@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+<meta name="Author" content="Dario Alejandro Alpern" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="waring, number theory" />
+<meta name="description" content="Javascript application that finds the decomposition of a number into cubes. Written by Dario Alpern." />
+<link rel="alternate" hreflang="es" href="SUMCUBOS.HTM" />
+    <title>Sum of four cubes</title>
+  <style type="text/css" media="print">
+    #smallheader {display:none;}
+  </style>
+  <style type="text/css" media="screen">
+    #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
+    #smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+    #smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+    #smallheader li:hover {background-color:#004000; color:#FFFFFF;}
+    #smallheader li ul { display:none; position:absolute; }
+    #smallheader li:hover ul.alignleft{ display:block; height:auto;}
+    #smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+    #smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
+    #smallheader a:link{color:#FFFFFF; text-decoration: none;}
+    #smallheader a:visited{color:#FFFFFF; text-decoration: none;}
+    #smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+    #smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+    #smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+    #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+    #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+    #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+    @media (max-width: 400px) { #smallheader { font-size:0.7em;  } }
+    @media (min-width: 400px) { #smallheader { font-size:1em;  } }
+  </style>
+  <style>
+    body {
+    font-family: arial;
+    margin: 0;
+    padding: 0;
+    }
+    h1 {text-align:center;}
+    input#input {margin:5px;width:100%;padding:3px;margin:0px;}
+    textarea {margin:5px;width:100%;padding:3px;margin:0px;}
+    div.emscripten { text-align: center; }
+    div.emscripten_border { border: 1px solid black; vertical-align:middle;}
+    canvas.emscripten { border: 0px none;width:100%;}
+    .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+    #bottom { border: 0px none;width:100%;min-height:4em;padding:5px}
+    @media (min-height : 200px) {.container {height:100px}}
+    @media (min-height : 300px) {.container {height:200px}}
+    @media (min-height : 400px) {.container {height:300px}}
+    @media (min-height : 500px) {.container {height:400px}}
+    @media (min-height : 600px) {.container {height:500px}}
+    @media (min-height : 700px) {.container {height:600px}}
+    @media (min-height : 800px) {.container {height:700px}}
+    @media (min-height : 900px) {.container {height:800px}}
+    @media (min-width : 600px) {
+    #info {display:inline;}
+    #inputboxes {display:inline; float:right;}
+    }
+
+  </style>
+ </head>
+  <body>
+    <div id="smallheader">
+      <div style="float:right;"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
+      <ul>
+        <li>
+          Electronics
+          <ul class="alignleft">
+            <li>
+              <a href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Mathematics
+          <ul class="alignleft">
+            <li>
+              <a href="CALTORS.HTM" title="Java and Javascript programs implementing calculators">Calculators</a>
+            </li>
+            <li>
+              <a href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a>
+            </li>
+            <li>
+              <a href="PROBLEMS.HTM" title="Interesting math problems">Problems</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Programs
+          <ul class="alignright">
+            <li>
+              <a href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a>
+            </li>
+            <li>
+              <a href="JAVAPROG.HTM" title="Programs written in Java">Java</a>
+            </li>
+            <li>
+              <a href="GAMES.HTM" title="Computer games">Games</a>
+            </li>
+          </ul>
+        </li>
+        <li class="alignright">
+          Contact
+          <ul class="alignright">
+            <li>
+              <a href="EPERS.HTM" title="Personal information">Personal</a>
+            </li>
+            <li>
+              <a href="FORM.HTM" title="Form to send comments">Comments</a>
+            </li>
+            <li>
+              <a href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a>
+            </li>
+            <li>
+              <a href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <br style="clear:both;"/>
+    </div>
+
+    <h1>Sum of cubes</h1>
+    <div id="applet" class="applet">
+      <form>
+        <input type="text" placeholder="Number to be decomposed in sum of cubes" id="input" />
+        <textarea rows="10" id="output" readonly="readonly"></textarea>
+        <p style="text-align:center;">
+          <label for="output">Number of digits per group:</label>
+          <input type="number" id="digits" value="6"/>
+          <input type="hidden" id="app" value="2"/>
+        </p>
+      </form>
+    </div>
+    <script async="async" type="text/javascript" src="fsquares.js?1412"></script>
+    <div style='padding:10px;'>
+      <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
+        <a href="ENGLISH.HTM" itemprop="url">
+          <span itemprop="title">Alpertron</span>
+        </a> ›
+      </div>
+      <div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" style="display:inline;">
+        <a href="JAVAPROG.HTM" itemprop="url">
+          <span itemprop="title">Programs</span>
+        </a> ›
+      </div>
+      <div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" style="display:inline;">
+        <a href="FCUBES.HTM" itemprop="url">
+          <span itemprop="title">Sum of four cubes</span>
+        </a>
+      </div>
+      <P>This applet finds the decomposition of any integer number not congruent to 4 or 5 (mod 9) into a sum of four cubes.</P>
+      <P>The applet uses the following formulas:</P>
+      <UL>
+        <LI>
+          6x = (x - 1)<SUP>3</SUP> + (-x)<SUP>3</SUP> + (-x)<SUP>3</SUP> + (x + 1)<SUP>3</SUP>
+        </LI>
+        <LI>
+          6x + 3 = x<SUP>3</SUP> + (-x + 4)<SUP>3</SUP> + (2x - 5)<SUP>3</SUP> + (-2x + 4)<SUP>3</SUP>
+        </LI>
+        <LI>
+          18x + 1 = (2x + 14)<SUP>3</SUP> + (-2x - 23)<SUP>3</SUP> + (-3x - 26)<SUP>3</SUP> + (3x + 30)<SUP>3</SUP>
+        </LI>
+        <LI>
+          18x + 7 = (x + 2)<SUP>3</SUP> + (6x - 1)<SUP>3</SUP> + (8x - 2)<SUP>3</SUP> + (-9x + 2)<SUP>3</SUP>
+        </LI>
+        <LI>
+          18x + 8 = (x - 5)<SUP>3</SUP> + (-x + 14)<SUP>3</SUP> + (-3x + 29)<SUP>3</SUP> + (3x - 30)<SUP>3</SUP>
+        </LI>
+        <LI>
+          54x + 20 = (3x - 11)<SUP>3</SUP> + (-3x + 10)<SUP>3</SUP> + (x + 2)<SUP>3</SUP> + (-x + 7)<SUP>3</SUP>
+        </LI>
+        <LI>
+          72x + 56 = (-9x + 4)<SUP>3</SUP> + (x + 4)<SUP>3</SUP> + (6x - 2)<SUP>3</SUP> + (8x - 4)<SUP>3</SUP>
+        </LI>
+        <LI>
+          108x + 2 = (-x - 22)<SUP>3</SUP> + (x + 4)<SUP>3</SUP> + (-3x - 41)<SUP>3</SUP> + (3x + 43)<SUP>3</SUP>
+        </LI>
+        <LI>
+          216x + 92 = (3x - 164)<SUP>3</SUP> + (-3x + 160)<SUP>3</SUP> + (x - 35)<SUP>3</SUP> + (-x + 71)<SUP>3</SUP>
+        </LI>
+        <LI>
+          270x + 146 = (-60x + 91)<SUP>3</SUP> + (-3x + 13)<SUP>3</SUP> + (22x - 37)<SUP>3</SUP> + (59x - 89)<SUP>3</SUP>
+        </LI>
+        <LI>
+          270x + 200 = (3x + 259)<SUP>3</SUP> + (-3x - 254)<SUP>3</SUP> + (x + 62)<SUP>3</SUP> + (-x - 107)<SUP>3</SUP>
+        </LI>
+        <LI>
+          270x + 218 = (-3x - 56)<SUP>3</SUP> + (3x + 31)<SUP>3</SUP> + (-5x - 69)<SUP>3</SUP> + (5x + 78)<SUP>3</SUP>
+        </LI>
+        <LI>
+          432x + 380 = (-3x + 64)<SUP>3</SUP> + (3x - 80)<SUP>3</SUP> + (2x - 29)<SUP>3</SUP> + (-2x + 65)<SUP>3</SUP>
+        </LI>
+        <LI>
+          540x + 38 = (5x - 285)<SUP>3</SUP> + (-5x + 267)<SUP>3</SUP> + (3x - 140)<SUP>3</SUP> + (-3x + 190)<SUP>3</SUP>
+        </LI>
+        <LI>
+          810x + 56 = (5x - 755)<SUP>3</SUP> + (-5x + 836)<SUP>3</SUP> + (9x - 1445)<SUP>3</SUP> + (-9x + 1420)<SUP>3</SUP>
+        </LI>
+        <LI>
+          1080x + 380 = (-x - 1438)<SUP>3</SUP> + (x + 1258)<SUP>3</SUP> + (-3x - 4037)<SUP>3</SUP> + (3x + 4057)<SUP>3</SUP>
+        </LI>
+        <LI>
+          1620x + 1334 = (-5x - 3269)<SUP>3</SUP> + (5x + 3107)<SUP>3</SUP> + (-9x - 5714)<SUP>3</SUP> + (9x + 5764)<SUP>3</SUP>
+        </LI>
+        <LI>
+          1620x + 1352 = (-5x + 434)<SUP>3</SUP> + (5x - 353)<SUP>3</SUP> + (9x - 722)<SUP>3</SUP> + (-9x + 697)<SUP>3</SUP>
+        </LI>
+        <LI>
+          2160x + 362 = (-5x - 180)<SUP>3</SUP> + (5x + 108)<SUP>3</SUP> + (-6x - 149)<SUP>3</SUP> + (6x + 199)<SUP>3</SUP>
+        </LI>
+        <LI>
+          6480x + 794 = (-5x - 83)<SUP>3</SUP> + (5x + 11)<SUP>3</SUP> + (-6x - 35)<SUP>3</SUP> + (6x + 85)<SUP>3</SUP>
+        </LI>
+      </UL>
+      <P>
+        If n = 164, 596, 1892, 2324, 2756, 4052, 4484 (mod 6480) the following formula is used:
+      </P>
+      <P>
+        54x + 2 = (29484x<SUP>2</SUP> + 2211x + 43)<SUP>3</SUP> + (-29484x<SUP>2</SUP> - 2157x - 41)<SUP>3</SUP> + (9828x<SUP>2</SUP> + 485x + 4)<SUP>3</SUP> + (-9828x<SUP>2</SUP> - 971x - 22)<SUP>3</SUP>
+      </P>
+      <P>
+        If n = 254, 902, 1442, 1874, 1982, 2414, 3062, 3494, 3602, 4034, 4142, 5114, 5222, 5654, 5762, 6302 (mod 6480) a method due to Demjanenko is used. Notice that the results can have hundreds of digits in this case.
+      </P>
+      <P>
+        In the remaining cases the number n is replaced by -n and then all solutions are multiplied by -1.
+      </P>
+      <P>
+        If you find any error or you have a comment, please fill in the <A HREF="FORM.HTM?Sum of cubes feedback" TARGET="_blank">form</A>.
+      </P>
+      <p>
+        Written by Dario Alpern.
+      </p>
+        <h2>Source code</h2>
+        <p>
+          You can download the source of the current program and the old sum of four cubes applet from <a href="fsquares.zip">here</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
+        </p>
+        <P>
+          You can also enter expressions that use the following operators and parentheses:
+        </P>
+        <UL>
+          <LI>
+            + for addition
+          </LI>
+          <LI>
+            - for subtraction
+          </LI>
+          <LI>
+            * for multiplication
+          </LI>
+          <LI>
+            / for integer division
+          </LI>
+          <LI>
+            ^ for exponentiation
+          </LI>
+          <LI>
+            <B>n!</B>: factorial
+          </LI>
+          <LI>
+            <B>p#</B>: primorial (product of all primes less or equal than <B>p</B>).
+          </LI>
+          <LI>
+            <B>B(n)</B>: Previous pseudoprime to <I>n</I>
+          </LI>
+          <LI>
+            <B>F(n)</B>: Fibonacci number F<SUB>n</SUB>
+          </LI>
+          <LI>
+            <B>L(n)</B>: Lucas number L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB>
+          </LI>
+          <LI>
+            <B>N(n)</B>: Next pseudoprime to <I>n</I>
+          </LI>
+          <LI>
+            <B>P(n)</B>: Unrestricted Partition Number (number of decompositions of <b>n</b> into integer summands without regard to order).
+          </LI>
+        </UL>
+      </div>
+    <script type="text/javascript">
+      var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+      document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+    <noscript></noscript>
+    <script type="text/javascript">
+      var pageTracker = _gat._getTracker("UA-4438475-1");
+      pageTracker._initData();
+      pageTracker._trackPageview();
+    </script>
+    <noscript></noscript>
+  </body>
+</html>

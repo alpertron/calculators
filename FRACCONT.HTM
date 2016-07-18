@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta name="Author" content="Dario Alejandro Alpern" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Aplicación Javascript que muestra la fracción continua de números racionales e irracionalidades cuadráticas." />
+    <link rel="alternate" hreflang="en" href="CONTFRAC.HTM" />
+    <title>Calculadora de fracciones continuas</title>
+    <style type="text/css" media="print">
+      #smallheader {display:none;}
+    </style>
+    <style type="text/css" media="screen">
+      #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
+      #smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+      #smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+      #smallheader li:hover {background-color:#004000; color:#FFFFFF;}
+      #smallheader li ul { display:none; position:absolute; }
+      #smallheader li:hover ul.alignleft{ display:block; height:auto;}
+      #smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+      #smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
+      #smallheader a:link{color:#FFFFFF; text-decoration: none;}
+      #smallheader a:visited{color:#FFFFFF; text-decoration: none;}
+      #smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+      #smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+      #smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+      #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+      #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+      #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+      @media (max-width: 400px) { #smallheader { font-size:0.7em;  } }
+      @media (min-width: 400px) { #smallheader { font-size:1em;  } }
+    </style>
+    <style>
+      body {
+      font-family: arial;
+      margin: 0;
+      padding: 0;
+      }
+      h1 {text-align:center;}
+      .i {font-style: italic;}
+      .bold {font-weight: bold;}
+      .mysvg {margin:0px;padding:0px;}
+      .input {margin:5px;width:100%;padding:3px;margin:0px;}
+      #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+      #bottom { border: 0px none;width:100%;min-height:4em;padding:5px}
+      #info {display:inline;}
+      #inputboxes {display:inline; float:right;}
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="smallheader">
+      <div style="padding:0px;float:right;">
+        <a href="ENGLISH.HTM" hreflang="en" title="Dario Alpern's Web site in English">ENG</a>
+      </div>
+      <ul>
+        <li>
+          Electrónica
+          <ul class="alignleft">
+            <li>
+              <a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Matemáticas
+          <ul class="alignleft">
+            <li>
+              <a href="CALDORAS.HTM" title="Programas en Java y Javascript que implementan calculadoras">Calculadoras</a>
+            </li>
+            <li>
+              <a href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a>
+            </li>
+            <li>
+              <a href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Programas
+          <ul class="alignright">
+            <li>
+              <a href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a>
+            </li>
+            <li>
+              <a href="PROGJAVA.HTM" title="Programas escritos en Java">Java</a>
+            </li>
+            <li>
+              <a href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a>
+            </li>
+          </ul>
+        </li>
+        <li class="alignright">
+          Contacto
+          <ul class="alignright">
+            <li>
+              <a href="PERSONAL.HTM" title="Información personal">Personal</a>
+            </li>
+            <li>
+              <a href="FORMULAR.HTM" title="Formulario para enviar comentarios">Comentarios</a>
+            </li>
+            <li>
+              <a href="GBOOK.HTM" title="Viejo y nuevo libro de visitas">Libro de invitados</a>
+            </li>
+            <li>
+              <a href="DONATION.HTM" title="Donaciones al autor de este sitio Web">Donaciones</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <br style="clear:both;" />
+    </div>
+    <h1>Calculadora de fracciones continuas</h1>
+    <script async="async" type="text/javascript" src="fsquares.js?1412"></script>
+    <div style='padding:10px;'>
+      <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
+        <a href="ENGLISH.HTM" itemprop="url">
+          <span itemprop="title">Alpertron</span>
+        </a> ›
+      </div>
+      <div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" style="display:inline;">
+        <a href="PROGJAVA.HTM" itemprop="url">
+          <span itemprop="title">Programas</span>
+        </a> ›
+      </div>
+      <div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" style="display:inline;">
+        <a href="FRACCONT.HTM" itemprop="url">
+          <span itemprop="title">Calculadora de fracciones continuas</span>
+        </a>
+      </div>
+    </div>
+    <form id="applet">
+      <p class="mysvg">
+        <svg height='30.4592pt' version='1.1' viewBox='0 0 40.118 30.4592' width='40.118pt' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
+          <defs>
+            <path d='M3.612 -1.428C3.552 -1.224 3.552 -1.2 3.384 -0.972C3.12 -0.636 2.592 -0.12 2.028 -0.12C1.536 -0.12 1.26 -0.564 1.26 -1.272C1.26 -1.932 1.632 -3.276 1.86 -3.78C2.268 -4.62 2.832 -5.052 3.3 -5.052C4.092 -5.052 4.248 -4.068 4.248 -3.972C4.248 -3.96 4.212 -3.804 4.2 -3.78L3.612 -1.428ZM4.38 -4.5C4.248 -4.812 3.924 -5.292 3.3 -5.292C1.944 -5.292 0.48 -3.54 0.48 -1.764C0.48 -0.576 1.176 0.12 1.992 0.12C2.652 0.12 3.216 -0.396 3.552 -0.792C3.672 -0.084 4.236 0.12 4.596 0.12S5.244 -0.096 5.46 -0.528C5.652 -0.936 5.82 -1.668 5.82 -1.716C5.82 -1.776 5.772 -1.824 5.7 -1.824C5.592 -1.824 5.58 -1.764 5.532 -1.584C5.352 -0.876 5.124 -0.12 4.632 -0.12C4.284 -0.12 4.26 -0.432 4.26 -0.672C4.26 -0.948 4.296 -1.08 4.404 -1.548C4.488 -1.848 4.548 -2.112 4.644 -2.46C5.088 -4.26 5.196 -4.692 5.196 -4.764C5.196 -4.932 5.064 -5.064 4.884 -5.064C4.5 -5.064 4.404 -4.644 4.38 -4.5Z' id='ltr-a'/>
+            <path d='M2.772 -8.028C2.784 -8.076 2.808 -8.148 2.808 -8.208C2.808 -8.328 2.688 -8.328 2.664 -8.328C2.652 -8.328 2.22 -8.292 2.004 -8.268C1.8 -8.256 1.62 -8.232 1.404 -8.22C1.116 -8.196 1.032 -8.184 1.032 -7.968C1.032 -7.848 1.152 -7.848 1.272 -7.848C1.884 -7.848 1.884 -7.74 1.884 -7.62C1.884 -7.536 1.788 -7.188 1.74 -6.972L1.452 -5.82C1.332 -5.34 0.648 -2.616 0.6 -2.4C0.54 -2.1 0.54 -1.896 0.54 -1.74C0.54 -0.516 1.224 0.12 2.004 0.12C3.396 0.12 4.836 -1.668 4.836 -3.408C4.836 -4.512 4.212 -5.292 3.312 -5.292C2.688 -5.292 2.124 -4.776 1.896 -4.536L2.772 -8.028ZM2.016 -0.12C1.632 -0.12 1.212 -0.408 1.212 -1.344C1.212 -1.74 1.248 -1.968 1.464 -2.808C1.5 -2.964 1.692 -3.732 1.74 -3.888C1.764 -3.984 2.472 -5.052 3.288 -5.052C3.816 -5.052 4.056 -4.524 4.056 -3.9C4.056 -3.324 3.72 -1.968 3.42 -1.344C3.12 -0.696 2.568 -0.12 2.016 -0.12Z' id='ltr-b'/>
+            <path d='M4.692 -4.512C4.464 -4.512 4.356 -4.512 4.188 -4.368C4.116 -4.308 3.984 -4.128 3.984 -3.936C3.984 -3.696 4.164 -3.552 4.392 -3.552C4.68 -3.552 5.004 -3.792 5.004 -4.272C5.004 -4.848 4.452 -5.292 3.624 -5.292C2.052 -5.292 0.48 -3.576 0.48 -1.872C0.48 -0.828 1.128 0.12 2.352 0.12C3.984 0.12 5.016 -1.152 5.016 -1.308C5.016 -1.38 4.944 -1.44 4.896 -1.44C4.86 -1.44 4.848 -1.428 4.74 -1.32C3.972 -0.3 2.832 -0.12 2.376 -0.12C1.548 -0.12 1.284 -0.84 1.284 -1.44C1.284 -1.86 1.488 -3.024 1.92 -3.84C2.232 -4.404 2.88 -5.052 3.636 -5.052C3.792 -5.052 4.452 -5.028 4.692 -4.512Z' id='ltr-c'/>
+            <path d='M4.788 -2.772H8.1C8.268 -2.772 8.484 -2.772 8.484 -2.988C8.484 -3.216 8.28 -3.216 8.1 -3.216H4.788V-6.528C4.788 -6.696 4.788 -6.912 4.572 -6.912C4.344 -6.912 4.344 -6.708 4.344 -6.528V-3.216H1.032C0.864 -3.216 0.648 -3.216 0.648 -3C0.648 -2.772 0.852 -2.772 1.032 -2.772H4.344V0.54C4.344 0.708 4.344 0.924 4.56 0.924C4.788 0.924 4.788 0.72 4.788 0.54V-2.772Z' id='plus'/>
+            <path d='M4.668 10.26L2.556 5.592C2.472 5.4 2.412 5.4 2.376 5.4C2.364 5.4 2.304 5.4 2.172 5.496L1.032 6.36C0.876 6.48 0.876 6.516 0.876 6.552C0.876 6.612 0.912 6.684 0.996 6.684C1.068 6.684 1.272 6.516 1.404 6.42C1.476 6.36 1.656 6.228 1.788 6.132L4.152 11.328C4.236 11.52 4.296 11.52 4.404 11.52C4.584 11.52 4.62 11.448 4.704 11.28L10.152 0C10.236 -0.168 10.236 -0.216 10.236 -0.24C10.236 -0.36 10.14 -0.48 9.996 -0.48C9.9 -0.48 9.816 -0.42 9.72 -0.228L4.668 10.26Z' id='sqrt'/>
+          </defs>
+          <g id='page1' transform='matrix(1.12578 0 0 1.12578 -65.342 -61.5624)'>
+            <use x='57.8248' xlink:href='#ltr-a' y='65.1866'/>
+            <use x='66.6594' xlink:href='#plus' y='65.1866'/>
+            <use x='78.4648' xlink:href='#sqrt' y='54.96'/>
+            <rect height='0.47998' width='4.99576' x='88.4649' y='54.48'/>
+            <use x='88.4649' xlink:href='#ltr-b' y='65.1866'/>
+            <rect height='0.47998' width='35.6358' x='57.8248' y='70.0647'/>
+            <use x='73.1143' xlink:href='#ltr-c' y='81.5361'/>
+          </g>
+        </svg>
+      </p>
+      <input type="input" id="num" placeholder="a" value="" class="input"/>
+      <br />
+      <input type="input" id="delta" placeholder="b" value="" class="input"/>
+      <br />
+      <input type="input" id="den" placeholder="c" value="" class="input"/>
+      <br />
+      <input type="button" id="calc" value="Calcular fracción continua" />
+      <input type="button" id="helpbtn" value="Ayuda" />
+      <input type="hidden" id="digits" value="20000"/>
+      <input type="hidden" id="app" value="5"/>
+    </form>
+    <div id="help">
+      <p>
+        Cualquier número real <span class="i">x</span> se puede representar de manera única mediante la fracción continua:
+      </p>
+      <p class="mysvg">
+        <svg height='76.6988pt' version='1.1' viewBox='0 0 159.224 76.6988' width='159.224pt' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
+          <defs>
+            <path d='M5.688 -4.896C5.304 -4.824 5.16 -4.536 5.16 -4.308C5.16 -4.02 5.388 -3.924 5.556 -3.924C5.916 -3.924 6.168 -4.236 6.168 -4.56C6.168 -5.064 5.592 -5.292 5.088 -5.292C4.356 -5.292 3.948 -4.572 3.84 -4.344C3.564 -5.244 2.82 -5.292 2.604 -5.292C1.38 -5.292 0.732 -3.72 0.732 -3.456C0.732 -3.408 0.78 -3.348 0.864 -3.348C0.96 -3.348 0.984 -3.42 1.008 -3.468C1.416 -4.8 2.22 -5.052 2.568 -5.052C3.108 -5.052 3.216 -4.548 3.216 -4.26C3.216 -3.996 3.144 -3.72 3 -3.144L2.592 -1.5C2.412 -0.78 2.064 -0.12 1.428 -0.12C1.368 -0.12 1.068 -0.12 0.816 -0.276C1.248 -0.36 1.344 -0.72 1.344 -0.864C1.344 -1.104 1.164 -1.248 0.936 -1.248C0.648 -1.248 0.336 -0.996 0.336 -0.612C0.336 -0.108 0.9 0.12 1.416 0.12C1.992 0.12 2.4 -0.336 2.652 -0.828C2.844 -0.12 3.444 0.12 3.888 0.12C5.112 0.12 5.76 -1.452 5.76 -1.716C5.76 -1.776 5.712 -1.824 5.64 -1.824C5.532 -1.824 5.52 -1.764 5.484 -1.668C5.16 -0.612 4.464 -0.12 3.924 -0.12C3.504 -0.12 3.276 -0.432 3.276 -0.924C3.276 -1.188 3.324 -1.38 3.516 -2.172L3.936 -3.804C4.116 -4.524 4.524 -5.052 5.076 -5.052C5.1 -5.052 5.436 -5.052 5.688 -4.896Z' id='let-x'/>
+            <path d='M2.208 -0.588C2.208 -0.912 1.932 -1.164 1.632 -1.164C1.284 -1.164 1.044 -0.888 1.044 -0.588C1.044 -0.228 1.344 0 1.62 0C1.944 0 2.208 -0.252 2.208 -0.588Z' id='dot2'/>
+            <path d='M3.456 -7.692C3.456 -7.968 3.456 -7.98 3.216 -7.98C2.928 -7.656 2.328 -7.212 1.092 -7.212V-6.864C1.368 -6.864 1.968 -6.864 2.628 -7.176V-0.924C2.628 -0.492 2.592 -0.348 1.536 -0.348H1.164V0C1.488 -0.024 2.652 -0.024 3.048 -0.024S4.596 -0.024 4.92 0V-0.348H4.548C3.492 -0.348 3.456 -0.492 3.456 -0.924V-7.692Z' id='nbr-1'/>
+            <path d='M8.1 -3.888C8.268 -3.888 8.484 -3.888 8.484 -4.104C8.484 -4.332 8.28 -4.332 8.1 -4.332H1.032C0.864 -4.332 0.648 -4.332 0.648 -4.116C0.648 -3.888 0.852 -3.888 1.032 -3.888H8.1ZM8.1 -1.656C8.268 -1.656 8.484 -1.656 8.484 -1.872C8.484 -2.1 8.28 -2.1 8.1 -2.1H1.032C0.864 -2.1 0.648 -2.1 0.648 -1.884C0.648 -1.656 0.852 -1.656 1.032 -1.656H8.1Z' id='equal'/>
+            <path d='M3.912 -2.552C3.912 -3.408 3.824 -3.928 3.56 -4.44C3.208 -5.144 2.56 -5.32 2.12 -5.32C1.112 -5.32 0.744 -4.568 0.632 -4.344C0.344 -3.76 0.328 -2.968 0.328 -2.552C0.328 -2.024 0.352 -1.216 0.736 -0.576C1.104 0.016 1.696 0.168 2.12 0.168C2.504 0.168 3.192 0.048 3.592 -0.744C3.888 -1.32 3.912 -2.032 3.912 -2.552ZM2.12 -0.056C1.848 -0.056 1.296 -0.184 1.128 -1.024C1.04 -1.48 1.04 -2.232 1.04 -2.648C1.04 -3.2 1.04 -3.76 1.128 -4.2C1.296 -5.016 1.92 -5.096 2.12 -5.096C2.392 -5.096 2.944 -4.96 3.104 -4.232C3.2 -3.792 3.2 -3.192 3.2 -2.648C3.2 -2.176 3.2 -1.456 3.104 -1.008C2.936 -0.168 2.384 -0.056 2.12 -0.056Z' id='sub-0'/>
+            <path d='M2.512 -5.096C2.512 -5.312 2.496 -5.32 2.28 -5.32C1.952 -5 1.528 -4.808 0.768 -4.808V-4.544C0.984 -4.544 1.416 -4.544 1.88 -4.76V-0.656C1.88 -0.36 1.856 -0.264 1.096 -0.264H0.816V0C1.144 -0.024 1.832 -0.024 2.192 -0.024S3.248 -0.024 3.576 0V-0.264H3.296C2.536 -0.264 2.512 -0.36 2.512 -0.656V-5.096Z' id='sub-1'/>
+            <path d='M2.256 -1.632C2.384 -1.752 2.72 -2.016 2.848 -2.128C3.344 -2.584 3.816 -3.024 3.816 -3.752C3.816 -4.704 3.016 -5.32 2.016 -5.32C1.056 -5.32 0.424 -4.592 0.424 -3.88C0.424 -3.488 0.736 -3.432 0.848 -3.432C1.016 -3.432 1.264 -3.552 1.264 -3.856C1.264 -4.272 0.864 -4.272 0.768 -4.272C1 -4.856 1.536 -5.056 1.928 -5.056C2.672 -5.056 3.056 -4.424 3.056 -3.752C3.056 -2.92 2.472 -2.312 1.528 -1.344L0.52 -0.304C0.424 -0.216 0.424 -0.2 0.424 0H3.584L3.816 -1.432H3.568C3.544 -1.272 3.48 -0.872 3.384 -0.72C3.336 -0.656 2.728 -0.656 2.6 -0.656H1.176L2.256 -1.632Z' id='sub-2'/>
+            <path d='M2.024 -2.672C2.656 -2.672 3.056 -2.208 3.056 -1.368C3.056 -0.368 2.488 -0.072 2.064 -0.072C1.624 -0.072 1.024 -0.232 0.744 -0.656C1.032 -0.656 1.232 -0.84 1.232 -1.104C1.232 -1.36 1.048 -1.544 0.792 -1.544C0.576 -1.544 0.352 -1.408 0.352 -1.088C0.352 -0.328 1.168 0.168 2.08 0.168C3.144 0.168 3.888 -0.568 3.888 -1.368C3.888 -2.032 3.36 -2.64 2.544 -2.816C3.176 -3.04 3.648 -3.584 3.648 -4.224S2.928 -5.32 2.096 -5.32C1.24 -5.32 0.592 -4.856 0.592 -4.248C0.592 -3.952 0.792 -3.824 1 -3.824C1.248 -3.824 1.408 -4 1.408 -4.232C1.408 -4.528 1.152 -4.64 0.976 -4.648C1.312 -5.088 1.928 -5.112 2.072 -5.112C2.28 -5.112 2.888 -5.048 2.888 -4.224C2.888 -3.664 2.656 -3.328 2.544 -3.2C2.304 -2.952 2.12 -2.936 1.632 -2.904C1.48 -2.896 1.416 -2.888 1.416 -2.784C1.416 -2.672 1.488 -2.672 1.624 -2.672H2.024Z' id='sub-3'/>
+          </defs>
+          <g id='page1' transform='matrix(1.12578 0 0 1.12578 -63.986 -63.7508)'>
+            <use x='56.6248' xlink:href='#let-x' y='73.1799'/>
+            <use x='66.6351' xlink:href='#equal' y='73.1799'/>
+            <use x='79.1072' xlink:href='#ltr-a' y='73.1799'/>
+            <use x='85.2752' xlink:href='#sub-0' y='74.9799'/>
+            <use x='92.6919' xlink:href='#plus' y='73.1799'/>
+            <use x='148.941' xlink:href='#nbr-1' y='64.1499'/>
+            <rect height='0.47998' width='92.3618' x='105.697' y='69.9399'/>
+            <use x='105.697' xlink:href='#ltr-a' y='91.0398'/>
+            <use x='111.865' xlink:href='#sub-1' y='92.8398'/>
+            <use x='119.282' xlink:href='#plus' y='91.0398'/>
+            <use x='162.236' xlink:href='#nbr-1' y='82.0098'/>
+            <rect height='0.47998' width='65.7717' x='132.287' y='87.7998'/>
+            <use x='132.287' xlink:href='#ltr-a' y='108.9'/>
+            <use x='138.455' xlink:href='#sub-2' y='110.7'/>
+            <use x='145.872' xlink:href='#plus' y='108.9'/>
+            <use x='175.531' xlink:href='#nbr-1' y='99.8696'/>
+            <rect height='0.47998' width='39.1816' x='158.877' y='105.66'/>
+            <use x='158.877' xlink:href='#ltr-a' y='122.746'/>
+            <use x='165.045' xlink:href='#sub-3' y='124.546'/>
+            <use x='172.462' xlink:href='#plus' y='122.746'/>
+            <use x='184.934' xlink:href='#dot2' y='115.746'/>
+            <use x='189.531' xlink:href='#dot2' y='118.746'/>
+            <use x='194.129' xlink:href='#dot2' y='121.746'/>
+          </g>
+        </svg>
+      </p>
+      <p>donde <span id="i">a<sub>1</sub></span>, <span id="i">a<sub>2</sub></span>, <span id="i">a<sub>3</sub></span>, ... son números enteros mayores que cero. Una representación más compacta es:</p>
+      <p class="mysvg">
+        <svg height='13.5093pt' version='1.1' viewBox='0 0 153.013 13.5093' width='153.013pt' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
+          <defs>
+            <path d='M2.34 0.048C2.34 -0.648 2.112 -1.164 1.62 -1.164C1.236 -1.164 1.044 -0.852 1.044 -0.588S1.224 0 1.632 0C1.788 0 1.92 -0.048 2.028 -0.156C2.052 -0.18 2.064 -0.18 2.076 -0.18C2.1 -0.18 2.1 -0.012 2.1 0.048C2.1 0.444 2.028 1.224 1.332 2.004C1.2 2.148 1.2 2.172 1.2 2.196C1.2 2.256 1.26 2.316 1.32 2.316C1.416 2.316 2.34 1.428 2.34 0.048Z' id='comma'/>
+            <path d='M5.148 -8.556C5.148 -8.568 5.22 -8.748 5.22 -8.772C5.22 -8.916 5.1 -9 5.004 -9C4.944 -9 4.836 -9 4.74 -8.736L0.72 2.556C0.72 2.568 0.648 2.748 0.648 2.772C0.648 2.916 0.768 3 0.864 3C0.936 3 1.044 2.988 1.128 2.736L5.148 -8.556Z' id='over'/>
+            <path d='M2.304 -3C2.304 -3.348 2.016 -3.636 1.668 -3.636S1.032 -3.348 1.032 -3S1.32 -2.364 1.668 -2.364S2.304 -2.652 2.304 -3Z' id='dot'/>
+          </defs>
+          <g id='page1' transform='matrix(1.12578 0 0 1.12578 -63.986 -64.41)'>
+            <use x='56.6248' xlink:href='#let-x' y='66'/>
+            <use x='66.6351' xlink:href='#equal' y='66'/>
+            <use x='79.1072' xlink:href='#ltr-a' y='66'/>
+            <use x='85.2752' xlink:href='#sub-0' y='67.8'/>
+            <use x='92.6919' xlink:href='#plus' y='66'/>
+            <use x='104.497' xlink:href='#over' y='66'/>
+            <use x='110.372' xlink:href='#over' y='66'/>
+            <use x='116.247' xlink:href='#ltr-a' y='66'/>
+            <use x='122.415' xlink:href='#sub-1' y='67.8'/>
+            <use x='127.165' xlink:href='#comma' y='66'/>
+            <use x='132.429' xlink:href='#ltr-a' y='66'/>
+            <use x='138.597' xlink:href='#sub-2' y='67.8'/>
+            <use x='143.347' xlink:href='#comma' y='66'/>
+            <use x='148.611' xlink:href='#ltr-a' y='66'/>
+            <use x='154.779' xlink:href='#sub-3' y='67.8'/>
+            <use x='159.529' xlink:href='#comma' y='66'/>
+            <use x='164.793' xlink:href='#dot' y='66'/>
+            <use x='170.126' xlink:href='#dot' y='66'/>
+            <use x='175.459' xlink:href='#dot' y='66'/>
+            <use x='180.793' xlink:href='#over' y='66'/>
+            <use x='186.668' xlink:href='#over' y='66'/>
+          </g>
+        </svg>
+      </p>
+        <p>
+        Si el número a representar es racional, hay una cantidad finita de términos en la fracción continua. Si el número es una irracionalidad cuadrática de la forma
+<svg height='16.0902pt' version='1.1' viewBox='0 0 62.7131 16.0902' width='62.7131pt' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
+          <defs>
+            <path d='M3.9 2.916C3.9 2.88 3.9 2.856 3.696 2.652C2.496 1.44 1.824 -0.54 1.824 -2.988C1.824 -5.316 2.388 -7.32 3.78 -8.736C3.9 -8.844 3.9 -8.868 3.9 -8.904C3.9 -8.976 3.84 -9 3.792 -9C3.636 -9 2.652 -8.136 2.064 -6.96C1.452 -5.748 1.176 -4.464 1.176 -2.988C1.176 -1.92 1.344 -0.492 1.968 0.792C2.676 2.232 3.66 3.012 3.792 3.012C3.84 3.012 3.9 2.988 3.9 2.916Z' id='lpar'/>
+            <path d='M3.384 -2.988C3.384 -3.9 3.264 -5.388 2.592 -6.78C1.884 -8.22 0.9 -9 0.768 -9C0.72 -9 0.66 -8.976 0.66 -8.904C0.66 -8.868 0.66 -8.844 0.864 -8.64C2.064 -7.428 2.736 -5.448 2.736 -3C2.736 -0.672 2.172 1.332 0.78 2.748C0.66 2.856 0.66 2.88 0.66 2.916C0.66 2.988 0.72 3.012 0.768 3.012C0.924 3.012 1.908 2.148 2.496 0.972C3.108 -0.252 3.384 -1.548 3.384 -2.988Z' id='rpar'/>
+          </defs>
+          <g id='page1' transform='matrix(1.12578 0 0 1.12578 -63.986 -61.8195)'>
+            <use x='56.6248' xlink:href='#lpar' y='66'/>
+            <use x='61.1942' xlink:href='#ltr-a' y='66'/>
+            <use x='70.0288' xlink:href='#plus' y='66'/>
+            <use x='81.8342' xlink:href='#sqrt' y='55.1875'/>
+            <rect height='0.47998' width='4.99576' x='91.8343' y='54.7075'/>
+            <use x='91.8343' xlink:href='#ltr-b' y='66'/>
+            <use x='96.83' xlink:href='#rpar' y='66'/>
+            <use x='101.399' xlink:href='#over' y='66'/>
+            <use x='107.274' xlink:href='#ltr-c' y='66'/>
+          </g>
+        </svg>,
+        entonces la fracción continua es periódica. Esta calculadora puede encontrar el desarrollo en fracciones continuas de números racionales e irracionalidades cuadráticas.
+      </p>
+      <p>Puede escribir números o expresiones numéricas en las cajas de entrada.</p>
+      <p>La calculadora acepta números de hasta 10000 dígitos.</p>
+      <p>
+        Si necesita que la raíz cuadrada reste al número de la izquierda, simplemente cambie el signo de <span class="i">a</span> y <span class="i">c</span>.
+      </p>
+      <p>
+        Si <span class="i">b</span> es negativo, el resultado no es un número real, así que no se podrá representar como fracción continua.
+      </p>
+        <p>La calculadora puede hallar todos los convergentes para números racionales. En el caso de irracionalidades cuadráticas, la calculadora se detiene después de hallar el convergente número 100000 si el período es más largo.</p>
+      <P>Se pueden entrar expresiones que usen los siguientes operadores y paréntesis:</P>
+      <UL>
+          <LI> + para suma</LI>
+          <LI> - para resta</LI>
+          <LI> * para multiplicación</LI>
+          <LI> / para división entera</LI>
+          <LI> ^ para exponenciación</LI>
+          <LI>
+            <B>n!</B>: factorial
+          </LI>
+          <LI>
+            <B>p#</B>: primorial (producto de todos los primos menores o iguales que <B>p</B>).
+          </LI>
+          <LI>
+            <B>B(n)</B>: número pseudoprimo anterior a <I>n</I>.
+          </LI>
+          <LI>
+            <B>F(n)</B>: número de Fibonacci F<SUB>n</SUB>.
+          </LI>
+          <LI>
+            <B>L(n)</B>: número de Lucas L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB>.
+          </LI>
+          <LI>
+            <B>N(n)</B>: número pseudoprimo posterior a <I>n</I>.
+          </LI>
+          <LI>
+            <B>P(n)</B>: particiones irrestrictas (cantidad de descomposiciones de <b>n</b> en sumas de números enteros sin tener en cuenta el orden).
+          </LI>
+        </UL>
+      <h2>Código fuente</h2>
+      <p>
+        Se puede bajar el código fuente de este programa y el del viejo applet de fracciones continuas desde <a href="fsquares.zip">aquí</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
+      </p>
+    </div>
+    <div id="result"></div>
+    <div>
+      <P>
+        Si encuentra algún error o tiene algún comentario, por favor llene el <A HREF="FORMULAR.HTM?Calculadora de fracciones continuas" TARGET="_blank">formulario</A>.
+      </P>
+      <script type="text/javascript">
+        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+        document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+      </script>
+      <noscript></noscript>
+      <script type="text/javascript">
+        var pageTracker = _gat._getTracker("UA-4438475-1");
+        pageTracker._initData();
+        pageTracker._trackPageview();
+      </script>
+      <noscript></noscript>
+    </div>
+  </body>
+</html>

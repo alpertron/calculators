@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="es">
+  <head>
+<meta name="Author" content="Dario Alejandro Alpern" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="Waring, teoría de números, teorema de Lagrange" />
+<meta name="description" content="Aplicación Javascript que descompone un número en una suma de hasta cuadrados. Hecho por Darío Alpern." />
+<link rel="alternate" hreflang="en" href="FSQUARES.HTM" />
+<title>Suma de cuatro cuadrados</title>
+  <style type="text/css" media="print">
+    #smallheader {display:none;}
+  </style>
+  <style type="text/css" media="screen">
+    #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
+    #smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+    #smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+    #smallheader li:hover {background-color:#004000; color:#FFFFFF;}
+    #smallheader li ul { display:none; position:absolute; }
+    #smallheader li:hover ul.alignleft{ display:block; height:auto;}
+    #smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+    #smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
+    #smallheader a:link{color:#FFFFFF; text-decoration: none;}
+    #smallheader a:visited{color:#FFFFFF; text-decoration: none;}
+    #smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+    #smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+    #smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+    #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+    #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+    #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+    @media (max-width: 400px) { #smallheader { font-size:0.7em;  } }
+    @media (min-width: 400px) { #smallheader { font-size:1em;  } }
+  </style>
+  <style>
+    body {
+    font-family: arial;
+    margin: 0;
+    padding: 0;
+    }
+    h1 {text-align:center;}
+    input#input {margin:5px;width:100%;padding:3px;margin:0px;}
+    textarea {margin:5px;width:100%;padding:3px;margin:0px;}
+    div.emscripten { text-align: center; }
+    div.emscripten_border { border: 1px solid black; vertical-align:middle;}
+    canvas.emscripten { border: 0px none;width:100%;}
+    .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+    #bottom { border: 0px none;width:100%;min-height:4em;padding:5px}
+    @media (min-height : 200px) {.container {height:100px}}
+    @media (min-height : 300px) {.container {height:200px}}
+    @media (min-height : 400px) {.container {height:300px}}
+    @media (min-height : 500px) {.container {height:400px}}
+    @media (min-height : 600px) {.container {height:500px}}
+    @media (min-height : 700px) {.container {height:600px}}
+    @media (min-height : 800px) {.container {height:700px}}
+    @media (min-height : 900px) {.container {height:800px}}
+    @media (min-width : 600px) {
+    #info {display:inline;}
+    #inputboxes {display:inline; float:right;}
+    }
+
+  </style>
+ </head>
+  <body>
+    <div id="smallheader">
+      <div style="padding:0px;float:right;">
+          <a href="ENGLISH.HTM" hreflang="en" title="Dario Alpern's Web site in English">ENG</a>
+      </div>
+      <ul>
+        <li>
+          Electrónica
+          <ul class="alignleft">
+            <li>
+              <a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Matemáticas
+          <ul class="alignleft">
+            <li>
+              <a href="CALDORAS.HTM" title="Programas en Java y Javascript que implementan calculadoras">Calculadoras</a>
+            </li>
+            <li>
+              <a href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a>
+            </li>
+            <li>
+              <a href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Programas
+          <ul class="alignright">
+            <li>
+              <a href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a>
+            </li>
+            <li>
+              <a href="PROGJAVA.HTM" title="Programas escritos en Java">Java</a>
+            </li>
+            <li>
+              <a href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a>
+            </li>            
+          </ul>
+      </li>
+      <li class="alignright">
+        Contacto
+        <ul class="alignright">
+          <li>
+            <a href="PERSONAL.HTM" title="Información personal">Personal</a>
+          </li>
+          <li>
+            <a href="FORMULAR.HTM" title="Formulario para enviar comentarios">Comentarios</a>
+          </li>
+          <li>
+            <a href="GBOOK.HTM" title="Viejo y nuevo libro de visitas">Libro de invitados</a>
+          </li>
+          <li>
+            <a href="DONATION.HTM" title="Donaciones al autor de este sitio Web">Donaciones</a>
+          </li>
+         </ul>
+        </li>
+      </ul>
+      <br style="clear:both;" />
+    </div>
+
+
+    <h1>Suma de cuatro cuadrados</h1>
+    <div id="applet" class="applet">
+      <form>
+        <input type="text" placeholder="Número a descomponer en suma de cuadrados" id="input" />
+        <textarea rows="10" id="output" readonly="readonly"></textarea>
+        <p style="text-align:center;">
+          <label for="output">Cantidad de dígitos por grupo:</label>
+          <input type="number" id="digits" value="6"/>
+          <input type="hidden" id="app" value="1"/>
+        </p>
+      </form>
+    </div>
+    <script async="async" type="text/javascript" src="fsquares.js?1412"></script>
+    <div style='padding:10px;'>
+      <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
+        <a href="/" itemprop="url">
+          <span itemprop="title">Alpertron</span>
+        </a> ›
+      </div>
+      <div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" style="display:inline;">
+        <a href="PROGJAVA.HTM" itemprop="url">
+          <span itemprop="title">Programas</span>
+        </a> ›
+      </div>
+      <div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" style="display:inline;">
+        <a href="SUMCUAD.HTM" itemprop="url">
+          <span itemprop="title">Suma de cuatro cuadrados</span>
+        </a>
+      </div>
+      <P>Este applet encuentra la descomposición de cualquier número natural mayor que 1 en una suma de hasta cuadrados.</P>
+      <P>
+        Como el programa no factoriza el número entrado por el usuario, en algunos casos se mostrarán
+        tres cuadrados donde una suma de dos bastaría. Por ejemplo, 10000998089 = 95317<SUP>2</SUP> + 30260<SUP>2</SUP>.
+      </P>
+      <P>
+        Si encuentra algún error o tiene algún comentario, por favor llene el <A HREF="FORMULAR.HTM?Suma de cuadrados" TARGET="_blank">formulario</A>.
+      </P>
+      <P>Se pueden entrar expresiones que usen los siguientes operadores y paréntesis:</P>
+<UL>
+  <LI> + para suma</LI>
+  <LI> - para resta</LI>
+  <LI> * para multiplicación</LI>
+<LI> / para división entera</LI>
+  <LI> ^ para exponenciación</LI>
+  <LI><B>n!</B>: factorial</LI>
+  <LI>
+    <B>p#</B>: primorial (producto de todos los primos menores o iguales que <B>p</B>).
+  </LI>
+  <LI>
+    <B>B(n)</B>: número pseudoprimo anterior a <I>n</I>.
+  </LI>
+  <LI>
+    <B>F(n)</B>: número de Fibonacci F<SUB>n</SUB>.
+  </LI>
+  <LI>
+    <B>L(n)</B>: número de Lucas L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB>.
+  </LI>
+  <LI>
+    <B>N(n)</B>: número pseudoprimo posterior a <I>n</I>.
+  </LI>
+  <LI>
+    <B>P(n)</B>: particiones irrestrictas (cantidad de descomposiciones de <b>n</b> en sumas de números enteros sin tener en cuenta el orden).
+  </LI>
+</UL>
+      <P>
+        Apriete <A HREF="4CUADR.HTM">aqu&iacute;</A> para ver los m&eacute;todos que usa este applet.
+      </P>
+      <h2>Código fuente</h2>
+      <p>
+        Se puede bajar el código fuente de este programa y el del viejo applet de suma de cuatro cubos desde <a href="fsquares.zip">aquí</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
+      </p>
+    </div>
+    <script type="text/javascript">
+      var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+      document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+    <noscript></noscript>
+    <script type="text/javascript">
+      var pageTracker = _gat._getTracker("UA-4438475-1");
+      pageTracker._initData();
+      pageTracker._trackPageview();
+    </script>
+    <noscript></noscript>
+  </body>
+</html>
