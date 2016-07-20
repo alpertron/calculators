@@ -39,15 +39,10 @@
       padding: 0;
       }
       h1 {text-align:center;}
-      .i {font-style: italic;}
-      #pol {font-weight: bold; color:#800000}
-      .bold {font-weight: bold;}
-      .mysvg {margin:0px;padding:0px;}
-      .input {margin:5px;width:100%;padding:3px;margin:0px;}
+	  .lf {padding:0.2em; clear:both; width:100%}
       #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
-      #bottom { border: 0px none;width:100%;min-height:4em;padding:5px}
-      #info {display:inline;}
-      #inputboxes {display:inline; float:right;}
+      @media (min-width: 400px) { .input{width: calc(100% - 8em);float:right;padding:3px;margin:0px;}}
+      @media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
     </style>
   </head>
   <body>
@@ -133,15 +128,16 @@
       </div>
     </div>
     <form id="applet">
-      <input type="text" id="poly" placeholder="expresión polinómica" value="" class="input"/>
-      <br />
-      <input type="text" id="mod" placeholder="módulo" value="" class="input"/>
-      <br />
+	  <label for="poly">Polinomio</label><input type="text" id="poly" value="" class="input"/>
+      <div class="lf"></div>
+	  <label for="mod">Módulo</label><input type="text" id="mod" value="" class="input"/>
+      <div class="lf"></div>
       <input type="button" id="eval" value="Evaluar" />
       <input type="button" id="factor" value="Factorizar" />
       <input type="button" id="stop" value="Parar" />
       <input type="button" id="helpbtn" value="Ayuda" /><br />
-      <label for="digits">Dígitos por grupo</label><input type="number" id="digits" value="6"/>
+      <div class="lf"></div>
+      <label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6"/>
       <input type="checkbox" id="sup" value="sup" checked /> <label for="sup">Superíndices</label>
       <input type="hidden" id="app" value="1"/>
     </form>

@@ -39,16 +39,11 @@
       padding: 0;
       }
       h1 {text-align:center;}
-      .i {font-style: italic;}
-      #pol {font-weight: bold; color:#800000}
-      .bold {font-weight: bold;}
-      .mysvg {margin:0px;padding:0px;}
-      .input {margin:5px;width:100%;padding:3px;margin:0px;}
+	  .lf {padding:0.2em; clear:both;}
       #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
-      #bottom { border: 0px none;width:100%;min-height:4em;padding:5px}
-      #info {display:inline;}
-      #inputboxes {display:inline; float:right;}
-    </style>
+      @media (min-width: 400px) { .input{width: calc(100% - 7em);float:right;padding:3px;margin:0px;}}
+      @media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
+   </style>
   </head>
   <body>
     <div id="smallheader">
@@ -131,15 +126,16 @@
       </div>
     </div>
     <form id="applet">
-      <input type="text" id="base" placeholder="Base" value="" class="input"/>
-      <br />
-      <input type="text" id="pow" placeholder="Power" value="" class="input"/>
-      <br />
-      <input type="text" id="mod" placeholder="Modulus" value="" class="input"/>
-      <br />
+      <label for="base">Base</label><input type="text" id="base" value="" class="input"/>
+      <div class="lf"></div>
+      <label for="pow">Power</label><input type="text" id="pow" value="" class="input"/>
+      <div class="lf"></div>
+      <label for="mod">Modulus</label><input type="text" id="mod" value="" class="input"/>
+      <div class="lf"></div>
       <input type="button" id="dlog" value="Discrete logarithm" />
       <input type="button" id="stop" value="Stop" />
-      <input type="button" id="helpbtn" value="Help" /><br />
+      <input type="button" id="helpbtn" value="Help" />
+      <div class="lf"></div>
       <label for="digits">Digits per group</label> <input type="number" id="digits" value="6"/>
       <input type="hidden" id="app" value="0"/>
     </form>
@@ -173,12 +169,12 @@ The applet works in a reasonable amount of time if this factor is less than 10<s
       <p>
         You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
       </p>
-	  <p>Written by Dario Alpern. Last updated 17 July 2016.</p>
+	  <p>Written by Dario Alpern. Last updated 19 July 2016.</p>
     </div>
     <div id="result"></div>
     <div>
       <P>
-        If you find any error or you have a comment, please fill in the <A HREF="FORM.HTM?Discrete+logarithm+calculator+feedback" TARGET="_blank">form</A>.
+        If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Discrete+logarithm+calculator+feedback">form</a>.
       </P>
       <script type="text/javascript">
         var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -41,24 +41,8 @@
     h1 {text-align:center;}
     input#input {margin:5px;width:100%;padding:3px;margin:0px;}
     textarea {margin:5px;width:100%;padding:3px;margin:0px;}
-    div.emscripten { text-align: center; }
-    div.emscripten_border { border: 1px solid black; vertical-align:middle;}
-    canvas.emscripten { border: 0px none;width:100%;}
     .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
-    #bottom { border: 0px none;width:100%;min-height:4em;padding:5px}
-    @media (min-height : 200px) {.container {height:100px}}
-    @media (min-height : 300px) {.container {height:200px}}
-    @media (min-height : 400px) {.container {height:300px}}
-    @media (min-height : 500px) {.container {height:400px}}
-    @media (min-height : 600px) {.container {height:500px}}
-    @media (min-height : 700px) {.container {height:600px}}
-    @media (min-height : 800px) {.container {height:700px}}
-    @media (min-height : 900px) {.container {height:800px}}
-    @media (min-width : 600px) {
-    #info {display:inline;}
-    #inputboxes {display:inline; float:right;}
-    }
-
+    .lf {padding:0.2em; clear:both; width:100%}
   </style>
  </head>
   <body>
@@ -125,13 +109,15 @@
     <h1>Sum of squares</h1>
     <div id="applet" class="applet">
       <form>
-        <input type="text" placeholder="Number to be decomposed in sum of squares" id="input" />
+	    <label for="input">Number to be decomposed in sum of squares</label>
+        <input type="text" id="input" />
+        <div class="lf"></div>
+	    <label for="output">Results</label>
         <textarea rows="10" id="output" readonly="readonly"></textarea>
-        <p style="text-align:center;">
-          <label for="output">Number of digits per group:</label>
-          <input type="number" id="digits" value="6"/>
-          <input type="hidden" id="app" value="0"/>
-        </p>
+        <div class="lf"></div>
+        <label for="digits">Number of digits per group:</label>
+        <input type="number" id="digits" value="6"/>
+        <input type="hidden" id="app" value="0"/>
       </form>
     </div>
     <script async="async" type="text/javascript" src="fsquares.js?1412"></script>
@@ -157,7 +143,7 @@
         so some cases where two squares would be enough will be represented as a sum of three squares. For example, 10000998089 = 95317<SUP>2</SUP> + 30260<SUP>2</SUP>.
       </p>
         <p>
-          If you find any error or you have a comment, please fill in the <A HREF="FORM.HTM?Sum of squares feedback" TARGET="_blank">form</A>.
+          If you find any error or you have a comment, please fill in the <a HREF="FORM.HTM?Sum of squares feedback">form</a>.
         </p>
         <p>
           Written by Dario Alpern.
@@ -185,10 +171,10 @@
             <B>n!</B>: factorial
           </LI>
           <LI>
-            <B>p#</B>: primorial (product of all primes less or equal than <B>p</B>).
+            <B>p#</B>: primorial (product of all primes less or equal than <em>p</em>).
           </LI>
           <LI>
-            <B>B(n)</B>: Previous pseudoprime to <I>n</I>
+            <B>B(n)</B>: Previous pseudoprime to <em>n</em>
           </LI>
           <LI>
             <B>F(n)</B>: Fibonacci number F<SUB>n</SUB>
@@ -197,10 +183,10 @@
             <B>L(n)</B>: Lucas number L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB>
           </LI>
           <LI>
-            <B>N(n)</B>: Next pseudoprime to <I>n</I>
+            <B>N(n)</B>: Next pseudoprime to <em>n</em>
           </LI>
           <LI>
-            <B>P(n)</B>: Unrestricted Partition Number (number of decompositions of <b>n</b> into integer summands without regard to order).
+            <B>P(n)</B>: Unrestricted Partition Number (number of decompositions of <em>n</em> into sums of integers without regard to order).
           </LI>
         </UL>
         <P>

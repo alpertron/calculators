@@ -41,24 +41,8 @@
     h1 {text-align:center;}
     input#input {margin:5px;width:100%;padding:3px;margin:0px;}
     textarea {margin:5px;width:100%;padding:3px;margin:0px;}
-    div.emscripten { text-align: center; }
-    div.emscripten_border { border: 1px solid black; vertical-align:middle;}
-    canvas.emscripten { border: 0px none;width:100%;}
     .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
-    #bottom { border: 0px none;width:100%;min-height:4em;padding:5px}
-    @media (min-height : 200px) {.container {height:100px}}
-    @media (min-height : 300px) {.container {height:200px}}
-    @media (min-height : 400px) {.container {height:300px}}
-    @media (min-height : 500px) {.container {height:400px}}
-    @media (min-height : 600px) {.container {height:500px}}
-    @media (min-height : 700px) {.container {height:600px}}
-    @media (min-height : 800px) {.container {height:700px}}
-    @media (min-height : 900px) {.container {height:800px}}
-    @media (min-width : 600px) {
-    #info {display:inline;}
-    #inputboxes {display:inline; float:right;}
-    }
-
+    .lf {padding:0.2em; clear:both; width:100%}
   </style>
  </head>
   <body>
@@ -128,13 +112,15 @@
     <h1>Suma de cuatro cuadrados</h1>
     <div id="applet" class="applet">
       <form>
-        <input type="text" placeholder="Número a descomponer en suma de cuadrados" id="input" />
+	    <label for="input">Número a descomponer en suma de cuadrados</label>
+        <input type="text" id="input" />
+        <div class="lf"></div>
+	    <label for="output">Resultado</label>
         <textarea rows="10" id="output" readonly="readonly"></textarea>
-        <p style="text-align:center;">
-          <label for="output">Cantidad de dígitos por grupo:</label>
-          <input type="number" id="digits" value="6"/>
-          <input type="hidden" id="app" value="1"/>
-        </p>
+        <div class="lf"></div>
+        <label for="digits">Cantidad de dígitos por grupo:</label>
+        <input type="number" id="digits" value="6"/>
+        <input type="hidden" id="app" value="1"/>
       </form>
     </div>
     <script async="async" type="text/javascript" src="fsquares.js?1412"></script>
@@ -160,7 +146,7 @@
         tres cuadrados donde una suma de dos bastaría. Por ejemplo, 10000998089 = 95317<SUP>2</SUP> + 30260<SUP>2</SUP>.
       </P>
       <P>
-        Si encuentra algún error o tiene algún comentario, por favor llene el <A HREF="FORMULAR.HTM?Suma de cuadrados" TARGET="_blank">formulario</A>.
+        Si encuentra algún error o tiene algún comentario, por favor llene el <a HREF="FORMULAR.HTM?Suma de cuadrados">formulario</a>.
       </P>
       <P>Se pueden entrar expresiones que usen los siguientes operadores y paréntesis:</P>
 <UL>
@@ -171,10 +157,10 @@
   <LI> ^ para exponenciación</LI>
   <LI><B>n!</B>: factorial</LI>
   <LI>
-    <B>p#</B>: primorial (producto de todos los primos menores o iguales que <B>p</B>).
+    <B>p#</B>: primorial (producto de todos los primos menores o iguales que <em>p</em>).
   </LI>
   <LI>
-    <B>B(n)</B>: número pseudoprimo anterior a <I>n</I>.
+    <B>B(n)</B>: número pseudoprimo anterior a <em>n</em>.
   </LI>
   <LI>
     <B>F(n)</B>: número de Fibonacci F<SUB>n</SUB>.
@@ -183,10 +169,10 @@
     <B>L(n)</B>: número de Lucas L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB>.
   </LI>
   <LI>
-    <B>N(n)</B>: número pseudoprimo posterior a <I>n</I>.
+    <B>N(n)</B>: número pseudoprimo posterior a <em>n</em>.
   </LI>
   <LI>
-    <B>P(n)</B>: particiones irrestrictas (cantidad de descomposiciones de <b>n</b> en sumas de números enteros sin tener en cuenta el orden).
+    <B>P(n)</B>: particiones irrestrictas (cantidad de descomposiciones de <em>n</em> en sumas de números enteros sin tener en cuenta el orden).
   </LI>
 </UL>
       <P>

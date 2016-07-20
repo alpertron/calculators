@@ -39,13 +39,10 @@
       }
       h1 {text-align:center;}
       .i {font-style: italic;}
-      .bold {font-weight: bold;}
       .mysvg {margin:0px;padding:0px;}
-      .input {margin:5px;width:100%;padding:3px;margin:0px;}
+      .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
+	  .lf {padding:0.2em; clear:both; width:100%}
       #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
-      #bottom { border: 0px none;width:100%;min-height:4em;padding:5px}
-      #info {display:inline;}
-      #inputboxes {display:inline; float:right;}
       }
 
     </style>
@@ -152,12 +149,12 @@
           </g>
         </svg>
       </p>
-      <input type="input" id="num" placeholder="a" value="" class="input"/>
-      <br />
-      <input type="input" id="delta" placeholder="b" value="" class="input"/>
-      <br />
-      <input type="input" id="den" placeholder="c" value="" class="input"/>
-      <br />
+      <label for="num">a</label><input type="input" id="num" value="" class="input"/>
+      <div class="lf"></div>
+      <label for="delta">b</label><input type="input" id="delta" value="" class="input"/>
+      <div class="lf"></div>
+      <label for="den">c</label><input type="input" id="den" value="" class="input"/>
+      <div class="lf"></div>
       <input type="button" id="calc" value="Calcular fracción continua" />
       <input type="button" id="helpbtn" value="Ayuda" />
       <input type="hidden" id="digits" value="20000"/>
@@ -179,7 +176,7 @@
             <path d='M2.256 -1.632C2.384 -1.752 2.72 -2.016 2.848 -2.128C3.344 -2.584 3.816 -3.024 3.816 -3.752C3.816 -4.704 3.016 -5.32 2.016 -5.32C1.056 -5.32 0.424 -4.592 0.424 -3.88C0.424 -3.488 0.736 -3.432 0.848 -3.432C1.016 -3.432 1.264 -3.552 1.264 -3.856C1.264 -4.272 0.864 -4.272 0.768 -4.272C1 -4.856 1.536 -5.056 1.928 -5.056C2.672 -5.056 3.056 -4.424 3.056 -3.752C3.056 -2.92 2.472 -2.312 1.528 -1.344L0.52 -0.304C0.424 -0.216 0.424 -0.2 0.424 0H3.584L3.816 -1.432H3.568C3.544 -1.272 3.48 -0.872 3.384 -0.72C3.336 -0.656 2.728 -0.656 2.6 -0.656H1.176L2.256 -1.632Z' id='sub-2'/>
             <path d='M2.024 -2.672C2.656 -2.672 3.056 -2.208 3.056 -1.368C3.056 -0.368 2.488 -0.072 2.064 -0.072C1.624 -0.072 1.024 -0.232 0.744 -0.656C1.032 -0.656 1.232 -0.84 1.232 -1.104C1.232 -1.36 1.048 -1.544 0.792 -1.544C0.576 -1.544 0.352 -1.408 0.352 -1.088C0.352 -0.328 1.168 0.168 2.08 0.168C3.144 0.168 3.888 -0.568 3.888 -1.368C3.888 -2.032 3.36 -2.64 2.544 -2.816C3.176 -3.04 3.648 -3.584 3.648 -4.224S2.928 -5.32 2.096 -5.32C1.24 -5.32 0.592 -4.856 0.592 -4.248C0.592 -3.952 0.792 -3.824 1 -3.824C1.248 -3.824 1.408 -4 1.408 -4.232C1.408 -4.528 1.152 -4.64 0.976 -4.648C1.312 -5.088 1.928 -5.112 2.072 -5.112C2.28 -5.112 2.888 -5.048 2.888 -4.224C2.888 -3.664 2.656 -3.328 2.544 -3.2C2.304 -2.952 2.12 -2.936 1.632 -2.904C1.48 -2.896 1.416 -2.888 1.416 -2.784C1.416 -2.672 1.488 -2.672 1.624 -2.672H2.024Z' id='sub-3'/>
           </defs>
-          <g id='page1' transform='matrix(1.12578 0 0 1.12578 -63.986 -63.7508)'>
+          <g id='page2' transform='matrix(1.12578 0 0 1.12578 -63.986 -63.7508)'>
             <use x='56.6248' xlink:href='#let-x' y='73.1799'/>
             <use x='66.6351' xlink:href='#equal' y='73.1799'/>
             <use x='79.1072' xlink:href='#ltr-a' y='73.1799'/>
@@ -206,7 +203,7 @@
           </g>
         </svg>
       </p>
-      <p>donde <span id="i">a<sub>1</sub></span>, <span id="i">a<sub>2</sub></span>, <span id="i">a<sub>3</sub></span>, ... son números enteros mayores que cero. Una representación más compacta es:</p>
+      <p>donde <span class="i">a<sub>1</sub></span>, <span class="i">a<sub>2</sub></span>, <span class="i">a<sub>3</sub></span>, ... son números enteros mayores que cero. Una representación más compacta es:</p>
       <p class="mysvg">
         <svg height='13.5093pt' version='1.1' viewBox='0 0 153.013 13.5093' width='153.013pt' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
           <defs>
@@ -214,7 +211,7 @@
             <path d='M5.148 -8.556C5.148 -8.568 5.22 -8.748 5.22 -8.772C5.22 -8.916 5.1 -9 5.004 -9C4.944 -9 4.836 -9 4.74 -8.736L0.72 2.556C0.72 2.568 0.648 2.748 0.648 2.772C0.648 2.916 0.768 3 0.864 3C0.936 3 1.044 2.988 1.128 2.736L5.148 -8.556Z' id='over'/>
             <path d='M2.304 -3C2.304 -3.348 2.016 -3.636 1.668 -3.636S1.032 -3.348 1.032 -3S1.32 -2.364 1.668 -2.364S2.304 -2.652 2.304 -3Z' id='dot'/>
           </defs>
-          <g id='page1' transform='matrix(1.12578 0 0 1.12578 -63.986 -64.41)'>
+          <g id='page3' transform='matrix(1.12578 0 0 1.12578 -63.986 -64.41)'>
             <use x='56.6248' xlink:href='#let-x' y='66'/>
             <use x='66.6351' xlink:href='#equal' y='66'/>
             <use x='79.1072' xlink:href='#ltr-a' y='66'/>
@@ -246,7 +243,7 @@
             <path d='M3.9 2.916C3.9 2.88 3.9 2.856 3.696 2.652C2.496 1.44 1.824 -0.54 1.824 -2.988C1.824 -5.316 2.388 -7.32 3.78 -8.736C3.9 -8.844 3.9 -8.868 3.9 -8.904C3.9 -8.976 3.84 -9 3.792 -9C3.636 -9 2.652 -8.136 2.064 -6.96C1.452 -5.748 1.176 -4.464 1.176 -2.988C1.176 -1.92 1.344 -0.492 1.968 0.792C2.676 2.232 3.66 3.012 3.792 3.012C3.84 3.012 3.9 2.988 3.9 2.916Z' id='lpar'/>
             <path d='M3.384 -2.988C3.384 -3.9 3.264 -5.388 2.592 -6.78C1.884 -8.22 0.9 -9 0.768 -9C0.72 -9 0.66 -8.976 0.66 -8.904C0.66 -8.868 0.66 -8.844 0.864 -8.64C2.064 -7.428 2.736 -5.448 2.736 -3C2.736 -0.672 2.172 1.332 0.78 2.748C0.66 2.856 0.66 2.88 0.66 2.916C0.66 2.988 0.72 3.012 0.768 3.012C0.924 3.012 1.908 2.148 2.496 0.972C3.108 -0.252 3.384 -1.548 3.384 -2.988Z' id='rpar'/>
           </defs>
-          <g id='page1' transform='matrix(1.12578 0 0 1.12578 -63.986 -61.8195)'>
+          <g id='page4' transform='matrix(1.12578 0 0 1.12578 -63.986 -61.8195)'>
             <use x='56.6248' xlink:href='#lpar' y='66'/>
             <use x='61.1942' xlink:href='#ltr-a' y='66'/>
             <use x='70.0288' xlink:href='#plus' y='66'/>
@@ -280,10 +277,10 @@
             <B>n!</B>: factorial
           </LI>
           <LI>
-            <B>p#</B>: primorial (producto de todos los primos menores o iguales que <B>p</B>).
+            <B>p#</B>: primorial (producto de todos los primos menores o iguales que <em>p</em>).
           </LI>
           <LI>
-            <B>B(n)</B>: número pseudoprimo anterior a <I>n</I>.
+            <B>B(n)</B>: número pseudoprimo anterior a <em>n</em>.
           </LI>
           <LI>
             <B>F(n)</B>: número de Fibonacci F<SUB>n</SUB>.
@@ -292,10 +289,10 @@
             <B>L(n)</B>: número de Lucas L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB>.
           </LI>
           <LI>
-            <B>N(n)</B>: número pseudoprimo posterior a <I>n</I>.
+            <B>N(n)</B>: número pseudoprimo posterior a <em>n</em>.
           </LI>
           <LI>
-            <B>P(n)</B>: particiones irrestrictas (cantidad de descomposiciones de <b>n</b> en sumas de números enteros sin tener en cuenta el orden).
+            <B>P(n)</B>: particiones irrestrictas (cantidad de descomposiciones de <em>n</em> en sumas de números enteros sin tener en cuenta el orden).
           </LI>
         </UL>
       <h2>Código fuente</h2>
