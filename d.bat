@@ -1,0 +1,2 @@
+java -jar "C:\Program Files\Emscripten\emscripten\1.35.0\third_party\closure-compiler\compiler.jar" --compilation_level ADVANCED_OPTIMIZATIONS --js gauss.js --js_output_file gaussian.js
+cmd /c emcc -Os GaussExpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c gaussian.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork']" -s TOTAL_MEMORY=33554432 -s NO_BROWSER=1 -s NO_FILESYSTEM=1 --closure 1 --memory-init-file 0 -o gaussianW.js
