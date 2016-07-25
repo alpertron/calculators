@@ -1056,13 +1056,14 @@ static void insertBigFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   int nbrLimbs = *ptrFactor;
   int *ptrValue = ptrFactor + nbrLimbs;
 
+  NumberLength = *ptrFactor;
   UncompressBigInteger(ptrFactor, &Temp1);
   UncompressLimbsBigInteger(divisor, &Temp2);
   BigIntDivide(&Temp1, &Temp2, &Temp3);
   // Set non-significant limbs of Temp3 to zero.
-  if (NumberLength != Temp3.nbrLimbs)
+  if (Temp1.nbrLimbs != Temp3.nbrLimbs)
   {
-    memset(&Temp3.limbs[Temp3.nbrLimbs].x, 0, (NumberLength - Temp3.nbrLimbs) * sizeof(limb));
+    memset(&Temp3.limbs[Temp3.nbrLimbs].x, 0, (Temp1.nbrLimbs - Temp3.nbrLimbs) * sizeof(limb));
   }
   CompressBigInteger(ptrFactor, &Temp3);
   // Check whether prime is already in factor list.
@@ -1097,7 +1098,8 @@ static void insertBigFactor(struct sFactors *pstFactors, struct sFactors *pstFac
     pstCurFactor = pstFactors + pstFactors->multiplicity;
     pstCurFactor->ptrFactor = ptrValue;
     pstCurFactor->multiplicity = pstFactorDividend->multiplicity;
-    pstFactors->ptrFactor += 2;  // Next free memory.
+    pstCurFactor->upperBound = pstFactorDividend->upperBound;
+    pstFactors->ptrFactor += 1 + Temp2.nbrLimbs;  // Next free memory.
   }
   CompressBigInteger(ptrValue, &Temp2);
 }
@@ -1210,8 +1212,8 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
     if (isPseudoprime(&prime))
     {   // Number is prime power.
       CompressBigInteger(pstCurFactor->ptrFactor, &prime);
-      pstFactors->multiplicity *= expon;
-      pstFactors->upperBound = 0;   // Indicate that number is prime.
+      pstCurFactor->multiplicity *= expon;
+      pstCurFactor->upperBound = 0;   // Indicate that number is prime.
       continue;             // Check next factor.
     }
     else
@@ -1228,7 +1230,7 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
       if (ctr != NumberLength || GD[0].x != 1)
       {
         insertBigFactor(pstFactors, pstCurFactor, GD);
-        factorNbr--;     // Continue factoring this number because it can be composite.
+        factorNbr--;     // Continue factoring this number because it may be composite.
         pstCurFactor--;
       }
     }

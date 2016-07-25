@@ -230,7 +230,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
       }
     }
     ptrQuotient = &approxInv[2 * nbrLimbs - nbrLimbsQuotient - 1];
-    if (idx >= 0 && ptrDividend->x > ptrDivisor->x)
+    if ((idx >= 0 && ptrDividend->x > ptrDivisor->x) || idx < 0)
     {
       nbrLimbsQuotient++;
     }

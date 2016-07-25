@@ -26,8 +26,10 @@ enum eExprErr
   EXPR_MODULUS_POWER_NOT_RELATIVELY_PRIME,
   EXPR_OK = 0
 };
-
+extern int lang;
+enum eExprErr ComputeGaussianExpression(char *expr, BigInteger *ExpressionResult);
 enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResult);
+void partition(int val, BigInteger *pResult);
 void textError(char *output, enum eExprErr rc);
 #else
 #endif

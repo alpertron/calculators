@@ -4,8 +4,9 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "factor.h"
-#define DEBUG_CODE 11
+#define DEBUG_CODE 12
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
+void gaussianText(char *valueText, int doFactorization);
 int Factor1[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00 };
 int Factor2[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00 };
 int Factor3[] = { 29504, 29490, 19798, 633, 181, 0, 0, 0, 0, 0 };
@@ -168,13 +169,21 @@ int main(int argc, char *argv[])
     printf("%s^%d\n", output, astFactors[index].multiplicity);
   }
 #elif DEBUG_CODE == 11
-if (argc != 4)
-{
-  printf("base power modulus\n");
-  return 0;
-}
-dilogText(argv[1], argv[2], argv[3], 6);
-printf("%s\n", output);
+  if (argc != 4)
+  {
+    printf("base power modulus\n");
+    return 0;
+  }
+  dilogText(argv[1], argv[2], argv[3], 6);
+  printf("%s\n", output);
+#elif DEBUG_CODE == 12
+  if (argc != 3)
+  {
+    printf("value factorize\n");
+    return 0;
+  }
+  gaussianText(argv[1], argv[2][0]);
+  printf("%s\n", output);
 #endif
   return 0;
 }

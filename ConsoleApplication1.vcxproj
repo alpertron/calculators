@@ -159,12 +159,16 @@
     <ClCompile Include="contfrac.c" />
     <ClCompile Include="dilog.c" />
     <ClCompile Include="division.c" />
+    <ClCompile Include="errors.c" />
     <ClCompile Include="expression.c" />
     <ClCompile Include="factor.c" />
     <ClCompile Include="fcubes.c" />
     <ClCompile Include="fsquares.c" />
+    <ClCompile Include="GaussExpr.c" />
+    <ClCompile Include="gaussian.c" />
     <ClCompile Include="karatsuba.c" />
     <ClCompile Include="modmult.c" />
+    <ClCompile Include="partition.c" />
     <ClCompile Include="polfact.c" />
     <ClCompile Include="polynomial.c" />
     <ClCompile Include="sqroot.c">
@@ -173,7 +177,6 @@
     <ClCompile Include="test.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="highlevel.h" />
     <ClInclude Include="polynomial.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

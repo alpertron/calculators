@@ -71,6 +71,7 @@ struct sFactors astFactorsGO[1000];
 int factorsGO[10000];
 int NumberLength;
 extern char *output;
+static int groupLen;
 static void BigNbrToMont(BigInteger *bigNbr, limb *nbr);
 static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *subGroupOrder);
 static void ExchangeMods(void);
@@ -130,7 +131,7 @@ static void indicateCannotComputeLog(int indexBase, int indexExp)
   struct sFactors *pstFactors = &astFactorsGO[indexBase + 1];
   strcpy(textExp, "Cannot compute discrete logarithm: subgroup=");
   UncompressBigInteger(pstFactors->ptrFactor, &tmpBase);
-  Bin2Dec(tmpBase.limbs, textExp + strlen(textExp), tmpBase.nbrLimbs, 6);
+  Bin2Dec(tmpBase.limbs, textExp + strlen(textExp), tmpBase.nbrLimbs, groupLen);
   strcpy(textExp + strlen(textExp), ", exponent=");
   ptrText = textExp + strlen(textExp);
   int2dec(&ptrText, indexExp);
@@ -242,7 +243,7 @@ void DiscreteLogarithm(void)
       strcpy(textExp, "Computing discrete logarithm in subgroup of ");
       UncompressBigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
       subGroupOrder.sign = SIGN_POSITIVE;
-      Bin2Dec(subGroupOrder.limbs, textExp + strlen(textExp), subGroupOrder.nbrLimbs, 6);
+      Bin2Dec(subGroupOrder.limbs, textExp + strlen(textExp), subGroupOrder.nbrLimbs, groupLen);
       ptr = textExp + strlen(textExp);
       if (astFactorsGO[indexBase + 1].multiplicity > 1)
       {
@@ -825,8 +826,8 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLen)
       strcat(ptrOutput, "<em>k</em></p>");
     }
   }
-  strcat(ptrOutput, lang ? "<p>Hecho por Darío Alpern. Actualizado el 17 de julio de 2016.</p>" :
-    "<p>Written by Dario Alpern. Last updated on 17 July 2016.</p>");
+  strcat(ptrOutput, lang ? "<p>Hecho por Darío Alpern. Actualizado el 24 de julio de 2016.</p>" :
+    "<p>Written by Dario Alpern. Last updated on 24 July 2016.</p>");
 }
 
 #ifdef __EMSCRIPTEN__
@@ -840,6 +841,7 @@ void doWork(char* data, int size)
   {
     output = malloc(3000000);
   }
+  groupLen = 0;
   while (*ptrData != ',')
   {
     groupLen = groupLen * 10 + (*ptrData++ - '0');
