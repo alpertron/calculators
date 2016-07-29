@@ -49,7 +49,7 @@ enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResu
   int i, j, shLeft;
   limb carry;
   boolean leftNumberFlag = FALSE;
-  int exprIndexAux;
+  int exprIndexAux, offset;
   enum eExprErr SubExprResult;
   int len;
   limb largeLen;
@@ -367,6 +367,7 @@ enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResu
         carry.x = 0;
         i = 0;  // limb number.
         shLeft = 0;
+        offset = exprIndexAux;
         ptrLimb = &stackValues[stackIndex].limbs[0];
         for (; exprIndexAux >= exprIndex + 2; exprIndexAux--)
         {
@@ -388,11 +389,14 @@ enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResu
           if (shLeft >= BITS_PER_GROUP)
           {
             shLeft -= BITS_PER_GROUP;
+            (ptrLimb++)->x = carry.x & MAX_VALUE_LIMB;
+            carry.x >>= BITS_PER_GROUP;
           }
-          (ptrLimb++)->x = carry.x & MAX_VALUE_LIMB;
-          carry.x >>= BITS_PER_GROUP;
         }
+        (ptrLimb++)->x = carry.x;
+        exprIndex = offset;
         stackValues[stackIndex].nbrLimbs = (int)(ptrLimb - &stackValues[stackIndex].limbs[0]);
+        stackValues[stackIndex].sign = SIGN_POSITIVE;
       }
       else
       {                   // Decimal number.
@@ -413,9 +417,9 @@ enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResu
         Dec2Bin(expr + exprIndex, pBigInt->limbs,
                 exprIndexAux + 1 - exprIndex, &pBigInt -> nbrLimbs);
         pBigInt -> sign = SIGN_POSITIVE;
+        exprIndex = exprIndexAux;
       }
       leftNumberFlag = TRUE;
-      exprIndex = exprIndexAux;
     }
     else
     {
@@ -463,7 +467,7 @@ enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResu
       return EXPR_NUMBER_TOO_LOW;
     }
   }
-  *ExpressionResult = stackValues[0];
+  CopyBigInt(ExpressionResult, &stackValues[0]);
   return EXPR_OK;
 }
 

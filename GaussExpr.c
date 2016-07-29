@@ -84,7 +84,6 @@ enum eExprErr ComputeGaussianExpression(char *expr, BigInteger *ExpressionResult
 static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
 {
   int c, i, j;
-  char charValue;
   int exprIndexAux;
   int SubExprResult,len;
   BigInteger factorial, Tmp;
@@ -92,14 +91,14 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
   BigInteger *ptrRe, *ptrIm;
   limb carry, largeLen;
   limb *ptrLimb;
-  int retcode, shLeft;;
+  int retcode, shLeft, offset;
   int leftNumberFlag = 0;
   int startStackIndex = stackIndex;
   
   exprLength = (int)strlen(expr);
   while (exprIndex < exprLength)
   {
-    charValue = *(expr + exprIndex);
+    char charValue = *(expr + exprIndex);
     if (charValue == '!')
     {           // Calculating factorial.
       if (leftNumberFlag == FALSE)
@@ -494,6 +493,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         carry.x = 0;
         i = 0;  // limb number.
         shLeft = 0;
+        offset = exprIndexAux;
         ptrLimb = &stackRealValues[stackIndex].limbs[0];
         for (; exprIndexAux >= exprIndex + 2; exprIndexAux--)
         {
@@ -515,11 +515,14 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
           if (shLeft >= BITS_PER_GROUP)
           {
             shLeft -= BITS_PER_GROUP;
+            (ptrLimb++)->x = carry.x & MAX_VALUE_LIMB;
+            carry.x >>= BITS_PER_GROUP;
           }
-          (ptrLimb++)->x = carry.x & MAX_VALUE_LIMB;
-          carry.x >>= BITS_PER_GROUP;
         }
+        (ptrLimb++)->x = carry.x;
+        exprIndex = offset;
         stackRealValues[stackIndex].nbrLimbs = (int)(ptrLimb - &stackRealValues[stackIndex].limbs[0]);
+        stackRealValues[stackIndex].sign = SIGN_POSITIVE;
       }
       else
       {                   // Decimal number.
@@ -540,13 +543,13 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         Dec2Bin(expr + exprIndex, ptrBigInt->limbs,
           exprIndexAux + 1 - exprIndex, &ptrBigInt->nbrLimbs);
         ptrBigInt->sign = SIGN_POSITIVE;
+        exprIndex = exprIndexAux;
       }
       ptrBigInt = &stackImagValues[stackIndex];
       ptrBigInt->limbs[0].x = 0;     // Initialize imaginary part to zero.
       ptrBigInt->nbrLimbs = 1;
       ptrBigInt->sign = SIGN_POSITIVE;
       leftNumberFlag = 1;
-      exprIndex = exprIndexAux;
     }                            /* end if */
     exprIndex++;
   }                              /* end while */
@@ -587,8 +590,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
 static int func(char *expr, BigInteger *ExpressionResult,
                 char *funcName, int funcArgs, int leftNumberFlag)
 {
-  int index, retcode;
-  char compareChar;
+  int index;
   int funcNameLen = (int)strlen(funcName);
   char *ptrExpr, *ptrFuncName;
 
@@ -619,6 +621,9 @@ static int func(char *expr, BigInteger *ExpressionResult,
   }
   for (index = 0; index < funcArgs; index++)
   {
+    int retcode;
+    char compareChar;
+
     SkipSpaces(expr);
     if (stackIndex >= PAREN_STACK_SIZE)
     {
@@ -1025,7 +1030,7 @@ static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigIn
 static int ComputeModExp(void)
 {
   BigInteger Result[2];
-  int retcode, index, mask;
+  int mask;
   BigInteger norm, ReTmp, ImTmp;
 
   BigInteger ReBase = stackRealValues[stackIndex];
@@ -1041,6 +1046,7 @@ static int ComputeModExp(void)
   }
   if (ReExp.sign == SIGN_NEGATIVE)
   {
+    int retcode;
     BigIntNegate(&ReExp, &ReExp);
     retcode = ModInv(&ReBase, &ImBase, &ReMod, &ImMod, Result);
     if (retcode != 0)
@@ -1062,6 +1068,7 @@ static int ComputeModExp(void)
   }
   else
   {                            /* Modulus is not zero */
+    int index;
     BigIntMultiply(&ReMod, &ReMod, &ReTmp);
     BigIntMultiply(&ImMod, &ImMod, &ImTmp);
     BigIntAdd(&ReTmp, &ImTmp, &norm);
