@@ -145,6 +145,7 @@
 <p>In this version of the discrete logarithm calculator only the Pohlig-Hellman algorithm is implemented, so the execution time is proportional to the square root of the largest prime factor of the modulus minus 1.
 The applet works in a reasonable amount of time if this factor is less than 10<sup>17</sup>.
 <p>I will add the index-calculus algorithm soon. This algorithm has subexponential running time.
+<h2>Expressions</h2>
 <p>You can also enter expressions that use the following operators and parentheses:
     <UL>
         <li><strong>+</strong> for addition</li>
@@ -161,6 +162,7 @@ The applet works in a reasonable amount of time if this factor is less than 10<s
         <li><strong>N(n)</strong>: Next pseudoprime to <em>n</em></li>
         <li><strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <em>n</em> into sums of integers without regard to order).</li>
       </UL>
+<p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 <p>The exponentiation symbol is not present in some mobile devices, so two asterisks ** can by typed as the exponentiation operator.</p>
 <p>Example: Find the number n such that 7<sup>n</sup> &equiv; 23 (mod 43241).
 <p>Type 7 in the Base input box, 23 in the Power input box and 43241 in the Mod input box. Then press the button named "Discrete logarithm".</p>
@@ -169,7 +171,7 @@ The applet works in a reasonable amount of time if this factor is less than 10<s
       <p>
         You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
       </p>
-	  <p>Written by Dario Alpern. Last updated 24 July 2016.</p>
+	  <p>Written by Dario Alpern. Last updated 28 July 2016.</p>
     </div>
     <div id="result"></div>
     <div>
