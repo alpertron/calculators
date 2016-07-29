@@ -168,19 +168,17 @@ void DiscreteLogarithm(void)
   BigInteger logar, logarMult, runningExpBase;
   BigInteger currentExp;
   int indexBase, indexExp;
-  int index, multiplicity, expon;
+  int index, expon;
   limb addA, addB, addA2, addB2;
   limb mult1, mult2;
   limb magnitude;
-  int mostSignificantDword, leastSignificantDword;
   limb firstLimit, secondLimit;
   long long brentK, brentR;
   unsigned char EndPollardBrentRho;
-  int NbrFactors, nbrLimbs;
+  int nbrLimbs;
   struct sFactors *pstFactors;
   enum eLogMachineState logMachineState;
   char *ptr;
-  int *ptrPrime;
 
   lModularMult = 0;
   NumberLength = modulus.nbrLimbs;
@@ -198,6 +196,11 @@ void DiscreteLogarithm(void)
   DiscreteLogPeriod.sign = SIGN_POSITIVE;
   for (index = 1; index <= NbrFactorsMod; index++)
   {  // Compute group order as the prime minus 1.
+    int mostSignificantDword, leastSignificantDword;
+    int NbrFactors;
+    int *ptrPrime;
+    int multiplicity;
+
     ptrPrime = astFactorsMod[index].ptrFactor;
     NumberLength = *ptrPrime;
     UncompressBigInteger(ptrPrime, &groupOrder);
@@ -826,8 +829,8 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLen)
       strcat(ptrOutput, "<em>k</em></p>");
     }
   }
-  strcat(ptrOutput, lang ? "<p>Hecho por Darío Alpern. Actualizado el 24 de julio de 2016.</p>" :
-    "<p>Written by Dario Alpern. Last updated on 24 July 2016.</p>");
+  strcat(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+                           "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
 #ifdef __EMSCRIPTEN__

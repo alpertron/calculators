@@ -713,8 +713,8 @@ void fsquaresText(char *input, int groupLen)
     Bin2Dec(Mult4, ptrOutput, Mult4Len, groupLen);
     ptrOutput += strlen(ptrOutput);
   }
-  strcpy(ptrOutput, (lang==0?"\n\n\nWritten by Dario Alpern. Last updated Dec 14, 2015.\n":
-                       "\n\n\nHecho por Darío Alpern. Actualizado el 14 de diciembre de 2015.\n"));
+  strcpy(ptrOutput, (lang?"\n\n\n" COPYRIGHT_SPANISH "\n":
+                          "\n\n\n" COPYRIGHT_ENGLISH "\n"));
 }
 
 #ifdef __EMSCRIPTEN__

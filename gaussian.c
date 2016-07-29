@@ -81,8 +81,6 @@ void GaussianFactorization(void)
 {
   BigInteger prime, q, r, M1, M2, Tmp, norm;
   struct sFactors *pstFactor;
-  int index, index2;
-  int *ptrPrime;
 
   BigIntMultiply(&ReValue, &ReValue, &norm);
   BigIntMultiply(&ImValue, &ImValue, &Tmp);
@@ -96,6 +94,8 @@ void GaussianFactorization(void)
   w("<ul>");
   if (norm.nbrLimbs > 1 || norm.limbs[0].x > 1)
   {           // norm greater than 1. Factor norm.
+    int index, index2;
+
     NumberLength = norm.nbrLimbs;
     CompressBigInteger(nbrToFactor, &norm);
     factor(nbrToFactor, factorsNorm, astFactorsNorm);
@@ -103,7 +103,7 @@ void GaussianFactorization(void)
     pstFactor = &astFactorsNorm[1];
     for (index = 0; index < NbrFactorsNorm; index++)
     {
-      ptrPrime = pstFactor->ptrFactor;
+      int *ptrPrime = pstFactor->ptrFactor;
       NumberLength = *ptrPrime;
       UncompressBigInteger(ptrPrime, &prime);
       prime.sign = SIGN_POSITIVE;
@@ -306,8 +306,8 @@ void gaussianText(char *valueText, int doFactorization)
     textError(ptrOutput, rc);
     ptrOutput = output + strlen(output);
   }
-  strcat(ptrOutput, lang ? "<p>Hecho por Darío Alpern. Actualizado el 24 de julio de 2016.</p>" :
-    "<p>Written by Dario Alpern. Last updated on 24 July 2016.</p>");
+  strcat(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+                           "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
 #ifdef __EMSCRIPTEN__

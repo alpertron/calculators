@@ -214,8 +214,8 @@ static void ContFrac(void)
     }
   }
   showText(".");
-  showText(lang == 0 ? "<p>Written by Dario Alpern. Last updated Dec 14, 2015.</p>" :
-    "<p>Hecho por Darío Alpern. Actualizado el 14 de diciembre de 2015.</p>");
+  showText(lang? "<p>" COPYRIGHT_SPANISH "</p>" :
+                 "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
 static void ShowRational(BigInteger *pNum, BigInteger *pDen)

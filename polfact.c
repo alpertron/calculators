@@ -424,8 +424,8 @@ void polyFactText(char *modText, char *polyText, int groupLen)
   {
     outputPolynomial(output + 1, groupLen);
   }
-  strcat(output + 1, lang ? "<p>Hecho por Darío Alpern. Actualizado el 12 de abril de 2016.</p>" :
-    "<p>Written by Dario Alpern. Last updated on 12 April 2016.</p>");
+  strcat(output + 1, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+                            "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
 #ifdef __EMSCRIPTEN__

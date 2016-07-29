@@ -1,5 +1,9 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
+
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 28 de julio de 2016."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 28 July 2016."
+
 enum eExprErr
 {
   EXPR_NUMBER_TOO_LOW = -100,

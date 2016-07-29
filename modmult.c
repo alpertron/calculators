@@ -78,9 +78,8 @@ void ComputeInversePower2(limb *value, limb *result, limb *aux)
 
 void GetMontgomeryParms(int len)
 {
-  int N, x, j;
+  int j;
   limb Cy;
-  limb *ptrResult;
   TestNbr[len].x = 0;
   NumberLength = len;
   NumberLength2 = len + len;
@@ -96,6 +95,7 @@ void GetMontgomeryParms(int len)
   // In the formula above: k = BITS_PER_GROUP * NumberLength.
   if (NumberLength >= 8)
   {
+    limb *ptrResult;
     ComputeInversePower2(TestNbr, MontgomeryMultN, aux);
     ptrResult = &MontgomeryMultN[0];
     Cy.x = 0;          // Change sign.
@@ -109,6 +109,7 @@ void GetMontgomeryParms(int len)
   }
   else
   {
+    int x, N;
     x = N = (int)TestNbr[0].x;   // 2 least significant bits of inverse correct.
     x = x * (2 - N * x);         // 4 least significant bits of inverse correct.
     x = x * (2 - N * x);         // 8 least significant bits of inverse correct.
