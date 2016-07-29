@@ -222,7 +222,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     nbrLimbsQuotient = nbrLimbsDividend - nbrLimbsDivisor;
     ptrDivisor = &pDivisor->limbs[nbrLimbsDivisor];
     ptrDividend = &pDividend->limbs[nbrLimbsDividend];
-    for (idx = nbrLimbsDivisor; idx >= 0; idx--)
+    for (idx = nbrLimbsDivisor; idx > 0; idx--)
     {
       if ((--ptrDividend)->x != (--ptrDivisor)->x)
       {
@@ -230,7 +230,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
       }
     }
     ptrQuotient = &approxInv[2 * nbrLimbs - nbrLimbsQuotient - 1];
-    if ((idx >= 0 && ptrDividend->x > ptrDivisor->x) || idx < 0)
+    if ((idx > 0 && ptrDividend->x > ptrDivisor->x) || idx <= 0)
     {
       nbrLimbsQuotient++;
     }
