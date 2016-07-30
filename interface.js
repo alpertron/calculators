@@ -22,7 +22,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker('fsquaresW.js?1412');
+    worker = new Worker('fsquaresW.js?2807');
     worker.onmessage = function(e)
     {
       if (app < 4)
