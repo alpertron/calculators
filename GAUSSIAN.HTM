@@ -4,7 +4,6 @@
     <meta name="Author" content="Dario Alejandro Alpern" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="description" content="Javascript application that factors Gaussian integers of the form (a+bi). Written by Dario Alpern." />
     <link rel="alternate" hreflang="es" href="GAUSIANO.HTM" />
     <link rel="prefetch" href="gaussianW.js?2807" />
@@ -46,7 +45,7 @@
    </style>
   </head>
   <body>
-    <div id="smallheader">
+    <nav id="smallheader">
       <div style="float:right;"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
       <ul>
         <li>
@@ -104,8 +103,8 @@
         </li>
       </ul>
       <br style="clear:both;"/>
-    </div>
-
+    </nav>
+    <article>
     <h1>Gaussian integer factorization calculator</h1>
     <script async="async" type="text/javascript" src="gaussian.js?2807"></script>
     <div style='padding:10px;'>
@@ -140,6 +139,7 @@
 <p>The Gaussian integers are complex numbers of the form <var>a</var> + <var>bi</var>, where both <var>a</var> and <var>b</var> are integer numbers.</p>
 <p>This applet is able to factor a Gaussian integer as a product of Gaussian primes. This decomposition is unique, if we do not consider the order of the factors.</p>
 <p>You can enter numbers of up to 500 digits, but notice that the norm <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> should be factored (some large numbers cannot be factored in a reasonable amount of time).
+<h2>Expressions</h2>
 <p>In order to enter the imaginary part of a Gaussian integer you can use the symbol <var>i</var>, as in the next example: 3+4i.</p>
 <p>You can also enter expressions that use the following operators, functions and parentheses:</p>
 <p>
@@ -160,7 +160,7 @@
 <li> <strong>Norm(n)</strong>: Norm of <var>n</var>, it equals Re(<var>n</var>)<sup>2</sup> + Im(<var>n</var>)<sup>2</sup>.
 <li> <strong>Gcd(m,n)</strong>: Greatest common divisor of these two gaussian integers.
 <li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.
-<li> <strong>Modexp(m,n,r)</strong>: finds m<sup>n</sup> modulo r (<var>n</var> must be real).
+<li> <strong>Modexp(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var> (<var>n</var> must be real).
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 <p>The final value must have 500 or less digits, intermediate results must have 2000 or less digits and in the case of divisions, the dividend must be multiple of the divisor.
@@ -168,7 +168,7 @@
       <p>
         You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
       </p>
-	  <p>Written by Dario Alpern. Last updated 28 July 2016.</p>
+	  <p>Written by Dario Alpern. Last updated 31 July 2016.</p>
     </div>
     <div id="result"></div>
     <div>
@@ -179,13 +179,12 @@
         var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
         document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
       </script>
-      <noscript></noscript>
       <script type="text/javascript">
         var pageTracker = _gat._getTracker("UA-4438475-1");
         pageTracker._initData();
         pageTracker._trackPageview();
       </script>
-      <noscript></noscript>
     </div>
+	</article>
   </body>
 </html>

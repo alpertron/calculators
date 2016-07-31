@@ -4,7 +4,6 @@
 <meta name="Author" content="Dario Alejandro Alpern" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="keywords" content="Waring, number theory, Lagrange's theorem" />
 <meta name="description" content="Javascript application that finds the decomposition of a number into squares. Written by Dario Alpern." />
 <link rel="prefetch" href="fsquaresW.js?2807" />
@@ -47,7 +46,7 @@
   </style>
  </head>
   <body>
-    <div id="smallheader">
+    <nav id="smallheader">
       <div style="float:right;"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
       <ul>
         <li>
@@ -105,8 +104,8 @@
         </li>
       </ul>
       <br style="clear:both;"/>
-    </div>
-
+    </nav>
+    <article>
     <h1>Sum of squares</h1>
     <div id="applet" class="applet">
       <form>
@@ -144,10 +143,10 @@
         so some cases where two squares would be enough will be represented as a sum of three squares. For example, 10000998089 = 95317<SUP>2</SUP> + 30260<SUP>2</SUP>.
       </p>
         <P>
-          See the methods used in this applet <A HREF="4SQUARES.HTM">here</A>.
+          See the <a href="4SQUARES.HTM">methods used in this applet</a>.
         </P>
         <p>
-          If you find any error or you have a comment, please fill in the <a HREF="FORM.HTM?Sum of squares feedback">form</a>.
+          If you find any error or you have a comment, please fill in the <a HREF="FORM.HTM?Sum+of+squares+feedback">form</a>.
         </p>
        <h2>Expressions</h2>
         <P>
@@ -173,10 +172,10 @@
             <B>n!</B>: factorial
           </LI>
           <LI>
-            <B>p#</B>: primorial (product of all primes less or equal than <em>p</em>).
+            <B>p#</B>: primorial (product of all primes less or equal than <var>p</var>).
           </LI>
           <LI>
-            <B>B(n)</B>: Previous pseudoprime to <em>n</em>
+            <B>B(n)</B>: Previous pseudoprime to <var>n</var>
           </LI>
           <LI>
             <B>F(n)</B>: Fibonacci number F<SUB>n</SUB>
@@ -185,10 +184,10 @@
             <B>L(n)</B>: Lucas number L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB>
           </LI>
           <LI>
-            <B>N(n)</B>: Next pseudoprime to <em>n</em>
+            <B>N(n)</B>: Next pseudoprime to <var>n</var>
           </LI>
           <LI>
-            <B>P(n)</B>: Unrestricted Partition Number (number of decompositions of <em>n</em> into sums of integers without regard to order).
+            <B>P(n)</B>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).
           </LI>
         </UL>
 		<p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
@@ -196,18 +195,17 @@
       <p>
         You can download the source of the current program and the old sum of four squares applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
       </p>
-	  <p>Written by Dario Alpern. Last updated 28 July 2016.</p>
+	  <p>Written by Dario Alpern. Last updated 31 July 2016.</p>
     </div>
     <script type="text/javascript">
       var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
       document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
     </script>
-    <noscript></noscript>
     <script type="text/javascript">
       var pageTracker = _gat._getTracker("UA-4438475-1");
       pageTracker._initData();
       pageTracker._trackPageview();
     </script>
-    <noscript></noscript>
+	</article>
   </body>
 </html>

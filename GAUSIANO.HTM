@@ -4,7 +4,6 @@
     <meta name="Author" content="Dario Alejandro Alpern" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="description" content="Aplicación Javascript que factoriza enteros gausianos de la forma (a+b*i). Hecho por Dario Alpern." />
     <link rel="alternate" hreflang="en" href="GAUSSIAN.HTM" />
     <link rel="prefetch" href="gaussianW.js?2807" />
@@ -46,7 +45,7 @@
     </style>
   </head>
   <body>
-    <div id="smallheader">
+    <nav id="smallheader">
       <div style="padding:0px;float:right;">
         <a href="ENGLISH.HTM" hreflang="en" title="Dario Alpern's Web site in English">ENG</a>
       </div>
@@ -106,8 +105,8 @@
         </li>
       </ul>
       <br style="clear:both;" />
-    </div>
-
+    </nav>
+    <article>
     <h1>Factorización de enteros gausianos</h1>
     <script async="async" type="text/javascript" src="gaussian.js?2807"></script>
     <div style='padding:10px;'>
@@ -139,9 +138,11 @@
       <input type="hidden" id="app" value="1"/>
     </form>
     <div id="help">
-<p>Los enteros gausianos son números complejos que tienen la forma <var>a</var> + <var>b</var>i</B>, donde <var>a</var> y <var>b</var> son números enteros en la recta real.</p>
+<p>Los enteros gausianos son números complejos que tienen la forma <var>a</var> + <var>b</var>i, donde <var>a</var> y <var>b</var> son números enteros en la recta real.</p>
 <p>Este applet es capaz de factorizar un entero gausiano como un producto de primos gausianos. Esta descomposición es única, si no consideramos el orden de los factores y los primos asociados. Estos conjuntos de primos asociados se obtienen multiplicando un primo por una potencia de i (por eso cada número primo tiene tres asociados). Para eliminar este problema, tomamos el primo tal que a >= |b|.</p>
 <p>La calculadora acepta números de hasta 500 dígitos, pero obsérvese que debe factorizar la norma <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> (algunos números grandes no pueden ser factorizados en un tiempo razonable).</p>
+<p>El valor final debe tener 500 o menos dígitos, los resultados intermedios deben tener como máximo 2000 dígitos y en el caso de divisiones, el dividendo debe ser múltiplo del divisor.
+<h2>Expresiones</h2>
 <p>Para ingresar la parte imaginaria de un entero gausiano podrá utilizar el símbolo <var>i</var>, como por ejemplo en 3+4i.</p>
 <p>Además puede entrar expresiones que usen los siguientes operadores, funciones y paréntesis:</p>
 <p>
@@ -162,15 +163,14 @@
 <li> <B>Norm(n)</B>: norma de <var>n</var>, equivale a Re(n)<SUP>2</SUP> + Im(n)<SUP>2</SUP>.</li>
 <li> <B>Gcd(m,n)</B>: máximo común divisor de estos dos enteros gausianos.</li>
 <li> <B>Modinv(m,n)</B>: inverso del valor <var>m</var> módulo <var>n</var>, sólo válido si gcd(m,n)=1.</li>
-<li> <B>Modexp(m,n,r)</B>: Calcula m<SUP>n</SUP> módulo r (<var>n</var> debe ser real).</li>
+<li> <B>Modexp(m,n,r)</B>: Calcula <var>m</var><sup><var>n</var></sup> módulo <var>r</var> (<var>n</var> debe ser real).</li>
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
-<p>El valor final debe tener 500 o menos dígitos, los resultados intermedios deben tener como máximo 2000 dígitos y en el caso de divisiones, el dividendo debe ser múltiplo del divisor.
       <h2>Código fuente</h2>
       <p>
         Puedes bajar el código fuente del programa actual y del viejo applet de factorización de enteros gausianos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
       </p>
-	  <p>Escrito por Dario Alpern. Actualizado el 28 de julio de 2016.</p>
+	  <p>Escrito por Dario Alpern. Actualizado el 31 de julio de 2016.</p>
     </div>
     <div id="result"></div>
     <div>
@@ -181,13 +181,12 @@
         var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
         document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
       </script>
-      <noscript></noscript>
       <script type="text/javascript">
         var pageTracker = _gat._getTracker("UA-4438475-1");
         pageTracker._initData();
         pageTracker._trackPageview();
       </script>
-      <noscript></noscript>
     </div>
+	</article>
   </body>
 </html>
