@@ -41,18 +41,33 @@ static void ContFrac(void)
   BigInteger K, L, M, P, Z;
 
   ptrOutput = output;
+  // Show formula.
+  strcpy(ptrOutput, "<p><var>x</var> = <span class = \"fraction\"><span class = \"fup\">");
+  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&num, ptrOutput, groupLen);  // Show convergent.
+  ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, " + <span class=\"sqrtout\"><span class=\"sqrtin\">");
+  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&delta, ptrOutput, groupLen);  // Show convergent.
+  ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, "</span></span></span><span class = \"bar\"> / </span><span class = \"fdn\">");
+  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&den, ptrOutput, groupLen);  // Show convergent.
+  ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, "</span></span></p>");
+  // Validate input.
   if (den.nbrLimbs==1 && den.limbs[0].x==0)
   {
-    showText(lang != 0? "Error: El denominador es cero.": "Error: The denominator is zero.");
+    showText(lang != 0? "<p>Error: El denominador es cero.</p>": "<p>Error: The denominator is zero.</p>");
     return;
   }
   if (delta.sign==SIGN_NEGATIVE)
   {   /* Complex number */
-    showText(lang != 0? "El número no es real, por lo que no tiene desarrollo en fracciones continuas":
-                   "The number is not real, so it does not have continued fraction expansion.");
+    showText(lang != 0? "<p>El número no es real, por lo que no tiene desarrollo en fracciones continuas.</p>":
+                   "<p>The number is not real, so it does not have continued fraction expansion.</p>");
     return;
   }
-  showText("x = ");
+  showText("<p><var>x</var> = ");
   if (delta.nbrLimbs == 1 && delta.limbs[0].x == 0)
   {   /* Rational number */
     ShowRational(&num, &den);

@@ -7,7 +7,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="description" content="Aplicación Javascript que muestra la fracción continua de números racionales e irracionalidades cuadráticas." />
     <link rel="alternate" hreflang="en" href="CONTFRAC.HTM" />
-    <link rel="prefetch" href="fsquaresW.js?2807" />
+    <link rel="prefetch" href="fsquaresW.js?3107" />
     <title>Calculadora de fracciones continuas</title>
     <style type="text/css" media="print">
       #smallheader {display:none;}
@@ -33,19 +33,19 @@
       @media (min-width: 400px) { #smallheader { font-size:1em;  } }
     </style>
     <style>
-      body {
-      font-family: arial;
-      margin: 0;
-      padding: 0;
-      }
-      h1 {text-align:center;}
-      .i {font-style: italic;}
-      .mysvg {margin:0px;padding:0px;}
-      .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
-	  .lf {padding:0.2em; clear:both; width:100%}
-      #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
-      }
-
+body {font-family: arial; margin: 0; padding: 0;}
+h1 {text-align:center;}
+.mysvg {margin:0px;padding:0px;}
+.input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
+.lf {padding:0.2em; clear:both; width:100%}
+#applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+.fraction {display: inline-block; vertical-align: middle; margin: 0 0.2em 0.4ex; text-align: center}
+.fraction > span {display: block; padding-top: 0.15em}
+.fraction span.fdn {border-top: thin solid black}
+.fraction span.bar {display: none}
+.sqrtout {white-space: nowrap}
+.sqrtout:before {content: "√"}
+.sqrtin {text-decoration:overline}
     </style>
   </head>
   <body>
@@ -111,7 +111,7 @@
       <br style="clear:both;" />
     </div>
     <h1>Calculadora de fracciones continuas</h1>
-    <script async="async" type="text/javascript" src="fsquares.js?2807"></script>
+    <script async="async" type="text/javascript" src="fsquares.js?3107"></script>
     <div style='padding:10px;'>
       <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
         <a href="ENGLISH.HTM" itemprop="url">
@@ -163,7 +163,7 @@
     </form>
     <div id="help">
       <p>
-        Cualquier número real <span class="i">x</span> se puede representar de manera única mediante la fracción continua:
+        Cualquier número real <var>x</var> se puede representar de manera única mediante la fracción continua:
       </p>
       <p class="mysvg">
         <svg height='76.6988pt' version='1.1' viewBox='0 0 159.224 76.6988' width='159.224pt' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
@@ -204,7 +204,7 @@
           </g>
         </svg>
       </p>
-      <p>donde <span class="i">a<sub>1</sub></span>, <span class="i">a<sub>2</sub></span>, <span class="i">a<sub>3</sub></span>, ... son números enteros mayores que cero. Una representación más compacta es:</p>
+      <p>donde <var>a</var><sub>1</sub>, <var>a</var><sub>2</sub>, <var>a</var><sub>3</sub>, ... son números enteros mayores que cero. Una representación más compacta es:</p>
       <p class="mysvg">
         <svg height='13.5093pt' version='1.1' viewBox='0 0 153.013 13.5093' width='153.013pt' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
           <defs>
@@ -261,52 +261,52 @@
       <p>Puede escribir números o expresiones numéricas en las cajas de entrada.</p>
       <p>La calculadora acepta números de hasta 10000 dígitos.</p>
       <p>
-        Si necesita que la raíz cuadrada reste al número de la izquierda, simplemente cambie el signo de <span class="i">a</span> y <span class="i">c</span>.
+        Si necesita que la raíz cuadrada reste al número de la izquierda, simplemente cambie el signo de <var>a</var> y <var>c</var>.
       </p>
       <p>
-        Si <span class="i">b</span> es negativo, el resultado no es un número real, así que no se podrá representar como fracción continua.
+        Si <var>b</var> es negativo, el resultado no es un número real, así que no se podrá representar como fracción continua.
       </p>
         <p>La calculadora puede hallar todos los convergentes para números racionales. En el caso de irracionalidades cuadráticas, la calculadora se detiene después de hallar el convergente número 100000 si el período es más largo.</p>
       <P>Se pueden entrar expresiones que usen los siguientes operadores y paréntesis:</P>
-      <UL>
-          <LI> + para suma</LI>
-          <LI> - para resta</LI>
-          <LI> * para multiplicación</LI>
-          <LI> / para división entera</LI>
-          <LI> ^ para exponenciación</LI>
-          <LI>
+      <ul>
+          <li> + para suma</li>
+          <li> - para resta</li>
+          <li> * para multiplicación</li>
+          <li> / para división entera</li>
+          <li> ^ para exponenciación</li>
+          <li>
             <B>n!</B>: factorial
-          </LI>
-          <LI>
-            <B>p#</B>: primorial (producto de todos los primos menores o iguales que <em>p</em>).
-          </LI>
-          <LI>
-            <B>B(n)</B>: número pseudoprimo anterior a <em>n</em>.
-          </LI>
-          <LI>
-            <B>F(n)</B>: número de Fibonacci F<SUB>n</SUB>.
-          </LI>
-          <LI>
-            <B>L(n)</B>: número de Lucas L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB>.
-          </LI>
-          <LI>
-            <B>N(n)</B>: número pseudoprimo posterior a <em>n</em>.
-          </LI>
-          <LI>
-            <B>P(n)</B>: particiones irrestrictas (cantidad de descomposiciones de <em>n</em> en sumas de números enteros sin tener en cuenta el orden).
-          </LI>
-        </UL>
+          </li>
+          <li>
+            <B>p#</B>: primorial (producto de todos los primos menores o iguales que <var>p</var>).
+          </li>
+          <li>
+            <B>B(n)</B>: número pseudoprimo anterior a <var>n</var>.
+          </li>
+          <li>
+            <B>F(n)</B>: número de Fibonacci F<sub>n</sub>.
+          </li>
+          <li>
+            <B>L(n)</B>: número de Lucas L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub>.
+          </li>
+          <li>
+            <B>N(n)</B>: número pseudoprimo posterior a <var>n</var>.
+          </li>
+          <li>
+            <B>P(n)</B>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).
+          </li>
+        </ul>
 		<p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
       <h2>Código fuente</h2>
       <p>
         Se puede bajar el código fuente de este programa y el del viejo applet de fracciones continuas desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
       </p>
-	  <p>Escrito por Dario Alpern. Actualizado el 28 de julio de 2016.</p>
+	  <p>Escrito por Dario Alpern. Actualizado el 31 de julio de 2016.</p>
     </div>
     <div id="result"></div>
     <div>
       <P>
-        Si encuentra algún error o tiene algún comentario, por favor llene el <A HREF="FORMULAR.HTM?Calculadora de fracciones continuas" TARGET="_blank">formulario</A>.
+        Si encuentra algún error o tiene algún comentario, por favor llene el <A HREF="FORMULAR.HTM?Calculadora de fracciones continuas">formulario</A>.
       </P>
       <script type="text/javascript">
         var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
