@@ -134,7 +134,7 @@
       <input type="checkbox" id="sup" value="sup" checked /> <label for="sup">Superscripts</label>
       <input type="hidden" id="app" value="0"/>
     </form>
-    <div id="help">
+    <div id="help" aria-live="polite">
 <p>Multiplication of polynomials modulo a prime number can be performed in the usual way by multiplying the different terms of the polynomial
 and then adding the coefficients of the same degree. Finally the coefficients are reduced modulo that prime.</p>
 <p>For example, the product of 3x<sup>2</sup> + 5x + 1 and 6x<sup>2</sup> + 4x + 3 modulo 7 is 18x<sup>4</sup> + (30+12)x<sup>3</sup> + (9+20+6)x<sup>2</sup> + (15+4)x + 3 modulo 7 which equals 4x<sup>4</sup> + 5x + 3</p>
@@ -193,7 +193,7 @@ The second option is used to copy the data to another application.
       </p>
  	  <p>Written by Dario Alpern. Last updated 31 July 2016.</p>
    </div>
-    <div id="result"></div>
+    <div id="result" aria-live="polite"></div>
     <div>
       <P>
         If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Polynomial+factorization+feedback">form</a>.

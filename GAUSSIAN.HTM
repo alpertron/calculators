@@ -135,7 +135,7 @@
       <label for="digits">Digits per group</label> <input type="number" id="digits" value="6"/>
       <input type="hidden" id="app" value="0"/>
     </form>
-    <div id="help">
+    <div id="help" aria-live="polite">
 <p>The Gaussian integers are complex numbers of the form <var>a</var> + <var>bi</var>, where both <var>a</var> and <var>b</var> are integer numbers.</p>
 <p>This applet is able to factor a Gaussian integer as a product of Gaussian primes. This decomposition is unique, if we do not consider the order of the factors.</p>
 <p>You can enter numbers of up to 500 digits, but notice that the norm <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> should be factored (some large numbers cannot be factored in a reasonable amount of time).
@@ -170,7 +170,7 @@
       </p>
 	  <p>Written by Dario Alpern. Last updated 31 July 2016.</p>
     </div>
-    <div id="result"></div>
+    <div id="result" aria-live="polite"></div>
     <div>
       <p>
         If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Gaussian+integer+factorization+calculator+feedback">form</a>.

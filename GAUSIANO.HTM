@@ -137,7 +137,7 @@
       <label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6"/>
       <input type="hidden" id="app" value="1"/>
     </form>
-    <div id="help">
+    <div id="help" aria-live="polite">
 <p>Los enteros gausianos son números complejos que tienen la forma <var>a</var> + <var>b</var>i, donde <var>a</var> y <var>b</var> son números enteros en la recta real.</p>
 <p>Este applet es capaz de factorizar un entero gausiano como un producto de primos gausianos. Esta descomposición es única, si no consideramos el orden de los factores y los primos asociados. Estos conjuntos de primos asociados se obtienen multiplicando un primo por una potencia de i (por eso cada número primo tiene tres asociados). Para eliminar este problema, tomamos el primo tal que a >= |b|.</p>
 <p>La calculadora acepta números de hasta 500 dígitos, pero obsérvese que debe factorizar la norma <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> (algunos números grandes no pueden ser factorizados en un tiempo razonable).</p>
@@ -172,7 +172,7 @@
       </p>
 	  <p>Escrito por Dario Alpern. Actualizado el 31 de julio de 2016.</p>
     </div>
-    <div id="result"></div>
+    <div id="result" aria-live="polite"></div>
     <div>
       <p>
         Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORM.HTM?Comentario+de+factorizacion+de+enteros+gausianos">formulario</a>.

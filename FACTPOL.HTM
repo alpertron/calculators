@@ -136,7 +136,7 @@
       <input type="checkbox" id="sup" value="sup" checked /> <label for="sup">Superíndices</label>
       <input type="hidden" id="app" value="1"/>
     </form>
-    <div id="help">
+    <div id="help" aria-live="polite">
 <p>La multiplicación de polinomios módulo un número primo se puede realizar de la manera habitual multiplicando los diferentes términos del polinomio
 y luego sumando los coeficientes del mismo grado. Finalmente se reducen los coeficientes módulo ese primo.</p>
 <p>Por ejemplo, el producto de 3x<sup>2</sup> + 5x + 1 y 6x<sup>2</sup> + 4x + 3 modulo 7 es 18x<sup>4</sup> + (30+12)x<sup>3</sup> + (9+20+6)x<sup>2</sup> + (15+4)x + 3 modulo 7 que es igual a 4x<sup>4</sup> + 5x + 3</p>
@@ -193,7 +193,7 @@ La segunda opción se utiliza cuando hay que copiar los datos a otra aplicación
         Puede bajar el código fuente del programa actual y del viejo applet de factorización de polinomios <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
       </p>
     </div>
-    <div id="result"></div>
+    <div id="result" aria-live="polite"></div>
     <div>
       <P>
        Si encuentra algún error o tiene algún comentario, por favor llene el <A HREF="FORMULAR.HTM?Factorizacion+de+polinomios">formulario</A>.

@@ -138,7 +138,7 @@
       <label for="digits">Digits per group</label> <input type="number" id="digits" value="6"/>
       <input type="hidden" id="app" value="0"/>
     </form>
-    <div id="help">
+    <div id="help" aria-live="polite">
 <p>The discrete logarithm problem is to find the exponent in the expression <em>Base<sup>Exponent</sup> = Power (mod Modulus)</em>.
 <p>This applet works for both prime and composite moduli. The only restriction is that the base and the modulus, and the power and the modulus must be relatively prime.
 <p>In this version of the discrete logarithm calculator only the Pohlig-Hellman algorithm is implemented, so the execution time is proportional to the square root of the largest prime factor of the modulus minus 1.
@@ -172,7 +172,7 @@ The applet works in a reasonable amount of time if this factor is less than <spa
       </p>
 	  <p>Written by Dario Alpern. Last updated 31 July 2016.</p>
     </div>
-    <div id="result"></div>
+    <div id="result" aria-live="polite"></div>
     <div>
       <P>
         If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Discrete+logarithm+calculator+feedback">form</a>.
