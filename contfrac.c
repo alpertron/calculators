@@ -42,17 +42,29 @@ static void ContFrac(void)
 
   ptrOutput = output;
   // Show formula.
-  strcpy(ptrOutput, "<p><var>x</var> = <span class = \"fraction\"><span class = \"fup\">");
+  strcpy(ptrOutput, "<p><var>x</var> = <span class=\"fraction\" role=\"math\" aria-label=\"");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&num, ptrOutput, groupLen);  // Show convergent.
+  BigInteger2Dec(&num, ptrOutput, groupLen);    // Show numerator.
+  ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, lang ? " más la raíz cuadrada de " : " plus the square root of ");
+  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&delta, ptrOutput, groupLen);  // Show radicand.
+  ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, lang ? " sobre " : " over ");
+  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&den, ptrOutput, groupLen);    // Show denominator.
+  ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, "\"><span class=\"fup\">");
+  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&num, ptrOutput, groupLen);    // Show numerator.
   ptrOutput += strlen(ptrOutput);
   strcpy(ptrOutput, " + <span class=\"sqrtout\"><span class=\"sqrtin\">");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&delta, ptrOutput, groupLen);  // Show convergent.
+  BigInteger2Dec(&delta, ptrOutput, groupLen);  // Show radicand.
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "</span></span></span><span class = \"bar\"> / </span><span class = \"fdn\">");
+  strcpy(ptrOutput, "</span></span></span><span class=\"bar\"> / </span><span class=\"fdn\">");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&den, ptrOutput, groupLen);  // Show convergent.
+  BigInteger2Dec(&den, ptrOutput, groupLen);    // Show denominator.
   ptrOutput += strlen(ptrOutput);
   strcpy(ptrOutput, "</span></span></p>");
   // Validate input.
@@ -166,7 +178,9 @@ static void ContFrac(void)
           BigIntSubt(&biM, &intSqrt, &Temp);
           if (Temp.sign == SIGN_NEGATIVE || (Temp.nbrLimbs == 1 && Temp.limbs[0].x == 0))
           {
-            showText("<span class=\"bold\">");
+            showText("<span aria-label=\"");
+            showText(lang ? "inicio del período\">" : "start periodic part\">");
+            showText("</span><span class=\"bold\">");
             CopyBigInt(&P, &biP);
             CopyBigInt(&K, &P);
             CopyBigInt(&M, &biM);
@@ -235,25 +249,25 @@ static void ContFrac(void)
 
 static void ShowRational(BigInteger *pNum, BigInteger *pDen)
 {
-  BigInteger GcdAll;
+  BigInteger Tmp;
   char *sep;
 
-  BigIntGcd(pNum, pDen, &GcdAll);
-  (void)BigIntDivide(pNum, &GcdAll, pNum);
-  (void)BigIntDivide(pDen, &GcdAll, pDen);
+  BigIntGcd(pNum, pDen, &Tmp);     // Tmp <- GCD of numerator and denominator.
+  (void)BigIntDivide(pNum, &Tmp, pNum);
+  (void)BigIntDivide(pDen, &Tmp, pDen);
   if (pDen->sign == SIGN_NEGATIVE)
   {
     BigIntNegate(pNum, pNum);
     BigIntNegate(pDen, pDen);
   }
-  (void)BigIntDivide(pNum, pDen, &Temp); //  Get integer part.
+  (void)BigIntDivide(pNum, pDen, &Tmp); //  Get integer part.
   (void)BigIntRemainder(pNum, pDen, pNum);
   if (pNum->sign == SIGN_NEGATIVE)
   {
     BigIntAdd(pDen, pNum, pNum);   // Convert numerator to positive.
-    addbigint(&Temp, -1);          // Adjust integer part to floor.
+    addbigint(&Tmp, -1);          // Adjust integer part to floor.
   }
-  BigInteger2Dec(&Temp, ptrOutput, groupLen);  // Show convergent.
+  BigInteger2Dec(&Tmp, ptrOutput, groupLen);  // Show convergent.
   ptrOutput += strlen(ptrOutput);
   (void)BigIntRemainder(pNum, pDen, pNum);
   sep = " + //";
@@ -261,15 +275,15 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
   {      // Numerator greater than zero.
     if (pDen->nbrLimbs!=1 || pDen->limbs[0].x != 0)
     {    // Denominator greater than zero.
-      (void)BigIntDivide(pDen, pNum, &Temp);
+      (void)BigIntDivide(pDen, pNum, &Tmp);
       showText(sep);
-      BigInteger2Dec(&Temp, ptrOutput, groupLen);  // Show convergent.
+      BigInteger2Dec(&Tmp, ptrOutput, groupLen);  // Show convergent.
       ptrOutput += strlen(ptrOutput);
       sep = ", ";
     }
-    (void)BigIntRemainder(pDen, pNum, &Temp);
+    (void)BigIntRemainder(pDen, pNum, &Tmp);
     CopyBigInt(pDen, pNum);
-    CopyBigInt(pNum, &Temp);
+    CopyBigInt(pNum, &Tmp);
   }
   if (sep[0] == ',')
   {         // Inside continued fraction. Close it.

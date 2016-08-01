@@ -125,7 +125,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     }
     else
     {
-      pQuotient->limbs[0] = quotient;
+      pQuotient->limbs[0].x = quotient.x;
       pQuotient->nbrLimbs = 1;
     }
   }

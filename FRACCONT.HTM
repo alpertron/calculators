@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="description" content="Aplicación Javascript que muestra la fracción continua de números racionales e irracionalidades cuadráticas." />
     <link rel="alternate" hreflang="en" href="CONTFRAC.HTM" />
-    <link rel="prefetch" href="fsquaresW.js?3107" />
+    <link rel="prefetch" href="fsquaresW.js?0108" />
     <title>Calculadora de fracciones continuas</title>
     <style type="text/css" media="print">
       #smallheader {display:none;}
@@ -37,6 +37,7 @@ h1 {text-align:center;}
 .mysvg {margin:0px;padding:0px;}
 .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
 .lf {padding:0.2em; clear:both; width:100%}
+.bold {font-weight: bold;}
 #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 .fraction {display: inline-block; vertical-align: middle; margin: 0 0.2em 0.4ex; text-align: center}
 .fraction > span {display: block; padding-top: 0.15em}
@@ -111,7 +112,7 @@ h1 {text-align:center;}
     </nav>
 	<article>
     <h1>Calculadora de fracciones continuas</h1>
-    <script async="async" type="text/javascript" src="fsquares.js?3107"></script>
+    <script async="async" type="text/javascript" src="fsquares.js?0108"></script>
     <div style='padding:10px;'>
       <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
         <a href="ENGLISH.HTM" itemprop="url">
@@ -150,11 +151,11 @@ h1 {text-align:center;}
           </g>
         </svg>
       </p>
-      <label for="num">a</label><input type="text" id="num" value="" class="input"/>
+      <label for="num">a</label><input type="text" id="num" value="" class="input" aria-label="numerador"/>
       <div class="lf"></div>
-      <label for="delta">b</label><input type="text" id="delta" value="" class="input"/>
+      <label for="delta">b</label><input type="text" id="delta" value="" class="input" aria-label="radicando"/>
       <div class="lf"></div>
-      <label for="den">c</label><input type="text" id="den" value="" class="input"/>
+      <label for="den">c</label><input type="text" id="den" value="" class="input" aria-label="denominador"/>
       <div class="lf"></div>
       <input type="button" id="calc" value="Calcular fracción continua" />
       <input type="button" id="helpbtn" value="Ayuda" />
