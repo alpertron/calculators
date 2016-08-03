@@ -44,17 +44,19 @@ static void ContFrac(void)
   // Show formula.
   strcpy(ptrOutput, "<p><var>x</var> = <span class=\"fraction\" role=\"math\" aria-label=\"");
   ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, lang ? " la fracción cuyo numerador es " : " the fraction whose numerator is ");
+  ptrOutput += strlen(ptrOutput);
   BigInteger2Dec(&num, ptrOutput, groupLen);    // Show numerator.
   ptrOutput += strlen(ptrOutput);
   strcpy(ptrOutput, lang ? " más la raíz cuadrada de " : " plus the square root of ");
   ptrOutput += strlen(ptrOutput);
   BigInteger2Dec(&delta, ptrOutput, groupLen);  // Show radicand.
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, lang ? " sobre " : " over ");
+  strcpy(ptrOutput, lang ? " y el denominador es " : " and the denominator is ");
   ptrOutput += strlen(ptrOutput);
   BigInteger2Dec(&den, ptrOutput, groupLen);    // Show denominator.
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "\"><span class=\"fup\">");
+  strcpy(ptrOutput, ".\"><span class=\"fup\">");
   ptrOutput += strlen(ptrOutput);
   BigInteger2Dec(&num, ptrOutput, groupLen);    // Show numerator.
   ptrOutput += strlen(ptrOutput);
@@ -79,7 +81,8 @@ static void ContFrac(void)
                    "<p>The number is not real, so it does not have continued fraction expansion.</p>");
     return;
   }
-  showText("<p><var>x</var> = ");
+  showText(lang?"<p><span role=\"math\" aria-label=\"El desarrollo en fracción continua de x es\"><var>x</var> = </span>":
+    "<p><span role=\"math\" aria-label=\"The expansion in continued fraction of x is\"><var>x</var> = </span>");
   if (delta.nbrLimbs == 1 && delta.limbs[0].x == 0)
   {   /* Rational number */
     ShowRational(&num, &den);
@@ -232,8 +235,8 @@ static void ContFrac(void)
     }
     else
     {
-      showText(lang != 0 ? "</span>//<br />donde la parte periódica está señalada en negrita" :
-        "</span>//<br />where the periodic part is marked in bold");
+      showText(lang != 0 ? "</span>//<br /><span aria-hidden=\"true\">donde la parte periódica está señalada en negrita</span>" :
+        "</span>//<br /><span aria-hidden=\"true\">where the periodic part is marked in bold</span>");
       if (cont > 1)
       {
         showText(lang != 0 ? " (el período tiene " : " (the period has ");

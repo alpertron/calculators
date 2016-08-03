@@ -642,6 +642,8 @@ int fsquares(void)
 
 void fsquaresText(char *input, int groupLen)
 {
+  char text[200];
+  char *ptrText;
   enum eExprErr rc;
   char *ptrOutput = output;
   rc = ComputeExpression(input, 1, &ExpressionResult);
@@ -660,61 +662,78 @@ void fsquaresText(char *input, int groupLen)
   switch (fsquares())
   {
   case 1:
-    strcpy(ptrOutput, (lang==0?"Internal error!\n\nPlease send the number to the author of the applet.":
-      "¡Error interno!\n\nPor favor envíe este número al autor del applet."));
+    strcpy(ptrOutput, (lang==0?"<p>Internal error!\n\nPlease send the number to the author of the applet.</p>":
+      "<p>¡Error interno!\n\nPor favor envíe este número al autor del applet.</p>"));
     return;
   case 2:
-    strcpy(ptrOutput, (lang==0?"User stopped the calculation":"El usuario detuvo el cálculo"));
+    strcpy(ptrOutput, (lang==0?"<p>User stopped the calculation":"</p>El usuario detuvo el cálculo"));
     return;
   }
-  strcpy(ptrOutput, "n = ");
+  // Show the number to be decomposed into sum of squares.
+  strcpy(ptrOutput, "<p><var>n</var> = ");
   ptrOutput += strlen(ptrOutput);
+  ptrText = text;
   Bin2Dec(origNbr, ptrOutput, origNbrLimbs, groupLen);
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "\n\nn = a^2");
+  // Show whether the number is a sum of 1, 2, 3 or 4 squares.
+  strcpy(ptrOutput, lang ? "</p><p><span role=\"math\" aria-label=\"n es igual a a al cuadrado":
+                           "</p><p><span role=\"math\" aria-label=\"n is equal to a squared");
   ptrOutput += strlen(ptrOutput);
+  strcpy(ptrText, "\"><var>n</var> = <var>a</var><sup>2</sup>");
+  ptrText += strlen(ptrText);
   if (Mult2Len != 1 || Mult2[0].x != 0)
   {
-    strcpy(ptrOutput, " + b^2");
+    strcpy(ptrOutput, lang ? " más b al cuadrado" : " plus b squared");
     ptrOutput += strlen(ptrOutput);
+    strcpy(ptrText, " + <var>b</var><sup>2</sup>");
+    ptrText += strlen(ptrText);
   }
   if (Mult3Len != 1 || Mult3[0].x != 0)
   {
-    strcpy(ptrOutput, " + c^2");
+    strcpy(ptrOutput, lang ? " más c al cuadrado" : " plus c squared");
     ptrOutput += strlen(ptrOutput);
+    strcpy(ptrText, " + <var>c</var><sup>2</sup>");
+    ptrText += strlen(ptrText);
   }
   if (Mult4Len != 1 || Mult4[0].x != 0)
   {
-    strcpy(ptrOutput, " + d^2");
+    strcpy(ptrOutput, lang ? " más d al cuadrado" : " plus d squared");
     ptrOutput += strlen(ptrOutput);
+    strcpy(ptrText, " + <var>d</var><sup>2</sup>");
+    ptrText += strlen(ptrText);
   }
-  strcpy(ptrOutput, "\na = ");
+  strcpy(ptrOutput, text);
+  ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, "</span></p>");
+  ptrOutput += strlen(ptrOutput);
+  // Show the decomposition.
+  strcpy(ptrOutput, "<p><var>a</var> = ");
   ptrOutput += strlen(ptrOutput);
   Bin2Dec(Mult1, ptrOutput, Mult1Len, groupLen);
   ptrOutput += strlen(ptrOutput);
   if (Mult2Len != 1 || Mult2[0].x != 0)
   {
-    strcpy(ptrOutput, "\nb = ");
+    strcpy(ptrOutput, "</p><p><var>b</var> = ");
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(Mult2, ptrOutput, Mult2Len, groupLen);
     ptrOutput += strlen(ptrOutput);
   }
   if (Mult3Len != 1 || Mult3[0].x != 0)
   {
-    strcpy(ptrOutput, "\nc = ");
+    strcpy(ptrOutput, "</p><p><var>c</var> = ");
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(Mult3, ptrOutput, Mult3Len, groupLen);
     ptrOutput += strlen(ptrOutput);
   }
   if (Mult4Len != 1 || Mult4[0].x != 0)
   {
-    strcpy(ptrOutput, "\nd = ");
+    strcpy(ptrOutput, "</p><p><var>d</var> = ");
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(Mult4, ptrOutput, Mult4Len, groupLen);
     ptrOutput += strlen(ptrOutput);
   }
-  strcpy(ptrOutput, (lang?"\n\n\n" COPYRIGHT_SPANISH "\n":
-                          "\n\n\n" COPYRIGHT_ENGLISH "\n"));
+  strcpy(ptrOutput, (lang?"</p><p>" COPYRIGHT_SPANISH "</p>":
+                          "</p><p>" COPYRIGHT_ENGLISH "</p>"));
 }
 
 #ifdef __EMSCRIPTEN__

@@ -22,7 +22,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker('fsquaresW.js?0108');
+    worker = new Worker('fsquaresW.js?0208');
     worker.onmessage = function(e)
     {
       if (app < 4)
@@ -45,9 +45,11 @@ window.onload = function()
   {
     document.getElementById('input').onkeypress = function(e)
     {
-      var output;
-	    var digitGroup = document.getElementById('digits').value;
+      var output, res;
+	  var digitGroup = document.getElementById('digits').value;
       app = document.getElementById('app').value;
+      res = document.getElementById('result');
+      res.style.display = "block";
       var input = document.getElementById('input').value;
       if (!e) e = window.event;
       var keyCode = e.keyCode || e.which;
@@ -56,71 +58,102 @@ window.onload = function()
 	      output = document.getElementById('output')
 	      if (input == "")
 	      {
-          output.value = (app&1?"Por favor ingrese un número o expresión.": "Please type a number or expression.");
+	        res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión." : "Please type a number or expression.");
           return;
 	      }
 	      if (app==0)
 		    {
-		      output.value = "Computing sum of squares...";
+	        res.innerHTML = "Computing sum of squares...";
 		    }
 		    else if (app==1)
 		    {
-          output.value = "Calculando suma de cuadrados...";
+		      res.innerHTML = "Calculando suma de cuadrados...";
 		    }
 		    else if (app==2)
 		    {
-		      output.value = "Computing sum of cubes...";
+		      res.innerHTML = "Computing sum of cubes...";
 		    }
 		    else
 		    {
-		      output.value = "Calculando suma de cubos...";
+		      res.innerHTML = "Calculando suma de cubos...";
 		    }
-		    param = digitGroup + ',' + app + ',' + input;
+	      param = digitGroup + ',' + app + ',' + input + String.fromCharCode(0);
 		    callWorker(param);
 	    }
     }
   }
-  if (document.getElementById('calc'))
+  document.getElementById('calc').onclick = function()
   {
-    document.getElementById('calc').onclick = function()
-    {
-	    var app = document.getElementById('app').value;
-  	  var res = document.getElementById('result');
-	    var valueA = document.getElementById('num').value;
-      var valueB = document.getElementById('delta').value;
-      var valueC = document.getElementById('den').value;
-	    var digitGroup = document.getElementById('digits').value;
-	    document.getElementById('help').style.display = "none";
-	    res.style.display = "block";
-	    if (valueA == "")
-      {
-	      res.innerHTML = (app&1? "Por favor ingrese un número o expresión para el numerador." :
+    var app, res, valueA, valueB, valueC, digitGroup;
+    app = parseInt(document.getElementById('app').value);
+    res = document.getElementById('result');
+	  res.style.display = "block";
+	  valueA = document.getElementById('num').value;
+	  if (valueA == "")
+	  {
+	    if (app >= 4)
+	    {
+	      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el numerador." :
 	                              "Please type a number or expression for numerator.");
-        return;
 	    }
+	    else
+	    {
+	      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión." :
+	                              "Please type a number or expression.");
+	    }
+	    return;
+	  }
+	  if (app >= 4)
+	  {
+	    valueB = document.getElementById('delta').value;
 	    if (valueB == "")
 	    {
-  	    res.innerHTML = (app&1? "Por favor ingrese un número o expresión para el argumento de la raíz cuadrada." :
-	                              "Please type a number or expression for square root argument.");
+	      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el argumento de la raíz cuadrada." :
+                                "Please type a number or expression for square root argument.");
 	      return;
 	    }
+	    valueC = document.getElementById('den').value;
 	    if (valueC == "")
 	    {
-  	    res.innerHTML = (app&1? "Por favor ingrese un número o expresión para el denominador." :
-	                              "Please type a number or expression for denominator.");
+	      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el denominador." :
+                                "Please type a number or expression for denominator.");
 	      return;
 	    }
-      res.innerHTML = (app&1? "Calculando desarrollo en fracciones continuas..." :
-	                          "Computing continued fraction expansion...");
-      param = digitGroup + ',' + app + ',' + valueA + String.fromCharCode(0) + valueB +
-			String.fromCharCode(0) + valueC + String.fromCharCode(0);
-      callWorker(param);
-	  }
-    document.getElementById('helpbtn').onclick = function()
+    }
+	  digitGroup = document.getElementById('digits').value;
+	  document.getElementById('help').style.display = "none";
+	  switch (app)
 	  {
-      document.getElementById('help').style.display = "block";
-      document.getElementById('result').style.display = "none";
+      case 0:
+        res.innerHTML = "Computing sum of squares...";
+        break;
+      case 1:
+        res.innerHTML = "Calculando suma de cuadrados...";
+        break;
+      case 2:
+        res.innerHTML = "Computing sum of cubes...";
+        break;
+      case 3:
+        res.innerHTML = "Calculando suma de cubos...";
+        break;
+      case 4:
+        res.innerHTML = "Computing continued fraction expansion...";
+        break;
+      default:
+        res.innerHTML = "Calculando desarrollo en fracciones continuas...";
+        break;
 	  }
-  }
+	  param = digitGroup + ',' + app + ',' + valueA + String.fromCharCode(0);
+	  if (app >= 4)
+	  {
+	    param += valueB + String.fromCharCode(0) + valueC + String.fromCharCode(0);
+	  }
+    callWorker(param);
+	}
+  document.getElementById('helpbtn').onclick = function()
+  {
+    document.getElementById('help').style.display = "block";
+    document.getElementById('result').style.display = "none";
+	}
 }
 

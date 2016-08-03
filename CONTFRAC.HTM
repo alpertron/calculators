@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="utf-8" />
     <meta name="description" content="Javascript application that finds the continued fraction representation of rational numbers and quadratic irrationalities. Written by Dario Alpern." />
-    <link rel="prefetch" href="fsquaresW.js?0108" />
+    <link rel="prefetch" href="fsquaresW.js?0208" />
     <link rel="alternate" hreflang="es" href="FRACCONT.HTM" />
     <title>Continued fraction calculator</title>
     <style type="text/css" media="print">
@@ -112,7 +112,7 @@ h1 {text-align:center;}
     </nav>
     <article>
     <h1>Continued Fraction calculator</h1>
-    <script async="async" type="text/javascript" src="fsquares.js?0108"></script>
+    <script async="async" type="text/javascript" src="fsquares.js?0208"></script>
     <div style='padding:10px;'>
       <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
         <a href="ENGLISH.HTM" itemprop="url">
@@ -286,7 +286,10 @@ h1 {text-align:center;}
           / for integer division
         </li>
         <li>
-          ^ for exponentiation
+          % for remainder
+        </li>
+        <li>
+          ^ or ** for exponentiation
         </li>
         <li>
           <B>n!</B>: factorial
@@ -298,10 +301,10 @@ h1 {text-align:center;}
           <B>B(n)</B>: Previous pseudoprime to <var>n</var>
         </li>
         <li>
-          <B>F(n)</B>: Fibonacci number F<sub>n</sub>
+          <B>F(n)</B>: Fibonacci number <span role="math" aria-label="F sub n">F<sub><var>n</var></sub></span>
         </li>
         <li>
-          <B>L(n)</B>: Lucas number L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub>
+          <B>L(n)</B>: Lucas number <span role="math" aria-label="L sub n equals F sub n-1 plus F sub n+1">L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub></span>
         </li>
         <li>
           <B>N(n)</B>: Next pseudoprime to <var>n</var>
@@ -315,7 +318,7 @@ h1 {text-align:center;}
       <p>
         You can download the source of the current program and the old continued fraction applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
       </p>
-	  <p>Written by Dario Alpern. Last updated 31 July 2016.</p>
+	  <p>Written by Dario Alpern. Last updated 2 August 2016.</p>
     </div>
     <div id="result" aria-live="polite"></div>
     <div>

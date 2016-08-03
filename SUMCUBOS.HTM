@@ -7,7 +7,7 @@
 <meta name="keywords" content="waring, teoría de números" />
 <meta name="description" content="Aplicación Javascript application que descompone un número en una suma de cuatro cubos. Hecho por Dario Alpern." />
 <link rel="alternate" hreflang="en" href="FCUBES.HTM" />
-<link rel="prefetch" href="fsquaresW.js?2807" />
+<link rel="prefetch" href="fsquaresW.js?0208" />
     <title>Suma de cuatro cubos</title>
   <style type="text/css" media="print">
     #smallheader {display:none;}
@@ -35,10 +35,9 @@
   <style>
     body {font-family: arial; margin: 0; padding: 0;}
     h1 {text-align:center;}
+    input#num {margin:5px;width:100%;padding:3px;margin:0px;}
+    #applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
     .lf {padding:0.2em; clear:both; width:100%}
-    input#input {margin:5px;width:100%;padding:3px;margin:0px;}
-    textarea {margin:5px;width:100%;padding:3px;margin:0px;}
-    .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
   </style>
  </head>
   <body>
@@ -105,22 +104,6 @@
     </nav>
     <article>
     <h1>Suma de cuatro cubos</h1>
-    <div id="applet" class="applet">
-      <form>
-	    <label for="input">Número a descomponer en suma de cubos</label>
-        <input type="text" id="input" />
-        <div class="lf"></div>
-	    <label for="output">Resultado</label>
-        <textarea rows="10" id="output" readonly="readonly"></textarea>
-        <div class="lf"></div>
-        <p style="text-align:center;">
-        <label for="digits">Cantidad de dígitos por grupo:</label>
-        <input type="number" id="digits" value="6"/>
-        <input type="hidden" id="app" value="3"/>
-      </form>
-    </div>
-    <script async="async" type="text/javascript" src="fsquares.js?2807"></script>
-    <div style='padding:10px;'>
       <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
         <a href="/" itemprop="url">
           <span itemprop="title">Alpertron</span>
@@ -135,123 +118,141 @@
         <a href="SUMCUBOS.HTM" itemprop="url">
           <span itemprop="title">Suma de cuatro cubos</span>
         </a>
-      </div>
-      <P>Este applet encuentra la descomposición de cualquier número entero no congruente a 4 ó 5 (mod 9) en una suma de cuatro cubos.</P>
+      </div><br><br>
+      <form id="applet">
+	    <label for="input">Número a descomponer en suma de cubos</label>
+        <input type="text" id="num" />
+        <div class="lf"></div>
+        <input type="button" id="calc" value="Suma de cubos" />
+        <input type="button" id="helpbtn" value="Ayuda" />
+        <div class="lf"></div>
+        <p style="text-align:center;">
+        <label for="digits">Cantidad de dígitos por grupo:</label>
+        <input type="number" id="digits" value="6"/>
+        <input type="hidden" id="app" value="3"/>
+      </form>
+    <script async="async" type="text/javascript" src="fsquares.js?0208"></script>
+    <div style='padding:10px;'>
+    <div id="help" aria-live="polite">
+     <p>Este applet encuentra la descomposición de cualquier número entero no congruente a 4 ó 5 (mod 9) en una suma de cuatro cubos.</p>
       <h2>Fórmulas</h2>
-      <P>El applet usa las siguientes fórmulas:</P>
-      <UL>
-        <LI>
-          6x = (x - 1)<SUP>3</SUP> + (-x)<SUP>3</SUP> + (-x)<SUP>3</SUP> + (x + 1)<SUP>3</SUP>
-        </LI>
-        <LI>
-          6x + 3 = x<SUP>3</SUP> + (-x + 4)<SUP>3</SUP> + (2x - 5)<SUP>3</SUP> + (-2x + 4)<SUP>3</SUP>
-        </LI>
-        <LI>
-          18x + 1 = (2x + 14)<SUP>3</SUP> + (-2x - 23)<SUP>3</SUP> + (-3x - 26)<SUP>3</SUP> + (3x + 30)<SUP>3</SUP>
-        </LI>
-        <LI>
-          18x + 7 = (x + 2)<SUP>3</SUP> + (6x - 1)<SUP>3</SUP> + (8x - 2)<SUP>3</SUP> + (-9x + 2)<SUP>3</SUP>
-        </LI>
-        <LI>
-          18x + 8 = (x - 5)<SUP>3</SUP> + (-x + 14)<SUP>3</SUP> + (-3x + 29)<SUP>3</SUP> + (3x - 30)<SUP>3</SUP>
-        </LI>
-        <LI>
-          54x + 20 = (3x - 11)<SUP>3</SUP> + (-3x + 10)<SUP>3</SUP> + (x + 2)<SUP>3</SUP> + (-x + 7)<SUP>3</SUP>
-        </LI>
-        <LI>
-          72x + 56 = (-9x + 4)<SUP>3</SUP> + (x + 4)<SUP>3</SUP> + (6x - 2)<SUP>3</SUP> + (8x - 4)<SUP>3</SUP>
-        </LI>
-        <LI>
-          108x + 2 = (-x - 22)<SUP>3</SUP> + (x + 4)<SUP>3</SUP> + (-3x - 41)<SUP>3</SUP> + (3x + 43)<SUP>3</SUP>
-        </LI>
-        <LI>
-          216x + 92 = (3x - 164)<SUP>3</SUP> + (-3x + 160)<SUP>3</SUP> + (x - 35)<SUP>3</SUP> + (-x + 71)<SUP>3</SUP>
-        </LI>
-        <LI>
-          270x + 146 = (-60x + 91)<SUP>3</SUP> + (-3x + 13)<SUP>3</SUP> + (22x - 37)<SUP>3</SUP> + (59x - 89)<SUP>3</SUP>
-        </LI>
-        <LI>
-          270x + 200 = (3x + 259)<SUP>3</SUP> + (-3x - 254)<SUP>3</SUP> + (x + 62)<SUP>3</SUP> + (-x - 107)<SUP>3</SUP>
-        </LI>
-        <LI>
-          270x + 218 = (-3x - 56)<SUP>3</SUP> + (3x + 31)<SUP>3</SUP> + (-5x - 69)<SUP>3</SUP> + (5x + 78)<SUP>3</SUP>
-        </LI>
-        <LI>
-          432x + 380 = (-3x + 64)<SUP>3</SUP> + (3x - 80)<SUP>3</SUP> + (2x - 29)<SUP>3</SUP> + (-2x + 65)<SUP>3</SUP>
-        </LI>
-        <LI>
-          540x + 38 = (5x - 285)<SUP>3</SUP> + (-5x + 267)<SUP>3</SUP> + (3x - 140)<SUP>3</SUP> + (-3x + 190)<SUP>3</SUP>
-        </LI>
-        <LI>
-          810x + 56 = (5x - 755)<SUP>3</SUP> + (-5x + 836)<SUP>3</SUP> + (9x - 1445)<SUP>3</SUP> + (-9x + 1420)<SUP>3</SUP>
-        </LI>
-        <LI>
-          1080x + 380 = (-x - 1438)<SUP>3</SUP> + (x + 1258)<SUP>3</SUP> + (-3x - 4037)<SUP>3</SUP> + (3x + 4057)<SUP>3</SUP>
-        </LI>
-        <LI>
-          1620x + 1334 = (-5x - 3269)<SUP>3</SUP> + (5x + 3107)<SUP>3</SUP> + (-9x - 5714)<SUP>3</SUP> + (9x + 5764)<SUP>3</SUP>
-        </LI>
-        <LI>
-          1620x + 1352 = (-5x + 434)<SUP>3</SUP> + (5x - 353)<SUP>3</SUP> + (9x - 722)<SUP>3</SUP> + (-9x + 697)<SUP>3</SUP>
-        </LI>
-        <LI>
-          2160x + 362 = (-5x - 180)<SUP>3</SUP> + (5x + 108)<SUP>3</SUP> + (-6x - 149)<SUP>3</SUP> + (6x + 199)<SUP>3</SUP>
-        </LI>
-        <LI>
-          6480x + 794 = (-5x - 83)<SUP>3</SUP> + (5x + 11)<SUP>3</SUP> + (-6x - 35)<SUP>3</SUP> + (6x + 85)<SUP>3</SUP>
-        </LI>
-      </UL>
-      <P>
+      <p>El applet usa las siguientes fórmulas:</p>
+      <ul>
+        <li>
+          <span role="math" aria-label="6x es igual a abrir paréntesis x menos 1 cerrar paréntesis al cubo más abrir paréntesis menos x cerrar paréntesis al cubo más abrir paréntesis menos x cerrar paréntesis al cubo más abrir paréntesis x más 1 cerrar paréntesis al cubo">6x = (x &minus; 1)<SUP>3</SUP> + (&minus;x)<SUP>3</SUP> + (&minus;x)<SUP>3</SUP> + (x + 1)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="6x más 3 es igual a x al cubo más abrir paréntesis menos x más 4 cerrar paréntesis al cubo más abrir paréntesis 2x menos 5 cerrar paréntesis al cubo más abrir paréntesis menos 2x más 4 cerrar paréntesis al cubo">6x + 3 = x<SUP>3</SUP> + (&minus;x + 4)<SUP>3</SUP> + (2x &minus; 5)<SUP>3</SUP> + (&minus;2x + 4)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="18x más 1 es igual a abrir paréntesis 2x más 14 cerrar paréntesis al cubo más abrir paréntesis menos 2x menos 23 cerrar paréntesis al cubo más abrir paréntesis menos 3x menos 26 cerrar paréntesis al cubo más abrir paréntesis 3x más 30 cerrar paréntesis al cubo">18x + 1 = (2x + 14)<SUP>3</SUP> + (&minus;2x &minus; 23)<SUP>3</SUP> + (&minus;3x &minus; 26)<SUP>3</SUP> + (3x + 30)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="18x más 7 es igual a abrir paréntesis x más 2 cerrar paréntesis al cubo más abrir paréntesis 6x menos 1 cerrar paréntesis al cubo más abrir paréntesis 8x menos 2 cerrar paréntesis al cubo más abrir paréntesis menos 9x más 2 cerrar paréntesis al cubo">18x + 7 = (x + 2)<SUP>3</SUP> + (6x &minus; 1)<SUP>3</SUP> + (8x &minus; 2)<SUP>3</SUP> + (&minus;9x + 2)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="18x más 8 es igual a abrir paréntesis x menos 5 cerrar paréntesis al cubo más abrir paréntesis menos x más 14 cerrar paréntesis al cubo más abrir paréntesis menos 3x más 29 cerrar paréntesis al cubo más abrir paréntesis 3x menos 30 cerrar paréntesis al cubo">18x + 8 = (x &minus; 5)<SUP>3</SUP> + (&minus;x + 14)<SUP>3</SUP> + (&minus;3x + 29)<SUP>3</SUP> + (3x &minus; 30)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="54x más 20 es igual a abrir paréntesis 3x menos 11 cerrar paréntesis al cubo más abrir paréntesis menos 3x más 10 cerrar paréntesis al cubo más abrir paréntesis x más 2 cerrar paréntesis al cubo más abrir paréntesis menos x más 7 cerrar paréntesis al cubo">54x + 20 = (3x &minus; 11)<SUP>3</SUP> + (&minus;3x + 10)<SUP>3</SUP> + (x + 2)<SUP>3</SUP> + (&minus;x + 7)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="72x más 56 es igual a abrir paréntesis menos 9x más 4 cerrar paréntesis al cubo más abrir paréntesis x más 4 cerrar paréntesis al cubo más abrir paréntesis 6x menos 2 cerrar paréntesis al cubo más abrir paréntesis 8x menos 4 cerrar paréntesis al cubo">72x + 56 = (&minus;9x + 4)<SUP>3</SUP> + (x + 4)<SUP>3</SUP> + (6x &minus; 2)<SUP>3</SUP> + (8x &minus; 4)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="108x más 2 es igual a abrir paréntesis menos x menos 22 cerrar paréntesis al cubo más abrir paréntesis x más 4 cerrar paréntesis al cubo más abrir paréntesis menos 3x menos 41 cerrar paréntesis al cubo más abrir paréntesis 3x más 43 cerrar paréntesis al cubo">108x + 2 = (&minus;x &minus; 22)<SUP>3</SUP> + (x + 4)<SUP>3</SUP> + (&minus;3x &minus; 41)<SUP>3</SUP> + (3x + 43)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="216x más 92 es igual a abrir paréntesis 3x menos 164 cerrar paréntesis al cubo más abrir paréntesis menos 3x más 160 cerrar paréntesis al cubo más abrir paréntesis x menos 35 cerrar paréntesis al cubo más abrir paréntesis menos x más 71 cerrar paréntesis al cubo">216x + 92 = (3x &minus; 164)<SUP>3</SUP> + (&minus;3x + 160)<SUP>3</SUP> + (x &minus; 35)<SUP>3</SUP> + (&minus;x + 71)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="270x más 146 es igual a abrir paréntesis menos 60x más 91 cerrar paréntesis al cubo más abrir paréntesis menos 3x más 13 cerrar paréntesis al cubo más abrir paréntesis 22x menos 37 cerrar paréntesis al cubo más abrir paréntesis 59x menos 89 cerrar paréntesis al cubo">270x + 146 = (&minus;60x + 91)<SUP>3</SUP> + (&minus;3x + 13)<SUP>3</SUP> + (22x &minus; 37)<SUP>3</SUP> + (59x &minus; 89)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="270x más 200 es igual a abrir paréntesis 3x más 259 cerrar paréntesis al cubo más abrir paréntesis menos 3x menos 254 cerrar paréntesis al cubo más abrir paréntesis x más 62 cerrar paréntesis al cubo más abrir paréntesis menos x menos 107 cerrar paréntesis al cubo">270x + 200 = (3x + 259)<SUP>3</SUP> + (&minus;3x &minus; 254)<SUP>3</SUP> + (x + 62)<SUP>3</SUP> + (&minus;x &minus; 107)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="270x más 218 es igual a abrir paréntesis menos 3x menos 56 cerrar paréntesis al cubo más abrir paréntesis 3x más 31 cerrar paréntesis al cubo más abrir paréntesis menos 5x menos 69 cerrar paréntesis al cubo más abrir paréntesis 5x más 78 cerrar paréntesis al cubo">270x + 218 = (&minus;3x &minus; 56)<SUP>3</SUP> + (3x + 31)<SUP>3</SUP> + (&minus;5x &minus; 69)<SUP>3</SUP> + (5x + 78)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="432x más 380 es igual a abrir paréntesis menos 3x más 64 cerrar paréntesis al cubo más abrir paréntesis 3x menos 80 cerrar paréntesis al cubo más abrir paréntesis 2x menos 29 cerrar paréntesis al cubo más abrir paréntesis menos 2x más 65 cerrar paréntesis al cubo">432x + 380 = (&minus;3x + 64)<SUP>3</SUP> + (3x &minus; 80)<SUP>3</SUP> + (2x &minus; 29)<SUP>3</SUP> + (&minus;2x + 65)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="540x más 38 es igual a abrir paréntesis 5x menos 285 cerrar paréntesis al cubo más abrir paréntesis menos 5x más 267 cerrar paréntesis al cubo más abrir paréntesis 3x menos 140 cerrar paréntesis al cubo más abrir paréntesis menos 3x más 190 cerrar paréntesis al cubo">540x + 38 = (5x &minus; 285)<SUP>3</SUP> + (&minus;5x + 267)<SUP>3</SUP> + (3x &minus; 140)<SUP>3</SUP> + (&minus;3x + 190)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="810x más 56 es igual a abrir paréntesis 5x menos 755 cerrar paréntesis al cubo más abrir paréntesis menos 5x más 836 cerrar paréntesis al cubo más abrir paréntesis 9x menos 1445 cerrar paréntesis al cubo más abrir paréntesis menos 9x más 1420 cerrar paréntesis al cubo">810x + 56 = (5x &minus; 755)<SUP>3</SUP> + (&minus;5x + 836)<SUP>3</SUP> + (9x &minus; 1445)<SUP>3</SUP> + (&minus;9x + 1420)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="1080x más 380 es igual a abrir paréntesis menos x menos 1438 cerrar paréntesis al cubo más abrir paréntesis x más 1258 cerrar paréntesis al cubo más abrir paréntesis menos 3x menos 4037 cerrar paréntesis al cubo más abrir paréntesis 3x más 4057 cerrar paréntesis al cubo">1080x + 380 = (&minus;x &minus; 1438)<SUP>3</SUP> + (x + 1258)<SUP>3</SUP> + (&minus;3x &minus; 4037)<SUP>3</SUP> + (3x + 4057)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="1620x más 1334 es igual a abrir paréntesis menos 5x menos 3269 cerrar paréntesis al cubo más abrir paréntesis 5x más 3107 cerrar paréntesis al cubo más abrir paréntesis menos 9x menos 5714 cerrar paréntesis al cubo más abrir paréntesis 9x más 5764 cerrar paréntesis al cubo">1620x + 1334 = (&minus;5x &minus; 3269)<SUP>3</SUP> + (5x + 3107)<SUP>3</SUP> + (&minus;9x &minus; 5714)<SUP>3</SUP> + (9x + 5764)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="1620x más 1352 es igual a abrir paréntesis menos 5x más 434 cerrar paréntesis al cubo más abrir paréntesis 5x menos 353 cerrar paréntesis al cubo más abrir paréntesis 9x menos 722 cerrar paréntesis al cubo más abrir paréntesis menos 9x más 697 cerrar paréntesis al cubo">1620x + 1352 = (&minus;5x + 434)<SUP>3</SUP> + (5x &minus; 353)<SUP>3</SUP> + (9x &minus; 722)<SUP>3</SUP> + (&minus;9x + 697)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="2160x más 362 es igual a abrir paréntesis menos 5x menos 180 cerrar paréntesis al cubo más abrir paréntesis 5x más 108 cerrar paréntesis al cubo más abrir paréntesis menos 6x menos 149 cerrar paréntesis al cubo más abrir paréntesis 6x más 199 cerrar paréntesis al cubo">2160x + 362 = (&minus;5x &minus; 180)<SUP>3</SUP> + (5x + 108)<SUP>3</SUP> + (&minus;6x &minus; 149)<SUP>3</SUP> + (6x + 199)<SUP>3</SUP></span>
+        </li>
+        <li>
+          <span role="math" aria-label="6480x más 794 es igual a abrir paréntesis menos 5x menos 83 cerrar paréntesis al cubo más abrir paréntesis 5x más 11 cerrar paréntesis al cubo más abrir paréntesis menos 6x menos 35 cerrar paréntesis al cubo más abrir paréntesis 6x más 85 cerrar paréntesis al cubo">6480x + 794 = (&minus;5x &minus; 83)<SUP>3</SUP> + (5x + 11)<SUP>3</SUP> + (&minus;6x &minus; 35)<SUP>3</SUP> + (6x + 85)<SUP>3</SUP></span>
+        </li>
+      </ul>
+      <p>
         Si n = 164, 596, 1892, 2324, 2756, 4052, 4484 (mod 6480) se utiliza la fórmula:
-      </P>
-      <P>
-        54x + 2 = (29484x<SUP>2</SUP> + 2211x + 43)<SUP>3</SUP> + (-29484x<SUP>2</SUP> - 2157x - 41)<SUP>3</SUP> + (9828x<SUP>2</SUP> + 485x + 4)<SUP>3</SUP> + (-9828x<SUP>2</SUP> - 971x - 22)<SUP>3</SUP>
-      </P>
-      <P>
+      </p>
+      <p>
+        <span role="math" aria-label="54x más 2 es igual a abrir paréntesis 29484x al cuadrado más 2211x más 43 cerrar paréntesis al cubo más abrir paréntesis menos 29484x al cuadrado menos 2157x menos 41 cerrar paréntesis al cubo más abrir paréntesis 9828x al cuadrado más 485x más 4 cerrar paréntesis al cubo más abrir paréntesis menos 9828x al cuadrado menos 971x menos 22 cerrar paréntesis al cubo">54x + 2 = (29484x<SUP>2</SUP> + 2211x + 43)<SUP>3</SUP> + (&minus;29484x<SUP>2</SUP> &minus; 2157x &minus; 41)<SUP>3</SUP> + (9828x<SUP>2</SUP> + 485x + 4)<SUP>3</SUP> + (&minus;9828x<SUP>2</SUP> &minus; 971x &minus; 22)<SUP>3</SUP></span>
+      </p>
+      <p>
         Si n = 254, 902, 1442, 1874, 1982, 2414, 3062, 3494, 3602, 4034, 4142, 5114, 5222, 5654, 5762, 6302 (mod 6480) se utiliza un m&eacute;todo debido a Demjanenko que puede dar resultados de cientos de dígitos.
-      </P>
-      <P>
-        En el resto de los casos se reemplaza n por -n y luego se multiplican las soluciones por -1.
-      </P>
-      <P>
+      </p>
+      <p>
+        En el resto de los casos se reemplaza n por &minus;n y luego se multiplican las soluciones por &minus;1.
+      </p>
+      <p>
         Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORMULAR.HTM?Suma+de+cuatro+cubos">formulario</a>.
-      </P>
+      </p>
       <h2>Expresiones</h2>
       <p>Además de ingresar números en la caja de entrada, se pueden escribir expresiones numéricas incluyendo paréntesis. A continuación se muestran las operaciones permitidas:</p>
-      <UL>
-        <LI> + para suma</LI>
-        <LI> - para resta</LI>
-        <LI> * para multiplicación</LI>
-        <LI> / para división entera</LI>
-        <LI> ^ para exponenciación</LI>
-        <LI>
+      <ul>
+        <li> + para suma</li>
+        <li> &minus; para resta</li>
+        <li> * para multiplicación</li>
+        <li> / para división entera</li>
+        <li> % para resto</li>
+        <li> ^ o ** para exponenciación</li>
+        <li>
           <B>n!</B>: factorial
-        </LI>
-        <LI>
+        </li>
+        <li>
           <B>p#</B>: primorial (producto de todos los primos menores o iguales que <var>p</var>).
-        </LI>
-        <LI>
+        </li>
+        <li>
           <B>B(n)</B>: número pseudoprimo anterior a <var>n</var>.
-        </LI>
-        <LI>
-          <B>F(n)</B>: número de Fibonacci F<SUB>n</SUB>.
-        </LI>
-        <LI>
-          <B>L(n)</B>: número de Lucas L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB>.
-        </LI>
-        <LI>
+        </li>
+        <li>
+          <B>F(n)</B>: número de Fibonacci <span role="math" aria-label="F sub n">F<sub><var>n</var></sub></span>.
+        </li>
+        <li>
+          <B>L(n)</B>: número de Lucas <span role="math" aria-label="L sub n es igual a F sub n-1 más F sub n+1">L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub></span>.
+        </li>
+        <li>
           <B>N(n)</B>: número pseudoprimo posterior a <var>n</var>.
-        </LI>
-        <LI>
+        </li>
+        <li>
           <B>P(n)</B>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).
-        </LI>
-      </UL>
+        </li>
+      </ul>
 	  <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
       <h2>Código fuente</h2>
       <p>
         Se puede bajar el código fuente de este programa y el del viejo applet de suma de cuatro cubos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
       </p>
-	  <p>Escrito por Dario Alpern. Actualizado el 31 de julio de 2016.</p>
+	  <p>Escrito por Dario Alpern. Actualizado el 2 de agosto de 2016.</p>
+	</div>
+    <div id="result" aria-live="polite"></div>
     </div>
     <script type="text/javascript">
       var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

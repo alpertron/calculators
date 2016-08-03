@@ -339,7 +339,10 @@ static int fcubes(BigInteger *pArgument)
 void fcubesText(char *input, int groupLen)
 {
   enum eExprErr rc;
+  char text[200];
+  char *ptrText;
   char *ptrOutput = output;
+  
   rc = ComputeExpression(input, 1, &ExpressionResult);
   if (rc != EXPR_OK)
   {
@@ -349,63 +352,80 @@ void fcubesText(char *input, int groupLen)
   switch (fcubes(&ExpressionResult))
   {
   case -1:
-    strcpy(ptrOutput, (lang==0?"Applet does not work if the number is congruent to 4 or 5 (mod 9)":
-      "El applet no funciona si el número es congruente a 4 o 5 (mod 9)"));
+    strcpy(ptrOutput, (lang==0?"<p>This applet does not work if the number is congruent to 4 or 5 (mod 9)</p>":
+      "<p>El applet no funciona si el número es congruente a 4 o 5 (mod 9)</p>"));
     return;
   case 1:
-    strcpy(ptrOutput, (lang==0?"Internal error!\n\nPlease send the number to the author of the applet.":
-      "¡Error interno!\n\nPor favor envíe este número al autor del applet."));
+    strcpy(ptrOutput, (lang==0?"<p>Internal error!</p><p>Please send the number to the author of the applet.</p>":
+      "<p>¡Error interno!</p><p>Por favor envíe este número al autor del applet.</p>"));
     return;
   case 2:
-    strcpy(ptrOutput, (lang==0?"User stopped the calculation":"El usuario detuvo el cálculo"));
+    strcpy(ptrOutput, (lang==0?"<p>User stopped the calculation</p>":"<p>El usuario detuvo el cálculo</p>"));
     return;
   }
-  strcpy(ptrOutput, "n = ");
+  // Show the number to be decomposed into sum of cubes.
+  ptrText = text;
+  strcpy(ptrOutput, "<p><var>n</var> = ");
   ptrOutput += strlen(ptrOutput);
   BigInteger2Dec(&ExpressionResult, ptrOutput, groupLen);
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "\n\nn = a^3");
+  // Show whether the number is a sum of 1, 2, 3 or 4 cubes.
+  strcpy(ptrOutput, lang ? "</p><p><span role=\"math\" aria-label=\"n es igual a a al cubo":
+                           "</p><p><span role=\"math\" aria-label=\"n is equal to a cubed");
   ptrOutput += strlen(ptrOutput);
+  strcpy(ptrText, "\"><var>n</var> = <var>a</var><sup>3</sup>");
+  ptrText += strlen(ptrText);
   if (Base2.nbrLimbs != 1 || Base2.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, " + b^3");
+    strcpy(ptrOutput, lang ? " más b al cubo" : " plus b cubed");
     ptrOutput += strlen(ptrOutput);
+    strcpy(ptrText, " + <var>b</var><sup>3</sup>");
+    ptrText += strlen(ptrText);
   }
   if (Base3.nbrLimbs != 1 || Base3.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, " + c^3");
+    strcpy(ptrOutput, lang ? " más c al cubo" : " plus c cubed");
     ptrOutput += strlen(ptrOutput);
+    strcpy(ptrText, " + <var>c</var><sup>3</sup>");
+    ptrText += strlen(ptrText);
   }
   if (Base4.nbrLimbs != 1 || Base4.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, " + d^3");
+    strcpy(ptrOutput, lang ? " más d al cubo" : " plus d cubed");
     ptrOutput += strlen(ptrOutput);
+    strcpy(ptrText, " + <var>d</var><sup>3</sup>");
+    ptrText += strlen(ptrText);
   }
-  strcpy(ptrOutput, "\na = ");
+  strcpy(ptrOutput, text);
+  ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, "</span></p>");
+  ptrOutput += strlen(ptrOutput);
+  // Show the decomposition.
+  strcpy(ptrOutput, "<p><var>a</var> = ");
   ptrOutput += strlen(ptrOutput);
   BigInteger2Dec(&Base1, ptrOutput, groupLen);
   ptrOutput += strlen(ptrOutput);
   if (Base2.nbrLimbs != 1 || Base2.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, "\nb = ");
+    strcpy(ptrOutput, "</p><p><var>b</var> = ");
     ptrOutput += strlen(ptrOutput);
     BigInteger2Dec(&Base2, ptrOutput, groupLen);
     ptrOutput += strlen(ptrOutput);
   }
   if (Base3.nbrLimbs != 1 || Base3.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, "\nc = ");
+    strcpy(ptrOutput, "</p><p><var>c</var> = ");
     ptrOutput += strlen(ptrOutput);
     BigInteger2Dec(&Base3, ptrOutput, groupLen);
     ptrOutput += strlen(ptrOutput);
   }
   if (Base4.nbrLimbs != 1 || Base4.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, "\nd = ");
+    strcpy(ptrOutput, "</p><p><var>d</var> = ");
     ptrOutput += strlen(ptrOutput);
     BigInteger2Dec(&Base4, ptrOutput,  groupLen);
     ptrOutput += strlen(ptrOutput);
   }
-  strcpy(ptrOutput, (lang?"\n\n\n" COPYRIGHT_SPANISH "\n":
-                          "\n\n\n" COPYRIGHT_ENGLISH "\n"));
+  strcpy(ptrOutput, (lang?"</p><p>" COPYRIGHT_SPANISH "</p>":
+                          "</p><p>" COPYRIGHT_ENGLISH "</p>"));
 }

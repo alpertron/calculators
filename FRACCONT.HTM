@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
   <head>
     <meta name="Author" content="Dario Alejandro Alpern" />
@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="description" content="Aplicación Javascript que muestra la fracción continua de números racionales e irracionalidades cuadráticas." />
     <link rel="alternate" hreflang="en" href="CONTFRAC.HTM" />
-    <link rel="prefetch" href="fsquaresW.js?0108" />
+    <link rel="prefetch" href="fsquaresW.js?0208" />
     <title>Calculadora de fracciones continuas</title>
     <style type="text/css" media="print">
       #smallheader {display:none;}
@@ -38,7 +38,7 @@ h1 {text-align:center;}
 .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
 .lf {padding:0.2em; clear:both; width:100%}
 .bold {font-weight: bold;}
-#applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+#applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
 .fraction {display: inline-block; vertical-align: middle; margin: 0 0.2em 0.4ex; text-align: center}
 .fraction > span {display: block; padding-top: 0.15em}
 .fraction span.fdn {border-top: thin solid black}
@@ -112,7 +112,7 @@ h1 {text-align:center;}
     </nav>
 	<article>
     <h1>Calculadora de fracciones continuas</h1>
-    <script async="async" type="text/javascript" src="fsquares.js?0108"></script>
+    <script async="async" type="text/javascript" src="fsquares.js?0208"></script>
     <div style='padding:10px;'>
       <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
         <a href="ENGLISH.HTM" itemprop="url">
@@ -277,7 +277,8 @@ h1 {text-align:center;}
           <li> - para resta</li>
           <li> * para multiplicación</li>
           <li> / para división entera</li>
-          <li> ^ para exponenciación</li>
+          <li> % para resto</li>
+          <li> ^ o ** para exponenciación</li>
           <li>
             <B>n!</B>: factorial
           </li>
@@ -288,10 +289,10 @@ h1 {text-align:center;}
             <B>B(n)</B>: número pseudoprimo anterior a <var>n</var>.
           </li>
           <li>
-            <B>F(n)</B>: número de Fibonacci F<sub>n</sub>.
+            <B>F(n)</B>: número de Fibonacci <span role="math" aria-label="F sub n">F<sub><var>n</var></sub></span>.
           </li>
           <li>
-            <B>L(n)</B>: número de Lucas L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub>.
+            <B>L(n)</B>: número de Lucas <span role="math" aria-label="L sub n es igual a F sub n-1 más F sub n+1">L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub></span>.
           </li>
           <li>
             <B>N(n)</B>: número pseudoprimo posterior a <var>n</var>.
@@ -305,7 +306,7 @@ h1 {text-align:center;}
       <p>
         Se puede bajar el código fuente de este programa y el del viejo applet de fracciones continuas desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
       </p>
-	  <p>Escrito por Dario Alpern. Actualizado el 31 de julio de 2016.</p>
+	  <p>Escrito por Dario Alpern. Actualizado el 2 de agosto de 2016.</p>
     </div>
     <div id="result" aria-live="polite"></div>
     <div>
