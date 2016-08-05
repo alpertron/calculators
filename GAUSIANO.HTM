@@ -140,8 +140,47 @@
     <div id="help" aria-live="polite">
 <p>Los enteros gausianos son números complejos que tienen la forma <var>a</var> + <var>b</var>i, donde <var>a</var> y <var>b</var> son números enteros en la recta real.</p>
 <p>Este applet es capaz de factorizar un entero gausiano como un producto de primos gausianos. Esta descomposición es única, si no consideramos el orden de los factores y los primos asociados. Estos conjuntos de primos asociados se obtienen multiplicando un primo por una potencia de i (por eso cada número primo tiene tres asociados). Para eliminar este problema, tomamos el primo tal que a >= |b|.</p>
-<p>La calculadora acepta números de hasta 500 dígitos, pero obsérvese que debe factorizar la norma <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> (algunos números grandes no pueden ser factorizados en un tiempo razonable).</p>
-<p>El valor final debe tener 500 o menos dígitos, los resultados intermedios deben tener como máximo 2000 dígitos y en el caso de divisiones, el dividendo debe ser múltiplo del divisor.
+<h2>Cómo factorizar enteros gausianos</h2>
+<p>Un comcepto importante necesario para la factorización de enteros gausianos es la norma. Ésta se define como: <span role="math" aria-label="norma de a más b i es igual a a al cuadrado más b al cuadrado">N(<var>a</var>+<var>b</var><var>i</var>) = <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup></span>.
+<p>El producto de la norma de dos enteros gausianos es igual a la norma del producto de estos números como se muestra a continuación:</p>
+<p>N(<var>a</var>+<var>b</var><var>i</var>) N(<var>c</var>+<var>d</var><var>i</var>) =
+(<var>a</var><sup>2</sup> + <var>b</var><sup>2</sup>) (<var>c</var><sup>2</sup> + <var>d</var><sup>2</sup>) =
+(<var>a</var><var>c</var>)<sup>2</sup> + (<var>b</var><var>d</var>)<sup>2</sup> + (<var>a</var><var>d</var>)<sup>2</sup> + (<var>b</var><var>c</var>)<sup>2</sup> = 
+(<var>a</var><var>c</var>)<sup>2</sup> - 2<var>a</var><var>b</var><var>c</var><var>d</var> + (<var>b</var><var>d</var>)<sup>2</sup> + (<var>a</var><var>d</var>)<sup>2</sup> + 2<var>a</var><var>b</var><var>c</var><var>d</var> + (<var>b</var><var>c</var>)<sup>2</sup> = 
+(<var>a</var><var>c</var>-<var>b</var><var>d</var>)<sup>2</sup> + (<var>a</var><var>d</var>+<var>b</var><var>c</var>)<sup>2</sup> =
+N((<var>a</var><var>c</var>-<var>b</var><var>d</var>)+(<var>a</var><var>d</var>+<var>b</var><var>c</var>)<var>i</var>) =
+N(<var>a</var>(<var>c</var>+<var>d</var><var>i</var>) + <var>b</var>(-<var>d</var>+<var>c</var><var>i</var>)) =
+N(<var>a</var>(<var>c</var>+<var>d</var><var>i</var>) + <var>b</var><var>i</var>(<var>c</var>+<var>d</var><var>i</var>)) =
+N((<var>a</var>+<var>b</var><var>i</var>) (<var>c</var>+<var>d</var><var>i</var>))</p>
+
+<p>En la penúltima expresión nos valemos de la propiedad <var>i</var><sup>2</sup> = -1.</p>
+
+<p>Esto significa que como primer paso para factorizar números gausianos, debemos hallar los factores primos de su norma, así obtenemos las normas de los factores del número original.</p>
+<p>El segundo paso consiste en obtener los factores a partir de las normas halladas.</p>
+<p>Existen tres casos:</p>
+<ol>
+<li>El factor primo <var>p</var> de la norma es 2: en este caso los factores primos del entero gausiano pueden ser 1+i o 1-i (hay que probar cuál divide al número).</li>
+<li>El factor primo <var>p</var> de la norma es múltiplo de 4 más 3: este valor no se puede expresar como suma de dos cuadrados, así que <var>p</var> no es una norma, pero <var>p</var><sup>2</sup> sí lo es.
+Como <var>p</var><sup>2</sup> = <var>p</var><sup>2</sup> + 0<sup>2</sup>, y no existe una norma prima que divida <var>p</var><sup>2</sup>, el número <var>p</var> + 0<var>i</var> es un primo gausiano, y deberemos descartar el factor repetido <var>p</var>.
+<li>El factor primo <var>p</var> de la norma es múltiplo de 4 más 1: este número se puede expresar como suma de dos cuadrados utilizando los métodos explicados en la página de <a href="https://www.alpertron.com.ar/4CUADR.HTM">suma de cuadrados</a>.
+Si <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, entonces deberemos verificar si <var>m</var> + <var>n</var><var>i</var> o <var>m</var> &minus; <var>n</var><var>i</var> son divisores del número gausiano original.</li>
+</ol>
+<p>¿Por qué un número que es múltiplo de 4 más 3 no puede expresarse como suma de cuadrados? Esto se debe a que el cuadrado de un número par es múltiplo de 4 y el cuadrado de un número impar es múltiplo de 4 más 1. De esta manera obtenemos:</p>
+<ul>
+<li>par<sup>2</sup> + par<sup>2</sup> = múltiplo de 4</li>
+<li>par<sup>2</sup> + impar<sup>2</sup> = múltiplo de 4 más 1</li>
+<li>impar<sup>2</sup> + par<sup>2</sup> = múltiplo de 4 más 1</li>
+<li>impar<sup>2</sup> + impar<sup>2</sup> = múltiplo de 4 más 2</li>
+</ul>
+<p>Así que bajo ninguna circunstancia una suma de dos cuadrados puede ser múltiplo de 4 más 3.</p>
+<p>Por supuesto el primer paso es mucho más complicado que el segundo. Esto es porque no conocemos métodos eficientes de factorización de números enteros.</p>
+<p>Ejemplo: factorizar el entero gausiano 440 &minus; 55i</p>
+<p>La norma es 440<sup>2</sup> + 55<sup>2</sup> = 196625 = 5 &times; 5 &times; 5 &times; 11 &times; 11 &times; 13</p>
+<p>Tanto 5 como 13 son múltiplos de 4 más 1 mientras que 11 es múltiplo de 4 más 3. Podemos valernos de 5 = 2<sup>2</sup> + 1<sup>2</sup> y 13 = 3<sup>2</sup> + 2<sup>2</sup></p>
+<p>Como 11 es un primo gausiano, podemos dividir el número original por 11 y hallamos el cociente 44 &minus; 5i.</p>
+<p>Para los tres factores de la norma iguales a 5, deberemos dividir el resultado del paso anterior 44 &minus; 5i por 2&minus;i o 2+i. Obtenemos: 44 &minus; 5i = (2+i)<sup>2</sup> &times; (2-i) &times; (3 &minus; 2i)</p>
+<p>Para el factor 13 deberemos dividir el resultado del paso antrerior 3 &minus; 2i por 3 + 2i ó 3 &minus; 2i. Por supuesto solo 3 &minus; 2i divide a 3 &minus; 2i.</p>
+<p>La factorización completa es: 440 &minus; 55i = 11 &times; (2 + i)<sup>2</sup> &times; (2 &minus; i) &times; (3 &minus; 2i).</p>
 <h2>Expresiones</h2>
 <p>Para ingresar la parte imaginaria de un entero gausiano podrá utilizar el símbolo <var>i</var>, como por ejemplo en 3+4i.</p>
 <p>Además puede entrar expresiones que usen los siguientes operadores, funciones y paréntesis:</p>
@@ -170,7 +209,7 @@
       <p>
         Puedes bajar el código fuente del programa actual y del viejo applet de factorización de enteros gausianos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
       </p>
-	  <p>Escrito por Dario Alpern. Actualizado el 31 de julio de 2016.</p>
+	  <p>Escrito por Dario Alpern. Actualizado el 4 de agosto de 2016.</p>
     </div>
     <div id="result" aria-live="polite"></div>
     <div>
