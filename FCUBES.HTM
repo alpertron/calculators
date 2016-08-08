@@ -6,7 +6,7 @@
 <meta charset="utf-8" />
 <meta name="keywords" content="waring, number theory" />
 <meta name="description" content="Javascript application that finds the decomposition of a number into cubes. Written by Dario Alpern." />
-<link rel="prefetch" href="fsquaresW.js?0108" />
+<link rel="prefetch" href="fsquaresW.js?0708" />
 <link rel="alternate" hreflang="es" href="SUMCUBOS.HTM" />
 <title>Sum of four cubes</title>
   <style type="text/css" media="print">
@@ -38,6 +38,8 @@
     input#num {margin:5px;width:100%;padding:3px;margin:0px;}
     #applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
     .lf {padding:0.2em; clear:both; width:100%}
+	.offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
+	.bigger {font-size:150%;}
   </style>
  </head>
   <body>
@@ -128,7 +130,7 @@
         <input type="number" id="digits" value="6"/>
         <input type="hidden" id="app" value="2"/>
       </form>
-    <script async="async" type="text/javascript" src="fsquares.js?0108"></script>
+    <script async="async" type="text/javascript" src="fsquares.js?0708"></script>
     <div style='padding:10px;'>
       <div id="help" aria-live="polite">
       <p>This applet finds the decomposition of any integer number not congruent to 4 or 5 (mod 9) into a sum of four cubes.</p>
@@ -136,71 +138,71 @@
       <p>The applet uses the following formulas:</p>
       <ul>
         <li>
-          <span role="math" aria-label="6x is equal to parenthesis x minus 1 close parenthesis cubed plus parenthesis negative x close parenthesis cubed plus parenthesis negative x close parenthesis cubed plus parenthesis x plus 1 close parenthesis cubed">6x = (x &minus; 1)<SUP>3</SUP> + (&minus;x)<SUP>3</SUP> + (&minus;x)<SUP>3</SUP> + (x + 1)<SUP>3</SUP></span>
+          6x = <span class="offscr">parenthesis</span>(x &minus; 1<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;x<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;x<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(x + 1<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="6x plus 3 is equal to x cubed plus parenthesis negative x plus 4 close parenthesis cubed plus parenthesis 2x minus 5 close parenthesis cubed plus parenthesis negative 2x plus 4 close parenthesis cubed">6x + 3 = x<SUP>3</SUP> + (&minus;x + 4)<SUP>3</SUP> + (2x &minus; 5)<SUP>3</SUP> + (&minus;2x + 4)<SUP>3</SUP></span>
+          6x + 3 = x<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;x + 4<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(2x &minus; 5<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;2x + 4<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="18x plus 1 is equal to parenthesis 2x plus 14 close parenthesis cubed plus parenthesis negative 2x minus 23 close parenthesis cubed plus parenthesis negative 3x minus 26 close parenthesis cubed plus parenthesis 3x plus 30 close parenthesis cubed">18x + 1 = (2x + 14)<SUP>3</SUP> + (&minus;2x &minus; 23)<SUP>3</SUP> + (&minus;3x &minus; 26)<SUP>3</SUP> + (3x + 30)<SUP>3</SUP></span>
+          18x + 1 = <span class="offscr">parenthesis</span>(2x + 14<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;2x &minus; 23<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;3x &minus; 26<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(3x + 30<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="18x plus 7 is equal to parenthesis x plus 2 close parenthesis cubed plus parenthesis 6x minus 1 close parenthesis cubed plus parenthesis 8x minus 2 close parenthesis cubed plus parenthesis negative 9x plus 2 close parenthesis cubed">18x + 7 = (x + 2)<SUP>3</SUP> + (6x &minus; 1)<SUP>3</SUP> + (8x &minus; 2)<SUP>3</SUP> + (&minus;9x + 2)<SUP>3</SUP></span>
+          18x + 7 = <span class="offscr">parenthesis</span>(x + 2<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(6x &minus; 1<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(8x &minus; 2<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;9x + 2<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="18x plus 8 is equal to parenthesis x minus 5 close parenthesis cubed plus parenthesis negative x plus 14 close parenthesis cubed plus parenthesis negative 3x plus 29 close parenthesis cubed plus parenthesis 3x minus 30 close parenthesis cubed">18x + 8 = (x &minus; 5)<SUP>3</SUP> + (&minus;x + 14)<SUP>3</SUP> + (&minus;3x + 29)<SUP>3</SUP> + (3x &minus; 30)<SUP>3</SUP></span>
+          18x + 8 = <span class="offscr">parenthesis</span>(x &minus; 5<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;x + 14<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;3x + 29<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(3x &minus; 30<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="54x plus 20 is equal to parenthesis 3x minus 11 close parenthesis cubed plus parenthesis negative 3x plus 10 close parenthesis cubed plus parenthesis x plus 2 close parenthesis cubed plus parenthesis negative x plus 7 close parenthesis cubed">54x + 20 = (3x &minus; 11)<SUP>3</SUP> + (&minus;3x + 10)<SUP>3</SUP> + (x + 2)<SUP>3</SUP> + (&minus;x + 7)<SUP>3</SUP></span>
+          54x + 20 = <span class="offscr">parenthesis</span>(3x &minus; 11<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;3x + 10<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(x + 2<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;x + 7<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="72x plus 56 is equal to parenthesis negative 9x plus 4 close parenthesis cubed plus parenthesis x plus 4 close parenthesis cubed plus parenthesis 6x minus 2 close parenthesis cubed plus parenthesis 8x minus 4 close parenthesis cubed">72x + 56 = (&minus;9x + 4)<SUP>3</SUP> + (x + 4)<SUP>3</SUP> + (6x &minus; 2)<SUP>3</SUP> + (8x &minus; 4)<SUP>3</SUP></span>
+          72x + 56 = <span class="offscr">parenthesis</span>(&minus;9x + 4<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(x + 4<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(6x &minus; 2<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(8x &minus; 4<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="108x plus 2 is equal to parenthesis negative x minus 22 close parenthesis cubed plus parenthesis x plus 4 close parenthesis cubed plus parenthesis negative 3x minus 41 close parenthesis cubed plus parenthesis 3x plus 43 close parenthesis cubed">108x + 2 = (&minus;x &minus; 22)<SUP>3</SUP> + (x + 4)<SUP>3</SUP> + (&minus;3x &minus; 41)<SUP>3</SUP> + (3x + 43)<SUP>3</SUP></span>
+          108x + 2 = <span class="offscr">parenthesis</span>(&minus;x &minus; 22<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(x + 4<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;3x &minus; 41<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(3x + 43<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="216x plus 92 is equal to parenthesis 3x minus 164 close parenthesis cubed plus parenthesis negative 3x plus 160 close parenthesis cubed plus parenthesis x minus 35 close parenthesis cubed plus parenthesis negative x plus 71 close parenthesis cubed">216x + 92 = (3x &minus; 164)<SUP>3</SUP> + (&minus;3x + 160)<SUP>3</SUP> + (x &minus; 35)<SUP>3</SUP> + (&minus;x + 71)<SUP>3</SUP></span>
+          216x + 92 = <span class="offscr">parenthesis</span>(3x &minus; 164<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;3x + 160<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(x &minus; 35<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;x + 71<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="270x plus 146 is equal to parenthesis negative 60x plus 91 close parenthesis cubed plus parenthesis negative 3x plus 13 close parenthesis cubed plus parenthesis 22x minus 37 close parenthesis cubed plus parenthesis 59x minus 89 close parenthesis cubed">270x + 146 = (&minus;60x + 91)<SUP>3</SUP> + (&minus;3x + 13)<SUP>3</SUP> + (22x &minus; 37)<SUP>3</SUP> + (59x &minus; 89)<SUP>3</SUP></span>
+          270x + 146 = <span class="offscr">parenthesis</span>(&minus;60x + 91<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;3x + 13<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(22x &minus; 37<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(59x &minus; 89<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="270x plus 200 is equal to parenthesis 3x plus 259 close parenthesis cubed plus parenthesis negative 3x minus 254 close parenthesis cubed plus parenthesis x plus 62 close parenthesis cubed plus parenthesis negative x minus 107 close parenthesis cubed">270x + 200 = (3x + 259)<SUP>3</SUP> + (&minus;3x &minus; 254)<SUP>3</SUP> + (x + 62)<SUP>3</SUP> + (&minus;x &minus; 107)<SUP>3</SUP></span>
+          270x + 200 = <span class="offscr">parenthesis</span>(3x + 259<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;3x &minus; 254<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(x + 62<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;x &minus; 107<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="270x plus 218 is equal to parenthesis negative 3x minus 56 close parenthesis cubed plus parenthesis 3x plus 31 close parenthesis cubed plus parenthesis negative 5x minus 69 close parenthesis cubed plus parenthesis 5x plus 78 close parenthesis cubed">270x + 218 = (&minus;3x &minus; 56)<SUP>3</SUP> + (3x + 31)<SUP>3</SUP> + (&minus;5x &minus; 69)<SUP>3</SUP> + (5x + 78)<SUP>3</SUP></span>
+          270x + 218 = <span class="offscr">parenthesis</span>(&minus;3x &minus; 56<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(3x + 31<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;5x &minus; 69<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(5x + 78<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="432x plus 380 is equal to parenthesis negative 3x plus 64 close parenthesis cubed plus parenthesis 3x minus 80 close parenthesis cubed plus parenthesis 2x minus 29 close parenthesis cubed plus parenthesis negative 2x plus 65 close parenthesis cubed">432x + 380 = (&minus;3x + 64)<SUP>3</SUP> + (3x &minus; 80)<SUP>3</SUP> + (2x &minus; 29)<SUP>3</SUP> + (&minus;2x + 65)<SUP>3</SUP></span>
+          432x + 380 = <span class="offscr">parenthesis</span>(&minus;3x + 64<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(3x &minus; 80<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(2x &minus; 29<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;2x + 65<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="540x plus 38 is equal to parenthesis 5x minus 285 close parenthesis cubed plus parenthesis negative 5x plus 267 close parenthesis cubed plus parenthesis 3x minus 140 close parenthesis cubed plus parenthesis negative 3x plus 190 close parenthesis cubed">540x + 38 = (5x &minus; 285)<SUP>3</SUP> + (&minus;5x + 267)<SUP>3</SUP> + (3x &minus; 140)<SUP>3</SUP> + (&minus;3x + 190)<SUP>3</SUP></span>
+          540x + 38 = <span class="offscr">parenthesis</span>(5x &minus; 285<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;5x + 267<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(3x &minus; 140<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;3x + 190<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="810x plus 56 is equal to parenthesis 5x minus 755 close parenthesis cubed plus parenthesis negative 5x plus 836 close parenthesis cubed plus parenthesis 9x minus 1445 close parenthesis cubed plus parenthesis negative 9x plus 1420 close parenthesis cubed">810x + 56 = (5x &minus; 755)<SUP>3</SUP> + (&minus;5x + 836)<SUP>3</SUP> + (9x &minus; 1445)<SUP>3</SUP> + (&minus;9x + 1420)<SUP>3</SUP></span>
+          810x + 56 = <span class="offscr">parenthesis</span>(5x &minus; 755<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;5x + 836<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(9x &minus; 1445<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;9x + 1420<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="1080x plus 380 is equal to parenthesis negative x minus 1438 close parenthesis cubed plus parenthesis x plus 1258 close parenthesis cubed plus parenthesis negative 3x minus 4037 close parenthesis cubed plus parenthesis 3x plus 4057 close parenthesis cubed">1080x + 380 = (&minus;x &minus; 1438)<SUP>3</SUP> + (x + 1258)<SUP>3</SUP> + (&minus;3x &minus; 4037)<SUP>3</SUP> + (3x + 4057)<SUP>3</SUP></span>
+          1080x + 380 = <span class="offscr">parenthesis</span>(&minus;x &minus; 1438<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(x + 1258<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;3x &minus; 4037<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(3x + 4057<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="1620x plus 1334 is equal to parenthesis negative 5x minus 3269 close parenthesis cubed plus parenthesis 5x plus 3107 close parenthesis cubed plus parenthesis negative 9x minus 5714 close parenthesis cubed plus parenthesis 9x plus 5764 close parenthesis cubed">1620x + 1334 = (&minus;5x &minus; 3269)<SUP>3</SUP> + (5x + 3107)<SUP>3</SUP> + (&minus;9x &minus; 5714)<SUP>3</SUP> + (9x + 5764)<SUP>3</SUP></span>
+          1620x + 1334 = <span class="offscr">parenthesis</span>(&minus;5x &minus; 3269<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(5x + 3107<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;9x &minus; 5714<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(9x + 5764<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="1620x plus 1352 is equal to parenthesis negative 5x plus 434 close parenthesis cubed plus parenthesis 5x minus 353 close parenthesis cubed plus parenthesis 9x minus 722 close parenthesis cubed plus parenthesis negative 9x plus 697 close parenthesis cubed">1620x + 1352 = (&minus;5x + 434)<SUP>3</SUP> + (5x &minus; 353)<SUP>3</SUP> + (9x &minus; 722)<SUP>3</SUP> + (&minus;9x + 697)<SUP>3</SUP></span>
+          1620x + 1352 = <span class="offscr">parenthesis</span>(&minus;5x + 434<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(5x &minus; 353<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(9x &minus; 722<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;9x + 697<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="2160x plus 362 is equal to parenthesis negative 5x minus 180 close parenthesis cubed plus parenthesis 5x plus 108 close parenthesis cubed plus parenthesis negative 6x minus 149 close parenthesis cubed plus parenthesis 6x plus 199 close parenthesis cubed">2160x + 362 = (&minus;5x &minus; 180)<SUP>3</SUP> + (5x + 108)<SUP>3</SUP> + (&minus;6x &minus; 149)<SUP>3</SUP> + (6x + 199)<SUP>3</SUP></span>
+          2160x + 362 = <span class="offscr">parenthesis</span>(&minus;5x &minus; 180<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(5x + 108<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;6x &minus; 149<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(6x + 199<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
         <li>
-          <span role="math" aria-label="6480x plus 794 is equal to parenthesis negative 5x minus 83 close parenthesis cubed plus parenthesis 5x plus 11 close parenthesis cubed plus parenthesis negative 6x minus 35 close parenthesis cubed plus parenthesis 6x plus 85 close parenthesis cubed">6480x + 794 = (&minus;5x &minus; 83)<SUP>3</SUP> + (5x + 11)<SUP>3</SUP> + (&minus;6x &minus; 35)<SUP>3</SUP> + (6x + 85)<SUP>3</SUP></span>
+          6480x + 794 = <span class="offscr">parenthesis</span>(&minus;5x &minus; 83<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(5x + 11<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;6x &minus; 35<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(6x + 85<span class="offscr">close parenthesis</span>)<span class="bigger">³</span>
         </li>
       </ul>
       <p>
         If n = 164, 596, 1892, 2324, 2756, 4052, 4484 (mod 6480) the following formula is used:
       </p>
       <p>
-        <span role="math" aria-label="54x plus 2 is equal to parenthesis 29484x squared plus 2211x plus 43 close parenthesis cubed plus parenthesis negative 29484x squared minus 2157x minus 41 close parenthesis cubed plus parenthesis 9828x squared plus 485x plus 4 close parenthesis cubed plus parenthesis negative 9828x squared minus 971x minus 22 close parenthesis cubed">54x + 2 = (29484x<SUP>2</SUP> + 2211x + 43)<SUP>3</SUP> + (&minus;29484x<SUP>2</SUP> &minus; 2157x &minus; 41)<SUP>3</SUP> + (9828x<SUP>2</SUP> + 485x + 4)<SUP>3</SUP> + (&minus;9828x<SUP>2</SUP> &minus; 971x &minus; 22)<SUP>3</SUP></span>
+        54x + 2 = <span class="offscr">parenthesis</span>(29484x<span class="bigger">²</span> + 2211x + 43<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;29484x<span class="bigger">²</span> &minus; 2157x &minus; 41<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(9828x<span class="bigger">²</span> + 485x + 4<span class="offscr">close parenthesis</span>)<span class="bigger">³</span> + <span class="offscr">parenthesis</span>(&minus;9828x<span class="bigger">²</span> &minus; 971x &minus; 22<span class="offscr">close parenthesis</span>)<span class="bigger">³</span></span>
       </p>
       <p>
         If n = 254, 902, 1442, 1874, 1982, 2414, 3062, 3494, 3602, 4034, 4142, 5114, 5222, 5654, 5762, 6302 (mod 6480) a method due to Demjanenko is used. Notice that the results can have hundreds of digits in this case.

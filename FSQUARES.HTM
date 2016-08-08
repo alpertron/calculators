@@ -6,7 +6,7 @@
 <meta charset="utf-8" />
 <meta name="keywords" content="Waring, number theory, Lagrange's theorem" />
 <meta name="description" content="Javascript application that finds the decomposition of a number into squares. Written by Dario Alpern." />
-<link rel="prefetch" href="fsquaresW.js?0108" />
+<link rel="prefetch" href="fsquaresW.js?0708" />
 <link rel="alternate" hreflang="es" href="SUMCUAD.HTM" />
 <title>Sum of four squares</title>
   <style type="text/css" media="print">
@@ -38,6 +38,7 @@
     input#num {margin:5px;width:100%;padding:3px;margin:0px;}
     #applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
     .lf {padding:0.2em; clear:both; width:100%}
+	.bigger {font-size:150%;}
   </style>
  </head>
   <body>
@@ -132,12 +133,12 @@
         <input type="hidden" id="app" value="0"/>
       </form>
     </div>
-    <script async="async" type="text/javascript" src="fsquares.js?0108"></script>
+    <script async="async" type="text/javascript" src="fsquares.js?0708"></script>
       <div id="help" aria-live="polite">
         <p>This applet finds the decomposition of any positive number greater than 1 into up to four squares.</p>
         <p>
           Notice that it does not find the prime factorization of the number entered by the user,
-          so some cases where two squares would be enough, it will be represented as a sum of three squares. For example, 10000998089 = 95317<SUP>2</SUP> + 30260<SUP>2</SUP>.
+          so some cases where two squares would be enough, it will be represented as a sum of three squares. For example, 10000998089 = 95317<span class="bigger">²</span> + 30260<span class="bigger">²</span>.
         </p>
         <P>
           Read the <a href="4SQUARES.HTM">methods used in this applet</a>.

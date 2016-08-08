@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="utf-8" />
     <meta name="description" content="Javascript application that finds the continued fraction representation of rational numbers and quadratic irrationalities. Written by Dario Alpern." />
-    <link rel="prefetch" href="fsquaresW.js?0208" />
+    <link rel="prefetch" href="fsquaresW.js?0708" />
     <link rel="alternate" hreflang="es" href="FRACCONT.HTM" />
     <title>Continued fraction calculator</title>
     <style type="text/css" media="print">
@@ -46,6 +46,7 @@ h1 {text-align:center;}
 .sqrtout {white-space: nowrap}
 .sqrtout:before {content: "√"}
 .sqrtin {text-decoration:overline}
+.offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
    </style>
   </head>
   <body>
@@ -112,7 +113,7 @@ h1 {text-align:center;}
     </nav>
     <article>
     <h1>Continued Fraction calculator</h1>
-    <script async="async" type="text/javascript" src="fsquares.js?0208"></script>
+    <script async="async" type="text/javascript" src="fsquares.js?0708"></script>
     <div style='padding:10px;'>
       <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
         <a href="ENGLISH.HTM" itemprop="url">
@@ -167,7 +168,7 @@ h1 {text-align:center;}
         Any real number <var>x</var> can be represented uniquely by a continued fraction:
       </p>
       <p class="mysvg">
-	  <span role="math" aria-label="x is equal to a sub 0 plus 1 over a sub 1 plus 1 over a sub 2 plus 1 over a sub 3 plus dots">
+	  <span class="offscr">x is equal to a sub 0 plus 1 over a sub 1 plus 1 over a sub 2 plus 1 over a sub 3 plus etcetera</span>
         <svg height='76.6988pt' version='1.1' viewBox='0 0 159.224 76.6988' width='159.224pt' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
           <defs>
             <path d='M5.688 -4.896C5.304 -4.824 5.16 -4.536 5.16 -4.308C5.16 -4.02 5.388 -3.924 5.556 -3.924C5.916 -3.924 6.168 -4.236 6.168 -4.56C6.168 -5.064 5.592 -5.292 5.088 -5.292C4.356 -5.292 3.948 -4.572 3.84 -4.344C3.564 -5.244 2.82 -5.292 2.604 -5.292C1.38 -5.292 0.732 -3.72 0.732 -3.456C0.732 -3.408 0.78 -3.348 0.864 -3.348C0.96 -3.348 0.984 -3.42 1.008 -3.468C1.416 -4.8 2.22 -5.052 2.568 -5.052C3.108 -5.052 3.216 -4.548 3.216 -4.26C3.216 -3.996 3.144 -3.72 3 -3.144L2.592 -1.5C2.412 -0.78 2.064 -0.12 1.428 -0.12C1.368 -0.12 1.068 -0.12 0.816 -0.276C1.248 -0.36 1.344 -0.72 1.344 -0.864C1.344 -1.104 1.164 -1.248 0.936 -1.248C0.648 -1.248 0.336 -0.996 0.336 -0.612C0.336 -0.108 0.9 0.12 1.416 0.12C1.992 0.12 2.4 -0.336 2.652 -0.828C2.844 -0.12 3.444 0.12 3.888 0.12C5.112 0.12 5.76 -1.452 5.76 -1.716C5.76 -1.776 5.712 -1.824 5.64 -1.824C5.532 -1.824 5.52 -1.764 5.484 -1.668C5.16 -0.612 4.464 -0.12 3.924 -0.12C3.504 -0.12 3.276 -0.432 3.276 -0.924C3.276 -1.188 3.324 -1.38 3.516 -2.172L3.936 -3.804C4.116 -4.524 4.524 -5.052 5.076 -5.052C5.1 -5.052 5.436 -5.052 5.688 -4.896Z' id='let-x'/>
@@ -204,11 +205,11 @@ h1 {text-align:center;}
             <use x='189.531' xlink:href='#dot2' y='118.746'/>
             <use x='194.129' xlink:href='#dot2' y='121.746'/>
           </g>
-        </svg></span>
+        </svg>
       </p>
       <p>where <var>a</var><sub>1</sub>, <var>a</var><sub>2</sub>, <var>a</var><sub>3</sub>, ... are integer numbers greater than zero. A more compact representation is:</p>  
       <p class="mysvg">
-	    <span role="math" aria-label="x is equal to a sub 0 plus double slash a sub 1, a sub 2, a sub 3, etcetera double slash">
+	    <span class="offscr">x is equal to a sub 0 plus double slash a sub 1, a sub 2, a sub 3, etcetera double slash</span>
         <svg height='13.5093pt' version='1.1' viewBox='0 0 153.013 13.5093' width='153.013pt' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
           <defs>
             <path d='M2.34 0.048C2.34 -0.648 2.112 -1.164 1.62 -1.164C1.236 -1.164 1.044 -0.852 1.044 -0.588S1.224 0 1.632 0C1.788 0 1.92 -0.048 2.028 -0.156C2.052 -0.18 2.064 -0.18 2.076 -0.18C2.1 -0.18 2.1 -0.012 2.1 0.048C2.1 0.444 2.028 1.224 1.332 2.004C1.2 2.148 1.2 2.172 1.2 2.196C1.2 2.256 1.26 2.316 1.32 2.316C1.416 2.316 2.34 1.428 2.34 0.048Z' id='comma'/>
@@ -238,10 +239,10 @@ h1 {text-align:center;}
             <use x='180.793' xlink:href='#over' y='66'/>
             <use x='186.668' xlink:href='#over' y='66'/>
           </g>
-        </svg></span>
+        </svg>
       </p>
         <p>
-        If the number to be represented is rational, there is a finite number of terms in the continued fraction. If the number is a quadratic irrationality of the form <span role="math" aria-label="a plus the square root of b over c">
+        If the number to be represented is rational, there is a finite number of terms in the continued fraction. If the number is a quadratic irrationality of the form <span class="offscr">fraction whether the numerator is a plus the square root of b and the denominator is c</span>
 <svg height='16.0902pt' version='1.1' viewBox='0 0 62.7131 16.0902' width='62.7131pt' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
           <defs>
             <path d='M3.9 2.916C3.9 2.88 3.9 2.856 3.696 2.652C2.496 1.44 1.824 -0.54 1.824 -2.988C1.824 -5.316 2.388 -7.32 3.78 -8.736C3.9 -8.844 3.9 -8.868 3.9 -8.904C3.9 -8.976 3.84 -9 3.792 -9C3.636 -9 2.652 -8.136 2.064 -6.96C1.452 -5.748 1.176 -4.464 1.176 -2.988C1.176 -1.92 1.344 -0.492 1.968 0.792C2.676 2.232 3.66 3.012 3.792 3.012C3.84 3.012 3.9 2.988 3.9 2.916Z' id='lpar'/>
@@ -258,7 +259,7 @@ h1 {text-align:center;}
             <use x='101.399' xlink:href='#over' y='66'/>
             <use x='107.274' xlink:href='#ltr-c' y='66'/>
           </g>
-        </svg></span>,
+        </svg>,
         then the continued fraction is periodic. This calculator can find the continued fraction expansions of rational numbers and quadratic irrationalities.
       </p>
       <p>You can type numbers or numerical expressions on the input boxes at the left.</p>
@@ -301,10 +302,10 @@ h1 {text-align:center;}
           <B>B(n)</B>: Previous pseudoprime to <var>n</var>
         </li>
         <li>
-          <B>F(n)</B>: Fibonacci number <span role="math" aria-label="F sub n">F<sub><var>n</var></sub></span>
+          <B>F(n)</B>: Fibonacci number F<sub><span class="offscr"> sub </span><var>n</var></sub>
         </li>
         <li>
-          <B>L(n)</B>: Lucas number <span role="math" aria-label="L sub n equals F sub n-1 plus F sub n+1">L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub></span>
+          <B>L(n)</B>: Lucas number L<sub><span class="offscr"> sub </span><var>n</var></sub> = F<sub><span class="offscr"> sub </span><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub>
         </li>
         <li>
           <B>N(n)</B>: Next pseudoprime to <var>n</var>

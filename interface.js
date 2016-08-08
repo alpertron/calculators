@@ -22,17 +22,10 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker('fsquaresW.js?0208');
+    worker = new Worker('fsquaresW.js?0708');
     worker.onmessage = function(e)
     {
-      if (app < 4)
-      {
-        document.getElementById('output').value = e.data;
-      }
-      else
-      {
-	      document.getElementById('result').innerHTML = e.data;
-      }
+      document.getElementById('result').innerHTML = e.data;
     }
   }
   worker.postMessage(param);
@@ -46,7 +39,7 @@ window.onload = function()
     document.getElementById('input').onkeypress = function(e)
     {
       var output, res;
-	  var digitGroup = document.getElementById('digits').value;
+	    var digitGroup = document.getElementById('digits').value;
       app = document.getElementById('app').value;
       res = document.getElementById('result');
       res.style.display = "block";

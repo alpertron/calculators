@@ -643,6 +643,7 @@ int fsquares(void)
 void fsquaresText(char *input, int groupLen)
 {
   char text[200];
+  char *square = "<span class=\"bigger\">²</span>";
   char *ptrText;
   enum eExprErr rc;
   char *ptrOutput = output;
@@ -669,42 +670,40 @@ void fsquaresText(char *input, int groupLen)
     strcpy(ptrOutput, (lang==0?"<p>User stopped the calculation":"</p>El usuario detuvo el cálculo"));
     return;
   }
-  // Show the number to be decomposed into sum of squares.
+  // Show the number to be decomposed into sum of cubes.
   strcpy(ptrOutput, "<p><var>n</var> = ");
   ptrOutput += strlen(ptrOutput);
-  ptrText = text;
-  Bin2Dec(origNbr, ptrOutput, origNbrLimbs, groupLen);
+  BigInteger2Dec(&ExpressionResult, ptrOutput, groupLen);
   ptrOutput += strlen(ptrOutput);
   // Show whether the number is a sum of 1, 2, 3 or 4 squares.
-  strcpy(ptrOutput, lang ? "</p><p><span role=\"math\" aria-label=\"n es igual a a al cuadrado":
-                           "</p><p><span role=\"math\" aria-label=\"n is equal to a squared");
+  strcpy(ptrOutput, "</p><p><var>n</var> = <var>a</var>");
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrText, "\"><var>n</var> = <var>a</var><sup>2</sup>");
-  ptrText += strlen(ptrText);
+  strcpy(ptrOutput, square);
+  ptrOutput += strlen(ptrOutput);
   if (Mult2Len != 1 || Mult2[0].x != 0)
   {
-    strcpy(ptrOutput, lang ? " más b al cuadrado" : " plus b squared");
+    strcpy(ptrOutput, " + <var>b</var>");
     ptrOutput += strlen(ptrOutput);
-    strcpy(ptrText, " + <var>b</var><sup>2</sup>");
-    ptrText += strlen(ptrText);
+    strcpy(ptrOutput, square);
+    ptrOutput += strlen(ptrOutput);
   }
   if (Mult3Len != 1 || Mult3[0].x != 0)
   {
-    strcpy(ptrOutput, lang ? " más c al cuadrado" : " plus c squared");
+    strcpy(ptrOutput, " + <var>c</var>");
     ptrOutput += strlen(ptrOutput);
-    strcpy(ptrText, " + <var>c</var><sup>2</sup>");
-    ptrText += strlen(ptrText);
+    strcpy(ptrOutput, square);
+    ptrOutput += strlen(ptrOutput);
   }
   if (Mult4Len != 1 || Mult4[0].x != 0)
   {
-    strcpy(ptrOutput, lang ? " más d al cuadrado" : " plus d squared");
+    strcpy(ptrOutput, " + <var>d</var>");
     ptrOutput += strlen(ptrOutput);
-    strcpy(ptrText, " + <var>d</var><sup>2</sup>");
-    ptrText += strlen(ptrText);
+    strcpy(ptrOutput, square);
+    ptrOutput += strlen(ptrOutput);
   }
-  strcpy(ptrOutput, text);
+  strcpy(ptrOutput, "</p><p><span class=\"offscr\">");
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "</span></p>");
+  strcpy(ptrOutput, lang ? " donde: </span>" : " where: </span>");
   ptrOutput += strlen(ptrOutput);
   // Show the decomposition.
   strcpy(ptrOutput, "<p><var>a</var> = ");

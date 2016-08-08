@@ -339,9 +339,8 @@ static int fcubes(BigInteger *pArgument)
 void fcubesText(char *input, int groupLen)
 {
   enum eExprErr rc;
-  char text[200];
-  char *ptrText;
   char *ptrOutput = output;
+  char *cube = "<span class=\"bigger\">³</span>";
   
   rc = ComputeExpression(input, 1, &ExpressionResult);
   if (rc != EXPR_OK)
@@ -364,64 +363,62 @@ void fcubesText(char *input, int groupLen)
     return;
   }
   // Show the number to be decomposed into sum of cubes.
-  ptrText = text;
   strcpy(ptrOutput, "<p><var>n</var> = ");
   ptrOutput += strlen(ptrOutput);
   BigInteger2Dec(&ExpressionResult, ptrOutput, groupLen);
   ptrOutput += strlen(ptrOutput);
   // Show whether the number is a sum of 1, 2, 3 or 4 cubes.
-  strcpy(ptrOutput, lang ? "</p><p><span role=\"math\" aria-label=\"n es igual a a al cubo":
-                           "</p><p><span role=\"math\" aria-label=\"n is equal to a cubed");
+  strcpy(ptrOutput, "</p><p><var>n</var> = <var>a</var>");
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrText, "\"><var>n</var> = <var>a</var><sup>3</sup>");
-  ptrText += strlen(ptrText);
+  strcpy(ptrOutput, cube);
+  ptrOutput += strlen(ptrOutput);
   if (Base2.nbrLimbs != 1 || Base2.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, lang ? " más b al cubo" : " plus b cubed");
+    strcpy(ptrOutput, " + <var>b</var>");
     ptrOutput += strlen(ptrOutput);
-    strcpy(ptrText, " + <var>b</var><sup>3</sup>");
-    ptrText += strlen(ptrText);
+    strcpy(ptrOutput, cube);
+    ptrOutput += strlen(ptrOutput);
   }
   if (Base3.nbrLimbs != 1 || Base3.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, lang ? " más c al cubo" : " plus c cubed");
+    strcpy(ptrOutput, " + <var>c</var>");
     ptrOutput += strlen(ptrOutput);
-    strcpy(ptrText, " + <var>c</var><sup>3</sup>");
-    ptrText += strlen(ptrText);
+    strcpy(ptrOutput, cube);
+    ptrOutput += strlen(ptrOutput);
   }
   if (Base4.nbrLimbs != 1 || Base4.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, lang ? " más d al cubo" : " plus d cubed");
+    strcpy(ptrOutput, " + <var>d</var>");
     ptrOutput += strlen(ptrOutput);
-    strcpy(ptrText, " + <var>d</var><sup>3</sup>");
-    ptrText += strlen(ptrText);
+    strcpy(ptrOutput, cube);
+    ptrOutput += strlen(ptrOutput);
   }
-  strcpy(ptrOutput, text);
+  strcpy(ptrOutput, "</p><p><span class=\"offscr\">");
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "</span></p>");
+  strcpy(ptrOutput, lang ? " donde: </span>" : " where: </span>");
   ptrOutput += strlen(ptrOutput);
   // Show the decomposition.
-  strcpy(ptrOutput, "<p><var>a</var> = ");
+  strcpy(ptrOutput, "<var>a</var> = ");
   ptrOutput += strlen(ptrOutput);
   BigInteger2Dec(&Base1, ptrOutput, groupLen);
   ptrOutput += strlen(ptrOutput);
   if (Base2.nbrLimbs != 1 || Base2.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, "</p><p><var>b</var> = ");
+    strcpy(ptrOutput, "</p><p><span class=\"offscr\">, </span><var>b</var> = ");
     ptrOutput += strlen(ptrOutput);
     BigInteger2Dec(&Base2, ptrOutput, groupLen);
     ptrOutput += strlen(ptrOutput);
   }
   if (Base3.nbrLimbs != 1 || Base3.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, "</p><p><var>c</var> = ");
+    strcpy(ptrOutput, "</p><p><span class=\"offscr\">, </span><var>c</var> = ");
     ptrOutput += strlen(ptrOutput);
     BigInteger2Dec(&Base3, ptrOutput, groupLen);
     ptrOutput += strlen(ptrOutput);
   }
   if (Base4.nbrLimbs != 1 || Base4.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, "</p><p><var>d</var> = ");
+    strcpy(ptrOutput, "</p><p><span class=\"offscr\">, </span><var>d</var> = ");
     ptrOutput += strlen(ptrOutput);
     BigInteger2Dec(&Base4, ptrOutput,  groupLen);
     ptrOutput += strlen(ptrOutput);

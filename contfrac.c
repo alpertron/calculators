@@ -27,7 +27,6 @@ static char *ptrOutput;
 static void ShowRational(BigInteger *pNum, BigInteger *pDen);
 static int groupLen;
 extern int lang;
-
 static void showText(char *text)
 {
   strcpy(ptrOutput, text);
@@ -42,33 +41,23 @@ static void ContFrac(void)
 
   ptrOutput = output;
   // Show formula.
-  strcpy(ptrOutput, "<p><var>x</var> = <span class=\"fraction\" role=\"math\" aria-label=\"");
+  showText("<p><var>x</var> = <span class=\"fraction\"><span class=\"offscr\">");
+  strcpy(ptrOutput, lang ? " la fracción cuyo numerador es </span>" : " the fraction whose numerator is </span>");
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, lang ? " la fracción cuyo numerador es " : " the fraction whose numerator is ");
-  ptrOutput += strlen(ptrOutput);
+  showText("<span class=\"fup\">");
   BigInteger2Dec(&num, ptrOutput, groupLen);    // Show numerator.
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, lang ? " más la raíz cuadrada de " : " plus the square root of ");
-  ptrOutput += strlen(ptrOutput);
+//  strcpy(ptrOutput, lang ? " más la raíz cuadrada de " : " plus the square root of ");
+//  ptrOutput += strlen(ptrOutput);
+  showText(" + <span class=\"sqrtout\"><span class=\"sqrtin\">");
   BigInteger2Dec(&delta, ptrOutput, groupLen);  // Show radicand.
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, lang ? " y el denominador es " : " and the denominator is ");
+  showText("</span></span></span><span class=\"bar\"> </span><span class=\"fdn\"><span class=\"offscr\">");
+  strcpy(ptrOutput, lang ? " y el denominador es </span>" : " and the denominator is </span>");
   ptrOutput += strlen(ptrOutput);
   BigInteger2Dec(&den, ptrOutput, groupLen);    // Show denominator.
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, ".\"><span class=\"fup\">");
-  ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&num, ptrOutput, groupLen);    // Show numerator.
-  ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, " + <span class=\"sqrtout\"><span class=\"sqrtin\">");
-  ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&delta, ptrOutput, groupLen);  // Show radicand.
-  ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "</span></span></span><span class=\"bar\"> / </span><span class=\"fdn\">");
-  ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&den, ptrOutput, groupLen);    // Show denominator.
-  ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "</span></span></p>");
+  showText("</span></span></span></p>");
   // Validate input.
   if (den.nbrLimbs==1 && den.limbs[0].x==0)
   {
@@ -81,8 +70,10 @@ static void ContFrac(void)
                    "<p>The number is not real, so it does not have continued fraction expansion.</p>");
     return;
   }
-  showText(lang?"<p><span role=\"math\" aria-label=\"El desarrollo en fracción continua de x es\"><var>x</var> = </span>":
-    "<p><span role=\"math\" aria-label=\"The expansion in continued fraction of x is\"><var>x</var> = </span>");
+  showText("<p><span class=\"offscr\">");
+  showText(lang?"El desarrollo en fracción continua de":
+                "The expansion in continued fraction of");
+  showText(" </span><var>x</var> = ");
   if (delta.nbrLimbs == 1 && delta.limbs[0].x == 0)
   {   /* Rational number */
     ShowRational(&num, &den);
@@ -181,8 +172,8 @@ static void ContFrac(void)
           BigIntSubt(&biM, &intSqrt, &Temp);
           if (Temp.sign == SIGN_NEGATIVE || (Temp.nbrLimbs == 1 && Temp.limbs[0].x == 0))
           {
-            showText("<span aria-label=\"");
-            showText(lang ? "inicio del período\">" : "start periodic part\">");
+            showText("<span class=\"offscr\">");
+            showText(lang ? "inicio del período" : "start periodic part");
             showText("</span><span class=\"bold\">");
             CopyBigInt(&P, &biP);
             CopyBigInt(&K, &P);
