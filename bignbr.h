@@ -73,6 +73,8 @@ void modPow(limb *base, limb *exp, int nbrGroupsExp, limb *power);
 void modPowLimb(limb *base, limb *exp, limb *power);
 void AdjustModN(limb *Nbr, limb *TestNbr, int NumberLength);
 int fsquares(void);
+void AddBigInt(limb *pAddend1, limb *pAddend2, limb *pSum, int nbrLimbs);
+void SubtractBigInt(limb *pAddend1, limb *pAddend2, limb *pSum, int nbrLimbs);
 void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum);
 void BigIntSubt(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum);
 void BigIntNegate(BigInteger *pSrc, BigInteger *pDest);
@@ -105,4 +107,6 @@ void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, /*@in@*/BigInteger *bigin
 void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len);
 void ComputeInversePower2(/*@in@*/limb *value, /*@out@*/limb *result, /*@out@*/limb *aux);
 int BigNbrIsZero(limb *value);
+double logBigNbr(BigInteger *pBigNbr);
+
 

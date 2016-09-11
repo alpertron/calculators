@@ -25,7 +25,8 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 // These defines are valid for factoring up to 10^110.
 #define MAX_NBR_FACTORS 13
 #define MAX_PRIMES 150000
-
+#define MAX_LIMBS_SIQS 25
+#define LENGTH_OFFSET 0
 typedef struct
 {
   int value;
@@ -48,7 +49,8 @@ typedef struct
 
 unsigned char SIQSInfoText[300];
 int numberThreads;
-int NumberLength;
+extern int NumberLength;
+int matrixBLength;
 long trialDivisions;
 long smoothsFound;
 long totalPartials;
@@ -62,15 +64,14 @@ int multiplier;
 int nbrFactorsA;
 long afact[MAX_NBR_FACTORS];
 long startTime;
-int TestNbr[20];
-int TestNbr2[20];
-int biQuadrCoeff[20];
-int biLinearDelta[20][20];
+int TestNbr2[MAX_LIMBS_SIQS];
+int biQuadrCoeff[MAX_LIMBS_SIQS];
+int biLinearDelta[MAX_LIMBS_SIQS][MAX_LIMBS_SIQS];
 static long largePrimeUpperBound;
-static unsigned char log2;
+static unsigned char logar2;
 static int aindex[MAX_NBR_FACTORS];
 //  static Thread threadArray[];
-static PrimeSieveData primeSieveData[MAX_PRIMES];
+static PrimeSieveData primeSieveData[MAX_PRIMES+3];
 static PrimeTrialDivisionData primeTrialDivisionData[MAX_PRIMES];
 static int span;
 static int indexMinFactorA;
@@ -80,10 +81,11 @@ static long oldSeed;
 static long newSeed = 0;
 static int NbrPolynomials;
 static int SieveLimit;
-static int vectLeftHandSide[][];
-static int matrixPartial[][];
+static int matrixPartial[MAX_PRIMES * 8][MAX_LIMBS_SIQS/2+4];
+static int matrixPartialLength;
+static int vectLeftHandSide[MAX_PRIMES+50][MAX_LIMBS_SIQS];
 static int matrixPartialHashIndex[2048];
-static int matrixB[][];
+static int matrixB[MAX_PRIMES + 50][MAX_LIMBS_SIQS];
 static int amodq[MAX_NBR_FACTORS];
 static int tmodqq[MAX_NBR_FACTORS];
 static unsigned char threshold;
@@ -91,25 +93,37 @@ static int smallPrimeUpperLimit;
 static int firstLimit;
 static int secondLimit;
 static int thirdLimit;
-static int vectExpParity[];
+static int vectExpParity[MAX_PRIMES + 50];
+static int matrixAV[MAX_PRIMES];
+static int matrixV[MAX_PRIMES];
+static int matrixV1[MAX_PRIMES];
+static int matrixV2[MAX_PRIMES];
+static int matrixXmY[MAX_PRIMES];
+static int newColumns[MAX_PRIMES];
+// Matrix that holds temporary data
+static int matrixCalc3[MAX_PRIMES];
+static int matrixTemp2[MAX_PRIMES];
 static int nbrPrimes2;
 static BigInteger factorSiqs;
 static unsigned char onlyFactoring;
-PrimeSieveData firstPrimeSieveData[];
-static long DosALa32 = (long)1 << 32;
-static long DosALa31 = (long)1 << 31;
-static long DosALa31_1 = DosALa31 - 1;
-static double dDosALa31 = (double)DosALa31;
-static double dDosALa62 = dDosALa31 * dDosALa31;
-static long Mi = 1000000000;
+PrimeSieveData *firstPrimeSieveData;
+static unsigned char InsertNewRelation(
+  int *rowMatrixB,
+  int *biT, int *biU, int *biR,
+  int NumberLength);
+static void BlockLanczos(void);
+void ShowSIQSStatus(int matrixBLength, long startTime);
 
-Siqs(factorApplet ecmApplet, unsigned char onlyFactoring, int NumberLength,
-  int numberThreads)
+static void ChSignBigNbr(int *nbr, int length)
 {
-  this.ecmApplet = ecmApplet;
-  this.onlyFactoring = onlyFactoring;
-  this.NumberLength = NumberLength;
-  this.numberThreads = numberThreads;
+  int carry = 0;
+  int ctr;
+  for (ctr = 0; ctr < length; ctr++)
+  {
+    carry -= *nbr;
+    *nbr &= -LIMB_RANGE;
+    carry >>= BITS_PER_GROUP;
+  }
 }
 
 static void PerformSiqsSieveStage(PrimeSieveData primeSieveData[],
@@ -117,9 +131,9 @@ static void PerformSiqsSieveStage(PrimeSieveData primeSieveData[],
   int nbrPrimes, int nbrPrimes2,
   int firstLimit, int secondLimit, int thirdLimit,
   int smallPrimeUpperLimit, unsigned char threshold,
-  int multiplier, int SieveLimit, int amodq[],
-  int PolynomialIndex, int aindex[],
-  int nbrFactorsA, unsigned char log2, int biLinearCoeff[],
+  int multiplier, int amodq[],
+  int PolynomialIndex,
+  int nbrFactorsA, limb *biLinearCoeff,
   int NumberLength)
 {
   short logPrimeEvenPoly, logPrimeOddPoly;
@@ -140,16 +154,16 @@ static void PerformSiqsSieveStage(PrimeSieveData primeSieveData[],
   }
   if (polyadd = ((F1 & 2) != 0))   // Adjust value of B as appropriate
   {                                // according to the Gray code.
-    ecm.AddBigNbr(biLinearCoeff, biLinearDelta[indexFactorA], biLinearCoeff,
+    AddBigNbr(biLinearCoeff, biLinearDelta[indexFactorA], biLinearCoeff,
       NumberLength);
-    ecm.AddBigNbr(biLinearCoeff, biLinearDelta[indexFactorA], biLinearCoeff,
+    AddBigNbr(biLinearCoeff, biLinearDelta[indexFactorA], biLinearCoeff,
       NumberLength);
   }
   else
   {
-    ecm.SubtractBigNbr(biLinearCoeff, biLinearDelta[indexFactorA],
+    SubtractBigNbr(biLinearCoeff, biLinearDelta[indexFactorA],
       biLinearCoeff, NumberLength);
-    ecm.SubtractBigNbr(biLinearCoeff, biLinearDelta[indexFactorA],
+    SubtractBigNbr(biLinearCoeff, biLinearDelta[indexFactorA],
       biLinearCoeff, NumberLength);
   }
   indexFactorA--;
@@ -159,23 +173,23 @@ static void PerformSiqsSieveStage(PrimeSieveData primeSieveData[],
     rowPrimeSieveData->Bainv2[indexFactorA];
   if (((rowPrimeSieveData->soln1 += F1) & 1) == 0)
   {
-    SieveArray[0] = (short)(log2 - threshold);
+    SieveArray[0] = (short)(logar2 - threshold);
     SieveArray[1] = (short)(-threshold);
   }
   else
   {
     SieveArray[0] = (short)(-threshold);
-    SieveArray[1] = (short)(log2 - threshold);
+    SieveArray[1] = (short)(logar2 - threshold);
   }
   if (((rowPrimeSieveData->soln1 + rowPrimeSieveData->Bainv2_0) & 1) == 0)
   {
-    SieveArray[0] += (short)((log2 - threshold) << 8);
+    SieveArray[0] += (short)((logar2 - threshold) << 8);
     SieveArray[1] += (short)((-threshold) << 8);
   }
   else
   {
     SieveArray[0] += (short)((-threshold) << 8);
-    SieveArray[1] += (short)((log2 - threshold) << 8);
+    SieveArray[1] += (short)((logar2 - threshold) << 8);
   }
   F2 = 2;
   index = 2;
@@ -191,10 +205,10 @@ static void PerformSiqsSieveStage(PrimeSieveData primeSieveData[],
     F4 = F2;
     while (F4 * 2 <= F3)
     {
-      System.arraycopy(SieveArray, 0, SieveArray, F4, F4);
+      memcpy(&SieveArray[F4], &SieveArray[0], F4*sizeof(SieveArray[0]));
       F4 *= 2;
     }
-    System.arraycopy(SieveArray, 0, SieveArray, F4, F3 - F4);
+    memcpy(&SieveArray[F4], &SieveArray[0], (F3-F4) * sizeof(SieveArray[0]));
     if (F3 == X1 + 1)
     {
       break;
@@ -883,7 +897,7 @@ static void PerformSiqsSieveStage(PrimeSieveData primeSieveData[],
 static long PerformTrialDivision(PrimeSieveData primeSieveData[],
   PrimeTrialDivisionData primeTrialDivisionData[],
   int nbrPrimes, int rowMatrixBbeforeMerge[],
-  int aindex[], int nbrFactorsA, int index2,
+  int nbrFactorsA, int index2,
   int biDividend[], int rowSquares[],
   int NumberLength, int biT[],
   unsigned char oddPolynomial)
@@ -903,8 +917,8 @@ static long PerformTrialDivision(PrimeSieveData primeSieveData[],
   int indexFactorA = 0;
   int nbrColumns = rowMatrixBbeforeMerge[0];
   unsigned char fullRemainder;
-  PrimeSieveData rowPrimeSieveData;
-  PrimeTrialDivisionData rowPrimeTrialDivisionData;
+  PrimeSieveData *rowPrimeSieveData;
+  PrimeTrialDivisionData *rowPrimeTrialDivisionData;
   switch (NumberLength)
   {
   case 7:
@@ -1011,35 +1025,35 @@ static long PerformTrialDivision(PrimeSieveData primeSieveData[],
         }
         else
         {
-          rowPrimeTrialDivisionData = primeTrialDivisionData[index];
-          Divisor = rowPrimeTrialDivisionData.value;
+          rowPrimeTrialDivisionData = &primeTrialDivisionData[index];
+          Divisor = rowPrimeTrialDivisionData->value;
           divis = (int)Divisor;
           switch (NumberLength)
           {
           case 7:
-            Rem = biR6*rowPrimeTrialDivisionData.exp6 +
-              biR5*rowPrimeTrialDivisionData.exp5 +
-              biR4*rowPrimeTrialDivisionData.exp4 +
-              biR3*rowPrimeTrialDivisionData.exp3 +
-              biR2*rowPrimeTrialDivisionData.exp2 + Divid;
+            Rem = biR6*rowPrimeTrialDivisionData->exp6 +
+              biR5*rowPrimeTrialDivisionData->exp5 +
+              biR4*rowPrimeTrialDivisionData->exp4 +
+              biR3*rowPrimeTrialDivisionData->exp3 +
+              biR2*rowPrimeTrialDivisionData->exp2 + Divid;
             break;
           case 6:
-            Rem = biR5*rowPrimeTrialDivisionData.exp5 +
-              biR4*rowPrimeTrialDivisionData.exp4 +
-              biR3*rowPrimeTrialDivisionData.exp3 +
-              biR2*rowPrimeTrialDivisionData.exp2 + Divid;
+            Rem = biR5*rowPrimeTrialDivisionData->exp5 +
+              biR4*rowPrimeTrialDivisionData->exp4 +
+              biR3*rowPrimeTrialDivisionData->exp3 +
+              biR2*rowPrimeTrialDivisionData->exp2 + Divid;
             break;
           case 5:
-            Rem = biR4*rowPrimeTrialDivisionData.exp4 +
-              biR3*rowPrimeTrialDivisionData.exp3 +
-              biR2*rowPrimeTrialDivisionData.exp2 + Divid;
+            Rem = biR4*rowPrimeTrialDivisionData->exp4 +
+              biR3*rowPrimeTrialDivisionData->exp3 +
+              biR2*rowPrimeTrialDivisionData->exp2 + Divid;
             break;
           case 4:
-            Rem = biR3*rowPrimeTrialDivisionData.exp3 +
-              biR2*rowPrimeTrialDivisionData.exp2 + Divid;
+            Rem = biR3*rowPrimeTrialDivisionData->exp3 +
+              biR2*rowPrimeTrialDivisionData->exp2 + Divid;
             break;
           default:
-            Rem = biR2*rowPrimeTrialDivisionData.exp2 + Divid;
+            Rem = biR2*rowPrimeTrialDivisionData->exp2 + Divid;
             break;
           }
           if (Rem%divis != 0)
@@ -1188,7 +1202,7 @@ static long PerformTrialDivision(PrimeSieveData primeSieveData[],
                     if (nbr < Divid)
                     {
                       if (median == left &&
-                        congruencesFound >= matrixB.length)
+                        congruencesFound >= matrixBLength)
                       {
                         return 0;
                       }
@@ -1263,35 +1277,35 @@ static long PerformTrialDivision(PrimeSieveData primeSieveData[],
         }
         else
         {
-          rowPrimeTrialDivisionData = primeTrialDivisionData[index];
-          Divisor = rowPrimeTrialDivisionData.value;
+          rowPrimeTrialDivisionData = &primeTrialDivisionData[index];
+          Divisor = rowPrimeTrialDivisionData->value;
           divis = (int)Divisor;
           switch (NumberLength)
           {
           case 7:
-            Rem = biR6*rowPrimeTrialDivisionData.exp6 +
-              biR5*rowPrimeTrialDivisionData.exp5 +
-              biR4*rowPrimeTrialDivisionData.exp4 +
-              biR3*rowPrimeTrialDivisionData.exp3 +
-              biR2*rowPrimeTrialDivisionData.exp2 + Divid;
+            Rem = biR6*rowPrimeTrialDivisionData->exp6 +
+              biR5*rowPrimeTrialDivisionData->exp5 +
+              biR4*rowPrimeTrialDivisionData->exp4 +
+              biR3*rowPrimeTrialDivisionData->exp3 +
+              biR2*rowPrimeTrialDivisionData->exp2 + Divid;
             break;
           case 6:
-            Rem = biR5*rowPrimeTrialDivisionData.exp5 +
-              biR4*rowPrimeTrialDivisionData.exp4 +
-              biR3*rowPrimeTrialDivisionData.exp3 +
-              biR2*rowPrimeTrialDivisionData.exp2 + Divid;
+            Rem = biR5*rowPrimeTrialDivisionData->exp5 +
+              biR4*rowPrimeTrialDivisionData->exp4 +
+              biR3*rowPrimeTrialDivisionData->exp3 +
+              biR2*rowPrimeTrialDivisionData->exp2 + Divid;
             break;
           case 5:
-            Rem = biR4*rowPrimeTrialDivisionData.exp4 +
-              biR3*rowPrimeTrialDivisionData.exp3 +
-              biR2*rowPrimeTrialDivisionData.exp2 + Divid;
+            Rem = biR4*rowPrimeTrialDivisionData->exp4 +
+              biR3*rowPrimeTrialDivisionData->exp3 +
+              biR2*rowPrimeTrialDivisionData->exp2 + Divid;
             break;
           case 4:
-            Rem = biR3*rowPrimeTrialDivisionData.exp3 +
-              biR2*rowPrimeTrialDivisionData.exp2 + Divid;
+            Rem = biR3*rowPrimeTrialDivisionData->exp3 +
+              biR2*rowPrimeTrialDivisionData->exp2 + Divid;
             break;
           default:
-            Rem = biR2*rowPrimeTrialDivisionData.exp2 + Divid;
+            Rem = biR2*rowPrimeTrialDivisionData->exp2 + Divid;
             break;
           }
           if (Rem%divis != 0)
@@ -1440,7 +1454,7 @@ static long PerformTrialDivision(PrimeSieveData primeSieveData[],
                     if (nbr < Divid)
                     {
                       if (median == left &&
-                        congruencesFound >= matrixB.length)
+                        congruencesFound >= matrixBLength)
                       {
                         return 0;
                       }
@@ -1479,7 +1493,7 @@ static long PerformTrialDivision(PrimeSieveData primeSieveData[],
   return Divid;
 }
 
-static void mergeArrays(int aindex[], int nbrFactorsA,
+static void mergeArrays(int nbrFactorsA,
   int rowMatrixB[], int rowMatrixBeforeMerge[],
   PrimeTrialDivisionData primeTrialDivisionData[],
   int rowSquares[])
@@ -1518,77 +1532,75 @@ static void mergeArrays(int aindex[], int nbrFactorsA,
 }
 
 static void SmoothRelationFound(
-  unsigned char positive, int matrixB[][],
-  int rowMatrixB[], int rowMatrixBbeforeMerge[],
-  int SieveLimit, int vectExpParity[],
-  int vectLeftHandSide[][], int index2,
-  PrimeTrialDivisionData primeTrialDivisionData[],
-  long startTime, int aindex[], int nbrFactorsA,
-  int rowSquares[], int biLinearCoeff[],
-  int NumberLength, int biT[], int biU[],
-  int biR[], unsigned char oddPolynomial)
+  unsigned char positive,
+  int *rowMatrixB, int *rowMatrixBbeforeMerge,
+  int *vectExpParity,
+  int index2,
+  PrimeTrialDivisionData *primeTrialDivisionData,
+  long startTime, int nbrFactorsA,
+  int *rowSquares, limb *biLinearCoeff,
+  int NumberLength, int *biT, int *biU,
+  int *biR, unsigned char oddPolynomial)
 {
   int index;
   long D;
   int nbrSquares;
-  if (congruencesFound == matrixB.length)
+  if (congruencesFound == matrixBLength)
   {
     return;            // All congruences already found.
   }
   // Add all elements of aindex array to the rowMatrixB array discarding
   // duplicates.
-  mergeArrays(aindex, nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge,
+  mergeArrays(nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge,
     primeTrialDivisionData, rowSquares);
   nbrSquares = rowSquares[0];
-  ecm.LongToBigNbr(1, biR, NumberLength);
-  ecm.LongToBigNbr(positive ? 1 : -1, biT, NumberLength);
-  ecm.MultBigNbrByLong(biQuadrCoeff, index2 - SieveLimit, biU,
+  LongToBigNbr(1, biR, NumberLength);
+  LongToBigNbr(positive ? 1 : -1, biT, NumberLength);
+  MultBigNbrByLong(biQuadrCoeff, index2 - SieveLimit, biU,
     NumberLength);                     // Ax
-  ecm.AddBigNbr(biU, biLinearCoeff, biU, NumberLength);         // Ax+B
+  AddBigNbr(biU, biLinearCoeff, biU, NumberLength);         // Ax+B
   if (oddPolynomial)
   {
-    ecm.SubtractBigNbr(biU, biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
-    ecm.SubtractBigNbr(biU, biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
+    SubtractBigNbr(biU, biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
+    SubtractBigNbr(biU, biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
   }
   if ((biU[NumberLength - 1] & 0x40000000) != 0)
   {                                        // If number is negative
-    ecm.ChSignBigNbr(biU, NumberLength);   // make it positive.
+    ChSignBigNbr(biU, NumberLength);   // make it positive.
   }
   for (index = 1; index < nbrSquares; index++)
   {
     D = rowSquares[index];
     if (D == multiplier)
     {
-      ecm.AddBigNbr(biU, TestNbr, biU, NumberLength);
-      ecm.DivBigNbrByLong(biU, D, biU, NumberLength);
+      AddBigNbr(biU, TestNbr, biU, NumberLength);
+      DivBigNbrByLong(biU, D, biU, NumberLength);
     }
     else
     {
-      ecm.MultBigNbrByLong(biR, D, biR, NumberLength);
+      MultBigNbrByLong(biR, D, biR, NumberLength);
     }
   }
-  if (InsertNewRelation(matrixB, rowMatrixB, vectLeftHandSide, biT,
-    biU, biR, NumberLength))
+  if (InsertNewRelation(rowMatrixB, biT, biU, biR, NumberLength))
   {
     smoothsFound++;
-    ShowSIQSStatus(matrixB.length, startTime);
+    ShowSIQSStatus(matrixBLength, startTime);
   }
   return;
 }
 
 static void PartialRelationFound(
-  unsigned char positive, int matrixB[][],
-  int rowMatrixB[], int rowMatrixBbeforeMerge[],
-  int SieveLimit, int vectExpParity[],
-  int vectLeftHandSide[][], int index2,
-  PrimeTrialDivisionData primeTrialDivisionData[],
-  long startTime, int aindex[], int nbrFactorsA,
-  long Divid, int rowPartials[],
-  int matrixPartial[][], int matrixPartialHashIndex[],
-  int indexMinFactorA, int rowSquares[],
-  int biLinearCoeff[], int NumberLength, int biT[],
-  int biR[], int biU[], int biV[],
-  int indexFactorsA[], unsigned char oddPolynomial)
+  unsigned char positive,
+  int *rowMatrixB, int *rowMatrixBbeforeMerge,
+  int *vectExpParity,
+  int index2,
+  PrimeTrialDivisionData *primeTrialDivisionData,
+  long startTime, int nbrFactorsA,
+  long Divid, int *rowPartials,
+  int *rowSquares,
+  limb *biLinearCoeff, int NumberLength, int *biT,
+  int *biR, int *biU, int *biV,
+  int *indexFactorsA, unsigned char oddPolynomial)
 {
   int index;
   int expParity;
@@ -1597,7 +1609,7 @@ static void PartialRelationFound(
   int prev;
   long seed;
   int hashIndex;
-  int rowPartial[];
+  int *rowPartial;
   int newDivid = (int)Divid;    // This number is greater than zero.
   int indexFactorA = 0;
   int oldDivid;
@@ -1607,9 +1619,9 @@ static void PartialRelationFound(
   long biT2, biT3, biT4, biT5, biT6;
   int squareRootSize = NumberLength / 2 + 1;
   int nbrColumns;
-  PrimeTrialDivisionData rowPrimeTrialDivisionData;
+  PrimeTrialDivisionData *rowPrimeTrialDivisionData;
 
-  if (congruencesFound == matrixB.length)
+  if (congruencesFound == matrixBLength)
   {
     return;
   }
@@ -1635,24 +1647,24 @@ static void PartialRelationFound(
         biV[index] = 0;
       }
       seed = rowPartial[squareRootSize + 2];
-      getFactorsOfA(seed, nbrFactorsA, indexFactorsA, indexMinFactorA);
-      ecm.LongToBigNbr(newDivid, biR, NumberLength);
+      getFactorsOfA(seed, nbrFactorsA, indexFactorsA);
+      LongToBigNbr(newDivid, biR, NumberLength);
       nbrFactorsPartial = 0;
       // biT = old (Ax+B)^2.
-      ecm.MultBigNbr(biV, biV, biT, NumberLength);
+      MultBigNbr(biV, biV, biT, NumberLength);
       // biT = old (Ax+B)^2 - N.
-      ecm.SubtractBigNbr(biT, TestNbr, biT, NumberLength);
+      SubtractBigNbr(biT, TestNbr, biT, NumberLength);
       if (oldDivid < 0)
       {
         rowPartials[nbrFactorsPartial++] = 0; // Insert -1 as a factor.
       }
       if (biT[NumberLength - 1] >= 0x40000000)
       {
-        ecm.ChSignBigNbr(biT, NumberLength);   // Make it positive.
+        ChSignBigNbr(biT, NumberLength);   // Make it positive.
       }
       NumberLengthDivid = NumberLength;
       // The number is multiple of the big prime, so divide by it.
-      ecm.DivBigNbrByLong(biT, newDivid, biT, NumberLengthDivid);
+      DivBigNbrByLong(biT, newDivid, biT, NumberLengthDivid);
       if (biT[NumberLengthDivid - 1] == 0 &&
         biT[NumberLengthDivid - 2] < 0x40000000)
       {
@@ -1660,7 +1672,7 @@ static void PartialRelationFound(
       }
       for (index = 0; index < nbrFactorsA; index++)
       {
-        ecm.DivBigNbrByLong(biT,
+        DivBigNbrByLong(biT,
           primeTrialDivisionData[indexFactorsA[index]].value, biT,
           NumberLengthDivid);
         if (biT[NumberLengthDivid - 1] == 0 &&
@@ -1686,36 +1698,36 @@ static void PartialRelationFound(
             indexFactorA++;
           }
         }
-        rowPrimeTrialDivisionData = primeTrialDivisionData[index];
-        Divisor = rowPrimeTrialDivisionData.value;
+        rowPrimeTrialDivisionData = &primeTrialDivisionData[index];
+        Divisor = rowPrimeTrialDivisionData->value;
         for (;;)
         {
           switch (NumberLengthDivid)
           {
           case 7:
-            Rem = biT6*rowPrimeTrialDivisionData.exp6 +
-              biT5*rowPrimeTrialDivisionData.exp5 +
-              biT4*rowPrimeTrialDivisionData.exp4 +
-              biT3*rowPrimeTrialDivisionData.exp3 +
-              biT2*rowPrimeTrialDivisionData.exp2 + DividLSDW;
+            Rem = biT6*rowPrimeTrialDivisionData->exp6 +
+              biT5*rowPrimeTrialDivisionData->exp5 +
+              biT4*rowPrimeTrialDivisionData->exp4 +
+              biT3*rowPrimeTrialDivisionData->exp3 +
+              biT2*rowPrimeTrialDivisionData->exp2 + DividLSDW;
             break;
           case 6:
-            Rem = biT5*rowPrimeTrialDivisionData.exp5 +
-              biT4*rowPrimeTrialDivisionData.exp4 +
-              biT3*rowPrimeTrialDivisionData.exp3 +
-              biT2*rowPrimeTrialDivisionData.exp2 + DividLSDW;
+            Rem = biT5*rowPrimeTrialDivisionData->exp5 +
+              biT4*rowPrimeTrialDivisionData->exp4 +
+              biT3*rowPrimeTrialDivisionData->exp3 +
+              biT2*rowPrimeTrialDivisionData->exp2 + DividLSDW;
             break;
           case 5:
-            Rem = biT4*rowPrimeTrialDivisionData.exp4 +
-              biT3*rowPrimeTrialDivisionData.exp3 +
-              biT2*rowPrimeTrialDivisionData.exp2 + DividLSDW;
+            Rem = biT4*rowPrimeTrialDivisionData->exp4 +
+              biT3*rowPrimeTrialDivisionData->exp3 +
+              biT2*rowPrimeTrialDivisionData->exp2 + DividLSDW;
             break;
           case 4:
-            Rem = biT3*rowPrimeTrialDivisionData.exp3 +
-              biT2*rowPrimeTrialDivisionData.exp2 + DividLSDW;
+            Rem = biT3*rowPrimeTrialDivisionData->exp3 +
+              biT2*rowPrimeTrialDivisionData->exp2 + DividLSDW;
             break;
           case 3:
-            Rem = biT2*rowPrimeTrialDivisionData.exp2 + DividLSDW;
+            Rem = biT2*rowPrimeTrialDivisionData->exp2 + DividLSDW;
             break;
           default:
             Rem = DividLSDW;
@@ -1726,7 +1738,7 @@ static void PartialRelationFound(
             break;
           }
           expParity = 1 - expParity;
-          ecm.DivBigNbrByLong(biT, Divisor, biT, NumberLengthDivid);
+          DivBigNbrByLong(biT, Divisor, biT, NumberLengthDivid);
           DividLSDW = ((long)biT[1] << 31) + biT[0];
           biT2 = biT[2];
           biT3 = biT[3];
@@ -1755,28 +1767,26 @@ static void PartialRelationFound(
           rowPartials[nbrFactorsPartial++] = index;
         }
       }
-      ecm.MultBigNbrByLong(biQuadrCoeff, index2 - SieveLimit, biT,
+      MultBigNbrByLong(biQuadrCoeff, index2 - SieveLimit, biT,
         NumberLength);
-      ecm.AddBigNbr(biT, biLinearCoeff, biT, NumberLength); // biT = Ax+B
+      AddBigNbr(biT, biLinearCoeff, biT, NumberLength); // biT = Ax+B
       if (oddPolynomial)
       {                                                     // Ax+B (odd)
-        ecm.SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
-        ecm.SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
+        SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
+        SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
       }
       if ((biT[NumberLength - 1] & 0x40000000) != 0)
       {                                        // If number is negative
-        ecm.ChSignBigNbr(biT, NumberLength);   // make it positive.
+        ChSignBigNbr(biT, NumberLength);   // make it positive.
       }
       // biU = Product of old Ax+B times new Ax+B
-      ecm.MultBigNbrModN(biV, biT, biU, TestNbr, NumberLength);
+      MultBigNbrModN(biV, biT, biU, TestNbr, NumberLength);
       // Add all elements of aindex array to the rowMatrixB array discarding
       // duplicates.
-      mergeArrays(aindex, nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge,
+      mergeArrays(nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge,
         primeTrialDivisionData, rowSquares);
       rowMatrixBbeforeMerge[0] = nbrColumns = rowMatrixB[0];
-      System.arraycopy(rowMatrixB, 1,                      // Source
-        rowMatrixBbeforeMerge, 1,           // Destination
-        nbrColumns);                        // Length
+      memcpy(&rowMatrixBbeforeMerge[1], &rowMatrixB[1], nbrColumns*sizeof(int));
       mergeArrays(rowPartials, nbrFactorsPartial,
         rowMatrixB, rowMatrixBbeforeMerge, primeTrialDivisionData,
         rowSquares);
@@ -1786,20 +1796,19 @@ static void PartialRelationFound(
         D = rowSquares[index];
         if (D != multiplier)
         {
-          ecm.MultBigNbrByLong(biR, D, biR, NumberLength);
+          MultBigNbrByLong(biR, D, biR, NumberLength);
         }
         else
         {
-          ecm.AddBigNbr(biU, TestNbr, biU, NumberLength);
-          ecm.DivBigNbrByLong(biU, multiplier, biU, NumberLength);
+          AddBigNbr(biU, TestNbr, biU, NumberLength);
+          DivBigNbrByLong(biU, multiplier, biU, NumberLength);
         }
       }
       if (rowMatrixB[0] > 1 &&
-        InsertNewRelation(matrixB, rowMatrixB, vectLeftHandSide, biT,
-          biU, biR, NumberLength))
+        InsertNewRelation(rowMatrixB, biT, biU, biR, NumberLength))
       {
         partialsFound++;
-        ShowSIQSStatus(matrixB.length, startTime);
+        ShowSIQSStatus(matrixBLength, startTime);
       }
       return;
     }
@@ -1809,9 +1818,9 @@ static void PartialRelationFound(
       hashIndex = rowPartial[1]; // Get next index for same hash.
     }
   } /* end while */
-  synchronized(firstPrimeSieveData)
+//  synchronized(firstPrimeSieveData)
   {
-    if (hashIndex == -1 && nbrPartials < matrixPartial.length)
+    if (hashIndex == -1 && nbrPartials < matrixPartialLength)
     { // No match and partials table is not full.
       // Add partial to table of partials.
       if (prev >= 0)
@@ -1825,33 +1834,33 @@ static void PartialRelationFound(
       rowPartial = matrixPartial[nbrPartials];
       // Add all elements of aindex array to the rowMatrixB array discarding
       // duplicates.
-      mergeArrays(aindex, nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge,
+      mergeArrays(nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge,
         primeTrialDivisionData, rowSquares);
-      ecm.LongToBigNbr(Divid, biR, NumberLength);
+      LongToBigNbr(Divid, biR, NumberLength);
       nbrSquares = rowSquares[0];
       for (index = 1; index < nbrSquares; index++)
       {
         D = rowSquares[index];
-        ecm.MultBigNbrByLongModN(biR, D, biR, TestNbr, NumberLength);
+        MultBigNbrByLongModN(biR, D, biR, TestNbr, NumberLength);
         if (D == multiplier)
         {
-          ecm.DivBigNbrByLong(biU, D, biU, NumberLength);
+          DivBigNbrByLong(biU, D, biU, NumberLength);
         }
       }
       rowPartial[0] = (positive ? newDivid : -newDivid);
       // Indicate last index with this hash.
       rowPartial[1] = -1;
-      ecm.MultBigNbrByLong(biQuadrCoeff, index2 - SieveLimit, biT,
+      MultBigNbrByLong(biQuadrCoeff, index2 - SieveLimit, biT,
         NumberLength);
-      ecm.AddBigNbr(biT, biLinearCoeff, biT, NumberLength); // biT = Ax+B
+      AddBigNbr(biT, biLinearCoeff, biT, NumberLength); // biT = Ax+B
       if (oddPolynomial)
       {                                                     // Ax+B (odd)
-        ecm.SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
-        ecm.SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
+        SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
+        SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
       }
       if ((biT[NumberLength - 1] & 0x40000000) != 0)
       {                      // If square root is negative convert to positive.
-        ecm.ChSignBigNbr(biT, NumberLength);
+        ChSignBigNbr(biT, NumberLength);
       }
       for (index = 0; index < squareRootSize; index++)
       {
@@ -1864,19 +1873,14 @@ static void PartialRelationFound(
   return;
 }
 
-static void SieveLocationHit(int matrixB[][],
-  int rowMatrixB[], int rowMatrixBbeforeMerge[],
-  int SieveLimit, int vectExpParity[],
-  int vectLeftHandSide[][], int index2,
+static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
+  int vectExpParity[],
+  int index2,
   PrimeSieveData primeSieveData[],
   PrimeTrialDivisionData primeTrialDivisionData[],
-  long startTime, int aindex[],
-  int nbrFactorsA, int rowPartials[],
-  int matrixPartial[][], int matrixPartialHashIndex[],
-  long afact[],
-  long largePrimeUpperBound, int indexMinFactorA,
+  long startTime, int nbrFactorsA, int rowPartials[],
   int multiplier, int rowSquares[], int biDividend[],
-  int NumberLength, int biT[], int biLinearCoeff[],
+  int NumberLength, int biT[], limb *biLinearCoeff,
   int biR[], int biU[], int biV[],
   int indexFactorsA[], unsigned char oddPolynomial)
 {
@@ -1887,17 +1891,17 @@ static void SieveLocationHit(int matrixB[][],
   int nbrColumns;
 
   trialDivisions++;
-  ecm.MultBigNbrByLong(biQuadrCoeff, index2 - SieveLimit, biT,
+  MultBigNbrByLong(biQuadrCoeff, index2 - SieveLimit, biT,
     NumberLength);                       // Ax
-  ecm.AddBigNbr(biT, biLinearCoeff, biT, NumberLength);     // Ax+B
+  AddBigNbr(biT, biLinearCoeff, biT, NumberLength);     // Ax+B
   if (oddPolynomial)
   {                                                         // Ax+B (odd)
-    ecm.SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
-    ecm.SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
+    SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
+    SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
   }
-  ecm.MultBigNbr(biT, biT, biDividend, NumberLength);       // (Ax+B)^2
+  MultBigNbr(biT, biT, biDividend, NumberLength);       // (Ax+B)^2
                                                             // To factor: (Ax+B)^2-N
-  ecm.SubtractBigNbr(biDividend, TestNbr, biDividend, NumberLength);
+  SubtractBigNbr(biDividend, TestNbr, biDividend, NumberLength);
   /* factor biDividend */
 
   NumberLengthDivid = NumberLength; /* Number length for dividend */
@@ -1905,12 +1909,12 @@ static void SieveLocationHit(int matrixB[][],
   if (biDividend[NumberLengthDivid - 1] >= 0x40000000)
   { /* Negative */
     positive = FALSE;
-    ecm.ChSignBigNbr(biDividend, NumberLengthDivid); // Convert to positive
+    ChSignBigNbr(biDividend, NumberLengthDivid); // Convert to positive
   }
   rowSquares[0] = 1;
   for (index = 0; index < nbrFactorsA; index++)
   {
-    ecm.DivBigNbrByLong(biDividend, afact[index], biDividend,
+    DivBigNbrByLong(biDividend, afact[index], biDividend,
       NumberLengthDivid);
     if ((biDividend[NumberLengthDivid - 1] == 0
       && biDividend[NumberLengthDivid - 2] < 0x40000000))
@@ -1926,16 +1930,16 @@ static void SieveLocationHit(int matrixB[][],
   rowMatrixBbeforeMerge[0] = nbrColumns;
   Divid = PerformTrialDivision(primeSieveData, primeTrialDivisionData,
     nbrPrimes, rowMatrixBbeforeMerge,
-    aindex, nbrFactorsA, index2, biDividend,
+    nbrFactorsA, index2, biDividend,
     rowSquares, NumberLengthDivid, biT,
     oddPolynomial);
   if (Divid == 1)
   { // Smooth relation found.
-    SmoothRelationFound(positive, matrixB, rowMatrixB,
+    SmoothRelationFound(positive, rowMatrixB,
       rowMatrixBbeforeMerge,
-      SieveLimit, vectExpParity, vectLeftHandSide,
+      vectExpParity,
       index2, primeTrialDivisionData, startTime,
-      aindex, nbrFactorsA, rowSquares,
+      nbrFactorsA, rowSquares,
       biLinearCoeff, NumberLength, biT, biU, biR,
       oddPolynomial);
   }
@@ -1943,13 +1947,12 @@ static void SieveLocationHit(int matrixB[][],
   {
     if (Divid > 0 && Divid < largePrimeUpperBound)
     {
-      PartialRelationFound(positive, matrixB, rowMatrixB,
+      PartialRelationFound(positive, rowMatrixB,
         rowMatrixBbeforeMerge,
-        SieveLimit, vectExpParity, vectLeftHandSide,
+        vectExpParity,
         index2, primeTrialDivisionData, startTime,
-        aindex, nbrFactorsA, Divid, rowPartials,
-        matrixPartial, matrixPartialHashIndex,
-        indexMinFactorA, rowSquares, biLinearCoeff,
+        nbrFactorsA, Divid, rowPartials,
+        rowSquares, biLinearCoeff,
         NumberLength, biT, biR, biU, biV,
         indexFactorsA, oddPolynomial);
     }
@@ -1957,8 +1960,7 @@ static void SieveLocationHit(int matrixB[][],
   return;
 }
 
-static long getFactorsOfA(long seed, int nbrFactorsA, int aindex[],
-  int indexMinFactorA)
+static long getFactorsOfA(long seed, int nbrFactorsA)
 {
   int index, index2, i, tmp;
   for (index = 0; index < nbrFactorsA; index++)
@@ -2009,8 +2011,8 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
   long FactorBase;
   int currentPrime;
   int NbrMod;
-  PrimeSieveData rowPrimeSieveData;
-  PrimeTrialDivisionData rowPrimeTrialDivisionData;
+  PrimeSieveData *rowPrimeSieveData;
+  PrimeTrialDivisionData *rowPrimeTrialDivisionData;
   long Power2, SqrRootMod, fact;
   int index;
   long D, E, Q, V, W, X, Y, Z, T1, V1, W1, Y1;
@@ -2021,62 +2023,46 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
     47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };
   double adjustment[sizeof(arrmult)/sizeof(arrmult[0])];
   int halfCurrentPrime;
-  double dNumberToFactor;
+  double dNumberToFactor, dlogNumberToFactor;
   ValuesSieved = 0;
-  int NumberLength = this.NumberLength;
 
   nbrThreadFinishedPolySet = 0;
-  factorSiqs = null;
-  threadArray = new Thread[numberThreads];
+//  threadArray = new Thread[numberThreads];
   nbrPartials = 0;
   congruencesFound = 0;
-  Temp = log(NbrToFactor.doubleValue());
+  Temp = logBigNbr(&NbrToFactor);
   nbrPrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.318);
   SieveLimit = (int)exp(8.5 + 0.015 * Temp) & 0xFFFFFFF8;
-  nbrFactorsA = NbrToFactor.bitLength() / 28 + 1;
+  nbrFactorsA = (int)(Temp*0.025 + 1);
   NbrPolynomials = (1 << (nbrFactorsA - 1)) - 1;
-  NumberLength = ecm.BigNbrToBigInt(NbrToFactor, TestNbr);
-  TestNbr[NumberLength++] = 0;
-  System.arraycopy(TestNbr, 0,          // Source
-    TestNbr2, 0,         // Destination
-    NumberLength);       // Length
+  NumberLength = BigNbrToBigInt(NbrToFactor, TestNbr);
+  TestNbr[NumberLength++].x = 0;
+  memcpy(TestNbr2, TestNbr, NumberLength*sizeof(limb));
   for (i = sizeof(matrixPartialHashIndex)/sizeof(matrixPartialHashIndex[0]) - 1; i >= 0; i--)
   {
     matrixPartialHashIndex[i] = -1;
   }
-  SIQSInfoText = ecmApplet.InitSIQSStrings(NbrToFactor, SieveLimit);
+//  SIQSInfoText = InitSIQSStrings(NbrToFactor, SieveLimit);
 
   /************************/
   /* Compute startup data */
   /************************/
 
-  for (index = primeSieveData.length - 1; index >= 0; index--)
-  {
-    primeSieveData[index] = new PrimeSieveData();
-  }
-  for (index = primeSieveData.length - 1; index >= 0; index--)
-  {
-    primeSieveData[index].Bainv2 = new int[nbrFactorsA - 1];
-  }
-  for (index = primeTrialDivisionData.length - 1; index >= 0; index--)
-  {
-    primeTrialDivisionData[index] = new PrimeTrialDivisionData();
-  }
   /* search for best Knuth-Schroeppel multiplier */
   bestadjust = -10.0e0;
   primeSieveData[0].value = 1;
   primeTrialDivisionData[0].value = 1;
   rowPrimeSieveData = &primeSieveData[1];
-  rowPrimeTrialDivisionData = primeTrialDivisionData[1];
+  rowPrimeTrialDivisionData = &primeTrialDivisionData[1];
   rowPrimeSieveData->value = 2;
-  rowPrimeTrialDivisionData.value = 2;
+  rowPrimeTrialDivisionData->value = 2;
   // (2^31)^(j+1) mod 2
-  rowPrimeTrialDivisionData.exp2 =
-    rowPrimeTrialDivisionData.exp3 = rowPrimeTrialDivisionData.exp4 =
-    rowPrimeTrialDivisionData.exp5 = rowPrimeTrialDivisionData.exp6 = 0;
+  rowPrimeTrialDivisionData->exp2 =
+    rowPrimeTrialDivisionData->exp3 = rowPrimeTrialDivisionData->exp4 =
+    rowPrimeTrialDivisionData->exp5 = rowPrimeTrialDivisionData->exp6 = 0;
 
-  NbrMod = NbrToFactor. and (BigInteger.valueOf(7)).intValue();
-  for (j = 0; j<arrmult.length; j++)
+  NbrMod = NbrToFactor.limbs[0].x & 7;
+  for (j = 0; j<sizeof(arrmult)/sizeof(arrmult[0]); j++)
   {
     int mod = (NbrMod * arrmult[j]) & 7;
     adjustment[j] = 0.34657359; /*  (ln 2)/2  */
@@ -2089,40 +2075,38 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
   currentPrime = 3;
   while (currentPrime < 10000)
   {
-    NbrMod = (int)ecm.RemDivBigNbrByLong(TestNbr, currentPrime,
+    NbrMod = (int)RemDivBigNbrByLong(TestNbr, currentPrime,
       NumberLength);
     halfCurrentPrime = (currentPrime - 1) / 2;
-    int jacobi = (int)modPow(NbrMod, halfCurrentPrime, currentPrime);
+    int jacobi = (int)intModPow(NbrMod, halfCurrentPrime, currentPrime);
     double dp = (double)currentPrime;
     double logp = log(dp) / dp;
-    for (j = 0; j<arrmult.length; j++)
+    for (j = 0; j<sizeof(arrmult)/sizeof(arrmult[0]); j++)
     {
       if (arrmult[j] == currentPrime)
       {
         adjustment[j] += logp;
       }
-      else if (jacobi * (int)modPow(arrmult[j], halfCurrentPrime,
+      else if (jacobi * (int)intModPow(arrmult[j], halfCurrentPrime,
         currentPrime) % currentPrime == 1)
       {
         adjustment[j] += 2 * logp;
       }
     }
-  calculate_new_prime1:
-    for (;;)
+    do
     {
       currentPrime += 2;
       for (Q = 3; Q * Q <= currentPrime; Q += 2)
       { /* Check if currentPrime is prime */
         if (currentPrime % Q == 0)
         {
-          continue calculate_new_prime1;
+          break;  /* Composite */
         }
       }
-      break; /* Prime found */
-    }
+    } while (Q * Q <= currentPrime);
   }  /* end while */
   multiplier = 1;
-  for (j = 0; j<arrmult.length; j++)
+  for (j = 0; j<sizeof(arrmult)/sizeof(arrmult[0]); j++)
   {
     if (adjustment[j] > bestadjust)
     { /* find biggest adjustment */
@@ -2130,42 +2114,39 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
       multiplier = arrmult[j];
     }
   } /* end while */
-  ecm.MultBigNbrByLong(TestNbr2, multiplier, TestNbr, NumberLength);
-  matrixPartial = new int[nbrPrimes * 8][NumberLength / 2 + 4];
+  MultBigNbrByLong(TestNbr2, multiplier, TestNbr, NumberLength);
   FactorBase = currentPrime;
-  matrixB = new int[nbrPrimes + 50][];
-  vectLeftHandSide = new int[matrixB.length][];
-  vectExpParity = new int[matrixB.length];
-  rowPrimeSieveData->modsqrt = NbrToFactor.testBit(0) ? 1 : 0;
-  switch ((int)TestNbr[0] & 0x07)
+  matrixBLength = nbrPrimes + 50;
+  rowPrimeSieveData->modsqrt = (NbrToFactor.limbs[0].x & 1) ? 1 : 0;
+  switch ((int)TestNbr[0].x & 0x07)
   {
   case 1:
-    log2 = 3;
+    logar2 = (unsigned char)3;
     break;
   case 5:
-    log2 = 1;
+    logar2 = (unsigned char)1;
     break;
   default:
-    log2 = 1;
+    logar2 = (unsigned char)1;
     break;
   }
   if (multiplier != 1 && multiplier != 2)
   {
     rowPrimeSieveData = &primeSieveData[2];
-    rowPrimeTrialDivisionData = primeTrialDivisionData[2];
+    rowPrimeTrialDivisionData = &primeTrialDivisionData[2];
     rowPrimeSieveData->value = multiplier;
-    rowPrimeTrialDivisionData.value = multiplier;
+    rowPrimeTrialDivisionData->value = multiplier;
     rowPrimeSieveData->modsqrt = 0;
-    D = (1L << 62) % multiplier;
-    rowPrimeTrialDivisionData.exp2 = (int)D;  // (2^31)^2 mod multiplier
-    D = (D << 31) % multiplier;
-    rowPrimeTrialDivisionData.exp3 = (int)D;  // (2^31)^3 mod multiplier
-    D = (D << 31) % multiplier;
-    rowPrimeTrialDivisionData.exp4 = (int)D;  // (2^31)^4 mod multiplier
-    D = (D << 31) % multiplier;
-    rowPrimeTrialDivisionData.exp5 = (int)D;  // (2^31)^5 mod multiplier
-    D = (D << 31) % multiplier;
-    rowPrimeTrialDivisionData.exp6 = (int)D;  // (2^31)^6 mod multiplier
+    D = (1L << (2*BITS_PER_GROUP)) % multiplier;
+    rowPrimeTrialDivisionData->exp2 = (int)D;  // (2^31)^2 mod multiplier
+    D = (D << BITS_PER_GROUP) % multiplier;
+    rowPrimeTrialDivisionData->exp3 = (int)D;  // (2^31)^3 mod multiplier
+    D = (D << BITS_PER_GROUP) % multiplier;
+    rowPrimeTrialDivisionData->exp4 = (int)D;  // (2^31)^4 mod multiplier
+    D = (D << BITS_PER_GROUP) % multiplier;
+    rowPrimeTrialDivisionData->exp5 = (int)D;  // (2^31)^5 mod multiplier
+    D = (D << BITS_PER_GROUP) % multiplier;
+    rowPrimeTrialDivisionData->exp6 = (int)D;  // (2^31)^6 mod multiplier
     j = 3;
   }
   else
@@ -2175,36 +2156,36 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
   currentPrime = 3;
   while (j < nbrPrimes)
   { /* select small primes */
-    NbrMod = (int)ecm.RemDivBigNbrByLong(TestNbr, currentPrime,
+    NbrMod = (int)RemDivBigNbrByLong(TestNbr, currentPrime,
       NumberLength);
     if (currentPrime != multiplier &&
-      modPow(NbrMod, (currentPrime - 1) / 2, currentPrime) == 1)
+      intModPow(NbrMod, (currentPrime - 1) / 2, currentPrime) == 1)
     {
       /* use only if Jacobi symbol = 0 or 1 */
       rowPrimeSieveData = &primeSieveData[j];
-      rowPrimeTrialDivisionData = primeTrialDivisionData[j];
+      rowPrimeTrialDivisionData = &primeTrialDivisionData[j];
       rowPrimeSieveData->value = (int)currentPrime;
-      rowPrimeTrialDivisionData.value = (int)currentPrime;
-      D = (1L << 62) % currentPrime;
-      rowPrimeTrialDivisionData.exp2 = (int)D; // (2^31)^2 mod currentPrime
-      D = (D << 31) % currentPrime;
-      rowPrimeTrialDivisionData.exp3 = (int)D; // (2^31)^3 mod currentPrime
-      D = (D << 31) % currentPrime;
-      rowPrimeTrialDivisionData.exp4 = (int)D; // (2^31)^4 mod currentPrime
-      D = (D << 31) % currentPrime;
-      rowPrimeTrialDivisionData.exp5 = (int)D; // (2^31)^5 mod currentPrime
-      D = (D << 31) % currentPrime;
-      rowPrimeTrialDivisionData.exp6 = (int)D; // (2^31)^6 mod currentPrime
+      rowPrimeTrialDivisionData->value = (int)currentPrime;
+      D = (1L << (2*BITS_PER_GROUP)) % currentPrime;
+      rowPrimeTrialDivisionData->exp2 = (int)D; // (2^31)^2 mod currentPrime
+      D = (D << BITS_PER_GROUP) % currentPrime;
+      rowPrimeTrialDivisionData->exp3 = (int)D; // (2^31)^3 mod currentPrime
+      D = (D << BITS_PER_GROUP) % currentPrime;
+      rowPrimeTrialDivisionData->exp4 = (int)D; // (2^31)^4 mod currentPrime
+      D = (D << BITS_PER_GROUP) % currentPrime;
+      rowPrimeTrialDivisionData->exp5 = (int)D; // (2^31)^5 mod currentPrime
+      D = (D << BITS_PER_GROUP) % currentPrime;
+      rowPrimeTrialDivisionData->exp6 = (int)D; // (2^31)^6 mod currentPrime
       if ((currentPrime & 3) == 3)
       {
-        SqrRootMod = modPow(NbrMod, (currentPrime + 1) / 4, currentPrime);
+        SqrRootMod = intModPow(NbrMod, (currentPrime + 1) / 4, currentPrime);
       }
       else
       {
         if ((currentPrime & 7) == 5)    // currentPrime = 5 (mod 8)
         {
           SqrRootMod =
-            modPow(NbrMod * 2, (currentPrime - 5) / 8, currentPrime);
+            intModPow(NbrMod * 2, (currentPrime - 5) / 8, currentPrime);
           SqrRootMod =
             ((((2 * NbrMod * SqrRootMod % currentPrime) * SqrRootMod - 1)
               % currentPrime)
@@ -2229,10 +2210,10 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
           do
           {
             X++;
-            Z = modPow(X, Q, currentPrime);
-          } while (modPow(Z, Power2, currentPrime) == 1);
+            Z = intModPow(X, Q, currentPrime);
+          } while (intModPow(Z, Power2, currentPrime) == 1);
           Y = Z;
-          X = modPow(NbrMod, (Q - 1) / 2, currentPrime);
+          X = intModPow(NbrMod, (Q - 1) / 2, currentPrime);
           V = NbrMod * X % currentPrime;
           W = V * X % currentPrime;
           while (W != 1)
@@ -2244,7 +2225,7 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
               D = D * D % currentPrime;
               T1++;
             }
-            D = modPow(Y, 1 << (E - T1 - 1), currentPrime);
+            D = intModPow(Y, 1 << (E - T1 - 1), currentPrime);
             Y1 = D * D % currentPrime;
             E = T1;
             V1 = V * D % currentPrime;
@@ -2259,25 +2240,25 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
       rowPrimeSieveData->modsqrt = (int)SqrRootMod;
       j++;
     } /* end while */
-  calculate_new_prime2: for (;;)
-  {
-    currentPrime += 2;
-    for (Q = 3; Q * Q <= currentPrime; Q += 2)
-    { /* Check if currentPrime is prime */
-      if (currentPrime % Q == 0)
-      {
-        continue calculate_new_prime2;
+    do
+    {
+      currentPrime += 2;
+      for (Q = 3; Q * Q <= currentPrime; Q += 2)
+      { /* Check if currentPrime is prime */
+        if (currentPrime % Q == 0)
+        {
+          break;  /* Composite */
+        }
       }
-    }
-    break; /* Prime found */
-  }
+    } while (Q * Q <= currentPrime);
   } /* End while */
 
   FactorBase = currentPrime;
   largePrimeUpperBound = 100 * FactorBase;
-  dNumberToFactor = NbrToFactor.doubleValue();
-  SIQSInfoText += ecmApplet.getMultAndFactorBase(multiplier, FactorBase);
-  ecmApplet.writeLowerPane(SIQSInfoText);
+  dlogNumberToFactor = logBigNbr(&NbrToFactor);
+  dNumberToFactor = exp(dlogNumberToFactor);
+//  SIQSInfoText += getMultAndFactorBase(multiplier, FactorBase);
+//  writeLowerPane(SIQSInfoText);
   firstLimit = 2;
   for (j = 2; j < nbrPrimes; j++)
   {
@@ -2311,7 +2292,7 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
     }
   }
   nbrPrimes2 = nbrPrimes - 4;
-  startTime = System.currentTimeMillis();
+//  startTime = System.currentTimeMillis();
   // Sieve start time in milliseconds.
   Prod = sqrt(2 * dNumberToFactor) / (double)SieveLimit;
   fact = (long)pow(Prod, 1 / (float)nbrFactorsA);
@@ -2328,29 +2309,30 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
     span *= 2;
   }
   indexMinFactorA = i - span / 2;
-  this.multiplier = multiplier;
+  //this.multiplier = multiplier;
   /*********************************************/
   /* Generate sieve threads                    */
   /*********************************************/
   for (threadNumber = 0; threadNumber<numberThreads; threadNumber++)
   {
-    new Thread(this).start();                // Start new thread.
-    synchronized(amodq)
+    //new Thread(this).start();                // Start new thread.
+    //synchronized(amodq)
     {
-      while (threadArray[threadNumber] == null &&
-        ecmApplet.getTerminateThread() == FALSE)
+//      while (threadArray[threadNumber] == null &&
+//        getTerminateThread() == FALSE)
       {
-        try
-        {
-          amodq.wait();
-        }
-        catch (InterruptedException ie) {}
+        //try
+        //{
+        //  amodq.wait();
+        //}
+        //catch (InterruptedException ie) {}
       }
     }
   }
-  synchronized(matrixB)
+#if 0
+  //synchronized(matrixB)
   {
-    while (factorSiqs == null && ecmApplet.getTerminateThread() == FALSE)
+    while (factorSiqs == null && getTerminateThread() == FALSE)
     {
       try
       {
@@ -2359,63 +2341,66 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
       catch (InterruptedException ie) {}
     }
   }
-  if (ecmApplet.getTerminateThread() || factorSiqs.signum() == 0)
+#endif
+  if (getTerminateThread() || (factorSiqs.nbrLimbs == 1 && factorSiqs.limbs[0].x == 0))
   {
-    throw new ArithmeticException();
+    //throw new ArithmeticException();
   }
+#if 0
   for (threadNumber = 0; threadNumber<numberThreads; threadNumber++)
   {                 // Wake up all sieve threads so they can terminate.
     if (threadArray[threadNumber].isAlive())
     {
-      try
+      //try
       {
         threadArray[threadNumber].interrupt();
       }
-      catch (Exception e) {}
+      //catch (Exception e) {}
     }
   }
+#endif
+#if 0
   synchronized(this)
   {
-    ecmApplet.saveSIQSStatistics(polynomialsSieved, trialDivisions,
+    saveSIQSStatistics(polynomialsSieved, trialDivisions,
       smoothsFound, totalPartials,
       partialsFound, ValuesSieved);
   }
   return factorSiqs;
+#endif
 }
 
 void ShowSIQSStatus(int matrixBLength, long startTime)
 {
   long New, u;
-  long oldTime = ecmApplet.getOldTimeElapsed();
-
-  if (ecmApplet.getTerminateThread())
-  {
-    throw new ArithmeticException();
-  }
+//  long oldTime = getOldTimeElapsed();
+#if 0
+//  if (getTerminateThread())
+//  {
+//    throw new ArithmeticException();
+//  }
   //    Thread.yield();
   New = System.currentTimeMillis();
   if (oldTime >= 0
-    && oldTime / 1000 != (oldTime + New - ecmApplet.getOld()) / 1000)
+    && oldTime / 1000 != (oldTime + New - getOld()) / 1000)
   {
-    oldTime += New - ecmApplet.getOld();
-    ecmApplet.setOldTimeElapsed(oldTime);
-    ecmApplet.setOld(New);
-    ecmApplet.ShowSIQSInfo(New - startTime, congruencesFound,
+    oldTime += New - getOld();
+    setOldTimeElapsed(oldTime);
+    setOld(New);
+    ShowSIQSInfo(New - startTime, congruencesFound,
       matrixBLength, oldTime / 1000);
   }
+#endif
 }
 
 static int EraseSingletons(
   int nbrPrimes,
-  int[][] matrixB,
-  int[][] vectLeftHandSide,
-  int[] vectExpParity,
-  PrimeTrialDivisionData[] primeTrialDivisionData)
+  int *vectExpParity,
+  PrimeTrialDivisionData *primeTrialDivisionData)
 {
   int row, column, delta;
-  int[] rowMatrixB;
-  int matrixBlength = matrixB.length;
-  int[] newColumns = new int[matrixBlength];
+  int *rowMatrixB;
+  int matrixBlength = matrixBLength;
   // Find singletons in matrixB storing in array vectExpParity the number
   // of primes in each column.
   do
@@ -2428,7 +2413,7 @@ static int EraseSingletons(
     for (row = matrixBlength - 1; row >= 0; row--)
     {                  // Traverse all rows of the matrix.
       rowMatrixB = matrixB[row];
-      for (column = rowMatrixB.length - 1; column >= 0; column--)
+      for (column = rowMatrixB[LENGTH_OFFSET] - 1; column >= 0; column--)
       {                // A prime appeared in that column.
         vectExpParity[rowMatrixB[column]]++;
       }
@@ -2450,7 +2435,7 @@ static int EraseSingletons(
     for (row = 0; row < matrixBlength; row++)
     {                  // Traverse all rows of the matrix.
       rowMatrixB = matrixB[row];
-      for (column = rowMatrixB.length - 1; column >= 0; column--)
+      for (column = rowMatrixB[LENGTH_OFFSET] - 1; column >= 0; column--)
       {                // Traverse all columns.
         if (vectExpParity[rowMatrixB[column]] == 1)
         {              // Singleton found: erase this row.
@@ -2460,15 +2445,15 @@ static int EraseSingletons(
       }
       if (column < 0)
       {                // Singleton not found: move row upwards.
-        matrixB[row - delta] = matrixB[row];
-        vectLeftHandSide[row - delta] = vectLeftHandSide[row];
+        memcpy(matrixB[row - delta], matrixB[row], sizeof(matrixB[0]));
+        memcpy(vectLeftHandSide[row - delta], vectLeftHandSide[row], sizeof(vectLeftHandSide[0]));
       }
     }
     matrixBlength -= delta;      // Update number of rows of the matrix.
     for (row = 0; row < matrixBlength; row++)
     {                  // Traverse all rows of the matrix.
       rowMatrixB = matrixB[row];
-      for (column = rowMatrixB.length - 1; column >= 0; column--)
+      for (column = rowMatrixB[LENGTH_OFFSET] - 1; column >= 0; column--)
       {                // Change all column indexes in this row.
         rowMatrixB[column] = newColumns[rowMatrixB[column]];
       }
@@ -2484,35 +2469,34 @@ static int EraseSingletons(
 /************************/
 static unsigned char LinearAlgebraPhase(
   int nbrPrimes,
-  int[][] matrixB,
-  PrimeTrialDivisionData[] primeTrialDivisionData,
-  int[] vectExpParity,
-  int[][] vectLeftHandSide, int biT[], int biR[], int biU[],
+  PrimeTrialDivisionData *primeTrialDivisionData,
+  int *vectExpParity,
+  int *biT, int *biR, int *biU,
   int NumberLength)
 {
   int mask, row, j, index;
-  int[] rowMatrixB;
+  int *rowMatrixB;
   int primeIndex;
   int NumberLengthBak;
   // Get new number of rows after erasing singletons.
-  int matrixBlength = EraseSingletons(nbrPrimes, matrixB, vectLeftHandSide,
+  int matrixBlength = EraseSingletons(nbrPrimes,
     vectExpParity, primeTrialDivisionData);
-  ecmApplet.showMatrixSize(SIQSInfoText, matrixBlength,
+  showMatrixSize(SIQSInfoText, matrixBlength,
     primeTrialDivisionData[0].exp2);
   primeTrialDivisionData[0].exp2 = 0;         // Restore correct value.
-  int[] matrixV = BlockLanczos(matrixB, matrixBlength);
+  BlockLanczos();
   // The rows of matrixV indicate which rows must be multiplied so no
   // primes are multiplied an odd number of times.
   for (mask = 1; mask != 0; mask *= 2)
   {
-    ecm.LongToBigNbr(1, biT, NumberLength);
-    ecm.LongToBigNbr(1, biR, NumberLength);
+    LongToBigNbr(1, biT, NumberLength);
+    LongToBigNbr(1, biR, NumberLength);
     for (row = matrixBlength - 1; row >= 0; row--)
     {
       vectExpParity[row] = 0;
     }
     NumberLengthBak = NumberLength;
-    if (TestNbr[NumberLength - 1] == 0 && TestNbr[NumberLength - 2] < 0x40000000)
+    if (TestNbr[NumberLength - 1].x == 0 && TestNbr[NumberLength - 2].x < 0x40000000)
     {
       NumberLength--;
     }
@@ -2520,14 +2504,14 @@ static unsigned char LinearAlgebraPhase(
     {
       if ((matrixV[row] & mask) != 0)
       {
-        ecm.MultBigNbrModN(vectLeftHandSide[row], biR, biU, TestNbr,
+        MultBigNbrModN(vectLeftHandSide[row], biR, biU, TestNbr,
           NumberLength);
         for (j = 0; j <= NumberLength; j++)
         {
           biR[j] = biU[j];
         }
         rowMatrixB = matrixB[row];
-        for (j = rowMatrixB.length - 1; j >= 0; j--)
+        for (j = rowMatrixB[LENGTH_OFFSET] - 1; j >= 0; j--)
         {
           primeIndex = rowMatrixB[j];
           vectExpParity[primeIndex] ^= 1;
@@ -2535,11 +2519,11 @@ static unsigned char LinearAlgebraPhase(
           {
             if (primeIndex == 0)
             {
-              ecm.SubtractBigNbr(TestNbr, biT, biT, NumberLength); // Multiply biT by -1.
+              SubtractBigNbr(TestNbr, biT, biT, NumberLength); // Multiply biT by -1.
             }
             else
             {
-              ecm.MultBigNbrByLongModN(biT,
+              MultBigNbrByLongModN(biT,
                 primeTrialDivisionData[primeIndex].value, biT,
                 TestNbr, NumberLength);
             }
@@ -2548,8 +2532,8 @@ static unsigned char LinearAlgebraPhase(
       }
     }
     NumberLength = NumberLengthBak;
-    ecm.SubtractBigNbrModN(biR, biT, biR, TestNbr, NumberLength);
-    ecmApplet.GcdBigNbr(biR, TestNbr2, biT, NumberLength);
+    SubtractBigNbrModN(biR, biT, biR, TestNbr, NumberLength);
+    GcdBigNbr(biR, TestNbr2, biT, NumberLength);
     index = 0;
     if (biT[0] == 1)
     {
@@ -2579,7 +2563,7 @@ static unsigned char LinearAlgebraPhase(
   return FALSE;
 }
 
-static long modPow(long NbrMod, long Expon, long currentPrime)
+static long intModPow(long NbrMod, long Expon, long currentPrime)
 {
   long Power = 1;
   long Square = NbrMod;
@@ -2594,28 +2578,27 @@ static long modPow(long NbrMod, long Expon, long currentPrime)
   }
   return Power;
 }
-static synchronized unsigned char InsertNewRelation(
-  int[][] matrixB,
-  int[] rowMatrixB,
-  int[][] vectLeftHandSide, int biT[], int biU[], int biR[],
+static unsigned char InsertNewRelation(
+  int *rowMatrixB,
+  int *biT, int *biU, int *biR,
   int NumberLength)
 {
   int i, k;
   int nbrColumns = rowMatrixB[0] - 1;
-  int curRowMatrixB[];
+  int *curRowMatrixB;
   // Insert it only if it is different from previous relations.
-  if (congruencesFound >= matrixB.length)
+  if (congruencesFound >= matrixBLength)
   {                   // Discard excess congruences.
     return TRUE;
   }
   for (i = 0; i < congruencesFound; i++)
   {
     curRowMatrixB = matrixB[i];
-    if (nbrColumns > curRowMatrixB.length)
+    if (nbrColumns > curRowMatrixB[LENGTH_OFFSET])
     {
       continue;
     }
-    if (nbrColumns == curRowMatrixB.length)
+    if (nbrColumns == curRowMatrixB[LENGTH_OFFSET])
     {
       for (k = 1; k <= nbrColumns; k++)
       {
@@ -2635,49 +2618,43 @@ static synchronized unsigned char InsertNewRelation(
     }
     for (k = congruencesFound - 1; k >= i; k--)
     {
-      matrixB[k + 1] = matrixB[k];
-      vectLeftHandSide[k + 1] = vectLeftHandSide[k];
+      memcpy(matrixB[k + 1], matrixB[k], sizeof(matrixB[0]));
+      memcpy(vectLeftHandSide[k + 1], vectLeftHandSide[k], sizeof(vectLeftHandSide[0]));
     }
     break;
   }
   /* Convert negative numbers to the range 0 <= n < TestNbr */
-  if ((TestNbr[0] & 1) == 0)
+  if ((TestNbr[0].x & 1) == 0)
   {
-    ecm.DivBigNbrByLong(TestNbr, 2, TestNbr2, NumberLength);
+    DivBigNbrByLong(TestNbr, 2, TestNbr2, NumberLength);
     // If biR >= TestNbr perform biR = biR - TestNbr.
     for (k = 0; k < NumberLength; k++)
     {
       biT[k] = 0;
     }
-    ecm.AddBigNbrModN(biR, biT, biR, TestNbr2, NumberLength);
-    ecmApplet.ModInvBigNbr(biR, biT, TestNbr2, NumberLength);
+    AddBigNbrModN(biR, biT, biR, TestNbr2, NumberLength);
+    ModInvBigNbr(biR, biT, TestNbr2, NumberLength);
   }
   else
   {
-    ecmApplet.ModInvBigNbr(biR, biT, TestNbr, NumberLength);
+    ModInvBigNbr(biR, biT, TestNbr, NumberLength);
   }
   if ((biU[NumberLength - 1] & 0x40000000) != 0)
   {
-    ecm.AddBigNbr(biU, TestNbr, biU, NumberLength);
+    AddBigNbr(biU, TestNbr, biU, NumberLength);
   }
 
   // Compute biU / biR  (mod TestNbr)
+  MultBigNbrModN(biU, biT, biR, TestNbr, NumberLength);
 
-  ecm.MultBigNbrModN(biU, biT, biR, TestNbr, NumberLength);
-
-  matrixB[i] = new int[nbrColumns];        // Add relation to matrix B.
-  System.arraycopy(rowMatrixB, 1,          // Source
-    matrixB[i], 0,          // Destination
-    nbrColumns);            // Number of elements to copy.
-  vectLeftHandSide[i] = new int[NumberLength];
-  System.arraycopy(biR, 0,                 // Source
-    vectLeftHandSide[i], 0, // Destination
-    NumberLength);          // Number of elements to copy.
+  // Add relation to matrix B.
+  memcpy(matrixB[i], &rowMatrixB[1], nbrColumns * sizeof(int));
+  memcpy(vectLeftHandSide[i], biR, NumberLength * sizeof(int));
   congruencesFound++;
   return TRUE;
 }
 
-static static int modInv(int NbrMod, int currentPrime)
+static int modInv(int NbrMod, int currentPrime)
 {
   int QQ, T1, T3;
   int V1 = 1;
@@ -2707,10 +2684,10 @@ static static int modInv(int NbrMod, int currentPrime)
 
 /* Multiply binary matrices of length m x 32 by 32 x 32 */
 /* The product matrix has size m x 32. Then add it to a m x 32 matrix. */
-static void MatrixMultAdd(int[] LeftMatr, int[] RightMatr, int[] ProdMatr)
+static void MatrixMultAdd(int *LeftMatr, int *RightMatr, int *ProdMatr)
 {
   int leftMatr;
-  int matrLength = LeftMatr.length;
+  int matrLength = matrixBLength;
   int prodMatr;
   int row, col;
   for (row = 0; row < matrLength; row++)
@@ -2732,10 +2709,10 @@ static void MatrixMultAdd(int[] LeftMatr, int[] RightMatr, int[] ProdMatr)
 }
 /* Multiply binary matrices of length m x 32 by 32 x 32 */
 /* The product matrix has size m x 32 */
-static void MatrixMultiplication(int[] LeftMatr, int[] RightMatr, int[] ProdMatr)
+static void MatrixMultiplication(int *LeftMatr, int *RightMatr, int *ProdMatr)
 {
   int leftMatr;
-  int matrLength = LeftMatr.length;
+  int matrLength = 32;
   int prodMatr;
   int row, col;
   for (row = 0; row < matrLength; row++)
@@ -2759,10 +2736,9 @@ static void MatrixMultiplication(int[] LeftMatr, int[] RightMatr, int[] ProdMatr
 /* Multiply the transpose of a binary matrix of length n x 32 by */
 /* another binary matrix of length n x 32 */
 /* The product matrix has size 32 x 32 */
-static void MatrTranspMult(int[] LeftMatr, int[] RightMatr, int[] ProdMatr)
+static void MatrTranspMult(int matrLength, int *LeftMatr, int *RightMatr, int *ProdMatr)
 {
   int prodMatr;
-  int matrLength = LeftMatr.length;
   int row, col;
   int iMask = 1;
   for (col = 31; col >= 0; col--)
@@ -2780,17 +2756,17 @@ static void MatrTranspMult(int[] LeftMatr, int[] RightMatr, int[] ProdMatr)
   }
 }
 
-static void MatrixAddition(int[] leftMatr, int[] rightMatr, int[] sumMatr)
+static void MatrixAddition(int *leftMatr, int *rightMatr, int *sumMatr)
 {
-  for (int row = leftMatr.length - 1; row >= 0; row--)
+  for (int row = 32 - 1; row >= 0; row--)
   {
     sumMatr[row] = leftMatr[row] ^ rightMatr[row];
   }
 }
 
-static void MatrMultBySSt(int[] Matr, int diagS, int[] Prod)
+static void MatrMultBySSt(int length, int *Matr, int diagS, int *Prod)
 {
-  for (int row = Matr.length - 1; row >= 0; row--)
+  for (int row = length - 1; row >= 0; row--)
   {
     Prod[row] = diagS & Matr[row];
   }
@@ -2798,38 +2774,33 @@ static void MatrMultBySSt(int[] Matr, int diagS, int[] Prod)
 
 /* Compute Bt * B * input matrix where B is the matrix that holds the */
 /* factorization relations */
-static void MultiplyAByMatrix(
-  int[][] matrixB,
-  int[] Matr,
-  int[] TempMatr,
-  int[] ProdMatr,
-  int matrixBlength)
+static void MultiplyAByMatrix(int *Matr, int *TempMatr, int *ProdMatr)
 {
   int index;
   int prodMatr;
   int row;
-  int[] rowMatrixB;
+  int *rowMatrixB;
 
   /* Compute TempMatr = B * Matr */
-  for (row = matrixBlength - 1; row >= 0; row--)
+  for (row = matrixBLength - 1; row >= 0; row--)
   {
     TempMatr[row] = 0;
   }
-  for (row = matrixBlength - 1; row >= 0; row--)
+  for (row = matrixBLength - 1; row >= 0; row--)
   {
     rowMatrixB = matrixB[row];
-    for (index = rowMatrixB.length - 1; index >= 0; index--)
+    for (index = rowMatrixB[LENGTH_OFFSET] - 1; index >= 0; index--)
     {
       TempMatr[rowMatrixB[index]] ^= Matr[row];
     }
   }
 
   /* Compute ProdMatr = Bt * TempMatr */
-  for (row = matrixBlength - 1; row >= 0; row--)
+  for (row = matrixBLength - 1; row >= 0; row--)
   {
     prodMatr = 0;
     rowMatrixB = matrixB[row];
-    for (index = rowMatrixB.length - 1; index >= 0; index--)
+    for (index = rowMatrixB[LENGTH_OFFSET] - 1; index >= 0; index--)
     {
       prodMatr ^= TempMatr[rowMatrixB[index]];
     }
@@ -2837,22 +2808,22 @@ static void MultiplyAByMatrix(
   }
 }
 
-static void colexchange(int[] XmY, int[] V, int[] V1, int[] V2,
+static void colexchange(int *XmY, int *V, int *V1, int *V2,
   int col1, int col2)
 {
   int row;
   int mask1, mask2;
-  int[] matr1, matr2;
+  int *matr1, *matr2;
 
   if (col1 == col2)
   {          // Cannot exchange the same column.
     return;
   }          // Exchange columns col1 and col2 of V1:V2
-  mask1 = 0x80000000 >> > (col1 & 31);
-  mask2 = 0x80000000 >> > (col2 & 31);
+  mask1 = 0x80000000 >> (col1 & 31);
+  mask2 = 0x80000000 >> (col2 & 31);
   matr1 = (col1 >= 32 ? V1 : V2);
   matr2 = (col2 >= 32 ? V1 : V2);
-  for (row = V.length - 1; row >= 0; row--)
+  for (row = matrixBLength - 1; row >= 0; row--)
   {             // If both bits are different toggle them.
     if (((matr1[row] & mask1) == 0) != ((matr2[row] & mask2) == 0))
     {           // If both bits are different toggle them.
@@ -2863,7 +2834,7 @@ static void colexchange(int[] XmY, int[] V, int[] V1, int[] V2,
   // Exchange columns col1 and col2 of XmY:V
   matr1 = (col1 >= 32 ? XmY : V);
   matr2 = (col2 >= 32 ? XmY : V);
-  for (row = V.length - 1; row >= 0; row--)
+  for (row = matrixBLength - 1; row >= 0; row--)
   {             // If both bits are different toggle them.
     if (((matr1[row] & mask1) == 0) != ((matr2[row] & mask2) == 0))
     {
@@ -2873,22 +2844,22 @@ static void colexchange(int[] XmY, int[] V, int[] V1, int[] V2,
   }
 }
 
-static void coladd(int[] XmY, int[] V, int[] V1, int[] V2,
+static void coladd(int *XmY, int *V, int *V1, int *V2,
   int col1, int col2)
 {
   int row;
   int mask1, mask2;
-  int[] matr1, matr2;
+  int *matr1, *matr2;
 
   if (col1 == col2)
   {
     return;
   }               // Add column col1 to column col2 of V1:V2
-  mask1 = 0x80000000 >> > (col1 & 31);
-  mask2 = 0x80000000 >> > (col2 & 31);
+  mask1 = 0x80000000 >> (col1 & 31);
+  mask2 = 0x80000000 >> (col2 & 31);
   matr1 = (col1 >= 32 ? V1 : V2);
   matr2 = (col2 >= 32 ? V1 : V2);
-  for (row = V.length - 1; row >= 0; row--)
+  for (row = matrixBLength - 1; row >= 0; row--)
   {              // If bit to add is '1'...
     if ((matr1[row] & mask1) != 0)
     {            // Toggle bit in destination.
@@ -2898,7 +2869,7 @@ static void coladd(int[] XmY, int[] V, int[] V1, int[] V2,
   // Add column col1 to column col2 of XmY:V
   matr1 = (col1 >= 32 ? XmY : V);
   matr2 = (col2 >= 32 ? XmY : V);
-  for (row = V.length - 1; row >= 0; row--)
+  for (row = matrixBLength - 1; row >= 0; row--)
   {              // If bit to add is '1'...
     if ((matr1[row] & mask1) != 0)
     {            // Toggle bit in destination.
@@ -2907,78 +2878,71 @@ static void coladd(int[] XmY, int[] V, int[] V1, int[] V2,
   }
 }
 
-static int[] BlockLanczos(int[][] matrixB, int matrixBlength)
+static void BlockLanczos(void)
 {
   int i, j, k;
   int oldDiagonalSSt, newDiagonalSSt;
   int index, indexC, mask;
-  int[] matrixD = new int[32];
-  int[] matrixE = new int[32];
-  int[] matrixF = new int[32];
-  int[] matrixWinv = new int[32];
-  int[] matrixWinv1 = new int[32];
-  int[] matrixWinv2 = new int[32];
-  int[] matrixVtV0 = new int[32];
-  int[] matrixVt1V0 = new int[32];
-  int[] matrixVt2V0 = new int[32];
-  int[] matrixVtAV = new int[32];
-  int[] matrixVt1AV1 = new int[32];
-  int[] matrixAV = new int[matrixBlength];
-  int[] matrixCalcParenD = new int[32];
-  int[] vectorIndex = new int[64];
-  int[] matrixV = new int[matrixBlength];
-  int[] matrixV1 = new int[matrixBlength];
-  int[] matrixV2 = new int[matrixBlength];
-  int[] matrixXmY = new int[matrixBlength];
-  // Matrix that holds temporary data
-  int[] matrixCalc3 = new int[matrixBlength];
-  int[] matrixTemp;
-  int[] matrixCalc1 = new int[32]; // Matrix that holds temporary data
-  int[] matrixCalc2 = new int[32]; // Matrix that holds temporary data
-  int[] matr;
+  int matrixD[32];
+  int matrixE[32];
+  int matrixF[32];
+  int matrixWinv[32];
+  int matrixWinv1[32];
+  int matrixWinv2[32];
+  int matrixVtV0[32];
+  int matrixVt1V0[32];
+  int matrixVt2V0[32];
+  int matrixVtAV[32];
+  int matrixVt1AV1[32];
+  int matrixCalcParenD[32];
+  int vectorIndex[64];
+  int matrixTemp[32];
+  int matrixCalc1[32]; // Matrix that holds temporary data
+  int matrixCalc2[32]; // Matrix that holds temporary data
+  int *matr;
   int rowMatrixV;
   int rowMatrixXmY;
-  long seed;
+  double seed;
   int Temp, Temp1;
   int stepNbr = 0;
   int currentOrder, currentMask;
   int row, col;
   int leftCol, rightCol;
   int minind, min, minanswer;
-  int[] rowMatrixB;
+  int *rowMatrixB;
 
   newDiagonalSSt = oldDiagonalSSt = -1;
 
   /* Initialize matrix X-Y and matrix V_0 with random data */
-  seed = 123456789L;
-  for (i = matrixXmY.length - 1; i >= 0; i--)
+  seed = (double)123456789;
+  for (i = matrixBLength - 1; i >= 0; i--)
   {
     matrixXmY[i] = (int)seed;
-    seed = (seed * 62089911L + 54325442L) % DosALa31_1;
-    matrixXmY[i] += (int)(seed * 6543265L);
-    seed = (seed * 62089911L + 54325442L) % DosALa31_1;
+    seed = (int)(seed * 62089911L / 0x7FFFFFFF + 54325442);
+    matrixXmY[i] += (int)seed;
+    seed = (int)(seed * 62089911L / 0x7FFFFFFF + 54325442);
     matrixV[i] = (int)seed;
-    seed = (seed * 62089911L + 54325442L) % DosALa31_1;
-    matrixV[i] += (int)(seed * 6543265L);
-    seed = (seed * 62089911L + 54325442L) % DosALa31_1;
+    seed = (int)(seed * 62089911L / 0x7FFFFFFF + 54325442);
+    matrixV[i] += (int)seed;
+    seed = (int)(seed * 62089911L / 0x7FFFFFFF + 54325442);
   }
   // Compute matrix Vt(0) * V(0)
-  MatrTranspMult(matrixV, matrixV, matrixVtV0);
+  MatrTranspMult(matrixBLength, matrixV, matrixV, matrixVtV0);
   for (;;)
   {
-    if (ecmApplet.getTerminateThread())
-    {
-      throw new ArithmeticException();
-    }
+    //if (getTerminateThread())
+    //{
+    //  throw new ArithmeticException();
+    // }
     oldDiagonalSSt = newDiagonalSSt;
     stepNbr++;
     // Compute matrix A * V(i)
-    MultiplyAByMatrix(matrixB, matrixV, matrixCalc3, matrixAV, matrixBlength);
+    MultiplyAByMatrix(matrixV, matrixCalc3, matrixAV);
     // Compute matrix Vt(i) * A * V(i)
-    MatrTranspMult(matrixV, matrixAV, matrixVtAV);
+    MatrTranspMult(matrixBLength, matrixV, matrixAV, matrixVtAV);
 
     /* If Vt(i) * A * V(i) = 0, end of loop */
-    for (i = matrixVtAV.length - 1; i >= 0; i--)
+    for (i = sizeof(matrixVtAV)/sizeof(matrixVtAV[0]) - 1; i >= 0; i--)
     {
       if (matrixVtAV[i] != 0)
       {
@@ -2992,10 +2956,10 @@ static int[] BlockLanczos(int[][] matrixB, int matrixBlength)
 
       /* Selection of S(i) and W(i) */
 
-    matrixTemp = matrixWinv2;
-    matrixWinv2 = matrixWinv1;
-    matrixWinv1 = matrixWinv;
-    matrixWinv = matrixTemp;
+    memcpy(matrixTemp, matrixWinv2, sizeof(matrixTemp));
+    memcpy(matrixWinv2, matrixWinv1, sizeof(matrixTemp));
+    memcpy(matrixWinv1, matrixWinv, sizeof(matrixTemp));
+    memcpy(matrixWinv, matrixTemp, sizeof(matrixTemp));
 
     mask = 1;
     for (j = 31; j >= 0; j--)
@@ -3098,18 +3062,18 @@ static int[] BlockLanczos(int[][] matrixB, int matrixBlength)
       }
       MatrixMultiplication(matrixWinv2, matrixCalc2, matrixCalc1);
       MatrixMultiplication(matrixCalc1, matrixCalcParenD, matrixF);
-      MatrMultBySSt(matrixF, newDiagonalSSt, matrixF);
+      MatrMultBySSt(32, matrixF, newDiagonalSSt, matrixF);
     }
     // E = -Winv(i-1) * Vt(i)*A*V(i) * S*St
     if (stepNbr >= 2)
     {
       MatrixMultiplication(matrixWinv1, matrixVtAV, matrixE);
-      MatrMultBySSt(matrixE, newDiagonalSSt, matrixE);
+      MatrMultBySSt(32, matrixE, newDiagonalSSt, matrixE);
     }
     // ParenD = Vt(i)*A*A*V(i) * S*St + Vt(i)*A*V(i)
     // D = I - Winv(i) * ParenD
-    MatrTranspMult(matrixAV, matrixAV, matrixCalc1); // Vt(i)*A*A*V(i)
-    MatrMultBySSt(matrixCalc1, newDiagonalSSt, matrixCalc1);
+    MatrTranspMult(matrixBLength, matrixAV, matrixAV, matrixCalc1); // Vt(i)*A*A*V(i)
+    MatrMultBySSt(32, matrixCalc1, newDiagonalSSt, matrixCalc1);
     MatrixAddition(matrixCalc1, matrixVtAV, matrixCalcParenD);
     MatrixMultiplication(matrixWinv, matrixCalcParenD, matrixD);
     index = 31; /* Add identity matrix */
@@ -3125,7 +3089,7 @@ static int[] BlockLanczos(int[][] matrixB, int matrixBlength)
 
     /* Compute value of new matrix V(i) */
     // V(i+1) = A * V(i) * S * St + V(i) * D + V(i-1) * E + V(i-2) * F
-    MatrMultBySSt(matrixAV, newDiagonalSSt, matrixCalc3);
+    MatrMultBySSt(matrixBLength, matrixAV, newDiagonalSSt, matrixCalc3);
     MatrixMultAdd(matrixV, matrixD, matrixCalc3);
     if (stepNbr >= 2)
     {
@@ -3137,44 +3101,44 @@ static int[] BlockLanczos(int[][] matrixB, int matrixBlength)
     }
     /* Compute value of new matrix Vt(i)V0 */
     // Vt(i+1)V(0) = Dt * Vt(i)V(0) + Et * Vt(i-1)V(0) + Ft * Vt(i-2)V(0)
-    MatrTranspMult(matrixD, matrixVtV0, matrixCalc2);
+    MatrTranspMult(32, matrixD, matrixVtV0, matrixCalc2);
     if (stepNbr >= 2)
     {
-      MatrTranspMult(matrixE, matrixVt1V0, matrixCalc1);
+      MatrTranspMult(32, matrixE, matrixVt1V0, matrixCalc1);
       MatrixAddition(matrixCalc1, matrixCalc2, matrixCalc2);
       if (stepNbr >= 3)
       {
-        MatrTranspMult(matrixF, matrixVt2V0, matrixCalc1);
+        MatrTranspMult(32, matrixF, matrixVt2V0, matrixCalc1);
         MatrixAddition(matrixCalc1, matrixCalc2, matrixCalc2);
       }
     }
-    matrixTemp = matrixV2;
-    matrixV2 = matrixV1;
-    matrixV1 = matrixV;
-    matrixV = matrixCalc3;
-    matrixCalc3 = matrixTemp;
-    matrixTemp = matrixVt2V0;
-    matrixVt2V0 = matrixVt1V0;
-    matrixVt1V0 = matrixVtV0;
-    matrixVtV0 = matrixCalc2;
-    matrixCalc2 = matrixTemp;
-    matrixTemp = matrixVt1AV1;
-    matrixVt1AV1 = matrixVtAV;
-    matrixVtAV = matrixTemp;
+    memcpy(matrixTemp2, matrixV2, sizeof(matrixTemp2));
+    memcpy(matrixV2, matrixV1, sizeof(matrixV2));
+    memcpy(matrixV1, matrixV, sizeof(matrixV1));
+    memcpy(matrixV, matrixCalc3, sizeof(matrixV));
+    memcpy(matrixCalc3, matrixTemp2, sizeof(matrixCalc3));
+    memcpy(matrixTemp, matrixVt2V0, sizeof(matrixTemp));
+    memcpy(matrixVt2V0, matrixVt1V0, sizeof(matrixVt2V0));
+    memcpy(matrixVt1V0, matrixVtV0, sizeof(matrixVt1V0));
+    memcpy(matrixVtV0, matrixCalc2, sizeof(matrixVtV0));
+    memcpy(matrixCalc2, matrixTemp, sizeof(matrixCalc2));
+    memcpy(matrixTemp, matrixVt1AV1, sizeof(matrixTemp));
+    memcpy(matrixVt1AV1, matrixVtAV, sizeof(matrixVt1AV1));
+    memcpy(matrixVtAV, matrixTemp, sizeof(matrixVtAV));
   } /* end while */
 
     /* Find matrix V1:V2 = B * (X-Y:V) */
-  for (row = matrixBlength - 1; row >= 0; row--)
+  for (row = matrixBLength - 1; row >= 0; row--)
   {
     matrixV1[row] = matrixV2[row] = 0;
   }
-  for (row = matrixBlength - 1; row >= 0; row--)
+  for (row = matrixBLength - 1; row >= 0; row--)
   {
     rowMatrixB = matrixB[row];
     rowMatrixXmY = matrixXmY[row];
     rowMatrixV = matrixV[row];
     // The vector rowMatrixB includes the indexes of the columns set to '1'.
-    for (index = rowMatrixB.length - 1; index >= 0; index--)
+    for (index = rowMatrixB[LENGTH_OFFSET] - 1; index >= 0; index--)
     {
       col = rowMatrixB[index];
       matrixV1[col] ^= rowMatrixXmY;
@@ -3189,9 +3153,9 @@ static int[] BlockLanczos(int[][] matrixB, int matrixBlength)
     {       // For each column find the first row which has a '1'.
             // Columns outside this range must have '0' in all rows.
       matr = (col >= 32 ? matrixV1 : matrixV2);
-      mask = 0x80000000 >> >(col & 31);
+      mask = 0x80000000 >> (col & 31);
       vectorIndex[col] = -1;    // indicate all rows in zero in advance.
-      for (row = 0; row < matr.length; row++)
+      for (row = 0; row < matrixBLength; row++)
       {
         if ((matr[row] & mask) != 0)
         {               // First row for this mask is found. Store it.
@@ -3259,9 +3223,9 @@ static int[] BlockLanczos(int[][] matrixB, int matrixBlength)
     for (col = leftCol; col < rightCol; col++)
     {         // For each column find the first row which has a '1'.
       matr = (col >= 32 ? matrixXmY : matrixV);
-      mask = 0x80000000 >> >(col & 31);
+      mask = 0x80000000 >> (col & 31);
       vectorIndex[col] = -1;    // indicate all rows in zero in advance.
-      for (row = 0; row < matrixV1.length; row++)
+      for (row = 0; row < matrixBLength; row++)
       {
         if ((matr[row] & mask) != 0)
         {         // First row for this mask is found. Store it.
@@ -3329,26 +3293,25 @@ static int[] BlockLanczos(int[][] matrixB, int matrixBlength)
 /****************/
 /* Sieve thread */
 /****************/
-public void run()
+void run(void)
 {
   int polySet;
-  int biT[] = new int[20];
-  int biU[] = new int[20];
-  int biV[] = new int[20];
-  int biR[] = new int[20];
-  int multiplier = this.multiplier;
-  PrimeSieveData primeSieveData[];
-  PrimeSieveData rowPrimeSieveData;
-  PrimeSieveData rowPrimeSieveData0;
-  PrimeTrialDivisionData rowPrimeTrialDivisionData;
-  short[] SieveArray = new short[2 * SieveLimit + 5000];
-  int rowPartials[] = new int[200];
-  int biLinearCoeff[] = new int[20];
-  int threadNumber = this.threadNumber;
-  int biDividend[] = new int[20];
-  int biAbsLinearCoeff[];
-  int indexFactorsA[] = new int[50];
-  int rowSquares[] = new int[200];
+  int biT[20];
+  int biU[20];
+  int biV[20];
+  int biR[20];
+//  int multiplier = this.multiplier;
+  PrimeSieveData *rowPrimeSieveData;
+  PrimeSieveData *rowPrimeSieveData0;
+  PrimeTrialDivisionData *rowPrimeTrialDivisionData;
+  short SieveArray[100000];
+  int rowPartials[200];
+  int biLinearCoeff[20];
+//  int threadNumber = this.threadNumber;
+  int biDividend[20];
+  int biAbsLinearCoeff[20];
+  int indexFactorsA[50];
+  int rowSquares[200];
   int polynomialsPerThread = ((NbrPolynomials - 1) / numberThreads) & 0xFFFFFFFE;
   int firstPolynomial = threadNumber*polynomialsPerThread;
   int lastPolynomial = firstPolynomial + polynomialsPerThread;
@@ -3358,74 +3321,73 @@ public void run()
   int i, PolynomialIndex, index, index2;
   int currentPrime;
   long Rem, RemB, remE, D, Q;
-  int Dividend[];
-  int rowMatrixBbeforeMerge[] = new int[200];
-  int rowMatrixB[] = new int[200];
+  int Dividend[25];
+  int rowMatrixBbeforeMerge[200];
+  int rowMatrixB[200];
   unsigned char positive;
   BigInteger result;
   int inverseA, twiceInverseA;
   int NumberLengthA, NumberLengthB;
-  int NumberLength = this.NumberLength + 1;
+  NumberLength++;
 
-  synchronized(amodq)
+//  synchronized(amodq)
   {
     if (threadNumber == 0)
     {
-      primeSieveData = this.primeSieveData;
+//      primeSieveData = this.primeSieveData;
     }
     else
     {
-      primeSieveData = new PrimeSieveData[nbrPrimes + 3];
       for (i = 0; i<nbrPrimes; i++)
       {
-        primeSieveData[i] = rowPrimeSieveData = new PrimeSieveData();
-        rowPrimeSieveData0 = this.primeSieveData[i];
-        rowPrimeSieveData->value = rowPrimeSieveData0.value;
-        rowPrimeSieveData->modsqrt = rowPrimeSieveData0.modsqrt;
-        rowPrimeSieveData->Bainv2 = rowPrimeSieveData0.Bainv2;
+        rowPrimeSieveData = &primeSieveData[i];
+        rowPrimeSieveData0 = &primeSieveData[i];
+        rowPrimeSieveData->value = rowPrimeSieveData0->value;
+        rowPrimeSieveData->modsqrt = rowPrimeSieveData0->modsqrt;
+        memcpy(rowPrimeSieveData->Bainv2, rowPrimeSieveData0->Bainv2, sizeof(rowPrimeSieveData0->Bainv2));
       }
     }
-    threadArray[threadNumber] = Thread.currentThread();
-    amodq.notifyAll();
+//    threadArray[threadNumber] = Thread.currentThread();
+//    amodq.notifyAll();
   }               // End synchronized block.
-  try
-  {
-  nextpoly:
     for (polySet = 1;; polySet++)
     {                         // For each polynomial set...
-      if (ecmApplet.getTerminateThread())
-      {
-        throw new ArithmeticException();
-      }
-      synchronized(amodq)
+      //if (getTerminateThread())
+      //{
+      //  throw new ArithmeticException();
+      //}
+      //synchronized(amodq)
       {
         nbrThreadFinishedPolySet++;
-        if (congruencesFound >= matrixB.length || factorSiqs != null)
+        if (congruencesFound >= matrixBLength/* || factorSiqs != null*/)
         {
           if (nbrThreadFinishedPolySet < polySet * numberThreads)
           {
             return;
           }
-          if (factorSiqs == null)
+          if (1/*factorSiqs == null*/)
           {
             while (!LinearAlgebraPhase(nbrPrimes,
-              matrixB,
               primeTrialDivisionData,
               vectExpParity,
-              vectLeftHandSide, biT, biR, biU, NumberLength));
-            result = ecm.BigIntToBigNbr(biT, NumberLength);  // Factor found.
+              biT, biR, biU, NumberLength));
+            /*result = BigIntToBigNbr(biT, NumberLength);  // Factor found.*/
+#if 0
             synchronized(matrixB)
             {
               factorSiqs = result;
               matrixB.notify();
             }
+#endif
           }
           else
           {
+#if 0
             synchronized(matrixB)
             {
               matrixB.notify();
             }
+#endif
           }
           return;
         }
@@ -3436,18 +3398,17 @@ public void run()
           /*********************************************/
           firstPrimeSieveData = primeSieveData;
           oldSeed = newSeed;
-          newSeed = getFactorsOfA(oldSeed, nbrFactorsA, aindex,
-            indexMinFactorA);
+          newSeed = getFactorsOfA(oldSeed, nbrFactorsA);
           for (index = 0; index<nbrFactorsA; index++)
           {                        // Get the values of the factors of A.
             afact[index] = primeSieveData[aindex[index]].value;
           }
           // Compute the leading coefficient in biQuadrCoeff.
 
-          ecm.LongToBigNbr(afact[0], biQuadrCoeff, NumberLength);
+          LongToBigNbr(afact[0], biQuadrCoeff, NumberLength);
           for (index = 1; index < nbrFactorsA; index++)
           {
-            ecm.MultBigNbrByLong(biQuadrCoeff, afact[index], biQuadrCoeff,
+            MultBigNbrByLong(biQuadrCoeff, afact[index], biQuadrCoeff,
               NumberLength);
           }
           for (NumberLengthA = NumberLength; NumberLengthA >= 2; NumberLengthA--)
@@ -3461,20 +3422,20 @@ public void run()
           for (index = 0; index < nbrFactorsA; index++)
           {
             currentPrime = (int)afact[index];
-            D = ecm.RemDivBigNbrByLong(biQuadrCoeff,
+            D = RemDivBigNbrByLong(biQuadrCoeff,
               currentPrime*currentPrime, NumberLengthA) / currentPrime;
             Q = (long)primeSieveData[aindex[index]].modsqrt *
               modInv((int)D, currentPrime) % currentPrime;
             amodq[index] = (int)D << 1;
-            tmodqq[index] = (int)ecm.RemDivBigNbrByLong(TestNbr,
+            tmodqq[index] = (int)RemDivBigNbrByLong(TestNbr,
               currentPrime*currentPrime, NumberLength);
             if (Q + Q > currentPrime)
             {
               Q = currentPrime - Q;
             }
-            ecm.DivBigNbrByLong(biQuadrCoeff, currentPrime, biDividend,
+            DivBigNbrByLong(biQuadrCoeff, currentPrime, biDividend,
               NumberLengthA);
-            ecm.MultBigNbrByLong(biDividend, Q, biLinearDelta[index],
+            MultBigNbrByLong(biDividend, Q, biLinearDelta[index],
               NumberLengthA);
             for (index2 = NumberLengthA; index2 < NumberLength; index2++)
             {
@@ -3483,37 +3444,37 @@ public void run()
           }
           for (index = 1; index < nbrPrimes; index++)
           {
-            rowPrimeTrialDivisionData = primeTrialDivisionData[index];
-            rowPrimeSieveData = primeSieveData[index];
+            rowPrimeTrialDivisionData = &primeTrialDivisionData[index];
+            rowPrimeSieveData = &primeSieveData[index];
             // Get current prime.
-            currentPrime = rowPrimeTrialDivisionData.value;
-            Dividend = biQuadrCoeff;          // Get A mod current prime.
+            currentPrime = rowPrimeTrialDivisionData->value;
+            memcpy(Dividend, biQuadrCoeff, sizeof(Dividend));   // Get A mod current prime.
             switch (NumberLengthA)
             {
             case 7:
-              Rem = (long)Dividend[6] * rowPrimeTrialDivisionData.exp6 +
-                (long)Dividend[5] * rowPrimeTrialDivisionData.exp5 +
-                (long)Dividend[4] * rowPrimeTrialDivisionData.exp4 +
-                (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-                (long)Dividend[2] * rowPrimeTrialDivisionData.exp2;
+              Rem = (long)Dividend[6] * rowPrimeTrialDivisionData->exp6 +
+                (long)Dividend[5] * rowPrimeTrialDivisionData->exp5 +
+                (long)Dividend[4] * rowPrimeTrialDivisionData->exp4 +
+                (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+                (long)Dividend[2] * rowPrimeTrialDivisionData->exp2;
               break;
             case 6:
-              Rem = (long)Dividend[5] * rowPrimeTrialDivisionData.exp5 +
-                (long)Dividend[4] * rowPrimeTrialDivisionData.exp4 +
-                (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-                (long)Dividend[2] * rowPrimeTrialDivisionData.exp2;
+              Rem = (long)Dividend[5] * rowPrimeTrialDivisionData->exp5 +
+                (long)Dividend[4] * rowPrimeTrialDivisionData->exp4 +
+                (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+                (long)Dividend[2] * rowPrimeTrialDivisionData->exp2;
               break;
             case 5:
-              Rem = (long)Dividend[4] * rowPrimeTrialDivisionData.exp4 +
-                (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-                (long)Dividend[2] * rowPrimeTrialDivisionData.exp2;
+              Rem = (long)Dividend[4] * rowPrimeTrialDivisionData->exp4 +
+                (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+                (long)Dividend[2] * rowPrimeTrialDivisionData->exp2;
               break;
             case 4:
-              Rem = (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-                (long)Dividend[2] * rowPrimeTrialDivisionData.exp2;
+              Rem = (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+                (long)Dividend[2] * rowPrimeTrialDivisionData->exp2;
               break;
             default:
-              Rem = (long)Dividend[2] * rowPrimeTrialDivisionData.exp2;
+              Rem = (long)Dividend[2] * rowPrimeTrialDivisionData->exp2;
               break;
             }
             // Get its inverse
@@ -3527,95 +3488,95 @@ public void run()
             case 7:
               for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
               {
-                Dividend = biLinearDelta[index2];
-                remE = ((long)Dividend[6] * rowPrimeTrialDivisionData.exp6 +
-                  (long)Dividend[5] * rowPrimeTrialDivisionData.exp5 +
-                  (long)Dividend[4] * rowPrimeTrialDivisionData.exp4 +
-                  (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-                  (long)Dividend[2] * rowPrimeTrialDivisionData.exp2 +
+                memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
+                remE = ((long)Dividend[6] * rowPrimeTrialDivisionData->exp6 +
+                  (long)Dividend[5] * rowPrimeTrialDivisionData->exp5 +
+                  (long)Dividend[4] * rowPrimeTrialDivisionData->exp4 +
+                  (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+                  (long)Dividend[2] * rowPrimeTrialDivisionData->exp2 +
                   ((long)Dividend[1] << 31) + Dividend[0]) %
                   currentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] =
                   (int)(remE * twiceInverseA % currentPrime);
               }
-              Dividend = biLinearDelta[0];
-              remE = ((long)Dividend[6] * rowPrimeTrialDivisionData.exp6 +
-                (long)Dividend[5] * rowPrimeTrialDivisionData.exp5 +
-                (long)Dividend[4] * rowPrimeTrialDivisionData.exp4 +
-                (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-                (long)Dividend[2] * rowPrimeTrialDivisionData.exp2 +
+              memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
+              remE = ((long)Dividend[6] * rowPrimeTrialDivisionData->exp6 +
+                (long)Dividend[5] * rowPrimeTrialDivisionData->exp5 +
+                (long)Dividend[4] * rowPrimeTrialDivisionData->exp4 +
+                (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+                (long)Dividend[2] * rowPrimeTrialDivisionData->exp2 +
                 ((long)Dividend[1] << 31) + Dividend[0]) %
                 currentPrime;
               break;
             case 6:
               for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
               {
-                Dividend = biLinearDelta[index2];
-                remE = ((long)Dividend[5] * rowPrimeTrialDivisionData.exp5 +
-                  (long)Dividend[4] * rowPrimeTrialDivisionData.exp4 +
-                  (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-                  (long)Dividend[2] * rowPrimeTrialDivisionData.exp2 +
+                memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
+                remE = ((long)Dividend[5] * rowPrimeTrialDivisionData->exp5 +
+                  (long)Dividend[4] * rowPrimeTrialDivisionData->exp4 +
+                  (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+                  (long)Dividend[2] * rowPrimeTrialDivisionData->exp2 +
                   ((long)Dividend[1] << 31) + Dividend[0]) %
                   currentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] =
                   (int)(remE * twiceInverseA % currentPrime);
               }
-              Dividend = biLinearDelta[0];
-              remE = ((long)Dividend[5] * rowPrimeTrialDivisionData.exp5 +
-                (long)Dividend[4] * rowPrimeTrialDivisionData.exp4 +
-                (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-                (long)Dividend[2] * rowPrimeTrialDivisionData.exp2 +
+              memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
+              remE = ((long)Dividend[5] * rowPrimeTrialDivisionData->exp5 +
+                (long)Dividend[4] * rowPrimeTrialDivisionData->exp4 +
+                (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+                (long)Dividend[2] * rowPrimeTrialDivisionData->exp2 +
                 ((long)Dividend[1] << 31) + Dividend[0]) %
                 currentPrime;
               break;
             case 5:
               for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
               {
-                Dividend = biLinearDelta[index2];
-                remE = ((long)Dividend[4] * rowPrimeTrialDivisionData.exp4 +
-                  (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-                  (long)Dividend[2] * rowPrimeTrialDivisionData.exp2 +
+                memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
+                remE = ((long)Dividend[4] * rowPrimeTrialDivisionData->exp4 +
+                  (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+                  (long)Dividend[2] * rowPrimeTrialDivisionData->exp2 +
                   ((long)Dividend[1] << 31) + Dividend[0]) %
                   currentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] =
                   (int)(remE * twiceInverseA % currentPrime);
               }
-              Dividend = biLinearDelta[0];
-              remE = ((long)Dividend[4] * rowPrimeTrialDivisionData.exp4 +
-                (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-                (long)Dividend[2] * rowPrimeTrialDivisionData.exp2 +
+              memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
+              remE = ((long)Dividend[4] * rowPrimeTrialDivisionData->exp4 +
+                (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+                (long)Dividend[2] * rowPrimeTrialDivisionData->exp2 +
                 ((long)Dividend[1] << 31) + Dividend[0]) %
                 currentPrime;
               break;
             case 4:
               for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
               {
-                Dividend = biLinearDelta[index2];
-                remE = ((long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-                  (long)Dividend[2] * rowPrimeTrialDivisionData.exp2 +
+                memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
+                remE = ((long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+                  (long)Dividend[2] * rowPrimeTrialDivisionData->exp2 +
                   ((long)Dividend[1] << 31) + Dividend[0]) %
                   currentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] =
                   (int)(remE * twiceInverseA % currentPrime);
               }
-              Dividend = biLinearDelta[0];
-              remE = ((long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-                (long)Dividend[2] * rowPrimeTrialDivisionData.exp2 +
+              memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
+              remE = ((long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+                (long)Dividend[2] * rowPrimeTrialDivisionData->exp2 +
                 ((long)Dividend[1] << 31) + Dividend[0]) %
                 currentPrime;
               break;
             default:
               for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
               {
-                Dividend = biLinearDelta[index2];
-                remE = ((long)Dividend[2] * rowPrimeTrialDivisionData.exp2 +
+                memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
+                remE = ((long)Dividend[2] * rowPrimeTrialDivisionData->exp2 +
                   ((long)Dividend[1] << 31) + Dividend[0]) %
                   currentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] =
                   (int)(remE * twiceInverseA % currentPrime);
               }
-              Dividend = biLinearDelta[0];
-              remE = ((long)Dividend[2] * rowPrimeTrialDivisionData.exp2 +
+              memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
+              remE = ((long)Dividend[2] * rowPrimeTrialDivisionData->exp2 +
                 ((long)Dividend[1] << 31) + Dividend[0]) %
                 currentPrime;
               break;
@@ -3632,12 +3593,13 @@ public void run()
           {
             primeSieveData[aindex[index2]].difsoln = -1; // Do not sieve.
           }
-          synchronized(TestNbr2)
+          //synchronized(TestNbr2)
           {
-            TestNbr2.notifyAll();
+            //TestNbr2.notifyAll();
           }
         }           // End initializing first polynomial
       }             // End synchronized
+#if 0
       synchronized(TestNbr2)
       {
         while (nbrThreadFinishedPolySet < polySet * numberThreads)
@@ -3649,13 +3611,14 @@ public void run()
           catch (InterruptedException ie) {}
         }
       }
-      if (factorSiqs != null || congruencesFound >= matrixB.length)
+#endif
+      if (/*factorSiqs != null ||*/ congruencesFound >= matrixBLength)
       {
         if (nbrThreadFinishedPolySet > numberThreads*polySet)
         {
-          continue nextpoly;
+          continue;
         }
-        synchronized(amodq)
+        //synchronized(amodq)
         {
           nbrThreadFinishedPolySet++;
         }
@@ -3671,12 +3634,12 @@ public void run()
       {
         if ((grayCode & (1 << i)) == 0)
         {
-          ecm.AddBigNbr(biLinearCoeff, biLinearDelta[i], biLinearCoeff,
+          AddBigNbr(biLinearCoeff, biLinearDelta[i], biLinearCoeff,
             NumberLength);
         }
         else
         {
-          ecm.SubtractBigNbr(biLinearCoeff, biLinearDelta[i], biLinearCoeff,
+          SubtractBigNbr(biLinearCoeff, biLinearDelta[i], biLinearCoeff,
             NumberLength);
         }
       }
@@ -3691,16 +3654,15 @@ public void run()
       if (biLinearCoeff[NumberLength - 1] >= 0x40000000)
       {                               // Number is negative.
         positive = FALSE;
-        System.arraycopy(biLinearCoeff, 0,     // Source
-          biT, 0,               // Destination
-          NumberLength);        // Number of elements.
-        ecm.ChSignBigNbr(biT, NumberLength);   // Make it positive.
-        biAbsLinearCoeff = biT;
+        memcpy(biT, biLinearCoeff, NumberLength * sizeof(biT[0]));
+        ChSignBigNbr(biT, NumberLength);   // Make it positive.
+        memcpy(biAbsLinearCoeff, biT, sizeof(biT));
       }
       else
       {
         positive = TRUE;                       // B is positive.
-        biAbsLinearCoeff = biLinearCoeff;      // Get B mod current prime.
+                                               // Get B mod current prime. 
+        memcpy(biAbsLinearCoeff, biLinearCoeff, sizeof(biLinearCoeff));
       }
       for (NumberLengthB = NumberLength; NumberLengthB >= 2; NumberLengthB--)
       {
@@ -3712,39 +3674,39 @@ public void run()
       }
       for (i = nbrPrimes - 1; i>0; i--)
       {
-        rowPrimeSieveData = primeSieveData[i];
-        rowPrimeSieveData0 = firstPrimeSieveData[i];
-        rowPrimeSieveData->difsoln = rowPrimeSieveData0.difsoln;
-        rowPrimeSieveData->Bainv2_0 = rowPrimeSieveData0.Bainv2_0;
-        rowPrimeTrialDivisionData = primeTrialDivisionData[i];
-        currentPrime = rowPrimeTrialDivisionData.value; // Get current prime.
-        Dividend = biQuadrCoeff;                  // Get A mod current prime.
+        rowPrimeSieveData = &primeSieveData[i];
+        rowPrimeSieveData0 = firstPrimeSieveData+i;
+        rowPrimeSieveData->difsoln = rowPrimeSieveData0->difsoln;
+        rowPrimeSieveData->Bainv2_0 = rowPrimeSieveData0->Bainv2_0;
+        rowPrimeTrialDivisionData = &primeTrialDivisionData[i];
+        currentPrime = rowPrimeTrialDivisionData->value;     // Get current prime.
+        memcpy(Dividend, biQuadrCoeff,sizeof(biQuadrCoeff)); // Get A mod current prime.
         switch (NumberLengthA)
         {
         case 7:
-          Rem = (long)Dividend[6] * rowPrimeTrialDivisionData.exp6 +
-            (long)Dividend[5] * rowPrimeTrialDivisionData.exp5 +
-            (long)Dividend[4] * rowPrimeTrialDivisionData.exp4 +
-            (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-            (long)Dividend[2] * rowPrimeTrialDivisionData.exp2;
+          Rem = (long)Dividend[6] * rowPrimeTrialDivisionData->exp6 +
+            (long)Dividend[5] * rowPrimeTrialDivisionData->exp5 +
+            (long)Dividend[4] * rowPrimeTrialDivisionData->exp4 +
+            (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+            (long)Dividend[2] * rowPrimeTrialDivisionData->exp2;
           break;
         case 6:
-          Rem = (long)Dividend[5] * rowPrimeTrialDivisionData.exp5 +
-            (long)Dividend[4] * rowPrimeTrialDivisionData.exp4 +
-            (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-            (long)Dividend[2] * rowPrimeTrialDivisionData.exp2;
+          Rem = (long)Dividend[5] * rowPrimeTrialDivisionData->exp5 +
+            (long)Dividend[4] * rowPrimeTrialDivisionData->exp4 +
+            (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+            (long)Dividend[2] * rowPrimeTrialDivisionData->exp2;
           break;
         case 5:
-          Rem = (long)Dividend[4] * rowPrimeTrialDivisionData.exp4 +
-            (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-            (long)Dividend[2] * rowPrimeTrialDivisionData.exp2;
+          Rem = (long)Dividend[4] * rowPrimeTrialDivisionData->exp4 +
+            (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+            (long)Dividend[2] * rowPrimeTrialDivisionData->exp2;
           break;
         case 4:
-          Rem = (long)Dividend[3] * rowPrimeTrialDivisionData.exp3 +
-            (long)Dividend[2] * rowPrimeTrialDivisionData.exp2;
+          Rem = (long)Dividend[3] * rowPrimeTrialDivisionData->exp3 +
+            (long)Dividend[2] * rowPrimeTrialDivisionData->exp2;
           break;
         case 3:
-          Rem = (long)Dividend[2] * rowPrimeTrialDivisionData.exp2;
+          Rem = (long)Dividend[2] * rowPrimeTrialDivisionData->exp2;
           break;
         default:
           Rem = 0;
@@ -3756,29 +3718,29 @@ public void run()
         switch (NumberLengthB)
         {
         case 7:
-          Rem = (long)biAbsLinearCoeff[6] * rowPrimeTrialDivisionData.exp6 +
-            (long)biAbsLinearCoeff[5] * rowPrimeTrialDivisionData.exp5 +
-            (long)biAbsLinearCoeff[4] * rowPrimeTrialDivisionData.exp4 +
-            (long)biAbsLinearCoeff[3] * rowPrimeTrialDivisionData.exp3 +
-            (long)biAbsLinearCoeff[2] * rowPrimeTrialDivisionData.exp2;
+          Rem = (long)biAbsLinearCoeff[6] * rowPrimeTrialDivisionData->exp6 +
+            (long)biAbsLinearCoeff[5] * rowPrimeTrialDivisionData->exp5 +
+            (long)biAbsLinearCoeff[4] * rowPrimeTrialDivisionData->exp4 +
+            (long)biAbsLinearCoeff[3] * rowPrimeTrialDivisionData->exp3 +
+            (long)biAbsLinearCoeff[2] * rowPrimeTrialDivisionData->exp2;
           break;
         case 6:
-          Rem = (long)biAbsLinearCoeff[5] * rowPrimeTrialDivisionData.exp5 +
-            (long)biAbsLinearCoeff[4] * rowPrimeTrialDivisionData.exp4 +
-            (long)biAbsLinearCoeff[3] * rowPrimeTrialDivisionData.exp3 +
-            (long)biAbsLinearCoeff[2] * rowPrimeTrialDivisionData.exp2;
+          Rem = (long)biAbsLinearCoeff[5] * rowPrimeTrialDivisionData->exp5 +
+            (long)biAbsLinearCoeff[4] * rowPrimeTrialDivisionData->exp4 +
+            (long)biAbsLinearCoeff[3] * rowPrimeTrialDivisionData->exp3 +
+            (long)biAbsLinearCoeff[2] * rowPrimeTrialDivisionData->exp2;
           break;
         case 5:
-          Rem = (long)biAbsLinearCoeff[4] * rowPrimeTrialDivisionData.exp4 +
-            (long)biAbsLinearCoeff[3] * rowPrimeTrialDivisionData.exp3 +
-            (long)biAbsLinearCoeff[2] * rowPrimeTrialDivisionData.exp2;
+          Rem = (long)biAbsLinearCoeff[4] * rowPrimeTrialDivisionData->exp4 +
+            (long)biAbsLinearCoeff[3] * rowPrimeTrialDivisionData->exp3 +
+            (long)biAbsLinearCoeff[2] * rowPrimeTrialDivisionData->exp2;
           break;
         case 4:
-          Rem = (long)biAbsLinearCoeff[3] * rowPrimeTrialDivisionData.exp3 +
-            (long)biAbsLinearCoeff[2] * rowPrimeTrialDivisionData.exp2;
+          Rem = (long)biAbsLinearCoeff[3] * rowPrimeTrialDivisionData->exp3 +
+            (long)biAbsLinearCoeff[2] * rowPrimeTrialDivisionData->exp2;
           break;
         case 3:
-          Rem = (long)biAbsLinearCoeff[2] * rowPrimeTrialDivisionData.exp2;
+          Rem = (long)biAbsLinearCoeff[2] * rowPrimeTrialDivisionData->exp2;
           break;
         default:
           Rem = 0;
@@ -3791,17 +3753,17 @@ public void run()
           RemB = currentPrime - RemB;
         }
         rowPrimeSieveData->soln1 = (int)((SieveLimit + (long)inverseA *
-          (rowPrimeSieveData0.modsqrt + RemB)) % currentPrime);
+          (rowPrimeSieveData0->modsqrt + RemB)) % currentPrime);
       }
       do
       {                       // For each polynomial...
-        if (congruencesFound >= matrixB.length || factorSiqs != null)
+        if (congruencesFound >= matrixBLength /*|| factorSiqs != null*/)
         {
           if (nbrThreadFinishedPolySet > numberThreads*polySet)
           {
-            continue nextpoly;
+            break;
           }
-          synchronized(amodq)
+          //synchronized(amodq)
           {
             nbrThreadFinishedPolySet++;
           }
@@ -3818,8 +3780,8 @@ public void run()
           nbrPrimes2,
           firstLimit, secondLimit, thirdLimit,
           smallPrimeUpperLimit, threshold, multiplier,
-          SieveLimit, amodq, PolynomialIndex,
-          aindex, nbrFactorsA, log2, biLinearCoeff,
+          amodq, PolynomialIndex,
+          nbrFactorsA, biLinearCoeff,
           NumberLength);
         ValuesSieved += 2 * SieveLimit;
         /************************/
@@ -3841,24 +3803,22 @@ public void run()
             {
               if ((SieveArray[index2 + i] & 0x80) != 0)
               {
-                if (congruencesFound >= matrixB.length)
+                if (congruencesFound >= matrixBLength)
                 {       // All congruences were found: stop sieving.
                   index2 = 0;
                   break;
                 }
-                SieveLocationHit(matrixB, rowMatrixB,
+                SieveLocationHit(rowMatrixB,
                   rowMatrixBbeforeMerge,
-                  SieveLimit, vectExpParity, vectLeftHandSide,
+                  vectExpParity,
                   index2 + i, primeSieveData,
                   primeTrialDivisionData, startTime,
-                  aindex, nbrFactorsA, rowPartials,
-                  matrixPartial, matrixPartialHashIndex,
-                  afact, largePrimeUpperBound,
-                  indexMinFactorA, multiplier, rowSquares,
+                  nbrFactorsA, rowPartials,
+                  multiplier, rowSquares,
                   biDividend, NumberLength, biT,
                   biLinearCoeff, biR, biU, biV,
                   indexFactorsA, FALSE);
-                if (congruencesFound >= matrixB.length)
+                if (congruencesFound >= matrixBLength)
                 {               // All congruences were found: stop sieving.
                   index2 = 0;
                   break;
@@ -3866,24 +3826,22 @@ public void run()
               }
               if (SieveArray[index2 + i] < 0)
               {
-                if (congruencesFound >= matrixB.length)
+                if (congruencesFound >= matrixBLength)
                 {       // All congruences were found: stop sieving.
                   index2 = 0;
                   break;
                 }
-                SieveLocationHit(matrixB, rowMatrixB,
+                SieveLocationHit(rowMatrixB,
                   rowMatrixBbeforeMerge,
-                  SieveLimit, vectExpParity, vectLeftHandSide,
+                  vectExpParity,
                   index2 + i, primeSieveData,
                   primeTrialDivisionData, startTime,
-                  aindex, nbrFactorsA, rowPartials,
-                  matrixPartial, matrixPartialHashIndex,
-                  afact, largePrimeUpperBound,
-                  indexMinFactorA, multiplier, rowSquares,
+                  nbrFactorsA, rowPartials,
+                  multiplier, rowSquares,
                   biDividend, NumberLength, biT,
                   biLinearCoeff, biR, biU, biV,
                   indexFactorsA, TRUE);
-                if (congruencesFound >= matrixB.length)
+                if (congruencesFound >= matrixBLength)
                 {               // All congruences were found: stop sieving.
                   index2 = 0;
                   break;
@@ -3897,8 +3855,9 @@ public void run()
         /*******************/
         PolynomialIndex += 2;
       } while (PolynomialIndex <= lastPolynomial &&
-        congruencesFound < matrixB.length);
+        congruencesFound < matrixBLength);
     }
+#if 0
   }
   catch (ArithmeticException ae)
   {
@@ -3908,8 +3867,9 @@ public void run()
       matrixB.notify();
     }
   }
+#endif
 }
-
+#if 0
 /* Implementation of algorithm explained in Gower and Wagstaff paper */
 /* The variables with suffix 3 correspond to multiplier = 3 */
 static int SQUFOF(long N, int queue[])
@@ -4271,7 +4231,7 @@ static int SQUFOF(long N, int queue[])
   }
   return 0;
 }
-
+#endif
 /* If 2^value mod value = 2, then the value is a probable prime (value odd) */
 static unsigned char isProbablePrime(long value)
 {
@@ -4304,14 +4264,14 @@ static unsigned char isProbablePrime(long value)
     /* Square the base */
     Pr = BaseLO * BaseLO;
     MontDig = ((int)Pr * MontgomeryMultN) & 0x7FFFFFFFL;
-    Prod0 = (Pr = ((MontDig * valueLO + Pr) >> > 31) +
+    Prod0 = (Pr = ((MontDig * valueLO + Pr) >> 31) +
       MontDig * valueHI + BaseLO * BaseHI) & 0x7FFFFFFFL;
-    Prod1 = Pr >> > 31;
+    Prod1 = Pr >> 31;
     Pr = BaseHI * BaseLO + Prod0;
     MontDig = ((int)Pr * MontgomeryMultN) & 0x7FFFFFFFL;
-    Prod0 = (Pr = ((MontDig * valueLO + Pr) >> > 31) +
+    Prod0 = (Pr = ((MontDig * valueLO + Pr) >> 31) +
       MontDig * valueHI + BaseHI * BaseHI + Prod1) & 0x7FFFFFFFL;
-    Prod1 = Pr >> > 31;
+    Prod1 = Pr >> 31;
     if (Prod1 > valueHI || (Prod1 == valueHI && Prod0 >= valueLO))
     {
       Prod0 = (Pr = Prod0 - valueLO) & 0x7FFFFFFFL;

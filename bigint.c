@@ -38,6 +38,32 @@ void CopyBigInt(BigInteger *pDest, BigInteger *pSrc)
   memcpy(pDest->limbs, pSrc->limbs, (pSrc->nbrLimbs)*sizeof(limb));
 }
 
+void AddBigInt(limb *pAddend1, limb *pAddend2, limb *pSum, int nbrLimbs)
+{
+  limb carry;
+  int ctr;
+  carry.x = 0;
+  for (ctr = 0; ctr < nbrLimbs; ctr++)
+  {
+    carry.x += (pAddend1++)->x + (pAddend2++)->x;
+    (pSum++)->x = carry.x & MAX_VALUE_LIMB;
+    carry.x >>= BITS_PER_GROUP;
+  }
+}
+
+void SubtractBigInt(limb *pMinuend, limb *pSubtrahend, limb *pDiff, int nbrLimbs)
+{
+  limb carry;
+  int ctr;
+  carry.x = 0;
+  for (ctr = 0; ctr < nbrLimbs; ctr++)
+  {
+    carry.x += (pMinuend++)->x - (pSubtrahend++)->x;
+    (pDiff++)->x = carry.x & MAX_VALUE_LIMB;
+    carry.x >>= BITS_PER_GROUP;
+  }
+}
+
 void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum)
 {
   int ctr, nbrLimbs;
@@ -211,6 +237,23 @@ enum eExprErr BigIntRemainder(BigInteger *pDividend, BigInteger *pDivisor, BigIn
   return EXPR_OK;
 }
 
+double logBigNbr(BigInteger *pBigNbr)
+{
+  int nbrLimbs;
+  double logar;
+  nbrLimbs = pBigNbr->nbrLimbs;
+  if (nbrLimbs > 1)
+  {
+    logar = log((double)(pBigNbr->limbs[nbrLimbs - 2].x + (pBigNbr->limbs[nbrLimbs - 1].x << BITS_PER_GROUP)) +
+      (double)(nbrLimbs - 2)*log((double)(1 << BITS_PER_GROUP)));
+  }
+  else
+  {
+    logar = log((double)(pBigNbr->limbs[nbrLimbs - 1].x) + (double)(nbrLimbs - 1)*log((double)(1 << BITS_PER_GROUP)));
+  }
+  return logar;
+}
+
 enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int expon, BigInteger *pPower)
 {
   int nbrLimbs, mask;
@@ -222,16 +265,7 @@ enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int expon, BigInteger *pPower
     pPower->sign = SIGN_POSITIVE;
     return EXPR_OK;
   }
-  nbrLimbs = pBase->nbrLimbs;
-  if (nbrLimbs > 1)
-  {
-    base = log((double)(pBase->limbs[nbrLimbs - 2].x + (pBase->limbs[nbrLimbs - 1].x << BITS_PER_GROUP)) +
-      (double)(nbrLimbs - 2)*log((double)(1 << BITS_PER_GROUP)));
-  }
-  else
-  {
-    base = log((double)(pBase->limbs[nbrLimbs - 1].x) + (double)(nbrLimbs - 1)*log((double)(1 << BITS_PER_GROUP)));
-  }
+  base = logBigNbr(pBase);
   if (base*(double)expon > 46051)
   {   // More than 20000 digits. 46051 = log(10^20000)
     return EXPR_INTERM_TOO_HIGH;
