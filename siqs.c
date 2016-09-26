@@ -62,9 +62,10 @@ long polynomialsSieved;
 int nbrPartials;
 int multiplier;
 int nbrFactorsA;
-long afact[MAX_NBR_FACTORS];
+int afact[MAX_NBR_FACTORS];
 long startTime;
 int TestNbr2[MAX_LIMBS_SIQS];
+int NbrBak[MAX_LIMBS_SIQS];
 int biQuadrCoeff[MAX_LIMBS_SIQS];
 int biLinearDelta[MAX_LIMBS_SIQS][MAX_LIMBS_SIQS];
 static long largePrimeUpperBound;
@@ -125,6 +126,346 @@ static void ChSignBigNbr(int *nbr, int length)
     carry >>= BITS_PER_GROUP;
   }
 }
+
+static void AddBigNbr(int *pNbr1, int *pNbr2, int *pSum, int NumberLength)
+{
+  unsigned int carry = 0;
+  int i;
+  for (i = 0; i < NumberLength; i++)
+  {
+    carry = (carry >> 31) + (unsigned int)*pNbr1++ + (unsigned int)*pNbr2++;
+    *pSum++ = (int)(carry & 0x7FFFFFFF);
+  }
+}
+
+static void SubtractBigNbr(int *pNbr1, int *pNbr2, int *pDiff,
+  int NumberLength)
+{
+  int carry = 0;
+  int i;
+  for (i = 0; i < NumberLength; i++)
+  {
+    carry = (carry >> 31) + *pNbr1++ - *pNbr2++;
+    *pDiff++ = carry & 0x7FFFFFFF;
+  }
+}
+
+static void SubtractBigNbrModN(int *pNbr1, int *pNbr2, int *pDiff, int *pMod,
+  int NumberLength)
+{
+  int borrow = 0;
+  unsigned int carry;
+  int i;
+  for (i = 0; i < NumberLength; i++)
+  {
+    borrow = (borrow >> 31) + *pNbr1++ - *pNbr2++;
+    *pDiff++ = borrow & 0x7FFFFFFF;
+  }
+  if (borrow != 0)
+  {
+    pDiff -= NumberLength;
+    carry = 0;
+    for (i = 0; i < NumberLength; i++)
+    {
+      carry = (carry >> 31) + (unsigned int)*pDiff + (unsigned int)*pMod++;
+      *pDiff++ = (int)(carry & 0x7FFFFFFF);
+    }
+  }
+}
+
+static void showMatrixSize(char *SIQSInfoText, int rows, int cols)
+{
+}
+
+static void MultBigNbrByInt(int *bigFactor, int factor, int *bigProduct, int nbrLen)
+{
+  double dVal = 1 / 0x80000000e0;
+  double dFactor = (double)factor;
+  int ctr, low;
+  int carry = 0;
+  for (ctr = 0; ctr < nbrLen; ctr++)
+  {
+    low = *bigFactor * factor + carry;
+    // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
+    // In that case, there would be an error of +/- 1.
+    if (low < 0x40000000)
+    {
+      carry = (int)(((double)*bigFactor * dFactor + (double)carry + 0x20000000)*dVal);
+    }
+    else
+    {
+      carry = (int)(((double)*bigFactor * dFactor + (double)carry - 0x20000000)*dVal);
+    }
+    *bigProduct++ = low;
+    bigFactor++;
+  }
+}
+
+static void DivBigNbrByInt(int *pDividend, int divisor, int *pQuotient, int nbrLen)
+{
+  int ctr, quotient, dividend;
+  int remainder = 0;
+  double dDivisor = (double)divisor;
+  double dLimb = 0x80000000;
+  double dDividend, dQuotient;
+  pDividend += nbrLen - 1;
+  pQuotient += nbrLen - 1;
+  for (ctr = nbrLen - 1; ctr >= 0; ctr--)
+  {
+    dividend = (remainder << 31) + *pDividend;
+    dDividend = (double)remainder * dLimb + *pDividend;
+    dQuotient = dDividend / dDivisor + 0.5;
+    quotient = (int)dQuotient;   // quotient has correct value or 1 more.
+    remainder = dividend - quotient * divisor;
+    if ((unsigned int)remainder >= divisor)
+    {     // remainder not in range 0 <= remainder < divisor. Adjust.
+      quotient--;
+      remainder += divisor;
+    }
+    *pQuotient-- = quotient;
+    pDividend--;
+  }
+}
+
+static int RemDivBigNbrByInt(int *pDividend, int divisor, int nbrLen)
+{
+  int ctr, quotient, dividend;
+  int remainder = 0;
+  double dDivisor = (double)divisor;
+  double dLimb = 0x80000000;
+  double dDividend, dQuotient;
+  pDividend += nbrLen - 1;
+  for (ctr = nbrLen - 1; ctr >= 0; ctr--)
+  {
+    dividend = (remainder << 31) + *pDividend;
+    dDividend = (double)remainder * dLimb + *pDividend;
+    dQuotient = dDividend / dDivisor + 0.5;
+    quotient = (int)dQuotient;   // quotient has correct value or 1 more.
+    remainder = dividend - quotient * divisor;
+    if ((unsigned int)remainder >= divisor)
+    {     // remainder not in range 0 <= remainder < divisor. Adjust.
+      quotient--;
+      remainder += divisor;
+    }
+    pDividend--;
+  }
+  return remainder;
+}
+
+static void MultBigNbr(int *pFactor1, int *pFactor2, int *pProd, int nbrLen)
+{
+  double dVal = 1 / 0x80000000e0;
+  double dAccumulator;
+  int low;
+  int i, j;
+  int factor1, factor2;
+  low = 0;
+  for (i = 0; i < nbrLen; i++)
+  {
+    dAccumulator = 0;
+    for (j = 0; j <= i; j++)
+    {
+      factor1 = *(pFactor1 + j);
+      factor2 = *(pFactor2 + i-j);
+      low += factor1*factor2;
+      dAccumulator += (double)factor1 * (double)factor2;
+    }
+    *pProd++ = low;
+    // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
+    // In that case, there would be an error of +/- 1.
+    if (low < 0x40000000)
+    {
+      dAccumulator = floor((dAccumulator + 0x20000000)*dVal);
+    }
+    else
+    {
+      dAccumulator = floor((dAccumulator - 0x20000000)*dVal);
+    }
+  }
+}
+
+static void IntToBigNbr(int value, int *bigNbr, int nbrLength)
+{
+  if (value >= 0)
+  {     // value is positive.
+    *bigNbr = value;
+    value = 0;
+  }
+  else
+  {     // value is negative.
+    *bigNbr = value & 0x7FFFFFFF;
+    value = 0x7FFFFFFF;
+  }
+  for (; nbrLength > 1; nbrLength--)
+  {
+    *++bigNbr = value;
+  }
+}
+
+static int BigNbrToBigInt(BigInteger *pBigNbr, int *pBigInt)
+{
+  int ctr;
+  int currentValue = 0;
+  int nbrLenBigNbr = pBigNbr->nbrLimbs;
+  int curShift = 0;
+  int *ptrBigInt = pBigInt;
+  limb *ptrLimb = pBigNbr->limbs;
+  for (ctr = 0; ctr < nbrLenBigNbr; ctr++)
+  {
+    currentValue += ptrLimb->x << curShift;
+    curShift += BITS_PER_GROUP;
+    if (curShift >= 31)
+    {
+      *ptrBigInt++ = currentValue & 0x7FFFFFFF;
+      curShift -= 31;
+      currentValue = ptrLimb->x >> (BITS_PER_GROUP - curShift);
+    }
+    ptrLimb++;
+  }
+  if (curShift == 0)
+  {
+    return ptrBigInt - pBigInt;
+  }
+  *ptrBigInt = currentValue;
+  return (ptrBigInt - pBigInt)+1;
+}
+
+static void BigIntToBigNbr(BigInteger *pBigNbr, int *pBigInt, int nbrLenBigInt)
+{
+  int ctr, nbrLimbs;
+  int currentValue = 0;
+  int nbrLenBigNbr = pBigNbr->nbrLimbs;
+  int curShift = 0;
+  int *ptrBigInt = pBigInt;
+  limb *ptrLimb = pBigNbr->limbs;
+  pBigNbr->sign = SIGN_POSITIVE;
+  for (ctr = 0; ctr < nbrLenBigInt; ctr++)
+  {
+    curShift += 31;
+    while (curShift >= BITS_PER_GROUP)
+    {
+      currentValue |= *ptrBigInt << curShift;
+      ptrLimb++->x = currentValue & MAX_VALUE_LIMB;
+      curShift -= BITS_PER_GROUP;
+      currentValue >>= BITS_PER_GROUP;
+    }
+    ptrBigInt++;
+  }
+  if (curShift == 0)
+  {
+    nbrLimbs = ptrBigInt - pBigInt;
+  }
+  else
+  {
+    nbrLimbs = ptrBigInt - pBigInt + 1;
+    ptrLimb++->x = currentValue;
+  }
+  for (nbrLimbs = NumberLength; nbrLimbs > 1; nbrLimbs--)
+  {
+    if (--ptrLimb->x != 0)
+    {
+      break;
+    }
+  }
+  pBigNbr->nbrLimbs = nbrLimbs;
+}
+
+static void GcdBigNbr(int *pNbr1, int *pNbr2, int *pGcd, int nbrLen)
+{
+  int lenGcd;
+  BigInteger BigInt1, BigInt2, BigGcd;
+  BigIntToBigNbr(&BigInt1, pNbr1, nbrLen);
+  BigIntToBigNbr(&BigInt2, pNbr2, nbrLen);
+  BigIntGcd(&BigInt1, &BigInt2, &BigGcd);
+  memset(pGcd, 0, NumberLength * sizeof(int));
+  BigNbrToBigInt(&BigGcd, pGcd);
+}
+
+static void AdjustModN(int Nbr[], int TestNbr[], int NumberLength)
+{
+  int MaxUInt = 0x7FFFFFFFL;
+  int TrialQuotient;
+  int carry;
+  int i;
+  double dAux, dN;
+  double dMaxInt = (double)(1U << 31);
+
+  dN = (double)TestNbr[NumberLength - 1];
+  if (NumberLength > 1)
+  {
+    dN += (double)TestNbr[NumberLength - 2] / dMaxInt;
+  }
+  if (NumberLength > 2)
+  {
+    dN += (double)TestNbr[NumberLength - 3] / (dMaxInt*dMaxInt);
+  }
+  dAux =
+    (double)Nbr[NumberLength] * dMaxInt + (double)Nbr[NumberLength - 1];
+  if (NumberLength > 1)
+  {
+    dAux += (double)Nbr[NumberLength - 2] / dMaxInt;
+  }
+  TrialQuotient = (long)(dAux / dN) + 3;
+  if (TrialQuotient < 0)
+  {     // Exceeded maximum value for TrialQuotient.
+    TrialQuotient = MaxUInt;
+  }
+  MultBigNbrByInt(TestNbr, TrialQuotient, NbrBak, NumberLength+1);
+  SubtractBigInt(Nbr, NbrBak, Nbr, NumberLength + 1);
+  while (Nbr[NumberLength] != 0)
+  {
+    AddBigInt(Nbr, TestNbr, Nbr, NumberLength + 1);
+  }
+}
+
+static void MultBigNbrModN(int Nbr1[], int Nbr2[], int Prod[],
+  int TestNbr[], int NumberLength)
+{
+  long MaxUInt = 0x7FFFFFFFL;
+  int i, j;
+  long Pr, Nbr;
+
+  if (NumberLength >= 2 &&
+    TestNbr[NumberLength - 1] == 0 && TestNbr[NumberLength - 2]<0x40000000)
+  {
+    NumberLength--;
+  }
+  i = NumberLength;
+  do
+  {
+    Prod[--i] = 0;
+  } while (i > 0);
+  i = NumberLength;
+  do
+  {
+    Nbr = Nbr1[--i];
+    j = NumberLength;
+    do
+    {
+      Prod[j] = Prod[j - 1];
+      j--;
+    } while (j > 0);
+    MultBigNbrByInt(Nbr, Nbr2, Prod, NumberLength + 1);
+    AdjustModN(Prod, TestNbr, NumberLength);
+  } while (i > 0);
+}
+
+static void MultBigNbrByIntModN(int Nbr1[], int Nbr2, int Prod[],
+  int TestNbr[], int NumberLength)
+{
+  long MaxUInt = 0x7FFFFFFFL;
+  long Pr;
+  int j;
+
+  if (NumberLength >= 2 &&
+    TestNbr[NumberLength - 1] == 0 && TestNbr[NumberLength - 2]<0x40000000)
+  {
+    NumberLength--;
+  }
+  MultBigNbrByInt(Nbr1, Nbr2, Prod, NumberLength + 1);
+  AdjustModN(Prod, TestNbr, NumberLength);
+}
+
 
 static void PerformSiqsSieveStage(PrimeSieveData primeSieveData[],
   short SieveArray[],
@@ -1554,9 +1895,9 @@ static void SmoothRelationFound(
   mergeArrays(nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge,
     primeTrialDivisionData, rowSquares);
   nbrSquares = rowSquares[0];
-  LongToBigNbr(1, biR, NumberLength);
-  LongToBigNbr(positive ? 1 : -1, biT, NumberLength);
-  MultBigNbrByLong(biQuadrCoeff, index2 - SieveLimit, biU,
+  IntToBigNbr(1, biR, NumberLength);
+  IntToBigNbr(positive ? 1 : -1, biT, NumberLength);
+  MultBigNbrByInt(biQuadrCoeff, index2 - SieveLimit, biU,
     NumberLength);                     // Ax
   AddBigNbr(biU, biLinearCoeff, biU, NumberLength);         // Ax+B
   if (oddPolynomial)
@@ -1574,11 +1915,11 @@ static void SmoothRelationFound(
     if (D == multiplier)
     {
       AddBigNbr(biU, TestNbr, biU, NumberLength);
-      DivBigNbrByLong(biU, D, biU, NumberLength);
+      DivBigNbrByInt(biU, D, biU, NumberLength);
     }
     else
     {
-      MultBigNbrByLong(biR, D, biR, NumberLength);
+      MultBigNbrByInt(biR, D, biR, NumberLength);
     }
   }
   if (InsertNewRelation(rowMatrixB, biT, biU, biR, NumberLength))
@@ -1648,7 +1989,7 @@ static void PartialRelationFound(
       }
       seed = rowPartial[squareRootSize + 2];
       getFactorsOfA(seed, nbrFactorsA, indexFactorsA);
-      LongToBigNbr(newDivid, biR, NumberLength);
+      IntToBigNbr(newDivid, biR, NumberLength);
       nbrFactorsPartial = 0;
       // biT = old (Ax+B)^2.
       MultBigNbr(biV, biV, biT, NumberLength);
@@ -1664,7 +2005,7 @@ static void PartialRelationFound(
       }
       NumberLengthDivid = NumberLength;
       // The number is multiple of the big prime, so divide by it.
-      DivBigNbrByLong(biT, newDivid, biT, NumberLengthDivid);
+      DivBigNbrByInt(biT, newDivid, biT, NumberLengthDivid);
       if (biT[NumberLengthDivid - 1] == 0 &&
         biT[NumberLengthDivid - 2] < 0x40000000)
       {
@@ -1672,7 +2013,7 @@ static void PartialRelationFound(
       }
       for (index = 0; index < nbrFactorsA; index++)
       {
-        DivBigNbrByLong(biT,
+        DivBigNbrByInt(biT,
           primeTrialDivisionData[indexFactorsA[index]].value, biT,
           NumberLengthDivid);
         if (biT[NumberLengthDivid - 1] == 0 &&
@@ -1738,7 +2079,7 @@ static void PartialRelationFound(
             break;
           }
           expParity = 1 - expParity;
-          DivBigNbrByLong(biT, Divisor, biT, NumberLengthDivid);
+          DivBigNbrByInt(biT, Divisor, biT, NumberLengthDivid);
           DividLSDW = ((long)biT[1] << 31) + biT[0];
           biT2 = biT[2];
           biT3 = biT[3];
@@ -1767,7 +2108,7 @@ static void PartialRelationFound(
           rowPartials[nbrFactorsPartial++] = index;
         }
       }
-      MultBigNbrByLong(biQuadrCoeff, index2 - SieveLimit, biT,
+      MultBigNbrByInt(biQuadrCoeff, index2 - SieveLimit, biT,
         NumberLength);
       AddBigNbr(biT, biLinearCoeff, biT, NumberLength); // biT = Ax+B
       if (oddPolynomial)
@@ -1796,12 +2137,12 @@ static void PartialRelationFound(
         D = rowSquares[index];
         if (D != multiplier)
         {
-          MultBigNbrByLong(biR, D, biR, NumberLength);
+          MultBigNbrByInt(biR, D, biR, NumberLength);
         }
         else
         {
           AddBigNbr(biU, TestNbr, biU, NumberLength);
-          DivBigNbrByLong(biU, multiplier, biU, NumberLength);
+          DivBigNbrByInt(biU, multiplier, biU, NumberLength);
         }
       }
       if (rowMatrixB[0] > 1 &&
@@ -1836,21 +2177,21 @@ static void PartialRelationFound(
       // duplicates.
       mergeArrays(nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge,
         primeTrialDivisionData, rowSquares);
-      LongToBigNbr(Divid, biR, NumberLength);
+      IntToBigNbr(Divid, biR, NumberLength);
       nbrSquares = rowSquares[0];
       for (index = 1; index < nbrSquares; index++)
       {
         D = rowSquares[index];
-        MultBigNbrByLongModN(biR, D, biR, TestNbr, NumberLength);
+        MultBigNbrByIntModN(biR, D, biR, TestNbr, NumberLength);
         if (D == multiplier)
         {
-          DivBigNbrByLong(biU, D, biU, NumberLength);
+          DivBigNbrByInt(biU, D, biU, NumberLength);
         }
       }
       rowPartial[0] = (positive ? newDivid : -newDivid);
       // Indicate last index with this hash.
       rowPartial[1] = -1;
-      MultBigNbrByLong(biQuadrCoeff, index2 - SieveLimit, biT,
+      MultBigNbrByInt(biQuadrCoeff, index2 - SieveLimit, biT,
         NumberLength);
       AddBigNbr(biT, biLinearCoeff, biT, NumberLength); // biT = Ax+B
       if (oddPolynomial)
@@ -1891,7 +2232,7 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   int nbrColumns;
 
   trialDivisions++;
-  MultBigNbrByLong(biQuadrCoeff, index2 - SieveLimit, biT,
+  MultBigNbrByInt(biQuadrCoeff, index2 - SieveLimit, biT,
     NumberLength);                       // Ax
   AddBigNbr(biT, biLinearCoeff, biT, NumberLength);     // Ax+B
   if (oddPolynomial)
@@ -1914,7 +2255,7 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   rowSquares[0] = 1;
   for (index = 0; index < nbrFactorsA; index++)
   {
-    DivBigNbrByLong(biDividend, afact[index], biDividend,
+    DivBigNbrByInt(biDividend, afact[index], biDividend,
       NumberLengthDivid);
     if ((biDividend[NumberLengthDivid - 1] == 0
       && biDividend[NumberLengthDivid - 2] < 0x40000000))
@@ -2035,7 +2376,7 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
   SieveLimit = (int)exp(8.5 + 0.015 * Temp) & 0xFFFFFFF8;
   nbrFactorsA = (int)(Temp*0.025 + 1);
   NbrPolynomials = (1 << (nbrFactorsA - 1)) - 1;
-  NumberLength = BigNbrToBigInt(NbrToFactor, TestNbr);
+  NumberLength = BigNbrToBigInt(&NbrToFactor, TestNbr);
   TestNbr[NumberLength++].x = 0;
   memcpy(TestNbr2, TestNbr, NumberLength*sizeof(limb));
   for (i = sizeof(matrixPartialHashIndex)/sizeof(matrixPartialHashIndex[0]) - 1; i >= 0; i--)
@@ -2075,7 +2416,7 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
   currentPrime = 3;
   while (currentPrime < 10000)
   {
-    NbrMod = (int)RemDivBigNbrByLong(TestNbr, currentPrime,
+    NbrMod = (int)RemDivBigNbrByInt(TestNbr, currentPrime,
       NumberLength);
     halfCurrentPrime = (currentPrime - 1) / 2;
     int jacobi = (int)intModPow(NbrMod, halfCurrentPrime, currentPrime);
@@ -2114,7 +2455,7 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
       multiplier = arrmult[j];
     }
   } /* end while */
-  MultBigNbrByLong(TestNbr2, multiplier, TestNbr, NumberLength);
+  MultBigNbrByInt(TestNbr2, multiplier, TestNbr, NumberLength);
   FactorBase = currentPrime;
   matrixBLength = nbrPrimes + 50;
   rowPrimeSieveData->modsqrt = (NbrToFactor.limbs[0].x & 1) ? 1 : 0;
@@ -2156,7 +2497,7 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
   currentPrime = 3;
   while (j < nbrPrimes)
   { /* select small primes */
-    NbrMod = (int)RemDivBigNbrByLong(TestNbr, currentPrime,
+    NbrMod = (int)RemDivBigNbrByInt(TestNbr, currentPrime,
       NumberLength);
     if (currentPrime != multiplier &&
       intModPow(NbrMod, (currentPrime - 1) / 2, currentPrime) == 1)
@@ -2342,7 +2683,7 @@ BigInteger FactoringSIQS(BigInteger NbrToFactor)
     }
   }
 #endif
-  if (getTerminateThread() || (factorSiqs.nbrLimbs == 1 && factorSiqs.limbs[0].x == 0))
+  if (/*getTerminateThread() ||*/ (factorSiqs.nbrLimbs == 1 && factorSiqs.limbs[0].x == 0))
   {
     //throw new ArithmeticException();
   }
@@ -2489,8 +2830,8 @@ static unsigned char LinearAlgebraPhase(
   // primes are multiplied an odd number of times.
   for (mask = 1; mask != 0; mask *= 2)
   {
-    LongToBigNbr(1, biT, NumberLength);
-    LongToBigNbr(1, biR, NumberLength);
+    IntToBigNbr(1, biT, NumberLength);
+    IntToBigNbr(1, biR, NumberLength);
     for (row = matrixBlength - 1; row >= 0; row--)
     {
       vectExpParity[row] = 0;
@@ -2523,7 +2864,7 @@ static unsigned char LinearAlgebraPhase(
             }
             else
             {
-              MultBigNbrByLongModN(biT,
+              MultBigNbrByIntModN(biT,
                 primeTrialDivisionData[primeIndex].value, biT,
                 TestNbr, NumberLength);
             }
@@ -2626,7 +2967,7 @@ static unsigned char InsertNewRelation(
   /* Convert negative numbers to the range 0 <= n < TestNbr */
   if ((TestNbr[0].x & 1) == 0)
   {
-    DivBigNbrByLong(TestNbr, 2, TestNbr2, NumberLength);
+    DivBigNbrByInt(TestNbr, 2, TestNbr2, NumberLength);
     // If biR >= TestNbr perform biR = biR - TestNbr.
     for (k = 0; k < NumberLength; k++)
     {
@@ -3371,7 +3712,7 @@ void run(void)
               primeTrialDivisionData,
               vectExpParity,
               biT, biR, biU, NumberLength));
-            /*result = BigIntToBigNbr(biT, NumberLength);  // Factor found.*/
+            BigIntToBigNbr(&result, biT, NumberLength);  // Factor found.
 #if 0
             synchronized(matrixB)
             {
@@ -3405,10 +3746,10 @@ void run(void)
           }
           // Compute the leading coefficient in biQuadrCoeff.
 
-          LongToBigNbr(afact[0], biQuadrCoeff, NumberLength);
+          IntToBigNbr(afact[0], biQuadrCoeff, NumberLength);
           for (index = 1; index < nbrFactorsA; index++)
           {
-            MultBigNbrByLong(biQuadrCoeff, afact[index], biQuadrCoeff,
+            MultBigNbrByInt(biQuadrCoeff, afact[index], biQuadrCoeff,
               NumberLength);
           }
           for (NumberLengthA = NumberLength; NumberLengthA >= 2; NumberLengthA--)
@@ -3421,21 +3762,21 @@ void run(void)
           }
           for (index = 0; index < nbrFactorsA; index++)
           {
-            currentPrime = (int)afact[index];
-            D = RemDivBigNbrByLong(biQuadrCoeff,
+            currentPrime = afact[index];
+            D = RemDivBigNbrByInt(biQuadrCoeff,
               currentPrime*currentPrime, NumberLengthA) / currentPrime;
             Q = (long)primeSieveData[aindex[index]].modsqrt *
               modInv((int)D, currentPrime) % currentPrime;
             amodq[index] = (int)D << 1;
-            tmodqq[index] = (int)RemDivBigNbrByLong(TestNbr,
+            tmodqq[index] = (int)RemDivBigNbrByInt(TestNbr,
               currentPrime*currentPrime, NumberLength);
             if (Q + Q > currentPrime)
             {
               Q = currentPrime - Q;
             }
-            DivBigNbrByLong(biQuadrCoeff, currentPrime, biDividend,
+            DivBigNbrByInt(biQuadrCoeff, currentPrime, biDividend,
               NumberLengthA);
-            MultBigNbrByLong(biDividend, Q, biLinearDelta[index],
+            MultBigNbrByInt(biDividend, Q, biLinearDelta[index],
               NumberLengthA);
             for (index2 = NumberLengthA; index2 < NumberLength; index2++)
             {
