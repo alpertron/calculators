@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClCompile Include="baseconv.c" />
     <ClCompile Include="bigint.c" />
+    <ClCompile Include="bignbr.c" />
     <ClCompile Include="contfrac.c" />
     <ClCompile Include="dilog.c" />
     <ClCompile Include="division.c" />
@@ -171,6 +172,7 @@
     <ClCompile Include="partition.c" />
     <ClCompile Include="polfact.c" />
     <ClCompile Include="polynomial.c" />
+    <ClCompile Include="siqs.c" />
     <ClCompile Include="sqroot.c">
       <DeploymentContent>true</DeploymentContent>
     </ClCompile>

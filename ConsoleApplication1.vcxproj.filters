@@ -36,9 +36,6 @@
     <ClCompile Include="expression.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
-    <ClCompile Include="bigint.c">
-      <Filter>Archivos de código fuente</Filter>
-    </ClCompile>
     <ClCompile Include="division.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
@@ -70,6 +67,15 @@
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
     <ClCompile Include="errors.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="siqs.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="bignbr.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="bigint.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
   </ItemGroup>

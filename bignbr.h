@@ -109,4 +109,22 @@ void ComputeInversePower2(/*@in@*/limb *value, /*@out@*/limb *result, /*@out@*/l
 int BigNbrIsZero(limb *value);
 double logBigNbr(BigInteger *pBigNbr);
 
+void ChSignBigNbr(int *nbr, int length);
+void AddBigNbr(int *pNbr1, int *pNbr2, int *pSum, int nbrLen);
+void SubtractBigNbr(int *pNbr1, int *pNbr2, int *pDiff, int nbrLen);
+void AddBigIntModN(int *pNbr1, int *pNbr2, int *pSum, int *pMod, int nbrLen);
+void SubtractBigNbrModN(int *pNbr1, int *pNbr2, int *pDiff, int *pMod, int nbrLen);
+void MultBigNbrByInt(int *bigFactor, int factor, int *bigProduct, int nbrLen);
+void DivBigNbrByInt(int *pDividend, int divisor, int *pQuotient, int nbrLen);
+int RemDivBigNbrByInt(int *pDividend, int divisor, int nbrLen);
+void MultBigNbr(int *pFactor1, int *pFactor2, int *pProd, int nbrLen);
+void IntToBigNbr(int value, int *bigNbr, int nbrLength);
+int BigNbrToBigInt(BigInteger *pBigNbr, int *pBigInt);
+void BigIntToBigNbr(BigInteger *pBigNbr, int *pBigInt, int nbrLenBigInt);
+void GcdBigNbr(int *pNbr1, int *pNbr2, int *pGcd, int nbrLen);
+void AdjustBigIntModN(int Nbr[], int Mod[], int nbrLen);
+void MultBigNbrModN(int Nbr1[], int Nbr2[], int Prod[], int Mod[], int nbrLen);
+void MultBigNbrByIntModN(int Nbr1[], int Nbr2, int Prod[], int Mod[], int nbrLen);
+int intDoubleModPow(int NbrMod, int Expon, int currentPrime);
+void ModInvBigInt(int *num, int *inv, int *mod, int NumberLength);
 
