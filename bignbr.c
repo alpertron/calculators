@@ -254,9 +254,24 @@ double logBigNbr(BigInteger *pBigNbr)
   return logar;
 }
 
+double logLimbs(limb *pBigNbr, int nbrLimbs)
+{
+  double logar;
+  if (nbrLimbs > 1)
+  {
+    logar = log((double)((pBigNbr + nbrLimbs - 2)->x + ((pBigNbr+nbrLimbs - 1)->x << BITS_PER_GROUP))) +
+      (double)(nbrLimbs - 2)*log((double)(1 << BITS_PER_GROUP));
+  }
+  else
+  {
+    logar = log((double)((pBigNbr+nbrLimbs - 1)->x)) + (double)(nbrLimbs - 1)*log((double)(1 << BITS_PER_GROUP));
+  }
+  return logar;
+}
+
 enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int expon, BigInteger *pPower)
 {
-  int nbrLimbs, mask;
+  int mask;
   double base;
   if (pBase->nbrLimbs == 1 && pBase->limbs[0].x == 0)
   {     // Base = 0 -> power = 0

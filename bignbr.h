@@ -19,6 +19,9 @@
 
 #define MAX_LEN 5000        // 20000 digits
 #define BITS_PER_GROUP 15
+#define BITS_PER_INT_GROUP 31
+#define HALF_INT_RANGE (1 << (BITS_PER_INT_GROUP - 1))
+#define MAX_INT_NBR ((int)(1U << BITS_PER_INT_GROUP)-1)
 struct mylimb
 {
 #if BITS_PER_GROUP == 15
@@ -108,6 +111,7 @@ void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len);
 void ComputeInversePower2(/*@in@*/limb *value, /*@out@*/limb *result, /*@out@*/limb *aux);
 int BigNbrIsZero(limb *value);
 double logBigNbr(BigInteger *pBigNbr);
+double logLimbs(limb *pBigNbr, int nbrLimbs);
 
 void ChSignBigNbr(int *nbr, int length);
 void AddBigNbr(int *pNbr1, int *pNbr2, int *pSum, int nbrLen);
@@ -127,4 +131,5 @@ void MultBigNbrModN(int Nbr1[], int Nbr2[], int Prod[], int Mod[], int nbrLen);
 void MultBigNbrByIntModN(int Nbr1[], int Nbr2, int Prod[], int Mod[], int nbrLen);
 int intDoubleModPow(int NbrMod, int Expon, int currentPrime);
 void ModInvBigInt(int *num, int *inv, int *mod, int NumberLength);
+void IntToBigNbr(int value, int *bigNbr, int nbrLength);
 

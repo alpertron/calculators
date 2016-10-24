@@ -4,7 +4,7 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "factor.h"
-#define DEBUG_CODE 2
+#define DEBUG_CODE 10
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 int Factor1[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00 };
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
   polyFactText(argv[1], argv[2], 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 10
-  int index, nbrLimbs;
+  int index;
   limb number[5000];
   BigInteger value;
   if (argc != 2)

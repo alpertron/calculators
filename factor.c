@@ -86,6 +86,16 @@ static limb *fieldAux2 = Aux2;
 static limb *fieldAux3 = Aux3;
 static limb *fieldAux4 = Aux4;
 static BigInteger Temp1, Temp2, Temp3;
+
+enum eEcmResult
+{
+  FACTOR_NOT_FOUND = 0,
+  FACTOR_FOUND,
+  CHANGE_TO_SIQS,
+};
+
+/* ECM limits for 30, 35, ..., 85 digits */
+static int limits[] = { 5, 8, 15, 25, 25, 27, 32, 43, 70, 150, 300, 350, 600 };
 /******************************************************/
 /* Start of code adapted from Paul Zimmermann's ECM4C */
 /******************************************************/
@@ -445,13 +455,13 @@ static void GenerateSieve(int initial)
   } while (Q < 5000);
 }
 
-static int ecmCurve(void)
+static enum eEcmResult ecmCurve(void)
 {
-  int I, J, Pass, Qaux;
-  int i, j, u;
-  long long L1, L2, LS, P, IP, Paux = 1;
   for (;;)
   {
+    int I, Pass;
+    int i, j, u;
+    long long L1, L2, LS, P, IP, Paux = 1;
     if (NextEC > 0)
     {
       EC = NextEC;
@@ -460,7 +470,7 @@ static int ecmCurve(void)
       {
         GD[0].x = 1;   // Set GD to 1.
         memset(&GD[1], 0, (NumberLength - 1) * sizeof(limb));
-        return 1;
+        return FACTOR_FOUND;
       }
     }
     else
@@ -473,18 +483,18 @@ static int ecmCurve(void)
         foundByLehman = true;
         return NN;
       }
-      L1 = N.toString().length();   // Get number of digits.
-      if (L1 > 30 && L1 <= 90 &&    // If between 30 and 90 digits...
-        (digitsInGroup & 0x400) == 0)
+#endif
+      L1 = NumberLength*9/2;        // Get number of digits.
+      if (L1 > 30 && L1 <= 90 /*&&    // If between 30 and 90 digits...
+        (digitsInGroup & 0x400) == 0*/)
       {                             // Switch to SIQS checkbox is set.
         int limit = limits[((int)L1 - 31) / 5];
-        if (EC % 50000000 >= limit && !forcedECM)
+        if (EC % 50000000 >= limit /*&& !forcedECM*/)
         {                           // Switch to SIQS.
           EC += TYP_SIQS;
-          return BigInt1;
+          return CHANGE_TO_SIQS;
         }
       }
-#endif
     }
     Typ[FactorIndex] = EC;
     L1 = 2000;
@@ -631,7 +641,7 @@ static int ecmCurve(void)
       {
         if (!gcdIsOne(Z))
         {
-          return 1;
+          return FACTOR_FOUND;
         }
       }
 
@@ -656,7 +666,7 @@ static int ecmCurve(void)
         {
           if (!gcdIsOne(Z))
           {
-            return 1;
+            return FACTOR_FOUND;
           }
         }
       } while (SmallPrime[indexM - 1] <= LS);
@@ -739,6 +749,7 @@ static int ecmCurve(void)
     memcpy(Zaux, Z, NumberLength * sizeof(limb));  //         from step 1)
     for (Pass = 0; Pass < 2; Pass++)
     {
+      int Qaux, J;
       memcpy(GcdAccumulated, MontgomeryMultR1, NumberLength * sizeof(limb));
       memcpy(UX, X, NumberLength * sizeof(limb));
       memcpy(UZ, Z, NumberLength * sizeof(limb));  // (UX:UZ) -> Q 
@@ -791,7 +802,7 @@ static int ecmCurve(void)
         {
           if (!gcdIsOne(Aux1))
           {
-            return 1;
+            return FACTOR_FOUND;
           }
         }
         if (I == HALF_SIEVE_SIZE)
@@ -879,7 +890,7 @@ static int ecmCurve(void)
           {
             if (!gcdIsOne(GcdAccumulated))
             {
-              return 1;
+              return FACTOR_FOUND;
             }
           }
         }
@@ -921,7 +932,7 @@ static int ecmCurve(void)
         {            // GD <- GCD(GcdAccumulated, TestNbr)
           if (memcmp(GD, TestNbr, NumberLength*sizeof(limb)))
           {          // GCD is not 1 or TestNbr
-            return 0;
+            return FACTOR_NOT_FOUND;
           }
           break;
         }
@@ -978,7 +989,13 @@ static void ecm(BigInteger *N)
   foundByLehman = FALSE;
   do
   {
-    if (ecmCurve())
+    enum eEcmResponse ecmResp = ecmCurve();
+    if (ecmResp == CHANGE_TO_SIQS)
+    {    // Perform SIQS
+      FactoringSIQS(TestNbr, Z);
+      break;
+    }
+    else if (ecmResp == FACTOR_FOUND)
     {
       break;
     }
@@ -1109,7 +1126,7 @@ static void insertBigFactor(struct sFactors *pstFactors, struct sFactors *pstFac
 void factor(int *number, int *factors, struct sFactors *pstFactors)
 {
   struct sFactors *pstCurFactor;
-  int factorNbr, expon, upperBound;
+  int factorNbr, expon;
   int remainder, nbrLimbs, ctr;
   int *ptrValue, *ptrFactor;
   int dividend;
@@ -1124,8 +1141,8 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
   pstCurFactor->upperBound = 2;
   for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
   {
-    ptrFactor = pstCurFactor->ptrFactor;
-    upperBound = pstCurFactor->upperBound;
+    int upperBound = pstCurFactor->upperBound;
+    ptrFactor = pstCurFactor->ptrFactor;    
     // If number is prime, do not process it.
     if (upperBound == 0)
     {     // Factor is prime.
