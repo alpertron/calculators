@@ -21,7 +21,8 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
-
+#include <stdio.h>
+#include <stdlib.h>
 // These defines are valid for factoring up to 10^110.
 #define MAX_NBR_FACTORS        13
 #define MAX_PRIMES         150000
@@ -1146,7 +1147,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           {     // Number fits in a double
             double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
             int sqrtDivid = (int)(floor(sqrt(dDivid)));
-            if (trialDivisions == 219)
+            if (trialDivisions == 12135)
             {
               Divisor = 0;
             }
@@ -1278,6 +1279,10 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         {
           Divisor = rowPrimeSieveData->value;
           divis = (int)Divisor;
+          if (trialDivisions == 12135 && Divisor == 2857)
+          {
+            Rem = 0;
+          }
           if (oddPolynomial)
           {
             iRem = index2 - rowPrimeSieveData->soln1 +
@@ -1349,7 +1354,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           default:
-            dRem = (double)biR1*(double)rowPrimeTrialDivisionData->exp1;
+            dRem = (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           }
           dCurrentPrime = (double)divis;
@@ -1579,7 +1584,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
   return biR0;
 }
 
-static void mergeArrays(int rowMatrixB[], int rowMatrixBeforeMerge[],
+static void mergeArrays(int aindex[], int nbrFactorsA, int rowMatrixB[], int rowMatrixBeforeMerge[],
   int rowSquares[])
 {
   int indexAindex = 0;
@@ -1631,7 +1636,7 @@ static void SmoothRelationFound(
   }
   // Add all elements of aindex array to the rowMatrixB array discarding
   // duplicates.
-  mergeArrays(rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
+  mergeArrays(aindex, nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
   nbrSquares = rowSquares[0];
   IntToBigNbr(1, biR, NumberLength);
   IntToBigNbr(positive ? 1 : -1, biT, NumberLength);
@@ -1865,10 +1870,10 @@ static void PartialRelationFound(
       MultBigNbrModN(biV, biT, biU, Modulus, NumberLength);
       // Add all elements of aindex array to the rowMatrixB array discarding
       // duplicates.
-      mergeArrays(rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
+      mergeArrays(aindex, nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
       rowMatrixBbeforeMerge[0] = nbrColumns = rowMatrixB[LENGTH_OFFSET];
       memcpy(&rowMatrixBbeforeMerge[1], &rowMatrixB[1], nbrColumns*sizeof(int));
-      mergeArrays(rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
+      mergeArrays(rowPartials, nbrFactorsPartial, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
       nbrSquares = rowSquares[0];
       for (index = 1; index < nbrSquares; index++)
       {
@@ -1913,7 +1918,7 @@ static void PartialRelationFound(
       rowPartial = matrixPartial[nbrPartials];
       // Add all elements of aindex array to the rowMatrixB array discarding
       // duplicates.
-      mergeArrays(rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
+      mergeArrays(aindex, nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
       IntToBigNbr(Divid, biR, NumberLength);
       nbrSquares = rowSquares[0];
       for (index = 1; index < nbrSquares; index++)
@@ -2539,7 +2544,7 @@ static int EraseSingletons(int nbrPrimes)
           break;
         }
       }
-      if (column < 0)
+      if (column == 0)
       {                // Singleton not found: move row upwards.
         memcpy(matrixB[row - delta], matrixB[row], sizeof(matrixB[0]));
         memcpy(vectLeftHandSide[row - delta], vectLeftHandSide[row], sizeof(vectLeftHandSide[0]));
@@ -2572,6 +2577,7 @@ static unsigned char LinearAlgebraPhase(
   int primeIndex;
   // Get new number of rows after erasing singletons.
   int matrixBlength = EraseSingletons(nbrPrimes);
+  matrixBLength = matrixBlength;
   showMatrixSize((char *)SIQSInfoText, matrixBlength,
     primeTrialDivisionData[0].exp2);
   primeTrialDivisionData[0].exp2 = 0;         // Restore correct value.
@@ -2604,7 +2610,7 @@ static unsigned char LinearAlgebraPhase(
           biR[j] = biU[j];
         }
         rowMatrixB = matrixB[row];
-        for (j = rowMatrixB[LENGTH_OFFSET]; j >= 1; j--)
+        for (j = rowMatrixB[LENGTH_OFFSET]-1; j >= 1; j--)
         {
           primeIndex = rowMatrixB[j];
           vectExpParity[primeIndex] ^= 1;
@@ -2677,14 +2683,14 @@ static unsigned char InsertNewRelation(
     }
     if (nbrColumns == curRowMatrixB[LENGTH_OFFSET])
     {
-      for (k = 1; k <= nbrColumns; k++)
+      for (k = 1; k < nbrColumns; k++)
       {
         if (rowMatrixB[k] != curRowMatrixB[k])
         {
           break;
         }
       }
-      if (k > nbrColumns)
+      if (k == nbrColumns)
       {
         return FALSE; // Do not insert same relation.
       }
@@ -2860,7 +2866,7 @@ static void MultiplyAByMatrix(int *Matr, int *TempMatr, int *ProdMatr)
   for (row = matrixBLength - 1; row >= 0; row--)
   {
     rowMatrixB = matrixB[row];
-    for (index = rowMatrixB[LENGTH_OFFSET]; index >= 1; index--)
+    for (index = rowMatrixB[LENGTH_OFFSET]-1; index >= 1; index--)
     {
       TempMatr[rowMatrixB[index]] ^= Matr[row];
     }
@@ -2871,7 +2877,7 @@ static void MultiplyAByMatrix(int *Matr, int *TempMatr, int *ProdMatr)
   {
     int prodMatr = 0;
     rowMatrixB = matrixB[row];
-    for (index = rowMatrixB[LENGTH_OFFSET]; index >= 1; index--)
+    for (index = rowMatrixB[LENGTH_OFFSET]-1; index >= 1; index--)
     {
       prodMatr ^= TempMatr[rowMatrixB[index]];
     }
@@ -2971,7 +2977,7 @@ static void BlockLanczos(void)
   int matrixCalc1[32]; // Matrix that holds temporary data
   int matrixCalc2[32]; // Matrix that holds temporary data
   int *matr;
-  double seed;
+  double dSeed, dMult, dDivisor, dAdd;
   int Temp, Temp1;
   int stepNbr = 0;
   int currentOrder, currentMask;
@@ -2983,17 +2989,24 @@ static void BlockLanczos(void)
   newDiagonalSSt = oldDiagonalSSt = -1;
 
   /* Initialize matrix X-Y and matrix V_0 with random data */
-  seed = (double)123456789;
+  dSeed = (double)123456789;
+  dMult = (double)62089911;
+  dAdd = (double)54325442;
+  dDivisor = (double)0x7FFFFFFF;
   for (i = matrixBLength - 1; i >= 0; i--)
   {
-    matrixXmY[i] = (int)seed;
-    seed = (int)(seed * 62089911L / 0x7FFFFFFF + 54325442);
-    matrixXmY[i] += (int)seed;
-    seed = (int)(seed * 62089911L / 0x7FFFFFFF + 54325442);
-    matrixV[i] = (int)seed;
-    seed = (int)(seed * 62089911L / 0x7FFFFFFF + 54325442);
-    matrixV[i] += (int)seed;
-    seed = (int)(seed * 62089911L / 0x7FFFFFFF + 54325442);
+    matrixXmY[i] = (int)dSeed;
+    dSeed = (dSeed * dMult + dAdd);
+    dSeed -= floor(dSeed / dDivisor) * dDivisor;
+    matrixXmY[i] += (int)dSeed;
+    dSeed = (dSeed * dMult + dAdd);
+    dSeed -= floor(dSeed / dDivisor) * dDivisor;
+    matrixV[i] = (int)dSeed;
+    dSeed = (dSeed * dMult + dAdd);
+    dSeed -= floor(dSeed / dDivisor) * dDivisor;
+    matrixV[i] += (int)dSeed;
+    dSeed = (dSeed * dMult + dAdd);
+    dSeed -= floor(dSeed / dDivisor) * dDivisor;
   }
   // Compute matrix Vt(0) * V(0)
   MatrTranspMult(matrixBLength, matrixV, matrixV, matrixVtV0);
@@ -3210,7 +3223,7 @@ static void BlockLanczos(void)
     rowMatrixXmY = matrixXmY[row];
     rowMatrixV = matrixV[row];
     // The vector rowMatrixB includes the indexes of the columns set to '1'.
-    for (index = rowMatrixB[LENGTH_OFFSET]; index >= 1; index--)
+    for (index = rowMatrixB[LENGTH_OFFSET]-1; index >= 1; index--)
     {
       col = rowMatrixB[index];
       matrixV1[col] ^= rowMatrixXmY;
