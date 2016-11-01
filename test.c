@@ -4,9 +4,10 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "factor.h"
-#define DEBUG_CODE 10
+#define DEBUG_CODE 13
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
+void ecmFrontText(char *tofactorText, int doFactorization);
 int Factor1[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00 };
 int Factor2[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00 };
 int Factor3[] = { 29504, 29490, 19798, 633, 181, 0, 0, 0, 0, 0 };
@@ -18,7 +19,7 @@ struct sFactors astFactors[1000];
 extern int karatCtr, multCtr;
 extern int number[MAX_LEN];
 extern int nbrLimbs;
-extern int lang;
+extern int lang, groupLen;
 extern limb TestNbr[MAX_LEN];
 char expr[] = "123456789012345";
 extern char *output;
@@ -184,7 +185,14 @@ int main(int argc, char *argv[])
   }
   gaussianText(argv[1], argv[2][0]);
   printf("%s\n", output);
+#elif DEBUG_CODE == 13
+  if (argc != 2)
+  {
+    printf("value\n");
+    return 0;
+  }
+  ecmFrontText(argv[1], 1);
+  printf("%s\n", output);
 #endif
   return 0;
 }
-

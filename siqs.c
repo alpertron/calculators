@@ -21,8 +21,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
-#include <stdio.h>
-#include <stdlib.h>
 // These defines are valid for factoring up to 10^110.
 #define MAX_NBR_FACTORS        13
 #define MAX_PRIMES         150000
@@ -118,7 +116,7 @@ static unsigned char InsertNewRelation(
 static void BlockLanczos(void);
 void ShowSIQSStatus(void);
 static unsigned int getFactorsOfA(unsigned int seed, int *aindex);
-static void sieveThread(void);
+static void sieveThread(BigInteger *result);
 
 static void showMatrixSize(char *SIQSInfoText, int rows, int cols)
 {
@@ -2091,6 +2089,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   int FactorBase;
   int currentPrime;
   int NbrMod;
+  BigInteger TempResult;
   PrimeSieveData *rowPrimeSieveData;
   PrimeTrialDivisionData *rowPrimeTrialDivisionData;
   int Power2, SqrRootMod, fact;
@@ -2416,7 +2415,11 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   /*********************************************/
   /* Generate sieve threads                    */
   /*********************************************/
-  sieveThread();
+  sieveThread(&TempResult);
+  NumberLength = origNumberLength;
+  memcpy(pFactor, TempResult.limbs, TempResult.nbrLimbs * sizeof(limb));
+  memset(pFactor + TempResult.nbrLimbs, 0, (NumberLength - TempResult.nbrLimbs) * sizeof(limb));
+
 #if 0
   for (threadNumber = 0; threadNumber<numberThreads; threadNumber++)
   {
@@ -2446,7 +2449,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
     }
   }
 #endif
-  if (/*getTerminateThread() ||*/ (factorSiqs.nbrLimbs == 1 && factorSiqs.limbs[0].x == 0))
+  if (/*getTerminateThread() ||*/ (TempResult.nbrLimbs == 1 && TempResult.limbs[0].x == 0))
   {
     //throw new ArithmeticException();
   }
@@ -3377,7 +3380,7 @@ static void BlockLanczos(void)
 /****************/
 /* Sieve thread */
 /****************/
-static void sieveThread(void)
+static void sieveThread(BigInteger *result)
 {
   int polySet;
   int biT[20];
@@ -3409,7 +3412,6 @@ static void sieveThread(void)
   int rowMatrixBbeforeMerge[200];
   int rowMatrixB[200];
   unsigned char positive;
-  BigInteger result;
   int inverseA, twiceInverseA;
   int NumberLengthA, NumberLengthB;
 
@@ -3451,7 +3453,7 @@ static void sieveThread(void)
           if (1/*factorSiqs == null*/)
           {
             while (!LinearAlgebraPhase(biT, biR, biU, NumberLength));
-            BigIntToBigNbr(&result, biT, NumberLength);  // Factor found.
+            BigIntToBigNbr(result, biT, NumberLength);  // Factor found.
 #if 0
             synchronized(matrixB)
             {

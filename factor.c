@@ -989,10 +989,10 @@ static void ecm(BigInteger *N)
   foundByLehman = FALSE;
   do
   {
-    enum eEcmResponse ecmResp = ecmCurve();
+    enum eEcmResult ecmResp = ecmCurve();
     if (ecmResp == CHANGE_TO_SIQS)
     {    // Perform SIQS
-      FactoringSIQS(TestNbr, Z);
+      FactoringSIQS(TestNbr, GD);
       break;
     }
     else if (ecmResp == FACTOR_FOUND)

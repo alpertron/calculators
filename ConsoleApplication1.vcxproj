@@ -160,6 +160,7 @@
     <ClCompile Include="contfrac.c" />
     <ClCompile Include="dilog.c" />
     <ClCompile Include="division.c" />
+    <ClCompile Include="ecmfront.c" />
     <ClCompile Include="errors.c" />
     <ClCompile Include="expression.c" />
     <ClCompile Include="factor.c" />

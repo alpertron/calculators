@@ -21,7 +21,7 @@
 #define BITS_PER_GROUP 15
 #define BITS_PER_INT_GROUP 31
 #define HALF_INT_RANGE (1 << (BITS_PER_INT_GROUP - 1))
-#define MAX_INT_NBR ((int)(1U << BITS_PER_INT_GROUP)-1)
+#define MAX_INT_NBR ((int)((1U << BITS_PER_INT_GROUP)-1))
 struct mylimb
 {
 #if BITS_PER_GROUP == 15
