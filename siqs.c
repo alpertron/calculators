@@ -2107,12 +2107,19 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
     47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };
   double adjustment[sizeof(arrmult)/sizeof(arrmult[0])];
   double dNumberToFactor, dlogNumberToFactor;
-  ValuesSieved = 0;
   origNumberLength = NumberLength;
   nbrThreadFinishedPolySet = 0;
-//  threadArray = new Thread[numberThreads];
-  nbrPartials = 0;
+  trialDivisions = 0;
+  smoothsFound = 0;
+  totalPartials = 0;
+  partialsFound = 0;
+  ValuesSieved = 0;
   congruencesFound = 0;
+  polynomialsSieved = 0;
+  nbrPartials = 0;
+  matrixPartialLength = 0;
+
+//  threadArray = new Thread[numberThreads];
   Temp = logLimbs(pNbrToFactor, origNumberLength);
   nbrPrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.318);
   SieveLimit = (int)exp(8.5 + 0.015 * Temp) & 0xFFFFFFF8;
@@ -2124,10 +2131,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   NumberLength = BigNbrToBigInt(&factorSiqs, Modulus);
   Modulus[NumberLength++] = 0;
   memcpy(TestNbr2, Modulus, NumberLength*sizeof(int));
-  for (i = sizeof(matrixPartialHashIndex)/sizeof(matrixPartialHashIndex[0]) - 1; i >= 0; i--)
-  {
-    matrixPartialHashIndex[i] = -1;
-  }
+  memset(matrixPartialHashIndex, 0xFF, sizeof(matrixPartialHashIndex));
 //  SIQSInfoText = InitSIQSStrings(pNbrToFactor, SieveLimit);
 
   /************************/
@@ -2163,8 +2167,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   {
     int halfCurrentPrime;
 
-    NbrMod = (int)RemDivBigNbrByInt(Modulus, currentPrime,
-      NumberLength);
+    NbrMod = (int)RemDivBigNbrByInt(Modulus, currentPrime, NumberLength);
     halfCurrentPrime = (currentPrime - 1) / 2;
     int jacobi = intDoubleModPow(NbrMod, halfCurrentPrime, currentPrime);
     double dp = (double)currentPrime;
@@ -2581,7 +2584,7 @@ static unsigned char LinearAlgebraPhase(
   int *biT, int *biR, int *biU,
   int NumberLength)
 {
-  int mask, row, j;
+  int mask, row, col, j;
   int *rowMatrixB;
   int primeIndex;
   // Get new number of rows after erasing singletons.
@@ -2593,7 +2596,8 @@ static unsigned char LinearAlgebraPhase(
   BlockLanczos();
   // The rows of matrixV indicate which rows must be multiplied so no
   // primes are multiplied an odd number of times.
-  for (mask = 1; mask != 0; mask *= 2)
+  mask = 1;
+  for (col = 31; col >= 0; col--)
   {
     int NumberLengthBak, index;
 
@@ -2667,6 +2671,7 @@ static unsigned char LinearAlgebraPhase(
         return TRUE;
       }
     }
+    mask *= 2;
   }
   return FALSE;
 }

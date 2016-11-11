@@ -109,7 +109,6 @@ void ecmFrontText(char *tofactorText, int doFactorization)
 void doWork(char* data, int size)
 {
   int flags;
-  int groupLen = 0;
   char *ptrData = data;
   char *ptrPower, *ptrMod;
   if (output == NULL)

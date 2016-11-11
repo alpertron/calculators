@@ -41,8 +41,8 @@ int main(int argc, char *argv[])
 #elif DEBUG_CODE == 3
   for (i = 0; i < 20; i++)
   {
-    Factor1[i] = 7-i;
-    Factor2[i] = 1+i;
+    Factor1[i] = 7 - i;
+    Factor2[i] = 1 + i;
     Product[i] = 21 + i;
   }
   multiply(Factor5, Factor6, Product, 4, NULL);
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
   Factor1[4] = 728;
   Factor1[5] = 32767;
   Factor1[6] = 32767;
-    squareRoot(&Factor1[2], Factor2, 4, &len); 
+  squareRoot(&Factor1[2], Factor2, 4, &len);
   //squareRoot(Factor1, Factor2, 7, &len);
   while (1);
 #elif DEBUG_CODE == 4
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
   dividend.sign = SIGN_NEGATIVE;
   BigIntDivide(&dividend, &divisor, &quotient);
 #elif DEBUG_CODE == 5
-  for (i=sizeof(expr)-1; i>=0; i-=3)
+  for (i = sizeof(expr) - 1; i >= 0; i -= 3)
   {
     expr[i] = 0;
     fcubesText(expr, 6);
@@ -135,9 +135,9 @@ int main(int argc, char *argv[])
       NumberLength = mod.nbrLimbs;
       if (num.nbrLimbs < mod.nbrLimbs)
       {
-        memset(&num.limbs[num.nbrLimbs], 0, (mod.nbrLimbs - num.nbrLimbs)*sizeof(limb));
+        memset(&num.limbs[num.nbrLimbs], 0, (mod.nbrLimbs - num.nbrLimbs) * sizeof(limb));
       }
-      memcpy(TestNbr, mod.limbs, NumberLength*sizeof(limb));
+      memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
       GetMontgomeryParms(NumberLength);
       ModInvBigNbr(num.limbs, inv.limbs, mod.limbs, NumberLength);
       Bin2Dec(inv.limbs, output, NumberLength, 200);
@@ -186,13 +186,23 @@ int main(int argc, char *argv[])
   gaussianText(argv[1], argv[2][0]);
   printf("%s\n", output);
 #elif DEBUG_CODE == 13
-  if (argc != 2)
+  if (argc == 3)
   {
-    printf("value\n");
+    ecmFrontText(argv[1], 1);
+    printf("%s\n", output);
+    ecmFrontText(argv[2], 1);
+    printf("%s\n", output);
+  }
+  else if (argc == 2)
+  {
+    ecmFrontText(argv[1], 1);
+    printf("%s\n", output);
+  }
+  else
+  {
+    printf("value [value]\n");
     return 0;
   }
-  ecmFrontText(argv[1], 1);
-  printf("%s\n", output);
 #endif
   return 0;
 }
