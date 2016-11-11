@@ -33,12 +33,9 @@ static BigInteger DiscreteLog, DiscreteLogPeriod;
 static BigInteger base, power, modulus, tmpBase, tmp2, baseModGO;
 static BigInteger bigNbrA, bigNbrB;
 static BigInteger LastModulus;
-static BigInteger PrimesModBak[400];
-static int ExponentsModBak[400];
 static int ExponentsGOComputed[400];
 static BigInteger nbrV[400];
 static int NbrFactorsMod = 0;
-static limb BigNbrTmp[MAX_LEN];
 static int nbrToFactor[MAX_LEN];
 static limb nbrA[MAX_LEN];
 static limb nbrA2[MAX_LEN];
@@ -55,14 +52,12 @@ static limb basePHMontg[MAX_LEN];
 static limb powerMontg[MAX_LEN];
 static limb powerPHMontg[MAX_LEN];
 static limb currPowerMontg[MAX_LEN];
-static limb K0Montg[MAX_LEN];
-static limb K1Montg[MAX_LEN];
 static limb primRoot[MAX_LEN];
 static limb primRootPwr[MAX_LEN];
 static limb TestNbrOther[MAX_LEN];
 static limb MontgomeryMultR1Other[MAX_LEN];
 static int NumberLengthOther;
-static double dN, dNOther;
+static double dN;
 static long long lModularMult;
 static char textExp[1000];
 struct sFactors astFactorsMod[1000];
@@ -72,7 +67,6 @@ int factorsGO[10000];
 int NumberLength;
 extern char *output;
 static int groupLen;
-static void BigNbrToMont(BigInteger *bigNbr, limb *nbr);
 static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *subGroupOrder);
 static void ExchangeMods(void);
 
@@ -688,14 +682,6 @@ static void ExchangeMods(void)
   NumberLengthOther = count;
   TestNbr[NumberLength].x = 0;
   MontgomeryMultR1[NumberLength].x = 0;
-}
-
-static void BigNbrToMont(BigInteger *bigNbr, limb *nbr) 
-{
-  int nbrLimbs = bigNbr->nbrLimbs;
-  memcpy(nbr, bigNbr->limbs, nbrLimbs);
-  memset(nbr + nbrLimbs, 0, (NumberLength - nbrLimbs) * sizeof(limb));
-  modmult(nbr, MontgomeryMultR2, nbr);
 }
 
 // nbr = (nbr * mult + add) % subGroupOrder

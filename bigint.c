@@ -206,7 +206,6 @@ void MultBigNbr(int *pFactor1, int *pFactor2, int *pProd, int nbrLen)
   int i, j;
   int factor1, factor2;
   double dAccumulator = 0;
-  double dQuot;
   for (i = 0; i < nbrLen; i++)
   {
     for (j = 0; j <= i; j++)

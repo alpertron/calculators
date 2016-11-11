@@ -37,10 +37,7 @@ static int nbrPrimes, indexPrimes, StepECM;
 static int FactorIndex;
 static BigInteger power, prime;
 int *factorArr[FACTOR_ARRSIZE];
-static int Exp[4000];
 static int Typ[4000];
-static int Exp1[4000];
-static int Typ1[4000];
 static int indexM, maxIndexM;
 static int foundByLehman, performLehman;
 static int SmallPrime[670]; /* Primes < 5000 */
@@ -75,7 +72,6 @@ static limb root[GROUP_SIZE][MAX_LEN];
 static unsigned char sieve[10*SIEVE_SIZE];
 static unsigned char sieve2310[SIEVE_SIZE];
 static int sieveidx[GROUP_SIZE];
-static limb MontgomeryMultAfterInv[MAX_LEN];
 static limb GcdAccumulated[MAX_LEN];
 
 static limb *fieldAA, *fieldTX, *fieldTZ, *fieldUX, *fieldUZ;

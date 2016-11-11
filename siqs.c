@@ -908,14 +908,19 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
   {
   case 7:
     biR6 = biDividend[6];
+    /* no break */
   case 6:
     biR5 = biDividend[5];
+    /* no break */
   case 5:
     biR4 = biDividend[4];
+    /* no break */
   case 4:
     biR3 = biDividend[3];
+    /* no break */
   case 3:
     biR2 = biDividend[2];
+    /* no break */
   case 1:
   case 2:
     biR1 = biDividend[1];
@@ -1405,6 +1410,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           quot = (int)(dDivid / dCurrentPrime);
           Rem = biR2 + Rem*LimbMult - quot * divis;
           biR2 = quot;
+          /* no break */
         case 2:     // {biR1 - biR0} <- {biR1 - biR0} / divis
           dDivid = (double)biR1 + (double)Rem*dLimbMult;
           quot = (int)(dDivid / dCurrentPrime);
@@ -2776,19 +2782,18 @@ static void MatrixMultAdd(int *LeftMatr, int *RightMatr, int *ProdMatr)
   int row;
   for (row = 0; row < matrLength; row++)
   {
-    int col = 0;
-    int prodMatr = ProdMatr[row];
-    int leftMatr = LeftMatr[row];
-    while (leftMatr != 0)
+    int col;
+    int prodMatr = *(ProdMatr+row);
+    int leftMatr = *(LeftMatr+row);
+    for (col=0; col<32; col++)
     {
       if (leftMatr < 0)
       {
-        prodMatr ^= RightMatr[col];
+        prodMatr ^= *(RightMatr+col);
       }
       leftMatr *= 2;
-      col++;
     }
-    ProdMatr[row] = prodMatr;
+    *(ProdMatr+row) = prodMatr;
   }
 }
 /* Multiply binary matrices of length m x 32 by 32 x 32 */
@@ -2799,19 +2804,18 @@ static void MatrixMultiplication(int *LeftMatr, int *RightMatr, int *ProdMatr)
   int row;
   for (row = 0; row < matrLength; row++)
   {
-    int col = 0;
+    int col;
     int prodMatr = 0;
-    int leftMatr = LeftMatr[row];
-    while (leftMatr != 0)
+    int leftMatr = *(LeftMatr+row);
+    for (col=0; col < 32; col++)
     {
       if (leftMatr < 0)
       {
-        prodMatr ^= RightMatr[col];
+        prodMatr ^= *(RightMatr+col);
       }
       leftMatr *= 2;
-      col++;
     }
-    ProdMatr[row] = prodMatr;
+    *(ProdMatr+row) = prodMatr;
   }
 }
 
@@ -2827,29 +2831,31 @@ static void MatrTranspMult(int matrLength, int *LeftMatr, int *RightMatr, int *P
     int prodMatr = 0;
     for (row = 0; row < matrLength; row++)
     {
-      if ((LeftMatr[row] & iMask) != 0)
+      if ((*(LeftMatr+row) & iMask) != 0)
       {
-        prodMatr ^= RightMatr[row];
+        prodMatr ^= *(RightMatr+row);
       }
     }
-    ProdMatr[col] = prodMatr;
+    *(ProdMatr+col) = prodMatr;
     iMask *= 2;
   }
 }
 
 static void MatrixAddition(int *leftMatr, int *rightMatr, int *sumMatr)
 {
-  for (int row = 32 - 1; row >= 0; row--)
+  int row;
+  for (row = 32 - 1; row >= 0; row--)
   {
-    sumMatr[row] = leftMatr[row] ^ rightMatr[row];
+    *(sumMatr+row) = *(leftMatr+row) ^ *(rightMatr+row);
   }
 }
 
 static void MatrMultBySSt(int length, int *Matr, int diagS, int *Prod)
 {
-  for (int row = length - 1; row >= 0; row--)
+  int row;
+  for (row = length - 1; row >= 0; row--)
   {
-    Prod[row] = diagS & Matr[row];
+    *(Prod+row) = diagS & *(Matr+row);
   }
 }
 
@@ -2858,20 +2864,18 @@ static void MatrMultBySSt(int length, int *Matr, int diagS, int *Prod)
 static void MultiplyAByMatrix(int *Matr, int *TempMatr, int *ProdMatr)
 {
   int index;
-  int row;
+  int row, rowValue;
   int *rowMatrixB;
 
   /* Compute TempMatr = B * Matr */
-  for (row = matrixBLength - 1; row >= 0; row--)
-  {
-    TempMatr[row] = 0;
-  }
+  memset(TempMatr, 0, matrixBLength*sizeof(int));
   for (row = matrixBLength - 1; row >= 0; row--)
   {
     rowMatrixB = matrixB[row];
-    for (index = rowMatrixB[LENGTH_OFFSET]-1; index >= 1; index--)
+    rowValue = *(Matr+row);
+    for (index = *(rowMatrixB+LENGTH_OFFSET)-1; index >= 1; index--)
     {
-      TempMatr[rowMatrixB[index]] ^= Matr[row];
+      *(TempMatr+*(rowMatrixB+index)) ^= rowValue;
     }
   }
 
@@ -2880,11 +2884,11 @@ static void MultiplyAByMatrix(int *Matr, int *TempMatr, int *ProdMatr)
   {
     int prodMatr = 0;
     rowMatrixB = matrixB[row];
-    for (index = rowMatrixB[LENGTH_OFFSET]-1; index >= 1; index--)
+    for (index = *(rowMatrixB+LENGTH_OFFSET)-1; index >= 1; index--)
     {
-      prodMatr ^= TempMatr[rowMatrixB[index]];
+      prodMatr ^= *(TempMatr+*(rowMatrixB+index));
     }
-    ProdMatr[row] = prodMatr;
+    *(ProdMatr+row) = prodMatr;
   }
 }
 
@@ -2980,35 +2984,41 @@ static void BlockLanczos(void)
   int matrixCalc1[32]; // Matrix that holds temporary data
   int matrixCalc2[32]; // Matrix that holds temporary data
   int *matr;
-  double dSeed, dMult, dDivisor, dAdd;
+  double dSeed, dSeed2, dMult, dDivisor, dAdd;
   int Temp, Temp1;
   int stepNbr = 0;
   int currentOrder, currentMask;
   int row, col;
   int leftCol, rightCol;
   int minind, min, minanswer;
-  int *rowMatrixB;
+  int *rowMatrixB, *ptrMatrixV, *ptrMatrixXmY;
 
   newDiagonalSSt = oldDiagonalSSt = -1;
+  memset(matrixWinv, 0, sizeof(matrixWinv));
+  memset(matrixWinv1, 0, sizeof(matrixWinv1));
+  memset(matrixWinv2, 0, sizeof(matrixWinv2));
+  memset(matrixVtV0, 0, sizeof(matrixVtV0));
+  memset(matrixVt1V0, 0, sizeof(matrixVt1V0));
+  memset(matrixVt2V0, 0, sizeof(matrixVt2V0));
+  memset(matrixVt1AV1, 0, sizeof(matrixVt1AV1));
 
   /* Initialize matrix X-Y and matrix V_0 with random data */
   dSeed = (double)123456789;
   dMult = (double)62089911;
   dAdd = (double)54325442;
   dDivisor = (double)0x7FFFFFFF;
-  for (i = matrixBLength - 1; i >= 0; i--)
+  ptrMatrixXmY = &matrixXmY[matrixBLength - 1];
+  for (ptrMatrixV = &matrixV[matrixBLength - 1]; ptrMatrixV >= matrixV; ptrMatrixV--)
   {
-    matrixXmY[i] = (int)dSeed;
-    dSeed = (dSeed * dMult + dAdd);
+    dSeed2 = (dSeed * dMult + dAdd);
+    dSeed2 -= floor(dSeed2 / dDivisor) * dDivisor;
+    *ptrMatrixXmY-- = (int)dSeed + (int)dSeed2;
+    dSeed = (dSeed2 * dMult + dAdd);
     dSeed -= floor(dSeed / dDivisor) * dDivisor;
-    matrixXmY[i] += (int)dSeed;
-    dSeed = (dSeed * dMult + dAdd);
-    dSeed -= floor(dSeed / dDivisor) * dDivisor;
-    matrixV[i] = (int)dSeed;
-    dSeed = (dSeed * dMult + dAdd);
-    dSeed -= floor(dSeed / dDivisor) * dDivisor;
-    matrixV[i] += (int)dSeed;
-    dSeed = (dSeed * dMult + dAdd);
+    dSeed2 = (dSeed * dMult + dAdd);
+    dSeed2 -= floor(dSeed2 / dDivisor) * dDivisor;
+    *ptrMatrixV = (int)dSeed + (int)dSeed2;
+    dSeed = (dSeed2 * dMult + dAdd);
     dSeed -= floor(dSeed / dDivisor) * dDivisor;
   }
   // Compute matrix Vt(0) * V(0)
@@ -3056,8 +3066,8 @@ static void BlockLanczos(void)
     }
 
     index = 31;
-    indexC = 31;
-    for (mask = 1; mask != 0; mask *= 2)
+    mask = 1;
+    for (indexC = 31; indexC >= 0; indexC--)
     {
       if ((oldDiagonalSSt & mask) != 0)
       {
@@ -3065,10 +3075,10 @@ static void BlockLanczos(void)
         matrixF[index] = mask;
         index--;
       }
-      indexC--;
+      mask *= 2;
     }
-    indexC = 31;
-    for (mask = 1; mask != 0; mask *= 2)
+    mask = 1;
+    for (indexC = 31; indexC >= 0; indexC--)
     {
       if ((oldDiagonalSSt & mask) == 0)
       {
@@ -3076,7 +3086,7 @@ static void BlockLanczos(void)
         matrixF[index] = mask;
         index--;
       }
-      indexC--;
+      mask *= 2;
     }
     newDiagonalSSt = 0;
     for (j = 0; j < 32; j++)
@@ -3140,11 +3150,11 @@ static void BlockLanczos(void)
     {
       // F = -Winv(i-2) * (I - Vt(i-1)*A*V(i-1)*Winv(i-1)) * ParenD * S*St
       MatrixMultiplication(matrixVt1AV1, matrixWinv1, matrixCalc2);
-      index = 31; /* Add identity matrix */
-      for (mask = 1; mask != 0; mask *= 2)
+      mask = 1; /* Add identity matrix */
+      for (index = 31; index >= 0; index--)
       {
         matrixCalc2[index] ^= mask;
-        index--;
+        mask*=2;
       }
       MatrixMultiplication(matrixWinv2, matrixCalc2, matrixCalc1);
       MatrixMultiplication(matrixCalc1, matrixCalcParenD, matrixF);
@@ -3162,11 +3172,11 @@ static void BlockLanczos(void)
     MatrMultBySSt(32, matrixCalc1, newDiagonalSSt, matrixCalc1);
     MatrixAddition(matrixCalc1, matrixVtAV, matrixCalcParenD);
     MatrixMultiplication(matrixWinv, matrixCalcParenD, matrixD);
-    index = 31; /* Add identity matrix */
-    for (mask = 1; mask != 0; mask *= 2)
+    mask = 1; /* Add identity matrix */
+    for (index = 31; index >= 0; index--)
     {
       matrixD[index] ^= mask;
-      index--;
+      mask*=2;
     }
 
     /* Update value of X - Y */
@@ -3383,20 +3393,20 @@ static void BlockLanczos(void)
 static void sieveThread(BigInteger *result)
 {
   int polySet;
-  int biT[20];
-  int biU[20];
-  int biV[20];
-  int biR[20];
+  int biT[MAX_LIMBS_SIQS];
+  int biU[MAX_LIMBS_SIQS];
+  int biV[MAX_LIMBS_SIQS];
+  int biR[MAX_LIMBS_SIQS];
 //  int multiplier = this.multiplier;
   PrimeSieveData *rowPrimeSieveData;
   PrimeSieveData *rowPrimeSieveData0;
   PrimeTrialDivisionData *rowPrimeTrialDivisionData;
   short SieveArray[100000];
   int rowPartials[200];
-  int biLinearCoeff[20];
+  int biLinearCoeff[MAX_LIMBS_SIQS];
 //  int threadNumber = this.threadNumber;
-  int biDividend[20];
-  int biAbsLinearCoeff[20];
+  int biDividend[MAX_LIMBS_SIQS];
+  int biAbsLinearCoeff[MAX_LIMBS_SIQS];
   int indexFactorsA[50];
   int rowSquares[200];
   int polynomialsPerThread = ((NbrPolynomials - 1) / numberThreads) & 0xFFFFFFFE;
@@ -3408,13 +3418,14 @@ static void sieveThread(BigInteger *result)
   int i, PolynomialIndex, index, index2;
   int currentPrime;
   int RemB, D, Q;
-  int Dividend[25];
+  int Dividend[MAX_LIMBS_SIQS];
   int rowMatrixBbeforeMerge[200];
   int rowMatrixB[200];
   unsigned char positive;
   int inverseA, twiceInverseA;
   int NumberLengthA, NumberLengthB;
 
+  memset(biLinearCoeff, 0, sizeof(biLinearCoeff));
 //  synchronized(amodq)
   {
     if (threadNumber == 0)

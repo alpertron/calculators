@@ -19,6 +19,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
 #include "bignbr.h"
+#include <stdio.h>
 
 #if BITS_PER_GROUP == 15
 #define DIGITS_PER_LIMB 4

@@ -1216,7 +1216,9 @@ static int ModInv(BigInteger *RealNbr, BigInteger *ImagNbr,
 
 static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
                   BigInteger *ReDen, BigInteger *ImDen,
-                  BigInteger *Result) {
+                  BigInteger *Result)
+{
+  int i;
   BigInteger Re, Im, ReMin, ImMin, norm, Tmp, normmin;
   if (ReDen->nbrLimbs == 1 && ImDen->nbrLimbs == 1 &&
       ReDen->limbs[0].x == 0 && ImDen->limbs[0].x == 0)
@@ -1237,7 +1239,7 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
   normmin.limbs[0].x = 1;
   normmin.nbrLimbs = 1;
   normmin.sign = SIGN_NEGATIVE;
-  for (int i=0; i<9; i++)
+  for (i=0; i<9; i++)
   {
     switch (i)
     {

@@ -61,8 +61,10 @@ extern char *output;
 BigInteger ExpressionResult;
 void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs);
 int checkMinusOne(limb *value, int nbrLimbs);
-void fcubesText(char *input, int groupLen);
+#ifdef __EMSCRIPTEN__
 void contfracText(char *input, int groupLen);
+void fcubesText(char *input, int groupLen);
+#endif
 
       // Find power of 4 that divides the number.
       // output: pNbrLimbs = pointer to number of limbs
@@ -215,8 +217,10 @@ int fsquares(void)
       {
       case 3:
         iMult3 = 1;
+        /* no break */
       case 2:
         Mult2[0].x = 1;
+        /* no break */
       case 1:
         Mult1[0].x = 1;
       }
@@ -642,9 +646,7 @@ int fsquares(void)
 
 void fsquaresText(char *input, int groupLen)
 {
-  char text[200];
   char *square = "<span class=\"bigger\">²</span>";
-  char *ptrText;
   enum eExprErr rc;
   char *ptrOutput = output;
   rc = ComputeExpression(input, 1, &ExpressionResult);

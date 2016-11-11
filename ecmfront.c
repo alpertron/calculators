@@ -22,7 +22,9 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
-
+#ifdef __EMSCRIPTEN
+#include <emscripten.h>
+#endif
 extern char *output;
 static BigInteger tofactor;
 static int nbrToFactor[MAX_LEN];
@@ -40,9 +42,7 @@ extern int newStamp, oldStamp;
 
 void ecmFrontText(char *tofactorText, int doFactorization)
 {
-  struct sFactors *pstFactors;
   char *ptrOutput;
-  int i;
   enum eExprErr rc;
   rc = ComputeExpression(tofactorText, 1, &tofactor);
   if (output == NULL)
@@ -73,9 +73,10 @@ void ecmFrontText(char *tofactorText, int doFactorization)
     ptrOutput += strlen(ptrOutput);
     if (doFactorization)
     {
+      struct sFactors *pstFactors;
+      int i = 0;
       strcpy(ptrOutput, " = ");
       ptrOutput += strlen(ptrOutput);
-      i = 0;
       pstFactors = &astFactorsMod[1];
       for (;;)
       {

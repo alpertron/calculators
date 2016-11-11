@@ -21,6 +21,7 @@
 
 #include <string.h>
 #include "bignbr.h"
+#include <stdio.h>
 
 #define KARATSUBA_CUTOFF 8
 static limb arr[MAX_LEN];

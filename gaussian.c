@@ -31,10 +31,7 @@ extern int newStamp, oldStamp;
 
 #define PAREN_STACK_SIZE 100
 
-static BigInteger Primes[PAREN_STACK_SIZE];
-static int Exponents[PAREN_STACK_SIZE];
 static BigInteger ReValue, ImValue;
-static BigInteger LastModulus;
 static char *ptrOutput;
 extern char *output;
 static struct sFactors astFactorsNorm[1000];

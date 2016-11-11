@@ -32,6 +32,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 void databack(char *data);
 int stamp(void);
 int newStamp, oldStamp;
+extern char *output;
 #endif
 BigInteger primeMod;              // p
 int exponentMod;                  // k
@@ -60,7 +61,6 @@ struct sFactorInfo factorInfo[MAX_DEGREE];
 int nbrFactorsFound;
 int *ptrOrigPoly;
 int degreeOrigPoly;
-extern char *output;
 enum eDivType
 {
   TYPE_DIVISION,
