@@ -80,7 +80,7 @@ static int indexMinFactorA;
 static int threadNumber;
 static int nbrThreadFinishedPolySet;
 static unsigned int oldSeed;
-static unsigned int newSeed = 0;
+static unsigned int newSeed;
 static int NbrPolynomials;
 static int SieveLimit;
 static int matrixPartial[MAX_PRIMES * 8][MAX_LIMBS_SIQS/2+4];
@@ -2118,6 +2118,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   polynomialsSieved = 0;
   nbrPartials = 0;
   matrixPartialLength = 0;
+  newSeed = 0;
 
 //  threadArray = new Thread[numberThreads];
   Temp = logLimbs(pNbrToFactor, origNumberLength);
@@ -2514,6 +2515,7 @@ static int EraseSingletons(int nbrPrimes)
   int row, column, delta;
   int *rowMatrixB;
   int matrixBlength = matrixBLength;
+  memset(newColumns, 0, matrixBlength*sizeof(int));
   // Find singletons in matrixB storing in array vectExpParity the number
   // of primes in each column.
   do
