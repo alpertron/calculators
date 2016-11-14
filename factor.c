@@ -966,13 +966,7 @@ static enum eEcmResult ecmCurve(void)
           memcpy(UX, WX, NumberLength * sizeof(limb));
           memcpy(UZ, WZ, NumberLength * sizeof(limb));
         }
-//  NbrToLimbs(1, Aux2, NumberLength);
-//  modmult(Aux2, GcdAccumulated, Aux3);
       } // end for Q
-//  NbrToLimbs(1, Aux2, NumberLength);
-//  modmult(Aux2, Z, Aux4);
-//  NbrToLimbs(1, Aux2, NumberLength);
-//  modmult(Aux2, GcdAccumulated, Aux3);
       if (Pass == 0)
       {
         if (BigNbrIsZero(GcdAccumulated))
@@ -981,13 +975,14 @@ static enum eEcmResult ecmCurve(void)
           memcpy(Z, Zaux, NumberLength * sizeof(limb));
           continue; // multiple of TestNbr, continue.
         }
-        if (!gcdIsOne(GcdAccumulated))
-        {            // GD <- GCD(GcdAccumulated, TestNbr)
-          if (memcmp(GD, TestNbr, NumberLength*sizeof(limb)))
-          {          // GCD is not 1 or TestNbr
-            return FACTOR_NOT_FOUND;
-          }
-          break;
+        if (gcdIsOne(GcdAccumulated))
+        {
+          break;    // GCD is one, so this curve does not find a factor.
+        }
+                    // GD <- GCD(GcdAccumulated, TestNbr)
+        if (memcmp(GD, TestNbr, NumberLength*sizeof(limb)))
+        {           // GCD is not 1 or TestNbr
+          return FACTOR_FOUND;
         }
       }
     } /* end for Pass */
