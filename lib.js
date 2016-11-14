@@ -7,5 +7,9 @@ mergeInto(LibraryManager.library,
   stamp: function()
   {
     return Math.floor(new Date().getTime() / 1000);
+  },
+  tenths: function()
+  {
+    return Math.floor(new Date().getTime() / 100);
   }
 });

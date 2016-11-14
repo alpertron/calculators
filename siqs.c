@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include "bignbr.h"
@@ -27,6 +28,18 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_LIMBS_SIQS         15
 #define MAX_FACTORS_RELATION   50
 #define LENGTH_OFFSET           0
+
+#ifdef __EMSCRIPTEN__
+void databack(char *data);
+int stamp(void);
+int tenths(void);
+extern int newStamp, oldStamp;
+extern char lowerText[], *ptrLowerText;
+char *ptrSIQSStrings;
+int oldTimeElapsed, startSieveTenths;
+double originalTenthSecond;
+#endif
+
 typedef struct
 {
   int value;
@@ -51,6 +64,7 @@ typedef struct
 unsigned char SIQSInfoText[300];
 int numberThreads = 1;
 extern int NumberLength;
+extern int groupLen;
 int matrixBLength;
 long trialDivisions;
 long smoothsFound;
@@ -118,9 +132,102 @@ void ShowSIQSStatus(void);
 static unsigned int getFactorsOfA(unsigned int seed, int *aindex);
 static void sieveThread(BigInteger *result);
 
+#ifdef __EMSCRIPTEN__
+// Convert tenths of seconds to days, hours, minutes and seconds.
+void GetDHMS(char **pptrText, int seconds)
+{
+  char *ptrText = *pptrText;
+  int2dec(&ptrText, seconds / 86400);         // Show number of days.
+  *ptrText++ = 'd';
+  *ptrText++ = ' ';
+  int2dec(&ptrText, (seconds / 3600) % 24);   // Show number of hours.
+  *ptrText++ = 'h';
+  *ptrText++ = ' ';
+  int2dec(&ptrText, (seconds / 60) % 60);     // Show number of minutes.
+  *ptrText++ = 'm';
+  *ptrText++ = ' ';
+  int2dec(&ptrText, seconds % 60);            // Show number of seconds.
+  *ptrText++ = 's';
+  *ptrText++ = ' ';
+  *pptrText = ptrText;
+}
+
 static void showMatrixSize(char *SIQSInfoText, int rows, int cols)
 {
+  char *ptrText = ptrLowerText;  // Point after number that is being factored.
+  strcpy(ptrText, lang ? "<p>Resolviendo la matriz de congruencias de " : "<p>Solving ");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, rows);   // Show number of rows.
+  strcpy(ptrText, " &times; ");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, cols);   // Show number of columns.
+  strcpy(ptrText, lang ? "usando el algoritmo de Lanczos en bloques.</p>" :
+                         "congruence matrix using Block Lanczos algorithm.</p>");
+  databack(lowerText);
 }
+
+static void InitSIQSStrings(int SieveLimit)
+{
+  char *ptrText = ptrLowerText;  // Point after number that is being factored.
+  strcpy(ptrText, lang ? "<p>Parámetros de SIQS: " : "<p>SIQS parameters: ");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, nbrPrimes);   // Show number of primes in factor base.
+  strcpy(ptrText, lang ? " primos, límite de la criba: " : " primes, sieve limit: ");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, SieveLimit);  // Show sieve limit.
+  strcpy(ptrText, "</p>");
+  ptrText += strlen(ptrText);
+  ptrSIQSStrings = ptrText;
+  strcpy(ptrText, lang ? "<p>Buscando el mejor multiplicador de Knuth-Schroeppel...</p>" :
+                         "<p>Searching for Knuth-Schroeppel multiplier...</p>");
+  databack(lowerText);
+}
+
+// Append multiplier and factor base to SIQS string.
+static void getMultAndFactorBase(int multiplier, int FactorBase)
+{
+  char *ptrText = ptrSIQSStrings;
+  strcpy(ptrText, lang ? "<p>Multiplicador: " : "<p>Multiplier: ");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, multiplier);  // Show Knuth-Schroeppel multiplier.
+  strcpy(ptrText, lang ? ", base de factores: " : ", factor base: ");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, FactorBase);  // Show factor base.
+  strcpy(ptrText, "</p>");
+  ptrText += strlen(ptrText);
+  ptrSIQSStrings = ptrText;
+}
+
+static void ShowSIQSInfo(int timeSieve, int congruencesFound, int matrixBLength, int elapsedTime)
+{
+  char SIQSInfo[100];
+  int percentage = (int)((float)(congruencesFound * 100) / (float)matrixBLength);
+  int u = (int)((double)timeSieve * (double)(matrixBLength - congruencesFound) / (double)congruencesFound);
+  char *ptrText = SIQSInfo;
+  strcpy(ptrText, "4<p>");
+  ptrText += strlen(ptrText);
+  GetDHMS(&ptrText, elapsedTime);
+  strcpy(ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, congruencesFound);  // Show number of coungruences found.
+  strcpy(ptrText, lang ? " congruencias halladas (" : " congruences found (");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, percentage);  // Show number of coungruences found.
+  if (timeSieve > 1 && congruencesFound > 10)
+  {
+    strcpy(ptrText, lang ? "%). Fin de la criba en " : "%). End sieve in ");
+    ptrText += strlen(ptrText);
+    GetDHMS(&ptrText, u/2);
+    strcpy(ptrText, "</p>");
+  }
+  else
+  {
+    strcpy(ptrText, "%)");
+  }
+  databack(SIQSInfo);
+}
+
+#endif
 
 static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
   short SieveArray[],
@@ -2133,8 +2240,10 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   Modulus[NumberLength++] = 0;
   memcpy(TestNbr2, Modulus, NumberLength*sizeof(int));
   memset(matrixPartialHashIndex, 0xFF, sizeof(matrixPartialHashIndex));
-//  SIQSInfoText = InitSIQSStrings(pNbrToFactor, SieveLimit);
-
+#ifdef __EMSCRIPTEN__
+  InitSIQSStrings(SieveLimit);
+  startSieveTenths = (int)(tenths() - originalTenthSecond);
+#endif
   /************************/
   /* Compute startup data */
   /************************/
@@ -2369,8 +2478,10 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   // Convert array of limbs to BigInteger and find its logarithm.
   dlogNumberToFactor = logLimbs(pNbrToFactor, origNumberLength);
   dNumberToFactor = exp(dlogNumberToFactor);
-//  SIQSInfoText += getMultAndFactorBase(multiplier, FactorBase);
-//  writeLowerPane(SIQSInfoText);
+#ifdef __EMSCRIPTEN__
+  getMultAndFactorBase(multiplier, FactorBase);
+  databack(lowerText);
+#endif
   firstLimit = 2;
   for (j = 2; j < nbrPrimes; j++)
   {
@@ -2404,8 +2515,11 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
     }
   }
   nbrPrimes2 = nbrPrimes - 4;
-//  startTime = System.currentTimeMillis();
+#ifdef __EMSCRIPTEN__
+  newStamp = stamp();
   // Sieve start time in milliseconds.
+  //  startTime = System.currentTimeMillis();
+#endif
   Prod = sqrt(2 * dNumberToFactor) / (double)SieveLimit;
   fact = (int)pow(Prod, 1 / (float)nbrFactorsA);
   for (i = 2;; i++)
@@ -2421,7 +2535,6 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
     span *= 2;
   }
   indexMinFactorA = i - span / 2;
-  //this.multiplier = multiplier;
   /*********************************************/
   /* Generate sieve threads                    */
   /*********************************************/
@@ -2489,23 +2602,13 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
 
 void ShowSIQSStatus(void)
 {
-//  long New, u;
-//  long oldTime = getOldTimeElapsed();
-#if 0
-//  if (getTerminateThread())
-//  {
-//    throw new ArithmeticException();
-//  }
-  //    Thread.yield();
-  New = System.currentTimeMillis();
-  if (oldTime >= 0
-    && oldTime / 1000 != (oldTime + New - getOld()) / 1000)
+#ifdef __EMSCRIPTEN__
+  int elapsedTime = (int)(tenths() - originalTenthSecond);
+  if (elapsedTime / 10 != oldTimeElapsed / 10)
   {
-    oldTime += New - getOld();
-    setOldTimeElapsed(oldTime);
-    setOld(New);
-    ShowSIQSInfo(New - startTime, congruencesFound,
-      matrixBLength, oldTime / 1000);
+    oldTimeElapsed = elapsedTime;
+    ShowSIQSInfo((elapsedTime - startSieveTenths)/10, congruencesFound, matrixBLength,
+                 elapsedTime / 10);
   }
 #endif
 }
@@ -2592,8 +2695,9 @@ static unsigned char LinearAlgebraPhase(
   // Get new number of rows after erasing singletons.
   int matrixBlength = EraseSingletons(nbrPrimes);
   matrixBLength = matrixBlength;
-  showMatrixSize((char *)SIQSInfoText, matrixBlength,
-    primeTrialDivisionData[0].exp2);
+#ifdef __EMSCRIPTEN__
+  showMatrixSize((char *)SIQSInfoText, matrixBlength, primeTrialDivisionData[0].exp2);
+#endif
   primeTrialDivisionData[0].exp2 = 0;         // Restore correct value.
   BlockLanczos();
   // The rows of matrixV indicate which rows must be multiplied so no

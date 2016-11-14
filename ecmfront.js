@@ -28,16 +28,24 @@ function callWorker(param)
   {
   	worker = new Worker('ecmW.js?1111');
     worker.onmessage = function(e)
-	{ // First character of e.data is '1' for intermediate text
+	  { // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.
-	  document_getElementById('result').innerHTML = e.data.substring(1);
-	  if (e.data.substring(0, 1) == '2')
-	  {   // First character passed from web worker is '2'.
-	    document_getElementById('eval').disabled = false;
-	    document_getElementById('factor').disabled = false;
-	    document_getElementById('stop').disabled = true;
+      if (e.data.substring(0, 1) == '4')
+      {
+        document_getElementById('status').innerHTML = e.data.substring(1);
       }
-	}
+      else
+      {
+        document_getElementById('result').innerHTML = e.data.substring(1);
+        if (e.data.substring(0, 1) == '2')
+        {   // First character passed from web worker is '2'.
+          document_getElementById('status').innerHTML = "";
+          document_getElementById('eval').disabled = false;
+          document_getElementById('factor').disabled = false;
+          document_getElementById('stop').disabled = true;
+        }
+      }
+	  }
   }
   worker.postMessage(param);
 }
@@ -87,6 +95,7 @@ window.onload = function ()
     document_getElementById('result').innerHTML = 
       (app & 1 ? "<p>Cálculo detenido por el usuario.</p>" :
                  "<p>Calculation stopped by user</p>");
+    document_getElementById('status').innerHTML = "";
   }
   document_getElementById('helpbtn').onclick = function ()
   {

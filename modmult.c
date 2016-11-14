@@ -30,6 +30,8 @@ static limb aux[MAX_LEN], aux2[MAX_LEN];
 static limb aux3[MAX_LEN], aux4[MAX_LEN];
 static int NumberLength2;
 int NumberLength, NumberLengthR1;
+long long lModularMult;
+mmCback modmultCallback;
 static limb U[MAX_LEN], V[MAX_LEN], R[MAX_LEN], S[MAX_LEN];
 static BigInteger tmpDen, tmpNum;
 
@@ -273,6 +275,13 @@ void modmult(limb *factor1, limb *factor2, limb *product)
   int count;
   limb Pr, Nbr, MontDig;
   limb Prod[10];
+#ifdef __EMSCRIPTEN__
+  if (modmultCallback)
+  {
+    modmultCallback();
+    lModularMult++;
+  }
+#endif
   if (NumberLength == 1)
   {
     product->x = factor1->x * factor2->x % TestNbr[0].x;

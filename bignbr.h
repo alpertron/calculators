@@ -133,3 +133,4 @@ int intDoubleModPow(int NbrMod, int Expon, int currentPrime);
 void ModInvBigInt(int *num, int *inv, int *mod, int NumberLength);
 void IntToBigNbr(int value, int *bigNbr, int nbrLength);
 
+typedef void(*mmCback)(void);

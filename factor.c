@@ -17,10 +17,27 @@ You should have received a copy of the GNU General Public License
 along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <string.h>
+#include <stdio.h>
 #include <math.h>
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
+
+#ifdef __EMSCRIPTEN__
+void databack(char *data);
+int stamp(void);
+double tenths(void);
+void GetDHMS(char **pptrText, int seconds);
+int newStamp, oldStamp;
+char upperText[30000];
+char lowerText[30000];
+char *ptrLowerText;
+int yieldFreq;
+mmCback modmultCallback;
+extern int oldTimeElapsed;
+extern double originalTenthSecond;
+extern long long lModularMult;
+#endif
 
 #define TYP_AURIF  100000000
 #define TYP_TABLE  150000000
@@ -82,7 +99,7 @@ static limb *fieldAux2 = Aux2;
 static limb *fieldAux3 = Aux3;
 static limb *fieldAux4 = Aux4;
 static BigInteger Temp1, Temp2, Temp3;
-
+extern int groupLen;
 enum eEcmResult
 {
   FACTOR_NOT_FOUND = 0,
@@ -98,6 +115,28 @@ static int limits[] = { 5, 8, 15, 25, 25, 27, 32, 43, 70, 150, 300, 350, 600 };
 #define ADD 6  /* number of multiplications in an addition */
 #define DUP 5  /* number of multiplications in a duplicate */
 
+#ifdef __EMSCRIPTEN__
+static void GetYieldFrequency()
+{
+  yieldFreq = 1000000 / (NumberLength * NumberLength);
+  if (yieldFreq > 100000)
+  {
+    yieldFreq = yieldFreq / 100000 * 100000;
+  }
+  else if (yieldFreq > 10000)
+  {
+    yieldFreq = yieldFreq / 10000 * 10000;
+  }
+  else if (yieldFreq > 1000)
+  {
+    yieldFreq = yieldFreq / 1000 * 1000;
+  }
+  else if (yieldFreq > 100)
+  {
+    yieldFreq = yieldFreq / 100 * 100;
+  }
+}
+#endif
                           /* returns the number of modular multiplications */
 static int lucas_cost(int n, double v)
 {
@@ -455,6 +494,9 @@ static enum eEcmResult ecmCurve(void)
 {
   for (;;)
   {
+#ifdef __EMSCRIPTEN__
+    char *ptrText;
+#endif
     int I, Pass;
     int i, j, u;
     long long L1, L2, LS, P, IP, Paux = 1;
@@ -528,6 +570,20 @@ static enum eEcmResult ecmCurve(void)
         }
       }
     }
+#ifdef __EMSCRIPTEN__
+    ptrText = ptrLowerText;  // Point after number that is being factored.
+    strcpy(ptrText, lang ? "<p>Curva ": "<p>Curve ");
+    ptrText += strlen(ptrText);
+    int2dec(&ptrText, EC);   // Show curve number.
+    strcpy(ptrText, lang?" usando límites B1=": " using bounds B1=");
+    ptrText += strlen(ptrText);
+    int2dec(&ptrText, L1);   // Show first bound.
+    strcpy(ptrText, lang? " y B2=" : " and B2=");
+    ptrText += strlen(ptrText);
+    int2dec(&ptrText, L2);   // Show second bound.
+    strcpy(ptrText, "</p>");
+    ptrText += strlen(ptrText);
+    databack(lowerText);
 #if 0
     primalityString =
       textAreaContents
@@ -545,7 +601,7 @@ static enum eEcmResult ecmCurve(void)
       Prob =
         (int)Math.round(
           100
-          * (1 - Math.exp(-((double)L1 * (double)Paux) / ProbArray[I])));
+          * (1 - exp(-((double)L1 * (double)Paux) / ProbArray[I])));
       if (Prob == 100)
       {
         LowerLine += "    100% ";
@@ -564,6 +620,7 @@ static enum eEcmResult ecmCurve(void)
     } /* end for */
     lowerTextArea.setText(
       primalityString + EC + "\n" + UpperLine + "\n" + LowerLine);
+#endif
 #endif
 
     //  Compute A0 <- 2 * (EC+1)*modinv(3 * (EC+1) ^ 2 - 1, N) mod N
@@ -949,7 +1006,9 @@ static void ecm(BigInteger *N)
   BigInteger NN;
 
   fieldAA = AA;
-  //GetYieldFrequency();
+#ifdef __EMSCRIPTEN__
+  GetYieldFrequency();
+#endif
   GetMontgomeryParms(NumberLength);
   memset(M, 0, NumberLength * sizeof(limb));
   memset(DX, 0, NumberLength * sizeof(limb));
@@ -957,11 +1016,13 @@ static void ecm(BigInteger *N)
   memset(W3, 0, NumberLength * sizeof(limb));
   memset(W4, 0, NumberLength * sizeof(limb));
   memset(GD, 0, NumberLength * sizeof(limb));
-#if 0
-  textAreaContents = "";
-  StringToLabel = "Factoring ";
-  insertBigNbr(N);
-  addStringToLabel("(" + N.toString().length() + " digits)");
+#ifdef __EMSCRIPTEN__
+  strcpy(lowerText, lang ? "3<p>Factorizando ": "3<p>Factoring " );
+  ptrLowerText = lowerText + strlen(lowerText);
+  Bin2Dec(N->limbs, ptrLowerText, N->nbrLimbs, groupLen);
+  ptrLowerText += strlen(ptrLowerText);
+  strcpy(ptrLowerText, "</p>");
+  ptrLowerText += strlen(ptrLowerText);
 #endif
   EC--;
   SmallPrime[0] = 2;
@@ -1117,6 +1178,46 @@ static void insertBigFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   CompressBigInteger(ptrValue, &Temp2);
 }
 
+#ifdef __EMSCRIPTEN__
+static void showECMStatus(void)
+{
+  char status[200];
+  int elapsedTime;
+  char *ptrStatus;
+  if ((lModularMult % yieldFreq) != 0)
+  {
+    return;
+  }
+  elapsedTime = (int)(tenths() - originalTenthSecond);
+  if (elapsedTime / 10 == oldTimeElapsed / 10)
+  {
+    return;
+  }
+  oldTimeElapsed = elapsedTime;
+  ptrStatus = status;
+  strcpy(ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
+  ptrStatus += strlen(ptrStatus);
+  GetDHMS(&ptrStatus, elapsedTime / 10);
+  switch (StepECM)
+  {
+  case 1:
+    strcpy(ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Paso 1: " : "&nbsp;&nbsp;&nbsp;Step 1: ");
+    ptrStatus += strlen(ptrStatus);
+    int2dec(&ptrStatus, indexPrimes / (nbrPrimes / 100));
+    *ptrStatus++ = '%';
+    break;
+  case 2:
+    strcpy(ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Paso 2: " : "&nbsp;&nbsp;&nbsp;Step 2: ");
+    ptrStatus += strlen(ptrStatus);
+    int2dec(&ptrStatus, maxIndexM == 0 ? 0 : indexM / (maxIndexM / 100));
+    *ptrStatus++ = '%';
+    break;
+  }
+  strcpy(ptrStatus, "</p>");
+  databack(status);
+}
+#endif
+
 // pstFactors -> ptrFactor points to end of factors.
 // pstFactors -> multiplicity indicates the number of different factors.
 void factor(int *number, int *factors, struct sFactors *pstFactors)
@@ -1127,6 +1228,11 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
   int *ptrValue, *ptrFactor;
   int dividend;
   EC = 1;
+#ifdef __EMSCRIPTEN__
+  oldTimeElapsed = 0;
+  originalTenthSecond = tenths();
+  modmultCallback = showECMStatus;   // Set callback.
+#endif
   memcpy(factors, number, (1 + *number)*sizeof(int));
   pstFactors->multiplicity = 1;
   pstFactors->ptrFactor = factors+1+*factors;

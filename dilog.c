@@ -27,6 +27,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 void databack(char *data);
 int stamp(void);
 extern int newStamp, oldStamp;
+extern long long lModularMult;
 #endif
 
 static BigInteger DiscreteLog, DiscreteLogPeriod;
@@ -58,7 +59,6 @@ static limb TestNbrOther[MAX_LEN];
 static limb MontgomeryMultR1Other[MAX_LEN];
 static int NumberLengthOther;
 static double dN;
-static long long lModularMult;
 static char textExp[1000];
 struct sFactors astFactorsMod[1000];
 int factorsMod[10000];
@@ -174,7 +174,9 @@ void DiscreteLogarithm(void)
   enum eLogMachineState logMachineState;
   char *ptr;
 
+#ifdef __EMSCRIPTEN__
   lModularMult = 0;
+#endif
   NumberLength = modulus.nbrLimbs;
   if (!TestBigNbrEqual(&LastModulus, &modulus))
   {

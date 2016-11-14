@@ -22,22 +22,21 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
-#ifdef __EMSCRIPTEN
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+extern long long lModularMult;
 #endif
 extern char *output;
 static BigInteger tofactor;
 static int nbrToFactor[MAX_LEN];
 static int NbrFactorsMod = 0;
-static int groupLen = 6;
+int groupLen = 6;
 struct sFactors astFactorsMod[1000];
 int factorsMod[10000];
 static BigInteger factorValue;
 
 #ifdef __EMSCRIPTEN__
 void databack(char *data);
-int stamp(void);
-extern int newStamp, oldStamp;
 #endif
 
 void ecmFrontText(char *tofactorText, int doFactorization)
@@ -57,11 +56,15 @@ void ecmFrontText(char *tofactorText, int doFactorization)
   {
     NumberLength = tofactor.nbrLimbs;
     CompressBigInteger(nbrToFactor, &tofactor);
+#ifdef __EMSCRIPTEN__
+    lModularMult = 0;
+#endif
     factor(nbrToFactor, factorsMod, astFactorsMod);
     NbrFactorsMod = astFactorsMod[0].multiplicity;
   }
-  output[0] = '2';
-  ptrOutput = &output[1];
+  ptrOutput = output;
+  strcpy(output, "2<p>");
+  ptrOutput += strlen(output);
   if (rc != EXPR_OK)
   {
     textError(output + 1, rc);
