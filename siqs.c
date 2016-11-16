@@ -2707,12 +2707,9 @@ static unsigned char LinearAlgebraPhase(
   {
     int NumberLengthBak, index;
 
-    IntToBigNbr(1, biT, NumberLength);
-    IntToBigNbr(1, biR, NumberLength);
-    for (row = matrixBlength - 1; row >= 0; row--)
-    {
-      vectExpParity[row] = 0;
-    }
+    IntToBigNbr(1, biT, NumberLength+1);
+    IntToBigNbr(1, biR, NumberLength+1);
+    memset(vectExpParity, 0, matrixBlength * sizeof(vectExpParity[0]));
     NumberLengthBak = NumberLength;
     if (Modulus[NumberLength - 1] == 0 && Modulus[NumberLength - 2] < HALF_INT_RANGE)
     {
@@ -2724,10 +2721,7 @@ static unsigned char LinearAlgebraPhase(
       {
         MultBigNbrModN(vectLeftHandSide[row], biR, biU, Modulus,
           NumberLength);
-        for (j = 0; j <= NumberLength; j++)
-        {
-          biR[j] = biU[j];
-        }
+        memcpy(biR, biU, (NumberLength + 1) * sizeof(biR[0]));
         rowMatrixB = matrixB[row];
         for (j = rowMatrixB[LENGTH_OFFSET]-1; j >= 1; j--)
         {
@@ -2752,19 +2746,15 @@ static unsigned char LinearAlgebraPhase(
     NumberLength = NumberLengthBak;
     SubtractBigNbrModN(biR, biT, biR, Modulus, NumberLength);
     GcdBigNbr(biR, TestNbr2, biT, NumberLength);
-    index = 0;
-    if (biT[0] == 1)
+    for (index = 1; index < NumberLength; index++)
     {
-      for (index = 1; index < NumberLength; index++)
+      if (biT[index] != 0)
       {
-        if (biT[index] != 0)
-        {
-          break;
-        }
+        break;
       }
     }
-    if (index < NumberLength)
-    { /* GCD is not 1 */
+    if (index < NumberLength || biT[0] > 1)
+    {   // GCD is not zero or 1.
       for (index = 0; index < NumberLength; index++)
       {
         if (biT[index] != TestNbr2[index])
