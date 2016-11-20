@@ -492,6 +492,7 @@ static void GenerateSieve(int initial)
 
 static enum eEcmResult ecmCurve(void)
 {
+  EC %= 50000000;   // Convert to curve number.
   for (;;)
   {
 #ifdef __EMSCRIPTEN__
