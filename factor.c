@@ -1060,6 +1060,7 @@ static void ecm(BigInteger *N)
   return;
 }
 
+// Insert new factor found into factor array. This factor array must be sorted.
 static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFactorDividend, int divisor)
 {
   struct sFactors *pstCurFactor;
@@ -1068,7 +1069,9 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   int *ptrFactor = pstFactorDividend->ptrFactor;
   int nbrLimbs = *ptrFactor;
   int *ptrValue = ptrFactor + nbrLimbs;
+  pstFactorDividend->upperBound = divisor;
 
+  // Divide number by factor just found.
   for (ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
     remainder = (remainder << BITS_PER_GROUP) + *ptrValue;
@@ -1083,11 +1086,7 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   pstCurFactor = pstFactors+1;
   for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++, pstCurFactor++)
   {
-    if (pstCurFactor == pstFactorDividend)
-    {    // Do not use this slot.
-      continue;
-    }
-    ptrValue = pstCurFactor->ptrFactor;
+    ptrValue = pstCurFactor->ptrFactor;  // Point to factor in factor array.
     if (*ptrValue == 1 && *(ptrValue+1) == divisor)
     {  // Prime already found: increment multiplicity and go out.
       pstCurFactor->multiplicity += pstFactorDividend->multiplicity;
@@ -1098,9 +1097,19 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
       }
       return;
     }
+    if (*ptrValue > 1 || *(ptrValue + 1) > divisor)
+    {   // Factor in factor list is greater than factor to insert. Exit loop.
+      break;
+    }
   }
-  pstFactors->multiplicity++;
+  pstFactors->multiplicity++; // Indicate new known factor.
+  // Move all elements.
   ptrValue = pstFactorDividend->ptrFactor;
+  if (pstFactors->multiplicity > factorNumber)
+  {
+    memmove(pstCurFactor + 1, pstCurFactor,
+      (pstFactors->multiplicity - factorNumber) * sizeof(struct sFactors));
+  }
   if (*ptrValue == 1 && *(ptrValue + 1) == 1)
   {
     pstCurFactor = pstFactorDividend;
@@ -1108,7 +1117,6 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   else
   {
     ptrValue = pstFactors->ptrFactor;
-    pstCurFactor = pstFactors + pstFactors->multiplicity;
     pstCurFactor->ptrFactor = ptrValue;
     pstCurFactor->multiplicity = pstFactorDividend->multiplicity;
     pstFactors->ptrFactor += 2;  // Next free memory.
@@ -1118,6 +1126,8 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   *(ptrValue + 1) = divisor;
 }
 
+// Insert new factor found into factor array. This factor array must be sorted.
+// The divisor must be also sorted.
 static void insertBigFactor(struct sFactors *pstFactors, struct sFactors *pstFactorDividend, limb *divisor)
 {
   struct sFactors *pstCurFactor;
@@ -1125,7 +1135,9 @@ static void insertBigFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   int *ptrFactor = pstFactorDividend->ptrFactor;
   int nbrLimbs = *ptrFactor;
   int *ptrValue = ptrFactor + nbrLimbs;
+  int limbNbr;
 
+  // Divide number by factor just found.
   NumberLength = *ptrFactor;
   UncompressBigInteger(ptrFactor, &Temp1);
   UncompressLimbsBigInteger(divisor, &Temp2);
@@ -1136,42 +1148,106 @@ static void insertBigFactor(struct sFactors *pstFactors, struct sFactors *pstFac
     memset(&Temp3.limbs[Temp3.nbrLimbs].x, 0, (Temp1.nbrLimbs - Temp3.nbrLimbs) * sizeof(limb));
   }
   CompressBigInteger(ptrFactor, &Temp3);
-  // Check whether prime is already in factor list.
+  // Check whether factor is already in factor list. If factor is already found,
+  // increment multiplicity in array and go out. Otherwise, if factor is less than
+  // an element of the array, move one position all other elements of the array and
+  // put in the empty position the new factor.
   pstCurFactor = pstFactors + 1;
   for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++, pstCurFactor++)
   {
-    if (pstCurFactor == pstFactorDividend)
-    {    // Do not use this slot.
+    int nbrLimbsFactorArray;
+    ptrValue = pstCurFactor->ptrFactor;    // Point to factor in factor array.
+    nbrLimbsFactorArray = *ptrValue;
+    if (Temp2.nbrLimbs > nbrLimbsFactorArray)
+    {
       continue;
     }
-    ptrValue = pstCurFactor->ptrFactor;
-    if (*ptrValue == 1 && *(ptrValue + 1) == divisor->x)
-    {  // Prime already found: increment multiplicity and go out.
-      pstCurFactor->multiplicity += pstFactorDividend->multiplicity;
-      ptrValue = pstFactorDividend->ptrFactor;
-      if (*ptrValue == 1 && *(ptrValue + 1) == 1)
-      {    // Dividend is 1 now so discard it.
-        *pstFactorDividend = *(pstFactors + pstFactors->multiplicity--);
-      }
-      return;
+    if (Temp2.nbrLimbs < nbrLimbsFactorArray)
+    {
+      break;
     }
+    for (limbNbr = nbrLimbsFactorArray-1; limbNbr >= 0; limbNbr--)
+    {
+      if (Temp2.limbs[limbNbr].x != *(ptrValue + 1 + limbNbr))
+      {
+        break;
+      }
+    }
+    if (limbNbr >= 0)
+    {          // Number in factor array is not equal to factor to be inserted.
+      if (Temp2.limbs[limbNbr].x > *(ptrValue + 1 + limbNbr))
+      {
+        continue;
+      }
+      else
+      {
+        break;
+      }
+    }
+               // Prime already found: increment multiplicity and go out.
+    pstCurFactor->multiplicity += pstFactorDividend->multiplicity;
+    ptrValue = pstFactorDividend->ptrFactor;
+    if (nbrLimbsFactorArray == 1 && *(ptrValue + 1) == 1)
+    {    // Dividend is 1 now so discard it.
+      *pstFactorDividend = *(pstFactors + pstFactors->multiplicity--);
+    }
+    return;
   }
   pstFactors->multiplicity++;
   ptrValue = pstFactorDividend->ptrFactor;
-  if (*ptrValue == 1 && *(ptrValue + 1) == 1)
+  if (pstFactors->multiplicity > factorNumber)
   {
+    memmove(pstCurFactor + 1, pstCurFactor,
+      (pstFactors->multiplicity - factorNumber) * sizeof(struct sFactors));
+  }
+  if (*ptrValue == 1 && *(ptrValue + 1) == 1)
+  {   // Factor is 1.
     pstCurFactor = pstFactorDividend;
   }
   else
-  {
+  {   // Factor is not 1.
     ptrValue = pstFactors->ptrFactor;
-    pstCurFactor = pstFactors + pstFactors->multiplicity;
     pstCurFactor->ptrFactor = ptrValue;
     pstCurFactor->multiplicity = pstFactorDividend->multiplicity;
     pstCurFactor->upperBound = pstFactorDividend->upperBound;
     pstFactors->ptrFactor += 1 + Temp2.nbrLimbs;  // Next free memory.
   }
   CompressBigInteger(ptrValue, &Temp2);
+  // Sort divisor inside factor array.
+  if (pstFactorDividend >= pstCurFactor)
+  {
+    pstFactorDividend++;   // Dividend was moved by previous sort.
+  }
+  while (pstFactorDividend > pstFactors+1)
+  { // If divisor and previous factor are not ordered, exchange them
+    nbrLimbs = *(pstFactorDividend->ptrFactor);
+    if (nbrLimbs > *((pstFactorDividend - 1)->ptrFactor))
+    {    // Order is OK, so go out.
+      return;
+    }
+    if (nbrLimbs == *((pstFactorDividend - 1)->ptrFactor))
+    {
+      struct sFactors Temp;
+      for (limbNbr = nbrLimbs; limbNbr > 0; limbNbr--)
+      {
+        if (*(pstFactorDividend->ptrFactor + limbNbr) !=
+          *((pstFactorDividend - 1)->ptrFactor + limbNbr))
+        {
+          break;
+        }
+      }
+      if (limbNbr < 0 || *(pstFactorDividend->ptrFactor + limbNbr) >
+        *((pstFactorDividend - 1)->ptrFactor + limbNbr))
+      {
+        return;    // Divisor was already sorted.
+      }
+      // Exchange dividor and previous element of factor array.
+      Temp = *pstFactorDividend;
+      *pstFactorDividend = *(pstFactorDividend-1);
+      *(pstFactorDividend - 1) = Temp;
+    }
+    pstFactorDividend--;
+  }
 }
 
 #ifdef __EMSCRIPTEN__
@@ -1223,6 +1299,7 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
   int remainder, nbrLimbs, ctr;
   int *ptrValue, *ptrFactor;
   int dividend;
+  int restartFactoring = FALSE;
   EC = 1;
 #ifdef __EMSCRIPTEN__
   oldTimeElapsed = 0;
@@ -1240,6 +1317,7 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
   for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
   {
     int upperBound = pstCurFactor->upperBound;
+    restartFactoring = FALSE;
     ptrFactor = pstCurFactor->ptrFactor;    
     // If number is prime, do not process it.
     if (upperBound == 0)
@@ -1264,11 +1342,14 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
           break;
         }
         insertIntFactor(pstFactors, pstCurFactor, upperBound);
-        nbrLimbs = *ptrFactor;
-        if (nbrLimbs <= 2)
-        {     // Number completely factored.
-          break;
-        }
+        restartFactoring = TRUE;
+        break;
+      }
+      if (restartFactoring)
+      {
+        factorNbr = 0;
+        pstCurFactor = pstFactors;
+        break;
       }
       if (nbrLimbs <= 2)
       {     // Number completely factored.
@@ -1286,6 +1367,10 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
       {
         upperBound += 2;
       }
+    }
+    if (restartFactoring)
+    {
+      continue;
     }
     if (nbrLimbs <= 2)
     {
@@ -1345,8 +1430,9 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
       if (ctr != NumberLength || GD[0].x != 1)
       {
         insertBigFactor(pstFactors, pstCurFactor, GD);
-        factorNbr--;     // Continue factoring this number because it may be composite.
-        pstCurFactor--;
+        factorNbr = 0;
+        pstCurFactor = pstFactors;
+        continue;
       }
     }
   }
