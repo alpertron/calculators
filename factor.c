@@ -433,11 +433,11 @@ static int gcdIsOne(limb *value)
   UncompressLimbsBigInteger(TestNbr, &Temp2);
   BigIntGcd(&Temp1, &Temp2, &Temp3);
   CompressLimbsBigInteger(GD, &Temp3);
-  if (Temp3.nbrLimbs == 1 && Temp3.limbs[0].x == 1)
+  if (Temp3.nbrLimbs == 1 && Temp3.limbs[0].x < 2)
   {
-    return 1;    // GCD is one.
+    return Temp3.limbs[0].x;    // GCD is less than 2.
   }
-  return 0;      // GCD is not one.
+  return 2;      // GCD is greater than one.
 }
 
 static void GenerateSieve(int initial)
@@ -693,7 +693,7 @@ static enum eEcmResult ecmCurve(void)
       }
       else
       {
-        if (!gcdIsOne(Z))
+        if (gcdIsOne(Z) > 1)
         {
           return FACTOR_FOUND;
         }
@@ -718,7 +718,7 @@ static enum eEcmResult ecmCurve(void)
         }
         else
         {
-          if (!gcdIsOne(Z))
+          if (gcdIsOne(Z) > 1)
           {
             return FACTOR_FOUND;
           }
@@ -758,7 +758,7 @@ static enum eEcmResult ecmCurve(void)
           }
           else
           {
-            if (!gcdIsOne(Z))
+            if (gcdIsOne(Z) != 1)
             {
               return 1;
             }
@@ -774,7 +774,7 @@ static enum eEcmResult ecmCurve(void)
           memcpy(Z, Zaux, NumberLength * sizeof(limb));
           continue; // multiple of TestNbr, continue.
         }
-        if (!gcdIsOne(GcdAccumulated))
+        if (gcdIsOne(GcdAccumulated) > 1)
         {
           return 1;
         }
@@ -854,7 +854,7 @@ static enum eEcmResult ecmCurve(void)
         }
         else
         {
-          if (!gcdIsOne(Aux1))
+          if (gcdIsOne(Aux1) > 1)
           {
             return FACTOR_FOUND;
           }
@@ -942,7 +942,7 @@ static enum eEcmResult ecmCurve(void)
           }
           if (Pass != 0)
           {
-            if (!gcdIsOne(GcdAccumulated))
+            if (gcdIsOne(GcdAccumulated) > 1)
             {
               return FACTOR_FOUND;
             }
@@ -970,15 +970,21 @@ static enum eEcmResult ecmCurve(void)
       } // end for Q
       if (Pass == 0)
       {
+        int rc;
         if (BigNbrIsZero(GcdAccumulated))
         { // If GcdAccumulated is zero
           memcpy(X, Xaux, NumberLength * sizeof(limb));
           memcpy(Z, Zaux, NumberLength * sizeof(limb));
           continue; // multiple of TestNbr, continue.
         }
-        if (gcdIsOne(GcdAccumulated))
+        rc = gcdIsOne(GcdAccumulated);
+        if (rc == 1)
         {
           break;    // GCD is one, so this curve does not find a factor.
+        }
+        if (rc == 0)
+        {
+          continue;
         }
                     // GD <- GCD(GcdAccumulated, TestNbr)
         if (memcmp(GD, TestNbr, NumberLength*sizeof(limb)))
@@ -1241,7 +1247,7 @@ static void insertBigFactor(struct sFactors *pstFactors, struct sFactors *pstFac
       {
         return;    // Divisor was already sorted.
       }
-      // Exchange dividor and previous element of factor array.
+      // Exchange divisor and previous element of factor array.
       Temp = *pstFactorDividend;
       *pstFactorDividend = *(pstFactorDividend-1);
       *(pstFactorDividend - 1) = Temp;
@@ -1318,12 +1324,12 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
   {
     int upperBound = pstCurFactor->upperBound;
     restartFactoring = FALSE;
-    ptrFactor = pstCurFactor->ptrFactor;    
     // If number is prime, do not process it.
     if (upperBound == 0)
     {     // Factor is prime.
       continue;
     }
+    ptrFactor = pstCurFactor->ptrFactor;
     nbrLimbs = *ptrFactor;
     while (upperBound < LIMB_RANGE && nbrLimbs > 2)
     {        // Number has at least 3 limbs: Trial division by small numbers.
@@ -1387,6 +1393,7 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
         while (dividend % upperBound == 0)
         {            // Factor found.
           insertIntFactor(pstFactors, pstCurFactor, upperBound);
+          pstCurFactor++;
           dividend /= upperBound;
         }
         if (dividend == upperBound)

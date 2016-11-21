@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="description" content="Javascript application that factors integers using ECM and SIQS algorithms. Written by Dario Alpern." />
     <link rel="alternate" hreflang="es" href="ECMC.HTM" />
-    <link rel="prefetch" href="ecmW.js?1411" />
+    <link rel="prefetch" href="ecmW.js?1511" />
     <title>Integer factorization calculator</title>
     <style type="text/css" media="print">
       #smallheader {display:none;}
@@ -40,8 +40,9 @@
       h1 {text-align:center;}
 	  .lf {padding:0.2em; clear:both;}
       #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
-      @media (min-width: 400px) { .input{width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
-      @media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
+      #digits {width:5em}
+      @media (min-width: 400px) { .input {width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
+      @media (max-width: 400px) { .input {width:100%;padding:3px;margin:0px;}}
    </style>
   </head>
   <body>
@@ -106,7 +107,7 @@
     </nav>
     <article>
     <h1>Integer factorization calculator</h1>
-    <script async="async" type="text/javascript" src="ecm.js?1411"></script>
+    <script async="async" type="text/javascript" src="ecm.js?1511"></script>
     <div style='padding:10px;'>
       <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
         <a href="ENGLISH.HTM" itemprop="url">
@@ -125,14 +126,15 @@
       </div>
     </div>
     <form id="applet">
-      <label for="value">Value</label><input type="text" id="value" value="" class="input"/>
+      <label for="value">Value</label><span id="entry"><input type="text" id="value" value="" placeholder="Number or numerical expression" class="input"/></span>
       <div class="lf"></div>
       <input type="button" id="eval" value="Only evaluate" />
       <input type="button" id="factor" value="Factor" />
       <input type="button" id="stop" value="Stop" />
       <input type="button" id="helpbtn" value="Help" />
       <div class="lf"></div>
-      <label for="digits">Digits per group</label> <input type="number" id="digits" value="6"/>
+      <label for="digits">Digits per group</label> <input type="number" id="digits" value="6" maxlength="5"/>
+      <input type="checkbox" id="batch" value="Batch"><label for="batch">Batch mode</label>
       <input type="hidden" id="app" value="0"/>
     </form>
     <div id="help" aria-live="polite">
@@ -162,7 +164,7 @@
       <p>
         You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
       </p>
-	  <p>Written by Dario Alpern. Last updated 15 November 2016.</p>
+	  <p>Written by Dario Alpern. Last updated 20 November 2016.</p>
     </div>
     <div id="result" aria-live="polite"></div>
     <div id="status"></div>

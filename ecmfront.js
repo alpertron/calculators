@@ -18,6 +18,8 @@
 */
 var worker = 0;
 var app;
+var oldWhiteSpace;
+var oldOverflowX;
 function document_getElementById(x)
 {
   return document.getElementById(x);
@@ -26,7 +28,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-  	worker = new Worker('ecmW.js?1411');
+  	worker = new Worker('ecmW.js?1511');
     worker.onmessage = function(e)
 	  { // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.
@@ -102,5 +104,27 @@ window.onload = function ()
     document_getElementById('help').style.display = "block";
     document_getElementById('result').style.display = "none";
   }
+  document_getElementById('batch').onchange = function ()
+  {
+    var entry = document_getElementById('entry');
+    if (document_getElementById('batch').checked)
+    {
+      value = document_getElementById("value");
+      oldWhiteSpace = value.style.whiteSpace;
+      oldOverflowX = value.style.overflowX;
+      entry.innerHTML = '<textarea id="value" rows="5" class="input" placeholder="One numerical expression or loop per line"></textarea>';
+      value = document_getElementById("value");
+      value.style.whiteSpace = "nowrap";
+      value.style.overflowX = "scroll";
+    }
+    else
+    {
+      entry.innerHTML = '<input type="text" id="value" value="" placeholder="Number or numerical expression" class="input"/>';
+      value = document_getElementById("value");
+      value.style.whiteSpace = oldWhiteSpace;
+      value.style.overflowX = oldOverflowX;
+    }
+  }
+
 }
 
