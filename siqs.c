@@ -161,8 +161,8 @@ static void showMatrixSize(char *SIQSInfoText, int rows, int cols)
   strcpy(ptrText, " &times; ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, cols);   // Show number of columns.
-  strcpy(ptrText, lang ? "usando el algoritmo de Lanczos en bloques.</p>" :
-                         "congruence matrix using Block Lanczos algorithm.</p>");
+  strcpy(ptrText, lang ? " usando el algoritmo de Lanczos en bloques.</p>" :
+                         " congruence matrix using Block Lanczos algorithm.</p>");
   databack(lowerText);
 }
 
