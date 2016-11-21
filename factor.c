@@ -108,7 +108,7 @@ enum eEcmResult
 };
 
 /* ECM limits for 30, 35, ..., 85 digits */
-static int limits[] = { 5, 8, 15, 25, 25, 27, 32, 43, 70, 150, 300, 350, 600 };
+static int limits[] = { 5, 5, 5, 5, 5, 6, 8, 10, 20, 25, 26, 30, 50 };
 /******************************************************/
 /* Start of code adapted from Paul Zimmermann's ECM4C */
 /******************************************************/

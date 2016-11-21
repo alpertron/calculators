@@ -1056,7 +1056,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
     }
   }
   else
-  {
+  {   // Dividend has at least two limbs.
     unsigned char mostSignificantLimbZero = FALSE;
     double dRem, dCurrentPrime;
     double dDivid, dLimbMult;
@@ -1171,8 +1171,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
             break;
           }
           dCurrentPrime = (double)divis;
-          Rem = (int)(dRem - floor(dRem / dCurrentPrime)*dCurrentPrime);
-          if (Rem%divis != 0)
+          if (dRem != floor(dRem / dCurrentPrime)*dCurrentPrime)
           {                     // Number is not a multiple of prime.
             if (expParity != 0)
             {
@@ -1257,10 +1256,6 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           {     // Number fits in a double
             double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
             int sqrtDivid = (int)(floor(sqrt(dDivid)));
-            if (trialDivisions == 12135)
-            {
-              Divisor = 0;
-            }
             fullRemainder = TRUE;
             for (; index < nbrPrimes; index++)
             {
@@ -1314,8 +1309,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 }
                 else
                 {
-                  double dQuot = floor(dDivid / Divisor);
-                  if (dDivid - dQuot * Divisor != 0)
+                  if (dDivid != floor(dDivid / Divisor) * Divisor)
                   {
                     break;
                   }
@@ -1468,8 +1462,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
             break;
           }
           dCurrentPrime = (double)divis;
-          Rem = (int)(dRem - floor(dRem / dCurrentPrime)*dCurrentPrime);
-          if (Rem%divis != 0)
+          if (dRem != floor(dRem / dCurrentPrime)*dCurrentPrime)
           {                     // Number is not a multiple of prime.
             if (expParity != 0)
             {
@@ -1611,8 +1604,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 }
                 else
                 {
-                  double dQuot = floor(dDivid / Divisor);
-                  if (dDivid - dQuot * Divisor != 0)
+                  if (dDivid != floor(dDivid / Divisor) * Divisor)
                   {
                     break;
                   }
