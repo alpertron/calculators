@@ -1390,15 +1390,11 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
       }
       while (upperBound*upperBound <= dividend)
       {              // Trial division by small numbers.
-        while (dividend % upperBound == 0)
+        if (dividend % upperBound == 0)
         {            // Factor found.
           insertIntFactor(pstFactors, pstCurFactor, upperBound);
-          pstCurFactor++;
-          dividend /= upperBound;
-        }
-        if (dividend == upperBound)
-        {
-          continue;
+          restartFactoring = TRUE;
+          break;
         }
         if (upperBound == 2)
         {
@@ -1408,6 +1404,12 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
         {
           upperBound += 2;
         }
+      }
+      if (restartFactoring)
+      {
+        factorNbr = 0;
+        pstCurFactor = pstFactors;
+        continue;
       }
       pstCurFactor->upperBound = 0;   // Number is prime.
       continue;
@@ -1441,6 +1443,21 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
         pstCurFactor = pstFactors;
         continue;
       }
+    }
+  }
+  // Join equal prime factors by adding their multiplicities.
+  pstCurFactor = pstFactors + 1;
+  for (factorNbr = 1; factorNbr < pstFactors->multiplicity; factorNbr++, pstCurFactor++)
+  {
+    nbrLimbs = *pstCurFactor->ptrFactor;
+    if (nbrLimbs == *(pstCurFactor + 1)->ptrFactor &&
+      memcmp(pstCurFactor->ptrFactor+1, (pstCurFactor + 1)->ptrFactor+1,
+             nbrLimbs*sizeof(int)) == 0)
+    {   // Successive prime factors in array match.
+      pstCurFactor->multiplicity += (pstCurFactor + 1)->multiplicity;
+      memmove(pstCurFactor->ptrFactor, (pstCurFactor + 1)->ptrFactor,
+        (pstFactors->multiplicity - factorNbr) * sizeof(int));
+      pstFactors->multiplicity--;   // Indicate one less different prime factor.
     }
   }
 }

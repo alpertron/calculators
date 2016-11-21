@@ -78,29 +78,37 @@ void ecmFrontText(char *tofactorText, int doFactorization)
     {
       struct sFactors *pstFactors;
       int i = 0;
-      strcpy(ptrOutput, " = ");
-      ptrOutput += strlen(ptrOutput);
       pstFactors = &astFactorsMod[1];
-      for (;;)
+      if (NbrFactorsMod == 1 && pstFactors->multiplicity == 1 &&
+          (*pstFactors->ptrFactor > 1 || *(pstFactors->ptrFactor+1) > 1))
+      {    // Do not show zero or one as prime.
+        strcpy(ptrOutput, lang ? " es primo" : " is prime");
+      }
+      else
       {
-        UncompressBigInteger(pstFactors->ptrFactor, &factorValue);
-        Bin2Dec(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
+        strcpy(ptrOutput, " = ");
         ptrOutput += strlen(ptrOutput);
-        if (pstFactors->multiplicity > 1)
+        for (;;)
         {
-          strcpy(ptrOutput, "<sup>");
+          UncompressBigInteger(pstFactors->ptrFactor, &factorValue);
+          Bin2Dec(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
           ptrOutput += strlen(ptrOutput);
-          int2dec(&ptrOutput, pstFactors->multiplicity);
-          strcpy(ptrOutput, "</sup>");
+          if (pstFactors->multiplicity > 1)
+          {
+            strcpy(ptrOutput, "<sup>");
+            ptrOutput += strlen(ptrOutput);
+            int2dec(&ptrOutput, pstFactors->multiplicity);
+            strcpy(ptrOutput, "</sup>");
+            ptrOutput += strlen(ptrOutput);
+          }
+          if (++i == NbrFactorsMod)
+          {
+            break;
+          }
+          strcpy(ptrOutput, " &times; ");
           ptrOutput += strlen(ptrOutput);
+          pstFactors++;
         }
-        if (++i == NbrFactorsMod)
-        {
-          break;
-        }
-        strcpy(ptrOutput, " &times; ");
-        ptrOutput += strlen(ptrOutput);
-        pstFactors++;
       }
     }
   }

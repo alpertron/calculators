@@ -28,9 +28,9 @@ function callWorker(param)
 {
   if (!worker)
   {
-  	worker = new Worker('ecmW.js?1511');
+  	worker = new Worker('ecmW.js?1611');
     worker.onmessage = function(e)
-	  { // First character of e.data is '1' for intermediate text
+    { // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.
       if (e.data.substring(0, 1) == '4')
       {
@@ -47,7 +47,7 @@ function callWorker(param)
           document_getElementById('stop').disabled = true;
         }
       }
-	  }
+    }
   }
   worker.postMessage(param);
 }
