@@ -2230,7 +2230,8 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   memcpy(factorSiqs.limbs, pNbrToFactor, NumberLength * sizeof(limb));
   NumberLength = BigNbrToBigInt(&factorSiqs, Modulus);
   Modulus[NumberLength++] = 0;
-  memcpy(TestNbr2, Modulus, NumberLength*sizeof(int));
+  Modulus[NumberLength] = 0;
+  memcpy(TestNbr2, Modulus, (NumberLength+1)*sizeof(int));
   memset(matrixPartialHashIndex, 0xFF, sizeof(matrixPartialHashIndex));
 #ifdef __EMSCRIPTEN__
   InitSIQSStrings(SieveLimit);
