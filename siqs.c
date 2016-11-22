@@ -152,6 +152,18 @@ void GetDHMS(char **pptrText, int seconds)
   *pptrText = ptrText;
 }
 
+void GetDHMSt(char **pptrText, int tenths)
+{
+  char *ptrText;
+  GetDHMS(pptrText, tenths / 10);
+  ptrText = *pptrText - 2;
+  *ptrText++ = '.';
+  *ptrText++ = (char)(tenths%10 + '0');
+  *ptrText++ = 's';
+  *ptrText++ = ' ';
+  *pptrText = ptrText;
+}
+
 static void showMatrixSize(char *SIQSInfoText, int rows, int cols)
 {
   char *ptrText = ptrLowerText;  // Point after number that is being factored.

@@ -37,6 +37,10 @@ static BigInteger factorValue;
 
 #ifdef __EMSCRIPTEN__
 void databack(char *data);
+extern double originalTenthSecond;
+int tenths(void);
+void GetDHMSt(char **pptrText, int tenths);
+
 #endif
 
 void ecmFrontText(char *tofactorText, int doFactorization)
@@ -112,7 +116,14 @@ void ecmFrontText(char *tofactorText, int doFactorization)
       }
     }
   }
-  strcat(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+  strcpy(ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
+  ptrOutput += strlen(ptrOutput);
+#ifdef __EMSCRIPTEN__
+  GetDHMSt(&ptrOutput, (int)(tenths() - originalTenthSecond));
+  strcpy(ptrOutput, "</p>");
+  ptrOutput += strlen(ptrOutput);
+#endif
+  strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
