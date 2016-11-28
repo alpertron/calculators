@@ -28,7 +28,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-  	worker = new Worker('ecmW.js?1911');
+  	worker = new Worker('ecmW.js?2111');
     worker.onmessage = function(e)
     { // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.
@@ -62,15 +62,21 @@ function dowork(n)
   res.style.display = "block";
   if (valueText == "")
   {
-    res.innerHTML = (app & 1 ? "Por favor ingrese una expresión." :
-                               "Please type an expression.");
+    res.innerHTML = (app & 1 ? "<p>Por favor ingrese una expresión.</p>" :
+                               "<p>Please type an expression.</p>");
     return;
+  }
+  if (typeof(Worker) === "undefined")
+  {
+    res.innerHTML = (app & 1 ? "<p>Esta calculadora necesita Web Workers. Por favor use otro navegador Web.</p>" :
+                               "<p>This calculator requires Web Workers. Please use another Web browser.</p>");
+    return;							   
   }
   document_getElementById('eval').disabled = true;
   document_getElementById('factor').disabled = true;
   document_getElementById('stop').disabled = false;
-  res.innerHTML = (app & 1 ? "Factorizando la expresión..." :
-                             "Factoring expression...");
+  res.innerHTML = (app & 1 ? "<p>Factorizando la expresión...</p>" :
+                             "<p>Factoring expression...</p>");
   param = digitGroup + ',' + app + ',' + valueText + String.fromCharCode(0)
   callWorker(param);
 }
@@ -81,11 +87,11 @@ window.onload = function ()
   document_getElementById('stop').disabled = true;
   document_getElementById('eval').onclick = function ()
   {
-    dowork(0);
+    dowork(document_getElementById('batch').checked? 4: 0);
   }
   document_getElementById('factor').onclick = function ()
   {
-    dowork(2);
+    dowork(document_getElementById('batch').checked? 6: 2);
   }
   document_getElementById('stop').onclick = function ()
   {

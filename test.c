@@ -22,7 +22,7 @@ extern int nbrLimbs;
 extern int lang, groupLen;
 extern limb TestNbr[MAX_LEN];
 char expr[] = "123456789012345";
-extern char *output;
+extern char *output, batch;
 int Product[32];
 char input[10000];
 BigInteger dividend, divisor, quotient;
@@ -186,6 +186,7 @@ int main(int argc, char *argv[])
   gaussianText(argv[1], argv[2][0]);
   printf("%s\n", output);
 #elif DEBUG_CODE == 13
+  batch = 1;
   if (argc == 3)
   {
     ecmFrontText(argv[1], 1);

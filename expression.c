@@ -604,7 +604,7 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
     nbrLimbs = pArgument->nbrLimbs;
     FirstTime = 1;
     if (stackOper == 'B')
-    {
+    {        // Previous pseudoprime
       if (pArgument->sign == SIGN_NEGATIVE || (nbrLimbs == 1 && pArgumentLimbs->x<3))
       {
         return EXPR_INVALID_PARAM;
@@ -620,9 +620,9 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
       pResultLimbs->x = pResultLimbs->x | 1;
     }
     else
-    {
+    {        // Next pseudoprime
       pResult -> sign = SIGN_POSITIVE;
-      if (pArgument->sign == SIGN_NEGATIVE || (nbrLimbs == 1 && pArgumentLimbs->x<2))
+      if (pArgument->sign == SIGN_NEGATIVE || (nbrLimbs == 1 && pArgumentLimbs->x < 2))
       {
         pResult -> nbrLimbs = 1;
         pResultLimbs->x = 2;
@@ -649,17 +649,21 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
         }
       }
       else
-      {
+      {      // Next pseudoprime
         if (FirstTime != 0)
         {
-          pResultLimbs->x |= 1;  // If it is even, change to next odd value.
+          if (nbrLimbs == 1 && pResultLimbs->x == 2)
+          {   // Find next pseudoprime to 2.
+            pResultLimbs->x = 1;
+          }
+          else
+          {
+            pResultLimbs->x |= 1;  // If it is even, change to next odd value.
+          }
           FirstTime = 0;
           pResult->nbrLimbs = nbrLimbs;
         }
-        else
-        {     // Add 2.
-          pResultLimbs->x += 2;
-        }
+        pResultLimbs->x += 2;   // Add 2.
         if (pResultLimbs->x > MAX_VALUE_LIMB)
         {
           pTemp = pResultLimbs;
