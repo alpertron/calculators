@@ -1073,12 +1073,17 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
   {   // Most significant bits not set.
     *pNbrLimbs = nbrLimbs - index - 1;
   }
+      // Move number shRg bits to the right.
   mask = (1 << shRg) - 1;
   for (index2 = nbrLimbs - 1; index2 >= index; index2--)
   {
     carry.x = (carry.x << BITS_PER_GROUP) + number[index2].x;
-    number[index2 - index].x = carry.x >> shRg;
+    number[index2].x = carry.x >> shRg;
     carry.x &= mask;
+  }
+  if (index > 0)
+  {   // Move limbs to final position.
+    memmove(number, &number[index], (nbrLimbs - index) * sizeof(limb));
   }
   *pShRight = power2;
 }
