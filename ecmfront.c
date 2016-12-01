@@ -127,7 +127,7 @@ static char evalExpression(char *expr, int counter, BigInteger *result)
     }
     if (c == 'x' || c == 'X')
     {
-      BigInteger2Dec(&valueX, ptrOutputExpr, 100000);
+      BigInteger2Dec(&valueX, ptrOutputExpr, -100000);
       ptrOutputExpr += strlen(ptrOutputExpr);
     }
     else if (c == 'c' || c == 'C')
@@ -364,6 +364,8 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
   }
   strcpy(ptrOutput, "</ul>");
   ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+    "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
 void ecmFrontText(char *tofactorText, int doFactorization)

@@ -131,6 +131,12 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
   int significantZero = 0;
   int groupCtr, digit[DIGITS_PER_LIMB];
   int digits=0;
+  int showDigitsText = TRUE;
+  if (groupLen < 0)
+  {
+    groupLen = -groupLen;
+    showDigitsText = FALSE;
+  }
   power10000[0].x = ptrSrc->x % MAX_LIMB_CONVERSION;
   power10000[1].x = ptrSrc->x / MAX_LIMB_CONVERSION;
      // Initialize array length.
@@ -208,7 +214,7 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
     *ptrDest = '\0';
     return;
   }
-  if (digits > 30)
+  if (digits > 30 && showDigitsText)
   {
     *ptrDest++ = '(';
     int2dec(&ptrDest, digits);
