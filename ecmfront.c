@@ -357,6 +357,135 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
+static void ExponentToBigInteger(int exponent, BigInteger *bigint)
+{
+  if (exponent > MAX_VALUE_LIMB)
+  {
+    bigint->limbs[0].x = exponent - MAX_VALUE_LIMB;
+    bigint->limbs[1].x = 1;
+    bigint->nbrLimbs = 2;
+  }
+  else
+  {
+    bigint->limbs[0].x = exponent + 1;
+    bigint->nbrLimbs = 1;
+  }
+  bigint->sign = SIGN_POSITIVE;
+}
+
+// Find number of divisors as the product of all exponents plus 1.
+static void GetNumberOfDivisors(char **pptrOutput)
+{
+  char *ptrOutput = *pptrOutput;
+  struct sFactors *pstFactor;
+  int factorNumber;
+  result.limbs[0].x = 1;    // Set result to 1.
+  result.nbrLimbs = 1;
+  result.sign = SIGN_POSITIVE;
+  pstFactor = &astFactorsMod[1];
+  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  {
+    ExponentToBigInteger(pstFactor->multiplicity, &factorValue);
+    BigIntMultiply(&factorValue, &result, &result);
+    pstFactor++;
+  }
+  strcpy(ptrOutput, lang ? "<p>Cantidad de divisores: " : "<p>Number of divisors: ");
+  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&result, ptrOutput, groupLen);
+  ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, "</p>");
+  ptrOutput += strlen(ptrOutput);
+  *pptrOutput = ptrOutput;
+}
+
+// Find sum of divisors as the product of (p^(e+1)-1)/(p-1) where p=prime and e=exponent.
+static void GetSumOfDivisors(char **pptrOutput)
+{
+  BigInteger Temp1;
+  char *ptrOutput = *pptrOutput;
+  struct sFactors *pstFactor;
+  int factorNumber;
+  result.limbs[0].x = 1;    // Set result to 1.
+  result.nbrLimbs = 1;
+  result.sign = SIGN_POSITIVE;
+  pstFactor = &astFactorsMod[1];
+  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  {
+    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Temp1);   // p^(e+1)
+    addbigint(&Temp1, -1);   // p^(e-1)-1
+    BigIntMultiply(&result, &Temp1, &result);
+    UncompressBigInteger(pstFactor->ptrFactor, &Temp1);
+    addbigint(&Temp1, -1);   // p-1
+    BigIntDivide(&result, &Temp1, &result);
+    pstFactor++;
+  }
+  strcpy(ptrOutput, lang ? "<p>Suma de divisores: " : "<p>Sum of divisors: ");
+  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&result, ptrOutput, groupLen);
+  ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, "</p>");
+  ptrOutput += strlen(ptrOutput);
+  *pptrOutput = ptrOutput;
+}
+
+// Find Euler's Totient as the product of p^(e-1)*(p-1) where p=prime and e=exponent.
+static void GetEulerTotient(char **pptrOutput)
+{
+  BigInteger Temp1;
+  char *ptrOutput = *pptrOutput;
+  struct sFactors *pstFactor;
+  int factorNumber;
+  result.limbs[0].x = 1;    // Set result to 1.
+  result.nbrLimbs = 1;
+  result.sign = SIGN_POSITIVE;
+  pstFactor = &astFactorsMod[1];
+  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  {
+    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    BigIntPowerIntExp(&factorValue, pstFactor->multiplicity - 1, &Temp1);   // p^(e-1)
+    BigIntMultiply(&result, &Temp1, &result);
+    UncompressBigInteger(pstFactor->ptrFactor, &Temp1);
+    addbigint(&Temp1, -1);   // p-1
+    BigIntMultiply(&result, &Temp1, &result);
+    pstFactor++;
+  }
+  strcpy(ptrOutput, lang ? "<p>Phi de Euler: " : "<p>Euler's totient: ");
+  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&result, ptrOutput, groupLen);
+  ptrOutput += strlen(ptrOutput);
+  strcpy(ptrOutput, "</p>");
+  ptrOutput += strlen(ptrOutput);
+  *pptrOutput = ptrOutput;
+}
+
+// Find Mobius as zero if some exponent is > 1, 1 if the number of factors is even, -1 if it is odd.
+static void GetMobius(char **pptrOutput)
+{
+  char *ptrOutput = *pptrOutput;
+  struct sFactors *pstFactor;
+  int factorNumber;
+  int mobius = 1;
+  pstFactor = &astFactorsMod[1];
+  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  {
+    if (pstFactor->multiplicity == 1)
+    {
+      mobius = -mobius;
+    }
+    else
+    {
+      mobius = 0;
+    }
+  }
+  strcpy(ptrOutput, "<p>Möbius: ");
+  ptrOutput += strlen(ptrOutput);
+  int2dec(&ptrOutput, mobius);
+  strcpy(ptrOutput, "</p>");
+  ptrOutput += strlen(ptrOutput);
+  *pptrOutput = ptrOutput;
+}
+
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
 {
   char *ptrOutput;
@@ -392,6 +521,10 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
   SendFactorizationToOutput(rc, &ptrOutput, doFactorization);
   if (rc == EXPR_OK && doFactorization)
   {
+    GetNumberOfDivisors(&ptrOutput);
+    GetSumOfDivisors(&ptrOutput);
+    GetEulerTotient(&ptrOutput);
+    GetMobius(&ptrOutput);
     strcpy(ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
     ptrOutput += strlen(ptrOutput);
 #ifdef __EMSCRIPTEN__
