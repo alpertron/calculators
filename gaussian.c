@@ -95,7 +95,7 @@ void GaussianFactorization(void)
 
     NumberLength = norm.nbrLimbs;
     CompressBigInteger(nbrToFactor, &norm);
-    factor(nbrToFactor, factorsNorm, astFactorsNorm);
+    factor(nbrToFactor, factorsNorm, astFactorsNorm, NULL);
     NbrFactorsNorm = astFactorsNorm[0].multiplicity;
     pstFactor = &astFactorsNorm[1];
     for (index = 0; index < NbrFactorsNorm; index++)

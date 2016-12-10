@@ -28,7 +28,8 @@ struct sFactors
 };
 extern struct sFactors stFactors[MAX_FACTORS];
 extern int *factorArr[FACTOR_ARRSIZE];
-void factor(int *number, int *factors, struct sFactors *pstFactors);
+void factor(int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors);
 void FactoringSIQS(limb *pNbrToFactor, limb *pFactor);
 extern int lang;
+char *findChar(char *str, char c);
 #endif

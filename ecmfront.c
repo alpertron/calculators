@@ -37,8 +37,10 @@ int factorsMod[10000];
 static BigInteger factorValue, result;
 BigInteger valueX;
 char outputExpr[100000];
+char *ptrInputText;
 
 #ifdef __EMSCRIPTEN__
+extern int NextEC;
 void databack(char *data);
 extern double originalTenthSecond;
 int tenths(void);
@@ -88,19 +90,6 @@ static void stringToHTML(char **pptrOutput, char *ptrString)
     }
   }
   *pptrOutput = ptrOutput;
-}
-
-static char *findChar(char *str, char c)
-{
-  while (*str != 0)
-  {
-    if (*str == c)
-    {
-      return str;
-    }
-    str++;
-  }
-  return NULL;
 }
 
 static void SkipSpaces(char **pptrText)
@@ -322,7 +311,7 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
         {
           NumberLength = tofactor.nbrLimbs;
           CompressBigInteger(nbrToFactor, &tofactor);
-          factor(nbrToFactor, factorsMod, astFactorsMod);
+          factor(nbrToFactor, factorsMod, astFactorsMod, NULL);
           NbrFactorsMod = astFactorsMod[0].multiplicity;
         }
         SendFactorizationToOutput(rc, &ptrOutput, doFactorization);
@@ -343,7 +332,7 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
       {
         NumberLength = tofactor.nbrLimbs;
         CompressBigInteger(nbrToFactor, &tofactor);
-        factor(nbrToFactor, factorsMod, astFactorsMod);
+        factor(nbrToFactor, factorsMod, astFactorsMod, NULL);
         NbrFactorsMod = astFactorsMod[0].multiplicity;
       }
       SendFactorizationToOutput(rc, &ptrOutput, doFactorization);
@@ -368,10 +357,11 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
-void ecmFrontText(char *tofactorText, int doFactorization)
+void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
 {
   char *ptrOutput;
   enum eExprErr rc;
+  ptrInputText = tofactorText;
   if (batch)
   {
     BatchFactorization(tofactorText, doFactorization);
@@ -393,7 +383,7 @@ void ecmFrontText(char *tofactorText, int doFactorization)
 #ifdef __EMSCRIPTEN__
     lModularMult = 0;
 #endif
-    factor(nbrToFactor, factorsMod, astFactorsMod);
+    factor(nbrToFactor, factorsMod, astFactorsMod, knownFactors);
     NbrFactorsMod = astFactorsMod[0].multiplicity;
   }
   ptrOutput = output;
@@ -418,8 +408,10 @@ void ecmFrontText(char *tofactorText, int doFactorization)
 void doWork(char* data, int size)
 {
   int flags;
+  char *ptrText;
   char *ptrData = data;
   char *ptrPower, *ptrMod;
+  char *ptrWebStorage, *ptrKnownFactors;
   if (output == NULL)
   {
     output = malloc(3000000);
@@ -431,9 +423,37 @@ void doWork(char* data, int size)
   }
   ptrData++;             // Skip comma.
   flags = *ptrData;
+  if (flags == '-')
+  {
+    flags = -*(++ptrData);
+  }
   lang = flags & 1;
-  batch = flags & 4;
-  ecmFrontText(ptrData+2, flags & 2); // Skip app number and second comma.
+  ptrData += 2;          // Skip app number and second comma.
+  ptrWebStorage = ptrData + strlen(ptrData) + 1;
+  ptrKnownFactors = findChar(ptrWebStorage, '=');
+  if (ptrKnownFactors)
+  {
+    ptrKnownFactors++;
+  }
+  if (flags & 0x80)
+  {
+    batch = 0;
+    if (ptrKnownFactors)
+    {
+      ptrText = ptrKnownFactors + strlen(ptrKnownFactors) + 1;
+      NextEC = 0;
+      while (*ptrText != 0)
+      {
+        NextEC = NextEC * 10 + (*ptrText++ & 0x0F);
+      }
+      flags = 2;  // do factorization, no batch mode.
+    }
+  }
+  else
+  {
+    batch = flags & 4;
+  }
+  ecmFrontText(ptrData, flags & 2, ptrKnownFactors); // The 3rd parameter includes known factors.
   databack(output);
 }
 #endif

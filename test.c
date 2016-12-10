@@ -7,7 +7,7 @@
 #define DEBUG_CODE 13
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
-void ecmFrontText(char *tofactorText, int doFactorization);
+void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
 int Factor1[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00 };
 int Factor2[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00 };
 int Factor3[] = { 29504, 29490, 19798, 633, 181, 0, 0, 0, 0, 0 };
@@ -186,22 +186,26 @@ int main(int argc, char *argv[])
   gaussianText(argv[1], argv[2][0]);
   printf("%s\n", output);
 #elif DEBUG_CODE == 13
-  batch = 1;
+  batch = 0;
   if (argc == 3)
   {
-    ecmFrontText(argv[1], 1);
-    printf("%s\n", output);
-    ecmFrontText(argv[2], 1);
+    ecmFrontText(argv[1], 1, argv[2]);
     printf("%s\n", output);
   }
   else if (argc == 2)
   {
-    ecmFrontText(argv[1], 1);
+    char *ptrKnownFactors = strchr(argv[1], '=');
+    if (ptrKnownFactors)
+    {                          // There is equal sign.
+      *ptrKnownFactors = 0;    // Replace equal sign by string terminator.
+      ptrKnownFactors++;
+    }
+    ecmFrontText(argv[1], 1, ptrKnownFactors);
     printf("%s\n", output);
   }
   else
   {
-    printf("value [value]\n");
+    printf("value [known factors]\n");
     return 0;
   }
 #endif

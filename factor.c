@@ -58,7 +58,8 @@ static int Typ[4000];
 static int indexM, maxIndexM;
 static int foundByLehman, performLehman;
 static int SmallPrime[670]; /* Primes < 5000 */
-static int EC, NextEC;
+int NextEC;
+static int EC;
 static limb A0[MAX_LEN];
 static limb A02[MAX_LEN];
 static limb A03[MAX_LEN];
@@ -100,6 +101,9 @@ static limb *fieldAux3 = Aux3;
 static limb *fieldAux4 = Aux4;
 static BigInteger Temp1, Temp2, Temp3;
 extern int groupLen;
+#ifdef __EMSCRIPTEN__
+extern char *ptrInputText;
+#endif
 enum eEcmResult
 {
   FACTOR_NOT_FOUND = 0,
@@ -492,6 +496,9 @@ static void GenerateSieve(int initial)
 
 static enum eEcmResult ecmCurve(void)
 {
+#ifdef __EMSCRIPTEN__
+  char text[20];
+#endif
   EC %= 50000000;   // Convert to curve number.
   for (;;)
   {
@@ -515,6 +522,12 @@ static enum eEcmResult ecmCurve(void)
     else
     {
       EC++;
+#ifdef __EMSCRIPTEN__
+      text[0] = '7';
+      ptrText = &text[1];
+      int2dec(&ptrText, EC);
+      databack(text);
+#endif
 #if 0
       NN = Lehman(NumberToFactor, EC);
       if (!NN.equals(BigInt1))
@@ -758,9 +771,9 @@ static enum eEcmResult ecmCurve(void)
           }
           else
           {
-            if (gcdIsOne(Z) != 1)
+            if (gcdIsOne(Z) > 1)
             {
-              return 1;
+              return FACTOR_FOUND;
             }
           }
         }
@@ -1134,126 +1147,99 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
 
 // Insert new factor found into factor array. This factor array must be sorted.
 // The divisor must be also sorted.
-static void insertBigFactor(struct sFactors *pstFactors, struct sFactors *pstFactorDividend, limb *divisor)
+static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor)
 {
-  struct sFactors *pstCurFactor;
-  int factorNumber;
-  int *ptrFactor = pstFactorDividend->ptrFactor;
-  int nbrLimbs = *ptrFactor;
-  int *ptrValue = ptrFactor + nbrLimbs;
-  int limbNbr;
+  struct sFactors *pstCurFactor, stTempFactor;
+  int factorNumber, factorNumber2, ctr;
+  int lastFactorNumber = pstFactors->multiplicity;
+  struct sFactors *pstNewFactor = pstFactors + lastFactorNumber + 1;
+  int *ptrNewFactor;
 
-  // Divide number by factor just found.
-  NumberLength = *ptrFactor;
-  UncompressBigInteger(ptrFactor, &Temp1);
-  UncompressLimbsBigInteger(divisor, &Temp2);
-  BigIntDivide(&Temp1, &Temp2, &Temp3);
-  // Set non-significant limbs of Temp3 to zero.
-  if (Temp1.nbrLimbs != Temp3.nbrLimbs)
-  {
-    memset(&Temp3.limbs[Temp3.nbrLimbs].x, 0, (Temp1.nbrLimbs - Temp3.nbrLimbs) * sizeof(limb));
+  pstCurFactor = pstFactors + 1;
+  for (factorNumber = 1; factorNumber <= lastFactorNumber; factorNumber++, pstCurFactor++)
+  {     // For each known factor...
+    int *ptrFactor = pstCurFactor->ptrFactor;
+    UncompressBigInteger(ptrFactor, &Temp2);    // Convert known factor to Big Integer.
+    BigIntGcd(divisor, &Temp2, &Temp3);          // Temp3 is the GCD between known factor and divisor.
+    if (Temp3.nbrLimbs == 1 && Temp3.limbs[0].x < 2)
+    {                                           // divisor is not a new factor (GCD = 0 or 1).
+      continue;
+    }
+    if (TestBigNbrEqual(&Temp2, &Temp3))
+    {                                           // GCD is equal to known factor.
+      continue;
+    }
+    // At this moment both GCD and known factor / GCD are new known factors. Replace the known factor by
+    // known factor / GCD and generate a new known factor entry.
+    NumberLength = Temp3.nbrLimbs;
+    CompressBigInteger(pstFactors->ptrFactor, &Temp3);  // Append new known factor.
+    BigIntDivide(&Temp2, divisor, &Temp3);
+    NumberLength = Temp3.nbrLimbs;
+    CompressBigInteger(ptrFactor, &Temp3);              // Overwrite old known factor.
+    pstNewFactor->multiplicity = pstCurFactor->multiplicity;
+    pstNewFactor->ptrFactor = pstFactors->ptrFactor;
+    pstNewFactor->upperBound = pstCurFactor->upperBound;
+    pstNewFactor++;
+    pstFactors->multiplicity++;
   }
-  CompressBigInteger(ptrFactor, &Temp3);
-  // Check whether factor is already in factor list. If factor is already found,
-  // increment multiplicity in array and go out. Otherwise, if factor is less than
-  // an element of the array, move one position all other elements of the array and
-  // put in the empty position the new factor.
+    // Sort factors in ascending order. If two factors are equal, coalesce them.
+    // Divide number by factor just found.
   pstCurFactor = pstFactors + 1;
   for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++, pstCurFactor++)
   {
-    int nbrLimbsFactorArray;
-    ptrValue = pstCurFactor->ptrFactor;    // Point to factor in factor array.
-    nbrLimbsFactorArray = *ptrValue;
-    if (Temp2.nbrLimbs > nbrLimbsFactorArray)
+    int *ptrFactor, *ptrFactor2;
+    pstNewFactor = pstCurFactor + 1;
+    for (factorNumber2 = factorNumber+1; factorNumber2 <= pstFactors->multiplicity; factorNumber2++, pstNewFactor++)
     {
-      continue;
-    }
-    if (Temp2.nbrLimbs < nbrLimbsFactorArray)
-    {
-      break;
-    }
-    for (limbNbr = nbrLimbsFactorArray-1; limbNbr >= 0; limbNbr--)
-    {
-      if (Temp2.limbs[limbNbr].x != *(ptrValue + 1 + limbNbr))
-      {
-        break;
-      }
-    }
-    if (limbNbr >= 0)
-    {          // Number in factor array is not equal to factor to be inserted.
-      if (Temp2.limbs[limbNbr].x > *(ptrValue + 1 + limbNbr))
-      {
+      ptrFactor = pstCurFactor->ptrFactor;
+      ptrFactor2 = pstNewFactor->ptrFactor;
+      if (*ptrFactor < *ptrFactor2)
+      {     // Factors already in correct order.
         continue;
       }
-      else
+      if (*ptrFactor == *ptrFactor2)
       {
-        break;
-      }
-    }
-               // Prime already found: increment multiplicity and go out.
-    pstCurFactor->multiplicity += pstFactorDividend->multiplicity;
-    ptrValue = pstFactorDividend->ptrFactor;
-    if (nbrLimbsFactorArray == 1 && *(ptrValue + 1) == 1)
-    {    // Dividend is 1 now so discard it.
-      *pstFactorDividend = *(pstFactors + pstFactors->multiplicity--);
-    }
-    return;
-  }
-  pstFactors->multiplicity++;
-  ptrValue = pstFactorDividend->ptrFactor;
-  if (pstFactors->multiplicity > factorNumber)
-  {
-    memmove(pstCurFactor + 1, pstCurFactor,
-      (pstFactors->multiplicity - factorNumber) * sizeof(struct sFactors));
-  }
-  if (*ptrValue == 1 && *(ptrValue + 1) == 1)
-  {   // Factor is 1.
-    pstCurFactor = pstFactorDividend;
-  }
-  else
-  {   // Factor is not 1.
-    ptrValue = pstFactors->ptrFactor;
-    pstCurFactor->ptrFactor = ptrValue;
-    pstCurFactor->multiplicity = pstFactorDividend->multiplicity;
-    pstCurFactor->upperBound = pstFactorDividend->upperBound;
-    pstFactors->ptrFactor += 1 + Temp2.nbrLimbs;  // Next free memory.
-  }
-  CompressBigInteger(ptrValue, &Temp2);
-  // Sort divisor inside factor array.
-  if (pstFactorDividend >= pstCurFactor)
-  {
-    pstFactorDividend++;   // Dividend was moved by previous sort.
-  }
-  while (pstFactorDividend > pstFactors+1)
-  { // If divisor and previous factor are not ordered, exchange them
-    nbrLimbs = *(pstFactorDividend->ptrFactor);
-    if (nbrLimbs > *((pstFactorDividend - 1)->ptrFactor))
-    {    // Order is OK, so go out.
-      return;
-    }
-    if (nbrLimbs == *((pstFactorDividend - 1)->ptrFactor))
-    {
-      struct sFactors Temp;
-      for (limbNbr = nbrLimbs; limbNbr > 0; limbNbr--)
-      {
-        if (*(pstFactorDividend->ptrFactor + limbNbr) !=
-          *((pstFactorDividend - 1)->ptrFactor + limbNbr))
+        for (ctr = *ptrFactor; ctr > 1; ctr--)
         {
-          break;
+          if (*(ptrFactor + ctr) != *(ptrFactor2 + ctr))
+          {
+            break;
+          }
+        }
+        if (*(ptrFactor + ctr) < *(ptrFactor2 + ctr))
+        {     // Factors already in correct order.
+          continue;
+        }
+        if (*(ptrFactor + ctr) == *(ptrFactor2 + ctr))
+        {     // Factors are the same.
+          pstCurFactor->multiplicity += pstNewFactor->multiplicity;
+          ctr = pstFactors->multiplicity - factorNumber2;
+          if (ctr > 0)
+          {
+            memmove(pstNewFactor, pstNewFactor + 1, ctr * sizeof(struct sFactors));
+          }
+          pstFactors->multiplicity--;   // Indicate one less known factor.
+          continue;
         }
       }
-      if (limbNbr < 0 || *(pstFactorDividend->ptrFactor + limbNbr) >
-        *((pstFactorDividend - 1)->ptrFactor + limbNbr))
-      {
-        return;    // Divisor was already sorted.
-      }
-      // Exchange divisor and previous element of factor array.
-      Temp = *pstFactorDividend;
-      *pstFactorDividend = *(pstFactorDividend-1);
-      *(pstFactorDividend - 1) = Temp;
+      // Exchange both factors.
+      memcpy(&stTempFactor, pstCurFactor, sizeof(struct sFactors));
+      memcpy(pstCurFactor, pstNewFactor, sizeof(struct sFactors));
+      memcpy(pstNewFactor, &stTempFactor, sizeof(struct sFactors));
     }
-    pstFactorDividend--;
   }
+  // Find location for new factors.
+  ptrNewFactor = 0;
+  pstCurFactor = pstFactors + 1;
+  for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++, pstCurFactor++)
+  {
+    int *ptrPotentialNewFactor = pstCurFactor->ptrFactor + *(pstCurFactor->ptrFactor) + 1;
+    if (ptrPotentialNewFactor > ptrNewFactor)
+    {
+      ptrNewFactor = ptrPotentialNewFactor;
+    }
+  }
+  pstFactors->ptrFactor = ptrNewFactor;
 }
 
 #ifdef __EMSCRIPTEN__
@@ -1294,18 +1280,87 @@ static void showECMStatus(void)
   strcpy(ptrStatus, "</p>");
   databack(status);
 }
+
+// Save factors in Web Storage so factorization can continue the next time the application runs.
+static void SaveFactors(struct sFactors *pstFactors)
+{
+  struct sFactors *pstCurFactor = pstFactors + 1;
+  int factorNbr, expon;
+  char text[30000];
+  char *ptrText;
+  int *ptrFactor;
+  BigInteger bigint;
+  ptrText = text;
+  *ptrText++ = '8';
+  strcpy(ptrText, ptrInputText);
+  ptrText += strlen(ptrText);
+  *ptrText++ = '=';
+  for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
+  {
+    if (factorNbr > 1)
+    {
+      *ptrText++ = '*';
+    }
+    UncompressBigInteger(pstCurFactor->ptrFactor, &bigint);
+    bigint.sign = SIGN_POSITIVE;
+    BigInteger2Dec(&bigint, ptrText, -100000);
+    ptrText += strlen(ptrText);
+    *ptrText++ = '^';
+    int2dec(&ptrText, pstCurFactor->multiplicity);
+    *ptrText++ = '(';
+    int2dec(&ptrText, pstCurFactor->upperBound);
+    *ptrText++ = ')';
+  }
+  *ptrText++ = 0;
+  databack(text);
+}
+
 #endif
+
+char *findChar(char *str, char c)
+{
+  while (*str != 0)
+  {
+    if (*str == c)
+    {
+      return str;
+    }
+    str++;
+  }
+  return NULL;
+}
+
+static int getNextInteger(char **ppcFactors, int *result, char delimiter)
+{
+  char *pcFactors = *ppcFactors;
+  char *ptrCharFound = findChar(pcFactors, delimiter);
+  if (ptrCharFound == NULL)
+  {
+    return 1;
+  }
+  *ptrCharFound = 0;
+  Dec2Bin(pcFactors, Temp1.limbs, (int)(ptrCharFound - pcFactors), &Temp1.nbrLimbs);
+  if (Temp1.nbrLimbs != 1)
+  {   // Exponent is too large.
+    return 1;
+  }
+  *result = (int)Temp1.limbs[0].x;
+  *ppcFactors = ptrCharFound+1;
+  return 0;
+}
 
 // pstFactors -> ptrFactor points to end of factors.
 // pstFactors -> multiplicity indicates the number of different factors.
-void factor(int *number, int *factors, struct sFactors *pstFactors)
+void factor(int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors)
 {
   struct sFactors *pstCurFactor;
   int factorNbr, expon;
   int remainder, nbrLimbs, ctr;
   int *ptrValue, *ptrFactor;
-  int dividend;
+  int dividend, multiplicity;
+  int factorUpperBound;
   int restartFactoring = FALSE;
+  char *ptrCharFound;
   EC = 1;
 #ifdef __EMSCRIPTEN__
   oldTimeElapsed = 0;
@@ -1314,12 +1369,47 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
 #endif
   memcpy(factors, number, (1 + *number)*sizeof(int));
   pstFactors->multiplicity = 1;
-  pstFactors->ptrFactor = factors+1+*factors;
+  pstFactors->ptrFactor = factors + 1 + *factors;
   pstFactors->upperBound = 0;
-  pstCurFactor = pstFactors+1;
+  pstCurFactor = pstFactors + 1;
   pstCurFactor->multiplicity = 1;
   pstCurFactor->ptrFactor = factors;
   pstCurFactor->upperBound = 2;
+  if (pcKnownFactors != NULL)
+  {   // Insert factors saved on Web Storage.
+    while (*pcKnownFactors != 0)
+    {
+      int *ptrNewFactor = pstFactors->ptrFactor;
+      ptrCharFound = findChar(pcKnownFactors, '^');
+      if (ptrCharFound == NULL)
+      {
+        break;
+      }
+      *ptrCharFound = 0;
+      Dec2Bin(pcKnownFactors, prime.limbs, (int)(ptrCharFound - pcKnownFactors), &prime.nbrLimbs);
+      CompressBigInteger(ptrNewFactor, &prime);
+      pcKnownFactors = ptrCharFound + 1;
+      if (getNextInteger(&pcKnownFactors, &multiplicity, '('))
+      {     // Error on processing exponent.
+        break;
+      }
+      if (getNextInteger(&pcKnownFactors, &factorUpperBound, ')'))
+      {     // Error on processing upper bound.
+        break;
+      }
+      for (ctr = 0; ctr < multiplicity; ctr++)
+      {
+        insertBigFactor(pstFactors, &prime);
+      }
+      if (*pcKnownFactors == '*')
+      {
+        pcKnownFactors++;  // Skip multiplication sign.
+      }
+    }
+  }
+#ifdef __EMSCRIPTEN__
+  SaveFactors(pstFactors);
+#endif
   for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
   {
     int upperBound = pstCurFactor->upperBound;
@@ -1418,10 +1508,13 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
     UncompressBigInteger(pstCurFactor->ptrFactor, &power);
     NumberLength = power.nbrLimbs;
     expon = PowerCheck(&power, &prime);
-    if (isPseudoprime(&prime))
-    {   // Number is prime power.
+    if (expon > 1)
+    {
       CompressBigInteger(pstCurFactor->ptrFactor, &prime);
       pstCurFactor->multiplicity *= expon;
+    }
+    if (isPseudoprime(&prime))
+    {   // Number is prime power.
       pstCurFactor->upperBound = 0;   // Indicate that number is prime.
       continue;             // Check next factor.
     }
@@ -1438,27 +1531,31 @@ void factor(int *number, int *factors, struct sFactors *pstFactors)
       }
       if (ctr != NumberLength || GD[0].x != 1)
       {
-        insertBigFactor(pstFactors, pstCurFactor, GD);
+        int nbrLimbs;
+        Temp1.sign = SIGN_POSITIVE;
+        nbrLimbs = NumberLength;
+        while (nbrLimbs > 1)
+        {
+          if (GD[nbrLimbs-1].x != 0)
+          {
+            break;
+          }
+          nbrLimbs--;
+        }
+        memcpy(Temp1.limbs, GD, nbrLimbs * sizeof(limb));
+        Temp1.nbrLimbs = nbrLimbs;
+        insertBigFactor(pstFactors, &Temp1);
+#ifdef __EMSCRIPTEN__
+        SaveFactors(pstFactors);
+#endif
         factorNbr = 0;
         pstCurFactor = pstFactors;
         continue;
       }
     }
   }
-  // Join equal prime factors by adding their multiplicities.
-  pstCurFactor = pstFactors + 1;
-  for (factorNbr = 1; factorNbr < pstFactors->multiplicity; factorNbr++, pstCurFactor++)
-  {
-    nbrLimbs = *pstCurFactor->ptrFactor;
-    if (nbrLimbs == *(pstCurFactor + 1)->ptrFactor &&
-      memcmp(pstCurFactor->ptrFactor+1, (pstCurFactor + 1)->ptrFactor+1,
-             nbrLimbs*sizeof(int)) == 0)
-    {   // Successive prime factors in array match.
-      pstCurFactor->multiplicity += (pstCurFactor + 1)->multiplicity;
-      memmove(pstCurFactor->ptrFactor, (pstCurFactor + 1)->ptrFactor,
-        (pstFactors->multiplicity - factorNbr) * sizeof(int));
-      pstFactors->multiplicity--;   // Indicate one less different prime factor.
-    }
-  }
+#ifdef __EMSCRIPTEN__
+  SaveFactors(pstFactors);
+#endif
 }
 
