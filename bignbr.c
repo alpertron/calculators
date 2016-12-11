@@ -518,7 +518,7 @@ static void subtFromAbsValue(limb *pLimbs, int *pNbrLimbs, int subt)
     int ctr;
     for (ctr = 1; ctr < nbrLimbs; ctr++)
     {
-      (pLimbs + ctr)->x += MAX_VALUE_LIMB + 1;
+      (pLimbs + ctr - 1)->x += MAX_VALUE_LIMB + 1;
       if (--((pLimbs + ctr)->x) >= 0)
       {
         break;

@@ -28,13 +28,13 @@ extern long long lModularMult;
 #endif
 extern char *output;
 char batch;
-static BigInteger tofactor;
+extern BigInteger tofactor;
 static int nbrToFactor[MAX_LEN];
-static int NbrFactorsMod = 0;
 int groupLen = 6;
 struct sFactors astFactorsMod[1000];
 int factorsMod[10000];
-static BigInteger factorValue, result;
+extern BigInteger factorValue;
+static BigInteger result;
 BigInteger valueX;
 char outputExpr[100000];
 char *ptrInputText;
@@ -141,60 +141,6 @@ static void BatchError(char **pptrOutput, char *tofactorText, char *errorText)
   *ptrOutput++ = ' ';
   strcpy(ptrOutput, errorText);
   ptrOutput += strlen(ptrOutput);
-  *pptrOutput = ptrOutput;
-}
-
-static void SendFactorizationToOutput(enum eExprErr rc, char **pptrOutput, int doFactorization)
-{
-  char *ptrOutput = *pptrOutput;
-  if (rc != EXPR_OK)
-  {
-    textError(output + 1, rc);
-    ptrOutput = output + strlen(output);
-  }
-  else
-  {
-    Bin2Dec(tofactor.limbs, ptrOutput, tofactor.nbrLimbs, groupLen);
-    ptrOutput += strlen(ptrOutput);
-    if (doFactorization)
-    {
-      struct sFactors *pstFactors;
-      int i = 0;
-      pstFactors = &astFactorsMod[1];
-      if (NbrFactorsMod == 1 && pstFactors->multiplicity == 1 &&
-        (*pstFactors->ptrFactor > 1 || *(pstFactors->ptrFactor + 1) > 1))
-      {    // Do not show zero or one as prime.
-        strcpy(ptrOutput, lang ? " es primo" : " is prime");
-        ptrOutput += strlen(ptrOutput);
-      }
-      else
-      {
-        strcpy(ptrOutput, " = ");
-        ptrOutput += strlen(ptrOutput);
-        for (;;)
-        {
-          UncompressBigInteger(pstFactors->ptrFactor, &factorValue);
-          Bin2Dec(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
-          ptrOutput += strlen(ptrOutput);
-          if (pstFactors->multiplicity > 1)
-          {
-            strcpy(ptrOutput, "<sup>");
-            ptrOutput += strlen(ptrOutput);
-            int2dec(&ptrOutput, pstFactors->multiplicity);
-            strcpy(ptrOutput, "</sup>");
-            ptrOutput += strlen(ptrOutput);
-          }
-          if (++i == NbrFactorsMod)
-          {
-            break;
-          }
-          strcpy(ptrOutput, " &times; ");
-          ptrOutput += strlen(ptrOutput);
-          pstFactors++;
-        }
-      }
-    }
-  }
   *pptrOutput = ptrOutput;
 }
 
@@ -312,9 +258,8 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
           NumberLength = tofactor.nbrLimbs;
           CompressBigInteger(nbrToFactor, &tofactor);
           factor(nbrToFactor, factorsMod, astFactorsMod, NULL);
-          NbrFactorsMod = astFactorsMod[0].multiplicity;
         }
-        SendFactorizationToOutput(rc, &ptrOutput, doFactorization);
+        SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
         if (evalExpression(NextExpr, counter, &result) != 0)
         {
           break;
@@ -333,9 +278,8 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
         NumberLength = tofactor.nbrLimbs;
         CompressBigInteger(nbrToFactor, &tofactor);
         factor(nbrToFactor, factorsMod, astFactorsMod, NULL);
-        NbrFactorsMod = astFactorsMod[0].multiplicity;
       }
-      SendFactorizationToOutput(rc, &ptrOutput, doFactorization);
+      SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
       counter = 2;
       strcpy(ptrOutput, "</li><li>");
       ptrOutput += strlen(ptrOutput);
@@ -377,6 +321,7 @@ static void ExponentToBigInteger(int exponent, BigInteger *bigint)
 static void GetNumberOfDivisors(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
+  int *ptrFactor;
   struct sFactors *pstFactor;
   int factorNumber;
   result.limbs[0].x = 1;    // Set result to 1.
@@ -385,6 +330,11 @@ static void GetNumberOfDivisors(char **pptrOutput)
   pstFactor = &astFactorsMod[1];
   for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
+    ptrFactor = pstFactor->ptrFactor;
+    if (*ptrFactor == 1 && *(ptrFactor + 1) < 2)
+    {                        // Factor is 1.
+      break;
+    }
     ExponentToBigInteger(pstFactor->multiplicity, &factorValue);
     BigIntMultiply(&factorValue, &result, &result);
     pstFactor++;
@@ -477,9 +427,15 @@ static void GetMobius(char **pptrOutput)
     {
       mobius = 0;
     }
+    pstFactor++;
   }
   strcpy(ptrOutput, "<p>Möbius: ");
   ptrOutput += strlen(ptrOutput);
+  if (mobius < 0)
+  {
+    mobius = -mobius;
+    *ptrOutput++ = '-';
+  }
   int2dec(&ptrOutput, mobius);
   strcpy(ptrOutput, "</p>");
   ptrOutput += strlen(ptrOutput);
@@ -513,12 +469,11 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
     lModularMult = 0;
 #endif
     factor(nbrToFactor, factorsMod, astFactorsMod, knownFactors);
-    NbrFactorsMod = astFactorsMod[0].multiplicity;
   }
   ptrOutput = output;
   strcpy(output, "2<p>");
   ptrOutput += strlen(output);
-  SendFactorizationToOutput(rc, &ptrOutput, doFactorization);
+  SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
   if (rc == EXPR_OK && doFactorization)
   {
     GetNumberOfDivisors(&ptrOutput);

@@ -32,4 +32,5 @@ void factor(int *number, int *factors, struct sFactors *pstFactors, char *pcKnow
 void FactoringSIQS(limb *pNbrToFactor, limb *pFactor);
 extern int lang;
 char *findChar(char *str, char c);
+void SendFactorizationToOutput(enum eExprErr rc, struct sFactors *pstFactors, char **pptrOutput, int doFactorization);
 #endif
