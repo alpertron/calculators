@@ -1,8 +1,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 10 de diciembre de 2016."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 10 December 2016."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 11 de diciembre de 2016."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 11 December 2016."
 
 enum eExprErr
 {

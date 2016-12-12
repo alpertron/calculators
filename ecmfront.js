@@ -56,7 +56,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-  	worker = new Worker('ecmW.js?0412');
+  	worker = new Worker('ecmW0612.js');
     worker.onmessage = function(e)
     { // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.
@@ -216,4 +216,11 @@ window.onload = function ()
     dowork(-2);
 	document_getElementById('curve').value = "";
   }
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  window['ga']('create', 'UA-4438475-1', 'auto');
+  window['ga']('send', 'pageview');
 }
