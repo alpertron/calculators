@@ -20,33 +20,36 @@ var worker = 0;
 var app;
 var oldWhiteSpace;
 var oldOverflowX;
+var digits;
+var config;
 
-function document_getElementById(x)
+function get(x)
 {
   return document.getElementById(x);
 }
 
-function localStorage_setItem(name, data)
+function setStorage(name, data)
 {
   localStorage.setItem(name, data);
 }
 
-function localStorage_getItem(name)
+function getStorage(name)
 {
   return localStorage.getItem(name);
 }
 
 function styleButtons(style1, style2)
 {
-  document_getElementById("eval").style.display = style1;
-  document_getElementById("factor").style.display = style1;
-  document_getElementById("stop").style.display = style2;
-  document_getElementById("more").style.display = style2;
+  get("eval").style.display = style1;
+  get("factor").style.display = style1;
+  get("config").style.display = style1;
+  get("stop").style.display = style2;
+  get("more").style.display = style2;
 }
 
 function restartFactorization(type)
 {
-  document_getElementById("modal").style.display = "none";
+  get("modal-more").style.display = "none";
   worker.terminate();
   worker = 0;
   dowork(type);
@@ -56,7 +59,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker("ecmW0612.js");
+    worker = new Worker("ecmW0712.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
@@ -64,25 +67,25 @@ function callWorker(param)
       var firstChar = e.data.substring(0, 1);
       if (firstChar == "8")
       {
-        localStorage_setItem("ecmFactors", e.data.substring(1));
-        localStorage_setItem("ecmCurve", "");
+        setStorage("ecmFactors", e.data.substring(1));
+        setStorage("ecmCurve", "");
       }
       else if (firstChar == "7")
       {
-        localStorage_setItem("ecmCurve", e.data.substring(1));
+        setStorage("ecmCurve", e.data.substring(1));
       }
       else if (firstChar == "4")
       {
-        document_getElementById("status").innerHTML = e.data.substring(1);
+        get("status").innerHTML = e.data.substring(1);
       }
       else
       {
-        document_getElementById("result").innerHTML = e.data.substring(1);
+        get("result").innerHTML = e.data.substring(1);
         if (e.data.substring(0, 1) == "2")
         {   // First character passed from web worker is "2".
-          document_getElementById("status").innerHTML = "";
+          get("status").innerHTML = "";
           styleButtons("inline", "none");  // Enable eval and factor
-          document_getElementById("modal").style.display = "none";
+          get("modal-more").style.display = "none";
         }
       }
     };
@@ -92,12 +95,11 @@ function callWorker(param)
 
 function dowork(n)
 {
-  app = parseInt(document_getElementById("app").value) + n;
-  var res = document_getElementById("result");
-  var valueText = document_getElementById("value").value;
-  var digitGroup = document_getElementById("digits").value;
+  app = parseInt(get("app").value) + n;
+  var res = get("result");
+  var valueText = get("value").value;
   var charNull = String.fromCharCode(0);
-  document_getElementById("help").style.display = "none";
+  get("help").style.display = "none";
   res.style.display = "block";
   if (valueText == "")
   {    // Nothing in input box.
@@ -118,103 +120,158 @@ function dowork(n)
   {
     app += 6;   // Convert to factorization.
   }
-  param = digitGroup + "," + app + "," + valueText + charNull +
-          localStorage_getItem("ecmFactors");
+  param = digits + "," + app + "," + config + valueText + charNull +
+          getStorage("ecmFactors");
   if (n == -1 || n == -2)
   {
-    param += charNull + document_getElementById("curve").value;   // Append new factor or curve number.
+    param += charNull + get("curve").value;   // Append new factor or curve number.
   }
   if (n == -3 || n == -4)
   {
-    param += "*" + document_getElementById("curve").value + "^1(2)";   // Append new factor or curve number.
+    param += "*" + get("curve").value + "^1(2)";   // Append new factor or curve number.
   }
   callWorker(param + charNull);
 }
 
+function isBatch()
+{   
+  var entry = get("entry");
+  if (config.substr(0,1)=="1")
+  {
+    value = get("value");
+    oldWhiteSpace = value.style.whiteSpace;
+    oldOverflowX = value.style.overflowX;
+    entry.innerHTML = "<textarea id=\"value\" rows=\"5\" class=\"input\" placeholder=\"One numerical expression or loop per line\"></textarea>";
+    value = get("value");
+    value.style.whiteSpace = "nowrap";
+    value.style.overflowX = "scroll";
+  }
+  else
+  {
+    entry.innerHTML = "<input type=\"text\" id=\"value\" value=\"\" placeholder=\"Number or numerical expression\" class=\"input\"/>";
+    value = get("value");
+    value.style.whiteSpace = oldWhiteSpace;
+    value.style.overflowX = oldOverflowX;
+  }
+}
 window.onload = function ()
 {
-  var param;
-  document_getElementById("eval").onclick = function ()
+  var param, index;
+  get("eval").onclick = function ()
   {
     localStorage.setItem("ecmFactors","");
-    dowork(document_getElementById("batch").checked? 4: 0);
+    dowork(0);
   };
-  document_getElementById("factor").onclick = function ()
+  get("factor").onclick = function ()
   {
     localStorage.setItem("ecmFactors","");
-    dowork(document_getElementById("batch").checked? 6: 2);
+    dowork(2);
   };
-  document_getElementById("more").onclick = function ()
+  get("more").onclick = function ()
   {
-    document_getElementById("modal").style.display = "block";
+    get("modal-more").style.display = "block";
   };
-  document_getElementById("close").onclick = function ()
+  get("config").onclick = function ()
   {
-    document_getElementById("modal").style.display = "none";
+	get("digits").value = digits;
+    get("batch").checked = (config.substr(0,1)=="1");
+    get("verbose").checked = (config.substr(1,1)=="1");
+    get("pretty").checked = (config.substr(2,1)=="1");
+    get("cunnin").checked = (config.substr(3,1)=="1");  
+    get("modal-config").style.display = "block";
   };
-  document_getElementById("ncurve").onclick = function ()
+  get("close-config").onclick = function ()
+  {
+    get("modal-config").style.display = "none";
+  };
+  get("cancel-config").onclick = function ()
+  {
+    get("modal-config").style.display = "none";
+  };
+  get("save-config").onclick = function ()
+  {
+    oldconfig = config;
+    config = (get("batch").checked? "1" :"0") +
+             (get("verbose").checked? "1" :"0") +
+             (get("pretty").checked? "1" :"0") +
+             (get("cunnin").checked? "1" :"0");
+    digits = get("digits").value;
+    setStorage("ecmConfig", digits+","+config);
+    if (config.substr(0,1) != oldconfig.substr(0,1))
+    {
+      isBatch();
+    }
+    get("modal-config").style.display = "none";
+  };
+  get("close-more").onclick = function ()
+  {
+    get("modal-more").style.display = "none";
+  };
+  get("ncurve").onclick = function ()
   {
     restartFactorization(-2);
   };
-  document_getElementById("nfactor").onclick = function ()
+  get("nfactor").onclick = function ()
   {
     restartFactorization(-4);
   };
-  document_getElementById("curve").onkeypress = function(event)
+  get("curve").onkeypress = function(event)
   {
     return (event.charCode == 8 || event.charCode == 0) ? null : event.charCode >= 48 && event.charCode <= 57;
   };
-  document_getElementById("stop").onclick = function ()
+  get("stop").onclick = function ()
   {
     worker.terminate();
     worker = 0;
     styleButtons("inline", "none");  // Enable eval and factor
-    document_getElementById("result").innerHTML =
+    get("result").innerHTML =
       (app & 1 ? "<p>Cálculo detenido por el usuario.</p>" :
                  "<p>Calculation stopped by user</p>");
-    document_getElementById("status").innerHTML = "";
+    get("status").innerHTML = "";
   };
-  document_getElementById("helpbtn").onclick = function ()
+  get("helpbtn").onclick = function ()
   {
-    document_getElementById("help").style.display = "block";
-    document_getElementById("result").style.display = "none";
-  };
-  document_getElementById("batch").onchange = function ()
-  {
-    var entry = document_getElementById("entry");
-    if (document_getElementById("batch").checked)
-    {
-      value = document_getElementById("value");
-      oldWhiteSpace = value.style.whiteSpace;
-      oldOverflowX = value.style.overflowX;
-      entry.innerHTML = "<textarea id=\"value\" rows=\"5\" class=\"input\" placeholder=\"One numerical expression or loop per line\"></textarea>";
-      value = document_getElementById("value");
-      value.style.whiteSpace = "nowrap";
-      value.style.overflowX = "scroll";
-    }
-    else
-    {
-      entry.innerHTML = "<input type=\"text\" id=\"value\" value=\"\" placeholder=\"Number or numerical expression\" class=\"input\"/>";
-      value = document_getElementById("value");
-      value.style.whiteSpace = oldWhiteSpace;
-      value.style.overflowX = oldOverflowX;
-    }
+    get("help").style.display = "block";
+    get("result").style.display = "none";
   };
   window.onclick = function(event)
   {
-    var modal = document_getElementById("modal");
+    var modal = get("modal");
     if (event.target == modal)
     {
       modal.style.display = "none";
     }
   };
-  ecmFactor = localStorage_getItem("ecmFactors");
+  digits = getStorage("ecmConfig");
+  if (digits == null || digits == "")
+  {
+    digits = 6;
+    config = "0010";
+    setStorage("ecmConfig", digits+","+config);
+  }
+  else
+  {
+    index = digits.indexOf(",");
+    if (index<0)
+    {
+      digits = 6;
+      config = "0010";
+      setStorage("ecmConfig", digits+","+config);
+    }
+    else
+    {
+      config = digits.substr(index+1);
+      digits = digits.substr(0,index);
+    }
+  }
+  isBatch();
+  ecmFactor = getStorage("ecmFactors");
   if (ecmFactor)
   {          // Continue factoring.
-    document_getElementById("value").value = ecmFactor.slice(0,ecmFactor.indexOf("="));
-    document_getElementById("curve").value = localStorage.getItem("ecmCurve");
+    get("value").value = ecmFactor.slice(0,ecmFactor.indexOf("="));
+    get("curve").value = getStorage("ecmCurve");
     dowork(-2);
-    document_getElementById("curve").value = "";
+    get("curve").value = "";
   }
   (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

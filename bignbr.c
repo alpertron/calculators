@@ -244,8 +244,8 @@ double logBigNbr(BigInteger *pBigNbr)
   nbrLimbs = pBigNbr->nbrLimbs;
   if (nbrLimbs > 1)
   {
-    logar = log((double)(pBigNbr->limbs[nbrLimbs - 2].x + (pBigNbr->limbs[nbrLimbs - 1].x << BITS_PER_GROUP)) +
-      (double)(nbrLimbs - 2)*log((double)(1 << BITS_PER_GROUP)));
+    logar = log((double)(pBigNbr->limbs[nbrLimbs - 2].x + (pBigNbr->limbs[nbrLimbs - 1].x << BITS_PER_GROUP))) +
+      (double)((nbrLimbs - 2)*BITS_PER_GROUP)*log(2);
   }
   else
   {

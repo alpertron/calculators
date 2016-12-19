@@ -8,7 +8,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>65536</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001643000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000163423</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

@@ -28,6 +28,7 @@ extern long long lModularMult;
 #endif
 extern char *output;
 char batch;
+extern char verbose, prettyprint, cunningham;
 extern BigInteger tofactor;
 static int nbrToFactor[MAX_LEN];
 int groupLen = 6;
@@ -517,15 +518,23 @@ void doWork(char* data, int size)
   }
   lang = flags & 1;
   ptrData += 2;          // Skip app number and second comma.
+  batch = (*ptrData == '1');
+  verbose = (*(ptrData + 1) == '1');
+  prettyprint = (*(ptrData + 2) == '1');
+  cunningham = (*(ptrData + 3) == '1');
+  ptrData += 4;
   ptrWebStorage = ptrData + strlen(ptrData) + 1;
   ptrKnownFactors = findChar(ptrWebStorage, '=');
+  if (prettyprint == 0)
+  {
+    groupLen = -groupLen;  // Do not show number of digts.
+  }
   if (ptrKnownFactors)
   {
     ptrKnownFactors++;
   }
   if (flags & 0x80)
   {
-    batch = 0;
     if (ptrKnownFactors)
     {
       ptrText = ptrKnownFactors + strlen(ptrKnownFactors) + 1;
@@ -536,10 +545,6 @@ void doWork(char* data, int size)
       }
       flags = 2;  // do factorization, no batch mode.
     }
-  }
-  else
-  {
-    batch = flags & 4;
   }
   ecmFrontText(ptrData, flags & 2, ptrKnownFactors); // The 3rd parameter includes known factors.
   databack(output);

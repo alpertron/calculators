@@ -102,6 +102,7 @@ static limb *fieldAux4 = Aux4;
 static BigInteger Temp1, Temp2, Temp3;
 BigInteger factorValue, tofactor;
 extern int groupLen;
+char verbose, prettyprint, cunningham;
 #ifdef __EMSCRIPTEN__
 extern char *ptrInputText;
 #endif
@@ -495,8 +496,229 @@ static void GenerateSieve(int initial)
   } while (Q < 5000);
 }
 
-static enum eEcmResult ecmCurve(void)
+static void intToBigInteger(BigInteger *bigint, int value)
 {
+  if (value >= LIMB_RANGE)
+  {
+    bigint->nbrLimbs = 2;
+    bigint->limbs[0].x = value & MAX_VALUE_LIMB;
+    bigint->limbs[1].x = value >> BITS_PER_GROUP;
+  }
+  else
+  {
+    bigint->nbrLimbs = 1;
+    bigint->limbs[0].x = value;
+  }
+  bigint->sign = SIGN_POSITIVE;
+}
+
+// Perform Lehman algorithm
+static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
+{
+  int bitsSqrLow[] =
+  {
+    0x00000003, // 3
+    0x00000013, // 5
+    0x00000017, // 7
+    0x0000023B, // 11
+    0x0000161B, // 13
+    0x0001A317, // 17
+    0x00030AF3, // 19
+    0x0005335F, // 23
+    0x13D122F3, // 29
+    0x121D47B7, // 31
+    0x5E211E9B, // 37
+    0x82B50737, // 41
+    0x83A3EE53, // 43
+    0x1B2753DF, // 47
+    0x3303AED3, // 53
+    0x3E7B92BB, // 59
+    0x0A59F23B, // 61
+  };
+  int bitsSqrHigh[] =
+  {
+    0x00000000, // 3
+    0x00000000, // 5
+    0x00000000, // 7
+    0x00000000, // 11
+    0x00000000, // 13
+    0x00000000, // 17
+    0x00000000, // 19
+    0x00000000, // 23
+    0x00000000, // 29
+    0x00000000, // 31
+    0x00000016, // 37
+    0x000001B3, // 41
+    0x00000358, // 43
+    0x00000435, // 47
+    0x0012DD70, // 53
+    0x022B6218, // 59
+    0x1713E694, // 61
+  };
+  int primes[] = { 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61 };
+  int nbrs[17];
+  int diffs[17];
+  int i, j, m, r;
+  int mostSignificantLimb;
+  double logSquareRoot;
+  BigInteger root, rootN, dif, nextroot;
+  BigInteger a, c, d, sqr, val;
+  if ((nbr->limbs[0].x & 1) == 0)
+  { // nbr Even
+    r = 0;
+    m = 1;
+  }
+  else
+  {
+    if (k % 2 == 0)
+    { // k Even
+      r = 1;
+      m = 2;
+    }
+    else
+    { // k Odd
+      r = (k + nbr->limbs[0].x) & 3;
+      m = 4;
+    }
+  }
+  intToBigInteger(&sqr, k<<2);
+  BigIntMultiply(&sqr, nbr, &sqr);
+  // Obtain approximate square root of sqr in root.
+  logSquareRoot = logBigNbr(&sqr) / (2 * log(2));   // logarithm of square root of sqr
+  root.sign = SIGN_POSITIVE;
+  root.nbrLimbs = (int)floor(logSquareRoot / BITS_PER_GROUP);
+  mostSignificantLimb = (int)floor(exp((logSquareRoot - BITS_PER_GROUP*root.nbrLimbs) * log(2)))+1;
+  if (mostSignificantLimb == LIMB_RANGE)
+  {
+    mostSignificantLimb = 1;
+    root.nbrLimbs++;
+  }
+  memset(root.limbs, 0, root.nbrLimbs * sizeof(limb));
+  root.limbs[root.nbrLimbs].x = mostSignificantLimb;
+  root.nbrLimbs++;
+  for (;;)
+  {    // Newton loop that finds the real square root.
+       // root <- (sqr/root + root)/2
+    BigIntMultiply(&root, &root, &rootN);  // rootN <- root * root
+    BigIntSubt(&sqr, &rootN, &dif);        // dif <- sqr - rootN
+    if (dif.nbrLimbs == 1 && dif.limbs[0].x == 0)
+    { // sqr is Perfect square.
+      break;
+    }
+    addbigint(&dif, 1);                    // dif <- dif + 1
+    multint(&d, &root, 2);                 // d <- 2 * root
+    BigIntDivide(&dif, &d, &a);            // a <- dif / d
+    BigIntAdd(&a, &root, &nextroot);       // nextroot <- a + root
+    addbigint(&nextroot, -1);              // nextroot <- nextroot - 1
+    BigIntSubt(&nextroot, &root, &root);   // root <- nextroot - root
+    if (root.sign == SIGN_POSITIVE)
+    {
+      CopyBigInt(&root, &nextroot);           // root <- nextroot
+      break;    // Not a perfect power.
+    }
+    CopyBigInt(&root, &nextroot);           // root <- nextroot
+  }
+  CopyBigInt(&a, &root);
+  for (;;)
+  {
+    if ((a.limbs[0].x & (m-1)) == r)
+    {
+      BigIntMultiply(&a, &a, &nextroot);
+      BigIntSubt(&nextroot, &sqr, &nextroot);
+      if (nextroot.sign == SIGN_POSITIVE)
+      {
+        break;
+      }
+    }
+    addbigint(&a, 1);                         // a <- a + 1
+  }
+  BigIntMultiply(&a, &a, &nextroot);
+  BigIntSubt(&nextroot, &sqr, &c);
+  for (i = 0; i < 17; i++)
+  {
+    int pr = primes[i];
+    nbrs[i] = getRemainder(&c, pr);    // nbrs[i] <- c % primes[i]
+    diffs[i] = m * (getRemainder(&a, pr) * 2 + m) % pr;
+  }
+  for (j = 0; j < 10000; j++)
+  {
+    for (i = 0; i < 17; i++)
+    {
+      int shiftBits = nbrs[i];
+      if (shiftBits < 32)
+      {
+        if ((bitsSqrLow[i] & (1 << shiftBits)) == 0)
+        { // Not a perfect square
+          break;
+        }
+      }
+      else if ((bitsSqrHigh[i] & (1 << (shiftBits-32))) == 0)
+      { // Not a perfect square
+        break;
+      }
+    }
+    if (i == 17)
+    { // Test for perfect square
+      intToBigInteger(&c, m * j);           // c <- m * j
+      BigIntAdd(&a, &c, &val);
+      BigIntMultiply(&val, &val, &c);       // c <- val * val
+      BigIntSubt(&c, &sqr, &c);             // c <- val * val - sqr
+
+      // Obtain approximate square root of c in root.
+      logSquareRoot = logBigNbr(&c) / (2 * log(2));   // logarithm of square root of sqr
+      root.sign = SIGN_POSITIVE;
+      root.nbrLimbs = (int)floor(logSquareRoot / BITS_PER_GROUP);
+      mostSignificantLimb = (int)floor(exp((logSquareRoot - BITS_PER_GROUP*root.nbrLimbs) * log(2)) + 0.5);
+      if (mostSignificantLimb == LIMB_RANGE)
+      {
+        mostSignificantLimb = 1;
+        root.nbrLimbs++;
+      }
+      memset(root.limbs, 0, root.nbrLimbs * sizeof(limb));
+      root.limbs[root.nbrLimbs].x = mostSignificantLimb;
+      root.nbrLimbs++;
+      for(;;)
+      {    // Newton loop that finds the real square root.
+           // root <- (c/root + root)/2
+        BigIntMultiply(&root, &root, &rootN);  // rootN <- root * root
+        BigIntSubt(&c, &rootN, &dif);          // dif <- c - rootN
+        if (dif.nbrLimbs == 1 && dif.limbs[0].x == 0)
+        { // sqr is Perfect square.
+          break;
+        }
+        addbigint(&dif, 1);                    // dif <- dif + 1
+        multint(&d, &root, 2);                 // d <- 2 * root
+        BigIntDivide(&dif, &d, &a);            // a <- dif / d
+        BigIntAdd(&a, &root, &nextroot);       // nextroot <- a + root
+        addbigint(&nextroot, -1);              // nextroot <- nextroot - 1
+        BigIntSubt(&nextroot, &root, &root);   // root <- nextroot - root
+        if (root.sign == SIGN_POSITIVE)
+        {
+          CopyBigInt(&root, &nextroot);        // root <- nextroot
+          break;    // Not a perfect power.
+        }
+        CopyBigInt(&root, &nextroot);          // root <- nextroot
+      }
+      BigIntAdd(&root, &val, &root);
+      BigIntGcd(&root, nbr, &c);
+      if (c.nbrLimbs > 1)
+      {    // Non-trivial factor has been found.
+        CopyBigInt(factor, &c);
+        return;
+      }
+    }
+    for (i = 0; i < 17; i++)
+    {
+      nbrs[i] = (nbrs[i] + diffs[i]) % primes[i];
+      diffs[i] = (diffs[i] + 2 * m * m) % primes[i];
+    }
+  }
+  intToBigInteger(factor, 1);   // Factor not found.
+}
+
+static enum eEcmResult ecmCurve(BigInteger *N)
+{
+  BigInteger potentialFactor;
 #ifdef __EMSCRIPTEN__
   char text[20];
 #endif
@@ -529,25 +751,26 @@ static enum eEcmResult ecmCurve(void)
       int2dec(&ptrText, EC);
       databack(text);
 #endif
-#if 0
-      NN = Lehman(NumberToFactor, EC);
-      if (!NN.equals(BigInt1))
-      {                // Factor found.
-        foundByLehman = true;
-        return NN;
-      }
-#endif
       L1 = NumberLength*9/2;        // Get number of digits.
-      if (L1 > 30 && L1 <= 90 /*&&    // If between 30 and 90 digits...
-        (digitsInGroup & 0x400) == 0*/)
-      {                             // Switch to SIQS checkbox is set.
+      if (L1 > 30 && L1 <= 90)    // If between 30 and 90 digits...
+      {                             // Switch to SIQS.
         int limit = limits[((int)L1 - 31) / 5];
-        if (EC % 50000000 >= limit /*&& !forcedECM*/)
+        if (EC % 50000000 >= limit)
         {                           // Switch to SIQS.
           EC += TYP_SIQS;
           return CHANGE_TO_SIQS;
         }
       }
+    }
+    // Try to factor BigInteger N using Lehman algorithm. Result in potentialFactor.
+    Lehman(N, EC % 50000000, &potentialFactor);
+    if (potentialFactor.nbrLimbs > 1)
+    {                // Factor found.
+      memcpy(GD, potentialFactor.limbs, NumberLength * sizeof(limb));
+      memset(&GD[potentialFactor.nbrLimbs], 0, 
+             (NumberLength - potentialFactor.nbrLimbs) * sizeof(limb));
+      foundByLehman = TRUE;
+      return FACTOR_FOUND;
     }
     Typ[FactorIndex] = EC;
     L1 = 2000;
@@ -1072,7 +1295,7 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
   foundByLehman = FALSE;
   do
   {
-    enum eEcmResult ecmResp = ecmCurve();
+    enum eEcmResult ecmResp = ecmCurve(N);
     if (ecmResp == CHANGE_TO_SIQS)
     {    // Perform SIQS
       FactoringSIQS(TestNbr, GD);
@@ -1124,17 +1347,32 @@ void SendFactorizationToOutput(enum eExprErr rc, struct sFactors *pstFactors, ch
           ptrOutput += strlen(ptrOutput);
           if (pstFactor->multiplicity > 1)
           {
-            strcpy(ptrOutput, "<sup>");
-            ptrOutput += strlen(ptrOutput);
-            int2dec(&ptrOutput, pstFactor->multiplicity);
-            strcpy(ptrOutput, "</sup>");
-            ptrOutput += strlen(ptrOutput);
+            if (prettyprint)
+            {
+              strcpy(ptrOutput, "<sup>");
+              ptrOutput += strlen(ptrOutput);
+              int2dec(&ptrOutput, pstFactor->multiplicity);
+              strcpy(ptrOutput, "</sup>");
+              ptrOutput += strlen(ptrOutput);
+            }
+            else
+            {
+              *ptrOutput++ = '^';
+              int2dec(&ptrOutput, pstFactor->multiplicity);
+            }
           }
           if (++i == pstFactors->multiplicity)
           {
             break;
           }
-          strcpy(ptrOutput, " &times; ");
+          if (prettyprint)
+          {
+            strcpy(ptrOutput, " &times; ");
+          }
+          else
+          {
+            strcpy(ptrOutput, " * ");
+          }
           ptrOutput += strlen(ptrOutput);
           pstFactor++;
         }

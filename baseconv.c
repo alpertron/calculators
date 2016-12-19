@@ -132,7 +132,7 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
   int groupCtr, digit[DIGITS_PER_LIMB];
   int digits=0;
   int showDigitsText = TRUE;
-  if (groupLen < 0)
+  if (groupLen <= 0)
   {
     groupLen = -groupLen;
     showDigitsText = FALSE;
@@ -177,10 +177,14 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
   // ASCII separating every groupLen characters.
   ptrDest = decimal;
   ptrSrc = &power10000[len-1];
-  groupCtr = len * DIGITS_PER_LIMB % groupLen;
-  if (groupCtr == 0)
+  groupCtr = len * DIGITS_PER_LIMB;
+  if (groupLen != 0)
   {
-    groupCtr = groupLen;
+    groupCtr %= groupLen;
+    if (groupCtr == 0)
+    {
+      groupCtr = groupLen;
+    }
   }
   for (index = len; index > 0; index--)
   {
