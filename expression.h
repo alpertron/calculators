@@ -1,8 +1,14 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 18 de diciembre de 2016."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 18 December 2016."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 1 de enero de 2017."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 1 January 2017."
+
+#ifdef __EMSCRIPTEN__
+double tenths(void);
+void databack(char *data);
+int stamp(void);
+#endif
 
 enum eExprErr
 {

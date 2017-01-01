@@ -30,9 +30,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define LENGTH_OFFSET           0
 
 #ifdef __EMSCRIPTEN__
-void databack(char *data);
-int stamp(void);
-int tenths(void);
 extern int newStamp, oldStamp;
 extern char lowerText[], *ptrLowerText;
 char *ptrSIQSStrings;

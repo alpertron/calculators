@@ -237,19 +237,45 @@ enum eExprErr BigIntRemainder(BigInteger *pDividend, BigInteger *pDivisor, BigIn
   return EXPR_OK;
 }
 
+void expBigNbr(BigInteger *bignbr, double logar)
+{
+  int mostSignificantLimb;
+  logar /= log(2);
+  bignbr->sign = SIGN_POSITIVE;
+  bignbr->nbrLimbs = (int)floor(logar / BITS_PER_GROUP);
+  mostSignificantLimb = (int)floor(exp((logar - BITS_PER_GROUP*bignbr->nbrLimbs) * log(2)) + 0.5);
+  if (mostSignificantLimb == LIMB_RANGE)
+  {
+    mostSignificantLimb = 1;
+    bignbr->nbrLimbs++;
+  }
+  memset(bignbr->limbs, 0, bignbr->nbrLimbs * sizeof(limb));
+  bignbr->limbs[bignbr->nbrLimbs].x = mostSignificantLimb;
+  bignbr->nbrLimbs++;
+}
+
 double logBigNbr(BigInteger *pBigNbr)
 {
-  int nbrLimbs;
-  double logar;
+  int nbrLimbs, value;
+  double logar, sum;
   nbrLimbs = pBigNbr->nbrLimbs;
-  if (nbrLimbs > 1)
+  if (nbrLimbs == 1)
   {
-    logar = log((double)(pBigNbr->limbs[nbrLimbs - 2].x + (pBigNbr->limbs[nbrLimbs - 1].x << BITS_PER_GROUP))) +
-      (double)((nbrLimbs - 2)*BITS_PER_GROUP)*log(2);
+    logar = log((double)(pBigNbr->limbs[nbrLimbs - 1].x) + (double)(nbrLimbs - 1)*log((double)(1 << BITS_PER_GROUP)));
   }
   else
   {
-    logar = log((double)(pBigNbr->limbs[nbrLimbs - 1].x) + (double)(nbrLimbs - 1)*log((double)(1 << BITS_PER_GROUP)));
+    value = pBigNbr->limbs[nbrLimbs - 2].x + (pBigNbr->limbs[nbrLimbs - 1].x << BITS_PER_GROUP);
+    sum = (double)((nbrLimbs - 2)*BITS_PER_GROUP)*log(2);
+    if (nbrLimbs == 2)
+    {
+      logar = log((double)value) + sum;
+    }
+    else
+    {
+      logar = log((double)value + (double)pBigNbr->limbs[nbrLimbs - 3].x / LIMB_RANGE) +
+              sum;
+    }
   }
   return logar;
 }

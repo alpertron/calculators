@@ -24,8 +24,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "expression.h"
 
 #ifdef __EMSCRIPTEN__
-void databack(char *data);
-int stamp(void);
 extern int newStamp, oldStamp;
 #endif
 
@@ -95,7 +93,7 @@ void GaussianFactorization(void)
 
     NumberLength = norm.nbrLimbs;
     CompressBigInteger(nbrToFactor, &norm);
-    factor(nbrToFactor, factorsNorm, astFactorsNorm, NULL);
+    factor(&norm, nbrToFactor, factorsNorm, astFactorsNorm, NULL);
     NbrFactorsNorm = astFactorsNorm[0].multiplicity;
     pstFactor = &astFactorsNorm[1];
     for (index = 0; index < NbrFactorsNorm; index++)

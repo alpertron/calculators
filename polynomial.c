@@ -29,8 +29,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define TOKEN_END_EXPON      '2'
 #define TOKEN_UNARY_MINUS    '3'
 #ifdef __EMSCRIPTEN__
-void databack(char *data);
-int stamp(void);
 int newStamp, oldStamp;
 extern char *output;
 #endif

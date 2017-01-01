@@ -21,7 +21,7 @@
 }
 @media screen and (max-width: 400px) { #smallheader { font-size:0.7em;  } }
 @media screen and (min-width: 400px) { #smallheader { font-size:1em;  } }
-body {font-family: arial; margin: 0; padding: 0;}
+body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
 h1 {text-align:center;}
 .lf {padding:0.2em; clear:both;}
 .blue {color: #0000FF;}

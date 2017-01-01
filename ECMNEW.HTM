@@ -6,8 +6,9 @@
 <meta charset="utf-8" />
 <meta name="description" content="Javascript application that factors integers using ECM and SIQS algorithms. Written by Dario Alpern." />
 <link rel="alternate" hreflang="es" href="ECMC.HTM" />
-<link rel="prefetch" href="ecmW0712.js" />
-<link rel="stylesheet" type="text/css" href="ecm0912.css">
+<link rel="prefetch" href="ecmW0003.js" />
+<link rel="stylesheet" type="text/css" href="ecm0002.css">
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Integer factorization calculator</title>
 </head>
 <body>
@@ -50,7 +51,7 @@ Contact
 </nav>
 <article>
 <h1>Integer factorization calculator</h1>
-<script async="async" type="text/javascript" src="ecm1012.js"></script>
+<script async="async" type="text/javascript" src="ecm0003.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -131,12 +132,13 @@ Contact
 <h2>Configuration</h2>
 <p>You can change settings for this application by pressing the Config button when a factorization is not in progress. A new window will pop up where you can select different settings:</p>
 <ul>
-<li>Digits per group: In order to improve readability, big numbers are separated by spaces forming groups of a fixed number of digits. With this input box, you can determine the number of digits in a group.</li> 
-<li>Batch mode: See explanation in next section.</li>
-<li>Verbose mode: Not ready yet.</li>
-<li>Pretty print: If this checkbox is set, the exponents are shown in superscripts and the multiplication sign is &quot; &times; &quot;. The application also shows the number of digits for numbers with more than 30 digits.
+<li><strong>Digits per group</strong>: In order to improve readability, big numbers are separated by spaces forming groups of a fixed number of digits. With this input box, you can determine the number of digits in a group.</li> 
+<li><strong>Batch mode</strong>: See explanation in next section.</li>
+<li><strong>Verbose mode</strong>: Not ready yet.</li>
+<li><strong>Pretty print</strong>: If this checkbox is set, the exponents are shown in superscripts and the multiplication sign is &quot; &times; &quot;. The application also shows the number of digits for numbers with more than 30 digits.
 If the checkbox is not set, the exponents are preceded by the exponentiation sign &quot; ^ &quot; and the multiplication is indicated by asterisks. Also the number of digits is never displayed. This mode eases copying the results to other mathematical programs.</li>
-<li>Use Cunningham tables on server: Not ready yet.</li>
+<li><strong>Use Cunningham tables on server</strong>: When selected, if the number to be factored has the form a<sup>b</sup> &pm; 1, the application will attempt to retrieve the known factors from the Web server.
+In order to reduce the database, only factors with at least 14 digits are included, so the application will find the small factors. These factors comes from <a href="http://myfactors.mooo.com/">Jonathan Crombie list</a> and it includes 2674850 factors of Cunningham numbers.</li>
 </ul>
 <p>The configuration is saved in your device, so when you start again the Web browser, all settings remain the same.
 <p>
@@ -158,7 +160,7 @@ The line to type is: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.</p>
-<p>Written by Dario Alpern. Last updated 18 December 2016.</p>
+<p>Written by Dario Alpern. Last updated 1 January 2017.</p>
 </div>
 <div id="result" aria-live="polite"></div>
 <div id="status"></div>

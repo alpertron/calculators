@@ -24,8 +24,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "factor.h"
 
 #ifdef __EMSCRIPTEN__
-void databack(char *data);
-int stamp(void);
 extern int newStamp, oldStamp;
 extern long long lModularMult;
 #endif
@@ -181,7 +179,7 @@ void DiscreteLogarithm(void)
   if (!TestBigNbrEqual(&LastModulus, &modulus))
   {
     CompressBigInteger(nbrToFactor, &modulus);
-    factor(nbrToFactor, factorsMod, astFactorsMod, NULL);
+    factor(&modulus, nbrToFactor, factorsMod, astFactorsMod, NULL);
     NbrFactorsMod = astFactorsMod[0].multiplicity;
   }
   DiscreteLog.nbrLimbs = 1;           // DiscreteLog <- 0
@@ -208,7 +206,7 @@ void DiscreteLogarithm(void)
     groupOrder.limbs[0].x--;
     showText("Computing discrete logarithm...");
     CompressBigInteger(nbrToFactor, &groupOrder);
-    factor(nbrToFactor, factorsGO, astFactorsGO, NULL);  // factor groupOrder.
+    factor(&groupOrder, nbrToFactor, factorsGO, astFactorsGO, NULL);  // factor groupOrder.
     NbrFactors = astFactorsGO[0].multiplicity;
     UncompressBigInteger(ptrPrime, &mod);
     logar.nbrLimbs = 1;             // logar <- 0

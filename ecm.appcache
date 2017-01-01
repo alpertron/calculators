@@ -1,11 +1,12 @@
 CACHE MANIFEST
-# 2016-12-18
+# 2017-01-01-1
 
 CACHE:
 /ECMNEW.HTM
-/ecm1012.js
-/ecmW0712.js
-/ecm0912.css
+/ecm0003.js
+/ecmW0003.js
+/ecm0002.css
+/favicon.ico
 
 NETWORK:
 *

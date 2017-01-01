@@ -42,9 +42,7 @@ char *ptrInputText;
 
 #ifdef __EMSCRIPTEN__
 extern int NextEC;
-void databack(char *data);
 extern double originalTenthSecond;
-int tenths(void);
 void GetDHMSt(char **pptrText, int tenths);
 #endif
 
@@ -150,7 +148,7 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
   char *ptrNextBatchFactor = tofactorText;
   char *ptrEndBatchFactor = tofactorText + strlen(tofactorText);
   char *ptrCurrBatchFactor;
-  int counter;
+  int counter = 0;
   char *ptrOutput = output;
   char *NextExpr, *EndExpr, *FactorExpr;
   char c;
@@ -258,7 +256,7 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
         {
           NumberLength = tofactor.nbrLimbs;
           CompressBigInteger(nbrToFactor, &tofactor);
-          factor(nbrToFactor, factorsMod, astFactorsMod, NULL);
+          factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
         }
         SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
         if (evalExpression(NextExpr, counter, &result) != 0)
@@ -278,7 +276,7 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
       {
         NumberLength = tofactor.nbrLimbs;
         CompressBigInteger(nbrToFactor, &tofactor);
-        factor(nbrToFactor, factorsMod, astFactorsMod, NULL);
+        factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
       }
       SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
       counter = 2;
@@ -469,7 +467,7 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
 #ifdef __EMSCRIPTEN__
     lModularMult = 0;
 #endif
-    factor(nbrToFactor, factorsMod, astFactorsMod, knownFactors);
+    factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactors);
   }
   ptrOutput = output;
   strcpy(output, "2<p>");

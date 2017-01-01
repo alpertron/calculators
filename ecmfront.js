@@ -59,7 +59,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker("ecmW0712.js");
+    worker = new Worker("ecmW0003.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.

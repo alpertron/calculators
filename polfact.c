@@ -24,8 +24,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "highlevel.h"
 #include "polynomial.h"
 #ifdef __EMSCRIPTEN__
-void databack(char *data);
-int stamp(void);
 extern int newStamp, oldStamp;
 #endif
 
