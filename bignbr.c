@@ -237,6 +237,23 @@ enum eExprErr BigIntRemainder(BigInteger *pDividend, BigInteger *pDivisor, BigIn
   return EXPR_OK;
 }
 
+void longToBigInteger(BigInteger *bigint, long long value)
+{
+  int nbrLimbs = 0;
+  bigint->sign = SIGN_POSITIVE;
+  if (value < 0)
+  {
+    bigint->sign = SIGN_NEGATIVE;
+    value = -value;
+  }
+  do
+  {
+    bigint->limbs[nbrLimbs++].x = (int)value & MAX_VALUE_LIMB;
+    value >>= BITS_PER_GROUP;
+  } while (value != 0);
+  bigint->nbrLimbs = nbrLimbs;
+}
+
 void expBigNbr(BigInteger *bignbr, double logar)
 {
   int mostSignificantLimb;

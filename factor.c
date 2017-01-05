@@ -515,23 +515,6 @@ static void intToBigInteger(BigInteger *bigint, int value)
   bigint->sign = SIGN_POSITIVE;
 }
 
-static void longToBigInteger(BigInteger *bigint, long long value)
-{
-  int nbrLimbs = 0;
-  bigint->sign = SIGN_POSITIVE;
-  if (value < 0)
-  {
-    bigint->sign = SIGN_NEGATIVE;
-    value = -value;
-  }
-  do
-  {
-    bigint->limbs[nbrLimbs++].x = (int)value & MAX_VALUE_LIMB;
-    value >>= BITS_PER_GROUP;
-  } while (value != 0);
-  bigint->nbrLimbs = nbrLimbs;
-}
-
 int JacobiSymbol(int M, int Q)
 {
   int k, t1, t2, t3, jacobi;
@@ -1098,7 +1081,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
     {
       continue;
     }
-    if (!(ProcessExpon[Exponent] & (1 << (Exponent & 7))))
+    if (!(ProcessExpon[Exponent >> 3] & (1 << (Exponent & 7))))
     {
       continue;
     }
@@ -2309,7 +2292,10 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
 #ifdef __EMSCRIPTEN__
   SaveFactors(pstFactors);
 #endif
-  PowerPM1Check(pstFactors, toFactor);
+  if (tofactor.nbrLimbs > 1)
+  {
+    PowerPM1Check(pstFactors, toFactor);
+  }
   for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
   {
     int upperBound = pstCurFactor->upperBound;

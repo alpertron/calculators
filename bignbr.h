@@ -110,6 +110,7 @@ void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, /*@in@*/BigInteger *bigin
 void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len);
 void ComputeInversePower2(/*@in@*/limb *value, /*@out@*/limb *result, /*@out@*/limb *aux);
 int BigNbrIsZero(limb *value);
+void longToBigInteger(BigInteger *bigint, long long value);
 void expBigNbr(BigInteger *pBigNbr, double logar);
 double logBigNbr(BigInteger *pBigNbr);
 double logLimbs(limb *pBigNbr, int nbrLimbs);
