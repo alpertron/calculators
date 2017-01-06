@@ -863,7 +863,7 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
   while (Expon2 % 2 == 0 && increment == -1)
   {
     Expon2 /= 2;
-    BigIntPowerIntExp(BigBase, Expon, &Nbr1);
+    BigIntPowerIntExp(BigBase, Expon2, &Nbr1);
     addbigint(&Nbr1, increment);
     insertBigFactor(pstFactors, &Nbr1);
     InsertAurifFactors(pstFactors,BigBase, Expon2, 1);

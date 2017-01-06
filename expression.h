@@ -1,8 +1,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 4 de enero de 2017."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 4 January 2017."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 5 de enero de 2017."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 5 January 2017."
 
 #ifdef __EMSCRIPTEN__
 double tenths(void);
