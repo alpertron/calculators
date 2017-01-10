@@ -59,7 +59,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker("ecmW0006.js");
+    worker = new Worker("ecmW0008.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
@@ -99,7 +99,11 @@ function dowork(n)
   var res = get("result");
   var valueText = get("value").value;
   var charNull = String.fromCharCode(0);
+  var helphelp = get("helphelp");
   get("help").style.display = "none";
+  helphelp.style.display = "block";
+  helphelp.innerHTML = (app & 1 ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización.</p>":
+                                  "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization.</p>");
   res.style.display = "block";
   if (valueText == "")
   {    // Nothing in input box.
@@ -231,8 +235,21 @@ window.onload = function ()
   };
   get("helpbtn").onclick = function ()
   {
-    get("help").style.display = "block";
-    get("result").style.display = "none";
+    var help = get("help");
+	var helpStyle = help.style;
+	var helphelpStyle = get("helphelp").style;
+	var result = get("result");
+	var resultStyle = result.style;
+	if (helpStyle.display == "block" && result.innerHTML != "")		
+	{
+	  helpStyle.display = "none";
+	  helphelpStyle.display = resultStyle.display = "block";
+	}
+	else
+	{
+      helpStyle.display = "block";
+	  helphelpStyle.display = resultStyle.display = "none";
+	}
   };
   window.onclick = function(event)
   {

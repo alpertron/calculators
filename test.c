@@ -187,6 +187,7 @@ int main(int argc, char *argv[])
   printf("%s\n", output);
 #elif DEBUG_CODE == 13
   batch = 0;
+  lang = 0;
   if (argc == 3)
   {
     ecmFrontText(argv[1], 1, argv[2]);

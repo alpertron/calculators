@@ -539,7 +539,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
           BigIntRemainder(&Mult1, &K, &M1);  // M1 <- Mult1 % K
           BigIntRemainder(&Mult2, &K, &M2);  // M2 <- Mult2 % K
           CopyBigInt(&Tmp, &K);
-          subtractdivide(&Tmp, 0, 2);        // Tmp <- K / 2
+          subtractdivide(&Tmp, -1, 2);       // Tmp <- (K+1) / 2
           BigIntSubt(&M1, &Tmp, &Tmp1);      // Tmp1 <- M1 - Tmp
           if (Tmp1.sign == SIGN_POSITIVE)    // If M1 >= K / 2 ... 
           {
@@ -640,15 +640,15 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
             {  // If Mult1 + Mult2 is odd...
               if (((Mult1.limbs[0].x + Mult3.limbs[0].x) & 1) == 0)
               {   // If Mult1 + Mult3 is even...
-                Tmp = Mult2;
-                Mult2 = Mult3;
-                Mult3 = Tmp;
+                CopyBigInt(&Tmp, &Mult2);
+                CopyBigInt(&Mult2, &Mult3);
+                CopyBigInt(&Mult3, &Tmp);
               }
               else
               {
-                Tmp = Mult2;
-                Mult2 = Mult4;
-                Mult4 = Tmp;
+                CopyBigInt(&Tmp, &Mult2);
+                CopyBigInt(&Mult2, &Mult4);
+                CopyBigInt(&Mult4, &Tmp);
               }
             } // At this moment Mult1+Mult2 = even, Mult3+Mult4 = even
             BigIntAdd(&Mult1, &Mult2, &Tmp1);
@@ -665,9 +665,25 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
             continue;
           } /* end if k is even */
           BigIntRemainder(&Mult1, &K, &M1);    // M1 <- Mult1 % K.
+          if (M1.sign == SIGN_NEGATIVE)
+          {
+            BigIntAdd(&M1, &K, &M1);
+          }
           BigIntRemainder(&Mult2, &K, &M2);    // M2 <- Mult2 % K.
+          if (M2.sign == SIGN_NEGATIVE)
+          {
+            BigIntAdd(&M2, &K, &M2);
+          }
           BigIntRemainder(&Mult3, &K, &M3);    // M3 <- Mult3 % K.
+          if (M3.sign == SIGN_NEGATIVE)
+          {
+            BigIntAdd(&M3, &K, &M3);
+          }
           BigIntRemainder(&Mult4, &K, &M4);    // M4 <- Mult4 % K.
+          if (M4.sign == SIGN_NEGATIVE)
+          {
+            BigIntAdd(&M4, &K, &M4);
+          }
           CopyBigInt(&Tmp, &K);
           subtractdivide(&Tmp, -1, 2);       // Tmp <- (K+1) / 2
           BigIntSubt(&M1, &Tmp, &Tmp1);      // Tmp1 <- M1 - Tmp

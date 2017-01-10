@@ -6,7 +6,7 @@
 <meta charset="utf-8" />
 <meta name="description" content="Javascript application that factors integers using ECM and SIQS algorithms. Written by Dario Alpern." />
 <link rel="alternate" hreflang="es" href="ECMC.HTM" />
-<link rel="prefetch" href="ecmW0006.js" />
+<link rel="prefetch" href="ecmW0008.js" />
 <link rel="stylesheet" type="text/css" href="ecm0002.css">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Integer factorization calculator</title>
@@ -51,7 +51,7 @@ Contact
 </nav>
 <article>
 <h1>Integer factorization calculator</h1>
-<script async="async" type="text/javascript" src="ecm0006.js"></script>
+<script async="async" type="text/javascript" src="ecm0008.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -82,6 +82,10 @@ Contact
 <input type="hidden" id="app" value="0"/>
 </form>
 <div id="help" aria-live="polite">
+<p>This application uses local storage to remember the progress of the factorization, so you can complete the factorization of a large number in several sessions. Your computer will remember the state of the factorization. You only have to reload this page.</p>
+<p>The execution time depends on the magnitude of the second largest prime factor and on your computer speed.</p>
+<p>Since all calculations are performed in your computer, you can disconnect it from the Internet while the factorization is in progress. You can even start this application without Internet connection after the first run.</p>
+<p>See <a href="ECMREC.HTM" title="ECM Factorization records" tabindex="1">factorization records</a> for this application.
 <h2>Expressions</h2>
 <p>You can enter expressions that use the following operators, functions and parentheses:</p>
 <p>
@@ -89,17 +93,17 @@ Contact
 <li> + for addition
 <li> - for subtraction
 <li> * for multiplication
-<li> / for integer division (the dividend must be multiple of the divisor)
+<li> / for integer division
 <li> % for modulus (remainder of the integer division)
-<li> ^ for exponentiation (the exponent must be real and greater than or equal to zero).
-<li> <strong>n!</strong>: factorial (<var>n</var> must be real and greater than or equal to zero).
+<li> ^ or ** for exponentiation (the exponent must be greater than or equal to zero).
+<li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero).
 <li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).
 <li> <strong>F(n)</strong>: Fibonacci number F<sub>n</sub>
 <li> <strong>L(n)</strong>: Lucas number L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub>
 <li> <strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).
 <li> <strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.
 <li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.
-<li> <strong>Modexp(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var> (<var>n</var> must be real).
+<li> <strong>Modexp(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 <div class="tableCurves"><table>
@@ -120,7 +124,8 @@ Contact
 </table></div>
 <p>The program runs 25 curves with limit B1 = 2000, 300 curves with limit B1 = 50000, 1675 curves with limit B1 = 1000000 and finally it uses curves with limit B1 = 11000000 until all factors are found.</p>
 <h2>Factoring a number in several machines</h2>
-<p>The ECM factoring algorithm can be easily parallelized in several machines. In order to do it, run the factorization in the first computer from curve 1, run it in the second computer from curve 10000, in the third computer from curve 20000, and so on. In order to change the curve number, just type this number on the bottom-left input box and press Enter or click on the <strong>New Curve</strong> button.</p>
+<p>The ECM factoring algorithm can be easily parallelized in several machines. In order to do it, run the factorization in the first computer from curve 1, run it in the second computer from curve 10000, in the third computer from curve 20000, and so on.
+In order to change the curve number when a factorization is in progress, press the button named <strong>More</strong>, type this number on the input box located on the new window and press the <strong>New Curve</strong> button.</p>
 <p>When one of the machines discovers a new factor, you should enter this factor in the other computers by typing it in the bottom-right input box and pressing Enter (or clicking the <strong>Factor</strong> button).</p>
 <h2>Factoring using the Self Initializing Quadratic Sieve (SIQS)</h2>
 <p>When the number to be factorized is in the range 31 to 95 digits, after computing some curves in order to find small factors, the program switches to SIQS (if the checkbox located below the applet enables it), which is an algorithm that is much faster than ECM when the number has two large prime factors. Since this method needs a large amount of your computer's memory, if you restart the applet the factorization begins from scratch. In order to start factoring immediately using SIQS, you can enter 0 in the New Curve box.</p>
@@ -160,8 +165,9 @@ The line to type is: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.</p>
-<p>Written by Dario Alpern. Last updated 1 January 2017.</p>
+<p>Written by Dario Alpern. Last updated 8 January 2017.</p>
 </div>
+<div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
 <div id="status"></div>
 <div id="footer">

@@ -209,7 +209,7 @@ static void getMultAndFactorBase(int multiplier, int FactorBase)
 
 static void ShowSIQSInfo(int timeSieve, int congruencesFound, int matrixBLength, int elapsedTime)
 {
-  char SIQSInfo[100];
+  char SIQSInfo[200];
   int percentage = (int)((float)(congruencesFound * 100) / (float)matrixBLength);
   int u = (int)((double)timeSieve * (double)(matrixBLength - congruencesFound) / (double)congruencesFound);
   char *ptrText = SIQSInfo;
