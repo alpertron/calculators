@@ -90,20 +90,11 @@ enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResu
       factorial.sign = SIGN_POSITIVE;
       for (i = 2; i <= len; i++)
       {   // Multiply by all integers up to the argument of factorial.
-        carry.x = 0;
-        for (j = 0; j < factorial.nbrLimbs; j++)
-        {
-          carry.x += i*factorial.limbs[j].x;
-          factorial.limbs[j].x = carry.x & MAX_VALUE_LIMB;
-          carry.x >>= BITS_PER_GROUP;
-        }
-        if (carry.x != 0)
-        {  // New limb needed.
-          factorial.limbs[j].x = carry.x;
-          factorial.nbrLimbs++;
-        }
+        multint(&factorial, &factorial, i);
       }
       stackValues[stackIndex] = factorial;
+      exprIndex++;
+      continue;
     }
     if (charValue == '#')
     {           // Calculating primorial.
@@ -151,21 +142,12 @@ enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResu
         }
         if (j*j > i)
         {     // Number is prime, perform multiplication.
-          carry.x = 0;
-          for (j = 0; j < factorial.nbrLimbs; j++)
-          {
-            carry.x += i*factorial.limbs[j].x;
-            factorial.limbs[j].x = carry.x & MAX_VALUE_LIMB;
-            carry.x >>= BITS_PER_GROUP;
-          }
-          if (carry.x != 0)
-          {  // New limb needed.
-            factorial.limbs[j].x = carry.x;
-            factorial.nbrLimbs++;
-          }
+          multint(&factorial, &factorial, i);
         }
       }
       stackValues[stackIndex] = factorial;
+      exprIndex++;
+      continue;
     }
     if (charValue == 'B' || charValue == 'b' ||
         charValue == 'N' || charValue == 'n' ||
