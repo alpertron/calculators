@@ -2090,6 +2090,7 @@ static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor)
   for (factorNumber = 1; factorNumber <= lastFactorNumber; factorNumber++, pstCurFactor++)
   {     // For each known factor...
     int *ptrFactor = pstCurFactor->ptrFactor;
+    NumberLength = *ptrFactor;
     UncompressBigInteger(ptrFactor, &Temp2);    // Convert known factor to Big Integer.
     BigIntGcd(divisor, &Temp2, &Temp3);          // Temp3 is the GCD between known factor and divisor.
     if (Temp3.nbrLimbs == 1 && Temp3.limbs[0].x < 2)
