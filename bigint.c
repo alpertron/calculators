@@ -48,12 +48,12 @@ void AddBigNbr(int *pNbr1, int *pNbr2, int *pSum, int nbrLen)
 
 void SubtractBigNbr(int *pNbr1, int *pNbr2, int *pDiff, int nbrLen)
 {
-  int carry = 0;
+  int borrow = 0;
   int i;
   for (i = 0; i < nbrLen; i++)
   {
-    carry = (carry >> BITS_PER_INT_GROUP) + *pNbr1++ - *pNbr2++;
-    *pDiff++ = carry & MAX_INT_NBR;
+    borrow = (borrow >> BITS_PER_INT_GROUP) + *pNbr1++ - *pNbr2++;
+    *pDiff++ = borrow & MAX_INT_NBR;
   }
 }
 
@@ -130,11 +130,11 @@ void MultBigNbrByInt(int *bigFactor, int factor, int *bigProd, int nbrLen)
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      carry = (int)(((double)*bigFactor * dFactor + (double)carry + HALF_INT_RANGE/2)*dVal);
+      carry = (int)floor(((double)*bigFactor * dFactor + (double)carry + HALF_INT_RANGE/2)*dVal);
     }
     else
     {
-      carry = (int)(((double)*bigFactor * dFactor + (double)carry - HALF_INT_RANGE/2)*dVal);
+      carry = (int)floor(((double)*bigFactor * dFactor + (double)carry - HALF_INT_RANGE/2)*dVal);
     }
     *bigProduct++ = low;
     bigFactor++;
@@ -261,22 +261,9 @@ int BigNbrToBigInt(BigInteger *pBigNbr, int *pBigInt)
   limb *ptrLimb = pBigNbr->limbs;
   for (ctr = 0; ctr < nbrLenBigNbr; ctr++)
   {
-    currentValue += ptrLimb->x << curShift;
-    curShift += BITS_PER_GROUP;
-    if (curShift >= BITS_PER_INT_GROUP)
-    {
-      *ptrBigInt++ = currentValue & MAX_INT_NBR;
-      curShift -= BITS_PER_INT_GROUP;
-      currentValue = ptrLimb->x >> (BITS_PER_GROUP - curShift);
-    }
-    ptrLimb++;
+    *ptrBigInt++ = ptrLimb++->x;
   }
-  if (currentValue == 0)
-  {
-    return (int)(ptrBigInt - pBigInt);
-  }
-  *ptrBigInt = currentValue;
-  return (int)(ptrBigInt - pBigInt) + 1;
+  return nbrLenBigNbr;
 }
 
 void BigIntToBigNbr(BigInteger *pBigNbr, int *pBigInt, int nbrLenBigInt)
@@ -289,32 +276,9 @@ void BigIntToBigNbr(BigInteger *pBigNbr, int *pBigInt, int nbrLenBigInt)
   pBigNbr->sign = SIGN_POSITIVE;
   for (ctr = 0; ctr < nbrLenBigInt; ctr++)
   {
-    curShift += BITS_PER_INT_GROUP;
-    while (curShift >= BITS_PER_GROUP)
-    {
-      if (curShift >= BITS_PER_INT_GROUP)
-      {
-        currentValue |= (unsigned int)(*ptrBigInt << (curShift - BITS_PER_INT_GROUP));
-      }
-      else
-      {
-        currentValue |= (unsigned int)(*ptrBigInt >> (BITS_PER_INT_GROUP - curShift));
-      }
-      ptrLimb++->x = currentValue & MAX_VALUE_LIMB;
-      curShift -= BITS_PER_GROUP;
-      currentValue >>= BITS_PER_GROUP;
-    }
-    ptrBigInt++;
+    ptrLimb++->x = *ptrBigInt++;
   }
-  if (curShift == 0)
-  {
-    nbrLimbs = (int)(ptrLimb - pBigNbr->limbs);
-  }
-  else
-  {
-    nbrLimbs = (int)(ptrLimb - pBigNbr->limbs) + 1;
-    ptrLimb++->x = currentValue;
-  }
+  nbrLimbs = nbrLenBigInt;
   do
   {
     if ((--ptrLimb)->x != 0)

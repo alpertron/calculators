@@ -209,6 +209,18 @@ int main(int argc, char *argv[])
     printf("value [known factors]\n");
     return 0;
   }
+#elif DEBUG_CODE == 14
+  {
+    limb internalNotation[100];
+    static int bitGroups;
+    char textInput[500];
+    textInput[0] = '1';
+    memset(&textInput[1], '0', 150);
+    textInput[151] = 0;
+    Dec2Bin(textInput, internalNotation, 151, &bitGroups);
+    Bin2Dec(internalNotation, textInput, 17, 6);
+    textInput[200] = 0;
+  }
 #endif
   return 0;
 }

@@ -33,8 +33,8 @@ extern int bitLengthCycle[20];
 // a better approximation is: x(3-Nxx)/2. After the inverse square root is computed,
 // the square root is found just by multiplying by N.
 // The argument is multiplied by a power of 4 so the most significant limb is
-// between 8192 and 32767 and there is an even number of limbs. At the end of
-// the calculation, the result is divided by the power of 2.
+// between LIMB_RANGE/4 and LIMB_RANGE - 1 and there is an even number of limbs.
+// At the end of the calculation, the result is divided by the power of 2.
 
 // All computations are done in little-endian notation.
 // Find power of 2 that divides the number.
@@ -42,15 +42,14 @@ extern int bitLengthCycle[20];
 //         pPower2 = pointer to power of 2.
 static void MultiplyBigNbrByMinPowerOf2(int *pPower2, limb *number, int len, limb *dest)
 {
-  limb mostSignficLimb;
+  limb mostSignficLimb, oldLimb, newLimb;
   int index2, mask, shLeft;
-  limb carry;
   limb *ptrDest, *ptrSrc;
 
   ptrSrc = number;
   shLeft = 0;
   mostSignficLimb.x = (number + len - 1)->x;
-  for (mask = (MAX_VALUE_LIMB+1)/2; mask > 0; mask >>= 1)
+  for (mask = LIMB_RANGE/2; mask > 0; mask >>= 1)
   {
     if ((mostSignficLimb.x & mask) != 0)
     {
@@ -60,14 +59,15 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, limb *number, int len, lim
   }
   ptrDest = dest;
   // Multiply number by this power.
-  carry.x = 0;
+  oldLimb.x = 0;
   for (index2 = len; index2 > 0; index2--)
   {
-    carry.x += ((ptrSrc++)->x << shLeft);
-    (ptrDest++)->x = carry.x & MAX_VALUE_LIMB;
-    carry.x >>= BITS_PER_GROUP;
+    newLimb.x = ptrDest->x;
+    (ptrDest++)->x = ((newLimb.x << shLeft) |
+      (oldLimb.x >> (BITS_PER_GROUP - shLeft))) & MAX_VALUE_LIMB;
+    oldLimb.x = newLimb.x;
   }
-  ptrDest->x = carry.x;
+  ptrDest->x = oldLimb.x >> (BITS_PER_GROUP - shLeft);
   *pPower2 = shLeft;
 }
 
@@ -77,9 +77,8 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, limb *number, int len, lim
 enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteger *pQuotient)
 {
   limb carry;
-  limb dividend, divisor, quotient;
-  limb inverse;
-  int power2;
+  double inverse;
+  limb oldLimb, newLimb;
   int nbrLimbs, nbrLimbsDividend, nbrLimbsDivisor;
 
   // Check whether the divisor is zero.
@@ -98,36 +97,27 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     pQuotient->sign = SIGN_POSITIVE;
     return EXPR_OK;
   }
-  if (nbrLimbsDividend <= 2)
-  {   // If dividend is small, perform the division directly.
-    if (nbrLimbsDividend == 1)
+  if (nbrLimbs == 0)
+  {   // Both divisor and dividend have the same number of limbs.
+    for (nbrLimbs = nbrLimbsDividend - 1; nbrLimbs > 0; nbrLimbs--)
     {
-      dividend.x = pDividend->limbs[0].x;
+      if (pDividend->limbs[nbrLimbs].x != pDivisor->limbs[nbrLimbs].x)
+      {
+        break;
+      }
     }
-    else
-    {
-      dividend.x = pDividend->limbs[0].x + (pDividend->limbs[1].x << BITS_PER_GROUP);
-    }
-    if (nbrLimbsDivisor == 1)
-    {
-      divisor.x = pDivisor->limbs[0].x;
-    }
-    else
-    {
-      divisor.x = pDivisor->limbs[0].x + (pDivisor->limbs[1].x << BITS_PER_GROUP);
-    }
-    quotient.x = dividend.x / divisor.x;
-    if (quotient.x > MAX_VALUE_LIMB)
-    {
-      pQuotient->limbs[0].x = quotient.x & MAX_VALUE_LIMB;
-      pQuotient->limbs[1].x = quotient.x >> BITS_PER_GROUP;
-      pQuotient->nbrLimbs = 2;
-    }
-    else
-    {
-      pQuotient->limbs[0].x = quotient.x;
+    if (pDividend->limbs[nbrLimbs].x < pDivisor->limbs[nbrLimbs].x)
+    {   // Dividend is less than divisor, so quotient is zero.
+      pQuotient->limbs[0].x = 0;
       pQuotient->nbrLimbs = 1;
+      pQuotient->sign = SIGN_POSITIVE;
+      return EXPR_OK;
     }
+  }
+  if (nbrLimbsDividend == 1)
+  {   // If dividend is small, perform the division directly.
+    pQuotient->limbs[0].x = pDividend->limbs[0].x / pDivisor->limbs[0].x;
+    pQuotient->nbrLimbs = 1;
   }
   else
   {
@@ -136,6 +126,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     int bitLengthNbrCycles;
     int idx;
     int nbrLimbsQuotient;
+    int power2;
     limb *ptrDest;
     limb *ptrDivisor, *ptrDividend, *ptrQuotient;
 
@@ -151,14 +142,9 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     }
     MultiplyBigNbrByMinPowerOf2(&power2, adjustedArgument, nbrLimbs, adjustedArgument);
     // Initialize approximate inverse.
-    inverse.x = (int)((double)(LIMB_RANGE*LIMB_RANGE)*(double)(LIMB_RANGE*LIMB_RANGE) / ((double)((adjustedArgument[nbrLimbs - 1].x << BITS_PER_GROUP) +
-      adjustedArgument[nbrLimbs - 2].x) + 1));
+    inverse = MAX_VALUE_LIMB / ((double)adjustedArgument[nbrLimbs - 1].x + 1);
     approxInv[nbrLimbs-1].x = 1;
-    approxInv[nbrLimbs-2].x = (inverse.x >> BITS_PER_GROUP) & MAX_VALUE_LIMB;
-    if (nbrLimbs > 2)
-    {
-      approxInv[nbrLimbs - 3].x = inverse.x & MAX_VALUE_LIMB;
-    }
+    approxInv[nbrLimbs-2].x = (int)floor((inverse-1)*MAX_VALUE_LIMB);
     // Perform Newton approximation loop.
     // Get bit length of each cycle.
     bitLengthNbrCycles = 0;
@@ -211,12 +197,13 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     }             // approxInv holds the quotient.
     // Shift left quotient power2 bits into result.
     ptrDest = &approxInv[nbrLimbs-1];
-    carry.x = 0;
+    oldLimb.x = 0;
     for (index = nbrLimbs; index >= 0; index--)
     {
-      carry.x += ptrDest->x << power2;
-      (ptrDest++)->x = carry.x & MAX_VALUE_LIMB;
-      carry.x >>= BITS_PER_GROUP;
+      newLimb.x = ptrDest->x;
+      (ptrDest++)->x = ((newLimb.x << power2) |
+                        (oldLimb.x >> (BITS_PER_GROUP-power2))) & MAX_VALUE_LIMB;
+      oldLimb.x = newLimb.x;
     }
     // Determine number of limbs of quotient.
     nbrLimbsQuotient = nbrLimbsDividend - nbrLimbsDivisor;
@@ -238,7 +225,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     {                   // Increment quotient.
       for (idx = 0; idx < nbrLimbsQuotient; idx++)
       {
-        if (++((ptrQuotient+idx)->x) < (1 << BITS_PER_GROUP))
+        if ((unsigned int)++((ptrQuotient+idx)->x) < LIMB_RANGE)
         {
           break;
         }

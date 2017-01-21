@@ -22,6 +22,7 @@
 #include <string.h>
 #include "bignbr.h"
 #include <stdio.h>
+#include <math.h>
 
 #define KARATSUBA_CUTOFF 8
 static limb arr[MAX_LEN];
@@ -103,50 +104,56 @@ static int absSubtract(int idxMinuend, int idxSubtrahend,
 	return sign;
 }
 
+// Multiply two groups of length limbs. The first one starts at idxFactor1
+// and the second one at idxFactor2. The 2*length limb result is stored
+// starting at idxFactor1. Use arrAux as temporary storage.
+// Accumulate products by result limb.
 static void ClassicalMult(int idxFactor1, int idxFactor2, int length)
 {
-  int i, j;
-  limb carry, sum, hiProd;
+  int prodCol, fact1Col;
   limb *ptrFactor1, *ptrFactor2;
-  limb prod;
+  double dRangeLimb = (double)LIMB_RANGE;
+  double dInvRangeLimb = 1 / dRangeLimb;
+  int low = 0;              // Low limb of sums of multiplications.
+  double dAccumulator = 0;  // Approximation to the sum of multiplications.
+  int factor1, factor2;
   multCtr++;
-  sum.x = 0;  // Initialize sum of product of limbs in the same column.
-  for (i = 0; i < 2 * length - 1; i++)
+  for (prodCol = 0; prodCol < 2 * length - 1; prodCol++)
   {    // Process each limb of product (least to most significant limb).
-    carry.x = 0;
-    if (i < length)
+    if (prodCol < length)
     {   // Processing first half (least significant) of product.
-      ptrFactor2 = &arr[idxFactor2 + i];
+      ptrFactor2 = &arr[idxFactor2 + prodCol];
       ptrFactor1 = &arr[idxFactor1];
-      j = i;
+      fact1Col = prodCol;
     }
     else
     {  // Processing second half (most significant) of product.
       ptrFactor2 = &arr[idxFactor2 + length - 1];
-      ptrFactor1 = &arr[idxFactor1 + i - length + 1];
-      j = 2 * (length - 1) - i;
+      ptrFactor1 = &arr[idxFactor1 + prodCol - length + 1];
+      fact1Col = 2 * (length - 1) - prodCol;
     }
-    for (; j>0; j -= 2)
+    for (; fact1Col>=0; fact1Col--)
     {
-      prod.x = ptrFactor1->x * ptrFactor2->x +
-               (ptrFactor1 + 1)->x * (ptrFactor2 - 1)->x;
-      ptrFactor1 += 2;
-      ptrFactor2 -= 2;
-      hiProd.x = prod.x >> BITS_PER_GROUP;
-      sum.x += prod.x & MAX_VALUE_LIMB;
-      carry.x += hiProd.x;
+      factor1 = (ptrFactor1++)->x;
+      factor2 = (ptrFactor2--)->x;
+      low += factor1 * factor2;
+      dAccumulator += (double)factor1 * (double)factor2;
     }
-    if (j == 0)
-    {   // Odd number of limbs: process last one.
-      prod.x = ptrFactor1->x * ptrFactor2->x;
-      hiProd.x = prod.x >> BITS_PER_GROUP;
-      sum.x += prod.x & MAX_VALUE_LIMB;
-      carry.x += hiProd.x;
+    low &= MAX_VALUE_LIMB;    // Trim extra bits.
+    arrAux[prodCol].x = low;
+    // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
+    // In that case, there would be an error of +/- 1.
+    if (low < HALF_INT_RANGE)
+    {
+      dAccumulator = floor((dAccumulator + HALF_INT_RANGE / 2)*dInvRangeLimb);
     }
-    arrAux[i].x = sum.x & MAX_VALUE_LIMB;
-    sum.x = carry.x + (sum.x >> BITS_PER_GROUP);
+    else
+    {
+      dAccumulator = floor((dAccumulator - HALF_INT_RANGE / 2)*dInvRangeLimb);
+    }
+    low = (int)(dAccumulator - floor(dAccumulator / dRangeLimb) * dRangeLimb);
   }
-  arrAux[i].x = sum.x;
+  arrAux[prodCol].x = low;
   memcpy(&arr[idxFactor1], &arrAux[0], 2 * length * sizeof(limb));
   return;
 }
@@ -156,8 +163,9 @@ static void Karatsuba(int idxFactor1, int length, int endIndex)
 {
 	int idxFactor2 = idxFactor1 + length;
   int i;
-  limb tmp, cy;
-  limb *ptrResult, *ptrHigh;
+  unsigned int carry1First, carry1Second, accum1Lo;
+  unsigned int carry2Second, accum2Lo;
+  limb *ptrResult, *ptrHigh, tmp;
 	int middle;
 	int sign;
 	int halfLength;
@@ -207,7 +215,7 @@ static void Karatsuba(int idxFactor1, int length, int endIndex)
 	// Exchange high part of first factor with low part of 2nd factor.
   karatCtr++;
   halfLength = length >> 1;
-	for (i = idxFactor1 + halfLength; i<idxFactor2; i++)
+  for (i = idxFactor1 + halfLength; i<idxFactor2; i++)
 	{
 		tmp.x = arr[i].x;
 		arr[i].x = arr[i + halfLength].x;
@@ -227,39 +235,60 @@ static void Karatsuba(int idxFactor1, int length, int endIndex)
      // Obtain (b+1)(xH*yH*b + xL*yL) = xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
      // The first and last terms are already in correct locations.
   ptrResult = &arr[idxFactor1+halfLength];
+  carry1First = carry1Second = carry2Second = 0;
   for (i = halfLength; i > 0; i--)
   {
-    tmp.x = ptrResult->x;
-    ptrResult->x += (ptrResult - halfLength)->x + (ptrResult + halfLength)->x;
-    (ptrResult + halfLength)->x += tmp.x + (ptrResult + length)->x;
+    // The sum of three ints overflows an unsigned int variable,
+    // so two adds are required. Also carries must be separated in
+    // order to avoid overflow:
+    // 00000001 + 7FFFFFFF + 7FFFFFFF = FFFFFFFF
+    accum1Lo = carry1First + ptrResult->x + (ptrResult + halfLength)->x;
+    carry1First = accum1Lo >> BITS_PER_GROUP;
+    accum2Lo = carry2Second + (accum1Lo & MAX_VALUE_LIMB) +
+               (ptrResult - halfLength)->x;
+    carry2Second = accum2Lo >> BITS_PER_GROUP;
+    accum1Lo = carry1Second + (accum1Lo & MAX_VALUE_LIMB) +
+               (ptrResult + length)->x;
+    carry1Second = accum1Lo >> BITS_PER_GROUP;
+    (ptrResult + halfLength)->x = accum1Lo & MAX_VALUE_LIMB;
+    ptrResult->x = accum2Lo & MAX_VALUE_LIMB;
     ptrResult++;
   }
-    // Compute final product.
+  (ptrResult + halfLength)->x += carry1First + carry1Second;
+  ptrResult->x += carry1First + carry2Second;
+  // Compute final product.
   ptrHigh = &arr[middle];
   ptrResult = &arr[idxFactor1 + halfLength];
-  cy.x = 0;
   if (sign != 0)
   {            // (xH-xL) * (yL-yH) is negative.
+    int borrow = 0;
     for (i = length; i > 0; i--)
     {
-      cy.x += ptrResult->x - (ptrHigh++)->x;
-      (ptrResult++)->x = cy.x & MAX_VALUE_LIMB;
-      cy.x >>= BITS_PER_GROUP;
+      borrow += ptrResult->x - (ptrHigh++)->x;
+      (ptrResult++)->x = borrow & MAX_VALUE_LIMB;
+      borrow >>= BITS_PER_GROUP;
+    }
+    for (i = halfLength; i > 0; i--)
+    {
+      borrow += ptrResult->x;
+      (ptrResult++)->x = borrow & MAX_VALUE_LIMB;
+      borrow >>= BITS_PER_GROUP;
     }
   }
   else
   {            // (xH-xL) * (yL-yH) is positive or zero.
+    unsigned int carry = 0;
     for (i = length; i > 0; i--)
     {
-      cy.x += ptrResult->x + (ptrHigh++)->x;
-      (ptrResult++)->x = cy.x & MAX_VALUE_LIMB;
-      cy.x >>= BITS_PER_GROUP;
+      carry += (unsigned int)ptrResult->x + (unsigned int)(ptrHigh++)->x;
+      (ptrResult++)->x = (int)(carry & MAX_VALUE_LIMB);
+      carry >>= BITS_PER_GROUP;
     }
-  }
-  for (i = halfLength; i > 0; i--)
-  {
-    cy.x += ptrResult->x;
-    (ptrResult++)->x = cy.x & MAX_VALUE_LIMB;
-    cy.x >>= BITS_PER_GROUP;
+    for (i = halfLength; i > 0; i--)
+    {
+      carry += (unsigned int)ptrResult->x;
+      (ptrResult++)->x = (int)(carry & MAX_VALUE_LIMB);
+      carry >>= BITS_PER_GROUP;
+    }
   }
 }

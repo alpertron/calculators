@@ -908,7 +908,6 @@ static boolean ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFac
 #endif
   BigInteger NFp1, NFm1, root, rootN1, rootN, rootbak;
   BigInteger nextroot, dif;
-  int intLog2N;
   double log2N;
 #ifdef __EMSCRIPTEN__
   int elapsedTime = (int)(tenths() - originalTenthSecond);
@@ -1021,15 +1020,12 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
       {
         remainder += (unsigned int)Temp2.limbs[1].x << BITS_PER_GROUP;
       }
-      if (Temp2.nbrLimbs > 2)
-      {
-        remainder += (unsigned int)Temp2.limbs[2].x << (2*BITS_PER_GROUP);
-      }
       if (remainder % i == 1 && remainder != 1)
       {
         plus1 = TRUE; // NumberFactor cannot be a power + 1
       }
-      if (remainder % i == i-1 && remainder != (unsigned int)i*(unsigned int)i-1)
+      if (remainder % i == (unsigned int)i-1 &&
+          remainder != (unsigned int)i*(unsigned int)i-1)
       {
         minus1 = TRUE; // NumberFactor cannot be a power - 1
       }
@@ -1321,7 +1317,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
       int2dec(&ptrText, EC);
       databack(text);
 #endif
-      L1 = NumberLength*9/2;        // Get number of digits.
+      L1 = NumberLength*9;        // Get number of digits.
       if (L1 > 30 && L1 <= 90)    // If between 30 and 90 digits...
       {                             // Switch to SIQS.
         int limit = limits[((int)L1 - 31) / 5];
@@ -1432,14 +1428,16 @@ static enum eEcmResult ecmCurve(BigInteger *N)
 #endif
 
     //  Compute A0 <- 2 * (EC+1)*modinv(3 * (EC+1) ^ 2 - 1, N) mod N
-    NbrToLimbs(EC + 1, Aux2, NumberLength);    // Aux2 <- EC + 1
-    modmult(Aux2, MontgomeryMultR2, Aux2);     // Convert Aux2 to Montgomery notation.
+                                               // Aux2 <- 1 in Montgomery notation.
+    memcpy(Aux2, MontgomeryMultR1, NumberLength * sizeof(limb));                                               
+    modmultInt(Aux2, EC + 1, Aux2);            // Aux2 <- EC + 1.
     modmultInt(Aux2, 2, Aux1);                 // Aux1 <- 2*(EC+1)
-    modmult(Aux2, Aux2, Aux3);                 // Aux3 <- (EC + 1)^2
+    modmultInt(Aux2, EC + 1, Aux3);            // Aux3 <- (EC + 1)^2
     modmultInt(Aux3, 3, Aux3);                 // Aux3 <- 3*(EC + 1)^2
-    SubtBigNbrModN(Aux3, MontgomeryMultR1, Aux2, TestNbr, NumberLength); // Aux2 <- 3*(EC + 1)^2 - 1
+                                               // Aux2 <- 3*(EC + 1)^2 - 1 
+    SubtBigNbrModN(Aux3, MontgomeryMultR1, Aux2, TestNbr, NumberLength); 
     ModInvBigNbr(Aux2, Aux2, TestNbr, NumberLength);
-    modmult(Aux1, Aux2, A0);
+    modmult(Aux1, Aux2, A0);                   // A0 <- 2*(EC+1)/(3*(EC+1)^2 - 1)
 
     //  if A0*(A0 ^ 2 - 1)*(9 * A0 ^ 2 - 1) mod N=0 then select another curve.
     modmult(A0, A0, A02);          // A02 <- A0^2
@@ -1815,6 +1813,8 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
   BigInteger NN;
 
   fieldAA = AA;
+  NumberLength = N->nbrLimbs;
+  memcpy(TestNbr, N->limbs, NumberLength * sizeof(limb));
 #ifdef __EMSCRIPTEN__
   GetYieldFrequency();
 #endif
@@ -2020,20 +2020,13 @@ static void SortFactors(struct sFactors *pstFactors)
 static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFactorDividend, int divisor)
 {
   struct sFactors *pstCurFactor;
-  int ctr, factorNumber;
-  int remainder = 0;
+  int factorNumber;
   int *ptrFactor = pstFactorDividend->ptrFactor;
   int nbrLimbs = *ptrFactor;
-  int *ptrValue = ptrFactor + nbrLimbs;
+  int *ptrValue;
   pstFactorDividend->upperBound = divisor;
-
   // Divide number by factor just found.
-  for (ctr = nbrLimbs - 1; ctr >= 0; ctr--)
-  {
-    remainder = (remainder << BITS_PER_GROUP) + *ptrValue;
-    *ptrValue-- = remainder / divisor;
-    remainder %= divisor;
-  }
+  DivBigNbrByInt(ptrFactor + 1, divisor, ptrFactor + 1, nbrLimbs);
   if (*(ptrFactor + nbrLimbs) == 0)
   {
     (*ptrFactor)--;
@@ -2307,18 +2300,13 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
     }
     ptrFactor = pstCurFactor->ptrFactor;
     nbrLimbs = *ptrFactor;
-    while (upperBound < LIMB_RANGE && nbrLimbs > 2)
-    {        // Number has at least 3 limbs: Trial division by small numbers.
+    while (upperBound < 100000 && nbrLimbs > 1)
+    {        // Number has at least 2 limbs: Trial division by small numbers.
       while (pstCurFactor->upperBound != 0)
       {            // Factor found.
         remainder = 0;
         ptrFactor = pstCurFactor->ptrFactor;
-        nbrLimbs = *ptrFactor;
-        ptrValue = ptrFactor + nbrLimbs;
-        for (ctr = nbrLimbs - 1; ctr >= 0; ctr--)
-        {
-          remainder = ((remainder << BITS_PER_GROUP) + *ptrValue--) % upperBound;
-        }
+        remainder = RemDivBigNbrByInt(ptrFactor+1, upperBound, nbrLimbs);
         if (remainder != 0)
         {    // Factor not found. Use new divisor.
           break;
@@ -2354,16 +2342,9 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
     {
       continue;
     }
-    if (nbrLimbs <= 2)
+    if (nbrLimbs == 1)
     {
-      if (nbrLimbs == 1)
-      {
-        dividend = *(ptrFactor + 1);
-      }
-      else
-      {
-        dividend = *(ptrFactor + 2)*LIMB_RANGE + *(ptrFactor + 1);
-      }
+      dividend = *(ptrFactor + 1);
       while (upperBound*upperBound <= dividend)
       {              // Trial division by small numbers.
         if (dividend % upperBound == 0)

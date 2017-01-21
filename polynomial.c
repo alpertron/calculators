@@ -961,7 +961,7 @@ int ComputePolynomial(char *input, int expo)
       if (insideExpon != 0)
       {
         *ptrValue1 += *ptrValue2;
-        if (*ptrValue1 < -MAX_VALUE_LIMB || *ptrValue1 > MAX_VALUE_LIMB)
+        if ((unsigned int)*ptrValue1 >= LIMB_RANGE)
         {
           return EXPR_EXPONENT_TOO_LARGE;
         }
@@ -981,7 +981,7 @@ int ComputePolynomial(char *input, int expo)
       if (insideExpon != 0)
       {
         *ptrValue1 -= *ptrValue2;
-        if (*ptrValue1 < -MAX_VALUE_LIMB || *ptrValue1 > MAX_VALUE_LIMB)
+        if ((unsigned int)*ptrValue1 >= LIMB_RANGE)
         {
           return EXPR_EXPONENT_TOO_LARGE;
         }
@@ -1006,7 +1006,7 @@ int ComputePolynomial(char *input, int expo)
       if (insideExpon != 0)
       {
         *ptrValue1 *= *ptrValue2;
-        if (*ptrValue1 < -MAX_VALUE_LIMB || *ptrValue1 > MAX_VALUE_LIMB)
+        if ((unsigned int)*ptrValue1 >= LIMB_RANGE)
         {
           return EXPR_EXPONENT_TOO_LARGE;
         }
@@ -1062,13 +1062,13 @@ int ComputePolynomial(char *input, int expo)
       {
         val = *stackValues[stackIndex - 1];
         pwr = 1;
+        if (pow(val, pwr) >= MAX_VALUE_LIMB)
+        {
+          return EXPR_EXPONENT_TOO_LARGE;
+        }
         for (count = expon; count > 0; count--)
         {
           pwr *= val;
-          if (pwr < -MAX_VALUE_LIMB || pwr > MAX_VALUE_LIMB)
-          {
-            return EXPR_EXPONENT_TOO_LARGE;
-          }
         }
         *stackValues[stackIndex - 1] = pwr;
       }

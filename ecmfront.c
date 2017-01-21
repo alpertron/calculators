@@ -363,7 +363,7 @@ static void GetSumOfDivisors(char **pptrOutput)
   {
     UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
     BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Temp1);   // p^(e+1)
-    addbigint(&Temp1, -1);   // p^(e-1)-1
+    addbigint(&Temp1, -1);   // p^(e+1)-1
     BigIntMultiply(&result, &Temp1, &result);
     UncompressBigInteger(pstFactor->ptrFactor, &Temp1);
     addbigint(&Temp1, -1);   // p-1
@@ -480,6 +480,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
     }
     NumberLength = *pstFactor->ptrFactor;
     UncompressBigInteger(pstFactor->ptrFactor, &p);
+    p.sign = SIGN_POSITIVE;
     CopyBigInt(&q, &p);
     addbigint(&q, -1);             // q <- p-1
     if (p.nbrLimbs == 1 && p.limbs[0].x == 2)
@@ -965,6 +966,9 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
   strcpy(output, "2<p>");
   ptrOutput += strlen(output);
   SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
+//  {
+//    int pepe; for (pepe = 0; pepe < tofactor.nbrLimbs; pepe++) {int2dec(&ptrOutput, tofactor.limbs[pepe].x); *ptrOutput++ = ';';}
+//  }
   if (rc == EXPR_OK && doFactorization)
   {
     if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 0)

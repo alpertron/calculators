@@ -20,14 +20,12 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include "bignbr.h"
 #include <stdio.h>
+#include <math.h>
 
-#if BITS_PER_GROUP == 15
-#define DIGITS_PER_LIMB 4
-#define MAX_LIMB_CONVERSION 10000
-#else
 #define DIGITS_PER_LIMB 9
 #define MAX_LIMB_CONVERSION 1000000000
-#endif
+#define FIRST_MULT  (1 << (BITS_PER_GROUP/2))
+#define SECOND_MULT (LIMB_RANGE / FIRST_MULT)
 
 extern int lang;
 static limb power10000[MAX_LEN];
@@ -124,7 +122,6 @@ void int2dec(char **pOutput, int nbr)
 void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
 {
   int len, index, index2, count;
-  limb carry, carry2, val;
   limb *ptrSrc = binary + nbrLimbs - 1;
   limb *ptrPower;
   char *ptrDest;
@@ -132,6 +129,10 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
   int groupCtr, digit[DIGITS_PER_LIMB];
   int digits=0;
   int showDigitsText = TRUE;
+  unsigned int carry;
+  double dRangeLimb = (double)1000000000;
+  double dInvRangeLimb = 1 / dRangeLimb;
+
   if (groupLen <= 0)
   {
     groupLen = -groupLen;
@@ -139,36 +140,39 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
   }
   power10000[0].x = ptrSrc->x % MAX_LIMB_CONVERSION;
   power10000[1].x = ptrSrc->x / MAX_LIMB_CONVERSION;
-     // Initialize array length.
-  if (power10000[1].x == 0)
-  {
-    len = 1;
-  }
-  else
-  {
-    len = 2;
-  }
+     
+  len = (power10000[1].x == 0 ? 1 : 2); // Initialize array length.
   for (index = nbrLimbs - 2; index >= 0; index--)
   {
-    // Multiply by 32768: first multiply by 128 and then by 256.
-    ptrSrc--;
-    carry.x = ptrSrc->x >> 8;
-    carry2.x = ptrSrc->x & 0xFF;
+    double dCarry, dQuotient;
+
+    // Multiply by FIRST_MULT and then by SECOND_MULT, so there is never
+    // more than 53 bits in the product.
+
     ptrPower = power10000;
-    power10000[len++].x = 0;
-    for (index2 = len; index2 > 0; index2--)
+    dQuotient = 0;
+    for (index2 = 0; index2 < len; index2++)
     {
-      val.x = ptrPower->x;
-      carry.x += val.x << (BITS_PER_GROUP/2);
-      val.x = carry.x % MAX_LIMB_CONVERSION;
-      carry.x /= MAX_LIMB_CONVERSION;
-      carry2.x += val.x << (BITS_PER_GROUP - BITS_PER_GROUP / 2);
-      (ptrPower++)->x = carry2.x % MAX_LIMB_CONVERSION;
-      carry2.x /= MAX_LIMB_CONVERSION;
+      dCarry = dQuotient + (double)ptrPower->x * FIRST_MULT;
+      dQuotient = floor(dCarry / MAX_LIMB_CONVERSION);
+      (ptrPower++)->x = (int)(dCarry - dQuotient * MAX_LIMB_CONVERSION);
     }
-    if (carry2.x != 0)
+    if (dQuotient != 0)
     {
-      ptrPower->x = carry2.x;
+      (ptrPower++)->x = (int)dQuotient;
+      len++;
+    }
+    ptrPower = power10000;
+    dQuotient = (--ptrSrc)->x;
+    for (index2 = 0; index2 < len; index2++)
+    {
+      dCarry = dQuotient + (double)ptrPower->x * SECOND_MULT;
+      dQuotient = floor(dCarry / MAX_LIMB_CONVERSION);
+      (ptrPower++)->x = (int)(dCarry - dQuotient * MAX_LIMB_CONVERSION);
+    }
+    if (dQuotient != 0)
+    {
+      (ptrPower++)->x = (int)dQuotient;
       len++;
     }
   }
@@ -233,21 +237,21 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
 
 static void add(limb *addend1, limb *addend2, limb *sum, int length)
 {
-  limb carry;
+  unsigned int carry;
   int i;
-  carry.x = 0;
+  carry = 0;
   for (i = 0; i < length; i++)
   {
-    carry.x += (addend1++)->x + (addend2++)->x;
-    if (carry.x >= LIMB_RANGE)
+    carry += (unsigned int)(addend1++)->x + (unsigned int)(addend2++)->x;
+    if (carry >= LIMB_RANGE)
     {
-      (sum++)->x = carry.x - LIMB_RANGE;
-      carry.x = 1;
+      (sum++)->x = (int)(carry - LIMB_RANGE);
+      carry = 1;
     }
     else
     {
-      (sum++)->x = carry.x;
-      carry.x = 0;
+      (sum++)->x = (int)carry;
+      carry = 0;
     }
   }
   return;

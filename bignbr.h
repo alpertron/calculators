@@ -17,20 +17,16 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
     */
 
-#define MAX_LEN 5000        // 20000 digits
-#define BITS_PER_GROUP 15
+#define MAX_LEN 2500        // 20000 digits
+#define BITS_PER_GROUP 31
 #define BITS_PER_INT_GROUP 31
 #define HALF_INT_RANGE (1 << (BITS_PER_INT_GROUP - 1))
 #define MAX_INT_NBR ((int)((1U << BITS_PER_INT_GROUP)-1))
+#define LIMB_RANGE (1U<<BITS_PER_GROUP)
+#define SMALL_NUMBER_BOUND 32768
 struct mylimb
 {
-#if BITS_PER_GROUP == 15
-#define LIMB_RANGE (1<<BITS_PER_GROUP)
   int x;
-#else
-#define LIMB_RANGE ((long long)1<<BITS_PER_GROUP)
-  long long x;
-#endif
 };
 #define MAX_VALUE_LIMB (LIMB_RANGE-1)
 typedef struct mylimb limb;
