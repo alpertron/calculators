@@ -374,7 +374,7 @@ enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResu
           {
             shLeft -= BITS_PER_GROUP;
             (ptrLimb++)->x = carry.x & MAX_VALUE_LIMB;
-            carry.x >>= BITS_PER_GROUP;
+            carry.x = c >> (4-shLeft);
           }
         }
         (ptrLimb++)->x = carry.x;
