@@ -460,7 +460,8 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
   int len, val, ctr;
   BigInteger *pArgument, *pResult;
   limb *pResultLimbs, *pArgumentLimbs, *pTemp, *pFibonPrev, *pFibonAct;
-  limb carry, largeVal;
+  unsigned int carry;
+  limb largeVal;
   char stackOper;
   int nbrLimbs;
   int FirstTime;
@@ -496,18 +497,11 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
     {
       return EXPR_INVALID_PARAM;
     }
-    if (pArgument->nbrLimbs > 2)
+    if (pArgument->nbrLimbs > 1)
     {
       return EXPR_INTERM_TOO_HIGH;
     }
-    if (pArgument->nbrLimbs==2)
-    {
-      largeVal.x = pArgument->limbs[0].x + (pArgument->limbs[1].x << BITS_PER_GROUP);
-    }
-    else
-    {
-      largeVal.x = pArgument->limbs[0].x;
-    }
+    largeVal.x = pArgument->limbs[0].x;
     if (largeVal.x > 95662)
     {
       return EXPR_INTERM_TOO_HIGH;
@@ -525,20 +519,20 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
       int i, j;
       // For Lucas sequences: FibonPrev = 2, FibonAct = 1
       // For Fibonacci sequences: FibonPrev = 0, FibonAct = 1
-      fibon1[0].x = (stackOper == 'L'? 2: 0);
+      fibon1[0].x = (stackOper == 'L' ? 2 : 0);
       fibon2[0].x = 1;
-      for (i = 1; i <= val; i++)
+      for (i = 1; i < val; i++)
       {
-        carry.x = 0;
+        carry = 0;
         for (j=0; j<len; j++)
         {
-          carry.x += (pFibonPrev+j)->x + (pFibonAct+j)->x;
-          (pFibonPrev+j)->x = carry.x & MAX_VALUE_LIMB;
-          carry.x >>= BITS_PER_GROUP;
+          carry += (pFibonPrev+j)->x + (pFibonAct+j)->x;
+          (pFibonPrev+j)->x = carry & MAX_VALUE_LIMB;
+          carry >>= BITS_PER_GROUP;
         }
-        if (carry.x != 0)
+        if (carry != 0)
         {
-          (pFibonPrev+j)->x = carry.x;
+          (pFibonPrev+j)->x = carry;
           (pFibonAct+j)->x = 0;
           len++;
         }
