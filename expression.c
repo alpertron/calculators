@@ -60,6 +60,11 @@ enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResu
     char charValue;
 
     charValue = *(expr+exprIndex);
+    if (charValue == ' ' || charValue == 9)
+    {           // Ignore spaces and horizontal tabs.
+      exprIndex++;
+      continue;
+    }
     if (charValue == '*' && *(expr + exprIndex + 1) == '*')
     {           // Convert double asterisk to exponentiation.
       charValue = '^';
