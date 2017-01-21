@@ -130,7 +130,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     limb *ptrDest;
     limb *ptrDivisor, *ptrDividend, *ptrQuotient;
 
-    nbrLimbs += 3;    // Use this number of limbs for intermediate calculations.
+    nbrLimbs += 2;    // Use this number of limbs for intermediate calculations.
     if (nbrLimbs > nbrLimbsDivisor)
     {
       memset(&adjustedArgument[0], 0, (nbrLimbs - nbrLimbsDivisor)*sizeof(limb));

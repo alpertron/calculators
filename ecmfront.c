@@ -538,7 +538,15 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
             break;
           }
           BigIntRemainder(&Mult1, &K, &M1);  // M1 <- Mult1 % K
+          if (M1.sign == SIGN_NEGATIVE)
+          {
+            BigIntAdd(&M1, &K, &M1);
+          }
           BigIntRemainder(&Mult2, &K, &M2);  // M2 <- Mult2 % K
+          if (M2.sign == SIGN_NEGATIVE)
+          {
+            BigIntAdd(&M2, &K, &M2);
+          }
           CopyBigInt(&Tmp, &K);
           subtractdivide(&Tmp, -1, 2);       // Tmp <- (K+1) / 2
           BigIntSubt(&M1, &Tmp, &Tmp1);      // Tmp1 <- M1 - Tmp
