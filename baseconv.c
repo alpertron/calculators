@@ -129,9 +129,6 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
   int groupCtr, digit[DIGITS_PER_LIMB];
   int digits=0;
   int showDigitsText = TRUE;
-  unsigned int carry;
-  double dRangeLimb = (double)1000000000;
-  double dInvRangeLimb = 1 / dRangeLimb;
 
   if (groupLen <= 0)
   {

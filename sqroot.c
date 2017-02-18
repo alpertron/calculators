@@ -33,8 +33,8 @@ int bitLengthCycle[20];
 // a better approximation is: x(3-Nxx)/2. After the inverse square root is computed,
 // the square root is found just by multiplying by N.
 // The argument is multiplied by a power of 4 so the most significant limb is
-// between 8192 and 32767 and there is an even number of limbs. At the end of
-// the calculation, the result is divided by the power of 2.
+// between LIMB_RANGE/4 and LIMB_RANGE-1 and there is an even number of limbs.
+// At the end of the calculation, the result is divided by the power of 2.
 
 // All computations are done in little-endian notation.
 // Find power of 4 that divides the number.
@@ -46,7 +46,7 @@ static void MultiplyBigNbrByMinPowerOf4(/*@in@*/ int *pPower4, /*@in@*/limb *num
   int power2 = 0;
   limb mostSignficLimb;
   int index2, mask, shLeft;
-  limb carry;
+  limb prevLimb, currLimb;
   limb *ptrDest, *ptrSrc;
 
   ptrSrc = number;
@@ -60,7 +60,7 @@ static void MultiplyBigNbrByMinPowerOf4(/*@in@*/ int *pPower4, /*@in@*/limb *num
   }
   shLeft = 0;
   mostSignficLimb.x = (number + len - 1)->x;
-  for (mask = (MAX_VALUE_LIMB+1)/2; mask > 0; mask >>= 1)
+  for (mask = LIMB_RANGE/2; mask > 0; mask >>= 1)
   {
     if ((mostSignficLimb.x & mask) != 0)
     {
@@ -81,14 +81,13 @@ static void MultiplyBigNbrByMinPowerOf4(/*@in@*/ int *pPower4, /*@in@*/limb *num
     shLeft = power2;
   }
   // Multiply number by this power.
-  carry.x = 0;
-  for (index2 = len; index2 > 0; index2--)
+  prevLimb.x = 0;
+  for (index2 = len; index2 >= 0; index2--)
   {
-    carry.x += ((ptrSrc++)->x << shLeft);
-    (ptrDest++)->x = carry.x & MAX_VALUE_LIMB;
-    carry.x >>= BITS_PER_GROUP;
+    currLimb.x = (ptrSrc++)->x;
+    (ptrDest++)->x = ((currLimb.x << shLeft) | (prevLimb.x >> (BITS_PER_GROUP - shLeft))) & MAX_VALUE_LIMB;
+    prevLimb.x = currLimb.x;
   }
-  ptrDest->x = carry.x;
   *pPower4 = power4;
 }
 
@@ -97,15 +96,14 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
   int index, lenInvSqrt, lenInvSqrt2;
   int bitLength;
   int bitLengthNbrCycles;
-  limb arg;
   int idx;
-  limb carry, prev;
-  limb result, delta;
+  limb prev;
   limb *ptrApproxInvSqrt;
   limb *ptrArrAux;
   int shRight;
   limb *ptrDest, *ptrSrc;
   double invSqrt;
+  int prevLimb, currLimb;
 
   // Obtain logarithm of 2 of argument.
   for (index=len - 1; index>2; index--)
@@ -120,21 +118,25 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
   {                // Argument is small, so compute directly its square root.
     if (index == 0)
     {
-      arg.x = argument->x;
+      sqRoot->x = (int)floor(sqrt(argument->x)+0.000001);
     }
     else
     {
-      arg.x = ((argument+1)->x << BITS_PER_GROUP) + argument->x;
-    }
-    result.x = 0;
-    for (delta.x = 1 << (BITS_PER_GROUP-1); delta.x > 0; delta.x >>= 1)
-    {
-      if (arg.x >= (result.x + delta.x)*(result.x + delta.x))
+      double dArg = argument->x + (double)(argument + 1)->x*LIMB_RANGE;
+      int square[2];
+      dArg = floor(sqrt(dArg + 0.5));
+      if (dArg == (double)LIMB_RANGE)
       {
-        result.x += delta.x;
+        dArg = (double)MAX_VALUE_LIMB;
+      }
+      sqRoot->x = (int)dArg;
+      MultBigNbr(&sqRoot->x, &sqRoot->x, square, 1);
+      if (square[1] > (argument + 1)->x ||
+        (square[1] == (argument + 1)->x && square[0] > argument->x))
+      {
+        sqRoot->x--;
       }
     }
-    sqRoot->x = result.x;
     *pLenSqRoot = 1;    // Only one limb for result.
     return;
   }
@@ -147,10 +149,9 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
   lenInvSqrt = (len + 5)>> 1;
   memset(approxInvSqrt, 0, lenInvSqrt*sizeof(limb));
   // Initialize approximate inverse square root.
-  invSqrt = (1<<BITS_PER_GROUP) / sqrt((double)((adjustedArgument[len-1].x << BITS_PER_GROUP) + 
-                               adjustedArgument[len-2].x)+1);
+  invSqrt = LIMB_RANGE / sqrt(getMantissa(adjustedArgument+len, len)*LIMB_RANGE+1);
   approxInvSqrt[lenInvSqrt - 1].x = 1;
-  approxInvSqrt[lenInvSqrt - 2].x = (int)((invSqrt-1)*32768);
+  approxInvSqrt[lenInvSqrt - 2].x = (int)((invSqrt-1)*LIMB_RANGE);
 
                // Perform Newton approximation loop.
                // Get bit length of each cycle.
@@ -178,22 +179,20 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
     // Multiply by argument.
     multiply(&approxInv[limbLength-1], &adjustedArgument[len - limbLength], arrAux, limbLength, NULL);
     // Subtract arrAux from 3.
-    carry.x = 0;
     ptrArrAux = &arrAux[limbLength];
     for (idx = limbLength-1; idx > 0; idx--)
     {
-      carry.x -= ptrArrAux->x;
-      (ptrArrAux++)->x = carry.x & MAX_VALUE_LIMB;
-      carry.x >>= BITS_PER_GROUP;
+      ptrArrAux->x ^= MAX_VALUE_LIMB;
+      ptrArrAux++;
     }
-    ptrArrAux->x = 3 - ptrArrAux->x + carry.x;
+    ptrArrAux->x = 2 - ptrArrAux->x;
     // Divide arrAux by 2.
-    carry.x = 0;
+    prevLimb = 0;
     for (idx = limbLength; idx > 0; idx--)
     {
-      carry.x = ptrArrAux->x + (carry.x << BITS_PER_GROUP);
-      (ptrArrAux--)->x = carry.x >> 1;
-      carry.x &= 1;
+      currLimb = ptrArrAux->x;
+      (ptrArrAux--)->x = ((currLimb >> 1) | (prevLimb << (BITS_PER_GROUP - 1))) & MAX_VALUE_LIMB;
+      prevLimb = currLimb;
     }
     // Multiply arrAux by approxInvSqrt.
     multiply(ptrArrAux+1, &approxInvSqrt[lenInvSqrt-limbLength], approxInv, limbLength, NULL);
@@ -213,7 +212,7 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
   {                   // Increment square root.
     for (idx = 2 * lenInvSqrt - lenInvSqrt2-1; idx < 2*lenInvSqrt-1; idx++)
     {
-      if (++approxInv[idx].x < (1 << BITS_PER_GROUP))
+      if ((unsigned int)++approxInv[idx].x != LIMB_RANGE)
       {
         break;
       }
@@ -234,12 +233,14 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
                     // It is correct only if when squared, it is <= than the argument.
     ptrApproxInvSqrt = &approxInv[2 * lenInvSqrt - lenInvSqrt2-1];
     multiply(ptrApproxInvSqrt, ptrApproxInvSqrt, approxInvSqrt, lenInvSqrt2, NULL);
-    carry.x = 0;
-    for (idx = 0; idx < lenInvSqrt; idx++)
+    for (idx = lenInvSqrt-1; idx > 0; idx--)
     {
-      carry.x = (adjustedArgument[idx].x - approxInvSqrt[idx].x + carry.x) >> BITS_PER_GROUP;
+      if (adjustedArgument[idx].x != approxInvSqrt[idx].x)
+      {
+        break;
+      }
     }
-    if (carry.x != 0)
+    if (adjustedArgument[idx].x < approxInvSqrt[idx].x)
     {                // Incorrect square root: roll back.
       for (idx = 2 * lenInvSqrt - lenInvSqrt2-1; idx < 2 * lenInvSqrt-1; idx++)
       {
@@ -259,7 +260,8 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
   prev.x = 0;
   for (index = len; index > 0; index--)
   {
-    (ptrDest--)->x = (((prev.x << BITS_PER_GROUP) + ptrSrc->x) >> shRight) & MAX_VALUE_LIMB;
+    (ptrDest--)->x = ((prev.x << (BITS_PER_GROUP-shRight)) |
+                      (ptrSrc->x >> shRight)) & MAX_VALUE_LIMB;
     prev.x = (ptrSrc--)->x;
   }
 }

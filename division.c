@@ -70,13 +70,11 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, limb *number, int len, lim
   ptrDest->x = oldLimb.x >> (BITS_PER_GROUP - shLeft);
   *pPower2 = shLeft;
 }
-
 // After computing the number of limbs of the results, this routine finds the inverse
 // of the divisor and then multiplies it by the dividend using nbrLimbs+1 limbs.
 // After that, the quotient is adjusted.
 enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteger *pQuotient)
 {
-  limb carry;
   double inverse;
   limb oldLimb, newLimb;
   int nbrLimbs, nbrLimbsDividend, nbrLimbsDivisor;
@@ -119,6 +117,12 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     pQuotient->limbs[0].x = pDividend->limbs[0].x / pDivisor->limbs[0].x;
     pQuotient->nbrLimbs = 1;
   }
+  else if (nbrLimbsDivisor == 1)
+  {   // Divisor is small: use divide by int.
+      // Sign of quotient is determined later.
+    CopyBigInt(pQuotient, pDividend);
+    subtractdivide(pQuotient, 0, pDivisor->limbs[0].x);
+  }
   else
   {
     int index;
@@ -128,9 +132,9 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     int nbrLimbsQuotient;
     int power2;
     limb *ptrDest;
-    limb *ptrDivisor, *ptrDividend, *ptrQuotient;
-
-    nbrLimbs += 2;    // Use this number of limbs for intermediate calculations.
+    limb *ptrDivisor, *ptrDividend, *ptrQuotient, *ptrQuot;
+    
+    nbrLimbs += 3;    // Use this number of limbs for intermediate calculations.
     if (nbrLimbs > nbrLimbsDivisor)
     {
       memset(&adjustedArgument[0], 0, (nbrLimbs - nbrLimbsDivisor)*sizeof(limb));
@@ -168,18 +172,16 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
         limbLength = nbrLimbs;
       }
       // Compute x(2-Nx).
-      // Multiply by argument.
+      // Multiply by divisor.
       multiply(&approxInv[nbrLimbs-limbLength], &adjustedArgument[nbrLimbs - limbLength], arrAux, limbLength, NULL);
       // Subtract arrAux from 2.
-      carry.x = 0;
       ptrArrAux = &arrAux[limbLength];
       for (idx = limbLength - 1; idx > 0; idx--)
       {
-        carry.x = -ptrArrAux->x + carry.x;
-        (ptrArrAux++)->x = carry.x & MAX_VALUE_LIMB;
-        carry.x >>= BITS_PER_GROUP;
+        ptrArrAux->x = MAX_VALUE_LIMB - ptrArrAux->x;
+        ptrArrAux++;
       }
-      ptrArrAux->x = 2 - ptrArrAux->x + carry.x;
+      ptrArrAux->x = 1 - ptrArrAux->x;
       // Multiply arrAux by approxInv.
       multiply(&arrAux[limbLength], &approxInv[nbrLimbs - limbLength], approxInv, limbLength, NULL);
       memmove(&approxInv[nbrLimbs - limbLength], &approxInv[limbLength - 1], limbLength*sizeof(limb));
@@ -196,42 +198,50 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
       multiply(arrAux, approxInv, approxInv, nbrLimbs, NULL);
     }             // approxInv holds the quotient.
     // Shift left quotient power2 bits into result.
-    ptrDest = &approxInv[nbrLimbs-1];
+    ptrDest = &approxInv[nbrLimbs - 1];
     oldLimb.x = 0;
     for (index = nbrLimbs; index >= 0; index--)
     {
       newLimb.x = ptrDest->x;
       (ptrDest++)->x = ((newLimb.x << power2) |
-                        (oldLimb.x >> (BITS_PER_GROUP-power2))) & MAX_VALUE_LIMB;
+        (oldLimb.x >> (BITS_PER_GROUP - power2))) & MAX_VALUE_LIMB;
       oldLimb.x = newLimb.x;
     }
+
     // Determine number of limbs of quotient.
     nbrLimbsQuotient = nbrLimbsDividend - nbrLimbsDivisor;
-    ptrDivisor = &pDivisor->limbs[nbrLimbsDivisor];
-    ptrDividend = &pDividend->limbs[nbrLimbsDividend];
-    for (idx = nbrLimbsDivisor; idx > 0; idx--)
+    ptrDivisor = &pDivisor->limbs[nbrLimbsDivisor - 1];
+    ptrDividend = &pDividend->limbs[nbrLimbsDividend - 1];
+    for (idx = nbrLimbsDivisor - 1; idx > 0; idx--)
     {
-      if ((--ptrDividend)->x != (--ptrDivisor)->x)
+      if (ptrDividend->x != ptrDivisor->x)
       {
         break;
       }
+      ptrDividend--;
+      ptrDivisor--;
     }
-    ptrQuotient = &approxInv[2 * nbrLimbs - nbrLimbsQuotient - 1];
-    if ((idx > 0 && ptrDividend->x > ptrDivisor->x) || idx <= 0)
+    if (ptrDividend->x >= ptrDivisor->x)
     {
       nbrLimbsQuotient++;
     }
+    ptrQuotient = &approxInv[2 * nbrLimbs - nbrLimbsQuotient];
+    if (approxInv[2 * nbrLimbs - 1].x == 0)
+    {  // Most significant byte is zero, so it is not part of the quotient. 
+      ptrQuotient--;
+    }
+    ptrQuot = ptrQuotient;
     if ((ptrQuotient - 1)->x > (7 << (BITS_PER_GROUP - 3)))
     {                   // Increment quotient.
-      for (idx = 0; idx < nbrLimbsQuotient; idx++)
+      for (idx = 0; idx <= nbrLimbsQuotient; idx++)
       {
-        if ((unsigned int)++((ptrQuotient+idx)->x) < LIMB_RANGE)
+        if ((unsigned int)(++((ptrQuotient + idx)->x)) != LIMB_RANGE)
         {
           break;
         }
         (ptrQuotient + idx)->x = 0;
       }
-      if (idx == nbrLimbsQuotient)
+      if (idx >= nbrLimbsQuotient)
       {                // Roll back on overflow.
         for (idx = 0; idx < nbrLimbsQuotient; idx++)
         {
@@ -242,57 +252,53 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
           (ptrQuotient + idx)->x = MAX_VALUE_LIMB;
         }
       }
+      if (approxInv[2 * nbrLimbs - 1].x != 0)
+      {    // Most significant byte is not zero, so it is part of the quotient.
+        ptrQuot = &approxInv[2 * nbrLimbs - nbrLimbsQuotient];
+      }
       // Test whether the quotient is correct.
       // It is correct only if multiplied by the divisor, it is <= than the dividend.
       if (nbrLimbsQuotient > nbrLimbsDivisor)
       {
-        memcpy(&approxInv[0], pDivisor->limbs, nbrLimbsDivisor*sizeof(limb));
-        memset(&approxInv[nbrLimbsDivisor], 0, (nbrLimbsQuotient - nbrLimbsDivisor)*sizeof(limb));
-        multiply(&approxInv[0], &approxInv[2 * nbrLimbs - nbrLimbsQuotient], arrAux, nbrLimbsQuotient, NULL);
+        memcpy(&approxInv[0], pDivisor->limbs, nbrLimbsDivisor * sizeof(limb));
+        memset(&approxInv[nbrLimbsDivisor], 0, (nbrLimbsQuotient - nbrLimbsDivisor) * sizeof(limb));
+        multiply(&approxInv[0], ptrQuot, arrAux, nbrLimbsQuotient, NULL);
       }
       else
       {
-        memset(&approxInv[2 * nbrLimbs], 0, (nbrLimbsDivisor - nbrLimbsQuotient)*sizeof(limb));
-        multiply(pDivisor->limbs, &approxInv[2 * nbrLimbs - nbrLimbsQuotient], arrAux, nbrLimbsDivisor, NULL);
+        memset(&approxInv[2 * nbrLimbs], 0, (nbrLimbsDivisor - nbrLimbsQuotient) * sizeof(limb));
+        multiply(pDivisor->limbs, ptrQuot, arrAux, nbrLimbsDivisor, NULL);
       }
-      ptrDividend = &pDividend->limbs[0];
-      ptrDest = &arrAux[0];
-      carry.x = 0;
-      for (idx = pDividend->nbrLimbs; idx > 0; idx--)
+      ptrDividend = &pDividend->limbs[pDividend->nbrLimbs - 1];
+      ptrDest = &arrAux[pDividend->nbrLimbs - 1];
+      for (idx = pDividend->nbrLimbs - 1; idx > 0; idx--)
       {
-        carry.x += (ptrDividend++)->x - (ptrDest++)->x;
-        carry.x >>= BITS_PER_GROUP;
+        if (ptrDividend->x != ptrDest->x)
+        {
+          break;
+        }
+        ptrDividend--;
+        ptrDest--;
       }
-      ptrDest = &pQuotient->limbs[0];
-      if (carry.x != 0)
+      if (ptrDividend->x < ptrDest->x)
       {  // Decrement quotient.
-        carry.x = -1;
+        ptrQuotient = ptrQuot;
         for (idx = 0; idx < nbrLimbsQuotient; idx++)
         {
-          carry.x += (ptrQuotient++)->x;
-          (ptrDest++)->x = carry.x & MAX_VALUE_LIMB;
-          carry.x >>= BITS_PER_GROUP;
+          if (--(ptrQuotient->x) >= 0)
+          {
+            break;
+          }
+          (ptrQuotient++)->x = MAX_VALUE_LIMB;
         }
-        if (carry.x != 0)
+        if (idx == nbrLimbsQuotient)
         {
-          pQuotient->nbrLimbs = nbrLimbsQuotient - 1;
-        }
-        else
-        {
-          pQuotient->nbrLimbs = nbrLimbsQuotient;
+          nbrLimbsQuotient--;
         }
       }
-      else
-      {
-        memcpy(ptrDest, ptrQuotient, nbrLimbsQuotient*sizeof(limb));
-        pQuotient->nbrLimbs = nbrLimbsQuotient;
-      }
     }
-    else
-    {
-      memcpy(&pQuotient->limbs[0], ptrQuotient, nbrLimbsQuotient*sizeof(limb));
-      pQuotient->nbrLimbs = nbrLimbsQuotient;
-    }
+    memcpy(&pQuotient->limbs[0], ptrQuot, nbrLimbsQuotient*sizeof(limb));
+    pQuotient->nbrLimbs = nbrLimbsQuotient;
   }
   if (pDividend->sign == pDivisor->sign || (pQuotient->limbs[0].x == 0 && pQuotient->nbrLimbs == 1))
   {

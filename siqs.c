@@ -1068,9 +1068,8 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
   {   // Dividend has at least two limbs.
     unsigned char mostSignificantLimbZero = FALSE;
     double dRem, dCurrentPrime;
-    double dDivid, dLimbMult;
-    int LimbMult = 1 << BITS_PER_INT_GROUP;
-    int quot, Dividend;
+    double dDivid, dLimbMult, dQuot;
+    int Dividend;
     int nbr, iRem, Rem;
     int left, right, median;
     unsigned char fullRemainder;
@@ -1195,7 +1194,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         {
           rowSquares[nbrSquares++] = (int)Divisor;
         }
-        Rem = 0;
+        dRem = 0;
         // Perform division
         dLimbMult = (double)(1U << BITS_PER_INT_GROUP);
         dCurrentPrime = (double)divis;
@@ -1203,39 +1202,39 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         {
         case 7:     // {biR6 - biR0} <- {biR6 - biR0} / divis
           Dividend = biR6;
-          Rem = Dividend - (biR6 = Dividend / Divisor) * Divisor;
+          dRem = (double)(Dividend - (biR6 = Dividend / Divisor) * Divisor);
           /* no break */
         case 6:     // {biR5 - biR0} <- {biR5 - biR0} / divis
-          dDivid = (double)biR5 + (double)Rem*dLimbMult;
-          quot = (int)(dDivid / dCurrentPrime);
-          Rem = biR5 + Rem*LimbMult - quot * divis;
-          biR5 = quot;
+          dDivid = (double)biR5 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
+          dRem = dDivid - dQuot * dCurrentPrime;
+          biR5 = (int)dQuot;
           /* no break */
         case 5:     // {biR4 - biR0} <- {biR4 - biR0} / divis
-          dDivid = (double)biR4 + (double)Rem*dLimbMult;
-          quot = (int)(dDivid / dCurrentPrime);
-          Rem = biR4 + Rem*LimbMult - quot * divis;
-          biR4 = quot;
+          dDivid = (double)biR4 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
+          dRem = dDivid - dQuot * dCurrentPrime;
+          biR4 = (int)dQuot;
           /* no break */
         case 4:     // {biR3 - biR0} <- {biR3 - biR0} / divis
-          dDivid = (double)biR3 + (double)Rem*dLimbMult;
-          quot = (int)(dDivid / dCurrentPrime);
-          Rem = biR3 + Rem*LimbMult - quot * divis;
-          biR3 = quot;
+          dDivid = (double)biR3 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
+          dRem = dDivid - dQuot * dCurrentPrime;
+          biR3 = (int)dQuot;
           /* no break */
         case 3:     // {biR2 - biR0} <- {biR2 - biR0} / divis
-          dDivid = (double)biR2 + (double)Rem*dLimbMult;
-          quot = (int)(dDivid / dCurrentPrime);
-          Rem = biR2 + Rem*LimbMult - quot * divis;
-          biR2 = quot;
+          dDivid = (double)biR2 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
+          dRem = dDivid - dQuot * dCurrentPrime;
+          biR2 = (int)dQuot;
           /* no break */
         case 2:     // {biR1 - biR0} <- {biR1 - biR0} / divis
-          dDivid = (double)biR1 + (double)Rem*dLimbMult;
-          quot = (int)(dDivid / dCurrentPrime);
-          Rem = biR1 + Rem*LimbMult - quot * divis;
-          biR1 = quot;
-          dDivid = (double)biR0 + (double)Rem*dLimbMult;
-          biR0 = (int)(dDivid / dCurrentPrime);
+          dDivid = (double)biR1 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
+          dRem = dDivid - dQuot * dCurrentPrime;
+          biR1 = (int)dQuot;
+          dDivid = (double)biR0 + dRem*dLimbMult;
+          biR0 = (int)floor(dDivid / dCurrentPrime);
         }
         switch (NumberLengthDividend)
         {
@@ -1486,7 +1485,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         {
           rowSquares[nbrSquares++] = (int)Divisor;
         }
-        Rem = 0;
+        dRem = 0;
         // Perform division
         dLimbMult = (double)(1U << BITS_PER_INT_GROUP);
         dCurrentPrime = (double)divis;
@@ -1494,39 +1493,39 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         {
         case 7:     // {biR6 - biR0} <- {biR6 - biR0} / divis
           Dividend = biR6;
-          Rem = Dividend - (biR6 = Dividend / Divisor) * Divisor;
+          dRem = (double)(Dividend - (biR6 = Dividend / Divisor) * Divisor);
           /* no break */
         case 6:     // {biR5 - biR0} <- {biR5 - biR0} / divis
-          dDivid = (double)biR5 + (double)Rem*dLimbMult;
-          quot = (int)(dDivid / dCurrentPrime);
-          Rem = biR5 + Rem*LimbMult - quot * divis;
-          biR5 = quot;
+          dDivid = (double)biR5 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
+          dRem = dDivid - dQuot * dCurrentPrime;
+          biR5 = (int)dQuot;
           /* no break */
         case 5:     // {biR4 - biR0} <- {biR4 - biR0} / divis
-          dDivid = (double)biR4 + (double)Rem*dLimbMult;
-          quot = (int)(dDivid / dCurrentPrime);
-          Rem = biR4 + Rem*LimbMult - quot * divis;
-          biR4 = quot;
+          dDivid = (double)biR4 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
+          dRem = dDivid - dQuot * dCurrentPrime;
+          biR4 = (int)dQuot;
           /* no break */
         case 4:     // {biR3 - biR0} <- {biR3 - biR0} / divis
-          dDivid = (double)biR3 + (double)Rem*dLimbMult;
-          quot = (int)(dDivid / dCurrentPrime);
-          Rem = biR3 + Rem*LimbMult - quot * divis;
-          biR3 = quot;
+          dDivid = (double)biR3 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
+          dRem = dDivid - dQuot * dCurrentPrime;
+          biR3 = (int)dQuot;
           /* no break */
         case 3:     // {biR2 - biR0} <- {biR2 - biR0} / divis
-          dDivid = (double)biR2 + (double)Rem*dLimbMult;
-          quot = (int)(dDivid / dCurrentPrime);
-          Rem = biR2 + Rem*LimbMult - quot * divis;
-          biR2 = quot;
+          dDivid = (double)biR2 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
+          dRem = dDivid - dQuot * dCurrentPrime;
+          biR2 = (int)dQuot;
           /* no break */
         case 2:     // {biR1 - biR0} <- {biR1 - biR0} / divis
-          dDivid = (double)biR1 + (double)Rem*dLimbMult;
-          quot = (int)(dDivid / dCurrentPrime);
-          Rem = biR1 + Rem*LimbMult - quot * divis;
-          biR1 = quot;
-          dDivid = (double)biR0 + (double)Rem*dLimbMult;
-          biR0 = (int)(dDivid / dCurrentPrime);
+          dDivid = (double)biR1 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
+          dRem = dDivid - dQuot * dCurrentPrime;
+          biR1 = (int)dQuot;
+          dDivid = (double)biR0 + dRem*dLimbMult;
+          biR0 = (int)floor(dDivid / dCurrentPrime);
         }
         switch (NumberLengthDividend)
         {
@@ -2620,6 +2619,7 @@ static int EraseSingletons(int nbrPrimes)
   int row, column, delta;
   int *rowMatrixB;
   int matrixBlength = matrixBLength;
+
   memset(newColumns, 0, matrixBlength*sizeof(int));
   // Find singletons in matrixB storing in array vectExpParity the number
   // of primes in each column.
@@ -2691,7 +2691,7 @@ static unsigned char LinearAlgebraPhase(
   int *biT, int *biR, int *biU,
   int NumberLength)
 {
-  int mask, row, col, j;
+  int mask, row, col, j, i;
   int *rowMatrixB;
   int primeIndex;
   // Get new number of rows after erasing singletons.
@@ -2779,7 +2779,7 @@ static unsigned char InsertNewRelation(
   int *biT, int *biU, int *biR,
   int NumberLengthMod)
 {
-  int i, k;
+  int i, k, j;
   int nbrColumns = rowMatrixB[LENGTH_OFFSET];
   // Insert it only if it is different from previous relations.
   if (congruencesFound >= matrixBLength)
@@ -2820,7 +2820,7 @@ static unsigned char InsertNewRelation(
   }
   /* Convert negative numbers to the range 0 <= n < Modulus */
   if ((Modulus[0] & 1) == 0)
-  {
+  {             // Even modulus.
     DivBigNbrByInt(Modulus, 2, TestNbr2, NumberLengthMod);
     // If biR >= Modulus perform biR = biR - Modulus.
     for (k = 0; k < NumberLengthMod; k++)
@@ -2831,7 +2831,7 @@ static unsigned char InsertNewRelation(
     ModInvBigInt(biR, biT, TestNbr2, NumberLengthMod);
   }
   else
-  {
+  {             // Odd modulus
     ModInvBigInt(biR, biT, Modulus, NumberLengthMod);
   }
   if ((biU[NumberLengthMod - 1] & HALF_INT_RANGE) != 0)

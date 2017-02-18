@@ -159,7 +159,7 @@ void DivBigNbrByInt(int *pDividend, int divisor, int *pQuotient, int nbrLen)
     int quotient, dividend;
     dividend = (remainder << BITS_PER_INT_GROUP) + *pDividend;
     dDividend = (double)remainder * dLimb + *pDividend;
-    dQuotient = dDividend / dDivisor + 0.5;
+    dQuotient = floor(dDividend / dDivisor + 0.5);
     quotient = (int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - quotient * divisor;
     if ((unsigned int)remainder >= (unsigned int)divisor)
@@ -185,7 +185,7 @@ int RemDivBigNbrByInt(int *pDividend, int divisor, int nbrLen)
     double dQuotient, dDividend;
     dividend = (remainder << BITS_PER_INT_GROUP) + *pDividend;
     dDividend = (double)remainder * dLimb + *pDividend;
-    dQuotient = dDividend / dDivisor + 0.5;
+    dQuotient = floor(dDividend / dDivisor + 0.5);
     quotient = (int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - quotient * divisor;
     if ((unsigned int)remainder >= (unsigned int)divisor)
@@ -254,9 +254,7 @@ void IntToBigNbr(int value, int *bigNbr, int nbrLength)
 int BigNbrToBigInt(BigInteger *pBigNbr, int *pBigInt)
 {
   int ctr;
-  int currentValue = 0;
   int nbrLenBigNbr = pBigNbr->nbrLimbs;
-  int curShift = 0;
   int *ptrBigInt = pBigInt;
   limb *ptrLimb = pBigNbr->limbs;
   for (ctr = 0; ctr < nbrLenBigNbr; ctr++)
@@ -269,8 +267,6 @@ int BigNbrToBigInt(BigInteger *pBigNbr, int *pBigInt)
 void BigIntToBigNbr(BigInteger *pBigNbr, int *pBigInt, int nbrLenBigInt)
 {
   int ctr, nbrLimbs;
-  unsigned int currentValue = 0;
-  int curShift = 0;
   int *ptrBigInt = pBigInt;
   limb *ptrLimb = pBigNbr->limbs;
   pBigNbr->sign = SIGN_POSITIVE;
@@ -299,42 +295,9 @@ void GcdBigNbr(int *pNbr1, int *pNbr2, int *pGcd, int nbrLen)
   BigNbrToBigInt(&BigGcd, pGcd);
 }
 
-void AdjustBigIntModN(int Nbr[], int Mod[], int nbrLen)
+void AdjustBigIntModN(int *Nbr, int *Mod, int nbrLen)
 {
-  int MaxUInt = MAX_INT_NBR;
-  int TrialQuotient;
-  double dAux, dN;
-  double dMaxInt = (double)(1U << BITS_PER_INT_GROUP);
-
-  dN = (double)Mod[nbrLen - 1];
-  if (nbrLen > 1)
-  {
-    dN += (double)Mod[nbrLen - 2] / dMaxInt;
-  }
-  if (nbrLen > 2)
-  {
-    dN += (double)Mod[nbrLen - 3] / (dMaxInt*dMaxInt);
-  }
-  dAux = (double)Nbr[nbrLen] * dMaxInt + (double)Nbr[nbrLen - 1];
-  if (nbrLen > 1)
-  {
-    dAux += (double)Nbr[nbrLen - 2] / dMaxInt;
-  }
-  if (nbrLen > 2)
-  {
-    dAux += (double)Nbr[nbrLen - 3] / (dMaxInt*dMaxInt);
-  }
-  TrialQuotient = (long)(dAux / dN) + 3;
-  if (TrialQuotient < 0)
-  {     // Exceeded maximum value for TrialQuotient.
-    TrialQuotient = MaxUInt;
-  }
-  MultBigNbrByInt(Mod, TrialQuotient, NbrBak, nbrLen + 1);
-  SubtractBigNbr(Nbr, NbrBak, Nbr, nbrLen + 1);
-  while (Nbr[nbrLen] != 0)
-  {
-    AddBigNbr(Nbr, Mod, Nbr, nbrLen + 1);
-  }
+  AdjustModN((limb *)Nbr, (limb *)Mod, nbrLen);
 }
 
 void MultBigNbrModN(int Nbr1[], int Nbr2[], int Prod[], int Mod[], int nbrLen)
@@ -371,8 +334,7 @@ void MultBigNbrByIntModN(int Nbr1[], int Nbr2, int Prod[], int Mod[], int nbrLen
     nbrLen--;
   }
   Nbr1[nbrLen] = 0;
-  MultBigNbrByInt(Nbr1, Nbr2, Prod, nbrLen + 1);
-  AdjustBigIntModN(Prod, Mod, nbrLen);
+  modmultIntExtended((limb *)Nbr1, Nbr2, (limb *)Prod, (limb *)Mod, nbrLen);
 }
 
 int intDoubleModPow(int NbrMod, int Expon, int currentPrime)

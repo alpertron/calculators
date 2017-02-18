@@ -43,9 +43,15 @@ extern long long lModularMult;
 #define TYP_RABIN  300000000
 #define TYP_EC     350000000
 
-#define SIEVE_SIZE (2*3*5*7)
+#define MAX_PRIME_SIEVE 11  // Only numbers 7 or 11 are accepted here.
+#if MAX_PRIME_SIEVE == 11
+  #define SIEVE_SIZE (2*3*5*7*11)
+  #define GROUP_SIZE ((2-1)*(3-1)*(5-1)*(7-1)*(11-1))
+#else
+  #define SIEVE_SIZE (2*3*5*7)
+  #define GROUP_SIZE ((2-1)*(3-1)*(5-1)*(7-1))
+#endif
 #define HALF_SIEVE_SIZE (SIEVE_SIZE/2)
-#define GROUP_SIZE ((2-1)*(3-1)*(5-1)*(7-1))
 
 char factorsAscii[10000];
 static int nbrPrimes, indexPrimes, StepECM, DegreeAurif;
@@ -456,8 +462,13 @@ static void GenerateSieve(int initial)
   {
     memcpy(&sieve[i], sieve2310, SIEVE_SIZE);
   }
+#if MAX_PRIME_SIEVE == 11
   j = 5;
   Q = 13; /* Point to prime 13 */
+#else
+  j = 4;
+  Q = 11; /* Point to prime 11 */
+#endif
   do
   {
     if (initial > Q * Q)
@@ -496,23 +507,11 @@ static void GenerateSieve(int initial)
       }
     }
     Q = SmallPrime[++j];
+#if MAX_PRIME_SIEVE == 11
   } while (Q < 5000);
-}
-
-static void intToBigInteger(BigInteger *bigint, int value)
-{
-  if (value >= LIMB_RANGE)
-  {
-    bigint->nbrLimbs = 2;
-    bigint->limbs[0].x = value & MAX_VALUE_LIMB;
-    bigint->limbs[1].x = value >> BITS_PER_GROUP;
-  }
-  else
-  {
-    bigint->nbrLimbs = 1;
-    bigint->limbs[0].x = value;
-  }
-  bigint->sign = SIGN_POSITIVE;
+#else
+  } while (Q < 10*SIEVE_SIZE);
+#endif
 }
 
 int JacobiSymbol(int M, int Q)
@@ -1010,7 +1009,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
   for (i = 2; i < nbrPrimes; i++)
   {
     if (primes[i>>3] & (1 << (i & 7)))
-    {      // i is prime.
+    {      // i is prime according to sieve.
       unsigned int remainder;
       int index;
       longToBigInteger(&Temp1, (unsigned int)i*(unsigned int)i);
@@ -1135,10 +1134,8 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
   int nbrs[17];
   int diffs[17];
   int i, j, m, r;
-  int mostSignificantLimb;
-  double logSquareRoot;
-  BigInteger root, rootN, dif, nextroot;
-  BigInteger a, c, d, sqr, val;
+  BigInteger root, nextroot;
+  BigInteger a, c, sqr, val;
   if ((nbr->limbs[0].x & 1) == 0)
   { // nbr Even
     r = 0;
@@ -1159,41 +1156,8 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
   }
   intToBigInteger(&sqr, k<<2);
   BigIntMultiply(&sqr, nbr, &sqr);
-  // Obtain approximate square root of sqr in root.
-  logSquareRoot = logBigNbr(&sqr) / (2 * log(2));   // logarithm of square root of sqr
+  squareRoot(sqr.limbs, root.limbs, sqr.nbrLimbs, &root.nbrLimbs);
   root.sign = SIGN_POSITIVE;
-  root.nbrLimbs = (int)floor(logSquareRoot / BITS_PER_GROUP);
-  mostSignificantLimb = (int)floor(exp((logSquareRoot - BITS_PER_GROUP*root.nbrLimbs) * log(2)))+1;
-  if (mostSignificantLimb == LIMB_RANGE)
-  {
-    mostSignificantLimb = 1;
-    root.nbrLimbs++;
-  }
-  memset(root.limbs, 0, root.nbrLimbs * sizeof(limb));
-  root.limbs[root.nbrLimbs].x = mostSignificantLimb;
-  root.nbrLimbs++;
-  for (;;)
-  {    // Newton loop that finds the real square root.
-       // root <- (sqr/root + root)/2
-    BigIntMultiply(&root, &root, &rootN);  // rootN <- root * root
-    BigIntSubt(&sqr, &rootN, &dif);        // dif <- sqr - rootN
-    if (dif.nbrLimbs == 1 && dif.limbs[0].x == 0)
-    { // sqr is Perfect square.
-      break;
-    }
-    addbigint(&dif, 1);                    // dif <- dif + 1
-    multint(&d, &root, 2);                 // d <- 2 * root
-    BigIntDivide(&dif, &d, &a);            // a <- dif / d
-    BigIntAdd(&a, &root, &nextroot);       // nextroot <- a + root
-    addbigint(&nextroot, -1);              // nextroot <- nextroot - 1
-    BigIntSubt(&nextroot, &root, &root);   // root <- nextroot - root
-    if (root.sign == SIGN_POSITIVE)
-    {
-      CopyBigInt(&root, &nextroot);           // root <- nextroot
-      break;    // Not a perfect power.
-    }
-    CopyBigInt(&root, &nextroot);           // root <- nextroot
-  }
   CopyBigInt(&a, &root);
   for (;;)
   {
@@ -1239,32 +1203,8 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
       BigIntAdd(&a, &c, &val);
       BigIntMultiply(&val, &val, &c);       // c <- val * val
       BigIntSubt(&c, &sqr, &c);             // c <- val * val - sqr
-
-      // Obtain approximate square root of c in root.
-      logSquareRoot = logBigNbr(&c) / 2;   // logarithm of square root of sqr
-      expBigNbr(&root, logSquareRoot);     // root is an approximation to the square root.
-      for(;;)
-      {    // Newton loop that finds the real square root.
-           // root <- (c/root + root)/2
-        BigIntMultiply(&root, &root, &rootN);  // rootN <- root * root
-        BigIntSubt(&c, &rootN, &dif);          // dif <- c - rootN
-        if (dif.nbrLimbs == 1 && dif.limbs[0].x == 0)
-        { // sqr is Perfect square.
-          break;
-        }
-        addbigint(&dif, 1);                    // dif <- dif + 1
-        multint(&d, &root, 2);                 // d <- 2 * root
-        BigIntDivide(&dif, &d, &a);            // a <- dif / d
-        BigIntAdd(&a, &root, &nextroot);       // nextroot <- a + root
-        addbigint(&nextroot, -1);              // nextroot <- nextroot - 1
-        BigIntSubt(&nextroot, &root, &root);   // root <- nextroot - root
-        if (root.sign == SIGN_POSITIVE)
-        {
-          CopyBigInt(&root, &nextroot);        // root <- nextroot
-          break;    // Not a perfect power.
-        }
-        CopyBigInt(&root, &nextroot);          // root <- nextroot
-      }
+      squareRoot(sqr.limbs, c.limbs, sqr.nbrLimbs, &c.nbrLimbs);
+      root.sign = SIGN_POSITIVE;
       BigIntAdd(&root, &val, &root);
       BigIntGcd(&root, nbr, &c);
       if (c.nbrLimbs > 1)
@@ -1538,7 +1478,11 @@ static enum eEcmResult ecmCurve(BigInteger *N)
         sieve2310[i] =
           (u % 3 == 0
             || u % 5 == 0
-            || u % 7 == 0? (unsigned char)1 : (unsigned char)0);
+            || u % 7 == 0
+#if MAX_PRIME_SIEVE == 11
+            || u % 11 == 0
+#endif
+            ? (unsigned char)1 : (unsigned char)0);
         u += 2;
       }
       do
@@ -1551,9 +1495,13 @@ static enum eEcmResult ecmCurve(BigInteger *N)
         for (i = 0; i < 10*SIEVE_SIZE; i++)
         {
           if (sieve[i] != 0)
+          {
             continue; /* Do not process composites */
+          }
           if (P + 2 * i > L1)
+          {
             break;
+          }
           indexPrimes++;
           prac((int)(P + 2 * i), X, Z, W1, W2, W3, W4);
           if (Pass == 0)
@@ -1581,7 +1529,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
         }
         if (gcdIsOne(GcdAccumulated) > 1)
         {
-          return 1;
+          return FACTOR_FOUND;
         }
         break;
       }
@@ -1594,7 +1542,11 @@ static enum eEcmResult ecmCurve(BigInteger *N)
     j = 0;
     for (u = 1; u < SIEVE_SIZE; u += 2)
     {
-      if (u % 3 == 0 || u % 5 == 0 || u % 7 == 0)
+      if (u % 3 == 0 || u % 5 == 0 || u % 7 == 0
+#if MAX_PRIME_SIEVE == 11
+        || u % 11 == 0
+#endif
+        )
       {
         sieve2310[u / 2] = (unsigned char)1;
       }
@@ -1669,7 +1621,11 @@ static enum eEcmResult ecmCurve(BigInteger *N)
           memcpy(DX, X, NumberLength * sizeof(limb));
           memcpy(DZ, Z, NumberLength * sizeof(limb));  // (DX:DZ) -> HALF_SIEVE_SIZE*Q
         }
-        if (I % 3 != 0 && I % 5 != 0 && I % 7 != 0)
+        if (I % 3 != 0 && I % 5 != 0 && I % 7 != 0
+#if MAX_PRIME_SIEVE == 11
+          && I % 11 != 0
+#endif
+          )
         {
           J++;
           ModInvBigNbr(Z, Aux1, TestNbr, NumberLength);
@@ -1912,6 +1868,7 @@ void SendFactorizationToOutput(enum eExprErr rc, struct sFactors *pstFactors, ch
         ptrOutput += strlen(ptrOutput);
         for (;;)
         {
+          NumberLength = *pstFactor->ptrFactor;
           UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
           Bin2Dec(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
           ptrOutput += strlen(ptrOutput);
@@ -2085,7 +2042,7 @@ static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor)
   int factorNumber;
   int lastFactorNumber = pstFactors->multiplicity;
   struct sFactors *pstNewFactor = pstFactors + lastFactorNumber + 1;
-
+  int *ptrNewFactorLimbs = pstFactors->ptrFactor;
   pstCurFactor = pstFactors + 1;
   for (factorNumber = 1; factorNumber <= lastFactorNumber; factorNumber++, pstCurFactor++)
   {     // For each known factor...
@@ -2104,15 +2061,16 @@ static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor)
     // At this moment both GCD and known factor / GCD are new known factors. Replace the known factor by
     // known factor / GCD and generate a new known factor entry.
     NumberLength = Temp3.nbrLimbs;
-    CompressBigInteger(pstFactors->ptrFactor, &Temp3);  // Append new known factor.
+    CompressBigInteger(ptrNewFactorLimbs, &Temp3);      // Append new known factor.
     BigIntDivide(&Temp2, &Temp3, &Temp4);               // Divide by this factor.
     NumberLength = Temp4.nbrLimbs;
     CompressBigInteger(ptrFactor, &Temp4);              // Overwrite old known factor.
     pstNewFactor->multiplicity = pstCurFactor->multiplicity;
-    pstNewFactor->ptrFactor = pstFactors->ptrFactor;
+    pstNewFactor->ptrFactor = ptrNewFactorLimbs;
     pstNewFactor->upperBound = pstCurFactor->upperBound;
     pstNewFactor++;
     pstFactors->multiplicity++;
+    ptrNewFactorLimbs += 1 + Temp3.nbrLimbs;
   }
   // Sort factors in ascending order. If two factors are equal, coalesce them.
   // Divide number by factor just found.
@@ -2177,6 +2135,7 @@ static void SaveFactors(struct sFactors *pstFactors)
     {
       *ptrText++ = '*';
     }
+    NumberLength = *pstCurFactor->ptrFactor;
     UncompressBigInteger(pstCurFactor->ptrFactor, &bigint);
     bigint.sign = SIGN_POSITIVE;
     BigInteger2Dec(&bigint, ptrText, -100000);
@@ -2232,7 +2191,7 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
   struct sFactors *pstCurFactor;
   int factorNbr, expon;
   int remainder, nbrLimbs, ctr;
-  int *ptrValue, *ptrFactor;
+  int *ptrFactor;
   int dividend, multiplicity;
   int factorUpperBound;
   int restartFactoring = FALSE;
@@ -2373,6 +2332,7 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
       continue;
     }
     // No small factor. Check whether the number is prime or prime power.
+    NumberLength = *pstCurFactor->ptrFactor;
     UncompressBigInteger(pstCurFactor->ptrFactor, &power);
     NumberLength = power.nbrLimbs;
     expon = PowerCheck(&power, &prime);

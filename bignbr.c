@@ -238,6 +238,21 @@ enum eExprErr BigIntRemainder(BigInteger *pDividend, BigInteger *pDivisor, BigIn
   return EXPR_OK;
 }
 
+void intToBigInteger(BigInteger *bigint, int value)
+{
+  if (value >= 0)
+  {
+    bigint->limbs[0].x = value;
+    bigint->sign = SIGN_POSITIVE;
+  }
+  else
+  {
+    bigint->limbs[0].x = -value;
+    bigint->sign = SIGN_NEGATIVE;
+  }
+  bigint->nbrLimbs = 1;
+}
+
 void longToBigInteger(BigInteger *bigint, long long value)
 {
   int nbrLimbs = 0;
@@ -601,7 +616,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
     int quotient, dividend;
     dividend = (remainder << BITS_PER_INT_GROUP) + pLimbs->x;
     dDividend = (double)remainder * dLimb + pLimbs->x;
-    dQuotient = dDividend / dDivisor + 0.5;
+    dQuotient = floor(dDividend / dDivisor + 0.5);
     quotient = (int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - quotient * divisor;
     if ((unsigned int)remainder >= (unsigned int)divisor)
@@ -611,7 +626,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
     }
     (pLimbs--)->x = quotient;
   }
-  if (nbrLimbs > 1 && (pLimbs + nbrLimbs - 1)->x == 0)
+  if (nbrLimbs > 1 && pBigInt->limbs[nbrLimbs - 1].x == 0)
   {   // Most significant limb is now zero, so discard it.
     nbrLimbs--;
   }
@@ -632,7 +647,7 @@ int getRemainder(BigInteger *pBigInt, int divisor)
     double dQuotient, dDividend;
     dividend = (remainder << BITS_PER_INT_GROUP) + pLimb->x;
     dDividend = (double)remainder * dLimb + pLimb->x;
-    dQuotient = dDividend / dDivisor + 0.5;
+    dQuotient = floor(dDividend / dDivisor + 0.5);
     quotient = (int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - quotient * divisor;
     if ((unsigned int)remainder >= (unsigned int)divisor)
@@ -1144,7 +1159,7 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
 int isPseudoprime(BigInteger *pResult)
 {
   int Base, delta, baseNbr, ctr, i, nbrLimbsQ, Mult3Len;
-  limb carry, largeVal;
+  limb largeVal;
   int nbrLimbs = pResult->nbrLimbs;
   limb *pResultLimbs = pResult->limbs;
   if (nbrLimbs == 1)
@@ -1189,7 +1204,8 @@ int isPseudoprime(BigInteger *pResult)
   memcpy(Mult3, q, (nbrLimbsQ + 1)*sizeof(q[0]));
   Mult3Len = nbrLimbs;
   DivideBigNbrByMaxPowerOf2(&ctr, Mult3, &Mult3Len);
-  memcpy(TestNbr, pResultLimbs, (nbrLimbs + 1)*sizeof(limb));
+  memcpy(TestNbr, pResultLimbs, nbrLimbs*sizeof(limb));
+  TestNbr[nbrLimbs].x = 0;
   GetMontgomeryParms(nbrLimbs);
   for (baseNbr = 20; baseNbr > 0; baseNbr--)
   {    // Try up to 20 bases.
@@ -1252,4 +1268,19 @@ int BigNbrIsZero(limb *value)
     value++;
   }
   return 1;      // Number is zero
+}
+
+double getMantissa(limb *ptrLimb, int nbrLimbs)
+{
+  double dN = (double)(ptrLimb - 1)->x;
+  double dInvLimb = 1 / (double)LIMB_RANGE;
+  if (nbrLimbs > 1)
+  {
+    dN += (double)(ptrLimb - 2)->x * dInvLimb;
+  }
+  if (nbrLimbs > 2)
+  {
+    dN += (double)(ptrLimb - 3)->x * dInvLimb * dInvLimb;
+  }
+  return dN;
 }

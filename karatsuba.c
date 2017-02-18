@@ -145,13 +145,13 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int length)
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      dAccumulator = floor((dAccumulator + HALF_INT_RANGE / 2)*dInvRangeLimb);
+      dAccumulator = floor(dAccumulator * dInvRangeLimb + 0.25);
     }
     else
     {
-      dAccumulator = floor((dAccumulator - HALF_INT_RANGE / 2)*dInvRangeLimb);
+      dAccumulator = floor(dAccumulator * dInvRangeLimb - 0.25);
     }
-    low = (int)(dAccumulator - floor(dAccumulator / dRangeLimb) * dRangeLimb);
+    low = (unsigned int)(dAccumulator - floor(dAccumulator / dRangeLimb) * dRangeLimb);
   }
   arrAux[prodCol].x = low;
   memcpy(&arr[idxFactor1], &arrAux[0], 2 * length * sizeof(limb));
@@ -256,6 +256,15 @@ static void Karatsuba(int idxFactor1, int length, int endIndex)
   }
   (ptrResult + halfLength)->x += carry1First + carry1Second;
   ptrResult->x += carry1First + carry2Second;
+  // Process carries.
+  ptrResult = &arr[idxFactor1];
+  carry1First = 0;
+  for (i = 2*length; i > 0; i--)
+  {
+    carry1First += ptrResult->x;
+    (ptrResult++)->x = carry1First & MAX_VALUE_LIMB;
+    carry1First >>= BITS_PER_GROUP;
+  }
   // Compute final product.
   ptrHigh = &arr[middle];
   ptrResult = &arr[idxFactor1 + halfLength];

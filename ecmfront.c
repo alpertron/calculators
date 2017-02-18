@@ -454,10 +454,10 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
   struct sFactors *pstFactor;
   static limb minusOneMont[MAX_LEN];
 
-  longToBigInteger(&Quad1, 1);     // 1 = 1^2 + 0^2 + 0^2 + 0^2
-  longToBigInteger(&Quad2, 0);
-  longToBigInteger(&Quad3, 0);
-  longToBigInteger(&Quad4, 0);
+  intToBigInteger(&Quad1, 1);     // 1 = 1^2 + 0^2 + 0^2 + 0^2
+  intToBigInteger(&Quad2, 0);
+  intToBigInteger(&Quad3, 0);
+  intToBigInteger(&Quad4, 0);
   pstFactor = pstFactors + 1;      // Point to first factor in array of factors.
   if (pstFactors->multiplicity == 1 && *pstFactor->ptrFactor == 1)
   {
@@ -467,7 +467,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
     }
     if (*(pstFactor->ptrFactor + 1) == 0)
     {                             // Number to factor is 0.
-      longToBigInteger(&Quad1, 0);     // 0 = 0^2 + 0^2 + 0^2 + 0^2
+      intToBigInteger(&Quad1, 0);     // 0 = 0^2 + 0^2 + 0^2 + 0^2
       return;
     }
   }
@@ -485,10 +485,10 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
     addbigint(&q, -1);             // q <- p-1
     if (p.nbrLimbs == 1 && p.limbs[0].x == 2)
     {
-      longToBigInteger(&Mult1, 1); // 2 = 1^2 + 1^2 + 0^2 + 0^2
-      longToBigInteger(&Mult2, 1);
-      longToBigInteger(&Mult3, 0);
-      longToBigInteger(&Mult4, 0);
+      intToBigInteger(&Mult1, 1); // 2 = 1^2 + 1^2 + 0^2 + 0^2
+      intToBigInteger(&Mult2, 1);
+      intToBigInteger(&Mult3, 0);
+      intToBigInteger(&Mult4, 0);
     }
     else
     { /* Prime not 2 */
@@ -498,7 +498,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
       GetMontgomeryParms(NumberLength);
       memset(minusOneMont, 0, NumberLength * sizeof(limb));
       SubtBigNbrModN(minusOneMont, MontgomeryMultR1, minusOneMont, TestNbr, NumberLength);
-      memset(&K, 0, NumberLength * sizeof(limb));
+      memset(K.limbs, 0, NumberLength * sizeof(limb));
       if ((p.limbs[0].x & 3) == 1)
       { /* if p = 1 (mod 4) */
         CopyBigInt(&q, &p);
@@ -510,6 +510,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
           modPow(K.limbs, q.limbs, q.nbrLimbs, Mult1.limbs);
         } while (!memcmp(Mult1.limbs, MontgomeryMultR1, NumberLength * sizeof(limb)) ||
           !memcmp(Mult1.limbs, minusOneMont, NumberLength * sizeof(limb)));
+        Mult1.sign = SIGN_POSITIVE;
         memset(Mult2.limbs, 0, p.nbrLimbs * sizeof(limb));
         Mult2.limbs[0].x = 1;
         Mult2.nbrLimbs = 1;
@@ -530,11 +531,11 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
           BigIntMultiply(&Mult1, &Mult1, &Tmp);
           BigIntMultiply(&Mult2, &Mult2, &Tmp1);
           BigIntAdd(&Tmp, &Tmp1, &Tmp);
-          BigIntDivide(&Tmp, &p, &K);  // K <- (mult1^2 + mult2^2) / p
+          BigIntDivide(&Tmp, &p, &K);        // K <- (mult1^2 + mult2^2) / p
           if (K.nbrLimbs == 1 && K.limbs[0].x == 1)
           {    // If K = 1...
-            longToBigInteger(&Mult3, 0);
-            longToBigInteger(&Mult4, 0);
+            intToBigInteger(&Mult3, 0);
+            intToBigInteger(&Mult4, 0);
             break;
           }
           BigIntRemainder(&Mult1, &K, &M1);  // M1 <- Mult1 % K
@@ -562,16 +563,17 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
           BigIntMultiply(&Mult1, &M1, &Tmp);
           BigIntMultiply(&Mult2, &M2, &Tmp1);
           BigIntAdd(&Tmp, &Tmp1, &Tmp);
-          BigIntDivide(&Tmp, &K, &Tmp2);  // Tmp2 <- (mult1*m1 + mult2*m2) / K
+          BigIntDivide(&Tmp, &K, &Tmp2);     // Tmp2 <- (mult1*m1 + mult2*m2) / K
           BigIntMultiply(&Mult1, &M2, &Tmp);
           BigIntMultiply(&Mult2, &M1, &Tmp1);
           BigIntSubt(&Tmp, &Tmp1, &Tmp);
-          BigIntDivide(&Tmp, &K, &Mult2);  // Mult2 <- (mult1*m2 - mult2*m1) / K
+          BigIntDivide(&Tmp, &K, &Mult2);    // Mult2 <- (mult1*m2 - mult2*m1) / K
           CopyBigInt(&Mult1, &Tmp2);
         } /* end while */
       } /* end p = 1 (mod 4) */
       else
       { /* if p = 3 (mod 4) */
+        int mult1 = 0;
         CopyBigInt(&q, &p);
         subtractdivide(&q, 1, 2);     // q = (prime-1)/2
         memcpy(K.limbs, q.limbs, q.nbrLimbs * sizeof(limb));
@@ -579,45 +581,28 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
         memset(Mult1.limbs, 0, p.nbrLimbs*sizeof(limb));
         do
         {
+          mult1++;
           // Increment Mult1 by 1 in Montgomery notation.
-          AddBigNbrModN(Mult1.limbs, MontgomeryMultR1, Mult1.limbs,
-                        p.limbs, p.nbrLimbs);
+          AddBigNbrModN(Mult1.limbs, MontgomeryMultR1, Mult1.limbs, p.limbs, p.nbrLimbs);
           modmult(Mult1.limbs, Mult1.limbs, Tmp.limbs);
-          SubtBigNbrModN(minusOneMont, Tmp.limbs, Tmp.limbs,
-                         p.limbs, p.nbrLimbs);
+          SubtBigNbrModN(minusOneMont, Tmp.limbs, Tmp.limbs, p.limbs, p.nbrLimbs);
           modPow(Tmp.limbs, K.limbs, p.nbrLimbs, Tmp1.limbs);
-          // At this moment Tmp1 = (-1 - Mult1^2)^((q-1)/2)
+          // At this moment Tmp1 = (-1 - Mult1^2)^((p-1)/2)
           // in Montgomery notation. Continue loop if it is not 1.
         } while (memcmp(Tmp1.limbs, MontgomeryMultR1, p.nbrLimbs));
+        // After the loop finishes, Tmp = (-1 - Mult1^2) is a quadratic residue mod p.
         // Convert Mult1 to standard notation by multiplying by 1 in
         // Montgomery notation.
-        memset(Tmp.limbs, 0, p.nbrLimbs*sizeof(limb));
-        Tmp.limbs[0].x = 1;
-        modmult(Mult1.limbs, Tmp.limbs, Mult3.limbs);
-        memcpy(Mult1.limbs, Mult3.limbs, p.nbrLimbs * sizeof(limb));
-        for (Mult1.nbrLimbs = p.nbrLimbs; Mult1.nbrLimbs > 1; Mult1.nbrLimbs--)
-        {  // Adjust number of limbs so the most significant limb is not zero.
-          if (Mult1.limbs[Mult1.nbrLimbs - 1].x != 0)
-          {
-            break;
-          }
-        }
-        // Convert Mult1 to Montgomery notation. Place result in variable Tmp.
-        memset(&Mult1.limbs[Mult1.nbrLimbs], 0,
-               (p.nbrLimbs - Mult1.nbrLimbs)*sizeof(limb));
-        modmult(Mult1.limbs, MontgomeryMultR2, Tmp.limbs);
-        modmult(Tmp.limbs, Tmp.limbs, Tmp1.limbs);
-        SubtBigNbrModN(minusOneMont, Tmp1.limbs, Tmp.limbs, p.limbs, p.nbrLimbs);
-        // At this moment Tmp = -1 - Mult1^2 in Montgomery notation.
+        intToBigInteger(&Mult1, mult1);
         CopyBigInt(&q, &p);
         subtractdivide(&q, -1, 4);  // q <- (p+1)/4.
-        // Find Mult2 <- Tmp^q (mod p) in Montgomery notation.
+        // Find Mult2 <- square root of Tmp = Tmp^q (mod p) in Montgomery notation.
         modPow(Tmp.limbs, q.limbs, p.nbrLimbs, Mult2.limbs);
         // Convert Mult2 from Montgomery notation to standard notation.
         memset(Tmp.limbs, 0, p.nbrLimbs * sizeof(limb));
         Tmp.limbs[0].x = 1;
-        longToBigInteger(&Mult3, 1);
-        longToBigInteger(&Mult4, 0);
+        intToBigInteger(&Mult3, 1);
+        intToBigInteger(&Mult4, 0);
         // Convert Mult2 to standard notation by multiplying by 1 in
         // Montgomery notation.
         modmult(Mult2.limbs, Tmp.limbs, Mult2.limbs);
@@ -628,6 +613,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
             break;
           }
         }
+        Mult2.sign = SIGN_POSITIVE;
         for (;;)
         {
           // Compute K <- (Mult1^2 + Mult2^2 + Mult3^2 + Mult4^2) / p
@@ -974,9 +960,6 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
   strcpy(output, "2<p>");
   ptrOutput += strlen(output);
   SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
-//  {
-//    int pepe; for (pepe = 0; pepe < tofactor.nbrLimbs; pepe++) {int2dec(&ptrOutput, tofactor.limbs[pepe].x); *ptrOutput++ = ';';}
-//  }
   if (rc == EXPR_OK && doFactorization)
   {
     if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 0)

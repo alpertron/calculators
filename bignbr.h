@@ -66,6 +66,7 @@ void SubtBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Sum, limb *TestNbr, int Number
 void SubtBigNbrMod(limb *Nbr1, limb *Nbr2, limb *Sum);
 void modmult(limb *factor1, limb *factor2, limb *product);
 void modmultInt(limb *factorBig, int factorInt, limb *result);
+void modmultIntExtended(limb *factorBig, int factorInt, limb *result, limb *pTestNbr, int nbrLen);
 void AddBigNbrMod(limb *Nbr1, limb *Nbr2, limb *Sum);
 void modPowBaseInt(int base, limb *exp, int nbrGroupsExp, limb *power);
 void modPow(limb *base, limb *exp, int nbrGroupsExp, limb *power);
@@ -106,10 +107,12 @@ void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, /*@in@*/BigInteger *bigin
 void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len);
 void ComputeInversePower2(/*@in@*/limb *value, /*@out@*/limb *result, /*@out@*/limb *aux);
 int BigNbrIsZero(limb *value);
+void intToBigInteger(BigInteger *bigint, int value);
 void longToBigInteger(BigInteger *bigint, long long value);
 void expBigNbr(BigInteger *pBigNbr, double logar);
 double logBigNbr(BigInteger *pBigNbr);
 double logLimbs(limb *pBigNbr, int nbrLimbs);
+double getMantissa(limb *ptrLimb, int nbrLimbs);
 
 void ChSignBigNbr(int *nbr, int length);
 void AddBigNbr(int *pNbr1, int *pNbr2, int *pSum, int nbrLen);
@@ -124,7 +127,7 @@ void IntToBigNbr(int value, int *bigNbr, int nbrLength);
 int BigNbrToBigInt(BigInteger *pBigNbr, int *pBigInt);
 void BigIntToBigNbr(BigInteger *pBigNbr, int *pBigInt, int nbrLenBigInt);
 void GcdBigNbr(int *pNbr1, int *pNbr2, int *pGcd, int nbrLen);
-void AdjustBigIntModN(int Nbr[], int Mod[], int nbrLen);
+void AdjustBigIntModN(int *Nbr, int *Mod, int nbrLen);
 void MultBigNbrModN(int Nbr1[], int Nbr2[], int Prod[], int Mod[], int nbrLen);
 void MultBigNbrByIntModN(int Nbr1[], int Nbr2, int Prod[], int Mod[], int nbrLen);
 int intDoubleModPow(int NbrMod, int Expon, int currentPrime);
