@@ -43,7 +43,7 @@ extern long long lModularMult;
 #define TYP_RABIN  300000000
 #define TYP_EC     350000000
 
-#define MAX_PRIME_SIEVE 11  // Only numbers 7 or 11 are accepted here.
+#define MAX_PRIME_SIEVE 7  // Only numbers 7 or 11 are accepted here.
 #if MAX_PRIME_SIEVE == 11
   #define SIEVE_SIZE (2*3*5*7*11)
   #define GROUP_SIZE ((2-1)*(3-1)*(5-1)*(7-1)*(11-1))
@@ -1786,11 +1786,13 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
   *ptrLowerText++ = '3';
   if (pstFactors->multiplicity > 1)
   {    // Some factorization known.
+    int NumberLengthBak = NumberLength;
     strcpy(ptrLowerText, "<p class=\"blue\">");
     ptrLowerText += strlen(ptrLowerText);
     SendFactorizationToOutput(EXPR_OK, pstFactors, &ptrLowerText, 1);
     strcpy(ptrLowerText, "</p>");
     ptrLowerText += strlen(ptrLowerText);
+    NumberLength = NumberLengthBak;
   }
   strcpy(ptrLowerText, lang ? "<p>Factorizando ": "<p>Factoring " );
   ptrLowerText += strlen(ptrLowerText);

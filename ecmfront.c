@@ -40,9 +40,9 @@ static BigInteger result;
 BigInteger valueX;
 char outputExpr[100000];
 char *ptrInputText;
+extern int NextEC;
 
 #ifdef __EMSCRIPTEN__
-extern int NextEC;
 extern double originalTenthSecond;
 void GetDHMSt(char **pptrText, int tenths);
 #endif
@@ -983,8 +983,7 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
-#ifdef __EMSCRIPTEN__
-void doWork(char* data, int size)
+void doWork(char* data)
 {
   int flags;
   char *ptrText;
@@ -1037,6 +1036,7 @@ void doWork(char* data, int size)
     }
   }
   ecmFrontText(ptrData, flags & 2, ptrKnownFactors); // The 3rd parameter includes known factors.
+#ifdef __EMSCRIPTEN__
   databack(output);
-}
 #endif
+}

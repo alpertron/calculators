@@ -1070,7 +1070,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
     double dRem, dCurrentPrime;
     double dDivid, dLimbMult, dQuot;
     int Dividend;
-    int nbr, iRem, Rem;
+    int nbr, iRem;
     int left, right, median;
     unsigned char fullRemainder;
     int indexFactorA = 0;
@@ -1391,10 +1391,6 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         {
           Divisor = rowPrimeSieveData->value;
           divis = (int)Divisor;
-          if (trialDivisions == 12135 && Divisor == 2857)
-          {
-            Rem = 0;
-          }
           if (oddPolynomial)
           {
             iRem = index2 - rowPrimeSieveData->soln1 +
@@ -2691,7 +2687,7 @@ static unsigned char LinearAlgebraPhase(
   int *biT, int *biR, int *biU,
   int NumberLength)
 {
-  int mask, row, col, j, i;
+  int mask, row, col, j;
   int *rowMatrixB;
   int primeIndex;
   // Get new number of rows after erasing singletons.
@@ -2779,7 +2775,7 @@ static unsigned char InsertNewRelation(
   int *biT, int *biU, int *biR,
   int NumberLengthMod)
 {
-  int i, k, j;
+  int i, k;
   int nbrColumns = rowMatrixB[LENGTH_OFFSET];
   // Insert it only if it is different from previous relations.
   if (congruencesFound >= matrixBLength)

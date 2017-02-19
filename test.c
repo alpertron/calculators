@@ -4,7 +4,7 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "factor.h"
-#define DEBUG_CODE 13
+#define DEBUG_CODE 15 // 13
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
@@ -221,6 +221,8 @@ int main(int argc, char *argv[])
     Bin2Dec(internalNotation, textInput, 17, 6);
     textInput[200] = 0;
   }
+#elif DEBUG_CODE == 15
+  doWork("6,2,001054325435235345543254354325423543253453423233133\x00");
 #endif
   return 0;
 }

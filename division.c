@@ -44,9 +44,8 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, limb *number, int len, lim
 {
   limb mostSignficLimb, oldLimb, newLimb;
   int index2, mask, shLeft;
-  limb *ptrDest, *ptrSrc;
+  limb *ptrDest;
 
-  ptrSrc = number;
   shLeft = 0;
   mostSignficLimb.x = (number + len - 1)->x;
   for (mask = LIMB_RANGE/2; mask > 0; mask >>= 1)

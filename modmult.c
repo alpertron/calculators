@@ -449,7 +449,6 @@ void modmultIntExtended(limb *factorBig, int factorInt, limb *result, limb *pTes
   int TrialQuotient;
   double dTrialQuotient, dAccumulator, dFactorInt;
   limb *ptrFactorBig, *ptrTestNbr;
-  double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
   double dTestNbr, dFactorBig;
   double dInvLimbRange = 1 / (double)LIMB_RANGE;
   if (nbrLen == 1)

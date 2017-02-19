@@ -1108,7 +1108,6 @@ int checkMinusOne(limb *value, int nbrLimbs)
 //         pShRight = pointer to power of 2.
 void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
 {
-  limb carry;
   int power2 = 0;
   int index, index2, mask, shRg;
   int nbrLimbs = *pNbrLimbs;
@@ -1131,7 +1130,6 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
   }
   // Divide number by this power.
   shRg = power2 % BITS_PER_GROUP; // Shift right bit counter
-  carry.x = 0;
   if ((number[nbrLimbs - 1].x & (-(1 << shRg))) != 0)
   {   // Most significant bits set.
     *pNbrLimbs = nbrLimbs - index;
