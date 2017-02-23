@@ -162,6 +162,7 @@ int main(int argc, char *argv[])
     return 0;
   }
   Dec2Bin(argv[1], &number[1], (int)strlen(argv[1]), &number[0]);
+  strcpy(toFactorDec, argv[1]);
   factor(number, factors, astFactors);
   for (index = 1; index <= astFactors[0].multiplicity; index++)
   {

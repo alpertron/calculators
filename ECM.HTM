@@ -245,9 +245,11 @@ The line to type is: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <div id="status"></div>
 <div id="footer">
 <p>If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Integer+factorization+calculator+feedback">form</a>.</p>
-<div id="modal-more" class="modal">
+</div>
+</article>
+<div id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
 <div class="modal-content">
-<div class="modal-header"><span id="close-more" aria-label="close" class="atright">×</span><p>More options</p></div>
+<div class="modal-header"><span id="close-more" aria-label="close" class="atright">×</span><p id="moreopt">More options</p></div>
 <div class="modal-body">
 <form class="applet">
 <p><label for="curve">New curve number or factor:</label></p><input type="number" id="curve" value="" class="input" min="0" step="1"/>
@@ -255,9 +257,9 @@ The line to type is: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <input type="button" id="nfactor" value="New factor" />
 </form>
 </div></div></div>
-<div id="modal-config" class="modal">
+<div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
-<div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p>Configuration</p></div>
+<div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuration</p></div>
 <div class="modal-body">
 <form class="applet">
 <p><label for="digits">Digits per group</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"/></p>
@@ -268,7 +270,5 @@ The line to type is: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
 </form>
 </div></div></div>
-</div>
-</article>
 </body>
 </html>

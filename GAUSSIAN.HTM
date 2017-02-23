@@ -1,141 +1,149 @@
 ﻿<!doctype html>
-<html lang="en">
-  <head>
-    <meta name="Author" content="Dario Alejandro Alpern" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta charset="utf-8" />
-    <meta name="description" content="Javascript application that factors Gaussian integers of the form (a+bi). Written by Dario Alpern." />
-    <link rel="alternate" hreflang="es" href="GAUSIANO.HTM" />
-    <link rel="prefetch" href="gaussianW.js?2807" />
-    <title>Gaussian integer factorization calculator</title>
-    <style type="text/css" media="print">
-      #smallheader {display:none;}
-    </style>
-    <style type="text/css" media="screen">
-      #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
-      #smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
-      #smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
-      #smallheader li:hover {background-color:#004000; color:#FFFFFF;}
-      #smallheader li ul { display:none; position:absolute; }
-      #smallheader li:hover ul.alignleft{ display:block; height:auto;}
-      #smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
-      #smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
-      #smallheader a:link{color:#FFFFFF; text-decoration: none;}
-      #smallheader a:visited{color:#FFFFFF; text-decoration: none;}
-      #smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
-      #smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
-      #smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
-      #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
-      #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-      #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-      @media (max-width: 400px) { #smallheader { font-size:0.7em;  } }
-      @media (min-width: 400px) { #smallheader { font-size:1em;  } }
-    </style>
-    <style>
-      body {
-      font-family: arial;
-      margin: 0;
-      padding: 0;
-      }
-      h1 {text-align:center;}
-	  .lf {padding:0.2em; clear:both;}
-      #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
-      @media (min-width: 400px) { .input{width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
-      @media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
-   </style>
-  </head>
-  <body>
-    <nav id="smallheader">
-      <div style="float:right;"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
-      <ul>
-        <li>
-          Electronics
-          <ul class="alignleft">
-            <li>
-              <a href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a>
-            </li>
-          </ul>
-        </li>
-        <li>
-          Mathematics
-          <ul class="alignleft">
-            <li>
-              <a href="CALTORS.HTM" title="Java and Javascript programs implementing calculators">Calculators</a>
-            </li>
-            <li>
-              <a href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a>
-            </li>
-            <li>
-              <a href="PROBLEMS.HTM" title="Interesting math problems">Problems</a>
-            </li>
-          </ul>
-        </li>
-        <li>
-          Programs
-          <ul class="alignright">
-            <li>
-              <a href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a>
-            </li>
-            <li>
-              <a href="JAVAPROG.HTM" title="Programs written in Java">Java</a>
-            </li>
-            <li>
-              <a href="GAMES.HTM" title="Computer games">Games</a>
-            </li>
-          </ul>
-        </li>
-        <li class="alignright">
-          Contact
-          <ul class="alignright">
-            <li>
-              <a href="EPERS.HTM" title="Personal information">Personal</a>
-            </li>
-            <li>
-              <a href="FORM.HTM" title="Form to send comments">Comments</a>
-            </li>
-            <li>
-              <a href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a>
-            </li>
-            <li>
-              <a href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a>
-            </li>
-          </ul>
-        </li>
-      </ul>
-      <br style="clear:both;"/>
-    </nav>
-    <article>
-    <h1>Gaussian integer factorization calculator</h1>
-    <script async="async" type="text/javascript" src="gaussian.js?2807"></script>
-    <div style='padding:10px;'>
-      <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
-        <a href="ENGLISH.HTM" itemprop="url">
-          <span itemprop="title">Alpertron</span>
-        </a> ›
-      </div>
-      <div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" style="display:inline;">
-        <a href="JAVAPROG.HTM" itemprop="url">
-          <span itemprop="title">Programs</span>
-        </a> ›
-      </div>
-      <div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" style="display:inline;">
-        <a href="GAUSSIAN.HTM" itemprop="url">
-          <span itemprop="title">Gaussian integer factorization calculator</span>
-        </a>
-      </div>
-    </div>
-    <form id="applet">
-      <label for="value">Value</label><input type="text" id="value" value="" class="input"/>
-      <div class="lf"></div>
-      <input type="button" id="eval" value="Only evaluate" />
-      <input type="button" id="factor" value="Factor" />
-      <input type="button" id="stop" value="Stop" />
-      <input type="button" id="helpbtn" value="Help" />
-      <div class="lf"></div>
-      <label for="digits">Digits per group</label> <input type="number" id="digits" value="6"/>
-      <input type="hidden" id="app" value="0"/>
-    </form>
-    <div id="help" aria-live="polite">
+<html lang="en" manifest="gaussian.appcache">
+<head>
+<meta name="Author" content="Dario Alejandro Alpern" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8" />
+<meta name="description" content="Javascript application that factors Gaussian integers of the form (a+bi). Written by Dario Alpern." />
+<link rel="alternate" hreflang="es" href="GAUSIANO.HTM" />
+<link rel="prefetch" href="gaussianW0001.js" />
+<title>Gaussian integer factorization calculator</title>
+<style type="text/css">
+@media print {#smallheader {display:none;}}
+@media screen {
+#smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
+#smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+#smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+#smallheader li:hover {background-color:#004000; color:#FFFFFF;}
+#smallheader li ul { display:none; position:absolute; }
+#smallheader li:hover ul.alignleft{ display:block; height:auto;}
+#smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+#smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
+#smallheader a:link{color:#FFFFFF; text-decoration: none;}
+#smallheader a:visited{color:#FFFFFF; text-decoration: none;}
+#smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+#smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+#smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+#smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+#smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+#smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+.atright {float:right;}
+.newline {clear:both;}
+}
+@media screen and (max-width: 400px) { #smallheader { font-size:0.7em;  } }
+@media screen and (min-width: 400px) { #smallheader { font-size:1em;  } }
+.modal-header {padding: 2px 10px; background-color: #5cb85c; color: white;}
+.modal-body {padding: 2px 10px;}
+.modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 0;
+  border: 1px solid #888;
+  width: 80%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  -webkit-animation-name: animatetop;
+  -webkit-animation-duration: 0.4s;
+  animation-name: animatetop;
+  animation-duration: 0.4s
+}
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+}
+body {font-family: arial;margin: 0; padding: 0;}
+h1 {text-align:center;}
+.lf {padding:0.2em; clear:both;}
+.blue {color: #0000FF;}
+.inline  {display:inline;}
+.pad {padding:10px;}
+#applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+@media (min-width: 400px) { .input{width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
+@media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
+#help,#result,#status,#footer {margin: 3px; padding: 3px;}
+#more,#stop {display:none}
+</style>
+</head>
+<body>
+<nav id="smallheader">
+<div class="atright"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
+<ul>
+<li>
+Electronics
+<ul class="alignleft">
+<li><a href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a></li>
+</ul>
+</li>
+<li>
+Mathematics
+<ul class="alignleft">
+<li><a href="CALTORS.HTM" title="Java and Javascript programs implementing calculators">Calculators</a></li>
+<li><a href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a></li>
+<li><a href="PROBLEMS.HTM" title="Interesting math problems">Problems</a></li>
+</ul>
+</li>
+<li>
+Programs
+<ul class="alignright">
+<li><a href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a></li>
+<li><a href="JAVAPROG.HTM" title="Programs written in Java">Java</a></li>
+<li><a href="GAMES.HTM" title="Computer games">Games</a></li>
+</ul>
+</li>
+<li class="alignright">
+Contact
+<ul class="alignright">
+<li><a href="EPERS.HTM" title="Personal information">Personal</a></li>
+<li><a href="FORM.HTM" title="Form to send comments">Comments</a></li>
+<li><a href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a></li>
+<li><a href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a></li>
+</ul>
+</li>
+</ul>
+<br class="newline"/>
+</nav>
+<article>
+<h1>Gaussian integer factorization calculator</h1>
+<script async="async" type="text/javascript" src="gaussian0001.js"></script>
+<div class="pad">
+<div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
+<a href="ENGLISH.HTM" itemprop="url">
+<span itemprop="title">Alpertron</span>
+</a> ›
+</div>
+<div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" class="inline">
+<a href="JAVAPROG.HTM" itemprop="url">
+<span itemprop="title">Programs</span>
+</a> ›
+</div>
+<div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="inline">
+<a href="GAUSSIAN.HTM" itemprop="url">
+<span itemprop="title">Gaussian integer factorization calculator</span>
+</a>
+</div>
+</div>
+<form id="applet">
+<label for="value">Value</label><input type="text" id="value" value="" class="input"/>
+<div class="lf"></div>
+<input type="button" id="more" value="More" />
+<input type="button" id="eval" value="Only evaluate" />
+<input type="button" id="factor" value="Factor" />
+<input type="button" id="stop" value="Stop" />
+<input type="button" id="helpbtn" value="Help" />
+<input type="button" id="config" value="Config" />
+<div class="lf"></div>
+<input type="hidden" id="app" value="0"/>
+</form>
+<div id="help" aria-live="polite">
 <p>The Gaussian integers are complex numbers of the form <var>a</var> + <var>bi</var>, where both <var>a</var> and <var>b</var> are integer numbers and <var>i</var> is the square root of -1.</p>
 <p>This applet is able to factor a Gaussian integer as a product of Gaussian primes. This decomposition is unique, if we do not consider the order of the factors.</p>
 <h2>Factoring Gaussian integers</h2>
@@ -203,27 +211,39 @@ If <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, then you 
 <li> <strong>Modexp(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var> (<var>n</var> must be real).
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
-      <h2>Source code</h2>
-      <p>
-        You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
-      </p>
-	  <p>Written by Dario Alpern. Last updated 4 August 2016.</p>
-    </div>
-    <div id="result" aria-live="polite"></div>
-    <div>
-      <p>
-        If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Gaussian+integer+factorization+calculator+feedback">form</a>.
-      </p>
-      <script type="text/javascript">
-        var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-        document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-      </script>
-      <script type="text/javascript">
-        var pageTracker = _gat._getTracker("UA-4438475-1");
-        pageTracker._initData();
-        pageTracker._trackPageview();
-      </script>
-    </div>
-	</article>
-  </body>
+<h2>Source code</h2>
+<p>You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.</p>
+<p>Written by Dario Alpern. Last updated 22 February 2017.</p>
+</div>
+<div id="helphelp"></div>
+<div id="result" aria-live="polite"></div>
+<div id="status"></div>
+<div id="footer">
+<p>If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Gaussian+integer+factorization+calculator+feedback">form</a>.</p>
+</div>
+</article>
+<div id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
+<div class="modal-content">
+<div class="modal-header"><span id="close-more" aria-label="close" class="atright">×</span><p id="moreopt">More options</p></div>
+<div class="modal-body">
+<form class="applet">
+<p><label for="curve">New curve number or factor:</label></p><input type="number" id="curve" value="" class="input" min="0" step="1"/>
+<input type="button" id="ncurve" value="New curve" />
+<input type="button" id="nfactor" value="New factor" />
+</form>
+</div></div></div>
+<div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
+<div class="modal-content">
+<div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuration</p></div>
+<div class="modal-body">
+<form class="applet">
+<p><label for="digits">Digits per group</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"/></p>
+<p><input type="checkbox" id="batch"><label for="batch">Batch mode</label></p>
+<p><input type="checkbox" id="verbose"><label for="verbose">Verbose mode</label></p>
+<p><input type="checkbox" id="pretty"><label for="pretty">Pretty print</label></p>
+<p><input type="checkbox" id="cunnin"><label for="cunnin">Use Cunningham tables on server</label></p>
+<p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
+</form>
+</div></div></div>
+</body>
 </html>

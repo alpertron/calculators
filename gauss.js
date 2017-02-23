@@ -18,37 +18,78 @@
 */
 var worker = 0;
 var app;
-function document_getElementById(x)
+function get(x)
 {
   return document.getElementById(x);
 }
+
+function setStorage(name, data)
+{
+  localStorage.setItem(name, data);
+}
+
+function getStorage(name)
+{
+  return localStorage.getItem(name);
+}
+
+function styleButtons(style1, style2)
+{
+  get("eval").style.display = style1;
+  get("factor").style.display = style1;
+  get("config").style.display = style1;
+  get("stop").style.display = style2;
+  get("more").style.display = style2;
+}
+
 function callWorker(param)
 {
   if (!worker)
   {
-  	worker = new Worker('gaussianW.js?2807');
+    worker = new Worker("gaussianW0001.js");
     worker.onmessage = function(e)
-	{ // First character of e.data is '1' for intermediate text
-      // and it is '2' for end of calculation.
-	  document_getElementById('result').innerHTML = e.data.substring(1);
-	  if (e.data.substring(0, 1) == '2')
-	  {   // First character passed from web worker is '2'.
-	    document_getElementById('eval').disabled = false;
-	    document_getElementById('factor').disabled = false;
-	    document_getElementById('stop').disabled = true;
+    { // First character of e.data is "1" for intermediate text
+      // and it is "2" for end of calculation.
+      // It is "9" for saving expression to factor into Web Storage.
+      var firstChar = e.data.substring(0, 1);
+      if (firstChar == "8")
+      {
+//        setStorage("ecmFactors", e.data.substring(1));
+//        setStorage("ecmCurve", "");
       }
-	}
+      else if (firstChar == "7")
+      {
+//        setStorage("ecmCurve", e.data.substring(1));
+      }
+      else if (firstChar == "4")
+      {
+        get("status").innerHTML = e.data.substring(1);
+      }
+      else
+      {
+        get("result").innerHTML = e.data.substring(1);
+        if (e.data.substring(0, 1) == "2")
+        {   // First character passed from web worker is "2".
+          get("status").innerHTML = "";
+          styleButtons("inline", "none");  // Enable eval and factor
+          get("modal-more").style.display = "none";
+        }
+      }
+    };
   }
   worker.postMessage(param);
 }
 
 function dowork(n)
 {
-  var app = parseInt(document_getElementById('app').value) + n;
-  var res = document_getElementById('result');
-  var valueText = document_getElementById('value').value;
-  var digitGroup = document_getElementById('digits').value;
-  document_getElementById('help').style.display = "none";
+  app = parseInt(get("app").value) + n;
+  var res = get("result");
+  var valueText = get("value").value;
+  var helphelp = get("helphelp");
+  get("help").style.display = "none";
+  helphelp.style.display = "block";
+  helphelp.innerHTML = (app & 1 ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización.</p>":
+                                  "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization.</p>");
   res.style.display = "block";
   if (valueText == "")
   {
@@ -56,42 +97,128 @@ function dowork(n)
                                "Please type an expression.");
     return;
   }
-  document_getElementById('eval').disabled = true;
-  document_getElementById('factor').disabled = true;
-  document_getElementById('stop').disabled = false;
+  styleButtons("none", "inline");  // Enable "more" and "stop" buttons
   res.innerHTML = (app & 1 ? "Factorizando la expresión..." :
                              "Factoring expression...");
-  param = digitGroup + ',' + app + ',' + valueText + String.fromCharCode(0)
+  param = digits + "," + app + "," + valueText + String.fromCharCode(0);
   callWorker(param);
 }
 
 window.onload = function ()
 {
   var param;
-  document_getElementById('stop').disabled = true;
-  document_getElementById('eval').onclick = function ()
+  get("eval").onclick = function ()
   {
     dowork(0);
-  }
-  document_getElementById('factor').onclick = function ()
+  };
+  get("factor").onclick = function ()
   {
     dowork(2);
-  }
-  document_getElementById('stop').onclick = function ()
+  };
+  get("stop").onclick = function ()
   {
     worker.terminate();
     worker = 0;
-    document_getElementById('eval').disabled = false;
-    document_getElementById('factor').disabled = false;
-    document_getElementById('stop').disabled = true;
-    document_getElementById('result').innerHTML = 
+    styleButtons("inline", "none");  // Enable eval and factor
+    get("result").innerHTML =
       (app & 1 ? "<p>Cálculo detenido por el usuario.</p>" :
                  "<p>Calculation stopped by user</p>");
-  }
-  document_getElementById('helpbtn').onclick = function ()
+    get("status").innerHTML = "";
+  };
+  get("more").onclick = function ()
   {
-    document_getElementById('help').style.display = "block";
-    document_getElementById('result').style.display = "none";
+    get("modal-more").style.display = "block";
+  };
+  get("config").onclick = function ()
+  {
+    get("digits").value = digits;
+    get("batch").checked = (config.substr(0,1)=="1");
+    get("verbose").checked = (config.substr(1,1)=="1");
+    get("pretty").checked = (config.substr(2,1)=="1");
+    get("cunnin").checked = (config.substr(3,1)=="1");  
+    get("modal-config").style.display = "block";
+  };
+  get("close-config").onclick = function ()
+  {
+    get("modal-config").style.display = "none";
+  };
+  get("cancel-config").onclick = function ()
+  {
+    get("modal-config").style.display = "none";
+  };
+  get("save-config").onclick = function ()
+  {
+    oldconfig = config;
+    config = (get("batch").checked? "1" :"0") +
+             (get("verbose").checked? "1" :"0") +
+             (get("pretty").checked? "1" :"0") +
+             (get("cunnin").checked? "1" :"0");
+    digits = get("digits").value;
+    setStorage("ecmConfig", digits+","+config);
+    if (config.substr(0,1) != oldconfig.substr(0,1))
+    {
+      isBatch();
+    }
+    get("modal-config").style.display = "none";
+  };
+  get("close-more").onclick = function ()
+  {
+    get("modal-more").style.display = "none";
+  };
+  get("helpbtn").onclick = function ()
+  {
+    var help = get("help");
+    var helpStyle = help.style;
+    var helphelpStyle = get("helphelp").style;
+    var result = get("result");
+    var resultStyle = result.style;
+    if (helpStyle.display == "block" && result.innerHTML != "")     
+    {
+      helpStyle.display = "none";
+      helphelpStyle.display = resultStyle.display = "block";
+    }
+    else
+    {
+      helpStyle.display = "block";
+      helphelpStyle.display = resultStyle.display = "none";
+    }
+  };
+  window.onclick = function(event)
+  {
+    var modal = get("modal");
+    if (event.target == modal)
+    {
+      modal.style.display = "none";
+    }
+  };
+  digits = getStorage("ecmConfig");
+  if (digits == null || digits == "")
+  {
+    digits = 6;
+    config = "0010";
+    setStorage("ecmConfig", digits+","+config);
   }
+  else
+  {
+    index = digits.indexOf(",");
+    if (index<0)
+    {
+      digits = 6;
+      config = "0010";
+      setStorage("ecmConfig", digits+","+config);
+    }
+    else
+    {
+      config = digits.substr(index+1);
+      digits = digits.substr(0,index);
+    }
+  }
+  (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
+
+  ga("create", "UA-4438475-1", "auto");
+  ga("send", "pageview");
 }
 

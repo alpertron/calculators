@@ -61,7 +61,6 @@ typedef struct
 unsigned char SIQSInfoText[300];
 int numberThreads = 1;
 extern int NumberLength;
-extern int groupLen;
 int matrixBLength;
 long trialDivisions;
 long smoothsFound;

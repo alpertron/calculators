@@ -106,14 +106,14 @@ static limb *fieldAux4 = Aux4;
 static BigInteger Temp1, Temp2, Temp3, Temp4;
 BigInteger factorValue, tofactor;
 char verbose, prettyprint, cunningham;
-extern int groupLen;
 long long Gamma[386];
 long long Delta[386];
 long long AurifQ[386];
+char tofactorDec[30000];
 static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor);
 
 #ifdef __EMSCRIPTEN__
-extern char *ptrInputText;
+char *ptrInputText;
 #endif
 enum eEcmResult
 {
@@ -1851,7 +1851,7 @@ void SendFactorizationToOutput(enum eExprErr rc, struct sFactors *pstFactors, ch
   }
   else
   {
-    Bin2Dec(tofactor.limbs, ptrOutput, tofactor.nbrLimbs, groupLen);
+    strcpy(ptrOutput, tofactorDec);
     ptrOutput += strlen(ptrOutput);
     if (doFactorization)
     {

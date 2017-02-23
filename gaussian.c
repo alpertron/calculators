@@ -40,8 +40,8 @@ static BigInteger mult1, mult2;
 static limb minusOneMont[MAX_LEN];
 static int nbrToFactor[MAX_LEN];
 static void DivideGaussian(BigInteger *real, BigInteger *imag);
-static int groupLen;
 static BigInteger value[2];
+extern BigInteger tofactor;
 
 static void w(char *text)
 {
@@ -74,26 +74,39 @@ static void showNumber(BigInteger *real, BigInteger *imag)
 
 void GaussianFactorization(void)
 {
-  BigInteger prime, q, r, M1, M2, Tmp, norm;
+  BigInteger prime, q, r, M1, M2, Tmp;
   struct sFactors *pstFactor;
 
-  BigIntMultiply(&ReValue, &ReValue, &norm);
+  BigIntMultiply(&ReValue, &ReValue, &tofactor);
   BigIntMultiply(&ImValue, &ImValue, &Tmp);
-  BigIntAdd(&norm, &Tmp, &norm);
+  BigIntAdd(&tofactor, &Tmp, &tofactor);
   NbrFactorsNorm = 0;
-  if (norm.nbrLimbs == 1 && norm.limbs[0].x == 0)
+#ifdef __EMSCRIPTEN__
+  originalTenthSecond = tenths();
+#endif
+  if (tofactor.nbrLimbs == 1 && tofactor.limbs[0].x == 0)
   {                // Norm is zero.
-    w("Any gaussian prime divides this number");
+    w("<ul><li>Any gaussian prime divides this number</li></ul>");
     return;
   }
   w("<ul>");
-  if (norm.nbrLimbs > 1 || norm.limbs[0].x > 1)
+  if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 1)
   {           // norm greater than 1. Factor norm.
     int index, index2;
-
-    NumberLength = norm.nbrLimbs;
-    CompressBigInteger(nbrToFactor, &norm);
-    factor(&norm, nbrToFactor, factorsNorm, astFactorsNorm, NULL);
+    char *ptrFactorDec = tofactorDec;
+    NumberLength = tofactor.nbrLimbs;
+    CompressBigInteger(nbrToFactor, &tofactor);
+    strcpy(ptrFactorDec, "Re&sup2; + Im&sup2; = ");
+    ptrFactorDec += strlen(ptrFactorDec);
+    Bin2Dec(ReValue.limbs, ptrFactorDec, ReValue.nbrLimbs, groupLen);
+    ptrFactorDec += strlen(ptrFactorDec);
+    strcpy(ptrFactorDec, "&sup2; + ");
+    ptrFactorDec += strlen(ptrFactorDec);
+    Bin2Dec(ImValue.limbs, ptrFactorDec, ImValue.nbrLimbs, groupLen);
+    ptrFactorDec += strlen(ptrFactorDec);
+    strcpy(ptrFactorDec, "&sup2;");
+    ptrFactorDec += strlen(ptrFactorDec);
+    factor(&tofactor, nbrToFactor, factorsNorm, astFactorsNorm, NULL);
     NbrFactorsNorm = astFactorsNorm[0].multiplicity;
     pstFactor = &astFactorsNorm[1];
     for (index = 0; index < NbrFactorsNorm; index++)
@@ -141,38 +154,38 @@ void GaussianFactorization(void)
         for (;;)
         {
           // norm <- (mult1^2 + mult2^2) / prime
-          BigIntMultiply(&mult1, &mult1, &norm);
+          BigIntMultiply(&mult1, &mult1, &tofactor);
           BigIntMultiply(&mult2, &mult2, &Tmp);
-          BigIntAdd(&norm, &Tmp, &Tmp);
-          BigIntDivide(&Tmp, &prime, &norm);
-          if (norm.nbrLimbs == 1 && norm.limbs[0].x == 1)
+          BigIntAdd(&tofactor, &Tmp, &Tmp);
+          BigIntDivide(&Tmp, &prime, &tofactor);
+          if (tofactor.nbrLimbs == 1 && tofactor.limbs[0].x == 1)
           {        // norm equals 1.
             break;
           }
-          BigIntRemainder(&mult1, &norm, &M1);
-          BigIntRemainder(&mult2, &norm, &M2);
+          BigIntRemainder(&mult1, &tofactor, &M1);
+          BigIntRemainder(&mult2, &tofactor, &M2);
           BigIntAdd(&M1, &M1, &Tmp);
-          BigIntSubt(&norm, &Tmp, &Tmp);
+          BigIntSubt(&tofactor, &Tmp, &Tmp);
           if (Tmp.sign == SIGN_NEGATIVE)
           {
-            BigIntSubt(&M1, &norm, &M1);
+            BigIntSubt(&M1, &tofactor, &M1);
           }
           BigIntAdd(&M2, &M2, &Tmp);
-          BigIntSubt(&norm, &Tmp, &Tmp);
+          BigIntSubt(&tofactor, &Tmp, &Tmp);
           if (Tmp.sign == SIGN_NEGATIVE)
           {
-            BigIntSubt(&M2, &norm, &M2);
+            BigIntSubt(&M2, &tofactor, &M2);
           }
           // Compute q <- (mult1*M1 + mult2*M2) / norm
           BigIntMultiply(&mult1, &M1, &q);
           BigIntMultiply(&mult2, &M2, &Tmp);
           BigIntAdd(&q, &Tmp, &Tmp);
-          BigIntDivide(&Tmp, &norm, &q);
-          // Compute Mult2 <- (mult1*M2 - mult2*M1) / norm
+          BigIntDivide(&Tmp, &tofactor, &q);
+          // Compute Mult2 <- (mult1*M2 - mult2*M1) / tofactor
           BigIntMultiply(&mult1, &M2, &r);
           BigIntMultiply(&mult2, &M1, &Tmp);
           BigIntSubt(&r, &Tmp, &Tmp);
-          BigIntDivide(&Tmp, &norm, &mult2);
+          BigIntDivide(&Tmp, &tofactor, &mult2);
           CopyBigInt(&mult1, &q);
           mult1.sign = SIGN_POSITIVE;    // mult1 <- abs(mult1)
           mult2.sign = SIGN_POSITIVE;    // mult2 <- abs(mult2)
@@ -296,7 +309,17 @@ void gaussianText(char *valueText, int doFactorization)
       GaussianFactorization();
     }
   }
-  if (rc != EXPR_OK)
+  if (rc == EXPR_OK)
+  {
+    strcpy(ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
+    ptrOutput += strlen(ptrOutput);
+#ifdef __EMSCRIPTEN__
+    GetDHMSt(&ptrOutput, (int)(tenths() - originalTenthSecond));
+    strcpy(ptrOutput, "</p>");
+    ptrOutput += strlen(ptrOutput);
+#endif
+  }
+  else
   {
     textError(ptrOutput, rc);
     ptrOutput = output + strlen(output);

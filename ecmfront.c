@@ -32,20 +32,14 @@ extern char verbose, prettyprint, cunningham;
 extern BigInteger tofactor;
 static int nbrToFactor[MAX_LEN];
 static BigInteger Quad1, Quad2, Quad3, Quad4;
-int groupLen = 6;
 struct sFactors astFactorsMod[1000];
 int factorsMod[10000];
 extern BigInteger factorValue;
 static BigInteger result;
 BigInteger valueX;
 char outputExpr[100000];
-char *ptrInputText;
+extern char *ptrInputText;
 extern int NextEC;
-
-#ifdef __EMSCRIPTEN__
-extern double originalTenthSecond;
-void GetDHMSt(char **pptrText, int tenths);
-#endif
 
 static void stringToHTML(char **pptrOutput, char *ptrString)
 {
@@ -257,6 +251,7 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
         {
           NumberLength = tofactor.nbrLimbs;
           CompressBigInteger(nbrToFactor, &tofactor);
+          Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
           factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
         }
         SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
@@ -277,6 +272,7 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
       {
         NumberLength = tofactor.nbrLimbs;
         CompressBigInteger(nbrToFactor, &tofactor);
+        Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
         factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
       }
       SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
@@ -932,7 +928,9 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
 {
   char *ptrOutput;
   enum eExprErr rc;
+#ifdef __EMSCRIPTEN__
   ptrInputText = tofactorText;
+#endif
   if (batch)
   {
     BatchFactorization(tofactorText, doFactorization);
@@ -954,6 +952,7 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
 #ifdef __EMSCRIPTEN__
     lModularMult = 0;
 #endif
+    Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
     factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactors);
   }
   ptrOutput = output;
@@ -988,7 +987,6 @@ void doWork(char* data)
   int flags;
   char *ptrText;
   char *ptrData = data;
-  char *ptrPower, *ptrMod;
   char *ptrWebStorage, *ptrKnownFactors;
   if (output == NULL)
   {

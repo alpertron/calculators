@@ -241,9 +241,11 @@ La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <div id="status"></div>
 <div id="footer">
 <p>Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORM.HTM?Comentario+de+calculadora+de+factorizacion+de+enteros">formulario</a>.</p>
-<div id="modal-more" class="modal">
+</div>
+</article>
+<div id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
 <div class="modal-content">
-<div class="modal-header"><span id="close-more" aria-label="close" class="atright">×</span><p>Más opciones</p></div>
+<div class="modal-header"><span id="close-more" aria-label="close" class="atright">×</span><p id="moreopt">Más opciones</p></div>
 <div class="modal-body">
 <form class="applet">
 <p><label for="curve">Nuevo número de curva o factor:</label></p><input type="number" id="curve" value="" class="input" min="0" step="1"/>
@@ -251,9 +253,9 @@ La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <input type="button" id="nfactor" value="Nuevo factor" />
 </form>
 </div></div></div>
-<div id="modal-config" class="modal">
+<div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
-<div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p>Configuración</p></div>
+<div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuración</p></div>
 <div class="modal-body">
 <form class="applet">
 <p><label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"/></p>
@@ -264,7 +266,5 @@ La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
 </form>
 </div></div></div>
-</div>
-</article>
 </body>
 </html>

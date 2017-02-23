@@ -64,7 +64,6 @@ struct sFactors astFactorsGO[1000];
 int factorsGO[10000];
 int NumberLength;
 extern char *output;
-static int groupLen;
 static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *subGroupOrder);
 static void ExchangeMods(void);
 
@@ -179,6 +178,7 @@ void DiscreteLogarithm(void)
   if (!TestBigNbrEqual(&LastModulus, &modulus))
   {
     CompressBigInteger(nbrToFactor, &modulus);
+    Bin2Dec(modulus.limbs, tofactorDec, modulus.nbrLimbs, groupLen);
     factor(&modulus, nbrToFactor, factorsMod, astFactorsMod, NULL);
     NbrFactorsMod = astFactorsMod[0].multiplicity;
   }

@@ -23,6 +23,8 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef __EMSCRIPTEN__
 void getCunn(char *url, char *factorsFromServer);
+extern double originalTenthSecond;
+void GetDHMSt(char **pptrText, int tenths);
 #endif
 struct sFactors
 {
@@ -30,6 +32,7 @@ struct sFactors
   int multiplicity;
   int upperBound;
 };
+extern char tofactorDec[30000];
 extern struct sFactors stFactors[MAX_FACTORS];
 extern int *factorArr[FACTOR_ARRSIZE];
 void factor(BigInteger *nbrToFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors);

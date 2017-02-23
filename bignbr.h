@@ -53,6 +53,7 @@ extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR2[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 extern int NumberLength, NumberLengthR1;
+extern int groupLen;
 
 #include "expression.h"
 void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen);

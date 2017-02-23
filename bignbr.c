@@ -30,6 +30,7 @@ extern limb Mult4[MAX_LEN];
 extern int q[MAX_LEN];
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
+int groupLen = 6;
 
 void CopyBigInt(BigInteger *pDest, BigInteger *pSrc)
 {
