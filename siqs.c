@@ -30,11 +30,9 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define LENGTH_OFFSET           0
 
 #ifdef __EMSCRIPTEN__
-extern int newStamp, oldStamp;
 extern char lowerText[], *ptrLowerText;
 char *ptrSIQSStrings;
-int oldTimeElapsed, startSieveTenths;
-double originalTenthSecond;
+int startSieveTenths;
 #endif
 
 typedef struct
@@ -129,37 +127,6 @@ static unsigned int getFactorsOfA(unsigned int seed, int *aindex);
 static void sieveThread(BigInteger *result);
 
 #ifdef __EMSCRIPTEN__
-// Convert tenths of seconds to days, hours, minutes and seconds.
-void GetDHMS(char **pptrText, int seconds)
-{
-  char *ptrText = *pptrText;
-  int2dec(&ptrText, seconds / 86400);         // Show number of days.
-  *ptrText++ = 'd';
-  *ptrText++ = ' ';
-  int2dec(&ptrText, (seconds / 3600) % 24);   // Show number of hours.
-  *ptrText++ = 'h';
-  *ptrText++ = ' ';
-  int2dec(&ptrText, (seconds / 60) % 60);     // Show number of minutes.
-  *ptrText++ = 'm';
-  *ptrText++ = ' ';
-  int2dec(&ptrText, seconds % 60);            // Show number of seconds.
-  *ptrText++ = 's';
-  *ptrText++ = ' ';
-  *pptrText = ptrText;
-}
-
-void GetDHMSt(char **pptrText, int tenths)
-{
-  char *ptrText;
-  GetDHMS(pptrText, tenths / 10);
-  ptrText = *pptrText - 2;
-  *ptrText++ = '.';
-  *ptrText++ = (char)(tenths%10 + '0');
-  *ptrText++ = 's';
-  *ptrText++ = ' ';
-  *pptrText = ptrText;
-}
-
 static void showMatrixSize(char *SIQSInfoText, int rows, int cols)
 {
   char *ptrText = ptrLowerText;  // Point after number that is being factored.
@@ -2511,11 +2478,6 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
     }
   }
   nbrPrimes2 = nbrPrimes - 4;
-#ifdef __EMSCRIPTEN__
-  newStamp = stamp();
-  // Sieve start time in milliseconds.
-  //  startTime = System.currentTimeMillis();
-#endif
   Prod = sqrt(2 * dNumberToFactor) / (double)SieveLimit;
   fact = (int)pow(Prod, 1 / (float)nbrFactorsA);
   for (i = 2;; i++)

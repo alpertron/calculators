@@ -24,15 +24,11 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "factor.h"
 
 #ifdef __EMSCRIPTEN__
-void GetDHMS(char **pptrText, int seconds);
-int newStamp, oldStamp;
 char upperText[30000];
 char lowerText[30000];
 char *ptrLowerText;
 int yieldFreq;
 mmCback modmultCallback;
-extern int oldTimeElapsed;
-extern double originalTenthSecond;
 extern long long lModularMult;
 #endif
 

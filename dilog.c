@@ -24,7 +24,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "factor.h"
 
 #ifdef __EMSCRIPTEN__
-extern int newStamp, oldStamp;
 extern long long lModularMult;
 #endif
 

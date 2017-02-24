@@ -1,11 +1,10 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 22 de febrero de 2017."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 22 February 2017."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 23 de febrero de 2017."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 23 February 2017."
 
 #ifdef __EMSCRIPTEN__
-double tenths(void);
 void databack(char *data);
 int stamp(void);
 #endif

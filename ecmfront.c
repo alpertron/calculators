@@ -970,13 +970,7 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
     }
     ComputeFourSquares(astFactorsMod);
     ShowFourSquares(&ptrOutput);
-    strcpy(ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
-    ptrOutput += strlen(ptrOutput);
-#ifdef __EMSCRIPTEN__
-    GetDHMSt(&ptrOutput, (int)(tenths() - originalTenthSecond));
-    strcpy(ptrOutput, "</p>");
-    ptrOutput += strlen(ptrOutput);
-#endif
+    showElapsedTime(&ptrOutput, lang);
   }
   strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
     "<p>" COPYRIGHT_ENGLISH "</p>");

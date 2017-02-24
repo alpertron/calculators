@@ -20,11 +20,9 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define _FACTOR_H
 #define MAX_FACTORS 1000
 #define FACTOR_ARRSIZE (2*MAX_FACTORS)
-
+#include "showtime.h"
 #ifdef __EMSCRIPTEN__
 void getCunn(char *url, char *factorsFromServer);
-extern double originalTenthSecond;
-void GetDHMSt(char **pptrText, int tenths);
 #endif
 struct sFactors
 {

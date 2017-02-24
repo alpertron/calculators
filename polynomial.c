@@ -24,13 +24,13 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "highlevel.h"
 #include "polynomial.h"
+#include "showtime.h"
 #define STACK_OPER_SIZE      100
 #define TOKEN_NUMBER         '0'
 #define TOKEN_START_EXPON    '1'
 #define TOKEN_END_EXPON      '2'
 #define TOKEN_UNARY_MINUS    '3'
 #ifdef __EMSCRIPTEN__
-int newStamp, oldStamp;
 extern char *output;
 #endif
 BigInteger primeMod;              // p
@@ -1861,11 +1861,10 @@ int HenselLifting(void)
     while (currentExp != exponentMod)
     {
 #ifdef __EMSCRIPTEN__
-      newStamp = stamp();
-      if (newStamp != oldStamp)
+      int elapsedTime = (int)(tenths() - originalTenthSecond);
+      if (elapsedTime / 10 != oldTimeElapsed / 10)
       {
         char *ptrOutput = output;
-        oldStamp = newStamp;
         if (lang)
         {
           strcpy(ptrOutput, "1<p>Aplicando lema de Hensel en el factor número ");

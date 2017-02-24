@@ -23,9 +23,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "highlevel.h"
 #include "polynomial.h"
-#ifdef __EMSCRIPTEN__
-extern int newStamp, oldStamp;
-#endif
+#include "showtime.h"
 
 // Perform distinct degree factorization
 static void DistinctDegreeFactorization(int polyDegree)
@@ -59,11 +57,10 @@ static void DistinctDegreeFactorization(int polyDegree)
     for (currentDegree = 1; currentDegree * 2 <= polyDegree; currentDegree++)
     {
 #ifdef __EMSCRIPTEN__
-      newStamp = stamp();
-      if (newStamp != oldStamp)
+      int elapsedTime = (int)(tenths() - originalTenthSecond);
+      if (elapsedTime / 10 != oldTimeElapsed / 10)
       {
         char *ptrOutput = output;
-        oldStamp = newStamp;
         if (lang)
         {
           strcpy(ptrOutput, "1<p>Factorización de distintos grados: buscando factores de grado ");
@@ -92,7 +89,10 @@ static void DistinctDegreeFactorization(int polyDegree)
         }
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, nbrFactorsFound);
-        strcpy(ptrOutput, ".</p>");
+        strcpy(ptrOutput, lang ? ".</p><p>Transcurrió " : ".</p><p>Time elapsed: ");
+        ptrOutput += strlen(ptrOutput);
+        GetDHMS(&ptrOutput, elapsedTime / 10);
+        strcpy(ptrOutput, "</p>");
         databack(output);
       }
 #endif
@@ -325,6 +325,9 @@ static int FactorPolynomial(char *input, int expo)
     return EXPR_OK;
   }
   // Generate polynomial mod prime.
+#ifdef __EMSCRIPTEN__
+  originalTenthSecond = tenths();
+#endif
   degree = values[0];
   ptrValue1 = &values[1];
   for (currentDegree = 0; currentDegree <= degree; currentDegree++)
@@ -383,6 +386,7 @@ static int FactorPolynomial(char *input, int expo)
 
 void polyFactText(char *modText, char *polyText, int groupLen)
 {
+  char *ptrOutput;
   enum eExprErr rc;
   int expon = 0;
   rc = ComputeExpression(modText, 1, &powerMod);
@@ -414,16 +418,20 @@ void polyFactText(char *modText, char *polyText, int groupLen)
     rc = FactorPolynomial(polyText, expon);
   }
   output[0] = '2';
+  ptrOutput = &output[1];
   if (rc != EXPR_OK)
   {
-    textErrorPol(output + 1, rc);
+    textErrorPol(ptrOutput, rc);
+    ptrOutput += strlen(ptrOutput);
   }
   else
   {
-    outputPolynomial(output + 1, groupLen);
+    outputPolynomial(ptrOutput, groupLen);
+    ptrOutput += strlen(ptrOutput);
+    showElapsedTime(&ptrOutput, lang);
   }
-  strcat(output + 1, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
-                            "<p>" COPYRIGHT_ENGLISH "</p>");
+  strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+                           "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
 #ifdef __EMSCRIPTEN__
@@ -447,6 +455,7 @@ void doWork(char* data, int size)
   superscripts = (unsigned char)(flags & 4);
   ptrData += 2;          // Skip flags and comma.
   polyFactText(ptrData, ptrData + strlen(ptrData) + 1, groupLen);
+  ptrData += strlen(ptrData);
   databack(output);
 }
 #endif

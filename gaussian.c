@@ -23,10 +23,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "factor.h"
 #include "expression.h"
 
-#ifdef __EMSCRIPTEN__
-extern int newStamp, oldStamp;
-#endif
-
 #define PAREN_STACK_SIZE 100
 
 static BigInteger ReValue, ImValue;
@@ -311,13 +307,7 @@ void gaussianText(char *valueText, int doFactorization)
   }
   if (rc == EXPR_OK)
   {
-    strcpy(ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
-    ptrOutput += strlen(ptrOutput);
-#ifdef __EMSCRIPTEN__
-    GetDHMSt(&ptrOutput, (int)(tenths() - originalTenthSecond));
-    strcpy(ptrOutput, "</p>");
-    ptrOutput += strlen(ptrOutput);
-#endif
+    showElapsedTime(&ptrOutput, lang);
   }
   else
   {

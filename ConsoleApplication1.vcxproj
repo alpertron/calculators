@@ -180,9 +180,11 @@
       <DeploymentContent>true</DeploymentContent>
     </ClCompile>
     <ClCompile Include="test.c" />
+    <ClCompile Include="showtime.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="polynomial.h" />
+    <ClInclude Include="showtime.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
