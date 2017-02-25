@@ -151,8 +151,15 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
   // Initialize approximate inverse square root.
   invSqrt = LIMB_RANGE / sqrt(getMantissa(adjustedArgument+len, len)*LIMB_RANGE+1);
   approxInvSqrt[lenInvSqrt - 1].x = 1;
-  approxInvSqrt[lenInvSqrt - 2].x = (int)((invSqrt-1)*LIMB_RANGE);
-
+  invSqrt = (invSqrt - 1)*LIMB_RANGE;
+  if (invSqrt > MAX_INT_NBR)
+  {
+    approxInvSqrt[lenInvSqrt - 2].x = MAX_INT_NBR;
+  }
+  else
+  {
+    approxInvSqrt[lenInvSqrt - 2].x = (int)invSqrt;
+  }
                // Perform Newton approximation loop.
                // Get bit length of each cycle.
   bitLengthNbrCycles = 0;
@@ -218,7 +225,7 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
       }
       approxInv[idx].x = 0;
     }
-    if (idx == 2*lenInvSqrt-2)
+    if (idx == 2*lenInvSqrt-1)
     {                // Roll back on overflow.
       for (idx = 2 * lenInvSqrt - lenInvSqrt2-1; idx < 2 * lenInvSqrt-1; idx++)
       {
