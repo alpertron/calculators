@@ -336,7 +336,7 @@ static int fcubes(BigInteger *pArgument)
   return 0;
 }
 
-void fcubesText(char *input, int groupLen)
+void fcubesText(char *input, int groupLength)
 {
   enum eExprErr rc;
   char *ptrOutput = output;
@@ -365,7 +365,7 @@ void fcubesText(char *input, int groupLen)
   // Show the number to be decomposed into sum of cubes.
   strcpy(ptrOutput, "<p><var>n</var> = ");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&ExpressionResult, ptrOutput, groupLen);
+  BigInteger2Dec(&ExpressionResult, ptrOutput, groupLength);
   ptrOutput += strlen(ptrOutput);
   // Show whether the number is a sum of 1, 2, 3 or 4 cubes.
   strcpy(ptrOutput, "</p><p><var>n</var> = <var>a</var>");
@@ -400,27 +400,27 @@ void fcubesText(char *input, int groupLen)
   // Show the decomposition.
   strcpy(ptrOutput, "<var>a</var> = ");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&Base1, ptrOutput, groupLen);
+  BigInteger2Dec(&Base1, ptrOutput, groupLength);
   ptrOutput += strlen(ptrOutput);
   if (Base2.nbrLimbs != 1 || Base2.limbs[0].x != 0)
   {
     strcpy(ptrOutput, "</p><p><span class=\"offscr\">, </span><var>b</var> = ");
     ptrOutput += strlen(ptrOutput);
-    BigInteger2Dec(&Base2, ptrOutput, groupLen);
+    BigInteger2Dec(&Base2, ptrOutput, groupLength);
     ptrOutput += strlen(ptrOutput);
   }
   if (Base3.nbrLimbs != 1 || Base3.limbs[0].x != 0)
   {
     strcpy(ptrOutput, "</p><p><span class=\"offscr\">, </span><var>c</var> = ");
     ptrOutput += strlen(ptrOutput);
-    BigInteger2Dec(&Base3, ptrOutput, groupLen);
+    BigInteger2Dec(&Base3, ptrOutput, groupLength);
     ptrOutput += strlen(ptrOutput);
   }
   if (Base4.nbrLimbs != 1 || Base4.limbs[0].x != 0)
   {
     strcpy(ptrOutput, "</p><p><span class=\"offscr\">, </span><var>d</var> = ");
     ptrOutput += strlen(ptrOutput);
-    BigInteger2Dec(&Base4, ptrOutput,  groupLen);
+    BigInteger2Dec(&Base4, ptrOutput,  groupLength);
     ptrOutput += strlen(ptrOutput);
   }
   strcpy(ptrOutput, (lang?"</p><p>" COPYRIGHT_SPANISH "</p>":

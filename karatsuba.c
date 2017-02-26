@@ -27,14 +27,13 @@
 #define KARATSUBA_CUTOFF 8
 static limb arr[MAX_LEN];
 static limb arrAux[MAX_LEN];
-static int length;
 static int karatLength;
 static void Karatsuba(int idxFactor1, int length, int endIndex);
 int multCtr, karatCtr;
 
 void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen)
 {
-	length = len;
+	int length = len;
     // Compute length of numbers for each recursion.
 	if (length <= KARATSUBA_CUTOFF)
 	{
@@ -75,12 +74,12 @@ void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultL
 // The return value is the sign: true: negative.
 // In result the absolute value of the difference is computed.
 static int absSubtract(int idxMinuend, int idxSubtrahend,
-	                     int idxResult, int length)
+	                     int idxResult, int nbrLen)
 {
 	int sign = 0;
 	limb carry;
 	int i;
-	for (i = length-1; i>=0; i--)
+	for (i = nbrLen-1; i>=0; i--)
 	{
 		if (arr[idxMinuend + i].x != arr[idxSubtrahend + i].x)
 		{
@@ -95,7 +94,7 @@ static int absSubtract(int idxMinuend, int idxSubtrahend,
 		idxSubtrahend = i;
 	}
   carry.x = 0;
-  for (i = 0; i < length; i++)
+  for (i = 0; i < nbrLen; i++)
   {
     carry.x += arr[idxMinuend + i].x - arr[idxSubtrahend + i].x;
     arr[idxResult + i].x = carry.x & MAX_VALUE_LIMB;
@@ -104,11 +103,11 @@ static int absSubtract(int idxMinuend, int idxSubtrahend,
 	return sign;
 }
 
-// Multiply two groups of length limbs. The first one starts at idxFactor1
-// and the second one at idxFactor2. The 2*length limb result is stored
+// Multiply two groups of nbrLen limbs. The first one starts at idxFactor1
+// and the second one at idxFactor2. The 2*nbrLen limb result is stored
 // starting at idxFactor1. Use arrAux as temporary storage.
 // Accumulate products by result limb.
-static void ClassicalMult(int idxFactor1, int idxFactor2, int length)
+static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
 {
   int prodCol, fact1Col;
   limb *ptrFactor1, *ptrFactor2;
@@ -118,9 +117,9 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int length)
   double dAccumulator = 0;  // Approximation to the sum of multiplications.
   int factor1, factor2;
   multCtr++;
-  for (prodCol = 0; prodCol < 2 * length - 1; prodCol++)
+  for (prodCol = 0; prodCol < 2 * nbrLen - 1; prodCol++)
   {    // Process each limb of product (least to most significant limb).
-    if (prodCol < length)
+    if (prodCol < nbrLen)
     {   // Processing first half (least significant) of product.
       ptrFactor2 = &arr[idxFactor2 + prodCol];
       ptrFactor1 = &arr[idxFactor1];
@@ -128,9 +127,9 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int length)
     }
     else
     {  // Processing second half (most significant) of product.
-      ptrFactor2 = &arr[idxFactor2 + length - 1];
-      ptrFactor1 = &arr[idxFactor1 + prodCol - length + 1];
-      fact1Col = 2 * (length - 1) - prodCol;
+      ptrFactor2 = &arr[idxFactor2 + nbrLen - 1];
+      ptrFactor1 = &arr[idxFactor1 + prodCol - nbrLen + 1];
+      fact1Col = 2 * (nbrLen - 1) - prodCol;
     }
     for (; fact1Col>=0; fact1Col--)
     {
@@ -154,26 +153,26 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int length)
     low = (unsigned int)(dAccumulator - floor(dAccumulator / dRangeLimb) * dRangeLimb);
   }
   arrAux[prodCol].x = low;
-  memcpy(&arr[idxFactor1], &arrAux[0], 2 * length * sizeof(limb));
+  memcpy(&arr[idxFactor1], &arrAux[0], 2 * nbrLen * sizeof(limb));
   return;
 }
 
 // Recursive Karatsuba function.
-static void Karatsuba(int idxFactor1, int length, int endIndex)
+static void Karatsuba(int idxFactor1, int nbrLen, int endIndex)
 {
-	int idxFactor2 = idxFactor1 + length;
+	int idxFactor2 = idxFactor1 + nbrLen;
   int i;
-  unsigned int carry1First, carry1Second, accum1Lo;
-  unsigned int carry2Second, accum2Lo;
+  unsigned int carry1First, carry1Second;
+  unsigned int carry2Second;
   limb *ptrResult, *ptrHigh, tmp;
 	int middle;
 	int sign;
 	int halfLength;
-	if (length <= KARATSUBA_CUTOFF)
+	if (nbrLen <= KARATSUBA_CUTOFF)
 	{
 		// Check if one of the factors is equal to zero.
     ptrResult = &arr[idxFactor1];
-		for (i = length; i > 0; i--)
+		for (i = nbrLen; i > 0; i--)
 		{
 			if ((ptrResult++)->x != 0)
 			{
@@ -183,7 +182,7 @@ static void Karatsuba(int idxFactor1, int length, int endIndex)
 		if (i > 0)
 		{     // First factor is not zero. Check second.
       ptrResult = &arr[idxFactor2];
-      for (i = length; i > 0; i--)
+      for (i = nbrLen; i > 0; i--)
 			{
         if ((ptrResult++)->x != 0)
 				{
@@ -193,14 +192,14 @@ static void Karatsuba(int idxFactor1, int length, int endIndex)
 		}
 		if (i==0)
 		{    // One of the factors is equal to zero.
-			for (i = length - 1; i >= 0; i--)
+			for (i = nbrLen - 1; i >= 0; i--)
 			{
 				arr[idxFactor1 + i].x = arr[idxFactor2 + i].x = 0;
 			}
 			return;
 		}
          // Below cutoff: perform standard classical multiplcation.
-    ClassicalMult(idxFactor1, idxFactor2, length);
+    ClassicalMult(idxFactor1, idxFactor2, nbrLen);
     return;
 	}
 	// Length > KARATSUBA_CUTOFF: Use Karatsuba multiplication.
@@ -214,7 +213,7 @@ static void Karatsuba(int idxFactor1, int length, int endIndex)
 	// At this moment the order is: xL, xH, yL, yH.
 	// Exchange high part of first factor with low part of 2nd factor.
   karatCtr++;
-  halfLength = length >> 1;
+  halfLength = nbrLen >> 1;
   for (i = idxFactor1 + halfLength; i<idxFactor2; i++)
 	{
 		tmp.x = arr[i].x;
@@ -227,7 +226,7 @@ static void Karatsuba(int idxFactor1, int length, int endIndex)
 	sign ^= absSubtract(idxFactor2 + halfLength, idxFactor1 + halfLength,
 		endIndex + halfLength, halfLength);
 	middle = endIndex;
-	endIndex += length;
+	endIndex += nbrLen;
 	Karatsuba(idxFactor1, halfLength, endIndex); // Multiply both low parts.
 	Karatsuba(idxFactor2, halfLength, endIndex); // Multiply both high parts.
 	Karatsuba(middle, halfLength, endIndex);     // Multiply the differences.
@@ -242,13 +241,14 @@ static void Karatsuba(int idxFactor1, int length, int endIndex)
     // so two adds are required. Also carries must be separated in
     // order to avoid overflow:
     // 00000001 + 7FFFFFFF + 7FFFFFFF = FFFFFFFF
-    accum1Lo = carry1First + ptrResult->x + (ptrResult + halfLength)->x;
+    unsigned int accum1Lo = carry1First + ptrResult->x + (ptrResult + halfLength)->x;
+    unsigned int accum2Lo;
     carry1First = accum1Lo >> BITS_PER_GROUP;
     accum2Lo = carry2Second + (accum1Lo & MAX_VALUE_LIMB) +
                (ptrResult - halfLength)->x;
     carry2Second = accum2Lo >> BITS_PER_GROUP;
     accum1Lo = carry1Second + (accum1Lo & MAX_VALUE_LIMB) +
-               (ptrResult + length)->x;
+               (ptrResult + nbrLen)->x;
     carry1Second = accum1Lo >> BITS_PER_GROUP;
     (ptrResult + halfLength)->x = accum1Lo & MAX_VALUE_LIMB;
     ptrResult->x = accum2Lo & MAX_VALUE_LIMB;
@@ -259,7 +259,7 @@ static void Karatsuba(int idxFactor1, int length, int endIndex)
   // Process carries.
   ptrResult = &arr[idxFactor1];
   carry1First = 0;
-  for (i = 2*length; i > 0; i--)
+  for (i = 2*nbrLen; i > 0; i--)
   {
     carry1First += ptrResult->x;
     (ptrResult++)->x = carry1First & MAX_VALUE_LIMB;
@@ -271,7 +271,7 @@ static void Karatsuba(int idxFactor1, int length, int endIndex)
   if (sign != 0)
   {            // (xH-xL) * (yL-yH) is negative.
     int borrow = 0;
-    for (i = length; i > 0; i--)
+    for (i = nbrLen; i > 0; i--)
     {
       borrow += ptrResult->x - (ptrHigh++)->x;
       (ptrResult++)->x = borrow & MAX_VALUE_LIMB;
@@ -287,7 +287,7 @@ static void Karatsuba(int idxFactor1, int length, int endIndex)
   else
   {            // (xH-xL) * (yL-yH) is positive or zero.
     unsigned int carry = 0;
-    for (i = length; i > 0; i--)
+    for (i = nbrLen; i > 0; i--)
     {
       carry += (unsigned int)ptrResult->x + (unsigned int)(ptrHigh++)->x;
       (ptrResult++)->x = (int)(carry & MAX_VALUE_LIMB);

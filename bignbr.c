@@ -437,13 +437,12 @@ void BigIntDivide2(BigInteger *pArg)
 
 static void BigIntMutiplyPower2(BigInteger *pArg, int power2)
 {
-  unsigned int carry;
   int ctr;
   int nbrLimbs = pArg->nbrLimbs;
   limb *ptrLimbs = pArg->limbs;
   for (; power2 > 0; power2--)
   {
-    carry = 0;
+    unsigned int carry = 0;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
       carry += (unsigned int)(ptrLimbs + ctr)->x << 1;
@@ -793,18 +792,18 @@ int bitLength(BigInteger *pBigNbr)
 
 int intModPow(int NbrMod, int Expon, int currentPrime)
 {
-  unsigned int Power = 1;
-  unsigned int Square = (unsigned int)NbrMod;
+  unsigned int power = 1;
+  unsigned int square = (unsigned int)NbrMod;
   while (Expon != 0)
   {
     if ((Expon & 1) == 1)
     {
-      Power = (Power * Square) % (unsigned int)currentPrime;
+      power = (power * square) % (unsigned int)currentPrime;
     }
-    Square = (Square * Square) % (unsigned int)currentPrime;
+    square = (square * square) % (unsigned int)currentPrime;
     Expon >>= 1;
   }
-  return (int)Power;
+  return (int)power;
 }
 
 static void InitTempFromInt(int value)
@@ -1157,7 +1156,7 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
 // Check if number is pseudoprime base 3
 int isPseudoprime(BigInteger *pResult)
 {
-  int Base, delta, baseNbr, ctr, i, nbrLimbsQ, Mult3Len;
+  int base, delta, baseNbr, ctr, i, nbrLimbsQ, Mult3Len;
   limb largeVal;
   int nbrLimbs = pResult->nbrLimbs;
   limb *pResultLimbs = pResult->limbs;
@@ -1168,7 +1167,7 @@ int isPseudoprime(BigInteger *pResult)
     {
       int Q;
       for (Q = 3; Q*Q <= largeVal.x; Q += 2)
-      {     // Check if Base is prime
+      {     // Check if base is prime
         if (largeVal.x % Q == 0)
         {
           break;     // Composite
@@ -1181,21 +1180,21 @@ int isPseudoprime(BigInteger *pResult)
     }
     return TRUE;
   }
-  Base = 3;
+  base = 3;
   delta = 2;
   for (baseNbr = 100; baseNbr > 0; baseNbr--)
-  {    // Compute value mod Base. If it is zero, the number is composite.
-    if (getRemainder(pResult, Base) == 0)
+  {    // Compute value mod base. If it is zero, the number is composite.
+    if (getRemainder(pResult, base) == 0)
     {                      // Number is composite.
       return FALSE;
     }
-    Base += delta;         // Skip multiples of 3.
-    if (Base > 5)
+    base += delta;         // Skip multiples of 3.
+    if (base > 5)
     {
       delta = 6 - delta;   // Exchange delta between 2 and 4.
     }
   }
-  Base = 3;
+  base = 3;
   (pResultLimbs + nbrLimbs)->x = 0;
   memcpy(q, pResultLimbs, (nbrLimbs + 1)*sizeof(limb));
   nbrLimbsQ = nbrLimbs;
@@ -1208,11 +1207,11 @@ int isPseudoprime(BigInteger *pResult)
   GetMontgomeryParms(nbrLimbs);
   for (baseNbr = 20; baseNbr > 0; baseNbr--)
   {    // Try up to 20 bases.
-    modPowBaseInt(Base, Mult3, Mult3Len, Mult1); // Mult1 = base^Mult3.
+    modPowBaseInt(base, Mult3, Mult3Len, Mult1); // Mult1 = base^Mult3.
                                                  // If Mult1 = 1 or Mult1 = TestNbr-1, then try next base.
     if (checkOne(Mult1, nbrLimbs) != 0 || checkMinusOne(Mult1, nbrLimbs) != 0)
     {
-      Base += 2;
+      base += 2;
       continue;
     }
     for (i = 0; i < ctr; i++)
@@ -1235,7 +1234,7 @@ int isPseudoprime(BigInteger *pResult)
     }
     // If power (Mult4) is 1, that means that number is at least PRP,
     // so continue loop trying to find square root of -1.
-    Base += 2;
+    base += 2;
   }
   return TRUE;
 }

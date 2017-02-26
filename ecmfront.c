@@ -22,6 +22,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
+#include "showtime.h"
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 extern long long lModularMult;
@@ -38,17 +39,18 @@ extern BigInteger factorValue;
 static BigInteger result;
 BigInteger valueX;
 char outputExpr[100000];
+#ifdef __EMSCRIPTEN__
 extern char *ptrInputText;
+#endif
 extern int NextEC;
 
 static void stringToHTML(char **pptrOutput, char *ptrString)
 {
   int character;
-  char c;
   char *ptrOutput = *pptrOutput;
   for (;;)
   {
-    c = *ptrString;
+    char c = *ptrString;
     if (c == 0)
     {
       break;    // End of string, so go out.
@@ -96,14 +98,13 @@ static void SkipSpaces(char **pptrText)
   *pptrText = ptrText;
 }
 
-static char evalExpression(char *expr, int counter, BigInteger *result)
+static char evalExpression(char *expr, int counter, BigInteger *ptrResult)
 {
   char *ptrInputExpr = expr;
   char *ptrOutputExpr = outputExpr;
-  char c;
   while (*ptrInputExpr != 0)
   {
-    c = *ptrInputExpr;
+    char c = *ptrInputExpr;
     if (c == ';')
     {
       break;
@@ -124,7 +125,7 @@ static char evalExpression(char *expr, int counter, BigInteger *result)
     ptrInputExpr++;
   }
   *ptrOutputExpr = 0;   // Append string terminator.
-  return ComputeExpression(outputExpr, 1, result);
+  return ComputeExpression(outputExpr, 1, ptrResult);
 }
 
 static void BatchError(char **pptrOutput, char *tofactorText, char *errorText)
@@ -146,13 +147,13 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
   int counter = 0;
   char *ptrOutput = output;
   char *NextExpr, *EndExpr, *FactorExpr;
-  char c;
   enum eExprErr rc;
   char *ptrCharFound, *ptrSrcString, *ptrStartExpr;
   strcpy(ptrOutput, "2<ul><li>");
   ptrOutput += strlen(ptrOutput);
   while (ptrNextBatchFactor != NULL && ptrNextBatchFactor < ptrEndBatchFactor)
   {  // Get next line.
+    char c;
     counter = 1;
     ptrCurrBatchFactor = ptrNextBatchFactor;
     ptrNextBatchFactor = findChar(ptrCurrBatchFactor, '\n');
@@ -317,7 +318,6 @@ static void ExponentToBigInteger(int exponent, BigInteger *bigint)
 static void GetNumberOfDivisors(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
-  int *ptrFactor;
   struct sFactors *pstFactor;
   int factorNumber;
   result.limbs[0].x = 1;    // Set result to 1.
@@ -326,7 +326,7 @@ static void GetNumberOfDivisors(char **pptrOutput)
   pstFactor = &astFactorsMod[1];
   for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
-    ptrFactor = pstFactor->ptrFactor;
+    int *ptrFactor = pstFactor->ptrFactor;
     if (*ptrFactor == 1 && *(ptrFactor + 1) < 2)
     {                        // Factor is 1.
       break;
@@ -410,12 +410,12 @@ static void GetMobius(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
   struct sFactors *pstFactor;
-  int factorNumber;
   int mobius = 1;
   pstFactor = &astFactorsMod[1];
   if (astFactorsMod[0].multiplicity > 1 || *pstFactor->ptrFactor != 1 ||
     *(pstFactor->ptrFactor + 1) != 1)
   {                                // Number to factor is not 1.
+    int factorNumber;
     for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
     {
       if (pstFactor->multiplicity == 1)
@@ -970,7 +970,7 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
     }
     ComputeFourSquares(astFactorsMod);
     ShowFourSquares(&ptrOutput);
-    showElapsedTime(&ptrOutput, lang);
+    showElapsedTime(&ptrOutput);
   }
   strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
     "<p>" COPYRIGHT_ENGLISH "</p>");
@@ -979,7 +979,6 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
 void doWork(char* data)
 {
   int flags;
-  char *ptrText;
   char *ptrData = data;
   char *ptrWebStorage, *ptrKnownFactors;
   if (output == NULL)
@@ -1018,7 +1017,7 @@ void doWork(char* data)
   {
     if (ptrKnownFactors)
     {
-      ptrText = ptrKnownFactors + strlen(ptrKnownFactors) + 1;
+      char *ptrText = ptrKnownFactors + strlen(ptrKnownFactors) + 1;
       NextEC = 0;
       while (*ptrText != 0)
       {

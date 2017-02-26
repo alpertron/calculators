@@ -22,6 +22,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "factor.h"
 #include "expression.h"
+#include "showtime.h"
 
 #define PAREN_STACK_SIZE 100
 
@@ -307,7 +308,7 @@ void gaussianText(char *valueText, int doFactorization)
   }
   if (rc == EXPR_OK)
   {
-    showElapsedTime(&ptrOutput, lang);
+    showElapsedTime(&ptrOutput);
   }
   else
   {

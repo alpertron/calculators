@@ -655,13 +655,13 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
   return EXPR_OK;
 }
 
-static void ToPoly(int degree, int *polySrc, int *polyDest)
+static void ToPoly(int polyDegree, int *polySrc, int *polyDest)
 {
   int currentDegree;
   polySrc++;
-  if (degree < 0)
+  if (polyDegree < 0)
   {    // Polynomial is a monomial
-    for (currentDegree = 0; currentDegree < -degree; currentDegree++)
+    for (currentDegree = 0; currentDegree < -polyDegree; currentDegree++)
     {
       *polyDest = 1;
       *(polyDest + 1) = 0;
@@ -671,7 +671,7 @@ static void ToPoly(int degree, int *polySrc, int *polyDest)
   }
   else
   {   // Polynomial
-    for (currentDegree = 0; currentDegree <= degree; currentDegree++)
+    for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
       int nbrLimbs = *(polySrc)+1;
       memcpy(polyDest, polySrc, nbrLimbs*sizeof(int));
@@ -681,11 +681,11 @@ static void ToPoly(int degree, int *polySrc, int *polyDest)
   }
 }
 
-static void FromPoly(int degree, int *polyDest, int *polySrc)
+static void FromPoly(int polyDegree, int *polyDest, int *polySrc)
 {
   int currentDegree;
-  *polyDest++ = degree;
-  for (currentDegree = 0; currentDegree <= degree; currentDegree++)
+  *polyDest++ = polyDegree;
+  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     int nbrLimbs = *(polySrc)+1;
     memcpy(polyDest, polySrc, nbrLimbs*sizeof(int));
@@ -945,7 +945,7 @@ int ComputePolynomial(char *input, int expo)
       ptrValue1 = stackValues[stackIndex - 1];
       if (insideExpon != 0)
       {
-        *ptrValue1 = -val;
+        *ptrValue1 = -*ptrValue1;
       }
       else
       {
@@ -2054,7 +2054,7 @@ static void showPowerX(char **pptrOutput, int polyDegree)
   *pptrOutput = ptrOutput;
 }
 
-static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int groupLen)
+static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int groupLength)
 {
   int nbrLimbs = NumberLength + 1;
   int *ptrValue1 = ptrPoly + (polyDegree - 1)*nbrLimbs;
@@ -2071,7 +2071,7 @@ static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int 
       if (*ptrValue1 != 1 || *(ptrValue1 + 1) != 1)
       {            // Coefficient is not one.
         UncompressBigInteger(ptrValue1, &operand1);
-        Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLen);
+        Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLength);
         ptrOutput += strlen(ptrOutput);
         if (currentDegree > 0)
         {
@@ -2088,7 +2088,7 @@ static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int 
   *pptrOutput = ptrOutput;
 }
 
-void outputPolynomial(char *ptrOutput, int groupLen)
+void outputPolynomial(char *ptrOutput, int groupLength)
 {
   struct sFactorInfo *pstFactorInfo = factorInfo;
   int nbrFactor, currentDegree;
@@ -2117,17 +2117,17 @@ void outputPolynomial(char *ptrOutput, int groupLen)
   UncompressBigInteger(&poly4[degree*nbrLimbs], &operand1);
   if ((operand1.nbrLimbs != 1 || operand1.limbs[0].x != 1) || degree == 0)
   {     // Leading coefficient is not 1 or degree is zero.
-    Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLen);
+    Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
   }
   if (degree > 0)
   {
     showPowerX(&ptrOutput, degree);
   }
-  showPolynomial(&ptrOutput, poly4, degree, groupLen);
+  showPolynomial(&ptrOutput, poly4, degree, groupLength);
   strcpy(ptrOutput, " (mod ");
   ptrOutput += strlen(ptrOutput);
-  Bin2Dec(primeMod.limbs, ptrOutput, primeMod.nbrLimbs, groupLen);
+  Bin2Dec(primeMod.limbs, ptrOutput, primeMod.nbrLimbs, groupLength);
   ptrOutput += strlen(ptrOutput);
   if (exponentMod != 1)
   {
@@ -2154,7 +2154,7 @@ void outputPolynomial(char *ptrOutput, int groupLen)
     *ptrOutput++ = 'l';
     *ptrOutput++ = 'i';
     *ptrOutput++ = '>';
-    Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLen);
+    Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
     *ptrOutput++ = '<';
     *ptrOutput++ = '/';
@@ -2175,7 +2175,7 @@ void outputPolynomial(char *ptrOutput, int groupLen)
       *ptrOutput++ = '(';
     }
     showPowerX(&ptrOutput, polyDegree);
-    showPolynomial(&ptrOutput, pstFactorInfo->ptrPolyLifted, polyDegree, groupLen);
+    showPolynomial(&ptrOutput, pstFactorInfo->ptrPolyLifted, polyDegree, groupLength);
     if (multiplicity > 1)
     {
       *ptrOutput++ = ')';
@@ -2196,7 +2196,7 @@ void outputPolynomial(char *ptrOutput, int groupLen)
   *ptrOutput++ = '\0';
 }
 
-void textErrorPol(char *output, enum eExprErr rc)
+void textErrorPol(char *ptrOutput, enum eExprErr rc)
 {
   char text[150];
 
@@ -2234,15 +2234,15 @@ void textErrorPol(char *output, enum eExprErr rc)
   default:
     textError(text, rc);
   }
-  *output++ = '<';
-  *output++ = 'p';
-  *output++ = '>';
-  strcpy(output, text);
-  output += strlen(output);
-  *output++ = '<';
-  *output++ = '/';
-  *output++ = 'p';
-  *output++ = '>';
-  *output = 0;    // Add terminator character.
+  *ptrOutput++ = '<';
+  *ptrOutput++ = 'p';
+  *ptrOutput++ = '>';
+  strcpy(ptrOutput, text);
+  ptrOutput += strlen(ptrOutput);
+  *ptrOutput++ = '<';
+  *ptrOutput++ = '/';
+  *ptrOutput++ = 'p';
+  *ptrOutput++ = '>';
+  *ptrOutput = 0;    // Add terminator character.
 }
 

@@ -510,16 +510,16 @@ static void GenerateSieve(int initial)
 #endif
 }
 
-int JacobiSymbol(int M, int Q)
+int JacobiSymbol(int upper, int lower)
 {
-  int k, t1, t2, t3, jacobi;
-  // Calculate gcd(M,Q)
+  int k, t1, t2, jacobi;
+  // Calculate gcd(upper,lower)
 
-  t1 = M;
-  t2 = Q;
+  t1 = upper;
+  t2 = lower;
   while (t1 != 0)
   {
-    t3 = t2 % t1;
+    int t3 = t2 % t1;
     t2 = t1;
     t1 = t3;
   }
@@ -528,46 +528,46 @@ int JacobiSymbol(int M, int Q)
     return 0;
   }
   jacobi = 1;
-  while (Q % 2 == 0)
+  while (lower % 2 == 0)
   {
-    Q /= 2;
+    lower /= 2;
   }
-  if (Q % 3 == 0)
+  if (lower % 3 == 0)
   {
     do
     {
-      jacobi = (jacobi * M) % 3;
-      Q /= 3;
-    } while (Q % 3 == 0);
+      jacobi = (jacobi * upper) % 3;
+      lower /= 3;
+    } while (lower % 3 == 0);
     jacobi = (jacobi + 1) % 3 - 1;
   }
 
   k = 5;
-  while (k * k <= Q)
+  while (k * k <= lower)
   {
     if (k % 3 != 0)
     {
-      while (Q % k == 0)
+      while (lower % k == 0)
       {
-        Q /= k;
+        lower /= k;
         jacobi = (jacobi + k) % k;
         for (t1 = (k - 1) / 2; t1 > 0; t1--)
         {
-          jacobi = jacobi * M % k;
+          jacobi = jacobi * upper % k;
         }
         jacobi = (jacobi + 1) % k - 1;
       }
     }
     k += 2;
   }
-  if (Q > 1)
+  if (lower > 1)
   {
-    jacobi = (jacobi + Q) % Q;
-    for (t1 = (Q - 1) / 2; t1 > 0; t1--)
+    jacobi = (jacobi + lower) % lower;
+    for (t1 = (lower - 1) / 2; t1 > 0; t1--)
     {
-      jacobi = jacobi * M % Q;
+      jacobi = jacobi * upper % lower;
     }
-    jacobi = (jacobi + 1) % Q - 1;
+    jacobi = (jacobi + 1) % lower - 1;
   }
   return jacobi;
 }
@@ -675,24 +675,24 @@ int Moebius(int N)
 
 void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, BigInteger *BigBase)
 {
-  BigInteger X, Csal, Dsal, Nbr1;
+  BigInteger x, Csal, Dsal, Nbr1;
   int k;
 
-  BigIntPowerIntExp(BigBase, L, &X);   // X <- BigBase^L.
+  BigIntPowerIntExp(BigBase, L, &x);   // x <- BigBase^L.
   intToBigInteger(&Csal, 1);
   intToBigInteger(&Dsal, 1);
   for (k = 1; k < DegreeAurif; k++)
   {
     longToBigInteger(&Nbr1, Gamma[k]);
-    BigIntMultiply(&Csal, &X, &Csal);
-    BigIntAdd(&Csal, &Nbr1, &Csal);      // Csal <- Csal * X + Gamma[k]
+    BigIntMultiply(&Csal, &x, &Csal);
+    BigIntAdd(&Csal, &Nbr1, &Csal);      // Csal <- Csal * x + Gamma[k]
     longToBigInteger(&Nbr1, Delta[k]);
-    BigIntMultiply(&Dsal, &X, &Dsal);
-    BigIntAdd(&Dsal, &Nbr1, &Dsal);      // Dsal <- Dsal * X + Gamma[k]
+    BigIntMultiply(&Dsal, &x, &Dsal);
+    BigIntAdd(&Dsal, &Nbr1, &Dsal);      // Dsal <- Dsal * x + Gamma[k]
   }
   longToBigInteger(&Nbr1, Gamma[k]);
-  BigIntMultiply(&Csal, &X, &Csal);
-  BigIntAdd(&Csal, &Nbr1, &Csal);        // Csal <- Csal * X + Gamma[k]
+  BigIntMultiply(&Csal, &x, &Csal);
+  BigIntAdd(&Csal, &Nbr1, &Csal);        // Csal <- Csal * x + Gamma[k]
   BigIntPowerIntExp(BigBase, (L + 1) / 2, &Nbr1);   // Nbr1 <- Dsal * base^((L+1)/2)
   BigIntMultiply(&Dsal, &Nbr1, &Nbr1);
   BigIntAdd(&Csal, &Nbr1, &Dsal);
@@ -704,8 +704,7 @@ void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, BigInteger *BigBas
 // Get Aurifeuille factors.
 void InsertAurifFactors(struct sFactors *pstFactors, BigInteger *BigBase, int Expon, int Incre)
 {
-  int t1, t2, t3, N, N1, q, L, j, k, Base;
-  Base = BigBase->limbs[0].x;
+  int Base = BigBase->limbs[0].x;
   if (BigBase->nbrLimbs != 1 || Base >= 386)
   {
     return;    // Base is very big, so go out.
@@ -722,7 +721,8 @@ void InsertAurifFactors(struct sFactors *pstFactors, BigInteger *BigBase, int Ex
     && Expon / Base % 2 != 0
     && ((Base % 4 != 1 && Incre == 1) || (Base % 4 == 1 && Incre == -1)))
   {
-    N = Base;
+    int N1, q, L, k;
+    int N = Base;
     if (N % 4 == 1)
     {
       N1 = N;
@@ -738,11 +738,11 @@ void InsertAurifFactors(struct sFactors *pstFactors, BigInteger *BigBase, int Ex
     }
     for (k = 2; k <= DegreeAurif; k += 2)
     {
-      t1 = k; // Calculate t2 = gcd(k, N1)
-      t2 = N1;
+      int t1 = k; // Calculate t2 = gcd(k, N1)
+      int t2 = N1;
       while (t1 != 0)
       {
-        t3 = t2 % t1;
+        int t3 = t2 % t1;
         t2 = t1;
         t1 = t3;
       }
@@ -751,6 +751,7 @@ void InsertAurifFactors(struct sFactors *pstFactors, BigInteger *BigBase, int Ex
     Gamma[0] = Delta[0] = 1;
     for (k = 1; k <= DegreeAurif / 2; k++)
     {
+      int j;
       Gamma[k] = Delta[k] = 0;
       for (j = 0; j < k; j++)
       {
@@ -901,7 +902,7 @@ static boolean ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFac
   char status[200];
   char *ptrStatus;
 #endif
-  BigInteger NFp1, NFm1, root, rootN1, rootN, rootbak;
+  BigInteger NFp1, NFm1, nthRoot, rootN1, rootN, rootbak;
   BigInteger nextroot, dif;
   double log2N;
 #ifdef __EMSCRIPTEN__
@@ -924,52 +925,52 @@ static boolean ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFac
   CopyBigInt(&NFm1, nbrToFactor);
   addbigint(&NFm1, -1);                   // NFm1 <- NumberToFactor - 1
   log2N = logBigNbr(&NFp1) / Exponent;    // Find nth root of number to factor.
-  expBigNbr(&root, log2N);
-  rootbak = root;
+  expBigNbr(&nthRoot, log2N);
+  rootbak = nthRoot;
   for (;;)
   {
-    BigIntPowerIntExp(&root, Exponent - 1, &rootN1); // rootN1 <- root ^ (Exponent-1)
-    BigIntMultiply(&root, &rootN1, &rootN);     // rootN <- root ^ Exponent
+    BigIntPowerIntExp(&nthRoot, Exponent - 1, &rootN1); // rootN1 <- nthRoot ^ (Exponent-1)
+    BigIntMultiply(&nthRoot, &rootN1, &rootN);     // rootN <- nthRoot ^ Exponent
     BigIntSubt(&NFp1, &rootN, &dif);            // dif <- NFp1 - rootN
     if (dif.nbrLimbs == 1 && dif.limbs[0].x == 0)
     { // Perfect power
-      Cunningham(pstFactors, &root, Exponent, -1, nbrToFactor);
+      Cunningham(pstFactors, &nthRoot, Exponent, -1, nbrToFactor);
       return TRUE;
     }
     addbigint(&dif, 1);                         // dif <- dif + 1
     BigIntDivide(&dif, &rootN1, &Temp1);        // Temp1 <- dif / rootN1
     subtractdivide(&Temp1, 0, Exponent);        // Temp1 <- Temp1 / Exponent
-    BigIntAdd(&Temp1, &root, &nextroot);        // nextroot <- Temp1 + root
+    BigIntAdd(&Temp1, &nthRoot, &nextroot);        // nextroot <- Temp1 + nthRoot
     addbigint(&nextroot, -1);                   // nextroot <- nextroot - 1
-    BigIntSubt(&nextroot, &root, &root);        // root <- nextroot - root
-    if (root.sign == SIGN_POSITIVE)
+    BigIntSubt(&nextroot, &nthRoot, &nthRoot);        // nthRoot <- nextroot - nthRoot
+    if (nthRoot.sign == SIGN_POSITIVE)
     {
       break; // Not a perfect power
     }
-    CopyBigInt(&root, &nextroot);
+    CopyBigInt(&nthRoot, &nextroot);
   }
-  root = rootbak;
+  nthRoot = rootbak;
   for (;;)
   {
-    BigIntPowerIntExp(&root, Exponent - 1, &rootN1); // rootN1 <- root ^ (Exponent-1)
-    BigIntMultiply(&root, &rootN1, &rootN);     // rootN <- root ^ Exponent
+    BigIntPowerIntExp(&nthRoot, Exponent - 1, &rootN1); // rootN1 <- nthRoot ^ (Exponent-1)
+    BigIntMultiply(&nthRoot, &rootN1, &rootN);     // rootN <- nthRoot ^ Exponent
     BigIntSubt(&NFm1, &rootN, &dif);            // dif <- NFm1 - rootN
     if (dif.nbrLimbs == 1 && dif.limbs[0].x == 0)
     { // Perfect power
-      Cunningham(pstFactors, &root, Exponent, 1, nbrToFactor);
+      Cunningham(pstFactors, &nthRoot, Exponent, 1, nbrToFactor);
       return TRUE;
     }
     addbigint(&dif, 1);                         // dif <- dif + 1
     BigIntDivide(&dif, &rootN1, &Temp1);        // Temp1 <- dif / rootN1
     subtractdivide(&Temp1, 0, Exponent);        // Temp1 <- Temp1 / Exponent
-    BigIntAdd(&Temp1, &root, &nextroot);        // nextroot <- Temp1 + root
+    BigIntAdd(&Temp1, &nthRoot, &nextroot);        // nextroot <- Temp1 + nthRoot
     addbigint(&nextroot, -1);                   // nextroot <- nextroot - 1
-    BigIntSubt(&nextroot, &root, &root);        // root <- nextroot - root
-    if (root.sign == SIGN_POSITIVE)
+    BigIntSubt(&nextroot, &nthRoot, &nthRoot);        // nthRoot <- nextroot - nthRoot
+    if (nthRoot.sign == SIGN_POSITIVE)
     {
       break;                               // Not a perfect power
     }
-    CopyBigInt(&root, &nextroot);
+    CopyBigInt(&nthRoot, &nextroot);
   }
   return FALSE;
 }
@@ -983,18 +984,18 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
   int modulus;
   int mod9 = getRemainder(nbrToFactor, 9);
   int maxExpon = nbrToFactor->nbrLimbs * BITS_PER_GROUP;
-  int nbrPrimes = 2 * maxExpon + 3;
+  int numPrimes = 2 * maxExpon + 3;
   double logar = logBigNbr(nbrToFactor);
   // 33219 = logarithm base 2 of max number supported = 10^10000.
   unsigned char ProcessExpon[(33219+7)/8];
   unsigned char primes[(2*33219+3+7)/8];
   memset(ProcessExpon, 0xFF, sizeof(ProcessExpon));
   memset(primes, 0xFF, sizeof(primes));
-  for (i = 2; i * i < nbrPrimes; i++)
+  for (i = 2; i * i < numPrimes; i++)
   { // Generation of primes using sieve of Eratosthenes.
     if (primes[i >> 3] & (1 << (i & 7)))
     {     // Number i is prime.
-      for (j = i * i; j < nbrPrimes; j += i)
+      for (j = i * i; j < numPrimes; j += i)
       {   // Mark multiple of i as composite.
         primes[j >> 3] &= ~(1 << (j & 7));
       }
@@ -1002,7 +1003,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
   }
   // If the number +/- 1 is multiple of a prime but not a multiple
   // of its square then the number +/- 1 cannot be a perfect power.
-  for (i = 2; i < nbrPrimes; i++)
+  for (i = 2; i < numPrimes; i++)
   {
     if (primes[i>>3] & (1 << (i & 7)))
     {      // i is prime according to sieve.
@@ -1130,7 +1131,7 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
   int nbrs[17];
   int diffs[17];
   int i, j, m, r;
-  BigInteger root, nextroot;
+  BigInteger sqrRoot, nextroot;
   BigInteger a, c, sqr, val;
   if ((nbr->limbs[0].x & 1) == 0)
   { // nbr Even
@@ -1152,9 +1153,9 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
   }
   intToBigInteger(&sqr, k<<2);
   BigIntMultiply(&sqr, nbr, &sqr);
-  squareRoot(sqr.limbs, root.limbs, sqr.nbrLimbs, &root.nbrLimbs);
-  root.sign = SIGN_POSITIVE;
-  CopyBigInt(&a, &root);
+  squareRoot(sqr.limbs, sqrRoot.limbs, sqr.nbrLimbs, &sqrRoot.nbrLimbs);
+  sqrRoot.sign = SIGN_POSITIVE;
+  CopyBigInt(&a, &sqrRoot);
   for (;;)
   {
     if ((a.limbs[0].x & (m-1)) == r)
@@ -1200,9 +1201,9 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
       BigIntMultiply(&val, &val, &c);       // c <- val * val
       BigIntSubt(&c, &sqr, &c);             // c <- val * val - sqr
       squareRoot(sqr.limbs, c.limbs, sqr.nbrLimbs, &c.nbrLimbs);
-      root.sign = SIGN_POSITIVE;
-      BigIntAdd(&root, &val, &root);
-      BigIntGcd(&root, nbr, &c);
+      sqrRoot.sign = SIGN_POSITIVE;
+      BigIntAdd(&sqrRoot, &val, &sqrRoot);
+      BigIntGcd(&sqrRoot, nbr, &c);
       if (c.nbrLimbs > 1)
       {    // Non-trivial factor has been found.
         CopyBigInt(factor, &c);
@@ -1757,12 +1758,15 @@ static enum eEcmResult ecmCurve(BigInteger *N)
 static void ecm(BigInteger *N, struct sFactors *pstFactors)
 {
   int P, Q;
+#ifndef __EMSCRIPTEN__
+  (void)pstFactors;     // Ignore parameter.
+#endif
   fieldTX = TX;
   fieldTZ = TZ;
   fieldUX = UX;
   fieldUZ = UZ;
-  int Prob;
-  BigInteger NN;
+//  int Prob;
+//  BigInteger NN;
 
   fieldAA = AA;
   NumberLength = N->nbrLimbs;
@@ -1852,7 +1856,6 @@ void SendFactorizationToOutput(enum eExprErr rc, struct sFactors *pstFactors, ch
     if (doFactorization)
     {
       struct sFactors *pstFactor;
-      int i = 0;
       pstFactor = pstFactors+1;
       if (pstFactors->multiplicity == 1 && pstFactor->multiplicity == 1 &&
         (*pstFactor->ptrFactor > 1 || *(pstFactor->ptrFactor + 1) > 1))
@@ -1862,6 +1865,7 @@ void SendFactorizationToOutput(enum eExprErr rc, struct sFactors *pstFactors, ch
       }
       else
       {
+        int i = 0;
         strcpy(ptrOutput, " = ");
         ptrOutput += strlen(ptrOutput);
         for (;;)
@@ -1916,12 +1920,11 @@ static void SortFactors(struct sFactors *pstFactors)
   struct sFactors *pstNewFactor;
   for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++, pstCurFactor++)
   {
-    int *ptrFactor, *ptrFactor2;
     pstNewFactor = pstCurFactor + 1;
     for (factorNumber2 = factorNumber + 1; factorNumber2 <= pstFactors->multiplicity; factorNumber2++, pstNewFactor++)
     {
-      ptrFactor = pstCurFactor->ptrFactor;
-      ptrFactor2 = pstNewFactor->ptrFactor;
+      int *ptrFactor = pstCurFactor->ptrFactor;
+      int *ptrFactor2 = pstNewFactor->ptrFactor;
       if (*ptrFactor < *ptrFactor2)
       {     // Factors already in correct order.
         continue;
@@ -2117,10 +2120,9 @@ static void showECMStatus(void)
 static void SaveFactors(struct sFactors *pstFactors)
 {
   struct sFactors *pstCurFactor = pstFactors + 1;
-  int factorNbr, expon;
+  int factorNbr;
   char text[30000];
   char *ptrText;
-  int *ptrFactor;
   BigInteger bigint;
   ptrText = text;
   *ptrText++ = '8';
@@ -2262,7 +2264,6 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
     {        // Number has at least 2 limbs: Trial division by small numbers.
       while (pstCurFactor->upperBound != 0)
       {            // Factor found.
-        remainder = 0;
         ptrFactor = pstCurFactor->ptrFactor;
         remainder = RemDivBigNbrByInt(ptrFactor+1, upperBound, nbrLimbs);
         if (remainder != 0)
@@ -2342,7 +2343,7 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
     if (isPseudoprime(&prime))
     {   // Number is prime power.
       pstCurFactor->upperBound = 0;   // Indicate that number is prime.
-      continue;             // Check next factor.
+      continue;                       // Check next factor.
     }
     else
     {
@@ -2357,19 +2358,19 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
       }
       if (ctr != NumberLength || GD[0].x != 1)
       {
-        int nbrLimbs;
+        int numLimbs;
         Temp1.sign = SIGN_POSITIVE;
-        nbrLimbs = NumberLength;
-        while (nbrLimbs > 1)
+        numLimbs = NumberLength;
+        while (numLimbs > 1)
         {
-          if (GD[nbrLimbs-1].x != 0)
+          if (GD[numLimbs-1].x != 0)
           {
             break;
           }
-          nbrLimbs--;
+          numLimbs--;
         }
-        memcpy(Temp1.limbs, GD, nbrLimbs * sizeof(limb));
-        Temp1.nbrLimbs = nbrLimbs;
+        memcpy(Temp1.limbs, GD, numLimbs * sizeof(limb));
+        Temp1.nbrLimbs = numLimbs;
         insertBigFactor(pstFactors, &Temp1);
 #ifdef __EMSCRIPTEN__
         SaveFactors(pstFactors);

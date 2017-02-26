@@ -460,7 +460,6 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
   int len, val, ctr;
   BigInteger *pArgument, *pResult;
   limb *pResultLimbs, *pArgumentLimbs, *pTemp, *pFibonPrev, *pFibonAct;
-  unsigned int carry;
   limb largeVal;
   char stackOper;
   int nbrLimbs;
@@ -523,7 +522,7 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
       fibon2[0].x = 1;
       for (i = 1; i < val; i++)
       {
-        carry = 0;
+        unsigned int carry = 0;
         for (j=0; j<len; j++)
         {
           carry += (pFibonPrev+j)->x + (pFibonAct+j)->x;

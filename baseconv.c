@@ -119,20 +119,19 @@ void int2dec(char **pOutput, int nbr)
 
   // Convert little-endian number to a string with space every groupLen digits.
   // In order to perform a faster conversion, use groups of DIGITS_PER_LIMB digits.
-void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
+void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLength)
 {
   int len, index, index2, count;
   limb *ptrSrc = binary + nbrLimbs - 1;
-  limb *ptrPower;
   char *ptrDest;
   int significantZero = 0;
   int groupCtr, digit[DIGITS_PER_LIMB];
   int digits=0;
   int showDigitsText = TRUE;
 
-  if (groupLen <= 0)
+  if (groupLength <= 0)
   {
-    groupLen = -groupLen;
+    groupLength = -groupLength;
     showDigitsText = FALSE;
   }
   power10000[0].x = ptrSrc->x % MAX_LIMB_CONVERSION;
@@ -142,6 +141,7 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
   for (index = nbrLimbs - 2; index >= 0; index--)
   {
     double dCarry, dQuotient;
+    limb *ptrPower;
 
     // Multiply by FIRST_MULT and then by SECOND_MULT, so there is never
     // more than 53 bits in the product.
@@ -175,16 +175,16 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
   }
   // At this moment the array power10000 has the representation
   // of the number in base 10000 in little-endian. Convert to
-  // ASCII separating every groupLen characters.
+  // ASCII separating every groupLength characters.
   ptrDest = decimal;
   ptrSrc = &power10000[len-1];
   groupCtr = len * DIGITS_PER_LIMB;
-  if (groupLen != 0)
+  if (groupLength != 0)
   {
-    groupCtr %= groupLen;
+    groupCtr %= groupLength;
     if (groupCtr == 0)
     {
-      groupCtr = groupLen;
+      groupCtr = groupLength;
     }
   }
   for (index = len; index > 0; index--)
@@ -209,7 +209,7 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen)
       }
       if (--groupCtr == 0)
       {
-        groupCtr = groupLen;
+        groupCtr = groupLength;
       }
     }
   }
@@ -254,11 +254,11 @@ static void add(limb *addend1, limb *addend2, limb *sum, int length)
   return;
 }
 
-void BigInteger2Dec(BigInteger *pBigInt, char *decimal, int groupLen)
+void BigInteger2Dec(BigInteger *pBigInt, char *decimal, int groupLength)
 {
   if (pBigInt->sign == SIGN_NEGATIVE)
   {
     *decimal++ = '-';
   }
-  Bin2Dec(pBigInt->limbs, decimal, pBigInt->nbrLimbs, groupLen);
+  Bin2Dec(pBigInt->limbs, decimal, pBigInt->nbrLimbs, groupLength);
 }

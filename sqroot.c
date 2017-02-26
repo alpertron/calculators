@@ -103,7 +103,7 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
   int shRight;
   limb *ptrDest, *ptrSrc;
   double invSqrt;
-  int prevLimb, currLimb;
+  int currLimb;
 
   // Obtain logarithm of 2 of argument.
   for (index=len - 1; index>2; index--)
@@ -172,7 +172,7 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
                // Each loop increments precision.
   while (--bitLengthNbrCycles >= 0)
   {
-    int limbLength;
+    int limbLength, prevLimb;
     bitLength = bitLengthCycle[bitLengthNbrCycles];
     limbLength = (bitLength + 3*(BITS_PER_GROUP)-1) / BITS_PER_GROUP;
     if (limbLength > lenInvSqrt)

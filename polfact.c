@@ -384,7 +384,7 @@ static int FactorPolynomial(char *input, int expo)
   return rc;
 }
 
-void polyFactText(char *modText, char *polyText, int groupLen)
+void polyFactText(char *modText, char *polyText, int groupLength)
 {
   char *ptrOutput;
   enum eExprErr rc;
@@ -426,9 +426,9 @@ void polyFactText(char *modText, char *polyText, int groupLen)
   }
   else
   {
-    outputPolynomial(ptrOutput, groupLen);
+    outputPolynomial(ptrOutput, groupLength);
     ptrOutput += strlen(ptrOutput);
-    showElapsedTime(&ptrOutput, lang);
+    showElapsedTime(&ptrOutput);
   }
   strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
                            "<p>" COPYRIGHT_ENGLISH "</p>");

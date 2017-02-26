@@ -59,7 +59,7 @@ void GetDHMSt(char **pptrText, int tenths)
 
 #endif
 
-void showElapsedTime(char **pptrOutput, int lang)
+void showElapsedTime(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
   strcpy(ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");

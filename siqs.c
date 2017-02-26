@@ -2924,13 +2924,14 @@ static void MatrMultBySSt(int length, int *Matr, int diagS, int *Prod)
 static void MultiplyAByMatrix(int *Matr, int *TempMatr, int *ProdMatr)
 {
   int index;
-  int row, rowValue;
+  int row;
   int *rowMatrixB;
 
   /* Compute TempMatr = B * Matr */
   memset(TempMatr, 0, matrixBLength*sizeof(int));
   for (row = matrixBLength - 1; row >= 0; row--)
   {
+    int rowValue;
     rowMatrixB = matrixB[row];
     rowValue = *(Matr+row);
     for (index = *(rowMatrixB+LENGTH_OFFSET)-1; index >= 1; index--)
@@ -3044,7 +3045,7 @@ static void BlockLanczos(void)
   int matrixCalc1[32]; // Matrix that holds temporary data
   int matrixCalc2[32]; // Matrix that holds temporary data
   int *matr;
-  double dSeed, dSeed2, dMult, dDivisor, dAdd;
+  double dSeed, dMult, dDivisor, dAdd;
   int Temp, Temp1;
   int stepNbr = 0;
   int currentOrder, currentMask;
@@ -3070,7 +3071,7 @@ static void BlockLanczos(void)
   ptrMatrixXmY = &matrixXmY[matrixBLength - 1];
   for (ptrMatrixV = &matrixV[matrixBLength - 1]; ptrMatrixV >= matrixV; ptrMatrixV--)
   {
-    dSeed2 = (dSeed * dMult + dAdd);
+    double dSeed2 = (dSeed * dMult + dAdd);
     dSeed2 -= floor(dSeed2 / dDivisor) * dDivisor;
     *ptrMatrixXmY-- = (int)dSeed + (int)dSeed2;
     dSeed = (dSeed2 * dMult + dAdd);

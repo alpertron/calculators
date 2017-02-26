@@ -52,9 +52,7 @@ static int nbrLimbs, origNbrLimbs;
 static int sieve[MAX_SIEVE];
 static int TerminateThread, sum, sumHi, sumLo;
 static int nbrModExp;
-extern limb MontgomeryR1[MAX_LEN];
 extern limb TestNbr[MAX_LEN];
-extern limb MontgomeryMultN[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 char texto[500];
 extern char *output;
@@ -71,19 +69,19 @@ void fcubesText(char *input, int groupLen);
       //         pPower4 = pointer to power of 4.
 static void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
 {
-  int power4;
-  int power2 = 0;
-  int nbrLimbs = *pNbrLimbs;
+  int powerOf4;
+  int powerOf2 = 0;
+  int numLimbs = *pNbrLimbs;
   int index, index2, mask, power2gr, shRg;
   limb carry;
     // Start from least significant limb (number zero).
-  for (index = 0; index < nbrLimbs; index++)
+  for (index = 0; index < numLimbs; index++)
   {
     if ((value + index)->x != 0)
     {
       break;
     }
-    power2 += BITS_PER_GROUP;
+    powerOf2 += BITS_PER_GROUP;
   }
   for (mask = 0x1; mask <= MAX_VALUE_LIMB; mask *= 2)
   {
@@ -91,11 +89,11 @@ static void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
     {
       break;
     }
-    power2++;
+    powerOf2++;
   }
-  power4 = power2 >> 1;
+  powerOf4 = powerOf2 >> 1;
     // Divide value by this power.
-  power2gr = power2 % (2*BITS_PER_GROUP);
+  power2gr = powerOf2 % (2*BITS_PER_GROUP);
   shRg = (power2gr & (-2)) % BITS_PER_GROUP; // Shift right bit counter
   if (power2gr == BITS_PER_GROUP)
   {
@@ -103,7 +101,7 @@ static void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   }
   carry.x = 0;
   mask = (1 << shRg) - 1;
-  for (index2 = nbrLimbs-1; index2 >= index; index2--)
+  for (index2 = numLimbs-1; index2 >= index; index2--)
   {
     carry.x = (carry.x << BITS_PER_GROUP) + (value+index2)->x;
     (value + index2)->x = carry.x >> shRg;
@@ -111,55 +109,55 @@ static void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   }
   if (index != 0)
   {
-    memmove(value, value+index, (nbrLimbs-index)*sizeof(limb));
+    memmove(value, value+index, (numLimbs-index)*sizeof(limb));
   }
-  if ((value+nbrLimbs-1)->x != 0)
+  if ((value+numLimbs-1)->x != 0)
   {
-    *pNbrLimbs = nbrLimbs - index;
+    *pNbrLimbs = numLimbs - index;
   }
   else
   {
-    *pNbrLimbs = nbrLimbs - index - 1;
+    *pNbrLimbs = numLimbs - index - 1;
   }
-  *pPower4 = power4;
+  *pPower4 = powerOf4;
 }
 
  // If Mult1 < Mult2, exchange both numbers.
-static void SortBigNbrs(limb *Mult1, int *Mult1Len, limb *Mult2, int *Mult2Len)
+static void SortBigNbrs(limb *mult1, int *mult1Len, limb *mult2, int *mult2Len)
 {
   limb tmp;
   int index;
   limb *ptr1, *ptr2;
-  int len = *Mult1Len;
-  if (len > *Mult2Len)
+  int len = *mult1Len;
+  if (len > *mult2Len)
   {
-    return;    // Mult1 > Mult2, so nothing to do.
+    return;    // mult1 > mult2, so nothing to do.
   }
-  if (len == *Mult2Len)
+  if (len == *mult2Len)
   {
-    ptr1 = &Mult1[len-1];
-    ptr2 = &Mult2[len-1];
-    for (index = *Mult1Len - 1; index >= 0; index--)
+    ptr1 = &mult1[len-1];
+    ptr2 = &mult2[len-1];
+    for (index = *mult1Len - 1; index >= 0; index--)
     {
       if (ptr1->x > ptr2->x)
       {
-        return;    // Mult1 > Mult2, so nothing to do.
+        return;    // mult1 > mult2, so nothing to do.
       }
       if (ptr1->x < ptr2->x)
       {
-        break;     // Mult1 < Mult2, so exchange them.
+        break;     // mult1 < mult2, so exchange them.
       }
       ptr1--;
       ptr2--;
     }
   }
     // Exchange lengths.
-  len = *Mult2Len;
-  *Mult2Len = *Mult1Len;
-  *Mult1Len = len;
+  len = *mult2Len;
+  *mult2Len = *mult1Len;
+  *mult1Len = len;
     // Exchange bytes that compose the numbers.
-  ptr1 = Mult1;
-  ptr2 = Mult2;
+  ptr1 = mult1;
+  ptr2 = mult2;
   for (index = 0; index < len; index++)
   {
     tmp.x = ptr1->x;
@@ -644,7 +642,7 @@ int fsquares(void)
   return 0;
 }
 
-void fsquaresText(char *input, int groupLen)
+void fsquaresText(char *input, int groupLength)
 {
   char *square = "<span class=\"bigger\">²</span>";
   enum eExprErr rc;
@@ -675,7 +673,7 @@ void fsquaresText(char *input, int groupLen)
   // Show the number to be decomposed into sum of cubes.
   strcpy(ptrOutput, "<p><var>n</var> = ");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&ExpressionResult, ptrOutput, groupLen);
+  BigInteger2Dec(&ExpressionResult, ptrOutput, groupLength);
   ptrOutput += strlen(ptrOutput);
   // Show whether the number is a sum of 1, 2, 3 or 4 squares.
   strcpy(ptrOutput, "</p><p><var>n</var> = <var>a</var>");
@@ -710,27 +708,27 @@ void fsquaresText(char *input, int groupLen)
   // Show the decomposition.
   strcpy(ptrOutput, "<p><var>a</var> = ");
   ptrOutput += strlen(ptrOutput);
-  Bin2Dec(Mult1, ptrOutput, Mult1Len, groupLen);
+  Bin2Dec(Mult1, ptrOutput, Mult1Len, groupLength);
   ptrOutput += strlen(ptrOutput);
   if (Mult2Len != 1 || Mult2[0].x != 0)
   {
     strcpy(ptrOutput, "</p><p><var>b</var> = ");
     ptrOutput += strlen(ptrOutput);
-    Bin2Dec(Mult2, ptrOutput, Mult2Len, groupLen);
+    Bin2Dec(Mult2, ptrOutput, Mult2Len, groupLength);
     ptrOutput += strlen(ptrOutput);
   }
   if (Mult3Len != 1 || Mult3[0].x != 0)
   {
     strcpy(ptrOutput, "</p><p><var>c</var> = ");
     ptrOutput += strlen(ptrOutput);
-    Bin2Dec(Mult3, ptrOutput, Mult3Len, groupLen);
+    Bin2Dec(Mult3, ptrOutput, Mult3Len, groupLength);
     ptrOutput += strlen(ptrOutput);
   }
   if (Mult4Len != 1 || Mult4[0].x != 0)
   {
     strcpy(ptrOutput, "</p><p><var>d</var> = ");
     ptrOutput += strlen(ptrOutput);
-    Bin2Dec(Mult4, ptrOutput, Mult4Len, groupLen);
+    Bin2Dec(Mult4, ptrOutput, Mult4Len, groupLength);
     ptrOutput += strlen(ptrOutput);
   }
   strcpy(ptrOutput, (lang?"</p><p>" COPYRIGHT_SPANISH "</p>":

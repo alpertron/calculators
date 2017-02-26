@@ -24,11 +24,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "expression.h"
 
-#if BITS_PER_GROUP == 15
-#define SQRT_MAX_VALUE_LIMB 182
-#else
 #define SQRT_MAX_VALUE_LIMB 46341
-#endif
 static int partArray[100000 + 1000];
 static limb prodModulus[MAX_LEN];
 static int prodModulusLimbs;
@@ -49,12 +45,7 @@ void partition(int val, BigInteger *pResult)
   limb carry;
   // Compute approximate number of limbs: log(p(n))/log(2^31)
   // pi * sqrt(2/3)/log(2^31) < 0.12, so 0.12 is selected.
-  // for 15 bits is < 0.25
-#if BITS_PER_GROUP == 15
-  int limbs = (int)(0.25*sqrt((double)val) + 1);
-#else
   int limbs = (int)(0.12*sqrt(val) + 1);
-#endif
 
   // Compute the primes which will be used for the modular arithmetic
   // operations. The primes must be ordered in ascending order.

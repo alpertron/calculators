@@ -247,11 +247,8 @@ void AddBigNbrMod(limb *Nbr1, limb *Nbr2, limb *Sum)
 
 void SubtBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Diff, limb *mod, int nbrLen)
 {
-  unsigned int carry;
-  int borrow;
   int i;
-
-  borrow = 0;
+  int borrow = 0;
   for (i = 0; i < nbrLen; i++)
   {
     borrow = (borrow >> BITS_PER_GROUP) + (Nbr1 + i)->x - (Nbr2 + i)->x;
@@ -259,7 +256,7 @@ void SubtBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Diff, limb *mod, int nbrLen)
   }
   if (borrow < 0)
   {
-    carry = 0;
+    unsigned int carry = 0;
     for (i = 0; i < nbrLen; i++)
     {
       carry = (carry >> BITS_PER_GROUP) + 
@@ -310,7 +307,6 @@ void modmult(limb *factor1, limb *factor2, limb *product)
   int count;
   limb Prod[10];
   unsigned int cy;
-  int borrow;
   int index;
 #ifdef __EMSCRIPTEN__
   if (modmultCallback)
@@ -432,7 +428,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
   }
   if (cy >= LIMB_RANGE || (product + count)->x >= TestNbr[count].x)
   {  // The number is greater or equal than Testnbr. Subtract it.
-    borrow = 0;
+    int borrow = 0;
     for (count = 0; count < NumberLength; count++)
     {
       borrow = (borrow >> BITS_PER_GROUP) +
@@ -580,7 +576,6 @@ static void AddMult(limb *firstBig, int e, int f, limb *secondBig, int g, int h,
   double dFactorF = (double)f;
   double dFactorG = (double)g;
   double dFactorH = (double)h;
-  double dCarry;
   carryU = carryV = 0;
   for (ctr = 0; ctr <= nbrLen; ctr++)
   {
@@ -590,8 +585,8 @@ static void AddMult(limb *firstBig, int e, int f, limb *secondBig, int g, int h,
     int lowV = (carryV + u * g + v * h) & MAX_INT_NBR;
     // Subtract or add 0.25 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
-    dCarry = ((double)carryU + (double)u * dFactorE +
-              (double)v * dFactorF)*dVal;
+    double dCarry = ((double)carryU + (double)u * dFactorE +
+                     (double)v * dFactorF)*dVal;
     if (lowU < HALF_INT_RANGE)
     {
       carryU = (int)floor(dCarry + 0.25);
@@ -620,13 +615,14 @@ static void AddMult(limb *firstBig, int e, int f, limb *secondBig, int g, int h,
 static int HalveDifference(limb *first, limb *second, int len)
 {
   int i;
-  int borrow, prevLimb, currLimb;
+  int borrow, prevLimb;
     // Perform first <- (first - second)/2.
   borrow = first->x - second->x;
   prevLimb = borrow & MAX_VALUE_LIMB;
   borrow >>= BITS_PER_GROUP;
   for (i = 1; i < len; i++)
   {
+    int currLimb;
     borrow += (first + i)->x - (second + i)->x;
     currLimb = borrow & MAX_VALUE_LIMB;
     borrow >>= BITS_PER_GROUP;
