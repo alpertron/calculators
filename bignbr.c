@@ -903,6 +903,27 @@ void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, /*@in@*/BigInteger *bigin
   }
 }
 
+void UncompressIntLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbrLen)
+{
+  int nbrLimbs = *ptrValues;
+  memcpy(bigint, ptrValues+1, nbrLimbs*sizeof(limb));
+  memset(bigint + nbrLimbs + 1, 0, (nbrLen - nbrLimbs) * sizeof(limb));
+}
+
+void CompressIntLimbs(/*@out@*/int *ptrValues, /*@in@*/limb *bigint, int nbrLen)
+{
+  int nbrLimbs;
+  memcpy(ptrValues+1, bigint, (nbrLen-1) * sizeof(limb));
+  for (nbrLimbs = nbrLen-1; nbrLimbs > 1; nbrLimbs--)
+  {
+    if (*(ptrValues + nbrLimbs) != 0)
+    {
+      break;
+    }
+  }
+  *ptrValues = nbrLimbs;
+}
+
 // This routine checks whether the number pointed by pNbr is
 // a perfect power. If it is not, it returns one.
 // If it is a perfect power, it returns the exponent and 

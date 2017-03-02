@@ -114,6 +114,9 @@ void expBigNbr(BigInteger *pBigNbr, double logar);
 double logBigNbr(BigInteger *pBigNbr);
 double logLimbs(limb *pBigNbr, int nbrLimbs);
 double getMantissa(limb *ptrLimb, int nbrLimbs);
+void UncompressIntLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbrLen);
+void CompressIntLimbs(/*@out@*/int *ptrValues, /*@in@*/limb *bigint, int nbrLen);
+
 
 void ChSignBigNbr(int *nbr, int length);
 void AddBigNbr(int *pNbr1, int *pNbr2, int *pSum, int nbrLen);
