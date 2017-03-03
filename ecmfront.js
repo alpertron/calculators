@@ -18,8 +18,6 @@
 */
 var worker = 0;
 var app;
-var oldWhiteSpace;
-var oldOverflowX;
 var digits;
 var config;
 
@@ -59,7 +57,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker("ecmW0021.js");
+    worker = new Worker("ecmW0022.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
@@ -97,7 +95,7 @@ function dowork(n)
 {
   app = parseInt(get("app").value) + n;
   var res = get("result");
-  var valueText = get("value").value;
+  var valueText = get(config.substr(0,1)=="1"?"textarea":"value").value;
   var charNull = String.fromCharCode(0);
   var helphelp = get("helphelp");
   get("help").style.display = "none";
@@ -139,23 +137,19 @@ function dowork(n)
 
 function isBatch()
 {   
-  var entry = get("entry");
   if (config.substr(0,1)=="1")
   {
-    value = get("value");
-    oldWhiteSpace = value.style.whiteSpace;
-    oldOverflowX = value.style.overflowX;
-    entry.innerHTML = "<textarea id=\"value\" rows=\"5\" class=\"input\" placeholder=\"One numerical expression or loop per line\"></textarea>";
-    value = get("value");
-    value.style.whiteSpace = "nowrap";
-    value.style.overflowX = "scroll";
+    get("value").style.display = "none";
+    get("lvalue").style.display = "none";
+    get("textarea").style.display = "inline";
+    get("ltextarea").style.display = "inline";
   }
   else
   {
-    entry.innerHTML = "<input type=\"text\" id=\"value\" value=\"\" placeholder=\"Number or numerical expression\" class=\"input\"/>";
-    value = get("value");
-    value.style.whiteSpace = oldWhiteSpace;
-    value.style.overflowX = oldOverflowX;
+    get("value").style.display = "inline";
+    get("lvalue").style.display = "inline";
+    get("textarea").style.display = "none";
+    get("ltextarea").style.display = "none";
   }
 }
 window.onload = function ()
@@ -233,6 +227,14 @@ window.onload = function ()
                  "<p>Calculation stopped by user</p>");
     get("status").innerHTML = "";
   };
+  get("value").onkeydown = function (event)
+  {
+	if (event.keyCode == 13)
+	{                   // Do not propagate Enter key.
+	  event.preventDefault();
+	}
+	return true;
+  }
   get("helpbtn").onclick = function ()
   {
     var help = get("help");

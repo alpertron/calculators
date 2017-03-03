@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="es" manifest="ecm.appcache">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.google-analytics.com; connect-src 'self'; style-src 'self' 'unsafe-inline' 'sha256-3eYINMtoIn3Bb8ReFO7RSvFgjH6uHxdtDeo0Y6+ef1k='; child-src 'self'; img-src 'self' https://www.google-analytics.com; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.google-analytics.com; connect-src 'self'; style-src 'self' 'unsafe-inline' 'sha256-oOY+9vgpg7MtyMgDf/rkYK+Cj1XdB9QIihDm5wCvlf8='; child-src 'self'; img-src 'self' https://www.google-analytics.com; object-src 'none'">
 <meta name="Author" content="Dario Alejandro Alpern" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta charset="utf-8" />
 <meta name="description" content="Aplicación Javascript que factoriza números enteros utilizando los algoritmos ECM y SIQS. Escrito por Dario Alpern." />
 <link rel="alternate" hreflang="es" href="ECMC.HTM" />
-<link rel="prefetch" href="ecmW0021.js" />
+<link rel="prefetch" href="ecmW0022.js" />
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Calculadora de factorización de números enteros</title>
 <style>
@@ -40,6 +40,8 @@ h1 {text-align:center;}
 .blue {color: #0000FF;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 #digits {width:5em}
+#textarea {display:none;whitespace:nowrap;overflowX:scroll}
+#ltextarea {display:none;}
 .inline  {display:inline;}
 .pad {padding:10px;}
 #tableCurves {max-width:700px; margin-left:auto; margin-right:auto;}
@@ -124,7 +126,7 @@ Contacto
 </nav>
 <article>
 <h1>Calculadora de factorización de números enteros</h1>
-<script async="async" type="text/javascript" src="ecm0021.js"></script>
+<script async="async" type="text/javascript" src="ecm0022.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -144,6 +146,7 @@ Contacto
 </div>
 <form class="applet">
 <label for="value">Valor</label><span id="entry"><input type="text" id="value" value="" placeholder="Número o expresión numérica" class="input"/></span>
+<label for="textarea" id="ltextarea">Valor</label><textarea id="textarea" rows="5" class="input" placeholder="Una expresión numérica o ciclo por línea"></textarea>
 <div class="lf"></div>
 <input type="button" id="more" value="Más" />
 <input type="button" id="eval" value="Solo evaluar" />
@@ -234,7 +237,7 @@ Para reducir esa base de datos, sólo se incluyen factores primos con al menos 1
 La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 24 de febrero de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 2 de marzo de 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
