@@ -25,6 +25,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "polynomial.h"
 #include "showtime.h"
 
+extern int poly4[1000000];
 // Perform distinct degree factorization
 static void DistinctDegreeFactorization(int polyDegree)
 {
@@ -50,6 +51,7 @@ static void DistinctDegreeFactorization(int polyDegree)
     }
     ptrPolyToFactor = pstFactorInfo->ptr;
     polyDegree = pstFactorInfo->degree;
+    GetPolyInvParm(polyDegree, ptrPolyToFactor);
     // For each loop, raise this polynomial to the primeth power and 
     // then compute the gcd between the polynomial to be factored and
     // the computed polynomial less x. If the degree of GCD is > 0, then the
@@ -101,7 +103,7 @@ static void DistinctDegreeFactorization(int polyDegree)
       memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0])*sizeof(int));
       SetNumberToOne(ptrValue1);  // Set leading coefficient to 1.
       powerPolynomial(poly1, poly3, polyDegree, &primeMod, poly2);
-      memcpy(poly1, poly2, polyDegree*nbrLimbs*sizeof(int));
+      memcpy(poly1, poly2, polyDegree*nbrLimbs * sizeof(int));
       // Subtract x.
       UncompressBigInteger(&poly2[nbrLimbs], &operand1);
       memcpy(operand2.limbs, MontgomeryMultR1, NumberLength*sizeof(limb));
@@ -137,6 +139,10 @@ static void DistinctDegreeFactorization(int polyDegree)
         ptrPolyToFactor += degreeGcd*nbrLimbs;
         // Replace poly1 by poly1 mod ptrPolyToFactor
         DividePolynomial(poly1, polyDegree + degreeGcd - 1, ptrPolyToFactor, polyDegree, poly2);
+        if (polyDegree > 0)
+        {
+          GetPolyInvParm(polyDegree, ptrPolyToFactor);
+        }
       }
     }
     if (polyDegree > 0)
@@ -175,6 +181,7 @@ static void SameDegreeFactorization(void)
       BigIntDivide2(&operand4);
     }
     ptrPolyToFactor = pstFactorInfo->ptr;
+    GetPolyInvParm(polyDegree, ptrPolyToFactor);
     for (;;)
     {
       // Copy polynomial to factor to poly3 and set leading coefficient to 1.
@@ -247,6 +254,7 @@ static void SameDegreeFactorization(void)
         {
           break;
         }
+        GetPolyInvParm(polyDegree, ptrPolyToFactor);
       }
     }
     pstFactorInfo++;

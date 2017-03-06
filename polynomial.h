@@ -53,6 +53,7 @@ void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *ex
 int getDegreePoly(int *poly, int polyDegree);
 void DividePolynomial(/*@in@*/int *pDividend, int dividendDegree, /*@in@*/int *pDivisor, int divisorDegree, /*@out@*/int *ptrQuotient);
 void multPolynomial(/*@in@*/int *polyFact1, /*@in@*/int *polyFact2, /*@out@*/int *polyProduct, int polyDegree, /*@in@*/int *polyMod);
+void GetPolyInvParm(int polyDegree, /*@in@*/int *polyMod);
 int ComputePolynomial(char *input, int expo);
 void OrigPolyFromMontgomeryToStandard(void);
 void ConvertToMonic(int *poly, int polyDegree);
