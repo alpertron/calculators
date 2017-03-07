@@ -4,7 +4,7 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "factor.h"
-#define DEBUG_CODE  9
+#define DEBUG_CODE  13
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
@@ -25,6 +25,7 @@ char expr[] = "123456789012345";
 extern char *output, batch;
 int Product[32];
 char input[10000];
+extern char tofactorDec[30000];
 BigInteger dividend, divisor, quotient;
 int main(int argc, char *argv[])
 {
@@ -152,24 +153,6 @@ int main(int argc, char *argv[])
   }
   polyFactText(argv[1], argv[2], 6);
   printf("%s\n", output);
-#elif DEBUG_CODE == 10
-  int index;
-  limb number[5000];
-  BigInteger value;
-  if (argc != 2)
-  {
-    printf("number_to_factor\n");
-    return 0;
-  }
-  Dec2Bin(argv[1], &number[1], (int)strlen(argv[1]), &number[0]);
-  strcpy(toFactorDec, argv[1]);
-  factor(number, factors, astFactors);
-  for (index = 1; index <= astFactors[0].multiplicity; index++)
-  {
-    UncompressBigInteger(astFactors[index].ptrFactor, &value);
-    Bin2Dec(value.limbs, output, value.nbrLimbs, 6);
-    printf("%s^%d\n", output, astFactors[index].multiplicity);
-  }
 #elif DEBUG_CODE == 11
   if (argc != 4)
   {

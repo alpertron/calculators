@@ -57,7 +57,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker("ecmW0022.js");
+    worker = new Worker("ecmW0023.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
@@ -230,8 +230,10 @@ window.onload = function ()
   get("value").onkeydown = function (event)
   {
 	if (event.keyCode == 13)
-	{                   // Do not propagate Enter key.
-	  event.preventDefault();
+	{
+	  event.preventDefault();        // Do not propagate Enter key.
+      setStorage("ecmFactors","");   // Perform factorization.
+      dowork(2);
 	}
 	return true;
   }
