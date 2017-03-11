@@ -573,6 +573,10 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
         CopyBigInt(&q, &p);
         subtractdivide(&q, 1, 2);     // q = (prime-1)/2
         memcpy(K.limbs, q.limbs, q.nbrLimbs * sizeof(limb));
+        if (p.nbrLimbs > q.nbrLimbs)
+        {
+          K.limbs[q.nbrLimbs].x = 0;
+        }
         // Compute Mult1 and Mult2 so Mult1^2 + Mult2^2 = -1 (mod p)
         memset(Mult1.limbs, 0, p.nbrLimbs*sizeof(limb));
         do
@@ -612,6 +616,11 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
         Mult2.sign = SIGN_POSITIVE;
         for (;;)
         {
+          char pepe1[1000], pepe2[1000], pepe3[1000], pepe4[1000];
+          Bin2Dec(Mult1.limbs, pepe1, Mult1.nbrLimbs, 0);
+          Bin2Dec(Mult2.limbs, pepe2, Mult2.nbrLimbs, 0);
+          Bin2Dec(Mult3.limbs, pepe3, Mult3.nbrLimbs, 0);
+          Bin2Dec(Mult4.limbs, pepe4, Mult4.nbrLimbs, 0);
           // Compute K <- (Mult1^2 + Mult2^2 + Mult3^2 + Mult4^2) / p
           BigIntMultiply(&Mult1, &Mult1, &Tmp);
           BigIntMultiply(&Mult2, &Mult2, &Tmp1);

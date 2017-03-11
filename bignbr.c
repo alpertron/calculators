@@ -598,7 +598,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   int remainder = 0;
   double dDivisor = (double)divisor;
   double dLimb = (double)LIMB_RANGE;
-  if (subt != 0)
+  if (subt >= 0)
   {
     if (pBigInt->sign == SIGN_POSITIVE)
     {               // Subtract subt to absolute value.
@@ -607,6 +607,17 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
     else
     {               // Add subt to absolute value.
       addToAbsValue(pBigInt->limbs, &nbrLimbs, subt);
+    }
+  }
+  else
+  {
+    if (pBigInt->sign == SIGN_POSITIVE)
+    {               // Subtract subt to absolute value.
+      addToAbsValue(pBigInt->limbs, &nbrLimbs, -subt);
+    }
+    else
+    {               // Add subt to absolute value.
+      subtFromAbsValue(pBigInt->limbs, &nbrLimbs, -subt);
     }
   }
   // Divide number by divisor.
