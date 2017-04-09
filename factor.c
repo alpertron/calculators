@@ -23,11 +23,11 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "expression.h"
 #include "factor.h"
 
+int yieldFreq;
 #ifdef __EMSCRIPTEN__
 char upperText[30000];
 char lowerText[30000];
 char *ptrLowerText;
-int yieldFreq;
 mmCback modmultCallback;
 extern long long lModularMult;
 #endif
@@ -126,10 +126,9 @@ static int limits[] = { 5, 5, 5, 5, 5, 6, 8, 10, 20, 25, 26, 30, 50 };
 #define ADD 6  /* number of multiplications in an addition */
 #define DUP 5  /* number of multiplications in a duplicate */
 
-#ifdef __EMSCRIPTEN__
-static void GetYieldFrequency()
+static void GetYieldFrequency(void)
 {
-  yieldFreq = 1000000 / (NumberLength * NumberLength);
+  yieldFreq = 1000000 / (NumberLength * NumberLength) + 1;
   if (yieldFreq > 100000)
   {
     yieldFreq = yieldFreq / 100000 * 100000;
@@ -147,7 +146,6 @@ static void GetYieldFrequency()
     yieldFreq = yieldFreq / 100 * 100;
   }
 }
-#endif
                           /* returns the number of modular multiplications */
 static int lucas_cost(int n, double v)
 {
@@ -1771,9 +1769,7 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
   fieldAA = AA;
   NumberLength = N->nbrLimbs;
   memcpy(TestNbr, N->limbs, NumberLength * sizeof(limb));
-#ifdef __EMSCRIPTEN__
   GetYieldFrequency();
-#endif
   GetMontgomeryParms(NumberLength);
   memset(M, 0, NumberLength * sizeof(limb));
   memset(DX, 0, NumberLength * sizeof(limb));
@@ -2197,6 +2193,8 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
   int restartFactoring = FALSE;
   char *ptrCharFound;
   EC = 1;
+  NumberLength = tofactor.nbrLimbs;
+  GetYieldFrequency();
 #ifdef __EMSCRIPTEN__
   oldTimeElapsed = 0;
   originalTenthSecond = tenths();
@@ -2280,7 +2278,7 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
         pstCurFactor = pstFactors;
         break;
       }
-      if (nbrLimbs <= 2)
+      if (nbrLimbs == 1)
       {     // Number completely factored.
         break;
       }
@@ -2386,3 +2384,7 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
 #endif
 }
 
+char *getFactorsAsciiPtr(void)
+{
+  return factorsAscii;
+}

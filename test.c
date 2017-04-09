@@ -22,7 +22,7 @@ extern int nbrLimbs;
 extern int lang, groupLen;
 extern limb TestNbr[MAX_LEN];
 char expr[] = "123456789012345";
-extern char *output, batch;
+extern char batch;
 int Product[32];
 char input[10000];
 extern char tofactorDec[30000];
@@ -30,7 +30,6 @@ BigInteger dividend, divisor, quotient;
 int main(int argc, char *argv[])
 {
   int len, i;
-  output = (char *)malloc(10000000);
 #if DEBUG_CODE == 1
   fsquaresText(argv[1], 6);
   printf("%s\n", output);

@@ -45,7 +45,6 @@ extern unsigned char superscripts, onlyEvaluate;
 extern int degree;
 extern int *ptrOrigPoly;
 extern int degreeOrigPoly;
-extern char *output;
 
 void SetNumberToOne(/*@out@*/int *ptrValue1);
 void PolynomialGcd(int *arg1, int degree1, int *arg2, int degree2, int *gcd, int *degreeGcd);

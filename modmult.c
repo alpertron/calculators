@@ -1,4 +1,4 @@
-﻿/*
+/*
     This file is part of Alpertron Calculators.
 
     Copyright 2015 Dario Alejandro Alpern
@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdint.h>
 #include "bignbr.h"
 limb MontgomeryR1[MAX_LEN];
 limb TestNbr[MAX_LEN];
@@ -323,6 +324,24 @@ void modmult(limb *factor1, limb *factor2, limb *product)
   if (NumberLength < 8)
   {     // Small numbers.
     int i, j;
+#ifdef _USING64BITS_
+    int32_t MontDig, Nbr;
+    int64_t Pr;
+    memset(Prod, 0, NumberLength * sizeof(limb));
+    for (i = 0; i < NumberLength; i++)
+    {
+      Pr = (Nbr = (factor1 + i)->x) * (int64_t)factor2->x + Prod[0].x;
+      MontDig = ((int32_t)Pr * MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
+      Prod[0].x = (Pr = (((int64_t)MontDig * TestNbr[0].x + Pr) >> BITS_PER_GROUP) +
+        (int64_t)MontDig * TestNbr[1].x + (int64_t)Nbr * (factor2 + 1)->x + Prod[1].x) & MAX_VALUE_LIMB;
+      for (j = 2; j < NumberLength; j++)
+      {
+        Prod[j - 1].x = ((Pr = (Pr >> BITS_PER_GROUP) +
+          (int64_t)MontDig * TestNbr[j].x + (int64_t)Nbr * (factor2 + j)->x + Prod[j].x) & MAX_VALUE_LIMB);
+      }
+      Prod[j - 1].x = (int32_t)(Pr >> BITS_PER_GROUP);
+    }
+#else
     double dLimbRange = (double)LIMB_RANGE;
     double dInvLimbRange = (double)1 / dLimbRange;
     memset(Prod, 0, NumberLength*sizeof(limb));
@@ -369,6 +388,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
       }
       Prod[j - 1].x = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
     }
+#endif
     for (j = NumberLength - 1; j >= 0; j--)
     {
       if (Prod[j].x != TestNbr[j].x)

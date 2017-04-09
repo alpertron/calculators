@@ -28,7 +28,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 
 static BigInteger ReValue, ImValue;
 static char *ptrOutput;
-extern char *output;
 static struct sFactors astFactorsNorm[1000];
 static int factorsNorm[10000];
 static int NbrFactorsNorm;
@@ -278,14 +277,6 @@ void gaussianText(char *valueText, int doFactorization)
   groupLen = 6;
 #endif
   rc = ComputeGaussianExpression(valueText, value);
-  if (output == NULL)
-  {
-    output = (char *)malloc(1000000);
-  }
-  if (output == NULL)
-  {
-    return;   // Go out if cannot generate output string.
-  }
   output[0] = '2';
   ptrOutput = &output[1];
   if (rc == EXPR_OK)
@@ -324,10 +315,6 @@ void doWork(char* data, int size)
 {
   int flags;
   char *ptrData = data;
-  if (output == NULL)
-  {
-    output = malloc(3000000);
-  }
   groupLen = 0;
   while (*ptrData != ',')
   {

@@ -27,7 +27,6 @@ static BigInteger P1, Q1, R1, S1;
 static BigInteger tmpP1, tmpQ1, tmpR1, tmpS1;
 extern BigInteger ExpressionResult;
 extern int lang;
-extern char *output;
 
 static int sums[] =
 {

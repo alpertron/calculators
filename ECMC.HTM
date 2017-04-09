@@ -1,13 +1,14 @@
 <!doctype html>
 <html lang="es" manifest="ecm.appcache">
 <head>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.google-analytics.com; connect-src 'self'; style-src 'self' 'unsafe-inline' 'sha256-oOY+9vgpg7MtyMgDf/rkYK+Cj1XdB9QIihDm5wCvlf8='; child-src 'self'; img-src 'self' https://www.google-analytics.com; object-src 'none'">
 <meta name="Author" content="Dario Alejandro Alpern" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta charset="utf-8" />
 <meta name="description" content="Aplicación Javascript que factoriza números enteros utilizando los algoritmos ECM y SIQS. Escrito por Dario Alpern." />
 <link rel="alternate" hreflang="es" href="ECMC.HTM" />
-<link rel="prefetch" href="ecmW0024.js" />
+<link rel="prefetch" href="ecmW0025.js" />
+<link rel="prefetch" href="ecmX0025.js" />
+<link rel="prefetch" href="ecm0025.wasm" />
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Calculadora de factorización de números enteros</title>
 <style>
@@ -126,7 +127,7 @@ Contacto
 </nav>
 <article>
 <h1>Calculadora de factorización de números enteros</h1>
-<script async="async" type="text/javascript" src="ecm0024.js"></script>
+<script async="async" type="text/javascript" src="ecm0025.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -158,10 +159,13 @@ Contacto
 <input type="hidden" id="app" value="1"/>
 </form>
 <div id="help" aria-live="polite">
-<p>Esta aplicación utiliza almacenamiento local para recordar el avance de la factorización, así que puedes completar la factorización de un número grande en varias sesiones. Tu computadora recordará el estado de la factorización. Sólo debes recargar esta página.</p>
+<p>Esta aplicación factoriza números o expresiones numéricas usando los algoritmos rápidos ECM y SIQS.</p>
+<p>Este programa utiliza almacenamiento local para recordar el avance de la factorización, así que puedes completar la factorización de un número grande en varias sesiones. Tu computadora recordará el estado de la factorización. Sólo debes recargar esta página.</p>
 <p>El tiempo de ejecución depende de la magnitud del segundo mayor factor primo y de la velocidad del equipo.</p>
 <p>Como todos los cáculos se realizan en tu computadora, puedes desconectarla de Intenet mientras progresa la factorización. Puedes arrancar esta aplicación sin conexión de Internet después de la primera corrida.</p>
+<p>El código fuente está escrito en lenguaje C y compilado en asm.js y WebAssembly. Este último es más rápido, pero no está soportado en todos los navegadores Web. Podrás ver la versión que se ejecuta al factorizar un número.</p>
 <p><a href="ECMREC.HTM" title="récords de factorización ECM">Récords de factorización</a> para esta aplicación.
+<p>
 <h2>Expresiones</h2>
 <p>Puedes ingresar expresiones que usen los siguientes operadores y paréntesis:</p>
 <p>
@@ -237,7 +241,7 @@ Para reducir esa base de datos, sólo se incluyen factores primos con al menos 1
 La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 10 de marzo de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 8 de abril de 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>

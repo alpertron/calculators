@@ -24,10 +24,8 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "factor.h"
 #include "showtime.h"
 #ifdef __EMSCRIPTEN__
-#include <emscripten.h>
 extern long long lModularMult;
 #endif
-extern char *output;
 char batch;
 extern char verbose, prettyprint, cunningham;
 extern BigInteger tofactor;
@@ -616,11 +614,6 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
         Mult2.sign = SIGN_POSITIVE;
         for (;;)
         {
-          char pepe1[1000], pepe2[1000], pepe3[1000], pepe4[1000];
-          Bin2Dec(Mult1.limbs, pepe1, Mult1.nbrLimbs, 0);
-          Bin2Dec(Mult2.limbs, pepe2, Mult2.nbrLimbs, 0);
-          Bin2Dec(Mult3.limbs, pepe3, Mult3.nbrLimbs, 0);
-          Bin2Dec(Mult4.limbs, pepe4, Mult4.nbrLimbs, 0);
           // Compute K <- (Mult1^2 + Mult2^2 + Mult3^2 + Mult4^2) / p
           BigIntMultiply(&Mult1, &Mult1, &Tmp);
           BigIntMultiply(&Mult2, &Mult2, &Tmp1);
@@ -946,14 +939,6 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
     return;
   }
   rc = ComputeExpression(tofactorText, 1, &tofactor);
-  if (output == NULL)
-  {
-    output = (char *)malloc(1000000);
-  }
-  if (output == NULL)
-  {
-    return;   // Go out if cannot generate output string.
-  }
   if (rc == EXPR_OK && doFactorization)
   {
     NumberLength = tofactor.nbrLimbs;
@@ -985,15 +970,11 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
-void doWork(char* data)
+void doWork(void)
 {
   int flags;
-  char *ptrData = data;
+  char *ptrData = inputString;
   char *ptrWebStorage, *ptrKnownFactors;
-  if (output == NULL)
-  {
-    output = malloc(3000000);
-  }
   groupLen = 0;
   while (*ptrData != ',')
   {

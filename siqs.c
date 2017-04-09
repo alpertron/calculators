@@ -65,7 +65,7 @@ long smoothsFound;
 long totalPartials;
 long partialsFound;
 long ValuesSieved;
-int nbrPrimes;
+int nbrFactorBasePrimes;
 int congruencesFound;
 long polynomialsSieved;
 int nbrPartials;
@@ -146,7 +146,7 @@ static void InitSIQSStrings(int SieveLimit)
   char *ptrText = ptrLowerText;  // Point after number that is being factored.
   strcpy(ptrText, lang ? "<p>Parámetros de SIQS: " : "<p>SIQS parameters: ");
   ptrText += strlen(ptrText);
-  int2dec(&ptrText, nbrPrimes);   // Show number of primes in factor base.
+  int2dec(&ptrText, nbrFactorBasePrimes);   // Show number of primes in factor base.
   strcpy(ptrText, lang ? " primos, límite de la criba: " : " primes, sieve limit: ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, SieveLimit);  // Show sieve limit.
@@ -620,7 +620,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         SieveArray[F2] += logPrimeOddPoly;
       }
     }
-    for (; index < nbrPrimes; index++)
+    for (; index < nbrFactorBasePrimes; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -934,7 +934,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         SieveArray[F2] += logPrimeOddPoly;
       }
     }
-    for (; index < nbrPrimes; index++)
+    for (; index < nbrFactorBasePrimes; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -1011,7 +1011,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
   expParity = 0;
   if (NumberLengthDividend <= 1)
   {
-    for (index = 1; index < nbrPrimes; index++)
+    for (index = 1; index < nbrFactorBasePrimes; index++)
     {
       Divisor = primeTrialDivisionData[index].value;
       while (biR0 % Divisor == 0)
@@ -1231,7 +1231,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
             double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
             int sqrtDivid = (int)(floor(sqrt(dDivid)));
             fullRemainder = TRUE;
-            for (; index < nbrPrimes; index++)
+            for (; index < nbrFactorBasePrimes; index++)
             {
               rowPrimeSieveData = primeSieveData + index;
               Divisor = rowPrimeSieveData->value;
@@ -1304,12 +1304,12 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               if (Divisor > sqrtDivid)
               {                     // End of trial division.
                 rowSquares[0] = nbrSquares;
-                index = nbrPrimes - 1;
+                index = nbrFactorBasePrimes - 1;
                 if (dDivid <= primeTrialDivisionData[index].value &&
                   dDivid > 1)
                 {          // Perform binary search to find the index.
                   left = -1;
-                  median = right = nbrPrimes;
+                  median = right = nbrFactorBasePrimes;
                   while (left != right)
                   {
                     median = ((right - left) >> 1) + left;
@@ -1337,6 +1337,10 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                   return 1;
                 }
                 rowMatrixBbeforeMerge[0] = nbrColumns;
+                if (dDivid > 2.147e9)
+                {
+                  return 0;  // Discard this congruence because of large cofactor.
+                }
                 return (int)dDivid;
               }
               fullRemainder = FALSE;
@@ -1346,7 +1350,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         }
       }             /* end while */
     }               /* end for */
-    for (; index < nbrPrimes; index++)
+    for (; index < nbrFactorBasePrimes; index++)
     {
       fullRemainder = FALSE;
       for (;;)
@@ -1518,7 +1522,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
             double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
             int sqrtDivid = (int)(floor(sqrt(dDivid)));
             fullRemainder = TRUE;
-            for (; index < nbrPrimes; index++)
+            for (; index < nbrFactorBasePrimes; index++)
             {
               rowPrimeSieveData = primeSieveData + index;
               if (rowPrimeSieveData->value == 41893)
@@ -1600,12 +1604,12 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 }
                 Divisor = (int)dDivid;
                 rowSquares[0] = nbrSquares;
-                index = nbrPrimes - 1;
+                index = nbrFactorBasePrimes - 1;
                 if (Divisor <= primeTrialDivisionData[index].value &&
                   Divisor > 1)
                 {          // Perform binary search to find the index.
                   left = -1;
-                  median = right = nbrPrimes;
+                  median = right = nbrFactorBasePrimes;
                   while (left != right)
                   {
                     median = ((right - left) >> 1) + left;
@@ -1843,7 +1847,7 @@ static void PartialRelationFound(
       biT4 = biT[4];
       biT5 = biT[5];
       biT6 = biT[6];
-      for (index = 1; index < nbrPrimes; index++)
+      for (index = 1; index < nbrFactorBasePrimes; index++)
       {
         expParity = 0;
         if (index >= indexMinFactorA && indexFactorA < nbrFactorsA)
@@ -2191,7 +2195,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
 
 //  threadArray = new Thread[numberThreads];
   Temp = logLimbs(pNbrToFactor, origNumberLength);
-  nbrPrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.318);
+  nbrFactorBasePrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.318);
   SieveLimit = (int)exp(8.5 + 0.015 * Temp) & 0xFFFFFFF8;
   nbrFactorsA = (int)(Temp*0.051 + 1);
   NbrPolynomials = (1 << (nbrFactorsA - 1)) - 1;
@@ -2279,9 +2283,9 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
     }
   } /* end while */
   MultBigNbrByInt(TestNbr2, multiplier, Modulus, NumberLength);
-  matrixPartialLength = nbrPrimes * 8;
+  matrixPartialLength = nbrFactorBasePrimes * 8;
   FactorBase = currentPrime;
-  matrixBLength = nbrPrimes + 50;
+  matrixBLength = nbrFactorBasePrimes + 50;
   rowPrimeSieveData->modsqrt = (pNbrToFactor->x & 1) ? 1 : 0;
   switch ((int)Modulus[0] & 0x07)
   {
@@ -2322,7 +2326,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
     j = 2;
   }
   currentPrime = 3;
-  while (j < nbrPrimes)
+  while (j < nbrFactorBasePrimes)
   { /* select small primes */
     NbrMod = (int)RemDivBigNbrByInt(Modulus, currentPrime,
       NumberLength);
@@ -2446,7 +2450,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   databack(lowerText);
 #endif
   firstLimit = 2;
-  for (j = 2; j < nbrPrimes; j++)
+  for (j = 2; j < nbrFactorBasePrimes; j++)
   {
     firstLimit *= (int)(primeSieveData[j].value);
     if (firstLimit > 2 * SieveLimit)
@@ -2463,21 +2467,21 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
       primeSieveData[j + 1].value)
       / log(3) + 0x81);
   firstLimit = (int)(log(dNumberToFactor) / 3);
-  for (secondLimit = firstLimit; secondLimit < nbrPrimes; secondLimit++)
+  for (secondLimit = firstLimit; secondLimit < nbrFactorBasePrimes; secondLimit++)
   {
     if (primeSieveData[secondLimit].value * 2 > SieveLimit)
     {
       break;
     }
   }
-  for (thirdLimit = secondLimit; thirdLimit < nbrPrimes; thirdLimit++)
+  for (thirdLimit = secondLimit; thirdLimit < nbrFactorBasePrimes; thirdLimit++)
   {
     if (primeSieveData[thirdLimit].value > 2 * SieveLimit)
     {
       break;
     }
   }
-  nbrPrimes2 = nbrPrimes - 4;
+  nbrPrimes2 = nbrFactorBasePrimes - 4;
   Prod = sqrt(2 * dNumberToFactor) / (double)SieveLimit;
   fact = (int)pow(Prod, 1 / (float)nbrFactorsA);
   for (i = 2;; i++)
@@ -2487,8 +2491,8 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
       break;
     }
   }
-  span = nbrPrimes / (2 * nbrFactorsA*nbrFactorsA);
-  if (nbrPrimes < 500)
+  span = nbrFactorBasePrimes / (2 * nbrFactorsA*nbrFactorsA);
+  if (nbrFactorBasePrimes < 500)
   {
     span *= 2;
   }
@@ -2571,7 +2575,7 @@ void ShowSIQSStatus(void)
 #endif
 }
 
-static int EraseSingletons(int nbrPrimes)
+static int EraseSingletons(int nbrFactorBasePrimes)
 {
   int row, column, delta;
   int *rowMatrixB;
@@ -2583,7 +2587,7 @@ static int EraseSingletons(int nbrPrimes)
   do
   {   // The singleton removal phase must run until there are no more
       // singletons to erase.
-    for (column = nbrPrimes - 1; column >= 0; column--)
+    for (column = nbrFactorBasePrimes - 1; column >= 0; column--)
     {                  // Initialize number of primes per column to zero.
       vectExpParity[column] = 0;
     }
@@ -2596,7 +2600,7 @@ static int EraseSingletons(int nbrPrimes)
       }
     }
     row = 0;
-    for (column = 0; column<nbrPrimes; column++)
+    for (column = 0; column<nbrFactorBasePrimes; column++)
     {
       if (vectExpParity[column] > 1)
       {                // Useful column found with at least 2 primes.
@@ -2605,7 +2609,7 @@ static int EraseSingletons(int nbrPrimes)
           primeTrialDivisionData[column].value;
       }
     }
-    nbrPrimes = row;
+    nbrFactorBasePrimes = row;
     delta = 0;
     // Erase singletons from matrixB. The rows to be erased are those where the
     // the corresponding element of the array vectExpParity equals 1.
@@ -2637,7 +2641,7 @@ static int EraseSingletons(int nbrPrimes)
     }
   } while (delta > 0);           // End loop if number of rows did not
                                  // change.
-  primeTrialDivisionData[0].exp2 = nbrPrimes;
+  primeTrialDivisionData[0].exp2 = nbrFactorBasePrimes;
   return matrixBlength;
 }
 
@@ -2652,7 +2656,7 @@ static unsigned char LinearAlgebraPhase(
   int *rowMatrixB;
   int primeIndex;
   // Get new number of rows after erasing singletons.
-  int matrixBlength = EraseSingletons(nbrPrimes);
+  int matrixBlength = EraseSingletons(nbrFactorBasePrimes);
   matrixBLength = matrixBlength;
 #ifdef __EMSCRIPTEN__
   showMatrixSize((char *)SIQSInfoText, matrixBlength, primeTrialDivisionData[0].exp2);
@@ -3462,7 +3466,7 @@ static void sieveThread(BigInteger *result)
   PrimeSieveData *rowPrimeSieveData;
   PrimeSieveData *rowPrimeSieveData0;
   PrimeTrialDivisionData *rowPrimeTrialDivisionData;
-  short SieveArray[100000];
+  short SieveArray[200000];
   int rowPartials[200];
   int biLinearCoeff[MAX_LIMBS_SIQS];
 //  int threadNumber = this.threadNumber;
@@ -3495,7 +3499,7 @@ static void sieveThread(BigInteger *result)
     }
     else
     {
-      for (i = 0; i<nbrPrimes; i++)
+      for (i = 0; i<nbrFactorBasePrimes; i++)
       {
         rowPrimeSieveData = &primeSieveData[i];
         rowPrimeSieveData0 = &primeSieveData[i];
@@ -3596,7 +3600,7 @@ static void sieveThread(BigInteger *result)
               biLinearDelta[index][index2] = 0;
             }
           }
-          for (index = 1; index < nbrPrimes; index++)
+          for (index = 1; index < nbrFactorBasePrimes; index++)
           {
             double dRem, dCurrentPrime;
             rowPrimeTrialDivisionData = &primeTrialDivisionData[index];
@@ -3851,7 +3855,7 @@ static void sieveThread(BigInteger *result)
           break;
         }
       }
-      for (i = nbrPrimes - 1; i>0; i--)
+      for (i = nbrFactorBasePrimes - 1; i>0; i--)
       {
         double dRem, dCurrentPrime;
         rowPrimeSieveData = &primeSieveData[i];

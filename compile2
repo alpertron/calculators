@@ -1,0 +1,5 @@
+cat expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c ecmfront.c bignbr.c showtime.c from_musl.c > all.c
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz all.c -o all.bc
+/usr/local/bin/llc -O3 all.bc -march=wasm32 -o ecm.s
+../binaryen/bin/s2wasm ecm.s -s 1000000 > ecm.wast
+../wabt/build/wast2wasm -o ecm.wasm ecm.wast

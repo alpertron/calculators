@@ -31,9 +31,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define TOKEN_END_EXPON      '2'
 #define TOKEN_UNARY_MINUS    '3'
 #define KARATSUBA_POLY_CUTOFF 8
-#ifdef __EMSCRIPTEN__
-extern char *output;
-#endif
 BigInteger primeMod;              // p
 int exponentMod;                  // k
 BigInteger powerMod;              // p^k

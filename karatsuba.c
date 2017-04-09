@@ -23,10 +23,11 @@
 #include "bignbr.h"
 #include <stdio.h>
 #include <math.h>
+#include <stdint.h>
 
 #define KARATSUBA_CUTOFF 8
 static limb arr[MAX_LEN];
-static limb arrAux[MAX_LEN];
+static limb arrayAux[MAX_LEN];
 static int karatLength;
 static void Karatsuba(int idxFactor1, int length, int diffIndex);
 int multCtr, karatCtr;
@@ -54,7 +55,7 @@ void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultL
   if (pResultLen != NULL)
   {
     memcpy(result, &arr[2 * (karatLength - length)], 2 * length * sizeof(limb));
-    if (arr[2 * (karatLength - length)-1].x == 0)
+    if (karatLength > length && arr[2 * (karatLength - length)-1].x == 0)
     {
       *pResultLen = length * 2 - 1;
     }
@@ -99,11 +100,51 @@ static int absSubtract(int idxMinuend, int idxSubtrahend,
 
 // Multiply two groups of nbrLen limbs. The first one starts at idxFactor1
 // and the second one at idxFactor2. The 2*nbrLen limb result is stored
-// starting at idxFactor1. Use arrAux as temporary storage.
+// starting at idxFactor1. Use arrayAux as temporary storage.
 // Accumulate products by result limb.
 static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
 {
   int prodCol, fact1Col;
+#ifdef _USING64BITS_
+  uint64_t carry, sum, prod;
+  limb *ptrFactor1, *ptrFactor2;
+  multCtr++;
+  sum = 0;  // Initialize sum of product of limbs in the same column.
+  for (prodCol = 0; prodCol < 2 * nbrLen - 1; prodCol++)
+  {    // Process each limb of product (least to most significant limb).
+    carry = 0;
+    if (prodCol < nbrLen)
+    {   // Processing first half (least significant) of product.
+      ptrFactor2 = &arr[idxFactor2 + prodCol];
+      ptrFactor1 = &arr[idxFactor1];
+      fact1Col = prodCol;
+    }
+    else
+    {  // Processing second half (most significant) of product.
+      ptrFactor2 = &arr[idxFactor2 + nbrLen - 1];
+      ptrFactor1 = &arr[idxFactor1 + prodCol - nbrLen + 1];
+      fact1Col = 2 * (nbrLen - 1) - prodCol;
+    }
+    for (; fact1Col>0; fact1Col -= 2)
+    {
+      prod = (uint64_t)ptrFactor1->x * (uint32_t)ptrFactor2->x +
+        (uint64_t)(ptrFactor1 + 1)->x * (uint32_t)(ptrFactor2 - 1)->x;
+      ptrFactor1 += 2;
+      ptrFactor2 -= 2;
+      sum += (uint32_t)prod & MAX_VALUE_LIMB;
+      carry += (uint32_t)(prod >> BITS_PER_GROUP);
+    }
+    if (fact1Col == 0)
+    {   // Odd number of limbs: process last one.
+      prod = (uint64_t)ptrFactor1->x * (uint32_t)ptrFactor2->x;
+      sum += (uint32_t)prod & MAX_VALUE_LIMB;
+      carry += (uint32_t)(prod >> BITS_PER_GROUP);
+    }
+    arrayAux[prodCol].x = (int32_t)sum & MAX_VALUE_LIMB;
+    sum = carry + (sum >> BITS_PER_GROUP);
+  }
+  arrayAux[prodCol].x = (int32_t)sum;
+#else
   limb *ptrFactor1, *ptrFactor2;
   double dRangeLimb = (double)LIMB_RANGE;
   double dInvRangeLimb = 1 / dRangeLimb;
@@ -133,7 +174,7 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
       dAccumulator += (double)factor1 * (double)factor2;
     }
     low &= MAX_VALUE_LIMB;    // Trim extra bits.
-    arrAux[prodCol].x = low;
+    arrayAux[prodCol].x = low;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
@@ -146,8 +187,9 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
     }
     low = (unsigned int)(dAccumulator - floor(dAccumulator / dRangeLimb) * dRangeLimb);
   }
-  arrAux[prodCol].x = low;
-  memcpy(&arr[idxFactor1], &arrAux[0], 2 * nbrLen * sizeof(limb));
+  arrayAux[prodCol].x = low;
+#endif
+  memcpy(&arr[idxFactor1], &arrayAux[0], 2 * nbrLen * sizeof(limb));
   return;
 }
 

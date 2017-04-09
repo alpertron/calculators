@@ -62,7 +62,6 @@ int factorsMod[10000];
 struct sFactors astFactorsGO[1000];
 int factorsGO[10000];
 int NumberLength;
-extern char *output;
 static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *subGroupOrder);
 static void ExchangeMods(void);
 
@@ -705,14 +704,6 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
   char *ptrOutput;
   enum eExprErr rc;
   rc = ComputeExpression(baseText, 1, &base);
-  if (output == NULL)
-  {
-    output = (char *)malloc(1000000);
-  }
-  if (output == NULL)
-  {
-    return;   // Go out if cannot generate output string.
-  }
   if (rc == EXPR_OK)
   {
     if (base.sign == SIGN_NEGATIVE || (base.nbrLimbs == 1 && base.limbs[0].x == 0))
@@ -721,14 +712,6 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
     }
   }
   rc = ComputeExpression(powerText, 1, &power);
-  if (output == NULL)
-  {
-    output = (char *)malloc(1000000);
-  }
-  if (output == NULL)
-  {
-    return;   // Go out if cannot generate output string.
-  }
   if (rc == EXPR_OK)
   {
     if (power.sign == SIGN_NEGATIVE || (power.nbrLimbs == 1 && base.limbs[0].x == 0))
@@ -737,14 +720,6 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
     }
   }
   rc = ComputeExpression(modText, 1, &modulus);
-  if (output == NULL)
-  {
-    output = (char *)malloc(1000000);
-  }
-  if (output == NULL)
-  {
-    return;   // Go out if cannot generate output string.
-  }
   if (rc == EXPR_OK)
   {
     if (modulus.sign == SIGN_NEGATIVE || (modulus.nbrLimbs == 1 && modulus.limbs[0].x < 2))
@@ -825,10 +800,6 @@ void doWork(char* data, int size)
   int groupLen = 0;
   char *ptrData = data;
   char *ptrPower, *ptrMod;
-  if (output == NULL)
-  {
-    output = malloc(3000000);
-  }
   groupLen = 0;
   while (*ptrData != ',')
   {

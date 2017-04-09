@@ -20,7 +20,7 @@ var worker = 0;
 var app;
 var digits;
 var config;
-
+var asmjs = typeof(WebAssembly) === "undefined";
 function get(x)
 {
   return document.getElementById(x);
@@ -57,12 +57,16 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker("ecmW0024.js");
+    worker = new Worker(asmjs? "ecmW0025.js": "ecmX0025.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
       // It is "9" for saving expression to factor into Web Storage.
       var firstChar = e.data.substring(0, 1);
+      if (firstChar == "9")
+      {
+        console.log(e.data.substring(1));
+      }
       if (firstChar == "8")
       {
         setStorage("ecmFactors", e.data.substring(1));
@@ -100,8 +104,8 @@ function dowork(n)
   var helphelp = get("helphelp");
   get("help").style.display = "none";
   helphelp.style.display = "block";
-  helphelp.innerHTML = (app & 1 ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización.</p>":
-                                  "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization.</p>");
+  helphelp.innerHTML = (app & 1 ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. Esta es la versión "+(asmjs? "asm.js": "WebAssembly")+".</p>":
+                                  "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. This is the "+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
   res.style.display = "block";
   if (valueText == "")
   {    // Nothing in input box.
@@ -154,7 +158,7 @@ function isBatch()
 }
 window.onload = function ()
 {
-  var param, index;
+  var param, index, ecmFactor;
   get("eval").onclick = function ()
   {
     setStorage("ecmFactors","");

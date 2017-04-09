@@ -22,7 +22,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "highlevel.h"
 static BigInteger num, den, delta;
 static BigInteger Temp;
-extern char *output;
 static char *ptrOutput;
 static void ShowRational(BigInteger *pNum, BigInteger *pDen);
 extern int lang;

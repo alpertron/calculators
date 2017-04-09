@@ -24,9 +24,6 @@
 #include "expression.h"
 #include "highlevel.h"
 #include <math.h>
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#endif
 #define MAX_SIEVE 65536
 #define SUBT 12
 extern int lang;
@@ -55,7 +52,6 @@ static int nbrModExp;
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 char texto[500];
-extern char *output;
 BigInteger ExpressionResult;
 void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs);
 int checkMinusOne(limb *value, int nbrLimbs);
@@ -741,10 +737,6 @@ void doWork(char* data, int size)
 {
   int groupLen = 0;
   char *ptrData = data;
-  if (output == NULL)
-  {
-    output = malloc(3000000);
-  }
   while (*ptrData != ',')
   {
     groupLen = groupLen * 10 + (*ptrData++ - '0');

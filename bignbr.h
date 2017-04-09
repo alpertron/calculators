@@ -16,7 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
     */
-
+#ifndef _BIGNBR_H
+#define _BIGNBR_H
 #define MAX_LEN 2500        // 20000 digits
 #define BITS_PER_GROUP 31
 #define BITS_PER_INT_GROUP 31
@@ -139,3 +140,4 @@ void ModInvBigInt(int *num, int *inv, int *mod, int NumberLength);
 void IntToBigNbr(int value, int *bigNbr, int nbrLength);
 
 typedef void(*mmCback)(void);
+#endif

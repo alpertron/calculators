@@ -234,7 +234,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     {                   // Increment quotient.
       for (idx = 0; idx <= nbrLimbsQuotient; idx++)
       {
-        if ((unsigned int)(++((ptrQuotient + idx)->x)) != LIMB_RANGE)
+        if ((++((ptrQuotient + idx)->x)) & MAX_INT_NBR)
         {
           break;
         }

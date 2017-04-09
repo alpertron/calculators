@@ -398,14 +398,6 @@ void polyFactText(char *modText, char *polyText, int groupLength)
   enum eExprErr rc;
   int expon = 0;
   rc = ComputeExpression(modText, 1, &powerMod);
-  if (output == NULL)
-  {
-    output = (char *)malloc(1000000);
-  }
-  if (output == NULL)
-  {
-    return;   // Go out if cannot generate output string.
-  }
   if (rc == EXPR_OK)
   {
     if (powerMod.sign == SIGN_NEGATIVE || (powerMod.nbrLimbs == 1 && powerMod.limbs[0].x < 2))
@@ -448,10 +440,6 @@ void doWork(char* data, int size)
   int flags;
   int groupLen = 0;
   char *ptrData = data;
-  if (output == NULL)
-  {
-    output = malloc(3000000);
-  }
   while (*ptrData != ',')
   {
     groupLen = groupLen * 10 + (*ptrData++ - '0');
