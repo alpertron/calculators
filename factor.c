@@ -818,7 +818,8 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
   {   // Enter here on numbers of more than 40 digits if the user selected
       // get Cunningham factors from server.
 #ifdef __EMSCRIPTEN__
-    databack("4<p>Requesting known primitive factors from Web server.</p>");
+    databack(lang ? "4<p>Obteniendo los factores primitivos conocidos del servidor Web.</p>":
+                    "4<p>Requesting known primitive factors from Web server.</p>");
     // Format URL.
     ptrUrl = url;
     strcpy(ptrUrl, "factors.pl?base=");

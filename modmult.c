@@ -330,14 +330,14 @@ void modmult(limb *factor1, limb *factor2, limb *product)
     memset(Prod, 0, NumberLength * sizeof(limb));
     for (i = 0; i < NumberLength; i++)
     {
-      Pr = (Nbr = (factor1 + i)->x) * (int64_t)factor2->x + Prod[0].x;
+      Pr = (Nbr = (factor1 + i)->x) * (int64_t)factor2->x + (uint32_t)Prod[0].x;
       MontDig = ((int32_t)Pr * MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
       Prod[0].x = (Pr = (((int64_t)MontDig * TestNbr[0].x + Pr) >> BITS_PER_GROUP) +
-        (int64_t)MontDig * TestNbr[1].x + (int64_t)Nbr * (factor2 + 1)->x + Prod[1].x) & MAX_VALUE_LIMB;
+        (int64_t)MontDig * TestNbr[1].x + (int64_t)Nbr * (factor2 + 1)->x + (uint32_t)Prod[1].x) & MAX_VALUE_LIMB;
       for (j = 2; j < NumberLength; j++)
       {
         Prod[j - 1].x = ((Pr = (Pr >> BITS_PER_GROUP) +
-          (int64_t)MontDig * TestNbr[j].x + (int64_t)Nbr * (factor2 + j)->x + Prod[j].x) & MAX_VALUE_LIMB);
+          (int64_t)MontDig * TestNbr[j].x + (int64_t)Nbr * (factor2 + j)->x + (uint32_t)Prod[j].x) & MAX_VALUE_LIMB);
       }
       Prod[j - 1].x = (int32_t)(Pr >> BITS_PER_GROUP);
     }

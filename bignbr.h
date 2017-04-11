@@ -131,6 +131,7 @@ void MultBigNbr(int *pFactor1, int *pFactor2, int *pProd, int nbrLen);
 void IntToBigNbr(int value, int *bigNbr, int nbrLength);
 int BigNbrToBigInt(BigInteger *pBigNbr, int *pBigInt);
 void BigIntToBigNbr(BigInteger *pBigNbr, int *pBigInt, int nbrLenBigInt);
+int BigNbrIsZero(limb *pNbr);
 void GcdBigNbr(int *pNbr1, int *pNbr2, int *pGcd, int nbrLen);
 void AdjustBigIntModN(int *Nbr, int *Mod, int nbrLen);
 void MultBigNbrModN(int Nbr1[], int Nbr2[], int Prod[], int Mod[], int nbrLen);
