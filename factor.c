@@ -814,7 +814,7 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
 
   factorsAscii[0] = 0;    // Indicate no new factor found in advance.
   Expon2 = Expon;
-  if (cunningham && BigOriginal->nbrLimbs > 8)
+  if (cunningham && BigOriginal->nbrLimbs > 4)
   {   // Enter here on numbers of more than 40 digits if the user selected
       // get Cunningham factors from server.
 #ifdef __EMSCRIPTEN__
@@ -2303,7 +2303,7 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
     if (nbrLimbs == 1)
     {
       dividend = *(ptrFactor + 1);
-      while (upperBound*upperBound <= dividend)
+      while ((unsigned int)upperBound*(unsigned int)upperBound <= (unsigned int)dividend)
       {              // Trial division by small numbers.
         if (dividend % upperBound == 0)
         {            // Factor found.

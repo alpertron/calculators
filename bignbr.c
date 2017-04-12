@@ -593,7 +593,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
 {
   int nbrLimbs = pBigInt->nbrLimbs;
   // Point to most significant limb.
-  limb *pLimbs = pBigInt->limbs + nbrLimbs - 1;
+  limb *pLimbs;
   int ctr;
   int remainder = 0;
   double dDivisor = (double)divisor;
@@ -620,6 +620,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
       subtFromAbsValue(pBigInt->limbs, &nbrLimbs, -subt);
     }
   }
+  pLimbs = pBigInt->limbs + nbrLimbs - 1;
   // Divide number by divisor.
   for (ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
