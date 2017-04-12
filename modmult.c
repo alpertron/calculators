@@ -162,7 +162,7 @@ void AdjustModN(limb *Nbr, limb *Modulus, int nbrLen)
 
   dModulus = getMantissa(Modulus+nbrLen, nbrLen);
   dNbr = getMantissa(Nbr + nbrLen + 1, nbrLen + 1) * LIMB_RANGE;
-  TrialQuotient = (int)floor(dNbr / dModulus + 0.5);
+  TrialQuotient = (int)(unsigned int)floor(dNbr / dModulus + 0.5);
   if ((unsigned int)TrialQuotient >= LIMB_RANGE)
   {   // Maximum value for limb.
     TrialQuotient = MAX_VALUE_LIMB;
@@ -280,6 +280,9 @@ static void smallmodmult(int factor1, int factor2, limb *product, int mod)
   }
   else
   {   // TestNbr has one limb but it is not small.
+#ifdef _USING64BITS_
+    product->x = (int64_t)factor1 * factor2 % mod;
+#else
       // Round up quotient.
     int quotient = (int)floor((double)factor1 * (double)factor2 / (double)mod + 0.5);
     int remainder = factor1 * factor2 - quotient * mod;
@@ -288,6 +291,7 @@ static void smallmodmult(int factor1, int factor2, limb *product, int mod)
       remainder += mod;
     }
     product->x = remainder;
+#endif
   }
 }
 
@@ -476,7 +480,7 @@ void modmultIntExtended(limb *factorBig, int factorInt, limb *result, limb *pTes
   dFactorInt = (double)factorInt;
   dTestNbr = getMantissa(pTestNbr + nbrLen, nbrLen);
   dFactorBig = getMantissa(factorBig + nbrLen, nbrLen);
-  TrialQuotient = (int)floor(dFactorBig * factorInt / dTestNbr + 0.5);
+  TrialQuotient = (int)(unsigned int)floor(dFactorBig * factorInt / dTestNbr + 0.5);
   if ((unsigned int)TrialQuotient >= LIMB_RANGE)
   {   // Maximum value for limb.
     TrialQuotient = MAX_VALUE_LIMB;

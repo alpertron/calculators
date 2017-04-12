@@ -625,18 +625,18 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   for (ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
     double dDividend, dQuotient;
-    int quotient, dividend;
+    unsigned int quotient, dividend;
     dividend = (remainder << BITS_PER_INT_GROUP) + pLimbs->x;
     dDividend = (double)remainder * dLimb + pLimbs->x;
     dQuotient = floor(dDividend / dDivisor + 0.5);
-    quotient = (int)dQuotient;   // quotient has correct value or 1 more.
+    quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - quotient * divisor;
     if ((unsigned int)remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
       quotient--;
       remainder += divisor;
     }
-    (pLimbs--)->x = quotient;
+    (pLimbs--)->x = (int)quotient;
   }
   if (nbrLimbs > 1 && pBigInt->limbs[nbrLimbs - 1].x == 0)
   {   // Most significant limb is now zero, so discard it.
@@ -660,7 +660,7 @@ int getRemainder(BigInteger *pBigInt, int divisor)
     dividend = (remainder << BITS_PER_INT_GROUP) + pLimb->x;
     dDividend = (double)remainder * dLimb + pLimb->x;
     dQuotient = floor(dDividend / dDivisor + 0.5);
-    quotient = (int)dQuotient;   // quotient has correct value or 1 more.
+    quotient = (int)(unsigned int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - quotient * divisor;
     if ((unsigned int)remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
