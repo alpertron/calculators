@@ -343,9 +343,9 @@ static void GetNumberOfDivisors(char **pptrOutput)
 }
 
 // Find sum of divisors as the product of (p^(e+1)-1)/(p-1) where p=prime and e=exponent.
+// Use Quad1 and Quad2 as temporary variables
 static void GetSumOfDivisors(char **pptrOutput)
 {
-  BigInteger Temp1;
   char *ptrOutput = *pptrOutput;
   struct sFactors *pstFactor;
   int factorNumber;
@@ -356,12 +356,12 @@ static void GetSumOfDivisors(char **pptrOutput)
   for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
     UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
-    BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Temp1);   // p^(e+1)
-    addbigint(&Temp1, -1);   // p^(e+1)-1
-    BigIntMultiply(&result, &Temp1, &result);
-    UncompressBigInteger(pstFactor->ptrFactor, &Temp1);
-    addbigint(&Temp1, -1);   // p-1
-    BigIntDivide(&result, &Temp1, &result);
+    BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Quad1);   // p^(e+1)
+    addbigint(&Quad1, -1);   // p^(e+1)-1
+    BigIntMultiply(&result, &Quad1, &Quad2);
+    UncompressBigInteger(pstFactor->ptrFactor, &Quad1);
+    addbigint(&Quad1, -1);   // p-1
+    BigIntDivide(&Quad2, &Quad1, &result);
     pstFactor++;
   }
   strcpy(ptrOutput, lang ? "<p>Suma de divisores: " : "<p>Sum of divisors: ");

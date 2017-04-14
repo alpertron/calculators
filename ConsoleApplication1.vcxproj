@@ -167,6 +167,7 @@
     <ClCompile Include="expression.c" />
     <ClCompile Include="factor.c" />
     <ClCompile Include="fcubes.c" />
+    <ClCompile Include="from_musl.c" />
     <ClCompile Include="fsquares.c" />
     <ClCompile Include="GaussExpr.c" />
     <ClCompile Include="gaussian.c" />

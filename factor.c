@@ -917,7 +917,8 @@ static boolean ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFac
       "&nbsp;&nbsp;&nbsp;Power +/- 1 exponent: ");
     ptrStatus += strlen(ptrStatus);
     int2dec(&ptrStatus, Exponent);
-  }
+    databack(status);
+}
 #endif
   CopyBigInt(&NFp1, nbrToFactor);
   addbigint(&NFp1, 1);                    // NFp1 <- NumberToFactor + 1

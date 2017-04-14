@@ -283,9 +283,9 @@ void expBigNbr(BigInteger *bignbr, double logar)
     mostSignificantLimb = 1;
     bignbr->nbrLimbs++;
   }
-  memset(bignbr->limbs, 0, bignbr->nbrLimbs * sizeof(limb));
-  bignbr->limbs[bignbr->nbrLimbs].x = mostSignificantLimb;
   bignbr->nbrLimbs++;
+  memset(bignbr->limbs, 0, bignbr->nbrLimbs * sizeof(limb));
+  bignbr->limbs[bignbr->nbrLimbs-1].x = mostSignificantLimb;
 }
 
 double logBigNbr(BigInteger *pBigNbr)
@@ -543,27 +543,25 @@ void BigIntGcd(BigInteger *pArg1, BigInteger *pArg2, BigInteger *pResult)
 static void addToAbsValue(limb *pLimbs, int *pNbrLimbs, int addend)
 {
   int nbrLimbs = *pNbrLimbs;
-
   pLimbs->x += addend;
   if ((unsigned int)pLimbs->x >= LIMB_RANGE)
   {
     int ctr;
+    pLimbs->x -= LIMB_RANGE;
     for (ctr = 1; ctr < nbrLimbs; ctr++)
     {
-      (pLimbs + ctr - 1)->x -= LIMB_RANGE;
-      if (++((pLimbs + ctr)->x) >= 0)
+      if ((unsigned int)++((pLimbs + ctr)->x) >= LIMB_RANGE)
       {
         break;
       }
+      (pLimbs + ctr)->x = 0;
     }
     if (ctr == nbrLimbs)
     {
-      nbrLimbs++;
-      (pLimbs + ctr - 1)->x -= LIMB_RANGE;
-      ++((pLimbs + ctr)->x);
+      (*pNbrLimbs)++;
+      (pLimbs + ctr)->x = 1;
     }
   }
-  *pNbrLimbs = nbrLimbs;
 }
 
 static void subtFromAbsValue(limb *pLimbs, int *pNbrLimbs, int subt)
@@ -678,7 +676,6 @@ int getRemainder(BigInteger *pBigInt, int divisor)
 
 void addbigint(BigInteger *pResult, int addend)
 {
-  limb carry;
   int sign;
   int nbrLimbs = pResult->nbrLimbs;
   limb *pResultLimbs = pResult->limbs;
@@ -697,11 +694,7 @@ void addbigint(BigInteger *pResult, int addend)
   }
   if (sign == SIGN_POSITIVE)
   {   // Add addend to absolute value of pResult.
-    carry.x = pResultLimbs->x + addend;
-    if (carry.x != 0)
-    {
-      addToAbsValue(pResultLimbs, &nbrLimbs, addend);
-    }
+    addToAbsValue(pResultLimbs, &nbrLimbs, addend);
   }
   else
   {  // Subtract addend from absolute value of pResult.
