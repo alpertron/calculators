@@ -147,7 +147,14 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     // Initialize approximate inverse.
     inverse = MAX_VALUE_LIMB / ((double)adjustedArgument[nbrLimbs - 1].x + 1);
     approxInv[nbrLimbs-1].x = 1;
-    approxInv[nbrLimbs-2].x = (int)floor((inverse-1)*MAX_VALUE_LIMB);
+    if (inverse <= 1)
+    {
+      approxInv[nbrLimbs - 2].x = 0;
+    }
+    else
+    {
+      approxInv[nbrLimbs - 2].x = (int)floor((inverse - 1)*MAX_VALUE_LIMB);
+    }
     // Perform Newton approximation loop.
     // Get bit length of each cycle.
     bitLengthNbrCycles = 0;
