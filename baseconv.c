@@ -96,18 +96,19 @@ void int2dec(char **pOutput, int nbr)
 {
   char *ptrOutput = *pOutput;
   int significantZero = 0;
-  int div = 1000000000;
+  unsigned int div = 1000000000;
+  unsigned int value = (unsigned int)nbr;
   while (div > 0)
   {
     int digit;
 
-    digit = nbr/div;
+    digit = value/div;
     if (digit > 0 || significantZero != 0)
     {
       significantZero = 1;
       *ptrOutput++ = (char)(digit + (int)'0');
     }
-    nbr %= div;
+    value %= div;
     div /= 10;
   }
   if (significantZero == 0)
