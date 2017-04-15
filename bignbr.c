@@ -1052,8 +1052,8 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
     // All approximations must be >= than true answer.
     if (nbrLimbs == 1)
     {
-      ptrLimb->x = (int)ceil(dN);
-      if (ptrLimb->x == LIMB_RANGE)
+      ptrLimb->x = (int)(unsigned int)ceil(dN);
+      if ((unsigned int)ptrLimb->x == LIMB_RANGE)
       {
         nbrLimbs = 2;
         ptrLimb->x = 0;
@@ -1062,9 +1062,10 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
     }
     else
     {
-      j = (int)ceil(dN*LIMB_RANGE);
-      ptrLimb->x = j/LIMB_RANGE;
-      (ptrLimb - 1)->x = j%LIMB_RANGE;
+      dN += 1 / (double)LIMB_RANGE;
+      ptrLimb->x = (int)trunc(dN);
+      dN -= trunc(dN);
+      (ptrLimb - 1)->x = (int)trunc(dN*LIMB_RANGE);
     }
     pBase->nbrLimbs = nbrLimbs;
     // Perform Newton iteration for n-th root.
