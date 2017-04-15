@@ -542,26 +542,26 @@ void BigIntGcd(BigInteger *pArg1, BigInteger *pArg2, BigInteger *pResult)
 
 static void addToAbsValue(limb *pLimbs, int *pNbrLimbs, int addend)
 {
+  int ctr;
   int nbrLimbs = *pNbrLimbs;
   pLimbs->x += addend;
-  if ((unsigned int)pLimbs->x >= LIMB_RANGE)
-  {
-    int ctr;
+  if ((unsigned int)pLimbs->x < LIMB_RANGE)
+  {     // No overflow. Go out of routine.
+    return;
+  }
     pLimbs->x -= LIMB_RANGE;
     for (ctr = 1; ctr < nbrLimbs; ctr++)
     {
-      if ((unsigned int)++((pLimbs + ctr)->x) >= LIMB_RANGE)
-      {
-        break;
-      }
-      (pLimbs + ctr)->x = 0;
+    pLimbs++;        // Point to next most significant limb.
+    if (pLimbs->x != MAX_INT_NBR)
+    {   // No overflow. Go out of routine.
+      (pLimbs->x)++;   // Add carry.
+      return;
     }
-    if (ctr == nbrLimbs)
-    {
-      (*pNbrLimbs)++;
-      (pLimbs + ctr)->x = 1;
-    }
+    pLimbs->x = 0;
   }
+  (*pNbrLimbs)++;        // Result has an extra limb.
+  (pLimbs + 1)->x = 1;   // Most significant limb must be 1.
 }
 
 static void subtFromAbsValue(limb *pLimbs, int *pNbrLimbs, int subt)
