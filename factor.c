@@ -118,8 +118,8 @@ enum eEcmResult
   CHANGE_TO_SIQS,
 };
 
-/* ECM limits for 30, 35, ..., 85 digits */
-static int limits[] = { 5, 5, 5, 5, 5, 6, 8, 10, 20, 25, 26, 30, 50 };
+/* ECM limits for 30, 35, ..., 95 digits */
+static int limits[] = { 8, 8, 8, 8, 8, 10, 15, 20, 28, 35, 50, 100, 150 };
 /******************************************************/
 /* Start of code adapted from Paul Zimmermann's ECM4C */
 /******************************************************/
