@@ -65,7 +65,7 @@ var env =
     req.send(null);
     if (req.status == 200)
     {
-      ConvertToString(exports.getFactorsAsciiPtr(), req.responseText);
+      ConvertToString(exports["getFactorsAsciiPtr"](), req.responseText);
     }
   }
 };
@@ -78,7 +78,7 @@ var info =
 self.onmessage = function(e)
 {
   var request = new XMLHttpRequest();
-  request.open('GET', 'ecm0028.wasm');
+  request.open('GET', 'ecm0030.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
