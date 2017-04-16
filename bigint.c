@@ -227,7 +227,7 @@ void MultBigNbr(int *pFactor1, int *pFactor2, int *pProd, int nbrLen)
     {
       dAccumulator = floor((dAccumulator - HALF_INT_RANGE/2)*dInvRangeLimb);
     }
-    low = (int)(dAccumulator - floor(dAccumulator / dRangeLimb) * dRangeLimb);
+    low = (int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
   }
   *pProd = low;
   *(pProd+1) = (int)floor(dAccumulator/dRangeLimb);

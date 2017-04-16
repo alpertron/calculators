@@ -185,7 +185,7 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
     {
       dAccumulator = floor(dAccumulator * dInvRangeLimb - 0.25);
     }
-    low = (unsigned int)(dAccumulator - floor(dAccumulator / dRangeLimb) * dRangeLimb);
+    low = (unsigned int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
   }
   arrayAux[prodCol].x = low;
 #endif

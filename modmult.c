@@ -310,7 +310,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
 {
   limb carry;
   int count;
-  limb Prod[10];
+  limb Prod[13];
   unsigned int cy;
   int index;
 #ifdef __EMSCRIPTEN__
@@ -325,7 +325,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
     smallmodmult(factor1->x, factor2->x, product, TestNbr[0].x);
     return;
   }
-  if (NumberLength < 8)
+  if (NumberLength <= 12)
   {     // Small numbers.
     int i, j;
 #ifdef _USING64BITS_
