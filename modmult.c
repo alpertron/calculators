@@ -327,7 +327,7 @@ static void MontgomeryMult2(limb *pNbr1, limb *pNbr2, limb *pProd)
       (int64_t)MontDig * TestNbr1 + (int64_t)Nbr * Nbr2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
     Prod1 = (int32_t)(Pr >> BITS_PER_GROUP);
   }
-  if (Prod1 > TestNbr1 || (Prod1 == TestNbr1 && Prod0 >= TestNbr0))
+  if (Pr >= ((int64_t)(TestNbr1+1) << BITS_PER_GROUP) || (Prod1 == TestNbr1 && Prod0 >= TestNbr0))
   {
     Prod0 = (borrow = Prod0 - TestNbr0) & MAX_INT_NBR;
     Prod1 = ((borrow >> BITS_PER_GROUP) + Prod1 - TestNbr1) & MAX_INT_NBR;
@@ -360,7 +360,7 @@ static void MontgomeryMult3(limb *pNbr1, limb *pNbr2, limb *pProd)
       (int64_t)MontDig * TestNbr2 + (int64_t)Nbr * Nbr2_2 + (uint32_t)Prod2) & MAX_INT_NBR;
     Prod2 = (int32_t)(Pr >> BITS_PER_GROUP);
   }
-  if (Prod2 > TestNbr2
+  if (Pr >= ((int64_t)(TestNbr2 + 1) << BITS_PER_GROUP)
     || (Prod2 == TestNbr2
     && (Prod1 > TestNbr1 || (Prod1 == TestNbr1 && (Prod0 >= TestNbr0)))))
   {
@@ -401,7 +401,7 @@ static void MontgomeryMult4(limb *pNbr1, limb *pNbr2, limb *pProd)
       (int64_t)MontDig * TestNbr3 + (int64_t)Nbr * Nbr2_3 + (uint32_t)Prod3) & MAX_INT_NBR;
     Prod3 = (int32_t)(Pr >> BITS_PER_GROUP);
   }
-  if (Prod3 > TestNbr3
+  if (Pr >= ((int64_t)(TestNbr3 + 1) << BITS_PER_GROUP)
     || (Prod3 == TestNbr3
     && (Prod2 > TestNbr2
       || (Prod2 == TestNbr2
@@ -450,7 +450,7 @@ static void MontgomeryMult5(limb *pNbr1, limb *pNbr2, limb *pProd)
       (int64_t)MontDig * TestNbr4 + (int64_t)Nbr * Nbr2_4 + (uint32_t)Prod4) & MAX_INT_NBR;
     Prod4 = (int32_t)(Pr >> BITS_PER_GROUP);
   }
-  if (Prod4 > TestNbr4
+  if (Pr >= ((int64_t)(TestNbr4 + 1) << BITS_PER_GROUP)
     || (Prod4 == TestNbr4
     && (Prod3 > TestNbr3
       || (Prod3 == TestNbr3
@@ -507,7 +507,7 @@ static void MontgomeryMult6(limb *pNbr1, limb *pNbr2, limb *pProd)
       (int64_t)MontDig * TestNbr5 + (int64_t)Nbr * Nbr2_5 + (uint32_t)Prod5) & MAX_INT_NBR;
     Prod5 = (int32_t)(Pr >> BITS_PER_GROUP);
   }
-  if (Prod5 > TestNbr5
+  if (Pr >= ((int64_t)(TestNbr5 + 1) << BITS_PER_GROUP)
     || (Prod5 == TestNbr5
     && (Prod4 > TestNbr4
       || (Prod4 == TestNbr4
@@ -574,7 +574,7 @@ static void MontgomeryMult7(limb *pNbr1, limb *pNbr2, limb *pProd)
       (int64_t)MontDig * TestNbr6 + (int64_t)Nbr * Nbr2_6 + (uint32_t)Prod6) & MAX_INT_NBR;
     Prod6 = (int32_t)(Pr >> BITS_PER_GROUP);
   }
-  if (Prod6 > TestNbr6
+  if (Pr >= ((int64_t)(TestNbr6 + 1) << BITS_PER_GROUP)
     || (Prod6 == TestNbr6
     && (Prod5 > TestNbr5
       || (Prod5 == TestNbr5
@@ -649,7 +649,7 @@ static void MontgomeryMult8(limb *pNbr1, limb *pNbr2, limb *pProd)
       (int64_t)MontDig * TestNbr7 + (int64_t)Nbr * Nbr2_7 + (uint32_t)Prod7) & MAX_INT_NBR;
     Prod7 = (int32_t)(Pr >> BITS_PER_GROUP);
   }
-  if (Prod7 > TestNbr7
+  if (Pr >= ((int64_t)(TestNbr7 + 1) << BITS_PER_GROUP)
     || (Prod7 == TestNbr7
     && (Prod6 > TestNbr6
       || (Prod6 == TestNbr6
@@ -734,7 +734,7 @@ static void MontgomeryMult9(limb *pNbr1, limb *pNbr2, limb *pProd)
       (int64_t)MontDig * TestNbr8 + (int64_t)Nbr * Nbr2_8 + (uint32_t)Prod8) & MAX_INT_NBR;
     Prod8 = (int32_t)(Pr >> BITS_PER_GROUP);
   }
-  if (Prod8 > TestNbr8
+  if (Pr >= ((int64_t)(TestNbr8 + 1) << BITS_PER_GROUP)
     || (Prod8 == TestNbr8
     && (Prod7 > TestNbr7
       || (Prod7 == TestNbr7
@@ -827,7 +827,7 @@ static void MontgomeryMult10(limb *pNbr1, limb *pNbr2, limb *pProd)
       (int64_t)MontDig * TestNbr9 + (int64_t)Nbr * Nbr2_9 + (uint32_t)Prod9) & MAX_INT_NBR;
     Prod9 = (int32_t)(Pr >> BITS_PER_GROUP);
   }
-  if (Prod9 > TestNbr9
+  if (Pr >= ((int64_t)(TestNbr9 + 1) << BITS_PER_GROUP)
     || (Prod9 == TestNbr9
     && (Prod8 > TestNbr8
       || (Prod8 == TestNbr8
@@ -928,7 +928,7 @@ static void MontgomeryMult11(limb *pNbr1, limb *pNbr2, limb *pProd)
       (int64_t)MontDig * TestNbr10 + (int64_t)Nbr * Nbr2_10 + (uint32_t)Prod10) & MAX_INT_NBR;
     Prod10 = (int32_t)(Pr >> BITS_PER_GROUP);
   }
-  if (Prod10 > TestNbr10
+  if (Pr >= ((int64_t)(TestNbr10 + 1) << BITS_PER_GROUP)
     || (Prod10 == TestNbr10
     && (Prod9 > TestNbr9
       || (Prod9 == TestNbr9
