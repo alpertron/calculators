@@ -16,7 +16,6 @@ int Factor5[] = { 32767, 32767, 32767, 32767, 0, 0, 0, 0 };
 int Factor6[] = { 32767, 32767, 32767, 32767, 0, 0, 0, 0 };
 int factors[5000];
 struct sFactors astFactors[1000];
-extern int karatCtr, multCtr;
 extern int number[MAX_LEN];
 extern int nbrLimbs;
 extern int lang, groupLen;
@@ -33,11 +32,9 @@ int main(int argc, char *argv[])
 #if DEBUG_CODE == 1
   fsquaresText(argv[1], 6);
   printf("%s\n", output);
-  printf("multiplication count: %d, Karatsuba count: %d", multCtr, karatCtr);
 #elif DEBUG_CODE == 2
   fcubesText(argv[1], 6);
   printf("%s\n", output);
-  printf("multiplication count: %d, Karatsuba count: %d", multCtr, karatCtr);
 #elif DEBUG_CODE == 3
   for (i = 0; i < 20; i++)
   {

@@ -30,7 +30,6 @@ static limb arr[MAX_LEN];
 static limb arrayAux[MAX_LEN];
 static int karatLength;
 static void Karatsuba(int idxFactor1, int length, int diffIndex);
-int multCtr, karatCtr;
 
 void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen)
 {
@@ -102,56 +101,310 @@ static int absSubtract(int idxMinuend, int idxSubtrahend,
 // and the second one at idxFactor2. The 2*nbrLen limb result is stored
 // starting at idxFactor1. Use arrayAux as temporary storage.
 // Accumulate products by result limb.
+#ifdef _USING64BITS_
+static void ClassicalMult2Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  int32_t factor2_i;
+  int32_t factor1_0 = arr[idxFactor1].x;
+  int32_t factor1_1 = arr[idxFactor1+1].x;
+  int32_t prod_iPlus0 = 0;
+  int32_t prod_iPlus1 = 0;
+  int64_t Pr;
+  for (i = 0; i < 2; i++)
+  {
+    factor2_i = arr[idxFactor2 + i].x;
+    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
+    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
+    prod_iPlus1 = (int32_t)(Pr >> BITS_PER_GROUP);
+  }
+  arrayAux[2].x = prod_iPlus0;
+  arrayAux[3].x = prod_iPlus1;
+}
+
+static void ClassicalMult3Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  int32_t factor2_i;
+  int32_t factor1_0 = arr[idxFactor1].x;
+  int32_t factor1_1 = arr[idxFactor1 + 1].x;
+  int32_t factor1_2 = arr[idxFactor1 + 2].x;
+  int32_t prod_iPlus0 = 0;
+  int32_t prod_iPlus1 = 0;
+  int32_t prod_iPlus2 = 0;
+  int64_t Pr;
+  for (i = 0; i < 3; i++)
+  {
+    factor2_i = arr[idxFactor2 + i].x;
+    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
+    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus2 + (int64_t)factor2_i * factor1_2 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus1 = (int32_t)Pr & MAX_INT_NBR;
+    prod_iPlus2 = (int32_t)(Pr >> BITS_PER_GROUP);
+  }
+  arrayAux[3].x = prod_iPlus0;
+  arrayAux[4].x = prod_iPlus1;
+  arrayAux[5].x = prod_iPlus2;
+}
+
+static void ClassicalMult4Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  int32_t factor2_i;
+  int32_t factor1_0 = arr[idxFactor1].x;
+  int32_t factor1_1 = arr[idxFactor1 + 1].x;
+  int32_t factor1_2 = arr[idxFactor1 + 2].x;
+  int32_t factor1_3 = arr[idxFactor1 + 3].x;
+  int32_t prod_iPlus0 = 0;
+  int32_t prod_iPlus1 = 0;
+  int32_t prod_iPlus2 = 0;
+  int32_t prod_iPlus3 = 0;
+  int64_t Pr;
+  for (i = 0; i < 4; i++)
+  {
+    factor2_i = arr[idxFactor2 + i].x;
+    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
+    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus2 + (int64_t)factor2_i * factor1_2 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus1 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus3 + (int64_t)factor2_i * factor1_3 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus2 = (int32_t)Pr & MAX_INT_NBR;
+    prod_iPlus3 = (int32_t)(Pr >> BITS_PER_GROUP);
+  }
+  arrayAux[4].x = prod_iPlus0;
+  arrayAux[5].x = prod_iPlus1;
+  arrayAux[6].x = prod_iPlus2;
+  arrayAux[7].x = prod_iPlus3;
+}
+
+static void ClassicalMult5Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  int32_t factor2_i;
+  int32_t factor1_0 = arr[idxFactor1].x;
+  int32_t factor1_1 = arr[idxFactor1 + 1].x;
+  int32_t factor1_2 = arr[idxFactor1 + 2].x;
+  int32_t factor1_3 = arr[idxFactor1 + 3].x;
+  int32_t factor1_4 = arr[idxFactor1 + 4].x;
+  int32_t prod_iPlus0 = 0;
+  int32_t prod_iPlus1 = 0;
+  int32_t prod_iPlus2 = 0;
+  int32_t prod_iPlus3 = 0;
+  int32_t prod_iPlus4 = 0;
+  int64_t Pr;
+  for (i = 0; i < 5; i++)
+  {
+    factor2_i = arr[idxFactor2 + i].x;
+    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
+    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus2 + (int64_t)factor2_i * factor1_2 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus1 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus3 + (int64_t)factor2_i * factor1_3 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus2 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus4 + (int64_t)factor2_i * factor1_4 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus3 = (int32_t)Pr & MAX_INT_NBR;
+    prod_iPlus4 = (int32_t)(Pr >> BITS_PER_GROUP);
+  }
+  arrayAux[5].x = prod_iPlus0;
+  arrayAux[6].x = prod_iPlus1;
+  arrayAux[7].x = prod_iPlus2;
+  arrayAux[8].x = prod_iPlus3;
+  arrayAux[9].x = prod_iPlus4;
+}
+
+static void ClassicalMult6Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  int32_t factor2_i;
+  int32_t factor1_0 = arr[idxFactor1].x;
+  int32_t factor1_1 = arr[idxFactor1 + 1].x;
+  int32_t factor1_2 = arr[idxFactor1 + 2].x;
+  int32_t factor1_3 = arr[idxFactor1 + 3].x;
+  int32_t factor1_4 = arr[idxFactor1 + 4].x;
+  int32_t factor1_5 = arr[idxFactor1 + 5].x;
+  int32_t prod_iPlus0 = 0;
+  int32_t prod_iPlus1 = 0;
+  int32_t prod_iPlus2 = 0;
+  int32_t prod_iPlus3 = 0;
+  int32_t prod_iPlus4 = 0;
+  int32_t prod_iPlus5 = 0;
+  int64_t Pr;
+  for (i = 0; i < 6; i++)
+  {
+    factor2_i = arr[idxFactor2 + i].x;
+    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
+    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus2 + (int64_t)factor2_i * factor1_2 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus1 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus3 + (int64_t)factor2_i * factor1_3 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus2 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus4 + (int64_t)factor2_i * factor1_4 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus3 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus5 + (int64_t)factor2_i * factor1_5 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus4 = (int32_t)Pr & MAX_INT_NBR;
+    prod_iPlus5 = (int32_t)(Pr >> BITS_PER_GROUP);
+  }
+  arrayAux[6].x = prod_iPlus0;
+  arrayAux[7].x = prod_iPlus1;
+  arrayAux[8].x = prod_iPlus2;
+  arrayAux[9].x = prod_iPlus3;
+  arrayAux[10].x = prod_iPlus4;
+  arrayAux[11].x = prod_iPlus5;
+}
+
+static void ClassicalMult7Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  int32_t factor2_i;
+  int32_t factor1_0 = arr[idxFactor1].x;
+  int32_t factor1_1 = arr[idxFactor1 + 1].x;
+  int32_t factor1_2 = arr[idxFactor1 + 2].x;
+  int32_t factor1_3 = arr[idxFactor1 + 3].x;
+  int32_t factor1_4 = arr[idxFactor1 + 4].x;
+  int32_t factor1_5 = arr[idxFactor1 + 5].x;
+  int32_t factor1_6 = arr[idxFactor1 + 6].x;
+  int32_t prod_iPlus0 = 0;
+  int32_t prod_iPlus1 = 0;
+  int32_t prod_iPlus2 = 0;
+  int32_t prod_iPlus3 = 0;
+  int32_t prod_iPlus4 = 0;
+  int32_t prod_iPlus5 = 0;
+  int32_t prod_iPlus6 = 0;
+  int64_t Pr;
+  for (i = 0; i < 7; i++)
+  {
+    factor2_i = arr[idxFactor2 + i].x;
+    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
+    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus2 + (int64_t)factor2_i * factor1_2 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus1 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus3 + (int64_t)factor2_i * factor1_3 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus2 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus4 + (int64_t)factor2_i * factor1_4 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus3 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus5 + (int64_t)factor2_i * factor1_5 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus4 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus6 + (int64_t)factor2_i * factor1_6 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus5 = (int32_t)Pr & MAX_INT_NBR;
+    prod_iPlus6 = (int32_t)(Pr >> BITS_PER_GROUP);
+  }
+  arrayAux[7].x = prod_iPlus0;
+  arrayAux[8].x = prod_iPlus1;
+  arrayAux[9].x = prod_iPlus2;
+  arrayAux[10].x = prod_iPlus3;
+  arrayAux[11].x = prod_iPlus4;
+  arrayAux[12].x = prod_iPlus5;
+  arrayAux[13].x = prod_iPlus6;
+}
+
+static void ClassicalMult8Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  int32_t factor2_i;
+  int32_t factor1_0 = arr[idxFactor1].x;
+  int32_t factor1_1 = arr[idxFactor1 + 1].x;
+  int32_t factor1_2 = arr[idxFactor1 + 2].x;
+  int32_t factor1_3 = arr[idxFactor1 + 3].x;
+  int32_t factor1_4 = arr[idxFactor1 + 4].x;
+  int32_t factor1_5 = arr[idxFactor1 + 5].x;
+  int32_t factor1_6 = arr[idxFactor1 + 6].x;
+  int32_t factor1_7 = arr[idxFactor1 + 7].x;
+  int32_t prod_iPlus0 = 0;
+  int32_t prod_iPlus1 = 0;
+  int32_t prod_iPlus2 = 0;
+  int32_t prod_iPlus3 = 0;
+  int32_t prod_iPlus4 = 0;
+  int32_t prod_iPlus5 = 0;
+  int32_t prod_iPlus6 = 0;
+  int32_t prod_iPlus7 = 0;
+  int64_t Pr;
+  for (i = 0; i < 8; i++)
+  {
+    factor2_i = arr[idxFactor2 + i].x;
+    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
+    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus2 + (int64_t)factor2_i * factor1_2 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus1 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus3 + (int64_t)factor2_i * factor1_3 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus2 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus4 + (int64_t)factor2_i * factor1_4 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus3 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus5 + (int64_t)factor2_i * factor1_5 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus4 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus6 + (int64_t)factor2_i * factor1_6 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus5 = (int32_t)Pr & MAX_INT_NBR;
+    Pr = prod_iPlus7 + (int64_t)factor2_i * factor1_7 + (Pr >> BITS_PER_GROUP);
+    prod_iPlus6 = (int32_t)Pr & MAX_INT_NBR;
+    prod_iPlus7 = (int32_t)(Pr >> BITS_PER_GROUP);
+  }
+  arrayAux[8].x = prod_iPlus0;
+  arrayAux[9].x = prod_iPlus1;
+  arrayAux[10].x = prod_iPlus2;
+  arrayAux[11].x = prod_iPlus3;
+  arrayAux[12].x = prod_iPlus4;
+  arrayAux[13].x = prod_iPlus5;
+  arrayAux[14].x = prod_iPlus6;
+  arrayAux[15].x = prod_iPlus7;
+}
+
+#endif
 static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
 {
-  int prodCol, fact1Col;
 #ifdef _USING64BITS_
-  uint64_t carry, sum, prod;
-  limb *ptrFactor1, *ptrFactor2;
-  multCtr++;
-  sum = 0;  // Initialize sum of product of limbs in the same column.
-  for (prodCol = 0; prodCol < 2 * nbrLen - 1; prodCol++)
-  {    // Process each limb of product (least to most significant limb).
-    carry = 0;
-    if (prodCol < nbrLen)
-    {   // Processing first half (least significant) of product.
-      ptrFactor2 = &arr[idxFactor2 + prodCol];
-      ptrFactor1 = &arr[idxFactor1];
-      fact1Col = prodCol;
-    }
-    else
-    {  // Processing second half (most significant) of product.
-      ptrFactor2 = &arr[idxFactor2 + nbrLen - 1];
-      ptrFactor1 = &arr[idxFactor1 + prodCol - nbrLen + 1];
-      fact1Col = 2 * (nbrLen - 1) - prodCol;
-    }
-    for (; fact1Col>0; fact1Col -= 2)
-    {
-      prod = (uint64_t)ptrFactor1->x * (uint32_t)ptrFactor2->x +
-        (uint64_t)(ptrFactor1 + 1)->x * (uint32_t)(ptrFactor2 - 1)->x;
-      ptrFactor1 += 2;
-      ptrFactor2 -= 2;
-      sum += (uint32_t)prod & MAX_VALUE_LIMB;
-      carry += (uint32_t)(prod >> BITS_PER_GROUP);
-    }
-    if (fact1Col == 0)
-    {   // Odd number of limbs: process last one.
-      prod = (uint64_t)ptrFactor1->x * (uint32_t)ptrFactor2->x;
-      sum += (uint32_t)prod & MAX_VALUE_LIMB;
-      carry += (uint32_t)(prod >> BITS_PER_GROUP);
-    }
-    arrayAux[prodCol].x = (int32_t)sum & MAX_VALUE_LIMB;
-    sum = carry + (sum >> BITS_PER_GROUP);
+  uint64_t product;
+  switch (nbrLen)
+  {
+  case 1:
+    product = (int64_t)arr[idxFactor1].x * arr[idxFactor2].x;
+    // Store least significant limb.
+    arr[idxFactor1].x = (int32_t)product & MAX_INT_NBR;
+    // Store most significant limb.
+    arr[idxFactor2].x = (int32_t)(product >> BITS_PER_GROUP) & MAX_INT_NBR;
+    return;
+  case 2:
+    ClassicalMult2Limbs(idxFactor1, idxFactor2);
+    break;
+  case 3:
+    ClassicalMult3Limbs(idxFactor1, idxFactor2);
+    break;
+  case 4:
+    ClassicalMult4Limbs(idxFactor1, idxFactor2);
+    break;
+  case 5:
+    ClassicalMult5Limbs(idxFactor1, idxFactor2);
+    break;
+  case 6:
+    ClassicalMult6Limbs(idxFactor1, idxFactor2);
+    break;
+  case 7:
+    ClassicalMult7Limbs(idxFactor1, idxFactor2);
+    break;
+  case 8:
+    ClassicalMult8Limbs(idxFactor1, idxFactor2);
+    break;
   }
-  arrayAux[prodCol].x = (int32_t)sum;
 #else
   limb *ptrFactor1, *ptrFactor2;
+  int prodCol, fact1Col;
   double dRangeLimb = (double)LIMB_RANGE;
   double dInvRangeLimb = 1 / dRangeLimb;
   int low = 0;              // Low limb of sums of multiplications.
   double dAccumulator = 0;  // Approximation to the sum of multiplications.
   int factor1, factor2;
-  multCtr++;
   for (prodCol = 0; prodCol < 2 * nbrLen - 1; prodCol++)
   {    // Process each limb of product (least to most significant limb).
     if (prodCol < nbrLen)
@@ -248,7 +501,6 @@ static void Karatsuba(int idxFactor1, int nbrLen, int diffIndex)
 
   // At this moment the order is: xL, xH, yL, yH.
   // Exchange high part of first factor with low part of 2nd factor.
-  karatCtr++;
   halfLength = nbrLen >> 1;
   for (i = idxFactor1 + halfLength; i<idxFactor2; i++)
   {
