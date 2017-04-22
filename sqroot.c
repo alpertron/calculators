@@ -122,8 +122,8 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
     }
     else
     {
-      double dArg = argument->x + (double)(argument + 1)->x*LIMB_RANGE;
-      int square[2];
+      int square[3];   // MultBigNbr routine uses an extra limb for result.
+      double dArg = argument->x + (double)(argument + 1)->x*(double)LIMB_RANGE;
       dArg = floor(sqrt(dArg + 0.5));
       if (dArg == (double)LIMB_RANGE)
       {
