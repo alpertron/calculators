@@ -78,7 +78,7 @@ var info =
 self.onmessage = function(e)
 {
   var request = new XMLHttpRequest();
-  request.open('GET', 'ecm0034.wasm');
+  request.open('GET', 'ecm0035.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 

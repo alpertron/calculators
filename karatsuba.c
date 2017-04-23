@@ -25,11 +25,43 @@
 #include <math.h>
 #include <stdint.h>
 
-#define KARATSUBA_CUTOFF 8
+#define KARATSUBA_CUTOFF 16
 static limb arr[MAX_LEN];
 static limb arrayAux[MAX_LEN];
 static int karatLength;
 static void Karatsuba(int idxFactor1, int length, int diffIndex);
+
+#define PROLOG_MULTIPLICATION_DOUBLE                                    \
+  factor2_i = arr[idxFactor2 + i].x;                                    \
+  factor2_iPlus1 = arr[idxFactor2 + i + 1].x;                           \
+  Pr = prod_iPlus0 + (uint64_t)factor2_i * factor1_0;                   \
+  arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;                            \
+  Pr = prod_iPlus1 + (uint64_t)factor2_i * factor1_1 +                  \
+       (uint64_t)factor2_iPlus1 * factor1_0 + (Pr >> BITS_PER_GROUP);   \
+  arrayAux[i + 1].x = (int32_t)Pr & MAX_INT_NBR;
+#define MULT_MACRO_DOUBLE(m, n, p)                                      \
+  Pr = prod_iPlus##p + (uint64_t)factor2_i * factor1_##p +              \
+    (uint64_t)factor2_iPlus1 * factor1_##n + (Pr >> BITS_PER_GROUP);    \
+  prod_iPlus##m = (int32_t)Pr & MAX_INT_NBR;
+#define EPILOG_MULTIPLICATION_DOUBLE(m, n)                              \
+  Pr = (uint64_t)factor2_iPlus1 * factor1_##n + (Pr >> BITS_PER_GROUP); \
+  prod_iPlus##m = (uint32_t)Pr & MAX_INT_NBR;                           \
+  prod_iPlus##n = (uint32_t)(Pr >> BITS_PER_GROUP);
+
+#define PROLOG_MULTIPLICATION_SINGLE(m)                                 \
+  factor2_i = arr[idxFactor2 + m].x;                                    \
+  Pr = prod_iPlus0 + (uint64_t)factor2_i * factor1_0;                   \
+  arrayAux[m].x = (int32_t)Pr & MAX_INT_NBR;
+#define MULT_MACRO_SINGLE(m, n)                                         \
+  Pr = prod_iPlus##m + (uint64_t)factor2_i * factor1_##m +              \
+       (Pr >> BITS_PER_GROUP);                                          \
+  arrayAux[n].x = (int32_t)Pr & MAX_INT_NBR;
+#define EPILOG_MULTIPLICATION_SINGLE(m)                                 \
+  arrayAux[m].x = (int32_t)(Pr >> BITS_PER_GROUP);
+
+#define M(n)                                                            \
+  uint32_t factor1_##n = arr[idxFactor1 + n].x;                         \
+  uint32_t prod_iPlus##n = 0;
 
 void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen)
 {
@@ -104,78 +136,43 @@ static int absSubtract(int idxMinuend, int idxSubtrahend,
 #ifdef _USING64BITS_
 static void ClassicalMult2Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
-  int32_t factor2_i;
-  int32_t factor1_0 = arr[idxFactor1].x;
-  int32_t factor1_1 = arr[idxFactor1+1].x;
-  int32_t prod_iPlus0 = 0;
-  int32_t prod_iPlus1 = 0;
-  int64_t Pr;
-  for (i = 0; i < 2; i++)
-  {
-    factor2_i = arr[idxFactor2 + i].x;
-    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
-    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
-    prod_iPlus1 = (int32_t)(Pr >> BITS_PER_GROUP);
-  }
+  int i=0;
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1);
+  PROLOG_MULTIPLICATION_DOUBLE;
+  EPILOG_MULTIPLICATION_DOUBLE(0, 1);
   arrayAux[2].x = prod_iPlus0;
   arrayAux[3].x = prod_iPlus1;
 }
 
 static void ClassicalMult3Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
-  int32_t factor2_i;
-  int32_t factor1_0 = arr[idxFactor1].x;
-  int32_t factor1_1 = arr[idxFactor1 + 1].x;
-  int32_t factor1_2 = arr[idxFactor1 + 2].x;
-  int32_t prod_iPlus0 = 0;
-  int32_t prod_iPlus1 = 0;
-  int32_t prod_iPlus2 = 0;
-  int64_t Pr;
-  for (i = 0; i < 3; i++)
-  {
-    factor2_i = arr[idxFactor2 + i].x;
-    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
-    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus2 + (int64_t)factor2_i * factor1_2 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus1 = (int32_t)Pr & MAX_INT_NBR;
-    prod_iPlus2 = (int32_t)(Pr >> BITS_PER_GROUP);
-  }
-  arrayAux[3].x = prod_iPlus0;
-  arrayAux[4].x = prod_iPlus1;
-  arrayAux[5].x = prod_iPlus2;
+  int i=0;
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2);
+  PROLOG_MULTIPLICATION_DOUBLE;
+  MULT_MACRO_DOUBLE(0, 1, 2);
+  EPILOG_MULTIPLICATION_DOUBLE(1, 2);
+  PROLOG_MULTIPLICATION_SINGLE(2);
+  MULT_MACRO_SINGLE(1, 3);
+  MULT_MACRO_SINGLE(2, 4);
+  EPILOG_MULTIPLICATION_SINGLE(5);
 }
 
 static void ClassicalMult4Limbs(int idxFactor1, int idxFactor2)
 {
   int i;
-  int32_t factor2_i;
-  int32_t factor1_0 = arr[idxFactor1].x;
-  int32_t factor1_1 = arr[idxFactor1 + 1].x;
-  int32_t factor1_2 = arr[idxFactor1 + 2].x;
-  int32_t factor1_3 = arr[idxFactor1 + 3].x;
-  int32_t prod_iPlus0 = 0;
-  int32_t prod_iPlus1 = 0;
-  int32_t prod_iPlus2 = 0;
-  int32_t prod_iPlus3 = 0;
-  int64_t Pr;
-  for (i = 0; i < 4; i++)
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3);
+  for (i = 0; i < 4; i += 2)
   {
-    factor2_i = arr[idxFactor2 + i].x;
-    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
-    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus2 + (int64_t)factor2_i * factor1_2 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus1 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus3 + (int64_t)factor2_i * factor1_3 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus2 = (int32_t)Pr & MAX_INT_NBR;
-    prod_iPlus3 = (int32_t)(Pr >> BITS_PER_GROUP);
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    EPILOG_MULTIPLICATION_DOUBLE(2, 3);
   }
   arrayAux[4].x = prod_iPlus0;
   arrayAux[5].x = prod_iPlus1;
@@ -186,73 +183,39 @@ static void ClassicalMult4Limbs(int idxFactor1, int idxFactor2)
 static void ClassicalMult5Limbs(int idxFactor1, int idxFactor2)
 {
   int i;
-  int32_t factor2_i;
-  int32_t factor1_0 = arr[idxFactor1].x;
-  int32_t factor1_1 = arr[idxFactor1 + 1].x;
-  int32_t factor1_2 = arr[idxFactor1 + 2].x;
-  int32_t factor1_3 = arr[idxFactor1 + 3].x;
-  int32_t factor1_4 = arr[idxFactor1 + 4].x;
-  int32_t prod_iPlus0 = 0;
-  int32_t prod_iPlus1 = 0;
-  int32_t prod_iPlus2 = 0;
-  int32_t prod_iPlus3 = 0;
-  int32_t prod_iPlus4 = 0;
-  int64_t Pr;
-  for (i = 0; i < 5; i++)
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3); M(4);
+  for (i = 0; i < 4; i+=2)
   {
-    factor2_i = arr[idxFactor2 + i].x;
-    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
-    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus2 + (int64_t)factor2_i * factor1_2 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus1 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus3 + (int64_t)factor2_i * factor1_3 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus2 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus4 + (int64_t)factor2_i * factor1_4 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus3 = (int32_t)Pr & MAX_INT_NBR;
-    prod_iPlus4 = (int32_t)(Pr >> BITS_PER_GROUP);
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    MULT_MACRO_DOUBLE(2, 3, 4);
+    EPILOG_MULTIPLICATION_DOUBLE(3, 4);
   }
-  arrayAux[5].x = prod_iPlus0;
-  arrayAux[6].x = prod_iPlus1;
-  arrayAux[7].x = prod_iPlus2;
-  arrayAux[8].x = prod_iPlus3;
-  arrayAux[9].x = prod_iPlus4;
+  PROLOG_MULTIPLICATION_SINGLE(4);
+  MULT_MACRO_SINGLE(1, 5);
+  MULT_MACRO_SINGLE(2, 6);
+  MULT_MACRO_SINGLE(3, 7);
+  MULT_MACRO_SINGLE(4, 8);
+  EPILOG_MULTIPLICATION_SINGLE(9);
 }
 
 static void ClassicalMult6Limbs(int idxFactor1, int idxFactor2)
 {
   int i;
-  int32_t factor2_i;
-  int32_t factor1_0 = arr[idxFactor1].x;
-  int32_t factor1_1 = arr[idxFactor1 + 1].x;
-  int32_t factor1_2 = arr[idxFactor1 + 2].x;
-  int32_t factor1_3 = arr[idxFactor1 + 3].x;
-  int32_t factor1_4 = arr[idxFactor1 + 4].x;
-  int32_t factor1_5 = arr[idxFactor1 + 5].x;
-  int32_t prod_iPlus0 = 0;
-  int32_t prod_iPlus1 = 0;
-  int32_t prod_iPlus2 = 0;
-  int32_t prod_iPlus3 = 0;
-  int32_t prod_iPlus4 = 0;
-  int32_t prod_iPlus5 = 0;
-  int64_t Pr;
-  for (i = 0; i < 6; i++)
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3); M(4); M(5);
+  for (i = 0; i < 6; i+=2)
   {
-    factor2_i = arr[idxFactor2 + i].x;
-    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
-    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus2 + (int64_t)factor2_i * factor1_2 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus1 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus3 + (int64_t)factor2_i * factor1_3 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus2 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus4 + (int64_t)factor2_i * factor1_4 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus3 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus5 + (int64_t)factor2_i * factor1_5 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus4 = (int32_t)Pr & MAX_INT_NBR;
-    prod_iPlus5 = (int32_t)(Pr >> BITS_PER_GROUP);
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    MULT_MACRO_DOUBLE(2, 3, 4);
+    MULT_MACRO_DOUBLE(3, 4, 5);
+    EPILOG_MULTIPLICATION_DOUBLE(4, 5);
   }
   arrayAux[6].x = prod_iPlus0;
   arrayAux[7].x = prod_iPlus1;
@@ -265,91 +228,45 @@ static void ClassicalMult6Limbs(int idxFactor1, int idxFactor2)
 static void ClassicalMult7Limbs(int idxFactor1, int idxFactor2)
 {
   int i;
-  int32_t factor2_i;
-  int32_t factor1_0 = arr[idxFactor1].x;
-  int32_t factor1_1 = arr[idxFactor1 + 1].x;
-  int32_t factor1_2 = arr[idxFactor1 + 2].x;
-  int32_t factor1_3 = arr[idxFactor1 + 3].x;
-  int32_t factor1_4 = arr[idxFactor1 + 4].x;
-  int32_t factor1_5 = arr[idxFactor1 + 5].x;
-  int32_t factor1_6 = arr[idxFactor1 + 6].x;
-  int32_t prod_iPlus0 = 0;
-  int32_t prod_iPlus1 = 0;
-  int32_t prod_iPlus2 = 0;
-  int32_t prod_iPlus3 = 0;
-  int32_t prod_iPlus4 = 0;
-  int32_t prod_iPlus5 = 0;
-  int32_t prod_iPlus6 = 0;
-  int64_t Pr;
-  for (i = 0; i < 7; i++)
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3); M(4); M(5); M(6);
+  for (i = 0; i < 6; i += 2)
   {
-    factor2_i = arr[idxFactor2 + i].x;
-    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
-    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus2 + (int64_t)factor2_i * factor1_2 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus1 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus3 + (int64_t)factor2_i * factor1_3 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus2 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus4 + (int64_t)factor2_i * factor1_4 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus3 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus5 + (int64_t)factor2_i * factor1_5 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus4 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus6 + (int64_t)factor2_i * factor1_6 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus5 = (int32_t)Pr & MAX_INT_NBR;
-    prod_iPlus6 = (int32_t)(Pr >> BITS_PER_GROUP);
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    MULT_MACRO_DOUBLE(2, 3, 4);
+    MULT_MACRO_DOUBLE(3, 4, 5);
+    MULT_MACRO_DOUBLE(4, 5, 6);
+    EPILOG_MULTIPLICATION_DOUBLE(5, 6);
   }
-  arrayAux[7].x = prod_iPlus0;
-  arrayAux[8].x = prod_iPlus1;
-  arrayAux[9].x = prod_iPlus2;
-  arrayAux[10].x = prod_iPlus3;
-  arrayAux[11].x = prod_iPlus4;
-  arrayAux[12].x = prod_iPlus5;
-  arrayAux[13].x = prod_iPlus6;
+  PROLOG_MULTIPLICATION_SINGLE(6);
+  MULT_MACRO_SINGLE(1, 7);
+  MULT_MACRO_SINGLE(2, 8);
+  MULT_MACRO_SINGLE(3, 9);
+  MULT_MACRO_SINGLE(4, 10);
+  MULT_MACRO_SINGLE(5, 11);
+  MULT_MACRO_SINGLE(6, 12);
+  EPILOG_MULTIPLICATION_SINGLE(13);
 }
 
 static void ClassicalMult8Limbs(int idxFactor1, int idxFactor2)
 {
   int i;
-  int32_t factor2_i;
-  int32_t factor1_0 = arr[idxFactor1].x;
-  int32_t factor1_1 = arr[idxFactor1 + 1].x;
-  int32_t factor1_2 = arr[idxFactor1 + 2].x;
-  int32_t factor1_3 = arr[idxFactor1 + 3].x;
-  int32_t factor1_4 = arr[idxFactor1 + 4].x;
-  int32_t factor1_5 = arr[idxFactor1 + 5].x;
-  int32_t factor1_6 = arr[idxFactor1 + 6].x;
-  int32_t factor1_7 = arr[idxFactor1 + 7].x;
-  int32_t prod_iPlus0 = 0;
-  int32_t prod_iPlus1 = 0;
-  int32_t prod_iPlus2 = 0;
-  int32_t prod_iPlus3 = 0;
-  int32_t prod_iPlus4 = 0;
-  int32_t prod_iPlus5 = 0;
-  int32_t prod_iPlus6 = 0;
-  int32_t prod_iPlus7 = 0;
-  int64_t Pr;
-  for (i = 0; i < 8; i++)
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7);
+  for (i = 0; i < 8; i += 2)
   {
-    factor2_i = arr[idxFactor2 + i].x;
-    Pr = prod_iPlus0 + (int64_t)factor2_i * factor1_0;
-    arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus1 + (int64_t)factor2_i * factor1_1 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus0 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus2 + (int64_t)factor2_i * factor1_2 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus1 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus3 + (int64_t)factor2_i * factor1_3 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus2 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus4 + (int64_t)factor2_i * factor1_4 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus3 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus5 + (int64_t)factor2_i * factor1_5 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus4 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus6 + (int64_t)factor2_i * factor1_6 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus5 = (int32_t)Pr & MAX_INT_NBR;
-    Pr = prod_iPlus7 + (int64_t)factor2_i * factor1_7 + (Pr >> BITS_PER_GROUP);
-    prod_iPlus6 = (int32_t)Pr & MAX_INT_NBR;
-    prod_iPlus7 = (int32_t)(Pr >> BITS_PER_GROUP);
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    MULT_MACRO_DOUBLE(2, 3, 4);
+    MULT_MACRO_DOUBLE(3, 4, 5);
+    MULT_MACRO_DOUBLE(4, 5, 6);
+    MULT_MACRO_DOUBLE(5, 6, 7);
+    EPILOG_MULTIPLICATION_DOUBLE(6, 7);
   }
   arrayAux[8].x = prod_iPlus0;
   arrayAux[9].x = prod_iPlus1;
@@ -359,6 +276,303 @@ static void ClassicalMult8Limbs(int idxFactor1, int idxFactor2)
   arrayAux[13].x = prod_iPlus5;
   arrayAux[14].x = prod_iPlus6;
   arrayAux[15].x = prod_iPlus7;
+}
+
+static void ClassicalMult9Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8);
+  for (i = 0; i < 8; i += 2)
+  {
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    MULT_MACRO_DOUBLE(2, 3, 4);
+    MULT_MACRO_DOUBLE(3, 4, 5);
+    MULT_MACRO_DOUBLE(4, 5, 6);
+    MULT_MACRO_DOUBLE(5, 6, 7);
+    MULT_MACRO_DOUBLE(6, 7, 8);
+    EPILOG_MULTIPLICATION_DOUBLE(7, 8);
+  }
+  PROLOG_MULTIPLICATION_SINGLE(8);
+  MULT_MACRO_SINGLE(1, 9);
+  MULT_MACRO_SINGLE(2, 10);
+  MULT_MACRO_SINGLE(3, 11);
+  MULT_MACRO_SINGLE(4, 12);
+  MULT_MACRO_SINGLE(5, 13);
+  MULT_MACRO_SINGLE(6, 14);
+  MULT_MACRO_SINGLE(7, 15);
+  MULT_MACRO_SINGLE(8, 16);
+  EPILOG_MULTIPLICATION_SINGLE(17);
+}
+
+static void ClassicalMult10Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
+  for (i = 0; i < 10; i+=2)
+  {
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    MULT_MACRO_DOUBLE(2, 3, 4);
+    MULT_MACRO_DOUBLE(3, 4, 5);
+    MULT_MACRO_DOUBLE(4, 5, 6);
+    MULT_MACRO_DOUBLE(5, 6, 7);
+    MULT_MACRO_DOUBLE(6, 7, 8);
+    MULT_MACRO_DOUBLE(7, 8, 9);
+    EPILOG_MULTIPLICATION_DOUBLE(8, 9);
+  }
+  arrayAux[10].x = prod_iPlus0;
+  arrayAux[11].x = prod_iPlus1;
+  arrayAux[12].x = prod_iPlus2;
+  arrayAux[13].x = prod_iPlus3;
+  arrayAux[14].x = prod_iPlus4;
+  arrayAux[15].x = prod_iPlus5;
+  arrayAux[16].x = prod_iPlus6;
+  arrayAux[17].x = prod_iPlus7;
+  arrayAux[18].x = prod_iPlus8;
+  arrayAux[19].x = prod_iPlus9;
+}
+
+static void ClassicalMult11Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9); M(10);
+  for (i = 0; i < 10; i += 2)
+  {
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    MULT_MACRO_DOUBLE(2, 3, 4);
+    MULT_MACRO_DOUBLE(3, 4, 5);
+    MULT_MACRO_DOUBLE(4, 5, 6);
+    MULT_MACRO_DOUBLE(5, 6, 7);
+    MULT_MACRO_DOUBLE(6, 7, 8);
+    MULT_MACRO_DOUBLE(7, 8, 9);
+    MULT_MACRO_DOUBLE(8, 9, 10);
+    EPILOG_MULTIPLICATION_DOUBLE(9, 10);
+  }
+  PROLOG_MULTIPLICATION_SINGLE(10);
+  MULT_MACRO_SINGLE(1, 11);
+  MULT_MACRO_SINGLE(2, 12);
+  MULT_MACRO_SINGLE(3, 13);
+  MULT_MACRO_SINGLE(4, 14);
+  MULT_MACRO_SINGLE(5, 15);
+  MULT_MACRO_SINGLE(6, 16);
+  MULT_MACRO_SINGLE(7, 17);
+  MULT_MACRO_SINGLE(8, 18);
+  MULT_MACRO_SINGLE(9, 19);
+  MULT_MACRO_SINGLE(10, 20);
+  EPILOG_MULTIPLICATION_SINGLE(21);
+}
+
+static void ClassicalMult12Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
+  M(10); M(11);
+  for (i = 0; i < 12; i += 2)
+  {
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    MULT_MACRO_DOUBLE(2, 3, 4);
+    MULT_MACRO_DOUBLE(3, 4, 5);
+    MULT_MACRO_DOUBLE(4, 5, 6);
+    MULT_MACRO_DOUBLE(5, 6, 7);
+    MULT_MACRO_DOUBLE(6, 7, 8);
+    MULT_MACRO_DOUBLE(7, 8, 9);
+    MULT_MACRO_DOUBLE(8, 9, 10);
+    MULT_MACRO_DOUBLE(9, 10, 11);
+    EPILOG_MULTIPLICATION_DOUBLE(10, 11);
+  }
+  arrayAux[12].x = prod_iPlus0;
+  arrayAux[13].x = prod_iPlus1;
+  arrayAux[14].x = prod_iPlus2;
+  arrayAux[15].x = prod_iPlus3;
+  arrayAux[16].x = prod_iPlus4;
+  arrayAux[17].x = prod_iPlus5;
+  arrayAux[18].x = prod_iPlus6;
+  arrayAux[19].x = prod_iPlus7;
+  arrayAux[20].x = prod_iPlus8;
+  arrayAux[21].x = prod_iPlus9;
+  arrayAux[22].x = prod_iPlus10;
+  arrayAux[23].x = prod_iPlus11;
+}
+
+static void ClassicalMult13Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
+  M(10); M(11); M(12);
+  for (i = 0; i < 12; i += 2)
+  {
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    MULT_MACRO_DOUBLE(2, 3, 4);
+    MULT_MACRO_DOUBLE(3, 4, 5);
+    MULT_MACRO_DOUBLE(4, 5, 6);
+    MULT_MACRO_DOUBLE(5, 6, 7);
+    MULT_MACRO_DOUBLE(6, 7, 8);
+    MULT_MACRO_DOUBLE(7, 8, 9);
+    MULT_MACRO_DOUBLE(8, 9, 10);
+    MULT_MACRO_DOUBLE(9, 10, 11);
+    MULT_MACRO_DOUBLE(10, 11, 12);
+    EPILOG_MULTIPLICATION_DOUBLE(11, 12);
+  }
+  PROLOG_MULTIPLICATION_SINGLE(12);
+  MULT_MACRO_SINGLE(1, 13);
+  MULT_MACRO_SINGLE(2, 14);
+  MULT_MACRO_SINGLE(3, 15);
+  MULT_MACRO_SINGLE(4, 16);
+  MULT_MACRO_SINGLE(5, 17);
+  MULT_MACRO_SINGLE(6, 18);
+  MULT_MACRO_SINGLE(7, 19);
+  MULT_MACRO_SINGLE(8, 20);
+  MULT_MACRO_SINGLE(9, 21);
+  MULT_MACRO_SINGLE(10, 22);
+  MULT_MACRO_SINGLE(11, 23);
+  MULT_MACRO_SINGLE(12, 24);
+  EPILOG_MULTIPLICATION_SINGLE(25);
+}
+
+static void ClassicalMult14Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
+  M(10); M(11); M(12); M(13);
+  for (i = 0; i < 14; i += 2)
+  {
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    MULT_MACRO_DOUBLE(2, 3, 4);
+    MULT_MACRO_DOUBLE(3, 4, 5);
+    MULT_MACRO_DOUBLE(4, 5, 6);
+    MULT_MACRO_DOUBLE(5, 6, 7);
+    MULT_MACRO_DOUBLE(6, 7, 8);
+    MULT_MACRO_DOUBLE(7, 8, 9);
+    MULT_MACRO_DOUBLE(8, 9, 10);
+    MULT_MACRO_DOUBLE(9, 10, 11);
+    MULT_MACRO_DOUBLE(10, 11, 12);
+    MULT_MACRO_DOUBLE(11, 12, 13);
+    EPILOG_MULTIPLICATION_DOUBLE(12, 13);
+  }
+  arrayAux[14].x = prod_iPlus0;
+  arrayAux[15].x = prod_iPlus1;
+  arrayAux[16].x = prod_iPlus2;
+  arrayAux[17].x = prod_iPlus3;
+  arrayAux[18].x = prod_iPlus4;
+  arrayAux[19].x = prod_iPlus5;
+  arrayAux[20].x = prod_iPlus6;
+  arrayAux[21].x = prod_iPlus7;
+  arrayAux[22].x = prod_iPlus8;
+  arrayAux[23].x = prod_iPlus9;
+  arrayAux[24].x = prod_iPlus10;
+  arrayAux[25].x = prod_iPlus11;
+  arrayAux[26].x = prod_iPlus12;
+  arrayAux[27].x = prod_iPlus13;
+}
+
+static void ClassicalMult15Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
+  M(10); M(11); M(12); M(13); M(14);
+  for (i = 0; i < 14; i += 2)
+  {
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    MULT_MACRO_DOUBLE(2, 3, 4);
+    MULT_MACRO_DOUBLE(3, 4, 5);
+    MULT_MACRO_DOUBLE(4, 5, 6);
+    MULT_MACRO_DOUBLE(5, 6, 7);
+    MULT_MACRO_DOUBLE(6, 7, 8);
+    MULT_MACRO_DOUBLE(7, 8, 9);
+    MULT_MACRO_DOUBLE(8, 9, 10);
+    MULT_MACRO_DOUBLE(9, 10, 11);
+    MULT_MACRO_DOUBLE(10, 11, 12);
+    MULT_MACRO_DOUBLE(11, 12, 13);
+    MULT_MACRO_DOUBLE(12, 13, 14);
+    EPILOG_MULTIPLICATION_DOUBLE(13, 14);
+  }
+  PROLOG_MULTIPLICATION_SINGLE(14);
+  MULT_MACRO_SINGLE(1, 15);
+  MULT_MACRO_SINGLE(2, 16);
+  MULT_MACRO_SINGLE(3, 17);
+  MULT_MACRO_SINGLE(4, 18);
+  MULT_MACRO_SINGLE(5, 19);
+  MULT_MACRO_SINGLE(6, 20);
+  MULT_MACRO_SINGLE(7, 21);
+  MULT_MACRO_SINGLE(8, 22);
+  MULT_MACRO_SINGLE(9, 23);
+  MULT_MACRO_SINGLE(10, 24);
+  MULT_MACRO_SINGLE(11, 25);
+  MULT_MACRO_SINGLE(12, 26);
+  MULT_MACRO_SINGLE(13, 27);
+  MULT_MACRO_SINGLE(14, 28);
+  EPILOG_MULTIPLICATION_SINGLE(29);
+}
+
+static void ClassicalMult16Limbs(int idxFactor1, int idxFactor2)
+{
+  int i;
+  uint32_t factor2_i, factor2_iPlus1;
+  uint64_t Pr;
+  M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
+  M(10); M(11); M(12); M(13); M(14); M(15);
+  for (i = 0; i < 16; i += 2)
+  {
+    PROLOG_MULTIPLICATION_DOUBLE;
+    MULT_MACRO_DOUBLE(0, 1, 2);
+    MULT_MACRO_DOUBLE(1, 2, 3);
+    MULT_MACRO_DOUBLE(2, 3, 4);
+    MULT_MACRO_DOUBLE(3, 4, 5);
+    MULT_MACRO_DOUBLE(4, 5, 6);
+    MULT_MACRO_DOUBLE(5, 6, 7);
+    MULT_MACRO_DOUBLE(6, 7, 8);
+    MULT_MACRO_DOUBLE(7, 8, 9);
+    MULT_MACRO_DOUBLE(8, 9, 10);
+    MULT_MACRO_DOUBLE(9, 10, 11);
+    MULT_MACRO_DOUBLE(10, 11, 12);
+    MULT_MACRO_DOUBLE(11, 12, 13);
+    MULT_MACRO_DOUBLE(12, 13, 14);
+    MULT_MACRO_DOUBLE(13, 14, 15);
+    EPILOG_MULTIPLICATION_DOUBLE(14, 15);
+  }
+  arrayAux[16].x = prod_iPlus0;
+  arrayAux[17].x = prod_iPlus1;
+  arrayAux[18].x = prod_iPlus2;
+  arrayAux[19].x = prod_iPlus3;
+  arrayAux[20].x = prod_iPlus4;
+  arrayAux[21].x = prod_iPlus5;
+  arrayAux[22].x = prod_iPlus6;
+  arrayAux[23].x = prod_iPlus7;
+  arrayAux[24].x = prod_iPlus8;
+  arrayAux[25].x = prod_iPlus9;
+  arrayAux[26].x = prod_iPlus10;
+  arrayAux[27].x = prod_iPlus11;
+  arrayAux[28].x = prod_iPlus12;
+  arrayAux[29].x = prod_iPlus13;
+  arrayAux[30].x = prod_iPlus14;
+  arrayAux[31].x = prod_iPlus15;
 }
 
 #endif
@@ -395,6 +609,30 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
     break;
   case 8:
     ClassicalMult8Limbs(idxFactor1, idxFactor2);
+    break;
+  case 9:
+    ClassicalMult9Limbs(idxFactor1, idxFactor2);
+    break;
+  case 10:
+    ClassicalMult10Limbs(idxFactor1, idxFactor2);
+    break;
+  case 11:
+    ClassicalMult11Limbs(idxFactor1, idxFactor2);
+    break;
+  case 12:
+    ClassicalMult12Limbs(idxFactor1, idxFactor2);
+    break;
+  case 13:
+    ClassicalMult13Limbs(idxFactor1, idxFactor2);
+    break;
+  case 14:
+    ClassicalMult14Limbs(idxFactor1, idxFactor2);
+    break;
+  case 15:
+    ClassicalMult15Limbs(idxFactor1, idxFactor2);
+    break;
+  case 16:
+    ClassicalMult16Limbs(idxFactor1, idxFactor2);
     break;
   }
 #else
