@@ -998,9 +998,9 @@ void modmult(limb *factor1, limb *factor2, limb *product)
   if (NumberLength <= 12)
   {     // Small numbers.
     int i, j;
+#ifdef _USING64BITS_
     int32_t MontDig, Nbr;
     int64_t Pr;
-#ifdef _USING64BITS_
     switch (NumberLength)
     {
     case 2:
