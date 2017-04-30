@@ -159,7 +159,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     // Get bit length of each cycle.
     bitLengthNbrCycles = 0;
     bitLength = nbrLimbs*BITS_PER_GROUP;
-    while (bitLength > BITS_PER_GROUP)
+    while (bitLength >= BITS_PER_GROUP)
     {
       bitLengthCycle[bitLengthNbrCycles++] = bitLength;
       bitLength = (bitLength + 1) >> 1;
