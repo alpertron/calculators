@@ -665,8 +665,8 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
           }
         }
       }
-      if (isPseudoprime(pResult))
-      {   // Number is SPRP.
+      if (BpswPrimalityTest(pResult) == 0)
+      {   // Number is probable prime.
         pResult->nbrLimbs = nbrLimbs;
         pResult->sign = SIGN_POSITIVE;
         return EXPR_OK;

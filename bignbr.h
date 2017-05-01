@@ -101,7 +101,7 @@ int modInv(int NbrMod, int currentPrime);
 int getNbrLimbs(limb *bigNbr);
 void BigIntDivide2(BigInteger *pArg);
 int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase);
-int isPseudoprime(BigInteger *pBigNbr);
+int BpswPrimalityTest(BigInteger *pBigNbr);
 void UncompressBigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint);
 void CompressBigInteger(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint);
 void UncompressLimbsBigInteger(/*@in@*/limb *ptrValues, /*@out@*/BigInteger *bigint);
@@ -139,6 +139,7 @@ void MultBigNbrByIntModN(int Nbr1[], int Nbr2, int Prod[], int Mod[], int nbrLen
 int intDoubleModPow(int NbrMod, int Expon, int currentPrime);
 void ModInvBigInt(int *num, int *inv, int *mod, int NumberLength);
 void IntToBigNbr(int value, int *bigNbr, int nbrLength);
+int JacobiSymbol(int upper, int lower);
 
 typedef void(*mmCback)(void);
 #endif

@@ -21,10 +21,11 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "expression.h"
 
-static BigInteger Temp, Temp2, Temp3, Base, Power;
+static BigInteger Temp, Temp2, Temp3, Base, Power, expon;
 static char ProcessExpon[5000];
 static char primes[5000];
 extern limb Mult1[MAX_LEN];
+extern limb Mult2[MAX_LEN];
 extern limb Mult3[MAX_LEN];
 extern limb Mult4[MAX_LEN];
 extern int q[MAX_LEN];
@@ -331,7 +332,7 @@ double logLimbs(limb *pBigNbr, int nbrLimbs)
   return logar;
 }
 
-enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int expon, BigInteger *pPower)
+enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int exponent, BigInteger *pPower)
 {
   int mask;
   double base;
@@ -343,7 +344,7 @@ enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int expon, BigInteger *pPower
     return EXPR_OK;
   }
   base = logBigNbr(pBase);
-  if (base*(double)expon > 46051)
+  if (base*(double)exponent > 46051)
   {   // More than 20000 digits. 46051 = log(10^20000)
     return EXPR_INTERM_TOO_HIGH;
   }
@@ -353,12 +354,12 @@ enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int expon, BigInteger *pPower
   pPower->limbs[0].x = 1;
   for (mask = 1 << 30; mask != 0; mask >>= 1)
   {
-    if ((expon & mask) != 0)
+    if ((exponent & mask) != 0)
     {
       for (; mask != 0; mask >>= 1)
       {
         (void)BigIntMultiply(pPower, pPower, pPower);
-        if ((expon & mask) != 0)
+        if ((exponent & mask) != 0)
         {
           (void)BigIntMultiply(pPower, &Base, pPower);
         }
@@ -371,7 +372,7 @@ enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int expon, BigInteger *pPower
 
 enum eExprErr BigIntPower(BigInteger *pBase, BigInteger *pExponent, BigInteger *pPower)
 {
-  int expon;
+  int exponent;
   if (pExponent->sign == SIGN_NEGATIVE)
   {    // Negative exponent not accepted.
     return EXPR_INVALID_PARAM;
@@ -389,20 +390,20 @@ enum eExprErr BigIntPower(BigInteger *pBase, BigInteger *pExponent, BigInteger *
   }
   if (pExponent->nbrLimbs == 2)
   {
-    expon = pExponent->limbs[0].x + (pExponent->limbs[1].x << BITS_PER_GROUP);
+    exponent = pExponent->limbs[0].x + (pExponent->limbs[1].x << BITS_PER_GROUP);
   }
   else
   {
-    expon = pExponent->limbs[0].x;
+    exponent = pExponent->limbs[0].x;
   }
-  return BigIntPowerIntExp(pBase, expon, pPower);
+  return BigIntPowerIntExp(pBase, exponent, pPower);
 }
 
 
 
 // GCD of two numbers:
 // Input: a, b positive integers
-// Output : g and d such that g is odd and gcd(a, b) = g×2d
+// Output : g and d such that g is odd and gcd(a, b) = gÃ—2d
 //   d : = 0
 //   while a and b are both even do
 //     a : = a / 2
@@ -411,8 +412,8 @@ enum eExprErr BigIntPower(BigInteger *pBase, BigInteger *pExponent, BigInteger *
 //   while a != b do
 //     if a is even then a : = a / 2
 //     else if b is even then b : = b / 2
-//     else if a > b then a : = (a – b) / 2
-//     else b : = (b – a) / 2
+//     else if a > b then a : = (a â€“ b) / 2
+//     else b : = (b â€“ a) / 2
 //   g : = a
 //     output g, d
 
@@ -549,9 +550,9 @@ static void addToAbsValue(limb *pLimbs, int *pNbrLimbs, int addend)
   {     // No overflow. Go out of routine.
     return;
   }
-    pLimbs->x -= LIMB_RANGE;
-    for (ctr = 1; ctr < nbrLimbs; ctr++)
-    {
+  pLimbs->x -= LIMB_RANGE;
+  for (ctr = 1; ctr < nbrLimbs; ctr++)
+  {
     pLimbs++;        // Point to next most significant limb.
     if (pLimbs->x != MAX_INT_NBR)
     {   // No overflow. Go out of routine.
@@ -1266,6 +1267,220 @@ int isPseudoprime(BigInteger *pResult)
   return TRUE;
 }
 
+// Calculate Jacobi symbol by following algorithm 2.3.5 of C&P book.
+int JacobiSymbol(int upper, int lower)
+{
+  int tmp;
+  int a = upper % lower;
+  int m = lower;
+  int t = 1;
+  while (a != 0)
+  {
+    while ((a & 1) == 0)
+    {     // a is even.
+      a >>= 1;
+      if ((m & 7) == 3 || (m & 7) == 5)
+      {   // m = 3 or m = 5 (mod 8)
+        t = -t;
+      }
+    }
+    tmp = a; a = m; m = tmp;   // Exchange a and m.
+    if ((a & m & 3) == 3)
+    {   // a = 3 and m = 3 (mod 4)
+      t = -t;
+    }
+    a = a % m;
+  }
+  if (m == 1 || m == -1)
+  {
+    return t;
+  }
+  return 0;
+}
+
+static void Halve(limb *pValue)
+{
+  if ((pValue[0].x & 1) == 0)
+  {    // Number to halve is even. Divide by 2.
+    DivBigNbrByInt((int *)pValue, 2, (int *)pValue, NumberLength);
+  }
+  else
+  {    // Number to halve is odd. Add modulus and then divide by 2.
+    AddBigNbr((int *)pValue, (int *)TestNbr, (int *)pValue, NumberLength + 1);
+    DivBigNbrByInt((int *)pValue, 2, (int *)pValue, NumberLength + 1);
+  }
+}
+
+// BPSW primality test:
+// 1) If the input number is 2-SPRP composite, indicate composite and go out.
+// 2) Find the first D in the sequence 5, -7, 9, -11, 13, -15, ...
+//    for which the Jacobi symbol (D/n) is âˆ’1. Set P = 1 and Q = (1 - D) / 4.
+// 3) Perform a strong Lucas probable prime test on n using parameters D, P,
+//    and Q. If n is not a strong Lucas probable prime, then n is composite.
+//    Otherwise, n is almost certainly prime.
+// Output: 0 = probable prime.
+//         1 = composite: not 2-Fermat pseudoprime.
+//         2 = composite: does not pass 2-SPRP test.
+//         3 = composite: does not pass strong Lucas test.
+int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
+{
+  int i, Mult3Len, ctr, D, absQ, mult, mask, index, signPowQ;
+  int insidePowering = FALSE;
+  int nbrLimbs = pValue->nbrLimbs;
+  limb *limbs = pValue->limbs;
+  if (nbrLimbs == 1 && limbs->x <= 2)
+  {
+    return 0;    // Indicate prime.
+  }
+  if ((limbs->x & 1) == 0)
+  {
+    return 1;    // Number is even and different from 2. Indicate composite.
+  }
+  // Perform 2-SPRP test
+  (limbs + nbrLimbs)->x = 0;
+  memcpy(q, limbs, (nbrLimbs + 1) * sizeof(limb));
+  q[0]--;                     // q = p - 1 (p is odd, so there is no carry).
+  memcpy(Mult3, q, (nbrLimbs + 1) * sizeof(q[0]));
+  Mult3Len = nbrLimbs;
+  DivideBigNbrByMaxPowerOf2(&ctr, Mult3, &Mult3Len);
+  memcpy(TestNbr, limbs, (nbrLimbs+1) * sizeof(limb));
+  GetMontgomeryParms(nbrLimbs);
+  modPowBaseInt(2, Mult3, Mult3Len, Mult1); // Mult1 = base^Mult3.
+                                            // If Mult1 != 1 and Mult1 = TestNbr-1, perform full test.
+  if (!checkOne(Mult1, nbrLimbs) && !checkMinusOne(Mult1, nbrLimbs))
+  {
+    for (i = 0; i < ctr; i++)
+    {               // Loop that squares number.
+      modmult(Mult1, Mult1, Mult4);
+      if (checkOne(Mult4, nbrLimbs) != 0)
+      {  // Current value is 1 but previous value is not 1 or -1: composite
+        return 2;       // Composite. Not 2-strong probable prime.
+      }
+      if (checkMinusOne(Mult4, nbrLimbs) != 0)
+      {
+        i = -1;         // Number is strong pseudoprime.
+        break;
+      }
+      memcpy(Mult1, Mult4, nbrLimbs * sizeof(limb));
+    }
+    if (i == ctr)
+    {
+      return 1;         // Not 2-Fermat probable prime.
+    }
+    if (i != -1)
+    {
+      return 2;         // Composite. Not 2-strong probable prime.
+    }
+  }
+  // At this point, the number is 2-SPRP, so find value of D.
+  mult = 1;
+  for (D = 5; ; D += 2)
+  {
+    int rem = getRemainder(pValue, D);
+    if (JacobiSymbol(rem, D*mult) == -1)
+    {
+      break;
+    }
+    mult = -mult;
+  }
+  absQ = (D + 1) >> 2;
+  // Perform strong Lucas primality test on n with parameters D, P=1, Q just found.
+  // Let d*2^s = n+1 where d is odd.
+  // Then U_d = 0 or v_{d*2^r} = 0 for some r < s.
+  // Use the following recurrences:
+  // U_0 = 0, U_1 = 1, V_0 = 2, V_1 = 1.
+  // U_{2k} = U_k * V_k
+  // V_{2k} = (V_k)^2 - 2*Q^K
+  // U_{2k+1} = (U_{2k} + V_{2k})/2
+  // V_{2k+1} = (D*U_{2k} + V_{2k})/2
+  // Use the following temporary variables:
+  // Mult1 for Q^n, Mult3 for U, Mult4 for V, Mult2 for temporary.
+  memcpy(Mult1, MontgomeryMultR1, (nbrLimbs + 1) * sizeof(limb)); // Q^0 <- 1.
+  signPowQ = 1;
+  memset(Mult3, 0, (nbrLimbs + 1) * sizeof(limb));                // U_0 <- 0.
+  memcpy(Mult4, MontgomeryMultR1, (nbrLimbs + 1) * sizeof(limb)); 
+  AddBigNbrMod(Mult4, Mult4, Mult4);                              // V_0 <- 2.
+  CopyBigInt(&expon, pValue);
+  addbigint(&expon, 1);                            // expon <- n + 1.
+  Temp.limbs[nbrLimbs].x = 0;
+  Temp2.limbs[nbrLimbs].x = 0;
+  expon.limbs[nbrLimbs].x = 0;
+  DivideBigNbrByMaxPowerOf2(&ctr, expon.limbs, &expon.nbrLimbs);
+  for (index = expon.nbrLimbs - 1; index >= 0; index--)
+  {
+    int groupExp = (int)(expon.limbs[index].x);
+    for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+    {
+      if (insidePowering)
+      {
+        // U_{2k} = U_k * V_k
+        // V_{2k} = (V_k)^2 - 2*Q^K
+        modmult(Mult3, Mult4, Mult3);          // U <- U * V
+        modmult(Mult4, Mult4, Mult4);          // V <- V * V
+        if (signPowQ > 0)
+        {
+          SubtBigNbrMod(Mult4, Mult1, Mult4);  // V <- V - Q^k
+          SubtBigNbrMod(Mult4, Mult1, Mult4);  // V <- V - Q^k
+        }
+        else
+        {
+          AddBigNbrMod(Mult4, Mult1, Mult4);   // V <- V - Q^k
+          AddBigNbrMod(Mult4, Mult1, Mult4);   // V <- V - Q^k
+        }
+        modmult(Mult1, Mult1, Mult1);          // Square power of Q.
+        signPowQ = 1;                          // Indicate it is positive. 
+      }
+      if ((groupExp & mask) != 0)
+      {
+        // U_{2k+1} = (U_{2k} + V_{2k})/2
+        // V_{2k+1} = (D*U_{2k} + V_{2k})/2
+        AddBigNbrMod(Mult3, Mult4, Temp.limbs);
+        Halve(Temp.limbs);
+        MultBigNbrByIntModN((int *)Mult3, D, (int *)Temp2.limbs, (int *)TestNbr, nbrLimbs);
+        if (mult > 0)
+        {      // D is positive
+          AddBigNbrMod(Mult4, Temp2.limbs, Mult4);
+        }
+        else
+        {      // D is negative.
+          SubtBigNbrMod(Mult4, Temp2.limbs, Mult4);
+        }
+        Halve(Mult4);
+        memcpy(Mult3, Temp.limbs, NumberLength * sizeof(limb));
+        modmultInt(Mult1, absQ, Mult1);     // Multiply power of Q by Q.
+        signPowQ = -mult;                   // Attach correct sign to power.
+        insidePowering = TRUE;
+      }
+    }
+  }
+  // If U is zero, the number passes the BPSW primality test.
+  if (BigNbrIsZero(Mult3))
+  {
+    return 0;      // Indicate number is probable prime.
+  }
+  for (index = 0; index < ctr; index++)
+  {
+    // If V is zero, the number passes the BPSW primality test.
+    if (BigNbrIsZero(Mult4))
+    {
+      return 0;    // Indicate number is probable prime.
+    }
+    modmult(Mult4, Mult4, Mult4);          // V <- V * V
+    if (signPowQ > 0)
+    {
+      SubtBigNbrMod(Mult4, Mult1, Mult4);  // V <- V - Q^k
+      SubtBigNbrMod(Mult4, Mult1, Mult4);  // V <- V - Q^k
+    }
+    else
+    {
+      AddBigNbrMod(Mult4, Mult1, Mult4);   // V <- V - Q^k
+      AddBigNbrMod(Mult4, Mult1, Mult4);   // V <- V - Q^k
+    }
+    modmult(Mult1, Mult1, Mult1);          // Square power of Q.
+    signPowQ = 1;                          // Indicate it is positive.
+  }
+  return 3;        // Number does not pass strong Lucas test.
+}
 void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len)
 {
   if (nbr >= MAX_VALUE_LIMB)

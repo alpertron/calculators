@@ -408,8 +408,8 @@ void polyFactText(char *modText, char *polyText, int groupLength)
   if (rc == EXPR_OK)
   {
     expon = PowerCheck(&powerMod, &primeMod);
-    if (!isPseudoprime(&primeMod))
-    {
+    if (BpswPrimalityTest(&primeMod))
+    {    // Number is composite
       rc = EXPR_MODULUS_MUST_BE_PRIME_EXP;
     }
   }

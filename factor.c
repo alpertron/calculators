@@ -508,68 +508,6 @@ static void GenerateSieve(int initial)
 #endif
 }
 
-int JacobiSymbol(int upper, int lower)
-{
-  int k, t1, t2, jacobi;
-  // Calculate gcd(upper,lower)
-
-  t1 = upper;
-  t2 = lower;
-  while (t1 != 0)
-  {
-    int t3 = t2 % t1;
-    t2 = t1;
-    t1 = t3;
-  }
-  if (t2 > 1)
-  {
-    return 0;
-  }
-  jacobi = 1;
-  while (lower % 2 == 0)
-  {
-    lower /= 2;
-  }
-  if (lower % 3 == 0)
-  {
-    do
-    {
-      jacobi = (jacobi * upper) % 3;
-      lower /= 3;
-    } while (lower % 3 == 0);
-    jacobi = (jacobi + 1) % 3 - 1;
-  }
-
-  k = 5;
-  while (k * k <= lower)
-  {
-    if (k % 3 != 0)
-    {
-      while (lower % k == 0)
-      {
-        lower /= k;
-        jacobi = (jacobi + k) % k;
-        for (t1 = (k - 1) / 2; t1 > 0; t1--)
-        {
-          jacobi = jacobi * upper % k;
-        }
-        jacobi = (jacobi + 1) % k - 1;
-      }
-    }
-    k += 2;
-  }
-  if (lower > 1)
-  {
-    jacobi = (jacobi + lower) % lower;
-    for (t1 = (lower - 1) / 2; t1 > 0; t1--)
-    {
-      jacobi = jacobi * upper % lower;
-    }
-    jacobi = (jacobi + 1) % lower - 1;
-  }
-  return jacobi;
-}
-
 static int Cos(int N)
 {
   switch (N % 8)
@@ -2340,7 +2278,7 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
       CompressBigInteger(pstCurFactor->ptrFactor, &prime);
       pstCurFactor->multiplicity *= expon;
     }
-    if (isPseudoprime(&prime))
+    if (BpswPrimalityTest(&prime) == 0)
     {   // Number is prime power.
       pstCurFactor->upperBound = 0;   // Indicate that number is prime.
       continue;                       // Check next factor.
