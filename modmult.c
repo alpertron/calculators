@@ -1168,32 +1168,49 @@ void modmult(limb *factor1, limb *factor2, limb *product)
 // Multiply big number in Montgomery notation by integer.
 void modmultIntExtended(limb *factorBig, int factorInt, limb *result, limb *pTestNbr, int nbrLen)
 {
-  int i, low;
-  int TrialQuotient;
+#ifdef _USING64BITS_
+  int64_t carry;
+#else
   double dTrialQuotient, dAccumulator, dFactorInt;
+  double dInvLimbRange = 1 / (double)LIMB_RANGE;
+  int low;
+#endif
+  int i;
+  int TrialQuotient;
   limb *ptrFactorBig, *ptrTestNbr;
   double dTestNbr, dFactorBig;
-  double dInvLimbRange = 1 / (double)LIMB_RANGE;
   if (nbrLen == 1)
   {
     smallmodmult(factorBig->x, factorInt, result, pTestNbr->x);
     return;
   }
   (factorBig + nbrLen)->x = 0;
-  dFactorInt = (double)factorInt;
   dTestNbr = getMantissa(pTestNbr + nbrLen, nbrLen);
   dFactorBig = getMantissa(factorBig + nbrLen, nbrLen);
-  TrialQuotient = (int)(unsigned int)floor(dFactorBig * factorInt / dTestNbr + 0.5);
+  TrialQuotient = (int)(unsigned int)floor(dFactorBig * (double)factorInt / dTestNbr + 0.5);
   if ((unsigned int)TrialQuotient >= LIMB_RANGE)
   {   // Maximum value for limb.
     TrialQuotient = MAX_VALUE_LIMB;
   }
   // Compute result <- factorBig * factorInt - TrialQuotient * TestNbr
+  ptrFactorBig = factorBig;
+  ptrTestNbr = pTestNbr;
+#ifdef _USING64BITS_
+  carry = 0;
+  for (i = 0; i <= nbrLen; i++)
+  {
+    carry += (int64_t)ptrFactorBig->x * factorInt -
+             (int64_t)TrialQuotient * ptrTestNbr->x;
+    (result + i)->x = (int)carry & MAX_INT_NBR;
+    carry >>= BITS_PER_GROUP;
+    ptrFactorBig++;
+    ptrTestNbr++;
+  }
+#else
+  dFactorInt = (double)factorInt;
   dTrialQuotient = (double)TrialQuotient;
   low = 0;
   dAccumulator = 0;
-  ptrFactorBig = factorBig;
-  ptrTestNbr = pTestNbr;
   for (i = 0; i <= nbrLen; i++)
   {
     dAccumulator += ptrFactorBig->x * dFactorInt - dTrialQuotient * ptrTestNbr->x;
@@ -1214,6 +1231,7 @@ void modmultIntExtended(limb *factorBig, int factorInt, limb *result, limb *pTes
     ptrFactorBig++;
     ptrTestNbr++;
   }
+#endif
   while (((result+nbrLen)->x & MAX_VALUE_LIMB) != 0)
   {
     ptrFactorBig = result;

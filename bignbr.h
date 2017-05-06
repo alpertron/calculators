@@ -117,7 +117,9 @@ double logLimbs(limb *pBigNbr, int nbrLimbs);
 double getMantissa(limb *ptrLimb, int nbrLimbs);
 void UncompressIntLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbrLen);
 void CompressIntLimbs(/*@out@*/int *ptrValues, /*@in@*/limb *bigint, int nbrLen);
-
+int checkOne(limb *value, int nbrLimbs);
+int checkMinusOne(limb *value, int nbrLimbs);
+void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs);
 
 void ChSignBigNbr(int *nbr, int length);
 void AddBigNbr(int *pNbr1, int *pNbr2, int *pSum, int nbrLen);

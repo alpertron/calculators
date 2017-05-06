@@ -18,6 +18,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <math.h>
 #include "bignbr.h"
 #include "expression.h"
@@ -95,10 +96,6 @@ static limb GcdAccumulated[MAX_LEN];
 static limb *fieldAA, *fieldTX, *fieldTZ, *fieldUX, *fieldUZ;
 static void add3(limb *x3, limb *z3, limb *x2, limb *z2, limb *x1, limb *z1, limb *x, limb *z);
 static void duplicate(limb *x2, limb *z2, limb *x1, limb *z1);
-static limb *fieldAux1 = Aux1;
-static limb *fieldAux2 = Aux2;
-static limb *fieldAux3 = Aux3;
-static limb *fieldAux4 = Aux4;
 static BigInteger Temp1, Temp2, Temp3, Temp4;
 BigInteger factorValue, tofactor;
 char verbose, prettyprint, cunningham;
@@ -106,6 +103,7 @@ long long Gamma[386];
 long long Delta[386];
 long long AurifQ[386];
 char tofactorDec[30000];
+extern int q[MAX_LEN];
 static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor);
 
 #ifdef __EMSCRIPTEN__
@@ -225,8 +223,8 @@ void prac(int n, limb *x, limb *z, limb *xT, limb *zT, limb *xT2, limb *zT2)
   int d, e, r, i;
   limb *t;
   limb *xA = x, *zA = z;
-  limb *xB = fieldAux1, *zB = fieldAux2;
-  limb *xC = fieldAux3, *zC = fieldAux4;
+  limb *xB = Aux1, *zB = Aux2;
+  limb *xC = Aux3, *zC = Aux4;
   double v[] =
   {
     1.61803398875,
@@ -2120,6 +2118,108 @@ static int getNextInteger(char **ppcFactors, int *result, char delimiter)
   return 0;
 }
 
+// Return: 0 = No factors found.
+//         1 = Factors found.
+// Use: Xaux for square root of -1.
+//      Zaux for square root of 1.
+static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
+{
+  int randomBase = 0;
+  int factorsFound = FALSE;
+  int nbrLimbsQ, countdown, ctr;
+  int nbrLimbs = pValue->nbrLimbs;
+  int sqrtOneFound = FALSE;
+  int sqrtMinusOneFound = FALSE;
+  int Aux1Len;
+  limb *pValueLimbs = pValue->limbs;
+  (pValueLimbs + nbrLimbs)->x = 0;
+  memcpy(q, pValueLimbs, (nbrLimbs + 1) * sizeof(limb));
+  nbrLimbsQ = nbrLimbs;
+  q[0]--;                     // q = p - 1 (p is odd, so there is no carry).
+  memcpy(Aux1, q, (nbrLimbsQ + 1) * sizeof(q[0]));
+  Aux1Len = nbrLimbs;
+  DivideBigNbrByMaxPowerOf2(&ctr, Aux1, &Aux1Len);
+  memcpy(TestNbr, pValueLimbs, nbrLimbs * sizeof(limb));
+  TestNbr[nbrLimbs].x = 0;
+  GetMontgomeryParms(nbrLimbs);
+  for (countdown = 20; countdown > 0; countdown--)
+  {
+    int i;
+    NumberLength = nbrLimbs;
+    randomBase = (int)((uint64_t)randomBase * 89547121 + 1762281733) & MAX_INT_NBR;
+    modPowBaseInt(randomBase, Aux1, Aux1Len, Aux2); // Aux2 = base^Aux1.
+                                                 // If Mult1 = 1 or Mult1 = TestNbr-1, then try next base.
+    if (checkOne(Aux2, nbrLimbs) != 0 || checkMinusOne(Aux2, nbrLimbs) != 0)
+    {
+      continue;    // This base cannot find a factor. Try another one.
+    }
+    for (i = 0; i < ctr; i++)
+    {              // Loop that squares number.
+      modmult(Aux2, Aux2, Aux3);
+      if (checkOne(Aux3, nbrLimbs) != 0)
+      {            // Non-trivial square root of 1 found.
+        if (!sqrtOneFound)
+        {          // Save it to perform GCD later.
+          memcpy(Zaux, Aux2, nbrLimbs*sizeof(limb));
+          sqrtOneFound = TRUE;
+        }
+        else
+        {          // Try to find non-trivial factor by doing GCD.
+          SubtBigNbrMod(Aux2, Zaux, Aux4);
+          UncompressLimbsBigInteger(Aux4, &Temp2);
+          BigIntGcd(pValue, &Temp2, &Temp4);
+          if ((Temp4.nbrLimbs != 1 || Temp4.limbs[0].x > 1) &&
+            (Temp4.nbrLimbs != NumberLength ||
+              memcmp(pValue->limbs, Temp4.limbs, NumberLength * sizeof(limb))))
+          {          // Non-trivial factor found.
+            insertBigFactor(pstFactors, &Temp4);
+            factorsFound = TRUE;
+          }
+        }
+                   // Try to find non-trivial factor by doing GCD.
+        NumberLength = nbrLimbs;
+        AddBigNbrMod(Aux2, MontgomeryMultR1, Aux4);
+        UncompressLimbsBigInteger(Aux4, &Temp2);
+        BigIntGcd(pValue, &Temp2, &Temp4);
+        if ((Temp4.nbrLimbs != 1 || Temp4.limbs[0].x > 1) &&
+          (Temp4.nbrLimbs != NumberLength ||
+            memcmp(pValue->limbs, Temp4.limbs, NumberLength * sizeof(limb))))
+        {          // Non-trivial factor found.
+          insertBigFactor(pstFactors, &Temp4);
+          factorsFound = TRUE;
+        }
+        i = ctr;
+        continue;  // Find more factors.
+      }
+      if (checkMinusOne(Aux3, nbrLimbs) != 0)
+      {            // Square root of 1 found.
+        if (!sqrtMinusOneFound)
+        {          // Save it to perform GCD later.
+          memcpy(Xaux, Aux2, nbrLimbs * sizeof(limb));
+          sqrtOneFound = TRUE;
+        }
+        else
+        {          // Try to find non-trivial factor by doing GCD.
+          SubtBigNbrMod(Aux3, Xaux, Aux4);
+          UncompressLimbsBigInteger(Aux4, &Temp2);
+          BigIntGcd(pValue, &Temp2, &Temp4);
+          if ((Temp4.nbrLimbs != 1 || Temp4.limbs[0].x > 1) &&
+            (Temp4.nbrLimbs != NumberLength ||
+              memcmp(pValue->limbs, Temp4.limbs, NumberLength * sizeof(limb))))
+          {          // Non-trivial factor found.
+            insertBigFactor(pstFactors, &Temp4);
+            factorsFound = TRUE;
+          }
+        }
+        i = ctr;
+        continue;  // Find more factors.
+      }
+      memcpy(Aux2, Aux3, nbrLimbs * sizeof(limb));
+    }
+  }
+  return factorsFound;
+}
+
 // pstFactors -> ptrFactor points to end of factors.
 // pstFactors -> multiplicity indicates the number of different factors.
 void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors)
@@ -2132,6 +2232,7 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
   int factorUpperBound;
   int restartFactoring = FALSE;
   char *ptrCharFound;
+  int result;
   EC = 1;
   NumberLength = tofactor.nbrLimbs;
   GetYieldFrequency();
@@ -2278,47 +2379,51 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
       CompressBigInteger(pstCurFactor->ptrFactor, &prime);
       pstCurFactor->multiplicity *= expon;
     }
-    if (BpswPrimalityTest(&prime) == 0)
+    result = BpswPrimalityTest(&prime);
+    if (result == 0)
     {   // Number is prime power.
       pstCurFactor->upperBound = 0;   // Indicate that number is prime.
       continue;                       // Check next factor.
     }
-    else
-    {
-      ecm(&prime, pstFactors);        // Factor number.
-      // Check whether GD is not one. In this case we found a proper factor.
-      for (ctr = 1; ctr < NumberLength; ctr++)
-      {
-        if (GD[ctr].x != 0)
-        {
-          break;
-        }
-      }
-      if (ctr != NumberLength || GD[0].x != 1)
-      {
-        int numLimbs;
-        Temp1.sign = SIGN_POSITIVE;
-        numLimbs = NumberLength;
-        while (numLimbs > 1)
-        {
-          if (GD[numLimbs-1].x != 0)
-          {
-            break;
-          }
-          numLimbs--;
-        }
-        memcpy(Temp1.limbs, GD, numLimbs * sizeof(limb));
-        Temp1.nbrLimbs = numLimbs;
-        insertBigFactor(pstFactors, &Temp1);
-#ifdef __EMSCRIPTEN__
-        SaveFactors(pstFactors);
-#endif
-        factorNbr = 0;
-        pstCurFactor = pstFactors;
+    if (result > 1)
+    {    // Number is 2-Fermat probable prime. Try to factor it.
+      if (factorCarmichael(&prime, pstFactors))
+      {                               // Prime factors found.
         continue;
       }
     }
-  }
+    ecm(&prime, pstFactors);          // Factor number.
+    // Check whether GD is not one. In this case we found a proper factor.
+    for (ctr = 1; ctr < NumberLength; ctr++)
+    {
+      if (GD[ctr].x != 0)
+      {
+        break;
+      }
+    }
+    if (ctr != NumberLength || GD[0].x != 1)
+    {
+      int numLimbs;
+      Temp1.sign = SIGN_POSITIVE;
+      numLimbs = NumberLength;
+      while (numLimbs > 1)
+      {
+        if (GD[numLimbs-1].x != 0)
+        {
+          break;
+        }
+        numLimbs--;
+      }
+      memcpy(Temp1.limbs, GD, numLimbs * sizeof(limb));
+      Temp1.nbrLimbs = numLimbs;
+      insertBigFactor(pstFactors, &Temp1);
+#ifdef __EMSCRIPTEN__
+      SaveFactors(pstFactors);
+#endif
+      factorNbr = 0;
+      pstCurFactor = pstFactors;
+    }    // End if
+  }      // End for
 #ifdef __EMSCRIPTEN__
   SaveFactors(pstFactors);
 #endif
