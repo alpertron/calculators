@@ -1136,10 +1136,10 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
       BigIntAdd(&a, &c, &val);
       BigIntMultiply(&val, &val, &c);       // c <- val * val
       BigIntSubt(&c, &sqr, &c);             // c <- val * val - sqr
-      squareRoot(sqr.limbs, c.limbs, sqr.nbrLimbs, &c.nbrLimbs);
-      sqrRoot.sign = SIGN_POSITIVE;
+      squareRoot(c.limbs, sqrRoot.limbs, c.nbrLimbs, &sqrRoot.nbrLimbs);
+      sqrRoot.sign = SIGN_POSITIVE;         // sqrRoot <- sqrt(c)
       BigIntAdd(&sqrRoot, &val, &sqrRoot);
-      BigIntGcd(&sqrRoot, nbr, &c);
+      BigIntGcd(&sqrRoot, nbr, &c);         // Get GCD(sqrRoot + val, nbr)
       if (c.nbrLimbs > 1)
       {    // Non-trivial factor has been found.
         CopyBigInt(factor, &c);

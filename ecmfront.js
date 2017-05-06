@@ -70,7 +70,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'ecm0040.wasm');
+  request.open('GET', 'ecm0041.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -177,7 +177,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker(asmjs? "ecmW0040.js": "ecm0040.js");
+    worker = new Worker(asmjs? "ecmW0041.js": "ecm0041.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
