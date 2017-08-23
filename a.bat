@@ -13,6 +13,11 @@ if errorlevel 1 goto end
 cmd /c emcc -Os expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c dilog.c bignbr.c showtime.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork']" -s TOTAL_MEMORY=301989888 -s NO_FILESYSTEM=1 --closure 1 --memory-init-file 0 -o dilogW%1.js
 if errorlevel 1 goto end
 
+java -jar "C:\Program Files\Emscripten\emscripten\tag-1.37.3\third_party\closure-compiler\compiler.jar" --compilation_level WHITESPACE_ONLY --js quadrmod.js --js_output_file dilog%1.js
+if errorlevel 1 goto end
+cmd /c emcc -Os expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c quadmod.c bignbr.c showtime.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888 -s NO_FILESYSTEM=1 --closure 1 --memory-init-file 0 -o quadmodW%1.js
+if errorlevel 1 goto end
+
 java -jar "C:\Program Files\Emscripten\emscripten\tag-1.37.3\third_party\closure-compiler\compiler.jar" --compilation_level WHITESPACE_ONLY --js gauss.js --js_output_file gaussian%1.js
 if errorlevel 1 goto end
 cmd /c emcc -Os GaussExpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c gaussian.c bignbr.c showtime.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork']" -s TOTAL_MEMORY=301989888 -s NO_FILESYSTEM=1 --closure 1 --memory-init-file 0 -o gaussianW%1.js

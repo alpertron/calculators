@@ -1,0 +1,188 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta name="Author" content="Dario Alejandro Alpern" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="description" content="Javascript application that finds solutions to quadratic modular equations. Written by Dario Alpern." />
+    <link rel="alternate" hreflang="es" href="CUADMOD.HTM" />
+    <link rel="prefetch" href="quadmodW0002.js" />
+    <title>Quadratic modular equation solver</title>
+    <style type="text/css" media="print">
+      #smallheader {display:none;}
+    </style>
+    <style type="text/css" media="screen">
+      #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
+      #smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+      #smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+      #smallheader li:hover {background-color:#004000; color:#FFFFFF;}
+      #smallheader li ul { display:none; position:absolute; }
+      #smallheader li:hover ul.alignleft{ display:block; height:auto;}
+      #smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+      #smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
+      #smallheader a:link{color:#FFFFFF; text-decoration: none;}
+      #smallheader a:visited{color:#FFFFFF; text-decoration: none;}
+      #smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+      #smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+      #smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+      #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+      #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+      #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+      @media (max-width: 400px) { #smallheader { font-size:0.7em;  } }
+      @media (min-width: 400px) { #smallheader { font-size:1em;  } }
+    </style>
+    <style>
+      body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
+      h1 {text-align:center;}
+	  .lf {padding:0.2em; clear:both;}
+	  .i {font-style: italic;}
+	  .inline {display:inline;}
+	  .pad {padding:10px;}
+	  #help,#result,#status,#footer {margin: 3px; padding: 3px;}
+      #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+      @media (min-width: 400px) { .input{width: calc(100% - 7em);float:right;padding:3px;margin:0px;}}
+      @media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
+   </style>
+  </head>
+  <body>
+    <nav id="smallheader">
+      <div style="float:right;"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
+      <ul>
+        <li>
+          Electronics
+          <ul class="alignleft">
+            <li>
+              <a href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Mathematics
+          <ul class="alignleft">
+            <li>
+              <a href="CALTORS.HTM" title="Java and Javascript programs implementing calculators">Calculators</a>
+            </li>
+            <li>
+              <a href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a>
+            </li>
+            <li>
+              <a href="PROBLEMS.HTM" title="Interesting math problems">Problems</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          Programs
+          <ul class="alignright">
+            <li>
+              <a href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a>
+            </li>
+            <li>
+              <a href="JAVAPROG.HTM" title="Programs written in Java">Java</a>
+            </li>
+            <li>
+              <a href="GAMES.HTM" title="Computer games">Games</a>
+            </li>
+          </ul>
+        </li>
+        <li class="alignright">
+          Contact
+          <ul class="alignright">
+            <li>
+              <a href="EPERS.HTM" title="Personal information">Personal</a>
+            </li>
+            <li>
+              <a href="FORM.HTM" title="Form to send comments">Comments</a>
+            </li>
+            <li>
+              <a href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a>
+            </li>
+            <li>
+              <a href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <br style="clear:both;"/>
+    </nav>
+	<main role="main">
+    <article>
+	<h1>Quadratic modular equation solver</h1>
+    <script async="async" type="text/javascript" src="quadmod0002.js"></script>
+    <div class="pad">
+      <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
+        <a href="ENGLISH.HTM" itemprop="url">
+          <span itemprop="title">Alpertron</span>
+        </a> ›
+      </div>
+      <div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" style="display:inline;">
+        <a href="JAVAPROG.HTM" itemprop="url">
+          <span itemprop="title">Programs</span>
+        </a> ›
+      </div>
+      <div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" style="display:inline;">
+        <a href="QUADMOD.HTM" itemprop="url">
+          <span itemprop="title">Quadratic modular equation solver</span>
+        </a>
+      </div>
+    </div>
+    <div id="applet">
+	  ax&sup2; + bx + c &equiv; 0 (mod&nbsp;n)
+	  <div class="lf"></div>    
+      <label for="quad">a</label>&nbsp;<input type="text" id="quad" value="" class="input" aria-label="Quadratic coefficient"/>
+      <div class="lf"></div>
+      <label for="lin">b</label>&nbsp;<input type="text" id="lin" value="" class="input" aria-label="Linear coefficient"/>
+      <div class="lf"></div>
+      <label for="const">c</label>&nbsp;<input type="text" id="const" value="" class="input"  aria-label="Constant coefficient"/>
+      <div class="lf"></div>
+      <label for="mod">n</label>&nbsp;<input type="text" id="mod" value="" class="input"/>
+      <div class="lf"></div>
+      <input type="button" id="solve" value="Solve" />
+      <input type="button" id="stop" value="Stop" />
+      <input type="button" id="helpbtn" value="Help" />
+      <div class="lf"></div>
+      <label for="digits">Digits per group</label>&nbsp;<input type="number" id="digits" value="6"/>
+      <input type="hidden" id="app" value="0"/>
+    </div>
+    <div id="help" aria-live="polite">
+    <p>This calculator can solve equations of the form <strong>a&#8290;x&sup2; + bx + c &equiv; 0 (mod&nbsp;n)</strong> where the integer unknown <strong>x</strong> is in the range <strong>0 &le; x &lt; n</strong>. In particular, it can find modular square roots by setting <strong><var>a</var> = -1</strong>, <strong><var>b</var> = 0</strong>, <strong><var>c</var> = <span class="i">number whose root we want to find</span></strong> and <strong><var>n</var> = <var>modulus</var></strong>.</p>
+    <p>You can type numbers or numerical expressions on the input boxes at the left.
+    <p>The calculator accepts numbers of up to 1000 digits, but notice that the modulus <strong>n</strong> should be factored (some large numbers cannot be factored in a reasonable amount of time). The factorization engine is the one used in the <A HREF="ECM.HTM">Elliptic Curve Method factorization applet</A>, that uses the methods ECM and SIQS.</p>
+    <p>When <strong>a</strong> is not zero, the number of solutions depends on the number of distinct prime factor of the modulus, so if the modulus has many small prime factors (say more than 14), the program could run out of memory and it will not show any solution.</p>
+<h2>Expressions</h2>
+<p>You can also enter expressions that use the following operators and parentheses:
+    <ul>
+        <li><strong>+</strong> for addition</li>
+        <li><strong>-</strong> for subtraction</li>
+        <li><strong>*</strong> for multiplication</li>
+        <li><strong>/</strong> for division</li>
+        <li><strong>%</strong> for remainder</li>
+        <li><strong>^</strong> or <strong>**</strong> for exponentiation</li>
+        <li><strong>n!</strong>: factorial</li>
+        <li><strong>p#</strong>: primorial (product of all primes less or equal than <em>p</em>).</li>
+        <li><strong>B(n)</strong>: Previous pseudoprime to <em>n</em></li>
+        <li><strong>F(n)</strong>: Fibonacci number F<SUB>n</SUB></li>
+        <li><strong>L(n)</strong>: Lucas number L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB></li>
+        <li><strong>N(n)</strong>: Next pseudoprime to <em>n</em></li>
+        <li><strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <em>n</em> into sums of integers without regard to order).</li>
+        <li><strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
+        <li><strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
+        <li><strong>Modexp(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
+      </ul>
+<p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
+<p>The exponentiation symbol is not present in some mobile devices, so two asterisks ** can by typed as the exponentiation operator.</p>
+      <h2>Source code</h2>
+      <p>
+        You can download the source of the current program and the old quadratic modular equation applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
+      </p>
+	  <p>Written by Dario Alpern. Last updated 6 August 2017.</p>
+    </div>
+    <div id="result" aria-live="polite"></div>
+    <div>
+      <p>
+        If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Quadratic+modular+equation+feedback">form</a>.
+      </p>
+    </div>
+	</article>
+	</main>
+  </body>
+</html>

@@ -219,11 +219,11 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
   {                   // Increment square root.
     for (idx = 2 * lenInvSqrt - lenInvSqrt2-1; idx < 2*lenInvSqrt-1; idx++)
     {
-      if ((unsigned int)++approxInv[idx].x != LIMB_RANGE)
+      approxInv[idx].x = (approxInv[idx].x + 1) & MAX_INT_NBR;
+      if (approxInv[idx].x != 0)
       {
         break;
       }
-      approxInv[idx].x = 0;
     }
     if (idx == 2*lenInvSqrt-1)
     {                // Roll back on overflow.

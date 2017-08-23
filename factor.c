@@ -29,7 +29,7 @@ int yieldFreq;
 char upperText[30000];
 char lowerText[30000];
 char *ptrLowerText;
-mmCback modmultCallback;
+extern mmCback modmultCallback;
 extern long long lModularMult;
 #endif
 
@@ -417,6 +417,19 @@ Uses the following global variables:
 - u, v, w : auxiliary variables
 Modifies: x2, z2, u, v, w
 */
+#if 0
+void print(limb *w)
+{
+  char pepe[1000];
+  Bin2Dec(w, pepe, NumberLength, 0);
+  printf("%s\n", pepe);
+  memset(Xaux, 0, NumberLength * sizeof(limb));
+  Xaux[0].x = 1;
+  modmult(Xaux, w, Zaux);
+  Bin2Dec(Zaux, pepe, NumberLength, 0);
+  printf("%s\n\n", pepe);
+}
+#endif
 static void duplicate(limb *x2, limb *z2, limb *x1, limb *z1)
 {
   limb *u = fieldUZ;
@@ -1636,12 +1649,16 @@ static enum eEcmResult ecmCurve(BigInteger *N)
           }
           if (Pass != 0)
           {
+            if (BigNbrIsZero(GcdAccumulated))
+            {           // This curve cannot factor the number.
+              break;
+            }
             if (gcdIsOne(GcdAccumulated) > 1)
             {
               return FACTOR_FOUND;
             }
           }
-        }
+        }   // End for.
         if (indexM != 0)
         { // Update (X:Z)
           memcpy(WX, X, NumberLength * sizeof(limb));
@@ -2234,7 +2251,7 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
   char *ptrCharFound;
   int result;
   EC = 1;
-  NumberLength = tofactor.nbrLimbs;
+  NumberLength = toFactor->nbrLimbs;
   GetYieldFrequency();
 #ifdef __EMSCRIPTEN__
   oldTimeElapsed = 0;

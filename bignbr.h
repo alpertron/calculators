@@ -88,9 +88,11 @@ enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int expon, BigInteger *pPower
 void BigInteger2Dec(BigInteger *pBigInt, char *decimal, int groupLen);
 void BigIntGcd(BigInteger *pArg1, BigInteger *pArg2, BigInteger *pResult);
 void BigIntModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient);
+void BigIntModularDivisionPower2(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient);
 void multint(BigInteger *pResult, BigInteger *pMult, int iMult);
 void multadd(BigInteger *pResult, int iMult, BigInteger *pMult, int addend);
 void addmult(BigInteger *pResult, BigInteger *pMult1, int iMult1, BigInteger *pMult2, int iMult2);
+void BigIntPowerOf2(BigInteger *pResult, int expon);
 int getRemainder(BigInteger *pBigInt, int divisor);
 void subtractdivide(BigInteger *pBigInt, int subt, int divisor);
 void addbigint(BigInteger *pResult, int addend);
@@ -120,6 +122,7 @@ void CompressIntLimbs(/*@out@*/int *ptrValues, /*@in@*/limb *bigint, int nbrLen)
 int checkOne(limb *value, int nbrLimbs);
 int checkMinusOne(limb *value, int nbrLimbs);
 void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs);
+void BigIntModularPower(BigInteger *base, BigInteger *exponent, BigInteger *power);
 
 void ChSignBigNbr(int *nbr, int length);
 void AddBigNbr(int *pNbr1, int *pNbr2, int *pSum, int nbrLen);
@@ -142,6 +145,7 @@ int intDoubleModPow(int NbrMod, int Expon, int currentPrime);
 void ModInvBigInt(int *num, int *inv, int *mod, int NumberLength);
 void IntToBigNbr(int value, int *bigNbr, int nbrLength);
 int JacobiSymbol(int upper, int lower);
+int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower);
 
 typedef void(*mmCback)(void);
 #endif

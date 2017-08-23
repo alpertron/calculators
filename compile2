@@ -1,5 +1,19 @@
-cat expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c ecmfront.c bignbr.c showtime.c from_musl.c > all.c
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz all.c -o all.bc
-/usr/local/bin/llc -O3 all.bc -march=wasm32 -o ecm.s
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz expression.c -o expression.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz partition.c -o partition.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz errors.c -o errors.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz bigint.c -o bigint.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz division.c -o division.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz baseconv.c -o baseconv.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz karatsuba.c -o karatsuba.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz modmult.c -o modmult.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz sqroot.c -o sqroot.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz factor.c -o factor.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz siqs.c -o siqs.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz ecmfront.c -o ecmfront.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz bignbr.c -o bignbr.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz showtime.c -o showtime.bc
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz from_musl.c -o from_musl.bc
+/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc factor.bc siqs.bc ecmfront.bc bignbr.bc showtime.bc from_musl.bc -o ecm.bc
+/usr/local/bin/llc -O3 ecm.bc -march=wasm32 -o ecm.s
 ../binaryen/bin/s2wasm ecm.s -s 1000000 > ecm.wast
 ../wabt/build/wast2wasm -o ecm.wasm ecm.wast

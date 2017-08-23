@@ -6,14 +6,16 @@
 <meta charset="utf-8" />
 <meta name="description" content="Aplicación Javascript que factoriza números enteros utilizando los algoritmos ECM y SIQS. Escrito por Dario Alpern." />
 <link rel="alternate" hreflang="es" href="ECMC.HTM" />
-<link rel="prefetch" href="ecmW0041.js" />
-<link rel="prefetch" href="ecm0041.wasm" />
+<link rel="prefetch" href="ecmW0001.js" />
+<link rel="prefetch" href="ecm0001.wasm" />
+<link rel="manifest" href="/ecmc.json">
+<meta name="theme-color" content="#db5945">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Calculadora de factorización de números enteros</title>
 <style>
 @media print {#smallheader {display:none;}}
 @media screen {
-#smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
+#smallheader {background-color:#000080; color:#FFFFFF; width:100%; margin:0px; text-align:center;}
 #smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
 #smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
 #smallheader li:hover {background-color:#004000; color:#FFFFFF;}
@@ -40,7 +42,7 @@ h1 {text-align:center;}
 .blue {color: #0000FF;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 #digits {width:5em}
-#textarea {display:none;whitespace:nowrap;overflowX:scroll}
+#textarea {display:none;white-space:nowrap;overflow-x:scroll}
 #ltextarea {display:none;}
 .inline  {display:inline;}
 .pad {padding:10px;}
@@ -124,9 +126,10 @@ Contacto
 </ul>
 <br class="newline"/>
 </nav>
+<main role="main">
 <article>
 <h1>Calculadora de factorización de números enteros</h1>
-<script async="async" type="text/javascript" src="ecm0041.js"></script>
+<script async="async" type="text/javascript" src="ecm0001.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -168,7 +171,7 @@ Contacto
 <h2>Expresiones</h2>
 <p>Puedes ingresar expresiones que usen los siguientes operadores y paréntesis:</p>
 <p>
-<UL>
+<ul>
 <li> + para suma
 <li> - para resta
 <li> * para multiplicación
@@ -240,37 +243,41 @@ Para reducir esa base de datos, sólo se incluyen factores primos con al menos 1
 La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 6 de mayo de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 22 de agosto de 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
 <div id="status"></div>
 <div id="footer">
-<p>Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORM.HTM?Comentario+de+calculadora+de+factorizacion+de+enteros">formulario</a>.</p>
+<p>Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORMULAR.HTM?Comentario+de+calculadora+de+factorizacion+de+enteros">formulario</a>.</p>
 </div>
 </article>
+</main>
 <div id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
 <div class="modal-content">
 <div class="modal-header"><span id="close-more" aria-label="close" class="atright">×</span><p id="moreopt">Más opciones</p></div>
 <div class="modal-body">
-<form class="applet">
+<div class="applet">
 <p><label for="curve">Nuevo número de curva o factor:</label></p><input type="number" id="curve" value="" class="input" min="0" step="1"/>
 <input type="button" id="ncurve" value="Nueva curva" />
 <input type="button" id="nfactor" value="Nuevo factor" />
-</form>
+</div>
 </div></div></div>
 <div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
 <div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuración</p></div>
 <div class="modal-body">
-<form class="applet">
+<div class="applet">
+<fieldset>
+<legend>Parámetros de configuración</legend>
 <p><label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"/></p>
 <p><input type="checkbox" id="batch"><label for="batch">Factorización en lotes</label></p>
 <p><input type="checkbox" id="verbose"><label for="verbose">Información</label></p>
 <p><input type="checkbox" id="pretty"><label for="pretty">Impresión bonita</label></p>
 <p><input type="checkbox" id="cunnin"><label for="cunnin">Usar tablas de Cunningham en el servidor</label></p>
+</fieldset>
 <p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
-</form>
+</div>
 </div></div></div>
 </body>
 </html>

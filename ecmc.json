@@ -1,0 +1,25 @@
+{
+  "short_name": "Factores",
+  "name": "Calculadora de factorización de números enteros",
+  "icons": [
+    {
+      "src": "ecm-icon-1x.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "ecm-icon-2x.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "ecm-icon-4x.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ],
+  "theme_color": "#db5945",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "ECMC.HTM?launcher=true"
+}

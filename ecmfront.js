@@ -70,7 +70,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'ecm0041.wasm');
+  request.open('GET', 'ecm0001.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -177,7 +177,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker(asmjs? "ecmW0041.js": "ecm0041.js");
+    worker = new Worker(asmjs? "ecmW0001.js": "ecm0001.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
@@ -217,6 +217,7 @@ function callWorker(param)
 
 function dowork(n)
 {
+  var param;
   app = parseInt(get("app").value) + n;
   var res = get("result");
   var valueText = get(config.substr(0,1)=="1"?"textarea":"value").value;
@@ -280,6 +281,7 @@ function isBatch()
 function startUp()
 {
   var param, index, ecmFactor;
+  get("textarea").wrap="off";
   get("eval").onclick = function ()
   {
     setStorage("ecmFactors","");
@@ -418,6 +420,11 @@ function startUp()
     get("curve").value = getStorage("ecmCurve");
     dowork(-2);
     get("curve").value = "";
+  }
+  if ('serviceWorker' in navigator)
+  { // Attempt to register service worker.
+    // There is no need to do anything on registration success or failure in this Javascript module.
+    navigator.serviceWorker.register('calcSW.js').then(function() {}, function() {});
   }
 }
 addEventListener("load", startUp);

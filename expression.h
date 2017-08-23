@@ -1,8 +1,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 6 de mayo de 2017."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 6 May 2017."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 12 de agosto de 2017."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 12 August 2017."
 
 #ifdef __EMSCRIPTEN__
 void databack(char *data);
@@ -33,6 +33,7 @@ enum eExprErr
   EXPR_POWER_MUST_BE_POSITIVE,
   EXPR_MODULUS_BASE_NOT_RELATIVELY_PRIME,
   EXPR_MODULUS_POWER_NOT_RELATIVELY_PRIME,
+  EXPR_MODULUS_MUST_BE_NONNEGATIVE,
   EXPR_OK = 0
 };
 extern int lang;

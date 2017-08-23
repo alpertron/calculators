@@ -126,7 +126,7 @@ static char evalExpression(char *expr, int counter, BigInteger *ptrResult)
   return ComputeExpression(outputExpr, 1, ptrResult);
 }
 
-static void BatchError(char **pptrOutput, char *tofactorText, char *errorText)
+static void BatchError(char **pptrOutput, char *tofactorText, const char *errorText)
 {
   char *ptrOutput = *pptrOutput;
   stringToHTML(&ptrOutput, tofactorText);

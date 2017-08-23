@@ -491,11 +491,14 @@ void BigIntGcd(BigInteger *pArg1, BigInteger *pArg2, BigInteger *pResult)
   int nbrLimbs1 = pArg1->nbrLimbs;
   int nbrLimbs2 = pArg2->nbrLimbs;
   int power2;
-  if ((nbrLimbs1 == 1 && pArg1->limbs[0].x == 0) || (nbrLimbs2 == 1 && pArg2->limbs[0].x == 0))
-  {               // Some argument is zero, so the GCD is zero.
-    pResult->limbs[0].x = 0;
-    pResult->nbrLimbs = 1;
-    pResult->sign = SIGN_POSITIVE;
+  if (nbrLimbs1 == 1 && pArg1->limbs[0].x == 0)
+  {               // First argument is zero, so the GCD is second argument.
+    CopyBigInt(pResult, pArg2);
+    return;
+  }
+  if (nbrLimbs2 == 1 && pArg2->limbs[0].x == 0)
+  {               // Second argument is zero, so the GCD is first argument.
+    CopyBigInt(pResult, pArg1);
     return;
   }
   // Reuse Base and Power temporary variables.
@@ -1210,6 +1213,50 @@ int JacobiSymbol(int upper, int lower)
   return 0;
 }
 
+int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower)
+{
+  int t, power2;
+  BigInteger a, m;
+  BigInteger tmp;
+  CopyBigInt(&m, lower);               // m <- lower
+  DivideBigNbrByMaxPowerOf2(&power2, m.limbs, &m.nbrLimbs);
+  BigIntRemainder(upper, lower, &a);   // a <- upper % lower
+  t = 1;
+  if (upper->sign == SIGN_NEGATIVE)
+  {
+    a.sign = SIGN_POSITIVE;
+    if ((m.limbs[0].x & 3) == 3)
+    {
+      t = -1;
+    }
+  }
+  while (a.nbrLimbs > 1 || a.limbs[0].x != 0)  // a != 0
+  {
+    while ((a.limbs[0].x & 1) == 0)
+    {     // a is even.
+      subtractdivide(&a, 0, 2);         // a <- a / 2
+      if ((m.limbs[0].x & 7) == 3 || (m.limbs[0].x & 7) == 5)
+      {   // m = 3 or m = 5 (mod 8)
+        t = -t;
+      }
+    }
+    CopyBigInt(&tmp, &a);               // Exchange a and m.
+    CopyBigInt(&a, &m);
+    CopyBigInt(&m, &tmp);
+    if ((a.limbs[0].x & m.limbs[0].x & 3) == 3)
+    {   // a = 3 and m = 3 (mod 4)
+      t = -t;
+    }
+    BigIntRemainder(&a, &m, &tmp);
+    CopyBigInt(&a, &tmp);              // a <- a % m;   
+  }
+  if (m.nbrLimbs == 1 && m.limbs[0].x == 1)
+  {              // Absolute value of m is 1.
+    return t;
+  }
+  return 0;
+}
+
 static void Halve(limb *pValue)
 {
   if ((pValue[0].x & 1) == 0)
@@ -1438,4 +1485,15 @@ double getMantissa(limb *ptrLimb, int nbrLimbs)
     dN += (double)(ptrLimb - 3)->x * dInvLimb * dInvLimb;
   }
   return dN;
+}
+
+void BigIntPowerOf2(BigInteger *pResult, int expon)
+{
+  int nbrLimbs = expon / BITS_PER_GROUP;
+  if (nbrLimbs > 0)
+  {
+    memset(pResult->limbs, 0, nbrLimbs * sizeof(limb));
+  }
+  pResult->limbs[nbrLimbs].x = 1 << (expon % BITS_PER_GROUP);
+  pResult->sign = SIGN_POSITIVE;
 }
