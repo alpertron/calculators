@@ -16,7 +16,13 @@
       "src": "ecm-icon-4x.png",
       "type": "image/png",
       "sizes": "192x192"
+    },
+    {
+      "src": "ecm-icon-512px.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
+
   ],
   "theme_color": "#db5945",
   "background_color": "#ffffff",
