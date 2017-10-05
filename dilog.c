@@ -124,28 +124,31 @@ static void indicateCannotComputeLog(int indexBase, int indexExp)
   strcpy(textExp + strlen(textExp), ", exponent=");
   ptrText = textExp + strlen(textExp);
   int2dec(&ptrText, indexExp);
-  showText(textExp);
   DiscreteLogPeriod.sign = SIGN_NEGATIVE;
 }
 
 static int ComputeDLogModSubGroupOrder(int indexBase, int indexExp, BigInteger *Exponent, BigInteger *subGroupOrder)
 {
+  // Set tmpBase to 1 in Montgomery notation.
   memcpy(tmpBase.limbs, MontgomeryMultR1, NumberLength * sizeof(limb));
+  // Set Exponent to zero.
   Exponent->limbs[0].x = 0;
   Exponent->nbrLimbs = 1;
   Exponent->sign = SIGN_POSITIVE;
   for (;;)
   {
     if (TestBigNbrEqual(Exponent, subGroupOrder))
-    {
+    {    // All exponents have been tried and logarithm has not been found, so go out.
       indicateCannotComputeLog(indexBase, indexExp);
       return 0;
     }
     if (!memcmp(tmpBase.limbs, powerPHMontg, NumberLength * sizeof(limb)))
-    {
+    {    // Logarithm for this subgroup has been found. Go out.
       return 1;
     }
+         // Set tmpBase to next power.
     modmult(tmpBase.limbs, primRootPwr, tmpBase.limbs);
+         // Set next exponent.
     addbigint(Exponent, 1);
   }
 }
@@ -160,8 +163,7 @@ void DiscreteLogarithm(void)
   int index, expon;
   limb addA, addB, addA2, addB2;
   limb mult1, mult2;
-  limb magnitude;
-  limb firstLimit, secondLimit;
+  double magnitude, firstLimit, secondLimit;
   long long brentK, brentR;
   unsigned char EndPollardBrentRho;
   int nbrLimbs;
@@ -206,6 +208,7 @@ void DiscreteLogarithm(void)
     CompressBigInteger(nbrToFactor, &groupOrder);
     factor(&groupOrder, nbrToFactor, factorsGO, astFactorsGO, NULL);  // factor groupOrder.
     NbrFactors = astFactorsGO[0].multiplicity;
+    NumberLength = *ptrPrime;
     UncompressBigInteger(ptrPrime, &mod);
     logar.nbrLimbs = 1;             // logar <- 0
     logar.limbs[0].x = 0;
@@ -213,10 +216,20 @@ void DiscreteLogarithm(void)
     logarMult.nbrLimbs = 1;         // logarMult <- 1
     logarMult.limbs[0].x = 1;
     logarMult.sign = SIGN_POSITIVE;
+    NumberLength = mod.nbrLimbs;
     memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
     TestNbr[NumberLength].x = 0;
     //    yieldFreq = 1000000 / (NumberLength*NumberLength);
     GetMontgomeryParms(NumberLength);
+#if 0
+    char *ptrText = textExp;
+    strcpy(ptrText, "<p>NumberLength (2) = ");
+    ptrText = ptrText + strlen(ptrText);
+    int2dec(&ptrText, NumberLength);
+    strcpy(ptrText, "</p>");
+    DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+    return;
+#endif
     // Convert base and power to Montgomery notation.
     modmult(baseMontg, MontgomeryMultR2, baseMontg);
     modmult(powerMontg, MontgomeryMultR2, powerMontg);
@@ -224,18 +237,19 @@ void DiscreteLogarithm(void)
     if (NumberLength == 1)
     {
       leastSignificantDword = NumberLength - 1;
-      secondLimit.x = TestNbr[leastSignificantDword].x * 2 / 3;
+      firstLimit = (double)TestNbr[leastSignificantDword].x / 3;
     }
     else
     {
       leastSignificantDword = NumberLength - 2;
-      secondLimit.x = ((TestNbr[mostSignificantDword].x << BITS_PER_GROUP) +
-        TestNbr[leastSignificantDword].x) * 2 / 3;
+      firstLimit = ((double)TestNbr[mostSignificantDword].x * LIMB_RANGE +
+        TestNbr[leastSignificantDword].x) / 3;
     }
-    firstLimit.x = secondLimit.x / 2;
+    secondLimit = firstLimit * 2;
     for (indexBase = 0; indexBase < NbrFactors; indexBase++)
     {
       strcpy(textExp, "Computing discrete logarithm in subgroup of ");
+      NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
       UncompressBigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
       subGroupOrder.sign = SIGN_POSITIVE;
       Bin2Dec(subGroupOrder.limbs, textExp + strlen(textExp), subGroupOrder.nbrLimbs, groupLen);
@@ -268,10 +282,10 @@ void DiscreteLogarithm(void)
       if (nbrLimbs > 1)
       {
         dN += (double)subGroupOrder.limbs[nbrLimbs - 2].x / LIMB_RANGE;
-      }
-      if (nbrLimbs > 2)
-      {
-        dN += (double)subGroupOrder.limbs[nbrLimbs - 3].x / LIMB_RANGE / LIMB_RANGE;
+        if (nbrLimbs > 2)
+        {
+          dN += (double)subGroupOrder.limbs[nbrLimbs - 3].x / LIMB_RANGE / LIMB_RANGE;
+        }
       }
       CopyBigInt(&baseExp, &groupOrder);
       // Check whether base is primitive root.
@@ -282,7 +296,10 @@ void DiscreteLogarithm(void)
         logMachineState = CALC_LOG_BASE;
         // Find primitive root
         primRoot[0].x = 1;
-        memset(&primRoot[1], 0, (NumberLength - 1) * sizeof(limb));
+        if (NumberLength > 1)
+        {
+          memset(&primRoot[1], 0, (NumberLength - 1) * sizeof(limb));
+        }
         do
         {
           primRoot[0].x++;
@@ -358,19 +375,19 @@ void DiscreteLogarithm(void)
                 brentK++;
                 if (NumberLength == 1)
                 {
-                  magnitude.x = nbrR2[leastSignificantDword].x;
+                  magnitude = (double)nbrR2[leastSignificantDword].x;
                 }
                 else
                 {
-                  magnitude.x = (nbrR2[mostSignificantDword].x << BITS_PER_GROUP) +
+                  magnitude = (double)nbrR2[mostSignificantDword].x * LIMB_RANGE +
                     nbrR2[leastSignificantDword].x;
                 }
-                if (magnitude.x < firstLimit.x)
+                if (magnitude < firstLimit)
                 {
                   modmult(nbrR2, nbrPower, nbrROther);
                   addA2.x++;
                 }
-                else if (magnitude.x < secondLimit.x)
+                else if (magnitude < secondLimit)
                 {
                   modmult(nbrR2, nbrR2, nbrROther);
                   mult2.x *= 2;
@@ -386,7 +403,8 @@ void DiscreteLogarithm(void)
                 memcpy(nbrTemp, nbrR2, NumberLength * sizeof(limb));
                 memcpy(nbrR2, nbrROther, NumberLength * sizeof(limb));
                 memcpy(nbrROther, nbrTemp, NumberLength * sizeof(limb));
-                if (addA2.x >= LIMB_RANGE / 2 || addB2.x >= LIMB_RANGE / 2 || mult2.x >= LIMB_RANGE / 2)
+                if (addA2.x >= (int)(LIMB_RANGE / 2) || addB2.x >= (int)(LIMB_RANGE / 2) ||
+                    mult2.x >= (int)(LIMB_RANGE / 2))
                 {
                   // nbrA2 <- (nbrA2 * mult2 + addA2) % subGroupOrder
                   AdjustExponent(nbrA2, mult2, addA2, &subGroupOrder);
@@ -427,7 +445,7 @@ void DiscreteLogarithm(void)
               // Exponent <- (nbrB / nbrA) (mod subGroupOrder)
               UncompressLimbsBigInteger(nbrA, &bigNbrA);
               UncompressLimbsBigInteger(nbrB, &bigNbrB);
-              BigIntModularDivision(&bigNbrB, &bigNbrA, &subGroupOrder, &Exponent);
+              BigIntModularDivisionSaveTestNbr(&bigNbrB, &bigNbrA, &subGroupOrder, &Exponent);
               Exponent.sign = SIGN_POSITIVE;
               ExchangeMods();           // TestNbr <- modulus
             }
@@ -464,7 +482,7 @@ void DiscreteLogarithm(void)
             BigIntRemainder(&runningExpBase, &subGroupOrder, &tmpBase);
             if (tmpBase.nbrLimbs > 1 || tmpBase.limbs[0].x != 0)
             {    // runningExpBase is not multiple of subGroupOrder
-              BigIntModularDivision(&runningExp, &runningExpBase, &powSubGroupOrderBak, &tmpBase);
+              BigIntModularDivisionSaveTestNbr(&runningExp, &runningExpBase, &powSubGroupOrderBak, &tmpBase);
               CopyBigInt(&runningExp, &tmpBase);
               break;
             }
@@ -493,7 +511,7 @@ void DiscreteLogarithm(void)
           // When powSubGroupOrder is even, we cannot use Montgomery.
           if (powSubGroupOrder.limbs[0].x & 1)
           {          // powSubGroupOrder is odd.
-            BigIntModularDivision(&runningExp, &runningExpBase, &powSubGroupOrder, &tmpBase);
+            BigIntModularDivisionSaveTestNbr(&runningExp, &runningExpBase, &powSubGroupOrder, &tmpBase);
             CopyBigInt(&runningExp, &tmpBase);
           }
           else
@@ -581,7 +599,7 @@ void DiscreteLogarithm(void)
       BigIntDivide(&tmp2, &tmpBase, &bigNbrA);                             // s
       UncompressLimbsBigInteger(primRoot, &baseModGO);   // Use baseMontGO as temp var.
       BigIntDivide(&baseModGO, &tmpBase, &tmp2);                           // r
-      BigIntModularDivision(&tmp2, &bigNbrA, &bigNbrB, &tmpBase);          // m
+      BigIntModularDivisionSaveTestNbr(&tmp2, &bigNbrA, &bigNbrB, &tmpBase);          // m
       BigIntMultiply(&tmpBase, &logarMult, &tmp2);
       BigIntAdd(&logar, &tmp2, &logar);
       BigIntMultiply(&logarMult, &bigNbrB, &logarMult);
@@ -619,7 +637,7 @@ void DiscreteLogarithm(void)
     if (tmp2.limbs[0].x & 1)
     {     // h is odd.
       BigIntSubt(&logar, &DiscreteLog, &tmpBase);
-      BigIntModularDivision(&tmpBase, &DiscreteLogPeriod, &tmp2, &bigNbrA);
+      BigIntModularDivisionSaveTestNbr(&tmpBase, &DiscreteLogPeriod, &tmp2, &bigNbrA);
       BigIntMultiply(&DiscreteLogPeriod, &bigNbrA, &tmpBase);
       BigIntAdd(&tmpBase, &DiscreteLog, &tmpBase);
     }
@@ -627,7 +645,7 @@ void DiscreteLogarithm(void)
     {     // h is even.
       BigIntDivide(&DiscreteLogPeriod, &tmpBase, &bigNbrB);
       BigIntSubt(&DiscreteLog, &logar, &tmpBase);
-      BigIntModularDivision(&tmpBase, &logarMult, &bigNbrB, &bigNbrA);
+      BigIntModularDivisionSaveTestNbr(&tmpBase, &logarMult, &bigNbrB, &bigNbrA);
       BigIntMultiply(&logarMult, &bigNbrA, &tmpBase);
       BigIntAdd(&tmpBase, &logar, &tmpBase);
     }
@@ -685,17 +703,18 @@ static void ExchangeMods(void)
 // nbr = (nbr * mult + add) % subGroupOrder
 static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *subGroupOrder)
 {
-  limb Pr;
+  unsigned int carry;
   int j;
   int nbrLimbs = subGroupOrder->nbrLimbs;
-
-  Pr.x = add.x << BITS_PER_GROUP;
-  for (j = 0; j<nbrLimbs; j++)
+  (nbr + nbrLimbs)->x = 0;
+  MultBigNbrByInt((int *)nbr, mult.x, (int *)nbr, nbrLimbs+1);
+  carry = add.x;
+  for (j = 0; j<=nbrLimbs; j++)
   {
-    Pr.x = (Pr.x >> BITS_PER_GROUP) + mult.x*nbr[j].x;
-    nbr[j].x = Pr.x & MAX_VALUE_LIMB;
+    carry += nbr[j].x;
+    nbr[j].x = (int)(carry & MAX_VALUE_LIMB);
+    carry >>= BITS_PER_GROUP;
   }
-  nbr[j].x = (Pr.x >> BITS_PER_GROUP);
   AdjustModN(nbr, subGroupOrder->limbs, nbrLimbs);
 }
 
@@ -775,6 +794,8 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
     {
       strcat(ptrOutput, lang? "Ningún valor de <em>exp</em> satisface la congruencia.</p>":
                               "There is no such value of <em>exp</em>.</p>");
+      ptrOutput += strlen(ptrOutput);
+      strcpy(ptrOutput, textExp);
     }
     else
     {
@@ -794,11 +815,11 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
 }
 
 #ifdef __EMSCRIPTEN__
-void doWork(char* data, int size)
+void doWork(void)
 {
   int flags;
   int groupLen = 0;
-  char *ptrData = data;
+  char *ptrData = inputString;
   char *ptrPower, *ptrMod;
   groupLen = 0;
   while (*ptrData != ',')

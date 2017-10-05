@@ -29,7 +29,6 @@ static char stackOperators[PAREN_STACK_SIZE];
 static limb fibon2[MAX_LEN];
 extern limb MontgomeryR1[MAX_LEN];
 int lang;
-char inputString[1000000];
 char output[3000000];
 limb Mult1[MAX_LEN];
 limb Mult3[MAX_LEN];
@@ -674,9 +673,4 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
     }
   }              /* end switch */
   return EXPR_OK;
-}
-
-char *getInputStringPtr(void)
-{
-  return inputString;
 }

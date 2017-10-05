@@ -1,8 +1,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 12 de agosto de 2017."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 12 August 2017."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 28 de septiembre de 2017."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 28 September 2017."
 
 #ifdef __EMSCRIPTEN__
 void databack(char *data);

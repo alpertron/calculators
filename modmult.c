@@ -151,8 +151,8 @@ void GetMontgomeryParms(int len)
   }
 }
 
-// Compute Nbr <- Nbr mod TestNbr.
-// TestNbr has NumberLength limbs.
+// Compute Nbr <- Nbr mod Modulus.
+// Modulus has NumberLength limbs.
 void AdjustModN(limb *Nbr, limb *Modulus, int nbrLen)
 {
   int i, carry;
@@ -1907,4 +1907,17 @@ void BigIntModularDivisionPower2(BigInteger *Num, BigInteger *Den, BigInteger *m
   }
   quotient->nbrLimbs = NumberLength;
   NumberLength = NumberLengthBak;
+}
+
+void BigIntModularDivisionSaveTestNbr(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient)
+{
+  int NumberLengthBak = NumberLength;
+  memcpy(U, TestNbr, (NumberLength + 1) * sizeof(limb));
+  NumberLength = mod->nbrLimbs;
+  memcpy(TestNbr, mod->limbs, NumberLength * sizeof(limb));
+  TestNbr[NumberLength].x = 0;
+  GetMontgomeryParms(NumberLength);
+  BigIntModularDivision(Num, Den, mod, quotient);
+  NumberLength = NumberLengthBak;
+  memcpy(TestNbr, U, (NumberLength+1) * sizeof(limb));
 }

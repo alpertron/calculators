@@ -451,6 +451,16 @@ static int gcdIsOne(limb *value)
 {
   UncompressLimbsBigInteger(value, &Temp1);
   UncompressLimbsBigInteger(TestNbr, &Temp2);
+  // Return zero if value is zero or both numbers are equal.
+  if (Temp1.nbrLimbs == 1 && Temp1.limbs[0].x == 0)
+  {
+    return 0;
+  }
+  BigIntSubt(&Temp1, &Temp2, &Temp3);
+  if (Temp3.nbrLimbs == 1 && Temp3.limbs[0].x == 0)
+  {
+    return 0;
+  }
   BigIntGcd(&Temp1, &Temp2, &Temp3);
   CompressLimbsBigInteger(GD, &Temp3);
   if (Temp3.nbrLimbs == 1 && Temp3.limbs[0].x < 2)

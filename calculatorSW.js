@@ -16,7 +16,10 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-var version = '0001::';
+var version = '0006::';
+
+
+
 
 self.addEventListener("install", function(event)
 {  // Add requests to cache during service worker installation.
@@ -26,9 +29,9 @@ self.addEventListener("install", function(event)
         return cache.addAll([
           '/ECM.HTM',
           '/ECMC.HTM',
-          '/ecm0001.js',
-          '/ecmW0001.js',
-          '/ecm0001.wasm',
+          '/ecm0006.js',
+          '/ecmW0006.js',
+          '/ecm0006.wasm',
 		  '/ecm.json',
 		  '/ecm-icon-1x.png',
 		  '/ecm-icon-2x.png',
@@ -62,17 +65,18 @@ self.addEventListener("fetch", function(event) {
         return cached || networked;
 
         function fetchedFromNetwork(response) {
-          /* We copy the response before replying to the network request.
-             This is the response that will be stored on the ServiceWorker cache.
-          */
-          var cacheCopy = response.clone();
-          caches.open(version + 'pages').then(function add(cache) {
-              // Store the response for this request into cache
-              cache.put(event.request, cacheCopy);
-            })
-            .then(function() {
-            });
-
+		  if (response.url.startsWith("https://www.alpertron.com.ar")) {
+            /* We copy the response before replying to the network request.
+               This is the response that will be stored on the ServiceWorker cache.
+            */
+            var cacheCopy = response.clone();
+            caches.open(version + 'pages').then(function add(cache) {
+                // Store the response for this request into cache
+                cache.put(event.request, cacheCopy);
+              })
+              .then(function() {
+              });
+          }
           // Return the response so that the promise is settled in fulfillment.
           return response;
         }

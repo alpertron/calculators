@@ -136,22 +136,12 @@ static void EvaluateQuadraticPoly(BigInteger *pResult, BigInteger *pValue, int q
 
 static int fcubes(BigInteger *pArgument)
 {
-  int argumentNbrLimbs = pArgument->nbrLimbs;
-  limb *argumentLimbs = pArgument->limbs;
-  int ctr, mod18, modulus, i, mod83, mask;
+  int mod18, modulus, i, mod83, mask;
   int pow, exp;
   boolean converted = FALSE;
-  value = *pArgument;
+  CopyBigInt(&value, pArgument);
   // Compute argument mod 18.
-  mod18 = 0;
-  for (ctr = argumentNbrLimbs - 1; ctr >= 0; ctr--)
-  {
-    mod18 = ((mod18 << BITS_PER_GROUP) + (argumentLimbs + ctr)->x) % 18;
-  }
-  if (value.sign == SIGN_NEGATIVE && mod18 != 0)
-  {
-    mod18 = 18 - mod18;
-  }
+  mod18 = getRemainder(pArgument, 18);
   if (mod18 == 4 || mod18 == 5 || mod18 == 13 || mod18 == 14)
   {
     return -1;  // Applet does not work if the number is congruent to 4 or 5 (mod 9)
@@ -163,18 +153,8 @@ static int fcubes(BigInteger *pArgument)
   }
   for (i = 0; i<(int)(sizeof(sums)/sizeof(sums[0])); i += 10)
   {
-    int carry;
     modulus = sums[i];
-    carry = 0;
-    for (ctr = argumentNbrLimbs - 1; ctr >= 0; ctr--)
-    {
-      carry = ((carry << BITS_PER_GROUP) + (argumentLimbs + ctr)->x) % modulus;
-    }
-    if (value.sign == SIGN_NEGATIVE && carry != 0)
-    {
-      carry = modulus - carry;
-    }
-    if (carry == sums[i + 1])
+    if (getRemainder(pArgument, modulus) == sums[i + 1])
     {
       break;
     }
@@ -208,23 +188,20 @@ static int fcubes(BigInteger *pArgument)
       // Perform Pell solution of Demjanenko's theorem
       // Using these values of P, Q, R and S, a and b will be
       // always one and zero (mod 6) respectively.
-      // P <- -112488782561 = -((104*32768+25013)*32768+6881)
-      // Q <- -6578430178320 = -((6126*32768+20988)*32768+29712)
-      // R <- -1923517596 = -((1*32768+25933)*32768+3228)
+      // P <- -112488782561 = -(52*2^31+819632865)
+      // Q <- -6578430178320 = -(3063*2^31+687764496)
+      // R <- -1923517596 = -(0*2^31+1923517596)
       // S <- P
       // P1 <- 1
       // Q1 <- 0
       // R1 <- 0
       // S1 <- 1
-    P.limbs[2].x = S.limbs[2].x = 104;
-    P.limbs[1].x = S.limbs[1].x = 25013;
-    P.limbs[0].x = S.limbs[0].x = 6881;
-    Q.limbs[2].x = 6126;
-    Q.limbs[1].x = 20988;
-    Q.limbs[0].x = 29712;
-    R.limbs[2].x = 1;
-    R.limbs[1].x = 25933;
-    R.limbs[0].x = 3228;
+    P.limbs[1].x = S.limbs[1].x = 52;
+    P.limbs[0].x = S.limbs[0].x = 819632865;
+    Q.limbs[1].x = 3063;
+    Q.limbs[0].x = 687764496;
+    R.limbs[1].x = 0;
+    R.limbs[0].x = 1923517596;
     P.nbrLimbs = Q.nbrLimbs = R.nbrLimbs = S.nbrLimbs = 3;
     P.sign = Q.sign = R.sign = S.sign = SIGN_NEGATIVE;
     P1.limbs[0].x = S1.limbs[0].x = 1;

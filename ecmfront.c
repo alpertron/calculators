@@ -246,12 +246,15 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
           break;
         }
         rc = evalExpression(FactorExpr, counter, &tofactor);
-        if (rc == EXPR_OK && doFactorization)
+        if (rc == EXPR_OK)
         {
           NumberLength = tofactor.nbrLimbs;
           CompressBigInteger(nbrToFactor, &tofactor);
           Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
-          factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
+          if (doFactorization)
+          {
+            factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
+          }
         }
         SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
         if (evalExpression(NextExpr, counter, &result) != 0)
@@ -267,12 +270,15 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
     else
     {       // Factor expression (not loop).
       rc = ComputeExpression(ptrSrcString, 1, &tofactor);
-      if (rc == EXPR_OK && doFactorization)
+      if (rc == EXPR_OK)
       {
         NumberLength = tofactor.nbrLimbs;
         CompressBigInteger(nbrToFactor, &tofactor);
         Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
-        factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
+        if (doFactorization)
+        {
+          factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
+        }
       }
       SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
       counter = 2;
@@ -939,7 +945,7 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
     return;
   }
   rc = ComputeExpression(tofactorText, 1, &tofactor);
-  if (rc == EXPR_OK && doFactorization)
+  if (rc == EXPR_OK)
   {
     NumberLength = tofactor.nbrLimbs;
     CompressBigInteger(nbrToFactor, &tofactor);
@@ -947,7 +953,10 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
     lModularMult = 0;
 #endif
     Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
-    factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactors);
+    if (doFactorization)
+    {
+      factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactors);
+    }
   }
   ptrOutput = output;
   strcpy(output, "2<p>");
@@ -1016,6 +1025,9 @@ void doWork(void)
       flags = 2;  // do factorization, no batch mode.
     }
   }
+#ifdef __EMSCRIPTEN__
+  originalTenthSecond = tenths();
+#endif
   ecmFrontText(ptrData, flags & 2, ptrKnownFactors); // The 3rd parameter includes known factors.
 #ifdef __EMSCRIPTEN__
   databack(output);

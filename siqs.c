@@ -19,6 +19,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <stdint.h>
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
@@ -28,6 +29,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_LIMBS_SIQS         15
 #define MAX_FACTORS_RELATION   50
 #define LENGTH_OFFSET           0
+#define MAX_SIEVE_LIMIT    100000
 
 #ifdef __EMSCRIPTEN__
 extern char lowerText[], *ptrLowerText;
@@ -205,7 +207,7 @@ static void ShowSIQSInfo(int timeSieve, int congruencesFound, int matrixBLength,
 #endif
 
 static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
-  short SieveArray[],
+  short *SieveArray,
   int PolynomialIndex,
   int *biLinearCoeff,
   int NumberLength)
@@ -229,16 +231,16 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
   polyadd = (F1 & 2) != 0;
   if (polyadd)   // Adjust value of B as appropriate
   {                                // according to the Gray code.
-    AddBigNbr(biLinearCoeff, biLinearDelta[indexFactorA], biLinearCoeff,
+    AddBigNbrB(biLinearCoeff, biLinearDelta[indexFactorA], biLinearCoeff,
       NumberLength);
-    AddBigNbr(biLinearCoeff, biLinearDelta[indexFactorA], biLinearCoeff,
+    AddBigNbrB(biLinearCoeff, biLinearDelta[indexFactorA], biLinearCoeff,
       NumberLength);
   }
   else
   {
-    SubtractBigNbr(biLinearCoeff, biLinearDelta[indexFactorA],
+    SubtractBigNbrB(biLinearCoeff, biLinearDelta[indexFactorA],
       biLinearCoeff, NumberLength);
-    SubtractBigNbr(biLinearCoeff, biLinearDelta[indexFactorA],
+    SubtractBigNbrB(biLinearCoeff, biLinearDelta[indexFactorA],
       biLinearCoeff, NumberLength);
   }
   indexFactorA--;
@@ -248,23 +250,23 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
     rowPrimeSieveData->Bainv2[indexFactorA];
   if (((rowPrimeSieveData->soln1 += F1) & 1) == 0)
   {
-    SieveArray[0] = (short)(logar2 - threshold);
-    SieveArray[1] = (short)(-threshold);
+    *(SieveArray + 0) = (short)(logar2 - threshold);
+    *(SieveArray + 1) = (short)(-threshold);
   }
   else
   {
-    SieveArray[0] = (short)(-threshold);
-    SieveArray[1] = (short)(logar2 - threshold);
+    *(SieveArray + 0) = (short)(-threshold);
+    *(SieveArray + 1) = (short)(logar2 - threshold);
   }
   if (((rowPrimeSieveData->soln1 + rowPrimeSieveData->Bainv2_0) & 1) == 0)
   {
-    SieveArray[0] += (short)((logar2 - threshold) << 8);
-    SieveArray[1] += (short)((-threshold) << 8);
+    *(SieveArray + 0) += (short)((logar2 - threshold) << 8);
+    *(SieveArray + 1) += (short)((-threshold) << 8);
   }
   else
   {
-    SieveArray[0] += (short)((-threshold) << 8);
-    SieveArray[1] += (short)((logar2 - threshold) << 8);
+    *(SieveArray + 0) += (short)((-threshold) << 8);
+    *(SieveArray + 1) += (short)((logar2 - threshold) << 8);
   }
   F2 = 2;
   index = 2;
@@ -280,10 +282,10 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
     F4 = F2;
     while (F4 * 2 <= F3)
     {
-      memcpy(&SieveArray[F4], &SieveArray[0], F4*sizeof(SieveArray[0]));
+      memcpy(SieveArray + F4, SieveArray, F4*sizeof(*SieveArray));
       F4 *= 2;
     }
-    memcpy(&SieveArray[F4], &SieveArray[0], (F3-F4) * sizeof(SieveArray[0]));
+    memcpy(SieveArray + F4, SieveArray, (F3-F4) * sizeof(*SieveArray));
     if (F3 == X1 + 1)
     {
       break;
@@ -302,14 +304,14 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
     rowPrimeSieveData->soln1 = index2 += currentPrime & (index2 >> 31);
     for (; index2 < F3; index2 += currentPrime)
     {
-      SieveArray[index2] += logPrimeEvenPoly;
+      *(SieveArray + index2) += logPrimeEvenPoly;
     }
     for (index2 = (rowPrimeSieveData->soln1 + currentPrime -
       rowPrimeSieveData->Bainv2_0) % currentPrime;
       index2 < F3;
       index2 += currentPrime)
     {
-      SieveArray[index2] += logPrimeOddPoly;
+      *(SieveArray + index2) += logPrimeOddPoly;
     }
     if (currentPrime != multiplier)
     {
@@ -318,14 +320,14 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         index2 < F3;
         index2 += currentPrime)
       {
-        SieveArray[index2] += logPrimeEvenPoly;
+        *(SieveArray + index2) += logPrimeEvenPoly;
       }
       for (index2 = (F1 + currentPrime -
         rowPrimeSieveData->Bainv2_0) % currentPrime;
         index2 < F3;
         index2 += currentPrime)
       {
-        SieveArray[index2] += logPrimeOddPoly;
+        *(SieveArray + index2) += logPrimeOddPoly;
       }
     }
     index++;
@@ -399,22 +401,22 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       I3 = I2 + currentPrime;
       do
       {
-        SieveArray[index2] += logPrimeEvenPoly;
-        SieveArray[index2 + currentPrime] += logPrimeEvenPoly;
-        SieveArray[index2 + F2] += logPrimeEvenPoly;
-        SieveArray[index2 + F3] += logPrimeEvenPoly;
-        SieveArray[index2 + G0] += logPrimeEvenPoly;
-        SieveArray[index2 + G1] += logPrimeEvenPoly;
-        SieveArray[index2 + G2] += logPrimeEvenPoly;
-        SieveArray[index2 + G3] += logPrimeEvenPoly;
-        SieveArray[index2 + H0] += logPrimeOddPoly;
-        SieveArray[index2 + H1] += logPrimeOddPoly;
-        SieveArray[index2 + H2] += logPrimeOddPoly;
-        SieveArray[index2 + H3] += logPrimeOddPoly;
-        SieveArray[index2 + I0] += logPrimeOddPoly;
-        SieveArray[index2 + I1] += logPrimeOddPoly;
-        SieveArray[index2 + I2] += logPrimeOddPoly;
-        SieveArray[index2 + I3] += logPrimeOddPoly;
+        *(SieveArray + index2) += logPrimeEvenPoly;
+        *(SieveArray + index2 + currentPrime) += logPrimeEvenPoly;
+        *(SieveArray + index2 + F2) += logPrimeEvenPoly;
+        *(SieveArray + index2 + F3) += logPrimeEvenPoly;
+        *(SieveArray + index2 + G0) += logPrimeEvenPoly;
+        *(SieveArray + index2 + G1) += logPrimeEvenPoly;
+        *(SieveArray + index2 + G2) += logPrimeEvenPoly;
+        *(SieveArray + index2 + G3) += logPrimeEvenPoly;
+        *(SieveArray + index2 + H0) += logPrimeOddPoly;
+        *(SieveArray + index2 + H1) += logPrimeOddPoly;
+        *(SieveArray + index2 + H2) += logPrimeOddPoly;
+        *(SieveArray + index2 + H3) += logPrimeOddPoly;
+        *(SieveArray + index2 + I0) += logPrimeOddPoly;
+        *(SieveArray + index2 + I1) += logPrimeOddPoly;
+        *(SieveArray + index2 + I2) += logPrimeOddPoly;
+        *(SieveArray + index2 + I3) += logPrimeOddPoly;
       } while ((index2 -= F4) >= 0);
     }
     for (; index < secondLimit; index++)
@@ -439,54 +441,54 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         index2 = (rowPrimeSieveData->soln1 = F1);
         do
         {
-          SieveArray[index2] += logPrimeEvenPoly;
-          SieveArray[index2 + currentPrime] += logPrimeEvenPoly;
-          SieveArray[index2 + F2] += logPrimeEvenPoly;
-          SieveArray[index2 + F3] += logPrimeEvenPoly;
+          *(SieveArray + index2) += logPrimeEvenPoly;
+          *(SieveArray + index2 + currentPrime) += logPrimeEvenPoly;
+          *(SieveArray + index2 + F2) += logPrimeEvenPoly;
+          *(SieveArray + index2 + F3) += logPrimeEvenPoly;
         } while ((index2 += F4) <= X2);
         for (; index2 <= X1; index2 += currentPrime)
         {
-          SieveArray[index2] += logPrimeEvenPoly;
+          *(SieveArray + index2) += logPrimeEvenPoly;
         }
         index2 = F1 - rowPrimeSieveData->Bainv2_0;
         index2 += (index2 >> 31) & currentPrime;
         do
         {
-          SieveArray[index2] += logPrimeOddPoly;
-          SieveArray[index2 + currentPrime] += logPrimeOddPoly;
-          SieveArray[index2 + F2] += logPrimeOddPoly;
-          SieveArray[index2 + F3] += logPrimeOddPoly;
+          *(SieveArray + index2) += logPrimeOddPoly;
+          *(SieveArray + index2 + currentPrime) += logPrimeOddPoly;
+          *(SieveArray + index2 + F2) += logPrimeOddPoly;
+          *(SieveArray + index2 + F3) += logPrimeOddPoly;
         } while ((index2 += F4) <= X2);
         for (; index2 <= X1; index2 += currentPrime)
         {
-          SieveArray[index2] += logPrimeOddPoly;
+          *(SieveArray + index2) += logPrimeOddPoly;
         }
         F1 -= rowPrimeSieveData->difsoln;
         F1 += (F1 >> 31) & currentPrime;
         index2 = F1;
         do
         {
-          SieveArray[index2] += logPrimeEvenPoly;
-          SieveArray[index2 + currentPrime] += logPrimeEvenPoly;
-          SieveArray[index2 + F2] += logPrimeEvenPoly;
-          SieveArray[index2 + F3] += logPrimeEvenPoly;
+          *(SieveArray + index2) += logPrimeEvenPoly;
+          *(SieveArray + index2 + currentPrime) += logPrimeEvenPoly;
+          *(SieveArray + index2 + F2) += logPrimeEvenPoly;
+          *(SieveArray + index2 + F3) += logPrimeEvenPoly;
         } while ((index2 += F4) <= X2);
         for (; index2 <= X1; index2 += currentPrime)
         {
-          SieveArray[index2] += logPrimeEvenPoly;
+          *(SieveArray + index2) += logPrimeEvenPoly;
         }
         index2 = F1 - rowPrimeSieveData->Bainv2_0;
         index2 += (index2 >> 31) & currentPrime;
         do
         {
-          SieveArray[index2] += logPrimeOddPoly;
-          SieveArray[index2 + currentPrime] += logPrimeOddPoly;
-          SieveArray[index2 + F2] += logPrimeOddPoly;
-          SieveArray[index2 + F3] += logPrimeOddPoly;
+          *(SieveArray + index2) += logPrimeOddPoly;
+          *(SieveArray + index2 + currentPrime) += logPrimeOddPoly;
+          *(SieveArray + index2 + F2) += logPrimeOddPoly;
+          *(SieveArray + index2 + F3) += logPrimeOddPoly;
         } while ((index2 += F4) <= X2);
         for (; index2 <= X1; index2 += currentPrime)
         {
-          SieveArray[index2] += logPrimeOddPoly;
+          *(SieveArray + index2) += logPrimeOddPoly;
         }
       }
     }
@@ -505,24 +507,24 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       index2 = (rowPrimeSieveData->soln1 = F2);
       do
       {
-        SieveArray[index2] += logPrimeEvenPoly;
+        *(SieveArray + index2) += logPrimeEvenPoly;
       } while ((index2 += currentPrime) <= X1);
       F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
       F1 += currentPrime & (F1 >> 31);
       do
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       } while ((F1 += currentPrime) <= X1);
       F2 -= rowPrimeSieveData->difsoln;
       index2 = F2 += currentPrime & (F2 >> 31);
       do
       {
-        SieveArray[index2] += logPrimeEvenPoly;
+        *(SieveArray + index2) += logPrimeEvenPoly;
       } while ((index2 += currentPrime) <= X1);
       F2 += (currentPrime & ((F2 - F3) >> 31)) - F3;
       do
       {
-        SieveArray[F2] += logPrimeOddPoly;
+        *(SieveArray + F2) += logPrimeOddPoly;
       } while ((F2 += currentPrime) <= X1);
     }
     for (; index < nbrPrimes2; index++)
@@ -538,86 +540,86 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       F2 = rowPrimeSieveData->soln1 - rowPrimeSieveData->Bainv2[indexFactorA];
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       }
       F2 -= rowPrimeSieveData->difsoln;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       if ((F2 += (currentPrime & ((F2 - F3) >> 31)) - F3) < X1)
       {
-        SieveArray[F2] += logPrimeOddPoly;
+        *(SieveArray + F2) += logPrimeOddPoly;
       }
       rowPrimeSieveData = primeSieveData + ++index;
       currentPrime = rowPrimeSieveData->value;
       F2 = rowPrimeSieveData->soln1 - rowPrimeSieveData->Bainv2[indexFactorA];
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       }
       F2 -= rowPrimeSieveData->difsoln;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       if ((F2 += (currentPrime & ((F2 - F3) >> 31)) - F3) < X1)
       {
-        SieveArray[F2] += logPrimeOddPoly;
+        *(SieveArray + F2) += logPrimeOddPoly;
       }
       rowPrimeSieveData = primeSieveData + ++index;
       currentPrime = rowPrimeSieveData->value;
       F2 = rowPrimeSieveData->soln1 - rowPrimeSieveData->Bainv2[indexFactorA];
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       }
       F2 -= rowPrimeSieveData->difsoln;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F2 -= F3;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeOddPoly;
+        *(SieveArray + F2) += logPrimeOddPoly;
       }
       rowPrimeSieveData = primeSieveData + ++index;
       currentPrime = rowPrimeSieveData->value;
       F2 = rowPrimeSieveData->soln1 - rowPrimeSieveData->Bainv2[indexFactorA];
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       }
       F2 -= rowPrimeSieveData->difsoln;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F2 -= F3;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeOddPoly;
+        *(SieveArray + F2) += logPrimeOddPoly;
       }
     }
     for (; index < nbrFactorBasePrimes; index++)
@@ -633,22 +635,22 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       F2 = rowPrimeSieveData->soln1 - rowPrimeSieveData->Bainv2[indexFactorA];
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       }
       F2 -= rowPrimeSieveData->difsoln;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F2 -= F3;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeOddPoly;
+        *(SieveArray + F2) += logPrimeOddPoly;
       }
     }
   }
@@ -706,22 +708,22 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       I3 = I2 + currentPrime;
       do
       {
-        SieveArray[index2] += logPrimeEvenPoly;
-        SieveArray[index2 + currentPrime] += logPrimeEvenPoly;
-        SieveArray[index2 + F2] += logPrimeEvenPoly;
-        SieveArray[index2 + F3] += logPrimeEvenPoly;
-        SieveArray[index2 + G0] += logPrimeEvenPoly;
-        SieveArray[index2 + G1] += logPrimeEvenPoly;
-        SieveArray[index2 + G2] += logPrimeEvenPoly;
-        SieveArray[index2 + G3] += logPrimeEvenPoly;
-        SieveArray[index2 + H0] += logPrimeOddPoly;
-        SieveArray[index2 + H1] += logPrimeOddPoly;
-        SieveArray[index2 + H2] += logPrimeOddPoly;
-        SieveArray[index2 + H3] += logPrimeOddPoly;
-        SieveArray[index2 + I0] += logPrimeOddPoly;
-        SieveArray[index2 + I1] += logPrimeOddPoly;
-        SieveArray[index2 + I2] += logPrimeOddPoly;
-        SieveArray[index2 + I3] += logPrimeOddPoly;
+        *(SieveArray + index2) += logPrimeEvenPoly;
+        *(SieveArray + index2 + currentPrime) += logPrimeEvenPoly;
+        *(SieveArray + index2 + F2) += logPrimeEvenPoly;
+        *(SieveArray + index2 + F3) += logPrimeEvenPoly;
+        *(SieveArray + index2 + G0) += logPrimeEvenPoly;
+        *(SieveArray + index2 + G1) += logPrimeEvenPoly;
+        *(SieveArray + index2 + G2) += logPrimeEvenPoly;
+        *(SieveArray + index2 + G3) += logPrimeEvenPoly;
+        *(SieveArray + index2 + H0) += logPrimeOddPoly;
+        *(SieveArray + index2 + H1) += logPrimeOddPoly;
+        *(SieveArray + index2 + H2) += logPrimeOddPoly;
+        *(SieveArray + index2 + H3) += logPrimeOddPoly;
+        *(SieveArray + index2 + I0) += logPrimeOddPoly;
+        *(SieveArray + index2 + I1) += logPrimeOddPoly;
+        *(SieveArray + index2 + I2) += logPrimeOddPoly;
+        *(SieveArray + index2 + I3) += logPrimeOddPoly;
       } while ((index2 -= F4) >= 0);
     }
     for (; index < secondLimit; index++)
@@ -746,54 +748,54 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         index2 = (rowPrimeSieveData->soln1 = F1);
         do
         {
-          SieveArray[index2] += logPrimeEvenPoly;
-          SieveArray[index2 + currentPrime] += logPrimeEvenPoly;
-          SieveArray[index2 + F2] += logPrimeEvenPoly;
-          SieveArray[index2 + F3] += logPrimeEvenPoly;
+          *(SieveArray + index2) += logPrimeEvenPoly;
+          *(SieveArray + index2 + currentPrime) += logPrimeEvenPoly;
+          *(SieveArray + index2 + F2) += logPrimeEvenPoly;
+          *(SieveArray + index2 + F3) += logPrimeEvenPoly;
         } while ((index2 += F4) <= X2);
         for (; index2 <= X1; index2 += currentPrime)
         {
-          SieveArray[index2] += logPrimeEvenPoly;
+          *(SieveArray + index2) += logPrimeEvenPoly;
         }
         index2 = F1 - rowPrimeSieveData->Bainv2_0;
         index2 += (index2 >> 31) & currentPrime;
         do
         {
-          SieveArray[index2] += logPrimeOddPoly;
-          SieveArray[index2 + currentPrime] += logPrimeOddPoly;
-          SieveArray[index2 + F2] += logPrimeOddPoly;
-          SieveArray[index2 + F3] += logPrimeOddPoly;
+          *(SieveArray + index2) += logPrimeOddPoly;
+          *(SieveArray + index2 + currentPrime) += logPrimeOddPoly;
+          *(SieveArray + index2 + F2) += logPrimeOddPoly;
+          *(SieveArray + index2 + F3) += logPrimeOddPoly;
         } while ((index2 += F4) <= X2);
         for (; index2 <= X1; index2 += currentPrime)
         {
-          SieveArray[index2] += logPrimeOddPoly;
+          *(SieveArray + index2) += logPrimeOddPoly;
         }
         F1 -= rowPrimeSieveData->difsoln;
         F1 += (F1 >> 31) & currentPrime;
         index2 = F1;
         do
         {
-          SieveArray[index2] += logPrimeEvenPoly;
-          SieveArray[index2 + currentPrime] += logPrimeEvenPoly;
-          SieveArray[index2 + F2] += logPrimeEvenPoly;
-          SieveArray[index2 + F3] += logPrimeEvenPoly;
+          *(SieveArray + index2) += logPrimeEvenPoly;
+          *(SieveArray + index2 + currentPrime) += logPrimeEvenPoly;
+          *(SieveArray + index2 + F2) += logPrimeEvenPoly;
+          *(SieveArray + index2 + F3) += logPrimeEvenPoly;
         } while ((index2 += F4) <= X2);
         for (; index2 <= X1; index2 += currentPrime)
         {
-          SieveArray[index2] += logPrimeEvenPoly;
+          *(SieveArray + index2) += logPrimeEvenPoly;
         }
         index2 = F1 - rowPrimeSieveData->Bainv2_0;
         index2 += (index2 >> 31) & currentPrime;
         do
         {
-          SieveArray[index2] += logPrimeOddPoly;
-          SieveArray[index2 + currentPrime] += logPrimeOddPoly;
-          SieveArray[index2 + F2] += logPrimeOddPoly;
-          SieveArray[index2 + F3] += logPrimeOddPoly;
+          *(SieveArray + index2) += logPrimeOddPoly;
+          *(SieveArray + index2 + currentPrime) += logPrimeOddPoly;
+          *(SieveArray + index2 + F2) += logPrimeOddPoly;
+          *(SieveArray + index2 + F3) += logPrimeOddPoly;
         } while ((index2 += F4) <= X2);
         for (; index2 <= X1; index2 += currentPrime)
         {
-          SieveArray[index2] += logPrimeOddPoly;
+          *(SieveArray + index2) += logPrimeOddPoly;
         }
       }
     }
@@ -812,25 +814,25 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       index2 = (rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31)));
       do
       {
-        SieveArray[index2] += logPrimeEvenPoly;
+        *(SieveArray + index2) += logPrimeEvenPoly;
       } while ((index2 += currentPrime) <= X1);
       F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
       F1 += currentPrime & (F1 >> 31);
       do
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       } while ((F1 += currentPrime) <= X1);
       F2 -= rowPrimeSieveData->difsoln;
       F1 = F2 += currentPrime & (F2 >> 31);
       do
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       } while ((F2 += currentPrime) <= X1);
       F1 -= F3;
       F1 += currentPrime & (F1 >> 31);
       do
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       } while ((F1 += currentPrime) <= X1);
     }
     for (; index < nbrPrimes2; index++)
@@ -847,22 +849,22 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         rowPrimeSieveData->Bainv2[indexFactorA] - currentPrime;
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       }
       F2 -= rowPrimeSieveData->difsoln;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F2 -= F3;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeOddPoly;
+        *(SieveArray + F2) += logPrimeOddPoly;
       }
       rowPrimeSieveData = primeSieveData + ++index;
       currentPrime = rowPrimeSieveData->value;
@@ -870,22 +872,22 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         rowPrimeSieveData->Bainv2[indexFactorA] - currentPrime;
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       }
       F2 -= rowPrimeSieveData->difsoln;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F2 -= F3;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeOddPoly;
+        *(SieveArray + F2) += logPrimeOddPoly;
       }
       rowPrimeSieveData = primeSieveData + ++index;
       currentPrime = rowPrimeSieveData->value;
@@ -893,22 +895,22 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         rowPrimeSieveData->Bainv2[indexFactorA] - currentPrime;
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       }
       F2 -= rowPrimeSieveData->difsoln;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F2 -= F3;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeOddPoly;
+        *(SieveArray + F2) += logPrimeOddPoly;
       }
       rowPrimeSieveData = primeSieveData + ++index;
       currentPrime = rowPrimeSieveData->value;
@@ -916,22 +918,22 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         rowPrimeSieveData->Bainv2[indexFactorA] - currentPrime;
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       }
       F2 -= rowPrimeSieveData->difsoln;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F2 -= F3;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeOddPoly;
+        *(SieveArray + F2) += logPrimeOddPoly;
       }
     }
     for (; index < nbrFactorBasePrimes; index++)
@@ -948,22 +950,22 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         rowPrimeSieveData->Bainv2[indexFactorA] - currentPrime;
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
-        SieveArray[F1] += logPrimeOddPoly;
+        *(SieveArray + F1) += logPrimeOddPoly;
       }
       F2 -= rowPrimeSieveData->difsoln;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeEvenPoly;
+        *(SieveArray + F2) += logPrimeEvenPoly;
       }
       F2 -= F3;
       if ((F2 += currentPrime & (F2 >> 31)) < X1)
       {
-        SieveArray[F2] += logPrimeOddPoly;
+        *(SieveArray + F2) += logPrimeOddPoly;
       }
     }
   }
@@ -1205,19 +1207,19 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         switch (NumberLengthDividend)
         {
         case 7:
-          mostSignificantLimbZero = (biR6 == 0 && biR5 < HALF_INT_RANGE);
+          mostSignificantLimbZero = (biR6 == 0);
           break;
         case 6:
-          mostSignificantLimbZero = (biR5 == 0 && biR4 < HALF_INT_RANGE);
+          mostSignificantLimbZero = (biR5 == 0);
           break;
         case 5:
-          mostSignificantLimbZero = (biR4 == 0 && biR3 < HALF_INT_RANGE);
+          mostSignificantLimbZero = (biR4 == 0);
           break;
         case 4:
-          mostSignificantLimbZero = (biR3 == 0 && biR2 < HALF_INT_RANGE);
+          mostSignificantLimbZero = (biR3 == 0);
           break;
         case 3:
-          mostSignificantLimbZero = (biR2 == 0 && biR1 < HALF_INT_RANGE);
+          mostSignificantLimbZero = (biR2 == 0);
           break;
         case 2:    // Criteria is to fit in a double (52 bits).
           mostSignificantLimbZero = (biR1 < (1 << (52 - BITS_PER_INT_GROUP)));
@@ -1496,19 +1498,19 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         switch (NumberLengthDividend)
         {
         case 7:
-          mostSignificantLimbZero = (biR6 == 0 && biR5 < HALF_INT_RANGE);
+          mostSignificantLimbZero = (biR6 == 0);
           break;
         case 6:
-          mostSignificantLimbZero = (biR5 == 0 && biR4 < HALF_INT_RANGE);
+          mostSignificantLimbZero = (biR5 == 0);
           break;
         case 5:
-          mostSignificantLimbZero = (biR4 == 0 && biR3 < HALF_INT_RANGE);
+          mostSignificantLimbZero = (biR4 == 0);
           break;
         case 4:
-          mostSignificantLimbZero = (biR3 == 0 && biR2 < HALF_INT_RANGE);
+          mostSignificantLimbZero = (biR3 == 0);
           break;
         case 3:
-          mostSignificantLimbZero = (biR2 == 0 && biR1 < HALF_INT_RANGE);
+          mostSignificantLimbZero = (biR2 == 0);
           break;
         case 2:    // Criteria is to fit in a double (52 bits).
           mostSignificantLimbZero = (biR1 < (1 << (52 - BITS_PER_INT_GROUP)));
@@ -1718,16 +1720,16 @@ static void SmoothRelationFound(
   IntToBigNbr(1, biR, NumberLength);
   IntToBigNbr(positive ? 1 : -1, biT, NumberLength);
   MultBigNbrByInt(biQuadrCoeff, index2 - SieveLimit, biU,
-    NumberLength);                     // Ax
-  AddBigNbr(biU, biLinearCoeff, biU, NumberLength);         // Ax+B
+    NumberLength);                                           // Ax
+  AddBigNbrB(biU, biLinearCoeff, biU, NumberLength);          // Ax+B
   if (oddPolynomial)
   {
-    SubtractBigNbr(biU, biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
-    SubtractBigNbr(biU, biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
+    SubtractBigNbrB(biU, biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
+    SubtractBigNbrB(biU, biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
   }
-  if ((biU[NumberLength - 1] & HALF_INT_RANGE) != 0)
+  if ((uint32_t)biU[NumberLength - 1] >= (uint32_t)LIMB_RANGE)
   {                                        // If number is negative
-    ChSignBigNbr(biU, NumberLength);   // make it positive.
+    ChSignBigNbr(biU, NumberLength);       // make it positive.
   }
   for (index = 1; index < nbrSquares; index++)
   {
@@ -1812,20 +1814,19 @@ static void PartialRelationFound(
       // biT = old (Ax+B)^2.
       MultBigNbr(biV, biV, biT, NumberLength);
       // biT = old (Ax+B)^2 - N.
-      SubtractBigNbr(biT, Modulus, biT, NumberLength);
+      SubtractBigNbrB(biT, Modulus, biT, NumberLength);
       if (oldDivid < 0)
       {
         rowPartials[nbrFactorsPartial++] = 0; // Insert -1 as a factor.
       }
-      if (biT[NumberLength - 1] >= HALF_INT_RANGE)
+      if ((uint32_t)biT[NumberLength - 1] >= (uint32_t)LIMB_RANGE)
       {
         ChSignBigNbr(biT, NumberLength);   // Make it positive.
       }
       NumberLengthDivid = NumberLength;
       // The number is multiple of the big prime, so divide by it.
       DivBigNbrByInt(biT, newDivid, biT, NumberLengthDivid);
-      if (biT[NumberLengthDivid - 1] == 0 &&
-        biT[NumberLengthDivid - 2] < HALF_INT_RANGE)
+      if (biT[NumberLengthDivid - 1] == 0)
       {
         NumberLengthDivid--;
       }
@@ -1834,8 +1835,7 @@ static void PartialRelationFound(
         DivBigNbrByInt(biT,
           primeTrialDivisionData[indexFactorsA[index]].value, biT,
           NumberLengthDivid);
-        if (biT[NumberLengthDivid - 1] == 0 &&
-          biT[NumberLengthDivid - 2] < HALF_INT_RANGE)
+        if (biT[NumberLengthDivid - 1] == 0)
         {
           NumberLengthDivid--;
         }
@@ -1920,8 +1920,7 @@ static void PartialRelationFound(
               break;
             }
           }
-          else if (biT[NumberLengthDivid - 1] == 0 &&
-            biT[NumberLengthDivid - 2] < HALF_INT_RANGE)
+          else if (biT[NumberLengthDivid - 1] == 0)
           {
             NumberLengthDivid--;
           }
@@ -1931,15 +1930,15 @@ static void PartialRelationFound(
           rowPartials[nbrFactorsPartial++] = index;
         }
       }
-      MultBigNbrByInt(biQuadrCoeff, index2 - SieveLimit, biT,
+      MultBigNbrByIntB(biQuadrCoeff, index2 - SieveLimit, biT,
         NumberLength);
-      AddBigNbr(biT, biLinearCoeff, biT, NumberLength); // biT = Ax+B
+      AddBigNbrB(biT, biLinearCoeff, biT, NumberLength); // biT = Ax+B
       if (oddPolynomial)
       {                                                     // Ax+B (odd)
-        SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
-        SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
+        SubtractBigNbrB(biT, biLinearDelta[0], biT, NumberLength);
+        SubtractBigNbrB(biT, biLinearDelta[0], biT, NumberLength);
       }
-      if ((biT[NumberLength - 1] & HALF_INT_RANGE) != 0)
+      if ((uint32_t)biT[NumberLength - 1] >= (uint32_t)LIMB_RANGE)
       {                                        // If number is negative
         ChSignBigNbr(biT, NumberLength);   // make it positive.
       }
@@ -2010,15 +2009,15 @@ static void PartialRelationFound(
       rowPartial[0] = (positive ? newDivid : -newDivid);
       // Indicate last index with this hash.
       rowPartial[1] = -1;
-      MultBigNbrByInt(biQuadrCoeff, index2 - SieveLimit, biT,
+      MultBigNbrByIntB(biQuadrCoeff, index2 - SieveLimit, biT,
         NumberLength);
-      AddBigNbr(biT, biLinearCoeff, biT, NumberLength); // biT = Ax+B
+      AddBigNbrB(biT, biLinearCoeff, biT, NumberLength); // biT = Ax+B
       if (oddPolynomial)
       {                                                     // Ax+B (odd)
-        SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
-        SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
+        SubtractBigNbrB(biT, biLinearDelta[0], biT, NumberLength);
+        SubtractBigNbrB(biT, biLinearDelta[0], biT, NumberLength);
       }
-      if ((biT[NumberLength - 1] & HALF_INT_RANGE) != 0)
+      if ((uint32_t)biT[NumberLength - 1] >= (uint32_t)LIMB_RANGE)
       {                      // If square root is negative convert to positive.
         ChSignBigNbr(biT, NumberLength);
       }
@@ -2049,9 +2048,13 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   int nbrColumns;
 
   trialDivisions++;
+  if (trialDivisions == 496)
+  {
+    trialDivisions = 496;
+  }
   MultBigNbrByInt(biQuadrCoeff, index2 - SieveLimit, biT,
     NumberLength);                                      // Ax
-  AddBigNbr(biT, biLinearCoeff, biT, NumberLength);     // Ax+B
+  AddBigNbrB(biT, biLinearCoeff, biT, NumberLength);    // Ax+B
   if (oddPolynomial)
   {                                                     // Ax+B (odd)
     SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
@@ -2059,12 +2062,12 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   }
   MultBigNbr(biT, biT, biDividend, NumberLength);       // (Ax+B)^2
                                                         // To factor: (Ax+B)^2-N
-  SubtractBigNbr(biDividend, Modulus, biDividend, NumberLength);
+  SubtractBigNbrB(biDividend, Modulus, biDividend, NumberLength);
   /* factor biDividend */
 
   NumberLengthDivid = NumberLength; /* Number length for dividend */
   positive = TRUE;
-  if (biDividend[NumberLengthDivid - 1] >= HALF_INT_RANGE)
+  if ((uint32_t)biDividend[NumberLengthDivid - 1] >= (uint32_t)LIMB_RANGE)
   { /* Negative */
     positive = FALSE;
     ChSignBigNbr(biDividend, NumberLengthDivid); // Convert to positive
@@ -2074,8 +2077,7 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   {
     DivBigNbrByInt(biDividend, afact[index], biDividend,
       NumberLengthDivid);
-    if ((biDividend[NumberLengthDivid - 1] == 0
-      && biDividend[NumberLengthDivid - 2] < HALF_INT_RANGE))
+    if (biDividend[NumberLengthDivid - 1] == 0)
     {
       NumberLengthDivid--;
     }
@@ -2197,6 +2199,10 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   Temp = logLimbs(pNbrToFactor, origNumberLength);
   nbrFactorBasePrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.318);
   SieveLimit = (int)exp(8.5 + 0.015 * Temp) & 0xFFFFFFF8;
+  if (SieveLimit > MAX_SIEVE_LIMIT)
+  {
+    SieveLimit = MAX_SIEVE_LIMIT;
+  }
   nbrFactorsA = (int)(Temp*0.051 + 1);
   NbrPolynomials = (1 << (nbrFactorsA - 1)) - 1;
   factorSiqs.nbrLimbs = NumberLength;
@@ -2674,7 +2680,7 @@ static unsigned char LinearAlgebraPhase(
     IntToBigNbr(1, biR, NumberLength+1);
     memset(vectExpParity, 0, matrixBlength * sizeof(vectExpParity[0]));
     NumberLengthBak = NumberLength;
-    if (Modulus[NumberLength - 1] == 0 && Modulus[NumberLength - 2] < HALF_INT_RANGE)
+    if (Modulus[NumberLength - 1] == 0)
     {
       NumberLength--;
     }
@@ -2735,6 +2741,7 @@ static unsigned char LinearAlgebraPhase(
   return FALSE;
 }
 
+int nn;
 static unsigned char InsertNewRelation(
   int *rowMatrixB,
   int *biT, int *biU, int *biR,
@@ -3466,7 +3473,7 @@ static void sieveThread(BigInteger *result)
   PrimeSieveData *rowPrimeSieveData;
   PrimeSieveData *rowPrimeSieveData0;
   PrimeTrialDivisionData *rowPrimeTrialDivisionData;
-  short SieveArray[200000];
+  short SieveArray[2*MAX_SIEVE_LIMIT];
   int rowPartials[200];
   int biLinearCoeff[MAX_LIMBS_SIQS];
 //  int threadNumber = this.threadNumber;
@@ -3571,8 +3578,7 @@ static void sieveThread(BigInteger *result)
           }
           for (NumberLengthA = NumberLength; NumberLengthA >= 2; NumberLengthA--)
           {
-            if (biQuadrCoeff[NumberLengthA - 1] != 0 ||
-              biQuadrCoeff[NumberLengthA - 2] >= HALF_INT_RANGE)
+            if (biQuadrCoeff[NumberLengthA - 1] != 0)
             {
               break;
             }
@@ -3817,24 +3823,23 @@ static void sieveThread(BigInteger *result)
       {
         if ((grayCode & (1 << i)) == 0)
         {
-          AddBigNbr(biLinearCoeff, biLinearDelta[i], biLinearCoeff,
+          AddBigNbrB(biLinearCoeff, biLinearDelta[i], biLinearCoeff,
             NumberLength);
         }
         else
         {
-          SubtractBigNbr(biLinearCoeff, biLinearDelta[i], biLinearCoeff,
+          SubtractBigNbrB(biLinearCoeff, biLinearDelta[i], biLinearCoeff,
             NumberLength);
         }
       }
       for (NumberLengthA = NumberLength; NumberLengthA >= 2; NumberLengthA--)
       {
-        if (biQuadrCoeff[NumberLengthA - 1] != 0 ||
-          biQuadrCoeff[NumberLengthA - 2] >= HALF_INT_RANGE)
+        if (biQuadrCoeff[NumberLengthA - 1] != 0)
         {                             // Go out if significant limb.
           break;
         }
       }
-      if (biLinearCoeff[NumberLength - 1] >= HALF_INT_RANGE)
+      if ((uint32_t)biLinearCoeff[NumberLength - 1] >= (uint32_t)LIMB_RANGE)
       {                               // Number is negative.
         positive = FALSE;
         memcpy(biT, biLinearCoeff, NumberLength * sizeof(biT[0]));
@@ -3849,8 +3854,7 @@ static void sieveThread(BigInteger *result)
       }
       for (NumberLengthB = NumberLength; NumberLengthB >= 2; NumberLengthB--)
       {
-        if (biAbsLinearCoeff[NumberLengthB - 1] != 0 ||
-          biAbsLinearCoeff[NumberLengthB - 2] >= HALF_INT_RANGE)
+        if (biAbsLinearCoeff[NumberLengthB - 1] != 0)
         {                                // Go out if significant limb.
           break;
         }

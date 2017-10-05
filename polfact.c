@@ -435,11 +435,11 @@ void polyFactText(char *modText, char *polyText, int groupLength)
 }
 
 #ifdef __EMSCRIPTEN__
-void doWork(char* data, int size)
+void doWork(void)
 {
   int flags;
   int groupLen = 0;
-  char *ptrData = data;
+  char *ptrData = inputString;
   while (*ptrData != ',')
   {
     groupLen = groupLen * 10 + (*ptrData++ - '0');

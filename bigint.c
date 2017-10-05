@@ -35,6 +35,19 @@ void ChSignBigNbr(int *nbr, int length)
   }
 }
 
+void ChSignBigNbrB(int *nbr, int length)
+{
+  int carry = 0;
+  int ctr;
+  for (ctr = 0; ctr < length-1; ctr++)
+  {
+    carry -= *nbr;
+    *nbr++ = carry & MAX_INT_NBR;
+    carry >>= BITS_PER_INT_GROUP;
+  }
+  *nbr = carry - *nbr;
+}
+
 void AddBigNbr(int *pNbr1, int *pNbr2, int *pSum, int nbrLen)
 {
   unsigned int carry = 0;
@@ -55,6 +68,32 @@ void SubtractBigNbr(int *pNbr1, int *pNbr2, int *pDiff, int nbrLen)
     borrow = (borrow >> BITS_PER_INT_GROUP) + *pNbr1++ - *pNbr2++;
     *pDiff++ = borrow & MAX_INT_NBR;
   }
+}
+
+void AddBigNbrB(int *pNbr1, int *pNbr2, int *pSum, int nbrLen)
+{
+  unsigned int carry = 0;
+  int i;
+  for (i = 0; i < nbrLen-1; i++)
+  {
+    carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pNbr1++ + (unsigned int)*pNbr2++;
+    *pSum++ = (int)(carry & MAX_INT_NBR);
+  }
+  carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pNbr1++ + (unsigned int)*pNbr2++;
+  *pSum = (int)carry;
+}
+
+void SubtractBigNbrB(int *pNbr1, int *pNbr2, int *pDiff, int nbrLen)
+{
+  int borrow = 0;
+  int i;
+  for (i = 0; i < nbrLen-1; i++)
+  {
+    borrow = (borrow >> BITS_PER_INT_GROUP) + *pNbr1++ - *pNbr2++;
+    *pDiff++ = borrow & MAX_INT_NBR;
+  }
+  borrow = (borrow >> BITS_PER_INT_GROUP) + *pNbr1++ - *pNbr2++;
+  *pDiff++ = borrow;
 }
 
 void AddBigIntModN(int *pNbr1, int *pNbr2, int *pSum, int *pMod, int nbrLen)
@@ -142,6 +181,53 @@ void MultBigNbrByInt(int *bigFactor, int factor, int *bigProd, int nbrLen)
   if (factorPositive == 0)
   {         // If factor is negative, change sign of product.
     ChSignBigNbr(bigProd, nbrLen);
+  }
+}
+
+void MultBigNbrByIntB(int *bigFactor, int factor, int *bigProd, int nbrLen)
+{
+  int *bigProduct = bigProd;
+  int low;
+  double dFactor;
+  double dVal = 1 / (double)(1U << BITS_PER_INT_GROUP);
+  int factorPositive = 1;
+  int ctr, carry;
+  if (factor < 0)
+  {     // If factor is negative, indicate it and compute its absolute value.
+    factorPositive = 0;
+    factor = -factor;
+  }
+  dFactor = (double)factor;
+  carry = 0;
+  for (ctr = 0; ctr < nbrLen-1; ctr++)
+  {
+    low = (*bigFactor * factor + carry) & MAX_INT_NBR;
+    // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
+    // In that case, there would be an error of +/- 1.
+    if (low < HALF_INT_RANGE)
+    {
+      carry = (int)floor(((double)*bigFactor * dFactor + (double)carry + HALF_INT_RANGE / 2)*dVal);
+    }
+    else
+    {
+      carry = (int)floor(((double)*bigFactor * dFactor + (double)carry - HALF_INT_RANGE / 2)*dVal);
+    }
+    *bigProduct++ = low;
+    bigFactor++;
+  }
+  low = *bigFactor * factor + carry;
+  if ((low & MAX_INT_NBR) < HALF_INT_RANGE)
+  {
+    carry = (int)floor(((double)*bigFactor * dFactor + (double)carry + HALF_INT_RANGE / 2)*dVal);
+  }
+  else
+  {
+    carry = (int)floor(((double)*bigFactor * dFactor + (double)carry - HALF_INT_RANGE / 2)*dVal);
+  }
+  *bigProduct = low;
+  if (factorPositive == 0)
+  {         // If factor is negative, change sign of product.
+    ChSignBigNbrB(bigProd, nbrLen);
   }
 }
 
@@ -300,25 +386,25 @@ void AdjustBigIntModN(int *Nbr, int *Mod, int nbrLen)
   AdjustModN((limb *)Nbr, (limb *)Mod, nbrLen);
 }
 
-void MultBigNbrModN(int Nbr1[], int Nbr2[], int Prod[], int Mod[], int nbrLen)
+void MultBigNbrModN(int *Nbr1, int *Nbr2, int *Prod, int *Mod, int nbrLen)
 {
   int i;
   int arr[MAX_LIMBS_SIQS];
 
-  if (nbrLen >= 2 && Mod[nbrLen - 1] == 0 && Mod[nbrLen - 2] < HALF_INT_RANGE)
+  if (nbrLen >= 2 && *(Mod + nbrLen - 1) == 0)
   {
     nbrLen--;
   }
-  Nbr2[nbrLen] = 0;
-  memset(Prod, 0, nbrLen * sizeof(Prod[0]));
+  *(Nbr2+nbrLen) = 0;
+  memset(Prod, 0, nbrLen * sizeof(*Prod));
   i = nbrLen;
   do
   {
-    int Nbr = Nbr1[--i];
+    int Nbr = *(Nbr1 + --i);
     int j = nbrLen;
     do
     {
-      Prod[j] = Prod[j - 1];
+      *(Prod+j) = *(Prod + j - 1);
     } while (--j > 0);
     Prod[0] = 0;
     AdjustBigIntModN(Prod, Mod, nbrLen);
@@ -327,13 +413,13 @@ void MultBigNbrModN(int Nbr1[], int Nbr2[], int Prod[], int Mod[], int nbrLen)
   } while (i > 0);
 }
 
-void MultBigNbrByIntModN(int Nbr1[], int Nbr2, int Prod[], int Mod[], int nbrLen)
+void MultBigNbrByIntModN(int *Nbr1, int Nbr2, int *Prod, int *Mod, int nbrLen)
 {
-  if (nbrLen >= 2 && Mod[nbrLen - 1] == 0 && Mod[nbrLen - 2]<HALF_INT_RANGE)
+  if (nbrLen >= 2 && *(Mod + nbrLen - 1) == 0)
   {
     nbrLen--;
   }
-  Nbr1[nbrLen] = 0;
+  *(Nbr1+nbrLen) = 0;
   modmultIntExtended((limb *)Nbr1, Nbr2, (limb *)Prod, (limb *)Mod, nbrLen);
 }
 
@@ -361,6 +447,19 @@ void ModInvBigInt(int *num, int *inv, int *mod, int nbrLenBigInt)
   int NumberLengthBigInt;
   int NumberLengthBak = NumberLength;
   BigInteger Numerator, Denominator, Modulus, Quotient;
+  memset(inv, 0, nbrLenBigInt*sizeof(int));
+  while (nbrLenBigInt > 1)
+  {
+    if (*(mod + nbrLenBigInt - 1) != 0)
+    {
+      break;
+    }
+    nbrLenBigInt--;
+  }
+  NumberLength = nbrLenBigInt;
+  memcpy(TestNbr, mod, NumberLength * sizeof(limb));
+  TestNbr[NumberLength].x = 0;
+  GetMontgomeryParms(NumberLength);
   BigIntToBigNbr(&Denominator, num, nbrLenBigInt);
   BigIntToBigNbr(&Modulus, mod, nbrLenBigInt);
   Numerator.sign = SIGN_POSITIVE;

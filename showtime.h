@@ -4,7 +4,6 @@
 double tenths(void);
 extern double originalTenthSecond;
 extern int oldTimeElapsed;
-extern double originalTenthSecond;
 void GetDHMS(char **pptrText, int seconds);
 void GetDHMSt(char **pptrText, int tenths);
 #endif

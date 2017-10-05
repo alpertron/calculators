@@ -47,8 +47,9 @@ static int Mult1Len, Mult2Len, Mult3Len, Mult4Len, power4;
 static limb result[MAX_LEN];
 static int nbrLimbs, origNbrLimbs;
 static int sieve[MAX_SIEVE];
-static int TerminateThread, sum, sumHi, sumLo;
+static int TerminateThread, sum;
 static int nbrModExp;
+static BigInteger biMult1, biMult2, biMult3;
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 char texto[500];
@@ -68,8 +69,8 @@ static void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   int powerOf4;
   int powerOf2 = 0;
   int numLimbs = *pNbrLimbs;
-  int index, index2, mask, power2gr, shRg;
-  limb carry;
+  int index, index2, power2gr, shRg, mask;
+  limb prevLimb, currLimb;
     // Start from least significant limb (number zero).
   for (index = 0; index < numLimbs; index++)
   {
@@ -95,13 +96,12 @@ static void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   {
     index--;
   }
-  carry.x = 0;
-  mask = (1 << shRg) - 1;
+  prevLimb.x = 0;
   for (index2 = numLimbs-1; index2 >= index; index2--)
   {
-    carry.x = (carry.x << BITS_PER_GROUP) + (value+index2)->x;
-    (value + index2)->x = carry.x >> shRg;
-    carry.x &= mask;
+    currLimb.x = (value + index2)->x;
+    (value + index2)->x = ((currLimb.x >> shRg) | (prevLimb.x << (BITS_PER_GROUP - shRg))) & MAX_VALUE_LIMB;
+    prevLimb.x = currLimb.x;
   }
   if (index != 0)
   {
@@ -170,8 +170,8 @@ int fsquares(void)
   int sqrtFound, r, tmp;
   int i, j, numberMod8, Computing3Squares, nbrDivisors;
   int index, nbrLimbsP, nbrLimbsQ, shRight, shRightMult3, count;
-  int divisor, base, idx, nbrLimbsSq, nbrLimbsBrillhart;
-  limb carry, carry2;
+  int divisor, base, idx, nbrLimbsSq;
+  limb carry;
   nbrLimbs = origNbrLimbs;
   memcpy(number, origNbr, nbrLimbs*sizeof(limb));
   squareRoot(number, Mult1, nbrLimbs, &Mult1Len);
@@ -231,13 +231,15 @@ int fsquares(void)
         {
           limb Divid;
           limb Rem;
+          int LimbModQ;
           int Q;
           Rem.x = 0;
-          Q = 2 * i + 3;                              // Prime
+          Q = 2 * i + 3;                          // Prime
+          LimbModQ = (int)(LIMB_RANGE % Q);
           for (j = nbrLimbs - 1; j >= 0; j--)
           {
-            Divid.x = number[j].x + (Rem.x << BITS_PER_GROUP);
-            Rem.x = Divid.x % Q;
+            Divid.x = number[j].x + (Rem.x * LimbModQ);
+            Rem.x = (int)((unsigned int)Divid.x % Q);
           }
           sieve[i] = (int)Rem.x;
         }
@@ -275,20 +277,14 @@ int fsquares(void)
         else
         {
           iMult3++;
-          if (iMult3 == 67)
-          {
-            iMult4 = 0;
-          }
         }
         sum = iMult3 * iMult3 + iMult4 * iMult4;
-        sumHi = sum >> BITS_PER_GROUP;
-        sumLo = sum & MAX_VALUE_LIMB;
-        carry.x = number[0].x - sumLo;
+        carry.x = number[0].x - sum;
         p[0].x = carry.x & MAX_VALUE_LIMB;
         carry.x >>= BITS_PER_GROUP;
         if (nbrLimbs > 1)
         {
-          carry.x += number[1].x - sumHi;
+          carry.x += number[1].x;
           p[1].x = carry.x & MAX_VALUE_LIMB;
           carry.x >>= BITS_PER_GROUP;
           for (index = 2; index < nbrLimbs; index++)
@@ -304,8 +300,8 @@ int fsquares(void)
         nbrLimbsP = nbrLimbs;
         DivideBigNbrByMaxPowerOf2(&shRight, p, &nbrLimbsP);
         if ((p[0].x & 0x03) != 0x01)
-        {
-          continue;         /* p is not congruent to 1 mod 4 */
+        {                   // p is not congruent to 1 mod 4
+          continue;         // so it cannot be a sum of two squares.
         }
 
         // Now compute modulus over the product of all odd divisors
@@ -330,10 +326,11 @@ int fsquares(void)
             for (;;)
             {
               // Compute the remainder of p and divisor.
+              int LimbModDivisor = (int)(LIMB_RANGE % divisor);
               carry.x = 0;
               for (index = nbrLimbsP - 1; index >= 0; index--)
               {
-                carry.x = ((carry.x << BITS_PER_GROUP) + p[index].x) % divisor;
+                carry.x = ((unsigned int)(carry.x * LimbModDivisor) + p[index].x) % divisor;
               }
               if (carry.x != 0)
               {     // Number is not a multiple of "divisor".
@@ -341,12 +338,7 @@ int fsquares(void)
               }
               carry.x = 0;
               // Divide by divisor.
-              for (index = nbrLimbsP - 1; index >= 0; index--)
-              {
-                carry.x = (carry.x << BITS_PER_GROUP) + p[index].x;
-                p[index].x = carry.x / divisor;
-                carry.x %= divisor;
-              }
+              DivBigNbrByInt((int *)p, divisor, (int *)p, nbrLimbsP);
               if (p[nbrLimbsP - 1].x == 0)
               {
                 nbrLimbsP--;
@@ -367,6 +359,8 @@ int fsquares(void)
           // squares of primes 4k+3.
           Mult1[0].x = 1;
           Mult2[0].x = 0;
+          Mult1[1].x = 0;
+          Mult2[1].x = 0;
           nbrLimbs = 1;
         }
         else
@@ -409,7 +403,7 @@ int fsquares(void)
           // by multiplying by 1 in Montgomery notation.
           memset(Mult2, 0, nbrLimbsP*sizeof(limb));
           Mult2[0].x = 1;
-          modmult(Mult2, Mult1, Mult1);  // Get sqrt(-1) mod p.
+          modmult(Mult2, Mult1, Mult1);  // Mult1 = sqrt(-1) mod p.
           // Find the sum of two squares that equals this PRP using
           // Brillhart's method detailed in
           // http://www.ams.org/journals/mcom/1972-26-120/S0025-5718-1972-0314745-6/S0025-5718-1972-0314745-6.pdf
@@ -420,40 +414,52 @@ int fsquares(void)
 
           // Result is stored in Mult1 and Mult2.
           squareRoot(TestNbr, Sum, nbrLimbsP, &nbrLimbsSq);
-          memcpy(Mult2, TestNbr, nbrLimbsP*sizeof(limb));
-          nbrLimbsBrillhart = nbrLimbsP;
+          memcpy(biMult1.limbs, Mult1, nbrLimbsP * sizeof(limb));
+          biMult1.nbrLimbs = nbrLimbsP;
+          biMult1.sign = SIGN_POSITIVE;
+          while (biMult1.nbrLimbs > 1 && biMult1.limbs[biMult1.nbrLimbs - 1].x == 0)
+          {
+            biMult1.nbrLimbs--;
+          }
+          memcpy(biMult2.limbs, TestNbr, nbrLimbsP*sizeof(limb));
+          biMult2.nbrLimbs = nbrLimbsP;
+          biMult2.sign = SIGN_POSITIVE;
+          while (biMult2.nbrLimbs > 1 && biMult2.limbs[biMult2.nbrLimbs - 1].x == 0)
+          {
+            biMult2.nbrLimbs--;
+          }
           for (;;)
           {
-            AdjustModN(Mult2, Mult1, nbrLimbsBrillhart);
-            memcpy(Mult3, Mult2, nbrLimbsBrillhart*sizeof(limb));
-            memcpy(Mult2, Mult1, nbrLimbsBrillhart*sizeof(limb));
-            memcpy(Mult1, Mult3, nbrLimbsBrillhart*sizeof(limb));
-            if (Mult2[nbrLimbsBrillhart - 1].x == 0)
-            {
-              nbrLimbsBrillhart--;
-            }
-            if (nbrLimbsBrillhart > nbrLimbsSq)
+            BigIntRemainder(&biMult2, &biMult1, &biMult2);
+            CopyBigInt(&biMult3, &biMult1);
+            CopyBigInt(&biMult1, &biMult2);
+            CopyBigInt(&biMult2, &biMult3);
+            if (biMult2.nbrLimbs > nbrLimbsSq)
             {
               continue;
             }
-            if (nbrLimbsBrillhart < nbrLimbsSq)
+            if (biMult2.nbrLimbs < nbrLimbsSq)
             {
               break;
             }
-            for (idx = nbrLimbsBrillhart - 1; idx >= 0; idx--)
+            for (idx = nbrLimbsSq - 1; idx >= 0; idx--)
             {
-              if (Mult2[idx].x != Sum[idx].x)
+              if (biMult2.limbs[idx].x != Sum[idx].x)
               {
                 break;
               }
             }
-            if (idx < 0 || Mult2[idx].x < Sum[idx].x)
+            if (idx < 0 || biMult2.limbs[idx].x < Sum[idx].x)
             {
               break;
             }
           }
-          nbrLimbs = nbrLimbsBrillhart;
+          nbrLimbs = nbrLimbsSq;
         }
+        memset(Mult1, 0, (nbrLimbs+1) * sizeof(limb));
+        memset(Mult2, 0, (nbrLimbs+1) * sizeof(limb));
+        memcpy(Mult1, biMult1.limbs, biMult1.nbrLimbs * sizeof(limb));
+        memcpy(Mult2, biMult2.limbs, biMult2.nbrLimbs * sizeof(limb));
         // Use the other divisors of modulus in order to get Mult1 and Mult2.
 
         for (i = 0; i < nbrDivisors; i++)
@@ -461,22 +467,13 @@ int fsquares(void)
           divisor = primediv[i];
           for (index = primeexp[i]-1; index > 0; index -= 2)
           {
-            carry.x = 0;
-            carry2.x = 0;
-            for (count = 0; count < nbrLimbs; count++)
-            {
-              carry.x += Mult1[count].x * divisor;
-              carry2.x += Mult2[count].x * divisor;
-              Mult1[count].x = carry.x & MAX_VALUE_LIMB;
-              carry.x >>= BITS_PER_GROUP;
-              Mult2[count].x = carry2.x & MAX_VALUE_LIMB;
-              carry2.x >>= BITS_PER_GROUP;
-            }
-            Mult1[count].x = carry.x;
-            Mult2[count].x = carry2.x;
-            if (Mult1[count].x != 0 || Mult2[count].x != 0)
+            MultBigNbrByInt((int*)Mult1, divisor, (int*)Mult1, nbrLimbs + 1);
+            MultBigNbrByInt((int*)Mult2, divisor, (int*)Mult2, nbrLimbs + 1);
+            if (Mult1[nbrLimbs].x != 0 || Mult2[nbrLimbs].x != 0)
             {
               nbrLimbs++;
+              Mult1[nbrLimbs].x = 0;
+              Mult2[nbrLimbs].x = 0;
             }
           }
           if (index == 0)
@@ -494,34 +491,25 @@ int fsquares(void)
               }
               j++;
             }
-            carry.x = 0;
-            carry2.x = 0;
-            for (count = 0; count < nbrLimbs; count++)
-            {
-              carry.x += Mult1[count].x * j + Mult2[count].x * r;
-              carry2.x += Mult1[count].x * r - Mult2[count].x * j;
-              Mult1[count].x = carry.x & MAX_VALUE_LIMB;
-              carry.x >>= BITS_PER_GROUP;
-              Mult2[count].x = carry2.x & MAX_VALUE_LIMB;
-              carry2.x >>= BITS_PER_GROUP;
-            }
-            Mult1[count].x = carry.x;
-            Mult2[count].x = carry2.x;
-            if (carry2.x < 0)
+            // Compute Mult1 <- Previous Mult1 * j + Previous Mult2 * r
+            // Compute Mult2 <- Previous Mult1 * r - Previous Mult2 * j
+            // Use SquareMult1, SquareMult2, SquareMult3, SquareMult4 as temporary storage.
+            MultBigNbrByInt((int*)Mult1, j, (int*)SquareMult1, nbrLimbs + 1);
+            MultBigNbrByInt((int*)Mult2, r, (int*)SquareMult2, nbrLimbs + 1);
+            MultBigNbrByInt((int*)Mult1, r, (int*)SquareMult3, nbrLimbs + 1);
+            MultBigNbrByInt((int*)Mult2, j, (int*)SquareMult4, nbrLimbs + 1);
+            AddBigNbr((int *)SquareMult1, (int *)SquareMult2, (int *)Mult1, nbrLimbs + 1);
+            SubtractBigNbrB((int *)SquareMult3, (int *)SquareMult4, (int *)Mult2, nbrLimbs + 1);
+            if ((unsigned int)Mult2[nbrLimbs].x >= LIMB_RANGE)
             {   // Since Mult2 is a difference of products, it can be
                 // negative. In this case replace it by its absolute value.
-              Mult2[count].x = carry2.x & MAX_VALUE_LIMB;
-              carry2.x = 0;
-              for (count = 0; count <= nbrLimbs; count++)
-              {
-                carry2.x -= Mult2[count].x;
-                Mult2[count].x = carry2.x & MAX_VALUE_LIMB;
-                carry2.x >>= BITS_PER_GROUP;
-              }
+              ChSignBigNbr((int *)Mult2, nbrLimbs+1);
             }
             if (Mult1[nbrLimbs].x != 0 || Mult2[nbrLimbs].x != 0)
             {
               nbrLimbs++;
+              Mult1[nbrLimbs].x = 0;
+              Mult2[nbrLimbs].x = 0;
             }
           }
         }            /* end for */
@@ -531,46 +519,30 @@ int fsquares(void)
     // Shift left the number of bits that the original number was divided by 4.
     for (count = 0; count < power4; count++)
     {
-      carry.x = 0;
-      carry2.x = 0;
-      for (index = 0; index < nbrLimbs; index++)
-      {
-        carry.x += Mult1[index].x * 2;
-        carry2.x += Mult2[index].x * 2;
-        Mult1[index].x = carry.x & MAX_VALUE_LIMB;
-        carry.x >>= BITS_PER_GROUP;
-        Mult2[index].x = carry2.x & MAX_VALUE_LIMB;
-        carry2.x >>= BITS_PER_GROUP;
-      }
-      Mult1[index].x = carry.x;
-      Mult2[index].x = carry2.x;
-      if (Mult1[index].x != 0 || Mult2[index].x != 0)
+      MultBigNbrByInt((int*)Mult1, 2, (int*)Mult1, nbrLimbs + 1);
+      MultBigNbrByInt((int*)Mult2, 2, (int*)Mult2, nbrLimbs + 1);
+      if (Mult1[nbrLimbs].x != 0 || Mult2[nbrLimbs].x != 0)
       {
         nbrLimbs++;
+        Mult1[nbrLimbs].x = 0;
+        Mult2[nbrLimbs].x = 0;
       }
     }
     nbrLimbsP = 1;
     Mult3[0].x = iMult3;
     Mult4[0].x = iMult4;
+    Mult3[1].x = 0;
+    Mult4[1].x = 0;
     for (count = 0; count < power4; count++)
     {
-      carry.x = 0;
-      carry2.x = 0;
-      for (index = 0; index < nbrLimbsP; index++)
-      {
-        carry.x += Mult3[index].x * 2;
-        carry2.x += Mult4[index].x * 2;
-        Mult3[index].x = carry.x & MAX_VALUE_LIMB;
-        carry.x >>= BITS_PER_GROUP;
-        Mult4[index].x = carry2.x & MAX_VALUE_LIMB;
-        carry2.x >>= BITS_PER_GROUP;
-      }
-      Mult3[index].x = carry.x;
-      Mult4[index].x = carry2.x;
-      if (Mult3[index].x != 0 || Mult4[index].x != 0)
+      MultBigNbrByInt((int*)Mult3, 2, (int*)Mult3, nbrLimbsP + 1);
+      MultBigNbrByInt((int*)Mult4, 2, (int*)Mult4, nbrLimbsP + 1);
+      if (Mult3[nbrLimbsP].x != 0 || Mult4[nbrLimbsP].x != 0)
       {
         nbrLimbsP++;
       }
+      Mult3[nbrLimbsP].x = 0;
+      Mult4[nbrLimbsP].x = 0;
     }
     Mult1Len = Mult2Len = nbrLimbs;
     while (Mult1[Mult1Len-1].x == 0 && Mult1Len > 1)
@@ -599,28 +571,23 @@ int fsquares(void)
     SortBigNbrs(Mult3, &Mult3Len, Mult4, &Mult4Len);
   }
     // Validate result.
+  idx = Mult1Len * 2;
   multiply(Mult1, Mult1, SquareMult1, Mult1Len, &tmp);
+  Mult1[idx].x = 0;
   multiply(Mult2, Mult2, SquareMult2, Mult2Len, &tmp);
   memset(&SquareMult2[Mult2Len << 1], 0, ((Mult1Len - Mult2Len) << 1)*sizeof(limb));
+  Mult2[idx].x = 0;
   multiply(Mult3, Mult3, SquareMult3, Mult3Len, &tmp);
   memset(&SquareMult3[Mult3Len << 1], 0, ((Mult1Len - Mult3Len) << 1)*sizeof(limb));
+  Mult3[idx].x = 0;
   multiply(Mult4, Mult4, SquareMult4, Mult4Len, &tmp);
   memset(&SquareMult4[Mult4Len << 1], 0, ((Mult1Len - Mult4Len) << 1)*sizeof(limb));
-  idx = Mult1Len * 2;
-  carry.x = 0;
-  for (index = 0; index < idx; index++)
-  {
-    carry.x += SquareMult1[index].x + SquareMult2[index].x +
-    SquareMult3[index].x + SquareMult4[index].x;
-    SquareMult1[index].x = carry.x & MAX_VALUE_LIMB;
-    carry.x >>= BITS_PER_GROUP;
-  }
-  if (carry.x != 0)
-  {
-    SquareMult1[index].x = carry.x;
-    idx++;
-  }
-  if (SquareMult1[idx - 1].x == 0)
+  Mult4[idx].x = 0;
+  idx++;
+  AddBigInt(SquareMult1, SquareMult2, SquareMult1, idx);
+  AddBigInt(SquareMult1, SquareMult3, SquareMult1, idx);
+  AddBigInt(SquareMult1, SquareMult4, SquareMult1, idx);
+  while (SquareMult1[idx - 1].x == 0)
   {
     idx--;
   }
@@ -733,10 +700,10 @@ void fsquaresText(char *input, int groupLength)
 
 #ifdef __EMSCRIPTEN__
 void databack(char *data);
-void doWork(char* data, int size)
+void doWork(void)
 {
   int groupLen = 0;
-  char *ptrData = data;
+  char *ptrData = inputString;
   while (*ptrData != ',')
   {
     groupLen = groupLen * 10 + (*ptrData++ - '0');

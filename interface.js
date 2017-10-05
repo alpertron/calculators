@@ -16,13 +16,15 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+(function(global)
+{   // This method separates the name space from the Google Analytics code.
 var worker = 0;
 var app;
 function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker('fsquaresW.js?0708');
+    worker = new Worker('fsquaresW0003.js');
     worker.onmessage = function(e)
     {
       document.getElementById('result').innerHTML = e.data;
@@ -39,7 +41,7 @@ window.onload = function()
     document.getElementById('input').onkeypress = function(e)
     {
       var output, res;
-	    var digitGroup = document.getElementById('digits').value;
+	  var digitGroup = document.getElementById('digits').value;
       app = document.getElementById('app').value;
       res = document.getElementById('result');
       res.style.display = "block";
@@ -47,32 +49,32 @@ window.onload = function()
       if (!e) e = window.event;
       var keyCode = e.keyCode || e.which;
       if (keyCode == 13)
-	    {  // Used pressed Enter key
-	      output = document.getElementById('output')
-	      if (input == "")
-	      {
-	        res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión." : "Please type a number or expression.");
+	  {  // Used pressed Enter key
+	    output = document.getElementById('output')
+	    if (input == "")
+	    {
+	      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión." : "Please type a number or expression.");
           return;
-	      }
-	      if (app==0)
-		    {
-	        res.innerHTML = "Computing sum of squares...";
-		    }
-		    else if (app==1)
-		    {
-		      res.innerHTML = "Calculando suma de cuadrados...";
-		    }
-		    else if (app==2)
-		    {
-		      res.innerHTML = "Computing sum of cubes...";
-		    }
-		    else
-		    {
-		      res.innerHTML = "Calculando suma de cubos...";
-		    }
-	      param = digitGroup + ',' + app + ',' + input + String.fromCharCode(0);
-		    callWorker(param);
 	    }
+	    if (app==0)
+		{
+	      res.innerHTML = "Computing sum of squares...";
+		}
+		else if (app==1)
+		{
+		  res.innerHTML = "Calculando suma de cuadrados...";
+		}
+		else if (app==2)
+		{
+		  res.innerHTML = "Computing sum of cubes...";
+		}
+		else
+		{
+		  res.innerHTML = "Calculando suma de cubos...";
+		}
+	    param = digitGroup + ',' + app + ',' + input + String.fromCharCode(0);
+		callWorker(param);
+	  }
     }
   }
   document.getElementById('calc').onclick = function()
@@ -80,73 +82,89 @@ window.onload = function()
     var app, res, valueA, valueB, valueC, digitGroup;
     app = parseInt(document.getElementById('app').value);
     res = document.getElementById('result');
-	  res.style.display = "block";
-	  valueA = document.getElementById('num').value;
-	  if (valueA == "")
+	res.style.display = "block";
+	valueA = document.getElementById('num').value;
+	if (valueA == "")
+	{
+	  if (app >= 4)
 	  {
-	    if (app >= 4)
-	    {
-	      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el numerador." :
-	                              "Please type a number or expression for numerator.");
-	    }
-	    else
-	    {
-	      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión." :
-	                              "Please type a number or expression.");
-	    }
+	    res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el numerador." :
+	                            "Please type a number or expression for numerator.");
+	  }
+	  else
+	  {
+	    res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión." :
+	                            "Please type a number or expression.");
+	  }
+	  return;
+	}
+	if (app >= 4)
+	{
+	  valueB = document.getElementById('delta').value;
+	  if (valueB == "")
+	  {
+	    res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el argumento de la raíz cuadrada." :
+                              "Please type a number or expression for square root argument.");
 	    return;
 	  }
-	  if (app >= 4)
+	  valueC = document.getElementById('den').value;
+	  if (valueC == "")
 	  {
-	    valueB = document.getElementById('delta').value;
-	    if (valueB == "")
-	    {
-	      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el argumento de la raíz cuadrada." :
-                                "Please type a number or expression for square root argument.");
-	      return;
-	    }
-	    valueC = document.getElementById('den').value;
-	    if (valueC == "")
-	    {
-	      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el denominador." :
-                                "Please type a number or expression for denominator.");
-	      return;
-	    }
+	    res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el denominador." :
+                              "Please type a number or expression for denominator.");
+	    return;
+	  }
     }
-	  digitGroup = document.getElementById('digits').value;
-	  document.getElementById('help').style.display = "none";
-	  switch (app)
-	  {
-      case 0:
-        res.innerHTML = "Computing sum of squares...";
-        break;
-      case 1:
-        res.innerHTML = "Calculando suma de cuadrados...";
-        break;
-      case 2:
-        res.innerHTML = "Computing sum of cubes...";
-        break;
-      case 3:
-        res.innerHTML = "Calculando suma de cubos...";
-        break;
-      case 4:
-        res.innerHTML = "Computing continued fraction expansion...";
-        break;
-      default:
-        res.innerHTML = "Calculando desarrollo en fracciones continuas...";
-        break;
-	  }
-	  param = digitGroup + ',' + app + ',' + valueA + String.fromCharCode(0);
-	  if (app >= 4)
-	  {
-	    param += valueB + String.fromCharCode(0) + valueC + String.fromCharCode(0);
-	  }
-    callWorker(param);
+	digitGroup = document.getElementById('digits').value;
+	document.getElementById('help').style.display = "none";
+	switch (app)
+	{
+    case 0:
+      res.innerHTML = "Computing sum of squares...";
+      break;
+    case 1:
+      res.innerHTML = "Calculando suma de cuadrados...";
+      break;
+    case 2:
+      res.innerHTML = "Computing sum of cubes...";
+      break;
+    case 3:
+      res.innerHTML = "Calculando suma de cubos...";
+      break;
+    case 4:
+      res.innerHTML = "Computing continued fraction expansion...";
+      break;
+    default:
+      res.innerHTML = "Calculando desarrollo en fracciones continuas...";
+      break;
 	}
+	param = digitGroup + ',' + app + ',' + valueA + String.fromCharCode(0);
+	if (app >= 4)
+	{
+	  param += valueB + String.fromCharCode(0) + valueC + String.fromCharCode(0);
+	}
+    callWorker(param);
+  }
   document.getElementById('helpbtn').onclick = function()
   {
     document.getElementById('help').style.display = "block";
     document.getElementById('result').style.display = "none";
-	}
+  }
+}
+
+})(this);
+
+if (typeof(window) !== "undefined")
+{   // In main thread: register Google Analytics.
+  addEventListener("load", function ()
+  {
+    (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
+  
+    ga("create", "UA-4438475-1", "auto");
+    ga("send", "pageview");
+  });
 }
 

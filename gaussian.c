@@ -311,10 +311,10 @@ void gaussianText(char *valueText, int doFactorization)
 }
 
 #ifdef __EMSCRIPTEN__
-void doWork(char* data, int size)
+void doWork(void)
 {
   int flags;
-  char *ptrData = data;
+  char *ptrData = inputString;
   groupLen = 0;
   while (*ptrData != ',')
   {
