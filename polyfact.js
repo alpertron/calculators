@@ -26,18 +26,18 @@ function callWorker(param)
 {
   if (!worker)
   {
-  	worker = new Worker('polfactW0003.js');
-	  worker.onmessage = function(e)
-	  { // First character of e.data is '1' for intermediate text
+    worker = new Worker('polfactW0006.js');
+    worker.onmessage = function(e)
+    { // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.
-	    document_getElementById('result').innerHTML = e.data.substring(1);
-	    if (e.data.substring(0, 1) == '2')
-	    {   // First character passed from web worker is '2'.
-	      document_getElementById('eval').disabled = false;
-	      document_getElementById('factor').disabled = false;
-	      document_getElementById('stop').disabled = true;
+      document_getElementById('result').innerHTML = e.data.substring(1);
+      if (e.data.substring(0, 1) == '2')
+      {   // First character passed from web worker is '2'.
+        document_getElementById('eval').disabled = false;
+        document_getElementById('factor').disabled = false;
+        document_getElementById('stop').disabled = true;
       }
-	  }
+    }
   }
   worker.postMessage(param);
 }
@@ -81,7 +81,7 @@ window.onload = function ()
   document_getElementById('eval').onclick = function ()
   {
     dowork(2);
-	}
+  }
   document_getElementById('factor').onclick = function ()
   {
     dowork(0);

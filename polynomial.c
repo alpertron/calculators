@@ -525,6 +525,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
 {
   int i, j;
   int *ptrFactor1, *ptrFactor2;
+  limb result;
   for (i = 0; i < 2 * coeffLen - 1; i++)
   {    // Process each limb of product (least to most significant limb).
     if (i < coeffLen)
@@ -540,14 +541,48 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
       j = 2 * (coeffLen-1) - i;
     }
     memset(coeff[i].limbs, 0, nbrLimbs * sizeof(limb));
-    for (; j >= 0; j--)
+    if (nbrLimbs == 2)
+    {    // Optimization for the case when there is only one limb.
+      int modulus = TestNbr[0].x;
+      int sum = 0;
+      ptrFactor1++;
+      ptrFactor2++;
+      if (modulus < 32768)
+      {
+        for (; j >= 0; j--)
+        {
+          sum = (sum + *ptrFactor1 * *ptrFactor2) % modulus;
+          ptrFactor1 += nbrLimbs;
+          ptrFactor2 -= nbrLimbs;
+        }
+      }
+      else
+      {
+        for (; j >= 0; j--)
+        {
+          modmult((limb*)ptrFactor1, (limb*)ptrFactor2, &result);
+          sum = sum + result.x - modulus;
+          if (sum < 0)
+          {
+            sum += modulus;
+          }
+          ptrFactor1 += nbrLimbs;
+          ptrFactor2 -= nbrLimbs;
+        }
+      }
+      coeff[i].limbs[0].x = sum;
+    }
+    else
     {
-      UncompressIntLimbs(ptrFactor1, operand3.limbs, nbrLimbs);
-      UncompressIntLimbs(ptrFactor2, operand2.limbs, nbrLimbs);
-      modmult(operand3.limbs, operand2.limbs, operand3.limbs);
-      AddBigNbrMod(coeff[i].limbs, operand3.limbs, coeff[i].limbs);
-      ptrFactor1 += nbrLimbs;
-      ptrFactor2 -= nbrLimbs;
+      for (; j >= 0; j--)
+      {
+        UncompressIntLimbs(ptrFactor1, operand3.limbs, nbrLimbs);
+        UncompressIntLimbs(ptrFactor2, operand2.limbs, nbrLimbs);
+        modmult(operand3.limbs, operand2.limbs, operand3.limbs);
+        AddBigNbrMod(coeff[i].limbs, operand3.limbs, coeff[i].limbs);
+        ptrFactor1 += nbrLimbs;
+        ptrFactor2 -= nbrLimbs;
+      }
     }
   }
   ptrFactor1 = &polyMultTemp[idxFactor1*nbrLimbs];
@@ -567,7 +602,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int diffIndex, int nbrLimb
   int idxFactor2 = idxFactor1 + nbrLen;
   int i;
   int *ptrResult, *ptrHigh, *ptr1, *ptr2;
-  int middle;
+  int middle, sum, modulus;
   int halfLength;
   int coeff[MAX_LEN];
   if (nbrLen <= KARATSUBA_POLY_CUTOFF)
@@ -631,25 +666,56 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int diffIndex, int nbrLimb
   ptr1 = &polyMultTemp[idxFactor1*nbrLimbs];
   ptr2 = &polyMultTemp[idxFactor2*nbrLimbs];
   ptrResult = &polyMultTemp[diffIndex*nbrLimbs];
-  for (i = 0; i < halfLength; i++)
-  {
-    UncompressIntLimbs(ptr1, operand3.limbs, nbrLimbs);
-    UncompressIntLimbs(ptr2, operand2.limbs, nbrLimbs);
-    SubtBigNbrMod(operand2.limbs, operand3.limbs, operand3.limbs);
-    CompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
-    ptr1 += nbrLimbs;
-    ptr2 += nbrLimbs;
-    ptrResult += nbrLimbs;
+  if (nbrLimbs == 2)
+  {    // Small modulus.
+    modulus = TestNbr[0].x;
+    for (i = 0; i < halfLength; i++)
+    {
+      sum = *(ptr2 + 1) - *(ptr1 + 1);
+      if (sum < 0)
+      {
+        sum += modulus;
+      }
+      *(ptrResult + 1) = sum;
+      ptr1 += nbrLimbs;
+      ptr2 += nbrLimbs;
+      ptrResult += nbrLimbs;
+    }
+    for (i = 0; i < halfLength; i++)
+    {
+      sum = *(ptr1 + 1) - *(ptr2 + 1);
+      if (sum < 0)
+      {
+        sum += modulus;
+      }
+      *(ptrResult + 1) = sum;
+      ptr1 += nbrLimbs;
+      ptr2 += nbrLimbs;
+      ptrResult += nbrLimbs;
+    }
   }
-  for (i = 0; i < halfLength; i++)
-  {
-    UncompressIntLimbs(ptr1, operand3.limbs, nbrLimbs);
-    UncompressIntLimbs(ptr2, operand2.limbs, nbrLimbs);
-    SubtBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
-    CompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
-    ptr1 += nbrLimbs;
-    ptr2 += nbrLimbs;
-    ptrResult += nbrLimbs;
+  else
+  {    // General case.
+    for (i = 0; i < halfLength; i++)
+    {
+      UncompressIntLimbs(ptr1, operand3.limbs, nbrLimbs);
+      UncompressIntLimbs(ptr2, operand2.limbs, nbrLimbs);
+      SubtBigNbrMod(operand2.limbs, operand3.limbs, operand3.limbs);
+      CompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
+      ptr1 += nbrLimbs;
+      ptr2 += nbrLimbs;
+      ptrResult += nbrLimbs;
+    }
+    for (i = 0; i < halfLength; i++)
+    {
+      UncompressIntLimbs(ptr1, operand3.limbs, nbrLimbs);
+      UncompressIntLimbs(ptr2, operand2.limbs, nbrLimbs);
+      SubtBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
+      CompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
+      ptr1 += nbrLimbs;
+      ptr2 += nbrLimbs;
+      ptrResult += nbrLimbs;
+    }
   }
   middle = diffIndex;
   diffIndex += nbrLen;
@@ -660,41 +726,103 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int diffIndex, int nbrLimb
      // The first and last terms are already in correct locations.
      // Add (xL*yL+xH*yH)*b.
   ptrResult = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
-  for (i = halfLength; i > 0; i--)
-  {
-    // Obtain coefficient from xH*yH*b^2 + xL*yL
-    UncompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
-    // Obtain coefficient from xL*yL
-    UncompressIntLimbs(ptrResult - halfLength*nbrLimbs, operand2.limbs, nbrLimbs);
-    // Obtain coefficient from xH*yH
-    UncompressIntLimbs(ptrResult + halfLength*nbrLimbs, operand1.limbs, nbrLimbs);
-    // Add all three coefficients.
-    AddBigNbrMod(operand3.limbs, operand2.limbs, operand2.limbs);
-    AddBigNbrMod(operand2.limbs, operand1.limbs, operand2.limbs);
-    // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-    CompressIntLimbs(ptrResult, operand2.limbs, nbrLimbs);
-    // Obtain coefficient from xH*yH
-    UncompressIntLimbs(ptrResult + nbrLen*nbrLimbs, operand2.limbs, nbrLimbs);
-    // Add coefficient from xL*yL
-    AddBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
-    // Add coefficient from xH*yH*b^2 + xL*yL
-    AddBigNbrMod(operand3.limbs, operand1.limbs, operand3.limbs);
-    // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-    CompressIntLimbs(ptrResult + halfLength*nbrLimbs, operand3.limbs, nbrLimbs);
-    // Point to next address.
-    ptrResult += nbrLimbs;
+  if (nbrLimbs == 2)
+  {        // Optimiztion for small numbers.
+    for (i = halfLength; i > 0; i--)
+    {
+      // First addend is the coefficient from xH*yH*b^2 + xL*yL
+      // Second addend is the coefficient from xL*yL
+      int coeff = *(ptrResult + 1);
+      int coeff1 = *(ptrResult + halfLength*nbrLimbs + 1);
+      sum = coeff + *(ptrResult - halfLength*nbrLimbs + 1) - modulus;
+      if (sum < 0)
+      {
+        sum += modulus;
+      }
+      // Addend is the coefficient from xH*yH
+      sum += coeff1 - modulus;
+      if (sum < 0)
+      {
+        sum += modulus;
+      }
+      // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
+      *(ptrResult + 1) = sum;
+
+      // First addend is the coefficient from xL*yL
+      // Second addend is the coefficient from xH*yH
+      sum = coeff + *(ptrResult + nbrLen*nbrLimbs + 1) - modulus;
+      if (sum < 0)
+      {
+        sum += modulus;
+      }
+      // Addend is the coefficient from xH*yH*b^2 + xL*yL
+      sum += coeff1 - modulus;
+      if (sum < 0)
+      {
+        sum += modulus;
+      }
+      // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
+      *(ptrResult + halfLength*nbrLimbs + 1) = sum;
+      // Point to next address.
+      ptrResult += nbrLimbs;
+    }
+  }
+  else
+  {        // General case.
+    for (i = halfLength; i > 0; i--)
+    {
+      // Obtain coefficient from xH*yH*b^2 + xL*yL
+      UncompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
+      // Obtain coefficient from xL*yL
+      UncompressIntLimbs(ptrResult - halfLength*nbrLimbs, operand2.limbs, nbrLimbs);
+      // Obtain coefficient from xH*yH
+      UncompressIntLimbs(ptrResult + halfLength*nbrLimbs, operand1.limbs, nbrLimbs);
+      // Add all three coefficients.
+      AddBigNbrMod(operand3.limbs, operand2.limbs, operand2.limbs);
+      AddBigNbrMod(operand2.limbs, operand1.limbs, operand2.limbs);
+      // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
+      CompressIntLimbs(ptrResult, operand2.limbs, nbrLimbs);
+      // Obtain coefficient from xH*yH
+      UncompressIntLimbs(ptrResult + nbrLen*nbrLimbs, operand2.limbs, nbrLimbs);
+      // Add coefficient from xL*yL
+      AddBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
+      // Add coefficient from xH*yH*b^2 + xL*yL
+      AddBigNbrMod(operand3.limbs, operand1.limbs, operand3.limbs);
+      // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
+      CompressIntLimbs(ptrResult + halfLength*nbrLimbs, operand3.limbs, nbrLimbs);
+      // Point to next address.
+      ptrResult += nbrLimbs;
+    }
   }
   // Compute final product by adding (xH - xL)*(yL - yH)*b.
   ptrHigh = &polyMultTemp[middle*nbrLimbs];
   ptrResult = &polyMultTemp[(idxFactor1 + halfLength)*nbrLimbs];
-  for (i = nbrLen; i > 0; i--)
-  {
-    UncompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
-    UncompressIntLimbs(ptrHigh, operand2.limbs, nbrLimbs);
-    AddBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
-    CompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
-    ptrHigh += nbrLimbs;
-    ptrResult += nbrLimbs;
+  if (nbrLimbs == 2)
+  {        // Optimiztion for small numbers.
+    modulus = TestNbr[0].x;
+    for (i = nbrLen; i > 0; i--)
+    {
+      sum = *(ptrResult + 1) + *(ptrHigh + 1) - modulus;
+      if (sum < 0)
+      {
+        sum += modulus;
+      }
+      *(ptrResult + 1) = sum;
+      ptrHigh += nbrLimbs;
+      ptrResult += nbrLimbs;
+    }
+  }
+  else
+  {        // General case.
+    for (i = nbrLen; i > 0; i--)
+    {
+      UncompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
+      UncompressIntLimbs(ptrHigh, operand2.limbs, nbrLimbs);
+      AddBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
+      CompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
+      ptrHigh += nbrLimbs;
+      ptrResult += nbrLimbs;
+    }
   }
 }
 

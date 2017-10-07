@@ -4,7 +4,7 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "factor.h"
-#define DEBUG_CODE  11
+#define DEBUG_CODE  9
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
