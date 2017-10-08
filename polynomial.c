@@ -30,7 +30,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define TOKEN_START_EXPON    '1'
 #define TOKEN_END_EXPON      '2'
 #define TOKEN_UNARY_MINUS    '3'
-#define KARATSUBA_POLY_CUTOFF 8
+#define KARATSUBA_POLY_CUTOFF 16
 BigInteger primeMod;              // p
 int exponentMod;                  // k
 BigInteger powerMod;              // p^k
@@ -545,16 +545,28 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
     {    // Optimization for the case when there is only one limb.
       int modulus = TestNbr[0].x;
       int sum = 0;
+      double dSum = 0;
       ptrFactor1++;
       ptrFactor2++;
       if (modulus < 32768)
       {
-        for (; j >= 0; j--)
+        for (; j >= 3; j-=4)
         {
-          sum = (sum + *ptrFactor1 * *ptrFactor2) % modulus;
-          ptrFactor1 += nbrLimbs;
-          ptrFactor2 -= nbrLimbs;
+          dSum += (double)(*ptrFactor1 * *ptrFactor2) +
+                  (double)(*(ptrFactor1 + 2) * *(ptrFactor2 - 2)) +
+                  (double)(*(ptrFactor1 + 4) * *(ptrFactor2 - 4)) +
+                  (double)(*(ptrFactor1 + 6) * *(ptrFactor2 - 6));
+          ptrFactor1 += 8;
+          ptrFactor2 -= 8;
         }
+        while (j >= 0)
+        {
+          dSum += (double)(*ptrFactor1 * *ptrFactor2);
+          ptrFactor1 += 2;
+          ptrFactor2 -= 2;
+          j--;
+        }
+        sum = (int)(dSum - floor(dSum / modulus) * modulus);
       }
       else
       {
@@ -566,14 +578,14 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
           {
             sum += modulus;
           }
-          ptrFactor1 += nbrLimbs;
-          ptrFactor2 -= nbrLimbs;
+          ptrFactor1 += 2;
+          ptrFactor2 -= 2;
         }
       }
       coeff[i].limbs[0].x = sum;
     }
     else
-    {
+    {          // General case.
       for (; j >= 0; j--)
       {
         UncompressIntLimbs(ptrFactor1, operand3.limbs, nbrLimbs);
@@ -677,9 +689,9 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int diffIndex, int nbrLimb
         sum += modulus;
       }
       *(ptrResult + 1) = sum;
-      ptr1 += nbrLimbs;
-      ptr2 += nbrLimbs;
-      ptrResult += nbrLimbs;
+      ptr1 += 2;
+      ptr2 += 2;
+      ptrResult += 2;
     }
     for (i = 0; i < halfLength; i++)
     {
@@ -689,9 +701,9 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int diffIndex, int nbrLimb
         sum += modulus;
       }
       *(ptrResult + 1) = sum;
-      ptr1 += nbrLimbs;
-      ptr2 += nbrLimbs;
-      ptrResult += nbrLimbs;
+      ptr1 += 2;
+      ptr2 += 2;
+      ptrResult += 2;
     }
   }
   else
@@ -727,14 +739,17 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int diffIndex, int nbrLimb
      // Add (xL*yL+xH*yH)*b.
   ptrResult = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
   if (nbrLimbs == 2)
-  {        // Optimiztion for small numbers.
+  {        // Optimization for small numbers.
+    int halfLength2 = halfLength * 2;
+    int nbrLen2 = nbrLen * 2;
+    ptrResult++;
     for (i = halfLength; i > 0; i--)
     {
       // First addend is the coefficient from xH*yH*b^2 + xL*yL
       // Second addend is the coefficient from xL*yL
-      int coeff = *(ptrResult + 1);
-      int coeff1 = *(ptrResult + halfLength*nbrLimbs + 1);
-      sum = coeff + *(ptrResult - halfLength*nbrLimbs + 1) - modulus;
+      int coeff = *(ptrResult);
+      int coeff1 = *(ptrResult + halfLength2);
+      sum = coeff + *(ptrResult - halfLength2) - modulus;
       if (sum < 0)
       {
         sum += modulus;
@@ -746,11 +761,11 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int diffIndex, int nbrLimb
         sum += modulus;
       }
       // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-      *(ptrResult + 1) = sum;
+      *(ptrResult) = sum;
 
       // First addend is the coefficient from xL*yL
       // Second addend is the coefficient from xH*yH
-      sum = coeff + *(ptrResult + nbrLen*nbrLimbs + 1) - modulus;
+      sum = coeff + *(ptrResult + nbrLen2) - modulus;
       if (sum < 0)
       {
         sum += modulus;
@@ -762,9 +777,9 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int diffIndex, int nbrLimb
         sum += modulus;
       }
       // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-      *(ptrResult + halfLength*nbrLimbs + 1) = sum;
+      *(ptrResult + halfLength2) = sum;
       // Point to next address.
-      ptrResult += nbrLimbs;
+      ptrResult += 2;
     }
   }
   else
@@ -800,7 +815,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int diffIndex, int nbrLimb
   if (nbrLimbs == 2)
   {        // Optimiztion for small numbers.
     modulus = TestNbr[0].x;
-    for (i = nbrLen; i > 0; i--)
+    for (i = nbrLen; i >= 2; i-=2)
     {
       sum = *(ptrResult + 1) + *(ptrHigh + 1) - modulus;
       if (sum < 0)
@@ -808,8 +823,23 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int diffIndex, int nbrLimb
         sum += modulus;
       }
       *(ptrResult + 1) = sum;
-      ptrHigh += nbrLimbs;
-      ptrResult += nbrLimbs;
+      sum = *(ptrResult + 3) + *(ptrHigh + 3) - modulus;
+      if (sum < 0)
+      {
+        sum += modulus;
+      }
+      *(ptrResult + 3) = sum;
+      ptrHigh += 4;
+      ptrResult += 4;
+    }
+    if (i > 0)
+    {
+      sum = *(ptrResult + 1) + *(ptrHigh + 1) - modulus;
+      if (sum < 0)
+      {
+        sum += modulus;
+      }
+      *(ptrResult + 1) = sum;
     }
   }
   else

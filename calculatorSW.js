@@ -16,8 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-var version = '0007::';
-
+var version = '0008::';
 
 self.addEventListener("install", function(event)
 {  // Add requests to cache during service worker installation.
