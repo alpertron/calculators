@@ -107,9 +107,12 @@ window.onload = function ()
     var input = document_getElementById('poly');
     var loc = input.value.length - input.selectionStart;
     input.value = input.value.replace(".", "x^");
-    loc = input.value.length - loc;
-    input.selectionStart = loc;
-    input.selectionEnd = loc;
+	setTimeout(function()
+	{
+      loc = input.value.length - loc;
+      input.selectionStart = loc;
+      input.selectionEnd = loc;
+	}, 30);		
   }
 }
 
