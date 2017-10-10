@@ -1789,12 +1789,16 @@ void multPolynomial(/*@in@*/int *polyFact1, /*@in@*/int *polyFact2,
   }
   memcpy(polyProduct, polyMultTemp, polyDegree*nbrLimbs*sizeof(int));
 }
+
   // Perform polyPower <- polyBase ^ expon (mod polyMod)
-void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *expon, int *polyPower)
+void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *expon,
+                     int *polyPower, powerCback callback)
 {
   int mask, index;
   int nbrLimbs = NumberLength + 1;
   int powerIsOne = TRUE;
+  int nbrBits = 0;
+  int bitCounter;
   // Initialize polyPower to 1.
   memset(polyPower, 0, (polyDegree + 1)*nbrLimbs * sizeof(int));
   for (index = 0; index <= polyDegree; index++)
@@ -1802,20 +1806,31 @@ void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *ex
     *(polyPower + index*nbrLimbs) = 1;
   }
   SetNumberToOne(polyPower);
-  for (index = expon->nbrLimbs - 1; index >= 0; index--)
+  index = expon->nbrLimbs - 1;
+  bitCounter = (index+1) * BITS_PER_GROUP;
+  for (; index >= 0; index--)
   {
     int groupExp = (int)(expon->limbs[index].x);
     for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
     {
       if (!powerIsOne)
       {
+        if (callback)
+        {
+          callback(100 - 100 * bitCounter/nbrBits);
+        }
         multUsingInvPolynomial(polyPower, polyPower, polyPower, polyDegree, polyMod);
       }
       if ((groupExp & mask) != 0)
       {
         multUsingInvPolynomial(polyPower, polyBase, polyPower, polyDegree, polyMod);
-        powerIsOne = FALSE;
+        if (powerIsOne)
+        {
+          nbrBits = bitCounter;
+          powerIsOne = FALSE;
+        }
       }
+      bitCounter--;
     }
   }
 }

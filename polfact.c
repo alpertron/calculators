@@ -25,6 +25,11 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "polynomial.h"
 #include "showtime.h"
 
+#ifdef __EMSCRIPTEN__
+int attemptNbr;
+char *ptrPercentageOutput;
+#endif
+
 extern int poly4[1000000];
 // Perform distinct degree factorization
 static void DistinctDegreeFactorization(int polyDegree)
@@ -63,6 +68,7 @@ static void DistinctDegreeFactorization(int polyDegree)
       if (elapsedTime / 10 != oldTimeElapsed / 10)
       {
         char *ptrOutput = output;
+        oldTimeElapsed = elapsedTime;
         if (lang)
         {
           strcpy(ptrOutput, "1<p>Factorización de distintos grados: buscando factores de grado ");
@@ -102,7 +108,7 @@ static void DistinctDegreeFactorization(int polyDegree)
       ptrValue1 = &poly3[polyDegree*nbrLimbs];
       memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0])*sizeof(int));
       SetNumberToOne(ptrValue1);  // Set leading coefficient to 1.
-      powerPolynomial(poly1, poly3, polyDegree, &primeMod, poly2);
+      powerPolynomial(poly1, poly3, polyDegree, &primeMod, poly2, NULL);
       memcpy(poly1, poly2, polyDegree*nbrLimbs * sizeof(int));
       // Subtract x.
       UncompressBigInteger(&poly2[nbrLimbs], &operand1);
@@ -152,6 +158,39 @@ static void DistinctDegreeFactorization(int polyDegree)
   }
 }
 
+static void percentageCallback(int percentage)
+{
+#ifdef __EMSCRIPTEN__
+  int elapsedTime = (int)(tenths() - originalTenthSecond);
+  char *ptrOutput = ptrPercentageOutput;
+  if (elapsedTime / 10 != oldTimeElapsed / 10)
+  {
+    oldTimeElapsed = elapsedTime;
+    int2dec(&ptrOutput, percentage);
+    if (lang)
+    {
+      strcpy(ptrOutput, "% del ");
+      ptrOutput += strlen(ptrOutput);
+      int2dec(&ptrOutput, attemptNbr);
+      strcpy(ptrOutput, ".º intento");
+      ptrOutput += strlen(ptrOutput);
+    }
+    else
+    {
+      strcpy(ptrOutput, "% of attempt #");
+      ptrOutput += strlen(ptrOutput);
+      int2dec(&ptrOutput, attemptNbr);
+    }
+    strcpy(ptrOutput, lang ? ".</p><p>Transcurrió " : ".</p><p>Time elapsed: ");
+    ptrOutput += strlen(ptrOutput);
+    GetDHMS(&ptrOutput, elapsedTime / 10);
+    strcpy(ptrOutput, "</p>");
+    databack(output);
+  }
+#endif
+}
+
+
 // Perform Cantor-Zassenhaus algorithm to factor polynomials of the same degree.
 static void SameDegreeFactorization(void)
 {
@@ -171,6 +210,9 @@ static void SameDegreeFactorization(void)
       pstFactorInfo++;
       continue;
     }
+#ifdef __EMSCRIPTEN__
+    attemptNbr = 1;
+#endif
     if (isCharacteristic2 == 0)
     { // If prime is not 2,
       // Calculate operand2 <- (prime^degree-1)/2
@@ -184,6 +226,27 @@ static void SameDegreeFactorization(void)
     GetPolyInvParm(polyDegree, ptrPolyToFactor);
     for (;;)
     {
+#ifdef __EMSCRIPTEN__
+      char *ptrOutput = output;
+      if (lang)
+      {
+        strcpy(ptrOutput, "1<p>Factorización del mismo grado: buscando ");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, polyDegree / pstFactorInfo->expectedDegree);
+        strcpy(ptrOutput, " factores de grado ");
+      }
+      else
+      {
+        strcpy(ptrOutput, "1<p>Equal degree factorization: searching for ");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, polyDegree / pstFactorInfo->expectedDegree);
+        strcpy(ptrOutput, " factors of degree ");
+      }
+      ptrOutput += strlen(ptrOutput);
+      int2dec(&ptrOutput, pstFactorInfo->expectedDegree);
+      strcpy(ptrOutput, ".</p><p>");
+      ptrPercentageOutput = ptrOutput + strlen(ptrOutput);
+#endif
       // Copy polynomial to factor to poly3 and set leading coefficient to 1.
       ptrValue1 = &poly3[pstFactorInfo->degree*nbrLimbs];
       memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0])*sizeof(int));
@@ -211,7 +274,7 @@ static void SameDegreeFactorization(void)
       }
       if (isCharacteristic2 == 0)
       { // If prime is not 2: compute (random poly)^((p^d-1)/2)
-        powerPolynomial(poly1, poly3, polyDegree, &operand4, poly2);
+        powerPolynomial(poly1, poly3, polyDegree, &operand4, poly2, percentageCallback);
         // Subtract 1.
         UncompressBigInteger(&poly2[0], &operand1);
         SubtBigNbrMod(operand1.limbs, MontgomeryMultR1, operand1.limbs);
@@ -250,12 +313,18 @@ static void SameDegreeFactorization(void)
         memcpy(ptrPolyToFactor, polyMultTemp, degreeGcd*nbrLimbs*sizeof(int));
         memcpy(pstNewFactorInfo->ptr, poly2, (polyDegree - degreeGcd)*nbrLimbs*sizeof(int));
         polyDegree = degreeGcd;
+#ifdef __EMSCRIPTEN__
+        attemptNbr = 0;
+#endif
         if (pstFactorInfo->expectedDegree == pstFactorInfo->degree)
         {
           break;
         }
         GetPolyInvParm(polyDegree, ptrPolyToFactor);
       }
+#ifdef __EMSCRIPTEN__
+      attemptNbr++;
+#endif
     }
     pstFactorInfo++;
   }
@@ -428,7 +497,10 @@ void polyFactText(char *modText, char *polyText, int groupLength)
   {
     outputPolynomial(ptrOutput, groupLength);
     ptrOutput += strlen(ptrOutput);
-    showElapsedTime(&ptrOutput);
+    if (onlyEvaluate == 0)
+    {        // Show time only when factoring, not when just evaluating polynomial.
+      showElapsedTime(&ptrOutput);
+    }
   }
   strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
                            "<p>" COPYRIGHT_ENGLISH "</p>");
