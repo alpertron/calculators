@@ -52,6 +52,8 @@ int poly2[1000000];
 int poly3[1000000];
 int poly4[1000000];
 static int poly5[1000000];
+static int polyS[1000000];
+static int polyT[1000000];
 static int polyMultM[1000000];
 static int polyMultT[1000000];
 int polyMultTemp[1000000];
@@ -862,7 +864,7 @@ static void MultPolynomialInternal(int degree1, int degree2,
 {
   int karatDegree;
   int *ptrValue1;
-  int nbrLimbs = powerMod.nbrLimbs + 1;
+  int nbrLimbs = NumberLength + 1;
   // Find the least power of 2 greater or equal than the maximum of factor1 and factor2.
   int degree = (degree1 > degree2? degree1: degree2) + 1;
   // Compute length of numbers for each recursion.
@@ -1193,18 +1195,10 @@ static int PowerPolynomialExpr(int *ptrArgument1, int expon)
 
 static void computePower(int expo)
 {
-  operand1.limbs[0].x = expo & MAX_VALUE_LIMB;
-  operand1.limbs[1].x = expo >> BITS_PER_GROUP;
-  if (operand1.limbs[1].x == 0)
-  {
-    operand1.nbrLimbs = 1;
-  }
-  else
-  {
-    operand1.nbrLimbs = 2;
-  }
-  BigIntPower(&primeMod, &operand1, &powerMod);
-  memcpy(&TestNbr, &powerMod, powerMod.nbrLimbs*sizeof(limb));
+  BigIntPowerIntExp(&primeMod, expo, &powerMod);
+  memcpy(TestNbr, powerMod.limbs, powerMod.nbrLimbs*sizeof(limb));
+  NumberLength = powerMod.nbrLimbs;
+  TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(powerMod.nbrLimbs);
 }
 // Compute polynomial using value array as stack.
@@ -2166,10 +2160,10 @@ static void MoveNumbers(int *poly, int qtyNbrs, int oldNbrLen, int newNbrLen)
 // poly5: s*e, t*e, t*e + q*g'
 
 static void Adjust(int *polyFirst, int degreeFirst,
-  int *polySecond,
+  int *polySecond, int degreeSecond,
   int *polyH, int degreeH,
-  int *polyS, int degreeS,
-  int *polyT, int degreeT,
+  int degreeS,
+  int degreeT,
   int *polyG, int degreeG, int degreeE, int subtract)
 {
   int nbrLimbs = NumberLength + 1;
@@ -2210,7 +2204,7 @@ static void Adjust(int *polyFirst, int degreeFirst,
     }
     CompressBigInteger(polyFirst + currentDegree*nbrLimbs, &operand1);
   }
-  for (currentDegree = 0; currentDegree < degreeH; currentDegree++)
+  for (currentDegree = 0; currentDegree < degreeH && currentDegree < degreeSecond; currentDegree++)
   {
     UncompressBigInteger(polySecond + currentDegree*nbrLimbs, &operand2);
     UncompressBigInteger(polyR+currentDegree*nbrLimbs, &operand1);
@@ -2230,7 +2224,7 @@ int HenselLifting(void)
 {
   int nbrFactor, nbrFactor2, currentExp, oldNumberLength;
   int degreeFactor, degreeS, degreeT, degreeG, currentDegree;
-  int index, nbrLimbs, *ptrValue1, *polyS, *polyT;
+  int index, nbrLimbs, *ptrValue1;
   int *ptrPolyLifted = polyLifted;
   struct sFactorInfo *pstFactorInfo, *pstFactorInfo2;
   if (exponentMod == 1)
@@ -2264,6 +2258,8 @@ int HenselLifting(void)
     powerMod.nbrLimbs = primeMod.nbrLimbs;
     memcpy(powerMod.limbs, primeMod.limbs, primeMod.nbrLimbs*sizeof(limb));
     memcpy(&TestNbr, powerMod.limbs, primeMod.nbrLimbs*sizeof(limb));
+    NumberLength = primeMod.nbrLimbs;
+    TestNbr[NumberLength].x = 0;
     GetMontgomeryParms(powerMod.nbrLimbs);
     nbrLimbs = NumberLength + 1;
     pstFactorInfo->ptrPolyLifted = ptrPolyLifted;
@@ -2287,11 +2283,9 @@ int HenselLifting(void)
     degreeFactor = pstFactorInfo->degree;
     // At this moment g = poly1, h = poly2.
     degreeG = degree - degreeFactor;
-    polyS = &poly1[(degreeG + 1)*nbrLimbs];
-    polyT = &poly2[(degreeFactor + 1)*nbrLimbs];
     ExtendedGcdPolynomial(poly1, degree - degreeFactor, poly2, degreeFactor, poly3,
       poly4, poly5, polyS, &degreeS, polyT, &degreeT);
-    // At this moment, s = poly1 (after g), t = poly2 (after h).
+    // At this moment, s = polyS, t = polyT.
     currentExp = 1;
     pstFactorInfo++;
     // Loop that performs the lifting.
@@ -2361,12 +2355,12 @@ int HenselLifting(void)
       // Convert polynomial mod prime to monic (leading coefficient must be 1).
       ConvertToMonic(poly4, degree);
       // Now the numbers are greater. Move them so they can fit. Old size = oldNumberLength, new size = NumberLength
-      MoveNumbers(poly1, degree - degreeFactor + degreeS + 2, oldNumberLength+1, NumberLength+1);
-      MoveNumbers(poly2, degreeFactor + degreeT + 2, oldNumberLength+1, NumberLength+1);
+      MoveNumbers(poly1, degreeG + 1, oldNumberLength+1, NumberLength+1);
+      MoveNumbers(poly2, degreeFactor + 1, oldNumberLength+1, NumberLength+1);
+      MoveNumbers(polyS, degreeS + 1, oldNumberLength + 1, NumberLength + 1);
+      MoveNumbers(polyT, degreeT + 1, oldNumberLength + 1, NumberLength + 1);
       nbrLimbs = NumberLength + 1;
-      polyS = &poly1[(degree - degreeFactor + 1)*nbrLimbs];
-      polyT = &poly2[(degreeFactor + 1)*nbrLimbs];
-      // Convert standard notation to Montgomery notation.
+      // Convert standard notation to Montgomery notation using new modulus.
       ToMontgomeryNotation(poly1, degreeG+1);                // Convert g to Montgomery notation.
       ToMontgomeryNotation(poly2, degreeFactor+1);           // Convert h to Montgomery notation.
       ToMontgomeryNotation(polyS, degreeS+1);                // Convert s to Montgomery notation.
@@ -2381,10 +2375,10 @@ int HenselLifting(void)
         CompressBigInteger(&poly3[index*nbrLimbs], &operand1);
       }
       Adjust(poly1, degreeG,                             // g
-        poly2,                                           // h
         poly2, degreeFactor,                             // h
-        polyS, degreeS,                                  // s
-        polyT, degreeT,                                  // t
+        poly2, degreeFactor,                             // h
+        degreeS,                                         // s
+        degreeT,                                         // t
         poly1, degreeG,                                  // g
         getDegreePoly(poly3, degree),                    // degree of e
         0);
@@ -2407,10 +2401,10 @@ int HenselLifting(void)
       SubtBigNbrMod(operand1.limbs, MontgomeryMultR1, operand1.limbs);
       CompressBigInteger(poly3, &operand1);                               // Store e.
       Adjust(polyT, degreeT,             // t
-        polyS,                           // s
-        poly2, degreeFactor,             // h
         polyS, degreeS,                  // s
-        polyT, degreeT,                  // t
+        poly2, degreeFactor,             // h
+        degreeS,                         // s
+        degreeT,                         // t
         poly1, degreeG,                  // g
         getDegreePoly(poly3, degreeS+degreeG),  // degree of e
         1);
@@ -2426,6 +2420,8 @@ void OrigPolyFromMontgomeryToStandard(void)
   int *ptrValue1, *ptrValue2;
   int currentDegree;
   memcpy(&TestNbr, &powerMod, powerMod.nbrLimbs*sizeof(limb));
+  NumberLength = powerMod.nbrLimbs;
+  TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(powerMod.nbrLimbs);
   degree = values[0];
   ptrValue1 = &values[1];

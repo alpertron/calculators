@@ -914,7 +914,7 @@ void UncompressIntLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbrLe
 {
   int nbrLimbs = *ptrValues;
   memcpy(bigint, ptrValues+1, nbrLimbs*sizeof(limb));
-  memset(bigint + nbrLimbs + 1, 0, (nbrLen - nbrLimbs) * sizeof(limb));
+  memset(bigint + nbrLimbs, 0, (nbrLen - nbrLimbs) * sizeof(limb));
 }
 
 void CompressIntLimbs(/*@out@*/int *ptrValues, /*@in@*/limb *bigint, int nbrLen)

@@ -430,6 +430,8 @@ static int FactorPolynomial(char *input, int expo)
     return EXPR_LEADING_COFF_MULTIPLE_OF_PRIME;
   }
   memcpy(&TestNbr, &primeMod, primeMod.nbrLimbs*sizeof(limb));
+  NumberLength = primeMod.nbrLimbs;
+  TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(primeMod.nbrLimbs);
   // Convert polynomial mod prime to monic (leading coefficient must be 1).
   ConvertToMonic(valuesPrime, degree);

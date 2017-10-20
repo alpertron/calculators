@@ -4,7 +4,7 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "factor.h"
-#define DEBUG_CODE  13
+#define DEBUG_CODE  9
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
@@ -135,6 +135,7 @@ int main(int argc, char *argv[])
         memset(&num.limbs[num.nbrLimbs], 0, (mod.nbrLimbs - num.nbrLimbs) * sizeof(limb));
       }
       memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
+      TestNbr[NumberLength].x = 0;
       GetMontgomeryParms(NumberLength);
       ModInvBigNbr(num.limbs, inv.limbs, mod.limbs, NumberLength);
       Bin2Dec(inv.limbs, output, NumberLength, 200);

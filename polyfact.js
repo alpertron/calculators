@@ -28,7 +28,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker('polfactW0014.js');
+    worker = new Worker('polfactW0015.js');
     worker.onmessage = function(e)
     { // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.
