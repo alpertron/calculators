@@ -424,19 +424,19 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
     {
       degreeMin = degree2;
       degreeMax = degree1;
-      ptrPolyMin = ptrArgument2;
-      ptrPolyMax = ptrArgument1;
+      ptrPolyMin = ptrArgument2+1;
+      ptrPolyMax = ptrArgument1+1;
     }
     else
     {
       degreeMin = degree1;
       degreeMax = degree2;
-      ptrPolyMin = ptrArgument1;
-      ptrPolyMax = ptrArgument2;
+      ptrPolyMin = ptrArgument1+1;
+      ptrPolyMax = ptrArgument2+1;
     }
     ptrValue1 = poly1;
     *ptrValue1++ = degreeMax;
-    for (currentDegree = 0; currentDegree < degreeMin; currentDegree++)
+    for (currentDegree = 0; currentDegree <= degreeMin; currentDegree++)
     {
       UncompressBigInteger(ptrPolyMin, &operand1);
       UncompressBigInteger(ptrPolyMax, &operand2);
@@ -446,9 +446,9 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
       ptrPolyMax += *ptrPolyMax + 1;
       ptrValue1 += *ptrValue1 + 1;
     }
-    for (; currentDegree < degreeMax; currentDegree++)
+    for (; currentDegree <= degreeMax; currentDegree++)
     {
-      memcpy(ptrValue1, ptrPolyMax, (1 + *ptrValue1)*sizeof(int));
+      memcpy(ptrValue1, ptrPolyMax, (1 + *ptrPolyMax)*sizeof(int));
       ptrPolyMax += *ptrPolyMax + 1;
       ptrValue1 += *ptrValue1 + 1;
     }
@@ -995,7 +995,7 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
     *ptrValue1++ = 0;
   }
   memcpy(ptrValue1, poly1, (ptrValue2 - &poly1[0])*sizeof(int));
-  valuesIndex = (int)(ptrValue1 - &values[0]);
+  valuesIndex = (int)(ptrValue1 - &values[0] + (ptrValue2 - &poly1[0]));
   return EXPR_OK;
 }
 

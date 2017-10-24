@@ -16,7 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-var version = '0015::';
+var version = '0017::';
+
+
 
 
 self.addEventListener("install", function(event)
