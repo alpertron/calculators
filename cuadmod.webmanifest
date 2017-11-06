@@ -1,0 +1,30 @@
+{
+  "short_name": "Cuadráticas mod",
+  "name": "Ecuaciones cuadráticas modulares",
+  "icons": [
+    {
+      "src": "quadmod-icon-1x.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "quadmod-icon-2x.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "quadmod-icon-4x.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "quadmod-icon-512px.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "theme_color": "#db5945",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "CUADMOD.HTM?launcher=true"
+}

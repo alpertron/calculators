@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="es" manifest="ecm.appcache">
 <head>
+<meta charset="utf-8">
 <meta name="Author" content="Dario Alejandro Alpern" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta charset="utf-8" />
 <meta name="description" content="Aplicación Javascript que factoriza números enteros utilizando los algoritmos ECM y SIQS. Escrito por Dario Alpern." />
 <link rel="alternate" hreflang="es" href="ECMC.HTM" />
-<link rel="manifest" href="/ecmc.json">
+<link rel="manifest" href="/ecmc.webapplication">
 <meta name="theme-color" content="#db5945">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Calculadora de factorización de números enteros</title>
@@ -127,7 +127,7 @@ Contacto
 <main role="main">
 <article>
 <h1>Calculadora de factorización de números enteros</h1>
-<script async="async" type="text/javascript" src="ecm0006.js"></script>
+<script async="async" type="application/javascript" src="ecm0020.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -178,8 +178,10 @@ Contacto
 <li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
 <li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
 <li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
+<li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
 <li> <strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub>
 <li> <strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub>
+<li> <strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
 <li> <strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).
 <li> <strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.
 <li> <strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.
@@ -241,7 +243,7 @@ Para reducir esa base de datos, sólo se incluyen factores primos con al menos 1
 La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 24 de septiembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 3 de noviembre de 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>

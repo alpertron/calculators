@@ -24,7 +24,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker('fsquaresW0003.js');
+    worker = new Worker('fsquaresW0020.js');
     worker.onmessage = function(e)
     {
       document.getElementById('result').innerHTML = e.data;
@@ -149,6 +149,11 @@ window.onload = function()
   {
     document.getElementById('help').style.display = "block";
     document.getElementById('result').style.display = "none";
+  }
+  if ('serviceWorker' in navigator)
+  { // Attempt to register service worker.
+    // There is no need to do anything on registration success or failure in this JavaScript module.
+    navigator.serviceWorker.register('calcSW.js').then(function() {}, function() {});
   }
 }
 

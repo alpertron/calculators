@@ -28,7 +28,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker('polfactW0016.js');
+    worker = new Worker('polfactW0020.js');
     worker.onmessage = function(e)
     { // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.
@@ -115,6 +115,11 @@ window.onload = function ()
       input.selectionStart = loc;
       input.selectionEnd = loc;
 	}, 30);		
+  }
+  if ('serviceWorker' in navigator)
+  { // Attempt to register service worker.
+    // There is no need to do anything on registration success or failure in this JavaScript module.
+    navigator.serviceWorker.register('calcSW.js').then(function() {}, function() {});
   }
 }
 

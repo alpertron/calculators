@@ -1,12 +1,14 @@
 ﻿<!doctype html>
 <html lang="en">
 <head>
+<meta charset="utf-8">
 <meta name="Author" content="Dario Alejandro Alpern" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta charset="utf-8" />
 <meta name="description" content="Javascript application that factors polynomials. Written by Dario Alpern." />
+<meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="es" href="POLFACT.HTM" />
-<link rel="prefetch" href="polfact0016.js" />
+<link rel="manifest" href="polfact.webmanifest">
+<link rel="prefetch" href="polfact0020.js" />
 <title>Polynomial factorization calculator</title>
 <style type="text/css" media="print">
 #smallheader {display:none;}
@@ -81,7 +83,7 @@ Contact
 </nav>
 <article>
 <h1>Polynomial factorization calculator</h1>
-<script async="async" type="text/javascript" src="polfact0016.js"></script>
+<script async="async" type="application/javascript" src="polfact0020.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -159,10 +161,10 @@ The second option is used to copy the data to another application.
 <ul>
 <li><strong>n!</strong>: factorial</li>
 <li><strong>p#</strong>: primorial (product of all primes less or equal than <em>p</em>).</li>
-<li><strong>B(n)</strong>: Previous pseudoprime to <em>n</em></li>
+<li><strong>B(n)</strong>: Previous probable prime before <em>n</em></li>
 <li><strong>F(n)</strong>: Fibonacci number F<SUB>n</SUB></li>
 <li><strong>L(n)</strong>: Lucas number L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB></li>
-<li><strong>N(n)</strong>: Next pseudoprime to <em>n</em></li>
+<li><strong>N(n)</strong>: Next probable prime after <em>n</em></li>
 <li><strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <em>n</em> into sums of integers without regard to order).</li>
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
@@ -170,7 +172,7 @@ The second option is used to copy the data to another application.
 <p>
 You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 23 October 2017.</p>
+<p>Written by Dario Alpern. Last updated 3 November 2017.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>

@@ -1,184 +1,182 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta name="Author" content="Dario Alejandro Alpern" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta charset="utf-8" />
-    <meta name="description" content="Aplicación Javascript que halla logaritmos discretos. Hecho por Dario Alpern." />
-    <link rel="alternate" hreflang="en" href="DILOG.HTM" />
-    <link rel="prefetch" href="dilogW0005.js" />
-    <title>Calculadora de logaritmos discretos</title>
-    <style type="text/css" media="print">
-      #smallheader {display:none;}
-    </style>
-    <style type="text/css" media="screen">
-      #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
-      #smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
-      #smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
-      #smallheader li:hover {background-color:#004000; color:#FFFFFF;}
-      #smallheader li ul { display:none; position:absolute; }
-      #smallheader li:hover ul.alignleft{ display:block; height:auto;}
-      #smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
-      #smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
-      #smallheader a:link{color:#FFFFFF; text-decoration: none;}
-      #smallheader a:visited{color:#FFFFFF; text-decoration: none;}
-      #smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
-      #smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
-      #smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
-      #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
-      #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-      #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-      @media (max-width: 400px) { #smallheader { font-size:0.7em;  } }
-      @media (min-width: 400px) { #smallheader { font-size:1em;  } }
-    </style>
-    <style>
-      body {
-      font-family: arial;
-      margin: 0;
-      padding: 0;
-      }
-      h1 {text-align:center;}
-	  .lf {padding:0.2em; clear:both; width:100%}
-      #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
-      @media (min-width: 400px) { .input{width: calc(100% - 7em);float:right;padding:3px;margin:0px;}}
-      @media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
-    </style>
-  </head>
-  <body>
-    <nav id="smallheader">
-      <div style="padding:0px;float:right;">
-        <a href="ENGLISH.HTM" hreflang="en" title="Dario Alpern's Web site in English">ENG</a>
-      </div>
-      <ul>
-        <li>
-          Electrónica
-          <ul class="alignleft">
-            <li>
-              <a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a>
-            </li>
-          </ul>
-        </li>
-        <li>
-          Matemáticas
-          <ul class="alignleft">
-            <li>
-              <a href="CALDORAS.HTM" title="Programas en Java y Javascript que implementan calculadoras">Calculadoras</a>
-            </li>
-            <li>
-              <a href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a>
-            </li>
-            <li>
-              <a href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a>
-            </li>
-          </ul>
-        </li>
-        <li>
-          Programas
-          <ul class="alignright">
-            <li>
-              <a href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a>
-            </li>
-            <li>
-              <a href="PROGJAVA.HTM" title="Programas escritos en Java">Java</a>
-            </li>
-            <li>
-              <a href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a>
-            </li>
-          </ul>
-        </li>
-        <li class="alignright">
-          Contacto
-          <ul class="alignright">
-            <li>
-              <a href="PERSONAL.HTM" title="Información personal">Personal</a>
-            </li>
-            <li>
-              <a href="FORMULAR.HTM" title="Formulario para enviar comentarios">Comentarios</a>
-            </li>
-            <li>
-              <a href="GBOOK.HTM" title="Viejo y nuevo libro de visitas">Libro de invitados</a>
-            </li>
-            <li>
-              <a href="DONATION.HTM" title="Donaciones al autor de este sitio Web">Donaciones</a>
-            </li>
-          </ul>
-        </li>
-      </ul>
-      <br style="clear:both;" />
-    </nav>
-  <article> 
-    <h1>Calculadora de logaritmos discretos</h1>
-    <script async="async" type="text/javascript" src="dilog0005.js"></script>
-    <div style='padding:10px;'>
-      <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
-        <a href="/" itemprop="url">
-          <span itemprop="title">Alpertron</span>
-        </a> ›
-      </div>
-      <div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" style="display:inline;">
-        <a href="PROGJAVA.HTM" itemprop="url">
-          <span itemprop="title">Programas</span>
-        </a> ›
-      </div>
-      <div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" style="display:inline;">
-        <a href="LOGDI.HTM" itemprop="url">
-          <span itemprop="title">Calculadora de logaritmos discretos</span>
-        </a>
-      </div>
-    </div>
-    <form id="applet">
-      <label for="base">Base</label><input type="text" id="base" value="" class="input"/>
-      <div class="lf"></div>
-      <label for="pow">Potencia</label><input type="text" id="pow" value="" class="input"/>
-      <div class="lf"></div>
-      <label for="mod">Módulo</label><input type="text" id="mod" value="" class="input"/>
-      <div class="lf"></div>
-      <input type="button" id="dlog" value="Logaritmo discreto" />
-      <input type="button" id="stop" value="Parar" />
-      <input type="button" id="helpbtn" value="Ayuda" />
-      <div class="lf"></div>
-      <label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6"/>
-      <input type="hidden" id="app" value="1"/>
-    </form>
-    <div id="help" aria-live="polite">
+<head>
+<meta charset="utf-8" />
+<meta name="Author" content="Dario Alejandro Alpern" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Aplicación Javascript que halla logaritmos discretos. Hecho por Dario Alpern." />
+<meta name="theme-color" content="#db5945">
+<link rel="alternate" hreflang="en" href="DILOG.HTM" />
+<link rel="prefetch" href="dilogW0020.js" />
+<link rel="manifest" href="logdi.webmanifest">
+<title>Calculadora de logaritmos discretos</title>
+<style type="text/css" media="print">
+#smallheader {display:none;}
+</style>
+<style type="text/css" media="screen">
+#smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
+#smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+#smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+#smallheader li:hover {background-color:#004000; color:#FFFFFF;}
+#smallheader li ul { display:none; position:absolute; }
+#smallheader li:hover ul.alignleft{ display:block; height:auto;}
+#smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+#smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
+#smallheader a:link{color:#FFFFFF; text-decoration: none;}
+#smallheader a:visited{color:#FFFFFF; text-decoration: none;}
+#smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+#smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+#smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+#smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+#smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+#smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+@media (max-width: 400px) { #smallheader { font-size:0.7em;} }
+@media (min-width: 400px) { #smallheader { font-size:1em;} }
+</style>
+<style>
+body {font-family: arial; margin: 0; padding: 0;}
+h1 {text-align:center;}
+.lf {padding:0.2em; clear:both; width:100%}
+#applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+@media (min-width: 400px) { .input{width: calc(100% - 7em);float:right;padding:3px;margin:0px;}}
+@media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
+</style>
+</head>
+<body>
+<nav id="smallheader">
+<div style="padding:0px;float:right;">
+<a href="ENGLISH.HTM" hreflang="en" title="Dario Alpern's Web site in English">ENG</a>
+</div>
+<ul>
+<li>
+Electrónica
+<ul class="alignleft">
+<li>
+<a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a>
+</li>
+</ul>
+</li>
+<li>
+Matemáticas
+<ul class="alignleft">
+<li>
+<a href="CALDORAS.HTM" title="Programas en Java y Javascript que implementan calculadoras">Calculadoras</a>
+</li>
+<li>
+<a href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a>
+</li>
+<li>
+<a href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a>
+</li>
+</ul>
+</li>
+<li>
+Programas
+<ul class="alignright">
+<li>
+<a href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a>
+</li>
+<li>
+<a href="PROGJAVA.HTM" title="Programas escritos en Java">Java</a>
+</li>
+<li>
+<a href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a>
+</li>
+</ul>
+</li>
+<li class="alignright">
+Contacto
+<ul class="alignright">
+<li>
+<a href="PERSONAL.HTM" title="Información personal">Personal</a>
+</li>
+<li>
+<a href="FORMULAR.HTM" title="Formulario para enviar comentarios">Comentarios</a>
+</li>
+<li>
+<a href="GBOOK.HTM" title="Viejo y nuevo libro de visitas">Libro de invitados</a>
+</li>
+<li>
+<a href="DONATION.HTM" title="Donaciones al autor de este sitio Web">Donaciones</a>
+</li>
+</ul>
+</li>
+</ul>
+<br style="clear:both;" />
+</nav>
+<article> 
+<h1>Calculadora de logaritmos discretos</h1>
+<script async="async" type="application/javascript" src="dilog0020.js"></script>
+<div style='padding:10px;'>
+<div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
+<a href="/" itemprop="url">
+<span itemprop="title">Alpertron</span>
+</a> ›
+</div>
+<div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" style="display:inline;">
+<a href="PROGJAVA.HTM" itemprop="url">
+<span itemprop="title">Programas</span>
+</a> ›
+</div>
+<div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" style="display:inline;">
+<a href="LOGDI.HTM" itemprop="url">
+<span itemprop="title">Calculadora de logaritmos discretos</span>
+</a>
+</div>
+</div>
+<form id="applet">
+<label for="base">Base</label><input type="text" id="base" value="" class="input"/>
+<div class="lf"></div>
+<label for="pow">Potencia</label><input type="text" id="pow" value="" class="input"/>
+<div class="lf"></div>
+<label for="mod">Módulo</label><input type="text" id="mod" value="" class="input"/>
+<div class="lf"></div>
+<input type="button" id="dlog" value="Logaritmo discreto" />
+<input type="button" id="stop" value="Parar" />
+<input type="button" id="helpbtn" value="Ayuda" />
+<div class="lf"></div>
+<label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6"/>
+<input type="hidden" id="app" value="1"/>
+</form>
+<div id="help" aria-live="polite">
 <p>El problema de los logaritmos discretos consiste en hallar el exponente en la expresión <var>Base</var><sup><var>Exponente</var></sup> = <var>Potencia</var> (mod <var>Módulo</var>).
 <p>Esta aplicación funciona para modulos primos y compuestos. La única restricción es que la base y el módulo, y la potencia y el módulo deben ser primos entre sí.
 <p>En esta versión de la calculadora de logaritmos discretos está implementado el algoritmo Pohlig-Hellman, así que el tiempo de ejecución es proporcional a la raíz cuadrada del mayor factor primo del módulo menos 1.
 El applet responde en un período de tiempo razonable si este factor es menor que <span role="math" aria-label="10 a la 17">10<sup>17</sup></span>.
 <p>Se pueden ingresar expresiones que usen los siguientes operadores y paréntesis:
-    <ul>
-        <li><strong>+</strong> para suma</li>
-        <li><strong>-</strong> para resta</li>
-        <li><strong>*</strong> para multiplicacion</li>
-        <li><strong>/</strong> para división</li>
-        <li><strong>%</strong> para resto</li>
-        <li><strong>^</strong> o <strong>**</strong> para exponenciación</li>
-        <li><strong>n!</strong>: factorial</li>
-        <li><strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).</li>
-        <li><strong>B(n)</strong>: Pseudoprimo anterior a <var>n</var></li>
-        <li><strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub></li>
-        <li><strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub></li>
-        <li><strong>N(n)</strong>: Pseudoprimo posterior a <var>n</var></li>
-        <li><strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).</li>
-      </ul>
-	  <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
+<ul>
+<li><strong>+</strong> para suma</li>
+<li><strong>-</strong> para resta</li>
+<li><strong>*</strong> para multiplicacion</li>
+<li><strong>/</strong> para división</li>
+<li><strong>%</strong> para resto</li>
+<li><strong>^</strong> o <strong>**</strong> para exponenciación</li>
+<li><strong>n!</strong>: factorial</li>
+<li><strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).</li>
+<li><strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
+<li><strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub></li>
+<li><strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub></li>
+<li><strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
+<li><strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).</li>
+</ul>
+<p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 <p>El símbolo de exponenciación no está presente en algunos dispositivos móviles, así que es posible digitar dos asteriscos ** para el operador de exponenciación.</p>
 <p>Ejemplo: Hallar el número <var>n</var> tal que <span role="math" aria-label="7 a la n sea congruente a 23 módulo 43241">7<sup><var>n</var></sup> &equiv; 23 (mod 43241)</span>.
 <p>Digita 7 en la caja de entrada de Base, 23 en la caja de Potencia y 43241 en la caja Mod. Luego aprieta el botón denominado "Logaritmo discreto".</p>
 <p>El resultado es 3360 + 3930 <var>k</var>, donde <var>k</var> puede ser cualquier número entero.
 Como verificación puedes hallar <span role="math" aria-label="7 a la 3360 congruente a 23 módulo 43241">7<sup>3360</sup> &equiv; 23 (mod&nbsp;43241)</span> y <span role="math" aria-label="7 a la 3930 congruente a 1 módulo 43241">7<sup>3930</sup> &equiv; 1 (mod&nbsp;43241)</span>
-      <h2>Código fuente</h2>
-      <p>
-        Puedes bajar el código fuente del programa actual y del viejo applet de cálculo de logaritmos discretos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
-      </p>
-	  <p>Escrito por Dario Alpern. Actualizado el 24 de septiembre de 2016.</p>
-    </div>
-    <div id="result" aria-live="polite"></div>
-    <div>
-      <p>
-        Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORM.HTM?Comentario+de+calculadora+de+logaritmos+discretos">formulario</a>.
-      </p>
-    </div>
-	</article>
-  </body>
+<h2>Código fuente</h2>
+<p>
+Puedes bajar el código fuente del programa actual y del viejo applet de cálculo de logaritmos discretos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
+</p>
+<p>Escrito por Dario Alpern. Actualizado el 3 de noviembre de 2017.</p>
+</div>
+<div id="result" aria-live="polite"></div>
+<div>
+<p>
+Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORM.HTM?Comentario+de+calculadora+de+logaritmos+discretos">formulario</a>.
+</p>
+</div>
+</article>
+</body>
 </html>

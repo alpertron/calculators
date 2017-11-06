@@ -1,0 +1,30 @@
+{
+  "short_name": "Get Factors",
+  "name": "Integer factorization",
+  "icons": [
+    {
+      "src": "ecm-icon-1x.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "ecm-icon-2x.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "ecm-icon-4x.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "ecm-icon-512px.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "theme_color": "#db5945",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "ECM.HTM?launcher=true"
+}

@@ -1,0 +1,30 @@
+{
+  "short_name": "Factorizar gausianos",
+  "name": "Factorización de enteros gausianos",
+  "icons": [
+    {
+      "src": "gaussian-icon-1x.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "gaussian-icon-2x.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "gaussian-icon-4x.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "gaussian-icon-512px.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "theme_color": "#db5945",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "GAUSIANO.HTM?launcher=true"
+}

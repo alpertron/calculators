@@ -1,0 +1,30 @@
+{
+  "short_name": "4 cuadrados",
+  "name": "Suma de cuatro cuadrados",
+  "icons": [
+    {
+      "src": "fsquares-icon-1x.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "fsquares-icon-2x.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "fsquares-icon-4x.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "fsquares-icon-512px.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "theme_color": "#db5945",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "SUMCUAD.HTM?launcher=true"
+}

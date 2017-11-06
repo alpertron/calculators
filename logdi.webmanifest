@@ -1,0 +1,30 @@
+{
+  "short_name": "Logaritmos discretos",
+  "name": "Calculadora de logaritmos discretos",
+  "icons": [
+    {
+      "src": "dilog-icon-1x.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "dilog-icon-2x.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "dilog-icon-4x.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "dilog-icon-512px.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "theme_color": "#db5945",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "LOGDI.HTM?launcher=true"
+}
