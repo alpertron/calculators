@@ -28,6 +28,7 @@ limb TestNbr[MAX_LEN];
 limb MontgomeryMultN[MAX_LEN];
 limb MontgomeryMultR1[MAX_LEN];
 limb MontgomeryMultR2[MAX_LEN];
+int powerOf2Exponent;
 static limb aux[MAX_LEN], aux2[MAX_LEN];
 static limb aux3[MAX_LEN], aux4[MAX_LEN];
 static limb aux5[MAX_LEN], aux6[MAX_LEN];
@@ -87,6 +88,7 @@ void GetMontgomeryParms(int len)
 {
   int j;
   limb Cy;
+  int value;
   TestNbr[len].x = 0;
   NumberLength = len;
   NumberLength2 = len + len;
@@ -96,6 +98,32 @@ void GetMontgomeryParms(int len)
     MontgomeryMultR2[0].x = 1;
     NumberLengthR1 = 1;
     return;
+  }
+  // Check whether TestNbr is a power of 2.
+  powerOf2Exponent = 0;    // Indicate not power of 2 in advance.
+  for (j = 0; j < NumberLength-1; j++)
+  {
+    if (TestNbr[j].x != 0)
+    {
+      break;
+    }
+  }
+  if (j == NumberLength - 1)
+  {
+    value = TestNbr[NumberLength - 1].x;
+    for (j = 0; j < BITS_PER_GROUP; j++)
+    {
+      if (value == 1)
+      {
+        powerOf2Exponent = (NumberLength - 1)*BITS_PER_GROUP + j;
+        memset(MontgomeryMultR1, 0, NumberLength*sizeof(limb));
+        memset(MontgomeryMultR2, 0, NumberLength * sizeof(limb));
+        MontgomeryMultR1[0].x = 1;
+        MontgomeryMultR2[0].x = 1;
+        return;
+      }
+      value >>= 1;
+    }
   }
   // Compute MontgomeryMultN as -1/TestNbr (mod 2^k) using Newton method,
   // which doubles the precision for each iteration.
@@ -995,6 +1023,15 @@ void modmult(limb *factor1, limb *factor2, limb *product)
     smallmodmult(factor1->x, factor2->x, product, TestNbr[0].x);
     return;
   }
+  if (powerOf2Exponent != 0)
+  {    // TestNbr is a power of 2.
+    UncompressLimbsBigInteger(factor1, &tmpNum);
+    UncompressLimbsBigInteger(factor2, &tmpDen);
+    BigIntMultiply(&tmpNum, &tmpDen, &tmpNum);
+    CompressLimbsBigInteger(product, &tmpNum);
+    (product + powerOf2Exponent / BITS_PER_GROUP)->x &= (1 << (powerOf2Exponent % BITS_PER_GROUP)) - 1;
+    return;
+  }
   if (NumberLength <= 12)
   {     // Small numbers.
     int i, j;
@@ -1264,7 +1301,6 @@ void BigIntModularPower(BigInteger *base, BigInteger *exponent, BigInteger *powe
   aux4[0].x = 1;
   modmult(aux4, aux5, aux6);
   UncompressLimbsBigInteger(aux6, power);
-
 }
 
 // Input: base = base in Montgomery notation.
@@ -1487,6 +1523,12 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
   if (nbrLen == 1)
   {
     inv->x = modInv(num->x, mod->x);
+    return;
+  }
+  if (powerOf2Exponent != 0)
+  {    // TestNbr is a power of 2.
+    ComputeInversePower2(num, inv, aux);
+    (inv + powerOf2Exponent / BITS_PER_GROUP)->x &= (1 << (powerOf2Exponent % BITS_PER_GROUP)) - 1;
     return;
   }
   //  1. U <- M, V <- X, R <- 0, S <- 1, k <- 0
