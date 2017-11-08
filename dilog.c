@@ -193,8 +193,9 @@ void DiscreteLogarithm(void)
     if (tmpBase.nbrLimbs == 1 && tmpBase.limbs[0].x == 0)
     {     // modulus and base are not relatively prime.
       int ctr;
-      CopyBigInt(&bigNbrA, &tmpBase);
-      for (ctr = astFactorsMod[index].multiplicity; ctr > 0; ctr--)
+      multiplicity = astFactorsMod[index].multiplicity;
+      CopyBigInt(&bigNbrA, &power);
+      for (ctr = multiplicity; ctr > 0; ctr--)
       {
         BigIntRemainder(&bigNbrA, &groupOrder, &bigNbrB);
         if (bigNbrB.nbrLimbs != 1 || bigNbrB.limbs[0].x != 0)
@@ -205,13 +206,20 @@ void DiscreteLogarithm(void)
         CopyBigInt(&bigNbrA, &bigNbrB);
       }
       if (ctr == 0)
-      {  // Base is multiple of prime^exp.
+      {  // Power is multiple of prime^exp.
         continue;
       }
-        // Get tentative exponent.
-      ctr = astFactorsMod[index].multiplicity - ctr;
+      // Compute prime^mutliplicity.
+      BigIntPowerIntExp(&groupOrder, multiplicity, &tmp2);
+      BigIntRemainder(&base, &tmp2, &tmpBase);
+      // Get tentative exponent.
+      ctr = multiplicity - ctr;
       intToBigInteger(&bigNbrB, ctr);   // Convert exponent to big integer.
+      NumberLength = tmp2.nbrLimbs;
+      memcpy(TestNbr, tmp2.limbs, (NumberLength + 1) * sizeof(limb));
+      GetMontgomeryParms(NumberLength);
       BigIntModularPower(&tmpBase, &bigNbrB, &bigNbrA);
+      BigIntRemainder(&power, &tmp2, &bigNbrB);
       BigIntSubt(&bigNbrA, &bigNbrB, &bigNbrA);
       if (bigNbrA.nbrLimbs == 1 && bigNbrA.limbs[0].x == 0)
       {
@@ -858,11 +866,15 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
       ptrOutput += strlen(ptrOutput);
       Bin2Dec(DiscreteLog.limbs, ptrOutput, DiscreteLog.nbrLimbs, groupLength);
       ptrOutput += strlen(ptrOutput);
-      strcat(ptrOutput, " + ");
-      ptrOutput += strlen(ptrOutput);
-      Bin2Dec(DiscreteLogPeriod.limbs, ptrOutput, DiscreteLogPeriod.nbrLimbs, groupLength);
-      ptrOutput += strlen(ptrOutput);
-      strcat(ptrOutput, "<var>k</var></p>");
+      if (DiscreteLogPeriod.nbrLimbs != 1 || DiscreteLogPeriod.limbs[0].x != 0)
+      {   // Discrete log period is not zero.
+        strcat(ptrOutput, " + ");
+        ptrOutput += strlen(ptrOutput);
+        Bin2Dec(DiscreteLogPeriod.limbs, ptrOutput, DiscreteLogPeriod.nbrLimbs, groupLength);
+        ptrOutput += strlen(ptrOutput);
+        strcat(ptrOutput, "<var>k</var>");
+      }
+      strcat(ptrOutput, "</p>");
     }
   }
   strcat(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :

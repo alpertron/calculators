@@ -18,13 +18,14 @@
 */
 var cacheName = "newCache";
 
+
 // URLs for calculators
 var calcURLs = new Array();
 calcURLs[0] = ["/ECM.HTM", "/ECMC.HTM", "/ecm0020.js", "ecmW0020.js", "ecm0020.wasm",
                "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-512px.png"];
 calcURLs[1] = ["/POLFACT.HTM", "/FACTPOL.HTM", "/polfact0020.js", "polfactW0020.js",
                "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png", "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-512px.png"];
-calcURLs[2] = ["/DILOG.HTM", "/LOGDI.HTM", "/dilog0020.js", "dilogW0020.js",
+calcURLs[2] = ["/DILOG.HTM", "/LOGDI.HTM", "/dilog0022.js", "dilogW0022.js",
                "dilog.webmanifest", "logdi.webmanifest", "dilog-icon-1x.png", "dilog-icon-2x.png", "dilog-icon-4x.png", "dilog-icon-512px.png"];
 calcURLs[3] = ["/GAUSSIAN.HTM", "/GAUSIANO.HTM", "/gaussian0020,js", "gaussianW0020.js",
                "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png", "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-512px.png"];

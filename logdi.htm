@@ -7,7 +7,7 @@
 <meta name="description" content="Aplicación Javascript que halla logaritmos discretos. Hecho por Dario Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="DILOG.HTM" />
-<link rel="prefetch" href="dilogW0021.js" />
+<link rel="prefetch" href="dilogW0022.js" />
 <link rel="manifest" href="logdi.webmanifest">
 <title>Calculadora de logaritmos discretos</title>
 <style type="text/css" media="print">
@@ -37,6 +37,7 @@
 body {font-family: arial; margin: 0; padding: 0;}
 h1 {text-align:center;}
 .lf {padding:0.2em; clear:both; width:100%}
+.pad {padding:10px;}
 #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 @media (min-width: 400px) { .input{width: calc(100% - 7em);float:right;padding:3px;margin:0px;}}
 @media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
@@ -106,8 +107,8 @@ Contacto
 </nav>
 <article> 
 <h1>Calculadora de logaritmos discretos</h1>
-<script async="async" type="application/javascript" src="dilog0021.js"></script>
-<div style='padding:10px;'>
+<script async="async" type="application/javascript" src="dilog0022.js"></script>
+<div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="/" itemprop="url">
 <span itemprop="title">Alpertron</span>
@@ -138,7 +139,7 @@ Contacto
 <label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6"/>
 <input type="hidden" id="app" value="1"/>
 </form>
-<div id="help" aria-live="polite">
+<div id="help" aria-live="polite" class="pad">
 <p>El problema de los logaritmos discretos consiste en hallar el exponente en la expresión <var>Base</var><sup><var>Exponente</var></sup> = <var>Potencia</var> (mod <var>Módulo</var>).
 <p>Esta aplicación funciona para modulos primos y compuestos. La única restricción es que la base y el módulo, y la potencia y el módulo deben ser primos entre sí.
 <p>En esta versión de la calculadora de logaritmos discretos está implementado el algoritmo Pohlig-Hellman, así que el tiempo de ejecución es proporcional a la raíz cuadrada del mayor factor primo del módulo menos 1.
@@ -171,9 +172,9 @@ Puedes bajar el código fuente del programa actual y del viejo applet de cálcul
 </p>
 <p>Escrito por Dario Alpern. Actualizado el 7 de noviembre de 2017.</p>
 </div>
-<div id="result" aria-live="polite"></div>
+<div id="result" aria-live="polite" class="pad"></div>
 <div>
-<p>
+<p class="pad">
 Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORM.HTM?Comentario+de+calculadora+de+logaritmos+discretos">formulario</a>.
 </p>
 </div>

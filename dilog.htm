@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -7,7 +7,7 @@
 <meta name="description" content="Javascript application that finds discrete logarithms. Written by Dario Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="es" href="LOGDI.HTM" />
-<link rel="prefetch" href="dilogW0021.js" />
+<link rel="prefetch" href="dilogW0022.js" />
 <link rel="manifest" href="dilog.webmanifest">
 <title>Discrete logarithm calculator</title>
 <style type="text/css" media="print">
@@ -37,6 +37,7 @@
 body {font-family: arial; margin: 0; padding: 0;}
 h1 {text-align:center;}
 .lf {padding:0.2em; clear:both;}
+.pad {padding:10px;}
 #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 @media (min-width: 400px) { .input{width: calc(100% - 7em);float:right;padding:3px;margin:0px;}}
 @media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
@@ -104,8 +105,8 @@ Contact
 </nav>
 <article>
 <h1>Discrete logarithm calculator</h1>
-<script async="async" type="application/javascript" src="dilog0021.js"></script>
-<div style='padding:10px;'>
+<script async="async" type="application/javascript" src="dilog0022.js"></script>
+<div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="ENGLISH.HTM" itemprop="url">
 <span itemprop="title">Alpertron</span>
@@ -136,7 +137,7 @@ Contact
 <label for="digits">Digits per group</label> <input type="number" id="digits" value="6"/>
 <input type="hidden" id="app" value="0"/>
 </form>
-<div id="help" aria-live="polite">
+<div id="help" aria-live="polite" class="pad">
 <p>The discrete logarithm problem is to find the exponent in the expression <em>Base<sup>Exponent</sup> = Power (mod Modulus)</em>.
 <p>This applet works for both prime and composite moduli. The only restriction is that the base and the modulus, and the power and the modulus must be relatively prime.
 <p>In this version of the discrete logarithm calculator only the Pohlig-Hellman algorithm is implemented, so the execution time is proportional to the square root of the largest prime factor of the modulus minus 1.
@@ -170,9 +171,9 @@ You can download the source of the current program and the old sum polynomial fa
 </p>
 <p>Written by Dario Alpern. Last updated 7 November 2017.</p>
 </div>
-<div id="result" aria-live="polite"></div>
+<div id="result" aria-live="polite" class="pad"></div>
 <div>
-<p>
+<p class="pad">
 If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Discrete+logarithm+calculator+feedback">form</a>.
 </p>
 </div>
