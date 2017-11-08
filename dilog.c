@@ -93,12 +93,6 @@ void textErrorDilog(char *ptrOutput, enum eExprErr rc)
   case EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE:
     strcpy(text, lang ? "El módulo debe ser mayor que 1" : "Modulus must be greater than one");
     break;
-  case EXPR_MODULUS_BASE_NOT_RELATIVELY_PRIME:
-    strcpy(text, lang ? "El módulo y la base no son primos entre sí": "Modulus and base are not relatively prime");
-    break;
-  case EXPR_MODULUS_POWER_NOT_RELATIVELY_PRIME:
-    strcpy(text, lang ? "El módulo y la potencia no son primos entre sí" : "Modulus and power are not relatively prime");
-    break;
   default:
     textError(text, rc);
   }
@@ -182,14 +176,10 @@ void DiscreteLogarithm(void)
     factor(&modulus, nbrToFactor, factorsMod, astFactorsMod, NULL);
     NbrFactorsMod = astFactorsMod[0].multiplicity;
   }
-  DiscreteLog.nbrLimbs = 1;           // DiscreteLog <- 0
-  DiscreteLog.limbs[0].x = 0;
-  DiscreteLog.sign = SIGN_POSITIVE;
-  DiscreteLogPeriod.nbrLimbs = 1;     // DiscreteLogPeriod <- 1
-  DiscreteLogPeriod.limbs[0].x = 1;
-  DiscreteLogPeriod.sign = SIGN_POSITIVE;
+  intToBigInteger(&DiscreteLog, 0);       // DiscreteLog <- 0
+  intToBigInteger(&DiscreteLogPeriod, 1); // DiscreteLogPeriod <- 1
   for (index = 1; index <= NbrFactorsMod; index++)
-  {  // Compute group order as the prime minus 1.
+  {
     int mostSignificantDword, leastSignificantDword;
     int NbrFactors;
     int *ptrPrime;
@@ -200,9 +190,53 @@ void DiscreteLogarithm(void)
     UncompressBigInteger(ptrPrime, &groupOrder);
     groupOrder.sign = SIGN_POSITIVE;
     BigIntRemainder(&base, &groupOrder, &tmpBase);
+    if (tmpBase.nbrLimbs == 1 && tmpBase.limbs[0].x == 0)
+    {     // modulus and base are not relatively prime.
+      int ctr;
+      CopyBigInt(&bigNbrA, &tmpBase);
+      for (ctr = astFactorsMod[index].multiplicity; ctr > 0; ctr--)
+      {
+        BigIntRemainder(&bigNbrA, &groupOrder, &bigNbrB);
+        if (bigNbrB.nbrLimbs != 1 || bigNbrB.limbs[0].x != 0)
+        {    // Exit loop if integer division cannot be performed
+          break;
+        }
+        BigIntDivide(&bigNbrA, &groupOrder, &bigNbrB);
+        CopyBigInt(&bigNbrA, &bigNbrB);
+      }
+      if (ctr == 0)
+      {  // Base is multiple of prime^exp.
+        continue;
+      }
+        // Get tentative exponent.
+      ctr = astFactorsMod[index].multiplicity - ctr;
+      intToBigInteger(&bigNbrB, ctr);   // Convert exponent to big integer.
+      BigIntModularPower(&tmpBase, &bigNbrB, &bigNbrA);
+      BigIntSubt(&bigNbrA, &bigNbrB, &bigNbrA);
+      if (bigNbrA.nbrLimbs == 1 && bigNbrA.limbs[0].x == 0)
+      {
+        intToBigInteger(&DiscreteLog, ctr);     // DiscreteLog <- exponent
+        intToBigInteger(&DiscreteLogPeriod, 0); // DiscreteLogPeriod <- 0
+        break;
+      }
+      showText("There is no discrete logarithm");
+      DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+      return;
+    }
+    else
+    {     // modulus and base are relatively prime.
+      BigIntRemainder(&power, &groupOrder, &bigNbrB);
+      if (bigNbrB.nbrLimbs == 1 && bigNbrB.limbs[0].x == 0)
+      {   // power is multiple of prime. Error.
+        showText("There is no discrete logarithm");
+        DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+        return;
+      }
+    }
     CompressLimbsBigInteger(baseMontg, &tmpBase);
     BigIntRemainder(&power, &groupOrder, &tmpBase);
     CompressLimbsBigInteger(powerMontg, &tmpBase);
+    // Compute group order as the prime minus 1.
     groupOrder.limbs[0].x--;
     showText("Computing discrete logarithm...");
     CompressBigInteger(nbrToFactor, &groupOrder);
@@ -210,12 +244,8 @@ void DiscreteLogarithm(void)
     NbrFactors = astFactorsGO[0].multiplicity;
     NumberLength = *ptrPrime;
     UncompressBigInteger(ptrPrime, &mod);
-    logar.nbrLimbs = 1;             // logar <- 0
-    logar.limbs[0].x = 0;
-    logar.sign = SIGN_POSITIVE;
-    logarMult.nbrLimbs = 1;         // logarMult <- 1
-    logarMult.limbs[0].x = 1;
-    logarMult.sign = SIGN_POSITIVE;
+    intToBigInteger(&logar, 0);     // logar <- 0
+    intToBigInteger(&logarMult, 1); // logarMult <- 1
     NumberLength = mod.nbrLimbs;
     memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
     TestNbr[NumberLength].x = 0;
@@ -248,10 +278,10 @@ void DiscreteLogarithm(void)
     secondLimit = firstLimit * 2;
     for (indexBase = 0; indexBase < NbrFactors; indexBase++)
     {
-      strcpy(textExp, "Computing discrete logarithm in subgroup of ");
       NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
       UncompressBigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
       subGroupOrder.sign = SIGN_POSITIVE;
+      strcpy(textExp, "Computing discrete logarithm in subgroup of ");
       Bin2Dec(subGroupOrder.limbs, textExp + strlen(textExp), subGroupOrder.nbrLimbs, groupLen);
       ptr = textExp + strlen(textExp);
       if (astFactorsGO[indexBase + 1].multiplicity > 1)
@@ -567,17 +597,46 @@ void DiscreteLogarithm(void)
     }
     multiplicity = astFactorsMod[index].multiplicity;
     UncompressBigInteger(ptrPrime, &bigNbrB);
-    for (expon = 1; expon < multiplicity; expon++)
+    expon = 1;
+    if (bigNbrB.nbrLimbs == 1 && bigNbrB.limbs[0].x == 2)
+    {            // Prime factor is 2. Base and power are odd at this moment.
+      int lsbBase = base.limbs[0].x;
+      int lsbPower = power.limbs[0].x;
+      if (multiplicity > 1)
+      {
+        int mask = (multiplicity == 2? 3 : 7);
+        expon = (multiplicity == 2 ? 2 : 3);
+        if ((lsbPower & mask) == 1)
+        {
+          intToBigInteger(&logar, 0);
+          intToBigInteger(&logarMult, (lsbBase == 1 ? 1 : 2));
+        }
+        else if (((lsbPower - lsbBase) & mask) == 0)
+        {
+          intToBigInteger(&logar, 1);
+          intToBigInteger(&logarMult, 2);
+        }
+        else
+        {
+          showText("There is no discrete logarithm");
+          DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+          return;
+        }
+      }
+    }
+    for (; expon < multiplicity; expon++)
     {    // Repeated factor.
       // L = logar, LM = logarMult
       // B = base, P = power, p = prime
 
-      // B^n = P(mod p ^ (k + 1))->n = L + m*LM   m = ?
-      // B ^ (L + m*LM) = P
-      // (B^LM) ^ m = P*B ^ (-L)
-      // B^LM = r*p^k + 1, P*B ^ (-L) = s*p^k + 1
-      // (r*p^k + 1) ^ m = s*p^k + 1
+      // B^n = P (mod p^(k+1)) -> n = L + m*LM   m = ?
+      // B^(L + m*LM) = P
+      // (B^LM) ^ m = P*B^(-L)
+      // B^LM = r*p^k + 1, P*B^(-L) = s*p^k + 1
+      // (r*p^k + 1)^m = s*p^k + 1
       // From binomial theorem: m = s / r (mod p)
+      // If r = 0 and s != 0 there is no solution.
+      // If r = 0 and s = 0 do not change LM.
       BigIntPowerIntExp(&bigNbrB, expon + 1, &bigNbrA);
       NumberLength = bigNbrA.nbrLimbs;
       memcpy(TestNbr, bigNbrA.limbs, NumberLength * sizeof(limb));
@@ -599,10 +658,22 @@ void DiscreteLogarithm(void)
       BigIntDivide(&tmp2, &tmpBase, &bigNbrA);                             // s
       UncompressLimbsBigInteger(primRoot, &baseModGO);   // Use baseMontGO as temp var.
       BigIntDivide(&baseModGO, &tmpBase, &tmp2);                           // r
-      BigIntModularDivisionSaveTestNbr(&tmp2, &bigNbrA, &bigNbrB, &tmpBase);          // m
-      BigIntMultiply(&tmpBase, &logarMult, &tmp2);
-      BigIntAdd(&logar, &tmp2, &logar);
-      BigIntMultiply(&logarMult, &bigNbrB, &logarMult);
+      if (bigNbrA.nbrLimbs == 1 && bigNbrA.limbs[0].x == 0)
+      {            // r equals zero.
+        if (tmp2.nbrLimbs != 1 || tmp2.limbs[0].x != 0)
+        {          // s does not equal zero.
+          showText("There is no discrete logarithm");
+          DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+          return;
+        }
+      }
+      else
+      {            // r does not equal zero.
+        BigIntModularDivisionSaveTestNbr(&tmp2, &bigNbrA, &bigNbrB, &tmpBase);          // m
+        BigIntMultiply(&tmpBase, &logarMult, &tmp2);
+        BigIntAdd(&logar, &tmp2, &logar);
+        BigIntMultiply(&logarMult, &bigNbrB, &logarMult);
+      }
     }
     // Based on logar and logarMult, compute DiscreteLog and DiscreteLogPeriod
     // using the following formulas, that can be deduced from the Chinese
@@ -748,23 +819,7 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
   }
   if (rc == EXPR_OK)
   {
-    BigIntGcd(&modulus, &base, &tmpBase);
-    if (tmpBase.nbrLimbs != 1 || tmpBase.limbs[0].x != 1)
-    {                     // Gcd is not 1.
-      rc = EXPR_MODULUS_BASE_NOT_RELATIVELY_PRIME;
-    }
-    else
-    {
-      BigIntGcd(&modulus, &power, &tmpBase);
-      if (tmpBase.nbrLimbs != 1 || tmpBase.limbs[0].x != 1)
-      {
-        rc = EXPR_MODULUS_POWER_NOT_RELATIVELY_PRIME;
-      }
-      else
-      {
-        DiscreteLogarithm();
-      }
-    }
+    DiscreteLogarithm();
   }
   output[0] = '2';
   ptrOutput = &output[1];
@@ -775,12 +830,12 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
   }
   else
   {
-    strcpy(ptrOutput, lang?"<p>Hallar <em>exp</em> tal que ": 
-                           "<p>Find <em>exp</em> such that ");
+    strcpy(ptrOutput, lang?"<p>Hallar <var>exp</var> tal que ": 
+                           "<p>Find <var>exp</var> such that ");
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(base.limbs, ptrOutput, base.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
-    strcat(ptrOutput, "<sup><em>exp</em></sup> &equiv; ");
+    strcat(ptrOutput, "<sup><var>exp</var></sup> &equiv; ");
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(power.limbs, ptrOutput, power.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
@@ -792,14 +847,14 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
     ptrOutput += strlen(ptrOutput);
     if (DiscreteLogPeriod.sign == SIGN_NEGATIVE)
     {
-      strcat(ptrOutput, lang? "Ningún valor de <em>exp</em> satisface la congruencia.</p>":
-                              "There is no such value of <em>exp</em>.</p>");
+      strcat(ptrOutput, lang? "Ningún valor de <var>exp</var> satisface la congruencia.</p>":
+                              "There is no such value of <var>exp</var>.</p>");
       ptrOutput += strlen(ptrOutput);
       strcpy(ptrOutput, textExp);
     }
     else
     {
-      strcat(ptrOutput, "<em>exp</em> = ");
+      strcat(ptrOutput, "<var>exp</var> = ");
       ptrOutput += strlen(ptrOutput);
       Bin2Dec(DiscreteLog.limbs, ptrOutput, DiscreteLog.nbrLimbs, groupLength);
       ptrOutput += strlen(ptrOutput);
@@ -807,7 +862,7 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
       ptrOutput += strlen(ptrOutput);
       Bin2Dec(DiscreteLogPeriod.limbs, ptrOutput, DiscreteLogPeriod.nbrLimbs, groupLength);
       ptrOutput += strlen(ptrOutput);
-      strcat(ptrOutput, "<em>k</em></p>");
+      strcat(ptrOutput, "<var>k</var></p>");
     }
   }
   strcat(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
