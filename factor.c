@@ -98,7 +98,7 @@ static void add3(limb *x3, limb *z3, limb *x2, limb *z2, limb *x1, limb *z1, lim
 static void duplicate(limb *x2, limb *z2, limb *x1, limb *z1);
 static BigInteger Temp1, Temp2, Temp3, Temp4;
 BigInteger factorValue, tofactor;
-char verbose, prettyprint, cunningham;
+char verbose, prettyprint, cunningham, hexadecimal;
 long long Gamma[386];
 long long Delta[386];
 long long AurifQ[386];
@@ -1757,7 +1757,14 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
   }
   strcpy(ptrLowerText, lang ? "<p>Factorizando ": "<p>Factoring " );
   ptrLowerText += strlen(ptrLowerText);
-  Bin2Dec(N->limbs, ptrLowerText, N->nbrLimbs, groupLen);
+  if (hexadecimal)
+  {
+    Bin2Hex(N->limbs, ptrLowerText, N->nbrLimbs, groupLen);
+  }
+  else
+  {
+    Bin2Dec(N->limbs, ptrLowerText, N->nbrLimbs, groupLen);
+  }
   ptrLowerText += strlen(ptrLowerText);
   strcpy(ptrLowerText, "</p>");
   ptrLowerText += strlen(ptrLowerText);
@@ -1833,7 +1840,14 @@ void SendFactorizationToOutput(enum eExprErr rc, struct sFactors *pstFactors, ch
         {
           NumberLength = *pstFactor->ptrFactor;
           UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
-          Bin2Dec(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
+          if (hexadecimal)
+          {
+            Bin2Hex(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
+          }
+          else
+          {
+            Bin2Dec(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
+          }
           ptrOutput += strlen(ptrOutput);
           if (pstFactor->multiplicity > 1)
           {
@@ -2099,7 +2113,7 @@ static void SaveFactors(struct sFactors *pstFactors)
     NumberLength = *pstCurFactor->ptrFactor;
     UncompressBigInteger(pstCurFactor->ptrFactor, &bigint);
     bigint.sign = SIGN_POSITIVE;
-    BigInteger2Dec(&bigint, ptrText, -100000);
+    BigInteger2Dec(&bigint, ptrText, -100000);   // Factors are saved in decimal.
     ptrText += strlen(ptrText);
     *ptrText++ = '^';
     int2dec(&ptrText, pstCurFactor->multiplicity);

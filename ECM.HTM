@@ -32,8 +32,9 @@
 .atright {float:right;}
 .newline {clear:both;}
 }
-@media screen and (max-width: 400px) { #smallheader { font-size:0.7em;  } }
-@media screen and (min-width: 400px) { #smallheader { font-size:1em;  } }
+@media screen and (max-width: 400px) {#smallheader {font-size:0.7em;}}
+@media screen and (min-width: 400px) {#smallheader {font-size:1em;}}
+@media screen and (min-width: 500px) {#configleft {float:left;}}
 body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
 h1 {text-align:center;}
 .lf {padding:0.2em; clear:both;}
@@ -44,6 +45,7 @@ h1 {text-align:center;}
 #ltextarea {display:none;}
 .inline  {display:inline;}
 .pad {padding:10px;}
+.hex {font-family: Courier, "Lucida Console", monospace}
 #tableCurves {max-width:700px; margin-left:auto; margin-right:auto;}
 #help,#result,#status,#footer {margin: 3px; padding: 3px;}
 #more,#stop {display:none}
@@ -52,23 +54,17 @@ h1 {text-align:center;}
 .modal-header {padding: 2px 10px; background-color: #5cb85c; color: white;}
 .modal-body {padding: 2px 10px;}
 .modal-content {
-  position: relative;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   background-color: #fefefe;
-  margin: auto;
   padding: 0;
   border: 1px solid #888;
   width: 80%;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-  -webkit-animation-name: animatetop;
-  -webkit-animation-duration: 0.4s;
-  animation-name: animatetop;
-  animation-duration: 0.4s
 }
 .modal {
   display: none;
   position: fixed;
   z-index: 1;
-  padding-top: 100px;
   left: 0;
   top: 0;
   width: 100%;
@@ -77,12 +73,9 @@ h1 {text-align:center;}
   background-color: rgb(0,0,0);
   background-color: rgba(0,0,0,0.4);
 }
-
 #close {float:right}
 #modal-header-text {font-size:1.5em}
 
-@-webkit-keyframes animatetop {from {top: -300px; opacity: 0} to {top: 0; opacity: 1}}
-@keyframes animatetop {from {top: -300px; opacity: 0} to {top: 0; opacity: 1}}
 table, td, th { border: 1px solid gray }
 </style>
 </head>
@@ -127,7 +120,7 @@ Contact
 <main role="main">
 <article>
 <h1>Integer factorization calculator</h1>
-<script async="async" type="application/javascript" src="ecm0020.js"></script>
+<script async="async" type="application/javascript" src="ecm0022.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -223,6 +216,8 @@ In order to change the curve number when a factorization is in progress, press t
 <li><strong>Verbose mode</strong>: Not ready yet.</li>
 <li><strong>Pretty print</strong>: If this checkbox is set, the exponents are shown in superscripts and the multiplication sign is &quot; &times; &quot;. The application also shows the number of digits for numbers with more than 30 digits.
 If the checkbox is not set, the exponents are preceded by the exponentiation sign &quot; ^ &quot; and the multiplication is indicated by asterisks. Also the number of digits is never displayed. This mode eases copying the results to other mathematical programs.</li>
+<li><strong>Hexadecimal output</strong>: If this checkbox is set, the numbers are shown in hexadecimal format instead of decimal, which is the common notation.
+To enter numbers in hexadecimal format, you will need to precede them by the string 0x. For instance 0x38 = 56. The program shows hexadecimal numbers with monospaced font.</li>
 <li><strong>Use Cunningham tables on server</strong>: When selected, if the number to be factored has the form a<sup>b</sup> &pm; 1, the application will attempt to retrieve the known factors from the Web server.
 In order to reduce the database, only factors with at least 14 digits are included, so the application will find the small factors. These factors comes from <a href="http://myfactors.mooo.com/">Jonathan Crombie list</a> and it includes 2674850 factors of Cunningham numbers.</li>
 </ul>
@@ -246,7 +241,7 @@ The line to type is: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.</p>
-<p>Written by Dario Alpern. Last updated 3 November 2017.</p>
+<p>Written by Dario Alpern. Last updated 17 November 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -273,11 +268,16 @@ The line to type is: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <div class="applet">
 <fieldset>
 <legend>Configuration parameters</legend>
+<div id="configleft">
 <p><label for="digits">Digits per group</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"/></p>
 <p><input type="checkbox" id="batch"><label for="batch">Batch mode</label></p>
 <p><input type="checkbox" id="verbose"><label for="verbose">Verbose mode</label></p>
+</div>
+<div id="configright">
 <p><input type="checkbox" id="pretty"><label for="pretty">Pretty print</label></p>
+<p><input type="checkbox" id="hex"><label for="hex">Hexadecimal output</label></p>
 <p><input type="checkbox" id="cunnin"><label for="cunnin">Use Cunningham tables on server</label></p>
+</div>
 </fieldset>
 <p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
 </div>

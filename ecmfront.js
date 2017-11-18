@@ -70,7 +70,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'ecm0020.wasm');
+  request.open('GET', 'ecm0022.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -177,7 +177,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker(asmjs? "ecmW0020.js": "ecm0020.js");
+    worker = new Worker(asmjs? "ecmW0022.js": "ecm0022.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
@@ -303,6 +303,7 @@ function startUp()
     get("verbose").checked = (config.substr(1,1)=="1");
     get("pretty").checked = (config.substr(2,1)=="1");
     get("cunnin").checked = (config.substr(3,1)=="1");  
+    get("hex").checked = (config.substr(4,1)=="1");  
     get("modal-config").style.display = "block";
   };
   get("close-config").onclick = function ()
@@ -319,7 +320,8 @@ function startUp()
     config = (get("batch").checked? "1" :"0") +
              (get("verbose").checked? "1" :"0") +
              (get("pretty").checked? "1" :"0") +
-             (get("cunnin").checked? "1" :"0");
+             (get("cunnin").checked? "1" :"0") +
+			 (get("hex").checked? "1" :"0");
     digits = get("digits").value;
     setStorage("ecmConfig", digits+","+config);
     if (config.substr(0,1) != oldconfig.substr(0,1))
@@ -394,7 +396,7 @@ function startUp()
   if (digits == null || digits == "")
   {
     digits = 6;
-    config = "0010";
+    config = "00100";
     setStorage("ecmConfig", digits+","+config);
   }
   else
@@ -403,12 +405,16 @@ function startUp()
     if (index<0)
     {
       digits = 6;
-      config = "0010";
+      config = "00100";
       setStorage("ecmConfig", digits+","+config);
     }
     else
     {
       config = digits.substr(index+1);
+	  while (config.length < 5)
+	  {  // Convert legacy configuration.
+		config += "0";
+	  }
       digits = digits.substr(0,index);
     }
   }

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es" manifest="ecm.appcache">
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="Author" content="Dario Alejandro Alpern" />
@@ -34,6 +34,7 @@
 }
 @media screen and (max-width: 400px) { #smallheader { font-size:0.7em;  } }
 @media screen and (min-width: 400px) { #smallheader { font-size:1em;  } }
+@media screen and (min-width: 500px) {#configleft {float:left;}}
 body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
 h1 {text-align:center;}
 .lf {padding:0.2em; clear:both;}
@@ -44,6 +45,7 @@ h1 {text-align:center;}
 #ltextarea {display:none;}
 .inline  {display:inline;}
 .pad {padding:10px;}
+.hex {font-family: Courier, "Lucida Console", monospace}
 #tableCurves {max-width:700px; margin-left:auto; margin-right:auto;}
 #help,#result,#status,#footer {margin: 3px; padding: 3px;}
 #more,#stop {display:none}
@@ -52,23 +54,17 @@ h1 {text-align:center;}
 .modal-header {padding: 2px 10px; background-color: #5cb85c; color: white;}
 .modal-body {padding: 2px 10px;}
 .modal-content {
-  position: relative;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   background-color: #fefefe;
-  margin: auto;
   padding: 0;
   border: 1px solid #888;
   width: 80%;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-  -webkit-animation-name: animatetop;
-  -webkit-animation-duration: 0.4s;
-  animation-name: animatetop;
-  animation-duration: 0.4s
 }
 .modal {
   display: none;
   position: fixed;
   z-index: 1;
-  padding-top: 100px;
   left: 0;
   top: 0;
   width: 100%;
@@ -77,7 +73,6 @@ h1 {text-align:center;}
   background-color: rgb(0,0,0);
   background-color: rgba(0,0,0,0.4);
 }
-
 #close {float:right}
 #modal-header-text {font-size:1.5em}
 
@@ -127,7 +122,7 @@ Contacto
 <main role="main">
 <article>
 <h1>Calculadora de factorización de números enteros</h1>
-<script async="async" type="application/javascript" src="ecm0020.js"></script>
+<script async="async" type="application/javascript" src="ecm0022.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -146,7 +141,7 @@ Contacto
 </div>
 </div>
 <form class="applet">
-<label for="value">Valor</label><span id="entry"><input type="text" id="value" value="" placeholder="Número o expresión numérica" class="input"/></span>
+<label for="value" id="lvalue">Valor</label><span id="entry"><input type="text" id="value" value="" placeholder="Número o expresión numérica" class="input"/></span>
 <label for="textarea" id="ltextarea">Valor</label><textarea id="textarea" rows="5" class="input" placeholder="Una expresión numérica o ciclo por línea"></textarea>
 <div class="lf"></div>
 <input type="button" id="more" value="Más" />
@@ -224,6 +219,8 @@ Para cambiar el número de curva, aprieta el botón <strong>Más</strong>, escr�
 <li><strong>Información</strong>: No está listo aún.</li>
 <li><strong>Impresión bonita</strong>: Si la casilla de verificación está marcada, los exponentes se muestran con superíndices y el signo de multiplicación es &quot; &times; &quot;. La aplicación muestra la cantidad de dígitos de los números que tienen más de 30 dígitos.
 Si la casilla de verificación no está marcada, los exponentes se muestran precedidos por el signo &quot; ^ &quot; y la multiplicación se indica mediante asteriscos. Además nunca se muestra la cantidad de dígitos. Esto facilita la copia de resultados a otros programas matemáticos.</li>
+<li><strong>Salida hexadecimal</strong>: Indica que los valores mostrados en pantalla deben figurar en hexadecimal en vez de decimal, que es lo habitual.
+Para ingresar números en el formato hexadecimal es necesario que tengan los caracteres 0x adelante. Por ejemplo 0x38 = 56. El programa muestra números en hexadecimal con tipo monoespaciado.</li>
 <li><strong>Usar tablas de Cunningham en el servidor</strong>: Si está seleccionado y el número a factorizar tiene la forma a<sup>b</sup> &pm; 1, la aplicación intentará recuperar los factores conocidos del servidor Web.
 Para reducir esa base de datos, sólo se incluyen factores primos con al menos 14 dígitos, así que la aplicación deberá hallar los factores pequeños. La fuente de estos factores es la <a href="http://myfactors.mooo.com/">lista de factores de Jonathan Crombie</a> e incluye 2674850 factores de números de Cunningham.</li>
 </ul>
@@ -243,7 +240,7 @@ Para reducir esa base de datos, sólo se incluyen factores primos con al menos 1
 La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 3 de noviembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 17 de noviembre de 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -270,11 +267,16 @@ La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <div class="applet">
 <fieldset>
 <legend>Parámetros de configuración</legend>
+<div id="configleft">
 <p><label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"/></p>
 <p><input type="checkbox" id="batch"><label for="batch">Factorización en lotes</label></p>
 <p><input type="checkbox" id="verbose"><label for="verbose">Información</label></p>
+</div>
+<div id="configright">
 <p><input type="checkbox" id="pretty"><label for="pretty">Impresión bonita</label></p>
+<p><input type="checkbox" id="hex"><label for="hex">Salida hexadecimal</label></p>
 <p><input type="checkbox" id="cunnin"><label for="cunnin">Usar tablas de Cunningham en el servidor</label></p>
+</div>
 </fieldset>
 <p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
 </div>

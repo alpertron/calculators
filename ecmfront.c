@@ -27,7 +27,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 extern long long lModularMult;
 #endif
 char batch;
-extern char verbose, prettyprint, cunningham;
 extern BigInteger tofactor;
 static int nbrToFactor[MAX_LEN];
 static BigInteger Quad1, Quad2, Quad3, Quad4;
@@ -250,7 +249,14 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
         {
           NumberLength = tofactor.nbrLimbs;
           CompressBigInteger(nbrToFactor, &tofactor);
-          Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
+          if (hexadecimal)
+          {
+            Bin2Hex(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
+          }
+          else
+          {
+            Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
+          }
           if (doFactorization)
           {
             factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
@@ -274,7 +280,14 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
       {
         NumberLength = tofactor.nbrLimbs;
         CompressBigInteger(nbrToFactor, &tofactor);
-        Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
+        if (hexadecimal)
+        {
+          Bin2Hex(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
+        }
+        else
+        {
+          Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
+        }
         if (doFactorization)
         {
           factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
@@ -341,7 +354,14 @@ static void GetNumberOfDivisors(char **pptrOutput)
   }
   strcpy(ptrOutput, lang ? "<p>Cantidad de divisores: " : "<p>Number of divisors: ");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&result, ptrOutput, groupLen);
+  if (hexadecimal)
+  {
+    BigInteger2Hex(&result, ptrOutput, groupLen);
+  }
+  else
+  {
+    BigInteger2Dec(&result, ptrOutput, groupLen);
+  }
   ptrOutput += strlen(ptrOutput);
   strcpy(ptrOutput, "</p>");
   ptrOutput += strlen(ptrOutput);
@@ -372,7 +392,14 @@ static void GetSumOfDivisors(char **pptrOutput)
   }
   strcpy(ptrOutput, lang ? "<p>Suma de divisores: " : "<p>Sum of divisors: ");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&result, ptrOutput, groupLen);
+  if (hexadecimal)
+  {
+    BigInteger2Hex(&result, ptrOutput, groupLen);
+  }
+  else
+  {
+    BigInteger2Dec(&result, ptrOutput, groupLen);
+  }
   ptrOutput += strlen(ptrOutput);
   strcpy(ptrOutput, "</p>");
   ptrOutput += strlen(ptrOutput);
@@ -402,7 +429,14 @@ static void GetEulerTotient(char **pptrOutput)
   }
   strcpy(ptrOutput, lang ? "<p>Phi de Euler: " : "<p>Euler's totient: ");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&result, ptrOutput, groupLen);
+  if (hexadecimal)
+  {
+    BigInteger2Hex(&result, ptrOutput, groupLen);
+  }
+  else
+  {
+    BigInteger2Dec(&result, ptrOutput, groupLen);
+  }
   ptrOutput += strlen(ptrOutput);
   strcpy(ptrOutput, "</p>");
   ptrOutput += strlen(ptrOutput);
@@ -874,7 +908,14 @@ static void valueVar(char **pptrOutput, char letter, BigInteger *value)
   *ptrOutput++ = ' ';
   *ptrOutput++ = '=';
   *ptrOutput++ = ' ';
-  BigInteger2Dec(value, ptrOutput, groupLen);
+  if (hexadecimal)
+  {
+    BigInteger2Hex(value, ptrOutput, groupLen);
+  }
+  else
+  {
+    BigInteger2Dec(value, ptrOutput, groupLen);
+  }
   ptrOutput += strlen(ptrOutput);
   strcpy(ptrOutput, "</p>");
   ptrOutput += strlen(ptrOutput);
@@ -952,7 +993,14 @@ void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
 #ifdef __EMSCRIPTEN__
     lModularMult = 0;
 #endif
-    Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
+    if (hexadecimal)
+    {
+      Bin2Hex(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
+    }
+    else
+    {
+      Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
+    }
     if (doFactorization)
     {
       factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactors);
@@ -1001,7 +1049,8 @@ void doWork(void)
   verbose = (*(ptrData + 1) == '1');
   prettyprint = (*(ptrData + 2) == '1');
   cunningham = (*(ptrData + 3) == '1');
-  ptrData += 4;
+  hexadecimal = (*(ptrData + 4) == '1');
+  ptrData += 5;
   ptrWebStorage = ptrData + strlen(ptrData) + 1;
   ptrKnownFactors = findChar(ptrWebStorage, '=');
   if (prettyprint == 0)

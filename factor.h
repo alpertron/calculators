@@ -31,6 +31,7 @@ struct sFactors
   int upperBound;
 };
 extern char tofactorDec[30000];
+extern char verbose, prettyprint, cunningham, hexadecimal;
 extern struct sFactors stFactors[MAX_FACTORS];
 extern int *factorArr[FACTOR_ARRSIZE];
 void factor(BigInteger *nbrToFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors);

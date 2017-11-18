@@ -118,6 +118,79 @@ void int2dec(char **pOutput, int nbr)
   *pOutput = ptrOutput;
 }
 
+// Convert little-endian number to a string with space every groupLen digits.
+void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
+{
+  int showDigitsText = TRUE;
+  int nbrBits, nbrHexDigits, mask, value;
+  int currentGroupDigit = -1;
+
+  if (groupLength <= 0)
+  {
+    groupLength = -groupLength;
+    showDigitsText = FALSE;
+  }
+  strcpy(decimal, "<span class=\"hex\">");
+  decimal += strlen(decimal);
+  nbrBits = nbrLimbs * BITS_PER_GROUP;
+  mask = LIMB_RANGE / 2;
+  value = (binary + nbrLimbs - 1)->x;
+  if (value == 0)
+  {
+    *decimal++ = '0';
+  }
+  else
+  {
+    while ((value & mask) == 0)
+    {   // Loop that finds the most significant bit.
+      mask >>= 1;
+      nbrBits--;
+    }
+    nbrHexDigits = (nbrBits + 3) >> 2;
+    if (groupLength > 0)
+    {
+      currentGroupDigit = nbrHexDigits % groupLength;
+      if (currentGroupDigit == 0)
+      {
+        currentGroupDigit = groupLength;
+      }
+    }
+    do
+    {  // Get 4 bits.
+      int digit = 0;
+      do
+      {
+        digit *= 2;
+        if (value & mask)
+        {
+          digit++;
+        }
+        mask >>= 1;
+        if (mask == 0)
+        {
+          nbrLimbs--;
+          value = (binary + nbrLimbs - 1)->x;
+          mask = LIMB_RANGE / 2;
+        }
+      } while (--nbrBits & 3);
+      if (digit < 10)
+      {        // Convert 0 - 9 to '0' - '9'.
+        *decimal++ = digit + '0';
+      }
+      else
+      {        // Convert 10 - 15 to 'A' - 'F'.
+        *decimal++ = digit + 'A' - 10;
+      }
+      if (--currentGroupDigit == 0 && nbrHexDigits != 1)
+      {
+        *decimal++ = ' ';
+        currentGroupDigit = groupLength;
+      }
+    } while (--nbrHexDigits > 0);
+  }
+  strcpy(decimal, "</span>");
+}
+
   // Convert little-endian number to a string with space every groupLen digits.
   // In order to perform a faster conversion, use groups of DIGITS_PER_LIMB digits.
 void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLength)
@@ -262,4 +335,13 @@ void BigInteger2Dec(BigInteger *pBigInt, char *decimal, int groupLength)
     *decimal++ = '-';
   }
   Bin2Dec(pBigInt->limbs, decimal, pBigInt->nbrLimbs, groupLength);
+}
+
+void BigInteger2Hex(BigInteger *pBigInt, char *decimal, int groupLength)
+{
+  if (pBigInt->sign == SIGN_NEGATIVE)
+  {
+    *decimal++ = '-';
+  }
+  Bin2Hex(pBigInt->limbs, decimal, pBigInt->nbrLimbs, groupLength);
 }

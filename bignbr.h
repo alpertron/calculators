@@ -61,6 +61,7 @@ void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultL
 void squareRoot(limb *argument, limb *sqRoot, int len, int *pLenSqRoot);
 void Dec2Bin(char *decimal, limb *binary, int digits, int *bitGroups);
 void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen);
+void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLen);
 void int2dec(char **pOutput, int nbr);
 void GetMontgomeryParms(int len);
 void AddBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Sum, limb *TestNbr, int NumberLength);
@@ -86,6 +87,7 @@ enum eExprErr BigIntRemainder(BigInteger *pDividend, BigInteger *pDivisor, BigIn
 enum eExprErr BigIntPower(BigInteger *pBase, BigInteger *pExponent, BigInteger *pPower);
 enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int expon, BigInteger *pPower);
 void BigInteger2Dec(BigInteger *pBigInt, char *decimal, int groupLen);
+void BigInteger2Hex(BigInteger *pBigInt, char *decimal, int groupLen);
 void BigIntGcd(BigInteger *pArg1, BigInteger *pArg2, BigInteger *pResult);
 void BigIntModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient);
 void BigIntModularDivisionPower2(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient);

@@ -362,11 +362,11 @@ enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResu
           }
           else if (c >= 'A' && c <= 'F')
           {
-            c -= 'A'+10;
+            c -= 'A' - 10;
           }
           else
           {
-            c -= 'a' + 10;
+            c -= 'a' - 10;
           }
           carry.x += c << shLeft;
           shLeft += 4;   // 4 bits per hex digit.
@@ -377,7 +377,10 @@ enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResu
             carry.x = c >> (4-shLeft);
           }
         }
-        (ptrLimb++)->x = carry.x;
+        if (carry.x != 0 || ptrLimb == &stackValues[stackIndex].limbs[0])
+        {
+          (ptrLimb++)->x = carry.x;
+        }
         exprIndex = offset;
         stackValues[stackIndex].nbrLimbs = (int)(ptrLimb - &stackValues[stackIndex].limbs[0]);
         stackValues[stackIndex].sign = SIGN_POSITIVE;

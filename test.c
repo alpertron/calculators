@@ -4,7 +4,7 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "factor.h"
-#define DEBUG_CODE  11
+#define DEBUG_CODE  13
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
@@ -169,6 +169,7 @@ int main(int argc, char *argv[])
 #elif DEBUG_CODE == 13
   batch = 0;
   lang = 0;
+  hexadecimal = 1;
   if (argc == 3)
   {
     ecmFrontText(argv[1], 1, argv[2]);
