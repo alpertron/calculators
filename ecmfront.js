@@ -70,7 +70,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'ecm0022.wasm');
+  request.open('GET', 'ecm0023.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -177,7 +177,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker(asmjs? "ecmW0022.js": "ecm0022.js");
+    worker = new Worker(asmjs? "ecmW0023.js": "ecm0023.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
@@ -220,7 +220,7 @@ function dowork(n)
   var param;
   app = parseInt(get("app").value) + n;
   var res = get("result");
-  var valueText = get(config.substr(0,1)=="1"?"textarea":"value").value;
+  var valueText = get(config.substr(0,1)=="1"?"textarea":"value").value.replace(/\u2011/g, "-").replace("\n","");
   var charNull = String.fromCharCode(0);
   var helphelp = get("helphelp");
   get("help").style.display = "none";
@@ -266,15 +266,13 @@ function isBatch()
   {
     get("value").style.display = "none";
     get("lvalue").style.display = "none";
-    get("textarea").style.display = "inline";
-    get("ltextarea").style.display = "inline";
+    get("bt").style.display = "block";
   }
   else
   {
     get("value").style.display = "inline";
     get("lvalue").style.display = "inline";
-    get("textarea").style.display = "none";
-    get("ltextarea").style.display = "none";
+    get("bt").style.display = "none";
   }
 }
 

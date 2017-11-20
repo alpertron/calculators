@@ -41,8 +41,8 @@ h1 {text-align:center;}
 .blue {color: #0000FF;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 #digits {width:5em}
-#textarea {display:none;white-space:nowrap;overflow:scroll;}
-#ltextarea {display:none;}
+#textarea {white-space:nowrap;overflow:scroll;}
+#bt {display:none;}
 .inline  {display:inline;}
 .pad {padding:10px;}
 .hex {font-family: Courier, "Lucida Console", monospace}
@@ -120,7 +120,7 @@ Contact
 <main role="main">
 <article>
 <h1>Integer factorization calculator</h1>
-<script async="async" type="application/javascript" src="ecm0022.js"></script>
+<script async="async" type="application/javascript" src="ecm0023.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -140,7 +140,11 @@ Contact
 </div>
 <form class="applet">
 <label for="value" id="lvalue">Value</label><input type="text" id="value" value="" placeholder="Number or numerical expression" class="input"/>
-<label for="textarea" id="ltextarea">Value</label><textarea id="textarea" rows="5" class="input" placeholder="One numerical expression or loop per line"></textarea>
+<div id="bt">
+<label for="textarea">Value</label><textarea id="textarea" rows="5" class="input"></textarea>
+<br class="newline"/>
+One numerical expression or loop per line. Example: x=3;x=n(x);c&#8209;100;x&#8209;1
+</div>
 <div class="lf"></div>
 <input type="button" id="more" value="More" />
 <input type="button" id="eval" value="Only evaluate" />
@@ -241,7 +245,7 @@ The line to type is: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.</p>
-<p>Written by Dario Alpern. Last updated 17 November 2017.</p>
+<p>Written by Dario Alpern. Last updated 20 November 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>

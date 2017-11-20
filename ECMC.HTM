@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Aplicación Javascript que factoriza números enteros utilizando los algoritmos ECM y SIQS. Escrito por Dario Alpern." />
 <link rel="alternate" hreflang="es" href="ECMC.HTM" />
-<link rel="manifest" href="/ecmc.webapplication">
+<link rel="manifest" href="/ecmc.webmanifest">
 <meta name="theme-color" content="#db5945">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Calculadora de factorización de números enteros</title>
@@ -41,8 +41,8 @@ h1 {text-align:center;}
 .blue {color: #0000FF;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 #digits {width:5em}
-#textarea {display:none;white-space:nowrap;overflow-x:scroll}
-#ltextarea {display:none;}
+#textarea {white-space:nowrap;overflow-x:scroll}
+#bt {display:none;}
 .inline  {display:inline;}
 .pad {padding:10px;}
 .hex {font-family: Courier, "Lucida Console", monospace}
@@ -122,7 +122,7 @@ Contacto
 <main role="main">
 <article>
 <h1>Calculadora de factorización de números enteros</h1>
-<script async="async" type="application/javascript" src="ecm0022.js"></script>
+<script async="async" type="application/javascript" src="ecm0023.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -142,7 +142,11 @@ Contacto
 </div>
 <form class="applet">
 <label for="value" id="lvalue">Valor</label><span id="entry"><input type="text" id="value" value="" placeholder="Número o expresión numérica" class="input"/></span>
-<label for="textarea" id="ltextarea">Valor</label><textarea id="textarea" rows="5" class="input" placeholder="Una expresión numérica o ciclo por línea"></textarea>
+<div id="bt">
+<label for="textarea">Valor</label><textarea id="textarea" rows="5" class="input"></textarea>
+<br class="newline"/>
+Una expresión numérica o ciclo por línea. Ejemplo: x=3;x=n(x);c&#8209;100;x&#8209;1
+</div>
 <div class="lf"></div>
 <input type="button" id="more" value="Más" />
 <input type="button" id="eval" value="Solo evaluar" />
@@ -240,7 +244,7 @@ Para reducir esa base de datos, sólo se incluyen factores primos con al menos 1
 La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 17 de noviembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 20 de noviembre de 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
