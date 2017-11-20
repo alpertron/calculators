@@ -597,7 +597,38 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   int ctr;
   int remainder = 0;
   double dDivisor = (double)divisor;
+  double dInvDivisor = 1 / dDivisor;
   double dLimb = (double)LIMB_RANGE;
+
+#if 0
+  char *ptrOutput = output;
+  *ptrOutput++ ='2';
+  *ptrOutput++ = '(';
+  int2dec(&ptrOutput, pBigInt->sign);
+  *ptrOutput++ = ',';
+  *ptrOutput++ = ' ';
+  int2dec(&ptrOutput, pBigInt->nbrLimbs);
+  *ptrOutput++ = ';';
+  *ptrOutput++ = ' ';
+  int2dec(&ptrOutput, pBigInt->limbs[0].x);
+  *ptrOutput++ = ',';
+  *ptrOutput++ = ' ';
+  int2dec(&ptrOutput, pBigInt->limbs[1].x);
+  *ptrOutput++ = ',';
+  *ptrOutput++ = ' ';
+  *ptrOutput++ = ')';
+  *ptrOutput++ = ',';
+  *ptrOutput++ = ' ';
+  int2dec(&ptrOutput, subt);
+  *ptrOutput++ = ',';
+  *ptrOutput++ = ' ';
+  int2dec(&ptrOutput, divisor);
+//  databack(output);
+  if ((unsigned int)pBigInt->limbs[0].x >= LIMB_RANGE)
+  {
+    remainder = 1;
+  }
+#endif
   if (subt >= 0)
   {
     if (pBigInt->sign == SIGN_POSITIVE)
@@ -628,10 +659,10 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
     unsigned int quotient, dividend;
     dividend = (remainder << BITS_PER_INT_GROUP) + pLimbs->x;
     dDividend = (double)remainder * dLimb + pLimbs->x;
-    dQuotient = floor(dDividend / dDivisor + 0.5);
+    dQuotient = dDividend * dInvDivisor + 0.5;
     quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - quotient * divisor;
-    if ((unsigned int)remainder >= (unsigned int)divisor)
+    if (remainder < 0)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
       quotient--;
       remainder += divisor;

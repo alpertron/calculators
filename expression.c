@@ -466,7 +466,6 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
   limb largeVal;
   char stackOper;
   int nbrLimbs;
-  int FirstTime;
 
   stackOper = stackOperators[stackIndex];
   switch (stackOper)
@@ -585,14 +584,13 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
     pResultLimbs = pResult -> limbs;
     pArgumentLimbs = pArgument -> limbs;
     nbrLimbs = pArgument->nbrLimbs;
-    FirstTime = 1;
+    pResult->sign = SIGN_POSITIVE;
     if (stackOper == 'B')
-    {        // Previous pseudoprime
+    {        // Previous probable prime
       if (pArgument->sign == SIGN_NEGATIVE || (nbrLimbs == 1 && pArgumentLimbs->x<3))
       {
         return EXPR_INVALID_PARAM;
       }
-      pResult -> sign = SIGN_POSITIVE;
       if (nbrLimbs == 1 && pArgumentLimbs->x == 3)
       {
         pResult -> nbrLimbs = 1;
@@ -600,28 +598,33 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
         return EXPR_OK;
       }
       memcpy(pResultLimbs, pArgumentLimbs, nbrLimbs*sizeof(limb));
-      pResultLimbs->x = pResultLimbs->x | 1;
+      pResultLimbs->x |= 1;  // If number is even, use next odd number.
     }
     else
-    {        // Next pseudoprime
-      pResult -> sign = SIGN_POSITIVE;
+    {        // Next probable prime
       if (pArgument->sign == SIGN_NEGATIVE || (nbrLimbs == 1 && pArgumentLimbs->x < 2))
       {
         pResult -> nbrLimbs = 1;
         pResultLimbs->x = 2;
         return EXPR_OK;
       }
+
       memcpy(pResultLimbs, pArgumentLimbs, nbrLimbs*sizeof(limb));
+      if ((pResultLimbs->x & 1) == 0)
+      {   // Number is even.
+        pResultLimbs->x--;
+      }
     }
-    for (;;)
-    {        // Search for next pseudoprime.
+    pResult->nbrLimbs = nbrLimbs;
+    do
+    {        // Loop that searches for previous or next probable prime.
       if (stackOper == 'B')
-      {      // Subtract 2
-        pResultLimbs->x = (pResultLimbs->x - 2);
+      {      // Previous probable prime. Subtract 2.
+        pResultLimbs->x -= 2;
         if (pResultLimbs->x < 0)
         {
           pTemp = pResultLimbs;
-          for (ctr = 0; ctr < nbrLimbs; ctr++)
+          for (ctr = 1; ctr < nbrLimbs; ctr++)
           {
             (pTemp++)->x = MAX_VALUE_LIMB;
             if (--(pTemp->x) >= 0)
@@ -629,51 +632,47 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
               break;
             }
           }
+          if (pTemp->x == 0)
+          {  // Most significant limb is zero. Decrement number of limbs.
+            nbrLimbs--;
+            pResult->nbrLimbs = nbrLimbs;
+          }
         }
       }
       else
-      {      // Next pseudoprime
-        if (FirstTime != 0)
-        {
-          if (nbrLimbs == 1 && pResultLimbs->x == 2)
-          {   // Find next pseudoprime to 2.
-            pResultLimbs->x = 1;
-          }
-          else
-          {
-            pResultLimbs->x |= 1;  // If it is even, change to next odd value.
-          }
-          FirstTime = 0;
-          pResult->nbrLimbs = nbrLimbs;
+      {      // Next probable prime
+        if (pResultLimbs->x < MAX_VALUE_LIMB)
+        {                       // No overflow.
+          pResultLimbs->x += 2;   // Add 2.
         }
-        pResultLimbs->x += 2;   // Add 2.
-        if (pResultLimbs->x > MAX_VALUE_LIMB)
-        {
+        else
+        {                       // Overflow.
           pTemp = pResultLimbs;
-          for (ctr = 0; ctr < nbrLimbs; ctr++)
+          (pTemp++)->x = 1;
+          for (ctr = 1; ctr < nbrLimbs; ctr++)
           {
-            (pTemp++)->x -= MAX_VALUE_LIMB + 1;
-            if (++(pTemp->x) <= MAX_VALUE_LIMB)
+            if (pTemp->x < MAX_VALUE_LIMB)
             {
+              pTemp->x++;
               break;
             }
+            (pTemp++)->x = 0;
           }
           if (ctr == nbrLimbs)
           {
-            (pTemp++)->x = 0;
             pTemp->x = 1;
             nbrLimbs++;
             pResult->nbrLimbs = nbrLimbs;
           }
         }
       }
-      if (BpswPrimalityTest(pResult) == 0)
-      {   // Number is probable prime.
-        pResult->nbrLimbs = nbrLimbs;
-        pResult->sign = SIGN_POSITIVE;
-        return EXPR_OK;
-      }
-    }
+    } while (BpswPrimalityTest(pResult));  // Continue loop if not probable prime.
   }              /* end switch */
   return EXPR_OK;
 }
+
+#ifndef __EMSCRIPTEN__
+void databack(char *data)
+{
+}
+#endif
