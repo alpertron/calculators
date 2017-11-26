@@ -30,6 +30,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_FACTORS_RELATION   50
 #define LENGTH_OFFSET           0
 #define MAX_SIEVE_LIMIT    100000
+#define DEBUG_SIQS              0
 
 #ifdef __EMSCRIPTEN__
 extern char lowerText[], *ptrLowerText;
@@ -1727,7 +1728,7 @@ static void SmoothRelationFound(
     SubtractBigNbrB(biU, biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
     SubtractBigNbrB(biU, biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
   }
-  if ((uint32_t)biU[NumberLength - 1] >= (uint32_t)LIMB_RANGE)
+  if ((uint32_t)biU[NumberLength - 1] >= (LIMB_RANGE/2))
   {                                        // If number is negative
     ChSignBigNbr(biU, NumberLength);       // make it positive.
   }
@@ -2661,6 +2662,31 @@ static unsigned char LinearAlgebraPhase(
   int mask, row, col, j;
   int *rowMatrixB;
   int primeIndex;
+#if DEBUG_SIQS
+  {
+    int i;
+    printf("*******\n");
+    for (j = 0; j < matrixBLength; j++)
+    {
+      char *ptrOutput = output;
+      BigInteger k;
+      memcpy(k.limbs, vectLeftHandSide[j], NumberLength * sizeof(limb));
+      k.nbrLimbs = NumberLength;
+      k.sign = SIGN_POSITIVE;
+      BigInteger2Dec(&k, ptrOutput, 0);
+      ptrOutput += strlen(ptrOutput);
+      *ptrOutput++ = ',';
+      for (i = 1; i < matrixB[j][0]; i++)
+      {
+        int2dec(&ptrOutput, matrixB[j][i]);
+        *ptrOutput++ = ',';
+      }
+      *ptrOutput = 0;
+      printf("%s\n", output);
+    }
+    exit(0);
+  }
+#endif
   // Get new number of rows after erasing singletons.
   int matrixBlength = EraseSingletons(nbrFactorBasePrimes);
   matrixBLength = matrixBlength;
@@ -2748,12 +2774,36 @@ static unsigned char InsertNewRelation(
   int NumberLengthMod)
 {
   int i, k;
+  int lenDivisor;
   int nbrColumns = rowMatrixB[LENGTH_OFFSET];
   // Insert it only if it is different from previous relations.
   if (congruencesFound >= matrixBLength)
   {                   // Discard excess congruences.
     return TRUE;
   }
+#if DEBUG_SIQS
+  {
+    char *ptrOutput = output;
+    BigInteger k;
+    memcpy(k.limbs, biR, NumberLength * sizeof(limb));
+    k.nbrLimbs = NumberLength;
+    k.sign = SIGN_POSITIVE;
+    BigInteger2Dec(&k, ptrOutput, 0);
+    ptrOutput += strlen(ptrOutput);
+    *ptrOutput++ = ',';
+    for (i = 1; i < *rowMatrixB; i++)
+    {
+      int2dec(&ptrOutput, *(rowMatrixB+i));
+      *ptrOutput++ = ',';
+    }
+    *ptrOutput = 0;
+    printf("%s\n", output);
+  }
+  if (++nn == 3018)
+  {
+    nn = 3018;
+  }
+#endif
   for (i = 0; i < congruencesFound; i++)
   {
     int *curRowMatrixB = matrixB[i];
@@ -2795,25 +2845,48 @@ static unsigned char InsertNewRelation(
     {
       biT[k] = 0;
     }
-    AddBigIntModN(biR, biT, biR, TestNbr2, NumberLengthMod);
-    ModInvBigInt(biR, biT, TestNbr2, NumberLengthMod);
+    lenDivisor = NumberLengthMod;
+    if (Modulus[lenDivisor - 1] == 0)
+    {
+      lenDivisor--;
+    }
+    AddBigIntModN(biR, biT, biR, TestNbr2, lenDivisor);
+    ModInvBigInt(biR, biT, TestNbr2, lenDivisor);
   }
   else
   {             // Odd modulus
-    ModInvBigInt(biR, biT, Modulus, NumberLengthMod);
+    lenDivisor = NumberLengthMod;
+    if (Modulus[lenDivisor - 1] == 0)
+    {
+      lenDivisor--;
+    }
+    ModInvBigInt(biR, biT, Modulus, lenDivisor);
   }
   if ((biU[NumberLengthMod - 1] & HALF_INT_RANGE) != 0)
   {
     AddBigNbr(biU, Modulus, biU, NumberLengthMod);
   }
-
+  AdjustModN((limb *)biU, (limb *)Modulus, lenDivisor);
   // Compute biU / biR  (mod Modulus)
-  MultBigNbrModN(biU, biT, biR, Modulus, NumberLengthMod);
+  MultBigNbrModN(biU, biT, biR, Modulus, lenDivisor);
 
   // Add relation to matrix B.
   memcpy(matrixB[i], &rowMatrixB[0], nbrColumns * sizeof(int));
   memcpy(vectLeftHandSide[i], biR, NumberLengthMod * sizeof(int));
   congruencesFound++;
+#if DEBUG_SIQS
+  {
+    char *ptrOutput = output;
+    BigInteger k;
+    memcpy(k.limbs, biR, NumberLength * sizeof(limb));
+    k.nbrLimbs = NumberLength;
+    k.sign = SIGN_POSITIVE;
+    BigInteger2Dec(&k, ptrOutput, 0);
+    ptrOutput += strlen(ptrOutput);
+    *ptrOutput = 0;
+    printf("%s\n", output);
+  }
+#endif
   return TRUE;
 }
 
