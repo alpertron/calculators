@@ -7,7 +7,7 @@
 <meta name="keywords" content="waring, number theory" />
 <meta name="description" content="Javascript application that finds the decomposition of a number into cubes. Written by Dario Alpern." />
 <meta name="theme-color" content="#db5945">
-<link rel="prefetch" href="fsquaresW0020.js" />
+<link rel="prefetch" href="fsquaresW0025.js" />
 <link rel="alternate" hreflang="es" href="SUMCUBOS.HTM" />
 <link rel="manifest" href="fcubes.webmanifest">
 <title>Sum of four cubes</title>
@@ -40,8 +40,9 @@ h1 {text-align:center;}
 input#num {margin:5px;width:100%;padding:3px;margin:0px;}
 #applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
 .lf {padding:0.2em; clear:both; width:100%}
-	.offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
-	.bigger {font-size:150%;}
+.offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
+.bigger {font-size:150%;}
+.pad {padding:10px;}
 </style>
  </head>
 <body>
@@ -132,8 +133,8 @@ Contact
 <input type="number" id="digits" value="6"/>
 <input type="hidden" id="app" value="2"/>
 </form>
-<script async="async" type="application/javascript" src="fsquares0020.js"></script>
-<div style='padding:10px;'>
+<script async="async" type="application/javascript" src="fsquares0025.js"></script>
+<div class="pad">
 <div id="help" aria-live="polite">
 <p>This applet finds the decomposition of any integer number not congruent to 4 or 5 (mod 9) into a sum of four cubes.</p>
 <h2>Formulas</h2>
@@ -263,7 +264,7 @@ If you find any error or you have a comment, please fill in the <a href="FORM.HT
 <p>
 You can download the source of the current program and the old sum of four cubes applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 3 November 2017.</p>
+<p>Written by Dario Alpern. Last updated 26 November 2017.</p>
 </div>
 <div id="result" aria-live="polite"></div>
 </div>

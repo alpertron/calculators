@@ -8,7 +8,7 @@
 <meta name="description" content="Aplicación Javascript que descompone un número en una suma de hasta cuadrados. Hecho por Darío Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="FSQUARES.HTM" />
-<link rel="prefetch" href="fsquaresW0020.js" />
+<link rel="prefetch" href="fsquaresW0025.js" />
 <link rel="manifest" href="sumcuad.webmanifest">
 <title>Suma de cuatro cuadrados</title>
 <style type="text/css" media="print">
@@ -41,6 +41,7 @@ input#num {margin:5px;width:100%;padding:3px;margin:0px;}
 #applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
 .lf {padding:0.2em; clear:both; width:100%}
 .bigger {font-size:150%;}
+.pad {padding:10px;}
 </style>
 </head>
 <body>
@@ -137,7 +138,8 @@ Contacto
 <input type="hidden" id="app" value="1"/>
 </form>
 </div>
-<script async="async" type="application/javascript" src="fsquares0020.js"></script>
+<script async="async" type="application/javascript" src="fsquares0025.js"></script>
+<div class="pad">
 <div id="help" aria-live="polite">
 <p>Este applet encuentra la descomposición de cualquier número natural mayor que 1 en una suma de hasta cuatro cuadrados.</p>
 <p>
@@ -184,9 +186,10 @@ Vea los <a href="4CUADR.HTM">métodos que usa este applet</a>.
 <p>
 Se puede bajar el código fuente de este programa y el del viejo applet de suma de cuatro cubos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 3 de noviembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 26 de noviembre de 2017.</p>
 </div>
 <div id="result" aria-live="polite"></div>
+</div>
 </article>
 </body>
 </html>

@@ -4,7 +4,7 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "factor.h"
-#define DEBUG_CODE  13
+#define DEBUG_CODE  1
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
 {
   int len, i;
 #if DEBUG_CODE == 1
+  fsquaresText("n(10^32)", 6);
   fsquaresText(argv[1], 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 2

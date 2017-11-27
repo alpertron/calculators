@@ -24,7 +24,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker('fsquaresW0020.js');
+    worker = new Worker('fsquaresW0025.js');
     worker.onmessage = function(e)
     {
       document.getElementById('result').innerHTML = e.data;
