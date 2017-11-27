@@ -466,6 +466,7 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
   limb largeVal;
   char stackOper;
   int nbrLimbs;
+  int skipUpdate;
 
   stackOper = stackOperators[stackIndex];
   switch (stackOper)
@@ -585,6 +586,7 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
     pArgumentLimbs = pArgument -> limbs;
     nbrLimbs = pArgument->nbrLimbs;
     pResult->sign = SIGN_POSITIVE;
+    skipUpdate = 0;    // Do not skip first update in advance.
     if (stackOper == 'B')
     {        // Previous probable prime
       if (pArgument->sign == SIGN_NEGATIVE || (nbrLimbs == 1 && pArgumentLimbs->x<3))
@@ -612,7 +614,8 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
       memcpy(pResultLimbs, pArgumentLimbs, nbrLimbs*sizeof(limb));
       if ((pResultLimbs->x & 1) == 0)
       {   // Number is even.
-        pResultLimbs->x--;
+        pResultLimbs->x++;
+        skipUpdate = 1;   // Skip first update.
       }
     }
     pResult->nbrLimbs = nbrLimbs;
@@ -641,29 +644,36 @@ static enum eExprErr ComputeSubExpr(int stackIndex)
       }
       else
       {      // Next probable prime
-        if (pResultLimbs->x < MAX_VALUE_LIMB)
-        {                       // No overflow.
-          pResultLimbs->x += 2;   // Add 2.
+        if (skipUpdate == 0)
+        {
+          if (pResultLimbs->x < MAX_VALUE_LIMB)
+          {                       // No overflow.
+            pResultLimbs->x += 2; // Add 2.
+          }
+          else
+          {                       // Overflow.
+            pTemp = pResultLimbs;
+            (pTemp++)->x = 1;
+            for (ctr = 1; ctr < nbrLimbs; ctr++)
+            {
+              if (pTemp->x < MAX_VALUE_LIMB)
+              {
+                pTemp->x++;
+                break;
+              }
+              (pTemp++)->x = 0;
+            }
+            if (ctr == nbrLimbs)
+            {
+              pTemp->x = 1;
+              nbrLimbs++;
+              pResult->nbrLimbs = nbrLimbs;
+            }
+          }
         }
         else
-        {                       // Overflow.
-          pTemp = pResultLimbs;
-          (pTemp++)->x = 1;
-          for (ctr = 1; ctr < nbrLimbs; ctr++)
-          {
-            if (pTemp->x < MAX_VALUE_LIMB)
-            {
-              pTemp->x++;
-              break;
-            }
-            (pTemp++)->x = 0;
-          }
-          if (ctr == nbrLimbs)
-          {
-            pTemp->x = 1;
-            nbrLimbs++;
-            pResult->nbrLimbs = nbrLimbs;
-          }
+        {
+          skipUpdate = 0;
         }
       }
     } while (BpswPrimalityTest(pResult));  // Continue loop if not probable prime.
