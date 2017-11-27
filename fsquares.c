@@ -455,11 +455,11 @@ int fsquares(void)
             }
           }
           nbrLimbs = nbrLimbsSq;
+          memset(Mult1, 0, (nbrLimbs + 1) * sizeof(limb));
+          memset(Mult2, 0, (nbrLimbs + 1) * sizeof(limb));
+          memcpy(Mult1, biMult1.limbs, biMult1.nbrLimbs * sizeof(limb));
+          memcpy(Mult2, biMult2.limbs, biMult2.nbrLimbs * sizeof(limb));
         }
-        memset(Mult1, 0, (nbrLimbs+1) * sizeof(limb));
-        memset(Mult2, 0, (nbrLimbs+1) * sizeof(limb));
-        memcpy(Mult1, biMult1.limbs, biMult1.nbrLimbs * sizeof(limb));
-        memcpy(Mult2, biMult2.limbs, biMult2.nbrLimbs * sizeof(limb));
         // Use the other divisors of modulus in order to get Mult1 and Mult2.
 
         for (i = 0; i < nbrDivisors; i++)
@@ -573,16 +573,16 @@ int fsquares(void)
     // Validate result.
   idx = Mult1Len * 2;
   multiply(Mult1, Mult1, SquareMult1, Mult1Len, &tmp);
-  Mult1[idx].x = 0;
+  SquareMult1[idx].x = 0;
   multiply(Mult2, Mult2, SquareMult2, Mult2Len, &tmp);
   memset(&SquareMult2[Mult2Len << 1], 0, ((Mult1Len - Mult2Len) << 1)*sizeof(limb));
-  Mult2[idx].x = 0;
+  SquareMult2[idx].x = 0;
   multiply(Mult3, Mult3, SquareMult3, Mult3Len, &tmp);
   memset(&SquareMult3[Mult3Len << 1], 0, ((Mult1Len - Mult3Len) << 1)*sizeof(limb));
-  Mult3[idx].x = 0;
+  SquareMult3[idx].x = 0;
   multiply(Mult4, Mult4, SquareMult4, Mult4Len, &tmp);
   memset(&SquareMult4[Mult4Len << 1], 0, ((Mult1Len - Mult4Len) << 1)*sizeof(limb));
-  Mult4[idx].x = 0;
+  SquareMult4[idx].x = 0;
   idx++;
   AddBigInt(SquareMult1, SquareMult2, SquareMult1, idx);
   AddBigInt(SquareMult1, SquareMult3, SquareMult1, idx);
