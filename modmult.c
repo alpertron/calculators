@@ -32,13 +32,14 @@ int powerOf2Exponent;
 static limb aux[MAX_LEN], aux2[MAX_LEN];
 static limb aux3[MAX_LEN], aux4[MAX_LEN];
 static limb aux5[MAX_LEN], aux6[MAX_LEN];
+static limb resultModOdd[MAX_LEN], resultModPower2[MAX_LEN];
 static int NumberLength2;
 int NumberLength, NumberLengthR1;
 long long lModularMult;
 mmCback modmultCallback;
 static limb U[MAX_LEN], V[MAX_LEN], R[MAX_LEN], S[MAX_LEN];
 static limb Ubak[MAX_LEN], Vbak[MAX_LEN];
-static BigInteger tmpDen, tmpNum;
+static BigInteger tmpDen, tmpNum, oddValue;
 
 int getNbrLimbs(limb *bigNbr)
 {
@@ -1018,11 +1019,6 @@ void modmult(limb *factor1, limb *factor2, limb *product)
     lModularMult++;
   }
 #endif
-  if (NumberLength == 1)
-  {
-    smallmodmult(factor1->x, factor2->x, product, TestNbr[0].x);
-    return;
-  }
   if (powerOf2Exponent != 0)
   {    // TestNbr is a power of 2.
     UncompressLimbsBigInteger(factor1, &tmpNum);
@@ -1030,6 +1026,11 @@ void modmult(limb *factor1, limb *factor2, limb *product)
     BigIntMultiply(&tmpNum, &tmpDen, &tmpNum);
     CompressLimbsBigInteger(product, &tmpNum);
     (product + powerOf2Exponent / BITS_PER_GROUP)->x &= (1 << (powerOf2Exponent % BITS_PER_GROUP)) - 1;
+    return;
+  }
+  if (NumberLength == 1)
+  {
+    smallmodmult(factor1->x, factor2->x, product, TestNbr[0].x);
     return;
   }
   if (NumberLength <= 12)
@@ -1292,6 +1293,7 @@ void modmultInt(limb *factorBig, int factorInt, limb *result)
 
 // Compute power = base^exponent (mod modulus)
 // Assumes GetMontgomeryParms routine for modulus already called.
+// This works only for odd moduli.
 void BigIntModularPower(BigInteger *base, BigInteger *exponent, BigInteger *power)
 {
   CompressLimbsBigInteger(aux5, base);
@@ -1891,10 +1893,7 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
   }
 }
 
-// Compute modular division. ModInvBigNbr does not support even moduli,
-// so the division is done separately by calculating the division modulo
-// n/2^k (n odd) and 2^k and then merge the results using Chinese Remainder
-// Theorem.
+// Compute modular division for odd moduli.
 void BigIntModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient)
 {
   NumberLength = mod->nbrLimbs;
@@ -1962,4 +1961,113 @@ void BigIntModularDivisionSaveTestNbr(BigInteger *Num, BigInteger *Den, BigInteg
   BigIntModularDivision(Num, Den, mod, quotient);
   NumberLength = NumberLengthBak;
   memcpy(TestNbr, U, (NumberLength+1) * sizeof(limb));
+}
+
+// On input: 
+// oddValue = odd modulus.
+// resultModOdd = result mod odd value
+// resultModPower2 = result mod 2^shRight
+// result = pointer to result.
+// From Knuth's TAOCP Vol 2, section 4.3.2:
+// If c = result mod odd, d = result mod 2^k:
+// compute result = c + (d-c)*modinv(odd,2^k)*odd
+static void ChineseRemainderTheorem(int shRight, BigInteger *result)
+{
+  if (shRight == 0)
+  {
+    NumberLength = oddValue.nbrLimbs;
+    UncompressLimbsBigInteger(resultModOdd, result);
+    return;
+  }
+  if (NumberLength > oddValue.nbrLimbs)
+  {
+    memset(&oddValue.limbs[oddValue.nbrLimbs], 0, (NumberLength - oddValue.nbrLimbs) * sizeof(limb));
+  }
+  SubtractBigNbr((int *)resultModPower2, (int *)resultModOdd, (int *)aux3, NumberLength);
+  ComputeInversePower2(oddValue.limbs, aux4, aux);
+  modmult(aux4, aux3, aux5);
+  (aux5 + shRight / BITS_PER_GROUP)->x &= (1 << (shRight % BITS_PER_GROUP)) - 1;
+  UncompressLimbsBigInteger(aux5, result);
+  BigIntMultiply(result, &oddValue, result);
+  NumberLength = oddValue.nbrLimbs;
+  UncompressLimbsBigInteger(resultModOdd, &tmpDen);
+  BigIntAdd(result, &tmpDen, result);
+}
+
+// Compute modular division. ModInvBigNbr does not support even moduli,
+// so the division is done separately by calculating the division modulo
+// n/2^k (n odd) and 2^k and then merge the results using Chinese Remainder
+// Theorem.
+void BigIntGeneralModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient)
+{
+  int shRight;
+  CopyBigInt(&oddValue, mod);
+  DivideBigNbrByMaxPowerOf2(&shRight, oddValue.limbs, &oddValue.nbrLimbs);
+  // Reduce Num modulo oddValue.
+  BigIntRemainder(Num, &oddValue, &tmpNum);
+  if (tmpNum.sign == SIGN_NEGATIVE)
+  {
+    BigIntAdd(&tmpNum, &oddValue, &tmpNum);
+  }
+  // Reduce Den modulo oddValue.
+  BigIntRemainder(Den, &oddValue, &tmpDen);
+  if (tmpDen.sign == SIGN_NEGATIVE)
+  {
+    BigIntAdd(&tmpDen, &oddValue, &tmpDen);
+  }
+  NumberLength = oddValue.nbrLimbs;
+  memcpy(TestNbr, oddValue.limbs, NumberLength * sizeof(limb));
+  TestNbr[NumberLength].x = 0;
+  GetMontgomeryParms(NumberLength);
+  CompressLimbsBigInteger(aux3, &tmpDen);
+  modmult(aux3, MontgomeryMultR2, aux3);      // aux3 <- Den in Montgomery notation
+  ModInvBigNbr(aux3, aux3, TestNbr, NumberLength); // aux3 <- 1 / Den in Montg notation.
+  CompressLimbsBigInteger(aux4, &tmpNum);
+  modmult(aux3, aux4, resultModOdd);          // resultModOdd <- Num / Dev in standard notation.
+
+  // Compute inverse mod power of 2.
+  NumberLength = (shRight + BITS_PER_GROUP-1) / BITS_PER_GROUP;
+  CompressLimbsBigInteger(aux3, Den);
+  ComputeInversePower2(aux3, aux4, aux);
+  powerOf2Exponent = shRight;
+  modmult(Num->limbs, aux4, resultModPower2); // resultModPower2 <- Num / Dev modulus 2^k.
+  ChineseRemainderTheorem(shRight, quotient);
+  powerOf2Exponent = 0;
+}
+
+// Compute modular division. ModInvBigNbr does not support even moduli,
+// so the division is done separately by calculating the division modulo
+// n/2^k (n odd) and 2^k and then merge the results using Chinese Remainder
+// Theorem.
+enum eExprErr BigIntGeneralModularPower(BigInteger *base, BigInteger *exponent, BigInteger *mod, BigInteger *power)
+{
+  int shRight;
+  if (mod->nbrLimbs == 1 && mod->limbs[0].x == 0)
+  {            // Modulus is zero.
+    return BigIntPower(base, exponent, power);
+  }
+  CopyBigInt(&oddValue, mod);
+  oddValue.sign = SIGN_POSITIVE;
+  DivideBigNbrByMaxPowerOf2(&shRight, oddValue.limbs, &oddValue.nbrLimbs);
+  // Reduce base modulo oddValue.
+  BigIntRemainder(base, &oddValue, &tmpNum);
+  if (tmpNum.sign == SIGN_NEGATIVE)
+  {
+    BigIntAdd(&tmpNum, &oddValue, &tmpNum);
+  }
+  NumberLength = oddValue.nbrLimbs;
+  memcpy(TestNbr, oddValue.limbs, NumberLength * sizeof(limb));
+  TestNbr[NumberLength].x = 0;
+  GetMontgomeryParms(NumberLength);
+  BigIntModularPower(&tmpNum, exponent, &tmpDen);
+  memcpy(resultModOdd, tmpDen.limbs, tmpDen.nbrLimbs * sizeof(limb));
+
+  // Compute power mod power of 2.
+  NumberLength = (shRight + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
+  CompressLimbsBigInteger(aux3, base);
+  powerOf2Exponent = shRight;
+  modPowLimb(aux3, exponent->limbs, resultModPower2);
+  ChineseRemainderTheorem(shRight, power);
+  powerOf2Exponent = 0;
+  return EXPR_OK;
 }
