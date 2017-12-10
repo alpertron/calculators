@@ -56,8 +56,11 @@ static int Show(BigInteger *num, char *str, int t)
     }
     if (num->nbrLimbs != 1 || num->limbs[0].x != 1)
     {    // num is not 1 or -1.
+      int signTemp = num->sign;
+      num->sign = SIGN_POSITIVE;
       *ptrOutput++ = ' ';
       BigInteger2Dec(num, ptrOutput, groupLen);
+      num->sign = signTemp;
       ptrOutput += strlen(ptrOutput);
     }
     strcpy(ptrOutput, str);
@@ -90,12 +93,12 @@ void Solution(BigInteger *value)
 
 void SolveEquation(void)
 {
-  int factorIndex, expon, T1, E, Expo;
+  int factorIndex, expon, T1, E;
   BigInteger GcdAll;
   BigInteger ValNn;
   BigInteger z, Mult, currentSolution;
-  BigInteger U, SqrtDisc, prime, K1, Den;
-  BigInteger discriminant, V, K, Q, R, Sol1, L;
+  BigInteger U, SqrtDisc, prime, K1;
+  BigInteger discriminant, V, K, Q, L;
   struct sFactors *pstFactor;
 
   if (ValN.nbrLimbs == 1 && ValN.limbs[0].x == 0)
@@ -171,6 +174,9 @@ void SolveEquation(void)
   }
   // Modulus is not zero.
   ValN.sign = SIGN_POSITIVE;
+  BigIntRemainder(&ValA, &ValN, &ValA);
+  BigIntRemainder(&ValB, &ValN, &ValB);
+  BigIntRemainder(&ValC, &ValN, &ValC);
   BigIntGcd(&ValA, &ValB, &Aux[0]);
   BigIntGcd(&ValC, &Aux[0], &GcdAll);
   BigIntRemainder(&ValC, &GcdAll, &Aux[0]);
@@ -179,7 +185,9 @@ void SolveEquation(void)
      // Otherwise go out because there are no solutions.
     return;
   }
-  // Divide all coefficients and modulus by gcd(ValA, ValB).
+  BigIntGcd(&ValN, &GcdAll, &Aux[0]);
+  CopyBigInt(&GcdAll, &Aux[0]);
+  // Divide all coefficients by gcd(ValA, ValB).
   BigIntDivide(&ValA, &GcdAll, &Aux[0]);
   CopyBigInt(&ValA, &Aux[0]);
   BigIntDivide(&ValB, &GcdAll, &Aux[0]);
@@ -188,7 +196,7 @@ void SolveEquation(void)
   CopyBigInt(&ValC, &Aux[0]);
   BigIntDivide(&ValN, &GcdAll, &Aux[0]);
   CopyBigInt(&ValN, &Aux[0]);
-  CopyBigInt(&ValNn, &Aux[0]);
+  CopyBigInt(&ValNn, &ValN);
   if (ValNn.nbrLimbs == 1 && ValNn.limbs[0].x == 1)
   {     // All values from 0 to GcdAll - 1 are solutions.
     if (GcdAll.nbrLimbs > 1 || GcdAll.limbs[0].x > 5)
@@ -254,286 +262,283 @@ void SolveEquation(void)
   pstFactor = &astFactorsMod[1];
   for (factorIndex = 0; factorIndex<nbrFactors; factorIndex++)
   {
+    int sol1Invalid = 0;
+    int sol2Invalid = 0;
     NumberLength = *pstFactor->ptrFactor;
     UncompressBigInteger(pstFactor->ptrFactor, &prime);
     expon = pstFactor->multiplicity;
-    BigIntRemainder(&ValA, &prime, &V);
-    if (V.nbrLimbs == 1 && V.limbs[0].x == 0)
+    BigIntPowerIntExp(&prime, expon, &V);
+    BigIntRemainder(&ValA, &V, &L);
+    if (L.nbrLimbs == 1 && L.limbs[0].x == 0)
     {     // ValA multiple of prime, means linear equation mod prime.
       if (ValB.nbrLimbs == 1 && ValB.limbs[0].x == 0 &&
         !(ValC.nbrLimbs == 1 && ValC.limbs[0].x == 0))
       {
         return;  // There are no solutions: ValB=0 and ValC!=0
       }
-      BigIntPowerIntExp(&prime, expon, &V);
-      BigIntRemainder(&ValA, &V, &L);
-      if (L.nbrLimbs == 1 && L.limbs[0].x == 0)
-      {    // Linear equation mod prime^exp.
-        BigIntGcd(&ValB, &V, &U);
-        BigIntDivide(&V, &U, &Q);
-        BigIntDivide(&ValB, &U, &V);
-        BigIntDivide(&ValC, &U, &L);
-        BigIntNegate(&V, &V);
-        if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
-        {      // If prime is 2.
-          BigIntModularDivisionPower2(&L, &V, &Q, &Solution1[factorIndex]);
-        }
-        else
-        {
-          BigIntModularDivision(&L, &V, &Q, &Solution1[factorIndex]);
-        }
+      BigIntGcd(&ValB, &V, &U);
+      BigIntDivide(&V, &U, &Q);
+      BigIntDivide(&ValB, &U, &V);
+      BigIntDivide(&ValC, &U, &L);
+      BigIntNegate(&V, &V);
+      if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
+      {      // If prime is 2.
+        BigIntModularDivisionPower2(&L, &V, &Q, &Solution1[factorIndex]);
       }
       else
       {
-        BigIntGcd(&ValA, &V, &Q);
-        if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
-        {      // If prime is 2.
-          BigIntModularDivisionPower2(&ValC, &ValB, &Q, &Sol1);
-        }
-        else
-        {
-          BigIntModularDivision(&ValC, &ValB, &Q, &Sol1);
-        }
-        T1 = 0;
-        CopyBigInt(&V, &prime);
-        for (;;)
-        {
-          BigIntRemainder(&ValA, &V, &L);
-          if (L.nbrLimbs > 1 || L.limbs[0].x != 0)
-          {
-            break;
-          }
-          BigIntMultiply(&V, &prime, &V);
-          T1++;
-        }
-        do
-        {
-          // L <- (ValA * (Sol1)^2 + ValB * Sol1 + ValC) / Q
-          BigIntMultiply(&ValA, &Sol1, &K1);
-          BigIntAdd(&K1, &ValB, &L);
-          BigIntMultiply(&L, &Sol1, &L);
-          BigIntAdd(&L, &ValC, &L);
-          BigIntDivide(&L, &Q, &K);
-          CopyBigInt(&L, &K);
-          // K1 <- 2 * ValA * Sol1 + ValB
-          BigIntAdd(&K1, &K1, &K1);
-          BigIntAdd(&K1, &ValB, &K1);
-          // K <- gcd(L, K1)
-          BigIntGcd(&L, &K1, &K);
-          // L <- L/K
-          BigIntDivide(&L, &K, &R);
-          CopyBigInt(&L, &R);
-          // K1 <- K1/K
-          BigIntDivide(&K1, &K, &R);
-          CopyBigInt(&K1, &R);
-          // R <- L/K1 (mod Q)
-          if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
-          {      // If prime is 2.
-            BigIntModularDivisionPower2(&L, &K1, &Q, &R);
-          }
-          else
-          {
-            BigIntModularDivision(&L, &K1, &Q, &R);
-          }
-          // Sol1 <- Sol1 + R*Q
-          BigIntMultiply(&R, &Q, &K);
-          BigIntAdd(&Sol1, &K, &Sol1);
-          T1 = T1 + T1;
-          BigIntMultiply(&Q, &Q, &Q);
-        } while (T1 < expon);
-        BigIntPowerIntExp(&prime, expon, &Q);
-        BigIntRemainder(&Sol1, &Q, &SqrtDisc);
-        intToBigInteger(&Mult, 1);
-        Solution1[factorIndex] = SqrtDisc;
+        NumberLength = Q.nbrLimbs;
+        memcpy(TestNbr, Q.limbs, NumberLength * sizeof(limb));
+        TestNbr[NumberLength].x = 0;
+        GetMontgomeryParms(NumberLength);
+        BigIntModularDivision(&L, &V, &Q, &Solution1[factorIndex]);
       }
-      Solution2[factorIndex] = Solution1[factorIndex];
+      CopyBigInt(&Solution2[factorIndex], &Solution1[factorIndex]);
     }
     else
     {                   /* If quadratic equation mod p */
-      Expo = 0;
+      BigInteger squareRoot;
+      BigInteger tmp1, tmp2, ValAOdd;
+      int nbrBitsSquareRoot, correctBits, nbrLimbs, bitsAZero, mask, ctr;
+      int deltaZeros, deltaIsZero = 0;
+      // Compute discriminant = ValB^2 - 4*ValA*ValC.
+      BigIntMultiply(&ValB, &ValB, &Aux[0]);
+      BigIntMultiply(&ValA, &ValC, &discriminant);
+      multadd(&discriminant, 4, &discriminant, 0);
+      BigIntSubt(&Aux[0], &discriminant, &discriminant);
+      CopyBigInt(&ValAOdd, &ValA);
       if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
       {         /* Prime p is 2 */
-        BigInteger coefX2, coefX1, coefX0;
-        BigInteger increm;
-        BigInteger deltaincrem;
-        CopyBigInt(&coefX2, &ValA);
-        CopyBigInt(&coefX1, &ValB);
-        CopyBigInt(&coefX0, &ValC);
-        intToBigInteger(&increm, 0);
-        intToBigInteger(&deltaincrem, 1);
-        Expo = 0;
-        while (Expo < expon - 1 && (coefX1.limbs[0].x & 1) == 0)
+        // Number of bits of square root of discriminant to compute: expon + bits_a + 1,
+        // where bits_a is the number of least significant bits of a set to zero.
+        // To compute the square root, compute the inverse of sqrt, so only multiplications are used.
+        // f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
+        // Get odd part of A and number of bits to zero.
+        DivideBigNbrByMaxPowerOf2(&bitsAZero, ValAOdd.limbs, &ValAOdd.nbrLimbs);
+        bitsAZero++;   // Include the number 2 in the denominator.
+        // Compute inverse of -A (mod 2^expon).
+        nbrLimbs = (expon + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
+        if (nbrLimbs > ValAOdd.nbrLimbs)
         {
-          if ((coefX0.limbs[0].x & 1) == 0)
-          {                   // constant term is even
-            if ((coefX0.limbs[0].x & 2) == 2)
-            {                 // constant term = 2 (mod 4)
-              return;         // No solutions
-            }
-            multadd(&coefX1, 2, &coefX1, 0);   // coefX1 <- 2*coefX1
-            multadd(&coefX0, 4, &coefX0, 0);   // coefX0 <- 4*coefX0
-            Expo += 2;
-            multadd(&deltaincrem, 2, &deltaincrem, 0);
-          }
-          else {              // constant term is odd
-            BigIntAdd(&coefX0, &coefX1, &coefX0);
-            BigIntAdd(&coefX0, &coefX2, &coefX0);
-            BigIntAdd(&coefX1, &coefX2, &coefX1);
-            BigIntAdd(&coefX1, &coefX2, &coefX1);
-            BigIntAdd(&increm, &deltaincrem, &increm);
-          }
+          memset(&ValAOdd.limbs[ValAOdd.nbrLimbs], 0, (nbrLimbs - ValAOdd.nbrLimbs) * sizeof(limb));
         }
-        if (Expo == expon - 1)
-        {                     // Equation modulo 2 
-          if ((coefX1.limbs[0].x & 1) == 0)
-          {                   // Linear coefficient is even.
-            BigIntPowerOf2(&Q, (expon + 1) / 2);
-            if (coefX0.limbs[0].x & 1)
-            {     // Constant coefficient is odd.
-              BigIntPowerOf2(&Solution1[factorIndex], Expo / 2);
-              BigIntAdd(&Solution1[factorIndex], &increm, &Solution1[factorIndex]);
-            }
-            else
-            {     // Constant coefficient is even.
-              CopyBigInt(&Solution1[factorIndex], &increm);
-            }
-          }
-          else
-          {
-            if (coefX0.limbs[0].x & 1)
-            {                 // All three coefficients odd
-              return;         // No solution
-            }
-            BigIntPowerOf2(&Q, Expo / 2);
-            CopyBigInt(&Solution1[factorIndex], &increm);
-          }
-          CopyBigInt(&Solution2[factorIndex], &Solution1[factorIndex]);
+        if (ValAOdd.sign == SIGN_POSITIVE)
+        {
+          ChSignBigNbr((int *)ValAOdd.limbs, nbrLimbs);
+        }
+        NumberLength = nbrLimbs;
+        ComputeInversePower2(ValAOdd.limbs, tmp2.limbs, tmp1.limbs);
+        memcpy(ValAOdd.limbs, tmp2.limbs, nbrLimbs*sizeof(limb));
+        if (discriminant.nbrLimbs == 1 && discriminant.limbs[0].x == 0)
+        {     // discriminant is zero.
+          memset(squareRoot.limbs, 0, nbrLimbs*sizeof(limb));
+          deltaIsZero = 1;
+          deltaZeros = 0;
+          nbrBitsSquareRoot = expon + bitsAZero;
         }
         else
         {
-          if (Expo == expon)
-          {            // equation modulo 1.
-            BigIntPowerOf2(&Q, Expo / 2);
-            CopyBigInt(&Solution1[factorIndex], &increm);
-            CopyBigInt(&Solution2[factorIndex], &increm);
+          int LSLimb;
+          CopyBigInt(&tmp1, &discriminant);
+          DivideBigNbrByMaxPowerOf4(&deltaZeros, discriminant.limbs, &discriminant.nbrLimbs);
+          // Find number of bits of square root to compute.
+          nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
+          nbrLimbs = (nbrBitsSquareRoot + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
+          if (nbrLimbs > discriminant.nbrLimbs)
+          {
+            memset(&discriminant.limbs[nbrLimbs], 0, (nbrLimbs - discriminant.nbrLimbs) * sizeof(limb));
           }
-          else
-          {            // coefX1 odd -> 1 solution odd, 1 solution even
-            // Compute discriminant <- (coefX1)^2 - 4 * coefX0 * coefX2.
-            BigIntMultiply(&coefX1, &coefX1, &Aux[0]);
-            BigIntMultiply(&coefX0, &coefX2, &Aux[1]);
-            multadd(&Aux[1], 4, &Aux[1], 0);
-            BigIntSubt(&Aux[0], &Aux[1], &discriminant);
-            if (coefX0.limbs[0].x & 1)
-            {
-              return;          // The three numbers cannot be all odd.
-            }
-            intToBigInteger(&Sol1, 1);
-            T1 = 1;
-            intToBigInteger(&Q, 2);
-            if (expon != 1)
-            {
-              do
-              {
-                // L <- (ValA * (Sol1)^2 + coefX1 * Sol1 + CoefX0) / Q
-                BigIntMultiply(&ValA, &Sol1, &L);
-                BigIntAdd(&L, &coefX1, &L);
-                BigIntMultiply(&L, &Sol1, &L);
-                BigIntAdd(&L, &coefX0, &L);
-                BigIntDivide(&L, &Q, &Aux[0]);
-                BigIntNegate(&Aux[0], &L);
-                // R <- -L/(2*Sol1*coefX2 + coefX1) (mod Q)
-                BigIntAdd(&Sol1, &Sol1, &Aux[0]);
-                BigIntMultiply(&Aux[0], &coefX2, &Aux[0]);
-                BigIntAdd(&Aux[0], &coefX1, &Aux[0]);
-                BigIntModularDivisionPower2(&L, &Aux[0], &Q, &R);
-                BigIntMultiply(&Q, &R, &Aux[0]);
-                BigIntAdd(&Sol1, &Aux[0], &Sol1);
-                T1 = T1 + T1;
-                BigIntMultiply(&Q, &Q, &Q);
-              } while (T1 < expon - Expo / 2);
-            }
-            BigIntPowerOf2(&Q, expon - Expo);
-            // Solution1[factorIndex] <- Sol1 % Q * 2**(Expo / 2) + increm
-            BigIntPowerOf2(&Aux[0], Expo/2);
-            BigIntRemainder(&Sol1, &Q, &Aux[1]);
-            BigIntMultiply(&Aux[0], &Aux[1], &Aux[1]);
-            BigIntAdd(&Aux[1], &increm, &Solution1[factorIndex]);
-            // Solution2[factorIndex] <- -(coefX1 / coefX2 + Sol1) % Q * 2**(Expo / 2) + increm
-            BigIntModularDivisionPower2(&coefX1, &coefX2, &Q, &Aux[1]);
-            BigIntAdd(&Aux[1], &Sol1, &Aux[1]);
-            BigIntRemainder(&Aux[1], &Q, &Aux[2]);
-            BigIntMultiply(&Aux[0], &Aux[2], &Aux[1]);
-            BigIntSubt(&increm, &Aux[2], &Solution2[factorIndex]);
-            if (Solution2[factorIndex].sign == SIGN_NEGATIVE)
-            {
-              BigIntAdd(&Q, &Solution2[factorIndex], &Solution2[factorIndex]);
-            }
-            BigIntSubt(&Solution1[factorIndex], &Solution2[factorIndex], &Aux[1]);
-            if (Aux[1].sign == SIGN_POSITIVE)
-            {   // Make Solution2 the greatest one.
-              CopyBigInt(&Sol1, &Solution1[factorIndex]);
-              CopyBigInt(&Solution1[factorIndex], &Solution2[factorIndex]);
-              CopyBigInt(&Solution2[factorIndex], &Sol1);
-            }
-            BigIntMultiply(&Q, &Aux[0], &Q);
+          if (discriminant.sign == SIGN_NEGATIVE)
+          {
+            ChSignBigNbr((int *)discriminant.limbs, nbrLimbs);
           }
+          LSLimb = discriminant.limbs[0].x;
+          if ((LSLimb & 7) != 1)
+          {
+            return;    // Square root does not exist. Go out.
+          }
+          // First approximation to inverse of square root.
+          squareRoot.limbs[0].x = ((LSLimb & 15) == 1 ? 1 : 3);
+          correctBits = 2;
+          do
+          {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
+            correctBits *= 2;
+            nbrLimbs = correctBits / BITS_PER_GROUP + 1;
+            MultBigNbr((int *)squareRoot.limbs, (int *)squareRoot.limbs, (int *)tmp2.limbs, nbrLimbs);
+            MultBigNbr((int *)tmp2.limbs, (int *)discriminant.limbs, (int *)tmp2.limbs, nbrLimbs);
+            ChSignBigNbr((int *)tmp2.limbs, nbrLimbs);
+            memset(tmp1.limbs, 0, nbrLimbs * sizeof(limb));
+            tmp1.limbs[0].x = 3;
+            AddBigNbr((int *)tmp1.limbs, (int *)tmp2.limbs, (int *)tmp2.limbs, nbrLimbs);
+            MultBigNbr((int *)tmp2.limbs, (int *)squareRoot.limbs, (int *)tmp1.limbs, nbrLimbs);
+            memcpy(squareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
+            DivBigNbrByInt((int *)tmp1.limbs, 2, (int *)squareRoot.limbs, nbrLimbs);
+          } while (correctBits < nbrBitsSquareRoot);
+          // Get square root of discriminant from its inverse by multiplying by discriminant.
+          MultBigNbr((int *)discriminant.limbs, (int *)squareRoot.limbs, (int *)tmp1.limbs, nbrLimbs);
+          memcpy(squareRoot.limbs, tmp1.limbs, nbrLimbs*sizeof(limb));
+          // Multiply by square root of discriminant by 2^deltaZeros.
+          squareRoot.limbs[nbrLimbs].x = 0;
+          for (ctr = 0; ctr < deltaZeros; ctr++)
+          {
+            MultBigNbrByInt((int*)squareRoot.limbs, 2, (int*)squareRoot.limbs, nbrLimbs + 1);
+            if (squareRoot.limbs[nbrLimbs].x != 0)
+            {
+              nbrLimbs++;
+              squareRoot.limbs[nbrLimbs].x = 0;
+            }
+          }
+          squareRoot.sign = SIGN_POSITIVE;
+          squareRoot.nbrLimbs = nbrLimbs;
         }
+        correctBits = expon - deltaZeros;
+        BigIntPowerOf2(&Q, correctBits);      // Store increment.
+        mask = 1 << (correctBits % BITS_PER_GROUP);
+        nbrLimbs = (nbrBitsSquareRoot + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
+        // Compute x = (b + sqrt(discriminant)) / (-2a) and x = (b - sqrt(discriminant)) / (-2a)
+        if (ValB.sign == SIGN_POSITIVE)
+        {
+          AddBigNbr((int *)ValB.limbs, (int *)squareRoot.limbs, (int *)tmp1.limbs, nbrLimbs);
+        }
+        else
+        {
+          SubtractBigNbr((int *)ValB.limbs, (int *)squareRoot.limbs, (int *)tmp1.limbs, nbrLimbs);
+        }
+        for (ctr = 0; ctr < bitsAZero; ctr++)
+        {
+          if (tmp1.limbs[0].x & 1)
+          {   // Cannot divide by 2 because number is odd.
+            sol1Invalid = 1;
+            break;
+          }
+          DivBigNbrByInt((int *)tmp1.limbs, 2, (int *)tmp1.limbs, nbrLimbs);
+        }
+        nbrLimbs = (correctBits + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
+        MultBigNbr((int *)tmp1.limbs, (int *)ValAOdd.limbs, (int *)tmp1.limbs, nbrLimbs);
+        tmp1.limbs[nbrLimbs - 1].x &= mask-1;
+        tmp1.nbrLimbs = nbrLimbs;
+        tmp1.sign = SIGN_POSITIVE;
+        CopyBigInt(&Solution1[factorIndex], &tmp1);
+        nbrLimbs = (nbrBitsSquareRoot + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
+        if (ValB.sign == SIGN_NEGATIVE)
+        {
+          AddBigNbr((int *)ValB.limbs, (int *)squareRoot.limbs, (int *)tmp1.limbs, nbrLimbs);
+        }
+        else
+        {
+          SubtractBigNbr((int *)ValB.limbs, (int *)squareRoot.limbs, (int *)tmp1.limbs, nbrLimbs);
+        }
+        for (ctr = 0; ctr < bitsAZero; ctr++)
+        {
+          if (tmp1.limbs[0].x & 1)
+          {   // Cannot divide by 2 because number is odd.
+            sol2Invalid = 1;
+            break;
+          }
+          DivBigNbrByInt((int *)tmp1.limbs, 2, (int *)tmp1.limbs, nbrLimbs);
+        }
+        nbrLimbs = (correctBits + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
+        MultBigNbr((int *)tmp1.limbs, (int *)ValAOdd.limbs, (int *)tmp1.limbs, nbrLimbs);
+        tmp1.limbs[nbrLimbs - 1].x &= (mask - 1);
+        tmp1.nbrLimbs = nbrLimbs;
+        tmp1.sign = SIGN_POSITIVE;
+        CopyBigInt(&Solution2[factorIndex], &tmp1);
       }
       else
       {                        // Prime is not 2
-        // discriminant <- (ValB)^2 - 4 * ValA * ValC
-        BigIntMultiply(&ValB, &ValB, &Aux[0]);
-        BigIntMultiply(&ValA, &ValC, &Aux[1]);
-        multadd(&Aux[1], 4, &Aux[1], 0);
-        BigIntSubt(&Aux[0], &Aux[1], &discriminant);
-        for (; Expo < expon; Expo++)
-        {   // Find exponent
-          BigIntRemainder(&discriminant, &prime, &Aux[0]);
-          if (Aux[0].nbrLimbs == 1 && Aux[0].limbs[0].x == 0)
-          {    // discriminant is multiple of prime.
-            BigIntDivide(&discriminant, &prime, &Aux[0]);
-            CopyBigInt(&discriminant, &Aux[0]);
-          }
-          else
+        // Number of bits of square root of discriminant to compute: expon + bits_a + 1,
+        // where bits_a is the number of least significant bits of a set to zero.
+        // To compute the square root, compute the inverse of sqrt, so only multiplications are used.
+        // f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
+        // Get maximum power of prime which divide ValA.
+        bitsAZero = 0;
+        for (;;)
+        {
+          BigIntRemainder(&ValAOdd, &prime, &tmp1);
+          if (tmp1.nbrLimbs > 1 || tmp1.limbs[0].x != 0)
           {
             break;
           }
+          BigIntDivide(&ValAOdd, &prime, &ValAOdd);
+          bitsAZero++;
         }
-        if (Expo == expon)
+        // Get maximum power of prime which divide discriminant.
+        deltaZeros = 0;
+        if (discriminant.nbrLimbs > 1 || discriminant.limbs[0].x != 0)
+        {      // Discriminant is not zero.
+          for (;;)
+          {
+            BigIntRemainder(&discriminant, &prime, &tmp1);
+            if (tmp1.nbrLimbs > 1 || tmp1.limbs[0].x != 0)
+            {
+              break;
+            }
+            BigIntDivide(&discriminant, &prime, &discriminant);
+            deltaZeros++;
+          }
+        }
+        if (deltaZeros & 1)
+        {          // If delta is of type m*prime^n where m is not multiple of prime
+                   // and n is odd, there is no solution, so go out.
+          return;
+        }
+        deltaZeros >>= 1;
+        // Compute inverse of -2*A (mod prime^(expon - deltaZeros)).
+        BigIntAdd(&ValAOdd, &ValAOdd, &ValAOdd);
+        BigIntPowerIntExp(&prime, expon - deltaZeros, &tmp1);
+        BigIntRemainder(&ValAOdd, &tmp1, &ValAOdd);
+        nbrLimbs = tmp1.nbrLimbs;
+        if (ValAOdd.sign == SIGN_NEGATIVE)
         {
-          BigIntPowerIntExp(&prime, (Expo + 1) / 2, &Q);
-          BigIntNegate(&ValB, &Aux[2]);
-          BigIntAdd(&ValA, &ValA, &Aux[3]);
-          NumberLength = Q.nbrLimbs;
-          memcpy(TestNbr, Q.limbs, NumberLength * sizeof(limb));
-          TestNbr[NumberLength].x = 0;
-          GetMontgomeryParms(NumberLength);
-          BigIntModularDivision(&Aux[2], &Aux[3], &Q, &Solution1[factorIndex]);
-          CopyBigInt(&Solution2[factorIndex], &Solution1[factorIndex]);
+          BigIntAdd(&tmp1, &ValAOdd, &ValAOdd);
+        }
+        else if (ValAOdd.nbrLimbs > 1 || ValAOdd.limbs[0].x != 0)
+        {
+          BigIntSubt(&tmp1, &ValAOdd, &ValAOdd);
+        }
+        intToBigInteger(&tmp2, 1);
+        NumberLength = tmp1.nbrLimbs;
+        memcpy(TestNbr, tmp1.limbs, NumberLength * sizeof(limb));
+        TestNbr[NumberLength].x = 0;
+        GetMontgomeryParms(NumberLength);
+        BigIntModularDivision(&tmp2, &ValAOdd, &tmp1, &Aux[0]);
+        CopyBigInt(&ValAOdd, &Aux[0]);
+        if (discriminant.nbrLimbs == 1 && discriminant.limbs[0].x == 0)
+        {     // Discriminant is zero.
+          memset(squareRoot.limbs, 0, nbrLimbs * sizeof(limb));
+          deltaIsZero = 1;
+          nbrBitsSquareRoot = expon + bitsAZero;
         }
         else
-        {
-          if ((Expo & 1) == 1)
+        {      // Discriminant is not zero.
+          // Find number of digits of square root to compute.
+          nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
+          BigIntPowerIntExp(&prime, nbrBitsSquareRoot, &tmp1);
+          nbrLimbs = tmp1.nbrLimbs;
+          BigIntRemainder(&discriminant, &tmp1, &discriminant);
+          if (discriminant.sign == SIGN_NEGATIVE)
           {
-            return;         // No solutions if odd exponent.
+            BigIntAdd(&discriminant, &tmp1, &discriminant);
           }
-          BigIntPowerIntExp(&prime, Expo / 2, &Mult);
-          if (BigIntJacobiSymbol(&discriminant, &prime) != 1)
+          if (nbrLimbs > discriminant.nbrLimbs)
           {
-            return;         // Not a quadratic residue, so go out.
+            memset(&discriminant.limbs[nbrLimbs], 0, (nbrLimbs - discriminant.nbrLimbs) * sizeof(limb));
           }
-          NumberLength = prime.nbrLimbs;
-          memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
-          TestNbr[NumberLength].x = 0;
-          GetMontgomeryParms(NumberLength);
-          CopyBigInt(&Q, &prime);
-                            // Obtain discriminant mod prime.
           BigIntRemainder(&discriminant, &prime, &Aux[3]);
           if (Aux[3].sign == SIGN_NEGATIVE)
           {
             BigIntAdd(&Aux[3], &prime, &Aux[3]);
           }
+          if (BigIntJacobiSymbol(&Aux[3], &prime) != 1)
+          {
+            return;         // Not a quadratic residue, so go out.
+          }
+          // Compute square root of discriminant.
+          NumberLength = prime.nbrLimbs;
+          memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
+          TestNbr[NumberLength].x = 0;
+          GetMontgomeryParms(NumberLength);
+          CopyBigInt(&Q, &prime);
           if ((prime.limbs[0].x & 3) == 3)
           {                 // prime mod 4 = 3
             subtractdivide(&Q, -1, 4);   // Q <- (prime+1)/4.
@@ -576,7 +581,7 @@ void SolveEquation(void)
               // Step 6. Find the smallest value of k such that w^(2^k) = 1 (mod p)
               // Step 7. Set d <- y^(2^(r-k-1)) mod p, y <- d^2 mod p, r <- k, v <- dv mod p, w <- wy mod p.
               // Step 8. Go to step 5.
-              int x, e, r, k, ctr;
+              int x, e, r, k;
               // Step 1.
               subtractdivide(&Q, 1, 1);   // Q <- (prime-1).
               DivideBigNbrByMaxPowerOf2(&e, Q.limbs, &Q.nbrLimbs);
@@ -627,61 +632,99 @@ void SolveEquation(void)
             modmult(Aux[4].limbs, toConvert, toConvert);
             UncompressLimbsBigInteger(toConvert, &SqrtDisc);
           }
-          CopyBigInt(&Sol1, &SqrtDisc);
-          T1 = 1;
+          // Obtain inverse of square root stored in SqrtDisc (mod prime).
+          intToBigInteger(&tmp2, 1);
+          BigIntModularDivision(&tmp2, &SqrtDisc, &prime, &squareRoot);
+          correctBits = 1;
           CopyBigInt(&Q, &prime);
-          if (expon != 1)
-          {            // Use Hensel lifting for solutions mod prime^n.
-            do
+          // Obtain nbrBitsSquareRoot correct digits of inverse square root.
+          while (correctBits < nbrBitsSquareRoot)
+          {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
+            correctBits *= 2;
+            BigIntMultiply(&Q, &Q, &Q);           // Square Q.
+            BigIntMultiply(&squareRoot, &squareRoot, &tmp1);
+            BigIntRemainder(&tmp1, &Q, &tmp2);
+            BigIntMultiply(&tmp2, &discriminant, &tmp2);
+            BigIntRemainder(&tmp2, &Q, &tmp1);
+            intToBigInteger(&tmp2, 3);
+            BigIntSubt(&tmp2, &tmp1, &tmp2);
+            BigIntMultiply(&tmp2, &squareRoot, &tmp1);
+            if (tmp1.limbs[0].x & 1)
             {
-              NumberLength = Q.nbrLimbs;
-              memcpy(TestNbr, Q.limbs, NumberLength * sizeof(limb));
-              TestNbr[NumberLength].x = 0;
-              GetMontgomeryParms(NumberLength);
-              // L <- ((Sol1)^2 - discriminant) / Q
-              BigIntMultiply(&Sol1, &Sol1, &K1);
-              BigIntSubt(&K1, &discriminant, &K1);
-              BigIntDivide(&K1, &Q, &L);
-              // K <- gcd(L, 2*Sol1)
-              BigIntAdd(&Sol1, &Sol1, &K1);
-              BigIntGcd(&K1, &L, &K);
-              // R <- (-L/K) / (2*Sol1/K) (mod Q)
-              BigIntNegate(&L, &Aux[4]);
-              BigIntDivide(&Aux[4], &K, &Aux[5]);
-              BigIntAdd(&Sol1, &Sol1, &Aux[6]);
-              BigIntDivide(&Aux[6], &K, &Aux[7]);
-              BigIntModularDivision(&Aux[5], &Aux[7], &Q, &R);
-              // Sol1 <- R*Q + Sol1
-              BigIntMultiply(&R, &Q, &Aux[4]);
-              BigIntAdd(&Sol1, &Aux[4], &Sol1);
-              T1 = T1 + T1;
-              // Q <- Q*Q
-              BigIntMultiply(&Q, &Q, &Q);
-            } while (T1 < expon - Expo / 2);
-            BigIntPowerIntExp(&prime, expon - Expo / 2, &Q);
+              BigIntAdd(&tmp1, &Q, &tmp1);
+            }
+            BigIntDivide2(&tmp1);
+            BigIntRemainder(&tmp1, &Q, &squareRoot);
           }
-          NumberLength = Q.nbrLimbs;
-          memcpy(TestNbr, Q.limbs, NumberLength * sizeof(limb));
-          TestNbr[NumberLength].x = 0;
-          GetMontgomeryParms(NumberLength);
-          // SqrtDisc <- Sol1 % Q * Mult
-          BigIntRemainder(&Sol1, &Q, &K1);
-          BigIntMultiply(&K1, &Mult, &SqrtDisc);
-          // Den <- ValA * 2
-          BigIntAdd(&ValA, &ValA, &Den);
-          BigIntNegate(&ValB, &K1);
-          BigIntSubt(&K1, &SqrtDisc, &Aux[4]);
-          BigIntModularDivision(&Aux[4], &Den, &Q, &Solution1[factorIndex]);
-          BigIntAdd(&K1, &SqrtDisc, &Aux[4]);
-          BigIntModularDivision(&Aux[4], &Den, &Q, &Solution2[factorIndex]);
-          BigIntSubt(&Solution1[factorIndex], &Solution2[factorIndex], &Aux[4]);
-          if (Aux[4].sign == SIGN_POSITIVE)
-          {   // Exchange solutions so Solution1 is always less than Solution2.
-            CopyBigInt(&Sol1, &Solution1[factorIndex]);
-            CopyBigInt(&Solution1[factorIndex], &Solution2[factorIndex]);
-            CopyBigInt(&Solution2[factorIndex], &Sol1);
+          // Get square root of discriminant from its inverse by multiplying by discriminant.
+          if (squareRoot.sign == SIGN_NEGATIVE)
+          {
+            BigIntAdd(&squareRoot, &Q, &squareRoot);
+          }
+          BigIntMultiply(&squareRoot, &discriminant, &squareRoot);
+          // Multiply by square root of discriminant by prime^deltaZeros.
+          squareRoot.limbs[nbrLimbs].x = 0;
+          for (ctr = 0; ctr < deltaZeros; ctr++)
+          {
+            BigIntMultiply(&squareRoot, &prime, &squareRoot);
           }
         }
+        correctBits = expon - deltaZeros;
+        BigIntPowerIntExp(&prime, correctBits, &Q);      // Store increment.
+        // Compute x = (b + sqrt(discriminant)) / (-2a) and x = (b - sqrt(discriminant)) / (-2a)
+        BigIntAdd(&ValB, &squareRoot, &tmp1);
+        for (ctr = 0; ctr < bitsAZero; ctr++)
+        {
+          BigIntRemainder(&tmp1, &prime, &tmp2);
+          if (tmp2.nbrLimbs > 1 || tmp2.limbs[0].x != 0)
+          {   // Cannot divide by prime, so go out.
+            sol1Invalid = 1;
+            break;
+          }
+          BigIntDivide(&tmp1, &prime, &tmp1);
+        }
+        BigIntMultiply(&tmp1, &ValAOdd, &tmp1);
+        BigIntRemainder(&tmp1, &Q, &Solution1[factorIndex]);
+        if (Solution1[factorIndex].sign == SIGN_NEGATIVE)
+        {
+          BigIntAdd(&Solution1[factorIndex], &Q, &Solution1[factorIndex]);
+        }
+        BigIntSubt(&ValB, &squareRoot, &tmp1);
+        for (ctr = 0; ctr < bitsAZero; ctr++)
+        {
+          BigIntRemainder(&tmp1, &prime, &tmp2);
+          if (tmp2.nbrLimbs > 1 || tmp2.limbs[0].x != 0)
+          {   // Cannot divide by prime, so go out.
+            sol2Invalid = 1;
+            break;
+          }
+          BigIntDivide(&tmp1, &prime, &tmp1);
+        }
+        BigIntMultiply(&tmp1, &ValAOdd, &tmp1);
+        BigIntRemainder(&tmp1, &Q, &Solution2[factorIndex]);
+        if (Solution2[factorIndex].sign == SIGN_NEGATIVE)
+        {
+          BigIntAdd(&Solution2[factorIndex], &Q, &Solution2[factorIndex]);
+        }
+      }
+      if (sol1Invalid && sol2Invalid)
+      {     // Both solutions are invalid. Go out.
+        return;
+      }
+      if (sol1Invalid)
+      {     // Solution1 is invalid. Overwrite it with Solution2.
+        CopyBigInt(&Solution1[factorIndex], &Solution2[factorIndex]);
+      }
+      else if (sol2Invalid)
+      {     // Solution2 is invalid. Overwrite it with Solution1.
+        CopyBigInt(&Solution2[factorIndex], &Solution1[factorIndex]);
+      }
+      BigIntSubt(&Solution2[factorIndex], &Solution1[factorIndex], &Aux[0]);
+      if (Aux[0].sign == SIGN_NEGATIVE)
+      {     // Solution2 is less than Solution1, so exchange them.
+        CopyBigInt(&Aux[0], &Solution1[factorIndex]);
+        CopyBigInt(&Solution1[factorIndex], &Solution2[factorIndex]);
+        CopyBigInt(&Solution2[factorIndex], &Aux[0]);
       }
     }
     CopyBigInt(&Increment[factorIndex], &Q);
@@ -780,10 +823,10 @@ void SolveEquation(void)
   } while (T1 >= 0);
 }
 
-void textErrorQuadMod(char *ptrOutput, enum eExprErr rc)
+void textErrorQuadMod(char *pOutput, enum eExprErr rc)
 {
   char text[150];
-
+  (void)pOutput;
   switch (rc)
   {
   case EXPR_MODULUS_MUST_BE_NONNEGATIVE:

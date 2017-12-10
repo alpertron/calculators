@@ -89,6 +89,7 @@ enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int expon, BigInteger *pPower
 void BigInteger2Dec(BigInteger *pBigInt, char *decimal, int groupLen);
 void BigInteger2Hex(BigInteger *pBigInt, char *decimal, int groupLen);
 void BigIntGcd(BigInteger *pArg1, BigInteger *pArg2, BigInteger *pResult);
+void BigIntGeneralModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient);
 void BigIntModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient);
 void BigIntModularDivisionPower2(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient);
 void BigIntModularDivisionSaveTestNbr(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient);
@@ -126,6 +127,7 @@ int checkOne(limb *value, int nbrLimbs);
 int checkMinusOne(limb *value, int nbrLimbs);
 void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs);
 void BigIntModularPower(BigInteger *base, BigInteger *exponent, BigInteger *power);
+enum eExprErr BigIntGeneralModularPower(BigInteger *base, BigInteger *exponent, BigInteger *mod, BigInteger *power);
 
 void ChSignBigNbr(int *nbr, int length);
 void ChSignBigNbrB(int *nbr, int length);
@@ -153,6 +155,8 @@ void ModInvBigInt(int *num, int *inv, int *mod, int NumberLength);
 void IntToBigNbr(int value, int *bigNbr, int nbrLength);
 int JacobiSymbol(int upper, int lower);
 int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower);
+void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs);
+
 
 typedef void(*mmCback)(void);
 #endif

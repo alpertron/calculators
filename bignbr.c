@@ -1526,5 +1526,64 @@ void BigIntPowerOf2(BigInteger *pResult, int expon)
     memset(pResult->limbs, 0, nbrLimbs * sizeof(limb));
   }
   pResult->limbs[nbrLimbs].x = 1 << (expon % BITS_PER_GROUP);
+  pResult->nbrLimbs = nbrLimbs + 1;
   pResult->sign = SIGN_POSITIVE;
 }
+
+// Find power of 4 that divides the number.
+// output: pNbrLimbs = pointer to number of limbs
+//         pPower4 = pointer to power of 4.
+void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
+{
+  int powerOf4;
+  int powerOf2 = 0;
+  int numLimbs = *pNbrLimbs;
+  int index, index2, power2gr, shRg, mask;
+  limb prevLimb, currLimb;
+  // Start from least significant limb (number zero).
+  for (index = 0; index < numLimbs; index++)
+  {
+    if ((value + index)->x != 0)
+    {
+      break;
+    }
+    powerOf2 += BITS_PER_GROUP;
+  }
+  for (mask = 0x1; mask <= MAX_VALUE_LIMB; mask *= 2)
+  {
+    if (((value + index)->x & mask) != 0)
+    {
+      break;
+    }
+    powerOf2++;
+  }
+  powerOf4 = powerOf2 >> 1;
+  // Divide value by this power.
+  power2gr = powerOf2 % (2 * BITS_PER_GROUP);
+  shRg = (power2gr & (-2)) % BITS_PER_GROUP; // Shift right bit counter
+  if (power2gr == BITS_PER_GROUP)
+  {
+    index--;
+  }
+  prevLimb.x = 0;
+  for (index2 = numLimbs - 1; index2 >= index; index2--)
+  {
+    currLimb.x = (value + index2)->x;
+    (value + index2)->x = ((currLimb.x >> shRg) | (prevLimb.x << (BITS_PER_GROUP - shRg))) & MAX_VALUE_LIMB;
+    prevLimb.x = currLimb.x;
+  }
+  if (index != 0)
+  {
+    memmove(value, value + index, (numLimbs - index) * sizeof(limb));
+  }
+  if ((value + numLimbs - 1)->x != 0)
+  {
+    *pNbrLimbs = numLimbs - index;
+  }
+  else
+  {
+    *pNbrLimbs = numLimbs - index - 1;
+  }
+  *pPower4 = powerOf4;
+}
+
