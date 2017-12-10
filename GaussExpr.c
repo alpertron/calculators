@@ -39,7 +39,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 BigInteger stackRealValues[PAREN_STACK_SIZE];
 BigInteger stackImagValues[PAREN_STACK_SIZE];
 int stackOperators[PAREN_STACK_SIZE];
-int stackIndex, exprIndex;
+static int stackIndex, exprIndex;
 int lang;
 char output[3000000];
 limb Mult1[MAX_LEN];
@@ -58,7 +58,7 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
   BigInteger *Result);
 static int ComputeFibonacci(void);
 static int ComputeLucas(void);
-static int ComputeModExp(void);
+static int ComputeModPow(void);
 static int ComputeModInv(void);
 static int ComputePartition(void);
 static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigInteger *Im2);
@@ -256,10 +256,10 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = 1;
     }
     else if ((retcode = func(expr, ExpressionResult,
-                             "MODEXP", 3, leftNumberFlag)) <= 0)
+                             "MODPOW", 3, leftNumberFlag)) <= 0)
     {
       if (retcode != 0) {return retcode;}
-      retcode = ComputeModExp();
+      retcode = ComputeModPow();
       if (retcode != 0) {return retcode;}
       leftNumberFlag = 1;
     }
@@ -315,7 +315,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
           {
             return EXPR_TOO_MANY_PAREN;
           }
-          stackOperators[stackIndex++] = '_'; /* Unitary minus */
+          stackOperators[stackIndex++] = '_'; /* Unary minus */
           continue;
         }
       }
@@ -346,41 +346,41 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       stackOperators[stackIndex++] = charValue;
       leftNumberFlag = 0;
     }                               /* end if */
-    else if (charValue == '*' || charValue == '/' || charValue == '%') {
-      if (leftNumberFlag == 0) {return EXPR_SYNTAX_ERROR;}
+    else if (charValue == '*' || charValue == '/' || charValue == '%')
+    {
+      if (leftNumberFlag == 0)
+      {
+        return EXPR_SYNTAX_ERROR;
+      }
       if (stackIndex > startStackIndex && (stackOperators[stackIndex-1] == '^' ||
           stackOperators[stackIndex-1] == '*' ||
-          stackOperators[stackIndex-1] == '/')) {
-        if ((SubExprResult = ComputeSubExpr()) != 0) {
+          stackOperators[stackIndex-1] == '/'))
+      {
+        if ((SubExprResult = ComputeSubExpr()) != 0)
+        {
           return SubExprResult;
-          }
+        }
         if (stackIndex > startStackIndex &&
              (stackOperators[stackIndex-1] == '^' ||
               stackOperators[stackIndex-1] == '*' ||
               stackOperators[stackIndex-1] == '/' ||
-              stackOperators[stackIndex-1] == '%')) {
-          if ((SubExprResult = ComputeSubExpr()) != 0) {
+              stackOperators[stackIndex-1] == '%'))
+        {
+          if ((SubExprResult = ComputeSubExpr()) != 0)
+          {
             return SubExprResult;
-            }
-          }                         /* end if */
-        }                           /* end if */
+          }
+        }                         /* end if */
+      }                           /* end if */
       stackOperators[stackIndex++] = charValue;
       leftNumberFlag = 0;
-      }                             
+    }                             
     else if (charValue == '^')
     {
       if (leftNumberFlag == 0)
       {
         return EXPR_SYNTAX_ERROR;
       }
-      if (stackIndex > 0 &&
-          (stackOperators[stackIndex-1] == '^'))
-      {
-        if ((SubExprResult = ComputeSubExpr()) != 0)
-        {
-          return SubExprResult;
-        }
-      }                         /* end if */
       stackOperators[stackIndex++] = charValue;
       leftNumberFlag = 0;
     }                           /* end if */
@@ -1023,7 +1023,7 @@ static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigIn
   return EXPR_OK;
 }
 
-static int ComputeModExp(void)
+static int ComputeModPow(void)
 {
   BigInteger Result[2];
   int mask;
