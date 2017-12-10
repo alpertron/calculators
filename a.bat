@@ -1,5 +1,7 @@
 set compilerName="C:\Program Files\Emscripten\emscripten\tag-1.37.3\third_party\closure-compiler\compiler.jar"
-
+if exist "C:\Program Files\Emscripten\emscripten\tag-1.37.3" goto compile
+set compilerName="C:\Program Files\Emscripten\emscripten\1.37.21\third_party\closure-compiler\compiler.jar"
+:compile
 java -jar %compilerName% --compilation_level WHITESPACE_ONLY --js interface.js --js_output_file fsquares%1.js
 if errorlevel 1 goto end
 cmd /c emcc -Os expression.c partition.c errors.c bigint.c division.c fsquares.c fcubes.c baseconv.c karatsuba.c modmult.c sqroot.c contfrac.c bignbr.c showtime.c inputstr.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432 -s NO_FILESYSTEM=1 --closure 1 --memory-init-file 0 -o fsquaresW%1.js
