@@ -24,13 +24,13 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "expression.h"
 #include "factor.h"
 // These defines are valid for factoring up to 10^110.
-#define MAX_NBR_FACTORS        13
-#define MAX_PRIMES         150000
-#define MAX_LIMBS_SIQS         15
-#define MAX_FACTORS_RELATION   50
-#define LENGTH_OFFSET           0
-#define MAX_SIEVE_LIMIT    100000
-#define DEBUG_SIQS              0
+#define MAX_NBR_FACTORS         13
+#define MAX_PRIMES          150000
+#define MAX_LIMBS_SIQS          15
+#define MAX_FACTORS_RELATION    50
+#define LENGTH_OFFSET            0
+#define MAX_SIEVE_LIMIT     100000
+#define DEBUG_SIQS               0
 
 #ifdef __EMSCRIPTEN__
 extern char lowerText[], *ptrLowerText;
@@ -95,7 +95,6 @@ static unsigned int newSeed;
 static int NbrPolynomials;
 static int SieveLimit;
 static int matrixPartial[MAX_PRIMES * 8][MAX_LIMBS_SIQS/2+4];
-static int matrixPartialLength;
 static int vectLeftHandSide[MAX_PRIMES+50][MAX_FACTORS_RELATION];
 static int matrixPartialHashIndex[2048];
 static int matrixB[MAX_PRIMES + 50][MAX_FACTORS_RELATION];
@@ -119,6 +118,7 @@ static int matrixTemp2[MAX_PRIMES];
 static int nbrPrimes2;
 static BigInteger factorSiqs;
 static unsigned char onlyFactoring;
+static int matrixRows, matrixCols;
 PrimeSieveData *firstPrimeSieveData;
 static unsigned char InsertNewRelation(
   int *rowMatrixB,
@@ -139,7 +139,7 @@ static void showMatrixSize(char *SIQSInfoText, int rows, int cols)
   strcpy(ptrText, " &times; ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, cols);   // Show number of columns.
-  strcpy(ptrText, lang ? " usando el algoritmo de Lanczos en bloques.</p>" :
+  strcpy(ptrText, lang ? " usando el algoritmo de Lanczos en bloques.</p>":
                          " congruence matrix using Block Lanczos algorithm.</p>");
   databack(lowerText);
 }
@@ -187,10 +187,10 @@ static void ShowSIQSInfo(int timeSieve, int congruencesFound, int matrixBLength,
   GetDHMS(&ptrText, elapsedTime);
   strcpy(ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
   ptrText += strlen(ptrText);
-  int2dec(&ptrText, congruencesFound);  // Show number of coungruences found.
+  int2dec(&ptrText, congruencesFound);  // Show number of congruences found.
   strcpy(ptrText, lang ? " congruencias halladas (" : " congruences found (");
   ptrText += strlen(ptrText);
-  int2dec(&ptrText, percentage);  // Show number of coungruences found.
+  int2dec(&ptrText, percentage);  // Show number of congruences found.
   if (timeSieve > 1 && congruencesFound > 10)
   {
     strcpy(ptrText, lang ? "%). Fin de la criba en " : "%). End sieve in ");
@@ -1981,7 +1981,7 @@ static void PartialRelationFound(
   } /* end while */
 //  synchronized(firstPrimeSieveData)
   {
-    if (hashIndex == -1 && nbrPartials < matrixPartialLength)
+    if (hashIndex == -1 && nbrPartials < MAX_PRIMES * 8)
     { // No match and partials table is not full.
       // Add partial to table of partials.
       if (prev >= 0)
@@ -2193,7 +2193,6 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   congruencesFound = 0;
   polynomialsSieved = 0;
   nbrPartials = 0;
-  matrixPartialLength = 0;
   newSeed = 0;
 
 //  threadArray = new Thread[numberThreads];
@@ -2290,7 +2289,6 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
     }
   } /* end while */
   MultBigNbrByInt(TestNbr2, multiplier, Modulus, NumberLength);
-  matrixPartialLength = nbrFactorBasePrimes * 8;
   FactorBase = currentPrime;
   matrixBLength = nbrFactorBasePrimes + 50;
   rowPrimeSieveData->modsqrt = (pNbrToFactor->x & 1) ? 1 : 0;
@@ -2594,14 +2592,11 @@ static int EraseSingletons(int nbrFactorBasePrimes)
   do
   {   // The singleton removal phase must run until there are no more
       // singletons to erase.
-    for (column = nbrFactorBasePrimes - 1; column >= 0; column--)
-    {                  // Initialize number of primes per column to zero.
-      vectExpParity[column] = 0;
-    }
+    memset(vectExpParity, 0, matrixBLength * sizeof(limb));
     for (row = matrixBlength - 1; row >= 0; row--)
     {                  // Traverse all rows of the matrix.
       rowMatrixB = matrixB[row];
-      for (column = rowMatrixB[LENGTH_OFFSET]; column >= 1; column--)
+      for (column = rowMatrixB[LENGTH_OFFSET]-1; column >= 1; column--)
       {                // A prime appeared in that column.
         vectExpParity[rowMatrixB[column]]++;
       }
@@ -2623,7 +2618,7 @@ static int EraseSingletons(int nbrFactorBasePrimes)
     for (row = 0; row < matrixBlength; row++)
     {                  // Traverse all rows of the matrix.
       rowMatrixB = matrixB[row];
-      for (column = rowMatrixB[LENGTH_OFFSET]; column >= 1; column--)
+      for (column = rowMatrixB[LENGTH_OFFSET]-1; column >= 1; column--)
       {                // Traverse all columns.
         if (vectExpParity[rowMatrixB[column]] == 1)
         {              // Singleton found: erase this row.
@@ -2684,15 +2679,14 @@ static unsigned char LinearAlgebraPhase(
       *ptrOutput = 0;
       printf("%s\n", output);
     }
-    exit(0);
+//    exit(0);
   }
 #endif
   // Get new number of rows after erasing singletons.
   int matrixBlength = EraseSingletons(nbrFactorBasePrimes);
   matrixBLength = matrixBlength;
-#ifdef __EMSCRIPTEN__
-  showMatrixSize((char *)SIQSInfoText, matrixBlength, primeTrialDivisionData[0].exp2);
-#endif
+  matrixRows = matrixBlength;
+  matrixCols = primeTrialDivisionData[0].exp2;
   primeTrialDivisionData[0].exp2 = 0;         // Restore correct value.
   BlockLanczos();
   // The rows of matrixV indicate which rows must be multiplied so no
@@ -2781,7 +2775,7 @@ static unsigned char InsertNewRelation(
   {                   // Discard excess congruences.
     return TRUE;
   }
-#if DEBUG_SIQS
+#if 0 // DEBUG_SIQS
   {
     char *ptrOutput = output;
     BigInteger k;
@@ -2804,18 +2798,15 @@ static unsigned char InsertNewRelation(
     nn = 3018;
   }
 #endif
+  // Check whether this relation is already in the matrix.
+  int *curRowMatrixB = matrixB[0];
   for (i = 0; i < congruencesFound; i++)
   {
-    int *curRowMatrixB = matrixB[i];
-    if (nbrColumns > curRowMatrixB[LENGTH_OFFSET])
-    {
-      continue;
-    }
-    if (nbrColumns == curRowMatrixB[LENGTH_OFFSET])
+    if (nbrColumns == *(curRowMatrixB + LENGTH_OFFSET))
     {
       for (k = 1; k < nbrColumns; k++)
       {
-        if (rowMatrixB[k] != curRowMatrixB[k])
+        if (*(rowMatrixB + k) != curRowMatrixB[k])
         {
           break;
         }
@@ -2824,17 +2815,8 @@ static unsigned char InsertNewRelation(
       {
         return FALSE; // Do not insert same relation.
       }
-      if (rowMatrixB[k] > curRowMatrixB[k])
-      {
-        continue;
-      }
     }
-    for (k = congruencesFound - 1; k >= i; k--)
-    {
-      memcpy(matrixB[k + 1], matrixB[k], matrixB[k][LENGTH_OFFSET]*sizeof(int));
-      memcpy(vectLeftHandSide[k + 1], vectLeftHandSide[k], sizeof(vectLeftHandSide[0]));
-    }
-    break;
+    curRowMatrixB += MAX_FACTORS_RELATION;
   }
   /* Convert negative numbers to the range 0 <= n < Modulus */
   if ((Modulus[0] & 1) == 0)
@@ -2871,10 +2853,10 @@ static unsigned char InsertNewRelation(
   MultBigNbrModN(biU, biT, biR, Modulus, lenDivisor);
 
   // Add relation to matrix B.
-  memcpy(matrixB[i], &rowMatrixB[0], nbrColumns * sizeof(int));
-  memcpy(vectLeftHandSide[i], biR, NumberLengthMod * sizeof(int));
+  memcpy(matrixB[congruencesFound], &rowMatrixB[0], nbrColumns * sizeof(int));
+  memcpy(vectLeftHandSide[congruencesFound], biR, NumberLengthMod * sizeof(int));
   congruencesFound++;
-#if DEBUG_SIQS
+#if 0 // DEBUG_SIQS
   {
     char *ptrOutput = output;
     BigInteger k;
@@ -3168,9 +3150,41 @@ static void BlockLanczos(void)
   }
   // Compute matrix Vt(0) * V(0)
   MatrTranspMult(matrixBLength, matrixV, matrixV, matrixVtV0);
+#ifdef __EMSCRIPTEN__
+  showMatrixSize((char *)SIQSInfoText, matrixRows, matrixCols);
+#endif
+#if DEBUG_SIQS
+  {
+    char *ptrOutput = output;
+    strcpy(ptrOutput, "MatrixBLength = ");
+    ptrOutput += strlen(ptrOutput);
+    int2dec(&ptrOutput, matrixBLength);
+    *ptrOutput = 0;
+    printf("%s\n", output);
+  }
+#endif
   for (;;)
   {
     int indexC;
+#ifdef __EMSCRIPTEN__
+    int elapsedTime = (int)(tenths() - originalTenthSecond);
+    if (elapsedTime / 10 != oldTimeElapsed / 10)
+    {
+      char SIQSInfo[200];
+      char *ptrText = SIQSInfo;
+      oldTimeElapsed = elapsedTime;
+      strcpy(ptrText, "4<p>");
+      ptrText += strlen(ptrText);
+      GetDHMS(&ptrText, elapsedTime/10);
+      strcpy(ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+      ptrText += strlen(ptrText);
+      strcpy(ptrText, lang? "Progreso del álgebra lineal: ": "Linear algebra progress: ");
+      ptrText += strlen(ptrText);
+      int2dec(&ptrText, stepNbr * 3200 / matrixRows);
+      strcpy(ptrText, "%</p>");
+      databack(SIQSInfo);
+    }  
+#endif
     //if (getTerminateThread())
     //{
     //  throw new ArithmeticException();
@@ -3291,6 +3305,20 @@ static void BlockLanczos(void)
       } /* end if */
     } /* end for j */
       /* Compute D(i), E(i) and F(i) */
+#if DEBUG_SIQS
+    char *ptrOutput = output;
+    if (stepNbr < 200)
+    {
+      strcpy(ptrOutput, "Step #");
+      ptrOutput += strlen(ptrOutput);
+      int2dec(&ptrOutput, stepNbr);
+      strcpy(ptrOutput, ": matrixWinv1[0] = ");
+      ptrOutput += strlen(ptrOutput);
+      int2dec(&ptrOutput, matrixWinv1[0]);
+      *ptrOutput = 0;
+      printf("%s\n", output);
+    }
+#endif
     if (stepNbr >= 3)
     {
       // F = -Winv(i-2) * (I - Vt(i-1)*A*V(i-1)*Winv(i-1)) * ParenD * S*St
