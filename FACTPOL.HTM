@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="FACTPOL.HTM" />
 <link rel="manifest" href="factpol.webmanifest">
-<link rel="prefetch" href="polfactW0020.js" />
+<link rel="prefetch" href="polfactW0026.js" />
 <title>Calculadora de factorización de polinomios</title>
 <style type="text/css" media="print">
 #smallheader {display:none;}
@@ -107,7 +107,7 @@ Contacto
 </nav>
 <article>
 <h1>Calculadora de factorización de polinomios</h1>
-<script async="async" type="application/javascript" src="polfact0020.js"></script>
+<script async="async" type="application/javascript" src="polfact0026.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="/" itemprop="url">
@@ -175,8 +175,8 @@ La segunda opción se utiliza cuando hay que copiar los datos a otra aplicación
 <ul>
 <li><strong>+</strong> para suma</li>
 <li><strong>-</strong> para resta</li>
-<li><strong>*</strong> para multiplicacion</li>
-<li><strong>/</strong> para división</li>
+<li><strong>*</strong> para multiplicación</li>
+<li><strong>/</strong> para división entera</li>
 <li><strong>%</strong> para resto</li>
 <li><strong>^</strong> o <strong>**</strong> para exponenciación</li>
 </ul>
@@ -189,13 +189,16 @@ La segunda opción se utiliza cuando hay que copiar los datos a otra aplicación
 <li><strong>L(n)</strong>: número de Lucas L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB></li>
 <li><strong>N(n)</strong>: número probablemente primo posterior a <em>n</em></li>
 <li><strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <em>n</em> en sumas de números enteros sin tener en cuenta el orden).</li>
+<li><strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.</li>
+<li><strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.</li>
+<li><strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.</li>
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 <h2>Código fuente</h2>
 <p>
 Puede bajar el código fuente del programa actual y del viejo applet de factorización de polinomios <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 3 de noviembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 9 de diciembre de 2017.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>

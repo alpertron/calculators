@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Javascript application that finds the continued fraction representation of rational numbers and quadratic irrationalities. Written by Dario Alpern." />
 <meta name="theme-color" content="#db5945">
-<link rel="prefetch" href="fsquaresW0025.js" />
+<link rel="prefetch" href="fsquaresW0026.js" />
 <link rel="manifest" href="contfrac.webmanifest">
 <link rel="alternate" hreflang="es" href="FRACCONT.HTM" />
 <title>Continued fraction calculator</title>
@@ -49,7 +49,8 @@ h1 {text-align:center;}
 .sqrtout:before {content: "√"}
 .sqrtin {text-decoration:overline}
 .offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
- </style>
+.pad {padding:10px;}
+</style>
 </head>
 <body>
 <nav id="smallheader">
@@ -115,7 +116,7 @@ Contact
 </nav>
 <article>
 <h1>Continued Fraction calculator</h1>
-<script async="async" type="application/javascript" src="fsquares0025.js"></script>
+<script async="async" type="application/javascript" src="fsquares0026.js"></script>
 <div style='padding:10px;'>
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -133,6 +134,7 @@ Contact
 </a>
 </div>
 </div>
+<div class="pad">
 <form id="applet">
 <p class="mysvg">
 <svg height='30.4592pt' version='1.1' viewBox='0 0 40.118 30.4592' width='40.118pt' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
@@ -276,58 +278,36 @@ If <var>b</var> is negative, the result is not a real number, so it cannot be re
 <p>You can use the following operators and parentheses for the expressions:
 </p>
 <ul>
-<li>
-+ for addition
-</li>
-<li>
-- for subtraction
-</li>
-<li>
-* for multiplication
-</li>
-<li>
-/ for integer division
-</li>
-<li>
-% for remainder
-</li>
-<li>
-^ or ** for exponentiation
-</li>
-<li>
-<strong>n!</strong>: factorial
-</li>
-<li>
-<strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).
-</li>
-<li>
-<strong>B(n)</strong>: Previous probable prime before <var>n</var>
-</li>
-<li>
-<strong>F(n)</strong>: Fibonacci number F<sub><span class="offscr"> sub </span><var>n</var></sub>
-</li>
-<li>
-<strong>L(n)</strong>: Lucas number L<sub><span class="offscr"> sub </span><var>n</var></sub> = F<sub><span class="offscr"> sub </span><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub>
-</li>
-<li>
-<strong>N(n)</strong>: Next probable prime after <var>n</var>
-</li>
-<li>
-<strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).
-</li>
+<li>+ for addition</li>
+<li>- for subtraction</li>
+<li>* for multiplication</li>
+<li>/ for integer division</li>
+<li>% for remainder</li>
+<li>^ or ** for exponentiation</li>
+<li><strong>n!</strong>: factorial</li>
+<li><strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).</li>
+<li><strong>B(n)</strong>: Previous probable prime before <var>n</var></li>
+<li><strong>F(n)</strong>: Fibonacci number <span role="math" aria-label="F sub n">F<sub><var>n</var></sub></span></li>
+<li><strong>L(n)</strong>: Lucas number <span role="math" aria-label="L sub n equals F sub n-1 plus F sub n+1">L<sub><var>n</var></sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub></span></li>
+<li><strong>N(n)</strong>: Next probable prime after <var>n</var></li>
+<li><strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).</li>
+<li><strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
+<li><strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
+<li><strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 <h2>Source code</h2>
 <p>
 You can download the source of the current program and the old continued fraction applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 26 November 2017.</p>
+<p>Written by Dario Alpern. Last updated 9 December 2017.</p>
 </div>
 <div id="result" aria-live="polite"></div>
 <div>
 <p>
 If you find an error or you have any comment, please fill the <a href="FORM.HTM?Continued+fraction+calculator">form</a>.
 </p>
+</div>
 </div>
 </article>
 </body>

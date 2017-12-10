@@ -48,7 +48,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker("gaussianW0020.js");
+    worker = new Worker("gaussianW0026.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.

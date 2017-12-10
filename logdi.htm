@@ -7,7 +7,7 @@
 <meta name="description" content="Aplicación Javascript que halla logaritmos discretos. Hecho por Dario Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="DILOG.HTM" />
-<link rel="prefetch" href="dilogW0022.js" />
+<link rel="prefetch" href="dilogW0026.js" />
 <link rel="manifest" href="logdi.webmanifest">
 <title>Calculadora de logaritmos discretos</title>
 <style type="text/css" media="print">
@@ -107,7 +107,7 @@ Contacto
 </nav>
 <article> 
 <h1>Calculadora de logaritmos discretos</h1>
-<script async="async" type="application/javascript" src="dilog0022.js"></script>
+<script async="async" type="application/javascript" src="dilog0026.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="/" itemprop="url">
@@ -149,7 +149,7 @@ El applet responde en un período de tiempo razonable si este factor es menor qu
 <li><strong>+</strong> para suma</li>
 <li><strong>-</strong> para resta</li>
 <li><strong>*</strong> para multiplicacion</li>
-<li><strong>/</strong> para división</li>
+<li><strong>/</strong> para división entera</li>
 <li><strong>%</strong> para resto</li>
 <li><strong>^</strong> o <strong>**</strong> para exponenciación</li>
 <li><strong>n!</strong>: factorial</li>
@@ -159,6 +159,9 @@ El applet responde en un período de tiempo razonable si este factor es menor qu
 <li><strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub></li>
 <li><strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
 <li><strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).</li>
+<li><strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.</li>
+<li><strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.</li>
+<li><strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.</li>
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 <p>El símbolo de exponenciación no está presente en algunos dispositivos móviles, así que es posible digitar dos asteriscos ** para el operador de exponenciación.</p>
@@ -170,7 +173,7 @@ Como verificación puedes hallar <span role="math" aria-label="7 a la 3360 congr
 <p>
 Puedes bajar el código fuente del programa actual y del viejo applet de cálculo de logaritmos discretos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 7 de noviembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 9 de diciembre de 2017.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>

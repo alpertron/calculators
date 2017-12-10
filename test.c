@@ -4,7 +4,7 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "factor.h"
-#define DEBUG_CODE  1
+#define DEBUG_CODE  16
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
@@ -179,7 +179,11 @@ int main(int argc, char *argv[])
   else if (argc == 2)
   {
     char *ptrKnownFactors = strchr(argv[1], '=');
-    if (ptrKnownFactors)
+    ecmFrontText("10^59+213", 1, ptrKnownFactors);
+    printf("\n\n\n\n\n\n\n\n\n\n\n");
+    ecmFrontText("n(10 ^ 30)*n(323244 * 10 ^ 35)", 1, ptrKnownFactors);
+    printf("\n\n\n\n\n\n\n\n\n\n\n");
+    if (ptrKnownFactors && batch == 0)
     {                          // There is equal sign.
       *ptrKnownFactors = 0;    // Replace equal sign by string terminator.
       ptrKnownFactors++;
@@ -208,7 +212,12 @@ int main(int argc, char *argv[])
   memcpy(inputString, "6,-2,00102^1042+1""\0""2^1042+1=5^1(0)*16673^1(0)*627186185377^1(16673)*131294792925870751515684960383613518415615538737991528767912593379854404518341858118366491474959205710499826133822402120149306175263402700301^1(16673)*6864797660130609714981900799081393217269435300143305409394463459185543183397652346775704046543201000705776033378429553397612687501667381169885775070966579201^1(2)""\0\0""222""\0", 10001314 - 10000928 + 1);
   doWork();
 #elif DEBUG_CODE == 16
-  quadmodText("1", "1", "0", "112856782", 6);
+//quadmodText("2", "0", "0", "3", 6);
+//quadmodText("7", "3", "5", "77", 6);
+//quadmodText("8", "3", "7", "16", 6);
+//quadmodText("1", "1", "-42", "10000", 6);
+quadmodText("1", "0", "-41", "625", 6);
+//quadmodText("1", "1", "0", "112856782", 6);
 //  quadmodText("1", "1", "0", "56428391", 6);
 //  quadmodText("1", "1", "0", "2", 6);
   printf("%s\n", output);

@@ -8,7 +8,7 @@
 <meta name="description" content="Aplicación Javascript que descompone un número en una suma de hasta cuadrados. Hecho por Darío Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="FSQUARES.HTM" />
-<link rel="prefetch" href="fsquaresW0025.js" />
+<link rel="prefetch" href="fsquaresW0026.js" />
 <link rel="manifest" href="sumcuad.webmanifest">
 <title>Suma de cuatro cuadrados</title>
 <style type="text/css" media="print">
@@ -138,7 +138,7 @@ Contacto
 <input type="hidden" id="app" value="1"/>
 </form>
 </div>
-<script async="async" type="application/javascript" src="fsquares0025.js"></script>
+<script async="async" type="application/javascript" src="fsquares0026.js"></script>
 <div class="pad">
 <div id="help" aria-live="polite">
 <p>Este applet encuentra la descomposición de cualquier número natural mayor que 1 en una suma de hasta cuatro cuadrados.</p>
@@ -155,38 +155,29 @@ Vea los <a href="4CUADR.HTM">métodos que usa este applet</a>.
 <h2>Expresiones</h2>
 <p>Se pueden entrar expresiones que usen los siguientes operadores y paréntesis:</p>
 <ul>
-<li> + para suma</li>
-<li> - para resta</li>
-<li> * para multiplicación</li>
-<li> / para división entera</li>
-<li> % para resto</li>
-<li> ^ o ** para exponenciación</li>
+<li><strong>+</strong> para suma</li>
+<li><strong>-</strong> para resta</li>
+<li><strong>*</strong> para multiplicación</li>
+<li><strong>/</strong> para división entera</li>
+<li><strong>%</strong> para resto</li>
+<li><strong>^</strong> o <strong>**</strong> para exponenciación</li>
 <li><strong>n!</strong>: factorial</li>
-<li>
-<strong>p#</strong>: primorial (producto de todos los primos menores o iguales que <em>p</em>).
-</li>
-<li>
-<strong>B(n)</strong>: número probablemente primo anterior a <em>n</em>.
-</li>
-<li>
-<strong>F(n)</strong>: número de Fibonacci <span role="math" aria-label="F sub n">F<sub><var>n</var></sub></span>.
-</li>
-<li>
-<strong>L(n)</strong>: número de Lucas <span role="math" aria-label="L sub n es igual a F sub n-1 más F sub n+1">L<sub><var>n</var></sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub></span>.
-</li>
-<li>
-<strong>N(n)</strong>: número probablemente primo posterior a <em>n</em>.
-</li>
-<li>
-<strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).
-</li>
+<li><strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).</li>
+<li><strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
+<li><strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub></li>
+<li><strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub></li>
+<li><strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
+<li><strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).</li>
+<li><strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.</li>
+<li><strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.</li>
+<li><strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.</li>
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 <h2>Código fuente</h2>
 <p>
 Se puede bajar el código fuente de este programa y el del viejo applet de suma de cuatro cubos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 26 de noviembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 9 de diciembre de 2017.</p>
 </div>
 <div id="result" aria-live="polite"></div>
 </div>

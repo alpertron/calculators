@@ -7,7 +7,7 @@
 <meta name="description" content="Aplicación Javascript que factoriza enteros gausianos de la forma (a+b*i). Hecho por Dario Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="GAUSSIAN.HTM" />
-<link rel="prefetch" href="gaussianW0020.js" />
+<link rel="prefetch" href="gaussianW0026.js" />
 <link rel="manifest" href="gausiano.webmanifest">
 <title>Factorización de enteros gausianos</title>
 <style type="text/css">
@@ -115,7 +115,7 @@ Contacto
 </nav>
 <article>
 <h1>Factorización de enteros gausianos</h1>
-<script async="async" type="application/javascript" src="gaussian0020.js"></script>
+<script async="async" type="application/javascript" src="gaussian0026.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="/" itemprop="url">
@@ -197,7 +197,7 @@ Si <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, entonces 
 <li> + para suma.</li>
 <li> - para resta.</li>
 <li> * para multiplicación.</li>
-<li> / para división entera (el dividendo debe ser múltiplo del divisor).</li>
+<li> / para división entera.</li>
 <li> % para módulo (resto de la división).</li>
 <li> ^ para exponenciación (el exponente debe ser real y mayor o igual que cero).</li>
 <li> <B>n!</B>: factorial (<var>n</var> debe ser real y mayor o igual que cero).</li>
@@ -210,12 +210,12 @@ Si <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, entonces 
 <li> <B>Norm(n)</B>: norma de <var>n</var>, equivale a Re(n)<SUP>2</SUP> + Im(n)<SUP>2</SUP>.</li>
 <li> <B>Gcd(m,n)</B>: máximo común divisor de estos dos enteros gausianos.</li>
 <li> <B>Modinv(m,n)</B>: inverso del valor <var>m</var> módulo <var>n</var>, sólo válido si gcd(m,n)=1.</li>
-<li> <B>Modexp(m,n,r)</B>: Calcula <var>m</var><sup><var>n</var></sup> módulo <var>r</var> (<var>n</var> debe ser real).</li>
+<li> <B>Modpow(m,n,r)</B>: Calcula <var>m</var><sup><var>n</var></sup> módulo <var>r</var> (<var>n</var> debe ser real).</li>
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente del programa actual y del viejo applet de factorización de enteros gausianos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 3 de noviembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 9 de diciembre de 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
