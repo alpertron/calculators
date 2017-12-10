@@ -53,6 +53,9 @@ void textError(char *output, enum eExprErr rc)
   case EXPR_INVALID_PARAM:
     strcpy(output, lang ? "Parámetro inválido" : "Invalid parameter");
     break;
+  case EXPR_ARGUMENTS_NOT_RELATIVELY_PRIME:
+    strcpy(output, lang ? "MCD de los argumentos no es 1" : "GCD of arguments is not 1");
+    break;
   case EXPR_BREAK:
     strcpy(output, lang ? "Detenido por el usuario" : "Stopped by user");
     break;
