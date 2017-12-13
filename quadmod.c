@@ -394,8 +394,8 @@ void SolveEquation(void)
         correctBits = expon - deltaZeros;
         BigIntPowerOf2(&Q, correctBits);      // Store increment.
         mask = 1 << (correctBits % BITS_PER_GROUP);
+        // Compute x = (b + sqrt(discriminant)) / (-2a)
         nbrLimbs = (nbrBitsSquareRoot + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
-        // Compute x = (b + sqrt(discriminant)) / (-2a) and x = (b - sqrt(discriminant)) / (-2a)
         if (ValB.sign == SIGN_POSITIVE)
         {
           AddBigNbr((int *)ValB.limbs, (int *)squareRoot.limbs, (int *)tmp1.limbs, nbrLimbs);
@@ -414,11 +414,15 @@ void SolveEquation(void)
           DivBigNbrByInt((int *)tmp1.limbs, 2, (int *)tmp1.limbs, nbrLimbs);
         }
         nbrLimbs = (correctBits + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
-        MultBigNbr((int *)tmp1.limbs, (int *)ValAOdd.limbs, (int *)tmp1.limbs, nbrLimbs);
-        tmp1.limbs[nbrLimbs - 1].x &= mask-1;
-        tmp1.nbrLimbs = nbrLimbs;
-        tmp1.sign = SIGN_POSITIVE;
-        CopyBigInt(&Solution1[factorIndex], &tmp1);
+        MultBigNbr((int *)tmp1.limbs, (int *)ValAOdd.limbs, (int *)tmp2.limbs, nbrLimbs);
+        if (mask != 1)
+        {
+          tmp2.limbs[nbrLimbs - 1].x &= mask - 1;
+        }
+        tmp2.nbrLimbs = nbrLimbs;
+        tmp2.sign = SIGN_POSITIVE;
+        CopyBigInt(&Solution1[factorIndex], &tmp2);
+        // Compute x = (b - sqrt(discriminant)) / (-2a)
         nbrLimbs = (nbrBitsSquareRoot + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
         if (ValB.sign == SIGN_NEGATIVE)
         {
@@ -438,11 +442,14 @@ void SolveEquation(void)
           DivBigNbrByInt((int *)tmp1.limbs, 2, (int *)tmp1.limbs, nbrLimbs);
         }
         nbrLimbs = (correctBits + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
-        MultBigNbr((int *)tmp1.limbs, (int *)ValAOdd.limbs, (int *)tmp1.limbs, nbrLimbs);
-        tmp1.limbs[nbrLimbs - 1].x &= (mask - 1);
-        tmp1.nbrLimbs = nbrLimbs;
-        tmp1.sign = SIGN_POSITIVE;
-        CopyBigInt(&Solution2[factorIndex], &tmp1);
+        MultBigNbr((int *)tmp1.limbs, (int *)ValAOdd.limbs, (int *)tmp2.limbs, nbrLimbs);
+        if (mask != 1)
+        {
+          tmp2.limbs[nbrLimbs - 1].x &= (mask - 1);
+        }
+        tmp2.nbrLimbs = nbrLimbs;
+        tmp2.sign = SIGN_POSITIVE;
+        CopyBigInt(&Solution2[factorIndex], &tmp2);
       }
       else
       {                        // Prime is not 2
@@ -644,10 +651,10 @@ void SolveEquation(void)
             BigIntMultiply(&Q, &Q, &Q);           // Square Q.
             BigIntMultiply(&squareRoot, &squareRoot, &tmp1);
             BigIntRemainder(&tmp1, &Q, &tmp2);
-            BigIntMultiply(&tmp2, &discriminant, &tmp2);
-            BigIntRemainder(&tmp2, &Q, &tmp1);
-            intToBigInteger(&tmp2, 3);
-            BigIntSubt(&tmp2, &tmp1, &tmp2);
+            BigIntMultiply(&tmp2, &discriminant, &tmp1);
+            BigIntRemainder(&tmp1, &Q, &tmp2);
+            intToBigInteger(&tmp1, 3);
+            BigIntSubt(&tmp1, &tmp2, &tmp2);
             BigIntMultiply(&tmp2, &squareRoot, &tmp1);
             if (tmp1.limbs[0].x & 1)
             {
@@ -662,8 +669,8 @@ void SolveEquation(void)
             BigIntAdd(&squareRoot, &Q, &squareRoot);
           }
           BigIntMultiply(&squareRoot, &discriminant, &squareRoot);
+          BigIntRemainder(&squareRoot, &Q, &squareRoot);
           // Multiply by square root of discriminant by prime^deltaZeros.
-          squareRoot.limbs[nbrLimbs].x = 0;
           for (ctr = 0; ctr < deltaZeros; ctr++)
           {
             BigIntMultiply(&squareRoot, &prime, &squareRoot);
