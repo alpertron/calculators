@@ -4,7 +4,7 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "factor.h"
-#define DEBUG_CODE  16
+#define DEBUG_CODE  13
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
@@ -21,7 +21,6 @@ extern int nbrLimbs;
 extern int lang, groupLen;
 extern limb TestNbr[MAX_LEN];
 char expr[] = "123456789012345";
-extern char batch;
 int Product[32];
 char input[10000];
 extern char tofactorDec[30000];
@@ -168,7 +167,6 @@ int main(int argc, char *argv[])
   gaussianText(argv[1], argv[2][0]);
   printf("%s\n", output);
 #elif DEBUG_CODE == 13
-  batch = 0;
   lang = 0;
   hexadecimal = 0;
   if (argc == 3)
@@ -179,11 +177,16 @@ int main(int argc, char *argv[])
   else if (argc == 2)
   {
     char *ptrKnownFactors = strchr(argv[1], '=');
-    ecmFrontText("10^59+213", 1, ptrKnownFactors);
-    printf("\n\n\n\n\n\n\n\n\n\n\n");
-    ecmFrontText("n(10 ^ 30)*n(323244 * 10 ^ 35)", 1, ptrKnownFactors);
-    printf("\n\n\n\n\n\n\n\n\n\n\n");
-    if (ptrKnownFactors && batch == 0)
+#if 1
+    char text[100] = "x=1;x=x+1;x<10000;x;sumdigits(x) == sumdigits(concatfact(2,x),10) and not isprime(x)";
+    ecmFrontText(text, 1, ptrKnownFactors);
+    printf("%s\n", output);
+    strcpy(text, "x=1;x=1;x;1;1");
+    ecmFrontText(text, 1, ptrKnownFactors);
+    printf("%s\n", output);
+    return 0;
+#endif
+    if (ptrKnownFactors)
     {                          // There is equal sign.
       *ptrKnownFactors = 0;    // Replace equal sign by string terminator.
       ptrKnownFactors++;

@@ -37,6 +37,11 @@ extern int *factorArr[FACTOR_ARRSIZE];
 void factor(BigInteger *nbrToFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors);
 void FactoringSIQS(limb *pNbrToFactor, limb *pFactor);
 extern int lang;
+extern int nbrToFactor[MAX_LEN];
+extern struct sFactors astFactorsMod[1000];
+extern int factorsMod[10000];
 char *findChar(char *str, char c);
 void SendFactorizationToOutput(enum eExprErr rc, struct sFactors *pstFactors, char **pptrOutput, int doFactorization);
+void Totient(BigInteger *result);
+void SumOfDivisors(BigInteger *result);
 #endif

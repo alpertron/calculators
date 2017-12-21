@@ -26,20 +26,21 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef __EMSCRIPTEN__
 extern long long lModularMult;
 #endif
-char batch;
 extern BigInteger tofactor;
-static int nbrToFactor[MAX_LEN];
 static BigInteger Quad1, Quad2, Quad3, Quad4;
-struct sFactors astFactorsMod[1000];
-int factorsMod[10000];
 extern BigInteger factorValue;
 static BigInteger result;
-BigInteger valueX;
 char outputExpr[100000];
 #ifdef __EMSCRIPTEN__
 extern char *ptrInputText;
 #endif
 extern int NextEC;
+static void ComputeFourSquares(struct sFactors *pstFactors);
+static void GetEulerTotient(char **pptrOutput);
+static void GetMobius(char **pptrOutput);
+static void GetNumberOfDivisors(char **pptrOutput);
+static void GetSumOfDivisors(char **pptrOutput);
+static void ShowFourSquares(char **pptrOutput);
 
 static void stringToHTML(char **pptrOutput, char *ptrString)
 {
@@ -106,22 +107,12 @@ static char evalExpression(char *expr, int counter, BigInteger *ptrResult)
     {
       break;
     }
-    if (c == 'x' || c == 'X')
-    {
-      BigInteger2Dec(&valueX, ptrOutputExpr, -100000);
-      ptrOutputExpr += strlen(ptrOutputExpr);
-    }
-    else if (c == 'c' || c == 'C')
-    {
-      int2dec(&ptrOutputExpr, counter);
-    }
-    else
-    {  // Copy character to output expression.
-      *ptrOutputExpr++ = *ptrInputExpr;
-    }
+    // Copy character to output expression.
+    *ptrOutputExpr++ = c;
     ptrInputExpr++;
   }
   *ptrOutputExpr = 0;   // Append string terminator.
+  counterC = counter;
   return ComputeExpression(outputExpr, 1, ptrResult);
 }
 
@@ -136,22 +127,25 @@ static void BatchError(char **pptrOutput, char *tofactorText, const char *errorT
   *pptrOutput = ptrOutput;
 }
 
-static void BatchFactorization(char *tofactorText, int doFactorization)
+static void BatchFactorization(char *tofactorText, int doFactorization, char *knownFactorization)
 {
   char *ptrNextBatchFactor = tofactorText;
   char *ptrEndBatchFactor = tofactorText + strlen(tofactorText);
   char *ptrCurrBatchFactor;
   int counter = 0;
   char *ptrOutput = output;
-  char *NextExpr, *EndExpr, *FactorExpr;
-  enum eExprErr rc;
+  char *NextExpr, *EndExpr, *FactorExpr, *FactorCond;
+  enum eExprErr rc = EXPR_OK;
   char *ptrCharFound, *ptrSrcString, *ptrStartExpr;
+  int valuesProcessed = 0;
   strcpy(ptrOutput, "2<ul><li>");
   ptrOutput += strlen(ptrOutput);
   while (ptrNextBatchFactor != NULL && ptrNextBatchFactor < ptrEndBatchFactor)
   {  // Get next line.
     char c;
     counter = 1;
+    expressionNbr = 0;
+    valueX.nbrLimbs = 0;     // Invalidate variable x and counter c.
     ptrCurrBatchFactor = ptrNextBatchFactor;
     ptrNextBatchFactor = findChar(ptrCurrBatchFactor, '\n');
     if (ptrNextBatchFactor != NULL)
@@ -173,13 +167,13 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
       stringToHTML(&ptrOutput, ptrCurrBatchFactor + 1);
     }
     else if (c == 'x' || c == 'X')
-    {   // Loop format: x=<orig expr>; x=<next expr>; <end expr>; <expr to factor>
+    {   // Loop format: x=<orig expr>; x=<next expr>; <end expr>; <expr to factor>[; <factor cond>]
       ptrCharFound = findChar(ptrSrcString + 1, ';');
       if (ptrCharFound == NULL)
       {
         BatchError(&ptrOutput, tofactorText,
-          lang ? "se esperaban tres puntos y comas pero no hay ninguno" :
-          "three semicolons expected but none found");
+          lang ? "se esperaban tres o cuatro puntos y comas pero no hay ninguno" :
+          "three or four semicolons expected but none found");
         continue;
       }
       ptrStartExpr = ptrSrcString + 1;
@@ -193,8 +187,12 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
       }
       ptrCharFound = findChar(ptrSrcString + 1, ';');
       *ptrCharFound++ = 0;   // Replace first semicolon by end of string.
-      if (ComputeExpression(ptrStartExpr + 1, 1, &valueX) != 0)
+      expressionNbr = 1;
+      rc = ComputeExpression(ptrStartExpr + 1, 1, &tofactor);
+      CopyBigInt(&valueX, &tofactor);
+      if (rc != EXPR_OK)
       {
+        SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
         continue;
       }
       ptrStartExpr = ptrCharFound;
@@ -220,8 +218,8 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
       if (ptrCharFound == NULL)
       {      // Third semicolon not found.
         BatchError(&ptrOutput, tofactorText,
-          lang ? "se esperaban tres puntos y comas pero solo hay uno" :
-          "three semicolons expected but there are only one");
+          lang ? "se esperaban tres o cuatro puntos y comas pero solo hay uno" :
+          "three or four semicolons expected but there are only one");
         continue;
       }
       EndExpr = ptrCharFound + 1;  // Point to end expression.
@@ -229,73 +227,129 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
       if (ptrCharFound == NULL)
       {      // Third semicolon not found.
         BatchError(&ptrOutput, tofactorText,
-          lang ? "se esperaban tres puntos y comas pero solo hay dos" :
-          "three semicolons expected but there are only two");
+          lang ? "se esperaban tres o cuatro puntos y comas pero solo hay dos" :
+          "three or four semicolons expected but there are only two");
         continue;
       }
       FactorExpr = ptrCharFound + 1;
-      for (;;)
-      {   // Perform loop.
-        if (evalExpression(EndExpr, counter, &result) != 0)
+      FactorCond = findChar(FactorExpr, ';');  // Find optional fourth semicolon. 
+      if (FactorCond != NULL)
+      {
+        FactorCond++;
+      }
+      do
+      {      // Perform loop.
+        int computeFactorExpr = 1;
+        expressionNbr = 3;
+        rc = evalExpression(EndExpr, counter, &result);
+        if (rc != EXPR_OK)
         {
+          SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
+          break;   // Cannot compute end expression, so go out.
+        }
+        if (result.nbrLimbs == 1 && result.limbs[0].x == 0)
+        {    // result is zero: end of loop
           break;
         }
-        if (result.sign == SIGN_POSITIVE && (result.nbrLimbs > 1 || result.limbs[0].x > 1))
-        {   // result is greater than zero: end of loop
-          break;
-        }
-        rc = evalExpression(FactorExpr, counter, &tofactor);
-        if (rc == EXPR_OK)
+        if (FactorCond != NULL)
         {
-          NumberLength = tofactor.nbrLimbs;
-          CompressBigInteger(nbrToFactor, &tofactor);
-          if (hexadecimal)
+          expressionNbr = 5;
+          rc = evalExpression(FactorCond, counter, &tofactor);
+          if (rc == EXPR_OK)
           {
-            Bin2Hex(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
+            if (tofactor.nbrLimbs == 1 && tofactor.limbs[0].x == 0)
+            {   // Do not compute factor expression if condition is false.
+              computeFactorExpr = FALSE;
+            }
           }
           else
           {
-            Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
-          }
-          if (doFactorization)
-          {
-            factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
+            SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
+            if (rc == EXPR_SYNTAX_ERROR || rc == EXPR_VAR_OR_COUNTER_REQUIRED)
+            {   // Do not show multiple errors.
+              break;
+            }
+            computeFactorExpr = FALSE;
           }
         }
-        SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
-        if (evalExpression(NextExpr, counter, &result) != 0)
+        if (computeFactorExpr)
         {
-          break;
+          expressionNbr = 4;
+          rc = evalExpression(FactorExpr, counter, &tofactor);
+          if (rc == EXPR_OK)
+          {
+            char *ptrFactorDec = tofactorDec;
+            NumberLength = tofactor.nbrLimbs;
+            if (tofactor.sign == SIGN_NEGATIVE)
+            {
+              *ptrFactorDec++ = '-';
+            }
+            CompressBigInteger(nbrToFactor, &tofactor);
+            if (hexadecimal)
+            {
+              Bin2Hex(tofactor.limbs, ptrFactorDec, tofactor.nbrLimbs, groupLen);
+            }
+            else
+            {
+              Bin2Dec(tofactor.limbs, ptrFactorDec, tofactor.nbrLimbs, groupLen);
+            }
+            if (doFactorization)
+            {
+              factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
+            }
+          }
+          SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
+          if (rc == EXPR_SYNTAX_ERROR || rc == EXPR_VAR_OR_COUNTER_REQUIRED)
+          {   // Do not show multiple errors.
+            break;
+          }
+        }
+        expressionNbr = 2;
+        rc = evalExpression(NextExpr, counter, &result);
+        if (rc != EXPR_OK)
+        {
+          SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
+          break;   // Cannot compute next expression, so go out.
         }
         CopyBigInt(&valueX, &result);
-        counter++;
-        strcpy(ptrOutput, "</li><li>");
-        ptrOutput += strlen(ptrOutput);
-      }
+        if (computeFactorExpr)
+        {
+          counter++;
+          strcpy(ptrOutput, "</li><li>");
+          valuesProcessed++;
+          ptrOutput += strlen(ptrOutput);
+        }      // Do not show these errors multiple times.
+      } while (rc != EXPR_SYNTAX_ERROR && rc != EXPR_VAR_OR_COUNTER_REQUIRED);
     }
     else
     {       // Factor expression (not loop).
       rc = ComputeExpression(ptrSrcString, 1, &tofactor);
       if (rc == EXPR_OK)
       {
+        char *ptrFactorDec = tofactorDec;
         NumberLength = tofactor.nbrLimbs;
         CompressBigInteger(nbrToFactor, &tofactor);
+        if (tofactor.sign == SIGN_NEGATIVE)
+        {
+          *ptrFactorDec++ = '-';
+        }
         if (hexadecimal)
         {
-          Bin2Hex(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
+          Bin2Hex(tofactor.limbs, ptrFactorDec, tofactor.nbrLimbs, groupLen);
         }
         else
         {
-          Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
+          Bin2Dec(tofactor.limbs, ptrFactorDec, tofactor.nbrLimbs, groupLen);
         }
         if (doFactorization)
         {
-          factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
+          factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactorization);
         }
       }
       SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
       counter = 2;
       strcpy(ptrOutput, "</li><li>");
+      valuesProcessed++;
       ptrOutput += strlen(ptrOutput);
     }
     if (counter == 1)
@@ -311,6 +365,25 @@ static void BatchFactorization(char *tofactorText, int doFactorization)
   }
   strcpy(ptrOutput, "</ul>");
   ptrOutput += strlen(ptrOutput);
+  if (valuesProcessed == 1)
+  {
+    if (rc == EXPR_OK && doFactorization)
+    {
+      if (tofactor.sign == SIGN_POSITIVE)
+      {        // Number to factor is non-negative.
+        if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 0)
+        {      // Number to factor is not zero.
+          GetNumberOfDivisors(&ptrOutput);
+          GetSumOfDivisors(&ptrOutput);
+          GetEulerTotient(&ptrOutput);
+          GetMobius(&ptrOutput);
+        }
+        ComputeFourSquares(astFactorsMod);
+        ShowFourSquares(&ptrOutput);
+      }
+      showElapsedTime(&ptrOutput);
+    }
+  }
   strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
@@ -368,28 +441,10 @@ static void GetNumberOfDivisors(char **pptrOutput)
   *pptrOutput = ptrOutput;
 }
 
-// Find sum of divisors as the product of (p^(e+1)-1)/(p-1) where p=prime and e=exponent.
-// Use Quad1 and Quad2 as temporary variables
 static void GetSumOfDivisors(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
-  struct sFactors *pstFactor;
-  int factorNumber;
-  result.limbs[0].x = 1;    // Set result to 1.
-  result.nbrLimbs = 1;
-  result.sign = SIGN_POSITIVE;
-  pstFactor = &astFactorsMod[1];
-  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
-  {
-    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
-    BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Quad1);   // p^(e+1)
-    addbigint(&Quad1, -1);   // p^(e+1)-1
-    BigIntMultiply(&result, &Quad1, &Quad2);
-    UncompressBigInteger(pstFactor->ptrFactor, &Quad1);
-    addbigint(&Quad1, -1);   // p-1
-    BigIntDivide(&Quad2, &Quad1, &result);
-    pstFactor++;
-  }
+  SumOfDivisors(&result);
   strcpy(ptrOutput, lang ? "<p>Suma de divisores: " : "<p>Sum of divisors: ");
   ptrOutput += strlen(ptrOutput);
   if (hexadecimal)
@@ -406,27 +461,10 @@ static void GetSumOfDivisors(char **pptrOutput)
   *pptrOutput = ptrOutput;
 }
 
-// Find Euler's Totient as the product of p^(e-1)*(p-1) where p=prime and e=exponent.
 static void GetEulerTotient(char **pptrOutput)
 {
-  BigInteger Temp1;
   char *ptrOutput = *pptrOutput;
-  struct sFactors *pstFactor;
-  int factorNumber;
-  result.limbs[0].x = 1;    // Set result to 1.
-  result.nbrLimbs = 1;
-  result.sign = SIGN_POSITIVE;
-  pstFactor = &astFactorsMod[1];
-  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
-  {
-    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
-    BigIntPowerIntExp(&factorValue, pstFactor->multiplicity - 1, &Temp1);   // p^(e-1)
-    BigIntMultiply(&result, &Temp1, &result);
-    UncompressBigInteger(pstFactor->ptrFactor, &Temp1);
-    addbigint(&Temp1, -1);   // p-1
-    BigIntMultiply(&result, &Temp1, &result);
-    pstFactor++;
-  }
+  Totient(&result);
   strcpy(ptrOutput, lang ? "<p>Phi de Euler: " : "<p>Euler's totient: ");
   ptrOutput += strlen(ptrOutput);
   if (hexadecimal)
@@ -975,56 +1013,10 @@ static void ShowFourSquares(char **pptrOutput)
 
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
 {
-  char *ptrOutput;
-  enum eExprErr rc;
 #ifdef __EMSCRIPTEN__
   ptrInputText = tofactorText;
 #endif
-  if (batch)
-  {
-    BatchFactorization(tofactorText, doFactorization);
-    return;
-  }
-  rc = ComputeExpression(tofactorText, 1, &tofactor);
-  if (rc == EXPR_OK)
-  {
-    NumberLength = tofactor.nbrLimbs;
-    CompressBigInteger(nbrToFactor, &tofactor);
-#ifdef __EMSCRIPTEN__
-    lModularMult = 0;
-#endif
-    if (hexadecimal)
-    {
-      Bin2Hex(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
-    }
-    else
-    {
-      Bin2Dec(tofactor.limbs, tofactorDec, tofactor.nbrLimbs, groupLen);
-    }
-    if (doFactorization)
-    {
-      factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactors);
-    }
-  }
-  ptrOutput = output;
-  strcpy(output, "2<p>");
-  ptrOutput += strlen(output);
-  SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
-  if (rc == EXPR_OK && doFactorization)
-  {
-    if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 0)
-    {      // Number to factor is not zero.
-      GetNumberOfDivisors(&ptrOutput);
-      GetSumOfDivisors(&ptrOutput);
-      GetEulerTotient(&ptrOutput);
-      GetMobius(&ptrOutput);
-    }
-    ComputeFourSquares(astFactorsMod);
-    ShowFourSquares(&ptrOutput);
-    showElapsedTime(&ptrOutput);
-  }
-  strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
-    "<p>" COPYRIGHT_ENGLISH "</p>");
+  BatchFactorization(tofactorText, doFactorization, knownFactors);
 }
 
 void doWork(void)
@@ -1045,7 +1037,6 @@ void doWork(void)
   }
   lang = flags & 1;
   ptrData += 2;          // Skip app number and second comma.
-  batch = (*ptrData == '1');
   verbose = (*(ptrData + 1) == '1');
   prettyprint = (*(ptrData + 2) == '1');
   cunningham = (*(ptrData + 3) == '1');
@@ -1071,7 +1062,7 @@ void doWork(void)
       {
         NextEC = NextEC * 10 + (*ptrText++ & 0x0F);
       }
-      flags = 2;  // do factorization, no batch mode.
+      flags = 2;  // do factorization.
     }
   }
 #ifdef __EMSCRIPTEN__

@@ -41,9 +41,9 @@ h1 {text-align:center;}
 .blue {color: #0000FF;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 #digits {width:5em}
-#textarea {white-space:nowrap;overflow:scroll;}
-#bt {display:none;}
-.inline  {display:inline;}
+#value {white-space:pre;overflow-wrap:normal;overflow:auto;}
+#wizard {display:none;}
+.inline {display:inline;}
 .pad {padding:10px;}
 .hex {font-family: Courier, "Lucida Console", monospace}
 #tableCurves {max-width:700px; margin-left:auto; margin-right:auto;}
@@ -117,10 +117,10 @@ Contact
 </ul>
 <br class="newline"/>
 </nav>
-<main role="main">
+<main role="main" id="main">
 <article>
 <h1>Integer factorization calculator</h1>
-<script async="async" type="application/javascript" src="ecm0026.js"></script>
+<script async="async" type="application/javascript" src="ecm0027.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -139,12 +139,9 @@ Contact
 </div>
 </div>
 <form class="applet">
-<label for="value" id="lvalue">Value</label><input type="text" id="value" value="" placeholder="Number or numerical expression" class="input"/>
-<div id="bt">
-<label for="textarea">Value</label><textarea id="textarea" rows="5" class="input"></textarea>
+<label for="textarea">Value</label><textarea id="value" rows="4" class="input"></textarea>
 <br class="newline"/>
-One numerical expression or loop per line. Example: x=3;x=n(x);c&#8209;100;x&#8209;1
-</div>
+One numerical expression or loop per line. Example: x=3;x=n(x);c&lt;=100;x&#8209;1
 <div class="lf"></div>
 <input type="button" id="more" value="More" />
 <input type="button" id="eval" value="Only evaluate" />
@@ -152,6 +149,7 @@ One numerical expression or loop per line. Example: x=3;x=n(x);c&#8209;100;x&#82
 <input type="button" id="stop" value="Stop" />
 <input type="button" id="helpbtn" value="Help" />
 <input type="button" id="config" value="Config" />
+<input type="button" id="openwizard" value="Wizard" />
 <div class="lf"></div>
 <input type="hidden" id="app" value="0"/>
 </form>
@@ -172,6 +170,8 @@ One numerical expression or loop per line. Example: x=3;x=n(x);c&#8209;100;x&#82
 <li> / for integer division
 <li> % for modulus (remainder of the integer division)
 <li> ^ or ** for exponentiation (the exponent must be greater than or equal to zero).
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> for binary logic.
 <li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero).
 <li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).
 <li> <strong>B(n)</strong>: Previous probable prime before <em>n</em></li>
@@ -182,6 +182,23 @@ One numerical expression or loop per line. Example: x=3;x=n(x);c&#8209;100;x&#82
 <li> <strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.
 <li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.
 <li> <strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.
+<li> <strong>Totient(n)</strong>: finds the number of positive integers less than <var>n</var> which are relatively prime to <var>n</var>.
+<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is.
+<li> <strong>NumDivs(n)</strong>: Number of positive divisors of <var>n</var> either prime or composite.
+<li> <strong>SumDivs(n)</strong>: Sum of positive divisors of <var>n</var> either prime or composite.
+<li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>.
+<li> <strong>SumDigits(n,r)</strong>: Sum of digits of <var>n</var> in base <var>r</var>.
+<li> <strong>RevDigits(n,r)</strong>: finds the value obtained by writing backwards the digits of <var>n</var> in base <var>r</var>.
+<li> <strong>ConcatFact(m,n)</strong>: Concatenates the prime factors of <var>n</var> according to the mode expressed in <var>m</var> which follows this table:<br><br>
+<table>
+<caption>ConcatFact function modes</caption>
+<tr><th scope="col">Mode</th><th scope="col">Order of factors</th><th scope="col">Repeated factors</th></tr>
+<tr><td>0</td><td>Ascending</td><td>No</td></tr>
+<tr><td>1</td><td>Descending</td><td>No</td></tr>
+<tr><td>2</td><td>Ascending</td><td>Yes</td></tr>
+<tr><td>3</td><td>Descending</td><td>Yes</td></tr>
+</table>
+</li>
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 <div class="tableCurves"><table>
@@ -216,7 +233,6 @@ In order to change the curve number when a factorization is in progress, press t
 <p>You can change settings for this application by pressing the Config button when a factorization is not in progress. A new window will pop up where you can select different settings:</p>
 <ul>
 <li><strong>Digits per group</strong>: In order to improve readability, big numbers are separated by spaces forming groups of a fixed number of digits. With this input box, you can determine the number of digits in a group.</li> 
-<li><strong>Batch mode</strong>: See explanation in next section.</li>
 <li><strong>Verbose mode</strong>: Not ready yet.</li>
 <li><strong>Pretty print</strong>: If this checkbox is set, the exponents are shown in superscripts and the multiplication sign is &quot; &times; &quot;. The application also shows the number of digits for numbers with more than 30 digits.
 If the checkbox is not set, the exponents are preceded by the exponentiation sign &quot; ^ &quot; and the multiplication is indicated by asterisks. Also the number of digits is never displayed. This mode eases copying the results to other mathematical programs.</li>
@@ -228,24 +244,26 @@ In order to reduce the database, only factors with at least 14 digits are includ
 <p>The configuration is saved in your device, so when you start again the Web browser, all settings remain the same.
 <p>
 <h2>Batch factorization</h2>
-<p>After you enable batch mode by using the checkbox in the configuration window, put an expression per line, then press the appropriate button. The output will be placed in the lower pane.</p>
+<p>Write an expression per line, then press the appropriate button. The output will be placed in the lower pane.</p>
 <p>Blank lines or comment lines (which start with a numeral '#' character) will be replicated on the lower pane.</p>
 <p>Expression loop: with the following syntax you can factor or determine primality of several numbers typing only one line.
-You have to type four expression separated by semicolons:</p>
+You have to type four or five expressions separated by semicolons:</p>
 <ul>
 <li>First expression: It must start with the string 'x=' and it sets the first value of x.</li>
 <li>Second expression: It must start with the string 'x=' and it sets the next value of x.
-It can include the variables 'x' (the variable) and 'c' (the counter).</li>
-<li>Third expression: It holds the end expression condition. If it is greater than zero the loop finishes, otherwise the loop continues.
-It can include the variables mentioned above.</li>
-<li>Fourth expression: It holds the expression to be factored. It can include the variables mentioned above.</li>
+<li>Third expression: It holds the end expression condition. If it is equal to zero the loop finishes, otherwise the loop continues.
+<li>Fourth expression: It holds the expression to be factored.</li>
+<li>Optional fifth expression: If this expression is different from zero (meaning true), the fourth expression is displayed or factored, and if is zero (meaning false), the fourth expression is ignored.
 </ul>
-<p>Example: Find the factors of the first 100 numbers of the form prime minus one.
-The line to type is: <code>x=3;x=n(x);c-100;x-1</code>.</p>
+<p>Except for the first expression, all other expressions must include the variable <var>x</var> and/or the counter <var>c</var>.</p>
+<p>Example 1: Find the factors of the first 100 numbers of the form prime minus one.
+The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
+<p>Example 2: Find the Smith numbers less than 10000. A Smith number, according to Wikipedia, is a composite number for which, in a given base (in base 10 by default), the sum of its digits is equal to the sum of the digits in its prime factorization.
+The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(concatfact(2,x),10) and not isprime(x)</code>
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.</p>
-<p>Written by Dario Alpern. Last updated 9 December 2017.</p>
+<p>Written by Dario Alpern. Last updated 19 December 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -274,7 +292,6 @@ The line to type is: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <legend>Configuration parameters</legend>
 <div id="configleft">
 <p><label for="digits">Digits per group</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"/></p>
-<p><input type="checkbox" id="batch"><label for="batch">Batch mode</label></p>
 <p><input type="checkbox" id="verbose"><label for="verbose">Verbose mode</label></p>
 </div>
 <div id="configright">
@@ -286,5 +303,65 @@ The line to type is: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
 </div>
 </div></div></div>
+<div id="wizard">
+<h1>Factorization wizard</h1>
+<form class="applet">
+<fieldset id="mode">
+<legend>Wizard mode</legend>
+<input type="radio" name="mode" id="oneexpr"><label for="oneexpr">Process one expression</label><br>
+<input type="radio" name="mode" id="loop"><label for="loop">Process several expressions in a loop</label><br>
+</fieldset>
+<label for="wzdinput" id="wzddesc">&nbsp;</label>
+<br class="newline"/>
+<input type="text" id="wzdinput" value="" placeholder="Number or numerical expression" class="input"/>
+<br class="newline"/>
+<p id="wzdexam">&nbsp;</p>
+<input type="button" id="next" value="Next" />
+<input type="button" id="cancel" value="Cancel" />
+</form>
+<h2>Expressions</h2>
+<p>You can enter expressions that use the following operators, functions and parentheses:</p>
+<p>
+<ul>
+<li> + for addition
+<li> - for subtraction
+<li> * for multiplication
+<li> / for integer division
+<li> % for modulus (remainder of the integer division)
+<li> ^ or ** for exponentiation (the exponent must be greater than or equal to zero).</li>
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.</li>
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> for binary logic.</li>
+<li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero).</li>
+<li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).</li>
+<li> <strong>B(n)</strong>: Previous probable prime before <em>n</em></li>
+<li> <strong>F(n)</strong>: Fibonacci number F<sub>n</sub></li>
+<li> <strong>L(n)</strong>: Lucas number L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub></li>
+<li> <strong>N(n)</strong>: Next probable prime after <em>n</em></li>
+<li> <strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).</li>
+<li> <strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
+<li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
+<li> <strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
+<li> <strong>Totient(n)</strong>: finds the number of positive integers less than <var>n</var> which are relatively prime to <var>n</var>.</li>
+<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is.</li>
+<li> <strong>NumDivs(n)</strong>: Number of positive divisors of <var>n</var> either prime or composite.</li>
+<li> <strong>SumDivs(n)</strong>: Sum of positive divisors of <var>n</var> either prime or composite.</li>
+<li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>SumDigits(n,r)</strong>: Sum of digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>RevDigits(n,r)</strong>: finds the value obtained by writing backwards the digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>ConcatFact(m,n)</strong>: Concatenates the prime factors of <var>n</var> according to the mode expressed in <var>m</var> which follows this table:<br><br>
+<table>
+<caption>ConcatFact function modes</caption>
+<tr><th scope="col">Mode</th><th scope="col">Order of factors</th><th scope="col">Repeated factors</th></tr>
+<tr><td>0</td><td>Ascending</td><td>No</td></tr>
+<tr><td>1</td><td>Descending</td><td>No</td></tr>
+<tr><td>2</td><td>Ascending</td><td>Yes</td></tr>
+<tr><td>3</td><td>Descending</td><td>Yes</td></tr>
+</table>
+</li>
+<li id="C">Variable C: number of expressions already processed.</li>
+<li id="X">Variable X: variable changed on each iteration of the loop.</li>
+</ul>
+<p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
+</div>
 </body>
 </html>

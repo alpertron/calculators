@@ -32,8 +32,8 @@
 .atright {float:right;}
 .newline {clear:both;}
 }
-@media screen and (max-width: 400px) { #smallheader { font-size:0.7em;  } }
-@media screen and (min-width: 400px) { #smallheader { font-size:1em;  } }
+@media screen and (max-width: 400px) {#smallheader {font-size:0.7em;}}
+@media screen and (min-width: 400px) {#smallheader {font-size:1em;}}
 @media screen and (min-width: 500px) {#configleft {float:left;}}
 body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
 h1 {text-align:center;}
@@ -41,9 +41,9 @@ h1 {text-align:center;}
 .blue {color: #0000FF;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 #digits {width:5em}
-#textarea {white-space:nowrap;overflow-x:scroll}
-#bt {display:none;}
-.inline  {display:inline;}
+#value {white-space:pre;overflow-wrap:normal;overflow:auto;}
+#wizard {display:none;}
+.inline {display:inline;}
 .pad {padding:10px;}
 .hex {font-family: Courier, "Lucida Console", monospace}
 #tableCurves {max-width:700px; margin-left:auto; margin-right:auto;}
@@ -119,10 +119,10 @@ Contacto
 </ul>
 <br class="newline"/>
 </nav>
-<main role="main">
+<main role="main" id="main">
 <article>
 <h1>Calculadora de factorización de números enteros</h1>
-<script async="async" type="application/javascript" src="ecm0026.js"></script>
+<script async="async" type="application/javascript" src="ecm0027.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -141,11 +141,9 @@ Contacto
 </div>
 </div>
 <form class="applet">
-<label for="value" id="lvalue">Valor</label><span id="entry"><input type="text" id="value" value="" placeholder="Número o expresión numérica" class="input"/></span>
-<div id="bt">
-<label for="textarea">Valor</label><textarea id="textarea" rows="5" class="input"></textarea>
+<label for="textarea">Valor</label><textarea id="value" rows="4" class="input"></textarea>
 <br class="newline"/>
-Una expresión numérica o ciclo por línea. Ejemplo: x=3;x=n(x);c&#8209;100;x&#8209;1
+Una expresión numérica o ciclo por línea. Ejemplo: x=3;x=n(x);c&lt;=100;x&#8209;1
 </div>
 <div class="lf"></div>
 <input type="button" id="more" value="Más" />
@@ -154,6 +152,7 @@ Una expresión numérica o ciclo por línea. Ejemplo: x=3;x=n(x);c&#8209;100;x&#
 <input type="button" id="stop" value="Parar" />
 <input type="button" id="helpbtn" value="Ayuda" />
 <input type="button" id="config" value="Config" />
+<input type="button" id="openwizard" value="Asistente" />
 <div class="lf"></div>
 <input type="hidden" id="app" value="1"/>
 </form>
@@ -175,6 +174,8 @@ Una expresión numérica o ciclo por línea. Ejemplo: x=3;x=n(x);c&#8209;100;x&#
 <li> / para división entera
 <li> % para el resto de la división entera
 <li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> para lógica binaria.
 <li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
 <li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
 <li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
@@ -185,6 +186,23 @@ Una expresión numérica o ciclo por línea. Ejemplo: x=3;x=n(x);c&#8209;100;x&#
 <li> <strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.
 <li> <strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.
 <li> <strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.
+<li> <strong>Totient(n)</strong>: cantidad de enteros positivos menores que <var>n</var> coprimos con <var>n</var>.
+<li> <strong>IsPrime(n)</strong>: returna cero si <var>n</var> no es un primo probable y -1 si lo es.
+<li> <strong>NumDivs(n)</strong>: cantidad de divisores positivos de <var>n</var> primos o compuestos.
+<li> <strong>SumDivs(n)</strong>: suma de divisores positivos de <var>n</var> primos o compuestos.
+<li> <strong>NumDigits(n,r)</strong>: cantidad de dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>SumDigits(n,r)</strong>: suma de dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>RevDigits(n,r)</strong>: halla el valor que se obtiene escribiendo para atrás los dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>ConcatFact(m,n)</strong>: concatena los factores primos de <var>n</var> de acuerdo al modo expresado en <var>m</var> según lo indicado en la siguiente tabla:
+<table>
+<caption>Modos de la función ConcatFact</caption>
+<tr><th scope="col">Modo</th><th scope="col">Orden de los factores</th><th scope="col">Factores repetidos</th></tr>
+<tr><td>0</td><td>Creciente</td><td>No</td></tr>
+<tr><td>1</td><td>Decreciente</td><td>No</td></tr>
+<tr><td>2</td><td>Creciente</td><td>Sí</td></tr>
+<tr><td>3</td><td>Decreciente</td><td>Sí</td></tr>
+</table>
+</li>
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 <div class="tableCurves"><table>
@@ -219,7 +237,6 @@ Para cambiar el número de curva, aprieta el botón <strong>Más</strong>, escr�
 <p>Puedes cambiar la configuración de esta aplicación apretando el botón <strong>Config</strong> mientras el programa no está factorizando. En ese momento aparecerá una nueva ventana donde puedes seleccionar los siguientes ajustes:</p>
 <ul>
 <li><strong>Dígitos por grupo</strong>: Para mejorar la legibilidad, los números grandes se separan mediante espacios formando grupos de una cantidad fija de dígitos. Con esta caja de entrada, puedes determinar la cantidad de dígitos por grupo.</li> 
-<li><strong>Factorización en lotes</strong>: La explicación se encuentra en la siguiente sección.</li>
 <li><strong>Información</strong>: No está listo aún.</li>
 <li><strong>Impresión bonita</strong>: Si la casilla de verificación está marcada, los exponentes se muestran con superíndices y el signo de multiplicación es &quot; &times; &quot;. La aplicación muestra la cantidad de dígitos de los números que tienen más de 30 dígitos.
 Si la casilla de verificación no está marcada, los exponentes se muestran precedidos por el signo &quot; ^ &quot; y la multiplicación se indica mediante asteriscos. Además nunca se muestra la cantidad de dígitos. Esto facilita la copia de resultados a otros programas matemáticos.</li>
@@ -231,20 +248,24 @@ Para reducir esa base de datos, sólo se incluyen factores primos con al menos 1
 <p>La configuración se almacena en tu dispositivo, así que si arrancas nuevamente el navegador, los ajustes no se modificarán.
 <p>
 <h2>Factorización en lotes</h2>
-<p>Después de haber habilitado el modo de factorización en lotes usando la casilla de verificación en la ventana de configuración, escribe una expresión por línea, y luego aprieta el botón <strong>Sólo evaluar</strong> o <strong>Factorizar</strong>.</p>
+<p>Escribe una expresión por línea, y luego aprieta el botón <strong>Sólo evaluar</strong> o <strong>Factorizar</strong>.</p>
 <p>Las líneas en blanco o de comentarios (que comienzan con el carácter numeral '#') se replicarán en la salida.</p>
-<p>Expresión para ciclos: con la siguiente sintaxis podrás factorizar o determinar si varios números son primos con sólo digitar una línea. Deberás escribir cuatro expresiones separadas por puntos y coma:</p>
+<p>Expresión para ciclos: con la siguiente sintaxis podrás factorizar o determinar si varios números son primos con sólo digitar una línea. Deberás escribir cuatro o cinco expresiones separadas por puntos y coma:</p>
 <ul>
-<li>Primera expresión: Debe comenzar con la cadena 'x=' e indica el primer valor para la variable x.</li>
-<li>Segunda expresión:Debe comenzar con la cadena 'x=' e indica el siguiente valor para la variable x. Dicha expresión puede incluir las variables 'x' (la variable) y 'c' (el contador).</li>
-<li>Tercera expresión: Contiene la expresión de finalización del ciclo. Si es mayor que cero el ciclo termina, en caso contrario, continúa. Puede incluir las variables indicadas arriba.</li>
+<li>Primera expresión: Debe comenzar con la cadena 'x=' e indica el primer valor para la variable <var>x</var>.</li>
+<li>Segunda expresión:Debe comenzar con la cadena 'x=' e indica el siguiente valor para la variable <var>x</var>.</li>
+<li>Tercera expresión: Contiene la expresión de finalización del ciclo. Si es distinto que cero (indicando verdadero) el ciclo termina, en caso contrario, continúa. Puede incluir las variables indicadas arriba.</li>
 <li>Cuarta expresión: Contiene la expresión a factorizar. Puede incluir las variables indicadas arriba.</li>
+<li>Quinta expresión (opcional): Si esta expresión no vale cero (indicando verdadero), se muestra o factoriza la cuarta expresión, y si es cero (indicando falso), se ignora la cuarta expresión.
 </ul>
-<p>Example: Hallar los factores de los primeros 100 números de la forma primo menos 1.
-La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
+<p>Excepto la primera expresión, las demás expresiones deben incluir la variable <var>x</var> y/o el contador <var>c</var>.</p>
+<p>Ejemplo 1: Hallar los factores de los primeros 100 números de la forma primo menos 1.
+La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
+<p>Ejemplo 2: Hallar los números de Smith meores que 10000. Un número de Smith, de acuerdo a Wikipedia, es un número compuesto tal que, en una base dada (por defecto en base 10), la suma de sus dígitos es igual a la suma de los dígitos de su factorización en números primos.
+La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(concatfact(2,x),10) and not isprime(x)</code>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 9 de diciembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 19 de diciembre de 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -273,7 +294,6 @@ La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <legend>Parámetros de configuración</legend>
 <div id="configleft">
 <p><label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"/></p>
-<p><input type="checkbox" id="batch"><label for="batch">Factorización en lotes</label></p>
 <p><input type="checkbox" id="verbose"><label for="verbose">Información</label></p>
 </div>
 <div id="configright">
@@ -285,5 +305,63 @@ La línea a escribir es: <code>x=3;x=n(x);c-100;x-1</code>.</p>
 <p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
 </div>
 </div></div></div>
+<div id="wizard">
+<h1>Factorization wizard</h1>
+<form class="applet">
+<fieldset id="mode">
+<legend>Modo asistente</legend>
+<input type="radio" name="mode" id="oneexpr"><label for="oneexpr">Procesar una expresión</label><br>
+<input type="radio" name="mode" id="loop"><label for="loop">Procesar varias expresiones en un ciclo</label><br>
+</fieldset>
+<label for="wzdinput" id="wzddesc">&nbsp;</label>
+<br class="newline"/>
+<input type="text" id="wzdinput" value="" placeholder="Número o expresión numérica" class="input"/>
+<br class="newline"/>
+<p id="wzdexam">&nbsp;</p>
+<input type="button" id="next" value="Siguiente" />
+<input type="button" id="cancel" value="Cancelar" />
+</form>
+<h2>Expresiones</h2>
+<p>Puedes ingresar expresiones que usen los siguientes operadores y paréntesis:</p>
+<p>
+<ul>
+<li> + para suma
+<li> - para resta
+<li> * para multiplicación
+<li> / para división entera
+<li> % para el resto de la división entera
+<li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
+<li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
+<li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
+<li> <strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub>
+<li> <strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub>
+<li> <strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
+<li> <strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).
+<li> <strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.
+<li> <strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.
+<li> <strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.
+<li> <strong>Totient(n)</strong>: cantidad de enteros positivos menores que <var>n</var> coprimos con <var>n</var>.
+<li> <strong>IsPrime(n)</strong>: returna cero si <var>n</var> no es un primo probable y -1 si lo es.
+<li> <strong>NumDivs(n)</strong>: cantidad de divisores positivos de <var>n</var> primos o compuestos.
+<li> <strong>SumDivs(n)</strong>: suma de divisores positivos de <var>n</var> primos o compuestos.
+<li> <strong>NumDigits(n,r)</strong>: cantidad de dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>SumDigits(n,r)</strong>: suma de dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>RevDigits(n,r)</strong>: halla el valor que se obtiene escribiendo para atrás los dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>ConcatFact(m,n)</strong>: concatena los factores primos de <var>n</var> de acuerdo al modo expresado en <var>m</var> según lo indicado en la siguiente tabla:
+<table>
+<caption>Modos de la función ConcatFact</caption>
+<tr><th scope="col">Modo</th><th scope="col">Orden de los factores</th><th scope="col">Factores repetidos</th></tr>
+<tr><td>0</td><td>Creciente</td><td>No</td></tr>
+<tr><td>1</td><td>Decreciente</td><td>No</td></tr>
+<tr><td>2</td><td>Creciente</td><td>Sí</td></tr>
+<tr><td>3</td><td>Decreciente</td><td>Sí</td></tr>
+</table>
+</li>
+</ul>
+<p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
+</div>
 </body>
 </html>

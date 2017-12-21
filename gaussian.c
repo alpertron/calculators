@@ -34,7 +34,6 @@ static int NbrFactorsNorm;
 static limb K[MAX_LEN];
 static BigInteger mult1, mult2;
 static limb minusOneMont[MAX_LEN];
-static int nbrToFactor[MAX_LEN];
 static void DivideGaussian(BigInteger *real, BigInteger *imag);
 static BigInteger value[2];
 extern BigInteger tofactor;

@@ -138,6 +138,10 @@ void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum)
   }
   pSum->nbrLimbs = nbrLimbs;
   pSum->sign = pAddend1->sign;
+  if (pSum->nbrLimbs == 1 && pSum->limbs[0].x == 0)
+  {          // Result is zero.
+    pSum->sign = SIGN_POSITIVE;
+  }
 }
 
 void BigIntNegate(BigInteger *pSrc, BigInteger *pDest)

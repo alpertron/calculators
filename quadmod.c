@@ -29,16 +29,11 @@ static BigInteger Increment[400];
 static int Exponents[400];
 static BigInteger Aux[400];
 BigInteger ValA, ValB, ValC, ValN;
-static int nbrToFactor[MAX_LEN];
 static int SolNbr;
 static char textExp[1000];
 static BigInteger LastModulus;
 static int nbrFactors;
-extern struct sFactors astFactorsMod[1000];
-extern int factorsMod[10000];
 char *ptrOutput;
-struct sFactors astFactorsMod[1000];
-int factorsMod[10000];
 
 static int Show(BigInteger *num, char *str, int t)
 {

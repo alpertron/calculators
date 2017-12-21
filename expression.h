@@ -1,8 +1,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 9 de diciembre de 2017."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 9 December 2017."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 19 de diciembre de 2017."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 19 December 2017."
 
 #ifdef __EMSCRIPTEN__
 int stamp(void);
@@ -33,11 +33,15 @@ enum eExprErr
   EXPR_BASE_MUST_BE_POSITIVE,
   EXPR_POWER_MUST_BE_POSITIVE,
   EXPR_MODULUS_MUST_BE_NONNEGATIVE,
+  EXPR_VAR_OR_COUNTER_REQUIRED,
   EXPR_OK = 0
 };
 extern int lang;
 extern char inputString[1000000];
 extern char output[3000000];
+extern BigInteger valueX;
+extern int counterC;
+extern int expressionNbr;
 enum eExprErr ComputeGaussianExpression(char *expr, BigInteger *ExpressionResult);
 enum eExprErr ComputeExpression(char *expr, int type, BigInteger *ExpressionResult);
 void partition(int val, BigInteger *pResult);

@@ -104,6 +104,9 @@ long long Delta[386];
 long long AurifQ[386];
 char tofactorDec[30000];
 extern int q[MAX_LEN];
+int nbrToFactor[MAX_LEN];
+struct sFactors astFactorsMod[1000];
+int factorsMod[10000];
 static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor);
 
 #ifdef __EMSCRIPTEN__
@@ -541,7 +544,7 @@ static int Cos(int N)
   return 0;
 }
 
-int Totient(int N)
+static int intTotient(int N)
 {
   int totient, q, k;
 
@@ -688,7 +691,7 @@ void InsertAurifFactors(struct sFactors *pstFactors, BigInteger *BigBase, int Ex
     {
       N1 = 2 * N;
     }
-    DegreeAurif = Totient(N1) / 2;
+    DegreeAurif = intTotient(N1) / 2;
     for (k = 1; k <= DegreeAurif; k += 2)
     {
       AurifQ[k] = JacobiSymbol(N, k);
@@ -703,7 +706,7 @@ void InsertAurifFactors(struct sFactors *pstFactors, BigInteger *BigBase, int Ex
         t2 = t1;
         t1 = t3;
       }
-      AurifQ[k] = Moebius(N1 / t2) * Totient(t2) * Cos((N - 1) * k);
+      AurifQ[k] = Moebius(N1 / t2) * intTotient(t2) * Cos((N - 1) * k);
     }
     Gamma[0] = Delta[0] = 1;
     for (k = 1; k <= DegreeAurif / 2; k++)
@@ -1825,7 +1828,7 @@ void SendFactorizationToOutput(enum eExprErr rc, struct sFactors *pstFactors, ch
     {
       struct sFactors *pstFactor;
       pstFactor = pstFactors+1;
-      if (pstFactors->multiplicity == 1 && pstFactor->multiplicity == 1 &&
+      if (tofactor.sign == SIGN_POSITIVE && pstFactors->multiplicity == 1 && pstFactor->multiplicity == 1 &&
         (*pstFactor->ptrFactor > 1 || *(pstFactor->ptrFactor + 1) > 1))
       {    // Do not show zero or one as prime.
         strcpy(ptrOutput, lang ? " es primo" : " is prime");
@@ -1836,6 +1839,22 @@ void SendFactorizationToOutput(enum eExprErr rc, struct sFactors *pstFactors, ch
         int i = 0;
         strcpy(ptrOutput, " = ");
         ptrOutput += strlen(ptrOutput);
+        if (tofactor.sign == SIGN_NEGATIVE)
+        {
+          *ptrOutput++ = '-';
+          if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 1)
+          {
+            if (prettyprint)
+            {
+              strcpy(ptrOutput, "1 &times; ");
+            }
+            else
+            {
+              strcpy(ptrOutput, "1 * ");
+            }
+            ptrOutput += strlen(ptrOutput);
+          }
+        }
         for (;;)
         {
           NumberLength = *pstFactor->ptrFactor;
@@ -2473,4 +2492,44 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
 char *getFactorsAsciiPtr(void)
 {
   return factorsAscii;
+}
+
+// Find Euler's Totient as the product of p^(e-1)*(p-1) where p=prime and e=exponent.
+void Totient(BigInteger *result)
+{
+  BigInteger Temp1;
+  struct sFactors *pstFactor;
+  int factorNumber;
+  intToBigInteger(result, 1);  // Set result to 1.
+  pstFactor = &astFactorsMod[1];
+  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  {
+    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    BigIntPowerIntExp(&factorValue, pstFactor->multiplicity - 1, &Temp1);   // p^(e-1)
+    BigIntMultiply(result, &Temp1, result);
+    UncompressBigInteger(pstFactor->ptrFactor, &Temp1);
+    addbigint(&Temp1, -1);   // p-1
+    BigIntMultiply(result, &Temp1, result);
+    pstFactor++;
+  }
+}
+
+// Find sum of divisors as the product of (p^(e+1)-1)/(p-1) where p=prime and e=exponent.
+void SumOfDivisors(BigInteger *result)
+{
+  struct sFactors *pstFactor;
+  int factorNumber;
+  intToBigInteger(result, 1);  // Set result to 1.
+  pstFactor = &astFactorsMod[1];
+  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  {
+    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Temp1);   // p^(e+1)
+    addbigint(&Temp1, -1);   // p^(e+1)-1
+    BigIntMultiply(result, &Temp1, &Temp2);
+    UncompressBigInteger(pstFactor->ptrFactor, &Temp1);
+    addbigint(&Temp1, -1);   // p-1
+    BigIntDivide(&Temp2, &Temp1, result);
+    pstFactor++;
+  }
 }

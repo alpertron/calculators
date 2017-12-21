@@ -175,11 +175,11 @@ void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
       } while (--nbrBits & 3);
       if (digit < 10)
       {        // Convert 0 - 9 to '0' - '9'.
-        *decimal++ = digit + '0';
+        *decimal++ = (char)(digit + '0');
       }
       else
       {        // Convert 10 - 15 to 'A' - 'F'.
-        *decimal++ = digit + 'A' - 10;
+        *decimal++ = (char)(digit + 'A' - 10);
       }
       if (--currentGroupDigit == 0 && nbrHexDigits != 1)
       {

@@ -23,7 +23,27 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include "bignbr.h"
 #include "expression.h"
-#define PAREN_STACK_SIZE 100
+#include "factor.h"
+#define PAREN_STACK_SIZE            100
+#define OPER_POWER                    1
+#define OPER_MULTIPLY                 2
+#define OPER_DIVIDE                   3
+#define OPER_REMAINDER                4
+#define OPER_PLUS                     5
+#define OPER_MINUS                    6
+#define OPER_UNARY_MINUS              7
+#define OPER_NOT_GREATER              8
+#define OPER_NOT_LESS                 9
+#define OPER_NOT_EQUAL               10
+#define OPER_EQUAL                   11
+#define OPER_GREATER                 12
+#define OPER_LESS                    13
+#define OPER_NOT                     14
+#define OPER_AND                     15
+#define OPER_OR                      16
+#define OPER_XOR                     17
+#define MAXIMUM_OPERATOR             17
+
 static BigInteger stackValues[PAREN_STACK_SIZE];
 static char stackOperators[PAREN_STACK_SIZE];
 static limb fibon2[MAX_LEN];
@@ -36,12 +56,20 @@ limb Mult1[MAX_LEN];
 limb Mult3[MAX_LEN];
 limb Mult4[MAX_LEN];
 int q[MAX_LEN];
+BigInteger valueX;
+int counterC;
 #define fibon1 MontgomeryR1
 static enum eExprErr ComputeSubExpr(void);
-// Operators accepted: +, -, *, /, ^, !, F(, L(, P(, B(. N(.
 static void SkipSpaces(char *expr);
 static int ComputeBack(void);
 static int ComputeNext(void);
+static int ComputeTotient(void);
+static int ComputeNumDivs(void);
+static int ComputeSumDivs(void);
+static int ComputeSumDigits(void);
+static int ComputeRevDigits(void);
+static int ComputeNumDigits(void);
+static int ComputeConcatFact(void);
 static enum eExprErr ComputeModInv(void);
 static enum eExprErr ComputeFibLucas(int origValue);
 static enum eExprErr ComputePartition(void);
@@ -49,10 +77,23 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult);
 static int func(char *expr, BigInteger *ExpressionResult,
   char *funcName, int funcArgs, int leftNumberFlag);
 static int type;
+static int valueXused;
+static char textFactor[30000];
+
+static char priority[] = 
+{
+  1,                // Power
+  2, 2, 2,          // Multiply, divide and remainder.
+  3, 3, 3,          // Plus, minus and unary minus.
+  4, 4, 4, 4, 4, 4, // Six comparison operators (equal, greater, less, etc.)
+  5,                // NOT.
+  6, 6,             // AND, OR.
+};
 
 enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResult)
 {
   int retcode;
+  valueXused = FALSE;
   stackIndex = 0;
   exprIndex = 0;
   type = typ;
@@ -62,6 +103,10 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
     ExpressionResult[1].nbrLimbs > 2215)
   {
     return EXPR_NUMBER_TOO_HIGH;
+  }
+  if (valueX.nbrLimbs > 0 && valueXused == FALSE)
+  {
+    return EXPR_VAR_OR_COUNTER_REQUIRED;
   }
   return 0;
 }
@@ -81,7 +126,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
   BigInteger *pBigInt;
   int c;
   int startStackIndex = stackIndex;
-
+  
   exprLength = (int)strlen(expr);
   while (exprIndex < exprLength)
   {
@@ -93,12 +138,84 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       exprIndex++;
       continue;
     }
-    if (charValue == '*' && *(expr + exprIndex + 1) == '*')
+    if (charValue == '^' || (charValue == '*' && *(expr + exprIndex + 1) == '*'))
     {           // Convert double asterisk to exponentiation.
-      charValue = '^';
+      charValue = OPER_POWER;
       exprIndex++;
     }
-    if (charValue == '!')
+    else if (charValue == '*')
+    {
+      charValue = OPER_MULTIPLY;
+      exprIndex++;
+    }
+    else if (charValue == '/')
+    {
+      charValue = OPER_DIVIDE;
+      exprIndex++;
+    }
+    else if (charValue == '%')
+    {
+      charValue = OPER_REMAINDER;
+      exprIndex++;
+    }
+    else if (charValue == '+')
+    {
+      charValue = OPER_PLUS;
+      exprIndex++;
+    }
+    else if (charValue == '-')
+    {
+      charValue = OPER_MINUS;
+      exprIndex++;
+    }
+    else if (charValue == '<' && *(expr + exprIndex + 1) == '=')
+    {
+      charValue = OPER_NOT_GREATER;
+      exprIndex += 2;
+    }
+    else if (charValue == '>' && *(expr + exprIndex + 1) == '=')
+    {
+      charValue = OPER_NOT_LESS;
+      exprIndex += 2;
+    }
+    else if (charValue == '!' && *(expr + exprIndex + 1) == '=')
+    {
+      charValue = OPER_NOT_EQUAL;
+      exprIndex += 2;
+    }
+    else if (charValue == '=' && *(expr + exprIndex + 1) == '=')
+    {
+      charValue = OPER_EQUAL;
+      exprIndex += 2;
+    }
+    else if (charValue == '>')
+    {
+      charValue = OPER_GREATER;
+      exprIndex++;
+    }
+    else if (charValue == '<')
+    {
+      charValue = OPER_LESS;
+      exprIndex++;
+    }
+    else if ((charValue & 0xDF) == 'N' && (*(expr + exprIndex + 1) & 0xDF) == 'O' &&
+      (*(expr + exprIndex + 2) & 0xDF) == 'T')
+    {
+      charValue = OPER_NOT;
+      exprIndex += 3;
+    }
+    else if ((charValue & 0xDF) == 'A' && (*(expr + exprIndex + 1) & 0xDF) == 'N' &&
+      (*(expr + exprIndex + 2) & 0xDF) == 'D')
+    {
+      charValue = OPER_AND;
+      exprIndex += 3;
+    }
+    else if ((charValue & 0xDF) == 'O' && (*(expr + exprIndex + 1) & 0xDF) == 'R')
+    {
+      charValue = OPER_OR;
+      exprIndex += 2;
+    }
+    else if (charValue == '!')
     {           // Calculating factorial.
       if (leftNumberFlag == FALSE)
       {
@@ -124,7 +241,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       exprIndex++;
       continue;
     }
-    if (charValue == '#')
+    else if (charValue == '#')
     {           // Calculating primorial.
       if (leftNumberFlag == FALSE)
       {
@@ -183,6 +300,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (retcode != 0) { return retcode; }
       BigIntGcd(&stackValues[stackIndex], &stackValues[stackIndex + 1], &stackValues[stackIndex]);
       leftNumberFlag = 1;
+      continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
       "MODPOW", 3, leftNumberFlag)) <= 0)
@@ -192,6 +310,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         &stackValues[stackIndex + 2], &stackValues[stackIndex]);
       if (retcode != 0) { return retcode; }
       leftNumberFlag = 1;
+      continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
       "MODINV", 2, leftNumberFlag)) <= 0)
@@ -200,6 +319,85 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       retcode = ComputeModInv();
       if (retcode != 0) { return retcode; }
       leftNumberFlag = 1;
+      continue;
+    }
+    else if ((retcode = func(expr, ExpressionResult,
+      "TOTIENT", 1, leftNumberFlag)) <= 0)
+    {
+      if (retcode != 0) { return retcode; }
+      retcode = ComputeTotient();
+      if (retcode != 0) { return retcode; }
+      leftNumberFlag = 1;
+      continue;
+    }
+    else if ((retcode = func(expr, ExpressionResult,
+      "NUMDIVS", 1, leftNumberFlag)) <= 0)
+    {
+      if (retcode != 0) { return retcode; }
+      retcode = ComputeNumDivs();
+      if (retcode != 0) { return retcode; }
+      leftNumberFlag = 1;
+      continue;
+    }
+    else if ((retcode = func(expr, ExpressionResult,
+      "SUMDIVS", 1, leftNumberFlag)) <= 0)
+    {
+      if (retcode != 0) { return retcode; }
+      retcode = ComputeSumDivs();
+      if (retcode != 0) { return retcode; }
+      leftNumberFlag = 1;
+      continue;
+    }
+    else if ((retcode = func(expr, ExpressionResult,
+      "SUMDIGITS", 2, leftNumberFlag)) <= 0)
+    {
+      if (retcode != 0) { return retcode; }
+      retcode = ComputeSumDigits();
+      if (retcode != 0) { return retcode; }
+      leftNumberFlag = 1;
+      continue;
+    }
+    else if ((retcode = func(expr, ExpressionResult,
+      "NUMDIGITS", 2, leftNumberFlag)) <= 0)
+    {
+      if (retcode != 0) { return retcode; }
+      retcode = ComputeNumDigits();
+      if (retcode != 0) { return retcode; }
+      leftNumberFlag = 1;
+      continue;
+    }
+    else if ((retcode = func(expr, ExpressionResult,
+      "REVDIGITS", 2, leftNumberFlag)) <= 0)
+    {
+      if (retcode != 0) { return retcode; }
+      retcode = ComputeRevDigits();
+      if (retcode != 0) { return retcode; }
+      leftNumberFlag = 1;
+      continue;
+    }
+    else if ((retcode = func(expr, ExpressionResult,
+      "CONCATFACT", 2, leftNumberFlag)) <= 0)
+    {
+      if (retcode != 0) { return retcode; }
+      retcode = ComputeConcatFact();
+      if (retcode != 0) { return retcode; }
+      leftNumberFlag = 1;
+      continue;
+    }
+    else if ((retcode = func(expr, ExpressionResult,
+      "ISPRIME", 1, leftNumberFlag)) <= 0)
+    {
+      if (retcode != 0) { return retcode; }
+      if (BpswPrimalityTest(&stackValues[stackIndex]) == 0)
+      {    // Argument is a probable prime.
+        intToBigInteger(&stackValues[stackIndex], -1);
+      }
+      else
+      {    // Argument is not a probable prime.
+        intToBigInteger(&stackValues[stackIndex], 0);
+      }
+      leftNumberFlag = 1;
+      continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
       "F", 1, leftNumberFlag)) <= 0)
@@ -208,6 +406,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       retcode = ComputeFibLucas(0);
       if (retcode != 0) { return retcode; }
       leftNumberFlag = 1;
+      continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
       "L", 1, leftNumberFlag)) <= 0)
@@ -216,6 +415,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       retcode = ComputeFibLucas(2);
       if (retcode != 0) { return retcode; }
       leftNumberFlag = 1;
+      continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
       "P", 1, leftNumberFlag)) <= 0)
@@ -224,6 +424,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       retcode = ComputePartition();
       if (retcode != 0) { return retcode; }
       leftNumberFlag = 1;
+      continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
       "N", 1, leftNumberFlag)) <= 0)
@@ -232,6 +433,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       retcode = ComputeNext();
       if (retcode != 0) { return retcode; }
       leftNumberFlag = 1;
+      continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
       "B", 1, leftNumberFlag)) <= 0)
@@ -240,99 +442,35 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       retcode = ComputeBack();
       if (retcode != 0) { return retcode; }
       leftNumberFlag = 1;
+      continue;
     }
-    else if (charValue == '+' || charValue == '-')
+    else if ((charValue & 0xDF) == 'X')
     {
-      if (leftNumberFlag == 0)
-      {      // Unary plus/minus operator
-        exprIndex++;
-        if (charValue == '+')
-        {
-          continue;
-        }
-        else
-        {
-          if (stackIndex > startStackIndex && stackOperators[stackIndex - 1] == '_')
-          {
-            stackIndex--;
-            continue;
-          }
-          if (stackIndex >= PAREN_STACK_SIZE)
-          {
-            return EXPR_TOO_MANY_PAREN;
-          }
-          stackOperators[stackIndex++] = '_'; /* Unary minus */
-          continue;
-        }
-      }
-      if (stackIndex > startStackIndex &&
-        stackOperators[stackIndex - 1] != '(')
-      {
-        if ((SubExprResult = ComputeSubExpr()) != 0)
-        {
-          return SubExprResult;
-        }
-        if (stackIndex > startStackIndex &&
-          stackOperators[stackIndex - 1] != '(')
-        {
-          if ((SubExprResult = ComputeSubExpr()) != 0)
-          {
-            return SubExprResult;
-          }
-          if (stackIndex > startStackIndex &&
-            stackOperators[stackIndex - 1] != '(')
-          {
-            if ((SubExprResult = ComputeSubExpr()) != 0)
-            {
-              return SubExprResult;
-            }
-          }                         /* end if */
-        }                           /* end if */
-      }                             /* end if */
-      stackOperators[stackIndex++] = charValue;
-      leftNumberFlag = 0;
-    }                               /* end if */
-    else if (charValue == '*' || charValue == '/' || charValue == '%')
-    {
-      if (leftNumberFlag == 0)
+      if (leftNumberFlag || valueX.nbrLimbs == 0)
       {
         return EXPR_SYNTAX_ERROR;
       }
-      if (stackIndex > startStackIndex && (stackOperators[stackIndex - 1] == '^' ||
-        stackOperators[stackIndex - 1] == '*' ||
-        stackOperators[stackIndex - 1] == '/'))
-      {
-        if ((SubExprResult = ComputeSubExpr()) != 0)
-        {
-          return SubExprResult;
-        }
-        if (stackIndex > startStackIndex &&
-          (stackOperators[stackIndex - 1] == '^' ||
-            stackOperators[stackIndex - 1] == '*' ||
-            stackOperators[stackIndex - 1] == '/' ||
-            stackOperators[stackIndex - 1] == '%'))
-        {
-          if ((SubExprResult = ComputeSubExpr()) != 0)
-          {
-            return SubExprResult;
-          }
-        }                         /* end if */
-      }                           /* end if */
-      stackOperators[stackIndex++] = charValue;
-      leftNumberFlag = 0;
+      CopyBigInt(&stackValues[stackIndex], &valueX);
+      valueXused = TRUE;
+      exprIndex++;
+      leftNumberFlag = TRUE;
+      continue;
     }
-    else if (charValue == '^')
+    else if ((charValue & 0xDF) == 'C')
     {
-      if (leftNumberFlag == 0)
+      if (leftNumberFlag || valueX.nbrLimbs == 0)
       {
         return EXPR_SYNTAX_ERROR;
       }
-      stackOperators[stackIndex++] = charValue;
-      leftNumberFlag = 0;
-    }                           /* end if */
+      intToBigInteger(&stackValues[stackIndex], counterC);
+      valueXused = TRUE;
+      exprIndex++;
+      leftNumberFlag = TRUE;
+      continue;
+    }
     else if (charValue == '(')
     {
-      if (leftNumberFlag == 1)
+      if (leftNumberFlag == TRUE)
       {
         return EXPR_SYNTAX_ERROR;
       }
@@ -341,6 +479,8 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         return EXPR_TOO_MANY_PAREN;
       }
       stackOperators[stackIndex++] = charValue;
+      exprIndex++;
+      continue;
     }
     else if (charValue == ')' || charValue == ',')
     {
@@ -348,28 +488,12 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_SYNTAX_ERROR;
       }
-      if (stackIndex > startStackIndex &&
+      while (stackIndex > startStackIndex &&
         stackOperators[stackIndex - 1] != '(')
       {
         if ((SubExprResult = ComputeSubExpr()) != 0)
         {
           return SubExprResult;
-        }
-        if (stackIndex > startStackIndex &&
-          stackOperators[stackIndex - 1] != '(')
-        {
-          if ((SubExprResult = ComputeSubExpr()) != 0)
-          {
-            return SubExprResult;
-          }
-          if (stackIndex > startStackIndex &&
-            stackOperators[stackIndex - 1] != '(')
-          {
-            if ((SubExprResult = ComputeSubExpr()) != 0)
-            {
-              return SubExprResult;
-            }
-          }
         }
       }
       if (stackIndex == startStackIndex)
@@ -383,6 +507,8 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       stackIndex--;    /* Discard ')' */
       stackValues[stackIndex] = stackValues[stackIndex + 1];
       leftNumberFlag = 1;
+      exprIndex++;
+      continue;
     }
     else if (charValue >= '0' && charValue <= '9')
     {
@@ -462,39 +588,66 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         Dec2Bin(expr + exprIndex, pBigInt->limbs,
                 exprIndexAux + 1 - exprIndex, &pBigInt -> nbrLimbs);
         pBigInt -> sign = SIGN_POSITIVE;
-        exprIndex = exprIndexAux;
+        exprIndex = exprIndexAux + 1;
       }
       leftNumberFlag = TRUE;
+      continue;
     }
-    else
+    if (charValue <= MAXIMUM_OPERATOR)
     {
-      return EXPR_SYNTAX_ERROR;
+      if ((charValue == OPER_PLUS || charValue == OPER_MINUS) && leftNumberFlag == 0)
+      {                    // Unary plus/minus operator
+        if (charValue == OPER_PLUS)
+        {
+          continue;
+        }
+        else
+        {
+          if (stackIndex > startStackIndex && stackOperators[stackIndex - 1] == OPER_UNARY_MINUS)
+          {
+            stackIndex--;
+            continue;
+          }
+          if (stackIndex >= PAREN_STACK_SIZE)
+          {
+            return EXPR_TOO_MANY_PAREN;
+          }
+          stackOperators[stackIndex++] = OPER_UNARY_MINUS; /* Unary minus */
+          continue;
+        }
+      }
+      if ((leftNumberFlag == 0) != (charValue == OPER_NOT))
+      {     // Missing left operator if operator is not NOT or
+            // extra left operator if operator is NOT.
+        return EXPR_SYNTAX_ERROR;
+      }
+      if (charValue != OPER_POWER)
+      {  // Power operator has right associativity.
+        while (stackIndex > startStackIndex &&
+          stackOperators[stackIndex - 1] != '(' &&
+          priority[(int)stackOperators[stackIndex - 1] - 1] <= priority[(int)charValue] - 1)
+        {
+          if ((SubExprResult = ComputeSubExpr()) != 0)
+          {
+            return SubExprResult;
+          }
+        }
+      }
+      stackOperators[stackIndex++] = charValue;
+      leftNumberFlag = 0;
+      continue;
     }
-    exprIndex++;
+    return EXPR_SYNTAX_ERROR;
   }                              /* end while */
   if (leftNumberFlag == FALSE)
   {
     return EXPR_SYNTAX_ERROR;
   }
-  if (stackIndex > startStackIndex && stackOperators[stackIndex - 1] != '(')
+  while (stackIndex > startStackIndex && stackOperators[stackIndex - 1] != '(')
   {
     if ((SubExprResult = ComputeSubExpr()) != 0)
     {
       return SubExprResult;
-    }
-    if (stackIndex > startStackIndex && stackOperators[stackIndex - 1] != '(')
-    {
-      if ((SubExprResult = ComputeSubExpr()) != 0)
-      {
-        return SubExprResult;
-      }
-      if (stackIndex > startStackIndex && stackOperators[stackIndex - 1] != '(')
-      {
-        if ((SubExprResult = ComputeSubExpr()) != 0)
-        {
-          return SubExprResult;
-        }
-      }
     }
   }
   if (stackIndex != startStackIndex)
@@ -518,32 +671,146 @@ static void SkipSpaces(char *expr)
   return;
 }
 
+static void ConvertToTwosComplement(BigInteger *value)
+{
+  int idx;
+  int nbrLimbs;
+  limb *ptrLimb;
+  if (value->sign == SIGN_POSITIVE)
+  {    // If number is positive, no conversion is needed.
+    return;
+  }
+  nbrLimbs = value->nbrLimbs;
+  ptrLimb = &value->limbs[0];
+  for (idx = 0; idx < nbrLimbs; idx++)
+  {
+    if (ptrLimb->x != 0)
+    {
+      break;
+    }
+    ptrLimb++;
+  }
+  if (idx < nbrLimbs)
+  {
+    ptrLimb->x = 0x80000000 - ptrLimb->x;
+    ptrLimb++;
+  }
+  for (; idx < nbrLimbs; idx++)
+  {
+    ptrLimb->x = 0x7FFFFFFF - ptrLimb->x;
+    ptrLimb++;
+  }
+}
+
 static enum eExprErr ComputeSubExpr(void)
 {
   char stackOper = stackOperators[--stackIndex];
+  BigInteger *firstArg = &stackValues[stackIndex];
+  BigInteger *secondArg = &stackValues[stackIndex + 1];
+  BigInteger *result = &stackValues[stackIndex];
+  BigInteger *tmpptr;
+  int idx;
   switch (stackOper)
   {
-  case '+':
-    BigIntAdd(&stackValues[stackIndex], &stackValues[stackIndex + 1], &stackValues[stackIndex]);
+  case OPER_PLUS:
+    BigIntAdd(firstArg, secondArg, result);
     return EXPR_OK;
-  case '-':
-    BigIntSubt(&stackValues[stackIndex], &stackValues[stackIndex + 1], &stackValues[stackIndex]);
+  case OPER_MINUS:
+    BigIntSubt(firstArg, secondArg, result);
     return EXPR_OK;
-  case '_':
-    BigIntNegate(&stackValues[stackIndex + 1], &stackValues[stackIndex]);
+  case OPER_UNARY_MINUS:
+    BigIntNegate(secondArg, result);
     return EXPR_OK;
-  case '/':
-    return BigIntDivide(&stackValues[stackIndex], &stackValues[stackIndex + 1],
-      &stackValues[stackIndex]);
-  case '*':
-    return BigIntMultiply(&stackValues[stackIndex], &stackValues[stackIndex + 1],
-      &stackValues[stackIndex]);
-  case '%':
-    return BigIntRemainder(&stackValues[stackIndex], &stackValues[stackIndex + 1],
-      &stackValues[stackIndex]);
-  case '^':
-    return BigIntPower(&stackValues[stackIndex], &stackValues[stackIndex + 1],
-      &stackValues[stackIndex]);
+  case OPER_DIVIDE:
+    return BigIntDivide(firstArg, secondArg, result);
+  case OPER_MULTIPLY:
+    return BigIntMultiply(firstArg, secondArg, result);
+  case OPER_REMAINDER:
+    return BigIntRemainder(firstArg, secondArg, result);
+  case OPER_POWER:
+    return BigIntPower(firstArg, secondArg, result);
+  case OPER_EQUAL:
+    BigIntSubt(firstArg, secondArg, result);
+    intToBigInteger(result, (result->nbrLimbs == 1 && result->limbs[0].x == 0? -1: 0));
+    return EXPR_OK;
+  case OPER_NOT_EQUAL:
+    BigIntSubt(firstArg, secondArg, result);
+    intToBigInteger(result, (result->nbrLimbs == 1 && result->limbs[0].x == 0 ? 0 : -1));
+    return EXPR_OK;
+  case OPER_GREATER:
+    BigIntSubt(secondArg, firstArg, result);
+    intToBigInteger(result, result->sign == SIGN_NEGATIVE ? -1 : 0);
+    return EXPR_OK;
+  case OPER_NOT_GREATER:
+    BigIntSubt(secondArg, firstArg, result);
+    intToBigInteger(result, result->sign == SIGN_NEGATIVE ? 0 : -1);
+    return EXPR_OK;
+  case OPER_LESS:
+    BigIntSubt(firstArg, secondArg, result);
+    intToBigInteger(result, result->sign == SIGN_NEGATIVE ? -1 : 0);
+    return EXPR_OK;
+  case OPER_NOT_LESS:
+    BigIntSubt(firstArg, secondArg, result);
+    intToBigInteger(result, result->sign == SIGN_NEGATIVE ? 0 : -1);
+    return EXPR_OK;
+  case OPER_NOT:    // Perform binary NOT as result <- -1 - argument.
+    intToBigInteger(firstArg, -1);
+    BigIntSubt(firstArg, secondArg, result);
+    return EXPR_OK;
+  case OPER_AND:    // Perform binary AND.
+    if (firstArg->nbrLimbs < secondArg->nbrLimbs)
+    {    // After the exchange, firstArg has not fewer limbs than secondArg.
+      tmpptr = firstArg;
+      firstArg = secondArg;
+      secondArg = tmpptr;
+    }
+    ConvertToTwosComplement(firstArg);
+    ConvertToTwosComplement(secondArg);
+    for (idx = 0; idx < secondArg->nbrLimbs; idx++)
+    {
+      result->limbs[idx].x = firstArg->limbs[idx].x & secondArg->limbs[idx].x;
+    }
+    if (firstArg->sign == SIGN_POSITIVE || secondArg->sign == SIGN_POSITIVE)
+    {
+      result->sign = SIGN_POSITIVE;
+    }
+    else
+    {
+      result->sign = SIGN_NEGATIVE;
+    }
+    if (secondArg->sign == SIGN_POSITIVE)
+    {
+      result->nbrLimbs = secondArg->nbrLimbs;      
+    }
+    ConvertToTwosComplement(result);
+    return EXPR_OK;
+  case OPER_OR:    // Perform binary OR.
+    if (firstArg->nbrLimbs < secondArg->nbrLimbs)
+    {    // After the exchange, firstArg has not fewer limbs than secondArg.
+      tmpptr = firstArg;
+      firstArg = secondArg;
+      secondArg = tmpptr;
+    }
+    ConvertToTwosComplement(firstArg);
+    ConvertToTwosComplement(secondArg);
+    for (idx = 0; idx < secondArg->nbrLimbs; idx++)
+    {
+      result->limbs[idx].x = firstArg->limbs[idx].x | secondArg->limbs[idx].x;
+    }
+    if (firstArg->sign == SIGN_NEGATIVE || secondArg->sign == SIGN_NEGATIVE)
+    {
+      result->sign = SIGN_NEGATIVE;
+    }
+    else
+    {
+      result->sign = SIGN_POSITIVE;
+    }
+    if (secondArg->sign == SIGN_NEGATIVE)
+    {
+      result->nbrLimbs = secondArg->nbrLimbs;
+    }
+    ConvertToTwosComplement(result);
+    return EXPR_OK;
   }
   return EXPR_OK;
 }
@@ -601,7 +868,6 @@ static int func(char *expr, BigInteger *ExpressionResult,
     stackIndex++;
   }
   stackIndex -= funcArgs;
-  exprIndex--;
   return 0;
 }
 
@@ -827,6 +1093,129 @@ static enum eExprErr ComputePartition(void)
     return EXPR_INVALID_PARAM;
   }
   partition(val, &stackValues[stackIndex]);
+  return EXPR_OK;
+}
+
+static void PerformFactorization(BigInteger *tofactor)
+{
+  NumberLength = tofactor->nbrLimbs;
+  CompressBigInteger(nbrToFactor, tofactor);
+  if (hexadecimal)
+  {
+    Bin2Hex(tofactor->limbs, tofactorDec, tofactor->nbrLimbs, groupLen);
+  }
+  else
+  {
+    Bin2Dec(tofactor->limbs, tofactorDec, tofactor->nbrLimbs, groupLen);
+  }
+  factor(tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
+}
+
+static int ComputeTotient(void)
+{
+  PerformFactorization(&stackValues[stackIndex]);
+  Totient(&stackValues[stackIndex]);
+  return EXPR_OK;
+}
+
+static int ComputeNumDivs(void)
+{
+  PerformFactorization(&stackValues[stackIndex]);
+  Totient(&stackValues[stackIndex]);
+  return EXPR_OK;
+}
+
+static int ComputeSumDivs(void)
+{
+  PerformFactorization(&stackValues[stackIndex]);
+  SumOfDivisors(&stackValues[stackIndex]);
+  return EXPR_OK;
+}
+
+static int ComputeSumDigits(void)
+{
+  BigInteger argum, Temp;
+  BigInteger *result = &stackValues[stackIndex];
+  BigInteger *radix = &stackValues[stackIndex + 1];
+  CopyBigInt(&argum, &stackValues[stackIndex]);
+  intToBigInteger(result, 0);
+  while (argum.nbrLimbs > 1 || argum.limbs[0].x > 0)
+  {
+    BigIntRemainder(&argum, radix, &Temp);
+    BigIntAdd(result, &Temp, result);
+    BigIntDivide(&argum, radix, &argum);
+  }
+  return EXPR_OK;
+}
+
+static int ComputeNumDigits(void)
+{
+  BigInteger *result = &stackValues[stackIndex];
+  BigInteger *radix = &stackValues[stackIndex + 1];
+  int digits = 0;
+  while (result->nbrLimbs > 1 || result->limbs[0].x > 0)
+  {
+    BigIntDivide(result, radix, result);
+    digits++;
+  }
+  intToBigInteger(result, digits);
+  return EXPR_OK;
+}
+
+static int ComputeRevDigits(void)
+{
+  BigInteger argum, Temp;
+  BigInteger *result = &stackValues[stackIndex];
+  BigInteger *radix = &stackValues[stackIndex+1];
+  CopyBigInt(&argum, &stackValues[stackIndex]);
+  intToBigInteger(result, 0);
+  while (argum.nbrLimbs > 1 || argum.limbs[0].x > 0)
+  {
+    BigIntRemainder(&argum, radix, &Temp);
+    BigIntMultiply(result, radix, result);
+    BigIntAdd(result, &Temp, result);
+    BigIntDivide(&argum, radix, &argum);
+  }
+  return EXPR_OK;
+}
+
+static int ComputeConcatFact(void)
+{
+  BigInteger *mode = &stackValues[stackIndex];
+  BigInteger factorValue;
+  struct sFactors *pstFactor;
+  int factorNumber, nbrFactors;
+  int descend = mode->limbs[0].x & 1;
+  int repeated = mode->limbs[0].x & 2;
+  char *ptrTextFactor = textFactor;
+  if (mode->nbrLimbs > 1 || mode->sign == SIGN_NEGATIVE || mode->limbs[0].x > 3)
+  {      // The valid modes are 0, 1, 2 and 3.
+    return EXPR_INVALID_PARAM;
+  }
+  PerformFactorization(&stackValues[stackIndex+1]); // Factor second argument.
+  nbrFactors = astFactorsMod[0].multiplicity;
+  for (factorNumber = 1; factorNumber <= nbrFactors; factorNumber++)
+  {
+    int ctr;
+    pstFactor = &astFactorsMod[descend ? nbrFactors - factorNumber + 1: factorNumber];
+    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    factorValue.sign = SIGN_POSITIVE;
+    ctr = (repeated? pstFactor->multiplicity: 1);
+    for (; ctr > 0; ctr--)
+    {
+      BigInteger2Dec(&factorValue, ptrTextFactor, 0);
+      ptrTextFactor += strlen(ptrTextFactor);
+    }
+  }
+  if (ptrTextFactor == &textFactor[0])
+  {
+    intToBigInteger(&stackValues[stackIndex], 0);
+  }
+  else
+  {
+    Dec2Bin(textFactor, stackValues[stackIndex].limbs, (int)(ptrTextFactor - &textFactor[0]),
+      &stackValues[stackIndex].nbrLimbs);
+  }
   return EXPR_OK;
 }
 

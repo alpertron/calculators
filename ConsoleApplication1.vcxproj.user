@@ -8,11 +8,11 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>10^59+213</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>x\=1;x\=1;1;1;1</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>10^59+213</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>"x=10^10;x=x+1;x&lt;=10^10+100000;x;sumdigits(x,10)==sumdigits(concatfact(2,x),10) and not isprime(x)"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
