@@ -72,7 +72,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'ecm0027.wasm');
+  request.open('GET', 'ecm0029.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -100,7 +100,6 @@ function oneexpr()
   get("next").value = (app & 1? "Hecho": "Done");
   get("wzddesc").innerHTML = (app & 1? "Paso 1 de 1: Expresión a factorizar": "Step 1 of 1: Expression to factor");
   get("wzdexam").innerHTML = "&nbsp;";
-  get("wzdinput").value = "";
   wizardTextInput = "";
   wizardStep = 9;
 }
@@ -190,7 +189,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker(asmjs? "ecmW0027.js": "ecm0027.js");
+    worker = new Worker(asmjs? "ecmW0029.js": "ecm0029.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
@@ -273,6 +272,73 @@ function dowork(n)
   callWorker(param + charNull);
 }
 
+function selectLoop()
+{	  
+  get("next").value = (app & 1 ? "Siguiente": "Next");
+  get("wzddesc").innerHTML = (app & 1 ? "Paso 1 de 5: Valor inicial de x": "Step 1 of 5: Initial value of x");
+  get("wzdexam").innerHTML = (app & 1? "No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code>": 
+                                       "Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>");
+  wizardStep = 1;
+}
+	
+function wizardNext()
+{     
+  get("next").disabled = true;
+  switch (++wizardStep)
+  {
+    case 2:
+      wizardTextInput += "x="+get("wzdinput").value;
+      get("mode").style.display = "none";
+      get("wzddesc").innerHTML = (app & 1? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
+      get("wzdexam").innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x+1</code>":
+                                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>");
+      break;
+    case 3:
+      wizardTextInput += ";x="+get("wzdinput").value;
+      get("wzddesc").innerHTML = (app & 1? "Paso 3 de 5: Condición para finalizar el ciclo": "Step 3 of 5: End loop condition");
+      get("wzdexam").innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x&lt;10000</code>":
+                                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x&lt;10000</code>");
+      break;
+    case 4:
+      wizardTextInput += ";"+get("wzdinput").value;
+      get("wzddesc").innerHTML = (app & 1? "Paso 4 de 5: Expresión a factorizar": "Step 4 of 5: Expression to factor");
+      get("wzdexam").innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x</code>":
+                                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x</code>");
+      break;
+    case 5:
+      wizardTextInput += ";"+get("wzdinput").value;
+      get("next").value = (app & 1? "Hecho": "Done");
+      get("next").disabled = false;
+      get("wzddesc").innerHTML = (app & 1? "Paso 5 de 5: Condición para procesar la expresión": "Step 5 of 5: Process expression condition");
+      get("wzdexam").innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>":
+                                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>");
+      break;
+    case 6:
+      if (get("wzdinput").value != "")
+      {
+        wizardTextInput += ";"+get("wzdinput").value;
+      }
+      get("value").value = wizardTextInput;
+      wizardStep = 0;
+      get("main").style.display = "block";
+      get("wizard").style.display = "none";
+      get("value").focus();
+      break;
+    default:
+      wizardStep = 0;
+      get("value").value = get("wzdinput").value;
+      get("main").style.display = "block";
+      get("wizard").style.display = "none";
+      get("value").focus();
+      break;
+  } 
+  if (wizardStep)
+  {
+    get("wzdinput").value = "";
+    get("wzdinput").focus();
+  }
+}
+
 function startUp()
 {
   var param, index, ecmFactor;
@@ -308,7 +374,37 @@ function startUp()
     get("mode").style.display = "block";
     get("oneexpr").checked = true;
     get("next").disabled = true;
+	get("wzdinput").value = "";
+	get("wzdinput").focus();
     oneexpr();
+  };
+  get("wzdinput").onkeydown = function (event)
+  {
+    if (event.keyCode == 10 || event.keyCode == 13)
+    {
+      event.preventDefault();          // Do not propagate Enter key.
+	  if (get("next").disabled == false)
+	  {                                // Next button is not disabled.
+        wizardNext();                  // Perform same operation as if the user had pressed Next button.
+	  }
+    }
+    if (event.keyCode == 80 && event.altKey)
+    {                                  // User pressed ALT-P.
+      event.preventDefault();          // Do not propagate key.
+      if (get("oneexpr").checked)
+      {
+        get("oneexpr").checked = false;
+        get("loop").checked = true;
+		selectLoop();
+      }
+      else
+      {
+        get("oneexpr").checked = true;
+        get("loop").checked = false;
+		oneexpr();
+      }
+    }
+    return true;
   };
   get("oneexpr").onclick = function ()
   {
@@ -316,78 +412,35 @@ function startUp()
   };
   get("loop").onclick = function ()
   {
-    get("next").value = (app & 1 ? "Siguiente": "Next");
-    get("wzddesc").innerHTML = (app & 1 ? "Paso 1 de 5: Valor inicial de x": "Step 1 of 5: Initial value of x");
-    get("wzdexam").innerHTML = (app & 1? "No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code>": 
-                                         "Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>");
-    wizardStep = 1;
+	selectLoop();
   };
   get("next").onclick = function ()
   {
-    get("next").disabled = true;
-    switch (++wizardStep)
-    {
-      case 2:
-        wizardTextInput += "x="+get("wzdinput").value;
-        get("mode").style.display = "none";
-        get("wzddesc").innerHTML = (app & 1? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
-        get("wzdexam").innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x+1</code>":
-                                             "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>");
-        break;
-      case 3:
-        wizardTextInput += ";x="+get("wzdinput").value;
-        get("wzddesc").innerHTML = (app & 1? "Paso 3 de 5: Condición para finalizar el ciclo": "Step 3 of 5: End loop condition");
-        get("wzdexam").innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x&lt;10000</code>":
-                                             "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x&lt;10000</code>");
-        break;
-      case 4:
-        wizardTextInput += ";"+get("wzdinput").value;
-        get("wzddesc").innerHTML = (app & 1? "Paso 4 de 5: Expresión a factorizar": "Step 4 of 5: Expression to factor");
-        get("wzdexam").innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x</code>":
-                                             "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x</code>");
-        break;
-      case 5:
-        wizardTextInput += ";"+get("wzdinput").value;
-        get("next").value = (app & 1? "Hecho": "Done");
-        get("next").disabled = false;
-        get("wzddesc").innerHTML = (app & 1? "Paso 5 de 5: Condición para procesar la expresión": "Step 5 of 5: Process expression condition");
-        get("wzdexam").innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>":
-                                             "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>");
-        break;
-      case 6:
-        if (get("wzdinput").value != "")
-        {
-          wizardTextInput += ";"+get("wzdinput").value;
-        }
-        get("value").value = wizardTextInput;
-        get("value").focus();
-        wizardStep = 0;
-        get("main").style.display = "block";
-        get("wizard").style.display = "none";
-        break;
-      default:
-        wizardStep = 0;
-        get("value").value = get("wzdinput").value;
-        get("value").focus();
-        get("main").style.display = "block";
-        get("wizard").style.display = "none";
-        break;
-    }
-    if (wizardStep)
-    {
-      get("wzdinput").value = "";
-      get("wzdinput").focus();
-    }
+    wizardNext();
   };
   get("wzdinput").oninput = function ()
   {
-    if (get("wzdinput").value != "" || wizardStep == 5)
-    {
-      get("next").disabled = false;
+	var inputValue = get("wzdinput").value;
+	var nextBtn = get("next");
+    if (inputValue != "")
+    {         // User typed something on input box.
+	  if (wizardStep == 1 || wizardStep == 9 || (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
+	      inputValue.lastIndexOf("X") >= 0 || inputValue.lastIndexOf("C") >= 0))
+	  {       // At least one x or c. Indicate valid.
+	    nextBtn.disabled = false;
+	  }
+	  else
+	  {
+        nextBtn.disabled = true;
+	  }
     }
-    else
-    {
-      get("next").disabled = true;
+    else if (wizardStep == 5)
+	{         // Last step is optional, so empty input is valid.
+      nextBtn.disabled = false;
+	}
+	else
+    {         // For required input, empty input is invalid.
+      nextBtn.disabled = true;
     }
   };
   get("cancel").onclick = function ()
@@ -410,7 +463,7 @@ function startUp()
              (get("verbose").checked? "1" :"0") +
              (get("pretty").checked? "1" :"0") +
              (get("cunnin").checked? "1" :"0") +
-			 (get("hex").checked? "1" :"0");
+             (get("hex").checked? "1" :"0");
     digits = get("digits").value;
     setStorage("ecmConfig", digits+","+config);
     get("modal-config").style.display = "none";
@@ -443,31 +496,31 @@ function startUp()
   };
   get("value").onkeydown = function (event)
   {
-	  if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey)
-	  {
-	    event.preventDefault();          // Do not propagate Enter key.
+    if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey)
+    {
+      event.preventDefault();          // Do not propagate Enter key.
       setStorage("ecmFactors","");     // Perform factorization.
       dowork(2);
-	  }
-	  return true;
+    }
+    return true;
   }
   get("helpbtn").onclick = function ()
   {
     var help = get("help");
-	  var helpStyle = help.style;
-	  var helphelpStyle = get("helphelp").style;
-	  var result = get("result");
-	  var resultStyle = result.style;
-	  if (helpStyle.display == "block" && result.innerHTML != "")		
-	  {
-	    helpStyle.display = "none";
-	    helphelpStyle.display = resultStyle.display = "block";
-	  }
-	  else
-	  {
+    var helpStyle = help.style;
+    var helphelpStyle = get("helphelp").style;
+    var result = get("result");
+    var resultStyle = result.style;
+    if (helpStyle.display == "block" && result.innerHTML != "")     
+    {
+      helpStyle.display = "none";
+      helphelpStyle.display = resultStyle.display = "block";
+    }
+    else
+    {
       helpStyle.display = "block";
       helphelpStyle.display = resultStyle.display = "none";
-	  }
+    }
   };
   window.onclick = function(event)
   {
@@ -496,10 +549,10 @@ function startUp()
     else
     {
       config = digits.substr(index+1);
-	  while (config.length < 5)
-	  {  // Convert legacy configuration.
-		config += "0";
-	  }
+      while (config.length < 5)
+      {  // Convert legacy configuration.
+        config += "0";
+      }
       digits = digits.substr(0,index);
     }
   }
