@@ -72,7 +72,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'ecm0029.wasm');
+  request.open('GET', 'ecm0030.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -189,7 +189,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker(asmjs? "ecmW0029.js": "ecm0029.js");
+    worker = new Worker(asmjs? "ecmW0030.js": "ecm0030.js");
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
@@ -215,11 +215,15 @@ function callWorker(param)
       else
       {
         get("result").innerHTML = e.data.substring(1);
-        if (e.data.substring(0, 1) == "2")
+        if (firstChar == "2" || firstChar == "6")
         {   // First character passed from web worker is "2".
           get("status").innerHTML = "";
           styleButtons("inline", "none");  // Enable eval and factor
           get("modal-more").style.display = "none";
+		  if (firstChar == "6")
+		  {
+			get("cont").style.display = "block";
+		  }
         }
       }
     };
@@ -235,6 +239,7 @@ function dowork(n)
   var valueText = get("value").value.replace(/\u2011/g, "-");
   var charNull = String.fromCharCode(0);
   var helphelp = get("helphelp");
+  get("cont").style.display = "none";
   get("help").style.display = "none";
   helphelp.style.display = "block";
   helphelp.innerHTML = (app & 1 ? '<p class="pad">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización. Esta es la versión '+(asmjs? "asm.js": "WebAssembly")+".</p>":
@@ -282,60 +287,65 @@ function selectLoop()
 }
 	
 function wizardNext()
-{     
-  get("next").disabled = true;
+{
+  var nextBtn = get("next");
+  var wzdDescText = get("wzddesc");
+  var wzdExamText = get("wzdexam");
+  var wzdInput = get("wzdinput");
+  var valueInput = get("value");
+  nxtBtn.disabled = true;
   switch (++wizardStep)
   {
     case 2:
-      wizardTextInput += "x="+get("wzdinput").value;
+      wizardTextInput += "x="+wzdInput.value;
       get("mode").style.display = "none";
-      get("wzddesc").innerHTML = (app & 1? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
-      get("wzdexam").innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x+1</code>":
-                                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>");
+      wzdDescText.innerHTML = (app & 1? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
+      wzdExamText.innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x+1</code>":
+                                        "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>");
       break;
     case 3:
-      wizardTextInput += ";x="+get("wzdinput").value;
-      get("wzddesc").innerHTML = (app & 1? "Paso 3 de 5: Condición para finalizar el ciclo": "Step 3 of 5: End loop condition");
-      get("wzdexam").innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x&lt;10000</code>":
+      wizardTextInput += ";x="+wzdInput.value;
+      wzdDescText.innerHTML = (app & 1? "Paso 3 de 5: Condición para finalizar el ciclo": "Step 3 of 5: End loop condition");
+      wzdExamText.innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x&lt;10000</code>":
                                            "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x&lt;10000</code>");
       break;
     case 4:
-      wizardTextInput += ";"+get("wzdinput").value;
-      get("wzddesc").innerHTML = (app & 1? "Paso 4 de 5: Expresión a factorizar": "Step 4 of 5: Expression to factor");
-      get("wzdexam").innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x</code>":
+      wizardTextInput += ";"+wzdInput.value;
+      wzdDescText.innerHTML = (app & 1? "Paso 4 de 5: Expresión a factorizar": "Step 4 of 5: Expression to factor");
+      wzdExamText.innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x</code>":
                                            "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x</code>");
       break;
     case 5:
-      wizardTextInput += ";"+get("wzdinput").value;
-      get("next").value = (app & 1? "Hecho": "Done");
-      get("next").disabled = false;
-      get("wzddesc").innerHTML = (app & 1? "Paso 5 de 5: Condición para procesar la expresión": "Step 5 of 5: Process expression condition");
-      get("wzdexam").innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>":
-                                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>");
+      wizardTextInput += ";"+wzdInput.value;
+      nextBtn.value = (app & 1? "Hecho": "Done");
+      nextBtn.disabled = false;
+      wzdDescText.innerHTML = (app & 1? "Paso 5 de 5: Condición para procesar la expresión": "Step 5 of 5: Process expression condition");
+      wzdExamText.innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>":
+                                        "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>");
       break;
     case 6:
-      if (get("wzdinput").value != "")
+      if (wzdInput.value != "")
       {
-        wizardTextInput += ";"+get("wzdinput").value;
+        wizardTextInput += ";"+wzdInput.value;
       }
-      get("value").value = wizardTextInput;
+      valueInput.value = wizardTextInput;
       wizardStep = 0;
       get("main").style.display = "block";
       get("wizard").style.display = "none";
-      get("value").focus();
+      valueInput.focus();
       break;
     default:
       wizardStep = 0;
-      get("value").value = get("wzdinput").value;
+      valueInput.value = wzdInput.value;
       get("main").style.display = "block";
       get("wizard").style.display = "none";
-      get("value").focus();
+      valueInput.focus();
       break;
   } 
   if (wizardStep)
   {
-    get("wzdinput").value = "";
-    get("wzdinput").focus();
+    wzdInput.value = "";
+    wzdInput.focus();
   }
 }
 
@@ -522,6 +532,11 @@ function startUp()
       helphelpStyle.display = resultStyle.display = "none";
     }
   };
+  get("continue").onclick = function ()
+  {
+	get("cont").style.display = "none";
+    callWorker("C");  // Indicate worker that user pressed Continue button.
+  }
   window.onclick = function(event)
   {
     var modal = get("modal");

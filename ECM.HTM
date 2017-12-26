@@ -40,6 +40,7 @@ h1 {text-align:center;}
 .lf {padding:0.2em; clear:both;}
 .blue {color: #0000FF;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+.cont {display:none;}
 #digits {width:5em}
 #value {white-space:pre;overflow-wrap:normal;overflow:auto;}
 #wizard {display:none;}
@@ -121,7 +122,7 @@ Contact
 <main role="main" id="main">
 <article>
 <h1>Integer factorization calculator</h1>
-<script async="async" type="application/javascript" src="ecm0029.js"></script>
+<script async="async" type="application/javascript" src="ecm0030.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -252,11 +253,12 @@ You have to type four or five expressions separated by semicolons:</p>
 <ul>
 <li>First expression: It must start with the string 'x=' and it sets the first value of x.</li>
 <li>Second expression: It must start with the string 'x=' and it sets the next value of x.
-<li>Third expression: It holds the end expression condition. If it is equal to zero the loop finishes, otherwise the loop continues.
+<li>Third expression: It holds the end expression condition. If it is equal to zero (meaning false) the loop finishes, otherwise the loop continues.
 <li>Fourth expression: It holds the expression to be factored.</li>
 <li>Optional fifth expression: If this expression is different from zero (meaning true), the fourth expression is displayed or factored, and if is zero (meaning false), the fourth expression is ignored.
 </ul>
 <p>Except for the first expression, all other expressions must include the variable <var>x</var> and/or the counter <var>c</var>.</p>
+<p>If the end expression is false after processing 1000 numbers, the Continue button will appear. Pressing this button will make the program to process the next 1000 numbers and so on.</p>
 <p>Example 1: Find the factors of the first 100 numbers of the form prime minus one.
 The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <p>Example 2: Find the Smith numbers less than 10000. A Smith number, according to Wikipedia, is a composite number for which, in a given base (in base 10 by default), the sum of its digits is equal to the sum of the digits in its prime factorization.
@@ -264,11 +266,14 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.</p>
-<p>Written by Dario Alpern. Last updated 22 December 2017.</p>
+<p>Written by Dario Alpern. Last updated 25 December 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
 <div id="status"></div>
+<form id="cont" class="pad">
+<input type="button" id="continue" value="Continue" />
+</form>
 <div id="footer">
 <p>If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Integer+factorization+calculator+feedback">form</a>.</p>
 </div>

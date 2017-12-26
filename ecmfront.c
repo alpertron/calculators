@@ -41,6 +41,12 @@ static void GetMobius(char **pptrOutput);
 static void GetNumberOfDivisors(char **pptrOutput);
 static void GetSumOfDivisors(char **pptrOutput);
 static void ShowFourSquares(char **pptrOutput);
+static int valuesProcessed;
+static int firstExprProcessed;
+static char *ptrEndBatchFactor;
+static char *ptrCurrBatchFactor;
+static char *ptrNextBatchFactor;
+static int doFactorization;
 
 static void stringToHTML(char **pptrOutput, char *ptrString)
 {
@@ -96,7 +102,7 @@ static void SkipSpaces(char **pptrText)
   *pptrText = ptrText;
 }
 
-static char evalExpression(char *expr, int counter, BigInteger *ptrResult)
+static char evalExpression(char *expr, BigInteger *ptrResult)
 {
   char *ptrInputExpr = expr;
   char *ptrOutputExpr = outputExpr;
@@ -112,7 +118,6 @@ static char evalExpression(char *expr, int counter, BigInteger *ptrResult)
     ptrInputExpr++;
   }
   *ptrOutputExpr = 0;   // Append string terminator.
-  counterC = counter;
   return ComputeExpression(outputExpr, 1, ptrResult);
 }
 
@@ -127,30 +132,38 @@ static void BatchError(char **pptrOutput, char *tofactorText, const char *errorT
   *pptrOutput = ptrOutput;
 }
 
-static void BatchFactorization(char *tofactorText, int doFactorization, char *knownFactorization)
+void BatchFactorization(char *tofactorText, int performFactorization, char *knownFactorization)
 {
-  char *ptrNextBatchFactor = tofactorText;
-  char *ptrEndBatchFactor = tofactorText + strlen(tofactorText);
-  char *ptrCurrBatchFactor;
-  int counter = 0;
+  int endValuesProcessed;
   char *ptrOutput = output;
-  char *NextExpr, *EndExpr, *FactorExpr, *FactorCond;
+  char *NextExpr, *EndExpr;
+  char *FactorExpr = NULL;
+  char *FactorCond = NULL;
   enum eExprErr rc = EXPR_OK;
   char *ptrCharFound, *ptrSrcString, *ptrStartExpr;
-  int valuesProcessed = 0;
   strcpy(ptrOutput, "2<ul><li>");
   ptrOutput += strlen(ptrOutput);
-  while (ptrNextBatchFactor != NULL && ptrNextBatchFactor < ptrEndBatchFactor)
+  endValuesProcessed = valuesProcessed + 1000;
+  if (valuesProcessed == 0)
+  {        // Start batch factorization.
+    ptrCurrBatchFactor = tofactorText;
+    ptrEndBatchFactor = tofactorText + strlen(tofactorText);
+    firstExprProcessed = FALSE;
+    doFactorization = performFactorization;
+  }
+  for (; ptrCurrBatchFactor < ptrEndBatchFactor; ptrCurrBatchFactor += strlen(ptrCurrBatchFactor) + 1)
   {  // Get next line.
     char c;
-    counter = 1;
     expressionNbr = 0;
-    valueX.nbrLimbs = 0;     // Invalidate variable x and counter c.
-    ptrCurrBatchFactor = ptrNextBatchFactor;
-    ptrNextBatchFactor = findChar(ptrCurrBatchFactor, '\n');
-    if (ptrNextBatchFactor != NULL)
-    {    // End of line found.
-      *ptrNextBatchFactor++ = 0;   // Replace it by string terminator.
+    if (firstExprProcessed == FALSE)
+    {
+      valueX.nbrLimbs = 0;     // Invalidate variable x and counter c.
+      ptrNextBatchFactor = findChar(ptrCurrBatchFactor, '\n');
+      if (ptrNextBatchFactor != NULL)
+      {
+        *ptrNextBatchFactor = 0;    // Indicate end of line.
+      }
+      counterC = 1;
     }
     // Skip leading spaces.
     ptrSrcString = ptrCurrBatchFactor;
@@ -168,80 +181,102 @@ static void BatchFactorization(char *tofactorText, int doFactorization, char *kn
     }
     else if (c == 'x' || c == 'X')
     {   // Loop format: x=<orig expr>; x=<next expr>; <end expr>; <expr to factor>[; <factor cond>]
-      ptrCharFound = findChar(ptrSrcString + 1, ';');
-      if (ptrCharFound == NULL)
+#ifdef __EMSCRIPTEN__
+      ptrInputText = "";
+#endif
+      if (firstExprProcessed == FALSE)
       {
-        BatchError(&ptrOutput, tofactorText,
-          lang ? "se esperaban tres o cuatro puntos y comas pero no hay ninguno" :
-          "three or four semicolons expected but none found");
-        continue;
+        ptrCharFound = findChar(ptrSrcString + 1, ';');
+        if (ptrCharFound == NULL)
+        {
+          BatchError(&ptrOutput, tofactorText,
+            lang ? "se esperaban tres o cuatro puntos y comas pero no hay ninguno" :
+            "three or four semicolons expected but none found");
+          continue;
+        }
+        ptrStartExpr = ptrSrcString + 1;
+        SkipSpaces(&ptrStartExpr);
+        if (*ptrStartExpr != '=')
+        {
+          BatchError(&ptrOutput, tofactorText,
+            lang ? "falta signo igual en la primera expresión" :
+            "equal sign missing in first expression");
+          continue;
+        }
+        ptrCharFound = findChar(ptrSrcString + 1, ';');
+        expressionNbr = 1;
+        rc = evalExpression(ptrStartExpr + 1, &tofactor);
+        CopyBigInt(&valueX, &tofactor);
+        if (rc != EXPR_OK)
+        {
+          SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
+          continue;
+        }
+        ptrStartExpr = ptrCharFound+1;
+        SkipSpaces(&ptrStartExpr);
+        if (*ptrStartExpr != 'x' && *ptrStartExpr != 'X')
+        {
+          BatchError(&ptrOutput, tofactorText,
+            lang ? "falta variable x en la segunda expresión" :
+            "variable x missing in second expression");
+          continue;
+        }
+        ptrStartExpr++;               // Skip variable 'x'.
+        SkipSpaces(&ptrStartExpr);
+        if (*ptrStartExpr != '=')
+        {
+          BatchError(&ptrOutput, tofactorText,
+            lang ? "falta signo igual en la segunda expresión" :
+            "equal sign missing in second expression");
+          continue;
+        }
+        NextExpr = ptrStartExpr + 1;  // Skip equal sign.
+        ptrCharFound = findChar(ptrStartExpr, ';');  // Find second semicolon.
+        if (ptrCharFound == NULL)
+        {      // Third semicolon not found.
+          BatchError(&ptrOutput, tofactorText,
+            lang ? "se esperaban tres o cuatro puntos y comas pero solo hay uno" :
+            "three or four semicolons expected but there are only one");
+          continue;
+        }
+        EndExpr = ptrCharFound + 1;  // Point to end expression.
+        ptrCharFound = findChar(EndExpr, ';');  // Find third semicolon.
+        if (ptrCharFound == NULL)
+        {      // Third semicolon not found.
+          BatchError(&ptrOutput, tofactorText,
+            lang ? "se esperaban tres o cuatro puntos y comas pero solo hay dos" :
+            "three or four semicolons expected but there are only two");
+          continue;
+        }
+        FactorExpr = ptrCharFound + 1;
+        FactorCond = findChar(FactorExpr, ';');  // Find optional fourth semicolon. 
+        if (FactorCond != NULL)
+        {
+          FactorCond++;
+        }
+        firstExprProcessed = TRUE;
       }
-      ptrStartExpr = ptrSrcString + 1;
-      SkipSpaces(&ptrStartExpr);
-      if (*ptrStartExpr != '=')
+      else
       {
-        BatchError(&ptrOutput, tofactorText,
-          lang ? "falta signo igual en la primera expresión" :
-          "equal sign missing in first expression");
-        continue;
+        NextExpr = findChar(ptrCurrBatchFactor, ';') + 1;  // Point to "x="
+        SkipSpaces(&NextExpr);   // Now point to "x"
+        NextExpr++;
+        SkipSpaces(&NextExpr);   // Now point to "="
+        NextExpr++;
+        SkipSpaces(&NextExpr);   // Now point to next expression.
+        EndExpr = findChar(NextExpr, ';') + 1;
+        FactorExpr = findChar(EndExpr, ';') + 1;
+        FactorCond = findChar(FactorExpr, ';');
+        if (FactorCond != NULL)
+        {
+          FactorCond++;
+        }
       }
-      ptrCharFound = findChar(ptrSrcString + 1, ';');
-      *ptrCharFound++ = 0;   // Replace first semicolon by end of string.
-      expressionNbr = 1;
-      rc = ComputeExpression(ptrStartExpr + 1, 1, &tofactor);
-      CopyBigInt(&valueX, &tofactor);
-      if (rc != EXPR_OK)
-      {
-        SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
-        continue;
-      }
-      ptrStartExpr = ptrCharFound;
-      SkipSpaces(&ptrStartExpr);
-      if (*ptrStartExpr != 'x' && *ptrStartExpr != 'X')
-      {
-        BatchError(&ptrOutput, tofactorText,
-          lang ? "falta variable x en la segunda expresión" :
-          "variable x missing in second expression");
-        continue;
-      }
-      ptrStartExpr++;               // Skip variable 'x'.
-      SkipSpaces(&ptrStartExpr);
-      if (*ptrStartExpr != '=')
-      {
-        BatchError(&ptrOutput, tofactorText,
-          lang ? "falta signo igual en la segunda expresión" :
-          "equal sign missing in second expression");
-        continue;
-      }
-      NextExpr = ptrStartExpr + 1;  // Skip equal sign.
-      ptrCharFound = findChar(ptrStartExpr, ';');  // Find second semicolon.
-      if (ptrCharFound == NULL)
-      {      // Third semicolon not found.
-        BatchError(&ptrOutput, tofactorText,
-          lang ? "se esperaban tres o cuatro puntos y comas pero solo hay uno" :
-          "three or four semicolons expected but there are only one");
-        continue;
-      }
-      EndExpr = ptrCharFound + 1;  // Point to end expression.
-      ptrCharFound = findChar(EndExpr, ';');  // Find third semicolon.
-      if (ptrCharFound == NULL)
-      {      // Third semicolon not found.
-        BatchError(&ptrOutput, tofactorText,
-          lang ? "se esperaban tres o cuatro puntos y comas pero solo hay dos" :
-          "three or four semicolons expected but there are only two");
-        continue;
-      }
-      FactorExpr = ptrCharFound + 1;
-      FactorCond = findChar(FactorExpr, ';');  // Find optional fourth semicolon. 
-      if (FactorCond != NULL)
-      {
-        FactorCond++;
-      }
-      do
+      while (ptrOutput < &output[sizeof(output) - 100000])
       {      // Perform loop.
         int computeFactorExpr = 1;
         expressionNbr = 3;
-        rc = evalExpression(EndExpr, counter, &result);
+        rc = evalExpression(EndExpr, &result);
         if (rc != EXPR_OK)
         {
           SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
@@ -249,12 +284,18 @@ static void BatchFactorization(char *tofactorText, int doFactorization, char *kn
         }
         if (result.nbrLimbs == 1 && result.limbs[0].x == 0)
         {    // result is zero: end of loop
+          firstExprProcessed = FALSE;
+          break;
+        }
+        if (valuesProcessed >= endValuesProcessed)
+        {
+          output[0] = '6';  // Show Continue button.
           break;
         }
         if (FactorCond != NULL)
         {
           expressionNbr = 5;
-          rc = evalExpression(FactorCond, counter, &tofactor);
+          rc = evalExpression(FactorCond, &tofactor);
           if (rc == EXPR_OK)
           {
             if (tofactor.nbrLimbs == 1 && tofactor.limbs[0].x == 0)
@@ -275,7 +316,7 @@ static void BatchFactorization(char *tofactorText, int doFactorization, char *kn
         if (computeFactorExpr)
         {
           expressionNbr = 4;
-          rc = evalExpression(FactorExpr, counter, &tofactor);
+          rc = evalExpression(FactorExpr, &tofactor);
           if (rc == EXPR_OK)
           {
             char *ptrFactorDec = tofactorDec;
@@ -305,7 +346,7 @@ static void BatchFactorization(char *tofactorText, int doFactorization, char *kn
           }
         }
         expressionNbr = 2;
-        rc = evalExpression(NextExpr, counter, &result);
+        rc = evalExpression(NextExpr, &result);
         if (rc != EXPR_OK)
         {
           SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
@@ -314,15 +355,31 @@ static void BatchFactorization(char *tofactorText, int doFactorization, char *kn
         CopyBigInt(&valueX, &result);
         if (computeFactorExpr)
         {
-          counter++;
+          counterC++;
           strcpy(ptrOutput, "</li><li>");
           valuesProcessed++;
           ptrOutput += strlen(ptrOutput);
-        }      // Do not show these errors multiple times.
-      } while (rc != EXPR_SYNTAX_ERROR && rc != EXPR_VAR_OR_COUNTER_REQUIRED);
+        }
+        if (rc == EXPR_SYNTAX_ERROR || rc == EXPR_VAR_OR_COUNTER_REQUIRED)
+        {      // Do not show these errors multiple times.
+          firstExprProcessed = FALSE;
+          break;
+        }
+      }
+      if (valuesProcessed >= endValuesProcessed)
+      {
+        break;
+      }
     }
     else
     {       // Factor expression (not loop).
+#ifdef __EMSCRIPTEN__
+      ptrInputText = ptrSrcString;
+#endif
+      if (valuesProcessed >= endValuesProcessed)
+      {
+        output[0] = '6';  // Show Continue button.
+      }
       rc = ComputeExpression(ptrSrcString, 1, &tofactor);
       if (rc == EXPR_OK)
       {
@@ -347,19 +404,36 @@ static void BatchFactorization(char *tofactorText, int doFactorization, char *kn
         }
       }
       SendFactorizationToOutput(rc, astFactorsMod, &ptrOutput, doFactorization);
-      counter = 2;
+      counterC = 2;
       strcpy(ptrOutput, "</li><li>");
       valuesProcessed++;
       ptrOutput += strlen(ptrOutput);
     }
-    if (counter == 1)
+    if (counterC == 1)
     {
       strcpy(ptrOutput, "</li>");
       ptrOutput += strlen(ptrOutput);
     }
-    ptrCurrBatchFactor = ptrNextBatchFactor;
+    if (ptrOutput >= &output[sizeof(output) - 100000])
+    {
+      output[0] = '6';     // Show Continue button.
+      break;
+    }
+    if ((*ptrCurrBatchFactor & 0xDF) == 'x')
+    {      // Loop mode.
+      if (FactorCond)
+      {
+        ptrCurrBatchFactor += strlen(FactorCond) + 1;
+        FactorCond = NULL;
+      }
+      else
+      {
+        ptrCurrBatchFactor += strlen(FactorExpr) + 1;
+      }
+    }
+    valueX.nbrLimbs = 0;     // Invalidate variable x and counter c.
   }
-  if (counter > 1)
+  if (counterC > 1)
   {
     ptrOutput -= 4;   // Erase start tag <li> without contents.
   }
@@ -1011,12 +1085,9 @@ static void ShowFourSquares(char **pptrOutput)
   *pptrOutput = ptrOutput;
 }
 
-void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors)
+void ecmFrontText(char *tofactorText, int performFactorization, char *knownFactors)
 {
-#ifdef __EMSCRIPTEN__
-  ptrInputText = tofactorText;
-#endif
-  BatchFactorization(tofactorText, doFactorization, knownFactors);
+  BatchFactorization(tofactorText, performFactorization, knownFactors);
 }
 
 void doWork(void)
@@ -1024,6 +1095,18 @@ void doWork(void)
   int flags;
   char *ptrData = inputString;
   char *ptrWebStorage, *ptrKnownFactors;
+#ifdef __EMSCRIPTEN__
+  originalTenthSecond = tenths();
+#endif
+  if (*ptrData == 'C')
+  {    // User pressed Continue button.
+    BatchFactorization(NULL, 0, NULL); // The 3rd parameter includes known factors.
+#ifdef __EMSCRIPTEN__
+    databack(output);
+#endif
+    return;
+  }
+  valuesProcessed = 0;
   groupLen = 0;
   while (*ptrData != ',')
   {
@@ -1065,9 +1148,6 @@ void doWork(void)
       flags = 2;  // do factorization.
     }
   }
-#ifdef __EMSCRIPTEN__
-  originalTenthSecond = tenths();
-#endif
   ecmFrontText(ptrData, flags & 2, ptrKnownFactors); // The 3rd parameter includes known factors.
 #ifdef __EMSCRIPTEN__
   databack(output);

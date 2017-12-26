@@ -178,12 +178,14 @@ int main(int argc, char *argv[])
   {
     char *ptrKnownFactors = strchr(argv[1], '=');
 #if 1
-    char text[100] = "x=1;x=x+1;x<10000;x;sumdigits(x) == sumdigits(concatfact(2,x),10) and not isprime(x)";
+    char text[100];
+    strcpy(text, "x=1;x=x+1;x<10;x\nx = 30; x = x + 1; x<40; x");
     ecmFrontText(text, 1, ptrKnownFactors);
     printf("%s\n", output);
-    strcpy(text, "x=1;x=1;x;1;1");
-    ecmFrontText(text, 1, ptrKnownFactors);
+    BatchFactorization(NULL, 0, NULL);
     printf("%s\n", output);
+    strcpy(text, "x=1;x=x+1;x<1001;c");
+    ecmFrontText(text, 1, ptrKnownFactors);
     return 0;
 #endif
     if (ptrKnownFactors)

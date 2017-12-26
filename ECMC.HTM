@@ -40,6 +40,7 @@ h1 {text-align:center;}
 .lf {padding:0.2em; clear:both;}
 .blue {color: #0000FF;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+.cont {display:none;}
 #digits {width:5em}
 #value {white-space:pre;overflow-wrap:normal;overflow:auto;}
 #wizard {display:none;}
@@ -123,7 +124,7 @@ Contacto
 <main role="main" id="main">
 <article>
 <h1>Calculadora de factorización de números enteros</h1>
-<script async="async" type="application/javascript" src="ecm0029.js"></script>
+<script async="async" type="application/javascript" src="ecm0030.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -260,17 +261,21 @@ Para reducir esa base de datos, sólo se incluyen factores primos con al menos 1
 <li>Quinta expresión (opcional): Si esta expresión no vale cero (indicando verdadero), se muestra o factoriza la cuarta expresión, y si es cero (indicando falso), se ignora la cuarta expresión.
 </ul>
 <p>Excepto la primera expresión, las demás expresiones deben incluir la variable <var>x</var> y/o el contador <var>c</var>.</p>
+<p>Si la expresión de finalización es falsa después de procesar 1000 números, aparecerá el botón Continuar. Apretando este botón hará que el programa procese los siguientes 1000 números, y así sucesivamente.
 <p>Ejemplo 1: Hallar los factores de los primeros 100 números de la forma primo menos 1.
 La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <p>Ejemplo 2: Hallar los números de Smith meores que 10000. Un número de Smith, de acuerdo a Wikipedia, es un número compuesto tal que, en una base dada (por defecto en base 10), la suma de sus dígitos es igual a la suma de los dígitos de su factorización en números primos.
 La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(concatfact(2,x),10) and not isprime(x)</code>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 22 de diciembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 25 de diciembre de 2017.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
 <div id="status"></div>
+<form id="cont" class="pad">
+<input type="button" id="continue" value="Continuar" />
+</form>
 <div id="footer">
 <p>Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORMULAR.HTM?Comentario+de+calculadora+de+factorizacion+de+enteros">formulario</a>.</p>
 </div>
