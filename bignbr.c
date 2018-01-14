@@ -183,7 +183,7 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
     pProduct->sign = SIGN_POSITIVE;
     return EXPR_OK;
   }
-  if (pFactor1->nbrLimbs + pFactor2->nbrLimbs > 66438 / BITS_PER_GROUP)  // 2^66438 ~ 10^20000
+  if (pFactor1->nbrLimbs + pFactor2->nbrLimbs > 66438 / BITS_PER_GROUP + 1)  // 2^66438 ~ 10^20000
   {
     return EXPR_INTERM_TOO_HIGH;
   }
@@ -340,6 +340,7 @@ enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int exponent, BigInteger *pPo
 {
   int mask;
   double base;
+  enum eExprErr rc;
   if (pBase->nbrLimbs == 1 && pBase->limbs[0].x == 0)
   {     // Base = 0 -> power = 0
     pPower->limbs[0].x = 0;
@@ -362,10 +363,18 @@ enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int exponent, BigInteger *pPo
     {
       for (; mask != 0; mask >>= 1)
       {
-        (void)BigIntMultiply(pPower, pPower, pPower);
+        rc = BigIntMultiply(pPower, pPower, pPower);
+        if (rc != EXPR_OK)
+        {
+          return rc;
+        }
         if ((exponent & mask) != 0)
         {
-          (void)BigIntMultiply(pPower, &Base, pPower);
+          rc = BigIntMultiply(pPower, &Base, pPower);
+          if (rc != EXPR_OK)
+          {
+            return rc;
+          }
         }
       }
       break;

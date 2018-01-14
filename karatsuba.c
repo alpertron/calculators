@@ -26,8 +26,8 @@
 #include <stdint.h>
 
 #define KARATSUBA_CUTOFF 16
-static limb arr[MAX_LEN];
-static limb arrayAux[MAX_LEN];
+static limb arr[3*MAX_LEN];
+static limb arrayAux[3*MAX_LEN];
 static int karatLength;
 static void Karatsuba(int idxFactor1, int length, int diffIndex);
 

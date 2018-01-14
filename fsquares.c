@@ -20,15 +20,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "bignbr.h"
 #include "expression.h"
 #include "highlevel.h"
-#include <math.h>
+#include "showtime.h"
+#include "batch.h"
 #define MAX_SIEVE 65536
 #define SUBT 12
 extern int lang;
 static int primediv[256];
 static int primeexp[256];
+static char hexadecimal;
 static limb number[MAX_LEN];
 static limb origNbr[MAX_LEN];
 static limb p[MAX_LEN];
@@ -45,21 +48,57 @@ static limb Sum[MAX_LEN];
 static int iMult3, iMult4;
 static int Mult1Len, Mult2Len, Mult3Len, Mult4Len, power4;
 static limb result[MAX_LEN];
-static int nbrLimbs, origNbrLimbs;
+static int nbrLimbs, origNbrLimbs, groupLength;
 static int sieve[MAX_SIEVE];
 static int TerminateThread, sum;
 static int nbrModExp;
+static int Computing3Squares;
+static char tmpOutput[30000];
+int app;
+static char *square = "<span class=\"bigger\">²</span>";
 static BigInteger biMult1, biMult2, biMult3;
+static BigInteger toProcess;
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 char texto[500];
-BigInteger ExpressionResult;
 void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs);
 int checkMinusOne(limb *value, int nbrLimbs);
+void batchCubesCallback(char **pptrOutput);
 #ifdef __EMSCRIPTEN__
 void contfracText(char *input, int groupLen);
 void fcubesText(char *input, int groupLen);
 #endif
+
+static void ShowStatus(void)
+{
+#ifdef __EMSCRIPTEN__
+  char status[200];
+  char *ptrStatus = status;
+  int elapsedTime = (int)(tenths() - originalTenthSecond);
+  if (elapsedTime / 10 == oldTimeElapsed / 10)
+  {
+    return;
+  }
+  oldTimeElapsed = elapsedTime;
+  ptrStatus = status;
+  strcpy(ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
+  ptrStatus += strlen(ptrStatus);
+  GetDHMS(&ptrStatus, elapsedTime / 10);
+  strcpy(ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Intentando suma de dos cuadrados de n &minus; " : "&nbsp;&nbsp;&nbsp;Attempting sum of two squares of <var>n</var> &minus; ");
+  ptrStatus += strlen(ptrStatus);
+  int2dec(&ptrStatus, iMult3);
+  strcpy(ptrStatus, square);
+  ptrStatus += strlen(ptrStatus);
+  if (!Computing3Squares)
+  {
+    strcpy(ptrStatus, " &minus; ");
+    ptrStatus += strlen(ptrStatus);
+    int2dec(&ptrStatus, iMult4);
+    strcpy(ptrStatus, square);
+  }
+  databack(status);
+#endif
+}
 
  // If Mult1 < Mult2, exchange both numbers.
 static void SortBigNbrs(limb *mult1, int *mult1Len, limb *mult2, int *mult2Len)
@@ -110,8 +149,11 @@ static void SortBigNbrs(limb *mult1, int *mult1Len, limb *mult2, int *mult2Len)
  // Variable to split in up to four squares: number
 int fsquares(void)
 {
+#ifdef __EMSCRIPTEN__
+  char *ptrOutput;
+#endif
   int sqrtFound, r, tmp;
-  int i, j, numberMod8, Computing3Squares, nbrDivisors;
+  int i, j, numberMod8, nbrDivisors;
   int index, nbrLimbsP, nbrLimbsQ, shRight, shRightMult3, count;
   int divisor, base, idx, nbrLimbsSq;
   limb carry;
@@ -145,6 +187,15 @@ int fsquares(void)
         sieve[j] = -1;             // Indicate number is composite.
       }
     }
+#ifdef __EMSCRIPTEN__
+    ptrOutput = tmpOutput;
+    strcpy(ptrOutput, "1<p><var>n</var> = ");
+    ptrOutput += strlen(ptrOutput);
+    Bin2Dec(origNbr, ptrOutput, nbrLimbs, groupLen);
+    ptrOutput += strlen(ptrOutput);
+    strcpy(ptrOutput, "</p>");
+    databack(tmpOutput);
+#endif
     DivideBigNbrByMaxPowerOf4(&power4, number, &nbrLimbs);
     Mult1Len = Mult2Len = 1;
     if (nbrLimbs == 1 && number[0].x < 4)
@@ -322,6 +373,7 @@ int fsquares(void)
           sqrtFound = 0;
           do
           {                 // Compute Mult1 = sqrt(-1) (mod p).
+            ShowStatus();
             base++;
             modPowBaseInt(base, Mult3, Mult3Len, Mult1); // Mult1 = base^Mult3.
             nbrModExp++;   // Increment number of modular exponentiations.    
@@ -530,7 +582,7 @@ int fsquares(void)
   AddBigInt(SquareMult1, SquareMult2, SquareMult1, idx);
   AddBigInt(SquareMult1, SquareMult3, SquareMult1, idx);
   AddBigInt(SquareMult1, SquareMult4, SquareMult1, idx);
-  while (SquareMult1[idx - 1].x == 0)
+  while (idx > 1 && SquareMult1[idx - 1].x == 0)
   {
     idx--;
   }
@@ -548,112 +600,142 @@ int fsquares(void)
   return 0;
 }
 
-void fsquaresText(char *input, int groupLength)
+void fsquaresText(char *input, int groupLen)
 {
-  char *square = "<span class=\"bigger\">²</span>";
-  enum eExprErr rc;
-  char *ptrOutput = output;
-  rc = ComputeExpression(input, 1, &ExpressionResult);
-  if (rc != EXPR_OK)
+  char *ptrOutput;
+#ifdef __EMSCRIPTEN__
+  int elapsedTime;
+#endif
+  if (valuesProcessed == 0)
   {
-    textError(ptrOutput, rc);
+    groupLength = groupLen;
+  }
+  BatchProcessing(input, &toProcess, &ptrOutput);
+#ifdef __EMSCRIPTEN__
+  strcpy(ptrOutput, lang ? "<p>Transcurrió " : "<p>Time elapsed: ");
+  ptrOutput += strlen(ptrOutput);
+  elapsedTime = (int)(tenths() - originalTenthSecond);
+  GetDHMSt(&ptrOutput, elapsedTime);
+#endif
+  strcpy(ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
+    "</p><p>" COPYRIGHT_ENGLISH "</p>"));
+}
+
+#ifdef FSQUARES_APP
+void batchCallback(char **pptrOutput)
+{
+  int result;
+  char *ptrOutput;
+  if (app == 1)
+  {
+    batchCubesCallback(pptrOutput);
     return;
   }
-  if (ExpressionResult.sign == SIGN_NEGATIVE)
+  ptrOutput = *pptrOutput;
+  NumberLength = toProcess.nbrLimbs;
+  CompressBigInteger((int *)number, &toProcess);
+  origNbrLimbs = toProcess.nbrLimbs;
+  memcpy(origNbr, toProcess.limbs, origNbrLimbs*sizeof(limb));
+  result = fsquares();
+  // Show the number to be decomposed into sum of squares.
+  strcpy(ptrOutput, "<p>");
+  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&toProcess, ptrOutput, groupLength);
+  ptrOutput += strlen(ptrOutput);
+  if (toProcess.sign == SIGN_NEGATIVE)
   {
+    *ptrOutput++ = ':';
+    *ptrOutput++ = ' ';
     textError(ptrOutput, EXPR_NUMBER_TOO_LOW);
+    ptrOutput += strlen(ptrOutput);
+    strcpy(ptrOutput, "</p>");
+    *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   }
-  origNbrLimbs = ExpressionResult.nbrLimbs;
-  memcpy(origNbr, ExpressionResult.limbs, origNbrLimbs*sizeof(limb));
-  switch (fsquares())
+  switch (result)
   {
   case 1:
-    strcpy(ptrOutput, (lang==0?"<p>Internal error!\n\nPlease send the number to the author of the applet.</p>":
-      "<p>¡Error interno!\n\nPor favor envíe este número al autor del applet.</p>"));
+    strcpy(ptrOutput, (lang==0?": Internal error!\n\nPlease send the number to the author of the applet.</p>":
+      ": ¡Error interno!\n\nPor favor envíe este número al autor del applet.</p>"));
+    *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   case 2:
-    strcpy(ptrOutput, (lang==0?"<p>User stopped the calculation":"</p>El usuario detuvo el cálculo"));
+    strcpy(ptrOutput, (lang==0?": User stopped the calculation":": El usuario detuvo el cálculo"));
+    *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   }
-  // Show the number to be decomposed into sum of cubes.
-  strcpy(ptrOutput, "<p><var>n</var> = ");
+  // Show the decomposition.
+  strcpy(ptrOutput, " = ");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&ExpressionResult, ptrOutput, groupLength);
-  ptrOutput += strlen(ptrOutput);
-  // Show whether the number is a sum of 1, 2, 3 or 4 squares.
-  strcpy(ptrOutput, "</p><p><var>n</var> = <var>a</var>");
+  Bin2Dec(Mult1, ptrOutput, Mult1Len, groupLength);
   ptrOutput += strlen(ptrOutput);
   strcpy(ptrOutput, square);
   ptrOutput += strlen(ptrOutput);
   if (Mult2Len != 1 || Mult2[0].x != 0)
   {
-    strcpy(ptrOutput, " + <var>b</var>");
-    ptrOutput += strlen(ptrOutput);
-    strcpy(ptrOutput, square);
-    ptrOutput += strlen(ptrOutput);
-  }
-  if (Mult3Len != 1 || Mult3[0].x != 0)
-  {
-    strcpy(ptrOutput, " + <var>c</var>");
-    ptrOutput += strlen(ptrOutput);
-    strcpy(ptrOutput, square);
-    ptrOutput += strlen(ptrOutput);
-  }
-  if (Mult4Len != 1 || Mult4[0].x != 0)
-  {
-    strcpy(ptrOutput, " + <var>d</var>");
-    ptrOutput += strlen(ptrOutput);
-    strcpy(ptrOutput, square);
-    ptrOutput += strlen(ptrOutput);
-  }
-  strcpy(ptrOutput, "</p><p><span class=\"offscr\">");
-  ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, lang ? " donde: </span>" : " where: </span>");
-  ptrOutput += strlen(ptrOutput);
-  // Show the decomposition.
-  strcpy(ptrOutput, "<p><var>a</var> = ");
-  ptrOutput += strlen(ptrOutput);
-  Bin2Dec(Mult1, ptrOutput, Mult1Len, groupLength);
-  ptrOutput += strlen(ptrOutput);
-  if (Mult2Len != 1 || Mult2[0].x != 0)
-  {
-    strcpy(ptrOutput, "</p><p><var>b</var> = ");
+    strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(Mult2, ptrOutput, Mult2Len, groupLength);
     ptrOutput += strlen(ptrOutput);
+    strcpy(ptrOutput, square);
+    ptrOutput += strlen(ptrOutput);
   }
   if (Mult3Len != 1 || Mult3[0].x != 0)
   {
-    strcpy(ptrOutput, "</p><p><var>c</var> = ");
+    strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(Mult3, ptrOutput, Mult3Len, groupLength);
+    ptrOutput += strlen(ptrOutput);
+    strcpy(ptrOutput, square);
     ptrOutput += strlen(ptrOutput);
   }
   if (Mult4Len != 1 || Mult4[0].x != 0)
   {
-    strcpy(ptrOutput, "</p><p><var>d</var> = ");
+    strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(Mult4, ptrOutput, Mult4Len, groupLength);
     ptrOutput += strlen(ptrOutput);
+    strcpy(ptrOutput, square);
+    ptrOutput += strlen(ptrOutput);
   }
-  strcpy(ptrOutput, (lang?"</p><p>" COPYRIGHT_SPANISH "</p>":
-                          "</p><p>" COPYRIGHT_ENGLISH "</p>"));
+  strcpy(ptrOutput, "</p>");
+  ptrOutput += strlen(ptrOutput);
+  *pptrOutput = ptrOutput;
 }
+#endif
 
 #ifdef __EMSCRIPTEN__
-void databack(char *data);
 void doWork(void)
 {
   int groupLen = 0;
   char *ptrData = inputString;
+#ifdef __EMSCRIPTEN__
+  originalTenthSecond = tenths();
+#endif
+  if (*ptrData == 'C')
+  {    // User pressed Continue button.
+    if (app == 0)
+    {
+      fsquaresText(NULL, 0); // Routine does not use prameters in this case.
+    }
+    else
+    {
+      fcubesText(NULL, 0); // Routine does not use prameters in this case.
+    }
+#ifdef __EMSCRIPTEN__
+    databack(output);
+#endif
+    return;
+  }
+  valuesProcessed = 0;
   while (*ptrData != ',')
   {
     groupLen = groupLen * 10 + (*ptrData++ - '0');
   }
   ptrData++;             // Skip comma.
   lang = *ptrData & 1;
-  switch ((*ptrData - '0') >> 1)
+  app = (*ptrData - '0') >> 1;
+  switch (app)
   {
   case 0:
     fsquaresText(ptrData+2, groupLen);

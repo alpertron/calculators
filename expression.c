@@ -63,13 +63,16 @@ static enum eExprErr ComputeSubExpr(void);
 static void SkipSpaces(char *expr);
 static int ComputeBack(void);
 static int ComputeNext(void);
+#ifdef FACTORIZATION_FUNCTIONS
 static int ComputeTotient(void);
 static int ComputeNumDivs(void);
 static int ComputeSumDivs(void);
+static int ComputeConcatFact(void);
+static char textFactor[30000];
+#endif
 static int ComputeSumDigits(void);
 static int ComputeRevDigits(void);
 static int ComputeNumDigits(void);
-static int ComputeConcatFact(void);
 static enum eExprErr ComputeModInv(void);
 static enum eExprErr ComputeFibLucas(int origValue);
 static enum eExprErr ComputePartition(void);
@@ -78,7 +81,6 @@ static int func(char *expr, BigInteger *ExpressionResult,
   char *funcName, int funcArgs, int leftNumberFlag);
 static int type;
 static int valueXused;
-static char textFactor[30000];
 
 static char priority[] = 
 {
@@ -99,8 +101,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
   type = typ;
   retcode = ComputeExpr(expr, ExpressionResult);
   if (retcode != 0) { return retcode; }
-  if (ExpressionResult[0].nbrLimbs > 2215 &&    // 10000/log_10(32768)
-    ExpressionResult[1].nbrLimbs > 2215)
+  if (ExpressionResult[0].nbrLimbs > 33219 / BITS_PER_GROUP + 1)    // 10000/log_10(2) = 33219
   {
     return EXPR_NUMBER_TOO_HIGH;
   }
@@ -138,10 +139,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       exprIndex++;
       continue;
     }
-    if (charValue == '^' || (charValue == '*' && *(expr + exprIndex + 1) == '*'))
-    {           // Convert double asterisk to exponentiation.
+    if (charValue == '^')
+    {           // Caret is exponentiation operation.
       charValue = OPER_POWER;
       exprIndex++;
+    }
+    else if (charValue == '*' && *(expr + exprIndex + 1) == '*')
+    {           // Double asterisk is exponentiation operation too.
+      charValue = OPER_POWER;
+      exprIndex += 2;
     }
     else if (charValue == '*')
     {
@@ -321,6 +327,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = 1;
       continue;
     }
+#ifdef FACTORIZATION_FUNCTIONS
     else if ((retcode = func(expr, ExpressionResult,
       "TOTIENT", 1, leftNumberFlag)) <= 0)
     {
@@ -349,6 +356,16 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
+      "CONCATFACT", 2, leftNumberFlag)) <= 0)
+    {
+      if (retcode != 0) { return retcode; }
+      retcode = ComputeConcatFact();
+      if (retcode != 0) { return retcode; }
+      leftNumberFlag = 1;
+      continue;
+    }
+#endif
+    else if ((retcode = func(expr, ExpressionResult,
       "SUMDIGITS", 2, leftNumberFlag)) <= 0)
     {
       if (retcode != 0) { return retcode; }
@@ -371,15 +388,6 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     {
       if (retcode != 0) { return retcode; }
       retcode = ComputeRevDigits();
-      if (retcode != 0) { return retcode; }
-      leftNumberFlag = 1;
-      continue;
-    }
-    else if ((retcode = func(expr, ExpressionResult,
-      "CONCATFACT", 2, leftNumberFlag)) <= 0)
-    {
-      if (retcode != 0) { return retcode; }
-      retcode = ComputeConcatFact();
       if (retcode != 0) { return retcode; }
       leftNumberFlag = 1;
       continue;
@@ -1111,6 +1119,7 @@ static void PerformFactorization(BigInteger *tofactor)
   factor(tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
 }
 
+#ifdef FACTORIZATION_FUNCTIONS
 static int ComputeTotient(void)
 {
   PerformFactorization(&stackValues[stackIndex]);
@@ -1131,6 +1140,47 @@ static int ComputeSumDivs(void)
   SumOfDivisors(&stackValues[stackIndex]);
   return EXPR_OK;
 }
+
+static int ComputeConcatFact(void)
+{
+  BigInteger *mode = &stackValues[stackIndex];
+  BigInteger factorValue;
+  struct sFactors *pstFactor;
+  int factorNumber, nbrFactors;
+  int descend = mode->limbs[0].x & 1;
+  int repeated = mode->limbs[0].x & 2;
+  char *ptrTextFactor = textFactor;
+  if (mode->nbrLimbs > 1 || mode->sign == SIGN_NEGATIVE || mode->limbs[0].x > 3)
+  {      // The valid modes are 0, 1, 2 and 3.
+    return EXPR_INVALID_PARAM;
+  }
+  PerformFactorization(&stackValues[stackIndex + 1]); // Factor second argument.
+  nbrFactors = astFactorsMod[0].multiplicity;
+  for (factorNumber = 1; factorNumber <= nbrFactors; factorNumber++)
+  {
+    int ctr;
+    pstFactor = &astFactorsMod[descend ? nbrFactors - factorNumber + 1 : factorNumber];
+    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    factorValue.sign = SIGN_POSITIVE;
+    ctr = (repeated ? pstFactor->multiplicity : 1);
+    for (; ctr > 0; ctr--)
+    {
+      BigInteger2Dec(&factorValue, ptrTextFactor, 0);
+      ptrTextFactor += strlen(ptrTextFactor);
+    }
+  }
+  if (ptrTextFactor == &textFactor[0])
+  {
+    intToBigInteger(&stackValues[stackIndex], 0);
+  }
+  else
+  {
+    Dec2Bin(textFactor, stackValues[stackIndex].limbs, (int)(ptrTextFactor - &textFactor[0]),
+      &stackValues[stackIndex].nbrLimbs);
+  }
+  return EXPR_OK;
+}
+#endif
 
 static int ComputeSumDigits(void)
 {
@@ -1175,46 +1225,6 @@ static int ComputeRevDigits(void)
     BigIntMultiply(result, radix, result);
     BigIntAdd(result, &Temp, result);
     BigIntDivide(&argum, radix, &argum);
-  }
-  return EXPR_OK;
-}
-
-static int ComputeConcatFact(void)
-{
-  BigInteger *mode = &stackValues[stackIndex];
-  BigInteger factorValue;
-  struct sFactors *pstFactor;
-  int factorNumber, nbrFactors;
-  int descend = mode->limbs[0].x & 1;
-  int repeated = mode->limbs[0].x & 2;
-  char *ptrTextFactor = textFactor;
-  if (mode->nbrLimbs > 1 || mode->sign == SIGN_NEGATIVE || mode->limbs[0].x > 3)
-  {      // The valid modes are 0, 1, 2 and 3.
-    return EXPR_INVALID_PARAM;
-  }
-  PerformFactorization(&stackValues[stackIndex+1]); // Factor second argument.
-  nbrFactors = astFactorsMod[0].multiplicity;
-  for (factorNumber = 1; factorNumber <= nbrFactors; factorNumber++)
-  {
-    int ctr;
-    pstFactor = &astFactorsMod[descend ? nbrFactors - factorNumber + 1: factorNumber];
-    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
-    factorValue.sign = SIGN_POSITIVE;
-    ctr = (repeated? pstFactor->multiplicity: 1);
-    for (; ctr > 0; ctr--)
-    {
-      BigInteger2Dec(&factorValue, ptrTextFactor, 0);
-      ptrTextFactor += strlen(ptrTextFactor);
-    }
-  }
-  if (ptrTextFactor == &textFactor[0])
-  {
-    intToBigInteger(&stackValues[stackIndex], 0);
-  }
-  else
-  {
-    Dec2Bin(textFactor, stackValues[stackIndex].limbs, (int)(ptrTextFactor - &textFactor[0]),
-      &stackValues[stackIndex].nbrLimbs);
   }
   return EXPR_OK;
 }

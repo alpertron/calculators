@@ -121,10 +121,10 @@ Contacto
 </ul>
 <br class="newline"/>
 </nav>
-<main role="main" id="main">
+<main id="main">
 <article>
 <h1>Calculadora de factorización de números enteros</h1>
-<script async="async" type="application/javascript" src="ecm0030.js"></script>
+<script async="async" src="ecm0032.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -143,7 +143,7 @@ Contacto
 </div>
 </div>
 <form class="applet">
-<label for="textarea">Valor</label><textarea id="value" rows="4" class="input"></textarea>
+<label for="value">Valor</label><textarea id="value" rows="4" class="input"></textarea>
 <br class="newline"/>
 Una expresión numérica o ciclo por línea. Ejemplo: x=3;x=n(x);c&lt;=100;x&#8209;1
 </div>
@@ -176,7 +176,7 @@ Una expresión numérica o ciclo por línea. Ejemplo: x=3;x=n(x);c&lt;=100;x&#82
 <li> / para división entera
 <li> % para el resto de la división entera
 <li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
-<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
 <li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> para lógica binaria.
 <li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
 <li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
@@ -256,8 +256,8 @@ Para reducir esa base de datos, sólo se incluyen factores primos con al menos 1
 <ul>
 <li>Primera expresión: Debe comenzar con la cadena 'x=' e indica el primer valor para la variable <var>x</var>.</li>
 <li>Segunda expresión:Debe comenzar con la cadena 'x=' e indica el siguiente valor para la variable <var>x</var>.</li>
-<li>Tercera expresión: Contiene la expresión de finalización del ciclo. Si es distinto que cero (indicando verdadero) el ciclo termina, en caso contrario, continúa. Puede incluir las variables indicadas arriba.</li>
-<li>Cuarta expresión: Contiene la expresión a factorizar. Puede incluir las variables indicadas arriba.</li>
+<li>Tercera expresión: Contiene la expresión de finalización del ciclo. Si es distinto que cero (indicando verdadero) el ciclo termina, en caso contrario, continúa.</li>
+<li>Cuarta expresión: Contiene la expresión a factorizar.</li>
 <li>Quinta expresión (opcional): Si esta expresión no vale cero (indicando verdadero), se muestra o factoriza la cuarta expresión, y si es cero (indicando falso), se ignora la cuarta expresión.
 </ul>
 <p>Excepto la primera expresión, las demás expresiones deben incluir la variable <var>x</var> y/o el contador <var>c</var>.</p>
@@ -268,7 +268,7 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(concatfact(2,x),10) and not isprime(x)</code>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 25 de diciembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 10 de enero de 2018.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -311,8 +311,8 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
 </div>
 </div></div></div>
-<div id="wizard">
-<h1>Factorization wizard</h1>
+<aside id="wizard">
+<h1>Asistente de factorización</h1>
 <form class="applet">
 <fieldset id="mode">
 <legend>Modo asistente</legend>
@@ -337,7 +337,7 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <li> / para división entera
 <li> % para el resto de la división entera
 <li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
-<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
 <li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> para lógica binaria.
 <li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
 <li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
@@ -366,8 +366,10 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <tr><td>3</td><td>Decreciente</td><td>Sí</td></tr>
 </table>
 </li>
+<li id="C">Variable <var>C</var>: cantidad de expresiones procesadas.</li>
+<li id="X">Variable <var>X</var>: variable que cambia en cada iteración del ciclo.</li>
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
-</div>
+</aside>
 </body>
 </html>

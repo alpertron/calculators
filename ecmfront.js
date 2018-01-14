@@ -72,7 +72,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'ecm0030.wasm');
+  request.open('GET', 'ecm0032.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -189,11 +189,16 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker(asmjs? "ecmW0030.js": "ecm0030.js");
+    worker = new Worker(asmjs? "ecmW0032.js": "ecm0032.js");
     worker.onmessage = function(e)
-    { // First character of e.data is "1" for intermediate text
-      // and it is "2" for end of calculation.
-      // It is "9" for saving expression to factor into Web Storage.
+    { // First character of e.data is:
+      // "1" for intermediate output
+      // "2" for end calculation
+      // "4" for sending intermediate data
+      // "6" for pausing calculation and showing the Continue button
+      // "7" for saving curve number into local storage
+      // "8" for saving input expression into local storage
+      // "9" for sending data to console.
       var firstChar = e.data.substring(0, 1);
       if (firstChar == "9")
       {
@@ -220,10 +225,10 @@ function callWorker(param)
           get("status").innerHTML = "";
           styleButtons("inline", "none");  // Enable eval and factor
           get("modal-more").style.display = "none";
-		  if (firstChar == "6")
-		  {
-			get("cont").style.display = "block";
-		  }
+          if (firstChar == "6")
+          {
+            get("cont").style.display = "block";
+          }
         }
       }
     };
@@ -278,14 +283,14 @@ function dowork(n)
 }
 
 function selectLoop()
-{	  
+{   
   get("next").value = (app & 1 ? "Siguiente": "Next");
   get("wzddesc").innerHTML = (app & 1 ? "Paso 1 de 5: Valor inicial de x": "Step 1 of 5: Initial value of x");
   get("wzdexam").innerHTML = (app & 1? "No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code>": 
                                        "Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>");
   wizardStep = 1;
 }
-	
+  
 function wizardNext()
 {
   var nextBtn = get("next");
@@ -293,7 +298,7 @@ function wizardNext()
   var wzdExamText = get("wzdexam");
   var wzdInput = get("wzdinput");
   var valueInput = get("value");
-  nxtBtn.disabled = true;
+  nextBtn.disabled = true;
   switch (++wizardStep)
   {
     case 2:
@@ -384,8 +389,8 @@ function startUp()
     get("mode").style.display = "block";
     get("oneexpr").checked = true;
     get("next").disabled = true;
-	get("wzdinput").value = "";
-	get("wzdinput").focus();
+    get("wzdinput").value = "";
+    get("wzdinput").focus();
     oneexpr();
   };
   get("wzdinput").onkeydown = function (event)
@@ -393,10 +398,10 @@ function startUp()
     if (event.keyCode == 10 || event.keyCode == 13)
     {
       event.preventDefault();          // Do not propagate Enter key.
-	  if (get("next").disabled == false)
-	  {                                // Next button is not disabled.
+      if (get("next").disabled == false)
+      {                                // Next button is not disabled.
         wizardNext();                  // Perform same operation as if the user had pressed Next button.
-	  }
+      }
     }
     if (event.keyCode == 80 && event.altKey)
     {                                  // User pressed ALT-P.
@@ -405,13 +410,13 @@ function startUp()
       {
         get("oneexpr").checked = false;
         get("loop").checked = true;
-		selectLoop();
+        selectLoop();
       }
       else
       {
         get("oneexpr").checked = true;
         get("loop").checked = false;
-		oneexpr();
+        oneexpr();
       }
     }
     return true;
@@ -422,7 +427,7 @@ function startUp()
   };
   get("loop").onclick = function ()
   {
-	selectLoop();
+  selectLoop();
   };
   get("next").onclick = function ()
   {
@@ -430,25 +435,25 @@ function startUp()
   };
   get("wzdinput").oninput = function ()
   {
-	var inputValue = get("wzdinput").value;
-	var nextBtn = get("next");
+    var inputValue = get("wzdinput").value;
+    var nextBtn = get("next");
     if (inputValue != "")
     {         // User typed something on input box.
-	  if (wizardStep == 1 || wizardStep == 9 || (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
-	      inputValue.lastIndexOf("X") >= 0 || inputValue.lastIndexOf("C") >= 0))
-	  {       // At least one x or c. Indicate valid.
-	    nextBtn.disabled = false;
-	  }
-	  else
-	  {
+      if (wizardStep == 1 || wizardStep == 9 || (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
+          inputValue.lastIndexOf("X") >= 0 || inputValue.lastIndexOf("C") >= 0))
+      {       // At least one x or c. Indicate valid.
+        nextBtn.disabled = false;
+      }
+      else
+      {
         nextBtn.disabled = true;
-	  }
+      }
     }
     else if (wizardStep == 5)
-	{         // Last step is optional, so empty input is valid.
+    {         // Last step is optional, so empty input is valid.
       nextBtn.disabled = false;
-	}
-	else
+    }
+    else
     {         // For required input, empty input is invalid.
       nextBtn.disabled = true;
     }
@@ -534,7 +539,7 @@ function startUp()
   };
   get("continue").onclick = function ()
   {
-	get("cont").style.display = "none";
+    get("cont").style.display = "none";
     callWorker("C");  // Indicate worker that user pressed Continue button.
   }
   window.onclick = function(event)

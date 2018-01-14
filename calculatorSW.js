@@ -21,22 +21,36 @@ var cacheName = "newCache";
 
 // URLs for calculators
 var calcURLs = new Array();
-calcURLs[0] = ["/ECM.HTM", "/ECMC.HTM", "/ecm0030.js", "ecmW0030.js", "ecm0030.wasm",
+calcURLs[0] = ["/ECM.HTM", "/ECMC.HTM", "/ecm0032.js", "ecmW0032.js", "ecm0032.wasm",
                "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-512px.png"];
 calcURLs[1] = ["/POLFACT.HTM", "/FACTPOL.HTM", "/polfact0026.js", "polfactW0026.js",
                "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png", "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-512px.png"];
 calcURLs[2] = ["/DILOG.HTM", "/LOGDI.HTM", "/dilog0026.js", "dilogW0026.js",
                "dilog.webmanifest", "logdi.webmanifest", "dilog-icon-1x.png", "dilog-icon-2x.png", "dilog-icon-4x.png", "dilog-icon-512px.png"];
-calcURLs[3] = ["/GAUSSIAN.HTM", "/GAUSIANO.HTM", "/gaussian0026,js", "gaussianW0026.js",
+calcURLs[3] = ["/GAUSSIAN.HTM", "/GAUSIANO.HTM", "/gaussian0026.js", "gaussianW0026.js",
                "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png", "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-512px.png"];
 calcURLs[4] = ["/QUADMOD.HTM", "/CUADMOD.HTM", "/quadmod0027.js", "quadmodW0027.js",
                "quadmod.webmanifest", "cuadmod.webmanifest", "quadmod-icon-1x.png", "quadmod-icon-2x.png", "quadmod-icon-4x.png", "quadmod-icon-512px.png"];
-calcURLs[5] = ["/FSQUARES.HTM", "/SUMCUAD.HTM", "/fsquares0026,js", "fsquaresW0026.js",
+calcURLs[5] = ["/FSQUARES.HTM", "/SUMCUAD.HTM", "/fsquares0032.js", "fsquaresW0032.js",
                "fsquares.webmanifest", "sumcuad.webmanifest", "fsquares-icon-1x.png", "fsquares-icon-2x.png", "fsquares-icon-4x.png", "fsquares-icon-512px.png"];
-calcURLs[6] = ["/FCUBES.HTM", "/SUMCUBOS.HTM", "/fsquares0026,js", "fsquaresW0026.js",
+calcURLs[6] = ["/FCUBES.HTM", "/SUMCUBOS.HTM", "/fsquares0032.js", "fsquaresW0032.js",
                "fcubes.webmanifest", "sumcubos.webmanifest", "fcubes-icon-1x.png", "fcubes-icon-2x.png", "fcubes-icon-4x.png", "fcubes-icon-512px.png"];
-calcURLs[7] = ["/CONTFRAC.HTM", "/FRACCONT.HTM", "/fsquares0026,js", "fsquaresW0026.js",
+calcURLs[7] = ["/CONTFRAC.HTM", "/FRACCONT.HTM", "/fsquares0032.js", "fsquaresW0032.js",
                "contfrac.webmanifest", "fraccont.webmanifest", "contfrac-icon-1x.png", "contfrac-icon-2x.png", "contfrac-icon-4x.png", "contfrac-icon-512px.png"];
+
+function UpdateCache(resources, url, mainCache)
+{
+  caches.open("cache"+url).then(function(cache)
+  {
+    cache.addAll(resources).then(function()
+    {     //Copy cached resources to main cache and delete this one.
+      mainCache.addAll(resources).then(function()
+      {
+        caches.delete("cache"+url);
+      });
+    });  
+  });
+}
 
 // Do not cache anything in advance.
 self.addEventListener("install", function(event)
@@ -48,24 +62,33 @@ self.addEventListener("install", function(event)
 self.addEventListener("fetch", function(event)
 {
   var url = event.request.url;
-  var etag;
+  var etag, noQueryString;
   if (url.toString().replace(/^(.*\/\/[^\/?#]*).*$/,"$1") != self.location.origin ||
       event.request.method !== 'GET' || url.endsWith(".pl") || url.endsWith(".php"))
   {  // Cache GET requests from this Web server only.
     return;
   }
+  // Erase any query information.
+  if (url.indexOf("?") < 0)
+  {
+    noQueryString = url;
+  }
+  else
+  {
+    noQueryString = url.substring(0, url.indexOf("?"));
+  }
   event.respondWith(
-    caches.match(event.request, {ígnoreSearch: true}).then(function(cached)
+    caches.match(noQueryString).then(function(cached)
     {
       if (cached)
       {
         // At this moment the response is in the cache, but we try to find if there
         // is a newer item in the network if it is a .HTM file
         if (url.search(".HTM") >= 0)
-		{
-		  etag = cached.headers.get("ETag");
-		}
-		else
+        {
+          etag = cached.headers.get("ETag");
+        }
+        else
         {                  // Static asset. Use resource already stored on cache.
           var indexZero = url.indexOf("00");
           if (indexZero > 0)
@@ -76,8 +99,10 @@ self.addEventListener("fetch", function(event)
               {
                 keys.forEach(function(request, index, array)
                 {
-                  if (request.url.substring(0, indexZero+2) == url.substring(0, indexZero+2) && request.url != url)
-                  {        // Old version of asset found. Delete it from cache.
+                  if (request.url.substring(0, indexZero+2) == url.substring(0, indexZero+2) &&
+                      request.url.substring(indexZero+2, indexZero+4) != url.substring(indexZero+2, indexZero+4) &&
+                      request.url.substring(indexZero+4) == url.substring(indexZero+4))
+                  {        // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
                     cache.delete(request);
                   }  
                 });
@@ -90,7 +115,6 @@ self.addEventListener("fetch", function(event)
       var networked = fetch(event.request)
           .then(fetchedFromNetwork, unableToResolve)
           .catch(unableToResolve);
-
         /* We return the cached response immediately if there is one, and fall
            back to waiting on the network as usual.
         */
@@ -110,25 +134,25 @@ self.addEventListener("fetch", function(event)
             cache.put(event.request, responseCopy).then(function()
             {
               var pathname = new URL(url).pathname;
-			  if (url.search(".HTM") >= 0 && etag != responseCopy.headers.get("ETag"))
-			  {   // HTML file is different from previous one. Get all JavaScript files.
+              if (url.search(".HTM") >= 0 && etag != responseCopy.headers.get("ETag"))
+              {   // HTML file is different from previous one. Get all JavaScript files.
                 for (var j=0; j<calcURLs.length; j++)
                 {
                   if (pathname == calcURLs[j][0] || pathname == calcURLs[j][1])
                   {   // It is one of our calculators.
-                    cache.addAll(calcURLs[j].slice(2));
+                    UpdateCache(calcURLs[j], calcURLs[j][0], cache);
                   }
-                }				
-			  }
-			  else
-			  {
+                }       
+              }
+              else
+              {
                 // Check whether the URL is the first JavaScript of our calculators.
                 for (var j=0; j<calcURLs.length; j++)
                 {
                   if (pathname == calcURLs[j][2])
                   {   // It is one of our calculators.
-                    cache.addAll(calcURLs[j].slice(3));
-				  }
+                    UpdateCache(calcURLs[j], calcURLs[j][0], cache);
+                  }
                 }
               }
             });
@@ -175,11 +199,11 @@ self.addEventListener("activate", function(event)
   .then(function() {
     var toCache = [];
     clients.claim().then(function()
-	{
-	  clients.matchAll({includeUncontrolled:true}).then(function(clientList)
+    {
+      clients.matchAll({includeUncontrolled:true}).then(function(clientList)
       {
         for (var i=0; i<clientList.length; i++)
-        {			
+        {     
           var pathname = new URL(clientList[i].url).pathname;
           // Check whether the client is one of our calculators.
           for (var j=0; j<calcURLs.length; j++)
@@ -194,11 +218,11 @@ self.addEventListener("activate", function(event)
         {
           caches.open(cacheName).then(function(cache)
           {
-            return cache.addAll(toCache).then(function(){skipWaiting();});
+            UpdateCache(toCache, "temp", cache);
           });
         }
       });
-	});
+    });
   })
   );
 });

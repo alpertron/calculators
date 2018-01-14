@@ -20,12 +20,15 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include "bignbr.h"
 #include "highlevel.h"
+#include "batch.h"
 static BigInteger value;
 static BigInteger Base1, Base2, Base3, Base4;
 static BigInteger P, Q, R, S, a, b;
 static BigInteger P1, Q1, R1, S1;
 static BigInteger tmpP1, tmpQ1, tmpR1, tmpS1;
-extern BigInteger ExpressionResult;
+static BigInteger toProcess;
+static int groupLength;
+static char *cube = "<span class=\"bigger\">³</span>";
 extern int lang;
 
 static int sums[] =
@@ -154,7 +157,7 @@ static int fcubes(BigInteger *pArgument)
   for (i = 0; i<(int)(sizeof(sums)/sizeof(sums[0])); i += 10)
   {
     modulus = sums[i];
-    if (getRemainder(pArgument, modulus) == sums[i + 1])
+    if ((getRemainder(&value, modulus) + modulus)% modulus == sums[i + 1])
     {
       break;
     }
@@ -312,93 +315,111 @@ static int fcubes(BigInteger *pArgument)
   return 0;
 }
 
-void fcubesText(char *input, int groupLength)
+void fcubesText(char *input, int groupLen)
 {
-  enum eExprErr rc;
-  char *ptrOutput = output;
-  char *cube = "<span class=\"bigger\">³</span>";
-  
-  rc = ComputeExpression(input, 1, &ExpressionResult);
-  if (rc != EXPR_OK)
+  char *ptrOutput;
+  if (valuesProcessed == 0)
   {
-    textError(ptrOutput, rc);
-    return;
+    groupLength = groupLen;
   }
-  switch (fcubes(&ExpressionResult))
+  BatchProcessing(input, &toProcess, &ptrOutput);
+  strcpy(ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
+    "</p><p>" COPYRIGHT_ENGLISH "</p>"));
+}
+
+void batchCubesCallback(char **pptrOutput)
+{
+  int result;
+  char *ptrOutput = *pptrOutput;
+  NumberLength = toProcess.nbrLimbs;
+  result = fcubes(&toProcess);
+  // Show the number to be decomposed into sum of cubes.
+  strcpy(ptrOutput, "<p>");
+  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&toProcess, ptrOutput, groupLength);
+  ptrOutput += strlen(ptrOutput);
+  switch (result)
   {
   case -1:
-    strcpy(ptrOutput, (lang==0?"<p>This applet does not work if the number is congruent to 4 or 5 (mod 9)</p>":
-      "<p>El applet no funciona si el número es congruente a 4 o 5 (mod 9)</p>"));
+    strcpy(ptrOutput, (lang==0?": This applet does not work if the number is congruent to 4 or 5 (mod 9)</p>":
+      ": El applet no funciona si el número es congruente a 4 o 5 (mod 9)</p>"));
+    *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   case 1:
-    strcpy(ptrOutput, (lang==0?"<p>Internal error!</p><p>Please send the number to the author of the applet.</p>":
-      "<p>¡Error interno!</p><p>Por favor envíe este número al autor del applet.</p>"));
+    strcpy(ptrOutput, (lang==0?": Internal error! Please send the number to the author of the applet.</p>":
+      ": ¡Error interno!Por favor envíe este número al autor del applet.</p>"));
+    *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   case 2:
-    strcpy(ptrOutput, (lang==0?"<p>User stopped the calculation</p>":"<p>El usuario detuvo el cálculo</p>"));
+    strcpy(ptrOutput, (lang==0?": User stopped the calculation</p>":": El usuario detuvo el cálculo</p>"));
+    *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   }
-  // Show the number to be decomposed into sum of cubes.
-  strcpy(ptrOutput, "<p><var>n</var> = ");
+  // Show decomposition in sum of 1, 2, 3 or 4 cubes.
+  strcpy(ptrOutput, " = ");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&ExpressionResult, ptrOutput, groupLength);
+  if (Base1.sign == SIGN_NEGATIVE)
+  {
+    *ptrOutput++ = '(';
+  }
+  BigInteger2Dec(&Base1, ptrOutput, groupLength);
   ptrOutput += strlen(ptrOutput);
-  // Show whether the number is a sum of 1, 2, 3 or 4 cubes.
-  strcpy(ptrOutput, "</p><p><var>n</var> = <var>a</var>");
-  ptrOutput += strlen(ptrOutput);
+  if (Base1.sign == SIGN_NEGATIVE)
+  {
+    *ptrOutput++ = ')';
+  }
   strcpy(ptrOutput, cube);
   ptrOutput += strlen(ptrOutput);
   if (Base2.nbrLimbs != 1 || Base2.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, " + <var>b</var>");
+    strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
-    strcpy(ptrOutput, cube);
-    ptrOutput += strlen(ptrOutput);
-  }
-  if (Base3.nbrLimbs != 1 || Base3.limbs[0].x != 0)
-  {
-    strcpy(ptrOutput, " + <var>c</var>");
-    ptrOutput += strlen(ptrOutput);
-    strcpy(ptrOutput, cube);
-    ptrOutput += strlen(ptrOutput);
-  }
-  if (Base4.nbrLimbs != 1 || Base4.limbs[0].x != 0)
-  {
-    strcpy(ptrOutput, " + <var>d</var>");
-    ptrOutput += strlen(ptrOutput);
-    strcpy(ptrOutput, cube);
-    ptrOutput += strlen(ptrOutput);
-  }
-  strcpy(ptrOutput, "</p><p><span class=\"offscr\">");
-  ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, lang ? " donde: </span>" : " where: </span>");
-  ptrOutput += strlen(ptrOutput);
-  // Show the decomposition.
-  strcpy(ptrOutput, "<var>a</var> = ");
-  ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&Base1, ptrOutput, groupLength);
-  ptrOutput += strlen(ptrOutput);
-  if (Base2.nbrLimbs != 1 || Base2.limbs[0].x != 0)
-  {
-    strcpy(ptrOutput, "</p><p><span class=\"offscr\">, </span><var>b</var> = ");
-    ptrOutput += strlen(ptrOutput);
+    if (Base2.sign == SIGN_NEGATIVE)
+    {
+      *ptrOutput++ = '(';
+    }
     BigInteger2Dec(&Base2, ptrOutput, groupLength);
     ptrOutput += strlen(ptrOutput);
+    if (Base2.sign == SIGN_NEGATIVE)
+    {
+      *ptrOutput++ = ')';
+    }
+    strcpy(ptrOutput, cube);
+    ptrOutput += strlen(ptrOutput);
   }
   if (Base3.nbrLimbs != 1 || Base3.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, "</p><p><span class=\"offscr\">, </span><var>c</var> = ");
+    strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
+    if (Base3.sign == SIGN_NEGATIVE)
+    {
+      *ptrOutput++ = '(';
+    }
     BigInteger2Dec(&Base3, ptrOutput, groupLength);
+    ptrOutput += strlen(ptrOutput);
+    if (Base3.sign == SIGN_NEGATIVE)
+    {
+      *ptrOutput++ = ')';
+    }
+    strcpy(ptrOutput, cube);
     ptrOutput += strlen(ptrOutput);
   }
   if (Base4.nbrLimbs != 1 || Base4.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, "</p><p><span class=\"offscr\">, </span><var>d</var> = ");
+    strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
-    BigInteger2Dec(&Base4, ptrOutput,  groupLength);
+    if (Base4.sign == SIGN_NEGATIVE)
+    {
+      *ptrOutput++ = '(';
+    }
+    BigInteger2Dec(&Base4, ptrOutput, groupLength);
+    ptrOutput += strlen(ptrOutput);
+    if (Base4.sign == SIGN_NEGATIVE)
+    {
+      *ptrOutput++ = ')';
+    }
+    strcpy(ptrOutput, cube);
     ptrOutput += strlen(ptrOutput);
   }
-  strcpy(ptrOutput, (lang?"</p><p>" COPYRIGHT_SPANISH "</p>":
-                          "</p><p>" COPYRIGHT_ENGLISH "</p>"));
+  *pptrOutput = ptrOutput;
 }

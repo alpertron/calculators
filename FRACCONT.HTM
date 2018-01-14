@@ -7,13 +7,14 @@
 <meta name="description" content="Aplicación Javascript que muestra la fracción continua de números racionales e irracionalidades cuadráticas." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="CONTFRAC.HTM" />
-<link rel="prefetch" href="fsquaresW0026.js" />
+<link rel="prefetch" href="fsquaresW0032.js" />
 <link rel="manifest" href="fraccont.webmanifest">
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Calculadora de fracciones continuas</title>
-<style type="text/css" media="print">
+<style media="print">
 #smallheader {display:none;}
 </style>
-<style type="text/css" media="screen">
+<style media="screen">
 #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
 #smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
 #smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
@@ -114,9 +115,10 @@ Contacto
 </ul>
 <br style="clear:both;" />
 </nav>
-	<article>
+<main>
+<article>
 <h1>Calculadora de fracciones continuas</h1>
-<script async="async" type="application/javascript" src="fsquares0026.js"></script>
+<script async="async" src="fsquares0032.js"></script>
 <div style='padding:10px;'>
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -278,31 +280,39 @@ Si <var>b</var> es negativo, el resultado no es un número real, así que no se 
 <h2>Expresiones</h2>
 <p>Se pueden entrar expresiones que usen los siguientes operadores y paréntesis:</p>
 <ul>
-<li><strong>+</strong> para suma</li>
-<li><strong>-</strong> para resta</li>
-<li><strong>*</strong> para multiplicación</li>
-<li><strong>/</strong> para división entera</li>
-<li><strong>%</strong> para resto</li>
-<li><strong>^</strong> o <strong>**</strong> para exponenciación</li>
-<li><strong>n!</strong>: factorial</li>
-<li><strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).</li>
-<li><strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
-<li><strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub></li>
-<li><strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub></li>
-<li><strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
-<li><strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).</li>
-<li><strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.</li>
-<li><strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.</li>
-<li><strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.</li>
+<li> + para suma
+<li> - para resta
+<li> * para multiplicación
+<li> / para división entera
+<li> % para el resto de la división entera
+<li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
+<li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
+<li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
+<li> <strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub>
+<li> <strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub>
+<li> <strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
+<li> <strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).
+<li> <strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.
+<li> <strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.
+<li> <strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.
+<li> <strong>IsPrime(n)</strong>: returna cero si <var>n</var> no es un primo probable y -1 si lo es.
+<li> <strong>NumDigits(n,r)</strong>: cantidad de dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>SumDigits(n,r)</strong>: suma de dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>RevDigits(n,r)</strong>: halla el valor que se obtiene escribiendo para atrás los dígitos de <var>n</var> en base <var>r</var>.
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 <h2>Código fuente</h2>
 <p>
 Se puede bajar el código fuente de este programa y el del viejo applet de fracciones continuas desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 9 de diciembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 10 de enero de 2018.</p>
 </div>
+<div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
+<div id="status"></div>
 <div>
 <p>
 Si encuentra algún error o tiene algún comentario, por favor llene el <A HREF="FORMULAR.HTM?Calculadora+de+fracciones+continuas">formulario</A>.
@@ -310,5 +320,6 @@ Si encuentra algún error o tiene algún comentario, por favor llene el <A HREF=
 </div>
 </div>
 </article>
+</main>
 </body>
 </html>

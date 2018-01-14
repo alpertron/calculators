@@ -24,15 +24,17 @@ char expr[] = "123456789012345";
 int Product[32];
 char input[10000];
 extern char tofactorDec[30000];
+extern int app;
 BigInteger dividend, divisor, quotient;
 int main(int argc, char *argv[])
 {
   int len, i;
 #if DEBUG_CODE == 1
-  fsquaresText("n(10^32)", 6);
+//  fsquaresText("n(10^32)", 6);
   fsquaresText(argv[1], 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 2
+  app = 1;
   fcubesText(argv[1], 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 3
@@ -177,12 +179,12 @@ int main(int argc, char *argv[])
   else if (argc == 2)
   {
     char *ptrKnownFactors = strchr(argv[1], '=');
-#if 1
     char text[100];
-    strcpy(text, "x=1;x=x+1;x<10;x\nx = 30; x = x + 1; x<40; x");
+#if 0
+    strcpy(text, "x=1;x=x+1;x<=2000;x\nx = 1; x = x + 1; x<1000; x");
     ecmFrontText(text, 1, ptrKnownFactors);
     printf("%s\n", output);
-    BatchFactorization(NULL, 0, NULL);
+    ecmFrontText(NULL, 0, NULL);
     printf("%s\n", output);
     strcpy(text, "x=1;x=x+1;x<1001;c");
     ecmFrontText(text, 1, ptrKnownFactors);
@@ -193,7 +195,8 @@ int main(int argc, char *argv[])
       *ptrKnownFactors = 0;    // Replace equal sign by string terminator.
       ptrKnownFactors++;
     }
-    ecmFrontText(argv[1], 1, ptrKnownFactors);
+    sprintf(text, "%s\n", argv[1]);
+    ecmFrontText(text, 0, ptrKnownFactors);
     printf("%s\n", output);
   }
   else

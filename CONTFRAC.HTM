@@ -6,14 +6,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Javascript application that finds the continued fraction representation of rational numbers and quadratic irrationalities. Written by Dario Alpern." />
 <meta name="theme-color" content="#db5945">
-<link rel="prefetch" href="fsquaresW0026.js" />
+<link rel="prefetch" href="fsquaresW0032.js" />
 <link rel="manifest" href="contfrac.webmanifest">
 <link rel="alternate" hreflang="es" href="FRACCONT.HTM" />
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Continued fraction calculator</title>
-<style type="text/css" media="print">
+<style media="print">
 #smallheader {display:none;}
 </style>
-<style type="text/css" media="screen">
+<style media="screen">
 #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
 #smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
 #smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
@@ -114,9 +115,10 @@ Contact
 </ul>
 <br style="clear:both;"/>
 </nav>
+<main>
 <article>
 <h1>Continued Fraction calculator</h1>
-<script async="async" type="application/javascript" src="fsquares0026.js"></script>
+<script async="async" src="fsquares0032.js"></script>
 <div style='padding:10px;'>
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -278,31 +280,39 @@ If <var>b</var> is negative, the result is not a real number, so it cannot be re
 <p>You can use the following operators and parentheses for the expressions:
 </p>
 <ul>
-<li>+ for addition</li>
-<li>- for subtraction</li>
-<li>* for multiplication</li>
-<li>/ for integer division</li>
-<li>% for remainder</li>
-<li>^ or ** for exponentiation</li>
-<li><strong>n!</strong>: factorial</li>
-<li><strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).</li>
-<li><strong>B(n)</strong>: Previous probable prime before <var>n</var></li>
-<li><strong>F(n)</strong>: Fibonacci number <span role="math" aria-label="F sub n">F<sub><var>n</var></sub></span></li>
-<li><strong>L(n)</strong>: Lucas number <span role="math" aria-label="L sub n equals F sub n-1 plus F sub n+1">L<sub><var>n</var></sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub></span></li>
-<li><strong>N(n)</strong>: Next probable prime after <var>n</var></li>
-<li><strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).</li>
-<li><strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
-<li><strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
-<li><strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
+<li> + for addition
+<li> - for subtraction
+<li> * for multiplication
+<li> / for integer division
+<li> % for modulus (remainder of the integer division)
+<li> ^ or ** for exponentiation (the exponent must be greater than or equal to zero).</li>
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.</li>
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> for binary logic.</li>
+<li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero).</li>
+<li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).</li>
+<li> <strong>B(n)</strong>: Previous probable prime before <em>n</em></li>
+<li> <strong>F(n)</strong>: Fibonacci number F<sub>n</sub></li>
+<li> <strong>L(n)</strong>: Lucas number L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub></li>
+<li> <strong>N(n)</strong>: Next probable prime after <em>n</em></li>
+<li> <strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).</li>
+<li> <strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
+<li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
+<li> <strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
+<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is.</li>
+<li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>SumDigits(n,r)</strong>: Sum of digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>RevDigits(n,r)</strong>: finds the value obtained by writing backwards the digits of <var>n</var> in base <var>r</var>.</li>
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 <h2>Source code</h2>
 <p>
 You can download the source of the current program and the old continued fraction applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 9 December 2017.</p>
+<p>Written by Dario Alpern. Last updated 10 January 2018.</p>
 </div>
+<div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
+<div id="status"></div>
 <div>
 <p>
 If you find an error or you have any comment, please fill the <a href="FORM.HTM?Continued+fraction+calculator">form</a>.
@@ -310,5 +320,6 @@ If you find an error or you have any comment, please fill the <a href="FORM.HTM?
 </div>
 </div>
 </article>
+</main>
 </body>
 </html>

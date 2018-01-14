@@ -8,13 +8,14 @@
 <meta name="description" content="Aplicación Javascript application que descompone un número en una suma de cuatro cubos. Hecho por Dario Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="FCUBES.HTM" />
-<link rel="prefetch" href="fsquaresW0026.js" />
+<link rel="prefetch" href="fsquaresW0032.js" />
 <link rel="manifest" href="sumcubos.webmanifest">
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Suma de cuatro cubos</title>
-<style type="text/css" media="print">
+<style media="print">
 #smallheader {display:none;}
 </style>
-<style type="text/css" media="screen">
+<style media="screen">
 #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
 #smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
 #smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
@@ -37,11 +38,16 @@
 <style>
 body {font-family: arial; margin: 0; padding: 0;}
 h1 {text-align:center;}
-input#num {margin:5px;width:100%;padding:3px;margin:0px;}
-#applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
+#num {white-space:pre;overflow-wrap:normal;overflow:auto;margin:5px;width:100%;padding:3px}
+#stop, #cont, #wizard {display:none}
 .lf {padding:0.2em; clear:both; width:100%}
 .offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
 .bigger {font-size:150%;}
+.pad {padding:10px;}
+.und {text-decoration: underline;}
+@media (min-width: 400px) {.input {width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
+@media (max-width: 400px) {.input {width:100%;padding:3px;margin:0px;}}
 </style>
 </head>
 <body>
@@ -106,6 +112,7 @@ Contacto
 </ul>
 <br style="clear:both;" />
 </nav>
+<main id="main">
 <article>
 <h1>Suma de cuatro cubos</h1>
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
@@ -123,22 +130,23 @@ Contacto
 <span itemprop="title">Suma de cuatro cubos</span>
 </a>
 </div><br><br>
-<form id="applet">
-	<label for="num">Número a descomponer en suma de cubos</label>
-<input type="text" id="num" />
+<form id="applet" class="applet">
+<label for="num">Número a descomponer en suma de cubos</label>
+<textarea id="num" rows="4" class="input"></textarea>
 <div class="lf"></div>
 <input type="button" id="calc" value="Suma de cubos" />
+<input type="button" id="stop" value="Parar" />
 <input type="button" id="helpbtn" value="Ayuda" />
+<input type="button" id="openwizard" value="Asistente" />
 <div class="lf"></div>
-<p style="text-align:center;">
 <label for="digits">Cantidad de dígitos por grupo:</label>
 <input type="number" id="digits" value="6"/>
 <input type="hidden" id="app" value="3"/>
 </form>
-<script async="async" type="application/javascript" src="fsquares0026.js"></script>
+<script async="async" src="fsquares0032.js"></script>
 <div style='padding:10px;'>
 <div id="help" aria-live="polite">
- <p>Este applet encuentra la descomposición de cualquier número entero no congruente a 4 ó 5 (mod 9) en una suma de cuatro cubos.</p>
+<p>Este applet encuentra la descomposición de cualquier número entero no congruente a 4 ó 5 (mod 9) en una suma de cuatro cubos.</p>
 <h2>Fórmulas</h2>
 <p>El applet usa las siguientes fórmulas:</p>
 <ul>
@@ -221,32 +229,91 @@ Si encuentra algún error o tiene algún comentario, por favor llene el <a href=
 <h2>Expresiones</h2>
 <p>Además de ingresar números en la caja de entrada, se pueden escribir expresiones numéricas incluyendo paréntesis. A continuación se muestran las operaciones permitidas:</p>
 <ul>
-<li><strong>+</strong> para suma</li>
-<li><strong>-</strong> para resta</li>
-<li><strong>*</strong> para multiplicación</li>
-<li><strong>/</strong> para división entera</li>
-<li><strong>%</strong> para resto</li>
-<li><strong>^</strong> o <strong>**</strong> para exponenciación</li>
-<li><strong>n!</strong>: factorial</li>
-<li><strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).</li>
-<li><strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
-<li><strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub></li>
-<li><strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub>n-1</sub> + F<sub>n+1</sub></li>
-<li><strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
-<li><strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).</li>
-<li><strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.</li>
-<li><strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.</li>
-<li><strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.</li>
+<li> + para suma
+<li> - para resta
+<li> * para multiplicación
+<li> / para división entera
+<li> % para el resto de la división entera
+<li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
+<li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
+<li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
+<li> <strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub>
+<li> <strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub>
+<li> <strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
+<li> <strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).
+<li> <strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.
+<li> <strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.
+<li> <strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.
+<li> <strong>IsPrime(n)</strong>: returna cero si <var>n</var> no es un primo probable y -1 si lo es.
+<li> <strong>NumDigits(n,r)</strong>: cantidad de dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>SumDigits(n,r)</strong>: suma de dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>RevDigits(n,r)</strong>: halla el valor que se obtiene escribiendo para atrás los dígitos de <var>n</var> en base <var>r</var>.
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 <h2>Código fuente</h2>
 <p>
 Se puede bajar el código fuente de este programa y el del viejo applet de suma de cuatro cubos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 9 de diciembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 10 de enero de 2018.</p>
 </div>
+<div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
+<div id="status"></div>
 </div>
+<form id="cont" class="pad">
+<input type="button" id="continue" value="Continuar" />
+</form>
 </article>
+</main>
+<aside id="wizard">
+<h1>Asistente de suma de cubos</h1>
+<form class="applet">
+<fieldset id="mode">
+<legend>Modo asistente</legend>
+<input type="radio" name="mode" id="oneexpr"><label for="oneexpr"><span class="und">P</span>rocesar una expresión</label><br>
+<input type="radio" name="mode" id="loop"><label for="loop"><span class="und">P</span>rocesar varias expresiones en un ciclo</label><br>
+</fieldset>
+<label for="wzdinput" id="wzddesc">&nbsp;</label>
+<br class="newline"/>
+<input type="text" id="wzdinput" value="" placeholder="Número o expresión numérica" class="input"/>
+<br class="newline"/>
+<p id="wzdexam">&nbsp;</p>
+<input type="button" id="next" value="Siguiente" />
+<input type="button" id="cancel" value="Cancelar" />
+</form>
+<h2>Expresiones</h2>
+<p>Puedes ingresar expresiones que usen los siguientes operadores y paréntesis:</p>
+<p>
+<ul>
+<li> + para suma
+<li> - para resta
+<li> * para multiplicación
+<li> / para división entera
+<li> % para el resto de la división entera
+<li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
+<li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
+<li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
+<li> <strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub>
+<li> <strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub>
+<li> <strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
+<li> <strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).
+<li> <strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.
+<li> <strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.
+<li> <strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.
+<li> <strong>IsPrime(n)</strong>: returna cero si <var>n</var> no es un primo probable y -1 si lo es.
+<li> <strong>NumDigits(n,r)</strong>: cantidad de dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>SumDigits(n,r)</strong>: suma de dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>RevDigits(n,r)</strong>: halla el valor que se obtiene escribiendo para atrás los dígitos de <var>n</var> en base <var>r</var>.
+<li id="C">Variable <var>C</var>: cantidad de expresiones procesadas.</li>
+<li id="X">Variable <var>X</var>: variable que cambia en cada iteración del ciclo.</li>
+</ul>
+<p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
+</aside>
 </body>
 </html>

@@ -7,14 +7,15 @@
 <meta name="keywords" content="waring, number theory" />
 <meta name="description" content="Javascript application that finds the decomposition of a number into cubes. Written by Dario Alpern." />
 <meta name="theme-color" content="#db5945">
-<link rel="prefetch" href="fsquaresW0026.js" />
+<link rel="prefetch" href="fsquaresW0032.js" />
 <link rel="alternate" hreflang="es" href="SUMCUBOS.HTM" />
 <link rel="manifest" href="fcubes.webmanifest">
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Sum of four cubes</title>
-<style type="text/css" media="print">
+<style media="print">
 #smallheader {display:none;}
 </style>
-<style type="text/css" media="screen">
+<style media="screen">
 #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
 #smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
 #smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
@@ -37,14 +38,18 @@
 <style>
 body {font-family: arial; margin: 0; padding: 0;}
 h1 {text-align:center;}
-input#num {margin:5px;width:100%;padding:3px;margin:0px;}
-#applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
+#num {white-space:pre;overflow-wrap:normal;overflow:auto;margin:5px;width:100%;padding:3px}
+#stop, #cont, #wizard {display:none}
 .lf {padding:0.2em; clear:both; width:100%}
 .offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
 .bigger {font-size:150%;}
 .pad {padding:10px;}
+.und {text-decoration: underline;}
+@media (min-width: 400px) {.input {width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
+@media (max-width: 400px) {.input {width:100%;padding:3px;margin:0px;}}
 </style>
- </head>
+</head>
 <body>
 <nav id="smallheader">
 <div style="float:right;"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
@@ -105,6 +110,7 @@ Contact
 </ul>
 <br style="clear:both;"/>
 </nav>
+<main id="main">
 <article>
 <h1>Sum of cubes</h1>
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
@@ -122,18 +128,20 @@ Contact
 <span itemprop="title">Sum of four cubes</span>
 </a>
 </div>
-<form id="applet">
+<form id="applet" class="applet">
 <label for="num">Number to be decomposed in sum of cubes</label>
-<input type="text" id="num" />
+<textarea id="num" rows="4" class="input"></textarea>
 <div class="lf"></div>
 <input type="button" id="calc" value="Sum of cubes" />
+<input type="button" id="stop" value="Stop" />
 <input type="button" id="helpbtn" value="Help" />
+<input type="button" id="openwizard" value="Wizard" />
 <div class="lf"></div>
 <label for="digits">Number of digits per group:</label>
 <input type="number" id="digits" value="6"/>
 <input type="hidden" id="app" value="2"/>
 </form>
-<script async="async" type="application/javascript" src="fsquares0026.js"></script>
+<script async="async" src="fsquares0032.js"></script>
 <div class="pad">
 <div id="help" aria-live="polite">
 <p>This applet finds the decomposition of any integer number not congruent to 4 or 5 (mod 9) into a sum of four cubes.</p>
@@ -219,32 +227,109 @@ If you find any error or you have a comment, please fill in the <a href="FORM.HT
 <h2>Expressions</h2>
 <p>You can enter numbers or numeric expressions in the input box including parentheses. The operations supported are:</p>
 <ul>
-<li>+ for addition</li>
-<li>- for subtraction</li>
-<li>* for multiplication</li>
-<li>/ for integer division</li>
-<li>% for remainder</li>
-<li>^ or ** for exponentiation</li>
-<li><strong>n!</strong>: factorial</li>
-<li><strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).</li>
-<li><strong>B(n)</strong>: Previous probable prime before <var>n</var></li>
-<li><strong>F(n)</strong>: Fibonacci number <span role="math" aria-label="F sub n">F<sub><var>n</var></sub></span></li>
-<li><strong>L(n)</strong>: Lucas number <span role="math" aria-label="L sub n equals F sub n-1 plus F sub n+1">L<sub><var>n</var></sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub></span></li>
-<li><strong>N(n)</strong>: Next probable prime after <var>n</var></li>
-<li><strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).</li>
-<li><strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
-<li><strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
-<li><strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
+<li> + for addition
+<li> - for subtraction
+<li> * for multiplication
+<li> / for integer division
+<li> % for modulus (remainder of the integer division)
+<li> ^ or ** for exponentiation (the exponent must be greater than or equal to zero).</li>
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.</li>
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> for binary logic.</li>
+<li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero).</li>
+<li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).</li>
+<li> <strong>B(n)</strong>: Previous probable prime before <em>n</em></li>
+<li> <strong>F(n)</strong>: Fibonacci number F<sub>n</sub></li>
+<li> <strong>L(n)</strong>: Lucas number L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub></li>
+<li> <strong>N(n)</strong>: Next probable prime after <em>n</em></li>
+<li> <strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).</li>
+<li> <strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
+<li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
+<li> <strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
+<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is.</li>
+<li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>SumDigits(n,r)</strong>: Sum of digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>RevDigits(n,r)</strong>: finds the value obtained by writing backwards the digits of <var>n</var> in base <var>r</var>.</li>
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
+<h2>Batch processing</h2>
+<p>Write an expression per line, then press the Sum if cubes button. The output will be placed in the lower pane.</p>
+<p>Blank lines or comment lines (which start with a numeral '#' character) will be replicated on the lower pane.</p>
+<p>Expression loop: with the following syntax you can factor or determine primality of several numbers typing only one line.
+You have to type four or five expressions separated by semicolons:</p>
+<ul>
+<li>First expression: It must start with the string 'x=' and it sets the first value of x.</li>
+<li>Second expression: It must start with the string 'x=' and it sets the next value of x.
+<li>Third expression: It holds the end expression condition. If it is equal to zero (meaning false) the loop finishes, otherwise the loop continues.
+<li>Fourth expression: It holds the expression to be expressed as a sum of cubes.</li>
+<li>Optional fifth expression: If this expression is different from zero (meaning true), the fourth expression is processed, and if is zero (meaning false), the fourth expression is ignored.
+</ul>
+<p>Except for the first expression, all other expressions must include the variable <var>x</var> and/or the counter <var>c</var>.</p>
+<p>If the end expression is false after processing 1000 numbers, the Continue button will appear. Pressing this button will make the program to process the next 1000 numbers and so on.</p>
+<p>Example 1: Find the decomposition in a sum of cubes of the numbers from 0 to 5000.
+The line to type is: <code>x=0;x=x+1;x&lt;=5000;x</code>. The calculator will show the results in blocks of 1000 values. You will need to press the Continue button to get the next block.</p>
+<p>Example 2: Find the decomposition in a sum of cubes of the first 100 numbers of the form prime minus one.
+The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <h2>Source code</h2>
 <p>
 You can download the source of the current program and the old sum of four cubes applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 9 December 2017.</p>
+<p>Written by Dario Alpern. Last updated 10 January 2018.</p>
 </div>
+<div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
+<div id="status"></div>
 </div>
+<form id="cont" class="pad">
+<input type="button" id="continue" value="Continue" />
+</form>
 </article>
+</main>
+<aside id="wizard">
+<h1>Sum of cubes wizard</h1>
+<form class="applet">
+<fieldset id="mode">
+<legend>Wizard mode</legend>
+<input type="radio" name="mode" id="oneexpr"><label for="oneexpr"><span class="und">P</span>rocess one expression</label><br>
+<input type="radio" name="mode" id="loop"><label for="loop"><span class="und">P</span>rocess several expressions in a loop</label><br>
+</fieldset>
+<label for="wzdinput" id="wzddesc">&nbsp;</label>
+<br class="newline"/>
+<input type="text" id="wzdinput" value="" placeholder="Number or numerical expression" class="input"/>
+<br class="newline"/>
+<p id="wzdexam">&nbsp;</p>
+<input type="button" id="next" value="Next" />
+<input type="button" id="cancel" value="Cancel" />
+</form>
+<h2>Expressions</h2>
+<p>You can enter expressions that use the following operators, functions and parentheses:</p>
+<p>
+<ul>
+<li> + for addition
+<li> - for subtraction
+<li> * for multiplication
+<li> / for integer division
+<li> % for modulus (remainder of the integer division)
+<li> ^ or ** for exponentiation (the exponent must be greater than or equal to zero).</li>
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.</li>
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> for binary logic.</li>
+<li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero).</li>
+<li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).</li>
+<li> <strong>B(n)</strong>: Previous probable prime before <em>n</em></li>
+<li> <strong>F(n)</strong>: Fibonacci number F<sub>n</sub></li>
+<li> <strong>L(n)</strong>: Lucas number L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub></li>
+<li> <strong>N(n)</strong>: Next probable prime after <em>n</em></li>
+<li> <strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).</li>
+<li> <strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
+<li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
+<li> <strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
+<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is.</li>
+<li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>SumDigits(n,r)</strong>: Sum of digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>RevDigits(n,r)</strong>: finds the value obtained by writing backwards the digits of <var>n</var> in base <var>r</var>.</li>
+<li id="C">Variable <var>C</var>: number of expressions already processed.</li>
+<li id="X">Variable <var>X</var>: variable changed on each iteration of the loop.</li>
+</ul>
+<p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
+</aside>
 </body>
 </html>

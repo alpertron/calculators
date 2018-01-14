@@ -119,10 +119,10 @@ Contact
 </ul>
 <br class="newline"/>
 </nav>
-<main role="main" id="main">
+<main id="main">
 <article>
 <h1>Integer factorization calculator</h1>
-<script async="async" type="application/javascript" src="ecm0030.js"></script>
+<script async="async" src="ecm0032.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -141,7 +141,7 @@ Contact
 </div>
 </div>
 <form class="applet">
-<label for="textarea">Value</label><textarea id="value" rows="4" class="input"></textarea>
+<label for="value">Value</label><textarea id="value" rows="4" class="input"></textarea>
 <br class="newline"/>
 One numerical expression or loop per line. Example: x=3;x=n(x);c&lt;=100;x&#8209;1
 <div class="lf"></div>
@@ -172,7 +172,7 @@ One numerical expression or loop per line. Example: x=3;x=n(x);c&lt;=100;x&#8209
 <li> / for integer division
 <li> % for modulus (remainder of the integer division)
 <li> ^ or ** for exponentiation (the exponent must be greater than or equal to zero).
-<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.
 <li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> for binary logic.
 <li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero).
 <li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).
@@ -266,7 +266,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.</p>
-<p>Written by Dario Alpern. Last updated 25 December 2017.</p>
+<p>Written by Dario Alpern. Last updated 10 January 2018.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -309,7 +309,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
 </div>
 </div></div></div>
-<div id="wizard">
+<aside id="wizard">
 <h1>Factorization wizard</h1>
 <form class="applet">
 <fieldset id="mode">
@@ -335,7 +335,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <li> / for integer division
 <li> % for modulus (remainder of the integer division)
 <li> ^ or ** for exponentiation (the exponent must be greater than or equal to zero).</li>
-<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.</li>
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.</li>
 <li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> for binary logic.</li>
 <li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero).</li>
 <li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).</li>
@@ -364,10 +364,10 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <tr><td>3</td><td>Descending</td><td>Yes</td></tr>
 </table>
 </li>
-<li id="C">Variable C: number of expressions already processed.</li>
-<li id="X">Variable X: variable changed on each iteration of the loop.</li>
+<li id="C">Variable <var>C</var>: number of expressions already processed.</li>
+<li id="X">Variable <var>X</var>: variable changed on each iteration of the loop.</li>
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
-</div>
+</aside>
 </body>
 </html>

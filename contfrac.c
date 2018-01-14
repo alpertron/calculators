@@ -39,7 +39,7 @@ static void ContFrac(void)
 
   ptrOutput = output;
   // Show formula.
-  showText("<p><var>x</var> = <span class=\"fraction\"><span class=\"offscr\">");
+  showText("2<p><var>x</var> = <span class=\"fraction\"><span class=\"offscr\">");
   strcpy(ptrOutput, lang ? " la fracción cuyo numerador es </span>" : " the fraction whose numerator is </span>");
   ptrOutput += strlen(ptrOutput);
   showText("<span class=\"fup\">");

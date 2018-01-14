@@ -31,6 +31,7 @@ char lowerText[30000];
 char *ptrLowerText;
 extern mmCback modmultCallback;
 extern long long lModularMult;
+extern char *ptrInputText;
 #endif
 
 #define TYP_AURIF  100000000
@@ -108,10 +109,7 @@ int nbrToFactor[MAX_LEN];
 struct sFactors astFactorsMod[1000];
 int factorsMod[10000];
 static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor);
-
-#ifdef __EMSCRIPTEN__
-char *ptrInputText;
-#endif
+static char *findChar(char *str, char c);
 enum eEcmResult
 {
   FACTOR_NOT_FOUND = 0,
@@ -1753,7 +1751,7 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
     int NumberLengthBak = NumberLength;
     strcpy(ptrLowerText, "<p class=\"blue\">");
     ptrLowerText += strlen(ptrLowerText);
-    SendFactorizationToOutput(EXPR_OK, pstFactors, &ptrLowerText, 1);
+    SendFactorizationToOutput(pstFactors, &ptrLowerText, 1);
     strcpy(ptrLowerText, "</p>");
     ptrLowerText += strlen(ptrLowerText);
     NumberLength = NumberLengthBak;
@@ -1812,93 +1810,85 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
   return;
 }
 
-void SendFactorizationToOutput(enum eExprErr rc, struct sFactors *pstFactors, char **pptrOutput, int doFactorization)
+void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, int doFactorization)
 {
   char *ptrOutput = *pptrOutput;
-  if (rc != EXPR_OK)
+  strcpy(ptrOutput, tofactorDec);
+  ptrOutput += strlen(ptrOutput);
+  if (doFactorization)
   {
-    textError(ptrOutput, rc);
-    ptrOutput += strlen(ptrOutput);
-  }
-  else
-  {
-    strcpy(ptrOutput, tofactorDec);
-    ptrOutput += strlen(ptrOutput);
-    if (doFactorization)
+    struct sFactors *pstFactor;
+    pstFactor = pstFactors+1;
+    if (tofactor.sign == SIGN_POSITIVE && pstFactors->multiplicity == 1 && pstFactor->multiplicity == 1 &&
+      (*pstFactor->ptrFactor > 1 || *(pstFactor->ptrFactor + 1) > 1))
+    {    // Do not show zero or one as prime.
+      strcpy(ptrOutput, lang ? " es primo" : " is prime");
+      ptrOutput += strlen(ptrOutput);
+    }
+    else
     {
-      struct sFactors *pstFactor;
-      pstFactor = pstFactors+1;
-      if (tofactor.sign == SIGN_POSITIVE && pstFactors->multiplicity == 1 && pstFactor->multiplicity == 1 &&
-        (*pstFactor->ptrFactor > 1 || *(pstFactor->ptrFactor + 1) > 1))
-      {    // Do not show zero or one as prime.
-        strcpy(ptrOutput, lang ? " es primo" : " is prime");
-        ptrOutput += strlen(ptrOutput);
-      }
-      else
+      int i = 0;
+      strcpy(ptrOutput, " = ");
+      ptrOutput += strlen(ptrOutput);
+      if (tofactor.sign == SIGN_NEGATIVE)
       {
-        int i = 0;
-        strcpy(ptrOutput, " = ");
-        ptrOutput += strlen(ptrOutput);
-        if (tofactor.sign == SIGN_NEGATIVE)
+        *ptrOutput++ = '-';
+        if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 1)
         {
-          *ptrOutput++ = '-';
-          if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 1)
-          {
-            if (prettyprint)
-            {
-              strcpy(ptrOutput, "1 &times; ");
-            }
-            else
-            {
-              strcpy(ptrOutput, "1 * ");
-            }
-            ptrOutput += strlen(ptrOutput);
-          }
-        }
-        for (;;)
-        {
-          NumberLength = *pstFactor->ptrFactor;
-          UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
-          if (hexadecimal)
-          {
-            Bin2Hex(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
-          }
-          else
-          {
-            Bin2Dec(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
-          }
-          ptrOutput += strlen(ptrOutput);
-          if (pstFactor->multiplicity > 1)
-          {
-            if (prettyprint)
-            {
-              strcpy(ptrOutput, "<sup>");
-              ptrOutput += strlen(ptrOutput);
-              int2dec(&ptrOutput, pstFactor->multiplicity);
-              strcpy(ptrOutput, "</sup>");
-              ptrOutput += strlen(ptrOutput);
-            }
-            else
-            {
-              *ptrOutput++ = '^';
-              int2dec(&ptrOutput, pstFactor->multiplicity);
-            }
-          }
-          if (++i == pstFactors->multiplicity)
-          {
-            break;
-          }
           if (prettyprint)
           {
-            strcpy(ptrOutput, " &times; ");
+            strcpy(ptrOutput, "1 &times; ");
           }
           else
           {
-            strcpy(ptrOutput, " * ");
+            strcpy(ptrOutput, "1 * ");
           }
           ptrOutput += strlen(ptrOutput);
-          pstFactor++;
         }
+      }
+      for (;;)
+      {
+        NumberLength = *pstFactor->ptrFactor;
+        UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+        if (hexadecimal)
+        {
+          Bin2Hex(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
+        }
+        else
+        {
+          Bin2Dec(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
+        }
+        ptrOutput += strlen(ptrOutput);
+        if (pstFactor->multiplicity > 1)
+        {
+          if (prettyprint)
+          {
+            strcpy(ptrOutput, "<sup>");
+            ptrOutput += strlen(ptrOutput);
+            int2dec(&ptrOutput, pstFactor->multiplicity);
+            strcpy(ptrOutput, "</sup>");
+            ptrOutput += strlen(ptrOutput);
+          }
+          else
+          {
+            *ptrOutput++ = '^';
+            int2dec(&ptrOutput, pstFactor->multiplicity);
+          }
+        }
+        if (++i == pstFactors->multiplicity)
+        {
+          break;
+        }
+        if (prettyprint)
+        {
+          strcpy(ptrOutput, " &times; ");
+        }
+        else
+        {
+          strcpy(ptrOutput, " * ");
+        }
+        ptrOutput += strlen(ptrOutput);
+        pstFactor++;
       }
     }
   }
@@ -2113,6 +2103,7 @@ static void showECMStatus(void)
 // Save factors in Web Storage so factorization can continue the next time the application runs.
 static void SaveFactors(struct sFactors *pstFactors)
 {
+#ifdef FACTORIZATION_APP
   struct sFactors *pstCurFactor = pstFactors + 1;
   int factorNbr;
   char text[30000];
@@ -2142,11 +2133,12 @@ static void SaveFactors(struct sFactors *pstFactors)
   }
   *ptrText++ = 0;
   databack(text);
+#endif
 }
 
 #endif
 
-char *findChar(char *str, char c)
+static char *findChar(char *str, char c)
 {
   while (*str != 0)
   {
