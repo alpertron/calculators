@@ -21,7 +21,7 @@ var cacheName = "newCache";
 
 // URLs for calculators
 var calcURLs = new Array();
-calcURLs[0] = ["/ECM.HTM", "/ECMC.HTM", "/ecm0032.js", "ecmW0032.js", "ecm0032.wasm",
+calcURLs[0] = ["/ECM.HTM", "/ECMC.HTM", "/ecm0033.js", "ecmW0033.js", "ecm0033.wasm",
                "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-512px.png"];
 calcURLs[1] = ["/POLFACT.HTM", "/FACTPOL.HTM", "/polfact0026.js", "polfactW0026.js",
                "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png", "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-512px.png"];
@@ -31,11 +31,11 @@ calcURLs[3] = ["/GAUSSIAN.HTM", "/GAUSIANO.HTM", "/gaussian0026.js", "gaussianW0
                "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png", "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-512px.png"];
 calcURLs[4] = ["/QUADMOD.HTM", "/CUADMOD.HTM", "/quadmod0027.js", "quadmodW0027.js",
                "quadmod.webmanifest", "cuadmod.webmanifest", "quadmod-icon-1x.png", "quadmod-icon-2x.png", "quadmod-icon-4x.png", "quadmod-icon-512px.png"];
-calcURLs[5] = ["/FSQUARES.HTM", "/SUMCUAD.HTM", "/fsquares0032.js", "fsquaresW0032.js",
+calcURLs[5] = ["/FSQUARES.HTM", "/SUMCUAD.HTM", "/fsquares0033.js", "fsquaresW0033.js",
                "fsquares.webmanifest", "sumcuad.webmanifest", "fsquares-icon-1x.png", "fsquares-icon-2x.png", "fsquares-icon-4x.png", "fsquares-icon-512px.png"];
-calcURLs[6] = ["/FCUBES.HTM", "/SUMCUBOS.HTM", "/fsquares0032.js", "fsquaresW0032.js",
+calcURLs[6] = ["/FCUBES.HTM", "/SUMCUBOS.HTM", "/fsquares0033.js", "fsquaresW0033.js",
                "fcubes.webmanifest", "sumcubos.webmanifest", "fcubes-icon-1x.png", "fcubes-icon-2x.png", "fcubes-icon-4x.png", "fcubes-icon-512px.png"];
-calcURLs[7] = ["/CONTFRAC.HTM", "/FRACCONT.HTM", "/fsquares0032.js", "fsquaresW0032.js",
+calcURLs[7] = ["/CONTFRAC.HTM", "/FRACCONT.HTM", "/fsquares0033.js", "fsquaresW0033.js",
                "contfrac.webmanifest", "fraccont.webmanifest", "contfrac-icon-1x.png", "contfrac-icon-2x.png", "contfrac-icon-4x.png", "contfrac-icon-512px.png"];
 
 function UpdateCache(resources, url, mainCache)

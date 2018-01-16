@@ -524,7 +524,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (charValue == '0' && exprIndexAux < exprLength - 2 &&
           *(expr+exprIndexAux + 1) == 'x')
       {  // hexadecimal
-        exprIndexAux += 2;
+        exprIndexAux++;
         while (exprIndexAux < exprLength - 1)
         {
           charValue = *(expr+exprIndexAux + 1);
@@ -573,7 +573,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         {
           (ptrLimb++)->x = carry.x;
         }
-        exprIndex = offset;
+        exprIndex = offset+1;
         stackValues[stackIndex].nbrLimbs = (int)(ptrLimb - &stackValues[stackIndex].limbs[0]);
         stackValues[stackIndex].sign = SIGN_POSITIVE;
       }

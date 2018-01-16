@@ -72,7 +72,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'ecm0032.wasm');
+  request.open('GET', 'ecm0033.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -189,7 +189,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker(asmjs? "ecmW0032.js": "ecm0032.js");
+    worker = new Worker(asmjs? "ecmW0033.js": "ecm0033.js");
     worker.onmessage = function(e)
     { // First character of e.data is:
       // "1" for intermediate output

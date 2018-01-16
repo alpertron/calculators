@@ -56,7 +56,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'fsquares0032.wasm');
+  request.open('GET', 'fsquares0033.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -150,7 +150,7 @@ function callWorker(param)
   var helphelp = get("helphelp");
   if (!worker)
   {
-    worker = new Worker(asmjs? "fsquaresW0032.js": "fsquares0032.js");
+    worker = new Worker(asmjs? "fsquaresW0033.js": "fsquares0033.js");
     worker.onmessage = function(e)
     { // First character of e.data is:
       // "1" for intermediate output
