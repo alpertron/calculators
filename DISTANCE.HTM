@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="Author" content="Dario Alejandro Alpern" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Javascript application which includes two tests about distance between cities. Written by Dario Alpern." />
+<link rel="alternate" hreflang="es" href="DIST.HTM" />
+<meta name="theme-color" content="#db5945">
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<title>Distance between cities</title>
+<style>
+@media print {#smallheader {display:none;}}
+@media screen {
+#smallheader {background-color:#000080; color:#FFFFFF; width:100%; margin:0px; text-align:center;}
+#smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+#smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+#smallheader li:hover {background-color:#004000; color:#FFFFFF;}
+#smallheader li ul { display:none; position:absolute; }
+#smallheader li:hover ul.alignleft{ display:block; height:auto;}
+#smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+#smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
+#smallheader a:link{color:#FFFFFF; text-decoration: none;}
+#smallheader a:visited{color:#FFFFFF; text-decoration: none;}
+#smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+#smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+#smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+#smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+#smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+#smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+.atright {float:right;}
+.newline {clear:both;}
+}
+@media screen and (max-width: 400px) {#smallheader {font-size:0.7em;}}
+@media screen and (min-width: 400px) {#smallheader {font-size:1em;}}
+@media screen and (min-width: 500px) {#configleft {float:left;} #configright {float:right;}}
+body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
+h1, h2 {text-align:center;}
+.pad {padding:10px;}
+.red {color: #C00000; font-weight: bold;}
+.inline {display:inline;}
+#finalInterp,#strings,.donotshow {display:none;}
+#order {width:6em;}
+#mainmenu {max-width:1000px;margin-left:auto;margin-right:auto;}
+</style>
+</head>
+<body>
+<nav id="smallheader">
+<div class="atright"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
+<ul>
+<li>
+Electronics
+<ul class="alignleft">
+<li><a href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a></li>
+</ul>
+</li>
+<li>
+Mathematics
+<ul class="alignleft">
+<li><a href="CALTORS.HTM" title="Java and Javascript programs implementing calculators">Calculators</a></li>
+<li><a href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a></li>
+<li><a href="PROBLEMS.HTM" title="Interesting math problems">Problems</a></li>
+</ul>
+</li>
+<li>
+Programs
+<ul class="alignright">
+<li><a href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a></li>
+<li><a href="JAVAPROG.HTM" title="Programs written in Java">Java</a></li>
+<li><a href="GAMES.HTM" title="Computer games">Games</a></li>
+</ul>
+</li>
+<li class="alignright">
+Contact
+<ul class="alignright">
+<li><a href="EPERS.HTM" title="Personal information">Personal</a></li>
+<li><a href="FORM.HTM" title="Form to send comments">Comments</a></li>
+<li><a href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a></li>
+<li><a href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a></li>
+</ul>
+</li>
+</ul>
+<br class="newline"/>
+</nav>
+<main id="main">
+<article>
+<h1>Distance between cities</h1>
+<script async="async" src="dist0035.js"></script>
+<div class="pad">
+<div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
+<a href="ENGLISH.HTM" itemprop="url">
+<span itemprop="title">Alpertron</span>
+</a> ›
+</div>
+<div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" class="inline">
+<a href="JAVAPROG.HTM" itemprop="url">
+<span itemprop="title">Programs</span>
+</a> ›
+</div>
+<div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="inline">
+<a href="DISTANCE.HTM" itemprop="url">
+<span itemprop="title">Distance between cities</span>
+</a>
+</div>
+</div>
+<div id="mainmenu">
+<form>
+<fieldset>
+<legend>Main menu</legend>
+<div id="configleft">
+<p><input type="button" id="1with" value="Start test #1 (with countries)"></p>
+<p><input type="button" id="1without" value="Start test #1 (without countries)"></p>
+<p><input type="button" id="2with" value="Start test #2 (with countries)"></p>
+</div>
+<div id="configright">
+<p><input type="button" id="2without" value="Start test #2 (without countries)"></p>
+<p><input type="button" id="listcity" value="Get list of cities"></p>
+<p><input type="button" id="finddist" value="Find distance betweeen cities"></p>
+</div>
+</fieldset>
+</form>
+</div>
+<div id="help" class="pad">
+<p>This program lets you practice geography by featuring two tests related to distance between cities.</p>
+<p>The first test shows 10 questions where you will have to answer the distance between two cities in kilometers. The score for every answer depends on the ratio between the distance you specified and the true one.</p>
+<p>In the 10 questions of the second test, the program shows six cities. Starting from the first city you have to arrive to the last one through the other four cities. You will have to reorder these intermediate cities so the total distance is minimized. Then, the program shows all 24 possibilities in which cities can be ordered, ordered according to distance traveled. The score is higher if the specified order is near the top of the table generated by the program.</p>
+<p>In both tests there are two levels of difficulty. At the easy level, the program shows the countries that correspond to the cities, while at the difficult level the countries are not shown.</p>
+<p>You can download the source of the current program and the old sum of four cubes applet from <a href="https://github.com/alpertron/calculators">GitHub</a>.</p>
+<p>Written by Dario Alpern. Updated on 19 January 2018.</p>
+<p>If you find an error or you have any comment, please fill the <a href="FORM.HTM?Distance+between+cities">form</a>.</p>
+</div>
+<div id="test1" class="donotshow pad">
+<p class="red test1_1 notFindDist">The current score is: <span id="score1"></span></p>
+<p class="notFindDist"><span id="ord1"></span> question: What is the distance between the following cities?</p>
+<p class="findDist">The selected cities are:</p>
+<p><span class="cityctry_from"></span> and <span class="cityctry_to"></span></p>
+<form class="test1_1 notFindDist">
+<p><label for="dist1">Distance in kilometers:</label> <input type="number" id="dist1"></p>
+</form>
+<div class="test1_2">
+<p class="red notFindDist">You think that the distance is <span id="dist12_1"></span> but the exact value is <span id="dist12_2"></span>.</p>
+<p class="findDist">The distance between both places are <span id="dist12_3"></span>.</p>
+<p>I can also tell you that:</p>
+<ul>
+<li>To go from <span class="city_from"></span> to <span class="city_to"></span>: <span id="dirdeg1"></span></li>
+<li>To go from <span class="city_to"></span> to <span class="city_from"></span>: <span id="dirdeg2"></span></li>
+</ul>
+<p>where: 0&deg; = North; 90&deg; = East; 180&deg; = South; 270&deg; = West.</p>
+<div id="sunleft">
+<p>Sun visible in <span class="cityctry_from"></span>:
+<ul>
+<li>June 21st: <span id="sun_from_0621"></span></li>
+<li>December 21st: <span id="sun_from_1221"></span></li>
+</ul>
+</div>
+<div id="sunright">
+<p>Sun visible in <span class="cityctry_to"></span>:
+<ul>
+<li>June 21st: <span id="sun_to_0621"></span></li>
+<li>December 21st: <span id="sun_to_1221"></span></li>
+</ul>
+<p class="red notFindDist">This time you score <span id="score2"></span> (<span id="parcInter"></span>), so your <span id="scoreType"></span> score is <span id="score3"></span>.</p>
+<p class="red" id="finalInter">&nbsp;</p>
+<p class="notFindDist"><input type="button" id="nextq" value="Next question"></p>
+</div>
+<p><input type="button" id="exitt" value="Main menu"></p>
+</div>
+</div>
+<div id="test2" class="donotshow pad">
+<p class="red test2_1">Your current score is: <span id="score4"></span></p>
+<p><span id="ord2"></span> question: How do you travel from <span id="city1"></span> to <span id="city6"></span> if you must pass through the following four cities so the total distance is minimum??</p>
+<ol>
+<li><span id="city2"></span></li> 
+<li><span id="city3"></span></li> 
+<li><span id="city4"></span></li> 
+<li><span id="city5"></span></li> 
+</ol>
+<form>
+<p><label for="order">If you think the order is 1, 2, 3, 4, please type 1234.</label> <input type="text" maxlength="4" id="order"></p>
+</form>
+</div>
+<div id="test2_2" class="donotshow pad">
+<p>You have chosen the option <span id="option"></span> so you deserve <span id="score5"></span></p>
+<p>Your current score is: <span id="score6"></span></p>
+<p><input type="button" id="nextq2" value="Next question"> <input type="button" id="exitt2" value="Main menu"></p>
+<div id="list"></div>
+</div>
+<div id="listCities" class="donotshow pad">
+<p id="lc">The list of cities in this program is:</p>
+<form id="fc">
+<p><label for="cityFrom">Number of origin city:</label> <input type="number" id="cityFrom" min="1" max="105"></p>
+<p><label for="cityTo">Number of destination city:</label> <input type="number" id="cityTo" min="1" max="105"></p>
+<input type="button" id="findDist" value="Find distance">
+</form>
+<div id="allCities"></div>
+<form><input type="button" id="exitt3" value="Back"></form>
+</div>
+</article>
+</main>
+<div id="strings">
+<div id="cities">Acapulco,Mexico:1652;-9953
+Alexandria,Egypt:3112;2957
+Amman,Jordan:3157;3557
+Amsterdam,Netherlands:5223;454
+Anchorage,USA:6113;-14954
+Ankara,Turkey:3956;3252
+Asuncion,Paraguay:-2518;-5737
+Athens,Greece:3759;2344
+Auckland,New Zealand:-3652;17444
+Baghdad,Iraq:3318;4424
+Bangkok,Thailand:1345;10031
+Barcelona,Spain:4123;211
+Beijing,China:3955;11623
+Beirut,Lebanon:3352;3532
+Berlin,Germany:5232;1326
+Bogota,Colombia:437;-7405
+Brasilia,Brazil:-1547;-4754
+Brussels,Belgium:5051;421
+Bucharest,Romania:4427;2606
+Buenos Aires,Argentina:-3437;-5823
+Cairo,Egypt:3004;3114
+Canberra,Australia:-3519;14904
+Cape Town,South Africa:-3354;1825
+Caracas,Venezuela:1030;-6654
+Chicago,USA:4152;-8737
+Copenhaguen,Denmark:5540;1234
+Cordoba,Argentina:-3124;-6411
+Dakar,Senegal:1442;-1727
+Damascus,Syria:3332;3620
+Dublin,Ireland:5321;-616
+Guadalajara,Mexico:2042;-10319
+Guatemala,Guatemala:1437;-9031
+Havana,Cuba:2306;-8222
+Helsinki,Finland:6010;2456
+Hong Kong,China:2216;11412
+Honolulu,USA:2119;-15750
+Istanbul,Turkey:4100;2858
+Jerusalem,Israel:3148;3512
+Karachi,Pakistan:2451;6701
+Kathmandu,Nepal:2743;8519
+Khartoum,Sudan:1538;3232
+Kiev,Ukraine:5025;3034
+Kolkata,India:2230;8818
+La Paz,Bolivia:-1629;-6808
+Lagos,Nigeria:627;326
+Lima,Peru:-1205;-7703
+Lisbon,Portugal:3844;-908
+London,United Kingdom:5129;-8
+Los Angeles,USA:3403;-11814
+Luxembourg,Luxembourg:4937;608
+Madrid,Spain:4025;-341
+Managua,Nicaragua:1208;-8616
+Mar del Plata,Argentina:-3800;-5733
+Mecca,Saudi Arabia:2126;3949
+Mendoza,Argentina:-3254;-6850
+Mexico,Mexico:1922;-9911
+Miami,USA:2546;-8012
+Milan,Italy:4529;911
+Monrovia,Liberia:618;-1047
+Monte Carlo,Monaco:4344;726
+Montevideo,Uruguay:-3454;-5609
+Montreal,Canada:4530;-7336
+Moscow,Russia:5545;3738
+Mumbai,India:1856;7249
+New York,USA:4043;-7401
+Nicosia,Cyprus:3510;3322
+North Pole,No country:9000;0
+Nuuk,Greenland:6411;-5144
+Oslo,Norway:5955;1046
+Ottawa,Canada:4525;-7543
+Panama,Panama:901;-7930
+Paris,France:4852;221
+Prague,Czech Republic:5005;1425
+Puebla,Mexico:1903;-9812
+Quito,Ecuador:-13;-7831
+Reykjavik,Iceland:6408;-2154
+Rio de Janeiro,Brazil:-2253;-4314
+Rome,Italy:4154;1230
+Rosario,Argentina:-3258;-6039
+Saint Petersburg,Russia:5956;3019
+Sao Paulo,Brazil:-2331;-4638
+San Francisco,USA:3746;-12225
+San Jose,Costa Rica:956;-8405
+San Salvador,El Salvador:1342;-8912
+Santiago,Chile:-3327;-7039
+Seoul,South Korea:3732;12659
+Shanghai,China:3114;12129
+Sofia,Bulgaria:4241;2320
+South Pole,No country:-9000;0
+Stockholm,Sweden:5919;1804
+Sydney,Australia:-3353;15112
+Taipei,Taiwan:2503;12131
+Tegucigalpa,Honduras:1406;-8712
+Tokyo,Japan:3542;13946
+Toronto,Canada:4339;-7922
+Tripoli,Libya:3253;1317
+Ulaanbaatar,Mongolia:4755;10656
+Ushuaia,Argentina:-5448;-6818
+Vancouver,Canada:4915;-12307
+Vienna,Austria:4812;1623
+Vladivostok,Russia:4308;13154
+Warsaw,Poland:5214;2100
+Washington,USA:3854;-7702
+Yaoundé,Cameroon:352;1131
+Zürich,Switzerland:4723;832"</div>
+<div id="parcInterp">unbelievable!
+excellent!
+very good
+OK
+not so bad, so-so, bah
+hhhmmmm...
+poor
+Yeeech!!
+Argggh!!</div>
+<div id="finalInterp">I should tell you something against my principles: Congratulations!
+Almost perfect. ALMOST. Next time you will perform worse.
+Apparently you know geography (or you are lucky).
+Continue playing, this game is for you.
+Obviously, you need to practice (several months, ha, ha).
+It seems that you hate geography.
+You will perform better playing a role player video game.</div>
+<div id="direction">NNE,NE,ENE,E,ESE,SE,SSE,S,SSW,SW,WSW,W,WNW,NW,NNW,N</div>
+<div id="ordinal">First,Second,Third,Fourth,Fifth,Sixth,Seventh,Eighth,Ninth,Last</div>
+<div id="degree">degree</div>
+<div id="km">kilometer</div>
+<div id="current">current</div>
+<div id="final">final</div>
+<div id="point">point</div>
+<div id="North">N</div>
+<div id="South">S</div>
+<div id="East">E</div>
+<div id="West">W</div>
+</div>
+</body>
+</html>

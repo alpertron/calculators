@@ -39,4 +39,6 @@ copy ecm.wasm ecm%1.wasm
 set EMCC_DEBUG=
 cmd /c emcc -Os -Wall -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 batch.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c ecmfront.c bignbr.c showtime.c inputstr.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 -s NO_FILESYSTEM=1 -s DOUBLE_MODE=1 --memory-init-file 0 -o ecmW%1.js
 
+java -jar %compilerName% --compilation_level WHITESPACE_ONLY --js dist.js --js_output_file dist%1.js
+
 :end
