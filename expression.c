@@ -29,9 +29,9 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define OPER_MULTIPLY                 2
 #define OPER_DIVIDE                   3
 #define OPER_REMAINDER                4
-#define OPER_PLUS                     5
-#define OPER_MINUS                    6
-#define OPER_UNARY_MINUS              7
+#define OPER_UNARY_MINUS              5
+#define OPER_PLUS                     6
+#define OPER_MINUS                    7
 #define OPER_NOT_GREATER              8
 #define OPER_NOT_LESS                 9
 #define OPER_NOT_EQUAL               10
@@ -86,10 +86,11 @@ static char priority[] =
 {
   1,                // Power
   2, 2, 2,          // Multiply, divide and remainder.
-  3, 3, 3,          // Plus, minus and unary minus.
-  4, 4, 4, 4, 4, 4, // Six comparison operators (equal, greater, less, etc.)
-  5,                // NOT.
-  6, 6,             // AND, OR.
+  3,                // Unary minus.
+  4, 4,             // Plus and minus.
+  5, 5, 5, 5, 5, 5, // Six comparison operators (equal, greater, less, etc.)
+  6,                // NOT.
+  7, 7,             // AND, OR.
 };
 
 enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResult)
