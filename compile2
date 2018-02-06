@@ -32,5 +32,15 @@ cp ../calc/*.h .
 /usr/local/bin/llc -O3 fsquares.bc -march=wasm32 -o fsquares.s
 ../binaryen/build/bin/s2wasm fsquares.s -s 1000000 > fsquares.wast
 ../wabt/build/wat2wasm -o fsquares.wasm fsquares.wast
+
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz ulam.c -o ulam.bc
+/usr/local/bin/llvm-link ulam.bc -o ulam1.bc
+/usr/local/bin/opt -internalize -internalize-public-api-list=nbrChanged,drawPartialUlamSpiral,ShowInformation,moveSpiral,memory ulam1.bc -o ulam.bc
+/usr/local/bin/llc -O3 ulam.bc -march=wasm32 -o ulam.s
+../binaryen/build/bin/s2wasm ulam.s -s 1000000 > ulam.wast
+../wabt/build/wat2wasm -o ulam.wasm ulam.wast
+
 cp ecm.wasm ../calc
 cp fsquares.wasm ../calc
+cp ulam.wasm ../calc
+

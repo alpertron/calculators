@@ -1,0 +1,172 @@
+﻿<!doctype html>
+<html lang="en-us">
+<head>
+<meta charset="utf-8">
+<meta name="Author" content="Dario Alejandro Alpern" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="keywords" content="ulam, spiral, number, prime" />
+<meta name="description" content="Javascript application that shows a graphical representation of prime numbers. Written by Dario Alpern." />
+<title>Ulam Spiral</title>
+<style media="print">
+#smallheader {display:none;}
+</style>
+<style media="screen">
+#smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
+#smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+#smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+#smallheader li:hover {background-color:#004000; color:#FFFFFF;}
+#smallheader li ul { display:none; position:absolute; }
+#smallheader li:hover ul.alignleft{ display:block; height:auto;}
+#smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+#smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%;; padding-top:1em; padding-bottom:0.5em}
+#smallheader a:link{color:#FFFFFF; text-decoration: none;}
+#smallheader a:visited{color:#FFFFFF; text-decoration: none;}
+#smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+#smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+#smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+#smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+#smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+#smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+@media (max-width: 400px) {#smallheader {font-size:0.7em;}}
+@media (min-width: 400px) {#smallheader {font-size:1em;}}
+</style>
+<style>
+body {font-family: arial;margin:0; padding:0;}
+h1 {text-align:center;}
+#canvas {margin-left:auto; margin-right:auto; display:block; width:100%;text-align:center;vertical-align:middle; max-width:2000px;touch-action:none;}
+#applet {border: 0px none;width:100%;}
+#bottom {border: 0px none;width:100%;min-height:4em;padding:5px}
+@media (min-height: 200px) {#canvas {height:100px}}
+@media (min-height: 300px) {#canvas {height:200px}}
+@media (min-height: 400px) {#canvas {height:300px}}
+@media (min-height: 500px) {#canvas {height:400px}}
+@media (min-height: 600px) {#canvas {height:500px}}
+@media (min-height: 700px) {#canvas {height:600px}}
+@media (min-height: 800px) {#canvas {height:700px}}
+@media (min-height: 900px) {#canvas {height:800px}}
+@media (min-width: 600px) {
+#info {display:inline;}
+#inputboxes {display:inline; float:right;}
+#left {float:left;}
+#right {float:right;}
+#cannotShow {display:none;}
+}
+</style>
+<script async="async" src="ulam0039.js"></script>
+</head>
+<body>
+<nav id="smallheader">
+<a id="left" href="#ulamspiral">Ulam Spiral</a>
+<a id="right" href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a>
+<ul>
+<li>
+Electronics
+<ul class="alignleft">
+<li><a href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a></li>
+</ul>
+</li>
+<li>
+Mathematics
+<ul class="alignleft">
+<li><a href="CALTORS.HTM" title="Java and Javascript programs implementing calculators">Calculators</a></li>
+<li><a href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a></li>
+<li><a href="PROBLEMS.HTM" title="Interesting math problems">Problems</a></li>
+</ul>
+</li>
+<li>
+Programs
+<ul class="alignright">
+<li><a href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a></li>
+<li><a href="JAVAPROG.HTM" title="Programs written in Java">Java</a></li>
+<li><a href="GAMES.HTM" title="Computer games">Games</a></li>
+</ul>
+</li>
+<li class="alignright">
+Contact
+<ul class="alignright">
+<li><a href="EPERS.HTM" title="Personal information">Personal</a></li>
+<li><a href="FORM.HTM" title="Form to send comments">Comments</a></li>
+<li><a href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a></li>
+<li><a href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a></li>
+</ul>
+</li>
+</ul>
+<br class="newline"/>
+</nav>
+<main><article>
+<div id="applet">
+<canvas id="canvas" aria-label="Ulam spiral" role="img" tabindex="0"></canvas>
+<div id="bottom">
+<div id="inputboxes">
+<form>
+<input id="zoomin" type="button" value="Zoom In" />
+<label for="center">Center spiral in number</label>
+<input type="number" value="1" min="1" id="center" tabindex="1" />
+<br />
+<input id="zoomout" type="button" value="Zoom Out" />
+<label for="start">Start spiral in number</label>
+<input type="number" value="1" min="1" id="start" />
+</form>
+</div>
+<div id="info"></div>
+</div>
+</div>
+<div style='padding:10px;'>
+<h1 id="ulamspiral">Ulam Spiral</h1>
+<div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
+<a href="ENGLISH.HTM" itemprop="url">
+<span itemprop="title">Alpertron</span>
+</a> ›
+</div>
+<div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" style="display:inline;">
+<a href="JAVAPROG.HTM" itemprop="url">
+<span itemprop="title">Programs</span>
+</a> ›
+</div>
+<div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" style="display:inline;">
+<a href="ULAM.HTM" itemprop="url">
+<span itemprop="title">Ulam spiral</span>
+</a>
+</div>
+<p>
+Do you see any pattern in this graph? You will not believe at first glance that it is generated using prime numbers.
+</p>
+<p>
+In order to generate it, the numbers are arranged in a spiral, as follows:
+</p>
+<pre>
+        13 -- 12 -- 11 -- 10    25
+        |                 |     |
+        14    03 -- 02    09    24
+        |     |     |     |     |
+        15    04    01    08    23
+        |     |           |     |
+        16    05 -- 06 -- 07    22
+        |                       |
+        17 -- 18 -- 19 -- 20 -- 21
+</pre>
+<p>Then the prime numbers are marked. Note the abundance of diagonals.</p>
+<p>In the graphic above you can see the spiral made up to 10<sup>18</sup>. The prime numbers are marked in green.</p>
+<p>Move the graph by dragging the spiral. If the spiral has the focus, you can also move the graph by using the keyboard arrows. You can obtain more detail or see a larger area by using the Zoom buttons.</p>
+<p>You can also see the position (<var>x</var>, <var>y</var>) in the spiral and the number <var>n</var> of any point of the graph by moving the cursor to that point.</p>
+<p>Below the spiral you can see the equations of the diagonal lines that intersect in the point marked by the cursor (see explanation below).</p>
+<p>Move the center by typing a new number (up to 18 digits) in the upper input box and press the return key.</p>
+<p>Change the starting number in the center of the spiral by typing a new number (up to 18 digits) in the lower input box and press the return key.</p>
+<p>The formula that gives the numbers in the diagonal lines can be expressed using quadratic polynomials.
+The quadratic polynomials are shown in the screen along with their factorization (if possible).
+In this case the diagonal cannot contain primes, except in exceptional cases (when one factor is 1 and the other is prime).</p>
+<p>When the quadratic polynomial cannot be factorized, then its diagonal will contain primes. A special property of quadratic polynomials is that about half the primes cannot divide any of the values of the polynomial.
+For instance, when we select the center of the spiral equal to 41 by entering this number in the right input box, we will find a diagonal with a lot of primes in the direction NW-SE.
+This is because the values that take the polynomial 4t<sup>2</sup>&nbsp;+&nbsp;2t&nbsp;+&nbsp;41 cannot divide 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 or 37 among other prime numbers.
+Any number in the diagonal line less than 41<sup>2</sup> = 1681 must be prime, because it is not multiple of any prime less than its square root.</p>
+<p>The numbers shown at the right of the polynomial are the primes less than 100 that cannot divide any value of the polynomial.
+The diagonals whose numbers cannot be divided by small prime numbers have more prime numbers in them, because most composite numbers are multiples of small prime numbers.</p>
+<p>Written by Dario Alpern. Last updated 5 February 2018.</p>
+<h2>Source code</h2>
+<p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
+<a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.</p>
+</div>
+</article></main>
+<div id="cannotShow"><p>Cannot show spiral when center value is less than start value.</p></div>
+</body>
+</html>
