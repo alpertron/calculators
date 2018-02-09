@@ -118,11 +118,42 @@ void int2dec(char **pOutput, int nbr)
   *pOutput = ptrOutput;
 }
 
+void int2hex(char **pOutput, int nbr)
+{
+  char *ptrOutput = *pOutput;
+  int significantZero = 0;
+  unsigned int div = 0x10000000;
+  unsigned int value = (unsigned int)nbr;
+  strcpy(ptrOutput, "<span class=\"hex\">");
+  ptrOutput += strlen(ptrOutput);
+  while (div > 0)
+  {
+    int digit;
+
+    digit = value / div;
+    if (digit > 0 || significantZero != 0)
+    {
+      significantZero = 1;
+      *ptrOutput++ = (char)(digit >= 10? digit + (int)('A'-10): digit + (int)'0');
+    }
+    value %= div;
+    div /= 10;
+  }
+  if (significantZero == 0)
+  {
+    *ptrOutput++ = '0';
+  }
+  strcpy(ptrOutput, "</span>");
+  ptrOutput += strlen(ptrOutput);
+  *pOutput = ptrOutput;
+}
+
 // Convert little-endian number to a string with space every groupLen digits.
 void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
 {
   int showDigitsText = TRUE;
   int nbrBits, nbrHexDigits, mask, value;
+  int digits = 0;
   int currentGroupDigit = -1;
 
   if (groupLength <= 0)
@@ -181,12 +212,20 @@ void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
       {        // Convert 10 - 15 to 'A' - 'F'.
         *decimal++ = (char)(digit + 'A' - 10);
       }
+      digits++;
       if (--currentGroupDigit == 0 && nbrHexDigits != 1)
       {
         *decimal++ = ' ';
         currentGroupDigit = groupLength;
       }
     } while (--nbrHexDigits > 0);
+  }
+  if (digits > 30 && showDigitsText)
+  {
+    *decimal++ = '(';
+    int2dec(&decimal, digits);
+    strcpy(decimal, (lang == 0 ? " digits)" : " dígitos)"));
+    decimal += strlen(decimal);
   }
   strcpy(decimal, "</span>");
 }

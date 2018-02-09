@@ -72,7 +72,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'ecm0034.wasm');
+  request.open('GET', 'ecm0035.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -189,7 +189,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker(asmjs? "ecmW0034.js": "ecm0034.js");
+    worker = new Worker(asmjs? "ecmW0035.js": "ecm0035.js");
     worker.onmessage = function(e)
     { // First character of e.data is:
       // "1" for intermediate output
@@ -335,6 +335,8 @@ function wizardNext()
       }
       valueInput.value = wizardTextInput;
       wizardStep = 0;
+      get("hex").checked = get("hexW").checked;
+      saveConfig();
       get("main").style.display = "block";
       get("wizard").style.display = "none";
       valueInput.focus();
@@ -342,6 +344,8 @@ function wizardNext()
     default:
       wizardStep = 0;
       valueInput.value = wzdInput.value;
+      get("hex").checked = get("hexW").checked;
+      saveConfig();
       get("main").style.display = "block";
       get("wizard").style.display = "none";
       valueInput.focus();
@@ -354,6 +358,17 @@ function wizardNext()
   }
 }
 
+function saveConfig()
+{    
+  config = "1" +   // Batch mode
+           (get("verbose").checked? "1" :"0") +
+           (get("pretty").checked? "1" :"0") +
+           (get("cunnin").checked? "1" :"0") +
+           (get("hex").checked? "1" :"0");
+  digits = get("digits").value;
+  setStorage("ecmConfig", digits+","+config);
+}
+    
 function startUp()
 {
   var param, index, ecmFactor;
@@ -379,7 +394,7 @@ function startUp()
     get("verbose").checked = (config.substr(1,1)=="1");
     get("pretty").checked = (config.substr(2,1)=="1");
     get("cunnin").checked = (config.substr(3,1)=="1");  
-    get("hex").checked = (config.substr(4,1)=="1");  
+    get("hex").checked = (config.substr(4,1)=="1");
     get("modal-config").style.display = "block";
   };
   get("openwizard").onclick = function ()
@@ -391,6 +406,8 @@ function startUp()
     get("next").disabled = true;
     get("wzdinput").value = "";
     get("wzdinput").focus();
+    get("hexW").checked = (config.substr(4,1)=="1");
+    get("decW").checked = (config.substr(4,1)!="1");
     oneexpr();
   };
   get("wzdinput").onkeydown = function (event)
@@ -403,20 +420,35 @@ function startUp()
         wizardNext();                  // Perform same operation as if the user had pressed Next button.
       }
     }
-    if (event.keyCode == 80 && event.altKey)
-    {                                  // User pressed ALT-P.
-      event.preventDefault();          // Do not propagate key.
-      if (get("oneexpr").checked)
-      {
-        get("oneexpr").checked = false;
-        get("loop").checked = true;
-        selectLoop();
+    if (event.altKey)
+    {                                  // User pressed ALT key.
+      if (event.keyCode == 80)
+      {                                // User pressed ALT-P.
+        event.preventDefault();        // Do not propagate key.
+        if (get("oneexpr").checked)
+        {
+          get("oneexpr").checked = false;
+          get("loop").checked = true;
+          selectLoop();
+        }
+        else
+        {
+          get("oneexpr").checked = true;
+          get("loop").checked = false;
+          oneexpr();
+        }
       }
-      else
-      {
-        get("oneexpr").checked = true;
-        get("loop").checked = false;
-        oneexpr();
+      else if (event.keyCode == 68)
+      {                                // User pressed ALT-D.
+        event.preventDefault();        // Do not propagate key.
+        get("decW").checked = true;
+        get("hexW").checked = false;
+      }
+      else if (event.keyCode == 72)
+      {                                // User pressed ALT-H.
+        event.preventDefault();        // Do not propagate key.
+        get("decW").checked = false;
+        get("hexW").checked = true;
       }
     }
     return true;
@@ -474,13 +506,7 @@ function startUp()
   get("save-config").onclick = function ()
   {
     oldconfig = config;
-    config = "1" +   // Batch mode
-             (get("verbose").checked? "1" :"0") +
-             (get("pretty").checked? "1" :"0") +
-             (get("cunnin").checked? "1" :"0") +
-             (get("hex").checked? "1" :"0");
-    digits = get("digits").value;
-    setStorage("ecmConfig", digits+","+config);
+    saveConfig();
     get("modal-config").style.display = "none";
   };
   get("close-more").onclick = function ()

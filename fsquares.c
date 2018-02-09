@@ -31,7 +31,7 @@
 extern int lang;
 static int primediv[256];
 static int primeexp[256];
-static char hexadecimal;
+char hexadecimal;
 static limb number[MAX_LEN];
 static limb origNbr[MAX_LEN];
 static limb p[MAX_LEN];
@@ -86,14 +86,28 @@ static void ShowStatus(void)
   GetDHMS(&ptrStatus, elapsedTime / 10);
   strcpy(ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Intentando suma de dos cuadrados de n &minus; " : "&nbsp;&nbsp;&nbsp;Attempting sum of two squares of <var>n</var> &minus; ");
   ptrStatus += strlen(ptrStatus);
-  int2dec(&ptrStatus, iMult3);
+  if (hexadecimal)
+  {
+    int2hex(&ptrStatus, iMult3);
+  }
+  else
+  {
+    int2dec(&ptrStatus, iMult3);
+  } 
   strcpy(ptrStatus, square);
   ptrStatus += strlen(ptrStatus);
   if (!Computing3Squares)
   {
     strcpy(ptrStatus, " &minus; ");
     ptrStatus += strlen(ptrStatus);
-    int2dec(&ptrStatus, iMult4);
+    if (hexadecimal)
+    {
+      int2hex(&ptrStatus, iMult4);
+    }
+    else
+    {
+      int2dec(&ptrStatus, iMult4);
+    }
     strcpy(ptrStatus, square);
   }
   databack(status);
@@ -191,7 +205,14 @@ int fsquares(void)
     ptrOutput = tmpOutput;
     strcpy(ptrOutput, "1<p><var>n</var> = ");
     ptrOutput += strlen(ptrOutput);
-    Bin2Dec(origNbr, ptrOutput, nbrLimbs, groupLen);
+    if (hexadecimal)
+    {
+      Bin2Hex(origNbr, ptrOutput, nbrLimbs, groupLen);
+    }
+    else
+    {
+      Bin2Dec(origNbr, ptrOutput, nbrLimbs, groupLen);
+    }
     ptrOutput += strlen(ptrOutput);
     strcpy(ptrOutput, "</p>");
     databack(tmpOutput);
@@ -640,7 +661,14 @@ void batchCallback(char **pptrOutput)
   // Show the number to be decomposed into sum of squares.
   strcpy(ptrOutput, "<p>");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&toProcess, ptrOutput, groupLength);
+  if (hexadecimal)
+  {
+    BigInteger2Hex(&toProcess, ptrOutput, groupLen);
+  }
+  else
+  {
+    BigInteger2Dec(&toProcess, ptrOutput, groupLen);
+  }
   ptrOutput += strlen(ptrOutput);
   if (toProcess.sign == SIGN_NEGATIVE)
   {
@@ -667,7 +695,14 @@ void batchCallback(char **pptrOutput)
   // Show the decomposition.
   strcpy(ptrOutput, " = ");
   ptrOutput += strlen(ptrOutput);
-  Bin2Dec(Mult1, ptrOutput, Mult1Len, groupLength);
+  if (hexadecimal)
+  {
+    Bin2Hex(Mult1, ptrOutput, Mult1Len, groupLength);
+  }
+  else
+  {
+    Bin2Dec(Mult1, ptrOutput, Mult1Len, groupLength);
+  }
   ptrOutput += strlen(ptrOutput);
   strcpy(ptrOutput, square);
   ptrOutput += strlen(ptrOutput);
@@ -675,7 +710,14 @@ void batchCallback(char **pptrOutput)
   {
     strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
-    Bin2Dec(Mult2, ptrOutput, Mult2Len, groupLength);
+    if (hexadecimal)
+    {
+      Bin2Hex(Mult2, ptrOutput, Mult2Len, groupLength);
+    }
+    else
+    {
+      Bin2Dec(Mult2, ptrOutput, Mult2Len, groupLength);
+    }
     ptrOutput += strlen(ptrOutput);
     strcpy(ptrOutput, square);
     ptrOutput += strlen(ptrOutput);
@@ -684,7 +726,14 @@ void batchCallback(char **pptrOutput)
   {
     strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
-    Bin2Dec(Mult3, ptrOutput, Mult3Len, groupLength);
+    if (hexadecimal)
+    {
+      Bin2Hex(Mult3, ptrOutput, Mult3Len, groupLength);
+    }
+    else
+    {
+      Bin2Dec(Mult3, ptrOutput, Mult3Len, groupLength);
+    }
     ptrOutput += strlen(ptrOutput);
     strcpy(ptrOutput, square);
     ptrOutput += strlen(ptrOutput);
@@ -693,7 +742,14 @@ void batchCallback(char **pptrOutput)
   {
     strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
-    Bin2Dec(Mult4, ptrOutput, Mult4Len, groupLength);
+    if (hexadecimal)
+    {
+      Bin2Hex(Mult4, ptrOutput, Mult4Len, groupLength);
+    }
+    else
+    {
+      Bin2Dec(Mult4, ptrOutput, Mult4Len, groupLength);
+    }
     ptrOutput += strlen(ptrOutput);
     strcpy(ptrOutput, square);
     ptrOutput += strlen(ptrOutput);
@@ -733,8 +789,19 @@ void doWork(void)
     groupLen = groupLen * 10 + (*ptrData++ - '0');
   }
   ptrData++;             // Skip comma.
-  lang = *ptrData & 1;
-  app = (*ptrData - '0') >> 1;
+  app = *ptrData - '0';
+  if (*(ptrData + 1) != ',')
+  {
+    ptrData++;
+    app = app * 10 + *ptrData - '0';
+  }
+  lang = app & 1;
+  app >>= 1;
+  if (app & 0x20)
+  {
+    app &= 0x1F;
+    hexadecimal = 1;
+  }
   switch (app)
   {
   case 0:

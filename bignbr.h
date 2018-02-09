@@ -63,6 +63,7 @@ void Dec2Bin(char *decimal, limb *binary, int digits, int *bitGroups);
 void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen);
 void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLen);
 void int2dec(char **pOutput, int nbr);
+void int2hex(char **pOutput, int nbr);
 void GetMontgomeryParms(int len);
 void AddBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Sum, limb *TestNbr, int NumberLength);
 void SubtBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Sum, limb *TestNbr, int NumberLength);

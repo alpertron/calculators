@@ -7,7 +7,7 @@
 <meta name="description" content="Aplicación Javascript que muestra la fracción continua de números racionales e irracionalidades cuadráticas." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="CONTFRAC.HTM" />
-<link rel="prefetch" href="fsquaresW0034.js" />
+<link rel="prefetch" href="fsquaresW0035.js" />
 <link rel="manifest" href="fraccont.webmanifest">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Calculadora de fracciones continuas</title>
@@ -118,7 +118,7 @@ Contacto
 <main>
 <article>
 <h1>Calculadora de fracciones continuas</h1>
-<script async="async" src="fsquares0034.js"></script>
+<script async="async" src="fsquares0035.js"></script>
 <div style='padding:10px;'>
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -287,7 +287,9 @@ Si <var>b</var> es negativo, el resultado no es un número real, así que no se 
 <li> % para el resto de la división entera
 <li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
 <li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
-<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>SHL</strong>: Desplazar a la izquierda la cantidad de bits indicada en el operando derecho.
+<li> <strong>SHR</strong>: Desplazar a la derecha la cantidad de bits indicada en el operando derecho.
 <li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
 <li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
 <li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
@@ -308,7 +310,7 @@ Si <var>b</var> es negativo, el resultado no es un número real, así que no se 
 <p>
 Se puede bajar el código fuente de este programa y el del viejo applet de fracciones continuas desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 21 de enero de 2018.</p>
+<p>Escrito por Dario Alpern. Actualizado el 9 de febrero de 2018.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>

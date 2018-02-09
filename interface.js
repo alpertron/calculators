@@ -19,6 +19,7 @@
 (function(global)
 {   // This method separates the name space from the Google Analytics code.
 var worker = 0;
+var hex = 0;
 var app;
 var asmjs = typeof(WebAssembly) === "undefined";
 if (typeof(window) === "undefined")
@@ -56,7 +57,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'fsquares0034.wasm');
+  request.open('GET', 'fsquares0035.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -150,7 +151,7 @@ function callWorker(param)
   var helphelp = get("helphelp");
   if (!worker)
   {
-    worker = new Worker(asmjs? "fsquaresW0034.js": "fsquares0034.js");
+    worker = new Worker(asmjs? "fsquaresW0035.js": "fsquares0035.js");
     worker.onmessage = function(e)
     { // First character of e.data is:
       // "1" for intermediate output
@@ -244,7 +245,7 @@ function performCalc()
       res.innerHTML = "Calculando desarrollo en fracciones continuas...";
       break;
   }
-  param = digitGroup + ',' + app + ',' + valueA + String.fromCharCode(0);
+  param = digitGroup + ',' + (app+hex*64) + ',' + valueA + String.fromCharCode(0);
   if (app >= 4)
   {
     param += valueB + String.fromCharCode(0) + valueC + String.fromCharCode(0);
@@ -318,6 +319,7 @@ function wizardNext()
       }
       valueInput.value = wizardTextInput;
       wizardStep = 0;
+      hex = (get("hexW").checked? 1: 0);
       get("main").style.display = "block";
       get("wizard").style.display = "none";
       valueInput.focus();
@@ -325,6 +327,7 @@ function wizardNext()
     default:
       wizardStep = 0;
       valueInput.value = wzdInput.value;
+      hex = (get("hexW").checked? 1: 0);
       get("main").style.display = "block";
       get("wizard").style.display = "none";
       valueInput.focus();
@@ -395,6 +398,8 @@ function startUp()
       get("mode").style.display = "block";
       get("oneexpr").checked = true;
       get("next").disabled = true;
+      get("hexW").checked = (hex? true: false);
+      get("decW").checked = (hex? false: true);
       get("wzdinput").value = "";
       get("wzdinput").focus();
       oneexpr();
@@ -409,20 +414,35 @@ function startUp()
           wizardNext();                  // Perform same operation as if the user had pressed Next button.
         }
       }
-      if (event.keyCode == 80 && event.altKey)
-      {                                  // User pressed ALT-P.
-        event.preventDefault();          // Do not propagate key.
-        if (get("oneexpr").checked)
-        {
-          get("oneexpr").checked = false;
-          get("loop").checked = true;
-          selectLoop();
+      if (event.altKey)
+      {                                  // User pressed ALT key.
+        if (event.keyCode == 80)
+        {                                // User pressed ALT-P.
+          event.preventDefault();        // Do not propagate key.
+          if (get("oneexpr").checked)
+          {
+            get("oneexpr").checked = false;
+            get("loop").checked = true;
+            selectLoop();
+          }
+          else
+          {
+            get("oneexpr").checked = true;
+            get("loop").checked = false;
+            oneexpr();
+          }
         }
-        else
-        {
-          get("oneexpr").checked = true;
-          get("loop").checked = false;
-          oneexpr();
+        else if (event.keyCode == 68)
+        {                                // User pressed ALT-D.
+          event.preventDefault();        // Do not propagate key.
+          get("decW").checked = true;
+          get("hexW").checked = false;
+        }
+        else if (event.keyCode == 72)
+        {                                // User pressed ALT-H.
+          event.preventDefault();        // Do not propagate key.
+          get("decW").checked = false;
+          get("hexW").checked = true;
         }
       }
       return true;

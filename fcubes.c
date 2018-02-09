@@ -30,7 +30,7 @@ static BigInteger toProcess;
 static int groupLength;
 static char *cube = "<span class=\"bigger\">³</span>";
 extern int lang;
-
+extern char hexadecimal;
 static int sums[] =
 {
   6, 0, 1, -1, -1, 0, -1, 0, 1, 1,
@@ -336,7 +336,14 @@ void batchCubesCallback(char **pptrOutput)
   // Show the number to be decomposed into sum of cubes.
   strcpy(ptrOutput, "<p>");
   ptrOutput += strlen(ptrOutput);
-  BigInteger2Dec(&toProcess, ptrOutput, groupLength);
+  if (hexadecimal)
+  {
+    BigInteger2Hex(&toProcess, ptrOutput, groupLen);
+  }
+  else
+  {
+    BigInteger2Dec(&toProcess, ptrOutput, groupLen);
+  }
   ptrOutput += strlen(ptrOutput);
   switch (result)
   {
@@ -362,7 +369,14 @@ void batchCubesCallback(char **pptrOutput)
   {
     *ptrOutput++ = '(';
   }
-  BigInteger2Dec(&Base1, ptrOutput, groupLength);
+  if (hexadecimal)
+  {
+    BigInteger2Hex(&Base1, ptrOutput, groupLength);
+  }
+  else
+  {
+    BigInteger2Dec(&Base1, ptrOutput, groupLength);
+  }
   ptrOutput += strlen(ptrOutput);
   if (Base1.sign == SIGN_NEGATIVE)
   {
@@ -378,7 +392,14 @@ void batchCubesCallback(char **pptrOutput)
     {
       *ptrOutput++ = '(';
     }
-    BigInteger2Dec(&Base2, ptrOutput, groupLength);
+    if (hexadecimal)
+    {
+      BigInteger2Hex(&Base2, ptrOutput, groupLength);
+    }
+    else
+    {
+      BigInteger2Dec(&Base2, ptrOutput, groupLength);
+    }
     ptrOutput += strlen(ptrOutput);
     if (Base2.sign == SIGN_NEGATIVE)
     {
@@ -395,7 +416,14 @@ void batchCubesCallback(char **pptrOutput)
     {
       *ptrOutput++ = '(';
     }
-    BigInteger2Dec(&Base3, ptrOutput, groupLength);
+    if (hexadecimal)
+    {
+      BigInteger2Hex(&Base3, ptrOutput, groupLength);
+    }
+    else
+    {
+      BigInteger2Dec(&Base3, ptrOutput, groupLength);
+    }
     ptrOutput += strlen(ptrOutput);
     if (Base3.sign == SIGN_NEGATIVE)
     {
@@ -412,7 +440,14 @@ void batchCubesCallback(char **pptrOutput)
     {
       *ptrOutput++ = '(';
     }
-    BigInteger2Dec(&Base4, ptrOutput, groupLength);
+    if (hexadecimal)
+    {
+      BigInteger2Hex(&Base4, ptrOutput, groupLength);
+    }
+    else
+    {
+      BigInteger2Dec(&Base4, ptrOutput, groupLength);
+    }
     ptrOutput += strlen(ptrOutput);
     if (Base4.sign == SIGN_NEGATIVE)
     {

@@ -29,9 +29,9 @@
 #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
 #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
 #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-.atright {float:right;}
 .newline {clear:both;}
 }
+.atright {float:right;}
 @media screen and (max-width: 400px) {#smallheader {font-size:0.7em;}}
 @media screen and (min-width: 400px) {#smallheader {font-size:1em;}}
 @media screen and (min-width: 500px) {#configleft {float:left;}}
@@ -124,7 +124,7 @@ Contacto
 <main id="main">
 <article>
 <h1>Calculadora de factorización de números enteros</h1>
-<script async="async" src="ecm0034.js"></script>
+<script async="async" src="ecm0035.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -177,7 +177,9 @@ Una expresión numérica o ciclo por línea. Ejemplo: x=3;x=n(x);c&lt;=100;x&#82
 <li> % para el resto de la división entera
 <li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
 <li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
-<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>SHL</strong>: Desplazar a la izquierda la cantidad de bits indicada en el operando derecho.
+<li> <strong>SHR</strong>: Desplazar a la derecha la cantidad de bits indicada en el operando derecho.
 <li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
 <li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
 <li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
@@ -268,7 +270,7 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(concatfact(2,x),10) and not isprime(x)</code>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 21 de enero de 2018.</p>
+<p>Escrito por Dario Alpern. Actualizado el 9 de febrero de 2018.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -314,6 +316,11 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <aside id="wizard">
 <h1>Asistente de factorización</h1>
 <form class="applet">
+<fieldset id="output" class="atright">
+<legend>Salida</legend>
+<input type="radio" name="output" id="decW"><label for="decW"><span class="und">D</span>ecimal</label><br>
+<input type="radio" name="output" id="hexW"><label for="hexW"><span class="und">H</span>exadecimal</label><br>
+</fieldset>
 <fieldset id="mode">
 <legend>Modo asistente</legend>
 <input type="radio" name="mode" id="oneexpr"><label for="oneexpr"><span class="und">P</span>rocesar una expresión</label><br>
@@ -338,7 +345,9 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <li> % para el resto de la división entera
 <li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
 <li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
-<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>SHL</strong>: Desplazar a la izquierda la cantidad de bits indicada en el operando derecho.
+<li> <strong>SHR</strong>: Desplazar a la derecha la cantidad de bits indicada en el operando derecho.
 <li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
 <li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
 <li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>

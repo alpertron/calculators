@@ -32,17 +32,19 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define OPER_UNARY_MINUS              5
 #define OPER_PLUS                     6
 #define OPER_MINUS                    7
-#define OPER_NOT_GREATER              8
-#define OPER_NOT_LESS                 9
-#define OPER_NOT_EQUAL               10
-#define OPER_EQUAL                   11
-#define OPER_GREATER                 12
-#define OPER_LESS                    13
-#define OPER_NOT                     14
-#define OPER_AND                     15
-#define OPER_OR                      16
-#define OPER_XOR                     17
-#define MAXIMUM_OPERATOR             17
+#define OPER_SHR                      8
+#define OPER_SHL                      9
+#define OPER_NOT_GREATER             10
+#define OPER_NOT_LESS                11
+#define OPER_NOT_EQUAL               12
+#define OPER_EQUAL                   13
+#define OPER_GREATER                 14
+#define OPER_LESS                    15
+#define OPER_NOT                     16
+#define OPER_AND                     17
+#define OPER_OR                      18
+#define OPER_XOR                     19
+#define MAXIMUM_OPERATOR             19
 
 static BigInteger stackValues[PAREN_STACK_SIZE];
 static char stackOperators[PAREN_STACK_SIZE];
@@ -77,6 +79,7 @@ static enum eExprErr ComputeModInv(void);
 static enum eExprErr ComputeFibLucas(int origValue);
 static enum eExprErr ComputePartition(void);
 static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult);
+static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger *result);
 static int func(char *expr, BigInteger *ExpressionResult,
   char *funcName, int funcArgs, int leftNumberFlag);
 static int type;
@@ -88,9 +91,10 @@ static char priority[] =
   2, 2, 2,          // Multiply, divide and remainder.
   3,                // Unary minus.
   4, 4,             // Plus and minus.
-  5, 5, 5, 5, 5, 5, // Six comparison operators (equal, greater, less, etc.)
-  6,                // NOT.
-  7, 7,             // AND, OR.
+  5, 5,             // Shift right and left.
+  6, 6, 6, 6, 6, 6, // Six comparison operators (equal, greater, less, etc.)
+  7,                // NOT.
+  8, 8, 8,          // AND, OR, XOR.
 };
 
 enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResult)
@@ -221,6 +225,24 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     {
       charValue = OPER_OR;
       exprIndex += 2;
+    }
+    else if ((charValue & 0xDF) == 'X' && (*(expr + exprIndex + 1) & 0xDF) == 'O' &&
+      (*(expr + exprIndex + 2) & 0xDF) == 'R')
+    {
+      charValue = OPER_XOR;
+      exprIndex += 3;
+    }
+    else if ((charValue & 0xDF) == 'S' && (*(expr + exprIndex + 1) & 0xDF) == 'H' &&
+      (*(expr + exprIndex + 2) & 0xDF) == 'L')
+    {
+      charValue = OPER_SHL;
+      exprIndex += 3;
+    }
+    else if ((charValue & 0xDF) == 'S' && (*(expr + exprIndex + 1) & 0xDF) == 'H' &&
+      (*(expr + exprIndex + 2) & 0xDF) == 'R')
+    {
+      charValue = OPER_SHR;
+      exprIndex += 3;
     }
     else if (charValue == '!')
     {           // Calculating factorial.
@@ -762,6 +784,20 @@ static enum eExprErr ComputeSubExpr(void)
     BigIntSubt(firstArg, secondArg, result);
     intToBigInteger(result, result->sign == SIGN_NEGATIVE ? 0 : -1);
     return EXPR_OK;
+  case OPER_SHL:
+    ShiftLeft(firstArg, secondArg, result);
+    return EXPR_OK;
+  case OPER_SHR:
+    if (secondArg->sign == SIGN_POSITIVE)
+    {
+      secondArg->sign = SIGN_NEGATIVE;
+    }
+    else
+    {
+      secondArg->sign = SIGN_POSITIVE;
+    }
+    ShiftLeft(firstArg, secondArg, result);
+    return EXPR_OK;
   case OPER_NOT:    // Perform binary NOT as result <- -1 - argument.
     intToBigInteger(firstArg, -1);
     BigIntSubt(firstArg, secondArg, result);
@@ -779,6 +815,18 @@ static enum eExprErr ComputeSubExpr(void)
     {
       result->limbs[idx].x = firstArg->limbs[idx].x & secondArg->limbs[idx].x;
     }
+    if (secondArg->sign == SIGN_POSITIVE)
+    {
+      result->nbrLimbs = secondArg->nbrLimbs;
+    }
+    else
+    {
+      result->nbrLimbs = firstArg->nbrLimbs;
+      for (; idx < firstArg->nbrLimbs; idx++)
+      {
+        result->limbs[idx].x = firstArg->limbs[idx].x;
+      }
+    }
     if (firstArg->sign == SIGN_POSITIVE || secondArg->sign == SIGN_POSITIVE)
     {
       result->sign = SIGN_POSITIVE;
@@ -786,10 +834,6 @@ static enum eExprErr ComputeSubExpr(void)
     else
     {
       result->sign = SIGN_NEGATIVE;
-    }
-    if (secondArg->sign == SIGN_POSITIVE)
-    {
-      result->nbrLimbs = secondArg->nbrLimbs;      
     }
     ConvertToTwosComplement(result);
     return EXPR_OK;
@@ -806,6 +850,18 @@ static enum eExprErr ComputeSubExpr(void)
     {
       result->limbs[idx].x = firstArg->limbs[idx].x | secondArg->limbs[idx].x;
     }
+    if (secondArg->sign == SIGN_NEGATIVE)
+    {
+      result->nbrLimbs = secondArg->nbrLimbs;
+    }
+    else
+    {
+      result->nbrLimbs = firstArg->nbrLimbs;
+      for (; idx < firstArg->nbrLimbs; idx++)
+      {
+        result->limbs[idx].x = firstArg->limbs[idx].x;
+      }
+    }
     if (firstArg->sign == SIGN_NEGATIVE || secondArg->sign == SIGN_NEGATIVE)
     {
       result->sign = SIGN_NEGATIVE;
@@ -814,10 +870,44 @@ static enum eExprErr ComputeSubExpr(void)
     {
       result->sign = SIGN_POSITIVE;
     }
-    if (secondArg->sign == SIGN_NEGATIVE)
-    {
-      result->nbrLimbs = secondArg->nbrLimbs;
+    ConvertToTwosComplement(result);
+    return EXPR_OK;
+  case OPER_XOR:    // Perform binary XOR.
+    if (firstArg->nbrLimbs < secondArg->nbrLimbs)
+    {    // After the exchange, firstArg has not fewer limbs than secondArg.
+      tmpptr = firstArg;
+      firstArg = secondArg;
+      secondArg = tmpptr;
     }
+    ConvertToTwosComplement(firstArg);
+    ConvertToTwosComplement(secondArg);
+    for (idx = 0; idx < secondArg->nbrLimbs; idx++)
+    {
+      result->limbs[idx].x = firstArg->limbs[idx].x ^ secondArg->limbs[idx].x;
+    }
+    if (secondArg->sign == SIGN_POSITIVE)
+    {
+      for (; idx < firstArg->nbrLimbs; idx++)
+      {
+        result->limbs[idx].x = firstArg->limbs[idx].x;
+      }
+    }
+    else
+    {
+      for (; idx < firstArg->nbrLimbs; idx++)
+      {
+        result->limbs[idx].x = firstArg->limbs[idx].x ^ MAX_INT_NBR;
+      }
+    }
+    if ((firstArg->sign == SIGN_NEGATIVE) != (secondArg->sign == SIGN_NEGATIVE))
+    {
+      result->sign = SIGN_NEGATIVE;
+    }
+    else
+    {
+      result->sign = SIGN_POSITIVE;
+    }
+    result->nbrLimbs = firstArg->nbrLimbs;
     ConvertToTwosComplement(result);
     return EXPR_OK;
   }
@@ -1226,6 +1316,94 @@ static int ComputeRevDigits(void)
     BigIntMultiply(result, radix, result);
     BigIntAdd(result, &Temp, result);
     BigIntDivide(&argum, radix, &argum);
+  }
+  return EXPR_OK;
+}
+
+static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger *result)
+{
+  int ctr;
+  int prevLimb, curLimb;
+  int *ptrDest, *ptrSrc;
+  int shiftCtr = second->limbs[0].x;
+  int delta = shiftCtr / BITS_PER_GROUP;
+  int rem = shiftCtr % BITS_PER_GROUP;
+  int nbrLimbs = first->nbrLimbs;
+  if (second->sign == SIGN_POSITIVE)
+  {     // Perform shift left.
+    if (second->nbrLimbs > 1)
+    {   // Shift too much to the left.
+      return EXPR_INTERM_TOO_HIGH;
+    }
+    if ((unsigned int)(first->nbrLimbs * BITS_PER_GROUP + shiftCtr) > 66438)
+    {   // Shift too much to the left.
+      return EXPR_INTERM_TOO_HIGH;
+    }
+    prevLimb = 0;
+    ptrSrc = &first->limbs[nbrLimbs - 1].x;
+    curLimb = *ptrSrc;
+    ptrDest = &first->limbs[nbrLimbs+delta].x;
+
+    for (ctr = nbrLimbs; ctr > 0; ctr--)
+    {  // Process starting from most significant limb.
+      *ptrDest-- = ((curLimb >> (BITS_PER_GROUP - rem)) | (prevLimb << rem)) & MAX_INT_NBR;
+      prevLimb = curLimb;
+      curLimb = *--ptrSrc;
+    }
+    *ptrDest = ((curLimb >> (BITS_PER_GROUP - rem)) | (prevLimb << rem)) & MAX_INT_NBR;
+    if (delta > 0)
+    {
+      memset(first->limbs, 0, delta * sizeof(limb));
+    }
+    result->nbrLimbs += delta;
+    if (result->limbs[result->nbrLimbs].x)
+    {
+      result->nbrLimbs++;
+    }
+  }
+  else
+  {     // Perform shift right.
+    int isNegative = 0;
+    if (second->nbrLimbs > 1 || shiftCtr > first->nbrLimbs * BITS_PER_GROUP)
+    {   // Shift too much to the right. Result is zero or -1.
+      if (first->sign == SIGN_POSITIVE)
+      {
+        intToBigInteger(result, 0);
+      }
+      else
+      {
+        intToBigInteger(result, -1);
+      }
+      return EXPR_OK;
+    }
+    if (first->sign == SIGN_NEGATIVE)
+    {   // If it is negative, add 1, perform shift right, and finally subtract 1 to result.
+      isNegative = 1;
+      addbigint(first, 1);
+    }
+    // Shift right the absolute value.
+    first->limbs[nbrLimbs].x = 0;
+    ptrSrc = &first->limbs[delta+1].x;
+    prevLimb = *(ptrSrc-1);
+    curLimb = *ptrSrc;
+    ptrDest = &first->limbs[0].x;
+
+    for (ctr = delta; ctr < nbrLimbs; ctr++)
+    {  // Process starting from least significant limb.
+      *ptrDest++ = ((prevLimb >> rem) | (curLimb << (BITS_PER_GROUP - rem))) & MAX_INT_NBR;
+      prevLimb = curLimb;
+      curLimb = *++ptrSrc;
+    }
+    *ptrDest = ((prevLimb >> rem) | (curLimb << (BITS_PER_GROUP - rem))) & MAX_INT_NBR;
+    result->nbrLimbs -= delta + 1;
+    if (result->nbrLimbs == 0 || result->limbs[result->nbrLimbs].x)
+    {
+      result->nbrLimbs++;
+    }
+    if (isNegative)
+    {    // Adjust negative number.
+      addbigint(result, -1);
+    }
   }
   return EXPR_OK;
 }

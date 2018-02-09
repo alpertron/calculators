@@ -407,7 +407,7 @@ int isPrime(int *value)
     LIMIT(3474749660383ll),        // Bases 2, 3, 5, 7, 11 and 13
     LIMIT(341550071728321ll),      // Bases 2, 3, 5, 7, 11, 13 and 17
     LIMIT(341550071728321ll),      // Bases 2, 3, 5, 7, 11, 13, 17 and 19
-    LIMIT((1 << (2*BITS_PER_GROUP)) - 1)
+    LIMIT((1ll << (2*BITS_PER_GROUP)) - 1)
   };
   int i, j;
   int index, idxNbr, indexLSB, indexMSB, idxNbrMSB;

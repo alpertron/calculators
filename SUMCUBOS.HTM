@@ -8,7 +8,7 @@
 <meta name="description" content="Aplicación Javascript application que descompone un número en una suma de cuatro cubos. Hecho por Dario Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="FCUBES.HTM" />
-<link rel="prefetch" href="fsquaresW0034.js" />
+<link rel="prefetch" href="fsquaresW0035.js" />
 <link rel="manifest" href="sumcubos.webmanifest">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Suma de cuatro cubos</title>
@@ -39,12 +39,14 @@
 body {font-family: arial; margin: 0; padding: 0;}
 h1 {text-align:center;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
+.atright {float:right;}
 #num {white-space:pre;overflow-wrap:normal;overflow:auto;margin:5px;width:100%;padding:3px}
 #stop, #cont, #wizard {display:none}
 .lf {padding:0.2em; clear:both; width:100%}
 .offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
 .bigger {font-size:150%;}
 .pad {padding:10px;}
+.hex {font-family: Courier, "Lucida Console", monospace}
 .und {text-decoration: underline;}
 @media (min-width: 400px) {.input {width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
 @media (max-width: 400px) {.input {width:100%;padding:3px;margin:0px;}}
@@ -143,7 +145,7 @@ Contacto
 <input type="number" id="digits" value="6"/>
 <input type="hidden" id="app" value="3"/>
 </form>
-<script async="async" src="fsquares0034.js"></script>
+<script async="async" src="fsquares0035.js"></script>
 <div style='padding:10px;'>
 <div id="help" aria-live="polite">
 <p>Este applet encuentra la descomposición de cualquier número entero no congruente a 4 ó 5 (mod 9) en una suma de cuatro cubos.</p>
@@ -236,7 +238,9 @@ Si encuentra algún error o tiene algún comentario, por favor llene el <a href=
 <li> % para el resto de la división entera
 <li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
 <li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
-<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>SHL</strong>: Desplazar a la izquierda la cantidad de bits indicada en el operando derecho.
+<li> <strong>SHR</strong>: Desplazar a la derecha la cantidad de bits indicada en el operando derecho.
 <li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
 <li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
 <li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
@@ -257,7 +261,7 @@ Si encuentra algún error o tiene algún comentario, por favor llene el <a href=
 <p>
 Se puede bajar el código fuente de este programa y el del viejo applet de suma de cuatro cubos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 21 de enero de 2018.</p>
+<p>Escrito por Dario Alpern. Actualizado el 9 de febrero de 2018.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -271,6 +275,11 @@ Se puede bajar el código fuente de este programa y el del viejo applet de suma 
 <aside id="wizard">
 <h1>Asistente de suma de cubos</h1>
 <form class="applet">
+<fieldset id="output" class="atright">
+<legend>Salida</legend>
+<input type="radio" name="output" id="decW"><label for="decW"><span class="und">D</span>ecimal</label><br>
+<input type="radio" name="output" id="hexW"><label for="hexW"><span class="und">H</span>exadecimal</label><br>
+</fieldset>
 <fieldset id="mode">
 <legend>Modo asistente</legend>
 <input type="radio" name="mode" id="oneexpr"><label for="oneexpr"><span class="und">P</span>rocesar una expresión</label><br>
@@ -295,7 +304,9 @@ Se puede bajar el código fuente de este programa y el del viejo applet de suma 
 <li> % para el resto de la división entera
 <li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
 <li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
-<li> <strong>AND</strong>, <strong>OR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>SHL</strong>: Desplazar a la izquierda la cantidad de bits indicada en el operando derecho.
+<li> <strong>SHR</strong>: Desplazar a la derecha la cantidad de bits indicada en el operando derecho.
 <li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
 <li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
 <li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
