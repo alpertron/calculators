@@ -36,6 +36,7 @@ h1 {text-align:center;}
 #canvas {margin-left:auto; margin-right:auto; display:block; width:100%;text-align:center;vertical-align:middle; max-width:2000px;touch-action:none;}
 #applet {border: 0px none;width:100%;}
 #bottom {border: 0px none;width:100%;min-height:4em;padding:5px}
+.pad {padding:10px;}
 @media (min-height: 200px) {#canvas {height:100px}}
 @media (min-height: 300px) {#canvas {height:200px}}
 @media (min-height: 400px) {#canvas {height:300px}}
@@ -52,7 +53,6 @@ h1 {text-align:center;}
 #cannotShow {display:none;}
 }
 </style>
-<script async="async" src="ulam0039.js"></script>
 </head>
 <body>
 <nav id="smallheader">
@@ -111,7 +111,7 @@ Contacto
 <div id="info"></div>
 </div>
 </div>
-<div style="padding:5px;">
+<div class="pad">
 <h1 id="espiralulam">Espiral de Ulam</h1>
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="/" itemprop="url">
@@ -157,7 +157,7 @@ Cualquier número en la línea diagonal menor que 41<sup>2</sup> = 1681 debe ser
 <p>Los números que se muestran a la derecha del polinomio son los primos menores que 100 que no pueden dividir a ninguno de los valores que toma el polinomio.
 Las diagonales cuyos números no se pueden dividir por primos pequeños tienen mayor cantidad de números primos, porque la mayoría de los números compuestos son divisibles por primos pequeños.</p>
 <h2>Código fuente</h2>
-<p>Puede bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
+<p>Puede bajar el código fuente de esta aplicación y del viejo applet de visualización de la espiral de Ulam desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
 <p>Escrito por Dario Alpern. Actualizado el 5 de febrero de 2018.</p>
 </div>
 </article></main>
