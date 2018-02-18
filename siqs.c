@@ -2848,6 +2848,7 @@ static unsigned char InsertNewRelation(
   {
     AddBigNbr(biU, Modulus, biU, NumberLengthMod);
   }
+  biU[NumberLengthMod] = 0;
   AdjustModN((limb *)biU, (limb *)Modulus, lenDivisor);
   // Compute biU / biR  (mod Modulus)
   MultBigNbrModN(biU, biT, biR, Modulus, lenDivisor);

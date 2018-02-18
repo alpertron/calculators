@@ -4,6 +4,7 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "factor.h"
+#include "batch.h"
 #define DEBUG_CODE  13
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -180,14 +181,20 @@ int main(int argc, char *argv[])
   {
     char *ptrKnownFactors = strchr(argv[1], '=');
     char text[100];
-#if 0
-    strcpy(text, "x=1;x=x+1;x<=2000;x\nx = 1; x = x + 1; x<1000; x");
+#if 1
+    strcpy(text, "10**45+572");
+//    strcpy(text, "x=10**45+572;x=x+1;c<1000;x");
     ecmFrontText(text, 1, ptrKnownFactors);
     printf("%s\n", output);
     ecmFrontText(NULL, 0, NULL);
     printf("%s\n", output);
-    strcpy(text, "x=1;x=x+1;x<1001;c");
-    ecmFrontText(text, 1, ptrKnownFactors);
+    valuesProcessed = 0;
+    strcpy(text, "10**45+573");
+//    strcpy(text, "x=1;x=x+1;x<1001;c");
+    ecmFrontText(text, 1, NULL);
+    printf("%s\n", output);
+    ecmFrontText(NULL, 0, NULL);
+    printf("%s\n", output);
     return 0;
 #endif
     if (ptrKnownFactors)
