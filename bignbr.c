@@ -1332,9 +1332,10 @@ static void Halve(limb *pValue)
 
 // BPSW primality test:
 // 1) If the input number is 2-SPRP composite, indicate composite and go out.
-// 2) Find the first D in the sequence 5, -7, 9, -11, 13, -15, ...
+// 2) If number is perfect square, indicate it is composite and go out.
+// 3) Find the first D in the sequence 5, -7, 9, -11, 13, -15, ...
 //    for which the Jacobi symbol (D/n) is −1. Set P = 1 and Q = (1 - D) / 4.
-// 3) Perform a strong Lucas probable prime test on n using parameters D, P,
+// 4) Perform a strong Lucas probable prime test on n using parameters D, P,
 //    and Q. If n is not a strong Lucas probable prime, then n is composite.
 //    Otherwise, n is almost certainly prime.
 // Output: 0 = probable prime.
@@ -1347,6 +1348,7 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   int insidePowering = FALSE;
   int nbrLimbs = pValue->nbrLimbs;
   limb *limbs = pValue->limbs;
+  BigInteger tmp;
   if (nbrLimbs == 1 && limbs->x <= 2)
   {
     return 0;    // Indicate prime.
@@ -1391,7 +1393,15 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
       return 2;         // Composite. Not 2-strong probable prime.
     }
   }
-  // At this point, the number is 2-SPRP, so find value of D.
+  // At this point, the number is 2-SPRP, so check whether the number is perfect square.
+  squareRoot(pValue->limbs, tmp.limbs, pValue->nbrLimbs, &tmp.nbrLimbs);
+  tmp.sign = SIGN_POSITIVE;
+  BigIntMultiply(&tmp, &tmp, &tmp);
+  if (BigIntEqual(pValue, &tmp))
+  {                  // Number is perfect square.
+    return 3;        // Indicate number does not pass strong Lucas test.
+  }
+  // At this point, the number is not perfect square, so find value of D.
   mult = 1;
   for (D = 5; ; D += 2)
   {
