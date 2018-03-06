@@ -29,6 +29,22 @@ static int partArray[100000 + 1000];
 static limb prodModulus[MAX_LEN];
 static int prodModulusLimbs;
 
+static void smallMultiply(int factor1, int factor2, int *prod)
+{
+  int low = (factor1 * factor2) & MAX_VALUE_LIMB;
+  double dAccum = (double)factor1 * (double)factor2;
+  *prod = low;
+  if (low < HALF_INT_RANGE)
+  {
+    dAccum = ((dAccum + HALF_INT_RANGE / 2) / LIMB_RANGE);
+  }
+  else
+  {
+    dAccum = ((dAccum - HALF_INT_RANGE / 2) / LIMB_RANGE);
+  }
+  *(prod + 1) = (unsigned int)dAccum;
+}
+
 // Compute the partitions of an integer p(n)
 // The formula p(n) = p(k) = p(k - 1) + p(k - 2) - p(k - 5) -
 // - p(k - 7) + p(k - 12) + p(k - 15) - p(k - 22) - ...
@@ -42,7 +58,6 @@ static int prodModulusLimbs;
 void partition(int val, BigInteger *pResult)
 {
   int index, currentPrime, Q, k, n, sum, idx;
-  limb carry;
   // Compute approximate number of limbs: log(p(n))/log(2^31)
   // pi * sqrt(2/3)/log(2^31) < 0.12, so 0.12 is selected.
   int limbs = (int)(0.12*sqrt(val) + 1);
@@ -140,21 +155,22 @@ void partition(int val, BigInteger *pResult)
     prodmod = 1;
     for (k = index - 1; k >= 0; k--)
     {
-      prodmod = prodmod * partArray[val + k] % currentPrime;
+      smallmodmult(prodmod, partArray[val + k], (limb *)&prodmod, currentPrime);
     }
     prodmod = modInv((int)prodmod, currentPrime);
     numerator = partArray[index - 1];
     for (k = index - 2; k >= 0; k--)
     {
-      numerator = (numerator*partArray[val + k] + partArray[k]) %
-        currentPrime;
+      smallmodmult(numerator, partArray[val + k], (limb *)&numerator, currentPrime);
+      numerator -= currentPrime - partArray[k];
+      numerator += currentPrime & (numerator >> 31);
     }
     sum = partArray[val + limbs + index] - (int)numerator;
     if (sum<0)
     {
       sum += currentPrime;
     }
-    partArray[index] = (int)(sum*prodmod%currentPrime);
+    smallmodmult(sum, prodmod, (limb *)&partArray[index], currentPrime);
   }
   // Use Chinese Remainder Theorem to find the partition number from
   // the partition number mod different primes.
@@ -166,34 +182,39 @@ void partition(int val, BigInteger *pResult)
   for (index = 1; index<limbs; index++)
   {
     int mult;
+    int prod[2];
+    unsigned int carry1 = 0, carry2 = 0;
     // Update product of modulus by multiplying by next prime.
-    carry.x = 0;
     mult = partArray[val + index - 1];
     for (idx = 0; idx < prodModulusLimbs; idx++)
     {
-      carry.x += mult*prodModulus[idx].x;
-      prodModulus[idx].x = carry.x & MAX_VALUE_LIMB;
-      carry.x >>= BITS_PER_GROUP;
+      smallMultiply(mult, prodModulus[idx].x, prod);
+      carry1 += (unsigned int)prod[0];
+      prodModulus[idx].x = (int)carry1 & MAX_VALUE_LIMB;
+      carry1 = (carry1 >> BITS_PER_GROUP) + (unsigned int)prod[1];
     }
-    if (carry.x != 0)
+    if (carry1 != 0)
     {  // New limb needed.
-      prodModulus[idx].x = carry.x;
+      prodModulus[idx].x = carry1;
       pResult->limbs[idx].x = 0;
       prodModulusLimbs++;
     }
     // Update result.
-    carry.x = 0;
+    carry1 = 0;
     mult = partArray[index];
     for (idx = 0; idx < prodModulusLimbs; idx++)
     {
-      carry.x += mult*prodModulus[idx].x + pResult->limbs[idx].x;
-      pResult->limbs[idx].x = carry.x & MAX_VALUE_LIMB;
-      carry.x >>= BITS_PER_GROUP;
+      smallMultiply(mult, prodModulus[idx].x, prod);
+      carry1 += (unsigned int)prod[0];
+      carry2 += (carry1 & MAX_VALUE_LIMB) + pResult->limbs[idx].x;
+      carry1 = (carry1 >> BITS_PER_GROUP) + (unsigned int)prod[1];
+      pResult->limbs[idx].x = (int)carry2 & MAX_VALUE_LIMB;
+      carry2 = (carry2 >> BITS_PER_GROUP);
     }
-    if (carry.x != 0)
+    if (carry1 + carry2 != 0)
     {  // New limb needed.
       prodModulus[idx].x = 0;
-      pResult->limbs[idx].x = carry.x;
+      pResult->limbs[idx].x = carry1 + carry2;
       prodModulusLimbs++;
     }
   }
