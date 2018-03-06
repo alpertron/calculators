@@ -303,7 +303,7 @@ void SubtBigNbrMod(limb *Nbr1, limb *Nbr2, limb *Sum)
   SubtBigNbrModN(Nbr1, Nbr2, Sum, TestNbr, NumberLength);
 }
 
-static void smallmodmult(int factor1, int factor2, limb *product, int mod)
+void smallmodmult(int factor1, int factor2, limb *product, int mod)
 {
   if (mod < SMALL_NUMBER_BOUND)
   {

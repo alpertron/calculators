@@ -160,7 +160,7 @@ void IntToBigNbr(int value, int *bigNbr, int nbrLength);
 int JacobiSymbol(int upper, int lower);
 int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower);
 void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs);
-
+void smallmodmult(int factor1, int factor2, limb *product, int mod);
 
 typedef void(*mmCback)(void);
 #endif
