@@ -63,6 +63,22 @@ void SubtractBigInt(limb *pMinuend, limb *pSubtrahend, limb *pDiff, int nbrLimbs
   }
 }
 
+void BigIntChSign(BigInteger *value)
+{
+  if (value->nbrLimbs == 1 && value->limbs[0].x == 0)
+  {    // Value is zero. Do not change number.
+    return;
+  }
+  if (value->sign == SIGN_POSITIVE)
+  {
+    value->sign = SIGN_NEGATIVE;
+  }
+  else
+  {
+    value->sign = SIGN_POSITIVE;
+  }
+}
+
 void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum)
 {
   int ctr, nbrLimbs;
@@ -1514,6 +1530,38 @@ int BigNbrIsZero(limb *value)
     value++;
   }
   return 1;      // Number is zero
+}
+
+int BigIntIsZero(BigInteger *value)
+{
+  if (value->nbrLimbs == 1 && value->limbs[0].x == 0)
+  {
+    return 1;    // Number is zero.
+  }
+  return 0;      // Number is not zero.
+}
+
+int BigIntEqual(BigInteger *value1, BigInteger *value2)
+{
+  int index, nbrLimbs;
+  limb *ptrValue1, *ptrValue2;
+  if (value1->nbrLimbs != value2->nbrLimbs || value1->sign != value2->sign)
+  {
+    return 0;    // Numbers are not equal.
+  }
+  nbrLimbs = value1->nbrLimbs;
+  ptrValue1 = value1->limbs;
+  ptrValue2 = value2->limbs;
+  for (index = 0; index < nbrLimbs; index++)
+  {
+    if (ptrValue1->x != ptrValue2->x)
+    {
+      return 0; // Numbers are not equal.
+    }
+    ptrValue1++;
+    ptrValue2++;
+  }
+  return 1;     // Numbers are equal.
 }
 
 double getMantissa(limb *ptrLimb, int nbrLimbs)
