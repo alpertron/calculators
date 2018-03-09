@@ -43,4 +43,5 @@ extern int factorsMod[10000];
 void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, int doFactorization);
 void Totient(BigInteger *result);
 void SumOfDivisors(BigInteger *result);
+void NumberOfDivisors(BigInteger *result);
 #endif

@@ -2497,6 +2497,10 @@ void Totient(BigInteger *result)
   for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
     UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    if (factorValue.nbrLimbs == 1 && factorValue.limbs[0].x == 1)
+    {   // If factor is 1 do not do anything.
+      continue;
+    }
     BigIntPowerIntExp(&factorValue, pstFactor->multiplicity - 1, &Temp1);   // p^(e-1)
     BigIntMultiply(result, &Temp1, result);
     UncompressBigInteger(pstFactor->ptrFactor, &Temp1);
@@ -2516,12 +2520,35 @@ void SumOfDivisors(BigInteger *result)
   for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
     UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    if (factorValue.nbrLimbs == 1 && factorValue.limbs[0].x == 1)
+    {   // If factor is 1 do not do anything.
+      continue;
+    }
     BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Temp1);   // p^(e+1)
     addbigint(&Temp1, -1);   // p^(e+1)-1
     BigIntMultiply(result, &Temp1, &Temp2);
     UncompressBigInteger(pstFactor->ptrFactor, &Temp1);
     addbigint(&Temp1, -1);   // p-1
     BigIntDivide(&Temp2, &Temp1, result);
+    pstFactor++;
+  }
+}
+
+// Find number of divisors as the product of e+1 where p=prime and e=exponent.
+void NumberOfDivisors(BigInteger *result)
+{
+  struct sFactors *pstFactor;
+  int factorNumber;
+  intToBigInteger(result, 1);  // Set result to 1.
+  pstFactor = &astFactorsMod[1];
+  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  {
+    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    if (factorValue.nbrLimbs == 1 && factorValue.limbs[0].x == 1)
+    {   // If factor is 1 do not do anything.
+      continue;
+    }
+    multint(result, result, pstFactor->multiplicity + 1);
     pstFactor++;
   }
 }

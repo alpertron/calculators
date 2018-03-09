@@ -1221,7 +1221,7 @@ static int ComputeTotient(void)
 static int ComputeNumDivs(void)
 {
   PerformFactorization(&stackValues[stackIndex]);
-  Totient(&stackValues[stackIndex]);
+  NumberOfDivisors(&stackValues[stackIndex]);
   return EXPR_OK;
 }
 
