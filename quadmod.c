@@ -331,6 +331,10 @@ void SolveEquation(void)
           deltaZeros = 0;
           nbrBitsSquareRoot = expon + bitsAZero;
           correctBits = expon / 2;
+          if (correctBits == 0)
+          {
+            correctBits = 1;
+          }
         }
         else
         {
@@ -475,9 +479,13 @@ void SolveEquation(void)
         }
         BigIntRemainder(&discriminant, &V, &discriminant);
         // Get maximum power of prime which divide discriminant.
-        deltaZeros = 0;
-        if (discriminant.nbrLimbs > 1 || discriminant.limbs[0].x != 0)
+        if (BigIntIsZero(&discriminant))
+        {      // Discriminant is zero.
+          deltaZeros = expon;
+        }
+        else
         {      // Discriminant is not zero.
+          deltaZeros = 0;
           for (;;)
           {
             BigIntRemainder(&discriminant, &prime, &tmp1);
@@ -489,7 +497,7 @@ void SolveEquation(void)
             deltaZeros++;
           }
         }
-        if (deltaZeros & 1)
+        if ((deltaZeros & 1) && deltaZeros < expon)
         {          // If delta is of type m*prime^n where m is not multiple of prime
                    // and n is odd, there is no solution, so go out.
           return;

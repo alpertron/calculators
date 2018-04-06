@@ -579,6 +579,10 @@ void SolveQuadModEquation(void)
           deltaZeros = 0;
           nbrBitsSquareRoot = expon + bitsAZero;
           correctBits = expon / 2;
+          if (correctBits == 0)
+          {
+            correctBits = 1;
+          }
         }
         else
         {
@@ -723,11 +727,15 @@ void SolveQuadModEquation(void)
         }
         BigIntRemainder(&discriminant, &V, &discriminant);
         // Get maximum power of prime which divide discriminant.
-        deltaZeros = 0;
-        if (discriminant.nbrLimbs > 1 || discriminant.limbs[0].x != 0)
+        if (BigIntIsZero(&discriminant))
+        {      // Discriminant is zero.
+          deltaZeros = expon;
+        }
+        else
         {      // Discriminant is not zero.
           for (;;)
           {
+            deltaZeros = 0;
             BigIntRemainder(&discriminant, &prime, &tmp1);
             if (tmp1.nbrLimbs > 1 || tmp1.limbs[0].x != 0)
             {
@@ -737,7 +745,7 @@ void SolveQuadModEquation(void)
             deltaZeros++;
           }
         }
-        if (deltaZeros & 1)
+        if ((deltaZeros & 1) && deltaZeros < expon)
         {          // If delta is of type m*prime^n where m is not multiple of prime
                    // and n is odd, there is no solution, so go out.
           return;
@@ -1467,7 +1475,7 @@ static void callbackQuadModParabolic(BigInteger *value)
   BigIntDivide(&bigTmp, &ValU, &ValR);
    // Compute ValS <- 2*T
   BigIntAdd(value, value, &ValS);
-   // Solve congruence jk = K (mod z) where j = u-bs, K = d+br-T, z = 2a
+   // Find k from the congruence jk = K (mod z) where j = u-bs, K = d+br-T, z = 2a
    // Compute j <- u-bs
   BigIntMultiply(&ValB, &ValS, &bigTmp);
   BigIntSubt(&ValU, &bigTmp, &ValJ);
@@ -1477,25 +1485,29 @@ static void callbackQuadModParabolic(BigInteger *value)
   BigIntSubt(&bigTmp, value, &ValK);
    // Compute z <- 2a
   BigIntAdd(&ValA, &ValA, &ValZ);
-   // Check whether K is multiple of gcd(j, z) or not.
+  // If K is not multiple of gcd(g, z) there is no solution.
   BigIntGcd(&ValJ, &ValZ, &bigTmp);
+  if (value->limbs[0].x == 527)
+  {
+    intToBigInteger(&U1, 1);
+  }
   BigIntRemainder(&ValK, &bigTmp, &U1);
   if (!BigIntIsZero(&U1))
-  {    // If K is not multiple of gcd(j, z) there is no solution. Go out.
+  {
     return;
   }
-   // Compute g = gcd(j, K, z), then recalculate j <- j/g, K <- K/g, z <- z/g
+  // Compute g = gcd(j, K, z), then recalculate j <- j/g, K <- K/g, z <- z/g
   BigIntGcd(&bigTmp, &ValK, &U1);
   BigIntDivide(&ValJ, &U1, &U2);    // U2 <- j
   BigIntDivide(&ValK, &U1, &U3);    // U3 <- K
   BigIntDivide(&ValZ, &U1, &ValZ);
-  ValZ.sign = SIGN_POSITIVE;
-  BigIntDivide(&U2, &ValZ, &U2);
+  ValZ.sign = SIGN_POSITIVE;        // Use positive sign for modulus.
+  BigIntRemainder(&U2, &ValZ, &U2);    
   if (U2.sign == SIGN_NEGATIVE)
   {
     BigIntAdd(&U2, &ValZ, &U2);
   }
-  BigIntDivide(&U3, &ValZ, &U3);
+  BigIntRemainder(&U3, &ValZ, &U3);
   if (U3.sign == SIGN_NEGATIVE)
   {
     BigIntAdd(&U3, &ValZ, &U3);

@@ -29,7 +29,7 @@ calcURLs[2] = ["/DILOG.HTM", "/LOGDI.HTM", "/dilog0026.js", "dilogW0026.js",
                "dilog.webmanifest", "logdi.webmanifest", "dilog-icon-1x.png", "dilog-icon-2x.png", "dilog-icon-4x.png", "dilog-icon-512px.png"];
 calcURLs[3] = ["/GAUSSIAN.HTM", "/GAUSIANO.HTM", "/gaussian0026.js", "gaussianW0026.js",
                "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png", "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-512px.png"];
-calcURLs[4] = ["/QUADMOD.HTM", "/CUADMOD.HTM", "/quadmod0027.js", "quadmodW0027.js",
+calcURLs[4] = ["/QUADMOD.HTM", "/CUADMOD.HTM", "/quadmod0040.js", "quadmodW0040.js",
                "quadmod.webmanifest", "cuadmod.webmanifest", "quadmod-icon-1x.png", "quadmod-icon-2x.png", "quadmod-icon-4x.png", "quadmod-icon-512px.png"];
 calcURLs[5] = ["/FSQUARES.HTM", "/SUMCUAD.HTM", "/fsquares0039.js", "fsquaresW0039.js",
                "fsquares.webmanifest", "sumcuad.webmanifest", "fsquares-icon-1x.png", "fsquares-icon-2x.png", "fsquares-icon-4x.png", "fsquares-icon-512px.png"];
