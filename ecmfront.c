@@ -231,7 +231,6 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
     }
     NumberLength = *pstFactor->ptrFactor;
     UncompressBigInteger(pstFactor->ptrFactor, &p);
-    p.sign = SIGN_POSITIVE;
     CopyBigInt(&q, &p);
     addbigint(&q, -1);             // q <- p-1
     if (p.nbrLimbs == 1 && p.limbs[0].x == 2)

@@ -1252,7 +1252,6 @@ static int ComputeConcatFact(void)
     int ctr;
     pstFactor = &astFactorsMod[descend ? nbrFactors - factorNumber + 1 : factorNumber];
     UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
-    factorValue.sign = SIGN_POSITIVE;
     ctr = (repeated ? pstFactor->multiplicity : 1);
     for (; ctr > 0; ctr--)
     {

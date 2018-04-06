@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Javascript application that finds the continued fraction representation of rational numbers and quadratic irrationalities. Written by Dario Alpern." />
 <meta name="theme-color" content="#db5945">
-<link rel="prefetch" href="fsquaresW0038.js" />
+<link rel="prefetch" href="fsquaresW0039.js" />
 <link rel="manifest" href="contfrac.webmanifest">
 <link rel="alternate" hreflang="es" href="FRACCONT.HTM" />
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
@@ -118,7 +118,7 @@ Contact
 <main>
 <article>
 <h1>Continued Fraction calculator</h1>
-<script async="async" src="fsquares0038.js"></script>
+<script async="async" src="fsquares0039.js"></script>
 <div style='padding:10px;'>
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -166,7 +166,8 @@ Contact
 <div class="lf"></div>
 <input type="button" id="calc" value="Compute continued fraction" />
 <input type="button" id="helpbtn" value="Help" />
-<input type="hidden" id="digits" value="20000"/>
+<input type="hidden" id="digits" value="20000"/><div class="lf"></div>
+<input type="checkbox" id="converg"><label for="converg">Show convergents</label>
 <input type="hidden" id="app" value="4"/>
 </form>
 <div id="help" aria-live="polite">
@@ -267,15 +268,17 @@ If the number to be represented is rational, there is a finite number of terms i
 </g>
 </svg>,
 then the continued fraction is periodic. This calculator can find the continued fraction expansions of rational numbers and quadratic irrationalities.
+Apart from the coefficients <var>a</var><sub><var>n</var></sub>, the program allows to find the convergent <var>A</var><sub><var>n</var></sub>/<var>B</var><sub><var>n</var></sub>. This quotient
+is the best rational approximation to the argument x with denominator less or equal to B<sub>n</sub> and matches the value obtained by developing only the first <var>n</var> coefficients of the continued fraction.
 </p>
-<p>You can type numbers or numerical expressions on the input boxes at the left.</p>
+<p>You can type numbers or numerical expressions on the input boxes.</p>
 <p>The calculator accepts numbers of up to 10000 digits.</p>
 <p>
 If you need the square root to subtract the number at the left, just negate both <var>a</var> and <var>c</var>.
 </p>
 <p>
 If <var>b</var> is negative, the result is not a real number, so it cannot be represented as a continued fraction.</p>
-<p>For rational numbers the calculator finds all convergents, but for quadratic irrationalities the calculator stops after the 100000th convergent if the period is larger.</p>
+<p>For rational numbers the calculator finds the coefficients and the numerator and denominator of all convergents, but for quadratic irrationalities the calculator stops after the 100000th convergent if the period is larger. When the program displays convergents, it stops before if it runs out of memory.</p>
 <h2>Expressions</h2>	
 <p>You can use the following operators and parentheses for the expressions:
 </p>
@@ -306,11 +309,45 @@ If <var>b</var> is negative, the result is not a real number, so it cannot be re
 <li> <strong>RevDigits(n,r)</strong>: finds the value obtained by writing backwards the digits of <var>n</var> in base <var>r</var>.</li>
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
+<h2>Algorithms used</h2>
+<p>The calculation of the coefficients of the continued fraction of a rational number is done as follows:</p>
+<ol>
+<li>Obtain the first coefficient as the integer part of the quotient between the numerator and the denominator rounded down.</li>
+<li>Subtract the numerator from the product of the denominator and the newly found coefficient.</li>
+<li>While the numerator is not zero:
+<ol>
+<li>Exchange the numerator and the denominator.</li>
+<li>Obtain the following coefficient as the integer part of the quotient between the numerator and the denominator rounded down.</li>
+<li>Subtract the numerator from the product of the denominator and the newly found coefficient.</li>
+</ol></li></ol>
+<p>The PQa algorithm is used to calculate the coefficients in the case of quadratic irrationalities, which are quotients between numerator + <span class="sqrtout"><span class="sqrtin">delta</span></span> and denominator.</p>
+<ol>
+<li>Repeat indefinitely:
+<ol>
+<li>Get the coefficient as the integer part of the quotient between numerator + <span class="sqrtout"><span class="sqrtin">delta</span></span> and the denominator rounded down.</li>
+<li>Subtract the numerator from the product of the newly found coefficient and the denominator.</li>
+<li>Change sign to the numerator.</li>
+<li>Calculate an auxiliary result as the difference between delta and the square of the numerator.</li>
+<li>Replace the denominator by the quotient between the previous auxiliary result and the denominator.</li>
+</ol></li></ol>
+<p>Based on the coefficients, the convergent numerators <var>A</var><sub><var>i</var></sub> and denominators <var>B</var><sub><var>i</var></sub> can be calculated using the following operations:</p>
+<ol>
+<li>Initialize the current and previous convergent numerator with the values ​​1 and 0 respectively. </li>
+<li>Initialize the current and previous convergent denominator with the values ​​0 and 1 respectively. </li>
+<li>For each coefficient obtained:
+<ol>
+<li>Calculate an auxiliary result as the product of the coefficient by the current convergent numerator.</li>
+<li>Obtain the next convergent numerator as the sum of the auxiliary result and the previous convergent numerator.</li>
+<li>Show the newly found value.</li>
+<li>Replace the previous convergent numerator with the current one.</li>
+<li>Replace the current convergent numerator with the next one.</li>
+<li>Perform the previous five steps replacing numerator by denominator.</li>
+</ol></li></ol>
 <h2>Source code</h2>
 <p>
 You can download the source of the current program and the old continued fraction applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 8 March 2018.</p>
+<p>Written by Dario Alpern. Last updated 5 April 2018.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>

@@ -90,6 +90,8 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
 enum eExprErr BigIntRemainder(BigInteger *pDividend, BigInteger *pDivisor, BigInteger *pRemainder);
 enum eExprErr BigIntPower(BigInteger *pBase, BigInteger *pExponent, BigInteger *pPower);
 enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int expon, BigInteger *pPower);
+void floordiv(BigInteger *num, BigInteger *den, BigInteger *result);
+void ceildiv(BigInteger *num, BigInteger *den, BigInteger *result);
 void BigInteger2Dec(BigInteger *pBigInt, char *decimal, int groupLen);
 void BigInteger2Hex(BigInteger *pBigInt, char *decimal, int groupLen);
 void BigIntGcd(BigInteger *pArg1, BigInteger *pArg2, BigInteger *pResult);

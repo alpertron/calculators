@@ -2122,7 +2122,6 @@ static void SaveFactors(struct sFactors *pstFactors)
     }
     NumberLength = *pstCurFactor->ptrFactor;
     UncompressBigInteger(pstCurFactor->ptrFactor, &bigint);
-    bigint.sign = SIGN_POSITIVE;
     BigInteger2Dec(&bigint, ptrText, -100000);   // Factors are saved in decimal.
     ptrText += strlen(ptrText);
     *ptrText++ = '^';

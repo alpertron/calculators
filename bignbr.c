@@ -63,6 +63,35 @@ void SubtractBigInt(limb *pMinuend, limb *pSubtrahend, limb *pDiff, int nbrLimbs
   }
 }
 
+// If address of num and result match, BigIntDivide will overwrite num, so it must be executed after processing num.
+void floordiv(BigInteger *num, BigInteger *den, BigInteger *result)
+{
+  BigInteger rem;
+  BigIntRemainder(num, den, &rem);
+  if (((num->sign == SIGN_NEGATIVE && den->sign == SIGN_POSITIVE) ||
+    (num->sign == SIGN_POSITIVE && !BigIntIsZero(num) && den->sign == SIGN_NEGATIVE)) && !BigIntIsZero(&rem))
+  {
+    BigIntDivide(num, den, result);
+    addbigint(result, -1);
+  }
+  else
+  {
+    BigIntDivide(num, den, result);
+  }
+}
+
+void ceildiv(BigInteger*num, BigInteger *den, BigInteger *result)
+{
+  BigInteger rem;
+  BigIntDivide(num, den, result);
+  BigIntRemainder(num, den, &rem);
+  if (((num->sign == SIGN_POSITIVE && !BigIntIsZero(num) && den->sign == SIGN_POSITIVE) ||
+    (num->sign == SIGN_NEGATIVE && den->sign == SIGN_NEGATIVE)) && !BigIntIsZero(&rem))
+  {
+    addbigint(result, 1);
+  }
+}
+
 void BigIntChSign(BigInteger *value)
 {
   if (value->nbrLimbs == 1 && value->limbs[0].x == 0)
@@ -902,6 +931,7 @@ void UncompressBigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint)
       (destLimb++)->x = 0;
     }
   }
+  bigint->sign = SIGN_POSITIVE;
 }
 
 void CompressBigInteger(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint)

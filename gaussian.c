@@ -109,7 +109,6 @@ void GaussianFactorization(void)
       int *ptrPrime = pstFactor->ptrFactor;
       NumberLength = *ptrPrime;
       UncompressBigInteger(ptrPrime, &prime);
-      prime.sign = SIGN_POSITIVE;
       if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
       {             // Prime factor is 2.
         for (index2 = 0; index2 < pstFactor->multiplicity; index2++)

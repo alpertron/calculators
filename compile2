@@ -23,6 +23,13 @@ cp ../calc/*.h .
 ../binaryen/build/bin/s2wasm ecm.s -s 1000000 > ecm.wast
 ../wabt/build/wat2wasm -o ecm.wasm ecm.wast
 
+/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -DFACTORIZATION_APP=1 -c -Oz quad.c -o quad.bc
+/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc factor.bc siqs.bc quad.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc batch.bc -o quad1.bc
+/usr/local/bin/opt -internalize -internalize-public-api-list=getFactorsAsciiPtr,getInputStringPtr,doWork,memory quad1.bc -o quad.bc
+/usr/local/bin/llc -O3 quad.bc -march=wasm32 -o quad.s
+../binaryen/build/bin/s2wasm quad.s -s 1000000 > quad.wast
+../wabt/build/wat2wasm -o quad.wasm quad.wast
+
 /usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz expression.c -o expression.bc
 /usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -DFSQUARES_APP=1 -c -Oz fsquares.c -o fsquares.bc
 /usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Oz fcubes.c -o fcubes.bc
@@ -43,4 +50,5 @@ cp ../calc/*.h .
 cp ecm.wasm ../calc
 cp fsquares.wasm ../calc
 cp ulam.wasm ../calc
+cp quad.wasm ../calc
 

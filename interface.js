@@ -57,7 +57,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'fsquares0038.wasm');
+  request.open('GET', 'fsquares0039.wasm');
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -151,7 +151,7 @@ function callWorker(param)
   var helphelp = get("helphelp");
   if (!worker)
   {
-    worker = new Worker(asmjs? "fsquaresW0038.js": "fsquares0038.js");
+    worker = new Worker(asmjs? "fsquaresW0039.js": "fsquares0039.js");
     worker.onmessage = function(e)
     { // First character of e.data is:
       // "1" for intermediate output
@@ -244,6 +244,10 @@ function performCalc()
     default:
       res.innerHTML = "Calculando desarrollo en fracciones continuas...";
       break;
+  }
+  if (app >= 4)
+  {
+    hex = (get("converg").checked? 1: 0);
   }
   param = digitGroup + ',' + (app+hex*64) + ',' + valueA + String.fromCharCode(0);
   if (app >= 4)

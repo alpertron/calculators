@@ -84,9 +84,6 @@
     <ClCompile Include="showtime.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
-    <ClCompile Include="aprtcle.c">
-      <Filter>Archivos de código fuente</Filter>
-    </ClCompile>
     <ClCompile Include="quadmod.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
@@ -94,6 +91,9 @@
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
     <ClCompile Include="batch.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="quad.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
   </ItemGroup>

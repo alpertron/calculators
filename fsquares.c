@@ -802,6 +802,10 @@ void doWork(void)
     app &= 0x1F;
     hexadecimal = 1;
   }
+  else
+  {
+    hexadecimal = 0;
+  }
   switch (app)
   {
   case 0:

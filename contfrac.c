@@ -21,21 +21,69 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "expression.h"
 #include "highlevel.h"
 static BigInteger num, den, delta;
-static BigInteger Temp;
+static BigInteger Temp, bigTmp;
+static BigInteger U1, U2, U3;
+static BigInteger V1, V2, V3;
+static BigInteger startPeriodNum, startPeriodDen;
 static char *ptrOutput;
 static void ShowRational(BigInteger *pNum, BigInteger *pDen);
 extern int lang;
+extern char hexadecimal;
 static void showText(char *text)
 {
   strcpy(ptrOutput, text);
   ptrOutput += strlen(ptrOutput);
 }
 
+static void ShowConvergents(int index, BigInteger *coeff)
+{
+  CopyBigInt(&U3, &U2);                   // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
+  CopyBigInt(&U2, &U1);
+  BigIntMultiply(coeff, &U2, &U1);
+  BigIntAdd(&U1, &U3, &U1);
+  CopyBigInt(&V3, &V2);                   // V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
+  CopyBigInt(&V2, &V1);
+  BigIntMultiply(coeff, &V2, &V1);
+  BigIntAdd(&V1, &V3, &V1);
+  *ptrOutput++ = 'A';
+  *ptrOutput++ = '[';
+  int2dec(&ptrOutput, index);
+  *ptrOutput++ = ']';
+  *ptrOutput++ = '/';
+  *ptrOutput++ = 'B';
+  *ptrOutput++ = '[';
+  int2dec(&ptrOutput, index);
+  *ptrOutput++ = ']';
+  *ptrOutput++ = ' ';
+  *ptrOutput++ = '=';
+  *ptrOutput++ = ' ';
+  BigInteger2Dec(&U1, ptrOutput, groupLen);  // Show continued fraction convergent.
+  ptrOutput += strlen(ptrOutput);
+  *ptrOutput++ = '/';
+  BigInteger2Dec(&V1, ptrOutput, groupLen);  // Show continued fraction convergent.
+  ptrOutput += strlen(ptrOutput);
+  *ptrOutput++ = ',';
+  *ptrOutput++ = ' ';
+  *ptrOutput++ = 'a';
+  *ptrOutput++ = '[';
+  int2dec(&ptrOutput, index);
+  *ptrOutput++ = ']';
+  *ptrOutput++ = ' ';
+  *ptrOutput++ = '=';
+  *ptrOutput++ = ' ';
+  BigInteger2Dec(coeff, ptrOutput, groupLen);  // Show continued fraction coefficient.
+  ptrOutput += strlen(ptrOutput);
+  *ptrOutput++ = '<';
+  *ptrOutput++ = 'b';
+  *ptrOutput++ = 'r';
+  *ptrOutput++ = '>';
+  *ptrOutput = 0;
+}
+
 static void ContFrac(void)
 {
   BigInteger intSqrt;
-  BigInteger biK, biP, biM;
-  BigInteger K, L, M, P, Z;
+  char ended;
 
   ptrOutput = output;
   // Show formula.
@@ -68,10 +116,18 @@ static void ContFrac(void)
                    "<p>The number is not real, so it does not have continued fraction expansion.</p>");
     return;
   }
-  showText("<p><span class=\"offscr\">");
-  showText(lang?"El desarrollo en fracción continua de":
-                "The expansion in continued fraction of");
-  showText(" </span><var>x</var> = ");
+  showText("<p>");
+  if (!hexadecimal)
+  {        // Show convergent checkbox not checked.
+    showText("<span class = \"offscr\">");
+    showText(lang ? "El desarrollo en fracción continua de" :
+      "The expansion in continued fraction of");
+    showText(" </span><var>x</var> = ");
+  }
+  intToBigInteger(&U1, 1);
+  intToBigInteger(&U2, 0);
+  intToBigInteger(&V1, 0);
+  intToBigInteger(&V2, 1);
   if (delta.nbrLimbs == 1 && delta.limbs[0].x == 0)
   {   /* Rational number */
     ShowRational(&num, &den);
@@ -101,140 +157,125 @@ static void ContFrac(void)
   {     // delta is a perfect square, so number is rational.
     BigIntAdd(&num, &intSqrt, &Temp);
     ShowRational(&Temp, &den);
+    ended = 1;
   }
   else
-  {
-    int cont;
-    char *sep;
-
-    CopyBigInt(&biP, &den);
-    CopyBigInt(&biK, &intSqrt);
-    if (biP.sign == SIGN_NEGATIVE)
+  {     // delta is not a perfect square. Periodic continued fraction.
+    int periodIndex, index;
+        // PQa algorithm for (P+G)/Q where G = sqrt(discriminant):
+        // If D - U^2 is not multiple of V then 
+        //   U = U*V
+        //   V = V*V
+        //   G = G*V
+        // U1 <- 1, U2 <- 0
+        // V1 <- 0, V2 <- 1
+        // Perform loop:
+        // a = floor((U + G)/V)
+        // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
+        // V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
+        // U <- a*V - U
+        // V <- (D - U^2)/V
+        // Inside period when: 0 <= G - U < V
+        // Check whether parameters have to be changed.
+        // Initialize variables.
+    intToBigInteger(&startPeriodNum, -1);     // Less than zero means outside period.
+    intToBigInteger(&startPeriodDen, -1);
+    index = 0;
+    periodIndex = 0;
+    ended = 0;
+    do
     {
-      addbigint(&biK, 1);
-    }
-    BigIntAdd(&biK, &num, &biK);
-    if (biK.sign == SIGN_POSITIVE)
-    {
-      if (den.sign == SIGN_POSITIVE)
-      {
-        (void)BigIntDivide(&biK, &den, &biM);
+      BigIntAdd(&num, &intSqrt, &bigTmp);
+      if (den.sign == SIGN_NEGATIVE)
+      {   // If denominator is negative, round square root upwards.
+        addbigint(&bigTmp, 1);
+      }      
+      floordiv(&bigTmp, &den, &Temp);         // Temp = Term of continued fraction.
+      if (!hexadecimal)
+      {      // Show convergent checkbox not checked.
+        BigInteger2Dec(&Temp, ptrOutput, groupLen);  // Show continued fraction coefficient.
+        ptrOutput += strlen(ptrOutput);
+        strcpy(ptrOutput, (index == 0 ? " + //" : ", ")); // Show separator.
+        ptrOutput += strlen(ptrOutput);
       }
-      else
-      {
-        CopyBigInt(&biM, &den);
-        addbigint(&biM, 1);
-        BigIntSubt(&biM, &biK, &biM);
-        BigIntNegate(&den, &den);
-        (void)BigIntDivide(&biM, &den, &biM);   // biM <- ((den+1)-biK)/(-den)
-        BigIntNegate(&den, &den);
+      if (hexadecimal)
+      {      // Show convergent checkbox is checked.
+        ShowConvergents(index, &Temp);
       }
-    }
-    else
-    {
-      if (den.sign == SIGN_POSITIVE)
-      {
-        CopyBigInt(&biM, &biK);
-        addbigint(&biM, 1);
-        BigIntSubt(&biM, &den, &biM);
-        (void)BigIntDivide(&biM, &den, &biM);   // biM <- ((biK+1)-den)/den
-      }
-      else
-      {
-        BigIntNegate(&biK, &biM);
-        BigIntNegate(&den, &den);
-        (void)BigIntDivide(&biM, &den, &biM);   // biM <- (-biK)/(-den)
-        BigIntNegate(&den, &den);
-      }
-    }
-
-    BigInteger2Dec(&biM, ptrOutput, groupLen);  // Show integer part.
-    ptrOutput += strlen(ptrOutput);
-    (void)BigIntMultiply(&biM, &den, &biM);
-    BigIntSubt(&biM, &num, &biM);
-    sep = " + //";
-    cont = -1;
-    K.sign = L.sign = P.sign = M.sign = SIGN_NEGATIVE;
-    K.nbrLimbs = L.nbrLimbs = P.nbrLimbs = M.nbrLimbs = 1;
-    K.limbs[0].x = L.limbs[0].x = P.limbs[0].x = M.limbs[0].x = 1;   // K <- L <- P <- M <- -1. 
-    while ((cont < 0 || TestBigNbrEqual(&K, &P) == 0|| TestBigNbrEqual(&L, &M)==0) && cont < 100000)
-    {
-      showText(sep);
-      sep = ", ";
-      if (cont < 0 && biP.sign == SIGN_POSITIVE && biM.sign == SIGN_POSITIVE)
-      {
-        BigIntSubt(&biP, &intSqrt, &Temp);
-        BigIntSubt(&Temp, &biM, &Temp);
-        if (Temp.sign == SIGN_NEGATIVE || (Temp.nbrLimbs == 1 && Temp.limbs[0].x == 0))
+      BigIntMultiply(&Temp, &den, &bigTmp);  // U <- a*V - U
+      BigIntSubt(&bigTmp, &num, &num);
+      BigIntMultiply(&num, &num, &bigTmp);   // V <- (D - U^2)/V
+      BigIntSubt(&delta, &bigTmp, &bigTmp);
+      BigIntDivide(&bigTmp, &den, &Temp);
+      CopyBigInt(&den, &Temp);
+      index++;
+      if (startPeriodNum.sign == SIGN_POSITIVE)
+      {             // Already inside period.
+        if (++periodIndex == 100000)
         {
-          BigIntSubt(&biM, &intSqrt, &Temp);
-          if (Temp.sign == SIGN_NEGATIVE || (Temp.nbrLimbs == 1 && Temp.limbs[0].x == 0))
-          {
+          break;    // Too many coefficients. Go out.
+        }
+        if (BigIntEqual(&num, &startPeriodNum) && BigIntEqual(&den, &startPeriodDen))
+        {           // New period started.
+          ended = 1;
+          break;    // Go out in this case.
+        }
+      }
+      else
+      {             // Check if periodic part of continued fraction has started.
+        BigIntSubt(&intSqrt, &num, &bigTmp);  // G - U must be >= 0 and < V.
+        if (bigTmp.sign == SIGN_POSITIVE)
+        {
+          BigIntSubt(&bigTmp, &den, &bigTmp);
+          if (bigTmp.sign == SIGN_NEGATIVE)
+          {                                 // Periodic part of continued fraction started.
+            CopyBigInt(&startPeriodNum, &num);       // Save U and V to check period end.
+            CopyBigInt(&startPeriodDen, &den);
             showText("<span class=\"offscr\">");
             showText(lang ? "inicio del período" : "start periodic part");
             showText("</span><span class=\"bold\">");
-            CopyBigInt(&P, &biP);
-            CopyBigInt(&K, &P);
-            CopyBigInt(&M, &biM);
-            CopyBigInt(&L, &M);
-            cont = 0;
           }
         }
       }
-      if (cont >= 0)
-      {
-        /* both numerator and denominator are positive */
-        (void)BigIntMultiply(&M, &M, &Temp);
-        BigIntSubt(&delta, &Temp, &Temp);
-        (void)BigIntDivide(&Temp, &P, &P);     // P <- (delta - M^2) / P
-        BigIntAdd(&intSqrt, &M, &Z);
-        (void)BigIntDivide(&Z, &P, &Z);        // Z <- (intSqrt + M) / P
-        (void)BigIntMultiply(&Z, &P, &Temp);
-        BigIntSubt(&Temp, &M, &M);       // M <- Z * P - M
-        cont++;
-      }
-      else
-      {
-        (void)BigIntMultiply(&biM, &biM, &Temp);
-        BigIntSubt(&delta, &Temp, &Temp);
-        (void)BigIntDivide(&Temp, &biP, &biP);    // biP <- (delta - biM^2) / biP
-        if (biP.sign == SIGN_POSITIVE)
-        {
-          BigIntAdd(&intSqrt, &biM, &Z);
-          (void)BigIntDivide(&Z, &biP, &Z);      // Z <- (intSqrt + biM) / biP
-        }
-        else
-        {
-          CopyBigInt(&Z, &intSqrt);
-          addbigint(&Z, 1);
-          BigIntAdd(&Z, &biM, &Z);
-          (void)BigIntDivide(&Z, &biP, &Z);      // Z <- (intSqrt + 1 + biM) / biP
-        }
-        (void)BigIntMultiply(&Z, &biP, &Temp);
-        BigIntSubt(&Temp, &biM, &biM);     // biM <- Z * biP - biM
-      }
-      BigInteger2Dec(&Z, ptrOutput, groupLen);  // Show convergent.
-      ptrOutput += strlen(ptrOutput);
+    } while (ptrOutput - &output[0] < sizeof(output) - 30000);
+    if (!hexadecimal)
+    {        // Show convergent checkbox not checked.
+      ptrOutput -= 2;                       // Delete extra comma and space at the end.
     }
-    if (cont >= 100000)
-    {  // Too many convergents.
-      showText(lang != 0? ", ... </span>//<br />donde la parte periódica (truncada a partir de los 100000 convergentes) está señalada en negrita.</p>" :
-        ", ... </span>//<br />where the periodic part (truncated after 100000 convergents) is marked in bold.</p>");
-      return;
-    }
-    else
+    if (ended)
     {
-      showText(lang != 0 ? "</span>//<br /><span aria-hidden=\"true\">donde la parte periódica está señalada en negrita</span>" :
-        "</span>//<br /><span aria-hidden=\"true\">where the periodic part is marked in bold</span>");
-      if (cont > 1)
+      showText("</span>");
+      if (!hexadecimal)
+      {        // Show convergent checkbox not checked.
+        showText("//");
+      }
+      showText("<br /><span aria-hidden=\"true\">");
+      showText(lang != 0 ? "donde la parte periódica está señalada en negrita</span>" :
+        "where the periodic part is marked in bold</span>");
+      if (periodIndex > 1)
       {
         showText(lang != 0 ? " (el período tiene " : " (the period has ");
-        int2dec(&ptrOutput, cont);
+        int2dec(&ptrOutput, periodIndex);
         showText(lang != 0 ? " coeficientes)" : " coefficients)");
       }
     }
+    else
+    {  // Too many convergents.
+      if (!hexadecimal)
+      {        // Show convergent checkbox not checked.
+        showText(", ... </span>//");
+      }
+      else
+      {
+        showText("... </span>");
+      }
+      showText(lang != 0 ? "<br />donde la parte periódica (truncada a partir de los " :
+        "//<br />where the periodic part (truncated after ");
+      int2dec(&ptrOutput, periodIndex);
+      showText(lang != 0 ? " convergentes) está señalada en negrita.</p>" :
+        " convergents) is marked in bold.</p>");
+    }
   }
-  showText(".");
   showText(lang? "<p>" COPYRIGHT_SPANISH "</p>" :
                  "<p>" COPYRIGHT_ENGLISH "</p>");
 }
@@ -243,41 +284,49 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
 {
   BigInteger Tmp;
   char *sep;
+  int index = 0;
 
   BigIntGcd(pNum, pDen, &Tmp);     // Tmp <- GCD of numerator and denominator.
   (void)BigIntDivide(pNum, &Tmp, pNum);
   (void)BigIntDivide(pDen, &Tmp, pDen);
-  if (pDen->sign == SIGN_NEGATIVE)
-  {
-    BigIntNegate(pNum, pNum);
-    BigIntNegate(pDen, pDen);
+  floordiv(pNum, pDen, &Tmp);
+  BigIntMultiply(pDen, &Tmp, &bigTmp);
+  BigIntSubt(pNum, &bigTmp, pNum);   // Reduce numerator.
+  if (hexadecimal)
+  {      // Show convergent checkbox is checked.
+    ShowConvergents(index, &Tmp);
   }
-  (void)BigIntDivide(pNum, pDen, &Tmp); //  Get integer part.
-  (void)BigIntRemainder(pNum, pDen, pNum);
-  if (pNum->sign == SIGN_NEGATIVE)
+  else
   {
-    BigIntAdd(pDen, pNum, pNum);   // Convert numerator to positive.
-    addbigint(&Tmp, -1);          // Adjust integer part to floor.
+    BigInteger2Dec(&Tmp, ptrOutput, groupLen);  // Show convergent.
+    ptrOutput += strlen(ptrOutput);
   }
-  BigInteger2Dec(&Tmp, ptrOutput, groupLen);  // Show convergent.
-  ptrOutput += strlen(ptrOutput);
   (void)BigIntRemainder(pNum, pDen, pNum);
   sep = " + //";
-  while (pNum->nbrLimbs!=1 || pNum->limbs[0].x != 0)
+  while (!BigIntIsZero(pNum))
   {      // Numerator greater than zero.
-    if (pDen->nbrLimbs!=1 || pDen->limbs[0].x != 0)
+    index++;
+    if (!BigIntIsZero(pDen))
     {    // Denominator greater than zero.
-      (void)BigIntDivide(pDen, pNum, &Tmp);
-      showText(sep);
-      BigInteger2Dec(&Tmp, ptrOutput, groupLen);  // Show convergent.
-      ptrOutput += strlen(ptrOutput);
+      floordiv(pDen, pNum, &Tmp);
+      if (hexadecimal)
+      {      // Show convergent checkbox is checked.
+        ShowConvergents(index, &Tmp);
+      }
+      else
+      {
+        showText(sep);
+        BigInteger2Dec(&Tmp, ptrOutput, groupLen);  // Show convergent.
+        ptrOutput += strlen(ptrOutput);
+      }
       sep = ", ";
     }
-    (void)BigIntRemainder(pDen, pNum, &Tmp);
+    BigIntMultiply(pNum, &Tmp, &bigTmp);
+    BigIntSubt(pDen, &bigTmp, &Tmp);
     CopyBigInt(pDen, pNum);
     CopyBigInt(pNum, &Tmp);
   }
-  if (sep[0] == ',')
+  if (!hexadecimal && sep[0] == ',')
   {         // Inside continued fraction. Close it.
     showText("//");
   }

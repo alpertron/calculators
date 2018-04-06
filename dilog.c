@@ -185,7 +185,6 @@ void DiscreteLogarithm(void)
     ptrPrime = astFactorsMod[index].ptrFactor;
     NumberLength = *ptrPrime;
     UncompressBigInteger(ptrPrime, &groupOrder);
-    groupOrder.sign = SIGN_POSITIVE;
     BigIntRemainder(&base, &groupOrder, &tmpBase);
     if (tmpBase.nbrLimbs == 1 && tmpBase.limbs[0].x == 0)
     {     // modulus and base are not relatively prime.
@@ -285,7 +284,6 @@ void DiscreteLogarithm(void)
     {
       NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
       UncompressBigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
-      subGroupOrder.sign = SIGN_POSITIVE;
       strcpy(textExp, "Computing discrete logarithm in subgroup of ");
       Bin2Dec(subGroupOrder.limbs, textExp + strlen(textExp), subGroupOrder.nbrLimbs, groupLen);
       ptr = textExp + strlen(textExp);
