@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="Author" content="Dario Alejandro Alpern" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Applicación Javascript que halla soluciones a ecuaciones cuadráticas enteras en dos variables. Hecho por Dario Alpern." />
+<meta name="keywords" content="ecuaciones enteras, Pell, ecuaciones de Pell" />
+<meta name="theme-color" content="#db5945">
+<link rel="alternate" hreflang="en" href="QUAD.HTM" />
+<link rel="prefetch" href="quadW0039.js" />
+<link rel="manifest" href="cuad.webmanifest">
+<title>Resolución de ecuaciones cuadráticas en dos variables enteras</title>
+<style media="print">
+#smallheader {display:none;}
+</style>
+<style media="screen">
+#smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
+#smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+#smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+#smallheader li:hover {background-color:#004000; color:#FFFFFF;}
+#smallheader li ul { display:none; position:absolute; }
+#smallheader li:hover ul.alignleft{ display:block; height:auto;}
+#smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+#smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
+#smallheader a:link{color:#FFFFFF; text-decoration: none;}
+#smallheader a:visited{color:#FFFFFF; text-decoration: none;}
+#smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+#smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+#smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+#smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+#smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+#smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+@media (max-width: 400px) { #smallheader { font-size:0.7em;} }
+@media (min-width: 400px) { #smallheader { font-size:1em;} }
+@media screen and (min-width: 500px) {#coefLeft {float:left;width:50%;} #coefRight {float:right;width:50%;}}
+</style>
+<style>
+body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
+h1 {text-align:center;}
+.lf,.coef {padding:0.2em; clear:both;}
+.i {font-style: italic;}
+.inline {display:inline;}
+.pad {padding:10px;}
+#help,#result,#status,#footer {margin: 3px; padding: 3px;}
+#applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+@media (min-width: 400px) { .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}}
+@media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
+</style>
+</head>
+<body>
+<nav id="smallheader">
+<div class="atright"><a href="ENGLISH.HTM" hreflang="en" title="Dario Alpern's Web site in English">ENG</a></div>
+<ul>
+<li>
+Electrónica
+<ul class="alignleft">
+<li><a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a></li>
+</ul>
+</li>
+<li>
+Matemáticas
+<ul class="alignleft">
+<li><a href="CALDORAS.HTM" title="Programas en Java y Javascript que implementan calculadoras">Calculadoras</a></li>
+<li><a href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a></li>
+<li><a href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a></li>
+</ul>
+</li>
+<li>
+Programas
+<ul class="alignright">
+<li><a href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a></li>
+<li><a href="PROGJAVA.HTM" title="Programas escritos en Java">Java</a></li>
+<li><a href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a></li>
+</ul>
+</li>
+<li class="alignright">
+Contacto
+<ul class="alignright">
+<li><a href="PERSONAL.HTM" title="Información personal">Personal</a></li>
+<li><a href="FORMULAR.HTM" title="Formulario para enviar comentarios">Comentarios</a></li>
+<li><a href="GBOOK.HTM" title="Viejo y nuevo libro de visitas">Libro de invitados</a></li>
+<li><a href="DONATION.HTM" title="Donaciones al autor de este sitio Web">Donaciones</a></li>
+</ul>
+</li>
+</ul>
+<br class="newline"/>
+</nav>
+<main>
+<article>
+<h1>Resolución de ecuaciones cuadráticas en dos variables enteras</h1>
+<script async="async" src="quad0039.js"></script>
+<div class="pad">
+<div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
+<a href="ENGLISH.HTM" itemprop="url">
+<span itemprop="title">Alpertron</span>
+</a> ›
+</div>
+<div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" class="inline">
+<a href="PROGJAVA.HTM" itemprop="url">
+<span itemprop="title">Programas</span>
+</a> ›
+</div>
+<div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="inline">
+<a href="ECMNUEVO.HTM" itemprop="url">
+<span itemprop="title">Resolución de ecuaciones cuadráticas en dos variables enteras</span>
+</a>
+</div>
+</div>
+<div id="applet">
+<var>a</var>&#8290;<var>x</var>&sup2; + <var>b</var>&#8290;<var>x</var>&#8290;<var>y</var> + <var>c</var>&#8290;<var>x</var>&sup2; + <var>d</var>&#8290;<var>x</var> + <var>e</var>&#8290;<var>y</var> + <var>f</var> = 0
+<div class="lf"></div>
+<div id="coefLeft">
+<div class="coef"><label for="coefA"><var>a</var></label>&nbsp;<input type="text" id="coefA" value="" class="input" aria-label="Coeficiente A"/></div>
+<div class="coef"><label for="coefB"><var>b</var></label>&nbsp;<input type="text" id="coefB" value="" class="input" aria-label="Coeficiente B"/></div>
+<div class="coef"><label for="coefC"><var>c</var></label>&nbsp;<input type="text" id="coefC" value="" class="input" aria-label="Coeficiente C"/></div>
+</div>
+<div id="coefRight">
+<div class="coef"><label for="coefD"><var>d</var></label>&nbsp;<input type="text" id="coefD" value="" class="input" aria-label="Coeficiente D"/></div>
+<div class="coef"><label for="coefE"><var>e</var></label>&nbsp;<input type="text" id="coefE" value="" class="input" aria-label="Coeficiente E"/></div>
+<div class="coef"><label for="coefF"><var>f</var></label>&nbsp;<input type="text" id="coefF" value="" class="input" aria-label="Coeficiente F"/></div>
+</div>
+<div class="lf"></div>
+<input type="button" id="solve" value="Resolver" />
+<input type="button" id="stop" value="Detener" />
+<input type="button" id="helpbtn" value="Ayuda" />
+<div class="lf"></div>
+<label for="digits">Dígitos por grupo</label>&nbsp;<input type="number" id="digits" value="6"/>
+<input type="hidden" id="app" value="1"/>
+</div>
+<div id="help" aria-live="polite">
+<p>Esta calculadora resuelve ecuaciones de la forma <strong>a&#8290;x&sup2; + b&#8290;x&#8290;y + c&#8290;y&sup2; + dx + ey + f = 0</strong> donde las incógnitas <strong>x</strong> e <strong>y</strong> son números enteros.</p>
+<p>El programa acepta números de hasta 10000 dígitos, pero el algoritmo utilizado requiere factorizar algunos números (en general los números grandes no se pueden factorizar en un tiempo razonable). El motor de factorización utilizado es el la aplicación de <A HREF="ECM.HTM">factorización de números enteros</A>, que usa los métodos ECM y SIQS.</p>
+<p>Si hay muchas soluciones, la aplicación se puede quedar sin memoria y no mostrará ningún resultado.</p>
+<h2>Expresiones</h2>
+<p>Puedes ingresar expresiones que usen los siguientes operadores y paréntesis:</p>
+<p>
+<ul>
+<li> + para suma
+<li> - para resta
+<li> * para multiplicación
+<li> / para división entera
+<li> % para el resto de la división entera
+<li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> para lógica binaria.
+<li> <strong>SHL</strong>: Desplazar a la izquierda la cantidad de bits indicada en el operando derecho.
+<li> <strong>SHR</strong>: Desplazar a la derecha la cantidad de bits indicada en el operando derecho.
+<li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
+<li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
+<li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
+<li> <strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub>
+<li> <strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub>
+<li> <strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
+<li> <strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).
+<li> <strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.
+<li> <strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.
+<li> <strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.
+<li> <strong>Totient(n)</strong>: cantidad de enteros positivos menores que <var>n</var> coprimos con <var>n</var>.
+<li> <strong>IsPrime(n)</strong>: returna cero si <var>n</var> no es un primo probable y -1 si lo es.
+<li> <strong>NumDivs(n)</strong>: cantidad de divisores positivos de <var>n</var> primos o compuestos.
+<li> <strong>SumDivs(n)</strong>: suma de divisores positivos de <var>n</var> primos o compuestos.
+<li> <strong>NumDigits(n,r)</strong>: cantidad de dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>SumDigits(n,r)</strong>: suma de dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>RevDigits(n,r)</strong>: halla el valor que se obtiene escribiendo para atrás los dígitos de <var>n</var> en base <var>r</var>.
+<li> <strong>ConcatFact(m,n)</strong>: concatena los factores primos de <var>n</var> de acuerdo al modo expresado en <var>m</var> según lo indicado en la siguiente tabla:
+<table>
+<caption>Modos de la función ConcatFact</caption>
+<tr><th scope="col">Modo</th><th scope="col">Orden de los factores</th><th scope="col">Factores repetidos</th></tr>
+<tr><td>0</td><td>Creciente</td><td>No</td></tr>
+<tr><td>1</td><td>Decreciente</td><td>No</td></tr>
+<tr><td>2</td><td>Creciente</td><td>Sí</td></tr>
+<tr><td>3</td><td>Decreciente</td><td>Sí</td></tr>
+</table>
+</li>
+</ul>
+<p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
+<p>El símbolo de exponenciación no se encuentra en algunos dispositivos móviles. En este caso se puede ingresar dos asteriscos (**) para representar el operador de exponenciación.</p>
+<h2>Código fuente</h2>
+<p>Puedes bajar el código fuente de esta aplicación y del viejo applet de ecuaciones cuadráticas enteras desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
+<p>Escrito por Dario Alpern. Actualizado el 5 de abril de 2017.</p>
+</div>
+<div id="result" aria-live="polite"></div>
+<div>
+<p>Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORMULAR.HTM?Comentario+de+calculadora+de+ecuaciones+cuadraticas+enteras">formulario</a>.</p>
+</div>
+</article>
+</main>
+</body>
+</html>

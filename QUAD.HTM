@@ -1,0 +1,216 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="Author" content="Dario Alejandro Alpern" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Javascript application that finds solutions to integer quadratic equations in two variables. Written by Dario Alpern." />
+<meta name="keywords" content="integer equations, Pell equations" />
+<meta name="theme-color" content="#db5945">
+<link rel="alternate" hreflang="es" href="CUAD.HTM" />
+<link rel="prefetch" href="quadW0039.js" />
+<link rel="manifest" href="quad.webmanifest">
+<title>Generic two integer variable equation solver</title>
+<style media="print">
+#smallheader {display:none;}
+</style>
+<style media="screen">
+#smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
+#smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+#smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+#smallheader li:hover {background-color:#004000; color:#FFFFFF;}
+#smallheader li ul { display:none; position:absolute; }
+#smallheader li:hover ul.alignleft{ display:block; height:auto;}
+#smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+#smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
+#smallheader a:link{color:#FFFFFF; text-decoration: none;}
+#smallheader a:visited{color:#FFFFFF; text-decoration: none;}
+#smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+#smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+#smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+#smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+#smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+#smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+@media (max-width: 400px) { #smallheader { font-size:0.7em;} }
+@media (min-width: 400px) { #smallheader { font-size:1em;} }
+@media screen and (min-width: 500px) {#coefLeft {float:left;width:50%;} #coefRight {float:right;width:50%;}}
+</style>
+<style>
+body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
+h1 {text-align:center;}
+.lf,.coef {padding:0.2em; clear:both;}
+.i {font-style: italic;}
+.inline {display:inline;}
+.pad {padding:10px;}
+#help,#result,#status,#footer {margin: 3px; padding: 3px;}
+#applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+@media (min-width: 400px) { .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}}
+@media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
+</style>
+</head>
+<body>
+<nav id="smallheader">
+<div style="float:right;"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
+<ul>
+<li>
+Electronics
+<ul class="alignleft">
+<li>
+<a href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a>
+</li>
+</ul>
+</li>
+<li>
+Mathematics
+<ul class="alignleft">
+<li>
+<a href="CALTORS.HTM" title="Java and Javascript programs implementing calculators">Calculators</a>
+</li>
+<li>
+<a href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a>
+</li>
+<li>
+<a href="PROBLEMS.HTM" title="Interesting math problems">Problems</a>
+</li>
+</ul>
+</li>
+<li>
+Programs
+<ul class="alignright">
+<li>
+<a href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a>
+</li>
+<li>
+<a href="JAVAPROG.HTM" title="Programs written in Java">Java</a>
+</li>
+<li>
+<a href="GAMES.HTM" title="Computer games">Games</a>
+</li>
+</ul>
+</li>
+<li class="alignright">
+Contact
+<ul class="alignright">
+<li>
+<a href="EPERS.HTM" title="Personal information">Personal</a>
+</li>
+<li>
+<a href="FORM.HTM" title="Form to send comments">Comments</a>
+</li>
+<li>
+<a href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a>
+</li>
+<li>
+<a href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a>
+</li>
+</ul>
+</li>
+</ul>
+<br style="clear:both;"/>
+</nav>
+<main>
+<article>
+<h1>Generic two integer variable equation solver</h1>
+<script async="async" src="quad0039.js"></script>
+<div class="pad">
+<div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
+<a href="ENGLISH.HTM" itemprop="url">
+<span itemprop="title">Alpertron</span>
+</a> ›
+</div>
+<div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" style="display:inline;">
+<a href="JAVAPROG.HTM" itemprop="url">
+<span itemprop="title">Programs</span>
+</a> ›
+</div>
+<div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" style="display:inline;">
+<a href="QUAD.HTM" itemprop="url">
+<span itemprop="title">Generic two integer variable equation solver</span>
+</a>
+</div>
+</div>
+<div id="applet">
+<var>a</var>&#8290;<var>x</var>&sup2; + <var>b</var>&#8290;<var>x</var>&#8290;<var>y</var> + <var>c</var>&#8290;<var>x</var>&sup2; + <var>d</var>&#8290;<var>x</var> + <var>e</var>&#8290;<var>y</var> + <var>f</var> = 0
+<div class="lf"></div>
+<div id="coefLeft">
+<div class="coef"><label for="coefA"><var>a</var></label>&nbsp;<input type="text" id="coefA" value="" class="input" aria-label="Coefficient A"/></div>
+<div class="coef"><label for="coefB"><var>b</var></label>&nbsp;<input type="text" id="coefB" value="" class="input" aria-label="Coefficient B"/></div>
+<div class="coef"><label for="coefC"><var>c</var></label>&nbsp;<input type="text" id="coefC" value="" class="input" aria-label="Coefficient C"/></div>
+</div>
+<div id="coefRight">
+<div class="coef"><label for="coefD"><var>d</var></label>&nbsp;<input type="text" id="coefD" value="" class="input" aria-label="Coefficient D"/></div>
+<div class="coef"><label for="coefE"><var>e</var></label>&nbsp;<input type="text" id="coefE" value="" class="input" aria-label="Coefficient E"/></div>
+<div class="coef"><label for="coefF"><var>f</var></label>&nbsp;<input type="text" id="coefF" value="" class="input" aria-label="Coefficient F"/></div>
+</div>
+<div class="lf"></div>
+<input type="button" id="solve" value="Solve" />
+<input type="button" id="stop" value="Stop" />
+<input type="button" id="helpbtn" value="Help" />
+<div class="lf"></div>
+<label for="digits">Digits per group</label>&nbsp;<input type="number" id="digits" value="6"/>
+<input type="hidden" id="app" value="0"/>
+</div>
+<div id="help" aria-live="polite">
+<p>This calculator can solve equations of the form <strong>a&#8290;x&sup2; + b&#8290;x;&#8290;y + c&#8290;y&sup2; + dx + ey + f = 0</strong> where the unknowns <var>x</var> and <var>y</var> are integer numbers.</p>
+<p>You can type numbers or numerical expressions on the input boxes.
+<p>The calculator accepts numbers of up to 10000 digits, but notice that the algorithm requires the factorization of some numbers (in general large numbers cannot be factored in a reasonable amount of time). The factorization engine is the one used in the <A HREF="ECM.HTM">Elliptic Curve Method factorization applet</A>, that uses the methods ECM and SIQS.</p>
+<p>If there are too many solutions, the application could run out of memory. In this case it will not show anything.</p>
+<h2>Expressions</h2>
+<p>You can also enter expressions that use the following operators and parentheses:
+<ul>
+<li> + for addition
+<li> - for subtraction
+<li> * for multiplication
+<li> / for integer division
+<li> % for modulus (remainder of the integer division)
+<li> ^ or ** for exponentiation (the exponent must be greater than or equal to zero).</li>
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.</li>
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> for binary logic.
+<li> <strong>SHL</strong>: Shift left the number of bits specified on the right operand.
+<li> <strong>SHR</strong>: Shift right the number of bits specified on the right operand.
+<li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero).</li>
+<li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).</li>
+<li> <strong>B(n)</strong>: Previous probable prime before <em>n</em></li>
+<li> <strong>F(n)</strong>: Fibonacci number F<sub>n</sub></li>
+<li> <strong>L(n)</strong>: Lucas number L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub></li>
+<li> <strong>N(n)</strong>: Next probable prime after <em>n</em></li>
+<li> <strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).</li>
+<li> <strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
+<li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
+<li> <strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
+<li> <strong>Totient(n)</strong>: finds the number of positive integers less than <var>n</var> which are relatively prime to <var>n</var>.</li>
+<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is.</li>
+<li> <strong>NumDivs(n)</strong>: Number of positive divisors of <var>n</var> either prime or composite.</li>
+<li> <strong>SumDivs(n)</strong>: Sum of positive divisors of <var>n</var> either prime or composite.</li>
+<li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>SumDigits(n,r)</strong>: Sum of digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>RevDigits(n,r)</strong>: finds the value obtained by writing backwards the digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>ConcatFact(m,n)</strong>: Concatenates the prime factors of <var>n</var> according to the mode expressed in <var>m</var> which follows this table:<br><br>
+<table>
+<caption>ConcatFact function modes</caption>
+<tr><th scope="col">Mode</th><th scope="col">Order of factors</th><th scope="col">Repeated factors</th></tr>
+<tr><td>0</td><td>Ascending</td><td>No</td></tr>
+<tr><td>1</td><td>Descending</td><td>No</td></tr>
+<tr><td>2</td><td>Ascending</td><td>Yes</td></tr>
+<tr><td>3</td><td>Descending</td><td>Yes</td></tr>
+</table>
+</li>
+</ul>
+<p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
+<p>The exponentiation symbol is not present in some mobile devices, so two asterisks ** can by typed as the exponentiation operator.</p>
+<h2>Source code</h2>
+<p>
+You can download the source of the current program and the old quadratic integer equation applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
+</p>
+<p>Written by Dario Alpern. Last updated 5 April 2018.</p>
+</div>
+<div id="result" aria-live="polite"></div>
+<div>
+<p>
+If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Generic+two+integer+variable+equation+solver+feedback">form</a>.
+</p>
+</div>
+</article>
+</main>
+</body>
+</html>
