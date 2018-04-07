@@ -28,7 +28,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-  	worker = new Worker('quadW0040.js');
+  	worker = new Worker('quadW0042.js');
 	worker.onmessage = function(e)
 	{ // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.

@@ -2331,12 +2331,12 @@ void SolveQuadEquation(void)
     ptrOutput += strlen(ptrOutput);
   }
   // Divide all coefficients by GCD(A, B, C, D, E)
-  BigIntDivide(&ValA, &Aux[0], &ValA);
-  BigIntDivide(&ValB, &Aux[0], &ValB);
-  BigIntDivide(&ValC, &Aux[0], &ValC);
-  BigIntDivide(&ValD, &Aux[0], &ValD);
-  BigIntDivide(&ValE, &Aux[0], &ValE);
-  BigIntDivide(&ValF, &Aux[0], &ValF);
+  BigIntDivide(&ValA, &Aux[1], &ValA);
+  BigIntDivide(&ValB, &Aux[1], &ValB);
+  BigIntDivide(&ValC, &Aux[1], &ValC);
+  BigIntDivide(&ValD, &Aux[1], &ValD);
+  BigIntDivide(&ValE, &Aux[1], &ValE);
+  BigIntDivide(&ValF, &Aux[1], &ValF);
   // Test whether the equation is linear. A = B = C = 0.
   if (BigIntIsZero(&ValA) && BigIntIsZero(&ValB) && BigIntIsZero(&ValC))
   {
@@ -2395,10 +2395,6 @@ void SolveQuadEquation(void)
   {
     return;     // There are no solutions.
   }
-  // Replace a, b, c by a/t, b/t, c/t.
-  BigIntDivide(&ValA, &U1, &ValA);
-  BigIntDivide(&ValB, &U1, &ValB);
-  BigIntDivide(&ValC, &U1, &ValC);
   if (discr.sign == SIGN_NEGATIVE)
   {
     NegativeDiscriminant();
