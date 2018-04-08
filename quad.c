@@ -63,7 +63,7 @@ static char *varT = "t";
 static char *varTprime = "t'";
 static char *squareText = "&sup2;";
 static BigInteger discr;
-static BigInteger U1, U2, U3, V1, V2, V3, G1, G2, G3, bigTmp;
+static BigInteger U1, U2, U3, V1, V2, V3, bigTmp;
 static BigInteger startPeriodU, startPeriodV;
 static BigInteger coeffQuadr, coeffLinear, coeffIndep, modulus;
 static BigInteger currentFactor, prime;
@@ -2226,12 +2226,10 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   // PQa algorithm for (P+G)/Q where G = sqrt(discriminant):
   // U1 <- 1, U2 <- 0
   // V1 <- 0, V2 <- 1
-  // G1 <- -U, G2 <- V
   // Perform loop:
   // a = floor((U + G)/V)
   // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
   // V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
-  // G3 <- G2, G2 <- G1, G1 <- a*G2 + G3
   // U <- a*V - U
   // V <- (D - U^2)/V
   // Inside period when: 0 <= G - U < V
@@ -2240,8 +2238,6 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   intToBigInteger(&U2, 0);
   intToBigInteger(&V1, 0);
   intToBigInteger(&V2, 1);
-  CopyBigInt(&G1, &ValU);
-  BigIntChSign(&G1);
   intToBigInteger(&startPeriodU, -1);      // Less than zero means outside period.
   intToBigInteger(&startPeriodV, -1);
   index = 0;
@@ -2261,10 +2257,6 @@ static void callbackQuadModHyperbolic(BigInteger *value)
     CopyBigInt(&V2, &V1);
     BigIntMultiply(&Tmp1, &V2, &V1);
     BigIntAdd(&V1, &V3, &V1);
-    CopyBigInt(&G3, &G2);                  // G3 <- G2, G2 <- G1, G1 <- a*G2 + G3
-    CopyBigInt(&G2, &G1);
-    BigIntMultiply(&Tmp1, &G2, &G1);
-    BigIntAdd(&G1, &G3, &G1);
     BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
     BigIntSubt(&bigTmp, &ValU, &ValU);
     BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
