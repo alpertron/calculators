@@ -1586,6 +1586,11 @@ static void NonSquareDiscriminant(void)
 {
   int factorNbr, numFactors;
   struct sFactors *pstFactor;
+  if (BigIntIsZero(&ValK))
+  {          // If k=0, the only solution is (X, Y) = (0, 0)
+    ShowPoint(&ValK, &ValK);
+    return;
+  }
   // For elliptic case: factor independent term.
   NumberLength = ValK.nbrLimbs;
   CompressBigInteger(nbrToFactor, &ValK);
