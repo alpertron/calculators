@@ -1566,6 +1566,26 @@ static void callbackQuadModParabolic(BigInteger *value)
   PrintQuad(&V3, &V2, &V1);
 }
 
+static void ShowPoint(BigInteger *X, BigInteger *Y)
+{
+  // Check first that (X+alpha) and (Y+beta) are multiple of D.
+  BigIntAdd(X, &ValAlpha, &Tmp1);
+  BigIntRemainder(&Tmp1, &discr, &Tmp2);
+  if (!BigIntIsZero(&Tmp2))
+  {
+    return;
+  }
+  BigIntAdd(Y, &ValBeta, &Tmp2);
+  BigIntRemainder(&Tmp2, &discr, &Tmp3);
+  if (!BigIntIsZero(&Tmp3))
+  {
+    return;
+  }
+  BigIntDivide(&Tmp1, &discr, &Tmp1);
+  BigIntDivide(&Tmp2, &discr, &Tmp2);
+  ShowXY(&Tmp1, &Tmp2);
+}
+
 // Solve ax^2+bxy+cy^2 = K
 // The quadratic modular equation algorithm requires that gcd(a, n) = 1.
 // At this point gcd(a, b, c) = 1
@@ -1577,7 +1597,9 @@ static void callbackQuadModParabolic(BigInteger *value)
 // Also perform: x = X + Y, y = (m-1)X + mY
 // We get: (a+(m-1)*b+(m-1)^2*c)*X^2 + (2a + b(2m-1) + 2cm(m-1))*X*Y + (a+bm+cm^2)*Y^2
 // The discriminant of the new formula does not change.
-// Compute m=1, 2, 3,... until gcd(am^2+bm+c, K) = 1
+// Compute m=1, 2, 3,... until gcd(am^2+bm+c, K) = 1.
+// When using the second formula, change sign of m so we know the formula used when
+// undoing the unimodular transformation later.
 
 // Since the algorithm discovers only primitive solutions, i.e. solutions (x,y) where
 // gcd(x,y) = 1, we need to solve ax'^2+bx'y'+cy'^2 = K/R^2 where R^2 is a divisor of K.
@@ -1628,9 +1650,7 @@ static void NonSquareDiscriminant(void)
     {                 // gcd(a, K) is not equal to 1.
       intToBigInteger(&ValM, 0);
       do
-      {  
-        addbigint(&ValM, 1);    // Increment M.
-                                // Compute cm^2 + bm + a and exit loop if this value is not coprime with K.
+      {                          // Compute cm^2 + bm + a and exit loop if this value is not coprime with K.
         BigIntMultiply(&ValC, &ValM, &U2);
         BigIntAdd(&U2, &ValB, &U1);
         BigIntMultiply(&U1, &ValM, &U1);
@@ -1638,9 +1658,11 @@ static void NonSquareDiscriminant(void)
         BigIntGcd(&U1, &ValK, &bigTmp);
         if (bigTmp.nbrLimbs == 1 && bigTmp.limbs[0].x == 1)
         {
+          addbigint(&ValM, 1);  // Increment M.
           BigIntChSign(&ValM);  // Change sign to indicate type.
           break;
         }
+        addbigint(&ValM, 1);    // Increment M.
                                 // Compute am^2 + bm + c and loop while this value is not coprime with K.
         BigIntMultiply(&ValA, &ValM, &U2);
         BigIntAdd(&U2, &ValB, &U1);
@@ -1648,16 +1670,29 @@ static void NonSquareDiscriminant(void)
         BigIntAdd(&U1, &ValC, &U1);
         BigIntGcd(&U1, &ValK, &bigTmp);
       } while (bigTmp.nbrLimbs != 1 || bigTmp.limbs[0].x != 1);
-      // Compute 2am + b.
+      // Compute 2am + b or 2cm + b as required.
       BigIntAdd(&U2, &U2, &U2);
       BigIntAdd(&U2, &ValB, &U2);
-      // Compute c.
-      BigIntSubt(&U1, &U2, &ValB);
-      BigIntAdd(&ValB, &ValA, &ValC);
-      // Compute b.
-      BigIntAdd(&ValB, &U1, &ValB);
-      // Compute a.
-      CopyBigInt(&ValA, &U1);
+      if (ValM.sign == SIGN_POSITIVE)
+      {
+        // Compute c.
+        BigIntSubt(&U1, &U2, &ValB);
+        BigIntAdd(&ValB, &ValA, &ValC);
+        // Compute b.
+        BigIntAdd(&ValB, &U1, &ValB);
+        // Compute a.
+        CopyBigInt(&ValA, &U1);
+      }
+      else
+      {
+        // Compute a.
+        BigIntSubt(&U1, &U2, &ValB);
+        BigIntAdd(&ValB, &ValC, &ValA);
+        // Compute b.
+        BigIntAdd(&ValB, &U1, &ValB);
+        // Compute c.
+        CopyBigInt(&ValC, &U1);
+      }
     }
     CopyBigInt(&coeffQuadr, &ValA);
     CopyBigInt(&coeffLinear, &ValB);
@@ -1721,29 +1756,12 @@ static void NegativeDiscriminant(void)
   NonSquareDiscriminant();
 }
 
-static void ShowPoint(BigInteger *X, BigInteger *Y)
-{
-  // Check first that (X+alpha) and (Y+beta) are multiple of D.
-  BigIntAdd(X, &ValAlpha, &Tmp1);
-  BigIntRemainder(&Tmp1, &discr, &Tmp2);
-  if (!BigIntIsZero(&Tmp2))
-  {
-    return;
-  }
-  BigIntAdd(Y, &ValBeta, &Tmp2);
-  BigIntRemainder(&Tmp1, &discr, &Tmp3);
-  if (!BigIntIsZero(&Tmp3))
-  {
-    return;
-  }
-  BigIntDivide(&Tmp1, &discr, &Tmp1);
-  BigIntDivide(&Tmp2, &discr, &Tmp2);
-  ShowXY(&Tmp1, &Tmp2);
-}
-
 // On input: ValH: value of u, ValI: value of v.
 // Output: ((tu - nv)*E, u*E) and ((-tu + nv)*E, -u*E)
-// If m is not zero, perform the substitution: x = mX + (m-1)Y, y = X + Y
+// If m is greater than zero, perform the substitution: x = mX + (m-1)Y, y = X + Y
+// If m is less than zero, perform the substitution: x = X + Y, y = (|m|-1)X + |m|Y
+// Do not substitute if m equals zero.
+
 static void NonSquareDiscrSolution(BigInteger *value)
 {
   // Get value of tu - Kv
@@ -1757,12 +1775,20 @@ static void NonSquareDiscrSolution(BigInteger *value)
   BigIntSubt(&ValZ, &bigTmp, &ValZ);      // tu + |K|v
   BigIntMultiply(&ValZ, &ValE, &ValZ);    // X = (tu - |K|v)*E
   BigIntMultiply(&ValH, &ValE, &ValO);    // Y = u*E
-  if (BigIntIsZero(&ValM))
+  if (ValM.sign == SIGN_NEGATIVE)
+  {     // Perform the substitution: x = X + Y, y = (|m|-1)X + |m|Y
+    ValM.sign = SIGN_POSITIVE;
+    BigIntAdd(&ValZ, &ValO, &Tmp[1]);     // x
+    BigIntMultiply(&Tmp[1], &ValM, &Tmp[0]);
+    BigIntSubt(&Tmp[0], &ValZ, &Tmp[0]);  // y
+    ShowPoint(&Tmp[1], &Tmp[0]);
+  }
+  else if (BigIntIsZero(&ValM))
   {
     ShowPoint(&ValZ, &ValO);
   }
   else
-  {
+  {     // Perform the substitution: x = mX + (m-1)Y, y = X + Y
     BigIntAdd(&ValZ, &ValO, &Tmp[1]);     // y
     BigIntMultiply(&Tmp[1], &ValM, &Tmp[0]);
     BigIntSubt(&Tmp[0], &ValO, &Tmp[0]);  // x
