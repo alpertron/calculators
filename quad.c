@@ -30,6 +30,14 @@ enum eLinearSolution
   INFINITE_SOLUTIONS,
 };
 
+static enum eShowSolution
+{
+  ONE_SOLUTION = 0,
+  TWO_SOLUTIONS,
+  FIRST_SOLUTION,
+  SECOND_SOLUTION,
+} showSolution;
+
 static enum eCallbackQuadModType
 {
   CBACK_QMOD_PARABOLIC = 0,
@@ -49,12 +57,13 @@ static BigInteger ValAbak, ValBbak, ValCbak;
 static BigInteger ValA, ValB, ValC, ValD, ValE, ValF;
 static BigInteger ValH, ValI, ValL, ValM, ValN, ValO, ValP, ValQ;
 static BigInteger ValU, ValV, ValG, ValR, ValS, ValJ, ValK, ValZ;
-static BigInteger ValAlpha, ValBeta, ValDen;
+static BigInteger ValAlpha, ValBeta, ValDen, ValDiv;
+static BigInteger ValUBak, ValVBak;
 static BigInteger Tmp1, Tmp2, Tmp3;
 static int SolNbr;
 static char textExp[1000];
 static BigInteger Xind, Yind, Xlin, Ylin;
-static int nbrFactors;
+static int nbrFactors, solFound;
 static char teach = 0, also;
 static char ExchXY;
 static char *ptrOutput;
@@ -67,6 +76,8 @@ static BigInteger U1, U2, U3, V1, V2, V3, bigTmp;
 static BigInteger startPeriodU, startPeriodV;
 static BigInteger coeffQuadr, coeffLinear, coeffIndep, modulus;
 static BigInteger currentFactor, prime;
+static BigInteger Xplus, Xminus, Yplus, Yminus;
+static BigInteger *Xbak, *Ybak;
 static int Show(BigInteger *num, char *str, enum eLinearSolution t);
 static void Show1(BigInteger *num, enum eLinearSolution t);
 static void callbackQuadModParabolic(BigInteger *value);
@@ -279,12 +290,48 @@ static void PrintQuad(BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeff
 
 void ShowXY(BigInteger *X, BigInteger *Y)
 {
-  showAlso();
-  w("<p>x = ");
-  shownbr(ExchXY? Y: X);
-  w("<BR>y = ");
-  shownbr(ExchXY? X: Y);
-  w("</p>");
+  enum eSign signX, signY;
+  if (showSolution == TWO_SOLUTIONS)
+  {
+    solFound = 1;
+    if (Xbak->nbrLimbs == 0)
+    {
+      CopyBigInt(Xbak, X);
+      CopyBigInt(Ybak, Y);
+      return;
+    }
+    // Use the lowest of |X| + |Y| and |Xbak| + |Ybak|
+    signX = Xbak->sign;
+    signY = Ybak->sign;
+    Xbak->sign = SIGN_POSITIVE;
+    Ybak->sign = SIGN_POSITIVE;
+    BigIntAdd(Xbak, Ybak, &bigTmp);
+    Xbak->sign = signX;
+    Ybak->sign = signY;
+    signX = X->sign;
+    signY = Y->sign;
+    X->sign = SIGN_POSITIVE;
+    Y->sign = SIGN_POSITIVE;
+    BigIntSubt(&bigTmp, X, &bigTmp);
+    BigIntSubt(&bigTmp, Y, &bigTmp);
+    X->sign = signX;
+    Y->sign = signY;
+    if (bigTmp.sign == SIGN_POSITIVE)
+    {       // |x| + |y| <= |xbak| + |ybak|
+      CopyBigInt(Xbak, X);
+      CopyBigInt(Ybak, Y);
+    }
+  }
+  else
+  {
+    // ONE_SOLUTION: Show it.
+    showAlso();
+    w("<p>x = ");
+    shownbr(ExchXY ? Y : X);
+    w("<BR>y = ");
+    shownbr(ExchXY ? X : Y);
+    w("</p>");
+  }
 }
 
 static int Show(BigInteger *num, char *str, enum eLinearSolution t)
@@ -1487,10 +1534,6 @@ static void callbackQuadModParabolic(BigInteger *value)
   BigIntAdd(&ValA, &ValA, &ValZ);
   // If K is not multiple of gcd(g, z) there is no solution.
   BigIntGcd(&ValJ, &ValZ, &bigTmp);
-  if (value->limbs[0].x == 527)
-  {
-    intToBigInteger(&U1, 1);
-  }
   BigIntRemainder(&ValK, &bigTmp, &U1);
   if (!BigIntIsZero(&U1))
   {
@@ -1570,19 +1613,19 @@ static void ShowPoint(BigInteger *X, BigInteger *Y)
 {
   // Check first that (X+alpha) and (Y+beta) are multiple of D.
   BigIntAdd(X, &ValAlpha, &Tmp1);
-  BigIntRemainder(&Tmp1, &discr, &Tmp2);
+  BigIntRemainder(&Tmp1, &ValDiv, &Tmp2);
   if (!BigIntIsZero(&Tmp2))
   {
     return;
   }
   BigIntAdd(Y, &ValBeta, &Tmp2);
-  BigIntRemainder(&Tmp2, &discr, &Tmp3);
+  BigIntRemainder(&Tmp2, &ValDiv, &Tmp3);
   if (!BigIntIsZero(&Tmp3))
   {
     return;
   }
-  BigIntDivide(&Tmp1, &discr, &Tmp1);
-  BigIntDivide(&Tmp2, &discr, &Tmp2);
+  BigIntDivide(&Tmp1, &ValDiv, &Tmp1);
+  BigIntDivide(&Tmp2, &ValDiv, &Tmp2);
   ShowXY(&Tmp1, &Tmp2);
 }
 
@@ -1608,12 +1651,24 @@ static void NonSquareDiscriminant(void)
 {
   int factorNbr, numFactors;
   struct sFactors *pstFactor;
+             // Find GCD(a,b,c)
+  BigIntGcd(&ValA, &ValB, &bigTmp);
+  BigIntGcd(&ValC, &bigTmp, &Tmp1);
+  CopyBigInt(&ValDiv, &discr);
+    // Divide A, B, C and K by this GCD.
+  BigIntDivide(&ValA, &Tmp1, &ValA);
+  BigIntDivide(&ValB, &Tmp1, &ValB);
+  BigIntDivide(&ValC, &Tmp1, &ValC);
+  BigIntDivide(&ValK, &Tmp1, &ValK);
+  // Divide discriminant by the square of GCD.
+  BigIntDivide(&discr, &Tmp1, &discr);
+  BigIntDivide(&discr, &Tmp1, &discr);
   if (BigIntIsZero(&ValK))
   {          // If k=0, the only solution is (X, Y) = (0, 0)
     ShowPoint(&ValK, &ValK);
     return;
   }
-  // For elliptic case: factor independent term.
+  // Factor independent term.
   NumberLength = ValK.nbrLimbs;
   CompressBigInteger(nbrToFactor, &ValK);
   Bin2Dec(ValK.limbs, tofactorDec, ValK.nbrLimbs, groupLen);
@@ -1756,25 +1811,8 @@ static void NegativeDiscriminant(void)
   NonSquareDiscriminant();
 }
 
-// On input: ValH: value of u, ValI: value of v.
-// Output: ((tu - nv)*E, u*E) and ((-tu + nv)*E, -u*E)
-// If m is greater than zero, perform the substitution: x = mX + (m-1)Y, y = X + Y
-// If m is less than zero, perform the substitution: x = X + Y, y = (|m|-1)X + |m|Y
-// Do not substitute if m equals zero.
-
-static void NonSquareDiscrSolution(BigInteger *value)
+static void UnimodularSubstitution(BigInteger *value)
 {
-  // Get value of tu - Kv
-  BigIntMultiply(value, &ValH, &ValZ);    // tu
-  CopyBigInt(&bigTmp, &ValK);
-  if (bigTmp.sign == SIGN_NEGATIVE)
-  {
-    BigIntChSign(&bigTmp);                // Get |K|
-  }
-  BigIntMultiply(&bigTmp, &ValI, &bigTmp);// |K|v
-  BigIntSubt(&ValZ, &bigTmp, &ValZ);      // tu + |K|v
-  BigIntMultiply(&ValZ, &ValE, &ValZ);    // X = (tu - |K|v)*E
-  BigIntMultiply(&ValH, &ValE, &ValO);    // Y = u*E
   if (ValM.sign == SIGN_NEGATIVE)
   {     // Perform the substitution: x = X + Y, y = (|m|-1)X + |m|Y
     ValM.sign = SIGN_POSITIVE;
@@ -1794,19 +1832,35 @@ static void NonSquareDiscrSolution(BigInteger *value)
     BigIntSubt(&Tmp[0], &ValO, &Tmp[0]);  // x
     ShowPoint(&Tmp[0], &Tmp[1]);
   }
+}
+
+// On input: ValH: value of u, ValI: value of v.
+// Output: ((tu - nv)*E, u*E) and ((-tu + nv)*E, -u*E)
+// If m is greater than zero, perform the substitution: x = mX + (m-1)Y, y = X + Y
+// If m is less than zero, perform the substitution: x = X + Y, y = (|m|-1)X + |m|Y
+// Do not substitute if m equals zero.
+
+static void NonSquareDiscrSolution(BigInteger *value)
+{
+  // Get value of tu - Kv
+  BigIntMultiply(value, &ValH, &ValZ);    // tu
+  CopyBigInt(&bigTmp, &ValK);
+  if (bigTmp.sign == SIGN_NEGATIVE)
+  {
+    BigIntChSign(&bigTmp);                // Get |K|
+  }
+  BigIntMultiply(&bigTmp, &ValI, &bigTmp);// |K|v
+  BigIntSubt(&ValZ, &bigTmp, &ValZ);      // tu + |K|v
+  BigIntMultiply(&ValZ, &ValE, &ValZ);    // X = (tu - |K|v)*E
+  BigIntMultiply(&ValH, &ValE, &ValO);    // Y = u*E
+  Xbak = &Xplus;
+  Ybak = &Yplus;
+  UnimodularSubstitution(value);          // Undo unimodular substitution
   BigIntChSign(&ValZ);                    // (-tu - |K|v)*E
   BigIntChSign(&ValO);                    // -u*E
-  if (BigIntIsZero(&ValM))
-  {
-    ShowPoint(&ValZ, &ValO);
-  }
-  else
-  {
-    BigIntAdd(&ValZ, &ValO, &Tmp[1]);     // y
-    BigIntMultiply(&Tmp[1], &ValM, &Tmp[0]);
-    BigIntSubt(&Tmp[0], &ValO, &Tmp[0]);  // x
-    ShowPoint(&Tmp[0], &Tmp[1]);
-  }
+  Xbak = &Xminus;
+  Ybak = &Yminus;
+  UnimodularSubstitution(value);          // Undo unimodular substitution
 }
 
 // Obtain next convergent of continued fraction of ValU/ValV
@@ -2213,10 +2267,107 @@ static void PositiveDiscriminant(void)
   NonSquareDiscriminant();
 }
 
+// PQa algorithm for (P+G)/Q where G = sqrt(discriminant):
+// U1 <- 1, U2 <- 0
+// V1 <- 0, V2 <- 1
+// Perform loop:
+// a = floor((U + G)/V)
+// U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
+// V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
+// U <- a*V - U
+// V <- (D - U^2)/V
+// Inside period when: 0 <= G - U < V
+static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
+{
+  int index = 0;
+  int periodIndex = 0;
+  char Beven = ((ValB.limbs[0].x & 1) == 0);
+  // Initialize variables.
+  intToBigInteger(&U1, 1);
+  intToBigInteger(&U2, 0);
+  intToBigInteger(&V1, 0);
+  intToBigInteger(&V2, 1);
+  intToBigInteger(&startPeriodU, -1);      // Less than zero means outside period.
+  intToBigInteger(&startPeriodV, -1);
+  if (solutionNbr == SECOND_SOLUTION)
+  {
+    index++;
+  }
+  for (;;)
+  {
+    BigIntAdd(&ValU, &ValG, &bigTmp);
+    if (ValV.sign == SIGN_NEGATIVE)
+    {   // If denominator is negative, round square root upwards.
+      addbigint(&bigTmp, 1);
+    }
+    floordiv(&bigTmp, &ValV, &Tmp1);       // Tmp1 = Term of continued fraction.
+    CopyBigInt(&U3, &U2);                  // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
+    CopyBigInt(&U2, &U1);
+    BigIntMultiply(&Tmp1, &U2, &U1);
+    BigIntAdd(&U1, &U3, &U1);
+    CopyBigInt(&V3, &V2);                  // V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
+    CopyBigInt(&V2, &V1);
+    BigIntMultiply(&Tmp1, &V2, &V1);
+    BigIntAdd(&V1, &V3, &V1);
+    BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
+    BigIntSubt(&bigTmp, &ValU, &ValU);
+    BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
+    BigIntSubt(&ValL, &bigTmp, &bigTmp);
+    BigIntDivide(&bigTmp, &ValV, &Tmp1);
+    CopyBigInt(&ValV, &Tmp1);
+    index++;
+    if (ValV.nbrLimbs == 1 && ValV.limbs[0].x == (Beven ? 1 : 2) &&
+      (index & 1) == (ValK.sign == ValV.sign ? 0 : 1))
+    {         // Found solution.
+      if (discr.nbrLimbs == 1 && discr.limbs[0].x == 5 && ValA.sign != ValK.sign && 
+        solutionNbr == FIRST_SOLUTION)
+      {       // Determinant is 5 and aK < 0. Use exceptional solution (U1-U2)/(V1-V2).
+        BigIntSubt(&V1, &V2, &ValH);
+        BigIntSubt(&U1, &U2, &ValI);
+      }
+      else
+      {       // Determinant is not 5 or aK > 0. Use convergent U1/V1 as solution.
+        CopyBigInt(&ValH, &V1);
+        CopyBigInt(&ValI, &U1);
+      }
+      BigIntChSign(&ValI);
+      showSolution = TWO_SOLUTIONS;
+      solFound = 0;
+      NonSquareDiscrSolution(value);
+      if (solFound)
+      {
+        break;                             // Solution found. Exit loop.
+      }
+    }
+    if (startPeriodU.sign == SIGN_POSITIVE)
+    {               // Already inside period.
+      periodIndex++;
+      if (BigIntEqual(&ValU, &startPeriodU) && BigIntEqual(&ValV, &startPeriodV))
+      {             // New period started.
+        if ((periodIndex & 1) == 0)
+        {           // Two periods of period length is odd, one period if even.
+          break;  // Go out in this case.
+        }
+      }
+    }
+    else
+    {             // Check if periodic part of continued fraction has started.
+      BigIntSubt(&ValG, &ValU, &bigTmp);          // G - U must be >= 0 and < V.
+      if (bigTmp.sign == SIGN_POSITIVE)
+      {
+        BigIntSubt(&bigTmp, &ValV, &bigTmp);
+        if (bigTmp.sign == SIGN_NEGATIVE)
+        {                                         // Periodic part of continued fraction started.
+          CopyBigInt(&startPeriodU, &ValU);       // Save U and V to check period end.
+          CopyBigInt(&startPeriodV, &ValV);
+        }
+      }
+    }
+  }
+}
+
 static void callbackQuadModHyperbolic(BigInteger *value)
 {
-  int index;
-  int periodIndex = 0;
   // Compute theta = (t-b)/(2a) mod K. (t = value).
   char Beven = ((ValB.limbs[0].x & 1) == 0);
   // Compute P = floor((2*a*theta + b)/2)
@@ -2254,94 +2405,33 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   // Set G <- floor(sqrt(L))
   squareRoot(ValL.limbs, ValG.limbs, ValL.nbrLimbs, &ValG.nbrLimbs);
   ValG.sign = SIGN_POSITIVE;          // g <- sqrt(discr).
-  // PQa algorithm for (P+G)/Q where G = sqrt(discriminant):
-  // U1 <- 1, U2 <- 0
-  // V1 <- 0, V2 <- 1
-  // Perform loop:
-  // a = floor((U + G)/V)
-  // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
-  // V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
-  // U <- a*V - U
-  // V <- (D - U^2)/V
-  // Inside period when: 0 <= G - U < V
-  // Initialize variables.
-  intToBigInteger(&U1, 1);
-  intToBigInteger(&U2, 0);
-  intToBigInteger(&V1, 0);
-  intToBigInteger(&V2, 1);
-  intToBigInteger(&startPeriodU, -1);      // Less than zero means outside period.
-  intToBigInteger(&startPeriodV, -1);
-  index = 0;
-  for (;;)
+  Xplus.nbrLimbs = 0;                 // Invalidate solutions.
+  Xminus.nbrLimbs = 0;
+  Yplus.nbrLimbs = 0;
+  Yminus.nbrLimbs = 0;
+  CopyBigInt(&ValUBak, &ValU);
+  CopyBigInt(&ValVBak, &ValV);
+  ContFrac(value, FIRST_SOLUTION);    // Continued fraction of (U+G)/V
+  CopyBigInt(&ValU, &ValUBak);
+  CopyBigInt(&ValV, &ValVBak);
+  BigIntChSign(&ValU);
+  BigIntChSign(&ValV);
+  ContFrac(value, SECOND_SOLUTION);   // Continued fraction of (-U+G)/(-V)
+  showSolution = ONE_SOLUTION;
+  if (Xplus.nbrLimbs)
   {
-    BigIntAdd(&ValU, &ValG, &bigTmp);
-    if (ValV.sign == SIGN_NEGATIVE)
-    {   // If denominator is negative, round square root upwards.
-      addbigint(&bigTmp, 1);
-    }
-    floordiv(&bigTmp, &ValV, &Tmp1);       // Tmp1 = Term of continued fraction.
-    CopyBigInt(&U3, &U2);                  // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
-    CopyBigInt(&U2, &U1);
-    BigIntMultiply(&Tmp1, &U2, &U1);
-    BigIntAdd(&U1, &U3, &U1);
-    CopyBigInt(&V3, &V2);                  // V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
-    CopyBigInt(&V2, &V1);
-    BigIntMultiply(&Tmp1, &V2, &V1);
-    BigIntAdd(&V1, &V3, &V1);
-    BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
-    BigIntSubt(&bigTmp, &ValU, &ValU);
-    BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
-    BigIntSubt(&ValL, &bigTmp, &bigTmp);
-    BigIntDivide(&bigTmp, &ValV, &Tmp1);
-    CopyBigInt(&ValV, &Tmp1);
-    index++;
-    if (ValV.nbrLimbs == 1 && ValV.limbs[0].x == (Beven ? 1 : 2) &&
-        (index & 1) == (ValK.sign == ValV.sign? 0: 1))
-    {         // Found solution.
-      if (discr.nbrLimbs == 1 && discr.limbs[0].x == 5 && ValA.sign != ValK.sign)
-      {       // Determinant is 5. Use exceptional solution (U1-U2)/(V1-V2).
-        BigIntSubt(&V1, &V2, &ValH);
-        BigIntSubt(&U1, &U2, &ValI);
-      }
-      else
-      {       // Determinant is not 5. Use convergent U1/V1 as solution.
-        CopyBigInt(&ValH, &V1);
-        CopyBigInt(&ValI, &U1);
-      }
-      BigIntChSign(&ValI);
-      NonSquareDiscrSolution(value);
-      break;                   // Solution found. Exit loop.
-    }
-    if (startPeriodU.sign == SIGN_POSITIVE)
-    {             // Already inside period.
-      periodIndex++;
-      if (BigIntEqual(&ValU, &startPeriodU) && BigIntEqual(&ValV, &startPeriodV))
-      {           // New period started.
-        if ((periodIndex & 1) == 0)
-        {         // Two periods of period length is odd, one period if even.
-          break;  // Go out in this case.
-        }
-      }       
-    }
-    else
-    {             // Check if periodic part of continued fraction has started.
-      BigIntSubt(&ValG, &ValU, &bigTmp);  // G - U must be >= 0 and < V.
-      if (bigTmp.sign == SIGN_POSITIVE)
-      {
-        BigIntSubt(&bigTmp, &ValV, &bigTmp);
-        if (bigTmp.sign == SIGN_NEGATIVE)
-        {                                 // Periodic part of continued fraction started.
-          CopyBigInt(&startPeriodU, &ValU);       // Save U and V to check period end.
-          CopyBigInt(&startPeriodV, &ValV);
-        }
-      }
-    }
+    ShowXY(&Xplus, &Yplus);
+  }
+  if (Xminus.nbrLimbs)
+  {
+    ShowXY(&Xminus, &Yminus);
   }
 }
 
 void SolveQuadEquation(void)
 {
   also = 0;
+  showSolution = ONE_SOLUTION;
   // Get GCD of A, B, C, D and E.
   BigIntGcd(&ValA, &ValB, &Aux[0]);
   BigIntGcd(&Aux[0], &ValC, &Aux[1]);
