@@ -61,7 +61,8 @@ void batchCallback(char **pptrOutput)
   }
   if (doFactorization)
   {
-    factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
+    factor(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactors);
+    knownFactors = NULL;
   }
   SendFactorizationToOutput(astFactorsMod, pptrOutput, doFactorization);
 }
