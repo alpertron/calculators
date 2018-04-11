@@ -20,7 +20,7 @@
 {   // This method separates the name space from the Google Analytics code.
 var worker = 0;
 var app;
-function document_getElementById(x)
+function get(x)
 {
   return document.getElementById(x);
 }
@@ -28,17 +28,17 @@ function callWorker(param)
 {
   if (!worker)
   {
-  	worker = new Worker('quadW0044.js');
-	worker.onmessage = function(e)
-	{ // First character of e.data is '1' for intermediate text
+  	worker = new Worker('quadW0045.js');
+    worker.onmessage = function(e)
+	  { // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.
-	  document_getElementById('result').innerHTML = e.data.substring(1);
-	  if (e.data.substring(0, 1) == '2')
-	  {   // First character passed from web worker is '2'.
-	    document_getElementById('solve').disabled = false;
-	    document_getElementById('stop').disabled = true;
+	    get('result').innerHTML = e.data.substring(1);
+	    if (e.data.substring(0, 1) == '2')
+	    {   // First character passed from web worker is '2'.
+	      get('solve').disabled = false;
+	      get('stop').disabled = true;
       }
-	}
+	  }
   }
   worker.postMessage(param);
 }
@@ -46,16 +46,16 @@ function callWorker(param)
 function dowork(n)
 {
   var param;
-  var app = parseInt(document_getElementById('app').value) + n;
-  var res = document_getElementById('result');
-  var coefAText = document_getElementById('coefA').value.trim();
-  var coefBText = document_getElementById('coefB').value.trim();
-  var coefCText = document_getElementById('coefC').value.trim();
-  var coefDText = document_getElementById('coefD').value.trim();
-  var coefEText = document_getElementById('coefE').value.trim();
-  var coefFText = document_getElementById('coefF').value.trim();
-  var digitGroup = document_getElementById('digits').value.trim();
-  document_getElementById('help').style.display = "none";
+  var app = parseInt(get('app').value) + n;
+  var res = get('result');
+  var coefAText = get('coefA').value.trim();
+  var coefBText = get('coefB').value.trim();
+  var coefCText = get('coefC').value.trim();
+  var coefDText = get('coefD').value.trim();
+  var coefEText = get('coefE').value.trim();
+  var coefFText = get('coefF').value.trim();
+  var digitGroup = get('digits').value.trim();
+  get('help').style.display = "none";
   res.style.display = "block";
   var missing = "";
   var zero = String.fromCharCode(0);
@@ -89,8 +89,8 @@ function dowork(n)
                                "Please type a number or expression for the "+missing);
     return;
   }
-  document_getElementById('solve').disabled = true;
-  document_getElementById('stop').disabled = false;
+  get('solve').disabled = true;
+  get('stop').disabled = false;
   res.innerHTML = (app & 1 ? "Resolviendo la ecuación cuadrática..." :
                              "Solving the quadratic equation...");
   param = digitGroup + ',' + app + ',' + coefAText + zero + coefBText + zero + coefCText + zero +
@@ -98,28 +98,68 @@ function dowork(n)
   callWorker(param);
 }
 
+function moveNext(e, curr, next)
+{    
+  var nextInput = get(next);
+  if ((e.which == 10 || e.which == 13) && curr.value.trim().length > 0)
+  {
+    e.preventDefault();
+    nextInput.focus();
+    nextInput.setSelectionRange(0, nextInput.value.length);
+  }
+}
+
 window.onload = function ()
 {
   var param;
-  document_getElementById('stop').disabled = true;
-  document_getElementById('solve').onclick = function ()
+  get('stop').disabled = true;
+  get('solve').onclick = function ()
   {
     dowork(0);
   }
-  document_getElementById('stop').onclick = function ()
+  get('stop').onclick = function ()
   {
     worker.terminate();
     worker = 0;
-    document_getElementById('solve').disabled = false;
-    document_getElementById('stop').disabled = true;
-    document_getElementById('result').innerHTML = 
+    get('solve').disabled = false;
+    get('stop').disabled = true;
+    get('result').innerHTML = 
       (app & 1 ? "<p>Cálculo detenido por el usuario.</p>" :
                  "<p>Calculation stopped by user</p>");
   }
-  document_getElementById('helpbtn').onclick = function ()
+  get('helpbtn').onclick = function ()
   {
-    document_getElementById('help').style.display = "block";
-    document_getElementById('result').style.display = "none";
+    get('help').style.display = "block";
+    get('result').style.display = "none";
+  }
+  get('coefA').onkeypress = function(e)
+  {
+    moveNext(e, this, 'coefB');
+  } 
+  get('coefB').onkeypress = function(e)
+  {
+    moveNext(e, this, 'coefC');
+  }
+  get('coefC').onkeypress = function(e)
+  {
+    moveNext(e, this, 'coefD');
+  }
+  get('coefD').onkeypress = function(e)
+  {
+    moveNext(e, this, 'coefE');
+  }
+  get('coefE').onkeypress = function(e)
+  {
+    moveNext(e, this, 'coefF');
+  }
+  get('coefF').onkeypress = function(e)
+  {
+    if ((e.which == 10 || e.which == 13) && this.value.trim().length > 0)
+    {
+      e.preventDefault();
+      get('coefA').focus();
+      dowork(0);
+    }
   }
   if ('serviceWorker' in navigator)
   { // Attempt to register service worker.
