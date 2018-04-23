@@ -2401,6 +2401,7 @@ static void ShowRecSol(char variable, BigInteger *coefX,
 static void ShowResult(char *text, BigInteger *value)
 {
   w(text);
+  w(" = ");
   shownbr(value);
   w("<br>");
 }
@@ -2409,15 +2410,29 @@ static void ShowAllRecSols(void)
 {
   if (ValP.nbrLimbs > 2 || ValQ.nbrLimbs > 2)
   {
-    w("x<sub>n+1</sub> = P&nbsp;&#8290;x<sub>n</sub> + Q&nbsp;&#8290;y<sub>n</sub> + K<br>"
-      "y<sub>n+1</sub> = R&nbsp;&#8290;x<sub>n</sub> + S&nbsp;&#8290;y<sub>n</sub> + L</p><p>");
+    if (BigIntIsZero(&ValAlpha) && BigIntIsZero(&ValBeta))
+    {
+      w("x<sub>n+1</sub> = P&nbsp;&#8290;x<sub>n</sub> + Q&nbsp;&#8290;y<sub>n</sub><br>"
+        "y<sub>n+1</sub> = R&nbsp;&#8290;x<sub>n</sub> + S&nbsp;&#8290;y<sub>n</sub></p><p>");
+    }
+    else
+    {
+      w("x<sub>n+1</sub> = P&nbsp;&#8290;x<sub>n</sub> + Q&nbsp;&#8290;y<sub>n</sub> + K<br>"
+        "y<sub>n+1</sub> = R&nbsp;&#8290;x<sub>n</sub> + S&nbsp;&#8290;y<sub>n</sub> + L</p><p>");
+    }
     w(lang? "donde:</p><p>": "where:</p><p>");
     ShowResult("P", &ValP);
     ShowResult("Q", &ValQ);
-    ShowResult("K", &ValK);
+    if (!BigIntIsZero(&ValAlpha) || !BigIntIsZero(&ValBeta))
+    {
+      ShowResult("K", &ValK);
+    }
     ShowResult("R", &ValR);
     ShowResult("S", &ValS);
-    ShowResult("L", &ValL);
+    if (!BigIntIsZero(&ValAlpha) || !BigIntIsZero(&ValBeta))
+    {
+      ShowResult("L", &ValL);
+    }
   }
   else
   {
@@ -2449,10 +2464,16 @@ static void ShowAllRecSols(void)
     w("<p>");
     ShowResult("P", &ValP);
     ShowResult("Q", &ValQ);
-    ShowResult("K", &ValK);
+    if (!BigIntIsZero(&ValAlpha) || !BigIntIsZero(&ValBeta))
+    {
+      ShowResult("K", &ValK);
+    }
     ShowResult("R", &ValR);
     ShowResult("S", &ValS);
-    ShowResult("L", &ValL);
+    if (!BigIntIsZero(&ValAlpha) || !BigIntIsZero(&ValBeta))
+    {
+      ShowResult("L", &ValL);
+    }
   }
   else
   {
