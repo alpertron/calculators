@@ -21,7 +21,7 @@ var cacheName = "newCache";
 
 // URLs for calculators
 var calcURLs = new Array();
-calcURLs[0] = ["/ECM.HTM", "/ECMC.HTM", "/ecm0045.js", "ecmW0045.js", "ecm0045.wasm",
+calcURLs[0] = ["/ECM.HTM", "/ECMC.HTM", "/ecm0048.js", "ecmW0048.js", "ecm0048.wasm",
                "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-512px.png"];
 calcURLs[1] = ["/POLFACT.HTM", "/FACTPOL.HTM", "/polfact0026.js", "polfactW0026.js",
                "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png", "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-512px.png"];
@@ -29,13 +29,13 @@ calcURLs[2] = ["/DILOG.HTM", "/LOGDI.HTM", "/dilog0026.js", "dilogW0026.js",
                "dilog.webmanifest", "logdi.webmanifest", "dilog-icon-1x.png", "dilog-icon-2x.png", "dilog-icon-4x.png", "dilog-icon-512px.png"];
 calcURLs[3] = ["/GAUSSIAN.HTM", "/GAUSIANO.HTM", "/gaussian0026.js", "gaussianW0026.js",
                "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png", "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-512px.png"];
-calcURLs[4] = ["/QUADMOD.HTM", "/CUADMOD.HTM", "/quadmod0045.js", "quadmodW0045.js",
+calcURLs[4] = ["/QUADMOD.HTM", "/CUADMOD.HTM", "/quadmod0048.js", "quadmodW0048.js",
                "quadmod.webmanifest", "cuadmod.webmanifest", "quadmod-icon-1x.png", "quadmod-icon-2x.png", "quadmod-icon-4x.png", "quadmod-icon-512px.png"];
-calcURLs[5] = ["/FSQUARES.HTM", "/SUMCUAD.HTM", "/fsquares0045.js", "fsquaresW0045.js",
+calcURLs[5] = ["/FSQUARES.HTM", "/SUMCUAD.HTM", "/fsquares0048.js", "fsquaresW0048.js",
                "fsquares.webmanifest", "sumcuad.webmanifest", "fsquares-icon-1x.png", "fsquares-icon-2x.png", "fsquares-icon-4x.png", "fsquares-icon-512px.png"];
-calcURLs[6] = ["/FCUBES.HTM", "/SUMCUBOS.HTM", "/fsquares0045.js", "fsquaresW0045.js",
+calcURLs[6] = ["/FCUBES.HTM", "/SUMCUBOS.HTM", "/fsquares0048.js", "fsquaresW0048.js",
                "fcubes.webmanifest", "sumcubos.webmanifest", "fcubes-icon-1x.png", "fcubes-icon-2x.png", "fcubes-icon-4x.png", "fcubes-icon-512px.png"];
-calcURLs[7] = ["/CONTFRAC.HTM", "/FRACCONT.HTM", "/fsquares0045.js", "fsquaresW0045.js",
+calcURLs[7] = ["/CONTFRAC.HTM", "/FRACCONT.HTM", "/fsquares0048.js", "fsquaresW0048.js",
                "contfrac.webmanifest", "fraccont.webmanifest", "contfrac-icon-1x.png", "contfrac-icon-2x.png", "contfrac-icon-4x.png", "contfrac-icon-512px.png"];
 
 function UpdateCache(resources, url, mainCache)
@@ -44,10 +44,17 @@ function UpdateCache(resources, url, mainCache)
   {
     cache.addAll(resources).then(function()
     {     //Copy cached resources to main cache and delete this one.
-      mainCache.addAll(resources).then(function()
+      cache.keys().then(function(keys)
       {
-        caches.delete("cache"+url);
+        keys.forEach(function(request, index, array)
+        {
+          cache.match(request.url).then(function(response)
+          {
+            mainCache.put(request, response);
+          });
+        });
       });
+      caches.delete("cache"+url);
     });  
   });
 }
@@ -144,7 +151,7 @@ self.addEventListener("fetch", function(event)
                   }
                 }       
               }
-              else
+              else if (false)
               {
                 // Check whether the URL is the first JavaScript of our calculators.
                 for (var j=0; j<calcURLs.length; j++)
@@ -177,7 +184,6 @@ self.addEventListener("fetch", function(event)
   );
 });
 
-// Delete old caches when new service worker activates.
 self.addEventListener("activate", function(event)
 {
   event.waitUntil(caches.keys().then(function (keys) 
@@ -198,6 +204,7 @@ self.addEventListener("activate", function(event)
   })
   .then(function() {
     var toCache = [];
+    var ctr, ctrInner;
     clients.claim().then(function()
     {
       clients.matchAll({includeUncontrolled:true}).then(function(clientList)
@@ -210,7 +217,21 @@ self.addEventListener("activate", function(event)
           {
             if (pathname == calcURLs[j][0] || pathname == calcURLs[j][1])
             {   // Client is one of our calculators.
-              toCache = toCache.concat(calcURLs[j]);
+                // Do not duplicate URLs.
+              for (ctr=0; ctr<calcURLs[j].length; ctr++)
+              {
+                for (ctrInner=0; ctrInner<toCache.length; ctrInner++)
+                {
+                  if (calcURLs[j][ctr] == toCache[ctrInner])
+                  {    // Duplicate found.
+                    break;
+                  }
+                }
+                if (ctrInner == toCache.length)
+                {
+                  toCache[toCache.length] = calcURLs[j][ctr];
+                }
+              }
             }
           }
         }
@@ -218,7 +239,32 @@ self.addEventListener("activate", function(event)
         {
           caches.open(cacheName).then(function(cache)
           {
-            UpdateCache(toCache, "temp", cache);
+            // Only update cache if some file is missing.
+            cache.keys().then(function(keys)
+            {
+              var foundNbr = 0;
+              keys.forEach(function(request, index, array)
+              {
+                var url = request.url;
+                for (ctr=0; ctr<toCache.length; ctr++)
+                {
+                  var str = toCache[ctr];
+                  if (str.substr(0,1) != '/')
+                  {
+                    str = "/" + str;
+                  }
+                  if (str == url.substr(url.lastIndexOf("/")))
+                  {
+                    foundNbr++;
+                    break;
+                  }
+                }
+              });
+              if (foundNbr < toCache.length)
+              {      // Not all URLs were found.
+                UpdateCache(toCache, "temp", cache);
+              }
+            });  
           });
         }
       });
