@@ -26,6 +26,8 @@ var worker = 0;
 var app;
 var digits;
 var config;
+var asmjsFileName = "ecm0048.js";
+var wasmFileName = "ecm0048.wasm";
 var asmjs = typeof(WebAssembly) === "undefined";
 if (typeof(window) === "undefined")
 {    // Inside Web Worker
@@ -72,7 +74,7 @@ function msgRecvByWorker(e)
     return;  
   }
   request = new XMLHttpRequest();
-  request.open('GET', 'ecm0045.wasm');
+  request.open('GET', wasmFileName);
   request.responseType = 'arraybuffer';
   request.send();
 
@@ -189,7 +191,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker(asmjs? "ecmW0045.js": "ecm0045.js");
+    worker = new Worker(asmjs? "ecmW0048.js": asmjsFileName);
     worker.onmessage = function(e)
     { // First character of e.data is:
       // "1" for intermediate output
@@ -610,11 +612,16 @@ function startUp()
     dowork(-2);
     get("curve").value = "";
   }
+  
   if ('serviceWorker' in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
     navigator.serviceWorker.register('calcSW.js').then(function() {}, function() {});
   }
+}
+if (!getStorage("ecmFactors"))
+{          // No factorization. Read factorization asm.js or wasm file in idle time.
+  fetch(asmjs? asmFileName: wasmFileName).then(function(response) {return;}).catch(function(err) {});
 }
 addEventListener("load", startUp);
 })(this);
