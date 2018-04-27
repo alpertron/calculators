@@ -1259,11 +1259,15 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
   }
       // Move number shRg bits to the right.
   mask = (1 << shRg) - 1;
-  for (index2 = index; index2 < nbrLimbs; index2++)
+  for (index2 = index; index2 < nbrLimbs-1; index2++)
   {
     number[index2].x = ((number[index2].x >> shRg) |
                         (number[index2+1].x << (BITS_PER_GROUP - shRg))) &
                         MAX_VALUE_LIMB;
+  }
+  if (index2 < nbrLimbs)
+  {
+    number[index2].x = (number[index2].x >> shRg) & MAX_VALUE_LIMB;
   }
   if (index > 0)
   {   // Move limbs to final position.
