@@ -38,7 +38,7 @@ static void DivideGaussian(BigInteger *real, BigInteger *imag);
 static BigInteger value[2];
 extern BigInteger tofactor;
 
-static void w(char *text)
+static void showText(char *text)
 {
   strcpy(ptrOutput, text);
   ptrOutput += strlen(ptrOutput);
@@ -50,21 +50,21 @@ static void showNumber(BigInteger *real, BigInteger *imag)
   CopyBigInt(&Tmp, imag);
   if (real->sign == SIGN_NEGATIVE)
   {
-    w("-");
+    showText("-");
   }
   Bin2Dec(real->limbs, ptrOutput, real->nbrLimbs, groupLen);
   ptrOutput += strlen(ptrOutput);
   if (imag->sign == SIGN_POSITIVE)
   {
-    w(" + ");
+    showText(" + ");
   }
   else
   {
-    w(" - ");
+    showText(" - ");
   }
   Bin2Dec(Tmp.limbs, ptrOutput, Tmp.nbrLimbs, groupLen);
   ptrOutput += strlen(ptrOutput);
-  w(" i");
+  showText(" i");
 }
 
 void GaussianFactorization(void)
@@ -81,10 +81,10 @@ void GaussianFactorization(void)
 #endif
   if (tofactor.nbrLimbs == 1 && tofactor.limbs[0].x == 0)
   {                // Norm is zero.
-    w("<ul><li>Any gaussian prime divides this number</li></ul>");
+    showText("<ul><li>Any gaussian prime divides this number</li></ul>");
     return;
   }
-  w("<ul>");
+  showText("<ul>");
   if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 1)
   {           // norm greater than 1. Factor norm.
     int index, index2;
@@ -220,23 +220,23 @@ void GaussianFactorization(void)
     {             // Value is 1.
       if (NbrFactorsNorm == 0)
       {
-        w("No gaussian prime divides this number");
+        showText("No gaussian prime divides this number");
       }
     }
     else
     {            // Value is -1.
-      w("<li>-1</li>");
+      showText("<li>-1</li>");
     }
   }
   else if (ImValue.sign == SIGN_POSITIVE)
   {
-    w("<li>i</li>");
+    showText("<li>i</li>");
   }
   else
   {
-    w("<li>-i</li>");
+    showText("<li>-i</li>");
   }
-  w("</ul>");
+  showText("</ul>");
 }
 
 static void DivideGaussian(BigInteger *real, BigInteger *imag)
@@ -261,9 +261,9 @@ static void DivideGaussian(BigInteger *real, BigInteger *imag)
     {
       BigIntDivide(&realNum, &norm, &ReValue);
       BigIntDivide(&imagNum, &norm, &ImValue);
-      w("<li>");
+      showText("<li>");
       showNumber(real, imag);
-      w("</li>");
+      showText("</li>");
     }
   }
 }
@@ -283,11 +283,11 @@ void gaussianText(char *valueText, int doFactorization)
     CopyBigInt(&ImValue, &value[1]);
     if (doFactorization != '0')
     {
-      w(lang ? "<p>Factores de " : "<p>Factors of ");
+      showText(lang ? "<p>Factores de " : "<p>Factors of ");
     }
     else
     {
-      w(lang ? "<p>El valor es " : "<p>Value is equal to ");
+      showText(lang ? "<p>El valor es " : "<p>Value is equal to ");
     }
     showNumber(&ReValue, &ImValue);
     if (doFactorization != '0')
