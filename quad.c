@@ -479,6 +479,45 @@ static void ShowEq(BigInteger *coeffA, BigInteger *coeffB, BigInteger *coeffC,
   Show1(coeffF, t);
 }
 
+static void showFactors(BigInteger *value)
+{
+  int index;
+  struct sFactors *pstFactor;
+  int nbrFactors = astFactorsMod[0].multiplicity;
+  int factorShown = 0;
+  shownbr(value);
+  showText(" = ");
+  if (value->sign == SIGN_NEGATIVE)
+  {
+    showMinus();
+  }
+  pstFactor = &astFactorsMod[1];
+  for (index = 0; index < nbrFactors; index++, pstFactor++)
+  {
+    UncompressBigInteger(pstFactor->ptrFactor, &prime);
+    if (pstFactor->multiplicity == 0)
+    {
+      continue;
+    }
+    if (factorShown)
+    {
+      showText(" &times; ");
+    }
+    shownbr(&prime);
+    if (pstFactor->multiplicity != 1)
+    {
+      showText("<sup>");
+      showInt(pstFactor->multiplicity);
+      showText("</sup>");
+    }
+    factorShown = 1;
+  }
+  if (!factorShown)
+  {      // No factor shown. Show 1.
+    showText("1");
+  }
+}
+
 static void SolutionX(BigInteger *value)
 {
   SolNbr++;
@@ -580,10 +619,18 @@ void SolveQuadModEquation(void)
     else
     {
       int ctr;
+      if (teach)
+      {
+        showText("<ol>");
+      }
       for (ctr = 0; ctr < GcdAll.limbs[0].x; ctr++)
       {
         intToBigInteger(&Tmp[0], ctr);
         SolutionX(&Tmp[0]);
+      }
+      if (teach)
+      {
+        showText("</ol>");
       }
     }
     return;
@@ -608,12 +655,20 @@ void SolveQuadModEquation(void)
       BigIntAdd(&z, &modulus, &z);
     }
     BigIntMultiply(&ValNn, &GcdAll, &Tmp[0]);
+    if (teach)
+    {
+      showText("<ol>");
+    }
     do
     {
       SolutionX(&z);
       BigIntAdd(&z, &modulus, &z);
       BigIntSubt(&z, &Tmp[0], &Tmp[1]);
     } while (Tmp[1].sign == SIGN_NEGATIVE);
+    if (teach)
+    {
+      showText("</ol>");
+    }
     return;
   }
   if (callbackQuadModType == CBACK_QMOD_PARABOLIC)
@@ -622,11 +677,11 @@ void SolveQuadModEquation(void)
     CompressBigInteger(nbrToFactor, &modulus);
     Bin2Dec(modulus.limbs, tofactorDec, modulus.nbrLimbs, groupLen);
     factor(&modulus, nbrToFactor, factorsMod, astFactorsMod, NULL);
-  }
-  if (teach)
-  {
-    showText(lang ? "<p>Para resolver esta ecuación cuadrática modular debemos factorizar el módulo y hallar las soluciones módulo las potencias de los factores primos. Luego debemos combinar estas soluciones usando el teorema chino del resto.</p>" :
-      "<p>To solve this quadratic modular equation we have to factor the modulus and find the solution modulo the powers of the prime factors. Then we combine them by using the Chinese Remainder Theorem.</p>");
+    if (teach)
+    {
+      showText(lang ? "<p>Para resolver esta ecuación cuadrática modular debemos factorizar el módulo y hallar las soluciones módulo las potencias de los factores primos. Luego debemos combinar estas soluciones usando el teorema chino del resto.</p>" :
+        "<p>To solve this quadratic modular equation we have to factor the modulus and find the solution modulo the powers of the prime factors. Then we combine them by using the Chinese Remainder Theorem.</p>");
+    }
   }
   intToBigInteger(&Q, 0);
   nbrFactors = astFactorsMod[0].multiplicity;   // Get number of different prime factors.
@@ -2121,6 +2176,13 @@ static void NonSquareDiscriminant(void)
   CopyBigInt(&ValBbak, &ValB);
   CopyBigInt(&ValCbak, &ValC);
   equationNbr = 2;
+  if (teach)
+  {
+    showText(lang ? "<p>A continuación hay que resolver varias ecuaciones cuadráticas modulares. Para ello debemos factorizar el módulo y hallar las soluciones módulo las potencias de los factores primos. Luego debemos combinar estas soluciones usando el teorema chino del resto.</p><p>Los diferentes módulos son divisores del término independiente, por lo que basta con factorizar dicho valor.</p>" :
+      "<p>We will have to solve several quadratic modular equations. To do this we have to factor the modulus and find the solution modulo the powers of the prime factors. Then we combine them by using the Chinese Remainder Theorem.</p><p>The different moduli are divisors of the right hand side, so we only have to factor it.</p>");
+    showText("<p>");
+    showFactors(&ValK);
+  }
   for (;;)
   {
     int index;
@@ -2229,7 +2291,8 @@ static void NonSquareDiscriminant(void)
       showText(lang ? "<p>Debemos resolver " : "<p>We have to solve:");
       PrintQuad(&coeffQuadr, &coeffLinear, &coeffIndep, "<var>T</var>", NULL);
       showText(" &equiv; 0 (mod ");
-      shownbr(&modulus);
+      showFactors(&modulus);
+      //      shownbr(&modulus);
       showText(")<p>");
     }
     SolveQuadModEquation();
@@ -2390,13 +2453,16 @@ static void ShowSolutionFromConvergent(void)
 {
   if (teach)
   {
-    showText(lang ? "<p>Solución hallada mediante el convergente " :
-      "<p>Solution found using the convergent ");
+    showText(lang ? "<p>Solución de ": "Solution of ");
+    showEqNbr(equationNbr + 1);
+    showText(lang? " hallada mediante el convergente " : " found using the convergent ");
     showText(varY);
     showText(" / <var>k</var> = ");
     shownbr(&ValH);
     showText(" / ");
     shownbr(&ValI);
+    showText(lang ? " de " : " of ");
+    showEqNbr(equationNbr + 2);
     showText("</p>");
   }
 }
@@ -2456,7 +2522,9 @@ static void callbackQuadModElliptic(BigInteger *value)
     showText(varY);
     showText("<var>k</var> + <var>R</var>&#8290; <var>k</var>");
     showSquare();
-    showText(" = 1</p>");
+    showText(" = 1 ");
+    showEqNbr(equationNbr + 1);
+    showText("</p>");
     showText(lang ? "donde: " : "where: ");
     showText("<var>P</var> = (<var>a</var>&#8290;<var>T</var>");
     showSquare();
@@ -2488,7 +2556,7 @@ static void callbackQuadModElliptic(BigInteger *value)
       intToBigInteger(&ValH, 1);
       intToBigInteger(&ValI, 0);
       NonSquareDiscrSolution(value);   // (1, 0)
-      equationNbr++;
+      equationNbr += 2;
       return;
     }
     if (discr.nbrLimbs == 1 && discr.limbs[0].x == 4)
@@ -2515,7 +2583,7 @@ static void callbackQuadModElliptic(BigInteger *value)
           showText(", -1)</p>");
         }
         NonSquareDiscrSolution(value);   // (Q/2, -1)
-        equationNbr++;
+        equationNbr += 2;
         return;
       }
       if (Plow == 2)
@@ -2538,11 +2606,11 @@ static void callbackQuadModElliptic(BigInteger *value)
         {
           showOtherSolution(lang ? "segunda" : "second");
           showText("(<var>Q</var>/2 + 1) / 2 = ");
-          shownbr(&ValG);
+          shownbr(&ValH);
           showText(", -1)</p>");
         }
         NonSquareDiscrSolution(value);   // ((Q/2+1)/2, -1)
-        equationNbr++;
+        equationNbr += 2;
         return;
       }
     }
@@ -2580,7 +2648,7 @@ static void callbackQuadModElliptic(BigInteger *value)
           showText(", -1)</p>");
         }
         NonSquareDiscrSolution(value);   // ((Q+1)/2, -1)
-        equationNbr++;
+        equationNbr += 2;
         return;
       }
       if (Plow == 3)
@@ -2618,7 +2686,7 @@ static void callbackQuadModElliptic(BigInteger *value)
           showText(", -1)</p>");
         }
         NonSquareDiscrSolution(value);   // ((Q-3)/6, -1)
-        equationNbr++;
+        equationNbr += 2;
         return;
       }
     }
@@ -2626,8 +2694,10 @@ static void callbackQuadModElliptic(BigInteger *value)
   if (teach)
   {
     int coeffNbr = 0;
-    showText(lang?"<p>Las soluciones a la última ecuación están dadas por los convergentes de la fracción continua de ":
-    "<p>The solutions to the last equation are given by the convergents of the continued fraction of ");
+    showText(lang ? "<p>Para obtener las soluciones a la ecuación " : "<p>To obtain solutions to the equation ");
+    showEqNbr(equationNbr + 1);
+    showText(lang? " debemos calcular los convergentes de la fracción continua de ":
+                   " we have to compute the convergents of the continued fraction of ");
     showText("&#8209;<var>Q</var> / 2&#8290;<var>P</var> = ");
     CopyBigInt(&ValU, &ValQ);
     BigIntChSign(&ValU);
@@ -2665,7 +2735,9 @@ static void callbackQuadModElliptic(BigInteger *value)
         showText(", ");
       }
     }
-    showText("//</p>");
+    showText("// ");
+    showEqNbr(equationNbr+2);
+    showText("</p>");
   }
   // Compute bound L = sqrt(4P/(-D))
   multint(&U1, &ValP, 4);
@@ -2728,7 +2800,7 @@ static void callbackQuadModElliptic(BigInteger *value)
       }
     }
   }
-  equationNbr++;
+  equationNbr += 3;
 }
 
 static void CheckSolutionSquareDiscr(void)
@@ -2949,28 +3021,7 @@ static void PerfectSquareDiscriminant(void)
   if (teach)
   {
     showText("<p>");
-    shownbr(&ValZ);
-    showText(" = ");
-    if (ValZ.sign == SIGN_NEGATIVE)
-    {
-      showMinus();
-    }
-    pstFactor = &astFactorsMod[1];
-    for (index = 0; index < nbrFactors; index++, pstFactor++)
-    {
-      UncompressBigInteger(pstFactor->ptrFactor, &prime);
-      shownbr(&prime);
-      if (pstFactor->multiplicity != 1)
-      {
-        showText("<sup>");
-        showInt(pstFactor->multiplicity);
-        showText("</sup>");
-      }
-      if (index < nbrFactors - 1)
-      {
-        showText(" &times; ");
-      }
-    }
+    showFactors(&ValZ);
     showText("<ol>");
   }
   if (BigIntIsZero(&ValA))
