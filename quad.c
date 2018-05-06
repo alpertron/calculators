@@ -13,6 +13,14 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
+showText(lang ? "Sea " : "Let ");
+showText("<var>X'</var> = ");
+shownbr(&ValE);
+showText("&#8290;<var>X</var>");
+showText(lang ? " e " : " and ");
+showText("<var>Y'</var> = ");
+shownbr(&ValE);
+showText("&#8290;<var>Y</var>. ");
 You should have received a copy of the GNU General Public License
 along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -53,11 +61,11 @@ static BigInteger Solution2[400];
 static BigInteger Increment[400];
 static int Exponents[400];
 static BigInteger Aux[400];
-static BigInteger ValAbak, ValBbak, ValCbak;
 static BigInteger ValA, ValB, ValC, ValD, ValE, ValF;
 static BigInteger ValH, ValI, ValL, ValM, ValN, ValO, ValP, ValQ;
 static BigInteger ValU, ValV, ValG, ValR, ValS, ValJ, ValK, ValZ;
 static BigInteger ValAlpha, ValBeta, ValDen, ValDiv;
+static BigInteger ValABak, ValBBak, ValCBak;
 static BigInteger ValUBak, ValVBak;
 static BigInteger ValGcdHomog;
 static BigInteger Tmp1, Tmp2;
@@ -65,7 +73,7 @@ static int SolNbr;
 static int showRecursiveSolution;
 static BigInteger Xind, Yind, Xlin, Ylin;
 static int nbrFactors, solFound;
-static char teach = 1, also;
+static char teach = 0, also;
 static char ExchXY;
 static char *ptrOutput;
 static char *divgcd;
@@ -90,7 +98,7 @@ static int nbrPrimesEvenMultiplicity;
 static int equationNbr;
 static char *ptrVarNameX;
 static char *ptrVarNameY;
-static char *varX, *varY;
+static char *varX, *varY, *varXnoTrans, *varYnoTrans;
 static BigInteger K, L;
 #define NBR_COEFF 6
 struct stValidateCoeff
@@ -118,7 +126,7 @@ static void showText(char *text)
 
 static void showMinus(void)
 {
-  showText("&#8209;");
+  showText("&minus;");
 }
 
 static void shownbr(BigInteger *value)
@@ -1897,7 +1905,7 @@ static void callbackQuadModParabolic(BigInteger *value)
    // Compute ValR <- (T^2 - v)/u
   if (teach)
   {
-    showText("<p><var>t</var> = <var>T</var> &#8209; <var>");
+    showText("<p><var>t</var> = <var>T</var> &minus; <var>");
     showText(ExchXY ? "e" : "d");
     showText("</var> ");
     CopyBigInt(&ValH, &ValU);
@@ -1907,7 +1915,7 @@ static void callbackQuadModParabolic(BigInteger *value)
     }
     else
     {
-      showText("&#8209; ");
+      showText("&minus; ");
     }
     if (ValU.nbrLimbs > 1 || ValU.limbs[0].x > 1)
     {         // Absolute value of U is not 1.
@@ -2150,6 +2158,9 @@ static void NonSquareDiscriminant(void)
     ShowPoint(&ValK, &ValK);
     return;
   }
+  CopyBigInt(&ValABak, &ValA);
+  CopyBigInt(&ValBBak, &ValB);
+  CopyBigInt(&ValCBak, &ValC);
   // Factor independent term.
   NumberLength = ValK.nbrLimbs;
   CompressBigInteger(nbrToFactor, &ValK);
@@ -2172,14 +2183,150 @@ static void NonSquareDiscriminant(void)
   memset(isDescending, 0, sizeof(isDescending));
   intToBigInteger(&ValE, 1);  // Initialize multiplier to 1.
   // Loop that cycles through all square divisors of the independent term.
-  CopyBigInt(&ValAbak, &ValA);
-  CopyBigInt(&ValBbak, &ValB);
-  CopyBigInt(&ValCbak, &ValC);
   equationNbr = 2;
+  BigIntGcd(&ValA, &ValK, &bigTmp);
+  intToBigInteger(&ValM, 0);
+  varXnoTrans = "<var>X</var>";
+  varYnoTrans = "<var>Y</var>";
+  if (bigTmp.nbrLimbs != 1 || bigTmp.limbs[0].x != 1)
+  {                        // gcd(a, K) is not equal to 1.
+    if (teach)
+    {
+      showText(lang ? "<p>El algoritmo requiere que el coeficiente de <var>X</var>" :
+        "<p>The algorithm requires that the coefficient of <var>X</var>");
+      showSquare();
+      showText(lang ? " y el término independiente sean primos entre sí. Como esto no ocurre, debemos hallar un valor de <var>m</var> tal que aplicando una de las transformaciones unimodulares siguientes</p>" : 
+        " and the right hand side are coprime. This does not happen, so we have to find a value of <var>m</var> such that applying one of the unimodular transformations</p> ");
+      showText("<ul><li><var>X</var> = <var>m</var>&#8290;<var>U</var> + <var>(m&minus;1)</var>&#8290;<var>V</var>, ");
+      showText("<var>Y</var> = <var>U</var> + <var>V</var></li>");
+      showText("<li><var>X</var> = <var>U</var> + <var>V</var>, ");
+      showText("<var>Y</var> = <var>(m&minus;1)</var>&#8290;<var>U</var> + <var>m</var>&#8290;<var>V</var></li></ul>");
+      showText(lang?"<p>el coeficiente de <var>U</var>": "<p>the coefficient of <var>U</var>");
+      showSquare();
+      showText(lang ? " y el término independiente sean primos entre sí. Este coeficiente es igual a ":
+        " and the right hand side are coprime. This coefficient equals ");
+      PrintQuad(&ValA, &ValB, &ValC, "<var>m</var>", NULL);
+      showText(lang ? " en el primer caso y " : " in the first case and ");
+      PrintQuad(&ValC, &ValB, &ValA, "(<var>m</var> &minus; 1)", NULL);
+      showText(lang ? " en el segundo caso.</p>" : " in the second case.</p>");
+    }
+    intToBigInteger(&ValM, 0);
+    do
+    {                      // Compute cm^2 + bm + a and exit loop if this value is not coprime with K.
+      BigIntMultiply(&ValC, &ValM, &U2);
+      BigIntAdd(&U2, &ValB, &U1);
+      BigIntMultiply(&U1, &ValM, &U1);
+      BigIntAdd(&U1, &ValA, &U1);
+      BigIntGcd(&U1, &ValK, &bigTmp);
+      if (bigTmp.nbrLimbs == 1 && bigTmp.limbs[0].x == 1)
+      {
+        addbigint(&ValM, 1);  // Increment M.
+        BigIntChSign(&ValM);  // Change sign to indicate type.
+        break;
+      }
+      addbigint(&ValM, 1);    // Increment M.
+                              // Compute am^2 + bm + c and loop while this value is not coprime with K.
+      BigIntMultiply(&ValA, &ValM, &U2);
+      BigIntAdd(&U2, &ValB, &U1);
+      BigIntMultiply(&U1, &ValM, &U1);
+      BigIntAdd(&U1, &ValC, &U1);
+      BigIntGcd(&U1, &ValK, &bigTmp);
+    } while (bigTmp.nbrLimbs != 1 || bigTmp.limbs[0].x != 1);
+    // Compute 2am + b or 2cm + b as required.
+    BigIntAdd(&U2, &U2, &U2);
+    BigIntAdd(&U2, &ValB, &U2);
+    if (ValM.sign == SIGN_POSITIVE)
+    {
+      // Compute c.
+      BigIntSubt(&U1, &U2, &ValB);
+      BigIntAdd(&ValB, &ValA, &ValC);
+      // Compute b.
+      BigIntAdd(&ValB, &U1, &ValB);
+      // Compute a.
+      CopyBigInt(&ValA, &U1);
+    }
+    else
+    {
+      // Compute a.
+      BigIntSubt(&U1, &U2, &ValB);
+      BigIntAdd(&ValB, &ValC, &ValA);
+      // Compute b.
+      BigIntAdd(&ValB, &U1, &ValB);
+      // Compute c.
+      CopyBigInt(&ValC, &U1);
+    }
+    if (teach)
+    {
+      int m = ValM.limbs[0].x;
+      showText(lang ? "<p>Usaremos la ":"<p>We will use the ");
+      if (ValM.sign == SIGN_POSITIVE)
+      {
+        showText(lang ? "primera" : "first");
+      }
+      else
+      {
+        showText(lang ? "segunda" : "second");
+      }
+      showText(lang? " transformación unimodular con <var>m</var> = ":
+          " unimodular transformation with <var>m</var> = ");
+      showInt(m);
+      showText(": <var>X</var> = ");
+      if (ValM.sign == SIGN_POSITIVE)
+      {
+        if (m == 1)
+        {
+          showText("<var>U</var>");
+        }
+        else
+        {
+          showInt(m);
+          showText(" &#8290;<var>U</var> + ");
+          if (m > 2)
+          {
+            showInt(m - 1);
+            showText(" &#8290;");
+          }
+          showText("<var>V</var>");
+        }
+        showText(", <var>Y</var> = <var>U</var> + <var>V</var> ");
+      }
+      else
+      {
+        showText("<var>X</var> = <var>U</var> + <var>V</var>, <var>Y</var> = ");
+        if (m > 2)
+        {
+          showInt(m - 1);
+          showText("&#8290;");
+        }
+        if (m > 1)
+        {
+          showText("<var>U</var> + ");
+          showInt(m);
+          showText("&#8290;");
+        }
+        showText("<var>V</var> ");
+      }
+      showEqNbr(2);
+      showText("</p>");
+      showText(lang ? "<p>Mediante ": "<p>Using");
+      showEqNbr(2);
+      showText(lang ? ", la ecuación " : ", the equation ");
+      showEqNbr(1);
+      showText(lang ? " se convierte a:</p>" : " converts to:</p>");
+      PrintQuad(&ValA, &ValB, &ValC, "<var>U</var>", "<var>V</var>");
+      showText(" = ");
+      shownbr(&ValK);
+      showText(" ");
+      showEqNbr(3);
+      equationNbr = 4;
+      varXnoTrans = "<var>U</var>";
+      varYnoTrans = "<var>V</var>";
+    }
+  }
   if (teach)
   {
     showText(lang ? "<p>A continuación hay que resolver varias ecuaciones cuadráticas modulares. Para ello debemos factorizar el módulo y hallar las soluciones módulo las potencias de los factores primos. Luego debemos combinar estas soluciones usando el teorema chino del resto.</p><p>Los diferentes módulos son divisores del término independiente, por lo que basta con factorizar dicho valor.</p>" :
-      "<p>We will have to solve several quadratic modular equations. To do this we have to factor the modulus and find the solution modulo the powers of the prime factors. Then we combine them by using the Chinese Remainder Theorem.</p><p>The different moduli are divisors of the right hand side, so we only have to factor it.</p>");
+      "<p>We will have to solve several quadratic modular equations. To do this we have to factor the modulus and find the solution modulo the powers of the prime factors. Then we combine them by using the Chinese Remainder Theorem.</p><p>The different moduli are divisors of the right hand side, so we only have to factor it once.</p>");
     showText("<p>");
     showFactors(&ValK);
   }
@@ -2191,21 +2338,42 @@ static void NonSquareDiscriminant(void)
       showText("<p>");
       if (ValE.nbrLimbs > 1 || ValE.limbs[0].x > 1)
       {
+        if (BigIntIsZero(&ValM))
+        {       // No unimodular transforation.
+          varX = "<var>X'</var>";
+          varY = "<var>Y'</var>";
+        }
+        else
+        {       // Unimodular transforation.
+          varX = "<var>U'</var>";
+          varY = "<var>V'</var>";
+        }
         showText(lang ? "Sea " : "Let ");
-        showText("<var>X'</var> = ");
+        showText(varX);
+        showText(" = ");
         shownbr(&ValE);
-        showText("&#8290;<var>X</var>");
+        showText("&#8290;");
+        showText(varXnoTrans);
         showText(lang ? " e " : " and ");
-        showText("<var>Y'</var> = ");
+        showText(varY);
+        showText(" = ");
         shownbr(&ValE);
-        showText("&#8290;<var>Y</var>. ");
-        varX = "<var>X'</var>";
-        varY = "<var>Y'</var>";
+        showText("&#8290;");
+        showText(varYnoTrans);
+        showText(". ");
       }
       else
       {
-        varX = "<var>X</var>";
-        varY = "<var>Y</var>";
+        if (BigIntIsZero(&ValM))
+        {       // No unimodular transforation.
+          varX = "<var>X</var>";
+          varY = "<var>Y</var>";
+        }
+        else
+        {       // Unimodular transforation.
+          varX = "<var>U</var>";
+          varY = "<var>V</var>";
+        }
       }
       showText(lang ? "Buscando soluciones " : "Searching for solutions ");
       showText(varX);
@@ -2215,7 +2383,7 @@ static void NonSquareDiscriminant(void)
       if (ValE.nbrLimbs > 1 || ValE.limbs[0].x > 1)
       {
         showText(lang ? "<p>De la ecuación " : "<p>From equation ");
-        showEqNbr(1);
+        showEqNbr(BigIntIsZero(&ValM)? 1: 3);
         showText(lang ? " obtenemos " : " we obtain ");
         PrintQuad(&ValA, &ValB, &ValC, varX, varY);
         showText(" = ");
@@ -2229,59 +2397,6 @@ static void NonSquareDiscriminant(void)
         shownbr(&ValK);
       }
     }
-    CopyBigInt(&ValA, &ValAbak);
-    CopyBigInt(&ValB, &ValBbak);
-    CopyBigInt(&ValC, &ValCbak);
-    BigIntGcd(&ValA, &ValK, &bigTmp);
-    intToBigInteger(&ValM, 0);
-    if (bigTmp.nbrLimbs != 1 || bigTmp.limbs[0].x != 1)
-    {                 // gcd(a, K) is not equal to 1.
-      intToBigInteger(&ValM, 0);
-      do
-      {                          // Compute cm^2 + bm + a and exit loop if this value is not coprime with K.
-        BigIntMultiply(&ValC, &ValM, &U2);
-        BigIntAdd(&U2, &ValB, &U1);
-        BigIntMultiply(&U1, &ValM, &U1);
-        BigIntAdd(&U1, &ValA, &U1);
-        BigIntGcd(&U1, &ValK, &bigTmp);
-        if (bigTmp.nbrLimbs == 1 && bigTmp.limbs[0].x == 1)
-        {
-          addbigint(&ValM, 1);  // Increment M.
-          BigIntChSign(&ValM);  // Change sign to indicate type.
-          break;
-        }
-        addbigint(&ValM, 1);    // Increment M.
-                                // Compute am^2 + bm + c and loop while this value is not coprime with K.
-        BigIntMultiply(&ValA, &ValM, &U2);
-        BigIntAdd(&U2, &ValB, &U1);
-        BigIntMultiply(&U1, &ValM, &U1);
-        BigIntAdd(&U1, &ValC, &U1);
-        BigIntGcd(&U1, &ValK, &bigTmp);
-      } while (bigTmp.nbrLimbs != 1 || bigTmp.limbs[0].x != 1);
-      // Compute 2am + b or 2cm + b as required.
-      BigIntAdd(&U2, &U2, &U2);
-      BigIntAdd(&U2, &ValB, &U2);
-      if (ValM.sign == SIGN_POSITIVE)
-      {
-        // Compute c.
-        BigIntSubt(&U1, &U2, &ValB);
-        BigIntAdd(&ValB, &ValA, &ValC);
-        // Compute b.
-        BigIntAdd(&ValB, &U1, &ValB);
-        // Compute a.
-        CopyBigInt(&ValA, &U1);
-      }
-      else
-      {
-        // Compute a.
-        BigIntSubt(&U1, &U2, &ValB);
-        BigIntAdd(&ValB, &ValC, &ValA);
-        // Compute b.
-        BigIntAdd(&ValB, &U1, &ValB);
-        // Compute c.
-        CopyBigInt(&ValC, &U1);
-      }
-    }
     CopyBigInt(&coeffQuadr, &ValA);
     CopyBigInt(&coeffLinear, &ValB);
     CopyBigInt(&coeffIndep, &ValC);
@@ -2292,7 +2407,6 @@ static void NonSquareDiscriminant(void)
       PrintQuad(&coeffQuadr, &coeffLinear, &coeffIndep, "<var>T</var>", NULL);
       showText(" &equiv; 0 (mod ");
       showFactors(&modulus);
-      //      shownbr(&modulus);
       showText(")<p>");
     }
     SolveQuadModEquation();
@@ -2347,9 +2461,6 @@ static void NonSquareDiscriminant(void)
   }
   if (showRecursiveSolution && callbackQuadModType == CBACK_QMOD_HYPERBOLIC)
   {   // Show recursive solution.
-    CopyBigInt(&ValA, &ValAbak);
-    CopyBigInt(&ValB, &ValBbak);
-    CopyBigInt(&ValC, &ValCbak);
     ContFracPell();
   }
 }
@@ -2360,26 +2471,46 @@ static void NegativeDiscriminant(void)
   NonSquareDiscriminant();
 }
 
+static void showBeforeUnimodularSubstitution(void)
+{
+  if (teach)
+  {
+    showText("<p>");
+    showText(varXnoTrans);
+    showText(" = ");
+    shownbr(&ValZ);
+    showText(", ");
+    showText(varYnoTrans);
+    showText(" = ");
+    shownbr(&ValO);
+    showText("</p>");
+    showText(lang ? "<p>De " : "<p>From ");
+    showEqNbr(2);
+    showText(": ");
+  }
+}
+
 static void UnimodularSubstitution(void)
 {
   if (ValM.sign == SIGN_NEGATIVE)
   {     // Perform the substitution: x = X + Y, y = (|m|-1)X + |m|Y
+    showBeforeUnimodularSubstitution();
     ValM.sign = SIGN_POSITIVE;
-    BigIntAdd(&ValZ, &ValO, &Tmp[1]);     // x
-    BigIntMultiply(&Tmp[1], &ValM, &Tmp[0]);
-    BigIntSubt(&Tmp[0], &ValZ, &Tmp[0]);  // y
-    ShowPoint(&Tmp[1], &Tmp[0]);
+    BigIntAdd(&ValZ, &ValO, &Tmp[0]);     // x
+    BigIntMultiply(&Tmp[0], &ValM, &Tmp[1]);
+    BigIntSubt(&Tmp[1], &ValZ, &Tmp[1]);  // y
   }
   else if (BigIntIsZero(&ValM))
   {
-    ShowPoint(&ValZ, &ValO);
+    CopyBigInt(&Tmp[0], &ValZ);           // x
+    CopyBigInt(&Tmp[1], &ValO);           // y
   }
   else
   {     // Perform the substitution: x = mX + (m-1)Y, y = X + Y
+    showBeforeUnimodularSubstitution();
     BigIntAdd(&ValZ, &ValO, &Tmp[1]);     // y
     BigIntMultiply(&Tmp[1], &ValM, &Tmp[0]);
     BigIntSubt(&Tmp[0], &ValO, &Tmp[0]);  // x
-    ShowPoint(&Tmp[0], &Tmp[1]);
   }
 }
 
@@ -2418,11 +2549,14 @@ static void NonSquareDiscrSolution(BigInteger *value)
   Xbak = &Xplus;
   Ybak = &Yplus;
   UnimodularSubstitution();               // Undo unimodular substitution
+  ShowPoint(&Tmp[0], &Tmp[1]);
   BigIntChSign(&ValZ);                    // (-tu - |K|v)*E
   BigIntChSign(&ValO);                    // -u*E
   Xbak = &Xminus;
   Ybak = &Yminus;
   UnimodularSubstitution();               // Undo unimodular substitution
+  ShowPoint(&Tmp[0], &Tmp[1]);
+
 }
 
 // Obtain next convergent of continued fraction of ValU/ValV
@@ -2537,7 +2671,7 @@ static void callbackQuadModElliptic(BigInteger *value)
   BigIntChSign(&ValQ);
   if (teach)
   {
-    showText(", <var>Q</var> = &#8209;(2&#8290;<var>a</var>&#8290;<var>T</var> + <var>b</var>) = ");
+    showText(", <var>Q</var> = &minus;(2&#8290;<var>a</var>&#8290;<var>T</var> + <var>b</var>) = ");
     shownbr(&ValQ);
   }
   // Compute R <- aK
@@ -2594,7 +2728,7 @@ static void callbackQuadModElliptic(BigInteger *value)
         if (teach)
         {
           showFirstSolution("-4", "2");
-          showText("(<var>Q</var>/2 &#8209; 1) / 2 = ");
+          showText("(<var>Q</var>/2 &minus; 1) / 2 = ");
           shownbr(&ValH);
           showText(", -1)</p>");
         }
@@ -2681,7 +2815,7 @@ static void callbackQuadModElliptic(BigInteger *value)
         if (teach)
         {
           showOtherSolution(lang ? "tercera" : "third");
-          showText("(<var>Q</var> &#8209; 3)/6 = ");
+          showText("(<var>Q</var> &minus; 3)/6 = ");
           shownbr(&ValH);
           showText(", -1)</p>");
         }
@@ -2698,7 +2832,7 @@ static void callbackQuadModElliptic(BigInteger *value)
     showEqNbr(equationNbr + 1);
     showText(lang? " debemos calcular los convergentes de la fracción continua de ":
                    " we have to compute the convergents of the continued fraction of ");
-    showText("&#8209;<var>Q</var> / 2&#8290;<var>P</var> = ");
+    showText("&minus;<var>Q</var> / 2&#8290;<var>P</var> = ");
     CopyBigInt(&ValU, &ValQ);
     BigIntChSign(&ValU);
     BigIntAdd(&ValP, &ValP, &ValV);
@@ -2759,6 +2893,13 @@ static void callbackQuadModElliptic(BigInteger *value)
     BigIntSubt(&ValL, &V1, &bigTmp);    // Check whether the denominator of convergent exceeds bound.
     if (bigTmp.sign == SIGN_NEGATIVE)
     {
+      if (teach)
+      {
+        showText(lang? "<p>No hay convergentes para los cuales se cumpla ":
+          "<p>There are no convergents for which ");
+        showEqNbr(equationNbr + 1);
+        showText(lang ? ".</p>" : " holds.</p>");
+      }
       break;                            // Bound exceeded, so go out.
     }
     // Test whether P*U1^2 + Q*U1*V1 + R*V1^2 = 1.
@@ -3129,6 +3270,14 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
   int index = 0;
   int periodIndex = 0;
   char Beven = ((ValB.limbs[0].x & 1) == 0);
+  // If (D-U^2) is not multiple of V, exit routine.
+  BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
+  BigIntSubt(&ValL, &bigTmp, &bigTmp);   // D - U^2
+  BigIntRemainder(&bigTmp, &ValV, &bigTmp);
+  if (!BigIntIsZero(&bigTmp))
+  {
+    return;
+  }
   // Initialize variables.
   intToBigInteger(&U1, 1);
   intToBigInteger(&U2, 0);
@@ -3178,14 +3327,37 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
     }
     else
     {             // Check if periodic part of continued fraction has started.
-      BigIntSubt(&ValG, &ValU, &bigTmp);          // G - U must be >= 0 and < V.
+      // First check: |u| < g.
+      // Second check: |u+g| > |v|
+      // Third check: |u-g| < |v|
+      CopyBigInt(&bigTmp, &ValU);
+      bigTmp.sign = SIGN_POSITIVE;
+      BigIntSubt(&ValG, &bigTmp, &bigTmp);
       if (bigTmp.sign == SIGN_POSITIVE)
-      {
-        BigIntSubt(&bigTmp, &ValV, &bigTmp);
+      {             // First check |u| < g passed.
+        CopyBigInt(&Tmp1, &ValV);
+        Tmp1.sign = SIGN_POSITIVE;
+        BigIntAdd(&ValU, &ValG, &Tmp2);
+        if (Tmp2.sign == SIGN_NEGATIVE)
+        {           // Round to number nearer to zero.
+          addbigint(&Tmp2, 1);
+        }
+        Tmp2.sign = SIGN_POSITIVE;
+        BigIntSubt(&Tmp1, &Tmp2, &bigTmp);
         if (bigTmp.sign == SIGN_NEGATIVE)
-        {                                         // Periodic part of continued fraction started.
-          CopyBigInt(&startPeriodU, &ValU);       // Save U and V to check period end.
-          CopyBigInt(&startPeriodV, &ValV);
+        {           // Second check |u+g| < |v| passed.
+          BigIntSubt(&ValU, &ValG, &Tmp2);
+          if (Tmp2.sign == SIGN_POSITIVE && !BigIntIsZero(&Tmp2))
+          {         // Round to number nearer to zero.
+            addbigint(&Tmp2, -1);
+          }
+          Tmp2.sign = SIGN_POSITIVE;
+          BigIntSubt(&Tmp2, &Tmp1, &bigTmp);
+          if (bigTmp.sign == SIGN_NEGATIVE)
+          {         // Third check |u-g| > |v| passed.
+            CopyBigInt(&startPeriodU, &ValU);       // Save U and V to check period end.
+            CopyBigInt(&startPeriodV, &ValV);
+          }
         }
       }
     }
@@ -3376,6 +3548,9 @@ static void ContFracPell(void)
     intToBigInteger(&ValV, 1);
   }
   showText(lang ? "<p>Soluciones recursivas:</p><p>" : "<p>Recursive solutions:</p><p>");
+  CopyBigInt(&ValA, &ValABak);
+  CopyBigInt(&ValB, &ValBBak);
+  CopyBigInt(&ValC, &ValCBak);
   for (;;)
   {
     int limbValue;
@@ -3612,7 +3787,7 @@ void SolveQuadEquation(void)
     showText(lang ? "<p>El discriminante es" : "<p>The discriminant is");
     showText(" <var>b</var>");
     showSquare();
-    showText("&nbsp;&#8209;&nbsp;4&#8290;<var>a</var>&#8290;<var>c</var> = ");
+    showText("&nbsp;&minus;&nbsp;4&#8290;<var>a</var>&#8290;<var>c</var> = ");
     shownbr(&discr);
     showText("</p>");
   }
@@ -3665,9 +3840,9 @@ void SolveQuadEquation(void)
     showEqNbr(1);
     showText("</p><p>");
     showText(lang ? "donde el término derecho es igual a " : "where the right hand side equals ");
-    showText("&#8209;<var>D</var> (<var>a</var>&#8290;<var>e</var>");
+    showText("&minus;<var>D</var> (<var>a</var>&#8290;<var>e</var>");
     showSquare();
-    showText(" &#8209; <var>b</var>&#8290;<var>e</var>&#8290;<var>d</var> + <var>e</var>&#8290;<var>d</var>");
+    showText(" &minus; <var>b</var>&#8290;<var>e</var>&#8290;<var>d</var> + <var>e</var>&#8290;<var>d</var>");
     showSquare();
     showText(" + <var>f</var>&#8290;<var>D</var>)</p>");
   }
@@ -3741,21 +3916,12 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
     showText(" = 0</h2>");
     SolNbr = 0;
     ptrBeginSol = ptrOutput;
-#if 0
-    showText("<ol>");
-#endif
     SolveQuadEquation();
-#if 0
-    if (SolNbr == 0)
+    if (ptrBeginSol == ptrOutput)
     {
-      ptrOutput = ptrBeginSol;
-      showText(lang ? "<p>No hay soluciones.</p>" : "<p>There are no solutions.</p>");
+      showText(lang ? "<p>La ecuación no tiene soluciones enteras.</p>" :
+        "<p>The equation does not have integer solutions.</p>");
     }
-    else
-    {
-      showText("</ol>");
-    }
-#endif
   }
   showText(lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
     "<p>" COPYRIGHT_ENGLISH "</p>");
