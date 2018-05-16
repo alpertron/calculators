@@ -13,14 +13,6 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-showText(lang ? "Sea " : "Let ");
-showText("<var>X'</var> = ");
-shownbr(&ValE);
-showText("&#8290;<var>X</var>");
-showText(lang ? " e " : " and ");
-showText("<var>Y'</var> = ");
-shownbr(&ValE);
-showText("&#8290;<var>Y</var>. ");
 You should have received a copy of the GNU General Public License
 along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -73,7 +65,7 @@ static int SolNbr;
 static int showRecursiveSolution;
 static BigInteger Xind, Yind, Xlin, Ylin;
 static int nbrFactors, solFound;
-static char teach = 0, also;
+static char teach = 1, also;
 static char ExchXY;
 static char *ptrOutput;
 static char *divgcd;
@@ -95,7 +87,8 @@ static void ContFracPell(void);
 static BigInteger Tmp[12];
 static int indexEvenMultiplicity[400];
 static int nbrPrimesEvenMultiplicity;
-static int equationNbr;
+static int equationNbr, contfracEqNbr;
+static char positiveDenominator;
 static char *ptrVarNameX;
 static char *ptrVarNameY;
 static char *varX, *varY, *varXnoTrans, *varYnoTrans;
@@ -348,6 +341,15 @@ static void PrintQuad(BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeff
   }
 }
 
+static void showSolutionXY(BigInteger *X, BigInteger *Y)
+{
+  showText("<p>x = ");
+  shownbr(ExchXY ? Y : X);
+  showText("<BR>y = ");
+  shownbr(ExchXY ? X : Y);
+  showText("</p>");
+}
+
 void ShowXY(BigInteger *X, BigInteger *Y)
 {
   enum eSign signX, signY;
@@ -386,11 +388,7 @@ void ShowXY(BigInteger *X, BigInteger *Y)
   {
     // ONE_SOLUTION: Show it.
     showAlso();
-    showText("<p>x = ");
-    shownbr(ExchXY ? Y : X);
-    showText("<BR>y = ");
-    shownbr(ExchXY ? X : Y);
-    showText("</p>");
+    showSolutionXY(X, Y);
   }
 }
 
@@ -786,6 +784,10 @@ void SolveQuadModEquation(void)
           DivideBigNbrByMaxPowerOf4(&deltaZeros, discriminant.limbs, &discriminant.nbrLimbs);
           // Find number of bits of square root to compute.
           nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
+          if (nbrBitsSquareRoot < 1)
+          {
+            nbrBitsSquareRoot = 1;
+          }
           nbrLimbs = (nbrBitsSquareRoot + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
           if (nbrLimbs > discriminant.nbrLimbs)
           {
@@ -840,6 +842,10 @@ void SolveQuadModEquation(void)
           {
             correctBits = nbrBitsSquareRoot;
           }
+        }
+        if (correctBits < 0)
+        {
+          correctBits = 0;
         }
         BigIntPowerOf2(&Q, correctBits);      // Store increment.
         mask = 1 << (correctBits % BITS_PER_GROUP);
@@ -2104,9 +2110,20 @@ static void ShowPoint(BigInteger *X, BigInteger *Y)
       }
       BigIntDivide(&Tmp1, &ValDiv, &Tmp1);
       BigIntDivide(&Tmp2, &ValDiv, &Tmp2);
-      startResultBox(SOLUTION_FOUND);
-      ShowXY(&Tmp1, &Tmp2);
-      endResultBox(SOLUTION_FOUND);
+      if (callbackQuadModType == CBACK_QMOD_HYPERBOLIC)
+      {
+        if (teach)
+        {
+          showSolutionXY(&Tmp1, &Tmp2);
+        }
+        ShowXY(&Tmp1, &Tmp2);
+      }
+      else
+      {
+        startResultBox(SOLUTION_FOUND);
+        ShowXY(&Tmp1, &Tmp2);
+        endResultBox(SOLUTION_FOUND);
+      }
       solution = 1;
       showRecursiveSolution = 1; // Show recursive solution if it exists.
     }
@@ -2591,12 +2608,20 @@ static void ShowSolutionFromConvergent(void)
     showEqNbr(equationNbr + 1);
     showText(lang? " hallada mediante el convergente " : " found using the convergent ");
     showText(varY);
-    showText(" / <var>k</var> = ");
+    showText(" / ");
+    if (callbackQuadModType == CBACK_QMOD_HYPERBOLIC)
+    {
+      showText("(&minus;<var>k</var>) = ");
+    }
+    else
+    {
+      showText("<var>k</var> = ");
+    }
     shownbr(&ValH);
     showText(" / ");
     shownbr(&ValI);
     showText(lang ? " de " : " of ");
-    showEqNbr(equationNbr + 2);
+    showEqNbr(contfracEqNbr);
     showText("</p>");
   }
 }
@@ -2624,7 +2649,7 @@ static void showOtherSolution(char *ordinal)
   showText(", <var>k</var>) = (");
 }
 
-static void callbackQuadModElliptic(BigInteger *value)
+static void PerformTransformation(BigInteger *value)
 {
   // Compute P <- (at^2+bt+c)/K
   BigIntMultiply(&ValA, value, &ValQ);
@@ -2632,6 +2657,12 @@ static void callbackQuadModElliptic(BigInteger *value)
   BigIntMultiply(&ValP, value, &ValP);
   BigIntAdd(&ValP, &ValC, &ValP);
   BigIntDivide(&ValP, &ValK, &ValP);
+  // Compute Q <- -(2at + b).
+  BigIntAdd(&ValQ, &ValQ, &ValQ);
+  BigIntAdd(&ValQ, &ValB, &ValQ);
+  BigIntChSign(&ValQ);
+  // Compute R <- aK
+  BigIntMultiply(&ValA, &ValK, &ValR);
   if (teach)
   {
     showText(lang ? "<p>La transformación " : "<p>The transformation ");
@@ -2645,7 +2676,7 @@ static void callbackQuadModElliptic(BigInteger *value)
     showText(" ");
     showEqNbr(equationNbr);
     showText(lang ? " convierte " : " converts ");
-    PrintQuad(&coeffQuadr, &coeffLinear, &coeffIndep, varX, varY);
+    PrintQuad(&ValA, &ValB, &ValC, varX, varY);
     showText(" = ");
     shownbr(&ValK);
     showText(lang ? " a " : " to ");
@@ -2664,24 +2695,17 @@ static void callbackQuadModElliptic(BigInteger *value)
     showSquare();
     showText(" + <var>b</var>&#8290;<var>T</var> + <var>c</var>) / n = ");
     shownbr(&ValP);
-  }
-  // Compute Q <- -(2at + b).
-  BigIntAdd(&ValQ, &ValQ, &ValQ);
-  BigIntAdd(&ValQ, &ValB, &ValQ);
-  BigIntChSign(&ValQ);
-  if (teach)
-  {
     showText(", <var>Q</var> = &minus;(2&#8290;<var>a</var>&#8290;<var>T</var> + <var>b</var>) = ");
     shownbr(&ValQ);
-  }
-  // Compute R <- aK
-  BigIntMultiply(&ValA, &ValK, &ValR);
-  if (teach)
-  {
     showText(", <var>R</var> = <var>a</var>&#8290;<var>n</var> = ");
     shownbr(&ValR);
     showText("</p>");
   }
+}
+
+static void callbackQuadModElliptic(BigInteger *value)
+{
+  PerformTransformation(value);
   if (ValP.sign == SIGN_POSITIVE && ValP.nbrLimbs == 1)
   {
     int Plow = ValP.limbs[0].x;
@@ -2828,6 +2852,7 @@ static void callbackQuadModElliptic(BigInteger *value)
   if (teach)
   {
     int coeffNbr = 0;
+    contfracEqNbr = equationNbr + 2;
     showText(lang ? "<p>Para obtener las soluciones a la ecuación " : "<p>To obtain solutions to the equation ");
     showEqNbr(equationNbr + 1);
     showText(lang? " debemos calcular los convergentes de la fracción continua de ":
@@ -2987,7 +3012,7 @@ static void CheckSolutionSquareDiscr(void)
   if (teach && solutions == 0)
   {
     showText(lang ? "<p>El sistema de dos ecuaciones no tiene soluciones <var>X</var>, <var>Y</var> enteras.</p>" :
-      "<p>The system of two equations do not have integer solutions <var>X</var>, <var>Y</var>.</p>");
+      "<p>The system of two equations does not have integer solutions <var>X</var>, <var>Y</var>.</p>");
   }
 }
 
@@ -3255,6 +3280,92 @@ static void PositiveDiscriminant(void)
   NonSquareDiscriminant();
 }
 
+// First check: |u| < g.
+// Second check: |u+g| > |v|
+// Third check: |u-g| < |v|
+// On input ValG = floor(g), g > 0.
+// g is not an integer number.
+static void CheckStartOfContinuedFractionPeriod(void)
+{
+  CopyBigInt(&bigTmp, &ValU);
+  bigTmp.sign = SIGN_POSITIVE;                  // bigTmp <- |u|
+  BigIntSubt(&ValG, &bigTmp, &bigTmp);          // bigTmp <- floor(g) - |u|
+  if (bigTmp.sign == SIGN_POSITIVE)
+  {             // First check |u| < g passed.
+    CopyBigInt(&Tmp1, &ValV);
+    Tmp1.sign = SIGN_POSITIVE;                  // Tmp1 <- |v|
+    BigIntAdd(&ValU, &ValG, &Tmp2);             // Tmp2 <- u + floor(g) = floor(u+g)
+    if (Tmp2.sign == SIGN_NEGATIVE)
+    {           // Round to number nearer to zero.
+      addbigint(&Tmp2, 1);
+    }
+    Tmp2.sign = SIGN_POSITIVE;                  // Tmp2 <- floor(|u+g|)
+    BigIntSubt(&Tmp2, &Tmp1, &bigTmp);          // bigTmp <- floor(|u+g|) - |v|
+    if (bigTmp.sign == SIGN_POSITIVE)
+    {           // Second check |u+g| > |v| passed.
+      BigIntSubt(&ValU, &ValG, &Tmp2);          // Tmp2 <- u - floor(g)
+      if (Tmp2.sign == SIGN_NEGATIVE || BigIntIsZero(&Tmp2))
+      {         // Round down number to integer.
+        addbigint(&Tmp2, -1);
+      }
+      Tmp2.sign = SIGN_POSITIVE;                // Tmp2 <- floor(|u-g|)
+      BigIntSubt(&Tmp1, &Tmp2, &bigTmp);        // Tmp2 <- |v| - floor(|u-g|)
+      if (bigTmp.sign == SIGN_POSITIVE)
+      {         // Third check |u-g| < |v| passed.
+        CopyBigInt(&startPeriodU, &ValU);       // Save U and V to check period end.
+        CopyBigInt(&startPeriodV, &ValV);
+      }
+    }
+  }
+}
+
+static void ShowArgumentContinuedFraction(void)
+{
+  showText(" (");
+  if (positiveDenominator == 0)
+  {
+    showText("&minus;");
+  }
+  showText("<var>Q</var> + <span class = \"sqrtout\"><span class=\"sqrtin\"><var>D</var>");
+  if ((ValB.limbs[0].x & 1) == 0)
+  {
+    showText(" / 4");
+  }
+  showText("</span></span>) / ");
+  if (ValB.limbs[0].x & 1)
+  {
+    showText(positiveDenominator?"(": "(&minus;");
+    showText("2<var>R</var>) = ");
+  }
+  else
+  {
+    showText(positiveDenominator ? "<var>R</var> = " : "(&minus;<var>R</var>) = ");
+  }
+  if (!BigIntIsZero(&ValU))
+  {
+    showText("(");
+    shownbr(&ValU);
+    showText(" + ");
+  }
+  showText("<span class=\"sqrtout\"><span class=\"sqrtin\">");
+  shownbr(&ValL);
+  showText("</span></span>");
+  if (!BigIntIsZero(&ValU))
+  {
+    showText(")");
+  }
+  showText(" / ");
+  if (ValV.sign == SIGN_NEGATIVE)
+  {
+    showText("(");
+  }
+  shownbr(&ValV);
+  if (ValV.sign == SIGN_NEGATIVE)
+  {
+    showText(")");
+  }
+}
+
 // PQa algorithm for (P+G)/Q where G = sqrt(discriminant):
 // U1 <- 1, U2 <- 0
 // V1 <- 0, V2 <- 1
@@ -3278,13 +3389,71 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
   {
     return;
   }
+  if (teach)
+  {
+    CopyBigInt(&U1, &ValU);      // Back up numerator and denominator.
+    CopyBigInt(&V1, &ValV);
+    showText(lang ? "<p>El desarrollo en fracciones continuas de " :
+      "<p>The continued fraction expansion of ");
+    ShowArgumentContinuedFraction();
+    showText(lang ? " es:</p>" : " is:</p>");
+    intToBigInteger(&startPeriodU, -1);      // Less than zero means outside period.
+    index = 0;
+    for (;;)
+    {
+      if (startPeriodU.sign == SIGN_POSITIVE)
+      {               // Already inside period.
+        periodIndex++;
+        if (BigIntEqual(&ValU, &startPeriodU) && BigIntEqual(&ValV, &startPeriodV))
+        {             // New period started.
+          break;      // Go out in this case.
+        }
+      }
+      else if (index > 0)
+      {               // Check if periodic part of continued fraction has started.
+        CheckStartOfContinuedFractionPeriod();
+        if (startPeriodU.sign == SIGN_POSITIVE)
+        {
+          showText("<span class=\"bold\">");
+        }
+      }
+      // Get continued fraction coefficient.
+      BigIntAdd(&ValU, &ValG, &bigTmp);
+      if (ValV.sign == SIGN_NEGATIVE)
+      {   // If denominator is negative, round square root upwards.
+        addbigint(&bigTmp, 1);
+      }
+      floordiv(&bigTmp, &ValV, &Tmp1);       // Tmp1 = Term of continued fraction.
+      if (index++ == 1)
+      {
+        showText("+ // ");
+      }
+      else if (index > 1)
+      {
+        showText(", ");
+      }
+      shownbr(&Tmp1);
+      // Update numerator and denominator.
+      BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
+      BigIntSubt(&bigTmp, &ValU, &ValU);
+      BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
+      BigIntSubt(&ValL, &bigTmp, &bigTmp);
+      BigIntDivide(&bigTmp, &ValV, &Tmp1);
+      CopyBigInt(&ValV, &Tmp1);
+    }
+    showText("</span>// ");
+    showEqNbr(contfracEqNbr);
+    showText("</p>");
+    CopyBigInt(&ValU, &U1);      // Restore numerator and denominator.
+    CopyBigInt(&ValV, &V1);
+  }
   // Initialize variables.
   intToBigInteger(&U1, 1);
   intToBigInteger(&U2, 0);
   intToBigInteger(&V1, 0);
   intToBigInteger(&V2, 1);
   intToBigInteger(&startPeriodU, -1);      // Less than zero means outside period.
-  intToBigInteger(&startPeriodV, -1);
+  index = 0;
   if (solutionNbr == SECOND_SOLUTION)
   {
     index++;
@@ -3304,6 +3473,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
       {       // Determinant is not 5 or aK > 0. Use convergent U1/V1 as solution.
         CopyBigInt(&ValH, &V1);
         CopyBigInt(&ValI, &U1);
+        ShowSolutionFromConvergent();
       }
       BigIntChSign(&ValI);
       showSolution = TWO_SOLUTIONS;
@@ -3327,46 +3497,16 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
     }
     else
     {             // Check if periodic part of continued fraction has started.
-      // First check: |u| < g.
-      // Second check: |u+g| > |v|
-      // Third check: |u-g| < |v|
-      CopyBigInt(&bigTmp, &ValU);
-      bigTmp.sign = SIGN_POSITIVE;
-      BigIntSubt(&ValG, &bigTmp, &bigTmp);
-      if (bigTmp.sign == SIGN_POSITIVE)
-      {             // First check |u| < g passed.
-        CopyBigInt(&Tmp1, &ValV);
-        Tmp1.sign = SIGN_POSITIVE;
-        BigIntAdd(&ValU, &ValG, &Tmp2);
-        if (Tmp2.sign == SIGN_NEGATIVE)
-        {           // Round to number nearer to zero.
-          addbigint(&Tmp2, 1);
-        }
-        Tmp2.sign = SIGN_POSITIVE;
-        BigIntSubt(&Tmp1, &Tmp2, &bigTmp);
-        if (bigTmp.sign == SIGN_NEGATIVE)
-        {           // Second check |u+g| < |v| passed.
-          BigIntSubt(&ValU, &ValG, &Tmp2);
-          if (Tmp2.sign == SIGN_POSITIVE && !BigIntIsZero(&Tmp2))
-          {         // Round to number nearer to zero.
-            addbigint(&Tmp2, -1);
-          }
-          Tmp2.sign = SIGN_POSITIVE;
-          BigIntSubt(&Tmp2, &Tmp1, &bigTmp);
-          if (bigTmp.sign == SIGN_NEGATIVE)
-          {         // Third check |u-g| > |v| passed.
-            CopyBigInt(&startPeriodU, &ValU);       // Save U and V to check period end.
-            CopyBigInt(&startPeriodV, &ValV);
-          }
-        }
-      }
+      CheckStartOfContinuedFractionPeriod();
     }
+    // Get continued fraction coefficient.
     BigIntAdd(&ValU, &ValG, &bigTmp);
     if (ValV.sign == SIGN_NEGATIVE)
     {   // If denominator is negative, round square root upwards.
       addbigint(&bigTmp, 1);
     }
     floordiv(&bigTmp, &ValV, &Tmp1);       // Tmp1 = Term of continued fraction.
+    // Update convergents.
     CopyBigInt(&U3, &U2);                  // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
     CopyBigInt(&U2, &U1);
     BigIntMultiply(&Tmp1, &U2, &U1);
@@ -3375,6 +3515,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
     CopyBigInt(&V2, &V1);
     BigIntMultiply(&Tmp1, &V2, &V1);
     BigIntAdd(&V1, &V3, &V1);
+    // Update numerator and denominator.
     BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
     BigIntSubt(&bigTmp, &ValU, &ValU);
     BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
@@ -3673,8 +3814,9 @@ static void ContFracPell(void)
 
 static void callbackQuadModHyperbolic(BigInteger *value)
 {
-  // Compute theta = (t-b)/(2a) mod K. (t = value).
   char Beven = ((ValB.limbs[0].x & 1) == 0);
+  positiveDenominator = 1;
+  PerformTransformation(value);
   // Compute P = floor((2*a*theta + b)/2)
   BigIntAdd(&ValA, &ValA, &ValP);
   BigIntMultiply(&ValP, value, &ValP);
@@ -3705,6 +3847,23 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   BigIntRemainder(&bigTmp, &ValV, &bigTmp);
   if (!BigIntIsZero(&bigTmp))
   {
+    if (teach)
+    {
+      showText(lang ? "<p>No hay soluciones de " : "<p>There are no solutions of ");
+      showEqNbr(equationNbr + 1);
+      showText(lang ? " usando la fracción continua de" : " using the continued fraction of ");
+      ShowArgumentContinuedFraction();
+      showText(lang ? " porque " : " because ");
+      showText("D &minus; Q");
+      showSquare();
+      showText(lang ? " no es múltiplo de " : " is not multiple of ");
+      if (ValB.limbs[0].x & 1)
+      {                       // Odd discriminant.
+        showText("2");
+      }
+      showText("<var>R</var></p>");
+    }
+    equationNbr += 2;
     return;
   }
   // Set G <- floor(sqrt(L))
@@ -3716,21 +3875,29 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   Yminus.nbrLimbs = 0;
   CopyBigInt(&ValUBak, &ValU);
   CopyBigInt(&ValVBak, &ValV);
+  contfracEqNbr = equationNbr + 2;
   ContFrac(value, FIRST_SOLUTION);    // Continued fraction of (U+G)/V
+  positiveDenominator = 0;
   CopyBigInt(&ValU, &ValUBak);
   CopyBigInt(&ValV, &ValVBak);
   BigIntChSign(&ValU);
   BigIntChSign(&ValV);
+  contfracEqNbr = equationNbr + 3;
   ContFrac(value, SECOND_SOLUTION);   // Continued fraction of (-U+G)/(-V)
   showSolution = ONE_SOLUTION;
   if (Xplus.nbrLimbs)
   {
+    startResultBox(SOLUTION_FOUND);
     ShowXY(&Xplus, &Yplus);
+    endResultBox(SOLUTION_FOUND);
   }
   if (Xminus.nbrLimbs)
   {
+    startResultBox(SOLUTION_FOUND);
     ShowXY(&Xminus, &Yminus);
+    endResultBox(SOLUTION_FOUND);
   }
+  equationNbr += 4;
 }
 
 void SolveQuadEquation(void)

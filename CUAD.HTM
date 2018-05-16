@@ -8,7 +8,7 @@
 <meta name="keywords" content="ecuaciones enteras, Pell, ecuaciones de Pell" />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="QUAD.HTM" />
-<link rel="prefetch" href="quadW0048.js" />
+<link rel="prefetch" href="quadW0054.js" />
 <link rel="manifest" href="cuad.webmanifest">
 <title>Resolución de ecuaciones cuadráticas en dos variables enteras</title>
 <style media="print">
@@ -38,12 +38,20 @@
 <style>
 body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
 h1 {text-align:center;}
+h2 {font-size: 120%;}
 .lf,.coef {padding:0.2em; clear:both;}
 .i {font-style: italic;}
 .inline {display:inline;}
 .pad {padding:10px;}
 .atright {float:right;}
-#help,#result,#status,#footer {margin: 3px; padding: 3px;}
+.box {font-weight:bold; text-align:center; border-style:double; display:table-cell;border-radius:10px;}
+.outerbox {display:table; color:blue;}
+.box > p {margin-left:5px;margin-right:5px;}
+.eq {color:red; font-weight:bold;}
+.sqrtout {white-space: nowrap}
+.sqrtout:before {content: "√"}
+.sqrtin {text-decoration:overline}#help,#result,#status,#footer {margin: 3px; padding: 3px;}
+.bold {font-weight:bold;}
 #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
 </style>
@@ -89,7 +97,7 @@ Contacto
 <main>
 <article>
 <h1>Resolución de ecuaciones cuadráticas en dos variables enteras</h1>
-<script async="async" src="quad0048.js"></script>
+<script async="async" src="quad0054.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -122,6 +130,7 @@ Contacto
 </div>
 <div class="lf"></div>
 <input type="button" id="solve" value="Resolver" />
+<input type="button" id="steps" value="Mostrar pasos" />
 <input type="button" id="stop" value="Detener" />
 <input type="button" id="helpbtn" value="Ayuda" />
 <div class="lf"></div>
@@ -178,7 +187,7 @@ Contacto
 <p>El símbolo de exponenciación no se encuentra en algunos dispositivos móviles. En este caso se puede ingresar dos asteriscos (**) para representar el operador de exponenciación.</p>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de ecuaciones cuadráticas enteras desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 26 de abril de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 15 de mayo de 2018.</p>
 </div>
 <div id="result" aria-live="polite"></div>
 <div>

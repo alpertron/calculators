@@ -8,7 +8,7 @@
 <meta name="keywords" content="integer equations, Pell equations" />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="es" href="CUAD.HTM" />
-<link rel="prefetch" href="quadW0048.js" />
+<link rel="prefetch" href="quadW0050.js" />
 <link rel="manifest" href="quad.webmanifest">
 <title>Generic two integer variable equation solver</title>
 <style media="print">
@@ -38,11 +38,20 @@
 <style>
 body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
 h1 {text-align:center;}
+h2 {font-size: 120%;}
 .lf,.coef {padding:0.2em; clear:both;}
 .i {font-style: italic;}
 .inline {display:inline;}
 .pad {padding:10px;}
 .atright {float:right;}
+.box {font-weight:bold; text-align:center; border-style:double; display:table-cell;border-radius:10px;}
+.outerbox {display:table; color:blue;}
+.box > p {margin-left:5px;margin-right:5px;}
+.eq {color:red; font-weight:bold;}
+.sqrtout {white-space: nowrap}
+.sqrtout:before {content: "√"}
+.sqrtin {text-decoration:overline}
+.bold {font-weight:bold;}
 #help,#result,#status,#footer {margin: 3px; padding: 3px;}
 #applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
@@ -111,7 +120,7 @@ Contact
 <main>
 <article>
 <h1>Generic two integer variable equation solver</h1>
-<script async="async" src="quad0048.js"></script>
+<script async="async" src="quad0054.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -144,6 +153,7 @@ Contact
 </div>
 <div class="lf"></div>
 <input type="button" id="solve" value="Solve" />
+<input type="button" id="steps" value="Show steps" />
 <input type="button" id="stop" value="Stop" />
 <input type="button" id="helpbtn" value="Help" />
 <div class="lf"></div>
@@ -202,7 +212,7 @@ Contact
 <p>
 You can download the source of the current program and the old quadratic integer equation applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 26 April 2018.</p>
+<p>Written by Dario Alpern. Last updated 15 May 2018.</p>
 </div>
 <div id="result" aria-live="polite"></div>
 <div>

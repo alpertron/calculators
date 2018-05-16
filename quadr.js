@@ -28,17 +28,18 @@ function callWorker(param)
 {
   if (!worker)
   {
-  	worker = new Worker('quadW0048.js');
+    worker = new Worker('quadW0054.js');
     worker.onmessage = function(e)
-	  { // First character of e.data is '1' for intermediate text
+    { // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.
-	    get('result').innerHTML = e.data.substring(1);
-	    if (e.data.substring(0, 1) == '2')
-	    {   // First character passed from web worker is '2'.
-	      get('solve').disabled = false;
-	      get('stop').disabled = true;
+      get('result').innerHTML = e.data.substring(1);
+      if (e.data.substring(0, 1) == '2')
+      {   // First character passed from web worker is '2'.
+        get('solve').disabled = false;
+        get('steps').disabled = false;
+        get('stop').disabled = true;
       }
-	  }
+    }
   }
   worker.postMessage(param);
 }
@@ -90,6 +91,7 @@ function dowork(n)
     return;
   }
   get('solve').disabled = true;
+  get('steps').disabled = true;
   get('stop').disabled = false;
   res.innerHTML = (app & 1 ? "Resolviendo la ecuación cuadrática..." :
                              "Solving the quadratic equation...");
@@ -117,11 +119,16 @@ window.onload = function ()
   {
     dowork(0);
   }
+  get('steps').onclick = function ()
+  {
+    dowork(2);
+  }
   get('stop').onclick = function ()
   {
     worker.terminate();
     worker = 0;
     get('solve').disabled = false;
+    get('steps').disabled = false;
     get('stop').disabled = true;
     get('result').innerHTML = 
       (app & 1 ? "<p>Cálculo detenido por el usuario.</p>" :
