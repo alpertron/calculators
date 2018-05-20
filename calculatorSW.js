@@ -21,7 +21,7 @@ var cacheName = "newCache";
 
 // URLs for calculators
 var calcURLs = new Array();
-calcURLs[0] = ["/ECM.HTM", "/ECMC.HTM", "/ecm0048.js", "ecmW0048.js", "ecm0048.wasm",
+calcURLs[0] = ["/ECM.HTM", "/ECMC.HTM", "/ecm0050.js", "ecmW0050.js", "ecm0050.wasm",
                "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-512px.png"];
 calcURLs[1] = ["/POLFACT.HTM", "/FACTPOL.HTM", "/polfact0026.js", "polfactW0026.js",
                "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png", "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-512px.png"];

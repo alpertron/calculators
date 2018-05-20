@@ -26,43 +26,9 @@ var worker = 0;
 var app;
 var digits;
 var config;
-var asmjsFileName = "ecm0048.js";
-var wasmFileName = "ecm0048.wasm";
+var asmjsFileName = "ecm0050.js";
+var wasmFileName = "ecm0050.wasm";
 var asmjs = typeof(WebAssembly) === "undefined";
-if (typeof(window) === "undefined")
-{    // Inside Web Worker
-  var wizardStep = 0;
-  var wizardTextInput;
-  var exports, HEAPU8, wasmLoaded;
-  var env =
-  {
-    "databack": function(data)
-    {
-      self.postMessage(PtrToString(data));
-    },
-    "tenths": function()
-    {
-      return Math.floor(new Date().getTime() / 100);
-    },
-    "getCunn": function(data)
-    {
-      var req = new XMLHttpRequest();
-      req.open('GET', PtrToString(data), false);
-      req.send(null);
-      if (req.status == 200)
-      {
-        ConvertToString(exports["getFactorsAsciiPtr"](), req.responseText);
-      }
-    }
-  };
-
-  var info =
-  {
-    "env": env
-  };  
-
-  global.addEventListener('message', msgRecvByWorker);
-}
 
 function msgRecvByWorker(e)
 {
@@ -191,7 +157,7 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker(asmjs? "ecmW0048.js": asmjsFileName);
+    worker = new Worker(asmjs? "ecmW0050.js": asmjsFileName);
     worker.onmessage = function(e)
     { // First character of e.data is:
       // "1" for intermediate output
@@ -619,11 +585,48 @@ function startUp()
     navigator.serviceWorker.register('calcSW.js').then(function() {}, function() {});
   }
 }
-if (!getStorage("ecmFactors"))
-{          // No factorization. Read factorization asm.js or wasm file in idle time.
-  fetch(asmjs? asmFileName: wasmFileName).then(function(response) {return;}).catch(function(err) {});
+if (typeof(window) === "undefined")
+{    // Inside Web Worker
+  var wizardStep = 0;
+  var wizardTextInput;
+  var exports, HEAPU8, wasmLoaded;
+  var env =
+  {
+    "databack": function(data)
+    {
+      self.postMessage(PtrToString(data));
+    },
+    "tenths": function()
+    {
+      return Math.floor(new Date().getTime() / 100);
+    },
+    "getCunn": function(data)
+    {
+      var req = new XMLHttpRequest();
+      req.open('GET', PtrToString(data), false);
+      req.send(null);
+      if (req.status == 200)
+      {
+        ConvertToString(exports["getFactorsAsciiPtr"](), req.responseText);
+      }
+    }
+  };
+
+  var info =
+  {
+    "env": env
+  };  
+
+  global.addEventListener('message', msgRecvByWorker);
 }
-addEventListener("load", startUp);
+else
+{    // Outside Web Worker
+  if (!getStorage("ecmFactors"))
+  {          // No factorization. Read factorization asm.js or wasm file in idle time.
+    fetch(asmjs? asmFileName: wasmFileName).then(function(response) {return;}).catch(function(err) {});
+  }
+  addEventListener("load", startUp);
+}
 })(this);
 
 if (typeof(window) !== "undefined")
