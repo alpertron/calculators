@@ -5,7 +5,7 @@
 #include "highlevel.h"
 #include "factor.h"
 #include "batch.h"
-#define DEBUG_CODE  17
+#define DEBUG_CODE  13
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
       ptrKnownFactors++;
     }
     sprintf(text, "%s\n", argv[1]);
-    ecmFrontText(text, 0, ptrKnownFactors);
+    ecmFrontText(text, 1, ptrKnownFactors);
     printf("%s\n", output);
   }
   else
