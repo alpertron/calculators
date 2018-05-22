@@ -16,52 +16,18 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-// In order to reduce the number of files to read from Web server, this 
-// Javascript file includes both the Javascript in the main thread and the 
-// Javascript that drives WebAssembly on its own Web Worker.
 (function(global)
 {   // This method separates the name space from the Google Analytics code.
+var wizardStep = 0;
+var wizardTextInput;
 var worker = 0;
+var fileContents = 0;
 var app;
+var blob;
 var digits;
 var config;
-var asmjsFileName = "ecm0050.js";
-var wasmFileName = "ecm0050.wasm";
+var workerParam;
 var asmjs = typeof(WebAssembly) === "undefined";
-
-function msgRecvByWorker(e)
-{
-  var request;
-  if (wasmLoaded)
-  {
-    ConvertToString(exports["getInputStringPtr"](), e.data);
-    exports["doWork"]();
-    return;  
-  }
-  request = new XMLHttpRequest();
-  request.open('GET', wasmFileName);
-  request.responseType = 'arraybuffer';
-  request.send();
-
-  request.onload = function()
-  {
-    if (request.status != 200)
-    {
-      return;
-    }
-    var bytes = request.response;
-    WebAssembly["instantiate"](bytes, info).then(function(results)
-    {
-      wasmLoaded = 1;
-      exports = results["instance"]["exports"];
-      HEAPU8 = new Uint8Array(exports["memory"]["buffer"]);
-      ConvertToString(exports["getInputStringPtr"](), e.data);
-      exports["doWork"]();
-      return;
-    });
-  };
-}
 
 function oneexpr()
 {
@@ -70,54 +36,6 @@ function oneexpr()
   get("wzdexam").innerHTML = "&nbsp;";
   wizardTextInput = "";
   wizardStep = 9;
-}
-
-function PtrToString(ptr)
-{
-  var t=-1;
-  var i = 0;
-  var str="", outString="";
-  do
-  {
-    for (i=0; i<1024; i++)
-    {
-      t = HEAPU8[((ptr++)>>0)];
-      if (t==0)
-      {
-        break;
-      }
-      if (t>=128)
-      {
-        t = ((t-192)<<6) + HEAPU8[((ptr++)>>0)] - 128;
-      }
-      str += String.fromCharCode(t);
-    }
-    outString += str;
-    str = "";
-  } while (t!=0);
-  outString += str;
-  return outString;
-}
-
-function ConvertToString(ptr, str)
-{
-  var dest = ptr;
-  var length = str.length;
-  var i, t;
-  for (i=0; i<length; i++)
-  {
-    t = str.charCodeAt(i);
-    if (t<128)
-    {
-      HEAPU8[dest++] = t;
-    }
-    else
-    {
-      HEAPU8[dest++] = (t >> 6) + 192;
-      HEAPU8[dest++] = (t & 63) + 128;
-    }
-  }
-  HEAPU8[dest] = 0;
 }
 
 function get(x)
@@ -157,7 +75,21 @@ function callWorker(param)
 {
   if (!worker)
   {
-    worker = new Worker(asmjs? "ecmW0050.js": asmjsFileName);
+    if (asmjs)
+    {    // Asm.js
+      if (!blob)
+      {
+        blob = new Blob([new Uint8Array(fileContents)]);
+      }
+    }
+    else
+    {    // WebAssembly
+      if (!blob)
+      {
+        blob = new Blob(Array.prototype.map.call(document.querySelectorAll('script[type=\'text\/js-worker\']'), function (oScript) { return oScript.textContent; }),{type: 'text/javascript'});
+      }
+    }    
+    worker = new Worker(window.URL.createObjectURL(blob));
     worker.onmessage = function(e)
     { // First character of e.data is:
       // "1" for intermediate output
@@ -201,7 +133,14 @@ function callWorker(param)
       }
     };
   }
-  worker.postMessage(param);
+  if (asmjs)
+  {      // Asm.js
+    worker.postMessage(param);
+  }
+  else
+  {      // WebAssembly.
+	worker.postMessage([param, fileContents]);
+  }
 }
 
 function dowork(n)
@@ -247,7 +186,14 @@ function dowork(n)
   {
     param += "*" + get("curve").value + "^1(2)";   // Append new factor or curve number.
   }
-  callWorker(param + charNull);
+  if (!fileContents)
+  {
+    workerParam = param + charNull;
+  }
+  else
+  {
+    callWorker(param + charNull);
+  }
 }
 
 function selectLoop()
@@ -427,7 +373,7 @@ function startUp()
   };
   get("loop").onclick = function ()
   {
-  selectLoop();
+    selectLoop();
   };
   get("next").onclick = function ()
   {
@@ -585,60 +531,31 @@ function startUp()
     navigator.serviceWorker.register('calcSW.js').then(function() {}, function() {});
   }
 }
-if (typeof(window) === "undefined")
-{    // Inside Web Worker
-  var wizardStep = 0;
-  var wizardTextInput;
-  var exports, HEAPU8, wasmLoaded;
-  var env =
+var req = new XMLHttpRequest();
+req.open('GET', (asmjs? "ecmW0056.js": "ecm0056.wasm"), true);
+req.responseType = "arraybuffer";
+req.onreadystatechange = function (aEvt)
+{
+  if (req.readyState == 4 && req.status == 200)
   {
-    "databack": function(data)
+    fileContents = req.response;
+    if (workerParam)
     {
-      self.postMessage(PtrToString(data));
-    },
-    "tenths": function()
-    {
-      return Math.floor(new Date().getTime() / 100);
-    },
-    "getCunn": function(data)
-    {
-      var req = new XMLHttpRequest();
-      req.open('GET', PtrToString(data), false);
-      req.send(null);
-      if (req.status == 200)
-      {
-        ConvertToString(exports["getFactorsAsciiPtr"](), req.responseText);
-      }
+      callWorker(workerParam);
     }
-  };
-
-  var info =
-  {
-    "env": env
-  };  
-
-  global.addEventListener('message', msgRecvByWorker);
-}
-else
-{    // Outside Web Worker
-  if (!getStorage("ecmFactors"))
-  {          // No factorization. Read factorization asm.js or wasm file in idle time.
-    fetch(asmjs? asmFileName: wasmFileName).then(function(response) {return;}).catch(function(err) {});
   }
-  addEventListener("load", startUp);
-}
+};
+req.send(null);
+addEventListener("load", startUp);
 })(this);
 
-if (typeof(window) !== "undefined")
-{   // In main thread: register Google Analytics.
-  addEventListener("load", function ()
-  {
-    (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
+addEventListener("load", function ()
+{
+  (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+     m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
   
-    ga("create", "UA-4438475-1", "auto");
-    ga("send", "pageview");
-  });
-}
+  ga("create", "UA-4438475-1", "auto");
+  ga("send", "pageview");
+});
