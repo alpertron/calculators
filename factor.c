@@ -877,6 +877,7 @@ static boolean ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFac
       "&nbsp;&nbsp;&nbsp;Power +/- 1 exponent: ");
     ptrStatus += strlen(ptrStatus);
     int2dec(&ptrStatus, Exponent);
+    *ptrStatus = 0;                       // Add string terminator.
     databack(status);
 }
 #endif
@@ -1212,6 +1213,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
       text[0] = '7';
       ptrText = &text[1];
       int2dec(&ptrText, EC);
+      *ptrText = 0;               // Add string terminator.
       databack(text);
 #endif
       L1 = NumberLength*9;        // Get number of digits.
