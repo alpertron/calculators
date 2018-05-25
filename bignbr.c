@@ -22,8 +22,8 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "expression.h"
 
 static BigInteger Temp, Temp2, Temp3, Base, Power, expon;
-static char ProcessExpon[5000];
-static char primes[5000];
+static char ProcessExpon[MAX_LEN*BITS_PER_GROUP + 1000];
+static char primes[MAX_LEN*BITS_PER_GROUP + 1000];
 extern limb Mult1[MAX_LEN];
 extern limb Mult2[MAX_LEN];
 extern limb Mult3[MAX_LEN];
