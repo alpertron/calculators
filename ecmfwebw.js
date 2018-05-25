@@ -25,13 +25,12 @@
     },
     "tenths": function()
     {
-	    var k = HEAPU8;
       return Math.floor(new Date().getTime() / 100);
     },
     "getCunn": function(data)
     {
       var req = new XMLHttpRequest();
-      // Web worker protocol is blob:, so we need to change that to https: as appropiate.
+      // Web worker protocol is blob:, so we need to change that to https: as appropriate.
       req.open('GET', "https://www.alpertron.com.ar/"+PtrToString(data), false);
       req.send(null);
       if (req.status == 200)

@@ -532,7 +532,7 @@ function startUp()
   }
 }
 var req = new XMLHttpRequest();
-req.open('GET', (asmjs? "ecmW0056.js": "ecm0056.wasm"), true);
+req.open('GET', (asmjs? "ecmW0057.js": "ecm0057.wasm"), true);
 req.responseType = "arraybuffer";
 req.onreadystatechange = function (aEvt)
 {
