@@ -2628,8 +2628,11 @@ static int EraseSingletons(int nbrFactorBasePrimes)
       }
       if (column == 0)
       {                // Singleton not found: move row upwards.
-        memcpy(matrixB[row - delta], matrixB[row], sizeof(matrixB[0]));
-        memcpy(vectLeftHandSide[row - delta], vectLeftHandSide[row], sizeof(vectLeftHandSide[0]));
+        if (delta != 0)
+        {
+          memcpy(matrixB[row - delta], matrixB[row], sizeof(matrixB[0]));
+          memcpy(vectLeftHandSide[row - delta], vectLeftHandSide[row], sizeof(vectLeftHandSide[0]));
+        }
       }
     }
     matrixBlength -= delta;      // Update number of rows of the matrix.
