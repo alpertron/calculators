@@ -119,7 +119,10 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
   else if (nbrLimbsDivisor == 1)
   {   // Divisor is small: use divide by int.
       // Sign of quotient is determined later.
-    CopyBigInt(pQuotient, pDividend);
+    if (pQuotient != pDividend)
+    {
+      CopyBigInt(pQuotient, pDividend);
+    }
     subtractdivide(pQuotient, 0, pDivisor->limbs[0].x);
   }
   else
