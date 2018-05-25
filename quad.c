@@ -932,9 +932,9 @@ void SolveQuadModEquation(void)
         }
         else
         {      // Discriminant is not zero.
+          deltaZeros = 0;
           for (;;)
           {
-            deltaZeros = 0;
             BigIntRemainder(&discriminant, &prime, &tmp1);
             if (tmp1.nbrLimbs > 1 || tmp1.limbs[0].x != 0)
             {
@@ -3380,6 +3380,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
 {
   int index = 0;
   int periodIndex = 0;
+  char isIntegerPart;
   char Beven = ((ValB.limbs[0].x & 1) == 0);
   // If (D-U^2) is not multiple of V, exit routine.
   BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
@@ -3458,6 +3459,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
   {
     index++;
   }
+  isIntegerPart = 1;
   for (;;)
   {
     if (ValV.nbrLimbs == 1 && ValV.limbs[0].x == (Beven ? 1 : 2) &&
@@ -3495,7 +3497,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
         }
       }
     }
-    else
+    else if (!isIntegerPart)
     {             // Check if periodic part of continued fraction has started.
       CheckStartOfContinuedFractionPeriod();
     }
@@ -3523,6 +3525,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
     BigIntDivide(&bigTmp, &ValV, &Tmp1);
     CopyBigInt(&ValV, &Tmp1);
     index++;
+    isIntegerPart = 0;
   }
 }
 
@@ -3883,6 +3886,10 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   BigIntChSign(&ValU);
   BigIntChSign(&ValV);
   contfracEqNbr = equationNbr + 3;
+  if (ValU.limbs[0].x == 3 && ValV.limbs[0].x == 9)
+  {
+    contfracEqNbr++;
+  }
   ContFrac(value, SECOND_SOLUTION);   // Continued fraction of (-U+G)/(-V)
   showSolution = ONE_SOLUTION;
   if (Xplus.nbrLimbs)
