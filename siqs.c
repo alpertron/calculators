@@ -27,15 +27,23 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_NBR_FACTORS         13
 #define MAX_PRIMES          150000
 #define MAX_LIMBS_SIQS          15
-#define MAX_FACTORS_RELATION    50
+#define MAX_FACTORS_RELATION    80
 #define LENGTH_OFFSET            0
-#define MAX_SIEVE_LIMIT     100000
+#define MAX_SIEVE_LIMIT     200000
 #define DEBUG_SIQS               0
 
 #ifdef __EMSCRIPTEN__
 extern char lowerText[], *ptrLowerText;
 char *ptrSIQSStrings;
 int startSieveTenths;
+#endif
+
+#ifdef _USING64BITS_
+typedef int64_t BIG;
+#define FLOOR
+#else
+typedef double BIG;
+#define FLOOR floor
 #endif
 
 typedef struct
@@ -94,8 +102,8 @@ static unsigned int oldSeed;
 static unsigned int newSeed;
 static int NbrPolynomials;
 static int SieveLimit;
-static int matrixPartial[MAX_PRIMES * 8][MAX_LIMBS_SIQS/2+4];
-static int vectLeftHandSide[MAX_PRIMES+50][MAX_FACTORS_RELATION];
+static int matrixPartial[MAX_PRIMES * 8][MAX_LIMBS_SIQS/2 + 4];
+static int vectLeftHandSide[MAX_PRIMES+50][MAX_LIMBS_SIQS + 4];
 static int matrixPartialHashIndex[2048];
 static int matrixB[MAX_PRIMES + 50][MAX_FACTORS_RELATION];
 static int amodq[MAX_NBR_FACTORS];
@@ -1036,8 +1044,8 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
   else
   {   // Dividend has at least two limbs.
     unsigned char mostSignificantLimbZero = FALSE;
-    double dRem, dCurrentPrime;
-    double dDivid, dLimbMult, dQuot;
+    BIG dRem, dCurrentPrime;
+    BIG dDivid, dLimbMult, dQuot;
     int Dividend;
     int nbr, iRem;
     int left, right, median;
@@ -1114,41 +1122,41 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           switch (NumberLengthDividend)
           {
           case 7:
-            dRem = (double)biR6*(double)rowPrimeTrialDivisionData->exp6 +
-              (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
-              (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (BIG)biR6*(BIG)rowPrimeTrialDivisionData->exp6 +
+              (BIG)biR5*(BIG)rowPrimeTrialDivisionData->exp5 +
+              (BIG)biR4*(BIG)rowPrimeTrialDivisionData->exp4 +
+              (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
+              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
+              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 6:
-            dRem = (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
-              (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (BIG)biR5*(BIG)rowPrimeTrialDivisionData->exp5 +
+              (BIG)biR4*(BIG)rowPrimeTrialDivisionData->exp4 +
+              (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
+              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
+              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 5:
-            dRem = (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (BIG)biR4*(BIG)rowPrimeTrialDivisionData->exp4 +
+              (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
+              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
+              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 4:
-            dRem = (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
+              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
+              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 3:
-            dRem = (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
+              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           default:
-            dRem = (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           }
-          dCurrentPrime = (double)divis;
-          if (dRem != floor(dRem / dCurrentPrime)*dCurrentPrime)
+          dCurrentPrime = (BIG)divis;
+          if (dRem != FLOOR(dRem / dCurrentPrime)*dCurrentPrime)
           {                     // Number is not a multiple of prime.
             if (expParity != 0)
             {
@@ -1165,45 +1173,45 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         }
         dRem = 0;
         // Perform division
-        dLimbMult = (double)(1U << BITS_PER_INT_GROUP);
-        dCurrentPrime = (double)divis;
+        dLimbMult = (BIG)(1U << BITS_PER_INT_GROUP);
+        dCurrentPrime = (BIG)divis;
         switch (NumberLengthDividend)
         {
         case 7:     // {biR6 - biR0} <- {biR6 - biR0} / divis
           Dividend = biR6;
-          dRem = (double)(Dividend - (biR6 = Dividend / Divisor) * Divisor);
+          dRem = (BIG)(Dividend - (biR6 = Dividend / Divisor) * Divisor);
           /* no break */
         case 6:     // {biR5 - biR0} <- {biR5 - biR0} / divis
-          dDivid = (double)biR5 + dRem*dLimbMult;
-          dQuot = floor(dDivid / dCurrentPrime);
+          dDivid = (BIG)biR5 + dRem*dLimbMult;
+          dQuot = FLOOR(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR5 = (int)dQuot;
           /* no break */
         case 5:     // {biR4 - biR0} <- {biR4 - biR0} / divis
-          dDivid = (double)biR4 + dRem*dLimbMult;
-          dQuot = floor(dDivid / dCurrentPrime);
+          dDivid = (BIG)biR4 + dRem*dLimbMult;
+          dQuot = FLOOR(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR4 = (int)dQuot;
           /* no break */
         case 4:     // {biR3 - biR0} <- {biR3 - biR0} / divis
-          dDivid = (double)biR3 + dRem*dLimbMult;
-          dQuot = floor(dDivid / dCurrentPrime);
+          dDivid = (BIG)biR3 + dRem*dLimbMult;
+          dQuot = FLOOR(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR3 = (int)dQuot;
           /* no break */
         case 3:     // {biR2 - biR0} <- {biR2 - biR0} / divis
-          dDivid = (double)biR2 + dRem*dLimbMult;
-          dQuot = floor(dDivid / dCurrentPrime);
+          dDivid = (BIG)biR2 + dRem*dLimbMult;
+          dQuot = FLOOR(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR2 = (int)dQuot;
           /* no break */
         case 2:     // {biR1 - biR0} <- {biR1 - biR0} / divis
-          dDivid = (double)biR1 + dRem*dLimbMult;
-          dQuot = floor(dDivid / dCurrentPrime);
+          dDivid = (BIG)biR1 + dRem*dLimbMult;
+          dQuot = FLOOR(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR1 = (int)dQuot;
-          dDivid = (double)biR0 + dRem*dLimbMult;
-          biR0 = (int)floor(dDivid / dCurrentPrime);
+          dDivid = (BIG)biR0 + dRem*dLimbMult;
+          biR0 = (int)FLOOR(dDivid / dCurrentPrime);
         }
         switch (NumberLengthDividend)
         {
@@ -1231,7 +1239,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           NumberLengthDividend--;
           if (NumberLengthDividend == 1)
           {     // Number fits in a double
-            double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
+            BIG dDivid = (BIG)biR1 * (BIG)(1U << BITS_PER_INT_GROUP) + (BIG)biR0;
             int sqrtDivid = (int)(floor(sqrt(dDivid)));
             fullRemainder = TRUE;
             for (; index < nbrFactorBasePrimes; index++)
@@ -1286,7 +1294,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 }
                 else
                 {
-                  if (dDivid != floor(dDivid / Divisor) * Divisor)
+                  if (dDivid != FLOOR(dDivid / Divisor) * Divisor)
                   {
                     break;
                   }
@@ -1340,7 +1348,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                   return 1;
                 }
                 rowMatrixBbeforeMerge[0] = nbrColumns;
-                if (dDivid > 2.147e9)
+                if (dDivid > MAX_INT_NBR)
                 {
                   return 0;  // Discard this congruence because of large cofactor.
                 }
@@ -1405,41 +1413,41 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           switch (NumberLengthDividend)
           {
           case 7:
-            dRem = (double)biR6*(double)rowPrimeTrialDivisionData->exp6 +
-              (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
-              (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (BIG)biR6*(BIG)rowPrimeTrialDivisionData->exp6 +
+              (BIG)biR5*(BIG)rowPrimeTrialDivisionData->exp5 +
+              (BIG)biR4*(BIG)rowPrimeTrialDivisionData->exp4 +
+              (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
+              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
+              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 6:
-            dRem = (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
-              (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (BIG)biR5*(BIG)rowPrimeTrialDivisionData->exp5 +
+              (BIG)biR4*(BIG)rowPrimeTrialDivisionData->exp4 +
+              (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
+              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
+              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 5:
-            dRem = (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (BIG)biR4*(BIG)rowPrimeTrialDivisionData->exp4 +
+              (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
+              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
+              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 4:
-            dRem = (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
+              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
+              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 3:
-            dRem = (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
+              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           default:
-            dRem = (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           }
-          dCurrentPrime = (double)divis;
-          if (dRem != floor(dRem / dCurrentPrime)*dCurrentPrime)
+          dCurrentPrime = (BIG)divis;
+          if (dRem != FLOOR(dRem / dCurrentPrime)*dCurrentPrime)
           {                     // Number is not a multiple of prime.
             if (expParity != 0)
             {
@@ -1456,45 +1464,45 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         }
         dRem = 0;
         // Perform division
-        dLimbMult = (double)(1U << BITS_PER_INT_GROUP);
-        dCurrentPrime = (double)divis;
+        dLimbMult = (BIG)(1U << BITS_PER_INT_GROUP);
+        dCurrentPrime = (BIG)divis;
         switch (NumberLengthDividend)
         {
         case 7:     // {biR6 - biR0} <- {biR6 - biR0} / divis
           Dividend = biR6;
-          dRem = (double)(Dividend - (biR6 = Dividend / Divisor) * Divisor);
+          dRem = (BIG)(Dividend - (biR6 = Dividend / Divisor) * Divisor);
           /* no break */
         case 6:     // {biR5 - biR0} <- {biR5 - biR0} / divis
-          dDivid = (double)biR5 + dRem*dLimbMult;
-          dQuot = floor(dDivid / dCurrentPrime);
+          dDivid = (BIG)biR5 + dRem*dLimbMult;
+          dQuot = FLOOR(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR5 = (int)dQuot;
           /* no break */
         case 5:     // {biR4 - biR0} <- {biR4 - biR0} / divis
-          dDivid = (double)biR4 + dRem*dLimbMult;
-          dQuot = floor(dDivid / dCurrentPrime);
+          dDivid = (BIG)biR4 + dRem*dLimbMult;
+          dQuot = FLOOR(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR4 = (int)dQuot;
           /* no break */
         case 4:     // {biR3 - biR0} <- {biR3 - biR0} / divis
-          dDivid = (double)biR3 + dRem*dLimbMult;
-          dQuot = floor(dDivid / dCurrentPrime);
+          dDivid = (BIG)biR3 + dRem*dLimbMult;
+          dQuot = FLOOR(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR3 = (int)dQuot;
           /* no break */
         case 3:     // {biR2 - biR0} <- {biR2 - biR0} / divis
-          dDivid = (double)biR2 + dRem*dLimbMult;
-          dQuot = floor(dDivid / dCurrentPrime);
+          dDivid = (BIG)biR2 + dRem*dLimbMult;
+          dQuot = FLOOR(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR2 = (int)dQuot;
           /* no break */
         case 2:     // {biR1 - biR0} <- {biR1 - biR0} / divis
-          dDivid = (double)biR1 + dRem*dLimbMult;
-          dQuot = floor(dDivid / dCurrentPrime);
+          dDivid = (BIG)biR1 + dRem*dLimbMult;
+          dQuot = FLOOR(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR1 = (int)dQuot;
-          dDivid = (double)biR0 + dRem*dLimbMult;
-          biR0 = (int)floor(dDivid / dCurrentPrime);
+          dDivid = (BIG)biR0 + dRem*dLimbMult;
+          biR0 = (int)FLOOR(dDivid / dCurrentPrime);
         }
         switch (NumberLengthDividend)
         {
@@ -1522,16 +1530,18 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           NumberLengthDividend--;
           if (NumberLengthDividend == 1)
           {
-            double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
-            int sqrtDivid = (int)(floor(sqrt(dDivid)));
+            BIG dDivid = (BIG)biR1 * (BIG)(1U << BITS_PER_INT_GROUP) + (BIG)biR0;
+            int sqrtDivid = (int)(floor(sqrt((double)dDivid)));
             fullRemainder = TRUE;
             for (; index < nbrFactorBasePrimes; index++)
             {
               rowPrimeSieveData = primeSieveData + index;
+#if 0
               if (rowPrimeSieveData->value == 41893)
               {
                 divis = 5;
               }
+#endif
               Divisor = rowPrimeSieveData->value;
               if (testFactorA && index == newFactorAIndex)
               {
@@ -1581,7 +1591,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 }
                 else
                 {
-                  if (dDivid != floor(dDivid / Divisor) * Divisor)
+                  if (dDivid != FLOOR(dDivid / Divisor) * Divisor)
                   {
                     break;
                   }
@@ -1601,7 +1611,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               }
               if (Divisor > sqrtDivid)
               {                     // End of trial division.
-                if (dDivid >= (double)(1U << BITS_PER_INT_GROUP))
+                if (dDivid >= (BIG)(1U << BITS_PER_INT_GROUP))
                 {                   // Dividend is too large.
                   return 0;
                 }
@@ -1644,7 +1654,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               }
               fullRemainder = FALSE;
             }
-            if (dDivid >= (double)(1U << BITS_PER_INT_GROUP))
+            if (dDivid >= (BIG)(1U << BITS_PER_INT_GROUP))
             {                   // Dividend is too large.
               return 0;
             }
@@ -1799,7 +1809,7 @@ static void PartialRelationFound(
     oldDivid = rowPartial[0];
     if (newDivid == oldDivid || newDivid == -oldDivid)
     {   // Match of partials.
-      double dRem, dDivisor;
+      BIG dRem, dDivisor;
       for (index = 0; index < squareRootSize; index++)
       {
         biV[index] = rowPartial[index + 2];
@@ -1866,37 +1876,37 @@ static void PartialRelationFound(
           switch (NumberLengthDivid)
           {
           case 7:
-            dRem = (double)biT6*(double)rowPrimeTrialDivisionData->exp6 +
-              (double)biT5*(double)rowPrimeTrialDivisionData->exp5 +
-              (double)biT4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biT3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biT2*(double)rowPrimeTrialDivisionData->exp2;
+            dRem = (BIG)biT6*(BIG)rowPrimeTrialDivisionData->exp6 +
+              (BIG)biT5*(BIG)rowPrimeTrialDivisionData->exp5 +
+              (BIG)biT4*(BIG)rowPrimeTrialDivisionData->exp4 +
+              (BIG)biT3*(BIG)rowPrimeTrialDivisionData->exp3 +
+              (BIG)biT2*(BIG)rowPrimeTrialDivisionData->exp2;
             break;
           case 6:
-            dRem = (double)biT5*(double)rowPrimeTrialDivisionData->exp5 +
-              (double)biT4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biT3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biT2*(double)rowPrimeTrialDivisionData->exp2;
+            dRem = (BIG)biT5*(BIG)rowPrimeTrialDivisionData->exp5 +
+              (BIG)biT4*(BIG)rowPrimeTrialDivisionData->exp4 +
+              (BIG)biT3*(BIG)rowPrimeTrialDivisionData->exp3 +
+              (BIG)biT2*(BIG)rowPrimeTrialDivisionData->exp2;
             break;
           case 5:
-            dRem = (double)biT4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biT3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biT2*(double)rowPrimeTrialDivisionData->exp2;
+            dRem = (BIG)biT4*(BIG)rowPrimeTrialDivisionData->exp4 +
+              (BIG)biT3*(BIG)rowPrimeTrialDivisionData->exp3 +
+              (BIG)biT2*(BIG)rowPrimeTrialDivisionData->exp2;
             break;
           case 4:
-            dRem = (double)biT3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biT2*(double)rowPrimeTrialDivisionData->exp2;
+            dRem = (BIG)biT3*(BIG)rowPrimeTrialDivisionData->exp3 +
+              (BIG)biT2*(BIG)rowPrimeTrialDivisionData->exp2;
             break;
           case 3:
-            dRem = (double)biT2*(double)rowPrimeTrialDivisionData->exp2;
+            dRem = (BIG)biT2*(BIG)rowPrimeTrialDivisionData->exp2;
             break;
           default:
             dRem = 0;
             break;
           }
-          dRem += (double)biT1*(double)rowPrimeTrialDivisionData->exp1 + biT0;
-          dDivisor = (double)Divisor;
-          dRem -= floor(dRem / dDivisor)*dDivisor;
+          dRem += (BIG)biT1*(BIG)rowPrimeTrialDivisionData->exp1 + biT0;
+          dDivisor = (BIG)Divisor;
+          dRem -= FLOOR(dRem / dDivisor)*dDivisor;
           if (dRem != 0)
           {
             break;
@@ -2248,11 +2258,8 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   currentPrime = 3;
   while (currentPrime < 10000)
   {
-    int halfCurrentPrime;
-
     NbrMod = (int)RemDivBigNbrByInt(Modulus, currentPrime, NumberLength);
-    halfCurrentPrime = (currentPrime - 1) / 2;
-    int jacobi = intDoubleModPow(NbrMod, halfCurrentPrime, currentPrime);
+    int jacobi = JacobiSymbol(NbrMod, currentPrime);
     double dp = (double)currentPrime;
     double logp = log(dp) / dp;
     for (j = 0; j<sizeof(arrmult)/sizeof(arrmult[0]); j++)
@@ -2261,8 +2268,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
       {
         adjustment[j] += logp;
       }
-      else if (jacobi * intDoubleModPow(arrmult[j], halfCurrentPrime,
-        currentPrime) % currentPrime == 1)
+      else if (jacobi == JacobiSymbol(arrmult[j], currentPrime))
       {
         adjustment[j] += 2 * logp;
       }
@@ -2335,8 +2341,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   { /* select small primes */
     NbrMod = (int)RemDivBigNbrByInt(Modulus, currentPrime,
       NumberLength);
-    if (currentPrime != multiplier &&
-      intDoubleModPow(NbrMod, (currentPrime - 1) / 2, currentPrime) == 1)
+    if (currentPrime != multiplier && JacobiSymbol(NbrMod, currentPrime) == 1)
     {
       double dBase, dPower, dCurrentPrime, dRem;
       /* use only if Jacobi symbol = 0 or 1 */
@@ -2682,7 +2687,6 @@ static unsigned char LinearAlgebraPhase(
       *ptrOutput = 0;
       printf("%s\n", output);
     }
-//    exit(0);
   }
 #endif
   // Get new number of rows after erasing singletons.
@@ -2778,7 +2782,7 @@ static unsigned char InsertNewRelation(
   {                   // Discard excess congruences.
     return TRUE;
   }
-#if 0 // DEBUG_SIQS
+#if DEBUG_SIQS
   {
     char *ptrOutput = output;
     BigInteger k;
@@ -2795,10 +2799,6 @@ static unsigned char InsertNewRelation(
     }
     *ptrOutput = 0;
     printf("%s\n", output);
-  }
-  if (++nn == 3018)
-  {
-    nn = 3018;
   }
 #endif
   // Check whether this relation is already in the matrix.
@@ -2860,7 +2860,7 @@ static unsigned char InsertNewRelation(
   memcpy(matrixB[congruencesFound], &rowMatrixB[0], nbrColumns * sizeof(int));
   memcpy(vectLeftHandSide[congruencesFound], biR, NumberLengthMod * sizeof(int));
   congruencesFound++;
-#if 0 // DEBUG_SIQS
+#if DEBUG_SIQS
   {
     char *ptrOutput = output;
     BigInteger k;
@@ -3713,7 +3713,7 @@ static void sieveThread(BigInteger *result)
           }
           for (index = 1; index < nbrFactorBasePrimes; index++)
           {
-            double dRem, dCurrentPrime;
+            BIG dRem, dCurrentPrime;
             rowPrimeTrialDivisionData = &primeTrialDivisionData[index];
             rowPrimeSieveData = &primeSieveData[index];
             // Get current prime.
@@ -3722,44 +3722,44 @@ static void sieveThread(BigInteger *result)
             switch (NumberLengthA)
             {
             case 7:
-              dRem = (double)Dividend[6] * (double)rowPrimeTrialDivisionData->exp6 +
-                (double)Dividend[5] * (double)rowPrimeTrialDivisionData->exp5 +
-                (double)Dividend[4] * (double)rowPrimeTrialDivisionData->exp4 +
-                (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-                (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1;
+              dRem = (BIG)Dividend[6] * (BIG)rowPrimeTrialDivisionData->exp6 +
+                (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
+                (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+                (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
               break;
             case 6:
-              dRem = (double)Dividend[5] * (double)rowPrimeTrialDivisionData->exp5 +
-                (double)Dividend[4] * (double)rowPrimeTrialDivisionData->exp4 +
-                (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-                (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1;
+              dRem = (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
+                (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+                (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
               break;
             case 5:
-              dRem = (double)Dividend[4] * (double)rowPrimeTrialDivisionData->exp4 +
-                (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-                (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1;
+              dRem = (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+                (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
               break;
             case 4:
-              dRem = (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-                (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1;
+              dRem = (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
               break;
             default:
-              dRem = (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1;
+              dRem = (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
               break;
             }
-            dRem += (double)Dividend[0];
-            dCurrentPrime = (double)currentPrime;
-            dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+            dRem += (BIG)Dividend[0];
+            dCurrentPrime = (BIG)currentPrime;
+            dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
             // Get its inverse
             inverseA = intModInv((int)dRem, currentPrime);
             twiceInverseA = inverseA << 1;       // and twice this value.
-            dRem = (double)twiceInverseA * (double)rowPrimeSieveData->modsqrt;
-            dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+            dRem = (BIG)twiceInverseA * (BIG)rowPrimeSieveData->modsqrt;
+            dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
             rowPrimeSieveData->difsoln = (int)dRem;
             switch (NumberLengthA)
             {
@@ -3767,115 +3767,115 @@ static void sieveThread(BigInteger *result)
               for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
               {
                 memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
-                dRem = (double)Dividend[6] * (double)rowPrimeTrialDivisionData->exp6 +
-                  (double)Dividend[5] * (double)rowPrimeTrialDivisionData->exp5 +
-                  (double)Dividend[4] * (double)rowPrimeTrialDivisionData->exp4 +
-                  (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-                  (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                  (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1 +
-                  (double)Dividend[0];
-                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem = (BIG)Dividend[6] * (BIG)rowPrimeTrialDivisionData->exp6 +
+                  (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
+                  (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+                  (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+                  (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                  (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
+                  (BIG)Dividend[0];
+                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 dRem *= twiceInverseA;
-                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
               memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
-              dRem = (double)Dividend[6] * (double)rowPrimeTrialDivisionData->exp6 +
-                (double)Dividend[5] * (double)rowPrimeTrialDivisionData->exp5 +
-                (double)Dividend[4] * (double)rowPrimeTrialDivisionData->exp4 +
-                (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-                (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1 +
-                (double)Dividend[0];
-              dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+              dRem = (BIG)Dividend[6] * (BIG)rowPrimeTrialDivisionData->exp6 +
+                (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
+                (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+                (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
+                (BIG)Dividend[0];
+              dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             case 6:
               for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
               {
                 memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
-                dRem = (double)Dividend[5] * (double)rowPrimeTrialDivisionData->exp5 +
-                  (double)Dividend[4] * (double)rowPrimeTrialDivisionData->exp4 +
-                  (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-                  (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                  (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1 +
-                  (double)Dividend[0];
-                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem = (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
+                  (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+                  (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+                  (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                  (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
+                  (BIG)Dividend[0];
+                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 dRem *= twiceInverseA;
-                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
               memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
-              dRem = (double)Dividend[5] * (double)rowPrimeTrialDivisionData->exp5 +
-                (double)Dividend[4] * (double)rowPrimeTrialDivisionData->exp4 +
-                (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-                (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1 +
-                (double)Dividend[0];
-              dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+              dRem = (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
+                (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+                (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
+                (BIG)Dividend[0];
+              dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             case 5:
               for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
               {
                 memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
-                dRem = (double)Dividend[4] * (double)rowPrimeTrialDivisionData->exp4 +
-                  (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-                  (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                  (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1 +
-                  (double)Dividend[0];
-                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem = (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+                  (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+                  (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                  (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
+                  (BIG)Dividend[0];
+                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 dRem *= twiceInverseA;
-                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
               memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
-              dRem = (double)Dividend[4] * (double)rowPrimeTrialDivisionData->exp4 +
-                (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-                (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1 +
-                (double)Dividend[0];
-              dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+              dRem = (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+                (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
+                (BIG)Dividend[0];
+              dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             case 4:
               for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
               {
                 memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
-                dRem = (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-                  (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                  (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1 +
-                  (double)Dividend[0];
-                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem = (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+                  (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                  (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
+                  (BIG)Dividend[0];
+                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 dRem *= twiceInverseA;
-                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
               memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
-              dRem = (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-                (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1 +
-                (double)Dividend[0];
-              dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+              dRem = (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
+                (BIG)Dividend[0];
+              dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             default:
               for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
               {
                 memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
-                dRem = (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                  (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1 +
-                  (double)Dividend[0];
-                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem = (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                  (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
+                  (BIG)Dividend[0];
+                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 dRem *= twiceInverseA;
-                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
               memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
-              dRem = (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-                (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1 +
-                (double)Dividend[0];
-              dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+              dRem = (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
+                (BIG)Dividend[0];
+              dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             }
             dRem *= twiceInverseA;
-            dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+            dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
             rowPrimeSieveData->Bainv2_0 = (int)dRem;
             if (rowPrimeSieveData->Bainv2_0 != 0)
             {
@@ -3966,7 +3966,7 @@ static void sieveThread(BigInteger *result)
       }
       for (i = nbrFactorBasePrimes - 1; i>0; i--)
       {
-        double dRem, dCurrentPrime;
+        BIG dRem, dCurrentPrime;
         rowPrimeSieveData = &primeSieveData[i];
         rowPrimeSieveData0 = firstPrimeSieveData+i;
         rowPrimeSieveData->difsoln = rowPrimeSieveData0->difsoln;
@@ -3977,90 +3977,90 @@ static void sieveThread(BigInteger *result)
         switch (NumberLengthA)
         {
         case 7:
-          dRem = (double)Dividend[6] * (double)rowPrimeTrialDivisionData->exp6 +
-            (double)Dividend[5] * (double)rowPrimeTrialDivisionData->exp5 +
-            (double)Dividend[4] * (double)rowPrimeTrialDivisionData->exp4 +
-            (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-            (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-            (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1;
+          dRem = (BIG)Dividend[6] * (BIG)rowPrimeTrialDivisionData->exp6 +
+            (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
+            (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+            (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+            (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+            (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
           break;
         case 6:
-          dRem = (double)Dividend[5] * (double)rowPrimeTrialDivisionData->exp5 +
-            (double)Dividend[4] * (double)rowPrimeTrialDivisionData->exp4 +
-            (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-            (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-            (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1;
+          dRem = (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
+            (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+            (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+            (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+            (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
           break;
         case 5:
-          dRem = (double)Dividend[4] * (double)rowPrimeTrialDivisionData->exp4 +
-            (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-            (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-            (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1;
+          dRem = (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+            (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+            (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+            (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
           break;
         case 4:
-          dRem = (double)Dividend[3] * (double)rowPrimeTrialDivisionData->exp3 +
-            (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-            (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1;
+          dRem = (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+            (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+            (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
           break;
         case 3:
-          dRem = (double)Dividend[2] * (double)rowPrimeTrialDivisionData->exp2 +
-            (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1;
+          dRem = (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+            (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
           break;
         default:
-          dRem = (double)Dividend[1] * (double)rowPrimeTrialDivisionData->exp1;
+          dRem = (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
           break;
         }
-        dCurrentPrime = (double)currentPrime;
-        dRem += (double)Dividend[0];
-        dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+        dCurrentPrime = (BIG)currentPrime;
+        dRem += (BIG)Dividend[0];
+        dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
         // Get its inverse
         inverseA = intModInv((int)dRem, currentPrime);
         switch (NumberLengthB)
         {
         case 7:
-          dRem = (double)biAbsLinearCoeff[6] * (double)rowPrimeTrialDivisionData->exp6 +
-            (double)biAbsLinearCoeff[5] * (double)rowPrimeTrialDivisionData->exp5 +
-            (double)biAbsLinearCoeff[4] * (double)rowPrimeTrialDivisionData->exp4 +
-            (double)biAbsLinearCoeff[3] * (double)rowPrimeTrialDivisionData->exp3 +
-            (double)biAbsLinearCoeff[2] * (double)rowPrimeTrialDivisionData->exp2 +
-            (double)biAbsLinearCoeff[1] * (double)rowPrimeTrialDivisionData->exp1;
+          dRem = (BIG)biAbsLinearCoeff[6] * (BIG)rowPrimeTrialDivisionData->exp6 +
+            (BIG)biAbsLinearCoeff[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
+            (BIG)biAbsLinearCoeff[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+            (BIG)biAbsLinearCoeff[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+            (BIG)biAbsLinearCoeff[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+            (BIG)biAbsLinearCoeff[1] * (BIG)rowPrimeTrialDivisionData->exp1;
           break;
         case 6:
-          dRem = (double)biAbsLinearCoeff[5] * (double)rowPrimeTrialDivisionData->exp5 +
-            (double)biAbsLinearCoeff[4] * (double)rowPrimeTrialDivisionData->exp4 +
-            (double)biAbsLinearCoeff[3] * (double)rowPrimeTrialDivisionData->exp3 +
-            (double)biAbsLinearCoeff[2] * (double)rowPrimeTrialDivisionData->exp2 +
-            (double)biAbsLinearCoeff[1] * (double)rowPrimeTrialDivisionData->exp1;
+          dRem = (BIG)biAbsLinearCoeff[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
+            (BIG)biAbsLinearCoeff[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+            (BIG)biAbsLinearCoeff[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+            (BIG)biAbsLinearCoeff[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+            (BIG)biAbsLinearCoeff[1] * (BIG)rowPrimeTrialDivisionData->exp1;
           break;
         case 5:
-          dRem = (double)biAbsLinearCoeff[4] * (double)rowPrimeTrialDivisionData->exp4 +
-            (double)biAbsLinearCoeff[3] * (double)rowPrimeTrialDivisionData->exp3 +
-            (double)biAbsLinearCoeff[2] * (double)rowPrimeTrialDivisionData->exp2 +
-            (double)biAbsLinearCoeff[1] * (double)rowPrimeTrialDivisionData->exp1;
+          dRem = (BIG)biAbsLinearCoeff[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
+            (BIG)biAbsLinearCoeff[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+            (BIG)biAbsLinearCoeff[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+            (BIG)biAbsLinearCoeff[1] * (BIG)rowPrimeTrialDivisionData->exp1;
           break;
         case 4:
-          dRem = (double)biAbsLinearCoeff[3] * (double)rowPrimeTrialDivisionData->exp3 +
-            (double)biAbsLinearCoeff[2] * (double)rowPrimeTrialDivisionData->exp2 +
-            (double)biAbsLinearCoeff[1] * (double)rowPrimeTrialDivisionData->exp1;
+          dRem = (BIG)biAbsLinearCoeff[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
+            (BIG)biAbsLinearCoeff[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+            (BIG)biAbsLinearCoeff[1] * (BIG)rowPrimeTrialDivisionData->exp1;
           break;
         case 3:
-          dRem = (double)biAbsLinearCoeff[2] * (double)rowPrimeTrialDivisionData->exp2 +
-            (double)biAbsLinearCoeff[1] * (double)rowPrimeTrialDivisionData->exp1;
+          dRem = (BIG)biAbsLinearCoeff[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
+            (BIG)biAbsLinearCoeff[1] * (BIG)rowPrimeTrialDivisionData->exp1;
           break;
         default:
-          dRem = (double)biAbsLinearCoeff[1] * (double)rowPrimeTrialDivisionData->exp1;
+          dRem = (BIG)biAbsLinearCoeff[1] * (BIG)rowPrimeTrialDivisionData->exp1;
           break;
         }
-        dRem += (double)biAbsLinearCoeff[0];
-        dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+        dRem += (BIG)biAbsLinearCoeff[0];
+        dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
         RemB = (int)dRem;
         if (positive)
         {
           RemB = currentPrime - RemB;
         }
-        dRem = (double)inverseA * (double)(rowPrimeSieveData0->modsqrt + RemB) +
-               (double)SieveLimit;
-        dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
+        dRem = (BIG)inverseA * (BIG)(rowPrimeSieveData0->modsqrt + RemB) +
+               (BIG)SieveLimit;
+        dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
         rowPrimeSieveData->soln1 = (int)dRem;
       }
       do
@@ -4176,7 +4176,7 @@ static void sieveThread(BigInteger *result)
 /* The variables with suffix 3 correspond to multiplier = 3 */
 static int SQUFOF(long N, int queue[])
 {
-  double sqrt;
+  BIG sqrt;
   int Q, Q1, P, P1, L, S;
   int i, j, r, s, t, q;
   int queueHead, queueTail, queueIndex;

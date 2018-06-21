@@ -5,7 +5,7 @@
 #include "highlevel.h"
 #include "factor.h"
 #include "batch.h"
-#define DEBUG_CODE  17
+#define DEBUG_CODE  13
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
@@ -13,8 +13,10 @@ int Factor1[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x
 int Factor2[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00 };
 int Factor3[] = { 29504, 29490, 19798, 633, 181, 0, 0, 0, 0, 0 };
 int Factor4[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-int Factor5[] = { 32767, 32767, 32767, 32767, 0, 0, 0, 0 };
-int Factor6[] = { 32767, 32767, 32767, 32767, 0, 0, 0, 0 };
+int Factor5[] = { 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0, 0, 0, 0 };
+int Factor6[] = { 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0, 0, 0, 0 };
+int factor7[1000];
+int factor8[1000];
 int factors[5000];
 struct sFactors astFactors[1000];
 extern int number[MAX_LEN];
@@ -250,6 +252,15 @@ quadmodText("1", "-8", "17", "10586", 6);
   }
   quadText(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
   printf("%s\n", output);
+#elif DEBUG_CODE == 18
+  int resultLen, k;
+  memset(factors, 0xEE, 1000 * sizeof(limb));
+  for (k = 0; k < 500; k++)
+  {
+    factor7[k] = 0x7FFFFFFF;
+  }
+  memset(factors, 0x00, 2000 * sizeof(limb));
+  fftMultiplication((limb *)factor7, (limb *)factor7, (limb *)factors, 4, &resultLen);
 #endif
   return 0;
 }

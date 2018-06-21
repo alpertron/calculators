@@ -169,14 +169,6 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         return EXPR_INTERM_TOO_HIGH;
       }
       len = (int)largeLen.x;
-      // Check if number is prime
-      for (i = 2; i*i <= len; i++)
-      {
-        if (len / i*i == len)
-        {   // Number is not prime, so go out.
-          return EXPR_INVALID_PARAM;
-        }
-      }
       factorial.limbs[0].x = 1;
       factorial.nbrLimbs = 1;
       factorial.sign = SIGN_POSITIVE;

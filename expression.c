@@ -289,18 +289,10 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         largeLen.x = stackValues[stackIndex].limbs[0].x;
       }
-      if (largeLen.x < 0 || largeLen.x > 46049)
+      len = (int)largeLen.x;
+      if (len < 0 || len > 46049)
       {
         return EXPR_INTERM_TOO_HIGH;
-      }
-      len = (int)largeLen.x;
-        // Check if number is prime
-      for (i = 2; i*i <= len; i++)
-      {
-        if (len / i*i == len)
-        {   // Number is not prime, so go out.
-          return EXPR_INVALID_PARAM;
-        }
       }
       factorial.limbs[0].x = 1;
       factorial.nbrLimbs = 1;

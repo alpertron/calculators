@@ -630,15 +630,15 @@ static void subtFromAbsValue(limb *pLimbs, int *pNbrLimbs, int subt)
   pLimbs->x -= subt;
   if (pLimbs->x < 0)
   {
-    int ctr;
-    for (ctr = 1; ctr < nbrLimbs; ctr++)
-    {
-      (pLimbs + ctr - 1)->x += LIMB_RANGE;
-      if (--((pLimbs + ctr)->x) >= 0)
-      {
+    int ctr = 0;
+    do
+    {      // Loop that adjust number if there is borrow.
+      (pLimbs + ctr)->x += LIMB_RANGE;
+      if (++ctr == nbrLimbs)
+      {    // All limbs processed. Exit loop.
         break;
       }
-    }
+    } while (--((pLimbs + ctr)->x) < 0);   // Continue loop if there is borrow.
     if (nbrLimbs > 1 && (pLimbs + nbrLimbs - 1)->x == 0)
     {
       nbrLimbs--;
@@ -900,13 +900,6 @@ int intModPow(int NbrMod, int Expon, int currentPrime)
     Expon >>= 1;
   }
   return (int)power;
-}
-
-static void InitTempFromInt(int value)
-{
-  Temp.nbrLimbs = 1;
-  Temp.limbs[0].x = value;
-  Temp.sign = SIGN_POSITIVE;
 }
 
 void UncompressBigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint)
@@ -1180,10 +1173,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
       {     // New approximation will be the same as previous. Go out.
         break;
       }
-      InitTempFromInt(Exponent - 1);
-      BigIntSubt(&Temp2, &Temp, &Temp2);
-      InitTempFromInt(Exponent);
-      BigIntDivide(&Temp2, &Temp, &Temp2);
+      subtractdivide(&Temp2, Exponent - 1, Exponent);   // Compute (Temp2 - (1 - Exponent)) / Exponent
       BigIntAdd(&Temp2, pBase, pBase);
     }
   }

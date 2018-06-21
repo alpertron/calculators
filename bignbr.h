@@ -148,6 +148,7 @@ void MultBigNbrByIntB(int *bigFactor, int factor, int *bigProduct, int nbrLen);
 void DivBigNbrByInt(int *pDividend, int divisor, int *pQuotient, int nbrLen);
 int RemDivBigNbrByInt(int *pDividend, int divisor, int nbrLen);
 void MultBigNbr(int *pFactor1, int *pFactor2, int *pProd, int nbrLen);
+void MultBigNbrComplete(int *pFactor1, int *pFactor2, int *pProd, int nbrLen);
 void IntToBigNbr(int value, int *bigNbr, int nbrLength);
 int BigNbrToBigInt(BigInteger *pBigNbr, int *pBigInt);
 void BigIntToBigNbr(BigInteger *pBigNbr, int *pBigInt, int nbrLenBigInt);
@@ -163,6 +164,7 @@ int JacobiSymbol(int upper, int lower);
 int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower);
 void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs);
 void smallmodmult(int factor1, int factor2, limb *product, int mod);
+void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen);
 
 typedef void(*mmCback)(void);
 #endif

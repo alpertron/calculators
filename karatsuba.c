@@ -66,6 +66,13 @@ static void Karatsuba(int idxFactor1, int length, int diffIndex);
 void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen)
 {
   int length = len;
+#if 0    // Do not enable FFT yet.
+  if (length > 100)
+  {
+    fftMultiplication(factor1, factor2, result, len, pResultLen);
+    return;
+  }
+#endif
     // Compute length of numbers for each recursion.
   if (length > KARATSUBA_CUTOFF)
   {

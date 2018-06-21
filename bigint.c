@@ -319,6 +319,64 @@ void MultBigNbr(int *pFactor1, int *pFactor2, int *pProd, int nbrLen)
   *(pProd+1) = (int)floor(dAccumulator/dRangeLimb);
 }
 
+void MultBigNbrComplete(int *pFactor1, int *pFactor2, int *pProd, int nbrLen)
+{
+  double dRangeLimb = (double)(1U << BITS_PER_INT_GROUP);
+  double dInvRangeLimb = 1 / dRangeLimb;
+  int low = 0;
+  int i, j;
+  int factor1, factor2;
+  double dAccumulator = 0;
+  for (i = 0; i < nbrLen; i++)
+  {
+    for (j = 0; j <= i; j++)
+    {
+      factor1 = *(pFactor1 + j);
+      factor2 = *(pFactor2 + i - j);
+      low += factor1 * factor2;
+      dAccumulator += (double)factor1 * (double)factor2;
+    }
+    low &= MAX_INT_NBR;    // Trim extra bits.
+    *pProd++ = low;
+    // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
+    // In that case, there would be an error of +/- 1.
+    if (low < HALF_INT_RANGE)
+    {
+      dAccumulator = floor((dAccumulator + HALF_INT_RANGE / 2)*dInvRangeLimb);
+    }
+    else
+    {
+      dAccumulator = floor((dAccumulator - HALF_INT_RANGE / 2)*dInvRangeLimb);
+    }
+    low = (int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
+  }
+  for (; i < 2*nbrLen; i++)
+  {
+    for (j = i-nbrLen+1; j < nbrLen; j++)
+    {
+      factor1 = *(pFactor1 + j);
+      factor2 = *(pFactor2 + i - j);
+      low += factor1 * factor2;
+      dAccumulator += (double)factor1 * (double)factor2;
+    }
+    low &= MAX_INT_NBR;    // Trim extra bits.
+    *pProd++ = low;
+    // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
+    // In that case, there would be an error of +/- 1.
+    if (low < HALF_INT_RANGE)
+    {
+      dAccumulator = floor((dAccumulator + HALF_INT_RANGE / 2)*dInvRangeLimb);
+    }
+    else
+    {
+      dAccumulator = floor((dAccumulator - HALF_INT_RANGE / 2)*dInvRangeLimb);
+    }
+    low = (int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
+  }
+  *pProd = low;
+  *(pProd + 1) = (int)floor(dAccumulator / dRangeLimb);
+}
+
 void IntToBigNbr(int value, int *bigNbr, int nbrLength)
 {
   if (value >= 0)
