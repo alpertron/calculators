@@ -353,6 +353,10 @@ void SolveEquation(void)
             ChSignBigNbr((int *)discriminant.limbs, nbrLimbs);
           }
           LSLimb = discriminant.limbs[0].x;
+          if (expon >= deltaZeros && expon - deltaZeros < 8)
+          {
+            LSLimb &= (1 << (expon - deltaZeros)) - 1;
+          }
           if (nbrBitsSquareRoot == 2 && (LSLimb & 3) != 1)
           {
             return;    // Square root does not exist. Go out.

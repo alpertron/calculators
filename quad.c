@@ -798,6 +798,10 @@ void SolveQuadModEquation(void)
             ChSignBigNbr((int *)discriminant.limbs, nbrLimbs);
           }
           LSLimb = discriminant.limbs[0].x;
+          if (expon >= deltaZeros && expon - deltaZeros < 8)
+          {
+            LSLimb &= (1 << (expon - deltaZeros)) - 1;
+          }
           if ((nbrBitsSquareRoot == 2 && (LSLimb & 3) != 1) ||
               (nbrBitsSquareRoot > 2 && (LSLimb & 7) != 1))
           {             // Square root does not exist. Go out.
