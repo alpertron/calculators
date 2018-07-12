@@ -52,7 +52,7 @@ extern char *ptrInputText;
 #define HALF_SIEVE_SIZE (SIEVE_SIZE/2)
 
 char factorsAscii[10000];
-static int nbrPrimes, indexPrimes, StepECM, DegreeAurif;
+static int nbrPrimes, indexPrimes, StepECM, DegreeAurif, NextEC;
 static int FactorIndex;
 static BigInteger power, prime;
 int *factorArr[FACTOR_ARRSIZE];
@@ -60,7 +60,6 @@ static int Typ[4000];
 static int indexM, maxIndexM;
 static int foundByLehman, performLehman;
 static int SmallPrime[670]; /* Primes < 5000 */
-int NextEC;
 static int EC;
 static limb A0[MAX_LEN];
 static limb A02[MAX_LEN];
@@ -1213,11 +1212,16 @@ static enum eEcmResult ecmCurve(BigInteger *N)
       text[0] = '7';
       ptrText = &text[1];
       int2dec(&ptrText, EC);
-      *ptrText = 0;               // Add string terminator.
+      *ptrText = 0;                 // Add string terminator.
       databack(text);
 #endif
-      L1 = NumberLength*9;        // Get number of digits.
-      if (L1 > 30 && L1 <= 90)    // If between 30 and 90 digits...
+      L1 = NumberLength*9;          // Get number of digits.
+      if (NextEC == 0 && L1 <= 110) // Force switch to SIQS and number not too large.
+      {
+        EC += TYP_SIQS;
+        return CHANGE_TO_SIQS;
+      }
+      if (L1 > 30 && L1 <= 90)      // If between 30 and 90 digits...         
       {                             // Switch to SIQS.
         int limit = limits[((int)L1 - 31) / 5];
         if (EC % 50000000 >= limit)
@@ -2273,9 +2277,13 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   return factorsFound;
 }
 
+void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors)
+{
+  factorExt(toFactor, number, factors, pstFactors, NULL, -1);
+}
 // pstFactors -> ptrFactor points to end of factors.
 // pstFactors -> multiplicity indicates the number of different factors.
-void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors)
+void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors, int nextEC)
 {
   struct sFactors *pstCurFactor;
   int factorNbr, expon;
@@ -2287,6 +2295,7 @@ void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *ps
   char *ptrCharFound;
   int result;
   EC = 1;
+  NextEC = nextEC;
   NumberLength = toFactor->nbrLimbs;
   GetYieldFrequency();
 #ifdef __EMSCRIPTEN__

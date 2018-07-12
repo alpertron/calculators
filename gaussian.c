@@ -101,7 +101,7 @@ void GaussianFactorization(void)
     ptrFactorDec += strlen(ptrFactorDec);
     strcpy(ptrFactorDec, "&sup2;");
     ptrFactorDec += strlen(ptrFactorDec);
-    factor(&tofactor, nbrToFactor, factorsNorm, astFactorsNorm, NULL);
+    factor(&tofactor, nbrToFactor, factorsNorm, astFactorsNorm);
     NbrFactorsNorm = astFactorsNorm[0].multiplicity;
     pstFactor = &astFactorsNorm[1];
     for (index = 0; index < NbrFactorsNorm; index++)

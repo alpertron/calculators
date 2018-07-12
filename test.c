@@ -157,11 +157,13 @@ int main(int argc, char *argv[])
   polyFactText(argv[1], argv[2], 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 11
+#if 0
   if (argc != 4)
   {
     printf("base power modulus\n");
     return 0;
   }
+#endif
   dilogText(argv[1], argv[2], argv[3], 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 12
@@ -231,7 +233,8 @@ int main(int argc, char *argv[])
   doWork();
 #elif DEBUG_CODE == 16
 //quadmodText(argv[1], argv[2], argv[3], argv[4]);
-quadmodText("1", "-8", "17", "10586", 6);
+quadmodText("1", "0", "4", "8", 6);
+//quadmodText("1", "-8", "17", "10586", 6);
 //quadmodText("1", "0", "-316", "36", 6);
 //quadmodText("1", "-8", "-17", "11", 6);
 //quadmodText("1", "0", "-316", "2340", 6);

@@ -1199,7 +1199,7 @@ static void PerformFactorization(BigInteger *tofactor)
   {
     Bin2Dec(tofactor->limbs, tofactorDec, tofactor->nbrLimbs, groupLen);
   }
-  factor(tofactor, nbrToFactor, factorsMod, astFactorsMod, NULL);
+  factor(tofactor, nbrToFactor, factorsMod, astFactorsMod);
 }
 
 #ifdef FACTORIZATION_FUNCTIONS

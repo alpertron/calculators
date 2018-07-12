@@ -682,7 +682,7 @@ void SolveQuadModEquation(void)
     NumberLength = modulus.nbrLimbs;
     CompressBigInteger(nbrToFactor, &modulus);
     Bin2Dec(modulus.limbs, tofactorDec, modulus.nbrLimbs, groupLen);
-    factor(&modulus, nbrToFactor, factorsMod, astFactorsMod, NULL);
+    factor(&modulus, nbrToFactor, factorsMod, astFactorsMod);
     if (teach)
     {
       showText(lang ? "<p>Para resolver esta ecuación cuadrática modular debemos factorizar el módulo y hallar las soluciones módulo las potencias de los factores primos. Luego debemos combinar estas soluciones usando el teorema chino del resto.</p>" :
@@ -2186,7 +2186,7 @@ static void NonSquareDiscriminant(void)
   NumberLength = ValK.nbrLimbs;
   CompressBigInteger(nbrToFactor, &ValK);
   Bin2Dec(ValK.limbs, tofactorDec, ValK.nbrLimbs, groupLen);
-  factor(&ValK, nbrToFactor, factorsMod, astFactorsMod, NULL);
+  factor(&ValK, nbrToFactor, factorsMod, astFactorsMod);
   // Find all indexes of prime factors with even multiplicity.
   nbrPrimesEvenMultiplicity = 0;
   numFactors = astFactorsMod[0].multiplicity;
@@ -3181,7 +3181,7 @@ static void PerfectSquareDiscriminant(void)
   NumberLength = ValZ.nbrLimbs;
   CompressBigInteger(nbrToFactor, &ValZ);
   Bin2Dec(ValZ.limbs, tofactorDec, ValZ.nbrLimbs, groupLen);
-  factor(&ValZ, nbrToFactor, factorsMod, astFactorsMod, NULL);
+  factor(&ValZ, nbrToFactor, factorsMod, astFactorsMod);
   // x = (NI - JM) / D(IL - MH) and y = (JL - NH) / D(IL - MH)
   // The denominator cannot be zero here.
   // H = 2a/R, I = (b+g)/R, J = F + H * alpha + I * beta

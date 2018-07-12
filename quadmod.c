@@ -250,7 +250,7 @@ void SolveEquation(void)
     NumberLength = ValN.nbrLimbs;
     CompressBigInteger(nbrToFactor, &ValN);
     Bin2Dec(ValN.limbs, tofactorDec, ValN.nbrLimbs, groupLen);
-    factor(&ValN, nbrToFactor, factorsMod, astFactorsMod, NULL);
+    factor(&ValN, nbrToFactor, factorsMod, astFactorsMod);
   }
   intToBigInteger(&Q, 0);
   nbrFactors = astFactorsMod[0].multiplicity;
