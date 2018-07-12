@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="Javascript application that finds the continued fraction representation of rational numbers and quadratic irrationalities. Written by Dario Alpern." />
 <meta name="theme-color" content="#db5945">
-<link rel="prefetch" href="fsquaresW0048.js" />
 <link rel="manifest" href="contfrac.webmanifest">
 <link rel="alternate" hreflang="es" href="FRACCONT.HTM" />
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
@@ -31,17 +30,21 @@
 #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
 #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
 #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
 @media (max-width: 400px) { #smallheader { font-size:0.7em;} }
 @media (min-width: 400px) { #smallheader { font-size:1em;} }
+@media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 </style>
 <style>
-body {font-family: arial; margin: 0; padding: 0;}
+body {font-family:arial; margin:0; padding:0;}
 h1 {text-align:center;}
+fieldset {display:inline}
 .mysvg {margin:0px;padding:0px;}
 .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
-.lf {padding:0.2em; clear:both; width:100%}
+.lf,.labels {padding:0.2em; clear:both; width:100%}
 .bold {font-weight: bold;}
-#applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+#feedback {display:none}
 .fraction {display: inline-block; vertical-align: middle; margin: 0 0.2em 0.4ex; text-align: center}
 .fraction > span {display: block; padding-top: 0.15em}
 .fraction span.fdn {border-top: thin solid black}
@@ -115,10 +118,9 @@ Contact
 </ul>
 <br style="clear:both;"/>
 </nav>
-<main>
+<main id="main">
 <article>
 <h1>Continued Fraction calculator</h1>
-<script async="async" src="fsquares0048.js"></script>
 <div style='padding:10px;'>
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -137,7 +139,7 @@ Contact
 </div>
 </div>
 <div class="pad">
-<form id="applet">
+<form class="applet">
 <p class="mysvg">
 <svg height='30.4592pt' version='1.1' viewBox='0 0 40.118 30.4592' width='40.118pt' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
 <defs>
@@ -168,7 +170,6 @@ Contact
 <input type="button" id="helpbtn" value="Help" />
 <input type="hidden" id="digits" value="20000"/><div class="lf"></div>
 <input type="checkbox" id="converg"><label for="converg">Show convergents</label>
-<input type="hidden" id="app" value="4"/>
 </form>
 <div id="help" aria-live="polite">
 <p>
@@ -347,18 +348,74 @@ If <var>b</var> is negative, the result is not a real number, so it cannot be re
 <p>
 You can download the source of the current program and the old continued fraction applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 26 April 2018.</p>
+<p>Written by Dario Alpern. Last updated 10 July 2018.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
 <div id="status"></div>
 <div>
-<p>
-If you find an error or you have any comment, please fill the <a href="FORM.HTM?Continued+fraction+calculator">form</a>.
-</p>
+<p>If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
 </div>
 </div>
 </article>
 </main>
+<aside id="feedback">
+<h1>Feedback form</h1>
+<form class="applet" id="formfeedback">
+<input type="hidden" name="subject" value="Continued fraction calculator feedback" />
+<div id="formleft">
+<div class="labels"><label for="name">Your name is:</label><input class="inputfbck" type="text" name="name" maxlength="40" id="name" autocomplete="name"/></div>
+<div class="labels"><label for="age">Age:</label><input class="inputfbck" type="number" name="age" min="0" max="999" id="age" /></div>
+<div class="labels"><label for="city">City:</label><input class="inputfbck" type="text" name="city" maxlength="70" id="city" autocomplete="address-level2"/></div>
+<div class="labels"><label for="province">Province/State:</label><input class="inputfbck" type="text" name="province" maxlength="70" id="province" autocomplete="address-level1"/></div>
+<div class="labels"><label for="country">Country:</label><input class="inputfbck" type="text" name="country" maxlength="70" id="country" autocomplete="country-name" /></div>
+<div class="labels"><label for="reply">E-mail address:</label><input class="inputfbck" type="email" name="reply" maxlength="70" id="reply" autocomplete="email" /></div>
+<p>Enter your e-mail address if you want a reply from the author of this application.</p>
+<p><input type="checkbox" id="adduserdata"><label for="adduserdata">Send input data</label></p>
+<input type="hidden" name="userdata" value="" id="userdata" />
+</div>
+<div id="formright">
+<label for="comments">Please feel free to add comments:</label><br />
+<textarea name="Comments" rows="7" cols="40" id="comments"></textarea>
+<p><label for="how">How did you find my page?</label><br />
+<select name="how" title="How did you find my page?" id="how">
+<option value="Select response">Select response</option>
+<option value="from a search engine">From a search engine</option>
+<option value="from a friend">From a friend</option>
+<option value="from a link">From a link</option>
+<option value="from Wikipedia">From Wikipedia or another reference</option>
+<option value="other">Other</option>
+</select></p>
+<fieldset><legend>Are the programs instructive?</legend>
+<input type="radio" name="Instructive" value="Yes" id="insyes" /><label for="insyes">Yes</label>
+<input type="radio" name="Instructive" value="No" id="insno" /><label for="insno">No</label>
+</fieldset>
+<fieldset><legend>Are the programs interesting?</legend>
+<input type="radio" name="Interesting" value="Yes" id="intyes" /><label for="intyes">Yes</label>
+<input type="radio" name="Interesting" value="No" id="intno" /><label for="intno">No</label>
+</fieldset>
+<p><input type="submit" value="Send it in!" id="formsend" />
+<input type="reset" value="Reset" />
+<input type="button" value="Cancel" id="formcancel" /></p>
+</div>
+<div class="lf"></div>
+</form>
+</aside>
+<script>
+<!--
+(function(){function a(a){return document.getElementById(a)}function k(){a("calc").style.display="inline";null!=a("stop")&&(a("stop").style.display="none")}function l(b){var q=a("helphelp");c||(n?m||(m=new Blob([new Uint8Array(f)])):m||(m=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),c=new Worker(window.URL.createObjectURL(m)),c.onmessage=function(b){var e=b.data.substring(0,1);if("4"==e)a("status").innerHTML=
+b.data.substring(1);else if(a("result").innerHTML=b.data.substring(1),"2"==e||"6"==e)a("status").innerHTML="",k(),"6"==e&&(a("cont").style.display="block")});q.style.display="block";q.innerHTML='<p class="pad">Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the '+(n?"asm.js":"WebAssembly")+" version.</p>";n?c.postMessage(b):c.postMessage([b,f])}function p(){var b,c,
+h,e,d;b=a("result");b.style.display="block";c=a("num").value;""==c?b.innerHTML="Please type a number or expression for numerator.":(h=a("delta").value,""==h?b.innerHTML="Please type a number or expression for square root argument.":(e=a("den").value,""==e?b.innerHTML="Please type a number or expression for denominator.":(d=a("digits").value,a("help").style.display="none",b.innerHTML="Computing continued fraction expansion...",r=a("converg").checked?1:0,param=d+","+(4+64*r)+","+c+String.fromCharCode(0),
+param+=h+String.fromCharCode(0)+e+String.fromCharCode(0),l(param))))}function d(){a("main").style.display="block";a("feedback").style.display="none";a("num").focus()}var c=0,f=0,r=0,m,n="undefined"===typeof WebAssembly,g=new XMLHttpRequest;g.open("GET",n?"fsquaresW0059.js":"fsquares0059.wasm",!0);g.responseType="arraybuffer";g.onreadystatechange=function(){4==g.readyState&&200==g.status&&(f=g.response)};g.send(null);addEventListener("load",function(){a("calc").onclick=function(){p()};null!=a("stop")&&
+(a("stop").onclick=function(){c.terminate();c=0;k();a("result").innerHTML="<p>Calculation stopped by user</p>";a("status").innerHTML=""});null!=a("continue")&&(a("continue").onclick=function(){a("cont").style.display="none";l("C")});a("num").onkeydown=function(a){10!=a.keyCode&&13!=a.keyCode||!a.ctrlKey||(a.preventDefault(),p());return!0};a("helpbtn").onclick=function(){var b=a("help").style,c=a("helphelp").style,d=a("result"),e=d.style;"block"==b.display&&""!=d.innerHTML?(b.display="none",c.display=
+e.display="block"):(b.display="block",c.display=e.display="none")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){d()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\nnum = "+a("num").value+"\ndelta = "+a("delta").value+"\nden = "+a("den").value:"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==
+b.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),d())};b.open("POST","/sendmail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var c=a("formfeedback").elements,h="",e=0,f=0;f<c.length;f++){var g=c[f];g.name&&(e&&(h+="&"),h+=g.name+"="+encodeURIComponent(g.value),e++)}b.send(h);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})})})(this);
+addEventListener("load",function(){(function(a,k,l,p,d,c,f){a.GoogleAnalyticsObject=d;a[d]=a[d]||function(){(a[d].a=a[d].a||[]).push(arguments)};a[d].b=1*new Date;c=k.createElement(l);f=k.getElementsByTagName(l)[0];c.async=1;c.src=p;f.parentNode.insertBefore(c,f)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
+//-->
+</script>
+<script type="text/js-worker">
+var e,g,k,l={env:{databack:function(b){var a=-1,c=0,f="",d="";do{for(c=0;1024>c;c++){a=g[b++>>0];if(0==a)break;128<=a&&(a=(a-192<<6)+g[b++>>0]-128);f+=String.fromCharCode(a)}d+=f;f=""}while(0!=a);self.postMessage(d+f)},tenths:function(){return Math.floor((new Date).getTime()/100)}}};
+self.onmessage=function(b){k?(m(e.getInputStringPtr(),b.data[0]),e.doWork()):WebAssembly.instantiate(b.data[1],l).then(function(a){k=1;e=a.instance.exports;g=new Uint8Array(e.memory.buffer);m(e.getInputStringPtr(),b.data[0]);e.doWork()})};function m(b,a){var c=b,f=a.length,d,h;for(d=0;d<f;d++)h=a.charCodeAt(d),128>h?g[c++]=h:(g[c++]=(h>>6)+192,g[c++]=(h&63)+128);g[c]=0};
+</script>
 </body>
 </html>

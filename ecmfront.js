@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/** @define {number} */ var lang = 1;   // Use with Closure compiler.
 (function(global)
 {   // This method separates the name space from the Google Analytics code.
 var wizardStep = 0;
@@ -31,8 +32,8 @@ var asmjs = typeof(WebAssembly) === "undefined";
 
 function oneexpr()
 {
-  get("next").value = (app & 1? "Hecho": "Done");
-  get("wzddesc").innerHTML = (app & 1? "Paso 1 de 1: Expresión a factorizar": "Step 1 of 1: Expression to factor");
+  get("next").value = (lang? "Hecho": "Done");
+  get("wzddesc").innerHTML = (lang? "Paso 1 de 1: Expresión a factorizar": "Step 1 of 1: Expression to factor");
   get("wzdexam").innerHTML = "&nbsp;";
   wizardTextInput = "";
   wizardStep = 9;
@@ -139,14 +140,14 @@ function callWorker(param)
   }
   else
   {      // WebAssembly.
-	worker.postMessage([param, fileContents]);
+    worker.postMessage([param, fileContents]);
   }
 }
 
 function dowork(n)
 {
   var param;
-  app = parseInt(get("app").value) + n;
+  app = lang + n;
   var res = get("result");
   var valueText = get("value").value.replace(/\u2011/g, "-");
   var charNull = String.fromCharCode(0);
@@ -154,24 +155,24 @@ function dowork(n)
   get("cont").style.display = "none";
   get("help").style.display = "none";
   helphelp.style.display = "block";
-  helphelp.innerHTML = (app & 1 ? '<p class="pad">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización. Esta es la versión '+(asmjs? "asm.js": "WebAssembly")+".</p>":
-                                  '<p class="pad">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. Keyboard users can press CTRL+ENTER to start factorization. This is the '+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
+  helphelp.innerHTML = (lang ? '<p class="pad">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización. Esta es la versión '+(asmjs? "asm.js": "WebAssembly")+".</p>":
+                               '<p class="pad">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. Keyboard users can press CTRL+ENTER to start factorization. This is the '+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
   res.style.display = "block";
   if (valueText == "")
   {    // Nothing in input box.
-    res.innerHTML = (app & 1 ? "<p>Por favor ingrese una expresión.</p>" :
-                               "<p>Please type an expression.</p>");
+    res.innerHTML = (lang ? "<p>Por favor ingrese una expresión.</p>" :
+                            "<p>Please type an expression.</p>");
     return;
   }
   if (typeof(Worker) === "undefined")
   {    // Web workers not supported on this browser.
-    res.innerHTML = (app & 1 ? "<p>Esta calculadora necesita Web Workers. Por favor use otro navegador Web.</p>" :
-                               "<p>This calculator requires Web Workers. Please use another Web browser.</p>");
+    res.innerHTML = (lang ? "<p>Esta calculadora necesita Web Workers. Por favor use otro navegador Web.</p>" :
+                            "<p>This calculator requires Web Workers. Please use another Web browser.</p>");
     return;
   }
   styleButtons("none", "inline");  // Enable "more" and "stop" buttons
-  res.innerHTML = (app & 1 ? "<p>Factorizando la expresión...</p>" :
-                             "<p>Factoring expression...</p>");
+  res.innerHTML = (lang ? "<p>Factorizando la expresión...</p>" :
+                          "<p>Factoring expression...</p>");
   if (n < -2)
   {
     app += 6;   // Convert to factorization.
@@ -180,11 +181,11 @@ function dowork(n)
           getStorage("ecmFactors");
   if (n == -1 || n == -2)
   {
-    param += charNull + get("curve").value;   // Append new factor or curve number.
+    param += charNull + get("curve").value;        // Append new curve number typed by user.
   }
   if (n == -3 || n == -4)
   {
-    param += "*" + get("curve").value + "^1(2)";   // Append new factor or curve number.
+    param += "*" + get("curve").value + "^1(2)";   // Append new factor typed by user.
   }
   if (!fileContents)
   {
@@ -198,10 +199,10 @@ function dowork(n)
 
 function selectLoop()
 {   
-  get("next").value = (app & 1 ? "Siguiente": "Next");
-  get("wzddesc").innerHTML = (app & 1 ? "Paso 1 de 5: Valor inicial de x": "Step 1 of 5: Initial value of x");
-  get("wzdexam").innerHTML = (app & 1? "No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code>": 
-                                       "Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>");
+  get("next").value = (lang ? "Siguiente": "Next");
+  get("wzddesc").innerHTML = (lang ? "Paso 1 de 5: Valor inicial de x": "Step 1 of 5: Initial value of x");
+  get("wzdexam").innerHTML = (lang? "No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code>": 
+                                    "Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>");
   wizardStep = 1;
 }
   
@@ -218,29 +219,29 @@ function wizardNext()
     case 2:
       wizardTextInput += "x="+wzdInput.value;
       get("mode").style.display = "none";
-      wzdDescText.innerHTML = (app & 1? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
-      wzdExamText.innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x+1</code>":
-                                        "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>");
+      wzdDescText.innerHTML = (lang? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
+      wzdExamText.innerHTML = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x+1</code>":
+                                     "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>");
       break;
     case 3:
       wizardTextInput += ";x="+wzdInput.value;
-      wzdDescText.innerHTML = (app & 1? "Paso 3 de 5: Condición para finalizar el ciclo": "Step 3 of 5: End loop condition");
-      wzdExamText.innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x&lt;10000</code>":
-                                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x&lt;10000</code>");
+      wzdDescText.innerHTML = (lang? "Paso 3 de 5: Condición para finalizar el ciclo": "Step 3 of 5: End loop condition");
+      wzdExamText.innerHTML = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x&lt;10000</code>":
+                                     "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x&lt;10000</code>");
       break;
     case 4:
       wizardTextInput += ";"+wzdInput.value;
-      wzdDescText.innerHTML = (app & 1? "Paso 4 de 5: Expresión a factorizar": "Step 4 of 5: Expression to factor");
-      wzdExamText.innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x</code>":
-                                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x</code>");
+      wzdDescText.innerHTML = (lang? "Paso 4 de 5: Expresión a factorizar": "Step 4 of 5: Expression to factor");
+      wzdExamText.innerHTML = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x</code>":
+                                     "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x</code>");
       break;
     case 5:
       wizardTextInput += ";"+wzdInput.value;
-      nextBtn.value = (app & 1? "Hecho": "Done");
+      nextBtn.value = (lang? "Hecho": "Done");
       nextBtn.disabled = false;
-      wzdDescText.innerHTML = (app & 1? "Paso 5 de 5: Condición para procesar la expresión": "Step 5 of 5: Process expression condition");
-      wzdExamText.innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>":
-                                        "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>");
+      wzdDescText.innerHTML = (lang? "Paso 5 de 5: Condición para procesar la expresión": "Step 5 of 5: Process expression condition");
+      wzdExamText.innerHTML = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>":
+                                     "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>");
       break;
     case 6:
       if (wzdInput.value != "")
@@ -282,11 +283,18 @@ function saveConfig()
   digits = get("digits").value;
   setStorage("ecmConfig", digits+","+config);
 }
-    
+
+function endFeedback()
+{
+  get("main").style.display = "block";
+  get("feedback").style.display = "none";
+  get("value").focus();   
+}
+
 function startUp()
 {
   var param, index, ecmFactor;
-  app = parseInt(get("app").value);
+  app = lang;
   get("value").wrap="off";
   get("eval").onclick = function ()
   {
@@ -445,7 +453,7 @@ function startUp()
     worker = 0;
     styleButtons("inline", "none");  // Enable eval and factor
     get("result").innerHTML =
-      (app & 1 ? "<p>Cálculo detenido por el usuario.</p>" :
+      (lang ? "<p>Cálculo detenido por el usuario.</p>" :
                  "<p>Calculation stopped by user</p>");
     get("status").innerHTML = "";
   };
@@ -481,6 +489,66 @@ function startUp()
   {
     get("cont").style.display = "none";
     callWorker("C");  // Indicate worker that user pressed Continue button.
+  }
+  get("formlink").onclick = function ()
+  {
+    get("main").style.display = "none";
+    get("feedback").style.display = "block";
+    get("formfeedback").reset();
+    get("name").focus();
+    return false;   // Do not follow the link.
+  }
+  get("formcancel").onclick = function ()
+  {
+    endFeedback();
+  }
+  get("formsend").onclick = function()
+  {
+    var userdata = get("userdata");
+    if (get("adduserdata").checked)
+    {
+      userdata.value = "\n" + get("value").value + "\n" + get("result").innerHTML + "\n" + get("status").innerHTML;
+    }
+    else
+    {
+      userdata.value = "";      
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function (event)
+    {
+      if (xhr.readyState == 4) 
+      {             // XHR finished.
+        if (xhr.status == 200)
+        {           // PHP page loaded.
+          alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
+        }
+        else
+        {           // PHP page not loaded.
+          alert(lang?"No se pudieron enviar los comentarios.": "Feedback could not be sent.");
+        }
+        endFeedback();
+      }
+    };
+    xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    var elements = get("formfeedback").elements;
+    var contents = "";
+    var useAmp = 0;
+    for (var i = 0; i < elements.length; i++)
+    {
+      var element = elements[i];
+      if (element.name)
+      {
+        if (useAmp)
+        {
+          contents += '&';
+        }
+        contents += element.name + "=" + encodeURIComponent(element.value);
+        useAmp++;
+      }
+    }
+    xhr.send(contents);
+    return false;   // Send form only through JavaScript.
   }
   window.onclick = function(event)
   {
@@ -528,11 +596,11 @@ function startUp()
   if ('serviceWorker' in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator.serviceWorker.register('calcSW.js').then(function() {}, function() {});
+    navigator["serviceWorker"]["register"]('calcSW.js').then(function() {}, function() {});
   }
 }
 var req = new XMLHttpRequest();
-req.open('GET', (asmjs? "ecmW0058.js": "ecm0058.wasm"), true);
+req.open('GET', (asmjs? "ecmW0000.js": "ecm0000.wasm"), true);
 req.responseType = "arraybuffer";
 req.onreadystatechange = function (aEvt)
 {
@@ -549,6 +617,7 @@ req.send(null);
 addEventListener("load", startUp);
 })(this);
 
+// Register Google Analytics.
 addEventListener("load", function ()
 {
   (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){

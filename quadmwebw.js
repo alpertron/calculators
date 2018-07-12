@@ -1,7 +1,7 @@
 /*
     This file is part of Alpertron Calculators.
 
-    Copyright 2015 Dario Alejandro Alpern
+    Copyright 2018 Dario Alejandro Alpern
 
     Alpertron Calculators is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,17 +26,6 @@ var env =
   "tenths": function()
   {
     return Math.floor(new Date().getTime() / 100);
-  },
-  "getCunn": function(data)
-  {
-    var req = new XMLHttpRequest();
-    // Web worker protocol is blob:, so we need to change that to https: as appropriate.
-    req.open('GET', "https://www.alpertron.com.ar/"+PtrToString(data), false);
-    req.send(null);
-    if (req.status == 200)
-    {
-      ConvertToString(exports["getFactorsAsciiPtr"](), req.responseText);
-    }
   }
 };
 

@@ -33,12 +33,14 @@
 @media (max-width: 400px) { #smallheader { font-size:0.7em;} }
 @media (min-width: 400px) { #smallheader { font-size:1em;} }
 @media screen and (min-width: 500px) {#coefLeft {float:left;width:50%;} #coefRight {float:right;width:50%;}}
+@media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 </style>
 <style>
 body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
 h1 {text-align:center;}
 h2 {font-size: 120%;}
-.lf,.coef {padding:0.2em; clear:both;}
+fieldset {display:inline}
+.lf,.coef,.labels {padding:0.2em; clear:both;}
 .i {font-style: italic;}
 .inline {display:inline;}
 .pad {padding:10px;}
@@ -52,7 +54,9 @@ h2 {font-size: 120%;}
 .sqrtin {text-decoration:overline}
 .bold {font-weight:bold;}
 #help,#result,#status,#footer {margin: 3px; padding: 3px;}
-#applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+#feedback {display:none}
+.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
 .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
 </style>
 </head>
@@ -116,10 +120,9 @@ Contact
 </ul>
 <br style="clear:both;"/>
 </nav>
-<main>
+<main id="main">
 <article>
 <h1>Generic two integer variable equation solver</h1>
-<script async="async" src="quad0056.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -137,7 +140,7 @@ Contact
 </a>
 </div>
 </div>
-<div id="applet">
+<div class="applet">
 <var>a</var>&#8290;<var>x</var>&sup2; + <var>b</var>&#8290;<var>x</var>&#8290;<var>y</var> + <var>c</var>&#8290;<var>y</var>&sup2; + <var>d</var>&#8290;<var>x</var> + <var>e</var>&#8290;<var>y</var> + <var>f</var> = 0
 <div class="lf"></div>
 <div id="coefLeft">
@@ -157,7 +160,6 @@ Contact
 <input type="button" id="helpbtn" value="Help" />
 <div class="lf"></div>
 <label for="digits">Digits per group</label>&nbsp;<input type="number" id="digits" value="6"/>
-<input type="hidden" id="app" value="0"/>
 </div>
 <div id="help" aria-live="polite">
 <p>This calculator can solve equations of the form <strong>a&#8290;x&sup2; + b&#8290;x&#8290;y + c&#8290;y&sup2; + dx + ey + f = 0</strong> where the unknowns <var>x</var> and <var>y</var> are integer numbers.</p>
@@ -211,15 +213,67 @@ Contact
 <p>
 You can download the source of the current program and the old quadratic integer equation applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 24 May 2018.</p>
+<p>Written by Dario Alpern. Last updated 10 July 2018.</p>
 </div>
 <div id="result" aria-live="polite"></div>
 <div>
-<p>
-If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Generic+two+integer+variable+equation+solver+feedback">form</a>.
-</p>
+<p>If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
 </div>
 </article>
 </main>
+<aside id="feedback">
+<h1>Feedback form</h1>
+<form class="applet" id="formfeedback">
+<input type="hidden" name="subject" value="Generic two integer variable equation solver feedback" />
+<div id="formleft">
+<div class="labels"><label for="name">Your name is:</label><input class="inputfbck" type="text" name="name" maxlength="40" id="name" autocomplete="name"/></div>
+<div class="labels"><label for="age">Age:</label><input class="inputfbck" type="number" name="age" min="0" max="999" id="age" /></div>
+<div class="labels"><label for="city">City:</label><input class="inputfbck" type="text" name="city" maxlength="70" id="city" autocomplete="address-level2"/></div>
+<div class="labels"><label for="province">Province/State:</label><input class="inputfbck" type="text" name="province" maxlength="70" id="province" autocomplete="address-level1"/></div>
+<div class="labels"><label for="country">Country:</label><input class="inputfbck" type="text" name="country" maxlength="70" id="country" autocomplete="country-name" /></div>
+<div class="labels"><label for="reply">E-mail address:</label><input class="inputfbck" type="email" name="reply" maxlength="70" id="reply" autocomplete="email" /></div>
+<p>Enter your e-mail address if you want a reply from the author of this application.</p>
+<p><input type="checkbox" id="adduserdata"><label for="adduserdata">Send coefficients</label></p>
+<input type="hidden" name="userdata" value="" id="userdata" />
+</div>
+<div id="formright">
+<label for="comments">Please feel free to add comments:</label><br />
+<textarea name="Comments" rows="7" cols="40" id="comments"></textarea>
+<p><label for="how">How did you find my page?</label><br />
+<select name="how" title="How did you find my page?" id="how">
+<option value="Select response">Select response</option>
+<option value="from a search engine">From a search engine</option>
+<option value="from a friend">From a friend</option>
+<option value="from a link">From a link</option>
+<option value="from Wikipedia">From Wikipedia or another reference</option>
+<option value="other">Other</option>
+</select></p>
+<fieldset><legend>Are the programs instructive?</legend>
+<input type="radio" name="Instructive" value="Yes" id="insyes" /><label for="insyes">Yes</label>
+<input type="radio" name="Instructive" value="No" id="insno" /><label for="insno">No</label>
+</fieldset>
+<fieldset><legend>Are the programs interesting?</legend>
+<input type="radio" name="Interesting" value="Yes" id="intyes" /><label for="intyes">Yes</label>
+<input type="radio" name="Interesting" value="No" id="intno" /><label for="intno">No</label>
+</fieldset>
+<p><input type="submit" value="Send it in!" id="formsend" />
+<input type="reset" value="Reset" />
+<input type="button" value="Cancel" id="formcancel" /></p>
+</div>
+<div class="lf"></div>
+</form>
+</aside>
+<script>
+<!--
+(function(){function a(a){return document.getElementById(a)}function n(c){b||(g||(g=new Blob([new Uint8Array(q)])),b=new Worker(window.URL.createObjectURL(g)),b.onmessage=function(c){a("result").innerHTML=c.data.substring(1);"2"==c.data.substring(0,1)&&(a("solve").disabled=!1,a("steps").disabled=!1,a("stop").disabled=!0)});b.postMessage(c)}function k(c){var p=a("result"),d=a("coefA").value.trim(),b=a("coefB").value.trim(),h=a("coefC").value.trim(),g=a("coefD").value.trim(),e=a("coefE").value.trim(),
+f=a("coefF").value.trim(),k=a("digits").value.trim();a("help").style.display="none";p.style.display="block";var l="",m=String.fromCharCode(0);""==d&&(l="coefficient <var>a</var>.");""==b&&(l="coefficient <var>b</var>.");""==h&&(l="coefficient <var>c</var>.");""==g&&(l="coefficient <var>d</var>.");""==e&&(l="coefficient <var>e</var>.");""==f&&(l="coefficient <var>f</var>.");""!=l?p.innerHTML="Please type a number or expression for the "+l:(a("solve").disabled=!0,a("steps").disabled=!0,a("stop").disabled=
+!1,p.innerHTML="Solving the quadratic equation...",c=k+","+(0+c)+","+d+m+b+m+h+m+g+m+e+m+f+m,n(c))}function e(c,b,d){d=a(d);(10==c.which||13==c.which)&&0<b.value.trim().length&&(c.preventDefault(),d.focus(),d.setSelectionRange(0,d.value.length))}function h(){a("main").style.display="block";a("feedback").style.display="none";a("coefA").focus()}var b=0,g,q=0;window.onload=function(){a("stop").disabled=!0;a("solve").onclick=function(){k(0)};a("steps").onclick=function(){k(2)};a("stop").onclick=function(){b.terminate();
+b=0;a("solve").disabled=!1;a("steps").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Calculation stopped by user</p>"};a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("coefA").onkeypress=function(a){e(a,this,"coefB")};a("coefB").onkeypress=function(a){e(a,this,"coefC")};a("coefC").onkeypress=function(a){e(a,this,"coefD")};a("coefD").onkeypress=function(a){e(a,this,"coefE")};a("coefE").onkeypress=function(a){e(a,this,"coefF")};a("coefF").onkeypress=
+function(c){(10==c.which||13==c.which)&&0<this.value.trim().length&&(c.preventDefault(),a("coefA").focus(),k(0))};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){h()};a("formsend").onclick=function(){var c=a("userdata");a("adduserdata").checked?c.value="ax^2 + bxy + cy^2 + dx + ey + f = 0\na = "+a("coefA").value.trim()+"\nb = "+a("coefB").value.trim()+"\nc = "+
+a("coefC").value.trim()+"\nd = "+a("coefD").value.trim()+"\ne = "+a("coefE").value.trim()+"\nf = "+a("coefF").value.trim():c.value="";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),h())};b.open("POST","/sendmail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var c=a("formfeedback").elements,d="",g=0,e=0;e<c.length;e++){var f=c[e];f.name&&(g&&(d+=
+"&"),d+=f.name+"="+encodeURIComponent(f.value),g++)}b.send(d);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var f=new XMLHttpRequest;f.open("GET","quadW0059.js",!0);f.responseType="arraybuffer";f.onreadystatechange=function(){4==f.readyState&&200==f.status&&(q=f.response)};f.send(null)})(this);
+"undefined"!==typeof window&&addEventListener("load",function(){(function(a,n,k,e,h,b,g){a.GoogleAnalyticsObject=h;a[h]=a[h]||function(){(a[h].a=a[h].a||[]).push(arguments)};a[h].b=1*new Date;b=n.createElement(k);g=n.getElementsByTagName(k)[0];b.async=1;b.src=e;g.parentNode.insertBefore(b,g)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
+//-->
+</script>
 </body>
 </html>

@@ -7,7 +7,6 @@
 <meta name="description" content="Applicación Javascript que halla soluciones a ecuaciones cuadráticas modulares. Hecho por Dario Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="QUADMOD.HTM" />
-<link rel="prefetch" href="quadmodW0048.js" />
 <link rel="manifest" href="cuadmod.webmanifest">
 <title>Resolución de ecuaciones cuadráticas modulares</title>
 <style  media="print">
@@ -30,20 +29,23 @@
 #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
 #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
 #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
 @media (max-width: 400px) { #smallheader { font-size:0.7em;} }
 @media (min-width: 400px) { #smallheader { font-size:1em;} }
+@media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 </style>
 <style>
 body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
 h1 {text-align:center;}
-.lf {padding:0.2em; clear:both;}
+.lf,.labels {padding:0.2em; clear:both;}
 .i {font-style: italic;}
 .inline {display:inline;}
 .pad {padding:10px;}
 .atright {float:right;}
 .newline {clear:both;}
 #help,#result,#status,#footer {margin: 3px; padding: 3px;}
-#applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+#feedback {display:none}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 @media (min-width: 400px) { .input{width: calc(100% - 7em);float:right;padding:3px;margin:0px;}}
 @media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
 </style>
@@ -86,10 +88,9 @@ Contacto
 </ul>
 <br class="newline"/>
 </nav>
-<main>
+<main id="main">
 <article>
 <h1>Resolución de ecuaciones cuadráticas modulares</h1>
-<script async="async"  src="quadmod0048.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -107,7 +108,7 @@ Contacto
 </a>
 </div>
 </div>
-<div id="applet">
+<div class="applet">
 ax&sup2; + bx + c &equiv; 0 (mod&nbsp;n)
 <div class="lf"></div>
 <label for="quad">a</label>&nbsp;<input type="text" id="quad" value="" class="input" aria-label="Quadratic coefficient"/>
@@ -123,10 +124,9 @@ ax&sup2; + bx + c &equiv; 0 (mod&nbsp;n)
 <input type="button" id="helpbtn" value="Ayuda" />
 <div class="lf"></div>
 <label for="digits">Dígitos por grupo</label>&nbsp;<input type="number" id="digits" value="6"/>
-<input type="hidden" id="app" value="1"/>
 </div>
 <div id="help" aria-live="polite">
-<p>Esta calculadora resuelve ecuaciones de la forma <strong>a&#8290;x&sup2; + bx + c &equiv; 0 (mod&nbsp;n)</strong> donde la incógnita entera <strong>x</strong> se encuentra en el rango <strong>0 &le; x &lt; n</strong>. En particular, puede hallar raíces cuadradas modulares si ingresa <strong><var>a</var> = -1</strong>, <strong><var>b</var> = 0</strong>, <strong><var>c</var> = <span class="i">número cuya raíz se desea hallar</span></strong> y<strong><var>n</var> = <var>módulo</var></strong>.</p>
+<p>Esta calculadora resuelve ecuaciones de la forma <strong>a&#8290;x&sup2; + bx + c &equiv; 0 (mod&nbsp;n)</strong> donde la incógnita entera <strong>x</strong> se encuentra en el rango <strong>0 &le; x &lt; n</strong>. En particular, puede hallar raíces cuadradas modulares si ingresa <strong><var>a</var> = -1</strong>, <strong><var>b</var> = 0</strong>, <strong><var>c</var> = <span class="i">número cuya raíz se desea hallar</span></strong> y <strong><var>n</var> = <var>módulo</var></strong>.</p>
 <p>El programa acepta números de hasta 10000 dígitos, pero se debe factorizar el módulo <strong>n</strong> (algunos números grandes no se pueden factorizar en un tiempo razonable). El motor de factorización utilizado es el la aplicación de <A HREF="ECM.HTM">factorización de números enteros</A>, que usa los métodos ECM y SIQS.</p>
 <p>Cuando <strong>a</strong> no es cero, la cantidad de soluciones depende de la cantidad de factores primos distintos del módulo, así que si el módulo tiene muchos factores primos pequeños (más de 14), el programa se puede quedar sin memoria y no mostrará ninguna solución.</p>
 <h2>Expresiones</h2>
@@ -154,13 +154,63 @@ ax&sup2; + bx + c &equiv; 0 (mod&nbsp;n)
 <p>El símbolo de exponenciación no se encuentra en algunos dispositivos móviles. En este caso se puede ingresar dos asteriscos (**) para representar el operador de exponenciación.</p>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de ecuaciones cuadráticas modulares desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 26 de abril de 2018.</p>
+<p>Escrito por Dario Alpern. Actualizado el 10 de julio de 2018.</p>
 </div>
 <div id="result" aria-live="polite"></div>
 <div>
-<p>Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORMULAR.HTM?Comentario+de+calculadora+de+ecuaciones+cuadraticas+modulares">formulario</a>.</p>
+<p>Si encuentra algún error o tiene algún comentario, por favor llene el <a href="#" id="formlink">formulario</a>.</p>
 </div>
 </article>
 </main>
+<aside id="feedback">
+<h1>Formulario de comentarios</h1>
+<form class="applet" id="formfeedback">
+<input type="hidden" name="subject" value="Comentario de calculadora de ecuaciones cuadráticas modulares" />
+<div id="formleft">
+<div class="labels"><label for="name">Nombre:</label><input class="inputfbck" type="text" name="name" maxlength="40" id="name" autocomplete="name"/></div>
+<div class="labels"><label for="age">Edad:</label><input class="inputfbck" type="number" name="age" min="0" max="999" id="age"/></div>
+<div class="labels"><label for="city">Ciudad:</label><input class="inputfbck" type="text" name="city" maxlength="70" id="city" autocomplete="address-level2"/></div>
+<div class="labels"><label for="province">Provincia:</label><input class="inputfbck" type="text" name="province" maxlength="70" id="province" autocomplete="address-level1"/></div>
+<div class="labels"><label for="country">País:</label><input class="inputfbck" type="text" name="country" maxlength="70" id="country" autocomplete="country-name" /></div>
+<div class="labels"><label for="reply">Su e-mail:</label><input class="inputfbck" type="email" name="reply" maxlength="70" id="reply" autocomplete="email" /></div>
+<p>Ingrese su dirección de correo electrónico si desea una respuesta del autor de esta aplicación.</p>
+<p><input type="checkbox" id="adduserdata"><label for="adduserdata">Enviar coeficientes</label></p>
+<input type="hidden" name="userdata" value="" id="userdata" />
+</div>
+<div id="formright">
+<label for="comments">Por favor, ingrese sus comentarios o sugerencias:</label><br />
+<textarea name="Comments" rows="7" cols="40" id="comments"></textarea>
+<p><label for="how">¿Cómo encontró mi pagina?</label><br />
+<select name="how" title="¿Cómo encontró mi pagina?" id="how">
+<option value="Select response">Elija respuesta</option>
+<option value="from a search engine">Por un buscador</option>
+<option value="from a friend">Por un amigo</option>
+<option value="from a link">Por un enlace</option>
+<option value="from Wikipedia">De Wikipedia u otra referencia</option>
+<option value="other">Otros</option>
+</select></p>
+<p>¿Le parecieron interesantes los programas?
+<input type="radio" name="Instructive" value="Yes" id="insyes" /><label for="insyes">Sí</label>
+<input type="radio" name="Instructive" value="No" id="insno" /><label for="insno">No</label></p>
+<p>¿Le parecieron instructivos los programas?
+<input type="radio" name="Interesting" value="Yes" id="intyes" /><label for="intyes">Sí</label>
+<input type="radio" name="Interesting" value="No" id="intno" /><label for="intno">No</label></p>
+<p><input type="submit" value="Enviar el comentario" id="formsend" />
+<input type="reset" value="Entrar otra vez" />
+<input type="button" value="Cancelar" id="formcancel" /></p>
+</div>
+<div class="lf"></div>
+</form>
+</aside>
+<script>
+<!--
+(function(){function a(a){return document.getElementById(a)}function g(c){e||(b||(b=new Blob([new Uint8Array(f)])),e=new Worker(window.URL.createObjectURL(b)),e.onmessage=function(c){a("result").innerHTML=c.data.substring(1);"2"==c.data.substring(0,1)&&(a("solve").disabled=!1,a("stop").disabled=!0)});e.postMessage(c)}function h(){a("main").style.display="block";a("feedback").style.display="none";a("quad").focus()}var e=0,b,f=0;window.onload=function(){a("stop").disabled=!0;a("solve").onclick=function(){var c;
+c=a("result");var d=a("quad").value.trim(),b=a("lin").value.trim(),e=a("const").value.trim(),f=a("mod").value.trim(),h=a("digits").value.trim();a("help").style.display="none";c.style.display="block";var k="";""==d&&(k="coeficiente cuadr\u00e1tico.");""==b&&(k="coeficiente lineal.");""==e&&(k="t\u00e9rmino independiente.");""==f&&(k="m\u00f3dulo.");""!=k?c.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n para el "+k:(a("solve").disabled=!0,a("stop").disabled=!1,c.innerHTML="Resolviendo la ecuaci\u00f3n cuadr\u00e1tica...",
+c=h+",1,"+d+String.fromCharCode(0)+b+String.fromCharCode(0)+e+String.fromCharCode(0)+f+String.fromCharCode(0),g(c))};a("stop").onclick=function(){e.terminate();e=0;a("solve").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>C\u00e1lculo detenido por el usuario.</p>"};a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();
+a("name").focus();return!1};a("formcancel").onclick=function(){h()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"ax^2 + bx + c = 0 (mod n)\na = "+a("quad").value+"\nb = "+a("lin").value+"\nc = "+a("const").value+"\nn = "+a("mod").value:"";var c=new XMLHttpRequest;c.onreadystatechange=function(){4==c.readyState&&(200==c.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),h())};c.open("POST","/enviomail.php",!0);
+c.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var d=a("formfeedback").elements,b="",e=0,f=0;f<d.length;f++){var g=d[f];g.name&&(e&&(b+="&"),b+=g.name+"="+encodeURIComponent(g.value),e++)}c.send(b);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var d=new XMLHttpRequest;d.open("GET","quadmodW0059.js",!0);d.responseType="arraybuffer";d.onreadystatechange=function(){4==d.readyState&&200==d.status&&(f=d.response)};
+d.send(null)})(this);addEventListener("load",function(){(function(a,g,h,e,b,f,d){a.GoogleAnalyticsObject=b;a[b]=a[b]||function(){(a[b].a=a[b].a||[]).push(arguments)};a[b].b=1*new Date;f=g.createElement(h);d=g.getElementsByTagName(h)[0];f.async=1;f.src=e;d.parentNode.insertBefore(f,d)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
+//-->
+</script>
 </body>
 </html>

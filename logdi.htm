@@ -7,13 +7,12 @@
 <meta name="description" content="Aplicación Javascript que halla logaritmos discretos. Hecho por Dario Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="DILOG.HTM" />
-<link rel="prefetch" href="dilogW0026.js" />
 <link rel="manifest" href="logdi.webmanifest">
 <title>Calculadora de logaritmos discretos</title>
 <style  media="print">
 #smallheader {display:none;}
 </style>
-<style  media="screen">
+<style media="screen">
 #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
 #smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
 #smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
@@ -30,15 +29,19 @@
 #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
 #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
 #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
 @media (max-width: 400px) { #smallheader { font-size:0.7em;} }
 @media (min-width: 400px) { #smallheader { font-size:1em;} }
+@media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 </style>
 <style>
 body {font-family: arial; margin: 0; padding: 0;}
 h1 {text-align:center;}
-.lf {padding:0.2em; clear:both; width:100%}
+fieldset {display:inline}
+.lf,.labels {padding:0.2em; clear:both; width:100%}
 .pad {padding:10px;}
-#applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+#feedback {display:none}
 @media (min-width: 400px) { .input{width: calc(100% - 7em);float:right;padding:3px;margin:0px;}}
 @media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
 </style>
@@ -105,9 +108,9 @@ Contacto
 </ul>
 <br style="clear:both;" />
 </nav>
-<article> 
+<main id="main"> 
+<article>
 <h1>Calculadora de logaritmos discretos</h1>
-<script async="async"  src="dilog0026.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="/" itemprop="url">
@@ -125,7 +128,7 @@ Contacto
 </a>
 </div>
 </div>
-<form id="applet">
+<form class="applet">
 <label for="base">Base</label><input type="text" id="base" value="" class="input"/>
 <div class="lf"></div>
 <label for="pow">Potencia</label><input type="text" id="pow" value="" class="input"/>
@@ -137,7 +140,6 @@ Contacto
 <input type="button" id="helpbtn" value="Ayuda" />
 <div class="lf"></div>
 <label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6"/>
-<input type="hidden" id="app" value="1"/>
 </form>
 <div id="help" aria-live="polite" class="pad">
 <p>El problema de los logaritmos discretos consiste en hallar el exponente en la expresión <var>Base</var><sup><var>Exponente</var></sup> = <var>Potencia</var> (mod <var>Módulo</var>).
@@ -173,14 +175,65 @@ Como verificación puedes hallar <span role="math" aria-label="7 a la 3360 congr
 <p>
 Puedes bajar el código fuente del programa actual y del viejo applet de cálculo de logaritmos discretos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 9 de diciembre de 2017.</p>
+<p>Escrito por Dario Alpern. Actualizado el 10 de julio de 2018.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>
-<p class="pad">
-Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORM.HTM?Comentario+de+calculadora+de+logaritmos+discretos">formulario</a>.
-</p>
+<p class="pad">Si encuentra algún error o tiene algún comentario, por favor llene el <a href="#" id="formlink">formulario</a>.</p>
 </div>
 </article>
+</main>
+<aside id="feedback">
+<h1>Formulario de comentarios</h1>
+<form class="applet" id="formfeedback">
+<input type="hidden" name="subject" value="Comentario de calculadora de logaritmos discretos" />
+<div id="formleft">
+<div class="labels"><label for="name">Nombre:</label><input class="inputfbck" type="text" name="Nombre" maxlength="40" id="name" autocomplete="name"/></div>
+<div class="labels"><label for="age">Edad:</label><input class="inputfbck" type="number" name="Edad" min="0" max="999" id="age"/></div>
+<div class="labels"><label for="city">Ciudad:</label><input class="inputfbck" type="text" name="Ciudad" maxlength="70" id="city" autocomplete="address-level2"/></div>
+<div class="labels"><label for="province">Provincia:</label><input class="inputfbck" type="text" name="Provincia" maxlength="70" id="province" autocomplete="address-level1"/></div>
+<div class="labels"><label for="country">País:</label><input class="inputfbck" type="text" name="Pais" maxlength="70" id="country" autocomplete="country-name" /></div>
+<div class="labels"><label for="reply">Su e-mail:</label><input class="inputfbck" type="email" name="Responder" maxlength="70" id="reply" autocomplete="email" /></div>
+<p>Ingrese su dirección de correo electrónico si desea una respuesta del autor de esta aplicación.</p>
+<p><input type="checkbox" id="adduserdata"><label for="adduserdata">Enviar parámetros</label></p>
+<input type="hidden" name="datos" value="" id="userdata" />
+</div>
+<div id="formright">
+<label for="comments">Por favor, ingrese sus comentarios o sugerencias:</label><br />
+<textarea name="Comentarios" rows="7" cols="40" id="comments"></textarea>
+<p><label for="how">¿Cómo encontró mi pagina?</label><br />
+<select name="Como" title="¿Cómo encontró mi pagina?" id="how">
+<option value="Elija respuesta">Elija respuesta</option>
+<option value="Por un buscador">Por un buscador</option>
+<option value="Por un amigo">Por un amigo</option>
+<option value="Por un enlace">Por un enlace</option>
+<option value="De Wikipedia">De Wikipedia u otra referencia</option>
+<option value="Otros">Otros</option>
+</select></p>
+<fieldset><legend>¿Son instructivos los programas?</legend>
+<input type="radio" name="Instructivo" value="Si" id="insyes" /><label for="insyes">Sí</label>
+<input type="radio" name="Instructivo" value="No" id="insno" /><label for="insno">No</label>
+</fieldset>
+<fieldset><legend>¿Son interesantes los programas?</legend>
+<input type="radio" name="Interesante" value="Si" id="intyes" /><label for="intyes">Sí</label>
+<input type="radio" name="Interesante" value="No" id="intno" /><label for="intno">No</label>
+</fieldset>
+<p><input type="submit" value="Enviar el comentario" id="formsend" />
+<input type="reset" value="Entrar otra vez" />
+<input type="button" value="Cancelar" id="formcancel" /></p>
+</div>
+<div class="lf"></div>
+</form>
+</aside>
+<script>
+<!--
+(function(){function a(a){return document.getElementById(a)}function g(){var c=param;e||(b||(b=new Blob([new Uint8Array(f)])),e=new Worker(window.URL.createObjectURL(b)),e.onmessage=function(c){a("result").innerHTML=c.data.substring(1);"2"==c.data.substring(0,1)&&(a("dlog").disabled=!1,a("stop").disabled=!0)});e.postMessage(c)}function h(){a("main").style.display="block";a("feedback").style.display="none";a("base").focus()}var e=0,b,f=0;window.onload=function(){a("stop").disabled=!0;a("dlog").onclick=
+function(){var c=a("result"),d=a("base").value,b=a("pow").value,e=a("mod").value,f=a("digits").value;a("help").style.display="none";c.style.display="block";""==d?c.innerHTML="Por favor ingrese una expresi\u00f3n para la base.":""==b?c.innerHTML="Por favor ingrese una expresi\u00f3n para la potencia.":""==e?c.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n para el m\u00f3dulo.":(a("dlog").disabled=!0,a("stop").disabled=!1,c.innerHTML="Calculando el logaritmo discreto...",param=f+",1,"+
+d+String.fromCharCode(0)+b+String.fromCharCode(0)+e+String.fromCharCode(0),g())};a("stop").onclick=function(){e.terminate();e=0;a("dlog").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>C\u00e1lculo detenido por el usuario.</p>"};a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=
+function(){h()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\nBase = "+a("base").value+"\nPotencia = "+a("pow").value+"\nM\u00f3dulo = "+a("mod").value:"";var c=new XMLHttpRequest;c.onreadystatechange=function(){4==c.readyState&&(200==c.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),h())};c.open("POST","/enviomail.php",!0);c.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var d=a("formfeedback").elements,
+b="",e=0,f=0;f<d.length;f++){var g=d[f];g.name&&(e&&(b+="&"),b+=g.name+"="+encodeURIComponent(g.value),e++)}c.send(b);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var d=new XMLHttpRequest;d.open("GET","dilogW0059.js",!0);d.responseType="arraybuffer";d.onreadystatechange=function(){4==d.readyState&&200==d.status&&(f=d.response)};d.send(null)})(this);
+addEventListener("load",function(){(function(a,g,h,e,b,f,d){a.GoogleAnalyticsObject=b;a[b]=a[b]||function(){(a[b].a=a[b].a||[]).push(arguments)};a[b].b=1*new Date;f=g.createElement(h);d=g.getElementsByTagName(h)[0];f.async=1;f.src=e;d.parentNode.insertBefore(f,d)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
+//-->
+</script>
 </body>
 </html>

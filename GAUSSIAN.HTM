@@ -7,10 +7,9 @@
 <meta name="description" content="Javascript application that factors Gaussian integers of the form (a+bi). Written by Dario Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="es" href="GAUSIANO.HTM" />
-<link rel="prefetch" href="gaussianW0026.js" />
 <link rel="manifest" href="gaussian.webmanifest">
 <title>Gaussian integer factorization calculator</title>
-<style >
+<style>
 @media print {#smallheader {display:none;}}
 @media screen {
 #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
@@ -64,13 +63,17 @@
 }
 body {font-family: arial;margin: 0; padding: 0;}
 h1 {text-align:center;}
-.lf {padding:0.2em; clear:both;}
+fieldset {display:inline}
+.lf,.labels {padding:0.2em; clear:both;}
 .blue {color: #0000FF;}
 .inline  {display:inline;}
 .pad {padding:10px;}
-#applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
-@media (min-width: 400px) { .input{width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
-@media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+#feedback {display:none}
+.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
+@media (min-width: 400px) {.input{width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
+@media (max-width: 400px) {.input{width:100%;padding:3px;margin:0px;}}
+@media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 #help,#result,#status,#footer {margin: 3px; padding: 3px;}
 #more,#stop {display:none}
 </style>
@@ -113,9 +116,9 @@ Contact
 </ul>
 <br class="newline"/>
 </nav>
+<main id="main">
 <article>
 <h1>Gaussian integer factorization calculator</h1>
-<script async="async"  src="gaussian0026.js"></script>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -133,7 +136,7 @@ Contact
 </a>
 </div>
 </div>
-<form id="applet">
+<form class="applet">
 <label for="value">Value</label><input type="text" id="value" value="" class="input"/>
 <div class="lf"></div>
 <input type="button" id="more" value="More" />
@@ -143,7 +146,6 @@ Contact
 <input type="button" id="helpbtn" value="Help" />
 <input type="button" id="config" value="Config" />
 <div class="lf"></div>
-<input type="hidden" id="app" value="0"/>
 </form>
 <div id="help" aria-live="polite">
 <p>The Gaussian integers are complex numbers of the form <var>a</var> + <var>bi</var>, where both <var>a</var> and <var>b</var> are integer numbers and <var>i</var> is the square root of -1.</p>
@@ -193,7 +195,7 @@ If <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, then you 
 <p>In order to enter the imaginary part of a Gaussian integer you can use the symbol <var>i</var>, as in the next example: 3+4i.</p>
 <p>You can also enter expressions that use the following operators, functions and parentheses:</p>
 <p>
-<UL>
+<ul>
 <li> + for addition
 <li> - for subtraction
 <li> * for multiplication
@@ -215,15 +217,16 @@ If <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, then you 
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.</p>
-<p>Written by Dario Alpern. Last updated 9 December 2017.</p>
+<p>Written by Dario Alpern. Last updated 10 July 2018.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
 <div id="status"></div>
 <div id="footer">
-<p>If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Gaussian+integer+factorization+calculator+feedback">form</a>.</p>
+<p>If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
 </div>
 </article>
+</main>
 <div id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
 <div class="modal-content">
 <div class="modal-header"><span id="close-more" aria-label="close" class="atright">×</span><p id="moreopt">More options</p></div>
@@ -247,5 +250,60 @@ If <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, then you 
 <p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
 </form>
 </div></div></div>
+<aside id="feedback">
+<h1>Feedback form</h1>
+<form class="applet" id="formfeedback">
+<input type="hidden" name="subject" value="Gaussian integer factorization calculator feedback" />
+<div id="formleft">
+<div class="labels"><label for="name">Your name is:</label><input class="inputfbck" type="text" name="name" maxlength="40" id="name" autocomplete="name"/></div>
+<div class="labels"><label for="age">Age:</label><input class="inputfbck" type="number" name="age" min="0" max="999" id="age" /></div>
+<div class="labels"><label for="city">City:</label><input class="inputfbck" type="text" name="city" maxlength="70" id="city" autocomplete="address-level2"/></div>
+<div class="labels"><label for="province">Province/State:</label><input class="inputfbck" type="text" name="province" maxlength="70" id="province" autocomplete="address-level1"/></div>
+<div class="labels"><label for="country">Country:</label><input class="inputfbck" type="text" name="country" maxlength="70" id="country" autocomplete="country-name" /></div>
+<div class="labels"><label for="reply">E-mail address:</label><input class="inputfbck" type="email" name="reply" maxlength="70" id="reply" autocomplete="email" /></div>
+<p>Enter your e-mail address if you want a reply from the author of this application.</p>
+<p><input type="checkbox" id="adduserdata"><label for="adduserdata">Send expression to factor</label></p>
+<input type="hidden" name="userdata" value="" id="userdata" />
+</div>
+<div id="formright">
+<label for="comments">Please feel free to add comments:</label><br />
+<textarea name="Comments" rows="7" cols="40" id="comments"></textarea>
+<p><label for="how">How did you find my page?</label><br />
+<select name="how" title="How did you find my page?" id="how">
+<option value="Select response">Select response</option>
+<option value="from a search engine">From a search engine</option>
+<option value="from a friend">From a friend</option>
+<option value="from a link">From a link</option>
+<option value="from Wikipedia">From Wikipedia or another reference</option>
+<option value="other">Other</option>
+</select></p>
+<fieldset><legend>Are the programs instructive?</legend>
+<input type="radio" name="Instructive" value="Yes" id="insyes" /><label for="insyes">Yes</label>
+<input type="radio" name="Instructive" value="No" id="insno" /><label for="insno">No</label>
+</fieldset>
+<fieldset><legend>Are the programs interesting?</legend>
+<input type="radio" name="Interesting" value="Yes" id="intyes" /><label for="intyes">Yes</label>
+<input type="radio" name="Interesting" value="No" id="intno" /><label for="intno">No</label>
+</fieldset>
+<p><input type="submit" value="Send it in!" id="formsend" />
+<input type="reset" value="Reset" />
+<input type="button" value="Cancel" id="formcancel" /></p>
+</div>
+<div class="lf"></div>
+</form>
+</aside>
+<script>
+<!--
+(function(){function a(a){return document.getElementById(a)}function k(){localStorage.setItem("ecmConfig",digits+","+config)}function l(b,f){a("eval").style.display=b;a("factor").style.display=b;a("config").style.display=b;a("stop").style.display=f;a("more").style.display=f}function m(){var b=param;c||(n||(n=new Blob([new Uint8Array(p)])),c=new Worker(window.URL.createObjectURL(n)),c.onmessage=function(b){var d=b.data.substring(0,1);"8"!=d&&"7"!=d&&("4"==d?a("status").innerHTML=b.data.substring(1):
+(a("result").innerHTML=b.data.substring(1),"2"==b.data.substring(0,1)&&(a("status").innerHTML="",l("inline","none"),a("modal-more").style.display="none")))});c.postMessage(b)}function e(b){q=0+b;b=a("result");var f=a("value").value,d=a("helphelp");a("help").style.display="none";d.style.display="block";d.innerHTML="<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization.</p>";b.style.display="block";""==f?b.innerHTML="Please type an expression.":
+(l("none","inline"),b.innerHTML="Factoring expression...",param=digits+","+q+","+f+String.fromCharCode(0),m())}function h(){a("main").style.display="block";a("feedback").style.display="none";a("value").focus()}var c=0,q,n,p=0;window.onload=function(){a("eval").onclick=function(){e(0)};a("factor").onclick=function(){e(2)};a("stop").onclick=function(){c.terminate();c=0;l("inline","none");a("result").innerHTML="<p>Calculation stopped by user</p>";a("status").innerHTML=""};a("more").onclick=function(){a("modal-more").style.display=
+"block"};a("config").onclick=function(){a("digits").value=digits;a("batch").checked="1"==config.substr(0,1);a("verbose").checked="1"==config.substr(1,1);a("pretty").checked="1"==config.substr(2,1);a("cunnin").checked="1"==config.substr(3,1);a("modal-config").style.display="block"};a("close-config").onclick=function(){a("modal-config").style.display="none"};a("cancel-config").onclick=function(){a("modal-config").style.display="none"};a("save-config").onclick=function(){oldconfig=config;config=(a("batch").checked?
+"1":"0")+(a("verbose").checked?"1":"0")+(a("pretty").checked?"1":"0")+(a("cunnin").checked?"1":"0");digits=a("digits").value;k();config.substr(0,1)!=oldconfig.substr(0,1)&&isBatch();a("modal-config").style.display="none"};a("close-more").onclick=function(){a("modal-more").style.display="none"};a("helpbtn").onclick=function(){var b=a("help").style,f=a("helphelp").style,d=a("result"),c=d.style;"block"==b.display&&""!=d.innerHTML?(b.display="none",f.display=c.display="block"):(b.display="block",f.display=
+c.display="none")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){h()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\n"+a("value").value+"\n"+a("result").innerHTML+"\n"+a("status").innerHTML:"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),
+h())};b.open("POST","/sendmail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var f=a("formfeedback").elements,d="",c=0,e=0;e<f.length;e++){var g=f[e];g.name&&(c&&(d+="&"),d+=g.name+"="+encodeURIComponent(g.value),c++)}b.send(d);return!1};window.onclick=function(b){var c=a("modal");b.target==c&&(c.style.display="none")};digits=localStorage.getItem("ecmConfig");null==digits||""==digits?(digits=6,config="0010",k()):(index=digits.indexOf(","),0>index?(digits=6,config=
+"0010",k()):(config=digits.substr(index+1),digits=digits.substr(0,index)));"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var g=new XMLHttpRequest;g.open("GET","gaussianW0059.js",!0);g.responseType="arraybuffer";g.onreadystatechange=function(){4==g.readyState&&200==g.status&&(p=g.response)};g.send(null)})(this);
+addEventListener("load",function(){(function(a,k,l,m,e,h,c){a.GoogleAnalyticsObject=e;a[e]=a[e]||function(){(a[e].a=a[e].a||[]).push(arguments)};a[e].b=1*new Date;h=k.createElement(l);c=k.getElementsByTagName(l)[0];h.async=1;h.src=m;c.parentNode.insertBefore(h,c)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
+//-->
+</script>
 </body>
 </html>

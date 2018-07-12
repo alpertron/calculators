@@ -8,7 +8,6 @@
 <meta name="description" content="Aplicación Javascript application que descompone un número en una suma de cuatro cubos. Hecho por Dario Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="FCUBES.HTM" />
-<link rel="prefetch" href="fsquaresW0048.js" />
 <link rel="manifest" href="sumcubos.webmanifest">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Suma de cuatro cubos</title>
@@ -32,17 +31,20 @@
 #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
 #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
 #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
 @media (max-width: 400px) { #smallheader { font-size:0.7em;} }
 @media (min-width: 400px) { #smallheader { font-size:1em;} }
+@media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 </style>
 <style>
 body {font-family: arial; margin: 0; padding: 0;}
 h1 {text-align:center;}
+fieldset {display:inline}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
 .atright {float:right;}
 #num {white-space:pre;overflow-wrap:normal;overflow:auto;margin:5px;width:100%;padding:3px}
-#stop, #cont, #wizard {display:none}
-.lf {padding:0.2em; clear:both; width:100%}
+#stop, #cont, #wizard, #feedback {display:none}
+.lf,.labels {padding:0.2em; clear:both; width:100%}
 .offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
 .bigger {font-size:150%;}
 .pad {padding:10px;}
@@ -132,7 +134,7 @@ Contacto
 <span itemprop="title">Suma de cuatro cubos</span>
 </a>
 </div><br><br>
-<form id="applet" class="applet">
+<form class="applet">
 <label for="num">Número a descomponer en suma de cubos</label>
 <textarea id="num" rows="4" class="input"></textarea>
 <div class="lf"></div>
@@ -143,9 +145,7 @@ Contacto
 <div class="lf"></div>
 <label for="digits">Cantidad de dígitos por grupo:</label>
 <input type="number" id="digits" value="6"/>
-<input type="hidden" id="app" value="3"/>
 </form>
-<script async="async" src="fsquares0048.js"></script>
 <div style='padding:10px;'>
 <div id="help" aria-live="polite">
 <p>Este applet encuentra la descomposición de cualquier número entero no congruente a 4 ó 5 (mod 9) en una suma de cuatro cubos.</p>
@@ -225,9 +225,6 @@ Si n = 254, 902, 1442, 1874, 1982, 2414, 3062, 3494, 3602, 4034, 4142, 5114, 522
 <p>
 En el resto de los casos se reemplaza n por &minus;n y luego se multiplican las soluciones por &minus;1.
 </p>
-<p>
-Si encuentra algún error o tiene algún comentario, por favor llene el <a href="FORMULAR.HTM?Suma+de+cuatro+cubos">formulario</a>.
-</p>
 <h2>Expresiones</h2>
 <p>Además de ingresar números en la caja de entrada, se pueden escribir expresiones numéricas incluyendo paréntesis. A continuación se muestran las operaciones permitidas:</p>
 <ul>
@@ -261,7 +258,7 @@ Si encuentra algún error o tiene algún comentario, por favor llene el <a href=
 <p>
 Se puede bajar el código fuente de este programa y el del viejo applet de suma de cuatro cubos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 26 de abril de 2018.</p>
+<p>Escrito por Dario Alpern. Actualizado el 10 de julio de 2018.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -270,6 +267,7 @@ Se puede bajar el código fuente de este programa y el del viejo applet de suma 
 <form id="cont" class="pad">
 <input type="button" id="continue" value="Continuar" />
 </form>
+<p>Si encuentra algún error o tiene algún comentario, por favor llene el <a href="#" id="formlink">formulario</a>.</p>
 </article>
 </main>
 <aside id="wizard">
@@ -285,7 +283,7 @@ Se puede bajar el código fuente de este programa y el del viejo applet de suma 
 <input type="radio" name="mode" id="oneexpr"><label for="oneexpr"><span class="und">P</span>rocesar una expresión</label><br>
 <input type="radio" name="mode" id="loop"><label for="loop"><span class="und">P</span>rocesar varias expresiones en un ciclo</label><br>
 </fieldset>
-<label for="wzdinput" id="wzddesc">&nbsp;</label>
+<label for="wzdinput" id="wzddesc">1</label>
 <br class="newline"/>
 <input type="text" id="wzdinput" value="" placeholder="Número o expresión numérica" class="input"/>
 <br class="newline"/>
@@ -326,5 +324,69 @@ Se puede bajar el código fuente de este programa y el del viejo applet de suma 
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 </aside>
+<aside id="feedback">
+<h1>Formulario de comentarios</h1>
+<form class="applet" id="formfeedback">
+<input type="hidden" name="subject" value="Comentario de calculadora de suma de cubos" />
+<div id="formleft">
+<div class="labels"><label for="name">Nombre:</label><input class="inputfbck" type="text" name="Nombre" maxlength="40" id="name" autocomplete="name"/></div>
+<div class="labels"><label for="age">Edad:</label><input class="inputfbck" type="number" name="Edad" min="0" max="999" id="age"/></div>
+<div class="labels"><label for="city">Ciudad:</label><input class="inputfbck" type="text" name="Ciudad" maxlength="70" id="city" autocomplete="address-level2"/></div>
+<div class="labels"><label for="province">Provincia:</label><input class="inputfbck" type="text" name="Provincia" maxlength="70" id="province" autocomplete="address-level1"/></div>
+<div class="labels"><label for="country">País:</label><input class="inputfbck" type="text" name="Pais" maxlength="70" id="country" autocomplete="country-name" /></div>
+<div class="labels"><label for="reply">Su e-mail:</label><input class="inputfbck" type="email" name="Responder" maxlength="70" id="reply" autocomplete="email" /></div>
+<p>Ingrese su dirección de correo electrónico si desea una respuesta del autor de esta aplicación.</p>
+<p><input type="checkbox" id="adduserdata"><label for="adduserdata">Enviar expresión a descomponer como suma de cubos</label></p>
+<input type="hidden" name="datos" value="" id="userdata" />
+</div>
+<div id="formright">
+<label for="comments">Por favor, ingrese sus comentarios o sugerencias:</label><br />
+<textarea name="Comentarios" rows="7" cols="40" id="comments"></textarea>
+<p><label for="how">¿Cómo encontró mi pagina?</label><br />
+<select name="Como" title="¿Cómo encontró mi pagina?" id="how">
+<option value="Elija respuesta">Elija respuesta</option>
+<option value="Por un buscador">Por un buscador</option>
+<option value="Por un amigo">Por un amigo</option>
+<option value="Por un enlace">Por un enlace</option>
+<option value="De Wikipedia">De Wikipedia u otra referencia</option>
+<option value="Otros">Otros</option>
+</select></p>
+<fieldset><legend>¿Son instructivos los programas?</legend>
+<input type="radio" name="Instructivo" value="Si" id="insyes" /><label for="insyes">Sí</label>
+<input type="radio" name="Instructivo" value="No" id="insno" /><label for="insno">No</label>
+</fieldset>
+<fieldset><legend>¿Son interesantes los programas?</legend>
+<input type="radio" name="Interesante" value="Si" id="intyes" /><label for="intyes">Sí</label>
+<input type="radio" name="Interesante" value="No" id="intno" /><label for="intno">No</label>
+</fieldset>
+<p><input type="submit" value="Enviar el comentario" id="formsend" />
+<input type="reset" value="Entrar otra vez" />
+<input type="button" value="Cancelar" id="formcancel" /></p>
+</div>
+<div class="lf"></div>
+</form>
+</aside>
+<script>
+<!--
+(function(){function a(a){return document.getElementById(a)}function k(d,b){a("calc").style.display=d;a("openwizard").style.display=d;null!=a("stop")&&(a("stop").style.display=b)}function q(d){var b=a("helphelp");l||(v?t||(t=new Blob([new Uint8Array(x)])):t||(t=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),l=new Worker(window.URL.createObjectURL(t)),l.onmessage=function(b){var c=b.data.substring(0,
+1);if("4"==c)a("status").innerHTML=b.data.substring(1);else if(a("result").innerHTML=b.data.substring(1),"2"==c||"6"==c)a("status").innerHTML="",k("inline","none"),"6"==c&&(a("cont").style.display="block")});b.style.display="block";b.innerHTML='<p class="pad">Aprieta el bot\u00f3n <strong>Ayuda</strong> para obtener ayuda para esta aplicaci\u00f3n. Apri\u00e9talo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el c\u00e1lculo. Esta es la versi\u00f3n '+
+(v?"asm.js":"WebAssembly")+".</p>";v?l.postMessage(d):l.postMessage([d,x])}function w(){var d,b,e;d=a("result");d.style.display="block";b=a("num").value;""==b?d.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n.":(e=a("digits").value,a("help").style.display="none",d.innerHTML="Calculando suma de cubos...",param=e+","+(3+64*u)+","+b+String.fromCharCode(0),k("none","inline"),q(param))}function g(){a("next").value="Hecho";a("wzddesc").innerHTML="Paso 1 de 1: Expresi\u00f3n a factorizar";a("wzdexam").innerHTML=
+"&nbsp;";f="";h=9}function m(){a("next").value="Siguiente";a("wzddesc").innerHTML="Paso 1 de 5: Valor inicial de x";a("wzdexam").innerHTML="No usar variables <var>x</var> o <var>c</var>. Ejemplo para n\u00fameros de Smith menores que 10000: <code>1</code>";h=1}function r(){var d=a("next"),b=a("wzddesc"),e=a("wzdexam"),c=a("wzdinput"),n=a("num");d.disabled=!0;switch(++h){case 2:f+="x="+c.value;a("mode").style.display="none";b.innerHTML="Paso 2 de 5: Valor de x para la nueva iteraci\u00f3n";e.innerHTML=
+"Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>x+1</code>";break;case 3:f+=";x="+c.value;b.innerHTML="Paso 3 de 5: Condici\u00f3n para finalizar el ciclo";e.innerHTML="Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>x&lt;10000</code>";break;case 4:f+=";"+c.value;b.innerHTML="Paso 4 de 5: Expresi\u00f3n a factorizar";e.innerHTML="Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>x</code>";
+break;case 5:f+=";"+c.value;d.value="Hecho";d.disabled=!1;b.innerHTML="Paso 5 de 5: Condici\u00f3n para procesar la expresi\u00f3n";e.innerHTML="Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";break;case 6:""!=c.value&&(f+=";"+c.value);n.value=f;h=0;u=a("hexW").checked?1:0;a("main").style.display="block";a("wizard").style.display="none";n.focus();break;default:h=
+0,n.value=c.value,u=a("hexW").checked?1:0,a("main").style.display="block",a("wizard").style.display="none",n.focus()}h&&(c.value="",c.focus())}function y(){a("main").style.display="block";a("feedback").style.display="none";a("value").focus()}var h=0,f,l=0,x=0,u=0,t,v="undefined"===typeof WebAssembly,p=new XMLHttpRequest;p.open("GET",v?"fsquaresW0059.js":"fsquares0059.wasm",!0);p.responseType="arraybuffer";p.onreadystatechange=function(){4==p.readyState&&200==p.status&&(x=p.response)};p.send(null);
+addEventListener("load",function(){var d;a("num").onkeypress=function(b){var e,c=a("digits").value;e=a("result");e.style.display="block";var n=a("num").value;b||(b=window.event);13==(b.keyCode||b.which)&&(""==n?e.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n.":(e.innerHTML="Calculando suma de cubos...",d=c+",3,"+n+String.fromCharCode(0),k("none","inline"),q(d)))};a("calc").onclick=function(){w()};a("openwizard").onclick=function(){a("main").style.display="none";a("wizard").style.display=
+"block";a("mode").style.display="block";a("oneexpr").checked=!0;a("next").disabled=!0;a("hexW").checked=u?!0:!1;a("decW").checked=u?!1:!0;a("wzdinput").value="";a("wzdinput").focus();g()};a("wzdinput").onkeydown=function(b){if(10==b.keyCode||13==b.keyCode)b.preventDefault(),0==a("next").disabled&&r();b.altKey&&(80==b.keyCode?(b.preventDefault(),a("oneexpr").checked?(a("oneexpr").checked=!1,a("loop").checked=!0,m()):(a("oneexpr").checked=!0,a("loop").checked=!1,g())):68==b.keyCode?(b.preventDefault(),
+a("decW").checked=!0,a("hexW").checked=!1):72==b.keyCode&&(b.preventDefault(),a("decW").checked=!1,a("hexW").checked=!0));return!0};a("oneexpr").onclick=function(){g()};a("loop").onclick=function(){m()};a("next").onclick=function(){r()};a("wzdinput").oninput=function(){var b=a("wzdinput").value;a("next").disabled=""!=b?1==h||9==h||0<=b.lastIndexOf("x")||0<=b.lastIndexOf("c")||0<=b.lastIndexOf("X")||0<=b.lastIndexOf("C")?!1:!0:5==h?!1:!0};a("cancel").onclick=function(){a("main").style.display="block";
+a("wizard").style.display="none"};null!=a("stop")&&(a("stop").onclick=function(){l.terminate();l=0;k("inline","none");a("result").innerHTML="<p>C\u00e1lculo detenido por el usuario.</p>";a("status").innerHTML=""});null!=a("continue")&&(a("continue").onclick=function(){a("cont").style.display="none";q("C")});a("num").onkeydown=function(a){10!=a.keyCode&&13!=a.keyCode||!a.ctrlKey||(a.preventDefault(),w());return!0};a("helpbtn").onclick=function(){var b=a("help").style,e=a("helphelp").style,c=a("result"),
+d=c.style;"block"==b.display&&""!=c.innerHTML?(b.display="none",e.display=d.display="block"):(b.display="block",e.display=d.display="none")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){y()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\n"+a("num").value+"\n"+a("result").innerHTML+"\n"+a("status").innerHTML:"";var b=new XMLHttpRequest;
+b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),y())};b.open("POST","/enviomail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var d=a("formfeedback").elements,c="",f=0,g=0;g<d.length;g++){var h=d[g];h.name&&(f&&(c+="&"),c+=h.name+"="+encodeURIComponent(h.value),f++)}b.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},
+function(){})})})(this);addEventListener("load",function(){(function(a,k,q,w,g,m,r){a.GoogleAnalyticsObject=g;a[g]=a[g]||function(){(a[g].a=a[g].a||[]).push(arguments)};a[g].b=1*new Date;m=k.createElement(q);r=k.getElementsByTagName(q)[0];m.async=1;m.src=w;r.parentNode.insertBefore(m,r)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
+//-->
+</script>
+<script type="text/js-worker">
+var e,g,k,l={env:{databack:function(b){var a=-1,c=0,f="",d="";do{for(c=0;1024>c;c++){a=g[b++>>0];if(0==a)break;128<=a&&(a=(a-192<<6)+g[b++>>0]-128);f+=String.fromCharCode(a)}d+=f;f=""}while(0!=a);self.postMessage(d+f)},tenths:function(){return Math.floor((new Date).getTime()/100)}}};
+self.onmessage=function(b){k?(m(e.getInputStringPtr(),b.data[0]),e.doWork()):WebAssembly.instantiate(b.data[1],l).then(function(a){k=1;e=a.instance.exports;g=new Uint8Array(e.memory.buffer);m(e.getInputStringPtr(),b.data[0]);e.doWork()})};function m(b,a){var c=b,f=a.length,d,h;for(d=0;d<f;d++)h=a.charCodeAt(d),128>h?g[c++]=h:(g[c++]=(h>>6)+192,g[c++]=(h&63)+128);g[c]=0};
+</script>
 </body>
 </html>

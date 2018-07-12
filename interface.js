@@ -16,117 +16,18 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/** @define {number} */ var app = 0;   // Use with Closure compiler.
 (function(global)
 {   // This method separates the name space from the Google Analytics code.
+var wizardStep = 0;
+var wizardTextInput;
 var worker = 0;
+var fileContents = 0;
 var hex = 0;
-var app;
+var blob;
+var lang = app % 2;
+var workerParam;
 var asmjs = typeof(WebAssembly) === "undefined";
-if (typeof(window) === "undefined")
-{    // Inside Web Worker
-  var wizardStep = 0;
-  var wizardTextInput;
-  var exports, HEAPU8, wasmLoaded;
-  var env =
-  {
-    "databack": function(data)
-    {
-      self.postMessage(PtrToString(data));
-    },
-    "tenths": function()
-    {
-      return Math.floor(new Date().getTime() / 100);
-    }
-  };
-
-  var info =
-  {
-    "env": env
-  };  
-
-  global.addEventListener('message', msgRecvByWorker);
-}
-
-function msgRecvByWorker(e)
-{
-  var request;
-  if (wasmLoaded)
-  {
-    ConvertToString(exports["getInputStringPtr"](), e.data);
-    exports["doWork"]();
-    return;  
-  }
-  request = new XMLHttpRequest();
-  request.open('GET', 'fsquares0048.wasm');
-  request.responseType = 'arraybuffer';
-  request.send();
-
-  request.onload = function()
-  {
-    if (request.status != 200)
-    {
-      return;
-    }
-    var bytes = request.response;
-    WebAssembly["instantiate"](bytes, info).then(function(results)
-    {
-      wasmLoaded = 1;
-      exports = results["instance"]["exports"];
-      HEAPU8 = new Uint8Array(exports["memory"]["buffer"]);
-      ConvertToString(exports["getInputStringPtr"](), e.data);
-      exports["doWork"]();
-      return;
-    });
-  };
-}
-
-function PtrToString(ptr)
-{
-  var t=-1;
-  var i = 0;
-  var str="", outString="";
-  do
-  {
-    for (i=0; i<1024; i++)
-    {
-      t = HEAPU8[((ptr++)>>0)];
-      if (t==0)
-      {
-        break;
-      }
-      if (t>=128)
-      {
-        t = ((t-192)<<6) + HEAPU8[((ptr++)>>0)] - 128;
-      }
-      str += String.fromCharCode(t);
-    }
-    outString += str;
-    str = "";
-  } while (t!=0);
-  outString += str;
-  return outString;
-}
-
-function ConvertToString(ptr, str)
-{
-  var dest = ptr;
-  var length = str.length;
-  var i, t;
-  for (i=0; i<length; i++)
-  {
-    t = str.charCodeAt(i);
-    if (t<128)
-    {
-      HEAPU8[dest++] = t;
-    }
-    else
-    {
-      HEAPU8[dest++] = (t >> 6) + 192;
-      HEAPU8[dest++] = (t & 63) + 128;
-    }
-  }
-  HEAPU8[dest] = 0;
-}
 
 function get(x)
 {
@@ -136,8 +37,8 @@ function get(x)
 function styleButtons(style1, style2)
 {
   get("calc").style.display = style1;
-  if (get("openwizard") != null)
-  {
+  if (app < 4)
+  {    // Continued fraction applet does not use wizard.
     get("openwizard").style.display = style1;
   }
   if (get("stop") != null)
@@ -151,7 +52,21 @@ function callWorker(param)
   var helphelp = get("helphelp");
   if (!worker)
   {
-    worker = new Worker(asmjs? "fsquaresW0048.js": "fsquares0048.js");
+    if (asmjs)
+    {    // Asm.js
+      if (!blob)
+      {
+        blob = new Blob([new Uint8Array(fileContents)]);
+      }
+    }
+    else
+    {    // WebAssembly
+      if (!blob)
+      {
+        blob = new Blob(Array.prototype.map.call(document.querySelectorAll('script[type=\'text\/js-worker\']'), function (oScript) { return oScript.textContent; }),{type: 'text/javascript'});
+      }
+    }    
+    worker = new Worker(window.URL.createObjectURL(blob));
     worker.onmessage = function(e)
     { // First character of e.data is:
       // "1" for intermediate output
@@ -179,15 +94,21 @@ function callWorker(param)
     };
   }
   helphelp.style.display = "block";
-  helphelp.innerHTML = (app & 1 ? '<p class="pad">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión '+(asmjs? "asm.js": "WebAssembly")+".</p>":
-                                  '<p class="pad">Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the '+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
-  worker.postMessage(param);
+  helphelp.innerHTML = (lang ? '<p class="pad">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión '+(asmjs? "asm.js": "WebAssembly")+".</p>":
+                               '<p class="pad">Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the '+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
+  if (asmjs)
+  {      // Asm.js
+    worker.postMessage(param);
+  }
+  else
+  {      // WebAssembly.
+    worker.postMessage([param, fileContents]);
+  }
 }
 
 function performCalc()
 {
   var res, valueA, valueB, valueC, digitGroup;
-  app = parseInt(get('app').value);
   res = get('result');
   res.style.display = "block";
   valueA = get('num').value;
@@ -195,13 +116,13 @@ function performCalc()
   {
     if (app >= 4)
     {
-      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el numerador." :
-                                 "Please type a number or expression for numerator.");
+      res.innerHTML = (lang ? "Por favor ingrese un número o expresión para el numerador." :
+                              "Please type a number or expression for numerator.");
     }
     else
     {
-      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión." :
-                                 "Please type a number or expression.");
+      res.innerHTML = (lang ? "Por favor ingrese un número o expresión." :
+                              "Please type a number or expression.");
     }
     return;
   }
@@ -210,40 +131,43 @@ function performCalc()
     valueB = get('delta').value;
     if (valueB == "")
     {
-      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el argumento de la raíz cuadrada." :
-                                 "Please type a number or expression for square root argument.");
+      res.innerHTML = (lang ? "Por favor ingrese un número o expresión para el argumento de la raíz cuadrada." :
+                              "Please type a number or expression for square root argument.");
       return;
     }
     valueC = get('den').value;
     if (valueC == "")
     {
-      res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el denominador." :
-                                 "Please type a number or expression for denominator.");
+      res.innerHTML = (lang ? "Por favor ingrese un número o expresión para el denominador." :
+                              "Please type a number or expression for denominator.");
       return;
     }
   }
   digitGroup = get('digits').value;
   get('help').style.display = "none";
-  switch (app)
+  if (app == 0)    // Closure compiler cannot optimize switch, so a series of "if" instructions is used.
   {
-    case 0:
-      res.innerHTML = "Computing sum of squares...";
-      break;
-    case 1:
-      res.innerHTML = "Calculando suma de cuadrados...";
-      break;
-    case 2:
-      res.innerHTML = "Computing sum of cubes...";
-      break;
-    case 3:
-      res.innerHTML = "Calculando suma de cubos...";
-      break;
-    case 4:
-      res.innerHTML = "Computing continued fraction expansion...";
-      break;
-    default:
-      res.innerHTML = "Calculando desarrollo en fracciones continuas...";
-      break;
+    res.innerHTML = "Computing sum of squares...";
+  }
+  else if (app == 1)
+  {
+    res.innerHTML = "Calculando suma de cuadrados...";
+  }
+  else if (app == 2)
+  {
+    res.innerHTML = "Computing sum of cubes...";
+  }
+  else if (app == 3)
+  {
+    res.innerHTML = "Calculando suma de cubos...";
+  }
+  else if (app == 4)
+  {
+    res.innerHTML = "Computing continued fraction expansion...";
+  }
+  else
+  {
+    res.innerHTML = "Calculando desarrollo en fracciones continuas...";
   }
   if (app >= 4)
   {
@@ -263,8 +187,8 @@ function performCalc()
 
 function oneexpr()
 {
-  get("next").value = (app & 1? "Hecho": "Done");
-  get("wzddesc").innerHTML = (app & 1? "Paso 1 de 1: Expresión a factorizar": "Step 1 of 1: Expression to factor");
+  get("next").value = (lang? "Hecho": "Done");
+  get("wzddesc").innerHTML = (lang? "Paso 1 de 1: Expresión a factorizar": "Step 1 of 1: Expression to factor");
   get("wzdexam").innerHTML = "&nbsp;";
   wizardTextInput = "";
   wizardStep = 9;
@@ -272,9 +196,9 @@ function oneexpr()
 
 function selectLoop()
 {   
-  get("next").value = (app & 1 ? "Siguiente": "Next");
-  get("wzddesc").innerHTML = (app & 1 ? "Paso 1 de 5: Valor inicial de x": "Step 1 of 5: Initial value of x");
-  get("wzdexam").innerHTML = (app & 1? "No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code>": 
+  get("next").value = (lang ? "Siguiente": "Next");
+  get("wzddesc").innerHTML = (lang ? "Paso 1 de 5: Valor inicial de x": "Step 1 of 5: Initial value of x");
+  get("wzdexam").innerHTML = (lang? "No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code>": 
                                        "Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>");
   wizardStep = 1;
 }
@@ -286,35 +210,33 @@ function wizardNext()
   var wzdExamText = get("wzdexam");
   var wzdInput = get("wzdinput");
   var valueInput = get("num");
+  var textExample = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>":
+                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>");
   nextBtn.disabled = true;
   switch (++wizardStep)
   {
     case 2:
       wizardTextInput += "x="+wzdInput.value;
       get("mode").style.display = "none";
-      wzdDescText.innerHTML = (app & 1? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
-      wzdExamText.innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x+1</code>":
-                                        "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>");
+      wzdDescText.innerHTML = (lang? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
+      wzdExamText.innerHTML = textExample + "x+1</code>";
       break;
     case 3:
       wizardTextInput += ";x="+wzdInput.value;
-      wzdDescText.innerHTML = (app & 1? "Paso 3 de 5: Condición para finalizar el ciclo": "Step 3 of 5: End loop condition");
-      wzdExamText.innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x&lt;10000</code>":
-                                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x&lt;10000</code>");
+      wzdDescText.innerHTML = (lang? "Paso 3 de 5: Condición para finalizar el ciclo": "Step 3 of 5: End loop condition");
+      wzdExamText.innerHTML = textExample + "x&lt;10000</code>";
       break;
     case 4:
       wizardTextInput += ";"+wzdInput.value;
-      wzdDescText.innerHTML = (app & 1? "Paso 4 de 5: Expresión a factorizar": "Step 4 of 5: Expression to factor");
-      wzdExamText.innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x</code>":
-                                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x</code>");
+      wzdDescText.innerHTML = (lang? "Paso 4 de 5: Expresión a factorizar": "Step 4 of 5: Expression to factor");
+      wzdExamText.innerHTML = textExample + "x</code>";
       break;
     case 5:
       wizardTextInput += ";"+wzdInput.value;
-      nextBtn.value = (app & 1? "Hecho": "Done");
+      nextBtn.value = (lang? "Hecho": "Done");
       nextBtn.disabled = false;
-      wzdDescText.innerHTML = (app & 1? "Paso 5 de 5: Condición para procesar la expresión": "Step 5 of 5: Process expression condition");
-      wzdExamText.innerHTML = (app & 1? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>":
-                                        "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>");
+      wzdDescText.innerHTML = (lang? "Paso 5 de 5: Condición para procesar la expresión": "Step 5 of 5: Process expression condition");
+      wzdExamText.innerHTML = textExample + "sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";
       break;
     case 6:
       if (wzdInput.value != "")
@@ -344,6 +266,13 @@ function wizardNext()
   }
 }
 
+function endFeedback()
+{
+  get("main").style.display = "block";
+  get("feedback").style.display = "none";
+  get(app<4?"value": "num").focus();
+}
+
 function startUp()
 {
   var param;
@@ -353,7 +282,6 @@ function startUp()
     {
       var output, res;
       var digitGroup = get('digits').value;
-      app = get('app').value;
       res = get('result');
       res.style.display = "block";
       var input = get('num').value;
@@ -364,7 +292,7 @@ function startUp()
         output = get('result')
         if (input == "")
         {
-          res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión." : "Please type a number or expression.");
+          res.innerHTML = (lang ? "Por favor ingrese un número o expresión." : "Please type a number or expression.");
           return;
         }
         if (app==0)
@@ -393,8 +321,8 @@ function startUp()
   {
     performCalc();
   };
-  if (get("openwizard") != null)
-  {
+  if (app < 4)
+  {    // Continued fraction applet does not use wizard.
     get("openwizard").onclick = function ()
     {
       get("main").style.display = "none";
@@ -502,8 +430,8 @@ function startUp()
       worker = 0;
       styleButtons("inline", "none");  // Enable buttons that have to be enabled when applet is not running.
       get("result").innerHTML =
-        (app & 1 ? "<p>Cálculo detenido por el usuario.</p>" :
-                   "<p>Calculation stopped by user</p>");
+        (lang ? "<p>Cálculo detenido por el usuario.</p>" :
+                "<p>Calculation stopped by user</p>");
       get("status").innerHTML = "";
     }
   };
@@ -542,26 +470,105 @@ function startUp()
       helphelpStyle.display = resultStyle.display = "none";
     }
   }
+  get("formlink").onclick = function ()
+  {
+    get("main").style.display = "none";
+    get("feedback").style.display = "block";
+    get("formfeedback").reset();
+    get("name").focus();
+    return false;   // Do not follow the link.
+  }
+  get("formcancel").onclick = function ()
+  {
+    endFeedback();
+  }
+  get("formsend").onclick = function()
+  {
+    var userdata = get("userdata");
+    if (get("adduserdata").checked)
+    {
+      if(app < 4)
+      {   
+        userdata.value = "\n" + get("num").value + "\n" + get("result").innerHTML + "\n" + get("status").innerHTML;
+      }
+      else
+      {
+        userdata.value = "\nnum = " + get("num").value + "\ndelta = " + get("delta").value + "\nden = " + get("den").value;         
+      }
+    }
+    else
+    {
+      userdata.value = "";      
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function (event)
+    {
+      if (xhr.readyState == 4) 
+      {             // XHR finished.
+        if (xhr.status == 200)
+        {           // PHP page loaded.
+          alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
+        }
+        else
+        {           // PHP page not loaded.
+          alert(lang?"No se pudieron enviar los comentarios.": "Feedback could not be sent.");
+        }
+        endFeedback();
+      }
+    };
+    xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    var elements = get("formfeedback").elements;
+    var contents = "";
+    var useAmp = 0;
+    for (var i = 0; i < elements.length; i++)
+    {
+      var element = elements[i];
+      if (element.name)
+      {
+        if (useAmp)
+        {
+          contents += '&';
+        }
+        contents += element.name + "=" + encodeURIComponent(element.value);
+        useAmp++;
+      }
+    }
+    xhr.send(contents);
+    return false;   // Send form only through JavaScript.
+  }
   if ('serviceWorker' in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator.serviceWorker.register('calcSW.js').then(function() {}, function() {});
+    navigator["serviceWorker"].register('calcSW.js').then(function() {}, function() {});
   }
 }
+var req = new XMLHttpRequest();
+req.open('GET', (asmjs? "fsquaresW0000.js": "fsquares0000.wasm"), true);
+req.responseType = "arraybuffer";
+req.onreadystatechange = function (aEvt)
+{
+  if (req.readyState == 4 && req.status == 200)
+  {
+    fileContents = req.response;
+    if (workerParam)
+    {
+      callWorker(workerParam);
+    }
+  }
+};
+req.send(null);
 addEventListener("load", startUp);
 })(this);
 
-if (typeof(window) !== "undefined")
-{   // In main thread: register Google Analytics.
-  addEventListener("load", function ()
-  {
-    (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
+// Register Google Analytics.
+addEventListener("load", function ()
+{
+  (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
   
-    ga("create", "UA-4438475-1", "auto");
-    ga("send", "pageview");
-  });
-}
-
+  ga("create", "UA-4438475-1", "auto");
+  ga("send", "pageview");
+});

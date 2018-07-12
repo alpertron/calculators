@@ -37,13 +37,14 @@
 @media screen and (min-width: 500px) {#configleft {float:left;}}
 body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
 h1 {text-align:center;}
-.lf {padding:0.2em; clear:both;}
+fieldset {display:inline}
+.lf,.labels {padding:0.2em; clear:both;}
 .blue {color: #0000FF;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 #cont {display:none;}
 #digits {width:5em}
 #value {white-space:pre;overflow-wrap:normal;overflow:auto;}
-#wizard {display:none;}
+#wizard,#feedback {display:none;}
 .inline {display:inline;}
 .pad {padding:10px;}
 .hex {font-family: Courier, "Lucida Console", monospace}
@@ -51,8 +52,11 @@ h1 {text-align:center;}
 #tableCurves {max-width:700px; margin-left:auto; margin-right:auto;}
 #help,#result,#status,#footer {margin: 3px; padding: 3px;}
 #more,#stop {display:none}
+#comments {width:90%}
+.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
 @media (min-width: 400px) {.input {width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
 @media (max-width: 400px) {.input {width:100%;padding:3px;margin:0px;}}
+@media screen and (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 .modal-header {padding: 2px 10px; background-color: #5cb85c; color: white;}
 .modal-body {padding: 2px 10px;}
 .modal-content {
@@ -152,7 +156,6 @@ One numerical expression or loop per line. Example: x=3;x=n(x);c&lt;=100;x&#8209
 <input type="button" id="config" value="Config" />
 <input type="button" id="openwizard" value="Wizard" />
 <div class="lf"></div>
-<input type="hidden" id="app" value="0"/>
 </form>
 <div id="help" aria-live="polite">
 <p>This application factors numbers or numeric expressions using fast algorithms ECM and SIQS.</p>
@@ -267,7 +270,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.</p>
-<p>Written by Dario Alpern. Last updated 20 June 2018.</p>
+<p>Written by Dario Alpern. Last updated 10 July 2018.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -276,7 +279,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <input type="button" id="continue" value="Continue" />
 </form>
 <div id="footer">
-<p>If you find any error or you have a comment, please fill in the <a href="FORM.HTM?Integer+factorization+calculator+feedback">form</a>.</p>
+<p>If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
 </div>
 </article>
 </main>
@@ -323,7 +326,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <input type="radio" name="mode" id="oneexpr"><label for="oneexpr"><span class="und">P</span>rocess one expression</label><br>
 <input type="radio" name="mode" id="loop"><label for="loop"><span class="und">P</span>rocess several expressions in a loop</label><br>
 </fieldset>
-<label for="wzdinput" id="wzddesc">&nbsp;</label>
+<label for="wzdinput" id="wzddesc">1</label>
 <br class="newline"/>
 <input type="text" id="wzdinput" value="" placeholder="Number or numerical expression" class="input"/>
 <br class="newline"/>
@@ -377,27 +380,68 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 </aside>
-<script async>
+<aside id="feedback">
+<h1>Feedback form</h1>
+<form class="applet" id="formfeedback">
+<input type="hidden" name="subject" value="Integer factorization calculator feedback" />
+<div id="formleft">
+<div class="labels"><label for="name">Your name is:</label><input class="inputfbck" type="text" name="name" maxlength="40" id="name" autocomplete="name"/></div>
+<div class="labels"><label for="age">Age:</label><input class="inputfbck" type="number" name="age" min="0" max="999" id="age" /></div>
+<div class="labels"><label for="city">City:</label><input class="inputfbck" type="text" name="city" maxlength="70" id="city" autocomplete="address-level2"/></div>
+<div class="labels"><label for="province">Province/State:</label><input class="inputfbck" type="text" name="province" maxlength="70" id="province" autocomplete="address-level1"/></div>
+<div class="labels"><label for="country">Country:</label><input class="inputfbck" type="text" name="country" maxlength="70" id="country" autocomplete="country-name" /></div>
+<div class="labels"><label for="reply">E-mail address:</label><input class="inputfbck" type="email" name="reply" maxlength="70" id="reply" autocomplete="email" /></div>
+<p>Enter your e-mail address if you want a reply from the author of this application.</p>
+<p><input type="checkbox" id="adduserdata"><label for="adduserdata">Send expression to be factored</label></p>
+<input type="hidden" name="userdata" value="" id="userdata" />
+</div>
+<div id="formright">
+<label for="comments">Please feel free to add comments:</label><br />
+<textarea name="Comments" rows="7" cols="40" id="comments"></textarea>
+<p><label for="how">How did you find my page?</label><br />
+<select name="how" title="How did you find my page?" id="how">
+<option value="Select response">Select response</option>
+<option value="from a search engine">From a search engine</option>
+<option value="from a friend">From a friend</option>
+<option value="from a link">From a link</option>
+<option value="from Wikipedia">From Wikipedia or another reference</option>
+<option value="other">Other</option>
+</select></p>
+<fieldset><legend>Are the programs instructive?</legend>
+<input type="radio" name="Instructive" value="Yes" id="insyes" /><label for="insyes">Yes</label>
+<input type="radio" name="Instructive" value="No" id="insno" /><label for="insno">No</label>
+</fieldset>
+<fieldset><legend>Are the programs interesting?</legend>
+<input type="radio" name="Interesting" value="Yes" id="intyes" /><label for="intyes">Yes</label>
+<input type="radio" name="Interesting" value="No" id="intno" /><label for="intno">No</label>
+</fieldset>
+<p><input type="submit" value="Send it in!" id="formsend" />
+<input type="reset" value="Reset" />
+<input type="button" value="Cancel" id="formcancel" /></p>
+</div>
+<div class="lf"></div>
+</form>
+</aside>
+<script>
 <!--
-(function(q){function t(){a("next").value=d&1?"Hecho":"Done";a("wzddesc").innerHTML=d&1?"Paso 1 de 1: Expresi\u00f3n a factorizar":"Step 1 of 1: Expression to factor";a("wzdexam").innerHTML="&nbsp;";g="";k=9}function a(a){return document.getElementById(a)}function u(c,b){a("eval").style.display=c;a("factor").style.display=c;a("config").style.display=c;a("openwizard").style.display=c;a("stop").style.display=b;a("more").style.display=b}function l(c){a("modal-more").style.display="none";m.terminate();
-m=0;n(c)}function p(c){m||(v?w||(w=new Blob([new Uint8Array(x)])):w||(w=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),m=new Worker(window.URL.createObjectURL(w)),m.onmessage=function(b){var c=b.data.substring(0,1);"9"==c&&console.log(b.data.substring(1));if("8"==c)b=b.data.substring(1),localStorage.setItem("ecmFactors",b),localStorage.setItem("ecmCurve","");else if("7"==c)b=b.data.substring(1),
-localStorage.setItem("ecmCurve",b);else if("4"==c)a("status").innerHTML=b.data.substring(1);else if(a("result").innerHTML=b.data.substring(1),"2"==c||"6"==c)a("status").innerHTML="",u("inline","none"),a("modal-more").style.display="none","6"==c&&(a("cont").style.display="block")});v?m.postMessage(c):m.postMessage([c,x])}function n(c){var b;d=parseInt(a("app").value)+c;b=a("result");var A=a("value").value.replace(/\u2011/g,"-"),h=String.fromCharCode(0),g=a("helphelp");a("cont").style.display="none";
-a("help").style.display="none";g.style.display="block";g.innerHTML=d&1?'<p class="pad">Aprieta el bot\u00f3n <strong>Ayuda</strong> para obtener ayuda para esta aplicaci\u00f3n. Apri\u00e9talo de nuevo para retornar a la factorizaci\u00f3n. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorizaci\u00f3n. Esta es la versi\u00f3n '+(v?"asm.js":"WebAssembly")+".</p>":'<p class="pad">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. Keyboard users can press CTRL+ENTER to start factorization. This is the '+
-(v?"asm.js":"WebAssembly")+" version.</p>";b.style.display="block";if(""==A)b.innerHTML=d&1?"<p>Por favor ingrese una expresi\u00f3n.</p>":"<p>Please type an expression.</p>";else if("undefined"===typeof Worker)b.innerHTML=d&1?"<p>Esta calculadora necesita Web Workers. Por favor use otro navegador Web.</p>":"<p>This calculator requires Web Workers. Please use another Web browser.</p>";else{u("none","inline");b.innerHTML=d&1?"<p>Factorizando la expresi\u00f3n...</p>":"<p>Factoring expression...</p>";
--2>c&&(d+=6);b=f+","+d+","+e+A+h+localStorage.getItem("ecmFactors");if(-1==c||-2==c)b+=h+a("curve").value;if(-3==c||-4==c)b+="*"+a("curve").value+"^1(2)";x?p(b+h):y=b+h}}function B(){a("next").value=d&1?"Siguiente":"Next";a("wzddesc").innerHTML=d&1?"Paso 1 de 5: Valor inicial de x":"Step 1 of 5: Initial value of x";a("wzdexam").innerHTML=d&1?"No usar variables <var>x</var> o <var>c</var>. Ejemplo para n\u00fameros de Smith menores que 10000: <code>1</code>":"Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>";
-k=1}function C(){var c=a("next"),b=a("wzddesc"),e=a("wzdexam"),h=a("wzdinput"),f=a("value");c.disabled=!0;switch(++k){case 2:g+="x="+h.value;a("mode").style.display="none";b.innerHTML=d&1?"Paso 2 de 5: Valor de x para la nueva iteraci\u00f3n":"Step 2 of 5: Value of x for new iteration";e.innerHTML=d&1?"Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>x+1</code>":"Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>";
-break;case 3:g+=";x="+h.value;b.innerHTML=d&1?"Paso 3 de 5: Condici\u00f3n para finalizar el ciclo":"Step 3 of 5: End loop condition";e.innerHTML=d&1?"Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>x&lt;10000</code>":"Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x&lt;10000</code>";break;case 4:g+=";"+h.value;b.innerHTML=d&1?"Paso 4 de 5: Expresi\u00f3n a factorizar":"Step 4 of 5: Expression to factor";
-e.innerHTML=d&1?"Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>x</code>":"Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x</code>";break;case 5:g+=";"+h.value;c.value=d&1?"Hecho":"Done";c.disabled=!1;b.innerHTML=d&1?"Paso 5 de 5: Condici\u00f3n para procesar la expresi\u00f3n":"Step 5 of 5: Process expression condition";e.innerHTML=d&1?"Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>":
-"Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";break;case 6:""!=h.value&&(g+=";"+h.value);f.value=g;k=0;a("hex").checked=a("hexW").checked;z();a("main").style.display="block";a("wizard").style.display="none";f.focus();break;default:k=0,f.value=h.value,a("hex").checked=a("hexW").checked,z(),a("main").style.display="block",a("wizard").style.display="none",f.focus()}k&&
-(h.value="",h.focus())}function z(){e="1"+(a("verbose").checked?"1":"0")+(a("pretty").checked?"1":"0")+(a("cunnin").checked?"1":"0")+(a("hex").checked?"1":"0");f=a("digits").value;localStorage.setItem("ecmConfig",f+","+e)}var k=0,g,m=0,x=0,d,w,f,e,y,v="undefined"===typeof WebAssembly,r=new XMLHttpRequest;r.open("GET",v?"ecmW0058.js":"ecm0058.wasm",!0);r.responseType="arraybuffer";r.onreadystatechange=function(a){4==r.readyState&&200==r.status&&(x=r.response,y&&p(y))};r.send(null);addEventListener("load",
-function(){var c;d=parseInt(a("app").value);a("value").wrap="off";a("eval").onclick=function(){localStorage.setItem("ecmFactors","");n(0)};a("factor").onclick=function(){localStorage.setItem("ecmFactors","");n(2)};a("more").onclick=function(){a("modal-more").style.display="block"};a("config").onclick=function(){a("digits").value=f;a("verbose").checked="1"==e.substr(1,1);a("pretty").checked="1"==e.substr(2,1);a("cunnin").checked="1"==e.substr(3,1);a("hex").checked="1"==e.substr(4,1);a("modal-config").style.display=
-"block"};a("openwizard").onclick=function(){a("main").style.display="none";a("wizard").style.display="block";a("mode").style.display="block";a("oneexpr").checked=!0;a("next").disabled=!0;a("wzdinput").value="";a("wzdinput").focus();a("hexW").checked="1"==e.substr(4,1);a("decW").checked="1"!=e.substr(4,1);t()};a("wzdinput").onkeydown=function(b){if(10==b.keyCode||13==b.keyCode)b.preventDefault(),0==a("next").disabled&&C();b.altKey&&(80==b.keyCode?(b.preventDefault(),a("oneexpr").checked?(a("oneexpr").checked=
-!1,a("loop").checked=!0,B()):(a("oneexpr").checked=!0,a("loop").checked=!1,t())):68==b.keyCode?(b.preventDefault(),a("decW").checked=!0,a("hexW").checked=!1):72==b.keyCode&&(b.preventDefault(),a("decW").checked=!1,a("hexW").checked=!0));return!0};a("oneexpr").onclick=function(){t()};a("loop").onclick=function(){B()};a("next").onclick=function(){C()};a("wzdinput").oninput=function(){var b=a("wzdinput").value,c=a("next");""!=b?1==k||9==k||0<=b.lastIndexOf("x")||0<=b.lastIndexOf("c")||0<=b.lastIndexOf("X")||
-0<=b.lastIndexOf("C")?c.disabled=!1:c.disabled=!0:c.disabled=5==k?!1:!0};a("cancel").onclick=function(){a("main").style.display="block";a("wizard").style.display="none"};a("close-config").onclick=function(){a("modal-config").style.display="none"};a("cancel-config").onclick=function(){a("modal-config").style.display="none"};a("save-config").onclick=function(){oldconfig=e;z();a("modal-config").style.display="none"};a("close-more").onclick=function(){a("modal-more").style.display="none"};a("ncurve").onclick=
-function(){l(-2)};a("nfactor").onclick=function(){l(-4)};a("curve").onkeypress=function(a){return 8==a.charCode||0==a.charCode?null:48<=a.charCode&&57>=a.charCode};a("stop").onclick=function(){m.terminate();m=0;u("inline","none");a("result").innerHTML=d&1?"<p>C\u00e1lculo detenido por el usuario.</p>":"<p>Calculation stopped by user</p>";a("status").innerHTML=""};a("value").onkeydown=function(a){10!=a.keyCode&&13!=a.keyCode||!a.ctrlKey||(a.preventDefault(),localStorage.setItem("ecmFactors",""),n(2));
-return!0};a("helpbtn").onclick=function(){var b=a("help").style,c=a("helphelp").style,d=a("result"),e=d.style;"block"==b.display&&""!=d.innerHTML?(b.display="none",c.display=e.display="block"):(b.display="block",c.display=e.display="none")};a("continue").onclick=function(){a("cont").style.display="none";p("C")};window.onclick=function(b){var c=a("modal");b.target==c&&(c.style.display="none")};f=localStorage.getItem("ecmConfig");if(null==f||""==f)f=6,e="00100",localStorage.setItem("ecmConfig",f+","+
-e);else if(c=f.indexOf(","),0>c)f=6,e="00100",localStorage.setItem("ecmConfig",f+","+e);else{for(e=f.substr(c+1);5>e.length;)e+="0";f=f.substr(0,c)}if(c=localStorage.getItem("ecmFactors"))a("value").value=c.slice(0,c.indexOf("=")),a("curve").value=localStorage.getItem("ecmCurve"),n(-2),a("curve").value="";"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})})})(this);
-addEventListener("load",function(){(function(q,t,a,u,l,p,n){q.GoogleAnalyticsObject=l;q[l]=q[l]||function(){(q[l].q=q[l].q||[]).push(arguments)};q[l].l=1*new Date;p=t.createElement(a);n=t.getElementsByTagName(a)[0];p.async=1;p.src=u;n.parentNode.insertBefore(p,n)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
+(function(){function g(){a("next").value="Done";a("wzddesc").innerHTML="Step 1 of 1: Expression to factor";a("wzdexam").innerHTML="&nbsp;";f="";m=9}function a(a){return document.getElementById(a)}function q(c,b){a("eval").style.display=c;a("factor").style.display=c;a("config").style.display=c;a("openwizard").style.display=c;a("stop").style.display=b;a("more").style.display=b}function v(c){a("modal-more").style.display="none";n.terminate();n=0;k(c)}function l(c){n||(w?t||(t=new Blob([new Uint8Array(x)])):
+t||(t=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),n=new Worker(window.URL.createObjectURL(t)),n.onmessage=function(b){var c=b.data.substring(0,1);"9"==c&&console.log(b.data.substring(1));if("8"==c)localStorage.setItem("ecmFactors",b.data.substring(1)),localStorage.setItem("ecmCurve","");else if("7"==c)localStorage.setItem("ecmCurve",b.data.substring(1));else if("4"==c)a("status").innerHTML=
+b.data.substring(1);else if(a("result").innerHTML=b.data.substring(1),"2"==c||"6"==c)a("status").innerHTML="",q("inline","none"),a("modal-more").style.display="none","6"==c&&(a("cont").style.display="block")});w?n.postMessage(c):n.postMessage([c,x])}function k(c){var b;u=0+c;b=a("result");var A=a("value").value.replace(/\u2011/g,"-"),h=String.fromCharCode(0),B=a("helphelp");a("cont").style.display="none";a("help").style.display="none";B.style.display="block";B.innerHTML='<p class="pad">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. Keyboard users can press CTRL+ENTER to start factorization. This is the '+
+(w?"asm.js":"WebAssembly")+" version.</p>";b.style.display="block";if(""==A)b.innerHTML="<p>Please type an expression.</p>";else if("undefined"===typeof Worker)b.innerHTML="<p>This calculator requires Web Workers. Please use another Web browser.</p>";else{q("none","inline");b.innerHTML="<p>Factoring expression...</p>";-2>c&&(u+=6);b=e+","+u+","+d+A+h+localStorage.getItem("ecmFactors");if(-1==c||-2==c)b+=h+a("curve").value;if(-3==c||-4==c)b+="*"+a("curve").value+"^1(2)";x?l(b+h):y=b+h}}function r(){a("next").value=
+"Next";a("wzddesc").innerHTML="Step 1 of 5: Initial value of x";a("wzdexam").innerHTML="Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>";m=1}function C(){var c=a("next"),b=a("wzddesc"),d=a("wzdexam"),h=a("wzdinput"),e=a("value");c.disabled=!0;switch(++m){case 2:f+="x="+h.value;a("mode").style.display="none";b.innerHTML="Step 2 of 5: Value of x for new iteration";d.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>";
+break;case 3:f+=";x="+h.value;b.innerHTML="Step 3 of 5: End loop condition";d.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x&lt;10000</code>";break;case 4:f+=";"+h.value;b.innerHTML="Step 4 of 5: Expression to factor";d.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x</code>";break;case 5:f+=";"+h.value;c.value="Done";c.disabled=!1;b.innerHTML="Step 5 of 5: Process expression condition";
+d.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";break;case 6:""!=h.value&&(f+=";"+h.value);e.value=f;m=0;a("hex").checked=a("hexW").checked;z();a("main").style.display="block";a("wizard").style.display="none";e.focus();break;default:m=0,e.value=h.value,a("hex").checked=a("hexW").checked,z(),a("main").style.display="block",a("wizard").style.display="none",e.focus()}m&&
+(h.value="",h.focus())}function z(){d="1"+(a("verbose").checked?"1":"0")+(a("pretty").checked?"1":"0")+(a("cunnin").checked?"1":"0")+(a("hex").checked?"1":"0");e=a("digits").value;localStorage.setItem("ecmConfig",e+","+d)}function D(){a("main").style.display="block";a("feedback").style.display="none";a("value").focus()}var m=0,f,n=0,x=0,u,t,e,d,y,w="undefined"===typeof WebAssembly,p=new XMLHttpRequest;p.open("GET",w?"ecmW0059.js":"ecm0059.wasm",!0);p.responseType="arraybuffer";p.onreadystatechange=
+function(){4==p.readyState&&200==p.status&&(x=p.response,y&&l(y))};p.send(null);addEventListener("load",function(){var c;u=0;a("value").c="off";a("eval").onclick=function(){localStorage.setItem("ecmFactors","");k(0)};a("factor").onclick=function(){localStorage.setItem("ecmFactors","");k(2)};a("more").onclick=function(){a("modal-more").style.display="block"};a("config").onclick=function(){a("digits").value=e;a("verbose").checked="1"==d.substr(1,1);a("pretty").checked="1"==d.substr(2,1);a("cunnin").checked=
+"1"==d.substr(3,1);a("hex").checked="1"==d.substr(4,1);a("modal-config").style.display="block"};a("openwizard").onclick=function(){a("main").style.display="none";a("wizard").style.display="block";a("mode").style.display="block";a("oneexpr").checked=!0;a("next").disabled=!0;a("wzdinput").value="";a("wzdinput").focus();a("hexW").checked="1"==d.substr(4,1);a("decW").checked="1"!=d.substr(4,1);g()};a("wzdinput").onkeydown=function(b){if(10==b.keyCode||13==b.keyCode)b.preventDefault(),0==a("next").disabled&&
+C();b.altKey&&(80==b.keyCode?(b.preventDefault(),a("oneexpr").checked?(a("oneexpr").checked=!1,a("loop").checked=!0,r()):(a("oneexpr").checked=!0,a("loop").checked=!1,g())):68==b.keyCode?(b.preventDefault(),a("decW").checked=!0,a("hexW").checked=!1):72==b.keyCode&&(b.preventDefault(),a("decW").checked=!1,a("hexW").checked=!0));return!0};a("oneexpr").onclick=function(){g()};a("loop").onclick=function(){r()};a("next").onclick=function(){C()};a("wzdinput").oninput=function(){var b=a("wzdinput").value;
+a("next").disabled=""!=b?1==m||9==m||0<=b.lastIndexOf("x")||0<=b.lastIndexOf("c")||0<=b.lastIndexOf("X")||0<=b.lastIndexOf("C")?!1:!0:5==m?!1:!0};a("cancel").onclick=function(){a("main").style.display="block";a("wizard").style.display="none"};a("close-config").onclick=function(){a("modal-config").style.display="none"};a("cancel-config").onclick=function(){a("modal-config").style.display="none"};a("save-config").onclick=function(){oldconfig=d;z();a("modal-config").style.display="none"};a("close-more").onclick=
+function(){a("modal-more").style.display="none"};a("ncurve").onclick=function(){v(-2)};a("nfactor").onclick=function(){v(-4)};a("curve").onkeypress=function(a){return 8==a.charCode||0==a.charCode?null:48<=a.charCode&&57>=a.charCode};a("stop").onclick=function(){n.terminate();n=0;q("inline","none");a("result").innerHTML="<p>Calculation stopped by user</p>";a("status").innerHTML=""};a("value").onkeydown=function(a){10!=a.keyCode&&13!=a.keyCode||!a.ctrlKey||(a.preventDefault(),localStorage.setItem("ecmFactors",
+""),k(2));return!0};a("helpbtn").onclick=function(){var b=a("help").style,c=a("helphelp").style,d=a("result"),e=d.style;"block"==b.display&&""!=d.innerHTML?(b.display="none",c.display=e.display="block"):(b.display="block",c.display=e.display="none")};a("continue").onclick=function(){a("cont").style.display="none";l("C")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=
+function(){D()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\n"+a("value").value+"\n"+a("result").innerHTML+"\n"+a("status").innerHTML:"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),D())};b.open("POST","/sendmail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var c=a("formfeedback").elements,d="",e=0,f=0;f<c.length;f++){var g=
+c[f];g.name&&(e&&(d+="&"),d+=g.name+"="+encodeURIComponent(g.value),e++)}b.send(d);return!1};window.onclick=function(b){var c=a("modal");b.target==c&&(c.style.display="none")};e=localStorage.getItem("ecmConfig");if(null==e||""==e)e=6,d="00100",localStorage.setItem("ecmConfig",e+","+d);else if(c=e.indexOf(","),0>c)e=6,d="00100",localStorage.setItem("ecmConfig",e+","+d);else{for(d=e.substr(c+1);5>d.length;)d+="0";e=e.substr(0,c)}if(c=localStorage.getItem("ecmFactors"))a("value").value=c.slice(0,c.indexOf("=")),
+a("curve").value=localStorage.getItem("ecmCurve"),k(-2),a("curve").value="";"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})})})(this);
+addEventListener("load",function(){(function(g,a,q,v,l,k,r){g.GoogleAnalyticsObject=l;g[l]=g[l]||function(){(g[l].a=g[l].a||[]).push(arguments)};g[l].b=1*new Date;k=a.createElement(q);r=a.getElementsByTagName(q)[0];k.async=1;k.src=v;r.parentNode.insertBefore(k,r)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
 //-->
 </script>
 <script type="text/js-worker">

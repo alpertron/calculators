@@ -16,11 +16,16 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/** @define {number} */ var lang = 1;   // Use with Closure compiler.
 (function(global)
 {   // This method separates the name space from the Google Analytics code.
 var worker = 0;
 var app;
-function document_getElementById(x)
+var blob;
+var workerParam;
+var fileContents = 0;
+
+function get(x)
 {
   return document.getElementById(x);
 }
@@ -28,15 +33,19 @@ function callWorker(param)
 {
   if (!worker)
   {
-  	worker = new Worker('dilogW0026.js');
+    if (!blob)
+    {
+      blob = new Blob([new Uint8Array(fileContents)]);
+    }
+    worker = new Worker(window.URL.createObjectURL(blob));
 	worker.onmessage = function(e)
 	{ // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.
-	  document_getElementById('result').innerHTML = e.data.substring(1);
+	  get('result').innerHTML = e.data.substring(1);
 	  if (e.data.substring(0, 1) == '2')
 	  {   // First character passed from web worker is '2'.
-	    document_getElementById('dlog').disabled = false;
-	    document_getElementById('stop').disabled = true;
+	    get('dlog').disabled = false;
+	    get('stop').disabled = true;
       }
 	}
   }
@@ -45,84 +54,164 @@ function callWorker(param)
 
 function dowork(n)
 {
-  var app = parseInt(document_getElementById('app').value) + n;
-  var res = document_getElementById('result');
-  var baseText = document_getElementById('base').value;
-  var powText = document_getElementById('pow').value;
-  var modText = document_getElementById('mod').value;
-  var digitGroup = document_getElementById('digits').value;
-  document_getElementById('help').style.display = "none";
+  var app = lang + n;
+  var res = get('result');
+  var baseText = get('base').value;
+  var powText = get('pow').value;
+  var modText = get('mod').value;
+  var digitGroup = get('digits').value;
+  get('help').style.display = "none";
   res.style.display = "block";
   if (baseText == "")
   {
-    res.innerHTML = (app & 1 ? "Por favor ingrese una expresión para la base." :
-                               "Please type an expression for the base.");
+    res.innerHTML = (lang? "Por favor ingrese una expresión para la base." :
+                           "Please type an expression for the base.");
     return;
   }
   if (powText == "")
   {
-    res.innerHTML = (app & 1 ? "Por favor ingrese una expresión para la potencia." :
-                               "Please type an expression for the power.");
+    res.innerHTML = (lang? "Por favor ingrese una expresión para la potencia." :
+                           "Please type an expression for the power.");
     return;
   }
   if (modText == "")
   {
-    res.innerHTML = (app & 1 ? "Por favor ingrese un número o expresión para el módulo." :
-                               "Please type a number or expression for the modulus.");
+    res.innerHTML = (lang? "Por favor ingrese un número o expresión para el módulo." :
+                           "Please type a number or expression for the modulus.");
     return;
   }
-  document_getElementById('dlog').disabled = true;
-  document_getElementById('stop').disabled = false;
-  res.innerHTML = (app & 1 ? "Calculando el logaritmo discreto..." :
-                             "Computing discrete logarithm...");
+  get('dlog').disabled = true;
+  get('stop').disabled = false;
+  res.innerHTML = (lang? "Calculando el logaritmo discreto..." :
+                         "Computing discrete logarithm...");
   param = digitGroup + ',' + app + ',' + baseText + String.fromCharCode(0) + powText +
   String.fromCharCode(0) + modText + String.fromCharCode(0);
   callWorker(param);
 }
 
+function endFeedback()
+{
+  get("main").style.display = "block";
+  get("feedback").style.display = "none";
+  get("base").focus();   
+}
+
 window.onload = function ()
 {
   var param;
-  document_getElementById('stop').disabled = true;
-  document_getElementById('dlog').onclick = function ()
+  get('stop').disabled = true;
+  get('dlog').onclick = function ()
   {
     dowork(0);
   }
-  document_getElementById('stop').onclick = function ()
+  get('stop').onclick = function ()
   {
     worker.terminate();
     worker = 0;
-    document_getElementById('dlog').disabled = false;
-    document_getElementById('stop').disabled = true;
-    document_getElementById('result').innerHTML = 
-      (app & 1 ? "<p>Cálculo detenido por el usuario.</p>" :
-                 "<p>Calculation stopped by user</p>");
+    get('dlog').disabled = false;
+    get('stop').disabled = true;
+    get('result').innerHTML = 
+      (lang? "<p>Cálculo detenido por el usuario.</p>" :
+             "<p>Calculation stopped by user</p>");
   }
-  document_getElementById('helpbtn').onclick = function ()
+  get('helpbtn').onclick = function ()
   {
-    document_getElementById('help').style.display = "block";
-    document_getElementById('result').style.display = "none";
+    get('help').style.display = "block";
+    get('result').style.display = "none";
+  }
+  get("formlink").onclick = function ()
+  {
+    get("main").style.display = "none";
+    get("feedback").style.display = "block";
+    get("formfeedback").reset();
+    get("name").focus();
+    return false;   // Do not follow the link.
+  }
+  get("formcancel").onclick = function ()
+  {
+    endFeedback();
+  }
+  get("formsend").onclick = function()
+  {
+    var userdata = get("userdata");
+    if (get("adduserdata").checked)
+    {
+      userdata.value = "\nBase = " + get("base").value + 
+	      (lang? "\nPotencia = ":"\npower = ") + get("pow").value +
+		  (lang? "\nMódulo = ": "\nModulus = ") + get("mod").value;
+    }
+    else
+    {
+      userdata.value = "";      
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function (event)
+    {
+      if (xhr.readyState == 4) 
+      {             // XHR finished.
+        if (xhr.status == 200)
+        {           // PHP page loaded.
+          alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
+        }
+        else
+        {           // PHP page not loaded.
+          alert(lang?"No se pudieron enviar los comentarios.": "Feedback could not be sent.");
+        }
+        endFeedback();
+      }
+    };
+    xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    var elements = get("formfeedback").elements;
+    var contents = "";
+    var useAmp = 0;
+    for (var i = 0; i < elements.length; i++)
+    {
+      var element = elements[i];
+      if (element.name)
+      {
+        if (useAmp)
+        {
+          contents += '&';
+        }
+        contents += element.name + "=" + encodeURIComponent(element.value);
+        useAmp++;
+      }
+    }
+    xhr.send(contents);
+    return false;   // Send form only through JavaScript.
   }
   if ('serviceWorker' in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator.serviceWorker.register('calcSW.js').then(function() {}, function() {});
+    navigator["serviceWorker"].register('calcSW.js').then(function() {}, function() {});
   }
 }
-
+var req = new XMLHttpRequest();
+req.open('GET', "dilogW0000.js", true);
+req.responseType = "arraybuffer";
+req.onreadystatechange = function (aEvt)
+{
+  if (req.readyState == 4 && req.status == 200)
+  {
+    fileContents = req.response;
+    if (workerParam)
+    {
+      callWorker(workerParam);
+    }
+  }
+};
+req.send(null);
 })(this);
 
-if (typeof(window) !== "undefined")
-{   // In main thread: register Google Analytics.
-  addEventListener("load", function ()
-  {
-    (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
+// Register Google Analytics.
+addEventListener("load", function ()
+{
+  (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
   
-    ga("create", "UA-4438475-1", "auto");
-    ga("send", "pageview");
-  });
-}
-
+  ga("create", "UA-4438475-1", "auto");
+  ga("send", "pageview");
+});

@@ -21,21 +21,21 @@ var cacheName = "newCache";
 
 // URLs for calculators
 var calcURLs = new Array();
-calcURLs[0] = ["/ECM.HTM", "/ECMC.HTM", "ecmW0058.js", "ecm0058.wasm",
+calcURLs[0] = ["/ECM.HTM", "/ECMC.HTM", "ecmW0000.js", "ecm0000.wasm",
                "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-512px.png"];
-calcURLs[1] = ["/POLFACT.HTM", "/FACTPOL.HTM", "/polfact0026.js", "polfactW0026.js",
+calcURLs[1] = ["/POLFACT.HTM", "/FACTPOL.HTM", "polfactW0000.js",
                "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png", "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-512px.png"];
-calcURLs[2] = ["/DILOG.HTM", "/LOGDI.HTM", "/dilog0026.js", "dilogW0026.js",
+calcURLs[2] = ["/DILOG.HTM", "/LOGDI.HTM", "dilogW0000.js",
                "dilog.webmanifest", "logdi.webmanifest", "dilog-icon-1x.png", "dilog-icon-2x.png", "dilog-icon-4x.png", "dilog-icon-512px.png"];
-calcURLs[3] = ["/GAUSSIAN.HTM", "/GAUSIANO.HTM", "/gaussian0026.js", "gaussianW0026.js",
+calcURLs[3] = ["/GAUSSIAN.HTM", "/GAUSIANO.HTM", "gaussianW0000.js",
                "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png", "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-512px.png"];
-calcURLs[4] = ["/QUADMOD.HTM", "/CUADMOD.HTM", "/quadmod0048.js", "quadmodW0048.js",
+calcURLs[4] = ["/QUADMOD.HTM", "/CUADMOD.HTM", "quadmodW0000.js",
                "quadmod.webmanifest", "cuadmod.webmanifest", "quadmod-icon-1x.png", "quadmod-icon-2x.png", "quadmod-icon-4x.png", "quadmod-icon-512px.png"];
-calcURLs[5] = ["/FSQUARES.HTM", "/SUMCUAD.HTM", "/fsquares0048.js", "fsquaresW0048.js",
+calcURLs[5] = ["/FSQUARES.HTM", "/SUMCUAD.HTM", "fsquaresW0000.js", "fsquares0000.wasm",
                "fsquares.webmanifest", "sumcuad.webmanifest", "fsquares-icon-1x.png", "fsquares-icon-2x.png", "fsquares-icon-4x.png", "fsquares-icon-512px.png"];
-calcURLs[6] = ["/FCUBES.HTM", "/SUMCUBOS.HTM", "/fsquares0048.js", "fsquaresW0048.js",
+calcURLs[6] = ["/FCUBES.HTM", "/SUMCUBOS.HTM", "fsquaresW0000.js", "fsquares0000.wasm",
                "fcubes.webmanifest", "sumcubos.webmanifest", "fcubes-icon-1x.png", "fcubes-icon-2x.png", "fcubes-icon-4x.png", "fcubes-icon-512px.png"];
-calcURLs[7] = ["/CONTFRAC.HTM", "/FRACCONT.HTM", "/fsquares0048.js", "fsquaresW0048.js",
+calcURLs[7] = ["/CONTFRAC.HTM", "/FRACCONT.HTM", "fsquaresW0000.js", "fsquares0000.wasm",
                "contfrac.webmanifest", "fraccont.webmanifest", "contfrac-icon-1x.png", "contfrac-icon-2x.png", "contfrac-icon-4x.png", "contfrac-icon-512px.png"];
 
 function UpdateCache(resources, url, mainCache)
@@ -150,17 +150,6 @@ self.addEventListener("fetch", function(event)
                     UpdateCache(calcURLs[j], calcURLs[j][0], cache);
                   }
                 }       
-              }
-              else if (false)
-              {
-                // Check whether the URL is the first JavaScript of our calculators.
-                for (var j=0; j<calcURLs.length; j++)
-                {
-                  if (pathname == calcURLs[j][2])
-                  {   // It is one of our calculators.
-                    UpdateCache(calcURLs[j], calcURLs[j][0], cache);
-                  }
-                }
               }
             });
           });
