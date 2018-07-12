@@ -170,7 +170,7 @@ void DiscreteLogarithm(void)
   {
     CompressBigInteger(nbrToFactor, &modulus);
     Bin2Dec(modulus.limbs, tofactorDec, modulus.nbrLimbs, groupLen);
-    factor(&modulus, nbrToFactor, factorsMod, astFactorsMod, NULL);
+    factor(&modulus, nbrToFactor, factorsMod, astFactorsMod);
     NbrFactorsMod = astFactorsMod[0].multiplicity;
   }
   intToBigInteger(&DiscreteLog, 0);       // DiscreteLog <- 0
@@ -244,7 +244,7 @@ void DiscreteLogarithm(void)
     groupOrder.limbs[0].x--;
     showText("Computing discrete logarithm...");
     CompressBigInteger(nbrToFactor, &groupOrder);
-    factor(&groupOrder, nbrToFactor, factorsGO, astFactorsGO, NULL);  // factor groupOrder.
+    factor(&groupOrder, nbrToFactor, factorsGO, astFactorsGO);  // factor groupOrder.
     NbrFactors = astFactorsGO[0].multiplicity;
     NumberLength = *ptrPrime;
     UncompressBigInteger(ptrPrime, &mod);
@@ -284,6 +284,7 @@ void DiscreteLogarithm(void)
     {
       NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
       UncompressBigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
+      subGroupOrder.limbs[subGroupOrder.nbrLimbs].x = 0;
       strcpy(textExp, "Computing discrete logarithm in subgroup of ");
       Bin2Dec(subGroupOrder.limbs, textExp + strlen(textExp), subGroupOrder.nbrLimbs, groupLen);
       ptr = textExp + strlen(textExp);
