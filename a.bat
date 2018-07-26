@@ -36,6 +36,7 @@ if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 FACTPOL.HTM polfactS.js
 cmd /c emcc -Os expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c polynomial.c polfact.c bignbr.c showtime.c inputstr.c fft.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=67108864 -s NO_FILESYSTEM=1 --closure 1 --memory-init-file 0 -o polfactW%1.js
 if errorlevel 1 goto end
+copy polfact.wasm polfact%1.wasm
 
 java -jar %compilerName% -D lang=0 --compilation_level ADVANCED_OPTIMIZATIONS --js dislog.js --js_output_file DILOGE.js
 if errorlevel 1 goto end

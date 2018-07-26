@@ -24,6 +24,7 @@ var app;
 var blob;
 var workerParam;
 var fileContents = 0;
+var asmjs = typeof(WebAssembly) === "undefined";
 function get(x)
 {
   return document.getElementById(x);
@@ -32,10 +33,20 @@ function callWorker(param)
 {
   if (!worker)
   {
-    if (!blob)
-    {
-      blob = new Blob([new Uint8Array(fileContents)]);
+    if (asmjs)
+    {    // Asm.js
+      if (!blob)
+      {
+        blob = new Blob([new Uint8Array(fileContents)]);
+      }
     }
+    else
+    {    // WebAssembly
+      if (!blob)
+      {
+        blob = new Blob(Array.prototype.map.call(document.querySelectorAll('script[type=\'text\/js-worker\']'), function (oScript) { return oScript.textContent; }),{type: 'text/javascript'});
+      }
+    }    
     worker = new Worker(window.URL.createObjectURL(blob));
     worker.onmessage = function(e)
     { // First character of e.data is '1' for intermediate text
@@ -49,7 +60,14 @@ function callWorker(param)
       }
     }
   }
-  worker.postMessage(param);
+  if (asmjs)
+  {      // Asm.js
+    worker.postMessage(param);
+  }
+  else
+  {      // WebAssembly.
+    worker.postMessage([param, fileContents]);
+  }
 }
 
 function dowork(n)
@@ -123,12 +141,12 @@ window.onload = function ()
     var input = get('poly');
     var loc = input.value.length - input.selectionStart;
     input.value = input.value.replace(".", "x^");
-	setTimeout(function()
-	{
+    setTimeout(function()
+    {
       loc = input.value.length - loc;
       input.selectionStart = loc;
       input.selectionEnd = loc;
-	}, 30);		
+    }, 30);   
   }
   get("formlink").onclick = function ()
   {
@@ -198,7 +216,7 @@ window.onload = function ()
   }
 }
 var req = new XMLHttpRequest();
-req.open('GET', "polfactW0000.js", true);
+req.open('GET', (asmjs? "polfactW0000.js": "polfact0000.wasm"), true);
 req.responseType = "arraybuffer";
 req.onreadystatechange = function (aEvt)
 {
