@@ -142,7 +142,7 @@ static void showAlso(void)
 {
   if (also && !teach)
   {
-    showText("and also:<br>");
+    showText(lang? "y también:<br>": "and also:<br>");
   }
   else
   {
@@ -758,7 +758,7 @@ void SolveQuadModEquation(void)
         {
           memset(&ValAOdd.limbs[ValAOdd.nbrLimbs], 0, (nbrLimbs - ValAOdd.nbrLimbs) * sizeof(limb));
         }
-        if (ValAOdd.sign == SIGN_POSITIVE)
+        if (ValAOdd.sign == ValB.sign)
         {
           ChSignBigNbr((int *)ValAOdd.limbs, nbrLimbs);
         }
@@ -2653,7 +2653,10 @@ static void showOtherSolution(char *ordinal)
   showText(", <var>k</var>) = (");
 }
 
-static void PerformTransformation(BigInteger *value)
+// Output:
+// 0 = There are no solutions because gcd(P, Q, R) > 1
+// 1 = gcd(P, Q, R) = 1.
+static int PerformTransformation(BigInteger *value)
 {
   // Compute P <- (at^2+bt+c)/K
   BigIntMultiply(&ValA, value, &ValQ);
@@ -2705,11 +2708,28 @@ static void PerformTransformation(BigInteger *value)
     shownbr(&ValR);
     showText("</p>");
   }
+  // Compute gcd(P, Q, R)
+  BigIntGcd(&ValP, &ValQ, &ValH);   // Use ValH and ValI as temporary variables.
+  BigIntGcd(&ValH, &ValR, &ValI);
+  if (ValI.nbrLimbs == 1 && ValI.limbs[0].x == 1)
+  {         // Gcd equals 1.
+    return 1;
+  }
+  if (teach)
+  {
+    showText(lang ? "<p>No hay soluciones porque mcd(<var>P</var>, <var>Q</var>, <var>R</var>) es mayor que 1.</p>" :
+      "<p>There are no solutions because gcd(<var>P</var>, <var>Q</var>, <var>R</var>) is greater than 1.</p>");
+    equationNbr += 2;
+  }
+  return 0;
 }
 
 static void callbackQuadModElliptic(BigInteger *value)
 {
-  PerformTransformation(value);
+  if (PerformTransformation(value) == 0)
+  {      // No solutions because gcd(P, Q, R) > 1.
+    return;
+  }
   if (ValP.sign == SIGN_POSITIVE && ValP.nbrLimbs == 1)
   {
     int Plow = ValP.limbs[0].x;
@@ -2916,7 +2936,7 @@ static void callbackQuadModElliptic(BigInteger *value)
   CopyBigInt(&ValU, &ValQ);
   BigIntChSign(&ValU);
   BigIntAdd(&ValP, &ValP, &ValV);
-  for (;;)
+  while (!BigIntIsZero(&ValV))
   {
     getNextConvergent();
     BigIntSubt(&ValL, &V1, &bigTmp);    // Check whether the denominator of convergent exceeds bound.
@@ -3823,7 +3843,10 @@ static void callbackQuadModHyperbolic(BigInteger *value)
 {
   char Beven = ((ValB.limbs[0].x & 1) == 0);
   positiveDenominator = 1;
-  PerformTransformation(value);
+  if (PerformTransformation(value) == 0)
+  {      // No solutions because gcd(P, Q, R) > 1.
+    return;
+  }
   // Compute P = floor((2*a*theta + b)/2)
   BigIntAdd(&ValA, &ValA, &ValP);
   BigIntMultiply(&ValP, value, &ValP);

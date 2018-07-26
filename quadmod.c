@@ -317,7 +317,7 @@ void SolveEquation(void)
         {
           memset(&ValAOdd.limbs[ValAOdd.nbrLimbs], 0, (nbrLimbs - ValAOdd.nbrLimbs) * sizeof(limb));
         }
-        if (ValAOdd.sign == SIGN_POSITIVE)
+        if (ValAOdd.sign == ValB.sign)
         {
           ChSignBigNbr((int *)ValAOdd.limbs, nbrLimbs);
         }
@@ -849,16 +849,14 @@ void SolveEquation(void)
 
 void textErrorQuadMod(char *pOutput, enum eExprErr rc)
 {
-  char text[150];
-  (void)pOutput;
   switch (rc)
   {
   case EXPR_MODULUS_MUST_BE_NONNEGATIVE:
-    strcpy(text, lang ? "No debe ser negativo" :
+    strcpy(pOutput, lang ? "No debe ser negativo" :
       "Must not be negative");
     break;
   default:
-    textError(text, rc);
+    textError(pOutput, rc);
   }
 }
 
