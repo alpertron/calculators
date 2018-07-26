@@ -21,6 +21,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "bignbr.h"
 #include "highlevel.h"
 #include "polynomial.h"
@@ -547,17 +548,28 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
     {    // Optimization for the case when there is only one limb.
       int modulus = TestNbr[0].x;
       int sum = 0;
+#ifdef _USING64BITS_
+      uint64_t dSum = 0;
+#else
       double dSum = 0;
+#endif
       ptrFactor1++;
       ptrFactor2++;
       if (modulus < 32768)
       {
         for (; j >= 3; j-=4)
         {
+#ifdef _USING64BITS_
+          dSum += (uint64_t)(*ptrFactor1 * *ptrFactor2) +
+            (uint64_t)(*(ptrFactor1 + 2) * *(ptrFactor2 - 2)) +
+            (uint64_t)(*(ptrFactor1 + 4) * *(ptrFactor2 - 4)) +
+            (uint64_t)(*(ptrFactor1 + 6) * *(ptrFactor2 - 6));
+#else
           dSum += (double)(*ptrFactor1 * *ptrFactor2) +
-                  (double)(*(ptrFactor1 + 2) * *(ptrFactor2 - 2)) +
-                  (double)(*(ptrFactor1 + 4) * *(ptrFactor2 - 4)) +
-                  (double)(*(ptrFactor1 + 6) * *(ptrFactor2 - 6));
+            (double)(*(ptrFactor1 + 2) * *(ptrFactor2 - 2)) +
+            (double)(*(ptrFactor1 + 4) * *(ptrFactor2 - 4)) +
+            (double)(*(ptrFactor1 + 6) * *(ptrFactor2 - 6));
+#endif
           ptrFactor1 += 8;
           ptrFactor2 -= 8;
         }
@@ -568,18 +580,24 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
           ptrFactor2 -= 2;
           j--;
         }
+#ifdef _USING64BITS_
+        sum = (int)(dSum % modulus);
+#else
         sum = (int)(dSum - floor(dSum / modulus) * modulus);
+#endif
       }
       else
       {
         for (; j >= 0; j--)
         {
-          modmult((limb*)ptrFactor1, (limb*)ptrFactor2, &result);
-          sum = sum + result.x - modulus;
-          if (sum < 0)
-          {
-            sum += modulus;
-          }
+#ifdef _USING64BITS_
+          sum += (int)((int64_t)*ptrFactor1 * *ptrFactor2 % modulus) - modulus;
+#else
+          smallmodmult(*ptrFactor1, *ptrFactor2, &result, modulus);
+          sum += result.x - modulus;
+#endif
+          // If sum < 0 do sum <- sum + modulus else do nothing.
+          sum += modulus & (sum >> BITS_PER_GROUP);
           ptrFactor1 += 2;
           ptrFactor2 -= 2;
         }
@@ -600,262 +618,309 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
     }
   }
   ptrFactor1 = &polyMultTemp[idxFactor1*nbrLimbs];
-  for (i = 0; i < 2 * coeffLen - 1; i++)
+  if (nbrLimbs == 2)
+  {    // Optimization for the case when there is only one limb.
+    for (i = 0; i < 2 * coeffLen - 1; i++)
+    {
+      *ptrFactor1++ = 1;
+      *ptrFactor1++ = coeff[i].limbs[0].x;
+    }
+  }
+  else
   {
-    CompressIntLimbs(ptrFactor1, coeff[i].limbs, nbrLimbs);
-    ptrFactor1 += nbrLimbs;
+    for (i = 0; i < 2 * coeffLen - 1; i++)
+    {
+      CompressIntLimbs(ptrFactor1, coeff[i].limbs, nbrLimbs);
+      ptrFactor1 += nbrLimbs;
+    }
   }
   *ptrFactor1 = 1;
   *(ptrFactor1+1) = 0;
   return;
 }
 
-// Recursive Karatsuba function.
-static void KaratsubaPoly(int idxFactor1, int nbrLen, int diffIndex, int nbrLimbs)
+static struct stKaratsubaStack
 {
-  int idxFactor2 = idxFactor1 + nbrLen;
-  int i;
+  int idxFactor1;
+  int stage;
+} astKaratsubaStack[10];
+
+// Recursive Karatsuba function.
+static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
+{
+  int i, idxFactor2;
   int *ptrResult, *ptrHigh, *ptr1, *ptr2;
-  int middle, sum, modulus;
+  int sum, modulus;
   int halfLength;
+  int diffIndex = 2 * nbrLen;
+  static struct stKaratsubaStack *pstKaratsubaStack = astKaratsubaStack;
   int coeff[MAX_LEN];
-  if (nbrLen <= KARATSUBA_POLY_CUTOFF)
+  int stage = 0;
+  // Save current parameters in stack.
+  pstKaratsubaStack->idxFactor1 = idxFactor1;
+  pstKaratsubaStack->stage = -1;
+  pstKaratsubaStack++;
+  do
   {
-    // Check if one of the factors is equal to zero.
-    ptrResult = &polyMultTemp[idxFactor1*nbrLimbs];
-    for (i = nbrLen; i > 0; i--)
+    switch (stage)
     {
-      if (*ptrResult != 1 || *(ptrResult+1) != 0)
-      {      // Coefficient is not zero.
+    case 0:
+      idxFactor2 = idxFactor1 + nbrLen;
+      if (nbrLen <= KARATSUBA_POLY_CUTOFF)
+      {
+        // Check if one of the factors is equal to zero.
+        ptrResult = &polyMultTemp[idxFactor1*nbrLimbs];
+        for (i = nbrLen; i > 0; i--)
+        {
+          if (*ptrResult != 1 || *(ptrResult + 1) != 0)
+          {      // Coefficient is not zero.
+            break;
+          }
+          ptrResult += nbrLimbs;
+        }
+        if (i > 0)
+        {     // First factor is not zero. Check second.
+          ptrResult = &polyMultTemp[idxFactor2*nbrLimbs];
+          for (i = nbrLen; i > 0; i--)
+          {
+            if (*ptrResult != 1 || *(ptrResult + 1) != 0)
+            {
+              break;
+            }
+            ptrResult += nbrLimbs;
+          }
+        }
+        if (i == 0)
+        {    // One of the factors is equal to zero.
+          for (i = nbrLen - 1; i >= 0; i--)
+          {
+            polyMultTemp[idxFactor1*nbrLimbs] = 1;
+            polyMultTemp[idxFactor2*nbrLimbs] = 1;
+            polyMultTemp[idxFactor1*nbrLimbs + 1] = 0;
+            polyMultTemp[idxFactor2*nbrLimbs + 1] = 0;
+            idxFactor1++;
+            idxFactor2++;
+          }
+        }
+        else
+        {
+          // Below cutoff: perform standard classical polynomial multiplcation.
+          ClassicalPolyMult(idxFactor1, idxFactor2, nbrLen, nbrLimbs);
+        }
+        pstKaratsubaStack--;
+        idxFactor1 = pstKaratsubaStack->idxFactor1;
+        nbrLen *= 2;
+        diffIndex -= nbrLen;
+        stage = pstKaratsubaStack->stage;
         break;
       }
-      ptrResult += nbrLimbs;
-    }
-    if (i > 0)
-    {     // First factor is not zero. Check second.
-      ptrResult = &polyMultTemp[idxFactor2*nbrLimbs];
-      for (i = nbrLen; i > 0; i--)
+      // Length > KARATSUBA_CUTOFF: Use Karatsuba multiplication.
+      // It uses three half-length multiplications instead of four.
+      //  x*y = (xH*b + xL)*(yH*b + yL)
+      //  x*y = (b + 1)*(xH*yH*b + xL*yL) + (xH - xL)*(yL - yH)*b
+      // The length of b is stored in variable halfLength.
+
+      // At this moment the order is: xL, xH, yL, yH.
+      // Exchange high part of first factor with low part of 2nd factor.
+      halfLength = nbrLen >> 1;
+      for (i = idxFactor1 + halfLength; i < idxFactor2; i++)
       {
-        if (*ptrResult != 1 || *(ptrResult + 1) != 0)
+        memcpy(coeff, &polyMultTemp[i*nbrLimbs], nbrLimbs * sizeof(int));
+        memcpy(&polyMultTemp[i*nbrLimbs], &polyMultTemp[(i + halfLength)*nbrLimbs], nbrLimbs * sizeof(int));
+        memcpy(&polyMultTemp[(i + halfLength)*nbrLimbs], coeff, nbrLimbs * sizeof(int));
+      }
+      // At this moment the order is: xL, yL, xH, yH.
+      // Compute (xH-xL) and (yL-yH) and store them starting from index diffIndex.
+      ptr1 = &polyMultTemp[idxFactor1*nbrLimbs];
+      ptr2 = &polyMultTemp[idxFactor2*nbrLimbs];
+      ptrResult = &polyMultTemp[diffIndex*nbrLimbs];
+      if (nbrLimbs == 2)
+      {    // Small modulus.
+        modulus = TestNbr[0].x;
+        for (i = 0; i < halfLength; i++)
         {
-          break;
+          sum = *(ptr2 + 1) - *(ptr1 + 1);
+          // If sum < 0 do sum <- sum + modulus else do nothing.
+          sum += modulus & (sum >> BITS_PER_GROUP);
+          *(ptrResult + 1) = sum;
+          ptr1 += 2;
+          ptr2 += 2;
+          ptrResult += 2;
         }
-        ptrResult += nbrLimbs;
+        for (i = 0; i < halfLength; i++)
+        {
+          sum = *(ptr1 + 1) - *(ptr2 + 1);
+          // If sum < 0 do sum <- sum + modulus else do nothing.
+          sum += modulus & (sum >> BITS_PER_GROUP);
+          *(ptrResult + 1) = sum;
+          ptr1 += 2;
+          ptr2 += 2;
+          ptrResult += 2;
+        }
       }
-    }
-    if (i == 0)
-    {    // One of the factors is equal to zero.
-      for (i = nbrLen - 1; i >= 0; i--)
-      {
-        polyMultTemp[idxFactor1*nbrLimbs] = 1;
-        polyMultTemp[idxFactor2*nbrLimbs] = 1;
-        polyMultTemp[idxFactor1*nbrLimbs+1] = 0;
-        polyMultTemp[idxFactor2*nbrLimbs+1] = 0;
-        idxFactor1++;
-        idxFactor2++;
+      else
+      {    // General case.
+        for (i = 0; i < halfLength; i++)
+        {
+          UncompressIntLimbs(ptr1, operand3.limbs, nbrLimbs);
+          UncompressIntLimbs(ptr2, operand2.limbs, nbrLimbs);
+          SubtBigNbrMod(operand2.limbs, operand3.limbs, operand3.limbs);
+          CompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
+          ptr1 += nbrLimbs;
+          ptr2 += nbrLimbs;
+          ptrResult += nbrLimbs;
+        }
+        for (i = 0; i < halfLength; i++)
+        {
+          UncompressIntLimbs(ptr1, operand3.limbs, nbrLimbs);
+          UncompressIntLimbs(ptr2, operand2.limbs, nbrLimbs);
+          SubtBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
+          CompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
+          ptr1 += nbrLimbs;
+          ptr2 += nbrLimbs;
+          ptrResult += nbrLimbs;
+        }
       }
-      return;
-    }
-    // Below cutoff: perform standard classical polynomial multiplcation.
-    ClassicalPolyMult(idxFactor1, idxFactor2, nbrLen, nbrLimbs);
-    return;
-  }
-  // Length > KARATSUBA_CUTOFF: Use Karatsuba multiplication.
-  // It uses three half-length multiplications instead of four.
-  //  x*y = (xH*b + xL)*(yH*b + yL)
-  //  x*y = (b + 1)*(xH*yH*b + xL*yL) + (xH - xL)*(yL - yH)*b
-  // The length of b is stored in variable halfLength.
+      // Save current parameters in stack.
+      pstKaratsubaStack->idxFactor1 = idxFactor1;
+      pstKaratsubaStack->stage = 1;
+      pstKaratsubaStack++;
+      // Multiply both low parts.
+      diffIndex += nbrLen;
+      nbrLen = halfLength;
+      break;
+    case 1:
+      // Multiply both high parts.
+      idxFactor1 += nbrLen;
+      diffIndex += nbrLen;
+      nbrLen >>= 1;
+      pstKaratsubaStack->stage = 2;
+      pstKaratsubaStack++;
+      stage = 0;         // Start new Karatsuba multiplication.
+      break;
+    case 2:
+      // Multiply the differences.
+      idxFactor1 = diffIndex;
+      diffIndex += nbrLen;
+      nbrLen >>= 1;
+      pstKaratsubaStack->stage = 3;
+      pstKaratsubaStack++;
+      stage = 0;         // Start new Karatsuba multiplication.
+      break;
+    default:
+      halfLength = nbrLen >> 1;
+         // Obtain (b+1)(xH*yH*b + xL*yL) = xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
+         // The first and last terms are already in correct locations.
+         // Add (xL*yL+xH*yH)*b.
+      ptrResult = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
+      if (nbrLimbs == 2)
+      {        // Optimization for small numbers.
+        int nbrLen2 = nbrLen * 2;
+        ptrResult++;
+        for (i = halfLength; i > 0; i--)
+        {
+          // First addend is the coefficient from xH*yH*b^2 + xL*yL
+          // Second addend is the coefficient from xL*yL
+          int coeff = *(ptrResult);
+          int coeff1 = *(ptrResult + nbrLen);
+          sum = coeff + *(ptrResult - nbrLen) - modulus;
+          // If sum < 0 do sum <- sum + modulus else do nothing.
+          sum += modulus & (sum >> BITS_PER_GROUP);
+          // Addend is the coefficient from xH*yH
+          sum += coeff1 - modulus;
+          // If sum < 0 do sum <- sum + modulus else do nothing.
+          sum += modulus & (sum >> BITS_PER_GROUP);
+          // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
+          *(ptrResult) = sum;
 
-  // At this moment the order is: xL, xH, yL, yH.
-  // Exchange high part of first factor with low part of 2nd factor.
-  halfLength = nbrLen >> 1;
-  for (i = idxFactor1 + halfLength; i<idxFactor2; i++)
-  {
-    memcpy(coeff, &polyMultTemp[i*nbrLimbs], nbrLimbs*sizeof(int));
-    memcpy(&polyMultTemp[i*nbrLimbs], &polyMultTemp[(i+halfLength)*nbrLimbs], nbrLimbs * sizeof(int));
-    memcpy(&polyMultTemp[(i + halfLength)*nbrLimbs], coeff, nbrLimbs * sizeof(int));
-  }
-  // At this moment the order is: xL, yL, xH, yH.
-  // Compute (xH-xL) and (yL-yH) and store them starting from index diffIndex.
-  ptr1 = &polyMultTemp[idxFactor1*nbrLimbs];
-  ptr2 = &polyMultTemp[idxFactor2*nbrLimbs];
-  ptrResult = &polyMultTemp[diffIndex*nbrLimbs];
-  if (nbrLimbs == 2)
-  {    // Small modulus.
-    modulus = TestNbr[0].x;
-    for (i = 0; i < halfLength; i++)
-    {
-      sum = *(ptr2 + 1) - *(ptr1 + 1);
-      if (sum < 0)
-      {
-        sum += modulus;
+          // First addend is the coefficient from xL*yL
+          // Second addend is the coefficient from xH*yH
+          sum = coeff + *(ptrResult + nbrLen2) - modulus;
+          // If sum < 0 do sum <- sum + modulus else do nothing.
+          sum += modulus & (sum >> BITS_PER_GROUP);
+          // Addend is the coefficient from xH*yH*b^2 + xL*yL
+          sum += coeff1 - modulus;
+          // If sum < 0 do sum <- sum + modulus else do nothing.
+          sum += modulus & (sum >> BITS_PER_GROUP);
+          // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
+          *(ptrResult + nbrLen) = sum;
+          // Point to next address.
+          ptrResult += 2;
+        }
       }
-      *(ptrResult + 1) = sum;
-      ptr1 += 2;
-      ptr2 += 2;
-      ptrResult += 2;
-    }
-    for (i = 0; i < halfLength; i++)
-    {
-      sum = *(ptr1 + 1) - *(ptr2 + 1);
-      if (sum < 0)
-      {
-        sum += modulus;
+      else
+      {        // General case.
+        for (i = halfLength; i > 0; i--)
+        {
+          // Obtain coefficient from xH*yH*b^2 + xL*yL
+          UncompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
+          // Obtain coefficient from xL*yL
+          UncompressIntLimbs(ptrResult - halfLength * nbrLimbs, operand2.limbs, nbrLimbs);
+          // Obtain coefficient from xH*yH
+          UncompressIntLimbs(ptrResult + halfLength * nbrLimbs, operand1.limbs, nbrLimbs);
+          // Add all three coefficients.
+          AddBigNbrMod(operand3.limbs, operand2.limbs, operand2.limbs);
+          AddBigNbrMod(operand2.limbs, operand1.limbs, operand2.limbs);
+          // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
+          CompressIntLimbs(ptrResult, operand2.limbs, nbrLimbs);
+          // Obtain coefficient from xH*yH
+          UncompressIntLimbs(ptrResult + nbrLen * nbrLimbs, operand2.limbs, nbrLimbs);
+          // Add coefficient from xL*yL
+          AddBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
+          // Add coefficient from xH*yH*b^2 + xL*yL
+          AddBigNbrMod(operand3.limbs, operand1.limbs, operand3.limbs);
+          // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
+          CompressIntLimbs(ptrResult + halfLength * nbrLimbs, operand3.limbs, nbrLimbs);
+          // Point to next address.
+          ptrResult += nbrLimbs;
+        }
       }
-      *(ptrResult + 1) = sum;
-      ptr1 += 2;
-      ptr2 += 2;
-      ptrResult += 2;
-    }
-  }
-  else
-  {    // General case.
-    for (i = 0; i < halfLength; i++)
-    {
-      UncompressIntLimbs(ptr1, operand3.limbs, nbrLimbs);
-      UncompressIntLimbs(ptr2, operand2.limbs, nbrLimbs);
-      SubtBigNbrMod(operand2.limbs, operand3.limbs, operand3.limbs);
-      CompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
-      ptr1 += nbrLimbs;
-      ptr2 += nbrLimbs;
-      ptrResult += nbrLimbs;
-    }
-    for (i = 0; i < halfLength; i++)
-    {
-      UncompressIntLimbs(ptr1, operand3.limbs, nbrLimbs);
-      UncompressIntLimbs(ptr2, operand2.limbs, nbrLimbs);
-      SubtBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
-      CompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
-      ptr1 += nbrLimbs;
-      ptr2 += nbrLimbs;
-      ptrResult += nbrLimbs;
-    }
-  }
-  middle = diffIndex;
-  diffIndex += nbrLen;
-  KaratsubaPoly(idxFactor1, halfLength, diffIndex, nbrLimbs); // Multiply both low parts.
-  KaratsubaPoly(idxFactor2, halfLength, diffIndex, nbrLimbs); // Multiply both high parts.
-  KaratsubaPoly(middle, halfLength, diffIndex, nbrLimbs);     // Multiply the differences.
-     // Obtain (b+1)(xH*yH*b + xL*yL) = xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-     // The first and last terms are already in correct locations.
-     // Add (xL*yL+xH*yH)*b.
-  ptrResult = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
-  if (nbrLimbs == 2)
-  {        // Optimization for small numbers.
-    int halfLength2 = halfLength * 2;
-    int nbrLen2 = nbrLen * 2;
-    ptrResult++;
-    for (i = halfLength; i > 0; i--)
-    {
-      // First addend is the coefficient from xH*yH*b^2 + xL*yL
-      // Second addend is the coefficient from xL*yL
-      int coeff = *(ptrResult);
-      int coeff1 = *(ptrResult + halfLength2);
-      sum = coeff + *(ptrResult - halfLength2) - modulus;
-      if (sum < 0)
-      {
-        sum += modulus;
+      // Compute final product by adding (xH - xL)*(yL - yH)*b.
+      ptrHigh = &polyMultTemp[diffIndex*nbrLimbs];
+      ptrResult = &polyMultTemp[(idxFactor1 + halfLength)*nbrLimbs];
+      if (nbrLimbs == 2)
+      {        // Optimization for small numbers.
+        modulus = TestNbr[0].x;
+        for (i = nbrLen; i >= 2; i -= 2)
+        {
+          sum = *(ptrResult + 1) + *(ptrHigh + 1) - modulus;
+          // If sum < 0 do sum <- sum + modulus else do nothing.
+          sum += modulus & (sum >> BITS_PER_GROUP);
+          *(ptrResult + 1) = sum;
+          sum = *(ptrResult + 3) + *(ptrHigh + 3) - modulus;
+          // If sum < 0 do sum <- sum + modulus else do nothing.
+          sum += modulus & (sum >> BITS_PER_GROUP);
+          *(ptrResult + 3) = sum;
+          ptrHigh += 4;
+          ptrResult += 4;
+        }
+        if (i > 0)
+        {
+          sum = *(ptrResult + 1) + *(ptrHigh + 1) - modulus;
+          // If sum < 0 do sum <- sum + modulus else do nothing.
+          sum += modulus & (sum >> BITS_PER_GROUP);
+          *(ptrResult + 1) = sum;
+        }
       }
-      // Addend is the coefficient from xH*yH
-      sum += coeff1 - modulus;
-      if (sum < 0)
-      {
-        sum += modulus;
+      else
+      {        // General case.
+        for (i = nbrLen; i > 0; i--)
+        {
+          UncompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
+          UncompressIntLimbs(ptrHigh, operand2.limbs, nbrLimbs);
+          AddBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
+          CompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
+          ptrHigh += nbrLimbs;
+          ptrResult += nbrLimbs;
+        }
       }
-      // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-      *(ptrResult) = sum;
-
-      // First addend is the coefficient from xL*yL
-      // Second addend is the coefficient from xH*yH
-      sum = coeff + *(ptrResult + nbrLen2) - modulus;
-      if (sum < 0)
-      {
-        sum += modulus;
-      }
-      // Addend is the coefficient from xH*yH*b^2 + xL*yL
-      sum += coeff1 - modulus;
-      if (sum < 0)
-      {
-        sum += modulus;
-      }
-      // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-      *(ptrResult + halfLength2) = sum;
-      // Point to next address.
-      ptrResult += 2;
-    }
-  }
-  else
-  {        // General case.
-    for (i = halfLength; i > 0; i--)
-    {
-      // Obtain coefficient from xH*yH*b^2 + xL*yL
-      UncompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
-      // Obtain coefficient from xL*yL
-      UncompressIntLimbs(ptrResult - halfLength*nbrLimbs, operand2.limbs, nbrLimbs);
-      // Obtain coefficient from xH*yH
-      UncompressIntLimbs(ptrResult + halfLength*nbrLimbs, operand1.limbs, nbrLimbs);
-      // Add all three coefficients.
-      AddBigNbrMod(operand3.limbs, operand2.limbs, operand2.limbs);
-      AddBigNbrMod(operand2.limbs, operand1.limbs, operand2.limbs);
-      // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-      CompressIntLimbs(ptrResult, operand2.limbs, nbrLimbs);
-      // Obtain coefficient from xH*yH
-      UncompressIntLimbs(ptrResult + nbrLen*nbrLimbs, operand2.limbs, nbrLimbs);
-      // Add coefficient from xL*yL
-      AddBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
-      // Add coefficient from xH*yH*b^2 + xL*yL
-      AddBigNbrMod(operand3.limbs, operand1.limbs, operand3.limbs);
-      // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-      CompressIntLimbs(ptrResult + halfLength*nbrLimbs, operand3.limbs, nbrLimbs);
-      // Point to next address.
-      ptrResult += nbrLimbs;
-    }
-  }
-  // Compute final product by adding (xH - xL)*(yL - yH)*b.
-  ptrHigh = &polyMultTemp[middle*nbrLimbs];
-  ptrResult = &polyMultTemp[(idxFactor1 + halfLength)*nbrLimbs];
-  if (nbrLimbs == 2)
-  {        // Optimiztion for small numbers.
-    modulus = TestNbr[0].x;
-    for (i = nbrLen; i >= 2; i-=2)
-    {
-      sum = *(ptrResult + 1) + *(ptrHigh + 1) - modulus;
-      if (sum < 0)
-      {
-        sum += modulus;
-      }
-      *(ptrResult + 1) = sum;
-      sum = *(ptrResult + 3) + *(ptrHigh + 3) - modulus;
-      if (sum < 0)
-      {
-        sum += modulus;
-      }
-      *(ptrResult + 3) = sum;
-      ptrHigh += 4;
-      ptrResult += 4;
-    }
-    if (i > 0)
-    {
-      sum = *(ptrResult + 1) + *(ptrHigh + 1) - modulus;
-      if (sum < 0)
-      {
-        sum += modulus;
-      }
-      *(ptrResult + 1) = sum;
-    }
-  }
-  else
-  {        // General case.
-    for (i = nbrLen; i > 0; i--)
-    {
-      UncompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
-      UncompressIntLimbs(ptrHigh, operand2.limbs, nbrLimbs);
-      AddBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
-      CompressIntLimbs(ptrResult, operand3.limbs, nbrLimbs);
-      ptrHigh += nbrLimbs;
-      ptrResult += nbrLimbs;
-    }
-  }
+      nbrLen *= 2;
+      diffIndex -= nbrLen;
+      pstKaratsubaStack--;
+      idxFactor1 = pstKaratsubaStack->idxFactor1;
+      stage = pstKaratsubaStack->stage;
+    }     // End switch
+  } while (stage >= 0);
 }
 
 // Multiply factor1 by factor2. The result will be stored in polyMultTemp.
@@ -889,7 +954,7 @@ static void MultPolynomialInternal(int degree1, int degree2,
   }
   memcpy(polyMultTemp, factor1, (degree1+1)*nbrLimbs * sizeof(limb));
   memcpy(&polyMultTemp[karatDegree*nbrLimbs], factor2, (degree2+1)*nbrLimbs * sizeof(limb));
-  KaratsubaPoly(0, karatDegree, 2 * karatDegree, nbrLimbs);
+  KaratsubaPoly(0, karatDegree, nbrLimbs);
 }
 
 static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
@@ -1440,13 +1505,30 @@ void ConvertToMonic(int *poly, int polyDegree)
 {
   int nbrLimbs = NumberLength + 1;
   int currentDegree;
-  UncompressBigInteger(poly+polyDegree*nbrLimbs, &operand1);
-  ModInvBigNbr(operand1.limbs, operand1.limbs, TestNbr, NumberLength);
-  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
-  {
-    UncompressBigInteger(poly+currentDegree*nbrLimbs, &operand2);
-    modmult(operand1.limbs, operand2.limbs, operand2.limbs);
-    CompressBigInteger(poly+currentDegree*nbrLimbs, &operand2);
+  if (NumberLength == 1)
+  {         // Modulus size is one limb.
+    int inverse = modInv(*(poly + polyDegree * 2 + 1), TestNbr[0].x);
+    int *ptrPoly = poly + 1;
+    for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+    {
+#ifdef _USING64BITS_
+      *ptrPoly = (int)((uint64_t)*ptrPoly * inverse % TestNbr[0].x);
+#else
+      smallmodmult(*ptrPoly, inverse, (limb *)ptrPoly, TestNbr[0].x);
+#endif
+      ptrPoly += 2;
+    }
+  }
+  else
+  {         // General case.
+    UncompressBigInteger(poly + polyDegree * nbrLimbs, &operand1);
+    ModInvBigNbr(operand1.limbs, operand1.limbs, TestNbr, NumberLength);
+    for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+    {
+      UncompressBigInteger(poly + currentDegree * nbrLimbs, &operand2);
+      modmult(operand1.limbs, operand2.limbs, operand2.limbs);
+      CompressBigInteger(poly + currentDegree * nbrLimbs, &operand2);
+    }
   }
 }
 
@@ -1488,16 +1570,40 @@ void PolynomialGcd(int *arg1, int degree1, int *arg2, int degree2, int *gcd, int
     ConvertToMonic(ptrArgMin, degreeMin);
     for (currentDegree = degreeMax; currentDegree >= degreeMin; currentDegree--)
     {          // Get remainder of long division.
-      UncompressBigInteger(ptrArgMax + currentDegree*nbrLimbs, &operand1);
       ptrTemp = ptrArgMax + (currentDegree - degreeMin)*nbrLimbs;
-      for (index = 0; index <= degreeMin; index++)
-      {
-        UncompressBigInteger(ptrArgMin + index*nbrLimbs, &operand2);
-        modmult(operand1.limbs, operand2.limbs, operand2.limbs);
-        UncompressBigInteger(ptrTemp, &operand3);
-        SubtBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
-        CompressBigInteger(ptrTemp, &operand3);
-        ptrTemp += nbrLimbs;
+      if (nbrLimbs == 2)
+      {        // Modulus size is one limb.
+        int modulus = TestNbr[0].x;
+        int value = *(ptrArgMax + currentDegree * 2 + 1);
+        int *ptrPoly = ptrArgMin + 1;
+        ptrTemp++;
+        for (index = 0; index <= degreeMin; index++)
+        {
+          int temp;
+#ifdef _USING64BITS_
+          temp = *ptrTemp - (int)((uint64_t)*ptrPoly * value % modulus);
+#else
+          smallmodmult(*ptrPoly, value, (limb *)&temp, modulus);
+          temp = *ptrTemp - temp;
+#endif
+          temp += modulus & (temp >> BITS_PER_GROUP);
+          *ptrTemp = temp;
+          ptrTemp += 2;
+          ptrPoly += 2;
+        }
+      }
+      else
+      {        // General case.
+        UncompressBigInteger(ptrArgMax + currentDegree * nbrLimbs, &operand1);
+        for (index = 0; index <= degreeMin; index++)
+        {
+          UncompressBigInteger(ptrArgMin + index * nbrLimbs, &operand2);
+          modmult(operand1.limbs, operand2.limbs, operand2.limbs);
+          UncompressBigInteger(ptrTemp, &operand3);
+          SubtBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
+          CompressBigInteger(ptrTemp, &operand3);
+          ptrTemp += nbrLimbs;
+        }
       }
     }
     degreeMax = degreeMin - 1;
