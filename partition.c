@@ -28,6 +28,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 static int partArray[100000 + 1000];
 static limb prodModulus[MAX_LEN];
 static int prodModulusLimbs;
+static BigInteger prod, factor;
 
 static void smallMultiply(int factor1, int factor2, int *prod)
 {
@@ -224,4 +225,110 @@ void partition(int val, BigInteger *pResult)
   }
   pResult->nbrLimbs = prodModulusLimbs;
   return;
+}
+
+static int numberofBitsSetToOne(int value)
+{
+  int bitsSet = 0;  
+  while (value > 0)
+  {
+    if (value & 1)
+    {
+      bitsSet++;
+    }
+    value >>= 1;
+  }
+  return bitsSet;
+}
+
+static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulated, BigInteger *result)
+{
+  int index, offset;
+  int nbrGroupsAccumulated = *pNbrGroupsAccumulated;
+  *pNbrGroupsAccumulated = nbrGroupsAccumulated + 1;
+  prod.limbs[1].x = (int)(factorAccum / (double)LIMB_RANGE);
+  prod.limbs[0].x = (int)(factorAccum - (double)LIMB_RANGE * (double)prod.limbs[1].x);
+  prod.nbrLimbs = (prod.limbs[1].x == 0 ? 1 : 2);
+  prod.sign = SIGN_POSITIVE;
+  if ((nbrGroupsAccumulated & 1) == 0 || result != NULL)
+  {     // Even means that k multiplications have to be done, where k is the number of 
+        // bits set to zero at the right.
+    index = numberofBitsSetToOne(nbrGroupsAccumulated - 1);
+    while ((nbrGroupsAccumulated & 1) == 0)
+    {
+      index--;
+      UncompressBigInteger(&partArray[partArray[index]], &factor);
+      BigIntMultiply(&prod, &factor, &prod);
+      nbrGroupsAccumulated >>= 1;
+    }
+    offset = partArray[index];
+    if (result == NULL)
+    {
+      NumberLength = prod.nbrLimbs;
+      CompressBigInteger(&partArray[offset], &prod);
+    }
+    else
+    {
+      CopyBigInt(result, &prod);
+    }
+  }
+  else
+  {     // Odd means that the Big Integer has to be stored into the buffer.
+    index = numberofBitsSetToOne(nbrGroupsAccumulated) - 1;
+    offset = partArray[index];
+    NumberLength = prod.nbrLimbs;
+    CompressBigInteger(&partArray[offset], &prod);
+  }
+  partArray[index + 1] = offset + partArray[offset] + 1;
+}
+
+// Using partArray as a buffer, accumulate products up to two limbs, then multiply the groups recursively.
+void factorial(BigInteger *result, int argument)
+{
+  int ctr;
+  int nbrGroupsAccumulated = 1;
+  double factorAccum = 1;
+  double maxFactorAccum = (double)(1 << 30) * (double)(1 << 23);
+  partArray[0] = 20;     // Index of first big integer.
+  for (ctr = 1; ctr <= argument; ctr++)
+  {
+    if (factorAccum * ctr > maxFactorAccum)
+    {
+      ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, NULL);
+      factorAccum = 1;
+    }
+    factorAccum *= ctr;
+  }
+  nbrGroupsAccumulated = 1 << numberofBitsSetToOne(nbrGroupsAccumulated - 1);  
+  ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, result);
+}
+
+void primorial(BigInteger *result, int argument)
+{
+  int ctr, j;
+  int nbrGroupsAccumulated = 1;
+  double factorAccum = 1;
+  double maxFactorAccum = (double)(1 << 30) * (double)(1 << 23);
+  partArray[0] = 20;     // Index of first big integer.
+  for (ctr = 2; ctr < argument; ctr++)
+  {
+    for (j = 2; j*j <= ctr; j++)
+    {
+      if (ctr / j * j == ctr)
+      {   // Number is not prime.
+        break;
+      }
+    }
+    if (j*j > ctr)
+    {     // Number is prime, perform multiplication.
+      if (factorAccum * ctr > maxFactorAccum)
+      {
+        ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, NULL);
+        factorAccum = 1;
+      }
+      factorAccum *= ctr;
+    }
+  }
+  nbrGroupsAccumulated = 1 << numberofBitsSetToOne(nbrGroupsAccumulated - 1);
+  ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, result);
 }

@@ -24,7 +24,7 @@ java -jar %compilerName% -D app=5 --compilation_level ADVANCED_OPTIMIZATIONS --j
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 FRACCONT.HTM fsquares.js
 
-cmd /c emcc -Os -DFSQUARES_APP=1 expression.c partition.c errors.c bigint.c division.c fsquares.c fcubes.c baseconv.c karatsuba.c modmult.c sqroot.c contfrac.c bignbr.c showtime.c inputstr.c batch.c fft.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432 -s NO_FILESYSTEM=1 --closure 1 --memory-init-file 0 -o fsquaresW%1.js
+cmd /c emcc -Os -DFSQUARES_APP=1 expression.c partition.c errors.c bigint.c division.c fsquares.c fcubes.c baseconv.c karatsuba.c modmult.c sqroot.c contfrac.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432 -s NO_FILESYSTEM=1 --closure 1 --memory-init-file 0 -o fsquaresW%1.js
 if errorlevel 1 goto end
 java -jar %compilerName% --compilation_level ADVANCED_OPTIMIZATIONS --js intfwebw.js --js_output_file intWW.js
 
@@ -77,7 +77,7 @@ perl replaceEmbeddedJS.pl %1 ECMC.HTM ECMS.js
 perl generateServiceWorker.pl %1 calculatorSW.js calcSW.js
 copy ecm.wasm ecm%1.wasm
 set EMCC_DEBUG=
-cmd /c emcc -Os -Wall -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c ecmfront.c bignbr.c showtime.c inputstr.c fft.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 -s NO_FILESYSTEM=1 -s DOUBLE_MODE=1 --memory-init-file 0 -o ecmW%1.js
+cmd /c emcc -Os -Wall -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c ecmfront.c gcdrings.c bignbr.c showtime.c inputstr.c fft.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 -s NO_FILESYSTEM=1 -s DOUBLE_MODE=1 --memory-init-file 0 -o ecmW%1.js
 java -jar %compilerName% --compilation_level ADVANCED_OPTIMIZATIONS --js ecmfwebw.js --js_output_file ecmWW.js
 
 java -jar %compilerName% -D lang=0 --compilation_level ADVANCED_OPTIMIZATIONS --js quadr.js --js_output_file quadE.js

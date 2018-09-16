@@ -100,6 +100,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -108,7 +109,7 @@
       </PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;FACTORIZATION_FUNCTIONS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;FACTORIZATION_APP;_USING64BITS_</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;FACTORIZATION_FUNCTIONS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USING64BITS_;FSQUARES_APP</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <CompileAs>CompileAsC</CompileAs>
       <EnablePREfast>false</EnablePREfast>
@@ -118,6 +119,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -174,6 +176,7 @@
     <ClCompile Include="fsquares.c" />
     <ClCompile Include="GaussExpr.c" />
     <ClCompile Include="gaussian.c" />
+    <ClCompile Include="gcdrings.c" />
     <ClCompile Include="inputstr.c" />
     <ClCompile Include="karatsuba.c" />
     <ClCompile Include="modmult.c" />

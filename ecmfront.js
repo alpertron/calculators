@@ -29,7 +29,8 @@ var digits;
 var config;
 var workerParam;
 var asmjs = typeof(WebAssembly) === "undefined";
-
+var indexedDBSupport = ('indexedDB' in window);
+var db;
 function oneexpr()
 {
   get("next").value = (lang? "Hecho": "Done");
@@ -117,6 +118,17 @@ function callWorker(param)
       else if (firstChar == "4")
       {
         get("status").innerHTML = e.data.substring(1);
+      }
+      else if (firstChar == "5")
+      {
+        if (e.data.substring(1, 2) == "1")
+        {
+          get("skip").style.display = "block";
+        }
+        else
+        {
+          get("skip").style.display = "none";
+        }
       }
       else
       {
@@ -452,6 +464,7 @@ function startUp()
     worker.terminate();
     worker = 0;
     styleButtons("inline", "none");  // Enable eval and factor
+    get("skip").style.display = "none";  // Hide button if it is present during factorization.
     get("result").innerHTML =
       (lang ? "<p>Cálculo detenido por el usuario.</p>" :
                  "<p>Calculation stopped by user</p>");
@@ -485,6 +498,11 @@ function startUp()
       helphelpStyle.display = resultStyle.display = "none";
     }
   };
+  get("skiptest").onclick = function ()
+  {
+    get("skip").style.display = "none";
+    restartFactorization(4);
+  }
   get("continue").onclick = function ()
   {
     get("cont").style.display = "none";

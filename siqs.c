@@ -23,6 +23,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
+#include "commonstruc.h"
 // These defines are valid for factoring up to 10^110.
 #define MAX_NBR_FACTORS         13
 #define MAX_PRIMES          150000
@@ -46,88 +47,9 @@ typedef double BIG;
 #define FLOOR floor
 #endif
 
-typedef struct
-{
-  int value;
-  int modsqrt;
-  int Bainv2[MAX_NBR_FACTORS];
-  int Bainv2_0;
-  int soln1;
-  int difsoln;
-} PrimeSieveData;
-
-typedef struct
-{
-  int value;
-  int exp1;
-  int exp2;
-  int exp3;
-  int exp4;
-  int exp5;
-  int exp6;
-} PrimeTrialDivisionData;
-
 unsigned char SIQSInfoText[300];
 int numberThreads = 1;
 extern int NumberLength;
-int matrixBLength;
-long trialDivisions;
-long smoothsFound;
-long totalPartials;
-long partialsFound;
-long ValuesSieved;
-int nbrFactorBasePrimes;
-int congruencesFound;
-long polynomialsSieved;
-int nbrPartials;
-int multiplier;
-int nbrFactorsA;
-int afact[MAX_NBR_FACTORS];
-long startTime;
-int Modulus[MAX_LIMBS_SIQS];
-int TestNbr2[MAX_LIMBS_SIQS];
-int biQuadrCoeff[MAX_LIMBS_SIQS];
-int biLinearDelta[MAX_LIMBS_SIQS][MAX_LIMBS_SIQS];
-static long largePrimeUpperBound;
-static unsigned char logar2;
-static int aindex[MAX_NBR_FACTORS];
-//  static Thread threadArray[];
-static PrimeSieveData primeSieveData[MAX_PRIMES+3];
-static PrimeTrialDivisionData primeTrialDivisionData[MAX_PRIMES];
-static int span;
-static int indexMinFactorA;
-static int threadNumber;
-static int nbrThreadFinishedPolySet;
-static unsigned int oldSeed;
-static unsigned int newSeed;
-static int NbrPolynomials;
-static int SieveLimit;
-static int matrixPartial[MAX_PRIMES * 8][MAX_LIMBS_SIQS/2 + 4];
-static int vectLeftHandSide[MAX_PRIMES+50][MAX_LIMBS_SIQS + 4];
-static int matrixPartialHashIndex[2048];
-static int matrixB[MAX_PRIMES + 50][MAX_FACTORS_RELATION];
-static int amodq[MAX_NBR_FACTORS];
-static int tmodqq[MAX_NBR_FACTORS];
-static char threshold;
-static int smallPrimeUpperLimit;
-static int firstLimit;
-static int secondLimit;
-static int thirdLimit;
-static int vectExpParity[MAX_PRIMES + 50];
-static int matrixAV[MAX_PRIMES];
-static int matrixV[MAX_PRIMES];
-static int matrixV1[MAX_PRIMES];
-static int matrixV2[MAX_PRIMES];
-static int matrixXmY[MAX_PRIMES];
-static int newColumns[MAX_PRIMES];
-// Matrix that holds temporary data
-static int matrixCalc3[MAX_PRIMES];
-static int matrixTemp2[MAX_PRIMES];
-static int nbrPrimes2;
-static BigInteger factorSiqs;
-static unsigned char onlyFactoring;
-static int matrixRows, matrixCols;
-PrimeSieveData *firstPrimeSieveData;
 static unsigned char InsertNewRelation(
   int *rowMatrixB,
   int *biT, int *biU, int *biR,
@@ -157,7 +79,7 @@ static void InitSIQSStrings(int SieveLimit)
   char *ptrText = ptrLowerText;  // Point after number that is being factored.
   strcpy(ptrText, lang ? "<p>Parámetros de SIQS: " : "<p>SIQS parameters: ");
   ptrText += strlen(ptrText);
-  int2dec(&ptrText, nbrFactorBasePrimes);   // Show number of primes in factor base.
+  int2dec(&ptrText, common.siqs.nbrFactorBasePrimes);   // Show number of primes in factor base.
   strcpy(ptrText, lang ? " primos, límite de la criba: " : " primes, sieve limit: ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, SieveLimit);  // Show sieve limit.
@@ -240,42 +162,42 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
   polyadd = (F1 & 2) != 0;
   if (polyadd)   // Adjust value of B as appropriate
   {                                // according to the Gray code.
-    AddBigNbrB(biLinearCoeff, biLinearDelta[indexFactorA], biLinearCoeff,
+    AddBigNbrB(biLinearCoeff, common.siqs.biLinearDelta[indexFactorA], biLinearCoeff,
       NumberLength);
-    AddBigNbrB(biLinearCoeff, biLinearDelta[indexFactorA], biLinearCoeff,
+    AddBigNbrB(biLinearCoeff, common.siqs.biLinearDelta[indexFactorA], biLinearCoeff,
       NumberLength);
   }
   else
   {
-    SubtractBigNbrB(biLinearCoeff, biLinearDelta[indexFactorA],
+    SubtractBigNbrB(biLinearCoeff, common.siqs.biLinearDelta[indexFactorA],
       biLinearCoeff, NumberLength);
-    SubtractBigNbrB(biLinearCoeff, biLinearDelta[indexFactorA],
+    SubtractBigNbrB(biLinearCoeff, common.siqs.biLinearDelta[indexFactorA],
       biLinearCoeff, NumberLength);
   }
   indexFactorA--;
-  X1 = SieveLimit << 1;
+  X1 = common.siqs.SieveLimit << 1;
   rowPrimeSieveData = primeSieveData + 1;
   F1 = polyadd ? -rowPrimeSieveData -> Bainv2[indexFactorA] :
     rowPrimeSieveData->Bainv2[indexFactorA];
   if (((rowPrimeSieveData->soln1 += F1) & 1) == 0)
   {
-    *(SieveArray + 0) = (short)(logar2 - threshold);
-    *(SieveArray + 1) = (short)(-threshold);
+    *(SieveArray + 0) = (short)(common.siqs.logar2 - common.siqs.threshold);
+    *(SieveArray + 1) = (short)(-common.siqs.threshold);
   }
   else
   {
-    *(SieveArray + 0) = (short)(-threshold);
-    *(SieveArray + 1) = (short)(logar2 - threshold);
+    *(SieveArray + 0) = (short)(-common.siqs.threshold);
+    *(SieveArray + 1) = (short)(common.siqs.logar2 - common.siqs.threshold);
   }
   if (((rowPrimeSieveData->soln1 + rowPrimeSieveData->Bainv2_0) & 1) == 0)
   {
-    *(SieveArray + 0) += (short)((logar2 - threshold) << 8);
-    *(SieveArray + 1) += (short)((-threshold) << 8);
+    *(SieveArray + 0) += (short)((common.siqs.logar2 - common.siqs.threshold) << 8);
+    *(SieveArray + 1) += (short)((-common.siqs.threshold) << 8);
   }
   else
   {
-    *(SieveArray + 0) += (short)((-threshold) << 8);
-    *(SieveArray + 1) += (short)((logar2 - threshold) << 8);
+    *(SieveArray + 0) += (short)((-common.siqs.threshold) << 8);
+    *(SieveArray + 1) += (short)((common.siqs.logar2 - common.siqs.threshold) << 8);
   }
   F2 = 2;
   index = 2;
@@ -322,7 +244,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
     {
       *(SieveArray + index2) += logPrimeOddPoly;
     }
-    if (currentPrime != multiplier)
+    if (currentPrime != common.siqs.multiplier)
     {
       for (F1 = index2 = (rowPrimeSieveData->soln1 + currentPrime -
         rowPrimeSieveData->difsoln) % currentPrime;
@@ -343,7 +265,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
     F2 *= currentPrime;
   }
 
-  F1 = (primeSieveData + smallPrimeUpperLimit) -> value;
+  F1 = (primeSieveData + common.siqs.smallPrimeUpperLimit) -> value;
   logPrimeEvenPoly = 1;
   logPrimeOddPoly = 0x100;
   mask = 5;
@@ -356,7 +278,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
   }
   if (polyadd)
   {
-    for (; index < smallPrimeUpperLimit; index++)
+    for (; index < common.siqs.smallPrimeUpperLimit; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -367,7 +289,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       }
       rowPrimeSieveData->soln1 = S1;
     }
-    for (index = smallPrimeUpperLimit; index < firstLimit; index++)
+    for (index = common.siqs.smallPrimeUpperLimit; index < common.siqs.firstLimit; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -428,7 +350,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         *(SieveArray + index2 + I3) += logPrimeOddPoly;
       } while ((index2 -= F4) >= 0);
     }
-    for (; index < secondLimit; index++)
+    for (; index < common.siqs.secondLimit; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -501,7 +423,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         }
       }
     }
-    for (; index < thirdLimit; index++)
+    for (; index < common.siqs.thirdLimit; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -536,7 +458,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         *(SieveArray + F2) += logPrimeOddPoly;
       } while ((F2 += currentPrime) <= X1);
     }
-    for (; index < nbrPrimes2; index++)
+    for (; index < common.siqs.nbrPrimes2; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -631,7 +553,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         *(SieveArray + F2) += logPrimeOddPoly;
       }
     }
-    for (; index < nbrFactorBasePrimes; index++)
+    for (; index < common.siqs.nbrFactorBasePrimes; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -665,7 +587,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
   }
   else
   {
-    for (; index < smallPrimeUpperLimit; index++)
+    for (; index < common.siqs.smallPrimeUpperLimit; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -674,7 +596,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       S1 += currentPrime & (S1 >> 31);
       rowPrimeSieveData->soln1 = S1;
     }
-    for (index = smallPrimeUpperLimit; index < firstLimit; index++)
+    for (index = common.siqs.smallPrimeUpperLimit; index < common.siqs.firstLimit; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -735,7 +657,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         *(SieveArray + index2 + I3) += logPrimeOddPoly;
       } while ((index2 -= F4) >= 0);
     }
-    for (; index < secondLimit; index++)
+    for (; index < common.siqs.secondLimit; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -808,7 +730,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         }
       }
     }
-    for (; index < thirdLimit; index++)
+    for (; index < common.siqs.thirdLimit; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -844,7 +766,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         *(SieveArray + F1) += logPrimeOddPoly;
       } while ((F1 += currentPrime) <= X1);
     }
-    for (; index < nbrPrimes2; index++)
+    for (; index < common.siqs.nbrPrimes2; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -945,7 +867,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         *(SieveArray + F2) += logPrimeOddPoly;
       }
     }
-    for (; index < nbrFactorBasePrimes; index++)
+    for (; index < common.siqs.nbrFactorBasePrimes; index++)
     {
       rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
@@ -1022,9 +944,9 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
   expParity = 0;
   if (NumberLengthDividend <= 1)
   {
-    for (index = 1; index < nbrFactorBasePrimes; index++)
+    for (index = 1; index < common.siqs.nbrFactorBasePrimes; index++)
     {
-      Divisor = primeTrialDivisionData[index].value;
+      Divisor = common.siqs.primeTrialDivisionData[index].value;
       while (biR0 % Divisor == 0)
       {
         biR0 /= Divisor;
@@ -1053,7 +975,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
     int indexFactorA = 0;
     int newFactorAIndex;
     unsigned char testFactorA = TRUE;
-    newFactorAIndex = aindex[0];
+    newFactorAIndex = common.siqs.aindex[0];
     for (index = 1; testFactorA; index++)
     {
       fullRemainder = FALSE;
@@ -1064,18 +986,18 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
       else if (index == newFactorAIndex)
       {
         fullRemainder = TRUE;
-        if (++indexFactorA == nbrFactorsA)
+        if (++indexFactorA == common.siqs.nbrFactorsA)
         {
           testFactorA = FALSE;   // All factors of A were tested.
         }
         else
         {
-          newFactorAIndex = aindex[indexFactorA];
+          newFactorAIndex = common.siqs.aindex[indexFactorA];
         }
       }
       for (;;)
       {
-        rowPrimeTrialDivisionData = &primeTrialDivisionData[index];
+        rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[index];
         if (fullRemainder == FALSE)
         {
           rowPrimeSieveData = primeSieveData + index;
@@ -1240,22 +1162,22 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           if (NumberLengthDividend == 1)
           {     // Number fits in a double
             BIG dDivid = (BIG)biR1 * (BIG)(1U << BITS_PER_INT_GROUP) + (BIG)biR0;
-            int sqrtDivid = (int)(floor(sqrt(dDivid)));
+            int sqrtDivid = (int)(floor(sqrt((double)dDivid)));
             fullRemainder = TRUE;
-            for (; index < nbrFactorBasePrimes; index++)
+            for (; index < common.siqs.nbrFactorBasePrimes; index++)
             {
               rowPrimeSieveData = primeSieveData + index;
               Divisor = rowPrimeSieveData->value;
               if (testFactorA && index == newFactorAIndex)
               {
                 fullRemainder = TRUE;
-                if (++indexFactorA == nbrFactorsA)
+                if (++indexFactorA == common.siqs.nbrFactorsA)
                 {
                   testFactorA = FALSE;   // All factors of A were tested.
                 }
                 else
                 {
-                  newFactorAIndex = aindex[indexFactorA];
+                  newFactorAIndex = common.siqs.aindex[indexFactorA];
                 }
               }
               for (;;)
@@ -1300,7 +1222,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                   }
                 }
                 dDivid /= Divisor;
-                sqrtDivid = (int)(floor(sqrt(dDivid))) + 1;
+                sqrtDivid = (int)(floor(sqrt((double)dDivid))) + 1;
                 expParity = 1 - expParity;
                 if (expParity == 0)
                 {
@@ -1315,20 +1237,20 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               if (Divisor > sqrtDivid)
               {                     // End of trial division.
                 rowSquares[0] = nbrSquares;
-                index = nbrFactorBasePrimes - 1;
-                if (dDivid <= primeTrialDivisionData[index].value &&
+                index = common.siqs.nbrFactorBasePrimes - 1;
+                if (dDivid <= common.siqs.primeTrialDivisionData[index].value &&
                   dDivid > 1)
                 {          // Perform binary search to find the index.
                   left = -1;
-                  median = right = nbrFactorBasePrimes;
+                  median = right = common.siqs.nbrFactorBasePrimes;
                   while (left != right)
                   {
                     median = ((right - left) >> 1) + left;
-                    nbr = primeTrialDivisionData[median].value;
+                    nbr = common.siqs.primeTrialDivisionData[median].value;
                     if (nbr < dDivid)
                     {
                       if (median == left &&
-                        congruencesFound >= matrixBLength)
+                        common.siqs.congruencesFound >= common.siqs.matrixBLength)
                       {
                         return 0;
                       }
@@ -1361,13 +1283,13 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         }
       }             /* end while */
     }               /* end for */
-    for (; index < nbrFactorBasePrimes; index++)
+    for (; index < common.siqs.nbrFactorBasePrimes; index++)
     {
       fullRemainder = FALSE;
       for (;;)
       {
         rowPrimeSieveData = primeSieveData + index;
-        rowPrimeTrialDivisionData = &primeTrialDivisionData[index];
+        rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[index];
         if (fullRemainder == FALSE)
         {
           Divisor = rowPrimeSieveData->value;
@@ -1533,7 +1455,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
             BIG dDivid = (BIG)biR1 * (BIG)(1U << BITS_PER_INT_GROUP) + (BIG)biR0;
             int sqrtDivid = (int)(floor(sqrt((double)dDivid)));
             fullRemainder = TRUE;
-            for (; index < nbrFactorBasePrimes; index++)
+            for (; index < common.siqs.nbrFactorBasePrimes; index++)
             {
               rowPrimeSieveData = primeSieveData + index;
 #if 0
@@ -1546,13 +1468,13 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               if (testFactorA && index == newFactorAIndex)
               {
                 fullRemainder = TRUE;
-                if (++indexFactorA == nbrFactorsA)
+                if (++indexFactorA == common.siqs.nbrFactorsA)
                 {
                   testFactorA = FALSE;   // All factors of A were tested.
                 }
                 else
                 {
-                  newFactorAIndex = aindex[indexFactorA];
+                  newFactorAIndex = common.siqs.aindex[indexFactorA];
                 }
               }
               for (;;)
@@ -1597,7 +1519,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                   }
                 }
                 dDivid /= Divisor;
-                sqrtDivid = (int)floor(sqrt(dDivid));
+                sqrtDivid = (int)floor(sqrt((double)dDivid));
                 expParity = 1 - expParity;
                 if (expParity == 0)
                 {
@@ -1617,20 +1539,20 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 }
                 Divisor = (int)dDivid;
                 rowSquares[0] = nbrSquares;
-                index = nbrFactorBasePrimes - 1;
-                if (Divisor <= primeTrialDivisionData[index].value &&
+                index = common.siqs.nbrFactorBasePrimes - 1;
+                if (Divisor <= common.siqs.primeTrialDivisionData[index].value &&
                   Divisor > 1)
                 {          // Perform binary search to find the index.
                   left = -1;
-                  median = right = nbrFactorBasePrimes;
+                  median = right = common.siqs.nbrFactorBasePrimes;
                   while (left != right)
                   {
                     median = ((right - left) >> 1) + left;
-                    nbr = primeTrialDivisionData[median].value;
+                    nbr = common.siqs.primeTrialDivisionData[median].value;
                     if (nbr < Divisor)
                     {
                       if (median == left &&
-                        congruencesFound >= matrixBLength)
+                        common.siqs.congruencesFound >= common.siqs.matrixBLength)
                       {
                         return 0;
                       }
@@ -1695,7 +1617,7 @@ static void mergeArrays(int aindex[], int nbrFactorsA, int rowMatrixB[], int row
     else
     {
       rowSquares[rowSquares[0]++] =
-        primeTrialDivisionData[aindex[indexAindex++]].value;
+        common.siqs.primeTrialDivisionData[aindex[indexAindex++]].value;
       indexRMBBM++;
     }
   }
@@ -1720,23 +1642,23 @@ static void SmoothRelationFound(
 {
   int index;
   int nbrSquares;
-  if (congruencesFound == matrixBLength)
+  if (common.siqs.congruencesFound == common.siqs.matrixBLength)
   {
     return;            // All congruences already found.
   }
   // Add all elements of aindex array to the rowMatrixB array discarding
   // duplicates.
-  mergeArrays(aindex, nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
+  mergeArrays(common.siqs.aindex, common.siqs.nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
   nbrSquares = rowSquares[0];
   IntToBigNbr(1, biR, NumberLength);
   IntToBigNbr(positive ? 1 : -1, biT, NumberLength);
-  MultBigNbrByInt(biQuadrCoeff, index2 - SieveLimit, biU,
+  MultBigNbrByInt(common.siqs.biQuadrCoeff, index2 - common.siqs.SieveLimit, biU,
     NumberLength);                                           // Ax
   AddBigNbrB(biU, biLinearCoeff, biU, NumberLength);          // Ax+B
   if (oddPolynomial)
   {
-    SubtractBigNbrB(biU, biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
-    SubtractBigNbrB(biU, biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
+    SubtractBigNbrB(biU, common.siqs.biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
+    SubtractBigNbrB(biU, common.siqs.biLinearDelta[0], biU, NumberLength);// Ax+B (odd)
   }
   if ((uint32_t)biU[NumberLength - 1] >= (LIMB_RANGE/2))
   {                                        // If number is negative
@@ -1745,9 +1667,9 @@ static void SmoothRelationFound(
   for (index = 1; index < nbrSquares; index++)
   {
     int D = rowSquares[index];
-    if (D == multiplier)
+    if (D == common.siqs.multiplier)
     {
-      AddBigNbr(biU, Modulus, biU, NumberLength);
+      AddBigNbr(biU, common.siqs.Modulus, biU, NumberLength);
       DivBigNbrByInt(biU, D, biU, NumberLength);
     }
     else
@@ -1757,7 +1679,7 @@ static void SmoothRelationFound(
   }
   if (InsertNewRelation(rowMatrixB, biT, biU, biR, NumberLength))
   {
-    smoothsFound++;
+    common.siqs.smoothsFound++;
     ShowSIQSStatus();
   }
   return;
@@ -1790,22 +1712,22 @@ static void PartialRelationFound(
   int nbrColumns;
   PrimeTrialDivisionData *rowPrimeTrialDivisionData;
 
-  if (congruencesFound == matrixBLength)
+  if (common.siqs.congruencesFound == common.siqs.matrixBLength)
   {
     return;
   }
   // Partial relation found.
-  totalPartials++;
+  common.siqs.totalPartials++;
   // Check if there is already another relation with the same
   // factor outside the prime base.
   // Calculate hash index
-  hashIndex = matrixPartialHashIndex[(int)(Divid & 0xFFE) >> 1];
+  hashIndex = common.siqs.matrixPartialHashIndex[(int)(Divid & 0xFFE) >> 1];
   prev = -1;
   while (hashIndex >= 0)
   {
     int oldDivid;
 
-    rowPartial = matrixPartial[hashIndex];
+    rowPartial = common.siqs.matrixPartial[hashIndex];
     oldDivid = rowPartial[0];
     if (newDivid == oldDivid || newDivid == -oldDivid)
     {   // Match of partials.
@@ -1825,7 +1747,7 @@ static void PartialRelationFound(
       // biT = old (Ax+B)^2.
       MultBigNbr(biV, biV, biT, NumberLength);
       // biT = old (Ax+B)^2 - N.
-      SubtractBigNbrB(biT, Modulus, biT, NumberLength);
+      SubtractBigNbrB(biT, common.siqs.Modulus, biT, NumberLength);
       if (oldDivid < 0)
       {
         rowPartials[nbrFactorsPartial++] = 0; // Insert -1 as a factor.
@@ -1841,10 +1763,10 @@ static void PartialRelationFound(
       {
         NumberLengthDivid--;
       }
-      for (index = 0; index < nbrFactorsA; index++)
+      for (index = 0; index < common.siqs.nbrFactorsA; index++)
       {
         DivBigNbrByInt(biT,
-          primeTrialDivisionData[indexFactorsA[index]].value, biT,
+          common.siqs.primeTrialDivisionData[indexFactorsA[index]].value, biT,
           NumberLengthDivid);
         if (biT[NumberLengthDivid - 1] == 0)
         {
@@ -1858,10 +1780,10 @@ static void PartialRelationFound(
       biT4 = biT[4];
       biT5 = biT[5];
       biT6 = biT[6];
-      for (index = 1; index < nbrFactorBasePrimes; index++)
+      for (index = 1; index < common.siqs.nbrFactorBasePrimes; index++)
       {
         expParity = 0;
-        if (index >= indexMinFactorA && indexFactorA < nbrFactorsA)
+        if (index >= common.siqs.indexMinFactorA && indexFactorA < common.siqs.nbrFactorsA)
         {
           if (index == indexFactorsA[indexFactorA])
           {
@@ -1869,7 +1791,7 @@ static void PartialRelationFound(
             indexFactorA++;
           }
         }
-        rowPrimeTrialDivisionData = &primeTrialDivisionData[index];
+        rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[index];
         Divisor = rowPrimeTrialDivisionData->value;
         for (;;)
         {
@@ -1941,23 +1863,23 @@ static void PartialRelationFound(
           rowPartials[nbrFactorsPartial++] = index;
         }
       }
-      MultBigNbrByIntB(biQuadrCoeff, index2 - SieveLimit, biT,
+      MultBigNbrByIntB(common.siqs.biQuadrCoeff, index2 - common.siqs.SieveLimit, biT,
         NumberLength);
       AddBigNbrB(biT, biLinearCoeff, biT, NumberLength); // biT = Ax+B
       if (oddPolynomial)
       {                                                     // Ax+B (odd)
-        SubtractBigNbrB(biT, biLinearDelta[0], biT, NumberLength);
-        SubtractBigNbrB(biT, biLinearDelta[0], biT, NumberLength);
+        SubtractBigNbrB(biT, common.siqs.biLinearDelta[0], biT, NumberLength);
+        SubtractBigNbrB(biT, common.siqs.biLinearDelta[0], biT, NumberLength);
       }
       if ((uint32_t)biT[NumberLength - 1] >= (uint32_t)LIMB_RANGE)
       {                                        // If number is negative
         ChSignBigNbr(biT, NumberLength);   // make it positive.
       }
       // biU = Product of old Ax+B times new Ax+B
-      MultBigNbrModN(biV, biT, biU, Modulus, NumberLength);
+      MultBigNbrModN(biV, biT, biU, common.siqs.Modulus, NumberLength);
       // Add all elements of aindex array to the rowMatrixB array discarding
       // duplicates.
-      mergeArrays(aindex, nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
+      mergeArrays(common.siqs.aindex, common.siqs.nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
       rowMatrixBbeforeMerge[0] = nbrColumns = rowMatrixB[LENGTH_OFFSET];
       memcpy(&rowMatrixBbeforeMerge[1], &rowMatrixB[1], nbrColumns*sizeof(int));
       mergeArrays(rowPartials, nbrFactorsPartial, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
@@ -1965,20 +1887,20 @@ static void PartialRelationFound(
       for (index = 1; index < nbrSquares; index++)
       {
         D = rowSquares[index];
-        if (D != multiplier)
+        if (D != common.siqs.multiplier)
         {
           MultBigNbrByInt(biR, D, biR, NumberLength);
         }
         else
         {
-          AddBigNbr(biU, Modulus, biU, NumberLength);
-          DivBigNbrByInt(biU, multiplier, biU, NumberLength);
+          AddBigNbr(biU, common.siqs.Modulus, biU, NumberLength);
+          DivBigNbrByInt(biU, common.siqs.multiplier, biU, NumberLength);
         }
       }
       if (rowMatrixB[0] > 1 &&
         InsertNewRelation(rowMatrixB, biT, biU, biR, NumberLength))
       {
-        partialsFound++;
+        common.siqs.partialsFound++;
         ShowSIQSStatus();
       }
       return;
@@ -1991,28 +1913,28 @@ static void PartialRelationFound(
   } /* end while */
 //  synchronized(firstPrimeSieveData)
   {
-    if (hashIndex == -1 && nbrPartials < MAX_PRIMES * 8)
+    if (hashIndex == -1 && common.siqs.nbrPartials < MAX_PRIMES * 8)
     { // No match and partials table is not full.
       // Add partial to table of partials.
       if (prev >= 0)
       {
-        matrixPartial[prev][1] = nbrPartials;
+        common.siqs.matrixPartial[prev][1] = common.siqs.nbrPartials;
       }
       else
       {
-        matrixPartialHashIndex[(newDivid & 0xFFE) >> 1] = nbrPartials;
+        common.siqs.matrixPartialHashIndex[(newDivid & 0xFFE) >> 1] = common.siqs.nbrPartials;
       }
-      rowPartial = matrixPartial[nbrPartials];
+      rowPartial = common.siqs.matrixPartial[common.siqs.nbrPartials];
       // Add all elements of aindex array to the rowMatrixB array discarding
       // duplicates.
-      mergeArrays(aindex, nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
+      mergeArrays(common.siqs.aindex, common.siqs.nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
       IntToBigNbr(Divid, biR, NumberLength);
       nbrSquares = rowSquares[0];
       for (index = 1; index < nbrSquares; index++)
       {
         D = rowSquares[index];
-        MultBigNbrByIntModN(biR, D, biR, Modulus, NumberLength);
-        if (D == multiplier)
+        MultBigNbrByIntModN(biR, D, biR, common.siqs.Modulus, NumberLength);
+        if (D == common.siqs.multiplier)
         {
           DivBigNbrByInt(biU, D, biU, NumberLength);
         }
@@ -2020,13 +1942,13 @@ static void PartialRelationFound(
       rowPartial[0] = (positive ? newDivid : -newDivid);
       // Indicate last index with this hash.
       rowPartial[1] = -1;
-      MultBigNbrByIntB(biQuadrCoeff, index2 - SieveLimit, biT,
+      MultBigNbrByIntB(common.siqs.biQuadrCoeff, index2 - common.siqs.SieveLimit, biT,
         NumberLength);
       AddBigNbrB(biT, biLinearCoeff, biT, NumberLength); // biT = Ax+B
       if (oddPolynomial)
       {                                                     // Ax+B (odd)
-        SubtractBigNbrB(biT, biLinearDelta[0], biT, NumberLength);
-        SubtractBigNbrB(biT, biLinearDelta[0], biT, NumberLength);
+        SubtractBigNbrB(biT, common.siqs.biLinearDelta[0], biT, NumberLength);
+        SubtractBigNbrB(biT, common.siqs.biLinearDelta[0], biT, NumberLength);
       }
       if ((uint32_t)biT[NumberLength - 1] >= (uint32_t)LIMB_RANGE)
       {                      // If square root is negative convert to positive.
@@ -2036,8 +1958,8 @@ static void PartialRelationFound(
       {
         rowPartial[index + 2] = (int)biT[index];
       }
-      rowPartial[squareRootSize + 2] = (int)oldSeed;
-      nbrPartials++;
+      rowPartial[squareRootSize + 2] = (int)common.siqs.oldSeed;
+      common.siqs.nbrPartials++;
     }
   }               // End synchronized block.
   return;
@@ -2058,22 +1980,22 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   int Divid;
   int nbrColumns;
 
-  trialDivisions++;
-  if (trialDivisions == 496)
+  common.siqs.trialDivisions++;
+  if (common.siqs.trialDivisions == 496)
   {
-    trialDivisions = 496;
+    common.siqs.trialDivisions = 496;
   }
-  MultBigNbrByInt(biQuadrCoeff, index2 - SieveLimit, biT,
+  MultBigNbrByInt(common.siqs.biQuadrCoeff, index2 - common.siqs.SieveLimit, biT,
     NumberLength);                                      // Ax
   AddBigNbrB(biT, biLinearCoeff, biT, NumberLength);    // Ax+B
   if (oddPolynomial)
   {                                                     // Ax+B (odd)
-    SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
-    SubtractBigNbr(biT, biLinearDelta[0], biT, NumberLength);
+    SubtractBigNbr(biT, common.siqs.biLinearDelta[0], biT, NumberLength);
+    SubtractBigNbr(biT, common.siqs.biLinearDelta[0], biT, NumberLength);
   }
   MultBigNbr(biT, biT, biDividend, NumberLength);       // (Ax+B)^2
                                                         // To factor: (Ax+B)^2-N
-  SubtractBigNbrB(biDividend, Modulus, biDividend, NumberLength);
+  SubtractBigNbrB(biDividend, common.siqs.Modulus, biDividend, NumberLength);
   /* factor biDividend */
 
   NumberLengthDivid = NumberLength; /* Number length for dividend */
@@ -2084,9 +2006,9 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
     ChSignBigNbr(biDividend, NumberLengthDivid); // Convert to positive
   }
   rowSquares[0] = 1;
-  for (index = 0; index < nbrFactorsA; index++)
+  for (index = 0; index < common.siqs.nbrFactorsA; index++)
   {
-    DivBigNbrByInt(biDividend, afact[index], biDividend,
+    DivBigNbrByInt(biDividend, common.siqs.afact[index], biDividend,
       NumberLengthDivid);
     if (biDividend[NumberLengthDivid - 1] == 0)
     {
@@ -2115,7 +2037,7 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   }
   else
   {
-    if (Divid > 0 && Divid < largePrimeUpperBound)
+    if (Divid > 0 && Divid < common.siqs.largePrimeUpperBound)
     {
       PartialRelationFound(positive, rowMatrixB,
         rowMatrixBbeforeMerge,
@@ -2132,12 +2054,12 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
 static unsigned int getFactorsOfA(unsigned int seed, int *indexA)
 {
   int index, index2, i, tmp;
-  for (index = 0; index < nbrFactorsA; index++)
+  for (index = 0; index < common.siqs.nbrFactorsA; index++)
   {
     do
     {
       seed = 1141592621 * seed + 321435;
-      i = (int)(((double)seed * (double)span)/(double)0x100000000ll + indexMinFactorA);
+      i = (int)(((double)seed * (double)common.siqs.span)/(double)0x100000000ll + common.siqs.indexMinFactorA);
       for (index2 = 0; index2 < index; index2++)
       {
         if (indexA[index2] == i || indexA[index2] == i + 1)
@@ -2148,9 +2070,9 @@ static unsigned int getFactorsOfA(unsigned int seed, int *indexA)
     } while (index2 < index);
     indexA[index] = i;
   }
-  for (index = 0; index<nbrFactorsA; index++)    // Sort factors of A.
+  for (index = 0; index<common.siqs.nbrFactorsA; index++)    // Sort factors of A.
   {
-    for (index2 = index + 1; index2<nbrFactorsA; index2++)
+    for (index2 = index + 1; index2<common.siqs.nbrFactorsA; index2++)
     {
       if (indexA[index] > indexA[index2])
       {
@@ -2181,7 +2103,6 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   int FactorBase;
   int currentPrime;
   int NbrMod;
-  BigInteger TempResult;
   PrimeSieveData *rowPrimeSieveData;
   PrimeTrialDivisionData *rowPrimeTrialDivisionData;
   int Power2, SqrRootMod, fact;
@@ -2194,37 +2115,37 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   double adjustment[sizeof(arrmult)/sizeof(arrmult[0])];
   double dNumberToFactor, dlogNumberToFactor;
   origNumberLength = NumberLength;
-  nbrThreadFinishedPolySet = 0;
-  trialDivisions = 0;
-  smoothsFound = 0;
-  totalPartials = 0;
-  partialsFound = 0;
-  ValuesSieved = 0;
-  congruencesFound = 0;
-  polynomialsSieved = 0;
-  nbrPartials = 0;
-  newSeed = 0;
+  common.siqs.nbrThreadFinishedPolySet = 0;
+  common.siqs.trialDivisions = 0;
+  common.siqs.smoothsFound = 0;
+  common.siqs.totalPartials = 0;
+  common.siqs.partialsFound = 0;
+  common.siqs.ValuesSieved = 0;
+  common.siqs.congruencesFound = 0;
+  common.siqs.polynomialsSieved = 0;
+  common.siqs.nbrPartials = 0;
+  common.siqs.newSeed = 0;
 
 //  threadArray = new Thread[numberThreads];
   Temp = logLimbs(pNbrToFactor, origNumberLength);
-  nbrFactorBasePrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.318);
-  SieveLimit = (int)exp(8.5 + 0.015 * Temp) & 0xFFFFFFF8;
-  if (SieveLimit > MAX_SIEVE_LIMIT)
+  common.siqs.nbrFactorBasePrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.318);
+  common.siqs.SieveLimit = (int)exp(8.5 + 0.015 * Temp) & 0xFFFFFFF8;
+  if (common.siqs.SieveLimit > MAX_SIEVE_LIMIT)
   {
-    SieveLimit = MAX_SIEVE_LIMIT;
+    common.siqs.SieveLimit = MAX_SIEVE_LIMIT;
   }
-  nbrFactorsA = (int)(Temp*0.051 + 1);
-  NbrPolynomials = (1 << (nbrFactorsA - 1)) - 1;
-  factorSiqs.nbrLimbs = NumberLength;
-  factorSiqs.sign = SIGN_POSITIVE;
-  memcpy(factorSiqs.limbs, pNbrToFactor, NumberLength * sizeof(limb));
-  NumberLength = BigNbrToBigInt(&factorSiqs, Modulus);
-  Modulus[NumberLength++] = 0;
-  Modulus[NumberLength] = 0;
-  memcpy(TestNbr2, Modulus, (NumberLength+1)*sizeof(int));
-  memset(matrixPartialHashIndex, 0xFF, sizeof(matrixPartialHashIndex));
+  common.siqs.nbrFactorsA = (int)(Temp*0.051 + 1);
+  common.siqs.NbrPolynomials = (1 << (common.siqs.nbrFactorsA - 1)) - 1;
+  common.siqs.factorSiqs.nbrLimbs = NumberLength;
+  common.siqs.factorSiqs.sign = SIGN_POSITIVE;
+  memcpy(common.siqs.factorSiqs.limbs, pNbrToFactor, NumberLength * sizeof(limb));
+  NumberLength = BigNbrToBigInt(&common.siqs.factorSiqs, common.siqs.Modulus);
+  common.siqs.Modulus[NumberLength++] = 0;
+  common.siqs.Modulus[NumberLength] = 0;
+  memcpy(common.siqs.TestNbr2, common.siqs.Modulus, (NumberLength+1)*sizeof(int));
+  memset(common.siqs.matrixPartialHashIndex, 0xFF, sizeof(common.siqs.matrixPartialHashIndex));
 #ifdef __EMSCRIPTEN__
-  InitSIQSStrings(SieveLimit);
+  InitSIQSStrings(common.siqs.SieveLimit);
   startSieveTenths = (int)(tenths() - originalTenthSecond);
 #endif
   /************************/
@@ -2233,10 +2154,10 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
 
   /* search for best Knuth-Schroeppel multiplier */
   bestadjust = -10.0e0;
-  primeSieveData[0].value = 1;
-  primeTrialDivisionData[0].value = 1;
-  rowPrimeSieveData = &primeSieveData[1];
-  rowPrimeTrialDivisionData = &primeTrialDivisionData[1];
+  common.siqs.primeSieveData[0].value = 1;
+  common.siqs.primeTrialDivisionData[0].value = 1;
+  rowPrimeSieveData = &common.siqs.primeSieveData[1];
+  rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[1];
   rowPrimeSieveData->value = 2;
   rowPrimeTrialDivisionData->value = 2;
   // (2^31)^(j+1) mod 2
@@ -2258,7 +2179,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   currentPrime = 3;
   while (currentPrime < 10000)
   {
-    NbrMod = (int)RemDivBigNbrByInt(Modulus, currentPrime, NumberLength);
+    NbrMod = (int)RemDivBigNbrByInt(common.siqs.Modulus, currentPrime, NumberLength);
     int jacobi = JacobiSymbol(NbrMod, currentPrime);
     double dp = (double)currentPrime;
     double logp = log(dp) / dp;
@@ -2285,50 +2206,50 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
       }
     } while (Q * Q <= currentPrime);
   }  /* end while */
-  multiplier = 1;
+  common.siqs.multiplier = 1;
   for (j = 0; j<sizeof(arrmult)/sizeof(arrmult[0]); j++)
   {
     if (adjustment[j] > bestadjust)
     { /* find biggest adjustment */
       bestadjust = adjustment[j];
-      multiplier = arrmult[j];
+      common.siqs.multiplier = arrmult[j];
     }
   } /* end while */
-  MultBigNbrByInt(TestNbr2, multiplier, Modulus, NumberLength);
+  MultBigNbrByInt(common.siqs.TestNbr2, common.siqs.multiplier, common.siqs.Modulus, NumberLength);
   FactorBase = currentPrime;
-  matrixBLength = nbrFactorBasePrimes + 50;
+  common.siqs.matrixBLength = common.siqs.nbrFactorBasePrimes + 50;
   rowPrimeSieveData->modsqrt = (pNbrToFactor->x & 1) ? 1 : 0;
-  switch ((int)Modulus[0] & 0x07)
+  switch ((int)common.siqs.Modulus[0] & 0x07)
   {
   case 1:
-    logar2 = (unsigned char)3;
+    common.siqs.logar2 = (unsigned char)3;
     break;
   case 5:
-    logar2 = (unsigned char)1;
+    common.siqs.logar2 = (unsigned char)1;
     break;
   default:
-    logar2 = (unsigned char)1;
+    common.siqs.logar2 = (unsigned char)1;
     break;
   }
-  if (multiplier != 1 && multiplier != 2)
+  if (common.siqs.multiplier != 1 && common.siqs.multiplier != 2)
   {
-    rowPrimeSieveData = &primeSieveData[2];
-    rowPrimeTrialDivisionData = &primeTrialDivisionData[2];
-    rowPrimeSieveData->value = multiplier;
-    rowPrimeTrialDivisionData->value = multiplier;
+    rowPrimeSieveData = &common.siqs.primeSieveData[2];
+    rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[2];
+    rowPrimeSieveData->value = common.siqs.multiplier;
+    rowPrimeTrialDivisionData->value = common.siqs.multiplier;
     rowPrimeSieveData->modsqrt = 0;
     // The following works because multiplier has less than 16 significant bits.
-    E = (int)((1U << BITS_PER_INT_GROUP) % multiplier);
+    E = (int)((1U << BITS_PER_INT_GROUP) % common.siqs.multiplier);
     rowPrimeTrialDivisionData->exp1 = E;  // (2^31) mod multiplier
-    D = E * E % multiplier;
+    D = E * E % common.siqs.multiplier;
     rowPrimeTrialDivisionData->exp2 = D;  // (2^31)^2 mod multiplier
-    D = D * E % multiplier;
+    D = D * E % common.siqs.multiplier;
     rowPrimeTrialDivisionData->exp3 = D;  // (2^31)^3 mod multiplier
-    D = D * E % multiplier;
+    D = D * E % common.siqs.multiplier;
     rowPrimeTrialDivisionData->exp4 = D;  // (2^31)^4 mod multiplier
-    D = D * E % multiplier;
+    D = D * E % common.siqs.multiplier;
     rowPrimeTrialDivisionData->exp5 = D;  // (2^31)^5 mod multiplier
-    D = D * E % multiplier;
+    D = D * E % common.siqs.multiplier;
     rowPrimeTrialDivisionData->exp6 = D;  // (2^31)^6 mod multiplier
     j = 3;
   }
@@ -2337,16 +2258,16 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
     j = 2;
   }
   currentPrime = 3;
-  while (j < nbrFactorBasePrimes)
+  while (j < common.siqs.nbrFactorBasePrimes)
   { /* select small primes */
-    NbrMod = (int)RemDivBigNbrByInt(Modulus, currentPrime,
+    NbrMod = (int)RemDivBigNbrByInt(common.siqs.Modulus, currentPrime,
       NumberLength);
-    if (currentPrime != multiplier && JacobiSymbol(NbrMod, currentPrime) == 1)
+    if (currentPrime != common.siqs.multiplier && JacobiSymbol(NbrMod, currentPrime) == 1)
     {
       double dBase, dPower, dCurrentPrime, dRem;
       /* use only if Jacobi symbol = 0 or 1 */
-      rowPrimeSieveData = &primeSieveData[j];
-      rowPrimeTrialDivisionData = &primeTrialDivisionData[j];
+      rowPrimeSieveData = &common.siqs.primeSieveData[j];
+      rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[j];
       rowPrimeSieveData->value = (int)currentPrime;
       rowPrimeTrialDivisionData->value = (int)currentPrime;
       // The following works because multiplier has less than 26 significant bits.
@@ -2451,69 +2372,69 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   } /* End while */
 
   FactorBase = currentPrime;
-  largePrimeUpperBound = 100 * FactorBase;
+  common.siqs.largePrimeUpperBound = 100 * FactorBase;
   // Convert array of limbs to BigInteger and find its logarithm.
   dlogNumberToFactor = logLimbs(pNbrToFactor, origNumberLength);
   dNumberToFactor = exp(dlogNumberToFactor);
 #ifdef __EMSCRIPTEN__
-  getMultAndFactorBase(multiplier, FactorBase);
+  getMultAndFactorBase(common.siqs.multiplier, FactorBase);
   databack(lowerText);
 #endif
-  firstLimit = 2;
-  for (j = 2; j < nbrFactorBasePrimes; j++)
+  common.siqs.firstLimit = 2;
+  for (j = 2; j < common.siqs.nbrFactorBasePrimes; j++)
   {
-    firstLimit *= (int)(primeSieveData[j].value);
-    if (firstLimit > 2 * SieveLimit)
+    common.siqs.firstLimit *= (int)(common.siqs.primeSieveData[j].value);
+    if (common.siqs.firstLimit > 2 * common.siqs.SieveLimit)
     {
       break;
     }
   }
-  dNumberToFactor *= multiplier;
-  smallPrimeUpperLimit = j + 1;
-  threshold =
+  dNumberToFactor *= common.siqs.multiplier;
+  common.siqs.smallPrimeUpperLimit = j + 1;
+  common.siqs.threshold =
     (unsigned char)(log(
-      sqrt(dNumberToFactor) * SieveLimit /
+      sqrt(dNumberToFactor) * common.siqs.SieveLimit /
       (FactorBase * 64) /
-      primeSieveData[j + 1].value)
+      common.siqs.primeSieveData[j + 1].value)
       / log(3) + 0x81);
-  firstLimit = (int)(log(dNumberToFactor) / 3);
-  for (secondLimit = firstLimit; secondLimit < nbrFactorBasePrimes; secondLimit++)
+  common.siqs.firstLimit = (int)(log(dNumberToFactor) / 3);
+  for (common.siqs.secondLimit = common.siqs.firstLimit; common.siqs.secondLimit < common.siqs.nbrFactorBasePrimes; common.siqs.secondLimit++)
   {
-    if (primeSieveData[secondLimit].value * 2 > SieveLimit)
+    if (common.siqs.primeSieveData[common.siqs.secondLimit].value * 2 > common.siqs.SieveLimit)
     {
       break;
     }
   }
-  for (thirdLimit = secondLimit; thirdLimit < nbrFactorBasePrimes; thirdLimit++)
+  for (common.siqs.thirdLimit = common.siqs.secondLimit; common.siqs.thirdLimit < common.siqs.nbrFactorBasePrimes; common.siqs.thirdLimit++)
   {
-    if (primeSieveData[thirdLimit].value > 2 * SieveLimit)
+    if (common.siqs.primeSieveData[common.siqs.thirdLimit].value > 2 * common.siqs.SieveLimit)
     {
       break;
     }
   }
-  nbrPrimes2 = nbrFactorBasePrimes - 4;
-  Prod = sqrt(2 * dNumberToFactor) / (double)SieveLimit;
-  fact = (int)pow(Prod, 1 / (float)nbrFactorsA);
+  common.siqs.nbrPrimes2 = common.siqs.nbrFactorBasePrimes - 4;
+  Prod = sqrt(2 * dNumberToFactor) / (double)common.siqs.SieveLimit;
+  fact = (int)pow(Prod, 1 / (float)common.siqs.nbrFactorsA);
   for (i = 2;; i++)
   {
-    if (primeSieveData[i].value > fact)
+    if (common.siqs.primeSieveData[i].value > fact)
     {
       break;
     }
   }
-  span = nbrFactorBasePrimes / (2 * nbrFactorsA*nbrFactorsA);
-  if (nbrFactorBasePrimes < 500)
+  common.siqs.span = common.siqs.nbrFactorBasePrimes / (2 * common.siqs.nbrFactorsA*common.siqs.nbrFactorsA);
+  if (common.siqs.nbrFactorBasePrimes < 500)
   {
-    span *= 2;
+    common.siqs.span *= 2;
   }
-  indexMinFactorA = i - span / 2;
+  common.siqs.indexMinFactorA = i - common.siqs.span / 2;
   /*********************************************/
   /* Generate sieve threads                    */
   /*********************************************/
-  sieveThread(&TempResult);
+  sieveThread(&common.siqs.TempResult);
   NumberLength = origNumberLength;
-  memcpy(pFactor, TempResult.limbs, TempResult.nbrLimbs * sizeof(limb));
-  memset(pFactor + TempResult.nbrLimbs, 0, (NumberLength - TempResult.nbrLimbs) * sizeof(limb));
+  memcpy(pFactor, common.siqs.TempResult.limbs, common.siqs.TempResult.nbrLimbs * sizeof(limb));
+  memset(pFactor + common.siqs.TempResult.nbrLimbs, 0, (NumberLength - common.siqs.TempResult.nbrLimbs) * sizeof(limb));
 
 #if 0
   for (threadNumber = 0; threadNumber<numberThreads; threadNumber++)
@@ -2534,7 +2455,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   }
   //synchronized(matrixB)
   {
-    while (factorSiqs == null && getTerminateThread() == FALSE)
+    while (common.siqs.factorSiqs == null && getTerminateThread() == FALSE)
     {
       try
       {
@@ -2544,7 +2465,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
     }
   }
 #endif
-  if (/*getTerminateThread() ||*/ (TempResult.nbrLimbs == 1 && TempResult.limbs[0].x == 0))
+  if (/*getTerminateThread() ||*/ (common.siqs.TempResult.nbrLimbs == 1 && common.siqs.TempResult.limbs[0].x == 0))
   {
     //throw new ArithmeticException();
   }
@@ -2568,7 +2489,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
       smoothsFound, totalPartials,
       partialsFound, ValuesSieved);
   }
-  return factorSiqs;
+  return common.siqs.factorSiqs;
 #endif
 }
 
@@ -2579,8 +2500,8 @@ void ShowSIQSStatus(void)
   if (elapsedTime / 10 != oldTimeElapsed / 10)
   {
     oldTimeElapsed = elapsedTime;
-    ShowSIQSInfo((elapsedTime - startSieveTenths)/10, congruencesFound, matrixBLength,
-                 elapsedTime / 10);
+    ShowSIQSInfo((elapsedTime - startSieveTenths)/10, common.siqs.congruencesFound,
+      common.siqs.matrixBLength, elapsedTime / 10);
   }
 #endif
 }
@@ -2589,31 +2510,31 @@ static int EraseSingletons(int nbrFactorBasePrimes)
 {
   int row, column, delta;
   int *rowMatrixB;
-  int matrixBlength = matrixBLength;
+  int matrixBlength = common.siqs.matrixBLength;
 
-  memset(newColumns, 0, matrixBlength*sizeof(int));
+  memset(common.siqs.newColumns, 0, matrixBlength*sizeof(int));
   // Find singletons in matrixB storing in array vectExpParity the number
   // of primes in each column.
   do
   {   // The singleton removal phase must run until there are no more
       // singletons to erase.
-    memset(vectExpParity, 0, matrixBLength * sizeof(limb));
+    memset(common.siqs.vectExpParity, 0, common.siqs.matrixBLength * sizeof(limb));
     for (row = matrixBlength - 1; row >= 0; row--)
     {                  // Traverse all rows of the matrix.
-      rowMatrixB = matrixB[row];
+      rowMatrixB = common.siqs.matrixB[row];
       for (column = rowMatrixB[LENGTH_OFFSET]-1; column >= 1; column--)
       {                // A prime appeared in that column.
-        vectExpParity[rowMatrixB[column]]++;
+        common.siqs.vectExpParity[rowMatrixB[column]]++;
       }
     }
     row = 0;
     for (column = 0; column<nbrFactorBasePrimes; column++)
     {
-      if (vectExpParity[column] > 1)
+      if (common.siqs.vectExpParity[column] > 1)
       {                // Useful column found with at least 2 primes.
-        newColumns[column] = row;
-        primeTrialDivisionData[row++].value =
-          primeTrialDivisionData[column].value;
+        common.siqs.newColumns[column] = row;
+        common.siqs.primeTrialDivisionData[row++].value =
+          common.siqs.primeTrialDivisionData[column].value;
       }
     }
     nbrFactorBasePrimes = row;
@@ -2622,10 +2543,10 @@ static int EraseSingletons(int nbrFactorBasePrimes)
     // the corresponding element of the array vectExpParity equals 1.
     for (row = 0; row < matrixBlength; row++)
     {                  // Traverse all rows of the matrix.
-      rowMatrixB = matrixB[row];
+      rowMatrixB = common.siqs.matrixB[row];
       for (column = rowMatrixB[LENGTH_OFFSET]-1; column >= 1; column--)
       {                // Traverse all columns.
-        if (vectExpParity[rowMatrixB[column]] == 1)
+        if (common.siqs.vectExpParity[rowMatrixB[column]] == 1)
         {              // Singleton found: erase this row.
           delta++;
           break;
@@ -2635,23 +2556,23 @@ static int EraseSingletons(int nbrFactorBasePrimes)
       {                // Singleton not found: move row upwards.
         if (delta != 0)
         {
-          memcpy(matrixB[row - delta], matrixB[row], sizeof(matrixB[0]));
-          memcpy(vectLeftHandSide[row - delta], vectLeftHandSide[row], sizeof(vectLeftHandSide[0]));
+          memcpy(common.siqs.matrixB[row - delta], common.siqs.matrixB[row], sizeof(common.siqs.matrixB[0]));
+          memcpy(common.siqs.vectLeftHandSide[row - delta], common.siqs.vectLeftHandSide[row], sizeof(common.siqs.vectLeftHandSide[0]));
         }
       }
     }
     matrixBlength -= delta;      // Update number of rows of the matrix.
     for (row = 0; row < matrixBlength; row++)
     {                  // Traverse all rows of the matrix.
-      rowMatrixB = matrixB[row];
+      rowMatrixB = common.siqs.matrixB[row];
       for (column = rowMatrixB[LENGTH_OFFSET]; column >= 1; column--)
       {                // Change all column indexes in this row.
-        rowMatrixB[column] = newColumns[rowMatrixB[column]];
+        rowMatrixB[column] = common.siqs.newColumns[rowMatrixB[column]];
       }
     }
   } while (delta > 0);           // End loop if number of rows did not
                                  // change.
-  primeTrialDivisionData[0].exp2 = nbrFactorBasePrimes;
+  common.siqs.primeTrialDivisionData[0].exp2 = nbrFactorBasePrimes;
   return matrixBlength;
 }
 
@@ -2690,11 +2611,11 @@ static unsigned char LinearAlgebraPhase(
   }
 #endif
   // Get new number of rows after erasing singletons.
-  int matrixBlength = EraseSingletons(nbrFactorBasePrimes);
-  matrixBLength = matrixBlength;
-  matrixRows = matrixBlength;
-  matrixCols = primeTrialDivisionData[0].exp2;
-  primeTrialDivisionData[0].exp2 = 0;         // Restore correct value.
+  int matrixBlength = EraseSingletons(common.siqs.nbrFactorBasePrimes);
+  common.siqs.matrixBLength = matrixBlength;
+  common.siqs.matrixRows = matrixBlength;
+  common.siqs.matrixCols = common.siqs.primeTrialDivisionData[0].exp2;
+  common.siqs.primeTrialDivisionData[0].exp2 = 0;         // Restore correct value.
   BlockLanczos();
   // The rows of matrixV indicate which rows must be multiplied so no
   // primes are multiplied an odd number of times.
@@ -2705,43 +2626,43 @@ static unsigned char LinearAlgebraPhase(
 
     IntToBigNbr(1, biT, NumberLength+1);
     IntToBigNbr(1, biR, NumberLength+1);
-    memset(vectExpParity, 0, matrixBlength * sizeof(vectExpParity[0]));
+    memset(common.siqs.vectExpParity, 0, matrixBlength * sizeof(common.siqs.vectExpParity[0]));
     NumberLengthBak = NumberLength;
-    if (Modulus[NumberLength - 1] == 0)
+    if (common.siqs.Modulus[NumberLength - 1] == 0)
     {
       NumberLength--;
     }
     for (row = matrixBlength - 1; row >= 0; row--)
     {
-      if ((matrixV[row] & mask) != 0)
+      if ((common.siqs.matrixV[row] & mask) != 0)
       {
-        MultBigNbrModN(vectLeftHandSide[row], biR, biU, Modulus,
+        MultBigNbrModN(common.siqs.vectLeftHandSide[row], biR, biU, common.siqs.Modulus,
           NumberLength);
         memcpy(biR, biU, (NumberLength + 1) * sizeof(biR[0]));
-        rowMatrixB = matrixB[row];
+        rowMatrixB = common.siqs.matrixB[row];
         for (j = rowMatrixB[LENGTH_OFFSET]-1; j >= 1; j--)
         {
           primeIndex = rowMatrixB[j];
-          vectExpParity[primeIndex] ^= 1;
-          if (vectExpParity[primeIndex] == 0)
+          common.siqs.vectExpParity[primeIndex] ^= 1;
+          if (common.siqs.vectExpParity[primeIndex] == 0)
           {
             if (primeIndex == 0)
             {
-              SubtractBigNbr(Modulus, biT, biT, NumberLength); // Multiply biT by -1.
+              SubtractBigNbr(common.siqs.Modulus, biT, biT, NumberLength); // Multiply biT by -1.
             }
             else
             {
               MultBigNbrByIntModN(biT,
-                primeTrialDivisionData[primeIndex].value, biT,
-                Modulus, NumberLength);
+                common.siqs.primeTrialDivisionData[primeIndex].value, biT,
+                common.siqs.Modulus, NumberLength);
             }
           }
         }
       }
     }
     NumberLength = NumberLengthBak;
-    SubtractBigNbrModN(biR, biT, biR, Modulus, NumberLength);
-    GcdBigNbr(biR, TestNbr2, biT, NumberLength);
+    SubtractBigNbrModN(biR, biT, biR, common.siqs.Modulus, NumberLength);
+    GcdBigNbr(biR, common.siqs.TestNbr2, biT, NumberLength);
     for (index = 1; index < NumberLength; index++)
     {
       if (biT[index] != 0)
@@ -2753,7 +2674,7 @@ static unsigned char LinearAlgebraPhase(
     {   // GCD is not zero or 1.
       for (index = 0; index < NumberLength; index++)
       {
-        if (biT[index] != TestNbr2[index])
+        if (biT[index] != common.siqs.TestNbr2[index])
         {
           break;
         }
@@ -2778,7 +2699,7 @@ static unsigned char InsertNewRelation(
   int lenDivisor;
   int nbrColumns = rowMatrixB[LENGTH_OFFSET];
   // Insert it only if it is different from previous relations.
-  if (congruencesFound >= matrixBLength)
+  if (common.siqs.congruencesFound >= common.siqs.matrixBLength)
   {                   // Discard excess congruences.
     return TRUE;
   }
@@ -2802,8 +2723,8 @@ static unsigned char InsertNewRelation(
   }
 #endif
   // Check whether this relation is already in the matrix.
-  int *curRowMatrixB = matrixB[0];
-  for (i = 0; i < congruencesFound; i++)
+  int *curRowMatrixB = common.siqs.matrixB[0];
+  for (i = 0; i < common.siqs.congruencesFound; i++)
   {
     if (nbrColumns == *(curRowMatrixB + LENGTH_OFFSET))
     {
@@ -2822,44 +2743,44 @@ static unsigned char InsertNewRelation(
     curRowMatrixB += MAX_FACTORS_RELATION;
   }
   /* Convert negative numbers to the range 0 <= n < Modulus */
-  if ((Modulus[0] & 1) == 0)
+  if ((common.siqs.Modulus[0] & 1) == 0)
   {             // Even modulus.
-    DivBigNbrByInt(Modulus, 2, TestNbr2, NumberLengthMod);
+    DivBigNbrByInt(common.siqs.Modulus, 2, common.siqs.TestNbr2, NumberLengthMod);
     // If biR >= Modulus perform biR = biR - Modulus.
     for (k = 0; k < NumberLengthMod; k++)
     {
       biT[k] = 0;
     }
     lenDivisor = NumberLengthMod;
-    if (Modulus[lenDivisor - 1] == 0)
+    if (common.siqs.Modulus[lenDivisor - 1] == 0)
     {
       lenDivisor--;
     }
-    AddBigIntModN(biR, biT, biR, TestNbr2, lenDivisor);
-    ModInvBigInt(biR, biT, TestNbr2, lenDivisor);
+    AddBigIntModN(biR, biT, biR, common.siqs.TestNbr2, lenDivisor);
+    ModInvBigInt(biR, biT, common.siqs.TestNbr2, lenDivisor);
   }
   else
   {             // Odd modulus
     lenDivisor = NumberLengthMod;
-    if (Modulus[lenDivisor - 1] == 0)
+    if (common.siqs.Modulus[lenDivisor - 1] == 0)
     {
       lenDivisor--;
     }
-    ModInvBigInt(biR, biT, Modulus, lenDivisor);
+    ModInvBigInt(biR, biT, common.siqs.Modulus, lenDivisor);
   }
   if ((biU[NumberLengthMod - 1] & HALF_INT_RANGE) != 0)
   {
-    AddBigNbr(biU, Modulus, biU, NumberLengthMod);
+    AddBigNbr(biU, common.siqs.Modulus, biU, NumberLengthMod);
   }
   biU[NumberLengthMod] = 0;
-  AdjustModN((limb *)biU, (limb *)Modulus, lenDivisor);
+  AdjustModN((limb *)biU, (limb *)common.siqs.Modulus, lenDivisor);
   // Compute biU / biR  (mod Modulus)
-  MultBigNbrModN(biU, biT, biR, Modulus, lenDivisor);
+  MultBigNbrModN(biU, biT, biR, common.siqs.Modulus, lenDivisor);
 
   // Add relation to matrix B.
-  memcpy(matrixB[congruencesFound], &rowMatrixB[0], nbrColumns * sizeof(int));
-  memcpy(vectLeftHandSide[congruencesFound], biR, NumberLengthMod * sizeof(int));
-  congruencesFound++;
+  memcpy(common.siqs.matrixB[common.siqs.congruencesFound], &rowMatrixB[0], nbrColumns * sizeof(int));
+  memcpy(common.siqs.vectLeftHandSide[common.siqs.congruencesFound], biR, NumberLengthMod * sizeof(int));
+  common.siqs.congruencesFound++;
 #if DEBUG_SIQS
   {
     char *ptrOutput = output;
@@ -2908,7 +2829,7 @@ static int intModInv(int NbrMod, int currentPrime)
 /* The product matrix has size m x 32. Then add it to a m x 32 matrix. */
 static void MatrixMultAdd(int *LeftMatr, int *RightMatr, int *ProdMatr)
 {
-  int matrLength = matrixBLength;
+  int matrLength = common.siqs.matrixBLength;
   int row;
   for (row = 0; row < matrLength; row++)
   {
@@ -2998,11 +2919,11 @@ static void MultiplyAByMatrix(int *Matr, int *TempMatr, int *ProdMatr)
   int *rowMatrixB;
 
   /* Compute TempMatr = B * Matr */
-  memset(TempMatr, 0, matrixBLength*sizeof(int));
-  for (row = matrixBLength - 1; row >= 0; row--)
+  memset(TempMatr, 0, common.siqs.matrixBLength*sizeof(int));
+  for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {
     int rowValue;
-    rowMatrixB = matrixB[row];
+    rowMatrixB = common.siqs.matrixB[row];
     rowValue = *(Matr+row);
     for (index = *(rowMatrixB+LENGTH_OFFSET)-1; index >= 1; index--)
     {
@@ -3011,10 +2932,10 @@ static void MultiplyAByMatrix(int *Matr, int *TempMatr, int *ProdMatr)
   }
 
   /* Compute ProdMatr = Bt * TempMatr */
-  for (row = matrixBLength - 1; row >= 0; row--)
+  for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {
     int prodMatr = 0;
-    rowMatrixB = matrixB[row];
+    rowMatrixB = common.siqs.matrixB[row];
     for (index = *(rowMatrixB+LENGTH_OFFSET)-1; index >= 1; index--)
     {
       prodMatr ^= *(TempMatr+*(rowMatrixB+index));
@@ -3038,7 +2959,7 @@ static void colexchange(int *XmY, int *V, int *V1, int *V2,
   mask2 = 0x80000000 >> (col2 & 31);
   matr1 = (col1 >= 32 ? V1 : V2);
   matr2 = (col2 >= 32 ? V1 : V2);
-  for (row = matrixBLength - 1; row >= 0; row--)
+  for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {             // If both bits are different toggle them.
     if (((matr1[row] & mask1) == 0) != ((matr2[row] & mask2) == 0))
     {           // If both bits are different toggle them.
@@ -3049,7 +2970,7 @@ static void colexchange(int *XmY, int *V, int *V1, int *V2,
   // Exchange columns col1 and col2 of XmY:V
   matr1 = (col1 >= 32 ? XmY : V);
   matr2 = (col2 >= 32 ? XmY : V);
-  for (row = matrixBLength - 1; row >= 0; row--)
+  for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {             // If both bits are different toggle them.
     if (((matr1[row] & mask1) == 0) != ((matr2[row] & mask2) == 0))
     {
@@ -3074,7 +2995,7 @@ static void coladd(int *XmY, int *V, int *V1, int *V2,
   mask2 = 0x80000000 >> (col2 & 31);
   matr1 = (col1 >= 32 ? V1 : V2);
   matr2 = (col2 >= 32 ? V1 : V2);
-  for (row = matrixBLength - 1; row >= 0; row--)
+  for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {              // If bit to add is '1'...
     if ((matr1[row] & mask1) != 0)
     {            // Toggle bit in destination.
@@ -3084,7 +3005,7 @@ static void coladd(int *XmY, int *V, int *V1, int *V2,
   // Add column col1 to column col2 of XmY:V
   matr1 = (col1 >= 32 ? XmY : V);
   matr2 = (col2 >= 32 ? XmY : V);
-  for (row = matrixBLength - 1; row >= 0; row--)
+  for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {              // If bit to add is '1'...
     if ((matr1[row] & mask1) != 0)
     {            // Toggle bit in destination.
@@ -3138,8 +3059,8 @@ static void BlockLanczos(void)
   dMult = (double)62089911;
   dAdd = (double)54325442;
   dDivisor = (double)0x7FFFFFFF;
-  ptrMatrixXmY = &matrixXmY[matrixBLength - 1];
-  for (ptrMatrixV = &matrixV[matrixBLength - 1]; ptrMatrixV >= matrixV; ptrMatrixV--)
+  ptrMatrixXmY = &common.siqs.matrixXmY[common.siqs.matrixBLength - 1];
+  for (ptrMatrixV = &common.siqs.matrixV[common.siqs.matrixBLength - 1]; ptrMatrixV >= common.siqs.matrixV; ptrMatrixV--)
   {
     double dSeed2 = (dSeed * dMult + dAdd);
     dSeed2 -= floor(dSeed2 / dDivisor) * dDivisor;
@@ -3153,9 +3074,9 @@ static void BlockLanczos(void)
     dSeed -= floor(dSeed / dDivisor) * dDivisor;
   }
   // Compute matrix Vt(0) * V(0)
-  MatrTranspMult(matrixBLength, matrixV, matrixV, matrixVtV0);
+  MatrTranspMult(common.siqs.matrixBLength, common.siqs.matrixV, common.siqs.matrixV, matrixVtV0);
 #ifdef __EMSCRIPTEN__
-  showMatrixSize((char *)SIQSInfoText, matrixRows, matrixCols);
+  showMatrixSize((char *)SIQSInfoText, common.siqs.matrixRows, common.siqs.matrixCols);
 #endif
 #if DEBUG_SIQS
   {
@@ -3184,7 +3105,7 @@ static void BlockLanczos(void)
       ptrText += strlen(ptrText);
       strcpy(ptrText, lang? "Progreso del álgebra lineal: ": "Linear algebra progress: ");
       ptrText += strlen(ptrText);
-      int2dec(&ptrText, stepNbr * 3200 / matrixRows);
+      int2dec(&ptrText, stepNbr * 3200 / common.siqs.matrixRows);
       strcpy(ptrText, "%</p>");
       databack(SIQSInfo);
     }  
@@ -3196,9 +3117,9 @@ static void BlockLanczos(void)
     oldDiagonalSSt = newDiagonalSSt;
     stepNbr++;
     // Compute matrix A * V(i)
-    MultiplyAByMatrix(matrixV, matrixCalc3, matrixAV);
+    MultiplyAByMatrix(common.siqs.matrixV, common.siqs.matrixCalc3, common.siqs.matrixAV);
     // Compute matrix Vt(i) * A * V(i)
-    MatrTranspMult(matrixBLength, matrixV, matrixAV, matrixVtAV);
+    MatrTranspMult(common.siqs.matrixBLength, common.siqs.matrixV, common.siqs.matrixAV, matrixVtAV);
 
     /* If Vt(i) * A * V(i) = 0, end of loop */
     for (i = sizeof(matrixVtAV)/sizeof(matrixVtAV[0]) - 1; i >= 0; i--)
@@ -3345,7 +3266,7 @@ static void BlockLanczos(void)
     }
     // ParenD = Vt(i)*A*A*V(i) * S*St + Vt(i)*A*V(i)
     // D = I - Winv(i) * ParenD
-    MatrTranspMult(matrixBLength, matrixAV, matrixAV, matrixCalc1); // Vt(i)*A*A*V(i)
+    MatrTranspMult(common.siqs.matrixBLength, common.siqs.matrixAV, common.siqs.matrixAV, matrixCalc1); // Vt(i)*A*A*V(i)
     MatrMultBySSt(32, matrixCalc1, newDiagonalSSt, matrixCalc1);
     MatrixAddition(matrixCalc1, matrixVtAV, matrixCalcParenD);
     MatrixMultiplication(matrixWinv, matrixCalcParenD, matrixD);
@@ -3358,18 +3279,18 @@ static void BlockLanczos(void)
 
     /* Update value of X - Y */
     MatrixMultiplication(matrixWinv, matrixVtV0, matrixCalc1);
-    MatrixMultAdd(matrixV, matrixCalc1, matrixXmY);
+    MatrixMultAdd(common.siqs.matrixV, matrixCalc1, common.siqs.matrixXmY);
 
     /* Compute value of new matrix V(i) */
     // V(i+1) = A * V(i) * S * St + V(i) * D + V(i-1) * E + V(i-2) * F
-    MatrMultBySSt(matrixBLength, matrixAV, newDiagonalSSt, matrixCalc3);
-    MatrixMultAdd(matrixV, matrixD, matrixCalc3);
+    MatrMultBySSt(common.siqs.matrixBLength, common.siqs.matrixAV, newDiagonalSSt, common.siqs.matrixCalc3);
+    MatrixMultAdd(common.siqs.matrixV, matrixD, common.siqs.matrixCalc3);
     if (stepNbr >= 2)
     {
-      MatrixMultAdd(matrixV1, matrixE, matrixCalc3);
+      MatrixMultAdd(common.siqs.matrixV1, matrixE, common.siqs.matrixCalc3);
       if (stepNbr >= 3)
       {
-        MatrixMultAdd(matrixV2, matrixF, matrixCalc3);
+        MatrixMultAdd(common.siqs.matrixV2, matrixF, common.siqs.matrixCalc3);
       }
     }
     /* Compute value of new matrix Vt(i)V0 */
@@ -3385,11 +3306,11 @@ static void BlockLanczos(void)
         MatrixAddition(matrixCalc1, matrixCalc2, matrixCalc2);
       }
     }
-    memcpy(matrixTemp2, matrixV2, sizeof(matrixTemp2));
-    memcpy(matrixV2, matrixV1, sizeof(matrixV2));
-    memcpy(matrixV1, matrixV, sizeof(matrixV1));
-    memcpy(matrixV, matrixCalc3, sizeof(matrixV));
-    memcpy(matrixCalc3, matrixTemp2, sizeof(matrixCalc3));
+    memcpy(common.siqs.matrixTemp2, common.siqs.matrixV2, sizeof(common.siqs.matrixTemp2));
+    memcpy(common.siqs.matrixV2, common.siqs.matrixV1, sizeof(common.siqs.matrixV2));
+    memcpy(common.siqs.matrixV1, common.siqs.matrixV, sizeof(common.siqs.matrixV1));
+    memcpy(common.siqs.matrixV, common.siqs.matrixCalc3, sizeof(common.siqs.matrixV));
+    memcpy(common.siqs.matrixCalc3, common.siqs.matrixTemp2, sizeof(common.siqs.matrixCalc3));
     memcpy(matrixTemp, matrixVt2V0, sizeof(matrixTemp));
     memcpy(matrixVt2V0, matrixVt1V0, sizeof(matrixVt2V0));
     memcpy(matrixVt1V0, matrixVtV0, sizeof(matrixVt1V0));
@@ -3401,23 +3322,23 @@ static void BlockLanczos(void)
   } /* end while */
 
     /* Find matrix V1:V2 = B * (X-Y:V) */
-  for (row = matrixBLength - 1; row >= 0; row--)
+  for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {
-    matrixV1[row] = matrixV2[row] = 0;
+    common.siqs.matrixV1[row] = common.siqs.matrixV2[row] = 0;
   }
-  for (row = matrixBLength - 1; row >= 0; row--)
+  for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {
     int rowMatrixXmY, rowMatrixV;
 
-    rowMatrixB = matrixB[row];
-    rowMatrixXmY = matrixXmY[row];
-    rowMatrixV = matrixV[row];
+    rowMatrixB = common.siqs.matrixB[row];
+    rowMatrixXmY = common.siqs.matrixXmY[row];
+    rowMatrixV = common.siqs.matrixV[row];
     // The vector rowMatrixB includes the indexes of the columns set to '1'.
     for (index = rowMatrixB[LENGTH_OFFSET]-1; index >= 1; index--)
     {
       col = rowMatrixB[index];
-      matrixV1[col] ^= rowMatrixXmY;
-      matrixV2[col] ^= rowMatrixV;
+      common.siqs.matrixV1[col] ^= rowMatrixXmY;
+      common.siqs.matrixV2[col] ^= rowMatrixV;
     }
   }
   rightCol = 64;
@@ -3427,10 +3348,10 @@ static void BlockLanczos(void)
     for (col = leftCol; col < rightCol; col++)
     {       // For each column find the first row which has a '1'.
             // Columns outside this range must have '0' in all rows.
-      matr = (col >= 32 ? matrixV1 : matrixV2);
+      matr = (col >= 32 ? common.siqs.matrixV1 : common.siqs.matrixV2);
       mask = 0x80000000 >> (col & 31);
       vectorIndex[col] = -1;    // indicate all rows in zero in advance.
-      for (row = 0; row < matrixBLength; row++)
+      for (row = 0; row < common.siqs.matrixBLength; row++)
       {
         if ((matr[row] & mask) != 0)
         {               // First row for this mask is found. Store it.
@@ -3444,7 +3365,7 @@ static void BlockLanczos(void)
       if (vectorIndex[col] < 0)
       {  // If all zeros in col 'col', exchange it with first column with
          // data different from zero (leftCol).
-        colexchange(matrixXmY, matrixV, matrixV1, matrixV2, leftCol, col);
+        colexchange(common.siqs.matrixXmY, common.siqs.matrixV, common.siqs.matrixV1, common.siqs.matrixV2, leftCol, col);
         vectorIndex[col] = vectorIndex[leftCol];
         vectorIndex[leftCol] = -1;  // This column now has zeros.
         leftCol++;                  // Update leftCol to exclude that column.
@@ -3482,14 +3403,14 @@ static void BlockLanczos(void)
         {        // Add first column which has '1' in the same row to
                  // the other columns so they have '0' in this row after
                  // this operation.
-          coladd(matrixXmY, matrixV, matrixV1, matrixV2, minind, col);
+          coladd(common.siqs.matrixXmY, common.siqs.matrixV, common.siqs.matrixV1, common.siqs.matrixV2, minind, col);
         }
       }
     }
     else
     {
       rightCol--;
-      colexchange(matrixXmY, matrixV, matrixV1, matrixV2, minind, rightCol);
+      colexchange(common.siqs.matrixXmY, common.siqs.matrixV, common.siqs.matrixV1, common.siqs.matrixV2, minind, rightCol);
     }
   }
   leftCol = 0; /* find linear independent solutions */
@@ -3497,10 +3418,10 @@ static void BlockLanczos(void)
   {
     for (col = leftCol; col < rightCol; col++)
     {         // For each column find the first row which has a '1'.
-      matr = (col >= 32 ? matrixXmY : matrixV);
+      matr = (col >= 32 ? common.siqs.matrixXmY : common.siqs.matrixV);
       mask = 0x80000000 >> (col & 31);
       vectorIndex[col] = -1;    // indicate all rows in zero in advance.
-      for (row = 0; row < matrixBLength; row++)
+      for (row = 0; row < common.siqs.matrixBLength; row++)
       {
         if ((matr[row] & mask) != 0)
         {         // First row for this mask is found. Store it.
@@ -3515,7 +3436,7 @@ static void BlockLanczos(void)
       if (vectorIndex[col] < 0)
       {
         rightCol--;                 // Update rightCol to exclude that column.
-        colexchange(matrixXmY, matrixV, matrixV1, matrixV2, rightCol, col);
+        colexchange(common.siqs.matrixXmY, common.siqs.matrixV, common.siqs.matrixV1, common.siqs.matrixV2, rightCol, col);
         vectorIndex[col] = vectorIndex[rightCol];
         vectorIndex[rightCol] = -1; // This column now has zeros.
       }
@@ -3552,13 +3473,13 @@ static void BlockLanczos(void)
         {        // Add first column which has '1' in the same row to
                  // the other columns so they have '0' in this row after
                  // this operation.
-          coladd(matrixXmY, matrixV, matrixV1, matrixV2, minind, col);
+          coladd(common.siqs.matrixXmY, common.siqs.matrixV, common.siqs.matrixV1, common.siqs.matrixV2, minind, col);
         }
       }
     }
     else
     {
-      colexchange(matrixXmY, matrixV, matrixV1, matrixV2, minind, leftCol);
+      colexchange(common.siqs.matrixXmY, common.siqs.matrixV, common.siqs.matrixV1, common.siqs.matrixV2, minind, leftCol);
       leftCol++;
     }
   }
@@ -3586,8 +3507,8 @@ static void sieveThread(BigInteger *result)
   int biAbsLinearCoeff[MAX_LIMBS_SIQS];
   int indexFactorsA[50];
   int rowSquares[200];
-  int polynomialsPerThread = ((NbrPolynomials - 1) / numberThreads) & 0xFFFFFFFE;
-  int firstPolynomial = threadNumber*polynomialsPerThread;
+  int polynomialsPerThread = ((common.siqs.NbrPolynomials - 1) / numberThreads) & 0xFFFFFFFE;
+  int firstPolynomial = common.siqs.threadNumber*polynomialsPerThread;
   int lastPolynomial = firstPolynomial + polynomialsPerThread;
   firstPolynomial |= 1;
   int grayCode = firstPolynomial ^ (firstPolynomial >> 1);
@@ -3605,16 +3526,16 @@ static void sieveThread(BigInteger *result)
   memset(biLinearCoeff, 0, sizeof(biLinearCoeff));
 //  synchronized(amodq)
   {
-    if (threadNumber == 0)
+    if (common.siqs.threadNumber == 0)
     {
 //      primeSieveData = this.primeSieveData;
     }
     else
     {
-      for (i = 0; i<nbrFactorBasePrimes; i++)
+      for (i = 0; i<common.siqs.nbrFactorBasePrimes; i++)
       {
-        rowPrimeSieveData = &primeSieveData[i];
-        rowPrimeSieveData0 = &primeSieveData[i];
+        rowPrimeSieveData = &common.siqs.primeSieveData[i];
+        rowPrimeSieveData0 = &common.siqs.primeSieveData[i];
         rowPrimeSieveData->value = rowPrimeSieveData0->value;
         rowPrimeSieveData->modsqrt = rowPrimeSieveData0->modsqrt;
         memcpy(rowPrimeSieveData->Bainv2, rowPrimeSieveData0->Bainv2, sizeof(rowPrimeSieveData0->Bainv2));
@@ -3631,21 +3552,21 @@ static void sieveThread(BigInteger *result)
       //}
       //synchronized(amodq)
       {
-        nbrThreadFinishedPolySet++;
-        if (congruencesFound >= matrixBLength/* || factorSiqs != null*/)
+        common.siqs.nbrThreadFinishedPolySet++;
+        if (common.siqs.congruencesFound >= common.siqs.matrixBLength/* || common.siqs.factorSiqs != null*/)
         {
-          if (nbrThreadFinishedPolySet < polySet * numberThreads)
+          if (common.siqs.nbrThreadFinishedPolySet < polySet * numberThreads)
           {
             return;
           }
-          if (1/*factorSiqs == null*/)
+          if (1/*common.siqs.factorSiqs == null*/)
           {
             while (!LinearAlgebraPhase(biT, biR, biU, NumberLength));
             BigIntToBigNbr(result, biT, NumberLength);  // Factor found.
 #if 0
             synchronized(matrixB)
             {
-              factorSiqs = result;
+              common.siqs.factorSiqs = result;
               matrixB.notify();
             }
 #endif
@@ -3661,64 +3582,64 @@ static void sieveThread(BigInteger *result)
           }
           return;
         }
-        if (nbrThreadFinishedPolySet == polySet * numberThreads)
+        if (common.siqs.nbrThreadFinishedPolySet == polySet * numberThreads)
         {
           /*********************************************/
           /* Initialization stage for first polynomial */
           /*********************************************/
-          firstPrimeSieveData = primeSieveData;
-          oldSeed = newSeed;
-          newSeed = getFactorsOfA(oldSeed, aindex);
-          for (index = 0; index<nbrFactorsA; index++)
+          common.siqs.firstPrimeSieveData = common.siqs.primeSieveData;
+          common.siqs.oldSeed = common.siqs.newSeed;
+          common.siqs.newSeed = getFactorsOfA(common.siqs.oldSeed, common.siqs.aindex);
+          for (index = 0; index<common.siqs.nbrFactorsA; index++)
           {                        // Get the values of the factors of A.
-            afact[index] = primeSieveData[aindex[index]].value;
+            common.siqs.afact[index] = common.siqs.primeSieveData[common.siqs.aindex[index]].value;
           }
           // Compute the leading coefficient in biQuadrCoeff.
 
-          IntToBigNbr(afact[0], biQuadrCoeff, NumberLength);
-          for (index = 1; index < nbrFactorsA; index++)
+          IntToBigNbr(common.siqs.afact[0], common.siqs.biQuadrCoeff, NumberLength);
+          for (index = 1; index < common.siqs.nbrFactorsA; index++)
           {
-            MultBigNbrByInt(biQuadrCoeff, afact[index], biQuadrCoeff,
+            MultBigNbrByInt(common.siqs.biQuadrCoeff, common.siqs.afact[index], common.siqs.biQuadrCoeff,
               NumberLength);
           }
           for (NumberLengthA = NumberLength; NumberLengthA >= 2; NumberLengthA--)
           {
-            if (biQuadrCoeff[NumberLengthA - 1] != 0)
+            if (common.siqs.biQuadrCoeff[NumberLengthA - 1] != 0)
             {
               break;
             }
           }
-          for (index = 0; index < nbrFactorsA; index++)
+          for (index = 0; index < common.siqs.nbrFactorsA; index++)
           {
-            currentPrime = afact[index];
-            D = RemDivBigNbrByInt(biQuadrCoeff,
+            currentPrime = common.siqs.afact[index];
+            D = RemDivBigNbrByInt(common.siqs.biQuadrCoeff,
               currentPrime*currentPrime, NumberLengthA) / currentPrime;
-            Q = primeSieveData[aindex[index]].modsqrt *
+            Q = common.siqs.primeSieveData[common.siqs.aindex[index]].modsqrt *
               intModInv(D, currentPrime) % currentPrime;
-            amodq[index] = D << 1;
-            tmodqq[index] = RemDivBigNbrByInt(Modulus,
+            common.siqs.amodq[index] = D << 1;
+            common.siqs.tmodqq[index] = RemDivBigNbrByInt(common.siqs.Modulus,
               currentPrime*currentPrime, NumberLength);
             if (Q + Q > currentPrime)
             {
               Q = currentPrime - Q;
             }
-            DivBigNbrByInt(biQuadrCoeff, currentPrime, biDividend,
+            DivBigNbrByInt(common.siqs.biQuadrCoeff, currentPrime, biDividend,
               NumberLengthA);
-            MultBigNbrByInt(biDividend, Q, biLinearDelta[index],
+            MultBigNbrByInt(biDividend, Q, common.siqs.biLinearDelta[index],
               NumberLengthA);
             for (index2 = NumberLengthA; index2 < NumberLength; index2++)
             {
-              biLinearDelta[index][index2] = 0;
+              common.siqs.biLinearDelta[index][index2] = 0;
             }
           }
-          for (index = 1; index < nbrFactorBasePrimes; index++)
+          for (index = 1; index < common.siqs.nbrFactorBasePrimes; index++)
           {
             BIG dRem, dCurrentPrime;
-            rowPrimeTrialDivisionData = &primeTrialDivisionData[index];
-            rowPrimeSieveData = &primeSieveData[index];
+            rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[index];
+            rowPrimeSieveData = &common.siqs.primeSieveData[index];
             // Get current prime.
             currentPrime = rowPrimeTrialDivisionData->value;
-            memcpy(Dividend, biQuadrCoeff, sizeof(Dividend));   // Get A mod current prime.
+            memcpy(Dividend, common.siqs.biQuadrCoeff, sizeof(Dividend));   // Get A mod current prime.
             switch (NumberLengthA)
             {
             case 7:
@@ -3764,9 +3685,9 @@ static void sieveThread(BigInteger *result)
             switch (NumberLengthA)
             {
             case 7:
-              for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
+              for (index2 = common.siqs.nbrFactorsA - 1; index2 > 0; index2--)
               {
-                memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
+                memcpy(Dividend, common.siqs.biLinearDelta[index2], sizeof(Dividend));
                 dRem = (BIG)Dividend[6] * (BIG)rowPrimeTrialDivisionData->exp6 +
                   (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
                   (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
@@ -3779,7 +3700,7 @@ static void sieveThread(BigInteger *result)
                 dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
-              memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
+              memcpy(Dividend, common.siqs.biLinearDelta[0], sizeof(Dividend));
               dRem = (BIG)Dividend[6] * (BIG)rowPrimeTrialDivisionData->exp6 +
                 (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
                 (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
@@ -3790,9 +3711,9 @@ static void sieveThread(BigInteger *result)
               dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             case 6:
-              for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
+              for (index2 = common.siqs.nbrFactorsA - 1; index2 > 0; index2--)
               {
-                memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
+                memcpy(Dividend, common.siqs.biLinearDelta[index2], sizeof(Dividend));
                 dRem = (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
                   (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
                   (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
@@ -3804,7 +3725,7 @@ static void sieveThread(BigInteger *result)
                 dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
-              memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
+              memcpy(Dividend, common.siqs.biLinearDelta[0], sizeof(Dividend));
               dRem = (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
                 (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
                 (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
@@ -3814,9 +3735,9 @@ static void sieveThread(BigInteger *result)
               dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             case 5:
-              for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
+              for (index2 = common.siqs.nbrFactorsA - 1; index2 > 0; index2--)
               {
-                memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
+                memcpy(Dividend, common.siqs.biLinearDelta[index2], sizeof(Dividend));
                 dRem = (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
                   (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
                   (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
@@ -3827,7 +3748,7 @@ static void sieveThread(BigInteger *result)
                 dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
-              memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
+              memcpy(Dividend, common.siqs.biLinearDelta[0], sizeof(Dividend));
               dRem = (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
                 (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
                 (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
@@ -3836,9 +3757,9 @@ static void sieveThread(BigInteger *result)
               dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             case 4:
-              for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
+              for (index2 = common.siqs.nbrFactorsA - 1; index2 > 0; index2--)
               {
-                memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
+                memcpy(Dividend, common.siqs.biLinearDelta[index2], sizeof(Dividend));
                 dRem = (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
                   (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
                   (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
@@ -3848,7 +3769,7 @@ static void sieveThread(BigInteger *result)
                 dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
-              memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
+              memcpy(Dividend, common.siqs.biLinearDelta[0], sizeof(Dividend));
               dRem = (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
                 (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
                 (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
@@ -3856,9 +3777,9 @@ static void sieveThread(BigInteger *result)
               dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             default:
-              for (index2 = nbrFactorsA - 1; index2 > 0; index2--)
+              for (index2 = common.siqs.nbrFactorsA - 1; index2 > 0; index2--)
               {
-                memcpy(Dividend, biLinearDelta[index2], sizeof(Dividend));
+                memcpy(Dividend, common.siqs.biLinearDelta[index2], sizeof(Dividend));
                 dRem = (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
                   (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
                   (BIG)Dividend[0];
@@ -3867,7 +3788,7 @@ static void sieveThread(BigInteger *result)
                 dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
-              memcpy(Dividend, biLinearDelta[0], sizeof(Dividend));
+              memcpy(Dividend, common.siqs.biLinearDelta[0], sizeof(Dividend));
               dRem = (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
                 (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
                 (BIG)Dividend[0];
@@ -3883,9 +3804,9 @@ static void sieveThread(BigInteger *result)
                 currentPrime - rowPrimeSieveData->Bainv2_0;
             }
           }
-          for (index2 = 0; index2 < nbrFactorsA; index2++)
+          for (index2 = 0; index2 < common.siqs.nbrFactorsA; index2++)
           {
-            primeSieveData[aindex[index2]].difsoln = -1; // Do not sieve.
+            common.siqs.primeSieveData[common.siqs.aindex[index2]].difsoln = -1; // Do not sieve.
           }
           //synchronized(TestNbr2)
           {
@@ -3906,15 +3827,15 @@ static void sieveThread(BigInteger *result)
         }
       }
 #endif
-      if (/*factorSiqs != null ||*/ congruencesFound >= matrixBLength)
+      if (/*common.siqs.factorSiqs != null ||*/ common.siqs.congruencesFound >= common.siqs.matrixBLength)
       {
-        if (nbrThreadFinishedPolySet > numberThreads*polySet)
+        if (common.siqs.nbrThreadFinishedPolySet > numberThreads*polySet)
         {
           continue;
         }
         //synchronized(amodq)
         {
-          nbrThreadFinishedPolySet++;
+          common.siqs.nbrThreadFinishedPolySet++;
         }
         return;
       }
@@ -3922,24 +3843,24 @@ static void sieveThread(BigInteger *result)
       // Compute first polynomial parameters.
       for (i = 0; i<NumberLength; i++)
       {
-        biLinearCoeff[i] = biLinearDelta[0][i];
+        biLinearCoeff[i] = common.siqs.biLinearDelta[0][i];
       }
-      for (i = 1; i<nbrFactorsA; i++)
+      for (i = 1; i<common.siqs.nbrFactorsA; i++)
       {
         if ((grayCode & (1 << i)) == 0)
         {
-          AddBigNbrB(biLinearCoeff, biLinearDelta[i], biLinearCoeff,
+          AddBigNbrB(biLinearCoeff, common.siqs.biLinearDelta[i], biLinearCoeff,
             NumberLength);
         }
         else
         {
-          SubtractBigNbrB(biLinearCoeff, biLinearDelta[i], biLinearCoeff,
+          SubtractBigNbrB(biLinearCoeff, common.siqs.biLinearDelta[i], biLinearCoeff,
             NumberLength);
         }
       }
       for (NumberLengthA = NumberLength; NumberLengthA >= 2; NumberLengthA--)
       {
-        if (biQuadrCoeff[NumberLengthA - 1] != 0)
+        if (common.siqs.biQuadrCoeff[NumberLengthA - 1] != 0)
         {                             // Go out if significant limb.
           break;
         }
@@ -3964,16 +3885,16 @@ static void sieveThread(BigInteger *result)
           break;
         }
       }
-      for (i = nbrFactorBasePrimes - 1; i>0; i--)
+      for (i = common.siqs.nbrFactorBasePrimes - 1; i>0; i--)
       {
         BIG dRem, dCurrentPrime;
-        rowPrimeSieveData = &primeSieveData[i];
-        rowPrimeSieveData0 = firstPrimeSieveData+i;
+        rowPrimeSieveData = &common.siqs.primeSieveData[i];
+        rowPrimeSieveData0 = common.siqs.firstPrimeSieveData+i;
         rowPrimeSieveData->difsoln = rowPrimeSieveData0->difsoln;
         rowPrimeSieveData->Bainv2_0 = rowPrimeSieveData0->Bainv2_0;
-        rowPrimeTrialDivisionData = &primeTrialDivisionData[i];
+        rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[i];
         currentPrime = rowPrimeTrialDivisionData->value;     // Get current prime.
-        memcpy(Dividend, biQuadrCoeff,sizeof(biQuadrCoeff)); // Get A mod current prime.
+        memcpy(Dividend, common.siqs.biQuadrCoeff,sizeof(common.siqs.biQuadrCoeff)); // Get A mod current prime.
         switch (NumberLengthA)
         {
         case 7:
@@ -4059,40 +3980,40 @@ static void sieveThread(BigInteger *result)
           RemB = currentPrime - RemB;
         }
         dRem = (BIG)inverseA * (BIG)(rowPrimeSieveData0->modsqrt + RemB) +
-               (BIG)SieveLimit;
+               (BIG)common.siqs.SieveLimit;
         dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
         rowPrimeSieveData->soln1 = (int)dRem;
       }
       do
       {                       // For each polynomial...
-        if (congruencesFound >= matrixBLength /*|| factorSiqs != null*/)
+        if (common.siqs.congruencesFound >= common.siqs.matrixBLength /*|| common.siqs.factorSiqs != null*/)
         {
-          if (nbrThreadFinishedPolySet > numberThreads*polySet)
+          if (common.siqs.nbrThreadFinishedPolySet > numberThreads*polySet)
           {
             break;
           }
           //synchronized(amodq)
           {
-            nbrThreadFinishedPolySet++;
+            common.siqs.nbrThreadFinishedPolySet++;
           }
           return;             // Another thread finished factoring.
         }
-        if (onlyFactoring)
+        if (common.siqs.onlyFactoring)
         {
-          polynomialsSieved += 2;
+          common.siqs.polynomialsSieved += 2;
         }
         /***************/
         /* Sieve stage */
         /***************/
-        PerformSiqsSieveStage(primeSieveData, SieveArray,
+        PerformSiqsSieveStage(common.siqs.primeSieveData, SieveArray,
           PolynomialIndex,
           biLinearCoeff,
           NumberLength);
-        ValuesSieved += 2 * SieveLimit;
+        common.siqs.ValuesSieved += 2 * common.siqs.SieveLimit;
         /************************/
         /* Trial division stage */
         /************************/
-        index2 = 2 * SieveLimit - 1;
+        index2 = 2 * common.siqs.SieveLimit - 1;
         do
         {
           index2 -= 16;
@@ -4109,20 +4030,20 @@ static void sieveThread(BigInteger *result)
             {
               if ((SieveArray[index2 + i] & 0x80) != 0)
               {
-                if (congruencesFound >= matrixBLength)
+                if (common.siqs.congruencesFound >= common.siqs.matrixBLength)
                 {       // All congruences were found: stop sieving.
                   index2 = 0;
                   break;
                 }
                 SieveLocationHit(rowMatrixB,
                   rowMatrixBbeforeMerge,
-                  index2 + i, primeSieveData,
+                  index2 + i, common.siqs.primeSieveData,
                   rowPartials,
                   rowSquares,
                   biDividend, NumberLength, biT,
                   biLinearCoeff, biR, biU, biV,
                   indexFactorsA, FALSE);
-                if (congruencesFound >= matrixBLength)
+                if (common.siqs.congruencesFound >= common.siqs.matrixBLength)
                 {               // All congruences were found: stop sieving.
                   index2 = 0;
                   break;
@@ -4130,20 +4051,20 @@ static void sieveThread(BigInteger *result)
               }
               if (SieveArray[index2 + i] < 0)
               {
-                if (congruencesFound >= matrixBLength)
+                if (common.siqs.congruencesFound >= common.siqs.matrixBLength)
                 {       // All congruences were found: stop sieving.
                   index2 = 0;
                   break;
                 }
                 SieveLocationHit(rowMatrixB,
                   rowMatrixBbeforeMerge,
-                  index2 + i, primeSieveData,
+                  index2 + i, common.siqs.primeSieveData,
                   rowPartials,
                   rowSquares,
                   biDividend, NumberLength, biT,
                   biLinearCoeff, biR, biU, biV,
                   indexFactorsA, TRUE);
-                if (congruencesFound >= matrixBLength)
+                if (common.siqs.congruencesFound >= common.siqs.matrixBLength)
                 {               // All congruences were found: stop sieving.
                   index2 = 0;
                   break;
@@ -4157,7 +4078,7 @@ static void sieveThread(BigInteger *result)
         /*******************/
         PolynomialIndex += 2;
       } while (PolynomialIndex <= lastPolynomial &&
-        congruencesFound < matrixBLength);
+        common.siqs.congruencesFound < common.siqs.matrixBLength);
     }
 #if 0
   }
@@ -4165,7 +4086,7 @@ static void sieveThread(BigInteger *result)
   {
     synchronized(matrixB)
     {
-      factorSiqs = null;
+      common.siqs.factorSiqs = null;
       matrixB.notify();
     }
   }

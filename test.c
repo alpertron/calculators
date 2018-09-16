@@ -5,7 +5,7 @@
 #include "highlevel.h"
 #include "factor.h"
 #include "batch.h"
-#define DEBUG_CODE  17
+#define DEBUG_CODE  1
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
@@ -25,9 +25,10 @@ extern int lang, groupLen;
 extern limb TestNbr[MAX_LEN];
 char expr[] = "123456789012345";
 int Product[32];
-char input[10000];
-extern char tofactorDec[30000];
+char input[MAX_LEN*4];
+extern char tofactorDec[MAX_LEN*12];
 extern int app;
+extern int skipPrimality;
 BigInteger dividend, divisor, quotient;
 int main(int argc, char *argv[])
 {
@@ -175,6 +176,7 @@ int main(int argc, char *argv[])
   gaussianText(argv[1], argv[2][0]);
   printf("%s\n", output);
 #elif DEBUG_CODE == 13
+  skipPrimality = 0;
   lang = 0;
   hexadecimal = 0;
   if (argc == 3)
@@ -209,6 +211,7 @@ int main(int argc, char *argv[])
     }
     sprintf(text, "%s\n", argv[1]);
     ecmFrontText(text, 1, ptrKnownFactors);
+//    ecmFrontText(text, 0, ptrKnownFactors);
     printf("%s\n", output);
   }
   else

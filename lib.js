@@ -12,6 +12,14 @@ mergeInto(LibraryManager.library,
   {
     return Math.floor(new Date().getTime() / 100);
   },
+  startSkipTest: function()
+  {
+    self.postMessage("51");   // Show Skip Test button on screen
+  },
+  endSkipTest: function()
+  {
+    self.postMessage("52");   // Hide Skip Test button from screen
+  },
   getCunn: function(data)
   {
     var copyString = Module.cwrap('copyString', 'number', ['string']);

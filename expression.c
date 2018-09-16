@@ -70,7 +70,7 @@ static int ComputeTotient(void);
 static int ComputeNumDivs(void);
 static int ComputeSumDivs(void);
 static int ComputeConcatFact(void);
-static char textFactor[30000];
+static char textFactor[MAX_LEN*12];
 #endif
 static int ComputeSumDigits(void);
 static int ComputeRevDigits(void);
@@ -106,7 +106,11 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
   type = typ;
   retcode = ComputeExpr(expr, ExpressionResult);
   if (retcode != 0) { return retcode; }
+#ifdef FACTORIZATION_APP
+  if (ExpressionResult[0].nbrLimbs > 332192 / BITS_PER_GROUP + 1)   // 100000/log_10(2) = 332192
+#else
   if (ExpressionResult[0].nbrLimbs > 33219 / BITS_PER_GROUP + 1)    // 10000/log_10(2) = 33219
+#endif
   {
     return EXPR_NUMBER_TOO_HIGH;
   }
@@ -119,7 +123,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
 
 static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
 {
-  int i, j, shLeft;
+  int i, shLeft;
   int retcode;
   limb carry;
   boolean leftNumberFlag = FALSE;
@@ -128,7 +132,6 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
   int len;
   limb largeLen;
   limb *ptrLimb;
-  BigInteger factorial;
   BigInteger *pBigInt;
   int c;
   int startStackIndex = stackIndex;
@@ -254,19 +257,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_INTERM_TOO_HIGH;
       }
-      if (stackValues[stackIndex].limbs[0].x < 0 || stackValues[stackIndex].limbs[0].x > 5984)
+#ifdef FACTORIZATION_APP
+      if (stackValues[stackIndex].limbs[0].x < 0 || stackValues[stackIndex].limbs[0].x >= 47177)
+#else
+      if (stackValues[stackIndex].limbs[0].x < 0 || stackValues[stackIndex].limbs[0].x >= 5984)
+#endif
       {
         return EXPR_INTERM_TOO_HIGH;
       }
-      len = (int)stackValues[stackIndex].limbs[0].x;
-      factorial.limbs[0].x = 1;
-      factorial.nbrLimbs = 1;
-      factorial.sign = SIGN_POSITIVE;
-      for (i = 2; i <= len; i++)
-      {   // Multiply by all integers up to the argument of factorial.
-        multint(&factorial, &factorial, i);
-      }
-      stackValues[stackIndex] = factorial;
+      factorial(&stackValues[stackIndex], (int)stackValues[stackIndex].limbs[0].x);
       exprIndex++;
       continue;
     }
@@ -290,28 +289,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         largeLen.x = stackValues[stackIndex].limbs[0].x;
       }
       len = (int)largeLen.x;
+#ifdef FACTORIZATION_APP
+      if (len < 0 || len > 460490)
+#else
       if (len < 0 || len > 46049)
+#endif
       {
         return EXPR_INTERM_TOO_HIGH;
       }
-      factorial.limbs[0].x = 1;
-      factorial.nbrLimbs = 1;
-      factorial.sign = SIGN_POSITIVE;
-      for (i = 2; i <= len; i++)
-      {      // Multiply by prime numbers only.
-        for (j = 2; j*j <= i; j++)
-        {
-          if (i / j*j == i)
-          {   // Number is not prime.
-            break;
-          }
-        }
-        if (j*j > i)
-        {     // Number is prime, perform multiplication.
-          multint(&factorial, &factorial, i);
-        }
-      }
-      stackValues[stackIndex] = factorial;
+      primorial(&stackValues[stackIndex], (int)stackValues[stackIndex].limbs[0].x);
       exprIndex++;
       continue;
     }
@@ -411,7 +397,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "ISPRIME", 1, leftNumberFlag)) <= 0)
     {
       if (retcode != 0) { return retcode; }
+#ifdef FACTORIZATION_APP
+      if (BpswPrimalityTest(&stackValues[stackIndex], NULL) == 0)
+#else
       if (BpswPrimalityTest(&stackValues[stackIndex]) == 0)
+#endif
       {    // Argument is a probable prime.
         intToBigInteger(&stackValues[stackIndex], -1);
       }
@@ -648,7 +638,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {  // Power operator has right associativity.
         while (stackIndex > startStackIndex &&
           stackOperators[stackIndex - 1] != '(' &&
-          priority[(int)stackOperators[stackIndex - 1] - 1] <= priority[(int)charValue] - 1)
+          priority[(int)stackOperators[stackIndex - 1] - 1] <= priority[(int)charValue]/* - 1*/)
         {
           if ((SubExprResult = ComputeSubExpr()) != 0)
           {
@@ -1005,7 +995,11 @@ static int ComputeBack(void)
         pResult->nbrLimbs = nbrLimbs;
       }
     }
+#ifdef FACTORIZATION_APP
+  } while (BpswPrimalityTest(pResult, NULL));  // Continue loop if not probable prime.
+#else
   } while (BpswPrimalityTest(pResult));  // Continue loop if not probable prime.
+#endif
   return EXPR_OK;
 }
 
@@ -1067,7 +1061,11 @@ static int ComputeNext(void)
     {
       skipUpdate = 0;
     }
+#ifdef FACTORIZATION_APP
+  } while (BpswPrimalityTest(pResult, NULL));  // Continue loop if not probable prime.
+#else
   } while (BpswPrimalityTest(pResult));  // Continue loop if not probable prime.
+#endif
   return EXPR_OK;
 }
 
@@ -1105,7 +1103,11 @@ static enum eExprErr ComputeFibLucas(int origValue)
     return EXPR_INTERM_TOO_HIGH;
   }
   largeVal.x = pArgument->limbs[0].x;
+#ifdef FACTORIZATION_APP
+  if (largeVal.x > 956620)
+#else
   if (largeVal.x > 95662)
+#endif
   {
     return EXPR_INTERM_TOO_HIGH;
   }
@@ -1326,7 +1328,11 @@ static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger
     {   // Shift too much to the left.
       return EXPR_INTERM_TOO_HIGH;
     }
+#ifdef FACTORIZATION_APP
+    if ((unsigned int)(first->nbrLimbs * BITS_PER_GROUP + shiftCtr) > 664380)
+#else
     if ((unsigned int)(first->nbrLimbs * BITS_PER_GROUP + shiftCtr) > 66438)
+#endif
     {   // Shift too much to the left.
       return EXPR_INTERM_TOO_HIGH;
     }

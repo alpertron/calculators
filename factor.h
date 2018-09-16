@@ -18,7 +18,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef _FACTOR_H
 #define _FACTOR_H
-#define MAX_FACTORS 1000
+#define MAX_FACTORS 5000
 #define FACTOR_ARRSIZE (2*MAX_FACTORS)
 #include "showtime.h"
 #ifdef __EMSCRIPTEN__
@@ -30,7 +30,11 @@ struct sFactors
   int multiplicity;
   int upperBound;
 };
-extern char tofactorDec[30000];
+#ifdef FACTORIZATION_APP
+extern int StepECM;
+#endif
+
+extern char tofactorDec[MAX_LEN*12];
 extern char verbose, prettyprint, cunningham, hexadecimal;
 extern struct sFactors stFactors[MAX_FACTORS];
 extern int *factorArr[FACTOR_ARRSIZE];
@@ -39,10 +43,14 @@ void factorExt(BigInteger *nbrToFactor, int *number, int *factors, struct sFacto
 void FactoringSIQS(limb *pNbrToFactor, limb *pFactor);
 extern int lang;
 extern int nbrToFactor[MAX_LEN];
-extern struct sFactors astFactorsMod[1000];
-extern int factorsMod[10000];
+extern struct sFactors astFactorsMod[MAX_FACTORS];
+extern int factorsMod[20000];
 void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, int doFactorization);
 void Totient(BigInteger *result);
 void SumOfDivisors(BigInteger *result);
 void NumberOfDivisors(BigInteger *result);
+#ifdef FACTORIZATION_APP
+char *ShowFactoredPart(BigInteger *nbr, void *vFactors);
+void ShowLowerText(void);
+#endif
 #endif

@@ -19,8 +19,9 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <math.h>
 #include "bignbr.h"
+#include "factor.h"
 #include "expression.h"
-
+#include "skiptest.h"
 static BigInteger Temp, Temp2, Temp3, Base, Power, expon;
 static char ProcessExpon[MAX_LEN*BITS_PER_GROUP + 1000];
 static char primes[MAX_LEN*BITS_PER_GROUP + 1000];
@@ -32,6 +33,9 @@ extern int q[MAX_LEN];
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 int groupLen = 6;
+#ifdef __EMSCRIPTEN__
+int percentageBPSW;
+#endif
 
 void CopyBigInt(BigInteger *pDest, BigInteger *pSrc)
 {
@@ -220,15 +224,31 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
   int nbrLimbsFactor1 = pFactor1->nbrLimbs;
   int nbrLimbsFactor2 = pFactor2->nbrLimbs;
   int nbrLimbs;
-  if ((pFactor1->nbrLimbs == 1 && pFactor1->limbs[0].x == 0) ||
-    (pFactor2->nbrLimbs == 1 && pFactor2->limbs[0].x == 0))
-  {    // Any factor is zero.
-    pProduct->nbrLimbs = 1;      // Product is zero.
-    pProduct->limbs[0].x = 0;
-    pProduct->sign = SIGN_POSITIVE;
+  BigInteger *temp;
+  if (pFactor1->nbrLimbs == 1 || pFactor2->nbrLimbs == 1)
+  {       // At least one the factors has only one limb.
+    if (pFactor1->nbrLimbs == 1)
+    {     // Force the second factor to have only one limb.
+      temp = pFactor1;
+      pFactor1 = pFactor2;
+      pFactor2 = temp;
+    }
+    if (pFactor2->limbs[0].x == 0 || (pFactor1->nbrLimbs == 1 && pFactor1->limbs[0].x == 0))
+    {     // Any factor is zero, so product must be zero.
+      intToBigInteger(pProduct, 0);
+    }
+    else
+    {     // Multiply BigInteger by integer.
+      int factor2 = (pFactor2->sign == SIGN_POSITIVE? pFactor2->limbs[0].x : -pFactor2->limbs[0].x);
+      multint(pProduct, pFactor1, factor2);
+    }
     return EXPR_OK;
   }
+#ifdef FACTORIZATION_APP
+  if (pFactor1->nbrLimbs + pFactor2->nbrLimbs > 664380 / BITS_PER_GROUP + 1)  // 2^664380 ~ 10^200000
+#else
   if (pFactor1->nbrLimbs + pFactor2->nbrLimbs > 66438 / BITS_PER_GROUP + 1)  // 2^66438 ~ 10^20000
+#endif
   {
     return EXPR_INTERM_TOO_HIGH;
   }
@@ -394,7 +414,11 @@ enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int exponent, BigInteger *pPo
     return EXPR_OK;
   }
   base = logBigNbr(pBase);
+#ifdef FACTORIZATION_APP
+  if (base*(double)exponent > 460510)
+#else
   if (base*(double)exponent > 46051)
+#endif
   {   // More than 20000 digits. 46051 = log(10^20000)
     return EXPR_INTERM_TOO_HIGH;
   }
@@ -1023,17 +1047,57 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
   limb *ptrLimb;
   double dN;
   int nbrLimbs = pBigNbr->nbrLimbs;
-  int maxExpon = bitLength(pBigNbr);
+  int maxExpon;
   int h, j;
   int modulus;
   int intLog2root;
   int primesLength, Exponent;
+  int base;
   double log2N, log2root;
   int prime2310x1[] =
   { 2311, 4621, 9241, 11551, 18481, 25411, 32341, 34651, 43891, 50821 };
   // Primes of the form 2310x+1.
   boolean expon2 = TRUE, expon3 = TRUE, expon5 = TRUE;
   boolean expon7 = TRUE, expon11 = TRUE;
+  double dLogBigNbr = logBigNbr(pBigNbr);
+  if (pBigNbr->nbrLimbs > 10)
+  {
+    for (base = 2; base <= 100; base++)
+    {     // Check whether pBigNbr is perfect power of these bases.
+      double dProd;
+      double dLogBase = log(base);
+      Exponent = (int)(dLogBigNbr / dLogBase - 1);
+      dProd = dLogBigNbr - Exponent * dLogBase;
+      if (dProd > 0.00000000001 || dProd < -0.00000000001)
+      {
+        Exponent++;
+        dProd = dLogBigNbr - Exponent * dLogBase;
+        if (dProd > 0.00000000001 || dProd < -0.00000000001)
+        {
+          Exponent++;
+          dProd = dLogBigNbr - Exponent * dLogBase;
+          if (dProd > 0.00000000001 || dProd < -0.00000000001)
+          {
+            continue;           // Test next base.
+          }
+        }
+      }
+      intToBigInteger(pBase, base);
+      BigIntPowerIntExp(pBase, Exponent, &Temp3);
+      if (BigIntEqual(&Temp3, pBigNbr))
+      {
+        return Exponent;
+      }
+      pBase->nbrLimbs = pBigNbr->nbrLimbs;
+      memcpy(pBase->limbs, pBigNbr->limbs, pBase->nbrLimbs * sizeof(limb));
+      return 1;
+    }
+    maxExpon = (int)(dLogBigNbr / log(101));
+  }
+  else
+  {
+    maxExpon = (int)(dLogBigNbr / log(2));
+  }
   for (h = 0; h < sizeof(prime2310x1) / sizeof(prime2310x1[0]); h++)
   {
     int testprime = prime2310x1[h];
@@ -1101,9 +1165,10 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
       }
     }
   }
-  log2N = logBigNbr(pBigNbr) / log(2);
+  log2N = dLogBigNbr / log(2);
   for (Exponent = maxExpon; Exponent >= 2; Exponent--)
   {
+    int k, prime;
     if (Exponent % 2 == 0 && !expon2)
     {
       continue; // Not a square
@@ -1134,6 +1199,47 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
     nbrLimbs = intLog2root + 1;
     ptrLimb = &pBase->limbs[nbrLimbs - 1];
     dN = exp((log2root - intLog2root*BITS_PER_GROUP) * log(2));
+    if (nbrLimbs == 1)
+    {
+      double dQuot;
+      base = (int)dN - 1;
+      dQuot = dN / base;
+      if (dQuot > 1.0000000001 || dQuot < 0.9999999999)
+      {
+        base++;
+        dQuot = dN / base;
+        if (dQuot > 1.0000000001 || dQuot < 0.9999999999)
+        {
+          base++;
+          dQuot = dN / base;
+          if (dQuot > 1.0000000001 || dQuot < 0.9999999999)
+          {
+            continue;   // Exponent is incorrect. Check next one.
+          }
+        }
+      }
+    }
+    // If p = prime = k*expon+1, and n = r (mod p), it must be r^k = 1 (mod p)
+    for (k=1; ; k++)
+    {
+      prime = k * Exponent + 1;
+      // Test that prime is really prime.
+      for (j = 2; j*j <= prime; j++)
+      {
+        if (prime / j * j == prime)
+        {   // Number is not prime.
+          break;
+        }
+      }
+      if (j*j > prime)
+      {     // Number is prime.
+        break;
+      }
+    }
+    if (intModPow(getRemainder(pBigNbr, prime), k, prime) != 1)
+    {   // Number is not a power of the type a^Exponent.
+      continue;
+    }
     // All approximations must be >= than true answer.
     if (nbrLimbs == 1)
     {
@@ -1210,6 +1316,50 @@ int checkMinusOne(limb *value, int nbrLimbs)
     carry >>= BITS_PER_GROUP;
   }
   return 1;
+}
+
+void BigIntDivideBy2(BigInteger *nbr)
+{
+  int ctr;
+  int nbrLimbs;
+  int curLimb, nextLimb;
+  int *ptrDest;
+  nbrLimbs = nbr->nbrLimbs;
+  ptrDest = &nbr->limbs[0].x;
+  curLimb = *ptrDest;
+  for (ctr = 1; ctr < nbrLimbs; ctr++)
+  {  // Process starting from least significant limb.
+    nextLimb = *(ptrDest + 1);
+    *ptrDest++ = ((curLimb >> 1) | (nextLimb << (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
+    curLimb = nextLimb;
+  }
+  *ptrDest = (curLimb >> 1) & MAX_INT_NBR;
+  if (nbrLimbs > 1 && nbr->limbs[nbrLimbs - 1].x == 0)
+  {
+    nbr->nbrLimbs--;
+  }
+}
+
+void BigIntMultiplyBy2(BigInteger *nbr)
+{
+  int ctr;
+  int nbrLimbs;
+  int prevLimb, curLimb;
+  int *ptrDest;
+  nbrLimbs = nbr->nbrLimbs;
+  ptrDest = &nbr->limbs[0].x;
+  prevLimb = 0;
+  for (ctr = 0; ctr < nbrLimbs; ctr++)
+  {  // Process starting from least significant limb.
+    curLimb = *ptrDest;
+    *ptrDest++ = ((curLimb << 1) | (prevLimb >> (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
+    prevLimb = curLimb;
+  }
+  if (prevLimb & (1 << (BITS_PER_GROUP - 1)))
+  {
+    *ptrDest = 1;
+    nbr->nbrLimbs++;
+  }
 }
 
 // Find power of 2 that divides the number.
@@ -1318,7 +1468,7 @@ int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower)
   {
     while ((a.limbs[0].x & 1) == 0)
     {     // a is even.
-      subtractdivide(&a, 0, 2);         // a <- a / 2
+      BigIntDivideBy2(&a);              // a <- a / 2
       if ((m.limbs[0].x & 7) == 3 || (m.limbs[0].x & 7) == 5)
       {   // m = 3 or m = 5 (mod 8)
         t = -t;
@@ -1366,8 +1516,18 @@ static void Halve(limb *pValue)
 //         1 = composite: not 2-Fermat pseudoprime.
 //         2 = composite: does not pass 2-SPRP test.
 //         3 = composite: does not pass strong Lucas test.
+#if FACTORIZATION_APP
+int BpswPrimalityTest(/*@in@*/BigInteger *pValue, void *vFactors)
+#else
 int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
+#endif
 {
+#if defined(__EMSCRIPTEN__) && !defined(FACTORIZATION_APP)
+  char text[200];
+#endif
+#ifdef __EMSCRIPTEN__
+  char *ptrText;
+#endif
   int i, Mult3Len, ctr, D, absQ, mult, mask, index, signPowQ;
   int insidePowering = FALSE;
   int nbrLimbs = pValue->nbrLimbs;
@@ -1381,6 +1541,18 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   {
     return 1;    // Number is even and different from 2. Indicate composite.
   }
+#ifdef __EMSCRIPTEN__
+#ifdef FACTORIZATION_APP
+  StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
+  ptrText = ShowFactoredPart(pValue, vFactors);
+  strcpy(ptrText, lang ? "<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
+    "<p>Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.</p>");
+  ShowLowerText();
+#else
+  databack(lang ? "3<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
+    "3<p>Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.</p>");
+#endif
+#endif
   // Perform 2-SPRP test
   (limbs + nbrLimbs)->x = 0;
   memcpy(q, limbs, (nbrLimbs + 1) * sizeof(limb));
@@ -1390,7 +1562,23 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   DivideBigNbrByMaxPowerOf2(&ctr, Mult3, &Mult3Len);
   memcpy(TestNbr, limbs, (nbrLimbs+1) * sizeof(limb));
   GetMontgomeryParms(nbrLimbs);
-  modPowBaseInt(2, Mult3, Mult3Len, Mult1); // Mult1 = base^Mult3.
+  // Find Mult1 = 2^Mult3.
+  memcpy(Mult1, MontgomeryMultR1, (NumberLength + 1) * sizeof(limb));  // power <- 1
+  for (index = Mult3Len - 1; index >= 0; index--)
+  {
+    int groupExp = (int)Mult3[index].x;
+#ifdef __EMSCRIPTEN__
+    percentageBPSW = (Mult3Len - index) * 100 / Mult3Len;
+#endif
+    for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+    {
+      modmult(Mult1, Mult1, Mult1);
+      if ((groupExp & mask) != 0)
+      {
+        modmultInt(Mult1, 2, Mult1);
+      }
+    }
+  }
                                             // If Mult1 != 1 and Mult1 = TestNbr-1, perform full test.
   if (!checkOne(Mult1, nbrLimbs) && !checkMinusOne(Mult1, nbrLimbs))
   {
@@ -1437,6 +1625,36 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
     mult = -mult;
   }
   absQ = (D + 1) >> 2;
+#ifdef __EMSCRIPTEN__
+#ifdef FACTORIZATION_APP
+  StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
+  ptrText = ShowFactoredPart(pValue, vFactors);
+#else
+  ptrText = text;
+  *ptrText++ = '3';
+#endif
+  strcpy(ptrText, lang ? "<p>Paso 2 del algoritmo BPSW de primos probables: Lucas fuerte con P=1, D=" :
+    "<p>Step 2 of BPSW probable prime algorithm: Strong Lucas with P=1, D=");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, D);
+  strcpy(ptrText, ", Q=");
+  ptrText += strlen(ptrText);
+  i = -absQ;        // Get value of Q to show it on screen.
+  if (i < 0)
+  {
+    strcpy(ptrText, "&minus;");
+    ptrText += strlen(ptrText);
+    i = -i;
+  }
+  int2dec(&ptrText, i);
+  strcpy(ptrText, "</p>");
+  ptrText += strlen(ptrText);
+#ifdef FACTORIZATION_APP
+  ShowLowerText();
+#else
+  databack(text);
+#endif
+#endif
   // Perform strong Lucas primality test on n with parameters D, P=1, Q just found.
   // Let d*2^s = n+1 where d is odd.
   // Then U_d = 0 or v_{d*2^r} = 0 for some r < s.
@@ -1461,6 +1679,9 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   DivideBigNbrByMaxPowerOf2(&ctr, expon.limbs, &expon.nbrLimbs);
   for (index = expon.nbrLimbs - 1; index >= 0; index--)
   {
+#ifdef __EMSCRIPTEN__
+    percentageBPSW = (expon.nbrLimbs - index) * 100 / expon.nbrLimbs;
+#endif
     int groupExp = (int)(expon.limbs[index].x);
     for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
     {

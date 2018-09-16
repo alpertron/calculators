@@ -23,11 +23,13 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
+#include "commonstruc.h"
+#include "skiptest.h"
 
 int yieldFreq;
 #ifdef __EMSCRIPTEN__
-char upperText[30000];
-char lowerText[30000];
+char upperText[MAX_LEN*16];
+char lowerText[MAX_LEN*16];
 char *ptrLowerText;
 extern mmCback modmultCallback;
 extern long long lModularMult;
@@ -41,59 +43,19 @@ extern char *ptrInputText;
 #define TYP_RABIN  300000000
 #define TYP_EC     350000000
 
-#define MAX_PRIME_SIEVE 7  // Only numbers 7 or 11 are accepted here.
-#if MAX_PRIME_SIEVE == 11
-  #define SIEVE_SIZE (2*3*5*7*11)
-  #define GROUP_SIZE ((2-1)*(3-1)*(5-1)*(7-1)*(11-1))
-#else
-  #define SIEVE_SIZE (2*3*5*7)
-  #define GROUP_SIZE ((2-1)*(3-1)*(5-1)*(7-1))
-#endif
-#define HALF_SIEVE_SIZE (SIEVE_SIZE/2)
-
-char factorsAscii[10000];
-static int nbrPrimes, indexPrimes, StepECM, DegreeAurif, NextEC;
+union uCommon common;
+char factorsAscii[MAX_LEN*4];
+int StepECM;
+int skipPrimality;
+static int nbrPrimes, indexPrimes, DegreeAurif, NextEC;
 static int FactorIndex;
 static BigInteger power, prime;
 int *factorArr[FACTOR_ARRSIZE];
 static int Typ[4000];
 static int indexM, maxIndexM;
 static int foundByLehman, performLehman;
-static int SmallPrime[670]; /* Primes < 5000 */
 static int EC;
-static limb A0[MAX_LEN];
-static limb A02[MAX_LEN];
-static limb A03[MAX_LEN];
-static limb AA[MAX_LEN];
-static limb DX[MAX_LEN];
-static limb DZ[MAX_LEN];
-static limb GD[MAX_LEN];
-static limb M[MAX_LEN];
-static limb TX[MAX_LEN];
-static limb TZ[MAX_LEN];
-static limb UX[MAX_LEN];
-static limb UZ[MAX_LEN];
-static limb W1[MAX_LEN];
-static limb W2[MAX_LEN];
-static limb W3[MAX_LEN];
-static limb W4[MAX_LEN];
-static limb WX[MAX_LEN];
-static limb WZ[MAX_LEN];
-static limb X[MAX_LEN];
-static limb Z[MAX_LEN];
-static limb Aux1[MAX_LEN];
-static limb Aux2[MAX_LEN];
-static limb Aux3[MAX_LEN];
-static limb Aux4[MAX_LEN];
-static limb Xaux[MAX_LEN];
-static limb Zaux[MAX_LEN];
-static limb root[GROUP_SIZE][MAX_LEN];
-static unsigned char sieve[10*SIEVE_SIZE];
-static unsigned char sieve2310[SIEVE_SIZE];
-static int sieveidx[GROUP_SIZE];
-static limb GcdAccumulated[MAX_LEN];
-
-static limb *fieldAA, *fieldTX, *fieldTZ, *fieldUX, *fieldUZ;
+static int SmallPrime[670]; /* Primes < 5000 */
 static void add3(limb *x3, limb *z3, limb *x2, limb *z2, limb *x1, limb *z1, limb *x, limb *z);
 static void duplicate(limb *x2, limb *z2, limb *x1, limb *z1);
 static BigInteger Temp1, Temp2, Temp3, Temp4;
@@ -102,11 +64,11 @@ char verbose, prettyprint, cunningham, hexadecimal;
 long long Gamma[386];
 long long Delta[386];
 long long AurifQ[386];
-char tofactorDec[30000];
+char tofactorDec[MAX_LEN*12];
 extern int q[MAX_LEN];
 int nbrToFactor[MAX_LEN];
-struct sFactors astFactorsMod[1000];
-int factorsMod[10000];
+struct sFactors astFactorsMod[5000];
+int factorsMod[20000];
 static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor);
 static char *findChar(char *str, char c);
 enum eEcmResult
@@ -223,8 +185,8 @@ void prac(int n, limb *x, limb *z, limb *xT, limb *zT, limb *xT2, limb *zT2)
   int d, e, r, i;
   limb *t;
   limb *xA = x, *zA = z;
-  limb *xB = Aux1, *zB = Aux2;
-  limb *xC = Aux3, *zC = Aux4;
+  limb *xB = common.ecm.Aux1, *zB = common.ecm.Aux2;
+  limb *xC = common.ecm.Aux3, *zC = common.ecm.Aux4;
   double v[] =
   {
     1.61803398875,
@@ -381,10 +343,10 @@ Modifies: x3, z3, u, v, w.
 static void add3(limb *x3, limb *z3, limb *x2, limb *z2,
                  limb *x1, limb *z1, limb *x, limb *z)
 {
-  limb *t = fieldTX;
-  limb *u = fieldTZ;
-  limb *v = fieldUX;
-  limb *w = fieldUZ;
+  limb *t = common.ecm.fieldTX;
+  limb *u = common.ecm.fieldTZ;
+  limb *v = common.ecm.fieldUX;
+  limb *w = common.ecm.fieldUZ;
   SubtBigNbrModN(x2, z2, v, TestNbr, NumberLength); // v = x2-z2
   AddBigNbrModN(x1, z1, w, TestNbr, NumberLength);      // w = x1+z1
   modmult(v, w, u);       // u = (x2-z2)*(x1+z1)
@@ -432,16 +394,16 @@ void print(limb *w)
 #endif
 static void duplicate(limb *x2, limb *z2, limb *x1, limb *z1)
 {
-  limb *u = fieldUZ;
-  limb *v = fieldTX;
-  limb *w = fieldTZ;
+  limb *u = common.ecm.fieldUZ;
+  limb *v = common.ecm.fieldTX;
+  limb *w = common.ecm.fieldTZ;
   AddBigNbrModN(x1, z1, w, TestNbr, NumberLength);      // w = x1+z1
   modmult(w, w, u);       // u = (x1+z1)^2
   SubtBigNbrModN(x1, z1, w, TestNbr, NumberLength); // w = x1-z1
   modmult(w, w, v);       // v = (x1-z1)^2
   modmult(u, v, x2);      // x2 = u*v = (x1^2 - z1^2)^2
   SubtBigNbrModN(u, v, w, TestNbr, NumberLength);   // w = u-v = 4*x1*z1
-  modmult(fieldAA, w, u);
+  modmult(common.ecm.fieldAA, w, u);
   AddBigNbrModN(u, v, u, TestNbr, NumberLength);        // u = (v+b*w)
   modmult(w, u, z2);      // z2 = (w*u)
 }
@@ -462,7 +424,7 @@ static int gcdIsOne(limb *value)
     return 0;
   }
   BigIntGcd(&Temp1, &Temp2, &Temp3);
-  CompressLimbsBigInteger(GD, &Temp3);
+  CompressLimbsBigInteger(common.ecm.GD, &Temp3);
   if (Temp3.nbrLimbs == 1 && Temp3.limbs[0].x < 2)
   {
     return Temp3.limbs[0].x;    // GCD is less than 2.
@@ -475,7 +437,7 @@ static void GenerateSieve(int initial)
   int i, j, Q, initModQ;
   for (i = 0; i < 10*SIEVE_SIZE; i += SIEVE_SIZE)
   {
-    memcpy(&sieve[i], sieve2310, SIEVE_SIZE);
+    memcpy(&common.ecm.sieve[i], common.ecm.sieve2310, SIEVE_SIZE);
   }
 #if MAX_PRIME_SIEVE == 11
   j = 5;
@@ -503,7 +465,7 @@ static void GenerateSieve(int initial)
       }
       for (; i < 10*SIEVE_SIZE; i += Q)
       {
-        sieve[i] = 1; /* Composite */
+        common.ecm.sieve[i] = 1; /* Composite */
       }
     }
     else
@@ -513,7 +475,7 @@ static void GenerateSieve(int initial)
       {
         for (i = i / 2; i < 10*SIEVE_SIZE; i += Q)
         {
-          sieve[i] = 1; /* Composite */
+          common.ecm.sieve[i] = 1; /* Composite */
         }
       }
       else
@@ -947,17 +909,15 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
   int numPrimes = 2 * maxExpon + 3;
   double logar = logBigNbr(nbrToFactor);
   // 33219 = logarithm base 2 of max number supported = 10^10000.
-  unsigned char ProcessExpon[(33219+7)/8];
-  unsigned char primes[(2*33219+3+7)/8];
-  memset(ProcessExpon, 0xFF, sizeof(ProcessExpon));
-  memset(primes, 0xFF, sizeof(primes));
+  memset(common.ecm.ProcessExpon, 0xFF, sizeof(common.ecm.ProcessExpon));
+  memset(common.ecm.primes, 0xFF, sizeof(common.ecm.primes));
   for (i = 2; i * i < numPrimes; i++)
   { // Generation of primes using sieve of Eratosthenes.
-    if (primes[i >> 3] & (1 << (i & 7)))
+    if (common.ecm.primes[i >> 3] & (1 << (i & 7)))
     {     // Number i is prime.
       for (j = i * i; j < numPrimes; j += i)
       {   // Mark multiple of i as composite.
-        primes[j >> 3] &= ~(1 << (j & 7));
+        common.ecm.primes[j >> 3] &= ~(1 << (j & 7));
       }
     }
   }
@@ -965,32 +925,35 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
   // of its square then the number +/- 1 cannot be a perfect power.
   for (i = 2; i < numPrimes; i++)
   {
-    if (primes[i>>3] & (1 << (i & 7)))
+    if (common.ecm.primes[i>>3] & (1 << (i & 7)))
     {      // i is prime according to sieve.
-      unsigned int remainder;
+      uint64_t remainder;
       int index;
-      longToBigInteger(&Temp1, (unsigned int)i*(unsigned int)i);
-      BigIntRemainder(nbrToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
-      remainder = (unsigned int)Temp2.limbs[0].x;
-      if (Temp2.nbrLimbs > 1)
+      int rem = getRemainder(nbrToFactor, i);
+      if (rem == 1 || rem == i - 1)
       {
-        remainder += (unsigned int)Temp2.limbs[1].x << BITS_PER_GROUP;
-      }
-      if (remainder % i == 1 && remainder != 1)
-      {
-        plus1 = TRUE; // NumberFactor cannot be a power + 1
-      }
-      if (remainder % i == (unsigned int)i-1 &&
-          remainder != (unsigned int)i*(unsigned int)i-1)
-      {
-        minus1 = TRUE; // NumberFactor cannot be a power - 1
-      }
-      if (minus1 && plus1)
-      {
-        return;
+        longToBigInteger(&Temp1, (uint64_t)i*(uint64_t)i);
+        BigIntRemainder(nbrToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
+        remainder = (uint64_t)Temp2.limbs[0].x;
+        if (Temp2.nbrLimbs > 1)
+        {
+          remainder += (uint64_t)Temp2.limbs[1].x << BITS_PER_GROUP;
+        }
+        if (rem == 1 && remainder != 1)
+        {
+          plus1 = TRUE; // NumberFactor cannot be a power + 1
+        }
+        if (rem == i - 1 && remainder != (uint64_t)i*(uint64_t)i - 1)
+        {
+          minus1 = TRUE; // NumberFactor cannot be a power - 1
+        }
+        if (minus1 && plus1)
+        {
+          return;
+        }
       }
       index = i / 2;
-      if (!(ProcessExpon[index >> 3] & (1<<(index&7))))
+      if (!(common.ecm.ProcessExpon[index >> 3] & (1<<(index&7))))
       {
         continue;
       }
@@ -999,7 +962,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
       {
         for (j = i / 2; j <= maxExpon; j += i / 2)
         {
-          ProcessExpon[j >> 3] &= ~(1 << (j&7));
+          common.ecm.ProcessExpon[j >> 3] &= ~(1 << (j&7));
         }
       }
       else
@@ -1008,7 +971,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
         {
           for (j = i - 1; j <= maxExpon; j += i - 1)
           {
-            ProcessExpon[j >> 3] &= ~(1 << (j & 7));
+            common.ecm.ProcessExpon[j >> 3] &= ~(1 << (j & 7));
           }
         }
       }
@@ -1022,7 +985,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
       continue;
     if (Exponent % 3 == 0 && mod9 > 2 && mod9 < 7)
       continue;
-    if (!(ProcessExpon[Exponent >> 3] & (1 << (Exponent & 7))))
+    if (!(common.ecm.ProcessExpon[Exponent >> 3] & (1 << (Exponent & 7))))
       continue;
     if (ProcessExponent(pstFactors, nbrToFactor, Exponent))
       return;
@@ -1033,7 +996,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
     {
       continue;
     }
-    if (!(ProcessExpon[Exponent >> 3] & (1 << (Exponent & 7))))
+    if (!(common.ecm.ProcessExpon[Exponent >> 3] & (1 << (Exponent & 7))))
     {
       continue;
     }
@@ -1200,8 +1163,8 @@ static enum eEcmResult ecmCurve(BigInteger *N)
       NextEC = -1;
       if (EC >= TYP_SIQS)
       {
-        GD[0].x = 1;   // Set GD to 1.
-        memset(&GD[1], 0, (NumberLength - 1) * sizeof(limb));
+        common.ecm.GD[0].x = 1;   // Set GD to 1.
+        memset(&common.ecm.GD[1], 0, (NumberLength - 1) * sizeof(limb));
         return FACTOR_FOUND;
       }
     }
@@ -1235,8 +1198,8 @@ static enum eEcmResult ecmCurve(BigInteger *N)
     Lehman(N, EC % 50000000, &potentialFactor);
     if (potentialFactor.nbrLimbs > 1)
     {                // Factor found.
-      memcpy(GD, potentialFactor.limbs, NumberLength * sizeof(limb));
-      memset(&GD[potentialFactor.nbrLimbs], 0, 
+      memcpy(common.ecm.GD, potentialFactor.limbs, NumberLength * sizeof(limb));
+      memset(&common.ecm.GD[potentialFactor.nbrLimbs], 0, 
              (NumberLength - potentialFactor.nbrLimbs) * sizeof(limb));
       foundByLehman = TRUE;
       return FACTOR_FOUND;
@@ -1332,53 +1295,53 @@ static enum eEcmResult ecmCurve(BigInteger *N)
 
     //  Compute A0 <- 2 * (EC+1)*modinv(3 * (EC+1) ^ 2 - 1, N) mod N
                                                // Aux2 <- 1 in Montgomery notation.
-    memcpy(Aux2, MontgomeryMultR1, NumberLength * sizeof(limb));                                               
-    modmultInt(Aux2, EC + 1, Aux2);            // Aux2 <- EC + 1.
-    modmultInt(Aux2, 2, Aux1);                 // Aux1 <- 2*(EC+1)
-    modmultInt(Aux2, EC + 1, Aux3);            // Aux3 <- (EC + 1)^2
-    modmultInt(Aux3, 3, Aux3);                 // Aux3 <- 3*(EC + 1)^2
+    memcpy(common.ecm.Aux2, MontgomeryMultR1, NumberLength * sizeof(limb));                                               
+    modmultInt(common.ecm.Aux2, EC + 1, common.ecm.Aux2);            // Aux2 <- EC + 1.
+    modmultInt(common.ecm.Aux2, 2, common.ecm.Aux1);                 // Aux1 <- 2*(EC+1)
+    modmultInt(common.ecm.Aux2, EC + 1, common.ecm.Aux3);            // Aux3 <- (EC + 1)^2
+    modmultInt(common.ecm.Aux3, 3, common.ecm.Aux3);                 // Aux3 <- 3*(EC + 1)^2
                                                // Aux2 <- 3*(EC + 1)^2 - 1 
-    SubtBigNbrModN(Aux3, MontgomeryMultR1, Aux2, TestNbr, NumberLength); 
-    ModInvBigNbr(Aux2, Aux2, TestNbr, NumberLength);
-    modmult(Aux1, Aux2, A0);                   // A0 <- 2*(EC+1)/(3*(EC+1)^2 - 1)
+    SubtBigNbrModN(common.ecm.Aux3, MontgomeryMultR1, common.ecm.Aux2, TestNbr, NumberLength); 
+    ModInvBigNbr(common.ecm.Aux2, common.ecm.Aux2, TestNbr, NumberLength);
+    modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.A0);                   // A0 <- 2*(EC+1)/(3*(EC+1)^2 - 1)
 
     //  if A0*(A0 ^ 2 - 1)*(9 * A0 ^ 2 - 1) mod N=0 then select another curve.
-    modmult(A0, A0, A02);          // A02 <- A0^2
-    modmult(A02, A0, A03);         // A03 <- A0^3
-    SubtBigNbrModN(A03, A0, Aux1, TestNbr, NumberLength);  // Aux1 <- A0^3 - A0
-    modmultInt(A02, 9, Aux2);      // Aux2 <- 9*A0^2
-    SubtBigNbrModN(Aux2, MontgomeryMultR1, Aux2, TestNbr, NumberLength); // Aux2 <- 9*A0^2-1
-    modmult(Aux1, Aux2, Aux3);
-    if (BigNbrIsZero(Aux3))
+    modmult(common.ecm.A0, common.ecm.A0, common.ecm.A02);          // A02 <- A0^2
+    modmult(common.ecm.A02, common.ecm.A0, common.ecm.A03);         // A03 <- A0^3
+    SubtBigNbrModN(common.ecm.A03, common.ecm.A0, common.ecm.Aux1, TestNbr, NumberLength);  // Aux1 <- A0^3 - A0
+    modmultInt(common.ecm.A02, 9, common.ecm.Aux2);      // Aux2 <- 9*A0^2
+    SubtBigNbrModN(common.ecm.Aux2, MontgomeryMultR1, common.ecm.Aux2, TestNbr, NumberLength); // Aux2 <- 9*A0^2-1
+    modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.Aux3);
+    if (BigNbrIsZero(common.ecm.Aux3))
     {
       continue;
     }
     //   Z <- 4 * A0 mod N
-    modmultInt(A0, 4, Z);
+    modmultInt(common.ecm.A0, 4, common.ecm.Z);
     //   A = (-3 * A0 ^ 4 - 6 * A0 ^ 2 + 1)*modinv(4 * A0 ^ 3, N) mod N
-    modmultInt(A02, 6, Aux1);      // Aux1 <- 6*A0^2
-    SubtBigNbrModN(MontgomeryMultR1, Aux1, Aux1, TestNbr, NumberLength);
-    modmult(A02, A02, Aux2);       // Aux2 <- A0^4
-    modmultInt(Aux2, 3, Aux2);     // Aux2 <- 3*A0^4
-    SubtBigNbrModN(Aux1, Aux2, Aux1, TestNbr, NumberLength);
-    modmultInt(A03, 4, Aux2);      // Aux2 <- 4*A0^3
-    ModInvBigNbr(Aux2, Aux3, TestNbr, NumberLength);
-    modmult(Aux1, Aux3, A0);
+    modmultInt(common.ecm.A02, 6, common.ecm.Aux1);      // Aux1 <- 6*A0^2
+    SubtBigNbrModN(MontgomeryMultR1, common.ecm.Aux1, common.ecm.Aux1, TestNbr, NumberLength);
+    modmult(common.ecm.A02, common.ecm.A02, common.ecm.Aux2);       // Aux2 <- A0^4
+    modmultInt(common.ecm.Aux2, 3, common.ecm.Aux2);     // Aux2 <- 3*A0^4
+    SubtBigNbrModN(common.ecm.Aux1, common.ecm.Aux2, common.ecm.Aux1, TestNbr, NumberLength);
+    modmultInt(common.ecm.A03, 4, common.ecm.Aux2);      // Aux2 <- 4*A0^3
+    ModInvBigNbr(common.ecm.Aux2, common.ecm.Aux3, TestNbr, NumberLength);
+    modmult(common.ecm.Aux1, common.ecm.Aux3, common.ecm.A0);
     //   AA <- (A + 2)*modinv(4, N) mod N
-    modmultInt(MontgomeryMultR1, 2, Aux2);  // Aux2 <- 2
-    AddBigNbrModN(A0, Aux2, Aux1, TestNbr, NumberLength); // Aux1 <- A0+2
-    modmultInt(MontgomeryMultR1, 4, Aux2);  // Aux2 <- 4
-    ModInvBigNbr(Aux2, Aux2, TestNbr, NumberLength);
-    modmult(Aux1, Aux2, AA);
+    modmultInt(MontgomeryMultR1, 2, common.ecm.Aux2);  // Aux2 <- 2
+    AddBigNbrModN(common.ecm.A0, common.ecm.Aux2, common.ecm.Aux1, TestNbr, NumberLength); // Aux1 <- A0+2
+    modmultInt(MontgomeryMultR1, 4, common.ecm.Aux2);  // Aux2 <- 4
+    ModInvBigNbr(common.ecm.Aux2, common.ecm.Aux2, TestNbr, NumberLength);
+    modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.AA);
     //   X <- (3 * A0 ^ 2 + 1) mod N
-    modmultInt(A02, 3, Aux1);    // Aux1 <- 3*A0^2
-    AddBigNbrModN(Aux1, MontgomeryMultR1, X, TestNbr, NumberLength);
+    modmultInt(common.ecm.A02, 3, common.ecm.Aux1);    // Aux1 <- 3*A0^2
+    AddBigNbrModN(common.ecm.Aux1, MontgomeryMultR1, common.ecm.X, TestNbr, NumberLength);
     /**************/
     /* First step */
     /**************/
-    memcpy(Xaux, X, NumberLength * sizeof(limb));
-    memcpy(Zaux, Z, NumberLength * sizeof(limb));
-    memcpy(GcdAccumulated, MontgomeryMultR1, (NumberLength+1) * sizeof(limb));
+    memcpy(common.ecm.Xaux, common.ecm.X, NumberLength * sizeof(limb));
+    memcpy(common.ecm.Zaux, common.ecm.Z, NumberLength * sizeof(limb));
+    memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, (NumberLength+1) * sizeof(limb));
     for (Pass = 0; Pass < 2; Pass++)
     {
       /* For powers of 2 */
@@ -1386,22 +1349,22 @@ static enum eEcmResult ecmCurve(BigInteger *N)
       StepECM = 1;
       for (I = 1; I <= L1; I <<= 1)
       {
-        duplicate(X, Z, X, Z);
+        duplicate(common.ecm.X, common.ecm.Z, common.ecm.X, common.ecm.Z);
       }
       for (I = 3; I <= L1; I *= 3)
       {
-        duplicate(W1, W2, X, Z);
-        add3(X, Z, X, Z, W1, W2, X, Z);
+        duplicate(common.ecm.W1, common.ecm.W2, common.ecm.X, common.ecm.Z);
+        add3(common.ecm.X, common.ecm.Z, common.ecm.X, common.ecm.Z, common.ecm.W1, common.ecm.W2, common.ecm.X, common.ecm.Z);
       }
 
       if (Pass == 0)
       {
-        modmult(GcdAccumulated, Z, Aux1);
-        memcpy(GcdAccumulated, Aux1, NumberLength * sizeof(limb));
+        modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.Aux1);
+        memcpy(common.ecm.GcdAccumulated, common.ecm.Aux1, NumberLength * sizeof(limb));
       }
       else
       {
-        if (gcdIsOne(Z) > 1)
+        if (gcdIsOne(common.ecm.Z) > 1)
         {
           return FACTOR_FOUND;
         }
@@ -1416,17 +1379,17 @@ static enum eEcmResult ecmCurve(BigInteger *N)
         P = SmallPrime[indexM];
         for (IP = P; IP <= L1; IP *= P)
         {
-          prac((int)P, X, Z, W1, W2, W3, W4);
+          prac((int)P, common.ecm.X, common.ecm.Z, common.ecm.W1, common.ecm.W2, common.ecm.W3, common.ecm.W4);
         }
         indexM++;
         if (Pass == 0)
         {
-          modmult(GcdAccumulated, Z, Aux1);
-          memcpy(GcdAccumulated, Aux1, NumberLength * sizeof(limb));
+          modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.Aux1);
+          memcpy(common.ecm.GcdAccumulated, common.ecm.Aux1, NumberLength * sizeof(limb));
         }
         else
         {
-          if (gcdIsOne(Z) > 1)
+          if (gcdIsOne(common.ecm.Z) > 1)
           {
             return FACTOR_FOUND;
           }
@@ -1438,7 +1401,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
       u = (int)P;
       for (i = 0; i < SIEVE_SIZE; i++)
       {
-        sieve2310[i] =
+        common.ecm.sieve2310[i] =
           (u % 3 == 0
             || u % 5 == 0
             || u % 7 == 0
@@ -1457,7 +1420,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
 
         for (i = 0; i < 10*SIEVE_SIZE; i++)
         {
-          if (sieve[i] != 0)
+          if (common.ecm.sieve[i] != 0)
           {
             continue; /* Do not process composites */
           }
@@ -1466,15 +1429,15 @@ static enum eEcmResult ecmCurve(BigInteger *N)
             break;
           }
           indexPrimes++;
-          prac((int)(P + 2 * i), X, Z, W1, W2, W3, W4);
+          prac((int)(P + 2 * i), common.ecm.X, common.ecm.Z, common.ecm.W1, common.ecm.W2, common.ecm.W3, common.ecm.W4);
           if (Pass == 0)
           {
-            modmult(GcdAccumulated, Z, Aux1);
-            memcpy(GcdAccumulated, Aux1, NumberLength * sizeof(limb));
+            modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.Aux1);
+            memcpy(common.ecm.GcdAccumulated, common.ecm.Aux1, NumberLength * sizeof(limb));
           }
           else
           {
-            if (gcdIsOne(Z) > 1)
+            if (gcdIsOne(common.ecm.Z) > 1)
             {
               return FACTOR_FOUND;
             }
@@ -1484,13 +1447,13 @@ static enum eEcmResult ecmCurve(BigInteger *N)
       } while (P < L1);
       if (Pass == 0)
       {
-        if (BigNbrIsZero(GcdAccumulated))
+        if (BigNbrIsZero(common.ecm.GcdAccumulated))
         { // If GcdAccumulated is
-          memcpy(X, Xaux, NumberLength * sizeof(limb));
-          memcpy(Z, Zaux, NumberLength * sizeof(limb));
+          memcpy(common.ecm.X, common.ecm.Xaux, NumberLength * sizeof(limb));
+          memcpy(common.ecm.Z, common.ecm.Zaux, NumberLength * sizeof(limb));
           continue; // multiple of TestNbr, continue.
         }
-        if (gcdIsOne(GcdAccumulated) > 1)
+        if (gcdIsOne(common.ecm.GcdAccumulated) > 1)
         {
           return FACTOR_FOUND;
         }
@@ -1511,78 +1474,78 @@ static enum eEcmResult ecmCurve(BigInteger *N)
 #endif
         )
       {
-        sieve2310[u / 2] = (unsigned char)1;
+        common.ecm.sieve2310[u / 2] = (unsigned char)1;
       }
       else
       {
-        sieve2310[(sieveidx[j++] = u / 2)] = (unsigned char)0;
+        common.ecm.sieve2310[(common.ecm.sieveidx[j++] = u / 2)] = (unsigned char)0;
       }
     }
-    memcpy(&sieve2310[HALF_SIEVE_SIZE], &sieve2310[0], HALF_SIEVE_SIZE);
-    memcpy(Xaux, X, NumberLength * sizeof(limb));  // (X:Z) -> Q (output
-    memcpy(Zaux, Z, NumberLength * sizeof(limb));  //         from step 1)
+    memcpy(&common.ecm.sieve2310[HALF_SIEVE_SIZE], &common.ecm.sieve2310[0], HALF_SIEVE_SIZE);
+    memcpy(common.ecm.Xaux, common.ecm.X, NumberLength * sizeof(limb));  // (X:Z) -> Q (output
+    memcpy(common.ecm.Zaux, common.ecm.Z, NumberLength * sizeof(limb));  //         from step 1)
     for (Pass = 0; Pass < 2; Pass++)
     {
       int Qaux, J;
-      memcpy(GcdAccumulated, MontgomeryMultR1, NumberLength * sizeof(limb));
-      memcpy(UX, X, NumberLength * sizeof(limb));
-      memcpy(UZ, Z, NumberLength * sizeof(limb));  // (UX:UZ) -> Q 
-      ModInvBigNbr(Z, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, X, root[0]); // root[0] <- X/Z (Q)
+      memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, NumberLength * sizeof(limb));
+      memcpy(common.ecm.UX, common.ecm.X, NumberLength * sizeof(limb));
+      memcpy(common.ecm.UZ, common.ecm.Z, NumberLength * sizeof(limb));  // (UX:UZ) -> Q 
+      ModInvBigNbr(common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.X, common.ecm.root[0]); // root[0] <- X/Z (Q)
       J = 0;
-      AddBigNbrModN(X, Z, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, Aux1, W1);
-      SubtBigNbrModN(X, Z, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, Aux1, W2);
-      modmult(W1, W2, TX);
-      SubtBigNbrModN(W1, W2, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, AA, Aux2);
-      AddBigNbrModN(Aux2, W2, Aux3, TestNbr, NumberLength);
-      modmult(Aux1, Aux3, TZ); // (TX:TZ) -> 2Q
-      SubtBigNbrModN(X, Z, Aux1, TestNbr, NumberLength);
-      AddBigNbrModN(TX, TZ, Aux2, TestNbr, NumberLength);
-      modmult(Aux1, Aux2, W1);
-      AddBigNbrModN(X, Z, Aux1, TestNbr, NumberLength);
-      SubtBigNbrModN(TX, TZ, Aux2, TestNbr, NumberLength);
-      modmult(Aux1, Aux2, W2);
-      AddBigNbrModN(W1, W2, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, Aux1, Aux2);
-      modmult(Aux2, UZ, X);
-      SubtBigNbrModN(W1, W2, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, Aux1, Aux2);
-      modmult(Aux2, UX, Z); // (X:Z) -> 3Q
+      AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W1);
+      SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W2);
+      modmult(common.ecm.W1, common.ecm.W2, common.ecm.TX);
+      SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.AA, common.ecm.Aux2);
+      AddBigNbrModN(common.ecm.Aux2, common.ecm.W2, common.ecm.Aux3, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux3, common.ecm.TZ); // (TX:TZ) -> 2Q
+      SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+      AddBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W1);
+      AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+      SubtBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W2);
+      AddBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
+      modmult(common.ecm.Aux2, common.ecm.UZ, common.ecm.X);
+      SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
+      modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z); // (X:Z) -> 3Q
       for (I = 5; I < SIEVE_SIZE; I += 2)
       {
-        memcpy(WX, X, NumberLength * sizeof(limb));
-        memcpy(WZ, Z, NumberLength * sizeof(limb));
-        SubtBigNbrModN(X, Z, Aux1, TestNbr, NumberLength);
-        AddBigNbrModN(TX, TZ, Aux2, TestNbr, NumberLength);
-        modmult(Aux1, Aux2, W1);
-        AddBigNbrModN(X, Z, Aux1, TestNbr, NumberLength);
-        SubtBigNbrModN(TX, TZ, Aux2, TestNbr, NumberLength);
-        modmult(Aux1, Aux2, W2);
-        AddBigNbrModN(W1, W2, Aux1, TestNbr, NumberLength);
-        modmult(Aux1, Aux1, Aux2);
-        modmult(Aux2, UZ, X);
-        SubtBigNbrModN(W1, W2, Aux1, TestNbr, NumberLength);
-        modmult(Aux1, Aux1, Aux2);
-        modmult(Aux2, UX, Z); // (X:Z) -> 5Q, 7Q, ...
+        memcpy(common.ecm.WX, common.ecm.X, NumberLength * sizeof(limb));
+        memcpy(common.ecm.WZ, common.ecm.Z, NumberLength * sizeof(limb));
+        SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+        AddBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
+        modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W1);
+        AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+        SubtBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
+        modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W2);
+        AddBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
+        modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
+        modmult(common.ecm.Aux2, common.ecm.UZ, common.ecm.X);
+        SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
+        modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
+        modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z); // (X:Z) -> 5Q, 7Q, ...
         if (Pass == 0)
         {
-          modmult(GcdAccumulated, Aux1, Aux2);
-          memcpy(GcdAccumulated, Aux2, NumberLength * sizeof(limb));
+          modmult(common.ecm.GcdAccumulated, common.ecm.Aux1, common.ecm.Aux2);
+          memcpy(common.ecm.GcdAccumulated, common.ecm.Aux2, NumberLength * sizeof(limb));
         }
         else
         {
-          if (gcdIsOne(Aux1) > 1)
+          if (gcdIsOne(common.ecm.Aux1) > 1)
           {
             return FACTOR_FOUND;
           }
         }
         if (I == HALF_SIEVE_SIZE)
         {
-          memcpy(DX, X, NumberLength * sizeof(limb));
-          memcpy(DZ, Z, NumberLength * sizeof(limb));  // (DX:DZ) -> HALF_SIEVE_SIZE*Q
+          memcpy(common.ecm.DX, common.ecm.X, NumberLength * sizeof(limb));
+          memcpy(common.ecm.DZ, common.ecm.Z, NumberLength * sizeof(limb));  // (DX:DZ) -> HALF_SIEVE_SIZE*Q
         }
         if (I % 3 != 0 && I % 5 != 0 && I % 7 != 0
 #if MAX_PRIME_SIEVE == 11
@@ -1591,44 +1554,44 @@ static enum eEcmResult ecmCurve(BigInteger *N)
           )
         {
           J++;
-          ModInvBigNbr(Z, Aux1, TestNbr, NumberLength);
-          modmult(Aux1, X, root[J]); // root[J] <- X/Z
+          ModInvBigNbr(common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+          modmult(common.ecm.Aux1, common.ecm.X, common.ecm.root[J]); // root[J] <- X/Z
         }
-        memcpy(UX, WX, NumberLength * sizeof(limb));  // (UX:UZ) <-
-        memcpy(UZ, WZ, NumberLength * sizeof(limb));  // Previous (X:Z)
+        memcpy(common.ecm.UX, common.ecm.WX, NumberLength * sizeof(limb));  // (UX:UZ) <-
+        memcpy(common.ecm.UZ, common.ecm.WZ, NumberLength * sizeof(limb));  // Previous (X:Z)
       } /* end for I */
-      AddBigNbrModN(DX, DZ, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, Aux1, W1);
-      SubtBigNbrModN(DX, DZ, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, Aux1, W2);
-      modmult(W1, W2, X);
-      SubtBigNbrModN(W1, W2, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, AA, Aux2);
-      AddBigNbrModN(Aux2, W2, Aux3, TestNbr, NumberLength);
-      modmult(Aux1, Aux3, Z);
-      memcpy(UX, X, NumberLength * sizeof(limb));
-      memcpy(UZ, Z, NumberLength * sizeof(limb));    // (UX:UZ) -> SIEVE_SIZE*Q
-      AddBigNbrModN(X, Z, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, Aux1, W1);
-      SubtBigNbrModN(X, Z, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, Aux1, W2);
-      modmult(W1, W2, TX);
-      SubtBigNbrModN(W1, W2, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, AA, Aux2);
-      AddBigNbrModN(Aux2, W2, Aux3, TestNbr, NumberLength);
-      modmult(Aux1, Aux3, TZ); // (TX:TZ) -> 2*SIEVE_SIZE*Q
-      SubtBigNbrModN(X, Z, Aux1, TestNbr, NumberLength);
-      AddBigNbrModN(TX, TZ, Aux2, TestNbr, NumberLength);
-      modmult(Aux1, Aux2, W1);
-      AddBigNbrModN(X, Z, Aux1, TestNbr, NumberLength);
-      SubtBigNbrModN(TX, TZ, Aux2, TestNbr, NumberLength);
-      modmult(Aux1, Aux2, W2);
-      AddBigNbrModN(W1, W2, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, Aux1, Aux2);
-      modmult(Aux2, UZ, X);
-      SubtBigNbrModN(W1, W2, Aux1, TestNbr, NumberLength);
-      modmult(Aux1, Aux1, Aux2);
-      modmult(Aux2, UX, Z); // (X:Z) -> 3*SIEVE_SIZE*Q
+      AddBigNbrModN(common.ecm.DX, common.ecm.DZ, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W1);
+      SubtBigNbrModN(common.ecm.DX, common.ecm.DZ, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W2);
+      modmult(common.ecm.W1, common.ecm.W2, common.ecm.X);
+      SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.AA, common.ecm.Aux2);
+      AddBigNbrModN(common.ecm.Aux2, common.ecm.W2, common.ecm.Aux3, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux3, common.ecm.Z);
+      memcpy(common.ecm.UX, common.ecm.X, NumberLength * sizeof(limb));
+      memcpy(common.ecm.UZ, common.ecm.Z, NumberLength * sizeof(limb));    // (UX:UZ) -> SIEVE_SIZE*Q
+      AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W1);
+      SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W2);
+      modmult(common.ecm.W1, common.ecm.W2, common.ecm.TX);
+      SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.AA, common.ecm.Aux2);
+      AddBigNbrModN(common.ecm.Aux2, common.ecm.W2, common.ecm.Aux3, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux3, common.ecm.TZ); // (TX:TZ) -> 2*SIEVE_SIZE*Q
+      SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+      AddBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W1);
+      AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+      SubtBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W2);
+      AddBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
+      modmult(common.ecm.Aux2, common.ecm.UZ, common.ecm.X);
+      SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
+      modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
+      modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z); // (X:Z) -> 3*SIEVE_SIZE*Q
       Qaux = (int)(L1 / (2*SIEVE_SIZE));
       maxIndexM = (int)(L2 / (2 * SIEVE_SIZE));
       for (indexM = 0; indexM <= maxIndexM; indexM++)
@@ -1637,13 +1600,13 @@ static enum eEcmResult ecmCurve(BigInteger *N)
         { // If inside step 2 range... 
           if (indexM == 0)
           {
-            ModInvBigNbr(UZ, Aux3, TestNbr, NumberLength);
-            modmult(UX, Aux3, Aux1); // Aux1 <- X/Z (SIEVE_SIZE*Q)
+            ModInvBigNbr(common.ecm.UZ, common.ecm.Aux3, TestNbr, NumberLength);
+            modmult(common.ecm.UX, common.ecm.Aux3, common.ecm.Aux1); // Aux1 <- X/Z (SIEVE_SIZE*Q)
           }
           else
           {
-            ModInvBigNbr(Z, Aux3, TestNbr, NumberLength);
-            modmult(X, Aux3, Aux1); // Aux1 <- X/Z (3,5,*
+            ModInvBigNbr(common.ecm.Z, common.ecm.Aux3, TestNbr, NumberLength);
+            modmult(common.ecm.X, common.ecm.Aux3, common.ecm.Aux1); // Aux1 <- X/Z (3,5,*
           }                         //         SIEVE_SIZE*Q)
 
             /* Generate sieve */
@@ -1655,22 +1618,22 @@ static enum eEcmResult ecmCurve(BigInteger *N)
           J = HALF_SIEVE_SIZE + (indexM % 10) * SIEVE_SIZE;
           for (i = 0; i < GROUP_SIZE; i++)
           {
-            j = sieveidx[i]; // 0 < J < HALF_SIEVE_SIZE
-            if (sieve[J + j] != 0 && sieve[J - 1 - j] != 0)
+            j = common.ecm.sieveidx[i]; // 0 < J < HALF_SIEVE_SIZE
+            if (common.ecm.sieve[J + j] != 0 && common.ecm.sieve[J - 1 - j] != 0)
             {
               continue; // Do not process if both are composite numbers.
             }
-            SubtBigNbrModN(Aux1, root[i], M, TestNbr, NumberLength);
-            modmult(GcdAccumulated, M, Aux2);
-            memcpy(GcdAccumulated, Aux2, NumberLength * sizeof(limb));
+            SubtBigNbrModN(common.ecm.Aux1, common.ecm.root[i], common.ecm.M, TestNbr, NumberLength);
+            modmult(common.ecm.GcdAccumulated, common.ecm.M, common.ecm.Aux2);
+            memcpy(common.ecm.GcdAccumulated, common.ecm.Aux2, NumberLength * sizeof(limb));
           }
           if (Pass != 0)
           {
-            if (BigNbrIsZero(GcdAccumulated))
+            if (BigNbrIsZero(common.ecm.GcdAccumulated))
             {           // This curve cannot factor the number.
               break;
             }
-            if (gcdIsOne(GcdAccumulated) > 1)
+            if (gcdIsOne(common.ecm.GcdAccumulated) > 1)
             {
               return FACTOR_FOUND;
             }
@@ -1678,34 +1641,34 @@ static enum eEcmResult ecmCurve(BigInteger *N)
         }   // End for.
         if (indexM != 0)
         { // Update (X:Z)
-          memcpy(WX, X, NumberLength * sizeof(limb));
-          memcpy(WZ, Z, NumberLength * sizeof(limb));
-          SubtBigNbrModN(X, Z, Aux1, TestNbr, NumberLength);
-          AddBigNbrModN(TX, TZ, Aux2, TestNbr, NumberLength);
-          modmult(Aux1, Aux2, W1);
-          AddBigNbrModN(X, Z, Aux1, TestNbr, NumberLength);
-          SubtBigNbrModN(TX, TZ, Aux2, TestNbr, NumberLength);
-          modmult(Aux1, Aux2, W2);
-          AddBigNbrModN(W1, W2, Aux1, TestNbr, NumberLength);
-          modmult(Aux1, Aux1, Aux2);
-          modmult(Aux2, UZ, X);
-          SubtBigNbrModN(W1, W2, Aux1, TestNbr, NumberLength);
-          modmult(Aux1, Aux1, Aux2);
-          modmult(Aux2, UX, Z);
-          memcpy(UX, WX, NumberLength * sizeof(limb));
-          memcpy(UZ, WZ, NumberLength * sizeof(limb));
+          memcpy(common.ecm.WX, common.ecm.X, NumberLength * sizeof(limb));
+          memcpy(common.ecm.WZ, common.ecm.Z, NumberLength * sizeof(limb));
+          SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+          AddBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
+          modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W1);
+          AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
+          SubtBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
+          modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W2);
+          AddBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
+          modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
+          modmult(common.ecm.Aux2, common.ecm.UZ, common.ecm.X);
+          SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
+          modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
+          modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z);
+          memcpy(common.ecm.UX, common.ecm.WX, NumberLength * sizeof(limb));
+          memcpy(common.ecm.UZ, common.ecm.WZ, NumberLength * sizeof(limb));
         }
       } // end for Q
       if (Pass == 0)
       {
         int rc;
-        if (BigNbrIsZero(GcdAccumulated))
+        if (BigNbrIsZero(common.ecm.GcdAccumulated))
         { // If GcdAccumulated is zero
-          memcpy(X, Xaux, NumberLength * sizeof(limb));
-          memcpy(Z, Zaux, NumberLength * sizeof(limb));
+          memcpy(common.ecm.X, common.ecm.Xaux, NumberLength * sizeof(limb));
+          memcpy(common.ecm.Z, common.ecm.Zaux, NumberLength * sizeof(limb));
           continue; // multiple of TestNbr, continue.
         }
-        rc = gcdIsOne(GcdAccumulated);
+        rc = gcdIsOne(common.ecm.GcdAccumulated);
         if (rc == 1)
         {
           break;    // GCD is one, so this curve does not find a factor.
@@ -1715,7 +1678,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
           continue;
         }
                     // GD <- GCD(GcdAccumulated, TestNbr)
-        if (memcmp(GD, TestNbr, NumberLength*sizeof(limb)))
+        if (memcmp(common.ecm.GD, TestNbr, NumberLength*sizeof(limb)))
         {           // GCD is not 1 or TestNbr
           return FACTOR_FOUND;
         }
@@ -1724,35 +1687,13 @@ static enum eEcmResult ecmCurve(BigInteger *N)
     performLehman = TRUE;
   }       /* End curve calculation */
 }
-
-static void ecm(BigInteger *N, struct sFactors *pstFactors)
-{
-  int P, Q;
-#ifndef __EMSCRIPTEN__
-  (void)pstFactors;     // Ignore parameter.
-#endif
-  fieldTX = TX;
-  fieldTZ = TZ;
-  fieldUX = UX;
-  fieldUZ = UZ;
-//  int Prob;
-//  BigInteger NN;
-
-  fieldAA = AA;
-  NumberLength = N->nbrLimbs;
-  memcpy(TestNbr, N->limbs, NumberLength * sizeof(limb));
-  GetYieldFrequency();
-  GetMontgomeryParms(NumberLength);
-  memset(M, 0, NumberLength * sizeof(limb));
-  memset(DX, 0, NumberLength * sizeof(limb));
-  memset(DZ, 0, NumberLength * sizeof(limb));
-  memset(W3, 0, NumberLength * sizeof(limb));
-  memset(W4, 0, NumberLength * sizeof(limb));
-  memset(GD, 0, NumberLength * sizeof(limb));
 #ifdef __EMSCRIPTEN__
+char *ShowFactoredPart(BigInteger *pNbr, void *vFactors)
+{
+  struct sFactors *pstFactors = (struct sFactors *)vFactors;
   ptrLowerText = lowerText;
   *ptrLowerText++ = '3';
-  if (pstFactors->multiplicity > 1)
+  if (vFactors != NULL && pstFactors->multiplicity > 1)
   {    // Some factorization known.
     int NumberLengthBak = NumberLength;
     strcpy(ptrLowerText, "<p class=\"blue\">");
@@ -1762,19 +1703,60 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
     ptrLowerText += strlen(ptrLowerText);
     NumberLength = NumberLengthBak;
   }
-  strcpy(ptrLowerText, lang ? "<p>Factorizando ": "<p>Factoring " );
-  ptrLowerText += strlen(ptrLowerText);
-  if (hexadecimal)
+  if (StepECM == 3)
   {
-    Bin2Hex(N->limbs, ptrLowerText, N->nbrLimbs, groupLen);
+    strcpy(ptrLowerText, lang ? "<p>Comprobando si es primo " : "<p>Testing primality of ");
   }
   else
   {
-    Bin2Dec(N->limbs, ptrLowerText, N->nbrLimbs, groupLen);
+    strcpy(ptrLowerText, lang ? "<p>Factorizando " : "<p>Factoring ");
+  }
+  ptrLowerText += strlen(ptrLowerText);
+  if (hexadecimal)
+  {
+    Bin2Hex(pNbr->limbs, ptrLowerText, pNbr->nbrLimbs, groupLen);
+  }
+  else
+  {
+    Bin2Dec(pNbr->limbs, ptrLowerText, pNbr->nbrLimbs, groupLen);
   }
   ptrLowerText += strlen(ptrLowerText);
   strcpy(ptrLowerText, "</p>");
   ptrLowerText += strlen(ptrLowerText);
+  return ptrLowerText;
+}
+void ShowLowerText(void)
+{
+  databack(lowerText);
+}
+#endif
+
+static void ecm(BigInteger *N, struct sFactors *pstFactors)
+{
+  int P, Q;
+#ifndef __EMSCRIPTEN__
+  (void)pstFactors;     // Ignore parameter.
+#endif
+  common.ecm.fieldTX = common.ecm.TX;
+  common.ecm.fieldTZ = common.ecm.TZ;
+  common.ecm.fieldUX = common.ecm.UX;
+  common.ecm.fieldUZ = common.ecm.UZ;
+  //  int Prob;
+  //  BigInteger NN;
+
+  common.ecm.fieldAA = common.ecm.AA;
+  NumberLength = N->nbrLimbs;
+  memcpy(TestNbr, N->limbs, NumberLength * sizeof(limb));
+  GetYieldFrequency();
+  GetMontgomeryParms(NumberLength);
+  memset(common.ecm.M, 0, NumberLength * sizeof(limb));
+  memset(common.ecm.DX, 0, NumberLength * sizeof(limb));
+  memset(common.ecm.DZ, 0, NumberLength * sizeof(limb));
+  memset(common.ecm.W3, 0, NumberLength * sizeof(limb));
+  memset(common.ecm.W4, 0, NumberLength * sizeof(limb));
+  memset(common.ecm.GD, 0, NumberLength * sizeof(limb));
+#ifdef __EMSCRIPTEN__
+  ptrLowerText = ShowFactoredPart(N, pstFactors);
 #endif
   EC--;
   SmallPrime[0] = 2;
@@ -1801,14 +1783,14 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
     enum eEcmResult ecmResp = ecmCurve(N);
     if (ecmResp == CHANGE_TO_SIQS)
     {    // Perform SIQS
-      FactoringSIQS(TestNbr, GD);
+      FactoringSIQS(TestNbr, common.ecm.GD);
       break;
     }
     else if (ecmResp == FACTOR_FOUND)
     {
       break;
     }
-  } while (!memcmp(GD, TestNbr, NumberLength*sizeof(limb)));
+  } while (!memcmp(common.ecm.GD, TestNbr, NumberLength*sizeof(limb)));
 #if 0
   lowerTextArea.setText("");
 #endif
@@ -1965,7 +1947,8 @@ static void SortFactors(struct sFactors *pstFactors)
 }
 
 // Insert new factor found into factor array. This factor array must be sorted.
-static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFactorDividend, int divisor)
+static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFactorDividend, int divisor, 
+  int expon, BigInteger *cofactor)
 {
   struct sFactors *pstCurFactor;
   int factorNumber;
@@ -1974,10 +1957,18 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   int *ptrValue;
   pstFactorDividend->upperBound = divisor;
   // Divide number by factor just found.
-  DivBigNbrByInt(ptrFactor + 1, divisor, ptrFactor + 1, nbrLimbs);
-  if (*(ptrFactor + nbrLimbs) == 0)
-  {
-    (*ptrFactor)--;
+  if (cofactor == NULL)
+  {        // Find cofactor.
+    DivBigNbrByInt(ptrFactor + 1, divisor, ptrFactor + 1, nbrLimbs);
+    if (*(ptrFactor + nbrLimbs) == 0)
+    {
+      (*ptrFactor)--;
+    }
+  }
+  else
+  {        // Cofactor given as a parameter.
+    NumberLength = cofactor->nbrLimbs;
+    CompressBigInteger(ptrFactor, cofactor);
   }
   // Check whether prime is already in factor list.
   pstCurFactor = pstFactors+1;
@@ -1986,7 +1977,7 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
     ptrValue = pstCurFactor->ptrFactor;  // Point to factor in factor array.
     if (*ptrValue == 1 && *(ptrValue+1) == divisor)
     {  // Prime already found: increment multiplicity and go out.
-      pstCurFactor->multiplicity += pstFactorDividend->multiplicity;
+      pstCurFactor->multiplicity += pstFactorDividend->multiplicity * expon;
       ptrValue = pstFactorDividend->ptrFactor;
       if (*ptrValue == 1 && *(ptrValue + 1) == 1)
       {    // Dividend is 1 now so discard it.
@@ -2016,7 +2007,7 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   {
     ptrValue = pstFactors->ptrFactor;
     pstCurFactor->ptrFactor = ptrValue;
-    pstCurFactor->multiplicity = pstFactorDividend->multiplicity;
+    pstCurFactor->multiplicity = pstFactorDividend->multiplicity * expon;
     pstFactors->ptrFactor += 2;  // Next free memory.
   }
   pstCurFactor->upperBound = 0;
@@ -2087,22 +2078,27 @@ static void showECMStatus(void)
   strcpy(ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
   ptrStatus += strlen(ptrStatus);
   GetDHMS(&ptrStatus, elapsedTime / 10);
+  strcpy(ptrStatus, "&nbsp;&nbsp;&nbsp;");  // Separate with three spaces.
+  ptrStatus += strlen(ptrStatus);
   switch (StepECM)
   {
   case 1:
-    strcpy(ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Paso 1: " : "&nbsp;&nbsp;&nbsp;Step 1: ");
+    strcpy(ptrStatus, lang ? "Paso 1: " : "Step 1: ");
     ptrStatus += strlen(ptrStatus);
     int2dec(&ptrStatus, indexPrimes / (nbrPrimes / 100));
-    *ptrStatus++ = '%';
     break;
   case 2:
-    strcpy(ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Paso 2: " : "&nbsp;&nbsp;&nbsp;Step 2: ");
+    strcpy(ptrStatus, lang ? "Paso 2: " : "Step 2: ");
     ptrStatus += strlen(ptrStatus);
     int2dec(&ptrStatus, maxIndexM == 0 ? 0 : indexM / (maxIndexM / 100));
-    *ptrStatus++ = '%';
+    break;
+  case 3:
+    strcpy(ptrStatus, lang ? "Progreso: " : "Progress: ");
+    ptrStatus += strlen(ptrStatus);
+    int2dec(&ptrStatus, percentageBPSW);
     break;
   }
-  strcpy(ptrStatus, "</p>");
+  strcpy(ptrStatus, "%</p>");
   databack(status);
 }
 
@@ -2112,7 +2108,7 @@ static void SaveFactors(struct sFactors *pstFactors)
 #ifdef FACTORIZATION_APP
   struct sFactors *pstCurFactor = pstFactors + 1;
   int factorNbr;
-  char text[30000];
+  char text[MAX_LEN*12];
   char *ptrText;
   BigInteger bigint;
   ptrText = text;
@@ -2193,9 +2189,9 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   memcpy(q, pValueLimbs, (nbrLimbs + 1) * sizeof(limb));
   nbrLimbsQ = nbrLimbs;
   q[0]--;                     // q = p - 1 (p is odd, so there is no carry).
-  memcpy(Aux1, q, (nbrLimbsQ + 1) * sizeof(q[0]));
+  memcpy(common.ecm.Aux1, q, (nbrLimbsQ + 1) * sizeof(q[0]));
   Aux1Len = nbrLimbs;
-  DivideBigNbrByMaxPowerOf2(&ctr, Aux1, &Aux1Len);
+  DivideBigNbrByMaxPowerOf2(&ctr, common.ecm.Aux1, &Aux1Len);
   memcpy(TestNbr, pValueLimbs, nbrLimbs * sizeof(limb));
   TestNbr[nbrLimbs].x = 0;
   GetMontgomeryParms(nbrLimbs);
@@ -2204,26 +2200,26 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
     int i;
     NumberLength = nbrLimbs;
     randomBase = (int)((uint64_t)randomBase * 89547121 + 1762281733) & MAX_INT_NBR;
-    modPowBaseInt(randomBase, Aux1, Aux1Len, Aux2); // Aux2 = base^Aux1.
+    modPowBaseInt(randomBase, common.ecm.Aux1, Aux1Len, common.ecm.Aux2); // Aux2 = base^Aux1.
                                                  // If Mult1 = 1 or Mult1 = TestNbr-1, then try next base.
-    if (checkOne(Aux2, nbrLimbs) != 0 || checkMinusOne(Aux2, nbrLimbs) != 0)
+    if (checkOne(common.ecm.Aux2, nbrLimbs) != 0 || checkMinusOne(common.ecm.Aux2, nbrLimbs) != 0)
     {
       continue;    // This base cannot find a factor. Try another one.
     }
     for (i = 0; i < ctr; i++)
     {              // Loop that squares number.
-      modmult(Aux2, Aux2, Aux3);
-      if (checkOne(Aux3, nbrLimbs) != 0)
+      modmult(common.ecm.Aux2, common.ecm.Aux2, common.ecm.Aux3);
+      if (checkOne(common.ecm.Aux3, nbrLimbs) != 0)
       {            // Non-trivial square root of 1 found.
         if (!sqrtOneFound)
         {          // Save it to perform GCD later.
-          memcpy(Zaux, Aux2, nbrLimbs*sizeof(limb));
+          memcpy(common.ecm.Zaux, common.ecm.Aux2, nbrLimbs*sizeof(limb));
           sqrtOneFound = TRUE;
         }
         else
         {          // Try to find non-trivial factor by doing GCD.
-          SubtBigNbrMod(Aux2, Zaux, Aux4);
-          UncompressLimbsBigInteger(Aux4, &Temp2);
+          SubtBigNbrMod(common.ecm.Aux2, common.ecm.Zaux, common.ecm.Aux4);
+          UncompressLimbsBigInteger(common.ecm.Aux4, &Temp2);
           BigIntGcd(pValue, &Temp2, &Temp4);
           if ((Temp4.nbrLimbs != 1 || Temp4.limbs[0].x > 1) &&
             (Temp4.nbrLimbs != NumberLength ||
@@ -2235,8 +2231,8 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
         }
                    // Try to find non-trivial factor by doing GCD.
         NumberLength = nbrLimbs;
-        AddBigNbrMod(Aux2, MontgomeryMultR1, Aux4);
-        UncompressLimbsBigInteger(Aux4, &Temp2);
+        AddBigNbrMod(common.ecm.Aux2, MontgomeryMultR1, common.ecm.Aux4);
+        UncompressLimbsBigInteger(common.ecm.Aux4, &Temp2);
         BigIntGcd(pValue, &Temp2, &Temp4);
         if ((Temp4.nbrLimbs != 1 || Temp4.limbs[0].x > 1) &&
           (Temp4.nbrLimbs != NumberLength ||
@@ -2248,17 +2244,17 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
         i = ctr;
         continue;  // Find more factors.
       }
-      if (checkMinusOne(Aux3, nbrLimbs) != 0)
+      if (checkMinusOne(common.ecm.Aux3, nbrLimbs) != 0)
       {            // Square root of 1 found.
         if (!sqrtMinusOneFound)
         {          // Save it to perform GCD later.
-          memcpy(Xaux, Aux2, nbrLimbs * sizeof(limb));
+          memcpy(common.ecm.Xaux, common.ecm.Aux2, nbrLimbs * sizeof(limb));
           sqrtOneFound = TRUE;
         }
         else
         {          // Try to find non-trivial factor by doing GCD.
-          SubtBigNbrMod(Aux3, Xaux, Aux4);
-          UncompressLimbsBigInteger(Aux4, &Temp2);
+          SubtBigNbrMod(common.ecm.Aux3, common.ecm.Xaux, common.ecm.Aux4);
+          UncompressLimbsBigInteger(common.ecm.Aux4, &Temp2);
           BigIntGcd(pValue, &Temp2, &Temp4);
           if ((Temp4.nbrLimbs != 1 || Temp4.limbs[0].x > 1) &&
             (Temp4.nbrLimbs != NumberLength ||
@@ -2271,7 +2267,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
         i = ctr;
         continue;  // Find more factors.
       }
-      memcpy(Aux2, Aux3, nbrLimbs * sizeof(limb));
+      memcpy(common.ecm.Aux2, common.ecm.Aux3, nbrLimbs * sizeof(limb));
     }
   }
   return factorsFound;
@@ -2361,61 +2357,91 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
     }
     ptrFactor = pstCurFactor->ptrFactor;
     nbrLimbs = *ptrFactor;
-    while (upperBound < 100000 && nbrLimbs > 1)
-    {        // Number has at least 2 limbs: Trial division by small numbers.
-      while (pstCurFactor->upperBound != 0)
-      {            // Factor found.
-        ptrFactor = pstCurFactor->ptrFactor;
-        remainder = RemDivBigNbrByInt(ptrFactor+1, upperBound, nbrLimbs);
-        if (remainder != 0)
-        {    // Factor not found. Use new divisor.
+    NumberLength = *pstCurFactor->ptrFactor;
+    UncompressBigInteger(pstCurFactor->ptrFactor, &power);
+    NumberLength = power.nbrLimbs;
+#ifdef __EMSCRIPTEN__
+    char *ptrText = ShowFactoredPart(&prime, pstFactors);
+    if (!skipPrimality)
+    {
+#endif
+      expon = PowerCheck(&power, &prime);
+      if (expon > 1)
+      {
+        NumberLength = prime.nbrLimbs;
+        CompressBigInteger(pstCurFactor->ptrFactor, &prime);
+        pstCurFactor->multiplicity *= expon;
+        nbrLimbs = *pstCurFactor->ptrFactor;
+      }
+#ifdef __EMSCRIPTEN__
+      strcpy(ptrText, lang ? "<p>División por primos menores que 100000.</p>" :
+        "<p>Trial division by primes less than 100000.</p>");
+      ShowLowerText();
+#endif
+      while (upperBound < 100000 && nbrLimbs > 1)
+      {        // Number has at least 2 limbs: Trial division by small numbers.
+        while (pstCurFactor->upperBound != 0)
+        {            // Factor found.
+          int expon, index, delta;
+          ptrFactor = pstCurFactor->ptrFactor;
+          remainder = RemDivBigNbrByInt(ptrFactor + 1, upperBound, nbrLimbs);
+          if (remainder != 0)
+          {    // Factor not found. Use new divisor.
+            break;
+          }
+          // Small factor found. Find the exponent.
+          expon = 1;
+          index = 0;
+          delta = 1;
+          CopyBigInt(&common.trialDiv.cofactor, &prime);
+          subtractdivide(&common.trialDiv.cofactor, 0, upperBound);
+          intToBigInteger(&common.trialDiv.power[0], upperBound);
+          for (;;)
+          {      // Test whether the cofactor is multiple of power.
+            BigIntDivide(&common.trialDiv.cofactor, &common.trialDiv.power[index], &common.trialDiv.quotient);
+            BigIntMultiply(&common.trialDiv.quotient, &common.trialDiv.power[index], &common.trialDiv.temp);
+            if (!BigIntEqual(&common.trialDiv.temp, &common.trialDiv.cofactor))
+            {    // Not a multiple, so exit loop.
+              break;
+            }
+            CopyBigInt(&common.trialDiv.cofactor, &common.trialDiv.quotient);
+            BigIntMultiply(&common.trialDiv.power[index], &common.trialDiv.power[index], &common.trialDiv.power[index+1]);
+            expon += delta;
+            delta <<= 1;
+            index++;
+          }
+          for (index--; index >= 0; index--)
+          {
+            delta >>= 1;
+            BigIntDivide(&common.trialDiv.cofactor, &common.trialDiv.power[index], &common.trialDiv.quotient);
+            BigIntMultiply(&common.trialDiv.quotient, &common.trialDiv.power[index], &common.trialDiv.temp);
+            if (BigIntEqual(&common.trialDiv.temp, &common.trialDiv.cofactor))
+            {    // It is a multiple.
+              CopyBigInt(&common.trialDiv.cofactor, &common.trialDiv.quotient);
+              expon += delta;
+            }
+          }
+          insertIntFactor(pstFactors, pstCurFactor, upperBound, expon, &common.trialDiv.cofactor);
+          restartFactoring = TRUE;
           break;
         }
-        insertIntFactor(pstFactors, pstCurFactor, upperBound);
-        restartFactoring = TRUE;
-        break;
-      }
-      if (restartFactoring)
-      {
-        factorNbr = 0;
-        pstCurFactor = pstFactors;
-        break;
-      }
-      if (nbrLimbs == 1)
-      {     // Number completely factored.
-        break;
-      }
-      if (upperBound == 2)
-      {
-        upperBound++;
-      }
-      else if (upperBound%6 == 1)
-      {
-        upperBound += 4;
-      }
-      else
-      {
-        upperBound += 2;
-      }
-    }
-    if (restartFactoring)
-    {
-      continue;
-    }
-    if (nbrLimbs == 1)
-    {
-      dividend = *(ptrFactor + 1);
-      while ((unsigned int)upperBound*(unsigned int)upperBound <= (unsigned int)dividend)
-      {              // Trial division by small numbers.
-        if (dividend % upperBound == 0)
-        {            // Factor found.
-          insertIntFactor(pstFactors, pstCurFactor, upperBound);
-          restartFactoring = TRUE;
+        if (restartFactoring)
+        {
+          factorNbr = 0;
+          pstCurFactor = pstFactors;
+          break;
+        }
+        if (nbrLimbs == 1)
+        {     // Number completely factored.
           break;
         }
         if (upperBound == 2)
         {
           upperBound++;
+        }
+        else if (upperBound % 6 == 1)
+        {
+          upperBound += 4;
         }
         else
         {
@@ -2424,24 +2450,80 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
       }
       if (restartFactoring)
       {
-        factorNbr = 0;
-        pstCurFactor = pstFactors;
         continue;
       }
-      pstCurFactor->upperBound = 0;   // Number is prime.
-      continue;
+      if (nbrLimbs == 1)
+      {
+        dividend = *(ptrFactor + 1);
+        while ((unsigned int)upperBound*(unsigned int)upperBound <= (unsigned int)dividend)
+        {              // Trial division by small numbers.
+          if (dividend % upperBound == 0)
+          {            // Factor found.
+            insertIntFactor(pstFactors, pstCurFactor, upperBound, 1, NULL);
+            restartFactoring = TRUE;
+            break;
+          }
+          if (upperBound == 2)
+          {
+            upperBound++;
+          }
+          else
+          {
+            upperBound += 2;
+          }
+        }
+        if (restartFactoring)
+        {
+          factorNbr = 0;
+          pstCurFactor = pstFactors;
+          continue;
+        }
+        pstCurFactor->upperBound = 0;   // Number is prime.
+        continue;
+      }
+      // No small factor. Check whether the number is prime or prime power.
+#ifdef __EMSCRIPTEN__
+#ifdef FACTORIZATION_APP
+      StepECM = 0;
+      strcpy(ptrText, lang ? "<p>Verificando si el número es potencia perfecta.<p>" :
+        "<p>Testing whether the number is perfect power or not.</p>");
+      ShowLowerText();
+#else
+      databack(lang ? "3<p>Verificando si el número es potencia perfecta.</p>" :
+        "3<p>Testing whether the number is perfect power or not.</p>");
+#endif
+#endif
+#ifdef __EMSCRIPTEN__
     }
-    // No small factor. Check whether the number is prime or prime power.
-    NumberLength = *pstCurFactor->ptrFactor;
-    UncompressBigInteger(pstCurFactor->ptrFactor, &power);
-    NumberLength = power.nbrLimbs;
-    expon = PowerCheck(&power, &prime);
-    if (expon > 1)
+#endif
+#ifdef __EMSCRIPTEN__
+    SaveFactors(pstFactors);
+#endif
+#ifdef FACTORIZATION_APP
+    if (skipPrimality)
     {
-      CompressBigInteger(pstCurFactor->ptrFactor, &prime);
-      pstCurFactor->multiplicity *= expon;
+      skipPrimality = FALSE;
+      result = 1;
     }
+    else
+    {
+#ifdef __EMSCRIPTEN__
+      if (prime.nbrLimbs > 3322 / BITS_PER_GROUP)  // 3322 = 1000*log_2(10) -> 1000 digits
+      {
+        startSkipTest();
+      }
+#endif
+      result = BpswPrimalityTest(&prime, pstFactors);
+#ifdef __EMSCRIPTEN__
+      if (prime.nbrLimbs > 3322 / BITS_PER_GROUP)  // 3322 = 1000*log_2(10) -> 1000 digits
+      {
+        endSkipTest();
+      }
+#endif
+    }
+#else
     result = BpswPrimalityTest(&prime);
+#endif
     if (result == 0)
     {   // Number is prime power.
       pstCurFactor->upperBound = 0;   // Indicate that number is prime.
@@ -2458,25 +2540,25 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
     // Check whether GD is not one. In this case we found a proper factor.
     for (ctr = 1; ctr < NumberLength; ctr++)
     {
-      if (GD[ctr].x != 0)
+      if (common.ecm.GD[ctr].x != 0)
       {
         break;
       }
     }
-    if (ctr != NumberLength || GD[0].x != 1)
+    if (ctr != NumberLength || common.ecm.GD[0].x != 1)
     {
       int numLimbs;
       Temp1.sign = SIGN_POSITIVE;
       numLimbs = NumberLength;
       while (numLimbs > 1)
       {
-        if (GD[numLimbs-1].x != 0)
+        if (common.ecm.GD[numLimbs-1].x != 0)
         {
           break;
         }
         numLimbs--;
       }
-      memcpy(Temp1.limbs, GD, numLimbs * sizeof(limb));
+      memcpy(Temp1.limbs, common.ecm.GD, numLimbs * sizeof(limb));
       Temp1.nbrLimbs = numLimbs;
       insertBigFactor(pstFactors, &Temp1);
 #ifdef __EMSCRIPTEN__

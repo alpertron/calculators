@@ -66,7 +66,7 @@ static void Karatsuba(int idxFactor1, int length);
 void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen)
 {
   int length = len;
-#if 0    // Do not enable FFT yet.
+#ifdef FACTORIZATION_APP
   if (length > 100)
   {
     fftMultiplication(factor1, factor2, result, len, pResultLen);

@@ -575,7 +575,11 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
         }
         while (j >= 0)
         {
+#ifdef _USING64BITS_
+          dSum += (uint64_t)(*ptrFactor1 * *ptrFactor2);
+#else
           dSum += (double)(*ptrFactor1 * *ptrFactor2);
+#endif
           ptrFactor1 += 2;
           ptrFactor2 -= 2;
           j--;

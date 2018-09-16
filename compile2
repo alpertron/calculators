@@ -1,56 +1,76 @@
+flags_factorization="-emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -DFACTORIZATION_APP=1 -c -Os"
+flags_other="-emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os"
 cp ../calc/*.c .
 cp ../calc/*.h .
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -DFACTORIZATION_FUNCTIONS=1 -c -Os expression.c -o expression.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os partition.c -o partition.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os errors.c -o errors.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os bigint.c -o bigint.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os division.c -o division.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os baseconv.c -o baseconv.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os karatsuba.c -o karatsuba.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os modmult.c -o modmult.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os sqroot.c -o sqroot.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -DFACTORIZATION_APP=1 -c -Os factor.c -o factor.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os siqs.c -o siqs.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -DFACTORIZATION_APP=1 -c -Os ecmfront.c -o ecmfront.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os bignbr.c -o bignbr.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os showtime.c -o showtime.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os from_musl.c -o from_musl.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os inputstr.c -o inputstr.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os batch.c -o batch.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os fft.c -o fft.bc
-/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc factor.bc siqs.bc ecmfront.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc batch.bc fft.bc -o ecm1.bc
+/usr/local/bin/clang $flags_factorization -DFACTORIZATION_FUNCTIONS=1 expression.c -o expression.bc
+/usr/local/bin/clang $flags_factorization partition.c -o partition.bc
+/usr/local/bin/clang $flags_factorization errors.c -o errors.bc
+/usr/local/bin/clang $flags_factorization gcdrings.c -o gcdrings.bc
+/usr/local/bin/clang $flags_factorization bigint.c -o bigint.bc
+/usr/local/bin/clang $flags_factorization division.c -o division.bc
+/usr/local/bin/clang $flags_factorization baseconv.c -o baseconv.bc
+/usr/local/bin/clang $flags_factorization karatsuba.c -o karatsuba.bc
+/usr/local/bin/clang $flags_factorization modmult.c -o modmult.bc
+/usr/local/bin/clang $flags_factorization sqroot.c -o sqroot.bc
+/usr/local/bin/clang $flags_factorization factor.c -o factor.bc
+/usr/local/bin/clang $flags_factorization siqs.c -o siqs.bc
+/usr/local/bin/clang $flags_factorization ecmfront.c -o ecmfront.bc
+/usr/local/bin/clang $flags_factorization bignbr.c -o bignbr.bc
+/usr/local/bin/clang $flags_factorization showtime.c -o showtime.bc
+/usr/local/bin/clang $flags_factorization from_musl.c -o from_musl.bc
+/usr/local/bin/clang $flags_factorization inputstr.c -o inputstr.bc
+/usr/local/bin/clang $flags_factorization batch.c -o batch.bc
+/usr/local/bin/clang $flags_factorization fft.c -o fft.bc
+/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc factor.bc siqs.bc ecmfront.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc batch.bc fft.bc gcdrings.bc -o ecm1.bc
 /usr/local/bin/opt -internalize -internalize-public-api-list=getFactorsAsciiPtr,getInputStringPtr,doWork,memory ecm1.bc -o ecm.bc
 /usr/local/bin/llc -O3 ecm.bc -march=wasm32 -o ecm.s
 ../binaryen/build/bin/s2wasm ecm.s -s 1000000 > ecm.wast
 ../wabt/build/wat2wasm -o ecm.wasm ecm.wast
 
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -DFACTORIZATION_APP=1 -c -Os quad.c -o quad.bc
+/usr/local/bin/clang $flags_factorization quad.c -o quad.bc
 /usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc factor.bc siqs.bc quad.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc batch.bc fft.bc -o quad1.bc
 /usr/local/bin/opt -internalize -internalize-public-api-list=getFactorsAsciiPtr,getInputStringPtr,doWork,memory quad1.bc -o quad.bc
 /usr/local/bin/llc -O3 quad.bc -march=wasm32 -o quad.s
 ../binaryen/build/bin/s2wasm quad.s -s 1000000 > quad.wast
 ../wabt/build/wat2wasm -o quad.wasm quad.wast
 
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os expression.c -o expression.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -DFSQUARES_APP=1 -c -Os fsquares.c -o fsquares.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os fcubes.c -o fcubes.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os contfrac.c -o contfrac.bc
-/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc fsquares.bc fcubes.bc contfrac.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc batch.bc fft.bc -o fsquares1.bc
+
+/usr/local/bin/clang $flags_other expression.c -o expression.bc
+/usr/local/bin/clang $flags_other partition.c -o partition.bc
+/usr/local/bin/clang $flags_other errors.c -o errors.bc
+/usr/local/bin/clang $flags_other gcdrings.c -o gcdrings.bc
+/usr/local/bin/clang $flags_other bigint.c -o bigint.bc
+/usr/local/bin/clang $flags_other division.c -o division.bc
+/usr/local/bin/clang $flags_other baseconv.c -o baseconv.bc
+/usr/local/bin/clang $flags_other karatsuba.c -o karatsuba.bc
+/usr/local/bin/clang $flags_other modmult.c -o modmult.bc
+/usr/local/bin/clang $flags_other sqroot.c -o sqroot.bc
+/usr/local/bin/clang $flags_other -DFSQUARES_APP=1 fsquares.c -o fsquares.bc
+/usr/local/bin/clang $flags_other fcubes.c -o fcubes.bc
+/usr/local/bin/clang $flags_other contfrac.c -o contfrac.bc
+/usr/local/bin/clang $flags_other bignbr.c -o bignbr.bc
+/usr/local/bin/clang $flags_other showtime.c -o showtime.bc
+/usr/local/bin/clang $flags_other from_musl.c -o from_musl.bc
+/usr/local/bin/clang $flags_other inputstr.c -o inputstr.bc
+/usr/local/bin/clang $flags_other batch.c -o batch.bc
+/usr/local/bin/clang $flags_other fft.c -o fft.bc
+/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc fsquares.bc fcubes.bc contfrac.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc batch.bc fft.bc gcdrings.bc -o fsquares1.bc
 /usr/local/bin/opt -internalize -internalize-public-api-list=getFactorsAsciiPtr,getInputStringPtr,doWork,memory fsquares1.bc -o fsquares.bc
 /usr/local/bin/llc -O3 fsquares.bc -march=wasm32 -o fsquares.s
 ../binaryen/build/bin/s2wasm fsquares.s -s 1000000 > fsquares.wast
 ../wabt/build/wat2wasm -o fsquares.wasm fsquares.wast
 
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os factor.c -o factor.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os polynomial.c -o polynomial.bc
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os polfact.c -o polfact.bc
+/usr/local/bin/clang $flags_other factor.c -o factor.bc
+/usr/local/bin/clang $flags_other siqs.c -o siqs.bc
+/usr/local/bin/clang $flags_other polynomial.c -o polynomial.bc
+/usr/local/bin/clang $flags_other polfact.c -o polfact.bc
 /usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc factor.bc siqs.bc polynomial.bc polfact.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc fft.bc -o polfact1.bc
 /usr/local/bin/opt -internalize -internalize-public-api-list=getFactorsAsciiPtr,getInputStringPtr,doWork,memory polfact1.bc -o polfact.bc
 /usr/local/bin/llc -O3 polfact.bc -march=wasm32 -o polfact.s
 ../binaryen/build/bin/s2wasm polfact.s -s 1000000 > polfact.wast
 ../wabt/build/wat2wasm -o polfact.wasm polfact.wast
 
-/usr/local/bin/clang -emit-llvm --target=wasm32 -D__EMSCRIPTEN__ -D_USING64BITS_ -c -Os ulam.c -o ulam.bc
+/usr/local/bin/clang $flags_other ulam.c -o ulam.bc
 /usr/local/bin/llvm-link ulam.bc -o ulam1.bc
 /usr/local/bin/opt -internalize -internalize-public-api-list=nbrChanged,drawPartialUlamSpiral,ShowInformation,moveSpiral,memory ulam1.bc -o ulam.bc
 /usr/local/bin/llc -O3 ulam.bc -march=wasm32 -o ulam.s

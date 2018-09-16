@@ -18,7 +18,11 @@
     */
 #ifndef _BIGNBR_H
 #define _BIGNBR_H
-#define MAX_LEN 2500        // 20000 digits
+#ifdef FACTORIZATION_APP
+#define MAX_LEN 25000        // 200000 digits
+#else
+#define MAX_LEN 2500         // 20000 digits
+#endif
 #define BITS_PER_GROUP 31
 #define BITS_PER_INT_GROUP 31
 #define HALF_INT_RANGE (1 << (BITS_PER_INT_GROUP - 1))
@@ -43,6 +47,13 @@ enum eSign
   SIGN_NEGATIVE,
 };
 
+enum
+{
+  NBR_NOT_CACHED = 0,
+  NBR_READY_TO_BE_CACHED,
+  NBR_CACHED,
+};
+
 typedef struct BigInteger
 {
   limb limbs[MAX_LEN];
@@ -55,6 +66,12 @@ extern limb MontgomeryMultR2[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 extern int NumberLength, NumberLengthR1;
 extern int groupLen;
+extern char MontgomeryMultNCached;
+extern char TestNbrCached;
+extern limb MontgomeryMultN[MAX_LEN];
+#ifdef __EMSCRIPTEN__
+extern int percentageBPSW;
+#endif
 
 #include "expression.h"
 void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen);
@@ -92,6 +109,8 @@ enum eExprErr BigIntPower(BigInteger *pBase, BigInteger *pExponent, BigInteger *
 enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int expon, BigInteger *pPower);
 void floordiv(BigInteger *num, BigInteger *den, BigInteger *result);
 void ceildiv(BigInteger *num, BigInteger *den, BigInteger *result);
+void BigIntMultiplyBy2(BigInteger *nbr);
+void BigIntDivideBy2(BigInteger *nbr);
 void BigInteger2Dec(BigInteger *pBigInt, char *decimal, int groupLen);
 void BigInteger2Hex(BigInteger *pBigInt, char *decimal, int groupLen);
 void BigIntGcd(BigInteger *pArg1, BigInteger *pArg2, BigInteger *pResult);
@@ -113,7 +132,11 @@ int modInv(int NbrMod, int currentPrime);
 int getNbrLimbs(limb *bigNbr);
 void BigIntDivide2(BigInteger *pArg);
 int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase);
-int BpswPrimalityTest(BigInteger *pBigNbr);
+#ifdef FACTORIZATION_APP
+int BpswPrimalityTest(/*@in@*/BigInteger *pValue, void *vFactors);
+#else
+int BpswPrimalityTest(/*@in@*/BigInteger *pValue);
+#endif
 void UncompressBigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint);
 void CompressBigInteger(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint);
 void UncompressLimbsBigInteger(/*@in@*/limb *ptrValues, /*@out@*/BigInteger *bigint);
@@ -167,4 +190,12 @@ void smallmodmult(int factor1, int factor2, limb *product, int mod);
 void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen);
 
 typedef void(*mmCback)(void);
+void GaussianGCD(BigInteger *realA, BigInteger *imagA, BigInteger *realB, BigInteger *imagB,
+  BigInteger *realGcd, BigInteger *imagGcd, BigInteger *temp1, BigInteger *temp2);
+void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, BigInteger *vecKA,
+  BigInteger *scalarB, BigInteger *vecIB, BigInteger *vecJB, BigInteger *vecKB,
+  BigInteger *scalarGcd, BigInteger *vecIGcd, BigInteger *vecJGcd, BigInteger *vecKGcd,
+  BigInteger *temp1, BigInteger *temp2, BigInteger *temp3, BigInteger *temp4);
+void MultiplyQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
+void DivideQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
 #endif

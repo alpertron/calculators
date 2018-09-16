@@ -17,11 +17,22 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 var exports, HEAPU8, wasmLoaded;
-var env =
+
+var info =
+{
+  "env":
 {
   "databack": function(data)
   {
     self.postMessage(PtrToString(data));
+  },
+  "startSkipTest": function()
+  {
+    self.postMessage("51");   // Show Skip Test button on screen
+  },
+  "endSkipTest": function()
+  {
+    self.postMessage("52");   // Hide Skip Test button from screen
   },
   "tenths": function()
   {
@@ -38,16 +49,13 @@ var env =
       ConvertToString(exports["getFactorsAsciiPtr"](), req.responseText);
     }
   }
-};
-
-var info =
-{
-  "env": env
+}
 };  
 
 self.onmessage = function (e)
 {
   var request;
+  var afterKey;
   if (wasmLoaded)
   {
     ConvertToString(exports["getInputStringPtr"](), e.data[0]);

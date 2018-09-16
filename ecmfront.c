@@ -24,7 +24,9 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "factor.h"
 #include "showtime.h"
 #include "batch.h"
+
 #ifdef __EMSCRIPTEN__
+extern int skipPrimality;
 extern long long lModularMult;
 #endif
 extern BigInteger tofactor;
@@ -198,11 +200,32 @@ static void GetMobius(char **pptrOutput)
   *pptrOutput = ptrOutput;
 }
 
+static void modPowShowStatus(limb *base, limb *exp, int nbrGroupsExp, limb *power)
+{
+  int mask, index;
+  memcpy(power, MontgomeryMultR1, (NumberLength + 1) * sizeof(*power));  // power <- 1
+  for (index = nbrGroupsExp - 1; index >= 0; index--)
+  {
+    int groupExp = (int)(exp + index)->x;
+#ifdef __EMSCRIPTEN__
+    percentageBPSW = (nbrGroupsExp - index) * 100 / nbrGroupsExp;
+#endif
+    for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+    {
+      modmult(power, power, power);
+      if ((groupExp & mask) != 0)
+      {
+        modmult(power, base, power);
+      }
+    }
+  }
+}
+
 static void ComputeFourSquares(struct sFactors *pstFactors)
 {
   int indexPrimes;
-  BigInteger p, q, K, Mult1, Mult2, Mult3, Mult4;
-  BigInteger Tmp, Tmp1, Tmp2, Tmp3, Tmp4, M1, M2, M3, M4;
+  static BigInteger p, q, K, Mult1, Mult2, Mult3, Mult4;
+  static BigInteger Tmp, Tmp1, Tmp2, Tmp3, Tmp4, M1, M2, M3, M4, M5, M6, M7, M8;
   struct sFactors *pstFactor;
   static limb minusOneMont[MAX_LEN];
 
@@ -243,6 +266,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
     }
     else
     { /* Prime not 2 */
+      int nbrLimbs;
       NumberLength = p.nbrLimbs;
       memcpy(&TestNbr, p.limbs, NumberLength * sizeof(limb));
       TestNbr[NumberLength].x = 0;
@@ -258,7 +282,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
         do
         {    // Loop that finds mult1 = sqrt(-1) mod prime in Montgomery notation.
           K.limbs[0].x++;
-          modPow(K.limbs, q.limbs, q.nbrLimbs, Mult1.limbs);
+          modPowShowStatus(K.limbs, q.limbs, q.nbrLimbs, Mult1.limbs);
         } while (!memcmp(Mult1.limbs, MontgomeryMultR1, NumberLength * sizeof(limb)) ||
           !memcmp(Mult1.limbs, minusOneMont, NumberLength * sizeof(limb)));
         Mult1.sign = SIGN_POSITIVE;
@@ -277,82 +301,52 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
             break;
           }
         }
-        for (;;)
+        // Initialize real part to square root of (-1).
+        intToBigInteger(&Mult2, 1);   // Initialize imaginary part to 1.
+        // Initialize real part to prime.
+        memcpy(Mult3.limbs, TestNbr, p.nbrLimbs * sizeof(limb));
+        Mult3.nbrLimbs = p.nbrLimbs;
+        Mult3.sign = SIGN_POSITIVE;
+        while (Mult3.nbrLimbs > 1 && Mult3.limbs[Mult3.nbrLimbs - 1].x == 0)
         {
-          BigIntMultiply(&Mult1, &Mult1, &Tmp);
-          BigIntMultiply(&Mult2, &Mult2, &Tmp1);
-          BigIntAdd(&Tmp, &Tmp1, &Tmp);
-          BigIntDivide(&Tmp, &p, &K);        // K <- (mult1^2 + mult2^2) / p
-          if (K.nbrLimbs == 1 && K.limbs[0].x == 1)
-          {    // If K = 1...
-            intToBigInteger(&Mult3, 0);
-            intToBigInteger(&Mult4, 0);
-            break;
-          }
-          BigIntRemainder(&Mult1, &K, &M1);  // M1 <- Mult1 % K
-          if (M1.sign == SIGN_NEGATIVE)
-          {
-            BigIntAdd(&M1, &K, &M1);
-          }
-          BigIntRemainder(&Mult2, &K, &M2);  // M2 <- Mult2 % K
-          if (M2.sign == SIGN_NEGATIVE)
-          {
-            BigIntAdd(&M2, &K, &M2);
-          }
-          CopyBigInt(&Tmp, &K);
-          subtractdivide(&Tmp, -1, 2);       // Tmp <- (K+1) / 2
-          BigIntSubt(&M1, &Tmp, &Tmp1);      // Tmp1 <- M1 - Tmp
-          if (Tmp1.sign == SIGN_POSITIVE)    // If M1 >= K / 2 ... 
-          {
-            BigIntSubt(&M1, &K, &M1);        // M1 <- M1 - K
-          }
-          BigIntSubt(&M2, &Tmp, &Tmp1);      // Tmp1 <- M2 - Tmp
-          if (Tmp1.sign == SIGN_POSITIVE)    // If M2 >= K / 2 ... 
-          {
-            BigIntSubt(&M2, &K, &M2);        // M1 <- M1 - K
-          }
-          BigIntMultiply(&Mult1, &M1, &Tmp);
-          BigIntMultiply(&Mult2, &M2, &Tmp1);
-          BigIntAdd(&Tmp, &Tmp1, &Tmp);
-          BigIntDivide(&Tmp, &K, &Tmp2);     // Tmp2 <- (mult1*m1 + mult2*m2) / K
-          BigIntMultiply(&Mult1, &M2, &Tmp);
-          BigIntMultiply(&Mult2, &M1, &Tmp1);
-          BigIntSubt(&Tmp, &Tmp1, &Tmp);
-          BigIntDivide(&Tmp, &K, &Mult2);    // Mult2 <- (mult1*m2 - mult2*m1) / K
-          CopyBigInt(&Mult1, &Tmp2);
-        } /* end while */
+          Mult3.nbrLimbs--;
+        }
+        intToBigInteger(&Mult4, 0);   // Initialize imaginary part to 0.
+                                      // Find gcd of (Mult1 + Mult2 * i) and (Mult3 + Mult4 * i)
+        GaussianGCD(&Mult1, &Mult2, &Mult3, &Mult4, &Tmp1, &Tmp2, &Tmp3, &Tmp4);
+        nbrLimbs = Mult1.nbrLimbs;
+        if (nbrLimbs < Mult2.nbrLimbs)
+        {
+          nbrLimbs = Mult2.nbrLimbs;
+        }
+        CopyBigInt(&Mult1, &Tmp1);
+        CopyBigInt(&Mult2, &Tmp2);
+        intToBigInteger(&Mult3, 0);
+        intToBigInteger(&Mult4, 0);
       } /* end p = 1 (mod 4) */
       else
       { /* if p = 3 (mod 4) */
         int mult1 = 0;
-        CopyBigInt(&q, &p);
-        subtractdivide(&q, 1, 2);     // q = (prime-1)/2
-        memcpy(K.limbs, q.limbs, q.nbrLimbs * sizeof(limb));
-        if (p.nbrLimbs > q.nbrLimbs)
-        {
-          K.limbs[q.nbrLimbs].x = 0;
-        }
         // Compute Mult1 and Mult2 so Mult1^2 + Mult2^2 = -1 (mod p)
-        memset(Mult1.limbs, 0, p.nbrLimbs*sizeof(limb));
-        do
-        {
+        intToBigInteger(&Tmp, -1);
+        intToBigInteger(&Mult2, -1);
+        while (BigIntJacobiSymbol(&Tmp, &p) <= 0)
+        {     // Not a quadratic residue. Compute next value of -1 - Mult1^2 in variable Tmp.
+          BigIntAdd(&Tmp, &Mult2, &Tmp);
+          Mult2.limbs[0].x += 2;
           mult1++;
-          // Increment Mult1 by 1 in Montgomery notation.
-          AddBigNbrModN(Mult1.limbs, MontgomeryMultR1, Mult1.limbs, p.limbs, p.nbrLimbs);
-          modmult(Mult1.limbs, Mult1.limbs, Tmp.limbs);
-          SubtBigNbrModN(minusOneMont, Tmp.limbs, Tmp.limbs, p.limbs, p.nbrLimbs);
-          modPow(Tmp.limbs, K.limbs, p.nbrLimbs, Tmp1.limbs);
-          // At this moment Tmp1 = (-1 - Mult1^2)^((p-1)/2)
-          // in Montgomery notation. Continue loop if it is not 1.
-        } while (memcmp(Tmp1.limbs, MontgomeryMultR1, p.nbrLimbs));
+        }
         // After the loop finishes, Tmp = (-1 - Mult1^2) is a quadratic residue mod p.
-        // Convert Mult1 to standard notation by multiplying by 1 in
-        // Montgomery notation.
+        // Convert base to Montgomery notation.
+        BigIntAdd(&Tmp, &p, &Tmp);
+        Tmp.limbs[NumberLength].x = 0;
+        modmult(Tmp.limbs, MontgomeryMultR2, Tmp.limbs);
+
         intToBigInteger(&Mult1, mult1);
         CopyBigInt(&q, &p);
         subtractdivide(&q, -1, 4);  // q <- (p+1)/4.
         // Find Mult2 <- square root of Tmp = Tmp^q (mod p) in Montgomery notation.
-        modPow(Tmp.limbs, q.limbs, p.nbrLimbs, Mult2.limbs);
+        modPowShowStatus(Tmp.limbs, q.limbs, p.nbrLimbs, Mult2.limbs);
         // Convert Mult2 from Montgomery notation to standard notation.
         memset(Tmp.limbs, 0, p.nbrLimbs * sizeof(limb));
         Tmp.limbs[0].x = 1;
@@ -369,137 +363,19 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
           }
         }
         Mult2.sign = SIGN_POSITIVE;
-        for (;;)
-        {
-          // Compute K <- (Mult1^2 + Mult2^2 + Mult3^2 + Mult4^2) / p
-          BigIntMultiply(&Mult1, &Mult1, &Tmp);
-          BigIntMultiply(&Mult2, &Mult2, &Tmp1);
-          BigIntAdd(&Tmp, &Tmp1, &Tmp);
-          BigIntMultiply(&Mult3, &Mult3, &Tmp1);
-          BigIntAdd(&Tmp, &Tmp1, &Tmp);
-          BigIntMultiply(&Mult4, &Mult4, &Tmp1);
-          BigIntAdd(&Tmp, &Tmp1, &Tmp);
-          BigIntDivide(&Tmp, &p, &K);
-          if (K.nbrLimbs == 1 && K.limbs[0].x == 1)
-          {   // K equals 1
-            break;
-          }
-          if ((K.limbs[0].x & 1) == 0)
-          { // If K is even ...
-            if ((Mult1.limbs[0].x + Mult2.limbs[0].x) & 1)
-            {  // If Mult1 + Mult2 is odd...
-              if (((Mult1.limbs[0].x + Mult3.limbs[0].x) & 1) == 0)
-              {   // If Mult1 + Mult3 is even...
-                CopyBigInt(&Tmp, &Mult2);
-                CopyBigInt(&Mult2, &Mult3);
-                CopyBigInt(&Mult3, &Tmp);
-              }
-              else
-              {
-                CopyBigInt(&Tmp, &Mult2);
-                CopyBigInt(&Mult2, &Mult4);
-                CopyBigInt(&Mult4, &Tmp);
-              }
-            } // At this moment Mult1+Mult2 = even, Mult3+Mult4 = even
-            BigIntAdd(&Mult1, &Mult2, &Tmp1);
-            subtractdivide(&Tmp1, 0, 2);  // Tmp1 <- (Mult1 + Mult2) / 2
-            BigIntSubt(&Mult1, &Mult2, &Tmp2);
-            subtractdivide(&Tmp2, 0, 2);  // Tmp2 <- (Mult1 - Mult2) / 2
-            BigIntAdd(&Mult3, &Mult4, &Tmp3);
-            subtractdivide(&Tmp3, 0, 2);  // Tmp3 <- (Mult3 + Mult4) / 2
-            BigIntSubt(&Mult3, &Mult4, &Mult4);
-            subtractdivide(&Mult4, 0, 2);  // Mult4 <- (Mult3 + Mult4) / 2
-            CopyBigInt(&Mult3, &Tmp3);
-            CopyBigInt(&Mult2, &Tmp2);
-            CopyBigInt(&Mult1, &Tmp1);
-            continue;
-          } /* end if k is even */
-          BigIntRemainder(&Mult1, &K, &M1);    // M1 <- Mult1 % K.
-          if (M1.sign == SIGN_NEGATIVE)
-          {
-            BigIntAdd(&M1, &K, &M1);
-          }
-          BigIntRemainder(&Mult2, &K, &M2);    // M2 <- Mult2 % K.
-          if (M2.sign == SIGN_NEGATIVE)
-          {
-            BigIntAdd(&M2, &K, &M2);
-          }
-          BigIntRemainder(&Mult3, &K, &M3);    // M3 <- Mult3 % K.
-          if (M3.sign == SIGN_NEGATIVE)
-          {
-            BigIntAdd(&M3, &K, &M3);
-          }
-          BigIntRemainder(&Mult4, &K, &M4);    // M4 <- Mult4 % K.
-          if (M4.sign == SIGN_NEGATIVE)
-          {
-            BigIntAdd(&M4, &K, &M4);
-          }
-          CopyBigInt(&Tmp, &K);
-          subtractdivide(&Tmp, -1, 2);       // Tmp <- (K+1) / 2
-          BigIntSubt(&M1, &Tmp, &Tmp1);      // Tmp1 <- M1 - Tmp
-          if (Tmp1.sign == SIGN_POSITIVE)    // If M1 >= K / 2 ... 
-          {
-            BigIntSubt(&M1, &K, &M1);        // M1 <- M1 - K
-          }
-          BigIntSubt(&M2, &Tmp, &Tmp1);      // Tmp1 <- M2 - Tmp
-          if (Tmp1.sign == SIGN_POSITIVE)    // If M2 >= K / 2 ... 
-          {
-            BigIntSubt(&M2, &K, &M2);        // M2 <- M2 - K
-          }
-          BigIntSubt(&M3, &Tmp, &Tmp1);      // Tmp1 <- M3 - Tmp
-          if (Tmp1.sign == SIGN_POSITIVE)    // If M3 >= K / 2 ... 
-          {
-            BigIntSubt(&M3, &K, &M3);        // M3 <- M3 - K
-          }
-          BigIntSubt(&M4, &Tmp, &Tmp1);      // Tmp1 <- M4 - Tmp
-          if (Tmp1.sign == SIGN_POSITIVE)    // If M4 >= K / 2 ... 
-          {
-            BigIntSubt(&M4, &K, &M4);        // M4 <- M4 - K
-          }
-          // Compute Tmp1 <- (Mult1*M1 + Mult2*M2 + Mult3*M3 + Mult4*M4) / K
-          BigIntMultiply(&Mult1, &M1, &Tmp);
-          BigIntMultiply(&Mult2, &M2, &Tmp4);
-          BigIntAdd(&Tmp, &Tmp4, &Tmp);
-          BigIntMultiply(&Mult3, &M3, &Tmp4);
-          BigIntAdd(&Tmp, &Tmp4, &Tmp);
-          BigIntMultiply(&Mult4, &M4, &Tmp4);
-          BigIntAdd(&Tmp, &Tmp4, &Tmp);
-          BigIntDivide(&Tmp, &K, &Tmp1);
-
-          // Compute Tmp2 <- (Mult1*M2 - Mult2*M1 + Mult3*M4 - Mult4*M3) / K
-          BigIntMultiply(&Mult1, &M2, &Tmp);
-          BigIntMultiply(&Mult2, &M1, &Tmp4);
-          BigIntSubt(&Tmp, &Tmp4, &Tmp);
-          BigIntMultiply(&Mult3, &M4, &Tmp4);
-          BigIntAdd(&Tmp, &Tmp4, &Tmp);
-          BigIntMultiply(&Mult4, &M3, &Tmp4);
-          BigIntSubt(&Tmp, &Tmp4, &Tmp);
-          BigIntDivide(&Tmp, &K, &Tmp2);
-
-          // Compute Tmp3 <- (Mult1*M3 - Mult3*M1 - Mult2*M4 + Mult4*M2) / K
-          BigIntMultiply(&Mult1, &M3, &Tmp);
-          BigIntMultiply(&Mult3, &M1, &Tmp4);
-          BigIntSubt(&Tmp, &Tmp4, &Tmp);
-          BigIntMultiply(&Mult2, &M4, &Tmp4);
-          BigIntSubt(&Tmp, &Tmp4, &Tmp);
-          BigIntMultiply(&Mult4, &M2, &Tmp4);
-          BigIntAdd(&Tmp, &Tmp4, &Tmp);
-          BigIntDivide(&Tmp, &K, &Tmp3);
-
-          // Compute Mult4 <- (Mult1*M4 - Mult4*M1 + Mult2*M3 - Mult3*M2) / K
-          BigIntMultiply(&Mult1, &M4, &Tmp);
-          BigIntMultiply(&Mult4, &M1, &Tmp4);
-          BigIntSubt(&Tmp, &Tmp4, &Tmp);
-          BigIntMultiply(&Mult2, &M3, &Tmp4);
-          BigIntAdd(&Tmp, &Tmp4, &Tmp);
-          BigIntMultiply(&Mult3, &M2, &Tmp4);
-          BigIntSubt(&Tmp, &Tmp4, &Tmp);
-          BigIntDivide(&Tmp, &K, &Mult4);
-
-          CopyBigInt(&Mult3, &Tmp3);
-          CopyBigInt(&Mult2, &Tmp2);
-          CopyBigInt(&Mult1, &Tmp1);
-        } /* end while */
+        MultiplyQuaternionBy2(&Mult1, &Mult2, &Mult3, &Mult4);
+        CopyBigInt(&M1, &p);
+        BigIntMultiplyBy2(&M1);
+        intToBigInteger(&M2, 0);
+        intToBigInteger(&M3, 0);
+        intToBigInteger(&M4, 0);
+        QuaternionGCD(&Mult1, &Mult2, &Mult3, &Mult4, &M1, &M2, &M3, &M4, &M5, &M6, &M7, &M8,
+          &Tmp, &Tmp1, &Tmp2, &Tmp3);
+        DivideQuaternionBy2(&M5, &M6, &M7, &M8);
+        CopyBigInt(&Mult1, &M5);
+        CopyBigInt(&Mult2, &M6);
+        CopyBigInt(&Mult3, &M7);
+        CopyBigInt(&Mult4, &M8);
       } /* end if p = 3 (mod 4) */
     } /* end prime not 2 */
 
@@ -691,7 +567,7 @@ static void ShowFourSquares(char **pptrOutput)
 
 void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
 {
-  char *ptrOutput;
+  char *ptrOutput, *ptrText;
   knownFactors = factors;
   if (valuesProcessed == 0)
   {
@@ -711,8 +587,18 @@ void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
           GetEulerTotient(&ptrOutput);
           GetMobius(&ptrOutput);
         }
+#ifdef __EMSCRIPTEN__
+        StepECM = 3;   // Show progress (in percentage) of sum of squares.
+        ptrText = ShowFactoredPart(&tofactor, astFactorsMod);
+        strcpy(ptrText, lang ? "<p>Hallando suma de cuadrados.</p>" :
+          "<p>Searching for sum of squares.</p>");
+        ShowLowerText();
+#endif
         ComputeFourSquares(astFactorsMod);
         ShowFourSquares(&ptrOutput);
+#ifdef __EMSCRIPTEN__
+        StepECM = 0;   // Do not show progress.
+#endif
       }
       showElapsedTime(&ptrOutput);
     }
@@ -750,6 +636,13 @@ void doWork(void)
     flags = -*(++ptrData);
   }
   lang = flags & 1;
+#ifdef __EMSCRIPTEN__
+  if ((flags & (-2)) == '4')
+  {
+    skipPrimality = TRUE;
+    flags = 2;           // Do factorization.
+  }
+#endif
   ptrData += 2;          // Skip app number and second comma.
   verbose = (*(ptrData + 1) == '1');
   prettyprint = (*(ptrData + 2) == '1');

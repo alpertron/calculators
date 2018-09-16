@@ -30,7 +30,7 @@ static char *ptrCurrBatchFactor;
 static char *ptrNextBatchFactor;
 static int firstExprProcessed;
 int valuesProcessed;
-char outputExpr[100000];
+char outputExpr[200000];
 #ifdef __EMSCRIPTEN__
 char *ptrInputText;
 #endif
@@ -259,7 +259,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           ptrConditionExpr++;
         }
       }
-      while (ptrOutput < &output[sizeof(output) - 100000])
+      while (ptrOutput < &output[sizeof(output) - 200000])
       {      // Perform loop.
         int processExpression = TRUE;
         expressionNbr = 3;
@@ -376,7 +376,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       strcpy(ptrOutput, "</li>");
       ptrOutput += strlen(ptrOutput);
     }
-    if (ptrOutput >= &output[sizeof(output) - 100000])
+    if (ptrOutput >= &output[sizeof(output) - 200000])
     {
       output[0] = '6';     // Show Continue button.
       break;

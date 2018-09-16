@@ -22,7 +22,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <math.h>
 
-#define FFT_LIMB_SIZE   20
+#define FFT_LIMB_SIZE   19
 #define FFT_LIMB_RANGE  (1 << FFT_LIMB_SIZE)
 #define MAX_VALUE_FFT_LIMB (FFT_LIMB_RANGE - 1)
 #define MAX_FFT_LEN        (MAX_LEN * BITS_PER_GROUP / FFT_LIMB_SIZE + 10)
@@ -38,7 +38,7 @@ struct sCosSin
   int Sin[2];
 };
 
-#define POWERS_2       13
+#define POWERS_2       17
 #define QUARTER_CIRCLE (1 << (POWERS_2 - 2))
 #define HALF_CIRCLE    (1 << (POWERS_2 - 1))
 #define CIRCLE_MASK    ((1 << POWERS_2) - 1)
@@ -46,19 +46,21 @@ struct sCosSin
 // first the least significant limb, then the most significant limb.
 struct sCosSin cossinPowerOneHalf[] =
 {
-  {{2121767201, 1518500249}, {2121767201, 1518500249}},  // cos(pi/2^1), then sin(pi/2^1)
-  {{1696238673, 1984016188}, {782852817, 821806413}},    // cos(pi/2^2), then sin(pi/2^2)
-  {{1857642581, 2106220351}, {886244699, 418953276}},    // cos(pi/2^3), then sin(pi/2^3)
-  {{575294268, 2137142927}, {174918392, 210490206}},     // cos(pi/2^4), then sin(pi/2^4)
-  {{1926953927, 2144896909}, {565903996, 105372028}},    // cos(pi/2^5), then sin(pi/2^5)
-  {{161094006, 2146836866}, {2050385887, 52701886}},     // cos(pi/2^6), then sin(pi/2^6)
-  {{925218478, 2147321946}, {1727413283, 26352927}},     // cos(pi/2^7), then sin(pi/2^7)
-  {{487924890, 2147443222}, {2040267204, 13176711}},     // cos(pi/2^8), then sin(pi/2^8)
-  {{1144652709, 2147473541}, {2107197812, 6588386}},     // cos(pi/2^9), then sin(pi/2^9)
-  {{819842189, 2147481121}, {786843437, 3294197}},       // cos(pi/2^10), then sin(pi/2^10)
-  {{741631965, 2147483016}, {360077744, 1647099}},       // cos(pi/2^11), then sin(pi/2^11)
-  {{185395523, 2147483490}, {1383830441, 823549}},       // cos(pi/2^12), then sin(pi/2^12)
-  {{1120089925, 2147483608}, {1781913263, 411774}},      // cos(pi/2^13), then sin(pi/2^13)
+  {{2121767201, 1518500249}, {2121767201, 1518500249}},  // cos(pi/2^2), then sin(pi/2^2)
+  {{1696238673, 1984016188}, {782852817, 821806413}},    // cos(pi/2^3), then sin(pi/2^3)
+  {{1857642581, 2106220351}, {886244699, 418953276}},    // cos(pi/2^4), then sin(pi/2^4)
+  {{575294268, 2137142927}, {174918392, 210490206}},     // cos(pi/2^5), then sin(pi/2^5)
+  {{1926953927, 2144896909}, {565903996, 105372028}},    // cos(pi/2^6), then sin(pi/2^6)
+  {{161094006, 2146836866}, {2050385887, 52701886}},     // cos(pi/2^7), then sin(pi/2^7)
+  {{925218478, 2147321946}, {1727413283, 26352927}},     // cos(pi/2^8), then sin(pi/2^8)
+  {{487924890, 2147443222}, {2040267204, 13176711}},     // cos(pi/2^9), then sin(pi/2^9)
+  {{1144652709, 2147473541}, {2107197812, 6588386}},     // cos(pi/2^10), then sin(pi/2^10)
+  {{819842189, 2147481121}, {786843437, 3294197}},       // cos(pi/2^11), then sin(pi/2^11)
+  {{741631965, 2147483016}, {360077744, 1647099}},       // cos(pi/2^12), then sin(pi/2^12)
+  {{185395523, 2147483490}, {1383830441, 823549}},       // cos(pi/2^13), then sin(pi/2^13)
+  {{1120089925, 2147483608}, {1781913263, 411774}},      // cos(pi/2^14), then sin(pi/2^14)
+  {{280022432, 2147483638}, {892988659, 205887}},        // cos(pi/2^15), then sin(pi/2^15)
+  {{1143747429, 2147483645}, {1520490156, 102943}},      // cos(pi/2^16), then sin(pi/2^16)
 };
 
 static struct sCosSin cossin[4 << (POWERS_2 - 2)];
@@ -68,7 +70,8 @@ static complex secondFactor[MAX_FFT_LEN];
 static complex transf[MAX_FFT_LEN];
 static complex product[MAX_FFT_LEN];
 static complex tempFFT[MAX_FFT_LEN];
-
+static complex MontgomeryMultNTransf[MAX_FFT_LEN];
+static complex TestNbrTransf[MAX_FFT_LEN];
 // Use formulas sin(A+B) = sin A cos B + cos A sin B
 // and cos(A+B) = cos A cos B - sin A sin B
 static void initCosinesArray(void)
@@ -100,20 +103,30 @@ static void initCosinesArray(void)
     {
       break;
     }
-    ptrOldCosSin = ptrCosSin - mask;   // Pointer to cos/sin A.
     ptrCosSinDelta = &cossinPowerOneHalf[(POWERS_2 - 3 - bitNbr)];  // Pointer to cos/sin B.
-    // Compute cos(A+B) = cos A cos B - sin A sin B.
-    MultBigNbrComplete(ptrOldCosSin->Cos, ptrCosSinDelta->Cos, firstProd, 2);
-    MultBigNbrComplete(ptrOldCosSin->Sin, ptrCosSinDelta->Sin, secondProd, 2);
-    SubtractBigNbr(firstProd, secondProd, firstProd, 4);
-    ptrCosSin->Cos[0] = *(firstProd + 2);
-    ptrCosSin->Cos[1] = *(firstProd + 3);
-    // Compute sin(A+B) = sin A cos B + cos A sin B.
-    MultBigNbrComplete(ptrOldCosSin->Sin, ptrCosSinDelta->Cos, firstProd, 2);
-    MultBigNbrComplete(ptrOldCosSin->Cos, ptrCosSinDelta->Sin, secondProd, 2);
-    AddBigNbr(firstProd, secondProd, firstProd, 4);
-    ptrCosSin->Sin[0] = *(firstProd + 2);
-    ptrCosSin->Sin[1] = *(firstProd + 3);
+    if (index == mask)
+    {
+      ptrCosSin->Cos[0] = ptrCosSinDelta->Cos[0];
+      ptrCosSin->Cos[1] = ptrCosSinDelta->Cos[1];
+      ptrCosSin->Sin[0] = ptrCosSinDelta->Sin[0];
+      ptrCosSin->Sin[1] = ptrCosSinDelta->Sin[1];
+    }
+    else
+    {
+      // Compute cos(A+B) = cos A cos B - sin A sin B.
+      ptrOldCosSin = ptrCosSin - mask;   // Pointer to cos/sin A.
+      MultBigNbrComplete(ptrOldCosSin->Cos, ptrCosSinDelta->Cos, firstProd, 2);
+      MultBigNbrComplete(ptrOldCosSin->Sin, ptrCosSinDelta->Sin, secondProd, 2);
+      SubtractBigNbr(firstProd, secondProd, firstProd, 4);
+      ptrCosSin->Cos[0] = *(firstProd + 2);
+      ptrCosSin->Cos[1] = *(firstProd + 3);
+      // Compute sin(A+B) = sin A cos B + cos A sin B.
+      MultBigNbrComplete(ptrOldCosSin->Sin, ptrCosSinDelta->Cos, firstProd, 2);
+      MultBigNbrComplete(ptrOldCosSin->Cos, ptrCosSinDelta->Sin, secondProd, 2);
+      AddBigNbr(firstProd, secondProd, firstProd, 4);
+      ptrCosSin->Sin[0] = *(firstProd + 2);
+      ptrCosSin->Sin[1] = *(firstProd + 3);
+    }
     ptrCosSin++;
   }
   // Convert from integers to doubles and send the results to the final array.
@@ -344,38 +357,38 @@ static int ReduceLimbs(limb *factor, complex *fftFactor, int len)
       real += ((ptrFactor + 1)->x << (BITS_PER_GROUP - bitExternal));
     }
     ptrInternalFactor->real = (double)(real & MAX_VALUE_FFT_LIMB);
-    bitExternal += FFT_LIMB_SIZE;
-    if (bitExternal >= BITS_PER_GROUP)
-    {                   // All bits of input limb have been used.
-      bitExternal -= BITS_PER_GROUP;
-      if (++ptrFactor - factor == len)
-      {
-        ptrInternalFactor++->imaginary = 0;
-        break;
-      }
-    }
-    int imaginary = ptrFactor->x >> bitExternal;
-    if (ptrFactor - factor < len - 1)
-    {                   // Do not read outside input buffer.
-      imaginary += (ptrFactor + 1)->x << (BITS_PER_GROUP - bitExternal);
-    }
-    ptrInternalFactor++->imaginary = (double)(imaginary & MAX_VALUE_FFT_LIMB);
-    bitExternal += FFT_LIMB_SIZE;
-    if (bitExternal >= BITS_PER_GROUP)
-    {                   // All bits of input limb have been used.
-      bitExternal -= BITS_PER_GROUP;
-      if (++ptrFactor - factor == len)
-      {
-        break;
-      }
-    }
+bitExternal += FFT_LIMB_SIZE;
+if (bitExternal >= BITS_PER_GROUP)
+{                   // All bits of input limb have been used.
+  bitExternal -= BITS_PER_GROUP;
+  if (++ptrFactor - factor == len)
+  {
+    ptrInternalFactor++->imaginary = 0;
+    break;
+  }
+}
+int imaginary = ptrFactor->x >> bitExternal;
+if (ptrFactor - factor < len - 1)
+{                   // Do not read outside input buffer.
+  imaginary += (ptrFactor + 1)->x << (BITS_PER_GROUP - bitExternal);
+}
+ptrInternalFactor++->imaginary = (double)(imaginary & MAX_VALUE_FFT_LIMB);
+bitExternal += FFT_LIMB_SIZE;
+if (bitExternal >= BITS_PER_GROUP)
+{                   // All bits of input limb have been used.
+  bitExternal -= BITS_PER_GROUP;
+  if (++ptrFactor - factor == len)
+  {
+    break;
+  }
+}
   }
   return (int)(ptrInternalFactor - fftFactor);
 }
 
 /*
    Algorithm 9.5.12 of Crandall and Pomerance book Prime Numbers:
-   
+
    Zero-pad x and y until each has length 2D.
    X = DFT(x);
    Y = DFT(y);
@@ -397,9 +410,14 @@ void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int 
   double invPower2;
   double dCarry;
   int fftLen, bitExternal;
+  int power2plus1;
   limb *ptrResult;
-  ReduceLimbs(factor1, firstFactor, len);
-  fftLen = ReduceLimbs(factor2, secondFactor, len);
+  fftLen = ReduceLimbs(factor1, firstFactor, len);
+  if (factor1 != factor2 && !(TestNbrCached == NBR_CACHED && factor2 == TestNbr) &&
+    !(MontgomeryMultNCached == NBR_CACHED && factor2 == MontgomeryMultN))
+  {
+    ReduceLimbs(factor2, secondFactor, len);
+  }
   // Get next power of 2 to len.
   int power2, index;
   for (power2 = 1; ; power2 *= 2)
@@ -417,11 +435,41 @@ void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int 
     secondFactor[index].real = 0;
     secondFactor[index].imaginary = 0;
   }
-  complexFFT(firstFactor, tempFFT, power2);   
-  ConvertHalfToFullSizeFFT(tempFFT, product, power2); // product <- DFT(firstFactor)
-  complexFFT(secondFactor, tempFFT, power2);
-  ConvertHalfToFullSizeFFT(tempFFT, transf, power2);  // transf <- DFT(secondFactor)
-                                                      // Perform convolution.
+  complexFFT(firstFactor, tempFFT, power2);
+  ConvertHalfToFullSizeFFT(tempFFT, product, power2);   // product <- DFT(firstFactor)
+  power2plus1 = power2 + 1;
+  if (factor1 != factor2)
+  {
+    if (TestNbrCached == NBR_CACHED && factor2 == TestNbr)
+    {
+      memcpy(transf, TestNbrTransf, power2plus1 * sizeof(transf[0]));
+    }
+    else if (MontgomeryMultNCached == NBR_CACHED && factor2 == MontgomeryMultN)
+    {
+      memcpy(transf, MontgomeryMultNTransf, power2plus1 * sizeof(transf[0]));
+    }
+    else
+    {
+      complexFFT(secondFactor, tempFFT, power2);
+      ConvertHalfToFullSizeFFT(tempFFT, transf, power2);  // transf <- DFT(secondFactor)
+    }
+    if (TestNbrCached == NBR_READY_TO_BE_CACHED && factor2 == TestNbr)
+    {
+      memcpy(TestNbrTransf, transf, power2plus1 * sizeof(transf[0]));
+      TestNbrCached = NBR_CACHED;
+    }
+    else if (MontgomeryMultNCached == NBR_READY_TO_BE_CACHED && factor2 == MontgomeryMultN)
+    {
+      memcpy(MontgomeryMultNTransf, transf, power2plus1 * sizeof(transf[0]));
+      MontgomeryMultNCached = NBR_CACHED;
+    }
+  }
+  else
+  {
+    memcpy(transf, product, power2plus1 * sizeof(product[0]));   // transf <- DFT(secondFactor)
+  }
+
+    // Perform convolution.
   ptrFirst = product;
   ptrSecond = transf;
   ptrProduct = product;

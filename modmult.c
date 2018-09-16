@@ -23,6 +23,8 @@
 #include <math.h>
 #include <stdint.h>
 #include "bignbr.h"
+char MontgomeryMultNCached;
+char TestNbrCached;
 limb MontgomeryR1[MAX_LEN];
 limb TestNbr[MAX_LEN];
 limb MontgomeryMultN[MAX_LEN];
@@ -66,7 +68,7 @@ void ComputeInversePower2(limb *value, limb *result, limb *tmp)
   x = x * (2 - N * x);         // 16 least significant bits of inverse correct.
   x = x * (2 - N * x);         // 32 least significant bits of inverse correct.
   result->x = x & MAX_VALUE_LIMB;
-  for (currLen = 2; currLen <= NumberLength * 2; currLen <<= 1)
+  for (currLen = 2; currLen < NumberLength; currLen <<= 1)
   {
     multiply(value, result, tmp, currLen, NULL);    // tmp <- N * x
     Cy.x = 2 - tmp[0].x;
@@ -75,9 +77,19 @@ void ComputeInversePower2(limb *value, limb *result, limb *tmp)
     {
       Cy.x = (Cy.x >> BITS_PER_GROUP) - tmp[j].x;
       tmp[j].x = Cy.x & MAX_VALUE_LIMB;
-    }                                               // tmp <- 2 - N * x
-    multiply(result, tmp, result, currLen, NULL);   // tmp <- x * (2 - N * x)
+    }                                                  // tmp <- 2 - N * x
+    multiply(result, tmp, result, currLen, NULL);      // tmp <- x * (2 - N * x)
   }
+  // Perform last approximation to inverse.
+  multiply(value, result, tmp, NumberLength, NULL);    // tmp <- N * x
+  Cy.x = 2 - tmp[0].x;
+  tmp[0].x = Cy.x & MAX_VALUE_LIMB;
+  for (j = 1; j < NumberLength; j++)
+  {
+    Cy.x = (Cy.x >> BITS_PER_GROUP) - tmp[j].x;
+    tmp[j].x = Cy.x & MAX_VALUE_LIMB;
+  }                                                    // tmp <- 2 - N * x
+  multiply(result, tmp, result, NumberLength, NULL);   // tmp <- x * (2 - N * x)
 }
 
 // Let R be a power of 2 of at least len limbs.
@@ -90,6 +102,8 @@ void GetMontgomeryParms(int len)
   int j;
   limb Cy;
   int value;
+  MontgomeryMultNCached = NBR_NOT_CACHED;
+  TestNbrCached = NBR_NOT_CACHED;
   TestNbr[len].x = 0;
   NumberLength = len;
   NumberLength2 = len + len;
@@ -178,6 +192,8 @@ void GetMontgomeryParms(int len)
     MontgomeryMultR2[0].x = 0;
     AdjustModN(MontgomeryMultR2, TestNbr, len);
   }
+  MontgomeryMultNCached = NBR_READY_TO_BE_CACHED;
+  TestNbrCached = NBR_READY_TO_BE_CACHED;
 }
 
 // Compute Nbr <- Nbr mod Modulus.
@@ -1159,7 +1175,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
   // Compute m
   multiply(product, MontgomeryMultN, aux, NumberLength, NULL);
   // Compute mN
-  multiply(TestNbr, aux, aux2, NumberLength, NULL);
+  multiply(aux, TestNbr, aux2, NumberLength, NULL);
   // Check if lowest half of mN is not zero
   for (count = NumberLength-1; count >= 0; count--)
   {

@@ -21,6 +21,8 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 
 #define MAX_LIMBS_SIQS 15
+static BigInteger Numerator, Denominator, Modulus, Quotient;
+static BigInteger BigInt1, BigInt2, BigGcd;
 
 int NbrBak[MAX_LIMBS_SIQS];
 void ChSignBigNbr(int *nbr, int length)
@@ -241,12 +243,12 @@ void DivBigNbrByInt(int *pDividend, int divisor, int *pQuotient, int nbrLen)
   pQuotient += nbrLen - 1;
   for (ctr = nbrLen - 1; ctr >= 0; ctr--)
   {
-    double dDividend, dQuotient;
+    double dDividend;
     int quotient, dividend;
     dividend = (remainder << BITS_PER_INT_GROUP) + *pDividend;
     dDividend = (double)remainder * dLimb + *pDividend;
-    dQuotient = floor(dDividend / dDivisor + 0.5);
-    quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
+    // quotient has correct value or 1 more.
+    quotient = (unsigned int)(dDividend / dDivisor + 0.5);
     remainder = dividend - quotient * divisor;
     if ((unsigned int)remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
@@ -268,11 +270,11 @@ int RemDivBigNbrByInt(int *pDividend, int divisor, int nbrLen)
   for (ctr = nbrLen - 1; ctr >= 0; ctr--)
   {
     unsigned int quotient, dividend;
-    double dQuotient, dDividend;
+    double dDividend;
     dividend = (remainder << BITS_PER_INT_GROUP) + *pDividend;
     dDividend = (double)remainder * dLimb + *pDividend;
-    dQuotient = floor(dDividend / dDivisor + 0.5);
-    quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
+         // quotient has correct value or 1 more.
+    quotient = (unsigned int)(dDividend / dDivisor + 0.5);
     remainder = dividend - quotient * divisor;
     if ((unsigned int)remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
@@ -431,7 +433,6 @@ void BigIntToBigNbr(BigInteger *pBigNbr, int *pBigInt, int nbrLenBigInt)
 
 void GcdBigNbr(int *pNbr1, int *pNbr2, int *pGcd, int nbrLen)
 {
-  BigInteger BigInt1, BigInt2, BigGcd;
   BigIntToBigNbr(&BigInt1, pNbr1, nbrLen);
   BigIntToBigNbr(&BigInt2, pNbr2, nbrLen);
   BigIntGcd(&BigInt1, &BigInt2, &BigGcd);
@@ -504,7 +505,6 @@ void ModInvBigInt(int *num, int *inv, int *mod, int nbrLenBigInt)
 {
   int NumberLengthBigInt;
   int NumberLengthBak = NumberLength;
-  BigInteger Numerator, Denominator, Modulus, Quotient;
   memset(inv, 0, nbrLenBigInt*sizeof(int));
   while (nbrLenBigInt > 1)
   {
