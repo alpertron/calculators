@@ -25,26 +25,26 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "expression.h"
 #include "factor.h"
 #define PAREN_STACK_SIZE            100
-#define OPER_POWER                    1
-#define OPER_MULTIPLY                 2
-#define OPER_DIVIDE                   3
-#define OPER_REMAINDER                4
-#define OPER_UNARY_MINUS              5
-#define OPER_PLUS                     6
-#define OPER_MINUS                    7
-#define OPER_SHR                      8
-#define OPER_SHL                      9
-#define OPER_NOT_GREATER             10
-#define OPER_NOT_LESS                11
-#define OPER_NOT_EQUAL               12
-#define OPER_EQUAL                   13
-#define OPER_GREATER                 14
-#define OPER_LESS                    15
-#define OPER_NOT                     16
-#define OPER_AND                     17
-#define OPER_OR                      18
-#define OPER_XOR                     19
-#define MAXIMUM_OPERATOR             19
+#define OPER_POWER                    0
+#define OPER_MULTIPLY                 1
+#define OPER_DIVIDE                   2
+#define OPER_REMAINDER                3
+#define OPER_UNARY_MINUS              4
+#define OPER_PLUS                     5
+#define OPER_MINUS                    6
+#define OPER_SHR                      7
+#define OPER_SHL                      8
+#define OPER_NOT_GREATER              9
+#define OPER_NOT_LESS                10
+#define OPER_NOT_EQUAL               11
+#define OPER_EQUAL                   12
+#define OPER_GREATER                 13
+#define OPER_LESS                    14
+#define OPER_NOT                     15
+#define OPER_AND                     16
+#define OPER_OR                      17
+#define OPER_XOR                     18
+#define MAXIMUM_OPERATOR             18
 
 static BigInteger stackValues[PAREN_STACK_SIZE];
 static char stackOperators[PAREN_STACK_SIZE];
@@ -638,7 +638,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {  // Power operator has right associativity.
         while (stackIndex > startStackIndex &&
           stackOperators[stackIndex - 1] != '(' &&
-          priority[(int)stackOperators[stackIndex - 1] - 1] <= priority[(int)charValue]/* - 1*/)
+          priority[(int)stackOperators[stackIndex - 1]] <= priority[(int)charValue])
         {
           if ((SubExprResult = ComputeSubExpr()) != 0)
           {
