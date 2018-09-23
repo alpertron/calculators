@@ -44,7 +44,6 @@ extern char *ptrInputText;
 #define TYP_EC     350000000
 
 union uCommon common;
-char factorsAscii[MAX_LEN*4];
 int StepECM;
 int skipPrimality;
 static int nbrPrimes, indexPrimes, DegreeAurif, NextEC;
@@ -719,7 +718,7 @@ void InsertAurifFactors(struct sFactors *pstFactors, BigInteger *BigBase, int Ex
 
 void copyString(char *textFromServer)
 {
-  strcpy(factorsAscii, textFromServer);
+  strcpy(common.saveFactors.text, textFromServer);
 }
 
 void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
@@ -733,7 +732,7 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
   char *ptrFactorsAscii;
   BigInteger Nbr1, Nbr2;
 
-  factorsAscii[0] = 0;    // Indicate no new factor found in advance.
+  common.saveFactors.text[0] = 0;    // Indicate no new factor found in advance.
   Expon2 = Expon;
   if (cunningham && BigOriginal->nbrLimbs > 4)
   {   // Enter here on numbers of more than 40 digits if the user selected
@@ -753,10 +752,10 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
     ptrUrl += strlen(ptrUrl);
     *ptrUrl++ = (increment > 0? 'p': 'm');
     *ptrUrl = 0;
-    getCunn(url, factorsAscii);
+    getCunn(url, common.saveFactors.text);
 #endif
   }
-  ptrFactorsAscii = factorsAscii;
+  ptrFactorsAscii = common.saveFactors.text;
   while (*ptrFactorsAscii > ' ')
   { // Loop through factors found in server.
     int nbrDigits;
@@ -2108,10 +2107,8 @@ static void SaveFactors(struct sFactors *pstFactors)
 #ifdef FACTORIZATION_APP
   struct sFactors *pstCurFactor = pstFactors + 1;
   int factorNbr;
-  char text[MAX_LEN*12];
-  char *ptrText;
   BigInteger bigint;
-  ptrText = text;
+  char *ptrText = common.saveFactors.text;
   *ptrText++ = '8';
   strcpy(ptrText, ptrInputText);
   ptrText += strlen(ptrText);
@@ -2133,7 +2130,7 @@ static void SaveFactors(struct sFactors *pstFactors)
     *ptrText++ = ')';
   }
   *ptrText++ = 0;
-  databack(text);
+  databack(common.saveFactors.text);
 #endif
 }
 
@@ -2575,7 +2572,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
 
 char *getFactorsAsciiPtr(void)
 {
-  return factorsAscii;
+  return common.saveFactors.text;
 }
 
 // Find Euler's Totient as the product of p^(e-1)*(p-1) where p=prime and e=exponent.

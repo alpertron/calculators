@@ -524,6 +524,10 @@ function startUp()
     for (var i = 0; i < elements.length; i++)
     {
       var element = elements[i];
+      if (element.type == "radio" && element.checked == false)
+      {
+        continue;
+      }
       if (element.name)
       {
         if (useAmp)

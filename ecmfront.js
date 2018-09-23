@@ -190,7 +190,7 @@ function dowork(n)
     app += 6;   // Convert to factorization.
   }
   param = digits + "," + app + "," + config + valueText + charNull +
-          getStorage("ecmFactors");
+          getStorage("ecmFactors") + charNull;
   if (n == -1 || n == -2)
   {
     param += charNull + get("curve").value;        // Append new curve number typed by user.
@@ -555,6 +555,10 @@ function startUp()
     for (var i = 0; i < elements.length; i++)
     {
       var element = elements[i];
+      if (element.type == "radio" && element.checked == false)
+      {
+        continue;
+      }
       if (element.name)
       {
         if (useAmp)

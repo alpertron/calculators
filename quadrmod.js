@@ -141,8 +141,8 @@
       if (get("adduserdata").checked)
       {
         userdata.value = "ax^2 + bx + c = 0 (mod n)" + 
-		                 "\na = " + get("quad").value + "\nb = " + get("lin").value +
-						 "\nc = " + get("const").value + "\nn = " + get("mod").value;
+                         "\na = " + get("quad").value + "\nb = " + get("lin").value +
+                         "\nc = " + get("const").value + "\nn = " + get("mod").value;
       }
       else
       {
@@ -172,6 +172,10 @@
       for (var i = 0; i < elements.length; i++)
       {
         var element = elements[i];
+        if (element.type == "radio" && element.checked == false)
+        {
+          continue;
+        }
         if (element.name)
         {
           if (useAmp)

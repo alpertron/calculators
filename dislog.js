@@ -38,16 +38,16 @@ function callWorker(param)
       blob = new Blob([new Uint8Array(fileContents)]);
     }
     worker = new Worker(window.URL.createObjectURL(blob));
-	worker.onmessage = function(e)
-	{ // First character of e.data is '1' for intermediate text
+    worker.onmessage = function(e)
+    { // First character of e.data is '1' for intermediate text
       // and it is '2' for end of calculation.
-	  get('result').innerHTML = e.data.substring(1);
-	  if (e.data.substring(0, 1) == '2')
-	  {   // First character passed from web worker is '2'.
-	    get('dlog').disabled = false;
-	    get('stop').disabled = true;
+      get('result').innerHTML = e.data.substring(1);
+      if (e.data.substring(0, 1) == '2')
+      {   // First character passed from web worker is '2'.
+        get('dlog').disabled = false;
+        get('stop').disabled = true;
       }
-	}
+    }
   }
   worker.postMessage(param);
 }
@@ -137,8 +137,8 @@ window.onload = function ()
     if (get("adduserdata").checked)
     {
       userdata.value = "\nBase = " + get("base").value + 
-	      (lang? "\nPotencia = ":"\npower = ") + get("pow").value +
-		  (lang? "\nMódulo = ": "\nModulus = ") + get("mod").value;
+          (lang? "\nPotencia = ":"\npower = ") + get("pow").value +
+          (lang? "\nMódulo = ": "\nModulus = ") + get("mod").value;
     }
     else
     {
@@ -168,6 +168,10 @@ window.onload = function ()
     for (var i = 0; i < elements.length; i++)
     {
       var element = elements[i];
+      if (element.type == "radio" && element.checked == false)
+      {
+        continue;
+      }
       if (element.name)
       {
         if (useAmp)

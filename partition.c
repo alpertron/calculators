@@ -310,7 +310,7 @@ void primorial(BigInteger *result, int argument)
   double factorAccum = 1;
   double maxFactorAccum = (double)(1 << 30) * (double)(1 << 23);
   partArray[0] = 20;     // Index of first big integer.
-  for (ctr = 2; ctr < argument; ctr++)
+  for (ctr = 2; ctr <= argument; ctr++)
   {
     for (j = 2; j*j <= ctr; j++)
     {
