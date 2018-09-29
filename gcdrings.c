@@ -199,8 +199,8 @@ static int DivideQuaternionByPowerOf1PlusI(BigInteger *scalar, BigInteger *vecI,
   int expon = 0;
   while ((scalar->limbs[0].x & 1) == 0)
   {
-    int sumCoeff = (scalar->limbs[0].x & 3) + (vecI->limbs[0].x & 3) +
-      (vecJ->limbs[0].x & 3) + (vecK->limbs[0].x & 3);
+    int sumCoeff = ((scalar->limbs[0].x & 3) + (vecI->limbs[0].x & 3) +
+      (vecJ->limbs[0].x & 3) + (vecK->limbs[0].x & 3)) & 7;
     if (sumCoeff == 0)
     {     // Number is multiple of 2.
       expon += 2;
@@ -286,10 +286,10 @@ static void approximate(BigInteger *nbr, struct approx *appNbr)
   {
     appNbr->mantissa += (double)nbr->limbs[nbrLimbs - 2].x;
   }
-  if (nbr->sign == SIGN_NEGATIVE)
-  {
-    appNbr->mantissa = -appNbr->mantissa;
-  }
+if (nbr->sign == SIGN_NEGATIVE)
+{
+  appNbr->mantissa = -appNbr->mantissa;
+}
 }
 
 static void addApprox(struct approx *addend1, struct approx *addend2, struct approx *sum)
@@ -327,6 +327,11 @@ static void addApprox(struct approx *addend1, struct approx *addend2, struct app
   {
     nbrLimbs1--;
     mantissa1 *= (double)LIMB_RANGE;
+  }
+  while (mantissa1 >= (double)LIMB_RANGE * (double)LIMB_RANGE)
+  {                // mantissa is positive after squaring it.
+    nbrLimbs1++;
+    mantissa1 /= (double)LIMB_RANGE;
   }
   sum->expon = nbrLimbs1;
   sum->mantissa = mantissa1;
@@ -366,7 +371,8 @@ static void TestCombination(BigInteger *scalarA, BigInteger *vecIA, BigInteger *
   approximate(vecJB, &appVecJB);
   approximate(vecKB, &appVecKB);
   for (ctr = 0; ctr < 2; ctr++)
-  {
+  {  // If ctr=0, find the square of norm of A+B.
+     // If ctr=1, find the square of norm of A-B.
     addApprox(&appScalarA, &appScalarB, &sum);
     squareApprox(&sum, &sum);
     addApprox(&appVecIA, &appVecIB, &temp);
@@ -378,6 +384,11 @@ static void TestCombination(BigInteger *scalarA, BigInteger *vecIA, BigInteger *
     addApprox(&appVecKA, &appVecKB, &temp);
     squareApprox(&temp, &temp);
     addApprox(&sum, &temp, &sum);
+    if (((scalarA->limbs[0].x + vecIA->limbs[0].x + vecJA->limbs[0].x + vecKA->limbs[0].x +
+      scalarB->limbs[0].x + vecIB->limbs[0].x + vecJB->limbs[0].x + vecKB->limbs[0].x) & 3) == 0)
+    {     // Sum is multiple of 1+i so norm will be divided by 1+i in next loop.
+      sum.mantissa /= 2;
+    }
     if ((nbr == 0 && ctr == 0) ||
       (sum.expon < appMin.expon || (sum.expon == appMin.expon && sum.mantissa < appMin.mantissa)))
     {
@@ -385,6 +396,7 @@ static void TestCombination(BigInteger *scalarA, BigInteger *vecIA, BigInteger *
       appMin.mantissa = sum.mantissa;
       *pCombination = nbr + ctr;
     }
+     // Change sign of B.
     appScalarB.mantissa = -appScalarB.mantissa;
     appVecIB.mantissa = -appVecIB.mantissa;
     appVecJB.mantissa = -appVecJB.mantissa;
@@ -433,6 +445,11 @@ static void getApproxHeight(BigInteger *scalar, BigInteger *vecI, BigInteger *ve
   approximate(vecK, &appTemp);
   squareApprox(&appTemp, &appTemp);
   addApprox(sum, &appTemp, sum);
+  while (sum->mantissa >= (double)LIMB_RANGE * (double)LIMB_RANGE)
+  {                // mantissa is positive after squaring it.
+    sum->expon++;
+    sum->mantissa /= (double)LIMB_RANGE;
+  }
 }
 
 // Use algorithm "Variants of an algorithm of J. Stein" of Sándor Szabó.
