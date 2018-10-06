@@ -24,14 +24,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "expression.h"
 #include "factor.h"
 #include "commonstruc.h"
-// These defines are valid for factoring up to 10^110.
-#define MAX_NBR_FACTORS         13
-#define MAX_PRIMES          150000
-#define MAX_LIMBS_SIQS          15
-#define MAX_FACTORS_RELATION    80
-#define LENGTH_OFFSET            0
-#define MAX_SIEVE_LIMIT     200000
-#define DEBUG_SIQS               0
 
 #ifdef __EMSCRIPTEN__
 extern char lowerText[], *ptrLowerText;
