@@ -27,6 +27,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "skiptest.h"
 
 int yieldFreq;
+static int oldNbrFactors;
 #ifdef __EMSCRIPTEN__
 char upperText[MAX_LEN*16];
 char lowerText[MAX_LEN*16];
@@ -2109,6 +2110,11 @@ static void SaveFactors(struct sFactors *pstFactors)
   int factorNbr;
   BigInteger bigint;
   char *ptrText = common.saveFactors.text;
+  if (oldNbrFactors == pstFactors->multiplicity)
+  {
+    return;
+  }
+  oldNbrFactors = pstFactors->multiplicity;
   *ptrText++ = '8';
   strcpy(ptrText, ptrInputText);
   ptrText += strlen(ptrText);
@@ -2272,23 +2278,23 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
 
 void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors)
 {
-  factorExt(toFactor, number, factors, pstFactors, NULL, -1);
+  factorExt(toFactor, number, factors, pstFactors, NULL);
 }
 // pstFactors -> ptrFactor points to end of factors.
 // pstFactors -> multiplicity indicates the number of different factors.
-void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors, int nextEC)
+void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors)
 {
   struct sFactors *pstCurFactor;
+  oldNbrFactors = 0;
+  NextEC = -1;
   int factorNbr, expon;
   int remainder, nbrLimbs, ctr;
   int *ptrFactor;
-  int dividend, multiplicity;
-  int factorUpperBound;
+  int dividend;
   int restartFactoring = FALSE;
   char *ptrCharFound;
   int result;
   EC = 1;
-  NextEC = nextEC;
   NumberLength = toFactor->nbrLimbs;
   GetYieldFrequency();
 #ifdef __EMSCRIPTEN__
@@ -2296,19 +2302,26 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
   originalTenthSecond = tenths();
   modmultCallback = showECMStatus;   // Set callback.
 #endif
-  memcpy(factors, number, (1 + *number)*sizeof(int));
-  pstFactors->multiplicity = 1;
-  pstFactors->ptrFactor = factors + 1 + *factors;
-  pstFactors->upperBound = 0;
   pstCurFactor = pstFactors + 1;
-  pstCurFactor->multiplicity = 1;
-  pstCurFactor->ptrFactor = factors;
-  pstCurFactor->upperBound = 2;
-  if (pcKnownFactors != NULL)
+  if (pcKnownFactors == NULL)
+  {   // No factors known.
+    memcpy(factors, number, (1 + *number) * sizeof(int));
+    pstFactors->multiplicity = 1;
+    pstFactors->ptrFactor = factors + 1 + *factors;
+    pstFactors->upperBound = 0;
+    pstCurFactor->multiplicity = 1;
+    pstCurFactor->ptrFactor = factors;
+    pstCurFactor->upperBound = 2;
+#ifdef __EMSCRIPTEN__
+    SaveFactors(pstFactors);
+#endif
+  }
+  else
   {   // Insert factors saved on Web Storage.
+    pstFactors->multiplicity = 0;
+    pstFactors->ptrFactor = factors;
     while (*pcKnownFactors != 0)
     {
-      int *ptrNewFactor = pstFactors->ptrFactor;
       ptrCharFound = findChar(pcKnownFactors, '^');
       if (ptrCharFound == NULL)
       {
@@ -2316,33 +2329,51 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
       }
       *ptrCharFound = 0;
       Dec2Bin(pcKnownFactors, prime.limbs, (int)(ptrCharFound - pcKnownFactors), &prime.nbrLimbs);
-      CompressBigInteger(ptrNewFactor, &prime);
+      CompressBigInteger(pstFactors->ptrFactor, &prime);
       pcKnownFactors = ptrCharFound + 1;
-      if (getNextInteger(&pcKnownFactors, &multiplicity, '('))
+      if (getNextInteger(&pcKnownFactors, &pstCurFactor->multiplicity, '('))
       {     // Error on processing exponent.
         break;
       }
-      if (getNextInteger(&pcKnownFactors, &factorUpperBound, ')'))
+      if (getNextInteger(&pcKnownFactors, &pstCurFactor->upperBound, ')'))
       {     // Error on processing upper bound.
         break;
       }
-      for (ctr = 0; ctr < multiplicity; ctr++)
-      {
-        insertBigFactor(pstFactors, &prime);
-      }
+      pstFactors->multiplicity++;
+      pstCurFactor->ptrFactor = pstFactors->ptrFactor;
+      pstFactors->ptrFactor += 1 + *pstFactors->ptrFactor;
+      pstCurFactor++;
       if (*pcKnownFactors == '*')
       {
         pcKnownFactors++;  // Skip multiplication sign.
       }
+      if (*pcKnownFactors == ';')
+      {
+        pcKnownFactors++;  // Skip separation between known factors and factor entered by user.
+        Dec2Bin(pcKnownFactors, prime.limbs, strlen(pcKnownFactors), &prime.nbrLimbs);
+        insertBigFactor(pstFactors, &prime);
+#ifdef __EMSCRIPTEN__
+        SaveFactors(pstFactors);
+#endif
+        break;
+      }
+      if (*pcKnownFactors == ',')
+      {
+        NextEC = 0;        // Curve number
+        while (*++pcKnownFactors != 0)
+        {
+          NextEC = NextEC * 10 + (*pcKnownFactors & 0x0F);
+        }
+        oldNbrFactors = pstFactors->multiplicity;
+        break;
+      }
     }
   }
-#ifdef __EMSCRIPTEN__
-  SaveFactors(pstFactors);
-#endif
   if (tofactor.nbrLimbs > 1)
   {
     PowerPM1Check(pstFactors, toFactor);
   }
+  pstCurFactor = pstFactors + 1;
   for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
   {
     int upperBound = pstCurFactor->upperBound;

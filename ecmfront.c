@@ -33,7 +33,6 @@ extern BigInteger tofactor;
 static BigInteger Quad1, Quad2, Quad3, Quad4;
 extern BigInteger factorValue;
 static BigInteger result;
-static int NextEC;
 static void ComputeFourSquares(struct sFactors *pstFactors);
 static void GetEulerTotient(char **pptrOutput);
 static void GetMobius(char **pptrOutput);
@@ -63,7 +62,7 @@ void batchCallback(char **pptrOutput)
   }
   if (doFactorization)
   {
-    factorExt(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactors, NextEC);
+    factorExt(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactors);
     knownFactors = NULL;
   }
   SendFactorizationToOutput(astFactorsMod, pptrOutput, doFactorization);
@@ -659,17 +658,10 @@ void doWork(void)
   {
     ptrKnownFactors++;
   }
-  NextEC = -1;
   if (flags & 0x80)
   {
     if (ptrKnownFactors)
     {
-      char *ptrText = ptrKnownFactors + strlen(ptrKnownFactors) + 1;
-      NextEC = 0;
-      while (*ptrText != 0)
-      {
-        NextEC = NextEC * 10 + (*ptrText++ & 0x0F);
-      }
       flags = 2;  // do factorization.
     }
   }

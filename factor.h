@@ -39,7 +39,7 @@ extern char verbose, prettyprint, cunningham, hexadecimal;
 extern struct sFactors stFactors[MAX_FACTORS];
 extern int *factorArr[FACTOR_ARRSIZE];
 void factor(BigInteger *nbrToFactor, int *number, int *factors, struct sFactors *pstFactors);
-void factorExt(BigInteger *nbrToFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors, int nextEC);
+void factorExt(BigInteger *nbrToFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors);
 void FactoringSIQS(limb *pNbrToFactor, limb *pFactor);
 extern int lang;
 extern int nbrToFactor[MAX_LEN];

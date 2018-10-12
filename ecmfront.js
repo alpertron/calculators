@@ -190,14 +190,14 @@ function dowork(n)
     app += 6;   // Convert to factorization.
   }
   param = digits + "," + app + "," + config + valueText + charNull +
-          getStorage("ecmFactors") + charNull;
+          getStorage("ecmFactors");
   if (n == -1 || n == -2)
   {
-    param += charNull + get("curve").value;        // Append new curve number typed by user.
+    param += "," + get("curve").value;        // Append new curve number typed by user.
   }
   if (n == -3 || n == -4)
   {
-    param += "*" + get("curve").value + "^1(2)";   // Append new factor typed by user.
+    param += ";" + get("curve").value;        // Append new factor typed by user.
   }
   if (!fileContents)
   {
