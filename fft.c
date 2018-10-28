@@ -177,39 +177,54 @@ static void initCosinesArray(void)
 // length is power of 2.
 static void complexFFT(complex *x, complex *y, int length)
 {
-  int i, j, J, m;
+  int j, J;
   int halfLength = length / 2;
-  int power2, mask;
   int step = (1 << POWERS_2) / length;
+  int exponentOdd = 0;
   complex *ptrX = x;
   complex *ptrY = y;
+  complex *ptrZ;
   complex *ptrTemp;
+  int angle;
   if (Cosine[0] == 0)
   {    // Cosines array not initialized yet. Initialize array.
     initCosinesArray();
   }
-  // Get logarithm base 2 of length.
-  mask = 1;
-  for (power2 = 0; ; power2++)
+  ptrZ = ptrX + halfLength;
+  for (angle = 0; angle < HALF_CIRCLE; angle += step)
   {
-    if (mask == length)
-    {
-      break;
-    }
-    mask *= 2;
+    double rootReal = Cosine[angle];
+    double rootImag = Cosine[angle + QUARTER_CIRCLE];
+    double tempReal = ptrX->real;
+    double tempImag = ptrX->imaginary;
+    double Zreal = ptrZ->real;
+    double Zimag = ptrZ->imaginary;
+    ptrY->real = tempReal + Zreal;
+    ptrY->imaginary = tempImag + Zimag;
+    tempReal -= Zreal;
+    tempImag -= Zimag;
+    ptrY++;
+    ptrY->real = rootReal * tempReal - rootImag * tempImag;
+    ptrY->imaginary = rootReal * tempImag + rootImag * tempReal;
+    ptrX++;
+    ptrY++;
+    ptrZ++;
   }
-  J = 1;
-  for (i = power2; i > 0; i--)
+  for (J = 2; J < length; J *= 2)
   {
-    complex *ptrZ = ptrX + halfLength;
-    m = 0;
-    if (J == 1)
+    step *= 2;
+    ptrTemp = ptrX - halfLength;
+    ptrX = ptrY - length;
+    ptrY = ptrTemp;
+    ptrZ = ptrX + halfLength;
+    exponentOdd = 1 - exponentOdd;
+    for (angle = 0; angle < HALF_CIRCLE; angle += step)
     {
-      do
+      double rootReal = Cosine[angle];
+      double rootImag = Cosine[angle + QUARTER_CIRCLE];
+      complex *ptrW = ptrY + J;
+      for (j = J; j > 0; j--)
       {
-        int angle = m * step;
-        double rootReal = Cosine[angle];
-        double rootImag = Cosine[angle + QUARTER_CIRCLE];
         double tempReal = ptrX->real;
         double tempImag = ptrX->imaginary;
         double Zreal = ptrZ->real;
@@ -218,51 +233,17 @@ static void complexFFT(complex *x, complex *y, int length)
         ptrY->imaginary = tempImag + Zimag;
         tempReal -= Zreal;
         tempImag -= Zimag;
-        ptrY++;
-        ptrY->real = rootReal * tempReal - rootImag * tempImag;
-        ptrY->imaginary = rootReal * tempImag + rootImag * tempReal;
+        ptrW->real = rootReal * tempReal - rootImag * tempImag;
+        ptrW->imaginary = rootReal * tempImag + rootImag * tempReal;
         ptrX++;
         ptrY++;
         ptrZ++;
-      } while (++m < halfLength);
-    }
-    else
-    {
-      while (m < halfLength)
-      {
-        int angle = m * step;
-        double rootReal = Cosine[angle];
-        double rootImag = Cosine[angle + QUARTER_CIRCLE];
-        complex *ptrW = ptrY + J;
-        for (j = J; j > 0; j--)
-        {
-          double tempReal = ptrX->real;
-          double tempImag = ptrX->imaginary;
-          double Zreal = ptrZ->real;
-          double Zimag = ptrZ->imaginary;
-          ptrY->real = tempReal + Zreal;
-          ptrY->imaginary = tempImag + Zimag;
-          tempReal -= Zreal;
-          tempImag -= Zimag;
-          ptrW->real = rootReal * tempReal - rootImag * tempImag;
-          ptrW->imaginary = rootReal * tempImag + rootImag * tempReal;
-          ptrX++;
-          ptrY++;
-          ptrZ++;
-          ptrW++;
-        }
-        ptrY += J;
-        m += J;
+        ptrW++;
       }
+      ptrY += J;
     }
-    J *= 2;
-    ptrX -= halfLength;
-    ptrY -= length;
-    ptrTemp = ptrX;
-    ptrX = ptrY;
-    ptrY = ptrTemp;
   }
-  if (power2 % 2 == 0)
+  if (exponentOdd)
   {     // Move data from x to y.
     memcpy(y, x, length * sizeof(complex));
   }
