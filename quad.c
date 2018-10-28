@@ -63,7 +63,7 @@ static int SolNbr;
 static int showRecursiveSolution;
 static BigInteger Xind, Yind, Xlin, Ylin;
 static int nbrFactors, solFound;
-static char teach = 1, also;
+static char teach = 0, also;
 static char ExchXY;
 static char *ptrOutput;
 static char *divgcd;
@@ -1806,6 +1806,7 @@ static void DiscriminantIsZero(void)
     // The original equation is now: 2ax + by + (d +/- g) = 0
     multint(&Aux[3], &ValA, 2);
     BigIntAdd(&ValD, &ValG, &Aux[4]);
+    CopyBigInt(&Aux[5], &ValB);
     if (teach)
     {
       showText("<p>");
@@ -1814,7 +1815,6 @@ static void DiscriminantIsZero(void)
       shownbr(&ValG);
       showText(lang ? "</p><p>La ecuación representa dos rectas paralelas. La primera recta es: </p><p>" :
         "</p><p>This equation represents two parallel lines. The first line is: </p><p>");
-      CopyBigInt(&Aux[5], &ValB);
       if (ExchXY)
       {
         ShowLin(&Aux[5], &Aux[3], &Aux[4], "<var>x</var>", "<var>y</var>");
