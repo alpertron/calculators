@@ -6,7 +6,7 @@
 #include "factor.h"
 #include "batch.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE  13
+#define DEBUG_CODE  17
 #endif
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -160,13 +160,11 @@ int main(int argc, char *argv[])
   polyFactText(argv[1], argv[2], 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 11
-#if 0
   if (argc != 4)
   {
     printf("base power modulus\n");
     return 0;
   }
-#endif
   dilogText(argv[1], argv[2], argv[3], 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 12
