@@ -27,6 +27,10 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 extern long long lModularMult;
 #endif
 
+static BigInteger groupOrder, subGroupOrder, powSubGroupOrder, powSubGroupOrderBak;
+static BigInteger Exponent, runningExp, baseExp, mod;
+static BigInteger logar, logarMult, runningExpBase;
+static BigInteger currentExp;
 static BigInteger DiscreteLog, DiscreteLogPeriod;
 static BigInteger base, power, modulus, tmpBase, tmp2, baseModGO;
 static BigInteger bigNbrA, bigNbrB;
@@ -146,10 +150,6 @@ static int ComputeDLogModSubGroupOrder(int indexBase, int indexExp, BigInteger *
 
 void DiscreteLogarithm(void)
 {
-  BigInteger groupOrder, subGroupOrder, powSubGroupOrder, powSubGroupOrderBak;
-  BigInteger Exponent, runningExp, baseExp, mod;
-  BigInteger logar, logarMult, runningExpBase;
-  BigInteger currentExp;
   int indexBase, indexExp;
   int index, expon;
   limb addA, addB, addA2, addB2;
