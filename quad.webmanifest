@@ -1,0 +1,30 @@
+{
+  "short_name": "Quadr int eq",
+  "name": "Quadratic integer equations",
+  "icons": [
+    {
+      "src": "quad-icon-1x.png",
+      "type": "image/png",
+      "sizes": "48x48"
+    },
+    {
+      "src": "quad-icon-2x.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "quad-icon-4x.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "quad-icon-512px.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "theme_color": "#db5945",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "QUAD.HTM?launcher=true"
+}
