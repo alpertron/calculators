@@ -132,6 +132,10 @@ int modInv(int NbrMod, int currentPrime);
 int getNbrLimbs(limb *bigNbr);
 void BigIntDivide2(BigInteger *pArg);
 int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase);
+void BigIntAnd(BigInteger *firstArg, BigInteger *secondArg, BigInteger *result);
+void BigIntOr(BigInteger *firstArg, BigInteger *secondArg, BigInteger *result);
+void BigIntXor(BigInteger *firstArg, BigInteger *secondArg, BigInteger *result);
+void ConvertToTwosComplement(BigInteger *value);
 #ifdef FACTORIZATION_APP
 int BpswPrimalityTest(/*@in@*/BigInteger *pValue, void *vFactors);
 #else

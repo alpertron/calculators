@@ -684,45 +684,12 @@ static void SkipSpaces(char *expr)
   return;
 }
 
-static void ConvertToTwosComplement(BigInteger *value)
-{
-  int idx;
-  int nbrLimbs;
-  limb *ptrLimb;
-  if (value->sign == SIGN_POSITIVE)
-  {    // If number is positive, no conversion is needed.
-    return;
-  }
-  nbrLimbs = value->nbrLimbs;
-  ptrLimb = &value->limbs[0];
-  for (idx = 0; idx < nbrLimbs; idx++)
-  {
-    if (ptrLimb->x != 0)
-    {
-      break;
-    }
-    ptrLimb++;
-  }
-  if (idx < nbrLimbs)
-  {
-    ptrLimb->x = 0x80000000 - ptrLimb->x;
-    ptrLimb++;
-  }
-  for (; idx < nbrLimbs; idx++)
-  {
-    ptrLimb->x = 0x7FFFFFFF - ptrLimb->x;
-    ptrLimb++;
-  }
-}
-
 static enum eExprErr ComputeSubExpr(void)
 {
   char stackOper = stackOperators[--stackIndex];
   BigInteger *firstArg = &stackValues[stackIndex];
   BigInteger *secondArg = &stackValues[stackIndex + 1];
   BigInteger *result = &stackValues[stackIndex];
-  BigInteger *tmpptr;
-  int idx;
   switch (stackOper)
   {
   case OPER_PLUS:
@@ -785,112 +752,13 @@ static enum eExprErr ComputeSubExpr(void)
     BigIntSubt(firstArg, secondArg, result);
     return EXPR_OK;
   case OPER_AND:    // Perform binary AND.
-    if (firstArg->nbrLimbs < secondArg->nbrLimbs)
-    {    // After the exchange, firstArg has not fewer limbs than secondArg.
-      tmpptr = firstArg;
-      firstArg = secondArg;
-      secondArg = tmpptr;
-    }
-    ConvertToTwosComplement(firstArg);
-    ConvertToTwosComplement(secondArg);
-    for (idx = 0; idx < secondArg->nbrLimbs; idx++)
-    {
-      result->limbs[idx].x = firstArg->limbs[idx].x & secondArg->limbs[idx].x;
-    }
-    if (secondArg->sign == SIGN_POSITIVE)
-    {
-      result->nbrLimbs = secondArg->nbrLimbs;
-    }
-    else
-    {
-      result->nbrLimbs = firstArg->nbrLimbs;
-      for (; idx < firstArg->nbrLimbs; idx++)
-      {
-        result->limbs[idx].x = firstArg->limbs[idx].x;
-      }
-    }
-    if (firstArg->sign == SIGN_POSITIVE || secondArg->sign == SIGN_POSITIVE)
-    {
-      result->sign = SIGN_POSITIVE;
-    }
-    else
-    {
-      result->sign = SIGN_NEGATIVE;
-    }
-    ConvertToTwosComplement(result);
+    BigIntAnd(firstArg, secondArg, result);
     return EXPR_OK;
-  case OPER_OR:    // Perform binary OR.
-    if (firstArg->nbrLimbs < secondArg->nbrLimbs)
-    {    // After the exchange, firstArg has not fewer limbs than secondArg.
-      tmpptr = firstArg;
-      firstArg = secondArg;
-      secondArg = tmpptr;
-    }
-    ConvertToTwosComplement(firstArg);
-    ConvertToTwosComplement(secondArg);
-    for (idx = 0; idx < secondArg->nbrLimbs; idx++)
-    {
-      result->limbs[idx].x = firstArg->limbs[idx].x | secondArg->limbs[idx].x;
-    }
-    if (secondArg->sign == SIGN_NEGATIVE)
-    {
-      result->nbrLimbs = secondArg->nbrLimbs;
-    }
-    else
-    {
-      result->nbrLimbs = firstArg->nbrLimbs;
-      for (; idx < firstArg->nbrLimbs; idx++)
-      {
-        result->limbs[idx].x = firstArg->limbs[idx].x;
-      }
-    }
-    if (firstArg->sign == SIGN_NEGATIVE || secondArg->sign == SIGN_NEGATIVE)
-    {
-      result->sign = SIGN_NEGATIVE;
-    }
-    else
-    {
-      result->sign = SIGN_POSITIVE;
-    }
-    ConvertToTwosComplement(result);
+  case OPER_OR:     // Perform binary OR.
+    BigIntOr(firstArg, secondArg, result);
     return EXPR_OK;
   case OPER_XOR:    // Perform binary XOR.
-    if (firstArg->nbrLimbs < secondArg->nbrLimbs)
-    {    // After the exchange, firstArg has not fewer limbs than secondArg.
-      tmpptr = firstArg;
-      firstArg = secondArg;
-      secondArg = tmpptr;
-    }
-    ConvertToTwosComplement(firstArg);
-    ConvertToTwosComplement(secondArg);
-    for (idx = 0; idx < secondArg->nbrLimbs; idx++)
-    {
-      result->limbs[idx].x = firstArg->limbs[idx].x ^ secondArg->limbs[idx].x;
-    }
-    if (secondArg->sign == SIGN_POSITIVE)
-    {
-      for (; idx < firstArg->nbrLimbs; idx++)
-      {
-        result->limbs[idx].x = firstArg->limbs[idx].x;
-      }
-    }
-    else
-    {
-      for (; idx < firstArg->nbrLimbs; idx++)
-      {
-        result->limbs[idx].x = firstArg->limbs[idx].x ^ MAX_INT_NBR;
-      }
-    }
-    if ((firstArg->sign == SIGN_NEGATIVE) != (secondArg->sign == SIGN_NEGATIVE))
-    {
-      result->sign = SIGN_NEGATIVE;
-    }
-    else
-    {
-      result->sign = SIGN_POSITIVE;
-    }
-    result->nbrLimbs = firstArg->nbrLimbs;
-    ConvertToTwosComplement(result);
+    BigIntXor(firstArg, secondArg, result);
     return EXPR_OK;
   }
   return EXPR_OK;

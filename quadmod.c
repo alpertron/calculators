@@ -23,6 +23,11 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "expression.h"
 #include "factor.h"
 
+static BigInteger GcdAll;
+static BigInteger ValNn;
+static BigInteger z, Mult, currentSolution;
+static BigInteger U, SqrtDisc, prime, K1;
+static BigInteger discriminant, V, K, Q, L;
 static BigInteger Solution1[400];
 static BigInteger Solution2[400];
 static BigInteger Increment[400];
@@ -89,11 +94,6 @@ void Solution(BigInteger *value)
 void SolveEquation(void)
 {
   int factorIndex, expon, T1, E;
-  BigInteger GcdAll;
-  BigInteger ValNn;
-  BigInteger z, Mult, currentSolution;
-  BigInteger U, SqrtDisc, prime, K1;
-  BigInteger discriminant, V, K, Q, L;
   struct sFactors *pstFactor;
 
   if (ValN.nbrLimbs == 1 && ValN.limbs[0].x == 0)
@@ -304,13 +304,15 @@ void SolveEquation(void)
       CopyBigInt(&ValAOdd, &ValA);
       if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
       {         /* Prime p is 2 */
-        // Number of bits of square root of discriminant to compute: expon + bits_a + 1,
+        // ax^2 + bx + c = 0 (mod 2^expon)
+        // 4 a^2 x^2 + 4bx + 4c = 0 (mod 2^(expon+2+bits_a))
+        // (2ax + b)^2 = b^2 - 4ac = discriminant (mod 2^(expon+2+bits_a))
+        // Number of bits of square root of discriminant to compute: expon + bits_a + 2,
         // where bits_a is the number of least significant bits of a set to zero.
         // To compute the square root, compute the inverse of sqrt, so only multiplications are used.
         // f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
         // Get odd part of A and number of bits to zero.
         DivideBigNbrByMaxPowerOf2(&bitsAZero, ValAOdd.limbs, &ValAOdd.nbrLimbs);
-        bitsAZero++;   // Include the number 2 in the denominator.
         // Compute inverse of -A (mod 2^expon).
         nbrLimbs = (expon + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
         if (nbrLimbs > ValAOdd.nbrLimbs)
@@ -324,49 +326,41 @@ void SolveEquation(void)
         NumberLength = nbrLimbs;
         ComputeInversePower2(ValAOdd.limbs, tmp2.limbs, tmp1.limbs);
         memcpy(ValAOdd.limbs, tmp2.limbs, nbrLimbs*sizeof(limb));
+        // Reduce discriminant mod 2^(expon+2+bitsAZero)
+        // Set K1 <- 2^(expon+2+bitsAZero)-1
+        BigIntPowerOf2(&K1, expon + 2 + bitsAZero);
+        addbigint(&K1, -1);
+        BigIntAnd(&discriminant, &K1, &discriminant);
         if (BigIntIsZero(&discriminant))
         {     // discriminant is zero.
           memset(squareRoot.limbs, 0, nbrLimbs*sizeof(limb));
           deltaIsZero = 1;
           deltaZeros = 0;
-          nbrBitsSquareRoot = expon + bitsAZero;
-          correctBits = expon / 2;
+          nbrBitsSquareRoot = expon + bitsAZero + 1;
+          correctBits = nbrBitsSquareRoot / 2 - bitsAZero;
           if (correctBits == 0)
           {
             correctBits = 1;
           }
         }
         else
-        {
-          int LSLimb;
+        {     // discriminant is not zero.
           CopyBigInt(&tmp1, &discriminant);
           DivideBigNbrByMaxPowerOf4(&deltaZeros, discriminant.limbs, &discriminant.nbrLimbs);
+          if ((discriminant.limbs[0].x & 0x07) != 1)
+          {            // There is no square root.
+            sol1Invalid = 1;
+            return;
+          }
           // Find number of bits of square root to compute.
-          nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
+          nbrBitsSquareRoot = expon + bitsAZero - deltaZeros + 1;
           nbrLimbs = (nbrBitsSquareRoot + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
           if (nbrLimbs > discriminant.nbrLimbs)
           {
             memset(&discriminant.limbs[nbrLimbs], 0, (nbrLimbs - discriminant.nbrLimbs) * sizeof(limb));
           }
-          if (discriminant.sign == SIGN_NEGATIVE)
-          {
-            ChSignBigNbr((int *)discriminant.limbs, nbrLimbs);
-          }
-          LSLimb = discriminant.limbs[0].x;
-          if (expon >= deltaZeros && expon - deltaZeros < 8)
-          {
-            LSLimb &= (1 << (expon - deltaZeros)) - 1;
-          }
-          if (nbrBitsSquareRoot == 2 && (LSLimb & 3) != 1)
-          {
-            return;    // Square root does not exist. Go out.
-          }
-          if (nbrBitsSquareRoot > 2 && (LSLimb & 7) != 1)
-          {
-            return;    // Square root does not exist. Go out.
-          }
           // First approximation to inverse of square root.
-          squareRoot.limbs[0].x = ((LSLimb & 15) == 1 ? 1 : 3);
+          squareRoot.limbs[0].x = ((discriminant.limbs[0].x & 15) == 1 ? 1 : 3);
           correctBits = 2;
           while (correctBits < nbrBitsSquareRoot)
           {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
@@ -384,7 +378,7 @@ void SolveEquation(void)
           }
           // Get square root of discriminant from its inverse by multiplying by discriminant.
           MultBigNbr((int *)discriminant.limbs, (int *)squareRoot.limbs, (int *)tmp1.limbs, nbrLimbs);
-          memcpy(squareRoot.limbs, tmp1.limbs, nbrLimbs*sizeof(limb));
+          memcpy(squareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
           // Multiply by square root of discriminant by 2^deltaZeros.
           squareRoot.limbs[nbrLimbs].x = 0;
           for (ctr = 0; ctr < deltaZeros; ctr++)
@@ -398,11 +392,15 @@ void SolveEquation(void)
           }
           squareRoot.sign = SIGN_POSITIVE;
           squareRoot.nbrLimbs = nbrLimbs;
-          correctBits = expon - deltaZeros;
+          correctBits = expon + 1 - deltaZeros - bitsAZero;
           if (nbrBitsSquareRoot < 2)
           {
             correctBits = nbrBitsSquareRoot;
           }
+        }
+        if (correctBits < 0)
+        {
+          correctBits = 0;
         }
         BigIntPowerOf2(&Q, correctBits);      // Store increment.
         mask = 1 << (correctBits % BITS_PER_GROUP);
@@ -416,7 +414,7 @@ void SolveEquation(void)
         {
           SubtractBigNbr((int *)ValB.limbs, (int *)squareRoot.limbs, (int *)tmp1.limbs, nbrLimbs);
         }
-        for (ctr = 0; ctr < bitsAZero; ctr++)
+        for (ctr = 0; ctr <= bitsAZero; ctr++)
         {
           if (tmp1.limbs[0].x & 1)
           {   // Cannot divide by 2 because number is odd.
@@ -444,7 +442,7 @@ void SolveEquation(void)
         {
           SubtractBigNbr((int *)ValB.limbs, (int *)squareRoot.limbs, (int *)tmp1.limbs, nbrLimbs);
         }
-        for (ctr = 0; ctr < bitsAZero; ctr++)
+        for (ctr = 0; ctr <= bitsAZero; ctr++)
         {
           if (tmp1.limbs[0].x & 1)
           {   // Cannot divide by 2 because number is odd.
