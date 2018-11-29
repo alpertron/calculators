@@ -392,7 +392,7 @@ void SolveEquation(void)
           }
           squareRoot.sign = SIGN_POSITIVE;
           squareRoot.nbrLimbs = nbrLimbs;
-          correctBits = expon + 1 - deltaZeros - bitsAZero;
+          correctBits = expon + (ValB.limbs[0].x % 4 == 2?1: 0) - deltaZeros - bitsAZero;
           if (nbrBitsSquareRoot < 2)
           {
             correctBits = nbrBitsSquareRoot;

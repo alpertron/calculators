@@ -82,7 +82,7 @@ static void callbackQuadModParabolic(BigInteger *value);
 static void callbackQuadModElliptic(BigInteger *value);
 static void callbackQuadModHyperbolic(BigInteger *value);
 static void ContFracPell(void);
-static BigInteger Tmp[12];
+static BigInteger Tmp[13];
 static int indexEvenMultiplicity[400];
 static int nbrPrimesEvenMultiplicity;
 static int equationNbr, contfracEqNbr;
@@ -685,6 +685,7 @@ void SolveQuadModEquation(void)
     {
       showText(lang ? "<p>Para resolver esta ecuación cuadrática modular debemos factorizar el módulo y hallar las soluciones módulo las potencias de los factores primos. Luego debemos combinar estas soluciones usando el teorema chino del resto.</p>" :
         "<p>To solve this quadratic modular equation we have to factor the modulus and find the solution modulo the powers of the prime factors. Then we combine them by using the Chinese Remainder Theorem.</p>");
+      showFactors(&modulus);
     }
   }
   intToBigInteger(&Q, 0);
@@ -831,7 +832,7 @@ void SolveQuadModEquation(void)
           }
           squareRoot.sign = SIGN_POSITIVE;
           squareRoot.nbrLimbs = nbrLimbs;
-          correctBits = expon + 1 - deltaZeros - bitsAZero;
+          correctBits = expon + (coeffLinear.limbs[0].x % 4 == 2 ? 1 : 0) - deltaZeros - bitsAZero;
           if (nbrBitsSquareRoot < 2)
           {
             correctBits = nbrBitsSquareRoot;
@@ -1833,7 +1834,7 @@ static void DiscriminantIsZero(void)
   if (teach)
   {
     showText(lang ? "<p>Tenemos que resolver" : "<p>We have to solve");
-    showText("<var>T</var>");
+    showText(" <var>T</var>");
     showSquare();
     showText(" = ");
     shownbr(&ValV);
@@ -2533,6 +2534,7 @@ static void UnimodularSubstitution(void)
 
 static void NonSquareDiscrSolution(BigInteger *value)
 {
+  CopyBigInt(&Tmp[12], value);            // Back up value.
   // Get value of tu - Kv
   BigIntMultiply(value, &ValH, &ValZ);    // tu
   CopyBigInt(&bigTmp, &ValK);
@@ -2567,7 +2569,7 @@ static void NonSquareDiscrSolution(BigInteger *value)
   Ybak = &Yminus;
   UnimodularSubstitution();               // Undo unimodular substitution
   ShowPoint(&Tmp[0], &Tmp[1]);
-
+  CopyBigInt(value, &Tmp[12]);            // Restore value.
 }
 
 // Obtain next convergent of continued fraction of ValU/ValV
@@ -2799,13 +2801,13 @@ static void callbackQuadModElliptic(BigInteger *value)
         }
         NonSquareDiscrSolution(value);   // (1, 0)
         CopyBigInt(&ValG, &ValQ);
-        subtractdivide(&ValG, -1, 2);
+        subtractdivide(&ValG, 1, 2);
         CopyBigInt(&ValH, &ValG);
         intToBigInteger(&ValI, -1);
         if (teach)
         {
           showOtherSolution(lang ? "segunda" : "second");
-          showText("(<var>Q</var> &8209; 1)/2 = ");
+          showText("(<var>Q</var> &#8209; 1)/2 = ");
           shownbr(&ValH);
           showText(", -1)</p>");
         }
@@ -3404,6 +3406,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
   {
     return;
   }
+  CopyBigInt(&Tmp[11], value);   // Back up value.
   if (teach)
   {
     CopyBigInt(&U1, &ValU);      // Back up numerator and denominator.
@@ -3541,6 +3544,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
     index++;
     isIntegerPart = 0;
   }
+  CopyBigInt(value, &Tmp[11]);   // Restore value.
 }
 
 static void ShowRecSol(char variable, BigInteger *coefX,
