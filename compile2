@@ -12,7 +12,7 @@ cp ../calc/*.h .
 /usr/local/bin/clang $flags_factorization karatsuba.c -o karatsuba.bc
 /usr/local/bin/clang $flags_factorization modmult.c -o modmult.bc
 /usr/local/bin/clang $flags_factorization sqroot.c -o sqroot.bc
-/usr/local/bin/clang $flags_factorization factor.c -o factor.bc
+/usr/local/bin/clang $flags_factorization -DENABLE_VERBOSE=1 factor.c -o factor.bc
 /usr/local/bin/clang $flags_factorization siqs.c -o siqs.bc
 /usr/local/bin/clang $flags_factorization ecmfront.c -o ecmfront.bc
 /usr/local/bin/clang $flags_factorization bignbr.c -o bignbr.bc

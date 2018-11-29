@@ -29,13 +29,14 @@ struct sFactors
   int *ptrFactor;
   int multiplicity;
   int upperBound;
+  int type;
 };
 #ifdef FACTORIZATION_APP
 extern int StepECM;
 #endif
 
 extern char tofactorDec[MAX_LEN*12];
-extern char verbose, prettyprint, cunningham, hexadecimal;
+extern char prettyprint, cunningham, hexadecimal;
 extern struct sFactors stFactors[MAX_FACTORS];
 extern int *factorArr[FACTOR_ARRSIZE];
 void factor(BigInteger *nbrToFactor, int *number, int *factors, struct sFactors *pstFactors);

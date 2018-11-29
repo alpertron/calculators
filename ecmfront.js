@@ -19,6 +19,7 @@
 /** @define {number} */ var lang = 1;   // Use with Closure compiler.
 (function(global)
 {   // This method separates the name space from the Google Analytics code.
+var points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 20,5, 22,10, 23,12, 24,6, 27,7];
 var wizardStep = 0;
 var wizardTextInput;
 var worker = 0;
@@ -189,7 +190,7 @@ function dowork(n)
   {
     app += 6;   // Convert to factorization.
   }
-  param = digits + "," + app + "," + config + valueText + charNull +
+  param = digits + "," + app + "," + config.substring(1) + valueText + charNull +
           getStorage("ecmFactors");
   if (n == -1 || n == -2)
   {
@@ -288,12 +289,30 @@ function wizardNext()
 function saveConfig()
 {    
   config = "1" +   // Batch mode
-           (get("verbose").checked? "1" :"0") +
-           (get("pretty").checked? "1" :"0") +
-           (get("cunnin").checked? "1" :"0") +
-           (get("hex").checked? "1" :"0");
+           (get("verbose").checked? "1" : "0") +
+           (get("pretty").checked? "1" : "0") +
+           (get("cunnin").checked? "1" : "0") +
+           (get("hex").checked? "1" : "0");
   digits = get("digits").value;
   setStorage("ecmConfig", digits+","+config);
+}
+
+function updateVerbose(isVerbose)    
+{
+  var cssRules = (document.all) ? document.styleSheets[0]['rules']: document.styleSheets[0]['cssRules'];
+  var index;
+  var len = cssRules.length;
+  for (index=0; index<len; index++)
+  {
+    if (cssRules[index].selectorText === ".verbose")
+    {
+      cssRules[index].style["display"] = (isVerbose? "inline": "none");
+    }
+    if (cssRules[index].selectorText === ".terse")
+    {
+      cssRules[index].style["display"] = (isVerbose? "none": "inline");
+    }
+  }
 }
 
 function endFeedback()
@@ -441,6 +460,7 @@ function startUp()
   {
     oldconfig = config;
     saveConfig();
+    updateVerbose(get("verbose").checked);
     get("modal-config").style.display = "none";
   };
   get("close-more").onclick = function ()
@@ -580,6 +600,64 @@ function startUp()
       modal.style.display = "none";
     }
   };
+  // Generate accordion.
+  var acc = document.querySelectorAll("h2");
+  var idx, x, y;
+
+  for (idx = 0; idx < acc.length; idx++)
+  {
+    acc[idx].addEventListener("click", function()
+    {
+    // "active" means that panel is being displayed.
+      this.children[0].classList.toggle("active");
+      var panel = this.nextElementSibling;
+      if (panel.style.display === "block")
+      {
+        panel.style.display = "none";
+      }
+      else
+      {
+        panel.style.display = "block";
+      }
+    });
+  }
+  document.getElementById("exprcopy").innerHTML = document.getElementById("exprorig").innerHTML;
+  var c = document.getElementById("ellCurve");
+  var ctx = c.getContext("2d");
+  ctx.fillStyle="#FFFFFF";      // White.
+  ctx.fillRect(0,0,313,313);    // Clear canvas.
+  ctx.fillStyle="#000000";      // Black.
+  ctx.strokeStyle="#808000";
+  ctx.fillRect(20,0,290,290);   // Clear canvas.
+  for (x=0; x<=290; x+=10)      // Draw grid.
+  {
+    ctx.moveTo(20+x, 0);
+    ctx.lineTo(20+x, 290);
+    ctx.stroke();
+    ctx.moveTo(20, x);
+    ctx.lineTo(310, x);
+    ctx.stroke();     
+  }
+  ctx.fillStyle="#00C000";      // Green.
+  for (ctr=0; ctr<points.length; ctr+=2)
+  {
+  x = points[ctr];
+  y = points[ctr+1];
+    ctx.fillRect(20+x*10+1,(28-y)*10+1,9,9);
+  if (y != 0)
+  {
+      ctx.fillRect(20+x*10+1,(y-1)*10+1,9,9); 
+  }
+  }
+  ctx.fillStyle="#000000";      // Black.
+  ctx.font = "15px 'Times New Roman'";
+  ctx.fillText("0",5,291);
+  ctx.fillText("0",20,308);
+  ctx.fillText("28",0,11);
+  ctx.fillText("28",297,308);
+  ctx.font = "italic "+ctx.font;
+  ctx.fillText("y",5,150);
+  ctx.fillText("x",160,308);  
   digits = getStorage("ecmConfig");
   if (digits == null || digits == "")
   {
@@ -604,6 +682,7 @@ function startUp()
         config += "0";
       }
       digits = digits.substr(0,index);
+      updateVerbose(config.substr(1,1) == "1");
     }
   }
   ecmFactor = getStorage("ecmFactors");
