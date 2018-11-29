@@ -37,21 +37,20 @@ extern long long lModularMult;
 extern char *ptrInputText;
 #endif
 
-#define TYP_AURIF  100000000
-#define TYP_TABLE  150000000
-#define TYP_SIQS   200000000
-#define TYP_LEHMAN 250000000
-#define TYP_RABIN  300000000
-#define TYP_EC     350000000
+#define TYP_AURIF    100000000
+#define TYP_TABLE    150000000
+#define TYP_SIQS     200000000
+#define TYP_LEHMAN   250000000
+#define TYP_RABIN    300000000
+#define TYP_DIVISION 350000000
+#define TYP_EC       400000000
 
 union uCommon common;
 int StepECM;
 int skipPrimality;
 static int nbrPrimes, indexPrimes, DegreeAurif, NextEC;
-static int FactorIndex;
 static BigInteger power, prime;
 int *factorArr[FACTOR_ARRSIZE];
-static int Typ[4000];
 static int indexM, maxIndexM;
 static int foundByLehman, performLehman;
 static int EC;
@@ -60,7 +59,7 @@ static void add3(limb *x3, limb *z3, limb *x2, limb *z2, limb *x1, limb *z1, lim
 static void duplicate(limb *x2, limb *z2, limb *x1, limb *z1);
 static BigInteger Temp1, Temp2, Temp3, Temp4;
 BigInteger factorValue, tofactor;
-char verbose, prettyprint, cunningham, hexadecimal;
+char prettyprint, cunningham, hexadecimal;
 long long Gamma[386];
 long long Delta[386];
 long long AurifQ[386];
@@ -69,7 +68,8 @@ extern int q[MAX_LEN];
 int nbrToFactor[MAX_LEN];
 struct sFactors astFactorsMod[5000];
 int factorsMod[20000];
-static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor);
+static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor,
+  int type);
 static char *findChar(char *str, char c);
 enum eEcmResult
 {
@@ -615,9 +615,9 @@ void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, BigInteger *BigBas
   BigIntPowerIntExp(BigBase, (L + 1) / 2, &Nbr1);   // Nbr1 <- Dsal * base^((L+1)/2)
   BigIntMultiply(&Dsal, &Nbr1, &Nbr1);
   BigIntAdd(&Csal, &Nbr1, &Dsal);
-  insertBigFactor(pstFactors, &Dsal);
+  insertBigFactor(pstFactors, &Dsal, TYP_AURIF);
   BigIntSubt(&Csal, &Nbr1, &Dsal);
-  insertBigFactor(pstFactors, &Dsal);
+  insertBigFactor(pstFactors, &Dsal, TYP_AURIF);
 }
 
 // Get Aurifeuille factors.
@@ -774,14 +774,14 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
     Dec2Bin(ptrFactorsAscii, Nbr1.limbs, nbrDigits, &Nbr1.nbrLimbs);
     Nbr1.sign = SIGN_POSITIVE;
     ptrFactorsAscii = ptrEndFactor;
-    insertBigFactor(pstFactors, &Nbr1);
+    insertBigFactor(pstFactors, &Nbr1, TYP_TABLE);
   }
   while (Expon2 % 2 == 0 && increment == -1)
   {
     Expon2 /= 2;
     BigIntPowerIntExp(BigBase, Expon2, &Nbr1);
     addbigint(&Nbr1, increment);
-    insertBigFactor(pstFactors, &Nbr1);
+    insertBigFactor(pstFactors, &Nbr1, TYP_TABLE);
     InsertAurifFactors(pstFactors,BigBase, Expon2, 1);
   }
   k = 1;
@@ -794,10 +794,10 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
         BigIntPowerIntExp(BigBase, Expon / k, &Nbr1);
         addbigint(&Nbr1, increment);
         BigIntGcd(&Nbr1, BigOriginal, &Nbr2);   // Nbr2 <- gcd(Base^(Expon/k)+incre, original)
-        insertBigFactor(pstFactors, &Nbr2);
+        insertBigFactor(pstFactors, &Nbr2, TYP_TABLE);
         CopyBigInt(&Temp1, BigOriginal);
         BigIntDivide(&Temp1, &Nbr2, &Nbr1);
-        insertBigFactor(pstFactors, &Nbr1);
+        insertBigFactor(pstFactors, &Nbr1, TYP_TABLE);
         InsertAurifFactors(pstFactors, BigBase, Expon / k, increment);
       }
       if ((Expon / k) % 2 != 0)
@@ -805,10 +805,10 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
         BigIntPowerIntExp(BigBase, k, &Nbr1);
         addbigint(&Nbr1, increment); 
         BigIntGcd(&Nbr1, BigOriginal, &Nbr2);   // Nbr2 <- gcd(Base^k+incre, original)
-        insertBigFactor(pstFactors, &Nbr2);
+        insertBigFactor(pstFactors, &Nbr2, TYP_TABLE);
         CopyBigInt(&Temp1, BigOriginal);
         BigIntDivide(&Temp1, &Nbr2, &Nbr1);
-        insertBigFactor(pstFactors, &Nbr1);
+        insertBigFactor(pstFactors, &Nbr1, TYP_TABLE);
         InsertAurifFactors(pstFactors, BigBase, k, increment);
       }
     }
@@ -1204,7 +1204,6 @@ static enum eEcmResult ecmCurve(BigInteger *N)
       foundByLehman = TRUE;
       return FACTOR_FOUND;
     }
-    Typ[FactorIndex] = EC;
     L1 = 2000;
     L2 = 200000;
     LS = 45;
@@ -1863,6 +1862,107 @@ void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, i
             int2dec(&ptrOutput, pstFactor->multiplicity);
           }
         }
+#ifdef ENABLE_VERBOSE
+        int type = pstFactor->type;
+        int isPrime = (pstFactor->upperBound == 0);
+        if (type > 0)
+        {
+          int compositeType = type / 50000000 * 50000000;
+          strcpy(ptrOutput, " <span class=\"verbose\">(");
+          ptrOutput += strlen(ptrOutput);
+          if (compositeType == TYP_AURIF)
+          {
+            strcpy(ptrOutput, "Aurifeuille");
+            ptrOutput += strlen(ptrOutput);
+            if (!isPrime)
+            {
+              strcpy(ptrOutput, lang ? " - Compuesto" : " - Composite");
+            }
+          }
+          else if (compositeType == TYP_TABLE)
+          {
+            strcpy(ptrOutput, lang ? "Tabla" : "Table");
+            ptrOutput += strlen(ptrOutput);
+            if (!isPrime)
+            {
+              strcpy(ptrOutput, lang ? " - Compuesto" : " - Composite");
+            }
+          }
+          else if (compositeType == TYP_SIQS)
+          {
+            strcpy(ptrOutput, lang? "<abbr title=\"Criba cuadrática autoinicializada\">SIQS</abbr>":
+                                    "<abbr title=\"Self-Initializing Quadratic Sieve\">SIQS</abbr>");
+            ptrOutput += strlen(ptrOutput);
+            if (!isPrime)
+            {
+              strcpy(ptrOutput, lang ? " - Compuesto" : " - Composite");
+            }
+          }
+          else if (compositeType == TYP_LEHMAN)
+          {
+            strcpy(ptrOutput, "Lehman");
+            ptrOutput += strlen(ptrOutput);
+            if (!isPrime)
+            {
+              strcpy(ptrOutput, lang ? " - Compuesto" : " - Composite");
+            }
+          }
+          else if (compositeType == TYP_RABIN)
+          {
+            strcpy(ptrOutput, lang ? "Miller y Rabin" : "Miller &amp; Rabin");
+            ptrOutput += strlen(ptrOutput);
+            if (!isPrime)
+            {
+              strcpy(ptrOutput, lang ? " - Compuesto" : " - Composite");
+            }
+          }
+          else if (compositeType == TYP_DIVISION)
+          {
+            strcpy(ptrOutput, lang ? "División" : "Division");
+            ptrOutput += strlen(ptrOutput);
+            if (!isPrime)
+            {
+              strcpy(ptrOutput, lang ? " - Compuesto" : " - Composite");
+            }
+          }
+          else if (type > TYP_EC)
+          {
+            if (isPrime)
+            {
+              strcpy(ptrOutput, lang ? "<abbr title=\"Método de curvas elípticas\">ECM</abbr>, curva " :
+                "<abbr title=\"Elliptic curve method\">ECM</abbr>, curve ");
+              ptrOutput += strlen(ptrOutput);
+              int2dec(&ptrOutput, type - TYP_EC);
+              *ptrOutput = 0;     // Add string terminator.
+            }
+            else
+            {
+              strcpy(ptrOutput, lang ? "Compuesto" : "Composite");
+            }
+          }
+          else if (!isPrime)
+          {
+            strcpy(ptrOutput, lang ? "Compuesto": "Composite");
+          }
+          ptrOutput += strlen(ptrOutput);
+          strcpy(ptrOutput, ")</span>");
+          ptrOutput += strlen(ptrOutput);
+        }
+        else if (!isPrime)
+        {
+          strcpy(ptrOutput, "<span class=\"terse\">(");
+          ptrOutput += strlen(ptrOutput);
+          strcpy(ptrOutput, lang ? "Compuesto" : "Composite");
+          ptrOutput += strlen(ptrOutput);
+          strcpy(ptrOutput, ")</span>");
+          ptrOutput += strlen(ptrOutput);
+        }
+        if (type < 0)
+        {
+          strcpy(ptrOutput, "(Unknown)");
+          ptrOutput += strlen(ptrOutput);
+        }
+#endif
         if (++i == pstFactors->multiplicity)
         {
           break;
@@ -1951,6 +2051,7 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   int expon, BigInteger *cofactor)
 {
   struct sFactors *pstCurFactor;
+  int multiplicity;
   int factorNumber;
   int *ptrFactor = pstFactorDividend->ptrFactor;
   int nbrLimbs = *ptrFactor;
@@ -1992,6 +2093,7 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
     }
   }
   pstFactors->multiplicity++; // Indicate new known factor.
+  multiplicity = pstFactorDividend->multiplicity;
   // Move all elements.
   ptrValue = pstFactorDividend->ptrFactor;
   if (pstFactors->multiplicity > factorNumber)
@@ -2007,7 +2109,7 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   {
     ptrValue = pstFactors->ptrFactor;
     pstCurFactor->ptrFactor = ptrValue;
-    pstCurFactor->multiplicity = pstFactorDividend->multiplicity * expon;
+    pstCurFactor->multiplicity = multiplicity * expon;
     pstFactors->ptrFactor += 2;  // Next free memory.
   }
   pstCurFactor->upperBound = 0;
@@ -2018,7 +2120,7 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
 
 // Insert new factor found into factor array. This factor array must be sorted.
 // The divisor must be also sorted.
-static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor)
+static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor, int type)
 {
   struct sFactors *pstCurFactor;
   int factorNumber;
@@ -2031,7 +2133,7 @@ static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor)
     int *ptrFactor = pstCurFactor->ptrFactor;
     NumberLength = *ptrFactor;
     UncompressBigInteger(ptrFactor, &Temp2);    // Convert known factor to Big Integer.
-    BigIntGcd(divisor, &Temp2, &Temp3);          // Temp3 is the GCD between known factor and divisor.
+    BigIntGcd(divisor, &Temp2, &Temp3);         // Temp3 is the GCD between known factor and divisor.
     if (Temp3.nbrLimbs == 1 && Temp3.limbs[0].x < 2)
     {                                           // divisor is not a new factor (GCD = 0 or 1).
       continue;
@@ -2050,6 +2152,23 @@ static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor)
     pstNewFactor->multiplicity = pstCurFactor->multiplicity;
     pstNewFactor->ptrFactor = ptrNewFactorLimbs;
     pstNewFactor->upperBound = pstCurFactor->upperBound;
+    if (type < 50000000)
+    {          // Factor found using ECM.
+      pstNewFactor->type = TYP_EC + EC;
+      type = pstCurFactor->type / 50000000 * 50000000;
+      if (type == 0)
+      {
+        pstCurFactor->type = TYP_DIVISION + EC;
+      }
+      else
+      {
+        pstCurFactor->type = type + EC;
+      }
+    }
+    else
+    {          // Found otherwise.
+      pstNewFactor->type = type;
+    }
     pstNewFactor++;
     pstFactors->multiplicity++;
     ptrNewFactorLimbs += 1 + Temp3.nbrLimbs;
@@ -2133,6 +2252,8 @@ static void SaveFactors(struct sFactors *pstFactors)
     int2dec(&ptrText, pstCurFactor->multiplicity);
     *ptrText++ = '(';
     int2dec(&ptrText, pstCurFactor->upperBound);
+    *ptrText++ = ',';
+    int2dec(&ptrText, pstCurFactor->type);
     *ptrText++ = ')';
   }
   *ptrText++ = 0;
@@ -2228,7 +2349,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
             (Temp4.nbrLimbs != NumberLength ||
               memcmp(pValue->limbs, Temp4.limbs, NumberLength * sizeof(limb))))
           {          // Non-trivial factor found.
-            insertBigFactor(pstFactors, &Temp4);
+            insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
             factorsFound = TRUE;
           }
         }
@@ -2241,7 +2362,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
           (Temp4.nbrLimbs != NumberLength ||
             memcmp(pValue->limbs, Temp4.limbs, NumberLength * sizeof(limb))))
         {          // Non-trivial factor found.
-          insertBigFactor(pstFactors, &Temp4);
+          insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
           factorsFound = TRUE;
         }
         i = ctr;
@@ -2263,7 +2384,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
             (Temp4.nbrLimbs != NumberLength ||
               memcmp(pValue->limbs, Temp4.limbs, NumberLength * sizeof(limb))))
           {          // Non-trivial factor found.
-            insertBigFactor(pstFactors, &Temp4);
+            insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
             factorsFound = TRUE;
           }
         }
@@ -2335,9 +2456,25 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
       {     // Error on processing exponent.
         break;
       }
-      if (getNextInteger(&pcKnownFactors, &pstCurFactor->upperBound, ')'))
-      {     // Error on processing upper bound.
-        break;
+      char *ptrCharFound = findChar(pcKnownFactors, ',');
+      if (ptrCharFound != NULL)
+      {
+        if (getNextInteger(&pcKnownFactors, &pstCurFactor->upperBound, ','))
+        {     // Error on processing upper bound.
+          break;
+        }
+        if (getNextInteger(&pcKnownFactors, &pstCurFactor->type, ')'))
+        {     // Error on processing upper bound.
+          break;
+        }
+      }
+      else
+      {
+        if (getNextInteger(&pcKnownFactors, &pstCurFactor->upperBound, ')'))
+        {     // Error on processing upper bound.
+          break;
+        }
+        pstCurFactor->type = 0;
       }
       pstFactors->multiplicity++;
       pstCurFactor->ptrFactor = pstFactors->ptrFactor;
@@ -2350,8 +2487,19 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
       if (*pcKnownFactors == ';')
       {
         pcKnownFactors++;  // Skip separation between known factors and factor entered by user.
-        Dec2Bin(pcKnownFactors, prime.limbs, strlen(pcKnownFactors), &prime.nbrLimbs);
-        insertBigFactor(pstFactors, &prime);
+        Dec2Bin(pcKnownFactors, prime.limbs, (int)strlen(pcKnownFactors), &prime.nbrLimbs);
+        if (foundByLehman)
+        {
+          insertBigFactor(pstFactors, &prime, TYP_LEHMAN);
+        }
+        else if (EC >= TYP_SIQS)
+        {
+          insertBigFactor(pstFactors, &prime, TYP_SIQS);
+        }
+        else
+        {
+          insertBigFactor(pstFactors, &prime, 0);
+        }
 #ifdef __EMSCRIPTEN__
         SaveFactors(pstFactors);
 #endif
@@ -2588,7 +2736,14 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
       }
       memcpy(Temp1.limbs, common.ecm.GD, numLimbs * sizeof(limb));
       Temp1.nbrLimbs = numLimbs;
-      insertBigFactor(pstFactors, &Temp1);
+      if (foundByLehman)
+      {
+        insertBigFactor(pstFactors, &Temp1, TYP_LEHMAN + EC);
+      }
+      else
+      {
+        insertBigFactor(pstFactors, &Temp1, EC);
+      }
 #ifdef __EMSCRIPTEN__
       SaveFactors(pstFactors);
 #endif

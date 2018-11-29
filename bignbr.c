@@ -1590,6 +1590,9 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
       modmult(Mult1, Mult1, Mult4);
       if (checkOne(Mult4, nbrLimbs) != 0)
       {  // Current value is 1 but previous value is not 1 or -1: composite
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+        StepECM = 0;    // Do not show progress.
+#endif
         return 2;       // Composite. Not 2-strong probable prime.
       }
       if (checkMinusOne(Mult4, nbrLimbs) != 0)
@@ -1601,10 +1604,16 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
     }
     if (i == ctr)
     {
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+      StepECM = 0;      // Do not show progress.
+#endif
       return 1;         // Not 2-Fermat probable prime.
     }
     if (i != -1)
     {
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+      StepECM = 0;      // Do not show progress.
+#endif
       return 2;         // Composite. Not 2-strong probable prime.
     }
   }
@@ -1614,6 +1623,9 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   BigIntMultiply(&tmp, &tmp, &tmp);
   if (BigIntEqual(pValue, &tmp))
   {                  // Number is perfect square.
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+    StepECM = 0;     // Do not show progress.
+#endif
     return 3;        // Indicate number does not pass strong Lucas test.
   }
   // At this point, the number is not perfect square, so find value of D.
@@ -1735,14 +1747,20 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   // If U is zero, the number passes the BPSW primality test.
   if (BigNbrIsZero(Mult3))
   {
-    return 0;      // Indicate number is probable prime.
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+    StepECM = 0;      // Do not show progress.
+#endif
+    return 0;         // Indicate number is probable prime.
   }
   for (index = 0; index < ctr; index++)
   {
     // If V is zero, the number passes the BPSW primality test.
     if (BigNbrIsZero(Mult4))
     {
-      return 0;    // Indicate number is probable prime.
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+      StepECM = 0;    // Do not show progress.
+#endif
+      return 0;       // Indicate number is probable prime.
     }
     modmult(Mult4, Mult4, Mult4);          // V <- V * V
     if (signPowQ > 0)
@@ -1758,6 +1776,9 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
     modmult(Mult1, Mult1, Mult1);          // Square power of Q.
     signPowQ = 1;                          // Indicate it is positive.
   }
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+  StepECM = 0;     // Do not show progress.
+#endif
   return 3;        // Number does not pass strong Lucas test.
 }
 

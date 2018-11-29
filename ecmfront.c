@@ -566,7 +566,10 @@ static void ShowFourSquares(char **pptrOutput)
 
 void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
 {
-  char *ptrOutput, *ptrText;
+#ifdef __EMSCRIPTEN__
+  char *ptrText;
+#endif
+  char *ptrOutput;
   knownFactors = factors;
   if (valuesProcessed == 0)
   {
@@ -643,11 +646,10 @@ void doWork(void)
   }
 #endif
   ptrData += 2;          // Skip app number and second comma.
-  verbose = (*(ptrData + 1) == '1');
-  prettyprint = (*(ptrData + 2) == '1');
-  cunningham = (*(ptrData + 3) == '1');
-  hexadecimal = (*(ptrData + 4) == '1');
-  ptrData += 5;
+  prettyprint = (*(ptrData + 1) == '1');
+  cunningham = (*(ptrData + 2) == '1');
+  hexadecimal = (*(ptrData + 3) == '1');
+  ptrData += 4;
   ptrWebStorage = ptrData + strlen(ptrData) + 1;
   ptrKnownFactors = findChar(ptrWebStorage, '=');
   if (prettyprint == 0)
