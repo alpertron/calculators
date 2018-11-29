@@ -31,6 +31,11 @@
 #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
 .newline {clear:both;}
 }
+h2 > button {background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 100%; width:100%; text-align:left; border:none; outline:none; transition:0.4s;}
+h2 > button.active,h2 > button:hover {background-color:#ccc;}
+h2 > button:after {content:"\002B"; color:#777; font-weight:bold; float:right; margin-left:5px;}
+h2 > button.active:after {content:"\2212";}
+.panel {padding: 0 10px; background-color: white; display: none; overflow: hidden;}
 .atright {float:right;}
 @media screen and (max-width: 400px) {#smallheader {font-size:0.7em;}}
 @media screen and (min-width: 400px) {#smallheader {font-size:1em;}}
@@ -38,6 +43,7 @@
 body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
 h1 {text-align:center;}
 fieldset {display:inline}
+.ellCurve {text-align:center;}
 .lf,.labels {padding:0.2em; clear:both;}
 .blue {color: #0000FF;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
@@ -48,6 +54,8 @@ fieldset {display:inline}
 .pad {padding:10px;}
 .hex {font-family: Courier, "Lucida Console", monospace}
 .und {text-decoration: underline;}
+.verbose {display:none;}
+.terse {display:inline;}
 #tableCurves {max-width:700px; margin-left:auto; margin-right:auto;}
 #help,#result,#status,#footer {margin: 3px; padding: 3px;}
 #comments {width:90%}
@@ -158,14 +166,14 @@ Una expresión numérica o ciclo por línea. Ejemplo: x=3;x=n(x);c&lt;=100;x&#82
 <div class="lf"></div>
 </form>
 <div id="help" aria-live="polite">
-<p>Esta aplicación factoriza números o expresiones numéricas usando los algoritmos rápidos ECM y SIQS.</p>
+<p>Esta aplicación factoriza números o expresiones numéricas usando dos algoritmos rápidos: el método de curvas elípticas (ECM) y el de criba cuadrática (SIQS).</p>
 <p>Este programa utiliza almacenamiento local para recordar el avance de la factorización, así que puedes completar la factorización de un número grande en varias sesiones. Tu computadora recordará el estado de la factorización. Sólo debes recargar esta página.</p>
-<p>El tiempo de ejecución depende de la magnitud del segundo mayor factor primo y de la velocidad del equipo.</p>
-<p>Como todos los cáculos se realizan en tu computadora, puedes desconectarla de Intenet mientras progresa la factorización. Puedes arrancar esta aplicación sin conexión de Internet después de la primera corrida.</p>
-<p>El código fuente está escrito en lenguaje C y compilado en asm.js y WebAssembly. Este último es más rápido, pero no está soportado en todos los navegadores Web. Podrás ver la versión que se ejecuta al factorizar un número.</p>
-<p><a href="ECMREC.HTM" title="récords de factorización ECM">Récords de factorización</a> para esta aplicación.
+<p>Como todos los cálculos se realizan en tu computadora, puedes desconectarla de Internet mientras progresa la factorización. Puedes arrancar esta aplicación sin conexión de Internet después de la primera corrida.</p>
+<p>El código fuente está escrito en lenguaje de programación C y compilado en asm.js y WebAssembly, que son los lenguajes que entienden los navegadores Web. Este último es más rápido, pero no está soportado en todos los navegadores Web. Podrás ver la versión que se ejecuta al factorizar un número.</p>
+<p><a href="RECECM.HTM" title="récords de factorización ECM">Récords de factorización</a> para esta aplicación.
 <p>
-<h2>Expresiones</h2>
+<h2><button>Expresiones</button></h2>
+<div class="panel" id="exprorig">
 <p>Puedes ingresar expresiones que usen los siguientes operadores y paréntesis:</p>
 <p>
 <ul>
@@ -177,37 +185,58 @@ Una expresión numérica o ciclo por línea. Ejemplo: x=3;x=n(x);c&lt;=100;x&#82
 <li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
 <li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
 <li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> para lógica binaria.
-<li> <strong>SHL</strong>: Desplazar a la izquierda la cantidad de bits indicada en el operando derecho.
-<li> <strong>SHR</strong>: Desplazar a la derecha la cantidad de bits indicada en el operando derecho.
-<li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
-<li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
-<li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
-<li> <strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub>
+<li> <strong>SHL</strong>: desplaza a la izquierda la cantidad de bits (o multiplica por la potencia de 2) indicada en el operando derecho. Ejemplo: 5 SHL 3 = 40.
+<li> <strong>SHR</strong>: desplaza a la derecha la cantidad de bits (o divide por la potencia de 2) indicada en el operando derecho. Ejemplo: -19 SHR 2 = -5.
+<li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero). Ejemplo: 6! = 6 &times; 5 &times; 4 &times; 3 &times; 2 = 720. 
+<li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>). Ejemplo: 12# = 11 &times; 7 &times; 5 &times; 3 &times; 2 = 2310.
+<li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var>. Ejemplo: B(24) = 23.
+<li> <strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub> que corresponde a la secuencia 0, 1, 1, 2, 3, 5, 8, 13, 21, etc. donde cada elemento es igual a la suma de los dos anteriores. Ejemplo: F(7) = 13.
 <li> <strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub>
-<li> <strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
-<li> <strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).
-<li> <strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.
-<li> <strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.
-<li> <strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.
-<li> <strong>Totient(n)</strong>: cantidad de enteros positivos menores que <var>n</var> coprimos con <var>n</var>.
-<li> <strong>IsPrime(n)</strong>: returna cero si <var>n</var> no es un primo probable y -1 si lo es.
-<li> <strong>NumDivs(n)</strong>: cantidad de divisores positivos de <var>n</var> primos o compuestos.
-<li> <strong>SumDivs(n)</strong>: suma de divisores positivos de <var>n</var> primos o compuestos.
-<li> <strong>NumDigits(n,r)</strong>: cantidad de dígitos de <var>n</var> en base <var>r</var>.
-<li> <strong>SumDigits(n,r)</strong>: suma de dígitos de <var>n</var> en base <var>r</var>.
-<li> <strong>RevDigits(n,r)</strong>: halla el valor que se obtiene escribiendo para atrás los dígitos de <var>n</var> en base <var>r</var>.
-<li> <strong>ConcatFact(m,n)</strong>: concatena los factores primos de <var>n</var> de acuerdo al modo expresado en <var>m</var> según lo indicado en la siguiente tabla:
+<li> <strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var>. Ejemplo: N(24) = 29.
+<li> <strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden). Ejemplo: P(4) = 5 porque el número 4 se puede particionar de 5 formas distintas: 4 = 3+1 = 2+2 = 2+1+1 = 1+1+1+1.
+<li> <strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros. Ejemplo: GCD(12,16) = 4.
+<li> <strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando <var>m</var> y <var>n</var> son coprimos, es decir que no tienen factores en común. Ejemplo: Modinv(3,7) = 5 porque 3 &times; 5 &equiv; 1 (mod 7)
+<li> <strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>. Ejemplo: Modpow(3, 4, 7) = 4, porque 3<sup>4</sup> &equiv; 4 (mod 7).
+<li> <strong>Totient(n)</strong>: cantidad de enteros positivos menores que <var>n</var> coprimos con <var>n</var>. Ejemplo: Totient(6) = 2 porque 1 y 5 no tienen factores en común con 6.
+<li> <strong>IsPrime(n)</strong>: retorna cero si <var>n</var> no es un primo probable y -1 si lo es. Ejemplo: IsPrime(5) = -1.
+<li> <strong>NumDivs(n)</strong>: cantidad de divisores positivos de <var>n</var>. Ejemplo: NumDivs(28) = 6 porque los divisores de 28 son 1, 2, 4, 7, 14 y 28.
+<li> <strong>SumDivs(n)</strong>: suma de todos los divisores positivos de <var>n</var>. Ejemplo: SumDivs(28) = 56 porque 1 + 2 + 4 + 7 + 14 + 28 = 56.
+<li> <strong>NumDigits(n,r)</strong>: cantidad de dígitos de <var>n</var> en base <var>r</var>. Ejemplo: NumDigits(13, 2) = 4 porque 13 en binario (base 2) se expresa como 1101.
+<li> <strong>SumDigits(n,r)</strong>: suma de dígitos de <var>n</var> en base <var>r</var>. Ejemplo: SumDigits(213, 10) = 6 porque la suma de los dígitos expresados en decimal es 2+1+3 = 6.
+<li> <strong>RevDigits(n,r)</strong>: halla el valor que se obtiene escribiendo para atrás los dígitos de <var>n</var> en base <var>r</var>. Ejemplo: RevDigits(213, 10) = 312.
+<li> <strong>ConcatFact(m,n)</strong>: concatena los factores primos de <var>n</var> de acuerdo al modo expresado en <var>m</var> según lo indicado en la siguiente tabla:</li></ul>
 <table>
 <caption>Modos de la función ConcatFact</caption>
-<tr><th scope="col">Modo</th><th scope="col">Orden de los factores</th><th scope="col">Factores repetidos</th></tr>
-<tr><td>0</td><td>Creciente</td><td>No</td></tr>
-<tr><td>1</td><td>Decreciente</td><td>No</td></tr>
-<tr><td>2</td><td>Creciente</td><td>Sí</td></tr>
-<tr><td>3</td><td>Decreciente</td><td>Sí</td></tr>
+<tr><th scope="col">Modo</th><th scope="col">Orden de los factores</th><th scope="col">Factores repetidos</th><th scope="col">Ejemplo</th></tr>
+<tr><td>0</td><td>Creciente</td><td>No</td><td>concatfact(0,36) = 23</td></tr>
+<tr><td>1</td><td>Decreciente</td><td>No</td><td>concatfact(1,36) = 32</td></tr>
+<tr><td>2</td><td>Creciente</td><td>Sí</td><td>concatfact(2,36) = 2233</td></tr>
+<tr><td>3</td><td>Decreciente</td><td>Sí</td><td>concatfact(3,36) = 3322</td></tr>
 </table>
-</li>
-</ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
+</div>
+<h2><button>Factorización usando el método de curvas elípticas (ECM)</button></h2>
+<div class="panel">
+<p>La notación <var>k</var> &equiv; <var>m</var> (mod <var>n</var>) significa que el resto de la división de <var>k</var> dividido <var>n</var> es igual al resto de la división de <var>m</var> dividido <var>n</var>. El número <var>n</var> se denomina módulo.</p>
+<p>Este método calcula puntos en curvas elípticas, que se representan mediante fórmulas del tipo <var>y</var>&sup2; &equiv; <var>x</var>&sup3; + <var>a</var><var>x</var> + <var>b</var> (mod <var>n</var>) donde <var>n</var> es el número a factorizar.</p>
+<p>A continuación se muestran los puntos (<var>x</var>, <var>y</var>) en los que se cumple <var>y</var>&sup2; &equiv; <var>x</var>&sup3; + 4<var>x</var> + 7 (mod <var>29</var>). Las abscisas corresponden a los valores de <var>x</var> de 0 a 28 y las ordenadas a los valores de <var>y</var> en el mismo rango.
+Como los cálculos usan aritmética modular (en este caso usando el resto de la división por 29), los puntos que componen la curva elíptica no forman líneas continuas como sería el caso si operásemos con números reales.
+<div class="lf"></div>
+<canvas id="ellCurve" width="313" height="313"></canvas>
+<p>Aparte de los puntos mostrados, se utiliza un punto adicional, denominado O, o punto en el infinito.</p>
+<p>Mediante complicadas fórmulas, se definen sumas de puntos. De esta manera un punto (<var>x</var><sub>3</sub>, <var>y</var><sub>3</sub>) que pertenece a la curva mencionada puede ser la suma de otros dos puntos (x<sub>1</sub>, y<sub>1</sub>) y (x<sub>2</sub>, y<sub>2</sub>) que también pertenecen a la curva.</p>
+<p>Un punto (<var>x</var>, <var>y</var>) se puede sumar varias veces consigo mismo, obteniendo un nuevo punto (<var>x<sub>4</sub></var>, <var>y</var><sub>4</sub>) que es un múltiplo de (<var>x</var>, <var>y</var>).</p>
+<p>Cuando el módulo es un número primo y no se cumple 4<var>a</var>&sup3; + 27<var>b</var>&sup2; &equiv; 0 (mod <var>p</var>), los puntos que conforman la curva elíptica (incluyendo el punto O) forman una estructura matemática llamada grupo. El orden del grupo es igual a la cantidad de puntos. En el gráfico se observan 31 puntos, por lo que el orden del grupo es 32.
+Se puede demostrar que siempre se puede obtener el punto O multiplicando cualquier punto por el orden del grupo.
+Como O + O = O, si multiplicamos cualquier punto por un múltiplo del orden del grupo obtenemos este punto O.</p>
+<p>Si bien el valor del orden del grupo es difícil de hallar, se puede demostrar que es cercano al número primo usado como módulo. Al variar la curva, se obtiene un grupo diferente, y su orden también es diferente.</p>
+<p>Para poder factorizar un número, hay que hallar un múltiplo del orden del grupo correspondiente a alguno de los factores primos.
+<p>Por cada curva elíptica a procesar intentamos obtener el punto en el infinito. Se realizan dos pasos.</p> 
+<p>En el primer paso el algoritmo multiplica puntos por potencias de diferentes números primos menores que una cota denominada B1. Al calcular el maximo común divisor entre la coordenada <var>x</var> del punto hallado y el número a factorizar se puede obtener el primo buscado si todos los factores primos del orden son menores que B1.</p>
+<p>Usando el resultado del primer paso, el segundo paso obtiene múltiplos de ese punto hasta la cota máxima B2 y se van multiplicando entre sí las coordenadas x de los puntos hallados. Finalmente se calcula el máximo común divisor entre el valor obtenido y el número a factorizar. En este caso se obtiene el primo buscado si todos los factores primos del orden (excepto uno) son menores que B1 y el mayor factor primo es menor que B2.</p>
+<p>Si el máximo común divisor vale 1, hay que intentar con otra curva variando los parámetros <var>a</var> y <var>b</var> y calculando otro punto inicial (<var>x</var>, <var>y</var>) que pertenezca a la nueva curva.</p>
+<p>El programa usa varias optimizaciones que son demasiado técnicas como para explicarlas aquí.</p>
+<p>El tiempo de ejecución depende de la magnitud del segundo mayor factor primo y de la velocidad del equipo.</p>
 <div class="tableCurves"><table>
 <caption>Valores óptimos de B1 y cantidad de curvas esperadas</caption>
 <tr><th scope="col">Dígitos</th><th scope="col">Valores de B1</th><th scope="col">Curvas esperadas</th></tr>
@@ -225,22 +254,41 @@ Una expresión numérica o ciclo por línea. Ejemplo: x=3;x=n(x);c&lt;=100;x&#82
 <tr><td>70</td><td>2900 000000</td><td>340000</td></tr>
 </table></div>
 <p>El programa procesa 25 curvas con límite B1 = 2000, 300 curvas con límite B1 = 50000, 1675 curves con límite B1 = 1000000 y finalmente usa curvas con límite B1 = 11000000 hasta hallar todos los factores.</p>
-<h2>Factorización de un número en varias computadoras</h2>
-<p>El algoritmo de factorización ECM se puede correr fácilmente en paralelo. Para hacer esto, ejecute la factorización en la primera computadora desde la curva 1, ejecútela en la segunda computadora desde la curva 10000, en la tercera computadora desde la curva 20000, y así sucesivamente.
+</div>
+<h2><button>Factorización de un número en varias computadoras</button></h2>
+<div class="panel">
+<p>El algoritmo de factorización ECM se puede correr fácilmente en paralelo. Para hacer esto, ejecuta la factorización en la primera computadora desde la curva 1, ejecútala en la segunda computadora desde la curva 10000, en la tercera computadora desde la curva 20000, y así sucesivamente.
 Para cambiar el número de curva, aprieta el botón <strong>Más</strong>, escríbalo en la caja de entrada que se encuentra en la nueva ventana y presiona el botón <B>Nueva curva</B>.
 <p>Cuando una de las otras máquinas descubre un nuevo factor, deberás apretar nueva el botón <strong>Más</strong>, ingresar dicho factor en la caja de entrada y finalmente  apretar el botón <strong>Factor</strong>.</p>
-<h2>Factorización utilizando el método de criba cuadrática (SIQS)</h2>
-<p>Cuando el número a factorizar tiene 31 a 95 dígitos, después de procesar algunas curvas para hallar factores pequeños, el programa ejecuta el algoritmo SIQS, que es mucho más rápido que ECM cuando el número tiene dos factores grandes. Como este método necesita gran cantidad de memoria de tu computadora, si arrancas otra vez el programa la factorización comenzará desde el principio. Para comenzar a factorizar inmediatamente mediante SIQS, deberás apretar el botón <strong>Más</strong>, ingresar el número cero en la caja de entrada y finalmente apretar el botón <strong>Nueva Curva</strong>.</p>
+</div>
+<h2><button>Factorización utilizando el método de criba cuadrática (SIQS)</button></h2>
+<div class="panel">
+<p>La notación <var>k</var> &equiv; <var>m</var> (mod <var>n</var>) significa que el resto de la división de <var>k</var> dividido <var>n</var> es igual al resto de la división de <var>m</var> dividido <var>n</var>. El número <var>n</var> se denomina módulo.</p>
+<p>Sea <var>N</var> el número a factorizar. Este número no debe ser una potencia perfecta. Si hallamos de alguna manera dos números enteros <var>X</var> e <var>Y</var> tales que <var>X</var>&sup2; &equiv; <var>Y</var>&sup2; (mod <var>N</var>) y <var>X</var>&ne;<var>Y</var> (mod <var>N</var>), entonces mcd(<var>X</var>+<var>Y</var>, <var>N</var>) será un factor no trivial (ni 1 ni <var>N</var>) de <var>N</var>.</p>
+<p>Para hallar estos valores <var>X</var> e <var>Y</var>, el método busca relaciones que tienen la forma <var>t</var>&sup2; &equiv; <var>u</var> (mod <var>N</var>) donde <var>u</var> es el producto de números primos pequeños. El conjunto de estos primos es la base de factores. Estas relaciones se obtienen mediante cribas, cuya explicación se encuentra fuera del alcance de esta introducción.</p>
+<p>Las relaciones halladas se combinan mediante multiplicaciones. El miembro izquierdo siempre será un cuadrado perfecto porque es el producto de cuadrados. Nuestro objetivo es obtener un cuadrado perfecto en el miembro derecho. Un número es un cuadrado perfecto cuando todos sus factores primos aparecen una cantidad par de veces.
+<p>Por ejemplo: si el número a factorizar es <var>N</var> = 1817 y hallamos las siguientes relaciones con la base de factores = {2, 7, 13}:</p>
+<p>45&sup2; &equiv; 2<sup>4</sup> &times; 7<sup>0</sup> &times; 13<sup>1</sup></p>
+<p>123&sup2; &equiv; 2<sup>10</sup> &times; 7<sup>0</sup> &times; 13<sup>1</sup></p>
+<p>En ambas relaciones el miembro derecho no es cuadrado perfecto, porque el exponente de 13 es impar. Pero multiplicándolos obtenemos:</p>
+<p>84&sup2; &equiv; 2<sup>14</sup> &times; 13&sup2;</p>
+<p>84&sup2; &equiv; (2<sup>7</sup>&times;13)&sup2;</p>
+<p>Dado que 2<sup>7</sup>&times;13 &equiv; 1664 obtenemos el factor mcd(84+1664, 1817) = 23.</p>
+<p>Qué relaciones se deben multiplicar para obtener un cuadrado perfecto en el miembro derecho es un problema de álgebra lineal y se resuelve mediante matrices.</p>
+<p>Cuando el número a factorizar tiene 31 a 95 dígitos, después de procesar algunas curvas para hallar factores pequeños, el programa ejecuta el algoritmo SIQS, que es mucho más rápido que ECM cuando el número tiene dos factores grandes.
+Como este método necesita gran cantidad de memoria de tu computadora para almacenar relaciones, si arrancas otra vez el programa, la factorización comenzará desde el principio. Para comenzar a factorizar inmediatamente mediante SIQS, deberás apretar el botón <strong>Más</strong>, ingresar el número cero en la caja de entrada y finalmente apretar el botón <strong>Nueva Curva</strong>.</p>
 <table>
 <caption>Umbral para cambio a SIQS</caption>
 <tr><th scope="row">Dígitos</th><td>31-55</td><td>56-60</td><td>61-65</td><td>66-70</td><td>71-75</td><td>76-80</td><td>81-85</td><td>86-90</td><td>91-95</td></tr>
 <tr><th scope="row">Curva</th><td>10</td><td>15</td><td>22</td><td>26</td><td>35</td><td>50</td><td>100</td><td>150</td><td>200</td></tr>
 </table>
-<h2>Configuración</h2>
+</div>
+<h2><button>Configuración</button></h2>
+<div class="panel">
 <p>Puedes cambiar la configuración de esta aplicación apretando el botón <strong>Config</strong> mientras el programa no está factorizando. En ese momento aparecerá una nueva ventana donde puedes seleccionar los siguientes ajustes:</p>
 <ul>
 <li><strong>Dígitos por grupo</strong>: Para mejorar la legibilidad, los números grandes se separan mediante espacios formando grupos de una cantidad fija de dígitos. Con esta caja de entrada, puedes determinar la cantidad de dígitos por grupo.</li> 
-<li><strong>Información</strong>: No está listo aún.</li>
+<li><strong>Información</strong>: Muestra más información con respecto a los factores hallados.</li>
 <li><strong>Impresión bonita</strong>: Si la casilla de verificación está marcada, los exponentes se muestran con superíndices y el signo de multiplicación es &quot; &times; &quot;. La aplicación muestra la cantidad de dígitos de los números que tienen más de 30 dígitos.
 Si la casilla de verificación no está marcada, los exponentes se muestran precedidos por el signo &quot; ^ &quot; y la multiplicación se indica mediante asteriscos. Además nunca se muestra la cantidad de dígitos. Esto facilita la copia de resultados a otros programas matemáticos.</li>
 <li><strong>Salida hexadecimal</strong>: Indica que los valores mostrados en pantalla deben figurar en hexadecimal en vez de decimal, que es lo habitual.
@@ -250,7 +298,9 @@ Para reducir esa base de datos, sólo se incluyen factores primos con al menos 1
 </ul>
 <p>La configuración se almacena en tu dispositivo, así que si arrancas nuevamente el navegador, los ajustes no se modificarán.
 <p>
-<h2>Factorización en lotes</h2>
+</div>
+<h2><button>Factorización en lotes</button></h2>
+<div class="panel">
 <p>Escribe una expresión por línea, y luego aprieta el botón <strong>Sólo evaluar</strong> o <strong>Factorizar</strong>.</p>
 <p>Las líneas en blanco o de comentarios (que comienzan con el carácter numeral '#') se replicarán en la salida.</p>
 <p>Expresión para ciclos: con la siguiente sintaxis podrás factorizar o determinar si varios números son primos con sólo digitar una línea. Deberás escribir cuatro o cinco expresiones separadas por puntos y coma:</p>
@@ -265,11 +315,14 @@ Para reducir esa base de datos, sólo se incluyen factores primos con al menos 1
 <p>Si la expresión de finalización es falsa después de procesar 1000 números, aparecerá el botón Continuar. Apretando este botón hará que el programa procese los siguientes 1000 números, y así sucesivamente.
 <p>Ejemplo 1: Hallar los factores de los primeros 100 números de la forma primo menos 1.
 La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
-<p>Ejemplo 2: Hallar los números de Smith meores que 10000. Un número de Smith, de acuerdo a Wikipedia, es un número compuesto tal que, en una base dada (por defecto en base 10), la suma de sus dígitos es igual a la suma de los dígitos de su factorización en números primos.
+<p>Ejemplo 2: Hallar los números de Smith menores que 10000. Un número de Smith, de acuerdo a Wikipedia, es un número compuesto tal que, en una base dada (por defecto en base 10), la suma de sus dígitos es igual a la suma de los dígitos de su factorización en números primos.
 La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(concatfact(2,x),10) and not isprime(x)</code>
-<h2>Código fuente</h2>
+</div>
+<h2><button>Código fuente</button></h2>
+<div class="panel">
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 28 de octubre de 2018.</p>
+</div>
+<p>Escrito por Dario Alpern. Actualizado el 26 de noviembre de 2018.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -312,10 +365,10 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <p><input type="checkbox" id="cunnin"><label for="cunnin">Usar tablas de Cunningham en el servidor</label></p>
 </div>
 </fieldset>
-<p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
+<p><input type="button" id="save-config" value="Aceptar" /><input type="button" id="cancel-config" value="Cancelar" /></p>
 </div>
 </div></div></div>
-<aside id="wizard">
+<aside id="wizard" class="pad">
 <h1>Asistente de factorización</h1>
 <form class="applet">
 <fieldset id="output" class="atright">
@@ -337,50 +390,11 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <input type="button" id="cancel" value="Cancelar" />
 </form>
 <h2>Expresiones</h2>
-<p>Puedes ingresar expresiones que usen los siguientes operadores y paréntesis:</p>
-<p>
+<div id="exprcopy"></div>
 <ul>
-<li> + para suma
-<li> - para resta
-<li> * para multiplicación
-<li> / para división entera
-<li> % para el resto de la división entera
-<li> ^ o ** para exponenciación (el exponente debe ser mayor o igual que cero).
-<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != para comparaciones. Los operadores devuelven cero si es falso y -1 si es verdadero.
-<li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> para lógica binaria.
-<li> <strong>SHL</strong>: Desplazar a la izquierda la cantidad de bits indicada en el operando derecho.
-<li> <strong>SHR</strong>: Desplazar a la derecha la cantidad de bits indicada en el operando derecho.
-<li> <strong>n!</strong>: factorial (<var>n</var> debe ser mayor o igual que cero).
-<li> <strong>p#</strong>: primorial (producto de todos los primos menores o iguales a <var>p</var>).
-<li> <strong>B(n)</strong>: Número probablemente primo anterior a <var>n</var></li>
-<li> <strong>F(n)</strong>: Número de Fibonacci F<sub>n</sub>
-<li> <strong>L(n)</strong>: Número de Lucas L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub>
-<li> <strong>N(n)</strong>: Número probablemente primo posterior a <var>n</var></li>
-<li> <strong>P(n)</strong>: particiones irrestrictas (cantidad de descomposiciones de <var>n</var> en sumas de números enteros sin tener en cuenta el orden).
-<li> <strong>Gcd(m,n)</strong>: Máximo común divisor de estos dos números enteros.
-<li> <strong>Modinv(m,n)</strong>: inverso de <var>m</var> modulo <var>n</var>, sólo válido cuando gcd(m,n)=1.
-<li> <strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.
-<li> <strong>Totient(n)</strong>: cantidad de enteros positivos menores que <var>n</var> coprimos con <var>n</var>.
-<li> <strong>IsPrime(n)</strong>: returna cero si <var>n</var> no es un primo probable y -1 si lo es.
-<li> <strong>NumDivs(n)</strong>: cantidad de divisores positivos de <var>n</var> primos o compuestos.
-<li> <strong>SumDivs(n)</strong>: suma de divisores positivos de <var>n</var> primos o compuestos.
-<li> <strong>NumDigits(n,r)</strong>: cantidad de dígitos de <var>n</var> en base <var>r</var>.
-<li> <strong>SumDigits(n,r)</strong>: suma de dígitos de <var>n</var> en base <var>r</var>.
-<li> <strong>RevDigits(n,r)</strong>: halla el valor que se obtiene escribiendo para atrás los dígitos de <var>n</var> en base <var>r</var>.
-<li> <strong>ConcatFact(m,n)</strong>: concatena los factores primos de <var>n</var> de acuerdo al modo expresado en <var>m</var> según lo indicado en la siguiente tabla:
-<table>
-<caption>Modos de la función ConcatFact</caption>
-<tr><th scope="col">Modo</th><th scope="col">Orden de los factores</th><th scope="col">Factores repetidos</th></tr>
-<tr><td>0</td><td>Creciente</td><td>No</td></tr>
-<tr><td>1</td><td>Decreciente</td><td>No</td></tr>
-<tr><td>2</td><td>Creciente</td><td>Sí</td></tr>
-<tr><td>3</td><td>Decreciente</td><td>Sí</td></tr>
-</table>
-</li>
 <li id="C">Variable <var>C</var>: cantidad de expresiones procesadas.</li>
 <li id="X">Variable <var>X</var>: variable que cambia en cada iteración del ciclo.</li>
 </ul>
-<p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 </aside>
 <aside id="feedback">
 <h1>Formulario de comentarios</h1>
@@ -426,25 +440,27 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 </aside>
 <script>
 <!--
-(function(){function f(){a("next").value="Hecho";a("wzddesc").innerHTML="Paso 1 de 1: Expresi\u00f3n a factorizar";a("wzdexam").innerHTML="&nbsp;";g="";m=9}function a(a){return document.getElementById(a)}function q(c,b){a("eval").style.display=c;a("factor").style.display=c;a("config").style.display=c;a("openwizard").style.display=c;a("stop").style.display=b;a("more").style.display=b}function t(c){a("modal-more").style.display="none";n.terminate();n=0;k(c)}function l(c){n||(w?u||(u=new Blob([new Uint8Array(x)])):
-u||(u=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),n=new Worker(window.URL.createObjectURL(u)),n.onmessage=function(b){var c=b.data.substring(0,1);"9"==c&&console.log(b.data.substring(1));if("8"==c)localStorage.setItem("ecmFactors",b.data.substring(1)),localStorage.setItem("ecmCurve","");else if("7"==c)localStorage.setItem("ecmCurve",b.data.substring(1));else if("4"==c)a("status").innerHTML=
-b.data.substring(1);else if("5"==c)a("skip").style.display="1"==b.data.substring(1,2)?"block":"none";else if(a("result").innerHTML=b.data.substring(1),"2"==c||"6"==c)a("status").innerHTML="",q("inline","none"),a("modal-more").style.display="none","6"==c&&(a("cont").style.display="block")});w?n.postMessage(c):n.postMessage([c,x])}function k(c){var b;v=1+c;b=a("result");var A=a("value").value.replace(/\u2011/g,"-"),h=String.fromCharCode(0),B=a("helphelp");a("cont").style.display="none";a("help").style.display=
-"none";B.style.display="block";B.innerHTML='<p class="pad">Aprieta el bot\u00f3n <strong>Ayuda</strong> para obtener ayuda para esta aplicaci\u00f3n. Apri\u00e9talo de nuevo para retornar a la factorizaci\u00f3n. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorizaci\u00f3n. Esta es la versi\u00f3n '+(w?"asm.js":"WebAssembly")+".</p>";b.style.display="block";if(""==A)b.innerHTML="<p>Por favor ingrese una expresi\u00f3n.</p>";else if("undefined"===typeof Worker)b.innerHTML=
-"<p>Esta calculadora necesita Web Workers. Por favor use otro navegador Web.</p>";else{q("none","inline");b.innerHTML="<p>Factorizando la expresi\u00f3n...</p>";-2>c&&(v+=6);b=e+","+v+","+d+A+h+localStorage.getItem("ecmFactors");if(-1==c||-2==c)b+=","+a("curve").value;if(-3==c||-4==c)b+=";"+a("curve").value;x?l(b+h):y=b+h}}function r(){a("next").value="Siguiente";a("wzddesc").innerHTML="Paso 1 de 5: Valor inicial de x";a("wzdexam").innerHTML="No usar variables <var>x</var> o <var>c</var>. Ejemplo para n\u00fameros de Smith menores que 10000: <code>1</code>";
-m=1}function C(){var c=a("next"),b=a("wzddesc"),d=a("wzdexam"),h=a("wzdinput"),e=a("value");c.disabled=!0;switch(++m){case 2:g+="x="+h.value;a("mode").style.display="none";b.innerHTML="Paso 2 de 5: Valor de x para la nueva iteraci\u00f3n";d.innerHTML="Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>x+1</code>";break;case 3:g+=";x="+h.value;b.innerHTML="Paso 3 de 5: Condici\u00f3n para finalizar el ciclo";d.innerHTML="Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>x&lt;10000</code>";
-break;case 4:g+=";"+h.value;b.innerHTML="Paso 4 de 5: Expresi\u00f3n a factorizar";d.innerHTML="Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>x</code>";break;case 5:g+=";"+h.value;c.value="Hecho";c.disabled=!1;b.innerHTML="Paso 5 de 5: Condici\u00f3n para procesar la expresi\u00f3n";d.innerHTML="Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";
-break;case 6:""!=h.value&&(g+=";"+h.value);e.value=g;m=0;a("hex").checked=a("hexW").checked;z();a("main").style.display="block";a("wizard").style.display="none";e.focus();break;default:m=0,e.value=h.value,a("hex").checked=a("hexW").checked,z(),a("main").style.display="block",a("wizard").style.display="none",e.focus()}m&&(h.value="",h.focus())}function z(){d="1"+(a("verbose").checked?"1":"0")+(a("pretty").checked?"1":"0")+(a("cunnin").checked?"1":"0")+(a("hex").checked?"1":"0");e=a("digits").value;
-localStorage.setItem("ecmConfig",e+","+d)}function D(){a("main").style.display="block";a("feedback").style.display="none";a("value").focus()}var m=0,g,n=0,x=0,v,u,e,d,y,w="undefined"===typeof WebAssembly,p=new XMLHttpRequest;p.open("GET",w?"ecmW0073.js":"ecm0073.wasm",!0);p.responseType="arraybuffer";p.onreadystatechange=function(){4==p.readyState&&200==p.status&&(x=p.response,y&&l(y))};p.send(null);addEventListener("load",function(){var c;v=1;a("value").c="off";a("eval").onclick=function(){localStorage.setItem("ecmFactors",
-"");k(0)};a("factor").onclick=function(){localStorage.setItem("ecmFactors","");k(2)};a("more").onclick=function(){a("modal-more").style.display="block"};a("config").onclick=function(){a("digits").value=e;a("verbose").checked="1"==d.substr(1,1);a("pretty").checked="1"==d.substr(2,1);a("cunnin").checked="1"==d.substr(3,1);a("hex").checked="1"==d.substr(4,1);a("modal-config").style.display="block"};a("openwizard").onclick=function(){a("main").style.display="none";a("wizard").style.display="block";a("mode").style.display=
-"block";a("oneexpr").checked=!0;a("next").disabled=!0;a("wzdinput").value="";a("wzdinput").focus();a("hexW").checked="1"==d.substr(4,1);a("decW").checked="1"!=d.substr(4,1);f()};a("wzdinput").onkeydown=function(b){if(10==b.keyCode||13==b.keyCode)b.preventDefault(),0==a("next").disabled&&C();b.altKey&&(80==b.keyCode?(b.preventDefault(),a("oneexpr").checked?(a("oneexpr").checked=!1,a("loop").checked=!0,r()):(a("oneexpr").checked=!0,a("loop").checked=!1,f())):68==b.keyCode?(b.preventDefault(),a("decW").checked=
-!0,a("hexW").checked=!1):72==b.keyCode&&(b.preventDefault(),a("decW").checked=!1,a("hexW").checked=!0));return!0};a("oneexpr").onclick=function(){f()};a("loop").onclick=function(){r()};a("next").onclick=function(){C()};a("wzdinput").oninput=function(){var b=a("wzdinput").value;a("next").disabled=""!=b?1==m||9==m||0<=b.lastIndexOf("x")||0<=b.lastIndexOf("c")||0<=b.lastIndexOf("X")||0<=b.lastIndexOf("C")?!1:!0:5==m?!1:!0};a("cancel").onclick=function(){a("main").style.display="block";a("wizard").style.display=
-"none"};a("close-config").onclick=function(){a("modal-config").style.display="none"};a("cancel-config").onclick=function(){a("modal-config").style.display="none"};a("save-config").onclick=function(){oldconfig=d;z();a("modal-config").style.display="none"};a("close-more").onclick=function(){a("modal-more").style.display="none"};a("ncurve").onclick=function(){t(-2)};a("nfactor").onclick=function(){t(-4)};a("curve").onkeypress=function(a){return 8==a.charCode||0==a.charCode?null:48<=a.charCode&&57>=a.charCode};
-a("stop").onclick=function(){n.terminate();n=0;q("inline","none");a("skip").style.display="none";a("result").innerHTML="<p>C\u00e1lculo detenido por el usuario.</p>";a("status").innerHTML=""};a("value").onkeydown=function(a){10!=a.keyCode&&13!=a.keyCode||!a.ctrlKey||(a.preventDefault(),localStorage.setItem("ecmFactors",""),k(2));return!0};a("helpbtn").onclick=function(){var b=a("help").style,c=a("helphelp").style,d=a("result"),e=d.style;"block"==b.display&&""!=d.innerHTML?(b.display="none",c.display=
-e.display="block"):(b.display="block",c.display=e.display="none")};a("skiptest").onclick=function(){a("skip").style.display="none";t(4)};a("continue").onclick=function(){a("cont").style.display="none";l("C")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){D()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\n"+a("value").value+
-"\n"+a("result").innerHTML+"\n"+a("status").innerHTML:"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),D())};b.open("POST","/enviomail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var c=a("formfeedback").elements,d="",e=0,g=0;g<c.length;g++){var f=c[g];"radio"==f.type&&0==f.checked||!f.name||(e&&(d+="&"),d+=f.name+"="+encodeURIComponent(f.value),
-e++)}b.send(d);return!1};window.onclick=function(b){var c=a("modal");b.target==c&&(c.style.display="none")};e=localStorage.getItem("ecmConfig");if(null==e||""==e)e=6,d="00100",localStorage.setItem("ecmConfig",e+","+d);else if(c=e.indexOf(","),0>c)e=6,d="00100",localStorage.setItem("ecmConfig",e+","+d);else{for(d=e.substr(c+1);5>d.length;)d+="0";e=e.substr(0,c)}if(c=localStorage.getItem("ecmFactors"))a("value").value=c.slice(0,c.indexOf("=")),a("curve").value=localStorage.getItem("ecmCurve"),k(-2),
-a("curve").value="";"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})})})(this);
-addEventListener("load",function(){(function(f,a,q,t,l,k,r){f.GoogleAnalyticsObject=l;f[l]=f[l]||function(){(f[l].a=f[l].a||[]).push(arguments)};f[l].b=1*new Date;k=a.createElement(q);r=a.getElementsByTagName(q)[0];k.async=1;k.src=t;r.parentNode.insertBefore(k,r)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
+(function(){function k(){a("next").value="Hecho";a("wzddesc").innerHTML="Paso 1 de 1: Expresi\u00f3n a factorizar";a("wzdexam").innerHTML="&nbsp;";h="";n=9}function a(a){return document.getElementById(a)}function r(b,d){a("eval").style.display=b;a("factor").style.display=b;a("config").style.display=b;a("openwizard").style.display=b;a("stop").style.display=d;a("more").style.display=d}function u(b){a("modal-more").style.display="none";p.terminate();p=0;l(b)}function m(b){p||(x?v||(v=new Blob([new Uint8Array(y)])):
+v||(v=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),p=new Worker(window.URL.createObjectURL(v)),p.onmessage=function(b){var c=b.data.substring(0,1);"9"==c&&console.log(b.data.substring(1));if("8"==c)localStorage.setItem("ecmFactors",b.data.substring(1)),localStorage.setItem("ecmCurve","");else if("7"==c)localStorage.setItem("ecmCurve",b.data.substring(1));else if("4"==c)a("status").innerHTML=
+b.data.substring(1);else if("5"==c)a("skip").style.display="1"==b.data.substring(1,2)?"block":"none";else if(a("result").innerHTML=b.data.substring(1),"2"==c||"6"==c)a("status").innerHTML="",r("inline","none"),a("modal-more").style.display="none","6"==c&&(a("cont").style.display="block")});x?p.postMessage(b):p.postMessage([b,y])}function l(b){var d;w=1+b;d=a("result");var c=a("value").value.replace(/\u2011/g,"-"),e=String.fromCharCode(0),C=a("helphelp");a("cont").style.display="none";a("help").style.display=
+"none";C.style.display="block";C.innerHTML='<p class="pad">Aprieta el bot\u00f3n <strong>Ayuda</strong> para obtener ayuda para esta aplicaci\u00f3n. Apri\u00e9talo de nuevo para retornar a la factorizaci\u00f3n. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorizaci\u00f3n. Esta es la versi\u00f3n '+(x?"asm.js":"WebAssembly")+".</p>";d.style.display="block";if(""==c)d.innerHTML="<p>Por favor ingrese una expresi\u00f3n.</p>";else if("undefined"===typeof Worker)d.innerHTML=
+"<p>Esta calculadora necesita Web Workers. Por favor use otro navegador Web.</p>";else{r("none","inline");d.innerHTML="<p>Factorizando la expresi\u00f3n...</p>";-2>b&&(w+=6);d=g+","+w+","+f.substring(1)+c+e+localStorage.getItem("ecmFactors");if(-1==b||-2==b)d+=","+a("curve").value;if(-3==b||-4==b)d+=";"+a("curve").value;y?m(d+e):z=d+e}}function t(){a("next").value="Siguiente";a("wzddesc").innerHTML="Paso 1 de 5: Valor inicial de x";a("wzdexam").innerHTML="No usar variables <var>x</var> o <var>c</var>. Ejemplo para n\u00fameros de Smith menores que 10000: <code>1</code>";
+n=1}function D(){var b=a("next"),d=a("wzddesc"),c=a("wzdexam"),e=a("wzdinput"),f=a("value");b.disabled=!0;switch(++n){case 2:h+="x="+e.value;a("mode").style.display="none";d.innerHTML="Paso 2 de 5: Valor de x para la nueva iteraci\u00f3n";c.innerHTML="Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>x+1</code>";break;case 3:h+=";x="+e.value;d.innerHTML="Paso 3 de 5: Condici\u00f3n para finalizar el ciclo";c.innerHTML="Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>x&lt;10000</code>";
+break;case 4:h+=";"+e.value;d.innerHTML="Paso 4 de 5: Expresi\u00f3n a factorizar";c.innerHTML="Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>x</code>";break;case 5:h+=";"+e.value;b.value="Hecho";b.disabled=!1;d.innerHTML="Paso 5 de 5: Condici\u00f3n para procesar la expresi\u00f3n";c.innerHTML="Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para n\u00fameros de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";
+break;case 6:""!=e.value&&(h+=";"+e.value);f.value=h;n=0;a("hex").checked=a("hexW").checked;A();a("main").style.display="block";a("wizard").style.display="none";f.focus();break;default:n=0,f.value=e.value,a("hex").checked=a("hexW").checked,A(),a("main").style.display="block",a("wizard").style.display="none",f.focus()}n&&(e.value="",e.focus())}function A(){f="1"+(a("verbose").checked?"1":"0")+(a("pretty").checked?"1":"0")+(a("cunnin").checked?"1":"0")+(a("hex").checked?"1":"0");g=a("digits").value;
+localStorage.setItem("ecmConfig",g+","+f)}function E(a){var d=document.all?document.styleSheets[0].rules:document.styleSheets[0].cssRules,c,e=d.length;for(c=0;c<e;c++)".verbose"===d[c].selectorText&&(d[c].style.display=a?"inline":"none"),".terse"===d[c].selectorText&&(d[c].style.display=a?"none":"inline")}function F(){a("main").style.display="block";a("feedback").style.display="none";a("value").focus()}var B=[0,6,2,9,4,0,5,6,7,1,8,0,13,9,14,9,15,7,16,7,17,0,18,13,20,5,22,10,23,12,24,6,27,7],n=0,h,
+p=0,y=0,w,v,g,f,z,x="undefined"===typeof WebAssembly,q=new XMLHttpRequest;q.open("GET",x?"ecmW0077.js":"ecm0077.wasm",!0);q.responseType="arraybuffer";q.onreadystatechange=function(){4==q.readyState&&200==q.status&&(y=q.response,z&&m(z))};q.send(null);addEventListener("load",function(){var b;w=1;a("value").c="off";a("eval").onclick=function(){localStorage.setItem("ecmFactors","");l(0)};a("factor").onclick=function(){localStorage.setItem("ecmFactors","");l(2)};a("more").onclick=function(){a("modal-more").style.display=
+"block"};a("config").onclick=function(){a("digits").value=g;a("verbose").checked="1"==f.substr(1,1);a("pretty").checked="1"==f.substr(2,1);a("cunnin").checked="1"==f.substr(3,1);a("hex").checked="1"==f.substr(4,1);a("modal-config").style.display="block"};a("openwizard").onclick=function(){a("main").style.display="none";a("wizard").style.display="block";a("mode").style.display="block";a("oneexpr").checked=!0;a("next").disabled=!0;a("wzdinput").value="";a("wzdinput").focus();a("hexW").checked="1"==
+f.substr(4,1);a("decW").checked="1"!=f.substr(4,1);k()};a("wzdinput").onkeydown=function(e){if(10==e.keyCode||13==e.keyCode)e.preventDefault(),0==a("next").disabled&&D();e.altKey&&(80==e.keyCode?(e.preventDefault(),a("oneexpr").checked?(a("oneexpr").checked=!1,a("loop").checked=!0,t()):(a("oneexpr").checked=!0,a("loop").checked=!1,k())):68==e.keyCode?(e.preventDefault(),a("decW").checked=!0,a("hexW").checked=!1):72==e.keyCode&&(e.preventDefault(),a("decW").checked=!1,a("hexW").checked=!0));return!0};
+a("oneexpr").onclick=function(){k()};a("loop").onclick=function(){t()};a("next").onclick=function(){D()};a("wzdinput").oninput=function(){var e=a("wzdinput").value;a("next").disabled=""!=e?1==n||9==n||0<=e.lastIndexOf("x")||0<=e.lastIndexOf("c")||0<=e.lastIndexOf("X")||0<=e.lastIndexOf("C")?!1:!0:5==n?!1:!0};a("cancel").onclick=function(){a("main").style.display="block";a("wizard").style.display="none"};a("close-config").onclick=function(){a("modal-config").style.display="none"};a("cancel-config").onclick=
+function(){a("modal-config").style.display="none"};a("save-config").onclick=function(){oldconfig=f;A();E(a("verbose").checked);a("modal-config").style.display="none"};a("close-more").onclick=function(){a("modal-more").style.display="none"};a("ncurve").onclick=function(){u(-2)};a("nfactor").onclick=function(){u(-4)};a("curve").onkeypress=function(a){return 8==a.charCode||0==a.charCode?null:48<=a.charCode&&57>=a.charCode};a("stop").onclick=function(){p.terminate();p=0;r("inline","none");a("skip").style.display=
+"none";a("result").innerHTML="<p>C\u00e1lculo detenido por el usuario.</p>";a("status").innerHTML=""};a("value").onkeydown=function(a){10!=a.keyCode&&13!=a.keyCode||!a.ctrlKey||(a.preventDefault(),localStorage.setItem("ecmFactors",""),l(2));return!0};a("helpbtn").onclick=function(){var b=a("help").style,c=a("helphelp").style,d=a("result"),f=d.style;"block"==b.display&&""!=d.innerHTML?(b.display="none",c.display=f.display="block"):(b.display="block",c.display=f.display="none")};a("skiptest").onclick=
+function(){a("skip").style.display="none";u(4)};a("continue").onclick=function(){a("cont").style.display="none";m("C")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){F()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\n"+a("value").value+"\n"+a("result").innerHTML+"\n"+a("status").innerHTML:"";var b=new XMLHttpRequest;b.onreadystatechange=
+function(){4==b.readyState&&(200==b.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),F())};b.open("POST","/enviomail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var c=a("formfeedback").elements,d="",f=0,g=0;g<c.length;g++){var h=c[g];"radio"==h.type&&0==h.checked||!h.name||(f&&(d+="&"),d+=h.name+"="+encodeURIComponent(h.value),f++)}b.send(d);return!1};window.onclick=function(b){var c=a("modal");b.target==
+c&&(c.style.display="none")};b=document.querySelectorAll("h2");var d;for(d=0;d<b.length;d++)b[d].addEventListener("click",function(){this.children[0].classList.toggle("active");var a=this.nextElementSibling;a.style.display="block"===a.style.display?"none":"block"});document.getElementById("exprcopy").innerHTML=document.getElementById("exprorig").innerHTML;var c=document.getElementById("ellCurve").getContext("2d");c.fillStyle="#FFFFFF";c.fillRect(0,0,313,313);c.fillStyle="#000000";c.strokeStyle="#808000";
+c.fillRect(20,0,290,290);for(b=0;290>=b;b+=10)c.moveTo(20+b,0),c.lineTo(20+b,290),c.stroke(),c.moveTo(20,b),c.lineTo(310,b),c.stroke();c.fillStyle="#00C000";for(ctr=0;ctr<B.length;ctr+=2)b=B[ctr],d=B[ctr+1],c.fillRect(10*b+21,10*(28-d)+1,9,9),0!=d&&c.fillRect(10*b+21,10*(d-1)+1,9,9);c.fillStyle="#000000";c.font="15px 'Times New Roman'";c.fillText("0",5,291);c.fillText("0",20,308);c.fillText("28",0,11);c.fillText("28",297,308);c.font="italic "+c.font;c.fillText("y",5,150);c.fillText("x",160,308);g=
+localStorage.getItem("ecmConfig");if(null==g||""==g)g=6,f="00100",localStorage.setItem("ecmConfig",g+","+f);else if(b=g.indexOf(","),0>b)g=6,f="00100",localStorage.setItem("ecmConfig",g+","+f);else{for(f=g.substr(b+1);5>f.length;)f+="0";g=g.substr(0,b);E("1"==f.substr(1,1))}if(b=localStorage.getItem("ecmFactors"))a("value").value=b.slice(0,b.indexOf("=")),a("curve").value=localStorage.getItem("ecmCurve"),l(-2),a("curve").value="";"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},
+function(){})})})(this);addEventListener("load",function(){(function(k,a,r,u,m,l,t){k.GoogleAnalyticsObject=m;k[m]=k[m]||function(){(k[m].a=k[m].a||[]).push(arguments)};k[m].b=1*new Date;l=a.createElement(r);t=a.getElementsByTagName(r)[0];l.async=1;l.src=u;t.parentNode.insertBefore(l,t)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
 //-->
 </script>
 <script type="text/js-worker">

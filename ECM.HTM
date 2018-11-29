@@ -31,6 +31,11 @@
 #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
 .newline {clear:both;}
 }
+h2 > button {background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 100%; width:100%; text-align:left; border:none; outline:none; transition:0.4s;}
+h2 > button.active,h2 > button:hover {background-color:#ccc;}
+h2 > button:after {content:"\002B"; color:#777; font-weight:bold; float:right; margin-left:5px;}
+h2 > button.active:after {content:"\2212";}
+.panel {padding: 0 10px; background-color:white; display:none; overflow:hidden;}
 .atright {float:right;}
 @media screen and (max-width: 400px) {#smallheader {font-size:0.7em;}}
 @media screen and (min-width: 400px) {#smallheader {font-size:1em;}}
@@ -48,6 +53,8 @@ fieldset {display:inline}
 .pad {padding:10px;}
 .hex {font-family: Courier, "Lucida Console", monospace}
 .und {text-decoration: underline;}
+.verbose {display:none;}
+.terse {display:inline;}
 #tableCurves {max-width:700px; margin-left:auto; margin-right:auto;}
 #help,#result,#status,#footer {margin: 3px; padding: 3px;}
 #comments {width:90%}
@@ -155,13 +162,13 @@ One numerical expression or loop per line. Example: x=3;x=n(x);c&lt;=100;x&#8209
 <div class="lf"></div>
 </form>
 <div id="help" aria-live="polite">
-<p>This application factors numbers or numeric expressions using fast algorithms ECM and SIQS.</p>
+<p>This application factors numbers or numeric expressions using two fast algorithms: the Elliptic Curve Method (ECM) and the Self-Initializing Quadratic Sieve (SIQS).</p>
 <p>The program uses local storage to remember the progress of the factorization, so you can complete the factorization of a large number in several sessions. Your computer will remember the state of the factorization. You only have to reload this page.</p>
-<p>The execution time depends on the magnitude of the second largest prime factor and on your computer speed.</p>
 <p>Since all calculations are performed in your computer, you can disconnect it from the Internet while the factorization is in progress. You can even start this application without Internet connection after the first run.</p>
-<p>The source code is written in C and compiled to asm.js and WebAssembly. The latter is faster, but it is not supported in all Web browsers. You can see the version while a number is being factored.</p>
+<p>The source code is written in C programming language and compiled to asm.js and WebAssembly, which are the languages used by Web navigators. The latter is faster, but it is not supported in all Web browsers. You can see the version while a number is being factored.</p>
 <p>See <a href="ECMREC.HTM" title="ECM Factorization records">factorization records</a> for this application.</p>
-<h2>Expressions</h2>
+<h2><button>Expressions</button></h2>
+<div class="panel" id="exprorig">
 <p>You can enter expressions that use the following operators, functions and parentheses:</p>
 <p>
 <ul>
@@ -173,37 +180,57 @@ One numerical expression or loop per line. Example: x=3;x=n(x);c&lt;=100;x&#8209
 <li> ^ or ** for exponentiation (the exponent must be greater than or equal to zero).
 <li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.
 <li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> for binary logic.
-<li> <strong>SHL</strong>: Shift left the number of bits specified on the right operand.
-<li> <strong>SHR</strong>: Shift right the number of bits specified on the right operand.
-<li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero).
-<li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).
-<li> <strong>B(n)</strong>: Previous probable prime before <em>n</em></li>
-<li> <strong>F(n)</strong>: Fibonacci number F<sub>n</sub>
+<li> <strong>SHL</strong>: Shift left the number of bits (multiply by the power of 2) specified on the right operand. Example: 5 SHL 3 = 40.
+<li> <strong>SHR</strong>: Shift right the number of bits (divide by the power of 2) specified on the right operand. Example: -19 SHL 2 = -5.
+<li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero). Example: 6! = 6 &times; 5 &times; 4 &times; 3 &times; 2 = 720. 
+<li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>). Example: 12# = 11 &times; 7 &times; 5 &times; 3 &times; 2 = 2310.
+<li> <strong>B(n)</strong>: Previous probable prime before <em>n</em>. Example: B(24) = 23.
+<li> <strong>F(n)</strong>: Fibonacci number F<sub>n</sub> from the sequence 0, 1, 1, 2, 3, 5, 8, 13, 21, etc. where each element equals the sum of the previous two members of the sequence. Example: F(7) = 13.
 <li> <strong>L(n)</strong>: Lucas number L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub>
-<li> <strong>N(n)</strong>: Next probable prime after <em>n</em></li>
-<li> <strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).
-<li> <strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.
-<li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.
-<li> <strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.
-<li> <strong>Totient(n)</strong>: finds the number of positive integers less than <var>n</var> which are relatively prime to <var>n</var>.
-<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is.
-<li> <strong>NumDivs(n)</strong>: Number of positive divisors of <var>n</var> either prime or composite.
-<li> <strong>SumDivs(n)</strong>: Sum of positive divisors of <var>n</var> either prime or composite.
-<li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>.
-<li> <strong>SumDigits(n,r)</strong>: Sum of digits of <var>n</var> in base <var>r</var>.
-<li> <strong>RevDigits(n,r)</strong>: finds the value obtained by writing backwards the digits of <var>n</var> in base <var>r</var>.
-<li> <strong>ConcatFact(m,n)</strong>: Concatenates the prime factors of <var>n</var> according to the mode expressed in <var>m</var> which follows this table:<br><br>
+<li> <strong>N(n)</strong>: Next probable prime after <em>n</em>. Example: N(24) = 29.
+<li> <strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order). Example: P(4) = 5 because the number 4 can be partitioned in 5 different ways: 4 = 3+1 = 2+2 = 2+1+1 = 1+1+1+1.
+<li> <strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers. Example: GCD(12, 16) = 4.
+<li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when <var>m</var> and <var>n</var> are coprime, menaning that they do not have common factors. Example: Modinv(3,7) = 5 because 3 &times; 5 &equiv; 1 (mod 7)
+<li> <strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>. Example: Modpow(3, 4, 7) = 4, because 3<sup>4</sup> &equiv; 4 (mod 7).
+<li> <strong>Totient(n)</strong>: finds the number of positive integers less than <var>n</var> which are relatively prime to <var>n</var>. Example: Totient(6) = 2 because 1 and 5 do not have common factors with 6.
+<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is. Example: IsPrime(5) = -1.
+<li> <strong>NumDivs(n)</strong>: Number of positive divisors of <var>n</var>. Example: NumDivs(28) = 6 because the divisors of 28 are 1, 2, 4, 7, 14 and 28.
+<li> <strong>SumDivs(n)</strong>: Sum of all positive divisors of <var>n</var>. Example: SumDivs(28) = 56 because 1 + 2 + 4 + 7 + 14 + 28 = 56.
+<li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>. Example: NumDigits(13, 2) = 4 because 13 in binary (base 2) is expressed as 1101.
+<li> <strong>SumDigits(n,r)</strong>: Sum of digits of <var>n</var> in base <var>r</var>. Example: SumDigits(213, 10) = 6 because the sum of the digits expressed in decimal is 2+1+3 = 6.
+<li> <strong>RevDigits(n,r)</strong>: finds the value obtained by writing backwards the digits of <var>n</var> in base <var>r</var>. Example: RevDigits(213, 10) = 312.
+<li> <strong>ConcatFact(m,n)</strong>: Concatenates the prime factors of <var>n</var> according to the mode expressed in <var>m</var> which follows this table:</li></ul>
 <table>
 <caption>ConcatFact function modes</caption>
-<tr><th scope="col">Mode</th><th scope="col">Order of factors</th><th scope="col">Repeated factors</th></tr>
-<tr><td>0</td><td>Ascending</td><td>No</td></tr>
-<tr><td>1</td><td>Descending</td><td>No</td></tr>
-<tr><td>2</td><td>Ascending</td><td>Yes</td></tr>
-<tr><td>3</td><td>Descending</td><td>Yes</td></tr>
+<tr><th scope="col">Mode</th><th scope="col">Order of factors</th><th scope="col">Repeated factors</th><th scope="col">Example</th></tr>
+<tr><td>0</td><td>Ascending</td><td>No</td><td>concatfact(0,36) = 23</td></tr>
+<tr><td>1</td><td>Descending</td><td>No</td><td>concatfact(1,36) = 32</td></tr>
+<tr><td>2</td><td>Ascending</td><td>Yes</td><td>concatfact(2,36) = 2233</td></tr>
+<tr><td>3</td><td>Descending</td><td>Yes</td><td>concatfact(3,36) = 3322</td></tr>
 </table>
-</li>
-</ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
+</div>
+<h2><button>Factoring using the Elliptic Curve Method (ECM)</button></h2>
+<div class="panel">
+<p>The notation <var>k</var> &equiv; <var>m</var> (mod <var>n</var>) means that the remainder of the division of <var>k</var> by <var>n</var> equals the remainder of the division of <var>m</var> by <var>n</var>. The number <var>n</var> is called modulus.</p>
+<p>This method computes points in elliptic curves, which are represented by formulas such as <var>y</var>&sup2; &equiv; <var>x</var>&sup3; + <var>a</var><var>x</var> + <var>b</var> (mod <var>n</var>) where <var>n</var> is the number to factor.</p>
+<p>In the next graphic you can see the points (<var>x</var>, <var>y</var>) for which <var>y</var>&sup2; &equiv; <var>x</var>&sup3; + 4<var>x</var> + 7 (mod <var>29</var>) holds.
+Since the computation use modular arithmetic (in this case using the remainder of the division by 29), the points that belong to the elliptic curve cannot be represented as a continuous line. That would be the case if the operations were performed in real numbers.
+<div class="lf"></div>
+<canvas id="ellCurve" width="313" height="313"></canvas>
+<p>Apart from the points shown above, we use another point, named O, or point at infinity.</p>
+<p>Using complex formulas, we can define a sum of points. In this way a point (<var>x</var><sub>3</sub>, <var>y</var><sub>3</sub>) that belongs to the mentioned curve can be the sum of other points (x<sub>1</sub>, y<sub>1</sub>) and (x<sub>2</sub>, y<sub>2</sub>) that also belong to the curve.</p>
+<p>A point (<var>x</var>, <var>y</var>) can be added to itself several times, obtaining a new point (<var>x<sub>4</sub></var>, <var>y</var><sub>4</sub>) that is a multiple of (<var>x</var>, <var>y</var>).</p>
+<p>When the modulus is a prime number, and 4<var>a</var>&sup3; + 27<var>b</var>&sup2; &equiv; 0 (mod <var>p</var>) is not true, the points that belong to the elliptic curve (including the point O) form a mathematical structure called group. The group order is the number of points. In the graphic we can see 31 points, so the group order is 32.
+Since O + O = O, if we multiply any point by a multiple of the group order we obtain the point O.</p>
+<p>Even though the value of the group order is difficult to find, it can be shown that it is near the prime number used as the modulus. By changing the curve, we obtain a different group, and its order also changes.</p>
+<p>In order to factor a number <var>n</var>, we have to find a multiple of the group order corresponding to any of the prime factors of <var>n</var>.
+<p>For each elliptic curve to process we try to find the point at infinity. There are two steps.</p> 
+<p>In the first step, the algorithm multiplies points by powers of different prime numbers less than a bound named B1. When computing the greatest common divisor between the coordinate <var>x</var> of the computed point and the number to factor we can obtain the prime number we are searching if all prime factors of the group order are less than B1.</p>
+<p>Using the result of the first step, the second step obtains multiples of that point up to the upper bound B2, and we multiply the coordinates x of all points found in this step. Finally we compute the gratest common divisor between the product and the number to factor. In this case we can obtain the prime number we are searching if all prime factors (except one) of the group order are less than B1 and the greatest prime factor of the group order is less than B2.</p>
+<p>If the greatest common divisor equals 1, we have to try with a different curve by changing the parameters <var>a</var> and <var>b</var> and computing an initial point (<var>x</var>, <var>y</var>) that belongs to the new curve.</p>
+<p>The program uses many optimizations that are outside the scope of this help to explain them here.</p>
+<p>The execution time depends on the magnitude of the second largest prime factor and on your computer speed.</p>
 <div class="tableCurves"><table>
 <caption>Optimal values of B1 and expected curves</caption>
 <tr><th scope="col">Digits</th><th scope="col">Values of B1</th><th scope="col">Expected curves</th></tr>
@@ -221,22 +248,41 @@ One numerical expression or loop per line. Example: x=3;x=n(x);c&lt;=100;x&#8209
 <tr><td>70</td><td>2900 000000</td><td>340000</td></tr>
 </table></div>
 <p>The program runs 25 curves with limit B1 = 2000, 300 curves with limit B1 = 50000, 1675 curves with limit B1 = 1000000 and finally it uses curves with limit B1 = 11000000 until all factors are found.</p>
-<h2>Factoring a number in several machines</h2>
+</div>
+<h2><button>Factoring a number in several machines</button></h2>
+<div class="panel">
 <p>The ECM factoring algorithm can be easily parallelized in several machines. In order to do it, run the factorization in the first computer from curve 1, run it in the second computer from curve 10000, in the third computer from curve 20000, and so on.
 In order to change the curve number when a factorization is in progress, press the button named <strong>More</strong>, type this number on the input box located on the new window and press the <strong>New Curve</strong> button.</p>
 <p>When one of the machines discovers a new factor, you should enter this factor in the other computers by typing it in the bottom-right input box and pressing Enter (or clicking the <strong>Factor</strong> button).</p>
-<h2>Factoring using the Self Initializing Quadratic Sieve (SIQS)</h2>
-<p>When the number to be factorized is in the range 31 to 95 digits, after computing some curves in order to find small factors, the program switches to SIQS (if the checkbox located below the applet enables it), which is an algorithm that is much faster than ECM when the number has two large prime factors. Since this method needs a large amount of your computer's memory, if you restart the applet the factorization begins from scratch. In order to start factoring immediately using SIQS, you can enter 0 in the New Curve box.</p>
+</div>
+<h2><button>Factoring using the Self Initializing Quadratic Sieve (SIQS)</button></h2>
+<div class="panel">
+<p>The notation <var>k</var> &equiv; <var>m</var> (mod <var>n</var>) means that the remainder of the division of <var>k</var> by <var>n</var> equals the remainder of the division of <var>m</var> by <var>n</var>. The number <var>n</var> is called modulus.</p>
+<p>Let <var>N</var> be the number to be factored. This number must not be a perfect power. If somehow we find two integers <var>X</var> and <var>Y</var> such that <var>X</var>&sup2; &equiv; <var>Y</var> (mod <var>N</var>) and <var>X</var>&ne;<var>Y</var> (mod <var>N</var>), then gcd(<var>X</var>+<var>Y</var>, <var>N</var>) will reveal a proper factor of <var>N</var>.</p>
+<p>In order to find these values <var>X</var> and <var>Y</var>, the method finds relations which have the form <var>t</var>&sup2; &equiv; <var>u</var> (mod <var>N</var>) where <var>u</var> is the product of small prime numbers. The set of these primes is the factor base. These relations will be found using sieving, which is outside the scope of this introduction.</p>
+<p>The relations found are combined using multiplications. The left hand side will always be a square because is a product of squares, so the goal is to have a square at the right hand side. A number is a square when all its prime factors appear an even number of times.
+<p>For example: let the number to factor be <var>N</var> = 1817 and we have found the following relations with factor base = {2, 7, 13}:</p>
+<p>45&sup2; &equiv; 2<sup>4</sup> &times; 7<sup>0</sup> &times; 13<sup>1</sup></p>
+<p>123&sup2; &equiv; 2<sup>10</sup> &times; 7<sup>0</sup> &times; 13<sup>1</sup></p>
+<p>Both relations have non-square RHS, since the exponent of 13 is not even. But multiplying them we get:</p>
+<p>84&sup2; &equiv; 2<sup>14</sup> &times; 13&sup2;</p>
+<p>84&sup2; &equiv; (2<sup>7</sup>&times;13)&sup2;</p>
+<p>Since 2<sup>7</sup>&times;13 &equiv; 1664 we get the factor gcd(84+1664, 1817) = 23.</p>
+<p>Which relations have to multiplied to find a square in the RHS is a linear algebra problem and it is solved using matrices.</p>
+<p>When the number to be factorized is in the range 31 to 95 digits, after computing some curves in order to find small factors, the program switches to SIQS (if the checkbox located below the applet enables it), which is an algorithm that is much faster than ECM when the number has two large prime factors.
+Since this method needs a large amount of your computer's memory to store relations, if you restart the applet the factorization begins from scratch. In order to start factoring immediately using SIQS, you can enter 0 in the New Curve box.</p>
 <table>
 <caption>Threshold for switching to SIQS</caption>
 <tr><th scope="row">Digits</th><td>31-55</td><td>56-60</td><td>61-65</td><td>66-70</td><td>71-75</td><td>76-80</td><td>81-85</td><td>86-90</td><td>91-95</td></tr>
 <tr><th scope="row">Curve</th><td>10</td><td>15</td><td>22</td><td>26</td><td>35</td><td>50</td><td>100</td><td>150</td><td>200</td></tr>
 </table>
-<h2>Configuration</h2>
+</div>
+<h2><button>Configuration</button></h2>
+<div class="panel">
 <p>You can change settings for this application by pressing the Config button when a factorization is not in progress. A new window will pop up where you can select different settings:</p>
 <ul>
 <li><strong>Digits per group</strong>: In order to improve readability, big numbers are separated by spaces forming groups of a fixed number of digits. With this input box, you can determine the number of digits in a group.</li> 
-<li><strong>Verbose mode</strong>: Not ready yet.</li>
+<li><strong>Verbose mode</strong>: It shows more information about the factors found.</li>
 <li><strong>Pretty print</strong>: If this checkbox is set, the exponents are shown in superscripts and the multiplication sign is &quot; &times; &quot;. The application also shows the number of digits for numbers with more than 30 digits.
 If the checkbox is not set, the exponents are preceded by the exponentiation sign &quot; ^ &quot; and the multiplication is indicated by asterisks. Also the number of digits is never displayed. This mode eases copying the results to other mathematical programs.</li>
 <li><strong>Hexadecimal output</strong>: If this checkbox is set, the numbers are shown in hexadecimal format instead of decimal, which is the common notation.
@@ -244,9 +290,10 @@ To enter numbers in hexadecimal format, you will need to precede them by the str
 <li><strong>Use Cunningham tables on server</strong>: When selected, if the number to be factored has the form a<sup>b</sup> &pm; 1, the application will attempt to retrieve the known factors from the Web server.
 In order to reduce the database, only factors with at least 14 digits are included, so the application will find the small factors. These factors comes from <a href="http://myfactors.mooo.com/">Jonathan Crombie list</a> and it includes 2674850 factors of Cunningham numbers.</li>
 </ul>
-<p>The configuration is saved in your device, so when you start again the Web browser, all settings remain the same.
-<p>
-<h2>Batch factorization</h2>
+<p>The configuration is saved in your device, so when you start again the Web browser, all settings remain the same.<p>
+</div>
+<h2><button>Batch factorization</button></h2>
+<div class="panel">
 <p>Write an expression per line, then press the appropriate button. The output will be placed in the lower pane.</p>
 <p>Blank lines or comment lines (which start with a numeral '#' character) will be replicated on the lower pane.</p>
 <p>Expression loop: with the following syntax you can factor or determine primality of several numbers typing only one line.
@@ -264,10 +311,13 @@ You have to type four or five expressions separated by semicolons:</p>
 The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <p>Example 2: Find the Smith numbers less than 10000. A Smith number, according to Wikipedia, is a composite number for which, in a given base (in base 10 by default), the sum of its digits is equal to the sum of the digits in its prime factorization.
 The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(concatfact(2,x),10) and not isprime(x)</code>
-<h2>Source code</h2>
+</div>
+<h2><button>Source code</button></h2>
+<div class="panel">
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.</p>
-<p>Written by Dario Alpern. Last updated 28 October 2018.</p>
+</div>
+<p>Written by Dario Alpern. Last updated 26 November 2018.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -313,7 +363,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p><input type="button" id="save-config" value="Save" /><input type="button" id="cancel-config" value="Cancel" /></p>
 </div>
 </div></div></div>
-<aside id="wizard">
+<aside id="wizard" class="pad">
 <h1>Factorization wizard</h1>
 <form class="applet">
 <fieldset id="output" class="atright">
@@ -335,50 +385,11 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <input type="button" id="cancel" value="Cancel" />
 </form>
 <h2>Expressions</h2>
-<p>You can enter expressions that use the following operators, functions and parentheses:</p>
-<p>
+<div id="exprcopy"></div>
 <ul>
-<li> + for addition
-<li> - for subtraction
-<li> * for multiplication
-<li> / for integer division
-<li> % for modulus (remainder of the integer division)
-<li> ^ or ** for exponentiation (the exponent must be greater than or equal to zero).</li>
-<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.</li>
-<li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> for binary logic.
-<li> <strong>SHL</strong>: Shift left the number of bits specified on the right operand.
-<li> <strong>SHR</strong>: Shift right the number of bits specified on the right operand.
-<li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero).</li>
-<li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).</li>
-<li> <strong>B(n)</strong>: Previous probable prime before <em>n</em></li>
-<li> <strong>F(n)</strong>: Fibonacci number F<sub>n</sub></li>
-<li> <strong>L(n)</strong>: Lucas number L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub></li>
-<li> <strong>N(n)</strong>: Next probable prime after <em>n</em></li>
-<li> <strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).</li>
-<li> <strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
-<li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
-<li> <strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
-<li> <strong>Totient(n)</strong>: finds the number of positive integers less than <var>n</var> which are relatively prime to <var>n</var>.</li>
-<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is.</li>
-<li> <strong>NumDivs(n)</strong>: Number of positive divisors of <var>n</var> either prime or composite.</li>
-<li> <strong>SumDivs(n)</strong>: Sum of positive divisors of <var>n</var> either prime or composite.</li>
-<li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>.</li>
-<li> <strong>SumDigits(n,r)</strong>: Sum of digits of <var>n</var> in base <var>r</var>.</li>
-<li> <strong>RevDigits(n,r)</strong>: finds the value obtained by writing backwards the digits of <var>n</var> in base <var>r</var>.</li>
-<li> <strong>ConcatFact(m,n)</strong>: Concatenates the prime factors of <var>n</var> according to the mode expressed in <var>m</var> which follows this table:<br><br>
-<table>
-<caption>ConcatFact function modes</caption>
-<tr><th scope="col">Mode</th><th scope="col">Order of factors</th><th scope="col">Repeated factors</th></tr>
-<tr><td>0</td><td>Ascending</td><td>No</td></tr>
-<tr><td>1</td><td>Descending</td><td>No</td></tr>
-<tr><td>2</td><td>Ascending</td><td>Yes</td></tr>
-<tr><td>3</td><td>Descending</td><td>Yes</td></tr>
-</table>
-</li>
 <li id="C">Variable <var>C</var>: number of expressions already processed.</li>
 <li id="X">Variable <var>X</var>: variable changed on each iteration of the loop.</li>
 </ul>
-<p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 </aside>
 <aside id="feedback">
 <h1>Feedback form</h1>
@@ -424,24 +435,27 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 </aside>
 <script>
 <!--
-(function(){function f(){a("next").value="Done";a("wzddesc").innerHTML="Step 1 of 1: Expression to factor";a("wzdexam").innerHTML="&nbsp;";g="";m=9}function a(a){return document.getElementById(a)}function q(c,b){a("eval").style.display=c;a("factor").style.display=c;a("config").style.display=c;a("openwizard").style.display=c;a("stop").style.display=b;a("more").style.display=b}function t(c){a("modal-more").style.display="none";n.terminate();n=0;k(c)}function l(c){n||(w?u||(u=new Blob([new Uint8Array(x)])):
-u||(u=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),n=new Worker(window.URL.createObjectURL(u)),n.onmessage=function(b){var c=b.data.substring(0,1);"9"==c&&console.log(b.data.substring(1));if("8"==c)localStorage.setItem("ecmFactors",b.data.substring(1)),localStorage.setItem("ecmCurve","");else if("7"==c)localStorage.setItem("ecmCurve",b.data.substring(1));else if("4"==c)a("status").innerHTML=
-b.data.substring(1);else if("5"==c)a("skip").style.display="1"==b.data.substring(1,2)?"block":"none";else if(a("result").innerHTML=b.data.substring(1),"2"==c||"6"==c)a("status").innerHTML="",q("inline","none"),a("modal-more").style.display="none","6"==c&&(a("cont").style.display="block")});w?n.postMessage(c):n.postMessage([c,x])}function k(c){var b;v=0+c;b=a("result");var A=a("value").value.replace(/\u2011/g,"-"),h=String.fromCharCode(0),B=a("helphelp");a("cont").style.display="none";a("help").style.display=
-"none";B.style.display="block";B.innerHTML='<p class="pad">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. Keyboard users can press CTRL+ENTER to start factorization. This is the '+(w?"asm.js":"WebAssembly")+" version.</p>";b.style.display="block";if(""==A)b.innerHTML="<p>Please type an expression.</p>";else if("undefined"===typeof Worker)b.innerHTML="<p>This calculator requires Web Workers. Please use another Web browser.</p>";
-else{q("none","inline");b.innerHTML="<p>Factoring expression...</p>";-2>c&&(v+=6);b=e+","+v+","+d+A+h+localStorage.getItem("ecmFactors");if(-1==c||-2==c)b+=","+a("curve").value;if(-3==c||-4==c)b+=";"+a("curve").value;x?l(b+h):y=b+h}}function r(){a("next").value="Next";a("wzddesc").innerHTML="Step 1 of 5: Initial value of x";a("wzdexam").innerHTML="Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>";m=1}function C(){var c=a("next"),b=a("wzddesc"),
-d=a("wzdexam"),h=a("wzdinput"),e=a("value");c.disabled=!0;switch(++m){case 2:g+="x="+h.value;a("mode").style.display="none";b.innerHTML="Step 2 of 5: Value of x for new iteration";d.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>";break;case 3:g+=";x="+h.value;b.innerHTML="Step 3 of 5: End loop condition";d.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x&lt;10000</code>";
-break;case 4:g+=";"+h.value;b.innerHTML="Step 4 of 5: Expression to factor";d.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x</code>";break;case 5:g+=";"+h.value;c.value="Done";c.disabled=!1;b.innerHTML="Step 5 of 5: Process expression condition";d.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";
-break;case 6:""!=h.value&&(g+=";"+h.value);e.value=g;m=0;a("hex").checked=a("hexW").checked;z();a("main").style.display="block";a("wizard").style.display="none";e.focus();break;default:m=0,e.value=h.value,a("hex").checked=a("hexW").checked,z(),a("main").style.display="block",a("wizard").style.display="none",e.focus()}m&&(h.value="",h.focus())}function z(){d="1"+(a("verbose").checked?"1":"0")+(a("pretty").checked?"1":"0")+(a("cunnin").checked?"1":"0")+(a("hex").checked?"1":"0");e=a("digits").value;
-localStorage.setItem("ecmConfig",e+","+d)}function D(){a("main").style.display="block";a("feedback").style.display="none";a("value").focus()}var m=0,g,n=0,x=0,v,u,e,d,y,w="undefined"===typeof WebAssembly,p=new XMLHttpRequest;p.open("GET",w?"ecmW0073.js":"ecm0073.wasm",!0);p.responseType="arraybuffer";p.onreadystatechange=function(){4==p.readyState&&200==p.status&&(x=p.response,y&&l(y))};p.send(null);addEventListener("load",function(){var c;v=0;a("value").c="off";a("eval").onclick=function(){localStorage.setItem("ecmFactors",
-"");k(0)};a("factor").onclick=function(){localStorage.setItem("ecmFactors","");k(2)};a("more").onclick=function(){a("modal-more").style.display="block"};a("config").onclick=function(){a("digits").value=e;a("verbose").checked="1"==d.substr(1,1);a("pretty").checked="1"==d.substr(2,1);a("cunnin").checked="1"==d.substr(3,1);a("hex").checked="1"==d.substr(4,1);a("modal-config").style.display="block"};a("openwizard").onclick=function(){a("main").style.display="none";a("wizard").style.display="block";a("mode").style.display=
-"block";a("oneexpr").checked=!0;a("next").disabled=!0;a("wzdinput").value="";a("wzdinput").focus();a("hexW").checked="1"==d.substr(4,1);a("decW").checked="1"!=d.substr(4,1);f()};a("wzdinput").onkeydown=function(b){if(10==b.keyCode||13==b.keyCode)b.preventDefault(),0==a("next").disabled&&C();b.altKey&&(80==b.keyCode?(b.preventDefault(),a("oneexpr").checked?(a("oneexpr").checked=!1,a("loop").checked=!0,r()):(a("oneexpr").checked=!0,a("loop").checked=!1,f())):68==b.keyCode?(b.preventDefault(),a("decW").checked=
-!0,a("hexW").checked=!1):72==b.keyCode&&(b.preventDefault(),a("decW").checked=!1,a("hexW").checked=!0));return!0};a("oneexpr").onclick=function(){f()};a("loop").onclick=function(){r()};a("next").onclick=function(){C()};a("wzdinput").oninput=function(){var b=a("wzdinput").value;a("next").disabled=""!=b?1==m||9==m||0<=b.lastIndexOf("x")||0<=b.lastIndexOf("c")||0<=b.lastIndexOf("X")||0<=b.lastIndexOf("C")?!1:!0:5==m?!1:!0};a("cancel").onclick=function(){a("main").style.display="block";a("wizard").style.display=
-"none"};a("close-config").onclick=function(){a("modal-config").style.display="none"};a("cancel-config").onclick=function(){a("modal-config").style.display="none"};a("save-config").onclick=function(){oldconfig=d;z();a("modal-config").style.display="none"};a("close-more").onclick=function(){a("modal-more").style.display="none"};a("ncurve").onclick=function(){t(-2)};a("nfactor").onclick=function(){t(-4)};a("curve").onkeypress=function(a){return 8==a.charCode||0==a.charCode?null:48<=a.charCode&&57>=a.charCode};
-a("stop").onclick=function(){n.terminate();n=0;q("inline","none");a("skip").style.display="none";a("result").innerHTML="<p>Calculation stopped by user</p>";a("status").innerHTML=""};a("value").onkeydown=function(a){10!=a.keyCode&&13!=a.keyCode||!a.ctrlKey||(a.preventDefault(),localStorage.setItem("ecmFactors",""),k(2));return!0};a("helpbtn").onclick=function(){var b=a("help").style,c=a("helphelp").style,d=a("result"),e=d.style;"block"==b.display&&""!=d.innerHTML?(b.display="none",c.display=e.display=
-"block"):(b.display="block",c.display=e.display="none")};a("skiptest").onclick=function(){a("skip").style.display="none";t(4)};a("continue").onclick=function(){a("cont").style.display="none";l("C")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){D()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\n"+a("value").value+"\n"+a("result").innerHTML+
-"\n"+a("status").innerHTML:"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),D())};b.open("POST","/sendmail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var c=a("formfeedback").elements,d="",e=0,g=0;g<c.length;g++){var f=c[g];"radio"==f.type&&0==f.checked||!f.name||(e&&(d+="&"),d+=f.name+"="+encodeURIComponent(f.value),e++)}b.send(d);return!1};
-window.onclick=function(b){var c=a("modal");b.target==c&&(c.style.display="none")};e=localStorage.getItem("ecmConfig");if(null==e||""==e)e=6,d="00100",localStorage.setItem("ecmConfig",e+","+d);else if(c=e.indexOf(","),0>c)e=6,d="00100",localStorage.setItem("ecmConfig",e+","+d);else{for(d=e.substr(c+1);5>d.length;)d+="0";e=e.substr(0,c)}if(c=localStorage.getItem("ecmFactors"))a("value").value=c.slice(0,c.indexOf("=")),a("curve").value=localStorage.getItem("ecmCurve"),k(-2),a("curve").value="";"serviceWorker"in
-navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})})})(this);addEventListener("load",function(){(function(f,a,q,t,l,k,r){f.GoogleAnalyticsObject=l;f[l]=f[l]||function(){(f[l].a=f[l].a||[]).push(arguments)};f[l].b=1*new Date;k=a.createElement(q);r=a.getElementsByTagName(q)[0];k.async=1;k.src=t;r.parentNode.insertBefore(k,r)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
+(function(){function k(){a("next").value="Done";a("wzddesc").innerHTML="Step 1 of 1: Expression to factor";a("wzdexam").innerHTML="&nbsp;";h="";n=9}function a(a){return document.getElementById(a)}function r(b,d){a("eval").style.display=b;a("factor").style.display=b;a("config").style.display=b;a("openwizard").style.display=b;a("stop").style.display=d;a("more").style.display=d}function u(b){a("modal-more").style.display="none";p.terminate();p=0;l(b)}function m(b){p||(x?v||(v=new Blob([new Uint8Array(y)])):
+v||(v=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),p=new Worker(window.URL.createObjectURL(v)),p.onmessage=function(b){var c=b.data.substring(0,1);"9"==c&&console.log(b.data.substring(1));if("8"==c)localStorage.setItem("ecmFactors",b.data.substring(1)),localStorage.setItem("ecmCurve","");else if("7"==c)localStorage.setItem("ecmCurve",b.data.substring(1));else if("4"==c)a("status").innerHTML=
+b.data.substring(1);else if("5"==c)a("skip").style.display="1"==b.data.substring(1,2)?"block":"none";else if(a("result").innerHTML=b.data.substring(1),"2"==c||"6"==c)a("status").innerHTML="",r("inline","none"),a("modal-more").style.display="none","6"==c&&(a("cont").style.display="block")});x?p.postMessage(b):p.postMessage([b,y])}function l(b){var d;w=0+b;d=a("result");var c=a("value").value.replace(/\u2011/g,"-"),e=String.fromCharCode(0),C=a("helphelp");a("cont").style.display="none";a("help").style.display=
+"none";C.style.display="block";C.innerHTML='<p class="pad">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. Keyboard users can press CTRL+ENTER to start factorization. This is the '+(x?"asm.js":"WebAssembly")+" version.</p>";d.style.display="block";if(""==c)d.innerHTML="<p>Please type an expression.</p>";else if("undefined"===typeof Worker)d.innerHTML="<p>This calculator requires Web Workers. Please use another Web browser.</p>";
+else{r("none","inline");d.innerHTML="<p>Factoring expression...</p>";-2>b&&(w+=6);d=g+","+w+","+f.substring(1)+c+e+localStorage.getItem("ecmFactors");if(-1==b||-2==b)d+=","+a("curve").value;if(-3==b||-4==b)d+=";"+a("curve").value;y?m(d+e):z=d+e}}function t(){a("next").value="Next";a("wzddesc").innerHTML="Step 1 of 5: Initial value of x";a("wzdexam").innerHTML="Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>";n=1}function D(){var b=a("next"),
+d=a("wzddesc"),c=a("wzdexam"),e=a("wzdinput"),f=a("value");b.disabled=!0;switch(++n){case 2:h+="x="+e.value;a("mode").style.display="none";d.innerHTML="Step 2 of 5: Value of x for new iteration";c.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>";break;case 3:h+=";x="+e.value;d.innerHTML="Step 3 of 5: End loop condition";c.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x&lt;10000</code>";
+break;case 4:h+=";"+e.value;d.innerHTML="Step 4 of 5: Expression to factor";c.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x</code>";break;case 5:h+=";"+e.value;b.value="Done";b.disabled=!1;d.innerHTML="Step 5 of 5: Process expression condition";c.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";
+break;case 6:""!=e.value&&(h+=";"+e.value);f.value=h;n=0;a("hex").checked=a("hexW").checked;A();a("main").style.display="block";a("wizard").style.display="none";f.focus();break;default:n=0,f.value=e.value,a("hex").checked=a("hexW").checked,A(),a("main").style.display="block",a("wizard").style.display="none",f.focus()}n&&(e.value="",e.focus())}function A(){f="1"+(a("verbose").checked?"1":"0")+(a("pretty").checked?"1":"0")+(a("cunnin").checked?"1":"0")+(a("hex").checked?"1":"0");g=a("digits").value;
+localStorage.setItem("ecmConfig",g+","+f)}function E(a){var d=document.all?document.styleSheets[0].rules:document.styleSheets[0].cssRules,c,e=d.length;for(c=0;c<e;c++)".verbose"===d[c].selectorText&&(d[c].style.display=a?"inline":"none"),".terse"===d[c].selectorText&&(d[c].style.display=a?"none":"inline")}function F(){a("main").style.display="block";a("feedback").style.display="none";a("value").focus()}var B=[0,6,2,9,4,0,5,6,7,1,8,0,13,9,14,9,15,7,16,7,17,0,18,13,20,5,22,10,23,12,24,6,27,7],n=0,h,
+p=0,y=0,w,v,g,f,z,x="undefined"===typeof WebAssembly,q=new XMLHttpRequest;q.open("GET",x?"ecmW0077.js":"ecm0077.wasm",!0);q.responseType="arraybuffer";q.onreadystatechange=function(){4==q.readyState&&200==q.status&&(y=q.response,z&&m(z))};q.send(null);addEventListener("load",function(){var b;w=0;a("value").c="off";a("eval").onclick=function(){localStorage.setItem("ecmFactors","");l(0)};a("factor").onclick=function(){localStorage.setItem("ecmFactors","");l(2)};a("more").onclick=function(){a("modal-more").style.display=
+"block"};a("config").onclick=function(){a("digits").value=g;a("verbose").checked="1"==f.substr(1,1);a("pretty").checked="1"==f.substr(2,1);a("cunnin").checked="1"==f.substr(3,1);a("hex").checked="1"==f.substr(4,1);a("modal-config").style.display="block"};a("openwizard").onclick=function(){a("main").style.display="none";a("wizard").style.display="block";a("mode").style.display="block";a("oneexpr").checked=!0;a("next").disabled=!0;a("wzdinput").value="";a("wzdinput").focus();a("hexW").checked="1"==
+f.substr(4,1);a("decW").checked="1"!=f.substr(4,1);k()};a("wzdinput").onkeydown=function(e){if(10==e.keyCode||13==e.keyCode)e.preventDefault(),0==a("next").disabled&&D();e.altKey&&(80==e.keyCode?(e.preventDefault(),a("oneexpr").checked?(a("oneexpr").checked=!1,a("loop").checked=!0,t()):(a("oneexpr").checked=!0,a("loop").checked=!1,k())):68==e.keyCode?(e.preventDefault(),a("decW").checked=!0,a("hexW").checked=!1):72==e.keyCode&&(e.preventDefault(),a("decW").checked=!1,a("hexW").checked=!0));return!0};
+a("oneexpr").onclick=function(){k()};a("loop").onclick=function(){t()};a("next").onclick=function(){D()};a("wzdinput").oninput=function(){var e=a("wzdinput").value;a("next").disabled=""!=e?1==n||9==n||0<=e.lastIndexOf("x")||0<=e.lastIndexOf("c")||0<=e.lastIndexOf("X")||0<=e.lastIndexOf("C")?!1:!0:5==n?!1:!0};a("cancel").onclick=function(){a("main").style.display="block";a("wizard").style.display="none"};a("close-config").onclick=function(){a("modal-config").style.display="none"};a("cancel-config").onclick=
+function(){a("modal-config").style.display="none"};a("save-config").onclick=function(){oldconfig=f;A();E(a("verbose").checked);a("modal-config").style.display="none"};a("close-more").onclick=function(){a("modal-more").style.display="none"};a("ncurve").onclick=function(){u(-2)};a("nfactor").onclick=function(){u(-4)};a("curve").onkeypress=function(a){return 8==a.charCode||0==a.charCode?null:48<=a.charCode&&57>=a.charCode};a("stop").onclick=function(){p.terminate();p=0;r("inline","none");a("skip").style.display=
+"none";a("result").innerHTML="<p>Calculation stopped by user</p>";a("status").innerHTML=""};a("value").onkeydown=function(a){10!=a.keyCode&&13!=a.keyCode||!a.ctrlKey||(a.preventDefault(),localStorage.setItem("ecmFactors",""),l(2));return!0};a("helpbtn").onclick=function(){var b=a("help").style,c=a("helphelp").style,d=a("result"),f=d.style;"block"==b.display&&""!=d.innerHTML?(b.display="none",c.display=f.display="block"):(b.display="block",c.display=f.display="none")};a("skiptest").onclick=function(){a("skip").style.display=
+"none";u(4)};a("continue").onclick=function(){a("cont").style.display="none";m("C")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){F()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\n"+a("value").value+"\n"+a("result").innerHTML+"\n"+a("status").innerHTML:"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&
+(200==b.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),F())};b.open("POST","/sendmail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var c=a("formfeedback").elements,d="",f=0,g=0;g<c.length;g++){var h=c[g];"radio"==h.type&&0==h.checked||!h.name||(f&&(d+="&"),d+=h.name+"="+encodeURIComponent(h.value),f++)}b.send(d);return!1};window.onclick=function(b){var c=a("modal");b.target==c&&(c.style.display="none")};b=document.querySelectorAll("h2");
+var d;for(d=0;d<b.length;d++)b[d].addEventListener("click",function(){this.children[0].classList.toggle("active");var a=this.nextElementSibling;a.style.display="block"===a.style.display?"none":"block"});document.getElementById("exprcopy").innerHTML=document.getElementById("exprorig").innerHTML;var c=document.getElementById("ellCurve").getContext("2d");c.fillStyle="#FFFFFF";c.fillRect(0,0,313,313);c.fillStyle="#000000";c.strokeStyle="#808000";c.fillRect(20,0,290,290);for(b=0;290>=b;b+=10)c.moveTo(20+
+b,0),c.lineTo(20+b,290),c.stroke(),c.moveTo(20,b),c.lineTo(310,b),c.stroke();c.fillStyle="#00C000";for(ctr=0;ctr<B.length;ctr+=2)b=B[ctr],d=B[ctr+1],c.fillRect(10*b+21,10*(28-d)+1,9,9),0!=d&&c.fillRect(10*b+21,10*(d-1)+1,9,9);c.fillStyle="#000000";c.font="15px 'Times New Roman'";c.fillText("0",5,291);c.fillText("0",20,308);c.fillText("28",0,11);c.fillText("28",297,308);c.font="italic "+c.font;c.fillText("y",5,150);c.fillText("x",160,308);g=localStorage.getItem("ecmConfig");if(null==g||""==g)g=6,f=
+"00100",localStorage.setItem("ecmConfig",g+","+f);else if(b=g.indexOf(","),0>b)g=6,f="00100",localStorage.setItem("ecmConfig",g+","+f);else{for(f=g.substr(b+1);5>f.length;)f+="0";g=g.substr(0,b);E("1"==f.substr(1,1))}if(b=localStorage.getItem("ecmFactors"))a("value").value=b.slice(0,b.indexOf("=")),a("curve").value=localStorage.getItem("ecmCurve"),l(-2),a("curve").value="";"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})})})(this);
+addEventListener("load",function(){(function(k,a,r,u,m,l,t){k.GoogleAnalyticsObject=m;k[m]=k[m]||function(){(k[m].a=k[m].a||[]).push(arguments)};k[m].b=1*new Date;l=a.createElement(r);t=a.getElementsByTagName(r)[0];l.async=1;l.src=u;t.parentNode.insertBefore(l,t)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
 //-->
 </script>
 <script type="text/js-worker">
