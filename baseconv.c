@@ -21,6 +21,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include <stdio.h>
 #include <math.h>
+#include <stdint.h>
 
 #define DIGITS_PER_LIMB 9
 #define MAX_LIMB_CONVERSION 1000000000
@@ -103,6 +104,32 @@ void int2dec(char **pOutput, int nbr)
     int digit;
 
     digit = value/div;
+    if (digit > 0 || significantZero != 0)
+    {
+      significantZero = 1;
+      *ptrOutput++ = (char)(digit + (int)'0');
+    }
+    value %= div;
+    div /= 10;
+  }
+  if (significantZero == 0)
+  {
+    *ptrOutput++ = '0';
+  }
+  *pOutput = ptrOutput;
+}
+
+void long2dec(char **pOutput, uint64_t nbr)
+{
+  char *ptrOutput = *pOutput;
+  int significantZero = 0;
+  uint64_t div = 1000000000000000000ll;
+  uint64_t value = (uint64_t)nbr;
+  while (div > 0)
+  {
+    int digit;
+
+    digit = value / div;
     if (digit > 0 || significantZero != 0)
     {
       significantZero = 1;

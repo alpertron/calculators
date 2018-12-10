@@ -24,7 +24,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "factor.h"
 
 #ifdef __EMSCRIPTEN__
-extern long long lModularMult;
+extern int64_t lModularMult;
 #endif
 
 static BigInteger groupOrder, subGroupOrder, powSubGroupOrder, powSubGroupOrderBak;

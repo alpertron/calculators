@@ -29,6 +29,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 extern char lowerText[], *ptrLowerText;
 char *ptrSIQSStrings;
 int startSieveTenths;
+int64_t SIQSModMult;
 #endif
 
 #ifdef _USING64BITS_
@@ -39,6 +40,14 @@ typedef double BIG;
 #define FLOOR floor
 #endif
 
+int smoothsFound;
+int totalPartials;
+int partialsFound;
+int trialDivisions;
+uint64_t ValuesSieved;
+int congruencesFound;
+int polynomialsSieved;
+int nbrPartials;
 unsigned char SIQSInfoText[300];
 int numberThreads = 1;
 extern int NumberLength;
@@ -1242,7 +1251,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                     if (nbr < dDivid)
                     {
                       if (median == left &&
-                        common.siqs.congruencesFound >= common.siqs.matrixBLength)
+                        congruencesFound >= common.siqs.matrixBLength)
                       {
                         return 0;
                       }
@@ -1544,7 +1553,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                     if (nbr < Divisor)
                     {
                       if (median == left &&
-                        common.siqs.congruencesFound >= common.siqs.matrixBLength)
+                        congruencesFound >= common.siqs.matrixBLength)
                       {
                         return 0;
                       }
@@ -1634,7 +1643,7 @@ static void SmoothRelationFound(
 {
   int index;
   int nbrSquares;
-  if (common.siqs.congruencesFound == common.siqs.matrixBLength)
+  if (congruencesFound == common.siqs.matrixBLength)
   {
     return;            // All congruences already found.
   }
@@ -1671,7 +1680,7 @@ static void SmoothRelationFound(
   }
   if (InsertNewRelation(rowMatrixB, biT, biU, biR, NumberLength))
   {
-    common.siqs.smoothsFound++;
+    smoothsFound++;
     ShowSIQSStatus();
   }
   return;
@@ -1704,12 +1713,12 @@ static void PartialRelationFound(
   int nbrColumns;
   PrimeTrialDivisionData *rowPrimeTrialDivisionData;
 
-  if (common.siqs.congruencesFound == common.siqs.matrixBLength)
+  if (congruencesFound == common.siqs.matrixBLength)
   {
     return;
   }
   // Partial relation found.
-  common.siqs.totalPartials++;
+  totalPartials++;
   // Check if there is already another relation with the same
   // factor outside the prime base.
   // Calculate hash index
@@ -1892,7 +1901,7 @@ static void PartialRelationFound(
       if (rowMatrixB[0] > 1 &&
         InsertNewRelation(rowMatrixB, biT, biU, biR, NumberLength))
       {
-        common.siqs.partialsFound++;
+        partialsFound++;
         ShowSIQSStatus();
       }
       return;
@@ -1905,18 +1914,18 @@ static void PartialRelationFound(
   } /* end while */
 //  synchronized(firstPrimeSieveData)
   {
-    if (hashIndex == -1 && common.siqs.nbrPartials < MAX_PRIMES * 8)
+    if (hashIndex == -1 && nbrPartials < MAX_PRIMES * 8)
     { // No match and partials table is not full.
       // Add partial to table of partials.
       if (prev >= 0)
       {
-        common.siqs.matrixPartial[prev][1] = common.siqs.nbrPartials;
+        common.siqs.matrixPartial[prev][1] = nbrPartials;
       }
       else
       {
-        common.siqs.matrixPartialHashIndex[(newDivid & 0xFFE) >> 1] = common.siqs.nbrPartials;
+        common.siqs.matrixPartialHashIndex[(newDivid & 0xFFE) >> 1] = nbrPartials;
       }
-      rowPartial = common.siqs.matrixPartial[common.siqs.nbrPartials];
+      rowPartial = common.siqs.matrixPartial[nbrPartials];
       // Add all elements of aindex array to the rowMatrixB array discarding
       // duplicates.
       mergeArrays(common.siqs.aindex, common.siqs.nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
@@ -1951,7 +1960,7 @@ static void PartialRelationFound(
         rowPartial[index + 2] = (int)biT[index];
       }
       rowPartial[squareRootSize + 2] = (int)common.siqs.oldSeed;
-      common.siqs.nbrPartials++;
+      nbrPartials++;
     }
   }               // End synchronized block.
   return;
@@ -1972,11 +1981,7 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   int Divid;
   int nbrColumns;
 
-  common.siqs.trialDivisions++;
-  if (common.siqs.trialDivisions == 496)
-  {
-    common.siqs.trialDivisions = 496;
-  }
+  trialDivisions++;
   MultBigNbrByInt(common.siqs.biQuadrCoeff, index2 - common.siqs.SieveLimit, biT,
     NumberLength);                                      // Ax
   AddBigNbrB(biT, biLinearCoeff, biT, NumberLength);    // Ax+B
@@ -2108,14 +2113,14 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   double dNumberToFactor, dlogNumberToFactor;
   origNumberLength = NumberLength;
   common.siqs.nbrThreadFinishedPolySet = 0;
-  common.siqs.trialDivisions = 0;
-  common.siqs.smoothsFound = 0;
-  common.siqs.totalPartials = 0;
-  common.siqs.partialsFound = 0;
-  common.siqs.ValuesSieved = 0;
-  common.siqs.congruencesFound = 0;
-  common.siqs.polynomialsSieved = 0;
-  common.siqs.nbrPartials = 0;
+  trialDivisions = 0;
+  smoothsFound = 0;
+  totalPartials = 0;
+  partialsFound = 0;
+  ValuesSieved = 0;
+  congruencesFound = 0;
+  polynomialsSieved = 0;
+  nbrPartials = 0;
   common.siqs.newSeed = 0;
 
 //  threadArray = new Thread[numberThreads];
@@ -2492,7 +2497,7 @@ void ShowSIQSStatus(void)
   if (elapsedTime / 10 != oldTimeElapsed / 10)
   {
     oldTimeElapsed = elapsedTime;
-    ShowSIQSInfo((elapsedTime - startSieveTenths)/10, common.siqs.congruencesFound,
+    ShowSIQSInfo((elapsedTime - startSieveTenths)/10, congruencesFound,
       common.siqs.matrixBLength, elapsedTime / 10);
   }
 #endif
@@ -2691,7 +2696,7 @@ static unsigned char InsertNewRelation(
   int lenDivisor;
   int nbrColumns = rowMatrixB[LENGTH_OFFSET];
   // Insert it only if it is different from previous relations.
-  if (common.siqs.congruencesFound >= common.siqs.matrixBLength)
+  if (congruencesFound >= common.siqs.matrixBLength)
   {                   // Discard excess congruences.
     return TRUE;
   }
@@ -2716,7 +2721,7 @@ static unsigned char InsertNewRelation(
 #endif
   // Check whether this relation is already in the matrix.
   int *curRowMatrixB = common.siqs.matrixB[0];
-  for (i = 0; i < common.siqs.congruencesFound; i++)
+  for (i = 0; i < congruencesFound; i++)
   {
     if (nbrColumns == *(curRowMatrixB + LENGTH_OFFSET))
     {
@@ -2770,9 +2775,9 @@ static unsigned char InsertNewRelation(
   MultBigNbrModN(biU, biT, biR, common.siqs.Modulus, lenDivisor);
 
   // Add relation to matrix B.
-  memcpy(common.siqs.matrixB[common.siqs.congruencesFound], &rowMatrixB[0], nbrColumns * sizeof(int));
-  memcpy(common.siqs.vectLeftHandSide[common.siqs.congruencesFound], biR, NumberLengthMod * sizeof(int));
-  common.siqs.congruencesFound++;
+  memcpy(common.siqs.matrixB[congruencesFound], &rowMatrixB[0], nbrColumns * sizeof(int));
+  memcpy(common.siqs.vectLeftHandSide[congruencesFound], biR, NumberLengthMod * sizeof(int));
+  congruencesFound++;
 #if DEBUG_SIQS
   {
     char *ptrOutput = output;
@@ -3545,7 +3550,7 @@ static void sieveThread(BigInteger *result)
       //synchronized(amodq)
       {
         common.siqs.nbrThreadFinishedPolySet++;
-        if (common.siqs.congruencesFound >= common.siqs.matrixBLength/* || common.siqs.factorSiqs != null*/)
+        if (congruencesFound >= common.siqs.matrixBLength/* || common.siqs.factorSiqs != null*/)
         {
           if (common.siqs.nbrThreadFinishedPolySet < polySet * numberThreads)
           {
@@ -3819,7 +3824,7 @@ static void sieveThread(BigInteger *result)
         }
       }
 #endif
-      if (/*common.siqs.factorSiqs != null ||*/ common.siqs.congruencesFound >= common.siqs.matrixBLength)
+      if (/*common.siqs.factorSiqs != null ||*/ congruencesFound >= common.siqs.matrixBLength)
       {
         if (common.siqs.nbrThreadFinishedPolySet > numberThreads*polySet)
         {
@@ -3978,7 +3983,7 @@ static void sieveThread(BigInteger *result)
       }
       do
       {                       // For each polynomial...
-        if (common.siqs.congruencesFound >= common.siqs.matrixBLength /*|| common.siqs.factorSiqs != null*/)
+        if (congruencesFound >= common.siqs.matrixBLength /*|| common.siqs.factorSiqs != null*/)
         {
           if (common.siqs.nbrThreadFinishedPolySet > numberThreads*polySet)
           {
@@ -3990,10 +3995,7 @@ static void sieveThread(BigInteger *result)
           }
           return;             // Another thread finished factoring.
         }
-        if (common.siqs.onlyFactoring)
-        {
-          common.siqs.polynomialsSieved += 2;
-        }
+        polynomialsSieved += 2;
         /***************/
         /* Sieve stage */
         /***************/
@@ -4001,7 +4003,7 @@ static void sieveThread(BigInteger *result)
           PolynomialIndex,
           biLinearCoeff,
           NumberLength);
-        common.siqs.ValuesSieved += 2 * common.siqs.SieveLimit;
+        ValuesSieved += 2 * common.siqs.SieveLimit;
         /************************/
         /* Trial division stage */
         /************************/
@@ -4022,7 +4024,7 @@ static void sieveThread(BigInteger *result)
             {
               if ((SieveArray[index2 + i] & 0x80) != 0)
               {
-                if (common.siqs.congruencesFound >= common.siqs.matrixBLength)
+                if (congruencesFound >= common.siqs.matrixBLength)
                 {       // All congruences were found: stop sieving.
                   index2 = 0;
                   break;
@@ -4035,7 +4037,7 @@ static void sieveThread(BigInteger *result)
                   biDividend, NumberLength, biT,
                   biLinearCoeff, biR, biU, biV,
                   indexFactorsA, FALSE);
-                if (common.siqs.congruencesFound >= common.siqs.matrixBLength)
+                if (congruencesFound >= common.siqs.matrixBLength)
                 {               // All congruences were found: stop sieving.
                   index2 = 0;
                   break;
@@ -4043,7 +4045,7 @@ static void sieveThread(BigInteger *result)
               }
               if (SieveArray[index2 + i] < 0)
               {
-                if (common.siqs.congruencesFound >= common.siqs.matrixBLength)
+                if (congruencesFound >= common.siqs.matrixBLength)
                 {       // All congruences were found: stop sieving.
                   index2 = 0;
                   break;
@@ -4056,7 +4058,7 @@ static void sieveThread(BigInteger *result)
                   biDividend, NumberLength, biT,
                   biLinearCoeff, biR, biU, biV,
                   indexFactorsA, TRUE);
-                if (common.siqs.congruencesFound >= common.siqs.matrixBLength)
+                if (congruencesFound >= common.siqs.matrixBLength)
                 {               // All congruences were found: stop sieving.
                   index2 = 0;
                   break;
@@ -4070,7 +4072,7 @@ static void sieveThread(BigInteger *result)
         /*******************/
         PolynomialIndex += 2;
       } while (PolynomialIndex <= lastPolynomial &&
-        common.siqs.congruencesFound < common.siqs.matrixBLength);
+        congruencesFound < common.siqs.matrixBLength);
     }
 #if 0
   }

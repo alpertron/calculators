@@ -74,11 +74,13 @@ extern int percentageBPSW;
 #endif
 
 #include "expression.h"
+#include <stdint.h>
 void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen);
 void squareRoot(limb *argument, limb *sqRoot, int len, int *pLenSqRoot);
 void Dec2Bin(char *decimal, limb *binary, int digits, int *bitGroups);
 void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLen);
 void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLen);
+void long2dec(char **pOutput, uint64_t nbr);
 void int2dec(char **pOutput, int nbr);
 void int2hex(char **pOutput, int nbr);
 void GetMontgomeryParms(int len);

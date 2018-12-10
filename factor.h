@@ -35,6 +35,24 @@ struct sFactors
 extern int StepECM;
 #endif
 
+extern int64_t primeModMult;
+extern int64_t SIQSModMult;
+extern int timePrimalityTests;
+extern int timeSIQS;
+extern int timeECM;
+extern int nbrPrimalityTests;
+extern int nbrSIQS;
+extern int nbrECM;
+
+extern int trialDivisions;
+extern int smoothsFound;
+extern int totalPartials;
+extern int partialsFound;
+extern uint64_t ValuesSieved;
+extern int congruencesFound;
+extern int polynomialsSieved;
+extern int nbrPartials;
+
 extern char tofactorDec[MAX_LEN*12];
 extern char prettyprint, cunningham, hexadecimal;
 extern struct sFactors stFactors[MAX_FACTORS];

@@ -33,7 +33,7 @@ char upperText[MAX_LEN*16];
 char lowerText[MAX_LEN*16];
 char *ptrLowerText;
 extern mmCback modmultCallback;
-extern long long lModularMult;
+extern int64_t lModularMult;
 extern char *ptrInputText;
 #endif
 
@@ -46,8 +46,15 @@ extern char *ptrInputText;
 #define TYP_EC       400000000
 
 union uCommon common;
+int64_t primeModMult;
 int StepECM;
 int skipPrimality;
+int nbrECM;
+int nbrPrimalityTests;
+int nbrSIQS;
+int timeECM;
+int timePrimalityTests;
+int timeSIQS;
 static int nbrPrimes, indexPrimes, DegreeAurif, NextEC;
 static BigInteger power, prime;
 int *factorArr[FACTOR_ARRSIZE];
@@ -1782,7 +1789,17 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
     enum eEcmResult ecmResp = ecmCurve(N);
     if (ecmResp == CHANGE_TO_SIQS)
     {    // Perform SIQS
+#ifdef __EMSCRIPTEN__
+      double originalTenths = tenths();
+      uint64_t oldModularMult = lModularMult;
+#endif
       FactoringSIQS(TestNbr, common.ecm.GD);
+#ifdef __EMSCRIPTEN__
+      SIQSModMult += lModularMult - oldModularMult;
+      timeSIQS += (int)(tenths() - originalTenths);
+      nbrSIQS++;
+#endif
+
       break;
     }
     else if (ecmResp == FACTOR_FOUND)
@@ -2302,6 +2319,15 @@ static int getNextInteger(char **ppcFactors, int *result, char delimiter)
 static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
 {
   int randomBase = 0;
+#ifdef __EMSCRIPTEN__
+  timePrimalityTests = 0;  // Reset to zero all timings.
+  timeSIQS = 0;
+  timeECM = 0;
+  nbrPrimalityTests = 0;   // Reset to zero all counters.
+  nbrSIQS = 0;
+  nbrECM = 0;
+  SIQSModMult = 0;
+#endif
   int factorsFound = FALSE;
   int nbrLimbsQ, countdown, ctr;
   int nbrLimbs = pValue->nbrLimbs;
@@ -2420,6 +2446,15 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
   GetYieldFrequency();
 #ifdef __EMSCRIPTEN__
   oldTimeElapsed = 0;
+  lModularMult = 0;
+  SIQSModMult = 0;
+  primeModMult = 0;
+  nbrECM = 0;
+  nbrSIQS = 0;
+  nbrPrimalityTests = 0;
+  timeECM = 0;
+  timePrimalityTests = 0;
+  timeSIQS = 0;
   originalTenthSecond = tenths();
   modmultCallback = showECMStatus;   // Set callback.
 #endif
@@ -2688,9 +2723,12 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
       {
         startSkipTest();
       }
+      uint64_t oldModularMult = lModularMult;
 #endif
       result = BpswPrimalityTest(&prime, pstFactors);
 #ifdef __EMSCRIPTEN__
+      nbrPrimalityTests++;
+      primeModMult += lModularMult - oldModularMult;
       if (prime.nbrLimbs > 3322 / BITS_PER_GROUP)  // 3322 = 1000*log_2(10) -> 1000 digits
       {
         endSkipTest();
@@ -2712,7 +2750,14 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
         continue;
       }
     }
+#ifdef __EMSCRIPTEN__
+    double originalTenths = tenths();
+#endif
     ecm(&prime, pstFactors);          // Factor number.
+#ifdef __EMSCRIPTEN__
+    nbrECM++;
+    timeECM += (int)(tenths() - originalTenths);
+#endif
     // Check whether GD is not one. In this case we found a proper factor.
     for (ctr = 1; ctr < NumberLength; ctr++)
     {

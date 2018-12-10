@@ -27,7 +27,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef __EMSCRIPTEN__
 extern int skipPrimality;
-extern long long lModularMult;
+extern int64_t lModularMult;
 #endif
 extern BigInteger tofactor;
 static BigInteger Quad1, Quad2, Quad3, Quad4;
@@ -567,6 +567,7 @@ static void ShowFourSquares(char **pptrOutput)
 void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
 {
 #ifdef __EMSCRIPTEN__
+  int64_t sumSquaresModMult;
   char *ptrText;
 #endif
   char *ptrOutput;
@@ -595,14 +596,152 @@ void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
         strcpy(ptrText, lang ? "<p>Hallando suma de cuadrados.</p>" :
           "<p>Searching for sum of squares.</p>");
         ShowLowerText();
+        sumSquaresModMult = lModularMult;
 #endif
         ComputeFourSquares(astFactorsMod);
         ShowFourSquares(&ptrOutput);
 #ifdef __EMSCRIPTEN__
+        sumSquaresModMult = lModularMult - sumSquaresModMult;
         StepECM = 0;   // Do not show progress.
 #endif
       }
       showElapsedTime(&ptrOutput);
+#ifdef __EMSCRIPTEN__
+      if (lModularMult >= 0)
+      {
+        strcpy(ptrOutput, lang?"<p>Multiplicaciones modulares:</p><ul>" :
+          "<p>Modular multiplications:</p><ul>");
+        ptrOutput += strlen(ptrOutput);
+        if (lModularMult - primeModMult - SIQSModMult - sumSquaresModMult > 0)
+        {
+          strcpy(ptrOutput, "<li>ECM: ");
+          ptrOutput += strlen(ptrOutput);
+          long2dec(&ptrOutput, lModularMult - primeModMult - SIQSModMult - sumSquaresModMult);
+          strcpy(ptrOutput, "</li>");
+          ptrOutput += strlen(ptrOutput);
+        }
+        if (primeModMult > 0)
+        {
+          strcpy(ptrOutput, lang ? "<li>Verificación de números primos probables: " :
+            "<li>Probable prime checking: ");
+          ptrOutput += strlen(ptrOutput);
+          long2dec(&ptrOutput, primeModMult);
+          strcpy(ptrOutput, "</li>");
+          ptrOutput += strlen(ptrOutput);
+        }
+        if (SIQSModMult > 0)
+        {
+          strcpy(ptrOutput, "<li>SIQS: ");
+          ptrOutput += strlen(ptrOutput);
+          long2dec(&ptrOutput, SIQSModMult);
+          strcpy(ptrOutput, "</li>");
+          ptrOutput += strlen(ptrOutput);
+        }
+        if (sumSquaresModMult > 0)
+        {
+          strcpy(ptrOutput, lang? "<li>Suma de cuadrados: ": "<li>Sum of squares: ");
+          ptrOutput += strlen(ptrOutput);
+          long2dec(&ptrOutput, sumSquaresModMult);
+          strcpy(ptrOutput, "</li>");
+          ptrOutput += strlen(ptrOutput);
+        }
+        strcpy(ptrOutput, "</ul>");
+        ptrOutput += strlen(ptrOutput);
+      }
+      if (nbrSIQS > 0)
+      {
+        strcpy(ptrOutput, "<p>SIQS:<ul><li>");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, polynomialsSieved);
+        strcpy(ptrOutput, lang? " polinomios utilizados": " polynomials sieved");
+        ptrOutput += strlen(ptrOutput);
+        strcpy(ptrOutput, "</li><li>");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, trialDivisions);
+        strcpy(ptrOutput, lang ? " conjuntos de divisiones de prueba" : " sets of trial divisions");
+        ptrOutput += strlen(ptrOutput);
+        strcpy(ptrOutput, "</li><li>");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, smoothsFound);
+        strcpy(ptrOutput, lang ? " congruencias completas (1 de cada " :
+          " smooth congruences found (1 out of every ");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, ValuesSieved / smoothsFound);
+        strcpy(ptrOutput, lang? " valores)</li><li>": " values)</li><li>");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, totalPartials);
+        strcpy(ptrOutput, lang ? " congruencias parciales (1 de cada " :
+          " partial congruences found (1 out of every ");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, ValuesSieved / totalPartials);
+        strcpy(ptrOutput, lang ? " valores)</li><li>" : " values)</li><li>");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, partialsFound);
+        strcpy(ptrOutput, lang ? " congruencias parciales útiles</li></ul>" :
+          " useful partial congruences</li></ul>");
+        ptrOutput += strlen(ptrOutput);
+      }
+      if (nbrSIQS > 0 || nbrECM > 0 || nbrPrimalityTests > 0)
+      {
+        strcpy(ptrOutput, lang ? "<p>Tiempos:<ul>" : "<p>Timings:<ul>");
+        ptrOutput += strlen(ptrOutput);
+        if (nbrPrimalityTests > 0)
+        {
+          strcpy(ptrOutput, lang ? "<li>Test de primo probable de " : "<li>Probable prime test of ");
+          ptrOutput += strlen(ptrOutput);
+          int2dec(&ptrOutput, nbrPrimalityTests);
+          strcpy(ptrOutput, lang ? " número" : " number");
+          ptrOutput += strlen(ptrOutput);
+          if (nbrPrimalityTests != 1)
+          {
+            *ptrOutput++ = 's';
+          }
+          *ptrOutput++ = ':';
+          *ptrOutput++ = ' ';
+          GetDHMSt(&ptrOutput, timePrimalityTests);
+          strcpy(ptrOutput, "</li>");
+          ptrOutput += strlen(ptrOutput);
+        }
+        if (nbrECM > 0)
+        {
+          strcpy(ptrOutput, lang ? "<li>Factorización " : "<li>Factoring ");
+          ptrOutput += strlen(ptrOutput);
+          int2dec(&ptrOutput, nbrECM);
+          strcpy(ptrOutput, lang ? " número" : " number");
+          ptrOutput += strlen(ptrOutput);
+          if (nbrECM != 1)
+          {
+            *ptrOutput++ = 's';
+          }
+          strcpy(ptrOutput, lang ? " mediante ECM" : " using ECM:");
+          ptrOutput += strlen(ptrOutput);
+          *ptrOutput++ = ' ';
+          GetDHMSt(&ptrOutput, timeECM - timeSIQS);
+          strcpy(ptrOutput, "</li>");
+          ptrOutput += strlen(ptrOutput);
+        }
+        if (nbrSIQS > 0)
+        {
+          strcpy(ptrOutput, lang ? "<li>Factorización " : "<li>Factoring ");
+          ptrOutput += strlen(ptrOutput);
+          int2dec(&ptrOutput, nbrSIQS);
+          strcpy(ptrOutput, lang ? " número" : " number");
+          ptrOutput += strlen(ptrOutput);
+          if (nbrSIQS != 1)
+          {
+            *ptrOutput++ = 's';
+          }
+          strcpy(ptrOutput, lang ? " mediante SIQS" : " using SIQS:");
+          ptrOutput += strlen(ptrOutput);
+          *ptrOutput++ = ' ';
+          GetDHMSt(&ptrOutput, timeSIQS);
+          strcpy(ptrOutput, "</li>");
+          ptrOutput += strlen(ptrOutput);
+        }
+        strcpy(ptrOutput, "</ul>");
+        ptrOutput += strlen(ptrOutput);
+      }
+#endif
     }
   }
   strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :

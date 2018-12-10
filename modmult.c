@@ -37,7 +37,9 @@ static limb aux5[MAX_LEN], aux6[MAX_LEN];
 static limb resultModOdd[MAX_LEN], resultModPower2[MAX_LEN];
 static int NumberLength2;
 int NumberLength, NumberLengthR1;
-long long lModularMult;
+#ifdef __EMSCRIPTEN__
+int64_t lModularMult;
+#endif
 mmCback modmultCallback;
 static limb U[MAX_LEN], V[MAX_LEN], R[MAX_LEN], S[MAX_LEN];
 static limb Ubak[MAX_LEN], Vbak[MAX_LEN];

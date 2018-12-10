@@ -50,15 +50,7 @@ typedef struct
 struct stSiqs
 {
   int matrixBLength;
-  long trialDivisions;
-  long smoothsFound;
-  long totalPartials;
-  long partialsFound;
-  long ValuesSieved;
   int nbrFactorBasePrimes;
-  int congruencesFound;
-  long polynomialsSieved;
-  int nbrPartials;
   int multiplier;
   int nbrFactorsA;
   int afact[MAX_NBR_FACTORS];
@@ -103,7 +95,6 @@ struct stSiqs
   int matrixRows, matrixCols;
   PrimeSieveData *firstPrimeSieveData;
   BigInteger TempResult;
-  unsigned char onlyFactoring;
   unsigned char logar2;
   char threshold;
 };
