@@ -105,6 +105,27 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
   double invSqrt;
   int currLimb;
 
+  // If the number of limbs is even and the upper half of the number has all
+  // limbs set to MAX_VALUE_LIMB, there could be overflow. Set the square root directly.
+  if ((len & 1) == 0)
+  {      // Even number of limbs.
+    for (index = len / 2; index < len; index++)
+    {
+      if ((argument + index)->x != MAX_VALUE_LIMB)
+      {
+        break;
+      }
+    }
+    if (index == len)
+    {   // Set square root and go out.
+      for (index = len / 2-1; index >= 0; index--)
+      {
+        (sqRoot + index)->x = MAX_VALUE_LIMB;
+      }
+      *pLenSqRoot = len / 2;
+      return;
+    }
+  }
   // Obtain logarithm of 2 of argument.
   for (index=len - 1; index>2; index--)
   {
