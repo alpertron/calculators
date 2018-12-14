@@ -1113,6 +1113,7 @@ static int ComputeConcatFact(void)
   {
     int ctr;
     pstFactor = &astFactorsMod[descend ? nbrFactors - factorNumber + 1 : factorNumber];
+    NumberLength = *(pstFactor->ptrFactor);
     UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
     ctr = (repeated ? pstFactor->multiplicity : 1);
     for (; ctr > 0; ctr--)
