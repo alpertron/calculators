@@ -343,11 +343,11 @@ void longToBigInteger(BigInteger *bigint, long long value)
 
 void expBigNbr(BigInteger *bignbr, double logar)
 {
-  int mostSignificantLimb;
+  unsigned int mostSignificantLimb;
   logar /= log(2);
   bignbr->sign = SIGN_POSITIVE;
   bignbr->nbrLimbs = (int)floor(logar / BITS_PER_GROUP);
-  mostSignificantLimb = (int)floor(exp((logar - BITS_PER_GROUP*bignbr->nbrLimbs) * log(2)) + 0.5);
+  mostSignificantLimb = (unsigned int)floor(exp((logar - BITS_PER_GROUP*bignbr->nbrLimbs) * log(2)) + 0.5);
   if (mostSignificantLimb == LIMB_RANGE)
   {
     mostSignificantLimb = 1;
