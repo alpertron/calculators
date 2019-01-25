@@ -53,6 +53,12 @@ h1 {text-align:center;}
 #cannotShow {display:none;}
 }
 </style>
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-4438475-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 </head>
 <body>
 <nav id="smallheader">
@@ -213,7 +219,6 @@ newY!=prevY1stTouch){moveSpiral(newX-prevX1stTouch,newY-prevY1stTouch);prevX1stT
 function(e){var evt=e||window.event;var key=evt.keyCode;if(evt.ctrlKey==false&&evt.altKey==false&&evt.metaKey==false)if(key!=8&&key!=9&&key!=37&&key!=39&&key!=45&&key!=46){if(key>=96&&key<=105)key-=48;if(key<48||key>57||center.value.length>=18)evt.preventDefault()}};center.oninput=function(){var ctx;if(checkStart()){get("info").innerHTML=get("cannotShow").innerHTML;ctx=canvas.getContext("2d");ctx.beginPath();ctx.rect(0,0,canvas.width,canvas.height);ctx.fillStyle="black";ctx.fill()}else{get("info").innerHTML=
 "";updateSpiral(center,1)}};start.onkeydown=function(e){var evt=e||window.event;var key=evt.keyCode;if(evt.ctrlKey==false&&evt.altKey==false&&evt.metaKey==false)if(key!=8&&key!=9&&key!=37&&key!=39&&key!=45&&key!=46){if(key>=96&&key<=105)key-=48;if(key<48||key>57||start.value.length>=18)evt.preventDefault()}};start.oninput=function(){ShowInformation(-1,-1);updateSpiral(start,2)};window.onresize=function(){var domRect=canvas.getBoundingClientRect();canvas.width=domRect.width;canvas.height=domRect.height;
 updateSpiral(center,1)};if(asmjs)updateSpiral(center,1)}addEventListener("load",startUp)})(this);
-if(typeof window!=="undefined")addEventListener("load",function(){(function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date;a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
 </script>
 </body>
 </html>

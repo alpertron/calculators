@@ -9,6 +9,7 @@
 <link rel="alternate" hreflang="en" href="CONTFRAC.HTM" />
 <link rel="manifest" href="fraccont.webmanifest">
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
+<link rel="apple-touch-icon" href="contfrac-icon-180px.png">
 <title>Calculadora de fracciones continuas</title>
 <style media="print">
 #smallheader {display:none;}
@@ -55,6 +56,12 @@ fieldset {display:inline}
 .offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
 .pad {padding:10px;}
 </style>
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-4438475-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 </head>
 <body>
 <nav id="smallheader">
@@ -348,7 +355,7 @@ Si <var>b</var> es negativo, el resultado no es un número real, así que no se 
 <p>
 Se puede bajar el código fuente de este programa y el del viejo applet de fracciones continuas desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 15 de diciembre de 2018.</p>
+<p>Escrito por Dario Alpern. Actualizado el 24 de enero de 2019.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -403,15 +410,14 @@ Se puede bajar el código fuente de este programa y el del viejo applet de fracc
 </aside>
 <script>
 <!--
-(function(){function a(a){return document.getElementById(a)}function k(){a("calc").style.display="inline";null!=a("stop")&&(a("stop").style.display="none")}function l(b){var q=a("helphelp");c||(n?m||(m=new Blob([new Uint8Array(g)])):m||(m=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),c=new Worker(window.URL.createObjectURL(m)),c.onmessage=function(b){var e=b.data.substring(0,1);if("4"==e)a("status").innerHTML=
-b.data.substring(1);else if(a("result").innerHTML=b.data.substring(1),"2"==e||"6"==e)a("status").innerHTML="",k(),"6"==e&&(a("cont").style.display="block")});q.style.display="block";q.innerHTML='<p class="pad">Aprieta el bot\u00f3n <strong>Ayuda</strong> para obtener ayuda para esta aplicaci\u00f3n. Apri\u00e9talo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el c\u00e1lculo. Esta es la versi\u00f3n '+(n?"asm.js":"WebAssembly")+".</p>";
-n?c.postMessage(b):c.postMessage([b,g])}function p(){var b,c,h,e,d;b=a("result");b.style.display="block";c=a("num").value;""==c?b.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n para el numerador.":(h=a("delta").value,""==h?b.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n para el argumento de la ra\u00edz cuadrada.":(e=a("den").value,""==e?b.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n para el denominador.":(d=a("digits").value,a("help").style.display="none",
-b.innerHTML="Calculando desarrollo en fracciones continuas...",r=a("converg").checked?1:0,param=d+","+(5+64*r)+","+c+String.fromCharCode(0),param+=h+String.fromCharCode(0)+e+String.fromCharCode(0),l(param))))}function d(){a("main").style.display="block";a("feedback").style.display="none";a("num").focus()}var c=0,g=0,r=0,m,n="undefined"===typeof WebAssembly,f=new XMLHttpRequest;f.open("GET",n?"fsquaresW0081.js":"fsquares0081.wasm",!0);f.responseType="arraybuffer";f.onreadystatechange=function(){4==
-f.readyState&&200==f.status&&(g=f.response)};f.send(null);addEventListener("load",function(){a("calc").onclick=function(){p()};null!=a("stop")&&(a("stop").onclick=function(){c.terminate();c=0;k();a("result").innerHTML="<p>C\u00e1lculo detenido por el usuario.</p>";a("status").innerHTML=""});null!=a("continue")&&(a("continue").onclick=function(){a("cont").style.display="none";l("C")});a("num").onkeydown=function(a){10!=a.keyCode&&13!=a.keyCode||!a.ctrlKey||(a.preventDefault(),p());return!0};a("helpbtn").onclick=
-function(){var b=a("help").style,c=a("helphelp").style,d=a("result"),e=d.style;"block"==b.display&&""!=d.innerHTML?(b.display="none",c.display=e.display="block"):(b.display="block",c.display=e.display="none")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){d()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\nnum = "+a("num").value+
-"\ndelta = "+a("delta").value+"\nden = "+a("den").value:"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),d())};b.open("POST","/enviomail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var c=a("formfeedback").elements,h="",e=0,g=0;g<c.length;g++){var f=c[g];"radio"==f.type&&0==f.checked||!f.name||(e&&(h+="&"),h+=f.name+"="+
-encodeURIComponent(f.value),e++)}b.send(h);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})})})(this);
-addEventListener("load",function(){(function(a,k,l,p,d,c,g){a.GoogleAnalyticsObject=d;a[d]=a[d]||function(){(a[d].a=a[d].a||[]).push(arguments)};a[d].b=1*new Date;c=k.createElement(l);g=k.getElementsByTagName(l)[0];c.async=1;c.src=p;g.parentNode.insertBefore(c,g)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
+(function(){function a(a){return document.getElementById(a)}function m(){a("calc").style.display="inline";null!=a("stop")&&(a("stop").style.display="none")}function n(b){var f=a("helphelp");c||(k?h||(h=new Blob([new Uint8Array(l)])):h||(h=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),c=new Worker(window.URL.createObjectURL(h)),c.onmessage=function(b){var d=b.data.substring(0,1);if("4"==d)a("status").innerHTML=
+b.data.substring(1);else if(a("result").innerHTML=b.data.substring(1),"2"==d||"6"==d)a("status").innerHTML="",m(),"6"==d&&(a("cont").style.display="block")});f.style.display="block";f.innerHTML='<p class="pad">Aprieta el bot\u00f3n <strong>Ayuda</strong> para obtener ayuda para esta aplicaci\u00f3n. Apri\u00e9talo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el c\u00e1lculo. Esta es la versi\u00f3n '+(k?"asm.js":"WebAssembly")+".</p>";
+k?c.postMessage(b):c.postMessage([b,l])}function p(){var b,f,g,d,c;b=a("result");b.style.display="block";f=a("num").value;""==f?b.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n para el numerador.":(g=a("delta").value,""==g?b.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n para el argumento de la ra\u00edz cuadrada.":(d=a("den").value,""==d?b.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n para el denominador.":(c=a("digits").value,a("help").style.display="none",
+b.innerHTML="Calculando desarrollo en fracciones continuas...",q=a("converg").checked?1:0,param=c+","+(5+64*q)+","+f+String.fromCharCode(0),param+=g+String.fromCharCode(0)+d+String.fromCharCode(0),n(param))))}function r(){a("main").style.display="block";a("feedback").style.display="none";a("num").focus()}var c=0,l=0,q=0,h,k="undefined"===typeof WebAssembly,e=new XMLHttpRequest;e.open("GET",k?"fsquaresW0082.js":"fsquares0082.wasm",!0);e.responseType="arraybuffer";e.onreadystatechange=function(){4==
+e.readyState&&200==e.status&&(l=e.response)};e.send(null);addEventListener("load",function(){a("calc").onclick=function(){p()};null!=a("stop")&&(a("stop").onclick=function(){c.terminate();c=0;m();a("result").innerHTML="<p>C\u00e1lculo detenido por el usuario.</p>";a("status").innerHTML=""});null!=a("continue")&&(a("continue").onclick=function(){a("cont").style.display="none";n("C")});a("num").onkeydown=function(a){10!=a.keyCode&&13!=a.keyCode||!a.ctrlKey||(a.preventDefault(),p());return!0};a("helpbtn").onclick=
+function(){var b=a("help").style,f=a("helphelp").style,g=a("result"),d=g.style;"block"==b.display&&""!=g.innerHTML?(b.display="none",f.display=d.display="block"):(b.display="block",f.display=d.display="none")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){r()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\nnum = "+a("num").value+
+"\ndelta = "+a("delta").value+"\nden = "+a("den").value:"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),r())};b.open("POST","/enviomail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var f=a("formfeedback").elements,g="",d=0,c=0;c<f.length;c++){var e=f[c];"radio"==e.type&&0==e.checked||!e.name||(d&&(g+="&"),g+=e.name+"="+
+encodeURIComponent(e.value),d++)}b.send(g);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})})})(this);
 //-->
 </script>
 <script type="text/js-worker">

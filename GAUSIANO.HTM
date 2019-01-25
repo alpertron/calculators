@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="GAUSSIAN.HTM" />
 <link rel="manifest" href="gausiano.webmanifest">
+<link rel="apple-touch-icon" href="gaussian-icon-180px.png">
 <title>Factorización de enteros gausianos</title>
 <style>
 @media print {#smallheader {display:none;}}
@@ -77,6 +78,12 @@ fieldset {display:inline}
 #help,#result,#status,#footer {margin: 3px; padding: 3px;}
 #more,#stop {display:none}
 </style>
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-4438475-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 </head>
 <body>
 <nav id="smallheader">
@@ -217,7 +224,7 @@ Si <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, entonces 
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente del programa actual y del viejo applet de factorización de enteros gausianos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 15 de diciembre de 2018.</p>
+<p>Escrito por Dario Alpern. Actualizado el 24 de enero de 2019.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -294,15 +301,15 @@ Si <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, entonces 
 </aside>
 <script>
 <!--
-(function(){function a(a){return document.getElementById(a)}function k(){localStorage.setItem("ecmConfig",digits+","+config)}function l(b,g){a("eval").style.display=b;a("factor").style.display=b;a("config").style.display=b;a("stop").style.display=g;a("more").style.display=g}function m(){var b=param;c||(n||(n=new Blob([new Uint8Array(p)])),c=new Worker(window.URL.createObjectURL(n)),c.onmessage=function(b){var d=b.data.substring(0,1);"8"!=d&&"7"!=d&&("4"==d?a("status").innerHTML=b.data.substring(1):
-(a("result").innerHTML=b.data.substring(1),"2"==b.data.substring(0,1)&&(a("status").innerHTML="",l("inline","none"),a("modal-more").style.display="none")))});c.postMessage(b)}function e(b){q=1+b;b=a("result");var g=a("value").value,d=a("helphelp");a("help").style.display="none";d.style.display="block";d.innerHTML="<p>Aprieta el bot\u00f3n <strong>Ayuda</strong> para obtener ayuda para esta aplicaci\u00f3n. Apri\u00e9talo de nuevo para retornar a la factorizaci\u00f3n.</p>";b.style.display="block";
-""==g?b.innerHTML="Por favor ingrese una expresi\u00f3n.":(l("none","inline"),b.innerHTML="Factorizando la expresi\u00f3n...",param=digits+","+q+","+g+String.fromCharCode(0),m())}function h(){a("main").style.display="block";a("feedback").style.display="none";a("value").focus()}var c=0,q,n,p=0;window.onload=function(){a("eval").onclick=function(){e(0)};a("factor").onclick=function(){e(2)};a("stop").onclick=function(){c.terminate();c=0;l("inline","none");a("result").innerHTML="<p>C\u00e1lculo detenido por el usuario.</p>";
+(function(){function a(a){return document.getElementById(a)}function h(){localStorage.setItem("ecmConfig",digits+","+config)}function k(b,d){a("eval").style.display=b;a("factor").style.display=b;a("config").style.display=b;a("stop").style.display=d;a("more").style.display=d}function r(){var b=param;f||(l||(l=new Blob([new Uint8Array(m)])),f=new Worker(window.URL.createObjectURL(l)),f.onmessage=function(b){var c=b.data.substring(0,1);"8"!=c&&"7"!=c&&("4"==c?a("status").innerHTML=b.data.substring(1):
+(a("result").innerHTML=b.data.substring(1),"2"==b.data.substring(0,1)&&(a("status").innerHTML="",k("inline","none"),a("modal-more").style.display="none")))});f.postMessage(b)}function n(b){p=1+b;b=a("result");var d=a("value").value,c=a("helphelp");a("help").style.display="none";c.style.display="block";c.innerHTML="<p>Aprieta el bot\u00f3n <strong>Ayuda</strong> para obtener ayuda para esta aplicaci\u00f3n. Apri\u00e9talo de nuevo para retornar a la factorizaci\u00f3n.</p>";b.style.display="block";
+""==d?b.innerHTML="Por favor ingrese una expresi\u00f3n.":(k("none","inline"),b.innerHTML="Factorizando la expresi\u00f3n...",param=digits+","+p+","+d+String.fromCharCode(0),r())}function q(){a("main").style.display="block";a("feedback").style.display="none";a("value").focus()}var f=0,p,l,m=0;window.onload=function(){a("eval").onclick=function(){n(0)};a("factor").onclick=function(){n(2)};a("stop").onclick=function(){f.terminate();f=0;k("inline","none");a("result").innerHTML="<p>C\u00e1lculo detenido por el usuario.</p>";
 a("status").innerHTML=""};a("more").onclick=function(){a("modal-more").style.display="block"};a("config").onclick=function(){a("digits").value=digits;a("batch").checked="1"==config.substr(0,1);a("verbose").checked="1"==config.substr(1,1);a("pretty").checked="1"==config.substr(2,1);a("cunnin").checked="1"==config.substr(3,1);a("modal-config").style.display="block"};a("close-config").onclick=function(){a("modal-config").style.display="none"};a("cancel-config").onclick=function(){a("modal-config").style.display=
-"none"};a("save-config").onclick=function(){oldconfig=config;config=(a("batch").checked?"1":"0")+(a("verbose").checked?"1":"0")+(a("pretty").checked?"1":"0")+(a("cunnin").checked?"1":"0");digits=a("digits").value;k();config.substr(0,1)!=oldconfig.substr(0,1)&&isBatch();a("modal-config").style.display="none"};a("close-more").onclick=function(){a("modal-more").style.display="none"};a("helpbtn").onclick=function(){var b=a("help").style,g=a("helphelp").style,d=a("result"),c=d.style;"block"==b.display&&
-""!=d.innerHTML?(b.display="none",g.display=c.display="block"):(b.display="block",g.display=c.display="none")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){h()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\n"+a("value").value+"\n"+a("result").innerHTML+"\n"+a("status").innerHTML:"";var b=new XMLHttpRequest;b.onreadystatechange=
-function(){4==b.readyState&&(200==b.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),h())};b.open("POST","/enviomail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var g=a("formfeedback").elements,d="",c=0,e=0;e<g.length;e++){var f=g[e];"radio"==f.type&&0==f.checked||!f.name||(c&&(d+="&"),d+=f.name+"="+encodeURIComponent(f.value),c++)}b.send(d);return!1};window.onclick=function(b){var c=a("modal");b.target==
-c&&(c.style.display="none")};digits=localStorage.getItem("ecmConfig");null==digits||""==digits?(digits=6,config="0010",k()):(index=digits.indexOf(","),0>index?(digits=6,config="0010",k()):(config=digits.substr(index+1),digits=digits.substr(0,index)));"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var f=new XMLHttpRequest;f.open("GET","gaussianW0081.js",!0);f.responseType="arraybuffer";f.onreadystatechange=function(){4==f.readyState&&200==
-f.status&&(p=f.response)};f.send(null)})(this);addEventListener("load",function(){(function(a,k,l,m,e,h,c){a.GoogleAnalyticsObject=e;a[e]=a[e]||function(){(a[e].a=a[e].a||[]).push(arguments)};a[e].b=1*new Date;h=k.createElement(l);c=k.getElementsByTagName(l)[0];h.async=1;h.src=m;c.parentNode.insertBefore(h,c)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
+"none"};a("save-config").onclick=function(){oldconfig=config;config=(a("batch").checked?"1":"0")+(a("verbose").checked?"1":"0")+(a("pretty").checked?"1":"0")+(a("cunnin").checked?"1":"0");digits=a("digits").value;h();config.substr(0,1)!=oldconfig.substr(0,1)&&isBatch();a("modal-config").style.display="none"};a("close-more").onclick=function(){a("modal-more").style.display="none"};a("helpbtn").onclick=function(){var b=a("help").style,d=a("helphelp").style,c=a("result"),e=c.style;"block"==b.display&&
+""!=c.innerHTML?(b.display="none",d.display=e.display="block"):(b.display="block",d.display=e.display="none")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){q()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"\n"+a("value").value+"\n"+a("result").innerHTML+"\n"+a("status").innerHTML:"";var b=new XMLHttpRequest;b.onreadystatechange=
+function(){4==b.readyState&&(200==b.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),q())};b.open("POST","/enviomail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var d=a("formfeedback").elements,c="",e=0,f=0;f<d.length;f++){var g=d[f];"radio"==g.type&&0==g.checked||!g.name||(e&&(c+="&"),c+=g.name+"="+encodeURIComponent(g.value),e++)}b.send(c);return!1};window.onclick=function(b){var d=a("modal");b.target==
+d&&(d.style.display="none")};digits=localStorage.getItem("ecmConfig");null==digits||""==digits?(digits=6,config="0010",h()):(index=digits.indexOf(","),0>index?(digits=6,config="0010",h()):(config=digits.substr(index+1),digits=digits.substr(0,index)));"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var e=new XMLHttpRequest;e.open("GET","gaussianW0082.js",!0);e.responseType="arraybuffer";e.onreadystatechange=function(){4==e.readyState&&200==
+e.status&&(m=e.response)};e.send(null)})(this);
 //-->
 </script>
 </body>

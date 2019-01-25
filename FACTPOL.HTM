@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="FACTPOL.HTM" />
 <link rel="manifest" href="factpol.webmanifest">
+<link rel="apple-touch-icon" href="polfact-icon-180px.png">
 <title>Calculadora de factorización de polinomios</title>
 <style media="print">
 #smallheader {display:none;}
@@ -45,6 +46,12 @@ fieldset {display:inline}
 @media (min-width: 400px) { .input{width: calc(100% - 8em);float:right;padding:3px;margin:0px;}}
 @media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
 </style>
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-4438475-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
 </head>
 <body>
 <nav id="smallheader">
@@ -200,7 +207,7 @@ La segunda opción se utiliza cuando hay que copiar los datos a otra aplicación
 <p>
 Puede bajar el código fuente del programa actual y del viejo applet de factorización de polinomios <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 15 de diciembre de 2018.</p>
+<p>Escrito por Dario Alpern. Actualizado el 24 de enero de 2019.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>
@@ -252,13 +259,12 @@ Puede bajar el código fuente del programa actual y del viejo applet de factoriz
 </aside>
 <script>
 <!--
-(function(){function a(a){return document.getElementById(a)}function k(){var c=param;b||(m?d||(d=new Blob([new Uint8Array(e)])):d||(d=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),b=new Worker(window.URL.createObjectURL(d)),b.onmessage=function(c){a("result").innerHTML=c.data.substring(1);"2"==c.data.substring(0,1)&&(a("eval").disabled=!1,a("factor").disabled=!1,a("stop").disabled=!0)});m?
-b.postMessage(c):b.postMessage([c,e])}function g(c){c=1+c+(a("sup").checked?4:0);var b=a("result"),d=a("poly").value,e=a("mod").value,f=a("digits").value;a("help").style.display="none";b.style.display="block";""==d?b.innerHTML="Por favor ingrese una expresi\u00f3n para el polinomio a evaluar.":""==e?b.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n para el m\u00f3dulo.":(a("eval").disabled=!0,a("factor").disabled=!0,a("stop").disabled=!1,b.innerHTML="Factorizando el polinomio...",param=
-f+","+c+","+e+String.fromCharCode(0)+d+String.fromCharCode(0),k())}function l(){a("main").style.display="block";a("feedback").style.display="none";a("poly").focus()}var b=0,d,e=0,m="undefined"===typeof WebAssembly;window.onload=function(){a("stop").disabled=!0;a("eval").onclick=function(){g(2)};a("factor").onclick=function(){g(0)};a("stop").onclick=function(){b.terminate();b=0;a("eval").disabled=!1;a("factor").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Factorizaci\u00f3n detenida por el usuario.</p>"};
-a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("poly").oninput=function(){var c=a("poly"),b=c.value.length-c.selectionStart;c.value=c.value.replace(".","x^");setTimeout(function(){b=c.value.length-b;c.selectionStart=b;c.selectionEnd=b},30)};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){l()};a("formsend").onclick=
-function(){a("userdata").value=a("adduserdata").checked?a("poly").value+" (mod "+a("mod").value+")":"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),l())};b.open("POST","/enviomail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var d=a("formfeedback").elements,e="",f=0,g=0;g<d.length;g++){var h=d[g];"radio"==h.type&&0==h.checked||
-!h.name||(f&&(e+="&"),e+=h.name+"="+encodeURIComponent(h.value),f++)}b.send(e);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var f=new XMLHttpRequest;f.open("GET",m?"polfactW0081.js":"polfact0081.wasm",!0);f.responseType="arraybuffer";f.onreadystatechange=function(){4==f.readyState&&200==f.status&&(e=f.response)};f.send(null)})(this);
-"undefined"!==typeof window&&addEventListener("load",function(){(function(a,k,g,l,b,d,e){a.GoogleAnalyticsObject=b;a[b]=a[b]||function(){(a[b].a=a[b].a||[]).push(arguments)};a[b].b=1*new Date;d=k.createElement(g);e=k.getElementsByTagName(g)[0];d.async=1;d.src=l;e.parentNode.insertBefore(d,e)})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");ga("create","UA-4438475-1","auto");ga("send","pageview")});
+(function(){function a(a){return document.getElementById(a)}function p(){var b=param;c||(h?f||(f=new Blob([new Uint8Array(k)])):f||(f=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),c=new Worker(window.URL.createObjectURL(f)),c.onmessage=function(b){a("result").innerHTML=b.data.substring(1);"2"==b.data.substring(0,1)&&(a("eval").disabled=!1,a("factor").disabled=!1,a("stop").disabled=!0)});h?
+c.postMessage(b):c.postMessage([b,k])}function l(b){b=1+b+(a("sup").checked?4:0);var d=a("result"),m=a("poly").value,c=a("mod").value,e=a("digits").value;a("help").style.display="none";d.style.display="block";""==m?d.innerHTML="Por favor ingrese una expresi\u00f3n para el polinomio a evaluar.":""==c?d.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n para el m\u00f3dulo.":(a("eval").disabled=!0,a("factor").disabled=!0,a("stop").disabled=!1,d.innerHTML="Factorizando el polinomio...",param=
+e+","+b+","+c+String.fromCharCode(0)+m+String.fromCharCode(0),p())}function n(){a("main").style.display="block";a("feedback").style.display="none";a("poly").focus()}var c=0,f,k=0,h="undefined"===typeof WebAssembly;window.onload=function(){a("stop").disabled=!0;a("eval").onclick=function(){l(2)};a("factor").onclick=function(){l(0)};a("stop").onclick=function(){c.terminate();c=0;a("eval").disabled=!1;a("factor").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Factorizaci\u00f3n detenida por el usuario.</p>"};
+a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("poly").oninput=function(){var b=a("poly"),d=b.value.length-b.selectionStart;b.value=b.value.replace(".","x^");setTimeout(function(){d=b.value.length-d;b.selectionStart=d;b.selectionEnd=d},30)};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){n()};a("formsend").onclick=
+function(){a("userdata").value=a("adduserdata").checked?a("poly").value+" (mod "+a("mod").value+")":"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),n())};b.open("POST","/enviomail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var d=a("formfeedback").elements,c="",e=0,f=0;f<d.length;f++){var g=d[f];"radio"==g.type&&0==g.checked||
+!g.name||(e&&(c+="&"),c+=g.name+"="+encodeURIComponent(g.value),e++)}b.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var e=new XMLHttpRequest;e.open("GET",h?"polfactW0082.js":"polfact0082.wasm",!0);e.responseType="arraybuffer";e.onreadystatechange=function(){4==e.readyState&&200==e.status&&(k=e.response)};e.send(null)})(this);
 //-->
 </script>
 <script type="text/js-worker">

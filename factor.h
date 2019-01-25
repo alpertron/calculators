@@ -51,6 +51,7 @@ extern int partialsFound;
 extern uint64_t ValuesSieved;
 extern int congruencesFound;
 extern int polynomialsSieved;
+extern int matrixRows, matrixCols;
 extern int nbrPartials;
 
 extern char tofactorDec[MAX_LEN*12];
