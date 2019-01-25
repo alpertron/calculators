@@ -1092,11 +1092,11 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
       memcpy(pBase->limbs, pBigNbr->limbs, pBase->nbrLimbs * sizeof(limb));
       return 1;
     }
-    maxExpon = (int)(dLogBigNbr / log(101));
+    maxExpon = (int)(dLogBigNbr / log(101) + 0.5);
   }
   else
   {
-    maxExpon = (int)(dLogBigNbr / log(2));
+    maxExpon = (int)(dLogBigNbr / log(2) + 0.5);
   }
   for (h = 0; h < sizeof(prime2310x1) / sizeof(prime2310x1[0]); h++)
   {
