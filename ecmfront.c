@@ -677,8 +677,14 @@ void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
         strcpy(ptrOutput, lang ? " valores)</li><li>" : " values)</li><li>");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, partialsFound);
-        strcpy(ptrOutput, lang ? " congruencias parciales útiles</li></ul>" :
-          " useful partial congruences</li></ul>");
+        strcpy(ptrOutput, lang ? " congruencias parciales útiles</li><li>Tamaño de la matriz binaria: " :
+          " useful partial congruences</li><li>Size of binary matrix: ");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, matrixRows);
+        strcpy(ptrOutput, " &times; ");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, matrixCols);
+        strcpy(ptrOutput, "</li></ul>");
         ptrOutput += strlen(ptrOutput);
       }
       if (nbrSIQS > 0 || nbrECM > 0 || nbrPrimalityTests > 0)
