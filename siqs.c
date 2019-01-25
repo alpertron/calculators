@@ -32,14 +32,9 @@ int startSieveTenths;
 int64_t SIQSModMult;
 #endif
 
-#ifdef _USING64BITS_
-typedef int64_t BIG;
-#define FLOOR
-#else
-typedef double BIG;
-#define FLOOR floor
-#endif
+#define QUEUE_LENGTH 100
 
+int matrixRows, matrixCols;
 int smoothsFound;
 int totalPartials;
 int partialsFound;
@@ -56,6 +51,10 @@ static unsigned char InsertNewRelation(
   int *biT, int *biU, int *biR,
   int NumberLength);
 static void BlockLanczos(void);
+#if 0
+static unsigned char isProbablePrime(double value);
+static int SQUFOF(double N, int queue[]);
+#endif
 void ShowSIQSStatus(void);
 static unsigned int getFactorsOfA(unsigned int seed, int *aindex);
 static void sieveThread(BigInteger *result);
@@ -202,9 +201,9 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
   }
   F2 = 2;
   index = 2;
+  rowPrimeSieveData = primeSieveData + 2;
   for (;;)
   {
-    rowPrimeSieveData = primeSieveData + index;
     currentPrime = rowPrimeSieveData->value;
     F3 = F2 * currentPrime;
     if (X1 + 1 < F3)
@@ -263,6 +262,7 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       }
     }
     index++;
+    rowPrimeSieveData++;
     F2 *= currentPrime;
   }
 
@@ -281,7 +281,6 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
   {
     for (; index < common.siqs.smallPrimeUpperLimit; index++)
     {
-      rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
       if ((S1 = rowPrimeSieveData->soln1 -
         rowPrimeSieveData->Bainv2[indexFactorA]) < 0)
@@ -289,10 +288,10 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         S1 += currentPrime;
       }
       rowPrimeSieveData->soln1 = S1;
+      rowPrimeSieveData++;
     }
     for (index = common.siqs.smallPrimeUpperLimit; index < common.siqs.firstLimit; index++)
     {
-      rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
       if (currentPrime >= mask)
       {
@@ -350,10 +349,10 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         *(SieveArray + index2 + I2) += logPrimeOddPoly;
         *(SieveArray + index2 + I3) += logPrimeOddPoly;
       } while ((index2 -= F4) >= 0);
+      rowPrimeSieveData++;
     }
     for (; index < common.siqs.secondLimit; index++)
     {
-      rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
       F2 = currentPrime + currentPrime;
       F3 = F2 + currentPrime;
@@ -423,10 +422,10 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
           *(SieveArray + index2) += logPrimeOddPoly;
         }
       }
+      rowPrimeSieveData++;
     }
     for (; index < common.siqs.thirdLimit; index++)
     {
-      rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
       if (currentPrime >= mask)
       {
@@ -458,10 +457,10 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeOddPoly;
       } while ((F2 += currentPrime) <= X1);
+      rowPrimeSieveData++;
     }
     for (; index < common.siqs.nbrPrimes2; index++)
     {
-      rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
       if (currentPrime >= mask)
       {
@@ -488,7 +487,8 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeOddPoly;
       }
-      rowPrimeSieveData = primeSieveData + ++index;
+      rowPrimeSieveData++;
+      index++;
       currentPrime = rowPrimeSieveData->value;
       F2 = rowPrimeSieveData->soln1 - rowPrimeSieveData->Bainv2[indexFactorA];
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
@@ -509,7 +509,8 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeOddPoly;
       }
-      rowPrimeSieveData = primeSieveData + ++index;
+      rowPrimeSieveData++;
+      index++;
       currentPrime = rowPrimeSieveData->value;
       F2 = rowPrimeSieveData->soln1 - rowPrimeSieveData->Bainv2[indexFactorA];
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
@@ -531,7 +532,8 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeOddPoly;
       }
-      rowPrimeSieveData = primeSieveData + ++index;
+      rowPrimeSieveData++;
+      index++;
       currentPrime = rowPrimeSieveData->value;
       F2 = rowPrimeSieveData->soln1 - rowPrimeSieveData->Bainv2[indexFactorA];
       if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
@@ -553,10 +555,10 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeOddPoly;
       }
+      rowPrimeSieveData++;
     }
     for (; index < common.siqs.nbrFactorBasePrimes; index++)
     {
-      rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
       if (currentPrime >= mask)
       {
@@ -584,22 +586,22 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeOddPoly;
       }
+      rowPrimeSieveData++;
     }
   }
   else
   {
     for (; index < common.siqs.smallPrimeUpperLimit; index++)
     {
-      rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
       S1 = rowPrimeSieveData->soln1 +
         rowPrimeSieveData->Bainv2[indexFactorA] - currentPrime;
       S1 += currentPrime & (S1 >> 31);
       rowPrimeSieveData->soln1 = S1;
+      rowPrimeSieveData++;
     }
     for (index = common.siqs.smallPrimeUpperLimit; index < common.siqs.firstLimit; index++)
     {
-      rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
       if (currentPrime >= mask)
       {
@@ -657,10 +659,10 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         *(SieveArray + index2 + I2) += logPrimeOddPoly;
         *(SieveArray + index2 + I3) += logPrimeOddPoly;
       } while ((index2 -= F4) >= 0);
+      rowPrimeSieveData++;
     }
     for (; index < common.siqs.secondLimit; index++)
     {
-      rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
       F2 = currentPrime + currentPrime;
       F3 = F2 + currentPrime;
@@ -730,10 +732,10 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
           *(SieveArray + index2) += logPrimeOddPoly;
         }
       }
+      rowPrimeSieveData++;
     }
     for (; index < common.siqs.thirdLimit; index++)
     {
-      rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
       if (currentPrime >= mask)
       {
@@ -766,10 +768,10 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F1) += logPrimeOddPoly;
       } while ((F1 += currentPrime) <= X1);
+      rowPrimeSieveData++;
     }
     for (; index < common.siqs.nbrPrimes2; index++)
     {
-      rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
       if (currentPrime >= mask)
       {
@@ -798,7 +800,8 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeOddPoly;
       }
-      rowPrimeSieveData = primeSieveData + ++index;
+      rowPrimeSieveData++;
+      index++;
       currentPrime = rowPrimeSieveData->value;
       F2 = rowPrimeSieveData->soln1 +
         rowPrimeSieveData->Bainv2[indexFactorA] - currentPrime;
@@ -821,7 +824,8 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeOddPoly;
       }
-      rowPrimeSieveData = primeSieveData + ++index;
+      rowPrimeSieveData++;
+      index++;
       currentPrime = rowPrimeSieveData->value;
       F2 = rowPrimeSieveData->soln1 +
         rowPrimeSieveData->Bainv2[indexFactorA] - currentPrime;
@@ -844,7 +848,8 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeOddPoly;
       }
-      rowPrimeSieveData = primeSieveData + ++index;
+      rowPrimeSieveData++;
+      index++;
       currentPrime = rowPrimeSieveData->value;
       F2 = rowPrimeSieveData->soln1 +
         rowPrimeSieveData->Bainv2[indexFactorA] - currentPrime;
@@ -867,10 +872,10 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeOddPoly;
       }
+      rowPrimeSieveData++;
     }
     for (; index < common.siqs.nbrFactorBasePrimes; index++)
     {
-      rowPrimeSieveData = primeSieveData + index;
       currentPrime = rowPrimeSieveData->value;
       if (currentPrime >= mask)
       {
@@ -899,8 +904,40 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeOddPoly;
       }
+      rowPrimeSieveData++;
     }
   }
+}
+
+static int getIndexFromDivisor(double dDivid)
+{
+  int nbr;
+  int left = -1;
+  int right;
+  int median = right = common.siqs.nbrFactorBasePrimes;
+  while (left != right)
+  {
+    median = ((right - left) >> 1) + left;
+    nbr = common.siqs.primeTrialDivisionData[median].value;
+    if (nbr < dDivid)
+    {
+      if (median == left &&
+        congruencesFound >= common.siqs.matrixBLength)
+      {
+        return 0;
+      }
+      left = median;
+    }
+    else if (nbr > dDivid)
+    {
+      right = median;
+    }
+    else
+    {
+      break;
+    }
+  }
+  return median;
 }
 
 static int PerformTrialDivision(PrimeSieveData *primeSieveData,
@@ -910,6 +947,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
   int NumberLengthDividend,
   unsigned char oddPolynomial)
 {
+//  int queue[2 * QUEUE_LENGTH];
   int biR0 = 0, biR1 = 0, biR2 = 0, biR3 = 0, biR4 = 0, biR5 = 0;
   int biR6 = 0;
   int nbrSquares = rowSquares[0];
@@ -945,9 +983,10 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
   expParity = 0;
   if (NumberLengthDividend <= 1)
   {
+    rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[1];
     for (index = 1; index < common.siqs.nbrFactorBasePrimes; index++)
     {
-      Divisor = common.siqs.primeTrialDivisionData[index].value;
+      Divisor = rowPrimeTrialDivisionData->value;
       while (biR0 % Divisor == 0)
       {
         biR0 /= Divisor;
@@ -962,13 +1001,14 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         rowMatrixBbeforeMerge[nbrColumns++] = index;
         expParity = 0;
       }
+      rowPrimeTrialDivisionData++;
     }
   }
   else
   {   // Dividend has at least two limbs.
     unsigned char mostSignificantLimbZero = FALSE;
-    BIG dRem, dCurrentPrime;
-    BIG dDivid, dLimbMult, dQuot;
+    double dRem, dCurrentPrime;
+    double dDivid, dLimbMult, dQuot;
     int Dividend;
     int nbr, iRem;
     int left, right, median;
@@ -977,6 +1017,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
     int newFactorAIndex;
     unsigned char testFactorA = TRUE;
     newFactorAIndex = common.siqs.aindex[0];
+    rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[1];
     for (index = 1; testFactorA; index++)
     {
       fullRemainder = FALSE;
@@ -998,7 +1039,6 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
       }
       for (;;)
       {
-        rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[index];
         if (fullRemainder == FALSE)
         {
           rowPrimeSieveData = primeSieveData + index;
@@ -1013,19 +1053,11 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           {
             iRem = index2 - rowPrimeSieveData->soln1;
           }
+          iRem += ((iRem >> 31) & divis) - divis;
+          iRem += (iRem >> 31) & divis;
           if (iRem >= divis)
           {
-            if ((iRem -= divis) >= divis)
-            {
-              if ((iRem -= divis) >= divis)
-              {
-                iRem %= divis;
-              }
-            }
-          }
-          else
-          {
-            iRem += (iRem >> 31) & divis;
+            iRem %= divis;
           }
           if (iRem != 0 && iRem != divis - rowPrimeSieveData->difsoln)
           {
@@ -1045,41 +1077,41 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           switch (NumberLengthDividend)
           {
           case 7:
-            dRem = (BIG)biR6*(BIG)rowPrimeTrialDivisionData->exp6 +
-              (BIG)biR5*(BIG)rowPrimeTrialDivisionData->exp5 +
-              (BIG)biR4*(BIG)rowPrimeTrialDivisionData->exp4 +
-              (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
-              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
-              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (double)biR6*(double)rowPrimeTrialDivisionData->exp6 +
+              (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
+              (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
+              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 6:
-            dRem = (BIG)biR5*(BIG)rowPrimeTrialDivisionData->exp5 +
-              (BIG)biR4*(BIG)rowPrimeTrialDivisionData->exp4 +
-              (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
-              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
-              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
+              (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
+              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 5:
-            dRem = (BIG)biR4*(BIG)rowPrimeTrialDivisionData->exp4 +
-              (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
-              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
-              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
+              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 4:
-            dRem = (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
-              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
-              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 3:
-            dRem = (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
-              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           default:
-            dRem = (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           }
-          dCurrentPrime = (BIG)divis;
-          if (dRem != FLOOR(dRem / dCurrentPrime)*dCurrentPrime)
+          dCurrentPrime = (double)divis;
+          if (dRem != floor(dRem / dCurrentPrime)*dCurrentPrime)
           {                     // Number is not a multiple of prime.
             if (expParity != 0)
             {
@@ -1096,45 +1128,45 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         }
         dRem = 0;
         // Perform division
-        dLimbMult = (BIG)(1U << BITS_PER_INT_GROUP);
-        dCurrentPrime = (BIG)divis;
+        dLimbMult = (double)(1U << BITS_PER_INT_GROUP);
+        dCurrentPrime = (double)divis;
         switch (NumberLengthDividend)
         {
         case 7:     // {biR6 - biR0} <- {biR6 - biR0} / divis
           Dividend = biR6;
-          dRem = (BIG)(Dividend - (biR6 = Dividend / Divisor) * Divisor);
+          dRem = (double)(Dividend - (biR6 = Dividend / Divisor) * Divisor);
           /* no break */
         case 6:     // {biR5 - biR0} <- {biR5 - biR0} / divis
-          dDivid = (BIG)biR5 + dRem*dLimbMult;
-          dQuot = FLOOR(dDivid / dCurrentPrime);
+          dDivid = (double)biR5 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR5 = (int)dQuot;
           /* no break */
         case 5:     // {biR4 - biR0} <- {biR4 - biR0} / divis
-          dDivid = (BIG)biR4 + dRem*dLimbMult;
-          dQuot = FLOOR(dDivid / dCurrentPrime);
+          dDivid = (double)biR4 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR4 = (int)dQuot;
           /* no break */
         case 4:     // {biR3 - biR0} <- {biR3 - biR0} / divis
-          dDivid = (BIG)biR3 + dRem*dLimbMult;
-          dQuot = FLOOR(dDivid / dCurrentPrime);
+          dDivid = (double)biR3 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR3 = (int)dQuot;
           /* no break */
         case 3:     // {biR2 - biR0} <- {biR2 - biR0} / divis
-          dDivid = (BIG)biR2 + dRem*dLimbMult;
-          dQuot = FLOOR(dDivid / dCurrentPrime);
+          dDivid = (double)biR2 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR2 = (int)dQuot;
           /* no break */
         case 2:     // {biR1 - biR0} <- {biR1 - biR0} / divis
-          dDivid = (BIG)biR1 + dRem*dLimbMult;
-          dQuot = FLOOR(dDivid / dCurrentPrime);
+          dDivid = (double)biR1 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR1 = (int)dQuot;
-          dDivid = (BIG)biR0 + dRem*dLimbMult;
-          biR0 = (int)FLOOR(dDivid / dCurrentPrime);
+          dDivid = (double)biR0 + dRem*dLimbMult;
+          biR0 = (int)floor(dDivid / dCurrentPrime);
         }
         switch (NumberLengthDividend)
         {
@@ -1162,12 +1194,15 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           NumberLengthDividend--;
           if (NumberLengthDividend == 1)
           {     // Number fits in a double
-            BIG dDivid = (BIG)biR1 * (BIG)(1U << BITS_PER_INT_GROUP) + (BIG)biR0;
+#if 0
+            int upperBound = common.siqs.largePrimeUpperBound / 100;
+#endif
+            double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
             int sqrtDivid = (int)(floor(sqrt((double)dDivid)));
             fullRemainder = TRUE;
+            rowPrimeSieveData = primeSieveData + index;
             for (; index < common.siqs.nbrFactorBasePrimes; index++)
             {
-              rowPrimeSieveData = primeSieveData + index;
               Divisor = rowPrimeSieveData->value;
               if (testFactorA && index == newFactorAIndex)
               {
@@ -1195,19 +1230,11 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                   {
                     iRem = index2 - rowPrimeSieveData->soln1;
                   }
+                  iRem += ((iRem >> 31) & divis) - divis;
+                  iRem += (iRem >> 31) & divis;
                   if (iRem >= divis)
                   {
-                    if ((iRem -= divis) >= divis)
-                    {
-                      if ((iRem -= divis) >= divis)
-                      {
-                        iRem %= divis;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    iRem += (iRem >> 31) & divis;
+                    iRem %= divis;
                   }
                   if (iRem != 0 && iRem != divis - rowPrimeSieveData->difsoln)
                   {
@@ -1217,7 +1244,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 }
                 else
                 {
-                  if (dDivid != FLOOR(dDivid / Divisor) * Divisor)
+                  if (dDivid != floor(dDivid / Divisor) * Divisor)
                   {
                     break;
                   }
@@ -1235,6 +1262,67 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 rowMatrixBbeforeMerge[nbrColumns++] = index;
                 expParity = 0;
               }
+#if 0
+              if (dDivid < (double)common.siqs.largePrimeUpperBound *
+                (double)upperBound)
+              {         // Use SQUFOF for finding factors.
+                int factor, bigfactor = 1;
+                while (!isProbablePrime(dDivid))
+                {
+                  int factor = SQUFOF((double)dDivid, queue);
+                  if (factor == 0)
+                  {
+                    return 0;  // Go out if factor could not be found.
+                  }
+                  if (factor > upperBound)
+                  {
+                    if (factor > common.siqs.largePrimeUpperBound || bigfactor > 1)
+                    {
+                      return 0;   // Discard relation.
+                    }
+                    bigfactor = factor;
+                  }
+                  else
+                  {
+                    index = getIndexFromDivisor(factor);
+                    if (rowMatrixBbeforeMerge[nbrColumns] == index)
+                    {
+                      nbrColumns--;
+                      rowSquares[nbrSquares++] = factor;
+                    }
+                    else
+                    {
+                      rowMatrixBbeforeMerge[nbrColumns++] = index;
+                    }
+                  }
+                  dDivid /= factor;
+                }
+                factor = (int)dDivid;
+                if (factor > upperBound)
+                {
+                  if (factor > common.siqs.largePrimeUpperBound || bigfactor > 1)
+                  {
+                    return 0;   // Discard relation.
+                  }
+                  bigfactor = factor;
+                }
+                else
+                {
+                  index = getIndexFromDivisor(factor);
+                  if (rowMatrixBbeforeMerge[nbrColumns] == index)
+                  {
+                    nbrColumns--;
+                    rowSquares[nbrSquares++] = factor;
+                  }
+                  else
+                  {
+                    rowMatrixBbeforeMerge[nbrColumns++] = index;
+                  }
+                }
+                rowMatrixBbeforeMerge[0] = nbrColumns;
+                return bigfactor;
+              }
+#endif
               if (Divisor > sqrtDivid)
               {                     // End of trial division.
                 rowSquares[0] = nbrSquares;
@@ -1242,31 +1330,8 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 if (dDivid <= common.siqs.primeTrialDivisionData[index].value &&
                   dDivid > 1)
                 {          // Perform binary search to find the index.
-                  left = -1;
-                  median = right = common.siqs.nbrFactorBasePrimes;
-                  while (left != right)
-                  {
-                    median = ((right - left) >> 1) + left;
-                    nbr = common.siqs.primeTrialDivisionData[median].value;
-                    if (nbr < dDivid)
-                    {
-                      if (median == left &&
-                        congruencesFound >= common.siqs.matrixBLength)
-                      {
-                        return 0;
-                      }
-                      left = median;
-                    }
-                    else if (nbr > dDivid)
-                    {
-                      right = median;
-                    }
-                    else
-                    {
-                      break;
-                    }
-                  }
-                  rowMatrixBbeforeMerge[nbrColumns++] = median;
+                  index = getIndexFromDivisor(dDivid);
+                  rowMatrixBbeforeMerge[nbrColumns++] = index;
                   rowMatrixBbeforeMerge[0] = nbrColumns;
                   return 1;
                 }
@@ -1278,19 +1343,22 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 return (int)dDivid;
               }
               fullRemainder = FALSE;
+              rowPrimeSieveData++;
             }
             break;
           }
         }
       }             /* end while */
+      rowPrimeTrialDivisionData++;
     }               /* end for */
-    for (; index < common.siqs.nbrFactorBasePrimes; index++)
+    int nbrFactorBasePrimes = common.siqs.nbrFactorBasePrimes;
+    rowPrimeSieveData = primeSieveData + index;
+    rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[index];
+    for (; index < nbrFactorBasePrimes; index++)
     {
       fullRemainder = FALSE;
       for (;;)
       {
-        rowPrimeSieveData = primeSieveData + index;
-        rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[index];
         if (fullRemainder == FALSE)
         {
           Divisor = rowPrimeSieveData->value;
@@ -1304,19 +1372,11 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           {
             iRem = index2 - rowPrimeSieveData->soln1;
           }
+          iRem += ((iRem >> 31) & divis) - divis;
+          iRem += (iRem >> 31) & divis;
           if (iRem >= divis)
           {
-            if ((iRem -= divis) >= divis)
-            {
-              if ((iRem -= divis) >= divis)
-              {
-                iRem %= divis;
-              }
-            }
-          }
-          else
-          {
-            iRem += (iRem >> 31) & divis;
+            iRem %= divis;
           }
           if (iRem != 0 && iRem != divis - rowPrimeSieveData->difsoln)
           {
@@ -1336,41 +1396,41 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           switch (NumberLengthDividend)
           {
           case 7:
-            dRem = (BIG)biR6*(BIG)rowPrimeTrialDivisionData->exp6 +
-              (BIG)biR5*(BIG)rowPrimeTrialDivisionData->exp5 +
-              (BIG)biR4*(BIG)rowPrimeTrialDivisionData->exp4 +
-              (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
-              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
-              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (double)biR6*(double)rowPrimeTrialDivisionData->exp6 +
+              (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
+              (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
+              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 6:
-            dRem = (BIG)biR5*(BIG)rowPrimeTrialDivisionData->exp5 +
-              (BIG)biR4*(BIG)rowPrimeTrialDivisionData->exp4 +
-              (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
-              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
-              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
+              (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
+              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 5:
-            dRem = (BIG)biR4*(BIG)rowPrimeTrialDivisionData->exp4 +
-              (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
-              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
-              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
+              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 4:
-            dRem = (BIG)biR3*(BIG)rowPrimeTrialDivisionData->exp3 +
-              (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
-              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           case 3:
-            dRem = (BIG)biR2*(BIG)rowPrimeTrialDivisionData->exp2 +
-              (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           default:
-            dRem = (BIG)biR1*(BIG)rowPrimeTrialDivisionData->exp1 + biR0;
+            dRem = (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
             break;
           }
-          dCurrentPrime = (BIG)divis;
-          if (dRem != FLOOR(dRem / dCurrentPrime)*dCurrentPrime)
+          dCurrentPrime = (double)divis;
+          if (dRem != floor(dRem / dCurrentPrime)*dCurrentPrime)
           {                     // Number is not a multiple of prime.
             if (expParity != 0)
             {
@@ -1387,45 +1447,45 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         }
         dRem = 0;
         // Perform division
-        dLimbMult = (BIG)(1U << BITS_PER_INT_GROUP);
-        dCurrentPrime = (BIG)divis;
+        dLimbMult = (double)(1U << BITS_PER_INT_GROUP);
+        dCurrentPrime = (double)divis;
         switch (NumberLengthDividend)
         {
         case 7:     // {biR6 - biR0} <- {biR6 - biR0} / divis
           Dividend = biR6;
-          dRem = (BIG)(Dividend - (biR6 = Dividend / Divisor) * Divisor);
+          dRem = (double)(Dividend - (biR6 = Dividend / Divisor) * Divisor);
           /* no break */
         case 6:     // {biR5 - biR0} <- {biR5 - biR0} / divis
-          dDivid = (BIG)biR5 + dRem*dLimbMult;
-          dQuot = FLOOR(dDivid / dCurrentPrime);
+          dDivid = (double)biR5 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR5 = (int)dQuot;
           /* no break */
         case 5:     // {biR4 - biR0} <- {biR4 - biR0} / divis
-          dDivid = (BIG)biR4 + dRem*dLimbMult;
-          dQuot = FLOOR(dDivid / dCurrentPrime);
+          dDivid = (double)biR4 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR4 = (int)dQuot;
           /* no break */
         case 4:     // {biR3 - biR0} <- {biR3 - biR0} / divis
-          dDivid = (BIG)biR3 + dRem*dLimbMult;
-          dQuot = FLOOR(dDivid / dCurrentPrime);
+          dDivid = (double)biR3 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR3 = (int)dQuot;
           /* no break */
         case 3:     // {biR2 - biR0} <- {biR2 - biR0} / divis
-          dDivid = (BIG)biR2 + dRem*dLimbMult;
-          dQuot = FLOOR(dDivid / dCurrentPrime);
+          dDivid = (double)biR2 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR2 = (int)dQuot;
           /* no break */
         case 2:     // {biR1 - biR0} <- {biR1 - biR0} / divis
-          dDivid = (BIG)biR1 + dRem*dLimbMult;
-          dQuot = FLOOR(dDivid / dCurrentPrime);
+          dDivid = (double)biR1 + dRem*dLimbMult;
+          dQuot = floor(dDivid / dCurrentPrime);
           dRem = dDivid - dQuot * dCurrentPrime;
           biR1 = (int)dQuot;
-          dDivid = (BIG)biR0 + dRem*dLimbMult;
-          biR0 = (int)FLOOR(dDivid / dCurrentPrime);
+          dDivid = (double)biR0 + dRem*dLimbMult;
+          biR0 = (int)floor(dDivid / dCurrentPrime);
         }
         switch (NumberLengthDividend)
         {
@@ -1453,12 +1513,11 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           NumberLengthDividend--;
           if (NumberLengthDividend == 1)
           {
-            BIG dDivid = (BIG)biR1 * (BIG)(1U << BITS_PER_INT_GROUP) + (BIG)biR0;
+            double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
             int sqrtDivid = (int)(floor(sqrt((double)dDivid)));
             fullRemainder = TRUE;
             for (; index < common.siqs.nbrFactorBasePrimes; index++)
             {
-              rowPrimeSieveData = primeSieveData + index;
 #if 0
               if (rowPrimeSieveData->value == 41893)
               {
@@ -1492,19 +1551,11 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                   {
                     iRem = index2 - rowPrimeSieveData->soln1;
                   }
+                  iRem += ((iRem >> 31) & divis) - divis;
+                  iRem += (iRem >> 31) & divis;
                   if (iRem >= divis)
                   {
-                    if ((iRem -= divis) >= divis)
-                    {
-                      if ((iRem -= divis) >= divis)
-                      {
-                        iRem %= divis;
-                      }
-                    }
-                  }
-                  else
-                  {
-                    iRem += (iRem >> 31) & divis;
+                    iRem %= divis;
                   }
                   if (iRem != 0 && iRem != divis - rowPrimeSieveData->difsoln)
                   {
@@ -1514,7 +1565,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 }
                 else
                 {
-                  if (dDivid != FLOOR(dDivid / Divisor) * Divisor)
+                  if (dDivid != floor(dDivid / Divisor) * Divisor)
                   {
                     break;
                   }
@@ -1534,7 +1585,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               }
               if (Divisor > sqrtDivid)
               {                     // End of trial division.
-                if (dDivid >= (BIG)(1U << BITS_PER_INT_GROUP))
+                if (dDivid >= (double)(1U << BITS_PER_INT_GROUP))
                 {                   // Dividend is too large.
                   return 0;
                 }
@@ -1576,8 +1627,9 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 return Divisor;
               }
               fullRemainder = FALSE;
+              rowPrimeSieveData++;
             }
-            if (dDivid >= (BIG)(1U << BITS_PER_INT_GROUP))
+            if (dDivid >= (double)(1U << BITS_PER_INT_GROUP))
             {                   // Dividend is too large.
               return 0;
             }
@@ -1586,6 +1638,8 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           }
         }
       }             /* end while */
+      rowPrimeSieveData++;
+      rowPrimeTrialDivisionData++;
     }               /* end for */
   }
   rowSquares[0] = nbrSquares;
@@ -1732,7 +1786,7 @@ static void PartialRelationFound(
     oldDivid = rowPartial[0];
     if (newDivid == oldDivid || newDivid == -oldDivid)
     {   // Match of partials.
-      BIG dRem, dDivisor;
+      double dRem, dDivisor;
       for (index = 0; index < squareRootSize; index++)
       {
         biV[index] = rowPartial[index + 2];
@@ -1799,37 +1853,37 @@ static void PartialRelationFound(
           switch (NumberLengthDivid)
           {
           case 7:
-            dRem = (BIG)biT6*(BIG)rowPrimeTrialDivisionData->exp6 +
-              (BIG)biT5*(BIG)rowPrimeTrialDivisionData->exp5 +
-              (BIG)biT4*(BIG)rowPrimeTrialDivisionData->exp4 +
-              (BIG)biT3*(BIG)rowPrimeTrialDivisionData->exp3 +
-              (BIG)biT2*(BIG)rowPrimeTrialDivisionData->exp2;
+            dRem = (double)biT6*(double)rowPrimeTrialDivisionData->exp6 +
+              (double)biT5*(double)rowPrimeTrialDivisionData->exp5 +
+              (double)biT4*(double)rowPrimeTrialDivisionData->exp4 +
+              (double)biT3*(double)rowPrimeTrialDivisionData->exp3 +
+              (double)biT2*(double)rowPrimeTrialDivisionData->exp2;
             break;
           case 6:
-            dRem = (BIG)biT5*(BIG)rowPrimeTrialDivisionData->exp5 +
-              (BIG)biT4*(BIG)rowPrimeTrialDivisionData->exp4 +
-              (BIG)biT3*(BIG)rowPrimeTrialDivisionData->exp3 +
-              (BIG)biT2*(BIG)rowPrimeTrialDivisionData->exp2;
+            dRem = (double)biT5*(double)rowPrimeTrialDivisionData->exp5 +
+              (double)biT4*(double)rowPrimeTrialDivisionData->exp4 +
+              (double)biT3*(double)rowPrimeTrialDivisionData->exp3 +
+              (double)biT2*(double)rowPrimeTrialDivisionData->exp2;
             break;
           case 5:
-            dRem = (BIG)biT4*(BIG)rowPrimeTrialDivisionData->exp4 +
-              (BIG)biT3*(BIG)rowPrimeTrialDivisionData->exp3 +
-              (BIG)biT2*(BIG)rowPrimeTrialDivisionData->exp2;
+            dRem = (double)biT4*(double)rowPrimeTrialDivisionData->exp4 +
+              (double)biT3*(double)rowPrimeTrialDivisionData->exp3 +
+              (double)biT2*(double)rowPrimeTrialDivisionData->exp2;
             break;
           case 4:
-            dRem = (BIG)biT3*(BIG)rowPrimeTrialDivisionData->exp3 +
-              (BIG)biT2*(BIG)rowPrimeTrialDivisionData->exp2;
+            dRem = (double)biT3*(double)rowPrimeTrialDivisionData->exp3 +
+              (double)biT2*(double)rowPrimeTrialDivisionData->exp2;
             break;
           case 3:
-            dRem = (BIG)biT2*(BIG)rowPrimeTrialDivisionData->exp2;
+            dRem = (double)biT2*(double)rowPrimeTrialDivisionData->exp2;
             break;
           default:
             dRem = 0;
             break;
           }
-          dRem += (BIG)biT1*(BIG)rowPrimeTrialDivisionData->exp1 + biT0;
-          dDivisor = (BIG)Divisor;
-          dRem -= FLOOR(dRem / dDivisor)*dDivisor;
+          dRem += (double)biT1*(double)rowPrimeTrialDivisionData->exp1 + biT0;
+          dDivisor = (double)Divisor;
+          dRem -= floor(dRem / dDivisor)*dDivisor;
           if (dRem != 0)
           {
             break;
@@ -2125,7 +2179,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
 
 //  threadArray = new Thread[numberThreads];
   Temp = logLimbs(pNbrToFactor, origNumberLength);
-  common.siqs.nbrFactorBasePrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.318);
+  common.siqs.nbrFactorBasePrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.363 - 1);
   common.siqs.SieveLimit = (int)exp(8.5 + 0.015 * Temp) & 0xFFFFFFF8;
   if (common.siqs.SieveLimit > MAX_SIEVE_LIMIT)
   {
@@ -2393,7 +2447,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
       sqrt(dNumberToFactor) * common.siqs.SieveLimit /
       (FactorBase * 64) /
       common.siqs.primeSieveData[j + 1].value)
-      / log(3) + 0x81);
+      / log(3) + 0x80);
   common.siqs.firstLimit = (int)(log(dNumberToFactor) / 3);
   for (common.siqs.secondLimit = common.siqs.firstLimit; common.siqs.secondLimit < common.siqs.nbrFactorBasePrimes; common.siqs.secondLimit++)
   {
@@ -2610,8 +2664,8 @@ static unsigned char LinearAlgebraPhase(
   // Get new number of rows after erasing singletons.
   int matrixBlength = EraseSingletons(common.siqs.nbrFactorBasePrimes);
   common.siqs.matrixBLength = matrixBlength;
-  common.siqs.matrixRows = matrixBlength;
-  common.siqs.matrixCols = common.siqs.primeTrialDivisionData[0].exp2;
+  matrixRows = matrixBlength;
+  matrixCols = common.siqs.primeTrialDivisionData[0].exp2;
   common.siqs.primeTrialDivisionData[0].exp2 = 0;         // Restore correct value.
   BlockLanczos();
   // The rows of matrixV indicate which rows must be multiplied so no
@@ -2797,19 +2851,26 @@ static unsigned char InsertNewRelation(
 static int intModInv(int NbrMod, int currentPrime)
 {
   int QQ, T1, T3;
+  int subt;
   int V1 = 1;
   int V3 = NbrMod;
   int U1 = 0;
   int U3 = currentPrime;
   while (V3 != 0)
   {
-    if (U3 < V3 + V3)
-    {               // QQ = 1
+    subt = U3 - V3 - V3;
+    if (subt < 0)
+    {               // QQ = 1 (probability = 41.5 %)
       T1 = U1 - V1;
       T3 = U3 - V3;
     }
+    else if (subt < V3)
+    {               // QQ = 2 (probability = 17 %)
+      T1 = U1 - V1 - V1;
+      T3 = subt;
+    }
     else
-    {
+    {               // QQ > 2 (probability = 41.5 %)
       QQ = U3 / V3;
       T1 = U1 - V1 * QQ;
       T3 = U3 - V3 * QQ;
@@ -2822,6 +2883,7 @@ static int intModInv(int NbrMod, int currentPrime)
   return U1 + (currentPrime & (U1 >> 31));
 }
 
+#define processCol(col) (*(RightMatr + col) & ((leftMatr << col) >> 31))
 /* Multiply binary matrices of length m x 32 by 32 x 32 */
 /* The product matrix has size m x 32. Then add it to a m x 32 matrix. */
 static void MatrixMultAdd(int *LeftMatr, int *RightMatr, int *ProdMatr)
@@ -2830,18 +2892,41 @@ static void MatrixMultAdd(int *LeftMatr, int *RightMatr, int *ProdMatr)
   int row;
   for (row = 0; row < matrLength; row++)
   {
-    int col;
-    int prodMatr = *(ProdMatr+row);
     int leftMatr = *(LeftMatr+row);
-    for (col=0; col<32; col++)
-    {
-      if (leftMatr < 0)
-      {
-        prodMatr ^= *(RightMatr+col);
-      }
-      leftMatr *= 2;
-    }
-    *(ProdMatr+row) = prodMatr;
+    // For each column...
+    *(ProdMatr + row) ^=
+    processCol(0) ^
+    processCol(1) ^
+    processCol(2) ^
+    processCol(3) ^
+    processCol(4) ^
+    processCol(5) ^
+    processCol(6) ^
+    processCol(7) ^
+    processCol(8) ^
+    processCol(9) ^
+    processCol(10) ^
+    processCol(11) ^
+    processCol(12) ^
+    processCol(13) ^
+    processCol(14) ^
+    processCol(15) ^
+    processCol(16) ^
+    processCol(17) ^
+    processCol(18) ^
+    processCol(19) ^
+    processCol(20) ^
+    processCol(21) ^
+    processCol(22) ^
+    processCol(23) ^
+    processCol(24) ^
+    processCol(25) ^
+    processCol(26) ^
+    processCol(27) ^
+    processCol(28) ^
+    processCol(29) ^
+    processCol(30) ^
+    processCol(31);
   }
 }
 /* Multiply binary matrices of length m x 32 by 32 x 32 */
@@ -2873,19 +2958,14 @@ static void MatrixMultiplication(int *LeftMatr, int *RightMatr, int *ProdMatr)
 static void MatrTranspMult(int matrLength, int *LeftMatr, int *RightMatr, int *ProdMatr)
 {
   int row, col;
-  int iMask = 1;
   for (col = 31; col >= 0; col--)
   {
     int prodMatr = 0;
     for (row = 0; row < matrLength; row++)
     {
-      if ((*(LeftMatr+row) & iMask) != 0)
-      {
-        prodMatr ^= *(RightMatr+row);
-      }
+      prodMatr ^= *(RightMatr + row) & ((*(LeftMatr + row) << col) >> 31);
     }
     *(ProdMatr+col) = prodMatr;
-    iMask *= 2;
   }
 }
 
@@ -3073,7 +3153,7 @@ static void BlockLanczos(void)
   // Compute matrix Vt(0) * V(0)
   MatrTranspMult(common.siqs.matrixBLength, common.siqs.matrixV, common.siqs.matrixV, matrixVtV0);
 #ifdef __EMSCRIPTEN__
-  showMatrixSize((char *)SIQSInfoText, common.siqs.matrixRows, common.siqs.matrixCols);
+  showMatrixSize((char *)SIQSInfoText, matrixRows, matrixCols);
 #endif
 #if DEBUG_SIQS
   {
@@ -3102,7 +3182,7 @@ static void BlockLanczos(void)
       ptrText += strlen(ptrText);
       strcpy(ptrText, lang? "Progreso del álgebra lineal: ": "Linear algebra progress: ");
       ptrText += strlen(ptrText);
-      int2dec(&ptrText, stepNbr * 3200 / common.siqs.matrixRows);
+      int2dec(&ptrText, stepNbr * 3200 / matrixRows);
       strcpy(ptrText, "%</p>");
       databack(SIQSInfo);
     }  
@@ -3513,7 +3593,7 @@ static void sieveThread(BigInteger *result)
   int i, PolynomialIndex, index, index2;
   int currentPrime;
   int RemB, D, Q;
-  int Dividend[MAX_LIMBS_SIQS];
+  int *piDividend;
   int rowMatrixBbeforeMerge[200];
   int rowMatrixB[200];
   unsigned char positive;
@@ -3631,169 +3711,169 @@ static void sieveThread(BigInteger *result)
           }
           for (index = 1; index < common.siqs.nbrFactorBasePrimes; index++)
           {
-            BIG dRem, dCurrentPrime;
+            double dRem, dCurrentPrime;
             rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[index];
             rowPrimeSieveData = &common.siqs.primeSieveData[index];
             // Get current prime.
             currentPrime = rowPrimeTrialDivisionData->value;
-            memcpy(Dividend, common.siqs.biQuadrCoeff, sizeof(Dividend));   // Get A mod current prime.
+            piDividend = common.siqs.biQuadrCoeff;   // Get A mod current prime.
             switch (NumberLengthA)
             {
             case 7:
-              dRem = (BIG)Dividend[6] * (BIG)rowPrimeTrialDivisionData->exp6 +
-                (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
-                (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-                (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+              dRem = (double)*(piDividend + 6) * (double)rowPrimeTrialDivisionData->exp6 +
+                (double)*(piDividend + 5) * (double)rowPrimeTrialDivisionData->exp5 +
+                (double)*(piDividend + 4) * (double)rowPrimeTrialDivisionData->exp4 +
+                (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+                (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1;
               break;
             case 6:
-              dRem = (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
-                (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-                (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+              dRem = (double)*(piDividend + 5) * (double)rowPrimeTrialDivisionData->exp5 +
+                (double)*(piDividend + 4) * (double)rowPrimeTrialDivisionData->exp4 +
+                (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+                (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1;
               break;
             case 5:
-              dRem = (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-                (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+              dRem = (double)*(piDividend + 4) * (double)rowPrimeTrialDivisionData->exp4 +
+                (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+                (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1;
               break;
             case 4:
-              dRem = (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+              dRem = (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+                (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1;
               break;
             default:
-              dRem = (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+              dRem = (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1;
               break;
             }
-            dRem += (BIG)Dividend[0];
-            dCurrentPrime = (BIG)currentPrime;
-            dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+            dRem += (double)*piDividend;
+            dCurrentPrime = (double)currentPrime;
+            dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
             // Get its inverse
             inverseA = intModInv((int)dRem, currentPrime);
             twiceInverseA = inverseA << 1;       // and twice this value.
-            dRem = (BIG)twiceInverseA * (BIG)rowPrimeSieveData->modsqrt;
-            dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+            dRem = (double)twiceInverseA * (double)rowPrimeSieveData->modsqrt;
+            dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
             rowPrimeSieveData->difsoln = (int)dRem;
             switch (NumberLengthA)
             {
             case 7:
               for (index2 = common.siqs.nbrFactorsA - 1; index2 > 0; index2--)
               {
-                memcpy(Dividend, common.siqs.biLinearDelta[index2], sizeof(Dividend));
-                dRem = (BIG)Dividend[6] * (BIG)rowPrimeTrialDivisionData->exp6 +
-                  (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
-                  (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-                  (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-                  (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                  (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
-                  (BIG)Dividend[0];
-                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+                piDividend = common.siqs.biLinearDelta[index2];
+                dRem = (double)*(piDividend + 6) * (double)rowPrimeTrialDivisionData->exp6 +
+                  (double)*(piDividend + 5) * (double)rowPrimeTrialDivisionData->exp5 +
+                  (double)*(piDividend + 4) * (double)rowPrimeTrialDivisionData->exp4 +
+                  (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+                  (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                  (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1 +
+                  (double)*piDividend;
+                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
                 dRem *= twiceInverseA;
-                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
-              memcpy(Dividend, common.siqs.biLinearDelta[0], sizeof(Dividend));
-              dRem = (BIG)Dividend[6] * (BIG)rowPrimeTrialDivisionData->exp6 +
-                (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
-                (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-                (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
-                (BIG)Dividend[0];
-              dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+              piDividend = common.siqs.biLinearDelta[0];
+              dRem = (double)*(piDividend + 6) * (double)rowPrimeTrialDivisionData->exp6 +
+                (double)*(piDividend + 5) * (double)rowPrimeTrialDivisionData->exp5 +
+                (double)*(piDividend + 4) * (double)rowPrimeTrialDivisionData->exp4 +
+                (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+                (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1 +
+                (double)*piDividend;
+              dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             case 6:
               for (index2 = common.siqs.nbrFactorsA - 1; index2 > 0; index2--)
               {
-                memcpy(Dividend, common.siqs.biLinearDelta[index2], sizeof(Dividend));
-                dRem = (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
-                  (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-                  (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-                  (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                  (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
-                  (BIG)Dividend[0];
-                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+                piDividend = common.siqs.biLinearDelta[index2];
+                dRem = (double)*(piDividend + 5) * (double)rowPrimeTrialDivisionData->exp5 +
+                  (double)*(piDividend + 4) * (double)rowPrimeTrialDivisionData->exp4 +
+                  (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+                  (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                  (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1 +
+                  (double)*piDividend;
+                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
                 dRem *= twiceInverseA;
-                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
-              memcpy(Dividend, common.siqs.biLinearDelta[0], sizeof(Dividend));
-              dRem = (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
-                (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-                (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
-                (BIG)Dividend[0];
-              dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+              piDividend = common.siqs.biLinearDelta[0];
+              dRem = (double)*(piDividend + 5) * (double)rowPrimeTrialDivisionData->exp5 +
+                (double)*(piDividend + 4) * (double)rowPrimeTrialDivisionData->exp4 +
+                (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+                (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1 +
+                (double)*piDividend;
+              dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             case 5:
               for (index2 = common.siqs.nbrFactorsA - 1; index2 > 0; index2--)
               {
-                memcpy(Dividend, common.siqs.biLinearDelta[index2], sizeof(Dividend));
-                dRem = (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-                  (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-                  (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                  (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
-                  (BIG)Dividend[0];
-                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+                piDividend = common.siqs.biLinearDelta[index2];
+                dRem = (double)*(piDividend + 4) * (double)rowPrimeTrialDivisionData->exp4 +
+                  (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+                  (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                  (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1 +
+                  (double)*piDividend;
+                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
                 dRem *= twiceInverseA;
-                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
-              memcpy(Dividend, common.siqs.biLinearDelta[0], sizeof(Dividend));
-              dRem = (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-                (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
-                (BIG)Dividend[0];
-              dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+              piDividend = common.siqs.biLinearDelta[0];
+              dRem = (double)*(piDividend + 4) * (double)rowPrimeTrialDivisionData->exp4 +
+                (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+                (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1 +
+                (double)*piDividend;
+              dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             case 4:
               for (index2 = common.siqs.nbrFactorsA - 1; index2 > 0; index2--)
               {
-                memcpy(Dividend, common.siqs.biLinearDelta[index2], sizeof(Dividend));
-                dRem = (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-                  (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                  (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
-                  (BIG)Dividend[0];
-                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+                piDividend = common.siqs.biLinearDelta[index2];
+                dRem = (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+                  (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                  (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1 +
+                  (double)*piDividend;
+                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
                 dRem *= twiceInverseA;
-                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
-              memcpy(Dividend, common.siqs.biLinearDelta[0], sizeof(Dividend));
-              dRem = (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-                (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
-                (BIG)Dividend[0];
-              dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+              piDividend = common.siqs.biLinearDelta[0];
+              dRem = (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+                (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1 +
+                (double)*piDividend;
+              dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             default:
               for (index2 = common.siqs.nbrFactorsA - 1; index2 > 0; index2--)
               {
-                memcpy(Dividend, common.siqs.biLinearDelta[index2], sizeof(Dividend));
-                dRem = (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                  (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
-                  (BIG)Dividend[0];
-                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+                piDividend = common.siqs.biLinearDelta[index2];
+                dRem = (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                  (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1 +
+                  (double)*piDividend;
+                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
                 dRem *= twiceInverseA;
-                dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+                dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
                 rowPrimeSieveData->Bainv2[index2 - 1] = (int)dRem;
               }
-              memcpy(Dividend, common.siqs.biLinearDelta[0], sizeof(Dividend));
-              dRem = (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-                (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1 +
-                (BIG)Dividend[0];
-              dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+              piDividend = common.siqs.biLinearDelta[0];
+              dRem = (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+                (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1 +
+                (double)*piDividend;
+              dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
               break;
             }
             dRem *= twiceInverseA;
-            dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+            dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
             rowPrimeSieveData->Bainv2_0 = (int)dRem;
             if (rowPrimeSieveData->Bainv2_0 != 0)
             {
@@ -3884,101 +3964,102 @@ static void sieveThread(BigInteger *result)
       }
       for (i = common.siqs.nbrFactorBasePrimes - 1; i>0; i--)
       {
-        BIG dRem, dCurrentPrime;
+        double dRem, dCurrentPrime;
         rowPrimeSieveData = &common.siqs.primeSieveData[i];
         rowPrimeSieveData0 = common.siqs.firstPrimeSieveData+i;
         rowPrimeSieveData->difsoln = rowPrimeSieveData0->difsoln;
         rowPrimeSieveData->Bainv2_0 = rowPrimeSieveData0->Bainv2_0;
         rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[i];
         currentPrime = rowPrimeTrialDivisionData->value;     // Get current prime.
-        memcpy(Dividend, common.siqs.biQuadrCoeff,sizeof(common.siqs.biQuadrCoeff)); // Get A mod current prime.
+         // Get A mod current prime.
+        piDividend = common.siqs.biQuadrCoeff;
         switch (NumberLengthA)
         {
         case 7:
-          dRem = (BIG)Dividend[6] * (BIG)rowPrimeTrialDivisionData->exp6 +
-            (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
-            (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-            (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-            (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-            (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+          dRem = (double)*(piDividend + 6) * (double)rowPrimeTrialDivisionData->exp6 +
+            (double)*(piDividend + 5) * (double)rowPrimeTrialDivisionData->exp5 +
+            (double)*(piDividend + 4) * (double)rowPrimeTrialDivisionData->exp4 +
+            (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+            (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+            (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1;
           break;
         case 6:
-          dRem = (BIG)Dividend[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
-            (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-            (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-            (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-            (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+          dRem = (double)*(piDividend + 5) * (double)rowPrimeTrialDivisionData->exp5 +
+            (double)*(piDividend + 4) * (double)rowPrimeTrialDivisionData->exp4 +
+            (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+            (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+            (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1;
           break;
         case 5:
-          dRem = (BIG)Dividend[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-            (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-            (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-            (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+          dRem = (double)*(piDividend + 4) * (double)rowPrimeTrialDivisionData->exp4 +
+            (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+            (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+            (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1;
           break;
         case 4:
-          dRem = (BIG)Dividend[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-            (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-            (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+          dRem = (double)*(piDividend + 3) * (double)rowPrimeTrialDivisionData->exp3 +
+            (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+            (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1;
           break;
         case 3:
-          dRem = (BIG)Dividend[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-            (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+          dRem = (double)*(piDividend + 2) * (double)rowPrimeTrialDivisionData->exp2 +
+            (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1;
           break;
         default:
-          dRem = (BIG)Dividend[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+          dRem = (double)*(piDividend + 1) * (double)rowPrimeTrialDivisionData->exp1;
           break;
         }
-        dCurrentPrime = (BIG)currentPrime;
-        dRem += (BIG)Dividend[0];
-        dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+        dCurrentPrime = (double)currentPrime;
+        dRem += (double)*piDividend;
+        dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
         // Get its inverse
         inverseA = intModInv((int)dRem, currentPrime);
         switch (NumberLengthB)
         {
         case 7:
-          dRem = (BIG)biAbsLinearCoeff[6] * (BIG)rowPrimeTrialDivisionData->exp6 +
-            (BIG)biAbsLinearCoeff[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
-            (BIG)biAbsLinearCoeff[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-            (BIG)biAbsLinearCoeff[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-            (BIG)biAbsLinearCoeff[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-            (BIG)biAbsLinearCoeff[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+          dRem = (double)biAbsLinearCoeff[6] * (double)rowPrimeTrialDivisionData->exp6 +
+            (double)biAbsLinearCoeff[5] * (double)rowPrimeTrialDivisionData->exp5 +
+            (double)biAbsLinearCoeff[4] * (double)rowPrimeTrialDivisionData->exp4 +
+            (double)biAbsLinearCoeff[3] * (double)rowPrimeTrialDivisionData->exp3 +
+            (double)biAbsLinearCoeff[2] * (double)rowPrimeTrialDivisionData->exp2 +
+            (double)biAbsLinearCoeff[1] * (double)rowPrimeTrialDivisionData->exp1;
           break;
         case 6:
-          dRem = (BIG)biAbsLinearCoeff[5] * (BIG)rowPrimeTrialDivisionData->exp5 +
-            (BIG)biAbsLinearCoeff[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-            (BIG)biAbsLinearCoeff[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-            (BIG)biAbsLinearCoeff[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-            (BIG)biAbsLinearCoeff[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+          dRem = (double)biAbsLinearCoeff[5] * (double)rowPrimeTrialDivisionData->exp5 +
+            (double)biAbsLinearCoeff[4] * (double)rowPrimeTrialDivisionData->exp4 +
+            (double)biAbsLinearCoeff[3] * (double)rowPrimeTrialDivisionData->exp3 +
+            (double)biAbsLinearCoeff[2] * (double)rowPrimeTrialDivisionData->exp2 +
+            (double)biAbsLinearCoeff[1] * (double)rowPrimeTrialDivisionData->exp1;
           break;
         case 5:
-          dRem = (BIG)biAbsLinearCoeff[4] * (BIG)rowPrimeTrialDivisionData->exp4 +
-            (BIG)biAbsLinearCoeff[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-            (BIG)biAbsLinearCoeff[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-            (BIG)biAbsLinearCoeff[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+          dRem = (double)biAbsLinearCoeff[4] * (double)rowPrimeTrialDivisionData->exp4 +
+            (double)biAbsLinearCoeff[3] * (double)rowPrimeTrialDivisionData->exp3 +
+            (double)biAbsLinearCoeff[2] * (double)rowPrimeTrialDivisionData->exp2 +
+            (double)biAbsLinearCoeff[1] * (double)rowPrimeTrialDivisionData->exp1;
           break;
         case 4:
-          dRem = (BIG)biAbsLinearCoeff[3] * (BIG)rowPrimeTrialDivisionData->exp3 +
-            (BIG)biAbsLinearCoeff[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-            (BIG)biAbsLinearCoeff[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+          dRem = (double)biAbsLinearCoeff[3] * (double)rowPrimeTrialDivisionData->exp3 +
+            (double)biAbsLinearCoeff[2] * (double)rowPrimeTrialDivisionData->exp2 +
+            (double)biAbsLinearCoeff[1] * (double)rowPrimeTrialDivisionData->exp1;
           break;
         case 3:
-          dRem = (BIG)biAbsLinearCoeff[2] * (BIG)rowPrimeTrialDivisionData->exp2 +
-            (BIG)biAbsLinearCoeff[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+          dRem = (double)biAbsLinearCoeff[2] * (double)rowPrimeTrialDivisionData->exp2 +
+            (double)biAbsLinearCoeff[1] * (double)rowPrimeTrialDivisionData->exp1;
           break;
         default:
-          dRem = (BIG)biAbsLinearCoeff[1] * (BIG)rowPrimeTrialDivisionData->exp1;
+          dRem = (double)biAbsLinearCoeff[1] * (double)rowPrimeTrialDivisionData->exp1;
           break;
         }
-        dRem += (BIG)biAbsLinearCoeff[0];
-        dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+        dRem += (double)biAbsLinearCoeff[0];
+        dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
         RemB = (int)dRem;
         if (positive)
         {
           RemB = currentPrime - RemB;
         }
-        dRem = (BIG)inverseA * (BIG)(rowPrimeSieveData0->modsqrt + RemB) +
-               (BIG)common.siqs.SieveLimit;
-        dRem -= FLOOR(dRem / dCurrentPrime)*dCurrentPrime;
+        dRem = (double)inverseA * (double)(rowPrimeSieveData0->modsqrt + RemB) +
+               (double)common.siqs.SieveLimit;
+        dRem -= floor(dRem / dCurrentPrime)*dCurrentPrime;
         rowPrimeSieveData->soln1 = (int)dRem;
       }
       do
@@ -4011,14 +4092,9 @@ static void sieveThread(BigInteger *result)
         do
         {
           index2 -= 16;
-          if (((SieveArray[index2+1] | SieveArray[index2+2] |
-            SieveArray[index2+3] | SieveArray[index2+4] |
-            SieveArray[index2+5] | SieveArray[index2+6] |
-            SieveArray[index2+7] | SieveArray[index2+8] |
-            SieveArray[index2+9] | SieveArray[index2+10] |
-            SieveArray[index2+11] | SieveArray[index2+12] |
-            SieveArray[index2+13] | SieveArray[index2+14] |
-            SieveArray[index2+15] | SieveArray[index2+16]) & 0x8080) != 0)
+          long *ptr = (long *)&SieveArray[index2 + 1];
+          if (((*ptr | *(ptr + 1) | *(ptr + 2) | *(ptr+3) |
+            *(ptr + 4) | *(ptr + 5) | *(ptr + 6) | *(ptr + 7)) & 0x80808080) != 0)
           {
             for (i = 16; i>0; i--)
             {
@@ -4089,20 +4165,35 @@ static void sieveThread(BigInteger *result)
 #if 0
 /* Implementation of algorithm explained in Gower and Wagstaff paper */
 /* The variables with suffix 3 correspond to multiplier = 3 */
-static int SQUFOF(long N, int queue[])
+static int SQUFOF(double N, int queue[])
 {
-  BIG sqrt;
+  double squareRoot;
   int Q, Q1, P, P1, L, S;
-  int i, j, r, s, t, q;
+  int ctr, j, r, s, t, q;
   int queueHead, queueTail, queueIndex;
-  long N3;
+  double N3;
   int Q3, Q13, P3, P13, L3, S3;
   int r3, s3, t3, q3;
   int queueHead3, queueTail3, queueIndex3;
   int QRev, Q1Rev, PRev, P1Rev;
   int tRev, qRev, uRev;
   /* Step 1: Initialize */
+  squareRoot = sqrt(N);
+  S = (int)squareRoot;
+  if ((double)(S + 1)*(double)(S + 1) <= N)
+  {
+    S++;
+  }
+  if ((double)S*(double)S > N)
+  {
+    S--;
+  }
+  if ((double)S*(double)S == N)
+  {
+    return S;
+  }
   N3 = 3 * N;
+#ifdef _USING64BITS_
   if ((N & 3) == 1)
   {
     N <<= 1;
@@ -4111,61 +4202,71 @@ static int SQUFOF(long N, int queue[])
   {
     N3 <<= 1;
   }
-  sqrt = sqrt(N);
-  S = (int)sqrt;
-  if ((long)(S + 1)*(long)(S + 1) <= N)
+#else
+  if (N - floor(N / 4) == 1)
+  {
+    N *= 2;
+  }
+  if (N3 - floor(N3 / 4) == 1)
+  {
+    N3 *= 2;
+  }
+#endif
+  squareRoot = sqrt(N);
+  S = (int)squareRoot;
+  if ((double)(S + 1)*(double)(S + 1) <= N)
   {
     S++;
   }
-  if ((long)S*(long)S > N)
+  if ((double)S*(double)S > N)
   {
     S--;
-  }
-  if ((long)S*(long)S == N)
-  {
-    return S;
   }
   Q1 = 1;
   P = S;
   Q = (int)N - P*P;
-  L = (int)(2 * sqrt(2 * sqrt));
+  L = (int)(2 * sqrt(2 * squareRoot));
   queueHead = 0;
   queueTail = 0;
 
-  sqrt = sqrt(N3);
-  S3 = (int)sqrt;
-  if ((long)(S3 + 1)*(long)(S3 + 1) <= N3)
+  squareRoot = sqrt(N3);
+  S3 = (int)squareRoot;
+  if ((double)(S3 + 1)*(double)(S3 + 1) <= N3)
   {
     S3++;
   }
-  if ((long)S3*(long)S3 > N3)
+  if ((double)S3*(double)S3 > N3)
   {
     S3--;
   }
-  if ((long)S3*(long)S3 == N3)
+  if ((double)S3*(double)S3 == N3)
   {
     return S3;
   }
   Q13 = 1;
   P3 = S3;
   Q3 = (int)N3 - P3*P3;
-  L3 = (int)(2 * sqrt(2 * sqrt));
-  queueHead3 = 100;
-  queueTail3 = 100;
+  L3 = (int)(2 * sqrt(2 * squareRoot));
+  queueHead3 = QUEUE_LENGTH;
+  queueTail3 = QUEUE_LENGTH;
 
   /* Step 2: Cycle forward to find a proper square form */
-  for (i = 0; i <= L; i++)
+  for (ctr = 0; ctr <= L; ctr++)
   {
     /* Multiplier == 1 */
+    
+    // Step 2a for i odd
     q = (S + P) / Q;
     P1 = q*Q - P;
+    
+    // Step 2b for i odd
     if (Q <= L)
     {
       if ((Q & 1) == 0)
       {
         queue[queueHead++] = Q >> 1;
         queue[queueHead++] = P % (Q >> 1);
-        if (queueHead == 100)
+        if (queueHead == QUEUE_LENGTH)
         {
           queueHead = 0;
         }
@@ -4174,114 +4275,112 @@ static int SQUFOF(long N, int queue[])
       {
         queue[queueHead++] = Q;
         queue[queueHead++] = P % Q;
-        if (queueHead == 100)
+        if (queueHead == QUEUE_LENGTH)
         {
           queueHead = 0;
         }
       }
     }
+    
+       // Step 2c for i odd
     t = Q1 + q*(P - P1);
     Q1 = Q;
     Q = t;
     P = P1;
+    
+        // Step 2d for i even.
+    r = (int)sqrt(Q);
+    if (r*r == Q)
     {
-      r = (int)sqrt(Q);
-      if (r*r == Q)
+      queueIndex = queueTail;
+      for (;;)
       {
-        queueIndex = queueTail;
-        for (;;)
+        if (queueIndex == queueHead)
         {
-          if (queueIndex == queueHead)
+          /* Step 3: Compute inverse square root of the square form */
+          PRev = P;
+          Q1Rev = r;
+          uRev = (S - PRev) / r;
+          PRev += r*uRev;
+          QRev = (int)((N - (double)PRev*(double)PRev) / Q1Rev);
+          /* Step 4: Cycle in the reverse direction to find a factor of N */
+          for (j = ctr; j >= 0; j--)
           {
-            /* Step 3: Compute inverse square root of the square form */
-            PRev = P;
-            Q1Rev = r;
-            uRev = (S - PRev) % r;
-            uRev += (uRev >> 31) & r;
-            PRev = S - uRev;
-            QRev = (int)((N - (long)PRev*(long)PRev) / Q1Rev);
-            /* Step 4: Cycle in the reverse direction to find a factor of N */
-            for (j = i; j >= 0; j--)
+            // Step 4a
+            qRev = (S + PRev) / QRev;
+            P1Rev = qRev*QRev - PRev;
+            
+            // Step 4b
+            if (PRev == P1Rev)
             {
-              qRev = (S + PRev) / QRev;
-              P1Rev = qRev*QRev - PRev;
-              if (PRev == P1Rev)
+              /* Step 5: Get the factor of N */
+              if ((QRev & 1) == 0)
               {
-                /* Step 5: Get the factor of N */
-                if ((QRev & 1) == 0)
-                {
-                  return QRev >> 1;
-                }
-                return QRev;
+                return QRev >> 1;
               }
-              tRev = Q1Rev + qRev*(PRev - P1Rev);
-              Q1Rev = QRev;
-              QRev = tRev;
-              PRev = P1Rev;
-              qRev = (S + PRev) / QRev;
-              P1Rev = qRev*QRev - PRev;
-              if (PRev == P1Rev)
+              return QRev;
+            }
+            
+            // Step 4c
+            tRev = Q1Rev + qRev*(PRev - P1Rev);
+            Q1Rev = QRev;
+            QRev = tRev;
+            PRev = P1Rev;
+            
+            // Step 4a
+            qRev = (S + PRev) / QRev;
+            P1Rev = qRev*QRev - PRev;
+            
+            // Step 4b
+            if (PRev == P1Rev)
+            {
+              /* Step 5: Get the factor of N */
+              if ((QRev & 1) == 0)
               {
-                /* Step 5: Get the factor of N */
-                if ((QRev & 1) == 0)
-                {
-                  return QRev >> 1;
-                }
-                return QRev;
+                return QRev >> 1;
               }
-              tRev = Q1Rev + qRev*(PRev - P1Rev);
-              Q1Rev = QRev;
-              QRev = tRev;
-              PRev = P1Rev;
+              return QRev;
             }
-            break;
+            // Step 4c
+            tRev = Q1Rev + qRev*(PRev - P1Rev);
+            Q1Rev = QRev;
+            QRev = tRev;
+            PRev = P1Rev;
           }
-          s = queue[queueIndex++];
-          t = queue[queueIndex++];
-          if (queueIndex == 100)
-          {
-            queueIndex = 0;
-          }
-          if ((P - t) % s == 0)
-          {
-            break;
-          }
+          break;
         }
-        if (r > 1)
+        s = queue[queueIndex++];
+        t = queue[queueIndex++];
+        if (queueIndex == QUEUE_LENGTH)
         {
-          queueTail = queueIndex;
+          queueIndex = 0;
         }
-        if (r == 1)
+        if (r == s && (P - t) % s == 0)
         {
-          queueIndex = queueTail;
-          for (;;)
-          {
-            if (queueIndex == queueHead)
-            {
-              break;
-            }
-            if (queue[queueIndex] == 1)
-            {
-              return 0;
-            }
-            queueIndex += 2;
-            if (queueIndex == 100)
-            {
-              queueIndex = 0;
-            }
-          }
+          break;
         }
       }
+      if (r > 1)
+      {  // Delete all entries of queue from beginning including the pair
+         // for which (P-t)%s = 0.
+        queueTail = queueIndex;
+      }
+      if (r == 1)
+      {
+        return 0;
+      }
     }
+       // Step 2a for i even
     q = (S + P) / Q;
     P1 = q*Q - P;
+       // Step 2b for i even
     if (Q <= L)
     {
       if ((Q & 1) == 0)
       {
         queue[queueHead++] = Q >> 1;
         queue[queueHead++] = P % (Q >> 1);
-        if (queueHead == 100)
+        if (queueHead == QUEUE_LENGTH)
         {
           queueHead = 0;
         }
@@ -4290,17 +4389,20 @@ static int SQUFOF(long N, int queue[])
       {
         queue[queueHead++] = Q;
         queue[queueHead++] = P % Q;
-        if (queueHead == 100)
+        if (queueHead == QUEUE_LENGTH)
         {
           queueHead = 0;
         }
       }
     }
+        // Step 2c for i even
     t = Q1 + q*(P - P1);
     Q1 = Q;
     Q = t;
     P = P1;
+    
 
+#if 0
     /* Multiplier == 3 */
     q3 = (S3 + P3) / Q3;
     P13 = q3*Q3 - P3;
@@ -4310,18 +4412,18 @@ static int SQUFOF(long N, int queue[])
       {
         queue[queueHead3++] = Q3 >> 1;
         queue[queueHead3++] = P3 % (Q3 >> 1);
-        if (queueHead3 == 200)
+        if (queueHead3 == 2*QUEUE_LENGTH)
         {
-          queueHead3 = 100;
+          queueHead3 = QUEUE_LENGTH;
         }
       }
       else if (Q3 + Q3 <= L3)
       {
         queue[queueHead3++] = Q3;
         queue[queueHead3++] = P3 % Q3;
-        if (queueHead3 == 200)
+        if (queueHead3 == 2*QUEUE_LENGTH)
         {
-          queueHead3 = 100;
+          queueHead3 = QUEUE_LENGTH;
         }
       }
     }
@@ -4344,14 +4446,18 @@ static int SQUFOF(long N, int queue[])
             uRev = (S3 - PRev) % r3;
             uRev += (uRev >> 31) & r3;
             PRev = S3 - uRev;
-            QRev = (int)((N3 - (long)PRev*(long)PRev) / Q1Rev);
+            QRev = (int)((N3 - (double)PRev*(double)PRev) / Q1Rev);
             /* Step 4: Cycle in the reverse direction to find a factor of N */
             for (j = i; j >= 0; j--)
             {
               qRev = (S3 + PRev) / QRev;
               P1Rev = qRev*QRev - PRev;
-              if (PRev == P1Rev)
+              if (PRev == P1Rev && QRev > 6)
               {
+                if (QRev % 3 == 0)
+                {
+                  QRev /= 3;
+                }
                 /* Step 5: Get the factor of N */
                 if ((QRev & 1) == 0)
                 {
@@ -4365,8 +4471,12 @@ static int SQUFOF(long N, int queue[])
               PRev = P1Rev;
               qRev = (S3 + PRev) / QRev;
               P1Rev = qRev*QRev - PRev;
-              if (PRev == P1Rev)
+              if (PRev == P1Rev && QRev > 6)
               {
+                if (QRev % 3 == 0)
+                {
+                  QRev /= 3;
+                }
                 /* Step 5: Get the factor of N */
                 if ((QRev & 1) == 0)
                 {
@@ -4383,11 +4493,11 @@ static int SQUFOF(long N, int queue[])
           }
           s3 = queue[queueIndex3++];
           t3 = queue[queueIndex3++];
-          if (queueIndex3 == 200)
+          if (queueIndex3 == 2*QUEUE_LENGTH)
           {
-            queueIndex3 = 100;
+            queueIndex3 = QUEUE_LENGTH;
           }
-          if ((P3 - t3) % s3 == 0)
+          if (r3 == s3 && (P3 - t3) % s3 == 0)
           {
             break;
           }
@@ -4398,23 +4508,7 @@ static int SQUFOF(long N, int queue[])
         }
         if (r3 == 1)
         {
-          queueIndex3 = queueTail3;
-          for (;;)
-          {
-            if (queueIndex3 == queueHead3)
-            {
-              break;
-            }
-            if (queue[queueIndex3] == 1)
-            {
-              return 0;
-            }
-            queueIndex3 += 2;
-            if (queueIndex3 == 200)
-            {
-              queueIndex3 = 100;
-            }
-          }
+          return 0;
         }
       }
     }
@@ -4426,18 +4520,18 @@ static int SQUFOF(long N, int queue[])
       {
         queue[queueHead3++] = Q3 >> 1;
         queue[queueHead3++] = P3 % (Q3 >> 1);
-        if (queueHead3 == 200)
+        if (queueHead3 == 2*QUEUE_LENGTH)
         {
-          queueHead3 = 100;
+          queueHead3 = QUEUE_LENGTH;
         }
       }
       else if (Q3 + Q3 <= L3)
       {
         queue[queueHead3++] = Q3;
         queue[queueHead3++] = P3 % Q3;
-        if (queueHead3 == 200)
+        if (queueHead3 == 2*QUEUE_LENGTH)
         {
-          queueHead3 = 100;
+          queueHead3 = QUEUE_LENGTH;
         }
       }
     }
@@ -4445,22 +4539,25 @@ static int SQUFOF(long N, int queue[])
     Q13 = Q3;
     Q3 = t3;
     P3 = P13;
+#endif
   }
   return 0;
 }
+
 /* If 2^value mod value = 2, then the value is a probable prime (value odd) */
-static unsigned char isProbablePrime(long value)
+static unsigned char isProbablePrime(double bValue)
 {
-  long mask, montgomery2, Pr, Prod0, Prod1, MontDig;
+  int64_t value = (int64_t)bValue;
+  int64_t mask, montgomery2, Pr, Prod0, Prod1, MontDig;
   int N, MontgomeryMultN;
-  long BaseHI, BaseLO, valueHI, valueLO;
+  int64_t BaseHI, BaseLO, valueHI, valueLO;
   int x = N = (int)value; // 2 least significant bits of inverse correct.
   x = x * (2 - N * x);     // 4 least significant bits of inverse correct.
   x = x * (2 - N * x);     // 8 least significant bits of inverse correct.
   x = x * (2 - N * x);     // 16 least significant bits of inverse correct.
   x = x * (2 - N * x);     // 32 least significant bits of inverse correct.
   MontgomeryMultN = (-x) & 0x7FFFFFFF;
-  mask = 1L << 62;
+  mask = (int64_t)1 << 62;
   montgomery2 = 2 * (mask % value);
   if (montgomery2 >= value)
   {
@@ -4512,5 +4609,5 @@ static unsigned char isProbablePrime(long value)
   Pr = (BaseHI << 31) + BaseLO;
   return Pr == montgomery2;
 }
-
 #endif
+
