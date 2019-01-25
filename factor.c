@@ -917,10 +917,20 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
   int numPrimes = 2 * maxExpon + 3;
   double logar = logBigNbr(nbrToFactor);
   // 33219 = logarithm base 2 of max number supported = 10^10000.
-  memset(common.ecm.ProcessExpon, 0xFF, sizeof(common.ecm.ProcessExpon));
+  // Let n = a^b +/- 1 (n = number to factor).
+  // If n!=1 or n!=0 or n!=7 (mod 8), then b cannot be even.
+  modulus = nbrToFactor->limbs[0].x & 7;
+  if (modulus == 0 || modulus == 1 || modulus == 7)
+  {       // b can be even
+    memset(common.ecm.ProcessExpon, 0xFF, sizeof(common.ecm.ProcessExpon));
+  }
+  else
+  {       // b cannot be even
+    memset(common.ecm.ProcessExpon, 0xAA, sizeof(common.ecm.ProcessExpon));
+  }
   memset(common.ecm.primes, 0xFF, sizeof(common.ecm.primes));
   for (i = 2; i * i < numPrimes; i++)
-  { // Generation of primes using sieve of Eratosthenes.
+  {       // Generation of primes using sieve of Eratosthenes.
     if (common.ecm.primes[i >> 3] & (1 << (i & 7)))
     {     // Number i is prime.
       for (j = i * i; j < numPrimes; j += i)
@@ -929,36 +939,31 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
       }
     }
   }
-  // If the number +/- 1 is multiple of a prime but not a multiple
-  // of its square then the number +/- 1 cannot be a perfect power.
+  // Let n = a^b +/- 1 (n = number to factor).
+  // If -1<=n<=2 (mod p) does not hold, b cannot be multiple of p-1.
+  // If -2<=n<=2 (mod p) does not hold, b cannot be multiple of (p-1)/2.
   for (i = 2; i < numPrimes; i++)
   {
     if (common.ecm.primes[i>>3] & (1 << (i & 7)))
     {      // i is prime according to sieve.
+           // If n+/-1 is multiple of p, then it must be multiple
+           // of p^2, otherwise it cannot be a perfect power.
       uint64_t remainder;
       int index;
       int rem = getRemainder(nbrToFactor, i);
+      longToBigInteger(&Temp1, (uint64_t)i*(uint64_t)i);
+      BigIntRemainder(nbrToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
+      remainder = (uint64_t)Temp2.limbs[0].x;
       if (rem == 1 || rem == i - 1)
       {
-        longToBigInteger(&Temp1, (uint64_t)i*(uint64_t)i);
-        BigIntRemainder(nbrToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
-        remainder = (uint64_t)Temp2.limbs[0].x;
         if (Temp2.nbrLimbs > 1)
         {
           remainder += (uint64_t)Temp2.limbs[1].x << BITS_PER_GROUP;
         }
-        if (rem == 1 && remainder != 1)
-        {
-          plus1 = TRUE; // NumberFactor cannot be a power + 1
-        }
-        if (rem == i - 1 && remainder != (uint64_t)i*(uint64_t)i - 1)
-        {
-          minus1 = TRUE; // NumberFactor cannot be a power - 1
-        }
-        if (minus1 && plus1)
-        {
-          return;
-        }
+        // NumberFactor cannot be a power + 1 if condition holds.
+        plus1 = (rem == 1 && remainder != 1);
+        // NumberFactor cannot be a power - 1 if condition holds.
+        minus1 = (rem == i - 1 && remainder != (uint64_t)i*(uint64_t)i - 1);
       }
       index = i / 2;
       if (!(common.ecm.ProcessExpon[index >> 3] & (1<<(index&7))))
@@ -968,7 +973,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
       modulus = remainder % i;
       if (modulus > (plus1 ? 1 : 2) && modulus < (minus1 ? i - 1 : i - 2))
       {
-        for (j = i / 2; j <= maxExpon; j += i / 2)
+        for (j = index; j <= maxExpon; j += index)
         {
           common.ecm.ProcessExpon[j >> 3] &= ~(1 << (j&7));
         }
@@ -1808,11 +1813,7 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
       break;
     }
   } while (!memcmp(common.ecm.GD, TestNbr, NumberLength*sizeof(limb)));
-#if 0
-  lowerTextArea.setText("");
-#endif
   StepECM = 0; /* do not show pass number on screen */
-  return;
 }
 
 void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, int doFactorization)
