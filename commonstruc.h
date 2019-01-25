@@ -92,9 +92,9 @@ struct stSiqs
   int matrixTemp2[MAX_PRIMES];
   int nbrPrimes2;
   BigInteger factorSiqs;
-  int matrixRows, matrixCols;
   PrimeSieveData *firstPrimeSieveData;
   BigInteger TempResult;
+  BigInteger biTemp1, biTemp2;
   unsigned char logar2;
   char threshold;
 };
