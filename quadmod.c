@@ -301,9 +301,9 @@ void SolveEquation(void)
       BigIntMultiply(&ValA, &ValC, &discriminant);
       multint(&discriminant, &discriminant, 4);
       BigIntSubt(&Aux[0], &discriminant, &discriminant);
-      CopyBigInt(&ValAOdd, &ValA);
       if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
       {         /* Prime p is 2 */
+        int bitsBZero = 0, bitsCZero = 0;
         // ax^2 + bx + c = 0 (mod 2^expon)
         // 4 a^2 x^2 + 4bx + 4c = 0 (mod 2^(expon+2+bits_a))
         // (2ax + b)^2 = b^2 - 4ac = discriminant (mod 2^(expon+2+bits_a))
@@ -312,6 +312,17 @@ void SolveEquation(void)
         // To compute the square root, compute the inverse of sqrt, so only multiplications are used.
         // f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
         // Get odd part of A and number of bits to zero.
+        if (!BigIntIsZero(&ValB))
+        {
+          CopyBigInt(&ValAOdd, &ValB);
+          DivideBigNbrByMaxPowerOf2(&bitsBZero, ValAOdd.limbs, &ValAOdd.nbrLimbs);
+        }
+        if (!BigIntIsZero(&ValC))
+        {
+          CopyBigInt(&ValAOdd, &ValC);
+          DivideBigNbrByMaxPowerOf2(&bitsCZero, ValAOdd.limbs, &ValAOdd.nbrLimbs);
+        }
+        CopyBigInt(&ValAOdd, &ValA);
         DivideBigNbrByMaxPowerOf2(&bitsAZero, ValAOdd.limbs, &ValAOdd.nbrLimbs);
         // Compute inverse of -A (mod 2^expon).
         nbrLimbs = (expon + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
@@ -392,7 +403,18 @@ void SolveEquation(void)
           }
           squareRoot.sign = SIGN_POSITIVE;
           squareRoot.nbrLimbs = nbrLimbs;
-          correctBits = expon + (ValB.limbs[0].x % 4 == 2?1: 0) - deltaZeros - bitsAZero;
+          if (BigIntIsZero(&ValB))
+          {
+            correctBits = expon - bitsCZero / 2 - bitsAZero / 2 - 1;
+          }
+          else if (bitsBZero <= bitsAZero)
+          {
+            correctBits = expon;
+          }
+          else
+          {
+            correctBits = expon + bitsAZero - bitsBZero;
+          }
           if (nbrBitsSquareRoot < 2)
           {
             correctBits = nbrBitsSquareRoot;
@@ -468,6 +490,7 @@ void SolveEquation(void)
         // To compute the square root, compute the inverse of sqrt, so only multiplications are used.
         // f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
         // Get maximum power of prime which divide ValA.
+        CopyBigInt(&ValAOdd, &ValA);
         bitsAZero = 0;
         for (;;)
         {

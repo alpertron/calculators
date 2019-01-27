@@ -16,25 +16,39 @@ open(tempFile, '>', $tempFile) or die "couldn't open temp file";
 
 while (<htmlFile>)
 {
-  if ($step == 2)
+  if (/^\<script\>/)
+  {
+    $step = 2;
+  }
+  else 
+  {
+    if (/^\<\/script\>/)
+    {
+      $step = 1;
+    }
+  }
+  if ($step == 3)
   {
     if (/^\/\/-->/)
     {
       print tempFile;
-      $step = 3;
+      $step = 1;
     }
   }
   else
   {
     print tempFile;
-    if (/^\<\!--/)
+    if ($step == 2)
     {
-      $step = 2;
-      while (<jsFile>)
+      if (/^\<\!--/)
       {
-        s/$oldJS/$newJS/g;
-        s/$oldWASM/$newWASM/g;
-        print tempFile;
+        $step = 3;
+        while (<jsFile>)
+        {
+          s/$oldJS/$newJS/g;
+          s/$oldWASM/$newWASM/g;
+          print tempFile;
+        }
       }
     }
   }

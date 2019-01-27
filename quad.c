@@ -744,6 +744,7 @@ void SolveQuadModEquation(void)
       CopyBigInt(&ValAOdd, &coeffQuadr);
       if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
       {         /* Prime p is 2 */
+        int bitsBZero = 0, bitsCZero = 0;
         // ax^2 + bx + c = 0 (mod 2^expon)
         // 4 a^2 x^2 + 4bx + 4c = 0 (mod 2^(expon+2+bits_a))
         // (2ax + b)^2 = b^2 - 4ac = discriminant (mod 2^(expon+2+bits_a))
@@ -752,6 +753,17 @@ void SolveQuadModEquation(void)
         // To compute the square root, compute the inverse of sqrt, so only multiplications are used.
         // f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
         // Get odd part of A and number of bits to zero.
+        if (!BigIntIsZero(&coeffLinear))
+        {
+          CopyBigInt(&ValAOdd, &coeffLinear);
+          DivideBigNbrByMaxPowerOf2(&bitsBZero, ValAOdd.limbs, &ValAOdd.nbrLimbs);
+        }
+        if (!BigIntIsZero(&coeffIndep))
+        {
+          CopyBigInt(&ValAOdd, &coeffIndep);
+          DivideBigNbrByMaxPowerOf2(&bitsCZero, ValAOdd.limbs, &ValAOdd.nbrLimbs);
+        }
+        CopyBigInt(&ValAOdd, &coeffQuadr);
         DivideBigNbrByMaxPowerOf2(&bitsAZero, ValAOdd.limbs, &ValAOdd.nbrLimbs);
         // Compute inverse of -A (mod 2^expon).
         nbrLimbs = (expon + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
@@ -832,7 +844,18 @@ void SolveQuadModEquation(void)
           }
           squareRoot.sign = SIGN_POSITIVE;
           squareRoot.nbrLimbs = nbrLimbs;
-          correctBits = expon + (coeffLinear.limbs[0].x % 4 == 2 ? 1 : 0) - deltaZeros - bitsAZero;
+          if (BigIntIsZero(&ValB))
+          {
+            correctBits = expon - bitsCZero / 2 - bitsAZero / 2 - 1;
+          }
+          else if (bitsBZero <= bitsAZero)
+          {
+            correctBits = expon;
+          }
+          else
+          {
+            correctBits = expon + bitsAZero - bitsBZero;
+          }
           if (nbrBitsSquareRoot < 2)
           {
             correctBits = nbrBitsSquareRoot;
@@ -2361,16 +2384,16 @@ static void NonSquareDiscriminant(void)
           varY = "<var>V'</var>";
         }
         showText(lang ? "Sea " : "Let ");
+        shownbr(&ValE);
+        showText("&#8290;");
         showText(varX);
         showText(" = ");
+        showText(varXnoTrans);
+        showText(lang ? " y " : " and ");
         shownbr(&ValE);
         showText("&#8290;");
-        showText(varXnoTrans);
-        showText(lang ? " e " : " and ");
         showText(varY);
         showText(" = ");
-        shownbr(&ValE);
-        showText("&#8290;");
         showText(varYnoTrans);
         showText(". ");
       }
@@ -4037,7 +4060,7 @@ void SolveQuadEquation(void)
     showText(lang ? "donde el término derecho es igual a " : "where the right hand side equals ");
     showText("&minus;<var>D</var> (<var>a</var>&#8290;<var>e</var>");
     showSquare();
-    showText(" &minus; <var>b</var>&#8290;<var>e</var>&#8290;<var>d</var> + <var>e</var>&#8290;<var>d</var>");
+    showText(" &minus; <var>b</var>&#8290;<var>e</var>&#8290;<var>d</var> + <var>c</var>&#8290;<var>d</var>");
     showSquare();
     showText(" + <var>f</var>&#8290;<var>D</var>)</p>");
   }
