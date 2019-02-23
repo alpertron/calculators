@@ -4146,7 +4146,7 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
 }
 
 #ifdef __EMSCRIPTEN__
-void doWork(void)
+EXTERNALIZE void doWork(void)
 {
   int flags;
   char *ptrData = inputString;

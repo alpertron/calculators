@@ -17,9 +17,13 @@ You should have received a copy of the GNU General Public License
 along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <math.h>
+#include "bignbr.h"
+#include "expression.h"
+
 char inputString[1000000];
 
-char *getInputStringPtr(void)
+EXTERNALIZE char *getInputStringPtr(void)
 {
   return inputString;
 }

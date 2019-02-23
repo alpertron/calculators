@@ -1192,6 +1192,10 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         if (mostSignificantLimbZero)
         {
           NumberLengthDividend--;
+          if (NumberLengthDividend == 2 && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
+          {
+            NumberLengthDividend--;
+          }
           if (NumberLengthDividend == 1)
           {     // Number fits in a double
 #if 0
@@ -1511,6 +1515,10 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         if (mostSignificantLimbZero)
         {
           NumberLengthDividend--;
+          if (NumberLengthDividend == 2 && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
+          {
+            NumberLengthDividend--;
+          }
           if (NumberLengthDividend == 1)
           {
             double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
@@ -1518,12 +1526,6 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
             fullRemainder = TRUE;
             for (; index < common.siqs.nbrFactorBasePrimes; index++)
             {
-#if 0
-              if (rowPrimeSieveData->value == 41893)
-              {
-                divis = 5;
-              }
-#endif
               Divisor = rowPrimeSieveData->value;
               if (testFactorA && index == newFactorAIndex)
               {
@@ -1539,36 +1541,9 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               }
               for (;;)
               {
-                if (fullRemainder == FALSE)
+                if (dDivid != floor(dDivid / Divisor) * Divisor)
                 {
-                  divis = (int)Divisor;
-                  if (oddPolynomial)
-                  {
-                    iRem = index2 - rowPrimeSieveData->soln1 +
-                      rowPrimeSieveData->Bainv2_0;
-                  }
-                  else
-                  {
-                    iRem = index2 - rowPrimeSieveData->soln1;
-                  }
-                  iRem += ((iRem >> 31) & divis) - divis;
-                  iRem += (iRem >> 31) & divis;
-                  if (iRem >= divis)
-                  {
-                    iRem %= divis;
-                  }
-                  if (iRem != 0 && iRem != divis - rowPrimeSieveData->difsoln)
-                  {
-                    break;
-                  }
-                  fullRemainder = TRUE;
-                }
-                else
-                {
-                  if (dDivid != floor(dDivid / Divisor) * Divisor)
-                  {
-                    break;
-                  }
+                  break;
                 }
                 dDivid /= Divisor;
                 sqrtDivid = (int)floor(sqrt((double)dDivid));
@@ -2180,6 +2155,10 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
 //  threadArray = new Thread[numberThreads];
   Temp = logLimbs(pNbrToFactor, origNumberLength);
   common.siqs.nbrFactorBasePrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.363 - 1);
+  if (common.siqs.nbrFactorBasePrimes > MAX_PRIMES)
+  {
+    common.siqs.nbrFactorBasePrimes = MAX_PRIMES;
+  }
   common.siqs.SieveLimit = (int)exp(8.5 + 0.015 * Temp) & 0xFFFFFFF8;
   if (common.siqs.SieveLimit > MAX_SIEVE_LIMIT)
   {

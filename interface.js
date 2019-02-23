@@ -173,7 +173,7 @@ function performCalc()
   {
     hex = (get("converg").checked? 1: 0);
   }
-  param = digitGroup + ',' + (app+hex*64) + ',' + valueA + String.fromCharCode(0);
+  var param = digitGroup + ',' + (app+hex*64) + ',' + valueA + String.fromCharCode(0);
   if (app >= 4)
   {
     param += valueB + String.fromCharCode(0) + valueC + String.fromCharCode(0);
@@ -554,7 +554,7 @@ req.onreadystatechange = function (aEvt)
 {
   if (req.readyState == 4 && req.status == 200)
   {
-    fileContents = req.response;
+    fileContents = /** @type {ArrayBuffer} */ (req.response);
     if (workerParam)
     {
       callWorker(workerParam);
@@ -562,6 +562,6 @@ req.onreadystatechange = function (aEvt)
   }
 };
 req.send(null);
-addEventListener("load", startUp);
+window.addEventListener("load", startUp);
 })(this);
 

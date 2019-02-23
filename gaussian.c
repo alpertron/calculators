@@ -309,7 +309,7 @@ void gaussianText(char *valueText, int doFactorization)
 }
 
 #ifdef __EMSCRIPTEN__
-void doWork(void)
+EXTERNALIZE void doWork(void)
 {
   int flags;
   char *ptrData = inputString;

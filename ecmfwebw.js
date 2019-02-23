@@ -56,6 +56,10 @@ self.onmessage = function (e)
 {
   var request;
   var afterKey;
+  if (typeof(WebAssembly) === "undefined")
+  {
+	return;
+  }
   if (wasmLoaded)
   {
     ConvertToString(exports["getInputStringPtr"](), e.data[0]);

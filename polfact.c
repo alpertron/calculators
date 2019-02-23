@@ -513,7 +513,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
 }
 
 #ifdef __EMSCRIPTEN__
-void doWork(void)
+EXTERNALIZE void doWork(void)
 {
   int flags;
   int groupLen = 0;

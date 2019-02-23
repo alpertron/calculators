@@ -21,6 +21,12 @@
 #include <math.h>
 #include <stdint.h>
 
+#if defined _USING64BITS_ && defined __EMSCRIPTEN__
+#define EXTERNALIZE  __attribute__((visibility("default")))
+#else
+#define EXTERNALIZE	
+#endif
+
 #define SMALL_NUMBER_BOUND 32768
 #ifdef __EMSCRIPTEN__
 #define MAX_WIDTH 2048
@@ -873,7 +879,7 @@ void setPoint(int x, int y)
   }
 }     /* end method setPoint */
 
-void drawPartialUlamSpiral(int xminDisp, int xmaxDisp, int yminDisp, int ymaxDisp)
+EXTERNALIZE void drawPartialUlamSpiral(int xminDisp, int xmaxDisp, int yminDisp, int ymaxDisp)
 {
   int x, y;
   if (initMultipleArrayCalled == 0)
@@ -1172,7 +1178,7 @@ void ShowLabel(char *text, int b, int *indep)
   strcpy(ptrText, "<br>");
 }
 
-void ShowInformation(int x, int y)
+EXTERNALIZE void ShowInformation(int x, int y)
 {
   int t;
   int value[2];
@@ -1270,7 +1276,7 @@ void ShowInformation(int x, int y)
   showInfo(bottomText, centerText);
 }
 
-void moveSpiral(int deltaX, int deltaY)
+EXTERNALIZE void moveSpiral(int deltaX, int deltaY)
 {
   xFraction -= deltaX;
   xCenter += xFraction >> thickness;
@@ -1282,7 +1288,7 @@ void moveSpiral(int deltaX, int deltaY)
 
 // inputBoxNbr = 1 -> changing center
 // inputBoxNbr = 2 -> changing start value
-int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
+EXTERNALIZE int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
 { 
   int temp[2];
   int nbr0, nbr1;

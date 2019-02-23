@@ -976,7 +976,7 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
 }
 
 #ifdef __EMSCRIPTEN__
-void doWork(void)
+EXTERNALIZE void doWork(void)
 {
   int flags;
   char *ptrData = inputString;

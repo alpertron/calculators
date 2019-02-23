@@ -1528,6 +1528,9 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
 #if defined(__EMSCRIPTEN__) && !defined(FACTORIZATION_APP)
   char text[200];
 #endif
+#if !defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+  (void)vFactors;    // Parameter is not used.
+#endif
 #ifdef __EMSCRIPTEN__
   char *ptrText;
 #endif

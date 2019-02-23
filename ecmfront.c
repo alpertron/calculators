@@ -754,7 +754,7 @@ void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
-void doWork(void)
+EXTERNALIZE void doWork(void)
 {
   int flags;
   char *ptrData = inputString;

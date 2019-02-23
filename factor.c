@@ -2803,7 +2803,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
 #endif
 }
 
-char *getFactorsAsciiPtr(void)
+EXTERNALIZE char *getFactorsAsciiPtr(void)
 {
   return common.saveFactors.text;
 }

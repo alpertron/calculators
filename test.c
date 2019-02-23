@@ -6,7 +6,7 @@
 #include "factor.h"
 #include "batch.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE  16
+#define DEBUG_CODE  13
 #endif
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -34,6 +34,7 @@ extern int skipPrimality;
 BigInteger dividend, divisor, quotient;
 int main(int argc, char *argv[])
 {
+  (void)argc;  // Parameter is not used. 
 #if DEBUG_CODE == 1
 //  fsquaresText("n(10^32)", 6);
   fsquaresText(argv[1], 6);

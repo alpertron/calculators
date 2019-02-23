@@ -23,7 +23,7 @@ var points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 2
 var wizardStep = 0;
 var wizardTextInput;
 var worker = 0;
-var fileContents = 0;
+var fileContents = null;
 var app;
 var blob;
 var digits;
@@ -48,12 +48,12 @@ function get(x)
 
 function setStorage(name, data)
 {
-  localStorage.setItem(name, data);
+  window.localStorage.setItem(name, data);
 }
 
 function getStorage(name)
 {
-  return localStorage.getItem(name);
+  return window.localStorage.getItem(name);
 }
 
 function styleButtons(style1, style2)
@@ -458,7 +458,6 @@ function startUp()
   };
   get("save-config").onclick = function ()
   {
-    oldconfig = config;
     saveConfig();
     updateVerbose(get("verbose").checked);
     get("modal-config").style.display = "none";
@@ -639,15 +638,16 @@ function startUp()
     ctx.stroke();     
   }
   ctx.fillStyle="#00C000";      // Green.
+  var ctr;
   for (ctr=0; ctr<points.length; ctr+=2)
   {
-  x = points[ctr];
-  y = points[ctr+1];
+    x = points[ctr];
+    y = points[ctr+1];
     ctx.fillRect(20+x*10+1,(28-y)*10+1,9,9);
-  if (y != 0)
-  {
+    if (y != 0)
+    {
       ctx.fillRect(20+x*10+1,(y-1)*10+1,9,9); 
-  }
+    }
   }
   ctx.fillStyle="#000000";      // Black.
   ctx.font = "15px 'Times New Roman'";
@@ -707,7 +707,7 @@ req.onreadystatechange = function (aEvt)
 {
   if (req.readyState == 4 && req.status == 200)
   {
-    fileContents = req.response;
+    fileContents = /** @type {ArrayBuffer} */ (req.response);
     if (workerParam)
     {
       callWorker(workerParam);
@@ -715,5 +715,5 @@ req.onreadystatechange = function (aEvt)
   }
 };
 req.send(null);
-addEventListener("load", startUp);
+window.addEventListener("load", startUp);
 })(this);

@@ -129,7 +129,7 @@ void long2dec(char **pOutput, uint64_t nbr)
   {
     int digit;
 
-    digit = value / div;
+    digit = (int)(value / div);
     if (digit > 0 || significantZero != 0)
     {
       significantZero = 1;

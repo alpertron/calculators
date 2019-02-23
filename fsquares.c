@@ -768,7 +768,7 @@ void batchCallback(char **pptrOutput)
 #endif
 
 #ifdef __EMSCRIPTEN__
-void doWork(void)
+EXTERNALIZE void doWork(void)
 {
   int groupLen = 0;
   char *ptrData = inputString;
