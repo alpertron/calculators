@@ -1192,15 +1192,8 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         if (mostSignificantLimbZero)
         {
           NumberLengthDividend--;
-          if (NumberLengthDividend == 2 && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
-          {
-            NumberLengthDividend--;
-          }
-          if (NumberLengthDividend == 1)
-          {     // Number fits in a double
-#if 0
-            int upperBound = common.siqs.largePrimeUpperBound / 100;
-#endif
+          if (NumberLengthDividend <= 2 && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
+          {       // Number fits in a double.
             double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
             int sqrtDivid = (int)(floor(sqrt((double)dDivid)));
             fullRemainder = TRUE;
@@ -1210,7 +1203,6 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               Divisor = rowPrimeSieveData->value;
               if (testFactorA && index == newFactorAIndex)
               {
-                fullRemainder = TRUE;
                 if (++indexFactorA == common.siqs.nbrFactorsA)
                 {
                   testFactorA = FALSE;   // All factors of A were tested.
@@ -1220,39 +1212,8 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                   newFactorAIndex = common.siqs.aindex[indexFactorA];
                 }
               }
-              for (;;)
-              {
-                if (fullRemainder == FALSE)
-                {
-                  divis = (int)Divisor;
-                  if (oddPolynomial)
-                  {
-                    iRem = index2 - rowPrimeSieveData->soln1 +
-                      rowPrimeSieveData->Bainv2_0;
-                  }
-                  else
-                  {
-                    iRem = index2 - rowPrimeSieveData->soln1;
-                  }
-                  iRem += ((iRem >> 31) & divis) - divis;
-                  iRem += (iRem >> 31) & divis;
-                  if (iRem >= divis)
-                  {
-                    iRem %= divis;
-                  }
-                  if (iRem != 0 && iRem != divis - rowPrimeSieveData->difsoln)
-                  {
-                    break;
-                  }
-                  fullRemainder = TRUE;
-                }
-                else
-                {
-                  if (dDivid != floor(dDivid / Divisor) * Divisor)
-                  {
-                    break;
-                  }
-                }
+              while (dDivid == floor(dDivid / Divisor) * Divisor)
+              {        // dDivid is multiple of Divisor.
                 dDivid /= Divisor;
                 sqrtDivid = (int)(floor(sqrt((double)dDivid))) + 1;
                 expParity = 1 - expParity;
@@ -1515,21 +1476,18 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         if (mostSignificantLimbZero)
         {
           NumberLengthDividend--;
-          if (NumberLengthDividend == 2 && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
-          {
-            NumberLengthDividend--;
-          }
-          if (NumberLengthDividend == 1)
-          {
+          if (NumberLengthDividend <= 2 && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
+          {        // Number fits in a double.
             double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
             int sqrtDivid = (int)(floor(sqrt((double)dDivid)));
             fullRemainder = TRUE;
             for (; index < common.siqs.nbrFactorBasePrimes; index++)
             {
+              double dDivisor;
               Divisor = rowPrimeSieveData->value;
+              dDivisor = (double)Divisor;
               if (testFactorA && index == newFactorAIndex)
               {
-                fullRemainder = TRUE;
                 if (++indexFactorA == common.siqs.nbrFactorsA)
                 {
                   testFactorA = FALSE;   // All factors of A were tested.
@@ -1539,18 +1497,14 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                   newFactorAIndex = common.siqs.aindex[indexFactorA];
                 }
               }
-              for (;;)
-              {
-                if (dDivid != floor(dDivid / Divisor) * Divisor)
-                {
-                  break;
-                }
-                dDivid /= Divisor;
+              while (dDivid == floor(dDivid / dDivisor) * dDivisor)
+              {           // dDivid is multiple of Divisor.
+                dDivid /= dDivisor;
                 sqrtDivid = (int)floor(sqrt((double)dDivid));
                 expParity = 1 - expParity;
                 if (expParity == 0)
                 {
-                  rowSquares[nbrSquares++] = (int)Divisor;
+                  rowSquares[nbrSquares++] = Divisor;
                 }
               }
               if (expParity != 0)
