@@ -192,7 +192,7 @@ The second option is used to copy the data to another application.
 <p>
 You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 24 February 2019.</p>
+<p>Written by Dario Alpern. Last updated 25 February 2019.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>
@@ -249,7 +249,7 @@ c.postMessage(b):c.postMessage([b,k])}function l(b){b=0+b+(a("sup").checked?4:0)
 m+String.fromCharCode(0),p())}function n(){a("main").style.display="block";a("feedback").style.display="none";a("poly").focus()}var c=0,f,k=0,h="undefined"===typeof WebAssembly;window.onload=function(){a("stop").disabled=!0;a("eval").onclick=function(){l(2)};a("factor").onclick=function(){l(0)};a("stop").onclick=function(){c.terminate();c=0;a("eval").disabled=!1;a("factor").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Factorization stopped by user</p>"};a("helpbtn").onclick=function(){a("help").style.display=
 "block";a("result").style.display="none"};a("poly").oninput=function(){var b=a("poly"),d=b.value.length-b.selectionStart;b.value=b.value.replace(".","x^");setTimeout(function(){d=b.value.length-d;b.selectionStart=d;b.selectionEnd=d},30)};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){n()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?
 a("poly").value+" (mod "+a("mod").value+")":"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),n())};b.open("POST","/sendmail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var d=a("formfeedback").elements,c="",e=0,f=0;f<d.length;f++){var g=d[f];"radio"==g.type&&0==g.checked||!g.name||(e&&(c+="&"),c+=g.name+"="+encodeURIComponent(g.value),e++)}b.send(c);
-return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var e=new XMLHttpRequest;e.open("GET",h?"polfactW0087.js":"polfact0087.wasm",!0);e.responseType="arraybuffer";e.onreadystatechange=function(){4==e.readyState&&200==e.status&&(k=e.response)};e.send(null)})(this);
+return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var e=new XMLHttpRequest;e.open("GET",h?"polfactW0088.js":"polfact0088.wasm",!0);e.responseType="arraybuffer";e.onreadystatechange=function(){4==e.readyState&&200==e.status&&(k=e.response)};e.send(null)})(this);
 //-->
 </script>
 <script type="text/js-worker">

@@ -1070,56 +1070,53 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           }
           fullRemainder = TRUE;
         }
-        else
+        Divisor = rowPrimeTrialDivisionData->value;
+        divis = (int)Divisor;
+        switch (NumberLengthDividend)
         {
-          Divisor = rowPrimeTrialDivisionData->value;
-          divis = (int)Divisor;
-          switch (NumberLengthDividend)
+        case 7:
+          dRem = (double)biR6*(double)rowPrimeTrialDivisionData->exp6 +
+            (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
+            (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
+            (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+            (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+            (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+          break;
+        case 6:
+          dRem = (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
+            (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
+            (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+            (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+            (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+          break;
+        case 5:
+          dRem = (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
+            (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+            (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+            (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+          break;
+        case 4:
+          dRem = (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+            (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+            (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+          break;
+        case 3:
+          dRem = (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+            (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+          break;
+        default:
+          dRem = (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+          break;
+        }
+        dCurrentPrime = (double)divis;
+        if (dRem != floor(dRem / dCurrentPrime)*dCurrentPrime)
+        {                     // Number is not a multiple of prime.
+          if (expParity != 0)
           {
-          case 7:
-            dRem = (double)biR6*(double)rowPrimeTrialDivisionData->exp6 +
-              (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
-              (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
-            break;
-          case 6:
-            dRem = (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
-              (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
-            break;
-          case 5:
-            dRem = (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
-            break;
-          case 4:
-            dRem = (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
-            break;
-          case 3:
-            dRem = (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
-            break;
-          default:
-            dRem = (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
-            break;
+            rowMatrixBbeforeMerge[nbrColumns++] = index;
+            expParity = 0;
           }
-          dCurrentPrime = (double)divis;
-          if (dRem != floor(dRem / dCurrentPrime)*dCurrentPrime)
-          {                     // Number is not a multiple of prime.
-            if (expParity != 0)
-            {
-              rowMatrixBbeforeMerge[nbrColumns++] = index;
-              expParity = 0;
-            }
-            break;              // Process next prime.
-          }
+          break;              // Process next prime.
         }
         expParity = 1 - expParity;
         if (expParity == 0)
@@ -1354,56 +1351,53 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           }
           fullRemainder = TRUE;
         }
-        else
+        Divisor = rowPrimeTrialDivisionData->value;
+        divis = (int)Divisor;
+        switch (NumberLengthDividend)
         {
-          Divisor = rowPrimeTrialDivisionData->value;
-          divis = (int)Divisor;
-          switch (NumberLengthDividend)
+        case 7:
+          dRem = (double)biR6*(double)rowPrimeTrialDivisionData->exp6 +
+            (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
+            (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
+            (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+            (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+            (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+          break;
+        case 6:
+          dRem = (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
+            (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
+            (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+            (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+            (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+          break;
+        case 5:
+          dRem = (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
+            (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+            (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+            (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+          break;
+        case 4:
+          dRem = (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
+            (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+            (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+          break;
+        case 3:
+          dRem = (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
+            (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+          break;
+        default:
+          dRem = (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
+          break;
+        }
+        dCurrentPrime = (double)divis;
+        if (dRem != floor(dRem / dCurrentPrime)*dCurrentPrime)
+        {                     // Number is not a multiple of prime.
+          if (expParity != 0)
           {
-          case 7:
-            dRem = (double)biR6*(double)rowPrimeTrialDivisionData->exp6 +
-              (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
-              (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
-            break;
-          case 6:
-            dRem = (double)biR5*(double)rowPrimeTrialDivisionData->exp5 +
-              (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
-            break;
-          case 5:
-            dRem = (double)biR4*(double)rowPrimeTrialDivisionData->exp4 +
-              (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
-            break;
-          case 4:
-            dRem = (double)biR3*(double)rowPrimeTrialDivisionData->exp3 +
-              (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
-            break;
-          case 3:
-            dRem = (double)biR2*(double)rowPrimeTrialDivisionData->exp2 +
-              (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
-            break;
-          default:
-            dRem = (double)biR1*(double)rowPrimeTrialDivisionData->exp1 + biR0;
-            break;
+            rowMatrixBbeforeMerge[nbrColumns++] = index;
+            expParity = 0;
           }
-          dCurrentPrime = (double)divis;
-          if (dRem != floor(dRem / dCurrentPrime)*dCurrentPrime)
-          {                     // Number is not a multiple of prime.
-            if (expParity != 0)
-            {
-              rowMatrixBbeforeMerge[nbrColumns++] = index;
-              expParity = 0;
-            }
-            break;              // Process next prime.
-          }
+          break;              // Process next prime.
         }
         expParity = 1 - expParity;
         if (expParity == 0)
