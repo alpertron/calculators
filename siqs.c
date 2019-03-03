@@ -108,30 +108,47 @@ static void getMultAndFactorBase(int multiplier, int FactorBase)
 
 static void ShowSIQSInfo(int timeSieve, int congruencesFound, int matrixBLength, int elapsedTime)
 {
-  char SIQSInfo[200];
+  char SIQSInfo[1000];
   int percentage = (int)((float)(congruencesFound * 100) / (float)matrixBLength);
   int u = (int)((double)timeSieve * (double)(matrixBLength - congruencesFound) / (double)congruencesFound);
   char *ptrText = SIQSInfo;
   strcpy(ptrText, "4<p>");
   ptrText += strlen(ptrText);
-  GetDHMS(&ptrText, elapsedTime);
-  strcpy(ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-  ptrText += strlen(ptrText);
   int2dec(&ptrText, congruencesFound);  // Show number of congruences found.
   strcpy(ptrText, lang ? " congruencias halladas (" : " congruences found (");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, percentage);  // Show number of congruences found.
+  strcpy(ptrText, lang ? "%) con " : "%) with ");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, common.siqs.nbrPrimesUsed);
+  strcpy(ptrText, lang ? " primos diferentes." : " different primes.");
+  ptrText += strlen(ptrText);
+  strcpy(ptrText, lang ? "<br>Relaciones: " : "<br>Relations: ");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, smoothsFound);   // Show number of full congruences.
+  strcpy(ptrText, lang ? " completas y " : " full and ");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, partialsFound);  // Show number of built congruences.
+  strcpy(ptrText, lang ? " obtenidas de " : " found from ");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, totalPartials);  // Show number of partial congruences.
+  strcpy(ptrText, lang ? " parciales.<br>" : " partials.<br>");
+  ptrText += strlen(ptrText);
+  strcpy(ptrText, "<br><progress value=\"");
+  ptrText += strlen(ptrText);
+  int2dec(&ptrText, percentage);
+  strcpy(ptrText, "\" max=\"100\"></progress><br>");
+  ptrText += strlen(ptrText);
+  GetDHMS(&ptrText, elapsedTime);
   if (timeSieve > 1 && congruencesFound > 10)
   {
-    strcpy(ptrText, lang ? "%). Fin de la criba en " : "%). End sieve in ");
+    strcpy(ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
     ptrText += strlen(ptrText);
-    GetDHMS(&ptrText, u/2);
-    strcpy(ptrText, "</p>");
+    strcpy(ptrText, lang ? " Fin de la criba en " : " End sieve in ");
+    ptrText += strlen(ptrText);
+    GetDHMS(&ptrText, u / 2);
   }
-  else
-  {
-    strcpy(ptrText, "%)");
-  }
+  strcpy(ptrText, "</p>");
   databack(SIQSInfo);
 }
 
@@ -2099,7 +2116,8 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   polynomialsSieved = 0;
   nbrPartials = 0;
   common.siqs.newSeed = 0;
-
+  common.siqs.nbrPrimesUsed = 0;
+  memset(common.siqs.primesUsed, 0, sizeof(common.siqs.primesUsed));
 //  threadArray = new Thread[numberThreads];
   Temp = logLimbs(pNbrToFactor, origNumberLength);
   common.siqs.nbrFactorBasePrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.363 - 1);
@@ -2759,6 +2777,15 @@ static unsigned char InsertNewRelation(
   memcpy(common.siqs.matrixB[congruencesFound], &rowMatrixB[0], nbrColumns * sizeof(int));
   memcpy(common.siqs.vectLeftHandSide[congruencesFound], biR, NumberLengthMod * sizeof(int));
   congruencesFound++;
+  nbrColumns = *(rowMatrixB + LENGTH_OFFSET);
+  for (k = 1; k < nbrColumns; k++)
+  {
+    if (common.siqs.primesUsed[*(rowMatrixB + k)] == 0)
+    {
+      common.siqs.primesUsed[*(rowMatrixB + k)] = 1;
+      common.siqs.nbrPrimesUsed++;
+    }
+  }
 #if DEBUG_SIQS
   {
     char *ptrOutput = output;

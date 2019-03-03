@@ -90,7 +90,9 @@ struct stSiqs
  // Matrix that holds temporary data
   int matrixCalc3[MAX_PRIMES];
   int matrixTemp2[MAX_PRIMES];
+  char primesUsed[MAX_PRIMES];
   int nbrPrimes2;
+  int nbrPrimesUsed;
   BigInteger factorSiqs;
   PrimeSieveData *firstPrimeSieveData;
   BigInteger TempResult;
