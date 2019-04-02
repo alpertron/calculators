@@ -4,11 +4,11 @@
     <ShowAllFiles>true</ShowAllFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>1000#</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>0 "der(x**2)"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>10**59+213</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>0 "(x+20000000000)^2"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

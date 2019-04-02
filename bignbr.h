@@ -184,8 +184,8 @@ void BigIntToBigNbr(BigInteger *pBigNbr, int *pBigInt, int nbrLenBigInt);
 int BigNbrIsZero(limb *pNbr);
 void GcdBigNbr(int *pNbr1, int *pNbr2, int *pGcd, int nbrLen);
 void AdjustBigIntModN(int *Nbr, int *Mod, int nbrLen);
-void MultBigNbrModN(int Nbr1[], int Nbr2[], int Prod[], int Mod[], int nbrLen);
-void MultBigNbrByIntModN(int Nbr1[], int Nbr2, int Prod[], int Mod[], int nbrLen);
+void MultBigNbrModN(int *Nbr1, int *Nbr2, int *Prod, int *Mod, int nbrLen);
+void MultBigNbrByIntModN(int *Nbr1, int Nbr2, int *Prod, int *Mod, int nbrLen);
 int intDoubleModPow(int NbrMod, int Expon, int currentPrime);
 void ModInvBigInt(int *num, int *inv, int *mod, int NumberLength);
 void IntToBigNbr(int value, int *bigNbr, int nbrLength);
@@ -204,4 +204,5 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
   BigInteger *temp1, BigInteger *temp2, BigInteger *temp3, BigInteger *temp4);
 void MultiplyQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
 void DivideQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
+int nextPrime(int prime);
 #endif

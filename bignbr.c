@@ -929,15 +929,24 @@ int intModPow(int NbrMod, int Expon, int currentPrime)
 void UncompressBigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint)
 {
   limb *destLimb = bigint->limbs;
+  int nbrLimbs = *ptrValues++;
+  if (nbrLimbs > 0)
+  {
+    bigint->sign = SIGN_POSITIVE;
+  }
+  else
+  {
+    bigint->sign = SIGN_NEGATIVE;
+    nbrLimbs = -nbrLimbs;
+  }
   if (NumberLength == 1)
   {
-    destLimb->x = *(ptrValues + 1);
+    destLimb->x = *ptrValues;
     bigint->nbrLimbs = 1;
   }
   else
   {
-    int ctr, nbrLimbs;
-    nbrLimbs = *ptrValues++;
+    int ctr;
     bigint->nbrLimbs = nbrLimbs;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
@@ -948,7 +957,6 @@ void UncompressBigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint)
       (destLimb++)->x = 0;
     }
   }
-  bigint->sign = SIGN_POSITIVE;
 }
 
 void CompressBigInteger(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint)
@@ -956,14 +964,14 @@ void CompressBigInteger(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint)
   limb *destLimb = bigint->limbs;
   if (NumberLength == 1)
   {
-    *ptrValues = 1;
+    *ptrValues = (bigint->sign == SIGN_POSITIVE? 1: -1);
     *(ptrValues + 1) = (int)(destLimb->x);
   }
   else
   {
     int ctr, nbrLimbs;
     nbrLimbs = getNbrLimbs(bigint->limbs);
-    *ptrValues++ = nbrLimbs;
+    *ptrValues++ = (bigint->sign == SIGN_POSITIVE ? nbrLimbs : -nbrLimbs);
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
       *ptrValues++ = (int)((destLimb++)->x);
@@ -1020,8 +1028,15 @@ void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, /*@in@*/BigInteger *bigin
 void UncompressIntLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbrLen)
 {
   int nbrLimbs = *ptrValues;
+  if (nbrLimbs < 0)
+  {
+    nbrLimbs = -nbrLimbs;
+  }
   memcpy(bigint, ptrValues+1, nbrLimbs*sizeof(limb));
-  memset(bigint + nbrLimbs, 0, (nbrLen - nbrLimbs) * sizeof(limb));
+  if (nbrLen > nbrLimbs)
+  {
+    memset(bigint + nbrLimbs, 0, (nbrLen - nbrLimbs) * sizeof(limb));
+  }
 }
 
 void CompressIntLimbs(/*@out@*/int *ptrValues, /*@in@*/limb *bigint, int nbrLen)
@@ -2081,3 +2096,31 @@ void ConvertToTwosComplement(BigInteger *value)
   }
 }
 
+// Find next prime.
+int nextPrime(int prime)
+{
+  int divisor = 5;
+  int isPrime;
+  if (prime < 3)
+  {
+    return prime + 1;
+  }
+  do
+  {
+    do
+    {
+      prime += 2;
+    } while (prime % 3 == 0);
+    isPrime = 1;
+    while (divisor * divisor <= prime)
+    {
+      if (prime % divisor == 0 || prime % (divisor + 2) == 0)
+      {
+        isPrime = 0;
+        break;
+      }
+      divisor += 6;
+    }
+  } while (isPrime == 0);
+  return prime;
+}

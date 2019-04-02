@@ -29,10 +29,18 @@ struct sFactorInfo
   int expectedDegree;
 };
 
+enum eDivType
+{
+  TYPE_DIVISION,
+  TYPE_MODULUS
+};
+
 extern int lang;
 extern struct sFactorInfo factorInfo[MAX_DEGREE];
 extern BigInteger primeMod;              // p
+extern int exponentMod;                  // k
 extern BigInteger powerMod;              // p^k
+extern int modulusIsZero;
 extern BigInteger operand1, operand2, operand3, operand4, operand5;
 extern int values[1000000];
 extern int poly1[1000000];
@@ -48,22 +56,36 @@ extern int degreeOrigPoly;
 
 typedef void (*powerCback)(int percentage);
 void SetNumberToOne(/*@out@*/int *ptrValue1);
-void PolynomialGcd(int *arg1, int degree1, int *arg2, int degree2, int *gcd, int *degreeGcd);
+void PolyModularGcd(int *arg1, int degree1, int *arg2, int degree2, int *gcd, int *degreeGcd);
 void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *expon,
                      int *polyPower, powerCback cback);
 int getDegreePoly(int *poly, int polyDegree);
 void DividePolynomial(/*@in@*/int *pDividend, int dividendDegree, /*@in@*/int *pDivisor,
                       int divisorDegree, /*@out@*/int *ptrQuotient);
-void multPolynomial(/*@in@*/int *polyFact1, /*@in@*/int *polyFact2, /*@out@*/int *polyProduct,
+void multPolynomialModPoly(/*@in@*/int *polyFact1, /*@in@*/int *polyFact2, /*@out@*/int *polyProduct,
                     int polyDegree, /*@in@*/int *polyMod);
+void MultPolynomial(int degree1, int degree2, /*@in@*/int *factor1, /*@in@*/int *factor2);
 void GetPolyInvParm(int polyDegree, /*@in@*/int *polyMod);
 int ComputePolynomial(char *input, int expo);
 void OrigPolyFromMontgomeryToStandard(void);
 void ConvertToMonic(int *poly, int polyDegree);
 void SquareFreeFactorization(int polyDegree, int *poly, int expon);
 int HenselLifting(void);
-void ToStandardNotation(int *nbr, int qtyNbrs);
+void polyToStandardNotation(int *nbr, int qtyNbrs);
 void textErrorPol(char *output, enum eExprErr rc);
 void outputPolynomial(char *ptrOutput, int groupLen);
+int DerPolynomial(int *ptrArgument);
+void PolynomialGcd(int *argF, int *argG, int *gcd);
+int DivideIntegerPolynomial(int *pDividend, int *pDivisor, enum eDivType type);
+int getModPolynomial(int *polyMod, int *poly, BigInteger *content);
+int *CopyPolynomial(int *ptrDest, int *ptrSrc, int degree);
+int *CopyPolynomialFixedCoeffSize(int *ptrDest, int *ptrSrc, int degree, int coeffSize);
+void computePower(int expo);
+void UncompressBigIntegerB(int *ptrValues, BigInteger *bigint);
+int numLimbs(int *pLen);
+void polyToStandardNotation(int *nbr, int qtyNbrs);
+void polyToMontgomeryNotation(int *nbr, int qtyNbrs);
+int *getContent(int *poly, BigInteger *content);
+int *CopyPolyProduct(int *ptrSrc, int *ptrDest, int degree);
 
 #endif

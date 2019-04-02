@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="polfact-icon-180px.png">
 <title>Polynomial factorization calculator</title>
 <style media="print">
-#smallheader {display:none;}
+#smallheader, .footer {display:none;}
 </style>
 <style media="screen">
 #smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
@@ -122,7 +122,7 @@ Contact
 <form class="applet">
 <label for="poly">Polynomial</label><input type="text" id="poly" value="" class="input" autocomplete="off" autocapitalize="off" spellcheck="false" />
 <div class="lf"></div>
-<label for="mod">Modulus</label><input type="text" id="mod" value="" class="input"/>
+<label for="mod">Modulus</label><input type="text" id="mod" value="0" class="input"/>
 <div class="lf"></div>
 <input type="button" id="eval" value="Evaluate" />
 <input type="button" id="factor" value="Factor" />
@@ -133,16 +133,22 @@ Contact
 <input type="checkbox" id="sup" value="sup" checked /> <label for="sup">Superscripts</label>
 </form>
 <div id="help" aria-live="polite" class="pad">
+<p>Important: If you want to factor integer polynomials, the modulus used in the input box must be zero.
+<h2>Polynomials modulo a prime number</h2>
 <p>Multiplication of polynomials modulo a prime number can be performed in the usual way by multiplying the different terms of the polynomial
 and then adding the coefficients of the same degree. Finally the coefficients are reduced modulo that prime.</p>
 <p>For example, the product of 3x<sup>2</sup> + 5x + 1 and 6x<sup>2</sup> + 4x + 3 modulo 7 is 18x<sup>4</sup> + (30+12)x<sup>3</sup> + (9+20+6)x<sup>2</sup> + (15+4)x + 3 modulo 7 which equals 4x<sup>4</sup> + 5x + 3</p>
 <p>It can be shown that the polynomials modulo a prime can be factored into the leading coefficient and monic prime polynomials in only one way (monic polynomials have the leading coefficient equal to one.)</p>
 <p>It can also be shown that if there are no repeated factors, the polynomial can be factored modulo a power of that prime in only one way.</p>
-<p>This JavaScript application can evaluate and factor polynomial expressions modulo a prime number or a power of a prime number.</p>
+<p>This JavaScript application can evaluate and factor polynomial expressions modulo a prime number or a power of a prime number.
+It can also evaluate and factor integer polynomials by entering zero in the modulo input box.</p>
+<h2>Application usage</h2>
 <p>Use the upper input box to enter the polynomial expression and the lower input box to enter a numerical expression for the modulus,
-which must be an integer number greater than 1 of the form prime number raised to an exponent.
+which must be either zero or an integer number greater than 1 of the form prime number raised to an exponent.
 You can just evaluate the polynomial or evaluate and factor it, by pressing the corresponding button.</p>
-<p>Example: copy any of the expressions below in the upper input box and type the number 211 (a prime number) in the lower input box.
+<p>Example for integer polynomial factorization: to factor x<sup>30</sup> &minus; 1, type x^30-1 in the upper input box and 0 in the lower input box.
+Then press the factor button.
+<p>Example for polynomial modulo a prime factorization: copy any of the expressions below in the upper input box and type the number 211 (a prime number) in the lower input box.
 Then press the button "Factor expression".</p>
 <ul>
 <li>6x^8+x^5+3</li>
@@ -165,6 +171,7 @@ or preceded by the caret character (when it is unchecked).
 The first option is used to see the factorization on the display or print it.
 The second option is used to copy the data to another application.
 <p>After the applet finishes factoring, it multiplies the factors in order to validate if they are equal to the input polynomial.
+<h2>Expressions</h2>
 <p>You can also enter expressions that use the following operators and parentheses:</p>
 <ul>
 <li><strong>+</strong> for addition</li>
@@ -183,7 +190,8 @@ The second option is used to copy the data to another application.
 <li><strong>L(n)</strong>: Lucas number L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB></li>
 <li><strong>N(n)</strong>: Next probable prime after <em>n</em></li>
 <li><strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <em>n</em> into sums of integers without regard to order).</li>
-<li><strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
+<li><strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers or polynomials.</li>
+<li><strong>Der(m)</strong>: Derivative of polynomial.</li>
 <li><strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
 <li><strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
 </ul>
@@ -192,11 +200,20 @@ The second option is used to copy the data to another application.
 <p>
 You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 2 March 2019.</p>
+<p>Written by Dario Alpern. Last updated 2 April 2019.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>
-<p class="pad">If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
+<div class="footer pad">
+<p>If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
+<p>If you like these calculators and you want to support free software, you can donate through Paypal:
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
+<input type="hidden" name="cmd" value="_s-xclick" />
+<input type="hidden" name="hosted_button_id" value="MR65QPWZM5JT6" />
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+<img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+</form></p>
+</div>
 </div>
 </article>
 </main>
@@ -249,7 +266,7 @@ c.postMessage(b):c.postMessage([b,k])}function l(b){b=0+b+(a("sup").checked?4:0)
 m+String.fromCharCode(0),p())}function n(){a("main").style.display="block";a("feedback").style.display="none";a("poly").focus()}var c=0,f,k=0,h="undefined"===typeof WebAssembly;window.onload=function(){a("stop").disabled=!0;a("eval").onclick=function(){l(2)};a("factor").onclick=function(){l(0)};a("stop").onclick=function(){c.terminate();c=0;a("eval").disabled=!1;a("factor").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Factorization stopped by user</p>"};a("helpbtn").onclick=function(){a("help").style.display=
 "block";a("result").style.display="none"};a("poly").oninput=function(){var b=a("poly"),d=b.value.length-b.selectionStart;b.value=b.value.replace(".","x^");setTimeout(function(){d=b.value.length-d;b.selectionStart=d;b.selectionEnd=d},30)};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){n()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?
 a("poly").value+" (mod "+a("mod").value+")":"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),n())};b.open("POST","/sendmail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var d=a("formfeedback").elements,c="",e=0,f=0;f<d.length;f++){var g=d[f];"radio"==g.type&&0==g.checked||!g.name||(e&&(c+="&"),c+=g.name+"="+encodeURIComponent(g.value),e++)}b.send(c);
-return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var e=new XMLHttpRequest;e.open("GET",h?"polfactW0089.js":"polfact0089.wasm",!0);e.responseType="arraybuffer";e.onreadystatechange=function(){4==e.readyState&&200==e.status&&(k=e.response)};e.send(null)})(this);
+return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var e=new XMLHttpRequest;e.open("GET",h?"polfactW0090.js":"polfact0090.wasm",!0);e.responseType="arraybuffer";e.onreadystatechange=function(){4==e.readyState&&200==e.status&&(k=e.response)};e.send(null)})(this);
 //-->
 </script>
 <script type="text/js-worker">

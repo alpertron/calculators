@@ -1,8 +1,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 2 de marzo de 2019."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 2 March 2019."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 2 de abril de 2019."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 2 April 2019."
 
 #ifdef __EMSCRIPTEN__
 int stamp(void);
@@ -28,6 +28,7 @@ enum eExprErr
   EXPR_BREAK,
   EXPR_OUT_OF_MEMORY,
   EXPR_CANNOT_USE_X_IN_EXPONENT,
+  EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER,
   EXPR_DEGREE_TOO_HIGH,
   EXPR_EXPONENT_TOO_LARGE,
   EXPR_EXPONENT_NEGATIVE,
