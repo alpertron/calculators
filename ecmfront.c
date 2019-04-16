@@ -52,6 +52,10 @@ void batchCallback(char **pptrOutput)
     *ptrFactorDec++ = '-';
   }
   CompressBigInteger(nbrToFactor, &tofactor);
+  if (*nbrToFactor < 0)
+  {    // If number is negative, make it positive.
+    *nbrToFactor = -*nbrToFactor;
+  }
   if (hexadecimal)
   {
     Bin2Hex(tofactor.limbs, ptrFactorDec, tofactor.nbrLimbs, groupLen);
@@ -220,6 +224,234 @@ static void modPowShowStatus(limb *base, limb *exp, int nbrGroupsExp, limb *powe
   }
 }
 
+// A number is a sum of 3 squares if it has not the form 4^n*(8k+7) and
+// there is a prime factor of the form 4k+3 with odd multiplicity.
+
+static int isSumOfThreeSquares(struct sFactors *pstFactors, BigInteger *pTmp,
+  BigInteger *pTmp1, BigInteger *pTmp2)
+{
+  struct sFactors *pstFactor = pstFactors + 1; // Point to first factor in array of factors.
+  int indexPrimes;
+  int factor2MultiplicityEven = TRUE;
+  int sumTwoSquares = TRUE;
+  for (indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--)
+  {
+    if (pstFactor->multiplicity % 2 != 0)
+    {                                          // Prime factor multiplicity is odd.
+      if (*pstFactor->ptrFactor == 1 && *(pstFactor->ptrFactor + 1) == 2)
+      {
+        factor2MultiplicityEven = FALSE;
+      }
+      if (*(pstFactor->ptrFactor + 1) % 4 == 3)
+      {                                        // Prime has the form 4k+3, so exit loop.
+        sumTwoSquares = FALSE;
+        break;
+      }
+    }
+    pstFactor++;
+  }
+  if (sumTwoSquares)
+  {
+    return FALSE;                              // Number can be expressed as sum of two squares.
+  }
+  if (factor2MultiplicityEven == FALSE)
+  {
+    return FALSE;                              // Number can be expressed as a sum of four squares.
+  }
+  return (tofactor.limbs[0].x % 8) != 7;
+}
+
+// Divide the number by the maximum power of 2, so it is odd.
+// Subtract 1, 4, 9, etc. Let the result be n.
+// Divide n by small primes. Let n=a1^e1*a2^e2*a3^e3*...*x where a,b,c,d are
+// small primes.
+// If e_i is odd and a_i=4k+3, then use next value of n.
+// If x is not prime, use next value of n.
+static void ComputeThreeSquares(struct sFactors *pstFactors, BigInteger *pTmp,
+  BigInteger *pTmp1, BigInteger *pTmp2, BigInteger *pTmp3, BigInteger *pTmp4,
+  BigInteger *pM1, BigInteger *pM2)
+{
+  int arrFactors[400];
+  int diff = 1;
+  int shRight, shRightPower, count;
+  int prime;
+  int expon;
+  int *ptrArrFactors;
+  int *ptrArrFactorsBak;
+  int sqrtFound, nbrLimbs, i, powerLen, base;
+  CopyBigInt(pTmp, &tofactor);
+  DivideBigNbrByMaxPowerOf4(&shRight, pTmp->limbs, &pTmp->nbrLimbs);
+  for (diff = 1; ; diff++)
+  {
+    prime = 2;
+    ptrArrFactors = arrFactors;
+    intToBigInteger(pTmp1, diff*diff);
+    BigIntSubt(pTmp, pTmp1, pTmp2);
+    do
+    {
+      expon = 0;
+      // Divide Tmp2 by small primes.
+      while (getRemainder(pTmp2, prime) == 0)
+      {
+        subtractdivide(pTmp2, 0, prime);
+        expon++;
+      }
+      if ((expon % 2 == 1 && prime % 4 == 3) || pTmp2->limbs[0].x % 4 == 3)
+      {  // Number cannot be expressed as a sum of three squares.
+        break;
+      }
+      if (expon > 0)
+      {
+        *ptrArrFactors++ = prime;
+        *ptrArrFactors++ = expon;
+      }
+      prime = nextPrime(prime);
+    } while (prime < 32768);
+    ptrArrFactorsBak = ptrArrFactors;
+    if (prime < 32768)
+    {      // Number cannot be expressed as a sum of three squares.
+      continue;
+    }
+    if (pTmp2->nbrLimbs == 1 && pTmp2->limbs[0].x == 1)
+    {      // Cofactor equals 1.
+      intToBigInteger(&Quad1, 1);
+      intToBigInteger(&Quad2, 0);
+    }
+    else if (pTmp2->nbrLimbs == 1 && pTmp2->limbs[0].x == 2)
+    {      // Cofactor equals 2.
+      intToBigInteger(&Quad1, 1);
+      intToBigInteger(&Quad2, 1);
+    }
+    else
+    {
+      // Check whether the number is prime.
+      // pTmp2->limbs: number to check (p).
+      // pTmp3->limbs: exponent (q).
+      // pTmp4->limbs: power.
+      // pTmp1->limbs: temporary storage.
+      nbrLimbs = pTmp2->nbrLimbs;
+      pTmp2->limbs[nbrLimbs].x = 0;
+      memcpy(pTmp3->limbs, pTmp2->limbs, (nbrLimbs + 1) * sizeof(limb));
+      pTmp3->limbs[0].x--;      // q = p - 1 (p is odd, so there is no carry).
+      powerLen = nbrLimbs;
+      DivideBigNbrByMaxPowerOf2(&shRightPower, pTmp3->limbs, &powerLen);
+      base = 1;
+      memcpy(TestNbr, pTmp2->limbs, (nbrLimbs + 1) * sizeof(limb));
+      GetMontgomeryParms(nbrLimbs);
+      sqrtFound = 0;
+      do
+      {                 // Compute Mult1 = sqrt(-1) (mod p).
+        base++;
+        // Mult1 = base^pTmp3.
+        modPowBaseInt(base, pTmp3->limbs, powerLen, pTmp1->limbs);
+#ifdef __EMSCRIPTEN__
+        lModularMult++;   // Increment number of modular exponentiations.    
+#endif
+        for (i = 0; i < shRightPower; i++)
+        {              // Loop that squares number.
+          modmult(pTmp1->limbs, pTmp1->limbs, pTmp4->limbs);
+          if (checkMinusOne(pTmp4->limbs, nbrLimbs) != 0)
+          {
+            sqrtFound = 1;
+            break;      // Mult1^2 = -1 (mod p), so exit loop.
+          }
+          memcpy(pTmp1->limbs, pTmp4->limbs, nbrLimbs * sizeof(limb));
+        }
+        // If power (Mult4) is 1, that means that number is at least PRP,
+        // so continue loop trying to find square root of -1.
+      } while (memcmp(pTmp4->limbs, MontgomeryMultR1, nbrLimbs * sizeof(limb)) == 0);
+      if (sqrtFound == 0)
+      {            // Cannot find sqrt(-1) (mod p), go to next candidate.
+        continue;
+      }
+      // Convert pTmp1->limbs from Montgomery notation to standard number
+      // by multiplying by 1 in Montgomery notation.
+      memset(pTmp4->limbs, 0, nbrLimbs * sizeof(limb));
+      pTmp4->limbs[0].x = 1;
+      // pTmp1->limbs = sqrt(-1) mod p.
+      modmult(pTmp4->limbs, pTmp1->limbs, pTmp1->limbs);
+      pTmp1->nbrLimbs = nbrLimbs;
+      while (pTmp1->nbrLimbs > 0 && pTmp1->limbs[pTmp1->nbrLimbs - 1].x == 0)
+      {
+        pTmp1->nbrLimbs--;
+      }
+      pTmp1->sign = SIGN_POSITIVE;
+      // Find the sum of two squares that equals this PRP x^2 + y^2 = p using
+      // Gaussian GCD as: x + iy = gcd(s + i, p)
+      // where s = sqrt(-1) mod p
+
+      // Result is stored in biMult1 and biMult2.
+      // Initialize real part to square root of (-1).
+      intToBigInteger(pTmp2, 1);   // Initialize imaginary part to 1.
+      // Initialize real part to prime.
+      memcpy(pTmp3->limbs, TestNbr, nbrLimbs * sizeof(limb));
+      pTmp3->nbrLimbs = nbrLimbs;
+      pTmp3->sign = SIGN_POSITIVE;
+      while (pTmp3->nbrLimbs > 1 && pTmp3->limbs[pTmp3->nbrLimbs - 1].x == 0)
+      {
+        pTmp3->nbrLimbs--;
+      }
+      intToBigInteger(pTmp4, 0);   // Initialize imaginary part to 0.
+                                   // Find gcd of (biMult1 + biMult2 * i) and
+                                   // (biMult3 + biMult4 * i)
+      GaussianGCD(pTmp1, pTmp2, pTmp3, pTmp4, &Quad1, &Quad2, pM1, pM2);
+    }
+    for (ptrArrFactors = arrFactors; ptrArrFactors < ptrArrFactorsBak; ptrArrFactors+=2)
+    {
+      prime = *ptrArrFactors;
+      expon = *(ptrArrFactors + 1);
+      for (i = expon - 1; i > 0; i -= 2)
+      {
+        multint(&Quad1, &Quad1, prime);
+        multint(&Quad2, &Quad2, prime);
+      }
+      if (i == 0)
+      {
+        // Since the prime is very low, it is faster to use
+        // trial and error than the general method in order to find
+        // the sum of two squares.
+        int j = 1;
+        int r;
+        for (;;)
+        {
+          r = (int)sqrt((double)(prime - j * j));
+          if (r*r + j * j == prime)
+          {
+            break;
+          }
+          j++;
+        }
+        // Compute Mult1 <- Previous Mult1 * j + Previous Mult2 * r
+        // Compute Mult2 <- Previous Mult1 * r - Previous Mult2 * j
+        // Use SquareMult1, SquareMult2, SquareMult3, SquareMult4 as temporary storage.
+        addmult(pTmp2, &Quad1, j, &Quad2, r);
+        addmult(pTmp1, &Quad1, r, &Quad2, -j);
+        CopyBigInt(&Quad1, pTmp2);
+        CopyBigInt(&Quad2, pTmp1);
+      }
+    }            /* end for */
+    Quad1.sign = SIGN_POSITIVE;
+    Quad2.sign = SIGN_POSITIVE;
+    intToBigInteger(&Quad3, diff);
+    intToBigInteger(&Quad4, 0);
+    // Perform shift left.
+    for (count = 0; count < shRight; count++)
+    {
+      BigIntAdd(&Quad1, &Quad1, &Quad1);
+      BigIntAdd(&Quad2, &Quad2, &Quad2);
+      BigIntAdd(&Quad3, &Quad3, &Quad3);
+    }
+    BigIntSubt(&Quad1, &Quad2, pTmp);
+    if (pTmp->sign == SIGN_NEGATIVE)
+    {   // Quad1 < Quad2, so exchange them.
+      CopyBigInt(pTmp, &Quad1);
+      CopyBigInt(&Quad1, &Quad2);
+      CopyBigInt(&Quad2, pTmp);
+    }
+    return;
+  }
+}
+
 static void ComputeFourSquares(struct sFactors *pstFactors)
 {
   int indexPrimes;
@@ -228,20 +460,25 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
   struct sFactors *pstFactor;
   static limb minusOneMont[MAX_LEN];
 
-  intToBigInteger(&Quad1, 1);     // 1 = 1^2 + 0^2 + 0^2 + 0^2
+  intToBigInteger(&Quad1, 1);      // 1 = 1^2 + 0^2 + 0^2 + 0^2
   intToBigInteger(&Quad2, 0);
   intToBigInteger(&Quad3, 0);
   intToBigInteger(&Quad4, 0);
+  if (tofactor.nbrLimbs < 25 && isSumOfThreeSquares(pstFactors, &Tmp, &Tmp1, &Tmp2))
+  {                                // Decompose in sum of 3 squares if less than 200 digits.
+    ComputeThreeSquares(pstFactors, &Tmp, &Tmp1, &Tmp2, &Tmp3, &Tmp4, &M1, &M2);
+    return;
+  }
   pstFactor = pstFactors + 1;      // Point to first factor in array of factors.
   if (pstFactors->multiplicity == 1 && *pstFactor->ptrFactor == 1)
   {
     if (*(pstFactor->ptrFactor + 1) == 1)
-    {                              // Number to factor is 1.
+    {                            // Number to factor is 1.
       return;
     }
     if (*(pstFactor->ptrFactor + 1) == 0)
-    {                             // Number to factor is 0.
-      intToBigInteger(&Quad1, 0);     // 0 = 0^2 + 0^2 + 0^2 + 0^2
+    {                            // Number to factor is 0.
+      intToBigInteger(&Quad1, 0);// 0 = 0^2 + 0^2 + 0^2 + 0^2
       return;
     }
   }
@@ -258,7 +495,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
     addbigint(&q, -1);             // q <- p-1
     if (p.nbrLimbs == 1 && p.limbs[0].x == 2)
     {
-      intToBigInteger(&Mult1, 1); // 2 = 1^2 + 1^2 + 0^2 + 0^2
+      intToBigInteger(&Mult1, 1);  // 2 = 1^2 + 1^2 + 0^2 + 0^2
       intToBigInteger(&Mult2, 1);
       intToBigInteger(&Mult3, 0);
       intToBigInteger(&Mult4, 0);

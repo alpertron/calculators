@@ -440,7 +440,7 @@ int fsquares(void)
             // so continue loop trying to find square root of -1.
           } while (memcmp(Mult4, MontgomeryMultR1, nbrLimbsP*sizeof(limb)) == 0);
           if (sqrtFound == 0)
-          {            // Cannot find sqrt(-1) (mod p), go to next candidate.
+          {            // Cannot find sqrt(-1) (mod p), try next candidate.
             continue;
           }
           // Convert Mult1 from Montgomery notation to standard number
@@ -471,7 +471,8 @@ int fsquares(void)
             biMult3.nbrLimbs--;
           }
           intToBigInteger(&biMult4, 0);   // Initialize imaginary part to 0.
-                                          // Find gcd of (biMult1 + biMult2 * i) and (biMult3 + biMult4 * i)
+                                          // Find gcd of (biMult1 + biMult2 * i) and 
+                                          // (biMult3 + biMult4 * i)
           GaussianGCD(&biMult1, &biMult2, &biMult3, &biMult4, &SquareMult1, &SquareMult2, &SquareMult3, &SquareMult4);
           nbrLimbs = biMult1.nbrLimbs;
           if (nbrLimbs < biMult2.nbrLimbs)

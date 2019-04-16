@@ -206,6 +206,8 @@ static void percentageCallback(int percentage)
     strcpy(ptrOutput, "</p>");
     databack(output);
   }
+#else
+  (void)percentage;
 #endif
 }
 
@@ -224,7 +226,8 @@ static void SameDegreeFactorization(void)
   for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
     int polyDegree = pstFactorInfo->degree;
-    if (polyDegree < 2 || polyDegree == pstFactorInfo->expectedDegree)
+    if (polyDegree < 2 || polyDegree == pstFactorInfo->expectedDegree ||
+      pstFactorInfo->expectedDegree == 0)
     {             // Polynomial is completely factored. Try next one.
       pstFactorInfo++;
       continue;
@@ -511,7 +514,8 @@ static int FactorPolyOverIntegers(void)
   int degree = values[0];
   int degree1, degree2;
   int prime;
-  int primeRecord, exponRecord;
+  int primeRecord = 0;
+  int exponRecord = 0;
   int expon, maxDegreeFactor;
   int degreeGcdMod;
   int *ptrSrc, *ptrDest;

@@ -63,7 +63,7 @@ static int SolNbr;
 static int showRecursiveSolution;
 static BigInteger Xind, Yind, Xlin, Ylin;
 static int nbrFactors, solFound;
-static char teach = 0, also;
+static char teach = 1, also;
 static char ExchXY;
 static char *ptrOutput;
 static char *divgcd;
@@ -271,7 +271,7 @@ static void PrintQuad(BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeff
   }
   if (coeffT->sign == SIGN_NEGATIVE)
   {
-    showText(" - ");
+    showText(" &minus; ");
   }
   else if (!BigIntIsZero(coeffT) && !BigIntIsZero(coeffT2))
   {
@@ -307,18 +307,24 @@ static void PrintQuad(BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeff
       showText(var2);
     }
   }
-  if (coeffInd->sign == SIGN_NEGATIVE)
+  if (!BigIntIsZero(coeffInd))
   {
-    showText(" - ");
+    enum eSign oldSign = coeffInd->sign;
     coeffInd->sign = SIGN_POSITIVE;
-    shownbr(coeffInd);
-    coeffInd->sign = SIGN_NEGATIVE;
-  }
-  else if (!BigIntIsZero(coeffInd))
-  {
     if (!BigIntIsZero(coeffT) || !BigIntIsZero(coeffT2))
     {
-      showText(" + ");
+      if (oldSign == SIGN_NEGATIVE)
+      {
+        showText(" &minus; ");
+      }
+      else
+      {
+        showText(" + ");
+      }
+    }
+    else if (oldSign == SIGN_NEGATIVE)
+    {
+      showText(" &minus;");
     }
     if (var2 == NULL)
     {
@@ -336,6 +342,7 @@ static void PrintQuad(BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeff
       showText(var2);
       showSquare();
     }
+    coeffInd->sign = oldSign;
   }
 }
 
@@ -771,7 +778,7 @@ void SolveQuadModEquation(void)
         {
           memset(&ValAOdd.limbs[ValAOdd.nbrLimbs], 0, (nbrLimbs - ValAOdd.nbrLimbs) * sizeof(limb));
         }
-        if (ValAOdd.sign == ValB.sign)
+        if (ValAOdd.sign == coeffLinear.sign)
         {
           ChSignBigNbr((int *)ValAOdd.limbs, nbrLimbs);
         }
@@ -2175,6 +2182,7 @@ static void ShowPoint(BigInteger *X, BigInteger *Y)
 // Then we get x = Rx', y = Ry'.
 static void NonSquareDiscriminant(void)
 {
+  enum eSign ValKSignBak;
   int factorNbr, numFactors;
   struct sFactors *pstFactor;
              // Find GCD(a,b,c)
@@ -2197,10 +2205,13 @@ static void NonSquareDiscriminant(void)
   CopyBigInt(&ValBBak, &ValB);
   CopyBigInt(&ValCBak, &ValC);
   // Factor independent term.
+  ValKSignBak = ValK.sign;
+  ValK.sign = SIGN_POSITIVE;
   NumberLength = ValK.nbrLimbs;
   CompressBigInteger(nbrToFactor, &ValK);
   Bin2Dec(ValK.limbs, tofactorDec, ValK.nbrLimbs, groupLen);
   factor(&ValK, nbrToFactor, factorsMod, astFactorsMod);
+  ValK.sign = ValKSignBak;
   // Find all indexes of prime factors with even multiplicity.
   nbrPrimesEvenMultiplicity = 0;
   numFactors = astFactorsMod[0].multiplicity;
@@ -2247,7 +2258,8 @@ static void NonSquareDiscriminant(void)
     }
     intToBigInteger(&ValM, 0);
     do
-    {                      // Compute cm^2 + bm + a and exit loop if this value is not coprime with K.
+    {                         // Compute U1 = cm^2 + bm + a and exit loop if this
+                              // value is not coprime to K.
       BigIntMultiply(&ValC, &ValM, &U2);
       BigIntAdd(&U2, &ValB, &U1);
       BigIntMultiply(&U1, &ValM, &U1);
@@ -2255,12 +2267,13 @@ static void NonSquareDiscriminant(void)
       BigIntGcd(&U1, &ValK, &bigTmp);
       if (bigTmp.nbrLimbs == 1 && bigTmp.limbs[0].x == 1)
       {
-        addbigint(&ValM, 1);  // common.quad.Increment M.
+        addbigint(&ValM, 1);  // Increment M.
         BigIntChSign(&ValM);  // Change sign to indicate type.
         break;
       }
-      addbigint(&ValM, 1);    // common.quad.Increment M.
-                              // Compute am^2 + bm + c and loop while this value is not coprime with K.
+      addbigint(&ValM, 1);    // Increment M.
+                              // Compute U1 = am^2 + bm + c and loop while this
+                              // value is not coprime to K.
       BigIntMultiply(&ValA, &ValM, &U2);
       BigIntAdd(&U2, &ValB, &U1);
       BigIntMultiply(&U1, &ValM, &U1);
@@ -2282,13 +2295,13 @@ static void NonSquareDiscriminant(void)
     }
     else
     {
-      // Compute a.
-      BigIntSubt(&U1, &U2, &ValB);
-      BigIntAdd(&ValB, &ValC, &ValA);
+      // Compute c.
+      BigIntAdd(&U1, &U2, &ValB);
+      BigIntAdd(&ValB, &ValC, &ValC);
       // Compute b.
       BigIntAdd(&ValB, &U1, &ValB);
-      // Compute c.
-      CopyBigInt(&ValC, &U1);
+      // Compute a.
+      CopyBigInt(&ValA, &U1);
     }
     if (teach)
     {
@@ -2534,6 +2547,7 @@ static void UnimodularSubstitution(void)
     BigIntAdd(&ValZ, &ValO, &Tmp[0]);     // x
     BigIntMultiply(&Tmp[0], &ValM, &Tmp[1]);
     BigIntSubt(&Tmp[1], &ValZ, &Tmp[1]);  // y
+    ValM.sign = SIGN_NEGATIVE;
   }
   else if (BigIntIsZero(&ValM))
   {
@@ -2566,7 +2580,7 @@ static void NonSquareDiscrSolution(BigInteger *value)
     BigIntChSign(&bigTmp);                // Get |K|
   }
   BigIntMultiply(&bigTmp, &ValI, &bigTmp);// |K|v
-  BigIntSubt(&ValZ, &bigTmp, &ValZ);      // tu + |K|v
+  BigIntSubt(&ValZ, &bigTmp, &ValZ);      // U = tu - |K|v
   if (teach && (ValE.nbrLimbs > 1 || ValE.limbs[0].x > 1))
   {     // E > 1
     showText(lang? "<p>De ": "<p>From ");
@@ -3901,7 +3915,7 @@ static void callbackQuadModHyperbolic(BigInteger *value)
       showText(lang ? " usando la fracción continua de" : " using the continued fraction of ");
       ShowArgumentContinuedFraction();
       showText(lang ? " porque " : " because ");
-      showText("D &minus; Q");
+      showText("<var>D</var> &minus; <var>Q</var>");
       showSquare();
       showText(lang ? " no es múltiplo de " : " is not multiple of ");
       if (ValB.limbs[0].x & 1)

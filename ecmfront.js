@@ -69,7 +69,10 @@ function styleButtons(style1, style2)
 function restartFactorization(type)
 {
   get("modal-more").style.display = "none";
-  worker.terminate();
+  if (worker)
+  {
+    worker.terminate();
+  }
   worker = 0;
   dowork(type);
 }

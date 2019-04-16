@@ -1969,7 +1969,7 @@ void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, i
         }
         else if (!isPrime)
         {
-          strcpy(ptrOutput, "<span class=\"terse\">(");
+          strcpy(ptrOutput, "<span class=\"terse\"> (");
           ptrOutput += strlen(ptrOutput);
           strcpy(ptrOutput, lang ? "Compuesto" : "Composite");
           ptrOutput += strlen(ptrOutput);
@@ -1978,7 +1978,7 @@ void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, i
         }
         if (type < 0)
         {
-          strcpy(ptrOutput, "(Unknown)");
+          strcpy(ptrOutput, " (Unknown)");
           ptrOutput += strlen(ptrOutput);
         }
 #endif
