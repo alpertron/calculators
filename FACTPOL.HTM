@@ -36,6 +36,11 @@
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 </style>
 <style>
+h2 > button {background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 100%; width:100%; text-align:left; border:none; outline:none; transition:0.4s;}
+h2 > button.active,h2 > button:hover {background-color:#ccc;}
+h2 > button:after {content:"\002B"; color:#777; font-weight:bold; float:right; margin-left:5px;}
+h2 > button.active:after {content:"\2212";}
+.panel {padding: 0 10px; background-color:white; display:none; overflow:hidden;}
 body {font-family: arial; margin: 0; padding: 0;}
 h1 {text-align:center;}
 fieldset {display:inline}
@@ -158,15 +163,35 @@ Contacto
 </form>
 <div id="help" aria-live="polite" class="pad">
 <p>Importante: Para factorizar polinomios enteros, el módulo usado en la caja de entrada debe ser cero.
-<h2>Polinomios módulo un número primo</h2>
+<h2><button>Polinomios enteros</button></h2>
+<div class="panel">
+<p>Los polinomios enteros en una variable son expresiones que incluyen una variable llamada <var>x</var>, números enteros y las operaciones de suma, resta y multiplicación.</p>
+<p>Se pueden expresar mediante la forma: <var>f</var>(<var>x</var>) = <var>f</var><sub>0</sub> + <var>f</var><sub>1</sub>&#8290;<var>x</var> + <var>f</var><sub>2</sub>&#8290;<var>x</var><sup>2</sup> + ... + <var>f</var><sub>n</sub>&#8290;<var>x</var><sup>n</sup>.</p>
+<p>El número <var>n</var> es el grado del polinomio. El coeficiente <var>f</var><sub>n</sub> es el coeficiente principal y el coeficiente <var>f</var><sub>0</sub> es el término independiente.
+Se pueden escribir como grado(<var>f</var>), cp(<var>f</var>) y ti(<var>f</var>) respectivamente.</p>
+<p>Sean <var>f</var>(<var>x</var>) y <var>g</var>(<var>x</var>) dos polinomios tales que grado(<var>f</var>) &ge; grado(<var>g</var>). Podemos definir la suma, resta y multiplicación como sigue:</p>
+<p><var>f</var>(<var>x</var>) + <var>g</var>(<var>x</var>) = <var>h</var>(<var>x</var>) significa <var>h</var><sub><var>i</var></sub> = <var>f</var><sub><var>i</var></sub> + <var>g</var><sub><var>i</var></sub> si <var>i</var> &le; grado(<var>g</var>) y <var>h</var><sub><var>i</var></sub> = <var>f</var><sub>i</sub> en caso contrario.</p>
+<p><var>f</var>(<var>x</var>) &minus; <var>g</var>(<var>x</var>) = <var>h</var>(<var>x</var>) significa <var>h</var><sub><var>i</var></sub> = <var>f</var><sub><var>i</var></sub> &minus; <var>g</var><sub><var>i</var></sub> si <var>i</var> &le; grado(<var>g</var>) y <var>h</var><sub><var>i</var></sub> = <var>f</var><sub>i</sub> en caso contrario.</p>
+<p><var>g</var>(<var>x</var>) &minus; <var>f</var>(<var>x</var>) = <var>h</var>(<var>x</var>) significa <var>h</var><sub><var>i</var></sub> = <var>g</var><sub><var>i</var></sub> &minus; <var>f</var><sub><var>i</var></sub> si <var>i</var> &le; grado(<var>g</var>) y <var>h</var><sub><var>i</var></sub> = &minus;<var>f</var><sub>i</sub> en caso contrario.</p>
+<p><var>f</var>(<var>x</var>) &#8290; <var>g</var>(<var>x</var>) = <var>h</var>(<var>x</var>) significa
+<var>h</var><sub><var>i</var></sub> = <var>f</var><sub>0</sub> &#8290; <var>g</var><sub><var>i</var></sub> + <var>f</var><sub>1</sub> &#8290; <var>g</var><sub><var>i</var> &minus; 1</sub> + ... + <var>f</var><sub>i</sub> &#8290; <var>g</var><sub>0</sub> si <var>i</var> &le; grado(<var>g</var>),
+<var>h</var><sub><var>i</var></sub> = <var>f</var><sub><var>i</var> &minus; grado(<var>g</var>)</sub> &#8290; <var>g</var><sub>grado(<var>g</var>)</sub> + <var>f</var><sub><var>i</var> + 1 &minus; grado(<var>g</var>)</sub> &#8290; <var>g</var><sub>grado(<var>g</var>) &minus; 1</sub> + ... + <var>f</var><sub>i</sub> &#8290; <var>g</var><sub>0</sub> en caso contrario.</p>
+<p>La factorización de polinomios enteros es el proceso que encuentra uno o más polinomios irreducibles cuyo producto es el polinomio original. Un polinomio irreducible no se puede expresar como un producto de dos o más polinomios enteros.
+<p>Ejemplo: <var>x</var><sup>4</sup> &minus; 1 = (<var>x</var><sup>2</sup> + 1) &#8290; (<var>x</var> + 1) &#8290; (<var>x</var> &minus; 1)</p>
+<p>Se puede demostrar que cualquier polinomio entero se puede factorizar de una sola manera en polinomios irreducibles.</p>
+</div>
+<h2><button>Polinomios módulo un número primo</button></h2>
+<div class="panel">
 <p>La multiplicación de polinomios módulo un número primo se puede realizar de la manera habitual multiplicando los diferentes términos del polinomio
 y luego sumando los coeficientes del mismo grado. Finalmente se reducen los coeficientes módulo ese primo.</p>
-<p>Por ejemplo, el producto de 3x<sup>2</sup> + 5x + 1 y 6x<sup>2</sup> + 4x + 3 modulo 7 es 18x<sup>4</sup> + (30+12)x<sup>3</sup> + (9+20+6)x<sup>2</sup> + (15+4)x + 3 modulo 7 que es igual a 4x<sup>4</sup> + 5x + 3</p>
+<p>Por ejemplo, el producto de 3x<sup>2</sup> + 5x + 1 y 6x<sup>2</sup> + 4x + 3 módulo 7 es 18x<sup>4</sup> + (30+12)x<sup>3</sup> + (9+20+6)x<sup>2</sup> + (15+4)x + 3 módulo 7 que es igual a 4x<sup>4</sup> + 5x + 3</p>
 <p>Se puede demostrar que cualquier polinomio módulo un número primo se puede factorizar como el primer coeficiente y polinomios mónicos de una sola manera (los polinomios mónicos son aquellos que tienen el primer coeficiente igual a 1.)</p>
 <p>También se puede demostrar que si no hay factores repetidos, el polinomio se puede factorizar módulo una potencia de ese primo de una sola forma.</p>
 <p>Esta aplicación Javascript puede evaluar y factorizar expresiones polinómicas módulo un primo o una potencia de número primo.
 También puede evaluar y factorizar polinomios enteros ingresando el valor cero en la caja de entrada Módulo.</p>
-<h2>Uso del programa</h2>
+</div>
+<h2><button>Uso del programa</button></h2>
+<div class="panel">
 <p>Utilice la caja superior para ingresar el polinomio y la inferior para ingresar el módulo,
 que debe ser un número entero mayor que 1 que sea un número primo o un primo elevado a alguna potencia.
 Es posible simplemente evaluar el polinomio, o bien evaluarlo y factorizarlo, apretando el botón correspondiente.</p>
@@ -193,7 +218,9 @@ Debido a esto, la aplicación acepta polinomios de grado no superior a 1000.
 o precedida por el símbolo de intercalación (^) (cuando la opción no está marcada).
 La primera opción sirve para ver la factorización en pantalla o para imprimirla.
 La segunda opción se utiliza cuando hay que copiar los datos a otra aplicación.
-<h2>Expresiones</h2>
+</div>
+<h2><button>Expresiones</button></h2>
+<div class="panel">
 <p>Se pueden ingresar expresiones que usan los siguientes operadores y paréntesis:</p>
 <ul>
 <li><strong>+</strong> para suma</li>
@@ -218,11 +245,270 @@ La segunda opción se utiliza cuando hay que copiar los datos a otra aplicación
 <li><strong>Modpow(m,n,r)</strong>: halla <var>m</var><sup><var>n</var></sup> módulo <var>r</var>.</li>
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
-<h2>Código fuente</h2>
+</div>
+<h2><button>División de polinomios</button></h2>
+<div class="panel">
+<h3>Polinomios módulo un número primo</h3>
+<p>La división de polinomios requiere varias divisiones modulares donde el divisor es el coeficiente principal del polinomio divisor.</p>
+<p>Para calcular la división modular <var>a</var> / <var>b</var> (mod <var>p</var>), primero debemos hallar el inverso multiplicativo modular <var>c</var>.
+Este número tiene la propiedad <var>b</var>&#8290;<var>c</var> &equiv; 1 (mod <var>p</var>) y se puede hallar usando el algoritmo extendido de Euclides como se muestra a continuación:</p>
+<p><code>
+función modInv(value, modulus)<br>
+{<br>
+&nbsp;&nbsp;V1 &larr; 1; V3 &larr; value;<br>
+&nbsp;&nbsp;U1 &larr; 0; U3 &larr; modulus;<br>
+&nbsp;&nbsp;mientras V3 &ne; 0<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;QQ &larr; U3 / V3;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;T1 &larr; U1 &minus; V1 * QQ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;T3 &larr; U3 &minus; V3 * QQ;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;U1 &larr; V1; U3 &larr; V3;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;V1 &larr; T1; V3 &larr; T3;<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;retornar U1;<br>
+}
+</code></p>
+<p>la división es igual al producto <var>a</var>&#8290;<var>c</var> (mod <var>p</var>).</p>
+<p>Para minimizar la cantidad de divisiones modulares (que tardan mucho tiempo), podemos multiplicar todos los coeficientes de ambos polinomios (dividendo y divisor) por el inverso multiplicativo del coeficiente principal del polinomio divisor.
+De esta manera, dividiremos por un polinomio mónico, esto es, un polinomio cuyo término principal vale 1. Esto no cambiará el cociente, pero deberemos multiplicar el resto por el coeficiente principal del polinomio divisor.
+<p>Ejejmplo: realizar la división (3&#8290;<var>x</var><sup>3</sup> + 7&#8290;<var>x</var><sup>2</sup> + 5&#8290;<var>x</var> + 6) / (4&#8290;<var>x</var><sup>2</sup> + 3&#8290;<var>x</var> + 10) (mod 11):</p>
+<p>Primero debemos hallar el inverso multiplicativo de 4 (mod 11), que es igual a 3, porque 4 &times; 3 = 12 &equiv; 1 (mod 11). Multiplicando todos los coeficientes por 3 obtenemos:</p>
+<p>(9&#8290;<var>x</var><sup>3</sup> + 10&#8290;<var>x</var><sup>2</sup> + 4&#8290;<var>x</var> + 7) / (<var>x</var><sup>2</sup> + 9&#8290;<var>x</var> + 8) (mod 11)</p>
+<p>Dividiendo el coeficiente principal del polinomio dividendo por el coeficiente principal del polinomio divisor: 9&#8290;<var>x</var><sup>3</sup> / <var>x</var><sup>2</sup> &equiv; 9&#8290;<var>x</var> (mod 11).</p>
+<p>Ahora restamos el producto de lo que acabamos de hallar por el polinomio divisor del polinomio dividendo. Obtenemos:</p>
+<p>9&#8290;<var>x</var><sup>3</sup> + 10&#8290;<var>x</var><sup>2</sup> + 4&#8290;<var>x</var> + 7 - 9&#8290;<var>x</var>(<var>x</var><sup>2</sup> + 9&#8290;<var>x</var> + 8) &equiv; 6&#8290;<var>x</var><sup>2</sup> + 9&#8290;<var>x</var> + 7 (mod 11). Debemos observar que 10 &minus; 9 &times; 9 &equiv; 6 (mod 11) y 4 &minus; 9 &times; 8 (mod 11) &equiv; 9 (mod 11).</p>
+<p>Dividiendo el coeficiente principal del polinomio resto que acabamos de hallar por el coeficiente principal del polinomio divisor: 6&#8290;<var>x</var><sup>2</sup> / <var>x</var><sup>2</sup> &equiv; 6 (mod 11).</P>
+<p>Ahora restamos el producto de lo que acabamos de hallar por el polinomio divisor del polinomio resto. Obtenemos:</p>
+<p>(6&#8290;<var>x</var><sup>2</sup> + 9&#8290;<var>x</var> + 7) &minus; 6&#8290;(<var>x</var><sup>2</sup> + 9&#8290;<var>x</var> + 8) &equiv; 10<var>x</var> + 3 (mod 11). Debemos observar que 9 &minus; 6 &times; 9 &equiv; 10 (mod 11) y 7 &minus; 6 &times; 8 &equiv; 3 (mod 11).</p>
+<p>El polinomio cociente es igual a 9&#8290;<var>x</var> + 6 y el polinomio resto es igual a 4&#8290;(10<var>x</var> + 3) &equiv; 7 <var>x</var> + 1 (mod 11).</p>
+<p>
+<h3>Polinomios enteros</h3>
+<p>La división se realiza de la misma manera que en la subsección anterior, con la diferencia que no hay inverso multiplicativo del coeficiente principal del polinomio divisor. Así que por cada iteración del algoritmo, se necesita una división.
+Si el polinomio divisor no es mónico, a veces no podremos hacer la división. Esto ocurre cuando el coeficiente principal del resto no es múltiplo del coeficiente principal del divisor.</p>
+</div>
+<h2><button>Máximo común divisor de polinomios</button></h2>
+<div class="panel">
+<p>El máximo común divisor de dos polinomios es el polinomio de mayor grado posible, que divide ambos polinomios.</p>
+<p>Por ejemplo: mcd(<var>x</var><sup>2</sup> + 6&#8290;<var>x</var> + 5, 2&#8290;<var>x</var><sup>2</sup> + 13&#8290;<var>x</var> + 15) = <var>x</var> + 5</p>
+<h3>Polinomios módulo un número primo</h3>
+<p>El máximo común divisor se puede hallar mediante el algoritmo de Euclides como se muestra a continuación:</p>
+<p><code>
+función mcdm(pol1, pol2, p)<br>
+{<br>
+&nbsp;&nbsp;a &larr; pol1;<br>
+&nbsp;&nbsp;b &larr; pol2;<br>
+&nbsp;&nbsp;mientras b ≠ 0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;t &larr; b;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;b &larr; resto(a, b) (mod p);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;a &larr; t;<br>
+&nbsp;&nbsp;retornar a;<br>
+}<br>
+</code></p>
+
+<h3>Polinomios enteros</h3>
+<p>Se puede utilizar el algoritmo recién mostrado para hallar el mcd de dos polinomios enteros, pero los coeficientes de los polinomios intermedios crecen rápidamente, así que no es útil.</p>
+<p>Existen dos métodos eficientes para hallar el mcd: el algoritmo de subresultantes y el modular. El último, inventado por William Brown, utiliza mcd de polinomios módulo un número primo, así que es mejor para nosotros.</p>
+<p><code>
+función mcdp(pol1, pol2)<br>
+{<br>
+&nbsp;&nbsp;c<sub>1</sub> &larr; cont(pol1);<br>
+&nbsp;&nbsp;c<sub>2</sub> &larr; cont(pol2);<br>
+&nbsp;&nbsp;c &larr; mcd(c<sub>1</sub>, c<sub>2</sub>);<br>
+&nbsp;&nbsp;a &larr; pol1 / c<sub>1</sub>;<br>
+&nbsp;&nbsp;b &larr; pol2 / c<sub>2</sub>;<br>
+&nbsp;&nbsp;h &larr; mcd(cp(pol1), cp(pol2));<br>
+&nbsp;&nbsp;d &larr; min(grado(pol1), grado(pol2));<br>
+&nbsp;&nbsp;m &larr; 1;<br>
+&nbsp;&nbsp;g<sub>m</sub> &larr; 0;<br>
+&nbsp;&nbsp;repetir<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hacer<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hacer<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p &larr; nextPrime();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} mientras resto(m*h, p) = 0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r &larr; pol1 (mod p);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s &larr; pol2 (mod p);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g<sub>p</sub> &larr; gcdm(r, s, p);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;si grado(g<sub>p</sub>) = 0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Salida c; salir;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} mientras grado(g<sub>p</sub>) > d;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;g<sub>p</sub> &larr; (h mod p)/cp(g<sub>p</sub>) * g<sub>p</sub>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;si grado(g<sub>p</sub>) &lt; d<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m &larr; 1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;g<sub>m</sub> &larr; 0;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;d &larr; grado(g<sub>p</sub>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;h &larr; ACR([g<sub>p</sub>, p], [g<sub>m</sub>, m]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;si h = g<sub>m</sub><br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h &larr; h / cont(h);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;si resto(a, h) = 0 y resto(b, h) = 0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Salida c*h; salir;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;m &larr; p * m;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;g<sub>m</sub> &larr; h;<br>
+&nbsp;&nbsp;}<br>
+}
+</code></p>
+<p>El contenido de un polinomio es el máximo común divisor de todos los coeficientes de ese polinomio. Se expresa como cont(f) en el algoritmo que se acaba de mostrar.</p>
+<p>Los coeficientes del resultado del algoritmo chino del resto (function ACR) calculado módulo <var>m</var><var>p</var>, deben estar en el rango &minus;<var>m</var><var>p</var>/2 a <var>m</var><var>p</var>/2.</p>
+<p>En este algoritmo se calculan varios mcd de los polinomios de entrada módulo diferentes primos. Podemos observar que sus grados son mayores o iguales que el grado del polinomio mcd.</p>
+<p>Podemos distinguir tres casos:</p>
+<ul>
+<li>El grado del mcd modular es mayor que el grado del mcd modular anterior: descartamos el nuevo resultado porque tiene el grado incorrecto.</li>
+<li>El grado del mcd modular el menor que el grado del mcd modular anterior: descartamos el viejo resultado porque tiene el grado incorrecto. Lo reemplazamos por el nuevo resultado.</li>
+<li>Ambos grados son iguales: Unimos los coeficientes de ambos mcd usando el algoritmo chino del resto. Este algoritmo halla <var>g</var> (mod <var>m</var><var>p</var>) dados <var>g</var><sub>m</sub> (mod <var>m</var>) y <var>g</var><sub>p</sub> (mod <var>p</var>).</li>
+</ul>
+<p>El algoritmo continúa hasta que el polinomio calculado divide los dos polinomios de entrada.</p>
+</div>
+<h2><button>Factorización de polinomios módulo un número primo</button></h2>
+<div class="panel">
+<p>El algoritmo de factorización se divide en cuatro etapas: factorization de factores repetidos, factorización de grados diferentes, factorización de grados iguales y elevación de los factores.
+Todos los pasos requieren polinomios mónicos, así que antes de comenzar, debemos multiplicar todos los coeficientes por el inverso multiplicativo del coeficiente principal del polinomio.</p>
+<h3>Factorization de factores repetidos</h3>
+<p>Los siguientes etapas no funcionan si hay factores repetidos, así que el primer paso consiste en factorizar el polinomio de manera que no haya factores repetidos.</p>
+<p>La derivada del polinomio <var>f</var>(<var>x</var>) = <var>f</var><sub>0</sub> + <var>f</var><sub>1</sub>&#8290;<var>x</var> + <var>f</var><sub>2</sub>&#8290;<var>x</var><sup>2</sup> + ... + <var>f</var><sub>n</sub>&#8290;<var>x</var><sup>n</sup> es
+<var>f</var>'(<var>x</var>) = <var>f</var><sub>1</sub> + 2&#8290;<var>f</var><sub>2</sub>&#8290;<var>x</var> + ... + <var>n</var>&#8290;<var>f</var><sub>n</sub>&#8290;<var>x</var><sup>n &minus; 1</sup></p>
+<p>El algoritmo recursivo es:</p>
+<p><code>
+función FFR(f)<br>
+{<br>
+&nbsp;&nbsp;i &larr; 1; g &larr; f';<br>
+&nbsp;&nbsp;si g &ne; 0<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;c &larr; mcd(f, g);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;w &larr; f / c;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mientras w &ne; 1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;y &larr; mcd(w, c); z &larr; w / y;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Salida(z<sup>i</sup>); i &larr; i + 1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w &larr; y; c &larr; c / y;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;si c &ne; 1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c &larr; c<sup>1/p</sup>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Salida(SFF(c)<sup>p</sup>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;else<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;f &larr; f<sup>1/p</sup>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Salida(SFF(f)<sup>p</sup>);<br>
+&nbsp;&nbsp;}<br>
+}
+</code></p>
+<p>Debemos hacer las siguientes etapas por cada polinomio en la salida de este algoritmo.</p>
+<h3>Factorización de grados diferentes</h3>
+<p>Este es un método que usa el hecho que el producto de todos los polinomios mónicos irreducibles de grados que dividen <var>d</var> (mod <var>p</var>) es igual a <var>x</var><sup>e</sup> &minus; <var>x</var> donde <var>e</var> = <var>p</var><sup><var>d</var>.</p>
+<p><code>
+función FGD(f, p)<br>
+{<br>
+&nbsp;&nbsp;i &larr; 1;<br>
+&nbsp;&nbsp;h &larr; f;<br>
+&nbsp;&nbsp;j &larr; x;<br>
+&nbsp;&nbsp;q &larr; 0;<br>
+&nbsp;&nbsp;mientras grado(h) &ge; 2&#8290;i<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;j &larr; j<sup>p</sup> (mod h);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;g &larr; gcdm(h, j &minus; x);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;si g &ne; 1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Salida(g, i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;q &larr; 1;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;h &larr; h / g;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;si h &ne; 1<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Salida(h, grado(h));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;q &larr; 1;<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;si q = 0<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Salida(f, 1);<br>
+&nbsp;&nbsp;}<br>
+}
+</code></p>
+<p>Los pares que forman la salida de esta función son la entrada de la siguiente etapa. El primer elemento del par es un factor de <var>f</var> que es el producto de todos los factores cuyo grado está especificado en el segundo elemento del par.</p>
+<h3>Factorización de grados iguales</h3>
+<p>Este es un método probabilístico inventado por David Cantor y Hans Zassenhaus que encuentra todos los factores del mismo grado de la salida del algoritmo anterior:</p>
+<p><code>
+función FGI(f, d, p)<br>
+{<br>
+&nbsp;&nbsp;n &larr; grado(f);<br>
+&nbsp;&nbsp;Asignar f a la lista de factores;<br>
+&nbsp;&nbsp;mientras tamaño(list of factors) &lt; n/d<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;h &larr; polinomio al azar con grado(h) &lt; n;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;e &larr; (q<sup>d</sup> &minus; 1) / 2;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;g &larr; h<sup>e</sup> &minus; 1 (mod f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;por cada elemento u de la lista de factores<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;si grado(u) &gt; d<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;j &larr; mcdm(g, u);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;si j &ne; 1 y j &ne; u<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;descartar u de la lista de factores;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;agregar j y u/j a la lista de factores;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;Salida lista de factores<br>
+}
+</code></p>
+<h3>Elevación de los factores</h3>
+<p>Una vez que hallamos todos los factores irreducibles del polinomio módulo <var>p</var>, podemos calcular el factor del polinomio módulo <var>p</var><sup>n</sup> si no hay factores repetidos.
+El siguiente algoritmo puede elevar de módulo <var>m</var> a <var>m</var><sup>2</sup>, así que podemos ejecutarlo varias veces hasta obtener el módulo deseado.</p>
+<p>Entrada: f = g*h (mod m), s*g + t*h = 1 (mod m)</p>
+<p>Salida: f = g'*h' (mod m<sup>2</sup>), s'*g' + t'*h' = 1 (mod m<sup>2</sup>) with grado(s') &lt; grado(h'), grado(t') &lt; grado(g')</p>
+<p>Todos los cálculos que se muestran abajo se realizan mod m<sup>2</sup>.</p>
+<p><code>
+&nbsp;&nbsp;e &larr; f - g*h<br>
+&nbsp;&nbsp;Calcular q, r tales que s*e = q*h + r<br>
+&nbsp;&nbsp;g' &larr; g + t*e + q*g<br>
+&nbsp;&nbsp;h' &larr; h + r<br>
+<br>
+&nbsp;&nbsp;e &larr; s*g' + t*h' &minus; 1<br>
+&nbsp;&nbsp;Calcular q, r tales que s*e = q*h + r<br>
+&nbsp;&nbsp;s' &larr; s &minus; r<br>
+&nbsp;&nbsp;t' &larr; t &minus; t*e &minus; q*g'
+</code></p>
+<p>Los valores iniciales de <var>s</var> y <var>t</var> se obtienen de <var>g</var> y <var>h</var> mediante el algoritmo extendido de Euclides.</p>
+</div>
+<h2><button>Factorización de polinomios enteros</button></h2>
+<div class="panel">
+<p>Podemos usar la salida de la sección anterior para factorizar polinomios enteros.</p>
+<p>Primero debemos dividir el polinomio por su contenido (el máximo común divisor de todos los coeficientes). El resultado es la parte principal, cuya notación es pp(<var>f</var>).</p>
+<p>Para separar los factores repetidos, podemos factorizar recursivamente mcd(<var>f</var>, <var>f'</var>) y <var>f</var>/mcd(<var>f</var>, <var>f'</var>).</p>
+<p>En este momento sabemos que no hay factores repetidos. Debemos hallar un número primo pequeño <var>p</var> para el que ese polinomio no tenga factores repetidos. Este número primo se puede encontar fácilmente verificando que mcd(<var>f</var>, <var>f'</var>) &equiv; 1 (mod <var>p</var>).</p>
+<p>Luego debemos hallar una cota para los coeficientes de los factores. Podemos calcular la cota de Knuth-Cohen para los coeficientes de los polinomios factores de la siguiente manera:</p>
+<p>Si el polinomio <var>G</var> divide <var>F</var> tenemos para todo <var>j</var>:</p>
+<p>|<var>G</var><sub><var>j</var></sub>| &le; binomial(<var>n</var>-1, j)*(&Sigma;<sub><var>i</var></sub> |<var>F</var><sub><var>i</var></sub>|<sup>2</sup>)<sup>1/2</sup> + binomial(<var>n</var> &minus; 1, <var>j</var> &minus;1) * |<var>F</var><sub><var>m</var></sub>|</p>
+<p>donde <var>m</var> es el grado de <var>F</var> y <var>n</var> es el grado de <var>G</var>. El máximo grado a considerar es <var>n</var> = ceil(<var>m</var>/2).</p>
+<p>Una vez hallada la cota <var>B</var>,debemos calcular el menor valor de <var>e</var> tal que 2&#8290;B &lt; <var>p</var><sup>e</sup>.</p>
+<p>Ahora factorizamos el polinomio mod <var>p</var><sup>e</sup> que tiene <var>r</var> factores diferentes. Si <var>r</var> &gt; 10, podemos probar otros valores de <var>p</var>, así minimizamos la cantidad de factores encontrados. La aplicación hace el intento con hasta 5 primos diferentes.</p>
+<p>Ahora combinaremos los factores encontrados módulo <var>p</var><sup>e</sup> para obtener los factores que sean polinomios enteros. Hay 2<sup>r</sup> combinaciones posibles, pero la mayoría puede ser eliminada rápidamente.</p>
+<p>Sea la combinación de factores hallados <var>f</var><sub>0</sub>, <var>f</var><sub>1</sub>, ..., <var>f</var><sub>s</sub>. Calculemos <var>a</var> &equiv; cp(<var>f</var>) &#8290; ti(<var>f</var><sub>0</sub>)&#8290; ti(<var>f</var><sub>1</sub>) &#8290; ... &#8290;ti(<var>f</var><sub>s</sub>) (mod <var>p</var><sup>e</sup>) y <var>b</var> &equiv; cp(<var>f</var>) &#8290; ti(<var>f</var>) (mod <var>p</var><sup>e</sup>). En ambos casos los productos deben estar en el rango &minus;<var>p</var><sup>e</sup>/2 a <var>p</var><sup>e</sup>/2.
+Si <var>a</var> no divide <var>b</var>, podemos descartar esa combinación.</p>
+<p>Para las pocas combinaciones que quedan, calcularemos a &equiv; lc (<var>f</var>) &#8290; <var>f</var><sub>0</sub> &#8290; <var>f</var><sub>1</sub> &#8290; ... &#8290; <var>f</var><sub>s</sub> (mod <var>p</var><sup>e</sup>). Otra vez, los coeficientes de este polinomio deben estar en el rango &minus;<var>p</var><sup>e</sup>/2 a <var>p</var><sup>e</sup>/2.
+Calculemos <var>b</var> = gcdp(<var>a</var>, cp(<var>f</var>) &#8290; <var>f</var>). Si el grado de <var>b</var> es cero, descartaremos la combinación. En caso contrario, el polinomio <var>b</var> es un factor no trivial de <var>f</var>.</p>
+</div>
+<h2><button>Código fuente</button></h2>
+<div class="panel">
 <p>
 Puede bajar el código fuente del programa actual y del viejo applet de factorización de polinomios <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
-<p>Escrito por Dario Alpern. Actualizado el 15 de abril de 2019.</p>
+</div>
+<p>Escrito por Dario Alpern. Actualizado el 20 de abril de 2019.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>
@@ -274,12 +560,13 @@ Puede bajar el código fuente del programa actual y del viejo applet de factoriz
 </aside>
 <script>
 <!--
-(function(){function a(a){return document.getElementById(a)}function p(){var b=param;c||(h?f||(f=new Blob([new Uint8Array(k)])):f||(f=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),c=new Worker(window.URL.createObjectURL(f)),c.onmessage=function(b){a("result").innerHTML=b.data.substring(1);"2"==b.data.substring(0,1)&&(a("eval").disabled=!1,a("factor").disabled=!1,a("stop").disabled=!0)});h?
-c.postMessage(b):c.postMessage([b,k])}function l(b){b=1+b+(a("sup").checked?4:0);var d=a("result"),m=a("poly").value,c=a("mod").value,e=a("digits").value;a("help").style.display="none";d.style.display="block";""==m?d.innerHTML="Por favor ingrese una expresi\u00f3n para el polinomio a evaluar.":""==c?d.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n para el m\u00f3dulo.":(a("eval").disabled=!0,a("factor").disabled=!0,a("stop").disabled=!1,d.innerHTML="Factorizando el polinomio...",param=
-e+","+b+","+c+String.fromCharCode(0)+m+String.fromCharCode(0),p())}function n(){a("main").style.display="block";a("feedback").style.display="none";a("poly").focus()}var c=0,f,k=0,h="undefined"===typeof WebAssembly;window.onload=function(){a("stop").disabled=!0;a("eval").onclick=function(){l(2)};a("factor").onclick=function(){l(0)};a("stop").onclick=function(){c.terminate();c=0;a("eval").disabled=!1;a("factor").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Factorizaci\u00f3n detenida por el usuario.</p>"};
-a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("poly").oninput=function(){var b=a("poly"),d=b.value.length-b.selectionStart;b.value=b.value.replace(".","x^");setTimeout(function(){d=b.value.length-d;b.selectionStart=d;b.selectionEnd=d},30)};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){n()};a("formsend").onclick=
-function(){a("userdata").value=a("adduserdata").checked?a("poly").value+" (mod "+a("mod").value+")":"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),n())};b.open("POST","/enviomail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var d=a("formfeedback").elements,c="",e=0,f=0;f<d.length;f++){var g=d[f];"radio"==g.type&&0==g.checked||
-!g.name||(e&&(c+="&"),c+=g.name+"="+encodeURIComponent(g.value),e++)}b.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var e=new XMLHttpRequest;e.open("GET",h?"polfactW0093.js":"polfact0093.wasm",!0);e.responseType="arraybuffer";e.onreadystatechange=function(){4==e.readyState&&200==e.status&&(k=e.response)};e.send(null)})(this);
+(function(){function a(a){return document.getElementById(a)}function p(){var d=param;e||(h?f||(f=new Blob([new Uint8Array(k)])):f||(f=new Blob(Array.prototype.map.call(document.querySelectorAll("script[type='text/js-worker']"),function(a){return a.textContent}),{type:"text/javascript"})),e=new Worker(window.URL.createObjectURL(f)),e.onmessage=function(b){a("result").innerHTML=b.data.substring(1);"2"==b.data.substring(0,1)&&(a("eval").disabled=!1,a("factor").disabled=!1,a("stop").disabled=!0)});h?
+e.postMessage(d):e.postMessage([d,k])}function l(d){d=1+d+(a("sup").checked?4:0);var b=a("result"),c=a("poly").value,m=a("mod").value,e=a("digits").value;a("help").style.display="none";b.style.display="block";""==c?b.innerHTML="Por favor ingrese una expresi\u00f3n para el polinomio a evaluar.":""==m?b.innerHTML="Por favor ingrese un n\u00famero o expresi\u00f3n para el m\u00f3dulo.":(a("eval").disabled=!0,a("factor").disabled=!0,a("stop").disabled=!1,b.innerHTML="Factorizando el polinomio...",param=
+e+","+d+","+m+String.fromCharCode(0)+c+String.fromCharCode(0),p())}function n(){a("main").style.display="block";a("feedback").style.display="none";a("poly").focus()}var e=0,f,k=0,h="undefined"===typeof WebAssembly;window.onload=function(){a("stop").disabled=!0;a("eval").onclick=function(){l(2)};a("factor").onclick=function(){l(0)};a("stop").onclick=function(){e.terminate();e=0;a("eval").disabled=!1;a("factor").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Factorizaci\u00f3n detenida por el usuario.</p>"};
+a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("poly").oninput=function(){var c=a("poly"),b=c.value.length-c.selectionStart;c.value=c.value.replace(".","x^");setTimeout(function(){b=c.value.length-b;c.selectionStart=b;c.selectionEnd=b},30)};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){n()};a("formsend").onclick=
+function(){a("userdata").value=a("adduserdata").checked?a("poly").value+" (mod "+a("mod").value+")":"";var c=new XMLHttpRequest;c.onreadystatechange=function(){4==c.readyState&&(200==c.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),n())};c.open("POST","/enviomail.php",!0);c.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var b=a("formfeedback").elements,d="",e=0,g=0;g<b.length;g++){var f=b[g];"radio"==f.type&&0==f.checked||
+!f.name||(e&&(d+="&"),d+=f.name+"="+encodeURIComponent(f.value),e++)}c.send(d);return!1};var d=document.querySelectorAll("h2"),b;for(b=0;b<d.length;b++)d[b].addEventListener("click",function(){this.children[0].classList.toggle("active");var a=this.nextElementSibling;a.style.display="block"===a.style.display?"none":"block"});"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var g=new XMLHttpRequest;g.open("GET",h?"polfactW0094.js":"polfact0094.wasm",
+!0);g.responseType="arraybuffer";g.onreadystatechange=function(){4==g.readyState&&200==g.status&&(k=g.response)};g.send(null)})(this);
 //-->
 </script>
 <script type="text/js-worker">

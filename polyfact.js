@@ -213,6 +213,27 @@ window.onload = function ()
     return false;   // Send form only through JavaScript.
   }
 
+  // Generate accordion.
+  var acc = document.querySelectorAll("h2");
+  var idx, x, y;
+
+  for (idx = 0; idx < acc.length; idx++)
+  {
+    acc[idx].addEventListener("click", function()
+    {
+    // "active" means that panel is being displayed.
+      this.children[0].classList.toggle("active");
+      var panel = this.nextElementSibling;
+      if (panel.style.display === "block")
+      {
+        panel.style.display = "none";
+      }
+      else
+      {
+        panel.style.display = "block";
+      }
+    });
+  }
   if ('serviceWorker' in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.

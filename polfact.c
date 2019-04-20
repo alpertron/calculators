@@ -626,6 +626,7 @@ static int FactorPolyOverIntegers(void)
           // Loop that finds the maximum value of bound for |Bj|.
     intToBigInteger(&operand2, 1);  // binomial(n-1, 0)
     UncompressBigIntegerB(&polyNonRepeatedFactors[1], &bound);  // bound <- |A0|
+    bound.sign = SIGN_POSITIVE;
     for (degree1 = 1; degree1 <= maxDegreeFactor; degree1++)
     {
       CopyBigInt(&operand4, &operand2);
