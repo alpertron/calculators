@@ -227,11 +227,10 @@ static void modPowShowStatus(limb *base, limb *exp, int nbrGroupsExp, limb *powe
 // A number is a sum of 3 squares if it has not the form 4^n*(8k+7) and
 // there is a prime factor of the form 4k+3 with odd multiplicity.
 
-static int isSumOfThreeSquares(struct sFactors *pstFactors, BigInteger *pTmp,
-  BigInteger *pTmp1, BigInteger *pTmp2)
+static int isSumOfThreeSquares(struct sFactors* pstFactors, BigInteger* pTmp)
 {
   struct sFactors *pstFactor = pstFactors + 1; // Point to first factor in array of factors.
-  int indexPrimes;
+  int indexPrimes, shRight;
   int factor2MultiplicityEven = TRUE;
   int sumTwoSquares = TRUE;
   for (indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--)
@@ -258,7 +257,9 @@ static int isSumOfThreeSquares(struct sFactors *pstFactors, BigInteger *pTmp,
   {
     return FALSE;                              // Number can be expressed as a sum of four squares.
   }
-  return (tofactor.limbs[0].x % 8) != 7;
+  CopyBigInt(pTmp, &tofactor);                 // Divide by power of 4.
+  DivideBigNbrByMaxPowerOf4(&shRight, pTmp->limbs, &pTmp->nbrLimbs);
+  return (pTmp->limbs[0].x % 8) != 7;
 }
 
 // Divide the number by the maximum power of 2, so it is odd.
@@ -267,7 +268,7 @@ static int isSumOfThreeSquares(struct sFactors *pstFactors, BigInteger *pTmp,
 // small primes.
 // If e_i is odd and a_i=4k+3, then use next value of n.
 // If x is not prime, use next value of n.
-static void ComputeThreeSquares(struct sFactors *pstFactors, BigInteger *pTmp,
+static void ComputeThreeSquares(BigInteger *pTmp,
   BigInteger *pTmp1, BigInteger *pTmp2, BigInteger *pTmp3, BigInteger *pTmp4,
   BigInteger *pM1, BigInteger *pM2)
 {
@@ -464,9 +465,9 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
   intToBigInteger(&Quad2, 0);
   intToBigInteger(&Quad3, 0);
   intToBigInteger(&Quad4, 0);
-  if (tofactor.nbrLimbs < 25 && isSumOfThreeSquares(pstFactors, &Tmp, &Tmp1, &Tmp2))
+  if (tofactor.nbrLimbs < 25 && isSumOfThreeSquares(pstFactors, &Tmp))
   {                                // Decompose in sum of 3 squares if less than 200 digits.
-    ComputeThreeSquares(pstFactors, &Tmp, &Tmp1, &Tmp2, &Tmp3, &Tmp4, &M1, &M2);
+    ComputeThreeSquares(&Tmp, &Tmp1, &Tmp2, &Tmp3, &Tmp4, &M1, &M2);
     return;
   }
   pstFactor = pstFactors + 1;      // Point to first factor in array of factors.
