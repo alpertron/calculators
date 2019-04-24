@@ -132,7 +132,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
         while (stackOperIndex > 0)
         {      // Send operators to output.
           s = stackOper[--stackOperIndex];
-          if (s != '+' && s != '-' && s != '*' && s != '^' && s != '/' && s != '%')
+          if (s != '+' && s != '-' && s != '*' && s != '^' && s != '/' && s != '%' && s != TOKEN_UNARY_MINUS)
           {    // Operator on stack has less precedence.
             stackOperIndex++;
             break;
@@ -401,26 +401,23 @@ static int NegatePolynomialExpr(int *ptrArgument)
         *ptrValue2++ = 1;
         *ptrValue2++ = 0;
       }
+      else if (modulusIsZero)
+      {                              // Integer polynomial.
+        int nbrLimbs = *ptrValue1;
+        *ptrValue1 = -nbrLimbs;      // Negate number.
+        if (nbrLimbs < 0)
+        {
+          nbrLimbs = -nbrLimbs;
+        }
+        ptrValue1 += nbrLimbs + 1;
+      }
       else
-      {
-        if (modulusIsZero)
-        {
-          int nbrLimbs = *(ptrValue1 + 1);
-          *(ptrValue1 + 1) = -nbrLimbs;      // Negate number.
-          if (nbrLimbs < 0)
-          {
-            nbrLimbs = -nbrLimbs;
-          }
-          ptrValue1 += nbrLimbs + 1;
-        }
-        else
-        {
-          UncompressBigInteger(ptrValue1, &operand1);
-          BigIntSubt(&powerMod, &operand1, &operand1);
-          CompressBigInteger(ptrValue2, &operand1);
-          ptrValue1 += *ptrValue1 + 1;
-          ptrValue2 += *ptrValue2 + 1;
-        }
+      {                              // Polynomial modulo prime.
+        UncompressBigInteger(ptrValue1, &operand1);
+        BigIntSubt(&powerMod, &operand1, &operand1);
+        CompressBigInteger(ptrValue2, &operand1);
+        ptrValue1 += *ptrValue1 + 1;
+        ptrValue2 += *ptrValue2 + 1;
       }
     }
     if (!modulusIsZero)
@@ -2015,6 +2012,7 @@ void ConvertToMonic(int *poly, int polyDegree)
   }
 }
 
+// The content is the GCD of all coefficients with the sign equal to the sign of the leading coefficient.
 int *getContent(int *poly, BigInteger *content)
 {
   int degree = *poly++;
@@ -2029,6 +2027,7 @@ int *getContent(int *poly, BigInteger *content)
     UncompressBigIntegerB(poly, &operand1);
     BigIntGcd(content, &operand1, &operand2);
     CopyBigInt(content, &operand2);
+    content->sign = operand1.sign;
   }
   return poly;
 }
@@ -3488,10 +3487,6 @@ static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int 
         ptrOutput += strlen(ptrOutput);
       }
       *ptrOutput++ = ' ';
-      if (len < 0)    // Convert len to positive.
-      {
-        len = -len;
-      }
       if (len != 1 || *(ptrValue1 + 1) != 1)
       {            // Absolute value of coefficient is not one.
         NumberLength = numLimbs(ptrValue1);
@@ -3554,6 +3549,11 @@ void outputPolynomial(char *ptrOutput, int groupLength)
     strcpy(ptrOutput, "<p id=\"pol\">");
   }
   ptrOutput += strlen(ptrOutput);
+  if (operand1.sign == SIGN_NEGATIVE)
+  {
+    strcpy(ptrOutput, " &minus;");
+    ptrOutput += strlen(ptrOutput);
+  }
   if ((operand1.nbrLimbs != 1 || operand1.limbs[0].x != 1) || degree == 0)
   {     // Leading coefficient is not 1 or degree is zero.
     Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLength);
@@ -3594,12 +3594,17 @@ void outputPolynomial(char *ptrOutput, int groupLength)
   {
     UncompressBigInteger(&poly4[degree*nbrLimbs], &operand5);
   }
-  if ((operand5.nbrLimbs != 1 || operand5.limbs[0].x != 1) || nbrFactorsFound == 0)
+  if ((operand5.nbrLimbs != 1 || operand5.limbs[0].x != 1 || operand5.sign == SIGN_NEGATIVE) || nbrFactorsFound == 0)
   {     // Leading coefficient is not 1 or degree is zero.
     *ptrOutput++ = '<';
     *ptrOutput++ = 'l';
     *ptrOutput++ = 'i';
     *ptrOutput++ = '>';
+    if (operand5.sign == SIGN_NEGATIVE)
+    {
+      strcpy(ptrOutput, " &minus;");
+      ptrOutput += strlen(ptrOutput);
+    }
     Bin2Dec(operand5.limbs, ptrOutput, operand5.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
     *ptrOutput++ = '<';
