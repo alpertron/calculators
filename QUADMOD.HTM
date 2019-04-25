@@ -191,7 +191,7 @@ ax&sup2; + bx + c &equiv; 0 (mod&nbsp;n)
 <p>
 You can download the source of the current program and the old quadratic modular equation applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 23 April 2019.</p>
+<p>Written by Dario Alpern. Last updated 25 April 2019.</p>
 </div>
 <div id="result" aria-live="polite"></div>
 <div>
@@ -254,7 +254,7 @@ You can download the source of the current program and the old quadratic modular
 b=a("result");var d=a("quad").value.trim(),m=a("lin").value.trim(),c=a("const").value.trim(),g=a("mod").value.trim(),e=a("digits").value.trim();a("help").style.display="none";b.style.display="block";var h="";""==d&&(h="quadratic coefficient.");""==m&&(h="linear coefficient.");""==c&&(h="constant coefficient.");""==g&&(h="modulus.");""!=h?b.innerHTML="Please type a number or expression for the "+h:(a("solve").disabled=!0,a("stop").disabled=!1,b.innerHTML="Solving the quadratic equation...",b=e+",0,"+
 d+String.fromCharCode(0)+m+String.fromCharCode(0)+c+String.fromCharCode(0)+g+String.fromCharCode(0),n(b))};a("stop").onclick=function(){c.terminate();c=0;a("solve").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Calculation stopped by user</p>"};a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();
 return!1};a("formcancel").onclick=function(){l()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?"ax^2 + bx + c = 0 (mod n)\na = "+a("quad").value+"\nb = "+a("lin").value+"\nc = "+a("const").value+"\nn = "+a("mod").value:"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),l())};b.open("POST","/sendmail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-for(var d=a("formfeedback").elements,c="",f=0,g=0;g<d.length;g++){var e=d[g];"radio"==e.type&&0==e.checked||!e.name||(f&&(c+="&"),c+=e.name+"="+encodeURIComponent(e.value),f++)}b.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var d=new XMLHttpRequest;d.open("GET","quadmodW0096.js",!0);d.responseType="arraybuffer";d.onreadystatechange=function(){4==d.readyState&&200==d.status&&(k=d.response)};d.send(null)})(this);
+for(var d=a("formfeedback").elements,c="",f=0,g=0;g<d.length;g++){var e=d[g];"radio"==e.type&&0==e.checked||!e.name||(f&&(c+="&"),c+=e.name+"="+encodeURIComponent(e.value),f++)}b.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var d=new XMLHttpRequest;d.open("GET","quadmodW0098.js",!0);d.responseType="arraybuffer";d.onreadystatechange=function(){4==d.readyState&&200==d.status&&(k=d.response)};d.send(null)})(this);
 //-->
 </script>
 </body>
