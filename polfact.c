@@ -512,7 +512,7 @@ static void InsertIntegerPolynomialFactor(int *ptrFactor, int degreePoly)
 static int FactorPolyOverIntegers(void)
 {
   int degree = values[0];
-  int degree1, degree2;
+  int degree1, degree2, rc;
   int prime;
   int primeRecord = 0;
   int exponRecord = 0;
@@ -890,10 +890,14 @@ static int FactorPolyOverIntegers(void)
         ptrSrc += 1 + numLimbs(ptrSrc);
         ptrDest += 1 + numLimbs(ptrDest);
       }
-      DivideIntegerPolynomial(polyS, poly5, TYPE_MODULUS);
-      if (polyS[0] != 0)
+      rc = DivideIntegerPolynomial(polyS, poly5, TYPE_MODULUS);
+      if (rc == EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER)
       {
-        continue;    // Number to factor does not divide this polynomial.
+        continue;    // Cannot perform the division.
+      }
+      if (polyS[0] != 0 || polyS[1] != 1 || polyS[2] != 0)
+      {              // Remainder is not zero. Number to factor does not divide this polynomial.
+        continue;
       }
       // Get principal part of poly5 and store it to poly2.
       getContent(poly5, &operand4);   // Content of polynomial.
