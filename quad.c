@@ -3074,6 +3074,7 @@ static void PerfectSquareDiscriminant(void)
   enum eLinearSolution ret;
   struct sFactors *pstFactor;
   int index;
+  enum eSign signTemp;
 
   if (BigIntIsZero(&ValA))
   { // Let R = gcd(b, c)
@@ -3151,7 +3152,7 @@ static void PerfectSquareDiscriminant(void)
     }
   }
   if (BigIntIsZero(&ValK))
-  {     // k equals zero.
+  {      // k equals zero.
     if (BigIntIsZero(&ValA))
     {    // Coefficient a does equals zero.
       // Solve Dy + beta = 0
@@ -3228,9 +3229,12 @@ static void PerfectSquareDiscriminant(void)
   }
   // Compute all factors of Z = 4ak/RS
   NumberLength = ValZ.nbrLimbs;
+  signTemp = ValZ.sign;
+  ValZ.sign = SIGN_POSITIVE;  // Factor positive number.
   CompressBigInteger(nbrToFactor, &ValZ);
   Bin2Dec(ValZ.limbs, tofactorDec, ValZ.nbrLimbs, groupLen);
   factor(&ValZ, nbrToFactor, factorsMod, astFactorsMod);
+  ValZ.sign = signTemp;       // Restore sign of Z = 4ak/RS.
   // x = (NI - JM) / D(IL - MH) and y = (JL - NH) / D(IL - MH)
   // The denominator cannot be zero here.
   // H = 2a/R, I = (b+g)/R, J = F + H * alpha + I * beta
