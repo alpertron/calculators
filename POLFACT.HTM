@@ -79,7 +79,7 @@ Electronics
 <li>
 Mathematics
 <ul class="alignleft">
-<li><a href="CALTORS.HTM" title="Java and Javascript programs implementing calculators">Calculators</a></li>
+<li><a href="CALTORS.HTM" title="HTML5 applications with JavaScript and WebAssembly implementing calculators">Calculators</a></li>
 <li><a href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a></li>
 <li><a href="PROBLEMS.HTM" title="Interesting math problems">Problems</a></li>
 </ul>
@@ -88,7 +88,7 @@ Mathematics
 Programs
 <ul class="alignright">
 <li><a href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a></li>
-<li><a href="JAVAPROG.HTM" title="Programs written in Java">Java</a></li>
+<li><a href="JAVAPROG.HTM" title="HTML5 applications with JavaScript and WebAssembly">HTML5 applications</a></li>
 <li><a href="GAMES.HTM" title="Computer games">Games</a></li>
 </ul>
 </li>
@@ -138,7 +138,8 @@ Contact
 <input type="checkbox" id="sup" value="sup" checked /> <label for="sup">Superscripts</label>
 </form>
 <div id="help" aria-live="polite" class="pad">
-<p>Important: If you want to factor integer polynomials, the modulus used in the input box must be zero.
+<p>This JavaScript/WebAssembly application can evaluate and factor polynomial expressions modulo a prime number or a power of a prime number.
+It can also evaluate and factor integer polynomials by entering zero in the modulo input box.</p>
 <h2><button>Integer polynomials</button></h2>
 <div class="panel">
 <p>Integer polynomials in one variable are expressions that include a variable named <var>x</var>, integer numbers and the addition, subtraction and multiplication operators.</p>
@@ -163,8 +164,6 @@ and then adding the coefficients of the same degree. Finally the coefficients ar
 <p>For example, the product of 3x<sup>2</sup> + 5x + 1 and 6x<sup>2</sup> + 4x + 3 modulo 7 is 18x<sup>4</sup> + (30+12)x<sup>3</sup> + (9+20+6)x<sup>2</sup> + (15+4)x + 3 modulo 7 which equals 4x<sup>4</sup> + 5x + 3</p>
 <p>It can be shown that the polynomials modulo a prime can be factored into the leading coefficient and monic prime polynomials in only one way (monic polynomials have the leading coefficient equal to one.)</p>
 <p>It can also be shown that if there are no repeated factors, the polynomial can be factored modulo a power of that prime in only one way.</p>
-<p>This JavaScript application can evaluate and factor polynomial expressions modulo a prime number or a power of a prime number.
-It can also evaluate and factor integer polynomials by entering zero in the modulo input box.</p>
 </div>
 <h2><button>Application usage</button></h2>
 <div class="panel">
@@ -335,7 +334,7 @@ function gcdp(poly1, poly2)<br>
 &nbsp;&nbsp;}<br>
 }
 </code></p>
-<p>The content of a polynomial is the greatest common divisor of all coefficients of that polynomial. It is expressed as cont(f) in the previous algorithm.</p>
+<p>The content of a polynomial is the greatest common divisor of all coefficients of that polynomial. The sign of the content matches the sign of the leading coefficient. It is expressed as cont(f) in the previous algorithm.</p>
 <p>The coefficients of the result of the Chinese Remainder Algorithm (function CRA) computed modulo <var>m</var><var>p</var>, must be in the range &minus;<var>m</var><var>p</var>/2 to <var>m</var><var>p</var>/2.</p>
 <p>The idea behind this algorithm is to compute several gcd of the input polynomials modulo different primes. We can see that their degrees are greater or equal than the degree of the polynomial gcd.</p>
 <p>There are three cases:</p>
@@ -463,12 +462,12 @@ function EDF(f, d, p)<br>
 <h2><button>Factoring integer polynomials</button></h2>
 <div class="panel">
 <p>We can use the output of the previous section to factor integer polynomials.</p>
-<p>First of all we need to divide the polynomial by its content (the greatest common divisor of all coefficients). The result is the principal part, named pp(<var>f</var>).</p>
+<p>First of all we need to divide the polynomial by its content (the greatest common divisor of all coefficients with the sign of the leading coefficient). The result is the principal part, named pp(<var>f</var>).</p>
 <p>To perform the square-free factorization, we can factor recursively gcd(<var>f</var>, <var>f'</var>) and <var>f</var>/gcd(<var>f</var>, <var>f'</var>).</p>
 <p>At this moment we know that there are no repeated factors. We have to find a small prime <var>p</var> for which the polynomial has no repeated factors. This can be easily found by checking that gcd(<var>f</var>, <var>f'</var>) &equiv; 1 (mod <var>p</var>).</p>
 <p>We need to find a bound of the coefficient of factors. The Knuth-Cohen bound for coefficients of polynomial factors can be computed as follows:</p>
 <p>If polynomial <var>G</var> divides <var>F</var> we have for all <var>j</var>:</p>
-<p>|<var>G</var><sub><var>j</var></sub>| &le; binomial(<var>n</var>-1, j)*(&Sigma;<sub><var>i</var></sub> |<var>F</var><sub><var>i</var></sub>|<sup>2</sup>)<sup>1/2</sup> + binomial(<var>n</var> &minus; 1, <var>j</var> &minus;1) * |<var>F</var><sub><var>m</var></sub>|</p>
+<p>|<var>G</var><sub><var>j</var></sub>| &le; binomial(<var>n</var> &minus; 1, j)*(&Sigma;<sub><var>i</var></sub> |<var>F</var><sub><var>i</var></sub>|<sup>2</sup>)<sup>1/2</sup> + binomial(<var>n</var> &minus; 1, <var>j</var> &minus;1) * |<var>F</var><sub><var>m</var></sub>|</p>
 <p>where <var>m</var> is the degree of <var>F</var> and <var>n</var> is the degree of <var>G</var>. The maximum degree to be considered is <var>n</var> = ceil(<var>m</var>/2).</p>
 <p>Once the bound <var>B</var> is found, we have to compute the least value of <var>e</var> such that 2&#8290;B &lt; <var>p</var><sup>e</sup>.</p>
 <p>Now we factor the polynomial mod <var>p</var><sup>e</sup> which has <var>r</var> different factors. If <var>r</var> &gt; 10, we can try a different value of <var>p</var>, so we minimize the number of factors found. The application tries up to 5 different primes.</p>
