@@ -1,8 +1,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 25 de abril de 2019."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 25 April 2019."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 13 de mayo de 2019."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 13 May 2019."
 
 #ifdef __EMSCRIPTEN__
 int stamp(void);

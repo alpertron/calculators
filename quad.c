@@ -851,7 +851,7 @@ void SolveQuadModEquation(void)
           }
           squareRoot.sign = SIGN_POSITIVE;
           squareRoot.nbrLimbs = nbrLimbs;
-          if (BigIntIsZero(&ValB))
+          if (BigIntIsZero(&coeffLinear))
           {
             correctBits = expon - bitsCZero / 2 - bitsAZero / 2 - 1;
           }
@@ -1774,7 +1774,13 @@ static void DiscriminantIsZero(void)
     {
       showEqNbr(2);
     }
-    showText("</p>");
+    showText("</p><p>");
+    showText(lang ? "donde el coeficiente lineal es ": "where the linear coefficient is ");
+    showText(ExchXY ? "2&#8290;(<var>b</var>&#8290;<var>e</var> &minus; 2&#8290;<var>c</var><var>d</var>)" :
+      "2&#8290;(<var>b</var>&#8290;<var>d</var> &minus; 2&#8290;<var>a</var><var>e</var>)");
+    showText(lang ? " y el término independiente es " : " and the constant coefficient is ");
+    showText(ExchXY ? "<var>e</var>&sup2; &minus; 4&#8290;<var>c</var><var>f</var>.</p>" :
+      "<var>d</var>&sup2; &minus; 4&#8290;<var>a</var><var>f</var>.</p>");
   }
   if (BigIntIsZero(&ValU))
   { // u equals zero, so (t+d)^2 = v.
@@ -2575,12 +2581,13 @@ static void NonSquareDiscrSolution(BigInteger *value)
   // Get value of tu - Kv
   BigIntMultiply(value, &ValH, &ValZ);    // tu
   CopyBigInt(&bigTmp, &ValK);
-  if (bigTmp.sign == SIGN_NEGATIVE)
+  if (callbackQuadModType == CBACK_QMOD_HYPERBOLIC)
   {
-    BigIntChSign(&bigTmp);                // Get |K|
+    BigIntChSign(&bigTmp);                // Get K
+    bigTmp.sign = SIGN_NEGATIVE;
   }
-  BigIntMultiply(&bigTmp, &ValI, &bigTmp);// |K|v
-  BigIntSubt(&ValZ, &bigTmp, &ValZ);      // U = tu - |K|v
+  BigIntMultiply(&bigTmp, &ValI, &bigTmp);// Kv
+  BigIntSubt(&ValZ, &bigTmp, &ValZ);      // U = tu - Kv
   if (teach && (ValE.nbrLimbs > 1 || ValE.limbs[0].x > 1))
   {     // E > 1
     showText(lang? "<p>De ": "<p>From ");
@@ -2594,13 +2601,13 @@ static void NonSquareDiscrSolution(BigInteger *value)
     showText(" = ");
     shownbr(&ValH);
   }
-  BigIntMultiply(&ValZ, &ValE, &ValZ);    // X = (tu - |K|v)*E
+  BigIntMultiply(&ValZ, &ValE, &ValZ);    // X = (tu - Kv)*E
   BigIntMultiply(&ValH, &ValE, &ValO);    // Y = u*E
   Xbak = &Xplus;
   Ybak = &Yplus;
   UnimodularSubstitution();               // Undo unimodular substitution
   ShowPoint(&Tmp[0], &Tmp[1]);
-  BigIntChSign(&ValZ);                    // (-tu - |K|v)*E
+  BigIntChSign(&ValZ);                    // (-tu - Kv)*E
   BigIntChSign(&ValO);                    // -u*E
   Xbak = &Xminus;
   Ybak = &Yminus;
@@ -3535,7 +3542,6 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
         CopyBigInt(&ValI, &U1);
         ShowSolutionFromConvergent();
       }
-      BigIntChSign(&ValI);
       showSolution = TWO_SOLUTIONS;
       solFound = 0;
       NonSquareDiscrSolution(value);
