@@ -65,7 +65,6 @@ int polyMultTemp[1000000];
 int polyLifted[1000000];
 unsigned char superscripts, onlyEvaluate = 0;
 struct sFactorInfo factorInfo[MAX_DEGREE];
-extern struct sFactorInfo factorInfoInteger[MAX_DEGREE]; 
 static BigInteger coeff[2 * KARATSUBA_POLY_CUTOFF];
 int nbrFactorsFound;
 int *ptrOrigPoly;
@@ -1386,7 +1385,7 @@ int DivideIntegerPolynomial(int *pDividend, int *pDivisor, enum eDivType type)
   int degreeDividend;
   int degreeDivisor;
   int degreeQuotient;
-  int *ptrDividend, *ptrDivisor, *ptrQuotient, *ptrRemainder, *ptrStartRemainder;
+  int *ptrDividend, *ptrDivisor, *ptrQuotient, *ptrRemainder;
   // Move arguments to temporary storage with most significant coefficient
   // first.
   ReversePolynomial(poly1, pDividend);
@@ -3509,11 +3508,11 @@ static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int 
   *pptrOutput = ptrOutput;
 }
 
-void outputPolynomial(char *ptrOutput, int groupLength)
+void outputOriginalPolynomial(char* ptrOutput, int groupLength)
 {
-  struct sFactorInfo *pstFactorInfo;
-  int nbrFactor, currentDegree;
-  int *ptrValue1, *ptrValue2;
+  struct sFactorInfo* pstFactorInfo;
+  int currentDegree;
+  int* ptrValue1, * ptrValue2;
   int nbrLimbs = powerMod.nbrLimbs + 1;
   degree = values[0];
   ptrValue1 = &values[1];
@@ -3529,7 +3528,7 @@ void outputPolynomial(char *ptrOutput, int groupLength)
       ptrValue2 += nbrLimbs;
     }
     // Get leading coefficient.
-    UncompressBigInteger(&poly4[degree*nbrLimbs], &operand1);
+    UncompressBigInteger(&poly4[degree * nbrLimbs], &operand1);
   }
   else
   { // Find leading coefficient.
@@ -3540,15 +3539,6 @@ void outputPolynomial(char *ptrOutput, int groupLength)
     }
     UncompressBigInteger(ptrValue1, &operand1);
   }
-  if (onlyEvaluate)
-  {
-    strcpy(ptrOutput, "<p>");
-  }
-  else
-  {
-    strcpy(ptrOutput, "<p id=\"pol\">");
-  }
-  ptrOutput += strlen(ptrOutput);
   if (operand1.sign == SIGN_NEGATIVE)
   {
     strcpy(ptrOutput, " &minus;");
@@ -3563,7 +3553,7 @@ void outputPolynomial(char *ptrOutput, int groupLength)
   {
     showPowerX(&ptrOutput, degree);
   }
-  showPolynomial(&ptrOutput, (modulusIsZero? &values[1]: poly4), degree, groupLength);
+  showPolynomial(&ptrOutput, (modulusIsZero ? &values[1] : poly4), degree, groupLength);
   if (!modulusIsZero)
   {
     strcpy(ptrOutput, " (mod ");
@@ -3574,102 +3564,53 @@ void outputPolynomial(char *ptrOutput, int groupLength)
     {
       showPower(&ptrOutput, exponentMod);
     }
-    *ptrOutput++ =  ')';
+    *ptrOutput++ = ')';
   }
-  strcpy(ptrOutput, "</p>");
-  ptrOutput += strlen(ptrOutput);
-  if (onlyEvaluate)
-  {
-    return;
-  }
-  strcpy(ptrOutput,"<p>");
-  ptrOutput += strlen(ptrOutput);
+  *ptrOutput = 0;    // Append string terminator.
+}
 
-  // Output factors
-  *ptrOutput++ = '<';
-  *ptrOutput++ = 'u';
-  *ptrOutput++ = 'l';
-  *ptrOutput++ = '>';
-  if (!modulusIsZero)
+void outputPolynomialFactor(char *ptrOutput, int groupLength, struct sFactorInfo* pstFactorInfo)
+{
+  int currentDegree;
+  int polyDegree = pstFactorInfo->degree;
+  int multiplicity = pstFactorInfo->multiplicity;
+  int isMonomial = (polyDegree == 1 && *pstFactorInfo->ptrPolyLifted == 1 &&
+     *(pstFactorInfo->ptrPolyLifted+1) == 0);
+  if (multiplicity > 1 && !isMonomial)
   {
-    UncompressBigInteger(&poly4[degree*nbrLimbs], &operand5);
+    *ptrOutput++ = '(';
   }
-  if ((operand5.nbrLimbs != 1 || operand5.limbs[0].x != 1 || operand5.sign == SIGN_NEGATIVE) || nbrFactorsFound == 0)
-  {     // Leading coefficient is not 1 or degree is zero.
-    *ptrOutput++ = '<';
-    *ptrOutput++ = 'l';
-    *ptrOutput++ = 'i';
-    *ptrOutput++ = '>';
-    if (operand5.sign == SIGN_NEGATIVE)
+  if (modulusIsZero)
+  {
+    // Get leading coefficient.
+    int *ptrSrc = pstFactorInfo->ptrPolyLifted;
+    for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
     {
-      strcpy(ptrOutput, " &minus;");
+      ptrSrc += 1 + numLimbs(ptrSrc);
+    }
+    UncompressBigIntegerB(ptrSrc, &operand1);
+    if (operand1.sign == SIGN_NEGATIVE)
+    {
+      strcpy(ptrOutput, "&minus;");
       ptrOutput += strlen(ptrOutput);
     }
-    Bin2Dec(operand5.limbs, ptrOutput, operand5.nbrLimbs, groupLength);
-    ptrOutput += strlen(ptrOutput);
-    *ptrOutput++ = '<';
-    *ptrOutput++ = '/';
-    *ptrOutput++ = 'l';
-    *ptrOutput++ = 'i';
-    *ptrOutput++ = '>';
+    if (operand1.nbrLimbs != 1 || operand1.limbs[0].x != 1)
+    {     // Absolute value is not 1.
+      Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLength);
+      ptrOutput += strlen(ptrOutput);
+    }
   }
-  for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+  showPowerX(&ptrOutput, polyDegree);
+  showPolynomial(&ptrOutput, pstFactorInfo->ptrPolyLifted, polyDegree, groupLength);
+  if (multiplicity > 1)
   {
-    int polyDegree = pstFactorInfo->degree;
-    int multiplicity = pstFactorInfo->multiplicity;
-    int isMonomial = (polyDegree == 1 && *pstFactorInfo->ptrPolyLifted == 1 &&
-       *(pstFactorInfo->ptrPolyLifted+1) == 0);
-    *ptrOutput++ = '<';
-    *ptrOutput++ = 'l';
-    *ptrOutput++ = 'i';
-    *ptrOutput++ = '>';
-    if (multiplicity > 1 && !isMonomial)
+    if (!isMonomial)
     {
-      *ptrOutput++ = '(';
+      *ptrOutput++ = ')';
     }
-    if (modulusIsZero)
-    {
-      // Get leading coefficient.
-      int *ptrSrc = pstFactorInfo->ptrPolyLifted;
-      for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
-      {
-        ptrSrc += 1 + numLimbs(ptrSrc);
-      }
-      UncompressBigIntegerB(ptrSrc, &operand1);
-      if (operand1.sign == SIGN_NEGATIVE)
-      {
-        strcpy(ptrOutput, "&minus;");
-        ptrOutput += strlen(ptrOutput);
-      }
-      if (operand1.nbrLimbs != 1 || operand1.limbs[0].x != 1)
-      {     // Absolute value is not 1.
-        Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLength);
-        ptrOutput += strlen(ptrOutput);
-      }
-    }
-    showPowerX(&ptrOutput, polyDegree);
-    showPolynomial(&ptrOutput, pstFactorInfo->ptrPolyLifted, polyDegree, groupLength);
-    if (multiplicity > 1)
-    {
-      if (!isMonomial)
-      {
-        *ptrOutput++ = ')';
-      }
-      showPower(&ptrOutput, multiplicity);
-    }
-    *ptrOutput++ = '<';
-    *ptrOutput++ = '/';
-    *ptrOutput++ = 'l';
-    *ptrOutput++ = 'i';
-    *ptrOutput++ = '>';
-    pstFactorInfo++;
+    showPower(&ptrOutput, multiplicity);
   }
-  *ptrOutput++ = '<';
-  *ptrOutput++ = '/';
-  *ptrOutput++ = 'u';
-  *ptrOutput++ = 'l';
-  *ptrOutput++ = '>';
-  *ptrOutput++ = '\0';
+  *ptrOutput = 0;    // Append string terminator.
 }
 
 void textErrorPol(char *ptrOutput, enum eExprErr rc)

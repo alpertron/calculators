@@ -37,6 +37,7 @@ enum eDivType
 
 extern int lang;
 extern struct sFactorInfo factorInfo[MAX_DEGREE];
+extern struct sFactorInfo factorInfoInteger[MAX_DEGREE];
 extern BigInteger primeMod;              // p
 extern int exponentMod;                  // k
 extern BigInteger powerMod;              // p^k
@@ -73,7 +74,8 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon);
 int HenselLifting(void);
 void polyToStandardNotation(int *nbr, int qtyNbrs);
 void textErrorPol(char *output, enum eExprErr rc);
-void outputPolynomial(char *ptrOutput, int groupLen);
+void outputOriginalPolynomial(char *ptrOutput, int groupLen);
+void outputPolynomialFactor(char* ptrOutput, int groupLength, struct sFactorInfo* pstFactorInfo);
 int DerPolynomial(int *ptrArgument);
 void PolynomialGcd(int *argF, int *argG, int *gcd);
 int DivideIntegerPolynomial(int *pDividend, int *pDivisor, enum eDivType type);
@@ -87,5 +89,6 @@ void polyToStandardNotation(int *nbr, int qtyNbrs);
 void polyToMontgomeryNotation(int *nbr, int qtyNbrs);
 int *getContent(int *poly, BigInteger *content);
 int *CopyPolyProduct(int *ptrSrc, int *ptrDest, int degree);
-
+int FactorPolyOverIntegers(void);
+void polyFactText(char* modText, char* polyText, int groupLength);
 #endif

@@ -6,7 +6,7 @@
 #include "factor.h"
 #include "batch.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE  17
+#define DEBUG_CODE  19
 #endif
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -268,6 +268,14 @@ quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
   }
   memset(factors, 0x00, 2000 * sizeof(limb));
   fftMultiplication((limb *)factor7, (limb *)factor7, (limb *)factors, 4, &resultLen);
+#elif DEBUG_CODE == 19
+  if (argc != 7)
+  {
+    printf("6 arguments needed\n");
+    return 1;
+  }
+  rootsEqText(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
+  printf("%s\n", output);
 #endif
   return 0;
 }

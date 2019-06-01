@@ -21,12 +21,15 @@ cp ../calc/*.h .
 /usr/local/bin/clang $flags_factorization inputstr.c -o inputstr.bc
 /usr/local/bin/clang $flags_factorization batch.c -o batch.bc
 /usr/local/bin/clang $flags_factorization fft.c -o fft.bc
+/usr/local/bin/clang $flags_factorization bigrational.c -o bigrational.bc
+echo ecm
 /usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc factor.bc siqs.bc ecmfront.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc batch.bc fft.bc gcdrings.bc -o ecm1.bc
 /usr/local/bin/opt -internalize -internalize-public-api-list=getFactorsAsciiPtr,getInputStringPtr,doWork,memory ecm1.bc -o ecm.bc
 /usr/local/bin/llc -O3 ecm.bc -march=wasm32 -o ecm.s
 ../binaryen/build/bin/s2wasm ecm.s -s 1000000 > ecm.wast
 ../wabt/build/wat2wasm -o ecm.wasm ecm.wast
 
+echo quad
 /usr/local/bin/clang $flags_factorization quad.c -o quad.bc
 /usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc factor.bc siqs.bc quad.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc batch.bc fft.bc -o quad1.bc
 /usr/local/bin/opt -internalize -internalize-public-api-list=getFactorsAsciiPtr,getInputStringPtr,doWork,memory quad1.bc -o quad.bc
@@ -34,7 +37,7 @@ cp ../calc/*.h .
 ../binaryen/build/bin/s2wasm quad.s -s 1000000 > quad.wast
 ../wabt/build/wat2wasm -o quad.wasm quad.wast
 
-
+echo fsquares
 /usr/local/bin/clang $flags_other expression.c -o expression.bc
 /usr/local/bin/clang $flags_other partition.c -o partition.bc
 /usr/local/bin/clang $flags_other errors.c -o errors.bc
@@ -60,16 +63,27 @@ cp ../calc/*.h .
 ../binaryen/build/bin/s2wasm fsquares.s -s 1000000 > fsquares.wast
 ../wabt/build/wat2wasm -o fsquares.wasm fsquares.wast
 
-/usr/local/bin/clang $flags_other factor.c -o factor.bc
-/usr/local/bin/clang $flags_other siqs.c -o siqs.bc
-/usr/local/bin/clang $flags_other polynomial.c -o polynomial.bc
+echo rootseq
+/usr/local/bin/clang $flags_other rootseq.c -o rootseq.bc
+/usr/local/bin/clang $flags_other output.c -o output.bc
+/usr/local/bin/clang $flags_other bigrational.c -o bigrational.bc
 /usr/local/bin/clang $flags_other polfact.c -o polfact.bc
-/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc factor.bc siqs.bc polynomial.bc polfact.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc fft.bc -o polfact1.bc
+/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc rootseq.bc bigrational.bc output.bc polfact.bc polynomial.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc batch.bc fft.bc -o rootseq1.bc
+/usr/local/bin/opt -internalize -internalize-public-api-list=getFactorsAsciiPtr,getInputStringPtr,doWork,memory rootseq1.bc -o rootseq.bc
+/usr/local/bin/llc -O3 rootseq.bc -march=wasm32 -o rootseq.s
+../binaryen/build/bin/s2wasm rootseq.s -s 1000000 > rootseq.wast
+../wabt/build/wat2wasm -o rootseq.wasm rootseq.wast
+
+echo polfact
+/usr/local/bin/clang $flags_other polfacte.c -o polfacte.bc
+/usr/local/bin/clang $flags_other polynomial.c -o polynomial.bc
+/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc polynomial.bc polfact.bc polfacte.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc fft.bc -o polfact1.bc
 /usr/local/bin/opt -internalize -internalize-public-api-list=getFactorsAsciiPtr,getInputStringPtr,doWork,memory polfact1.bc -o polfact.bc
 /usr/local/bin/llc -O3 polfact.bc -march=wasm32 -o polfact.s
 ../binaryen/build/bin/s2wasm polfact.s -s 1000000 > polfact.wast
 ../wabt/build/wat2wasm -o polfact.wasm polfact.wast
 
+echo ulam
 /usr/local/bin/clang $flags_other ulam.c -o ulam.bc
 /usr/local/bin/llvm-link ulam.bc -o ulam1.bc
 /usr/local/bin/opt -internalize -internalize-public-api-list=nbrChanged,drawPartialUlamSpiral,ShowInformation,moveSpiral,memory ulam1.bc -o ulam.bc
@@ -82,4 +96,5 @@ cp fsquares.wasm ../calc
 cp ulam.wasm ../calc
 cp quad.wasm ../calc
 cp polfact.wasm ../calc
+cp rootseq.wasm ../calc
 

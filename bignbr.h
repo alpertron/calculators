@@ -61,6 +61,12 @@ typedef struct BigInteger
   enum eSign sign;
 } BigInteger;
 
+typedef struct BigRational
+{
+  BigInteger numerator;
+  BigInteger denominator;
+} BigRational;
+
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR2[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
@@ -205,4 +211,18 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
 void MultiplyQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
 void DivideQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
 int nextPrime(int prime);
+
+enum eExprErr BigRationalAdd(BigRational* pAddend1, BigRational* pAddend2, BigRational* pSum);
+enum eExprErr BigRationalSubt(BigRational* pAddend1, BigRational* pAddend2, BigRational* pSum);
+void BigRationalNegate(BigRational* pSrc, BigRational* pDest);
+enum eExprErr BigRationalMultiply(BigRational* pFactor1, BigRational* pFactor2, BigRational* pProduct);
+enum eExprErr BigRationalDivide(BigRational* pDividend, BigRational* pDivisor, BigRational* pQuotient);
+enum eExprErr BigRationalMultiplyByInt(BigRational* pFactor1, int factor2, BigRational* pProduct);
+enum eExprErr BigRationalDivideByInt(BigRational* pDividend, int divisor, BigRational* pQuotient);
+void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart);
+int BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot);
+void ForceDenominatorPositive(BigRational* rat);
+void showRational(BigRational* rat);
+void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int root);
+void showSquareRootOfRational(BigRational* rat, int root);
 #endif

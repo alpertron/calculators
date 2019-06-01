@@ -1057,6 +1057,7 @@ static enum eExprErr ComputePartition(void)
   return EXPR_OK;
 }
 
+#ifdef FACTORIZATION_FUNCTIONS
 static void PerformFactorization(BigInteger *tofactor)
 {
   NumberLength = tofactor->nbrLimbs;
@@ -1072,7 +1073,6 @@ static void PerformFactorization(BigInteger *tofactor)
   factor(tofactor, nbrToFactor, factorsMod, astFactorsMod);
 }
 
-#ifdef FACTORIZATION_FUNCTIONS
 static int ComputeTotient(void)
 {
   PerformFactorization(&stackValues[stackIndex]);

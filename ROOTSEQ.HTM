@@ -4,14 +4,14 @@
 <meta charset="utf-8" />
 <meta name="Author" content="Dario Alejandro Alpern" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="Javascript application that finds discrete logarithms. Written by Dario Alpern." />
+<meta name="description" content="Javascript application that finds exact solutions to linear, quadratic, cubic, qartic and quintic equations. Written by Dario Alpern." />
+<meta name="keywords" content="integer equations" />
 <meta name="theme-color" content="#db5945">
-<link rel="alternate" hreflang="es" href="LOGDI.HTM" />
-<link rel="manifest" href="dilog.webmanifest">
-<link rel="icon" href="favicon.ico" type="image/x-icon" />
-<link rel="apple-touch-icon" href="dilog-icon-180px.png">
-<title>Discrete logarithm calculator</title>
-<style  media="print">
+<link rel="alternate" hreflang="es" href="RAICESEC.HTM" />
+<link rel="manifest" href="rootseq.webmanifest">
+<link rel="apple-touch-icon" href="rootseq-icon-180px.png">
+<title>Exact solutions of algebraic equations</title>
+<style media="print">
 #smallheader, .footer {display:none;}
 </style>
 <style media="screen">
@@ -31,21 +31,34 @@
 #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
 #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
 #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
 @media (max-width: 400px) { #smallheader { font-size:0.7em;} }
 @media (min-width: 400px) { #smallheader { font-size:1em;} }
+@media screen and (min-width: 500px) {#coefLeft {float:left;width:50%;} #coefRight {float:right;width:50%;}}
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 </style>
 <style>
-body {font-family: arial; margin: 0; padding: 0;}
+body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
 h1 {text-align:center;}
+h2 {font-size: 120%;}
 fieldset {display:inline}
-.lf,.labels {padding:0.2em; clear:both;}
+.lf,.coef,.labels {padding:0.2em; clear:both;}
+.i {font-style: italic;}
+.inline {display:inline;}
 .pad {padding:10px;}
+.atright {float:right;}
+.box {font-weight:bold; text-align:center; border-style:double; display:table-cell;border-radius:10px;}
+.outerbox {display:table; color:blue;}
+.box > p {margin-left:5px;margin-right:5px;}
+.eq {color:red; font-weight:bold;}
+.sqrtout {white-space: nowrap}
+.sqrtout:before {content: "√"}
+.sqrtin {text-decoration:overline}
+.bold {font-weight:bold;}
+#help,#result,#status,#footer {margin: 3px; padding: 3px;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 #feedback {display:none}
-@media (min-width: 400px) { .input{width: calc(100% - 7em);float:right;padding:3px;margin:0px;}}
-@media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
+.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
+.input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
 </style>
 <script type="text/galite">
 <!--
@@ -64,7 +77,7 @@ galite('send', 'pageview');
 </head>
 <body>
 <nav id="smallheader">
-<div style="float:right;"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
+<div class="atright"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
 <ul>
 <li>
 Electronics
@@ -112,7 +125,7 @@ Contact
 </nav>
 <main id="main">
 <article>
-<h1>Discrete logarithm calculator</h1>
+<h1>Exact solutions of algebraic equations</h1>
 <div class="pad">
 <div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
 <a href="ENGLISH.HTM" itemprop="url">
@@ -125,58 +138,81 @@ Contact
 </a> ›
 </div>
 <div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" style="display:inline;">
-<a href="POLFACT.HTM" itemprop="url">
-<span itemprop="title">Discrete logarithm calculator</span>
+<a href="QUAD.HTM" itemprop="url">
+<span itemprop="title">Exact solutions of algebraic equations</span>
 </a>
 </div>
 </div>
-<form class="applet">
-<label for="base">Base</label><input type="text" id="base" value="" class="input"/>
+<div class="applet">
+<var>a</var>&#8290;<var>x</var>&#8309; + <var>b</var>&#8290;<var>x</var>&#8308; + <var>c</var>&#8290;<var>x</var>&sup3; + <var>d</var>&#8290;<var>x</var>&sup2; + <var>e</var>&#8290;<var>x</var> + <var>f</var> = 0
 <div class="lf"></div>
-<label for="pow">Power</label><input type="text" id="pow" value="" class="input"/>
+<div id="coefLeft">
+<div class="coef"><label for="coefA"><var>a</var></label>&nbsp;<input type="text" id="coefA" value="" class="input" aria-label="Quintic coefficient A"/></div>
+<div class="coef"><label for="coefB"><var>b</var></label>&nbsp;<input type="text" id="coefB" value="" class="input" aria-label="Quartic coefficient B"/></div>
+<div class="coef"><label for="coefC"><var>c</var></label>&nbsp;<input type="text" id="coefC" value="" class="input" aria-label="Cubic coefficient C"/></div>
+</div>
+<div id="coefRight">
+<div class="coef"><label for="coefD"><var>d</var></label>&nbsp;<input type="text" id="coefD" value="" class="input" aria-label="Quadratic coefficient D"/></div>
+<div class="coef"><label for="coefE"><var>e</var></label>&nbsp;<input type="text" id="coefE" value="" class="input" aria-label="Linear coefficient E"/></div>
+<div class="coef"><label for="coefF"><var>f</var></label>&nbsp;<input type="text" id="coefF" value="" class="input" aria-label="Independent term F"/></div>
+</div>
 <div class="lf"></div>
-<label for="mod">Modulus</label><input type="text" id="mod" value="" class="input"/>
-<div class="lf"></div>
-<input type="button" id="dlog" value="Discrete logarithm" />
+<input type="button" id="solve" value="Solve" />
 <input type="button" id="stop" value="Stop" />
 <input type="button" id="helpbtn" value="Help" />
 <div class="lf"></div>
-<label for="digits">Digits per group</label> <input type="number" id="digits" value="6"/>
-</form>
+<label for="digits">Digits per group</label>&nbsp;<input type="number" id="digits" value="6"/>
+<input type="checkbox" id="pretty"><label for="pretty">Pretty print</label>
+</div>
 <div id="help" aria-live="polite" class="pad">
-<p>The discrete logarithm problem is to find the exponent in the expression <em>Base<sup>Exponent</sup> = Power (mod Modulus)</em>.
-<p>This applet works for both prime and composite moduli. The only restriction is that the base and the modulus, and the power and the modulus must be relatively prime.
-<p>In this version of the discrete logarithm calculator only the Pohlig-Hellman algorithm is implemented, so the execution time is proportional to the square root of the largest prime factor of the modulus minus 1.
-The applet works in a reasonable amount of time if this factor is less than <span role="math" aria-label="10 raised to the power of 17">10<sup>17</sup></span>.
-<p>I will add the index-calculus algorithm soon. This algorithm has subexponential running time.
+<p>This calculator can solve equations of the form <strong>a&#8290;x&#8309; + b&#8290;x&#8308; + c&#8290;y&sup3; + dx&sup2; + ey + f = 0</strong>.</p>
+<p>You can type numbers or numerical expressions on the input boxes. The calculator accepts numbers of up to 10000 digits.</p>
 <h2>Expressions</h2>
 <p>You can also enter expressions that use the following operators and parentheses:
 <ul>
-<li><strong>+</strong> for addition</li>
-<li><strong>-</strong> for subtraction</li>
-<li><strong>*</strong> for multiplication</li>
-<li><strong>/</strong> for division</li>
-<li><strong>%</strong> for remainder</li>
-<li><strong>^</strong> or <strong>**</strong> for exponentiation</li>
-<li><strong>n!</strong>: factorial</li>
-<li><strong>p#</strong>: primorial (product of all primes less or equal than <em>p</em>).</li>
-<li><strong>B(n)</strong>: Previous probable prime before <em>n</em></li>
-<li><strong>F(n)</strong>: Fibonacci number F<SUB>n</SUB></li>
-<li><strong>L(n)</strong>: Lucas number L<SUB>n</SUB> = F<SUB>n-1</SUB> + F<SUB>n+1</SUB></li>
-<li><strong>N(n)</strong>: Next probable prime after <em>n</em></li>
-<li><strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <em>n</em> into sums of integers without regard to order).</li>
-<li><strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
-<li><strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
-<li><strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
+<li> + for addition
+<li> - for subtraction
+<li> * for multiplication
+<li> / for integer division
+<li> % for modulus (remainder of the integer division)
+<li> ^ or ** for exponentiation (the exponent must be greater than or equal to zero).</li>
+<li> <strong>&lt;</strong>, <strong>==</strong>, <strong>&gt;</strong>; <strong>&lt;=</strong>, <strong>&gt;=</strong>, != for comparisons. The operators return zero for false and -1 for true.</li>
+<li> <strong>AND</strong>, <strong>OR</strong>, <strong>XOR</strong>, <strong>NOT</strong> for binary logic.
+<li> <strong>SHL</strong>: Shift left the number of bits specified on the right operand.
+<li> <strong>SHR</strong>: Shift right the number of bits specified on the right operand.
+<li> <strong>n!</strong>: factorial (<var>n</var> must be greater than or equal to zero).</li>
+<li> <strong>p#</strong>: primorial (product of all primes less or equal than <var>p</var>).</li>
+<li> <strong>B(n)</strong>: Previous probable prime before <em>n</em></li>
+<li> <strong>F(n)</strong>: Fibonacci number F<sub>n</sub></li>
+<li> <strong>L(n)</strong>: Lucas number L<sub>n</sub> = F<sub><var>n</var>-1</sub> + F<sub><var>n</var>+1</sub></li>
+<li> <strong>N(n)</strong>: Next probable prime after <em>n</em></li>
+<li> <strong>P(n)</strong>: Unrestricted Partition Number (number of decompositions of <var>n</var> into sums of integers without regard to order).</li>
+<li> <strong>Gcd(m,n)</strong>: Greatest common divisor of these two integers.</li>
+<li> <strong>Modinv(m,n)</strong>: inverse of <var>m</var> modulo <var>n</var>, only valid when gcd(m,n)=1.</li>
+<li> <strong>Modpow(m,n,r)</strong>: finds <var>m</var><sup><var>n</var></sup> modulo <var>r</var>.</li>
+<li> <strong>Totient(n)</strong>: finds the number of positive integers less than <var>n</var> which are relatively prime to <var>n</var>.</li>
+<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is.</li>
+<li> <strong>NumDivs(n)</strong>: Number of positive divisors of <var>n</var> either prime or composite.</li>
+<li> <strong>SumDivs(n)</strong>: Sum of positive divisors of <var>n</var> either prime or composite.</li>
+<li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>SumDigits(n,r)</strong>: Sum of digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>RevDigits(n,r)</strong>: finds the value obtained by writing backwards the digits of <var>n</var> in base <var>r</var>.</li>
+<li> <strong>ConcatFact(m,n)</strong>: Concatenates the prime factors of <var>n</var> according to the mode expressed in <var>m</var> which follows this table:<br><br>
+<table>
+<caption>ConcatFact function modes</caption>
+<tr><th scope="col">Mode</th><th scope="col">Order of factors</th><th scope="col">Repeated factors</th></tr>
+<tr><td>0</td><td>Ascending</td><td>No</td></tr>
+<tr><td>1</td><td>Descending</td><td>No</td></tr>
+<tr><td>2</td><td>Ascending</td><td>Yes</td></tr>
+<tr><td>3</td><td>Descending</td><td>Yes</td></tr>
+</table>
+</li>
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 <p>The exponentiation symbol is not present in some mobile devices, so two asterisks ** can by typed as the exponentiation operator.</p>
-<p>Example: Find the number <var>n</var> such that <span role="math" aria-label="7 raised to the power of n is congruent to 23 modulo 43241">7<sup>n</sup> &equiv; 23 (mod 43241)</span>.</p>
-<p>Type 7 in the Base input box, 23 in the Power input box and 43241 in the Mod input box. Then press the button named "Discrete logarithm".</p>
-<p>The result is 3360 + 3930 k. As a check you can compute <span role="math" aria-label="7 raised to the power of 3360 is congruent to 23 modulo 43241">7<sup>3360</sup> &equiv; 23 (mod&nbsp;43241)</span> and <span role="math" aria-label="7 raised to the power of 3930 is congruent to 1 modulo 43241">7<sup>3930</sup> &equiv; 1 (mod&nbsp;43241)</span>.</p>
 <h2>Source code</h2>
 <p>
-You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
+You can download the source of the current program and the old quadratic integer equation applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
 <p>Written by Dario Alpern. Last updated 1 June 2019.</p>
 </div>
@@ -198,7 +234,7 @@ You can download the source of the current program and the old sum polynomial fa
 <aside id="feedback">
 <h1>Feedback form</h1>
 <form class="applet" id="formfeedback">
-<input type="hidden" name="subject" value="Discrete logarithm calculator feedback" />
+<input type="hidden" name="subject" value="Generic two integer variable equation solver feedback" />
 <div id="formleft">
 <div class="labels"><label for="name">Your name is:</label><input class="inputfbck" type="text" name="name" maxlength="40" id="name" autocomplete="name"/></div>
 <div class="labels"><label for="age">Age:</label><input class="inputfbck" type="number" name="age" min="0" max="999" id="age" /></div>
@@ -207,7 +243,7 @@ You can download the source of the current program and the old sum polynomial fa
 <div class="labels"><label for="country">Country:</label><input class="inputfbck" type="text" name="country" maxlength="70" id="country" autocomplete="country-name" /></div>
 <div class="labels"><label for="reply">E-mail address:</label><input class="inputfbck" type="email" name="reply" maxlength="70" id="reply" autocomplete="email" /></div>
 <p>Enter your e-mail address if you want a reply from the author of this application.</p>
-<p><input type="checkbox" id="adduserdata"><label for="adduserdata">Send input data</label></p>
+<p><input type="checkbox" id="adduserdata"><label for="adduserdata">Send coefficients</label></p>
 <input type="hidden" name="userdata" value="" id="userdata" />
 </div>
 <div id="formright">
@@ -239,11 +275,13 @@ You can download the source of the current program and the old sum polynomial fa
 </aside>
 <script>
 <!--
-(function(){function a(a){return document.getElementById(a)}function m(){var b=param;c||(e||(e=new Blob([new Uint8Array(h)])),c=new Worker(window.URL.createObjectURL(e)),c.onmessage=function(b){a("result").innerHTML=b.data.substring(1);"2"==b.data.substring(0,1)&&(a("dlog").disabled=!1,a("stop").disabled=!0)});c.postMessage(b)}function k(){a("main").style.display="block";a("feedback").style.display="none";a("base").focus()}var c=0,e,h=0;window.onload=function(){a("stop").disabled=!0;a("dlog").onclick=
-function(){var b=a("result"),d=a("base").value,l=a("pow").value,c=a("mod").value,f=a("digits").value;a("help").style.display="none";b.style.display="block";""==d?b.innerHTML="Please type an expression for the base.":""==l?b.innerHTML="Please type an expression for the power.":""==c?b.innerHTML="Please type a number or expression for the modulus.":(a("dlog").disabled=!0,a("stop").disabled=!1,b.innerHTML="Computing discrete logarithm...",param=f+",0,"+d+String.fromCharCode(0)+l+String.fromCharCode(0)+
-c+String.fromCharCode(0),m())};a("stop").onclick=function(){c.terminate();c=0;a("dlog").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Calculation stopped by user</p>"};a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){k()};a("formsend").onclick=function(){a("userdata").value=
-a("adduserdata").checked?"\nBase = "+a("base").value+"\npower = "+a("pow").value+"\nModulus = "+a("mod").value:"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),k())};b.open("POST","/sendmail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var d=a("formfeedback").elements,c="",e=0,f=0;f<d.length;f++){var g=d[f];"radio"==g.type&&0==g.checked||!g.name||
-(e&&(c+="&"),c+=g.name+"="+encodeURIComponent(g.value),e++)}b.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var d=new XMLHttpRequest;d.open("GET","dilogW0002.js",!0);d.responseType="arraybuffer";d.onreadystatechange=function(){4==d.readyState&&200==d.status&&(h=d.response)};d.send(null)})(this);
+(function(){function a(a){return document.getElementById(a)}function r(b){e||(k||(k=new Blob([new Uint8Array(m)])),e=new Worker(window.URL.createObjectURL(k)),e.onmessage=function(b){a("result").innerHTML=b.data.substring(1);"2"==b.data.substring(0,1)&&(a("solve").disabled=!1,a("stop").disabled=!0)});e.postMessage(b)}function n(b){var g=a("result"),c=a("coefA").value.trim(),f=a("coefB").value.trim(),e=a("coefC").value.trim(),p=a("coefD").value.trim(),d=a("coefE").value.trim(),k=a("coefF").value.trim(),
+m=a("digits").value.trim();a("help").style.display="none";g.style.display="block";var h="",l=String.fromCharCode(0);""==c&&(h="quintic coefficient <var>a</var>.");""==f&&(h="quartic coefficient <var>b</var>.");""==e&&(h="cubic coefficient <var>c</var>.");""==p&&(h="quadratic coefficient <var>d</var>.");""==d&&(h="linear coefficient <var>e</var>.");""==k&&(h="constant term <var>f</var>.");""!=h?g.innerHTML="Please type a number or expression for the "+h:(a("solve").disabled=!0,a("stop").disabled=!1,
+g.innerHTML="Solving the equation...",b=m+","+(0+b)+","+c+l+f+l+e+l+p+l+d+l+k+l,r(b))}function d(b,g,c){c=a(c);(10==b.which||13==b.which)&&0<g.value.trim().length&&(b.preventDefault(),c.focus(),c.setSelectionRange(0,c.value.length))}function q(){a("main").style.display="block";a("feedback").style.display="none";a("coefA").focus()}var e=0,k,m=0;window.onload=function(){a("stop").disabled=!0;a("solve").onclick=function(){n(a("pretty").checked?2:0)};a("stop").onclick=function(){e.terminate();e=0;a("solve").disabled=
+!1;a("stop").disabled=!0;a("result").innerHTML="<p>Calculation stopped by user</p>"};a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("coefA").onkeypress=function(a){d(a,this,"coefB")};a("coefB").onkeypress=function(a){d(a,this,"coefC")};a("coefC").onkeypress=function(a){d(a,this,"coefD")};a("coefD").onkeypress=function(a){d(a,this,"coefE")};a("coefE").onkeypress=function(a){d(a,this,"coefF")};a("coefF").onkeypress=function(b){(10==b.which||13==b.which)&&
+0<this.value.trim().length&&(b.preventDefault(),a("coefA").focus(),n(a("pretty").checked?2:0))};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){q()};a("formsend").onclick=function(){var b=a("userdata");a("adduserdata").checked?b.value="ax^5 + bx^4 + cx^3 + dx^2 + ex + f = 0\na = "+a("coefA").value.trim()+"\nb = "+a("coefB").value.trim()+"\nc = "+a("coefC").value.trim()+
+"\nd = "+a("coefD").value.trim()+"\ne = "+a("coefE").value.trim()+"\nf = "+a("coefF").value.trim():b.value="";var g=new XMLHttpRequest;g.onreadystatechange=function(){4==g.readyState&&(200==g.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),q())};g.open("POST","/sendmail.php",!0);g.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var b=a("formfeedback").elements,c="",f=0,e=0;e<b.length;e++){var d=b[e];"radio"==d.type&&0==d.checked||!d.name||
+(f&&(c+="&"),c+=d.name+"="+encodeURIComponent(d.value),f++)}g.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var f=new XMLHttpRequest;f.open("GET","rootseqW0002.js",!0);f.responseType="arraybuffer";f.onreadystatechange=function(){4==f.readyState&&200==f.status&&(m=f.response)};f.send(null)})(this);
 //-->
 </script>
 </body>

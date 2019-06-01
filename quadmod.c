@@ -35,7 +35,6 @@ static int Exponents[400];
 static BigInteger Aux[400];
 BigInteger ValA, ValB, ValC, ValN;
 static int SolNbr;
-static char textExp[1000];
 static BigInteger LastModulus;
 static int nbrFactors;
 char *ptrOutput;

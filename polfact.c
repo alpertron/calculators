@@ -30,6 +30,7 @@ int attemptNbr;
 char *ptrPercentageOutput;
 #endif
 
+static char outputText[20000];
 extern int poly4[1000000];
 extern int poly5[1000000];
 extern int polyS[1000000];
@@ -86,7 +87,7 @@ static void DistinctDegreeFactorization(int polyDegree)
       int elapsedTime = (int)(tenths() - originalTenthSecond);
       if (elapsedTime / 10 != oldTimeElapsed / 10)
       {
-        char *ptrOutput = output;
+        char *ptrOutput = outputText;
         oldTimeElapsed = elapsedTime;
         if (lang)
         {
@@ -120,7 +121,7 @@ static void DistinctDegreeFactorization(int polyDegree)
         ptrOutput += strlen(ptrOutput);
         GetDHMS(&ptrOutput, elapsedTime / 10);
         strcpy(ptrOutput, "</p>");
-        databack(output);
+        databack(outputText);
       }
 #endif
       // Copy polynomial to factor to poly3 and set leading coefficient to 1.
@@ -204,7 +205,7 @@ static void percentageCallback(int percentage)
     ptrOutput += strlen(ptrOutput);
     GetDHMS(&ptrOutput, elapsedTime / 10);
     strcpy(ptrOutput, "</p>");
-    databack(output);
+    databack(outputText);
   }
 #else
   (void)percentage;
@@ -249,7 +250,7 @@ static void SameDegreeFactorization(void)
     for (;;)
     {
 #ifdef __EMSCRIPTEN__
-      char *ptrOutput = output;
+      char *ptrOutput = outputText;
       if (lang)
       {
         strcpy(ptrOutput, "1<p>Factorización del mismo grado: buscando ");
@@ -509,7 +510,7 @@ static void InsertIntegerPolynomialFactor(int *ptrFactor, int degreePoly)
 
 // Input: values = degree, coefficient degree 0, coefficient degree 1, etc.
 // Output: factorInfo = structure that holds the factors.
-static int FactorPolyOverIntegers(void)
+int FactorPolyOverIntegers(void)
 {
   int degree = values[0];
   int degree1, degree2, rc;
@@ -530,6 +531,7 @@ static int FactorPolyOverIntegers(void)
   struct sFactorInfo *pstFactorInfoOrig, *pstFactorInfoRecord;
   struct sFactorInfo *pstFactorInfoInteger = factorInfoInteger;
   int *ptrFactorInteger = polyInteger;
+  modulusIsZero = 1;
   memset(factorInfoInteger, 0, sizeof(factorInfoInteger));
   getContent(values, &contentPolyToFactor);
   CopyPolynomial(&origPolyToFactor[1], &values[1], degree);
@@ -655,12 +657,24 @@ static int FactorPolyOverIntegers(void)
     {
       int factorNbr, *ptrPolyLiftedRecord;
       int nbrFactors;
+      // Get leading coefficient of polyNonRepeatedFactors.
+      ptrSrc = &polyNonRepeatedFactors[1];
+      for (degree1 = 0; degree1 < degree; degree1++)
+      {
+        ptrSrc += 1 + numLimbs(ptrSrc);
+      }
+      UncompressBigIntegerB(ptrSrc, &leadingCoeff);
       do
       {   // Loop that finds a prime modulus such that the factorization
           // has no repeated factors. That means gcd(F, F') = 1 (mod prime).
           // This is required because Hensel lift does not work when
           // repeated factors are present.
-        prime = nextPrime(prime);
+          // If the leading coefficient is multiple of prime, the prime cannot
+          // be used.
+        do
+        {      // Loop while the leading coefficient is multiple of prime.
+          prime = nextPrime(prime);
+        } while (getRemainder(&leadingCoeff, prime) == 0);
         modulusIsZero = 0;
         intToBigInteger(&primeMod, prime);
         computePower(1);
@@ -1110,35 +1124,87 @@ void polyFactText(char *modText, char *polyText, int groupLength)
   }
   else
   {
-    outputPolynomial(ptrOutput, groupLength);
+    if (onlyEvaluate)
+    {
+      strcpy(ptrOutput, "<p>");
+    }
+    else
+    {
+      strcpy(ptrOutput, "<p id=\"pol\">");
+    }
+    ptrOutput += strlen(ptrOutput);
+    outputOriginalPolynomial(ptrOutput, groupLength);
+    ptrOutput += strlen(ptrOutput);
+    strcpy(ptrOutput, "</p>");
     ptrOutput += strlen(ptrOutput);
     if (onlyEvaluate == 0)
-    {        // Show time only when factoring, not when just evaluating polynomial.
+    {
+      int nbrFactor;
+      int nbrLimbs = powerMod.nbrLimbs + 1;
+      struct sFactorInfo* pstFactorInfo;
+      if (modulusIsZero)
+      {
+        pstFactorInfo = factorInfoInteger;
+      }
+      else
+      {
+        pstFactorInfo = factorInfo;
+      }
+      strcpy(ptrOutput, "<p>");
+      ptrOutput += strlen(ptrOutput);
+
+      // Output factors
+      *ptrOutput++ = '<';
+      *ptrOutput++ = 'u';
+      *ptrOutput++ = 'l';
+      *ptrOutput++ = '>';
+      if (!modulusIsZero)
+      {
+        UncompressBigInteger(&poly4[degree * nbrLimbs], &operand5);
+      }
+      if ((operand5.nbrLimbs != 1 || operand5.limbs[0].x != 1 || operand5.sign == SIGN_NEGATIVE) || nbrFactorsFound == 0)
+      {     // Leading coefficient is not 1 or degree is zero.
+        *ptrOutput++ = '<';
+        *ptrOutput++ = 'l';
+        *ptrOutput++ = 'i';
+        *ptrOutput++ = '>';
+        if (operand5.sign == SIGN_NEGATIVE)
+        {
+          strcpy(ptrOutput, " &minus;");
+          ptrOutput += strlen(ptrOutput);
+        }
+        Bin2Dec(operand5.limbs, ptrOutput, operand5.nbrLimbs, groupLength);
+        ptrOutput += strlen(ptrOutput);
+        *ptrOutput++ = '<';
+        *ptrOutput++ = '/';
+        *ptrOutput++ = 'l';
+        *ptrOutput++ = 'i';
+        *ptrOutput++ = '>';
+      }
+      for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+      {
+        *ptrOutput++ = '<';
+        *ptrOutput++ = 'l';
+        *ptrOutput++ = 'i';
+        *ptrOutput++ = '>';
+        outputPolynomialFactor(ptrOutput, groupLength, pstFactorInfo);
+        ptrOutput += strlen(ptrOutput);
+        *ptrOutput++ = '<';
+        *ptrOutput++ = '/';
+        *ptrOutput++ = 'l';
+        *ptrOutput++ = 'i';
+        *ptrOutput++ = '>';
+        pstFactorInfo++;
+      }
+      *ptrOutput++ = '<';
+      *ptrOutput++ = '/';
+      *ptrOutput++ = 'u';
+      *ptrOutput++ = 'l';
+      *ptrOutput++ = '>';
+      // Show time only when factoring, not when just evaluating polynomial.
       showElapsedTime(&ptrOutput);
     }
   }
   strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
                            "<p>" COPYRIGHT_ENGLISH "</p>");
 }
-
-#ifdef __EMSCRIPTEN__
-EXTERNALIZE void doWork(void)
-{
-  int flags;
-  int groupLen = 0;
-  char *ptrData = inputString;
-  while (*ptrData != ',')
-  {
-    groupLen = groupLen * 10 + (*ptrData++ - '0');
-  }
-  ptrData++;             // Skip comma.
-  flags = *ptrData;
-  lang = flags & 1;
-  onlyEvaluate = (unsigned char)(flags & 2);
-  superscripts = (unsigned char)(flags & 4);
-  ptrData += 2;          // Skip flags and comma.
-  polyFactText(ptrData, ptrData + strlen(ptrData) + 1, groupLen);
-  ptrData += strlen(ptrData);
-  databack(output);
-}
-#endif
