@@ -535,7 +535,7 @@ static void biquadraticEquation(int multiplicity)
   // Test whether e is a perfect square.
   BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
   if (BigRationalSquareRoot(&RatIndependent, &Rat3))
-  {           // e is a perfect square.
+  {           // e is a perfect square. Rat3 = sqrt(r).
     for (ctr = 0; ctr < 4; ctr++)
     {
       showX(multiplicity);
@@ -588,8 +588,10 @@ static void biquadraticEquation(int multiplicity)
       }
       else
       {
+        enum eSign sign = Rat2.numerator.sign;  // Back up sign.
         Rat2.numerator.sign = SIGN_POSITIVE;
         showSquareRootOfRational(&Rat2, 2);
+        Rat2.numerator.sign = sign;             // Restore sign.
       }
       if (Rat2.numerator.sign == SIGN_NEGATIVE)
       {
@@ -644,10 +646,14 @@ static void biquadraticEquation(int multiplicity)
             }
             showText("<var>i</var>&#8290; ");
           }
-          showText("sqrt(");
-          ShowRationalAndSqrParts(&Rat1, &Rat2, 2);
-          if (!BigIntIsZero(&RatDeprQuadratic.numerator))
+          if (BigIntIsZero(&RatDeprQuadratic.numerator))
           {
+            ShowRationalAndSqrParts(&Rat1, &Rat2, 4);
+          }
+          else
+          {
+            showText("(");
+            ShowRationalAndSqrParts(&Rat1, &Rat2, 2);
             if (sign == SIGN_POSITIVE)
             {
               showText(ctr2 == 0 ? " &minus; " : " + ");
@@ -657,8 +663,8 @@ static void biquadraticEquation(int multiplicity)
               showText(ctr2 == 0 ? " + " : " &minus; ");
             }
             showRational(&RatDeprQuadratic);
+            showText(")^(1/2)");
           }
-          showText(")");
         }
       }
       else
@@ -1225,7 +1231,8 @@ void rootsEqText(char* coefAText, char* coefBText, char* coefCText,
     NumberLength = Quintic.nbrLimbs;
     CompressBigInteger(ptrValues, &Quintic);
     FactorPolyOverIntegers();
-    showText("<h2>");
+    ptrOutput = output;
+    showText("2<p><h2>");
     outputOriginalPolynomial(ptrOutput, groupLen);
     ptrOutput += strlen(ptrOutput);
     showText(" = 0</h2>");

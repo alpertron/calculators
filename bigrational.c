@@ -180,6 +180,27 @@ void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart)
   BigIntGcd(&SqrPart->numerator, &SqrPart->denominator, &tmp1);
   BigIntDivide(&SqrPart->numerator, &tmp1, &SqrPart->numerator);
   BigIntDivide(&SqrPart->denominator, &tmp1, &SqrPart->denominator);
+  // Get A = gcd(numerator of rational, denominator of sqrt)
+  BigIntGcd(&RatPart->numerator, &SqrPart->denominator, &tmp1);
+  // Get B = gcd(numerator of rational, denominator of sqrt / A)
+  BigIntDivide(&SqrPart->denominator, &tmp1, &tmp2);
+  BigIntGcd(&tmp1, &tmp2, &tmp3);
+  // Compute numerator of rational <- numerator of rational / B
+  BigIntDivide(&RatPart->numerator, &tmp3, &RatPart->numerator);
+  // Compute denominator of sqrt <- denominator of sqrt / B^2
+  BigIntDivide(&SqrPart->denominator, &tmp3, &SqrPart->denominator);
+  BigIntDivide(&SqrPart->denominator, &tmp3, &SqrPart->denominator);
+  // Get A = gcd(denominator of rational, numerator of sqrt)
+  BigIntGcd(&RatPart->denominator, &SqrPart->numerator, &tmp1);
+  // Get B = gcd(denominator of rational, numerator of sqrt / A)
+  BigIntDivide(&SqrPart->numerator, &tmp1, &tmp2);
+  BigIntGcd(&tmp1, &tmp2, &tmp3);
+  // Compute denominator of rational <- denominator of rational / B
+  BigIntDivide(&RatPart->denominator, &tmp3, &RatPart->denominator);
+  // Compute numerator of sqrt <- numerator of sqrt / B^2
+  BigIntDivide(&SqrPart->numerator, &tmp3, &SqrPart->numerator);
+  BigIntDivide(&SqrPart->numerator, &tmp3, &SqrPart->numerator);
+  //
   // If numerator of SqrPart is a perfect square, multiply the square root by
   // the numerator of RatPart and replace the numerator of SqrPart by 1.
   squareRoot(SqrPart->numerator.limbs, tmp1.limbs, SqrPart->numerator.nbrLimbs, &tmp1.nbrLimbs);
