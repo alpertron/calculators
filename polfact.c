@@ -900,6 +900,7 @@ int FactorPolyOverIntegers(void)
       {
         UncompressBigIntegerB(ptrSrc, &operand1);
         BigIntMultiply(&operand1, &leadingCoeff, &operand2);
+        NumberLength = operand2.nbrLimbs;
         CompressBigInteger(ptrDest, &operand2);
         ptrSrc += 1 + numLimbs(ptrSrc);
         ptrDest += 1 + numLimbs(ptrDest);
