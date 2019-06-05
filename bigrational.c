@@ -166,8 +166,19 @@ void ForceDenominatorPositive(BigRational* rat)
   }
 }
 
+static void TryToSimplifyRatSqrt(BigInteger* RatPart, BigInteger* SqrPart, int divisor)
+{
+  while (getRemainder(RatPart, divisor) == 0 && getRemainder(SqrPart, divisor * divisor) == 0)
+  {
+    subtractdivide(RatPart, 0, divisor);
+    subtractdivide(SqrPart, 0, divisor);
+    subtractdivide(SqrPart, 0, divisor);
+  }
+}
+
 void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart)
 {
+  int ctr;
   if (BigIntIsZero(&SqrPart->numerator))
   {
     intToBigInteger(&RatPart->numerator, 0);
@@ -200,6 +211,17 @@ void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart)
   // Compute numerator of sqrt <- numerator of sqrt / B^2
   BigIntDivide(&SqrPart->numerator, &tmp3, &SqrPart->numerator);
   BigIntDivide(&SqrPart->numerator, &tmp3, &SqrPart->numerator);
+  // Let A = gcd(numerator of rational, denominator of sqrt)
+  BigIntGcd(&RatPart->numerator, &SqrPart->denominator, &tmp1);
+  // Divide numerator of rational by this gcd.
+  BigIntDivide(&RatPart->numerator, &tmp1, &RatPart->numerator);
+  // Divide denominator of sqrt by this gcd.
+  BigIntDivide(&SqrPart->denominator, &tmp1, &SqrPart->denominator);
+  // Multiply numerator of sqrt by the gcd.
+  BigIntMultiply(&SqrPart->numerator, &tmp1, &SqrPart->numerator);
+  ForceDenominatorPositive(SqrPart);
+  ForceDenominatorPositive(RatPart);
+  // 
   //
   // If numerator of SqrPart is a perfect square, multiply the square root by
   // the numerator of RatPart and replace the numerator of SqrPart by 1.
@@ -225,6 +247,14 @@ void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart)
   BigIntGcd(&RatPart->numerator, &RatPart->denominator, &tmp1);
   BigIntDivide(&RatPart->numerator, &tmp1, &RatPart->numerator);
   BigIntDivide(&RatPart->denominator, &tmp1, &RatPart->denominator);
+  // Divide numerator and denominator by small numbers.
+  TryToSimplifyRatSqrt(&RatPart->numerator, &SqrPart->denominator, 2);
+  TryToSimplifyRatSqrt(&RatPart->denominator, &SqrPart->numerator, 2);
+  for (ctr = 3; ctr < 300; ctr+=2)
+  {
+    TryToSimplifyRatSqrt(&RatPart->numerator, &SqrPart->denominator, ctr);
+    TryToSimplifyRatSqrt(&RatPart->denominator, &SqrPart->numerator, ctr);
+  }
 }
 
 int BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
