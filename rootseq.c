@@ -27,7 +27,7 @@ static BigInteger discr, commonDenom, tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, 
 static BigRational RatQuartic, RatCubic, RatQuadratic, RatLinear, RatIndependent;
 static BigRational RatDeprCubic, RatDeprQuadratic, RatDeprLinear, RatDeprIndependent;
 static BigRational RatDiscr, RatDelta0, RatDelta1, RatD;
-static BigRational Rat1, Rat2, Rat3, Rat4, Rat5;
+static BigRational Rat1, Rat2, Rat3, Rat4, Rat5, RatS;
 static char teach = 1;
 static int indexRoot;
 
@@ -728,6 +728,7 @@ static void biquadraticEquation(int multiplicity)
 static void QuarticEquation(int* ptrPolynomial, int multiplicity)
 {
   int ctr, isImaginary;
+  int* ptrValues;
   enum eSign sign1, sign2;
   UncompressBigIntegerB(ptrPolynomial, &Independent);
   ptrPolynomial += 1 + numLimbs(ptrPolynomial);
@@ -748,9 +749,21 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
   CopyBigInt(&RatIndependent.numerator, &Independent);
   CopyBigInt(&RatIndependent.denominator, &Quartic);
   // Compute coefficients of depressed equation x^4 + px^2 + qx + r
-  // where: p = (8c - 3b^2)/8, q = (b^3 - 4bc + 8d)/8 (r is not needed).
+  // where: p = (8c - 3b^2)/8, q = (b^3 - 4bc + 8d)/8,
+  // r = (-3b^4 + 256e - 64bd + 16b^2*c)/256
   BigRationalMultiply(&RatCubic, &RatCubic, &RatDeprQuadratic);       // b^2
   BigRationalMultiply(&RatCubic, &RatDeprQuadratic, &RatDeprLinear);  // b^3
+  BigRationalMultiply(&RatCubic, &RatQuadratic, &RatDeprIndependent); // bc
+  BigRationalMultiplyByInt(&RatDeprIndependent, 16, &RatDeprIndependent);  // 16bc
+  BigRationalMultiplyByInt(&RatLinear, -64, &Rat1);                    // -64d
+  BigRationalAdd(&RatDeprIndependent, &Rat1, &RatDeprIndependent);    // 16bc - 64d
+  BigRationalMultiply(&RatDeprIndependent, &RatCubic, &RatDeprIndependent);   // 16b^2*c - 64bd
+  BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &Rat1);   // b^4
+  BigRationalMultiplyByInt(&Rat1, -3, &Rat1);                         // -3b^4
+  BigRationalAdd(&RatDeprIndependent, &Rat1, &RatDeprIndependent);    // 3b^4 + 16b^2*c - 64bd
+  BigRationalDivideByInt(&RatDeprIndependent, 256, &RatDeprIndependent); // (3b^4 + 16b^2*c - 64bd)/256
+  BigRationalAdd(&RatDeprIndependent, &RatIndependent, &RatDeprIndependent); // (3b^4 + 16b^2*c - 64bd)/256 + e
+
   BigRationalMultiplyByInt(&RatDeprQuadratic, 3, &RatDeprQuadratic);  // 3b^2
   BigRationalDivideByInt(&RatDeprQuadratic, 8, &RatDeprQuadratic);    // 3b^2/8
   BigRationalSubt(&RatQuadratic, &RatDeprQuadratic, &RatDeprQuadratic); // c - 3b^2/8
@@ -810,6 +823,162 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
   if (BigIntIsZero(&RatDeprLinear.numerator))
   {             // Biquadratic equation. No cube root needed in this case.
     biquadraticEquation(multiplicity);
+    return;
+  }
+  // If resolvent equation can be factored, no cube roots are needed.
+  // The resolvent equation is: 8x^3 + 8px^2 + (2p^2-8r)x - q^2 = 0
+  BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &Rat2);
+  BigRationalMultiplyByInt(&Rat2, 2, &Rat2);                  // 2p^2
+  BigRationalMultiplyByInt(&RatDeprIndependent, -8, &Rat3);   // -8r
+  BigRationalAdd(&Rat2, &Rat3, &Rat2);
+  BigRationalMultiplyByInt(&RatDeprQuadratic, 8, &Rat1);      // 8p
+  BigRationalMultiply(&RatDeprLinear, &RatDeprLinear, &Rat3); // q^2
+  BigRationalNegate(&Rat3, &Rat3);                            // -q^2
+  // Convert from rational to integer coefficients.
+  // Cubic coefficient.
+  multint(&tmp3, &Rat1.denominator, 8);
+  BigIntMultiply(&tmp3, &Rat2.denominator, &tmp3);
+  BigIntMultiply(&tmp3, &Rat3.denominator, &tmp3);
+  // Quadratic coefficient.
+  BigIntMultiply(&Rat1.numerator, &Rat2.denominator, &tmp2);
+  BigIntMultiply(&tmp2, &Rat3.denominator, &tmp2);
+  // Linear coefficient.
+  BigIntMultiply(&Rat2.numerator, &Rat1.denominator, &tmp1);
+  BigIntMultiply(&tmp1, &Rat3.denominator, &tmp1);
+  // Independent term.
+  BigIntMultiply(&Rat3.numerator, &Rat1.denominator, &tmp0);
+  BigIntMultiply(&tmp0, &Rat2.denominator, &tmp0);
+  values[0] = 3;
+  ptrValues = &values[1];
+  NumberLength = tmp0.nbrLimbs;
+  CompressBigInteger(ptrValues, &tmp0);
+  ptrValues += 1 + numLimbs(ptrValues);
+  NumberLength = tmp1.nbrLimbs;
+  CompressBigInteger(ptrValues, &tmp1);
+  ptrValues += 1 + numLimbs(ptrValues);
+  NumberLength = tmp2.nbrLimbs;
+  CompressBigInteger(ptrValues, &tmp2);
+  ptrValues += 1 + numLimbs(ptrValues);
+  NumberLength = tmp3.nbrLimbs;
+  CompressBigInteger(ptrValues, &tmp3);
+  FactorPolyOverIntegers();
+  nbrFactorsFound = 0;
+  if (factorInfoInteger[0].degree == 1)
+  {   // Rational root find. Get root.
+    ptrValues = factorInfoInteger[0].ptrPolyLifted;
+    UncompressBigIntegerB(ptrValues, &RatS.numerator);
+    ptrValues += 1 + numLimbs(ptrValues);
+    UncompressBigIntegerB(ptrValues, &RatS.denominator);
+    BigRationalDivideByInt(&RatS, -2, &RatS);
+    ForceDenominatorPositive(&RatS);
+    BigRationalMultiplyByInt(&RatS, 4, &Rat3);
+    BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat3);
+    BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat3);   // S^2 + 2p
+    ForceDenominatorPositive(&Rat3);
+    Rat3.numerator.sign = SIGN_POSITIVE;
+    CopyBigInt(&Rat1.numerator, &RatDeprLinear.numerator);
+    CopyBigInt(&Rat1.denominator, &RatDeprLinear.denominator);
+    CopyBigInt(&Rat2.numerator, &RatS.denominator);
+    CopyBigInt(&Rat2.denominator, &RatS.numerator);
+    MultiplyRationalBySqrtRational(&Rat1, &Rat2);
+    sign1 = RatDeprLinear.numerator.sign;
+    RatDeprLinear.numerator.sign = SIGN_POSITIVE;
+    if (RatDiscr.numerator.sign == SIGN_POSITIVE)
+    {
+      for (ctr = 0; ctr < 4; ctr++)
+      {
+        isImaginary = ((ctr == 0 || ctr == 1) == (sign1 == SIGN_POSITIVE));
+        showX(multiplicity);
+        showFirstTermQuarticEq(ctr);
+        *ptrOutput++ = ' ';
+        if (RatS.numerator.sign == SIGN_NEGATIVE)
+        {
+          showText("<var>i</var>&#8290; ");
+          BigIntChSign(&RatS.numerator);
+          showSquareRootOfRational(&RatS, 2);
+          BigIntChSign(&RatS.numerator);
+        }
+        else
+        {
+          showSquareRootOfRational(&RatS, 2);
+        }
+        showText(" ");
+        if (ctr == 0 || ctr == 2)
+        {
+          showText("+ ");
+        }
+        else
+        {
+          showText("&minus; ");
+        }
+        if (isImaginary)
+        {
+          showText("<var>i</var>&#8290; ");
+        }
+        showText("(1/2)&#8290; (");
+        showRational(&Rat3);
+        if ((ctr == 0 || ctr == 1) == (sign1 == SIGN_NEGATIVE))
+        {
+          showText(isImaginary ? " &minus; " : " + ");
+        }
+        else
+        {
+          showText(isImaginary ? " + " : " &minus; ");
+        }
+        ShowRationalAndSqrParts(&Rat1, &Rat2, 2);
+        showText(")^(1/2)");
+      }
+    }
+    else
+    {
+      isImaginary = sign1 == SIGN_POSITIVE || RatD.numerator.sign == SIGN_POSITIVE;
+      for (ctr = 0; ctr < 4; ctr++)
+      {
+        showX(multiplicity);
+        showFirstTermQuarticEq(ctr);
+        *ptrOutput++ = ' ';
+        if (RatS.numerator.sign == SIGN_NEGATIVE)
+        {
+          showText("<var>i</var>&#8290; ");
+          BigIntChSign(&RatS.numerator);
+          showSquareRootOfRational(&RatS, 2);
+          BigIntChSign(&RatS.numerator);
+        }
+        else
+        {
+          showSquareRootOfRational(&RatS, 2);
+        }
+        showText(" ");
+        if (ctr == 0 || ctr == 2)
+        {
+          showText("+ ");
+        }
+        else
+        {
+          showText("&minus; ");
+        }
+        if (isImaginary)
+        {
+          showText("<var>i</var>&#8290; ");
+        }
+        showText("(1/2)&#8290; (");
+        if (!isImaginary)
+        {
+          showText("&minus;");
+        }
+        showRational(&Rat3);
+        if ((ctr == 0 || ctr == 1) == (sign1 == SIGN_NEGATIVE))
+        {
+          showText(isImaginary ? " &minus; " : " + ");
+        }
+        else
+        {
+          showText(isImaginary ? " + " : " &minus; ");
+        }
+        ShowRationalAndSqrParts(&Rat1, &Rat2, 2);
+        showText(")^(1/2)");
+      }
+    }
   }
   else if (RatDiscr.numerator.sign == SIGN_POSITIVE)
   {
