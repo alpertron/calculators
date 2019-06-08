@@ -37,7 +37,7 @@ extern int bitLengthCycle[20];
 // At the end of the calculation, the result is divided by the power of 2.
 
 // All computations are done in little-endian notation.
-// Find power of 2 that divides the number.
+// Multiply by a power of 2 such that the most significant bit of most significant limb is one.
 // output: pNbrLimbs = pointer to number of limbs
 //         pPower2 = pointer to power of 2.
 static void MultiplyBigNbrByMinPowerOf2(int *pPower2, limb *number, int len, limb *dest)
@@ -148,15 +148,24 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     }
     MultiplyBigNbrByMinPowerOf2(&power2, adjustedArgument, nbrLimbs, adjustedArgument);
     // Initialize approximate inverse.
-    inverse = MAX_VALUE_LIMB / ((double)adjustedArgument[nbrLimbs - 1].x + 1);
+    inverse = LIMB_RANGE / ((double)adjustedArgument[nbrLimbs - 1].x + 
+          ((double)adjustedArgument[nbrLimbs - 2].x) / LIMB_RANGE);
     approxInv[nbrLimbs-1].x = 1;
     if (inverse <= 1)
     {
       approxInv[nbrLimbs - 2].x = 0;
     }
+    else if (inverse >= 2)
+    {
+      approxInv[nbrLimbs - 2].x = MAX_VALUE_LIMB;
+      approxInv[nbrLimbs - 3].x = MAX_VALUE_LIMB;
+    }
     else
     {
-      approxInv[nbrLimbs - 2].x = (int)floor((inverse - 1)*MAX_VALUE_LIMB);
+      double t = (inverse - 1) * LIMB_RANGE;
+      double floor_t = floor(t);
+      approxInv[nbrLimbs - 2].x = (int)floor_t;
+      approxInv[nbrLimbs - 3].x = (int)floor((t - floor_t) * LIMB_RANGE);
     }
     // Perform Newton approximation loop.
     // Get bit length of each cycle.
