@@ -808,11 +808,11 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
       }
       else if (Rat1.numerator.sign == SIGN_POSITIVE && Rat3.numerator.sign == SIGN_NEGATIVE)
       {
-        isImaginary = (Rat5.numerator.sign == SIGN_POSITIVE);
+        isImaginary = (Rat5.numerator.sign != SIGN_POSITIVE);
       }
       else
       {
-        isImaginary = (Rat5.numerator.sign != SIGN_POSITIVE);
+        isImaginary = (Rat5.numerator.sign == SIGN_POSITIVE);
       }
       showText(ctr==0 || ctr==2? " + ": " &minus; ");
       if (isImaginary)
@@ -837,12 +837,6 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
         showRational(&Rat3);
         BigIntChSign(&Rat3.numerator);
       }
-      if (isImaginary)
-      {
-        showText(")");
-        BigIntChSign(&Rat1.numerator);
-        BigIntChSign(&Rat3.numerator);
-      }
       BigRationalMultiplyByInt(&Rat1, 4, &Rat1);
       BigRationalMultiplyByInt(&Rat3, 4, &Rat3);
       if (ctr == 0 || ctr == 1)
@@ -850,6 +844,12 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
         BigIntChSign(&Rat1.numerator);
       }
       showText(")^(1/2)");
+      if (isImaginary)
+      {
+        showText(")");
+        BigIntChSign(&Rat1.numerator);
+        BigIntChSign(&Rat3.numerator);
+      }
     }
     else
     {             // S is imaginary.
