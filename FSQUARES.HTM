@@ -213,7 +213,7 @@ The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <p>
 You can download the source of the current program and the old sum of four squares applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 4 June 2019.</p>
+<p>Written by Dario Alpern. Last updated 8 June 2019.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -338,7 +338,7 @@ k.postMessage([c,t])}function v(){var c,b,h;c=a("result");c.style.display="block
 "Step 1 of 5: Initial value of x";a("wzdexam").innerHTML="Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>";f=1}function x(){var c=a("next"),b=a("wzddesc"),h=a("wzdexam"),d=a("wzdinput"),g=a("num");c.disabled=!0;switch(++f){case 2:e+="x="+d.value;a("mode").style.display="none";b.innerHTML="Step 2 of 5: Value of x for new iteration";h.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>";
 break;case 3:e+=";x="+d.value;b.innerHTML="Step 3 of 5: End loop condition";h.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x&lt;10000</code>";break;case 4:e+=";"+d.value;b.innerHTML="Step 4 of 5: Expression to factor";h.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x</code>";break;case 5:e+=";"+d.value;c.value="Done";c.disabled=!1;b.innerHTML="Step 5 of 5: Process expression condition";
 h.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";break;case 6:""!=d.value&&(e+=";"+d.value);g.value=e;f=0;n=a("hexW").checked?1:0;a("main").style.display="block";a("wizard").style.display="none";g.focus();break;default:f=0,g.value=d.value,n=a("hexW").checked?1:0,a("main").style.display="block",a("wizard").style.display="none",g.focus()}f&&(d.value="",d.focus())}
-function y(){a("main").style.display="block";a("feedback").style.display="none";a("value").focus()}var f=0,e,k=0,t=0,n=0,m,q="undefined"===typeof WebAssembly,l=new XMLHttpRequest;l.open("GET",q?"fsquaresW0004.js":"fsquares0004.wasm",!0);l.responseType="arraybuffer";l.onreadystatechange=function(){4==l.readyState&&200==l.status&&(t=l.response)};l.send(null);window.addEventListener("load",function(){var c;a("num").onkeypress=function(b){var h,d=a("digits").value;h=a("result");h.style.display="block";
+function y(){a("main").style.display="block";a("feedback").style.display="none";a("value").focus()}var f=0,e,k=0,t=0,n=0,m,q="undefined"===typeof WebAssembly,l=new XMLHttpRequest;l.open("GET",q?"fsquaresW0006.js":"fsquares0006.wasm",!0);l.responseType="arraybuffer";l.onreadystatechange=function(){4==l.readyState&&200==l.status&&(t=l.response)};l.send(null);window.addEventListener("load",function(){var c;a("num").onkeypress=function(b){var h,d=a("digits").value;h=a("result");h.style.display="block";
 var g=a("num").value;b||(b=window.event);13==(b.keyCode||b.which)&&(""==g?h.innerHTML="Please type a number or expression.":(h.innerHTML="Computing sum of squares...",c=d+",0,"+g+String.fromCharCode(0),p("none","inline"),r(c)))};a("calc").onclick=function(){v()};a("openwizard").onclick=function(){a("main").style.display="none";a("wizard").style.display="block";a("mode").style.display="block";a("oneexpr").checked=!0;a("next").disabled=!0;a("hexW").checked=n?!0:!1;a("decW").checked=n?!1:!0;a("wzdinput").value=
 "";a("wzdinput").focus();u()};a("wzdinput").onkeydown=function(b){if(10==b.keyCode||13==b.keyCode)b.preventDefault(),0==a("next").disabled&&x();b.altKey&&(80==b.keyCode?(b.preventDefault(),a("oneexpr").checked?(a("oneexpr").checked=!1,a("loop").checked=!0,w()):(a("oneexpr").checked=!0,a("loop").checked=!1,u())):68==b.keyCode?(b.preventDefault(),a("decW").checked=!0,a("hexW").checked=!1):72==b.keyCode&&(b.preventDefault(),a("decW").checked=!1,a("hexW").checked=!0));return!0};a("oneexpr").onclick=function(){u()};
 a("loop").onclick=function(){w()};a("next").onclick=function(){x()};a("wzdinput").oninput=function(){var b=a("wzdinput").value;a("next").disabled=""!=b?1==f||9==f||0<=b.lastIndexOf("x")||0<=b.lastIndexOf("c")||0<=b.lastIndexOf("X")||0<=b.lastIndexOf("C")?!1:!0:5==f?!1:!0};a("cancel").onclick=function(){a("main").style.display="block";a("wizard").style.display="none"};null!=a("stop")&&(a("stop").onclick=function(){k.terminate();k=0;p("inline","none");a("result").innerHTML="<p>Calculation stopped by user</p>";
@@ -350,6 +350,28 @@ a("status").innerHTML=""});null!=a("continue")&&(a("continue").onclick=function(
 <script type="text/js-worker">
 var e,g,k,l={env:{databack:function(b){var a=-1,c=0,f="",d="";do{for(c=0;1024>c;c++){a=g[b++>>0];if(0==a)break;128<=a&&(a=(a-192<<6)+g[b++>>0]-128);f+=String.fromCharCode(a)}d+=f;f=""}while(0!=a);self.postMessage(d+f)},tenths:function(){return Math.floor((new Date).getTime()/100)}}};
 self.onmessage=function(b){k?(m(e.getInputStringPtr(),b.data[0]),e.doWork()):WebAssembly.instantiate(b.data[1],l).then(function(a){k=1;e=a.instance.exports;g=new Uint8Array(e.memory.buffer);m(e.getInputStringPtr(),b.data[0]);e.doWork()})};function m(b,a){var c=b,f=a.length,d,h;for(d=0;d<f;d++)h=a.charCodeAt(d),128>h?g[c++]=h:(g[c++]=(h>>6)+192,g[c++]=(h&63)+128);g[c]=0};
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "browserRequirements": "Requires HTML5. Requires Javascript.",
+  "name": "Sum of squares",
+  "description": "Javascript application that finds the decomposition of a number into squares.",
+  "operatingSystem": "Any",
+  "applicationCategory": "https://schema.org/EducationalApplication",
+  "author": {
+    "@type": "Person",
+    "name": "Dario Alpern"
+  },
+  "inLanguage": "en",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.en.html",
+  "offers": {
+    "@type": "Offer",
+    "price": "0.00",
+    "priceCurrency": "USD"
+  }
+}
 </script>
 </body>
 </html>

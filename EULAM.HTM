@@ -240,5 +240,27 @@ function(e){var evt=e||window.event;var key=evt.keyCode;if(evt.ctrlKey==false&&e
 "";updateSpiral(center,1)}};start.onkeydown=function(e){var evt=e||window.event;var key=evt.keyCode;if(evt.ctrlKey==false&&evt.altKey==false&&evt.metaKey==false)if(key!=8&&key!=9&&key!=37&&key!=39&&key!=45&&key!=46){if(key>=96&&key<=105)key-=48;if(key<48||key>57||start.value.length>=18)evt.preventDefault()}};start.oninput=function(){ShowInformation(-1,-1);updateSpiral(start,2)};window.onresize=function(){var domRect=canvas.getBoundingClientRect();canvas.width=domRect.width;canvas.height=domRect.height;
 updateSpiral(center,1)};if(asmjs)updateSpiral(center,1)}addEventListener("load",startUp)})(this);
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "browserRequirements": "Requires HTML5. Requires Javascript.",
+  "name": "Espiral de Ulam",
+  "description": "Aplicación Javascript que muestra una representación gráfica de los números primos.",
+  "operatingSystem": "Any",
+  "applicationCategory": "https://schema.org/EducationalApplication",
+  "author": {
+    "@type": "Person",
+    "name": "Dario Alpern"
+  },
+  "inLanguage": "es",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.en.html",
+  "offers": {
+    "@type": "Offer",
+    "price": "0.00",
+    "priceCurrency": "USD"
+  }
+}
+</script>
 </body>
 </html>

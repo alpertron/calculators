@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="Author" content="Dario Alejandro Alpern" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="Javascript application that factors polynomials. Written by Dario Alpern." />
+<meta name="description" content="Javascript application that factors integer polynomials and polynomials modulo a power of a prime number. Written by Dario Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="es" href="POLFACT.HTM" />
 <link rel="manifest" href="polfact.webmanifest">
@@ -483,7 +483,7 @@ Compute <var>b</var> = gcdp(<var>a</var>, lc(<var>f</var>) &#8290; <var>f</var>)
 You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
 </div>
-<p>Written by Dario Alpern. Last updated 4 June 2019.</p>
+<p>Written by Dario Alpern. Last updated 8 June 2019.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>
@@ -549,7 +549,7 @@ e.postMessage(d):e.postMessage([d,k])}function l(d){d=0+d+(a("sup").checked?4:0)
 c+String.fromCharCode(0),p())}function n(){a("main").style.display="block";a("feedback").style.display="none";a("poly").focus()}var e=0,f,k=0,h="undefined"===typeof WebAssembly;window.onload=function(){a("stop").disabled=!0;a("eval").onclick=function(){l(2)};a("factor").onclick=function(){l(0)};a("stop").onclick=function(){e.terminate();e=0;a("eval").disabled=!1;a("factor").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Factorization stopped by user</p>"};a("helpbtn").onclick=function(){a("help").style.display=
 "block";a("result").style.display="none"};a("poly").oninput=function(){var c=a("poly"),b=c.value.length-c.selectionStart;c.value=c.value.replace(".","x^");setTimeout(function(){b=c.value.length-b;c.selectionStart=b;c.selectionEnd=b},30)};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){n()};a("formsend").onclick=function(){a("userdata").value=a("adduserdata").checked?
 a("poly").value+" (mod "+a("mod").value+")":"";var c=new XMLHttpRequest;c.onreadystatechange=function(){4==c.readyState&&(200==c.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),n())};c.open("POST","/sendmail.php",!0);c.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var b=a("formfeedback").elements,d="",e=0,g=0;g<b.length;g++){var f=b[g];"radio"==f.type&&0==f.checked||!f.name||(e&&(d+="&"),d+=f.name+"="+encodeURIComponent(f.value),e++)}c.send(d);
-return!1};var d=document.querySelectorAll("h2"),b;for(b=0;b<d.length;b++)d[b].addEventListener("click",function(){this.children[0].classList.toggle("active");var a=this.nextElementSibling;a.style.display="block"===a.style.display?"none":"block"});"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var g=new XMLHttpRequest;g.open("GET",h?"polfactW0004.js":"polfact0004.wasm",!0);g.responseType="arraybuffer";g.onreadystatechange=function(){4==g.readyState&&
+return!1};var d=document.querySelectorAll("h2"),b;for(b=0;b<d.length;b++)d[b].addEventListener("click",function(){this.children[0].classList.toggle("active");var a=this.nextElementSibling;a.style.display="block"===a.style.display?"none":"block"});"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var g=new XMLHttpRequest;g.open("GET",h?"polfactW0006.js":"polfact0006.wasm",!0);g.responseType="arraybuffer";g.onreadystatechange=function(){4==g.readyState&&
 200==g.status&&(k=g.response)};g.send(null)})(this);
 //-->
 </script>
@@ -557,6 +557,28 @@ return!1};var d=document.querySelectorAll("h2"),b;for(b=0;b<d.length;b++)d[b].ad
 var e,f,k,n={env:{databack:function(b){self.postMessage(l(b))},tenths:function(){return Math.floor((new Date).getTime()/100)},getCunn:function(b){var a=new XMLHttpRequest;a.open("GET","https://www.alpertron.com.ar/"+l(b),!1);a.send(null);200==a.status&&m(e.getFactorsAsciiPtr(),a.responseText)}}};
 self.onmessage=function(b){k?(m(e.getInputStringPtr(),b.data[0]),e.doWork()):WebAssembly.instantiate(b.data[1],n).then(function(a){k=1;e=a.instance.exports;f=new Uint8Array(e.memory.buffer);m(e.getInputStringPtr(),b.data[0]);e.doWork()})};function l(b){var a=-1,c=0,g="",d="";do{for(c=0;1024>c;c++){a=f[b++>>0];if(0==a)break;128<=a&&(a=(a-192<<6)+f[b++>>0]-128);g+=String.fromCharCode(a)}d+=g;g=""}while(0!=a);return d+g}
 function m(b,a){var c=b,g=a.length,d,h;for(d=0;d<g;d++)h=a.charCodeAt(d),128>h?f[c++]=h:(f[c++]=(h>>6)+192,f[c++]=(h&63)+128);f[c]=0};
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "browserRequirements": "Requires HTML5. Requires Javascript.",
+  "name": "Polynomial factorization calculator",
+  "description": "Javascript application that factors integer polynomials and polynomials modulo a power of a prime number.",
+  "operatingSystem": "Any",
+  "applicationCategory": "https://schema.org/EducationalApplication",
+  "author": {
+    "@type": "Person",
+    "name": "Dario Alpern"
+  },
+  "inLanguage": "en",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.en.html",
+  "offers": {
+    "@type": "Offer",
+    "price": "0.00",
+    "priceCurrency": "USD"
+  }
+}
 </script>
 </body>
 </html>

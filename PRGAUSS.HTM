@@ -7,7 +7,7 @@
 <meta name="keywords" content="gauss, gaussiano, primo, imaginario, numero, cuadratico" />
 <meta name="description" content="Aplicación Javascript que muestra gráficamente los primos gausianos. Hecho por Dario Alpern." />
 <link rel="alternate" hreflang="en" href="GAUSSPR.HTM" />
-<title>Primos gaussianos</title>
+<title>Primos gausianos</title>
 <style  media="print">
 #smallheader {display:none;}
 </style>
@@ -226,6 +226,28 @@ prevY1stTouch=Math.round(touch.pageY);if(touches.length==2){touch=touches[1];pre
 newY-prevY1stTouch);prevX1stTouch=newX;prevY1stTouch=newY;ShowInformation(-1,-1)}}else if(touches.length==2&&!zoomDone){touch2=evt.touches[1];diffX=prevX2ndTouch-prevX1stTouch;diffY=prevY2ndTouch-prevY1stTouch;oldDist=diffX*diffX+diffY*diffY;diffX=Math.round(touch2.pageX)-newX;diffY=Math.round(touch2.pageY)-newY;newDist=diffX*diffX+diffY*diffY;if(newDist>oldDist){zoomIn();zoomDone=1}if(newDist<oldDist){zoomOut();zoomDone=1}}},false);centerX.onkeydown=function(e){keydown(e)};centerX.oninput=function(){if(beforeMinus!=
 ""&&centerX.value!="-"+beforeMinus)centerX.value="-"+beforeMinus;beforeMinus="";get("info").innerHTML="";updateGraphic(1)};centerY.onkeydown=function(e){keydown(e)};centerY.oninput=function(){if(beforeMinus!=""&&centerY.value!="-"+beforeMinus)centerY.value="-"+beforeMinus;beforeMinus="";get("info").innerHTML="";updateGraphic(1)};window.onresize=function(){var domRect=canvas.getBoundingClientRect();canvas.width=domRect.width;canvas.height=domRect.height;updateGraphic(1)};if(asmjs)updateGraphic(1)}
 addEventListener("load",startUp)})(this);
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "browserRequirements": "Requires HTML5. Requires Javascript.",
+  "name": "Primos gausianos",
+  "description": "Aplicación Javascript que muestra gráficamente los primos gausianos.",
+  "operatingSystem": "Any",
+  "applicationCategory": "https://schema.org/EducationalApplication",
+  "author": {
+    "@type": "Person",
+    "name": "Dario Alpern"
+  },
+  "inLanguage": "es",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.en.html",
+  "offers": {
+    "@type": "Offer",
+    "price": "0.00",
+    "priceCurrency": "USD"
+  }
+}
 </script>
 </body>
 </html>
