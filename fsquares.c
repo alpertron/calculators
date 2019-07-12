@@ -235,11 +235,11 @@ int fsquares(void)
     ptrOutput += strlen(ptrOutput);
     if (hexadecimal)
     {
-      Bin2Hex(origNbr, ptrOutput, nbrLimbs, groupLen);
+      Bin2Hex(origNbr, ptrOutput, nbrLimbs, groupLength);
     }
     else
     {
-      Bin2Dec(origNbr, ptrOutput, nbrLimbs, groupLen);
+      Bin2Dec(origNbr, ptrOutput, nbrLimbs, groupLength);
     }
     ptrOutput += strlen(ptrOutput);
     strcpy(ptrOutput, "</p>");
@@ -671,11 +671,11 @@ void batchCallback(char **pptrOutput)
   ptrOutput += strlen(ptrOutput);
   if (hexadecimal)
   {
-    BigInteger2Hex(&toProcess, ptrOutput, groupLen);
+    BigInteger2Hex(&toProcess, ptrOutput, groupLength);
   }
   else
   {
-    BigInteger2Dec(&toProcess, ptrOutput, groupLen);
+    BigInteger2Dec(&toProcess, ptrOutput, groupLength);
   }
   ptrOutput += strlen(ptrOutput);
   if (toProcess.sign == SIGN_NEGATIVE)
