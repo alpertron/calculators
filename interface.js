@@ -340,17 +340,19 @@ function startUp()
     {
       if (event.keyCode == 10 || event.keyCode == 13)
       {
-        event.preventDefault();          // Do not propagate Enter key.
         if (get("next").disabled == false)
         {                                // Next button is not disabled.
           wizardNext();                  // Perform same operation as if the user had pressed Next button.
         }
+        event.stopPropagation();         // Do not propagate key.
+        event.preventDefault();
       }
       if (event.altKey)
       {                                  // User pressed ALT key.
         if (event.keyCode == 80)
         {                                // User pressed ALT-P.
-          event.preventDefault();        // Do not propagate key.
+          event.stopPropagation();       // Do not propagate key.
+          event.preventDefault();
           if (get("oneexpr").checked)
           {
             get("oneexpr").checked = false;
@@ -366,13 +368,15 @@ function startUp()
         }
         else if (event.keyCode == 68)
         {                                // User pressed ALT-D.
-          event.preventDefault();        // Do not propagate key.
+          event.stopPropagation();       // Do not propagate key.
+          event.preventDefault();
           get("decW").checked = true;
           get("hexW").checked = false;
         }
         else if (event.keyCode == 72)
         {                                // User pressed ALT-H.
-          event.preventDefault();        // Do not propagate key.
+          event.stopPropagation();       // Do not propagate key.
+          event.preventDefault();
           get("decW").checked = false;
           get("hexW").checked = true;
         }

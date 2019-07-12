@@ -200,6 +200,14 @@ window.onload = function ()
       helphelpStyle.display = resultStyle.display = "none";
     }
   };
+  get("value").onkeydown = function(evt)
+  {
+    if (evt.ctrlKey && evt.keyCode === 13)
+    {
+      dowork(2);
+      evt.stopPropagation();
+    }
+  };
   get("formlink").onclick = function ()
   {
     get("main").style.display = "none";

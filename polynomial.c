@@ -925,6 +925,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
       if (nbrLimbs == 2)
       {        // Optimization for small numbers.
         int nbrLen2 = nbrLen * 2;
+        modulus = TestNbr[0].x;
         ptrResult++;
         for (i = halfLength; i > 0; i--)
         {
