@@ -293,13 +293,10 @@ void gaussianText(char *valueText, int doFactorization)
     if (doFactorization != '0')
     {
       GaussianFactorization();
+      showElapsedTime(&ptrOutput);
     }
   }
-  if (rc == EXPR_OK)
-  {
-    showElapsedTime(&ptrOutput);
-  }
-  else
+  if (rc != EXPR_OK)
   {
     textError(ptrOutput, rc);
     ptrOutput = output + strlen(output);
