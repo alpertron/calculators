@@ -18,18 +18,17 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <string.h>
 #include <math.h>
-#include "output.h"
-#include "polynomial.h"
+#include "rootseq.h"
 #define NBR_COEFF 6
 
-static BigInteger Quintic, Quartic, Cubic, Quadratic, Linear, Independent;
-static BigInteger discr, commonDenom, tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
-static BigRational RatQuartic, RatCubic, RatQuadratic, RatLinear, RatIndependent;
-static BigRational RatDeprCubic, RatDeprQuadratic, RatDeprLinear, RatDeprIndependent;
-static BigRational RatDiscr, RatDelta0, RatDelta1, RatD;
-static BigRational Rat1, Rat2, Rat3, Rat4, Rat5, RatS;
-static char teach = 1;
-static int indexRoot;
+BigInteger Quintic, Quartic, Cubic, Quadratic, Linear, Independent;
+BigInteger discr, commonDenom, tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
+BigRational RatQuartic, RatCubic, RatQuadratic, RatLinear, RatIndependent;
+BigRational RatDeprCubic, RatDeprQuadratic, RatDeprLinear, RatDeprIndependent;
+BigRational RatDiscr, RatDelta0, RatDelta1, RatD;
+BigRational Rat1, Rat2, Rat3, Rat4, Rat5, RatS;
+char teach;
+int indexRoot;
 
 struct stValidateCoeff
 {
@@ -49,142 +48,7 @@ static struct stValidateCoeff astValidateCoeff[NBR_COEFF] =
   { NULL, &Independent, "Término independiente <var>f</var>: ", "Constant term <var>f</var>: " },
 };
 
-#define P0 0x0000
-#define P1 0x1000
-#define P2 0x2000
-#define P3 0x3000
-#define P4 0x4000
-#define P5 0x5000
-#define P6 0x6000
-#define P7 0x7000
-
-#define Q0 0x0000
-#define Q1 0x0100
-#define Q2 0x0200
-#define Q3 0x0300
-#define Q4 0x0400
-#define Q5 0x0500
-#define Q6 0x0600
-#define Q8 0x0800
-
-#define R0 0x0000
-#define R1 0x0010
-#define R2 0x0020
-#define R3 0x0030
-#define R4 0x0040
-#define R5 0x0050
-#define R6 0x0060
-
-#define S0 0x0000
-#define S1 0x0001
-#define S2 0x0002
-#define S3 0x0003
-#define S4 0x0004
-#define S5 0x0005
-#define S6 0x0006
-
-#define END_COEFF 0xFFFF
-// Coefficients taken from Dummit's Solving Solvable Quintics article.
-static struct stQuinticF20
-{
-  unsigned short pqrs;
-  short coeff;
-} astQuinticF20[] =
-{
-  // Coefficients of independent term
-{P0 + Q8 + R0 + S0, 1},      // q^8
-{P1 + Q6 + R1 + S0, -13},    // -13pq^6*r
-{P5 + Q2 + R2 + S0, 1},      // p^5*q^2*r^2
-{P2 + Q4 + R2 + S0, 65},     // 65p^2*q^4*r^2
-{P6 + Q0 + R3 + S0, -4},     // -4p^6*r^3
-{P3 + Q2 + R3 + S0, -128},   // -128p^3*q^2*r^3
-{P0 + Q4 + R3 + S0, 17},     // 17q^4*r^3
-{P4 + Q0 + R4 + S0, 48},     // 48p^4*r^4
-{P1 + Q2 + R4 + S0, -16},    // -16pq^2*r^4
-{P2 + Q0 + R5 + S0, -192},   // -192p^2*r^5
-{P0 + Q0 + R6 + S0, 256},    // 256r^6
-{P5 + Q3 + R0 + S1, -4},     // -4p^5*q^3*s
-{P2 + Q5 + R0 + S1, -12},    // -12p^2*q^5*s
-{P6 + Q1 + R1 + S1, 18},     // 18p^6*qrs
-{P3 + Q3 + R1 + S1, 12},     // 12p^3*q^3*rs
-{P0 + Q5 + R1 + S1, -124},   // -124q^5*r*s
-{P4 + Q1 + R2 + S1, 196},    // 196p^4*qr^2*s
-{P1 + Q3 + R2 + S1, 590},    // 590pq^3*r^2*s
-{P2 + Q1 + R3 + S1, -160},   // -160p^2*qr^3*s
-{P0 + Q1 + R4 + S1, -1600},  // -1600qr^4*s
-{P7 + Q0 + R0 + S2, -27},    // -27p^7*s^2
-{P4 + Q2 + R0 + S2, -150},   // -150p^4*q^2*s^2
-{P1 + Q4 + R0 + S2, -125},   // -125pq^4*s^2
-{P5 + Q0 + R1 + S2, -99},    // -99p^5*rs^2
-{P2 + Q2 + R1 + S2, -725},   // -725p^2*q^2*rs^2
-{P3 + Q0 + R2 + S2, 1200},   // 1200p^3*r^2*s^2
-{P0 + Q2 + R2 + S2, 3250},   // 3250q^2*r^2*s^2
-{P1 + Q0 + R3 + S2, -2000},  // -2000pr^3*s^2
-{P1 + Q1 + R1 + S3, -1250},  // -1250pqrs^3
-{P2 + Q0 + R0 + S4, 3125},   // 3125p^2*s^4
-{P0 + Q0 + R1 + S4, -9375},  // -9375rs^4
-{END_COEFF, 0},
-  // Coefficients of x
-{P1 + Q6 + R0 + S0, -2},     // -2pq^6
-{P2 + Q4 + R1 + S0, 19},     // 19p^2*q^4*r
-{P3 + Q2 + R2 + S0, -51},    // -51p^3*q^2*r^2
-{P0 + Q4 + R2 + S0, 3},      // 3q^4*r^2
-{P4 + Q0 + R3 + S0, 32},     // 32p^4*r^3
-{P1 + Q2 + R3 + S0, 76},     // 76pq^2*r^3
-{P2 + Q0 + R4 + S0, -256},   // -256p^2*r^4
-{P0 + Q0 + R5 + S0, 512},    // 512r^5
-{P3 + Q3 + R0 + S1, -31},    // -31p^3*q^3*s
-{P0 + Q5 + R0 + S1, -58},    // -58q^5*s
-{P4 + Q1 + R1 + S1, 117},    // 117p^4*qrs
-{P1 + Q3 + R1 + S1, 105},    // 105pq^3*rs
-{P2 + Q1 + R2 + S1, 260},    // 260p^2*qr^2*s
-{P0 + Q1 + R3 + S1, -2400},  // -2400qr^3*s
-{P5 + R0 + R0 + S2, -108},   // -108p^5*s^2
-{P2 + Q2 + R0 + S2, -325},   // -325p^2*q^2*s^2
-{P3 + Q0 + R1 + S2, 525},    // 525p^3*rs^2
-{P0 + Q2 + R1 + S2, 2750},   // 2750q^2*rs^2
-{P1 + Q0 + R2 + S2, -500},   // -500pr^2*s^2
-{P1 + Q1 + R0 + S3, 625},    // 625pqs^3
-{P0 + Q0 + R0 + S4, -3125},  // -3125s^4
-{END_COEFF, 0},
-  // Coefficients of x^2
-{P2 + Q4 + R0 + S0, 1},      // p^2*q^4
-{P3 + Q2 + R1 + S0, -6},     // -6p^3*q^2*r
-{P0 + Q4 + R1 + S0, -8},     // -8q^4*r
-{P4 + Q0 + R2 + S0, 9},      // 9p^4*r^2
-{P1 + Q2 + R2 + S0, 76},     // 76pq^2*r^2
-{P2 + Q0 + R3 + S0, -136},   // -136p^2*r^3
-{P0 + Q0 + R4 + S0, 400},    // 400r^4
-{P1 + Q3 + R0 + S1, -50},    // -50pq^3*s
-{P2 + Q1 + R1 + S1, 90},     // 90p^2*qrs
-{P0 + Q1 + R2 + S1, -1400},  // -1400qr^2*s
-{P0 + Q2 + R0 + S2, 625},    // 625q^2*s^2
-{P1 + Q0 + R1 + S2, 500},    // 500prs^2
-{END_COEFF, 0},
-  // Coefficients of x^3
-{P0 + Q4 + R0 + S0, -2},     // -2q^4
-{P1 + Q2 + R1 + S0, 21},     // 21pq^2*r
-{P2 + Q0 + R2 + S0, -40},    // -40p^2*r^2
-{P0 + Q0 + R3 + S0, 160},    // 160r^3
-{P2 + Q1 + R0 + S1, -15},    // -15p^2*qs
-{P0 + Q1 + R1 + S1, -400},   // -400qrs
-{P1 + Q0 + R0 + S2, 125},     // 125ps^2
-{END_COEFF, 0},
-  // Coefficients of x^4
-{P1 + Q2 + R0 + S0, 2},      // 2pq^2
-{P2 + Q0 + R1 + S0, -6},     // -6p^2*r
-{P0 + Q0 + R2 + S0, 40},     // 40r^2
-{P0 + Q1 + R0 + S1, -50},    // -50qs
-{END_COEFF, 0},
-  // Coefficients of x^5
-{P0 + Q0 + R1 + S0, 8},      // 8r
-{END_COEFF, 0},
-  // Coefficients of x^6
-{P0 + Q0 + R0 + S0, 1},      // 1
-{END_COEFF, -1},
-};
-
-static void showX(int multiplicity)
+void showX(int multiplicity)
 {
   int ctr;
   showText("<li>");
@@ -291,7 +155,7 @@ static void QuadraticEquation(int* ptrPolynomial, int multiplicity)
     }
     if (signDiscr == SIGN_NEGATIVE)
     {    // Discriminant is negative.
-      showText(" &#8290<var>i</var>");
+      showText(" &#8290i");
     }
     if (!BigIntIsZero(&Linear))
     {
@@ -373,7 +237,7 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
           {
             showText(" &minus;");
           }
-          showText(" <var>i</var>&#8290;(3^(1/2) &#8290;");
+          showText(" i&#8290;(3^(1/2) &#8290;");
           showRational(&RatDeprIndependent);
           showText("^(1/3)) / 2");
         }
@@ -445,7 +309,7 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
           {
             showText(" &minus; ");
           }
-          showText("<var>i</var>&#8290; (<var>r</var> - <var>s</var>)&#8290; 3^(1/2) / 2");
+          showText("i&#8290; (<var>r</var> - <var>s</var>)&#8290; 3^(1/2) / 2");
         }
         showText("</li>");
       }
@@ -563,7 +427,7 @@ static void biquadraticEquation(int multiplicity)
       showFirstTermQuarticEq(ctr);
       if (Rat1.numerator.sign == SIGN_NEGATIVE)
       {
-        showText("<var>i</var> &#8290; (");
+        showText("i &#8290; (");
       }
       if (isSquareRoot1)
       {
@@ -601,7 +465,7 @@ static void biquadraticEquation(int multiplicity)
         }
         else
         {
-          showText("&#8290;<var>i</var>");
+          showText("&#8290;i");
         }
       }
       if (Rat1.numerator.sign == SIGN_NEGATIVE)
@@ -644,7 +508,7 @@ static void biquadraticEquation(int multiplicity)
             {
               showText(" &minus; ");
             }
-            showText("<var>i</var>&#8290; ");
+            showText("i&#8290; ");
           }
           if (BigIntIsZero(&RatDeprQuadratic.numerator))
           {
@@ -687,7 +551,7 @@ static void biquadraticEquation(int multiplicity)
         }
         if (!isX2Positive)
         {
-          showText("<var>i</var>&#8290; ");
+          showText("i&#8290; ");
         }
         ForceDenominatorPositive(&RatIndependent);
         if (BigIntIsZero(&RatDeprQuadratic.numerator))
@@ -817,7 +681,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
       showText(ctr==0 || ctr==2? " + ": " &minus; ");
       if (isImaginary)
       {
-        showText("<var>i</var>&#8290; ");
+        showText("i&#8290; ");
         BigIntChSign(&Rat1.numerator);
         BigIntChSign(&Rat3.numerator);
       }
@@ -862,7 +726,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
       BigRationalMultiply(&Rat3, &Rat3, &Rat5);          // u^2
       BigRationalSubt(&Rat5, &Rat4, &Rat4);              // k^2 = u^2 + q^2 / |S^2|
       showSquareRootOfComplex(" + ", " &minus; ");
-      showText(" + <var>i</var>&#8290; (");
+      showText(" + i&#8290; (");
       if (ctr == 1 || ctr == 3)
       {
         showText("&minus; ");
@@ -1082,7 +946,7 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
       }
       if (isImaginary)
       {
-        showText("<var>i</var>&#8290; ");
+        showText("i&#8290; ");
       }
       showText("(1/2)&#8290; (");
       if (!isImaginary)
@@ -1163,7 +1027,7 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
       }
       if (isImaginary)
       {
-        showText("<var>i</var>&#8290; ");
+        showText("i&#8290; ");
       }
       showText("(1/2)&#8290; (");
       if (!isImaginary)
@@ -1196,173 +1060,6 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
       showText(")^(1/2)");
     }
   }
-}
-
-static void QuinticEquation(int* ptrPolynomial, int multiplicity)
-{
-  int ctr;
-  int* ptrValues;
-  struct stQuinticF20 *pstQuinticF20;
-  UncompressBigIntegerB(ptrPolynomial, &Independent);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
-  UncompressBigIntegerB(ptrPolynomial, &Linear);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
-  UncompressBigIntegerB(ptrPolynomial, &Quadratic);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
-  UncompressBigIntegerB(ptrPolynomial, &Cubic);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
-  UncompressBigIntegerB(ptrPolynomial, &Quartic);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
-  UncompressBigIntegerB(ptrPolynomial, &Quintic);
-  // Get rational coefficients of monic equation.
-  CopyBigInt(&RatQuartic.numerator, &Quartic);
-  CopyBigInt(&RatQuartic.denominator, &Quintic);
-  CopyBigInt(&RatCubic.numerator, &Cubic);
-  CopyBigInt(&RatCubic.denominator, &Quintic);
-  CopyBigInt(&RatQuadratic.numerator, &Quadratic);
-  CopyBigInt(&RatQuadratic.denominator, &Quintic);
-  CopyBigInt(&RatLinear.numerator, &Linear);
-  CopyBigInt(&RatLinear.denominator, &Quintic);
-  CopyBigInt(&RatIndependent.numerator, &Independent);
-  CopyBigInt(&RatIndependent.denominator, &Quintic);
-  // Compute coefficients of depressed equation x^5 + px^3 + qx^2 + rx + s
-  // where: p = (5c - 2b^2)/5, q = (25d - 15bc + 4b^3)/25, r = (125e - 50bd + 15b^2*c - 3b^4)/125,
-  // s = (3125f - 625be + 125b^2*e - 25b^3*c + 4b^5)/3125
-  BigRationalMultiply(&RatQuartic, &RatCubic, &Rat2);
-  BigRationalMultiplyByInt(&Rat2, -15, &RatDeprQuadratic);         // -15bc
-  BigRationalMultiply(&RatQuartic, &RatQuadratic, &Rat2);
-  BigRationalMultiplyByInt(&Rat2, -50, &RatDeprLinear);            // -50bd
-  BigRationalMultiply(&RatQuartic, &RatLinear, &Rat2);
-  BigRationalMultiplyByInt(&Rat2, -625, &RatDeprIndependent);      // -625be
-  BigRationalMultiply(&RatQuartic, &RatQuartic, &Rat1);            // b^2
-  BigRationalMultiplyByInt(&Rat1, -2, &RatDeprCubic);              // -2b^2
-  BigRationalMultiply(&Rat1, &RatCubic, &Rat2);
-  BigRationalMultiplyByInt(&Rat2, 15, &Rat2);                      // 15b^2*c
-  BigRationalAdd(&RatDeprLinear, &Rat2, &RatDeprLinear);
-  BigRationalMultiply(&Rat1, &RatLinear, &Rat2);
-  BigRationalMultiplyByInt(&Rat2, 125, &Rat2);                     // 125b^2*e
-  BigRationalAdd(&RatDeprIndependent, &Rat2, &RatDeprIndependent);
-  BigRationalMultiply(&Rat1, &RatQuartic, &Rat1);                  // b^3
-  BigRationalMultiplyByInt(&Rat1, 4, &Rat2);                       // 4b^3
-  BigRationalAdd(&RatDeprQuadratic, &Rat2, &RatDeprQuadratic);
-  BigRationalMultiply(&Rat1, &RatCubic, &Rat2);
-  BigRationalMultiplyByInt(&Rat2, -25, &Rat2);                     // -15b^3*c
-  BigRationalAdd(&RatDeprIndependent, &Rat2, &RatDeprIndependent);
-  BigRationalMultiply(&Rat1, &RatQuartic, &Rat1);                  // b^4
-  BigRationalMultiplyByInt(&Rat1, -3, &Rat2);                      // -3b^4
-  BigRationalAdd(&RatDeprLinear, &Rat2, &RatDeprLinear);
-  BigRationalMultiply(&Rat1, &RatQuartic, &Rat1);                  // b^5
-  BigRationalMultiplyByInt(&Rat1, 4, &Rat2);                       // 4b^5
-  BigRationalAdd(&RatDeprIndependent, &Rat2, &RatDeprIndependent);
-  BigRationalDivideByInt(&RatDeprCubic, 5, &RatDeprCubic);
-  BigRationalAdd(&RatDeprCubic, &RatCubic, &RatDeprCubic);
-  BigRationalDivideByInt(&RatDeprQuadratic, 25, &RatDeprQuadratic);
-  BigRationalAdd(&RatDeprQuadratic, &RatQuadratic, &RatDeprQuadratic);
-  BigRationalDivideByInt(&RatDeprLinear, 125, &RatDeprLinear);
-  BigRationalAdd(&RatDeprLinear, &RatLinear, &RatDeprLinear);
-  BigRationalDivideByInt(&RatDeprIndependent, 3125, &RatDeprIndependent);
-  BigRationalAdd(&RatDeprIndependent, &RatIndependent, &RatDeprIndependent);
-  
-  // Generate sixth degree polynomial F20 as indicated in
-  // Dummit's Solving Solvable Quintics article.
-  values[0] = 6;          // Degree of polynomial to factor.
-  ptrValues = &values[1];
-  
-  intToBigInteger(&Rat1.numerator, 0);
-  intToBigInteger(&Rat1.denominator, 1);
-  intToBigInteger(&commonDenom, 1);             // Common denominator.
-  intToBigInteger(&tmp0, 0);
-  intToBigInteger(&tmp1, 0);
-  intToBigInteger(&tmp2, 0);
-  intToBigInteger(&tmp3, 0);
-  intToBigInteger(&tmp4, 0);
-  intToBigInteger(&tmp5, 0);
-  for (pstQuinticF20 = astQuinticF20; ; pstQuinticF20++)
-  {
-    if (pstQuinticF20->pqrs == END_COEFF)
-    {
-      BigIntGcd(&commonDenom, &Rat1.denominator, &tmp7);
-      BigIntMultiply(&tmp1, &Rat1.denominator, &tmp0);
-      BigIntDivide(&tmp0, &tmp7, &tmp0);
-      BigIntMultiply(&tmp2, &Rat1.denominator, &tmp1);
-      BigIntDivide(&tmp1, &tmp7, &tmp1);
-      BigIntMultiply(&tmp3, &Rat1.denominator, &tmp2);
-      BigIntDivide(&tmp2, &tmp7, &tmp2);
-      BigIntMultiply(&tmp4, &Rat1.denominator, &tmp3);
-      BigIntDivide(&tmp3, &tmp7, &tmp3);
-      BigIntMultiply(&tmp5, &Rat1.denominator, &tmp4);
-      BigIntDivide(&tmp4, &tmp7, &tmp4);
-      BigIntMultiply(&tmp6, &Rat1.denominator, &tmp5);
-      BigIntDivide(&tmp5, &tmp7, &tmp5);
-      BigIntMultiply(&Rat1.numerator, &commonDenom, &tmp6);
-      BigIntDivide(&tmp6, &tmp7, &tmp6);
-      BigIntMultiply(&commonDenom, &Rat1.denominator, &commonDenom);
-      BigIntDivide(&commonDenom, &tmp7, &commonDenom);
-      intToBigInteger(&Rat1.numerator, 0);
-      intToBigInteger(&Rat1.denominator, 1);
-      if (pstQuinticF20->coeff < 0)
-      {
-        break;
-      }
-      continue;
-    }
-    intToBigInteger(&Rat2.numerator, pstQuinticF20->coeff);
-    intToBigInteger(&Rat2.denominator, 1);
-    // Multiply by power of p.
-    for (ctr = pstQuinticF20->pqrs & 0xF000; ctr > 0; ctr -= 0x1000)
-    {
-      BigRationalMultiply(&Rat2, &RatDeprCubic, &Rat2);
-    }
-    // Multiply by power of q.
-    for (ctr = pstQuinticF20->pqrs & 0x0F00; ctr > 0; ctr -= 0x0100)
-    {
-      BigRationalMultiply(&Rat2, &RatDeprQuadratic, &Rat2);
-    }
-    // Multiply by power of r.
-    for (ctr = pstQuinticF20->pqrs & 0x00F0; ctr > 0; ctr -= 0x0010)
-    {
-      BigRationalMultiply(&Rat2, &RatDeprLinear, &Rat2);
-    }
-    // Multiply by power of s.
-    for (ctr = pstQuinticF20->pqrs & 0x000F; ctr > 0; ctr--)
-    {
-      BigRationalMultiply(&Rat2, &RatDeprIndependent, &Rat2);
-    }
-    BigRationalAdd(&Rat1, &Rat2, &Rat1);
-  }
-  NumberLength = tmp0.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp0);
-  ptrValues += 1 + numLimbs(ptrValues);
-  NumberLength = tmp1.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp1);
-  ptrValues += 1 + numLimbs(ptrValues);
-  NumberLength = tmp2.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp2);
-  ptrValues += 1 + numLimbs(ptrValues);
-  NumberLength = tmp3.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp3);
-  ptrValues += 1 + numLimbs(ptrValues);
-  NumberLength = tmp4.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp4);
-  ptrValues += 1 + numLimbs(ptrValues);
-  NumberLength = tmp5.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp5);
-  ptrValues += 1 + numLimbs(ptrValues);
-  NumberLength = tmp6.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp6);
-  FactorPolyOverIntegers();
-  // If there is a linear factor, that means that the quintic can be expressed with radicands.
-  if (factorInfoInteger[0].degree == 1)
-  {
-    showText(lang ? "<p>La ecuación quíntica se puede expresar mediante radicandos.</p>" :
-      "The quintic equation can be expressed with radicands.");
-  }
-  else
-  {
-    showText(lang ? "<p>La ecuación quíntica no se puede expresar mediante radicandos.</p>" :
-      "The quintic equation cannot be expressed with radicands.");
-  }
-  nbrFactorsFound = 0;   // Exit loop in caller so flow does not reenter here.
 }
 
 void rootsEqText(char* coefAText, char* coefBText, char* coefCText,

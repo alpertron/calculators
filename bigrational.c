@@ -168,9 +168,9 @@ void ForceDenominatorPositive(BigRational* rat)
 
 static void TryToSimplifyRatSqrt(BigInteger* RatPart, BigInteger* SqrPart, int divisor)
 {
-  while (getRemainder(RatPart, divisor) == 0 && getRemainder(SqrPart, divisor * divisor) == 0)
+  while (getRemainder(SqrPart, divisor * divisor) == 0)
   {
-    subtractdivide(RatPart, 0, divisor);
+    multint(RatPart, RatPart, divisor);
     subtractdivide(SqrPart, 0, divisor);
     subtractdivide(SqrPart, 0, divisor);
   }
@@ -243,18 +243,18 @@ void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart)
     BigIntMultiply(&RatPart->denominator, &tmp1, &RatPart->denominator);
     intToBigInteger(&SqrPart->denominator, 1);
   }
+  // Divide numerator and denominator by small numbers.
+  TryToSimplifyRatSqrt(&RatPart->numerator, &SqrPart->numerator, 2);
+  TryToSimplifyRatSqrt(&RatPart->denominator, &SqrPart->denominator, 2);
+  for (ctr = 3; ctr < 300; ctr += 2)
+  {
+    TryToSimplifyRatSqrt(&RatPart->numerator, &SqrPart->numerator, ctr);
+    TryToSimplifyRatSqrt(&RatPart->denominator, &SqrPart->denominator, ctr);
+  }
   // Divide numerator and denominator by their gcd.
   BigIntGcd(&RatPart->numerator, &RatPart->denominator, &tmp1);
   BigIntDivide(&RatPart->numerator, &tmp1, &RatPart->numerator);
   BigIntDivide(&RatPart->denominator, &tmp1, &RatPart->denominator);
-  // Divide numerator and denominator by small numbers.
-  TryToSimplifyRatSqrt(&RatPart->numerator, &SqrPart->denominator, 2);
-  TryToSimplifyRatSqrt(&RatPart->denominator, &SqrPart->numerator, 2);
-  for (ctr = 3; ctr < 300; ctr+=2)
-  {
-    TryToSimplifyRatSqrt(&RatPart->numerator, &SqrPart->denominator, ctr);
-    TryToSimplifyRatSqrt(&RatPart->denominator, &SqrPart->numerator, ctr);
-  }
 }
 
 int BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
@@ -324,7 +324,15 @@ void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int roo
       {
         showText("^(1/2)");
       }
-      showText("&#8290;");
+      if (RatPart->numerator.sign == SIGN_POSITIVE && RatPart->denominator.nbrLimbs == 1 &&
+        RatPart->denominator.limbs[0].x == 1)
+      {
+        showText(" &times; ");
+      }
+      else
+      {
+        showText("&#8290;");
+      }
     }
     showRational(SqrPart);
     showText(root==2?"^(1/2)":"^(1/4)");
