@@ -338,11 +338,11 @@ void batchCubesCallback(char **pptrOutput)
   ptrOutput += strlen(ptrOutput);
   if (hexadecimal)
   {
-    BigInteger2Hex(&toProcess, ptrOutput, groupLen);
+    BigInteger2Hex(&toProcess, ptrOutput, groupLength);
   }
   else
   {
-    BigInteger2Dec(&toProcess, ptrOutput, groupLen);
+    BigInteger2Dec(&toProcess, ptrOutput, groupLength);
   }
   ptrOutput += strlen(ptrOutput);
   switch (result)
