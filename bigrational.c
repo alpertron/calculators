@@ -291,16 +291,80 @@ int BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
   return TRUE;
 }
 
-void showRational(BigRational* rat)
+static void showRationalPretty(BigRational* rat)
 {
-  int showParen = rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1 || 
-    rat->numerator.sign == SIGN_NEGATIVE;
+  showText("<span class=\"fraction\"><span class=\"numerator\">");
+  shownbr(&rat->numerator);
+  showText("</span><span class=\"denominator\">");
+  shownbr(&rat->denominator);
+  showText("</span></span>");
+}
+
+void showRationalNoParen(BigRational* rat, char pretty)
+{
+  int denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
+  if (pretty && denominatorIsNotOne)
+  {
+    showRationalPretty(rat);
+    return;
+  }
+  shownbr(&rat->numerator);
+  if (denominatorIsNotOne)
+  {
+    showText(" / ");
+    shownbr(&rat->denominator);
+  }
+}
+
+void showRationalOverStr(BigRational* rat, char pretty, char *str)
+{
+  int denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
+  if (pretty)
+  {
+    showText("<span class=\"fraction\"><span class=\"numerator\">");
+    shownbr(&rat->numerator);
+    showText("</span><span class=\"denominator\">");
+    if (denominatorIsNotOne)
+    {
+      shownbr(&rat->denominator);
+      showText("&#8290; ");
+    }
+    showText(str);
+    showText("</span></span>");
+    return;
+  }
+  shownbr(&rat->numerator);
+  showText(" / ");
+  if (denominatorIsNotOne)
+  {
+    showText("(");
+    shownbr(&rat->denominator);
+    showText(" * ");
+    showText(str);
+    showText(")");
+  }
+  else
+  {
+    showText(str);
+  }
+}
+
+void showRational(BigRational* rat, char pretty)
+{
+  int denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
+  int showParen;
+  if (pretty && denominatorIsNotOne)
+  {
+    showRationalPretty(rat);
+    return;
+  }
+  showParen = denominatorIsNotOne || rat->numerator.sign == SIGN_NEGATIVE;
   if (showParen)
   {
     *ptrOutput++ = '(';
   }
   shownbr(&rat->numerator);
-  if (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1)
+  if (denominatorIsNotOne)
   {
     showText(" / ");
     shownbr(&rat->denominator);
@@ -311,44 +375,72 @@ void showRational(BigRational* rat)
   }
 }
 
-void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int root)
+void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int root, char pretty)
 {
   if (SqrPart->numerator.nbrLimbs != 1 || SqrPart->numerator.limbs[0].x != 1 ||
     SqrPart->denominator.nbrLimbs != 1 || SqrPart->denominator.limbs[0].x != 1)
-  {
+  {       // Square root part is not 1.
     if (RatPart->numerator.nbrLimbs != 1 || RatPart->numerator.limbs[0].x != 1 ||
       RatPart->denominator.nbrLimbs != 1 || RatPart->denominator.limbs[0].x != 1)
-    {
-      showRational(RatPart);
-      if (root == 4)
+    {     // Absolute value of rational part is not 1.
+      if (root == 2)
       {
-        showText("^(1/2)");
-      }
-      if (RatPart->numerator.sign == SIGN_POSITIVE && RatPart->denominator.nbrLimbs == 1 &&
-        RatPart->denominator.limbs[0].x == 1)
-      {
-        showText(" &times; ");
+        showRational(RatPart, pretty);
       }
       else
       {
-        showText("&#8290;");
+        if (pretty)
+        {
+          showText("<span class=\"root\"><span class=\"radicand2\">");
+          showRational(RatPart, pretty);
+          showText("</span></span>");
+        }
+        else
+        {
+          showRational(RatPart, pretty);
+          showText("^(1/2)");
+        }
+      }
+      showText(pretty? "&#8290;": " * ");
+    }
+    else
+    {     // Absolute value of rational part is 1.
+      if (RatPart->numerator.sign == SIGN_NEGATIVE)
+      {   // Rational part is 1. Show negative sign.
+        showText(pretty? "&minus;": "-");
       }
     }
-    showRational(SqrPart);
-    showText(root==2?"^(1/2)":"^(1/4)");
+    if (pretty)
+    {
+      if (root == 2)
+      {
+        showText("<span class=\"root\"><span class=\"radicand2\">");
+      }
+      else
+      {
+        showText("<span class=\"root\"><span class=\"radicand4\">");
+      }
+      showRational(SqrPart, pretty);
+      showText("</span></span>");
+    }
+    else
+    {
+      showRational(SqrPart, pretty);
+      showText(root == 2 ? "^(1/2)" : "^(1/4)");
+    }
   }
   else
   {
-    showRational(RatPart);
+    showRational(RatPart, pretty);
   }
 }
 
-void showSquareRootOfRational(BigRational* rat, int root)
+void showSquareRootOfRational(BigRational* rat, int root, char pretty)
 {
   intToBigInteger(&Rat1.numerator, 1);
   intToBigInteger(&Rat1.denominator, 1);
   CopyBigInt(&Rat2.numerator, &rat->numerator);
   CopyBigInt(&Rat2.denominator, &rat->denominator);
   MultiplyRationalBySqrtRational(&Rat1, &Rat2);
-  ShowRationalAndSqrParts(&Rat1, &Rat2, root);
+  ShowRationalAndSqrParts(&Rat1, &Rat2, root, pretty);
 }
