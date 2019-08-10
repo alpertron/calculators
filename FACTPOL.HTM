@@ -507,7 +507,7 @@ Calculemos <var>b</var> = gcdp(<var>a</var>, cp(<var>f</var>) &#8290; <var>f</va
 Puede bajar el código fuente del programa actual y del viejo applet de factorización de polinomios <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 22 de julio de 2019.</p>
+<p>Escrito por Dario Alpern. Actualizado el 10 de agosto de 2019.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>
@@ -564,7 +564,7 @@ e.postMessage(d):e.postMessage([d,k])}function l(d){d=1+d+(a("sup").checked?4:0)
 e+","+d+","+m+String.fromCharCode(0)+c+String.fromCharCode(0),p())}function n(){a("main").style.display="block";a("feedback").style.display="none";a("poly").focus()}var e=0,f,k=0,h="undefined"===typeof WebAssembly;window.onload=function(){a("stop").disabled=!0;a("eval").onclick=function(){l(2)};a("factor").onclick=function(){l(0)};a("stop").onclick=function(){e.terminate();e=0;a("eval").disabled=!1;a("factor").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Factorizaci\u00f3n detenida por el usuario.</p>"};
 a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("poly").oninput=function(){var c=a("poly"),b=c.value.length-c.selectionStart;c.value=c.value.replace(".","x^");setTimeout(function(){b=c.value.length-b;c.selectionStart=b;c.selectionEnd=b},30)};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){n()};a("formsend").onclick=
 function(){a("userdata").value=a("adduserdata").checked?a("poly").value+" (mod "+a("mod").value+")":"";var c=new XMLHttpRequest;c.onreadystatechange=function(){4==c.readyState&&(200==c.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),n())};c.open("POST","/enviomail.php",!0);c.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var b=a("formfeedback").elements,d="",e=0,g=0;g<b.length;g++){var f=b[g];"radio"==f.type&&0==f.checked||
-!f.name||(e&&(d+="&"),d+=f.name+"="+encodeURIComponent(f.value),e++)}c.send(d);return!1};var d=document.querySelectorAll("h2"),b;for(b=0;b<d.length;b++)d[b].addEventListener("click",function(){this.children[0].classList.toggle("active");var a=this.nextElementSibling;a.style.display="block"===a.style.display?"none":"block"});"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var g=new XMLHttpRequest;g.open("GET",h?"polfactW0014.js":"polfact0014.wasm",
+!f.name||(e&&(d+="&"),d+=f.name+"="+encodeURIComponent(f.value),e++)}c.send(d);return!1};var d=document.querySelectorAll("h2"),b;for(b=0;b<d.length;b++)d[b].addEventListener("click",function(){this.children[0].classList.toggle("active");var a=this.nextElementSibling;a.style.display="block"===a.style.display?"none":"block"});"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var g=new XMLHttpRequest;g.open("GET",h?"polfactW0015.js":"polfact0015.wasm",
 !0);g.responseType="arraybuffer";g.onreadystatechange=function(){4==g.readyState&&200==g.status&&(k=g.response)};g.send(null)})(this);
 //-->
 </script>

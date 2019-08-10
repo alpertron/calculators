@@ -219,7 +219,7 @@ Contact
 <p>
 You can download the source code of this program from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 22 July 2019.</p>
+<p>Written by Dario Alpern. Last updated 10 August 2019.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>
@@ -285,7 +285,7 @@ You can download the source code of this program from <a href="https://github.co
 13==b.which)&&0<e.value.trim().length&&(b.preventDefault(),c.focus(),c.setSelectionRange(0,c.value.length))}function r(){a("main").style.display="block";a("feedback").style.display="none";a("coefA").focus()}var k=0,m,p=0;window.onload=function(){a("export").onclick=function(){n(0)};a("pretty").onclick=function(){n(2)};a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("coefA").onkeypress=function(a){f(a,this,"coefB")};a("coefB").onkeypress=function(a){f(a,
 this,"coefC")};a("coefC").onkeypress=function(a){f(a,this,"coefD")};a("coefD").onkeypress=function(a){f(a,this,"coefE")};a("coefE").onkeypress=function(a){f(a,this,"coefF")};a("coefF").onkeypress=function(b){(10==b.which||13==b.which)&&0<this.value.trim().length&&(b.preventDefault(),a("coefA").focus(),n(2))};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){r()};
 a("formsend").onclick=function(){var b=a("userdata");a("adduserdata").checked?b.value="ax^5 + bx^4 + cx^3 + dx^2 + ex + f = 0\na = "+a("coefA").value.trim()+"\nb = "+a("coefB").value.trim()+"\nc = "+a("coefC").value.trim()+"\nd = "+a("coefD").value.trim()+"\ne = "+a("coefE").value.trim()+"\nf = "+a("coefF").value.trim():b.value="";var e=new XMLHttpRequest;e.onreadystatechange=function(){4==e.readyState&&(200==e.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),r())};
-e.open("POST","/sendmail.php",!0);e.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var b=a("formfeedback").elements,c="",d=0,f=0;f<b.length;f++){var g=b[f];"radio"==g.type&&0==g.checked||!g.name||(d&&(c+="&"),c+=g.name+"="+encodeURIComponent(g.value),d++)}e.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var d=new XMLHttpRequest;d.open("GET","rootseqW0014.js",!0);d.responseType="arraybuffer";d.onreadystatechange=
+e.open("POST","/sendmail.php",!0);e.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var b=a("formfeedback").elements,c="",d=0,f=0;f<b.length;f++){var g=b[f];"radio"==g.type&&0==g.checked||!g.name||(d&&(c+="&"),c+=g.name+"="+encodeURIComponent(g.value),d++)}e.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var d=new XMLHttpRequest;d.open("GET","rootseqW0015.js",!0);d.responseType="arraybuffer";d.onreadystatechange=
 function(){4==d.readyState&&200==d.status&&(p=d.response)};d.send(null)})(this);
 //-->
 </script>
