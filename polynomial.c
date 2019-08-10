@@ -653,15 +653,15 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
     {    // Optimization for the case when there is only one limb.
       int modulus = TestNbr[0].x;
       int sum = 0;
-#ifdef _USING64BITS_
-      uint64_t dSum = 0;
-#else
-      double dSum = 0;
-#endif
       ptrFactor1++;
       ptrFactor2++;
       if (modulus < 32768)
       {
+#ifdef _USING64BITS_
+        uint64_t dSum = 0;
+#else
+        double dSum = 0;
+#endif
         for (; j >= 3; j-=4)
         {
 #ifdef _USING64BITS_
@@ -763,7 +763,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
   int halfLength;
   int diffIndex = 2 * nbrLen;
   static struct stKaratsubaStack *pstKaratsubaStack = astKaratsubaStack;
-  int coeff[MAX_LEN];
+  static int coeff[MAX_LEN];
   int stage = 0;
   // Save current parameters in stack.
   pstKaratsubaStack->idxFactor1 = idxFactor1;
@@ -1039,12 +1039,12 @@ static void MultIntegerPolynomial(int degree1, int degree2,
 {
   int indexes[2][MAX_DEGREE];
   int *ptrIndex, *piTemp;
-  int degree, tmp, index, degreeF2;
+  int currentDegree, index, degreeF2;
   int *piDest;
   
   if (degree1 < degree2)
   {       // Force degree1 >= degree2.
-    tmp = degree1;
+    int tmp = degree1;
     degree1 = degree2;
     degree2 = tmp;
     piTemp = factor1;
@@ -1054,26 +1054,26 @@ static void MultIntegerPolynomial(int degree1, int degree2,
   // Fill indexes to start of each coefficient.
   ptrIndex = &indexes[0][0];
   index = 0;
-  for (degree = 0; degree <= degree1; degree++)
+  for (currentDegree = 0; currentDegree <= degree1; currentDegree++)
   {
     *ptrIndex++ = index;
     index += numLimbs(factor1 + index) + 1;
   }
   ptrIndex = &indexes[1][0];
   index = 0;
-  for (degree = 0; degree <= degree2; degree++)
+  for (currentDegree = 0; currentDegree <= degree2; currentDegree++)
   {
     *ptrIndex++ = index;
     index += numLimbs(factor2 + index) + 1;
   }
   piDest = polyMultTemp;
-  for (degree = 0; degree < degree2; degree++)
+  for (currentDegree = 0; currentDegree < degree2; currentDegree++)
   {
     intToBigInteger(&operand4, 0);
-    for (degreeF2 = 0; degreeF2 <= degree; degreeF2++)
+    for (degreeF2 = 0; degreeF2 <= currentDegree; degreeF2++)
     {
       UncompressBigIntegerB(factor2 + indexes[1][degreeF2], &operand1);
-      UncompressBigIntegerB(factor1 + indexes[0][degree - degreeF2], &operand2);
+      UncompressBigIntegerB(factor1 + indexes[0][currentDegree - degreeF2], &operand2);
       BigIntMultiply(&operand1, &operand2, &operand3);
       BigIntAdd(&operand4, &operand3, &operand4);
       NumberLength = operand4.nbrLimbs;
@@ -1081,13 +1081,13 @@ static void MultIntegerPolynomial(int degree1, int degree2,
     CompressBigInteger(piDest, &operand4);
     piDest += 1 + numLimbs(piDest);
   }
-  for (; degree <= degree1; degree++)
+  for (; currentDegree <= degree1; currentDegree++)
   {
     intToBigInteger(&operand4, 0);
     for (degreeF2 = 0; degreeF2 <= degree2; degreeF2++)
     {
       UncompressBigIntegerB(factor2 + indexes[1][degreeF2], &operand1);
-      UncompressBigIntegerB(factor1 + indexes[0][degree - degreeF2], &operand2);
+      UncompressBigIntegerB(factor1 + indexes[0][currentDegree - degreeF2], &operand2);
       BigIntMultiply(&operand1, &operand2, &operand3);
       BigIntAdd(&operand4, &operand3, &operand4);
       NumberLength = operand4.nbrLimbs;
@@ -1095,13 +1095,13 @@ static void MultIntegerPolynomial(int degree1, int degree2,
     CompressBigInteger(piDest, &operand4);
     piDest += 1 + numLimbs(piDest);
   }
-  for (; degree <= degree1 + degree2; degree++)
+  for (; currentDegree <= degree1 + degree2; currentDegree++)
   {
     intToBigInteger(&operand4, 0);
-    for (degreeF2 = degree - degree1; degreeF2 <= degree2; degreeF2++)
+    for (degreeF2 = currentDegree - degree1; degreeF2 <= degree2; degreeF2++)
     {
       UncompressBigIntegerB(factor2 + indexes[1][degreeF2], &operand1);
-      UncompressBigIntegerB(factor1 + indexes[0][degree - degreeF2], &operand2);
+      UncompressBigIntegerB(factor1 + indexes[0][currentDegree - degreeF2], &operand2);
       BigIntMultiply(&operand1, &operand2, &operand3);
       BigIntAdd(&operand4, &operand3, &operand4);
       NumberLength = operand4.nbrLimbs;
@@ -1114,7 +1114,7 @@ static void MultIntegerPolynomial(int degree1, int degree2,
 // Multiply factor1 by factor2. The result will be stored in polyMultTemp.
 void MultPolynomial(int degree1, int degree2, /*@in@*/int *factor1, /*@in@*/int *factor2)
 {
-  int karatDegree;
+  int currentDegree;
   int *ptrValue1;
   if (modulusIsZero)
   {
@@ -1123,22 +1123,21 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int *factor1, /*@in@*/int 
   }
   int nbrLimbs = NumberLength + 1;
   // Find the least power of 2 greater or equal than the maximum of factor1 and factor2.
-  int degree = (degree1 > degree2? degree1: degree2) + 1;
+  int karatDegree = (degree1 > degree2? degree1: degree2) + 1;
   // Compute length of numbers for each recursion.
-  if (degree > KARATSUBA_POLY_CUTOFF)
+  if (karatDegree > KARATSUBA_POLY_CUTOFF)
   {
     int div = 1;
-    while (degree > KARATSUBA_POLY_CUTOFF)
+    while (karatDegree > KARATSUBA_POLY_CUTOFF)
     {
       div *= 2;
-      degree = (degree + 1) / 2;
+      karatDegree = (karatDegree + 1) / 2;
     }
-    degree *= div;
+    karatDegree *= div;
   }
-  karatDegree = degree;
   // Initialize Karatsuba polynomial.
   ptrValue1 = polyMultTemp;
-  for (degree = 2 * karatDegree; degree > 0; degree--)
+  for (currentDegree = 2 * karatDegree; currentDegree > 0; currentDegree--)
   {
     *ptrValue1 = 1;        // Initialize coefficient to zero.
     *(ptrValue1 + 1) = 0;
@@ -1151,12 +1150,12 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int *factor1, /*@in@*/int 
 
 int *CopyPolyProduct(int *ptrSrc, int *ptrDest, int degree)
 {
-  int currentDegree, nbrLength;
+  int currentDegree;
   int *ptrValue1 = ptrSrc;
   int *ptrValue2 = ptrDest;
   for (currentDegree = 0; currentDegree <= degree; currentDegree++)
   {
-    nbrLength = 1 + numLimbs(ptrValue1);
+    int nbrLength = 1 + numLimbs(ptrValue1);
     memcpy(ptrValue2, ptrValue1, nbrLength * sizeof(int));
     ptrValue1 += nbrLength;
     ptrValue2 += nbrLength;
@@ -1386,7 +1385,7 @@ int DivideIntegerPolynomial(int *pDividend, int *pDivisor, enum eDivType type)
   int degreeDividend;
   int degreeDivisor;
   int degreeQuotient;
-  int *ptrDividend, *ptrDivisor, *ptrQuotient, *ptrRemainder;
+  int* ptrQuotient;
   // Move arguments to temporary storage with most significant coefficient
   // first.
   ReversePolynomial(poly1, pDividend);
@@ -1398,9 +1397,9 @@ int DivideIntegerPolynomial(int *pDividend, int *pDivisor, enum eDivType type)
   for (degreeQuotient = degreeDividend - degreeDivisor;
     degreeQuotient >= 0; degreeQuotient--)
   {
-    ptrDividend = &poly1[1];
-    ptrDivisor = &poly2[1];
-    ptrRemainder = &poly4[1];
+    int *ptrDividend = &poly1[1];
+    int *ptrDivisor = &poly2[1];
+    int *ptrRemainder = &poly4[1];
     UncompressBigIntegerB(ptrDividend, &operand1);
     UncompressBigIntegerB(ptrDivisor, &operand2);
     BigIntRemainder(&operand1, &operand2, &operand3);
@@ -2015,13 +2014,13 @@ void ConvertToMonic(int *poly, int polyDegree)
 // The content is the GCD of all coefficients with the sign equal to the sign of the leading coefficient.
 int *getContent(int *poly, BigInteger *content)
 {
-  int degree = *poly++;
-  if (degree < 0)
+  int currentDegree = *poly++;
+  if (currentDegree < 0)
   {
-    degree = 0;    // Monomial: process only one coefficient.
+    currentDegree = 0;    // Monomial: process only one coefficient.
   }
   UncompressBigIntegerB(poly, content);
-  for (; degree > 0; degree--)
+  for (; currentDegree > 0; currentDegree--)
   {
     poly += 1 + numLimbs(poly);
     UncompressBigIntegerB(poly, &operand1);
@@ -2035,11 +2034,11 @@ int *getContent(int *poly, BigInteger *content)
 // Get polynomial divided content mod prime.
 int getModPolynomial(int *polyMod, int *poly, BigInteger *content)
 {
-  int degree;
+  int currentDegree;
   int degreePoly = *poly++;
   if (degreePoly < 0)
   {     // Monomial.
-    for (degree = degreePoly; degree < 0; degree++)
+    for (currentDegree = degreePoly; currentDegree < 0; currentDegree++)
     {
       *polyMod++ = 1;       // Initialize coefficient to zero.
       *polyMod++ = 0;
@@ -2055,7 +2054,7 @@ int getModPolynomial(int *polyMod, int *poly, BigInteger *content)
     CompressBigInteger(polyMod, &operand1);
     return -degreePoly;
   }
-  for (degree = 0; degree <= degreePoly; degree++)
+  for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
   {
     NumberLength = *poly;
     UncompressBigInteger(poly, &operand1);  // Get coefficient.
@@ -2160,8 +2159,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
     }
     else
     {                                // Perform Chinese Remainder Theorem between g_p and g_m.
-      int coeffModPrime, invModPrime;
-      int valueR, gcdLCModPrime;
+      int gcdLCModPrime;
       // coeff = c = a (mod p), c = b (mod q) => c = jq + b
       // a = jq + b (mod p) => j = (a-b)/q = r (mod p)
       // j = pk + r => c = (pk + r)q + b = pqk + rq + b => c = rq + b (mod pq).
@@ -2171,7 +2169,9 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
       gcdLCModPrime = getRemainder(&gcdLeadingCoeff, prime);
       for (degree = 0; degree <= potentialDegreeGcd; degree++)
       {
-        coeffModPrime = *(ptrSrc + 1);
+        int valueR;
+        int invModPrime;
+        int coeffModPrime = *(ptrSrc + 1);
         coeffModPrime = (int)(((int64_t)coeffModPrime*gcdLCModPrime)%prime);
         UncompressBigIntegerB(ptrPrev, &operand1);
         valueR = coeffModPrime - getRemainder(&operand1, prime);
@@ -2375,15 +2375,15 @@ void PolyModularGcd(int *arg1, int degree1, int *arg2, int degree2, int *gcd, in
 
 static int GcdPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
 {
-  int degree1, degree2, degreeGcd;
+  int degreeGcd;
   if (modulusIsZero)
   {    // Integer GCD polynomial.
     PolynomialGcd(ptrArgument1, ptrArgument2, ptrArgument1);
   }
   else
   {    // Modular GCD polynomial.
-    degree1 = *ptrArgument1;
-    degree2 = *ptrArgument2;
+    int degree1 = *ptrArgument1;
+    int degree2 = *ptrArgument2;
     PolyModularGcd(ptrArgument1+1, degree1, ptrArgument2 + 1, degree2,
       poly5, &degreeGcd);
     CopyPolynomial(ptrArgument1 + 1, poly5, degreeGcd);
@@ -2557,7 +2557,7 @@ void DividePolynomial(/*@in@*/int *pDividend, int dividendDegree,
 // polyInv = x^(2*polyDegree) / polymod
 void GetPolyInvParm(int polyDegree, /*@in@*/int *polyMod)
 {
-  int *ptrCoeff, *ptrCoeff2;
+  int* ptrCoeff;
   int deg, outerDeg;
   int nbrLimbs = NumberLength + 1;
   // Point to leading coefficient of polyMod.
@@ -2580,6 +2580,7 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int *polyMod)
   SetNumberToOne(&poly4[nbrLimbs*polyDegree]);
   for (outerDeg = 1; outerDeg < polyDegree; outerDeg *= 2)
   {  // Use poly5 as temporary polynomial
+    int* ptrCoeff2;
     MultPolynomial(polyDegree, polyDegree, polyInv, poly4);
     ptrCoeff = poly5;
     ptrCoeff2 = &polyMultTemp[polyDegree*nbrLimbs];
@@ -3422,7 +3423,7 @@ static void showPower(char **pptrOutput, int exponent)
   *pptrOutput = ptrOutput;
 }
 
-static void showPowerX(char **pptrOutput, int polyDegree)
+void showPowerX(char **pptrOutput, int polyDegree)
 {
   char *ptrOutput = *pptrOutput;
   if (polyDegree == 0)
@@ -3443,10 +3444,8 @@ static void showPowerX(char **pptrOutput, int polyDegree)
 static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int groupLength)
 {
   int nbrLimbs = NumberLength + 1;
-  int *ptrValue1;
   int currentDegree;
   char *ptrOutput = *pptrOutput;
-  int index;
   int *ptrIndex;
   int indexes[MAX_DEGREE];
 
@@ -3454,7 +3453,7 @@ static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int 
   if (modulusIsZero)
   {
     // Fill indexes to start of each coefficient.
-    index = 0;
+    int index = 0;
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
       *ptrIndex++ = index;
@@ -3472,7 +3471,7 @@ static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int 
   }
   for (currentDegree = polyDegree - 1; currentDegree >= 0; currentDegree--)
   {
-    ptrValue1 = ptrPoly + indexes[currentDegree];
+    int* ptrValue1 = ptrPoly + indexes[currentDegree];
     int len = numLimbs(ptrValue1);
     if (len != 1 || *(ptrValue1 + 1) != 0)
     {            // Coefficient is not zero.
@@ -3511,15 +3510,14 @@ static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int 
 
 void outputOriginalPolynomial(char* ptrOutput, int groupLength)
 {
-  struct sFactorInfo* pstFactorInfo;
   int currentDegree;
-  int* ptrValue1, * ptrValue2;
+  int* ptrValue1;
   int nbrLimbs = powerMod.nbrLimbs + 1;
   degree = values[0];
   ptrValue1 = &values[1];
   if (!modulusIsZero)
   {
-    pstFactorInfo = factorInfo;
+    int* ptrValue2;
     // Output polynomial to factor. First move polynomial to poly4
     ptrValue2 = &poly4[0];
     for (currentDegree = 0; currentDegree <= degree; currentDegree++)
@@ -3533,7 +3531,6 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
   }
   else
   { // Find leading coefficient.
-    pstFactorInfo = factorInfoInteger;
     for (currentDegree = 0; currentDegree < degree; currentDegree++)
     {
       ptrValue1 += 1 + numLimbs(ptrValue1);
@@ -3572,7 +3569,6 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
 
 void outputPolynomialFactor(char *ptrOutput, int groupLength, struct sFactorInfo* pstFactorInfo)
 {
-  int currentDegree;
   int polyDegree = pstFactorInfo->degree;
   int multiplicity = pstFactorInfo->multiplicity;
   int isMonomial = (polyDegree == 1 && *pstFactorInfo->ptrPolyLifted == 1 &&
@@ -3583,6 +3579,7 @@ void outputPolynomialFactor(char *ptrOutput, int groupLength, struct sFactorInfo
   }
   if (modulusIsZero)
   {
+    int currentDegree;
     // Get leading coefficient.
     int *ptrSrc = pstFactorInfo->ptrPolyLifted;
     for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)

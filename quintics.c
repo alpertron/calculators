@@ -4007,15 +4007,14 @@ static void FactorPolynomialF20(void)
 static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
 {
   struct monomial* pstMonomial = *ppstMonomial;
-  int exponents;
   int ctr;
   intToBigInteger(&rat->numerator, 0);
   intToBigInteger(&rat->denominator, 1);
   while (pstMonomial->coefficient != 0)
   {
+    int exponents = pstMonomial->exponents;
     intToBigInteger(&Rat1.numerator, 1);
     intToBigInteger(&Rat1.denominator, 1);
-    exponents = pstMonomial->exponents;
     for (ctr = 4; ctr >= 0; ctr--)
     {
       BigRationalMultiply(&Rat1, &Rat1, &Rat1);
@@ -4555,7 +4554,6 @@ static void showRn(int groupOrder)
 
 static void GaloisGroupHasOrder20(int multiplicity)
 {
-  int ctr;
   CopyBigInt(&Rat1.numerator, &RatDiscr.numerator);
   CopyBigInt(&Rat1.denominator, &RatDiscr.denominator);
   MultiplyRationalBySqrtRational(&RatN, &Rat1);
@@ -4594,6 +4592,7 @@ static void GaloisGroupHasOrder20(int multiplicity)
     // Third  +/-: if O > 0: plus for R_1 and R_3, minus for R_2 and R_4.
     //             if O < 0: plus for R_1 and R_2, minus for R_3 and R_4.
 
+    int ctr;
     for (ctr = 1; ctr <= 4; ctr++)
     {
       showText("<li><var>R</var><sub>");

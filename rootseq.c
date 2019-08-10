@@ -574,7 +574,7 @@ static void showFirstTermQuarticEq(int ctr)
 
 static void biquadraticEquation(int multiplicity)
 {
-  int isSquareRoot1, isSquareRoot2, ctr;
+  int ctr;
   // For biquadratic equation, the depressed independent term equals the independent term (r = e).
 
   // Solutions are x = +/- sqrt((sqrt(r)-p/2)/2) +/- sqrt((-sqrt(r)-p/2)/2)
@@ -584,6 +584,7 @@ static void biquadraticEquation(int multiplicity)
   {           // e is a perfect square. Rat3 = sqrt(r).
     for (ctr = 0; ctr < 4; ctr++)
     {
+      int isSquareRoot1, isSquareRoot2;
       showX(multiplicity);
       BigRationalSubt(&Rat3, &RatDeprQuadratic, &Rat1);
       BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat2);
@@ -667,13 +668,13 @@ static void biquadraticEquation(int multiplicity)
     MultiplyRationalBySqrtRational(&Rat1, &Rat2);
     for (ctr = 0; ctr < 4; ctr++)
     {
-      int ctr2;
       int sign = RatDeprQuadratic.numerator.sign;
       RatDeprQuadratic.numerator.sign = SIGN_POSITIVE;
       showX(multiplicity);
       showFirstTermQuarticEq(ctr);
       if (RatDiscr.numerator.sign == SIGN_NEGATIVE)
       {  // x = +/- sqrt((sqrt(e) - c) / 2) +/- i * sqrt((sqrt(e) + c) / 2)
+        int ctr2;
         for (ctr2 = 0; ctr2 < 2; ctr2++)
         {
           if (ctr2 == 1)
@@ -793,7 +794,6 @@ static void showSquareRootOfComplex(char* plus, char* minus)
 
 static void FerrariResolventHasRationalRoot(int multiplicity)
 {
-  enum eSign sign1;
   int ctr;
   int* ptrValues = factorInfoInteger[0].ptrPolyLifted;
   UncompressBigIntegerB(ptrValues, &RatS.numerator);
@@ -814,7 +814,6 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
   CopyBigInt(&Rat2.numerator, &RatS.denominator);
   CopyBigInt(&Rat2.denominator, &RatS.numerator);
   MultiplyRationalBySqrtRational(&Rat1, &Rat2);          // q/S
-  sign1 = RatDeprLinear.numerator.sign;
   RatDeprLinear.numerator.sign = SIGN_POSITIVE;
   for (ctr = 0; ctr < 4; ctr++)
   {
@@ -1137,7 +1136,10 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
     BigRationalDivideByInt(&RatDelta0, 3, &Rat1);
     ForceDenominatorPositive(&Rat1);
     showPlusSignOn(Rat1.numerator.sign == SIGN_POSITIVE, TYPE_PM_SPACE_AFTER);
-    showRationalOverStr(&Rat1, pretty, "Q");
+    CopyBigInt(&Rat2.numerator, &Rat1.numerator);
+    CopyBigInt(&Rat2.denominator, &Rat1.denominator);
+    Rat2.numerator.sign = SIGN_POSITIVE;
+    showRationalOverStr(&Rat2, pretty, "Q");
     endSqrt();
     showText("</li>");
     sign1 = RatDeprLinear.numerator.sign;
@@ -1256,7 +1258,7 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
     Rat1.numerator.sign = SIGN_POSITIVE;
     CopyBigInt(&Rat2.numerator, &RatDeprLinear.numerator);
     CopyBigInt(&Rat2.denominator, &RatDeprLinear.denominator);
-    sign2 = Rat1.numerator.sign;
+    sign2 = Rat2.numerator.sign;
     Rat2.numerator.sign = SIGN_POSITIVE;
     isImaginary = RatDeprQuadratic.numerator.sign == SIGN_POSITIVE ||
       RatD.numerator.sign == SIGN_POSITIVE;
@@ -1316,14 +1318,77 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
   }
 }
 
+static void showPoly(int polyDegree, int *ptrPoly)
+{
+  int currentDegree;
+  int* ptrSrc = ptrPoly;
+  // Get leading coefficient.
+  for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
+  {
+    ptrSrc += 1 + numLimbs(ptrSrc);
+  }
+  UncompressBigIntegerB(ptrSrc, &operand1);
+  if (operand1.sign == SIGN_NEGATIVE)
+  {
+    strcpy(ptrOutput, ptrMinus);
+    ptrOutput += strlen(ptrOutput);
+  }
+  if (operand1.nbrLimbs != 1 || operand1.limbs[0].x != 1)
+  {     // Absolute value is not 1.
+    Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLen);
+    ptrOutput += strlen(ptrOutput);
+    showText(ptrTimes);
+  }
+  showPowerX(&ptrOutput, polyDegree);
+  int nbrLimbs = NumberLength + 1;
+  int* ptrIndex;
+  int indexes[MAX_DEGREE];
+  int index = 0;
+
+  ptrIndex = &indexes[0];
+    // Fill indexes to start of each coefficient.
+  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+  {
+    *ptrIndex++ = index;
+    index += numLimbs(ptrPoly + index) + 1;
+  }
+  for (currentDegree = polyDegree - 1; currentDegree >= 0; currentDegree--)
+  {
+    int* ptrValue1 = ptrPoly + indexes[currentDegree];
+    int len = numLimbs(ptrValue1);
+    if (len != 1 || *(ptrValue1 + 1) != 0)
+    {            // Coefficient is not zero.
+      showPlusSignOn(*ptrValue1 > 0, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      if (len != 1 || *(ptrValue1 + 1) != 1)
+      {            // Absolute value of coefficient is not one.
+        NumberLength = numLimbs(ptrValue1);
+        UncompressBigInteger(ptrValue1, &operand1);
+        operand1.sign = SIGN_POSITIVE;
+        Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLen);
+        ptrOutput += strlen(ptrOutput);
+        if (currentDegree > 0)
+        {
+          showText(ptrTimes);
+          showPowerX(&ptrOutput, currentDegree);
+        }
+      }
+      else
+      {
+        showPowerX(&ptrOutput, currentDegree);
+      }
+    }
+    ptrValue1 -= nbrLimbs;
+  }
+  *ptrOutput = 0;    // Append string terminator.
+}
+
 void rootsEqText(char* coefAText, char* coefBText, char* coefCText,
   char* coefDText, char* coefEText, char* coefFText)
 {
-  int coeffNbr, nbrFactor;
-  int* ptrValues;
+  int coeffNbr;
   enum eExprErr rc;
   struct stValidateCoeff* pstValidateCoeff = astValidateCoeff;
-  struct sFactorInfo* pstFactorInfo;
+  superscripts = pretty;
   if (pretty)
   {
     ptrMinus = "&minus;";
@@ -1360,6 +1425,9 @@ void rootsEqText(char* coefAText, char* coefBText, char* coefCText,
   }
   if (coeffNbr == NBR_COEFF)
   {
+    int nbrFactor;
+    int* ptrValues;
+    struct sFactorInfo* pstFactorInfo;
     // Send to "values" array all coefficients.
     values[0] = 5;
     if (BigIntIsZero(&Quintic))
@@ -1403,7 +1471,7 @@ void rootsEqText(char* coefAText, char* coefBText, char* coefCText,
     FactorPolyOverIntegers();
     ptrOutput = output;
     showText("2<p><h2>");
-    outputOriginalPolynomial(ptrOutput, groupLen);
+    showPoly(values[0], &values[1]);
     ptrOutput += strlen(ptrOutput);
     showText(" = 0</h2>");
     indexRoot = 1;
@@ -1414,12 +1482,17 @@ void rootsEqText(char* coefAText, char* coefBText, char* coefCText,
       for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
       {
         *ptrOutput++ = '(';
-        outputPolynomialFactor(ptrOutput, groupLen, pstFactorInfo);
+        showPoly(pstFactorInfo->degree, pstFactorInfo->ptrPolyLifted);
         ptrOutput += strlen(ptrOutput);
         *ptrOutput++ = ')';
         if (nbrFactor < nbrFactorsFound - 1)
         {
-          showText(" &#8290;");
+          *ptrOutput++ = ' ';
+          showText(ptrTimes);
+          if (!pretty)
+          {
+            *ptrOutput++ = ' ';
+          }
         }
         pstFactorInfo++;
       }

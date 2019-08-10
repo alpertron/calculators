@@ -512,19 +512,16 @@ static void InsertIntegerPolynomialFactor(int *ptrFactor, int degreePoly)
 // Output: factorInfo = structure that holds the factors.
 int FactorPolyOverIntegers(void)
 {
-  int degree = values[0];
+  int degreePolyToFactor = values[0];
   int degree1, degree2, rc;
-  int prime;
   int primeRecord = 0;
   int exponRecord = 0;
   int expon, maxDegreeFactor;
   int degreeGcdMod;
   int *ptrSrc, *ptrDest;
   int attemptNbr;
-  int nbrFactorsRecord;
-  int halfDegree;
   int currentFactor;
-  int currentDegree, sumOfDegrees;
+  int currentDegree;
   int polXprocessed = FALSE;
   int nbrTmp[1000], nbrTmp2[1000], nbrTmp3[1000];
   int *ptrFactorIntegerBak;
@@ -534,15 +531,15 @@ int FactorPolyOverIntegers(void)
   modulusIsZero = 1;
   memset(factorInfoInteger, 0, sizeof(factorInfoInteger));
   getContent(values, &contentPolyToFactor);
-  CopyPolynomial(&origPolyToFactor[1], &values[1], degree);
-  origPolyToFactor[0] = degree;
+  CopyPolynomial(&origPolyToFactor[1], &values[1], degreePolyToFactor);
+  origPolyToFactor[0] = degreePolyToFactor;
   // polyToFactor -> original polynomial / content of polynomial.
   // Let n the degree of the least coefficient different from zero.
   // Then x^n divides the polynomial.
-  polyToFactor[0] = degree;
+  polyToFactor[0] = degreePolyToFactor;
   ptrSrc = &origPolyToFactor[1];
   ptrDest = &polyToFactor[1];
-  for (currentDegree = 0; currentDegree <= degree; currentDegree++)
+  for (currentDegree = 0; currentDegree <= degreePolyToFactor; currentDegree++)
   {
     UncompressBigIntegerB(ptrSrc, &operand1);
     if (polXprocessed == FALSE)
@@ -560,7 +557,7 @@ int FactorPolyOverIntegers(void)
         pstFactorInfoInteger->multiplicity = currentDegree;
         pstFactorInfoInteger->ptrPolyLifted = factorX;
         pstFactorInfoInteger++;
-        polyToFactor[0] = degree - currentDegree;
+        polyToFactor[0] = degreePolyToFactor - currentDegree;
       }
       polXprocessed = TRUE;      
     }
@@ -574,11 +571,15 @@ int FactorPolyOverIntegers(void)
   {    // At least degree 1.
        // The trailing coefficient of factors must divide the product of the trailing and leading
        // coefficients of the original polynomial.
-       // Get trailing coefficient.
+    int halfDegree;
+    int nbrFactorsRecord;
+    int prime;
+    int sumOfDegrees;
+    // Get trailing coefficient.
     ptrSrc = &values[1];
     UncompressBigIntegerB(ptrSrc, &operand1);
        // Get leading coefficient.
-    for (degree1 = 0; degree1 < degree; degree1++)
+    for (degree1 = 0; degree1 < degreePolyToFactor; degree1++)
     {
       ptrSrc += 1 + numLimbs(ptrSrc);
     }
@@ -586,13 +587,13 @@ int FactorPolyOverIntegers(void)
     BigIntMultiply(&operand1, &operand2, &trailingCoeff);
     // Compute F/gcd(F, F') where F is the polynomial to factor.
     // In the next loop we will attempt to factor gcd(F, F').
-    degree = polyToFactor[0];
-    CopyPolynomial(&polyNonRepeatedFactors[1], &polyToFactor[1], degree);
-    CopyPolynomial(&tempPoly[1], &polyToFactor[1], degree);
-    tempPoly[0] = degree;
+    degreePolyToFactor = polyToFactor[0];
+    CopyPolynomial(&polyNonRepeatedFactors[1], &polyToFactor[1], degreePolyToFactor);
+    CopyPolynomial(&tempPoly[1], &polyToFactor[1], degreePolyToFactor);
+    tempPoly[0] = degreePolyToFactor;
     DerPolynomial(tempPoly);
     PolynomialGcd(tempPoly, polyToFactor, polyToFactor);
-    polyNonRepeatedFactors[0] = degree;
+    polyNonRepeatedFactors[0] = degreePolyToFactor;
     DivideIntegerPolynomial(polyNonRepeatedFactors, polyToFactor, TYPE_DIVISION);
     prime = 3;
         // Find Knuth-Cohen bound for coefficients of polynomial factors:
@@ -602,20 +603,20 @@ int FactorPolyOverIntegers(void)
         // Maximum degree to be considered is n = ceil(m/2).
         // We need to find max(Bj).
     modulusIsZero = 1;
-    degree = polyNonRepeatedFactors[0];
+    degreePolyToFactor = polyNonRepeatedFactors[0];
     ptrSrc = &polyNonRepeatedFactors[1];
     UncompressBigIntegerB(ptrSrc, &operand1);
-    if (degree < 0)
+    if (degreePolyToFactor < 0)
     {      // Monomial.
-      maxDegreeFactor = (-degree + 1) / 2;
+      maxDegreeFactor = (-degreePolyToFactor + 1) / 2;
       operand1.sign = SIGN_POSITIVE;
       CopyBigInt(&operand3, &operand1);         // Get leading coefficient.
     }
     else
     {      // Polynomial.
-      maxDegreeFactor = (degree + 1) / 2;
+      maxDegreeFactor = (degreePolyToFactor + 1) / 2;
       BigIntMultiply(&operand1, &operand1, &operand1);
-      for (degree1 = 1; degree1 <= degree; degree1++)
+      for (degree1 = 1; degree1 <= degreePolyToFactor; degree1++)
       {
         ptrSrc += 1 + numLimbs(ptrSrc);
         UncompressBigIntegerB(ptrSrc, &operand3);   // The last loop sets operand3 to the leading coefficient.
@@ -659,7 +660,7 @@ int FactorPolyOverIntegers(void)
       int nbrFactors;
       // Get leading coefficient of polyNonRepeatedFactors.
       ptrSrc = &polyNonRepeatedFactors[1];
-      for (degree1 = 0; degree1 < degree; degree1++)
+      for (degree1 = 0; degree1 < degreePolyToFactor; degree1++)
       {
         ptrSrc += 1 + numLimbs(ptrSrc);
       }
@@ -703,12 +704,12 @@ int FactorPolyOverIntegers(void)
       computePower(expon);
       exponentMod = expon;
       intToBigInteger(&operand5, 1);
-      degree = getModPolynomial(&poly1[1], polyNonRepeatedFactors, &operand5);
-      poly1[0] = degree;
+      degreePolyToFactor = getModPolynomial(&poly1[1], polyNonRepeatedFactors, &operand5);
+      poly1[0] = degreePolyToFactor;
       polyBackup[0] = values[0];
       CopyPolynomial(&polyBackup[1], &values[1], values[0] >= 0 ? values[0] : 0);
-      values[0] = degree;
-      CopyPolynomial(&values[1], &poly1[1], degree);
+      values[0] = degreePolyToFactor;
+      CopyPolynomial(&values[1], &poly1[1], degreePolyToFactor);
       memset(factorInfo, 0, sizeof(factorInfo));
       modulusIsZero = 0;
       FactorModularPolynomial(FALSE);   // Input is not in Montgomery notation.
@@ -776,7 +777,7 @@ int FactorPolyOverIntegers(void)
     halfDegree = polyNonRepeatedFactors[0] / 2;
     // Get leading coefficient of polyNonRepeatedFactors.
     ptrSrc = &polyNonRepeatedFactors[1];
-    for (degree1 = 0; degree1 < degree; degree1++)
+    for (degree1 = 0; degree1 < degreePolyToFactor; degree1++)
     {
       ptrSrc += 1 + numLimbs(ptrSrc);
     }
