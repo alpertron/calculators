@@ -275,16 +275,15 @@ static void ComputeThreeSquares(BigInteger *pTmp,
   int arrFactors[400];
   int diff = 1;
   int shRight, shRightPower, count;
-  int prime;
   int expon;
   int *ptrArrFactors;
-  int *ptrArrFactorsBak;
   int sqrtFound, nbrLimbs, i, powerLen, base;
   CopyBigInt(pTmp, &tofactor);
   DivideBigNbrByMaxPowerOf4(&shRight, pTmp->limbs, &pTmp->nbrLimbs);
   for (diff = 1; ; diff++)
   {
-    prime = 2;
+    int prime = 2;
+    int* ptrArrFactorsBak;
     ptrArrFactors = arrFactors;
     intToBigInteger(pTmp1, diff*diff);
     BigIntSubt(pTmp, pTmp1, pTmp2);
@@ -503,7 +502,6 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
     }
     else
     { /* Prime not 2 */
-      int nbrLimbs;
       NumberLength = p.nbrLimbs;
       memcpy(&TestNbr, p.limbs, NumberLength * sizeof(limb));
       TestNbr[NumberLength].x = 0;
@@ -513,6 +511,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
       memset(K.limbs, 0, NumberLength * sizeof(limb));
       if ((p.limbs[0].x & 3) == 1)
       { /* if p = 1 (mod 4) */
+        int nbrLimbs;
         CopyBigInt(&q, &p);
         subtractdivide(&q, 1, 4);     // q = (prime-1)/4
         K.limbs[0].x = 1;
@@ -804,10 +803,6 @@ static void ShowFourSquares(char **pptrOutput)
 
 void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
 {
-#ifdef __EMSCRIPTEN__
-  int64_t sumSquaresModMult;
-  char *ptrText;
-#endif
   char *ptrOutput;
   knownFactors = factors;
   if (valuesProcessed == 0)
@@ -819,8 +814,14 @@ void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
   {
     if (rc == EXPR_OK && doFactorization)
     {
+#ifdef __EMSCRIPTEN__
+      int64_t sumSquaresModMult;
+#endif
       if (tofactor.sign == SIGN_POSITIVE)
       {        // Number to factor is non-negative.
+#ifdef __EMSCRIPTEN__
+        char* ptrText;
+#endif
         if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 0)
         {      // Number to factor is not zero.
           GetNumberOfDivisors(&ptrOutput);

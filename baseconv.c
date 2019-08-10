@@ -179,9 +179,8 @@ void int2hex(char **pOutput, int nbr)
 void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
 {
   int showDigitsText = TRUE;
-  int nbrBits, nbrHexDigits, mask, value;
+  int nbrBits, mask, value;
   int digits = 0;
-  int currentGroupDigit = -1;
 
   if (groupLength <= 0)
   {
@@ -199,6 +198,8 @@ void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
   }
   else
   {
+    int nbrHexDigits;
+    int currentGroupDigit = -1;
     while ((value & mask) == 0)
     {   // Loop that finds the most significant bit.
       mask >>= 1;

@@ -88,7 +88,6 @@ static void initCosinesArray(void)
   for (index=1; ; index++)
   {
     // Get order of least significant non-zero bit.
-    int firstProd[6], secondProd[6];
     int bitNbr;
     int mask = 1;
     for (bitNbr = 0; ; bitNbr++)
@@ -113,6 +112,7 @@ static void initCosinesArray(void)
     }
     else
     {
+      int firstProd[6], secondProd[6];
       // Compute cos(A+B) = cos A cos B - sin A sin B.
       ptrOldCosSin = ptrCosSin - mask;   // Pointer to cos/sin A.
       MultBigNbrComplete(ptrOldCosSin->Cos, ptrCosSinDelta->Cos, firstProd, 2);

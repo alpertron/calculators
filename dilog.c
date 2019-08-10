@@ -805,7 +805,10 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
       rc = EXPR_BASE_MUST_BE_POSITIVE;
     }
   }
-  rc = ComputeExpression(powerText, 1, &power);
+  if (rc == EXPR_OK)
+  {
+    rc = ComputeExpression(powerText, 1, &power);
+  }
   if (rc == EXPR_OK)
   {
     if (power.sign == SIGN_NEGATIVE || (power.nbrLimbs == 1 && base.limbs[0].x == 0))
@@ -813,7 +816,10 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
       rc = EXPR_POWER_MUST_BE_POSITIVE;
     }
   }
-  rc = ComputeExpression(modText, 1, &modulus);
+  if (rc == EXPR_OK)
+  {
+    rc = ComputeExpression(modText, 1, &modulus);
+  }
   if (rc == EXPR_OK)
   {
     if (modulus.sign == SIGN_NEGATIVE || (modulus.nbrLimbs == 1 && modulus.limbs[0].x < 2))

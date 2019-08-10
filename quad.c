@@ -700,8 +700,6 @@ void SolveQuadModEquation(void)
   pstFactor = &astFactorsMod[1];                // Point to first prime factor information.
   for (factorIndex = 0; factorIndex<nbrFactors; factorIndex++)
   {
-    int sol1Invalid = 0;
-    int sol2Invalid = 0;
     expon = pstFactor->multiplicity;            // Get exponent multiplicity.
     if (expon == 0)
     {
@@ -739,9 +737,11 @@ void SolveQuadModEquation(void)
     }
     else
     {                   // Quadratic equation mod prime
+      int sol1Invalid = 0;
+      int sol2Invalid = 0;
       BigInteger squareRoot;
       BigInteger tmp1, tmp2, ValAOdd;
-      int nbrBitsSquareRoot, correctBits, nbrLimbs, bitsAZero, mask, ctr;
+      int nbrBitsSquareRoot, correctBits, nbrLimbs, bitsAZero, ctr;
       int deltaZeros, deltaIsZero = 0;
       // Compute discriminant = ValB^2 - 4*ValA*ValC.
       BigIntMultiply(&coeffLinear, &coeffLinear, &Tmp[0]);
@@ -751,6 +751,7 @@ void SolveQuadModEquation(void)
       CopyBigInt(&ValAOdd, &coeffQuadr);
       if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
       {         /* Prime p is 2 */
+        int mask;
         int bitsBZero = 0, bitsCZero = 0;
         // ax^2 + bx + c = 0 (mod 2^expon)
         // 4 a^2 x^2 + 4bx + 4c = 0 (mod 2^(expon+2+bits_a))
@@ -1075,7 +1076,7 @@ void SolveQuadModEquation(void)
               // Step 6. Find the smallest value of k such that w^(2^k) = 1 (mod p)
               // Step 7. Set d <- y^(2^(r-k-1)) mod p, y <- d^2 mod p, r <- k, v <- dv mod p, w <- wy mod p.
               // Step 8. Go to step 5.
-              int x, e, r, k;
+              int x, e, r;
               // Step 1.
               subtractdivide(&Q, 1, 1);   // Q <- (prime-1).
               DivideBigNbrByMaxPowerOf2(&e, Q.limbs, &Q.nbrLimbs);
@@ -1100,7 +1101,7 @@ void SolveQuadModEquation(void)
               while (memcmp(Tmp[9].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)))
               {
                 // Step 6
-                k = 0;
+                int k = 0;
                 memcpy(Tmp[10].limbs, Tmp[9].limbs, NumberLength * sizeof(limb));
                 do
                 {
@@ -3079,7 +3080,6 @@ static void CheckSolutionSquareDiscr(void)
 static void PerfectSquareDiscriminant(void)
 {
   enum eLinearSolution ret;
-  struct sFactors *pstFactor;
   int index;
   enum eSign signTemp;
 
@@ -3292,6 +3292,7 @@ static void PerfectSquareDiscriminant(void)
   intToBigInteger(&currentFactor, 1);
   for (;;)
   {
+    struct sFactors* pstFactor;
     CheckSolutionSquareDiscr();       // Process positive divisor.
     BigIntChSign(&currentFactor);
     CheckSolutionSquareDiscr();       // Process negative divisor.
@@ -4123,7 +4124,6 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
               char *coefDText, char *coefEText, char *coefFText)
 {
   int coeffNbr;
-  char *ptrBeginSol;
   enum eExprErr rc;
   struct stValidateCoeff *pstValidateCoeff = astValidateCoeff;
   astValidateCoeff[0].expression = coefAText;
@@ -4153,6 +4153,7 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
   }
   if (coeffNbr == NBR_COEFF)
   {
+    char* ptrBeginSol;
     showText("<h2>");
     ShowEq(&ValA, &ValB, &ValC, &ValD, &ValE, &ValF, "x", "y");
     showText(" = 0</h2>");

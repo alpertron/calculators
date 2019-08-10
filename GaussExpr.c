@@ -86,9 +86,9 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
   int c, i, j;
   int exprIndexAux;
   int SubExprResult,len;
-  BigInteger factorial, Tmp;
-  BigInteger *ptrBigInt;
-  BigInteger *ptrRe, *ptrIm;
+  static BigInteger factorialResult, Tmp;
+  static BigInteger *ptrBigInt;
+  static BigInteger *ptrRe, *ptrIm;
   limb carry, largeLen;
   limb *ptrLimb;
   int retcode, shLeft, offset;
@@ -120,25 +120,25 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         return EXPR_INTERM_TOO_HIGH;
       }
       len = (int)stackRealValues[stackIndex].limbs[0].x;
-      factorial.limbs[0].x = 1;
-      factorial.nbrLimbs = 1;
-      factorial.sign = SIGN_POSITIVE;
+      factorialResult.limbs[0].x = 1;
+      factorialResult.nbrLimbs = 1;
+      factorialResult.sign = SIGN_POSITIVE;
       for (i = 2; i <= len; i++)
       {   // Multiply by all integers up to the argument of factorial.
         carry.x = 0;
-        for (j = 0; j < factorial.nbrLimbs; j++)
+        for (j = 0; j < factorialResult.nbrLimbs; j++)
         {
-          carry.x += i*factorial.limbs[j].x;
-          factorial.limbs[j].x = carry.x & MAX_VALUE_LIMB;
+          carry.x += i*factorialResult.limbs[j].x;
+          factorialResult.limbs[j].x = carry.x & MAX_VALUE_LIMB;
           carry.x >>= BITS_PER_GROUP;
         }
         if (carry.x != 0)
         {  // New limb needed.
-          factorial.limbs[j].x = carry.x;
-          factorial.nbrLimbs++;
+          factorialResult.limbs[j].x = carry.x;
+          factorialResult.nbrLimbs++;
         }
       }
-      CopyBigInt(&stackRealValues[stackIndex], &factorial);
+      CopyBigInt(&stackRealValues[stackIndex], &factorialResult);
     }
     else if (charValue == '#')
     {           // Calculating primorial.
@@ -169,9 +169,9 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         return EXPR_INTERM_TOO_HIGH;
       }
       len = (int)largeLen.x;
-      factorial.limbs[0].x = 1;
-      factorial.nbrLimbs = 1;
-      factorial.sign = SIGN_POSITIVE;
+      factorialResult.limbs[0].x = 1;
+      factorialResult.nbrLimbs = 1;
+      factorialResult.sign = SIGN_POSITIVE;
       for (i = 2; i <= len; i++)
       {      // Multiply by prime numbers only.
         for (j = 2; j*j <= i; j++)
@@ -184,20 +184,20 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         if (j*j > i)
         {     // Number is prime, perform multiplication.
           carry.x = 0;
-          for (j = 0; j < factorial.nbrLimbs; j++)
+          for (j = 0; j < factorialResult.nbrLimbs; j++)
           {
-            carry.x += i*factorial.limbs[j].x;
-            factorial.limbs[j].x = carry.x & MAX_VALUE_LIMB;
+            carry.x += i*factorialResult.limbs[j].x;
+            factorialResult.limbs[j].x = carry.x & MAX_VALUE_LIMB;
             carry.x >>= BITS_PER_GROUP;
           }
           if (carry.x != 0)
           {  // New limb needed.
-            factorial.limbs[j].x = carry.x;
-            factorial.nbrLimbs++;
+            factorialResult.limbs[j].x = carry.x;
+            factorialResult.nbrLimbs++;
           }
         }
       }
-      CopyBigInt(&stackRealValues[stackIndex], &factorial);
+      CopyBigInt(&stackRealValues[stackIndex], &factorialResult);
     }
     else if ((retcode = func(expr, ExpressionResult,
                              "GCD", 2, leftNumberFlag)) <= 0)
@@ -210,15 +210,14 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
     else if ((retcode = func(expr, ExpressionResult,
                              "RE", 1, leftNumberFlag)) <= 0)
     {
-      if (retcode != 0)
-      {
-        return retcode;
-      }
       ptrBigInt = &stackImagValues[stackIndex];
       ptrBigInt->limbs[0].x = 0;
       ptrBigInt->nbrLimbs = 1;
       ptrBigInt->sign = SIGN_POSITIVE;
-      if (retcode != 0) {return retcode;}
+      if (retcode != 0)
+      {
+        return retcode;
+      }
       leftNumberFlag = 1;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -227,9 +226,9 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (retcode != 0) {return retcode;}
       ptrRe = &stackRealValues[stackIndex];
       ptrIm = &stackImagValues[stackIndex];
-      BigIntMultiply(ptrRe, ptrRe, &factorial);    // norm <- re2^2 + im2^2.
+      BigIntMultiply(ptrRe, ptrRe, &factorialResult);    // norm <- re2^2 + im2^2.
       BigIntMultiply(ptrIm, ptrIm, &Tmp);
-      BigIntAdd(&factorial, &Tmp, &stackRealValues[stackIndex]);  
+      BigIntAdd(&factorialResult, &Tmp, &stackRealValues[stackIndex]);  
       ptrBigInt = &stackImagValues[stackIndex];
       ptrBigInt->limbs[0].x = 0;
       ptrBigInt->nbrLimbs = 1;

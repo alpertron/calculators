@@ -95,8 +95,8 @@ void GaussianGCD(BigInteger *realA, BigInteger *imagA, BigInteger *realB, BigInt
     {        // B is a unit. GCD already found in d.
       return;
     }
-    type = (realA->limbs[0].x & 1 ? 8 : 0) + (imagA->limbs[0].x & 1 ? 4 : 0) +
-      (realB->limbs[0].x & 1 ? 2 : 0) + (imagB->limbs[0].x & 1 ? 1 : 0);
+    type = ((realA->limbs[0].x & 1) ? 8 : 0) + ((imagA->limbs[0].x & 1) ? 4 : 0) +
+      ((realB->limbs[0].x & 1) ? 2 : 0) + ((imagB->limbs[0].x & 1) ? 1 : 0);
     switch (type)
     {
     case 0:      // all components even.
@@ -296,13 +296,12 @@ static void addApprox(struct approx *addend1, struct approx *addend2, struct app
 {
   int nbrLimbs1 = addend1->expon;
   int nbrLimbs2 = addend2->expon;
-  int iTemp;
   double mantissa1 = addend1->mantissa;
   double mantissa2 = addend2->mantissa;
-  double dTemp;
   if (nbrLimbs1 < nbrLimbs2)
   {   // Exchange number of limbs and mantissas.
-    iTemp = nbrLimbs1;
+    double dTemp;
+    int iTemp = nbrLimbs1;
     nbrLimbs1 = nbrLimbs2;
     nbrLimbs2 = iTemp;
     dTemp = mantissa1;

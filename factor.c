@@ -512,87 +512,87 @@ static int Cos(int N)
 
 static int intTotient(int N)
 {
-  int totient, q, k;
+  int totient, argumentDivisor, trialDivisor;
 
-  totient = q = N;
-  if (q % 2 == 0)
+  totient = argumentDivisor = N;
+  if (argumentDivisor % 2 == 0)
   {
     totient /= 2;
     do
     {
-      q /= 2;
-    } while (q % 2 == 0);
+      argumentDivisor /= 2;
+    } while (argumentDivisor % 2 == 0);
   }
-  if (q % 3 == 0)
+  if (argumentDivisor % 3 == 0)
   {
     totient = totient * 2 / 3;
     do
     {
-      q /= 3;
-    } while (q % 3 == 0);
+      argumentDivisor /= 3;
+    } while (argumentDivisor % 3 == 0);
   }
-  k = 5;
-  while (k * k <= q)
+  trialDivisor = 5;
+  while (trialDivisor * trialDivisor <= argumentDivisor)
   {
-    if (k % 3 != 0 && q % k == 0)
+    if (trialDivisor % 3 != 0 && argumentDivisor % trialDivisor == 0)
     {
-      totient = totient * (k - 1) / k;
+      totient = totient * (trialDivisor - 1) / trialDivisor;
       do
       {
-        q /= k;
-      } while (q % k == 0);
+        argumentDivisor /= trialDivisor;
+      } while (argumentDivisor % trialDivisor == 0);
     }
-    k += 2;
+    trialDivisor += 2;
   }
-  if (q > 1)
+  if (argumentDivisor > 1)
   {
-    totient = totient * (q - 1) / q;
+    totient = totient * (argumentDivisor - 1) / argumentDivisor;
   }
   return totient;
 }
 
 int Moebius(int N)
 {
-  int moebius, q, k;
+  int moebius, argumentDivisor, trialDivisor;
 
   moebius = 1;
-  q = N;
-  if (q % 2 == 0)
+  argumentDivisor = N;
+  if (argumentDivisor % 2 == 0)
   {
     moebius = -moebius;
-    q /= 2;
-    if (q % 2 == 0)
+    argumentDivisor /= 2;
+    if (argumentDivisor % 2 == 0)
     {
       return 0;
     }
   }
-  if (q % 3 == 0)
+  if (argumentDivisor % 3 == 0)
   {
     moebius = -moebius;
-    q /= 3;
-    if (q % 3 == 0)
+    argumentDivisor /= 3;
+    if (argumentDivisor % 3 == 0)
     {
       return 0;
     }
   }
-  k = 5;
-  while (k * k <= q)
+  trialDivisor = 5;
+  while (trialDivisor * trialDivisor <= argumentDivisor)
   {
-    if (k % 3 != 0)
+    if (trialDivisor % 3 != 0)
     {
-      while (q % k == 0)
+      while (argumentDivisor % trialDivisor == 0)
       {
         moebius = -moebius;
-        q /= k;
-        if (q % k == 0)
+        argumentDivisor /= trialDivisor;
+        if (argumentDivisor % trialDivisor == 0)
         {
           return 0;
         }
       }
     }
-    k += 2;
+    trialDivisor += 2;
   }
-  if (q > 1)
+  if (argumentDivisor > 1)
   {
     moebius = -moebius;
   }
@@ -601,7 +601,7 @@ int Moebius(int N)
 
 void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, BigInteger *BigBase)
 {
-  BigInteger x, Csal, Dsal, Nbr1;
+  static BigInteger x, Csal, Dsal, Nbr1;
   int k;
 
   BigIntPowerIntExp(BigBase, L, &x);   // x <- BigBase^L.
@@ -2440,7 +2440,6 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
   int remainder, nbrLimbs, ctr;
   int *ptrFactor;
   int dividend;
-  int restartFactoring = FALSE;
   char *ptrCharFound;
   int result;
   EC = 1;
@@ -2562,7 +2561,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
   for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
   {
     int upperBound = pstCurFactor->upperBound;
-    restartFactoring = FALSE;
+    int restartFactoring = FALSE;
     // If number is prime, do not process it.
     if (upperBound == 0)
     {     // Factor is prime.
@@ -2811,7 +2810,7 @@ EXTERNALIZE char *getFactorsAsciiPtr(void)
 // Find Euler's Totient as the product of p^(e-1)*(p-1) where p=prime and e=exponent.
 void Totient(BigInteger *result)
 {
-  BigInteger Temp1;
+  static BigInteger TempVar;
   struct sFactors *pstFactor;
   int factorNumber;
   intToBigInteger(result, 1);  // Set result to 1.
@@ -2823,11 +2822,11 @@ void Totient(BigInteger *result)
     {   // If factor is 1 do not do anything.
       continue;
     }
-    BigIntPowerIntExp(&factorValue, pstFactor->multiplicity - 1, &Temp1);   // p^(e-1)
-    BigIntMultiply(result, &Temp1, result);
-    UncompressBigInteger(pstFactor->ptrFactor, &Temp1);
-    addbigint(&Temp1, -1);   // p-1
-    BigIntMultiply(result, &Temp1, result);
+    BigIntPowerIntExp(&factorValue, pstFactor->multiplicity - 1, &TempVar);   // p^(e-1)
+    BigIntMultiply(result, &TempVar, result);
+    UncompressBigInteger(pstFactor->ptrFactor, &TempVar);
+    addbigint(&TempVar, -1);   // p-1
+    BigIntMultiply(result, &TempVar, result);
     pstFactor++;
   }
 }

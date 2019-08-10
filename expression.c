@@ -123,7 +123,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
 
 static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
 {
-  int i, shLeft;
+  int shLeft;
   int retcode;
   limb carry;
   boolean leftNumberFlag = FALSE;
@@ -529,6 +529,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (charValue == '0' && exprIndexAux < exprLength - 2 &&
           *(expr+exprIndexAux + 1) == 'x')
       {  // hexadecimal
+        int i;
         exprIndexAux++;
         while (exprIndexAux < exprLength - 1)
         {
@@ -844,10 +845,10 @@ static int ComputeBack(void)
   pResult->nbrLimbs = nbrLimbs;
   do
   {        // Loop that searches for previous or next probable prime.
-    int ctr;
     pResultLimbs->x -= 2;
     if (pResultLimbs->x < 0)
     {
+      int ctr;
       limb *pTemp = pResultLimbs;
       for (ctr = 1; ctr < nbrLimbs; ctr++)
       {
@@ -1098,7 +1099,6 @@ static int ComputeConcatFact(void)
 {
   BigInteger *mode = &stackValues[stackIndex];
   BigInteger factorValue;
-  struct sFactors *pstFactor;
   int factorNumber, nbrFactors;
   int descend = mode->limbs[0].x & 1;
   int repeated = mode->limbs[0].x & 2;
@@ -1112,7 +1112,7 @@ static int ComputeConcatFact(void)
   for (factorNumber = 1; factorNumber <= nbrFactors; factorNumber++)
   {
     int ctr;
-    pstFactor = &astFactorsMod[descend ? nbrFactors - factorNumber + 1 : factorNumber];
+    struct sFactors* pstFactor = &astFactorsMod[descend ? nbrFactors - factorNumber + 1 : factorNumber];
     NumberLength = *(pstFactor->ptrFactor);
     UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
     ctr = (repeated ? pstFactor->multiplicity : 1);

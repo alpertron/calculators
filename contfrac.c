@@ -83,7 +83,6 @@ static void ShowConvergents(int index, BigInteger *coeff)
 static void ContFrac(void)
 {
   BigInteger intSqrt;
-  char ended;
 
   ptrOutput = output;
   // Show formula.
@@ -157,10 +156,10 @@ static void ContFrac(void)
   {     // delta is a perfect square, so number is rational.
     BigIntAdd(&num, &intSqrt, &Temp);
     ShowRational(&Temp, &den);
-    ended = 1;
   }
   else
   {     // delta is not a perfect square. Periodic continued fraction.
+    char ended;
     int periodIndex, index;
         // PQa algorithm for (P+G)/Q where G = sqrt(discriminant):
         // If D - U^2 is not multiple of V then 

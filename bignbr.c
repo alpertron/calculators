@@ -1340,14 +1340,14 @@ void BigIntDivideBy2(BigInteger *nbr)
 {
   int ctr;
   int nbrLimbs;
-  int curLimb, nextLimb;
+  int curLimb;
   int *ptrDest;
   nbrLimbs = nbr->nbrLimbs;
   ptrDest = &nbr->limbs[0].x;
   curLimb = *ptrDest;
   for (ctr = 1; ctr < nbrLimbs; ctr++)
   {  // Process starting from least significant limb.
-    nextLimb = *(ptrDest + 1);
+    int nextLimb = *(ptrDest + 1);
     *ptrDest++ = ((curLimb >> 1) | (nextLimb << (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
     curLimb = nextLimb;
   }
@@ -1362,14 +1362,14 @@ void BigIntMultiplyBy2(BigInteger *nbr)
 {
   int ctr;
   int nbrLimbs;
-  int prevLimb, curLimb;
+  int prevLimb;
   int *ptrDest;
   nbrLimbs = nbr->nbrLimbs;
   ptrDest = &nbr->limbs[0].x;
   prevLimb = 0;
   for (ctr = 0; ctr < nbrLimbs; ctr++)
   {  // Process starting from least significant limb.
-    curLimb = *ptrDest;
+    int curLimb = *ptrDest;
     *ptrDest++ = ((curLimb << 1) | (prevLimb >> (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
     prevLimb = curLimb;
   }
@@ -1416,7 +1416,6 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
     *pNbrLimbs = nbrLimbs - index - 1;
   }
       // Move number shRg bits to the right.
-  mask = (1 << shRg) - 1;
   for (index2 = index; index2 < nbrLimbs-1; index2++)
   {
     number[index2].x = ((number[index2].x >> shRg) |
@@ -1437,12 +1436,12 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
 // Calculate Jacobi symbol by following algorithm 2.3.5 of C&P book.
 int JacobiSymbol(int upper, int lower)
 {
-  int tmp;
   int a = upper % lower;
   int m = lower;
   int t = 1;
   while (a != 0)
   {
+    int tmp;
     while ((a & 1) == 0)
     {     // a is even.
       a >>= 1;
@@ -1549,7 +1548,7 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
 #ifdef __EMSCRIPTEN__
   char *ptrText;
 #endif
-  int i, Mult3Len, ctr, D, absQ, mult, mask, index, signPowQ;
+  int Mult3Len, ctr, D, absQ, mult, mask, index, signPowQ;
   int insidePowering = FALSE;
   int nbrLimbs = pValue->nbrLimbs;
   limb *limbs = pValue->limbs;
@@ -1603,6 +1602,7 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
                                             // If Mult1 != 1 and Mult1 = TestNbr-1, perform full test.
   if (!checkOne(Mult1, nbrLimbs) && !checkMinusOne(Mult1, nbrLimbs))
   {
+    int i;
     for (i = 0; i < ctr; i++)
     {               // Loop that squares number.
       modmult(Mult1, Mult1, Mult4);
@@ -1659,6 +1659,7 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   }
   absQ = (D + 1) >> 2;
 #ifdef __EMSCRIPTEN__
+  int i;
 #ifdef FACTORIZATION_APP
   StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
   ptrText = ShowFactoredPart(pValue, vFactors);

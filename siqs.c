@@ -928,12 +928,12 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
 
 static int getIndexFromDivisor(double dDivid)
 {
-  int nbr;
   int left = -1;
   int right;
   int median = right = common.siqs.nbrFactorBasePrimes;
   while (left != right)
   {
+    int nbr;
     median = ((right - left) >> 1) + left;
     nbr = common.siqs.primeTrialDivisionData[median].value;
     if (nbr < dDivid)
@@ -1208,9 +1208,8 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           NumberLengthDividend--;
           if (NumberLengthDividend <= 2 && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
           {       // Number fits in a double.
-            double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
-            int sqrtDivid = (int)(floor(sqrt((double)dDivid)));
-            fullRemainder = TRUE;
+            double dDividend = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
+            int sqrtDivid = (int)(floor(sqrt((double)dDividend)));
             rowPrimeSieveData = primeSieveData + index;
             for (; index < common.siqs.nbrFactorBasePrimes; index++)
             {
@@ -1226,10 +1225,10 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                   newFactorAIndex = common.siqs.aindex[indexFactorA];
                 }
               }
-              while (dDivid == floor(dDivid / Divisor) * Divisor)
+              while (dDividend == floor(dDividend / Divisor) * Divisor)
               {        // dDivid is multiple of Divisor.
-                dDivid /= Divisor;
-                sqrtDivid = (int)(floor(sqrt((double)dDivid))) + 1;
+                dDividend /= Divisor;
+                sqrtDivid = (int)(floor(sqrt((double)dDividend))) + 1;
                 expParity = 1 - expParity;
                 if (expParity == 0)
                 {
@@ -1306,22 +1305,21 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               {                     // End of trial division.
                 rowSquares[0] = nbrSquares;
                 index = common.siqs.nbrFactorBasePrimes - 1;
-                if (dDivid <= common.siqs.primeTrialDivisionData[index].value &&
-                  dDivid > 1)
+                if (dDividend <= common.siqs.primeTrialDivisionData[index].value &&
+                  dDividend > 1)
                 {          // Perform binary search to find the index.
-                  index = getIndexFromDivisor(dDivid);
+                  index = getIndexFromDivisor(dDividend);
                   rowMatrixBbeforeMerge[nbrColumns++] = index;
                   rowMatrixBbeforeMerge[0] = nbrColumns;
                   return 1;
                 }
                 rowMatrixBbeforeMerge[0] = nbrColumns;
-                if (dDivid > MAX_INT_NBR)
+                if (dDividend > MAX_INT_NBR)
                 {
                   return 0;  // Discard this congruence because of large cofactor.
                 }
-                return (int)dDivid;
+                return (int)dDividend;
               }
-              fullRemainder = FALSE;
               rowPrimeSieveData++;
             }
             break;
@@ -1489,9 +1487,8 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           NumberLengthDividend--;
           if (NumberLengthDividend <= 2 && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
           {        // Number fits in a double.
-            double dDivid = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
-            int sqrtDivid = (int)(floor(sqrt((double)dDivid)));
-            fullRemainder = TRUE;
+            double dDividend = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
+            int sqrtDivid = (int)(floor(sqrt((double)dDividend)));
             for (; index < common.siqs.nbrFactorBasePrimes; index++)
             {
               double dDivisor;
@@ -1508,10 +1505,10 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                   newFactorAIndex = common.siqs.aindex[indexFactorA];
                 }
               }
-              while (dDivid == floor(dDivid / dDivisor) * dDivisor)
+              while (dDividend == floor(dDividend / dDivisor) * dDivisor)
               {           // dDivid is multiple of Divisor.
-                dDivid /= dDivisor;
-                sqrtDivid = (int)floor(sqrt((double)dDivid));
+                dDividend /= dDivisor;
+                sqrtDivid = (int)floor(sqrt((double)dDividend));
                 expParity = 1 - expParity;
                 if (expParity == 0)
                 {
@@ -1525,11 +1522,11 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               }
               if (Divisor > sqrtDivid)
               {                     // End of trial division.
-                if (dDivid >= (double)(1U << BITS_PER_INT_GROUP))
+                if (dDividend >= (double)(1U << BITS_PER_INT_GROUP))
                 {                   // Dividend is too large.
                   return 0;
                 }
-                Divisor = (int)dDivid;
+                Divisor = (int)dDividend;
                 rowSquares[0] = nbrSquares;
                 index = common.siqs.nbrFactorBasePrimes - 1;
                 if (Divisor <= common.siqs.primeTrialDivisionData[index].value &&
@@ -1566,14 +1563,13 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 rowMatrixBbeforeMerge[0] = nbrColumns;
                 return Divisor;
               }
-              fullRemainder = FALSE;
               rowPrimeSieveData++;
             }
-            if (dDivid >= (double)(1U << BITS_PER_INT_GROUP))
+            if (dDividend >= (double)(1U << BITS_PER_INT_GROUP))
             {                   // Dividend is too large.
               return 0;
             }
-            biR0 = (int)dDivid;
+            biR0 = (int)dDividend;
             break;
           }
         }
@@ -2805,14 +2801,13 @@ static unsigned char InsertNewRelation(
 static int intModInv(int NbrMod, int currentPrime)
 {
   int QQ, T1, T3;
-  int subt;
   int V1 = 1;
   int V3 = NbrMod;
   int U1 = 0;
   int U3 = currentPrime;
   while (V3 != 0)
   {
-    subt = U3 - V3 - V3;
+    int subt = U3 - V3 - V3;
     if (subt < 0)
     {               // QQ = 1 (probability = 41.5 %)
       T1 = U1 - V1;
@@ -3048,7 +3043,7 @@ static void coladd(int *XmY, int *V, int *V1, int *V2,
 static void BlockLanczos(void)
 {
   int i, j, k;
-  int oldDiagonalSSt, newDiagonalSSt;
+  int newDiagonalSSt;
   int index, mask;
   int matrixD[32];
   int matrixE[32];
@@ -3076,7 +3071,7 @@ static void BlockLanczos(void)
   int minind, min, minanswer;
   int *rowMatrixB, *ptrMatrixV, *ptrMatrixXmY;
 
-  newDiagonalSSt = oldDiagonalSSt = -1;
+  newDiagonalSSt = -1;
   memset(matrixWinv, 0, sizeof(matrixWinv));
   memset(matrixWinv1, 0, sizeof(matrixWinv1));
   memset(matrixWinv2, 0, sizeof(matrixWinv2));
@@ -3122,6 +3117,7 @@ static void BlockLanczos(void)
   for (;;)
   {
     int indexC;
+    int oldDiagonalSSt;
 #ifdef __EMSCRIPTEN__
     int elapsedTime = (int)(tenths() - originalTenthSecond);
     if (elapsedTime / 10 != oldTimeElapsed / 10)

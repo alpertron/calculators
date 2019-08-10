@@ -189,7 +189,6 @@ void MultBigNbrByInt(int *bigFactor, int factor, int *bigProd, int nbrLen)
 void MultBigNbrByIntB(int *bigFactor, int factor, int *bigProd, int nbrLen)
 {
   int *bigProduct = bigProd;
-  int low;
   double dFactor;
   double dVal = 1 / (double)(1U << BITS_PER_INT_GROUP);
   int factorPositive = 1;
@@ -203,7 +202,7 @@ void MultBigNbrByIntB(int *bigFactor, int factor, int *bigProd, int nbrLen)
   carry = 0;
   for (ctr = 0; ctr < nbrLen-1; ctr++)
   {
-    low = (*bigFactor * factor + carry) & MAX_INT_NBR;
+    int low = (*bigFactor * factor + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
@@ -217,16 +216,7 @@ void MultBigNbrByIntB(int *bigFactor, int factor, int *bigProd, int nbrLen)
     *bigProduct++ = low;
     bigFactor++;
   }
-  low = *bigFactor * factor + carry;
-  if ((low & MAX_INT_NBR) < HALF_INT_RANGE)
-  {
-    carry = (int)floor(((double)*bigFactor * dFactor + (double)carry + HALF_INT_RANGE / 2)*dVal);
-  }
-  else
-  {
-    carry = (int)floor(((double)*bigFactor * dFactor + (double)carry - HALF_INT_RANGE / 2)*dVal);
-  }
-  *bigProduct = low;
+  *bigProduct = *bigFactor * factor + carry;
   if (factorPositive == 0)
   {         // If factor is negative, change sign of product.
     ChSignBigNbrB(bigProd, nbrLen);
