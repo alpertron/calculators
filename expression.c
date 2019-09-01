@@ -553,6 +553,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         if (exprIndexFirstHexDigit < 0)
         {    // Number is zero
           intToBigInteger(&stackValues[stackIndex], 0);
+          exprIndex = exprIndexAux + 1;
         }
         else
         {    // Generate big integer from hexadecimal number from right to left.
