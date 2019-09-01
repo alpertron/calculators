@@ -6,7 +6,7 @@
 #include "factor.h"
 #include "batch.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE  19
+#define DEBUG_CODE  13
 #endif
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
 #elif DEBUG_CODE == 13
   skipPrimality = 0;
   lang = 0;
-  hexadecimal = 0;
+  hexadecimal = 1;
   if (argc == 3)
   {
     ecmFrontText(argv[1], 1, argv[2]);

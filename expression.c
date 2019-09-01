@@ -530,6 +530,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           *(expr+exprIndexAux + 1) == 'x')
       {  // hexadecimal
         int i;
+        int exprIndexFirstHexDigit = -1;
         exprIndexAux++;
         while (exprIndexAux < exprLength - 1)
         {
@@ -539,49 +540,59 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
               (charValue >= 'a' && charValue <= 'f'))
           {
             exprIndexAux++;
+            if (charValue != '0' && exprIndexFirstHexDigit < 0)
+            {
+              exprIndexFirstHexDigit = exprIndexAux;
+            }
           }
           else
           {
             break;
           }
         }
-        // Generate big integer from hexadecimal number from right to left.
-        carry.x = 0;
-        i = 0;  // limb number.
-        shLeft = 0;
-        offset = exprIndexAux;
-        ptrLimb = &stackValues[stackIndex].limbs[0];
-        for (; exprIndexAux >= exprIndex + 2; exprIndexAux--)
-        {
-          c = *(expr + exprIndexAux);
-          if (c >= '0' && c <= '9')
-          {
-            c -= '0';
-          }
-          else if (c >= 'A' && c <= 'F')
-          {
-            c -= 'A' - 10;
-          }
-          else
-          {
-            c -= 'a' - 10;
-          }
-          carry.x += c << shLeft;
-          shLeft += 4;   // 4 bits per hex digit.
-          if (shLeft >= BITS_PER_GROUP)
-          {
-            shLeft -= BITS_PER_GROUP;
-            (ptrLimb++)->x = carry.x & MAX_VALUE_LIMB;
-            carry.x = c >> (4-shLeft);
-          }
+        if (exprIndexFirstHexDigit < 0)
+        {    // Number is zero
+          intToBigInteger(&stackValues[stackIndex], 0);
         }
-        if (carry.x != 0 || ptrLimb == &stackValues[stackIndex].limbs[0])
-        {
-          (ptrLimb++)->x = carry.x;
+        else
+        {    // Generate big integer from hexadecimal number from right to left.
+          carry.x = 0;
+          i = 0;  // limb number.
+          shLeft = 0;
+          offset = exprIndexAux;
+          ptrLimb = &stackValues[stackIndex].limbs[0];
+          for (; exprIndexAux >= exprIndexFirstHexDigit; exprIndexAux--)
+          {
+            c = *(expr + exprIndexAux);
+            if (c >= '0' && c <= '9')
+            {
+              c -= '0';
+            }
+            else if (c >= 'A' && c <= 'F')
+            {
+              c -= 'A' - 10;
+            }
+            else
+            {
+              c -= 'a' - 10;
+            }
+            carry.x += c << shLeft;
+            shLeft += 4;   // 4 bits per hex digit.
+            if (shLeft >= BITS_PER_GROUP)
+            {
+              shLeft -= BITS_PER_GROUP;
+              (ptrLimb++)->x = carry.x & MAX_VALUE_LIMB;
+              carry.x = c >> (4 - shLeft);
+            }
+          }
+          if (carry.x != 0 || ptrLimb == &stackValues[stackIndex].limbs[0])
+          {
+            (ptrLimb++)->x = carry.x;
+          }
+          exprIndex = offset + 1;
+          stackValues[stackIndex].nbrLimbs = (int)(ptrLimb - &stackValues[stackIndex].limbs[0]);
+          stackValues[stackIndex].sign = SIGN_POSITIVE;
         }
-        exprIndex = offset+1;
-        stackValues[stackIndex].nbrLimbs = (int)(ptrLimb - &stackValues[stackIndex].limbs[0]);
-        stackValues[stackIndex].sign = SIGN_POSITIVE;
       }
       else
       {                   // Decimal number.
