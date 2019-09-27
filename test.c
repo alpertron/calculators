@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
 #elif DEBUG_CODE == 13
   skipPrimality = 0;
   lang = 0;
-  hexadecimal = 1;
+  hexadecimal = 0;
   if (argc == 3)
   {
     ecmFrontText(argv[1], 1, argv[2]);

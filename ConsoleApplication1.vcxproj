@@ -147,7 +147,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>MinSpace</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;FACTORIZATION_FUNCTIONS;_USING64BITS_;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;FACTORIZATION_APP;_USING64BITS_</PreprocessorDefinitions>
@@ -168,6 +168,7 @@
     <ClCompile Include="bigint.c" />
     <ClCompile Include="bignbr.c" />
     <ClCompile Include="bigrational.c" />
+    <ClCompile Include="quintics.c" />
     <ClCompile Include="contfrac.c" />
     <ClCompile Include="dilog.c" />
     <ClCompile Include="division.c" />
@@ -203,6 +204,7 @@
     <ClInclude Include="batch.h" />
     <ClInclude Include="output.h" />
     <ClInclude Include="polynomial.h" />
+    <ClInclude Include="rootseq.h" />
     <ClInclude Include="showtime.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
