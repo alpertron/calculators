@@ -27,27 +27,8 @@ BigRational RatQuartic, RatCubic, RatQuadratic, RatLinear, RatIndependent;
 BigRational RatDeprCubic, RatDeprQuadratic, RatDeprLinear, RatDeprIndependent;
 BigRational RatDiscr, RatDelta0, RatDelta1, RatD;
 BigRational Rat1, Rat2, Rat3, Rat4, Rat5, RatS;
-char pretty;
 int indexRoot;
 char *ptrMinus, *ptrTimes;
-
-struct stValidateCoeff
-{
-  char* expression;
-  BigInteger* bigint;
-  char* textSpanish;
-  char* textEnglish;
-};
-
-static struct stValidateCoeff astValidateCoeff[NBR_COEFF] =
-{
-  { NULL, &Quintic, "Coeficiente quíntico <var>a</var>: ", "Quintic coefficient <var>a</var>: " },
-  { NULL, &Quartic, "Coeficiente cuártico <var>b</var>: ", "Quartic coefficient <var>b</var>: " },
-  { NULL, &Cubic, "Coeficiente cúbico <var>c</var>: ", "Cubic coefficient <var>c</var>: " },
-  { NULL, &Quadratic, "Coeficiente cuadrático <var>d</var>: ", "Quadratic coefficient <var>d</var>: " },
-  { NULL, &Linear, "Coeficiente lineal <var>e</var>: ", "Linear coefficient <var>e</var>: " },
-  { NULL, &Independent, "Término independiente <var>f</var>: ", "Constant term <var>f</var>: " },
-};
 
 void showX(int multiplicity)
 {
@@ -470,7 +451,7 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
   else
   {   // Discriminant is positive. Use Viete's formula.
     enum eSign signRat1;
-    showText("<ul><li><var>t</var> = ");
+    showText("<li><var>t</var> = ");
     if (pretty)
     {
       showRatConstants("1", "3");
@@ -1318,77 +1299,12 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
   }
 }
 
-static void showPoly(int polyDegree, int *ptrPoly)
+void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo)
 {
-  int currentDegree;
-  int* ptrSrc = ptrPoly;
-  // Get leading coefficient.
-  for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
-  {
-    ptrSrc += 1 + numLimbs(ptrSrc);
-  }
-  UncompressBigIntegerB(ptrSrc, &operand1);
-  if (operand1.sign == SIGN_NEGATIVE)
-  {
-    strcpy(ptrOutput, ptrMinus);
-    ptrOutput += strlen(ptrOutput);
-  }
-  if (operand1.nbrLimbs != 1 || operand1.limbs[0].x != 1)
-  {     // Absolute value is not 1.
-    Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLen);
-    ptrOutput += strlen(ptrOutput);
-    showText(ptrTimes);
-  }
-  showPowerX(&ptrOutput, polyDegree);
-  int nbrLimbs = NumberLength + 1;
-  int* ptrIndex;
-  int indexes[MAX_DEGREE];
-  int index = 0;
-
-  ptrIndex = &indexes[0];
-    // Fill indexes to start of each coefficient.
-  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
-  {
-    *ptrIndex++ = index;
-    index += numLimbs(ptrPoly + index) + 1;
-  }
-  for (currentDegree = polyDegree - 1; currentDegree >= 0; currentDegree--)
-  {
-    int* ptrValue1 = ptrPoly + indexes[currentDegree];
-    int len = numLimbs(ptrValue1);
-    if (len != 1 || *(ptrValue1 + 1) != 0)
-    {            // Coefficient is not zero.
-      showPlusSignOn(*ptrValue1 > 0, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-      if (len != 1 || *(ptrValue1 + 1) != 1)
-      {            // Absolute value of coefficient is not one.
-        NumberLength = numLimbs(ptrValue1);
-        UncompressBigInteger(ptrValue1, &operand1);
-        operand1.sign = SIGN_POSITIVE;
-        Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLen);
-        ptrOutput += strlen(ptrOutput);
-        if (currentDegree > 0)
-        {
-          showText(ptrTimes);
-          showPowerX(&ptrOutput, currentDegree);
-        }
-      }
-      else
-      {
-        showPowerX(&ptrOutput, currentDegree);
-      }
-    }
-    ptrValue1 -= nbrLimbs;
-  }
-  *ptrOutput = 0;    // Append string terminator.
-}
-
-void rootsEqText(char* coefAText, char* coefBText, char* coefCText,
-  char* coefDText, char* coefEText, char* coefFText)
-{
-  int coeffNbr;
-  enum eExprErr rc;
-  struct stValidateCoeff* pstValidateCoeff = astValidateCoeff;
-  superscripts = pretty;
+  static struct sFactorInfo factorInfoIntegerBak[MAX_DEGREE];
+  static int polyIntegerBak[1000000];
+  int nbrFactorsFoundBak;
+  ptrOutput = *pptrOutput;
   if (pretty)
   {
     ptrMinus = "&minus;";
@@ -1399,157 +1315,29 @@ void rootsEqText(char* coefAText, char* coefBText, char* coefCText,
     ptrMinus = "-";
     ptrTimes = "*";
   }
-  astValidateCoeff[0].expression = coefAText;
-  astValidateCoeff[1].expression = coefBText;
-  astValidateCoeff[2].expression = coefCText;
-  astValidateCoeff[3].expression = coefDText;
-  astValidateCoeff[4].expression = coefEText;
-  astValidateCoeff[5].expression = coefFText;
-  ptrOutput = output;
-  showText("2<p>");
-  for (coeffNbr = 0; coeffNbr < NBR_COEFF; coeffNbr++)
+  switch (pstFactorInfo->degree)
   {
-    rc = ComputeExpression(pstValidateCoeff->expression, 1,
-      pstValidateCoeff->bigint);
-    if (rc != EXPR_OK)
-    {
-      strcpy(ptrOutput, lang ? pstValidateCoeff->textSpanish : pstValidateCoeff->textEnglish);
-      ptrOutput = output + strlen(output);
-      textError(ptrOutput, rc);
-      ptrOutput = output + strlen(output);
-      strcpy(ptrOutput, "</p>");
-      ptrOutput = output + strlen(output);
-      break;
-    }
-    pstValidateCoeff++;
+  case 1:
+    LinearEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
+    break;
+  case 2:
+    QuadraticEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
+    break;
+  case 3:
+    CubicEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
+    break;
+  case 4:
+    QuarticEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
+    break;
+  case 5:
+    nbrFactorsFoundBak = nbrFactorsFound;
+    memcpy(polyIntegerBak, polyInteger, sizeof(polyInteger));
+    memcpy(factorInfoIntegerBak, factorInfoInteger, sizeof(factorInfoInteger));
+    QuinticEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
+    nbrFactorsFound = nbrFactorsFoundBak;
+    memcpy(polyInteger, polyIntegerBak, sizeof(polyInteger));
+    memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
+    break;
   }
-  if (coeffNbr == NBR_COEFF)
-  {
-    int nbrFactor;
-    int* ptrValues;
-    struct sFactorInfo* pstFactorInfo;
-    // Send to "values" array all coefficients.
-    values[0] = 5;
-    if (BigIntIsZero(&Quintic))
-    {
-      values[0] = 4;
-      if (BigIntIsZero(&Quartic))
-      {
-        values[0] = 3;
-        if (BigIntIsZero(&Cubic))
-        {
-          values[0] = 2;
-          if (BigIntIsZero(&Quadratic))
-          {
-            values[0] = 1;
-            if (BigIntIsZero(&Linear))
-            {
-              values[0] = 0;
-            }
-          }
-        }
-      }
-    }
-    ptrValues = &values[1];
-    NumberLength = Independent.nbrLimbs;
-    CompressBigInteger(ptrValues, &Independent);
-    ptrValues += 1 + numLimbs(ptrValues);
-    NumberLength = Linear.nbrLimbs;
-    CompressBigInteger(ptrValues, &Linear);
-    ptrValues += 1 + numLimbs(ptrValues);
-    NumberLength = Quadratic.nbrLimbs;
-    CompressBigInteger(ptrValues, &Quadratic);
-    ptrValues += 1 + numLimbs(ptrValues);
-    NumberLength = Cubic.nbrLimbs;
-    CompressBigInteger(ptrValues, &Cubic);
-    ptrValues += 1 + numLimbs(ptrValues);
-    NumberLength = Quartic.nbrLimbs;
-    CompressBigInteger(ptrValues, &Quartic);
-    ptrValues += 1 + numLimbs(ptrValues);
-    NumberLength = Quintic.nbrLimbs;
-    CompressBigInteger(ptrValues, &Quintic);
-    FactorPolyOverIntegers();
-    ptrOutput = output;
-    showText("2<p><h2>");
-    showPoly(values[0], &values[1]);
-    ptrOutput += strlen(ptrOutput);
-    showText(" = 0</h2>");
-    indexRoot = 1;
-    if (nbrFactorsFound > 1)
-    {
-      showText("<p>");
-      pstFactorInfo = factorInfoInteger;
-      for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
-      {
-        *ptrOutput++ = '(';
-        showPoly(pstFactorInfo->degree, pstFactorInfo->ptrPolyLifted);
-        ptrOutput += strlen(ptrOutput);
-        *ptrOutput++ = ')';
-        if (nbrFactor < nbrFactorsFound - 1)
-        {
-          *ptrOutput++ = ' ';
-          showText(ptrTimes);
-          if (!pretty)
-          {
-            *ptrOutput++ = ' ';
-          }
-        }
-        pstFactorInfo++;
-      }
-      showText(" = 0</p>");
-    }
-    pstFactorInfo = factorInfoInteger;
-    for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
-    {
-      switch (pstFactorInfo->degree)
-      {
-      case 1:
-        LinearEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
-        break;
-      case 2:
-        QuadraticEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
-        break;
-      case 3:
-        CubicEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
-        break;
-      case 4:
-        QuarticEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
-        break;
-      case 5:
-        QuinticEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
-        break;
-      }
-      pstFactorInfo++;
-    }
-  }
-  showText("</ul>");
-  showText(lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
-    "<p>" COPYRIGHT_ENGLISH "</p>");
+  *pptrOutput = ptrOutput;
 }
-
-#ifdef __EMSCRIPTEN__
-EXTERNALIZE void doWork(void)
-{
-  int flags;
-  char* ptrData = inputString;
-  char* ptrCoeffA, * ptrCoeffB, * ptrCoeffC;
-  char* ptrCoeffD, * ptrCoeffE, * ptrCoeffF;
-  groupLen = 0;
-  while (*ptrData != ',')
-  {
-    groupLen = groupLen * 10 + (*ptrData++ - '0');
-  }
-  ptrData++;                    // Skip comma.
-  flags = *ptrData;
-  lang = flags & 1;
-  pretty = flags & 2;
-  ptrCoeffA = ptrData + 2;  // Skip flags and comma.
-  ptrCoeffB = ptrCoeffA + strlen(ptrCoeffA) + 1;
-  ptrCoeffC = ptrCoeffB + strlen(ptrCoeffB) + 1;
-  ptrCoeffD = ptrCoeffC + strlen(ptrCoeffC) + 1;
-  ptrCoeffE = ptrCoeffD + strlen(ptrCoeffD) + 1;
-  ptrCoeffF = ptrCoeffE + strlen(ptrCoeffE) + 1;
-  rootsEqText(ptrCoeffA, ptrCoeffB, ptrCoeffC, ptrCoeffD, ptrCoeffE, ptrCoeffF);
-  databack(output);
-}
-#endif

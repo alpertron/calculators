@@ -4255,7 +4255,6 @@ static void ShowQuinticsRootsRealR(multiplicity)
   for (ctr = 1; ctr <= 5; ctr++)
   {
     showX(multiplicity);
-    BigIntChSign(&RatQuartic.numerator);
     if (!BigIntIsZero(&RatQuartic.numerator))
     {
       showRationalNoParen(&RatQuartic, pretty);
@@ -4329,7 +4328,6 @@ static void ShowQuinticsRootsRealR(multiplicity)
       break;
     }
   }
-  showText("</ul>");
 }
 
 static void NumberIsNotRational(enum eSign sign)
@@ -4558,7 +4556,6 @@ static void GaloisGroupHasOrder20(int multiplicity)
   CopyBigInt(&Rat1.denominator, &RatDiscr.denominator);
   MultiplyRationalBySqrtRational(&RatN, &Rat1);
   MultiplyRationalBySqrtRational(&RatValues[index_T2], &RatDiscr);
-  showText("<ul>");
   if (RatDiscr.denominator.nbrLimbs == 1 && RatDiscr.denominator.limbs[0].x == 1 &&
     getRemainder(&RatDiscr.numerator, 5) == 0 && getRemainder(&RatDiscr.numerator, 25) != 0)
   {      // The discriminant has the form 5*n^2.
@@ -4706,7 +4703,6 @@ static void GaloisGroupHasOrder5(int multiplicity)
   BigRationalSubt(&RatValues[index_l0], &Rat1, &Rat1);  // l
   enum eSign signRat2 = Rat2.numerator.sign;
   Rat2.numerator.sign = SIGN_POSITIVE;
-  showText("<ul>");
   for (ctr = 1; ctr <= 4; ctr++)
   {
     showText("<li><var>R</var><sub>");
@@ -4780,7 +4776,6 @@ static void GaloisGroupHasOrder5(int multiplicity)
     end5thRoot();
     showText("</li>");
   }
-  showText("</ul>");
 }
 
 void QuinticEquation(int* ptrPolynomial, int multiplicity)
@@ -4811,7 +4806,7 @@ void QuinticEquation(int* ptrPolynomial, int multiplicity)
   CopyBigInt(&RatIndependent.denominator, &Quintic);
   // Compute coefficients of depressed equation x^5 + px^3 + qx^2 + rx + s
   // where: p = (5c - 2b^2)/5, q = (25d - 15bc + 4b^3)/25, r = (125e - 50bd + 15b^2*c - 3b^4)/125,
-  // s = (3125f - 625be + 125b^2*e - 25b^3*c + 4b^5)/3125
+  // s = (3125f - 625be + 125b^2*d - 25b^3*c + 4b^5)/3125
   BigRationalMultiply(&RatQuartic, &RatCubic, &Rat2);
   BigRationalMultiplyByInt(&Rat2, -15, &RatDeprQuadratic);         // -15bc
   BigRationalMultiply(&RatQuartic, &RatQuadratic, &Rat2);
@@ -4823,14 +4818,14 @@ void QuinticEquation(int* ptrPolynomial, int multiplicity)
   BigRationalMultiply(&Rat1, &RatCubic, &Rat2);
   BigRationalMultiplyByInt(&Rat2, 15, &Rat2);                      // 15b^2*c
   BigRationalAdd(&RatDeprLinear, &Rat2, &RatDeprLinear);
-  BigRationalMultiply(&Rat1, &RatLinear, &Rat2);
-  BigRationalMultiplyByInt(&Rat2, 125, &Rat2);                     // 125b^2*e
+  BigRationalMultiply(&Rat1, &RatQuadratic, &Rat2);
+  BigRationalMultiplyByInt(&Rat2, 125, &Rat2);                     // 125b^2*d
   BigRationalAdd(&RatDeprIndependent, &Rat2, &RatDeprIndependent);
   BigRationalMultiply(&Rat1, &RatQuartic, &Rat1);                  // b^3
   BigRationalMultiplyByInt(&Rat1, 4, &Rat2);                       // 4b^3
   BigRationalAdd(&RatDeprQuadratic, &Rat2, &RatDeprQuadratic);
   BigRationalMultiply(&Rat1, &RatCubic, &Rat2);
-  BigRationalMultiplyByInt(&Rat2, -25, &Rat2);                     // -15b^3*c
+  BigRationalMultiplyByInt(&Rat2, -25, &Rat2);                     // -25b^3*c
   BigRationalAdd(&RatDeprIndependent, &Rat2, &RatDeprIndependent);
   BigRationalMultiply(&Rat1, &RatQuartic, &Rat1);                  // b^4
   BigRationalMultiplyByInt(&Rat1, -3, &Rat2);                      // -3b^4
@@ -4902,7 +4897,6 @@ void QuinticEquation(int* ptrPolynomial, int multiplicity)
       // Then the Galois group of f(x) is the Frobenius group of order 20.
     GaloisGroupHasOrder20(multiplicity);
     ShowQuinticsRootsRealR(multiplicity);
-    nbrFactorsFound = 0;   // Exit loop in caller so flow does not reenter here.
     return;
   }
   // Test whether M+N*d is a perfect square. In this case the quadratic is
@@ -4929,13 +4923,11 @@ void QuinticEquation(int* ptrPolynomial, int multiplicity)
         CopyBigInt(&Rat3.numerator, &tmp4);    // Rat3 = square root of discriminant
         CopyBigInt(&Rat3.denominator, &tmp1);  // of quadratic equation.
         GaloisGroupHasOrder5(multiplicity);
-        nbrFactorsFound = 0;   // Exit loop in caller so flow does not reenter here.
         return;
       }
     }
   }
   GaloisGroupHasOrder10(multiplicity);
   ShowQuinticsRootsRealR(multiplicity);
-  nbrFactorsFound = 0;   // Exit loop in caller so flow does not reenter here.
   return;
 }

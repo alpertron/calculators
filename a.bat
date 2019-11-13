@@ -34,7 +34,7 @@ perl replaceEmbeddedJS.pl %1 POLFACT.HTM polfactE.js
 java -jar %compilerName% -D lang=1 --compilation_level ADVANCED_OPTIMIZATIONS --js polyfact.js --js_output_file polfactS.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 FACTPOL.HTM polfactS.js
-cmd /c emcc -Os expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c polynomial.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=67108864 -s NO_FILESYSTEM=1 --closure 1 --memory-init-file 0 -o polfactW%1.js
+cmd /c emcc -Os expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c rootseq.c quintics.c bigrational.c output.c polynomial.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=67108864 -s NO_FILESYSTEM=1 --closure 1 --memory-init-file 0 -o polfactW%1.js
 if errorlevel 1 goto end
 copy polfact.wasm polfact%1.wasm
 
@@ -88,15 +88,6 @@ if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 CUAD.HTM quadS.js
 copy quad.wasm quad%1.wasm
 cmd /c emcc -Os -Wall -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c quad.c output.c bignbr.c showtime.c inputstr.c fft.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 -s NO_FILESYSTEM=1 -s DOUBLE_MODE=1 --memory-init-file 0 -o quadW%1.js
-
-java -jar %compilerName% -D lang=0 --compilation_level ADVANCED_OPTIMIZATIONS --js rootseq.js --js_output_file rootseqE.js
-if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 ROOTSEQ.HTM rootseqE.js
-java -jar %compilerName% -D lang=1 --compilation_level ADVANCED_OPTIMIZATIONS --js rootseq.js --js_output_file rootseqS.js
-if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 RAICESEC.HTM rootseqS.js
-copy rootseq.wasm rootseq%1.wasm
-cmd /c emcc -Os -Wall batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c rootseq.c quintics.c bigrational.c output.c polfact.c polynomial.c bignbr.c showtime.c inputstr.c fft.c --llvm-lto 1 --js-library lib.js --pre-js pre.js -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 -s NO_FILESYSTEM=1 -s DOUBLE_MODE=1 --memory-init-file 0 -o rootseqW%1.js
 
 java -jar %compilerName% --compilation_level WHITESPACE_ONLY --js dist.js --js_output_file dist%1.js
 

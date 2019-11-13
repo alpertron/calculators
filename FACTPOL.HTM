@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="Author" content="Dario Alejandro Alpern" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="Aplicación Javascript que factoriza polinomios enteros y módulo una potencia de número primo. Escrito por Dario Alpern." />
+<meta name="description" content="Aplicación Javascript que factoriza y halla raíces exactas de polinomios enteros y factoriza polinomios módulo una potencia de número primo. Escrito por Dario Alpern." />
 <meta name="theme-color" content="#db5945">
 <link rel="alternate" hreflang="en" href="FACTPOL.HTM" />
 <link rel="manifest" href="factpol.webmanifest">
@@ -30,7 +30,7 @@
 #smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
 #smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
 #smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
+#result ul {margin:0;padding:0px 20px 0px 20px;}
 @media (max-width: 400px) { #smallheader { font-size:0.7em;  } }
 @media (min-width: 400px) { #smallheader { font-size:1em;  } }
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
@@ -48,6 +48,20 @@ fieldset {display:inline}
 .pad {padding:10px;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 #feedback {display:none}
+.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
+.input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
+.root{display: inline-block; vertical-align:middle; border-top: 1px solid; border-left: 1px solid; transform: skew(-15deg); transform-origin: bottom left; margin: 2px 10px; position: relative;}
+.root:before {content: ""; position:absolute; bottom:0; height:40%; width:5px; left:-5px; border-right:1px solid; transform:skew(30deg); transform-origin:bottom right;}
+.radicand2, .radicand3, .radicand4, .radicand5{display: inline-block; padding-left:0.5em; transform:skew(15deg);}
+.radicand3:before{content: "3"; position:absolute; font-size:80%; top:-0.2em; left:-0.7em;}
+.radicand4:before{content: "4"; position:absolute; font-size:80%; top:-0.2em; left:-0.7em;}
+.radicand5:before{content: "5"; position:absolute; font-size:80%; top:-0.2em; left:-0.7em;}
+.fraction{display: inline-flex; flex-direction:column; padding:0.3em; align-items:center; vertical-align:middle;}
+.numerator {border-bottom: 2px solid grey; margin:-1px;}
+.denominator {border-top: 2px solid grey; margin:-1px;}
+.paren{padding-left:8px; padding-right:8px; position:relative; display:inline-block;}
+.paren:before{border-left:2px solid black; border-radius:50%; bottom:0; content:''; position:absolute; top:0; width:8px; left:-3px;}
+.paren:after{border-right:2px solid black; border-radius:50%; bottom:0; content:''; position:absolute; top:0; width:8px; right:3px;}
 @media (min-width: 400px) { .input{width: calc(100% - 8em);float:right;padding:3px;margin:0px;}}
 @media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
 </style>
@@ -159,11 +173,12 @@ Contacto
 <input type="button" id="helpbtn" value="Ayuda" /><br />
 <div class="lf"></div>
 <label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6"/>
-<input type="checkbox" id="sup" value="sup" checked /> <label for="sup">Superíndices</label>
+<input type="checkbox" id="sup" value="sup" checked /> <label for="sup">Impresión bonita</label>
 </form>
 <div id="help" aria-live="polite" class="pad">
 <p>Esta aplicación Javascript puede evaluar y factorizar expresiones polinómicas módulo un primo o una potencia de número primo.
-También puede evaluar y factorizar polinomios enteros ingresando el valor cero en la caja de entrada Módulo.</p>
+También puede evaluar, factorizar y hallar raíces exactas de polinomios enteros ingresando el valor cero en la caja de entrada Módulo.</p>
+<p>Puedes ingresar polinomios rápidamente usando la <em>notación punto</em>. Por ejemplo, para entrar 2<var>x</var><sup>4</sup> + 3<var>x</var><sup>2</sup> + 1, puedes escribir: 2.4 + 3.2 + 1</p>
 <h2><button>Polinomios enteros</button></h2>
 <div class="panel">
 <p>Los polinomios enteros en una variable son expresiones que incluyen una variable llamada <var>x</var>, números enteros y las operaciones de suma, resta y multiplicación.</p>
@@ -213,10 +228,12 @@ porque no hay necesidad de cambiar de teclado numérico a alfabético y vicevers
 <ul><li>6.8+.5+3</li></ul>
 <p>La factorización de polinomios de grados muy elevados requiere mucho tiempo.
 Debido a esto, la aplicación acepta polinomios de grado no superior a 1000.
-<p>La opción "superíndice" se utiliza para ver los exponentes como superíndices (cuando la opción está marcada)
-o precedida por el símbolo de intercalación (^) (cuando la opción no está marcada).
+<p>La opción <em>Impresión bonita</em> se utiliza para ver los exponentes como superíndices (cuando la opción está marcada)
+o precedida por el símbolo de intercalación (^) (cuando la opción no está marcada). También permite ver las raíces con el formato tradicional.
 La primera opción sirve para ver la factorización en pantalla o para imprimirla.
 La segunda opción se utiliza cuando hay que copiar los datos a otra aplicación.
+<p>Cuando la caja <em>Módulo</em> vale cero, la aplicación muestra las raíces del polinomio mediante números racionales y radicaciones. El programa soporta grados de los factores hasta 5.
+Por el teorema de Abel y Ruffini, algunos polinomios de grado 5 no se pueden expresar mediante radicandos.</p>
 </div>
 <h2><button>Expresiones</button></h2>
 <div class="panel">
@@ -507,7 +524,7 @@ Calculemos <var>b</var> = gcdp(<var>a</var>, cp(<var>f</var>) &#8290; <var>f</va
 Puede bajar el código fuente del programa actual y del viejo applet de factorización de polinomios <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.
 </p>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 18 de septiembre de 2019.</p>
+<p>Escrito por Dario Alpern. Actualizado el 11 de noviembre de 2019.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>
@@ -564,7 +581,7 @@ e.postMessage(d):e.postMessage([d,k])}function l(d){d=1+d+(a("sup").checked?4:0)
 e+","+d+","+m+String.fromCharCode(0)+c+String.fromCharCode(0),p())}function n(){a("main").style.display="block";a("feedback").style.display="none";a("poly").focus()}var e=0,f,k=0,h="undefined"===typeof WebAssembly;window.onload=function(){a("stop").disabled=!0;a("eval").onclick=function(){l(2)};a("factor").onclick=function(){l(0)};a("stop").onclick=function(){e.terminate();e=0;a("eval").disabled=!1;a("factor").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Factorizaci\u00f3n detenida por el usuario.</p>"};
 a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("poly").oninput=function(){var c=a("poly"),b=c.value.length-c.selectionStart;c.value=c.value.replace(".","x^");setTimeout(function(){b=c.value.length-b;c.selectionStart=b;c.selectionEnd=b},30)};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){n()};a("formsend").onclick=
 function(){a("userdata").value=a("adduserdata").checked?a("poly").value+" (mod "+a("mod").value+")":"";var c=new XMLHttpRequest;c.onreadystatechange=function(){4==c.readyState&&(200==c.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),n())};c.open("POST","/enviomail.php",!0);c.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var b=a("formfeedback").elements,d="",e=0,g=0;g<b.length;g++){var f=b[g];"radio"==f.type&&0==f.checked||
-!f.name||(e&&(d+="&"),d+=f.name+"="+encodeURIComponent(f.value),e++)}c.send(d);return!1};var d=document.querySelectorAll("h2"),b;for(b=0;b<d.length;b++)d[b].addEventListener("click",function(){this.children[0].classList.toggle("active");var a=this.nextElementSibling;a.style.display="block"===a.style.display?"none":"block"});"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var g=new XMLHttpRequest;g.open("GET",h?"polfactW0019.js":"polfact0019.wasm",
+!f.name||(e&&(d+="&"),d+=f.name+"="+encodeURIComponent(f.value),e++)}c.send(d);return!1};var d=document.querySelectorAll("h2"),b;for(b=0;b<d.length;b++)d[b].addEventListener("click",function(){this.children[0].classList.toggle("active");var a=this.nextElementSibling;a.style.display="block"===a.style.display?"none":"block"});"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var g=new XMLHttpRequest;g.open("GET",h?"polfactW0021.js":"polfact0021.wasm",
 !0);g.responseType="arraybuffer";g.onreadystatechange=function(){4==g.readyState&&200==g.status&&(k=g.response)};g.send(null)})(this);
 //-->
 </script>

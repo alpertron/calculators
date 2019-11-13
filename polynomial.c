@@ -63,7 +63,7 @@ static int polyMultM[1000000];
 static int polyMultT[1000000];
 int polyMultTemp[1000000];
 int polyLifted[1000000];
-unsigned char superscripts, onlyEvaluate = 0;
+unsigned char pretty, onlyEvaluate = 0;
 struct sFactorInfo factorInfo[MAX_DEGREE];
 static BigInteger coeff[2 * KARATSUBA_POLY_CUTOFF];
 int nbrFactorsFound;
@@ -1278,14 +1278,14 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
     UncompressBigIntegerB(ptrValue1, &operand2);
     if (modulusIsZero)
     {
-      BigIntMultiply(&operand1, &operand2, &operand1);
-      NumberLength = operand1.nbrLimbs;
+      BigIntMultiply(&operand1, &operand2, &operand3);
+      NumberLength = operand3.nbrLimbs;
     }
     else
     {
-      modmult(operand1.limbs, operand2.limbs, operand1.limbs);
+      modmult(operand1.limbs, operand2.limbs, operand3.limbs);
     }
-    CompressBigInteger(ptrValue2, &operand2);
+    CompressBigInteger(ptrValue2, &operand3);
     ptrValue1 += 1 + *ptrValue1;
     ptrValue2 += 1 + *ptrValue2;
   }
@@ -1701,7 +1701,7 @@ static int PowerPolynomialExpr(int *ptrArgument1, int expon)
   // Move power back to values stack.
   if (modulusIsZero)
   {
-    CopyPolynomial(ptrValue1, polyMultTemp, degreePower);
+    ptrValue1 = CopyPolynomial(ptrValue1, polyMultTemp, degreePower);
   }
   else
   {
@@ -3400,7 +3400,7 @@ void OrigPolyFromMontgomeryToStandard(void)
 static void showPower(char **pptrOutput, int exponent)
 {
   char *ptrOutput = *pptrOutput;
-  if (superscripts)
+  if (pretty)
   {
     *ptrOutput++ = '<';
     *ptrOutput++ = 's';

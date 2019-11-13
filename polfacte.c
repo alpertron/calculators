@@ -39,7 +39,7 @@ EXTERNALIZE void doWork(void)
   flags = *ptrData;
   lang = flags & 1;
   onlyEvaluate = (unsigned char)(flags & 2);
-  superscripts = (unsigned char)(flags & 4);
+  pretty = (unsigned char)(flags & 4);
   ptrData += 2;          // Skip flags and comma.
   polyFactText(ptrData, ptrData + strlen(ptrData) + 1, groupLen);
   ptrData += strlen(ptrData);

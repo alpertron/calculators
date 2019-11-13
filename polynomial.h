@@ -36,6 +36,7 @@ enum eDivType
 };
 
 extern int lang;
+extern BigInteger Quintic, Quartic, Cubic, Quadratic, Linear, Independent;
 extern struct sFactorInfo factorInfo[MAX_DEGREE];
 extern struct sFactorInfo factorInfoInteger[MAX_DEGREE];
 extern BigInteger primeMod;              // p
@@ -50,7 +51,7 @@ extern int poly3[1000000];
 extern int polyMultTemp[1000000];
 extern int valuesPrime[1000000];
 extern int nbrFactorsFound;
-extern unsigned char superscripts, onlyEvaluate;
+extern unsigned char pretty, onlyEvaluate;
 extern int degree;
 extern int *ptrOrigPoly;
 extern int degreeOrigPoly;

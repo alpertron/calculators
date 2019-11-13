@@ -63,22 +63,15 @@ echo fsquares
 ../binaryen/build/bin/s2wasm fsquares.s -s 1000000 > fsquares.wast
 ../wabt/build/wat2wasm -o fsquares.wasm fsquares.wast
 
-echo rootseq
+echo polfact
 /usr/local/bin/clang $flags_other rootseq.c -o rootseq.bc
 /usr/local/bin/clang $flags_other quintics.c -o quintics.bc
 /usr/local/bin/clang $flags_other output.c -o output.bc
 /usr/local/bin/clang $flags_other bigrational.c -o bigrational.bc
 /usr/local/bin/clang $flags_other polfact.c -o polfact.bc
-/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc rootseq.bc quintics.bc bigrational.bc output.bc polfact.bc polynomial.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc batch.bc fft.bc -o rootseq1.bc
-/usr/local/bin/opt -internalize -internalize-public-api-list=getFactorsAsciiPtr,getInputStringPtr,doWork,memory rootseq1.bc -o rootseq.bc
-/usr/local/bin/llc -O3 rootseq.bc -march=wasm32 -o rootseq.s
-../binaryen/build/bin/s2wasm rootseq.s -s 1000000 > rootseq.wast
-../wabt/build/wat2wasm -o rootseq.wasm rootseq.wast
-
-echo polfact
 /usr/local/bin/clang $flags_other polfacte.c -o polfacte.bc
 /usr/local/bin/clang $flags_other polynomial.c -o polynomial.bc
-/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc polynomial.bc polfact.bc polfacte.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc fft.bc -o polfact1.bc
+/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc polynomial.bc rootseq.bc quintics.bc bigrational.bc output.bc polfact.bc polfacte.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc fft.bc -o polfact1.bc
 /usr/local/bin/opt -internalize -internalize-public-api-list=getFactorsAsciiPtr,getInputStringPtr,doWork,memory polfact1.bc -o polfact.bc
 /usr/local/bin/llc -O3 polfact.bc -march=wasm32 -o polfact.s
 ../binaryen/build/bin/s2wasm polfact.s -s 1000000 > polfact.wast

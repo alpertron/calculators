@@ -24,6 +24,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "highlevel.h"
 #include "polynomial.h"
 #include "showtime.h"
+#include "rootseq.h"
 
 #ifdef __EMSCRIPTEN__
 int attemptNbr;
@@ -48,8 +49,7 @@ struct sFactorInfo factorInfoRecord[MAX_DEGREE];
 struct sFactorInfo factorInfoInteger[MAX_DEGREE];
 int polyInteger[1000000];
 static int arrNbrFactors[MAX_DEGREE];
-static int FactorModularPolynomial(int inputMontgomery)
-;
+static int FactorModularPolynomial(int inputMontgomery);
 
 // Perform distinct degree factorization
 static void DistinctDegreeFactorization(int polyDegree)
@@ -575,6 +575,7 @@ int FactorPolyOverIntegers(void)
     int nbrFactorsRecord;
     int prime;
     int sumOfDegrees;
+    modulusIsZero = 1;
     // Get trailing coefficient.
     ptrSrc = &values[1];
     UncompressBigIntegerB(ptrSrc, &operand1);
@@ -1152,7 +1153,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
       {
         pstFactorInfo = factorInfo;
       }
-      strcpy(ptrOutput, "<p>");
+      strcpy(ptrOutput, lang? "<p>Los factores irreducibles del polinomio son:": "<p>Irreducible polynomial factors:");
       ptrOutput += strlen(ptrOutput);
 
       // Output factors
@@ -1203,6 +1204,30 @@ void polyFactText(char *modText, char *polyText, int groupLength)
       *ptrOutput++ = 'u';
       *ptrOutput++ = 'l';
       *ptrOutput++ = '>';
+      if (modulusIsZero)
+      {
+        strcpy(ptrOutput, lang ? "<p>Las raíces son:<ul>" : "<p>Roots:<ul>");
+        ptrOutput += strlen(ptrOutput);
+        indexRoot = 1;
+        pstFactorInfo = factorInfoInteger;
+        for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+        {
+          int polyDegree = pstFactorInfo->degree;
+          if (polyDegree > 5)
+          {
+            strcpy(ptrOutput, lang ? "<p>No puedo calcular las raíces de un polinomio irreducible de grado mayor que 5.":
+                                     "<p>I cannot compute the roots of an irreducible polynomial whose degree is greater than 5.");
+            ptrOutput += strlen(ptrOutput);
+          }
+          else
+          {
+            getRootsPolynomial(&ptrOutput, pstFactorInfo);
+          }
+          pstFactorInfo++;
+        }
+      }
+      strcpy(ptrOutput, "</ul>");
+      ptrOutput += strlen(ptrOutput);
       // Show time only when factoring, not when just evaluating polynomial.
       showElapsedTime(&ptrOutput);
     }
