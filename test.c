@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
     printf("modulus polynomial\n");
     return 0;
   }
-  polyFactText(argv[1], argv[2], 6);
+  polyFactText(argv[1], argv[2], 7);
   printf("%s\n", output);
 #elif DEBUG_CODE == 11
   if (argc != 4)

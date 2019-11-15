@@ -215,7 +215,7 @@ Contacto
 <p>El símbolo de exponenciación no se encuentra en algunos dispositivos móviles. En este caso se puede ingresar dos asteriscos (**) para representar el operador de exponenciación.</p>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de ecuaciones cuadráticas enteras desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> para generar Javascript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 11 de noviembre de 2019.</p>
+<p>Escrito por Dario Alpern. Actualizado el 14 de noviembre de 2019.</p>
 </div>
 <div id="result" aria-live="polite"></div>
 <div>
@@ -273,7 +273,7 @@ k=a("coefF").value.trim(),m=a("digits").value.trim();a("help").style.display="no
 a("stop").onclick=function(){e.terminate();e=0;a("solve").disabled=!1;a("steps").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>C\u00e1lculo detenido por el usuario.</p>"};a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("coefA").onkeypress=function(a){d(a,this,"coefB")};a("coefB").onkeypress=function(a){d(a,this,"coefC")};a("coefC").onkeypress=function(a){d(a,this,"coefD")};a("coefD").onkeypress=function(a){d(a,this,"coefE")};a("coefE").onkeypress=
 function(a){d(a,this,"coefF")};a("coefF").onkeypress=function(b){(10==b.which||13==b.which)&&0<this.value.trim().length&&(b.preventDefault(),a("coefA").focus(),m(0))};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){q()};a("formsend").onclick=function(){var b=a("userdata");a("adduserdata").checked?b.value="ax^2 + bxy + cy^2 + dx + ey + f = 0\na = "+a("coefA").value.trim()+
 "\nb = "+a("coefB").value.trim()+"\nc = "+a("coefC").value.trim()+"\nd = "+a("coefD").value.trim()+"\ne = "+a("coefE").value.trim()+"\nf = "+a("coefF").value.trim():b.value="";var g=new XMLHttpRequest;g.onreadystatechange=function(){4==g.readyState&&(200==g.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),q())};g.open("POST","/enviomail.php",!0);g.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var b=a("formfeedback").elements,
-c="",f=0,e=0;e<b.length;e++){var d=b[e];"radio"==d.type&&0==d.checked||!d.name||(f&&(c+="&"),c+=d.name+"="+encodeURIComponent(d.value),f++)}g.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var f=new XMLHttpRequest;f.open("GET","quadW0021.js",!0);f.responseType="arraybuffer";f.onreadystatechange=function(){4==f.readyState&&200==f.status&&(n=f.response)};f.send(null)})(this);
+c="",f=0,e=0;e<b.length;e++){var d=b[e];"radio"==d.type&&0==d.checked||!d.name||(f&&(c+="&"),c+=d.name+"="+encodeURIComponent(d.value),f++)}g.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var f=new XMLHttpRequest;f.open("GET","quadW0023.js",!0);f.responseType="arraybuffer";f.onreadystatechange=function(){4==f.readyState&&200==f.status&&(n=f.response)};f.send(null)})(this);
 //-->
 </script>
 <script type="application/ld+json">

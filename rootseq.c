@@ -561,7 +561,7 @@ static void biquadraticEquation(int multiplicity)
   // Solutions are x = +/- sqrt((sqrt(r)-p/2)/2) +/- sqrt((-sqrt(r)-p/2)/2)
   // Test whether e is a perfect square.
   BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
-  if (BigRationalSquareRoot(&RatIndependent, &Rat3))
+  if (BigRationalSquareRoot(&RatDeprIndependent, &Rat3))
   {           // e is a perfect square. Rat3 = sqrt(r).
     for (ctr = 0; ctr < 4; ctr++)
     {
@@ -639,13 +639,13 @@ static void biquadraticEquation(int multiplicity)
   {      // e is not a perfect square.
          // Compute discriminant as c^2-4e
     BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &RatDiscr);
-    BigRationalMultiplyByInt(&RatIndependent, 4, &Rat1);
+    BigRationalMultiplyByInt(&RatDeprIndependent, 4, &Rat1);
     BigRationalSubt(&RatDiscr, &Rat1, &RatDiscr);
     ForceDenominatorPositive(&RatDiscr);
     intToBigInteger(&Rat1.numerator, 1);
     intToBigInteger(&Rat1.denominator, 2);
-    CopyBigInt(&Rat2.numerator, &RatIndependent.numerator);
-    CopyBigInt(&Rat2.denominator, &RatIndependent.denominator);
+    CopyBigInt(&Rat2.numerator, &RatDeprIndependent.numerator);
+    CopyBigInt(&Rat2.denominator, &RatDeprIndependent.denominator);
     MultiplyRationalBySqrtRational(&Rat1, &Rat2);
     for (ctr = 0; ctr < 4; ctr++)
     {
@@ -696,24 +696,24 @@ static void biquadraticEquation(int multiplicity)
         if (ctr == 0 || ctr == 2)
         {    // Positive sqrt
           isX2Positive = (RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE ||
-            RatIndependent.numerator.sign == SIGN_NEGATIVE);
+            RatDeprIndependent.numerator.sign == SIGN_NEGATIVE);
         }
         else
         {    // Negative sqrt
           isX2Positive = ((RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE || 
             BigIntIsZero(&RatDeprQuadratic.numerator)) &&
-            RatIndependent.numerator.sign == SIGN_POSITIVE);
+            RatDeprIndependent.numerator.sign == SIGN_POSITIVE);
         }
         if (!isX2Positive)
         {
           showText("i&#8290; ");
         }
-        ForceDenominatorPositive(&RatIndependent);
+        ForceDenominatorPositive(&RatDeprIndependent);
         if (BigIntIsZero(&RatDeprQuadratic.numerator))
         {
-          BigIntChSign(&RatIndependent.numerator);
-          showSquareRootOfRational(&RatIndependent, 4, pretty);
-          BigIntChSign(&RatIndependent.numerator);
+          BigIntChSign(&RatDeprIndependent.numerator);
+          showSquareRootOfRational(&RatDeprIndependent, 4, pretty);
+          BigIntChSign(&RatDeprIndependent.numerator);
           showText("</li>");
         }
         else
@@ -735,7 +735,7 @@ static void biquadraticEquation(int multiplicity)
             showPlusSignOn(!isX2Positive, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
           }
           BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &Rat1);
-          BigRationalSubt(&Rat1, &RatIndependent, &Rat1);
+          BigRationalSubt(&Rat1, &RatDeprIndependent, &Rat1);
           showSquareRootOfRational(&Rat1, 2, pretty);
           endSqrt();
           showText("</li>");
@@ -946,8 +946,8 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
   BigRationalMultiply(&RatDeprIndependent, &RatCubic, &RatDeprIndependent);   // 16b^2*c - 64bd
   BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &Rat1);   // b^4
   BigRationalMultiplyByInt(&Rat1, -3, &Rat1);                         // -3b^4
-  BigRationalAdd(&RatDeprIndependent, &Rat1, &RatDeprIndependent);    // 3b^4 + 16b^2*c - 64bd
-  BigRationalDivideByInt(&RatDeprIndependent, 256, &RatDeprIndependent); // (3b^4 + 16b^2*c - 64bd)/256
+  BigRationalAdd(&RatDeprIndependent, &Rat1, &RatDeprIndependent);    // -3b^4 + 16b^2*c - 64bd
+  BigRationalDivideByInt(&RatDeprIndependent, 256, &RatDeprIndependent); // (-3b^4 + 16b^2*c - 64bd)/256
   BigRationalAdd(&RatDeprIndependent, &RatIndependent, &RatDeprIndependent); // (3b^4 + 16b^2*c - 64bd)/256 + e
 
   BigRationalMultiplyByInt(&RatDeprQuadratic, 3, &RatDeprQuadratic);  // 3b^2
@@ -1299,11 +1299,12 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
   }
 }
 
-void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo)
+void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, int groupLength)
 {
   static struct sFactorInfo factorInfoIntegerBak[MAX_DEGREE];
   static int polyIntegerBak[1000000];
   int nbrFactorsFoundBak;
+  groupLen = groupLength;
   ptrOutput = *pptrOutput;
   if (pretty)
   {

@@ -98,7 +98,14 @@ function dowork(n)
                          "Factoring polynomial...");
   param = digitGroup + ',' + app + ',' + modText + String.fromCharCode(0) + polyText +
   String.fromCharCode(0);
-  callWorker(param);
+  if (!fileContents)
+  {
+    workerParam = param;
+  }
+  else
+  {
+    callWorker(param);
+  }
 }
 
 function endFeedback()

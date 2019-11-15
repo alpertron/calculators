@@ -925,6 +925,7 @@ int FactorPolyOverIntegers(void)
       {
         UncompressBigIntegerB(ptrSrc, &operand2);
         BigIntDivide(&operand2, &operand4, &operand3);
+        NumberLength = operand3.nbrLimbs;
         CompressBigInteger(ptrDest, &operand3);
         ptrSrc += 1 + numLimbs(ptrSrc);
         ptrDest += 1 + numLimbs(ptrDest);
@@ -1221,7 +1222,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
           }
           else
           {
-            getRootsPolynomial(&ptrOutput, pstFactorInfo);
+            getRootsPolynomial(&ptrOutput, pstFactorInfo, groupLength);
           }
           pstFactorInfo++;
         }

@@ -4906,7 +4906,7 @@ void QuinticEquation(int* ptrPolynomial, int multiplicity)
   BigRationalMultiply(&Rat4, &RatN, &Rat1);
   BigRationalAdd(&Rat1, &RatM, &Rat1);
   ForceDenominatorPositive(&Rat1);         // M + N*d
-  if (Rat1.numerator.sign == SIGN_POSITIVE)
+  if (BigIntIsZero(&Rat1.numerator) || Rat1.numerator.sign == SIGN_POSITIVE)
   {
     squareRoot(Rat1.numerator.limbs, tmp4.limbs, Rat1.numerator.nbrLimbs, &tmp4.nbrLimbs);
     tmp4.sign = SIGN_POSITIVE;
