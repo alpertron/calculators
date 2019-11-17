@@ -178,7 +178,7 @@ The applet works in a reasonable amount of time if this factor is less than <spa
 <p>
 You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate Javascript.
 </p>
-<p>Written by Dario Alpern. Last updated 14 November 2019.</p>
+<p>Written by Dario Alpern. Last updated 16 November 2019.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>
@@ -243,7 +243,7 @@ You can download the source of the current program and the old sum polynomial fa
 function(){var b=a("result"),d=a("base").value,l=a("pow").value,c=a("mod").value,f=a("digits").value;a("help").style.display="none";b.style.display="block";""==d?b.innerHTML="Please type an expression for the base.":""==l?b.innerHTML="Please type an expression for the power.":""==c?b.innerHTML="Please type a number or expression for the modulus.":(a("dlog").disabled=!0,a("stop").disabled=!1,b.innerHTML="Computing discrete logarithm...",param=f+",0,"+d+String.fromCharCode(0)+l+String.fromCharCode(0)+
 c+String.fromCharCode(0),m())};a("stop").onclick=function(){c.terminate();c=0;a("dlog").disabled=!1;a("stop").disabled=!0;a("result").innerHTML="<p>Calculation stopped by user</p>"};a("helpbtn").onclick=function(){a("help").style.display="block";a("result").style.display="none"};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){k()};a("formsend").onclick=function(){a("userdata").value=
 a("adduserdata").checked?"\nBase = "+a("base").value+"\npower = "+a("pow").value+"\nModulus = "+a("mod").value:"";var b=new XMLHttpRequest;b.onreadystatechange=function(){4==b.readyState&&(200==b.status?alert("Feedback sent successfully."):alert("Feedback could not be sent."),k())};b.open("POST","/sendmail.php",!0);b.setRequestHeader("Content-type","application/x-www-form-urlencoded");for(var d=a("formfeedback").elements,c="",e=0,f=0;f<d.length;f++){var g=d[f];"radio"==g.type&&0==g.checked||!g.name||
-(e&&(c+="&"),c+=g.name+"="+encodeURIComponent(g.value),e++)}b.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var d=new XMLHttpRequest;d.open("GET","dilogW0023.js",!0);d.responseType="arraybuffer";d.onreadystatechange=function(){4==d.readyState&&200==d.status&&(h=d.response)};d.send(null)})(this);
+(e&&(c+="&"),c+=g.name+"="+encodeURIComponent(g.value),e++)}b.send(c);return!1};"serviceWorker"in navigator&&navigator.serviceWorker.register("calcSW.js").then(function(){},function(){})};var d=new XMLHttpRequest;d.open("GET","dilogW0024.js",!0);d.responseType="arraybuffer";d.onreadystatechange=function(){4==d.readyState&&200==d.status&&(h=d.response)};d.send(null)})(this);
 //-->
 </script>
 <script type="application/ld+json">

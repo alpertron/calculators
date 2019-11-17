@@ -399,6 +399,7 @@ static int NegatePolynomialExpr(int *ptrArgument)
       {          // If value is zero, it does not have to be changed.
         *ptrValue2++ = 1;
         *ptrValue2++ = 0;
+        ptrValue1 += 2;              // Point to next coefficient.
       }
       else if (modulusIsZero)
       {                              // Integer polynomial.
@@ -408,14 +409,14 @@ static int NegatePolynomialExpr(int *ptrArgument)
         {
           nbrLimbs = -nbrLimbs;
         }
-        ptrValue1 += nbrLimbs + 1;
+        ptrValue1 += nbrLimbs + 1;   // Point to next coefficient.
       }
       else
       {                              // Polynomial modulo prime.
         UncompressBigInteger(ptrValue1, &operand1);
         BigIntSubt(&powerMod, &operand1, &operand1);
         CompressBigInteger(ptrValue2, &operand1);
-        ptrValue1 += *ptrValue1 + 1;
+        ptrValue1 += *ptrValue1 + 1; // Point to next coefficient.
         ptrValue2 += *ptrValue2 + 1;
       }
     }
@@ -451,8 +452,8 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
   {
     if (degree1 == degree2)
     {      // Sum of two monomials of same degree.
-      UncompressBigIntegerB(ptrArgument1, &operand1);
-      UncompressBigIntegerB(ptrArgument2, &operand2);
+      UncompressBigIntegerB(ptrArgument1 + 1, &operand1);
+      UncompressBigIntegerB(ptrArgument2 + 1, &operand2);
       if (modulusIsZero)
       {
         BigIntAdd(&operand1, &operand2, &operand1);
@@ -462,7 +463,11 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
       {
         AddBigNbrModN(operand1.limbs, operand2.limbs, operand1.limbs, powerMod.limbs, powerMod.nbrLimbs);
       }
-      CompressBigInteger(ptrArgument1, &operand1);
+      CompressBigInteger(ptrArgument1 + 1, &operand1);
+      if (BigIntIsZero(&operand1))
+      {                     // Sum is zero: set degree to zero.
+        *ptrArgument1 = 0;
+      }
       valuesIndex = (int)(ptrArgument1 + 2 + *(ptrArgument1 + 1) - &values[0]);
       return EXPR_OK;
     }
@@ -549,77 +554,90 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
     }
     memcpy(ptrArgument1, poly1, (ptrValue1 - &poly1[0])*sizeof(int));
     valuesIndex = (int)(ptrArgument1 - &values[0] + (ptrValue1 - &poly1[0]));
-    return EXPR_OK;
-  }
-  // Sum of polynomial and monomial.
-  if (degree1 < 0)
-  {
-    UncompressBigIntegerB(ptrArgument1+1, &operand1);
-    memmove(ptrArgument1 + 1, ptrArgument1 + 3 + numLimbs(ptrArgument1+1), (&values[valuesIndex] - ptrArgument2)*sizeof(int));
-    degreeMono = -degree1;
-    degreePoly = degree2;
-    ptrValue1 = ptrArgument2 + 1;
   }
   else
-  {
-    UncompressBigIntegerB(ptrArgument2 + 1, &operand1);
-    degreeMono = -degree2;
-    degreePoly = degree1;
-    ptrValue1 = ptrArgument1 + 1;
-  }
-  if (degreeMono > degreePoly)
-  {
-    int *ptrValue2 = ptrArgument1 + 1;
-    *ptrArgument1 = degreeMono;
-    for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
+  {                 // Sum of polynomial and monomial.
+    if (degree1 < 0)
     {
-      UncompressBigIntegerB(ptrValue1, &operand2);
-      CompressBigInteger(ptrValue2, &operand2);
-      ptrValue1 += 1 + numLimbs(ptrValue1);
-      ptrValue2 += 1 + numLimbs(ptrValue2);
-    }
-    for (; currentDegree < degreeMono; currentDegree++)
-    {
-      *ptrValue1++ = 1;  // Number of limbs
-      *ptrValue1++ = 0;  // Value = zero.
-    }
-    CompressBigInteger(ptrValue1, &operand1);
-    valuesIndex = (int)(ptrValue1 + 1 + numLimbs(ptrValue1) - &values[0]);
-  }
-  else
-  {        // Degree of polynomial greater than degree of monomial.
-    int differenceOfDegrees, nbrLimbsSum;
-
-    *ptrArgument1 = degreePoly;
-    ptrValue1 = ptrArgument1 + 1;
-    for (currentDegree = 0; currentDegree < degreeMono; currentDegree++)
-    {
-      ptrValue1 += 1 + numLimbs(ptrValue1);
-    }
-    UncompressBigIntegerB(ptrValue1, &operand2);
-    if (modulusIsZero)
-    {
-      BigIntAdd(&operand1, &operand2, &operand1);
-      NumberLength = operand1.nbrLimbs;
+      UncompressBigIntegerB(ptrArgument1 + 1, &operand1);
+      memmove(ptrArgument1 + 1, ptrArgument1 + 3 + numLimbs(ptrArgument1 + 1), (&values[valuesIndex] - ptrArgument2) * sizeof(int));
+      degreeMono = -degree1;
+      degreePoly = degree2;
+      ptrValue1 = ptrArgument2 + 1;
     }
     else
     {
-      AddBigNbrModN(operand1.limbs, operand2.limbs, operand1.limbs, powerMod.limbs, powerMod.nbrLimbs);
+      UncompressBigIntegerB(ptrArgument2 + 1, &operand1);
+      degreeMono = -degree2;
+      degreePoly = degree1;
+      ptrValue1 = ptrArgument1 + 1;
     }
-    CompressBigInteger(poly1, &operand1);
-    nbrLimbsSum = numLimbs(&poly1[0]);
-    differenceOfDegrees = nbrLimbsSum - numLimbs(ptrValue1);
-    if (differenceOfDegrees > 0)
-    {    // New coefficient is greater than old coefficient.
-      memmove(ptrValue1 + differenceOfDegrees, ptrValue1, (ptrArgument2 - ptrValue1)*sizeof(int));
-    }
-    else if (differenceOfDegrees < 0)
+    if (degreeMono > degreePoly)
     {
-      memmove(ptrValue1, ptrValue1 - differenceOfDegrees, (ptrArgument2 - ptrValue1 - differenceOfDegrees)*sizeof(int));
+      int* ptrValue2 = ptrArgument1 + 1;
+      *ptrArgument1 = degreeMono;
+      for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
+      {
+        UncompressBigIntegerB(ptrValue1, &operand2);
+        CompressBigInteger(ptrValue2, &operand2);
+        ptrValue1 += 1 + numLimbs(ptrValue1);
+        ptrValue2 += 1 + numLimbs(ptrValue2);
+      }
+      for (; currentDegree < degreeMono; currentDegree++)
+      {
+        *ptrValue1++ = 1;  // Number of limbs
+        *ptrValue1++ = 0;  // Value = zero.
+      }
+      CompressBigInteger(ptrValue1, &operand1);
+      valuesIndex = (int)(ptrValue1 + 1 + numLimbs(ptrValue1) - &values[0]);
     }
-    memcpy(ptrValue1, poly1, (1 + nbrLimbsSum)*sizeof(int));
-    valuesIndex += differenceOfDegrees;
+    else
+    {        // Degree of polynomial greater than degree of monomial.
+      int differenceOfDegrees, nbrLimbsSum;
+
+      *ptrArgument1 = degreePoly;
+      ptrValue1 = ptrArgument1 + 1;
+      for (currentDegree = 0; currentDegree < degreeMono; currentDegree++)
+      {
+        ptrValue1 += 1 + numLimbs(ptrValue1);
+      }
+      UncompressBigIntegerB(ptrValue1, &operand2);
+      if (modulusIsZero)
+      {
+        BigIntAdd(&operand1, &operand2, &operand1);
+        NumberLength = operand1.nbrLimbs;
+      }
+      else
+      {
+        AddBigNbrModN(operand1.limbs, operand2.limbs, operand1.limbs, powerMod.limbs, powerMod.nbrLimbs);
+      }
+      CompressBigInteger(poly1, &operand1);
+      nbrLimbsSum = numLimbs(&poly1[0]);
+      differenceOfDegrees = nbrLimbsSum - numLimbs(ptrValue1);
+      if (differenceOfDegrees > 0)
+      {    // New coefficient is greater than old coefficient.
+        memmove(ptrValue1 + differenceOfDegrees, ptrValue1, (ptrArgument2 - ptrValue1) * sizeof(int));
+      }
+      else if (differenceOfDegrees < 0)
+      {
+        memmove(ptrValue1, ptrValue1 - differenceOfDegrees, (ptrArgument2 - ptrValue1 - differenceOfDegrees) * sizeof(int));
+      }
+      memcpy(ptrValue1, poly1, (1 + nbrLimbsSum) * sizeof(int));
+      valuesIndex += differenceOfDegrees;
+    }
   }
+           // Reduce degree if leading coefficient is zero.
+  degreeMax = 0;
+  ptrValue1 = ptrArgument1 + 1;
+  for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
+  {
+    if (*ptrValue1 != 1 || *(ptrValue1 + 1) != 0)
+    {                    // Coefficient is not zero
+      degreeMax = currentDegree;
+    }
+    ptrValue1 += 1 + numLimbs(ptrValue1);
+  }
+  *ptrArgument1 = degreeMax;
   return EXPR_OK;
 }
 
