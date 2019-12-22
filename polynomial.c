@@ -2163,12 +2163,13 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
     }
     ptrSrc = &poly3[0];
     if (polyS[0] == 0 && polyS[1] == 1 && polyS[2] == 0)
-    {                                // If previous polynomial is zero, g_m <- b * g_p.
+    {                                // If previous polynomial is zero, g_m <- (b * g_p) mod p.
       ptrDest = &polyS[1];
       for (degree = 0; degree <= potentialDegreeGcd; degree++)
       {
         UncompressBigIntegerB(ptrSrc, &operand1);
         BigIntMultiply(&operand1, &gcdLeadingCoeff, &operand1);
+        intToBigInteger(&operand1, getRemainder(&operand1, prime));
         NumberLength = operand1.nbrLimbs;
         CompressBigInteger(ptrDest, &operand1);
         ptrSrc += 1 + numLimbs(ptrSrc);

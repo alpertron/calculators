@@ -168,6 +168,7 @@
     <ClCompile Include="bigint.c" />
     <ClCompile Include="bignbr.c" />
     <ClCompile Include="bigrational.c" />
+    <ClCompile Include="intpolfact.c" />
     <ClCompile Include="quintics.c" />
     <ClCompile Include="contfrac.c" />
     <ClCompile Include="dilog.c" />

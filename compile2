@@ -71,7 +71,8 @@ echo polfact
 /usr/local/bin/clang $flags_other polfact.c -o polfact.bc
 /usr/local/bin/clang $flags_other polfacte.c -o polfacte.bc
 /usr/local/bin/clang $flags_other polynomial.c -o polynomial.bc
-/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc polynomial.bc rootseq.bc quintics.bc bigrational.bc output.bc polfact.bc polfacte.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc fft.bc -o polfact1.bc
+/usr/local/bin/clang $flags_other intpolfact.c -o intpolfact.bc
+/usr/local/bin/llvm-link expression.bc partition.bc errors.bc bigint.bc division.bc baseconv.bc karatsuba.bc modmult.bc sqroot.bc polynomial.bc rootseq.bc quintics.bc bigrational.bc output.bc polfact.bc polfacte.bc intpolfact.bc bignbr.bc showtime.bc from_musl.bc inputstr.bc fft.bc -o polfact1.bc
 /usr/local/bin/opt -internalize -internalize-public-api-list=getFactorsAsciiPtr,getInputStringPtr,doWork,memory polfact1.bc -o polfact.bc
 /usr/local/bin/llc -O3 polfact.bc -march=wasm32 -o polfact.s
 ../binaryen/build/bin/s2wasm polfact.s -s 1000000 > polfact.wast

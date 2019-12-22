@@ -93,4 +93,6 @@ int *CopyPolyProduct(int *ptrSrc, int *ptrDest, int degree);
 int FactorPolyOverIntegers(void);
 void polyFactText(char* modText, char* polyText, int groupLength);
 void showPowerX(char** pptrOutput, int polyDegree);
+int FactorModularPolynomial(int inputMontgomery);
+
 #endif
