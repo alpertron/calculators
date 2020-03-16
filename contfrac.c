@@ -27,7 +27,6 @@ static BigInteger V1, V2, V3;
 static BigInteger startPeriodNum, startPeriodDen;
 static char *ptrOutput;
 static void ShowRational(BigInteger *pNum, BigInteger *pDen);
-extern int lang;
 extern char hexadecimal;
 static void showText(char *text)
 {

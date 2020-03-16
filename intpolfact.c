@@ -1,7 +1,7 @@
 /*
 This file is part of Alpertron Calculators.
 
-Copyright 2015 Dario Alejandro Alpern
+Copyright 2019 Dario Alejandro Alpern
 
 Alpertron Calculators is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,13 +26,26 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "showtime.h"
 #include "rootseq.h"
 
-#define MAX_MATRIX_SIZE  15
+#define MAX_MATRIX_SIZE  200
+#define MAX_LEN_MINI     1000   // 8000 digits
 
-BigInteger basis[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
-BigInteger basisStar[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
-BigInteger lambda[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
-BigInteger prodB[MAX_MATRIX_SIZE];
-BigInteger detProdB[MAX_MATRIX_SIZE];
+typedef struct MiniBigInteger
+{
+  limb limbs[MAX_LEN_MINI];
+  int nbrLimbs;
+  enum eSign sign;
+} MiniBigInteger;
+
+MiniBigInteger basis[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
+MiniBigInteger basisStar[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
+MiniBigInteger lambda[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
+MiniBigInteger prodB[MAX_MATRIX_SIZE];
+MiniBigInteger detProdB[MAX_MATRIX_SIZE];
+MiniBigInteger matrixBL[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
+MiniBigInteger matrixS[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
+BigInteger traces[MAX_MATRIX_SIZE];
+BigInteger powerBoundA, powerExtraBits;
+int *ptrCoeffs[MAX_MATRIX_SIZE];
 
 static BigInteger contentPolyToFactor, halfPowerMod;
 static int origPolyToFactor[1000000];
@@ -51,6 +64,16 @@ extern int polyS[1000000];
 extern int poly5[1000000];
 int polyInteger[1000000];
 
+static void CopyBigIntegerToMini(MiniBigInteger* mini, BigInteger* big)
+{
+  CopyBigInt((BigInteger*)mini, big);
+}
+
+static void CopyMiniBigIntegerToBig(MiniBigInteger* big, BigInteger* mini)
+{
+  CopyBigInt((BigInteger*)big, mini);
+}
+
 // Compute the orthogonal basis of E (basisStar), lambda, prodB
 // and the determinant of products of B.
 static void GramSchmidtOrthogonalization(int size)
@@ -62,45 +85,45 @@ static void GramSchmidtOrthogonalization(int size)
     // Compute b*_i = b_i - sum_j(u_{i, j} b*_j /d_j) (u = lambda)
     for (row = 0; row < size; row++)
     {
-      CopyBigInt(&basisStar[row][colI], &basis[row][colI]);
+      CopyBigInt((BigInteger *)&basisStar[row][colI], (BigInteger *)&basis[row][colI]);
     }
     for (colJ = 0; colJ < colI; colJ++)
     {
       for (row = 0; row < size; row++)
       {
-        BigIntMultiply(&lambda[colI][colJ], &basisStar[colJ][row], &tmp0);
-        BigIntDivide(&tmp0, &detProdB[colJ], &tmp1);
-        BigIntSubt(&basisStar[row][colJ], &tmp1, &basisStar[row][colJ]);
+        BigIntMultiply((BigInteger *)&lambda[colI][colJ], (BigInteger *)&basisStar[colJ][row], &tmp0);
+        BigIntDivide(&tmp0, (BigInteger *)&detProdB[colJ], &tmp1);
+        BigIntSubt((BigInteger *)&basisStar[row][colJ], &tmp1, (BigInteger *)&basisStar[row][colJ]);
       }
     }
     // Compute B_i = b*_i * b*_i
-    intToBigInteger(&prodB[colI], 0);
+    intToBigInteger((BigInteger *)&prodB[colI], 0);
     for (row = 0; row < size; row++)
     {
-      BigIntMultiply(&basisStar[row][colI], &basisStar[row][colI], &tmp0);
-      BigIntAdd(&prodB[colI], &tmp0, &prodB[colI]);
+      BigIntMultiply((BigInteger *)&basisStar[row][colI], (BigInteger *)&basisStar[row][colI], &tmp0);
+      BigIntAdd((BigInteger *)&prodB[colI], &tmp0, (BigInteger *)&prodB[colI]);
     }
     if (colI == 0)
     {
-      CopyBigInt(&detProdB[0], &prodB[0]);
+      CopyBigInt((BigInteger *)&detProdB[0], (BigInteger *)&prodB[0]);
     }
     else
     {
-      BigIntMultiply(&detProdB[colI-1], &prodB[colI], &detProdB[colI]);
+      BigIntMultiply((BigInteger *)&detProdB[colI-1], (BigInteger *)&prodB[colI], (BigInteger *)&detProdB[colI]);
     }
     // Compute lambda_{i, j} = b_i * b*_j * d_j / B_j = b_i * b*_j * d_{j-1}
     for (colJ = 0; colJ < colI; colJ++)
     {
-      pDest = &lambda[colI][colJ];
+      pDest = (BigInteger *)&lambda[colI][colJ];
       intToBigInteger(pDest, 0);
       for (row = 0; row < size; row++)
       {
-        BigIntMultiply(&basis[row][colI], &basisStar[row][colJ], &tmp0);
+        BigIntMultiply((BigInteger *)&basis[row][colI], (BigInteger *)&basisStar[row][colJ], &tmp0);
         BigIntAdd(pDest, &tmp0, pDest);
       }
       if (colI > 0)
       {
-        BigIntMultiply(pDest, &detProdB[colJ - 1], pDest);
+        BigIntMultiply(pDest, (BigInteger *)&detProdB[colJ - 1], pDest);
       }
     }
   }
@@ -110,8 +133,8 @@ static void PerformREDI(int k, int l, int size)
 {
   int i, row;
   // If |2 lambda_{k. l}| <= d_l, go out.
-  BigInteger* pLambda = &lambda[k][l];
-  BigInteger* pDet = &detProdB[l];
+  BigInteger* pLambda = (BigInteger *)&lambda[k][l];
+  BigInteger* pDet = (BigInteger *)&detProdB[l];
   enum eSign signDivision;
   multint(&tmp0, pLambda, 2);
   tmp0.sign = SIGN_POSITIVE;
@@ -137,16 +160,16 @@ static void PerformREDI(int k, int l, int size)
   tmp2.sign = signDivision;       // tmp2 <- q.
   for (row = 0; row < size; row++)
   {  // b_k <- b_k - q*b_l
-    BigIntMultiply(&tmp2, &basis[row][l], &tmp0);
-    BigIntSubt(&basis[row][k], &tmp0, &basis[row][k]);
+    BigIntMultiply(&tmp2, (BigInteger *)&basis[row][l], &tmp0);
+    BigIntSubt((BigInteger *)&basis[row][k], &tmp0, (BigInteger *)&basis[row][k]);
   }
     // lambda_{k, l} <- lambda_{k, l} - q*d_l
-  BigIntMultiply(&tmp2, &detProdB[l], &tmp0);
-  BigIntSubt(&lambda[k][l], &tmp0, &lambda[k][l]);
+  BigIntMultiply(&tmp2, (BigInteger *)&detProdB[l], &tmp0);
+  BigIntSubt((BigInteger *)&lambda[k][l], &tmp0, (BigInteger *)&lambda[k][l]);
   for (i = 0; i < l; i++)
   { // lambda_{k, i} <- lambda_{k, i} - q*lambda_{l, i}
-    BigIntMultiply(&tmp2, &lambda[l][i], &tmp0);
-    BigIntSubt(&lambda[k][i], &tmp0, &lambda[k][i]);
+    BigIntMultiply(&tmp2, (BigInteger *)&lambda[l][i], &tmp0);
+    BigIntSubt((BigInteger *)&lambda[k][i], &tmp0, (BigInteger *)&lambda[k][i]);
   }
 }
 
@@ -156,46 +179,46 @@ static void PerformSWAPI(int k, int kMax, int size)
   // Exchange b_k with b_{k-1}
   for (row = 0; row < size; row++)
   {
-    CopyBigInt(&tmp0, &basis[row][k]);
-    CopyBigInt(&basis[row][k], &basis[row][k-1]);
-    CopyBigInt(&basis[row][k-1], &tmp0);
+    CopyBigInt(&tmp0, (BigInteger *)&basis[row][k]);
+    CopyBigInt((BigInteger *)&basis[row][k], (BigInteger *)&basis[row][k-1]);
+    CopyBigInt((BigInteger *)&basis[row][k-1], &tmp0);
   }
   for (j = 0; j < k - 1; j++)
   {  // Exchange lambda_{k, j} with lambda_{k-1, j}
-    CopyBigInt(&tmp0, &lambda[k][j]);
-    CopyBigInt(&lambda[k][j], &lambda[k-1][j]);
-    CopyBigInt(&lambda[k-1][j], &tmp0);
+    CopyBigInt(&tmp0, (BigInteger *)&lambda[k][j]);
+    CopyBigInt((BigInteger *)&lambda[k][j], (BigInteger *)&lambda[k-1][j]);
+    CopyBigInt((BigInteger *)&lambda[k-1][j], &tmp0);
   }
     // Set lambda <- lambda_{k, k-1}
-  CopyBigInt(&tmp0, &lambda[k][k - 1]);    // tmp0 <- lambda.
+  CopyBigInt(&tmp0, (BigInteger *)&lambda[k][k - 1]);    // tmp0 <- lambda.
     // Set B <- (d_{k-2}*d_k + lambda^2)/d_{k-1}
   if (k > 1)
   {
-    BigIntMultiply(&detProdB[k - 2], &detProdB[k], &tmp1);
+    BigIntMultiply((BigInteger *)&detProdB[k - 2], (BigInteger *)&detProdB[k], &tmp1);
   }
   else
   {
-    CopyBigInt(&tmp1, &detProdB[k]);
+    CopyBigInt(&tmp1, (BigInteger *)&detProdB[k]);
   }
   BigIntMultiply(&tmp0, &tmp0, &tmp2);
   BigIntAdd(&tmp1, &tmp2, &tmp1);
-  BigIntDivide(&tmp1, &detProdB[k - 1], &tmp1); // tmp1 <- B.
+  BigIntDivide(&tmp1, (BigInteger *)&detProdB[k - 1], &tmp1); // tmp1 <- B.
   for (i = k; i <= kMax; i++)
   {
     // t <- lambda_{i, k}
-    CopyBigInt(&tmp2, &lambda[i][k]);
+    CopyBigInt(&tmp2, (BigInteger *)&lambda[i][k]);
     // lambda_{i, k} <- (d_k*lambda_{i, k-1} - lambda * t)/d_{k-1}
-    BigIntMultiply(&detProdB[k], &lambda[i][k-1], &tmp3);
+    BigIntMultiply((BigInteger *)&detProdB[k], (BigInteger *)&lambda[i][k-1], &tmp3);
     BigIntMultiply(&tmp0, &tmp2, &tmp4);
     BigIntSubt(&tmp3, &tmp4, &tmp3);
-    BigIntDivide(&tmp3, &detProdB[k - 1], &lambda[i][k]);
+    BigIntDivide(&tmp3, (BigInteger *)&detProdB[k - 1], (BigInteger *)&lambda[i][k]);
     // lambda_{i, k-1} <- (B*t + lambda * lambda_{i, k})/d_k
     BigIntMultiply(&tmp0, &tmp1, &tmp3);
-    BigIntMultiply(&tmp2, &lambda[i][k], &tmp4);
+    BigIntMultiply(&tmp2, (BigInteger *)&lambda[i][k], &tmp4);
     BigIntAdd(&tmp3, &tmp4, &tmp3);
-    BigIntDivide(&tmp3, &detProdB[k], &lambda[i][k - 1]);
+    BigIntDivide(&tmp3, (BigInteger *)&detProdB[k], (BigInteger *)&lambda[i][k - 1]);
   }
-  CopyBigInt(&detProdB[k - 1], &tmp1);  // d_{k-1} <- B.
+  CopyBigInt((BigInteger *)&detProdB[k - 1], &tmp1);  // d_{k-1} <- B.
 }
 
 void integralLLL(int size)
@@ -217,13 +240,13 @@ void integralLLL(int size)
         intToBigInteger(&tmp2, 0);
         for (row = 0; row < size; row++)
         {
-          BigIntMultiply(&basis[row][k], &basisStar[row][colJ], &tmp0);
+          BigIntMultiply((BigInteger *)&basis[row][k], (BigInteger *)&basisStar[row][colJ], &tmp0);
           BigIntAdd(&tmp2, &tmp0, &tmp2);
         }
         for (colI = 0; colI < colJ; colI++)
         {    // Set u = (d_i * u - lambda_{k, i} * lambda_{j, i}) / d_{i-1}
-          BigIntMultiply(&detProdB[colI], &tmp2, &tmp0);
-          BigIntMultiply(&lambda[k][colI], &lambda[colJ][colI], &tmp1);
+          BigIntMultiply((BigInteger *)&detProdB[colI], &tmp2, &tmp0);
+          BigIntMultiply((BigInteger *)&lambda[k][colI], (BigInteger *)&lambda[colJ][colI], &tmp1);
           if (colI == 0)
           {
             BigIntSubt(&tmp0, &tmp1, &tmp2);
@@ -231,16 +254,16 @@ void integralLLL(int size)
           else
           {
             BigIntSubt(&tmp0, &tmp1, &tmp0);
-            BigIntDivide(&tmp0, &detProdB[colI - 1], &tmp2);
+            BigIntDivide(&tmp0, (BigInteger *)&detProdB[colI - 1], &tmp2);
           }
         }
         if (colJ < k)
         {
-          CopyBigInt(&lambda[k][colJ], &tmp2);
+          CopyBigInt((BigInteger *)&lambda[k][colJ], &tmp2);
         }
         else
         {
-          CopyBigInt(&detProdB[k], &tmp2);
+          CopyBigInt((BigInteger *)&detProdB[k], &tmp2);
         }
       }
     }
@@ -252,11 +275,11 @@ void integralLLL(int size)
       // Check whether 4 * d_k * d_{k-2} < 3 (d_{k-1})^2 - 4*(lambda_{k, k-1})^2
       if (k > 1)
       {
-        BigIntMultiply(&detProdB[k], &detProdB[k - 2], &tmp0);
+        BigIntMultiply((BigInteger *)&detProdB[k], (BigInteger *)&detProdB[k - 2], &tmp0);
         multint(&tmp0, &tmp0, 4);
-        BigIntMultiply(&detProdB[k - 1], &detProdB[k - 1], &tmp1);
+        BigIntMultiply((BigInteger *)&detProdB[k - 1], (BigInteger *)&detProdB[k - 1], &tmp1);
         multint(&tmp1, &tmp1, 3);
-        BigIntMultiply(&lambda[k][k-1], &lambda[k][k - 1], &tmp2);
+        BigIntMultiply((BigInteger *)&lambda[k][k-1], (BigInteger *)&lambda[k][k - 1], &tmp2);
         multint(&tmp2, &tmp2, 4);
         BigIntSubt(&tmp1, &tmp2, &tmp1);    // tmp1 = Right Hand Side.
         BigIntSubt(&tmp0, &tmp1, &tmp0);
@@ -277,6 +300,399 @@ void integralLLL(int size)
       k++;
     }
   } while (k < size);
+}
+
+// Compute the traces of all modular factors in a matrix.
+// matrixS[row][col] = trace_row(poly_col)
+// Let the polynomial factor be:
+// P(x) = x^d + E_1*x^(d-1) + E_2*x^(d-2) + ... + E_n
+// Tr_n(P) = -n*E_n - E_{n-1}*Tr_1(P) - E_{n-2}*Tr_2(P) - ...
+// The coefficients have to be processed in the order inverted,
+// so the first step is to get the pointers to the coefficients.
+static void ComputeTraces(int nbrTraces, int nbrCol)
+{
+  int traceNbr;
+  int* ptrCoeff;
+  int polyDegree, degree;
+  struct sFactorInfo* pstFactorInfo = &factorInfoRecord[nbrCol];
+  // Get pointers to the coefficients.
+  polyDegree = pstFactorInfo->degree;          // Degree of polynomial factor
+  ptrCoeff = pstFactorInfo->ptrPolyLifted;     // coefficients of polynomial factor.
+  for (traceNbr = polyDegree - 1; traceNbr >= 0; traceNbr--)
+  {
+    ptrCoeffs[traceNbr] = ptrCoeff;
+    ptrCoeff += 1 + numLimbs(ptrCoeff);
+  }
+  // Store traces of polynomial in matrix traces.
+  UncompressBigIntegerB(ptrCoeffs[polyDegree - 1], &operand1);
+  BigIntNegate(&operand1, &traces[0]);
+  BigIntRemainder(&traces[0], &powerBoundA, &traces[0]);
+  for (traceNbr = 1; traceNbr < nbrTraces; traceNbr++)
+  {
+    // Initialize trace to -n*E_n.
+    if (traceNbr < polyDegree)
+    {
+      UncompressBigIntegerB(ptrCoeffs[traceNbr], &operand1);
+      multint(&traces[traceNbr], &operand1, traceNbr+1);
+    }
+    else
+    {
+      intToBigInteger(&traces[traceNbr], 0);
+    }
+    for (degree = 0; degree < traceNbr; degree++)
+    {
+      if (degree < polyDegree)
+      {
+        BigIntMultiply(&traces[degree], (BigInteger *)ptrCoeffs[polyDegree - degree], &operand1);
+        BigIntSubt(&traces[traceNbr], &operand1, &traces[traceNbr]);
+      }
+    }
+    BigIntRemainder(&traces[degree], &powerBoundA, &traces[degree]);
+  }
+  // The next loop is needed for non-monic polynomial.
+  // if lc(f) != 1, take the polynomial g(y) = lc(f)^(deg(f)-1)*f(y/lc(f)) which is monic.
+  // The roots of g are those of f multiplied by aN,
+  // thus Tr_g[i] = Tr_f[i]*lc(f)^i
+  intToBigInteger((BigInteger *)&prodB[0], 1);    // Use this a as temporary variable.
+  CopyBigInt((BigInteger *)&prodB[1], &powerMod);
+  BigIntDivideBy2((BigInteger *)&prodB[1]);
+  for (traceNbr = 0; traceNbr < nbrTraces-1; traceNbr++)
+  {
+    BigIntMultiply((BigInteger *)&prodB[0], &leadingCoeff, (BigInteger *)&prodB[0]);
+    BigIntRemainder((BigInteger *)&prodB[0], &powerBoundA, (BigInteger *)&prodB[0]);
+    BigIntMultiply(&traces[traceNbr], &leadingCoeff, &traces[traceNbr]);
+    BigIntRemainder(&traces[traceNbr], &powerBoundA, &traces[traceNbr]);
+    BigIntAdd(&traces[traceNbr], (BigInteger *)&prodB[1], &traces[traceNbr]);
+    BigIntDivide(&traces[traceNbr], &powerMod, &traces[traceNbr]);
+  }
+}
+
+// Perform Van Hoeij algorithm 
+// On input: values = integer polynomial.
+// prime: integer prime used for factoring the polynomial
+// primeMod: BigInteger representing prime.
+// exponentMod: Exponent used for Knuth-Cohen bound.
+// powerMod: BigInteger representing Knuth-Cohen bound.
+static void vanHoeij(int prime, int nbrFactors)
+{
+#if 0
+  int degreePolyToFactor = values[0];
+  int degree1, count;
+  int nbrRequiredTraces, nbrVectors, valueN;
+  int nbrRow, nbrCol;
+  int* ptrDest;
+  int exponDifference;
+  int firstTrace = 0;
+  // Store into polyLifted the polynomial values / lc(values) (mod powerMod).
+  int *ptrSrc = &values[1];
+  int bofs;
+  double b0 = log(2 * values[0]) / log(prime);
+  double log_rootbound = logBigNbr(&bound) / log(prime);
+  int a0 = (int)ceil(log_rootbound);
+  int b, C, j;
+  // initialize variables for van Hoeij algorithm.
+  nbrRequiredTraces = 0;    // Initialize nbrRequiredTraces.
+  nbrVectors = nbrFactors;      // Initialize nbrVectors.
+  // Compute powerExtraBits as a power of prime with 3 times
+  // the number of bits of nbrFactors (the number of polynomial factors).
+  // Compute powerBoundA as powerExtraBits * powerMod.
+  exponDifference = (int)(3.0 * (double)nbrFactors * log(2.0) / log(prime));
+  CopyBigInt(&powerBoundA, &powerMod);
+  BigIntMultiply(&powerExtraBits, &powerMod, &powerBoundA);
+  for (;;)
+  {
+    firstTrace += nbrRequiredTraces;
+    if (nbrVectors >= valueN)
+    {
+      exponDifference += 1 + (3 * exponDifference) / valueN;
+      nbrRequiredTraces++;
+    }
+    if (nbrVectors >= nbrFactors)
+    {
+      valueN = nbrFactors;
+      nbrVectors = nbrFactors;
+      // Initialize matrix BL with identity matrix (length nbrFactors).
+      for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
+      {
+        for (nbrCol = 0; nbrCol < nbrFactors; nbrCol++)
+        {
+          if (nbrRow == nbrCol)
+          {
+            intToBigInteger((MiniBigInteger*)&matrixBL[nbrRow][nbrCol], 1);
+          }
+          else
+          {
+            intToBigInteger((MiniBigInteger*)&matrixBL[nbrRow][nbrCol], 0);
+          }
+        }
+      }
+    }
+    b = (int)(ceil(b0 + (firstTrace + nbrRequiredTraces) * log_rootbound));
+    // use exponDifference additional bits instead of a fixed number
+    if (a0 > b + exponDifference)
+    {
+      bofs = a0 - exponDifference;
+    }
+    else
+    {
+      bofs = b;
+      exponDifference = a0 - b;
+    }
+
+    CopyBigInt(&operand1, prime);
+    BigIntPowerIntExp(&operand1, a0 - bofs, &powerExtraBits);
+
+    C = floor(sqrt(nbrRequiredTraces * nbrFactors) / 2);
+
+    // Generate matrix M in matrix basis.
+    // The matrix to generate is:
+    // ( C*I_n      0     )
+    // (  S     p^l * I_s )
+    //
+    //     ( S_1(G_1)   ...   S_1(G_n)  )
+    // S = (   ...      ...     ...     )
+    //     ( S_k(G_1)   ...   S_k(G_n)  )
+        // Use basisStar for matrix m.
+    for (int row = 0; row < nbrRequiredTraces; row++)
+    {
+      for (int col = 0; col < nbrVectors + nbrRequiredTraces; col++)
+      {
+        if (col == nbrFactors + row)
+        {
+          CopyBigInt(&basisStar[row][col], &powerBoundA);
+        }
+        else
+        {
+          intToBigInteger(&basisStar[row][col], 0);
+        }
+      }
+    }
+
+    /***************************** Construction of m ***************************/
+    // Use matrix lambda to hold the traces.
+
+    for (int factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
+    {
+      ComputeTraces(firstTrace + nbrRequiredTraces, factorNbr);
+
+      // Use traces firstTrace+1 to firstTrace+nbrRequiredTraces
+      // (i.e. Tr[firstTrace] to Tr[firstTrace+nbrRequiredTraces-1])
+      // Convert traces matrix to range -powerExtraBits/2 to powerExtraBits/2.
+      for (int j = firstTrace; j < firstTrace + nbrRequiredTraces; j++)
+      {
+        CopyBigInt(&operand1, &traces[j]);
+        BigIntMultiplyBy2(&operand1);
+        BigIntSubt(&operand1, &powerExtraBits, &operand1); // operand1 <- 2*traces[j] - powerExtraBits
+        if (operand1.sign == SIGN_POSITIVE)
+        {
+          BigIntSubt(&traces[j], &powerExtraBits, &traces[j]);
+        }
+      }
+
+      for (int j = 0; j < nbrVectors + nbrRequiredTraces; j++)
+      {
+        if (j >= nbrVectors)
+        {
+          CopyBigInt(&lambda[factorNbr][j], &traces[firstTrace + j - nbrVectors]);
+        }
+        else
+        {
+          intToBigInteger(&lambda[factorNbr][j], 0);
+        }
+      }
+    }
+
+    // Multiply BL by traces (in lambda matrix).
+    // Size of matrix BL: nbrVectors rows and nbrFactors columns.
+    // Size of matrix trace: nbrFactors rows and nbrVectors + nbrRequiredTraces columns.
+    // Size of product matrix: nbrVectors rows and nbrVectors + nbrRequiredTraces columns.
+    // Store product in matrix basisStar.
+
+    for (nbrRow = 0; nbrRow < nbrVectors; nbrRow++)
+    {
+      for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
+      {
+        intToBigInteger(&operand1, 0);     // Initialize sum.
+        for (j = 0; j < nbrFactors; j++)
+        {
+          BigIntMultiply(&matrixBL[nbrRow][j], &lambda[j][nbrCol], &operand2);
+          BigIntAdd(&operand1, &operand2, &operand1);
+        }
+        CopyBigInt(&basisStar[nbrRow][nbrCol], &operand1);
+      }
+    }
+
+    for (nbrRow = 0; nbrRow < nbrVectors; nbrRow++)
+    {       // overrides left nbrVectors*nbrVectors part of BT
+      intToBigInteger(&basisStar[nbrRow][nbrRow], C);
+    }
+
+    for (nbrRow = nbrRequiredTraces; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
+    {
+      for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
+      {
+        CopyBigInt(&basis[nbrRow][nbrCol], &basisStar[nbrRow - nbrRequiredTraces][nbrCol]);
+      }
+    }
+
+    /*****************************End of construction***************************/
+
+    integralLLL(nbrVectors + nbrRequiredTraces);
+
+    // extract left (nbrVectors+nbrRequiredTraces)*nbrVectors submatrix of M
+    L.SetDims(nbrVectors + nbrRequiredTraces, nbrVectors);
+    for (int i = 0; i < nbrVectors + nbrRequiredTraces; i++)
+    {
+      for (int j = 0; j < nbrVectors; j++)
+      {
+        L[i][j] = M[i][j];
+      }
+    }
+    // Multiply submatrix basis with nbrVectors+nbrRequiredTraces) rows and nbrVectors columns
+    // by BL with nbrVectors rows and nbrFactors columns.
+    // Store the result in matrix basisStar.
+    for (nbrRow = 0; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
+    {
+      for (nbrCol = 0; nbrCol < nbrFactors; nbrCol++)
+      {
+        intToBigInteger(&operand1, 0);     // Initialize sum.
+        for (j = 0; j < nbrVectors; j++)
+        {
+          BigIntMultiply(&matrixBL[nbrRow][j], &lambda[j][nbrCol], &operand2);
+          BigIntAdd(&operand1, &operand2, &operand1);
+        }
+        CopyBigInt(&basisStar[nbrRow][nbrCol], &operand1);
+      }
+    }
+
+    // now concat L to the left of the right (nbrVectors+nbrRequiredTraces)*nbrRequiredTraces submatrix of M
+    mat_ZZ Mprime;
+    Mprime.SetDims(nbrVectors + nbrRequiredTraces, nbrFactors + nbrRequiredTraces);
+    for (int i = 0; i < nbrVectors + nbrRequiredTraces; i++)
+    {
+      int j;
+      for (j = 0; j < nbrFactors; j++)
+      {
+        Mprime[i][j] = L[i][j];
+      }
+      for (; j < nbrFactors + nbrRequiredTraces; j++)
+      {
+        Mprime[i][j] = M[i][j - nbrFactors + nbrVectors];
+      }
+    }
+
+    /* Compute Gram-Schmidt & extract a sublattice of smaller dimension
+       constituted of vectors spanning the shortest vectors of L */
+
+    int nbits = (int)((double)exponDifference * log(to_double(p)) / log(2.0));
+    RR::SetPrecision(nbits);
+    mat_RR mu; vec_RR c;
+    double t_GS;
+
+    ComputeGS(Mprime, mu, c);
+
+    RR MM = to_RR(sqr(C) * nbrFactors + nbrRequiredTraces * nbrFactors * nbrFactors / 4);
+
+    n = nbrVectors;
+    nbrVectors = nbrVectors + nbrRequiredTraces;
+    nbrVectors--; while (nbrVectors >= 0 && c[nbrVectors] > MM) nbrVectors--;
+    nbrVectors++;
+
+    if (nbrVectors == 1) // don't need to update BL in that case
+    {
+      factors.SetLength(1); factors[0] = ff;
+      return;
+    }
+
+    BL.SetDims(nbrVectors, nbrFactors);  // BL is nbrVectors*nbrFactors
+    for (int i = 0; i < nbrVectors; i++)
+    {
+      for (int j = 0; j < nbrFactors; j++)
+      {
+        BL[i][j] = L[i][j] / C;
+      }
+    }
+
+    if (nbrVectors > nbrFactors)
+    {
+      continue;
+    }
+
+    mat_ZZ R;
+
+    int valid = gauss(R, BL, verbose);
+
+    if (valid == -1)
+    {
+      continue;
+    }
+
+    /* Checking condition B */
+
+    // compute degree of each potential factor
+    int degree[valid], ind[valid];
+    for (int i = 0; i < valid; i++) {
+      degree[i] = 0; ind[i] = i;
+      for (int j = 0; j < nbrFactors; j++)
+        if (R[i][j] != 0) degree[i] += deg(w[j]);
+    }
+
+    // sorting by increasing degree
+    for (int i = 0; i < valid; i++) {
+      int j, tmp;
+      j = i;
+      while (j > 0 && degree[ind[j - 1]] > degree[ind[j]]) {
+        tmp = ind[j - 1]; ind[j - 1] = ind[j]; ind[j] = tmp;
+        j--;
+      }
+    }
+
+    ZZX gg = ff, gg2; tf = 0;
+    for (int i = 0; i < valid; i++)
+    {
+      double tconstruct, tdiv;
+
+      factors.SetLength(tf + 1);
+      factors[tf] = aN;
+      for (int j = 0; j < nbrFactors; j++)
+      {
+        if (R[ind[i]][j] != 0)
+        {
+          factors[tf] = factors[tf] * w[j];
+          for (int k = 0; k <= deg(factors[tf]); k++)
+          {
+            factors[tf].rep[k] = factors[tf].rep[k] % P;
+            if (factors[tf].rep[k] > P / 2)
+              factors[tf].rep[k] -= P;
+          }
+        }
+      }
+      if (aN != 1) { // take the gcd of the coefficients
+        ZZ g = factors[tf].rep[0];
+        for (int k = 1; g != 1 && k <= deg(factors[tf]); k++)
+          g = GCD(g, factors[tf].rep[k]);
+        if (g != 1)
+          for (int k = 0; k <= deg(factors[tf]); k++)
+            factors[tf].rep[k] /= g;
+      }
+
+      if (divide(gg2, gg, factors[tf]))
+      {
+        tf++;
+        gg = gg2;
+      }
+      else
+      {
+        break; /* don't need to continue since anyway we won't have
+               a complete factorization */
+      }
+    }
+
+    if (tf == valid || gg2 == 1) {
+      return;
+    }
+  }
+ #endif 
 }
 
 // Generate integer polynomial from modular polynomial.
@@ -637,6 +1053,7 @@ int FactorPolyOverIntegers(void)
     intToBigInteger(&primeMod, prime);
     computePower(expon);
     exponentMod = expon;
+    vanHoeij(prime, nbrFactorsRecord);
     // Combine factors. Ensure that the trailing coefficient multiplied by the leading coefficient
     // of the polynomial to factor divides trailingCoeff.
     // The sum of degree of factors must not exceed half the degree of the original polynomial.

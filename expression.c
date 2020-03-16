@@ -55,7 +55,9 @@ static limb fibon2[MAX_LEN];
 extern limb MontgomeryR1[MAX_LEN];
 static int stackIndex, exprIndex;
 static int exprLength;
-int lang;
+#ifndef lang  
+  int lang;
+#endif
 static int smallPrimes[SMALL_PRIMES_ARRLEN];
 char output[3000000];
 limb Mult1[MAX_LEN];

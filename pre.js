@@ -19,14 +19,14 @@ function ConvertToString(ptr, str)
   HEAPU8[dest] = 0;
 }
 
-var Module =
+Module =
 {
   'preRun': function()
   {
     self.onmessage = function(e)
-	{
-	  ConvertToString(_getInputStringPtr(), e.data);
-  	  _doWork();
+    {
+      ConvertToString(_getInputStringPtr(), e.data);
+      _doWork();
     }
   },
   'noInitialRun': true,

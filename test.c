@@ -180,6 +180,10 @@ int main(int argc, char *argv[])
   skipPrimality = 0;
   lang = 0;
   hexadecimal = 0;
+//  ecmFrontText("x = 2 ^ 64 - 173; x = x + 1; c < 1; x", 1, NULL);
+  ecmFrontText("x=0", 1, NULL);
+  printf("%s\n", output);
+  return 0;
   if (argc == 3)
   {
     ecmFrontText(argv[1], 1, argv[2]);

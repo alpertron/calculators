@@ -62,7 +62,7 @@ static double dN;
 static char textExp[1000];
 struct sFactors astFactorsGO[1000];
 int factorsGO[10000];
-int NumberLength;
+extern int NumberLength;
 static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *subGroupOrder);
 static void ExchangeMods(void);
 
@@ -897,7 +897,9 @@ EXTERNALIZE void doWork(void)
   }
   ptrData++;             // Skip comma.
   flags = *ptrData;
+#ifndef lang  
   lang = flags & 1;
+#endif
   ptrData += 2;          // Skip flags and comma.
   ptrPower = ptrData + strlen(ptrData) + 1;
   ptrMod = ptrPower + strlen(ptrPower) + 1;

@@ -28,7 +28,6 @@
 #include "batch.h"
 #define MAX_SIEVE 65536
 #define SUBT 12
-extern int lang;
 static int primediv[256];
 static int primeexp[256];
 char hexadecimal;
@@ -639,7 +638,7 @@ void fsquaresText(char *input, int groupLen)
   {
     groupLength = groupLen;
   }
-  BatchProcessing(input, &toProcess, &ptrOutput);
+  BatchProcessing(input, &toProcess, &ptrOutput, NULL);
 #ifdef __EMSCRIPTEN__
   strcpy(ptrOutput, lang ? "<p>Transcurrió " : "<p>Time elapsed: ");
   ptrOutput += strlen(ptrOutput);
@@ -651,15 +650,10 @@ void fsquaresText(char *input, int groupLen)
 }
 
 #ifdef FSQUARES_APP
-void batchCallback(char **pptrOutput)
+void batchSquaresCallback(char **pptrOutput)
 {
   int result;
   char *ptrOutput;
-  if (app == 1)
-  {
-    batchCubesCallback(pptrOutput);
-    return;
-  }
   ptrOutput = *pptrOutput;
   NumberLength = toProcess.nbrLimbs;
   CompressBigInteger((int *)number, &toProcess);
@@ -766,6 +760,26 @@ void batchCallback(char **pptrOutput)
   ptrOutput += strlen(ptrOutput);
   *pptrOutput = ptrOutput;
 }
+
+void batchCallback(char **pptrOutput)
+{
+#ifdef applic
+  #if applic == 0
+    batchSquaresCallback(pptrOutput);
+  #else
+    batchCubesCallback(pptrOutput);
+  #endif
+#else
+  if (app == 0)
+  {
+    batchSquaresCallback(pptrOutput);
+  }
+  else
+  {
+    batchCubesCallback(pptrOutput);
+  }
+#endif  
+}
 #endif
 
 #ifdef __EMSCRIPTEN__
@@ -773,22 +787,26 @@ EXTERNALIZE void doWork(void)
 {
   int groupLen = 0;
   char *ptrData = inputString;
-#ifdef __EMSCRIPTEN__
   originalTenthSecond = tenths();
-#endif
   if (*ptrData == 'C')
   {    // User pressed Continue button.
+#if defined(applic)
+  #if applic == 0
+    fsquaresText(NULL, 0); // Routine does not use parameters in this case.
+  #elif applic == 1
+    fcubesText(NULL, 0); // Routine does not use parameters in this case.
+  #endif
+#else
     if (app == 0)
     {
-      fsquaresText(NULL, 0); // Routine does not use prameters in this case.
+      fsquaresText(NULL, 0); // Routine does not use parameters in this case.
     }
     else
     {
-      fcubesText(NULL, 0); // Routine does not use prameters in this case.
+      fcubesText(NULL, 0); // Routine does not use parameters in this case.
     }
-#ifdef __EMSCRIPTEN__
+#endif    
     databack(output);
-#endif
     return;
   }
   valuesProcessed = 0;
@@ -803,7 +821,9 @@ EXTERNALIZE void doWork(void)
     ptrData++;
     app = app * 10 + *ptrData - '0';
   }
+#ifndef lang  
   lang = app & 1;
+#endif
   app >>= 1;
   if (app & 0x20)
   {
@@ -814,6 +834,15 @@ EXTERNALIZE void doWork(void)
   {
     hexadecimal = 0;
   }
+#if defined(applic)
+  #if applic == 0
+    fsquaresText(ptrData+2, groupLen);    
+  #elif applic == 1
+    fcubesText(ptrData+2, groupLen);
+  #else
+    contfracText(ptrData+2, groupLen);
+  #endif  
+#else
   switch (app)
   {
   case 0:
@@ -826,6 +855,7 @@ EXTERNALIZE void doWork(void)
     contfracText(ptrData+2, groupLen);
     break;
   }
+#endif
   databack(output);
 }
 #endif

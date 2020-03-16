@@ -40,7 +40,9 @@ BigInteger stackRealValues[PAREN_STACK_SIZE];
 BigInteger stackImagValues[PAREN_STACK_SIZE];
 int stackOperators[PAREN_STACK_SIZE];
 static int stackIndex, exprIndex;
-int lang;
+#ifndef lang  
+  int lang;
+#endif
 char output[3000000];
 limb Mult1[MAX_LEN];
 limb Mult3[MAX_LEN];

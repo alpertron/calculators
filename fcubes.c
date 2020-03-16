@@ -29,7 +29,6 @@ static BigInteger tmpP1, tmpQ1, tmpR1, tmpS1;
 static BigInteger toProcess;
 static int groupLength;
 static char *cube = "<span class=\"bigger\">³</span>";
-extern int lang;
 extern char hexadecimal;
 static int sums[] =
 {
@@ -322,7 +321,7 @@ void fcubesText(char *input, int groupLen)
   {
     groupLength = groupLen;
   }
-  BatchProcessing(input, &toProcess, &ptrOutput);
+  BatchProcessing(input, &toProcess, &ptrOutput, NULL);
   strcpy(ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
     "</p><p>" COPYRIGHT_ENGLISH "</p>"));
 }

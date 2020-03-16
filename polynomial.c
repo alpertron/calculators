@@ -39,7 +39,6 @@ int exponentMod;                  // k
 BigInteger powerMod;              // p^k
 int modulusIsZero;
 int degree;
-extern int lang;
 static BigInteger value;
 BigInteger operand1, operand2, operand3, operand4, operand5;
 extern limb TestNbr[MAX_LEN];

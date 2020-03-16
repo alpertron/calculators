@@ -1,8 +1,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 21 de diciembre de 2019."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 21 December 2019."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 15 de marzo de 2020."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 15 March 2020."
 
 #ifdef __EMSCRIPTEN__
 int stamp(void);
@@ -42,7 +42,9 @@ enum eExprErr
   EXPR_VAR_OR_COUNTER_REQUIRED,
   EXPR_OK = 0
 };
-extern int lang;
+#ifndef lang  
+  extern int lang;
+#endif
 extern char inputString[1000000];
 extern char output[3000000];
 extern BigInteger valueX;

@@ -804,13 +804,14 @@ static void ShowFourSquares(char **pptrOutput)
 void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
 {
   char *ptrOutput;
+  int isBatch;
   knownFactors = factors;
   if (valuesProcessed == 0)
   {
     doFactorization = performFactorization;
   }
-  enum eExprErr rc = BatchProcessing(tofactorText, &tofactor, &ptrOutput);
-  if (valuesProcessed == 1)
+  enum eExprErr rc = BatchProcessing(tofactorText, &tofactor, &ptrOutput, &isBatch);
+  if (isBatch == FALSE)
   {
     if (rc == EXPR_OK && doFactorization)
     {
@@ -1021,7 +1022,9 @@ EXTERNALIZE void doWork(void)
   {
     flags = -*(++ptrData);
   }
+#ifndef lang  
   lang = flags & 1;
+#endif
 #ifdef __EMSCRIPTEN__
   if ((flags & (-2)) == '4')
   {

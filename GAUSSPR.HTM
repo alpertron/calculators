@@ -8,38 +8,42 @@
 <meta name="description" content="Javascript application that shows a graphical view of gaussian prime numbers by Dario Alpern." />
 <link rel="alternate" hreflang="es" href="PRGAUSS.HTM" />
 <title>Dario Alpern Web site - Gaussian primes</title>
-<style  media="print">
-#smallheader {display:none;}
-</style>
-<style  media="screen">
-#smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
-#smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
-#smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
-#smallheader li:hover {background-color:#004000; color:#FFFFFF;}
-#smallheader li ul { display:none; position:absolute; }
-#smallheader li:hover ul.alignleft{ display:block; height:auto;}
-#smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
-#smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%;; padding-top:1em; padding-bottom:0.5em}
-#smallheader a:link{color:#FFFFFF; text-decoration: none;}
-#smallheader a:visited{color:#FFFFFF; text-decoration: none;}
-#smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
-#smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
-#smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
-#smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
-#smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-#smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-@media (max-width: 100px) { #smallheader { font-size:0.2em;} }
-@media (min-width: 200px) { #smallheader { font-size:0.3em;} }
-@media (min-width: 300px) { #smallheader { font-size:0.7em;} }
-@media (min-width: 400px) { #smallheader { font-size:1em;} }
-</style>
 <style>
+@media screen {
+nav {background-color:#000080; width:100%; margin:0px; text-align:center;}
+nav ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+nav li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+nav li:hover {background-color:#004000; color:#FFFFFF;}
+nav li ul { display:none; position:absolute; }
+nav li:hover ul.alignleft{ display:block; height:auto;}
+nav li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+nav li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%;; padding-top:1em; padding-bottom:0.5em}
+nav a:link{color:#FFFFFF; text-decoration: none;}
+nav a:visited{color:#FFFFFF; text-decoration: none;}
+nav a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+nav a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+nav li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+nav li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+nav li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+nav li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+nav::after {clear:both;}
+@media (max-width: 100px) { nav { font-size:0.2em;} }
+@media (min-width: 200px) { nav { font-size:0.3em;} }
+@media (min-width: 300px) { nav { font-size:0.7em;} }
+@media (min-width: 400px) { nav { font-size:1em;} }
+}
+@media print {nav {display:none;}}
+.bread {padding:0px;list-style:none; display:inline-block;}
+.bread li {display:inline}
+.bread li+li:before {content:"›"}
 body {font-family:arial; margin:0; padding:0;}
 h1 {text-align:center;}
 #canvas {margin-left:auto; margin-right:auto; display:block; width:100%;text-align:center;vertical-align:middle; max-width:2000px;touch-action:none;}
 #applet {border: 0px none;width:100%;}
 #bottom {border: 0px none;width:100%;min-height:4em;padding:5px}
-.pad {padding:10px;}
+.pad {padding:10px}
+.atright {float:right;}
+.atleft {float:left;}
 @media (min-height: 200px) {#canvas {height:100px}}
 @media (min-height: 300px) {#canvas {height:200px}}
 @media (min-height: 400px) {#canvas {height:300px}}
@@ -69,16 +73,14 @@ galite('send', 'pageview');
 </script>
 </head>
 <body>
-<nav id="smallheader">
-<div style="float:left;"><a href="#gausspr">Gaussian primes</a></div>
-<div style="float:right;"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
+<nav>
+<div class="atleft"><a href="#gausspr">Gaussian primes</a></div>
+<div class="atright"><a href="PRGAUSS.HTM" hreflang="es" title="Esta página Web en español">ESP</a></div>
 <ul>
 <li>
 Electronics
 <ul class="alignleft">
-<li>
-<a href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a>
-</li>
+<li><a href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a></li>
 </ul>
 </li>
 <li>
@@ -100,22 +102,13 @@ Programs
 <li class="alignright">
 Contact
 <ul class="alignright">
-<li>
-<a href="EPERS.HTM" title="Personal information">Personal</a>
-</li>
-<li>
-<a href="FORM.HTM" title="Form to send comments">Comments</a>
-</li>
-<li>
-<a href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a>
-</li>
-<li>
-<a href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a>
-</li>
+<li><a href="EPERS.HTM" title="Personal information">Personal</a></li>
+<li><a href="FORM.HTM" title="Form to send comments">Comments</a></li>
+<li><a href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a></li>
+<li><a href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a></li>
 </ul>
 </li>
 </ul>
-<br />
 </nav>
 <main><article>
 <div class="applet">
@@ -127,8 +120,8 @@ Contact
 <label for="centerX">Center graphic in number</label>
 <br />
 <input type="button" id="zoomout" value="Zoom Out"/>
-<input type="number" size="9" value="0" min="-999999999" max="999999999" id="centerX" tabindex="1" /> +
-<input type="number" size="9" value="0" min="-999999999" max="999999999" id="centerY" />&nbsp;<var>i</var>
+<input type="number" value="0" min="-999999999" max="999999999" id="centerX" tabindex="1" /> +
+<input type="number" value="0" min="-999999999" max="999999999" id="centerY" />&nbsp;<var>i</var>
 </form>
 </div>
 <div id="info">
@@ -137,21 +130,20 @@ Contact
 </div>
 <div class="pad">
 <h1 id="gausspr">Gaussian primes</h1>
-<div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
-<a href="ENGLISH.HTM" itemprop="url">
-<span itemprop="title">Alpertron</span>
-</a> ›
-</div>
-<div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" style="display:inline;">
-<a href="JAVAPROG.HTM" itemprop="url">
-<span itemprop="title">Programs</span>
-</a> ›
-</div>
-<div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" style="display:inline;">
-<a href="GAUSSPR.HTM" itemprop="url">
-<span itemprop="title">Gaussian primes</span>
-</a>
-</div>
+<ol class="bread" vocab="https://schema.org/" typeof="BreadcrumbList">
+<li property="itemListElement" typeof="ListItem">
+<a property="item" typeof="WebPage" href="ENGLISH.HTM"><span property="name">Alpertron</span></a>
+<meta property="position" content="1">
+</li>
+<li property="itemListElement" typeof="ListItem">
+<a property="item" typeof="WebPage" href="JAVAPROG.HTM"><span property="name">Programs</span></a>
+<meta property="position" content="2">
+</li>
+<li property="itemListElement" typeof="ListItem">
+<span property="name">Gaussian primes</span>
+<meta property="position" content="3">
+</li>
+</ol>
 <p>The Gaussian integers are complex numbers of the form <var>a</var> + <var>b</var><var>i</var> donde <var>a</var> y <var>b</var> are (standard) integer numbers and <var>i</var> is the square root of -1.
 Like integers, these numbers can be factored into primes in only one way (this is known as unique factorization domain).
 For example: 79 + 43<var>i</var> = (1+<var>i</var>) (2-<var>i</var>) (28+5<var>i</var>)</p>

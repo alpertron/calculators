@@ -28,7 +28,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define FIRST_MULT  (1 << (BITS_PER_GROUP/2))
 #define SECOND_MULT (LIMB_RANGE / FIRST_MULT)
 
-extern int lang;
 static limb power10000[MAX_LEN*2];
 static limb temp[MAX_LEN];
 static void add(limb *addend1, limb *addend2, limb *sum, int length);

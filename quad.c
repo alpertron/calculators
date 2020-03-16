@@ -4184,7 +4184,9 @@ EXTERNALIZE void doWork(void)
   }
   ptrData++;                    // Skip comma.
   flags = *ptrData;
+#ifndef lang  
   lang = flags & 1;
+#endif
   teach = flags & 2;
   ptrCoeffA = ptrData + 2;  // Skip flags and comma.
   ptrCoeffB = ptrCoeffA + strlen(ptrCoeffA) + 1;

@@ -47,25 +47,204 @@ function styleButtons(style1, style2)
   }
 }
 
+function b64decode(str,out)
+{
+  var ch, idx;
+  var idxDest,idxSrc;
+  var blocks, left_over;
+  var byte0, byte1, byte2, byte3;
+  var conv=new Int8Array(128);
+  var len=str.length;
+  if(str.charAt(len-1)=="=")
+  {
+    len--;
+  }
+  if(str.charAt(len-1)=="=")
+  {
+    len--;
+  }
+  blocks=len & (-4);
+  for (ch = 65; ch <= 90; ch++)   // A - Z
+  {
+    conv[ch] = ch - 65;
+  }
+  for (ch = 97; ch <= 122; ch++)  // a - z
+  {
+    conv[ch] = ch - 71;
+  }
+  for (ch = 48; ch <= 57; ch++)   // 0 - 9
+  {
+    conv[ch] = ch + 4;
+  }
+  conv[43] = 62;                  // +
+  conv[33] = 63;                  // !
+  for (idxDest=0,idxSrc=0; idxSrc<blocks; idxDest+=3,idxSrc+=4)
+  {
+    byte0 = conv[str.charCodeAt(idxSrc)];
+    byte1 = conv[str.charCodeAt(idxSrc+1)];
+    byte2 = conv[str.charCodeAt(idxSrc+2)];
+    byte3 = conv[str.charCodeAt(idxSrc+3)];
+    
+    out[idxDest] = (byte0<<2) + (byte1>>4);
+    out[idxDest+1] = (byte1<<4) + (byte2>>2);
+    out[idxDest+2] = (byte2<<6) + byte3;
+  }
+  left_over = len & 3;
+  if (left_over == 2)
+  {
+    byte0 = conv[str.charCodeAt(idxSrc)];
+    byte1 = conv[str.charCodeAt(idxSrc+1)];
+    
+    out[idxDest] = (byte0<<2) + (byte1>>4);
+    out[idxDest+1] = byte1<<4;
+  }
+  else if (left_over == 3)
+  {
+    byte0 = conv[str.charCodeAt(idxSrc)];
+    byte1 = conv[str.charCodeAt(idxSrc+1)];
+    byte2 = conv[str.charCodeAt(idxSrc+2)];
+    
+    out[idxDest] = (byte0<<2) + (byte1>>4);
+    out[idxDest+1] = (byte1<<4) + (byte2>>2);
+    out[idxDest+2] = byte2<<6;
+  }
+}
+
+var calcURLs;
+
+if (app < 2)
+{
+  calcURLs = ["fsquaresW0000.js",
+               "fsquares.webmanifest", "sumcuad.webmanifest", "fsquares-icon-1x.png", "fsquares-icon-2x.png", "fsquares-icon-4x.png", "fsquares-icon-180px.png", "fsquares-icon-512px.png", "favicon.ico"];
+}
+else if (app < 4)
+{
+  calcURLs = ["fsquaresW0000.js",
+               "fcubes.webmanifest", "sumcubos.webmanifest", "fcubes-icon-1x.png", "fcubes-icon-2x.png", "fcubes-icon-4x.png", "fcubes-icon-180px.png", "fcubes-icon-512px.png", "favicon.ico"];
+}
+else
+{
+  calcURLs = ["fsquaresW0000.js",
+               "contfrac.webmanifest", "fraccont.webmanifest", "contfrac-icon-1x.png", "contfrac-icon-2x.png", "contfrac-icon-4x.png", "contfrac-icon-180px.png", "contfrac-icon-512px.png", "favicon.ico"];
+}
+
+var url = window.location.pathname;
+function fillCache()
+{
+  // Test whether the HTML is already on the cache.
+  caches.open("newCache").then(function(cache)
+  {
+    cache.match(url).then(function (response)
+    {
+      if (response === undefined)
+      {     // HTML is not in cache.
+        UpdateCache(cache);
+      }
+      else
+      {     // Response is the HTML contents.
+        var date = response.headers.get('last-modified');
+            // Request the HTML from the Web server.
+            // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
+        fetch(url,{headers:{'If-Modified-Since': date, 'x-calc': '1'}, cache: "no-store"}).then(function(responseHTML)
+        {
+          if (responseHTML.status != 200)
+          {
+            return;        // HTML could not be retrieved, so go out.
+          }
+          if (date == responseHTML.headers.get('last-modified'))
+          {
+            return;        // HTML has not changed, so other files have not been changed. Go out.
+          }
+          // Read files to new cache.
+          // Use temporary cache so if there is any network error, original cache is not changed.
+        
+          caches.open("cacheTEMP").then(function(tempCache)
+          {                // Do not fetch HTML because it is already fetched.
+            tempCache.addAll(calcURLs).then(function()
+            {              // Copy cached resources to main cache and delete this one.
+              tempCache.matchAll().then(function(responseArr)
+              {            // All responses in array responseArr.
+                responseArr.forEach(function(responseTempCache, index, array)
+                {
+                  var urlTemp = responseTempCache.url;
+                  var indexZero = url.indexOf("00");
+                  if (indexZero > 0)
+                  {        // There is an old version of this resource on cache to be erased.
+                    cache.keys().then(function(keys)
+                    {
+                      keys.forEach(function(requestCache, index, array)
+                      {    // Traverse cache.
+                        if (requestCache.url.substring(0, indexZero+2) == urlTemp.substring(0, indexZero+2) &&
+                            requestCache.url.substring(indexZero+2, indexZero+4) != urlTemp.substring(indexZero+2, indexZero+4) &&
+                            requestCache.url.substring(indexZero+4) == urlTemp.substring(indexZero+4))
+                        {  // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
+                          cache.delete(requestCache);
+                        }  
+                      });
+                      // Put resource into cache after old resource has been erased.
+                      cache.put(urlTemp, responseTempCache);
+                    });
+                  }
+                  else
+                  {   // Put resource into cache (no old resorce into cache). 
+                    cache.put(urlTemp, responseTempCache);
+                  }
+                });
+                cache.put(url, responseHTML);
+              });
+            })
+            .finally(function()
+            {
+              caches.delete("cacheTEMP");
+            });
+          })
+          .catch (function()     // Cannot fetch HTML.
+          {
+            UpdateCache(cache);
+          });
+        })
+      }
+    });
+  });
+}
+
+function UpdateCache(cache)
+{
+  caches.open("cacheTEMP").then(function(tempCache)
+  {
+    tempCache.addAll([url].concat(calcURLs)).then(function()
+    {     // Copy cached resources to main cache and delete this one.
+      tempCache.matchAll().then(function(responseArr)
+      {   // All responses in array responseArr.
+        responseArr.forEach(function(responseTempCache, index, array)
+        {
+          cache.put(responseTempCache.url, responseTempCache);
+        });
+      })
+      .finally(function()
+      {
+        caches.delete("cacheTEMP");
+      });
+    });  
+  });
+}
+
 function callWorker(param)
 {
   var helphelp = get("helphelp");
   if (!worker)
   {
-    if (asmjs)
-    {    // Asm.js
-      if (!blob)
-      {
-        blob = new Blob([new Uint8Array(fileContents)]);
+    if (!blob)
+    {
+      if (asmjs)
+      {    // Asm.js
+        blob = new Blob([fileContents]);
       }
-    }
-    else
-    {    // WebAssembly
-      if (!blob)
-      {
-        blob = new Blob(Array.prototype.map.call(document.querySelectorAll('script[type=\'text\/js-worker\']'), function (oScript) { return oScript.textContent; }),{type: 'text/javascript'});
+      else
+      {    // WebAssembly
+        blob = new Blob([get("worker").textContent],{type: 'text/javascript'});
       }
-    }    
+    }   
     worker = new Worker(window.URL.createObjectURL(blob));
     worker.onmessage = function(e)
     { // First character of e.data is:
@@ -94,8 +273,8 @@ function callWorker(param)
     };
   }
   helphelp.style.display = "block";
-  helphelp.innerHTML = (lang ? '<p class="pad">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión '+(asmjs? "asm.js": "WebAssembly")+".</p>":
-                               '<p class="pad">Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the '+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
+  helphelp.innerHTML = (lang ? '<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión '+(asmjs? "asm.js": "WebAssembly")+".</p>":
+                               '<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the '+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
   if (asmjs)
   {      // Asm.js
     worker.postMessage(param);
@@ -549,23 +728,51 @@ function startUp()
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
     navigator["serviceWorker"].register('calcSW.js').then(function() {}, function() {});
+    fillCache();
   }
 }
-var req = new XMLHttpRequest();
-req.open('GET', (asmjs? "fsquaresW0000.js": "fsquares0000.wasm"), true);
-req.responseType = "arraybuffer";
-req.onreadystatechange = function (aEvt)
+if (asmjs)
 {
-  if (req.readyState == 4 && req.status == 200)
+  var req = new XMLHttpRequest();
+  req.open('GET', "fsquaresW0000.js", true);
+  req.responseType = "arraybuffer";
+  req.onreadystatechange = function (aEvt)
   {
-    fileContents = /** @type {ArrayBuffer} */ (req.response);
-    if (workerParam)
+    if (req.readyState == 4 && req.status == 200)
     {
-      callWorker(workerParam);
+      fileContents = /** @type {ArrayBuffer} */ (req.response);
+      if (workerParam)
+      {
+        callWorker(workerParam);
+      }
     }
+  };
+  req.send(null);
+}
+else
+{
+  var wasm = document.getElementById("wasmb64").text;
+  while (wasm.charCodeAt(0) < 32)
+  {
+    wasm = wasm.substring(1);
+  }    
+  while (wasm.charCodeAt(wasm.length-1) < 32)
+  {
+    wasm = wasm.substring(0, wasm.length-1);
+  }    
+  var length = wasm.length*3/4;
+  if (wasm.charCodeAt(wasm.length-1)==61)
+  {
+    length--;
   }
-};
-req.send(null);
+  if (wasm.charCodeAt(wasm.length-2)==61)
+  {
+    length--;
+  }
+  fileContents=new Int8Array(length);
+  b64decode(wasm, fileContents); 
+}
+
 window.addEventListener("load", startUp);
 })(this);
 

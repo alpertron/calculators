@@ -10,33 +10,36 @@
 <link rel="icon" href="favicon.ico" type="image/x-icon" />
 <title>Distance between cities</title>
 <style>
-@media print {#smallheader {display:none;}}
+@media print {nav {display:none;}}
 @media screen {
-#smallheader {background-color:#000080; color:#FFFFFF; width:100%; margin:0px; text-align:center;}
-#smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
-#smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
-#smallheader li:hover {background-color:#004000; color:#FFFFFF;}
-#smallheader li ul { display:none; position:absolute; }
-#smallheader li:hover ul.alignleft{ display:block; height:auto;}
-#smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
-#smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
-#smallheader a:link{color:#FFFFFF; text-decoration: none;}
-#smallheader a:visited{color:#FFFFFF; text-decoration: none;}
-#smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
-#smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
-#smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
-#smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
-#smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-#smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+nav {background-color:#000080; color:#FFFFFF; width:100%; margin:0px; text-align:center;}
+nav ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+nav li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+nav li:hover {background-color:#004000; color:#FFFFFF;}
+nav li ul { display:none; position:absolute; }
+nav li:hover ul.alignleft{ display:block; height:auto;}
+nav li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+nav li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
+nav a:link{color:#FFFFFF; text-decoration: none;}
+nav a:visited{color:#FFFFFF; text-decoration: none;}
+nav a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+nav a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+nav li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+nav li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+nav li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+nav li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+nav::after {clear:both;}
 .atright {float:right;}
-.newline {clear:both;}
+@media (max-width: 400px) {nav {font-size:0.7em;}}
+@media (min-width: 400px) {nav {font-size:1em;}}
+@media (min-width: 500px) {#configleft {float:left;} #configright {float:right;}}
 }
-@media screen and (max-width: 400px) {#smallheader {font-size:0.7em;}}
-@media screen and (min-width: 400px) {#smallheader {font-size:1em;}}
-@media screen and (min-width: 500px) {#configleft {float:left;} #configright {float:right;}}
+.bread {padding:0px;list-style:none; display:inline-block;}
+.bread li {display:inline}
+.bread li+li:before {content:"›"}
 body {font-family: arial; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000}
+main {padding:10px;}
 h1, h2 {text-align:center;}
-.pad {padding:10px;}
 .red {color: #C00000; font-weight: bold;}
 .inline {display:inline;}
 #finalInterp,#strings,.donotshow {display:none;}
@@ -59,8 +62,8 @@ galite('send', 'pageview');
 </script>
 </head>
 <body>
-<nav id="smallheader">
-<div class="atright"><a href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a></div>
+<nav>
+<div class="atright"><a href="DIST.HTM" hreflang="es" title="Esta página Web en español">ESP</a></div>
 <ul>
 <li>
 Electronics
@@ -94,29 +97,25 @@ Contact
 </ul>
 </li>
 </ul>
-<br class="newline"/>
 </nav>
 <main id="main">
 <article>
 <h1>Distance between cities</h1>
 <script async="async" src="dist0024.js"></script>
-<div class="pad">
-<div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" class="inline">
-<a href="ENGLISH.HTM" itemprop="url">
-<span itemprop="title">Alpertron</span>
-</a> ›
-</div>
-<div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" class="inline">
-<a href="JAVAPROG.HTM" itemprop="url">
-<span itemprop="title">Programs</span>
-</a> ›
-</div>
-<div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" class="inline">
-<a href="DISTANCE.HTM" itemprop="url">
-<span itemprop="title">Distance between cities</span>
-</a>
-</div>
-</div>
+<ol class="bread" vocab="https://schema.org/" typeof="BreadcrumbList">
+<li property="itemListElement" typeof="ListItem">
+<a property="item" typeof="WebPage" href="ENGLISH.HTM"><span property="name">Alpertron</span></a>
+<meta property="position" content="1">
+</li>
+<li property="itemListElement" typeof="ListItem">
+<a property="item" typeof="WebPage" href="JAVAPROG.HTM"><span property="name">Programs</span></a>
+<meta property="position" content="2">
+</li>
+<li property="itemListElement" typeof="ListItem">
+<span property="name">Distance between cities</span>
+<meta property="position" content="3">
+</li>
+</ol>
 <div id="mainmenu">
 <form>
 <fieldset>
@@ -134,7 +133,7 @@ Contact
 </fieldset>
 </form>
 </div>
-<div id="help" class="pad">
+<div id="help">
 <p>This program lets you practice geography by featuring two tests related to distance between cities.</p>
 <p>The first test shows 10 questions where you will have to answer the distance between two cities in kilometers. The score for every answer depends on the ratio between the distance you specified and the true one.</p>
 <p>In the 10 questions of the second test, the program shows six cities. Starting from the first city you have to arrive to the last one through the other four cities. You will have to reorder these intermediate cities so the total distance is minimized. Then, the program shows all 24 possibilities in which cities can be ordered, ordered according to distance traveled. The score is higher if the specified order is near the top of the table generated by the program.</p>
@@ -143,7 +142,7 @@ Contact
 <p>Written by Dario Alpern. Updated on 19 January 2018.</p>
 <p>If you find an error or you have any comment, please fill the <a href="FORM.HTM?Distance+between+cities">form</a>.</p>
 </div>
-<div id="test1" class="donotshow pad">
+<div id="test1" class="donotshow">
 <p class="red test1_1 notFindDist">The current score is: <span id="score1"></span></p>
 <p class="notFindDist"><span id="ord1"></span> question: What is the distance between the following cities?</p>
 <p class="findDist">The selected cities are:</p>
@@ -180,7 +179,7 @@ Contact
 <p><input type="button" id="exitt" value="Main menu"></p>
 </div>
 </div>
-<div id="test2" class="donotshow pad">
+<div id="test2" class="donotshow">
 <p class="red test2_1">Your current score is: <span id="score4"></span></p>
 <p><span id="ord2"></span> question: How do you travel from <span id="city1"></span> to <span id="city6"></span> if you must pass through the following four cities so the total distance is minimum??</p>
 <ol>
@@ -193,13 +192,13 @@ Contact
 <p><label for="order">If you think the order is 1, 2, 3, 4, please type 1234.</label> <input type="text" maxlength="4" id="order"></p>
 </form>
 </div>
-<div id="test2_2" class="donotshow pad">
+<div id="test2_2" class="donotshow">
 <p>You have chosen the option <span id="option"></span> so you deserve <span id="score5"></span></p>
 <p>Your current score is: <span id="score6"></span></p>
 <p><input type="button" id="nextq2" value="Next question"> <input type="button" id="exitt2" value="Main menu"></p>
 <div id="list"></div>
 </div>
-<div id="listCities" class="donotshow pad">
+<div id="listCities" class="donotshow">
 <p id="lc">The list of cities in this program is:</p>
 <form id="fc">
 <p><label for="cityFrom">Number of origin city:</label> <input type="number" id="cityFrom" min="1" max="105"></p>

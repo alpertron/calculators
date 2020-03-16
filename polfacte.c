@@ -37,7 +37,9 @@ EXTERNALIZE void doWork(void)
   }
   ptrData++;             // Skip comma.
   flags = *ptrData;
+#ifndef lang  
   lang = flags & 1;
+#endif
   onlyEvaluate = (unsigned char)(flags & 2);
   pretty = (unsigned char)(flags & 4);
   ptrData += 2;          // Skip flags and comma.

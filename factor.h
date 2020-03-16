@@ -61,7 +61,9 @@ extern int *factorArr[FACTOR_ARRSIZE];
 void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors);
 void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors);
 void FactoringSIQS(limb *pNbrToFactor, limb *pFactor);
-extern int lang;
+#ifndef lang  
+  extern int lang;
+#endif
 extern int nbrToFactor[MAX_LEN];
 extern struct sFactors astFactorsMod[MAX_FACTORS];
 extern int factorsMod[20000];

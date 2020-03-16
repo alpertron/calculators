@@ -35,7 +35,9 @@ enum eDivType
   TYPE_MODULUS
 };
 
-extern int lang;
+#ifndef lang  
+  extern int lang;
+#endif
 extern BigInteger Quintic, Quartic, Cubic, Quadratic, Linear, Independent;
 extern struct sFactorInfo factorInfo[MAX_DEGREE];
 extern struct sFactorInfo factorInfoInteger[MAX_DEGREE];

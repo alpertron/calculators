@@ -1,0 +1,156 @@
+# Use PHP5.4 as default
+#AddHandler application/x-httpd-php54 .php
+
+<IfModule mod_mime.c>
+AddType image/x-icon .ico
+AddType text/html .HTM
+AddType text/cache-manifest .appcache
+AddType application/wasm .wasm
+AddType application/json .json
+AddType application/manifest+json .webmanifest
+AddCharset utf-8 .js
+AddCharset utf-8 .webmanifest
+</IfModule>
+
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/plain
+AddOutputFilterByType DEFLATE text/html
+AddOutputFilterByType DEFLATE text/xml
+AddOutputFilterByType DEFLATE text/css
+AddOutputFilterByType DEFLATE application/xml
+AddOutputFilterByType DEFLATE application/xhtml+xml
+AddOutputFilterByType DEFLATE application/rss+xml
+AddOutputFilterByType DEFLATE application/javascript
+AddOutputFilterByType DEFLATE application/x-javascript
+AddOutputFilterByType DEFLATE application/wasm
+AddOutputFilterByType DEFLATE application/json
+AddOutputFilterByType DEFLATE application/manifest+json
+</IfModule>
+
+<IfModule mod_headers.c>
+
+<FilesMatch "\.(htm|HTM)$">
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-XSS-Protection "1; mode=block"
+Header set Content-Type "text/html; charset=UTF-8"
+Header set Content-Security-Policy "frame-ancestors 'self'; object-src 'none'"
+Header set Referrer-Policy "strict-origin"
+Header set Report-To: {"group":"default","max_age":31536000,"endpoints":[{"url":"https://alpertron23.report-uri.com/a/d/g"}],"include_subdomains":true},{"group":"csp-endpoint","max_age":31536000,"endpoints":[{"url":"https://alpertron23.report-uri.com/r/d/csp/enforce"}],"include_subdomains":true}
+Header set NEL: {"report_to":"default","max_age":31536000,"include_subdomains":true}
+</FilesMatch>
+
+<FilesMatch "(index\.htm)$">
+Header set Content-Security-Policy "frame-ancestors 'self'; object-src 'none'"
+</FilesMatch>
+
+#Cache timings
+<FilesMatch "\.(HTM|js|webmanifest|ico|png)$">
+Header always set strict-transport-security "max-age=31536000; includeSubDomains; preload"
+</FilesMatch>
+
+<FilesMatch "\.(js|wasm|ico|png|jpeg|webmanifest)$">
+Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+
+<FilesMatch "\.(pdf)$">
+Header set Cache-Control "public, max-age=31536000"
+</FilesMatch>
+
+Header set X-Content-Type-Options "nosniff"
+
+<FilesMatch "\.(HTM)$">
+Header set Cache-Control "public, max-age=180"
+</FilesMatch>
+
+</IfModule>
+
+#Fix URL errors
+
+ErrorDocument 404 /404.shtml
+
+#RewriteEngine On
+#RewriteCond %{HTTP:X-Forwarded-Proto} =http
+#RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^alpertron\.com$ [NC]
+RewriteRule ^.*$ https://www.alpertron.com.ar%{REQUEST_URI} [R=301,L] 
+RewriteCond %{HTTP_HOST} ^alpern\.com\.ar$ [NC]
+RewriteRule ^.*$ https://www.alpertron.com.ar%{REQUEST_URI} [R=301,L] 
+RewriteCond %{HTTP_HOST} ^www\.alpern\.com\.ar$ [NC]
+RewriteRule ^.*$ https://www.alpertron.com.ar%{REQUEST_URI} [R=301,L] 
+
+#RedirectMatch ^/$ /index.htm
+
+Redirect 301 /intel.htm /INTEL.HTM
+Redirect 301 /4004.htm /4004.HTM
+Redirect 301 /8008.htm /8008.HTM
+Redirect 301 /8080.htm /8080.HTM
+Redirect 301 /8085.htm /8085.HTM
+Redirect 301 /8087.htm /8087.HTM
+Redirect 301 /8088.htm /8088.HTM
+Redirect 301 /80186.htm /80186.HTM
+Redirect 301 /80187.htm /80187.HTM
+Redirect 301 /80286.htm /80286.HTM
+Redirect 301 /80287.htm /80287.HTM
+Redirect 301 /80386.htm /80386.HTM
+Redirect 301 /80387.htm /80387.HTM
+Redirect 301 /hw386.htm /HW386.HTM
+Redirect 301 /80486.htm /80486.HTM
+Redirect 301 /80286.htm /80286.HTM
+Redirect 301 /pentium.htm /PENTIUM.HTM
+Redirect 301 /ecm.htm /ECM.HTM
+Redirect 301 /ECMNEW.HTM /ECM.HTM
+Redirect 301 /gausspr.htm /GAUSSPR.HTM
+Redirect 301 /prgauss.htm /PRGAUSS.HTM
+Redirect 301 /ulam.htm /ULAM.HTM
+Redirect 301 /eulam.htm /EULAM.HTM
+Redirect 301 /caldoras.htm /CALDORAS.HTM
+Redirect 301 /caltors.htm /CALTORS.HTM
+Redirect 301 /tnumeros.htm /TNUMEROS.HTM
+Redirect 301 /numbert.htm /NUMBERT.HTM
+Redirect 301 /quad.htm /QUAD.HTM
+Redirect 301 /JQUAD.HTM /QUAD.HTM
+Redirect 301 /bigcalc.htm /BIGCALC.HTM
+Redirect 301 /english.htm /ENGLISH.HTM
+Redirect 301 /INDEX.HTM /index.htm
+Redirect 301 /juegos.htm /JUEGOS.HTM
+Redirect 301 /games.htm /GAMES.HTM
+Redirect 301 /cuad.htm /CUAD.HTM
+Redirect 301 /ccalc.htm /CCALC.HTM
+Redirect 301 /calc.htm /CALC.HTM
+Redirect 301 /logdi.htm /LOGDI.HTM
+Redirect 301 /dilog.htm /DILOG.HTM
+Redirect 301 /4cuadr.htm /4CUADR.HTM
+Redirect 301 /methods.htm /METHODS.HTM
+Redirect 301 /intel.pdf /INTEL.PDF
+Redirect 301 /gaussian.htm /GAUSSIAN.HTM
+Redirect 301 /sumcuad.htm /SUMCUAD.HTM
+Redirect 301 /quadmod.htm /QUADMOD.HTM
+Redirect 301 /ensam386.htm /ENSAM386.HTM
+Redirect 301 /metodos.htm /METODOS.HTM
+Redirect 301 /fcubes.htm /FCUBES.HTM
+Redirect 301 /assem386.htm /ASSEM386.HTM
+Redirect 301 /javaprog.htm /JAVAPROG.HTM
+Redirect 301 /polfact.htm /POLFACT.HTM
+Redirect 301 /form.htm /FORM.HTM
+Redirect 301 /progjava.htm /PROGJAVA.HTM
+Redirect 301 /sumpot.htm /SUMPOT.HTM
+Redirect 301 /fsquares.htm /FSQUARES.HTM
+Redirect 301 /4squares.htm /4SQUARES.HTM
+Redirect 301 /contfrac.htm /CONTFRAC.HTM
+Redirect 301 /ecmc.htm /ECMC.HTM
+Redirect 301 /ECMNUEVO.HTM /ECMC.HTM
+Redirect 301 /brilliant.htm /BRILLIANT.HTM
+Redirect 301 /ecmrec.htm /ECMREC.HTM
+Redirect 301 /inst8088.htm /INST8088.HTM
+Redirect 301 /cuadmod.htm /CUADMOD.HTM
+Redirect 301 /fermmod.htm /FERMMOD.HTM
+Redirect 301 /fraccont.htm /FRACCONT.HTM
+Redirect 301 /factpol.htm /FACTPOL.HTM
+Redirect 301 /gausiano.htm /GAUSIANO.HTM
+Redirect 301 /sumpower.htm /SUMPOWER.HTM
+Redirect 301 /rootseq.htm /POLFACT.HTM
+Redirect 301 /raicesec.htm /FACTPOL.HTM
+Redirect 301 /ROOTSEQ.HTM /POLFACT.HTM
+Redirect 301 /RAICESEC.HTM /FACTPOL.HTM

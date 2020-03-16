@@ -117,9 +117,10 @@ static void BatchError(char **pptrOutput, char *batchText, const char *errorText
   strcpy(ptrOutput, errorText);
   ptrOutput += strlen(ptrOutput);
   *pptrOutput = ptrOutput;
+  counterC = 0;
 }
 
-enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pptrOutput)
+enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pptrOutput, int *pIsBatch)
 {
   int endValuesProcessed;
   char *ptrOutput = output;
@@ -131,6 +132,10 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
   strcpy(ptrOutput, "2<ul><li>");
   ptrOutput += strlen(ptrOutput);
   endValuesProcessed = valuesProcessed + 1000;
+  if (pIsBatch != NULL)
+  {
+    *pIsBatch = FALSE;    // Indicate not batch processing in advance.
+  }
   if (valuesProcessed == 0)
   {        // Start batch factorization.
     ptrCurrBatchFactor = batchText;
@@ -178,6 +183,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           BatchError(&ptrOutput, batchText,
             lang ? "se esperaban tres o cuatro puntos y comas pero no hay ninguno" :
             "three or four semicolons expected but none found");
+          ptrOutput += 4;
           continue;
         }
         ptrStartExpr = ptrSrcString + 1;
@@ -187,6 +193,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           BatchError(&ptrOutput, batchText,
             lang ? "falta signo igual en la primera expresión" :
             "equal sign missing in first expression");
+          ptrOutput += 4;
           continue;
         }
         ptrCharFound = findChar(ptrSrcString + 1, ';');
@@ -197,6 +204,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         {
           textError(ptrOutput, rc);
           ptrOutput += strlen(ptrOutput);
+          ptrOutput += 4;
           continue;
         }
         ptrStartExpr = ptrCharFound + 1;
@@ -206,6 +214,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           BatchError(&ptrOutput, batchText,
             lang ? "falta variable x en la segunda expresión" :
             "variable x missing in second expression");
+          ptrOutput += 4;
           continue;
         }
         ptrStartExpr++;               // Skip variable 'x'.
@@ -215,6 +224,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           BatchError(&ptrOutput, batchText,
             lang ? "falta signo igual en la segunda expresión" :
             "equal sign missing in second expression");
+          ptrOutput += 4;
           continue;
         }
         NextExpr = ptrStartExpr + 1;  // Skip equal sign.
@@ -224,6 +234,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           BatchError(&ptrOutput, batchText,
             lang ? "se esperaban tres o cuatro puntos y comas pero solo hay uno" :
             "three or four semicolons expected but there are only one");
+          ptrOutput += 4;
           continue;
         }
         EndExpr = ptrCharFound + 1;  // Point to end expression.
@@ -233,6 +244,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           BatchError(&ptrOutput, batchText,
             lang ? "se esperaban tres o cuatro puntos y comas pero solo hay dos" :
             "three or four semicolons expected but there are only two");
+          ptrOutput += 4;
           continue;
         }
         ptrExprToProcess = ptrCharFound + 1;
@@ -258,6 +270,10 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         {
           ptrConditionExpr++;
         }
+      }
+      if (pIsBatch != NULL)
+      {
+        *pIsBatch = TRUE;    // Indicate batch processing.
       }
       while (ptrOutput < &output[sizeof(output) - 200000])
       {      // Perform loop.
@@ -395,9 +411,13 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     }
     valueX.nbrLimbs = 0;     // Invalidate variable x and counter c.
   }
-  if (counterC > 1)
+  ptrOutput -= 4;            // Erase start tag <li> without contents.
+  if (counterC == 1)
   {
-    ptrOutput -= 4;   // Erase start tag <li> without contents.
+    ptrOutput--;             // Erase extra charaacter of </li>
+    strcpy(ptrOutput, lang ? "No hay valores para la expresión ingresada.":
+                             "There are no values for the requested expression.");
+    ptrOutput += strlen(ptrOutput);
   }
   strcpy(ptrOutput, "</ul>");
   ptrOutput += strlen(ptrOutput);

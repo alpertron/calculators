@@ -6,31 +6,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="keywords" content="ulam, spiral, number, prime" />
 <meta name="description" content="Javascript application that shows a graphical representation of prime numbers. Written by Dario Alpern." />
+<link rel="alternate" hreflang="es" href="EULAM.HTM" />
 <title>Ulam Spiral</title>
-<style media="print">
-#smallheader {display:none;}
-</style>
-<style media="screen">
-#smallheader {background-color:#000080; width:100%; margin:0px; text-align:center;}
-#smallheader ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
-#smallheader li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
-#smallheader li:hover {background-color:#004000; color:#FFFFFF;}
-#smallheader li ul { display:none; position:absolute; }
-#smallheader li:hover ul.alignleft{ display:block; height:auto;}
-#smallheader li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
-#smallheader li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%;; padding-top:1em; padding-bottom:0.5em}
-#smallheader a:link{color:#FFFFFF; text-decoration: none;}
-#smallheader a:visited{color:#FFFFFF; text-decoration: none;}
-#smallheader a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
-#smallheader a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
-#smallheader li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
-#smallheader li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
-#smallheader li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-#smallheader li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-@media (max-width: 400px) {#smallheader {font-size:0.7em;}}
-@media (min-width: 400px) {#smallheader {font-size:1em;}}
-</style>
 <style>
+@media screen {
+nav {background-color:#000080; width:100%; margin:0px; text-align:center;}
+nav ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
+nav li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
+nav li:hover {background-color:#004000; color:#FFFFFF;}
+nav li ul { display:none; position:absolute; }
+nav li:hover ul.alignleft{ display:block; height:auto;}
+nav li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+nav li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%;; padding-top:1em; padding-bottom:0.5em}
+nav a:link{color:#FFFFFF; text-decoration: none;}
+nav a:visited{color:#FFFFFF; text-decoration: none;}
+nav a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+nav a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
+nav li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
+nav li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
+nav li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+nav li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
+nav::after {clear:both;}
+@media (max-width: 400px) {nav {font-size:0.7em;}}
+@media (min-width: 400px) {nav {font-size:1em;}}
+}
+@media print {nav {display:none;}}
+.bread {padding:0px;list-style:none; display:inline-block;}
+.bread li {display:inline}
+.bread li+li:before {content:"›"}
 body {font-family: arial;margin:0; padding:0;}
 h1 {text-align:center;}
 #canvas {margin-left:auto; margin-right:auto; display:block; width:100%;text-align:center;vertical-align:middle; max-width:2000px;touch-action:none;}
@@ -69,9 +72,9 @@ galite('send', 'pageview');
 </script>
 </head>
 <body>
-<nav id="smallheader">
+<nav>
 <a id="left" href="#ulamspiral">Ulam Spiral</a>
-<a id="right" href="index.htm" hreflang="es" title="Sitio de Darío Alpern en español">ESP</a>
+<a id="right" href="EULAM.HTM" hreflang="es" title="Esta página Web en español">ESP</a>
 <ul>
 <li>
 Electronics
@@ -105,7 +108,6 @@ Contact
 </ul>
 </li>
 </ul>
-<br class="newline"/>
 </nav>
 <main><article>
 <div id="applet">
@@ -127,21 +129,20 @@ Contact
 </div>
 <div class="pad">
 <h1 id="ulamspiral">Ulam Spiral</h1>
-<div id="a" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemref="b" style="display:inline;">
-<a href="ENGLISH.HTM" itemprop="url">
-<span itemprop="title">Alpertron</span>
-</a> ›
-</div>
-<div id="b" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" itemref="c" style="display:inline;">
-<a href="JAVAPROG.HTM" itemprop="url">
-<span itemprop="title">Programs</span>
-</a> ›
-</div>
-<div id="c" itemscope="itemscope" itemtype="http://data-vocabulary.org/Breadcrumb" itemprop="child" style="display:inline;">
-<a href="ULAM.HTM" itemprop="url">
-<span itemprop="title">Ulam spiral</span>
-</a>
-</div>
+<ol class="bread" vocab="https://schema.org/" typeof="BreadcrumbList">
+<li property="itemListElement" typeof="ListItem">
+<a property="item" typeof="WebPage" href="ENGLISH.HTM"><span property="name">Alpertron</span></a>
+<meta property="position" content="1">
+</li>
+<li property="itemListElement" typeof="ListItem">
+<a property="item" typeof="WebPage" href="JAVAPROG.HTM"><span property="name">Programs</span></a>
+<meta property="position" content="2">
+</li>
+<li property="itemListElement" typeof="ListItem">
+<span property="name">Ulam Spiral</span>
+<meta property="position" content="3">
+</li>
+</ol>
 <p>
 Do you see any pattern in this graph? You will not believe at first glance that it is generated using prime numbers.
 </p>

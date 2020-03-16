@@ -2224,19 +2224,22 @@ static void showECMStatus(void)
     strcpy(ptrStatus, lang ? "Paso 1: " : "Step 1: ");
     ptrStatus += strlen(ptrStatus);
     int2dec(&ptrStatus, indexPrimes / (nbrPrimes / 100));
+    *ptrStatus++ = '%';
     break;
   case 2:
     strcpy(ptrStatus, lang ? "Paso 2: " : "Step 2: ");
     ptrStatus += strlen(ptrStatus);
     int2dec(&ptrStatus, maxIndexM == 0 ? 0 : indexM / (maxIndexM / 100));
+    *ptrStatus++ = '%';
     break;
   case 3:
     strcpy(ptrStatus, lang ? "Progreso: " : "Progress: ");
     ptrStatus += strlen(ptrStatus);
     int2dec(&ptrStatus, percentageBPSW);
+    *ptrStatus++ = '%';
     break;
   }
-  strcpy(ptrStatus, "%</p>");
+  strcpy(ptrStatus, "</p>");
   databack(status);
 }
 
@@ -2747,7 +2750,9 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
     if (result > 1)
     {    // Number is 2-Fermat probable prime. Try to factor it.
       if (factorCarmichael(&prime, pstFactors))
-      {                               // Prime factors found.
+      {                               // Factors found.
+        factorNbr--;                  // Test whether factor found is prime.
+        pstCurFactor--;
         continue;
       }
     }
