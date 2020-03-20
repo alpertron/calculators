@@ -654,8 +654,8 @@ static int ComputeSubExpr(void)
 {
   int retcode;
   int stackOper;
-  BigInteger Re1, Re2, Im1, Im2, Re, Im, ReTmp, ImTmp;
-  BigInteger Result[2], norm;
+  static BigInteger Re1, Re2, Im1, Im2, Re, Im, ReTmp, ImTmp;
+  static BigInteger Result[2], norm;
   stackIndex--;
 
   stackOper = stackOperators[stackIndex];
@@ -680,8 +680,8 @@ static int ComputeSubExpr(void)
     case '/':
       BigIntMultiply(&Re2, &Re2, &ReTmp);
       BigIntMultiply(&Im2, &Im2, &ImTmp);
-      BigIntAdd(&ReTmp, &ImTmp, &norm);  // norm <- re2^2 + im2^2.
-      if (norm.nbrLimbs == 1 || norm.limbs[0].x == 0)
+      BigIntAdd(&ReTmp, &ImTmp, &norm);       // norm <- re2^2 + im2^2.
+      if (norm.nbrLimbs == 1 && norm.limbs[0].x == 0)
       {              // norm is zero.
         return EXPR_INTERM_TOO_HIGH;
       }
@@ -690,7 +690,7 @@ static int ComputeSubExpr(void)
       BigIntAdd(&ReTmp, &ImTmp, &Re);         // Re <- re1*re2 + im1*im2.
       BigIntMultiply(&Im1, &Re2, &ReTmp);
       BigIntMultiply(&Re1, &Im2, &ImTmp);
-      BigIntSubt(&ReTmp, &ImTmp, &Im);    // Im <- im1*re2 - re1*im2.
+      BigIntSubt(&ReTmp, &ImTmp, &Im);        // Im <- im1*re2 - re1*im2.
       BigIntDivide(&Re, &norm, &stackRealValues[stackIndex]);
       BigIntDivide(&Im, &norm, &stackImagValues[stackIndex]);
       return 0;
