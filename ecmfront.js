@@ -385,7 +385,7 @@ function endFeedback()
   get("value").focus();   
 }
 
-var calcURLs = ["ecmW0031.js",
+var calcURLs = ["ecmW0000.js",
                "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-180px.png", "ecm-icon-512px.png", "favicon.ico"];
 
 var url = window.location.pathname;

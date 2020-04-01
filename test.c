@@ -6,7 +6,7 @@
 #include "factor.h"
 #include "batch.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE  12
+#define DEBUG_CODE  13
 #endif
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -180,8 +180,9 @@ int main(int argc, char *argv[])
   skipPrimality = 0;
   lang = 0;
   hexadecimal = 0;
-//  ecmFrontText("x = 2 ^ 64 - 173; x = x + 1; c < 1; x", 1, NULL);
-  ecmFrontText("x=0", 1, NULL);
+  char text[2000];
+  sprintf(text, "%s\n", argv[1]);
+  ecmFrontText(text, 1, NULL);
   printf("%s\n", output);
   return 0;
   if (argc == 3)
@@ -192,7 +193,6 @@ int main(int argc, char *argv[])
   else if (argc == 2)
   {
     char *ptrKnownFactors = strchr(argv[1], '=');
-    char text[100];
 #if 0
     strcpy(text, "10**45+572");
 //    strcpy(text, "x=10**45+572;x=x+1;c<1000;x");
