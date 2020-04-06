@@ -4203,7 +4203,7 @@ static void showSqRoot2(enum eSign sign)
   RatS.numerator.sign = signBak;
 }
 
-static void ShowQuinticsRootsRealR(multiplicity)
+static void ShowQuinticsRootsRealR(int multiplicity)
 {
   int ctr;
   BigRationalDivideByInt(&RatQuartic, -5, &RatQuartic);
