@@ -25,9 +25,10 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "polynomial.h"
 #include "showtime.h"
 #include "rootseq.h"
+#include "musl.h"
 
-#define MAX_MATRIX_SIZE  200
-#define MAX_LEN_MINI     1000   // 8000 digits
+#define MAX_MATRIX_SIZE  100
+#define MAX_LEN_MINI     700   // 5000 digits
 
 typedef struct MiniBigInteger
 {
@@ -43,6 +44,7 @@ MiniBigInteger prodB[MAX_MATRIX_SIZE];
 MiniBigInteger detProdB[MAX_MATRIX_SIZE];
 MiniBigInteger matrixBL[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
 MiniBigInteger matrixS[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
+MiniBigInteger Mprime[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
 BigInteger traces[MAX_MATRIX_SIZE];
 BigInteger powerBoundA, powerExtraBits;
 int *ptrCoeffs[MAX_MATRIX_SIZE];
@@ -121,7 +123,7 @@ static void GramSchmidtOrthogonalization(int size)
         BigIntMultiply((BigInteger *)&basis[row][colI], (BigInteger *)&basisStar[row][colJ], &tmp0);
         BigIntAdd(pDest, &tmp0, pDest);
       }
-      if (colI > 0)
+      if (colJ > 0)
       {
         BigIntMultiply(pDest, (BigInteger *)&detProdB[colJ - 1], pDest);
       }
@@ -373,12 +375,16 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
 // primeMod: BigInteger representing prime.
 // exponentMod: Exponent used for Knuth-Cohen bound.
 // powerMod: BigInteger representing Knuth-Cohen bound.
+//
+// Use algorithm in paper "Tuning and generalizing van Hoeij's algorithm"
+// by Karim Belabas, Gauillaume Hanrot and Paul Zimmermann (2001)
 static void vanHoeij(int prime, int nbrFactors)
 {
-#if 0
+#if 0	
   int degreePolyToFactor = values[0];
   int degree1, count;
-  int nbrRequiredTraces, nbrVectors, valueN;
+  int nbrRequiredTraces, nbrVectors;
+  int valueN = nbrFactors;
   int nbrRow, nbrCol;
   int* ptrDest;
   int exponDifference;
@@ -386,8 +392,9 @@ static void vanHoeij(int prime, int nbrFactors)
   // Store into polyLifted the polynomial values / lc(values) (mod powerMod).
   int *ptrSrc = &values[1];
   int bofs;
-  double b0 = log(2 * values[0]) / log(prime);
-  double log_rootbound = logBigNbr(&bound) / log(prime);
+  double logPrime = log(prime);
+  double b0 = log(2 * values[0]) / logPrime;
+  double log_rootbound = logBigNbr(&bound) / logPrime;
   int a0 = (int)ceil(log_rootbound);
   int b, C, j;
   // initialize variables for van Hoeij algorithm.
@@ -418,32 +425,26 @@ static void vanHoeij(int prime, int nbrFactors)
         {
           if (nbrRow == nbrCol)
           {
-            intToBigInteger((MiniBigInteger*)&matrixBL[nbrRow][nbrCol], 1);
+            intToBigInteger((BigInteger*)&matrixBL[nbrRow][nbrCol], 1);
           }
           else
           {
-            intToBigInteger((MiniBigInteger*)&matrixBL[nbrRow][nbrCol], 0);
+            intToBigInteger((BigInteger*)&matrixBL[nbrRow][nbrCol], 0);
           }
         }
       }
     }
-    b = (int)(ceil(b0 + (firstTrace + nbrRequiredTraces) * log_rootbound));
+    // Get b such that p^b is greater than the bounds on the cofficients.
+    b = b0 + (int)(ceil(log_rootbound)/logPrime) + 3;
+    a0 = b + exponDifference;
     // use exponDifference additional bits instead of a fixed number
-    if (a0 > b + exponDifference)
-    {
-      bofs = a0 - exponDifference;
-    }
-    else
-    {
-      bofs = b;
-      exponDifference = a0 - b;
-    }
 
-    CopyBigInt(&operand1, prime);
-    BigIntPowerIntExp(&operand1, a0 - bofs, &powerExtraBits);
+    intToBigInteger(&operand1, prime);
+    BigIntPowerIntExp(&operand1, exponDifference, &powerExtraBits);
 
     C = floor(sqrt(nbrRequiredTraces * nbrFactors) / 2);
 
+    // Step 1: Construction of the LLL input matrix.
     // Generate matrix M in matrix basis.
     // The matrix to generate is:
     // ( C*I_n      0     )
@@ -452,23 +453,29 @@ static void vanHoeij(int prime, int nbrFactors)
     //     ( S_1(G_1)   ...   S_1(G_n)  )
     // S = (   ...      ...     ...     )
     //     ( S_k(G_1)   ...   S_k(G_n)  )
-        // Use basisStar for matrix m.
+    // where G_1, G_2, ..., G_n are the p-adic factors of P.
+    // I_r is the r*r identity matrix.
+    // S_r(G_k) = (T_r(G_i) - T_r(G_i) mod p^b) / p^b (mod p^(a-b))
+    // where T_r(G_i) is the trace (Newton sum of powers of roots of
+    // polynomial G_i).
+    // n = nbrRequiredTraces
+    // s = nbrVectors
+    // Use basisStar for matrix m.
     for (int row = 0; row < nbrRequiredTraces; row++)
     {
       for (int col = 0; col < nbrVectors + nbrRequiredTraces; col++)
       {
         if (col == nbrFactors + row)
         {
-          CopyBigInt(&basisStar[row][col], &powerBoundA);
+          CopyBigInt((BigInteger *)&basisStar[row][col], &powerBoundA);
         }
         else
         {
-          intToBigInteger(&basisStar[row][col], 0);
+          intToBigInteger((BigInteger *)&basisStar[row][col], 0);
         }
       }
     }
 
-    /***************************** Construction of m ***************************/
     // Use matrix lambda to hold the traces.
 
     for (int factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
@@ -493,11 +500,11 @@ static void vanHoeij(int prime, int nbrFactors)
       {
         if (j >= nbrVectors)
         {
-          CopyBigInt(&lambda[factorNbr][j], &traces[firstTrace + j - nbrVectors]);
+          CopyBigInt((BigInteger *)&lambda[factorNbr][j], (BigInteger *)&traces[firstTrace + j - nbrVectors]);
         }
         else
         {
-          intToBigInteger(&lambda[factorNbr][j], 0);
+          intToBigInteger((BigInteger *)&lambda[factorNbr][j], 0);
         }
       }
     }
@@ -515,37 +522,59 @@ static void vanHoeij(int prime, int nbrFactors)
         intToBigInteger(&operand1, 0);     // Initialize sum.
         for (j = 0; j < nbrFactors; j++)
         {
-          BigIntMultiply(&matrixBL[nbrRow][j], &lambda[j][nbrCol], &operand2);
+          BigIntMultiply((BigInteger *)&matrixBL[nbrRow][j], (BigInteger *)&lambda[j][nbrCol], &operand2);
           BigIntAdd(&operand1, &operand2, &operand1);
         }
-        CopyBigInt(&basisStar[nbrRow][nbrCol], &operand1);
+        CopyBigInt((BigInteger *)&basisStar[nbrRow][nbrCol], &operand1);
       }
     }
 
     for (nbrRow = 0; nbrRow < nbrVectors; nbrRow++)
     {       // overrides left nbrVectors*nbrVectors part of BT
-      intToBigInteger(&basisStar[nbrRow][nbrRow], C);
+      intToBigInteger((BigInteger *)&basisStar[nbrRow][nbrRow], C);
     }
 
     for (nbrRow = nbrRequiredTraces; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        CopyBigInt(&basis[nbrRow][nbrCol], &basisStar[nbrRow - nbrRequiredTraces][nbrCol]);
+        CopyBigInt((BigInteger *)&basis[nbrRow][nbrCol],
+                   (BigInteger *)&basisStar[nbrRow - nbrRequiredTraces][nbrCol]);
       }
     }
 
-    /*****************************End of construction***************************/
-
+    // Step 2: LLL-reduce the (r+s)*(r+s) matrix M (of rank r+s).
     integralLLL(nbrVectors + nbrRequiredTraces);
 
+    // Step 3: Replace the upper r*(r+s) submatrix L of M by BL*L;
+    // M is now of dimension (n0+s)*(r+s) of rank r+s.
+    // First move down the rows of M.
+    for (int i = nbrVectors + nbrRequiredTraces - 1; i>= nbrRequiredTraces; i--)
+    {
+      MiniBigInteger* ptrSrc = &basisStar[i][0];
+      MiniBigInteger * ptrDest = &basisStar[i][0];
+      for (int j = 0; j < nbrVectors + nbrRequiredTraces; j++)
+      {
+        CopyBigInt((BigInteger *)ptrDest++, (BigInteger *)ptrSrc++);
+      }
+    }
+    // Now copy matrixBL to the first rows of M.
+    for (int i = 0; i < nbrRequiredTraces; i++)
+    {
+      MiniBigInteger* ptrSrc = &matrixBL[i][0];
+      MiniBigInteger* ptrDest = &basisStar[i][0];
+      for (int j = 0; j < nbrVectors + nbrRequiredTraces; j++)
+      {
+        CopyBigInt((BigInteger *)ptrDest++, (BigInteger *)ptrSrc++);
+      }
+    }
+#if 0
     // extract left (nbrVectors+nbrRequiredTraces)*nbrVectors submatrix of M
-    L.SetDims(nbrVectors + nbrRequiredTraces, nbrVectors);
     for (int i = 0; i < nbrVectors + nbrRequiredTraces; i++)
     {
       for (int j = 0; j < nbrVectors; j++)
       {
-        L[i][j] = M[i][j];
+        CopyBigInt(&L[i][j], &basisStar[i][j]);
       }
     }
     // Multiply submatrix basis with nbrVectors+nbrRequiredTraces) rows and nbrVectors columns
@@ -566,26 +595,22 @@ static void vanHoeij(int prime, int nbrFactors)
     }
 
     // now concat L to the left of the right (nbrVectors+nbrRequiredTraces)*nbrRequiredTraces submatrix of M
-    mat_ZZ Mprime;
-    Mprime.SetDims(nbrVectors + nbrRequiredTraces, nbrFactors + nbrRequiredTraces);
     for (int i = 0; i < nbrVectors + nbrRequiredTraces; i++)
     {
       int j;
       for (j = 0; j < nbrFactors; j++)
       {
-        Mprime[i][j] = L[i][j];
+        CopyBigInt(&Mprime[i][j], &L[i][j]);
       }
       for (; j < nbrFactors + nbrRequiredTraces; j++)
       {
-        Mprime[i][j] = M[i][j - nbrFactors + nbrVectors];
+        CopyBigInt(&Mprime[i][j], &basisStar[i][j - nbrFactors + nbrVectors]);
       }
     }
 
     /* Compute Gram-Schmidt & extract a sublattice of smaller dimension
        constituted of vectors spanning the shortest vectors of L */
 
-    int nbits = (int)((double)exponDifference * log(to_double(p)) / log(2.0));
-    RR::SetPrecision(nbits);
     mat_RR mu; vec_RR c;
     double t_GS;
 
@@ -593,9 +618,13 @@ static void vanHoeij(int prime, int nbrFactors)
 
     RR MM = to_RR(sqr(C) * nbrFactors + nbrRequiredTraces * nbrFactors * nbrFactors / 4);
 
-    n = nbrVectors;
+    int n = nbrVectors;
     nbrVectors = nbrVectors + nbrRequiredTraces;
-    nbrVectors--; while (nbrVectors >= 0 && c[nbrVectors] > MM) nbrVectors--;
+    nbrVectors--;
+    while (nbrVectors >= 0 && c[nbrVectors] > MM)
+    {
+      nbrVectors--;
+    }
     nbrVectors++;
 
     if (nbrVectors == 1) // don't need to update BL in that case
@@ -604,12 +633,13 @@ static void vanHoeij(int prime, int nbrFactors)
       return;
     }
 
-    BL.SetDims(nbrVectors, nbrFactors);  // BL is nbrVectors*nbrFactors
+    // BL is nbrVectors*nbrFactors
     for (int i = 0; i < nbrVectors; i++)
     {
       for (int j = 0; j < nbrFactors; j++)
       {
-        BL[i][j] = L[i][j] / C;
+        CopyBigInt(&matrixBL[i][j], &L[i][j]);  // BL = L / C.
+        subtractdivide(&matrixBL[i][j], 0, C);
       }
     }
 
@@ -691,8 +721,9 @@ static void vanHoeij(int prime, int nbrFactors)
     if (tf == valid || gg2 == 1) {
       return;
     }
+#endif
   }
- #endif 
+#endif  
 }
 
 // Generate integer polynomial from modular polynomial.

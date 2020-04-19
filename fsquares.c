@@ -43,7 +43,6 @@ static BigInteger SquareMult1;
 static BigInteger SquareMult2;
 static BigInteger SquareMult3;
 static BigInteger SquareMult4;
-static limb Sum[MAX_LEN];
 static int iMult3, iMult4;
 static int Mult1Len, Mult2Len, Mult3Len, Mult4Len, power4;
 static limb result[MAX_LEN];
@@ -53,7 +52,6 @@ static int TerminateThread, sum;
 static int nbrModExp;
 static int Computing3Squares;
 static char tmpOutput[MAX_LEN*12];
-static double logNormFirst, logNormSecond;
 int app;
 static char *square = "<span class=\"bigger\">²</span>";
 static BigInteger biMult1, biMult2, biMult3, biMult4;
@@ -160,36 +158,9 @@ static void SortBigNbrs(limb *mult1, int *mult1Len, limb *mult2, int *mult2Len)
   }
 }
 
-static void MultiplyComplexBy2(BigInteger *real, BigInteger *imag)
-{
-  BigIntMultiplyBy2(real);
-  BigIntMultiplyBy2(imag);
-}
-
-static void DivideComplexBy2(BigInteger *real, BigInteger *imag)
-{
-  BigIntDivideBy2(real);
-  BigIntDivideBy2(imag);
-}
-static void DivideComplexBy1PlusI(BigInteger *real, BigInteger *imag, BigInteger *temp)
-{        // Multiply by 1-i and then divide by 2.
-  BigIntAdd(real, imag, temp);
-  BigIntSubt(real, imag, imag);
-  CopyBigInt(real, temp);
-  DivideComplexBy2(real, imag);
-}
-
-static void MultiplyComplexBy1PlusI(BigInteger *real, BigInteger *imag, BigInteger *temp)
-{        // Multiply by 1+i.
-  BigIntSubt(real, imag, temp);
-  BigIntAdd(real, imag, imag);
-  CopyBigInt(real, temp);
-}
-
 // Variable to split in up to four squares: number
 int fsquares(void)
 {
-  static BigInteger biTemp;
 #ifdef __EMSCRIPTEN__
   char *ptrOutput;
 #endif

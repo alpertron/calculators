@@ -17,7 +17,6 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 var exports, HEAPU8, wasmLoaded;
-
 var info =
 {
   "env":
@@ -58,7 +57,7 @@ self.onmessage = function (e)
   var afterKey;
   if (typeof(WebAssembly) === "undefined")
   {
-	return;
+    return;
   }
   if (wasmLoaded)
   {

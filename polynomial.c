@@ -444,7 +444,7 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
 {
   int *ptrValue1, currentDegree;
   int degreeMin, degreeMax;
-  int degreePoly, degreeMono;
+  int degreePoly=0, degreeMono;
   int degree1 = *ptrArgument1;
   int degree2 = *ptrArgument2;
   if (degree1 <= 0)
