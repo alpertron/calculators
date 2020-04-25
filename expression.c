@@ -154,10 +154,20 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
   return 0;
 }
 
+static int numLimbs(int* pLen)
+{
+  int nbrLimbs = *pLen;
+  if (nbrLimbs < 0)
+  {
+    nbrLimbs = -nbrLimbs;
+  }
+  return nbrLimbs;
+}
+
 static void getCurrentStackValue(BigInteger* pValue)
 {
   limb* ptrStackValue = &comprStackValues[comprStackOffset[stackIndex]];
-  NumberLength = ptrStackValue->x;
+  NumberLength = numLimbs((int *)ptrStackValue);
   UncompressBigInteger((int *)ptrStackValue, pValue);
 }
 
@@ -306,7 +316,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         return EXPR_SYNTAX_ERROR;
       }
       getCurrentStackValue(&curStack);
-      if (curStack.nbrLimbs > 1)
+      if (curStack.nbrLimbs != 1)
       {
         return EXPR_INTERM_TOO_HIGH;
       }
@@ -628,7 +638,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         int currentStackOffset = comprStackOffset[stackIndex - 1];
         comprStackOffset[stackIndex] = currentStackOffset +
-          comprStackValues[currentStackOffset].x + 1;
+          numLimbs((int *)&comprStackValues[currentStackOffset]) + 1;
       }
       retcode = setStackValue(&valueX);
       if (retcode != EXPR_OK)
@@ -651,7 +661,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         int currentStackOffset = comprStackOffset[stackIndex - 1];
         comprStackOffset[stackIndex] = currentStackOffset +
-          comprStackValues[currentStackOffset].x + 1;
+          numLimbs((int*)&comprStackValues[currentStackOffset]) + 1;
       }
       retcode = setStackValue(&curStack);
       if (retcode != EXPR_OK)
@@ -801,7 +811,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         int currentStackOffset = comprStackOffset[stackIndex-1];
         comprStackOffset[stackIndex] = currentStackOffset + 
-          comprStackValues[currentStackOffset].x + 1;
+          numLimbs((int *)&comprStackValues[currentStackOffset]) + 1;
       }
       retcode = setStackValue(&curStack);   // Push number onto stack.
       if (retcode != EXPR_OK)
@@ -849,6 +859,12 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           {
             return SubExprResult;
           }
+        }
+        if (stackIndex >= 0)
+        {
+          int currentStackOffset = comprStackOffset[stackIndex];
+          comprStackOffset[stackIndex+1] = currentStackOffset +
+            numLimbs((int*)&comprStackValues[currentStackOffset]) + 1;
         }
       }
       stackOperators[stackIndex++] = charValue;

@@ -31,7 +31,7 @@ while (readdir $dir)
   }
   open(my $filehandle, '<', "C:/pages/$dirEntry");
   my $data = do { local $/; <$filehandle> };
-  my $extra = " blob:";
+  my $extra = "";
   print $htaccess  "<Files ${dirEntry}>\n${newstart}";
   getHashes($data, "style", $hash, "");
   print $htaccess  $hash;
@@ -44,7 +44,7 @@ closedir $dir;
 $newstart = $start."form-action 'none';";
 open(my $filehandle, '<', "C:/pages/index.htm");
 my $data = do { local $/; <$filehandle> };
-my $extra = " blob:";
+my $extra = "";
 print $htaccess  "<Files index.htm>\n${newstart}";
 getHashes($data, "style", $hash, "");
 print $htaccess  $hash;

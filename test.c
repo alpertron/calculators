@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include "stdio.h"
 #include <stdlib.h>
 #include <string.h>
 #include "bignbr.h"
@@ -6,7 +6,7 @@
 #include "factor.h"
 #include "batch.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE  9
+#define DEBUG_CODE 13
 #endif
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
