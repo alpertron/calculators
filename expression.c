@@ -688,6 +688,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (charValue == ')' || charValue == ',')
     {
+      int curStack;
       if (leftNumberFlag == 0)
       {       // Previous item should be a number or variable.
         return EXPR_SYNTAX_ERROR;
@@ -700,15 +701,18 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return SubExprResult;
         }
       }
+      curStack = comprStackOffset[stackIndex];
       if (stackIndex == startStackIndex)
       {
+        comprStackOffset[stackIndex+1] = curStack + numLimbs(&comprStackValues[curStack].x) + 1;
         break;
       }
       if (charValue == ',')
       {
         return EXPR_PAREN_MISMATCH;
       }
-      comprStackOffset[stackIndex - 1] = comprStackOffset[stackIndex];
+      comprStackOffset[stackIndex - 1] = curStack;
+      comprStackOffset[stackIndex] += numLimbs(&comprStackValues[curStack].x) + 1;
       stackIndex--;    /* Discard ')' */
       leftNumberFlag = 1;
       exprIndex++;
@@ -716,6 +720,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (charValue >= '0' && charValue <= '9')
     {
+      int currentStackOffset;
       exprIndexAux = exprIndex;
       if (charValue == '0' && exprIndexAux < exprLength - 2 &&
           *(expr+exprIndexAux + 1) == 'x')
@@ -807,17 +812,14 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         pBigInt -> sign = SIGN_POSITIVE;
         exprIndex = exprIndexAux + 1;
       }
-      if (stackIndex > 0)
-      {
-        int currentStackOffset = comprStackOffset[stackIndex-1];
-        comprStackOffset[stackIndex] = currentStackOffset + 
-          numLimbs((int *)&comprStackValues[currentStackOffset]) + 1;
-      }
       retcode = setStackValue(&curStack);   // Push number onto stack.
       if (retcode != EXPR_OK)
       {
         return retcode;
       }
+      currentStackOffset = comprStackOffset[stackIndex];
+      comprStackOffset[stackIndex + 1] = currentStackOffset +
+          numLimbs((int*)&comprStackValues[currentStackOffset]) + 1;
       leftNumberFlag = TRUE;
       continue;
     }

@@ -56,9 +56,9 @@ enum
 
 typedef struct BigInteger
 {
-  limb limbs[MAX_LEN];
   int nbrLimbs;
   enum eSign sign;
+  limb limbs[MAX_LEN];
 } BigInteger;
 
 typedef struct BigRational

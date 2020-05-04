@@ -429,7 +429,7 @@ int FactorModularPolynomial(int inputMontgomery)
   {
     return EXPR_LEADING_COFF_MULTIPLE_OF_PRIME;
   }
-  memcpy(&TestNbr, &primeMod, primeMod.nbrLimbs * sizeof(limb));
+  memcpy(&TestNbr, primeMod.limbs, primeMod.nbrLimbs * sizeof(limb));
   NumberLength = primeMod.nbrLimbs;
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(primeMod.nbrLimbs);
