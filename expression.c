@@ -48,7 +48,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define MAXIMUM_OPERATOR             18
 
 #define COMPUTE_NEXT_PRIME_SIEVE_SIZE 2000
-#define SMALL_PRIMES_ARRLEN           1229   // Number of primes less than 10000.
 
 static limb comprStackValues[COMPR_STACK_SIZE];
 static int comprStackOffset[PAREN_STACK_SIZE];
@@ -1071,33 +1070,6 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
   }
   stackIndex -= funcArgs;
   return EXPR_OK;
-}
-
-static void initializeSmallPrimes(int* pSmallPrimes)
-{
-  int ctr, P;
-  if (*pSmallPrimes != 0)
-  {
-    return;
-  }
-  P = 3;
-  *pSmallPrimes++ = 2;
-  for (ctr = 1; ctr < SMALL_PRIMES_ARRLEN; ctr++)
-  {     // Loop that fills the SmallPrime array.
-    int Q;
-    *pSmallPrimes++ = P; /* Store prime */
-    do
-    {
-      P += 2;
-      for (Q = 3; Q * Q <= P; Q += 2)
-      { /* Check if P is prime */
-        if (P % Q == 0)
-        {
-          break;  /* Composite */
-        }
-      }
-    } while (Q * Q <= P);
-  }
 }
 
 static void generateSieve(int* pSmallPrimes, char* sieve, BigInteger* pArgument, int isNext)

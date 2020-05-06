@@ -1,8 +1,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 4 de mayo de 2020."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 4 May 2020."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 6 de mayo de 2020."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 6 May 2020."
 
 #ifdef __EMSCRIPTEN__
 int stamp(void);
@@ -43,6 +43,8 @@ enum eExprErr
   EXPR_OK = 0,
   EXPR_NOT_FOUND,
 };
+#define SMALL_PRIMES_ARRLEN           1229   // Number of primes less than 10000.
+
 #ifndef lang  
   extern int lang;
 #endif
@@ -57,5 +59,6 @@ void partition(int val, BigInteger *pResult);
 void factorial(BigInteger *result, int argument);
 void primorial(BigInteger *result, int argument);
 void textError(char * ptrOutput, enum eExprErr rc);
+void initializeSmallPrimes(int* pSmallPrimes);
 #else
 #endif

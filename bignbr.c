@@ -22,6 +22,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "factor.h"
 #include "expression.h"
 #include "skiptest.h"
+
 static BigInteger Temp, Temp2, Temp3, Base, Power, expon;
 static char ProcessExpon[MAX_LEN*BITS_PER_GROUP + 1000];
 static char primes[MAX_LEN*BITS_PER_GROUP + 1000];
@@ -33,6 +34,7 @@ extern int q[MAX_LEN];
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 int groupLen = 6;
+static int smallPrimes[SMALL_PRIMES_ARRLEN];
 #ifdef __EMSCRIPTEN__
 int percentageBPSW;
 #endif
@@ -1521,6 +1523,33 @@ static void Halve(limb *pValue)
   }
 }
 
+void initializeSmallPrimes(int* pSmallPrimes)
+{
+  int ctr, P;
+  if (*pSmallPrimes != 0)
+  {
+    return;
+  }
+  P = 3;
+  *pSmallPrimes++ = 2;
+  for (ctr = 1; ctr < SMALL_PRIMES_ARRLEN; ctr++)
+  {     // Loop that fills the SmallPrime array.
+    int Q;
+    *pSmallPrimes++ = P; /* Store prime */
+    do
+    {
+      P += 2;
+      for (Q = 3; Q * Q <= P; Q += 2)
+      { /* Check if P is prime */
+        if (P % Q == 0)
+        {
+          break;  /* Composite */
+        }
+      }
+    } while (Q * Q <= P);
+  }
+}
+
 // BPSW primality test:
 // 1) If the input number is 2-SPRP composite, indicate composite and go out.
 // 2) If number is perfect square, indicate it is composite and go out.
@@ -1560,6 +1589,22 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   if ((limbs->x & 1) == 0)
   {
     return 1;    // Number is even and different from 2. Indicate composite.
+  }
+  if (nbrLimbs > 1)
+  {              // Check whether it is divisible by small number.
+    int primeIndex;
+    initializeSmallPrimes(smallPrimes);
+    for (primeIndex = 0; primeIndex < 180; primeIndex += 3)
+    {
+      int primeProd = smallPrimes[primeIndex] * smallPrimes[primeIndex+1] * smallPrimes[primeIndex+2];
+      int remainder = getRemainder(pValue, primeProd);
+      if (remainder % smallPrimes[primeIndex] == 0 ||
+        remainder % smallPrimes[primeIndex + 1] == 0 ||
+        remainder % smallPrimes[primeIndex + 2] == 0)
+      {
+        return 1;   // Number is divisible by small number. Indicate composite.
+      }
+    }
   }
 #ifdef __EMSCRIPTEN__
 #ifdef FACTORIZATION_APP
