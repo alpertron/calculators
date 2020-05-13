@@ -105,6 +105,7 @@ int fsquares(void);
 void AddBigInt(limb *pAddend1, limb *pAddend2, limb *pSum, int nbrLimbs);
 void SubtractBigInt(limb* pMinuend, limb* pSubtrahend, limb *pDiff, int nbrLimbs);
 int BigIntIsZero(BigInteger *value);
+int BigIntIsOne(BigInteger* value);
 int BigIntEqual(BigInteger *value1, BigInteger *value2);
 void BigIntChSign(BigInteger *value);
 void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum);

@@ -3391,7 +3391,7 @@ void OrigPolyFromMontgomeryToStandard(void)
 {
   int *ptrValue1, *ptrValue2;
   int currentDegree;
-  memcpy(&TestNbr, &powerMod, powerMod.nbrLimbs*sizeof(limb));
+  memcpy(&TestNbr, powerMod.limbs, powerMod.nbrLimbs*sizeof(limb));
   NumberLength = powerMod.nbrLimbs;
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(powerMod.nbrLimbs);

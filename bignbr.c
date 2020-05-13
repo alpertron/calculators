@@ -1884,6 +1884,15 @@ int BigIntIsZero(BigInteger *value)
   return 0;      // Number is not zero.
 }
 
+int BigIntIsOne(BigInteger* value)
+{
+  if (value->nbrLimbs == 1 && value->limbs[0].x == 1 && value->sign == SIGN_POSITIVE)
+  {
+    return 1;    // Number is zero.
+  }
+  return 0;      // Number is not zero.
+}
+
 int BigIntEqual(BigInteger *value1, BigInteger *value2)
 {
   int index, nbrLimbs;
