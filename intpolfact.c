@@ -30,6 +30,18 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_MATRIX_SIZE  100
 #define MAX_LEN_MINI     700   // 5000 digits
 
+char* ptrOutput2;
+#if DEBUG_VANHOEIJ
+char debugOutput[20000000];
+char* ptrDebugOutput = debugOutput;
+#endif
+
+#ifdef __EMSCRIPTEN__
+#define LF "<br>"
+#else
+#define LF "\r\n"
+#endif
+
 typedef struct MiniBigInteger
 {
   int nbrLimbs;
@@ -43,9 +55,7 @@ MiniBigInteger lambda[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
 MiniBigInteger prodB[MAX_MATRIX_SIZE];
 MiniBigInteger detProdB[MAX_MATRIX_SIZE];
 MiniBigInteger matrixBL[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
-MiniBigInteger matrixS[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
-MiniBigInteger Mprime[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
-BigInteger traces[MAX_MATRIX_SIZE];
+BigInteger traces[MAX_MATRIX_SIZE*10];
 BigInteger powerBoundA, powerExtraBits;
 int *ptrCoeffs[MAX_MATRIX_SIZE];
 
@@ -65,46 +75,59 @@ extern int polyLifted[1000000];
 extern int polyS[1000000];
 extern int poly5[1000000];
 int polyInteger[1000000];
-
-static void CopyBigIntegerToMini(MiniBigInteger* mini, BigInteger* big)
-{
-  CopyBigInt((BigInteger*)mini, big);
-}
-
-static void CopyMiniBigIntegerToBig(MiniBigInteger* big, BigInteger* mini)
-{
-  CopyBigInt((BigInteger*)big, mini);
-}
+static void GenerateIntegerPolynomial(int* polyMod, int* polyInt, int degreePoly);
+static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly);
 
 // Generate row echelon form from matrixBL.
 // The output will be located in matrix lambda.
-static int gauss(int nbrRows, int nbrCols)
+static int gauss(int nbrCols, int nbrRows)
 {
   int k, l;
   int row, col;
   int pos;
-  int w = nbrCols;
 
+#ifdef __EMSCRIPTEN__
+  char outputInfo[1000];
+  char* ptrOutput = outputInfo;
+  if (lang)
+  {
+    strcpy(ptrOutput, "1<p>Resolviendo matriz de");
+  }
+  else
+  {
+    strcpy(ptrOutput, "1<p>Solving matrix of");
+  }
+  ptrOutput += strlen(ptrOutput);
+  *ptrOutput++ = ' ';
+  int2dec(&ptrOutput, nbrRows);
+  strcpy(ptrOutput, " &times; ");
+  ptrOutput += strlen(ptrOutput);
+  int2dec(&ptrOutput, nbrCols);
+  strcpy(ptrOutput, ".</p>");
+  ptrOutput += strlen(ptrOutput);
+  databack(outputInfo);
+#endif
   for (row = 0; row < nbrRows; row++)
   {
     for (col = 0; col < nbrCols; col++)
     {
-      CopyBigInt((BigInteger*)&lambda[row][col], (BigInteger*)&matrixBL[row][col]);
+      CopyBigInt((BigInteger*)&lambda[row][col], (BigInteger*)&matrixBL[col][row]);
     }
   }
 
   l = 0;
-  for (k = 0; k < w && l < nbrRows; k++) {
+  for (k = 0; k < nbrCols && l < nbrRows; k++)
+  {
     pos = -1;
-    /* Look for a pivot under the "diagonal". */
+    /* Look for a pivot under the diagonal. */
     row = l;
-    while (row < nbrRows && BigIntIsZero(&lambda[row][k]))
+    while (row < nbrRows && BigIntIsZero((BigInteger*)&lambda[row][k]))
     {
       row++;
     }
 
     if (row == nbrRows)
-      /* No pivot found ; try to find a (unique !) 1 above */
+      /* No pivot found; try to find a unique 1 above */
     {
       row = 0;
       while (row < l && BigIntIsZero((BigInteger *)&lambda[row][k]))
@@ -126,10 +149,12 @@ static int gauss(int nbrRows, int nbrCols)
       continue;
     }
 
-    // we've found a non-zero element on the k-th column
+    // We have found a non-zero element on the k-th column
     for (; row < nbrRows && pos == -1; row++)
     {
-      if (BigIntIsOne((BigInteger*)&lambda[row][k]))
+      BigInteger* pLambda = (BigInteger*)&lambda[row][k];
+      if (pLambda->nbrLimbs == 1 && pLambda->sign == SIGN_NEGATIVE &&
+        pLambda->limbs[0].x == 1)   // Value is -1.
       {   // invert all elements on i-th row
         for (col = k; col < nbrCols; col++)
         {
@@ -137,7 +162,7 @@ static int gauss(int nbrRows, int nbrCols)
         }
         pos = row;
       }
-      if (BigIntIsOne((BigInteger*)&lambda[row][k]))
+      if (BigIntIsOne(pLambda))
       {
         pos = row;
       }
@@ -177,60 +202,71 @@ static int gauss(int nbrRows, int nbrCols)
 }
 
 
-// Compute the orthogonal basis of E (basisStar), lambda, prodB
-// and the determinant of products of B.
-// Use sections 2.5.2 and 2.6.3 of Henri Cohen's book
-// A Course in Computational Algebraic Number Theory
+// Compute the matrix lambda of Gram-Schimdt orthogonalization.
+// Use algorithm 2 of "Symplectic Lattice Reduction and NTRU"
+// (Gama1, Howgrave - Graham, Nguyen)
 static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
 {
-  BigInteger* pDest, * pProdB;
-  int colI, colJ, row;
+  int colI, colJ, k, row;
+#ifdef __EMSCRIPTEN__
+  char outputInfo[1000];
+  char* ptrOutput = outputInfo;
+  if (lang)
+  {
+    strcpy(ptrOutput, "1<p>Calculando Gram-Schmidt en matriz de");
+  }
+  else
+  {
+    strcpy(ptrOutput, "1<p>Computing Gram-Schmidt in matrix of");
+  }
+  ptrOutput += strlen(ptrOutput);
+  *ptrOutput++ = ' ';
+  int2dec(&ptrOutput, nbrRows);
+  strcpy(ptrOutput, " &times; ");
+  ptrOutput += strlen(ptrOutput);
+  int2dec(&ptrOutput, nbrCols);
+  strcpy(ptrOutput, ".</p>");
+  ptrOutput += strlen(ptrOutput);
+  databack(outputInfo);
+#endif
   for (colI = 0; colI < nbrCols; colI++)
   {
-    // Compute b*_i = b_i - sum_j(lambda_{i, j} b*_j /d_j)
-    for (row = 0; row < nbrRows; row++)
-    {
-      CopyBigInt((BigInteger *)&basisStar[row][colI], (BigInteger *)&basis[row][colI]);
-    }
-    for (colJ = 0; colJ < colI; colJ++)
-    {
-      for (row = 0; row < nbrRows; row++)
-      {
-        BigInteger* ptrBasisStar = (BigInteger*)&basisStar[row][colJ];
-        BigIntMultiply((BigInteger *)&lambda[colI][colJ], ptrBasisStar, &tmp0);
-        BigIntDivide(&tmp0, (BigInteger *)&detProdB[colJ], &tmp1);
-        BigIntSubt(ptrBasisStar, &tmp1, ptrBasisStar);
-      }
-    }
-    // Compute B_i = b*_i * b*_i
-    pProdB = (BigInteger *)&prodB[colI];
-    intToBigInteger(pProdB, 0);
-    for (row = 0; row < nbrRows; row++)
-    {
-      BigIntMultiply((BigInteger *)&basisStar[row][colI], (BigInteger *)&basisStar[row][colI], &tmp0);
-      BigIntAdd(pProdB, &tmp0, pProdB);
-    }
     if (colI == 0)
-    {
-      CopyBigInt((BigInteger *)&detProdB[0], pProdB);
+    {             // U_0 <- 1
+      intToBigInteger((BigInteger*)&detProdB[0], 1);
     }
     else
-    {
-      BigIntMultiply((BigInteger *)&detProdB[colI-1], pProdB, (BigInteger *)&detProdB[colI]);
+    {             // U_i <- lambda_{i-1, i-1}; U_{i-1} <- -lambda_{i, i-1}
+      CopyBigInt((BigInteger*)&detProdB[colI], (BigInteger*)&lambda[colI - 1][colI - 1]);
+      CopyBigInt((BigInteger*)&detProdB[colI - 1], (BigInteger*)&lambda[colI][colI - 1]);
+      BigIntChSign((BigInteger*)&detProdB[colI - 1]);
     }
-    // Compute lambda_{i, j} = b_i * b*_j * d_j / B_j = b_i * b*_j * d_{j-1}
-    for (colJ = 0; colJ < colI; colJ++)
-    {
-      pDest = (BigInteger *)&lambda[colI][colJ];
-      intToBigInteger(pDest, 0);
-      for (row = 0; row < nbrRows; row++)
-      {
-        BigIntMultiply((BigInteger *)&basis[row][colI], (BigInteger *)&basisStar[row][colJ], &tmp0);
-        BigIntAdd(pDest, &tmp0, pDest);
+    for (colJ = colI - 2; colJ >= 0; colJ--)
+    {             // U_j <- 0
+      intToBigInteger(&tmp1, 0);
+      for (k = colJ + 1; k <= colI; k++)
+      {           // U_j <- U_j + lambda_{k,j} * U_k
+        BigIntMultiply((BigInteger*)&lambda[k][colJ], (BigInteger*)&detProdB[k], &tmp2);
+        BigIntSubt(&tmp1, &tmp2, &tmp1);
       }
-      if (colJ > 0)
-      {
-        BigIntMultiply(pDest, (BigInteger *)&detProdB[colJ - 1], pDest);
+      // U_j <- U_j / lambda_{j,j}
+      BigIntDivide(&tmp1, (BigInteger*)&lambda[colJ][colJ], (BigInteger*)&detProdB[colJ]);
+    }
+    for (colJ = colI; colJ < nbrCols; colJ++)
+    {           // lambda_{j,i} <- 0
+      BigInteger* plambdaJI = (BigInteger*)&lambda[colJ][colI];
+      intToBigInteger(plambdaJI, 0);
+      for (k = 0; k <= colI; k++)
+      {         // tmp2 <- scalar product b_j * b_k 
+        intToBigInteger(&tmp2, 0);
+        for (row = 0; row < nbrRows; row++)
+        {
+          BigIntMultiply((BigInteger*)&basisStar[row][colJ], (BigInteger*)&basisStar[row][k], &tmp3);
+          BigIntAdd(&tmp2, &tmp3, &tmp2);
+        }
+        // lambda_{j,i} <- lambda_{j,i} + tmp2 * U_k
+        BigIntMultiply(&tmp2, (BigInteger*)&detProdB[k], &tmp2);
+        BigIntAdd(plambdaJI, &tmp2, plambdaJI);
       }
     }
   }
@@ -338,6 +374,27 @@ void integralLLL(int size)
   int k, kMax, row;
   int colI, colJ;
   int l;
+#ifdef __EMSCRIPTEN__
+  char outputInfo[1000];
+  char* ptrOutput = outputInfo;
+  if (lang)
+  {
+    strcpy(ptrOutput, "1<p>Calculando LLL en matriz de");
+  }
+  else
+  {
+    strcpy(ptrOutput, "1<p>Computing LLL in matrix of");
+  }
+  ptrOutput += strlen(ptrOutput);
+  *ptrOutput++ = ' ';
+  int2dec(&ptrOutput, size);
+  strcpy(ptrOutput, " &times; ");
+  ptrOutput += strlen(ptrOutput);
+  int2dec(&ptrOutput, size);
+  strcpy(ptrOutput, ".</p>");
+  ptrOutput += strlen(ptrOutput);
+  databack(outputInfo);
+#endif
   k = 1;
   kMax = 0;
   // Set d_0 to scalar product B_0 * B_0
@@ -423,6 +480,23 @@ void integralLLL(int size)
   } while (++k < size);
 }
 
+// Compute remainder such that the result is in range -divisor/2 to divisor/2.
+static void BigIntSymmetricRemainder(BigInteger* dividend, BigInteger* divisor, BigInteger* result)
+{
+  BigIntRemainder(dividend, divisor, result);
+  // Convert trace to range -powerExtraBits/2 to powerExtraBits/2
+  if (result->sign == SIGN_NEGATIVE)
+  {
+    BigIntAdd(result, divisor, result);
+  }
+  multint(&operand1, result, 2);
+  BigIntSubt(&operand1, divisor, &operand1);
+  if (operand1.sign == SIGN_POSITIVE)
+  {
+    BigIntSubt(result, divisor, result);
+  }
+}
+
 // Compute the traces of all modular factors in a matrix.
 // traces[row] = trace_row(poly_col). Column number is a parameter.
 // Let the polynomial factor be:
@@ -431,69 +505,95 @@ void integralLLL(int size)
 // The coefficients have to be processed in the order inverted,
 // so the first step is to get the pointers to the coefficients.
 //
-// if lc(f) != 1, take the polynomial g(y) = lc(f)^(deg(f)-1)*f(y/lc(f)) which is monic.
-// The roots of g are those of f multiplied by lc(f),
-// thus Tr_g[i] = Tr_f[i]*lc(f)^i
 static void ComputeTraces(int nbrTraces, int nbrCol)
 {
   int traceNbr;
   int* ptrCoeff, *ptrCoeffG;
   int polyDegree, degree;
+  int* ptrTemp = tempPoly;
+  BigInteger* ptrTrace;
   struct sFactorInfo* pstFactorInfo = &factorInfoRecord[nbrCol];
   // Get pointers to the coefficients.
   polyDegree = pstFactorInfo->degree;          // Degree of polynomial factor
   ptrCoeff = pstFactorInfo->ptrPolyLifted;     // coefficients of polynomial factor.
   for (traceNbr = polyDegree - 1; traceNbr >= 0; traceNbr--)
   {
-    ptrCoeffs[traceNbr] = ptrCoeff;
+    ptrCoeffs[traceNbr] = ptrTemp;
+    operand4.nbrLimbs = *ptrCoeff;
+    operand4.sign = SIGN_POSITIVE;
+    memcpy(operand4.limbs, ptrCoeff+1, *ptrCoeff *sizeof(int));
+    BigIntRemainder(&operand4, &powerMod, &operand3);
+    *ptrTemp = operand3.nbrLimbs;
+    memcpy(ptrTemp+1, operand3.limbs, *ptrTemp * sizeof(int));
+    ptrTemp += 1 + numLimbs(ptrTemp);
     ptrCoeff += 1 + numLimbs(ptrCoeff);
   }
-  // Compute coefficients of G.
+  // Compute coefficients of P.
   ptrCoeffG = (int*)basis;
   intToBigInteger(&operand1, 1);
-  UncompressBigIntegerB(ptrCoeff, &operand2);  // Get leading coefficient.
-  ptrCoeffs[0] = ptrCoeffG;
+#if DEBUG_VANHOEIJ
+  strcpy(ptrDebugOutput, "Coefficients: ");
+  ptrDebugOutput += strlen(ptrDebugOutput);
+#endif
   for (traceNbr = 0; traceNbr < polyDegree; traceNbr++)
   {
     UncompressBigIntegerB(ptrCoeffs[traceNbr], &operand3);
+#if DEBUG_VANHOEIJ
+    BigInteger2Dec(&operand3, ptrDebugOutput, 0);
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    *ptrDebugOutput++ = ',';
+    *ptrDebugOutput++ = ' ';
+#endif
     BigIntMultiply(&operand3, &operand1, &operand3);
-    CompressBigInteger(ptrCoeffG, &operand3);
-    BigIntMultiply(&operand1, &operand2, &operand1);
+    BigInteger2IntArray(ptrCoeffG, &operand3);
     ptrCoeffs[traceNbr] = ptrCoeffG;
     ptrCoeffG += 1 + numLimbs(ptrCoeffG);
   }
-  // Store traces of polynomial G in matrix traces.
-  intToBigInteger(&traces[0], polyDegree);
-  BigIntRemainder(&traces[0], &powerBoundA, &traces[0]);
+#if DEBUG_VANHOEIJ
+  strcpy(ptrDebugOutput, LF);
+  ptrDebugOutput += strlen(ptrDebugOutput);
+#endif
+  // Store traces of polynomial P in matrix traces.
+  ptrTrace = &traces[0];
+  intToBigInteger(ptrTrace, polyDegree);
+  BigIntRemainder(ptrTrace, &powerMod, &traces[0]);
   for (traceNbr = 1; traceNbr < nbrTraces; traceNbr++)
   {
+    ptrTrace++;
     // Initialize trace to -n*E_n.
-    if (traceNbr < polyDegree)
+    if (traceNbr <= polyDegree)
     {
-      UncompressBigIntegerB(ptrCoeffs[traceNbr], &operand1);
-      multint(&traces[traceNbr], &operand1, traceNbr+1);
+      UncompressBigIntegerB(ptrCoeffs[traceNbr - 1], &operand1);
+      multint(ptrTrace, &operand1, -traceNbr);
     }
     else
     {
-      intToBigInteger(&traces[traceNbr], 0);
+      intToBigInteger(ptrTrace, 0);
     }
-    for (degree = 0; degree < traceNbr; degree++)
-    {
-      if (degree < polyDegree)
+    for (degree = 1; degree < traceNbr; degree++)
+    {   // Subtract - E_{n-deg}*Tr_deg(P)
+      if (traceNbr - degree <= polyDegree)
       {
-        BigIntMultiply(&traces[degree], (BigInteger *)(ptrCoeffs + polyDegree - degree), &operand1);
-        BigIntSubt(&traces[traceNbr], &operand1, &traces[traceNbr]);
+        UncompressBigIntegerB(ptrCoeffs[traceNbr - degree - 1], &operand3);
+        BigIntMultiply(&traces[degree], &operand3, &operand1);
+        BigIntSubt(ptrTrace, &operand1, ptrTrace);
+        // Get remainder of quotient of result by p^a.
+        BigIntRemainder(ptrTrace, &powerMod, ptrTrace);
       }
     }
-    BigIntRemainder(&traces[degree], &powerBoundA, &traces[degree]);
   }
-  // Trace of polynomial G has been computed.
-  // Now we have to compute Tr_f[i] = Tr_g[i] / lc(f)^i
-  intToBigInteger((BigInteger *)&operand1, 1);
+  ptrTrace = &traces[0];
   for (traceNbr = 1; traceNbr < nbrTraces; traceNbr++)
-  {
-    BigIntDivide(&traces[traceNbr], &operand1, &traces[traceNbr]);
-    BigIntMultiply(&operand1, &operand2, &operand1);
+  {       // Loop that divides all traces by p^b and get modulus p^(a-b).
+    ptrTrace++;
+    // Get remainder of quotient of trace divided by p^b
+    BigIntSymmetricRemainder(ptrTrace, &powerBoundA, &operand2);
+    // Subtract the remainder from the computed trace.
+    BigIntSubt(ptrTrace, &operand2, ptrTrace);
+    // Divide the result by p^b
+    BigIntDivide(ptrTrace, &powerBoundA, ptrTrace);
+    // Get remainder of quotient of result divided by p^(a-b)
+    BigIntSymmetricRemainder(ptrTrace, &powerExtraBits, ptrTrace);
   }
 }
 
@@ -514,9 +614,11 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
 // s = nbrRequiredTraces
 static void vanHoeij(int prime, int nbrFactors)
 {
-#if 0
-//  int degreePolyToFactor = values[0];
-  int nbrRequiredTraces, nbrVectors, nbrColsTraces, r1;
+#if DEBUG_VANHOEIJ
+  int nbrStepsDone = 0;
+#endif
+  int nbrVectors, nbrColsTraces, r1;
+  int nbrRequiredTraces, firstTrace;
   int nbrRow, nbrCol;
   int exponDifference;
   // Store into polyLifted the polynomial values / lc(values) (mod powerMod).
@@ -524,15 +626,45 @@ static void vanHoeij(int prime, int nbrFactors)
   double b0 = log(2 * values[0]) / logPrime;
   double log_rootbound = logBigNbr(&bound) / logPrime;
   int a0 = (int)ceil(log_rootbound);
-  int b, C, j, rank;
+  int b, C, j, rank, nbrVector;
+  int nbrTmp[1000], nbrTmp2[1000], nbrTmp3[1000];
+  int degree1, degreeProd;
+  int* ptrSrc, *ptrDest;
+  int currentFactor, currentDegree, degreeFactor, rc;
+  struct sFactorInfo* pstFactorInfo;
+  int degreePolyToFactor = polyNonRepeatedFactors[0];
+  int* ptrFactorInteger = polyInteger;
+  int* ptrFactorIntegerBak;
+  int nbrFactor;
+  int completeFactorization = FALSE;
+  int oldExponent = 1;
+  int oldNumberLength = 0;
+  int newNumberLength;
+
+#if DEBUG_VANHOEIJ
+  sprintf(ptrDebugOutput, LF "====================================================="
+    LF "prime = %d, root bound = ", prime);
+  ptrDebugOutput += strlen(ptrDebugOutput);
+  BigInteger2Dec(&bound, ptrDebugOutput, 0);
+  ptrDebugOutput += strlen(ptrDebugOutput);
+  *ptrDebugOutput++ = '\n';
+#endif
+  memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
+  // Get leading coefficient of polyNonRepeatedFactors.
+  ptrSrc = &polyNonRepeatedFactors[1];
+  for (degree1 = 0; degree1 < degreePolyToFactor; degree1++)
+  {
+    ptrSrc += 1 + numLimbs(ptrSrc);
+  }
   // initialize variables for van Hoeij algorithm.
   nbrRequiredTraces = 1;        // Initialize nbrRequiredTraces.
+  firstTrace = 1;               // First trace to use for matrix M.
   nbrVectors = nbrFactors;      // Initialize nbrVectors.
   nbrColsTraces = nbrFactors;
   // Compute powerExtraBits as a power of prime with 3 times
   // the number of bits of nbrFactors (the number of polynomial factors).
   // Compute powerBoundA as powerExtraBits * powerMod.
-  exponDifference = (int)(3.0 * (double)nbrFactors * log(2.0) / log(prime));
+  exponDifference = (int)(4.0 * (double)nbrFactors * log(2.0) / log(prime));
   intToBigInteger(&operand1, prime);
   BigIntPowerIntExp(&operand1, exponDifference, &powerExtraBits);
   CopyBigInt(&powerBoundA, &powerMod);
@@ -552,21 +684,86 @@ static void vanHoeij(int prime, int nbrFactors)
       }
     }
   }
+  b = (int)(b0 + (ceil(log(nbrRequiredTraces + 2) * log_rootbound) / logPrime) + 3);
+  a0 = b + exponDifference;
+  exponentMod = a0*2+50;
+  computePower(exponentMod);
+  modulusIsZero = 0;    // Use modular arithmetic for polynomials.
+  intToBigInteger(&operand5, 1);
+  values[0] = polyNonRepeatedFactors[0];
+  getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
+#if DEBUG_HENSEL_LIFTING
+  ptrOutput2 = ptrDebugOutput;
+#endif
+  HenselLifting(factorInfoRecord);
+#if DEBUG_HENSEL_LIFTING
+  ptrDebugOutput = ptrOutput2; ptrOutput2 = NULL;
+#endif
+  // Compress polynomials so there are no spaces between coefficients.
+  pstFactorInfo = factorInfoRecord;
+  for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+  {
+    int* ptrDest = pstFactorInfo->ptrPolyLifted;
+    int* ptrSrc = ptrDest;
+    for (degree = 0; degree < pstFactorInfo->degree; degree++)
+    {
+      int coeffLength = 1 + numLimbs(ptrSrc);
+      memmove(ptrDest, ptrSrc, coeffLength * sizeof(int));
+      ptrDest += coeffLength;
+      ptrSrc += NumberLength + 1;
+    }
+    pstFactorInfo++;
+  }
   for (;;)
   {
-    int squareFormula;
-    if (nbrVectors >= nbrColsTraces)
-    {
-      exponDifference += 1 + (3 * exponDifference) / nbrColsTraces;
-    }
+    int squareFormula, stepNbr;
+    modulusIsZero = 0;    // Use modular arithmetic for polynomials.
+    firstTrace += nbrRequiredTraces - 1;
     if (nbrVectors >= nbrFactors)
     {
       nbrColsTraces = nbrFactors;
       nbrVectors = nbrFactors;
+      // Initialize matrix BL with identity matrix (length nbrFactors).
+      for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
+      {
+        for (nbrCol = 0; nbrCol < nbrFactors; nbrCol++)
+        {
+          if (nbrRow == nbrCol)
+          {
+            intToBigInteger((BigInteger*)&matrixBL[nbrRow][nbrCol], 1);
+          }
+          else
+          {
+            intToBigInteger((BigInteger*)&matrixBL[nbrRow][nbrCol], 0);
+          }
+        }
+      }
     }
     // Get b such that p^b is greater than the bounds on the cofficients.
-    b = (int)(b0 + (ceil(log_rootbound)/logPrime) + 3);
+    b = (int)(b0 + (ceil(log(firstTrace + nbrRequiredTraces + 1) * log_rootbound) / logPrime) + 3);
     a0 = b + exponDifference;
+    computePower(a0);
+    newNumberLength = NumberLength;
+    exponentMod = a0;
+    intToBigInteger(&operand1, prime);
+    BigIntPowerIntExp(&operand1, b, &powerBoundA);
+#if DEBUG_VANHOEIJ
+    sprintf(ptrDebugOutput, LF "====================================================="
+      LF "prime = %d, a0 = %d, b0 = %d, exponDifference = %d" LF, prime, a0, b, exponDifference);
+    ptrDebugOutput += strlen(ptrDebugOutput);
+#endif
+    intToBigInteger(&operand5, 1);
+    values[0] = polyNonRepeatedFactors[0];
+    getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
+#if DEBUG_HENSEL_LIFTING
+    ptrOutput2 = ptrDebugOutput;
+#endif
+#if DEBUG_HENSEL_LIFTING
+    ptrDebugOutput = ptrOutput2; ptrOutput2 = NULL;
+#endif
+    NumberLength = newNumberLength;
+    oldExponent = a0;
+    oldNumberLength = NumberLength;
     // use exponDifference additional bits instead of a fixed number
 
     intToBigInteger(&operand1, prime);
@@ -577,11 +774,11 @@ static void vanHoeij(int prime, int nbrFactors)
     // Step 1: Construction of the LLL input matrix.
     // Generate matrix M in matrix basis.
     // The matrix to generate is:
-    // ( C*I_r      0     )
-    // (  S     p^l * I_s )
+    // ( C * I_r      0     )
+    // (   S      p^l * I_s )
     //
     //     ( S_1(G_1)   ...   S_1(G_n)  )
-    // S = (   ...      ...     ...     )
+    // S = (   ...      ...     ...     ) * BL
     //     ( S_k(G_1)   ...   S_k(G_n)  )
     // where G_1, G_2, ..., G_n are the p-adic factors of P.
     // I_r is the r*r identity matrix.
@@ -601,53 +798,67 @@ static void vanHoeij(int prime, int nbrFactors)
         }
         else
         {
-          intToBigInteger((BigInteger *)&basisStar[nbrRow][nbrCol], 0);
+          intToBigInteger((BigInteger*)&basisStar[nbrRow][nbrCol], 0);
         }
       }
     }
 
     // Use matrix lambda to hold the traces.
-
     for (int factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
     {
-      ComputeTraces(nbrRequiredTraces, factorNbr);
-
+      ComputeTraces(firstTrace + nbrRequiredTraces, factorNbr);
+#if DEBUG_VANHOEIJ
+      strcpy(ptrDebugOutput, "Traces: ");
+      ptrDebugOutput += strlen(ptrDebugOutput);
+      for (nbrRow = firstTrace; nbrRow < firstTrace + nbrRequiredTraces; nbrRow++)
+      {
+        BigInteger2Dec(&traces[nbrRow], ptrDebugOutput, 0);
+        ptrDebugOutput += strlen(ptrDebugOutput);
+        if (nbrRow < firstTrace + nbrRequiredTraces - 1)
+        {
+          *ptrDebugOutput++ = ',';
+          *ptrDebugOutput++ = ' ';
+        }
+      }
+      strcpy(ptrDebugOutput, LF);
+      ptrDebugOutput += strlen(ptrDebugOutput);
+#endif
       // Use traces 1 to RequiredTraces
-      // (i.e. Tr[0] to Tr[nbrRequiredTraces-1])
+      // (i.e. Tr[1] to Tr[nbrRequiredTraces])
       // Convert traces matrix to range -powerExtraBits/2 to powerExtraBits/2.
       for (j = 0; j < nbrRequiredTraces; j++)
       {
-        CopyBigInt(&operand1, &traces[j]);
+        CopyBigInt(&operand1, &traces[firstTrace + j]);
         BigIntMultiplyBy2(&operand1);
         BigIntSubt(&operand1, &powerExtraBits, &operand1); // operand1 <- 2*traces[j] - powerExtraBits
         if (operand1.sign == SIGN_POSITIVE)
         {
-          BigIntSubt(&traces[j], &powerExtraBits, (BigInteger*)&lambda[j][factorNbr]);
+          BigIntSubt(&traces[firstTrace + j], &powerExtraBits, (BigInteger*)&lambda[j][factorNbr]);
         }
         else
         {
-          CopyBigInt((BigInteger*)&lambda[j][factorNbr], (BigInteger*)&traces[j]);
+          CopyBigInt((BigInteger*)&lambda[j][factorNbr], (BigInteger*)&traces[firstTrace + j]);
         }
       }
     }
 
-    // Multiply BL by traces (in lambda matrix).
-    // Size of matrix BL: nbrFactors rows and nbrVectors columns.
+    // Multiply traces (in lambda matrix) * BL.
     // Size of matrix trace: nbrRequiredTraces rows and nbrFactors columns.
+    // Size of matrix BL: nbrFactors rows and nbrVectors columns.
     // Size of product matrix: nbrRequiredTraces rows and nbrVectors columns.
     // Store product in lower-left part of matrix basisStar.
 
-    for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
+    for (nbrRow = 0; nbrRow < nbrRequiredTraces; nbrRow++)
     {
       for (nbrCol = 0; nbrCol < nbrVectors; nbrCol++)
       {
         intToBigInteger(&operand1, 0);     // Initialize sum.
         for (j = 0; j < nbrFactors; j++)
         {
-          BigIntMultiply((BigInteger *)&matrixBL[nbrRow][j], (BigInteger *)&lambda[j][nbrCol], &operand2);
+          BigIntMultiply((BigInteger*)&lambda[nbrRow][j], (BigInteger*)&matrixBL[j][nbrCol], &operand2);
           BigIntAdd(&operand1, &operand2, &operand1);
         }
-        CopyBigInt((BigInteger *)&basisStar[nbrRow + nbrVectors][nbrCol], &operand1);
+        CopyBigInt((BigInteger*)&basisStar[nbrRow + nbrVectors][nbrCol], &operand1);
       }
     }
 
@@ -659,7 +870,7 @@ static void vanHoeij(int prime, int nbrFactors)
       {
         if (nbrRow == nbrCol)
         {
-          CopyBigInt((BigInteger*)&basisStar[nbrRow][nbrCol], &powerBoundA);
+          CopyBigInt((BigInteger*)&basisStar[nbrRow][nbrCol], &powerExtraBits);
         }
         else
         {
@@ -673,11 +884,28 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        CopyBigInt((BigInteger *)&basis[nbrRow][nbrCol],
-                   (BigInteger *)&basisStar[nbrRow][nbrCol]);
+        CopyBigInt((BigInteger*)&basis[nbrRow][nbrCol],
+          (BigInteger*)&basisStar[nbrRow][nbrCol]);
       }
     }
-
+#if DEBUG_VANHOEIJ
+    strcpy(ptrDebugOutput, LF "Matrix M before LLL: ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    for (nbrRow = 0; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
+    {
+      for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
+      {
+        BigInteger2Dec((BigInteger*)&basisStar[nbrRow][nbrCol], ptrDebugOutput, 0);
+        ptrDebugOutput += strlen(ptrDebugOutput);
+        if (nbrCol < nbrVectors + nbrRequiredTraces - 1)
+        {
+          *ptrDebugOutput++ = ',';
+        }
+      }
+      *ptrDebugOutput++ = ';';
+    }
+    *ptrDebugOutput++ = '.';
+#endif
     // Step 2: LLL-reduce the (r+s)*(r+s) matrix M (of rank r+s).
     integralLLL(nbrVectors + nbrRequiredTraces);
 
@@ -690,17 +918,33 @@ static void vanHoeij(int prime, int nbrFactors)
           (BigInteger*)&basis[nbrRow][nbrCol]);
       }
     }
+#if DEBUG_VANHOEIJ
+    strcpy(ptrDebugOutput, LF "Matrix M after LLL: " LF);
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    for (nbrRow = 0; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
+    {
+      for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
+      {
+        BigInteger2Dec((BigInteger*)&basisStar[nbrRow][nbrCol], ptrDebugOutput, 0);
+        ptrDebugOutput += strlen(ptrDebugOutput);
+        *ptrDebugOutput++ = ' ';
+      }
+      *ptrDebugOutput++ = ';';
+    }
+    *ptrDebugOutput++ = '.';
+    *ptrDebugOutput = 0;
+#endif
     // Step 3: Replace the upper r*(r+s) submatrix L of M by BL*L;
     // Then set BL <- BL*L of dimension n0*(r+s)
     // M is now of dimension (n0+s)*(r+s) of rank r+s.
     // First move down the rows of M.
-    for (nbrRow = nbrVectors + nbrRequiredTraces - 1; nbrRow>= nbrVectors; nbrRow--)
+    for (nbrRow = nbrVectors + nbrRequiredTraces - 1; nbrRow >= nbrVectors; nbrRow--)
     {
       MiniBigInteger* ptrMBISrc = &basisStar[nbrRow][0];
       MiniBigInteger* ptrMBIDest = &basisStar[nbrRow - nbrVectors + nbrFactors][0];
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        CopyBigInt((BigInteger *)ptrMBIDest++, (BigInteger *)ptrMBISrc++);
+        CopyBigInt((BigInteger*)ptrMBIDest++, (BigInteger*)ptrMBISrc++);
       }
     }
     // Copy L to array lambda.
@@ -742,38 +986,91 @@ static void vanHoeij(int prime, int nbrFactors)
       }
     }
 
+#if DEBUG_VANHOEIJ
+    strcpy(ptrDebugOutput, LF "Matrix M before Gram-Schmidt" LF);
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    for (nbrRow = 0; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
+    {
+      for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
+      {
+        BigInteger2Dec((BigInteger*)&basisStar[nbrRow][nbrCol], ptrDebugOutput, 0);
+        ptrDebugOutput += strlen(ptrDebugOutput);
+        *ptrDebugOutput++ = ' ';
+      }
+      *ptrDebugOutput++ = ';';
+    }
+    *ptrDebugOutput++ = '.';
+    *ptrDebugOutput = 0;
+#endif
     // Step 4: Perform Gram-Schmidt orthogonalization on M.
     // Let c_i, 1 <= i <= r+s be the norm of the ith 
     // orthogonal vector.
     GramSchmidtOrthogonalization(nbrFactors + nbrRequiredTraces, nbrVectors + nbrRequiredTraces);
 
+#if DEBUG_VANHOEIJ
+    strcpy(ptrDebugOutput, LF "Norms after Gram-Schmidt: ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    for (r1 = 2; r1 <= nbrVectors + nbrRequiredTraces; r1++)
+    {
+      BigIntDivide((BigInteger*)&lambda[r1 - 1][r1 - 1], (BigInteger*)&lambda[r1 - 2][r1 - 2], &operand1);
+      BigInteger2Dec(&operand1, ptrDebugOutput, 0);
+      ptrDebugOutput += strlen(ptrDebugOutput);
+      *ptrDebugOutput++ = ' ';
+    }
+    *ptrDebugOutput++ = '.';
+    *ptrDebugOutput = 0;
+#endif
     // Step 5: Let r' the largest value such that all c_i of
     // index larger than r' are of norm greater than
     // sqrt(c^2*n_0 + s*n_0^2/4)
 
     // Compute square of formula.
-    squareFormula = nbrFactors*(C ^ 2 + nbrRequiredTraces * nbrFactors / 4);
-    for (r1 = nbrVectors + nbrRequiredTraces; r1 >= 1; r1--)
+    squareFormula = nbrFactors * C * C + nbrRequiredTraces * nbrFactors * nbrFactors / 4;
+    for (r1 = nbrVectors + nbrRequiredTraces; r1 > 1; r1--)
     {
-      // Get norm of basisStar[r1]
-      intToBigInteger(&operand1, 0);
-      for (nbrRow = 0; nbrRow < nbrFactors + nbrRequiredTraces; nbrRow++)
-      {
-        BigIntMultiply((BigInteger *)&basisStar[nbrRow][r1-1], (BigInteger*)&basisStar[nbrRow][r1-1], &operand2);
-        BigIntAdd(&operand1, &operand2, &operand1);
-      }
-      if (operand1.nbrLimbs == 1 && operand1.limbs[0].x < squareFormula)
+      // The norm of B*[r1] is lambda_{r1, r1} / lambda_{r1-1, r1-1}.
+      BigIntDivide((BigInteger*)&lambda[r1 - 1][r1 - 1], (BigInteger*)&lambda[r1-2][r1-2], &operand1);
+      if (operand1.nbrLimbs == 1 && operand1.limbs[0].x <= squareFormula)
       {
         break;        // r' was found.
       }
     }
+#if DEBUG_VANHOEIJ
+    sprintf(ptrDebugOutput, LF "squareFormula = %d", squareFormula);
+    ptrDebugOutput += strlen(ptrDebugOutput);
+#endif
 
     // Step 6: If r' = 1, return "irreducible".
     if (r1 == 1)
     {                 // Polynomial is irreducible.
+#if DEBUG_VANHOEIJ
+      sprintf(ptrDebugOutput, LF "r' = 1 -> irreducible." LF);
+#ifdef __EMSCRIPTEN__
+      output[0] = '1';
+      strcpy(&output[1], debugOutput);
+      databack(output);
+#else
+      printf("%s", debugOutput);
+#endif
+#endif
       return;
     }
 
+#ifdef __EMSCRIPTEN__
+    {
+      char outputInfo[1000];
+      char* ptrOutput = outputInfo;
+      if (lang)
+      {
+        strcpy(ptrOutput, "1<p>Paso 7</p>");
+      }
+      else
+      {
+        strcpy(ptrOutput, "1<p>Step 7</p>");
+      }
+      databack(outputInfo);
+    }
+#endif
     // Step 7: BL <- BL / C. Now BL has dimension 
     // nbrFactors rows by r'
     for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
@@ -785,21 +1082,262 @@ static void vanHoeij(int prime, int nbrFactors)
       }
     }
 
+#if DEBUG_VANHOEIJ
+    strcpy(ptrDebugOutput, LF "Matrix BL before Gauss: ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
+    {
+      for (nbrCol = 0; nbrCol < r1; nbrCol++)
+      {
+        BigInteger2Dec((BigInteger*)&basisStar[nbrRow][nbrCol], ptrDebugOutput, 0);
+        ptrDebugOutput += strlen(ptrDebugOutput);
+        *ptrDebugOutput++ = ' ';
+      }
+      *ptrDebugOutput++ = ';';
+    }
+    *ptrDebugOutput++ = '.';
+    *ptrDebugOutput = 0;
+#endif
+#ifdef __EMSCRIPTEN__
+    {
+      char outputInfo[1000];
+      char* ptrOutput = outputInfo;
+      if (lang)
+      {
+        strcpy(ptrOutput, "1<p>Paso 8</p>");
+      }
+      else
+      {
+        strcpy(ptrOutput, "1<p>Step 8</p>");
+      }
+      databack(outputInfo);
+    }
+#endif
     // Step 8: Put BL in Gauss-Jordan form. If possibly
     // after division by a constant factor, each column
     // contains only 0 and 1, and each row contains 
     // exactly one 1, we might have a valid factorization,
     // done <- true. Otherwise, increase s, replace n
     // by r and r by r'
+    completeFactorization = 1;
     rank = gauss(nbrFactors, r1);  // Dimension of matrix BL.
+#if DEBUG_VANHOEIJ
+    sprintf(ptrDebugOutput, LF "squareFormula = %d, rank = %d" LF, squareFormula, rank);
+    ptrDebugOutput += strlen(ptrDebugOutput);
+#endif
     nbrRequiredTraces++;
     nbrVectors = r1;
-    if (rank < 0)
+#if DEBUG_VANHOEIJ
+    if (++nbrStepsDone == 10)
     {
+#ifdef __EMSCRIPTEN__
+      output[0] = '1';
+      strcpy(&output[1], debugOutput);
+      databack(output);
+#else
+      printf("%s", debugOutput);
+#endif
+    }
+#endif
+    if (rank < 0)
+    {            // Cannot convert to row echelon form. Try again with bigger matrix.
       continue;
     }
+#if DEBUG_VANHOEIJ
+    strcpy(ptrDebugOutput, LF "Matrix R after Gauss: ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
+    {
+      for (nbrCol = 0; nbrCol < r1; nbrCol++)
+      {
+        BigInteger2Dec((BigInteger*)&lambda[nbrRow][nbrCol], ptrDebugOutput, 0);
+        ptrDebugOutput += strlen(ptrDebugOutput);
+        *ptrDebugOutput++ = ' ';
+      }
+      *ptrDebugOutput++ = ';';
+    }
+    *ptrDebugOutput++ = '.';
+    *ptrDebugOutput = 0;
+#endif
+    // There must be only one number different from zero in each column.
+    for (nbrCol = 0; nbrCol < nbrFactors; nbrCol++)
+    {
+      int differentFromZero = 0;
+      for (nbrRow = 0; nbrRow < nbrVectors; nbrRow++)
+      {
+        if (!BigIntIsZero((BigInteger *)&lambda[nbrRow][nbrCol]))
+        {
+          differentFromZero++;
+        }
+      }
+      if (differentFromZero != 1)
+      {                 // Column should have only one 1.
+        break;
+      }
+    }
+    if (nbrCol < nbrFactors)
+    {                   // Invalid matrix. Try again with bigger matrix.
+#if DEBUG_VANHOEIJ
+      sprintf(ptrDebugOutput, "nbrCol = %d, nbrFactors = %d. They should have been equal." LF, nbrCol, nbrFactors);
+      ptrDebugOutput += strlen(ptrDebugOutput);
+#endif
+      continue;
+    }
+    CopyBigInt(&halfPowerMod, &powerMod);
+    subtractdivide(&halfPowerMod, -1, 2); // halfPowerMod <- (powerMod+1)/2
+    // Combine factors.
+    // In step 1 we check that all factors can be found. If this succeeds,
+    // in step 2 we insert factors in final array of polynomial factors.
+    for (stepNbr = 1; stepNbr <= 2 && completeFactorization; stepNbr++)
+    {
+#if DEBUG_VANHOEIJ
+      sprintf(ptrDebugOutput, "stepNbr = %d\n", stepNbr);
+      ptrDebugOutput += strlen(ptrDebugOutput);
+#endif
+      // Test whether the factor divides the original polynomial.
+      // Initialize factor to 1.
+      // First reduce coefficients mod powerMod and then
+      // convert them to Montgomery notation.
+      for (nbrVector = 0; nbrVector < nbrVectors; nbrVector++)
+      {
+        GetMontgomeryParms(powerMod.nbrLimbs);
+        modulusIsZero = 0;  // Perform modular operations.
+        degreeProd = 0;
+        pstFactorInfo = factorInfoRecord;
+        for (currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
+        {
+          if (!BigIntIsZero((BigInteger*)&lambda[nbrVector][currentFactor]))
+          {
+            int* ptrValue1 = pstFactorInfo->ptrPolyLifted;    // Source
+            int* ptrValue2 = poly2;                           // Destination
+            int nbrLength;
+            degreeFactor = pstFactorInfo->degree;
+            // Reduce coefficients mod powerMod and store them on poly2.
+            for (currentDegree = 0; currentDegree < degreeFactor; currentDegree++)
+            {
+              nbrLength = numLimbs(ptrValue1);
+              operand1.nbrLimbs = nbrLength;
+              operand1.sign = SIGN_POSITIVE;
+              memcpy(operand1.limbs, ptrValue1 + 1, nbrLength * sizeof(int));
+              BigIntRemainder(&operand1, &powerMod, &operand2);
+              *ptrValue2 = operand2.nbrLimbs;
+              memcpy(ptrValue2 + 1, operand2.limbs, operand2.nbrLimbs * sizeof(int));
+              ptrValue1 += 1 + nbrLength;
+              ptrValue2 += 1 + NumberLength;
+            }
+            *ptrValue2 = 1;            // Store 1 as the leading coefficient.
+            *(ptrValue2 + 1) = 1;
+            // Convert factor to Montgomery notation.
+            polyToMontgomeryNotation(poly2, degreeFactor + 1);
+            if (degreeProd == 0)
+            {
+              ptrValue1 = poly2;              // Source is the new factor
+            }
+            else
+            {
+              MultPolynomial(degreeProd, degreeFactor, poly1, poly2);
+              ptrValue1 = polyMultTemp;       // Source is the product
+            }
+            degreeProd += degreeFactor;
+            ptrValue2 = poly1;                     // Destination
+            degreeFactor = pstFactorInfo->degree;
+            for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
+            {
+              nbrLength = 1 + numLimbs(ptrValue1);
+              memcpy(ptrValue2, ptrValue1, nbrLength * sizeof(int));
+              ptrValue1 += 1 + NumberLength;
+              ptrValue2 += 1 + NumberLength;
+            }
+          }
+          pstFactorInfo++;
+        }
+        // Multiply all coefficients by leadingCoeff by using modmult
+        // (this converts from Montgomery to standard notation)
+        // and store them in poly2.
+        ptrSrc = poly1;
+        ptrDest = poly2;
+        CompressLimbsBigInteger((limb*)nbrTmp, &leadingCoeff);
+        for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
+        {
+          LenAndLimbs2ArrLimbs(ptrSrc, (limb*)nbrTmp2, NumberLength);
+          modmult((limb*)nbrTmp, (limb*)nbrTmp2, (limb*)nbrTmp3);
+          ArrLimbs2LenAndLimbs(ptrDest, (limb*)nbrTmp3, NumberLength + 1);
+          ptrSrc += 1 + NumberLength;
+          ptrDest += 1 + numLimbs(ptrDest);
+        }
+        GenerateIntegerPolynomial(poly2, poly5, degreeProd);
+        modulusIsZero = 1;   // Perform integer division.
+        // Multiply all coefficients by leadingCoeff and store in polyS.
+        polyS[0] = polyNonRepeatedFactors[0];
+        ptrSrc = &polyNonRepeatedFactors[1];
+        ptrDest = &polyS[1];
+        for (currentDegree = 0; currentDegree <= polyS[0]; currentDegree++)
+        {
+          UncompressBigIntegerB(ptrSrc, &operand1);
+          BigIntMultiply(&operand1, &leadingCoeff, &operand2);
+          NumberLength = operand2.nbrLimbs;
+          BigInteger2IntArray(ptrDest, &operand2);
+          ptrSrc += 1 + numLimbs(ptrSrc);
+          ptrDest += 1 + numLimbs(ptrDest);
+        }
+        if (stepNbr == 1)
+        {   // Test whether the product divides the original polynomial.
+          rc = DivideIntegerPolynomial(polyS, poly5, TYPE_MODULUS);
+          if (rc == EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER)
+          {
+            completeFactorization = 0;
+            break;    // Cannot perform the division.
+          }
+          if (polyS[0] != 0 || polyS[1] != 1 || polyS[2] != 0)
+          {              // Remainder is not zero. Number to factor does not divide this polynomial.
+            completeFactorization = 0;
+            break;
+          }
+        }
+        else
+        {
+          // Get principal part of poly5 and store it to poly2.
+          getContent(poly5, &operand4);   // Content of polynomial.
+          poly2[0] = poly5[0];
+          ptrSrc = &poly5[1];
+          ptrDest = &poly2[1];
+          for (currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
+          {
+            UncompressBigIntegerB(ptrSrc, &operand2);
+            BigIntDivide(&operand2, &operand4, &operand3);
+            NumberLength = operand3.nbrLimbs;
+            BigInteger2IntArray(ptrDest, &operand3);
+            ptrSrc += 1 + numLimbs(ptrSrc);
+            ptrDest += 1 + numLimbs(ptrDest);
+          }
+          // Copy this principal part to poly5.
+          CopyPolynomial(&poly5[1], &poly2[1], poly5[0]);
+          DivideIntegerPolynomial(polyNonRepeatedFactors, poly5, TYPE_DIVISION);
+          int degreePoly = poly5[0];
+          ptrFactorIntegerBak = CopyPolynomial(ptrFactorInteger, &poly5[1], degreePoly);
+          InsertIntegerPolynomialFactor(ptrFactorInteger, degreePoly);
+          ptrFactorInteger = ptrFactorIntegerBak;
+        }
+        modulusIsZero = 0;   // Perform modular operations.
+        // Restart finding factors.
+        memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
+      }
+    }
+    if (completeFactorization)
+    {
+#if DEBUG_VANHOEIJ
+      sprintf(ptrDebugOutput, "nbrVector == nbrVectors" LF);
+#ifdef __EMSCRIPTEN__
+      output[0] = '1';
+      strcpy(&output[1], debugOutput);
+      databack(output);
+#else
+      printf("%s", debugOutput);
+#endif
+#endif
+      return;               // Factorization found.
+    }
   }
-#endif  
 }
 
 // Generate integer polynomial from modular polynomial.
@@ -812,7 +1350,7 @@ static void GenerateIntegerPolynomial(int* polyMod, int* polyInt, int degreePoly
   for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
   {
     NumberLength = powerMod.nbrLimbs;
-    UncompressBigInteger(ptrSrc, &operand1);
+    IntArray2BigInteger(ptrSrc, &operand1);
     ptrSrc += 1 + *ptrSrc;
     // If operand1 >= halfPowerMod, subtract powerMod.
     BigIntSubt(&operand1, &halfPowerMod, &operand2);
@@ -820,7 +1358,7 @@ static void GenerateIntegerPolynomial(int* polyMod, int* polyInt, int degreePoly
     {
       BigIntSubt(&operand1, &powerMod, &operand1);
     }
-    CompressBigInteger(ptrDest, &operand1);
+    BigInteger2IntArray(ptrDest, &operand1);
     ptrDest += 1 + numLimbs(ptrDest);
   }
 }
@@ -879,6 +1417,11 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
     if (currentDegree < 0)
     {   // Both polynomials are the same.
       pstFactorInfoInteger->multiplicity++;
+#if DEBUG_VANHOEIJ
+#ifndef __EMSCRIPTEN__
+      printf("%s", debugOutput);
+#endif
+#endif
       return;
     }
     if (operand1.sign == SIGN_NEGATIVE)
@@ -907,17 +1450,14 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
 int FactorPolyOverIntegers(void)
 {
   int degreePolyToFactor = values[0];
-  int degree1, degree2, rc;
+  int degree1, degree2;
   int primeRecord = 0;
-  int exponRecord = 0;
   int expon, maxDegreeFactor;
   int degreeGcdMod;
   int* ptrSrc, * ptrDest;
   int attemptNbr;
-  int currentFactor;
   int currentDegree;
   int polXprocessed = FALSE;
-  int nbrTmp[1000], nbrTmp2[1000], nbrTmp3[1000];
   int* ptrFactorIntegerBak;
   struct sFactorInfo* pstFactorInfoOrig, * pstFactorInfoRecord;
   struct sFactorInfo* pstFactorInfoInteger = factorInfoInteger;
@@ -957,7 +1497,7 @@ int FactorPolyOverIntegers(void)
     }
     BigIntDivide(&operand1, &contentPolyToFactor, &operand2);
     NumberLength = operand2.nbrLimbs;
-    CompressBigInteger(ptrDest, &operand2);
+    BigInteger2IntArray(ptrDest, &operand2);
     ptrSrc += 1 + numLimbs(ptrSrc);
     ptrDest += 1 + numLimbs(ptrDest);
   }
@@ -965,10 +1505,8 @@ int FactorPolyOverIntegers(void)
   {    // At least degree 1.
        // The trailing coefficient of factors must divide the product of the trailing and leading
        // coefficients of the original polynomial.
-    int halfDegree;
     int nbrFactorsRecord;
     int prime;
-    int sumOfDegrees;
     modulusIsZero = 1;
     // Get trailing coefficient.
     ptrSrc = &values[1];
@@ -1040,11 +1578,9 @@ int FactorPolyOverIntegers(void)
         CopyBigInt(&bound, &operand5);
       }
     }
-    // If the modular factorization has k irreducible factors, the
-    // number of combinations to try will be 2^k because all
-    // factors are different. So up to 5
-    // different prime moduli are tested to minimize the number
-    // of factors. If the number of factors is less than 10,
+    // Up to 5 different prime moduli are tested to minimize the number
+    // of factors because the Van Hoeij algorithm speed depends on
+    // this number. If the number of factors is less than 10,
     // no more modular factorizations are attempted.
 
     // The big number ensures that the first copy is done.
@@ -1074,6 +1610,7 @@ int FactorPolyOverIntegers(void)
         modulusIsZero = 0;
         intToBigInteger(&primeMod, prime);
         computePower(1);
+        ptrSrc = &polyNonRepeatedFactors[1];
         intToBigInteger(&operand5, 1);
         degree2 = getModPolynomial(&poly2[1], polyNonRepeatedFactors, &operand5);
         poly2[0] = degree2;
@@ -1096,8 +1633,8 @@ int FactorPolyOverIntegers(void)
       }
       modulusIsZero = 1;
       intToBigInteger(&primeMod, prime);
-      computePower(expon);
-      exponentMod = expon;
+      computePower(1);
+      exponentMod = 1;
       intToBigInteger(&operand5, 1);
       degreePolyToFactor = getModPolynomial(&poly1[1], polyNonRepeatedFactors, &operand5);
       poly1[0] = degreePolyToFactor;
@@ -1123,23 +1660,22 @@ int FactorPolyOverIntegers(void)
       if (nbrFactors < nbrFactorsRecord)
       {    // Copy factors found to records arrays.
         primeRecord = prime;
-        exponRecord = expon;
         pstFactorInfoOrig = factorInfo;
         pstFactorInfoRecord = factorInfoRecord;
         ptrPolyLiftedRecord = polyLiftedRecord;
         nbrFactorsRecord = 0;
         for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
         {
-          if (pstFactorInfoOrig->ptrPolyLifted == NULL)
+          if (pstFactorInfoOrig->ptr == NULL)
           {    // No more factors.
             break;
           }
           *pstFactorInfoRecord = *pstFactorInfoOrig;
-          pstFactorInfoRecord->ptrPolyLifted = ptrPolyLiftedRecord;
+          pstFactorInfoRecord->ptr = ptrPolyLiftedRecord;
           nbrFactorsRecord += pstFactorInfoOrig->multiplicity;
           ptrPolyLiftedRecord = CopyPolynomialFixedCoeffSize(ptrPolyLiftedRecord,
-            pstFactorInfoOrig->ptrPolyLifted,
-            pstFactorInfoOrig->degree - 1, powerMod.nbrLimbs + 1);
+            pstFactorInfoOrig->ptr,
+            pstFactorInfoOrig->degree - 1, primeMod.nbrLimbs + 1);
           *ptrPolyLiftedRecord++ = 1;    // Leading coefficient should be 1.
           *ptrPolyLiftedRecord++ = 1;
           pstFactorInfoOrig++;
@@ -1147,213 +1683,18 @@ int FactorPolyOverIntegers(void)
         }
         if (factorNbr < MAX_DEGREE)
         {
-          pstFactorInfoRecord->ptrPolyLifted = NULL;
+          pstFactorInfoRecord->ptr = NULL;
         }
         if (nbrFactors < 10)
         {
-          break;    // Up to 512 factors: test all of them.
+          break;    // Small enough number of factors. Go out of loop.
         }
       }
     }
     prime = primeRecord;
-    expon = exponRecord;
+    nbrFactorsFound = nbrFactorsRecord;
     intToBigInteger(&primeMod, prime);
-    computePower(expon);
-    exponentMod = expon;
     vanHoeij(prime, nbrFactorsRecord);
-    // Combine factors. Ensure that the trailing coefficient multiplied by the leading coefficient
-    // of the polynomial to factor divides trailingCoeff.
-    // The sum of degree of factors must not exceed half the degree of the original polynomial.
-    // Save in polyLifted the cumulative products, so we do not have to repeat multiplications.
-    // The multiplicity of factors is always 1.
-    CopyBigInt(&halfPowerMod, &powerMod);
-    subtractdivide(&halfPowerMod, -1, 2); // halfPowerMod <- (powerMod+1)/2
-    sumOfDegrees = 0;
-    memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
-    halfDegree = polyNonRepeatedFactors[0] / 2;
-    // Get leading coefficient of polyNonRepeatedFactors.
-    ptrSrc = &polyNonRepeatedFactors[1];
-    for (degree1 = 0; degree1 < degreePolyToFactor; degree1++)
-    {
-      ptrSrc += 1 + numLimbs(ptrSrc);
-    }
-    UncompressBigIntegerB(ptrSrc, &leadingCoeff);
-    ptrDest = polyLifted;
-    for (currentFactor = 0; currentFactor <= nbrFactorsRecord; currentFactor++)
-    {   // Initialize products to leading coefficient.
-      int nbrLimbs = leadingCoeff.nbrLimbs;
-      memcpy(ptrDest, leadingCoeff.limbs, nbrLimbs * sizeof(limb));
-      memset(ptrDest + nbrLimbs, 0, (powerMod.nbrLimbs - nbrLimbs) * sizeof(limb));
-      ptrDest += powerMod.nbrLimbs;
-    }
-    for (;;)
-    {       // Get next product.
-      int degreeProd, degreeFactor;
-      int* ptrTrailingCoeff;
-
-      pstFactorInfoRecord = factorInfoRecord;
-      for (currentFactor = 0; currentFactor < nbrFactorsRecord; currentFactor++)
-      {
-        arrNbrFactors[currentFactor]++;
-        sumOfDegrees += pstFactorInfoRecord->degree;
-        if (arrNbrFactors[currentFactor] <= pstFactorInfoRecord->multiplicity &&
-          sumOfDegrees <= halfDegree)
-        {
-          break;
-        }
-        sumOfDegrees -= pstFactorInfoRecord->degree * arrNbrFactors[currentFactor];
-        arrNbrFactors[currentFactor] = 0;
-        memcpy(&polyLifted[currentFactor * powerMod.nbrLimbs],
-          &polyLifted[(currentFactor + 1) * powerMod.nbrLimbs], powerMod.nbrLimbs * sizeof(int));
-        pstFactorInfoRecord++;
-      }
-      if (currentFactor == nbrFactorsRecord)
-      {            // All factors found.
-        break;
-      }
-      ptrTrailingCoeff = &polyLifted[(currentFactor + 1) * powerMod.nbrLimbs];
-      UncompressIntLimbs(pstFactorInfoRecord->ptrPolyLifted, (limb*)nbrTmp2, powerMod.nbrLimbs);
-      MultBigNbrModN(ptrTrailingCoeff, nbrTmp2, nbrTmp3, (int*)powerMod.limbs, powerMod.nbrLimbs);
-      do
-      {
-        ptrTrailingCoeff = &polyLifted[currentFactor * powerMod.nbrLimbs];
-        memcpy(ptrTrailingCoeff, nbrTmp3, powerMod.nbrLimbs * sizeof(int));
-      } while (--currentFactor >= 0);
-      NumberLength = powerMod.nbrLimbs;
-      UncompressLimbsBigInteger((limb*)ptrTrailingCoeff, &operand1);
-      operand1.sign = SIGN_POSITIVE;
-      // If ptrTrailingCoeff >= halfPowerMod, subtract powerMod.
-      BigIntSubt(&operand1, &halfPowerMod, &operand2);
-      if (operand2.sign == SIGN_POSITIVE)
-      {
-        BigIntSubt(&operand1, &powerMod, &operand1);
-      }
-      BigIntRemainder(&trailingCoeff, &operand1, &operand2);
-      if (!BigIntIsZero(&operand2))
-      {    // Factor not found, Try next one.
-        continue;
-      }
-      // Test whether the factor divides the original polynomial.
-      // Initialize factor to 1.
-      // Coefficients must be converted to Montgomery notation.
-      modulusIsZero = 0;  // Perform modular operations.
-      degreeProd = 0;
-      poly1[0] = NumberLength;
-      memcpy(&poly1[1], MontgomeryMultR1, NumberLength * sizeof(int));
-      pstFactorInfoRecord = factorInfoRecord;
-      for (currentFactor = 0; currentFactor < nbrFactorsRecord; currentFactor++)
-      {
-        if (arrNbrFactors[currentFactor] > 0)
-        {
-          int* ptrValue1 = pstFactorInfoRecord->ptrPolyLifted;    // Source
-          int* ptrValue2 = poly2;                                 // Destination
-          int nbrLength;
-          degreeFactor = pstFactorInfoRecord->degree;
-          for (currentDegree = 0; currentDegree <= degreeFactor; currentDegree++)
-          {
-            nbrLength = 1 + numLimbs(ptrValue1);
-            memcpy(ptrValue2, ptrValue1, nbrLength * sizeof(int));
-            ptrValue1 += 1 + NumberLength;
-            ptrValue2 += 1 + NumberLength;
-          }
-          // Convert factor to Montgomery notation.
-          polyToMontgomeryNotation(poly2, degreeFactor + 1);
-          MultPolynomial(degreeProd, degreeFactor, poly1, poly2);
-          degreeProd += degreeFactor;
-          ptrValue1 = polyMultTemp;              // Source is the product
-          ptrValue2 = poly1;                     // Destination
-          degreeFactor = pstFactorInfoRecord->degree;
-          for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
-          {
-            nbrLength = 1 + numLimbs(ptrValue1);
-            memcpy(ptrValue2, ptrValue1, nbrLength * sizeof(int));
-            ptrValue1 += 1 + NumberLength;
-            ptrValue2 += 1 + NumberLength;
-          }
-        }
-        pstFactorInfoRecord++;
-      }
-      // Convert from Montgomery to standard notation.
-      polyToStandardNotation(poly1, degreeProd + 1);
-      // Multiply all coefficients by leadingCoeff and store in poly2.
-      ptrSrc = poly1;
-      ptrDest = poly2;
-      CompressLimbsBigInteger((limb*)nbrTmp, &leadingCoeff);
-      for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
-      {
-        UncompressIntLimbs(ptrSrc, (limb*)nbrTmp2, powerMod.nbrLimbs);
-        MultBigNbrModN(nbrTmp, nbrTmp2, nbrTmp3, (int*)powerMod.limbs, powerMod.nbrLimbs);
-        CompressIntLimbs(ptrDest, (limb*)nbrTmp3, powerMod.nbrLimbs + 1);
-        ptrSrc += 1 + NumberLength;
-        ptrDest += 1 + numLimbs(ptrDest);
-      }
-      GenerateIntegerPolynomial(poly2, poly5, degreeProd);
-      modulusIsZero = 1;   // Perform integer division.
-      // Multiply all coefficients by leadingCoeff and store in polyS.
-      polyS[0] = polyNonRepeatedFactors[0];
-      ptrSrc = &polyNonRepeatedFactors[1];
-      ptrDest = &polyS[1];
-      for (currentDegree = 0; currentDegree <= polyS[0]; currentDegree++)
-      {
-        UncompressBigIntegerB(ptrSrc, &operand1);
-        BigIntMultiply(&operand1, &leadingCoeff, &operand2);
-        NumberLength = operand2.nbrLimbs;
-        CompressBigInteger(ptrDest, &operand2);
-        ptrSrc += 1 + numLimbs(ptrSrc);
-        ptrDest += 1 + numLimbs(ptrDest);
-      }
-      rc = DivideIntegerPolynomial(polyS, poly5, TYPE_MODULUS);
-      if (rc == EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER)
-      {
-        continue;    // Cannot perform the division.
-      }
-      if (polyS[0] != 0 || polyS[1] != 1 || polyS[2] != 0)
-      {              // Remainder is not zero. Number to factor does not divide this polynomial.
-        continue;
-      }
-      // Get principal part of poly5 and store it to poly2.
-      getContent(poly5, &operand4);   // Content of polynomial.
-      poly2[0] = poly5[0];
-      ptrSrc = &poly5[1];
-      ptrDest = &poly2[1];
-      for (currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
-      {
-        UncompressBigIntegerB(ptrSrc, &operand2);
-        BigIntDivide(&operand2, &operand4, &operand3);
-        NumberLength = operand3.nbrLimbs;
-        CompressBigInteger(ptrDest, &operand3);
-        ptrSrc += 1 + numLimbs(ptrSrc);
-        ptrDest += 1 + numLimbs(ptrDest);
-      }
-      // Copy this principal part to poly5.
-      CopyPolynomial(&poly5[1], &poly2[1], poly5[0]);
-      DivideIntegerPolynomial(polyNonRepeatedFactors, poly5, TYPE_DIVISION);
-      int degreePoly = poly5[0];
-      ptrFactorIntegerBak = CopyPolynomial(ptrFactorInteger, &poly5[1], degreePoly);
-      InsertIntegerPolynomialFactor(ptrFactorInteger, degreePoly);
-      ptrFactorInteger = ptrFactorIntegerBak;
-      pstFactorInfoInteger++;
-      modulusIsZero = 0;   // Perform modular operations.
-      // Discard factors already used.
-      pstFactorInfoRecord = factorInfoRecord;
-      for (currentFactor = 0; currentFactor < nbrFactorsRecord; currentFactor++)
-      {
-        if (arrNbrFactors[currentFactor] > 0)
-        {
-          pstFactorInfoRecord->multiplicity = 0;
-        }
-        pstFactorInfoRecord++;
-      }
-      // Restart finding factors.
-      sumOfDegrees -= degreePoly;
-      memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
-      polyLifted[0] = 1;                    // Initialize first product to 1.
-      halfDegree = polyNonRepeatedFactors[0] / 2;
-      if (powerMod.nbrLimbs > 1)
-      {
-        memset(&polyLifted[1], 0, powerMod.nbrLimbs - 1);
-      }
-    }
     // Polynomial is irreducible.
     if (polyNonRepeatedFactors[0] > 0)
     {    // Degree is greater than zero. Copy it to integer polynomial factor array.
@@ -1377,4 +1718,3 @@ int FactorPolyOverIntegers(void)
   }
   return EXPR_OK;
 }
-

@@ -52,7 +52,7 @@ int getNbrLimbs(limb *bigNbr)
   {
     if ((--ptrLimb)->x != 0)
     {
-      return (int)(ptrLimb - &bigNbr[0] + 1);
+      return (int)(ptrLimb - bigNbr + 1);
     }
   }
   return 1;

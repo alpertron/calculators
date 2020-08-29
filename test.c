@@ -272,6 +272,29 @@ quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
   }
   memset(factors, 0x00, 2000 * sizeof(limb));
   fftMultiplication((limb *)factor7, (limb *)factor7, (limb *)factors, 4, &resultLen);
+#elif DEBUG_CODE == 19
+  limb tempVal[4];
+  limb tempRes[4];
+  // TestNbr = 5^18
+  TestNbr[0].x = 1128244537;
+  TestNbr[1].x = 441554605;
+  TestNbr[2].x = 1;
+  TestNbr[3].x = 0;
+  NumberLength = 3;
+  GetMontgomeryParms(NumberLength);
+  tempVal[0].x = 312571964;
+  tempVal[1].x = 1720066743;
+  tempVal[2].x = 0;
+  tempVal[3].x = 0;
+  Bin2Dec(tempVal, output, 3, 0);
+  printf("Value = %s\n", output);
+  Bin2Dec(MontgomeryMultR1, output, NumberLength, 0);
+  printf("MontgomeryMultR1 = %s\n", output);
+  Bin2Dec(TestNbr, output, NumberLength, 0);
+  printf("TestNbr = %s\n", output);
+  ModInvBigNbr(tempVal, tempRes, TestNbr, 3);
+  Bin2Dec(tempRes, output, 3, 0);
+  printf("Inverse = %s", output);
 #endif
   return 0;
 }

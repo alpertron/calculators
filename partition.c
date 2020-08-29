@@ -257,7 +257,7 @@ static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulat
     while ((nbrGroupsAccumulated & 1) == 0)
     {
       index--;
-      UncompressBigInteger(&partArray[partArray[index]], &factor);
+      IntArray2BigInteger(&partArray[partArray[index]], &factor);
       BigIntMultiply(&prod, &factor, &prod);
       nbrGroupsAccumulated >>= 1;
     }
@@ -265,7 +265,7 @@ static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulat
     if (result == NULL)
     {
       NumberLength = prod.nbrLimbs;
-      CompressBigInteger(&partArray[offset], &prod);
+      BigInteger2IntArray(&partArray[offset], &prod);
     }
     else
     {
@@ -277,7 +277,7 @@ static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulat
     index = numberofBitsSetToOne(nbrGroupsAccumulated) - 1;
     offset = partArray[index];
     NumberLength = prod.nbrLimbs;
-    CompressBigInteger(&partArray[offset], &prod);
+    BigInteger2IntArray(&partArray[offset], &prod);
   }
   partArray[index + 1] = offset + partArray[offset] + 1;
 }

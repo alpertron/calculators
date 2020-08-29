@@ -1855,7 +1855,7 @@ void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, i
       for (;;)
       {
         NumberLength = *pstFactor->ptrFactor;
-        UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+        IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
         if (hexadecimal)
         {
           Bin2Hex(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
@@ -2088,7 +2088,7 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   else
   {        // Cofactor given as a parameter.
     NumberLength = cofactor->nbrLimbs;
-    CompressBigInteger(ptrFactor, cofactor);
+    BigInteger2IntArray(ptrFactor, cofactor);
   }
   // Check whether prime is already in factor list.
   pstCurFactor = pstFactors+1;
@@ -2151,7 +2151,7 @@ static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor, in
   {     // For each known factor...
     int *ptrFactor = pstCurFactor->ptrFactor;
     NumberLength = *ptrFactor;
-    UncompressBigInteger(ptrFactor, &Temp2);    // Convert known factor to Big Integer.
+    IntArray2BigInteger(ptrFactor, &Temp2);    // Convert known factor to Big Integer.
     BigIntGcd(divisor, &Temp2, &Temp3);         // Temp3 is the GCD between known factor and divisor.
     if (Temp3.nbrLimbs == 1 && Temp3.limbs[0].x < 2)
     {                                           // divisor is not a new factor (GCD = 0 or 1).
@@ -2164,10 +2164,10 @@ static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor, in
     // At this moment both GCD and known factor / GCD are new known factors. Replace the known factor by
     // known factor / GCD and generate a new known factor entry.
     NumberLength = Temp3.nbrLimbs;
-    CompressBigInteger(ptrNewFactorLimbs, &Temp3);      // Append new known factor.
+    BigInteger2IntArray(ptrNewFactorLimbs, &Temp3);      // Append new known factor.
     BigIntDivide(&Temp2, &Temp3, &Temp4);               // Divide by this factor.
     NumberLength = Temp4.nbrLimbs;
-    CompressBigInteger(ptrFactor, &Temp4);              // Overwrite old known factor.
+    BigInteger2IntArray(ptrFactor, &Temp4);              // Overwrite old known factor.
     pstNewFactor->multiplicity = pstCurFactor->multiplicity;
     pstNewFactor->ptrFactor = ptrNewFactorLimbs;
     pstNewFactor->upperBound = pstCurFactor->upperBound;
@@ -2267,7 +2267,7 @@ static void SaveFactors(struct sFactors *pstFactors)
       *ptrText++ = '*';
     }
     NumberLength = *pstCurFactor->ptrFactor;
-    UncompressBigInteger(pstCurFactor->ptrFactor, &bigint);
+    IntArray2BigInteger(pstCurFactor->ptrFactor, &bigint);
     BigInteger2Dec(&bigint, ptrText, -100000);   // Factors are saved in decimal.
     ptrText += strlen(ptrText);
     *ptrText++ = '^';
@@ -2489,7 +2489,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
       }
       *ptrCharFound = 0;
       Dec2Bin(pcKnownFactors, prime.limbs, (int)(ptrCharFound - pcKnownFactors), &prime.nbrLimbs);
-      CompressBigInteger(pstFactors->ptrFactor, &prime);
+      BigInteger2IntArray(pstFactors->ptrFactor, &prime);
       pcKnownFactors = ptrCharFound + 1;
       if (getNextInteger(&pcKnownFactors, &pstCurFactor->multiplicity, '('))
       {     // Error on processing exponent.
@@ -2573,7 +2573,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
     ptrFactor = pstCurFactor->ptrFactor;
     nbrLimbs = *ptrFactor;
     NumberLength = *pstCurFactor->ptrFactor;
-    UncompressBigInteger(pstCurFactor->ptrFactor, &power);
+    IntArray2BigInteger(pstCurFactor->ptrFactor, &power);
     NumberLength = power.nbrLimbs;
 #ifdef __EMSCRIPTEN__
     char *ptrText = ShowFactoredPart(&prime, pstFactors);
@@ -2584,7 +2584,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
       if (expon > 1)
       {
         NumberLength = prime.nbrLimbs;
-        CompressBigInteger(pstCurFactor->ptrFactor, &prime);
+        BigInteger2IntArray(pstCurFactor->ptrFactor, &prime);
         pstCurFactor->multiplicity *= expon;
         nbrLimbs = *pstCurFactor->ptrFactor;
       }
@@ -2822,14 +2822,14 @@ void Totient(BigInteger *result)
   pstFactor = &astFactorsMod[1];
   for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
-    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
     if (factorValue.nbrLimbs == 1 && factorValue.limbs[0].x == 1)
     {   // If factor is 1 do not do anything.
       continue;
     }
     BigIntPowerIntExp(&factorValue, pstFactor->multiplicity - 1, &TempVar);   // p^(e-1)
     BigIntMultiply(result, &TempVar, result);
-    UncompressBigInteger(pstFactor->ptrFactor, &TempVar);
+    IntArray2BigInteger(pstFactor->ptrFactor, &TempVar);
     addbigint(&TempVar, -1);   // p-1
     BigIntMultiply(result, &TempVar, result);
     pstFactor++;
@@ -2845,7 +2845,7 @@ void SumOfDivisors(BigInteger *result)
   pstFactor = &astFactorsMod[1];
   for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
-    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
     if (factorValue.nbrLimbs == 1 && factorValue.limbs[0].x == 1)
     {   // If factor is 1 do not do anything.
       continue;
@@ -2853,7 +2853,7 @@ void SumOfDivisors(BigInteger *result)
     BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Temp1);   // p^(e+1)
     addbigint(&Temp1, -1);   // p^(e+1)-1
     BigIntMultiply(result, &Temp1, &Temp2);
-    UncompressBigInteger(pstFactor->ptrFactor, &Temp1);
+    IntArray2BigInteger(pstFactor->ptrFactor, &Temp1);
     addbigint(&Temp1, -1);   // p-1
     BigIntDivide(&Temp2, &Temp1, result);
     pstFactor++;
@@ -2869,7 +2869,7 @@ void NumberOfDivisors(BigInteger *result)
   pstFactor = &astFactorsMod[1];
   for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
-    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
     if (factorValue.nbrLimbs == 1 && factorValue.limbs[0].x == 1)
     {   // If factor is 1 do not do anything.
       continue;

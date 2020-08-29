@@ -627,7 +627,7 @@ void batchSquaresCallback(char **pptrOutput)
   char *ptrOutput;
   ptrOutput = *pptrOutput;
   NumberLength = toProcess.nbrLimbs;
-  CompressBigInteger((int *)number, &toProcess);
+  BigInteger2IntArray((int *)number, &toProcess);
   origNbrLimbs = toProcess.nbrLimbs;
   memcpy(origNbr, toProcess.limbs, origNbrLimbs*sizeof(limb));
   result = fsquares();

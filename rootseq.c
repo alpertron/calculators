@@ -1038,16 +1038,16 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
   values[0] = 3;
   ptrValues = &values[1];
   NumberLength = tmp0.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp0);
+  BigInteger2IntArray(ptrValues, &tmp0);
   ptrValues += 1 + numLimbs(ptrValues);
   NumberLength = tmp1.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp1);
+  BigInteger2IntArray(ptrValues, &tmp1);
   ptrValues += 1 + numLimbs(ptrValues);
   NumberLength = tmp2.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp2);
+  BigInteger2IntArray(ptrValues, &tmp2);
   ptrValues += 1 + numLimbs(ptrValues);
   NumberLength = tmp3.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp3);
+  BigInteger2IntArray(ptrValues, &tmp3);
   FactorPolyOverIntegers();
   nbrFactorsFound = 0;
   if (factorInfoInteger[0].degree == 1)

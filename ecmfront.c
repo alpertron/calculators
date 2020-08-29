@@ -51,7 +51,7 @@ void batchCallback(char **pptrOutput)
   {
     *ptrFactorDec++ = '-';
   }
-  CompressBigInteger(nbrToFactor, &tofactor);
+  BigInteger2IntArray(nbrToFactor, &tofactor);
   if (*nbrToFactor < 0)
   {    // If number is negative, make it positive.
     *nbrToFactor = -*nbrToFactor;
@@ -490,7 +490,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
       continue;
     }
     NumberLength = *pstFactor->ptrFactor;
-    UncompressBigInteger(pstFactor->ptrFactor, &p);
+    IntArray2BigInteger(pstFactor->ptrFactor, &p);
     CopyBigInt(&q, &p);
     addbigint(&q, -1);             // q <- p-1
     if (p.nbrLimbs == 1 && p.limbs[0].x == 2)
@@ -659,7 +659,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
   for (indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--, pstFactor++)
   {
     NumberLength = *pstFactor->ptrFactor;
-    UncompressBigInteger(pstFactor->ptrFactor, &p);
+    IntArray2BigInteger(pstFactor->ptrFactor, &p);
     BigIntPowerIntExp(&p, pstFactor->multiplicity / 2, &K);
     BigIntMultiply(&Quad1, &K, &Quad1);
     BigIntMultiply(&Quad2, &K, &Quad2);

@@ -3981,25 +3981,25 @@ static void FactorPolynomialF20(void)
     BigRationalAdd(&Rat1, &Rat2, &Rat1);
   }
   NumberLength = tmp0.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp0);
+  BigInteger2IntArray(ptrValues, &tmp0);
   ptrValues += 1 + numLimbs(ptrValues);
   NumberLength = tmp1.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp1);
+  BigInteger2IntArray(ptrValues, &tmp1);
   ptrValues += 1 + numLimbs(ptrValues);
   NumberLength = tmp2.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp2);
+  BigInteger2IntArray(ptrValues, &tmp2);
   ptrValues += 1 + numLimbs(ptrValues);
   NumberLength = tmp3.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp3);
+  BigInteger2IntArray(ptrValues, &tmp3);
   ptrValues += 1 + numLimbs(ptrValues);
   NumberLength = tmp4.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp4);
+  BigInteger2IntArray(ptrValues, &tmp4);
   ptrValues += 1 + numLimbs(ptrValues);
   NumberLength = tmp5.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp5);
+  BigInteger2IntArray(ptrValues, &tmp5);
   ptrValues += 1 + numLimbs(ptrValues);
   NumberLength = tmp6.nbrLimbs;
-  CompressBigInteger(ptrValues, &tmp6);
+  BigInteger2IntArray(ptrValues, &tmp6);
   FactorPolyOverIntegers();
 }
 

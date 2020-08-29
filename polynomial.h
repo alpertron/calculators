@@ -20,6 +20,9 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define __POLYNOMIAL_H
 #define MAX_DEGREE          1000
 
+#define DEBUG_VANHOEIJ        0
+#define DEBUG_HENSEL_LIFTING  0
+
 struct sFactorInfo
 {
   int *ptr;
@@ -74,7 +77,7 @@ int ComputePolynomial(char *input, int expo);
 void OrigPolyFromMontgomeryToStandard(void);
 void ConvertToMonic(int *poly, int polyDegree);
 void SquareFreeFactorization(int polyDegree, int *poly, int expon);
-int HenselLifting(void);
+int HenselLifting(struct sFactorInfo* factorInfo);
 void polyToStandardNotation(int *nbr, int qtyNbrs);
 void textErrorPol(char *output, enum eExprErr rc);
 void outputOriginalPolynomial(char *ptrOutput, int groupLen);

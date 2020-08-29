@@ -49,7 +49,13 @@ self.onmessage = function (e)
     exports = results["instance"]["exports"];
     HEAPU8 = new Uint8Array(exports["memory"]["buffer"]);
     ConvertToString(exports["getInputStringPtr"](), e.data[0]);
-    exports["doWork"]();
+    try
+    {
+      exports["doWork"]();
+    } catch (err)
+	{
+      self.postMessage("2<p>"+err.message+"</p>");
+	}
     return;
   });
 }

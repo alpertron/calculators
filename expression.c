@@ -167,7 +167,7 @@ static void getCurrentStackValue(BigInteger* pValue)
 {
   limb* ptrStackValue = &comprStackValues[comprStackOffset[stackIndex]];
   NumberLength = numLimbs((int *)ptrStackValue);
-  UncompressBigInteger((int *)ptrStackValue, pValue);
+  IntArray2BigInteger((int *)ptrStackValue, pValue);
 }
 
 enum eExprErr setStackValue(BigInteger* pValue)
@@ -178,7 +178,7 @@ enum eExprErr setStackValue(BigInteger* pValue)
     return EXPR_OUT_OF_MEMORY;
   }
   NumberLength = pValue->nbrLimbs;
-  CompressBigInteger((int*)&comprStackValues[currentOffset], pValue);
+  BigInteger2IntArray((int*)&comprStackValues[currentOffset], pValue);
   return EXPR_OK;
 }
 
@@ -1368,7 +1368,7 @@ static enum eExprErr ComputePartition(void)
 static void PerformFactorization(BigInteger *tofactor)
 {
   NumberLength = tofactor->nbrLimbs;
-  CompressBigInteger(nbrToFactor, tofactor);
+  BigInteger2IntArray(nbrToFactor, tofactor);
   if (hexadecimal)
   {
     Bin2Hex(tofactor->limbs, tofactorDec, tofactor->nbrLimbs, groupLen);
@@ -1427,7 +1427,7 @@ static int ComputeConcatFact(void)
     int ctr;
     struct sFactors* pstFactor = &astFactorsMod[descend ? nbrFactors - factorNumber + 1 : factorNumber];
     NumberLength = *(pstFactor->ptrFactor);
-    UncompressBigInteger(pstFactor->ptrFactor, &factorValue);
+    IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
     ctr = (repeated ? pstFactor->multiplicity : 1);
     for (; ctr > 0; ctr--)
     {

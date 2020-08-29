@@ -247,7 +247,7 @@ void SolveEquation(void)
   {     // Last modulus is different from ValN.
     CopyBigInt(&LastModulus, &ValN);
     NumberLength = ValN.nbrLimbs;
-    CompressBigInteger(nbrToFactor, &ValN);
+    BigInteger2IntArray(nbrToFactor, &ValN);
     Bin2Dec(ValN.limbs, tofactorDec, ValN.nbrLimbs, groupLen);
     factor(&ValN, nbrToFactor, factorsMod, astFactorsMod);
   }
@@ -257,7 +257,7 @@ void SolveEquation(void)
   for (factorIndex = 0; factorIndex<nbrFactors; factorIndex++)
   {
     NumberLength = *pstFactor->ptrFactor;
-    UncompressBigInteger(pstFactor->ptrFactor, &prime);
+    IntArray2BigInteger(pstFactor->ptrFactor, &prime);
     expon = pstFactor->multiplicity;
     BigIntPowerIntExp(&prime, expon, &V);
     BigIntRemainder(&ValA, &V, &L);
@@ -790,7 +790,7 @@ void SolveEquation(void)
     CopyBigInt(&currentSolution, &Aux[0]);
     nbrFactors = astFactorsMod[0].multiplicity;
     pstFactor = &astFactorsMod[1];
-    UncompressBigInteger(pstFactor->ptrFactor, &prime);
+    IntArray2BigInteger(pstFactor->ptrFactor, &prime);
     BigIntPowerIntExp(&prime, pstFactor->multiplicity, &Mult);
     for (T1 = 1; T1<nbrFactors; T1++)
     {
@@ -806,13 +806,13 @@ void SolveEquation(void)
         BigIntAdd(&Aux[T1], &Solution1[T1], &Aux[T1]);
       }
       NumberLength = *pstFactor->ptrFactor;
-      UncompressBigInteger(pstFactor->ptrFactor, &prime);
+      IntArray2BigInteger(pstFactor->ptrFactor, &prime);
       BigIntPowerIntExp(&prime, pstFactor->multiplicity, &K1);
       CopyBigInt(&prime, &K1);
       for (E = 0; E<T1; E++)
       {
         BigIntSubt(&Aux[T1], &Aux[E], &Q);
-        UncompressBigInteger(astFactorsMod[E+1].ptrFactor, &K);
+        IntArray2BigInteger(astFactorsMod[E+1].ptrFactor, &K);
         BigIntPowerIntExp(&K, astFactorsMod[E+1].multiplicity, &L);
         NumberLength = prime.nbrLimbs;
         memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
@@ -844,7 +844,7 @@ void SolveEquation(void)
     }
     for (T1 = nbrFactors - 1; T1 >= 0; T1--)
     {
-      UncompressBigInteger(astFactorsMod[T1+1].ptrFactor, &K);
+      IntArray2BigInteger(astFactorsMod[T1+1].ptrFactor, &K);
       BigIntPowerIntExp(&K, astFactorsMod[T1+1].multiplicity, &prime);
       BigIntSubt(&Solution1[T1], &Solution2[T1], &K1);
       if (K1.nbrLimbs == 1 && K1.limbs[0].x == 0)

@@ -114,11 +114,11 @@ static void DistinctDegreeFactorization(int polyDegree)
       powerPolynomial(poly1, poly3, polyDegree, &primeMod, poly2, NULL);
       memcpy(poly1, poly2, polyDegree*nbrLimbs * sizeof(int));
       // Subtract x.
-      UncompressBigInteger(&poly2[nbrLimbs], &operand1);
+      IntArray2BigInteger(&poly2[nbrLimbs], &operand1);
       memcpy(operand2.limbs, MontgomeryMultR1, NumberLength*sizeof(limb));
       operand2.nbrLimbs = NumberLengthR1;
       SubtBigNbrMod(operand1.limbs, operand2.limbs, operand1.limbs);
-      CompressBigInteger(&poly2[nbrLimbs], &operand1);
+      BigInteger2IntArray(&poly2[nbrLimbs], &operand1);
       // Perform Gcd.
       degreeMin = getDegreePoly(poly2, polyDegree - 1);
       PolyModularGcd(poly3, polyDegree, poly2, degreeMin, polyMultTemp, &degreeGcd);
@@ -282,9 +282,9 @@ static void SameDegreeFactorization(void)
       { // If prime is not 2: compute (random poly)^((p^d-1)/2)
         powerPolynomial(poly1, poly3, polyDegree, &operand4, poly2, percentageCallback);
         // Subtract 1.
-        UncompressBigInteger(&poly2[0], &operand1);
+        IntArray2BigInteger(&poly2[0], &operand1);
         SubtBigNbrMod(operand1.limbs, MontgomeryMultR1, operand1.limbs);
-        CompressBigInteger(&poly2[0], &operand1);
+        BigInteger2IntArray(&poly2[0], &operand1);
       }
       else
       { // If prime is 2, Compute poly2 = T+T^2+T^4+...+T^2^(d-1) mod f(x)
@@ -296,10 +296,10 @@ static void SameDegreeFactorization(void)
           multPolynomialModPoly(poly1, poly1, poly1, polyDegree, poly3);
           for (index = 0; index < polyDegree; index++)
           {
-            UncompressBigInteger(&poly1[index*nbrLimbs], &operand1);
-            UncompressBigInteger(&poly2[index*nbrLimbs], &operand2);
+            IntArray2BigInteger(&poly1[index*nbrLimbs], &operand1);
+            IntArray2BigInteger(&poly2[index*nbrLimbs], &operand2);
             AddBigNbrMod(operand1.limbs, operand2.limbs, operand1.limbs);
-            CompressBigInteger(&poly2[index*nbrLimbs], &operand1);
+            BigInteger2IntArray(&poly2[index*nbrLimbs], &operand1);
           }
         }
       }
@@ -395,8 +395,7 @@ static void SortFactors(BigInteger *modulus)
 // Output: factorInfo = structure that holds the factors.
 int FactorModularPolynomial(int inputMontgomery)
 {
-  struct sFactorInfo *pstFactorInfo;
-  int currentDegree, nbrFactor, rc;
+  int currentDegree, rc;
   int *ptrValue1;
   int nbrLimbsPrime = primeMod.nbrLimbs + 1; // Add 1 for length;
   degree = values[0];
@@ -404,7 +403,7 @@ int FactorModularPolynomial(int inputMontgomery)
   for (currentDegree = 0; currentDegree <= degree; currentDegree++)
   {
     NumberLength = numLimbs(ptrValue1);
-    UncompressBigInteger(ptrValue1, &operand1);
+    IntArray2BigInteger(ptrValue1, &operand1);
     NumberLength = powerMod.nbrLimbs;
     if (inputMontgomery)
     {
@@ -422,7 +421,7 @@ int FactorModularPolynomial(int inputMontgomery)
       return rc;
     }
     NumberLength = primeMod.nbrLimbs;
-    CompressBigInteger(&valuesPrime[currentDegree*nbrLimbsPrime], &operand1);
+    BigInteger2IntArray(&valuesPrime[currentDegree*nbrLimbsPrime], &operand1);
     ptrValue1 += 1 + numLimbs(ptrValue1);
   }
   if (operand1.nbrLimbs == 1 && operand1.limbs[0].x == 0)
@@ -445,22 +444,16 @@ int FactorModularPolynomial(int inputMontgomery)
     DistinctDegreeFactorization(degree);
     SameDegreeFactorization();
   }
-  if (inputMontgomery)
+  if (inputMontgomery == FALSE)
   {
-    // Convert original polynomial from Montgomery to standard notation.
-    OrigPolyFromMontgomeryToStandard();
+    return EXPR_OK;
   }
-  rc = HenselLifting();
+  // Convert original polynomial from Montgomery to standard notation.
+  OrigPolyFromMontgomeryToStandard();
+  rc = HenselLifting(factorInfo);
   if (rc != EXPR_OK)
   {
     return rc;
-  }
-  // Convert factors to standard notation.
-  pstFactorInfo = factorInfo;
-  for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
-  {
-    polyToStandardNotation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree);
-    pstFactorInfo++;
   }
   SortFactors(rc != 0 ? &primeMod : &powerMod);
   return rc;
@@ -572,7 +565,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
       *ptrOutput++ = '>';
       if (!modulusIsZero)
       {
-        UncompressBigInteger(&poly4[degree * nbrLimbs], &operand5);
+        IntArray2BigInteger(&poly4[degree * nbrLimbs], &operand5);
       }
       if ((operand5.nbrLimbs != 1 || operand5.limbs[0].x != 1 || operand5.sign == SIGN_NEGATIVE) || nbrFactorsFound == 0)
       {     // Leading coefficient is not 1 or degree is zero.

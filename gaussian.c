@@ -90,7 +90,7 @@ void GaussianFactorization(void)
     int index, index2;
     char *ptrFactorDec = tofactorDec;
     NumberLength = tofactor.nbrLimbs;
-    CompressBigInteger(nbrToFactor, &tofactor);
+    BigInteger2IntArray(nbrToFactor, &tofactor);
     strcpy(ptrFactorDec, "Re&sup2; + Im&sup2; = ");
     ptrFactorDec += strlen(ptrFactorDec);
     Bin2Dec(ReValue.limbs, ptrFactorDec, ReValue.nbrLimbs, groupLen);
@@ -108,7 +108,7 @@ void GaussianFactorization(void)
     {
       int *ptrPrime = pstFactor->ptrFactor;
       NumberLength = *ptrPrime;
-      UncompressBigInteger(ptrPrime, &prime);
+      IntArray2BigInteger(ptrPrime, &prime);
       if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
       {             // Prime factor is 2.
         for (index2 = 0; index2 < pstFactor->multiplicity; index2++)

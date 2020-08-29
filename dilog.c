@@ -114,7 +114,7 @@ static void indicateCannotComputeLog(int indexBase, int indexExp)
   char *ptrText;
   struct sFactors *pstFactors = &astFactorsGO[indexBase + 1];
   strcpy(textExp, "Cannot compute discrete logarithm: subgroup=");
-  UncompressBigInteger(pstFactors->ptrFactor, &tmpBase);
+  IntArray2BigInteger(pstFactors->ptrFactor, &tmpBase);
   Bin2Dec(tmpBase.limbs, textExp + strlen(textExp), tmpBase.nbrLimbs, groupLen);
   strcpy(textExp + strlen(textExp), ", exponent=");
   ptrText = textExp + strlen(textExp);
@@ -168,7 +168,7 @@ void DiscreteLogarithm(void)
   NumberLength = modulus.nbrLimbs;
   if (!TestBigNbrEqual(&LastModulus, &modulus))
   {
-    CompressBigInteger(nbrToFactor, &modulus);
+    BigInteger2IntArray(nbrToFactor, &modulus);
     Bin2Dec(modulus.limbs, tofactorDec, modulus.nbrLimbs, groupLen);
     factor(&modulus, nbrToFactor, factorsMod, astFactorsMod);
     NbrFactorsMod = astFactorsMod[0].multiplicity;
@@ -184,7 +184,7 @@ void DiscreteLogarithm(void)
 
     ptrPrime = astFactorsMod[index].ptrFactor;
     NumberLength = *ptrPrime;
-    UncompressBigInteger(ptrPrime, &groupOrder);
+    IntArray2BigInteger(ptrPrime, &groupOrder);
     BigIntRemainder(&base, &groupOrder, &tmpBase);
     if (tmpBase.nbrLimbs == 1 && tmpBase.limbs[0].x == 0)
     {     // modulus and base are not relatively prime.
@@ -243,11 +243,11 @@ void DiscreteLogarithm(void)
     // Compute group order as the prime minus 1.
     groupOrder.limbs[0].x--;
     showText("Computing discrete logarithm...");
-    CompressBigInteger(nbrToFactor, &groupOrder);
+    BigInteger2IntArray(nbrToFactor, &groupOrder);
     factor(&groupOrder, nbrToFactor, factorsGO, astFactorsGO);  // factor groupOrder.
     NbrFactors = astFactorsGO[0].multiplicity;
     NumberLength = *ptrPrime;
-    UncompressBigInteger(ptrPrime, &mod);
+    IntArray2BigInteger(ptrPrime, &mod);
     intToBigInteger(&logar, 0);     // logar <- 0
     intToBigInteger(&logarMult, 1); // logarMult <- 1
     NumberLength = mod.nbrLimbs;
@@ -283,7 +283,7 @@ void DiscreteLogarithm(void)
     for (indexBase = 0; indexBase < NbrFactors; indexBase++)
     {
       NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
-      UncompressBigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
+      IntArray2BigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
       subGroupOrder.limbs[subGroupOrder.nbrLimbs].x = 0;
       strcpy(textExp, "Computing discrete logarithm in subgroup of ");
       Bin2Dec(subGroupOrder.limbs, textExp + strlen(textExp), subGroupOrder.nbrLimbs, groupLen);
@@ -578,7 +578,7 @@ void DiscreteLogarithm(void)
           BigIntAdd(&nbrV[indexBase], &powSubGroupOrder, &nbrV[indexBase]);
         }
         pstFactors = &astFactorsGO[indexExp + 1];
-        UncompressBigInteger(pstFactors->ptrFactor, &tmpBase);
+        IntArray2BigInteger(pstFactors->ptrFactor, &tmpBase);
         BigIntPowerIntExp(&tmpBase, ExponentsGOComputed[indexExp], &tmpBase);
         BigIntRemainder(&tmpBase, &powSubGroupOrder, &tmpBase);
         NumberLength = powSubGroupOrder.nbrLimbs;
@@ -600,7 +600,7 @@ void DiscreteLogarithm(void)
       BigIntMultiply(&logarMult, &powSubGroupOrder, &logarMult);
     }
     multiplicity = astFactorsMod[index].multiplicity;
-    UncompressBigInteger(ptrPrime, &bigNbrB);
+    IntArray2BigInteger(ptrPrime, &bigNbrB);
     expon = 1;
     if (bigNbrB.nbrLimbs == 1 && bigNbrB.limbs[0].x == 2)
     {            // Prime factor is 2. Base and power are odd at this moment.

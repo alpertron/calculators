@@ -928,7 +928,7 @@ int intModPow(int NbrMod, int Expon, int currentPrime)
   return (int)power;
 }
 
-void UncompressBigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint)
+void IntArray2BigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint)
 {
   limb *destLimb = bigint->limbs;
   int nbrLimbs = *ptrValues++;
@@ -961,7 +961,7 @@ void UncompressBigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint)
   }
 }
 
-void CompressBigInteger(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint)
+void BigInteger2IntArray(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint)
 {
   limb *destLimb = bigint->limbs;
   if (NumberLength == 1)
@@ -972,7 +972,7 @@ void CompressBigInteger(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint)
   else
   {
     int ctr, nbrLimbs;
-    nbrLimbs = getNbrLimbs(bigint->limbs);
+    nbrLimbs = getNbrLimbs(destLimb);
     *ptrValues++ = (bigint->sign == SIGN_POSITIVE ? nbrLimbs : -nbrLimbs);
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
@@ -1027,7 +1027,7 @@ void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, /*@in@*/BigInteger *bigin
   }
 }
 
-void UncompressIntLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbrLen)
+void LenAndLimbs2ArrLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbrLen)
 {
   int nbrLimbs = *ptrValues;
   if (nbrLimbs < 0)
@@ -1041,7 +1041,7 @@ void UncompressIntLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbrLe
   }
 }
 
-void CompressIntLimbs(/*@out@*/int *ptrValues, /*@in@*/limb *bigint, int nbrLen)
+void ArrLimbs2LenAndLimbs(/*@out@*/int *ptrValues, /*@in@*/limb *bigint, int nbrLen)
 {
   int nbrLimbs;
   memcpy(ptrValues+1, bigint, (nbrLen-1) * sizeof(limb));

@@ -505,7 +505,7 @@ static void showFactors(BigInteger *value)
   pstFactor = &astFactorsMod[1];
   for (index = 0; index < nbrFactors; index++, pstFactor++)
   {
-    UncompressBigInteger(pstFactor->ptrFactor, &prime);
+    IntArray2BigInteger(pstFactor->ptrFactor, &prime);
     if (pstFactor->multiplicity == 0)
     {
       continue;
@@ -685,7 +685,7 @@ void SolveQuadModEquation(void)
   if (callbackQuadModType == CBACK_QMOD_PARABOLIC)
   {    // For elliptic case, the factorization is already done.
     NumberLength = modulus.nbrLimbs;
-    CompressBigInteger(nbrToFactor, &modulus);
+    BigInteger2IntArray(nbrToFactor, &modulus);
     Bin2Dec(modulus.limbs, tofactorDec, modulus.nbrLimbs, groupLen);
     factor(&modulus, nbrToFactor, factorsMod, astFactorsMod);
     if (teach)
@@ -707,7 +707,7 @@ void SolveQuadModEquation(void)
       continue;
     }
     NumberLength = *pstFactor->ptrFactor;
-    UncompressBigInteger(pstFactor->ptrFactor, &prime);   // Get value of prime factor.
+    IntArray2BigInteger(pstFactor->ptrFactor, &prime);   // Get value of prime factor.
     BigIntPowerIntExp(&prime, expon, &V);       // Get value of prime power.
     BigIntRemainder(&coeffQuadr, &V, &L);       // Check whether quadratic coefficient is multiple of prime power.
     if (BigIntIsZero(&L))
@@ -1303,7 +1303,7 @@ void SolveQuadModEquation(void)
       BigIntAdd(&Aux[T1], &common.quad.Solution1[T1], &Aux[T1]);
     }
     CopyBigInt(&currentSolution, &Aux[T1]);
-    UncompressBigInteger(pstFactor->ptrFactor, &prime);
+    IntArray2BigInteger(pstFactor->ptrFactor, &prime);
     BigIntPowerIntExp(&prime, pstFactor->multiplicity, &Mult);
     for (T1++; T1<nbrFactors; T1++)
     {
@@ -1323,7 +1323,7 @@ void SolveQuadModEquation(void)
         BigIntAdd(&Aux[T1], &common.quad.Solution1[T1], &Aux[T1]);
       }
       NumberLength = *pstFactor->ptrFactor;
-      UncompressBigInteger(pstFactor->ptrFactor, &prime);
+      IntArray2BigInteger(pstFactor->ptrFactor, &prime);
       BigIntPowerIntExp(&prime, pstFactor->multiplicity, &K1);
       CopyBigInt(&prime, &K1);
       for (E = 0; E<T1; E++)
@@ -1333,7 +1333,7 @@ void SolveQuadModEquation(void)
           continue;
         }
         BigIntSubt(&Aux[T1], &Aux[E], &Q);
-        UncompressBigInteger(astFactorsMod[E+1].ptrFactor, &K);
+        IntArray2BigInteger(astFactorsMod[E+1].ptrFactor, &K);
         BigIntPowerIntExp(&K, astFactorsMod[E+1].multiplicity, &L);
         NumberLength = prime.nbrLimbs;
         memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
@@ -1369,7 +1369,7 @@ void SolveQuadModEquation(void)
       {
         continue;     // Do not process prime factors for which the multiplicity is zero.
       }
-      UncompressBigInteger(astFactorsMod[T1+1].ptrFactor, &K);         // Get prime factor.
+      IntArray2BigInteger(astFactorsMod[T1+1].ptrFactor, &K);         // Get prime factor.
       BigIntPowerIntExp(&K, astFactorsMod[T1+1].multiplicity, &prime); // Get prime power.
       if (BigIntEqual(&common.quad.Solution1[T1], &common.quad.Solution2[T1]))
       {     // common.quad.Solution1[T1] == common.quad.Solution2[T1]
@@ -2215,7 +2215,7 @@ static void NonSquareDiscriminant(void)
   ValKSignBak = ValK.sign;
   ValK.sign = SIGN_POSITIVE;
   NumberLength = ValK.nbrLimbs;
-  CompressBigInteger(nbrToFactor, &ValK);
+  BigInteger2IntArray(nbrToFactor, &ValK);
   Bin2Dec(ValK.limbs, tofactorDec, ValK.nbrLimbs, groupLen);
   factor(&ValK, nbrToFactor, factorsMod, astFactorsMod);
   ValK.sign = ValKSignBak;
@@ -2479,7 +2479,7 @@ static void NonSquareDiscriminant(void)
         else
         {
           NumberLength = *pstFactor->ptrFactor;
-          UncompressBigInteger(pstFactor->ptrFactor, &bigTmp);
+          IntArray2BigInteger(pstFactor->ptrFactor, &bigTmp);
           BigIntMultiply(&bigTmp, &bigTmp, &U3);
           pstFactor->multiplicity -= 2;
           BigIntDivide(&ValK, &U3, &ValK);       // Divide by square of prime.
@@ -2499,7 +2499,7 @@ static void NonSquareDiscriminant(void)
         {
           pstFactor = &astFactorsMod[indexEvenMultiplicity[index]];
           NumberLength = *pstFactor->ptrFactor;
-          UncompressBigInteger(pstFactor->ptrFactor, &bigTmp);
+          IntArray2BigInteger(pstFactor->ptrFactor, &bigTmp);
           BigIntMultiply(&bigTmp, &bigTmp, &U3);
           pstFactor->multiplicity += 2;
           BigIntMultiply(&ValK, &U3, &ValK);     // Multiply by square of prime.
@@ -3238,7 +3238,7 @@ static void PerfectSquareDiscriminant(void)
   NumberLength = ValZ.nbrLimbs;
   signTemp = ValZ.sign;
   ValZ.sign = SIGN_POSITIVE;  // Factor positive number.
-  CompressBigInteger(nbrToFactor, &ValZ);
+  BigInteger2IntArray(nbrToFactor, &ValZ);
   Bin2Dec(ValZ.limbs, tofactorDec, ValZ.nbrLimbs, groupLen);
   factor(&ValZ, nbrToFactor, factorsMod, astFactorsMod);
   ValZ.sign = signTemp;       // Restore sign of Z = 4ak/RS.
@@ -3309,7 +3309,7 @@ static void PerfectSquareDiscriminant(void)
         }
         else
         {
-          UncompressBigInteger(pstFactor->ptrFactor, &prime);
+          IntArray2BigInteger(pstFactor->ptrFactor, &prime);
           BigIntMultiply(&currentFactor, &prime, &currentFactor);
           counters[index]++;
           break;
@@ -3324,7 +3324,7 @@ static void PerfectSquareDiscriminant(void)
         }
         else
         {
-          UncompressBigInteger(pstFactor->ptrFactor, &prime);
+          IntArray2BigInteger(pstFactor->ptrFactor, &prime);
           BigIntDivide(&currentFactor, &prime, &currentFactor);
           counters[index]--;
           break;

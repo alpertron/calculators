@@ -150,8 +150,8 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue, void *vFactors);
 #else
 int BpswPrimalityTest(/*@in@*/BigInteger *pValue);
 #endif
-void UncompressBigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint);
-void CompressBigInteger(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint);
+void IntArray2BigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint);
+void BigInteger2IntArray(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint);
 void UncompressLimbsBigInteger(/*@in@*/limb *ptrValues, /*@out@*/BigInteger *bigint);
 void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, /*@in@*/BigInteger *bigint);
 void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len);
@@ -163,8 +163,8 @@ void expBigNbr(BigInteger *bignbr, double logar);
 double logBigNbr(BigInteger *pBigNbr);
 double logLimbs(limb *pBigNbr, int nbrLimbs);
 double getMantissa(limb *ptrLimb, int nbrLimbs);
-void UncompressIntLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbrLen);
-void CompressIntLimbs(/*@out@*/int *ptrValues, /*@in@*/limb *bigint, int nbrLen);
+void LenAndLimbs2ArrLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbrLen);
+void ArrLimbs2LenAndLimbs(/*@out@*/int *ptrValues, /*@in@*/limb *bigint, int nbrLen);
 int checkOne(limb *value, int nbrLimbs);
 int checkMinusOne(limb *value, int nbrLimbs);
 void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs);
