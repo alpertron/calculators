@@ -1049,7 +1049,6 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
   NumberLength = tmp3.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp3);
   FactorPolyOverIntegers();
-  nbrFactorsFound = 0;
   if (factorInfoInteger[0].degree == 1)
   {   // Rational root find. Get root.
     FerrariResolventHasRationalRoot(multiplicity);
@@ -1328,7 +1327,13 @@ void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, in
     CubicEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
     break;
   case 4:
+    nbrFactorsFoundBak = nbrFactorsFound;
+    memcpy(polyIntegerBak, polyInteger, sizeof(polyInteger));
+    memcpy(factorInfoIntegerBak, factorInfoInteger, sizeof(factorInfoInteger));
     QuarticEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
+    nbrFactorsFound = nbrFactorsFoundBak;
+    memcpy(polyInteger, polyIntegerBak, sizeof(polyInteger));
+    memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
     break;
   case 5:
     nbrFactorsFoundBak = nbrFactorsFound;

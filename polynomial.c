@@ -1414,6 +1414,20 @@ int DivideIntegerPolynomial(int *pDividend, int *pDivisor, enum eDivType type)
   int degreeDivisor;
   int degreeQuotient;
   int* ptrQuotient;
+  if (*pDividend < *pDivisor)
+  {      // Degree of dividend is less than degree of divisor.
+    if (type == TYPE_DIVISION)
+    {    // Get pointer to quotient.
+      poly3[0] = 0;     // Degree of quotient is zero.
+      poly3[1] = 1;     // Coefficient is zero.
+      poly3[2] = 0;
+    }
+    else
+    {                   // Remainder is equal to dividend.
+      CopyPolynomial(poly1, pDividend, *pDividend);
+    }
+    return EXPR_OK;
+  }
   // Move arguments to temporary storage with most significant coefficient
   // first.
   ReversePolynomial(poly1, pDividend);
@@ -3649,7 +3663,7 @@ int HenselLifting(struct sFactorInfo* factorInfo)
 #if DEBUG_HENSEL_LIFTING
     if (ptrOutput2 != NULL)
     {
-      strcpy(ptrOutput2, "currentExp = %d, ptrPolyLiftedBak = ");
+      sprintf(ptrOutput2, "currentExp = %d, ptrPolyLiftedBak = ", currentExp);
       ptrOutput2 += strlen(ptrOutput2);
       showPolynomial(&ptrOutput2, poly2, degreeFactor + 1, 0);
       *ptrOutput2++ = '\n';

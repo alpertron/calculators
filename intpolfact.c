@@ -58,6 +58,7 @@ MiniBigInteger matrixBL[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
 BigInteger traces[MAX_MATRIX_SIZE*10];
 BigInteger powerBoundA, powerExtraBits;
 int *ptrCoeffs[MAX_MATRIX_SIZE];
+static int* ptrFactorInteger;
 
 static BigInteger contentPolyToFactor, halfPowerMod;
 static int origPolyToFactor[1000000];
@@ -597,6 +598,213 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
   }
 }
 
+static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
+{
+  int currentDegree, currentFactor;
+  int nbrVector;
+  int stepNbr;
+  int degreeProd, degreeFactor;
+  int rc;
+  struct sFactorInfo* pstFactorInfo;
+  int* ptrSrc, * ptrDest;
+  int nbrTmp[1000], nbrTmp2[1000], nbrTmp3[1000];
+  // In step 1 we check that all factors can be found. If this succeeds,
+  // in step 2 we insert factors in final array of polynomial factors.
+  for (stepNbr = 1; stepNbr <= 2; stepNbr++)
+  {
+#if DEBUG_VANHOEIJ
+    sprintf(ptrDebugOutput, "stepNbr = %d\n", stepNbr);
+    ptrDebugOutput += strlen(ptrDebugOutput);
+#endif
+    NumberLength = powerMod.nbrLimbs;
+    for (nbrVector = 0; nbrVector < nbrVectors; nbrVector++)
+    {
+      // Test whether the product of the polynomial factors
+      // defined by this vector divides the original polynomial.
+      // First reduce coefficients mod powerMod and then
+      // convert them to Montgomery notation.
+      modulusIsZero = 0;  // Perform modular operations.
+      NumberLength = powerMod.nbrLimbs;
+      degreeProd = 0;     // Set product to 1.
+      pstFactorInfo = factorInfoRecord;
+      for (currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
+      {
+        if (!BigIntIsZero((BigInteger*)&lambda[nbrVector][currentFactor]))
+        {                 // Multiply this polynomial.
+          int* ptrCoeffSrc = pstFactorInfo->ptrPolyLifted;    // Source
+          int* ptrCoeffDest = poly2;                          // Destination
+          int nbrLength;
+          degreeFactor = pstFactorInfo->degree;
+          // Reduce coefficients mod powerMod and store them on poly2.
+          for (currentDegree = 0; currentDegree < degreeFactor; currentDegree++)
+          {
+            nbrLength = numLimbs(ptrCoeffSrc);
+            if (nbrVectors == 1)
+            {              // Coefficient is already reduced.
+              *ptrCoeffDest = nbrLength;
+              memcpy(ptrCoeffDest + 1, ptrCoeffSrc + 1, nbrLength * sizeof(int));
+            }
+            else
+            {              // Reduce the coefficient mod powerMod.
+              operand1.nbrLimbs = nbrLength;
+              operand1.sign = SIGN_POSITIVE;
+              memcpy(operand1.limbs, ptrCoeffSrc + 1, nbrLength * sizeof(int));
+              BigIntRemainder(&operand1, &powerMod, &operand2);
+              *ptrCoeffDest = operand2.nbrLimbs;
+              memcpy(ptrCoeffDest + 1, operand2.limbs, operand2.nbrLimbs * sizeof(int));
+            }
+            ptrCoeffSrc += 1 + nbrLength;
+            ptrCoeffDest += 1 + NumberLength;
+          }
+          *ptrCoeffDest = 1;            // Store 1 as the leading coefficient.
+          *(ptrCoeffDest + 1) = 1;
+          // Convert factor to Montgomery notation.
+          polyToMontgomeryNotation(poly2, degreeFactor + 1);
+          if (degreeProd == 0)
+          {
+            ptrCoeffSrc = poly2;              // Source is the new factor.
+          }
+          else
+          {
+            MultPolynomial(degreeProd, degreeFactor, poly1, poly2);
+            ptrCoeffSrc = polyMultTemp;       // Source is the product
+          }
+          degreeProd += degreeFactor;
+          ptrCoeffDest = poly1;                     // Destination
+          degreeFactor = pstFactorInfo->degree;
+          for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
+          {
+            nbrLength = 1 + numLimbs(ptrCoeffSrc);
+            memcpy(ptrCoeffDest, ptrCoeffSrc, nbrLength * sizeof(int));
+            ptrCoeffSrc += 1 + NumberLength;
+            ptrCoeffDest += 1 + NumberLength;
+          }
+          if (stepNbr == 2)
+          {
+            pstFactorInfo->multiplicity = 0;
+            (*pNbrFactors)--;
+          }
+        }
+        pstFactorInfo++;
+      }
+      // Multiply all coefficients by leadingCoeff by using modmult
+      // (this converts from Montgomery to standard notation)
+      // and store them in poly2.
+      ptrSrc = poly1;
+      ptrDest = poly2;
+      CompressLimbsBigInteger((limb*)nbrTmp, &leadingCoeff);
+      for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
+      {
+        LenAndLimbs2ArrLimbs(ptrSrc, (limb*)nbrTmp2, NumberLength);
+        modmult((limb*)nbrTmp, (limb*)nbrTmp2, (limb*)nbrTmp3);
+        ArrLimbs2LenAndLimbs(ptrDest, (limb*)nbrTmp3, NumberLength + 1);
+        ptrSrc += 1 + NumberLength;
+        ptrDest += 1 + numLimbs(ptrDest);
+      }
+      GenerateIntegerPolynomial(poly2, poly5, degreeProd);
+      // Ensure that the absolute value of the coefficients 
+      // are less than the bound.
+      ptrSrc = &poly5[1];
+      for (currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
+      {
+        UncompressBigIntegerB(ptrSrc, &operand1);
+        BigIntSubt(&operand1, &bound, &operand2);
+        if (operand2.sign == SIGN_POSITIVE)
+        {
+          return 0;     // Coefficient is too high.
+        }
+        BigIntAdd(&operand1, &bound, &operand2);
+        if (operand2.sign == SIGN_NEGATIVE)
+        {
+          return 0;     // Coefficient is too low.
+        }
+        ptrSrc += 1 + numLimbs(ptrSrc);
+      }
+      modulusIsZero = 1;   // Perform integer division.
+      // Multiply all coefficients by leadingCoeff and store in polyS.
+      polyS[0] = polyNonRepeatedFactors[0];
+      ptrSrc = &polyNonRepeatedFactors[1];
+      ptrDest = &polyS[1];
+      for (currentDegree = 0; currentDegree <= polyS[0]; currentDegree++)
+      {
+        UncompressBigIntegerB(ptrSrc, &operand1);
+        BigIntMultiply(&operand1, &leadingCoeff, &operand2);
+        NumberLength = operand2.nbrLimbs;
+        BigInteger2IntArray(ptrDest, &operand2);
+        ptrSrc += 1 + numLimbs(ptrSrc);
+        ptrDest += 1 + numLimbs(ptrDest);
+      }
+      if (stepNbr == 1)
+      {   // Test whether the product divides the original polynomial.
+        UncompressBigIntegerB(&polyS[1], &operand1);
+        UncompressBigIntegerB(&poly5[1], &operand2);
+        BigIntRemainder(&operand1, &operand2, &operand3);
+        if (!BigIntIsZero(&operand3))
+        {    // Constant term of product does not divide constant term of
+             // original polynomial, so go out.
+          return 0;
+        }
+        rc = DivideIntegerPolynomial(polyS, poly5, TYPE_MODULUS);
+        if (rc == EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER)
+        {               // Cannot perform the division.
+          return 0;
+        }
+        if (polyS[0] != 0 || polyS[1] != 1 || polyS[2] != 0)
+        {              // Remainder is not zero.
+          return 0;    // Number to factor does not divide this polynomial.
+        }
+      }
+      else
+      {
+        int degreePoly;
+        // Get principal part of poly5 and store it to poly2.
+        getContent(poly5, &operand4);   // Content of polynomial.
+        poly2[0] = poly5[0];
+        ptrSrc = &poly5[1];
+        ptrDest = &poly2[1];
+        for (currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
+        {
+          UncompressBigIntegerB(ptrSrc, &operand2);
+          BigIntDivide(&operand2, &operand4, &operand3);
+          NumberLength = operand3.nbrLimbs;
+          BigInteger2IntArray(ptrDest, &operand3);
+          ptrSrc += 1 + numLimbs(ptrSrc);
+          ptrDest += 1 + numLimbs(ptrDest);
+        }
+        // Copy this principal part to poly5.
+        CopyPolynomial(&poly5[1], &poly2[1], poly5[0]);
+        DivideIntegerPolynomial(polyNonRepeatedFactors, poly5, TYPE_DIVISION);
+        degreePoly = poly5[0];
+        CopyPolynomial(ptrFactorInteger, &poly5[1], degreePoly);
+        InsertIntegerPolynomialFactor(ptrFactorInteger, degreePoly);
+      }
+      modulusIsZero = 0;   // Perform modular operations.
+      // Restart finding factors.
+      memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
+    }
+  }
+  return 1;              // Factorization is complete.
+}
+
+static void CompressPolynomial(int nbrFactorsFound)
+{
+  int nbrFactor;
+  struct sFactorInfo* pstFactorInfo = factorInfoRecord;
+  for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+  {
+    int* ptrDest = pstFactorInfo->ptrPolyLifted;
+    int* ptrSrc = ptrDest;
+    for (degree = 0; degree < pstFactorInfo->degree; degree++)
+    {
+      int coeffLength = 1 + numLimbs(ptrSrc);
+      memmove(ptrDest, ptrSrc, coeffLength * sizeof(int));
+      ptrDest += coeffLength;
+      ptrSrc += NumberLength + 1;
+    }
+    pstFactorInfo++;
+  }
+}
+
 // Perform Van Hoeij algorithm 
 // On input: values = integer polynomial.
 // prime: integer prime used for factoring the polynomial
@@ -621,26 +829,24 @@ static void vanHoeij(int prime, int nbrFactors)
   int nbrRequiredTraces, firstTrace;
   int nbrRow, nbrCol;
   int exponDifference;
+  int delta;
   // Store into polyLifted the polynomial values / lc(values) (mod powerMod).
   double logPrime = log(prime);
   double b0 = log(2 * values[0]) / logPrime;
   double log_rootbound = logBigNbr(&bound) / logPrime;
-  int a0 = (int)ceil(log_rootbound);
-  int b, C, j, rank, nbrVector;
-  int nbrTmp[1000], nbrTmp2[1000], nbrTmp3[1000];
-  int degree1, degreeProd;
-  int* ptrSrc, *ptrDest;
-  int currentFactor, currentDegree, degreeFactor, rc;
+  int a0;
+  int b, C, j, rank;
+  int degree1;
+  int* ptrSrc;
   struct sFactorInfo* pstFactorInfo;
   int degreePolyToFactor = polyNonRepeatedFactors[0];
-  int* ptrFactorInteger = polyInteger;
-  int* ptrFactorIntegerBak;
   int nbrFactor;
-  int completeFactorization = FALSE;
   int oldExponent = 1;
   int oldNumberLength = 0;
-  int newNumberLength;
+  int newNumberLength, newNbrFactors;
+  int ctr1, ctr2, ctr3;
 
+  exponentMod = (int)ceil(log_rootbound) + 2;
 #if DEBUG_VANHOEIJ
   sprintf(ptrDebugOutput, LF "====================================================="
     LF "prime = %d, root bound = ", prime);
@@ -656,11 +862,84 @@ static void vanHoeij(int prime, int nbrFactors)
   {
     ptrSrc += 1 + numLimbs(ptrSrc);
   }
-  // initialize variables for van Hoeij algorithm.
-  nbrRequiredTraces = 1;        // Initialize nbrRequiredTraces.
-  firstTrace = 1;               // First trace to use for matrix M.
-  nbrVectors = nbrFactors;      // Initialize nbrVectors.
-  nbrColsTraces = nbrFactors;
+  computePower(exponentMod);
+  modulusIsZero = 0;    // Use modular arithmetic for polynomials.
+  intToBigInteger(&operand5, 1);
+  values[0] = polyNonRepeatedFactors[0];
+  getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
+#if DEBUG_HENSEL_LIFTING
+  ptrOutput2 = ptrDebugOutput;
+#endif
+  HenselLifting(factorInfoRecord);
+#if DEBUG_HENSEL_LIFTING
+  ptrDebugOutput = ptrOutput2; ptrOutput2 = NULL;
+#endif
+  // Compress polynomials so there are no spaces between coefficients.
+  CompressPolynomial(nbrFactorsFound);
+  // Check whether the product of up to 3 factors mod p^b
+  // is a divisor of the original polynomial.
+  CopyBigInt(&halfPowerMod, &powerMod);
+  subtractdivide(&halfPowerMod, -1, 2); // halfPowerMod <- (powerMod+1)/2
+  GetMontgomeryParms(powerMod.nbrLimbs);
+  for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
+  {
+    intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
+  }
+  newNbrFactors = nbrFactors;
+  for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
+  {
+    intToBigInteger((BigInteger*)&lambda[0][ctr1], 1);
+    AttemptToFactor(1, nbrFactors, &newNbrFactors);
+    intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
+  }
+  for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
+  {
+    intToBigInteger((BigInteger*)&lambda[0][ctr1], 1);
+    for (ctr2 = ctr1 + 1; ctr2 < nbrFactors; ctr2++)
+    {
+      intToBigInteger((BigInteger*)&lambda[0][ctr2], 1);
+      AttemptToFactor(1, nbrFactors, &newNbrFactors);
+      intToBigInteger((BigInteger*)&lambda[0][ctr2], 0);
+    }
+    intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
+  }
+  for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
+  {
+    intToBigInteger((BigInteger*)&lambda[0][ctr1], 1);
+    for (ctr2 = ctr1 + 1; ctr2 < nbrFactors; ctr2++)
+    {
+      intToBigInteger((BigInteger*)&lambda[0][ctr2], 1);
+      for (ctr3 = ctr2 + 1; ctr3 < nbrFactors; ctr3++)
+      {
+        intToBigInteger((BigInteger*)&lambda[0][ctr3], 1);
+        AttemptToFactor(1, nbrFactors, &newNbrFactors);
+        intToBigInteger((BigInteger*)&lambda[0][ctr3], 0);
+      }
+      intToBigInteger((BigInteger*)&lambda[0][ctr2], 0);
+    }
+    intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
+  }
+  if (newNbrFactors <= 1)
+  {   // Zero or 1 factor left. Polynomial completely factored, so go out.
+    return;
+  }
+  // Discard the entries with multiplicity zero in the stored factors array.
+  pstFactorInfo = factorInfoRecord;
+  delta = 0;
+  for (nbrFactor = 0; nbrFactor < nbrFactors; nbrFactor++)
+  {
+    if (pstFactorInfo->multiplicity == 0)
+    {
+      delta++;
+    }
+    else if (delta > 0)
+    {
+      memcpy(pstFactorInfo - delta, pstFactorInfo, sizeof(*pstFactorInfo));
+    }
+    pstFactorInfo++;
+  }
+  nbrFactors = newNbrFactors;
+  nbrFactorsFound = nbrFactors;
   // Compute powerExtraBits as a power of prime with 3 times
   // the number of bits of nbrFactors (the number of polynomial factors).
   // Compute powerBoundA as powerExtraBits * powerMod.
@@ -669,6 +948,23 @@ static void vanHoeij(int prime, int nbrFactors)
   BigIntPowerIntExp(&operand1, exponDifference, &powerExtraBits);
   CopyBigInt(&powerBoundA, &powerMod);
   BigIntMultiply(&powerExtraBits, &powerMod, &powerBoundA);
+  b = (int)(b0 + (ceil(log(3) * log_rootbound) / logPrime) + 3);
+  a0 = b + exponDifference;
+  exponentMod = a0 * 2 + 50;
+  computePower(exponentMod);
+  modulusIsZero = 0;    // Use modular arithmetic for polynomials.
+  intToBigInteger(&operand5, 1);
+  values[0] = polyNonRepeatedFactors[0];
+  getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
+#if DEBUG_HENSEL_LIFTING
+  ptrOutput2 = ptrDebugOutput;
+#endif
+  HenselLifting(factorInfoRecord);
+#if DEBUG_HENSEL_LIFTING
+  ptrDebugOutput = ptrOutput2; ptrOutput2 = NULL;
+#endif
+  // Compress polynomials so there are no spaces between coefficients.
+  CompressPolynomial(nbrFactorsFound);
   // Initialize matrix BL with identity matrix (length nbrFactors).
   for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
   {
@@ -684,39 +980,14 @@ static void vanHoeij(int prime, int nbrFactors)
       }
     }
   }
-  b = (int)(b0 + (ceil(log(nbrRequiredTraces + 2) * log_rootbound) / logPrime) + 3);
-  a0 = b + exponDifference;
-  exponentMod = a0*2+50;
-  computePower(exponentMod);
-  modulusIsZero = 0;    // Use modular arithmetic for polynomials.
-  intToBigInteger(&operand5, 1);
-  values[0] = polyNonRepeatedFactors[0];
-  getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
-#if DEBUG_HENSEL_LIFTING
-  ptrOutput2 = ptrDebugOutput;
-#endif
-  HenselLifting(factorInfoRecord);
-#if DEBUG_HENSEL_LIFTING
-  ptrDebugOutput = ptrOutput2; ptrOutput2 = NULL;
-#endif
-  // Compress polynomials so there are no spaces between coefficients.
-  pstFactorInfo = factorInfoRecord;
-  for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
-  {
-    int* ptrDest = pstFactorInfo->ptrPolyLifted;
-    int* ptrSrc = ptrDest;
-    for (degree = 0; degree < pstFactorInfo->degree; degree++)
-    {
-      int coeffLength = 1 + numLimbs(ptrSrc);
-      memmove(ptrDest, ptrSrc, coeffLength * sizeof(int));
-      ptrDest += coeffLength;
-      ptrSrc += NumberLength + 1;
-    }
-    pstFactorInfo++;
-  }
+  // Initialize variables for van Hoeij algorithm.
+  nbrRequiredTraces = 1;        // Initialize nbrRequiredTraces.
+  firstTrace = 1;               // First trace to use for matrix M.
+  nbrVectors = nbrFactors;      // Initialize nbrVectors.
+  nbrColsTraces = nbrFactors;
   for (;;)
   {
-    int squareFormula, stepNbr;
+    int squareFormula;
     modulusIsZero = 0;    // Use modular arithmetic for polynomials.
     firstTrace += nbrRequiredTraces - 1;
     if (nbrVectors >= nbrFactors)
@@ -1119,7 +1390,6 @@ static void vanHoeij(int prime, int nbrFactors)
     // exactly one 1, we might have a valid factorization,
     // done <- true. Otherwise, increase s, replace n
     // by r and r by r'
-    completeFactorization = 1;
     rank = gauss(nbrFactors, r1);  // Dimension of matrix BL.
 #if DEBUG_VANHOEIJ
     sprintf(ptrDebugOutput, LF "squareFormula = %d, rank = %d" LF, squareFormula, rank);
@@ -1185,145 +1455,10 @@ static void vanHoeij(int prime, int nbrFactors)
     }
     CopyBigInt(&halfPowerMod, &powerMod);
     subtractdivide(&halfPowerMod, -1, 2); // halfPowerMod <- (powerMod+1)/2
+    newNbrFactors = nbrFactors;
     // Combine factors.
-    // In step 1 we check that all factors can be found. If this succeeds,
-    // in step 2 we insert factors in final array of polynomial factors.
-    for (stepNbr = 1; stepNbr <= 2 && completeFactorization; stepNbr++)
-    {
-#if DEBUG_VANHOEIJ
-      sprintf(ptrDebugOutput, "stepNbr = %d\n", stepNbr);
-      ptrDebugOutput += strlen(ptrDebugOutput);
-#endif
-      // Test whether the factor divides the original polynomial.
-      // Initialize factor to 1.
-      // First reduce coefficients mod powerMod and then
-      // convert them to Montgomery notation.
-      for (nbrVector = 0; nbrVector < nbrVectors; nbrVector++)
-      {
-        GetMontgomeryParms(powerMod.nbrLimbs);
-        modulusIsZero = 0;  // Perform modular operations.
-        degreeProd = 0;
-        pstFactorInfo = factorInfoRecord;
-        for (currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
-        {
-          if (!BigIntIsZero((BigInteger*)&lambda[nbrVector][currentFactor]))
-          {
-            int* ptrValue1 = pstFactorInfo->ptrPolyLifted;    // Source
-            int* ptrValue2 = poly2;                           // Destination
-            int nbrLength;
-            degreeFactor = pstFactorInfo->degree;
-            // Reduce coefficients mod powerMod and store them on poly2.
-            for (currentDegree = 0; currentDegree < degreeFactor; currentDegree++)
-            {
-              nbrLength = numLimbs(ptrValue1);
-              operand1.nbrLimbs = nbrLength;
-              operand1.sign = SIGN_POSITIVE;
-              memcpy(operand1.limbs, ptrValue1 + 1, nbrLength * sizeof(int));
-              BigIntRemainder(&operand1, &powerMod, &operand2);
-              *ptrValue2 = operand2.nbrLimbs;
-              memcpy(ptrValue2 + 1, operand2.limbs, operand2.nbrLimbs * sizeof(int));
-              ptrValue1 += 1 + nbrLength;
-              ptrValue2 += 1 + NumberLength;
-            }
-            *ptrValue2 = 1;            // Store 1 as the leading coefficient.
-            *(ptrValue2 + 1) = 1;
-            // Convert factor to Montgomery notation.
-            polyToMontgomeryNotation(poly2, degreeFactor + 1);
-            if (degreeProd == 0)
-            {
-              ptrValue1 = poly2;              // Source is the new factor
-            }
-            else
-            {
-              MultPolynomial(degreeProd, degreeFactor, poly1, poly2);
-              ptrValue1 = polyMultTemp;       // Source is the product
-            }
-            degreeProd += degreeFactor;
-            ptrValue2 = poly1;                     // Destination
-            degreeFactor = pstFactorInfo->degree;
-            for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
-            {
-              nbrLength = 1 + numLimbs(ptrValue1);
-              memcpy(ptrValue2, ptrValue1, nbrLength * sizeof(int));
-              ptrValue1 += 1 + NumberLength;
-              ptrValue2 += 1 + NumberLength;
-            }
-          }
-          pstFactorInfo++;
-        }
-        // Multiply all coefficients by leadingCoeff by using modmult
-        // (this converts from Montgomery to standard notation)
-        // and store them in poly2.
-        ptrSrc = poly1;
-        ptrDest = poly2;
-        CompressLimbsBigInteger((limb*)nbrTmp, &leadingCoeff);
-        for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
-        {
-          LenAndLimbs2ArrLimbs(ptrSrc, (limb*)nbrTmp2, NumberLength);
-          modmult((limb*)nbrTmp, (limb*)nbrTmp2, (limb*)nbrTmp3);
-          ArrLimbs2LenAndLimbs(ptrDest, (limb*)nbrTmp3, NumberLength + 1);
-          ptrSrc += 1 + NumberLength;
-          ptrDest += 1 + numLimbs(ptrDest);
-        }
-        GenerateIntegerPolynomial(poly2, poly5, degreeProd);
-        modulusIsZero = 1;   // Perform integer division.
-        // Multiply all coefficients by leadingCoeff and store in polyS.
-        polyS[0] = polyNonRepeatedFactors[0];
-        ptrSrc = &polyNonRepeatedFactors[1];
-        ptrDest = &polyS[1];
-        for (currentDegree = 0; currentDegree <= polyS[0]; currentDegree++)
-        {
-          UncompressBigIntegerB(ptrSrc, &operand1);
-          BigIntMultiply(&operand1, &leadingCoeff, &operand2);
-          NumberLength = operand2.nbrLimbs;
-          BigInteger2IntArray(ptrDest, &operand2);
-          ptrSrc += 1 + numLimbs(ptrSrc);
-          ptrDest += 1 + numLimbs(ptrDest);
-        }
-        if (stepNbr == 1)
-        {   // Test whether the product divides the original polynomial.
-          rc = DivideIntegerPolynomial(polyS, poly5, TYPE_MODULUS);
-          if (rc == EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER)
-          {
-            completeFactorization = 0;
-            break;    // Cannot perform the division.
-          }
-          if (polyS[0] != 0 || polyS[1] != 1 || polyS[2] != 0)
-          {              // Remainder is not zero. Number to factor does not divide this polynomial.
-            completeFactorization = 0;
-            break;
-          }
-        }
-        else
-        {
-          // Get principal part of poly5 and store it to poly2.
-          getContent(poly5, &operand4);   // Content of polynomial.
-          poly2[0] = poly5[0];
-          ptrSrc = &poly5[1];
-          ptrDest = &poly2[1];
-          for (currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
-          {
-            UncompressBigIntegerB(ptrSrc, &operand2);
-            BigIntDivide(&operand2, &operand4, &operand3);
-            NumberLength = operand3.nbrLimbs;
-            BigInteger2IntArray(ptrDest, &operand3);
-            ptrSrc += 1 + numLimbs(ptrSrc);
-            ptrDest += 1 + numLimbs(ptrDest);
-          }
-          // Copy this principal part to poly5.
-          CopyPolynomial(&poly5[1], &poly2[1], poly5[0]);
-          DivideIntegerPolynomial(polyNonRepeatedFactors, poly5, TYPE_DIVISION);
-          int degreePoly = poly5[0];
-          ptrFactorIntegerBak = CopyPolynomial(ptrFactorInteger, &poly5[1], degreePoly);
-          InsertIntegerPolynomialFactor(ptrFactorInteger, degreePoly);
-          ptrFactorInteger = ptrFactorIntegerBak;
-        }
-        modulusIsZero = 0;   // Perform modular operations.
-        // Restart finding factors.
-        memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
-      }
-    }
-    if (completeFactorization)
+    GetMontgomeryParms(powerMod.nbrLimbs);
+    if (AttemptToFactor(nbrVectors, nbrFactors, &newNbrFactors))
     {
 #if DEBUG_VANHOEIJ
       sprintf(ptrDebugOutput, "nbrVector == nbrVectors" LF);
@@ -1377,7 +1512,7 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   // Fill indexes to start of each coefficient.
   ptrIndex = &indexNewFactor[0];
   index = 0;
-  for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
+  for (currentDegree = 0; currentDegree <= degreePoly+1; currentDegree++)
   {
     *ptrIndex++ = index;
     index += numLimbs(ptrFactor + index) + 1;
@@ -1385,37 +1520,38 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   for (pstFactorInfoInteger = factorInfoInteger;
     pstFactorInfoInteger->ptrPolyLifted != NULL;
     pstFactorInfoInteger++)
-  {
-    if (pstFactorInfoInteger->degree < degreePoly)
-    {
-      continue;
+  {      // Polynomial factors are sorted by degree and then
+         // by coefficients.
+    if (degreePoly > pstFactorInfoInteger->degree)
+    {    // New factor degree is greater than stored factor degree.
+      continue;  // Check next stored factor.
     }
-    if (pstFactorInfoInteger->degree > degreePoly)
-    {
-      break;
+    if (degreePoly < pstFactorInfoInteger->degree)
+    {    // New factor degree is less than stored factor degree.
+      break;     // Exit loop.
     }
     // Degree of the new factor is the same as the one already stored.
     ptrOldFactor = pstFactorInfoInteger->ptrPolyLifted;
     ptrIndex = &indexOldFactor[0];
     index = 0;
     for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
-    {
+    {   // Loop that gets the pointers to coefficients of stored factor.
       *ptrIndex++ = index;
       index += numLimbs(ptrOldFactor + index) + 1;
     }
-    // Compare coefficients.
+    // Compare coefficients starting from higher degrees.
     for (currentDegree = degreePoly; currentDegree >= 0; currentDegree--)
     {
       UncompressBigIntegerB(ptrFactor + indexNewFactor[currentDegree], &operand1);
       UncompressBigIntegerB(ptrOldFactor + indexOldFactor[currentDegree], &operand2);
       BigIntSubt(&operand1, &operand2, &operand1);
       if (!BigIntIsZero(&operand1))
-      {
+      {       // Polynomials are different.
         break;
       }
     }
     if (currentDegree < 0)
-    {   // Both polynomials are the same.
+    {         // Both polynomials are the same.
       pstFactorInfoInteger->multiplicity++;
 #if DEBUG_VANHOEIJ
 #ifndef __EMSCRIPTEN__
@@ -1425,7 +1561,8 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
       return;
     }
     if (operand1.sign == SIGN_NEGATIVE)
-    {
+    {   // Coefficient of new factor is less than
+        // coefficient of stored factor. Exit loop.
       break;
     }
   }
@@ -1443,6 +1580,7 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   pstFactorInfoInteger->multiplicity = 1;
   pstFactorInfoInteger->ptrPolyLifted = ptrFactor;
   pstFactorInfoInteger->degree = degreePoly;
+  ptrFactorInteger += indexNewFactor[degreePoly + 1];
 }
 
 // Input: values = degree, coefficient degree 0, coefficient degree 1, etc.
@@ -1461,7 +1599,7 @@ int FactorPolyOverIntegers(void)
   int* ptrFactorIntegerBak;
   struct sFactorInfo* pstFactorInfoOrig, * pstFactorInfoRecord;
   struct sFactorInfo* pstFactorInfoInteger = factorInfoInteger;
-  int* ptrFactorInteger = polyInteger;
+  ptrFactorInteger = polyInteger;
   modulusIsZero = 1;
   memset(factorInfoInteger, 0, sizeof(factorInfoInteger));
   getContent(values, &contentPolyToFactor);
