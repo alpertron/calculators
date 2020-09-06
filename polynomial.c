@@ -3328,23 +3328,18 @@ int HenselLifting(struct sFactorInfo* factorInfo)
   struct sFactorInfo *pstFactorInfo, *pstFactorInfo2;
 
   if (exponentMod == 1)
-  {
+  {      // No lift to be done. Copy polynomials to polyLifted.
     int* ptrDest = ptrPolyLifted;
     pstFactorInfo = factorInfo;
     for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
     {
-      int nbrLimbs = 1 + numLimbs(pstFactorInfo->ptr);
       pstFactorInfo->ptrPolyLifted = ptrDest;
-      memcpy(ptrDest, pstFactorInfo->ptr, nbrLimbs*sizeof(int));
-      ptrDest += nbrLimbs;
+      ptrDest = CopyPolynomial(ptrDest, pstFactorInfo->ptr, pstFactorInfo->degree);
       pstFactorInfo++;
     }
     return EXPR_OK;   // No lift has to be done.
   }
-  else
-  {
-    CopyBigInt(&powerMod, &primeMod);
-  }
+  CopyBigInt(&powerMod, &primeMod);
   // Hensel lifting only works when there are no repeated factors mod p.
   // Go out if the multiplicity of a factor is not 1.
   // Compute in variable degree the degree of the product.

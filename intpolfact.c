@@ -841,8 +841,6 @@ static void vanHoeij(int prime, int nbrFactors)
   struct sFactorInfo* pstFactorInfo;
   int degreePolyToFactor = polyNonRepeatedFactors[0];
   int nbrFactor;
-  int oldExponent = 1;
-  int oldNumberLength = 0;
   int newNumberLength, newNbrFactors;
   int ctr1, ctr2, ctr3;
 
@@ -886,6 +884,7 @@ static void vanHoeij(int prime, int nbrFactors)
     intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
   }
   newNbrFactors = nbrFactors;
+#if 1
   for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
   {
     intToBigInteger((BigInteger*)&lambda[0][ctr1], 1);
@@ -919,6 +918,7 @@ static void vanHoeij(int prime, int nbrFactors)
     }
     intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
   }
+#endif
   if (newNbrFactors <= 1)
   {   // Zero or 1 factor left. Polynomial completely factored, so go out.
     return;
@@ -970,14 +970,8 @@ static void vanHoeij(int prime, int nbrFactors)
   {
     for (nbrCol = 0; nbrCol < nbrFactors; nbrCol++)
     {
-      if (nbrRow == nbrCol)
-      {
-        intToBigInteger((BigInteger*)&matrixBL[nbrRow][nbrCol], 1);
-      }
-      else
-      {
-        intToBigInteger((BigInteger*)&matrixBL[nbrRow][nbrCol], 0);
-      }
+      intToBigInteger((BigInteger*)&matrixBL[nbrRow][nbrCol],
+        (nbrRow == nbrCol ? 1 : 0));
     }
   }
   // Initialize variables for van Hoeij algorithm.
@@ -999,14 +993,8 @@ static void vanHoeij(int prime, int nbrFactors)
       {
         for (nbrCol = 0; nbrCol < nbrFactors; nbrCol++)
         {
-          if (nbrRow == nbrCol)
-          {
-            intToBigInteger((BigInteger*)&matrixBL[nbrRow][nbrCol], 1);
-          }
-          else
-          {
-            intToBigInteger((BigInteger*)&matrixBL[nbrRow][nbrCol], 0);
-          }
+          intToBigInteger((BigInteger*)&matrixBL[nbrRow][nbrCol],
+            (nbrRow == nbrCol ? 1 : 0));
         }
       }
     }
@@ -1033,8 +1021,6 @@ static void vanHoeij(int prime, int nbrFactors)
     ptrDebugOutput = ptrOutput2; ptrOutput2 = NULL;
 #endif
     NumberLength = newNumberLength;
-    oldExponent = a0;
-    oldNumberLength = NumberLength;
     // use exponDifference additional bits instead of a fixed number
 
     intToBigInteger(&operand1, prime);
@@ -1063,14 +1049,8 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        if (nbrCol == nbrRow)
-        {
-          intToBigInteger((BigInteger*)&basisStar[nbrRow][nbrRow], C);
-        }
-        else
-        {
-          intToBigInteger((BigInteger*)&basisStar[nbrRow][nbrCol], 0);
-        }
+        intToBigInteger((BigInteger*)&basisStar[nbrRow][nbrCol],
+          (nbrRow == nbrCol ? C : 0));
       }
     }
 
@@ -1176,6 +1156,18 @@ static void vanHoeij(int prime, int nbrFactors)
       *ptrDebugOutput++ = ';';
     }
     *ptrDebugOutput++ = '.';
+#endif
+#if DEBUG_VANHOEIJ
+    if (++nbrStepsDone == 2)
+    {
+#ifdef __EMSCRIPTEN__
+      output[0] = '1';
+      strcpy(&output[1], debugOutput);
+      databack(output);
+#else
+      printf("%s", debugOutput);
+#endif
+    }
 #endif
     // Step 2: LLL-reduce the (r+s)*(r+s) matrix M (of rank r+s).
     integralLLL(nbrVectors + nbrRequiredTraces);
@@ -1397,7 +1389,7 @@ static void vanHoeij(int prime, int nbrFactors)
 #endif
     nbrRequiredTraces++;
     nbrVectors = r1;
-#if DEBUG_VANHOEIJ
+#if 0
     if (++nbrStepsDone == 10)
     {
 #ifdef __EMSCRIPTEN__
