@@ -3485,6 +3485,9 @@ int HenselLifting(struct sFactorInfo* factorInfo)
           strcpy(ptrOutput, " de ");
           ptrOutput += strlen(ptrOutput);
           int2dec(&ptrOutput, nbrFactorsFound);
+          strcpy(ptrOutput, " usando el número primo ");
+          ptrOutput += strlen(ptrOutput);
+          int2dec(&ptrOutput, primeMod.limbs[0].x);
           strcpy(ptrOutput, " procesando exponente ");
           ptrOutput += strlen(ptrOutput);
           int2dec(&ptrOutput, currentExp);
@@ -3498,6 +3501,9 @@ int HenselLifting(struct sFactorInfo* factorInfo)
           strcpy(ptrOutput, " of ");
           ptrOutput += strlen(ptrOutput);
           int2dec(&ptrOutput, nbrFactorsFound);
+          strcpy(ptrOutput, " using prime number ");
+          ptrOutput += strlen(ptrOutput);
+          int2dec(&ptrOutput, primeMod.limbs[0].x);
           strcpy(ptrOutput, " processing exponent ");
           ptrOutput += strlen(ptrOutput);
           int2dec(&ptrOutput, currentExp);
@@ -3506,6 +3512,8 @@ int HenselLifting(struct sFactorInfo* factorInfo)
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, exponentMod);
         strcpy(ptrOutput, ".</p>");
+        ptrOutput += strlen(ptrOutput);
+        showElapsedTime(&ptrOutput);
         databack(outputInfo);
       }
 #endif

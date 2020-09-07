@@ -805,6 +805,63 @@ static void CompressPolynomial(int nbrFactorsFound)
   }
 }
 
+// Find Knuth-Cohen bound for coefficients of polynomial factors:
+// If polynomial B divides A we have for all j:
+// |Bj| <= binomial(n-1, j)*SUM(i, |Ai|^2))^(1/2) + binomial(n-1, j-1) * |Am|
+// where m is the degree of A and n is the degree of B.
+// Maximum degree to be considered is n = ceil(m/2).
+// We need to find max(Bj).
+static void ComputeCoeffBounds(void)
+{
+  int degreePolyToFactor;
+  int* ptrSrc;
+  int maxDegreeFactor, degree1;
+
+  modulusIsZero = 1;
+  degreePolyToFactor = polyNonRepeatedFactors[0];
+  ptrSrc = &polyNonRepeatedFactors[1];
+  UncompressBigIntegerB(ptrSrc, &operand1);
+  if (degreePolyToFactor < 0)
+  {      // Monomial.
+    maxDegreeFactor = (-degreePolyToFactor + 1) / 2;
+    operand1.sign = SIGN_POSITIVE;
+    CopyBigInt(&operand3, &operand1);         // Get leading coefficient.
+  }
+  else
+  {      // Polynomial.
+    maxDegreeFactor = (degreePolyToFactor + 1) / 2;
+    BigIntMultiply(&operand1, &operand1, &operand1);
+    for (degree1 = 1; degree1 <= degreePolyToFactor; degree1++)
+    {
+      ptrSrc += 1 + numLimbs(ptrSrc);
+      UncompressBigIntegerB(ptrSrc, &operand3);   // The last loop sets operand3 to the leading coefficient.
+      BigIntMultiply(&operand3, &operand3, &operand2);
+      BigIntAdd(&operand1, &operand2, &operand1);
+    }
+    squareRoot(operand1.limbs, operand2.limbs, operand1.nbrLimbs, &operand2.nbrLimbs);
+    CopyBigInt(&operand1, &operand2);
+  }
+  // Loop that finds the maximum value of bound for |Bj|.
+  intToBigInteger(&operand2, 1);  // binomial(n-1, 0)
+  UncompressBigIntegerB(&polyNonRepeatedFactors[1], &bound);  // bound <- |A0|
+  bound.sign = SIGN_POSITIVE;
+  for (degree1 = 1; degree1 <= maxDegreeFactor; degree1++)
+  {
+    CopyBigInt(&operand4, &operand2);
+    multint(&operand2, &operand2, maxDegreeFactor - degree1);
+    subtractdivide(&operand2, 0, degree1);
+    BigIntMultiply(&operand1, &operand2, &operand5);
+    BigIntMultiply(&operand3, &operand4, &operand4);
+    BigIntAdd(&operand5, &operand4, &operand5);
+    // If operand5 > bound, set bound to operand5.
+    BigIntSubt(&operand5, &bound, &operand4);
+    if (operand4.sign == SIGN_POSITIVE)
+    {
+      CopyBigInt(&bound, &operand5);
+    }
+  }
+}
+
 // Perform Van Hoeij algorithm 
 // On input: values = integer polynomial.
 // prime: integer prime used for factoring the polynomial
@@ -842,9 +899,13 @@ static void vanHoeij(int prime, int nbrFactors)
   int degreePolyToFactor = polyNonRepeatedFactors[0];
   int nbrFactor;
   int newNumberLength, newNbrFactors;
-  int ctr1, ctr2, ctr3;
+  int ctr1, ctr2;
+  int currentAttempts, maxAttempts;
 
-  exponentMod = (int)ceil(log_rootbound) + 2;
+  exponDifference = (int)(6.0 * (double)nbrFactors * log(2.0) / log(prime));
+  b = (int)(b0 + (ceil(log(3) * log_rootbound) / logPrime) + 3);
+  a0 = b + exponDifference;
+  exponentMod = a0;
 #if DEBUG_VANHOEIJ
   sprintf(ptrDebugOutput, LF "====================================================="
     LF "prime = %d, root bound = ", prime);
@@ -884,13 +945,14 @@ static void vanHoeij(int prime, int nbrFactors)
     intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
   }
   newNbrFactors = nbrFactors;
-#if 1
   for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
   {
     intToBigInteger((BigInteger*)&lambda[0][ctr1], 1);
     AttemptToFactor(1, nbrFactors, &newNbrFactors);
     intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
   }
+  currentAttempts = 0;
+  maxAttempts = nbrFactors * (nbrFactors - 1) / 2;
   for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
   {
     intToBigInteger((BigInteger*)&lambda[0][ctr1], 1);
@@ -898,27 +960,31 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       intToBigInteger((BigInteger*)&lambda[0][ctr2], 1);
       AttemptToFactor(1, nbrFactors, &newNbrFactors);
-      intToBigInteger((BigInteger*)&lambda[0][ctr2], 0);
-    }
-    intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
-  }
-  for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
-  {
-    intToBigInteger((BigInteger*)&lambda[0][ctr1], 1);
-    for (ctr2 = ctr1 + 1; ctr2 < nbrFactors; ctr2++)
-    {
-      intToBigInteger((BigInteger*)&lambda[0][ctr2], 1);
-      for (ctr3 = ctr2 + 1; ctr3 < nbrFactors; ctr3++)
+      currentAttempts++;
+#ifdef __EMSCRIPTEN__
+      int elapsedTime = (int)(tenths() - originalTenthSecond);
+      if (elapsedTime / 10 != oldTimeElapsed / 10)
       {
-        intToBigInteger((BigInteger*)&lambda[0][ctr3], 1);
-        AttemptToFactor(1, nbrFactors, &newNbrFactors);
-        intToBigInteger((BigInteger*)&lambda[0][ctr3], 0);
+        ptrOutput = output;
+        strcpy(ptrOutput, lang? "1<p>Obteniendo factores de dos factores modulares: prueba ":
+                                "1<p>Finding factors from two modular factors: attempt ");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, currentAttempts);
+        strcpy(ptrOutput, lang ? " de " : " of ");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, maxAttempts);
+        oldTimeElapsed = elapsedTime;
+        strcpy(ptrOutput, lang ? "</p><p>Transcurrió " : "</p><p>Time elapsed: ");
+        ptrOutput += strlen(ptrOutput);
+        GetDHMS(&ptrOutput, elapsedTime / 10);
+        strcpy(ptrOutput, "</p>");
+        databack(output);
       }
+#endif
       intToBigInteger((BigInteger*)&lambda[0][ctr2], 0);
     }
     intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
   }
-#endif
   if (newNbrFactors <= 1)
   {   // Zero or 1 factor left. Polynomial completely factored, so go out.
     return;
@@ -943,28 +1009,16 @@ static void vanHoeij(int prime, int nbrFactors)
   // Compute powerExtraBits as a power of prime with 3 times
   // the number of bits of nbrFactors (the number of polynomial factors).
   // Compute powerBoundA as powerExtraBits * powerMod.
-  exponDifference = (int)(4.0 * (double)nbrFactors * log(2.0) / log(prime));
+  exponDifference = (int)(6.0 * (double)nbrFactors * log(2.0) / log(prime));
   intToBigInteger(&operand1, prime);
   BigIntPowerIntExp(&operand1, exponDifference, &powerExtraBits);
   CopyBigInt(&powerBoundA, &powerMod);
   BigIntMultiply(&powerExtraBits, &powerMod, &powerBoundA);
-  b = (int)(b0 + (ceil(log(3) * log_rootbound) / logPrime) + 3);
-  a0 = b + exponDifference;
-  exponentMod = a0 * 2 + 50;
+  ComputeCoeffBounds();     // bound = Bound of coefficient of factors.
+  log_rootbound = logBigNbr(&bound) / logPrime;
+  exponentMod = a0;
   computePower(exponentMod);
   modulusIsZero = 0;    // Use modular arithmetic for polynomials.
-  intToBigInteger(&operand5, 1);
-  values[0] = polyNonRepeatedFactors[0];
-  getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
-#if DEBUG_HENSEL_LIFTING
-  ptrOutput2 = ptrDebugOutput;
-#endif
-  HenselLifting(factorInfoRecord);
-#if DEBUG_HENSEL_LIFTING
-  ptrDebugOutput = ptrOutput2; ptrOutput2 = NULL;
-#endif
-  // Compress polynomials so there are no spaces between coefficients.
-  CompressPolynomial(nbrFactorsFound);
   // Initialize matrix BL with identity matrix (length nbrFactors).
   for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
   {
@@ -998,9 +1052,10 @@ static void vanHoeij(int prime, int nbrFactors)
         }
       }
     }
-    // Get b such that p^b is greater than the bounds on the cofficients.
-    b = (int)(b0 + (ceil(log(firstTrace + nbrRequiredTraces + 1) * log_rootbound) / logPrime) + 3);
-    a0 = b + exponDifference;
+// Get b such that p^b is greater than the bounds on the cofficients.
+//    b = (int)(b0 + (ceil(log(firstTrace + nbrRequiredTraces + 1) * log_rootbound) / logPrime) + 3);
+//    b = (int)(b0 + (ceil(log(3) * log_rootbound) / logPrime) + 3);
+//    a0 = b + exponDifference;
     computePower(a0);
     newNumberLength = NumberLength;
     exponentMod = a0;
@@ -1014,12 +1069,6 @@ static void vanHoeij(int prime, int nbrFactors)
     intToBigInteger(&operand5, 1);
     values[0] = polyNonRepeatedFactors[0];
     getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
-#if DEBUG_HENSEL_LIFTING
-    ptrOutput2 = ptrDebugOutput;
-#endif
-#if DEBUG_HENSEL_LIFTING
-    ptrDebugOutput = ptrOutput2; ptrOutput2 = NULL;
-#endif
     NumberLength = newNumberLength;
     // use exponDifference additional bits instead of a fixed number
 
@@ -1156,18 +1205,6 @@ static void vanHoeij(int prime, int nbrFactors)
       *ptrDebugOutput++ = ';';
     }
     *ptrDebugOutput++ = '.';
-#endif
-#if DEBUG_VANHOEIJ
-    if (++nbrStepsDone == 2)
-    {
-#ifdef __EMSCRIPTEN__
-      output[0] = '1';
-      strcpy(&output[1], debugOutput);
-      databack(output);
-#else
-      printf("%s", debugOutput);
-#endif
-    }
 #endif
     // Step 2: LLL-reduce the (r+s)*(r+s) matrix M (of rank r+s).
     integralLLL(nbrVectors + nbrRequiredTraces);
@@ -1582,7 +1619,7 @@ int FactorPolyOverIntegers(void)
   int degreePolyToFactor = values[0];
   int degree1, degree2;
   int primeRecord = 0;
-  int expon, maxDegreeFactor;
+  int expon;
   int degreeGcdMod;
   int* ptrSrc, * ptrDest;
   int attemptNbr;
@@ -1659,55 +1696,7 @@ int FactorPolyOverIntegers(void)
     polyNonRepeatedFactors[0] = degreePolyToFactor;
     DivideIntegerPolynomial(polyNonRepeatedFactors, polyToFactor, TYPE_DIVISION);
     prime = 3;
-    // Find Knuth-Cohen bound for coefficients of polynomial factors:
-    // If polynomial B divides A we have for all j:
-    // |Bj| <= binomial(n-1, j)*SUM(i, |Ai|^2))^(1/2) + binomial(n-1, j-1) * |Am|
-    // where m is the degree of A and n is the degree of B.
-    // Maximum degree to be considered is n = ceil(m/2).
-    // We need to find max(Bj).
-    modulusIsZero = 1;
-    degreePolyToFactor = polyNonRepeatedFactors[0];
-    ptrSrc = &polyNonRepeatedFactors[1];
-    UncompressBigIntegerB(ptrSrc, &operand1);
-    if (degreePolyToFactor < 0)
-    {      // Monomial.
-      maxDegreeFactor = (-degreePolyToFactor + 1) / 2;
-      operand1.sign = SIGN_POSITIVE;
-      CopyBigInt(&operand3, &operand1);         // Get leading coefficient.
-    }
-    else
-    {      // Polynomial.
-      maxDegreeFactor = (degreePolyToFactor + 1) / 2;
-      BigIntMultiply(&operand1, &operand1, &operand1);
-      for (degree1 = 1; degree1 <= degreePolyToFactor; degree1++)
-      {
-        ptrSrc += 1 + numLimbs(ptrSrc);
-        UncompressBigIntegerB(ptrSrc, &operand3);   // The last loop sets operand3 to the leading coefficient.
-        BigIntMultiply(&operand3, &operand3, &operand2);
-        BigIntAdd(&operand1, &operand2, &operand1);
-      }
-      squareRoot(operand1.limbs, operand2.limbs, operand1.nbrLimbs, &operand2.nbrLimbs);
-      CopyBigInt(&operand1, &operand2);
-    }
-    // Loop that finds the maximum value of bound for |Bj|.
-    intToBigInteger(&operand2, 1);  // binomial(n-1, 0)
-    UncompressBigIntegerB(&polyNonRepeatedFactors[1], &bound);  // bound <- |A0|
-    bound.sign = SIGN_POSITIVE;
-    for (degree1 = 1; degree1 <= maxDegreeFactor; degree1++)
-    {
-      CopyBigInt(&operand4, &operand2);
-      multint(&operand2, &operand2, maxDegreeFactor - degree1);
-      subtractdivide(&operand2, 0, degree1);
-      BigIntMultiply(&operand1, &operand2, &operand5);
-      BigIntMultiply(&operand3, &operand4, &operand4);
-      BigIntAdd(&operand5, &operand4, &operand5);
-      // If operand5 > bound, set bound to operand5.
-      BigIntSubt(&operand5, &bound, &operand4);
-      if (operand4.sign == SIGN_POSITIVE)
-      {
-        CopyBigInt(&bound, &operand5);
-      }
-    }
+    ComputeCoeffBounds();   // bound = Bound of coefficient of factors.
     // Up to 5 different prime moduli are tested to minimize the number
     // of factors because the Van Hoeij algorithm speed depends on
     // this number. If the number of factors is less than 10,
