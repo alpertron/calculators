@@ -29,6 +29,7 @@ BigRational RatDiscr, RatDelta0, RatDelta1, RatD;
 BigRational Rat1, Rat2, Rat3, Rat4, Rat5, RatS;
 int indexRoot;
 char *ptrMinus, *ptrTimes;
+static int totients[2 * MAX_DEGREE + 1];
 
 void showX(int multiplicity)
 {
@@ -1298,6 +1299,189 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
   }
 }
 
+static int gcd(int a, int b)
+{
+  while (b != 0)
+  {
+    int c = a % b;
+    a = b;
+    b = c;
+  }
+  return a;
+}
+
+static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
+{
+  int index, totient;
+  int* ptrCoeff, currentDegree;
+  // Polynomial must be palindromic of even degree
+  // and the absolute value must be less than 10.
+  if (degree % 2 == 1)
+  {      // Polynomial has odd degree so it cannot be cyclotomic.
+    return 0;
+  }
+  ptrCoeff = ptrPolynomial;
+  for (index = 0; index <= degree; index++)
+  {
+    if (*ptrCoeff != 1 && *ptrCoeff != -1)
+    {            // Too low ot too high.
+      return 0;
+    }
+    if (*(ptrCoeff + 1) >= 10)
+    {            // Absolute value too high.
+      return 0;
+    }
+    ptrCoeff += 2;
+  }
+  if (totients[0] == 0)
+  {    // Table not initialized.
+    totients[0] = 1;          // indicate table initialized
+    totients[2] = 1;
+    totients[3] = 2;
+    // Compute totient[index] as index*(p1-1)/p1*(p2-1)/p2*...
+    // where p_n is a prime factor of index.
+    for (index = 4; index <= 2*MAX_DEGREE; index++)
+    {
+      int prime = 2;
+      int quotient = index;
+      totient = index;
+      while (quotient != 1 && prime*prime <= index)
+      {
+        if (quotient / prime * prime == quotient)
+        {   // Prime dividing index was found.
+          totient = totient * (prime - 1) / prime;
+          do
+          {
+            quotient /= prime;
+          } while (quotient / prime * prime == quotient);
+        }
+        prime = nextPrime(prime);
+      }
+      if (quotient > 1)
+      {
+        totient = totient * (quotient - 1) / quotient;
+      }
+      totients[index] = totient;
+    }
+  }
+  // Degree of cyclotomic polynomial n is totient(n).
+  for (index = degree; index <= 2 * MAX_DEGREE; index++)
+  {
+    if (degree != totients[index])
+    {   // Degree is not correct.
+      continue;
+    }
+    // Test whether x^degree - 1 divides this polynomial.
+    int base[MAX_DEGREE];
+    int prod[MAX_DEGREE];
+    int expon;
+    int* ptrBase = base;
+    ptrCoeff = ptrPolynomial;
+    for (currentDegree = 0; currentDegree <= degree; currentDegree++)
+    {
+      *ptrBase++ = *ptrCoeff* *(ptrCoeff + 1);
+      ptrCoeff += 2;
+    }
+    memset(prod, 0, degree * sizeof(int));
+    prod[1] = 1;    // Initialize polynomial to x.
+    for (expon = 1; expon < index; expon++)
+    {               // Multiply by x.
+      int coeffMaxDegree = prod[degree - 1];
+      for (currentDegree = degree - 1; currentDegree > 0; currentDegree--)
+      {
+        prod[currentDegree] = prod[currentDegree-1] - coeffMaxDegree * base[currentDegree];
+      }
+      prod[0] = -coeffMaxDegree * base[0];
+    }
+    // If result is 1, then the polynomial is cyclotomic.
+    prod[0]--;
+    memset(base, 0, degree*sizeof(int));
+    if (memcmp(base, prod, degree * sizeof(int)) == 0)
+    {     // The polynomial is cyclotomic.
+      int numerator;
+      char den[20];
+      char *ptrNum = den;
+      int denIsOdd = index % 2;
+      int2dec(&ptrNum, denIsOdd? index: index/2);
+      *ptrNum = 0;  // Include string terminator.
+      for (numerator = 1; numerator < index; numerator++)
+      {
+        char num[30];
+        if (gcd(numerator, index) > 1)
+        {        // Numbers are not coprime. Next loop.
+          continue;
+        }
+        showX(multiplicity);
+        showText("cos");
+        ptrNum = num;
+        if (numerator != 1 || denIsOdd)
+        {
+          int2dec(&ptrNum, denIsOdd? 2 * numerator: numerator);
+          strcpy(ptrNum, pretty? " &#8290;": "*");
+          ptrNum += strlen(ptrNum);
+        }
+        strcpy(ptrNum, pretty ? "&pi;": "pi");
+        if (pretty)
+        {
+          showRatConstants(num, den);
+        }
+        else
+        {
+          showText("(");
+          showText(num);
+          showText("/");
+          showText(den);
+          showText(")");
+        }
+        showText(" + i ");
+        showText(pretty? "&#8290;":"*");
+        showText(lang ? " sen" : " sin");
+        if (pretty)
+        {
+          showRatConstants(num, den);
+        }
+        else
+        {
+          showText("(");
+          showText(num);
+          showText("/");
+          showText(den);
+          showText(")");
+        }
+        showText("</li>");
+      }
+      return 1;
+    }
+  }
+  return 0;         // polynomial is not cyclotomic.
+}
+
+static int isPalindromic(int* ptrPolynomial, int degree)
+{
+  int currentDegree;
+  int *ptrs[MAX_DEGREE+1];
+  int* ptrCoeff = ptrPolynomial;
+  // Get pointers to coefficients.
+  for (currentDegree = 0; currentDegree <= degree; currentDegree++)
+  {
+    ptrs[currentDegree] = ptrCoeff;
+    ptrCoeff += 1 + numLimbs(ptrCoeff);
+  }
+  for (currentDegree = 0; currentDegree <= degree / 2; currentDegree++)
+  {
+    if (*ptrs[currentDegree] != *ptrs[degree - currentDegree])
+    {
+      return 0;    // Polynomial is not palindromic.
+    }
+    if (memcmp(ptrs[currentDegree] + 1, ptrs[degree - currentDegree] + 1,
+      numLimbs(ptrs[currentDegree])))
+    {
+      return 0;    // Polynomial is not palindromic.
+    }
+  }
+  return 1;        // Polynomial is palindromic.
+}
+
 void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, int groupLength)
 {
   static struct sFactorInfo factorInfoIntegerBak[MAX_DEGREE];
@@ -1343,6 +1527,17 @@ void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, in
     nbrFactorsFound = nbrFactorsFoundBak;
     memcpy(polyInteger, polyIntegerBak, sizeof(polyInteger));
     memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
+    break;
+  default:
+    if (isPalindromic(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree))
+    {          // Cyclotomic polynomials are palindromic.
+      TestCyclotomic(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity,
+        pstFactorInfo->degree);
+      break;
+    }
+    strcpy(ptrOutput, lang ? "<p>No puedo calcular las raíces de un polinomio irreducible de grado mayor que 5." :
+      "<p>I cannot compute the roots of an irreducible polynomial whose degree is greater than 5.");
+    ptrOutput += strlen(ptrOutput);
     break;
   }
   *pptrOutput = ptrOutput;

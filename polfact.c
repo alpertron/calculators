@@ -614,17 +614,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
         pstFactorInfo = factorInfoInteger;
         for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
         {
-          int polyDegree = pstFactorInfo->degree;
-          if (polyDegree > 5)
-          {
-            strcpy(ptrOutput, lang ? "<p>No puedo calcular las raíces de un polinomio irreducible de grado mayor que 5.":
-                                     "<p>I cannot compute the roots of an irreducible polynomial whose degree is greater than 5.");
-            ptrOutput += strlen(ptrOutput);
-          }
-          else
-          {
-            getRootsPolynomial(&ptrOutput, pstFactorInfo, groupLength);
-          }
+          getRootsPolynomial(&ptrOutput, pstFactorInfo, groupLength);
           pstFactorInfo++;
         }
       }
