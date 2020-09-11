@@ -30,6 +30,50 @@ BigRational Rat1, Rat2, Rat3, Rat4, Rat5, RatS;
 int indexRoot;
 char *ptrMinus, *ptrTimes;
 static int totients[2 * MAX_DEGREE + 1];
+enum
+{
+  SHOW_COS = 0,
+  SHOW_SIN,
+};
+
+struct cosine12
+{
+  char* radicands;
+  int denominator;
+};
+
+static struct cosine12 aCosine12[] =
+{   // S = sqrt next digit, T = start sqrt, U = end sqrt
+  {"S6*T5+S5U+S5-1", 8},          // cos 12°
+  {"S6*T5-S5U+S5+1", 8},          // cos 24°
+  {"S5+1", 4},                    // cos 36°
+  {"S6*T5+S5U-S5+1", 8},          // cos 48°
+  {"1", 2},                       // cos 60°
+  {"S5-1", 4},                    // cos 72°
+  {"S6*T5-S5U-S5-1", 8},          // cos 84°
+};
+
+static struct cosine12 a2Plus2Cosine12[] =
+{   // S = sqrt next digit, T = start sqrt, U = end sqrt
+  {"7+S6*T5+S5U+S5", 4},          // 2 + 2*cos 12°
+  {"9+S6*T5-S5U+S5", 4},          // 2 + 2*cos 24°
+  {"5+S5", 2},                    // 2 + 2*cos 36°
+  {"9+S6*T5+S5U-S5", 4},          // 2 + 2*cos 48°
+  {"3", 1},                       // 2 + 2*cos 60°
+  {"3-S5", 2},                    // 2 + 2*cos 72°
+  {"7+S6*T5-S5U-S5", 4},          // 2 + 2*cos 84°
+};
+
+static struct cosine12 a2Minus2Cosine12[] =
+{   // S = sqrt next digit, T = start sqrt, U = end sqrt
+  {"9-S6*T5+S5U-S5", 4},          // 2 - 2*cos 12°
+  {"7-S6*T5-S5U-S5", 4},          // 2 - 2*cos 24°
+  {"3-S5", 2},                    // 2 - 2*cos 36°
+  {"7-S6*T5+S5U+S5", 4},          // 2 - 2*cos 48°
+  {"1", 1},                       // 2 - 2*cos 60°
+  {"5-S5", 2},                    // 2 - 2*cos 72°
+  {"9-S6*T5-S5U+S5", 4},          // 2 - 2*cos 84°
+};
 
 void showX(int multiplicity)
 {
@@ -1310,6 +1354,292 @@ static int gcd(int a, int b)
   return a;
 }
 
+static void showRadicals(int num, int den, int multiple, int power2, int toShow)
+{
+  int arraySigns[10];
+  int indexSigns = 0;
+  int exprDen;
+  int den2 = 2 * den;
+  int angle;
+  char* ptrExpr;
+  int sign;
+  int divisor;
+  int paren = 0;
+  int indexExpr;
+  num = num % den2;  // Convert to range 0 to 360 degrees.
+  if (num < 0)
+  {
+    num += den2;
+  }
+  if (multiple == 1)
+  {
+    power2 -= 2;
+    multiple = 4;
+    angle = num % 8;
+    if (angle == 1 || angle == 7)
+    {    // 45 or 315 degrees.
+      sign = 1;
+    }
+    else
+    {
+      sign = -1;
+    }
+    if (power2 > 0)
+    {
+      if (sign > 0)
+      {
+        ptrExpr = "2+S2";   // 2+2*cos(Pi/4)
+      }
+      else
+      {
+        ptrExpr = "2-S2";   // 2-2*cos(Pi/4)
+      }
+      exprDen = 1;
+    }
+    else
+    {
+      ptrExpr = "S2";       // cos (Pi/4)
+      exprDen = 2;
+    }
+  }
+  else
+  {  // Obtain cosine of num*pi/multiple.
+    angle = (2*num * 15 / multiple) % 60;
+    if (angle < 15)
+    {     // Angle between 0 and 90 degrees.
+      indexExpr = (angle - 1) / 2;
+      sign = 1;
+    }
+    else if (angle < 30)
+    {     // Angle between 90 and 180 degrees.
+      indexExpr = (30 - angle - 1) / 2;
+      sign = -1;
+    }
+    else if (angle < 45)
+    {     // Angle between 180 and 270 degrees.
+      indexExpr = (angle - 30 - 1) / 2;
+      sign = -1;
+    }
+    else
+    {     // Angle between 270 and 360 degrees.
+      indexExpr = (60 - angle - 1) / 2;
+      sign = 1;
+    }
+    if (power2 > 0)
+    {
+      if (sign > 0)
+      {
+        ptrExpr = a2Plus2Cosine12[indexExpr].radicands;
+        exprDen = a2Plus2Cosine12[indexExpr].denominator;
+      }
+      else
+      {
+        ptrExpr = a2Minus2Cosine12[indexExpr].radicands;
+        exprDen = a2Minus2Cosine12[indexExpr].denominator;
+      }
+    }
+    else
+    {
+      ptrExpr = aCosine12[indexExpr].radicands;
+      exprDen = aCosine12[indexExpr].denominator;
+    }
+  }
+  divisor = 1;
+  for (indexSigns = power2 - 1; indexSigns >= 0; indexSigns--)
+  {
+    arraySigns[indexSigns] = sign;
+    angle = num * 15 / (multiple * divisor) % 60;
+    if (angle < 15 || angle > 45)
+    {     // Angle between 0 and 90 degrees.
+          // or from 270 to 360 degrees.
+      sign = 1;
+    }
+    else
+    {     // Angle between 90 and 270 degrees.
+      sign = -1;
+    }
+    divisor *= 2;
+  }
+  if (toShow == SHOW_COS)
+  {
+    showText(" = ");
+    if (sign < 0)
+    {
+      showText(pretty ? "&minus;" : "-");
+    }
+    if (power2 > 0)
+    {
+      if (pretty)
+      {
+        showRatConstants("1", "2");
+      }
+      else
+      {
+        showText("(1/2)");
+      }
+      showText(pretty ? " &#8290;" : "*");
+    }
+  }
+  else
+  {
+    if (sign < 0)
+    {
+      showText(pretty ? " &minus; " : " - ");
+    }
+    else
+    {
+      showText(" + ");
+    }
+    if (power2 > 0)
+    {
+      if (pretty)
+      {
+        showRatConstants("i", "2");
+      }
+      else
+      {
+        showText("(i/2)");
+      }
+    }
+    else
+    {
+      showText("i");
+    }
+    showText(pretty ? " &#8290;" : "*");
+  }
+  for (indexSigns = 0; indexSigns < power2; indexSigns++)
+  {
+    startSqrt();
+    if (indexSigns == power2 - 1)
+    {
+      break;
+    }
+    *ptrOutput++ = '2';
+    if (arraySigns[indexSigns] < 0)
+    {
+      showText(pretty ? " &minus; " : " - ");
+    }
+    else
+    {
+      showText(" + ");
+    }
+  }
+  // Interpret expression.
+  if (!pretty)
+  {
+    if ((exprDen != 1 && strlen(ptrExpr) > 3) || toShow == SHOW_SIN)
+    {
+      showText("(");
+      paren = 1;
+    }
+  }
+  else if (exprDen != 1)
+  {
+    showText("<span class=\"fraction\"><span class=\"numerator\">");
+  }
+  while (*ptrExpr != 0)
+  {
+    if (*ptrExpr == 'S')
+    {    // Square root of next digit.
+      ptrExpr++;
+      if (pretty)
+      {
+        startSqrt();
+        *ptrOutput++ = *ptrExpr;
+        endSqrt();
+      }
+      else
+      {
+        *ptrOutput++ = *ptrExpr;
+        showText("^(1/2)");
+      }
+    }
+    else if (*ptrExpr == 'T')
+    {  // Start of square root.
+      startSqrt();
+    }
+    else if (*ptrExpr == 'U')
+    {  // End of square root.
+      endSqrt();
+    }
+    else if (*ptrExpr == '-')
+    {
+      showText(pretty ? "&minus;" : "-");
+    }
+    else if (*ptrExpr == '*')
+    {
+      showText(pretty ? "&#8290;" : "*");
+    }
+    else
+    {
+      *ptrOutput++ = *ptrExpr;
+    }
+    ptrExpr++;
+  }
+  if (paren)
+  {
+    showText(")");
+  }
+  if (exprDen != 1)
+  {
+    if (pretty)
+    {
+      showText("</span><span class=\"denominator\">");
+      int2dec(&ptrOutput, exprDen);
+      showText("</span></span>");
+    }
+    else
+    {
+      showText("/");
+      int2dec(&ptrOutput, exprDen);
+    }
+  }
+  for (indexSigns = 0; indexSigns < power2; indexSigns++)
+  {
+    endSqrt();
+  }
+}
+
+// Try to find a radical expression for cos(num*pi/den) + 
+// i*sin(num*pi/den). If it is not possible, return with no output.
+static void outputRadicandsForCosSin(int num, int den)
+{
+  // den must a multiple of 3, 5 or 15 times a power of 2.
+  // At this moment we do not consider other Fermat prime numbers.
+  int multiple = 1;
+  int power2 = 0;
+  int quot = den;
+  if (quot % 3 == 0)
+  {
+    multiple *= 3;
+    quot /= 3;
+  }
+  if (quot % 5 == 0)
+  {
+    multiple *= 5;
+    quot /= 5;
+  }
+  // At this moment quot should be a power of 2.
+  while (quot % 2 == 0)
+  {
+    power2++;
+    quot /= 2;
+  }
+  if (quot != 1)
+  {                   // Denominator is multiple of another prime.
+    return;           // Cannot express by radicals.
+  }
+  showRadicals(num, den, multiple, power2, SHOW_COS);
+  if (power2 == 0)
+  {
+    showRadicals(den-num*2, den*2, multiple, 1, SHOW_SIN);
+  }
+  else
+  {
+    showRadicals(den/2 - num, den, multiple, power2, SHOW_SIN);
+  }
+}
+
 static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
 {
   int index, totient;
@@ -1402,11 +1732,13 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
       char den[20];
       char *ptrNum = den;
       int denIsOdd = index % 2;
-      int2dec(&ptrNum, denIsOdd? index: index/2);
+      int realDen = denIsOdd ? index : index / 2;
+      int2dec(&ptrNum, realDen);
       *ptrNum = 0;  // Include string terminator.
       for (numerator = 1; numerator < index; numerator++)
       {
         char num[30];
+        int realNum;
         if (gcd(numerator, index) > 1)
         {        // Numbers are not coprime. Next loop.
           continue;
@@ -1414,9 +1746,10 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
         showX(multiplicity);
         showText("cos");
         ptrNum = num;
-        if (numerator != 1 || denIsOdd)
+        realNum = denIsOdd ? 2 * numerator : numerator;
+        if (realNum != 1)
         {
-          int2dec(&ptrNum, denIsOdd? 2 * numerator: numerator);
+          int2dec(&ptrNum, realNum);
           strcpy(ptrNum, pretty? " &#8290;": "*");
           ptrNum += strlen(ptrNum);
         }
@@ -1448,6 +1781,7 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
           showText(den);
           showText(")");
         }
+        outputRadicandsForCosSin(realNum, realDen);
         showText("</li>");
       }
       return 1;
@@ -1535,7 +1869,7 @@ void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, in
         pstFactorInfo->degree);
       break;
     }
-    strcpy(ptrOutput, lang ? "<p>No puedo calcular las ra�ces de un polinomio irreducible de grado mayor que 5." :
+    strcpy(ptrOutput, lang ? "<p>No puedo calcular las raíces de un polinomio irreducible de grado mayor que 5." :
       "<p>I cannot compute the roots of an irreducible polynomial whose degree is greater than 5.");
     ptrOutput += strlen(ptrOutput);
     break;
