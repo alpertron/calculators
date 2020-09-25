@@ -229,19 +229,12 @@ static void LinearEquation(int *ptrPolynomial, int multiplicity)
   showText("</li>");
 }
 
-// Compute delta = c_1^2 - 4c_0 * c_2
-// If delta > 0 -> x = (-c_1 +/- sqrt(delta))/(2*c_2)
-// If delta < 0 -> x = (-c_1 +/- i*sqrt(-delta))/(2*c_2)
-// Delta cannot be zero.
-static void QuadraticEquation(int* ptrPolynomial, int multiplicity)
+// From variables named Quadratic, Linear and Independent, compute the
+// discriminant and find the rational roots if there are. Otherwise find
+// the real or imaginary roots.
+// The output is zero if the roots are rational, 1 otherwise.
+static int ProcessQuadraticEquation(enum eSign* pSignDescr)
 {
-  int ctr;
-  enum eSign signDiscr;
-  UncompressBigIntegerB(ptrPolynomial, &Independent);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
-  UncompressBigIntegerB(ptrPolynomial, &Linear);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
-  UncompressBigIntegerB(ptrPolynomial, &Quadratic);
   // Compute discriminant (delta = linear^2 - 4*quadratic*independent).
   BigIntMultiply(&Linear, &Linear, &tmp1);
   BigIntMultiply(&Quadratic, &Independent, &tmp2);
@@ -255,28 +248,10 @@ static void QuadraticEquation(int* ptrPolynomial, int multiplicity)
     BigIntSubt(&tmp5, &discr, &tmp5);
     if (BigIntIsZero(&tmp5))
     {           // Discriminant is perfect square. Roots are rational numbers.
-      for (ctr = 0; ctr < 2; ctr++)
-      {         // Compute (-linear +/- sqrt(discr))/(2*quadratic)
-        showX(multiplicity);
-        if (ctr == 0)
-        {
-          BigIntAdd(&Linear, &tmp4, &tmp1);
-        }
-        else
-        {
-          BigIntSubt(&Linear, &tmp4, &tmp1);
-        }
-        CopyBigInt(&Rat1.numerator, &tmp1);        
-        CopyBigInt(&Rat1.denominator, &Quadratic);
-        BigRationalDivideByInt(&Rat1, -2, &Rat1);
-        ForceDenominatorPositive(&Rat1);
-        showRationalNoParen(&Rat1, pretty);        
-        showText("</li>");
-      }
-      return;
+      return 0;
     }
   }
-  signDiscr = discr.sign;
+  *pSignDescr = discr.sign;
   discr.sign = SIGN_POSITIVE;
   // Let Rat1 = -linear/(2*quadratic), Rat2 = abs(1/(2*quadratic)) and Rat3 = abs(delta)
   CopyBigInt(&Rat1.numerator, &Linear);
@@ -290,6 +265,44 @@ static void QuadraticEquation(int* ptrPolynomial, int multiplicity)
   ForceDenominatorPositive(&Rat1);
   ForceDenominatorPositive(&Rat2);
   Rat2.numerator.sign = SIGN_POSITIVE;
+  return 1;
+}
+
+// Compute delta = c_1^2 - 4c_0 * c_2
+// If delta > 0 -> x = (-c_1 +/- sqrt(delta))/(2*c_2)
+// If delta < 0 -> x = (-c_1 +/- i*sqrt(-delta))/(2*c_2)
+// Delta cannot be zero because the roots are different.
+static void QuadraticEquation(int* ptrPolynomial, int multiplicity)
+{
+  int ctr;
+  enum eSign signDiscr;
+  UncompressBigIntegerB(ptrPolynomial, &Independent);
+  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  UncompressBigIntegerB(ptrPolynomial, &Linear);
+  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  UncompressBigIntegerB(ptrPolynomial, &Quadratic);
+  if (ProcessQuadraticEquation(&signDiscr) == 0)
+  {           // Discriminant is perfect square. Roots are rational numbers.
+    for (ctr = 0; ctr < 2; ctr++)
+    {         // Compute (-linear +/- sqrt(discr))/(2*quadratic)
+      showX(multiplicity);
+      if (ctr == 0)
+      {
+        BigIntAdd(&Linear, &tmp4, &tmp1);
+      }
+      else
+      {
+        BigIntSubt(&Linear, &tmp4, &tmp1);
+      }
+      CopyBigInt(&Rat1.numerator, &tmp1);        
+      CopyBigInt(&Rat1.denominator, &Quadratic);
+      BigRationalDivideByInt(&Rat1, -2, &Rat1);
+      ForceDenominatorPositive(&Rat1);
+      showRationalNoParen(&Rat1, pretty);        
+      showText("</li>");
+    }
+    return;
+  }
   for (ctr = 0; ctr < 2; ctr++)
   {
     showX(multiplicity);
@@ -1553,13 +1566,12 @@ static int showRadicals(int num, int den, int multiple, int power2, char *times)
       {
         ptrExpr = "2-S2";   // 2-2*cos(Pi/4)
       }
-      exprDen = 1;
     }
     else
     {
       ptrExpr = "S2";       // cos (Pi/4)
-      exprDen = 2;
     }
+    exprDen = 2;
   }
   else
   {  // Obtain cosine of num*pi/multiple.
@@ -1628,7 +1640,7 @@ static int showRadicals(int num, int den, int multiple, int power2, char *times)
         char* ptrDenom = denom;
         if (exprDen == 1)
         {
-          strcpy(denom, "2");
+          *ptrOutput++ = '2';
         }
         else
         {
@@ -1731,7 +1743,7 @@ static int showRadicals17(int numerator34)
   return -8;
 }
 
-static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst)
+static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst, char *realRoot)
 {
   char beginning[500];
   char* ptrBeginning = beginning;
@@ -1784,22 +1796,31 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
     *ptrBeginning++ = '*';
     *ptrBeginning = 0;          // Add terminator at end of string.
   }
-  lenBeginning = strlen(beginning);
+  strcpy(ptrBeginning, realRoot);
+  ptrBeginning += strlen(ptrBeginning);
+  lenBeginning = (int)(ptrBeginning - &beginning[0]);
+  if (*realRoot != 0 && lenBeginning != 0 && *ptrStart != 0)
+  {
+    strcpy(ptrBeginning, pretty ? " &#8290;" : "*");
+    lenBeginning += strlen(ptrBeginning);
+  }
   memmove(ptrStart + lenBeginning, ptrStart, strlen(ptrStart));
   memcpy(ptrStart, beginning, lenBeginning);
   ptrOutput += lenBeginning;
+  *ptrOutput = 0;
 }
 
 // If den is multiple of 17, compute the extended GCD of 17 and den/17.
 // Let the results be A and B respectively. so num*pi/den = num*A*pi/17 +
 // num*B*pi/(den/17). Use the formula cos(a+b) = cos a * cos b - sin a * sin b.
-static void showComponent(int num, int den, int multiple, int power2, int toShow)
+static void showComponent(int num, int den, int multiple, int power2, int toShow, char *realRoot)
 {
   int denominCos, denominCos17;
   int den2 = 2 * den;
   char * ptrStartRadicals = ptrOutput;
   char *times = pretty ? " &times; " : "*";
 
+  *ptrOutput = 0;
   num = num % den2;  // Convert to range 0 to 360 degrees.
   if (num < 0)
   {
@@ -1820,10 +1841,11 @@ static void showComponent(int num, int den, int multiple, int power2, int toShow
     if (denominCos != 0)
     {   // Show cos(B).
       denominCos17 = showRadicals17(numerator34);
-      AdjustComponent(denominCos * denominCos17, ptrStartRadicals, toShow, 1);
+      AdjustComponent(denominCos * denominCos17, ptrStartRadicals, toShow, 1, realRoot);
     }
         // Show sin(A).
     ptrStartRadicals = ptrOutput;
+    *ptrOutput = 0;
     if (den % 2 == 1)
     {
       denominCos = showRadicals(den - numeratorDen * 2, den * 2, multiple, 1, times);
@@ -1835,17 +1857,17 @@ static void showComponent(int num, int den, int multiple, int power2, int toShow
     if (denominCos != 0)
     {    // Show sin(B).
       denominCos17 = showRadicals17(17 - numerator34);
-      AdjustComponent(-denominCos * denominCos17, ptrStartRadicals, toShow, 0);
+      AdjustComponent(-denominCos * denominCos17, ptrStartRadicals, toShow, 0, realRoot);
     }
     return;
   }
   denominCos = showRadicals(num, den, multiple, power2, "");
-  AdjustComponent(denominCos, ptrStartRadicals, toShow, 1);
+  AdjustComponent(denominCos, ptrStartRadicals, toShow, 1, realRoot);
 }
 
 // Try to find a radical expression for cos(num*pi/den) + 
 // i*sin(num*pi/den). If it is not possible, return with no output.
-static void outputRadicandsForCosSin(int num, int den)
+static void outputRadicandsForCosSin(int num, int den, char *realRoot)
 {
   // den must be 3^e3 * 5^e5 * 17^e17 * 2^k, where the exponents can be 0 or 1.
   // At this moment we do not consider other Fermat prime numbers.
@@ -1879,14 +1901,59 @@ static void outputRadicandsForCosSin(int num, int den)
   }
   showText(" = ");
 
-  showComponent(num, den, multiple, power2, SHOW_REAL);
+  showComponent(num, den, multiple, power2, SHOW_REAL, realRoot);
   if (power2 == 0)
   {
-    showComponent(den-num*2, den*2, multiple, 1, SHOW_IMAG);
+    showComponent(den-num*2, den*2, multiple, 1, SHOW_IMAG, realRoot);
   }
   else
   {
-    showComponent(den/2 - num, den, multiple, power2, SHOW_IMAG);
+    showComponent(den/2 - num, den, multiple, power2, SHOW_IMAG, realRoot);
+  }
+}
+
+// Show multiplicand * cos(realNum*pi/realDen) + 
+//      i * multiplicand * sin(realNum*pi/realDen)
+static void showTrig(int numerator, int denominator, char* multiplicand)
+{
+  char num[30], den[30];
+  char* ptrNum = den;
+  int2dec(&ptrNum, denominator);
+  *ptrNum = 0;  // Include string terminator.
+  showText(multiplicand);
+  if (*multiplicand != 0)
+  {
+    showText(pretty ? " &#8290;" : "*");
+  }
+  showText("cos");
+  ptrNum = num;
+  if (numerator != 1)
+  {
+    int2dec(&ptrNum, numerator);
+    strcpy(ptrNum, pretty ? " &#8290;" : "*");
+    ptrNum += strlen(ptrNum);
+  }
+  strcpy(ptrNum, pretty ? "&pi;" : "pi");
+  showRatString(num, den);
+  showText(" + i ");
+  showText(pretty ? "&#8290;" : "*");
+  showText(multiplicand);
+  if (*multiplicand != 0)
+  {
+    showText(pretty ? " &#8290;" : "*");
+  }
+  showText(lang ? " sen" : " sin");
+  if (pretty)
+  {
+    showRatConstants(num, den);
+  }
+  else
+  {
+    showText("(");
+    showText(num);
+    showText("/");
+    showText(den);
+    showText(")");
   }
 }
 
@@ -1979,48 +2046,20 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
     if (memcmp(base, prod, degree * sizeof(int)) == 0)
     {     // The polynomial is cyclotomic.
       int numerator;
-      char den[20];
-      char *ptrNum = den;
       int denIsOdd = index % 2;
       int realDen = denIsOdd ? index : index / 2;
-      int2dec(&ptrNum, realDen);
-      *ptrNum = 0;  // Include string terminator.
       for (numerator = 1; numerator < index; numerator++)
       {
-        char num[30];
         int realNum;
         if (gcd(numerator, index) > 1)
         {        // Numbers are not coprime. Next loop.
           continue;
         }
         showX(multiplicity);
-        showText("cos");
-        ptrNum = num;
         realNum = denIsOdd ? 2 * numerator : numerator;
-        if (realNum != 1)
-        {
-          int2dec(&ptrNum, realNum);
-          strcpy(ptrNum, pretty? " &#8290;": "*");
-          ptrNum += strlen(ptrNum);
-        }
-        strcpy(ptrNum, pretty ? "&pi;": "pi");
-        showRatString(num, den);
-        showText(" + i ");
-        showText(pretty? "&#8290;":"*");
-        showText(lang ? " sen" : " sin");
-        if (pretty)
-        {
-          showRatConstants(num, den);
-        }
-        else
-        {
-          showText("(");
-          showText(num);
-          showText("/");
-          showText(den);
-          showText(")");
-        }
-        outputRadicandsForCosSin(realNum, realDen);
+        // Show cos(realNum*pi/realDen) + i sin(realNum*pi/realDen)
+        showTrig(realNum, realDen, "");
+        outputRadicandsForCosSin(realNum, realDen, "");
         showText("</li>");
       }
       return 1;
@@ -2053,6 +2092,352 @@ static int isPalindromic(int* ptrPolynomial, int degree)
     }
   }
   return 1;        // Polynomial is palindromic.
+}
+
+static void StartRadicand(int degree)
+{
+  if (pretty)
+  {
+    strcpy(ptrOutput, "<span class=\"");
+    ptrOutput += strlen(ptrOutput);
+    if (degree < 10)
+    {       // degree has 1 digit.
+      strcpy(ptrOutput, "root");
+    }
+    else if (degree < 100)
+    {       // degree has 2 digits.
+      strcpy(ptrOutput, "root2dig");
+    }
+    else
+    {       // degree has 3 digits.
+      strcpy(ptrOutput, "root3dig");
+    }
+    ptrOutput += strlen(ptrOutput);
+    strcpy(ptrOutput, "\"><span class=\"befrad\">");
+    ptrOutput += strlen(ptrOutput);
+    int2dec(&ptrOutput, degree);
+    strcpy(ptrOutput, "</span><span class=\"radicand2\">");
+    ptrOutput += strlen(ptrOutput);
+  }
+}
+
+static void EndRadicand(int degree)
+{
+  if (pretty)
+  {
+    strcpy(ptrOutput, "</span></span>");
+    ptrOutput += strlen(ptrOutput);
+  }
+  else
+  {
+    *ptrOutput++ = '^';
+    *ptrOutput++ = '(';
+    *ptrOutput++ = '1';
+    *ptrOutput++ = '/';
+    int2dec(&ptrOutput, degree);
+    *ptrOutput++ = ')';
+    *ptrOutput = 0;
+  }
+}
+
+static void GenerateRoots(int multiplicity, char* rationalRoot, int isNegative, int degree)
+{
+  int currentDegree, realNum, realDen;
+  for (currentDegree = 0; currentDegree < degree; currentDegree++)
+  {
+    char realRoot[30000];
+    char* ptrOutputBak = ptrOutput;
+    ptrOutput = realRoot;
+    int numer = 2 * currentDegree + (isNegative ? 1 : 0);
+    int gcdNumDen = gcd(numer, degree);
+    realNum = numer / gcdNumDen;
+    realDen = degree / gcdNumDen;
+    StartRadicand(degree);
+    strcpy(ptrOutput, rationalRoot);
+    ptrOutput += strlen(ptrOutput);
+    EndRadicand(degree);
+    ptrOutput = ptrOutputBak;
+    showX(multiplicity);
+    showTrig(realNum, realDen, realRoot);
+    outputRadicandsForCosSin(realNum, realDen, realRoot);
+  }
+}
+
+static void ShowRootsOfRationalNumbers(int degree, int multiplicity)
+{
+  char rationalRoot[30000];
+  char* ptrOutputBak = ptrOutput;
+  int isNegative = 0;
+  if (Rat1.numerator.sign == Rat1.denominator.sign)
+  {
+    isNegative = 1;
+  }
+  Rat1.numerator.sign = SIGN_POSITIVE;
+  Rat1.denominator.sign = SIGN_POSITIVE;
+  ptrOutput = rationalRoot;
+  showRational(&Rat1, pretty);
+  *ptrOutput = 0;
+  ptrOutput = ptrOutputBak;
+  // Generate roots.
+  GenerateRoots(multiplicity, rationalRoot, isNegative, degree);
+}
+
+// If polynomial has the form ax^n + b, show its roots.
+static int isLinearExponential(int* ptrPolynomial, int degree, int multiplicity)
+{
+  int currentDegree;
+  // Get constant term.
+  NumberLength = *ptrPolynomial;
+  IntArray2BigInteger(ptrPolynomial, &Rat1.numerator);
+  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  for (currentDegree=1; currentDegree < degree; currentDegree++)
+  {
+    if (*ptrPolynomial != 1 || *(ptrPolynomial + 1) != 0)
+    {
+      return 0;    // Polynomial does not have format ax^n + b.
+    }
+    ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  }
+  // Get leading coefficient.
+  NumberLength = *ptrPolynomial;
+  IntArray2BigInteger(ptrPolynomial, &Rat1.denominator);
+  ShowRootsOfRationalNumbers(degree, multiplicity);
+  return 1;
+}
+
+// If polynomial has the form ax^(2n) + bx^n+c, show its roots.
+static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplicity)
+{
+  char rootQuadr[30000];
+  char* ptrOutputBak;
+  enum eSign signDiscr;
+  int ctr, isNegative;
+  int currentDegree;
+  int halfDegree = degree / 2;
+  char degreeStr[20];
+  char* ptrDegreeStr;
+  if (degree % 2 != 0)
+  {          // If degree is odd, it is not quadratic, so go out.
+    return 0;
+  }
+  // Get constant term.
+  NumberLength = *ptrPolynomial;
+  IntArray2BigInteger(ptrPolynomial, &Independent);
+  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  for (currentDegree = 1; currentDegree < halfDegree; currentDegree++)
+  {
+    if (*ptrPolynomial != 1 || *(ptrPolynomial + 1) != 0)
+    {
+      return 0;    // Polynomial does not have format ax^n + b.
+    }
+    ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  }
+  // Get linear coefficient.
+  NumberLength = *ptrPolynomial;
+  IntArray2BigInteger(ptrPolynomial, &Linear);
+  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  for (currentDegree = 1; currentDegree < halfDegree; currentDegree++)
+  {
+    if (*ptrPolynomial != 1 || *(ptrPolynomial + 1) != 0)
+    {
+      return 0;    // Polynomial does not have format ax^n + b.
+    }
+    ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  }
+  // Get leading coefficient.
+  NumberLength = *ptrPolynomial;
+  IntArray2BigInteger(ptrPolynomial, &Quadratic);
+  if (ProcessQuadraticEquation(&signDiscr) == 0)
+  {           // Discriminant is perfect square. Roots are rational numbers.
+    for (ctr = 0; ctr < 2; ctr++)
+    {         // Compute (-linear +/- sqrt(discr))/(2*quadratic)
+      if (ctr == 0)
+      {
+        BigIntAdd(&Linear, &tmp4, &tmp1);
+      }
+      else
+      {
+        BigIntSubt(&Linear, &tmp4, &tmp1);
+      }
+      CopyBigInt(&Rat1.numerator, &tmp1);
+      CopyBigInt(&Rat1.denominator, &Quadratic);
+      BigRationalDivideByInt(&Rat1, -2, &Rat1);
+      ShowRootsOfRationalNumbers(halfDegree, multiplicity);
+    }
+    return 1;
+  }
+  if (signDiscr == SIGN_POSITIVE)
+  {           // Roots of quadratic equation are real.
+    enum eSign Rat2SignBak;
+    for (ctr = 0; ctr < 2; ctr++)
+    {         // Show (Rat1 +/- Rat2*sqrt(Rat3))
+      isNegative = 0;
+      if (Rat1.numerator.sign == Rat2.numerator.sign)
+      {
+        if (Rat1.numerator.sign == SIGN_NEGATIVE)
+        {
+          isNegative = 1;
+        }
+      }
+      else
+      {   // Both terms have different signs.
+        BigRationalMultiply(&Rat2, &Rat2, &Rat4);
+        BigRationalMultiply(&Rat4, &Rat3, &Rat5);
+        BigRationalMultiply(&Rat1, &Rat1, &Rat4);
+        BigRationalSubt(&Rat5, &Rat4, &Rat4);
+        if (Rat1.numerator.sign == Rat4.numerator.sign)
+        {
+          isNegative = 1;
+        }
+      }
+      if (isNegative)
+      {     // Change sign of Rat1.
+        Rat1.numerator.sign ^= SIGN_POSITIVE ^ SIGN_NEGATIVE;
+        Rat2.numerator.sign ^= SIGN_POSITIVE ^ SIGN_NEGATIVE;
+      }
+      ptrOutputBak = ptrOutput;
+      ptrOutput = rootQuadr;
+      if (!BigIntIsZero(&Linear))
+      {
+        showRationalNoParen(&Rat1, pretty);
+      }
+      *ptrOutput++ = ' ';
+      Rat2SignBak = Rat2.numerator.sign;
+      if (Rat2.numerator.sign == SIGN_POSITIVE)
+      {
+        if (!BigIntIsZero(&Linear))
+        {
+          *ptrOutput++ = '+';
+        }
+      }
+      else
+      {
+        Rat2.numerator.sign = SIGN_POSITIVE;
+        showText(ptrMinus);
+      }
+      *ptrOutput++ = ' ';
+      MultiplyRationalBySqrtRational(&Rat2, &Rat3);
+      ShowRationalAndSqrParts(&Rat2, &Rat3, 2, pretty);
+      Rat2.numerator.sign = Rat2SignBak;
+      ptrOutput = ptrOutputBak;
+      GenerateRoots(multiplicity, rootQuadr, isNegative, halfDegree);
+      if (isNegative)
+      {     // Change sign of Rat1.
+        Rat1.numerator.sign ^= SIGN_POSITIVE ^ SIGN_NEGATIVE;
+        Rat2.numerator.sign ^= SIGN_POSITIVE ^ SIGN_NEGATIVE;
+      }
+      // Change sign of second term.
+      Rat2.numerator.sign ^= SIGN_POSITIVE ^ SIGN_NEGATIVE;
+    }
+    return 1;
+  }
+  // Roots: (Rat1^2+Rat2^2*Rat3)^(1/deg)*cos/sin((1/(deg/2))*(n*pi+/-arctan(Rat2*sqrt(Rat3)/Rat1))
+  BigRationalMultiply(&Rat2, &Rat2, &Rat4);
+  BigRationalMultiply(&Rat4, &Rat3, &Rat5);
+  BigRationalMultiply(&Rat1, &Rat1, &Rat4);
+  BigRationalAdd(&Rat5, &Rat4, &Rat4);  // Square of absolute value.
+  BigRationalDivide(&Rat2, &Rat1, &Rat5);
+  Rat5.numerator.sign = SIGN_POSITIVE;
+  Rat5.denominator.sign = SIGN_POSITIVE;
+  MultiplyRationalBySqrtRational(&Rat2, &Rat3);
+  ptrDegreeStr = degreeStr;
+  int2dec(&ptrDegreeStr, halfDegree);
+  *ptrDegreeStr = 0;
+  for (currentDegree = 0; currentDegree < halfDegree; currentDegree++)
+  {
+    int multiplicand;
+    for (ctr = 0; ctr < 2; ctr++)
+    {
+      int component;
+      for (component = 0; component < 2; component++)
+      {
+        if (component == 0)
+        {            // Showing real part.
+          showX(multiplicity);
+        }
+        else
+        {            // Showing imaginary part.
+          strcpy(ptrOutput, " + i ");
+          ptrOutput += strlen(ptrOutput);
+          strcpy(ptrOutput, pretty ? "&#8290; ": "* ");
+          ptrOutput += strlen(ptrOutput);
+        }
+        StartRadicand(degree);
+        showRationalNoParen(&Rat4, pretty);
+        EndRadicand(degree);
+        strcpy(ptrOutput, pretty ? "&#8290; " : " * ");
+        ptrOutput += strlen(ptrOutput);
+        if (component)
+        {
+          strcpy(ptrOutput, lang ? "sen" : "sin");
+        }
+        else
+        {
+          strcpy(ptrOutput, "cos");
+        }
+        ptrOutput += strlen(ptrOutput);
+        startParen();
+        if (pretty)
+        {
+          showRatString("1", degreeStr);
+          strcpy(ptrOutput, "&#8290; ");
+          ptrOutput += strlen(ptrOutput);
+        }
+        else
+        {
+          *ptrOutput++ = '1';
+          *ptrOutput++ = '/';
+          strcpy(ptrOutput, degreeStr);
+          ptrOutput += strlen(degreeStr);
+          *ptrOutput++ = '*';
+        }
+        startParen();
+        multiplicand = 2 * currentDegree;
+        if (Rat1.numerator.sign == SIGN_NEGATIVE)
+        {
+          multiplicand++;
+        }
+        if (multiplicand != 0)
+        {
+          if (multiplicand != 1)
+          {
+            int2dec(&ptrOutput, multiplicand);
+            strcpy(ptrOutput, pretty ? "&#8290 " : "*");
+            ptrOutput += strlen(ptrOutput);
+          }
+          strcpy(ptrOutput, pretty ? "&pi; " : "pi ");
+          ptrOutput += strlen(ptrOutput);
+        }
+        if (ctr == 1)
+        {
+          if (multiplicand != 0)
+          {
+            strcpy(ptrOutput, "+ ");
+            ptrOutput += strlen(ptrOutput);
+          }
+        }
+        else
+        {
+          strcpy(ptrOutput, pretty ? "&minus; " : "- ");
+          ptrOutput += strlen(ptrOutput);
+        }
+        strcpy(ptrOutput, "arctan");
+        ptrOutput += strlen(ptrOutput);
+        if (!pretty)
+        {
+          *ptrOutput++ = '(';
+        }
+        ShowRationalAndSqrParts(&Rat5, &Rat3, 2, pretty);
+        if (!pretty)
+        {
+          *ptrOutput++ = ')';
+        }
+        endParen();
+        endParen();
+      }
+    }
+  }
+  return 1;
 }
 
 void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, int groupLength)
@@ -2104,8 +2489,20 @@ void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, in
   default:
     if (isPalindromic(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree))
     {          // Cyclotomic polynomials are palindromic.
-      TestCyclotomic(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity,
-        pstFactorInfo->degree);
+      if (TestCyclotomic(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity,
+        pstFactorInfo->degree))
+      {
+        break;
+      }
+    }
+    if (isLinearExponential(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree,
+      pstFactorInfo->multiplicity))
+    {          // If polynomial is ax^n+b = 0, show roots.
+      break;
+    }
+    if (isQuadraticExponential(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree,
+      pstFactorInfo->multiplicity))
+    {          // If polynomial is ax^(2n)+bx^n+c = 0, show roots.
       break;
     }
     strcpy(ptrOutput, lang ? "<p>No puedo calcular las raíces de un polinomio irreducible de grado mayor que 5." :

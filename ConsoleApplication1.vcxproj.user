@@ -12,7 +12,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>0 "x^32 - x^31 + x^29 - x^28 + x^26 - x^25 + x^23 - x^22 + x^20 - x^19 + x^17 - x^16 + x^15 - x^13 + x^12 - x^10 + x^9 - x^7 + x^6 - x^4 + x^3 - x + 1"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>0 "13x^16-12"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
