@@ -316,7 +316,7 @@ void showRationalNoParen(BigRational* rat, char pretty)
   }
 }
 
-void showRationalOverStr(BigRational* rat, char pretty, char *str)
+void showRationalOverStr(BigRational* rat, char pretty, char *str, char *ptrTimes)
 {
   int denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
   if (pretty)
@@ -327,7 +327,8 @@ void showRationalOverStr(BigRational* rat, char pretty, char *str)
     if (denominatorIsNotOne)
     {
       shownbr(&rat->denominator);
-      showText("&#8290; ");
+      showText(ptrTimes);
+      showText(" ");
     }
     showText(str);
     showText("</span></span>");
@@ -375,7 +376,8 @@ void showRational(BigRational* rat, char pretty)
   }
 }
 
-void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int root, char pretty)
+void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int root,
+  char pretty, char *ptrTimes)
 {
   if (SqrPart->numerator.nbrLimbs != 1 || SqrPart->numerator.limbs[0].x != 1 ||
     SqrPart->denominator.nbrLimbs != 1 || SqrPart->denominator.limbs[0].x != 1)
@@ -401,7 +403,15 @@ void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int roo
           showText("^(1/2)");
         }
       }
-      showText(pretty? "&#8290;": " * ");
+      if (pretty == 0)
+      {
+        *ptrOutput++ = ' ';
+      }
+      showText(ptrTimes);
+      if (pretty == 0)
+      {
+        *ptrOutput++ = ' ';
+      }
     }
     else
     {     // Absolute value of rational part is 1.
@@ -418,7 +428,7 @@ void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int roo
       }
       else
       {
-        showText("<span class=\"root\"><span class=\"radicand4\">");
+        showText("<span class=\"root\"><span class=\"befrad\" aria-hidden=\"true\">4</span><span class=\"radicand4\">");
       }
       showRational(SqrPart, pretty);
       showText("</span></span>");
@@ -435,12 +445,12 @@ void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int roo
   }
 }
 
-void showSquareRootOfRational(BigRational* rat, int root, char pretty)
+void showSquareRootOfRational(BigRational* rat, int root, char pretty, char *ptrTimes)
 {
   intToBigInteger(&Rat1.numerator, 1);
   intToBigInteger(&Rat1.denominator, 1);
   CopyBigInt(&Rat2.numerator, &rat->numerator);
   CopyBigInt(&Rat2.denominator, &rat->denominator);
   MultiplyRationalBySqrtRational(&Rat1, &Rat2);
-  ShowRationalAndSqrParts(&Rat1, &Rat2, root, pretty);
+  ShowRationalAndSqrParts(&Rat1, &Rat2, root, pretty, ptrTimes);
 }

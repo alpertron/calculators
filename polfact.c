@@ -529,6 +529,8 @@ void polyFactText(char *modText, char *polyText, int groupLength)
   }
   else
   {
+    strcpy(ptrOutput, lang ? "<h2>Polinomio ingresado</h2>" : "<h2>Your polynomial</h2>");
+    ptrOutput += strlen(ptrOutput);
     if (onlyEvaluate)
     {
       strcpy(ptrOutput, "<p>");
@@ -555,60 +557,82 @@ void polyFactText(char *modText, char *polyText, int groupLength)
       {
         pstFactorInfo = factorInfo;
       }
-      strcpy(ptrOutput, lang? "<p>Los factores irreducibles del polinomio son:": "<p>Irreducible polynomial factors:");
+      strcpy(ptrOutput, lang? "<h2>Factores irreducibles del polinomio</h2>": "<h2>Irreducible polynomial factors</h2>");
       ptrOutput += strlen(ptrOutput);
-
-      // Output factors
-      *ptrOutput++ = '<';
-      *ptrOutput++ = 'u';
-      *ptrOutput++ = 'l';
-      *ptrOutput++ = '>';
-      if (!modulusIsZero)
+      if (nbrFactorsFound == 1)
       {
-        IntArray2BigInteger(&poly4[degree * nbrLimbs], &operand5);
+        strcpy(ptrOutput, lang ? "<p>El polinomio es irreducible</p>" : "<p>The polynomial is irreducible</p>");
+        ptrOutput += strlen(ptrOutput);
       }
-      if ((operand5.nbrLimbs != 1 || operand5.limbs[0].x != 1 || operand5.sign == SIGN_NEGATIVE) || nbrFactorsFound == 0)
-      {     // Leading coefficient is not 1 or degree is zero.
+      else
+      {
+        strcpy(ptrOutput, lang ? "Los " : "The ");
+        ptrOutput += strlen(ptrOutput);
+        int2dec(&ptrOutput, nbrFactorsFound);
+        strcpy(ptrOutput, lang ? " factores son:</p>" : " factors are:</p>");
+        ptrOutput += strlen(ptrOutput);
+        // Output factors
         *ptrOutput++ = '<';
+        *ptrOutput++ = 'u';
         *ptrOutput++ = 'l';
-        *ptrOutput++ = 'i';
         *ptrOutput++ = '>';
-        if (operand5.sign == SIGN_NEGATIVE)
+        if (!modulusIsZero)
         {
-          strcpy(ptrOutput, " &minus;");
-          ptrOutput += strlen(ptrOutput);
+          IntArray2BigInteger(&poly4[degree * nbrLimbs], &operand5);
         }
-        Bin2Dec(operand5.limbs, ptrOutput, operand5.nbrLimbs, groupLength);
-        ptrOutput += strlen(ptrOutput);
+        if ((operand5.nbrLimbs != 1 || operand5.limbs[0].x != 1 || operand5.sign == SIGN_NEGATIVE) || nbrFactorsFound == 0)
+        {     // Leading coefficient is not 1 or degree is zero.
+          *ptrOutput++ = '<';
+          *ptrOutput++ = 'l';
+          *ptrOutput++ = 'i';
+          *ptrOutput++ = '>';
+          if (operand5.sign == SIGN_NEGATIVE)
+          {
+            strcpy(ptrOutput, " &minus;");
+            ptrOutput += strlen(ptrOutput);
+          }
+          Bin2Dec(operand5.limbs, ptrOutput, operand5.nbrLimbs, groupLength);
+          ptrOutput += strlen(ptrOutput);
+          *ptrOutput++ = '<';
+          *ptrOutput++ = '/';
+          *ptrOutput++ = 'l';
+          *ptrOutput++ = 'i';
+          *ptrOutput++ = '>';
+        }
+        for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+        {
+          *ptrOutput++ = '<';
+          *ptrOutput++ = 'l';
+          *ptrOutput++ = 'i';
+          *ptrOutput++ = '>';
+          outputPolynomialFactor(ptrOutput, groupLength, pstFactorInfo);
+          ptrOutput += strlen(ptrOutput);
+          *ptrOutput++ = '<';
+          *ptrOutput++ = '/';
+          *ptrOutput++ = 'l';
+          *ptrOutput++ = 'i';
+          *ptrOutput++ = '>';
+          pstFactorInfo++;
+        }
         *ptrOutput++ = '<';
         *ptrOutput++ = '/';
+        *ptrOutput++ = 'u';
         *ptrOutput++ = 'l';
-        *ptrOutput++ = 'i';
         *ptrOutput++ = '>';
       }
-      for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
-      {
-        *ptrOutput++ = '<';
-        *ptrOutput++ = 'l';
-        *ptrOutput++ = 'i';
-        *ptrOutput++ = '>';
-        outputPolynomialFactor(ptrOutput, groupLength, pstFactorInfo);
-        ptrOutput += strlen(ptrOutput);
-        *ptrOutput++ = '<';
-        *ptrOutput++ = '/';
-        *ptrOutput++ = 'l';
-        *ptrOutput++ = 'i';
-        *ptrOutput++ = '>';
-        pstFactorInfo++;
-      }
-      *ptrOutput++ = '<';
-      *ptrOutput++ = '/';
-      *ptrOutput++ = 'u';
-      *ptrOutput++ = 'l';
-      *ptrOutput++ = '>';
       if (modulusIsZero)
       {
-        strcpy(ptrOutput, lang ? "<p>Las raíces son:<ul>" : "<p>Roots:<ul>");
+        strcpy(ptrOutput, lang ? "<h2>Raíces</h2>" : "<h2>Roots</h2>");
+        ptrOutput += strlen(ptrOutput);
+        if (degree > 1)
+        {
+          strcpy(ptrOutput, lang ? "Las " : "The ");
+          ptrOutput += strlen(ptrOutput);
+          int2dec(&ptrOutput, degree);
+          strcpy(ptrOutput, lang ? " raíces son:</p>" : " roots are:</p>");
+          ptrOutput += strlen(ptrOutput);
+        }
+        strcpy(ptrOutput, "<ul>");
         ptrOutput += strlen(ptrOutput);
         indexRoot = 1;
         pstFactorInfo = factorInfoInteger;

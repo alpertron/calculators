@@ -29,6 +29,7 @@ BigRational RatDiscr, RatDelta0, RatDelta1, RatD;
 BigRational Rat1, Rat2, Rat3, Rat4, Rat5, RatS;
 int indexRoot;
 char *ptrMinus, *ptrTimes;
+char* ptrSin, * ptrCos, *ptrPi;
 static int totients[2 * MAX_DEGREE + 1];
 enum
 {
@@ -151,7 +152,7 @@ void startCbrt(void)
 {
   if (pretty)
   {
-    showText("<span class=\"root\"><span class=\"radicand3\">");
+    showText("<span class=\"root\"><span class=\"befrad\" aria-hidden=\"true\">3</span><span class=\"radicand3\">");
   }
   else
   {
@@ -175,7 +176,15 @@ void startParen(void)
 {
   if (pretty)
   {
-    showText(" <span class=\"paren\">");
+    if (lang)
+    {
+      showText("<span class=\"hide\"> inicio paréntesis </span>");
+    }
+    else
+    {
+      showText("<span class=\"hide\"> start parenthesis </span>");
+    }
+    showText("<span class=\"paren\">");
   }
   else
   {
@@ -188,6 +197,14 @@ void endParen(void)
   if (pretty)
   {
     showText("</span>");
+    if (lang)
+    {
+      showText("<span class=\"hide\"> fin paréntesis </span>");
+    }
+    else
+    {
+      showText("<span class=\"hide\"> end parenthesis </span>");
+    }
   }
   else
   {
@@ -324,7 +341,7 @@ static void QuadraticEquation(int* ptrPolynomial, int multiplicity)
     }
     *ptrOutput++ = ' ';
     MultiplyRationalBySqrtRational(&Rat2, &Rat3);
-    ShowRationalAndSqrParts(&Rat2, &Rat3, 2, pretty);
+    ShowRationalAndSqrParts(&Rat2, &Rat3, 2, pretty, ptrTimes);
     if (signDiscr == SIGN_NEGATIVE)
     {
       *ptrOutput++ = ' ';
@@ -496,7 +513,7 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
           ForceDenominatorPositive(&Rat3);
           showRationalNoParen(&Rat3, pretty);
           showPlusSignOn(ctr == 0, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-          ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty);
+          ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty, ptrTimes);
         }
         endCbrt();
         showText("</li>");
@@ -526,7 +543,10 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
           showPlusSignOn(ctr == 1, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
           if (pretty)
           {
-            showText("i &#8290; ");
+            showText("i");
+            *ptrOutput++ = ' ';
+            showText(ptrTimes);
+            *ptrOutput++ = ' ';
             showRatConstants("<var>r</var> &minus; <var>s</var>", "2");
             showText(ptrTimes);
             startSqrt();
@@ -565,7 +585,7 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
     BigRationalMultiplyByInt(&Rat2, -3, &Rat2);                    // -3/p
     ForceDenominatorPositive(&Rat2);
     MultiplyRationalBySqrtRational(&Rat1, &Rat2);
-    ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty);
+    ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty, ptrTimes);
     endParen();
     showText("</li>");
     intToBigInteger(&Rat1.numerator, 2);
@@ -591,9 +611,10 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
         showText(ptrMinus);
         *ptrOutput++ = ' ';
       }
-      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty);
+      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty, ptrTimes);
       showText(ptrTimes);
-      showText(" cos");
+      *ptrOutput++ = ' ';
+      showText(ptrCos);
       if (ctr == 0)
       {
         showText("(<var>t</var>)");
@@ -606,7 +627,13 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
         {
           if (pretty)
           {
-            showRatConstants("2&#8290;&pi;", "3");
+            char numer[200];
+            char* ptrNumer = numer;
+            *ptrNumer++ = '2';
+            strcpy(ptrNumer, ptrTimes);
+            *ptrNumer++ = ' ';
+            strcpy(ptrNumer, ptrPi);
+            showRatConstants(numer, "3");
           }
           else
           {
@@ -617,7 +644,13 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
         {
           if (pretty)
           {
-            showRatConstants("4&#8290;&pi;", "3");
+            char numer[200];
+            char* ptrNumer = numer;
+            *ptrNumer++ = '4';
+            strcpy(ptrNumer, ptrTimes);
+            *ptrNumer++ = ' ';
+            strcpy(ptrNumer, ptrPi);
+            showRatConstants(numer, "3");
           }
           else
           {
@@ -696,7 +729,7 @@ static void biquadraticEquation(int multiplicity)
       else
       {
         Rat1.numerator.sign = SIGN_POSITIVE;
-        showSquareRootOfRational(&Rat1, 2, pretty);
+        showSquareRootOfRational(&Rat1, 2, pretty, ptrTimes);
       }
       showPlusSignOn(ctr == 0 || ctr == 2, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       if (isSquareRoot2)
@@ -707,7 +740,7 @@ static void biquadraticEquation(int multiplicity)
       {
         enum eSign sign = Rat2.numerator.sign;  // Back up sign.
         Rat2.numerator.sign = SIGN_POSITIVE;
-        showSquareRootOfRational(&Rat2, 2, pretty);
+        showSquareRootOfRational(&Rat2, 2, pretty, ptrTimes);
         Rat2.numerator.sign = sign;             // Restore sign.
       }
       if (Rat2.numerator.sign == SIGN_NEGATIVE)
@@ -761,12 +794,12 @@ static void biquadraticEquation(int multiplicity)
           }
           if (BigIntIsZero(&RatDeprQuadratic.numerator))
           {
-            ShowRationalAndSqrParts(&Rat1, &Rat2, 4, pretty);
+            ShowRationalAndSqrParts(&Rat1, &Rat2, 4, pretty, ptrTimes);
           }
           else
           {
             startSqrt();
-            ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty);
+            ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty, ptrTimes);
             if (sign == SIGN_POSITIVE)
             {
               showPlusSignOn(ctr2 != 0, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
@@ -800,13 +833,14 @@ static void biquadraticEquation(int multiplicity)
         }
         if (!isX2Positive)
         {
-          showText("i&#8290; ");
+          showText("i ");
+          showText(ptrTimes);
         }
         ForceDenominatorPositive(&RatDeprIndependent);
         if (BigIntIsZero(&RatDeprQuadratic.numerator))
         {
           BigIntChSign(&RatDeprIndependent.numerator);
-          showSquareRootOfRational(&RatDeprIndependent, 4, pretty);
+          showSquareRootOfRational(&RatDeprIndependent, 4, pretty, ptrTimes);
           BigIntChSign(&RatDeprIndependent.numerator);
           showText("</li>");
         }
@@ -830,7 +864,7 @@ static void biquadraticEquation(int multiplicity)
           }
           BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &Rat1);
           BigRationalSubt(&Rat1, &RatDeprIndependent, &Rat1);
-          showSquareRootOfRational(&Rat1, 2, pretty);
+          showSquareRootOfRational(&Rat1, 2, pretty, ptrTimes);
           endSqrt();
           showText("</li>");
         }
@@ -847,7 +881,7 @@ static void showSquareRootOfComplex(char* plus, char* minus)
   BigRationalDivideByInt(&Rat4, 4*16, &Rat4);  
   // Divide rational part by 2*4.
   BigRationalDivideByInt(&Rat3, 2*4, &Rat3);
-  showSquareRootOfRational(&Rat4, 2, pretty);
+  showSquareRootOfRational(&Rat4, 2, pretty, ptrTimes);
   if (Rat3.numerator.sign == SIGN_POSITIVE)
   {
     showText(plus);
@@ -898,7 +932,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
     if (RatS.numerator.sign == SIGN_POSITIVE)
     {             // S is real.
       int isImaginary;
-      showSquareRootOfRational(&RatS, 2, pretty);
+      showSquareRootOfRational(&RatS, 2, pretty, ptrTimes);
       if (ctr == 0 || ctr == 1)
       {   // Change sign so we always consider q/S.
         BigIntChSign(&Rat1.numerator);
@@ -945,7 +979,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
       startSqrt();
       BigRationalDivideByInt(&Rat1, 4, &Rat1);
       BigRationalDivideByInt(&Rat3, 4, &Rat3);
-      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty);
+      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty, ptrTimes);
       showPlusSignOn(Rat3.numerator.sign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       if (Rat3.numerator.sign == SIGN_POSITIVE)
       {
@@ -996,7 +1030,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
         *ptrOutput++ = ' ';
       }
       BigIntChSign(&RatS.numerator);
-      showSquareRootOfRational(&RatS, 2, pretty);
+      showSquareRootOfRational(&RatS, 2, pretty, ptrTimes);
       BigIntChSign(&RatS.numerator);
       showPlusSignOn(ctr == 1 || ctr == 2, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       showSquareRootOfComplex(szMinus, " + ");
@@ -1176,7 +1210,7 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
       showRationalNoParen(&RatDelta1, pretty);
       BigRationalMultiplyByInt(&RatDelta1, 2, &RatDelta1);
       showText(" + ");
-      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty);
+      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty, ptrTimes);
     }
     endCbrt();
     showText("</li><li><var>S</var> = ");
@@ -1213,7 +1247,7 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
     CopyBigInt(&Rat2.numerator, &Rat1.numerator);
     CopyBigInt(&Rat2.denominator, &Rat1.denominator);
     Rat2.numerator.sign = SIGN_POSITIVE;
-    showRationalOverStr(&Rat2, pretty, "Q");
+    showRationalOverStr(&Rat2, pretty, "Q", ptrTimes);
     endSqrt();
     showText("</li>");
     sign1 = RatDeprLinear.numerator.sign;
@@ -1275,7 +1309,7 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
         {
           showPlusSignOn(isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
         }
-        showRationalOverStr(&RatDeprLinear, pretty, "S");
+        showRationalOverStr(&RatDeprLinear, pretty, "S", ptrTimes);
       }
       endSqrt();
     }
@@ -1289,7 +1323,7 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
     CopyBigInt(&Rat2.numerator, &RatDelta0.denominator);
     CopyBigInt(&Rat2.denominator, &RatDelta0.numerator);
     MultiplyRationalBySqrtRational(&Rat1, &Rat2);
-    ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty);
+    ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty, ptrTimes);
     endParen();
     showText("</li><li><var>S</var> = ");
     if (pretty)
@@ -1313,9 +1347,9 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
     CopyBigInt(&Rat2.denominator, &RatDelta0.denominator);
     MultiplyRationalBySqrtRational(&Rat1, &Rat2);
     ForceDenominatorPositive(&Rat1);
-    ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty);
+    ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty, ptrTimes);
     showText(ptrTimes);
-    showText("cos");
+    showText(ptrCos);
     if (pretty)
     {
       showRatConstants("<var>t</var>", "3");
@@ -1385,7 +1419,7 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
         {
           showPlusSignOn(isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
         }
-        showRationalOverStr(&RatDeprLinear, pretty, "S");
+        showRationalOverStr(&RatDeprLinear, pretty, "S", ptrTimes);
       }
       endSqrt();
     }
@@ -1447,7 +1481,6 @@ static void showRatString(char* num, char* den)
 
 static void ParseExpression(char* ptrExpr)
 {
-  int paren = 0;
   while (*ptrExpr != 0)
   {
     if (*ptrExpr == 'S')
@@ -1486,21 +1519,25 @@ static void ParseExpression(char* ptrExpr)
     }
     else if (*ptrExpr == '-')
     {
-      showText(pretty ? "&minus;" : "-");
+      showText(ptrMinus);
     }
     else if (*ptrExpr == '*')
     {
-      showText(pretty ? "&#8290;" : "*");
+      showText(ptrTimes);
+    }
+    else if (*ptrExpr == '(')
+    {
+      startParen();
+    }
+    else if (*ptrExpr == ')')
+    {
+      endParen();
     }
     else
     {
       *ptrOutput++ = *ptrExpr;
     }
     ptrExpr++;
-  }
-  if (paren)
-  {
-    showText(")");
   }
 }
 
@@ -1647,7 +1684,7 @@ static int showRadicals(int num, int den, int multiple, int power2, char *times)
           int2dec(&ptrDenom, exprDen / 2);
           showRatString("1", denom);
         }
-        showText(pretty ? "&#8290;" : "*");
+        showText(ptrTimes);
       }
       startSqrt();
       break;
@@ -1656,7 +1693,9 @@ static int showRadicals(int num, int den, int multiple, int power2, char *times)
     *ptrOutput++ = '2';
     if (arraySigns[indexSigns] < 0)
     {
-      showText(pretty ? " &minus; " : " - ");
+      *ptrOutput++ = ' ';
+      showText(ptrMinus);
+      *ptrOutput++ = ' ';
     }
     else
     {
@@ -1769,7 +1808,12 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
   {
     if (toShow == SHOW_IMAG)
     {
-      strcpy(ptrBeginning, pretty?"i &#8290;": "i*");
+      *ptrBeginning++ = 'i';
+      if (pretty)
+      {
+        *ptrBeginning++ = ' ';
+      }
+      strcpy(ptrBeginning, ptrTimes);
       ptrBeginning += strlen(ptrBeginning);
     }
   }
@@ -1781,9 +1825,9 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
     strcpy(ptrBeginning, "</span><span class=\"denominator\">");
     ptrBeginning += strlen(ptrBeginning);
     int2dec(&ptrBeginning, denomin);
-    strcpy(ptrBeginning, "</span></span>");
+    strcpy(ptrBeginning, "</span></span> ");
     ptrBeginning += strlen(ptrBeginning);
-    strcpy(ptrBeginning, " &#8290;");
+    strcpy(ptrBeginning, ptrTimes);
     ptrBeginning += strlen(ptrBeginning);
   }
   else
@@ -1801,7 +1845,7 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
   lenBeginning = (int)(ptrBeginning - &beginning[0]);
   if (*realRoot != 0 && lenBeginning != 0 && *ptrStart != 0)
   {
-    strcpy(ptrBeginning, pretty ? " &#8290;" : "*");
+    strcpy(ptrBeginning, ptrTimes);
     lenBeginning += strlen(ptrBeginning);
   }
   memmove(ptrStart + lenBeginning, ptrStart, strlen(ptrStart));
@@ -1818,7 +1862,6 @@ static void showComponent(int num, int den, int multiple, int power2, int toShow
   int denominCos, denominCos17;
   int den2 = 2 * den;
   char * ptrStartRadicals = ptrOutput;
-  char *times = pretty ? " &times; " : "*";
 
   *ptrOutput = 0;
   num = num % den2;  // Convert to range 0 to 360 degrees.
@@ -1837,7 +1880,7 @@ static void showComponent(int num, int den, int multiple, int power2, int toShow
     // The original angle is multDen*pi/den + mult17*pi/17 = A + B.
     // Show cos(A) * cos(B) - sin(A) * sin(B).
         // Show cos(A).
-    denominCos = showRadicals(numeratorDen, den, multiple, power2, times);
+    denominCos = showRadicals(numeratorDen, den, multiple, power2, ptrTimes);
     if (denominCos != 0)
     {   // Show cos(B).
       denominCos17 = showRadicals17(numerator34);
@@ -1848,11 +1891,11 @@ static void showComponent(int num, int den, int multiple, int power2, int toShow
     *ptrOutput = 0;
     if (den % 2 == 1)
     {
-      denominCos = showRadicals(den - numeratorDen * 2, den * 2, multiple, 1, times);
+      denominCos = showRadicals(den - numeratorDen * 2, den * 2, multiple, 1, ptrTimes);
     }
     else
     {
-      denominCos = showRadicals(den / 2 - numeratorDen, den, multiple, power2, times);
+      denominCos = showRadicals(den / 2 - numeratorDen, den, multiple, power2, ptrTimes);
     }
     if (denominCos != 0)
     {    // Show sin(B).
@@ -1916,33 +1959,40 @@ static void outputRadicandsForCosSin(int num, int den, char *realRoot)
 //      i * multiplicand * sin(realNum*pi/realDen)
 static void showTrig(int numerator, int denominator, char* multiplicand)
 {
-  char num[30], den[30];
+  char num[300], den[300];
   char* ptrNum = den;
   int2dec(&ptrNum, denominator);
   *ptrNum = 0;  // Include string terminator.
   showText(multiplicand);
   if (*multiplicand != 0)
   {
-    showText(pretty ? " &#8290;" : "*");
+    if (pretty)
+    {
+      *ptrOutput++ = ' ';
+    }
+    showText(ptrTimes);
   }
-  showText("cos");
+  showText(ptrCos);
   ptrNum = num;
   if (numerator != 1)
   {
     int2dec(&ptrNum, numerator);
-    strcpy(ptrNum, pretty ? " &#8290;" : "*");
+    *ptrOutput++ = ' ';
+    strcpy(ptrNum, ptrTimes);
     ptrNum += strlen(ptrNum);
   }
-  strcpy(ptrNum, pretty ? "&pi;" : "pi");
+  strcpy(ptrNum, ptrPi);
   showRatString(num, den);
   showText(" + i ");
-  showText(pretty ? "&#8290;" : "*");
+  showText(ptrTimes);
   showText(multiplicand);
   if (*multiplicand != 0)
   {
-    showText(pretty ? " &#8290;" : "*");
+    *ptrOutput++ = ' ';
+    showText(ptrTimes);
+    *ptrOutput++ = ' ';
   }
-  showText(lang ? " sen" : " sin");
+  showText(ptrSin);
   if (pretty)
   {
     showRatConstants(num, den);
@@ -2317,7 +2367,7 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
       }
       *ptrOutput++ = ' ';
       MultiplyRationalBySqrtRational(&Rat2, &Rat3);
-      ShowRationalAndSqrParts(&Rat2, &Rat3, 2, pretty);
+      ShowRationalAndSqrParts(&Rat2, &Rat3, 2, pretty, ptrTimes);
       Rat2.numerator.sign = Rat2SignBak;
       ptrOutput = ptrOutputBak;
       GenerateRoots(multiplicity, rootQuadr, isNegative, halfDegree);
@@ -2359,28 +2409,31 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
         {            // Showing imaginary part.
           strcpy(ptrOutput, " + i ");
           ptrOutput += strlen(ptrOutput);
-          strcpy(ptrOutput, pretty ? "&#8290; ": "* ");
+          strcpy(ptrOutput, ptrTimes);
           ptrOutput += strlen(ptrOutput);
+          *ptrOutput++ = ' ';
         }
         StartRadicand(degree);
         showRationalNoParen(&Rat4, pretty);
         EndRadicand(degree);
-        strcpy(ptrOutput, pretty ? "&#8290; " : " * ");
+        *ptrOutput++ = ' ';
+        strcpy(ptrOutput, ptrTimes);
         ptrOutput += strlen(ptrOutput);
         if (component)
         {
-          strcpy(ptrOutput, lang ? "sen" : "sin");
+          strcpy(ptrOutput, ptrSin);
         }
         else
         {
-          strcpy(ptrOutput, "cos");
+          strcpy(ptrOutput, ptrCos);
         }
         ptrOutput += strlen(ptrOutput);
         startParen();
         if (pretty)
         {
           showRatString("1", degreeStr);
-          strcpy(ptrOutput, "&#8290; ");
+          *ptrOutput++ = ' ';
+          strcpy(ptrOutput, ptrTimes);
           ptrOutput += strlen(ptrOutput);
         }
         else
@@ -2405,8 +2458,9 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
             strcpy(ptrOutput, pretty ? "&#8290 " : "*");
             ptrOutput += strlen(ptrOutput);
           }
-          strcpy(ptrOutput, pretty ? "&pi; " : "pi ");
+          strcpy(ptrOutput, ptrPi);
           ptrOutput += strlen(ptrOutput);
+          *ptrOutput++ = ' ';
         }
         if (ctr == 1)
         {
@@ -2427,7 +2481,7 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
         {
           *ptrOutput++ = '(';
         }
-        ShowRationalAndSqrParts(&Rat5, &Rat3, 2, pretty);
+        ShowRationalAndSqrParts(&Rat5, &Rat3, 2, pretty, ptrTimes);
         if (!pretty)
         {
           *ptrOutput++ = ')';
@@ -2445,17 +2499,36 @@ void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, in
   static struct sFactorInfo factorInfoIntegerBak[MAX_DEGREE];
   static int polyIntegerBak[1000000];
   int nbrFactorsFoundBak;
+  if (lang)
+  {
+    ptrSin = "<span aria-hidden=\"true\">sen</span><span class=\"hide\"> seno de </span>";
+    ptrCos = "<span aria-hidden=\"true\">cos</span><span class=\"hide\"> coseno de </span>";
+  }
+  else
+  {
+    ptrSin = "<span aria-hidden=\"true\">sin</span><span class=\"hide\"> sine of </span>";
+    ptrCos = "<span aria-hidden=\"true\">cos</span><span class=\"hide\"> cosine of </span>";
+  }
   groupLen = groupLength;
   ptrOutput = *pptrOutput;
   if (pretty)
   {
     ptrMinus = "&minus;";
-    ptrTimes = "&#8290;";
+    if (lang)
+    {
+      ptrTimes = "<span class=\"hide\">por</span>";
+    }
+    else
+    {
+      ptrTimes = "<span class=\"hide\">times</span>";
+    }
+    ptrPi = "<span aria-hidden=\"true\">&pi;</span><span class=\"hide\">pi</span>";
   }
   else
   {
     ptrMinus = "-";
     ptrTimes = "*";
+    ptrPi = "pi";
   }
   switch (pstFactorInfo->degree)
   {

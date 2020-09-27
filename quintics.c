@@ -4095,7 +4095,7 @@ void start5thRoot(void)
 {
   if (pretty)
   {
-    showText("<span class=\"root\"><span class=\"radicand5\">");
+    showText("<span class=\"root\"><span class=\"befrad\" aria-hidden=\"true\">5</span><span class=\"radicand5\">");
   }
   else
   {
@@ -4172,7 +4172,7 @@ static void showSqRoot1(enum eSign sign, BigRational *ptrRatR, BigRational *ptrR
   }
   CopyBigInt(&Rat3.numerator, &RatDiscr.numerator);
   CopyBigInt(&Rat3.denominator, &RatDiscr.denominator);
-  ShowRationalAndSqrParts(ptrRatS, &Rat3, 2, pretty);
+  ShowRationalAndSqrParts(ptrRatS, &Rat3, 2, pretty, ptrTimes);
   endSqrt();
   ptrRatS->numerator.sign = signBak;
 }
@@ -4198,7 +4198,7 @@ static void showSqRoot2(enum eSign sign)
   }
   CopyBigInt(&Rat4.numerator, &RatDiscr.numerator);
   CopyBigInt(&Rat4.denominator, &RatDiscr.denominator);
-  ShowRationalAndSqrParts(&RatN, &Rat4, 2, pretty);
+  ShowRationalAndSqrParts(&RatN, &Rat4, 2, pretty, ptrTimes);
   endSqrt();
   RatS.numerator.sign = signBak;
 }
@@ -4441,7 +4441,7 @@ static void showRn(int groupOrder)
       {
         NumberIsNotRational(firstSign);
         BigRationalMultiplyByInt(ptrRatR, 4, &Rat2);
-        showSquareRootOfRational(&Rat2, 2, pretty);
+        showSquareRootOfRational(&Rat2, 2, pretty, ptrTimes);
       }
       else
       {
@@ -4532,7 +4532,7 @@ static void showRn(int groupOrder)
         else
         {
           NumberIsNotRational(firstSign);
-          showSquareRootOfRational(&Rat1, 2, pretty);
+          showSquareRootOfRational(&Rat1, 2, pretty, ptrTimes);
         }
       }
       else
@@ -4608,7 +4608,7 @@ static void GaloisGroupHasOrder20(int multiplicity)
       Rat1.numerator.sign = SIGN_POSITIVE;
       BigRationalDivideByInt(&Rat1, 2, &Rat2);
       BigRationalMultiplyByInt(&RatDiscr, 5, &Rat2);
-      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty);
+      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty, ptrTimes);
       if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
       {   // O > 0.
         showPlusSignOn(ctr == 3 || ctr == 4, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);

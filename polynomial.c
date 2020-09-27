@@ -3759,7 +3759,17 @@ void showPowerX(char **pptrOutput, int polyDegree)
   }
   else
   {
+    if (pretty)
+    {
+      strcpy(ptrOutput, "<var>");
+      ptrOutput += strlen(ptrOutput);
+    }
     *ptrOutput++ = 'x';
+    if (pretty)
+    {
+      strcpy(ptrOutput, "</var>");
+      ptrOutput += strlen(ptrOutput);
+    }
     if (polyDegree != 1)
     {
       showPower(&ptrOutput, polyDegree);

@@ -225,7 +225,7 @@ int BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot);
 void ForceDenominatorPositive(BigRational* rat);
 void showRational(BigRational* rat, char pretty);
 void showRationalNoParen(BigRational* rat, char pretty);
-void showRationalOverStr(BigRational* rat, char pretty, char* str);
-void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int root, char pretty);
-void showSquareRootOfRational(BigRational* rat, int root, char pretty);
+void showRationalOverStr(BigRational* rat, char pretty, char* str, char *ptrTimes);
+void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int root, char pretty, char *ptrTimes);
+void showSquareRootOfRational(BigRational* rat, int root, char pretty, char *ptrTimes);
 #endif
