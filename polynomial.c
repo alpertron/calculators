@@ -3761,14 +3761,12 @@ void showPowerX(char **pptrOutput, int polyDegree)
   {
     if (pretty)
     {
-      strcpy(ptrOutput, "<var>");
+      strcpy(ptrOutput, lang?"<span class=\"hide\">equis </span><span aria-hidden=\"true\"><var>x</var></span>":"<var>x</var>");
       ptrOutput += strlen(ptrOutput);
     }
-    *ptrOutput++ = 'x';
-    if (pretty)
+    else
     {
-      strcpy(ptrOutput, "</var>");
-      ptrOutput += strlen(ptrOutput);
+      *ptrOutput++ = 'x';
     }
     if (polyDegree != 1)
     {

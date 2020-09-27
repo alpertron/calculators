@@ -178,11 +178,11 @@ void startParen(void)
   {
     if (lang)
     {
-      showText("<span class=\"hide\"> inicio paréntesis </span>");
+      showText("<span class=\"hide\"> paréntesis izquierdo </span>");
     }
     else
     {
-      showText("<span class=\"hide\"> start parenthesis </span>");
+      showText("<span class=\"hide\"> left parenthesis </span>");
     }
     showText("<span class=\"paren\">");
   }
@@ -199,11 +199,11 @@ void endParen(void)
     showText("</span>");
     if (lang)
     {
-      showText("<span class=\"hide\"> fin paréntesis </span>");
+      showText("<span class=\"hide\"> paréntesis derecho </span>");
     }
     else
     {
-      showText("<span class=\"hide\"> end parenthesis </span>");
+      showText("<span class=\"hide\"> right parenthesis </span>");
     }
   }
   else
