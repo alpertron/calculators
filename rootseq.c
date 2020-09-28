@@ -2500,14 +2500,30 @@ void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, in
   static int polyIntegerBak[1000000];
   int nbrFactorsFoundBak;
   if (lang)
-  {
-    ptrSin = "<span aria-hidden=\"true\">sen</span><span class=\"hide\"> seno de </span>";
-    ptrCos = "<span aria-hidden=\"true\">cos</span><span class=\"hide\"> coseno de </span>";
+  {       // Spanish
+    if (pretty)
+    {
+      ptrSin = "<span aria-hidden=\"true\">sen</span><span class=\"hide\"> seno de </span>";
+      ptrCos = "<span aria-hidden=\"true\">cos</span><span class=\"hide\"> coseno de </span>";
+    }
+    else
+    {
+      ptrSin = "sen";
+      ptrCos = "cos";
+    }
   }
   else
-  {
-    ptrSin = "<span aria-hidden=\"true\">sin</span><span class=\"hide\"> sine of </span>";
-    ptrCos = "<span aria-hidden=\"true\">cos</span><span class=\"hide\"> cosine of </span>";
+  {       // English
+    if (pretty)
+    {
+      ptrSin = "<span aria-hidden=\"true\">sin</span><span class=\"hide\"> sine of </span>";
+      ptrCos = "<span aria-hidden=\"true\">cos</span><span class=\"hide\"> cosine of </span>";
+    }
+    else
+    {
+      ptrSin = "sin";
+      ptrCos = "cos";
+    }
   }
   groupLen = groupLength;
   ptrOutput = *pptrOutput;
