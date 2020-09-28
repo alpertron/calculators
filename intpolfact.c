@@ -974,7 +974,7 @@ static void vanHoeij(int prime, int nbrFactors)
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, maxAttempts);
         oldTimeElapsed = elapsedTime;
-        strcpy(ptrOutput, lang ? "</p><p>Transcurrió " : "</p><p>Time elapsed: ");
+        strcpy(ptrOutput, lang ? "</p><p>TranscurriÃ³ " : "</p><p>Time elapsed: ");
         ptrOutput += strlen(ptrOutput);
         GetDHMS(&ptrOutput, elapsedTime / 10);
         strcpy(ptrOutput, "</p>");
@@ -1813,7 +1813,10 @@ int FactorPolyOverIntegers(void)
     prime = primeRecord;
     nbrFactorsFound = nbrFactorsRecord;
     intToBigInteger(&primeMod, prime);
-    vanHoeij(prime, nbrFactorsRecord);
+    if (nbrFactorsRecord > 1)
+    {
+      vanHoeij(prime, nbrFactorsRecord);
+    }
     // Polynomial is irreducible.
     if (polyNonRepeatedFactors[0] > 0)
     {    // Degree is greater than zero. Copy it to integer polynomial factor array.

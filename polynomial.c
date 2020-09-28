@@ -2085,6 +2085,7 @@ int getModPolynomial(int *polyMod, int *poly, BigInteger *content)
       *polyMod++ = 1;       // Initialize coefficient to zero.
       *polyMod++ = 0;
     }
+    NumberLength = numLimbs(poly);
     UncompressBigIntegerB(poly, &operand1);  // Get coefficient.
     BigIntDivide(&operand1, content, &operand2);
     BigIntRemainder(&operand2, &powerMod, &operand1);
@@ -2098,6 +2099,7 @@ int getModPolynomial(int *polyMod, int *poly, BigInteger *content)
   }
   for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
   {
+    NumberLength = numLimbs(poly);
     UncompressBigIntegerB(poly, &operand1);  // Get coefficient.
     BigIntDivide(&operand1, content, &operand2);
     BigIntRemainder(&operand2, &powerMod, &operand1);
