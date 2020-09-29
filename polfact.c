@@ -565,12 +565,27 @@ void polyFactText(char *modText, char *polyText, int groupLength)
         ptrOutput += strlen(ptrOutput);
       }
       else
-      {
+      {   // Get number of factors including multiplicity.
+        int totalFactors = 0;
+        int ctr;
+        for (ctr = 0; ctr < nbrFactorsFound; ctr++)
+        {
+          totalFactors += pstFactorInfo->multiplicity;
+          pstFactorInfo++;
+        }
         strcpy(ptrOutput, lang ? "Los " : "The ");
         ptrOutput += strlen(ptrOutput);
-        int2dec(&ptrOutput, nbrFactorsFound);
+        int2dec(&ptrOutput, totalFactors);
         strcpy(ptrOutput, lang ? " factores son:</p>" : " factors are:</p>");
         ptrOutput += strlen(ptrOutput);
+        if (modulusIsZero)
+        {
+          pstFactorInfo = factorInfoInteger;
+        }
+        else
+        {
+          pstFactorInfo = factorInfo;
+        }
         // Output factors
         *ptrOutput++ = '<';
         *ptrOutput++ = 'u';
