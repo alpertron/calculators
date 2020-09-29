@@ -7,6 +7,8 @@
 void QuinticEquation(int* ptrPolynomial, int multiplicity);
 void showX(int multiplicity);
 void showPlusSignOn(int condPlus, int type);
+void startParen(void);
+void endParen(void);
 void startSqrt(void);
 void endSqrt(void);
 void showRatConstants(char* numerator, char* denominator);

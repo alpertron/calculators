@@ -4722,24 +4722,20 @@ static void GaloisGroupHasOrder5(int multiplicity)
       *ptrOutput++ = ' ';
     }
     showSqrt5();
-    showText(" + i ");
-    showText(ptrTimes);
-    startSqrt();
-    switch (ctr)
+    *ptrOutput++ = ' ';
+    if (ctr >= 3)
     {
-    case 1:
-      BigRationalSubt(&RatValues[index_T1], &RatValues[index_T4], &Rat3);  // l1 - l4
-      break;
-    case 2:
-      BigRationalSubt(&RatValues[index_T3], &RatValues[index_T2], &Rat3);  // l3 - l2
-      break;
-    case 3:
-      BigRationalSubt(&RatValues[index_T2], &RatValues[index_T3], &Rat3);  // l2 - l3
-      break;
-    case 4:
-      BigRationalSubt(&RatValues[index_T4], &RatValues[index_T1], &Rat3);  // l4 - l1
-      break;
+      showText(ptrMinus);
     }
+    else
+    {
+      *ptrOutput++ = '+';
+    }
+    showText(" i ");
+    showText(ptrTimes);
+    showText("&nbsp;");
+    startParen();
+    BigRationalSubt(&RatValues[index_T1], &RatValues[index_T4], &Rat3);  // l1 - l4
     BigRationalDivideByInt(&Rat3, 4, &Rat3);
     ForceDenominatorPositive(&Rat3);
     showRational(&Rat3, pretty);
@@ -4748,31 +4744,38 @@ static void GaloisGroupHasOrder5(int multiplicity)
       *ptrOutput++ = ' ';
     }
     showText(ptrTimes);
-    showSqrtTenPlusMinusTwoTimesSqrt5("+");
-    endSqrt();
-    switch (ctr)
+    if (ctr == 1 || ctr == 3)
     {
-    case 1:
-      BigRationalSubt(&RatValues[index_T2], &RatValues[index_T3], &Rat3);  // l2 - l3
-      break;
-    case 2:
-      BigRationalSubt(&RatValues[index_T1], &RatValues[index_T4], &Rat3);  // l1 - l4
-      break;
-    case 3:
-      BigRationalSubt(&RatValues[index_T4], &RatValues[index_T1], &Rat3);  // l4 - l1
-      break;
-    case 4:
-      BigRationalSubt(&RatValues[index_T3], &RatValues[index_T2], &Rat3);  // l3 - l2
-      break;
+      showSqrtTenPlusMinusTwoTimesSqrt5("+");
     }
-    BigRationalDivideByInt(&Rat3, 4, &Rat3);
+    else
+    {
+      showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
+    }
+    BigRationalSubt(&RatValues[index_T3], &RatValues[index_T2], &Rat3);  // l3 - l2
+    if (ctr == 2 || ctr == 3)
+    {
+      BigRationalDivideByInt(&Rat3, 4, &Rat3);
+    }
+    else
+    {
+      BigRationalDivideByInt(&Rat3, -4, &Rat3);
+    }
     ForceDenominatorPositive(&Rat3);
     showPlusSignOn(Rat3.numerator.sign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
     Rat3.numerator.sign = SIGN_POSITIVE;
     showRational(&Rat3, pretty);
     *ptrOutput++ = ' ';
     showText(ptrTimes);
-    showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
+    if (ctr == 2 || ctr == 4)
+    {
+      showSqrtTenPlusMinusTwoTimesSqrt5("+");
+    }
+    else
+    {
+      showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
+    }
+    endParen();
     end5thRoot();
     showText("</li>");
   }
