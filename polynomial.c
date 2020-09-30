@@ -594,11 +594,12 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
       }
       for (; currentDegree < degreeMono; currentDegree++)
       {
-        *ptrValue1++ = 1;  // Number of limbs
-        *ptrValue1++ = 0;  // Value = zero.
+        *ptrValue2++ = 1;  // Number of limbs
+        *ptrValue2++ = 0;  // Value = zero.
       }
-      BigInteger2IntArray(ptrValue1, &operand1);
-      valuesIndex = (int)(ptrValue1 + 1 + numLimbs(ptrValue1) - &values[0]);
+      BigInteger2IntArray(ptrValue2, &operand1);
+      valuesIndex = (int)(ptrValue2 + 1 + numLimbs(ptrValue2) - &values[0]);
+      degreePoly = degreeMono;   // Set new degree.
     }
     else
     {        // Degree of polynomial greater than degree of monomial.

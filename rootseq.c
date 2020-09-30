@@ -2567,6 +2567,11 @@ void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, in
     memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
     break;
   case 5:
+    if (isLinearExponential(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree,
+      pstFactorInfo->multiplicity))
+    {          // If polynomial is ax^n+b = 0, show roots.
+      break;
+    }
     nbrFactorsFoundBak = nbrFactorsFound;
     memcpy(polyIntegerBak, polyInteger, sizeof(polyInteger));
     memcpy(factorInfoIntegerBak, factorInfoInteger, sizeof(factorInfoInteger));
