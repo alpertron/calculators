@@ -535,7 +535,7 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
       ptrPolyMin = ptrArgument1+1;
       ptrPolyMax = ptrArgument2+1;
     }
-    ptrValue1 = poly1;
+    ptrValue1 = poly1;    // Point to temporary polynomial sum.
     *ptrValue1++ = degreeMax;
     for (currentDegree = 0; currentDegree <= degreeMin; currentDegree++)
     {
@@ -563,6 +563,7 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
     }
     memcpy(ptrArgument1, poly1, (ptrValue1 - &poly1[0])*sizeof(int));
     valuesIndex = (int)(ptrArgument1 - &values[0] + (ptrValue1 - &poly1[0]));
+    degreePoly = degreeMax;   // New degree of polynomial.
   }
   else
   {                 // Sum of polynomial and monomial.
@@ -1301,7 +1302,7 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
   }
      // Multiply all coefficients of polynomial by the coefficient
      // of monomial storing the resulting polynomial on poly1.
-  ptrValue2 = poly1;
+  ptrValue2 = poly1;    // Initialize pointer to product.
   for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
   {
     UncompressBigIntegerB(ptrValue1, &operand2);
