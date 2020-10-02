@@ -2154,7 +2154,7 @@ void ConvertToTwosComplement(BigInteger *value)
 // Find next prime.
 int nextPrime(int prime)
 {
-  int divisor = 5;
+  int divisor;
   int isPrime;
   if (prime < 3)
   {
@@ -2162,6 +2162,7 @@ int nextPrime(int prime)
   }
   do
   {
+    divisor = 5;
     do
     {
       prime += 2;

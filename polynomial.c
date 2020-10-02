@@ -1416,7 +1416,13 @@ int DivideIntegerPolynomial(int *pDividend, int *pDivisor, enum eDivType type)
   int degreeDivisor;
   int degreeQuotient;
   int* ptrQuotient;
-  if (*pDividend < *pDivisor)
+  // Move arguments to temporary storage with most significant coefficient
+  // first.
+  ReversePolynomial(poly1, pDividend);
+  ReversePolynomial(poly2, pDivisor);
+  degreeDividend = poly1[0];
+  degreeDivisor = poly2[0];
+  if (degreeDividend < degreeDivisor)
   {      // Degree of dividend is less than degree of divisor.
     if (type == TYPE_DIVISION)
     {    // Get pointer to quotient.
@@ -1430,12 +1436,6 @@ int DivideIntegerPolynomial(int *pDividend, int *pDivisor, enum eDivType type)
     }
     return EXPR_OK;
   }
-  // Move arguments to temporary storage with most significant coefficient
-  // first.
-  ReversePolynomial(poly1, pDividend);
-  ReversePolynomial(poly2, pDivisor);
-  degreeDividend = poly1[0];
-  degreeDivisor = poly2[0];
   ptrQuotient = poly3;
   *ptrQuotient++ = degreeDividend - degreeDivisor;
   for (degreeQuotient = degreeDividend - degreeDivisor;
