@@ -12,7 +12,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>0 "x*(x+1)-(x+1)"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>0 "x^5 - 1615*x^4 + 861790*x^3 - 174419170*x^2 + 14998420705*x - 465948627343"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

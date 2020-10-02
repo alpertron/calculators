@@ -1710,7 +1710,7 @@ int FactorPolyOverIntegers(void)
       int nbrFactors;
       // Get leading coefficient of polyNonRepeatedFactors.
       ptrSrc = &polyNonRepeatedFactors[1];
-      for (degree1 = 0; degree1 < degreePolyToFactor; degree1++)
+      for (degree1 = 0; degree1 < polyNonRepeatedFactors[0]; degree1++)
       {
         ptrSrc += 1 + numLimbs(ptrSrc);
       }
