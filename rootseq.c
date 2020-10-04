@@ -2672,7 +2672,7 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
       showText("número ");
       int2dec(&ptrOutput, nbrFactor + 1);
     }
-    showText(" no se pueden expresar mediante raíces. ");
+    showText(" no se pueden expresar mediante expresiones radicales. ");
     showText(" Los grados de los factores del polinomio módulo ");
     int2dec(&ptrOutput, factorDegreesCycle2Or3[0]);
     showText(" son ");
