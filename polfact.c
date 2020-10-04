@@ -653,7 +653,14 @@ void polyFactText(char *modText, char *polyText, int groupLength)
         pstFactorInfo = factorInfoInteger;
         for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
         {
-          getRootsPolynomial(&ptrOutput, pstFactorInfo, groupLength);
+          if (nbrFactorsFound == 1)
+          {    // Do not show polynomial factor number.
+            getRootsPolynomial(-1, &ptrOutput, pstFactorInfo, groupLength);
+          }
+          else
+          {
+            getRootsPolynomial(nbrFactor, &ptrOutput, pstFactorInfo, groupLength);
+          }
           pstFactorInfo++;
         }
       }

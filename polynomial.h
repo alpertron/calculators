@@ -99,5 +99,7 @@ int FactorPolyOverIntegers(void);
 void polyFactText(char* modText, char* polyText, int groupLength);
 void showPowerX(char** pptrOutput, int polyDegree);
 int FactorModularPolynomial(int inputMontgomery);
-
+int getNextPrimeNoDuplicatedFactors(int prime);
+void FactorPolynomialModPrime(int prime);
+extern int polyNonRepeatedFactors[];
 #endif

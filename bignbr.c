@@ -2160,6 +2160,10 @@ int nextPrime(int prime)
   {
     return prime + 1;
   }
+  if (prime % 2 == 0)
+  {
+    prime--;
+  }
   do
   {
     divisor = 5;

@@ -65,7 +65,7 @@ static int origPolyToFactor[1000000];
 static int polyToFactor[1000000];
 static int factorX[] = { 1, 0, 1, 1 }; // Polynomial is x.
 static BigInteger bound, trailingCoeff, leadingCoeff;
-static int polyNonRepeatedFactors[1000000];
+int polyNonRepeatedFactors[1000000];
 static int tempPoly[1000000];
 static int polyBackup[1000000];
 static int polyLiftedRecord[1000000];
@@ -1612,15 +1612,72 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   ptrFactorInteger += indexNewFactor[degreePoly + 1];
 }
 
+int getNextPrimeNoDuplicatedFactors(int prime)
+{
+  int* ptrSrc;
+  int currentDegree;
+  int degreeGcdMod;
+  int degree1, degree2;
+  int degree = polyNonRepeatedFactors[0];
+  // Get leading coefficient of polyNonRepeatedFactors.
+  ptrSrc = &polyNonRepeatedFactors[1];
+  for (currentDegree = 0; currentDegree < degree; currentDegree++)
+  {
+    ptrSrc += 1 + numLimbs(ptrSrc);
+  }
+  UncompressBigIntegerB(ptrSrc, &leadingCoeff);
+  do
+  {   // Loop that finds a prime modulus such that the factorization
+      // has no repeated factors. That means gcd(F, F') = 1 (mod prime).
+      // This is required because Hensel lift does not work when
+      // repeated factors are present.
+      // If the leading coefficient is multiple of prime, the prime cannot
+      // be used.
+    do
+    {      // Loop while the leading coefficient is multiple of prime.
+      prime = nextPrime(prime);
+    } while (getRemainder(&leadingCoeff, prime) == 0);
+    modulusIsZero = 0;
+    intToBigInteger(&primeMod, prime);
+    computePower(1);
+    ptrSrc = &polyNonRepeatedFactors[1];
+    intToBigInteger(&operand5, 1);
+    degree2 = getModPolynomial(&poly2[1], polyNonRepeatedFactors, &operand5);
+    poly2[0] = degree2;
+    DerPolynomial(poly2);   // This function overwrites poly1.
+    degree1 = getModPolynomial(poly1, polyNonRepeatedFactors, &operand5);
+    PolyModularGcd(poly1, degree1, &poly2[1], poly2[0], poly3, &degreeGcdMod);
+  } while (degreeGcdMod > 0);
+  return prime;
+}
+
+void FactorPolynomialModPrime(int prime)
+{
+  int degreePolyToFactor;
+  modulusIsZero = 1;
+  intToBigInteger(&primeMod, prime);
+  computePower(1);
+  exponentMod = 1;
+  intToBigInteger(&operand5, 1);
+  degreePolyToFactor = getModPolynomial(&poly1[1], polyNonRepeatedFactors, &operand5);
+  poly1[0] = degreePolyToFactor;
+  polyBackup[0] = values[0];
+  CopyPolynomial(&polyBackup[1], &values[1], values[0] >= 0 ? values[0] : 0);
+  values[0] = degreePolyToFactor;
+  CopyPolynomial(&values[1], &poly1[1], degreePolyToFactor);
+  memset(factorInfo, 0, sizeof(factorInfo));
+  modulusIsZero = 0;
+  FactorModularPolynomial(FALSE);   // Input is not in Montgomery notation.
+}
+
 // Input: values = degree, coefficient degree 0, coefficient degree 1, etc.
 // Output: factorInfo = structure that holds the factors.
 int FactorPolyOverIntegers(void)
 {
   int degreePolyToFactor = values[0];
-  int degree1, degree2;
+  int degree1;
   int primeRecord = 0;
   int expon;
-  int degreeGcdMod;
   int* ptrSrc, * ptrDest;
   int attemptNbr;
   int currentDegree;
@@ -1695,7 +1752,7 @@ int FactorPolyOverIntegers(void)
     PolynomialGcd(tempPoly, polyToFactor, polyToFactor);
     polyNonRepeatedFactors[0] = degreePolyToFactor;
     DivideIntegerPolynomial(polyNonRepeatedFactors, polyToFactor, TYPE_DIVISION);
-    prime = 3;
+    prime = 2;
     ComputeCoeffBounds();   // bound = Bound of coefficient of factors.
     // Up to 5 different prime moduli are tested to minimize the number
     // of factors because the Van Hoeij algorithm speed depends on
@@ -1708,35 +1765,7 @@ int FactorPolyOverIntegers(void)
     {
       int factorNbr, * ptrPolyLiftedRecord;
       int nbrFactors;
-      // Get leading coefficient of polyNonRepeatedFactors.
-      ptrSrc = &polyNonRepeatedFactors[1];
-      for (degree1 = 0; degree1 < polyNonRepeatedFactors[0]; degree1++)
-      {
-        ptrSrc += 1 + numLimbs(ptrSrc);
-      }
-      UncompressBigIntegerB(ptrSrc, &leadingCoeff);
-      do
-      {   // Loop that finds a prime modulus such that the factorization
-          // has no repeated factors. That means gcd(F, F') = 1 (mod prime).
-          // This is required because Hensel lift does not work when
-          // repeated factors are present.
-          // If the leading coefficient is multiple of prime, the prime cannot
-          // be used.
-        do
-        {      // Loop while the leading coefficient is multiple of prime.
-          prime = nextPrime(prime);
-        } while (getRemainder(&leadingCoeff, prime) == 0);
-        modulusIsZero = 0;
-        intToBigInteger(&primeMod, prime);
-        computePower(1);
-        ptrSrc = &polyNonRepeatedFactors[1];
-        intToBigInteger(&operand5, 1);
-        degree2 = getModPolynomial(&poly2[1], polyNonRepeatedFactors, &operand5);
-        poly2[0] = degree2;
-        DerPolynomial(poly2);   // This function overwrites poly1.
-        degree1 = getModPolynomial(poly1, polyNonRepeatedFactors, &operand5);
-        PolyModularGcd(poly1, degree1, &poly2[1], poly2[0], poly3, &degreeGcdMod);
-      } while (degreeGcdMod > 0);
+      prime = getNextPrimeNoDuplicatedFactors(prime);
       // Find expon such that prime^expon >= 2 * bound
       BigIntMultiplyBy2(&bound);
       intToBigInteger(&operand1, prime);
@@ -1750,20 +1779,7 @@ int FactorPolyOverIntegers(void)
         }
         multint(&operand1, &operand1, prime);
       }
-      modulusIsZero = 1;
-      intToBigInteger(&primeMod, prime);
-      computePower(1);
-      exponentMod = 1;
-      intToBigInteger(&operand5, 1);
-      degreePolyToFactor = getModPolynomial(&poly1[1], polyNonRepeatedFactors, &operand5);
-      poly1[0] = degreePolyToFactor;
-      polyBackup[0] = values[0];
-      CopyPolynomial(&polyBackup[1], &values[1], values[0] >= 0 ? values[0] : 0);
-      values[0] = degreePolyToFactor;
-      CopyPolynomial(&values[1], &poly1[1], degreePolyToFactor);
-      memset(factorInfo, 0, sizeof(factorInfo));
-      modulusIsZero = 0;
-      FactorModularPolynomial(FALSE);   // Input is not in Montgomery notation.
+      FactorPolynomialModPrime(prime);
           // Get number of factors found.
       pstFactorInfoOrig = factorInfo;
       nbrFactors = 0;

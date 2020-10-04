@@ -3685,6 +3685,7 @@ int HenselLifting(struct sFactorInfo* factorInfo)
   pstFactorInfo = factorInfo;
   ptrPolyLifted = polyLifted;
   ptrPolyLiftedBak = polyLiftedBak;
+  nbrLimbs = powerMod.nbrLimbs + 1;
   for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {              // For each factor...
     int polyLength;

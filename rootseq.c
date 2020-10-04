@@ -116,11 +116,25 @@ void showX(int multiplicity)
 {
   int ctr;
   showText("<li>");
-  for (ctr = 0; ctr < multiplicity; ctr++)
+  if (multiplicity > 2)
   {
     showText("<var>x</var><sub>");
-    int2dec(&ptrOutput, indexRoot++);
+    int2dec(&ptrOutput, indexRoot);
+    showText("</sub> ");
+    showText(lang ? "a " : "to ");
+    indexRoot += multiplicity;
+    showText("<var>x</var><sub>");
+    int2dec(&ptrOutput, indexRoot - 1);
     showText("</sub> = ");
+  }
+  else
+  {
+    for (ctr = 0; ctr < multiplicity; ctr++)
+    {
+      showText("<var>x</var><sub>");
+      int2dec(&ptrOutput, indexRoot++);
+      showText("</sub> = ");
+    }
   }
 }
 
@@ -2494,11 +2508,221 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
   return 1;
 }
 
-void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, int groupLength)
+// Save factor degrees sorting by ascending order.
+static void SaveFactorDegrees(int prime, int *piFactors, int nbrFactors)
 {
+  int currentFactor, newDegree;
+  int* ptrFactors, *ptrOldFactor;
+  int tmpDegree;
+
+  *piFactors++ = prime;
+  *piFactors++ = nbrFactors;
+  ptrFactors = piFactors;
+  for (currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
+  {
+    newDegree = factorInfo[currentFactor].degree;
+    for (ptrOldFactor = ptrFactors; ptrOldFactor < piFactors; ptrOldFactor++)
+    {
+      if (newDegree < *ptrOldFactor)
+      {
+        for (; ptrOldFactor < piFactors; ptrOldFactor++)
+        {
+          tmpDegree = *ptrOldFactor;
+          *ptrOldFactor = newDegree;
+          newDegree = tmpDegree;
+        }
+        break;
+      }
+    }
+    *ptrOldFactor = newDegree;
+    piFactors++;
+  }
+}
+
+static void showDegrees(int *factors)
+{
+  int nbrFactors;
+  int currentFactor;
+
+  nbrFactors = *++factors;
+  for (currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
+  {
+    if (currentFactor != 0)
+    {
+      if (currentFactor == nbrFactors - 1)
+      {
+        showText(lang ? " y " : " and ");
+      }
+      else
+      {
+        *ptrOutput++ = ',';
+        *ptrOutput++ = ' ';
+      }
+    }
+    int2dec(&ptrOutput, *++factors);
+  }
+}
+
+// If polynomial is S_n or A_n, indicate that the roots are not solvable.
+// Factor the polynomial modulo different primes less than 100.
+// If with the same or different factorizations, there is a factor of
+// degree 2 or 3 and there is no factor of degree multiple of 2 or 3 respectively
+// and if there is a factor with prime degree greater than half the degree of
+// the polynomial, the polynomial is not solvable with radicals.
+// Discard the primes such that the factorizations give duplicated roots.
+static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial, 
+  int polyDegree, int multiplicity)
+{
+  int factorDegreesCycle2Or3[MAX_DEGREE+2];
+  int factorDegreesCycleP[MAX_DEGREE + 2];
+  int cycle2Found = 0;
+  int cycle3Found = 0;
+  int cyclePFound = 0;
+  int prime = 1;   // getNextPrime will increment to 2 for first prime.
+  CopyPolynomial(&polyNonRepeatedFactors[1], ptrPolynomial, polyDegree);
+  polyNonRepeatedFactors[0] = polyDegree;
+  do
+  {
+    int factorNbr;
+    int cycle2FoundInThisFactor = 0;
+    int cycle3FoundInThisFactor = 0;
+    int cyclePFoundInThisFactor = 0;
+    struct sFactorInfo* pstFactorInfo;
+    memset(factorInfo, 0, sizeof(factorInfo));
+    prime = getNextPrimeNoDuplicatedFactors(prime);
+    FactorPolynomialModPrime(prime);
+    pstFactorInfo = factorInfo;
+    // Check whether there is a factor of degree 2, 3 or prime
+    // greater than the degree of the polynomial being analyzed.
+    for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
+    {
+      int currentDegree;
+      if (pstFactorInfo->ptr == NULL)
+      {    // No more factors.
+        break;
+      }
+      currentDegree = pstFactorInfo->degree;
+      if (currentDegree % 2 == 0)
+      {
+        if (currentDegree == 2)
+        {
+          cycle2FoundInThisFactor++;
+        }
+        else
+        {
+          cycle2FoundInThisFactor = 2;
+        }
+      }
+      if (currentDegree % 3 == 0)
+      {
+        if (currentDegree == 3)
+        {
+          cycle3FoundInThisFactor++;
+        }
+        else
+        {
+          cycle3FoundInThisFactor = 2;
+        }
+      }
+      if (currentDegree > 3 && currentDegree > degree / 2 &&
+        currentDegree == nextPrime(currentDegree - 2))
+      {
+        cyclePFoundInThisFactor = 1;
+      }
+      pstFactorInfo++;
+    }
+    if (cycle2Found == 0 && cycle3Found == 0)
+    {
+      if (cycle2FoundInThisFactor == 1)
+      {
+        cycle2Found = 1;
+        SaveFactorDegrees(prime, factorDegreesCycle2Or3, factorNbr);
+      }
+      else if (cycle3FoundInThisFactor == 1)
+      {
+        cycle3Found = 1;
+        SaveFactorDegrees(prime, factorDegreesCycle2Or3, factorNbr);
+      }
+    }
+    if (cyclePFoundInThisFactor == 1 && cyclePFound == 0)
+    {
+      cyclePFound = 1;
+      SaveFactorDegrees(prime, factorDegreesCycleP, factorNbr);
+    }
+    if ((cycle2Found != 0 || cycle3Found != 0) && cyclePFound != 0)
+    {           // Polynomial is not solvable with radicals. Exit loop.
+      break;
+    }
+  } while (prime < 100);
+  if (cycle2Found == 0 && cycle3Found == 0)
+  {             // No cycle of length 2 or 3 found. Go out.
+    return 0;
+  }
+  if (cyclePFound == 0)
+  {             // No cycle of prime length greater than half of degree found. Go out.
+    return 0;
+  }
+  showX(multiplicity * polyDegree);
+  *(ptrOutput - 2) = ':';  // Replace equal sign by colon.
+  if (lang)
+  {
+    showText("Las raíces del polinomio ");
+    if (nbrFactor >= 0)
+    {
+      showText("número ");
+      int2dec(&ptrOutput, nbrFactor + 1);
+    }
+    showText(" no se pueden expresar mediante raíces. ");
+    showText(" Los grados de los factores del polinomio módulo ");
+    int2dec(&ptrOutput, factorDegreesCycle2Or3[0]);
+    showText(" son ");
+    showDegrees(factorDegreesCycle2Or3);
+    showText(" (el grupo de Galois contiene un ciclo de longitud ");
+    *ptrOutput++ = (cycle2Found ? '2' : '3');
+    *ptrOutput++ = ')';
+    if (factorDegreesCycle2Or3[0] != factorDegreesCycleP[0])
+    {
+      showText(" y los grados de los factores del polinomio módulo ");
+      int2dec(&ptrOutput, factorDegreesCycleP[0]);
+      showText(" son ");
+      showDegrees(factorDegreesCycleP);
+    }
+    showText(" (el grupo de Galois contiene un ciclo de longitud primo mayor que la mitad del grado del polinomio)");
+  }
+  else
+  {
+    showText("The roots of the polynomial ");
+    if (nbrFactor >= 0)
+    {
+      showText("number ");
+      int2dec(&ptrOutput, nbrFactor + 1);
+    }
+    showText(" cannot be expressed by radicals. ");
+    showText(" The degrees of the factors of polynomial modulo ");
+    int2dec(&ptrOutput, factorDegreesCycle2Or3[0]);
+    showText(" are ");
+    showDegrees(factorDegreesCycle2Or3);
+    showText(" (the Galois group contains a cycle of length ");
+    *ptrOutput++ = (cycle2Found ? '2': '3');
+    *ptrOutput++ = ')';
+    if (factorDegreesCycle2Or3[0] != factorDegreesCycleP[0])
+    {
+      showText(" and the degrees of the factors of polynomial modulo ");
+      int2dec(&ptrOutput, factorDegreesCycleP[0]);
+      showText(" are ");
+      showDegrees(factorDegreesCycleP);
+    }
+    showText(" (the Galois group contains a cycle of prime length greater than half the degree of polynomial)");
+  }
+  return 1;
+}
+
+void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* pstFactorInfo, int groupLength)
+{
+  int nbrFactorsFoundBak = nbrFactorsFound;
   static struct sFactorInfo factorInfoIntegerBak[MAX_DEGREE];
   static int polyIntegerBak[1000000];
-  int nbrFactorsFoundBak;
+  int multiplicity = pstFactorInfo->multiplicity;
   if (lang)
   {       // Spanish
     if (pretty)
@@ -2549,60 +2773,69 @@ void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, in
   switch (pstFactorInfo->degree)
   {
   case 1:
-    LinearEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
+    LinearEquation(pstFactorInfo->ptrPolyLifted, multiplicity);
     break;
   case 2:
-    QuadraticEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
+    QuadraticEquation(pstFactorInfo->ptrPolyLifted, multiplicity);
     break;
   case 3:
-    CubicEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
+    CubicEquation(pstFactorInfo->ptrPolyLifted, multiplicity);
     break;
   case 4:
-    nbrFactorsFoundBak = nbrFactorsFound;
     memcpy(polyIntegerBak, polyInteger, sizeof(polyInteger));
     memcpy(factorInfoIntegerBak, factorInfoInteger, sizeof(factorInfoInteger));
-    QuarticEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
-    nbrFactorsFound = nbrFactorsFoundBak;
+    QuarticEquation(pstFactorInfo->ptrPolyLifted, multiplicity);
     memcpy(polyInteger, polyIntegerBak, sizeof(polyInteger));
     memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
     break;
   case 5:
     if (isLinearExponential(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree,
-      pstFactorInfo->multiplicity))
+      multiplicity))
     {          // If polynomial is ax^n+b = 0, show roots.
       break;
     }
-    nbrFactorsFoundBak = nbrFactorsFound;
+    if (isSymmetricOrAlternating(nbrFactor, pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree,
+      multiplicity))
+    {          // If polynomial is S_n or A_n, indicate that the roots are not solvable.
+      break;
+    }
     memcpy(polyIntegerBak, polyInteger, sizeof(polyInteger));
     memcpy(factorInfoIntegerBak, factorInfoInteger, sizeof(factorInfoInteger));
     QuinticEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
-    nbrFactorsFound = nbrFactorsFoundBak;
     memcpy(polyInteger, polyIntegerBak, sizeof(polyInteger));
     memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
     break;
   default:
     if (isPalindromic(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree))
     {          // Cyclotomic polynomials are palindromic.
-      if (TestCyclotomic(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity,
+      if (TestCyclotomic(pstFactorInfo->ptrPolyLifted, multiplicity,
         pstFactorInfo->degree))
       {
         break;
       }
     }
     if (isLinearExponential(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree,
-      pstFactorInfo->multiplicity))
+      multiplicity))
     {          // If polynomial is ax^n+b = 0, show roots.
       break;
     }
     if (isQuadraticExponential(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree,
-      pstFactorInfo->multiplicity))
+      multiplicity))
     {          // If polynomial is ax^(2n)+bx^n+c = 0, show roots.
       break;
     }
-    strcpy(ptrOutput, lang ? "<p>No puedo calcular las raíces de un polinomio irreducible de grado mayor que 5." :
-      "<p>I cannot compute the roots of an irreducible polynomial whose degree is greater than 5.");
+    if (isSymmetricOrAlternating(nbrFactor, pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree,
+      multiplicity))
+    {          // If polynomial is S_n or A_n, indicate that the roots are not solvable.
+      break;
+    }
+    showX(multiplicity * pstFactorInfo->degree);
+    *(ptrOutput - 2) = ':';
+    strcpy(ptrOutput, lang ? "No puedo calcular las raíces de un polinomio irreducible de grado mayor que 5." :
+      "I cannot compute the roots of an irreducible polynomial whose degree is greater than 5.");
     ptrOutput += strlen(ptrOutput);
     break;
   }
+  nbrFactorsFound = nbrFactorsFoundBak;
   *pptrOutput = ptrOutput;
 }

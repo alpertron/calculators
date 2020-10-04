@@ -12,7 +12,7 @@ void endParen(void);
 void startSqrt(void);
 void endSqrt(void);
 void showRatConstants(char* numerator, char* denominator);
-void getRootsPolynomial(char **pptrOutput, struct sFactorInfo* pstFactorInfo, int groupLength);
+void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* pstFactorInfo, int groupLength);
 
 extern BigInteger Quintic, Quartic, Cubic, Quadratic, Linear, Independent;
 extern BigInteger discr, commonDenom, tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
