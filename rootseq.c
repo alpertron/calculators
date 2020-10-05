@@ -2579,8 +2579,79 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
   int cycle3Found = 0;
   int cyclePFound = 0;
   int prime = 1;   // getNextPrime will increment to 2 for first prime.
-  CopyPolynomial(&polyNonRepeatedFactors[1], ptrPolynomial, polyDegree);
-  polyNonRepeatedFactors[0] = polyDegree;
+  int gcdDegrees = 0;
+  int currentDegree;
+  int* ptrCoeff;
+  int* ptrCoeffDest;
+  // Compute GCD of all degrees of coefficients different from zero.
+  // Generate polynomial polyNonRepeatedFactors stripping all zero
+  // coefficients with degree not multiple of this GCD.
+  ptrCoeff = ptrPolynomial;
+  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+  {
+    if (*ptrCoeff != 1 || *(ptrCoeff + 1) != 0)
+    {            // Coefficient is not zero.
+      gcdDegrees = gcd(currentDegree, gcdDegrees);
+      if (gcdDegrees == 1)
+      {          // GCD of degrees is one. Further loops will not change this.
+        break;
+      }
+    }
+    ptrCoeff += 1 + numLimbs(ptrCoeff);
+  }
+  polyDegree /= gcdDegrees;
+  if (polyDegree < 5)
+  {     // Polynomial is solvable with radical expressions.
+    showX(multiplicity * polyDegree * gcdDegrees);
+    *(ptrOutput - 2) = ':';  // Replace equal sign by colon.
+    if (lang)
+    {
+      showText("Las raíces del polinomio ");
+      if (nbrFactor >= 0)
+      {
+        showText("número ");
+        int2dec(&ptrOutput, nbrFactor + 1);
+      }
+      showText(" se pueden expresar mediante expresiones radicales");
+      if (gcdDegrees > 1)
+      {
+        showText(". Reemplazamos <var>y</var> = ");
+        showPowerX(&ptrOutput, gcdDegrees);
+      }
+      showText(". El polinomio es de grado ");
+      int2dec(&ptrOutput, polyDegree);
+      showText(" que es menor que 5.");
+    }
+    else
+    {
+      showText("The roots of the polynomial ");
+      if (nbrFactor >= 0)
+      {
+        showText("number ");
+        int2dec(&ptrOutput, nbrFactor + 1);
+      }
+      showText(" can be expressed by radicals");
+      if (gcdDegrees > 1)
+      {
+        showText(". We set <var>y</var> = ");
+        showPowerX(&ptrOutput, gcdDegrees);
+      }
+      showText(". The polynomial has degree ");
+      int2dec(&ptrOutput, polyDegree);
+      showText(" which is less than 5.");
+    }
+    return 1;
+  }
+  ptrCoeff = ptrPolynomial;
+  ptrCoeffDest = polyNonRepeatedFactors;
+  *ptrCoeffDest++ = polyDegree;
+  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+  {    // Copy coefficient and skip zero coefficients.
+    int nbrLen = 1 + numLimbs(ptrCoeff);
+    memcpy(ptrCoeffDest, ptrCoeff, nbrLen * sizeof(int));
+    ptrCoeff += nbrLen + 2*(gcdDegrees-1);
+    ptrCoeffDest += nbrLen;
+  }
   do
   {
     int factorNbr;
@@ -2662,7 +2733,7 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
   {             // No cycle of prime length greater than half of degree found. Go out.
     return 0;
   }
-  showX(multiplicity * polyDegree);
+  showX(multiplicity* polyDegree* gcdDegrees);
   *(ptrOutput - 2) = ':';  // Replace equal sign by colon.
   if (lang)
   {
@@ -2672,8 +2743,13 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
       showText("número ");
       int2dec(&ptrOutput, nbrFactor + 1);
     }
-    showText(" no se pueden expresar mediante expresiones radicales. ");
-    showText(" Los grados de los factores del polinomio módulo ");
+    showText(" no se pueden expresar mediante expresiones radicales");
+    if (gcdDegrees > 1)
+    {
+      showText(". Reemplazamos <var>y</var> = ");
+      showPowerX(&ptrOutput, gcdDegrees);
+    }
+    showText(". Los grados de los factores del polinomio módulo ");
     int2dec(&ptrOutput, factorDegreesCycle2Or3[0]);
     showText(" son ");
     showDegrees(factorDegreesCycle2Or3);
@@ -2697,8 +2773,13 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
       showText("number ");
       int2dec(&ptrOutput, nbrFactor + 1);
     }
-    showText(" cannot be expressed by radicals. ");
-    showText(" The degrees of the factors of polynomial modulo ");
+    showText(" cannot be expressed by radicals");
+    if (gcdDegrees > 1)
+    {
+      showText(". We set <var>y</var> = ");
+      showPowerX(&ptrOutput, gcdDegrees);
+    }
+    showText(". The degrees of the factors of polynomial modulo ");
     int2dec(&ptrOutput, factorDegreesCycle2Or3[0]);
     showText(" are ");
     showDegrees(factorDegreesCycle2Or3);
@@ -2831,9 +2912,26 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
     }
     showX(multiplicity * pstFactorInfo->degree);
     *(ptrOutput - 2) = ':';
-    strcpy(ptrOutput, lang ? "No puedo calcular las raíces de un polinomio irreducible de grado mayor que 5." :
-      "I cannot compute the roots of an irreducible polynomial whose degree is greater than 5.");
-    ptrOutput += strlen(ptrOutput);
+    if (lang)
+    {
+      showText("No puedo determinar si las raíces del polinomio");
+      if (nbrFactor >= 0)
+      {
+        showText(" número ");
+        int2dec(&ptrOutput, nbrFactor + 1);
+      }
+      showText(" se pueden resolver mediante expresiones radicales o no.");
+    }
+    else
+    {
+      showText("I cannot determine whether the roots of the polynomial");
+      if (nbrFactor >= 0)
+      {
+        showText(" number ");
+        int2dec(&ptrOutput, nbrFactor + 1);
+      }
+      showText(" can be solved using radical expressions or not.");
+    }
     break;
   }
   nbrFactorsFound = nbrFactorsFoundBak;
