@@ -2563,6 +2563,76 @@ static void showDegrees(int *factors)
   }
 }
 
+static void ShowNoSolvableSpanish(int* firstArray, int* secondArray,
+  int numberDifferentX, int nbrFactor, int gcdDegrees)
+{
+  if (firstArray != secondArray)
+  {
+    if (secondArray == NULL)
+    {
+      showX(numberDifferentX);
+      *(ptrOutput - 2) = ':';  // Replace equal sign by colon.
+      showText("Las raíces del polinomio ");
+      if (nbrFactor >= 0)
+      {
+        showText("número ");
+        int2dec(&ptrOutput, nbrFactor + 1);
+      }
+      showText(" no se pueden expresar mediante expresiones radicales");
+      if (gcdDegrees > 1)
+      {
+        showText(". Reemplazamos <var>y</var> = ");
+        showPowerX(&ptrOutput, gcdDegrees);
+      }
+      showText(". Los");
+    }
+    else
+    {
+      showText(" y los");
+    }
+    showText(" grados de los factores del polinomio módulo ");
+    int2dec(&ptrOutput, *firstArray);
+    showText(" son ");
+    showDegrees(firstArray);
+  }
+  showText(" (el grupo de Galois contiene un ciclo de longitud ");
+}
+
+static void ShowNoSolvableEnglish(int* firstArray, int* secondArray,
+  int numberDifferentX, int nbrFactor, int gcdDegrees)
+{
+  if (firstArray != secondArray)
+  {
+    if (secondArray == NULL)
+    {
+      showX(numberDifferentX);
+      *(ptrOutput - 2) = ':';  // Replace equal sign by colon.
+      showText("The roots of the polynomial ");
+      if (nbrFactor >= 0)
+      {
+        showText("number ");
+        int2dec(&ptrOutput, nbrFactor + 1);
+      }
+      showText(" cannot be expressed by radicals");
+      if (gcdDegrees > 1)
+      {
+        showText(". We set <var>y</var> = ");
+        showPowerX(&ptrOutput, gcdDegrees);
+      }
+      showText(". The");
+    }
+    else
+    {
+      showText(" and the");
+    }
+    showText(" degrees of the factors of polynomial modulo ");
+    int2dec(&ptrOutput, *firstArray);
+    showText(" are ");
+    showDegrees(firstArray);
+  }
+  showText(" (the Galois group contains a cycle of ");
+}
+
 // If polynomial is S_n or A_n, indicate that the roots are not solvable.
 // Factor the polynomial modulo different primes less than 100.
 // If with the same or different factorizations, there is a factor of
@@ -2570,19 +2640,29 @@ static void showDegrees(int *factors)
 // and if there is a factor with prime degree greater than half the degree of
 // the polynomial, the polynomial is not solvable with radicals.
 // Discard the primes such that the factorizations give duplicated roots.
+// If the factor of prime degree is n/2 < p < n-2, or if n/3 < p <= n/2 and
+// the largest degree is odd and greater than n/2, then the polynomial is not
+// solvable with radicals.
 static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial, 
   int polyDegree, int multiplicity)
 {
+  char* ptrStrPrimeHalfSp = "primo mayor que la mitad del grado del polinomio";
+  char* ptrStrPrimeHalfEn = "prime length greater than half the degree of polynomial";
   int factorDegreesCycle2Or3[MAX_DEGREE+2];
-  int factorDegreesCycleP[MAX_DEGREE + 2];
+  int factorDegreesCycleP[MAX_DEGREE + 2];  // n/2 < p
+  int factorDegreesCycleOther[MAX_DEGREE + 2]; // n/3 < p < n/2
   int cycle2Found = 0;
   int cycle3Found = 0;
-  int cyclePFound = 0;
+  int cyclePrGtNOver2Found = 0;
+  int cyclePrGtNOver2ToLess2Found = 0;
+  int cycleOddGtNOver2Found = 0;
+  int cyclePrGtNOver3Found = 0;
   int prime = 1;   // getNextPrime will increment to 2 for first prime.
   int gcdDegrees = 0;
   int currentDegree;
   int* ptrCoeff;
   int* ptrCoeffDest;
+  factorDegreesCycleP[1] = 0;
   // Compute GCD of all degrees of coefficients different from zero.
   // Generate polynomial polyNonRepeatedFactors stripping all zero
   // coefficients with degree not multiple of this GCD.
@@ -2654,24 +2734,28 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
   }
   do
   {
-    int factorNbr;
+    int factorNbr, nbrFactors;
     int cycle2FoundInThisFactor = 0;
     int cycle3FoundInThisFactor = 0;
-    int cyclePFoundInThisFactor = 0;
     struct sFactorInfo* pstFactorInfo;
     memset(factorInfo, 0, sizeof(factorInfo));
     prime = getNextPrimeNoDuplicatedFactors(prime);
     FactorPolynomialModPrime(prime);
     pstFactorInfo = factorInfo;
     // Check whether there is a factor of degree 2, 3 or prime
-    // greater than the degree of the polynomial being analyzed.
-    for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
+    // greater than half the degree of the polynomial being analyzed.
+    for (nbrFactors = 0; nbrFactors < MAX_DEGREE; nbrFactors++)
     {
-      int currentDegree;
       if (pstFactorInfo->ptr == NULL)
       {    // No more factors.
         break;
       }
+      pstFactorInfo++;
+    }
+    pstFactorInfo = factorInfo;
+    for (factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
+    {
+      int currentDegree;
       currentDegree = pstFactorInfo->degree;
       if (currentDegree % 2 == 0)
       {
@@ -2695,10 +2779,68 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
           cycle3FoundInThisFactor = 2;
         }
       }
-      if (currentDegree > 3 && currentDegree > degree / 2 &&
-        currentDegree == nextPrime(currentDegree - 2))
+      if (currentDegree > 3 && currentDegree > degree / 2)
       {
-        cyclePFoundInThisFactor = 1;
+        if (currentDegree == nextPrime(currentDegree - 2))
+        {      // Current degree > n/2 and is prime.
+          if (currentDegree < degree - 2)
+          {
+            SaveFactorDegrees(prime, factorDegreesCycleP, nbrFactors);
+            cyclePrGtNOver2ToLess2Found = 1;
+          }
+          else if (cyclePrGtNOver2Found == 0)
+          {    // If first condition holds, the polynomial is not solvable.
+            SaveFactorDegrees(prime, factorDegreesCycleP, nbrFactors);
+            cyclePrGtNOver2Found = 1;
+          }
+        }
+        else if (currentDegree % 2 == 1)
+        {      // Current degree > n/2 and is odd.
+          if (cycleOddGtNOver2Found == 0)
+          {    // If first condition holds, the polynomial is not solvable.
+               // Test that this degree is coprime to all other degrees of
+               // factors of this polynomial.
+            pstFactorInfo = factorInfo;
+            for (factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
+            {
+              if (pstFactorInfo->degree < currentDegree)
+              {
+                if (gcd(pstFactorInfo->degree, currentDegree) != 1)
+                {
+                  break;
+                }
+              }
+              pstFactorInfo++;
+            }
+            if (factorNbr == nbrFactors)
+            {      // All degrees are coprime to current degree.
+              SaveFactorDegrees(prime, factorDegreesCycleP, nbrFactors);
+              cycleOddGtNOver2Found = 1;
+            }
+          }
+        }
+      }
+      else if (currentDegree > 3 && currentDegree > degree / 3)
+      {
+        if (currentDegree == nextPrime(currentDegree - 2))
+        {      // Current degree > n/3 and is prime.
+               // Ensure that only this degree is multiple of itself.
+          int nbrMultiples = 0;
+          pstFactorInfo = factorInfo;
+          for (factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
+          {
+            if (pstFactorInfo->degree % currentDegree == 0)
+            {
+              nbrMultiples++;
+            }
+            pstFactorInfo++;
+          }
+          if (nbrMultiples == 1)
+          {           // Only one multiple of currentDegree expected.
+            SaveFactorDegrees(prime, factorDegreesCycleOther, nbrFactors);
+            cyclePrGtNOver3Found = 1;
+          }
+        }
       }
       pstFactorInfo++;
     }
@@ -2707,93 +2849,99 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
       if (cycle2FoundInThisFactor == 1)
       {
         cycle2Found = 1;
-        SaveFactorDegrees(prime, factorDegreesCycle2Or3, factorNbr);
+        SaveFactorDegrees(prime, factorDegreesCycle2Or3, nbrFactors);
       }
       else if (cycle3FoundInThisFactor == 1)
       {
         cycle3Found = 1;
-        SaveFactorDegrees(prime, factorDegreesCycle2Or3, factorNbr);
+        SaveFactorDegrees(prime, factorDegreesCycle2Or3, nbrFactors);
       }
     }
-    if (cyclePFoundInThisFactor == 1 && cyclePFound == 0)
-    {
-      cyclePFound = 1;
-      SaveFactorDegrees(prime, factorDegreesCycleP, factorNbr);
+    if (cyclePrGtNOver2ToLess2Found)
+    {           // Group is very transitive.
+      break;
     }
-    if ((cycle2Found != 0 || cycle3Found != 0) && cyclePFound != 0)
+    if (cyclePrGtNOver3Found != 0 && 
+       (cycleOddGtNOver2Found != 0 || cyclePrGtNOver2Found != 0))
+    {           // Group is very transitive.
+      break;
+    }
+    if ((cycle2Found != 0 || cycle3Found != 0) && cyclePrGtNOver2Found != 0)
     {           // Polynomial is not solvable with radicals. Exit loop.
       break;
     }
   } while (prime < 100);
-  if (cycle2Found == 0 && cycle3Found == 0)
-  {             // No cycle of length 2 or 3 found. Go out.
-    return 0;
-  }
-  if (cyclePFound == 0)
-  {             // No cycle of prime length greater than half of degree found. Go out.
-    return 0;
-  }
-  showX(multiplicity* polyDegree* gcdDegrees);
-  *(ptrOutput - 2) = ':';  // Replace equal sign by colon.
+  int numberDifferentX = multiplicity * polyDegree * gcdDegrees;
   if (lang)
-  {
-    showText("Las raíces del polinomio ");
-    if (nbrFactor >= 0)
-    {
-      showText("número ");
-      int2dec(&ptrOutput, nbrFactor + 1);
+  {    // Spanish
+    if (cyclePrGtNOver2ToLess2Found)
+    {     // Group is very transitive.
+      ShowNoSolvableSpanish(factorDegreesCycleP, NULL, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText(ptrStrPrimeHalfSp);
+      showText(" y menor que el grado menos 2)");
     }
-    showText(" no se pueden expresar mediante expresiones radicales");
-    if (gcdDegrees > 1)
-    {
-      showText(". Reemplazamos <var>y</var> = ");
-      showPowerX(&ptrOutput, gcdDegrees);
+    else if (cyclePrGtNOver3Found != 0 &&
+      (cycleOddGtNOver2Found != 0 || cyclePrGtNOver2Found != 0))
+    {     // Group is very transitive.
+      ShowNoSolvableSpanish(factorDegreesCycleOther, NULL, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText("primo mayor que la tercera parte del grado del polinomio)");
+      ShowNoSolvableSpanish(factorDegreesCycleP, factorDegreesCycleOther, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText("impar mayor que la mitad del grado del polinomio)");
     }
-    showText(". Los grados de los factores del polinomio módulo ");
-    int2dec(&ptrOutput, factorDegreesCycle2Or3[0]);
-    showText(" son ");
-    showDegrees(factorDegreesCycle2Or3);
-    showText(" (el grupo de Galois contiene un ciclo de longitud ");
-    *ptrOutput++ = (cycle2Found ? '2' : '3');
-    *ptrOutput++ = ')';
-    if (factorDegreesCycle2Or3[0] != factorDegreesCycleP[0])
+    else if ((cycle2Found != 0 || cycle3Found != 0) && cyclePrGtNOver2Found != 0)
     {
-      showText(" y los grados de los factores del polinomio módulo ");
-      int2dec(&ptrOutput, factorDegreesCycleP[0]);
-      showText(" son ");
-      showDegrees(factorDegreesCycleP);
+      ShowNoSolvableSpanish(factorDegreesCycle2Or3, NULL, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      *ptrOutput++ = (cycle2Found ? '2' : '3');
+      *ptrOutput++ = ')';
+      ShowNoSolvableSpanish(factorDegreesCycleP, factorDegreesCycle2Or3, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText(ptrStrPrimeHalfSp);
+      *ptrOutput++ = ')';
     }
-    showText(" (el grupo de Galois contiene un ciclo de longitud primo mayor que la mitad del grado del polinomio)");
+    else
+    {
+      return 0;
+    }
   }
   else
-  {
-    showText("The roots of the polynomial ");
-    if (nbrFactor >= 0)
-    {
-      showText("number ");
-      int2dec(&ptrOutput, nbrFactor + 1);
+  {             // English
+    if (cyclePrGtNOver2ToLess2Found)
+    {      // Very transitive
+      ShowNoSolvableEnglish(factorDegreesCycleP, NULL, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText(ptrStrPrimeHalfEn);
+      showText(" and less than the degree minus 2)");
     }
-    showText(" cannot be expressed by radicals");
-    if (gcdDegrees > 1)
-    {
-      showText(". We set <var>y</var> = ");
-      showPowerX(&ptrOutput, gcdDegrees);
+    else if (cyclePrGtNOver3Found != 0 &&
+      (cycleOddGtNOver2Found != 0 || cyclePrGtNOver2Found != 0))
+    {      // Very transitive
+      ShowNoSolvableEnglish(factorDegreesCycleOther, NULL, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText("prime length greater than a third of the degree of the polynomial)");
+      ShowNoSolvableEnglish(factorDegreesCycleP, factorDegreesCycleOther, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText("odd length greater than half the degree of the polynomial)");
     }
-    showText(". The degrees of the factors of polynomial modulo ");
-    int2dec(&ptrOutput, factorDegreesCycle2Or3[0]);
-    showText(" are ");
-    showDegrees(factorDegreesCycle2Or3);
-    showText(" (the Galois group contains a cycle of length ");
-    *ptrOutput++ = (cycle2Found ? '2': '3');
-    *ptrOutput++ = ')';
-    if (factorDegreesCycle2Or3[0] != factorDegreesCycleP[0])
+    else if ((cycle2Found != 0 || cycle3Found != 0) && cyclePrGtNOver2Found != 0)
     {
-      showText(" and the degrees of the factors of polynomial modulo ");
-      int2dec(&ptrOutput, factorDegreesCycleP[0]);
-      showText(" are ");
-      showDegrees(factorDegreesCycleP);
+      ShowNoSolvableEnglish(factorDegreesCycle2Or3, NULL, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText("length ");
+      *ptrOutput++ = (cycle2Found ? '2' : '3');
+      *ptrOutput++ = ')';
+      ShowNoSolvableEnglish(factorDegreesCycleP, factorDegreesCycle2Or3, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText(ptrStrPrimeHalfEn);
+      *ptrOutput++ = ')';
     }
-    showText(" (the Galois group contains a cycle of prime length greater than half the degree of polynomial)");
+    else
+    {
+      return 0;
+    }
   }
   return 1;
 }
