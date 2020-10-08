@@ -2633,6 +2633,22 @@ static void ShowNoSolvableEnglish(int* firstArray, int* secondArray,
   showText(" (the Galois group contains a cycle of ");
 }
 
+static void showExplanation(int left, char* oper1, int middle, char* oper2, int right)
+{
+  *ptrOutput++ = ' ';
+  *ptrOutput++ = '(';
+  int2dec(&ptrOutput, left);
+  *ptrOutput++ = ' ';
+  showText(oper1);
+  *ptrOutput++ = ' ';
+  int2dec(&ptrOutput, middle);
+  *ptrOutput++ = ' ';
+  showText(oper2);
+  *ptrOutput++ = ' ';
+  int2dec(&ptrOutput, right);
+  *ptrOutput++ = ')';
+}
+
 // If polynomial is S_n or A_n, indicate that the roots are not solvable.
 // Factor the polynomial modulo different primes less than 100.
 // If with the same or different factorizations, there is a factor of
@@ -2786,16 +2802,17 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
           if (currentDegree < degree - 2)
           {
             SaveFactorDegrees(prime, factorDegreesCycleP, nbrFactors);
-            cyclePrGtNOver2ToLess2Found = 1;
+            cyclePrGtNOver2ToLess2Found = currentDegree;
           }
           else if (cyclePrGtNOver2Found == 0)
           {    // If first condition holds, the polynomial is not solvable.
             SaveFactorDegrees(prime, factorDegreesCycleP, nbrFactors);
-            cyclePrGtNOver2Found = 1;
+            cyclePrGtNOver2Found = currentDegree;
+            cycleOddGtNOver2Found = currentDegree;
           }
         }
-        else if (currentDegree % 2 == 1)
-        {      // Current degree > n/2 and is odd.
+        else if (currentDegree % 2 == 1 && currentDegree < degree)
+        {      // Current degree > n/2, it is odd and less than the polynomial degree.
           if (cycleOddGtNOver2Found == 0)
           {    // If first condition holds, the polynomial is not solvable.
                // Test that this degree is coprime to all other degrees of
@@ -2815,15 +2832,15 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
             if (factorNbr == nbrFactors)
             {      // All degrees are coprime to current degree.
               SaveFactorDegrees(prime, factorDegreesCycleP, nbrFactors);
-              cycleOddGtNOver2Found = 1;
+              cycleOddGtNOver2Found = currentDegree;
             }
           }
         }
       }
       else if (currentDegree > 3 && currentDegree > degree / 3)
       {
-        if (currentDegree == nextPrime(currentDegree - 2))
-        {      // Current degree > n/3 and is prime.
+        if (currentDegree == nextPrime(currentDegree - 2) && degree % currentDegree != 0)
+        {      // Current degree > n/3, it is prime, and it does not divide the degree.
                // Ensure that only this degree is multiple of itself.
           int nbrMultiples = 0;
           pstFactorInfo = factorInfo;
@@ -2838,7 +2855,11 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
           if (nbrMultiples == 1)
           {           // Only one multiple of currentDegree expected.
             SaveFactorDegrees(prime, factorDegreesCycleOther, nbrFactors);
-            cyclePrGtNOver3Found = 1;
+            cyclePrGtNOver3Found = currentDegree;
+            if (degree % 2 == 1)
+            {         // If degree is odd, the group is very transitive.
+              break;
+            }
           }
         }
       }
@@ -2862,7 +2883,7 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
       break;
     }
     if (cyclePrGtNOver3Found != 0 && 
-       (cycleOddGtNOver2Found != 0 || cyclePrGtNOver2Found != 0))
+       (degree % 2 == 1 || cycleOddGtNOver2Found != 0 || cyclePrGtNOver2Found != 0))
     {           // Group is very transitive.
       break;
     }
@@ -2872,27 +2893,81 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
     }
   } while (prime < 100);
   int numberDifferentX = multiplicity * polyDegree * gcdDegrees;
-  if (lang)
-  {    // Spanish
-    if (cyclePrGtNOver2ToLess2Found)
-    {     // Group is very transitive.
+  if (cyclePrGtNOver2ToLess2Found)
+  {     // Group is very transitive.
+    if (lang)
+    {    // Spanish
       ShowNoSolvableSpanish(factorDegreesCycleP, NULL, numberDifferentX,
         nbrFactor, gcdDegrees);
       showText(ptrStrPrimeHalfSp);
-      showText(" y menor que el grado menos 2)");
+      showExplanation(cyclePrGtNOver2ToLess2Found, "&gt;", degree, "&divide;", 2);
+      showText(" y menor que el grado menos 2");
     }
-    else if (cyclePrGtNOver3Found != 0 &&
-      (cycleOddGtNOver2Found != 0 || cyclePrGtNOver2Found != 0))
-    {     // Group is very transitive.
+    else
+    {   // English
+      ShowNoSolvableEnglish(factorDegreesCycleP, NULL, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText(ptrStrPrimeHalfEn);
+      showExplanation(cyclePrGtNOver2ToLess2Found, "&gt;", degree, "&divide;", 2);
+      showText(" and less than the degree minus 2");
+    }
+    showExplanation(cyclePrGtNOver2ToLess2Found, "&lt;", degree, "&minus;", 2);
+    *ptrOutput++ = ')';
+  }
+  else if (cyclePrGtNOver3Found != 0 && degree % 2 == 1)
+  {     // Group is very transitive.
+    if (lang)
+    {    // Spanish
       ShowNoSolvableSpanish(factorDegreesCycleOther, NULL, numberDifferentX,
         nbrFactor, gcdDegrees);
-      showText("primo mayor que la tercera parte del grado del polinomio)");
+      showText("primo mayor que la tercera parte del grado del polinomio");
+      showExplanation(cyclePrGtNOver3Found, "&gt;", degree, "&divide;", 3);
+      showText(" y éste (");
+      int2dec(&ptrOutput, degree);
+      showText(") es impar)");
+    }
+    else
+    {   // English
+      ShowNoSolvableEnglish(factorDegreesCycleOther, NULL, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText("prime length greater than a third of the degree of the polynomial");
+      showExplanation(cyclePrGtNOver3Found, "&gt;", degree, "&divide;", 3);
+      showText(" and the latter (");
+      int2dec(&ptrOutput, degree);
+      showText(") is odd)");
+    }
+  }
+  else if (cyclePrGtNOver3Found != 0 && cycleOddGtNOver2Found != 0)
+  {     // Group is very transitive.
+    if (lang)
+    {    // Spanish
+      ShowNoSolvableSpanish(factorDegreesCycleOther, NULL, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText("primo mayor que la tercera parte del grado del polinomio");
+      showExplanation(cyclePrGtNOver3Found, "&gt;", degree, "&divide;", 3);
+      *ptrOutput++ = ')';
       ShowNoSolvableSpanish(factorDegreesCycleP, factorDegreesCycleOther, numberDifferentX,
         nbrFactor, gcdDegrees);
-      showText("impar mayor que la mitad del grado del polinomio)");
+      showText("impar mayor que la mitad del grado del polinomio");
     }
-    else if ((cycle2Found != 0 || cycle3Found != 0) && cyclePrGtNOver2Found != 0)
-    {
+    else
+    {    // English
+      ShowNoSolvableEnglish(factorDegreesCycleOther, NULL, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText("prime length greater than a third of the degree of the polynomial");
+      showExplanation(cyclePrGtNOver3Found, "&gt;", degree, "&divide;", 3);
+      *ptrOutput++ = ')';
+      ShowNoSolvableEnglish(factorDegreesCycleP, factorDegreesCycleOther, numberDifferentX,
+        nbrFactor, gcdDegrees);
+      showText("odd length greater than half the degree of the polynomial");
+    }
+    showExplanation(cycleOddGtNOver2Found, "&gt;", degree, "&divide;", 2);
+    *ptrOutput++ = ')';
+  }
+  else if ((cycle2Found != 0 || cycle3Found != 0) && cyclePrGtNOver2Found != 0)
+  {
+    if (lang)
+    {    // Spanish
       ShowNoSolvableSpanish(factorDegreesCycle2Or3, NULL, numberDifferentX,
         nbrFactor, gcdDegrees);
       *ptrOutput++ = (cycle2Found ? '2' : '3');
@@ -2900,34 +2975,9 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
       ShowNoSolvableSpanish(factorDegreesCycleP, factorDegreesCycle2Or3, numberDifferentX,
         nbrFactor, gcdDegrees);
       showText(ptrStrPrimeHalfSp);
-      *ptrOutput++ = ')';
     }
     else
-    {
-      return 0;
-    }
-  }
-  else
-  {             // English
-    if (cyclePrGtNOver2ToLess2Found)
-    {      // Very transitive
-      ShowNoSolvableEnglish(factorDegreesCycleP, NULL, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText(ptrStrPrimeHalfEn);
-      showText(" and less than the degree minus 2)");
-    }
-    else if (cyclePrGtNOver3Found != 0 &&
-      (cycleOddGtNOver2Found != 0 || cyclePrGtNOver2Found != 0))
-    {      // Very transitive
-      ShowNoSolvableEnglish(factorDegreesCycleOther, NULL, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText("prime length greater than a third of the degree of the polynomial)");
-      ShowNoSolvableEnglish(factorDegreesCycleP, factorDegreesCycleOther, numberDifferentX,
-        nbrFactor, gcdDegrees);
-      showText("odd length greater than half the degree of the polynomial)");
-    }
-    else if ((cycle2Found != 0 || cycle3Found != 0) && cyclePrGtNOver2Found != 0)
-    {
+    {    // English
       ShowNoSolvableEnglish(factorDegreesCycle2Or3, NULL, numberDifferentX,
         nbrFactor, gcdDegrees);
       showText("length ");
@@ -2936,12 +2986,13 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
       ShowNoSolvableEnglish(factorDegreesCycleP, factorDegreesCycle2Or3, numberDifferentX,
         nbrFactor, gcdDegrees);
       showText(ptrStrPrimeHalfEn);
-      *ptrOutput++ = ')';
     }
-    else
-    {
-      return 0;
-    }
+    showExplanation(cyclePrGtNOver2Found, "&gt;", degree, "&divide;", 2);
+    *ptrOutput++ = ')';
+  }
+  else
+  {
+    return 0;
   }
   return 1;
 }
