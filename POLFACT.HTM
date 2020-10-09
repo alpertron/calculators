@@ -517,6 +517,27 @@ function EDF(f, d, p)<br>
 If <var>a</var> does not divide <var>b</var>, we can discard that combination.</p>
 <p>For the very few combinations that remain, compute a &equiv; lc (<var>f</var>) &#8290; <var>f</var><sub>0</sub> &#8290; <var>f</var><sub>1</sub> &#8290; ... &#8290; <var>f</var><sub>s</sub> (mod <var>p</var><sup>e</sup>). Again, this time the coefficients of this polynomial must be in the range &minus;<var>p</var><sup>e</sup>/2 to <var>p</var><sup>e</sup>/2.
 Compute <var>b</var> = gcdp(<var>a</var>, lc(<var>f</var>) &#8290; <var>f</var>). If the degree of <var>b</var> is zero, discard this combination. Otherwise, the polynomial <var>b</var> is a proper factor of <var>f</var>.</p>
+<p>Even though the steps are very fast, for some polynomials the number of combinations is very huge. So the program uses Van Hoeij algorithm which uses LLL algorithm to determine quickly the combinations to use.</p>
+</div>
+<h2><button type="button">Roots</button></h2>
+<div class="panel">
+<p>The program finds the roots from the irreducible polynomials obtained in the previous section.</p>
+<p>For polynomials of degrees up to 4, the standard formulas are used. No cube roots of complex numbers are used. In these cases (named <em>casus irreducibilis</em>), the program uses trigonometric functions.</p>
+<p>For polynomials of degree 5, the application uses the results of D. S. Dummit's paper <em><a href="https://www.ams.org/journals/mcom/1991-57-195/S0025-5718-1991-1079014-X/S0025-5718-1991-1079014-X.pdf">Solving Solvable Quintic</a></em>, Mathematics of Computation volume 57, number 195, July 1991, pp. 387-401.</p>
+<p>The program can determine whether an irreducible polynomial is cyclotomic, i. e., a divisor of <var>x</var><sup><var>n</var></sup> &minus; 1. In this case the program shows the complex roots of 1:</p>
+<p><span aria-hidden="true">cos</span> <span class="hide">cosine of </span><span class="fraction"><span class="numerator"><var>m</var><span class="hide"> times pi</span><span aria-hidden="true"> &pi;</span></span><span class="denominator"><var>n</var></span></span> +
+i <span aria-hidden="true">sin</span> <span class="hide">times sine of </span><span class="fraction"><span class="numerator"><var>m</var><span class="hide"> times pi</span><span aria-hidden="true"> &pi;</span></span><span class="denominator"><var>n</var></span></span></p>
+<p>where <var>m</var> and <var>n</var> are coprime.</p>
+<p>If <var>n</var> = 2<sup><var>q</var></sup> &times; 3<sup><var>r</var></sup> &times; 5<sup><var>s</var></sup> &times; 17<sup><var>t</var></sup>
+where <var>r</var> &lt; 2, <var>s</var> &lt; 2 and <var>t</var> &lt; 2, the program can find the roots as radical expressions.</p>
+<p>For irreducible polynomials of the form <var>a</var> <var>x</var><sup>n</sup> + <var>b</var>, the roots can be computed as the product of a real number by a complex root of 1, so the method used in the previous paragraph is used.</p>
+<p>For <var>a</var> <var>x</var><sup>2n</sup> + <var>b</var> <var>x</var><sup>n</sup> + <var>c</var> there are two cases. If the quadratic polynomial (discarding the variable <var>n</var>) has real roots, again we can use the methods of the previous paragraph.
+Otherwise, only trigonometric functions are shown.</p>
+<p>For almost all polynomials with degree 5 or greater, the roots cannot be expressed as radical expressions. To detect these cases with high probability, the program uses the results of two papers about Galois theory:</p>
+<ul>
+<li>J.H. Davenport, G.C. Smith, <em><a href="https://www.sciencedirect.com/science/article/pii/S002240499900078X">Fast recognition of alternating and symmetric Galois groups</a></em>, Journal of Pure and Applied Algebra 153 (2000) 17-25.</li>
+<li>K. Conrad, <em><a href="https://kconrad.math.uconn.edu/blurbs/galoistheory/galoisSnAn.pdf">Recognizing Galois groups <var>S</var><sub><var>n</var></sub> and <var>A</var><sub><var>n</var></sub></a></em>
+</ul>
 </div>
 <h2><button type="button">Source code</button></h2>
 <div class="panel">

@@ -517,6 +517,27 @@ El siguiente algoritmo puede elevar de módulo <var>m</var> a <var>m</var><sup>2
 Si <var>a</var> no divide <var>b</var>, podemos descartar esa combinación.</p>
 <p>Para las pocas combinaciones que quedan, calcularemos a &equiv; lc (<var>f</var>) &#8290; <var>f</var><sub>0</sub> &#8290; <var>f</var><sub>1</sub> &#8290; ... &#8290; <var>f</var><sub>s</sub> (mod <var>p</var><sup>e</sup>). Otra vez, los coeficientes de este polinomio deben estar en el rango &minus;<var>p</var><sup>e</sup>/2 a <var>p</var><sup>e</sup>/2.
 Calculemos <var>b</var> = gcdp(<var>a</var>, cp(<var>f</var>) &#8290; <var>f</var>). Si el grado de <var>b</var> es cero, descartaremos la combinación. En caso contrario, el polinomio <var>b</var> es un factor no trivial de <var>f</var>.</p>
+<p>Aunque los pasos son muy rápidos, para algunos polinomios la cantidad de combinaciones es astronómica. Debido a esto el programa usa el algoritmo de Van Hoeij que usa el algoritmo LLL para determinar rápidamente las combinaciones a usar.</p>
+</div>
+<h2><button type="button">Raíces</button></h2>
+<div class="panel">
+<p>El programa halla las raíces de los polinomios irreducibles obtenidos en la sección anterior.</p>
+<p>Para los polinomios de grado hasta 4, se usan las fórmulas clásicas. No se calculan raíces cúbicas de números complejos. En estos casos (llamados <em>casus irreducibilis</em>), el programa usa funciones trigonométricas.</p>
+<p>Para los polinomios de grado 5, la aplicación usa los resultados del paper de D. S. Dummit <em><a href="https://www.ams.org/journals/mcom/1991-57-195/S0025-5718-1991-1079014-X/S0025-5718-1991-1079014-X.pdf">Solving Solvable Quintic</a></em>, Mathematics of Computation volumen 57, número 195, julio de 1991, pp. 387-401.</p>
+<p>El programa puede determinar si un polinomio irreducible es ciclotómico, es decir, un divisor de <var>x</var><sup><var>n</var></sup> &minus; 1. En este caso el programa muestra las raíces complejas de 1:</p>
+<p><span aria-hidden="true">cos</span> <span class="hide">coseno de </span><span class="fraction"><span class="numerator"><var>m</var><span class="hide"> por pi</span><span aria-hidden="true"> &pi;</span></span><span class="denominator"><var>n</var></span></span> +
+i <span aria-hidden="true">sen</span> <span class="hide">por seno de </span><span class="fraction"><span class="numerator"><var>m</var><span class="hide"> por pi</span><span aria-hidden="true"> &pi;</span></span><span class="denominator"><var>n</var></span></span></p>
+<p>donde <var>m</var> y <var>n</var> son coprimos.</p>
+<p>Si <var>n</var> = 2<sup><var>q</var></sup> &times; 3<sup><var>r</var></sup> &times; 5<sup><var>s</var></sup> &times; 17<sup><var>t</var></sup>
+donde <var>r</var> &lt; 2, <var>s</var> &lt; 2 y <var>t</var> &lt; 2, el programa puede mostrar las raíces mediante expresiones radicales.</p>
+<p>Para los polinomios irreducibles de la forma <var>a</var> <var>x</var><sup>n</sup> + <var>b</var>, las raíces se pueden calcular como el producto de un número real por una raíz compleja de 1, así que se puede usar los métodos del párrafo anterior.</p>
+<p>Para <var>a</var> <var>x</var><sup>2n</sup> + <var>b</var> <var>x</var><sup>n</sup> + <var>c</var> existen dos casos. Si el polinomio cuadrático (descartando la variable <var>n</var>) tiene raíces reales, podemos usar otra vez los métodos del párrafo anterior.
+En caso contrario, solo se muestran funciones trigonométricas.</p>
+<p>Para casi todos los polinomios de grado 5 o mayor, las raíces no se pueden expresar mediante expresiones radicales. Para detectar estos casos con alta probabilidad, el programa usa el resultado de dos papers de teoría de Galois:</p>
+<ul>
+<li>J.H. Davenport, G.C. Smith, <em><a href="https://www.sciencedirect.com/science/article/pii/S002240499900078X">Fast recognition of alternating and symmetric Galois groups</a></em>, Journal of Pure and Applied Algebra 153 (2000) 17-25.</li>
+<li>K. Conrad, <em><a href="https://kconrad.math.uconn.edu/blurbs/galoistheory/galoisSnAn.pdf">Recognizing Galois groups <var>S</var><sub><var>n</var></sub> and <var>A</var><sub><var>n</var></sub></a></em>
+</ul>
 </div>
 <h2><button type="button">Código fuente</button></h2>
 <div class="panel">
