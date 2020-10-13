@@ -311,7 +311,10 @@ void MultBigNbr(int *pFactor1, int *pFactor2, int *pProd, int nbrLen)
   *(pProd+1) = (int)floor(dAccumulator/dRangeLimb);
 }
 
-void MultBigNbrComplete(int *pFactor1, int *pFactor2, int *pProd, int nbrLen)
+// On input: pFactor1 and pFactor2: pointers to factors.
+//           pProd: pointer to product (length = 2*nbrLen)
+//           nbrLen: number of limbs of factors.
+void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, int nbrLen)
 {
   double dRangeLimb = (double)(1U << BITS_PER_INT_GROUP);
   double dInvRangeLimb = 1 / dRangeLimb;

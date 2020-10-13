@@ -184,7 +184,7 @@ void MultBigNbrByIntB(int *bigFactor, int factor, int *bigProd, int nbrLen);
 void DivBigNbrByInt(int *pDividend, int divisor, int *pQuotient, int nbrLen);
 int RemDivBigNbrByInt(int *pDividend, int divisor, int nbrLen);
 void MultBigNbr(int *pFactor1, int *pFactor2, int *pProd, int nbrLen);
-void MultBigNbrComplete(int *pFactor1, int *pFactor2, int *pProd, int nbrLen);
+void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, int nbrLen);
 void IntToBigNbr(int value, int *bigNbr, int nbrLength);
 int BigNbrToBigInt(BigInteger *pBigNbr, int *pBigInt);
 void BigIntToBigNbr(BigInteger *pBigNbr, int *pBigInt, int nbrLenBigInt);

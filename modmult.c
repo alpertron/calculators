@@ -2077,13 +2077,19 @@ enum eExprErr BigIntGeneralModularPower(BigInteger *base, BigInteger *exponent, 
   GetMontgomeryParms(NumberLength);
   BigIntModularPower(&tmpNum, exponent, &tmpDen);
   memcpy(resultModOdd, tmpDen.limbs, tmpDen.nbrLimbs * sizeof(limb));
-
-  // Compute power mod power of 2.
-  NumberLength = (shRight + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
-  CompressLimbsBigInteger(aux3, base);
-  powerOf2Exponent = shRight;
-  modPowLimb(aux3, exponent->limbs, resultModPower2);
-  ChineseRemainderTheorem(shRight, power);
-  powerOf2Exponent = 0;
+  if (shRight > 0)
+  {
+    // Compute power mod power of 2.
+    NumberLength = (shRight + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
+    CompressLimbsBigInteger(aux3, base);
+    powerOf2Exponent = shRight;
+    modPowLimb(aux3, exponent->limbs, resultModPower2);
+    ChineseRemainderTheorem(shRight, power);
+    powerOf2Exponent = 0;
+  }
+  else
+  {
+    CopyBigInt(power, &tmpDen);
+  }
   return EXPR_OK;
 }

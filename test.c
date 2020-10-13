@@ -6,7 +6,7 @@
 #include "factor.h"
 #include "batch.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 9
+#define DEBUG_CODE 13
 #endif
 extern unsigned char pretty;
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
   skipPrimality = 0;
   lang = 0;
   hexadecimal = 0;
-  char text[2000];
+  char text[40000];
   sprintf(text, "%s\n", argv[1]);
   ecmFrontText(text, 1, NULL);
   printf("%s\n", output);

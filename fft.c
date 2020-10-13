@@ -22,7 +22,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <math.h>
 
-#define FFT_LIMB_SIZE   19
+#define FFT_LIMB_SIZE   18
 #define FFT_LIMB_RANGE  (1 << FFT_LIMB_SIZE)
 #define MAX_VALUE_FFT_LIMB (FFT_LIMB_RANGE - 1)
 #define MAX_FFT_LEN        (MAX_LEN * BITS_PER_GROUP / FFT_LIMB_SIZE + 10)
@@ -47,20 +47,20 @@ struct sCosSin
 struct sCosSin cossinPowerOneHalf[] =
 {
   {{2121767201, 1518500249}, {2121767201, 1518500249}},  // cos(pi/2^2), then sin(pi/2^2)
-  {{1696238673, 1984016188}, {782852817, 821806413}},    // cos(pi/2^3), then sin(pi/2^3)
+  {{1696238673, 1984016188}, {782852818, 821806413}},    // cos(pi/2^3), then sin(pi/2^3)
   {{1857642581, 2106220351}, {886244699, 418953276}},    // cos(pi/2^4), then sin(pi/2^4)
   {{575294268, 2137142927}, {174918392, 210490206}},     // cos(pi/2^5), then sin(pi/2^5)
-  {{1926953927, 2144896909}, {565903996, 105372028}},    // cos(pi/2^6), then sin(pi/2^6)
-  {{161094006, 2146836866}, {2050385887, 52701886}},     // cos(pi/2^7), then sin(pi/2^7)
-  {{925218478, 2147321946}, {1727413283, 26352927}},     // cos(pi/2^8), then sin(pi/2^8)
-  {{487924890, 2147443222}, {2040267204, 13176711}},     // cos(pi/2^9), then sin(pi/2^9)
-  {{1144652709, 2147473541}, {2107197812, 6588386}},     // cos(pi/2^10), then sin(pi/2^10)
-  {{819842189, 2147481121}, {786843437, 3294197}},       // cos(pi/2^11), then sin(pi/2^11)
-  {{741631965, 2147483016}, {360077744, 1647099}},       // cos(pi/2^12), then sin(pi/2^12)
-  {{185395523, 2147483490}, {1383830441, 823549}},       // cos(pi/2^13), then sin(pi/2^13)
+  {{1926953927, 2144896909}, {565903997, 105372028}},    // cos(pi/2^6), then sin(pi/2^6)
+  {{161094006, 2146836866}, {2050385888, 52701886}},     // cos(pi/2^7), then sin(pi/2^7)
+  {{925218479, 2147321946}, {1727413283, 26352927}},     // cos(pi/2^8), then sin(pi/2^8)
+  {{487924891, 2147443222}, {2040267204, 13176711}},     // cos(pi/2^9), then sin(pi/2^9)
+  {{1144652709, 2147473541}, {2107197813, 6588386}},     // cos(pi/2^10), then sin(pi/2^10)
+  {{819842189, 2147481121}, {786843438, 3294197}},       // cos(pi/2^11), then sin(pi/2^11)
+  {{741631966, 2147483016}, {360077744, 1647099}},       // cos(pi/2^12), then sin(pi/2^12)
+  {{185395523, 2147483490}, {1383830442, 823549}},       // cos(pi/2^13), then sin(pi/2^13)
   {{1120089925, 2147483608}, {1781913263, 411774}},      // cos(pi/2^14), then sin(pi/2^14)
-  {{280022432, 2147483638}, {892988659, 205887}},        // cos(pi/2^15), then sin(pi/2^15)
-  {{1143747429, 2147483645}, {1520490156, 102943}},      // cos(pi/2^16), then sin(pi/2^16)
+  {{280022433, 2147483638}, {892988659, 205887}},        // cos(pi/2^15), then sin(pi/2^15)
+  {{1143747429, 2147483645}, {1520490157, 102943}},      // cos(pi/2^16), then sin(pi/2^16)
 };
 
 static struct sCosSin cossin[4 << (POWERS_2 - 2)];
@@ -302,7 +302,6 @@ static void ConvertFullToHalfSizeFFT(complex *fullSizeFFT, complex *halfSizeFFT,
   complex *ptrFullSizeFFT = fullSizeFFT;
   complex *ptrFullSizeFFTRev = fullSizeFFT + power2;
   complex *ptrHalfSizeFFT = halfSizeFFT;
-  complex *ptrHalfSizeFFTRev = halfSizeFFT + power2;
   for (k = 0; k < power2; k++)
   {
     int angle = k * step;
@@ -318,16 +317,22 @@ static void ConvertFullToHalfSizeFFT(complex *fullSizeFFT, complex *halfSizeFFT,
       sumImag*negativeSine +
       diffReal*cosine);
     ptrHalfSizeFFT++;
-    ptrHalfSizeFFTRev--;
     ptrFullSizeFFT++;
     ptrFullSizeFFTRev--;
   }
 }
 
+// Read limbs of input numbers with length BITS_PER_GROUP and convert them
+// to internal FFT limbs with length FFT_LIMB_SIZE.
+// The output is the number of internal FFT limbs generated.
+// Even limbs correspond to real component and odd limbs
+// correspond to imaginary component.
+// This code requires that FFT_LIMB_SIZE > BITS_PER_GROUP/2.
+// At this moment FFT_LIMB_SIZE = 19 and BITS_PER_GROUP = 31.
 static int ReduceLimbs(limb *factor, complex *fftFactor, int len)
 {
-  int bitExternal = 0;  // Least significant bit of current external limb that corresponds to
-                        // bit zero of FFT internal limb.
+  int bitExternal = 0;  // Least significant bit of current external limb
+                        // that corresponds to bit zero of FFT internal limb.
   limb *ptrFactor = factor;
   complex *ptrInternalFactor = fftFactor;
   for (;;)
@@ -338,31 +343,31 @@ static int ReduceLimbs(limb *factor, complex *fftFactor, int len)
       real += ((ptrFactor + 1)->x << (BITS_PER_GROUP - bitExternal));
     }
     ptrInternalFactor->real = (double)(real & MAX_VALUE_FFT_LIMB);
-bitExternal += FFT_LIMB_SIZE;
-if (bitExternal >= BITS_PER_GROUP)
-{                   // All bits of input limb have been used.
-  bitExternal -= BITS_PER_GROUP;
-  if (++ptrFactor - factor == len)
-  {
-    ptrInternalFactor++->imaginary = 0;
-    break;
-  }
-}
-int imaginary = ptrFactor->x >> bitExternal;
-if (ptrFactor - factor < len - 1)
-{                   // Do not read outside input buffer.
-  imaginary += (ptrFactor + 1)->x << (BITS_PER_GROUP - bitExternal);
-}
-ptrInternalFactor++->imaginary = (double)(imaginary & MAX_VALUE_FFT_LIMB);
-bitExternal += FFT_LIMB_SIZE;
-if (bitExternal >= BITS_PER_GROUP)
-{                   // All bits of input limb have been used.
-  bitExternal -= BITS_PER_GROUP;
-  if (++ptrFactor - factor == len)
-  {
-    break;
-  }
-}
+    bitExternal += FFT_LIMB_SIZE;
+    if (bitExternal >= BITS_PER_GROUP)
+    {                   // All bits of input limb have been used.
+      bitExternal -= BITS_PER_GROUP;
+      if (++ptrFactor - factor == len)
+      {
+        ptrInternalFactor++->imaginary = 0;
+        break;
+      }
+    }
+    int imaginary = ptrFactor->x >> bitExternal;
+    if (ptrFactor - factor < len - 1)
+    {                   // Do not read outside input buffer.
+      imaginary += (ptrFactor + 1)->x << (BITS_PER_GROUP - bitExternal);
+    }
+    ptrInternalFactor++->imaginary = (double)(imaginary & MAX_VALUE_FFT_LIMB);
+    bitExternal += FFT_LIMB_SIZE;
+    if (bitExternal >= BITS_PER_GROUP)
+    {                   // All bits of input limb have been used.
+      bitExternal -= BITS_PER_GROUP;
+      if (++ptrFactor - factor == len)
+      {
+        break;
+      }
+    }
   }
   return (int)(ptrInternalFactor - fftFactor);
 }
@@ -401,14 +406,10 @@ void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int 
   }
   // Get next power of 2 to len.
   int power2, index;
-  for (power2 = 1; ; power2 *= 2)
+  for (power2 = 1; power2 < fftLen; power2 *= 2)
   {
-    if (power2 >= fftLen)
-    {
-      power2 += power2;
-      break;
-    }
   }
+  power2 += power2;
   for (index = fftLen; index < power2; index++)
   {
     firstFactor[index].real = 0;

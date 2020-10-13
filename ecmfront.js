@@ -247,8 +247,16 @@ function dowork(n)
     return;
   }
   styleButtons("none", "inline");  // Enable "more" and "stop" buttons
-  res.innerHTML = (lang ? "<p>Factorizando la expresión...</p>" :
-                          "<p>Factoring expression...</p>");
+  if (n == 0)
+  {
+    res.innerHTML = (lang ? "<p>Evaluando la expresión...</p>" :
+                            "<p>Evaluating expression...</p>");
+  }
+  else
+  {
+    res.innerHTML = (lang ? "<p>Factorizando la expresión...</p>" :
+                            "<p>Factoring expression...</p>");
+  }
   if (n < -2)
   {
     app += 6;   // Convert to factorization.
