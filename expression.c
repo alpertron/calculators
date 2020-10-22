@@ -74,6 +74,9 @@ static int ComputeBack(void);
 static int ComputeNext(void);
 #ifdef FACTORIZATION_FUNCTIONS
 static int ComputeTotient(void);
+static int ComputeNumFact(void);
+static int ComputeMaxFact(void);
+static int ComputeMinFact(void);
 static int ComputeNumDivs(void);
 static int ComputeSumDivs(void);
 static int ComputeConcatFact(void);
@@ -459,6 +462,48 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     {
       if (retcode != 0) { return retcode; }
       retcode = ComputeSumDivs();
+      if (retcode != 0) { return retcode; }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      leftNumberFlag = 1;
+      continue;
+    }
+    else if ((retcode = func(expr, ExpressionResult,
+      "MINFACT", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    {
+      if (retcode != 0) { return retcode; }
+      retcode = ComputeMinFact();
+      if (retcode != 0) { return retcode; }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      leftNumberFlag = 1;
+      continue;
+    }
+    else if ((retcode = func(expr, ExpressionResult,
+      "MAXFACT", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    {
+      if (retcode != 0) { return retcode; }
+      retcode = ComputeMaxFact();
+      if (retcode != 0) { return retcode; }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      leftNumberFlag = 1;
+      continue;
+    }
+    else if ((retcode = func(expr, ExpressionResult,
+      "NUMFACT", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    {
+      if (retcode != 0) { return retcode; }
+      retcode = ComputeNumFact();
       if (retcode != 0) { return retcode; }
       retcode = setStackValue(&curStack);
       if (retcode != EXPR_OK)
@@ -1401,6 +1446,30 @@ static int ComputeSumDivs(void)
   getCurrentStackValue(&curStack);    // Get argument.
   PerformFactorization(&curStack);
   SumOfDivisors(&curStack);
+  return EXPR_OK;
+}
+
+static int ComputeNumFact(void)
+{
+  getCurrentStackValue(&curStack);    // Get argument.
+  PerformFactorization(&curStack);
+  NumFactors(&curStack);
+  return EXPR_OK;
+}
+
+static int ComputeMaxFact(void)
+{
+  getCurrentStackValue(&curStack);    // Get argument.
+  PerformFactorization(&curStack);
+  MaxFactor(&curStack);
+  return EXPR_OK;
+}
+
+static int ComputeMinFact(void)
+{
+  getCurrentStackValue(&curStack);    // Get argument.
+  PerformFactorization(&curStack);
+  MinFactor(&curStack);
   return EXPR_OK;
 }
 

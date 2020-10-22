@@ -2165,7 +2165,7 @@ static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor, in
     // known factor / GCD and generate a new known factor entry.
     NumberLength = Temp3.nbrLimbs;
     BigInteger2IntArray(ptrNewFactorLimbs, &Temp3);      // Append new known factor.
-    BigIntDivide(&Temp2, &Temp3, &Temp4);               // Divide by this factor.
+    BigIntDivide(&Temp2, &Temp3, &Temp4);                // Divide by this factor.
     NumberLength = Temp4.nbrLimbs;
     BigInteger2IntArray(ptrFactor, &Temp4);              // Overwrite old known factor.
     pstNewFactor->multiplicity = pstCurFactor->multiplicity;
@@ -2428,23 +2428,106 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   return factorsFound;
 }
 
-void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors)
+static void factorSmallInt(int toFactor, int* factors, struct sFactors* pstFactors)
+{
+  int factorsFound = 0;
+  int primeFactor;
+  int multiplicity;
+  struct sFactors* ptrFactor = pstFactors + 1;
+  int* ptrFactorLimbs = factors;
+  if (toFactor <= 3)
+  {     // Only one factor.
+    ptrFactor->ptrFactor = ptrFactorLimbs;
+    ptrFactor->multiplicity = 1;
+    ptrFactor->type = 0;
+    ptrFactor->upperBound = 0;
+    *ptrFactorLimbs++ = 1;
+    *ptrFactorLimbs++ = toFactor;
+    pstFactors->multiplicity = 1;
+    return;
+  }
+  // Divide by 2 and 3.
+  for (primeFactor = 2; primeFactor <= 3; primeFactor++)
+  {
+    multiplicity = 0;
+    while (toFactor % primeFactor == 0)
+    {
+      toFactor /= primeFactor;
+      multiplicity++;
+    }
+    if (multiplicity > 0)
+    {
+      factorsFound++;
+      ptrFactor->ptrFactor = ptrFactorLimbs;
+      ptrFactor->multiplicity = multiplicity;
+      ptrFactor->type = 0;
+      ptrFactor->upperBound = 0;
+      *ptrFactorLimbs++ = 1;
+      *ptrFactorLimbs++ = primeFactor;
+      ptrFactor++;
+    }
+  }
+  for (primeFactor = 5; primeFactor * primeFactor <= toFactor; primeFactor += 2)
+  {
+    if (primeFactor % 3 == 0)
+    {
+      continue;
+    }
+    multiplicity = 0;
+    while (toFactor % primeFactor == 0)
+    {
+      toFactor /= primeFactor;
+      multiplicity++;
+    }
+    if (multiplicity > 0)
+    {
+      factorsFound++;
+      ptrFactor->ptrFactor = ptrFactorLimbs;
+      ptrFactor->multiplicity = multiplicity;
+      ptrFactor->type = 0;
+      ptrFactor->upperBound = 0;
+      *ptrFactorLimbs++ = 1;
+      *ptrFactorLimbs++ = primeFactor;
+      ptrFactor++;
+    }
+  }
+  if (toFactor > 1)
+  {
+    factorsFound++;
+    ptrFactor->ptrFactor = ptrFactorLimbs;
+    ptrFactor->multiplicity = 1;
+    ptrFactor->type = 0;
+    ptrFactor->upperBound = 0;
+    *ptrFactorLimbs++ = 1;
+    *ptrFactorLimbs++ = toFactor;
+    ptrFactor++;
+  }
+  pstFactors->multiplicity = factorsFound;
+}
+
+void factor(BigInteger* toFactor, int* number, int* factors, struct sFactors* pstFactors)
 {
   factorExt(toFactor, number, factors, pstFactors, NULL);
 }
+
 // pstFactors -> ptrFactor points to end of factors.
 // pstFactors -> multiplicity indicates the number of different factors.
 void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors)
 {
   struct sFactors *pstCurFactor;
-  oldNbrFactors = 0;
-  NextEC = -1;
   int factorNbr, expon;
   int remainder, nbrLimbs, ctr;
   int *ptrFactor;
   int dividend;
   char *ptrCharFound;
   int result;
+  if (toFactor->nbrLimbs == 1)
+  {
+    factorSmallInt(toFactor->limbs[0].x, factors, pstFactors);
+    return;
+  }
+  oldNbrFactors = 0;
+  NextEC = -1;
   EC = 1;
   NumberLength = toFactor->nbrLimbs;
   GetYieldFrequency();
@@ -2833,6 +2916,43 @@ void Totient(BigInteger *result)
     addbigint(&TempVar, -1);   // p-1
     BigIntMultiply(result, &TempVar, result);
     pstFactor++;
+  }
+}
+
+void NumFactors(BigInteger* result)
+{
+  intToBigInteger(result, astFactorsMod[0].multiplicity);
+}
+
+void MinFactor(BigInteger* result)
+{
+  int factorNumber;
+  struct sFactors* pstFactor = &astFactorsMod[1];
+  IntArray2BigInteger(pstFactor->ptrFactor, result);
+  for (factorNumber = 2; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  {
+    IntArray2BigInteger((++pstFactor)->ptrFactor, &factorValue);
+    BigIntSubt(&factorValue, result, &factorValue);
+    if (factorValue.sign == SIGN_NEGATIVE)
+    {
+      IntArray2BigInteger(pstFactor->ptrFactor, result);
+    }
+  }
+}
+
+void MaxFactor(BigInteger* result)
+{
+  int factorNumber;
+  struct sFactors* pstFactor = &astFactorsMod[1];
+  IntArray2BigInteger(pstFactor->ptrFactor, result);
+  for (factorNumber = 2; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  {
+    IntArray2BigInteger((++pstFactor)->ptrFactor, &factorValue);
+    BigIntSubt(&factorValue, result, &factorValue);
+    if (factorValue.sign == SIGN_POSITIVE)
+    {
+      IntArray2BigInteger(pstFactor->ptrFactor, result);
+    }
   }
 }
 

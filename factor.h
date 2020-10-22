@@ -69,6 +69,9 @@ extern struct sFactors astFactorsMod[MAX_FACTORS];
 extern int factorsMod[20000];
 void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, int doFactorization);
 void Totient(BigInteger *result);
+void NumFactors(BigInteger* result);
+void MinFactor(BigInteger* result);
+void MaxFactor(BigInteger* result);
 void SumOfDivisors(BigInteger *result);
 void NumberOfDivisors(BigInteger *result);
 #ifdef FACTORIZATION_APP
