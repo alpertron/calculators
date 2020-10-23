@@ -36,7 +36,7 @@
       {
         if (asmjs)
         {    // Asm.js
-          blob = new Blob([fileContents]);
+        blob = new Blob([fileContents],{type: 'text/javascript'});
         }
         else
         {    // WebAssembly

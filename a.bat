@@ -1,86 +1,101 @@
 set compilerName=%userprofile%\emsdk\emsdk\upstream\emscripten\node_modules\google-closure-compiler-java\compiler.jar
 set compilerOptions=--compilation_level ADVANCED_OPTIMIZATIONS --language_in ECMASCRIPT5_STRICT --language_out ECMASCRIPT5_STRICT --externs=custom-externs.js
-set commonOptions=--no-entry -Os -Wall -s WASM=0 -s DYNAMIC_EXECUTION=0 -s SUPPORT_ERRNO=0 -s TEXTDECODER=0 -s MIN_IE_VERSION=11 -s ASSERTIONS=0 -s NO_FILESYSTEM=1 --closure 1 --js-library lib.js --pre-js pre.js --memory-init-file 0
-set wasmCommon=--no-entry -Os -Wall -s WASM=1 -s DYNAMIC_EXECUTION=0 -s SUPPORT_ERRNO=0 -D_USING64BITS_ -s ASSERTIONS=0 -s NO_FILESYSTEM=1 --js-library lib.js --pre-js pre.js
+set commonFlags=--no-entry -Wall -s DYNAMIC_EXECUTION=0 -s SUPPORT_ERRNO=0 -s ASSERTIONS=0 -s NO_FILESYSTEM=1 --js-library lib.js --pre-js pre.js
+set jsCommon=%commonFlags% -Os -s WASM=0 -s SINGLE_FILE=1 -s TEXTDECODER=0 -s MIN_IE_VERSION=11 -s INCOMING_MODULE_JS_API=['preRun','noInitialRun'] -s LEGACY_VM_SUPPORT=1 -s WASM_ASYNC_COMPILATION=0 -s ENVIRONMENT='worker' --closure 1 --memory-init-file 0
+set wasmCommon=%commonFlags% -Os -s WASM=1 %commonFlags% -D_USING64BITS_ 
 if "%1" == "" goto :end
 del *.wasm
 del *00*js
 
 rem ==================== GENERATION OF ASM.JS ===============================
-cmd /c emcc -DFSQUARES_APP=1 expression.c partition.c errors.c bigint.c division.c fsquares.c fcubes.c baseconv.c karatsuba.c modmult.c sqroot.c contfrac.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432 %commonOptions% -o fsquaresW%1.js
+set fsquaresFiles=expression.c partition.c errors.c bigint.c division.c fsquares.c fcubes.c baseconv.c karatsuba.c modmult.c sqroot.c contfrac.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c
+set fsquaresOptions=-DFSQUARES_APP=1 -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432
+cmd /c emcc %jsCommon% %fsquaresFiles% %fsquaresOptions% -o fsquaresW%1.js
 if errorlevel 1 goto end
 
-cmd /c emcc expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c rootseq.c quintics.c bigrational.c output.c polynomial.c intpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 %commonOptions% -o polfactW%1.js
+set polfactFiles=expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c rootseq.c quintics.c bigrational.c output.c polynomial.c intpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c
+set polfactOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=268435456
+cmd /c emcc %jsCommon% %polfactFiles% %polfactOptions% -o polfactW%1.js
 if errorlevel 1 goto end
 
-cmd /c emcc expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c dilog.c bignbr.c showtime.c inputstr.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888 %commonOptions% -o dilogW%1.js
+set dilogFiles=expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c dilog.c bignbr.c showtime.c inputstr.c fft.c
+set dilogOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
+cmd /c emcc %jsCommon% %dilogFiles% %dilogOptions% -o dilogW%1.js
 if errorlevel 1 goto end
 
-cmd /c emcc expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c quadmod.c bignbr.c showtime.c inputstr.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888 %commonOptions% -o quadmodW%1.js
+set quadmodFiles=expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c quadmod.c bignbr.c showtime.c inputstr.c fft.c
+set quadmodOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
+cmd /c emcc %jsCommon% %quadmodFiles% %quadmodOptions% -o quadmodW%1.js
 if errorlevel 1 goto end
 
-cmd /c emcc GaussExpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c gaussian.c output.c bignbr.c showtime.c inputstr.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888 %commonOptions% -o gaussianW%1.js
+set gaussianFiles=GaussExpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c gaussian.c output.c bignbr.c showtime.c inputstr.c fft.c
+set gaussianOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
+cmd /c emcc %jsCommon% %gaussianFiles% %gaussianOptions% -o gaussianW%1.js
 if errorlevel 1 goto end
 
-cmd /c emcc -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DENABLE_VERBOSE=1 batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c ecmfront.c gcdrings.c bignbr.c showtime.c inputstr.c -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 -s DOUBLE_MODE=1 %commonOptions% -o ecmW%1.js
+set ecmFiles=batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c ecmfront.c gcdrings.c bignbr.c showtime.c inputstr.c
+set ecmOptions=-DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DENABLE_VERBOSE=1 -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456
+cmd /c emcc %jsCommon% %ecmFiles% %ecmOptions% -o ecmW%1.js
 if errorlevel 1 goto end
 
-cmd /c emcc -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c quad.c output.c bignbr.c showtime.c inputstr.c -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s DOUBLE_MODE=1 -s TOTAL_MEMORY=268435456 %commonOptions% -o quadW%1.js
+set quadFiles=batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c quad.c output.c bignbr.c showtime.c inputstr.c
+set quadOptions=-DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456
+cmd /c emcc %jsCommon% %quadFiles% %quadOptions% -o quadW%1.js
 if errorlevel 1 goto end
 
 rem ===================== GENERATION OF WASM ================================
-cmd /c emcc %wasmCommon% -Dlang=0 -Dapplic=0 -DFSQUARES_APP=1 expression.c partition.c errors.c bigint.c division.c fsquares.c baseconv.c karatsuba.c modmult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432 -o fsquaresE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 -Dapplic=0 %fsquaresFiles% %fsquaresOptions% -o fsquaresE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 -Dapplic=0 -DFSQUARES_APP=1 expression.c partition.c errors.c bigint.c division.c fsquares.c baseconv.c karatsuba.c modmult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432 -o fsquaresS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 -Dapplic=0 %fsquaresFiles% %fsquaresOptions% -o fsquaresS.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=0 -Dapplic=1 -DFSQUARES_APP=1 expression.c partition.c errors.c bigint.c division.c fsquares.c fcubes.c baseconv.c karatsuba.c modmult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432 -o fcubesE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 -Dapplic=1 %fsquaresFiles% %fsquaresOptions% -o fcubesE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 -Dapplic=1 -DFSQUARES_APP=1 expression.c partition.c errors.c bigint.c division.c fsquares.c fcubes.c baseconv.c karatsuba.c modmult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432 -o fcubesS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 -Dapplic=1 %fsquaresFiles% %fsquaresOptions% -o fcubesS.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=0 -Dapplic=2 -DFSQUARES_APP=1 expression.c partition.c errors.c bigint.c division.c fsquares.c baseconv.c karatsuba.c modmult.c sqroot.c contfrac.c output.c bignbr.c showtime.c inputstr.c batch.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432 -o contfracE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 -Dapplic=2 %fsquaresFiles% %fsquaresOptions% -o contfracE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 -Dapplic=2 -DFSQUARES_APP=1 expression.c partition.c errors.c bigint.c division.c fsquares.c baseconv.c karatsuba.c modmult.c sqroot.c contfrac.c output.c bignbr.c showtime.c inputstr.c batch.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432 -o contfracS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 -Dapplic=2 %fsquaresFiles% %fsquaresOptions% -o contfracS.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=0 expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c rootseq.c quintics.c bigrational.c output.c polynomial.c intpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 -o polfactE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 %polfactFiles% %polfactOptions% -o polfactE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c rootseq.c quintics.c bigrational.c output.c polynomial.c intpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 -o polfactS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 %polfactFiles% %polfactOptions% -o polfactS.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=0 -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DENABLE_VERBOSE=1 batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c ecmfront.c gcdrings.c bignbr.c showtime.c inputstr.c -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 -s DOUBLE_MODE=1 -o ecmE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 %ecmFiles% %ecmOptions% -o ecmE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DENABLE_VERBOSE=1 batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c ecmfront.c gcdrings.c bignbr.c showtime.c inputstr.c -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 -s DOUBLE_MODE=1 -o ecmS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 %ecmFiles% %ecmOptions% -o ecmS.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=0 expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c dilog.c bignbr.c showtime.c inputstr.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888 -o dilogE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 %dilogFiles% %dilogOptions% -o dilogE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c dilog.c bignbr.c showtime.c inputstr.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888 -o dilogS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 %dilogFiles% %dilogOptions% -o dilogS.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=0 -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c quad.c output.c bignbr.c showtime.c inputstr.c -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 -s DOUBLE_MODE=1 -o quadE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 %quadFiles% %quadOptions% -o quadE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 -DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c quad.c output.c bignbr.c showtime.c inputstr.c -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456 -s DOUBLE_MODE=1 -o quadS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 %quadFiles% %quadOptions% -o quadS.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=0 expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c quadmod.c bignbr.c showtime.c inputstr.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888 -o quadmodE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 %quadmodFiles% %quadmodOptions% -o quadmodE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c quadmod.c bignbr.c showtime.c inputstr.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888 -o quadmodS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 %quadmodFiles% %quadmodOptions% -o quadmodS.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=0 GaussExpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c gaussian.c output.c bignbr.c showtime.c inputstr.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888 -o gaussianE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 %gaussianFiles% %gaussianOptions% -o gaussianE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 GaussExpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c gaussian.c output.c bignbr.c showtime.c inputstr.c fft.c -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888 -o gaussianS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 %gaussianFiles% %gaussianOptions% -o gaussianS.wasm
 if errorlevel 1 goto end
 
 java -jar %compilerName% -D app=0 %compilerOptions% --js interface.js --js_output_file fsquares.js
