@@ -3886,6 +3886,7 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
     {
       ptrValue1 += 1 + numLimbs(ptrValue1);
     }
+    NumberLength = numLimbs(ptrValue1);
     IntArray2BigInteger(ptrValue1, &operand1);
   }
   if (operand1.sign == SIGN_NEGATIVE)
