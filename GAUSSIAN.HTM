@@ -170,22 +170,23 @@ Contact
 <div class="lf"></div>
 </form>
 <div id="help" aria-live="polite">
-<p>The Gaussian integers are complex numbers of the form <var>a</var> + <var>bi</var>, where both <var>a</var> and <var>b</var> are integer numbers and <var>i</var> is the square root of -1.</p>
-<p>This applet is able to factor a Gaussian integer as a product of Gaussian primes. This decomposition is unique, if we do not consider the order of the factors.</p>
+<p>This Web application factors Gaussian integers as a product of Gaussian primes.</p>
+<p>The Gaussian integers are complex numbers of the form <var>a</var> + <var>b</var>i, where both <var>a</var> and <var>b</var> are integer numbers and i is the square root of -1.</p>
+<p>The factorization is unique, if we do not consider the order of the factors and associated primes. Each prime number has three associated prime numbers that are obtained by multiplying by a power of i. This issue disappears by selecting prime numbers <var>a</var> + <var>b</var>i such that <var>a</var> &gt;= |<var>b</var>|.</p>
 <h2>Factoring Gaussian integers</h2>
-<p>An important concept needed for Gaussian integer factorization is the norm. This is defined as: <span role="math" aria-label="norm of a plus b times i equals a squared plus b squared">N(<var>a</var>+<var>b</var><var>i</var>) = <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup></span>.
+<p>An important concept needed for Gaussian integer factorization is the norm. This is defined as: <span role="math" aria-label="norm of a plus b times i equals a squared plus b squared">N(<var>a</var>+<var>b</var>i) = <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup></span>.
 <p>The product of the norm of two Gaussian integers is equal to the norm of the products of these numbers as can be easily seen as follows:</p>
-<p>N(<var>a</var>+<var>b</var><var>i</var>) N(<var>c</var>+<var>d</var><var>i</var>) =
+<p>N(<var>a</var>+<var>b</var>i) N(<var>c</var>+<var>d</var>i) =
 (<var>a</var><sup>2</sup> + <var>b</var><sup>2</sup>) (<var>c</var><sup>2</sup> + <var>d</var><sup>2</sup>) =
 (<var>a</var><var>c</var>)<sup>2</sup> + (<var>b</var><var>d</var>)<sup>2</sup> + (<var>a</var><var>d</var>)<sup>2</sup> + (<var>b</var><var>c</var>)<sup>2</sup> = 
 (<var>a</var><var>c</var>)<sup>2</sup> - 2<var>a</var><var>b</var><var>c</var><var>d</var> + (<var>b</var><var>d</var>)<sup>2</sup> + (<var>a</var><var>d</var>)<sup>2</sup> + 2<var>a</var><var>b</var><var>c</var><var>d</var> + (<var>b</var><var>c</var>)<sup>2</sup> = 
 (<var>a</var><var>c</var>-<var>b</var><var>d</var>)<sup>2</sup> + (<var>a</var><var>d</var>+<var>b</var><var>c</var>)<sup>2</sup> =
-N((<var>a</var><var>c</var>-<var>b</var><var>d</var>)+(<var>a</var><var>d</var>+<var>b</var><var>c</var>)<var>i</var>) =
-N(<var>a</var>(<var>c</var>+<var>d</var><var>i</var>) + <var>b</var>(-<var>d</var>+<var>c</var><var>i</var>)) =
-N(<var>a</var>(<var>c</var>+<var>d</var><var>i</var>) + <var>b</var><var>i</var>(<var>c</var>+<var>d</var><var>i</var>)) =
-N((<var>a</var>+<var>b</var><var>i</var>) (<var>c</var>+<var>d</var><var>i</var>))</p>
+N((<var>a</var><var>c</var>-<var>b</var><var>d</var>)+(<var>a</var><var>d</var>+<var>b</var><var>c</var>)i) =
+N(<var>a</var>(<var>c</var>+<var>d</var>i) + <var>b</var>(-<var>d</var>+<var>c</var>i)) =
+N(<var>a</var>(<var>c</var>+<var>d</var>i) + <var>b</var>i(<var>c</var>+<var>d</var>i)) =
+N((<var>a</var>+<var>b</var>i) (<var>c</var>+<var>d</var>i))</p>
 
-<p>In the next to last expression we used the fact that <var>i</var><sup>2</sup> = -1.</p>
+<p>In the next to last expression we used the fact that i<sup>2</sup> = -1.</p>
 
 <p>This means that the first step when trying to factor a Gaussian integer is to factor its norm into integer primes, so we get the norm of the factors of the original number.</p>
 <p>The second step is to obtain the factors from the norm of the factor.</p>
@@ -193,9 +194,9 @@ N((<var>a</var>+<var>b</var><var>i</var>) (<var>c</var>+<var>d</var><var>i</var>
 <ol>
 <li>The prime factor <var>p</var> of the norm is 2: This means that the factor of the Gaussian integer is 1+i or 1-i.</li>
 <li>The prime factor <var>p</var> of the norm is multiple of 4 plus 3: this value cannot be expressed as a sum of two squares, so <var>p</var> is not a norm, but <var>p</var><sup>2</sup> is.
-Since <var>p</var><sup>2</sup> = <var>p</var><sup>2</sup> + 0<sup>2</sup>, and there is no prime norm that divides <var>p</var><sup>2</sup>, the number <var>p</var> + 0<var>i</var> is a Gaussian prime, and the repeated factor <var>p</var> must be discarded.
+Since <var>p</var><sup>2</sup> = <var>p</var><sup>2</sup> + 0<sup>2</sup>, and there is no prime norm that divides <var>p</var><sup>2</sup>, the number <var>p</var> + 0i is a Gaussian prime, and the repeated factor <var>p</var> must be discarded.
 <li>The prime factor <var>p</var> of the norm is multiple of 4 plus 1: this number can be expressed as a sum of two squares, by using the methods explained in the <a href="https://www.alpertron.com.ar/4SQUARES.HTM">sum of squares</a> page.
-If <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, then you can check whether <var>m</var> + <var>n</var><var>i</var> or <var>m</var> &minus; <var>n</var><var>i</var> are divisors of the original Gaussian number.</li>
+If <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, then you can check whether <var>m</var> + <var>n</var>i or <var>m</var> &minus; <var>n</var>i are divisors of the original Gaussian number.</li>
 </ol>
 <p>Why does a number which is multiple of 4 plus 3 cannot be expressed as a sum of two squares? This is because the square of an even number is multiple of 4, and the square of an odd number is multiple of 4 plus 1. So we get:</p>
 <ul>
@@ -209,12 +210,12 @@ If <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, then you 
 <p>Example: factor the Gaussian integer 440 &minus; 55i</p>
 <p>The norm is 440<sup>2</sup> + 55<sup>2</sup> = 196625 = 5 &times; 5 &times; 5 &times; 11 &times; 11 &times; 13</p>
 <p>Both 5 and 13 are multiples of 4 plus 1 while 11 is a multiple of 4 plus 3. We can use the fact the 5 = 2<sup>2</sup> + 1<sup>2</sup> and 13 = 3<sup>2</sup> + 2<sup>2</sup></p>
-<p>Since 11 is a Gaussian prime, we can divide the original number by 11 and get 44 &minus; 5i.</p>
-<p>For the three factors of the norm equal to 5, we have to divide the result of the previous step 44 &minus; 5i by 2&minus;i or 2+i. So we get: 44 &minus; 5i = (2+i)<sup>2</sup> &times; (2-i) &times; (3 &minus; 2i)</p>
-<p>For the factor 13 we have to divide the result of the previous step 3 &minus; 2i by 3 + 2i or 3 &minus; 2i. Of course only 3 &minus; 2i divides 3 &minus; 2i.</p>
-<p>The complete factorization is: 440 &minus; 55i = 11 &times; (2 + i)<sup>2</sup> &times; (2 &minus; i) &times; (3 &minus; 2i).</p>
+<p>Since 11 is a Gaussian prime, we can divide the original number by 11 and get 44&nbsp;&minus;&nbsp;5i.</p>
+<p>For the three factors of the norm equal to 5, we have to divide the result of the previous step 44&nbsp;&minus;&nbsp;5i by 2&nbsp;&minus;&nbsp;i or 2&nbsp;+&nbsp;i. So we get: 44 &minus; 5i = (2&nbsp;+&nbsp;i)<sup>2</sup> &times; (2&nbsp;&minus;&nbsp;i) &times; (3&nbsp;&minus;&nbsp;2i)</p>
+<p>For the factor 13 we have to divide the result of the previous step 3&nbsp;&minus;&nbsp;2i by 3&nbsp;+&nbsp;2i or 3&nbsp;&minus;&nbsp;2i. Of course only 3&nbsp;&minus;&nbsp;2i divides 3&nbsp;&minus;&nbsp;2i.</p>
+<p>The complete factorization is: 440 &minus; 55i = 11 &times; (2&nbsp;+&nbsp;i)<sup>2</sup> &times; (2&nbsp;&minus;&nbsp;i) &times; (3&nbsp;&minus;&nbsp;2i).</p>
 <h2>Expressions</h2>
-<p>In order to enter the imaginary part of a Gaussian integer you can use the symbol <var>i</var>, as in the next example: 3+4i.</p>
+<p>In order to enter the imaginary part of a Gaussian integer you can use the symbol i, as in the next example: 3+4i.</p>
 <p>You can also enter expressions that use the following operators, functions and parentheses:</p>
 <p>
 <ul>
