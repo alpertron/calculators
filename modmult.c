@@ -288,11 +288,6 @@ void AddBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Sum, limb *mod, int nbrLen)
   }
 }
 
-void AddBigNbrMod(limb *Nbr1, limb *Nbr2, limb *Sum)
-{
-  AddBigNbrModN(Nbr1, Nbr2, Sum, TestNbr, NumberLength);
-}
-
 void SubtBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Diff, limb *mod, int nbrLen)
 {
   int i;
@@ -312,11 +307,6 @@ void SubtBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Diff, limb *mod, int nbrLen)
       Diff[i].x = (int)(carry & MAX_VALUE_LIMB);
     }
   }
-}
-
-void SubtBigNbrMod(limb *Nbr1, limb *Nbr2, limb *Sum)
-{
-  SubtBigNbrModN(Nbr1, Nbr2, Sum, TestNbr, NumberLength);
 }
 
 void smallmodmult(int factor1, int factor2, limb *product, int mod)

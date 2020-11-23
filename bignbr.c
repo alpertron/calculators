@@ -1962,7 +1962,7 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
     }
     powerOf2 += BITS_PER_GROUP;
   }
-  for (mask = 0x1; mask <= MAX_VALUE_LIMB; mask *= 2)
+  for (mask = 0x1; mask <= (int)MAX_VALUE_LIMB; mask *= 2)
   {
     if (((value + index)->x & mask) != 0)
     {

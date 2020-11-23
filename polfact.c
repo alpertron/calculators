@@ -395,6 +395,8 @@ static void SortFactors(BigInteger *modulus)
 // Output: factorInfo = structure that holds the factors.
 int FactorModularPolynomial(int inputMontgomery)
 {
+  int nbrFactor;
+  struct sFactorInfo* ptrFactorInfo;
   int currentDegree, rc;
   int *ptrValue1;
   int nbrLimbsPrime = primeMod.nbrLimbs + 1; // Add 1 for length;
@@ -449,8 +451,14 @@ int FactorModularPolynomial(int inputMontgomery)
     return EXPR_OK;
   }
   // Convert original polynomial from Montgomery to standard notation.
+  ptrFactorInfo = factorInfo;
+  for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+  {
+    polyToStandardNotation(ptrFactorInfo->ptr, ptrFactorInfo->degree);
+    ptrFactorInfo++;
+  }
   OrigPolyFromMontgomeryToStandard();
-  rc = HenselLifting(factorInfo);
+  rc = HenselLifting(factorInfo, 0);
   if (rc != EXPR_OK)
   {
     return rc;

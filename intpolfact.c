@@ -786,29 +786,11 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
   return 1;              // Factorization is complete.
 }
 
-static void CompressPolynomial(int nbrFactorsFound)
-{
-  int nbrFactor;
-  struct sFactorInfo* pstFactorInfo = factorInfoRecord;
-  for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
-  {
-    int* ptrDest = pstFactorInfo->ptrPolyLifted;
-    int* ptrSrc = ptrDest;
-    for (degree = 0; degree < pstFactorInfo->degree; degree++)
-    {
-      int coeffLength = 1 + numLimbs(ptrSrc);
-      memmove(ptrDest, ptrSrc, coeffLength * sizeof(int));
-      ptrDest += coeffLength;
-      ptrSrc += NumberLength + 1;
-    }
-    pstFactorInfo++;
-  }
-}
-
 // Find Knuth-Cohen bound for coefficients of polynomial factors:
 // If polynomial B divides A we have for all j:
-// |Bj| <= binomial(n-1, j)*SUM(i, |Ai|^2))^(1/2) + binomial(n-1, j-1) * |Am|
+// |Bj| <= binomial(n-1, j)*SUM(i, |Ai|^2))^(1/2) + binomial(n-1, j-1) * Q
 // where m is the degree of A and n is the degree of B.
+// Q is the minimum of |A0| and |Am|.
 // Maximum degree to be considered is n = ceil(m/2).
 // We need to find max(Bj).
 static void ComputeCoeffBounds(void)
@@ -839,8 +821,19 @@ static void ComputeCoeffBounds(void)
       BigIntAdd(&operand1, &operand2, &operand1);
     }
     squareRoot(operand1.limbs, operand2.limbs, operand1.nbrLimbs, &operand2.nbrLimbs);
-    CopyBigInt(&operand1, &operand2);
+    CopyBigInt(&operand1, &operand2);  // operand1 <- SUM(i, |Ai|^2))^(1/2)
+    operand3.sign = SIGN_POSITIVE;
   }
+  // If the absolute value of trailing coefficient is less than the
+  // absolute value of leading coefficient (stored in operand3), replace it.
+  UncompressBigIntegerB(&polyNonRepeatedFactors[1], &operand2);
+  operand2.sign = SIGN_POSITIVE;
+  BigIntSubt(&operand3, &operand2, &operand4);
+  if (operand4.sign == SIGN_POSITIVE)
+  {      // |Am| >= |A0|
+    CopyBigInt(&operand3, &operand2);
+  }
+
   // Loop that finds the maximum value of bound for |Bj|.
   intToBigInteger(&operand2, 1);  // binomial(n-1, 0)
   UncompressBigIntegerB(&polyNonRepeatedFactors[1], &bound);  // bound <- |A0|
@@ -849,7 +842,7 @@ static void ComputeCoeffBounds(void)
   {
     CopyBigInt(&operand4, &operand2);
     multint(&operand2, &operand2, maxDegreeFactor - degree1);
-    subtractdivide(&operand2, 0, degree1);
+    subtractdivide(&operand2, 0, degree1);  // operand2 <- binomial(n-1, j)
     BigIntMultiply(&operand1, &operand2, &operand5);
     BigIntMultiply(&operand3, &operand4, &operand4);
     BigIntAdd(&operand5, &operand4, &operand5);
@@ -929,12 +922,10 @@ static void vanHoeij(int prime, int nbrFactors)
 #if DEBUG_HENSEL_LIFTING
   ptrOutput2 = ptrDebugOutput;
 #endif
-  HenselLifting(factorInfoRecord);
+  HenselLifting(factorInfoRecord, 1);
 #if DEBUG_HENSEL_LIFTING
   ptrDebugOutput = ptrOutput2; ptrOutput2 = NULL;
 #endif
-  // Compress polynomials so there are no spaces between coefficients.
-  CompressPolynomial(nbrFactorsFound);
   // Check whether the product of up to 3 factors mod p^b
   // is a divisor of the original polynomial.
   CopyBigInt(&halfPowerMod, &powerMod);

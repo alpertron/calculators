@@ -92,11 +92,11 @@ void int2hex(char **pOutput, int nbr);
 void GetMontgomeryParms(int len);
 void AddBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Sum, limb *TestNbr, int NumberLength);
 void SubtBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Sum, limb *TestNbr, int NumberLength);
-void SubtBigNbrMod(limb *Nbr1, limb *Nbr2, limb *Sum);
+#define SubtBigNbrMod(Nbr1, Nbr2, Sum) SubtBigNbrModN(Nbr1, Nbr2, Sum, TestNbr, NumberLength) 
 void modmult(limb *factor1, limb *factor2, limb *product);
 void modmultInt(limb *factorBig, int factorInt, limb *result);
 void modmultIntExtended(limb *factorBig, int factorInt, limb *result, limb *pTestNbr, int nbrLen);
-void AddBigNbrMod(limb *Nbr1, limb *Nbr2, limb *Sum);
+#define AddBigNbrMod(Nbr1, Nbr2, Sum) AddBigNbrModN(Nbr1, Nbr2, Sum, TestNbr, NumberLength) 
 void modPowBaseInt(int base, limb *exp, int nbrGroupsExp, limb *power);
 void modPow(limb *base, limb *exp, int nbrGroupsExp, limb *power);
 void modPowLimb(limb *base, limb *exp, limb *power);
