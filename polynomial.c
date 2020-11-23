@@ -95,7 +95,7 @@ int numLimbs(int *pLen)
 
 static int isFunc(char **ppcInput, char *funcName)
 {
-  char *pcInput = *ppcInput - 1;
+  char *pcInput = *ppcInput;
   char *ptrFuncName = funcName;
   while (*ptrFuncName)
   {
@@ -123,12 +123,50 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
   char s;
   char *ptrInput;
   int index, limb, bitNbr;
+  char variableLetter = ' ';  // Indicate variable letter not known yet.
   while (*input != '\0')
   {
-    char c = *input++;
+    char* inputTemp;
+    char c = *input;
+    char cUppercase;
     if (c == ' ' || c == 9)
     {          // Ignore any spaces and tabs.
+      input++;
       continue;
+    }
+    inputTemp = input;
+    if (isFunc(&inputTemp, "GCD"))
+    {
+      if (prevTokenIsNumber == FALSE)
+      {
+        input = inputTemp;
+        stackOper[stackOperIndex++] = TOKEN_GCD;  // Push token onto stack.
+        continue;
+      }
+      c = '*';
+    }
+    else if (isFunc(&inputTemp, "DER"))
+    {
+      if (prevTokenIsNumber == FALSE)
+      {
+        input = inputTemp;
+        stackOper[stackOperIndex++] = TOKEN_DER;  // Push token onto stack.
+        continue;
+      }
+      c = '*';
+    }
+    else
+    {
+      input++;
+    }
+    cUppercase = c & 0xDF;
+    if (cUppercase >= 'A' && cUppercase <= 'Z')
+    {          // Letter found.
+      if (variableLetter != cUppercase && variableLetter != ' ')
+      {
+        return EXPR_MULTIPLE_VARIABLES_NOT_ACCEPTED;
+      }
+      variableLetter = cUppercase;
     }
     if (c == '*' && *input == '*')
     {          // Convert double asterisk to exponentiation.
@@ -159,7 +197,8 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
         }
         stackOper[stackOperIndex++] = c;  // Push operator onto stack.
       }
-      else if (c == '*' || c == '(' || c == 'x' || c == 'X' || c == '/' || c == '%')
+      else if (c == '*' || c == '(' || c == '/' || c == '%' ||
+        cUppercase == variableLetter)
       {
         while (stackOperIndex > 0)
         {      // Send operators to output.
@@ -178,7 +217,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
           }
           *ptrOutput++ = s;
         }
-        if (c == 'x' || c == 'X')
+        if (cUppercase == variableLetter)
         {
           if (exponOperatorCounter != 0)
           {
@@ -249,6 +288,14 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
         }
         else
         {
+          if (stackOperIndex > 0)
+          {
+            if (stackOper[stackOperIndex - 1] == TOKEN_GCD ||
+              stackOper[stackOperIndex - 1] == TOKEN_DER)
+            {
+              *ptrOutput++ = stackOper[--stackOperIndex];
+            }
+          }
           prevTokenIsNumber = TRUE;
         }
       }
@@ -271,7 +318,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
       {          // Open parenthesis.
         stackOper[stackOperIndex++] = '(';  // Push operator onto stack.
       }
-      else if (c == 'x' || c == 'X')
+      else if (cUppercase == variableLetter)
       {
         if (exponOperatorCounter != 0)
         {
@@ -340,14 +387,6 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
           }
         }
         prevTokenIsNumber = TRUE;
-      }
-      else if (isFunc(&input, "GCD"))
-      {
-        stackOper[stackOperIndex++] = TOKEN_GCD;  // Push token onto stack.
-      }
-      else if (isFunc(&input, "DER"))
-      {
-        stackOper[stackOperIndex++] = TOKEN_DER;  // Push token onto stack.
       }
       else
       {
@@ -453,9 +492,11 @@ void UncompressBigIntegerB(int *ptrValues, BigInteger *bigint)
   IntArray2BigInteger(ptrValues, bigint);
 }
 
+// Add two polynomials starting on buffers pointed by ptrArgument1
+// and ptrArgument2. Use poly1 as a temporary buffer to hold the sum.
 static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
 {
-  int *ptrValue1, currentDegree;
+  int *ptrValue1, *ptrValue2, currentDegree;
   int degreeMin, degreeMax;
   int degreePoly=0, degreeMono;
   int degree1 = *ptrArgument1;
@@ -474,13 +515,13 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
       else
       {
         AddBigNbrModN(operand1.limbs, operand2.limbs, operand1.limbs, powerMod.limbs, powerMod.nbrLimbs);
+        BigInteger2IntArray(ptrArgument1 + 1, &operand1);
       }
-      BigInteger2IntArray(ptrArgument1 + 1, &operand1);
       if (BigIntIsZero(&operand1))
       {                     // Sum is zero: set degree to zero.
         *ptrArgument1 = 0;
       }
-      valuesIndex = (int)(ptrArgument1 + 2 + *(ptrArgument1 + 1) - &values[0]);
+      valuesIndex = (int)(ptrArgument1 + 2 + NumberLength - &values[0]);
       return EXPR_OK;
     }
     if (degree2 <= 0)
@@ -565,7 +606,6 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
       ptrValue1 += 1 + numLimbs(ptrValue1);
     }
     memcpy(ptrArgument1, poly1, (ptrValue1 - &poly1[0])*sizeof(int));
-    valuesIndex = (int)(ptrArgument1 - &values[0] + (ptrValue1 - &poly1[0]));
     degreePoly = degreeMax;   // New degree of polynomial.
   }
   else
@@ -591,10 +631,10 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
       *ptrArgument1 = degreeMono;
       for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
       {
-        UncompressBigIntegerB(ptrValue1, &operand2);
-        BigInteger2IntArray(ptrValue2, &operand2);
-        ptrValue1 += 1 + numLimbs(ptrValue1);
-        ptrValue2 += 1 + numLimbs(ptrValue2);
+        int numLen = 1 + numLimbs(ptrValue1);
+        memcpy(ptrValue2, ptrValue1, numLen * sizeof(int));
+        ptrValue1 += numLen;
+        ptrValue2 += numLen;
       }
       for (; currentDegree < degreeMono; currentDegree++)
       {
@@ -602,7 +642,6 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
         *ptrValue2++ = 0;  // Value = zero.
       }
       BigInteger2IntArray(ptrValue2, &operand1);
-      valuesIndex = (int)(ptrValue2 + 1 + numLimbs(ptrValue2) - &values[0]);
       degreePoly = degreeMono;   // Set new degree.
     }
     else
@@ -637,21 +676,24 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
         memmove(ptrValue1, ptrValue1 - differenceOfDegrees, (ptrArgument2 - ptrValue1 - differenceOfDegrees) * sizeof(int));
       }
       memcpy(ptrValue1, poly1, (1 + nbrLimbsSum) * sizeof(int));
-      valuesIndex += differenceOfDegrees;
     }
   }
            // Reduce degree if leading coefficient is zero.
   degreeMax = 0;
   ptrValue1 = ptrArgument1 + 1;
+  ptrValue2 = ptrValue1;
   for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
   {
     if (*ptrValue1 != 1 || *(ptrValue1 + 1) != 0)
     {                    // Coefficient is not zero
       degreeMax = currentDegree;
+      // Store point to coefficient not zero of maximum degree.
+      ptrValue2 = ptrValue1;
     }
     ptrValue1 += 1 + numLimbs(ptrValue1);
   }
   *ptrArgument1 = degreeMax;
+  valuesIndex = (int)(ptrValue2 + 1 + numLimbs(ptrValue2) - &values[0]);
   return EXPR_OK;
 }
 
@@ -1368,6 +1410,11 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
      // Multiply all coefficients of polynomial by the coefficient
      // of monomial storing the resulting polynomial on poly1.
   ptrValue2 = poly1;    // Initialize pointer to product.
+  for (currentDegree = 0; currentDegree < degreeMono; currentDegree++)
+  {
+    *ptrValue2++ = 1;
+    *ptrValue2++ = 0;
+  }
   for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
   {
     UncompressBigIntegerB(ptrValue1, &operand2);
@@ -1381,16 +1428,11 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
       modmult(operand1.limbs, operand2.limbs, operand3.limbs);
     }
     BigInteger2IntArray(ptrValue2, &operand3);
-    ptrValue1 += 1 + *ptrValue1;
-    ptrValue2 += 1 + *ptrValue2;
+    ptrValue1 += 1 + numLimbs(ptrValue1);
+    ptrValue2 += 1 + numLimbs(ptrValue2);
   }
   *ptrArgument1 = degreeMono + degreePoly;
   ptrValue1 = ptrArgument1 + 1;
-  for (currentDegree = 0; currentDegree < degreeMono; currentDegree++)
-  {
-    *ptrValue1++ = 1;
-    *ptrValue1++ = 0;
-  }
   memcpy(ptrValue1, poly1, (ptrValue2 - &poly1[0])*sizeof(int));
   valuesIndex = (int)(ptrValue1 - &values[0] + (ptrValue2 - &poly1[0]));
   return EXPR_OK;
@@ -2487,9 +2529,17 @@ void PolyModularGcd(int *arg1, int degree1, int *arg2, int degree2, int *gcd, in
 static int GcdPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
 {
   int degreeGcd;
+  int* ptrNextArgument;
   if (modulusIsZero)
   {    // Integer GCD polynomial.
+    int currentDegree, degree;
     PolynomialGcd(ptrArgument1, ptrArgument2, ptrArgument1);
+    degree = *ptrArgument1;
+    ptrNextArgument = ptrArgument1 + 1;
+    for (currentDegree = 0; currentDegree <= degree; currentDegree++)
+    {
+      ptrNextArgument += 1 + numLimbs(ptrNextArgument);
+    }
   }
   else
   {    // Modular GCD polynomial.
@@ -2497,9 +2547,10 @@ static int GcdPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
     int degree2 = *ptrArgument2;
     PolyModularGcd(ptrArgument1+1, degree1, ptrArgument2 + 1, degree2,
       poly5, &degreeGcd);
-    CopyPolynomial(ptrArgument1 + 1, poly5, degreeGcd);
+    ptrNextArgument = CopyPolynomial(ptrArgument1 + 1, poly5, degreeGcd);
     *ptrArgument1 = degreeGcd;
   }
+  valuesIndex = (int)(ptrNextArgument - &values[0]);
   return EXPR_OK;
 }
 
@@ -3955,8 +4006,8 @@ void textErrorPol(char *ptrOutput, enum eExprErr rc)
   switch (rc)
   {
   case EXPR_CANNOT_USE_X_IN_EXPONENT:
-    strcpy(text, lang?"No se puede usar x en el exponente":
-                      "Cannot use x in exponent");
+    strcpy(text, lang?"No se puede usar variable en el exponente":
+                      "Cannot use variable in exponent");
     break;
   case EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER:
     strcpy(text, lang ? "La división de polinomios no es entera" :
@@ -3986,6 +4037,10 @@ void textErrorPol(char *ptrOutput, enum eExprErr rc)
   case EXPR_MODULUS_MUST_BE_PRIME_EXP:
     strcpy(text, lang ? "El módulo debe ser un número primo o una potencia de número primo" :
       "Modulus must be a prime number or a power of a prime");
+    break;
+  case EXPR_MULTIPLE_VARIABLES_NOT_ACCEPTED:
+    strcpy(text, lang ? "No se aceptan múltiples variables" :
+      "Multiple variables are not accepted");
     break;
   default:
     textError(text, rc);

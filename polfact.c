@@ -567,7 +567,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
       }
       strcpy(ptrOutput, lang? "<h2>Factores irreducibles del polinomio</h2>": "<h2>Irreducible polynomial factors</h2>");
       ptrOutput += strlen(ptrOutput);
-      if (nbrFactorsFound == 1 && pstFactorInfo->multiplicity == 1)
+      if (nbrFactorsFound == 0 || (nbrFactorsFound == 1 && pstFactorInfo->multiplicity == 1))
       {
         strcpy(ptrOutput, lang ? "<p>El polinomio es irreducible</p>" : "<p>The polynomial is irreducible</p>");
         ptrOutput += strlen(ptrOutput);
