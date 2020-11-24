@@ -3285,12 +3285,31 @@ static void ExtendedGcdPolynomial(/*@in@*/int *ptrA, int degreeA, /*@in@*/int *p
 // polyLifted: f_i.
 // Change the fields ptrPolyLifted to point to f_i.
 
-// Compute polynomial poly4 <- values mod prime. This is the polynomial f.
+// Compute polynomial poly4 <- values divided by the leading coefficient
+// mod prime. This is the polynomial f.
 static void ComputeF(void)
 {
   int degree, currentDegree;
   int* ptrValue1;
   degree = values[0];                              // Get degree of polynomial
+  // Find the leading coefficient.
+  ptrValue1 = &values[1];                          // Point to constant coefficient.
+  for (currentDegree = 0; currentDegree < degree; currentDegree++)
+  {
+    ptrValue1 += 1 + numLimbs(ptrValue1);
+  }
+  NumberLength = numLimbs(ptrValue1);
+  IntArray2BigInteger(ptrValue1, &operand1);
+  (void)BigIntRemainder(&operand1, &powerMod, &operand1);
+  NumberLength = powerMod.nbrLimbs;
+  if (operand1.nbrLimbs < NumberLength)
+  {
+    memset(&operand1.limbs[operand1.nbrLimbs], 0,
+      (NumberLength - operand1.nbrLimbs) * sizeof(limb));
+  }
+  // Compute the inverse of leading coefficient.
+  ModInvBigNbr(operand1.limbs, operand2.limbs, TestNbr, NumberLength);
+  // Convert operand1 from standard to Montgomery notation.
   ptrValue1 = &values[1];                          // Point to constant coefficient.
   for (currentDegree = 0; currentDegree <= degree; currentDegree++)
   {
@@ -3303,8 +3322,8 @@ static void ComputeF(void)
       memset(&operand1.limbs[operand1.nbrLimbs], 0,
         (NumberLength - operand1.nbrLimbs) * sizeof(limb));
     }
-    // Convert operand1 from standard to Montgomery notation.
-    modmult(operand1.limbs, MontgomeryMultR2, operand1.limbs);
+    // Multiply by inverse. Result is in Montgomery notation.
+    modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     BigInteger2IntArray(&poly4[currentDegree * (NumberLength + 1)], &operand1);
     ptrValue1 += 1 + numLimbs(ptrValue1);           // Point to next coefficient.
   }
