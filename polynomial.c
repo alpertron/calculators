@@ -511,6 +511,7 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
       {
         BigIntAdd(&operand1, &operand2, &operand1);
         NumberLength = operand1.nbrLimbs;
+        BigInteger2IntArray(ptrArgument1 + 1, &operand1);
       }
       else
       {

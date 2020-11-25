@@ -708,12 +708,12 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
       for (currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
       {
         UncompressBigIntegerB(ptrSrc, &operand1);
-        BigIntSubt(&operand1, &bound, &operand2);
+        BigIntSubt(&operand1, &operand5, &operand2);
         if (operand2.sign == SIGN_POSITIVE)
         {
           return 0;     // Coefficient is too high.
         }
-        BigIntAdd(&operand1, &bound, &operand2);
+        BigIntAdd(&operand1, &operand5, &operand2);
         if (operand2.sign == SIGN_NEGATIVE)
         {
           return 0;     // Coefficient is too low.
@@ -896,7 +896,7 @@ static void vanHoeij(int prime, int nbrFactors)
   int currentAttempts, maxAttempts;
 
   exponDifference = (int)(6.0 * (double)nbrFactors * log(2.0) / log(prime));
-  b = (int)(b0 + (ceil(log(3) * log_rootbound) / logPrime) + 3);
+  b = (int)(b0 + (ceil(log(3) * log_rootbound) / logPrime) + 23);
   a0 = b + exponDifference;
   exponentMod = a0;
 #if DEBUG_VANHOEIJ
@@ -931,6 +931,10 @@ static void vanHoeij(int prime, int nbrFactors)
   CopyBigInt(&halfPowerMod, &powerMod);
   subtractdivide(&halfPowerMod, -1, 2); // halfPowerMod <- (powerMod+1)/2
   GetMontgomeryParms(powerMod.nbrLimbs);
+  // Compare the coefficients to the product of the bound times
+  // the leading coefficient of the polynomial.
+  // Store this product in operand5.
+  BigIntMultiply(&bound, &leadingCoeff, &operand5);
   for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
   {
     intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
