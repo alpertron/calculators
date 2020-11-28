@@ -21,7 +21,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_DEGREE          1000
 
 #define DEBUG_VANHOEIJ        0
-#define DEBUG_HENSEL_LIFTING  0
 
 struct sFactorInfo
 {

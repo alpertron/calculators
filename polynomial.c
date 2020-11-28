@@ -3136,18 +3136,6 @@ static void ExtendedGcdPolynomial(/*@in@*/int *ptrA, int degreeA, /*@in@*/int *p
      // Since gcd = 1, the loop will finish when the degree of R is zero.
   while (degreeR != 0)
   {  // If R is not constant...
-#if DEBUG_HENSEL_LIFTING
-    if (ptrOutput2 != NULL)
-    {
-      strcpy(ptrOutput2, "OldR = ");
-      ptrOutput2 += strlen(ptrOutput2);
-      showPolynomial(&ptrOutput2, ptrOldR, degreeOldR + 1, 0);
-      strcpy(ptrOutput2, "\nR = ");
-      ptrOutput2 += strlen(ptrOutput2);
-      showPolynomial(&ptrOutput2, ptrR, degreeR + 1, 0);
-      *ptrOutput2++ = '\n';
-    }
-#endif
     do
     {
       IntArray2BigInteger(ptrR + degreeR * (NumberLength+1), &operand1);
@@ -3165,15 +3153,6 @@ static void ExtendedGcdPolynomial(/*@in@*/int *ptrA, int degreeA, /*@in@*/int *p
     // ptrQuotient points to quotient of division.
     // ptrOldR points to the remainder.
     // Save pointer to the quotient.
-#if DEBUG_HENSEL_LIFTING
-    if (ptrOutput2 != NULL)
-    {
-      strcpy(ptrOutput2, "Quotient = ");
-      ptrOutput2 += strlen(ptrOutput2);
-      showPolynomial(&ptrOutput2, ptrQuotient, degreeOldR - degreeR + 1, 0);
-      *ptrOutput2++ = '\n';
-    }
-#endif
     ptrQuotients[nbrQuotients++] = ptrQuotient;
     // Move pointer to new quotient after this quotient.
     ptrQuotient += (degreeOldR - degreeR + 1)*nbrLimbs;

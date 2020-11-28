@@ -276,9 +276,10 @@ static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
 static void PerformREDI(int k, int l, int size)
 {
   int i, row;
+  enum eSign determinantSign;
   // If |2 lambda_{k, l}| <= d_l, go out.
-  BigInteger* pLambda = (BigInteger *)&lambda[k][l];
-  BigInteger* pDet = (BigInteger *)&detProdB[l];
+  BigInteger* pLambda = (BigInteger*)&lambda[k][l];
+  BigInteger* pDet = (BigInteger*)&detProdB[l];
   multint(&tmp0, pLambda, 2);        // tmp0 <- 2 lambda_{k, l}
   tmp0.sign = SIGN_POSITIVE;         // tmp0 <- |2 lambda_{k, l}|
   BigIntSubt(pDet, &tmp0, &tmp1);    // tmp1 <- d_l - |2 lambda_{k, l}|
@@ -287,9 +288,13 @@ static void PerformREDI(int k, int l, int size)
     return;                          // Go out if d_l >= |2 lambda_{k, l}|
   }
   // Compute q = nearest integer to lambda_{k, l} / d_l.
-  // d_l is always positive.
+  // If d_l is positive:
   // If lambda is positive, compute (2 lambda_{k, l} + d_l) / (2 d_l)
   // If lambda is negative, compute (2 lambda_{k, l} - d_l) / (2 d_l)
+  // If d_l is negative: convert d_l to positive, and after performing
+  // the division, change sign of quotient.
+  determinantSign = pDet->sign;
+  pDet->sign = SIGN_POSITIVE;
   multint(&tmp0, pLambda, 2);        // tmp0 <- 2 lambda_{k, l}
   if (pLambda->sign == SIGN_POSITIVE)
   {
@@ -301,8 +306,13 @@ static void PerformREDI(int k, int l, int size)
   }
   multint(&tmp1, pDet, 2);           // tmp1 <- 2 d_l
   BigIntDivide(&tmp0, &tmp1, &tmp2); // tmp2 <- q.
+  if (determinantSign == SIGN_NEGATIVE)
+  {
+    BigIntChSign(&tmp2);
+  }
+  pDet->sign = determinantSign;      // Restore sign of determinant.
   for (row = 0; row < size; row++)
-  {  // b_k <- b_k - q*b_l
+  {  // Loop that computes b_k <- b_k - q*b_l
     BigIntMultiply(&tmp2, (BigInteger *)&basis[row][l], &tmp0);  // tmp0 <- q*b_l
     BigIntSubt((BigInteger *)&basis[row][k], &tmp0, (BigInteger *)&basis[row][k]);
   }
@@ -339,12 +349,12 @@ static void PerformSWAPI(int k, int kMax, int size)
   CopyBigInt(&tmp0, (BigInteger *)&lambda[k][k - 1]);    // tmp0 <- lambda.
     // Set B <- (d_{k-2}*d_k + lambda^2)/d_{k-1}
   if (k > 1)
-  {
+  {                                     // Compute tmp1 <- d_{k-2}*d_k
     BigIntMultiply((BigInteger *)&detProdB[k - 2], (BigInteger *)&detProdB[k], &tmp1);
   }
   else
   {                                     // detProdB[k] = 1 for k < 0.
-    CopyBigInt(&tmp1, (BigInteger *)&detProdB[k]);
+    CopyBigInt(&tmp1, (BigInteger *)&detProdB[k]); // Compute tmp1 <- d_k
   }
   BigIntMultiply(&tmp0, &tmp0, &tmp2);  // tmp2 <- lambda^2
   BigIntAdd(&tmp1, &tmp2, &tmp1);       // tmp1 <- d_{k-2}*d_k + lambda^2
@@ -367,12 +377,14 @@ static void PerformSWAPI(int k, int kMax, int size)
   CopyBigInt((BigInteger *)&detProdB[k - 1], &tmp1);  // d_{k-1} <- B.
 }
 
-// Use algorithm 2.6.7 of Henri Cohen's book A Course in Computational Algebraic Number Theory
+// Use algorithm 2.6.7 of Henri Cohen's book
+// A Course in Computational Algebraic Number Theory.
+// Here the indexes start at zero instead of one as in the book.
 // B_0, B_1, ... are the different columns of matrix basis.
 // d_k = 1 when k < 0.
 void integralLLL(int size)
 {
-  int k, kMax, row;
+  int colK, colKMax, row;
   int colI, colJ;
   int l;
 #ifdef __EMSCRIPTEN__
@@ -396,89 +408,116 @@ void integralLLL(int size)
   ptrOutput += strlen(ptrOutput);
   databack(outputInfo);
 #endif
-  k = 1;
-  kMax = 0;
+  colK = 1;
+  colKMax = 0;  // Vectors b_0 to b_kMax are LLL-reduced.
   // Set d_0 to scalar product B_0 * B_0
+  // Array detProdB holds the array d in the algorithm.
   intToBigInteger((BigInteger *)&detProdB[0], 0);
   for (row = 0; row < size; row++)
-  {
+  {       // Loop that generates the scalar product B_0 * B_0.
     BigIntMultiply((BigInteger*)&basis[row][0], (BigInteger*)&basis[row][0], &tmp0);
     BigIntAdd((BigInteger*)&detProdB[0], &tmp0, (BigInteger*)&detProdB[0]);
   }
   do
-  {
-    // Perform incremental Gram-Schmidt
-    if (k > kMax)
-    {
-      kMax = k;
-      for (colJ = 0; colJ <= k; colJ++)
+  {    
+    if (colK > colKMax)
+    { // Perform incremental Gram-Schmidt
+      colKMax = colK;
+      for (colI = 0; colI <= colK; colI++)
       {
-        // Compute u <- scalar product of b_k and b_j (use tmp2 for u)
-        intToBigInteger(&tmp2, 0);
+        // Copy b_i to c_i.
         for (row = 0; row < size; row++)
         {
-          BigIntMultiply((BigInteger *)&basis[row][k], (BigInteger *)&basis[row][colJ], &tmp0);
+          CopyBigInt((BigInteger*)&basisStar[row][colI],
+            (BigInteger*)&basis[row][colI]);
+        } 
+        for (colJ = 0; colJ < colI; colJ++)
+        {    // Set lambda_{i, j} to the scalar product of b_i and c_j
+          intToBigInteger(&tmp2, 0);
+          for (row = 0; row < size; row++)
+          {    // Loop that computes the scalar product of b_i and c_j.
+            BigInteger* ptrCj = (BigInteger*)&basisStar[row][colJ];
+            BigIntMultiply((BigInteger*)&basis[row][colI], ptrCj, &tmp0);
+            BigIntAdd(&tmp2, &tmp0, &tmp2);
+          }
+          CopyBigInt((BigInteger*)&lambda[colI][colJ], &tmp2);
+          // Compute c_i <- (d_j * c_i - lambda_{i, j} * c_j) / d_{j-1}
+          for (row = 0; row < size; row++)
+          {
+            BigInteger* ptrCi = (BigInteger*)&basisStar[row][colI];
+            BigInteger* ptrCj = (BigInteger*)&basisStar[row][colJ];
+            BigIntMultiply((BigInteger*)&detProdB[colJ], ptrCi, &tmp0);   // d_j * c_i
+            BigIntMultiply((BigInteger*)&lambda[colI][colJ],
+              ptrCj, &tmp1);                                // lambda_{i, j} * c_j
+            if (colJ == 0)
+            {
+              BigIntSubt(&tmp0, &tmp1, ptrCi);         // d_j * c_i - lambda_{i, j} * c_j
+            }
+            else
+            {
+              BigIntSubt(&tmp0, &tmp1, &tmp0);         // d_j * c_i - lambda_{i, j} * c_j
+              BigIntDivide(&tmp0, (BigInteger*)&detProdB[colJ - 1], ptrCi); // Divide by d_{j-1}
+            }
+          }
+        }
+        // Compute d_i = (scalar product of c_i * c_i) / d_{i-1}
+        intToBigInteger(&tmp2, 0);
+        for (row = 0; row < size; row++)
+        {    // Loop that computes the scalar product of c_i and c_i.
+          BigInteger* ptrCi = (BigInteger*)&basisStar[row][colI];
+          BigIntMultiply(ptrCi, ptrCi, &tmp0);
           BigIntAdd(&tmp2, &tmp0, &tmp2);
         }
-        for (colI = 0; colI < colJ; colI++)
-        {    // Set u <- (d_i * u - lambda_{k, i} * lambda_{j, i}) / d_{i-1}
-          BigIntMultiply((BigInteger *)&detProdB[colI], &tmp2, &tmp0);
-          BigIntMultiply((BigInteger *)&lambda[k][colI], (BigInteger *)&lambda[colJ][colI], &tmp1);
-          if (colI == 0)
-          {
-            BigIntSubt(&tmp0, &tmp1, &tmp2);
-          }
-          else
-          {
-            BigIntSubt(&tmp0, &tmp1, &tmp0);
-            BigIntDivide(&tmp0, (BigInteger *)&detProdB[colI - 1], &tmp2);
-          }
-        }
-        if (colJ < k)
+        if (colI == 0)
         {
-          CopyBigInt((BigInteger *)&lambda[k][colJ], &tmp2);
+          CopyBigInt((BigInteger*)&detProdB[colI], &tmp2);
         }
         else
         {
-          CopyBigInt((BigInteger *)&detProdB[k], &tmp2);
+          BigIntDivide(&tmp2, (BigInteger*)&detProdB[colI - 1],
+            (BigInteger*)&detProdB[colI]);           // Divide by d_{j-1}
         }
       }
     }
     // Test LLL condition
     for (;;)
     {
-      PerformREDI(k, k - 1, size);
+      PerformREDI(colK, colK - 1, size);
       // Check whether 4 * d_k * d_{k-2} < 3 (d_{k-1})^2 - 4*(lambda_{k, k-1})^2
       // that means 4 (d_k * d_{k-2} + lambda_{k, k-1})^2) < 3 (d_{k-1})^2 
-      if (k > 1)
-      {
-        BigIntMultiply((BigInteger*)&detProdB[k], (BigInteger*)&detProdB[k - 2], &tmp0);
+      if (colK > 1)
+      {                // Compute d_k * d_{k-2}
+        BigIntMultiply((BigInteger*)&detProdB[colK], (BigInteger*)&detProdB[colK - 2], &tmp0);
       }
       else
-      {                // detProdB[k] = 1 for k < 0.
-        CopyBigInt(&tmp0, (BigInteger*)&detProdB[k]);
+      {                // d_k = detProdB[k] = 1 for k < 0.
+        CopyBigInt(&tmp0, (BigInteger*)&detProdB[colK]);
       }
-      BigIntMultiply((BigInteger*)&lambda[k][k - 1], (BigInteger*)&lambda[k][k - 1], &tmp1);
+                       // Compute lambda_{k, k-1})^2
+      BigIntMultiply((BigInteger*)&lambda[colK][colK - 1], (BigInteger*)&lambda[colK][colK - 1], &tmp1);
+                       // Compute d_k * d_{k-2} + lambda_{k, k-1})^2
       BigIntAdd(&tmp0, &tmp1, &tmp0);
       multint(&tmp0, &tmp0, 4);           // tmp0 = Left Hand Side.
-      BigIntMultiply((BigInteger *)&detProdB[k - 1], (BigInteger *)&detProdB[k - 1], &tmp1);
+                       // Compute (d_{k-1})^2 
+      BigIntMultiply((BigInteger *)&detProdB[colK - 1], (BigInteger *)&detProdB[colK - 1], &tmp1);
+                       // Compute 3 * (d_{k-1})^2 = Rigth hand side.
       multint(&tmp1, &tmp1, 3);
-      BigIntSubt(&tmp0, &tmp1, &tmp0);
+      BigIntSubt(&tmp0, &tmp1, &tmp0);    // tmp0 = LHS - RHS.
       if (tmp0.sign == SIGN_POSITIVE)
       {
-        break;                            // Exit loop if condition above does not hold.
+        break;                            // Exit loop if LHS - RHS >= 0.
       }
-      PerformSWAPI(k, kMax, size);
-      if (k > 1)                          // k <- max(1,k-1)
+      PerformSWAPI(colK, colKMax, size);
+      if (colK > 1)                       // k <- max(1,k-1)
       {
-        k--;
+        colK--;
       }
     }
-    for (l = k - 2; l >= 0; l--)
+    for (l = colK - 2; l >= 0; l--)
     {
-      PerformREDI(k, l, size);
+      PerformREDI(colK, l, size);
     }
-  } while (++k < size);
+  } while (++colK < size);
 }
 
 // Compute remainder such that the result is in range -divisor/2 to divisor/2.
