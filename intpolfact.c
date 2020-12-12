@@ -28,12 +28,13 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "musl.h"
 
 #define MAX_MATRIX_SIZE  100
-#define MAX_LEN_MINI     700   // 5000 digits
+#define MAX_LEN_MINI     1000   // 8000 digits
 
 char* ptrOutput2;
 #if DEBUG_VANHOEIJ
 char debugOutput[20000000];
 char* ptrDebugOutput = debugOutput;
+static int z;
 #endif
 
 #ifdef __EMSCRIPTEN__
@@ -53,8 +54,8 @@ MiniBigInteger basis[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
 MiniBigInteger basisStar[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
 MiniBigInteger lambda[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
 MiniBigInteger prodB[MAX_MATRIX_SIZE];
-MiniBigInteger detProdB[MAX_MATRIX_SIZE];
 MiniBigInteger matrixBL[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
+BigInteger detProdB[MAX_MATRIX_SIZE];
 BigInteger traces[MAX_MATRIX_SIZE*10];
 BigInteger powerBoundA, powerExtraBits;
 int *ptrCoeffs[MAX_MATRIX_SIZE];
@@ -78,6 +79,7 @@ extern int poly5[1000000];
 int polyInteger[1000000];
 static void GenerateIntegerPolynomial(int* polyMod, int* polyInt, int degreePoly);
 static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly);
+static int numberLLL;
 
 // Generate row echelon form from matrixBL.
 // The output will be located in matrix lambda.
@@ -87,27 +89,6 @@ static int gauss(int nbrCols, int nbrRows)
   int row, col;
   int pos;
 
-#ifdef __EMSCRIPTEN__
-  char outputInfo[1000];
-  char* ptrOutput = outputInfo;
-  if (lang)
-  {
-    strcpy(ptrOutput, "1<p>Resolviendo matriz de");
-  }
-  else
-  {
-    strcpy(ptrOutput, "1<p>Solving matrix of");
-  }
-  ptrOutput += strlen(ptrOutput);
-  *ptrOutput++ = ' ';
-  int2dec(&ptrOutput, nbrRows);
-  strcpy(ptrOutput, " &times; ");
-  ptrOutput += strlen(ptrOutput);
-  int2dec(&ptrOutput, nbrCols);
-  strcpy(ptrOutput, ".</p>");
-  ptrOutput += strlen(ptrOutput);
-  databack(outputInfo);
-#endif
   for (row = 0; row < nbrRows; row++)
   {
     for (col = 0; col < nbrCols; col++)
@@ -209,27 +190,6 @@ static int gauss(int nbrCols, int nbrRows)
 static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
 {
   int colI, colJ, k, row;
-#ifdef __EMSCRIPTEN__
-  char outputInfo[1000];
-  char* ptrOutput = outputInfo;
-  if (lang)
-  {
-    strcpy(ptrOutput, "1<p>Calculando Gram-Schmidt en matriz de");
-  }
-  else
-  {
-    strcpy(ptrOutput, "1<p>Computing Gram-Schmidt in matrix of");
-  }
-  ptrOutput += strlen(ptrOutput);
-  *ptrOutput++ = ' ';
-  int2dec(&ptrOutput, nbrRows);
-  strcpy(ptrOutput, " &times; ");
-  ptrOutput += strlen(ptrOutput);
-  int2dec(&ptrOutput, nbrCols);
-  strcpy(ptrOutput, ".</p>");
-  ptrOutput += strlen(ptrOutput);
-  databack(outputInfo);
-#endif
   for (colI = 0; colI < nbrCols; colI++)
   {
     if (colI == 0)
@@ -276,7 +236,6 @@ static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
 static void PerformREDI(int k, int l, int size)
 {
   int i, row;
-  enum eSign determinantSign;
   // If |2 lambda_{k, l}| <= d_l, go out.
   BigInteger* pLambda = (BigInteger*)&lambda[k][l];
   BigInteger* pDet = (BigInteger*)&detProdB[l];
@@ -288,13 +247,10 @@ static void PerformREDI(int k, int l, int size)
     return;                          // Go out if d_l >= |2 lambda_{k, l}|
   }
   // Compute q = nearest integer to lambda_{k, l} / d_l.
-  // If d_l is positive:
+  // d_l is always positive.
   // If lambda is positive, compute (2 lambda_{k, l} + d_l) / (2 d_l)
   // If lambda is negative, compute (2 lambda_{k, l} - d_l) / (2 d_l)
-  // If d_l is negative: convert d_l to positive, and after performing
   // the division, change sign of quotient.
-  determinantSign = pDet->sign;
-  pDet->sign = SIGN_POSITIVE;
   multint(&tmp0, pLambda, 2);        // tmp0 <- 2 lambda_{k, l}
   if (pLambda->sign == SIGN_POSITIVE)
   {
@@ -306,11 +262,6 @@ static void PerformREDI(int k, int l, int size)
   }
   multint(&tmp1, pDet, 2);           // tmp1 <- 2 d_l
   BigIntDivide(&tmp0, &tmp1, &tmp2); // tmp2 <- q.
-  if (determinantSign == SIGN_NEGATIVE)
-  {
-    BigIntChSign(&tmp2);
-  }
-  pDet->sign = determinantSign;      // Restore sign of determinant.
   for (row = 0; row < size; row++)
   {  // Loop that computes b_k <- b_k - q*b_l
     BigIntMultiply(&tmp2, (BigInteger *)&basis[row][l], &tmp0);  // tmp0 <- q*b_l
@@ -336,29 +287,49 @@ static void PerformSWAPI(int k, int kMax, int size)
     CopyBigInt((BigInteger *)&basis[row][k], (BigInteger *)&basis[row][k-1]);
     CopyBigInt((BigInteger *)&basis[row][k-1], &tmp0);
   }
-  if (k > 1)
-  {
-    for (j = 0; j < k - 1; j++)
-    {  // Exchange lambda_{k, j} with lambda_{k-1, j}
-      CopyBigInt(&tmp0, (BigInteger*)&lambda[k][j]);
-      CopyBigInt((BigInteger*)&lambda[k][j], (BigInteger*)&lambda[k - 1][j]);
-      CopyBigInt((BigInteger*)&lambda[k - 1][j], &tmp0);
-    }
+  for (j = 0; j < k - 1; j++)
+  {  // Exchange lambda_{k, j} with lambda_{k-1, j}
+    CopyBigInt(&tmp0, (BigInteger*)&lambda[k][j]);
+    CopyBigInt((BigInteger*)&lambda[k][j], (BigInteger*)&lambda[k - 1][j]);
+    CopyBigInt((BigInteger*)&lambda[k - 1][j], &tmp0);
   }
     // Set lambda <- lambda_{k, k-1}
   CopyBigInt(&tmp0, (BigInteger *)&lambda[k][k - 1]);    // tmp0 <- lambda.
     // Set B <- (d_{k-2}*d_k + lambda^2)/d_{k-1}
-  if (k > 1)
-  {                                     // Compute tmp1 <- d_{k-2}*d_k
-    BigIntMultiply((BigInteger *)&detProdB[k - 2], (BigInteger *)&detProdB[k], &tmp1);
+    // d_{k-2}*d_k + lambda^2 is already in tmp3.
+  BigIntDivide(&tmp3, (BigInteger*)&detProdB[k - 1], &tmp1); // tmp1 <- B
+#if DEBUG_VANHOEIJ
+  if (size == 16 && z<1000)
+  {
+    z++;
+    strcpy(ptrDebugOutput, "k = ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    int2dec(&ptrDebugOutput, k);
+    strcpy(ptrDebugOutput, ", z = ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    int2dec(&ptrDebugOutput, z);
+    *ptrDebugOutput++ = '\r';
+    *ptrDebugOutput++ = '\n';
+    strcpy(ptrDebugOutput, "tmp3 = ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    BigInteger2Dec(&tmp3, ptrDebugOutput, 0);
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    *ptrDebugOutput++ = '\r';
+    *ptrDebugOutput++ = '\n';
+    strcpy(ptrDebugOutput, "detProdB[k-1] = ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    BigInteger2Dec(&detProdB[k-1], ptrDebugOutput, 0);
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    *ptrDebugOutput++ = '\r';
+    *ptrDebugOutput++ = '\n';
+    strcpy(ptrDebugOutput, "B = ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    BigInteger2Dec(&tmp1, ptrDebugOutput, 0);
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    *ptrDebugOutput++ = '\r';
+    *ptrDebugOutput++ = '\n';
   }
-  else
-  {                                     // detProdB[k] = 1 for k < 0.
-    CopyBigInt(&tmp1, (BigInteger *)&detProdB[k]); // Compute tmp1 <- d_k
-  }
-  BigIntMultiply(&tmp0, &tmp0, &tmp2);  // tmp2 <- lambda^2
-  BigIntAdd(&tmp1, &tmp2, &tmp1);       // tmp1 <- d_{k-2}*d_k + lambda^2
-  BigIntDivide(&tmp1, (BigInteger*)&detProdB[k - 1], &tmp1); // tmp1 <- B.
+#endif
   for (i = k+1; i <= kMax; i++)
   {
     // t <- lambda_{i, k}
@@ -392,11 +363,17 @@ void integralLLL(int size)
   char* ptrOutput = outputInfo;
   if (lang)
   {
-    strcpy(ptrOutput, "1<p>Calculando LLL en matriz de");
+    strcpy(ptrOutput, "1<p>Calculando LLL número ");
+    ptrOutput += strlen(ptrOutput);
+    int2dec(&ptrOutput, ++numberLLL);
+    strcpy(ptrOutput, " en matriz de");
   }
   else
   {
-    strcpy(ptrOutput, "1<p>Computing LLL in matrix of");
+    strcpy(ptrOutput, "1<p>Computing LLL #");
+    ptrOutput += strlen(ptrOutput);
+    int2dec(&ptrOutput, ++numberLLL);
+    strcpy(ptrOutput, " in matrix of");
   }
   ptrOutput += strlen(ptrOutput);
   *ptrOutput++ = ' ';
@@ -406,6 +383,7 @@ void integralLLL(int size)
   int2dec(&ptrOutput, size);
   strcpy(ptrOutput, ".</p>");
   ptrOutput += strlen(ptrOutput);
+  showElapsedTimeSec(&ptrOutput);
   databack(outputInfo);
 #endif
   colK = 1;
@@ -423,65 +401,80 @@ void integralLLL(int size)
     if (colK > colKMax)
     { // Perform incremental Gram-Schmidt
       colKMax = colK;
-      for (colI = 0; colI <= colK; colI++)
+      for (colJ = 0; colJ <= colK; colJ++)
       {
-        // Copy b_i to c_i.
-        for (row = 0; row < size; row++)
-        {
-          CopyBigInt((BigInteger*)&basisStar[row][colI],
-            (BigInteger*)&basis[row][colI]);
-        } 
-        for (colJ = 0; colJ < colI; colJ++)
-        {    // Set lambda_{i, j} to the scalar product of b_i and c_j
-          intToBigInteger(&tmp2, 0);
-          for (row = 0; row < size; row++)
-          {    // Loop that computes the scalar product of b_i and c_j.
-            BigInteger* ptrCj = (BigInteger*)&basisStar[row][colJ];
-            BigIntMultiply((BigInteger*)&basis[row][colI], ptrCj, &tmp0);
-            BigIntAdd(&tmp2, &tmp0, &tmp2);
-          }
-          CopyBigInt((BigInteger*)&lambda[colI][colJ], &tmp2);
-          // Compute c_i <- (d_j * c_i - lambda_{i, j} * c_j) / d_{j-1}
-          for (row = 0; row < size; row++)
-          {
-            BigInteger* ptrCi = (BigInteger*)&basisStar[row][colI];
-            BigInteger* ptrCj = (BigInteger*)&basisStar[row][colJ];
-            BigIntMultiply((BigInteger*)&detProdB[colJ], ptrCi, &tmp0);   // d_j * c_i
-            BigIntMultiply((BigInteger*)&lambda[colI][colJ],
-              ptrCj, &tmp1);                                // lambda_{i, j} * c_j
-            if (colJ == 0)
-            {
-              BigIntSubt(&tmp0, &tmp1, ptrCi);         // d_j * c_i - lambda_{i, j} * c_j
-            }
-            else
-            {
-              BigIntSubt(&tmp0, &tmp1, &tmp0);         // d_j * c_i - lambda_{i, j} * c_j
-              BigIntDivide(&tmp0, (BigInteger*)&detProdB[colJ - 1], ptrCi); // Divide by d_{j-1}
-            }
-          }
-        }
-        // Compute d_i = (scalar product of c_i * c_i) / d_{i-1}
+        // Compute u <- scalar product of b_k and b_j (use tmp2 for u)
         intToBigInteger(&tmp2, 0);
         for (row = 0; row < size; row++)
-        {    // Loop that computes the scalar product of c_i and c_i.
-          BigInteger* ptrCi = (BigInteger*)&basisStar[row][colI];
-          BigIntMultiply(ptrCi, ptrCi, &tmp0);
+        {
+          BigIntMultiply((BigInteger*)&basis[row][colK],
+            (BigInteger*)&basis[row][colJ], &tmp0);
           BigIntAdd(&tmp2, &tmp0, &tmp2);
         }
-        if (colI == 0)
-        {
-          CopyBigInt((BigInteger*)&detProdB[colI], &tmp2);
+        for (colI = 0; colI < colJ; colI++)
+        {    // Set u <- (d_i * u - lambda_{k, i} * lambda_{j, i}) / d_{i-1}
+          BigIntMultiply((BigInteger*)&detProdB[colI], &tmp2, &tmp0);  // d_i * u
+          BigIntMultiply((BigInteger*)&lambda[colK][colI],  
+            (BigInteger*)&lambda[colJ][colI], &tmp1);  // lambda_{k, i} * lambda_{j, i}
+          if (colI == 0)
+          {
+            BigIntSubt(&tmp0, &tmp1, &tmp2);           // d_{i-1} = 0
+          }
+          else
+          {
+            BigIntSubt(&tmp0, &tmp1, &tmp0);
+            BigIntDivide(&tmp0, (BigInteger*)&detProdB[colI - 1], &tmp2);
+          }
+        }
+        if (colJ < colK)
+        {      // Set lambda_{j, k} <- u
+          CopyBigInt((BigInteger*)&lambda[colK][colJ], &tmp2);
         }
         else
-        {
-          BigIntDivide(&tmp2, (BigInteger*)&detProdB[colI - 1],
-            (BigInteger*)&detProdB[colI]);           // Divide by d_{j-1}
+        {      // Set d_k <- u
+          CopyBigInt((BigInteger*)&detProdB[colK], &tmp2);
         }
       }
     }
+#if DEBUG_VANHOEIJ
+    if (size == 16)
+    {
+      strcpy(ptrDebugOutput, "lambda: ");
+      ptrDebugOutput += strlen(ptrDebugOutput);
+      for (row = 0; row < size; row++)
+      {
+        strcpy(ptrDebugOutput, "Row #");
+        ptrDebugOutput += strlen(ptrDebugOutput);
+        int2dec(&ptrDebugOutput, row);
+        *ptrDebugOutput++ = ':';
+        *ptrDebugOutput++ = ' ';
+        for (colI = 0; colI < size; colI++)
+        {
+          BigInteger2Dec(&lambda[row][colI], ptrDebugOutput, 0);
+          ptrDebugOutput += strlen(ptrDebugOutput);
+          *ptrDebugOutput++ = ',';
+          *ptrDebugOutput++ = ' ';
+        }
+        *(ptrDebugOutput - 2) = '\r';
+        *(ptrDebugOutput - 1) = '\n';
+      }
+      strcpy(ptrDebugOutput, "detProdB: ");
+      ptrDebugOutput += strlen(ptrDebugOutput);
+      for (colI = 0; colI < size; colI++)
+      {
+        BigInteger2Dec(&detProdB[colI], ptrDebugOutput, 0);
+        ptrDebugOutput += strlen(ptrDebugOutput);
+        *ptrDebugOutput++ = ',';
+        *ptrDebugOutput++ = ' ';
+      }
+      *(ptrDebugOutput - 2) = '\r';
+      *(ptrDebugOutput - 1) = '\n';
+    }
+#endif
     // Test LLL condition
     for (;;)
     {
+      BigInteger *ptrBig;
       PerformREDI(colK, colK - 1, size);
       // Check whether 4 * d_k * d_{k-2} < 3 (d_{k-1})^2 - 4*(lambda_{k, k-1})^2
       // that means 4 (d_k * d_{k-2} + lambda_{k, k-1})^2) < 3 (d_{k-1})^2 
@@ -494,13 +487,15 @@ void integralLLL(int size)
         CopyBigInt(&tmp0, (BigInteger*)&detProdB[colK]);
       }
                        // Compute lambda_{k, k-1})^2
-      BigIntMultiply((BigInteger*)&lambda[colK][colK - 1], (BigInteger*)&lambda[colK][colK - 1], &tmp1);
+      ptrBig = (BigInteger*)&lambda[colK][colK - 1];
+      BigIntMultiply(ptrBig, ptrBig, &tmp1);
                        // Compute d_k * d_{k-2} + lambda_{k, k-1})^2
-      BigIntAdd(&tmp0, &tmp1, &tmp0);
-      multint(&tmp0, &tmp0, 4);           // tmp0 = Left Hand Side.
+      BigIntAdd(&tmp0, &tmp1, &tmp3);
+      multint(&tmp0, &tmp3, 4);           // tmp0 = Left Hand Side.
                        // Compute (d_{k-1})^2 
-      BigIntMultiply((BigInteger *)&detProdB[colK - 1], (BigInteger *)&detProdB[colK - 1], &tmp1);
-                       // Compute 3 * (d_{k-1})^2 = Rigth hand side.
+      ptrBig = (BigInteger *)&detProdB[colK - 1];
+      BigIntMultiply(ptrBig, ptrBig, &tmp1);
+                       // Compute 3 * (d_{k-1})^2 = Right hand side.
       multint(&tmp1, &tmp1, 3);
       BigIntSubt(&tmp0, &tmp1, &tmp0);    // tmp0 = LHS - RHS.
       if (tmp0.sign == SIGN_POSITIVE)
@@ -517,6 +512,30 @@ void integralLLL(int size)
     {
       PerformREDI(colK, l, size);
     }
+#if DEBUG_VANHOEIJ
+    if (size == 16)
+    {
+      strcpy(ptrDebugOutput, "basis: ");
+      ptrDebugOutput += strlen(ptrDebugOutput);
+      for (row = 0; row < size; row++)
+      {
+        strcpy(ptrDebugOutput, "Row #");
+        ptrDebugOutput += strlen(ptrDebugOutput);
+        int2dec(&ptrDebugOutput, row);
+        *ptrDebugOutput++ = ':';
+        *ptrDebugOutput++ = ' ';
+        for (colI = 0; colI < size; colI++)
+        {
+          BigInteger2Dec(&basis[row][colI], ptrDebugOutput, 0);
+          ptrDebugOutput += strlen(ptrDebugOutput);
+          *ptrDebugOutput++ = ',';
+          *ptrDebugOutput++ = ' ';
+        }
+        *(ptrDebugOutput - 2) = '\r';
+        *(ptrDebugOutput - 1) = '\n';
+      }
+    }
+#endif
   } while (++colK < size);
 }
 
@@ -934,6 +953,7 @@ static void vanHoeij(int prime, int nbrFactors)
   int ctr1, ctr2;
   int currentAttempts, maxAttempts;
 
+  numberLLL = 0;
   exponDifference = (int)(6.0 * (double)nbrFactors * log(2.0) / log(prime));
   b = (int)(b0 + (ceil(log(3) * log_rootbound) / logPrime) + 3);
   a0 = b + exponDifference;
@@ -998,6 +1018,7 @@ static void vanHoeij(int prime, int nbrFactors)
       int elapsedTime = (int)(tenths() - originalTenthSecond);
       if (elapsedTime / 10 != oldTimeElapsed / 10)
       {
+        oldTimeElapsed = elapsedTime;
         ptrOutput = output;
         strcpy(ptrOutput, lang? "1<p>Obteniendo factores de dos factores modulares: prueba ":
                                 "1<p>Finding factors from two modular factors: attempt ");
@@ -1006,11 +1027,9 @@ static void vanHoeij(int prime, int nbrFactors)
         strcpy(ptrOutput, lang ? " de " : " of ");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, maxAttempts);
-        oldTimeElapsed = elapsedTime;
-        strcpy(ptrOutput, lang ? "</p><p>Transcurrió " : "</p><p>Time elapsed: ");
-        ptrOutput += strlen(ptrOutput);
-        GetDHMS(&ptrOutput, elapsedTime / 10);
         strcpy(ptrOutput, "</p>");
+        ptrOutput += strlen(ptrOutput);
+        showElapsedTimeSec(&ptrOutput);
         databack(output);
       }
 #endif
@@ -1224,7 +1243,12 @@ static void vanHoeij(int prime, int nbrFactors)
       }
     }
 #if DEBUG_VANHOEIJ
-    strcpy(ptrDebugOutput, LF "Matrix M before LLL: ");
+    strcpy(ptrDebugOutput, LF "Matrix M before LLL (");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    int2dec(&ptrDebugOutput, nbrVectors + nbrRequiredTraces);
+    *ptrDebugOutput++ = '*';
+    int2dec(&ptrDebugOutput, nbrVectors + nbrRequiredTraces);
+    strcpy(ptrDebugOutput, "): ");
     ptrDebugOutput += strlen(ptrDebugOutput);
     for (nbrRow = 0; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
     {
@@ -1236,10 +1260,12 @@ static void vanHoeij(int prime, int nbrFactors)
         {
           *ptrDebugOutput++ = ',';
         }
+        intToBigInteger((BigInteger*)&lambda[nbrRow][nbrCol], 0);  // DEBUG BORRAR
       }
       *ptrDebugOutput++ = ';';
     }
     *ptrDebugOutput++ = '.';
+
 #endif
     // Step 2: LLL-reduce the (r+s)*(r+s) matrix M (of rank r+s).
     integralLLL(nbrVectors + nbrRequiredTraces);
@@ -1391,6 +1417,7 @@ static void vanHoeij(int prime, int nbrFactors)
       return;
     }
 
+#if DEBUG_VANHOEIJ
 #ifdef __EMSCRIPTEN__
     {
       char outputInfo[1000];
@@ -1405,6 +1432,7 @@ static void vanHoeij(int prime, int nbrFactors)
       }
       databack(outputInfo);
     }
+#endif
 #endif
     // Step 7: BL <- BL / C. Now BL has dimension 
     // nbrFactors rows by r'
@@ -1432,7 +1460,6 @@ static void vanHoeij(int prime, int nbrFactors)
     }
     *ptrDebugOutput++ = '.';
     *ptrDebugOutput = 0;
-#endif
 #ifdef __EMSCRIPTEN__
     {
       char outputInfo[1000];
@@ -1447,6 +1474,7 @@ static void vanHoeij(int prime, int nbrFactors)
       }
       databack(outputInfo);
     }
+#endif
 #endif
     // Step 8: Put BL in Gauss-Jordan form. If possibly
     // after division by a constant factor, each column
@@ -1522,6 +1550,21 @@ static void vanHoeij(int prime, int nbrFactors)
     newNbrFactors = nbrFactors;
     // Combine factors.
     GetMontgomeryParms(powerMod.nbrLimbs);
+#ifdef __EMSCRIPTEN__
+    char outputInfo[1000];
+    char* ptrOutput = outputInfo;
+    if (lang)
+    {
+      strcpy(ptrOutput, "1<p>Verificando si los polinomios hallados son factores irreducibles.</p>");
+    }
+    else
+    {
+      strcpy(ptrOutput, "1<p>Testing whether the polynomials found are irreducible factors.</p>");
+    }
+    ptrOutput += strlen(ptrOutput);
+    showElapsedTimeSec(&ptrOutput);
+    databack(outputInfo);
+#endif
     if (AttemptToFactor(nbrVectors, nbrFactors, &newNbrFactors))
     {
 #if DEBUG_VANHOEIJ

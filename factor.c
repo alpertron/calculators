@@ -386,19 +386,6 @@ Uses the following global variables:
 - u, v, w : auxiliary variables
 Modifies: x2, z2, u, v, w
 */
-#if 0
-void print(limb *w)
-{
-  char pepe[1000];
-  Bin2Dec(w, pepe, NumberLength, 0);
-  printf("%s\n", pepe);
-  memset(Xaux, 0, NumberLength * sizeof(limb));
-  Xaux[0].x = 1;
-  modmult(Xaux, w, Zaux);
-  Bin2Dec(Zaux, pepe, NumberLength, 0);
-  printf("%s\n\n", pepe);
-}
-#endif
 static void duplicate(limb *x2, limb *z2, limb *x1, limb *z1)
 {
   limb *u = common.ecm.fieldUZ;
@@ -2467,7 +2454,9 @@ static void factorSmallInt(int toFactor, int* factors, struct sFactors* pstFacto
       ptrFactor++;
     }
   }
-  for (primeFactor = 5; primeFactor * primeFactor <= toFactor; primeFactor += 2)
+  for (primeFactor = 5;
+    (unsigned int)primeFactor * (unsigned int)primeFactor <= (unsigned int)toFactor;
+    primeFactor += 2)
   {
     if (primeFactor % 3 == 0)
     {

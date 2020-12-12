@@ -177,7 +177,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
       bitLength = (bitLength + 1) >> 1;
     }
     // Each loop increments precision.
-    // Use Newton iteration: x_{n+1} = x_n(2 - x_n)
+    // Use Newton iteration: x_{n+1} = x_n * (2 - x_n)
     while (--bitLengthNbrCycles >= 0)
     {
       limb *ptrArrAux;
@@ -259,9 +259,9 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
         }
         (ptrQuotient + idx)->x = 0;
       }
-      if (idx >= nbrLimbsQuotient)
+      if (idx >= nbrLimbsQuotient && ptrDividend->x < ptrDivisor->x)
       {                // Roll back on overflow.
-        for (idx = 0; idx < nbrLimbsQuotient; idx++)
+        for (idx = 0; idx <= nbrLimbsQuotient; idx++)
         {
           if (--((ptrQuotient + idx)->x) >= 0)
           {

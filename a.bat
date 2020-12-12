@@ -14,7 +14,7 @@ cmd /c emcc %jsCommon% %fsquaresFiles% %fsquaresOptions% -o fsquaresW%1.js
 if errorlevel 1 goto end
 
 set polfactFiles=expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c rootseq.c quintics.c bigrational.c output.c polynomial.c intpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c
-set polfactOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=268435456
+set polfactOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=280297472
 cmd /c emcc %jsCommon% %polfactFiles% %polfactOptions% -o polfactW%1.js
 if errorlevel 1 goto end
 

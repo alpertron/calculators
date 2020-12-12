@@ -26,4 +26,5 @@ void GetDHMS(char **pptrText, int seconds);
 void GetDHMSt(char **pptrText, int tenths);
 #endif
 void showElapsedTime(char **pptrOutput);
+void showElapsedTimeSec(char **pptrOutput);
 #endif

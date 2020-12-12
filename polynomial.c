@@ -3499,7 +3499,7 @@ int HenselLifting(struct sFactorInfo* factorInfo, int compressPoly)
       int2dec(&ptrOutput, exponentMod);
       strcpy(ptrOutput, ".</p>");
       ptrOutput += strlen(ptrOutput);
-      showElapsedTime(&ptrOutput);
+      showElapsedTimeSec(&ptrOutput);
       databack(outputInfo);
     }
 #endif

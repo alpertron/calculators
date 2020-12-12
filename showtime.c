@@ -71,3 +71,16 @@ void showElapsedTime(char **pptrOutput)
   ptrOutput += strlen(ptrOutput);
   *pptrOutput = ptrOutput;
 }
+
+void showElapsedTimeSec(char **pptrOutput)
+{
+  char *ptrOutput = *pptrOutput;
+  strcpy(ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
+  ptrOutput += strlen(ptrOutput);
+#ifdef __EMSCRIPTEN__
+  GetDHMS(&ptrOutput, (int)(tenths() - originalTenthSecond) / 10);
+#endif
+  strcpy(ptrOutput, "</p>");
+  ptrOutput += strlen(ptrOutput);
+  *pptrOutput = ptrOutput;
+}

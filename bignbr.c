@@ -254,7 +254,13 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
   {
     return EXPR_INTERM_TOO_HIGH;
   }
-  if (nbrLimbsFactor1<nbrLimbsFactor2)
+  if (nbrLimbsFactor1 * nbrLimbsFactor1 < nbrLimbsFactor2 ||
+    nbrLimbsFactor2 * nbrLimbsFactor2 < nbrLimbsFactor1)
+  {    // One of the factors is a lot smaller than the other.
+       // Use classical multiplication.
+   // return EXPR_OK;
+  }
+  if (nbrLimbsFactor1 < nbrLimbsFactor2)
   {
     memset(&pFactor1->limbs[nbrLimbsFactor1], 0, (nbrLimbsFactor2 - nbrLimbsFactor1)*sizeof(limb));
     nbrLimbs = nbrLimbsFactor2;
