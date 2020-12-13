@@ -5,6 +5,8 @@
 #define TYPE_PM_SPACE_AFTER  2
 
 void QuinticEquation(int* ptrPolynomial, int multiplicity);
+void startLine(void);
+void endLine(void);
 void showX(int multiplicity);
 void showPlusSignOn(int condPlus, int type);
 void startParen(void);

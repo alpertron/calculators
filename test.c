@@ -5,10 +5,10 @@
 #include "highlevel.h"
 #include "factor.h"
 #include "batch.h"
+#include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 13
+#define DEBUG_CODE 9
 #endif
-extern unsigned char pretty;
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
@@ -159,7 +159,8 @@ int main(int argc, char *argv[])
     printf("modulus polynomial\n");
     return 0;
   }
-  pretty = 1;
+  pretty = PRETTY_PRINT;
+  pretty = PARI_GP;
   polyFactText(argv[1], argv[2], 7);
   printf("%s\n", output);
 #elif DEBUG_CODE == 11

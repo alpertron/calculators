@@ -28,21 +28,24 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef __EMSCRIPTEN__
 EXTERNALIZE void doWork(void)
 {
-  int flags;
+  int flags = 0;
   int groupLen = 0;
   char* ptrData = inputString;
   while (*ptrData != ',')
   {
     groupLen = groupLen * 10 + (*ptrData++ - '0');
   }
-  ptrData++;             // Skip comma.
-  flags = *ptrData;
+  ptrData++;         // Skip comma.
+  do
+  {
+    flags = flags * 10 + *ptrData - '0';
+  } while (*(++ptrData) != ',');
 #ifndef lang  
   lang = flags & 1;
 #endif
   onlyEvaluate = (unsigned char)(flags & 2);
-  pretty = (unsigned char)(flags & 4);
-  ptrData += 2;          // Skip flags and comma.
+  pretty = (enum eOutput)(flags/4);
+  ptrData++;          // Skip comma.
   polyFactText(ptrData, ptrData + strlen(ptrData) + 1, groupLen);
   ptrData += strlen(ptrData);
   databack(output);

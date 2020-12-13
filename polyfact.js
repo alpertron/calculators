@@ -78,7 +78,7 @@ function callWorker(param)
 
 function dowork(n)
 {
-  var app = lang + n + (get('sup').checked ? 4 : 0);
+  var app = lang + n + (get('out').value.charCodeAt(0)-48)*4;
   var res = get('result');
   var polyText = get('poly').value;
   var modText = get('mod').value;

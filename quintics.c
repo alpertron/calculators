@@ -4093,9 +4093,13 @@ static void computeArrayValues(void)
 
 void start5thRoot(void)
 {
-  if (pretty)
+  if (pretty == PRETTY_PRINT)
   {
     showText("<span class=\"root\"><span class=\"befrad\" aria-hidden=\"true\">5</span><span class=\"radicand5\">");
+  }
+  else if (pretty == TEX)
+  {
+    showText("\\sqrt[5]{");
   }
   else
   {
@@ -4105,9 +4109,13 @@ void start5thRoot(void)
 
 void end5thRoot(void)
 {
-  if (pretty)
+  if (pretty == PRETTY_PRINT)
   {
     showText("</span></span>");
+  }
+  else if (pretty == TEX)
+  {
+    showText("}");
   }
   else
   {
@@ -4117,11 +4125,15 @@ void end5thRoot(void)
 
 static void showSqrt5(void)
 {
-  if (pretty)
+  if (pretty == PRETTY_PRINT)
   {
     startSqrt();
     *ptrOutput++ = '5';
     endSqrt();
+  }
+  else if (pretty == TEX)
+  {
+    showText("\\sqrt{5}");
   }
   else
   {
@@ -4146,12 +4158,12 @@ static void showSqrtTenPlusMinusTwoTimesSqrt5(char *sign)
   showText(sign);
   *ptrOutput++ = ' ';
   showText(" 2");
-  if (!pretty)
+  if (pretty == PARI_GP)
   {
     *ptrOutput++ = ' ';
   }
   showText(ptrTimes);
-  if (!pretty)
+  if (pretty == PARI_GP)
   {
     *ptrOutput++ = ' ';
   }
@@ -4167,12 +4179,12 @@ static void showSqRoot1(enum eSign sign, BigRational *ptrRatR, BigRational *ptrR
   if (!BigIntIsZero(&ptrRatR->numerator))
   {
     ptrRatS->numerator.sign = SIGN_POSITIVE;
-    showRational(ptrRatR, pretty);
+    showRational(ptrRatR);
     showPlusSignOn(sign == signBak, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
   }
   CopyBigInt(&Rat3.numerator, &RatDiscr.numerator);
   CopyBigInt(&Rat3.denominator, &RatDiscr.denominator);
-  ShowRationalAndSqrParts(ptrRatS, &Rat3, 2, pretty, ptrTimes);
+  ShowRationalAndSqrParts(ptrRatS, &Rat3, 2, ptrTimes);
   endSqrt();
   ptrRatS->numerator.sign = signBak;
 }
@@ -4193,12 +4205,12 @@ static void showSqRoot2(enum eSign sign)
   if (!BigIntIsZero(&RatM.numerator))
   {
     RatS.numerator.sign = SIGN_POSITIVE;
-    showRationalNoParen(&RatM, pretty);
+    showRationalNoParen(&RatM);
     showPlusSignOn(sign == signBak, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
   }
   CopyBigInt(&Rat4.numerator, &RatDiscr.numerator);
   CopyBigInt(&Rat4.denominator, &RatDiscr.denominator);
-  ShowRationalAndSqrParts(&RatN, &Rat4, 2, pretty, ptrTimes);
+  ShowRationalAndSqrParts(&RatN, &Rat4, 2, ptrTimes);
   endSqrt();
   RatS.numerator.sign = signBak;
 }
@@ -4208,64 +4220,148 @@ static void ShowQuinticsRootsRealR(int multiplicity)
   int ctr;
   BigRationalDivideByInt(&RatQuartic, -5, &RatQuartic);
   ForceDenominatorPositive(&RatQuartic);
-  showText("<li><var>S</var><sub>1</sub> = ");
+  startLine();
+  if (pretty == TEX)
+  {
+    showText("S_1 = ");
+  }
+  else
+  {
+    showText("<var>S</var><sub>1</sub> = ");
+  }
   showMinusOnePlusMinusSqrt5("+");
   showText(ptrTimes);
-  showText("(<var>R</var><sub>1</sub> + <var>R</var><sub>4</sub>) + ");
+  if (pretty == TEX)
+  {
+    showText("(R_1 + R_4)");
+  }
+  else
+  {
+    showText("(<var>R</var><sub>1</sub> + <var>R</var><sub>4</sub>) + ");
+  }
   showMinusOnePlusMinusSqrt5(ptrMinus);
   showText(ptrTimes);
-  showText("(<var>R</var><sub>2</sub> + <var>R</var><sub>3</sub>)</li>");
-  showText("<li><var>S</var><sub>2</sub> = ");
+  if (pretty == TEX)
+  {
+    showText("(R_2 + R_3)");
+    endLine();
+    startLine();
+    showText("S_2 = ");
+  }
+  else
+  {
+    showText("(<var>R</var><sub>2</sub> + <var>R</var><sub>3</sub>)");
+    endLine();
+    startLine();
+    showText("<var>S</var><sub>2</sub> = ");
+  }
   showMinusOnePlusMinusSqrt5("+");
   showText(ptrTimes);
-  showText("(<var>R</var><sub>2</sub> + <var>R</var><sub>3</sub>) + ");
+  if (pretty == TEX)
+  {
+    showText("(R_2 + R_3) + ");
+  }
+  else
+  {
+    showText("(<var>R</var><sub>2</sub> + <var>R</var><sub>3</sub>) + ");
+  }
   showMinusOnePlusMinusSqrt5(ptrMinus);
   showText(ptrTimes);
-  showText("(<var>R</var><sub>1</sub> + <var>R</var><sub>4</sub>)</li>");
-  showText("<li><var>T</var><sub>1</sub> = ");
+  if (pretty == TEX)
+  {
+    showText("(R_1 + R_4)");
+    endLine();
+    startLine();
+    showText("T_1 = ");
+  }
+  else
+  {
+    showText("(<var>R</var><sub>1</sub> + <var>R</var><sub>4</sub>)");
+    endLine();
+    startLine();
+    showText("<var>T</var><sub>1</sub> = ");
+  }
   showSqrtTenPlusMinusTwoTimesSqrt5("+");
   showText(ptrTimes);
-  showText("(<var>R</var><sub>4</sub> ");
-  showText(ptrMinus);
-  showText(" <var>R</var><sub>1</sub>) +");
-  if (!pretty)
+  if (pretty == TEX)
+  {
+    showText("(R_4 - R_1) +");
+  }
+  else
+  {
+    showText("(<var>R</var><sub>4</sub> ");
+    showText(ptrMinus);
+    showText(" <var>R</var><sub>1</sub>) +");
+  }
+  if (pretty == PARI_GP)
   {
     *ptrOutput++ = ' ';
   }
   showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
   showText(ptrTimes);
-  showText("(<var>R</var><sub>3</sub> ");
-  showText(ptrMinus);
-  showText(" <var>R</var><sub>2</sub>)");
-  showText("<li><var>T</var><sub>2</sub> = ");
+  if (pretty == TEX)
+  {
+    showText("(R_3 - R2)");
+    endLine();
+    startLine();
+    showText("T_2 = ");
+  }
+  else
+  {
+    showText("(<var>R</var><sub>3</sub> ");
+    showText(ptrMinus);
+    showText(" <var>R</var><sub>2</sub>)");
+    endLine();
+    startLine();
+    showText("<var>T</var><sub>2</sub> = ");
+  }
   showSqrtTenPlusMinusTwoTimesSqrt5("+");
   showText(ptrTimes);
-  showText("(<var>R</var><sub>3</sub> ");
-  showText(ptrMinus);
-  showText(" <var>R</var><sub>2</sub>) +");
-  if (!pretty)
+  if (pretty == TEX)
+  {
+    showText("(R_3 - R_2) +");
+  }
+  else
+  {
+    showText("(<var>R</var><sub>3</sub> ");
+    showText(ptrMinus);
+    showText(" <var>R</var><sub>2</sub>) +");
+  }
+  if (pretty == PARI_GP)
   {
     *ptrOutput++ = ' ';
   }
   showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
   showText(ptrTimes);
-  showText("(<var>R</var><sub>4</sub> ");
-  showText(ptrMinus);
-  showText(" <var>R</var><sub>1</sub>)");
+  if (pretty == TEX)
+  {
+    showText("(R_4 - R_1)");
+  }
+  else
+  {
+    showText("(<var>R</var><sub>4</sub> ");
+    showText(ptrMinus);
+    showText(" <var>R</var><sub>1</sub>)");
+  }
+  endLine();
   for (ctr = 1; ctr <= 5; ctr++)
   {
     showX(multiplicity);
     if (!BigIntIsZero(&RatQuartic.numerator))
     {
-      showRationalNoParen(&RatQuartic, pretty);
+      showRationalNoParen(&RatQuartic);
       showText(" + ");
     }
     switch (ctr)
     {
     case 1:
-      if (pretty)
+      if (pretty == PRETTY_PRINT)
       {
         showRatConstants("<var>R</var><sub>1</sub> + <var>R</var><sub>2</sub> + <var>R</var><sub>3</sub> + <var>R</var><sub>4</sub>", "5");
+      }
+      else if (pretty == TEX)
+      {
+        showRatConstants("R_1 + R_2 + R_3 + R_4", "5");
       }
       else
       {
@@ -4273,20 +4369,26 @@ static void ShowQuinticsRootsRealR(int multiplicity)
       }
       break;
     case 2:
-      if (pretty)
+      if (pretty == PRETTY_PRINT)
       {
         showRatConstants("<var>S</var><sub>1</sub>", "20");
         showText("+ i ");
         showText(ptrTimes);
         showRatConstants("<var>T</var><sub>1</sub>", "20");
       }
+      else if (pretty == TEX)
+      {
+        showRatConstants("S_1", "20");
+        showText("+ i ");
+        showRatConstants("T_1", "20");
+      }
       else
       {
-        showText("(<var>S</var><sub>1</sub> + i * <var>T</var><sub>1</sub>) / 20");
+        showText("(<var>S</var><sub>1</sub> + I * <var>T</var><sub>1</sub>) / 20");
       }
       break;
     case 3:
-      if (pretty)
+      if (pretty == PRETTY_PRINT)
       {
         showRatConstants("<var>S</var><sub>1</sub>", "20");
         showText(ptrMinus);
@@ -4294,26 +4396,38 @@ static void ShowQuinticsRootsRealR(int multiplicity)
         showText(ptrTimes);
         showRatConstants("<var>T</var><sub>1</sub>", "20");
       }
+      else if (pretty == TEX)
+      {
+        showRatConstants("S_1", "20");
+        showText("- i ");
+        showRatConstants("T_1", "20");
+      }
       else
       {
-        showText("(<var>S</var><sub>1</sub> - i * <var>T</var><sub>1</sub>) / 20");
+        showText("(<var>S</var><sub>1</sub> - I * <var>T</var><sub>1</sub>) / 20");
       }
       break;
     case 4:
-      if (pretty)
+      if (pretty == PRETTY_PRINT)
       {
         showRatConstants("<var>S</var><sub>2</sub>", "20");
         showText("+ i ");
         showText(ptrTimes);
         showRatConstants("<var>T</var><sub>2</sub>", "20");
       }
+      else if (pretty == TEX)
+      {
+        showRatConstants("S_2", "20");
+        showText("+ i ");
+        showRatConstants("T_2", "20");
+      }
       else
       {
-        showText("(<var>S</var><sub>2</sub> + i * <var>T</var><sub>2</sub>) / 20");
+        showText("(<var>S</var><sub>2</sub> + I * <var>T</var><sub>2</sub>) / 20");
       }
       break;
     case 5:
-      if (pretty)
+      if (pretty == PRETTY_PRINT)
       {
         showRatConstants("<var>S</var><sub>2</sub>", "20");
         showText(ptrMinus);
@@ -4321,12 +4435,20 @@ static void ShowQuinticsRootsRealR(int multiplicity)
         showText(ptrTimes);
         showRatConstants("<var>T</var><sub>2</sub>", "20");
       }
+      else if (pretty == TEX)
+      {
+        showRatConstants("S_2", "20");
+        showText("- i ");
+        showText(ptrTimes);
+        showRatConstants("T_2", "20");
+      }
       else
       {
-        showText("(<var>S</var><sub>2</sub> - i * <var>T</var><sub>2</sub>) / 20");
+        showText("(<var>S</var><sub>2</sub> - I * <var>T</var><sub>2</sub>) / 20");
       }
       break;
     }
+    endLine();
   }
 }
 
@@ -4350,7 +4472,7 @@ static void NumberIsNotRational(enum eSign sign)
     else
     {
       start5thRoot();
-      showRationalNoParen(&Rat3, pretty);
+      showRationalNoParen(&Rat3);
       showPlusSignOn(sign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
     }
     firstNumberShown = TRUE;
@@ -4375,9 +4497,19 @@ static void showRn(int groupOrder)
     BigRational* ptrRatR = (groupOrder == 10 || ctr == 1 || ctr == 4 ? &RatR : &RatR2);
     BigRational* ptrRatS = (groupOrder == 10 || ctr == 1 || ctr == 4 ? &RatS : &RatS2);
     enum eSign firstSign, secondSign;
-    showText("<li><var>R</var><sub>");
-    *ptrOutput++ = ctr + '0';
-    showText("</sub> = ");
+    startLine();
+    if (pretty == TEX)
+    {
+      showText("R_");
+      *ptrOutput++ = ctr + '0';
+      showText(" = ");
+    }
+    else
+    {
+      showText("<var>R</var><sub>");
+      *ptrOutput++ = ctr + '0';
+      showText("</sub> = ");
+    }
     BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat3);
     BigRationalAdd(&RatValues[index_l0], &Rat3, &Rat3);
     if (groupOrder == 20)
@@ -4406,11 +4538,11 @@ static void showRn(int groupOrder)
         start5thRoot();
         if (!BigIntIsZero(&Rat1.numerator))
         {
-          showRational(&Rat3, pretty);
+          showRational(&Rat3);
         }
         showPlusSignOn(ctr == 2 || ctr == 3, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-        showRational(&Rat2, pretty);
-        if (!pretty)
+        showRational(&Rat2);
+        if (pretty == PARI_GP)
         {
           *ptrOutput++ = ' ';
         }
@@ -4441,7 +4573,7 @@ static void showRn(int groupOrder)
       {
         NumberIsNotRational(firstSign);
         BigRationalMultiplyByInt(ptrRatR, 4, &Rat2);
-        showSquareRootOfRational(&Rat2, 2, pretty, ptrTimes);
+        showSquareRootOfRational(&Rat2, 2, ptrTimes);
       }
       else
       {
@@ -4526,13 +4658,13 @@ static void showRn(int groupOrder)
           {
             start5thRoot();
             firstNumberShown = TRUE;
-            showRational(&Rat2, pretty);
+            showRational(&Rat2);
           }
         }
         else
         {
           NumberIsNotRational(firstSign);
-          showSquareRootOfRational(&Rat1, 2, pretty, ptrTimes);
+          showSquareRootOfRational(&Rat1, 2, ptrTimes);
         }
       }
       else
@@ -4547,6 +4679,7 @@ static void showRn(int groupOrder)
     {
       end5thRoot();
     }
+    endLine();
   }
 }
 
@@ -4592,15 +4725,25 @@ static void GaloisGroupHasOrder20(int multiplicity)
     int ctr;
     for (ctr = 1; ctr <= 4; ctr++)
     {
-      showText("<li><var>R</var><sub>");
-      *ptrOutput++ = ctr + '0';
-      showText("</sub></var> = (");
+      startLine();
+      if (pretty == TEX)
+      {
+        showText("R_");
+        *ptrOutput++ = ctr + '0';
+        showText(" = (");
+      }
+      else
+      {
+        showText("<var>R</var><sub>");
+        *ptrOutput++ = ctr + '0';
+        showText("</sub></var> = (");
+      }
       BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat2);
       BigRationalAdd(&RatValues[index_l0], &Rat2, &Rat1);
       ForceDenominatorPositive(&Rat1);
       if (!BigIntIsZero(&Rat1.numerator))
       {
-        showRational(&Rat1, pretty);
+        showRational(&Rat1);
       }
       CopyBigInt(&Rat1.numerator, &RatValues[index_T2].numerator);
       CopyBigInt(&Rat1.denominator, &RatValues[index_T2].denominator);
@@ -4608,7 +4751,7 @@ static void GaloisGroupHasOrder20(int multiplicity)
       Rat1.numerator.sign = SIGN_POSITIVE;
       BigRationalDivideByInt(&Rat1, 2, &Rat2);
       BigRationalMultiplyByInt(&RatDiscr, 5, &Rat2);
-      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, pretty, ptrTimes);
+      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
       if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
       {   // O > 0.
         showPlusSignOn(ctr == 3 || ctr == 4, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
@@ -4705,19 +4848,29 @@ static void GaloisGroupHasOrder5(int multiplicity)
   Rat2.numerator.sign = SIGN_POSITIVE;
   for (ctr = 1; ctr <= 4; ctr++)
   {
-    showText("<li><var>R</var><sub>");
-    *ptrOutput++ = ctr + '0';
-    showText("</sub> = ");
+    startLine();
+    if (pretty == TEX)
+    {
+      showText("R_");
+      *ptrOutput++ = ctr + '0';
+      showText(" = ");
+    }
+    else
+    {
+      showText("<var>R</var><sub>");
+      *ptrOutput++ = ctr + '0';
+      showText("</sub> = ");
+    }
     start5thRoot();
-    showRationalNoParen(&Rat1, pretty);
+    showRationalNoParen(&Rat1);
     showPlusSignOn((signRat2 == SIGN_POSITIVE) == (ctr == 1 || ctr == 4), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-    showRational(&Rat2, pretty);
-    if (!pretty)
+    showRational(&Rat2);
+    if (pretty == PARI_GP)
     {
       *ptrOutput++ = ' ';
     }
     showText(ptrTimes);
-    if (!pretty)
+    if (pretty == PARI_GP)
     {
       *ptrOutput++ = ' ';
     }
@@ -4731,15 +4884,15 @@ static void GaloisGroupHasOrder5(int multiplicity)
     {
       *ptrOutput++ = '+';
     }
-    showText(" i ");
+    showText(pretty == PARI_GP? " I ": " i ");
     showText(ptrTimes);
     showText("&nbsp;");
     startParen();
     BigRationalSubt(&RatValues[index_T1], &RatValues[index_T4], &Rat3);  // l1 - l4
     BigRationalDivideByInt(&Rat3, 4, &Rat3);
     ForceDenominatorPositive(&Rat3);
-    showRational(&Rat3, pretty);
-    if (!pretty)
+    showRational(&Rat3);
+    if (pretty == PARI_GP)
     {
       *ptrOutput++ = ' ';
     }
@@ -4764,7 +4917,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
     ForceDenominatorPositive(&Rat3);
     showPlusSignOn(Rat3.numerator.sign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
     Rat3.numerator.sign = SIGN_POSITIVE;
-    showRational(&Rat3, pretty);
+    showRational(&Rat3);
     *ptrOutput++ = ' ';
     showText(ptrTimes);
     if (ctr == 2 || ctr == 4)
@@ -4777,7 +4930,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
     }
     endParen();
     end5thRoot();
-    showText("</li>");
+    endLine();
   }
 }
 

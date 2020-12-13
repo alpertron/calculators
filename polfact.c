@@ -599,6 +599,11 @@ void polyFactText(char *modText, char *polyText, int groupLength)
         *ptrOutput++ = 'u';
         *ptrOutput++ = 'l';
         *ptrOutput++ = '>';
+        if (pretty == TEX)
+        {
+          strcpy(ptrOutput, "<li>\\begin{array}{l}</li>");
+          ptrOutput += strlen(ptrOutput);
+        }
         if (!modulusIsZero)
         {
           IntArray2BigInteger(&poly4[degree * nbrLimbs], &operand5);
@@ -628,14 +633,29 @@ void polyFactText(char *modText, char *polyText, int groupLength)
           *ptrOutput++ = 'l';
           *ptrOutput++ = 'i';
           *ptrOutput++ = '>';
+          if (pretty == TEX)
+          {
+            strcpy(ptrOutput, "\\bullet\\,\\,");
+            ptrOutput += strlen(ptrOutput);
+          }
           outputPolynomialFactor(ptrOutput, groupLength, pstFactorInfo);
           ptrOutput += strlen(ptrOutput);
+          if (pretty == TEX)
+          {
+            strcpy(ptrOutput, "\\\\");
+            ptrOutput += strlen(ptrOutput);
+          }
           *ptrOutput++ = '<';
           *ptrOutput++ = '/';
           *ptrOutput++ = 'l';
           *ptrOutput++ = 'i';
           *ptrOutput++ = '>';
           pstFactorInfo++;
+        }
+        if (pretty == TEX)
+        {
+          strcpy(ptrOutput, "<li>\\end{array}</li>");
+          ptrOutput += strlen(ptrOutput);
         }
         *ptrOutput++ = '<';
         *ptrOutput++ = '/';
@@ -657,6 +677,11 @@ void polyFactText(char *modText, char *polyText, int groupLength)
         }
         strcpy(ptrOutput, "<ul>");
         ptrOutput += strlen(ptrOutput);
+        if (pretty == TEX)
+        {
+          strcpy(ptrOutput, "<li>\\begin{array}{l}</li>");
+          ptrOutput += strlen(ptrOutput);
+        }
         indexRoot = 1;
         pstFactorInfo = factorInfoInteger;
         for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
@@ -670,6 +695,11 @@ void polyFactText(char *modText, char *polyText, int groupLength)
             getRootsPolynomial(nbrFactor, &ptrOutput, pstFactorInfo, groupLength);
           }
           pstFactorInfo++;
+        }
+        if (pretty == TEX)
+        {
+          strcpy(ptrOutput, "<li>\\end{array}</li>");
+          ptrOutput += strlen(ptrOutput);
         }
       }
       strcpy(ptrOutput, "</ul>");

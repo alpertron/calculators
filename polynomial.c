@@ -67,7 +67,8 @@ static int polyMultT[COMPRESSED_POLY_MAX_LENGTH];
 int polyMultTemp[COMPRESSED_POLY_MAX_LENGTH];
 int polyLifted[COMPRESSED_POLY_MAX_LENGTH];
 int polyLiftedNew[COMPRESSED_POLY_MAX_LENGTH];
-unsigned char pretty, onlyEvaluate = 0;
+enum eOutput pretty;
+unsigned char onlyEvaluate = 0;
 struct sFactorInfo factorInfo[MAX_DEGREE];
 static BigInteger coeff[2 * KARATSUBA_POLY_CUTOFF];
 int nbrFactorsFound;
@@ -3767,7 +3768,7 @@ void OrigPolyFromMontgomeryToStandard(void)
 static void showPower(char **pptrOutput, int exponent)
 {
   char *ptrOutput = *pptrOutput;
-  if (pretty)
+  if (pretty == PRETTY_PRINT)
   {
     *ptrOutput++ = '<';
     *ptrOutput++ = 's';
@@ -3781,6 +3782,13 @@ static void showPower(char **pptrOutput, int exponent)
     *ptrOutput++ = 'u';
     *ptrOutput++ = 'p';
     *ptrOutput++ = '>';
+  }
+  else if (pretty == TEX)
+  {
+    *ptrOutput++ = '^';
+    *ptrOutput++ = '{';
+    int2dec(&ptrOutput, exponent);
+    *ptrOutput++ = '}';
   }
   else
   {
@@ -3799,7 +3807,7 @@ void showPowerX(char **pptrOutput, int polyDegree)
   }
   else
   {
-    if (pretty)
+    if (pretty == PRETTY_PRINT)
     {
       strcpy(ptrOutput, lang?"<span class=\"hide\">equis </span><span aria-hidden=\"true\"><var>x</var></span>":"<var>x</var>");
       ptrOutput += strlen(ptrOutput);
@@ -3858,7 +3866,7 @@ static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int 
       }
       else
       {
-        strcpy(ptrOutput, pretty? "&minus;": "-");
+        strcpy(ptrOutput, pretty == PRETTY_PRINT? "&minus;": "-");
         ptrOutput += strlen(ptrOutput);
       }
       *ptrOutput++ = ' ';
@@ -3871,12 +3879,12 @@ static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int 
         ptrOutput += strlen(ptrOutput);
         if (currentDegree > 0)
         {
-          if (pretty)
+          if (pretty == PRETTY_PRINT)
           {
             strcpy(ptrOutput, "&#8290;");
             ptrOutput += strlen(ptrOutput);
           }
-          else
+          else if (pretty == PARI_GP)
           {
             *ptrOutput++ = '*';
           }

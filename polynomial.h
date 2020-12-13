@@ -22,6 +22,13 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 
 #define DEBUG_VANHOEIJ        0
 
+enum eOutput
+{
+  PRETTY_PRINT = 0,
+  TEX = 1,
+  PARI_GP = 2,
+};
+
 struct sFactorInfo
 {
   int *ptr;
@@ -55,7 +62,8 @@ extern int poly3[1000000];
 extern int polyMultTemp[1000000];
 extern int valuesPrime[1000000];
 extern int nbrFactorsFound;
-extern unsigned char pretty, onlyEvaluate;
+extern enum eOutput pretty;
+extern unsigned char onlyEvaluate;
 extern int degree;
 extern int *ptrOrigPoly;
 extern int degreeOrigPoly;
