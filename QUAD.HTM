@@ -192,7 +192,7 @@ Contact
 <li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is. Example: IsPrime(5) = -1.</li>
 <li> <strong>NumFact(n)</strong>: number of distinct prime factors of <var>n</var>. Example: NumFact(28) = 2 because its prime factors are 2 and 7.</li>
 <li> <strong>MinFact(n)</strong>: minimum prime factor of <var>n</var>. Example: MinFact(28) = 2 because its prime factors are 2 and 7.</li>
-<li> <strong>MaxFact(n)</strong>: maximum factor primo de <var>n</var>. Example: MaxFact(28) = 7 because its prime factors are 2 and 7.</li>
+<li> <strong>MaxFact(n)</strong>: maximum prime factor of <var>n</var>. Example: MaxFact(28) = 7 because its prime factors are 2 and 7.</li>
 <li> <strong>NumDivs(n)</strong>: Number of positive divisors of <var>n</var>. Example: NumDivs(28) = 6 because the divisors of 28 are 1, 2, 4, 7, 14 and 28.</li>
 <li> <strong>SumDivs(n)</strong>: Sum of all positive divisors of <var>n</var>. Example: SumDivs(28) = 56 because 1 + 2 + 4 + 7 + 14 + 28 = 56.</li>
 <li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>. Example: NumDigits(13, 2) = 4 because 13 in binary (base 2) is expressed as 1101.</li>
@@ -201,11 +201,11 @@ Contact
 <li> <strong>ConcatFact(m,n)</strong>: Concatenates the prime factors of <var>n</var> according to the mode expressed in <var>m</var> which follows this table:</li></ul>
 <table>
 <caption>ConcatFact function modes</caption>
-<tr><th scope="col">Mode</th><th scope="col">Order of factors</th><th scope="col">Repeated factors</th></tr>
-<tr><td>0</td><td>Ascending</td><td>No</td></tr>
-<tr><td>1</td><td>Descending</td><td>No</td></tr>
-<tr><td>2</td><td>Ascending</td><td>Yes</td></tr>
-<tr><td>3</td><td>Descending</td><td>Yes</td></tr>
+<tr><th scope="col">Mode</th><th scope="col">Order of factors</th><th scope="col">Repeated factors</th><th scope="col">Example</th></tr>
+<tr><td>0</td><td>Ascending</td><td>No</td><td>concatfact(0,36) = 23</td></tr>
+<tr><td>1</td><td>Descending</td><td>No</td><td>concatfact(1,36) = 32</td></tr>
+<tr><td>2</td><td>Ascending</td><td>Yes</td><td>concatfact(2,36) = 2233</td></tr>
+<tr><td>3</td><td>Descending</td><td>Yes</td><td>concatfact(3,36) = 3322</td></tr>
 </table>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 <p>The exponentiation symbol is not present in some mobile devices, so two asterisks ** can by typed as the exponentiation operator.</p>
