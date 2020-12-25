@@ -60,9 +60,9 @@ fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo input
 fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_contfrac.sqo -lm -o $@
 
 polfact: expression.oto partition.oto errors.oto bigint.oto division.oto baseconv.oto karatsuba.oto modmult.oto sqroot.oto \
-rootseq.oto quintics.oto bigrational.oto output.oto polynomial.oto polfact.oto bignbr.oto showtime.oto from_musl.oto inputstr.oto fft.oto test_polfact.oto intpolfact.oto
+rootseq.oto quintics.oto bigrational.oto output.oto polynomial.oto multpoly.oto fftpoly.oto polfact.oto bignbr.oto showtime.oto from_musl.oto inputstr.oto fft.oto test_polfact.oto intpolfact.oto
 	gcc expression.oto partition.oto errors.oto bigint.oto division.oto baseconv.oto karatsuba.oto modmult.oto sqroot.oto \
-rootseq.oto quintics.oto bigrational.oto output.oto polynomial.oto polfact.oto bignbr.oto showtime.oto from_musl.oto inputstr.oto fft.oto test_polfact.oto intpolfact.oto -lm -o $@
+rootseq.oto quintics.oto bigrational.oto output.oto polynomial.oto multpoly.oto fftpoly.oto polfact.oto bignbr.oto showtime.oto from_musl.oto inputstr.oto fft.oto test_polfact.oto intpolfact.oto -lm -o $@
 
 %.fco : %.c $(h_files)
 	gcc $(flags_factorization) -o $@ $<

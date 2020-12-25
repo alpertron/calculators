@@ -12,14 +12,14 @@
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
-int Factor1[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00 };
-int Factor2[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00 };
+int Factor1[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00 };
+int Factor2[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00 };
 int Factor3[] = { 29504, 29490, 19798, 633, 181, 0, 0, 0, 0, 0 };
 int Factor4[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 int Factor5[] = { 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0, 0, 0, 0 };
 int Factor6[] = { 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0, 0, 0, 0 };
-int factor7[1000];
-int factor8[1000];
+int factor7[2002];
+int factor8[2002];
 int factors[5000];
 struct sFactors astFactors[1000];
 extern int number[MAX_LEN];
@@ -298,6 +298,24 @@ quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
   ModInvBigNbr(tempVal, tempRes, TestNbr, 3);
   Bin2Dec(tempRes, output, 3, 0);
   printf("Inverse = %s", output);
+#elif DEBUG_CODE == 20
+  int ctr;
+  for (ctr = 0; ctr < 901; ctr++)
+  {
+    factor7[2 * ctr] = 1;
+    factor7[2 * ctr + 1] = 10;
+    factor8[2 * ctr] = 1;
+    factor8[2 * ctr + 1] = 10;
+  }
+  fftPolyMult(factor7, factor8, polyMultTemp, 901);
+  for (ctr = 0; ctr < 501; ctr++)
+  {
+    factor7[2 * ctr] = 1;
+    factor7[2 * ctr + 1] = 10;
+    factor8[2 * ctr] = 1;
+    factor8[2 * ctr + 1] = 10;
+  }
+  fftPolyMult(factor7, factor8, polyMultTemp, 501);
 #endif
   return 0;
 }

@@ -19,6 +19,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __POLYNOMIAL_H
 #define __POLYNOMIAL_H
 #define MAX_DEGREE          1000
+#define COMPRESSED_POLY_MAX_LENGTH 1000000
 
 #define DEBUG_VANHOEIJ        0
 
@@ -67,6 +68,7 @@ extern unsigned char onlyEvaluate;
 extern int degree;
 extern int *ptrOrigPoly;
 extern int degreeOrigPoly;
+extern int polyInvCached;
 
 typedef void (*powerCback)(int percentage);
 void SetNumberToOne(/*@out@*/int *ptrValue1);
@@ -108,5 +110,9 @@ void showPowerX(char** pptrOutput, int polyDegree);
 int FactorModularPolynomial(int inputMontgomery);
 int getNextPrimeNoDuplicatedFactors(int prime);
 void FactorPolynomialModPrime(int prime);
+void fftPolyMult(int* factor1, int* factor2, int* result, int len, int maxLen);
+void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
+  /*@out@*/int* polyProduct,
+  int polyDegree, /*@in@*/int* polyMod);
 extern int polyNonRepeatedFactors[];
 #endif

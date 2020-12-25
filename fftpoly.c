@@ -1,7 +1,7 @@
 /*
 This file is part of Alpertron Calculators.
 
-Copyright 2018 Dario Alejandro Alpern
+Copyright 2015 Dario Alejandro Alpern
 
 Alpertron Calculators is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,31 +21,14 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "polynomial.h"
 #include "fft.h"
 
-#define FFT_LIMB_SIZE   18
-#define MAX_FFT_LEN        (MAX_LEN * BITS_PER_GROUP / FFT_LIMB_SIZE + 10)
-#define POWERS_2       17
+#define FFT_LIMB_SIZE   22
+#define MAX_FFT_LEN     2048  //  Power of 2 greater than 2*MAX_DEGREE
+#define POWERS_2        13
 // In the next array, all numbers are represented by two elements,
 // first the least significant limb, then the most significant limb.
-const struct sCosSin cossinPowerOneHalf[] =
-{
-  {{2121767201, 1518500249}, {2121767201, 1518500249}},  // cos(pi/2^2), then sin(pi/2^2)
-  {{1696238673, 1984016188}, {782852818, 821806413}},    // cos(pi/2^3), then sin(pi/2^3)
-  {{1857642581, 2106220351}, {886244699, 418953276}},    // cos(pi/2^4), then sin(pi/2^4)
-  {{575294268, 2137142927}, {174918392, 210490206}},     // cos(pi/2^5), then sin(pi/2^5)
-  {{1926953927, 2144896909}, {565903997, 105372028}},    // cos(pi/2^6), then sin(pi/2^6)
-  {{161094006, 2146836866}, {2050385888, 52701886}},     // cos(pi/2^7), then sin(pi/2^7)
-  {{925218479, 2147321946}, {1727413283, 26352927}},     // cos(pi/2^8), then sin(pi/2^8)
-  {{487924891, 2147443222}, {2040267204, 13176711}},     // cos(pi/2^9), then sin(pi/2^9)
-  {{1144652709, 2147473541}, {2107197813, 6588386}},     // cos(pi/2^10), then sin(pi/2^10)
-  {{819842189, 2147481121}, {786843438, 3294197}},       // cos(pi/2^11), then sin(pi/2^11)
-  {{741631966, 2147483016}, {360077744, 1647099}},       // cos(pi/2^12), then sin(pi/2^12)
-  {{185395523, 2147483490}, {1383830442, 823549}},       // cos(pi/2^13), then sin(pi/2^13)
-  {{1120089925, 2147483608}, {1781913263, 411774}},      // cos(pi/2^14), then sin(pi/2^14)
-  {{280022433, 2147483638}, {892988659, 205887}},        // cos(pi/2^15), then sin(pi/2^15)
-  {{1143747429, 2147483645}, {1520490157, 102943}},      // cos(pi/2^16), then sin(pi/2^16)
-};
 
 static struct sCosSin cossin[4 << (POWERS_2 - 2)];
 static double Cosine[5 * QUARTER_CIRCLE + 1];
@@ -54,14 +37,15 @@ static complex secondFactor[MAX_FFT_LEN];
 static complex transf[MAX_FFT_LEN];
 static complex product[MAX_FFT_LEN];
 static complex tempFFT[MAX_FFT_LEN];
-static complex MontgomeryMultNTransf[MAX_FFT_LEN];
-static complex TestNbrTransf[MAX_FFT_LEN];
+static complex polyInvTransf[MAX_FFT_LEN];
+extern int polyInv[COMPRESSED_POLY_MAX_LENGTH];
+
 // Use formulas sin(A+B) = sin A cos B + cos A sin B
 // and cos(A+B) = cos A cos B - sin A sin B
 static void initCosinesArray(void)
 {
   struct sCosSin* ptrCosSin;
-  const struct sCosSin* ptrOldCosSin, * ptrCosSinDelta;
+  const struct sCosSin *ptrOldCosSin, * ptrCosSinDelta;
   double invLimb = 1 / (double)LIMB_RANGE;
   double invSqLimb = invLimb * invLimb;
   int index;
@@ -70,7 +54,7 @@ static void initCosinesArray(void)
   cossin[0].Sin[0] = 0;                                    // sin(0) = 0
   cossin[0].Sin[1] = 0;
   ptrCosSin = &cossin[1];
-  for (index=1; ; index++)
+  for (index = 1; ; index++)
   {
     // Get order of least significant non-zero bit.
     int bitNbr;
@@ -127,8 +111,9 @@ static void initCosinesArray(void)
     ptrCosSin++;
   }
   Cosine[QUARTER_CIRCLE] = 0;
-  Cosine[3*QUARTER_CIRCLE] = 0;
+  Cosine[3 * QUARTER_CIRCLE] = 0;
 }
+
 /*
   Algorithm 9.5.6 of Crandall and Pomerance book Prime Numbers:
   X, Y: Pointers to complex numbers.
@@ -157,19 +142,19 @@ static void initCosinesArray(void)
   }
   if (d even) return complex data at X.
   return complex data at Y.
-*/ 
+*/
 
 // length is power of 2.
-static void complexFFT(complex *x, complex *y, int length)
+static void complexFFT(complex* x, complex* y, int length)
 {
   int j, J;
   int halfLength = length / 2;
   int step = (1 << POWERS_2) / length;
   int exponentOdd = 0;
-  complex *ptrX = x;
-  complex *ptrY = y;
-  complex *ptrZ;
-  complex *ptrTemp;
+  complex* ptrX = x;
+  complex* ptrY = y;
+  complex* ptrZ;
+  complex* ptrTemp;
   int angle;
   if (Cosine[0] == 0)
   {    // Cosines array not initialized yet. Initialize array.
@@ -207,7 +192,7 @@ static void complexFFT(complex *x, complex *y, int length)
     {
       double rootReal = Cosine[angle];
       double rootImag = Cosine[angle + QUARTER_CIRCLE];
-      complex *ptrW = ptrY + J;
+      complex* ptrW = ptrY + J;
       for (j = J; j > 0; j--)
       {
         double tempReal = ptrX->real;
@@ -242,13 +227,13 @@ static void complexFFT(complex *x, complex *y, int length)
 // Ai(k) = –cos( PI k / N)
 // Br(k) = 1 + sin( PI k / N)
 // Bi(k) = cos( PI k / N)
-static void ConvertHalfToFullSizeFFT(complex *halfSizeFFT, complex *fullSizeFFT, int power2)
+static void ConvertHalfToFullSizeFFT(complex* halfSizeFFT, complex* fullSizeFFT, int power2)
 {
   int k;
-  int step = (1 << (POWERS_2-1)) / power2;
-  complex *ptrFullSizeFFT = fullSizeFFT;
-  complex *ptrHalfSizeFFT = halfSizeFFT;
-  complex *ptrHalfSizeFFTRev = halfSizeFFT + power2;
+  int step = (1 << (POWERS_2 - 1)) / power2;
+  complex* ptrFullSizeFFT = fullSizeFFT;
+  complex* ptrHalfSizeFFT = halfSizeFFT;
+  complex* ptrHalfSizeFFTRev = halfSizeFFT + power2;
   ptrHalfSizeFFTRev->real = halfSizeFFT->real;
   ptrHalfSizeFFTRev->imaginary = halfSizeFFT->imaginary;
   for (k = 0; k < power2; k++)
@@ -259,16 +244,16 @@ static void ConvertHalfToFullSizeFFT(complex *halfSizeFFT, complex *fullSizeFFT,
     double negativeSine = Cosine[angle + QUARTER_CIRCLE];
     double cosine = Cosine[angle];
     ptrFullSizeFFT->real = ptrHalfSizeFFT->real + ptrHalfSizeFFTRev->real +
-      diffReal*negativeSine +
-      sumImag*cosine;
+      diffReal * negativeSine +
+      sumImag * cosine;
     ptrFullSizeFFT->imaginary = ptrHalfSizeFFT->imaginary - ptrHalfSizeFFTRev->imaginary +
-      sumImag*negativeSine -
-      diffReal*cosine;
+      sumImag * negativeSine -
+      diffReal * cosine;
     ptrHalfSizeFFT++;
     ptrHalfSizeFFTRev--;
     ptrFullSizeFFT++;
   }
-  ptrFullSizeFFT->real = 2*(halfSizeFFT->real - halfSizeFFT->imaginary);
+  ptrFullSizeFFT->real = 2 * (halfSizeFFT->real - halfSizeFFT->imaginary);
   ptrFullSizeFFT->imaginary = 0;
 }
 
@@ -280,13 +265,13 @@ static void ConvertHalfToFullSizeFFT(complex *halfSizeFFT, complex *fullSizeFFT,
 // IAi(k) = cos( PI k / N)
 // IBr(k) = 1 + sin( PI k / N)
 // IBi(k) = -cos( PI k / N)
-static void ConvertFullToHalfSizeFFT(complex *fullSizeFFT, complex *halfSizeFFT, int power2)
+static void ConvertFullToHalfSizeFFT(complex* fullSizeFFT, complex* halfSizeFFT, int power2)
 {
   int k;
   int step = (1 << (POWERS_2 - 1)) / power2;
-  complex *ptrFullSizeFFT = fullSizeFFT;
-  complex *ptrFullSizeFFTRev = fullSizeFFT + power2;
-  complex *ptrHalfSizeFFT = halfSizeFFT;
+  complex* ptrFullSizeFFT = fullSizeFFT;
+  complex* ptrFullSizeFFTRev = fullSizeFFT + power2;
+  complex* ptrHalfSizeFFT = halfSizeFFT;
   for (k = 0; k < power2; k++)
   {
     int angle = k * step;
@@ -295,65 +280,43 @@ static void ConvertFullToHalfSizeFFT(complex *fullSizeFFT, complex *halfSizeFFT,
     double negativeSine = Cosine[angle + QUARTER_CIRCLE];
     double cosine = Cosine[angle];
     ptrHalfSizeFFT->real = ptrFullSizeFFT->real + ptrFullSizeFFTRev->real +
-      diffReal*negativeSine -
-      sumImag*cosine;
+      diffReal * negativeSine -
+      sumImag * cosine;
     // Negative sign for imaginary part required for inverse FFT.
     ptrHalfSizeFFT->imaginary = -(ptrFullSizeFFT->imaginary - ptrFullSizeFFTRev->imaginary +
-      sumImag*negativeSine +
-      diffReal*cosine);
+      sumImag * negativeSine +
+      diffReal * cosine);
     ptrHalfSizeFFT++;
     ptrFullSizeFFT++;
     ptrFullSizeFFTRev--;
   }
 }
 
-// Read limbs of input numbers with length BITS_PER_GROUP and convert them
-// to internal FFT limbs with length FFT_LIMB_SIZE.
-// The output is the number of internal FFT limbs generated.
-// Even limbs correspond to real component and odd limbs
-// correspond to imaginary component.
-// This code requires that FFT_LIMB_SIZE > BITS_PER_GROUP/2.
-// At this moment FFT_LIMB_SIZE = 19 and BITS_PER_GROUP = 31.
-static int ReduceLimbs(limb *factor, complex *fftFactor, int len)
+static int ConvertFactorToInternal(int* factor, complex* fftFactor, int len, int maxLen)
 {
-  int bitExternal = 0;  // Least significant bit of current external limb
-                        // that corresponds to bit zero of FFT internal limb.
-  limb *ptrFactor = factor;
-  complex *ptrInternalFactor = fftFactor;
-  for (;;)
+  int ctr = 0;
+  int* ptrFactor = factor+1;  // Point to constant coefficient.
+  complex* ptrInternalFactor = fftFactor;
+  for (ctr = 2; ctr <= len; ctr += 2)
   {
-    int real = ptrFactor->x >> bitExternal;
-    if (ptrFactor - factor < len - 1)
-    {                   // Do not read outside input buffer.
-      real += ((ptrFactor + 1)->x << (BITS_PER_GROUP - bitExternal));
-    }
-    ptrInternalFactor->real = (double)(real & MAX_VALUE_FFT_LIMB);
-    bitExternal += FFT_LIMB_SIZE;
-    if (bitExternal >= BITS_PER_GROUP)
-    {                   // All bits of input limb have been used.
-      bitExternal -= BITS_PER_GROUP;
-      if (++ptrFactor - factor == len)
-      {
-        ptrInternalFactor++->imaginary = 0;
-        break;
-      }
-    }
-    int imaginary = ptrFactor->x >> bitExternal;
-    if (ptrFactor - factor < len - 1)
-    {                   // Do not read outside input buffer.
-      imaginary += (ptrFactor + 1)->x << (BITS_PER_GROUP - bitExternal);
-    }
-    ptrInternalFactor++->imaginary = (double)(imaginary & MAX_VALUE_FFT_LIMB);
-    bitExternal += FFT_LIMB_SIZE;
-    if (bitExternal >= BITS_PER_GROUP)
-    {                   // All bits of input limb have been used.
-      bitExternal -= BITS_PER_GROUP;
-      if (++ptrFactor - factor == len)
-      {
-        break;
-      }
-    }
+    ptrInternalFactor->real = *ptrFactor;
+    ptrFactor += 2;            // Point to next coefficient.
+    ptrInternalFactor++->imaginary = *ptrFactor;
+    ptrFactor += 2;            // Point to next coefficient.
   }
+  if (len & 1)
+  {
+    ctr += 2;
+    ptrInternalFactor->real = *ptrFactor;
+    ptrInternalFactor++->imaginary = 0;
+  }
+  maxLen++;
+  for (; ctr <= maxLen; ctr += 2)
+  {
+    ptrInternalFactor->real = 0;
+    ptrInternalFactor++->imaginary = 0;
+  }
+
   return (int)(ptrInternalFactor - fftFactor);
 }
 
@@ -366,28 +329,20 @@ static int ReduceLimbs(limb *factor, complex *fftFactor, int len)
    Z = X * Y;      // Using convolution
    z = DFT^(-1)(Z)
    z = round(z)    // Round elementwise
-   carry = 0;
-   for (0 <= n < 2D)
-   {
-     v = z_n + carry;
-     z_n = v mod B
-     carry = floor(v/B)
-   }
    Delete leading zeros.
 */
-void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen)
+void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
 {
-  complex *ptrFirst, *ptrSecond, *ptrProduct;
+  complex* ptrFirst, * ptrSecond, * ptrProduct;
   double invPower2;
-  double dCarry;
-  int fftLen, bitExternal;
+  int fftLen;
   int power2plus1;
-  limb *ptrResult;
-  fftLen = ReduceLimbs(factor1, firstFactor, len);
-  if (factor1 != factor2 && !(TestNbrCached == NBR_CACHED && factor2 == TestNbr) &&
-    !(MontgomeryMultNCached == NBR_CACHED && factor2 == MontgomeryMultN))
+  int* ptrResult;
+  int maxLen = len1 > len2 ? len1 : len2;
+  fftLen = ConvertFactorToInternal(factor1, firstFactor, len1, maxLen);
+  if (factor1 != factor2 && !(polyInvCached == NBR_CACHED && factor2 == polyInv))
   {
-    ReduceLimbs(factor2, secondFactor, len);
+    ConvertFactorToInternal(factor2, secondFactor, len2, maxLen);
   }
   // Get next power of 2 to len.
   int power2, index;
@@ -407,28 +362,19 @@ void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int 
   power2plus1 = power2 + 1;
   if (factor1 != factor2)
   {
-    if (TestNbrCached == NBR_CACHED && factor2 == TestNbr)
+    if (polyInvCached == NBR_CACHED && factor2 == polyInv)
     {
-      memcpy(transf, TestNbrTransf, power2plus1 * sizeof(transf[0]));
-    }
-    else if (MontgomeryMultNCached == NBR_CACHED && factor2 == MontgomeryMultN)
-    {
-      memcpy(transf, MontgomeryMultNTransf, power2plus1 * sizeof(transf[0]));
+      memcpy(transf, polyInvTransf, power2plus1 * sizeof(transf[0]));
     }
     else
     {
       complexFFT(secondFactor, tempFFT, power2);
       ConvertHalfToFullSizeFFT(tempFFT, transf, power2);  // transf <- DFT(secondFactor)
     }
-    if (TestNbrCached == NBR_READY_TO_BE_CACHED && factor2 == TestNbr)
+    if (polyInvCached == NBR_READY_TO_BE_CACHED && factor2 == polyInv)
     {
-      memcpy(TestNbrTransf, transf, power2plus1 * sizeof(transf[0]));
-      TestNbrCached = NBR_CACHED;
-    }
-    else if (MontgomeryMultNCached == NBR_READY_TO_BE_CACHED && factor2 == MontgomeryMultN)
-    {
-      memcpy(MontgomeryMultNTransf, transf, power2plus1 * sizeof(transf[0]));
-      MontgomeryMultNCached = NBR_CACHED;
+      memcpy(polyInvTransf, transf, power2plus1 * sizeof(transf[0]));
+      polyInvCached = NBR_CACHED;
     }
   }
   else
@@ -436,14 +382,14 @@ void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int 
     memcpy(transf, product, power2plus1 * sizeof(product[0]));   // transf <- DFT(secondFactor)
   }
 
-    // Perform convolution.
+  // Perform convolution.
   ptrFirst = product;
   ptrSecond = transf;
   ptrProduct = product;
   for (index = 0; index <= power2; index++)
   {
-    double real = ptrFirst->real*ptrSecond->real - ptrFirst->imaginary*ptrSecond->imaginary;
-    ptrProduct->imaginary = ptrFirst->real*ptrSecond->imaginary + ptrFirst->imaginary*ptrSecond->real;
+    double real = ptrFirst->real * ptrSecond->real - ptrFirst->imaginary * ptrSecond->imaginary;
+    ptrProduct->imaginary = ptrFirst->real * ptrSecond->imaginary + ptrFirst->imaginary * ptrSecond->real;
     ptrProduct->real = real;
     ptrFirst++;
     ptrSecond++;
@@ -454,61 +400,32 @@ void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int 
   complexFFT(tempFFT, transf, power2);
   ptrProduct = transf;
   invPower2 = (double)1 / ((double)(power2 * 8));
-  dCarry = 0;
-  memset(result, 0, 2*len * sizeof(limb));
-  bitExternal = 0;
   ptrResult = result;
-  for (index = 0; index < power2; index++)
+  for (index = 0; index < maxLen; index++)
   {
-    double dQuot;
-    int fftResult;
-
-    // Real part.
-    dCarry += floor(ptrProduct->real * invPower2 + 0.5);
-    dQuot = floor(dCarry / (double)FFT_LIMB_RANGE);
-    fftResult = (int)(dCarry - dQuot * (double)FFT_LIMB_RANGE);
-    ptrResult->x |= (fftResult << bitExternal) & MAX_INT_NBR;
-    if (bitExternal > BITS_PER_GROUP - FFT_LIMB_SIZE)
+    int coeff = (int)floor(ptrProduct->real * invPower2 + 0.5);
+    if (coeff >= 0)
     {
-      (ptrResult+1)->x |= (fftResult >> (BITS_PER_GROUP - bitExternal)) & MAX_INT_NBR;
+      *ptrResult++ = 1;
+      *ptrResult++ = coeff;
     }
-    bitExternal += FFT_LIMB_SIZE;
-    if (bitExternal >= BITS_PER_GROUP)
+    else
     {
-      bitExternal -= BITS_PER_GROUP;
-      if (++ptrResult - result == 2 * len)
-      {
-        break;
-      }
+      *ptrResult++ = -1;
+      *ptrResult++ = -coeff;
     }
-    dCarry = dQuot;
-
     // Imaginary part. Use negative value for inverse FFT.
-    dCarry += floor(-ptrProduct++->imaginary * invPower2 + 0.5);
-    dQuot = floor(dCarry / (double)FFT_LIMB_RANGE);
-    fftResult = (int)(dCarry - dQuot * (double)FFT_LIMB_RANGE);
-    ptrResult->x |= (fftResult << bitExternal) & MAX_INT_NBR;
-    if (bitExternal > BITS_PER_GROUP - FFT_LIMB_SIZE)
+    coeff = (int)floor(-ptrProduct->imaginary * invPower2 + 0.5);
+    if (coeff >= 0)
     {
-      (ptrResult + 1)->x |= (fftResult >> (BITS_PER_GROUP - bitExternal)) & MAX_INT_NBR;
+      *ptrResult++ = 1;
+      *ptrResult++ = coeff;
     }
-    bitExternal += FFT_LIMB_SIZE;
-    if (bitExternal >= BITS_PER_GROUP)
+    else
     {
-      bitExternal -= BITS_PER_GROUP;
-      if (++ptrResult - result == 2 * len)
-      {
-        break;
-      }
+      *ptrResult++ = -1;
+      *ptrResult++ = -coeff;
     }
-    dCarry = dQuot;
-  }
-  if (pResultLen != NULL)
-  {
-    if ((result + len - 1)->x == 0)
-    {
-      len--;
-    }
-    *pResultLen = len;
+    ptrProduct++;
   }
 }

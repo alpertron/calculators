@@ -170,7 +170,9 @@
     <ClCompile Include="bigint.c" />
     <ClCompile Include="bignbr.c" />
     <ClCompile Include="bigrational.c" />
+    <ClCompile Include="fftpoly.c" />
     <ClCompile Include="intpolfact.c" />
+    <ClCompile Include="multpoly.c" />
     <ClCompile Include="quintics.c" />
     <ClCompile Include="contfrac.c" />
     <ClCompile Include="dilog.c" />
@@ -205,6 +207,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="batch.h" />
+    <ClInclude Include="fft.h" />
     <ClInclude Include="output.h" />
     <ClInclude Include="polynomial.h" />
     <ClInclude Include="rootseq.h" />
