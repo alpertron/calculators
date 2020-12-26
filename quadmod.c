@@ -23,6 +23,8 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "expression.h"
 #include "factor.h"
 
+static BigInteger sqrRoot;
+static BigInteger tmp1, tmp2, ValAOdd;
 static BigInteger GcdAll;
 static BigInteger ValNn;
 static BigInteger z, Mult, currentSolution;
@@ -289,8 +291,6 @@ void SolveEquation(void)
     }
     else
     {                   /* If quadratic equation mod p */
-      BigInteger sqrRoot;
-      BigInteger tmp1, tmp2, ValAOdd;
       int nbrBitsSquareRoot, correctBits, nbrLimbs, bitsAZero, ctr;
       int deltaZeros, deltaIsZero = 0;
       int sol1Invalid = 0;

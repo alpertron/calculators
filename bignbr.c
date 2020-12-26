@@ -847,6 +847,11 @@ void multint(BigInteger *pResult, BigInteger *pMult, int factor)
   int nbrLimbs = pMult->nbrLimbs;
   limb *pLimb = pMult->limbs;
   limb *pResultLimb = pResult->limbs;
+  if (factor == 0)
+  {   // Any number multiplied by zero is zero.
+    intToBigInteger(pResult, 0);
+    return;
+  }
   if (factor < 0)
   {     // If factor is negative, indicate it and compute its absolute value.
     factorPositive = 0;
