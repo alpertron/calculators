@@ -114,5 +114,6 @@ void fftPolyMult(int* factor1, int* factor2, int* result, int len, int maxLen);
 void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   /*@out@*/int* polyProduct,
   int polyDegree, /*@in@*/int* polyMod);
+void SameDegreeFactorization(void);
 extern int polyNonRepeatedFactors[];
 #endif

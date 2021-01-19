@@ -34,6 +34,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define TOKEN_GCD                  '4'
 #define TOKEN_DER                  '5'
 extern char* ptrOutput2;
+extern int DivPolynomialExpr(int* ptrArgument1, int* ptrArgument2, enum eDivType type);
 static void showPolynomial(char** pptrOutput, int* ptrPoly, int polyDegree, int groupLength);
 BigInteger primeMod;              // p
 int exponentMod;                  // k
@@ -49,7 +50,7 @@ extern int NumberLength, NumberLengthR1;
 static int prime;
 static char RPNbuffer[COMPRESSED_POLY_MAX_LENGTH];
 int values[COMPRESSED_POLY_MAX_LENGTH];
-static int valuesIndex;
+int valuesIndex;
 int valuesPrime[COMPRESSED_POLY_MAX_LENGTH];
 int poly1[COMPRESSED_POLY_MAX_LENGTH];
 int poly2[COMPRESSED_POLY_MAX_LENGTH];
@@ -845,293 +846,6 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
   return EXPR_OK;
 }
 
-static void ToPoly(int polyDegree, int *polySrc, int *polyDest)
-{
-  int currentDegree;
-  polySrc++;
-  if (polyDegree < 0)
-  {    // Polynomial is a monomial
-    for (currentDegree = 0; currentDegree < -polyDegree; currentDegree++)
-    {
-      *polyDest = 1;
-      *(polyDest + 1) = 0;
-      polyDest += NumberLength + 1;
-    }
-    memcpy(polyDest, polySrc, (*(polySrc)+1)*sizeof(int));
-  }
-  else
-  {   // Polynomial
-    for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
-    {
-      int nbrLimbs = *(polySrc)+1;
-      memcpy(polyDest, polySrc, nbrLimbs*sizeof(int));
-      polyDest += NumberLength + 1;
-      polySrc += nbrLimbs;
-    }
-  }
-}
-
-static void FromPoly(int polyDegree, int *polyDest, int *polySrc)
-{
-  int currentDegree;
-  *polyDest++ = polyDegree;
-  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
-  {
-    int nbrLimbs = *(polySrc)+1;
-    memcpy(polyDest, polySrc, nbrLimbs*sizeof(int));
-    polyDest += NumberLength + 1;
-    polySrc += nbrLimbs;
-  }
-}
-
-static void ReversePolynomial(int *ptrDest, int *ptrSrc)
-{
-  int indexes[2*MAX_DEGREE+1];
-  int *ptrIndex;
-  int index, numLength;
-  int degreePoly = *ptrSrc;
-  if (degreePoly < 0)
-  {    // Monomial.
-    degreePoly = -degreePoly;
-    *ptrDest++ = degreePoly;
-    numLength = numLimbs(ptrSrc+1) + 1;
-    memcpy(ptrDest, ptrSrc + 1, numLength * sizeof(int));
-    ptrDest += numLength;
-    for (degree = 0; degree < degreePoly; degree++)
-    {
-      *ptrDest++ = 1;   // Set coefficient to zero.
-      *ptrDest++ = 0;
-    }
-    return;
-  }
-  // Fill indexes to start of each coefficient.
-  ptrIndex = &indexes[0];
-  index = 1;
-  for (degree = 0; degree <= degreePoly; degree++)
-  {
-    *ptrIndex++ = index;
-    index += numLimbs(ptrSrc + index) + 1;
-  }
-  // Copy to destination.
-  *ptrDest++ = degreePoly;
-  for (degree = degreePoly; degree >= 0; degree--)
-  {
-    int *ptrSrcCoeff = ptrSrc + indexes[degree];
-    numLength = numLimbs(ptrSrcCoeff) + 1;
-    memcpy(ptrDest, ptrSrcCoeff, numLength * sizeof(int));
-    ptrDest += numLength;
-  }
-}
-
-int DivideIntegerPolynomial(int *pDividend, int *pDivisor, enum eDivType type)
-{
-  int *ptrResult;
-  int degreeDividend;
-  int degreeDivisor;
-  int degreeQuotient;
-  int* ptrQuotient;
-  // Move arguments to temporary storage with most significant coefficient
-  // first.
-  ReversePolynomial(poly1, pDividend);
-  ReversePolynomial(poly2, pDivisor);
-  degreeDividend = poly1[0];
-  degreeDivisor = poly2[0];
-  if (degreeDividend < degreeDivisor)
-  {      // Degree of dividend is less than degree of divisor.
-    if (type == TYPE_DIVISION)
-    {    // Get pointer to quotient.
-      poly3[0] = 0;     // Degree of quotient is zero.
-      poly3[1] = 1;     // Coefficient is zero.
-      poly3[2] = 0;
-    }
-    else
-    {                   // Remainder is equal to dividend.
-      CopyPolynomial(poly1, pDividend, *pDividend);
-    }
-    return EXPR_OK;
-  }
-  ptrQuotient = poly3;
-  *ptrQuotient++ = degreeDividend - degreeDivisor;
-  for (degreeQuotient = degreeDividend - degreeDivisor;
-    degreeQuotient >= 0; degreeQuotient--)
-  {
-    int *ptrDividend = &poly1[1];
-    int *ptrDivisor = &poly2[1];
-    int *ptrRemainder = &poly4[1];
-    UncompressBigIntegerB(ptrDividend, &operand1);
-    UncompressBigIntegerB(ptrDivisor, &operand2);
-    BigIntRemainder(&operand1, &operand2, &operand3);
-    if (!BigIntIsZero(&operand3))
-    {
-      return EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER;
-    }
-    BigIntDivide(&operand1, &operand2, &operand3);
-    NumberLength = operand3.nbrLimbs;
-    BigInteger2IntArray(ptrQuotient, &operand3);
-    ptrQuotient += 1 + NumberLength;
-    // Calculate remainder.
-    if (degreeDivisor == 0)
-    {     // Strip leading coefficient of dividend.
-      int numLength = 1 + numLimbs(ptrDividend);
-      ptrRemainder = &poly1[1];
-
-      for (degree = degreeDividend; degree > 0; degree--)
-      {
-        ptrDividend += numLength;
-        numLength = 1 + numLimbs(ptrDividend);
-        memcpy(ptrRemainder, ptrDividend, numLength * sizeof(int));
-        ptrRemainder += numLength;
-      }
-    }
-    else
-    {
-      for (degree = degreeDivisor; degree > 0; degree--)
-      {
-        ptrDividend += numLimbs(ptrDividend) + 1;
-        ptrDivisor += numLimbs(ptrDivisor) + 1;
-        UncompressBigIntegerB(ptrDivisor, &operand2);
-        BigIntMultiply(&operand2, &operand3, &operand2);
-        UncompressBigIntegerB(ptrDividend, &operand1);
-        BigIntSubt(&operand1, &operand2, &operand2);
-        NumberLength = operand2.nbrLimbs;
-        BigInteger2IntArray(ptrRemainder, &operand2);
-        ptrRemainder += 1 + NumberLength;
-      }
-      // Copy least significant coefficients of dividend into remainder.
-      for (degree = degreeDividend - degreeDivisor; degree > 0; degree--)
-      {
-        ptrDividend += 1 + numLimbs(ptrDividend);
-        int numLength = 1 + numLimbs(ptrDividend);
-        memcpy(ptrRemainder, ptrDividend, numLength * sizeof(int));
-        ptrRemainder += numLength;
-      }
-      // Copy remainder to dividend.
-      memcpy(&poly1[1], &poly4[1], (char *)ptrRemainder - (char *)&poly4[1]);
-    }
-    degreeDividend--;
-  }
-  if (type == TYPE_DIVISION)
-  {    // Get pointer to quotient.
-    ptrResult = poly3;
-    degree = poly1[0] - degreeDivisor;
-  }
-  else
-  {    // Get pointer to remainder.
-    ptrResult = poly1;
-    degree = degreeDivisor - 1;
-  }
-       // Compute degree discarding leading coefficients set to zero.
-  while (degree > 0)
-  {
-    if (*(ptrResult + 1) != 1 || *(ptrResult + 2) != 0)
-    {            // Coefficient is not zero.
-      break;
-    }
-    ptrResult += 2;
-    degree--;
-  }
-  *ptrResult = degree;
-       // Copy result to first parameter.
-  ReversePolynomial(pDividend, ptrResult);
-  // Discard most significant 
-  return EXPR_OK;
-}
-
-static int DivPolynomialExpr(int *ptrArgument1, int *ptrArgument2, enum eDivType type)
-{
-  int currentDegree;
-  int degree1 = *ptrArgument1;
-  int degree2 = *ptrArgument2;
-  if (*ptrArgument2 == 0 && *(ptrArgument2 + 1) == 1 && *(ptrArgument2 + 2) == 0)
-  {        // Divisor is zero
-    if (type == TYPE_DIVISION)
-    {
-      return EXPR_DIVIDE_BY_ZERO;
-    }
-    return EXPR_OK;   // a mod 0 = a.
-  }
-  if (degree1 <= 0 && degree2 <= 0)
-  {        // Division of two monomials.
-    if (degree1 > degree2)
-    {      // Degree of dividend less than degree of divisor.
-      if (type == TYPE_DIVISION)
-      {       // Result is zero.
-        *ptrArgument1 = 0;
-        *(ptrArgument1 + 1) = 1;
-        *(ptrArgument1 + 2) = 0;
-      }
-      return EXPR_OK;
-    }
-    if (type == TYPE_MODULUS)
-    {       // Result is zero.
-      *ptrArgument1 = 0;
-      *(ptrArgument1 + 1) = 1;
-      *(ptrArgument1 + 2) = 0;
-      return EXPR_OK;
-    }
-    *ptrArgument1 = degree1 - degree2;
-    UncompressBigIntegerB(ptrArgument1 + 1, &operand1);
-    UncompressBigIntegerB(ptrArgument2 + 1, &operand2);
-    if (modulusIsZero)
-    {
-      BigIntRemainder(&operand1, &operand2, &operand3);
-      if (!BigIntIsZero(&operand3))
-      {    // Remainder is not zero.
-        return EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER;
-      }
-      BigIntDivide(&operand1, &operand2, &operand3);
-      CopyBigInt(&operand1, &operand3);
-      NumberLength = operand1.nbrLimbs;
-    }
-    else
-    {
-      ModInvBigNbr(operand2.limbs, operand2.limbs, TestNbr, NumberLength);
-      modmult(operand1.limbs, operand2.limbs, operand1.limbs);
-    }
-    BigInteger2IntArray(ptrArgument1 + 1, &operand1);
-    valuesIndex = (int)(ptrArgument1 + 2 + *(ptrArgument1 + 1) - &values[0]);
-    return EXPR_OK;
-  }
-  if (modulusIsZero)
-  {
-    return DivideIntegerPolynomial(ptrArgument1, ptrArgument2, type);
-  }
-  ToPoly(degree1, ptrArgument1, poly1); // Move dividend to poly1.
-  ToPoly(degree2, ptrArgument2, poly2); // Move divisor to poly2.
-  if (degree1 < 0)
-  {
-    degree1 = -degree1;
-  }
-  if (degree2 < 0)
-  {
-    degree2 = -degree2;
-  }
-  if (degree1 < degree2)
-  {       // Degree of dividend less than degree of divisor.
-    if (type == TYPE_DIVISION)
-    {     // Result is zero.
-      *ptrArgument1 = 0;
-      *(ptrArgument1 + 1) = 1;
-      *(ptrArgument1 + 2) = 0;
-    }
-    return EXPR_OK;
-  }
-  DividePolynomial(poly1, degree1, poly2, degree2, poly3); // Set poly3 to quotient.
-  if (type == TYPE_DIVISION)
-  {
-    currentDegree = degree1 - degree2;
-    *ptrArgument1 = currentDegree;
-    FromPoly(currentDegree, ptrArgument1, poly3); // Move dividend to poly1.
-  }
-  else
-  {
-    currentDegree = getDegreePoly(poly1, degree2-1);
-    *ptrArgument1 = currentDegree;
-    FromPoly(currentDegree, ptrArgument1, poly1); // Move modulus to poly1.
-  }
-  return EXPR_OK;
-}
-
 void SetNumberToOne(/*@out@*/int *ptrValue1)
 {
   limb *destLimb;
@@ -1544,16 +1258,27 @@ void ConvertToMonic(int *poly, int polyDegree)
   if (NumberLength == 1)
   {         // Modulus size is one limb.
     int inverse = modInv(*(poly + polyDegree * 2 + 1), TestNbr[0].x);
-    int *ptrPoly = poly + 1;
+    int* ptrPoly = poly + 1;
     intToBigInteger(&operand1, inverse);
-    for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+    if (TestNbr[0].x < 32767)
     {
+      for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+      {
+        *ptrPoly = *ptrPoly * inverse % TestNbr[0].x;
+        ptrPoly += 2;
+      }
+    }
+    else
+    {
+      for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+      {
 #ifdef _USING64BITS_
-      *ptrPoly = (int)((uint64_t)*ptrPoly * inverse % TestNbr[0].x);
+        *ptrPoly = (int)((uint64_t)*ptrPoly * inverse % TestNbr[0].x);
 #else
-      smallmodmult(*ptrPoly, inverse, (limb *)ptrPoly, TestNbr[0].x);
+        smallmodmult(*ptrPoly, inverse, (limb*)ptrPoly, TestNbr[0].x);
 #endif
-      ptrPoly += 2;
+        ptrPoly += 2;
+      }
     }
   }
   else
@@ -1866,21 +1591,32 @@ void PolyModularGcd(int *arg1, int degree1, int *arg2, int degree2, int *gcd, in
       if (nbrLimbs == 2)
       {        // Modulus size is one limb.
         int modulus = TestNbr[0].x;
-        int value = *(ptrArgMax + currentDegree * 2 + 1);
+        int value = modulus - *(ptrArgMax + currentDegree * 2 + 1);
         int *ptrPoly = ptrArgMin + 1;
         ptrTemp++;
-        for (index = 0; index <= degreeMin; index++)
+        if (modulus < 32767)
         {
+          for (index = 0; index <= degreeMin; index++)
+          {
+            *ptrTemp = (*ptrTemp + *ptrPoly * value) % modulus;
+            ptrTemp += 2;
+            ptrPoly += 2;
+          }
+        }
+        else
+        {
+          for (index = 0; index <= degreeMin; index++)
+          {
 #ifdef _USING64BITS_
-          temp = *ptrTemp - (int)((uint64_t)*ptrPoly * value % modulus);
+            *ptrTemp = (*ptrTemp + (uint64_t)*ptrPoly * value) % modulus;
 #else
-          smallmodmult(*ptrPoly, value, (limb *)&temp, modulus);
-          temp = *ptrTemp - temp;
+            smallmodmult(*ptrPoly, value, (limb*)&temp, modulus);
+            *ptrTemp = (int)(((unsigned int)*ptrTemp + (unsigned int)temp) %
+              (unsigned int)modulus);
 #endif
-          temp += modulus & (temp >> BITS_PER_GROUP);
-          *ptrTemp = temp;
-          ptrTemp += 2;
-          ptrPoly += 2;
+            ptrTemp += 2;
+            ptrPoly += 2;
+          }
         }
       }
       else
@@ -2053,85 +1789,6 @@ void polyToMontgomeryNotation(int *nbr, int qtyNbrs)
   }
 }
 
-// In this routine, the dividend is replaced by the remainder of the division.
-// Input and output coefficients are expressed in Montgomery notation.
-// If only the remainder is needed, ptrQuotient can be NULL.
-void DividePolynomial(/*@in@*/int *pDividend, int dividendDegree,
- /*@in@*/int *pDivisor, int divisorDegree, /*@out@*/int *ptrQuotient)
-{
-  int currentDegree, index;
-  int nbrLimbs = NumberLength + 1;
-  int divisorIsOne;
-  int *ptrQuot;
-  int remainderDegree;
-  if (divisorDegree > dividendDegree)
-  {    // Quotient is zero.
-    if (ptrQuotient != NULL)
-    {
-      *ptrQuotient = 1;
-      *(ptrQuotient + 1) = 0;
-    }
-    return;
-  }
-  remainderDegree = dividendDegree - divisorDegree;
-  IntArray2BigInteger(pDivisor + divisorDegree*nbrLimbs, &operand1);
-  memcpy(operand5.limbs, operand1.limbs, NumberLength*sizeof(int));
-  divisorIsOne = !memcmp(operand1.limbs, MontgomeryMultR1, NumberLength*sizeof(int));
-  if (!divisorIsOne)
-  {        // Leading coefficient is not 1.
-    ConvertToMonic(pDivisor, divisorDegree);
-    // operand1 holds the inverse of the leading coefficient of divisor.
-    // Multiply dividend by this number.
-    for (currentDegree = 0; currentDegree <= dividendDegree; currentDegree++)
-    {
-      IntArray2BigInteger(pDividend + currentDegree*nbrLimbs, &operand2);
-      modmult(operand1.limbs, operand2.limbs, operand2.limbs);
-      BigInteger2IntArray(pDividend + currentDegree*nbrLimbs, &operand2);
-    }
-  }
-  ptrQuot = ptrQuotient + (dividendDegree - divisorDegree)*nbrLimbs;
-  for (currentDegree = dividendDegree; currentDegree >= divisorDegree; currentDegree--)
-  {
-    int *ptrDivisor;
-    int *ptrDividend = pDividend + currentDegree*nbrLimbs;
-    IntArray2BigInteger(ptrDividend, &operand1);
-    if (ptrQuotient != NULL)
-    {
-      BigInteger2IntArray(ptrQuot, &operand1);  // Store coefficient of quotient.
-    }
-    ptrDivisor = pDivisor + divisorDegree*nbrLimbs;
-    for (index = 0; index <= divisorDegree; index++)
-    {
-      IntArray2BigInteger(ptrDivisor, &operand2);
-      modmult(operand1.limbs, operand2.limbs, operand2.limbs);
-      IntArray2BigInteger(ptrDividend, &operand3);
-      SubtBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
-      BigInteger2IntArray(ptrDividend, &operand3);
-      ptrDividend -= nbrLimbs;
-      ptrDivisor -= nbrLimbs;
-    }
-    ptrQuot -= nbrLimbs;
-  }
-  if (!divisorIsOne)
-  {        // Leading coefficient is not 1.
-           // Adjust remainder by multiplying each coefficient by leading
-           // coefficient of divisor.
-    for (currentDegree = 0; currentDegree <= dividendDegree; currentDegree++)
-    {
-      IntArray2BigInteger(pDividend + currentDegree*nbrLimbs, &operand2);
-      modmult(operand5.limbs, operand2.limbs, operand2.limbs);
-      BigInteger2IntArray(pDividend + currentDegree*nbrLimbs, &operand2);
-    }
-           // Restore divisor.
-    for (currentDegree = 0; currentDegree <= divisorDegree; currentDegree++)
-    {
-      IntArray2BigInteger(pDivisor + currentDegree*nbrLimbs, &operand2);
-      modmult(operand5.limbs, operand2.limbs, operand2.limbs);
-      BigInteger2IntArray(pDivisor + currentDegree*nbrLimbs, &operand2);
-    }
-  }
-}
-
   // Perform polyPower <- polyBase ^ expon (mod polyMod)
 void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *expon,
                      int *polyPower, powerCback callback)
@@ -2260,7 +1917,7 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
     int i = 1;
 
     PolyModularGcd(poly, polyDegree, poly1, currentDegree, poly2, &degreeC); // poly2 = c
-    memcpy(polyMultTemp, poly, (polyDegree + 1)*nbrLimbs*sizeof(int));      // Backup poly
+    memcpy(poly4, poly, (polyDegree + 1)*nbrLimbs*sizeof(int));      // Backup poly
     if (degreeC == 0)
     {
       memcpy(poly1, poly, (polyDegree + 1)*nbrLimbs*sizeof(int));           // poly1 = w
@@ -2268,27 +1925,27 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
     else
     {
       SetNumberToOne(&poly2[degreeC*nbrLimbs]);
-      DividePolynomial(polyMultTemp, polyDegree, poly2, degreeC, poly1);    // poly1 = w
+      DividePolynomial(poly4, polyDegree, poly2, degreeC, poly1);    // poly1 = w
     }
     degreeW = polyDegree - degreeC;
     while (degreeW != 0)
     {
-      memcpy(polyMultTemp, poly1, (degreeW+1)*nbrLimbs*sizeof(int));        // Backup w.
-      PolyModularGcd(poly2, degreeC, poly1, degreeW, poly3, &degreeY);       // poly3 = y
+      memcpy(poly4, poly1, (degreeW+1)*nbrLimbs*sizeof(int));        // Backup w.
+      PolyModularGcd(poly2, degreeC, poly1, degreeW, poly3, &degreeY);      // poly3 = y
       SetNumberToOne(&poly3[degreeY*nbrLimbs]);
       if (degreeW != degreeY)
       {
         int degreeZ;
         struct sFactorInfo *pstFactorInfo;
 
-        DividePolynomial(polyMultTemp, degreeW, poly3, degreeY, poly1);     // poly1 = z
+        DividePolynomial(poly4, degreeW, poly3, degreeY, poly1);     // poly1 = z
         // z^i is divisor of the original polynomial.
         degreeZ = degreeW - degreeY;
         for (currentDegree = 0; currentDegree < i*expon; currentDegree++)
         {
-          DividePolynomial(ptrOrigPoly, degreeOrigPoly, poly1, degreeZ, polyMultTemp);
+          DividePolynomial(ptrOrigPoly, degreeOrigPoly, poly1, degreeZ, poly4);
           degreeOrigPoly -= degreeZ;
-          memcpy(ptrOrigPoly, polyMultTemp, (degreeOrigPoly+1)*nbrLimbs*sizeof(int));
+          memcpy(ptrOrigPoly, poly4, (degreeOrigPoly+1)*nbrLimbs*sizeof(int));
         }
         pstFactorInfo = &factorInfo[nbrFactorsFound++];
         pstFactorInfo -> ptr = ptrOrigPoly;
@@ -2297,14 +1954,14 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
         pstFactorInfo -> expectedDegree = 0;    // Unknown at this moment.
         memcpy(ptrOrigPoly, poly1, degreeZ*nbrLimbs*sizeof(int));
         ptrOrigPoly += (degreeZ+1)*nbrLimbs;
-        memcpy(ptrOrigPoly, polyMultTemp, (degreeOrigPoly + 1)*nbrLimbs*sizeof(int));
+        memcpy(ptrOrigPoly, poly4, (degreeOrigPoly + 1)*nbrLimbs*sizeof(int));
       }
       i++;
-      memcpy(poly1, poly3, (degreeY+1)*nbrLimbs*sizeof(int));             // Copy y to w.
+      memcpy(poly1, poly3, (degreeY+1)*nbrLimbs*sizeof(int));  // Copy y to w.
       degreeW = getDegreePoly(poly1, degreeY);
-      DividePolynomial(poly2, degreeC, poly1, degreeW, polyMultTemp); // Compute c.
+      DividePolynomial(poly2, degreeC, poly1, degreeW, poly4); // Compute c.
       degreeC -= degreeW;
-      memcpy(poly2, polyMultTemp, (degreeC+1)*nbrLimbs*sizeof(int));
+      memcpy(poly2, poly4, (degreeC+1)*nbrLimbs*sizeof(int));
     }
     if (degreeC != 0)
     {      // C is a perfect power.

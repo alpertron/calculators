@@ -229,21 +229,16 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
   BigInteger *temp;
   if (pFactor1->nbrLimbs == 1 || pFactor2->nbrLimbs == 1)
   {       // At least one the factors has only one limb.
+    int factor2;
     if (pFactor1->nbrLimbs == 1)
     {     // Force the second factor to have only one limb.
       temp = pFactor1;
       pFactor1 = pFactor2;
       pFactor2 = temp;
     }
-    if (pFactor2->limbs[0].x == 0 || (pFactor1->nbrLimbs == 1 && pFactor1->limbs[0].x == 0))
-    {     // Any factor is zero, so product must be zero.
-      intToBigInteger(pProduct, 0);
-    }
-    else
-    {     // Multiply BigInteger by integer.
-      int factor2 = (pFactor2->sign == SIGN_POSITIVE? pFactor2->limbs[0].x : -pFactor2->limbs[0].x);
-      multint(pProduct, pFactor1, factor2);
-    }
+      // Multiply BigInteger by integer.
+    factor2 = (pFactor2->sign == SIGN_POSITIVE? pFactor2->limbs[0].x : -pFactor2->limbs[0].x);
+    multint(pProduct, pFactor1, factor2);
     return EXPR_OK;
   }
 #ifdef FACTORIZATION_APP

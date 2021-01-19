@@ -121,7 +121,7 @@ static void DistinctDegreeFactorization(int polyDegree)
       BigInteger2IntArray(&poly2[nbrLimbs], &operand1);
       // Perform Gcd.
       degreeMin = getDegreePoly(poly2, polyDegree - 1);
-      PolyModularGcd(poly3, polyDegree, poly2, degreeMin, polyMultTemp, &degreeGcd);
+      PolyModularGcd(poly3, polyDegree, poly2, degreeMin, poly4, &degreeGcd);
       if (degreeGcd == polyDegree)
       {
         pstFactorInfo->expectedDegree = currentDegree;
@@ -131,9 +131,9 @@ static void DistinctDegreeFactorization(int polyDegree)
       {         // Non-trivial factor of polynomial has been found.
                 // Divide polynomial by GCD. Put the GCD in the first limbs
                 // and the quotient in the last limbs.
-        ptrValue1 = polyMultTemp + degreeGcd*nbrLimbs;
+        ptrValue1 = &poly4[degreeGcd*nbrLimbs];
         SetNumberToOne(ptrValue1);
-        DividePolynomial(poly3, polyDegree, polyMultTemp, degreeGcd, poly2);
+        DividePolynomial(poly3, polyDegree, poly4, degreeGcd, poly2);
         // Quotient located in poly2.
         pstNewFactorInfo = &factorInfo[nbrFactorsFound++];
         pstNewFactorInfo->ptr = ptrPolyToFactor;
@@ -142,7 +142,7 @@ static void DistinctDegreeFactorization(int polyDegree)
         pstNewFactorInfo->expectedDegree = currentDegree;
         pstFactorInfo->degree = polyDegree - degreeGcd;
         pstFactorInfo->ptr = &ptrPolyToFactor[degreeGcd*nbrLimbs];
-        memcpy(ptrPolyToFactor, polyMultTemp, degreeGcd*nbrLimbs*sizeof(int));
+        memcpy(ptrPolyToFactor, poly4, degreeGcd*nbrLimbs*sizeof(int));
         memcpy(pstFactorInfo->ptr, poly2, (polyDegree - degreeGcd + 1)*nbrLimbs*sizeof(int));
         polyDegree -= degreeGcd;
         ptrPolyToFactor += degreeGcd*nbrLimbs;
@@ -197,7 +197,7 @@ static void percentageCallback(int percentage)
 
 
 // Perform Cantor-Zassenhaus algorithm to factor polynomials of the same degree.
-static void SameDegreeFactorization(void)
+void SameDegreeFactorization(void)
 {
   unsigned int seed = 1;  // Initialize pseudorandom sequence.
   struct sFactorInfo *pstFactorInfo = factorInfo;
@@ -303,12 +303,12 @@ static void SameDegreeFactorization(void)
           }
         }
       }
-      PolyModularGcd(poly3, polyDegree, poly2, getDegreePoly(poly2, polyDegree - 1), polyMultTemp, &degreeGcd);
+      PolyModularGcd(poly3, polyDegree, poly2, getDegreePoly(poly2, polyDegree - 1), poly4, &degreeGcd);
       if (degreeGcd != 0 && degreeGcd != polyDegree)
       {   // Non-trivial factor found.
-        ptrValue1 = polyMultTemp + degreeGcd*nbrLimbs;
+        ptrValue1 = &poly4[degreeGcd*nbrLimbs];
         SetNumberToOne(ptrValue1);
-        DividePolynomial(poly3, polyDegree, polyMultTemp, degreeGcd, poly2);
+        DividePolynomial(poly3, polyDegree, poly4, degreeGcd, poly2);
         // Quotient located in poly2.
         pstNewFactorInfo = &factorInfo[nbrFactorsFound++];
         pstNewFactorInfo->ptr = &ptrPolyToFactor[degreeGcd*nbrLimbs];
@@ -316,7 +316,7 @@ static void SameDegreeFactorization(void)
         pstNewFactorInfo->multiplicity = pstFactorInfo->multiplicity;
         pstNewFactorInfo->expectedDegree = pstFactorInfo->expectedDegree;
         pstFactorInfo->degree = degreeGcd;
-        memcpy(ptrPolyToFactor, polyMultTemp, degreeGcd*nbrLimbs*sizeof(int));
+        memcpy(ptrPolyToFactor, poly4, degreeGcd*nbrLimbs*sizeof(int));
         memcpy(pstNewFactorInfo->ptr, poly2, (polyDegree - degreeGcd)*nbrLimbs*sizeof(int));
         polyDegree = degreeGcd;
 #ifdef __EMSCRIPTEN__
@@ -444,7 +444,11 @@ int FactorModularPolynomial(int inputMontgomery)
   {
     SquareFreeFactorization(degree, valuesPrime, 1);
     DistinctDegreeFactorization(degree);
-    SameDegreeFactorization();
+    if (inputMontgomery)
+    {    // Do not perform same degree factorization if only counting
+         // the number of modular factors of input polynomial.
+      SameDegreeFactorization();
+    }
   }
   if (inputMontgomery == FALSE)
   {

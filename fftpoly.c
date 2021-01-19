@@ -36,6 +36,7 @@ static complex firstFactor[MAX_FFT_LEN];
 static complex secondFactor[MAX_FFT_LEN];
 static complex transf[MAX_FFT_LEN];
 static complex product[MAX_FFT_LEN];
+static complex finalProduct[MAX_FFT_LEN];
 static complex tempFFT[MAX_FFT_LEN];
 static complex polyInvTransf[MAX_FFT_LEN];
 extern int polyInv[COMPRESSED_POLY_MAX_LENGTH];
@@ -145,7 +146,7 @@ static void initCosinesArray(void)
 */
 
 // length is power of 2.
-static void complexFFT(complex* x, complex* y, int length)
+static void complexPolyFFT(complex* x, complex* y, int length)
 {
   int j, J;
   int halfLength = length / 2;
@@ -292,7 +293,7 @@ static void ConvertFullToHalfSizeFFT(complex* fullSizeFFT, complex* halfSizeFFT,
   }
 }
 
-static int ConvertFactorToInternal(int* factor, complex* fftFactor, int len, int maxLen)
+static void ConvertFactorToInternal(int* factor, complex* fftFactor, int len, int maxLen)
 {
   int ctr = 0;
   int* ptrFactor = factor+1;  // Point to constant coefficient.
@@ -316,8 +317,6 @@ static int ConvertFactorToInternal(int* factor, complex* fftFactor, int len, int
     ptrInternalFactor->real = 0;
     ptrInternalFactor++->imaginary = 0;
   }
-
-  return (int)(ptrInternalFactor - fftFactor);
 }
 
 /*
@@ -331,101 +330,136 @@ static int ConvertFactorToInternal(int* factor, complex* fftFactor, int len, int
    z = round(z)    // Round elementwise
    Delete leading zeros.
 */
+// If degree of first polynomial is greater than the degree of the second polynomial,
+// subdivide the coefficients of the first polynomial in groups of K, where K is the
+// lowest power of 2 greater or equal than the length of the second polynomial.
 void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
 {
   complex* ptrFirst, * ptrSecond, * ptrProduct;
   double invPower2;
-  int fftLen;
   int power2plus1;
   int* ptrResult;
-  int maxLen = len1 > len2 ? len1 : len2;
-  fftLen = ConvertFactorToInternal(factor1, firstFactor, len1, maxLen);
-  if (factor1 != factor2 && !(polyInvCached == NBR_CACHED && factor2 == polyInv))
-  {
-    ConvertFactorToInternal(factor2, secondFactor, len2, maxLen);
+  int ctr, chunkLen, index;
+  int nbrLimbs = NumberLength + 1;
+  int factor1DegreesProcessed = 0;
+  int power2SecondFactor = 0;
+  int power2;
+  int modulus = TestNbr[0].x;
+  complex* ptrFinalProduct;
+  if (len1 > len2)
+  { // Degree of first polynomial is greater than degree of second polynomial.
+    // Set results to polynomial zero.
+    ptrFinalProduct = finalProduct;
+    chunkLen = (len1 + len2 + 1) / 2;
+    for (ctr = 0; ctr <= chunkLen; ctr++)
+    {
+      ptrFinalProduct->real = 0;         // Initialize coefficient to zero.
+      ptrFinalProduct->imaginary = 0;
+      ptrFinalProduct++;
+    }
   }
-  // Get next power of 2 to len.
-  int power2, index;
-  for (power2 = 1; power2 < fftLen; power2 *= 2)
+  // Get least power of 2 greater or equal than the degree of second factor.
+  for (power2SecondFactor = 1; power2SecondFactor < len2; power2SecondFactor *= 2)
   {
   }
-  power2 += power2;
-  for (index = fftLen; index < power2; index++)
-  {
-    firstFactor[index].real = 0;
-    firstFactor[index].imaginary = 0;
-    secondFactor[index].real = 0;
-    secondFactor[index].imaginary = 0;
-  }
-  complexFFT(firstFactor, tempFFT, power2);
-  ConvertHalfToFullSizeFFT(tempFFT, product, power2);   // product <- DFT(firstFactor)
+  // Get transform of second factor outside multiplication loop,
+  // because it has to be computed only once.
+  power2 = power2SecondFactor;
   power2plus1 = power2 + 1;
   if (factor1 != factor2)
   {
     if (polyInvCached == NBR_CACHED && factor2 == polyInv)
-    {
+    {   // Get transform of inverse of polynomial from cache.
       memcpy(transf, polyInvTransf, power2plus1 * sizeof(transf[0]));
     }
     else
-    {
-      complexFFT(secondFactor, tempFFT, power2);
+    {   // Second factor is not cached. Compute transform.
+      ConvertFactorToInternal(factor2, secondFactor, len2, 2 * power2);
+      complexPolyFFT(secondFactor, tempFFT, power2);
       ConvertHalfToFullSizeFFT(tempFFT, transf, power2);  // transf <- DFT(secondFactor)
     }
     if (polyInvCached == NBR_READY_TO_BE_CACHED && factor2 == polyInv)
-    {
+    {   // Save transform of inverse of polynomial to cache.
       memcpy(polyInvTransf, transf, power2plus1 * sizeof(transf[0]));
       polyInvCached = NBR_CACHED;
     }
   }
+  for (factor1DegreesProcessed = 0; factor1DegreesProcessed < len1;
+    factor1DegreesProcessed += power2SecondFactor)
+  {
+    int index;
+    int lenFirstFactor = power2SecondFactor;
+    if (lenFirstFactor > len1 - factor1DegreesProcessed)
+    {
+      lenFirstFactor = len1 - factor1DegreesProcessed;
+    }
+    // Get transform of first polynomial.
+    ConvertFactorToInternal(factor1 + factor1DegreesProcessed*nbrLimbs,
+      firstFactor, lenFirstFactor, 2*power2);
+    complexPolyFFT(firstFactor, tempFFT, power2);
+    ConvertHalfToFullSizeFFT(tempFFT, product, power2);   // product <- DFT(firstFactor)
+
+    // If first factor is equal to second factor and this is the first loop,
+    // use transform of second factor as the transform of first factor.
+    if (factor1DegreesProcessed == 0 && factor1 == factor2)
+    {
+      memcpy(transf, product, power2plus1 * sizeof(product[0]));   // transf <- DFT(secondFactor)
+    }
+    // Perform convolution.
+    // Overwrite transform of first factor with transform of product.
+    ptrFirst = product;
+    ptrSecond = transf;
+    for (index = 0; index <= power2; index++)
+    {   // Perform complex multiplication componentwise.
+      double real = ptrFirst->real * ptrSecond->real - ptrFirst->imaginary * ptrSecond->imaginary;
+      ptrFirst->imaginary = ptrFirst->real * ptrSecond->imaginary + ptrFirst->imaginary * ptrSecond->real;
+      ptrFirst->real = real;
+      ptrFirst++;
+      ptrSecond++;
+    }
+    ConvertFullToHalfSizeFFT(product, tempFFT, power2);
+    // Recover product from the transform using inverse DFT.
+    complexPolyFFT(tempFFT, product, power2);
+    // Divide by 8*power2 rounding to nearest integer to get
+    // coefficients of product.
+    chunkLen = (len1 + len2 - factor1DegreesProcessed + 1)/2;
+    if (chunkLen > power2)
+    {
+      chunkLen = power2;
+    }
+    if (len1 > len2)
+    {
+      ptrFinalProduct = &finalProduct[factor1DegreesProcessed / 2];
+      ptrProduct = product;
+      for (index = 0; index < chunkLen; index++)
+      {
+        ptrFinalProduct->real += ptrProduct->real;
+        ptrFinalProduct->imaginary += ptrProduct->imaginary;
+        ptrProduct++;
+        ptrFinalProduct++;
+      }
+    }
+  }
+  if (len1 > len2)
+  {
+    ptrProduct = finalProduct;
+  }
   else
   {
-    memcpy(transf, product, power2plus1 * sizeof(product[0]));   // transf <- DFT(secondFactor)
+    ptrProduct = product;
   }
-
-  // Perform convolution.
-  ptrFirst = product;
-  ptrSecond = transf;
-  ptrProduct = product;
-  for (index = 0; index <= power2; index++)
-  {
-    double real = ptrFirst->real * ptrSecond->real - ptrFirst->imaginary * ptrSecond->imaginary;
-    ptrProduct->imaginary = ptrFirst->real * ptrSecond->imaginary + ptrFirst->imaginary * ptrSecond->real;
-    ptrProduct->real = real;
-    ptrFirst++;
-    ptrSecond++;
-    ptrProduct++;
-  }
-  ConvertFullToHalfSizeFFT(product, tempFFT, power2);
-  // Perform inverse DFT of product.
-  complexFFT(tempFFT, transf, power2);
-  ptrProduct = transf;
   invPower2 = (double)1 / ((double)(power2 * 8));
   ptrResult = result;
-  for (index = 0; index < maxLen; index++)
+  chunkLen = (len1 + len2 + 1) / 2;
+  for (index = 0; index < chunkLen; index++)
   {
     int coeff = (int)floor(ptrProduct->real * invPower2 + 0.5);
-    if (coeff >= 0)
-    {
-      *ptrResult++ = 1;
-      *ptrResult++ = coeff;
-    }
-    else
-    {
-      *ptrResult++ = -1;
-      *ptrResult++ = -coeff;
-    }
+    *ptrResult++ = 1;
+    *ptrResult++ = coeff % modulus;
     // Imaginary part. Use negative value for inverse FFT.
     coeff = (int)floor(-ptrProduct->imaginary * invPower2 + 0.5);
-    if (coeff >= 0)
-    {
-      *ptrResult++ = 1;
-      *ptrResult++ = coeff;
-    }
-    else
-    {
-      *ptrResult++ = -1;
-      *ptrResult++ = -coeff;
-    }
+    *ptrResult++ = 1;
+    *ptrResult++ = coeff % modulus;
     ptrProduct++;
   }
 }

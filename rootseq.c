@@ -2363,6 +2363,7 @@ static void StartRadicand(int degree)
     ptrOutput += strlen(ptrOutput);
     int2dec(&ptrOutput, degree);
     strcpy(ptrOutput, "</span><span class=\"radicand2\">");
+    ptrOutput += strlen(ptrOutput);
   }
   else if (pretty == TEX)
   {
@@ -2370,8 +2371,8 @@ static void StartRadicand(int degree)
     ptrOutput += strlen(ptrOutput);
     int2dec(&ptrOutput, degree);
     strcpy(ptrOutput, "]{");
+    ptrOutput += strlen(ptrOutput);
   }
-  ptrOutput += strlen(ptrOutput);
 }
 
 static void EndRadicand(int degree)

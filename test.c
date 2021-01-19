@@ -7,7 +7,7 @@
 #include "batch.h"
 #include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 16
+#define DEBUG_CODE 9
 #endif
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -21,6 +21,7 @@ int Factor6[] = { 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0, 0, 0, 0 };
 int factor7[2002];
 int factor8[2002];
 int factors[5000];
+int quotientPoly[20];
 struct sFactors astFactors[1000];
 extern int number[MAX_LEN];
 extern int nbrLimbs;
@@ -307,7 +308,7 @@ quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
     factor8[2 * ctr] = 1;
     factor8[2 * ctr + 1] = 10;
   }
-  fftPolyMult(factor7, factor8, polyMultTemp, 901);
+  fftPolyMult(factor7, factor8, polyMultTemp, 127, 64);
   for (ctr = 0; ctr < 501; ctr++)
   {
     factor7[2 * ctr] = 1;
@@ -315,7 +316,18 @@ quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
     factor8[2 * ctr] = 1;
     factor8[2 * ctr + 1] = 10;
   }
-  fftPolyMult(factor7, factor8, polyMultTemp, 501);
+  fftPolyMult(factor7, factor8, polyMultTemp, 501, 501);
+#elif DEBUG_CODE == 21
+//  int dividendPoly[] = {1, 15, 1, 14, 1, 13, 1, 12, 1, 11, 1, 10, 1, 9, 1, 8,
+//    1, 7, 1, 6, 1, 5, 1, 4, 1, 3, 1, 2, 1, 1};
+  int dividendPoly[] = { 1, 7, 1, 6, 1, 5, 1, 4, 1, 3, 1, 2, 1, 1 };
+  int divisorPoly[] = { 1, 11, 1, 9, 1, 7, 1, 5, 1, 3 };
+  int dividendDegree = 6;
+  int divisorDegree = 4;
+  NumberLength = 1;
+  TestNbr[0].x = 23;
+  GetMontgomeryParms(1);
+  DividePolynomial(dividendPoly, dividendDegree, divisorPoly, divisorDegree, quotientPoly);
 #endif
   return 0;
 }

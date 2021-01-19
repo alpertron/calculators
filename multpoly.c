@@ -581,18 +581,33 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
         IntArray2BigInteger(ptrSrc1, &operand3);
         ptrSrc2 = factor2;
         ptrDest = &polyMultTemp[currentDegree1 * nbrLimbs];
-        for (currentDegree2 = 0; currentDegree2 <= degree2; currentDegree2++)
+        if (NumberLength == 1 && TestNbr[0].x < 32767)
         {
-          if (*ptrSrc2 != 1 || *(ptrSrc2 + 1) != 0)
-          {       // Only process factor if it is not zero.
-            IntArray2BigInteger(ptrSrc2, &operand2);
-            modmult(operand2.limbs, operand3.limbs, operand2.limbs);
-            IntArray2BigInteger(ptrDest, &operand1);
-            AddBigNbrMod(operand1.limbs, operand2.limbs, operand1.limbs);
-            BigInteger2IntArray(ptrDest, &operand1);
+          int mod = TestNbr[0].x;
+          ptrSrc2++;
+          ptrDest++;
+          for (currentDegree2 = 0; currentDegree2 <= degree2; currentDegree2++)
+          {
+            *ptrDest = (*ptrDest + operand3.limbs[0].x * *ptrSrc2) % mod;
+            ptrSrc2 += 2;
+            ptrDest += 2;
           }
-          ptrSrc2 += nbrLimbs;
-          ptrDest += nbrLimbs;
+        }
+        else
+        {
+          for (currentDegree2 = 0; currentDegree2 <= degree2; currentDegree2++)
+          {
+            if (*ptrSrc2 != 1 || *(ptrSrc2 + 1) != 0)
+            {       // Only process factor if it is not zero.
+              IntArray2BigInteger(ptrSrc2, &operand2);
+              modmult(operand2.limbs, operand3.limbs, operand2.limbs);
+              IntArray2BigInteger(ptrDest, &operand1);
+              AddBigNbrMod(operand1.limbs, operand2.limbs, operand1.limbs);
+              BigInteger2IntArray(ptrDest, &operand1);
+            }
+            ptrSrc2 += nbrLimbs;
+            ptrDest += nbrLimbs;
+          }
         }
       }
       ptrSrc1 += nbrLimbs;
@@ -601,16 +616,10 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
   }
   // Find the least power of 2 greater or equal than the maximum of factor1 and factor2.
   karatDegree = (degree1 > degree2 ? degree1 : degree2) + 1;
-  if (NumberLength == 1 && karatDegree > 100 &&
+  if (NumberLength == 1 && karatDegree > 50 &&
     karatDegree < 1000000 / TestNbr[0].x / TestNbr[0].x)
   {
-    int ctr, maxCtr;
     fftPolyMult(factor1, factor2, polyMultTemp, degree1+1, degree2+1);
-    maxCtr = 4 * karatDegree + 1;
-    for (ctr = 1; ctr < maxCtr; ctr += 2)
-    {
-      polyMultTemp[ctr] %= TestNbr[0].x;
-    }
     return;
   }
   // Compute length of numbers for each recursion.
@@ -626,13 +635,12 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
   }
   // Initialize Karatsuba polynomial.
   ptrValue1 = polyMultTemp;
-  for (currentDegree = 2 * karatDegree; currentDegree > 0; currentDegree--)
+  for (currentDegree = 3 * karatDegree; currentDegree > 0; currentDegree--)
   {
     *ptrValue1 = 1;        // Initialize coefficient to zero.
     *(ptrValue1 + 1) = 0;
     ptrValue1 += nbrLimbs;
   }
-  memset(polyMultTemp, 0, 3 * karatDegree * nbrLimbs * sizeof(limb));
   memcpy(polyMultTemp, factor1, (degree1 + 1) * nbrLimbs * sizeof(limb));
   memcpy(&polyMultTemp[karatDegree * nbrLimbs], factor2, (degree2 + 1) * nbrLimbs * sizeof(limb));
   KaratsubaPoly(0, karatDegree, nbrLimbs);
@@ -642,35 +650,50 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
 // polyInv = x^(2*polyDegree) / polymod
 void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
 {
+  int degrees[15];
+  int nbrDegrees = 0;
+  int newtonDegree;
   int* ptrCoeff;
-  int deg, outerDeg;
+  int deg;
   int nbrLimbs = NumberLength + 1;
+  int nextDegree;
+
+  newtonDegree = polyDegree;
+  // Compute degrees to use in Newton loop.
+  while (newtonDegree > 1)
+  {
+    degrees[nbrDegrees++] = newtonDegree;
+    newtonDegree = (newtonDegree + 1) / 2;
+  }
+
   // Point to leading coefficient of polyMod.
-  // Initialize polyInv as x^polyDegree - K*x^(polyDegree-1)
+  // Initialize polyInv as x - K
   // where K is the coefficient of x^(polyDegree-1) of polyMod.
-  SetNumberToOne(&polyInv[polyDegree * nbrLimbs]);
+  SetNumberToOne(&polyInv[nbrLimbs]);
   LenAndLimbs2ArrLimbs(polyMod + (polyDegree - 1) * nbrLimbs, operand1.limbs, nbrLimbs);
   memset(operand2.limbs, 0, nbrLimbs * sizeof(limb));
   SubtBigNbrMod(operand2.limbs, operand1.limbs, operand1.limbs);
-  ptrCoeff = &polyInv[(polyDegree - 1) * nbrLimbs];
-  ArrLimbs2LenAndLimbs(ptrCoeff, operand1.limbs, nbrLimbs);
-  for (deg = polyDegree - 2; deg >= 0; deg--)
-  {
-    ptrCoeff -= nbrLimbs;
-    *ptrCoeff = 1;          // Set coefficient to zero.
-    *(ptrCoeff + 1) = 0;
-  }
+  ArrLimbs2LenAndLimbs(polyInv, operand1.limbs, nbrLimbs);
+  newtonDegree = 1;
+
   // Use Newton iteration: F_{2n}(x) = F_n(x)*(2-D(x)*F_n(x))
-  memcpy(poly4, polyMod, nbrLimbs * polyDegree * sizeof(limb));
-  SetNumberToOne(&poly4[nbrLimbs * polyDegree]);
-  for (outerDeg = 1; outerDeg < polyDegree; outerDeg *= 2)
-  {  // Use poly5 as temporary polynomial
-    int* ptrCoeff2;
-    MultPolynomial(polyDegree, polyDegree, polyInv, poly4);
-    ptrCoeff = poly5;
-    ptrCoeff2 = &polyMultTemp[polyDegree * nbrLimbs];
+  // where F = polyInv (degree newtonDegree)
+  // and D = polyMod (degree nextDegree).
+  // Use poly5 as temporary polynomial 2-D(x)*F_n(x) (degree nextDegree).
+  while (--nbrDegrees >= 0)
+  {  
+    int* ptrCoeff2, *ptrPolyMod;
+    nextDegree = degrees[nbrDegrees];
+    // Initialize poly4 with the nextDegree most significant coefficients.
+    ptrPolyMod = polyMod + nbrLimbs * (polyDegree - nextDegree);
+    memcpy(poly4, ptrPolyMod, nextDegree * polyDegree * sizeof(limb));
+    SetNumberToOne(&poly4[nextDegree * nbrLimbs]);
+    polyInvCached = NBR_READY_TO_BE_CACHED;
+    MultPolynomial(nextDegree, newtonDegree, poly4, polyInv);
+    ptrCoeff = poly5;   // Destination of 2-D(x)*F_n(x).
+    ptrCoeff2 = &polyMultTemp[newtonDegree * nbrLimbs];  // Source of D(x)*F_n(x).
     memset(operand2.limbs, 0, nbrLimbs * sizeof(limb));
-    for (deg = 0; deg < polyDegree; deg++)
+    for (deg = 0; deg < nextDegree; deg++)
     {
       LenAndLimbs2ArrLimbs(ptrCoeff2, operand3.limbs, nbrLimbs);
       SubtBigNbrMod(operand2.limbs, operand3.limbs, operand3.limbs);
@@ -678,9 +701,11 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
       ptrCoeff += nbrLimbs;
       ptrCoeff2 += nbrLimbs;
     }
-    SetNumberToOne(&poly5[polyDegree * nbrLimbs]);
-    MultPolynomial(polyDegree, polyDegree, polyInv, poly5);
-    memcpy(polyInv, &polyMultTemp[polyDegree * nbrLimbs], polyDegree * nbrLimbs * sizeof(limb));
+    SetNumberToOne(ptrCoeff);
+    MultPolynomial(nextDegree, newtonDegree, poly5, polyInv);
+    memcpy(polyInv, &polyMultTemp[newtonDegree * nbrLimbs],
+        (nextDegree+1) * nbrLimbs * sizeof(limb));
+    newtonDegree = nextDegree;
   }
   polyInvCached = NBR_READY_TO_BE_CACHED;
 }
@@ -706,15 +731,28 @@ void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   // Compute m*polyMod
   MultPolynomial(polyDegree, polyDegree, polyMultM, polyMod);
   // Compute T - mN.
-  index = 0;
-  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+  index = 1;
+  if (NumberLength == 1 && TestNbr[0].x < 32767)
   {
-    IntArray2BigInteger(&polyMultTemp[index], &operand1);
-    IntArray2BigInteger(&polyMultT[index], &operand2);
-    SubtBigNbrMod(operand2.limbs, operand1.limbs, operand1.limbs);
-    BigInteger2IntArray(polyProduct, &operand1);
-    index += nbrLimbs;
-    polyProduct += nbrLimbs;
+    int mod = TestNbr[0].x;
+    for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+    {
+      *(polyProduct + 1) = (polyMultT[index] - polyMultTemp[index] + mod) % mod;
+      index += nbrLimbs;
+      polyProduct += nbrLimbs;
+    }
+  }
+  else
+  {
+    for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+    {
+      IntArray2BigInteger(&polyMultTemp[index], &operand1);
+      IntArray2BigInteger(&polyMultT[index], &operand2);
+      SubtBigNbrMod(operand2.limbs, operand1.limbs, operand1.limbs);
+      BigInteger2IntArray(polyProduct, &operand1);
+      index += nbrLimbs;
+      polyProduct += nbrLimbs;
+    }
   }
 }
 

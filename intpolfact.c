@@ -58,7 +58,7 @@ MiniBigInteger matrixBL[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
 BigInteger detProdB[MAX_MATRIX_SIZE];
 BigInteger traces[MAX_MATRIX_SIZE*10];
 BigInteger powerBoundA, powerExtraBits;
-int *ptrCoeffs[MAX_MATRIX_SIZE];
+int *ptrCoeffs[MAX_MATRIX_SIZE*10];
 static int* ptrFactorInteger;
 
 static BigInteger contentPolyToFactor, halfPowerMod;
@@ -1729,7 +1729,7 @@ int getNextPrimeNoDuplicatedFactors(int prime)
   return prime;
 }
 
-void FactorPolynomialModPrime(int prime)
+static void initFactorModularPoly(int prime)
 {
   int degreePolyToFactor;
   modulusIsZero = 1;
@@ -1743,9 +1743,45 @@ void FactorPolynomialModPrime(int prime)
   CopyPolynomial(&polyBackup[1], &values[1], values[0] >= 0 ? values[0] : 0);
   values[0] = degreePolyToFactor;
   CopyPolynomial(&values[1], &poly1[1], degreePolyToFactor);
-  memset(factorInfo, 0, sizeof(factorInfo));
   modulusIsZero = 0;
+}
+
+void PerformSameDegreeFactorization(int prime)
+{
+  initFactorModularPoly(prime);
+  SameDegreeFactorization();
+}
+
+void FactorPolynomialModPrime(int prime)
+{
+  memset(factorInfo, 0, sizeof(factorInfo));
+  initFactorModularPoly(prime);
   FactorModularPolynomial(FALSE);   // Input is not in Montgomery notation.
+}
+
+static void CopyFactorsFoundToRecord(void)
+{
+  struct sFactorInfo* pstFactorInfoOrig = factorInfo;
+  struct sFactorInfo* pstFactorInfoRecord = factorInfoRecord;
+  int *ptrPolyLiftedRecord = polyLiftedRecord;
+  int factorNbr;
+  for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
+  {
+    if (pstFactorInfoOrig->ptr == NULL)
+    {    // No more factors.
+      break;
+    }
+    *pstFactorInfoRecord = *pstFactorInfoOrig;
+    pstFactorInfoRecord->ptr = ptrPolyLiftedRecord;
+    ptrPolyLiftedRecord = CopyPolynomialFixedCoeffSize(ptrPolyLiftedRecord,
+      pstFactorInfoOrig->ptr,
+      pstFactorInfoOrig->degree - 1, primeMod.nbrLimbs + 1);
+    *ptrPolyLiftedRecord++ = 1;    // Leading coefficient should be 1.
+    *ptrPolyLiftedRecord++ = 1;
+    pstFactorInfoOrig++;
+    pstFactorInfoRecord++;
+  }
+  pstFactorInfoRecord->ptr = NULL; // Indicate that there are no more factors.
 }
 
 // Input: values = degree, coefficient degree 0, coefficient degree 1, etc.
@@ -1757,10 +1793,11 @@ int FactorPolyOverIntegers(void)
   int primeRecord = 0;
   int expon;
   int* ptrSrc, * ptrDest;
-  int attemptNbr;
+  int attemptNbr, factorNbr;
   int currentDegree;
   int polXprocessed = FALSE;
   int* ptrFactorIntegerBak;
+  int* ptrPolyLiftedOrig;
   struct sFactorInfo* pstFactorInfoOrig, * pstFactorInfoRecord;
   struct sFactorInfo* pstFactorInfoInteger = factorInfoInteger;
   ptrFactorInteger = polyInteger;
@@ -1841,7 +1878,6 @@ int FactorPolyOverIntegers(void)
     nbrFactorsRecord = 100000;
     for (attemptNbr = 1; attemptNbr < 5; attemptNbr++)
     {
-      int factorNbr, * ptrPolyLiftedRecord;
       int nbrFactors;
       prime = getNextPrimeNoDuplicatedFactors(prime);
       // Find expon such that prime^expon >= 2 * bound
@@ -1867,46 +1903,45 @@ int FactorPolyOverIntegers(void)
         {    // No more factors.
           break;
         }
-        nbrFactors++;
+        nbrFactors += pstFactorInfoOrig->degree / pstFactorInfoOrig->expectedDegree;        
         pstFactorInfoOrig++;
       }
       if (nbrFactors < nbrFactorsRecord)
       {    // Copy factors found to records arrays.
         primeRecord = prime;
-        pstFactorInfoOrig = factorInfo;
-        pstFactorInfoRecord = factorInfoRecord;
-        ptrPolyLiftedRecord = polyLiftedRecord;
-        nbrFactorsRecord = 0;
-        for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
-        {
-          if (pstFactorInfoOrig->ptr == NULL)
-          {    // No more factors.
-            break;
-          }
-          *pstFactorInfoRecord = *pstFactorInfoOrig;
-          pstFactorInfoRecord->ptr = ptrPolyLiftedRecord;
-          nbrFactorsRecord += pstFactorInfoOrig->multiplicity;
-          ptrPolyLiftedRecord = CopyPolynomialFixedCoeffSize(ptrPolyLiftedRecord,
-            pstFactorInfoOrig->ptr,
-            pstFactorInfoOrig->degree - 1, primeMod.nbrLimbs + 1);
-          *ptrPolyLiftedRecord++ = 1;    // Leading coefficient should be 1.
-          *ptrPolyLiftedRecord++ = 1;
-          pstFactorInfoOrig++;
-          pstFactorInfoRecord++;
-        }
-        if (factorNbr < MAX_DEGREE)
-        {
-          pstFactorInfoRecord->ptr = NULL;
-        }
+        nbrFactorsRecord = nbrFactors;
+        CopyFactorsFoundToRecord();
         if (nbrFactors < 10)
         {
           break;    // Small enough number of factors. Go out of loop.
         }
       }
     }
+    // Modulus that generate the lowest number of polynomials factors found.
+    // Perform same degree factorization.
+    // Copy back the record factorization to the work area.
+    pstFactorInfoOrig = factorInfo;
+    pstFactorInfoRecord = factorInfoRecord;
+    ptrPolyLiftedOrig = polyLifted;
+    for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
+    {
+      if (pstFactorInfoRecord->ptr == NULL)
+      {    // No more factors.
+        break;
+      }
+      *pstFactorInfoOrig = *pstFactorInfoRecord;
+      pstFactorInfoOrig->ptr = ptrPolyLiftedOrig;
+      ptrPolyLiftedOrig = CopyPolynomialFixedCoeffSize(ptrPolyLiftedOrig,
+        pstFactorInfoRecord->ptr,
+        pstFactorInfoRecord->degree - 1, primeMod.nbrLimbs + 1);
+      pstFactorInfoOrig++;
+      pstFactorInfoRecord++;
+    }
     prime = primeRecord;
-    nbrFactorsFound = nbrFactorsRecord;
-    intToBigInteger(&primeMod, prime);
+    nbrFactorsFound = factorNbr;
+    PerformSameDegreeFactorization(prime);
+    nbrFactorsRecord = nbrFactorsFound;
+    CopyFactorsFoundToRecord();
     if (nbrFactorsRecord > 1)
     {
       vanHoeij(prime, nbrFactorsRecord);
