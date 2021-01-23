@@ -13,7 +13,7 @@ set fsquaresOptions=-DFSQUARES_APP=1 -s EXPORTED_FUNCTIONS="['_doWork','_getInpu
 cmd /c emcc %jsCommon% %fsquaresFiles% %fsquaresOptions% -o fsquaresW%1.js
 if errorlevel 1 goto end
 
-set polfactFiles=expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c rootseq.c quintics.c bigrational.c output.c polynomial.c multpoly.c divpoly.c fftpoly.c intpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c
+set polfactFiles=expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c rootseq.c quintics.c bigrational.c output.c polynomial.c multpoly.c divpoly.c fftpoly.c divpoly.oto intpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c
 set polfactOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=292749312
 cmd /c emcc %jsCommon% %polfactFiles% %polfactOptions% -o polfactW%1.js
 if errorlevel 1 goto end
