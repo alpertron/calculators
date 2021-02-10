@@ -68,6 +68,9 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
     {    // Optimization for the case when there is only one limb.
       int modulus = TestNbr[0].x;
       int sum = 0;
+#ifdef _USING64BITS_
+      uint64_t dSum;
+#endif
       ptrFactor1++;
       ptrFactor2++;
       if (modulus < 32768 / SQRT_KARATSUBA_POLY_CUTOFF)
@@ -93,7 +96,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
       else if (modulus < 32768)
       {         // Product fits in one limb.
 #ifdef _USING64BITS_
-        uint64_t dSum = 0;
+        dSum = 0;
 #else
         double dSum = 0;
 #endif
@@ -132,19 +135,29 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
       }
       else
       {
+#ifdef _USING64BITS_
+        dSum = 0;
+#endif
         for (; j >= 0; j--)
         {
 #ifdef _USING64BITS_
-          sum += (int)((int64_t)*ptrFactor1 * *ptrFactor2 % modulus) - modulus;
+          dSum += (int64_t)*ptrFactor1 * *ptrFactor2;
+          if (dSum < 0)
+          {
+            dSum = (dSum - modulus) % modulus;
+          }
 #else
           smallmodmult(*ptrFactor1, *ptrFactor2, &result, modulus);
           sum += result.x - modulus;
-#endif
           // If sum < 0 do sum <- sum + modulus else do nothing.
           sum += modulus & (sum >> BITS_PER_GROUP);
+#endif
           ptrFactor1 += 2;
           ptrFactor2 -= 2;
         }
+#ifdef _USING64BITS_
+        sum = (int)(dSum % modulus);
+#endif
       }
       coeff[i].limbs[0].x = sum;
     }
