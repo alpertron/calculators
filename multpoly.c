@@ -267,11 +267,33 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
       // At this moment the order is: xL, xH, yL, yH.
       // Exchange high part of first factor with low part of 2nd factor.
       halfLength = nbrLen >> 1;
-      for (i = idxFactor1 + halfLength; i < idxFactor2; i++)
+      int* ptrHighFirstFactor = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
+      int* ptrLowSecondFactor = &polyMultTemp[idxFactor2 * nbrLimbs];
+      if (nbrLimbs == 2)
       {
-        memcpy(coeff, &polyMultTemp[i * nbrLimbs], nbrLimbs * sizeof(int));
-        memcpy(&polyMultTemp[i * nbrLimbs], &polyMultTemp[(i + halfLength) * nbrLimbs], nbrLimbs * sizeof(int));
-        memcpy(&polyMultTemp[(i + halfLength) * nbrLimbs], coeff, nbrLimbs * sizeof(int));
+        int coefficient;
+        ptrHighFirstFactor++;
+        ptrLowSecondFactor++;
+        for (i = 0; i < halfLength; i++)
+        {
+          coefficient = *ptrHighFirstFactor;
+          *ptrHighFirstFactor = *ptrLowSecondFactor;
+          *ptrLowSecondFactor = coefficient;
+          ptrHighFirstFactor += 2;
+          ptrLowSecondFactor += 2;
+        }
+      }
+      else
+      {
+        int sizeCoeffInBytes = nbrLimbs * sizeof(int);
+        for (i = 0; i < halfLength; i++)
+        {
+          memcpy(coeff, ptrHighFirstFactor, sizeCoeffInBytes);
+          memcpy(ptrHighFirstFactor, ptrLowSecondFactor, sizeCoeffInBytes);
+          memcpy(ptrLowSecondFactor, coeff, sizeCoeffInBytes);
+          ptrHighFirstFactor += nbrLimbs;
+          ptrLowSecondFactor += nbrLimbs;
+        }
       }
       // At this moment the order is: xL, yL, xH, yH.
       // Compute (xH-xL) and (yL-yH) and store them starting from index diffIndex.
@@ -732,12 +754,14 @@ void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   MultPolynomial(polyDegree, polyDegree, polyMultM, polyMod);
   // Compute T - mN.
   index = 1;
-  if (NumberLength == 1 && TestNbr[0].x < 32767)
+  if (NumberLength == 1)
   {
     int mod = TestNbr[0].x;
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
-      *(polyProduct + 1) = (polyMultT[index] - polyMultTemp[index] + mod) % mod;
+      int temp = polyMultT[index] - polyMultTemp[index];
+      temp += mod & (temp >> BITS_PER_GROUP);
+      *(polyProduct + 1) = temp;
       index += nbrLimbs;
       polyProduct += nbrLimbs;
     }
