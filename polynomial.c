@@ -2320,7 +2320,8 @@ int HenselLifting(struct sFactorInfo* factorInfo, int compressPoly)
   for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
     pstFactorInfo->ptrPolyLifted = ptrDest;
-    ptrDest = CopyPolynomial(ptrDest, pstFactorInfo->ptr, pstFactorInfo->degree);
+    ptrDest = CopyPolynomialFixedCoeffSize(ptrDest, pstFactorInfo->ptr,
+      pstFactorInfo->degree, NumberLength+1);
     pstFactorInfo++;
   }
   if (exponentMod == 1)

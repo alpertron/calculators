@@ -26,8 +26,8 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "showtime.h"
 #include "rootseq.h"
 
-#ifdef __EMSCRIPTEN__
 int attemptNbr;
+#ifdef __EMSCRIPTEN__
 char *ptrPercentageOutput;
 #endif
 
@@ -199,13 +199,13 @@ static void percentageCallback(int percentage)
 // Perform Cantor-Zassenhaus algorithm to factor polynomials of the same degree.
 void SameDegreeFactorization(void)
 {
-  unsigned int seed = 1;  // Initialize pseudorandom sequence.
   struct sFactorInfo *pstFactorInfo = factorInfo;
   struct sFactorInfo *pstNewFactorInfo;
   int *ptrValue1, *ptrPolyToFactor;
   int nbrFactor, currentDegree, index, degreeGcd;
   int primeInt = (int)primeMod.limbs[0].x;
   int nbrLimbs = primeMod.nbrLimbs + 1;
+  int polyNbr = 1;
   int isCharacteristic2 = primeMod.nbrLimbs == 1 && primeMod.limbs[0].x == 2;
   for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
@@ -216,9 +216,6 @@ void SameDegreeFactorization(void)
       pstFactorInfo++;
       continue;
     }
-#ifdef __EMSCRIPTEN__
-    attemptNbr = 1;
-#endif
     if (isCharacteristic2 == 0)
     { // If prime is not 2,
       // Calculate operand2 <- (prime^degree-1)/2
@@ -230,7 +227,7 @@ void SameDegreeFactorization(void)
     }
     ptrPolyToFactor = pstFactorInfo->ptr;
     GetPolyInvParm(polyDegree, ptrPolyToFactor);
-    for (;;)
+    for (attemptNbr = 1;; attemptNbr++, polyNbr++)
     {
 #ifdef __EMSCRIPTEN__
       char *ptrOutput = outputText;
@@ -259,22 +256,37 @@ void SameDegreeFactorization(void)
       SetNumberToOne(ptrValue1);  // Set leading coefficient to 1.
       ptrValue1 = poly1;
       if (nbrLimbs > 2)
-      {    // Pseudorandom number range can be from 0 to MAX_LIMB_VALUE-1.
-        for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
+      {    // Coefficient can be any number.
+        *ptrValue1 = 1;
+        *(ptrValue1 + 1) = polyNbr;
+        ptrValue1 += nbrLimbs;
+        *ptrValue1 = 1;
+        *(ptrValue1 + 1) = 1;
+        ptrValue1 += nbrLimbs;
+        for (currentDegree = 2; currentDegree < polyDegree; currentDegree++)
         {
           *ptrValue1 = 1;
-          seed = (314159265U)*seed + 123456789;
-          *(ptrValue1 + 1) = seed & MAX_VALUE_LIMB;
+          *(ptrValue1 + 1) = 0;
           ptrValue1 += nbrLimbs;
         }
       }
       else
-      {   // Pseudorandom number range can be from 0 to prime-1.
-        for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
+      {   // Coefficient range can be from 0 to prime-1.
+        int polyCoeff = polyNbr;
+        for (currentDegree = 0; polyCoeff != 0; currentDegree++)
         {
           *ptrValue1 = 1;
-          seed = (314159265U)*seed + 123456789;
-          *(ptrValue1 + 1) = ((seed >> 16)*primeInt) >> 16;
+          *(ptrValue1 + 1) = polyCoeff % primeInt;
+          polyCoeff /= primeInt;
+          ptrValue1 += nbrLimbs;
+        }
+        *ptrValue1 = 1;
+        *(ptrValue1 + 1) = 1;
+        ptrValue1 += nbrLimbs;
+        for (currentDegree++; currentDegree < polyDegree; currentDegree++)
+        {
+          *ptrValue1 = 1;
+          *(ptrValue1 + 1) = 0;
           ptrValue1 += nbrLimbs;
         }
       }
@@ -319,18 +331,13 @@ void SameDegreeFactorization(void)
         memcpy(ptrPolyToFactor, poly4, degreeGcd*nbrLimbs*sizeof(int));
         memcpy(pstNewFactorInfo->ptr, poly2, (polyDegree - degreeGcd)*nbrLimbs*sizeof(int));
         polyDegree = degreeGcd;
-#ifdef __EMSCRIPTEN__
         attemptNbr = 0;
-#endif
         if (pstFactorInfo->expectedDegree == pstFactorInfo->degree)
         {
           break;
         }
         GetPolyInvParm(polyDegree, ptrPolyToFactor);
       }
-#ifdef __EMSCRIPTEN__
-      attemptNbr++;
-#endif
     }
     pstFactorInfo++;
   }
@@ -359,12 +366,18 @@ static void SortFactors(BigInteger *modulus)
       else if (pstFactorInfo->degree == pstFactorInfo2->degree)
       {
         index = 0;
-        ptrValue1 = pstFactorInfo->ptr + (pstFactorInfo->degree - 1)*nbrLimbs;
-        ptrValue2 = pstFactorInfo2->ptr + (pstFactorInfo->degree - 1)*nbrLimbs;
+        ptrValue1 = pstFactorInfo->ptrPolyLifted + pstFactorInfo->degree * nbrLimbs;
+        ptrValue2 = pstFactorInfo2->ptrPolyLifted + pstFactorInfo->degree * nbrLimbs;
         for (currentDegree = pstFactorInfo->degree - 1; currentDegree >= 0; currentDegree--)
         {
+          ptrValue1 -= nbrLimbs;
+          ptrValue2 -= nbrLimbs;
+          if (*ptrValue1 > *ptrValue2)
+          {        // Coefficient of first polynomial is greater than coeff of second.
+            break;
+          }
           if (*ptrValue1 == *ptrValue2)
-          {
+          {        // Number of limbs of coefficients match.
             for (index = *ptrValue1; index > 0; index--)
             {
               if (*(ptrValue1 + index) != *(ptrValue2 + index))

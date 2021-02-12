@@ -227,42 +227,89 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
       {
         // Check if one of the factors is equal to zero.
         ptrResult = &polyMultTemp[idxFactor1 * nbrLimbs];
-        for (i = nbrLen; i > 0; i--)
+        i = nbrLen;
+        if (nbrLimbs == 2)
         {
-          if (*ptrResult != 1 || *(ptrResult + 1) != 0)
-          {      // Coefficient is not zero.
-            break;
-          }
-          ptrResult += nbrLimbs;
-        }
-        if (i > 0)
-        {     // First factor is not zero. Check second.
-          ptrResult = &polyMultTemp[idxFactor2 * nbrLimbs];
-          for (i = nbrLen; i > 0; i--)
-          {
-            if (*ptrResult != 1 || *(ptrResult + 1) != 0)
-            {
-              break;
-            }
+          ptrResult++;
+          while (((--i & 0x80000000) | *ptrResult) == 0)
+          {   // Loop not finished and coefficient is not zero.
             ptrResult += nbrLimbs;
-          }
-        }
-        if (i == 0)
-        {    // One of the factors is equal to zero.
-          for (i = nbrLen - 1; i >= 0; i--)
-          {
-            polyMultTemp[idxFactor1 * nbrLimbs] = 1;
-            polyMultTemp[idxFactor2 * nbrLimbs] = 1;
-            polyMultTemp[idxFactor1 * nbrLimbs + 1] = 0;
-            polyMultTemp[idxFactor2 * nbrLimbs + 1] = 0;
-            idxFactor1++;
-            idxFactor2++;
           }
         }
         else
         {
-          // Below cutoff: perform standard classical polynomial multiplcation.
-          ClassicalPolyMult(idxFactor1, idxFactor2, nbrLen, nbrLimbs);
+          while (((--i & 0x80000000) | (*ptrResult - 1) | *(ptrResult + 1)) == 0)
+          {   // Loop not finished and coefficient is not zero.
+            ptrResult += nbrLimbs;
+          }
+        }
+        if (i < 0)
+        {      // First factor is zero. Initialize second to zero.
+          ptrResult = &polyMultTemp[idxFactor2 * nbrLimbs];
+          if (nbrLimbs == 2)
+          {
+            ptrResult++;
+            for (i = nbrLen; i > 0; i--)
+            {
+              *ptrResult = 0;
+              ptrResult += nbrLimbs;
+            }
+          }
+          else
+          {
+            for (i = nbrLen; i > 0; i--)
+            {
+              *ptrResult = 1;
+              *(ptrResult + 1) = 0;
+              ptrResult += nbrLimbs;
+            }
+          }
+        }
+        else
+        {     // First factor is not zero. Check second.
+          ptrResult = &polyMultTemp[idxFactor2 * nbrLimbs];
+          i = nbrLen;
+          if (nbrLimbs == 2)
+          {
+            ptrResult++;
+            while (((--i & 0x80000000) | *ptrResult) == 0)
+            {   // Loop not finished and coefficient is not zero.
+              ptrResult += nbrLimbs;
+            }
+          }
+          else
+          {
+            while (((--i & 0x80000000) | (*ptrResult - 1) | *(ptrResult + 1)) == 0)
+            {   // Loop not finished and coefficient is not zero.
+              ptrResult += nbrLimbs;
+            }
+          }
+          if (i < 0)
+          {    // Second factor is zero. Initialize first to zero.
+            ptrResult = &polyMultTemp[idxFactor1 * nbrLimbs];
+            if (nbrLimbs == 2)
+            {
+              ptrResult++;
+              for (i = nbrLen; i > 0; i--)
+              {
+                *ptrResult = 0;
+                ptrResult += nbrLimbs;
+              }
+            }
+            else
+            {
+              for (i = nbrLen; i > 0; i--)
+              {
+                *ptrResult = 1;
+                *(ptrResult + 1) = 0;
+                ptrResult += nbrLimbs;
+              }
+            }
+          }
+          else
+          {   // Both factors not zero: perform standard classical polynomial multiplcation.
+            ClassicalPolyMult(idxFactor1, idxFactor2, nbrLen, nbrLimbs);
+          }
         }
         pstKaratsubaStack--;
         idxFactor1 = pstKaratsubaStack->idxFactor1;
@@ -766,10 +813,10 @@ void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   // Compute m*polyMod
   MultPolynomial(polyDegree, polyDegree, polyMultM, polyMod);
   // Compute T - mN.
-  index = 1;
   if (NumberLength == 1)
   {
     int mod = TestNbr[0].x;
+    index = 1;
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
       int temp = polyMultT[index] - polyMultTemp[index];
@@ -781,6 +828,7 @@ void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   }
   else
   {
+    index = 0;
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
       IntArray2BigInteger(&polyMultTemp[index], &operand1);
