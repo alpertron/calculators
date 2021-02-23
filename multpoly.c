@@ -30,6 +30,8 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define KARATSUBA_POLY_CUTOFF      16
 #define SQRT_KARATSUBA_POLY_CUTOFF 4
 
+//#define ADJUST_MODULUS(sum, modulus) sum += modulus & (sum >> 31);
+#define ADJUST_MODULUS(sum, modulus) if (sum < 0) {sum += modulus;}
 static BigInteger coeff[2 * KARATSUBA_POLY_CUTOFF];
 int polyInv[COMPRESSED_POLY_MAX_LENGTH];
 int polyInvCached;
@@ -142,15 +144,15 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
         {
 #ifdef _USING64BITS_
           dSum += (int64_t)*ptrFactor1 * *ptrFactor2;
-          if (dSum < 0)
+          if ((int64_t)dSum < 0)
           {
-            dSum = (dSum - modulus) % modulus;
+            dSum %= modulus;
           }
 #else
           smallmodmult(*ptrFactor1, *ptrFactor2, &result, modulus);
           sum += result.x - modulus;
           // If sum < 0 do sum <- sum + modulus else do nothing.
-          sum += modulus & (sum >> BITS_PER_GROUP);
+          ADJUST_MODULUS(sum, modulus);
 #endif
           ptrFactor1 += 2;
           ptrFactor2 -= 2;
@@ -211,7 +213,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
   int halfLength;
   int diffIndex = 2 * nbrLen;
   static struct stKaratsubaStack* pstKaratsubaStack = astKaratsubaStack;
-  static int coeff[MAX_LEN];
+  static int coeffic[MAX_LEN];
   int stage = 0;
   // Save current parameters in stack.
   pstKaratsubaStack->idxFactor1 = idxFactor1;
@@ -330,10 +332,10 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
       int* ptrHighFirstFactor = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
       int* ptrLowSecondFactor = &polyMultTemp[idxFactor2 * nbrLimbs];
       if (nbrLimbs == 2)
-      {
+      {                        // Coefficients have only one limb.
         int coefficient;
-        ptrHighFirstFactor++;
-        ptrLowSecondFactor++;
+        ptrHighFirstFactor++;  // Point to limb to be exchanged.
+        ptrLowSecondFactor++;  // Point to limb to be exchanged.
         for (i = 0; i < halfLength; i++)
         {
           coefficient = *ptrHighFirstFactor;
@@ -348,9 +350,9 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
         int sizeCoeffInBytes = nbrLimbs * sizeof(int);
         for (i = 0; i < halfLength; i++)
         {
-          memcpy(coeff, ptrHighFirstFactor, sizeCoeffInBytes);
+          memcpy(coeffic, ptrHighFirstFactor, sizeCoeffInBytes);
           memcpy(ptrHighFirstFactor, ptrLowSecondFactor, sizeCoeffInBytes);
-          memcpy(ptrLowSecondFactor, coeff, sizeCoeffInBytes);
+          memcpy(ptrLowSecondFactor, coeffic, sizeCoeffInBytes);
           ptrHighFirstFactor += nbrLimbs;
           ptrLowSecondFactor += nbrLimbs;
         }
@@ -363,22 +365,25 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
       if (nbrLimbs == 2)
       {    // Small modulus.
         modulus = TestNbr[0].x;
+        ptr1++;
+        ptr2++;
+        ptrResult++;
         for (i = 0; i < halfLength; i++)
         {
-          sum = *(ptr2 + 1) - *(ptr1 + 1);
+          sum = *ptr2 - *ptr1;
           // If sum < 0 do sum <- sum + modulus else do nothing.
-          sum += modulus & (sum >> BITS_PER_GROUP);
-          *(ptrResult + 1) = sum;
+          ADJUST_MODULUS(sum, modulus);
+          *ptrResult = sum;
           ptr1 += 2;
           ptr2 += 2;
           ptrResult += 2;
         }
         for (i = 0; i < halfLength; i++)
         {
-          sum = *(ptr1 + 1) - *(ptr2 + 1);
+          sum = *ptr1 - *ptr2;
           // If sum < 0 do sum <- sum + modulus else do nothing.
-          sum += modulus & (sum >> BITS_PER_GROUP);
-          *(ptrResult + 1) = sum;
+          ADJUST_MODULUS(sum, modulus);
+          *ptrResult = sum;
           ptr1 += 2;
           ptr2 += 2;
           ptrResult += 2;
@@ -447,28 +452,22 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
         for (i = halfLength; i > 0; i--)
         {
           // First addend is the coefficient from xH*yH*b^2 + xL*yL
-          // Second addend is the coefficient from xL*yL
-          int coeff = *(ptrResult);
-          int coeff1 = *(ptrResult + nbrLen);
-          sum = coeff + *(ptrResult - nbrLen) - modulus;
+          // Second addend is the coefficient from xH*yH
+          int coeffTmp = *ptrResult + *(ptrResult + nbrLen) - modulus;
           // If sum < 0 do sum <- sum + modulus else do nothing.
-          sum += modulus & (sum >> BITS_PER_GROUP);
-          // Addend is the coefficient from xH*yH
-          sum += coeff1 - modulus;
+          ADJUST_MODULUS(coeffTmp, modulus);
+          // Third addend is xL*yL. Add all three coefficients.
+          sum = coeffTmp + *(ptrResult - nbrLen) - modulus;
           // If sum < 0 do sum <- sum + modulus else do nothing.
-          sum += modulus & (sum >> BITS_PER_GROUP);
+          ADJUST_MODULUS(sum, modulus);
           // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-          *(ptrResult) = sum;
+          *ptrResult = sum;
 
           // First addend is the coefficient from xL*yL
           // Second addend is the coefficient from xH*yH
-          sum = coeff + *(ptrResult + nbrLen2) - modulus;
+          sum = coeffTmp + *(ptrResult + nbrLen2) - modulus;
           // If sum < 0 do sum <- sum + modulus else do nothing.
-          sum += modulus & (sum >> BITS_PER_GROUP);
-          // Addend is the coefficient from xH*yH*b^2 + xL*yL
-          sum += coeff1 - modulus;
-          // If sum < 0 do sum <- sum + modulus else do nothing.
-          sum += modulus & (sum >> BITS_PER_GROUP);
+          ADJUST_MODULUS(sum, modulus);
           // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
           *(ptrResult + nbrLen) = sum;
           // Point to next address.
@@ -481,21 +480,19 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
         {
           // Obtain coefficient from xH*yH*b^2 + xL*yL
           LenAndLimbs2ArrLimbs(ptrResult, operand3.limbs, nbrLimbs);
-          // Obtain coefficient from xL*yL
-          LenAndLimbs2ArrLimbs(ptrResult - halfLength * nbrLimbs, operand2.limbs, nbrLimbs);
           // Obtain coefficient from xH*yH
           LenAndLimbs2ArrLimbs(ptrResult + halfLength * nbrLimbs, operand1.limbs, nbrLimbs);
-          // Add all three coefficients.
-          AddBigNbrMod(operand3.limbs, operand2.limbs, operand2.limbs);
-          AddBigNbrMod(operand2.limbs, operand1.limbs, operand2.limbs);
+          // Add these coefficients.
+          AddBigNbrMod(operand3.limbs, operand1.limbs, operand3.limbs);
+          // Obtain coefficient from xL*yL
+          LenAndLimbs2ArrLimbs(ptrResult - halfLength * nbrLimbs, operand2.limbs, nbrLimbs);
+          AddBigNbrMod(operand2.limbs, operand3.limbs, operand2.limbs);
           // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
           ArrLimbs2LenAndLimbs(ptrResult, operand2.limbs, nbrLimbs);
           // Obtain coefficient from xH*yH
           LenAndLimbs2ArrLimbs(ptrResult + nbrLen * nbrLimbs, operand2.limbs, nbrLimbs);
           // Add coefficient from xL*yL
           AddBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
-          // Add coefficient from xH*yH*b^2 + xL*yL
-          AddBigNbrMod(operand3.limbs, operand1.limbs, operand3.limbs);
           // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
           ArrLimbs2LenAndLimbs(ptrResult + halfLength * nbrLimbs, operand3.limbs, nbrLimbs);
           // Point to next address.
@@ -508,25 +505,27 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
       if (nbrLimbs == 2)
       {        // Optimization for small numbers.
         modulus = TestNbr[0].x;
+        ptrResult++;           // Point to limb to process.
+        ptrHigh++;             // Point to limb to process.
         for (i = nbrLen; i >= 2; i -= 2)
         {
-          sum = *(ptrResult + 1) + *(ptrHigh + 1) - modulus;
+          sum = *ptrResult + *ptrHigh - modulus;
           // If sum < 0 do sum <- sum + modulus else do nothing.
-          sum += modulus & (sum >> BITS_PER_GROUP);
-          *(ptrResult + 1) = sum;
-          sum = *(ptrResult + 3) + *(ptrHigh + 3) - modulus;
+          ADJUST_MODULUS(sum, modulus);
+          *ptrResult = sum;
+          sum = *(ptrResult + 2) + *(ptrHigh + 2) - modulus;
           // If sum < 0 do sum <- sum + modulus else do nothing.
-          sum += modulus & (sum >> BITS_PER_GROUP);
-          *(ptrResult + 3) = sum;
+          ADJUST_MODULUS(sum, modulus);
+          *(ptrResult + 2) = sum;
           ptrHigh += 4;
           ptrResult += 4;
         }
         if (i > 0)
         {
-          sum = *(ptrResult + 1) + *(ptrHigh + 1) - modulus;
+          sum = *ptrResult + *ptrHigh - modulus;
           // If sum < 0 do sum <- sum + modulus else do nothing.
-          sum += modulus & (sum >> BITS_PER_GROUP);
-          *(ptrResult + 1) = sum;
+          ADJUST_MODULUS(sum, modulus);
+          *ptrResult = sum;
         }
       }
       else
@@ -768,7 +767,7 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
     nextDegree = degrees[nbrDegrees];
     // Initialize poly4 with the nextDegree most significant coefficients.
     ptrPolyMod = polyMod + nbrLimbs * (polyDegree - nextDegree);
-    memcpy(poly4, ptrPolyMod, nextDegree * polyDegree * sizeof(limb));
+    memcpy(poly4, ptrPolyMod, nextDegree * nbrLimbs * sizeof(limb));
     SetNumberToOne(&poly4[nextDegree * nbrLimbs]);
     polyInvCached = NBR_READY_TO_BE_CACHED;
     MultPolynomial(nextDegree, newtonDegree, poly4, polyInv);
@@ -796,7 +795,6 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
 // The algorithm is:
 // m <- (T*polyInv)/x^polyDegree
 // return T - m*polyMod
-
 void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   /*@out@*/int* polyProduct,
   int polyDegree, /*@in@*/int* polyMod)
@@ -817,10 +815,10 @@ void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   {
     int mod = TestNbr[0].x;
     index = 1;
-    for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+    for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
     {
       int temp = polyMultT[index] - polyMultTemp[index];
-      temp += mod & (temp >> BITS_PER_GROUP);
+      temp += mod & (temp >> 31);
       *(polyProduct + 1) = temp;
       index += nbrLimbs;
       polyProduct += nbrLimbs;
@@ -829,12 +827,12 @@ void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   else
   {
     index = 0;
-    for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+    for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
     {
-      IntArray2BigInteger(&polyMultTemp[index], &operand1);
-      IntArray2BigInteger(&polyMultT[index], &operand2);
+      LenAndLimbs2ArrLimbs(&polyMultTemp[index], operand1.limbs, nbrLimbs);
+      LenAndLimbs2ArrLimbs(&polyMultT[index], operand2.limbs, nbrLimbs);
       SubtBigNbrMod(operand2.limbs, operand1.limbs, operand1.limbs);
-      BigInteger2IntArray(polyProduct, &operand1);
+      ArrLimbs2LenAndLimbs(polyProduct, operand1.limbs, nbrLimbs);
       index += nbrLimbs;
       polyProduct += nbrLimbs;
     }

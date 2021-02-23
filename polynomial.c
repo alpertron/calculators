@@ -1791,22 +1791,16 @@ void polyToMontgomeryNotation(int *nbr, int qtyNbrs)
 
   // Perform polyPower <- polyBase ^ expon (mod polyMod)
 void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *expon,
-                     int *polyPower, powerCback callback)
+                     int *polyPower, powerCback callback, int curMultip, int nbrMultip)
 {
-  int mask, index;
+  int mask;
   int nbrLimbs = NumberLength + 1;
   int powerIsOne = TRUE;
   int nbrBits = 0;
-  int bitCounter;
-  // Initialize polyPower to 1.
-  memset(polyPower, 0, (polyDegree + 1)*nbrLimbs * sizeof(int));
-  for (index = 0; index <= polyDegree; index++)
-  {
-    *(polyPower + index*nbrLimbs) = 1;
-  }
-  SetNumberToOne(polyPower);
-  index = expon->nbrLimbs - 1;
-  bitCounter = (index+1) * BITS_PER_GROUP;
+  int index = expon->nbrLimbs - 1;
+  int bitCounter = 0;
+  *(polyBase + polyDegree * nbrLimbs) = 1;
+  *(polyBase + polyDegree * nbrLimbs + 1) = 0;
   for (; index >= 0; index--)
   {
     int groupExp = (int)(expon->limbs[index].x);
@@ -1816,20 +1810,25 @@ void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *ex
       {
         if (callback)
         {
-          callback(100 - 100 * bitCounter/nbrBits);
+          callback(100 * bitCounter/(nbrBits*nbrMultip));
         }
         multUsingInvPolynomial(polyPower, polyPower, polyPower, polyDegree, polyMod);
       }
       if ((groupExp & mask) != 0)
       {
-        multUsingInvPolynomial(polyPower, polyBase, polyPower, polyDegree, polyMod);
         if (powerIsOne)
         {
-          nbrBits = bitCounter;
+          CopyPolynomialFixedCoeffSize(polyPower, polyBase, polyDegree, nbrLimbs);
+          nbrBits = (index + 1) * BITS_PER_GROUP - bitCounter;
           powerIsOne = FALSE;
+          bitCounter = curMultip * nbrBits;
+        }
+        else
+        {
+          multUsingInvPolynomial(polyPower, polyBase, polyPower, polyDegree, polyMod);
         }
       }
-      bitCounter--;
+      bitCounter++;
     }
   }
 }

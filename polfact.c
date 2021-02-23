@@ -111,7 +111,10 @@ static void DistinctDegreeFactorization(int polyDegree)
       ptrValue1 = &poly3[polyDegree*nbrLimbs];
       memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0])*sizeof(int));
       SetNumberToOne(ptrValue1);  // Set leading coefficient to 1.
-      powerPolynomial(poly1, poly3, polyDegree, &primeMod, poly2, NULL);
+      powerPolynomial(poly1, poly3,  // Base and polynomial modulus.
+        polyDegree, &primeMod,       // Degree of polynomials and exponent.
+        poly2, NULL,                 // Power and pointer to callback.
+        0, 1);
       memcpy(poly1, poly2, polyDegree*nbrLimbs * sizeof(int));
       // Subtract x.
       IntArray2BigInteger(&poly2[nbrLimbs], &operand1);
@@ -222,11 +225,8 @@ void SameDegreeFactorization(void)
       // Use operand1 as temporary variable to store the exponent.
       operand1.limbs[0].x = pstFactorInfo->expectedDegree & MAX_VALUE_LIMB;
       operand1.nbrLimbs = 1;
-      BigIntPower(&primeMod, &operand1, &operand4);
-      BigIntDivide2(&operand4);
     }
     ptrPolyToFactor = pstFactorInfo->ptr;
-    GetPolyInvParm(polyDegree, ptrPolyToFactor);
     for (attemptNbr = 1;; attemptNbr++, polyNbr++)
     {
 #ifdef __EMSCRIPTEN__
@@ -251,15 +251,22 @@ void SameDegreeFactorization(void)
       ptrPercentageOutput = ptrOutput + strlen(ptrOutput);
 #endif
       // Copy polynomial to factor to poly3 and set leading coefficient to 1.
+      // All operations below will be done modulo this polynomial.
       ptrValue1 = &poly3[pstFactorInfo->degree*nbrLimbs];
       memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0])*sizeof(int));
       SetNumberToOne(ptrValue1);  // Set leading coefficient to 1.
+      if (attemptNbr == 1)
+      {
+        GetPolyInvParm(polyDegree, poly3);
+      }
+      // Initialize polynomial poly1 with different values of coefficients
+      // in different iterations.
       ptrValue1 = poly1;
       if (nbrLimbs > 2)
       {    // Coefficient can be any number.
         *ptrValue1 = 1;
         *(ptrValue1 + 1) = polyNbr;
-        ptrValue1 += nbrLimbs;
+          ptrValue1 += nbrLimbs;
         *ptrValue1 = 1;
         *(ptrValue1 + 1) = 1;
         ptrValue1 += nbrLimbs;
@@ -291,8 +298,40 @@ void SameDegreeFactorization(void)
         }
       }
       if (isCharacteristic2 == 0)
-      { // If prime is not 2: compute (random poly)^((p^d-1)/2)
-        powerPolynomial(poly1, poly3, polyDegree, &operand4, poly2, percentageCallback);
+      { // If prime is not 2: compute base^((p^d-1)/2).
+        int degreeFactor = pstFactorInfo->expectedDegree;
+        CopyBigInt(&operand4, &primeMod);
+        subtractdivide(&operand4, 1, 2);  // operand4 <- exponent = (p-1)/2.
+        // Start by raising base to power (p-1)/2.
+        powerPolynomial(poly1, poly3,   // Base and polynomial modulus.
+          polyDegree, &operand4,        // Degree of polynomials and exponent.
+          poly2, percentageCallback,   // Power and pointer to callback.
+          0, degreeFactor);
+        // Save base^((p-1)/2) on poly4.
+        CopyPolynomialFixedCoeffSize(poly4, poly2, polyDegree, nbrLimbs);
+        for (currentDegree = 1; currentDegree < degreeFactor; currentDegree++)
+        {
+          // Square polynomial and multiply by base to get base^(p^(q-1)).
+          multUsingInvPolynomial(poly2, poly2, // Multiplicands.
+            poly2, polyDegree,                 // Product and degree of poly.
+            poly3);                            // Polynomial modulus.
+          multUsingInvPolynomial(poly2, poly1, // Multiplicands.
+            poly1, polyDegree,                 // Product and degree of poly.
+            poly3);                            // Polynomial modulus.
+          CopyBigInt(&operand4, &primeMod);
+          subtractdivide(&operand4, 1, 2);  // operand4 <- exponent = (p-1)/2.
+            // Raise previous power to exponent (p-1)/2 to get
+          // base^(p^(q-1)*(p-1)/2))
+          powerPolynomial(poly1, poly3,   // Base and polynomial modulus.
+            polyDegree, &operand4,        // Degree of polynomials and exponent.
+            poly2, percentageCallback,    // Power and pointer to callback.
+            currentDegree, degreeFactor);
+          // Multiply base^(p^(q-1)*(p-1)/2) * base^(p^(q-2)*(p-1)/2)
+          multUsingInvPolynomial(poly2, poly4, // Multiplicands.
+            poly4, polyDegree,                 // Product and degree of poly.
+            poly3);                            // Polynomial modulus.
+        }
+        CopyPolynomialFixedCoeffSize(poly2, poly4, polyDegree, nbrLimbs);
         // Subtract 1.
         IntArray2BigInteger(&poly2[0], &operand1);
         SubtBigNbrMod(operand1.limbs, MontgomeryMultR1, operand1.limbs);

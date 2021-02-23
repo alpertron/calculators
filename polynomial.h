@@ -74,7 +74,7 @@ typedef void (*powerCback)(int percentage);
 void SetNumberToOne(/*@out@*/int *ptrValue1);
 void PolyModularGcd(int *arg1, int degree1, int *arg2, int degree2, int *gcd, int *degreeGcd);
 void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *expon,
-                     int *polyPower, powerCback cback);
+                     int *polyPower, powerCback cback, int curMultip, int nbrMultip);
 int getDegreePoly(int *poly, int polyDegree);
 void DividePolynomial(/*@in@*/int *pDividend, int dividendDegree, /*@in@*/int *pDivisor,
                       int divisorDegree, /*@out@*/int *ptrQuotient);

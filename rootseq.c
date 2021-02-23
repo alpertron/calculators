@@ -2032,7 +2032,7 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
   if (*realRoot != 0 && lenBeginning != 0 && *ptrStart != 0)
   {
     strcpy(ptrBeginning, ptrTimes);
-    lenBeginning += strlen(ptrBeginning);
+    lenBeginning += (int)strlen(ptrBeginning);
   }
   memmove(ptrStart + lenBeginning, ptrStart, strlen(ptrStart));
   memcpy(ptrStart, beginning, lenBeginning);
