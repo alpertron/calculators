@@ -4501,13 +4501,13 @@ static void showRn(int groupOrder)
     if (pretty == TEX)
     {
       showText("R_");
-      *ptrOutput++ = ctr + '0';
+      *ptrOutput++ = (char)(ctr + '0');
       showText(" = ");
     }
     else
     {
       showText("<var>R</var><sub>");
-      *ptrOutput++ = ctr + '0';
+      *ptrOutput++ = (char)(ctr + '0');
       showText("</sub> = ");
     }
     BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat3);
@@ -4685,6 +4685,7 @@ static void showRn(int groupOrder)
 
 static void GaloisGroupHasOrder20(int multiplicity)
 {
+  (void)multiplicity;
   CopyBigInt(&Rat1.numerator, &RatDiscr.numerator);
   CopyBigInt(&Rat1.denominator, &RatDiscr.denominator);
   MultiplyRationalBySqrtRational(&RatN, &Rat1);
@@ -4729,13 +4730,13 @@ static void GaloisGroupHasOrder20(int multiplicity)
       if (pretty == TEX)
       {
         showText("R_");
-        *ptrOutput++ = ctr + '0';
+        *ptrOutput++ = (char)(ctr + '0');
         showText(" = (");
       }
       else
       {
         showText("<var>R</var><sub>");
-        *ptrOutput++ = ctr + '0';
+        *ptrOutput++ = (char)(ctr + '0');
         showText("</sub></var> = (");
       }
       BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat2);
@@ -4777,6 +4778,7 @@ static void GaloisGroupHasOrder20(int multiplicity)
 
 static void GaloisGroupHasOrder10(int multiplicity)
 {
+  (void)multiplicity;
   // Set Y <- M + N*d. This value is already in Rat1.
   // Compute r = 5m/4, s = m/4.
   BigRationalDivideByInt(&Rat1, -4, &RatS);
@@ -4790,6 +4792,7 @@ static void GaloisGroupHasOrder10(int multiplicity)
 
 static void GaloisGroupHasOrder5(int multiplicity)
 {
+  (void)multiplicity;
   int ctr;
   // Compute the roots l1, l2, l3 and l4 of the pair of quadratic equations.
   // l1, l4 = (-(T1 + T2*d) +/- sqrt(M + N*d)) / 2
@@ -4852,13 +4855,13 @@ static void GaloisGroupHasOrder5(int multiplicity)
     if (pretty == TEX)
     {
       showText("R_");
-      *ptrOutput++ = ctr + '0';
+      *ptrOutput++ = (char)(ctr + '0');
       showText(" = ");
     }
     else
     {
       showText("<var>R</var><sub>");
-      *ptrOutput++ = ctr + '0';
+      *ptrOutput++ = (char)(ctr + '0');
       showText("</sub> = ");
     }
     start5thRoot();

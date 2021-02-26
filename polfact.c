@@ -54,6 +54,10 @@ static void DistinctDegreeFactorization(int polyDegree)
   {
     if (pstFactorInfo->degree < 2 || pstFactorInfo->expectedDegree != 0)
     {             // Polynomial is completely factored. Try next one.
+      if (pstFactorInfo->expectedDegree == 0)
+      {
+        pstFactorInfo->expectedDegree = pstFactorInfo->degree;
+      }
       pstFactorInfo++;
       continue;
     }
