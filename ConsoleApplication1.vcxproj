@@ -173,6 +173,7 @@
     <ClCompile Include="divpoly.c" />
     <ClCompile Include="fftpoly.c" />
     <ClCompile Include="intpolfact.c" />
+    <ClCompile Include="linkedbignbr.c" />
     <ClCompile Include="multpoly.c" />
     <ClCompile Include="quintics.c" />
     <ClCompile Include="contfrac.c" />
@@ -209,6 +210,7 @@
   <ItemGroup>
     <ClInclude Include="batch.h" />
     <ClInclude Include="fft.h" />
+    <ClInclude Include="linkedbignbr.h" />
     <ClInclude Include="output.h" />
     <ClInclude Include="polynomial.h" />
     <ClInclude Include="rootseq.h" />

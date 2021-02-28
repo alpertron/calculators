@@ -21,14 +21,14 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h>
 #include <stdlib.h>
 #include "bignbr.h"
+#include "linkedbignbr.h"
 #include "highlevel.h"
 #include "polynomial.h"
 #include "showtime.h"
 #include "rootseq.h"
 #include "musl.h"
 
-#define MAX_MATRIX_SIZE  100
-#define MAX_LEN_MINI     1000   // 8000 digits
+#define MAX_MATRIX_SIZE  200
 
 char* ptrOutput2;
 #if DEBUG_VANHOEIJ
@@ -43,22 +43,14 @@ static int z;
 #define LF "\r\n"
 #endif
 
-typedef struct MiniBigInteger
-{
-  int nbrLimbs;
-  enum eSign sign;
-  limb limbs[MAX_LEN_MINI];
-} MiniBigInteger;
-
-MiniBigInteger basis[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
-MiniBigInteger basisStar[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
-MiniBigInteger lambda[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
-MiniBigInteger prodB[MAX_MATRIX_SIZE];
-MiniBigInteger matrixBL[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
-BigInteger detProdB[MAX_MATRIX_SIZE];
-BigInteger traces[MAX_MATRIX_SIZE*10];
+struct linkedBigInt* basis[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
+struct linkedBigInt* basisStar[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
+struct linkedBigInt* lambda[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
+struct linkedBigInt* matrixBL[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
+struct linkedBigInt* detProdB[MAX_MATRIX_SIZE];
+struct linkedBigInt* traces[MAX_MATRIX_SIZE * 10];
+struct linkedBigInt* ptrCoeffs[MAX_MATRIX_SIZE * 10];
 BigInteger powerBoundA, powerExtraBits;
-int *ptrCoeffs[MAX_MATRIX_SIZE*10];
 static int* ptrFactorInteger;
 
 static BigInteger contentPolyToFactor, halfPowerMod;
@@ -93,7 +85,8 @@ static int gauss(int nbrCols, int nbrRows)
   {
     for (col = 0; col < nbrCols; col++)
     {
-      CopyBigInt((BigInteger*)&lambda[row][col], (BigInteger*)&matrixBL[col][row]);
+      getBigIntegerFromLinked(matrixBL[col][row], &tmp5);
+      setLinkedBigInteger(&lambda[row][col], &tmp5);
     }
   }
 
@@ -103,7 +96,7 @@ static int gauss(int nbrCols, int nbrRows)
     pos = -1;
     /* Look for a pivot under the diagonal. */
     row = l;
-    while (row < nbrRows && BigIntIsZero((BigInteger*)&lambda[row][k]))
+    while (row < nbrRows && linkedBigIntIsZero(lambda[row][k]))
     {
       row++;
     }
@@ -112,18 +105,18 @@ static int gauss(int nbrCols, int nbrRows)
       /* No pivot found; try to find a unique 1 above */
     {
       row = 0;
-      while (row < l && BigIntIsZero((BigInteger *)&lambda[row][k]))
+      while (row < l && linkedBigIntIsZero(lambda[row][k]))
       {
         row++;
       }
-      if (row == l || !BigIntIsOne((BigInteger*)&lambda[row][k]))
+      if (row == l || !linkedBigIntIsOne(lambda[row][k]))
       {
         return -1;           // No pivot found, go out.
       }
       row++;
       for (; row < l; row++)
       {
-        if (!BigIntIsZero((BigInteger*)&lambda[row][k]))
+        if (!linkedBigIntIsZero(lambda[row][k]))
         {
           return -1;
         }
@@ -134,17 +127,15 @@ static int gauss(int nbrCols, int nbrRows)
     // We have found a non-zero element on the k-th column
     for (; row < nbrRows && pos == -1; row++)
     {
-      BigInteger* pLambda = (BigInteger*)&lambda[row][k];
-      if (pLambda->nbrLimbs == 1 && pLambda->sign == SIGN_NEGATIVE &&
-        pLambda->limbs[0].x == 1)   // Value is -1.
+      if (linkedBigIntIsMinusOne(lambda[row][k]))   // Value is -1.
       {   // invert all elements on i-th row
         for (col = k; col < nbrCols; col++)
         {
-          BigIntChSign((BigInteger*)&lambda[row][col]);
+          linkedBigIntChSign(lambda[row][col]);
         }
         pos = row;
       }
-      if (BigIntIsOne(pLambda))
+      if (linkedBigIntIsOne(lambda[row][k]))
       {
         pos = row;
       }
@@ -154,22 +145,26 @@ static int gauss(int nbrCols, int nbrRows)
     { /* necessarily M[pos][k]=1 */
       for (col = 0; col < nbrCols; col++)
       {
-        CopyBigInt(&tmp0, (BigInteger *)&lambda[pos][col]);
-        CopyBigInt((BigInteger*)&lambda[pos][col], (BigInteger*)&lambda[l][col]);
-        CopyBigInt((BigInteger*)&lambda[l][col], &tmp0);
+        struct linkedBigInt* pstLinkedBigInt;
+        pstLinkedBigInt = lambda[pos][col];
+        lambda[pos][col] = lambda[l][col];
+        lambda[l][col] = pstLinkedBigInt;
       }
       for (row = 0; row < nbrRows; row++)
       {
         // M[i] = M[i] - M[l]
-        CopyBigInt(&tmp1, (BigInteger*)&lambda[row][k]);
+        getBigIntegerFromLinked(lambda[row][k], &tmp1);
         if (row != l && !BigIntIsZero(&tmp1))
         {
-          intToBigInteger((BigInteger*)&lambda[row][k], 0);
+          intToLinkedBigInt(&lambda[row][k], 0);
           for (col = k + 1; col < nbrCols; col++)
           {
             // *x = *x + (*y)*t1
-            BigIntMultiply((BigInteger*)&lambda[l][col], &tmp1, &tmp0);
-            BigIntSubt((BigInteger*)&lambda[row][col], &tmp0, (BigInteger*)&lambda[row][col]);
+            getBigIntegerFromLinked(lambda[l][col], &tmp5);
+            BigIntMultiply(&tmp5, &tmp1, &tmp0);
+            getBigIntegerFromLinked(lambda[row][col], &tmp5);
+            BigIntSubt(&tmp5, &tmp0, &tmp5);
+            setLinkedBigInteger(&lambda[row][col], &tmp5);
           }
         }
       }
@@ -194,41 +189,52 @@ static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
   {
     if (colI == 0)
     {             // U_0 <- 1
-      intToBigInteger((BigInteger*)&detProdB[0], 1);
+      intToLinkedBigInt(&detProdB[0], 1);
     }
     else
-    {             // U_i <- lambda_{i-1, i-1}; U_{i-1} <- -lambda_{i, i-1}
-      CopyBigInt((BigInteger*)&detProdB[colI], (BigInteger*)&lambda[colI - 1][colI - 1]);
-      CopyBigInt((BigInteger*)&detProdB[colI - 1], (BigInteger*)&lambda[colI][colI - 1]);
-      BigIntChSign((BigInteger*)&detProdB[colI - 1]);
+    {             // U_i <- lambda_{i-1, i-1}
+      getBigIntegerFromLinked(lambda[colI - 1][colI - 1], &tmp5);
+      setLinkedBigInteger(&detProdB[colI], &tmp5);
+
+                  // U_{i-1} <- -lambda_{i, i-1}
+      getBigIntegerFromLinked(lambda[colI][colI - 1], &tmp5);
+      BigIntChSign(&tmp5);
+      setLinkedBigInteger(&detProdB[colI - 1], &tmp5);
     }
     for (colJ = colI - 2; colJ >= 0; colJ--)
     {             // U_j <- 0
       intToBigInteger(&tmp1, 0);
       for (k = colJ + 1; k <= colI; k++)
       {           // U_j <- U_j + lambda_{k,j} * U_k
-        BigIntMultiply((BigInteger*)&lambda[k][colJ], (BigInteger*)&detProdB[k], &tmp2);
+        getBigIntegerFromLinked(lambda[k][colJ], &tmp4);
+        getBigIntegerFromLinked(detProdB[k], &tmp5);
+        BigIntMultiply(&tmp4, &tmp5, &tmp2);
         BigIntSubt(&tmp1, &tmp2, &tmp1);
       }
       // U_j <- U_j / lambda_{j,j}
-      BigIntDivide(&tmp1, (BigInteger*)&lambda[colJ][colJ], (BigInteger*)&detProdB[colJ]);
+      getBigIntegerFromLinked(lambda[colJ][colJ], &tmp4);
+      BigIntDivide(&tmp1, &tmp4, &tmp5);
+      setLinkedBigInteger(&detProdB[colJ], &tmp5);
     }
     for (colJ = colI; colJ < nbrCols; colJ++)
-    {           // lambda_{j,i} <- 0
-      BigInteger* plambdaJI = (BigInteger*)&lambda[colJ][colI];
-      intToBigInteger(plambdaJI, 0);
+    {           // lambda_{j,i} <- 0. Use tmp1 for lambda_{j,i}
+      intToBigInteger(&tmp1, 0);
       for (k = 0; k <= colI; k++)
       {         // tmp2 <- scalar product b_j * b_k 
         intToBigInteger(&tmp2, 0);
         for (row = 0; row < nbrRows; row++)
         {
-          BigIntMultiply((BigInteger*)&basisStar[row][colJ], (BigInteger*)&basisStar[row][k], &tmp3);
+          getBigIntegerFromLinked(basisStar[row][colJ], &tmp4);
+          getBigIntegerFromLinked(basisStar[row][k], &tmp5);
+          BigIntMultiply(&tmp4, &tmp5, &tmp3);
           BigIntAdd(&tmp2, &tmp3, &tmp2);
         }
         // lambda_{j,i} <- lambda_{j,i} + tmp2 * U_k
-        BigIntMultiply(&tmp2, (BigInteger*)&detProdB[k], &tmp2);
-        BigIntAdd(plambdaJI, &tmp2, plambdaJI);
+        getBigIntegerFromLinked(detProdB[k], &tmp5);
+        BigIntMultiply(&tmp2, &tmp5, &tmp2);
+        BigIntAdd(&tmp1, &tmp2, &tmp1);
       }
+      setLinkedBigInteger(&lambda[colJ][colI], &tmp1);
     }
   }
 }
@@ -237,11 +243,11 @@ static void PerformREDI(int k, int l, int size)
 {
   int i, row;
   // If |2 lambda_{k, l}| <= d_l, go out.
-  BigInteger* pLambda = (BigInteger*)&lambda[k][l];
-  BigInteger* pDet = (BigInteger*)&detProdB[l];
-  multint(&tmp0, pLambda, 2);        // tmp0 <- 2 lambda_{k, l}
+  getBigIntegerFromLinked(lambda[k][l], &tmp4);
+  multint(&tmp0, &tmp4, 2);          // tmp0 <- 2 lambda_{k, l}
   tmp0.sign = SIGN_POSITIVE;         // tmp0 <- |2 lambda_{k, l}|
-  BigIntSubt(pDet, &tmp0, &tmp1);    // tmp1 <- d_l - |2 lambda_{k, l}|
+  getBigIntegerFromLinked(detProdB[l], &tmp5);
+  BigIntSubt(&tmp5, &tmp0, &tmp1);   // tmp1 <- d_l - |2 lambda_{k, l}|
   if (tmp1.sign == SIGN_POSITIVE)
   {
     return;                          // Go out if d_l >= |2 lambda_{k, l}|
@@ -251,53 +257,64 @@ static void PerformREDI(int k, int l, int size)
   // If lambda is positive, compute (2 lambda_{k, l} + d_l) / (2 d_l)
   // If lambda is negative, compute (2 lambda_{k, l} - d_l) / (2 d_l)
   // the division, change sign of quotient.
-  multint(&tmp0, pLambda, 2);        // tmp0 <- 2 lambda_{k, l}
-  if (pLambda->sign == SIGN_POSITIVE)
+  multint(&tmp0, &tmp4, 2);          // tmp0 <- 2 lambda_{k, l}
+  if (tmp4.sign == SIGN_POSITIVE)
   {
-    BigIntAdd(&tmp0, pDet, &tmp0);   // tmp0 <- 2 lambda_{k, l} + d_l
+    BigIntAdd(&tmp0, &tmp5, &tmp0);   // tmp0 <- 2 lambda_{k, l} + d_l
   }
   else
   {
-    BigIntSubt(&tmp0, pDet, &tmp0);  // tmp0 <- 2 lambda_{k, l} - d_l
+    BigIntSubt(&tmp0, &tmp5, &tmp0);  // tmp0 <- 2 lambda_{k, l} - d_l
   }
-  multint(&tmp1, pDet, 2);           // tmp1 <- 2 d_l
+  multint(&tmp1, &tmp5, 2);           // tmp1 <- 2 d_l
   BigIntDivide(&tmp0, &tmp1, &tmp2); // tmp2 <- q.
   for (row = 0; row < size; row++)
   {  // Loop that computes b_k <- b_k - q*b_l
-    BigIntMultiply(&tmp2, (BigInteger *)&basis[row][l], &tmp0);  // tmp0 <- q*b_l
-    BigIntSubt((BigInteger *)&basis[row][k], &tmp0, (BigInteger *)&basis[row][k]);
+    getBigIntegerFromLinked(basis[row][l], &tmp5);
+    BigIntMultiply(&tmp2, &tmp5, &tmp0);  // tmp0 <- q*b_l
+    getBigIntegerFromLinked(basis[row][k], &tmp5);
+    BigIntSubt(&tmp5, &tmp0, &tmp5);
+    setLinkedBigInteger(&basis[row][k], &tmp5);
   }
     // lambda_{k, l} <- lambda_{k, l} - q*d_l
-  BigIntMultiply(&tmp2, (BigInteger *)&detProdB[l], &tmp0);      // tmp0 <- q*d_l
-  BigIntSubt((BigInteger *)&lambda[k][l], &tmp0, (BigInteger *)&lambda[k][l]);
+  getBigIntegerFromLinked(detProdB[l], &tmp5);
+  BigIntMultiply(&tmp2, &tmp5, &tmp0);               // tmp0 <- q*d_l
+  getBigIntegerFromLinked(lambda[k][l], &tmp5);
+  BigIntSubt(&tmp5, &tmp0, &tmp5);
+  setLinkedBigInteger(&lambda[k][l], &tmp5);
   for (i = 0; i < l; i++)
   { // lambda_{k, i} <- lambda_{k, i} - q*lambda_{l, i}
-    BigIntMultiply(&tmp2, (BigInteger *)&lambda[l][i], &tmp0);   // tmp0 <- q*lambda_{l, i}
-    BigIntSubt((BigInteger *)&lambda[k][i], &tmp0, (BigInteger *)&lambda[k][i]);
+    getBigIntegerFromLinked(lambda[l][i], &tmp5);
+    BigIntMultiply(&tmp2, &tmp5, &tmp0);   // tmp0 <- q*lambda_{l, i}
+    getBigIntegerFromLinked(lambda[k][i], &tmp5);
+    BigIntSubt(&tmp5, &tmp0, &tmp5);
+    setLinkedBigInteger(&lambda[k][i], &tmp5);
   }
 }
 
 static void PerformSWAPI(int k, int kMax, int size)
 {                   // On entry: k >= 1
   int row, i, j;
+  struct linkedBigInt* pstLinkedBigInt;
   // Exchange b_k with b_{k-1}
   for (row = 0; row < size; row++)
   {
-    CopyBigInt(&tmp0, (BigInteger *)&basis[row][k]);
-    CopyBigInt((BigInteger *)&basis[row][k], (BigInteger *)&basis[row][k-1]);
-    CopyBigInt((BigInteger *)&basis[row][k-1], &tmp0);
+    pstLinkedBigInt = basis[row][k];
+    basis[row][k] = basis[row][k - 1];
+    basis[row][k - 1] = pstLinkedBigInt;
   }
   for (j = 0; j < k - 1; j++)
   {  // Exchange lambda_{k, j} with lambda_{k-1, j}
-    CopyBigInt(&tmp0, (BigInteger*)&lambda[k][j]);
-    CopyBigInt((BigInteger*)&lambda[k][j], (BigInteger*)&lambda[k - 1][j]);
-    CopyBigInt((BigInteger*)&lambda[k - 1][j], &tmp0);
+    pstLinkedBigInt = lambda[k][j];
+    lambda[k][j] = lambda[k - 1][j];
+    lambda[k - 1][j] = pstLinkedBigInt;
   }
     // Set lambda <- lambda_{k, k-1}
-  CopyBigInt(&tmp0, (BigInteger *)&lambda[k][k - 1]);    // tmp0 <- lambda.
+  getBigIntegerFromLinked(lambda[k][k - 1], &tmp0);    // tmp0 <- lambda.
     // Set B <- (d_{k-2}*d_k + lambda^2)/d_{k-1}
     // d_{k-2}*d_k + lambda^2 is already in tmp3.
-  BigIntDivide(&tmp3, (BigInteger*)&detProdB[k - 1], &tmp1); // tmp1 <- B
+  getBigIntegerFromLinked(detProdB[k - 1], &tmp5);
+  BigIntDivide(&tmp3, &tmp5, &tmp1);                   // tmp1 <- B
 #if DEBUG_VANHOEIJ
   if (size == 16 && z<1000)
   {
@@ -318,7 +335,8 @@ static void PerformSWAPI(int k, int kMax, int size)
     *ptrDebugOutput++ = '\n';
     strcpy(ptrDebugOutput, "detProdB[k-1] = ");
     ptrDebugOutput += strlen(ptrDebugOutput);
-    BigInteger2Dec(&detProdB[k-1], ptrDebugOutput, 0);
+    getBigIntegerFromLinked(detProdB[k - 1], &tmp5);
+    BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
     ptrDebugOutput += strlen(ptrDebugOutput);
     *ptrDebugOutput++ = '\r';
     *ptrDebugOutput++ = '\n';
@@ -333,19 +351,25 @@ static void PerformSWAPI(int k, int kMax, int size)
   for (i = k+1; i <= kMax; i++)
   {
     // t <- lambda_{i, k}
-    CopyBigInt(&tmp2, (BigInteger *)&lambda[i][k]);   // tmp2 <- t
+    getBigIntegerFromLinked(lambda[i][k], &tmp2);     // tmp2 <- t
     // lambda_{i, k} <- (d_k*lambda_{i, k-1} - lambda * t)/d_{k-1}
-    BigIntMultiply((BigInteger *)&detProdB[k], (BigInteger *)&lambda[i][k-1], &tmp3);
+    getBigIntegerFromLinked(detProdB[k], &tmp4);
+    getBigIntegerFromLinked(lambda[i][k - 1], &tmp5);
+    BigIntMultiply(&tmp4, &tmp5, &tmp3);
     BigIntMultiply(&tmp0, &tmp2, &tmp4);       // tmp4 <- lambda * t
     BigIntSubt(&tmp3, &tmp4, &tmp3);
-    BigIntDivide(&tmp3, (BigInteger*)&detProdB[k - 1], (BigInteger*)&lambda[i][k]);
+    getBigIntegerFromLinked(detProdB[k - 1], &tmp5);
+    BigIntDivide(&tmp3, &tmp5, &tmp4);
+    setLinkedBigInteger(&lambda[i][k], &tmp4);
     // lambda_{i, k-1} <- (B*t + lambda * lambda_{i, k})/d_k
     BigIntMultiply(&tmp1, &tmp2, &tmp3);       // tmp3 <- B * t
-    BigIntMultiply(&tmp0, (BigInteger *)&lambda[i][k], &tmp4);
+    BigIntMultiply(&tmp0, &tmp4, &tmp4);
     BigIntAdd(&tmp3, &tmp4, &tmp3);
-    BigIntDivide(&tmp3, (BigInteger *)&detProdB[k], (BigInteger *)&lambda[i][k - 1]);
+    getBigIntegerFromLinked(detProdB[k], &tmp4);
+    BigIntDivide(&tmp3, &tmp4, &tmp5);
+    setLinkedBigInteger(&lambda[i][k - 1], &tmp5);
   }
-  CopyBigInt((BigInteger *)&detProdB[k - 1], &tmp1);  // d_{k-1} <- B.
+  setLinkedBigInteger(&detProdB[k - 1], &tmp1);     // d_{k-1} <- B.
 }
 
 // Use algorithm 2.6.7 of Henri Cohen's book
@@ -390,11 +414,14 @@ void integralLLL(int size)
   colKMax = 0;  // Vectors b_0 to b_kMax are LLL-reduced.
   // Set d_0 to scalar product B_0 * B_0
   // Array detProdB holds the array d in the algorithm.
-  intToBigInteger((BigInteger *)&detProdB[0], 0);
+  intToLinkedBigInt(&detProdB[0], 0);
   for (row = 0; row < size; row++)
   {       // Loop that generates the scalar product B_0 * B_0.
-    BigIntMultiply((BigInteger*)&basis[row][0], (BigInteger*)&basis[row][0], &tmp0);
-    BigIntAdd((BigInteger*)&detProdB[0], &tmp0, (BigInteger*)&detProdB[0]);
+    getBigIntegerFromLinked(basis[row][0], &tmp5);
+    BigIntMultiply(&tmp5, &tmp5, &tmp0);
+    getBigIntegerFromLinked(detProdB[0], &tmp5);
+    BigIntAdd(&tmp5, &tmp0, &tmp5);
+    setLinkedBigInteger(&detProdB[0], &tmp5);     // d_{k-1} <- B.
   }
   do
   {    
@@ -407,15 +434,18 @@ void integralLLL(int size)
         intToBigInteger(&tmp2, 0);
         for (row = 0; row < size; row++)
         {
-          BigIntMultiply((BigInteger*)&basis[row][colK],
-            (BigInteger*)&basis[row][colJ], &tmp0);
+          getBigIntegerFromLinked(basis[row][colK], &tmp4);
+          getBigIntegerFromLinked(basis[row][colJ], &tmp5);
+          BigIntMultiply(&tmp4, &tmp5, &tmp0);
           BigIntAdd(&tmp2, &tmp0, &tmp2);
         }
         for (colI = 0; colI < colJ; colI++)
         {    // Set u <- (d_i * u - lambda_{k, i} * lambda_{j, i}) / d_{i-1}
-          BigIntMultiply((BigInteger*)&detProdB[colI], &tmp2, &tmp0);  // d_i * u
-          BigIntMultiply((BigInteger*)&lambda[colK][colI],  
-            (BigInteger*)&lambda[colJ][colI], &tmp1);  // lambda_{k, i} * lambda_{j, i}
+          getBigIntegerFromLinked(detProdB[colI], &tmp5);
+          BigIntMultiply(&tmp5, &tmp2, &tmp0);  // d_i * u
+          getBigIntegerFromLinked(lambda[colK][colI], &tmp4);
+          getBigIntegerFromLinked(lambda[colJ][colI], &tmp5);
+          BigIntMultiply(&tmp4, &tmp5, &tmp1);  // lambda_{k, i} * lambda_{j, i}
           if (colI == 0)
           {
             BigIntSubt(&tmp0, &tmp1, &tmp2);           // d_{i-1} = 0
@@ -423,16 +453,17 @@ void integralLLL(int size)
           else
           {
             BigIntSubt(&tmp0, &tmp1, &tmp0);
-            BigIntDivide(&tmp0, (BigInteger*)&detProdB[colI - 1], &tmp2);
+            getBigIntegerFromLinked(detProdB[colI - 1], &tmp5);
+            BigIntDivide(&tmp0, &tmp5, &tmp2);
           }
         }
         if (colJ < colK)
         {      // Set lambda_{j, k} <- u
-          CopyBigInt((BigInteger*)&lambda[colK][colJ], &tmp2);
+          setLinkedBigInteger(&lambda[colK][colJ], &tmp2);
         }
         else
         {      // Set d_k <- u
-          CopyBigInt((BigInteger*)&detProdB[colK], &tmp2);
+          setLinkedBigInteger(&detProdB[colK], &tmp2);
         }
       }
     }
@@ -450,7 +481,8 @@ void integralLLL(int size)
         *ptrDebugOutput++ = ' ';
         for (colI = 0; colI < size; colI++)
         {
-          BigInteger2Dec(&lambda[row][colI], ptrDebugOutput, 0);
+          getBigIntegerFromLinked(lambda[row][colI], &tmp5);
+          BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
           ptrDebugOutput += strlen(ptrDebugOutput);
           *ptrDebugOutput++ = ',';
           *ptrDebugOutput++ = ' ';
@@ -474,27 +506,25 @@ void integralLLL(int size)
     // Test LLL condition
     for (;;)
     {
-      BigInteger *ptrBig;
       PerformREDI(colK, colK - 1, size);
       // Check whether 4 * d_k * d_{k-2} < 3 (d_{k-1})^2 - 4*(lambda_{k, k-1})^2
       // that means 4 (d_k * d_{k-2} + lambda_{k, k-1})^2) < 3 (d_{k-1})^2 
+                       // Get d_k
+      getBigIntegerFromLinked(detProdB[colK], &tmp0);
       if (colK > 1)
-      {                // Compute d_k * d_{k-2}
-        BigIntMultiply((BigInteger*)&detProdB[colK], (BigInteger*)&detProdB[colK - 2], &tmp0);
-      }
-      else
-      {                // d_k = detProdB[k] = 1 for k < 0.
-        CopyBigInt(&tmp0, (BigInteger*)&detProdB[colK]);
+      {                // Multiply by d_{k-2} if k>=0
+        getBigIntegerFromLinked(detProdB[colK - 2], &tmp5);
+        BigIntMultiply(&tmp0, &tmp5, &tmp0);
       }
                        // Compute lambda_{k, k-1})^2
-      ptrBig = (BigInteger*)&lambda[colK][colK - 1];
-      BigIntMultiply(ptrBig, ptrBig, &tmp1);
+      getBigIntegerFromLinked(lambda[colK][colK - 1], &tmp5);
+      BigIntMultiply(&tmp5, &tmp5, &tmp1);
                        // Compute d_k * d_{k-2} + lambda_{k, k-1})^2
       BigIntAdd(&tmp0, &tmp1, &tmp3);
       multint(&tmp0, &tmp3, 4);           // tmp0 = Left Hand Side.
                        // Compute (d_{k-1})^2 
-      ptrBig = (BigInteger *)&detProdB[colK - 1];
-      BigIntMultiply(ptrBig, ptrBig, &tmp1);
+      getBigIntegerFromLinked(detProdB[colK - 1], &tmp5);
+      BigIntMultiply(&tmp5, &tmp5, &tmp1);
                        // Compute 3 * (d_{k-1})^2 = Right hand side.
       multint(&tmp1, &tmp1, 3);
       BigIntSubt(&tmp0, &tmp1, &tmp0);    // tmp0 = LHS - RHS.
@@ -526,7 +556,8 @@ void integralLLL(int size)
         *ptrDebugOutput++ = ' ';
         for (colI = 0; colI < size; colI++)
         {
-          BigInteger2Dec(&basis[row][colI], ptrDebugOutput, 0);
+          getBigIntegerFromLinked(basis[row][colI], &tmp5);
+          BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
           ptrDebugOutput += strlen(ptrDebugOutput);
           *ptrDebugOutput++ = ',';
           *ptrDebugOutput++ = ' ';
@@ -567,28 +598,23 @@ static void BigIntSymmetricRemainder(BigInteger* dividend, BigInteger* divisor, 
 static void ComputeTraces(int nbrTraces, int nbrCol)
 {
   int traceNbr;
-  int* ptrCoeff, *ptrCoeffG;
+  int* ptrCoeff;
   int polyDegree, degree;
-  int* ptrTemp = tempPoly;
-  BigInteger* ptrTrace;
+  struct linkedBigInt** ptrTrace;
   struct sFactorInfo* pstFactorInfo = &factorInfoRecord[nbrCol];
   // Get pointers to the coefficients.
   polyDegree = pstFactorInfo->degree;          // Degree of polynomial factor
   ptrCoeff = pstFactorInfo->ptrPolyLifted;     // coefficients of polynomial factor.
   for (traceNbr = polyDegree - 1; traceNbr >= 0; traceNbr--)
   {
-    ptrCoeffs[traceNbr] = ptrTemp;
     operand4.nbrLimbs = *ptrCoeff;
     operand4.sign = SIGN_POSITIVE;
     memcpy(operand4.limbs, ptrCoeff+1, *ptrCoeff *sizeof(int));
     BigIntRemainder(&operand4, &powerMod, &operand3);
-    *ptrTemp = operand3.nbrLimbs;
-    memcpy(ptrTemp+1, operand3.limbs, *ptrTemp * sizeof(int));
-    ptrTemp += 1 + numLimbs(ptrTemp);
+    setLinkedBigInteger(&ptrCoeffs[traceNbr], &operand3);
     ptrCoeff += 1 + numLimbs(ptrCoeff);
   }
   // Compute coefficients of P.
-  ptrCoeffG = (int*)basis;
   intToBigInteger(&operand1, 1);
 #if DEBUG_VANHOEIJ
   strcpy(ptrDebugOutput, "Coefficients: ");
@@ -596,7 +622,7 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
 #endif
   for (traceNbr = 0; traceNbr < polyDegree; traceNbr++)
   {
-    UncompressBigIntegerB(ptrCoeffs[traceNbr], &operand3);
+    getBigIntegerFromLinked(ptrCoeffs[traceNbr], &operand3);
 #if DEBUG_VANHOEIJ
     BigInteger2Dec(&operand3, ptrDebugOutput, 0);
     ptrDebugOutput += strlen(ptrDebugOutput);
@@ -604,9 +630,7 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
     *ptrDebugOutput++ = ' ';
 #endif
     BigIntMultiply(&operand3, &operand1, &operand3);
-    BigInteger2IntArray(ptrCoeffG, &operand3);
-    ptrCoeffs[traceNbr] = ptrCoeffG;
-    ptrCoeffG += 1 + numLimbs(ptrCoeffG);
+    setLinkedBigInteger(&ptrCoeffs[traceNbr], &operand3);
   }
 #if DEBUG_VANHOEIJ
   strcpy(ptrDebugOutput, LF);
@@ -614,45 +638,51 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
 #endif
   // Store traces of polynomial P in matrix traces.
   ptrTrace = &traces[0];
-  intToBigInteger(ptrTrace, polyDegree);
-  BigIntRemainder(ptrTrace, &powerMod, &traces[0]);
+  intToLinkedBigInt(ptrTrace, polyDegree);
+  intToBigInteger(&operand1, polyDegree);
+  BigIntRemainder(&operand1, &powerMod, &tmp5);
+  setLinkedBigInteger(&traces[0], &tmp5);
   for (traceNbr = 1; traceNbr < nbrTraces; traceNbr++)
   {
     ptrTrace++;
     // Initialize trace to -n*E_n.
     if (traceNbr <= polyDegree)
     {
-      UncompressBigIntegerB(ptrCoeffs[traceNbr - 1], &operand1);
-      multint(ptrTrace, &operand1, -traceNbr);
+      getBigIntegerFromLinked(ptrCoeffs[traceNbr - 1], &operand1);
+      multint(&tmp5, &operand1, -traceNbr);
     }
     else
     {
-      intToBigInteger(ptrTrace, 0);
+      intToBigInteger(&tmp5, 0);
     }
     for (degree = 1; degree < traceNbr; degree++)
     {   // Subtract - E_{n-deg}*Tr_deg(P)
       if (traceNbr - degree <= polyDegree)
       {
-        UncompressBigIntegerB(ptrCoeffs[traceNbr - degree - 1], &operand3);
-        BigIntMultiply(&traces[degree], &operand3, &operand1);
-        BigIntSubt(ptrTrace, &operand1, ptrTrace);
+        getBigIntegerFromLinked(ptrCoeffs[traceNbr - degree - 1], &operand3);
+        getBigIntegerFromLinked(traces[degree], &tmp4);
+        BigIntMultiply(&tmp4, &operand3, &operand1);
+        BigIntSubt(&tmp5, &operand1, &tmp5);
         // Get remainder of quotient of result by p^a.
-        BigIntRemainder(ptrTrace, &powerMod, ptrTrace);
+        BigIntRemainder(&tmp5, &powerMod, &tmp5);
       }
     }
+    setLinkedBigInteger(ptrTrace, &tmp5);
   }
   ptrTrace = &traces[0];
   for (traceNbr = 1; traceNbr < nbrTraces; traceNbr++)
   {       // Loop that divides all traces by p^b and get modulus p^(a-b).
     ptrTrace++;
+    getBigIntegerFromLinked(*ptrTrace, &tmp5);
     // Get remainder of quotient of trace divided by p^b
-    BigIntSymmetricRemainder(ptrTrace, &powerBoundA, &operand2);
+    BigIntSymmetricRemainder(&tmp5, &powerBoundA, &operand2);
     // Subtract the remainder from the computed trace.
-    BigIntSubt(ptrTrace, &operand2, ptrTrace);
+    BigIntSubt(&tmp5, &operand2, &tmp5);
     // Divide the result by p^b
-    BigIntDivide(ptrTrace, &powerBoundA, ptrTrace);
+    BigIntDivide(&tmp5, &powerBoundA, &tmp5);
     // Get remainder of quotient of result divided by p^(a-b)
-    BigIntSymmetricRemainder(ptrTrace, &powerExtraBits, ptrTrace);
+    BigIntSymmetricRemainder(&tmp5, &powerExtraBits, &tmp5);
+    setLinkedBigInteger(ptrTrace, &tmp5);
   }
 }
 
@@ -687,7 +717,7 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
       pstFactorInfo = factorInfoRecord;
       for (currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
       {
-        if (!BigIntIsZero((BigInteger*)&lambda[nbrVector][currentFactor]))
+        if (!linkedBigIntIsZero(lambda[nbrVector][currentFactor]))
         {                 // Multiply this polynomial.
           int* ptrCoeffSrc = pstFactorInfo->ptrPolyLifted;    // Source
           int* ptrCoeffDest = poly2;                          // Destination
@@ -995,23 +1025,23 @@ static void vanHoeij(int prime, int nbrFactors)
   BigIntMultiply(&bound, &leadingCoeff, &bound);
   for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
   {
-    intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
+    intToLinkedBigInt(&lambda[0][ctr1], 0);
   }
   newNbrFactors = nbrFactors;
   for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
   {
-    intToBigInteger((BigInteger*)&lambda[0][ctr1], 1);
+    intToLinkedBigInt(&lambda[0][ctr1], 1);
     AttemptToFactor(1, nbrFactors, &newNbrFactors);
-    intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
+    intToLinkedBigInt(&lambda[0][ctr1], 0);
   }
   currentAttempts = 0;
   maxAttempts = nbrFactors * (nbrFactors - 1) / 2;
   for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
   {
-    intToBigInteger((BigInteger*)&lambda[0][ctr1], 1);
+    intToLinkedBigInt(&lambda[0][ctr1], 1);
     for (ctr2 = ctr1 + 1; ctr2 < nbrFactors; ctr2++)
     {
-      intToBigInteger((BigInteger*)&lambda[0][ctr2], 1);
+      intToLinkedBigInt(&lambda[0][ctr2], 1);
       AttemptToFactor(1, nbrFactors, &newNbrFactors);
       currentAttempts++;
 #ifdef __EMSCRIPTEN__
@@ -1033,9 +1063,9 @@ static void vanHoeij(int prime, int nbrFactors)
         databack(output);
       }
 #endif
-      intToBigInteger((BigInteger*)&lambda[0][ctr2], 0);
+      intToLinkedBigInt(&lambda[0][ctr2], 0);
     }
-    intToBigInteger((BigInteger*)&lambda[0][ctr1], 0);
+    intToLinkedBigInt(&lambda[0][ctr1], 0);
   }
   // Restore value of bound.
   BigIntDivide(&bound, &leadingCoeff, &bound);
@@ -1078,7 +1108,7 @@ static void vanHoeij(int prime, int nbrFactors)
   {
     for (nbrCol = 0; nbrCol < nbrFactors; nbrCol++)
     {
-      intToBigInteger((BigInteger*)&matrixBL[nbrRow][nbrCol],
+      intToLinkedBigInt(&matrixBL[nbrRow][nbrCol],
         (nbrRow == nbrCol ? 1 : 0));
     }
   }
@@ -1101,7 +1131,7 @@ static void vanHoeij(int prime, int nbrFactors)
       {
         for (nbrCol = 0; nbrCol < nbrFactors; nbrCol++)
         {
-          intToBigInteger((BigInteger*)&matrixBL[nbrRow][nbrCol],
+          intToLinkedBigInt(&matrixBL[nbrRow][nbrCol],
             (nbrRow == nbrCol ? 1 : 0));
         }
       }
@@ -1152,7 +1182,7 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        intToBigInteger((BigInteger*)&basisStar[nbrRow][nbrCol],
+        intToLinkedBigInt(&basisStar[nbrRow][nbrCol],
           (nbrRow == nbrCol ? C : 0));
       }
     }
@@ -1166,7 +1196,8 @@ static void vanHoeij(int prime, int nbrFactors)
       ptrDebugOutput += strlen(ptrDebugOutput);
       for (nbrRow = firstTrace; nbrRow < firstTrace + nbrRequiredTraces; nbrRow++)
       {
-        BigInteger2Dec(&traces[nbrRow], ptrDebugOutput, 0);
+        getBigIntegerFromLinked(traces[nbrRow], &tmp5);
+        BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
         ptrDebugOutput += strlen(ptrDebugOutput);
         if (nbrRow < firstTrace + nbrRequiredTraces - 1)
         {
@@ -1182,17 +1213,15 @@ static void vanHoeij(int prime, int nbrFactors)
       // Convert traces matrix to range -powerExtraBits/2 to powerExtraBits/2.
       for (j = 0; j < nbrRequiredTraces; j++)
       {
-        CopyBigInt(&operand1, &traces[firstTrace + j]);
+        getBigIntegerFromLinked(traces[firstTrace + j], &operand1);
         BigIntMultiplyBy2(&operand1);
         BigIntSubt(&operand1, &powerExtraBits, &operand1); // operand1 <- 2*traces[j] - powerExtraBits
+        getBigIntegerFromLinked(traces[firstTrace + j], &tmp5);
         if (operand1.sign == SIGN_POSITIVE)
         {
-          BigIntSubt(&traces[firstTrace + j], &powerExtraBits, (BigInteger*)&lambda[j][factorNbr]);
+          BigIntSubt(&tmp5, &powerExtraBits, &tmp5);
         }
-        else
-        {
-          CopyBigInt((BigInteger*)&lambda[j][factorNbr], (BigInteger*)&traces[firstTrace + j]);
-        }
+        setLinkedBigInteger(&lambda[j][factorNbr], &tmp5);
       }
     }
 
@@ -1209,10 +1238,12 @@ static void vanHoeij(int prime, int nbrFactors)
         intToBigInteger(&operand1, 0);     // Initialize sum.
         for (j = 0; j < nbrFactors; j++)
         {
-          BigIntMultiply((BigInteger*)&lambda[nbrRow][j], (BigInteger*)&matrixBL[j][nbrCol], &operand2);
+          getBigIntegerFromLinked(lambda[nbrRow][j], &tmp4);
+          getBigIntegerFromLinked(matrixBL[j][nbrCol], &tmp5);
+          BigIntMultiply(&tmp4, &tmp5, &operand2);
           BigIntAdd(&operand1, &operand2, &operand1);
         }
-        CopyBigInt((BigInteger*)&basisStar[nbrRow + nbrVectors][nbrCol], &operand1);
+        setLinkedBigInteger(&basisStar[nbrRow + nbrVectors][nbrCol], &operand1);
       }
     }
 
@@ -1224,11 +1255,11 @@ static void vanHoeij(int prime, int nbrFactors)
       {
         if (nbrRow == nbrCol)
         {
-          CopyBigInt((BigInteger*)&basisStar[nbrRow][nbrCol], &powerExtraBits);
+          setLinkedBigInteger(&basisStar[nbrRow][nbrCol], &powerExtraBits);
         }
         else
         {
-          intToBigInteger((BigInteger*)&basisStar[nbrRow][nbrCol], 0);
+          intToLinkedBigInt(&basisStar[nbrRow][nbrCol], 0);
         }
       }
     }
@@ -1238,8 +1269,8 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        CopyBigInt((BigInteger*)&basis[nbrRow][nbrCol],
-          (BigInteger*)&basisStar[nbrRow][nbrCol]);
+        getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
+        setLinkedBigInteger(&basis[nbrRow][nbrCol], &tmp5);
       }
     }
 #if DEBUG_VANHOEIJ
@@ -1254,13 +1285,14 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        BigInteger2Dec((BigInteger*)&basisStar[nbrRow][nbrCol], ptrDebugOutput, 0);
+        getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
+        BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
         ptrDebugOutput += strlen(ptrDebugOutput);
         if (nbrCol < nbrVectors + nbrRequiredTraces - 1)
         {
           *ptrDebugOutput++ = ',';
         }
-        intToBigInteger((BigInteger*)&lambda[nbrRow][nbrCol], 0);  // DEBUG BORRAR
+        intToLinkedBigInt(&lambda[nbrRow][nbrCol], 0);  // DEBUG BORRAR
       }
       *ptrDebugOutput++ = ';';
     }
@@ -1275,8 +1307,8 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        CopyBigInt((BigInteger*)&basisStar[nbrRow][nbrCol],
-          (BigInteger*)&basis[nbrRow][nbrCol]);
+        getBigIntegerFromLinked(basis[nbrRow][nbrCol], &tmp5);
+        setLinkedBigInteger(&basisStar[nbrRow][nbrCol], &tmp5);
       }
     }
 #if DEBUG_VANHOEIJ
@@ -1286,7 +1318,8 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        BigInteger2Dec((BigInteger*)&basisStar[nbrRow][nbrCol], ptrDebugOutput, 0);
+        getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
+        BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
         ptrDebugOutput += strlen(ptrDebugOutput);
         *ptrDebugOutput++ = ' ';
       }
@@ -1301,21 +1334,23 @@ static void vanHoeij(int prime, int nbrFactors)
     // First move down the rows of M.
     for (nbrRow = nbrVectors + nbrRequiredTraces - 1; nbrRow >= nbrVectors; nbrRow--)
     {
-      MiniBigInteger* ptrMBISrc = &basisStar[nbrRow][0];
-      MiniBigInteger* ptrMBIDest = &basisStar[nbrRow - nbrVectors + nbrFactors][0];
+      struct linkedBigInt** ptrLBISrc = &basisStar[nbrRow][0];
+      struct linkedBigInt** ptrLBIDest = &basisStar[nbrRow - nbrVectors + nbrFactors][0];
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        CopyBigInt((BigInteger*)ptrMBIDest++, (BigInteger*)ptrMBISrc++);
+        getBigIntegerFromLinked(*ptrLBISrc++, &tmp5);
+        setLinkedBigInteger(ptrLBIDest++, &tmp5);
       }
     }
     // Copy L to array lambda.
     for (; nbrRow >= 0; nbrRow--)
     {
-      MiniBigInteger* ptrMBISrc = &basisStar[nbrRow][0];
-      MiniBigInteger* ptrMBIDest = &lambda[nbrRow][0];
+      struct linkedBigInt** ptrLBISrc = &basisStar[nbrRow][0];
+      struct linkedBigInt** ptrLBIDest = &lambda[nbrRow][0];
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        CopyBigInt((BigInteger*)ptrMBIDest++, (BigInteger*)ptrMBISrc++);
+        getBigIntegerFromLinked(*ptrLBISrc++, &tmp5);
+        setLinkedBigInteger(ptrLBIDest++, &tmp5);
       }
     }
     // Multiply matrixBL (nbrFactors rows and nbrVectors columns) by
@@ -1329,21 +1364,24 @@ static void vanHoeij(int prime, int nbrFactors)
         intToBigInteger(&operand1, 0);     // Initialize sum.
         for (j = 0; j < nbrVectors; j++)
         {
-          BigIntMultiply((BigInteger*)&matrixBL[nbrRow][j], (BigInteger*)&lambda[j][nbrCol], &operand2);
+          getBigIntegerFromLinked(matrixBL[nbrRow][j], &tmp4);
+          getBigIntegerFromLinked(lambda[j][nbrCol], &tmp5);
+          BigIntMultiply(&tmp4, &tmp5, &operand2);
           BigIntAdd(&operand1, &operand2, &operand1);
         }
-        CopyBigInt((BigInteger*)&basisStar[nbrRow][nbrCol], &operand1);
+        setLinkedBigInteger(&basisStar[nbrRow][nbrCol], &operand1);
       }
     }
 
     // Copy BL*L to array matrixBL.
     for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
     {
-      MiniBigInteger* ptrMBISrc = &basisStar[nbrRow][0];
-      MiniBigInteger* ptrMBIDest = &matrixBL[nbrRow][0];
+      struct linkedBigInt** ptrLBISrc = &basisStar[nbrRow][0];
+      struct linkedBigInt** ptrLBIDest = &matrixBL[nbrRow][0];
       for (nbrCol = 0; nbrCol < nbrVectors; nbrCol++)
       {
-        CopyBigInt((BigInteger*)ptrMBIDest++, (BigInteger*)ptrMBISrc++);
+        getBigIntegerFromLinked(*ptrLBISrc++, &tmp5);
+        setLinkedBigInteger(ptrLBIDest++, &tmp5);
       }
     }
 
@@ -1354,7 +1392,8 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        BigInteger2Dec((BigInteger*)&basisStar[nbrRow][nbrCol], ptrDebugOutput, 0);
+        getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
+        BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
         ptrDebugOutput += strlen(ptrDebugOutput);
         *ptrDebugOutput++ = ' ';
       }
@@ -1373,7 +1412,9 @@ static void vanHoeij(int prime, int nbrFactors)
     ptrDebugOutput += strlen(ptrDebugOutput);
     for (r1 = 2; r1 <= nbrVectors + nbrRequiredTraces; r1++)
     {
-      BigIntDivide((BigInteger*)&lambda[r1 - 1][r1 - 1], (BigInteger*)&lambda[r1 - 2][r1 - 2], &operand1);
+      getBigIntegerFromLinked(lambda[r1 - 1][r1 - 1], &tmp4);
+      getBigIntegerFromLinked(lambda[r1 - 2][r1 - 2], &tmp5);
+      BigIntDivide(&tmp4, &tmp5, &operand1);
       BigInteger2Dec(&operand1, ptrDebugOutput, 0);
       ptrDebugOutput += strlen(ptrDebugOutput);
       *ptrDebugOutput++ = ' ';
@@ -1390,7 +1431,9 @@ static void vanHoeij(int prime, int nbrFactors)
     for (r1 = nbrVectors + nbrRequiredTraces; r1 > 1; r1--)
     {
       // The norm of B*[r1] is lambda_{r1, r1} / lambda_{r1-1, r1-1}.
-      BigIntDivide((BigInteger*)&lambda[r1 - 1][r1 - 1], (BigInteger*)&lambda[r1-2][r1-2], &operand1);
+      getBigIntegerFromLinked(lambda[r1 - 1][r1 - 1], &tmp4);
+      getBigIntegerFromLinked(lambda[r1 - 2][r1 - 2], &tmp5);
+      BigIntDivide(&tmp4, &tmp5, &operand1);
       if (operand1.nbrLimbs == 1 && operand1.limbs[0].x <= squareFormula)
       {
         break;        // r' was found.
@@ -1438,10 +1481,12 @@ static void vanHoeij(int prime, int nbrFactors)
     // nbrFactors rows by r'
     for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
     {
-      MiniBigInteger* ptrMBIDest = &matrixBL[nbrRow][0];
+      struct linkedBigInt** ptrLBIDest = &matrixBL[nbrRow][0];
       for (nbrCol = 0; nbrCol < r1; nbrCol++)
       {
-        subtractdivide((BigInteger*)ptrMBIDest++, 0, C);
+        getBigIntegerFromLinked(*ptrLBIDest, &tmp5);
+        subtractdivide(&tmp5, 0, C);
+        setLinkedBigInteger(ptrLBIDest++, &tmp5);
       }
     }
 
@@ -1452,7 +1497,8 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       for (nbrCol = 0; nbrCol < r1; nbrCol++)
       {
-        BigInteger2Dec((BigInteger*)&basisStar[nbrRow][nbrCol], ptrDebugOutput, 0);
+        getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
+        BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
         ptrDebugOutput += strlen(ptrDebugOutput);
         *ptrDebugOutput++ = ' ';
       }
@@ -1512,7 +1558,8 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       for (nbrCol = 0; nbrCol < r1; nbrCol++)
       {
-        BigInteger2Dec((BigInteger*)&lambda[nbrRow][nbrCol], ptrDebugOutput, 0);
+        getBigIntegerFromLinked(lambda[nbrRow][nbrCol], &tmp5);
+        BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
         ptrDebugOutput += strlen(ptrDebugOutput);
         *ptrDebugOutput++ = ' ';
       }
@@ -1527,7 +1574,7 @@ static void vanHoeij(int prime, int nbrFactors)
       int differentFromZero = 0;
       for (nbrRow = 0; nbrRow < nbrVectors; nbrRow++)
       {
-        if (!BigIntIsZero((BigInteger *)&lambda[nbrRow][nbrCol]))
+        if (!linkedBigIntIsZero(lambda[nbrRow][nbrCol]))
         {
           differentFromZero++;
         }
@@ -1800,6 +1847,7 @@ int FactorPolyOverIntegers(void)
   int* ptrPolyLiftedOrig;
   struct sFactorInfo* pstFactorInfoOrig, * pstFactorInfoRecord;
   struct sFactorInfo* pstFactorInfoInteger = factorInfoInteger;
+  initLinkedBigInt();
   ptrFactorInteger = polyInteger;
   modulusIsZero = 1;
   memset(factorInfoInteger, 0, sizeof(factorInfoInteger));

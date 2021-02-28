@@ -101,7 +101,7 @@ void ceildiv(BigInteger*num, BigInteger *den, BigInteger *result)
 void BigIntChSign(BigInteger *value)
 {
   if (value->nbrLimbs == 1 && value->limbs[0].x == 0)
-  {    // Value is zero. Do not change number.
+  {    // Value is zero. Do not change sign.
     return;
   }
   if (value->sign == SIGN_POSITIVE)
