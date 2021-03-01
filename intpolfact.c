@@ -696,10 +696,14 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
   struct sFactorInfo* pstFactorInfo;
   int* ptrSrc, * ptrDest;
   int nbrTmp[1000], nbrTmp2[1000], nbrTmp3[1000];
+  int TestNbr0Bak;
+  int dividendMod32768[2 * MAX_DEGREE + 1];
+  int divisorMod32768[2 * MAX_DEGREE + 1];
   // In step 1 we check that all factors can be found. If this succeeds,
   // in step 2 we insert factors in final array of polynomial factors.
   for (stepNbr = 1; stepNbr <= 2; stepNbr++)
   {
+    int* ptrMod32768;
 #if DEBUG_VANHOEIJ
     sprintf(ptrDebugOutput, "stepNbr = %d\n", stepNbr);
     ptrDebugOutput += strlen(ptrDebugOutput);
@@ -792,7 +796,10 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
       GenerateIntegerPolynomial(poly2, poly5, degreeProd);
       // Ensure that the absolute value of the coefficients 
       // are less than the bound.
+      // In the same loop get the coefficients of the divisor polynomial
+      // by computing the coefficient mod 32768.
       ptrSrc = &poly5[1];
+      ptrMod32768 = divisorMod32768;
       for (currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
       {
         UncompressBigIntegerB(ptrSrc, &operand1);
@@ -806,16 +813,36 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         {
           return 0;     // Coefficient is too low.
         }
+        *ptrMod32768++ = 1;
+        if (*ptrSrc >= 0)
+        {
+          *ptrMod32768++ = *(ptrSrc+1) & 32767;
+        }
+        else
+        {
+          *ptrMod32768++ = (-*(ptrSrc + 1)) & 32767;
+        }
         ptrSrc += 1 + numLimbs(ptrSrc);
       }
       modulusIsZero = 1;   // Perform integer division.
       // Multiply all coefficients by leadingCoeff and store in polyS.
+      // In the same loop get the polynomial mod 32768.
+      ptrMod32768 = dividendMod32768;
       polyS[0] = polyNonRepeatedFactors[0];
       ptrSrc = &polyNonRepeatedFactors[1];
       ptrDest = &polyS[1];
       for (currentDegree = 0; currentDegree <= polyS[0]; currentDegree++)
       {
         UncompressBigIntegerB(ptrSrc, &operand1);
+        *ptrMod32768++ = 1;
+        if (operand1.sign == SIGN_POSITIVE)
+        {
+          *ptrMod32768++ = operand1.limbs[0].x & 32767;
+        }
+        else
+        {
+          *ptrMod32768++ = (-operand1.limbs[0].x) & 32767;
+        }
         BigIntMultiply(&operand1, &leadingCoeff, &operand2);
         NumberLength = operand2.nbrLimbs;
         BigInteger2IntArray(ptrDest, &operand2);
@@ -824,6 +851,9 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
       }
       if (stepNbr == 1)
       {   // Test whether the product divides the original polynomial.
+          // This means that f(0) divides F(0) where f(x) is the
+          // polynomial just computed and F(x) is the original
+          // polynomial times the leading coefficient.
         UncompressBigIntegerB(&polyS[1], &operand1);
         UncompressBigIntegerB(&poly5[1], &operand2);
         BigIntRemainder(&operand1, &operand2, &operand3);
@@ -831,6 +861,94 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         {    // Constant term of product does not divide constant term of
              // original polynomial, so go out.
           return 0;
+        }
+          // Check that f(1) divides F(1) and f(-1) divides F(-1).
+          // Accumulate even coefficients of F in operand1 and odd
+          // coefficients in operand2.
+        intToBigInteger(&operand1, 0);
+        intToBigInteger(&operand2, 0);
+        ptrDest = &polyS[1];
+        for (currentDegree = 0; currentDegree <= polyS[0]; currentDegree++)
+        {
+          UncompressBigIntegerB(ptrDest, &tmp1);
+          ptrDest += 1 + numLimbs(ptrDest);
+          if (currentDegree & 1)
+          {
+            BigIntAdd(&operand2, &tmp1, &operand2);
+          }
+          else
+          {
+            BigIntAdd(&operand1, &tmp1, &operand1);
+          }
+        }
+        intToBigInteger(&operand3, 0);
+        intToBigInteger(&operand4, 0);
+        ptrDest = &poly5[1];
+        for (currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
+        {
+          UncompressBigIntegerB(ptrDest, &tmp1);
+          ptrDest += 1 + numLimbs(ptrDest);
+          if (currentDegree & 1)
+          {
+            BigIntAdd(&operand4, &tmp1, &operand4);
+          }
+          else
+          {
+            BigIntAdd(&operand3, &tmp1, &operand3);
+          }
+        }
+        BigIntAdd(&operand3, &operand4, &tmp1);     // Get f(1).
+        BigIntAdd(&operand1, &operand2, &tmp2);     // Get F(1).
+        if (BigIntIsZero(&tmp1))
+        {
+          if (!BigIntIsZero(&tmp2))
+          {
+            return 0;   // f(1) is zero and F(1) is not. Go out.
+          }
+        }
+        else
+        {
+          BigIntAdd(&operand1, &operand2, &tmp2);   // Get F(1).
+          BigIntRemainder(&tmp2, &tmp1, &tmp3);
+          if (!BigIntIsZero(&tmp3))
+          {    // f(1) does not divide F(1), so go out.
+            return 0;
+          }
+        }
+        BigIntSubt(&operand3, &operand4, &tmp1);    // Get f(-1).
+        BigIntSubt(&operand1, &operand2, &tmp2);    // Get F(-1).
+        if (BigIntIsZero(&tmp1))
+        {
+          if (!BigIntIsZero(&tmp2))
+          {
+            return 0;   // f(-1) is zero and F(-1) is not. Go out.
+          }
+        }
+        else
+        {
+          BigIntRemainder(&tmp2, &tmp1, &tmp3);
+          if (!BigIntIsZero(&tmp3))
+          {    // f(-1) does not divide F(-1), so go out.
+            return 0;
+          }
+        }
+        // Divide both polynomials mod 32768. If the remainder is
+        // not zero, the integer division will not be performed.
+        TestNbr0Bak = TestNbr[0].x;
+        TestNbr[0].x = 32768;
+        modulusIsZero = 0;
+        DividePolynomial(dividendMod32768, polyS[0], divisorMod32768, poly5[0], NULL);
+        modulusIsZero = 1;
+        TestNbr[0].x = TestNbr0Bak;
+        // Test whether the remainder is zero.
+        ptrMod32768 = dividendMod32768;
+        for (currentDegree = 0; currentDegree < poly5[0]; currentDegree++)
+        {
+          if (*(ptrMod32768+1) != 0)
+          {
+            return 0;         // Coefficient of remainder is not zero. Go out.
+          }
+          ptrMod32768 += 2;   // Point to next coefficient.
         }
         rc = DivideIntegerPolynomial(polyS, poly5, TYPE_MODULUS);
         if (rc == EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER)

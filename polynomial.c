@@ -1260,7 +1260,7 @@ void ConvertToMonic(int *poly, int polyDegree)
     int inverse = modInv(*(poly + polyDegree * 2 + 1), TestNbr[0].x);
     int* ptrPoly = poly + 1;
     intToBigInteger(&operand1, inverse);
-    if (TestNbr[0].x < 32767)
+    if (TestNbr[0].x <= 32768)
     {
       for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
       {

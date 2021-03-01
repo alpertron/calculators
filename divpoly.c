@@ -314,15 +314,15 @@ int DivPolynomialExpr(int* ptrArgument1, int* ptrArgument2, enum eDivType type)
   }
   else
   {
-    currentDegree = getDegreePoly(poly1, degree2 - 1);
-    *ptrArgument1 = currentDegree;
-    FromPoly(currentDegree, ptrArgument1, poly1); // Move modulus to poly1.
+currentDegree = getDegreePoly(poly1, degree2 - 1);
+*ptrArgument1 = currentDegree;
+FromPoly(currentDegree, ptrArgument1, poly1); // Move modulus to poly1.
   }
   return EXPR_OK;
 }
 
 // Reverse coefficients of polynomials. Both polynomials must be different.
-static void ReverseModularPolynomial(int *ptrSrc, int *ptrRev, int degree)
+static void ReverseModularPolynomial(int* ptrSrc, int* ptrRev, int degree)
 {
   int currentDegree;
   int nbrLimbs = NumberLength + 1;
@@ -352,7 +352,7 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
   ReverseModularPolynomial(pDivisor, revDividend, divisorDegree);
   if (divisorDegree < quotientDegree)
   {
-    ptrProd = &revDividend[(divisorDegree+1) * nbrLimbs];
+    ptrProd = &revDividend[(divisorDegree + 1) * nbrLimbs];
     for (currentDegree = divisorDegree; currentDegree < quotientDegree; currentDegree++)
     {
       *ptrProd = 1;       // Initialize coefficient to zero.
@@ -369,7 +369,15 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
   // 3) g <- g * (2 - f*g) (mod x^deg f)
 
   // Set polynomial g to 1.
-  ArrLimbs2LenAndLimbs(inverseDivisor, MontgomeryMultR1, nbrLimbs);
+  if (NumberLength == 1)
+  {
+    inverseDivisor[0] = 1;
+    inverseDivisor[1] = 1;
+  }
+  else
+  {
+    ArrLimbs2LenAndLimbs(inverseDivisor, MontgomeryMultR1, nbrLimbs);
+  }
   newtonDegree = quotientDegree + 1;
   // Compute degrees to use in Newton loop.
   while (newtonDegree > 1)
@@ -390,22 +398,50 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
     // Compute f*g.
     MultPolynomial(newDegree - 1, oldDegree - 1, revDividend, inverseDivisor);
     // Set operand1.limbs to 2 in Montgomery notation.
-    AddBigIntModN((int*)MontgomeryMultR1, (int*)MontgomeryMultR1,
-      (int*)operand1.limbs, (int*)TestNbr, NumberLength);
-    // Subtract 2 minus the trailing coefficient of f*g.
-    LenAndLimbs2ArrLimbs(polyMultTemp, operand2.limbs, nbrLimbs);
-    SubtBigNbrMod(operand1.limbs, operand2.limbs, operand2.limbs);
-    ArrLimbs2LenAndLimbs(polyTmp, operand2.limbs, nbrLimbs);
     ptrProduct = polyMultTemp; // Point to start of f*g.
     ptrDest = polyTmp;         // Point to start of 2 - f*g.
-    memset(operand1.limbs, 0, nbrLimbs * sizeof(limb));
-    for (currentDegree = 1; currentDegree < newDegree; currentDegree++)
-    {                    // Get the negative of all coefficients of f*g.
-      ptrProduct += nbrLimbs;  // Point to next coefficient of f*g.
-      ptrDest += nbrLimbs;     // Point to next coefficient of 2 - f*g.
-      LenAndLimbs2ArrLimbs(ptrProduct, operand2.limbs, nbrLimbs);
+    if (NumberLength == 1)
+    {
+      int mod = TestNbr[0].x;
+      // Subtract 2 minus the trailing coefficient of f*g.
+      polyTmp[0] = 1;
+      polyTmp[1] = 2 - polyMultTemp[1];
+      if (polyTmp[1] < 0)
+      {
+        polyTmp[1] += mod;
+      }
+      for (currentDegree = 1; currentDegree < newDegree; currentDegree++)
+      {                    // Get the negative of all coefficients of f*g.
+        ptrProduct += 2;   // Point to next coefficient of f*g.
+        ptrDest += 2;      // Point to next coefficient of 2 - f*g.
+        *ptrDest = 1;
+        if (*(ptrProduct + 1) == 0)
+        {
+          *(ptrDest+1) = 0;
+        }
+        else
+        {
+          *(ptrDest+1) = mod - *(ptrProduct + 1);
+        }
+      }
+    }
+    else
+    {
+      AddBigIntModN((int*)MontgomeryMultR1, (int*)MontgomeryMultR1,
+        (int*)operand1.limbs, (int*)TestNbr, NumberLength);
+      // Subtract 2 minus the trailing coefficient of f*g.
+      LenAndLimbs2ArrLimbs(polyMultTemp, operand2.limbs, nbrLimbs);
       SubtBigNbrMod(operand1.limbs, operand2.limbs, operand2.limbs);
-      ArrLimbs2LenAndLimbs(ptrDest, operand2.limbs, nbrLimbs);
+      ArrLimbs2LenAndLimbs(polyTmp, operand2.limbs, nbrLimbs);
+      memset(operand1.limbs, 0, nbrLimbs * sizeof(limb));
+      for (currentDegree = 1; currentDegree < newDegree; currentDegree++)
+      {                    // Get the negative of all coefficients of f*g.
+        ptrProduct += nbrLimbs;  // Point to next coefficient of f*g.
+        ptrDest += nbrLimbs;     // Point to next coefficient of 2 - f*g.
+        LenAndLimbs2ArrLimbs(ptrProduct, operand2.limbs, nbrLimbs);
+        SubtBigNbrMod(operand1.limbs, operand2.limbs, operand2.limbs);
+        ArrLimbs2LenAndLimbs(ptrDest, operand2.limbs, nbrLimbs);
+      }
     }
     // Compute g * (2 - f*g).
     MultPolynomial(oldDegree - 1, newDegree - 1, inverseDivisor, polyTmp);
@@ -471,7 +507,14 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
   remainderDegree = dividendDegree - divisorDegree;
   IntArray2BigInteger(pDivisor + divisorDegree * nbrLimbs, &operand1);
   memcpy(operand5.limbs, operand1.limbs, NumberLength * sizeof(int));
-  divisorIsOne = !memcmp(operand1.limbs, MontgomeryMultR1, NumberLength * sizeof(int));
+  if (NumberLength == 1)
+  {
+    divisorIsOne = operand1.limbs[0].x == 1;
+  }
+  else
+  {
+    divisorIsOne = !memcmp(operand1.limbs, MontgomeryMultR1, NumberLength * sizeof(int));
+  }
   if (!divisorIsOne)
   {        // Leading coefficient is not 1.
     ConvertToMonic(pDivisor, divisorDegree);

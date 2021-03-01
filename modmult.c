@@ -1038,7 +1038,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
   }
   if (NumberLength == 1)
   {
-    if (TestNbr[0].x < 32767)
+    if (TestNbr[0].x <= 32768)
     {
       product->x = factor1->x * factor2->x % TestNbr[0].x;
       return;

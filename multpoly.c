@@ -95,7 +95,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
         }
         sum %= modulus;
       }
-      else if (modulus < 32768)
+      else if (modulus <= 32768)
       {         // Product fits in one limb.
 #ifdef _USING64BITS_
         dSum = 0;
@@ -662,7 +662,7 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
         IntArray2BigInteger(ptrSrc1, &operand3);
         ptrSrc2 = factor2;
         ptrDest = &polyMultTemp[currentDegree1 * nbrLimbs];
-        if (NumberLength == 1 && TestNbr[0].x < 32767)
+        if (NumberLength == 1 && TestNbr[0].x <= 32768)
         {
           int mod = TestNbr[0].x;
           ptrSrc2++;
