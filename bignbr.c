@@ -1405,7 +1405,12 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
     }
     power2 += BITS_PER_GROUP;
   }
-  for (mask = 0x1; mask <= MAX_VALUE_LIMB; mask *= 2)
+  if (index == nbrLimbs)
+  {   // Input number is zero.
+    *pShRight = power2;
+    return;
+  }
+  for (mask = 0x1; (unsigned int)mask <= MAX_VALUE_LIMB; mask *= 2)
   {
     if ((number[index].x & mask) != 0)
     {
