@@ -884,7 +884,10 @@ void SolveQuadModEquation(void)
               NoSolsModPrime(origExpon);
               return;                             // q != 1 or p2(r) == 0, so go out.
             }
-            expon--;
+            if (expon > 1)
+            {
+              expon--;
+            }
             // Find square root of ValCOdd.
             // First approximation to inverse of square root.
             squareRoot.limbs[0].x = ((ValCOdd.limbs[0].x & 15) == 1 ? 1 : 3);
