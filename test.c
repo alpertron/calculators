@@ -7,7 +7,7 @@
 #include "batch.h"
 #include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 16
+#define DEBUG_CODE 9
 #endif
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -70,17 +70,39 @@ int main(int argc, char *argv[])
   //squareRoot(Factor1, Factor2, 7, &len);
   while (1);
 #elif DEBUG_CODE == 4
-  dividend.limbs[0] = 0;
-  dividend.limbs[1] = 0;
-  dividend.limbs[2] = 0;
-  dividend.limbs[3] = 0x20;
-  dividend.nbrLimbs = 4;
-  dividend.sign = SIGN_POSITIVE;
-  divisor.limbs[0] = 0;
-  divisor.limbs[1] = 0x05;
-  divisor.nbrLimbs = 2;
-  dividend.sign = SIGN_NEGATIVE;
+  if (argv[1][0] == '-')
+  {
+    Dec2Bin(&argv[1][1], dividend.limbs, (int)strlen(&argv[1][1]), &dividend.nbrLimbs);
+    dividend.sign = SIGN_NEGATIVE;
+  }
+  else
+  {
+    Dec2Bin(argv[1], dividend.limbs, (int)strlen(argv[1]), &dividend.nbrLimbs);
+    dividend.sign = SIGN_POSITIVE;
+  }
+  if (argv[2][0] == '-')
+  {
+    Dec2Bin(&argv[2][1], divisor.limbs, (int)strlen(&argv[2][1]), &divisor.nbrLimbs);
+    divisor.sign = SIGN_NEGATIVE;
+  }
+  else
+  {
+    Dec2Bin(argv[2], divisor.limbs, (int)strlen(argv[2]), &divisor.nbrLimbs);
+    divisor.sign = SIGN_POSITIVE;
+  }
+  // Insert garbage after dividend and divisor.
+  memset(&dividend.limbs[dividend.nbrLimbs], 0x45, 12);
+  memset(&divisor.limbs[divisor.nbrLimbs], 0x25, 12);
   BigIntDivide(&dividend, &divisor, &quotient);
+  Bin2Dec(quotient.limbs, output, quotient.nbrLimbs, 0);
+  if (quotient.sign == SIGN_POSITIVE)
+  {
+    printf("Quotient = %s\n", output);
+  }
+  else
+  {
+    printf("Quotient = -%s\n", output);
+  }
 #elif DEBUG_CODE == 5
   int i;
   for (i = sizeof(expr) - 1; i >= 0; i -= 3)
@@ -162,7 +184,11 @@ int main(int argc, char *argv[])
   }
   pretty = PRETTY_PRINT;
   pretty = PARI_GP;
-  polyFactText(argv[1], argv[2], 7);
+  int ctr;
+  for (ctr = 0; ctr < 1; ctr++)
+  {
+    polyFactText(argv[1], argv[2], 7);
+  }
   printf("%s\n", output);
 #elif DEBUG_CODE == 11
   if (argc != 4)

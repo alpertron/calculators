@@ -201,12 +201,17 @@ void GetMontgomeryParms(int len)
 // Modulus has NumberLength limbs.
 void AdjustModN(limb *Nbr, limb *Modulus, int nbrLen)
 {
-  int i, carry;
-  int TrialQuotient;
-  double dNbr, dModulus, dTrialQuotient;
-  double dDelta;
+#ifdef _USING64BITS_
+  int64_t carry;
+#else
+  int carry;
   double dVal = 1 / (double)LIMB_RANGE;
   double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
+  double dDelta, dTrialQuotient;
+#endif
+  int i;
+  int TrialQuotient;
+  double dNbr, dModulus;
 
   dModulus = getMantissa(Modulus+nbrLen, nbrLen);
   dNbr = getMantissa(Nbr + nbrLen + 1, nbrLen + 1) * LIMB_RANGE;
@@ -215,12 +220,19 @@ void AdjustModN(limb *Nbr, limb *Modulus, int nbrLen)
   {   // Maximum value for limb.
     TrialQuotient = MAX_VALUE_LIMB;
   }
-  // Compute Nbr <- Nbr - TrialQuotient * Modulus
+#ifndef _USING64BITS_
   dTrialQuotient = (double)TrialQuotient;
-  carry = 0;
   dDelta = 0;
+#endif
+  // Compute Nbr <- Nbr - TrialQuotient * Modulus
+  carry = 0;
   for (i = 0; i <= nbrLen; i++)
   {
+#ifdef _USING64BITS_
+    carry += (int64_t)Nbr[i].x - Modulus[i].x * (int64_t)TrialQuotient;
+    Nbr[i].x = (int)carry & MAX_VALUE_LIMB;
+    carry >>= BITS_PER_GROUP;
+#else
     int low = (Nbr[i].x - Modulus[i].x * TrialQuotient + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
@@ -240,8 +252,9 @@ void AdjustModN(limb *Nbr, limb *Modulus, int nbrLen)
       carry = (int)floor((dAccumulator - HALF_INT_RANGE / 2)*dVal);
     }
     Nbr[i].x = low;
+#endif
   }
-  Nbr[i].x = carry & MAX_INT_NBR;
+  Nbr[i].x = (int)carry & MAX_INT_NBR;
   if ((Nbr[nbrLen].x & MAX_VALUE_LIMB) != 0)
   {
     unsigned int cy = 0;

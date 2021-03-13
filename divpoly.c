@@ -545,15 +545,34 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
         BigInteger2IntArray(ptrQuot, &operand1);  // Store coefficient of quotient.
       }
       ptrDivisor = pDivisor + divisorDegree * nbrLimbs;
-      for (index = 0; index <= divisorDegree; index++)
+      if (NumberLength == 1 && TestNbr[0].x <= 32768)
       {
-        IntArray2BigInteger(ptrDivisor, &operand2);
-        modmult(operand1.limbs, operand2.limbs, operand2.limbs);
-        IntArray2BigInteger(ptrDividend, &operand3);
-        SubtBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
-        BigInteger2IntArray(ptrDividend, &operand3);
-        ptrDividend -= nbrLimbs;
-        ptrDivisor -= nbrLimbs;
+        int mod = TestNbr[0].x;
+        ptrDividend++;
+        ptrDivisor++;
+        for (index = 0; index <= divisorDegree; index++)
+        {
+          *ptrDividend = (*ptrDividend - *ptrDivisor * operand1.limbs[0].x) % mod;
+          if (*ptrDividend < 0)
+          {
+            *ptrDividend += mod;
+          }
+          ptrDividend -= nbrLimbs;
+          ptrDivisor -= nbrLimbs;
+        }
+      }
+      else
+      {
+        for (index = 0; index <= divisorDegree; index++)
+        {
+          IntArray2BigInteger(ptrDivisor, &operand2);
+          modmult(operand1.limbs, operand2.limbs, operand2.limbs);
+          IntArray2BigInteger(ptrDividend, &operand3);
+          SubtBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
+          BigInteger2IntArray(ptrDividend, &operand3);
+          ptrDividend -= nbrLimbs;
+          ptrDivisor -= nbrLimbs;
+        }
       }
       ptrQuot -= nbrLimbs;
     }

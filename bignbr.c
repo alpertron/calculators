@@ -835,10 +835,15 @@ void addbigint(BigInteger *pResult, int addend)
 
 void multint(BigInteger *pResult, BigInteger *pMult, int factor)
 {
+#ifdef _USING64BITS_
+  int64_t carry;
+#else
+  int carry;
   double dFactor;
   double dVal = 1 / (double)LIMB_RANGE;
+#endif
   int factorPositive = 1;
-  int ctr, carry;
+  int ctr;
   int nbrLimbs = pMult->nbrLimbs;
   limb *pLimb = pMult->limbs;
   limb *pResultLimb = pResult->limbs;
@@ -852,10 +857,17 @@ void multint(BigInteger *pResult, BigInteger *pMult, int factor)
     factorPositive = 0;
     factor = -factor;
   }
+#ifndef _USING64BITS_
   dFactor = (double)factor;
+#endif
   carry = 0;
   for (ctr = 0; ctr < nbrLimbs; ctr++)
   {
+#ifdef _USING64BITS_
+    carry += (int64_t)pLimb->x * (int64_t)factor;
+    (pResultLimb++)->x = (int)carry & MAX_VALUE_LIMB;
+    carry >>= BITS_PER_GROUP;
+#else
     int low = (pLimb->x * factor + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
@@ -868,11 +880,12 @@ void multint(BigInteger *pResult, BigInteger *pMult, int factor)
       carry = (int)(((double)(pLimb->x) * dFactor + (double)carry - HALF_INT_RANGE / 2)*dVal);
     }
     (pResultLimb++)->x = low;
+#endif
     pLimb++;
   }
   if (carry != 0)
   {
-    pResultLimb->x = carry;
+    pResultLimb->x = (int)carry;
     nbrLimbs++;
   }
   pResult->nbrLimbs = nbrLimbs;

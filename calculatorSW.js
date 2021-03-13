@@ -65,7 +65,7 @@ self.addEventListener("fetch", function(event)
   event.respondWith(  
     caches.match(noQueryString).then(function(cached)
     {
-      if (cached && nocache != "1")
+      if (cached && (nocache != "1" || !navigator.onLine))
       {        // At this moment the response is in the cache.
         return cached;
       }

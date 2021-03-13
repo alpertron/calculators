@@ -125,8 +125,105 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     }
     subtractdivide(pQuotient, 0, pDivisor->limbs[0].x);
   }
+  else if (nbrLimbsDivisor < 32)
+  {   // It is faster to perform classical division than
+      // using Newton algorithm.
+      // Use adjustedArgument to hold the remainder.
+#ifdef _USING64BITS_
+    int64_t carry;
+#else
+    int carry;
+    double dVal = 1 / (double)LIMB_RANGE;
+    double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
+#endif
+    int i, TrialQuotient;
+    double dNbr, dModulus, dTrialQuotient;
+    double dDelta;
+    limb* ptrDividend, * ptrDivisor, *ptrQuotient;
+
+    memcpy(adjustedArgument, pDividend->limbs, nbrLimbsDividend * sizeof(limb));
+    adjustedArgument[nbrLimbsDividend].x = 0;
+    pDivisor->limbs[pDivisor->nbrLimbs].x = 0;
+    pQuotient->nbrLimbs = nbrLimbsDividend - nbrLimbsDivisor + 1;
+    ptrQuotient = &pQuotient->limbs[nbrLimbsDividend - nbrLimbsDivisor];
+    dModulus = getMantissa(&pDivisor->limbs[nbrLimbsDivisor], nbrLimbsDivisor);
+    for (; nbrLimbsDividend >= nbrLimbsDivisor; nbrLimbsDividend--)
+    {
+      dNbr = getMantissa(&adjustedArgument[nbrLimbsDividend+1], nbrLimbsDividend)*LIMB_RANGE;
+      TrialQuotient = (int)(unsigned int)floor(dNbr / dModulus + 0.5);
+      if ((unsigned int)TrialQuotient >= LIMB_RANGE)
+      {   // Maximum value for limb.
+        TrialQuotient = MAX_VALUE_LIMB;
+      }
+      // Compute Nbr <- Nbr - TrialQuotient * Modulus
+      dTrialQuotient = (double)TrialQuotient;
+      carry = 0;
+      dDelta = 0;
+      ptrDividend = &adjustedArgument[nbrLimbsDividend - nbrLimbsDivisor];
+      ptrDivisor = pDivisor->limbs;
+      for (i = 0; i <= nbrLimbsDivisor; i++)
+      {
+#ifdef _USING64BITS_
+        carry += (int64_t)ptrDividend->x - ptrDivisor->x * (int64_t)TrialQuotient;
+        ptrDividend->x = (int)carry & MAX_VALUE_LIMB;
+        carry >>= BITS_PER_GROUP;
+#else
+        int low = (ptrDividend->x - ptrDivisor->x * TrialQuotient + carry) & MAX_INT_NBR;
+        // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
+        // In that case, there would be an error of +/- 1.
+        double dAccumulator = ptrDividend->x - ptrDivisor->x * dTrialQuotient + carry + dDelta;
+        dDelta = 0;
+        if (dAccumulator < 0)
+        {
+          dAccumulator += dSquareLimb;
+          dDelta = -(double)LIMB_RANGE;
+        }
+        if (low < HALF_INT_RANGE)
+        {
+          carry = (int)floor((dAccumulator + HALF_INT_RANGE / 2) * dVal);
+        }
+        else
+        {
+          carry = (int)floor((dAccumulator - HALF_INT_RANGE / 2) * dVal);
+        }
+        ptrDividend->x = low;
+#endif
+        ptrDividend++;
+        ptrDivisor++;
+      }
+      ptrDividend->x = carry & MAX_INT_NBR;
+      if ((adjustedArgument[nbrLimbsDividend].x & MAX_VALUE_LIMB) != 0)
+      {
+        unsigned int cy = 0;
+        ptrDividend = &adjustedArgument[nbrLimbsDividend - nbrLimbsDivisor];
+        ptrDivisor = pDivisor->limbs;
+        for (i = 0; i < nbrLimbsDivisor; i++)
+        {
+          cy += (unsigned int)(ptrDividend->x) + (unsigned int)(ptrDivisor->x);
+          ptrDividend->x = (int)(cy & MAX_VALUE_LIMB);
+          cy >>= BITS_PER_GROUP;
+          ptrDivisor++;
+          ptrDividend++;
+        }
+        TrialQuotient--;
+        adjustedArgument[nbrLimbsDividend].x = 0;
+        adjustedArgument[nbrLimbsDividend + 1].x = 0;
+      }
+      ptrQuotient->x = TrialQuotient;
+      ptrQuotient--;
+    }
+    while (pQuotient->nbrLimbs > 1)
+    {
+      if (pQuotient->limbs[pQuotient->nbrLimbs - 1].x != 0)
+      {
+        break;
+      }
+      pQuotient->nbrLimbs--;
+    }
+  }
   else
-  {
+  {        // Divisor has more than 32 limbs. Use Newton algorithm 
+           // to find the inverse and then multiply by dividend.
     int index;
     int bitLength;
     int bitLengthNbrCycles;
