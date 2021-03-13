@@ -857,9 +857,9 @@ static boolean ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFac
     addbigint(&dif, 1);                         // dif <- dif + 1
     BigIntDivide(&dif, &rootN1, &Temp1);        // Temp1 <- dif / rootN1
     subtractdivide(&Temp1, 0, Exponent);        // Temp1 <- Temp1 / Exponent
-    BigIntAdd(&Temp1, &nthRoot, &nextroot);        // nextroot <- Temp1 + nthRoot
+    BigIntAdd(&Temp1, &nthRoot, &nextroot);     // nextroot <- Temp1 + nthRoot
     addbigint(&nextroot, -1);                   // nextroot <- nextroot - 1
-    BigIntSubt(&nextroot, &nthRoot, &nthRoot);        // nthRoot <- nextroot - nthRoot
+    BigIntSubt(&nextroot, &nthRoot, &nthRoot);  // nthRoot <- nextroot - nthRoot
     if (nthRoot.sign == SIGN_POSITIVE)
     {
       break; // Not a perfect power
@@ -880,12 +880,12 @@ static boolean ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFac
     addbigint(&dif, 1);                         // dif <- dif + 1
     BigIntDivide(&dif, &rootN1, &Temp1);        // Temp1 <- dif / rootN1
     subtractdivide(&Temp1, 0, Exponent);        // Temp1 <- Temp1 / Exponent
-    BigIntAdd(&Temp1, &nthRoot, &nextroot);        // nextroot <- Temp1 + nthRoot
+    BigIntAdd(&Temp1, &nthRoot, &nextroot);     // nextroot <- Temp1 + nthRoot
     addbigint(&nextroot, -1);                   // nextroot <- nextroot - 1
-    BigIntSubt(&nextroot, &nthRoot, &nthRoot);        // nthRoot <- nextroot - nthRoot
+    BigIntSubt(&nextroot, &nthRoot, &nthRoot);  // nthRoot <- nextroot - nthRoot
     if (nthRoot.sign == SIGN_POSITIVE)
     {
-      break;                               // Not a perfect power
+      break;                                    // Not a perfect power
     }
     CopyBigInt(&nthRoot, &nextroot);
   }

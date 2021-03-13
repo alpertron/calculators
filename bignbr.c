@@ -1088,7 +1088,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
   int modulus;
   int intLog2root;
   int primesLength, Exponent;
-  int base;
+  int base = 0;
   double log2N, log2root;
   int prime2310x1[] =
   { 2311, 4621, 9241, 11551, 18481, 25411, 32341, 34651, 43891, 50821 };

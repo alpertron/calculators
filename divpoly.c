@@ -527,7 +527,7 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
       BigInteger2IntArray(pDividend + currentDegree * nbrLimbs, &operand2);
     }
   }
-  if (divisorDegree > 16 && dividendDegree<4*divisorDegree)
+  if (divisorDegree > 16 && dividendDegree < 4*divisorDegree)
 //  if (0)
   {         // Newton division is faster.
     PolynomialNewtonDivision(pDividend, dividendDegree,

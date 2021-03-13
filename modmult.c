@@ -211,11 +211,11 @@ void AdjustModN(limb *Nbr, limb *Modulus, int nbrLen)
 #endif
   int i;
   int TrialQuotient;
-  double dNbr, dModulus;
+  double dNbr, dInvModulus;
 
-  dModulus = getMantissa(Modulus+nbrLen, nbrLen);
+  dInvModulus = 1/getMantissa(Modulus+nbrLen, nbrLen);
   dNbr = getMantissa(Nbr + nbrLen + 1, nbrLen + 1) * LIMB_RANGE;
-  TrialQuotient = (int)(unsigned int)floor(dNbr / dModulus + 0.5);
+  TrialQuotient = (int)(unsigned int)floor(dNbr * dInvModulus + 0.5);
   if ((unsigned int)TrialQuotient >= LIMB_RANGE)
   {   // Maximum value for limb.
     TrialQuotient = MAX_VALUE_LIMB;

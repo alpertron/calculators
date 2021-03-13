@@ -69,6 +69,7 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, limb *number, int len, lim
   ptrDest->x = oldLimb.x >> (BITS_PER_GROUP - shLeft);
   *pPower2 = shLeft;
 }
+
 // After computing the number of limbs of the results, this routine finds the inverse
 // of the divisor and then multiplies it by the dividend using nbrLimbs+1 limbs.
 // After that, the quotient is adjusted.
@@ -125,7 +126,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     }
     subtractdivide(pQuotient, 0, pDivisor->limbs[0].x);
   }
-  else if (nbrLimbsDivisor < 32)
+  else if (nbrLimbsDivisor < 64)
   {   // It is faster to perform classical division than
       // using Newton algorithm.
       // Use adjustedArgument to hold the remainder.
@@ -137,7 +138,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
 #endif
     int i, TrialQuotient;
-    double dNbr, dModulus, dTrialQuotient;
+    double dNbr, dInvDivisor, dTrialQuotient;
     double dDelta;
     limb* ptrDividend, * ptrDivisor, *ptrQuotient;
 
@@ -146,11 +147,11 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     pDivisor->limbs[pDivisor->nbrLimbs].x = 0;
     pQuotient->nbrLimbs = nbrLimbsDividend - nbrLimbsDivisor + 1;
     ptrQuotient = &pQuotient->limbs[nbrLimbsDividend - nbrLimbsDivisor];
-    dModulus = getMantissa(&pDivisor->limbs[nbrLimbsDivisor], nbrLimbsDivisor);
+    dInvDivisor = 1/getMantissa(&pDivisor->limbs[nbrLimbsDivisor], nbrLimbsDivisor);
     for (; nbrLimbsDividend >= nbrLimbsDivisor; nbrLimbsDividend--)
     {
-      dNbr = getMantissa(&adjustedArgument[nbrLimbsDividend+1], nbrLimbsDividend)*LIMB_RANGE;
-      TrialQuotient = (int)(unsigned int)floor(dNbr / dModulus + 0.5);
+      dNbr = getMantissa(&adjustedArgument[nbrLimbsDividend+1], nbrLimbsDividend+1)*LIMB_RANGE;
+      TrialQuotient = (int)(unsigned int)floor(dNbr * dInvDivisor + 0.5);
       if ((unsigned int)TrialQuotient >= LIMB_RANGE)
       {   // Maximum value for limb.
         TrialQuotient = MAX_VALUE_LIMB;
