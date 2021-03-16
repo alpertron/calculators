@@ -34,7 +34,7 @@ extern int q[MAX_LEN];
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 int groupLen = 6;
-static int smallPrimes[SMALL_PRIMES_ARRLEN];
+int smallPrimes[SMALL_PRIMES_ARRLEN+1];
 #ifdef __EMSCRIPTEN__
 int percentageBPSW;
 #endif
@@ -1556,7 +1556,7 @@ void initializeSmallPrimes(int* pSmallPrimes)
   }
   P = 3;
   *pSmallPrimes++ = 2;
-  for (ctr = 1; ctr < SMALL_PRIMES_ARRLEN; ctr++)
+  for (ctr = 1; ctr <= SMALL_PRIMES_ARRLEN; ctr++)
   {     // Loop that fills the SmallPrime array.
     int Q;
     *pSmallPrimes++ = P; /* Store prime */
@@ -2175,36 +2175,3 @@ void ConvertToTwosComplement(BigInteger *value)
   }
 }
 
-// Find next prime.
-int nextPrime(int prime)
-{
-  int divisor;
-  int isPrime;
-  if (prime < 3)
-  {
-    return prime + 1;
-  }
-  if (prime % 2 == 0)
-  {
-    prime--;
-  }
-  do
-  {
-    divisor = 5;
-    do
-    {
-      prime += 2;
-    } while (prime % 3 == 0);
-    isPrime = 1;
-    while (divisor * divisor <= prime)
-    {
-      if (prime % divisor == 0 || prime % (divisor + 2) == 0)
-      {
-        isPrime = 0;
-        break;
-      }
-      divisor += 6;
-    }
-  } while (isPrime == 0);
-  return prime;
-}

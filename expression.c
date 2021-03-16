@@ -56,10 +56,11 @@ static limb fibon2[MAX_LEN];
 extern limb MontgomeryR1[MAX_LEN];
 static int stackIndex, exprIndex;
 static int exprLength;
+static int doComputeSubExpression = TRUE;
+static int computeSubExprStackThreshold = 0;
 #ifndef lang  
   int lang;
 #endif
-static int smallPrimes[SMALL_PRIMES_ARRLEN];
 char output[3000000];
 limb Mult1[MAX_LEN];
 limb Mult3[MAX_LEN];
@@ -134,6 +135,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
   {      // Number of open and closing parentheses do not match.
     return EXPR_PAREN_MISMATCH;
   }
+  doComputeSubExpression = TRUE;
   valueXused = FALSE;
   stackIndex = 0;
   comprStackOffset[0] = 0;
@@ -345,34 +347,37 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_SYNTAX_ERROR;
       }
-      getCurrentStackValue(&curStack);
-      if (curStack.nbrLimbs > 2)
+      if (doComputeSubExpression)
       {
-        return EXPR_INTERM_TOO_HIGH;
-      }
-      if (curStack.nbrLimbs == 2)
-      {
-        largeLen.x = curStack.limbs[0].x +
-          (curStack.limbs[1].x << BITS_PER_GROUP);
-      }
-      else
-      {
-        largeLen.x = curStack.limbs[0].x;
-      }
-      len = (int)largeLen.x;
+        getCurrentStackValue(&curStack);
+        if (curStack.nbrLimbs > 2)
+        {
+          return EXPR_INTERM_TOO_HIGH;
+        }
+        if (curStack.nbrLimbs == 2)
+        {
+          largeLen.x = curStack.limbs[0].x +
+            (curStack.limbs[1].x << BITS_PER_GROUP);
+        }
+        else
+        {
+          largeLen.x = curStack.limbs[0].x;
+        }
+        len = (int)largeLen.x;
 #ifdef FACTORIZATION_APP
-      if (len < 0 || len > 460490)
+        if (len < 0 || len > 460490)
 #else
-      if (len < 0 || len > 46049)
+        if (len < 0 || len > 46049)
 #endif
-      {
-        return EXPR_INTERM_TOO_HIGH;
-      }
-      primorial(&curStack, (int)curStack.limbs[0].x);
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
+        {
+          return EXPR_INTERM_TOO_HIGH;
+        }
+        primorial(&curStack, (int)curStack.limbs[0].x);
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       exprIndex++;
       continue;
@@ -381,15 +386,18 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "GCD", 2, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != EXPR_OK) { return retcode; }
-      getCurrentStackValue(&curStack);    // Get first argument of GCD.
-      stackIndex++;
-      getCurrentStackValue(&curStack2);   // Get second argument of GCD.
-      stackIndex--;
-      BigIntGcd(&curStack, &curStack2, &curStack);
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        getCurrentStackValue(&curStack);    // Get first argument of GCD.
+        stackIndex++;
+        getCurrentStackValue(&curStack2);   // Get second argument of GCD.
+        stackIndex--;
+        BigIntGcd(&curStack, &curStack2, &curStack);
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -398,18 +406,21 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "MODPOW", 3, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != EXPR_OK) { return retcode; }
-      getCurrentStackValue(&curStack);    // Get first argument of MODPOW.
-      stackIndex++;
-      getCurrentStackValue(&curStack2);   // Get second argument of MODPOW.
-      stackIndex++;
-      getCurrentStackValue(&curStack3);   // Get third argument of MODPOW.
-      stackIndex -= 2;
-      retcode = BigIntGeneralModularPower(&curStack, &curStack2, &curStack3, &curStack);
-      if (retcode != EXPR_OK) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        getCurrentStackValue(&curStack);    // Get first argument of MODPOW.
+        stackIndex++;
+        getCurrentStackValue(&curStack2);   // Get second argument of MODPOW.
+        stackIndex++;
+        getCurrentStackValue(&curStack3);   // Get third argument of MODPOW.
+        stackIndex -= 2;
+        retcode = BigIntGeneralModularPower(&curStack, &curStack2, &curStack3, &curStack);
+        if (retcode != EXPR_OK) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -418,12 +429,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "MODINV", 2, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      retcode = ComputeModInv();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        retcode = ComputeModInv();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -433,12 +447,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "TOTIENT", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      retcode = ComputeTotient();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        retcode = ComputeTotient();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -447,12 +464,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "NUMDIVS", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      retcode = ComputeNumDivs();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        retcode = ComputeNumDivs();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -461,26 +481,32 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "SUMDIVS", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      retcode = ComputeSumDivs();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        retcode = ComputeSumDivs();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
+        leftNumberFlag = 1;
       }
-      leftNumberFlag = 1;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
       "MINFACT", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      retcode = ComputeMinFact();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        retcode = ComputeMinFact();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -489,12 +515,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "MAXFACT", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      retcode = ComputeMaxFact();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        retcode = ComputeMaxFact();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -503,12 +532,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "NUMFACT", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      retcode = ComputeNumFact();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        retcode = ComputeNumFact();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -517,12 +549,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "CONCATFACT", 2, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      retcode = ComputeConcatFact();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        retcode = ComputeConcatFact();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -532,12 +567,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "SUMDIGITS", 2, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      retcode = ComputeSumDigits();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        retcode = ComputeSumDigits();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -546,12 +584,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "NUMDIGITS", 2, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      retcode = ComputeNumDigits();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        retcode = ComputeNumDigits();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -560,12 +601,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "REVDIGITS", 2, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      retcode = ComputeRevDigits();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        retcode = ComputeRevDigits();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -574,23 +618,26 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "ISPRIME", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      getCurrentStackValue(&curStack);    // Get argument.
-#ifdef FACTORIZATION_APP
-      if (BpswPrimalityTest(&curStack, NULL) == 0)
-#else
-      if (BpswPrimalityTest(&curStack) == 0)
-#endif
-      {    // Argument is a probable prime.
-        intToBigInteger(&curStack, -1);
-      }
-      else
-      {    // Argument is not a probable prime.
-        intToBigInteger(&curStack, 0);
-      }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        getCurrentStackValue(&curStack);    // Get argument.
+#ifdef FACTORIZATION_APP
+        if (BpswPrimalityTest(&curStack, NULL) == 0)
+#else
+        if (BpswPrimalityTest(&curStack) == 0)
+#endif
+        {    // Argument is a probable prime.
+          intToBigInteger(&curStack, -1);
+        }
+        else
+        {    // Argument is not a probable prime.
+          intToBigInteger(&curStack, 0);
+        }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -599,13 +646,16 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "F", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      getCurrentStackValue(&curStack);    // Get argument.
-      retcode = ComputeFibLucas(0);
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        getCurrentStackValue(&curStack);    // Get argument.
+        retcode = ComputeFibLucas(0);
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -614,13 +664,16 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "L", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      getCurrentStackValue(&curStack);    // Get argument.
-      retcode = ComputeFibLucas(2);
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        getCurrentStackValue(&curStack);    // Get argument.
+        retcode = ComputeFibLucas(2);
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -629,13 +682,16 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "P", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      getCurrentStackValue(&curStack);    // Get argument.
-      retcode = ComputePartition();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        getCurrentStackValue(&curStack);    // Get argument.
+        retcode = ComputePartition();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -644,13 +700,16 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "N", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      getCurrentStackValue(&curStack);    // Get argument.
-      retcode = ComputeNext();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        getCurrentStackValue(&curStack);    // Get argument.
+        retcode = ComputeNext();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -659,13 +718,16 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       "B", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
     {
       if (retcode != 0) { return retcode; }
-      getCurrentStackValue(&curStack);    // Get argument.
-      retcode = ComputeBack();
-      if (retcode != 0) { return retcode; }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
+      if (doComputeSubExpression)
       {
-        return retcode;
+        getCurrentStackValue(&curStack);    // Get argument.
+        retcode = ComputeBack();
+        if (retcode != 0) { return retcode; }
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       leftNumberFlag = 1;
       continue;
@@ -732,7 +794,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (charValue == ')' || charValue == ',')
     {
-      int curStack;
+      int curStackOperand;
       if (leftNumberFlag == 0)
       {       // Previous item should be a number or variable.
         return EXPR_SYNTAX_ERROR;
@@ -744,19 +806,29 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         {
           return SubExprResult;
         }
+        if (stackOperators[stackIndex-1] == OPER_AND ||
+          stackOperators[stackIndex-1] == OPER_OR)
+        {
+          if (doComputeSubExpression == FALSE &&
+              stackIndex == computeSubExprStackThreshold)
+          {
+            doComputeSubExpression = TRUE;
+          }
+        }
       }
-      curStack = comprStackOffset[stackIndex];
+      curStackOperand = comprStackOffset[stackIndex];
       if (stackIndex == startStackIndex)
       {
-        comprStackOffset[stackIndex+1] = curStack + numLimbs(&comprStackValues[curStack].x) + 1;
+        comprStackOffset[stackIndex+1] = curStackOperand +
+          numLimbs(&comprStackValues[curStackOperand].x) + 1;
         break;
       }
       if (charValue == ',')
       {
         return EXPR_PAREN_MISMATCH;
       }
-      comprStackOffset[stackIndex - 1] = curStack;
-      comprStackOffset[stackIndex] += numLimbs(&comprStackValues[curStack].x) + 1;
+      comprStackOffset[stackIndex - 1] = curStackOperand;
+      comprStackOffset[stackIndex] += numLimbs(&comprStackValues[curStackOperand].x) + 1;
       stackIndex--;    /* Discard ')' */
       leftNumberFlag = 1;
       exprIndex++;
@@ -905,12 +977,40 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           {
             return SubExprResult;
           }
+          if (stackOperators[stackIndex-1] == OPER_AND ||
+            stackOperators[stackIndex-1] == OPER_OR)
+          {
+            if (doComputeSubExpression == FALSE &&
+              stackIndex == computeSubExprStackThreshold)
+            {
+              doComputeSubExpression = TRUE;
+            }
+          }
         }
         if (stackIndex >= 0)
         {
           int currentStackOffset = comprStackOffset[stackIndex];
           comprStackOffset[stackIndex+1] = currentStackOffset +
             numLimbs((int*)&comprStackValues[currentStackOffset]) + 1;
+        }
+      }
+      if (charValue == OPER_AND)
+      {
+        getCurrentStackValue(&curStack);
+        if (BigIntIsZero(&curStack))
+        {
+          doComputeSubExpression = FALSE;
+          computeSubExprStackThreshold = stackIndex;
+        }
+      }
+      else if (charValue == OPER_OR)
+      {
+        getCurrentStackValue(&curStack);
+        if (curStack.sign == SIGN_NEGATIVE && curStack.nbrLimbs == 1 &&
+          curStack.limbs[0].x == 1)
+        {       // Number is -1.
+          doComputeSubExpression = FALSE;
+          computeSubExprStackThreshold = stackIndex;
         }
       }
       stackOperators[stackIndex++] = charValue;
@@ -1122,8 +1222,8 @@ static void generateSieve(int* pSmallPrimes, char* sieve, BigInteger* pArgument,
   int ctr;
   // Indicate numbers not divisible by small primes in advance.
   memset(sieve, 0, COMPUTE_NEXT_PRIME_SIEVE_SIZE);
-  for (ctr = 0; ctr < SMALL_PRIMES_ARRLEN; ctr++)
-  {     // For each prime...
+  for (ctr = 0; ctr < 1229; ctr++)
+  {     // For each prime less than 10000...
     int prime = *pSmallPrimes++;
     int remainder = getRemainder(pArgument, prime);
     // Compute first element of sieve to indicate multiple of prime.
@@ -1467,7 +1567,20 @@ static int ComputeMaxFact(void)
 
 static int ComputeMinFact(void)
 {
+  int primeIndex = 0;
+  int prime = 2;
   getCurrentStackValue(&curStack);    // Get argument.
+  // Try to find a small factor (less than 32767).
+  initializeSmallPrimes(smallPrimes);
+  do
+  {
+    if (getRemainder(&curStack, prime) == 0)
+    {
+      intToBigInteger(&curStack, prime);
+      return EXPR_OK;
+    }
+    prime = smallPrimes[++primeIndex];
+  } while (prime < 32767);
   PerformFactorization(&curStack);
   MinFactor(&curStack);
   return EXPR_OK;

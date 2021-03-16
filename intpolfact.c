@@ -1855,13 +1855,15 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   ptrFactorInteger += indexNewFactor[degreePoly + 1];
 }
 
-int getNextPrimeNoDuplicatedFactors(int prime)
+int getNextPrimeNoDuplicatedFactors(int primeIndex)
 {
   int* ptrSrc;
+  int prime;
   int currentDegree;
   int degreeGcdMod;
   int degree1, degree2;
   int degree = polyNonRepeatedFactors[0];
+  initializeSmallPrimes(smallPrimes);
   // Get leading coefficient of polyNonRepeatedFactors.
   ptrSrc = &polyNonRepeatedFactors[1];
   for (currentDegree = 0; currentDegree < degree; currentDegree++)
@@ -1878,7 +1880,7 @@ int getNextPrimeNoDuplicatedFactors(int prime)
       // be used.
     do
     {      // Loop while the leading coefficient is multiple of prime.
-      prime = nextPrime(prime);
+      prime = smallPrimes[++primeIndex];
     } while (getRemainder(&leadingCoeff, prime) == 0);
     modulusIsZero = 0;
     intToBigInteger(&primeMod, prime);
@@ -1891,7 +1893,7 @@ int getNextPrimeNoDuplicatedFactors(int prime)
     degree1 = getModPolynomial(poly1, polyNonRepeatedFactors, &operand5);
     PolyModularGcd(poly1, degree1, &poly2[1], poly2[0], poly3, &degreeGcdMod);
   } while (degreeGcdMod > 0);
-  return prime;
+  return primeIndex;
 }
 
 static void initFactorModularPoly(int prime)
@@ -2011,7 +2013,7 @@ int FactorPolyOverIntegers(void)
        // The trailing coefficient of factors must divide the product of the trailing and leading
        // coefficients of the original polynomial.
     int nbrFactorsRecord;
-    int prime;
+    int prime, primeIndex;
     modulusIsZero = 1;
     // Get trailing coefficient.
     ptrSrc = &values[1];
@@ -2033,6 +2035,7 @@ int FactorPolyOverIntegers(void)
     PolynomialGcd(tempPoly, polyToFactor, polyToFactor);
     polyNonRepeatedFactors[0] = degreePolyToFactor;
     DivideIntegerPolynomial(polyNonRepeatedFactors, polyToFactor, TYPE_DIVISION);
+    primeIndex = 0;
     prime = 2;
     ComputeCoeffBounds();   // bound = Bound of coefficient of factors.
     // Up to 5 different prime moduli are tested to minimize the number
@@ -2045,7 +2048,8 @@ int FactorPolyOverIntegers(void)
     for (attemptNbr = 1; attemptNbr < 5; attemptNbr++)
     {
       int nbrFactors;
-      prime = getNextPrimeNoDuplicatedFactors(prime);
+      primeIndex = getNextPrimeNoDuplicatedFactors(primeIndex);
+      prime = smallPrimes[primeIndex];
       // Find expon such that prime^expon >= 2 * bound
       BigIntMultiplyBy2(&bound);
       intToBigInteger(&operand1, prime);

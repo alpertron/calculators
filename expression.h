@@ -1,8 +1,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 13 de marzo de 2021."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 13 March 2021."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 16 de marzo de 2021."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 16 March 2021."
 
 #ifdef __EMSCRIPTEN__
 int stamp(void);
@@ -44,8 +44,6 @@ enum eExprErr
   EXPR_OK = 0,
   EXPR_NOT_FOUND,
 };
-#define SMALL_PRIMES_ARRLEN           1229   // Number of primes less than 10000.
-
 #ifndef lang  
   extern int lang;
 #endif

@@ -47,7 +47,7 @@ extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR2[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 extern int NumberLength, NumberLengthR1;
-static int prime;
+static int prime, primeIndex;
 static char RPNbuffer[COMPRESSED_POLY_MAX_LENGTH];
 int values[COMPRESSED_POLY_MAX_LENGTH];
 int valuesIndex;
@@ -1364,7 +1364,9 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
   int *ptrSrc, *ptrDest, *ptrPrev;
   int potentialDegreeGcd, tmp;
   int rc;
+  initializeSmallPrimes(smallPrimes);
   prime = 65537;
+  primeIndex = 6543;
   // Get content (gcd of all coefficients).
   ptrLeadingCoeff = getContent(argF, &contentF);
   UncompressBigIntegerB(ptrLeadingCoeff, &operand3);
@@ -1395,7 +1397,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
     int degree1, degree2, degreeGcdMod;
     do
     { // Find next prime.
-      prime = nextPrime(prime);
+      prime = smallPrimes[++primeIndex];
       // Ensure that the prime does not divide the modulus or
       // the gcd of the leading coefficients.
     } while (getRemainder(&modulus, prime) == 0 ||

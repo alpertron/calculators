@@ -29,6 +29,8 @@
 #define MAX_INT_NBR ((int)((1U << BITS_PER_INT_GROUP)-1))
 #define LIMB_RANGE (1U<<BITS_PER_GROUP)
 #define SMALL_NUMBER_BOUND 32768
+#define SMALL_PRIMES_ARRLEN  9592  // Number of primes less than 100000.
+
 struct mylimb
 {
   int x;
@@ -75,6 +77,7 @@ extern int groupLen;
 extern char MontgomeryMultNCached;
 extern char TestNbrCached;
 extern limb MontgomeryMultN[MAX_LEN];
+extern int smallPrimes[SMALL_PRIMES_ARRLEN+1];
 #ifdef __EMSCRIPTEN__
 extern int percentageBPSW;
 #endif
@@ -211,7 +214,6 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
   BigInteger *temp1, BigInteger *temp2, BigInteger *temp3, BigInteger *temp4);
 void MultiplyQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
 void DivideQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
-int nextPrime(int prime);
 
 enum eExprErr BigRationalAdd(BigRational* pAddend1, BigRational* pAddend2, BigRational* pSum);
 enum eExprErr BigRationalSubt(BigRational* pAddend1, BigRational* pAddend2, BigRational* pSum);

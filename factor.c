@@ -1054,6 +1054,7 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
   int nbrs[17];
   int diffs[17];
   int i, j, m, r;
+  int nbrLimbs, nbrIterations;
   BigInteger sqrRoot, nextroot;
   BigInteger a, c, sqr, val;
   if ((nbr->limbs[0].x & 1) == 0)
@@ -1100,7 +1101,16 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
     nbrs[i] = getRemainder(&c, pr);    // nbrs[i] <- c % primes[i]
     diffs[i] = m * (getRemainder(&a, pr) * 2 + m) % pr;
   }
-  for (j = 0; j < 10000; j++)
+  nbrLimbs = factor->nbrLimbs;
+  if (nbrLimbs > 10)
+  {
+    nbrIterations = 10000;
+  }
+  else
+  {
+    nbrIterations = 1000 * factor->nbrLimbs;
+  }
+  for (j = 0; j < nbrIterations; j++)
   {
     for (i = 0; i < 17; i++)
     {
@@ -2510,6 +2520,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
   int dividend;
   char *ptrCharFound;
   int result;
+  initializeSmallPrimes(smallPrimes);
   if (toFactor->nbrLimbs == 1)
   {
     factorSmallInt(toFactor->limbs[0].x, factors, pstFactors);
@@ -2635,12 +2646,36 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
   pstCurFactor = pstFactors + 1;
   for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
   {
+    int upperBoundIndex;
     int upperBound = pstCurFactor->upperBound;
+    int delta;
     int restartFactoring = FALSE;
     // If number is prime, do not process it.
     if (upperBound == 0)
     {     // Factor is prime.
       continue;
+    }
+    // Get upperBoundIndex from upperBound.
+    upperBoundIndex = 0;
+    if (upperBound < 100000)
+    {
+      for (delta = 8192; delta > 0; delta >>= 1)
+      {
+        int tempUpperBoundIndex = upperBoundIndex + delta;
+        if (tempUpperBoundIndex >= SMALL_PRIMES_ARRLEN)
+        {           // Index too large.
+          continue;
+        }
+        if (upperBound == smallPrimes[tempUpperBoundIndex])
+        {
+          upperBoundIndex = tempUpperBoundIndex;
+          break;
+        }
+        if (upperBound > smallPrimes[tempUpperBoundIndex])
+        {
+          upperBoundIndex = tempUpperBoundIndex;
+        }
+      }
     }
     ptrFactor = pstCurFactor->ptrFactor;
     nbrLimbs = *ptrFactor;
@@ -2722,18 +2757,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
         {     // Number completely factored.
           break;
         }
-        if (upperBound == 2)
-        {
-          upperBound++;
-        }
-        else if (upperBound % 6 == 1)
-        {
-          upperBound += 4;
-        }
-        else
-        {
-          upperBound += 2;
-        }
+        upperBound = smallPrimes[++upperBoundIndex];
       }
       if (restartFactoring)
       {
@@ -2750,14 +2774,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
             restartFactoring = TRUE;
             break;
           }
-          if (upperBound == 2)
-          {
-            upperBound++;
-          }
-          else
-          {
-            upperBound += 2;
-          }
+          upperBound = smallPrimes[++upperBoundIndex];
         }
         if (restartFactoring)
         {
@@ -2884,6 +2901,13 @@ EXTERNALIZE char *getFactorsAsciiPtr(void)
   return common.saveFactors.text;
 }
 
+static void intArrayToBigInteger(int *ptrValues, BigInteger *bigint)
+{
+  bigint->sign = SIGN_POSITIVE;
+  bigint->nbrLimbs = *ptrValues;
+  memcpy(bigint->limbs, ptrValues + 1, *ptrValues * sizeof(int));
+}
+
 // Find Euler's Totient as the product of p^(e-1)*(p-1) where p=prime and e=exponent.
 void Totient(BigInteger *result)
 {
@@ -2894,14 +2918,14 @@ void Totient(BigInteger *result)
   pstFactor = &astFactorsMod[1];
   for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
-    IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
+    intArrayToBigInteger(pstFactor->ptrFactor, &factorValue);
     if (factorValue.nbrLimbs == 1 && factorValue.limbs[0].x == 1)
     {   // If factor is 1 do not do anything.
       continue;
     }
     BigIntPowerIntExp(&factorValue, pstFactor->multiplicity - 1, &TempVar);   // p^(e-1)
     BigIntMultiply(result, &TempVar, result);
-    IntArray2BigInteger(pstFactor->ptrFactor, &TempVar);
+    intArrayToBigInteger(pstFactor->ptrFactor, &TempVar);
     addbigint(&TempVar, -1);   // p-1
     BigIntMultiply(result, &TempVar, result);
     pstFactor++;
@@ -2917,14 +2941,14 @@ void MinFactor(BigInteger* result)
 {
   int factorNumber;
   struct sFactors* pstFactor = &astFactorsMod[1];
-  IntArray2BigInteger(pstFactor->ptrFactor, result);
+  intArrayToBigInteger(pstFactor->ptrFactor, result);
   for (factorNumber = 2; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
-    IntArray2BigInteger((++pstFactor)->ptrFactor, &factorValue);
+    intArrayToBigInteger((++pstFactor)->ptrFactor, &factorValue);
     BigIntSubt(&factorValue, result, &factorValue);
     if (factorValue.sign == SIGN_NEGATIVE)
     {
-      IntArray2BigInteger(pstFactor->ptrFactor, result);
+      intArrayToBigInteger(pstFactor->ptrFactor, result);
     }
   }
 }
@@ -2933,14 +2957,14 @@ void MaxFactor(BigInteger* result)
 {
   int factorNumber;
   struct sFactors* pstFactor = &astFactorsMod[1];
-  IntArray2BigInteger(pstFactor->ptrFactor, result);
+  intArrayToBigInteger(pstFactor->ptrFactor, result);
   for (factorNumber = 2; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
-    IntArray2BigInteger((++pstFactor)->ptrFactor, &factorValue);
+    intArrayToBigInteger((++pstFactor)->ptrFactor, &factorValue);
     BigIntSubt(&factorValue, result, &factorValue);
     if (factorValue.sign == SIGN_POSITIVE)
     {
-      IntArray2BigInteger(pstFactor->ptrFactor, result);
+      intArrayToBigInteger(pstFactor->ptrFactor, result);
     }
   }
 }
@@ -2954,7 +2978,7 @@ void SumOfDivisors(BigInteger *result)
   pstFactor = &astFactorsMod[1];
   for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
-    IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
+    intArrayToBigInteger(pstFactor->ptrFactor, &factorValue);
     if (factorValue.nbrLimbs == 1 && factorValue.limbs[0].x == 1)
     {   // If factor is 1 do not do anything.
       continue;
@@ -2962,7 +2986,7 @@ void SumOfDivisors(BigInteger *result)
     BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Temp1);   // p^(e+1)
     addbigint(&Temp1, -1);   // p^(e+1)-1
     BigIntMultiply(result, &Temp1, &Temp2);
-    IntArray2BigInteger(pstFactor->ptrFactor, &Temp1);
+    intArrayToBigInteger(pstFactor->ptrFactor, &Temp1);
     addbigint(&Temp1, -1);   // p-1
     BigIntDivide(&Temp2, &Temp1, result);
     pstFactor++;
@@ -2978,7 +3002,7 @@ void NumberOfDivisors(BigInteger *result)
   pstFactor = &astFactorsMod[1];
   for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
-    IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
+    intArrayToBigInteger(pstFactor->ptrFactor, &factorValue);
     if (factorValue.nbrLimbs == 1 && factorValue.limbs[0].x == 1)
     {   // If factor is 1 do not do anything.
       continue;

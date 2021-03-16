@@ -32,6 +32,10 @@ var workerParam;
 var asmjs = typeof(WebAssembly) === "undefined";
 var indexedDBSupport = ('indexedDB' in window);
 var db;
+var statusText = "";
+var resultText = "";
+var statusDirty = false;
+var resultDirty = false;
 function oneexpr()
 {
   get("next").value = (lang? "Hecho": "Done");
@@ -181,7 +185,8 @@ function callWorker(param)
       }
       else if (firstChar == "4")
       {
-        get("status").innerHTML = e.data.substring(1);
+        statusDirty = true;
+        statusText = e.data.substring(1);
       }
       else if (firstChar == "5")
       {
@@ -196,10 +201,12 @@ function callWorker(param)
       }
       else
       {
-        get("result").innerHTML = e.data.substring(1);
+        resultDirty = true;
+        resultText = e.data.substring(1);
         if (firstChar == "2" || firstChar == "6")
         {   // First character passed from web worker is "2".
-          get("status").innerHTML = "";
+          statusDirty = true;
+          statusText = "";
           styleButtons("inline", "none");  // Enable eval and factor
           get("modal-more").style.display = "none";
           if (firstChar == "6")
@@ -236,26 +243,30 @@ function dowork(n)
   res.style.display = "block";
   if (valueText == "")
   {    // Nothing in input box.
-    res.innerHTML = (lang ? "<p>Por favor ingrese una expresión.</p>" :
-                            "<p>Please type an expression.</p>");
+    resultDirty = true;
+    resultText = (lang ? "<p>Por favor ingrese una expresión.</p>" :
+                         "<p>Please type an expression.</p>");
     return;
   }
   if (typeof(Worker) === "undefined")
   {    // Web workers not supported on this browser.
-    res.innerHTML = (lang ? "<p>Esta calculadora necesita Web Workers. Por favor use otro navegador Web.</p>" :
-                            "<p>This calculator requires Web Workers. Please use another Web browser.</p>");
+    resultDirty = true;
+    resultText = (lang ? "<p>Esta calculadora necesita Web Workers. Por favor use otro navegador Web.</p>" :
+                         "<p>This calculator requires Web Workers. Please use another Web browser.</p>");
     return;
   }
   styleButtons("none", "inline");  // Enable "more" and "stop" buttons
   if (n == 0)
   {
-    res.innerHTML = (lang ? "<p>Evaluando la expresión...</p>" :
-                            "<p>Evaluating expression...</p>");
+    resultDirty = true;
+    resultText = (lang ? "<p>Evaluando la expresión...</p>" :
+                         "<p>Evaluating expression...</p>");
   }
   else
   {
-    res.innerHTML = (lang ? "<p>Factorizando la expresión...</p>" :
-                            "<p>Factoring expression...</p>");
+    resultDirty = true;
+    resultText = (lang ? "<p>Factorizando la expresión...</p>" :
+                         "<p>Factoring expression...</p>");
   }
   if (n < -2)
   {
@@ -659,10 +670,11 @@ function startUp()
     worker = 0;
     styleButtons("inline", "none");  // Enable eval and factor
     get("skip").style.display = "none";  // Hide button if it is present during factorization.
-    get("result").innerHTML =
-      (lang ? "<p>Cálculo detenido por el usuario.</p>" :
-                 "<p>Calculation stopped by user</p>");
-    get("status").innerHTML = "";
+    resultDirty = true;
+    resultText = (lang ? "<p>Cálculo detenido por el usuario.</p>" :
+                         "<p>Calculation stopped by user</p>");
+    statusDirty = true;
+    statusText = "";
   };
   get("value").onkeydown = function (event)
   {
@@ -774,6 +786,19 @@ function startUp()
       modal.style.display = "none";
     }
   };
+  setInterval(function()
+  {
+    if (resultDirty)
+    {
+      get("result").innerHTML = resultText;
+      resultDirty = false;
+    }
+    if (statusDirty)
+    {
+      get("status").innerHTML = statusText;
+      statusDirty = false;
+    }
+  }, 100);
   // Generate accordion.
   var acc = document.querySelectorAll("h2");
   var idx, x, y;

@@ -282,6 +282,7 @@ static void ComputeThreeSquares(BigInteger *pTmp,
   DivideBigNbrByMaxPowerOf4(&shRight, pTmp->limbs, &pTmp->nbrLimbs);
   for (diff = 1; ; diff++)
   {
+    int primeIndex = 0;
     int prime = 2;
     int* ptrArrFactorsBak;
     ptrArrFactors = arrFactors;
@@ -305,7 +306,7 @@ static void ComputeThreeSquares(BigInteger *pTmp,
         *ptrArrFactors++ = prime;
         *ptrArrFactors++ = expon;
       }
-      prime = nextPrime(prime);
+      prime = smallPrimes[++primeIndex];
     } while (prime < 32768);
     ptrArrFactorsBak = ptrArrFactors;
     if (prime < 32768)

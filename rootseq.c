@@ -2228,6 +2228,7 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
   }
   if (totients[0] == 0)
   {    // Table not initialized.
+    initializeSmallPrimes(smallPrimes);
     totients[0] = 1;          // indicate table initialized
     totients[2] = 1;
     totients[3] = 2;
@@ -2236,6 +2237,7 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
     for (index = 4; index <= 2*MAX_DEGREE; index++)
     {
       int prime = 2;
+      int primeIndex = 0;
       int quotient = index;
       totient = index;
       while (quotient != 1 && prime*prime <= index)
@@ -2248,7 +2250,7 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
             quotient /= prime;
           } while (quotient / prime * prime == quotient);
         }
-        prime = nextPrime(prime);
+        prime = smallPrimes[++primeIndex];
       }
       if (quotient > 1)
       {
@@ -2864,6 +2866,28 @@ static void showExplanation(int left, char* oper1, int middle, char* oper2, int 
   *ptrOutput++ = ')';
 }
 
+static int isPrime(int value)
+{
+  int divisor = 3;
+  if (value == 2)
+  {
+    return 1;
+  }
+  if ((value & 1) == 0)
+  {
+    return 0;        // Even value different from 2: composite.
+  }
+  while (divisor * divisor <= value)
+  {
+    if (value % divisor == 0)
+    {
+      return 0;      // Composite.
+    }
+    divisor += 2;
+  }
+  return 1;          // Prime value.
+}
+
 // If polynomial is S_n or A_n, indicate that the roots are not solvable.
 // Factor the polynomial modulo different primes less than 100.
 // If with the same or different factorizations, there is a factor of
@@ -2888,7 +2912,8 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
   int cyclePrGtNOver2ToLess2Found = 0;
   int cycleOddGtNOver2Found = 0;
   int cyclePrGtNOver3Found = 0;
-  int prime = 1;   // getNextPrime will increment to 2 for first prime.
+  int prime;
+  int primeIndex = -1;
   int gcdDegrees = 0;
   int currentDegree;
   int* ptrCoeff;
@@ -2970,7 +2995,8 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
     int cycle3FoundInThisFactor = 0;
     struct sFactorInfo* pstFactorInfo;
     memset(factorInfo, 0, sizeof(factorInfo));
-    prime = getNextPrimeNoDuplicatedFactors(prime);
+    primeIndex = getNextPrimeNoDuplicatedFactors(primeIndex);
+    prime = smallPrimes[primeIndex];
     FactorPolynomialModPrime(prime);
     pstFactorInfo = factorInfo;
     // Check whether there is a factor of degree 2, 3 or prime
@@ -3012,7 +3038,7 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
       }
       if (currentDegree > 3 && currentDegree > degree / 2)
       {
-        if (currentDegree == nextPrime(currentDegree - 2))
+        if (isPrime(currentDegree))
         {      // Current degree > n/2 and is prime.
           if (currentDegree < degree - 2)
           {
@@ -3054,7 +3080,7 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
       }
       else if (currentDegree > 3 && currentDegree > degree / 3)
       {
-        if (currentDegree == nextPrime(currentDegree - 2) && degree % currentDegree != 0)
+        if (isPrime(currentDegree) && degree % currentDegree != 0)
         {      // Current degree > n/3, it is prime, and it does not divide the degree.
                // Ensure that only this degree is multiple of itself.
           int nbrMultiples = 0;
