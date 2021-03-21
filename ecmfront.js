@@ -36,6 +36,8 @@ var statusText = "";
 var resultText = "";
 var statusDirty = false;
 var resultDirty = false;
+var calcURLs = ["ecmW0000.js",
+               "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-180px.png", "ecm-icon-512px.png", "favicon.ico"];
 function oneexpr()
 {
   get("next").value = (lang? "Hecho": "Done");
@@ -403,9 +405,6 @@ function endFeedback()
   get("feedback").style.display = "none";
   get("value").focus();   
 }
-
-var calcURLs = ["ecmW0000.js",
-               "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-180px.png", "ecm-icon-512px.png", "favicon.ico"];
 
 var url = window.location.pathname;
 function fillCache()
@@ -940,7 +939,8 @@ else
     length--;
   }
   fileContents=new Int8Array(length);
-  b64decode(wasm, fileContents); 
+  b64decode(wasm, fileContents);
+  calcURLs.shift();  // Do not fetch Javascript file that will not be used.
 }
 window.addEventListener("load", startUp);
 })(this);

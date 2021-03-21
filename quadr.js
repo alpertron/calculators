@@ -207,6 +207,10 @@ function b64decode(str,out)
 var calcURLs = ["quadW0000.js",
                "quad.webmanifest", "cuad.webmanifest", "quad-icon-1x.png", "quad-icon-2x.png", "quad-icon-4x.png", "quad-icon-180px.png", "quad-icon-512px.png", "favicon.ico"];
 
+if (!asmjs)
+{
+  calcURLs.shift();  // Do not fetch Javascript file that will not be used.
+}
 var url = window.location.pathname;
 function fillCache()
 {

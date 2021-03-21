@@ -127,6 +127,10 @@ else
   calcURLs = ["fsquaresW0000.js",
                "contfrac.webmanifest", "fraccont.webmanifest", "contfrac-icon-1x.png", "contfrac-icon-2x.png", "contfrac-icon-4x.png", "contfrac-icon-180px.png", "contfrac-icon-512px.png", "favicon.ico"];
 }
+if (!asmjs)
+{
+  calcURLs.shift();  // Do not fetch Javascript file that will not be used.
+}
 
 var url = window.location.pathname;
 function fillCache()

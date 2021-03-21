@@ -180,6 +180,10 @@ function b64decode(str,out)
 
 var calcURLs = ["quadmodW0000.js",
                "quadmod.webmanifest", "cuadmod.webmanifest", "quadmod-icon-1x.png", "quadmod-icon-2x.png", "quadmod-icon-4x.png", "quadmod-icon-180px.png", "quadmod-icon-512px.png", "favicon.ico"];
+if (!asmjs)
+{
+  calcURLs.shift();  // Do not fetch Javascript file that will not be used.
+}
 
 var url = window.location.pathname;
 function fillCache()

@@ -186,7 +186,10 @@ function b64decode(str,out)
 
 var calcURLs = ["polfactW0000.js",
                "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png", "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-180px.png", "polfact-icon-512px.png", "favicon.ico"];
-
+if (!asmjs)
+{
+  calcURLs.shift();  // Do not fetch Javascript file that will not be used.
+}
 var url = window.location.pathname;
 function fillCache()
 {
