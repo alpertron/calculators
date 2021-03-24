@@ -2766,7 +2766,8 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
       if (nbrLimbs == 1)
       {
         dividend = *(ptrFactor + 1);
-        while ((unsigned int)upperBound*(unsigned int)upperBound <= (unsigned int)dividend)
+        while (upperBound < 65535 &&
+                (unsigned int)upperBound * (unsigned int)upperBound <= (unsigned int)dividend)
         {              // Trial division by small numbers.
           if (dividend % upperBound == 0)
           {            // Factor found.
