@@ -667,11 +667,11 @@ function startUp()
   {
     worker.terminate();
     worker = 0;
-    styleButtons("inline", "none");  // Enable eval and factor
+    styleButtons("inline", "none");      // Enable eval and factor
     get("skip").style.display = "none";  // Hide button if it is present during factorization.
     resultDirty = true;
-    resultText = (lang ? "<p>Cálculo detenido por el usuario.</p>" :
-                         "<p>Calculation stopped by user</p>");
+    resultText += (lang ? "<p>Cálculo detenido por el usuario.</p>" :
+                          "<p>Calculation stopped by user</p>");
     statusDirty = true;
     statusText = "";
   };
