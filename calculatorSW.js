@@ -21,7 +21,7 @@ var cacheName = "newCache";
 // Do not cache anything in advance.
 self.addEventListener("install", function(event)
 {
-  skipWaiting();
+  self.skipWaiting();
 });
 
 function fetchedFromNetwork(response)

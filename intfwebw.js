@@ -17,48 +17,6 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 var exports, HEAPU8, wasmLoaded;
-var env =
-{
-  "databack": function(data)
-  {
-    self.postMessage(ptrToString(data));
-  },
-  "tenths": function()
-  {
-    return Math.floor(new Date().getTime() / 100);
-  }
-};
-
-var info =
-{
-  "env": env
-};  
-
-self.onmessage = function (e)
-{
-  var request;
-  if (wasmLoaded)
-  {
-    convertToString(exports["getInputStringPtr"](), e.data[0]);
-    exports["doWork"]();
-    return;  
-  }
-  WebAssembly["instantiate"](e.data[1], info).then(function(results)
-  {
-    wasmLoaded = 1;
-    exports = results["instance"]["exports"];
-    HEAPU8 = new Uint8Array(exports["memory"]["buffer"]);
-    convertToString(exports["getInputStringPtr"](), e.data[0]);
-    try
-    {
-      exports["doWork"]();
-    } catch (err)
-	{
-      self.postMessage("2<p>"+err.message+"</p>");
-	}
-    return;
-  });
-};
 
 function ptrToString(ptr)
 {
@@ -107,3 +65,46 @@ function convertToString(ptr, str)
   }
   HEAPU8[dest >> 0] = 0;
 }
+
+var env =
+{
+  "databack": function(data)
+  {
+    self.postMessage(ptrToString(data));
+  },
+  "tenths": function()
+  {
+    return Math.floor(new Date().getTime() / 100);
+  }
+};
+
+var info =
+{
+  "env": env
+};  
+
+self.onmessage = function (e)
+{
+  var request;
+  if (wasmLoaded)
+  {
+    convertToString(exports["getInputStringPtr"](), e.data[0]);
+    exports["doWork"]();
+    return;  
+  }
+  WebAssembly["instantiate"](e.data[1], info).then(function(results)
+  {
+    wasmLoaded = 1;
+    exports = results["instance"]["exports"];
+    HEAPU8 = new Uint8Array(exports["memory"]["buffer"]);
+    convertToString(exports["getInputStringPtr"](), e.data[0]);
+    try
+    {
+      exports["doWork"]();
+    } catch (err)
+    {
+      self.postMessage("2<p>"+err.message+"</p>");
+    }
+    return;
+  });
+};

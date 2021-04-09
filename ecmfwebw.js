@@ -90,7 +90,7 @@ var info =
   {
     var req = new XMLHttpRequest();
     // Web worker protocol is blob:, so we need to change that to https: as appropriate.
-    req.open('GET', "https://www.alpertron.com.ar/"+ptrToString(data), false);
+    req.open("GET", "https://www.alpertron.com.ar/"+ptrToString(data), false);
     req.send(null);
     if (req.status === 200)
     {
