@@ -120,8 +120,8 @@ function test1(complete)
         cityTo = Math.floor(Math.random()*cityData.length);
       } while (cityFrom === cityTo);
     }
-    get("ord1").innerHTML = ordinal[questionNbr - 1];
-    get("score1").innerHTML = score + " " + pointText + (score === 1?"":"s");
+    get("ord1").textContent = ordinal[questionNbr - 1];
+    get("score1").textContent = score + " " + pointText + (score === 1?"":"s");
   }
   else
   {      // Query distance between two cities.
@@ -150,52 +150,100 @@ function test1(complete)
   {
     playerDist = parseInt(get("dist1").value);
     trueDist = getDistance(LatFrom, LongFrom, LatTo, LongTo);
-    get("dist12_1").innerHTML = playerDist + " " + kmText + (playerDist===1?"":"s");
-    get("dist12_2").innerHTML = get("dist12_3").innerHTML = trueDist + " " + kmText + (trueDist===1?"":"s");
+    get("dist12_1").textContent = playerDist + " " + kmText + (playerDist===1?"":"s");
+    get("dist12_2").textContent = get("dist12_3").textContent = trueDist + " " + kmText + (trueDist===1?"":"s");
     cityNameFrom = getCityName(cityFrom, false);  // Do not append country name.
     cityNameTo = getCityName(cityTo, false);
     SetTextToClass(cityNameFrom, "city_from");
     SetTextToClass(cityNameTo, "city_to");
-    get("dirdeg1").innerHTML = getDirection(LatFrom, LongFrom, LatTo, LongTo);
-    get("dirdeg2").innerHTML = getDirection(LatTo, LongTo, LatFrom, LongFrom);
-    get("sun_from_0621").innerHTML = getDaytime(-LatFrom, LongFrom);
-    get("sun_from_1221").innerHTML = getDaytime(LatFrom, LongFrom);
-    get("sun_to_0621").innerHTML = getDaytime(-LatTo, LongFrom);
-    get("sun_to_1221").innerHTML = getDaytime(LatTo, LongFrom);
+    get("dirdeg1").textContent = getDirection(LatFrom, LongFrom, LatTo, LongTo);
+    get("dirdeg2").textContent = getDirection(LatTo, LongTo, LatFrom, LongFrom);
+    get("sun_from_0621").textContent = getDaytime(-LatFrom, LongFrom);
+    get("sun_from_1221").textContent = getDaytime(LatFrom, LongFrom);
+    get("sun_to_0621").textContent = getDaytime(-LatTo, LongFrom);
+    get("sun_to_1221").textContent = getDaytime(LatTo, LongFrom);
     if (questionNbr != 0)
     {
       partialScore = Math.round(100 - 100 * Math.abs(Math.log(trueDist/playerDist)));
       if (partialScore < 0) partialScore = 0;
-      if (partialScore === 100) Interpretation = parcInterp[0];
-      else if (partialScore > 94) Interpretation = parcInterp[1];
-      else if (partialScore > 89) Interpretation = parcInterp[2];
-      else if (partialScore > 79) Interpretation = parcInterp[3];
-      else if (partialScore > 69) Interpretation = parcInterp[4];
-      else if (partialScore > 59) Interpretation = parcInterp[5];
-      else if (partialScore > 39) Interpretation = parcInterp[6];
-      else if (partialScore > 19) Interpretation = parcInterp[7];
-      else Interpretation = parcInterp[8];
-      get("score2").innerHTML = partialScore;
+      if (partialScore === 100)
+      {
+        Interpretation = parcInterp[0];
+      }
+      else if (partialScore > 94)
+      {
+        Interpretation = parcInterp[1];
+      }
+      else if (partialScore > 89)
+      {
+        Interpretation = parcInterp[2];
+      }
+      else if (partialScore > 79)
+      {
+        Interpretation = parcInterp[3];
+      }
+      else if (partialScore > 69)
+      {
+        Interpretation = parcInterp[4];
+      }
+      else if (partialScore > 59)
+      {
+        Interpretation = parcInterp[5];
+      }      
+      else if (partialScore > 39)
+      {
+        Interpretation = parcInterp[6];
+      }
+      else if (partialScore > 19)
+      {
+        Interpretation = parcInterp[7];
+      }
+      else
+      {
+        Interpretation = parcInterp[8];
+      }
+      get("score2").textContent = partialScore;
       score += partialScore;
-      get("parcInter").innerHTML = Interpretation;
-      get("score3").innerHTML = score;
+      get("parcInter").textContent = Interpretation;
+      get("score3").textContent = score;
       if (questionNbr == 10)
       {
-        if (score > 949) Interpretation = finalInterp[0];
-        else if (score > 899) Interpretation = finalInterp[1];
-        else if (score > 799) Interpretation = finalInterp[2];
-        else if (score > 699) Interpretation = finalInterp[3];
-        else if (score > 599) Interpretation = finalInterp[4];
-        else if (score > 399) Interpretation = finalInterp[5];
-        else Interpretation = finalInterp[6];
-        get("finalInter").innerHTML = Interpretation;
+        if (score > 949)
+        {
+          Interpretation = finalInterp[0];
+        }
+        else if (score > 899)
+        {
+          Interpretation = finalInterp[1];
+        }
+        else if (score > 799)
+        {
+          Interpretation = finalInterp[2];
+        }
+        else if (score > 699)
+        {
+          Interpretation = finalInterp[3];
+        }
+        else if (score > 599)
+        {
+          Interpretation = finalInterp[4];
+        }
+        else if (score > 399)
+        {
+          Interpretation = finalInterp[5];
+        }
+        else
+        {
+          Interpretation = finalInterp[6];
+        }
+        get("finalInter").textContent = Interpretation;
         get("finalInter").style.display = "block";
-        get("scoreType").innerHTML = finalText;
+        get("scoreType").textContent = finalText;
       }
       else
       {
         get("finalInter").style.display = "none";
-        get("scoreType").innerHTML = currentText;
+        get("scoreType").textContent = currentText;
       }
       questionNbr++;
       test11 = document.getElementsByClassName("test1_1");
@@ -320,7 +368,7 @@ function test2()
   var idx, innerIdx, randomValue;
   
   ClearScreen();
-  get("ord2").innerHTML = ordinal[questionNbr - 1];
+  get("ord2").textContent = ordinal[questionNbr - 1];
   for (idx=0; idx<6; idx++)
   {
     do
@@ -335,9 +383,9 @@ function test2()
       }
     } while (idx != innerIdx);
     cityIdx[idx] = randomValue;
-    get("city"+(idx+1)).innerHTML = getCityName(randomValue, withCountries);
+    get("city"+(idx+1)).textContent = getCityName(randomValue, withCountries);
   }
-  get("score4").innerHTML = score + " " + pointText + (score == 1?"":"s");
+  get("score4").textContent = score + " " + pointText + (score == 1?"":"s");
   get("order").value = "";
   get("test2").style.display="block";
 }
@@ -401,7 +449,7 @@ function ShowResultsTest2(playerInput)
     {
       text += getCityName(cityIdx[parseInt(combination.substring(k, k+1), 10)], withCountries) + " &rarr; ";
     }
-	parcScore = Math.round((1-j/23)*(1-j/23)*100);
+    parcScore = Math.round((1-j/23)*(1-j/23)*100);
     text += getCityName(cityIdx[5], withCountries) + ": "+ arrayDistComb[j] + " km (" + parcScore + " " + pointText +(parcScore == 1?"":"s") + ")";
   }
   text += "</ol>";
@@ -409,9 +457,9 @@ function ShowResultsTest2(playerInput)
   parcScore = Math.round((1-position/23)*(1-position/23)*100);
   score += parcScore;
   questionNbr++;
-  get("option").innerHTML = position + 1;
-  get("score5").innerHTML = parcScore + " " + pointText + (parcScore == 1?"":"s");
-  get("score6").innerHTML = score;
+  get("option").textContent = position + 1;
+  get("score5").textContent = parcScore + " " + pointText + (parcScore == 1?"":"s");
+  get("score6").textContent = score;
   get("nextq2").style.display = (questionNbr>10? "none": "inline");
   get("test2").style.display = "none";
   get("test2_2").style.display = "block";

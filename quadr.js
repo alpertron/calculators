@@ -212,6 +212,27 @@ if (!asmjs)
   calcURLs.shift();  // Do not fetch Javascript file that will not be used.
 }
 var url = window.location.pathname;
+function updateCache(cache)
+{
+  caches.open("cacheECM").then(function(tempCache)
+  {
+    tempCache.addAll([url].concat(calcURLs)).then(function()
+    {     // Copy cached resources to main cache and delete this one.
+      tempCache.matchAll().then(function(responseArr)
+      {   // All responses in array responseArr.
+        responseArr.forEach(function(responseTempCache, index, array)
+        {
+          cache.put(responseTempCache.url, responseTempCache);
+        });
+      })
+      .finally(function()
+      {
+        caches.delete("cacheECM");
+      });
+    });  
+  });
+}
+
 function fillCache()
 {
   // Test whether the HTML is already on the cache.
@@ -221,7 +242,7 @@ function fillCache()
     {
       if (response === undefined)
       {     // HTML is not in cache.
-        UpdateCache(cache);
+        updateCache(cache);
       }
       else
       {     // Response is the HTML contents.
@@ -283,32 +304,11 @@ function fillCache()
           })
           .catch (function()     // Cannot fetch HTML.
           {
-            UpdateCache(cache);
+            updateCache(cache);
           });
         })
       }
     });
-  });
-}
-
-function UpdateCache(cache)
-{
-  caches.open("cacheECM").then(function(tempCache)
-  {
-    tempCache.addAll([url].concat(calcURLs)).then(function()
-    {     // Copy cached resources to main cache and delete this one.
-      tempCache.matchAll().then(function(responseArr)
-      {   // All responses in array responseArr.
-        responseArr.forEach(function(responseTempCache, index, array)
-        {
-          cache.put(responseTempCache.url, responseTempCache);
-        });
-      })
-      .finally(function()
-      {
-        caches.delete("cacheECM");
-      });
-    });  
   });
 }
 

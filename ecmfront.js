@@ -429,7 +429,7 @@ function fillCache()
           {
             return;        // HTML could not be retrieved, so go out.
           }
-          if (date == responseHTML.headers.get("last-modified"))
+          if (date === responseHTML.headers.get("last-modified"))
           {
             return;        // HTML has not changed, so other files have not been changed. Go out.
           }
@@ -452,9 +452,9 @@ function fillCache()
                     {
                       keys.forEach(function(requestCache, index, array)
                       {    // Traverse cache.
-                        if (requestCache.url.substring(0, indexZero+2) == urlTemp.substring(0, indexZero+2) &&
-                            requestCache.url.substring(indexZero+2, indexZero+4) != urlTemp.substring(indexZero+2, indexZero+4) &&
-                            requestCache.url.substring(indexZero+4) == urlTemp.substring(indexZero+4))
+                        if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
+                            requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
+                            requestCache.url.substring(indexZero+4) === urlTemp.substring(indexZero+4))
                         {  // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
                           cache.delete(requestCache);
                         }  
@@ -529,10 +529,10 @@ function startUp()
   get("config").onclick = function ()
   {
     get("digits").value = digits;
-    get("verbose").checked = (config.substr(1,1)=="1");
-    get("pretty").checked = (config.substr(2,1)=="1");
-    get("cunnin").checked = (config.substr(3,1)=="1");  
-    get("hex").checked = (config.substr(4,1)=="1");
+    get("verbose").checked = (config.substr(1,1) === "1");
+    get("pretty").checked = (config.substr(2,1) === "1");
+    get("cunnin").checked = (config.substr(3,1) === "1");  
+    get("hex").checked = (config.substr(4,1) === "1");
     get("modal-config").style.display = "block";
   };
   get("openwizard").onclick = function ()
@@ -544,23 +544,23 @@ function startUp()
     get("next").disabled = true;
     get("wzdinput").value = "";
     get("wzdinput").focus();
-    get("hexW").checked = (config.substr(4,1)=="1");
-    get("decW").checked = (config.substr(4,1)!="1");
+    get("hexW").checked = (config.substr(4,1) === "1");
+    get("decW").checked = (config.substr(4,1) !== "1");
     oneexpr();
   };
   get("wzdinput").onkeydown = function (event)
   {
-    if (event.keyCode == 10 || event.keyCode == 13)
+    if (event.keyCode === 10 || event.keyCode === 13)
     {
       event.preventDefault();          // Do not propagate Enter key.
-      if (get("next").disabled == false)
+      if (!get("next").disabled)
       {                                // Next button is not disabled.
         wizardNext();                  // Perform same operation as if the user had pressed Next button.
       }
     }
     if (event.altKey)
     {                                  // User pressed ALT key.
-      if (event.keyCode == 80)
+      if (event.keyCode === 80)
       {                                // User pressed ALT-P.
         event.preventDefault();        // Do not propagate key.
         if (get("oneexpr").checked)
@@ -576,13 +576,13 @@ function startUp()
           oneexpr();
         }
       }
-      else if (event.keyCode == 68)
+      else if (event.keyCode === 68)
       {                                // User pressed ALT-D.
         event.preventDefault();        // Do not propagate key.
         get("decW").checked = true;
         get("hexW").checked = false;
       }
-      else if (event.keyCode == 72)
+      else if (event.keyCode === 72)
       {                                // User pressed ALT-H.
         event.preventDefault();        // Do not propagate key.
         get("decW").checked = false;
@@ -609,7 +609,8 @@ function startUp()
     var nextBtn = get("next");
     if (inputValue != "")
     {         // User typed something on input box.
-      if (wizardStep == 1 || wizardStep == 9 || (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
+      if (wizardStep === 1 || wizardStep === 9 ||
+          (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
           inputValue.lastIndexOf("X") >= 0 || inputValue.lastIndexOf("C") >= 0))
       {       // At least one x or c. Indicate valid.
         nextBtn.disabled = false;
@@ -619,7 +620,7 @@ function startUp()
         nextBtn.disabled = true;
       }
     }
-    else if (wizardStep == 5)
+    else if (wizardStep === 5)
     {         // Last step is optional, so empty input is valid.
       nextBtn.disabled = false;
     }
@@ -661,7 +662,7 @@ function startUp()
   };
   get("curve").onkeypress = function(event)
   {
-    return (event.charCode == 8 || event.charCode == 0) ? null : event.charCode >= 48 && event.charCode <= 57;
+    return (event.charCode === 8 || event.charCode === 0) ? null : event.charCode >= 48 && event.charCode <= 57;
   };
   get("stop").onclick = function ()
   {
@@ -677,7 +678,7 @@ function startUp()
   };
   get("value").onkeydown = function (event)
   {
-    if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey)
+    if ((event.keyCode === 10 || event.keyCode === 13) && event.ctrlKey)
     {
       event.preventDefault();          // Do not propagate Enter key.
       setStorage("ecmFactors","");     // Perform factorization.
@@ -692,7 +693,7 @@ function startUp()
     var helphelpStyle = get("helphelp").style;
     var result = get("result");
     var resultStyle = result.style;
-    if (helpStyle.display == "block" && result.innerHTML != "")     
+    if (helpStyle.display === "block" && result.innerHTML !== "")     
     {
       helpStyle.display = "none";
       helphelpStyle.display = resultStyle.display = "block";
@@ -739,9 +740,9 @@ function startUp()
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function (event)
     {
-      if (xhr.readyState == 4) 
+      if (xhr.readyState === 4) 
       {             // XHR finished.
-        if (xhr.status == 200)
+        if (xhr.status === 200)
         {           // PHP page loaded.
           alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
         }
@@ -760,7 +761,7 @@ function startUp()
     for (var i = 0; i < elements.length; i++)
     {
       var element = elements[i];
-      if (element.type == "radio" && element.checked == false)
+      if (element.type === "radio" && !element.checked)
       {
         continue;
       }
@@ -780,7 +781,7 @@ function startUp()
   window.onclick = function(event)
   {
     var modal = get("modal");
-    if (event.target == modal)
+    if (event.target === modal)
     {
       modal.style.display = "none";
     }
@@ -858,7 +859,7 @@ function startUp()
   ctx.fillText("y",5,150);
   ctx.fillText("x",160,308);  
   digits = getStorage("ecmConfig");
-  if (digits == null || digits == "")
+  if (digits === null || digits === "")
   {
     digits = 6;
     config = "00100";
@@ -881,7 +882,7 @@ function startUp()
         config += "0";
       }
       digits = digits.substr(0,index);
-      updateVerbose(config.substr(1,1) == "1");
+      updateVerbose(config.substr(1,1) === "1");
     }
   }
   ecmFactor = getStorage("ecmFactors");
@@ -907,7 +908,7 @@ if (asmjs)
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (aEvt)
   {
-    if (req.readyState == 4 && req.status == 200)
+    if (req.readyState === 4 && req.status === 200)
     {
       fileContents = /** @type {ArrayBuffer} */ (req.response);
       if (workerParam)
