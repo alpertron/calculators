@@ -12,18 +12,18 @@ mergeInto(LibraryManager.library,
 
       result.length = 0;
 
-      while (HEAPU8[offset] !== 0)
+      while (HEAPU8[offset >> 0] !== 0)
       {
-        byte1 = HEAPU8[offset++];
+        byte1 = HEAPU8[(offset++) >> 0];
         if (byte1 <= 0x7F)
         {
           codePt = byte1;
         }
         else if (byte1 <= 0xDF)
         {
-          codePt = ((byte1 & 0x1F) << 6) | (HEAPU8[offset++] & 0x3F);
+          codePt = ((byte1 & 0x1F) << 6) | (HEAPU8[(offset++) >> 0] & 0x3F);
         }
-        result.push(charCache[codePt] || (charCache[codePt] = charFromCodePt(codePt)));
+        result.push(charCache[codePt >> 0] || (charCache[codePt >> 0] = charFromCodePt(codePt)));
       }
       return result.join("");
     }
@@ -57,18 +57,18 @@ mergeInto(LibraryManager.library,
  
       result.length = 0;
 
-      while (HEAPU8[offset] !== 0)
+      while (HEAPU8[offset >> 0] !== 0)
       {
-        byte1 = HEAPU8[offset++];
+        byte1 = HEAPU8[(offset++) >> 0];
         if (byte1 <= 0x7F)
         {
           codePt = byte1;
         }
         else if (byte1 <= 0xDF)
         {
-          codePt = ((byte1 & 0x1F) << 6) | (HEAPU8[offset++] & 0x3F);
+          codePt = ((byte1 & 0x1F) << 6) | (HEAPU8[(offset++) >> 0] & 0x3F);
         }
-        result.push(charCache[codePt] || (charCache[codePt] = charFromCodePt(codePt)));
+        result.push(charCache[codePt >> 0] || (charCache[codePt >> 0] = charFromCodePt(codePt)));
       }
       return result.join("");
     }

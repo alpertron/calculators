@@ -261,15 +261,15 @@ function b64decode(str,out)
   blocks=len & (-4);
   for (ch = 65; ch <= 90; ch++)   // A - Z
   {
-    conv[ch] = ch - 65;
+    conv[ch >> 0] = ch - 65;
   }
   for (ch = 97; ch <= 122; ch++)  // a - z
   {
-    conv[ch] = ch - 71;
+    conv[ch >> 0] = ch - 71;
   }
   for (ch = 48; ch <= 57; ch++)   // 0 - 9
   {
-    conv[ch] = ch + 4;
+    conv[ch >> 0] = ch + 4;
   }
   conv[43] = 62;                  // +
   conv[33] = 63;                  // !
@@ -280,9 +280,9 @@ function b64decode(str,out)
     byte2 = conv[str.charCodeAt(idxSrc+2)];
     byte3 = conv[str.charCodeAt(idxSrc+3)];
     
-    out[idxDest] = (byte0<<2) + (byte1>>4);
-    out[idxDest+1] = (byte1<<4) + (byte2>>2);
-    out[idxDest+2] = (byte2<<6) + byte3;
+    out[idxDest >> 0] = (byte0<<2) + (byte1>>4);
+    out[(idxDest+1) >> 0] = (byte1<<4) + (byte2>>2);
+    out[(idxDest+2) >> 0] = (byte2<<6) + byte3;
   }
   left_over = len & 3;
   if (left_over === 2)
@@ -290,8 +290,8 @@ function b64decode(str,out)
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
     
-    out[idxDest] = (byte0<<2) + (byte1>>4);
-    out[idxDest+1] = byte1<<4;
+    out[idxDest >> 0] = (byte0<<2) + (byte1>>4);
+    out[(idxDest+1) >> 0] = byte1<<4;
   }
   else if (left_over === 3)
   {
@@ -299,9 +299,9 @@ function b64decode(str,out)
     byte1 = conv[str.charCodeAt(idxSrc+1)];
     byte2 = conv[str.charCodeAt(idxSrc+2)];
     
-    out[idxDest] = (byte0<<2) + (byte1>>4);
-    out[idxDest+1] = (byte1<<4) + (byte2>>2);
-    out[idxDest+2] = byte2<<6;
+    out[idxDest >> 0] = (byte0<<2) + (byte1>>4);
+    out[(idxDest+1) >> 0] = (byte1<<4) + (byte2>>2);
+    out[(idxDest+2) >> 0] = byte2<<6;
   }
 }
 
@@ -434,7 +434,7 @@ window.onload = function ()
     var useAmp = 0;
     for (var i = 0; i < elements.length; i++)
     {
-      var element = elements[i];
+      var element = elements[i >> 0];
       if (element.type === "radio" && !element.checked)
       {
         continue;

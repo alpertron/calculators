@@ -8,15 +8,15 @@ function convertToString(ptr, str)
     t = str.charCodeAt(i);
     if (t<128)
     {
-      HEAPU8[dest++] = t;
+      HEAPU8[(dest++) >> 0] = t;
     }
     else
     {
-      HEAPU8[dest++] = (t >> 6) + 192;
-      HEAPU8[dest++] = (t & 63) + 128;
+      HEAPU8[(dest++) >> 0] = (t >> 6) + 192;
+      HEAPU8[(dest++) >> 0] = (t & 63) + 128;
     }
   }
-  HEAPU8[dest] = 0;
+  HEAPU8[dest >> 0] = 0;
 }
 
 Module =

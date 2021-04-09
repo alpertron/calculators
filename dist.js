@@ -35,6 +35,8 @@ var Longitude = [];
 var cityIdx = [];
 var Rad = Math.PI/(180 * 60); // Minutes to radians
 var cityFrom, cityTo;
+var southText, westText;
+var northText, eastText;
 function get(x)
 {
   return document.getElementById(x);

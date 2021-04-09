@@ -1291,9 +1291,9 @@ function updateSpiral(input, nbr)
   {
     for (idx=0; idx<value.length; idx++)  
     {
-      HEAP8[11000000+idx] = value.charCodeAt(idx);
+      HEAP8[(11000000+idx) >> 0] = value.charCodeAt(idx);
     }
-    HEAP8[11000000+idx] = 0;
+    HEAP8[(11000000+idx) >> 0] = 0;
   }
   var width = getWidth();
   var height = getHeight();
@@ -1344,21 +1344,21 @@ function b64decode(str, out)
   blocks = len & -4;
   for (idxDest=0,idxSrc=0; idxSrc < blocks; idxDest += 3,idxSrc += 4)
   {
-    out[idxDest] = (charDecode(str.charCodeAt(idxSrc)) << 2) + ((charDecode(str.charCodeAt(idxSrc+1)) & 0x30) >> 4);
-    out[idxDest+1] = (charDecode(str.charCodeAt(idxSrc+1)) << 4) + (charDecode(str.charCodeAt(idxSrc+2)) >> 2);
-    out[idxDest+2] = (charDecode(str.charCodeAt(idxSrc+2)) << 6) + charDecode(str.charCodeAt(idxSrc+3));
+    out[idxDest >> 0] = (charDecode(str.charCodeAt(idxSrc)) << 2) + ((charDecode(str.charCodeAt(idxSrc+1)) & 0x30) >> 4);
+    out[(idxDest+1) >> 0] = (charDecode(str.charCodeAt(idxSrc+1)) << 4) + (charDecode(str.charCodeAt(idxSrc+2)) >> 2);
+    out[(idxDest+2) >> 0] = (charDecode(str.charCodeAt(idxSrc+2)) << 6) + charDecode(str.charCodeAt(idxSrc+3));
   }
   left_over = len & 3;
   if (left_over === 2)
   {
-    out[idxDest] = (charDecode(str.charCodeAt(idxSrc)) << 2) + ((charDecode(str.charCodeAt(idxSrc+1)) & 0x30) >> 4);
-    out[idxDest+1] = (charDecode(str.charCodeAt(idxSrc+1)) << 4);
+    out[idxDest >> 0] = (charDecode(str.charCodeAt(idxSrc)) << 2) + ((charDecode(str.charCodeAt(idxSrc+1)) & 0x30) >> 4);
+    out[(idxDest+1) >> 0] = (charDecode(str.charCodeAt(idxSrc+1)) << 4);
   }
   else if (left_over === 3)
   {
-    out[idxDest] = (charDecode(str.charCodeAt(idxSrc)) << 2) + ((charDecode(str.charCodeAt(idxSrc+1)) & 0x30) >> 4);
-    out[idxDest+1] = (charDecode(str.charCodeAt(idxSrc+1)) << 4) + (charDecode(str.charCodeAt(idxSrc+2)) >> 2);
-    out[idxDest+2] = charDecode(str.charCodeAt(idxSrc+2)) << 6;
+    out[idxDest >> 0] = (charDecode(str.charCodeAt(idxSrc)) << 2) + ((charDecode(str.charCodeAt(idxSrc+1)) & 0x30) >> 4);
+    out[(idxDest+1) >> 0] = (charDecode(str.charCodeAt(idxSrc+1)) << 4) + (charDecode(str.charCodeAt(idxSrc+2)) >> 2);
+    out[(idxDest+2) >> 0] = charDecode(str.charCodeAt(idxSrc+2)) << 6;
   }
 }
 
