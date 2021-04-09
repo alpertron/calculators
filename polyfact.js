@@ -378,7 +378,7 @@ window.onload = function ()
     var useAmp = 0;
     for (var i = 0; i < elements.length; i++)
     {
-      var element = elements[i];
+      var element = elements[i >> 0];
       if (element.type === "radio" && !element.checked)
       {
         continue;
@@ -403,7 +403,7 @@ window.onload = function ()
 
   for (idx = 0; idx < acc.length; idx++)
   {
-    acc[idx].addEventListener("click", function()
+    acc[idx >> 0].addEventListener("click", function()
     {
     // "active" means that panel is being displayed.
       this.children[0].classList.toggle("active");

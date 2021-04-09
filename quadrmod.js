@@ -357,7 +357,7 @@ function UpdateCache(cache)
       var useAmp = 0;
       for (var i = 0; i < elements.length; i++)
       {
-        var element = elements[i];
+        var element = elements[i >> 0];
         if (element.type === "radio" && !element.checked)
         {
           continue;
