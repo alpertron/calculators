@@ -46,7 +46,7 @@ function clearScreen()
   var index;
   for (index=0; index<donotshow.length; index++)
   {
-    donotshow[parseInt(index)].style.display = "none";
+    donotshow[parseInt(index, 10)].style.display = "none";
   }
   get("mainmenu").style.display = "none";
   get("help").style.display = "none";
@@ -65,7 +65,7 @@ function setTextToClass(text, className)
   var index;
   for (index=0; index<elems.length; index++)
   {
-    elems[parseInt(index)].innerHTML = text;
+    elems[parseInt(index, 10)].innerHTML = text;
   }
 }
 
@@ -73,11 +73,11 @@ function getCityName(cityIndex, withCountries)
 {
   if (withCountries)
   {
-    return cityName[parseInt(cityIndex)]+" ("+countryName[parseInt(cityIndex)]+")";
+    return cityName[parseInt(cityIndex, 10)]+" ("+countryName[parseInt(cityIndex, 10)]+")";
   }
   else
   {
-    return cityName[parseInt(cityIndex)];
+    return cityName[parseInt(cityIndex, 10)];
   }
 }
 
@@ -103,7 +103,7 @@ function test1(complete)
         cityTo = Math.floor(Math.random()*cityData.length);
       } while (cityFrom === cityTo);
     }
-    get("ord1").textContent = ordinal[parseInt(questionNbr - 1)];
+    get("ord1").textContent = ordinal[parseInt(questionNbr - 1, 10)];
     get("score1").textContent = score + " " + pointText + (score === 1?"":"s");
   }
   else
@@ -113,25 +113,25 @@ function test1(complete)
   }
   cityNameFrom = getCityName(cityFrom, withCountries || questionNbr === 0);
   cityNameTo = getCityName(cityTo, withCountries || questionNbr === 0);
-  LatFrom = Latitude[parseInt(cityFrom)];
-  LongFrom = Longitude[parseInt(cityFrom)];
-  LatTo = Latitude[parseInt(cityTo)];
-  LongTo = Longitude[parseInt(cityTo)];
+  LatFrom = Latitude[parseInt(cityFrom, 10)];
+  LongFrom = Longitude[parseInt(cityFrom, 10)];
+  LatTo = Latitude[parseInt(cityTo, 10)];
+  LongTo = Longitude[parseInt(cityTo, 10)];
   setTextToClass(cityNameFrom, "cityctry_from");
   setTextToClass(cityNameTo, "cityctry_to");
   show = document.getElementsByClassName(questionNbr === 0?"findDist": "notFindDist");
   for (index=0; index<show.length; index++)
   {
-    show[parseInt(index)].style.display = "block";
+    show[parseInt(index, 10)].style.display = "block";
   }
   show = document.getElementsByClassName(questionNbr === 0?"notFindDist": "findDist");
   for (index=0; index<show.length; index++)
   {
-    show[parseInt(index)].style.display = "none";
+    show[parseInt(index, 10)].style.display = "none";
   }
   if (complete)
   {
-    playerDist = parseInt(get("dist1").value);
+    playerDist = parseInt(get("dist1").value, 10);
     trueDist = getDistance(LatFrom, LongFrom, LatTo, LongTo);
     get("dist12_1").textContent = playerDist + " " + kmText + (playerDist===1?"":"s");
     get("dist12_2").textContent = get("dist12_3").textContent = trueDist + " " + kmText + (trueDist===1?"":"s");
@@ -232,12 +232,12 @@ function test1(complete)
       test11 = document.getElementsByClassName("test1_1");
       for (index=0; index<test11.length; index++)
       {
-        test11[parseInt(index)].style.display="none";
+        test11[parseInt(index, 10)].style.display="none";
       }
       test12 = document.getElementsByClassName("test1_2");
       for (index=0; index<test12.length; index++)
       {
-        test12[parseInt(index)].style.display="block";
+        test12[parseInt(index, 10)].style.display="block";
       }
       get("nextq").style.display = (questionNbr>10? "none": "inline");
     }
@@ -247,12 +247,12 @@ function test1(complete)
     test11 = document.getElementsByClassName("test1_1");
     for (index=0; index<test11.length; index++)
     {
-      test11[parseInt(index)].style.display="block";
+      test11[parseInt(index, 10)].style.display="block";
     }
     test12 = document.getElementsByClassName("test1_2");
     for (index=0; index<test12.length; index++)
     {
-      test12[parseInt(index)].style.display="none";
+      test12[parseInt(index, 10)].style.display="none";
     }
   }
   get("test1").style.display="block";
@@ -314,7 +314,7 @@ function getDirection(Lat1, Lon1, Lat2, Lon2)
     }
   }
   AngAux = (Angle + 348) % 360;
-  return Angle + " " + degreeText + (Angle===1?"":"s") + " (" + direction[parseInt(Math.floor(AngAux/22.5))] + ")";
+  return Angle + " " + degreeText + (Angle===1?"":"s") + " (" + direction[parseInt(Math.floor(AngAux/22.5), 10)] + ")";
 }
 
 function getDaytime(Lat, Lon)
@@ -351,7 +351,7 @@ function test2()
   var idx, innerIdx, randomValue;
   
   clearScreen();
-  get("ord2").textContent = ordinal[parseInt(questionNbr - 1)];
+  get("ord2").textContent = ordinal[parseInt(questionNbr - 1, 10)];
   for (idx=0; idx<6; idx++)
   {
     do
@@ -359,13 +359,13 @@ function test2()
       randomValue = Math.floor(Math.random()*cityData.length);
       for (innerIdx=0; innerIdx<idx; innerIdx++)
       {
-        if (cityIdx[parseInt(innerIdx)] === randomValue)
+        if (cityIdx[parseInt(innerIdx, 10)] === randomValue)
         {
           break;    
         }
       }
     } while (idx !== innerIdx);
-    cityIdx[parseInt(idx)] = randomValue;
+    cityIdx[parseInt(idx, 10)] = randomValue;
     get("city"+(idx+1)).textContent = getCityName(randomValue, withCountries);
   }
   get("score4").textContent = score + " " + pointText + (score === 1?"":"s");
@@ -386,40 +386,40 @@ function showResultsTest2(playerInput)
   {
     for (k=1; k<=5; k++)
     {
-      arrayDist[parseInt(i++)] = getDistance(Latitude[parseInt(cityIdx[parseInt(j)])],
-             Longitude[parseInt(cityIdx[parseInt(j)])], Latitude[parseInt(cityIdx[parseInt(k)])],
-             Longitude[parseInt(cityIdx[parseInt(k)])]);
+      arrayDist[parseInt(i++, 10)] = getDistance(Latitude[parseInt(cityIdx[parseInt(j, 10)], 10)],
+             Longitude[parseInt(cityIdx[parseInt(j, 10)], 10)], Latitude[parseInt(cityIdx[parseInt(k, 10)], 10)],
+             Longitude[parseInt(cityIdx[parseInt(k, 10)], 10)]);
     }
   }
   for (j=0; j<24; j++)
   {
-    arrayComb[parseInt(j)] = "123412431324134214231432213421432314234124132431312431423214324134123421412341324213423143124321".substring(j*4,j*4+4);
-    combination = "0" + arrayComb[parseInt(j)] + "5";
-    arrayDistComb[parseInt(j)] = 0;
+    arrayComb[parseInt(j, 10)] = "123412431324134214231432213421432314234124132431312431423214324134123421412341324213423143124321".substring(j*4,j*4+4);
+    combination = "0" + arrayComb[parseInt(j, 10)] + "5";
+    arrayDistComb[parseInt(j, 10)] = 0;
     for (k=0; k<5; k++)
     {
       u = parseInt(combination.substring(k,k+1), 10);
       v = parseInt(combination.substring(k+1,k+2), 10);
-      arrayDistComb[parseInt(j)] += arrayDist[parseInt(u*5+v-1)];
+      arrayDistComb[parseInt(j, 10)] += arrayDist[parseInt(u*5+v-1, 10)];
     }
     for (k=j; k>0; k--)
     {
-      if (arrayDistComb[parseInt(k)] > arrayDistComb[parseInt(k-1)])
+      if (arrayDistComb[parseInt(k, 10)] > arrayDistComb[parseInt(k-1, 10)])
       {
         break;
       }
-      i = arrayDistComb[parseInt(k)];
-      arrayDistComb[parseInt(k)] = arrayDistComb[parseInt(k-1)];
-      arrayDistComb[parseInt(k-1)] = i;
-      temp = arrayComb[parseInt(k)];
-      arrayComb[parseInt(k)] = arrayComb[parseInt(k-1)];
-      arrayComb[parseInt(k-1)] = temp;
+      i = arrayDistComb[parseInt(k, 10)];
+      arrayDistComb[parseInt(k, 10)] = arrayDistComb[parseInt(k-1, 10)];
+      arrayDistComb[parseInt(k-1, 10)] = i;
+      temp = arrayComb[parseInt(k, 10)];
+      arrayComb[parseInt(k, 10)] = arrayComb[parseInt(k-1, 10)];
+      arrayComb[parseInt(k-1, 10)] = temp;
     }
   }
   position = -1;
   for (j=0; j<24; j++)
   {
-    combination = arrayComb[parseInt(j)];
+    combination = arrayComb[parseInt(j, 10)];
     if (combination === playerInput)
     {
       position = j;
@@ -435,7 +435,7 @@ function showResultsTest2(playerInput)
       text += getCityName(cityIdx[parseInt(combination.substring(k, k+1), 10)], withCountries) + " &rarr; ";
     }
     parcScore = Math.round((1-j/23)*(1-j/23)*100);
-    text += getCityName(cityIdx[5], withCountries) + ": "+ arrayDistComb[parseInt(j)] +
+    text += getCityName(cityIdx[5], withCountries) + ": "+ arrayDistComb[parseInt(j, 10)] +
         " km (" + parcScore + " " + pointText +(parcScore === 1?"":"s") + ")";
   }
   text += "</ol>";
@@ -479,14 +479,14 @@ function listCities(onlyList)
   for (idx=0; idx<cityData.length; idx++)
   {
     signLat = 0;
-    degminLat = Latitude[parseInt(idx)];
+    degminLat = Latitude[parseInt(idx, 10)];
     if (degminLat < 0)
     {
       degminLat = -degminLat;
       signLat = -1;
     }
     signLon = 0;
-    degminLon = Longitude[parseInt(idx)];
+    degminLon = Longitude[parseInt(idx, 10)];
     if (degminLon < 0)
     {
       degminLon = -degminLon;
@@ -551,17 +551,17 @@ function startUp()
   westText = get("West").innerHTML;
   for (index=0; index<cityData.length; index++)
   {
-    s = cityData[parseInt(index)];
-    cityName[parseInt(index)] = s.substring(0, s.indexOf(","));
-    countryName[parseInt(index)] = s.substring(s.indexOf(",")+1, s.indexOf(":"));
+    s = cityData[parseInt(index, 10)];
+    cityName[parseInt(index, 10)] = s.substring(0, s.indexOf(","));
+    countryName[parseInt(index, 10)] = s.substring(s.indexOf(",")+1, s.indexOf(":"));
     degmin = parseInt(s.substring(s.indexOf(":")+1, s.indexOf(";")), 10);
     degLat = Math.floor(Math.abs(degmin) / 100);
     minLat = Math.abs(degmin) % 100;
-    Latitude[parseInt(index)] = (60 * degLat + minLat) * (degmin>0? 1:-1);       // Convert degrees and minutes to minutes.
+    Latitude[parseInt(index, 10)] = (60 * degLat + minLat) * (degmin>0? 1:-1);       // Convert degrees and minutes to minutes.
     degmin = parseInt(s.substring(s.indexOf(";")+1, s.length), 10);
     degLon = Math.floor(Math.abs(degmin) / 100);
     minLon = Math.abs(degmin) % 100;
-    Longitude[parseInt(index)] = (60 * degLon + minLon) * (degmin>0? 1:-1);      // Convert degrees and minutes to minutes.
+    Longitude[parseInt(index, 10)] = (60 * degLon + minLon) * (degmin>0? 1:-1);      // Convert degrees and minutes to minutes.
   }
   get("1with").onclick = function ()
   {
