@@ -40,7 +40,7 @@ function get(x)
   return document.getElementById(x);
 }
 
-function ClearScreen()
+function clearScreen()
 {
   var donotshow = document.getElementsByClassName("donotshow");
   var index;
@@ -52,14 +52,14 @@ function ClearScreen()
   get("help").style.display = "none";
 }
 
-function ShowMainMenu()
+function showMainMenu()
 {
-  ClearScreen();
+  clearScreen();
   get("mainmenu").style.display = "block";
   get("help").style.display = "block";
 }
 
-function SetTextToClass(text, className)
+function setTextToClass(text, className)
 {
   var elems = document.getElementsByClassName(className);
   var index;
@@ -81,24 +81,6 @@ function getCityName(cityIndex, withCountries)
   }
 }
 
-function StartTestType1()
-{
-  ClearScreen();
-  testNbr = 1;
-  questionNbr = 1;
-  score = 0;
-  test1(false);
-}
-
-function StartTestType2()
-{
-  ClearScreen();
-  testNbr = 2;
-  questionNbr = 1;
-  score = 0;
-  test2();
-}
-
 function test1(complete)
 {
   var cityNameFrom, cityNameTo;
@@ -109,7 +91,8 @@ function test1(complete)
   var test11, test12;
   var dist1;
   var show, index;
-  ClearScreen();
+  var interpretation;
+  clearScreen();
   if (questionNbr !== 0)
   {      // Inside test 1.
     if (!complete)
@@ -134,8 +117,8 @@ function test1(complete)
   LongFrom = Longitude[cityFrom];
   LatTo = Latitude[cityTo];
   LongTo = Longitude[cityTo];
-  SetTextToClass(cityNameFrom, "cityctry_from");
-  SetTextToClass(cityNameTo, "cityctry_to");
+  setTextToClass(cityNameFrom, "cityctry_from");
+  setTextToClass(cityNameTo, "cityctry_to");
   show = document.getElementsByClassName(questionNbr === 0?"findDist": "notFindDist");
   for (index=0; index<show.length; index++)
   {
@@ -154,8 +137,8 @@ function test1(complete)
     get("dist12_2").textContent = get("dist12_3").textContent = trueDist + " " + kmText + (trueDist===1?"":"s");
     cityNameFrom = getCityName(cityFrom, false);  // Do not append country name.
     cityNameTo = getCityName(cityTo, false);
-    SetTextToClass(cityNameFrom, "city_from");
-    SetTextToClass(cityNameTo, "city_to");
+    setTextToClass(cityNameFrom, "city_from");
+    setTextToClass(cityNameTo, "city_to");
     get("dirdeg1").textContent = getDirection(LatFrom, LongFrom, LatTo, LongTo);
     get("dirdeg2").textContent = getDirection(LatTo, LongTo, LatFrom, LongFrom);
     get("sun_from_0621").textContent = getDaytime(-LatFrom, LongFrom);
@@ -168,75 +151,75 @@ function test1(complete)
       if (partialScore < 0) partialScore = 0;
       if (partialScore === 100)
       {
-        Interpretation = parcInterp[0];
+        interpretation = parcInterp[0];
       }
       else if (partialScore > 94)
       {
-        Interpretation = parcInterp[1];
+        interpretation = parcInterp[1];
       }
       else if (partialScore > 89)
       {
-        Interpretation = parcInterp[2];
+        interpretation = parcInterp[2];
       }
       else if (partialScore > 79)
       {
-        Interpretation = parcInterp[3];
+        interpretation = parcInterp[3];
       }
       else if (partialScore > 69)
       {
-        Interpretation = parcInterp[4];
+        interpretation = parcInterp[4];
       }
       else if (partialScore > 59)
       {
-        Interpretation = parcInterp[5];
+        interpretation = parcInterp[5];
       }      
       else if (partialScore > 39)
       {
-        Interpretation = parcInterp[6];
+        interpretation = parcInterp[6];
       }
       else if (partialScore > 19)
       {
-        Interpretation = parcInterp[7];
+        interpretation = parcInterp[7];
       }
       else
       {
-        Interpretation = parcInterp[8];
+        interpretation = parcInterp[8];
       }
       get("score2").textContent = partialScore;
       score += partialScore;
-      get("parcInter").textContent = Interpretation;
+      get("parcInter").textContent = interpretation;
       get("score3").textContent = score;
-      if (questionNbr == 10)
+      if (questionNbr === 10)
       {
         if (score > 949)
         {
-          Interpretation = finalInterp[0];
+          interpretation = finalInterp[0];
         }
         else if (score > 899)
         {
-          Interpretation = finalInterp[1];
+          interpretation = finalInterp[1];
         }
         else if (score > 799)
         {
-          Interpretation = finalInterp[2];
+          interpretation = finalInterp[2];
         }
         else if (score > 699)
         {
-          Interpretation = finalInterp[3];
+          interpretation = finalInterp[3];
         }
         else if (score > 599)
         {
-          Interpretation = finalInterp[4];
+          interpretation = finalInterp[4];
         }
         else if (score > 399)
         {
-          Interpretation = finalInterp[5];
+          interpretation = finalInterp[5];
         }
         else
         {
-          Interpretation = finalInterp[6];
+          interpretation = finalInterp[6];
         }
-        get("finalInter").textContent = Interpretation;
+        get("finalInter").textContent = interpretation;
         get("finalInter").style.display = "block";
         get("scoreType").textContent = finalText;
       }
@@ -273,7 +256,7 @@ function test1(complete)
     }
   }
   get("test1").style.display="block";
-  if (complete == false && questionNbr != 0)
+  if (!complete && questionNbr !== 0)
   {
     dist1 = get("dist1");
     dist1.focus();
@@ -302,19 +285,19 @@ function getDirection(Lat1, Lon1, Lat2, Lon2)
   var AngAux;
   var Difference;
 
-  if (Lon1 == Lon2)
+  if (Lon1 === Lon2)
   {
     Angle = (Lat1>Lat2)?180:0;
   }
   else
   {
-    if (Lat1 == 90*60 || Lat2 == -90*60)
+    if (Lat1 === 90*60 || Lat2 === -90*60)
     {
       Angle = 180;
     }
     else
     {
-      if (Lat1 == -90*60 || Lat2 == 90*60)
+      if (Lat1 === -90*60 || Lat2 === 90*60)
       {
         Angle = 0;
       }
@@ -339,7 +322,7 @@ function getDaytime(Lat, Lon)
   var q;
   var minutesDaytime;
 
-  if (Math.abs(Lat) == 90*60)
+  if (Math.abs(Lat) === 90*60)
   {
     q = Lat;
   }
@@ -367,7 +350,7 @@ function test2()
 {
   var idx, innerIdx, randomValue;
   
-  ClearScreen();
+  clearScreen();
   get("ord2").textContent = ordinal[questionNbr - 1];
   for (idx=0; idx<6; idx++)
   {
@@ -376,7 +359,7 @@ function test2()
       randomValue = Math.floor(Math.random()*cityData.length);
       for (innerIdx=0; innerIdx<idx; innerIdx++)
       {
-        if (cityIdx[innerIdx] == randomValue)
+        if (cityIdx[innerIdx] === randomValue)
         {
           break;    
         }
@@ -385,12 +368,12 @@ function test2()
     cityIdx[idx] = randomValue;
     get("city"+(idx+1)).textContent = getCityName(randomValue, withCountries);
   }
-  get("score4").textContent = score + " " + pointText + (score == 1?"":"s");
+  get("score4").textContent = score + " " + pointText + (score === 1?"":"s");
   get("order").value = "";
   get("test2").style.display="block";
 }
 
-function ShowResultsTest2(playerInput)
+function showResultsTest2(playerInput)
 {
   var combination, position, parcScore;
   var arrayDist = new Array(25);
@@ -435,7 +418,7 @@ function ShowResultsTest2(playerInput)
   for (j=0; j<24; j++)
   {
     combination = arrayComb[j];
-    if (combination == playerInput)
+    if (combination === playerInput)
     {
       position = j;
       text += "<li class=\"red\">";
@@ -450,7 +433,7 @@ function ShowResultsTest2(playerInput)
       text += getCityName(cityIdx[parseInt(combination.substring(k, k+1), 10)], withCountries) + " &rarr; ";
     }
     parcScore = Math.round((1-j/23)*(1-j/23)*100);
-    text += getCityName(cityIdx[5], withCountries) + ": "+ arrayDistComb[j] + " km (" + parcScore + " " + pointText +(parcScore == 1?"":"s") + ")";
+    text += getCityName(cityIdx[5], withCountries) + ": "+ arrayDistComb[j] + " km (" + parcScore + " " + pointText +(parcScore === 1?"":"s") + ")";
   }
   text += "</ol>";
   get("list").innerHTML = text;
@@ -458,20 +441,38 @@ function ShowResultsTest2(playerInput)
   score += parcScore;
   questionNbr++;
   get("option").textContent = position + 1;
-  get("score5").textContent = parcScore + " " + pointText + (parcScore == 1?"":"s");
+  get("score5").textContent = parcScore + " " + pointText + (parcScore === 1?"":"s");
   get("score6").textContent = score;
   get("nextq2").style.display = (questionNbr>10? "none": "inline");
   get("test2").style.display = "none";
   get("test2_2").style.display = "block";
 }
 
-function ListCities(onlyList)
+function startTestType1()
+{
+  clearScreen();
+  testNbr = 1;
+  questionNbr = 1;
+  score = 0;
+  test1(false);
+}
+
+function startTestType2()
+{
+  clearScreen();
+  testNbr = 2;
+  questionNbr = 1;
+  score = 0;
+  test2();
+}
+
+function listCities(onlyList)
 {
   var listCitiesHTML = "<ol>";
   var idx;
   var degminLat, signLat;
   var degminLon, signLon;
-  ClearScreen();
+  clearScreen();
   for (idx=0; idx<cityData.length; idx++)
   {
     signLat = 0;
@@ -499,7 +500,7 @@ function ListCities(onlyList)
   get("cityFrom").value = "";
   get("cityTo").value = "";
   get("listCities").style.display = "block";
-  if (onlyList == false)
+  if (!onlyList)
   {
     get("cityFrom").focus();            // Enter first city.
   }
@@ -562,38 +563,38 @@ function startUp()
   get("1with").onclick = function ()
   {
     withCountries = true;
-    StartTestType1();
+    startTestType1();
   };
   get("1without").onclick = function ()
   {
     withCountries = false;
-    StartTestType1();
+    startTestType1();
   };
   get("2with").onclick = function ()
   {
     withCountries = true;
-    StartTestType2();
+    startTestType2();
   };
   get("2without").onclick = function ()
   {
     withCountries = false;
-    StartTestType2();
+    startTestType2();
   };
   get("listcity").onclick = function ()
   {
-    ClearScreen();
-    ListCities(true);
+    clearScreen();
+    listCities(true);
   };
   get("finddist").onclick = function ()
   {
-    ClearScreen();
+    clearScreen();
     get("findDist").disabled = true;
-    ListCities(false);
+    listCities(false);
   };
   get("dist1").onkeydown = function (event)
   {
     var key = event.keyCode;
-    if (key == 10 || key == 13)
+    if (key === 10 || key === 13)
     {
       event.preventDefault();          // Do not propagate Enter key.
       if (get("dist1").value.length > 0)
@@ -607,7 +608,7 @@ function startUp()
       {
         key -= 0x30;                   // Convert numpad key to standard digit key.
       }
-      if (key < 0x30 || key > 0x39 || get("dist1").value.length == 6)
+      if (key < 0x30 || key > 0x39 || get("dist1").value.length === 6)
       {                                // Key is not a digit or number is too large.
         event.preventDefault();        // Do not propagate this key.
       }
@@ -617,10 +618,10 @@ function startUp()
   {
     var key = event.keyCode;
     var value = get("order").value;
-    if ((key == 10 || key == 13) && value.length == 4)
+    if ((key === 10 || key === 13) && value.length === 4)
     {
       event.preventDefault();          // Do not propagate Enter key.
-      ShowResultsTest2(value);         // Second part of test 2.
+      showResultsTest2(value);         // Second part of test 2.
     }
     if (key != 8 && key != 9 && key != 37 && key != 39 && key != 45)
     {                                  // Not backspace, tab, right or left arrow or insert key.
@@ -642,12 +643,12 @@ function startUp()
     }
     else
     {
-      ShowMainMenu();
+      showMainMenu();
     }
   };
   get("exitt").onclick = function ()
   {
-    ShowMainMenu();
+    showMainMenu();
   };
   get("nextq2").onclick = function ()
   {
@@ -657,16 +658,16 @@ function startUp()
     }
     else
     {
-      ShowMainMenu();
+      showMainMenu();
     }
   };
   get("exitt2").onclick = function ()
   {
-    ShowMainMenu();
+    showMainMenu();
   };
   get("exitt3").onclick = function ()
   {
-    ShowMainMenu();
+    showMainMenu();
   };
   get("cityFrom").onkeydown = function (event)
   {
@@ -683,7 +684,7 @@ function startUp()
       {
         key -= 0x30;                   // Convert numpad key to standard digit key.
       }
-      if (key < 0x30 || key > 0x39 || value.length == 3)
+      if (key < 0x30 || key > 0x39 || value.length === 3)
       {                                // Key is not a digit or 3 digits is already used.
         event.preventDefault();        // Do not propagate this key.
       }
@@ -694,7 +695,7 @@ function startUp()
   {
     var key = event.keyCode;
     var value = get("cityTo").value;
-    if ((key == 10 || key == 13) && parseInt(value,10) >= 1 && parseInt(value,10) <= cityData.length)
+    if ((key === 10 || key === 13) && parseInt(value,10) >= 1 && parseInt(value,10) <= cityData.length)
     {
       event.preventDefault();          // Do not propagate Enter key.
       questionNbr = 0;
@@ -706,7 +707,7 @@ function startUp()
       {
         key -= 0x30;                   // Convert numpad key to standard digit key.
       }
-      if (key < 0x30 || key > 0x39 || value.length == 3)
+      if (key < 0x30 || key > 0x39 || value.length === 3)
       {                                // Key is not a digit or 3 digits is already used.
         event.preventDefault();        // Do not propagate this key.
       }
