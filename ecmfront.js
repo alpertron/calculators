@@ -91,7 +91,7 @@ function b64decode(str,out)
   var byte0, byte1, byte2, byte3;
   var conv=new Int8Array(128);
   var len=str.length;
-  if(str.charAt(len-1)=="=")
+  if(str.charAt(len-1)==="=")
   {
     len--;
   }
@@ -126,7 +126,7 @@ function b64decode(str,out)
     out[idxDest+2] = (byte2<<6) + byte3;
   }
   leftOver = len & 3;
-  if (leftOver == 2)
+  if (leftOver === 2)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -134,7 +134,7 @@ function b64decode(str,out)
     out[idxDest] = (byte0<<2) + (byte1>>4);
     out[idxDest+1] = byte1<<4;
   }
-  else if (leftOver == 3)
+  else if (leftOver === 3)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -172,27 +172,27 @@ function callWorker(param)
       // "8" for saving input expression into local storage
       // "9" for sending data to console.
       var firstChar = e.data.substring(0, 1);
-      if (firstChar == "9")
+      if (firstChar === "9")
       {
         console.log(e.data.substring(1));
       }
-      if (firstChar == "8")
+      if (firstChar === "8")
       {
         setStorage("ecmFactors", e.data.substring(1));
         setStorage("ecmCurve", "");
       }
-      else if (firstChar == "7")
+      else if (firstChar === "7")
       {
         setStorage("ecmCurve", e.data.substring(1));
       }
-      else if (firstChar == "4")
+      else if (firstChar === "4")
       {
         statusDirty = true;
         statusText = e.data.substring(1);
       }
-      else if (firstChar == "5")
+      else if (firstChar === "5")
       {
-        if (e.data.substring(1, 2) == "1")
+        if (e.data.substring(1, 2) === "1")
         {
           get("skip").style.display = "block";
         }
@@ -205,13 +205,13 @@ function callWorker(param)
       {
         resultDirty = true;
         resultText = e.data.substring(1);
-        if (firstChar == "2" || firstChar == "6")
+        if (firstChar === "2" || firstChar === "6")
         {   // First character passed from web worker is "2".
           statusDirty = true;
           statusText = "";
           styleButtons("inline", "none");  // Enable eval and factor
           get("modal-more").style.display = "none";
-          if (firstChar == "6")
+          if (firstChar === "6")
           {
             get("cont").style.display = "block";
           }
@@ -243,7 +243,7 @@ function dowork(n)
   helphelp.innerHTML = (lang ? "<p class=\"pad\">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización. Esta es la versión "+(asmjs? "asm.js": "WebAssembly")+".</p>":
                                "<p class=\"pad\">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. Keyboard users can press CTRL+ENTER to start factorization. This is the "+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
   res.style.display = "block";
-  if (valueText == "")
+  if (valueText === "")
   {    // Nothing in input box.
     resultDirty = true;
     resultText = (lang ? "<p>Por favor ingrese una expresión.</p>" :
@@ -258,7 +258,7 @@ function dowork(n)
     return;
   }
   styleButtons("none", "inline");  // Enable "more" and "stop" buttons
-  if (n == 0)
+  if (n === 0)
   {
     resultDirty = true;
     resultText = (lang ? "<p>Evaluando la expresión...</p>" :
@@ -276,11 +276,11 @@ function dowork(n)
   }
   param = digits + "," + app + "," + config.substring(1) + valueText + charNull +
           getStorage("ecmFactors");
-  if (n == -1 || n == -2)
+  if (n === -1 || n === -2)
   {
     param += "," + get("curve").value;        // Append new curve number typed by user.
   }
-  if (n == -3 || n == -4)
+  if (n === -3 || n === -4)
   {
     param += ";" + get("curve").value;        // Append new factor typed by user.
   }
@@ -341,7 +341,7 @@ function wizardNext()
                                      "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>");
       break;
     case 6:
-      if (wzdInput.value != "")
+      if (wzdInput.value !== "")
       {
         wizardTextInput += ";"+wzdInput.value;
       }

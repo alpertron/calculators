@@ -72,23 +72,23 @@ function callWorker(param)
       // and it is "2" for end of calculation.
       // It is "9" for saving expression to factor into Web Storage.
       var firstChar = e.data.substring(0, 1);
-      if (firstChar == "8")
+      if (firstChar === "8")
       {
 //        setStorage("ecmFactors", e.data.substring(1));
 //        setStorage("ecmCurve", "");
       }
-      else if (firstChar == "7")
+      else if (firstChar === "7")
       {
 //        setStorage("ecmCurve", e.data.substring(1));
       }
-      else if (firstChar == "4")
+      else if (firstChar === "4")
       {
         get("status").innerHTML = e.data.substring(1);
       }
       else
       {
         get("result").innerHTML = e.data.substring(1);
-        if (e.data.substring(0, 1) == "2")
+        if (e.data.substring(0, 1) === "2")
         {   // First character passed from web worker is "2".
           get("status").innerHTML = "";
           styleButtons("inline", "none");  // Enable eval and factor
@@ -118,7 +118,7 @@ function dowork(n)
   helphelp.innerHTML = (lang? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización.</p>":
                               "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization.</p>");
   res.style.display = "block";
-  if (valueText == "")
+  if (valueText === "")
   {
     res.innerHTML = (lang? "Por favor ingrese una expresión." :
                            "Please type an expression.");
@@ -164,7 +164,7 @@ function fillCache()
           {
             return;        // HTML could not be retrieved, so go out.
           }
-          if (date == responseHTML.headers.get("last-modified"))
+          if (date === responseHTML.headers.get("last-modified"))
           {
             return;        // HTML has not changed, so other files have not been changed. Go out.
           }
@@ -187,9 +187,9 @@ function fillCache()
                     {
                       keys.forEach(function(requestCache, index, array)
                       {    // Traverse cache.
-                        if (requestCache.url.substring(0, indexZero+2) == urlTemp.substring(0, indexZero+2) &&
-                            requestCache.url.substring(indexZero+2, indexZero+4) != urlTemp.substring(indexZero+2, indexZero+4) &&
-                            requestCache.url.substring(indexZero+4) == urlTemp.substring(indexZero+4))
+                        if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
+                            requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
+                            requestCache.url.substring(indexZero+4) === urlTemp.substring(indexZero+4))
                         {  // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
                           cache.delete(requestCache);
                         }  
@@ -250,7 +250,7 @@ function b64decode(str,out)
   var byte0, byte1, byte2, byte3;
   var conv=new Int8Array(128);
   var len=str.length;
-  if(str.charAt(len-1)=="=")
+  if(str.charAt(len-1)==="=")
   {
     len--;
   }
@@ -285,7 +285,7 @@ function b64decode(str,out)
     out[idxDest+2] = (byte2<<6) + byte3;
   }
   left_over = len & 3;
-  if (left_over == 2)
+  if (left_over === 2)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -293,7 +293,7 @@ function b64decode(str,out)
     out[idxDest] = (byte0<<2) + (byte1>>4);
     out[idxDest+1] = byte1<<4;
   }
-  else if (left_over == 3)
+  else if (left_over === 3)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -333,10 +333,10 @@ window.onload = function ()
   get("config").onclick = function ()
   {
     get("digits").value = digits;
-    get("batch").checked = (config.substr(0,1)=="1");
-    get("verbose").checked = (config.substr(1,1)=="1");
-    get("pretty").checked = (config.substr(2,1)=="1");
-    get("cunnin").checked = (config.substr(3,1)=="1");  
+    get("batch").checked = (config.substr(0,1) === "1");
+    get("verbose").checked = (config.substr(1,1) === "1");
+    get("pretty").checked = (config.substr(2,1) === "1");
+    get("cunnin").checked = (config.substr(3,1) === "1");  
     get("modal-config").style.display = "block";
   };
   get("close-config").onclick = function ()
@@ -369,7 +369,7 @@ window.onload = function ()
     var helphelpStyle = get("helphelp").style;
     var result = get("result");
     var resultStyle = result.style;
-    if (helpStyle.display == "block" && result.innerHTML != "")     
+    if (helpStyle.display === "block" && result.innerHTML !== "")
     {
       helpStyle.display = "none";
       helphelpStyle.display = resultStyle.display = "block";
@@ -414,9 +414,9 @@ window.onload = function ()
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function (event)
     {
-      if (xhr.readyState == 4) 
+      if (xhr.readyState === 4)
       {             // XHR finished.
-        if (xhr.status == 200)
+        if (xhr.status === 200)
         {           // PHP page loaded.
           alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
         }
@@ -435,7 +435,7 @@ window.onload = function ()
     for (var i = 0; i < elements.length; i++)
     {
       var element = elements[i];
-      if (element.type == "radio" && element.checked == false)
+      if (element.type === "radio" && !element.checked)
       {
         continue;
       }

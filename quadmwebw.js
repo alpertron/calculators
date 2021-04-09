@@ -40,7 +40,7 @@ function ptrToString(ptr)
     }
     outString += str;
     str = "";
-  } while (t!=0);
+  } while (t !== 0);
   outString += str;
   return outString;
 }

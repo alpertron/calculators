@@ -47,7 +47,7 @@ self.addEventListener("fetch", function(event)
       // Check if special header indicating not to read from cache has arrived.
   var nocache = event.request.headers.get("x-calc");
   var noQueryString;
-  if (url.toString().replace(/^(.*\/\/[^\/?#]*).*$/,"$1") != self.location.origin ||
+  if (url.toString().replace(/^(.*\/\/[^\/?#]*).*$/,"$1") !== self.location.origin ||
       event.request.method !== "GET" || url.endsWith(".pl") || url.endsWith(".php"))
   {  // Cache GET requests from this Web server only.
     return;
@@ -65,7 +65,7 @@ self.addEventListener("fetch", function(event)
   event.respondWith(  
     caches.match(noQueryString).then(function(cached)
     {
-      if (cached && (nocache != "1" || !navigator.onLine))
+      if (cached && (nocache !== "1" || !navigator.onLine))
       {        // At this moment the response is in the cache.
         return cached;
       }

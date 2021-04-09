@@ -55,7 +55,7 @@ function b64decode(str,out)
   var byte0, byte1, byte2, byte3;
   var conv=new Int8Array(128);
   var len=str.length;
-  if(str.charAt(len-1)=="=")
+  if(str.charAt(len-1)==="=")
   {
     len--;
   }
@@ -90,7 +90,7 @@ function b64decode(str,out)
     out[idxDest+2] = (byte2<<6) + byte3;
   }
   left_over = len & 3;
-  if (left_over == 2)
+  if (left_over === 2)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -98,7 +98,7 @@ function b64decode(str,out)
     out[idxDest] = (byte0<<2) + (byte1>>4);
     out[idxDest+1] = byte1<<4;
   }
-  else if (left_over == 3)
+  else if (left_over === 3)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -155,7 +155,7 @@ function fillCache()
           {
             return;        // HTML could not be retrieved, so go out.
           }
-          if (date == responseHTML.headers.get("last-modified"))
+          if (date === responseHTML.headers.get("last-modified"))
           {
             return;        // HTML has not changed, so other files have not been changed. Go out.
           }
@@ -257,18 +257,18 @@ function callWorker(param)
       // "4" for sending data to status line
       // "6" for pausing calculation and showing the Continue button
       var firstChar = e.data.substring(0, 1);
-      if (firstChar == "4")
+      if (firstChar === "4")
       {
         get("status").innerHTML = e.data.substring(1);
       }
       else
       {
         get("result").innerHTML = e.data.substring(1);
-        if (firstChar == "2" || firstChar == "6")
+        if (firstChar === "2" || firstChar === "6")
         {   // First character passed from web worker is "2".
           get("status").innerHTML = "";
           styleButtons("inline", "none");  // Enable buttons that must be enabled when applet is not running
-          if (firstChar == "6")
+          if (firstChar === "6")
           {
             get("cont").style.display = "block";
           }
@@ -295,7 +295,7 @@ function performCalc()
   res = get("result");
   res.style.display = "block";
   valueA = get("num").value;
-  if (valueA == "")
+  if (valueA === "")
   {
     if (app >= 4)
     {
@@ -312,14 +312,14 @@ function performCalc()
   if (app >= 4)
   {
     valueB = get("delta").value;
-    if (valueB == "")
+    if (valueB === "")
     {
       res.innerHTML = (lang ? "Por favor ingrese un número o expresión para el argumento de la raíz cuadrada." :
                               "Please type a number or expression for square root argument.");
       return;
     }
     valueC = get("den").value;
-    if (valueC == "")
+    if (valueC === "")
     {
       res.innerHTML = (lang ? "Por favor ingrese un número o expresión para el denominador." :
                               "Please type a number or expression for denominator.");
@@ -328,23 +328,23 @@ function performCalc()
   }
   digitGroup = get("digits").value;
   get("help").style.display = "none";
-  if (app == 0)    // Closure compiler cannot optimize switch, so a series of "if" instructions is used.
+  if (app === 0)    // Closure compiler cannot optimize switch, so a series of "if" instructions is used.
   {
     res.innerHTML = "Computing sum of squares...";
   }
-  else if (app == 1)
+  else if (app === 1)
   {
     res.innerHTML = "Calculando suma de cuadrados...";
   }
-  else if (app == 2)
+  else if (app === 2)
   {
     res.innerHTML = "Computing sum of cubes...";
   }
-  else if (app == 3)
+  else if (app === 3)
   {
     res.innerHTML = "Calculando suma de cubos...";
   }
-  else if (app == 4)
+  else if (app === 4)
   {
     res.innerHTML = "Computing continued fraction expansion...";
   }

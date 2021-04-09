@@ -110,38 +110,38 @@ function test1(complete)
   var dist1;
   var show, index;
   ClearScreen();
-  if (questionNbr != 0)
+  if (questionNbr !== 0)
   {      // Inside test 1.
-    if (complete == false)
+    if (!complete)
     {
       cityFrom = Math.floor(Math.random()*cityData.length);
       do
       {
         cityTo = Math.floor(Math.random()*cityData.length);
-      } while (cityFrom == cityTo);
+      } while (cityFrom === cityTo);
     }
     get("ord1").innerHTML = ordinal[questionNbr - 1];
-    get("score1").innerHTML = score + " " + pointText + (score == 1?"":"s");
+    get("score1").innerHTML = score + " " + pointText + (score === 1?"":"s");
   }
   else
   {      // Query distance between two cities.
     cityFrom = parseInt(get("cityFrom").value, 10) - 1;
     cityTo = parseInt(get("cityTo").value, 10) - 1;
   }
-  cityNameFrom = getCityName(cityFrom, withCountries || questionNbr == 0);
-  cityNameTo = getCityName(cityTo, withCountries || questionNbr == 0);
+  cityNameFrom = getCityName(cityFrom, withCountries || questionNbr === 0);
+  cityNameTo = getCityName(cityTo, withCountries || questionNbr === 0);
   LatFrom = Latitude[cityFrom];
   LongFrom = Longitude[cityFrom];
   LatTo = Latitude[cityTo];
   LongTo = Longitude[cityTo];
   SetTextToClass(cityNameFrom, "cityctry_from");
   SetTextToClass(cityNameTo, "cityctry_to");
-  show = document.getElementsByClassName(questionNbr == 0?"findDist": "notFindDist");
+  show = document.getElementsByClassName(questionNbr === 0?"findDist": "notFindDist");
   for (index=0; index<show.length; index++)
   {
     show[index].style.display = "block";
   }
-  show = document.getElementsByClassName(questionNbr == 0?"notFindDist": "findDist");
+  show = document.getElementsByClassName(questionNbr === 0?"notFindDist": "findDist");
   for (index=0; index<show.length; index++)
   {
     show[index].style.display = "none";
@@ -151,7 +151,7 @@ function test1(complete)
     playerDist = parseInt(get("dist1").value);
     trueDist = getDistance(LatFrom, LongFrom, LatTo, LongTo);
     get("dist12_1").innerHTML = playerDist + " " + kmText + (playerDist===1?"":"s");
-    get("dist12_2").innerHTML = get("dist12_3").innerHTML = trueDist + " " + kmText + (trueDist==1?"":"s");
+    get("dist12_2").innerHTML = get("dist12_3").innerHTML = trueDist + " " + kmText + (trueDist===1?"":"s");
     cityNameFrom = getCityName(cityFrom, false);  // Do not append country name.
     cityNameTo = getCityName(cityTo, false);
     SetTextToClass(cityNameFrom, "city_from");
@@ -166,7 +166,7 @@ function test1(complete)
     {
       partialScore = Math.round(100 - 100 * Math.abs(Math.log(trueDist/playerDist)));
       if (partialScore < 0) partialScore = 0;
-      if (partialScore == 100) Interpretation = parcInterp[0];
+      if (partialScore === 100) Interpretation = parcInterp[0];
       else if (partialScore > 94) Interpretation = parcInterp[1];
       else if (partialScore > 89) Interpretation = parcInterp[2];
       else if (partialScore > 79) Interpretation = parcInterp[3];
@@ -624,7 +624,7 @@ function startUp()
   {
     var key = event.keyCode;
     var value = get("cityFrom").value;
-    if ((key == 10 || key == 13) && parseInt(value,10) >= 1 && parseInt(value,10) <= cityData.length)
+    if ((key === 10 || key === 13) && parseInt(value,10) >= 1 && parseInt(value,10) <= cityData.length)
     {
       event.preventDefault();          // Do not propagate Enter key.
       get("cityTo").focus();           // Enter second city.

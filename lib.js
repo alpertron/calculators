@@ -76,7 +76,7 @@ mergeInto(LibraryManager.library,
     var req = new XMLHttpRequest();
     req.open("GET", pointerStringify(data), false);
     req.send(null);
-    if (req.status == 200)
+    if (req.status === 200)
     {
       copyString(req.responseText);
     }

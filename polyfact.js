@@ -51,7 +51,7 @@ function callWorker(param)
       // and it is "2" for end of calculation.
       var result = get("result");
       result.innerHTML = e.data.substring(1);
-      if (e.data.substring(0, 1) == "2")
+      if (e.data.substring(0, 1) === "2")
       {   // First character passed from web worker is "2".
         get("eval").disabled = false;
         get("factor").disabled = false;
@@ -59,7 +59,7 @@ function callWorker(param)
         busy = 0;
         result.setAttribute("aria-live", "polite");
       }
-      else if (busy == 0)
+      else if (busy === 0)
       {
         busy = 1;
         result.setAttribute("aria-live", "off");
@@ -85,13 +85,13 @@ function dowork(n)
   var digitGroup = get("digits").value;
   get("help").style.display = "none";
   res.style.display = "block";
-  if (polyText == "")
+  if (polyText === "")
   {
     res.innerHTML = (lang? "Por favor ingrese una expresión para el polinomio a evaluar." :
                            "Please type an expression for the polynomial to evaluate.");
     return;
   }
-  if (modText == "")
+  if (modText === "")
   {
     res.innerHTML = (lang? "Por favor ingrese un número o expresión para el módulo." :
                            "Please type a number or expression for the modulus.");
@@ -129,7 +129,7 @@ function b64decode(str,out)
   var byte0, byte1, byte2, byte3;
   var conv=new Int8Array(128);
   var len=str.length;
-  if(str.charAt(len-1)=="=")
+  if(str.charAt(len-1)==="=")
   {
     len--;
   }
@@ -164,7 +164,7 @@ function b64decode(str,out)
     out[idxDest+2] = (byte2<<6) + byte3;
   }
   leftOver = len & 3;
-  if (leftOver == 2)
+  if (leftOver === 2)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -172,7 +172,7 @@ function b64decode(str,out)
     out[idxDest] = (byte0<<2) + (byte1>>4);
     out[idxDest+1] = byte1<<4;
   }
-  else if (leftOver == 3)
+  else if (leftOver === 3)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -209,11 +209,11 @@ function fillCache()
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
         fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
         {
-          if (responseHTML.status != 200)
+          if (responseHTML.status !== 200)
           {
             return;        // HTML could not be retrieved, so go out.
           }
-          if (date == responseHTML.headers.get("last-modified"))
+          if (date === responseHTML.headers.get("last-modified"))
           {
             return;        // HTML has not changed, so other files have not been changed. Go out.
           }
@@ -236,9 +236,9 @@ function fillCache()
                     {
                       keys.forEach(function(requestCache, index, array)
                       {    // Traverse cache.
-                        if (requestCache.url.substring(0, indexZero+2) == urlTemp.substring(0, indexZero+2) &&
-                            requestCache.url.substring(indexZero+2, indexZero+4) != urlTemp.substring(indexZero+2, indexZero+4) &&
-                            requestCache.url.substring(indexZero+4) == urlTemp.substring(indexZero+4))
+                        if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
+                            requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
+                            requestCache.url.substring(indexZero+4) === urlTemp.substring(indexZero+4))
                         {  // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
                           cache.delete(requestCache);
                         }  
@@ -358,9 +358,9 @@ window.onload = function ()
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function (event)
     {
-      if (xhr.readyState == 4) 
+      if (xhr.readyState === 4) 
       {             // XHR finished.
-        if (xhr.status == 200)
+        if (xhr.status === 200)
         {           // PHP page loaded.
           alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
         }
@@ -379,7 +379,7 @@ window.onload = function ()
     for (var i = 0; i < elements.length; i++)
     {
       var element = elements[i];
-      if (element.type == "radio" && element.checked == false)
+      if (element.type === "radio" && element.checked === false)
       {
         continue;
       }
@@ -432,7 +432,7 @@ if (asmjs)
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (aEvt)
   {
-    if (req.readyState == 4 && req.status == 200)
+    if (req.readyState === 4 && req.status === 200)
     {
       fileContents = req.response;
       if (workerParam)
@@ -455,11 +455,11 @@ else
     wasm = wasm.substring(0, wasm.length-1);
   }    
   var length = wasm.length*3/4;
-  if (wasm.charCodeAt(wasm.length-1)==61)
+  if (wasm.charCodeAt(wasm.length-1) === 61)
   {
     length--;
   }
-  if (wasm.charCodeAt(wasm.length-2)==61)
+  if (wasm.charCodeAt(wasm.length-2) === 61)
   {
     length--;
   }

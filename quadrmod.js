@@ -48,7 +48,7 @@
       { // First character of e.data is "1" for intermediate text
         // and it is "2" for end of calculation.
         get("result").innerHTML = e.data.substring(1);
-        if (e.data.substring(0, 1) == "2")
+        if (e.data.substring(0, 1) === "2")
         {   // First character passed from web worker is "2".
           get("solve").disabled = false;
           get("stop").disabled = true;
@@ -77,23 +77,23 @@
     get("help").style.display = "none";
     res.style.display = "block";
     var missing = "";
-    if (quadrText == "")
+    if (quadrText === "")
     {
       missing = (lang? "coeficiente cuadrático." : "quadratic coefficient.");
     }
-    if (linText == "")
+    if (linText === "")
     {
       missing = (lang? "coeficiente lineal." : "linear coefficient.");
     }
-    if (constText == "")
+    if (constText === "")
     {
       missing = (lang? "término independiente." : "constant coefficient.");
     }
-    if (modText == "")
+    if (modText === "")
     {
       missing = (lang? "módulo." : "modulus.");
     }
-    if (missing != "")
+    if (missing !== "")
     {
       res.innerHTML = (lang? "Por favor ingrese un número o expresión para el "+missing :
                                  "Please type a number or expression for the "+missing);
@@ -158,7 +158,7 @@ function b64decode(str,out)
     out[idxDest+2] = (byte2<<6) + byte3;
   }
   left_over = len & 3;
-  if (left_over == 2)
+  if (left_over === 2)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -166,7 +166,7 @@ function b64decode(str,out)
     out[idxDest] = (byte0<<2) + (byte1>>4);
     out[idxDest+1] = byte1<<4;
   }
-  else if (left_over == 3)
+  else if (left_over === 3)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -204,11 +204,11 @@ function fillCache()
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
         fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
         {
-          if (responseHTML.status != 200)
+          if (responseHTML.status !== 200)
           {
             return;        // HTML could not be retrieved, so go out.
           }
-          if (date == responseHTML.headers.get("last-modified"))
+          if (date === responseHTML.headers.get("last-modified"))
           {
             return;        // HTML has not changed, so other files have not been changed. Go out.
           }
@@ -231,9 +231,9 @@ function fillCache()
                     {
                       keys.forEach(function(requestCache, index, array)
                       {    // Traverse cache.
-                        if (requestCache.url.substring(0, indexZero+2) == urlTemp.substring(0, indexZero+2) &&
-                            requestCache.url.substring(indexZero+2, indexZero+4) != urlTemp.substring(indexZero+2, indexZero+4) &&
-                            requestCache.url.substring(indexZero+4) == urlTemp.substring(indexZero+4))
+                        if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
+                            requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
+                            requestCache.url.substring(indexZero+4) === urlTemp.substring(indexZero+4))
                         {  // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
                           cache.delete(requestCache);
                         }  
@@ -337,9 +337,9 @@ function UpdateCache(cache)
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function (event)
       {
-        if (xhr.readyState == 4) 
+        if (xhr.readyState === 4) 
         {             // XHR finished.
-          if (xhr.status == 200)
+          if (xhr.status === 200)
           {           // PHP page loaded.
             alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
           }
@@ -358,7 +358,7 @@ function UpdateCache(cache)
       for (var i = 0; i < elements.length; i++)
       {
         var element = elements[i];
-        if (element.type == "radio" && element.checked == false)
+        if (element.type === "radio" && !element.checked)
         {
           continue;
         }
@@ -389,7 +389,7 @@ function UpdateCache(cache)
     req.responseType = "arraybuffer";
     req.onreadystatechange = function (aEvt)
     {
-      if (req.readyState == 4 && req.status == 200)
+      if (req.readyState === 4 && req.status === 200)
       {
         fileContents = /** @type {ArrayBuffer} */ (req.response);
         if (workerParam)
@@ -412,11 +412,11 @@ function UpdateCache(cache)
       wasm = wasm.substring(0, wasm.length-1);
     }    
     var length = wasm.length*3/4;
-    if (wasm.charCodeAt(wasm.length-1)==61)
+    if (wasm.charCodeAt(wasm.length-1) === 61)
     {
       length--;
     }
-    if (wasm.charCodeAt(wasm.length-2)==61)
+    if (wasm.charCodeAt(wasm.length-2) === 61)
     {
      length--;
     }
