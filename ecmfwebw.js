@@ -17,66 +17,8 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 var exports, HEAPU8, wasmLoaded;
-var info =
-{
-  "env":
-{
-  "databack": function(data)
-  {
-    self.postMessage(PtrToString(data));
-  },
-  "startSkipTest": function()
-  {
-    self.postMessage("51");   // Show Skip Test button on screen
-  },
-  "endSkipTest": function()
-  {
-    self.postMessage("52");   // Hide Skip Test button from screen
-  },
-  "tenths": function()
-  {
-    return Math.floor(new Date().getTime() / 100);
-  },
-  "getCunn": function(data)
-  {
-    var req = new XMLHttpRequest();
-    // Web worker protocol is blob:, so we need to change that to https: as appropriate.
-    req.open('GET', "https://www.alpertron.com.ar/"+PtrToString(data), false);
-    req.send(null);
-    if (req.status == 200)
-    {
-      ConvertToString(exports["getFactorsAsciiPtr"](), req.responseText);
-    }
-  }
-}
-};  
 
-self.onmessage = function (e)
-{
-  var request;
-  var afterKey;
-  if (typeof(WebAssembly) === "undefined")
-  {
-    return;
-  }
-  if (wasmLoaded)
-  {
-    ConvertToString(exports["getInputStringPtr"](), e.data[0]);
-    exports["doWork"]();
-    return;  
-  }
-  WebAssembly["instantiate"](e.data[1], info).then(function(results)
-  {
-    wasmLoaded = 1;
-    exports = results["instance"]["exports"];
-    HEAPU8 = new Uint8Array(exports["memory"]["buffer"]);
-    ConvertToString(exports["getInputStringPtr"](), e.data[0]);
-    exports["doWork"]();
-    return;
-  });
-}
-
-function PtrToString(ptr)
+function ptrToString(ptr)
 {
   var t=-1;
   var i = 0;
@@ -86,7 +28,7 @@ function PtrToString(ptr)
     for (i=0; i<1024; i++)
     {
       t = HEAPU8[((ptr++)>>0)];
-      if (t==0)
+      if (t === 0)
       {
         break;
       }
@@ -98,12 +40,12 @@ function PtrToString(ptr)
     }
     outString += str;
     str = "";
-  } while (t!=0);
+  } while (t !== 0);
   outString += str;
   return outString;
 }
 
-function ConvertToString(ptr, str)
+function convertToString(ptr, str)
 {
   var dest = ptr;
   var length = str.length;
@@ -123,3 +65,62 @@ function ConvertToString(ptr, str)
   }
   HEAPU8[dest] = 0;
 }
+
+var info =
+{
+  "env":
+{
+  "databack": function(data)
+  {
+    self.postMessage(ptrToString(data));
+  },
+  "startSkipTest": function()
+  {
+    self.postMessage("51");   // Show Skip Test button on screen
+  },
+  "endSkipTest": function()
+  {
+    self.postMessage("52");   // Hide Skip Test button from screen
+  },
+  "tenths": function()
+  {
+    return Math.floor(new Date().getTime() / 100);
+  },
+  "getCunn": function(data)
+  {
+    var req = new XMLHttpRequest();
+    // Web worker protocol is blob:, so we need to change that to https: as appropriate.
+    req.open('GET', "https://www.alpertron.com.ar/"+ptrToString(data), false);
+    req.send(null);
+    if (req.status === 200)
+    {
+      convertToString(exports["getFactorsAsciiPtr"](), req.responseText);
+    }
+  }
+}
+};  
+
+self.onmessage = function (e)
+{
+  var request;
+  var afterKey;
+  if (typeof(WebAssembly) === "undefined")
+  {
+    return;
+  }
+  if (wasmLoaded)
+  {
+    convertToString(exports["getInputStringPtr"](), e.data[0]);
+    exports["doWork"]();
+    return;  
+  }
+  WebAssembly["instantiate"](e.data[1], info).then(function(results)
+  {
+    wasmLoaded = 1;
+    exports = results["instance"]["exports"];
+    HEAPU8 = new Uint8Array(exports["memory"]["buffer"]);
+    convertToString(exports["getInputStringPtr"](), e.data[0]);
+    exports["doWork"]();
+    return;
+  });
+};

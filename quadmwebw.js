@@ -17,44 +17,8 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 var exports, HEAPU8, wasmLoaded;
-var env =
-{
-  "databack": function(data)
-  {
-    self.postMessage(PtrToString(data));
-  },
-  "tenths": function()
-  {
-    return Math.floor(new Date().getTime() / 100);
-  }
-};
 
-var info =
-{
-  "env": env
-};  
-
-self.onmessage = function (e)
-{
-  var request;
-  if (wasmLoaded)
-  {
-    ConvertToString(exports["getInputStringPtr"](), e.data[0]);
-    exports["doWork"]();
-    return;  
-  }
-  WebAssembly["instantiate"](e.data[1], info).then(function(results)
-  {
-    wasmLoaded = 1;
-    exports = results["instance"]["exports"];
-    HEAPU8 = new Uint8Array(exports["memory"]["buffer"]);
-    ConvertToString(exports["getInputStringPtr"](), e.data[0]);
-    exports["doWork"]();
-    return;
-  });
-}
-
-function PtrToString(ptr)
+function ptrToString(ptr)
 {
   var t=-1;
   var i = 0;
@@ -81,7 +45,7 @@ function PtrToString(ptr)
   return outString;
 }
 
-function ConvertToString(ptr, str)
+function convertToString(ptr, str)
 {
   var dest = ptr;
   var length = str.length;
@@ -100,4 +64,41 @@ function ConvertToString(ptr, str)
     }
   }
   HEAPU8[dest] = 0;
+}
+
+var env =
+{
+  "databack": function(data)
+  {
+    self.postMessage(ptrToString(data));
+  },
+  "tenths": function()
+  {
+    return Math.floor(new Date().getTime() / 100);
+  }
+};
+
+var info =
+{
+  "env": env
+};  
+
+self.onmessage = function (e)
+{
+  var request;
+  if (wasmLoaded)
+  {
+    convertToString(exports["getInputStringPtr"](), e.data[0]);
+    exports["doWork"]();
+    return;  
+  }
+  WebAssembly["instantiate"](e.data[1], info).then(function(results)
+  {
+    wasmLoaded = 1;
+    exports = results["instance"]["exports"];
+    HEAPU8 = new Uint8Array(exports["memory"]["buffer"]);
+    convertToString(exports["getInputStringPtr"](), e.data[0]);
+    exports["doWork"]();
+    return;
+  });
 }

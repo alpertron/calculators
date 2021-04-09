@@ -21,7 +21,7 @@ var env =
 {
   "databack": function(data)
   {
-    self.postMessage(PtrToString(data));
+    self.postMessage(ptrToString(data));
   },
   "tenths": function()
   {
@@ -39,7 +39,7 @@ self.onmessage = function (e)
   var request;
   if (wasmLoaded)
   {
-    ConvertToString(exports["getInputStringPtr"](), e.data[0]);
+    convertToString(exports["getInputStringPtr"](), e.data[0]);
     exports["doWork"]();
     return;  
   }
@@ -48,7 +48,7 @@ self.onmessage = function (e)
     wasmLoaded = 1;
     exports = results["instance"]["exports"];
     HEAPU8 = new Uint8Array(exports["memory"]["buffer"]);
-    ConvertToString(exports["getInputStringPtr"](), e.data[0]);
+    convertToString(exports["getInputStringPtr"](), e.data[0]);
     try
     {
       exports["doWork"]();
@@ -60,7 +60,7 @@ self.onmessage = function (e)
   });
 };
 
-function PtrToString(ptr)
+function ptrToString(ptr)
 {
   var t=-1;
   var i = 0;
@@ -87,7 +87,7 @@ function PtrToString(ptr)
   return outString;
 }
 
-function ConvertToString(ptr, str)
+function convertToString(ptr, str)
 {
   var dest = ptr;
   var length = str.length;

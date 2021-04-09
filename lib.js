@@ -2,7 +2,7 @@ mergeInto(LibraryManager.library,
 {
   databack: function(data)
   {
-    function PointerStringify(offset)
+    function pointerStringify(offset)
     {
       var charCache = new Array(128);  // Preallocate the cache for the common single byte chars
       var charFromCodePt = String.fromCodePoint || String.fromCharCode;
@@ -12,7 +12,7 @@ mergeInto(LibraryManager.library,
 
       result.length = 0;
 
-      while (HEAPU8[offset] != 0)
+      while (HEAPU8[offset] !== 0)
       {
         byte1 = HEAPU8[offset++];
         if (byte1 <= 0x7F)
@@ -25,9 +25,9 @@ mergeInto(LibraryManager.library,
         }
         result.push(charCache[codePt] || (charCache[codePt] = charFromCodePt(codePt)));
       }
-      return result.join('');
+      return result.join("");
     }
-    self.postMessage(PointerStringify(data));
+    self.postMessage(pointerStringify(data));
   },
   stamp: function()
   {
@@ -47,7 +47,7 @@ mergeInto(LibraryManager.library,
   },
   getCunn: function(data)
   {
-    function PointerStringify(offset)
+    function pointerStringify(offset)
     {
       var charCache = new Array(128);  // Preallocate the cache for the common single byte chars
       var charFromCodePt = String.fromCodePoint || String.fromCharCode;
@@ -57,7 +57,7 @@ mergeInto(LibraryManager.library,
  
       result.length = 0;
 
-      while (HEAPU8[offset] != 0)
+      while (HEAPU8[offset] !== 0)
       {
         byte1 = HEAPU8[offset++];
         if (byte1 <= 0x7F)
@@ -70,11 +70,11 @@ mergeInto(LibraryManager.library,
         }
         result.push(charCache[codePt] || (charCache[codePt] = charFromCodePt(codePt)));
       }
-      return result.join('');
+      return result.join("");
     }
-    var copyString = Module.cwrap('copyString', 'number', ['string']);
+    var copyString = Module.cwrap("copyString", "number", ["string"]);
     var req = new XMLHttpRequest();
-    req.open('GET', PointerStringify(data), false);
+    req.open("GET", pointerStringify(data), false);
     req.send(null);
     if (req.status == 200)
     {

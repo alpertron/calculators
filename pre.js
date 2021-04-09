@@ -1,4 +1,4 @@
-function ConvertToString(ptr, str)
+function convertToString(ptr, str)
 {
   var dest = ptr;
   var length = str.length;
@@ -21,14 +21,14 @@ function ConvertToString(ptr, str)
 
 Module =
 {
-  'preRun': function()
+  "preRun": function()
   {
     self.onmessage = function(e)
     {
-      ConvertToString(_getInputStringPtr(), e.data);
+      convertToString(_getInputStringPtr(), e.data);
       _doWork();
-    }
+    };
   },
-  'noInitialRun': true,
+  "noInitialRun": true,
 };
 
