@@ -37,23 +37,23 @@ function callWorker(param)
     {
       if (asmjs)
       {    // Asm.js
-        blob = new Blob([fileContents],{type: 'text/javascript'});
+        blob = new Blob([fileContents],{type: "text/javascript"});
       }
       else
       {    // WebAssembly
-        blob = new Blob([get("worker").textContent],{type: 'text/javascript'});
+        blob = new Blob([get("worker").textContent],{type: "text/javascript"});
       }
     }   
     worker = new Worker(window.URL.createObjectURL(blob));
     worker.onmessage = function(e)
-    { // First character of e.data is '1' for intermediate text
-      // and it is '2' for end of calculation.
-      get('result').innerHTML = e.data.substring(1);
-      if (e.data.substring(0, 1) == '2')
-      {   // First character passed from web worker is '2'.
-        get('solve').disabled = false;
-        get('steps').disabled = false;
-        get('stop').disabled = true;
+    { // First character of e.data is "1" for intermediate text
+      // and it is "2" for end of calculation.
+      get("result").innerHTML = e.data.substring(1);
+      if (e.data.substring(0, 1) === "2")
+      {   // First character passed from web worker is "2".
+        get("solve").disabled = false;
+        get("steps").disabled = false;
+        get("stop").disabled = true;
       }
     }
   }
@@ -71,39 +71,39 @@ function dowork(n)
 {
   var param;
   var app = lang + n;
-  var res = get('result');
-  var coefAText = get('coefA').value.trim();
-  var coefBText = get('coefB').value.trim();
-  var coefCText = get('coefC').value.trim();
-  var coefDText = get('coefD').value.trim();
-  var coefEText = get('coefE').value.trim();
-  var coefFText = get('coefF').value.trim();
-  var digitGroup = get('digits').value.trim();
-  get('help').style.display = "none";
+  var res = get("result");
+  var coefAText = get("coefA").value.trim();
+  var coefBText = get("coefB").value.trim();
+  var coefCText = get("coefC").value.trim();
+  var coefDText = get("coefD").value.trim();
+  var coefEText = get("coefE").value.trim();
+  var coefFText = get("coefF").value.trim();
+  var digitGroup = get("digits").value.trim();
+  get("help").style.display = "none";
   res.style.display = "block";
   var missing = "";
   var zero = String.fromCharCode(0);
-  if (coefAText == "")
+  if (coefAText === "")
   {
     missing = (lang? "coeficiente <var>a</var>." : "coefficient <var>a</var>.");
   }
-  if (coefBText == "")
+  if (coefBText === "")
   {
     missing = (lang? "coeficiente <var>b</var>." : "coefficient <var>b</var>.");
   }
-  if (coefCText == "")
+  if (coefCText === "")
   {
     missing = (lang? "coeficiente <var>c</var>." : "coefficient <var>c</var>.");
   }
-  if (coefDText == "")
+  if (coefDText === "")
   {
     missing = (lang? "coeficiente <var>d</var>." : "coefficient <var>d</var>.");
   }
-  if (coefEText == "")
+  if (coefEText === "")
   {
     missing = (lang? "coeficiente <var>e</var>." : "coefficient <var>e</var>.");
   }
-  if (coefFText == "")
+  if (coefFText === "")
   {
     missing = (lang? "coeficiente <var>f</var>." : "coefficient <var>f</var>.");
   }
@@ -113,12 +113,12 @@ function dowork(n)
                                "Please type a number or expression for the "+missing);
     return;
   }
-  get('solve').disabled = true;
-  get('steps').disabled = true;
-  get('stop').disabled = false;
+  get("solve").disabled = true;
+  get("steps").disabled = true;
+  get("stop").disabled = false;
   res.innerHTML = (lang? "Resolviendo la ecuación cuadrática..." :
                              "Solving the quadratic equation...");
-  param = digitGroup + ',' + app + ',' + coefAText + zero + coefBText + zero + coefCText + zero +
+  param = digitGroup + "," + app + "," + coefAText + zero + coefBText + zero + coefCText + zero +
                                          coefDText + zero + coefEText + zero + coefFText + zero;
   callWorker(param);
 }
@@ -225,16 +225,16 @@ function fillCache()
       }
       else
       {     // Response is the HTML contents.
-        var date = response.headers.get('last-modified');
+        var date = response.headers.get("last-modified");
             // Request the HTML from the Web server.
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
-        fetch(url,{headers:{'If-Modified-Since': date, 'x-calc': '1'}, cache: "no-store"}).then(function(responseHTML)
+        fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
         {
           if (responseHTML.status != 200)
           {
             return;        // HTML could not be retrieved, so go out.
           }
-          if (date == responseHTML.headers.get('last-modified'))
+          if (date == responseHTML.headers.get("last-modified"))
           {
             return;        // HTML has not changed, so other files have not been changed. Go out.
           }
@@ -315,57 +315,57 @@ function UpdateCache(cache)
 window.onload = function ()
 {
   var param;
-  get('stop').disabled = true;
-  get('solve').onclick = function ()
+  get("stop").disabled = true;
+  get("solve").onclick = function ()
   {
     dowork(0);
   }
-  get('steps').onclick = function ()
+  get("steps").onclick = function ()
   {
     dowork(2);
   }
-  get('stop').onclick = function ()
+  get("stop").onclick = function ()
   {
     worker.terminate();
     worker = 0;
-    get('solve').disabled = false;
-    get('steps').disabled = false;
-    get('stop').disabled = true;
-    get('result').innerHTML = 
+    get("solve").disabled = false;
+    get("steps").disabled = false;
+    get("stop").disabled = true;
+    get("result").innerHTML = 
       (lang? "<p>Cálculo detenido por el usuario.</p>" :
                  "<p>Calculation stopped by user</p>");
   }
-  get('helpbtn').onclick = function ()
+  get("helpbtn").onclick = function ()
   {
-    get('help').style.display = "block";
-    get('result').style.display = "none";
+    get("help").style.display = "block";
+    get("result").style.display = "none";
   }
-  get('coefA').onkeypress = function(e)
+  get("coefA").onkeypress = function(e)
   {
-    moveNext(e, this, 'coefB');
+    moveNext(e, this, "coefB");
   } 
-  get('coefB').onkeypress = function(e)
+  get("coefB").onkeypress = function(e)
   {
-    moveNext(e, this, 'coefC');
+    moveNext(e, this, "coefC");
   }
-  get('coefC').onkeypress = function(e)
+  get("coefC").onkeypress = function(e)
   {
-    moveNext(e, this, 'coefD');
+    moveNext(e, this, "coefD");
   }
-  get('coefD').onkeypress = function(e)
+  get("coefD").onkeypress = function(e)
   {
-    moveNext(e, this, 'coefE');
+    moveNext(e, this, "coefE");
   }
-  get('coefE').onkeypress = function(e)
+  get("coefE").onkeypress = function(e)
   {
-    moveNext(e, this, 'coefF');
+    moveNext(e, this, "coefF");
   }
-  get('coefF').onkeypress = function(e)
+  get("coefF").onkeypress = function(e)
   {
     if ((e.which == 10 || e.which == 13) && this.value.trim().length > 0)
     {
       e.preventDefault();
-      get('coefA').focus();
+      get("coefA").focus();
       dowork(0);
     }
   }
@@ -387,9 +387,9 @@ window.onload = function ()
     if (get("adduserdata").checked)
     {
       userdata.value = "ax^2 + bxy + cy^2 + dx + ey + f = 0" +
-                       "\na = " + get('coefA').value.trim() + "\nb = " + get('coefB').value.trim() +
-                       "\nc = " + get('coefC').value.trim() + "\nd = " + get('coefD').value.trim() +
-                       "\ne = " + get('coefE').value.trim() + "\nf = " + get('coefF').value.trim();  
+                       "\na = " + get("coefA").value.trim() + "\nb = " + get("coefB").value.trim() +
+                       "\nc = " + get("coefC").value.trim() + "\nd = " + get("coefD").value.trim() +
+                       "\ne = " + get("coefE").value.trim() + "\nf = " + get("coefF").value.trim();  
     }
     else
     {
@@ -412,7 +412,7 @@ window.onload = function ()
       }
     };
     xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     var elements = get("formfeedback").elements;
     var contents = "";
     var useAmp = 0;
@@ -427,7 +427,7 @@ window.onload = function ()
       {
         if (useAmp)
         {
-          contents += '&';
+          contents += "&";
         }
         contents += element.name + "=" + encodeURIComponent(element.value);
         useAmp++;
@@ -436,17 +436,17 @@ window.onload = function ()
     xhr.send(contents);
     return false;   // Send form only through JavaScript.
   }
-  if ('serviceWorker' in navigator)
+  if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"].register('calcSW.js').then(function() {}, function() {});
+    navigator["serviceWorker"].register("calcSW.js").then(function() {}, function() {});
     fillCache();
   }
 }
 if (asmjs)
 {
   var req = new XMLHttpRequest();
-  req.open('GET', "quadW0000.js", true);
+  req.open("GET", "quadW0000.js", true);
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (aEvt)
   {

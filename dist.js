@@ -87,7 +87,7 @@ function StartTestType1()
   testNbr = 1;
   questionNbr = 1;
   score = 0;
-  Test1(false);
+  test1(false);
 }
 
 function StartTestType2()
@@ -96,10 +96,10 @@ function StartTestType2()
   testNbr = 2;
   questionNbr = 1;
   score = 0;
-  Test2();
+  test2();
 }
 
-function Test1(complete)
+function test1(complete)
 {
   var cityNameFrom, cityNameTo;
   var LatFrom, LatTo;
@@ -150,7 +150,7 @@ function Test1(complete)
   {
     playerDist = parseInt(get("dist1").value);
     trueDist = getDistance(LatFrom, LongFrom, LatTo, LongTo);
-    get("dist12_1").innerHTML = playerDist + " " + kmText + (playerDist==1?"":"s");
+    get("dist12_1").innerHTML = playerDist + " " + kmText + (playerDist===1?"":"s");
     get("dist12_2").innerHTML = get("dist12_3").innerHTML = trueDist + " " + kmText + (trueDist==1?"":"s");
     cityNameFrom = getCityName(cityFrom, false);  // Do not append country name.
     cityNameTo = getCityName(cityTo, false);
@@ -315,7 +315,7 @@ function getDaytime(Lat, Lon)
   return Math.floor(minutesDaytime/60) + "h " + (minutesDaytime%60) + "m";
 }
 
-function Test2()
+function test2()
 {
   var idx, innerIdx, randomValue;
   
@@ -390,11 +390,11 @@ function ShowResultsTest2(playerInput)
     if (combination == playerInput)
     {
       position = j;
-      text += '<li class="red">';
+      text += "<li class=\"red\">";
     }
     else
     {
-      text += '<li>';
+      text += "<li>";
     }
     text += getCityName(cityIdx[0], withCountries) + " &rarr; ";
     for (k=0; k<4; k++)
@@ -550,7 +550,7 @@ function startUp()
       event.preventDefault();          // Do not propagate Enter key.
       if (get("dist1").value.length > 0)
       { 
-        Test1(true);                   // Second part of test 1.
+        test1(true);                   // Second part of test 1.
       }
     }
     if (key != 8 && key != 9 && key != 37 && key != 39 && key != 45)
@@ -590,7 +590,7 @@ function startUp()
   {
     if (questionNbr > 0 && questionNbr < 11)
     {
-      Test1(false);
+      test1(false);
     }
     else
     {
@@ -605,7 +605,7 @@ function startUp()
   {
     if (questionNbr < 11)
     {
-      Test2();
+      test2();
     }
     else
     {
@@ -650,7 +650,7 @@ function startUp()
     {
       event.preventDefault();          // Do not propagate Enter key.
       questionNbr = 0;
-      Test1(true);                     // Show distance between cities.
+      test1(true);                     // Show distance between cities.
     }
     if (key != 8 && key != 9 && key != 37 && key != 39 && key != 45)
     {                                  // Not backspace, right or left arrow or insert key.
@@ -668,7 +668,7 @@ function startUp()
   get("findDist").onclick = function ()
   {
     questionNbr = 0;
-    Test1(true);                     // Show distance between cities.
+    test1(true);                     // Show distance between cities.
   };
 }
 

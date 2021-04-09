@@ -30,7 +30,7 @@ var digits;
 var config;
 var workerParam;
 var asmjs = typeof(WebAssembly) === "undefined";
-var indexedDBSupport = ('indexedDB' in window);
+var indexedDBSupport = ("indexedDB" in window);
 var db;
 var statusText = "";
 var resultText = "";
@@ -87,7 +87,7 @@ function b64decode(str,out)
 {
   var ch, idx;
   var idxDest,idxSrc;
-  var blocks, left_over;
+  var blocks, leftOver;
   var byte0, byte1, byte2, byte3;
   var conv=new Int8Array(128);
   var len=str.length;
@@ -125,8 +125,8 @@ function b64decode(str,out)
     out[idxDest+1] = (byte1<<4) + (byte2>>2);
     out[idxDest+2] = (byte2<<6) + byte3;
   }
-  left_over = len & 3;
-  if (left_over == 2)
+  leftOver = len & 3;
+  if (leftOver == 2)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -134,7 +134,7 @@ function b64decode(str,out)
     out[idxDest] = (byte0<<2) + (byte1>>4);
     out[idxDest+1] = byte1<<4;
   }
-  else if (left_over == 3)
+  else if (leftOver == 3)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -154,11 +154,11 @@ function callWorker(param)
     {
       if (asmjs)
       {    // Asm.js
-        blob = new Blob([fileContents],{type: 'text/javascript'});
+        blob = new Blob([fileContents],{type: "text/javascript"});
       }
       else
       {    // WebAssembly
-        blob = new Blob([get("worker").textContent],{type: 'text/javascript'});
+        blob = new Blob([get("worker").textContent],{type: "text/javascript"});
       }
     }   
     worker = new Worker(window.URL.createObjectURL(blob));
@@ -240,8 +240,8 @@ function dowork(n)
   get("cont").style.display = "none";
   get("help").style.display = "none";
   helphelp.style.display = "block";
-  helphelp.innerHTML = (lang ? '<p class="pad">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización. Esta es la versión '+(asmjs? "asm.js": "WebAssembly")+".</p>":
-                               '<p class="pad">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. Keyboard users can press CTRL+ENTER to start factorization. This is the '+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
+  helphelp.innerHTML = (lang ? "<p class=\"pad\">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización. Esta es la versión "+(asmjs? "asm.js": "WebAssembly")+".</p>":
+                               "<p class=\"pad\">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. Keyboard users can press CTRL+ENTER to start factorization. This is the "+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
   res.style.display = "block";
   if (valueText == "")
   {    // Nothing in input box.
@@ -383,7 +383,7 @@ function saveConfig()
 
 function updateVerbose(isVerbose)    
 {
-  var cssRules = (document.all) ? document.styleSheets[0]['rules']: document.styleSheets[0]['cssRules'];
+  var cssRules = (document.all) ? document.styleSheets[0]["rules"]: document.styleSheets[0]["cssRules"];
   var index;
   var len = cssRules.length;
   for (index=0; index<len; index++)
@@ -420,16 +420,16 @@ function fillCache()
       }
       else
       {     // Response is the HTML contents.
-        var date = response.headers.get('last-modified');
+        var date = response.headers.get("last-modified");
             // Request the HTML from the Web server.
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
-        fetch(url,{headers:{'If-Modified-Since': date, 'x-calc': '1'}, cache: "no-store"}).then(function(responseHTML)
+        fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
         {
           if (responseHTML.status != 200)
           {
             return;        // HTML could not be retrieved, so go out.
           }
-          if (date == responseHTML.headers.get('last-modified'))
+          if (date == responseHTML.headers.get("last-modified"))
           {
             return;        // HTML has not changed, so other files have not been changed. Go out.
           }
@@ -753,7 +753,7 @@ function startUp()
       }
     };
     xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     var elements = get("formfeedback").elements;
     var contents = "";
     var useAmp = 0;
@@ -768,7 +768,7 @@ function startUp()
       {
         if (useAmp)
         {
-          contents += '&';
+          contents += "&";
         }
         contents += element.name + "=" + encodeURIComponent(element.value);
         useAmp++;
@@ -893,17 +893,17 @@ function startUp()
     get("curve").value = "";
   }
   
-  if ('serviceWorker' in navigator)
+  if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"]["register"]('calcSW.js').then(function() {}, function() {});
+    navigator["serviceWorker"]["register"]("calcSW.js").then(function() {}, function() {});
     fillCache();
   }
 }
 if (asmjs)
 {
   var req = new XMLHttpRequest();
-  req.open('GET', "ecmW0000.js", true);
+  req.open("GET", "ecmW0000.js", true);
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (aEvt)
   {

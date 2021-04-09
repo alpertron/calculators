@@ -146,16 +146,16 @@ function fillCache()
       }
       else
       {     // Response is the HTML contents.
-        var date = response.headers.get('last-modified');
+        var date = response.headers.get("last-modified");
             // Request the HTML from the Web server.
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
-        fetch(url,{headers:{'If-Modified-Since': date, 'x-calc': '1'}, cache: "no-store"}).then(function(responseHTML)
+        fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
         {
-          if (responseHTML.status != 200)
+          if (responseHTML.status !== 200)
           {
             return;        // HTML could not be retrieved, so go out.
           }
-          if (date == responseHTML.headers.get('last-modified'))
+          if (date == responseHTML.headers.get("last-modified"))
           {
             return;        // HTML has not changed, so other files have not been changed. Go out.
           }
@@ -178,9 +178,9 @@ function fillCache()
                     {
                       keys.forEach(function(requestCache, index, array)
                       {    // Traverse cache.
-                        if (requestCache.url.substring(0, indexZero+2) == urlTemp.substring(0, indexZero+2) &&
-                            requestCache.url.substring(indexZero+2, indexZero+4) != urlTemp.substring(indexZero+2, indexZero+4) &&
-                            requestCache.url.substring(indexZero+4) == urlTemp.substring(indexZero+4))
+                        if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
+                            requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
+                            requestCache.url.substring(indexZero+4) === urlTemp.substring(indexZero+4))
                         {  // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
                           cache.delete(requestCache);
                         }  
@@ -242,11 +242,11 @@ function callWorker(param)
     {
       if (asmjs)
       {    // Asm.js
-        blob = new Blob([fileContents],{type: 'text/javascript'});
+        blob = new Blob([fileContents],{type: "text/javascript"});
       }
       else
       {    // WebAssembly
-        blob = new Blob([get("worker").textContent],{type: 'text/javascript'});
+        blob = new Blob([get("worker").textContent],{type: "text/javascript"});
       }
     }   
     worker = new Worker(window.URL.createObjectURL(blob));
@@ -277,8 +277,8 @@ function callWorker(param)
     };
   }
   helphelp.style.display = "block";
-  helphelp.innerHTML = (lang ? '<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión '+(asmjs? "asm.js": "WebAssembly")+".</p>":
-                               '<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the '+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
+  helphelp.innerHTML = (lang ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión "+(asmjs? "asm.js": "WebAssembly")+".</p>":
+                               "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the "+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
   if (asmjs)
   {      // Asm.js
     worker.postMessage(param);
@@ -292,9 +292,9 @@ function callWorker(param)
 function performCalc()
 {
   var res, valueA, valueB, valueC, digitGroup;
-  res = get('result');
+  res = get("result");
   res.style.display = "block";
-  valueA = get('num').value;
+  valueA = get("num").value;
   if (valueA == "")
   {
     if (app >= 4)
@@ -311,14 +311,14 @@ function performCalc()
   }
   if (app >= 4)
   {
-    valueB = get('delta').value;
+    valueB = get("delta").value;
     if (valueB == "")
     {
       res.innerHTML = (lang ? "Por favor ingrese un número o expresión para el argumento de la raíz cuadrada." :
                               "Please type a number or expression for square root argument.");
       return;
     }
-    valueC = get('den').value;
+    valueC = get("den").value;
     if (valueC == "")
     {
       res.innerHTML = (lang ? "Por favor ingrese un número o expresión para el denominador." :
@@ -326,8 +326,8 @@ function performCalc()
       return;
     }
   }
-  digitGroup = get('digits').value;
-  get('help').style.display = "none";
+  digitGroup = get("digits").value;
+  get("help").style.display = "none";
   if (app == 0)    // Closure compiler cannot optimize switch, so a series of "if" instructions is used.
   {
     res.innerHTML = "Computing sum of squares...";
@@ -356,7 +356,7 @@ function performCalc()
   {
     hex = (get("converg").checked? 1: 0);
   }
-  var param = digitGroup + ',' + (app+hex*64) + ',' + valueA + String.fromCharCode(0);
+  var param = digitGroup + "," + (app+hex*64) + "," + valueA + String.fromCharCode(0);
   if (app >= 4)
   {
     param += valueB + String.fromCharCode(0) + valueC + String.fromCharCode(0);
@@ -461,18 +461,18 @@ function startUp()
   var param;
   if (app<4)
   {
-    get('num').onkeypress = function(e)
+    get("num").onkeypress = function(e)
     {
       var output, res;
-      var digitGroup = get('digits').value;
-      res = get('result');
+      var digitGroup = get("digits").value;
+      res = get("result");
       res.style.display = "block";
-      var input = get('num').value;
+      var input = get("num").value;
       if (!e) e = window.event;
       var keyCode = e.keyCode || e.which;
       if (keyCode == 13)
       {  // Used pressed Enter key
-        output = get('result')
+        output = get("result")
         if (input == "")
         {
           res.innerHTML = (lang ? "Por favor ingrese un número o expresión." : "Please type a number or expression.");
@@ -494,13 +494,13 @@ function startUp()
         {
           res.innerHTML = "Calculando suma de cubos...";
         }
-        param = digitGroup + ',' + app + ',' + input + String.fromCharCode(0);
+        param = digitGroup + "," + app + "," + input + String.fromCharCode(0);
         styleButtons("none", "inline");  // Enable "stop" button
         callWorker(param);
       }
     }
   }
-  get('calc').onclick = function()
+  get("calc").onclick = function()
   {
     performCalc();
   };
@@ -639,7 +639,7 @@ function startUp()
     }
     return true;
   }
-  get('helpbtn').onclick = function()
+  get("helpbtn").onclick = function()
   {
     var help = get("help");
     var helpStyle = help.style;
@@ -704,7 +704,7 @@ function startUp()
       }
     };
     xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     var elements = get("formfeedback").elements;
     var contents = "";
     var useAmp = 0;
@@ -719,7 +719,7 @@ function startUp()
       {
         if (useAmp)
         {
-          contents += '&';
+          contents += "&";
         }
         contents += element.name + "=" + encodeURIComponent(element.value);
         useAmp++;
@@ -728,17 +728,17 @@ function startUp()
     xhr.send(contents);
     return false;   // Send form only through JavaScript.
   }
-  if ('serviceWorker' in navigator)
+  if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"].register('calcSW.js').then(function() {}, function() {});
+    navigator["serviceWorker"].register("calcSW.js").then(function() {}, function() {});
     fillCache();
   }
 }
 if (asmjs)
 {
   var req = new XMLHttpRequest();
-  req.open('GET', "fsquaresW0000.js", true);
+  req.open("GET", "fsquaresW0000.js", true);
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (aEvt)
   {

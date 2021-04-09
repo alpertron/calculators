@@ -50,16 +50,16 @@ function callWorker(param)
       }
       else
       {    // WebAssembly
-        blob = new Blob([get("worker").textContent],{type: 'text/javascript'});
+        blob = new Blob([get("worker").textContent],{type: "text/javascript"});
       }
     }   
     worker = new Worker(window.URL.createObjectURL(blob));
     worker.onmessage = function(e)
-    { // First character of e.data is '1' for intermediate text
-      // and it is '2' for end of calculation.
+    { // First character of e.data is "1" for intermediate text
+      // and it is "2" for end of calculation.
       result.innerHTML = e.data.substring(1);
-      if (e.data.substring(0, 1) == '2')
-      {   // First character passed from web worker is '2'.
+      if (e.data.substring(0, 1) == "2")
+      {   // First character passed from web worker is "2".
         dlog.disabled = false;
         stop.disabled = true;
       }
@@ -103,7 +103,7 @@ function dowork(n)
   stop.disabled = false;
   result.innerHTML = (lang? "Calculando el logaritmo discreto..." :
                          "Computing discrete logarithm...");
-  var param = digitGroup + ',' + app + ',' + baseText + String.fromCharCode(0) + powText +
+  var param = digitGroup + "," + app + "," + baseText + String.fromCharCode(0) + powText +
   String.fromCharCode(0) + modText + String.fromCharCode(0);
   callWorker(param);
 }
@@ -132,16 +132,16 @@ function fillCache()
       }
       else
       {     // Response is the HTML contents.
-        var date = response.headers.get('last-modified');
+        var date = response.headers.get("last-modified");
             // Request the HTML from the Web server.
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
-        fetch(url,{headers:{'If-Modified-Since': date, 'x-calc': '1'}, cache: "no-store"}).then(function(responseHTML)
+        fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
         {
           if (responseHTML.status != 200)
           {
             return;        // HTML could not be retrieved, so go out.
           }
-          if (date == responseHTML.headers.get('last-modified'))
+          if (date == responseHTML.headers.get("last-modified"))
           {
             return;        // HTML has not changed, so other files have not been changed. Go out.
           }
@@ -223,7 +223,7 @@ function b64decode(str,out)
 {
   var ch, idx;
   var idxDest,idxSrc;
-  var blocks, left_over;
+  var blocks, leftOver;
   var byte0, byte1, byte2, byte3;
   var conv=new Int8Array(128);
   var len=str.length;
@@ -261,8 +261,8 @@ function b64decode(str,out)
     out[idxDest+1] = (byte1<<4) + (byte2>>2);
     out[idxDest+2] = (byte2<<6) + byte3;
   }
-  left_over = len & 3;
-  if (left_over == 2)
+  leftOver = len & 3;
+  if (leftOver == 2)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -270,7 +270,7 @@ function b64decode(str,out)
     out[idxDest] = (byte0<<2) + (byte1>>4);
     out[idxDest+1] = byte1<<4;
   }
-  else if (left_over == 3)
+  else if (leftOver == 3)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -364,7 +364,7 @@ window.onload = function ()
       }
     };
     xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     var elements = formfeedback.elements;
     var contents = "";
     var useAmp = 0;
@@ -379,7 +379,7 @@ window.onload = function ()
       {
         if (useAmp)
         {
-          contents += '&';
+          contents += "&";
         }
         contents += element.name + "=" + encodeURIComponent(element.value);
         useAmp++;
@@ -388,17 +388,17 @@ window.onload = function ()
     xhr.send(contents);
     return false;   // Send form only through JavaScript.
   }
-  if ('serviceWorker' in navigator)
+  if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"].register('calcSW.js').then(function() {}, function() {});
+    navigator["serviceWorker"].register("calcSW.js").then(function() {}, function() {});
     fillCache();
   }
 }
 if (asmjs)
 {
   var req = new XMLHttpRequest();
-  req.open('GET', "dilogW0000.js", true);
+  req.open("GET", "dilogW0000.js", true);
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (aEvt)
   {

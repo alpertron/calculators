@@ -1333,11 +1333,11 @@ function b64decode(str, out)
   var blocks,left_over;
   var len = str.length;
   // Ignore 
-  if (str.charAt(len-1) == '=')
+  if (str.charAt(len-1) == "=")
   {
     len--;
   }
-  if (str.charAt(len-1) == '=')
+  if (str.charAt(len-1) == "=")
   {
     len--;
   }
@@ -1389,7 +1389,7 @@ function startLowLevelCode()
       abortStackOverflow: function(q) {},
       _showInfo: showInfo};
     // check for imul support, and also for correctness ( https://bugs.webkit.org/show_bug.cgi?id=126345 )
-    if (!Math['imul'] || Math['imul'](0xffffffff, 5) !== -5) Math['imul'] = function imul(a, b)
+    if (!Math["imul"] || Math["imul"](0xffffffff, 5) !== -5) Math["imul"] = function imul(a, b)
     {
       var ah  = a >>> 16;
       var al = a & 0xffff;
@@ -1397,7 +1397,7 @@ function startLowLevelCode()
       var bl = b & 0xffff;
       return (al*bl + ((ah*bl + al*bh) << 16))|0;
     };
-    Math.imul = Math['imul'];
+    Math.imul = Math["imul"];
     asm = myAsmJs(global, env, buffer);  // Link asm.js module.
     ShowInformation = asm["_ShowInformation"];
   }

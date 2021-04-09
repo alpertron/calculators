@@ -59,11 +59,11 @@ function callWorker(param)
     {
       if (asmjs)
       {    // Asm.js
-        blob = new Blob([fileContents],{type: 'text/javascript'});
+        blob = new Blob([fileContents],{type: "text/javascript"});
       }
       else
       {    // WebAssembly
-        blob = new Blob([get("worker").textContent],{type: 'text/javascript'});
+        blob = new Blob([get("worker").textContent],{type: "text/javascript"});
       }
     }   
     worker = new Worker(window.URL.createObjectURL(blob));
@@ -155,16 +155,16 @@ function fillCache()
       }
       else
       {     // Response is the HTML contents.
-        var date = response.headers.get('last-modified');
+        var date = response.headers.get("last-modified");
             // Request the HTML from the Web server.
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
-        fetch(url,{headers:{'If-Modified-Since': date, 'x-calc': '1'}, cache: "no-store"}).then(function(responseHTML)
+        fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
         {
-          if (responseHTML.status != 200)
+          if (responseHTML.status !== 200)
           {
             return;        // HTML could not be retrieved, so go out.
           }
-          if (date == responseHTML.headers.get('last-modified'))
+          if (date == responseHTML.headers.get("last-modified"))
           {
             return;        // HTML has not changed, so other files have not been changed. Go out.
           }
@@ -428,7 +428,7 @@ window.onload = function ()
       }
     };
     xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     var elements = get("formfeedback").elements;
     var contents = "";
     var useAmp = 0;
@@ -443,7 +443,7 @@ window.onload = function ()
       {
         if (useAmp)
         {
-          contents += '&';
+          contents += "&";
         }
         contents += element.name + "=" + encodeURIComponent(element.value);
         useAmp++;
@@ -482,17 +482,17 @@ window.onload = function ()
       digits = digits.substr(0,index);
     }
   }
-  if ('serviceWorker' in navigator)
+  if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"].register('calcSW.js').then(function() {}, function() {});
+    navigator["serviceWorker"].register("calcSW.js").then(function() {}, function() {});
     fillCache();
   }
 }
 if (asmjs)
 {
   var req = new XMLHttpRequest();
-  req.open('GET', "gaussianW0000.js", true);
+  req.open("GET", "gaussianW0000.js", true);
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (aEvt)
   {

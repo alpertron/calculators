@@ -58,7 +58,7 @@ self.onmessage = function (e)
 	}
     return;
   });
-}
+};
 
 function PtrToString(ptr)
 {

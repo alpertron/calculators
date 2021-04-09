@@ -33,10 +33,10 @@ function fetchedFromNetwork(response)
          // Function is called when the item is not in cache and cannot be retrieved from network.
 function unableToResolve()
 {
-  return new Response('<h1>Cannot connect to Web server</h1>', {
+  return new Response("<h1>Cannot connect to Web server</h1>", {
           status: 503,
-          statusText: 'Service Unavailable',
-          headers: new Headers({'Content-Type': 'text/html'})
+          statusText: "Service Unavailable",
+          headers: new Headers({"Content-Type": "text/html"})
   });
 }
 
@@ -45,10 +45,10 @@ self.addEventListener("fetch", function(event)
 {
   var url = event.request.url;
       // Check if special header indicating not to read from cache has arrived.
-  var nocache = event.request.headers.get('x-calc');
+  var nocache = event.request.headers.get("x-calc");
   var noQueryString;
   if (url.toString().replace(/^(.*\/\/[^\/?#]*).*$/,"$1") != self.location.origin ||
-      event.request.method !== 'GET' || url.endsWith(".pl") || url.endsWith(".php"))
+      event.request.method !== "GET" || url.endsWith(".pl") || url.endsWith(".php"))
   {  // Cache GET requests from this Web server only.
     return;
   }
