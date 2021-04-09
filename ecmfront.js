@@ -38,6 +38,11 @@ var statusDirty = false;
 var resultDirty = false;
 var calcURLs = ["ecmW0000.js",
                "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-180px.png", "ecm-icon-512px.png", "favicon.ico"];
+function get(x)
+{
+  return document.getElementById(x);
+}
+
 function oneexpr()
 {
   get("next").value = (lang? "Hecho": "Done");
@@ -45,11 +50,6 @@ function oneexpr()
   get("wzdexam").innerHTML = "&nbsp;";
   wizardTextInput = "";
   wizardStep = 9;
-}
-
-function get(x)
-{
-  return document.getElementById(x);
 }
 
 function setStorage(name, data)
@@ -72,17 +72,6 @@ function styleButtons(style1, style2)
   get("more").style.display = style2;
 }
 
-function restartFactorization(type)
-{
-  get("modal-more").style.display = "none";
-  if (worker)
-  {
-    worker.terminate();
-  }
-  worker = 0;
-  dowork(type);
-}
-
 function b64decode(str,out)
 {
   var ch, idx;
@@ -91,11 +80,11 @@ function b64decode(str,out)
   var byte0, byte1, byte2, byte3;
   var conv=new Int8Array(128);
   var len=str.length;
-  if(str.charAt(len-1)==="=")
+  if (str.charAt(len-1) === "=")
   {
     len--;
   }
-  if(str.charAt(len-1)=="=")
+  if (str.charAt(len-1) === "=")
   {
     len--;
   }
@@ -294,6 +283,17 @@ function dowork(n)
   }
 }
 
+function restartFactorization(type)
+{
+  get("modal-more").style.display = "none";
+  if (worker)
+  {
+    worker.terminate();
+  }
+  worker = 0;
+  dowork(type);
+}
+
 function selectLoop()
 {   
   get("next").value = (lang ? "Siguiente": "Next");
@@ -407,6 +407,27 @@ function endFeedback()
 }
 
 var url = window.location.pathname;
+function updateCache(cache)
+{
+  caches.open("cacheECM").then(function(tempCache)
+  {
+    tempCache.addAll([url].concat(calcURLs)).then(function()
+    {     // Copy cached resources to main cache and delete this one.
+      tempCache.matchAll().then(function(responseArr)
+      {   // All responses in array responseArr.
+        responseArr.forEach(function(responseTempCache, index, array)
+        {
+          cache.put(responseTempCache.url, responseTempCache);
+        });
+      })
+      .finally(function()
+      {
+        caches.delete("cacheECM");
+      });
+    });  
+  });
+}
+
 function fillCache()
 {
   // Test whether the HTML is already on the cache.
@@ -414,9 +435,9 @@ function fillCache()
   {
     cache.match(url).then(function (response)
     {
-      if (response === undefined)
+      if (typeof response === "undefined")
       {     // HTML is not in cache.
-        UpdateCache(cache);
+        updateCache(cache);
       }
       else
       {     // Response is the HTML contents.
@@ -478,32 +499,11 @@ function fillCache()
           })
           .catch (function()     // Cannot fetch HTML.
           {
-            UpdateCache(cache);
+            updateCache(cache);
           });
-        })
+        });
       }
     });
-  });
-}
-
-function UpdateCache(cache)
-{
-  caches.open("cacheECM").then(function(tempCache)
-  {
-    tempCache.addAll([url].concat(calcURLs)).then(function()
-    {     // Copy cached resources to main cache and delete this one.
-      tempCache.matchAll().then(function(responseArr)
-      {   // All responses in array responseArr.
-        responseArr.forEach(function(responseTempCache, index, array)
-        {
-          cache.put(responseTempCache.url, responseTempCache);
-        });
-      })
-      .finally(function()
-      {
-        caches.delete("cacheECM");
-      });
-    });  
   });
 }
 
@@ -607,7 +607,7 @@ function startUp()
   {
     var inputValue = get("wzdinput").value;
     var nextBtn = get("next");
-    if (inputValue != "")
+    if (inputValue !== "")
     {         // User typed something on input box.
       if (wizardStep === 1 || wizardStep === 9 ||
           (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
@@ -685,7 +685,7 @@ function startUp()
       dowork(2);
     }
     return true;
-  }
+  };
   get("helpbtn").onclick = function ()
   {
     var help = get("help");
@@ -708,12 +708,12 @@ function startUp()
   {
     get("skip").style.display = "none";
     restartFactorization(4);
-  }
+  };
   get("continue").onclick = function ()
   {
     get("cont").style.display = "none";
     callWorker("C");  // Indicate worker that user pressed Continue button.
-  }
+  };
   get("formlink").onclick = function ()
   {
     get("main").style.display = "none";
@@ -721,11 +721,11 @@ function startUp()
     get("formfeedback").reset();
     get("name").focus();
     return false;   // Do not follow the link.
-  }
+  };
   get("formcancel").onclick = function ()
   {
     endFeedback();
-  }
+  };
   get("formsend").onclick = function()
   {
     var userdata = get("userdata");
@@ -777,7 +777,7 @@ function startUp()
     }
     xhr.send(contents);
     return false;   // Send form only through JavaScript.
-  }
+  };
   window.onclick = function(event)
   {
     var modal = get("modal");
@@ -844,7 +844,7 @@ function startUp()
     x = points[ctr >> 0];
     y = points[(ctr+1) >> 0];
     ctx.fillRect(20+x*10+1,(28-y)*10+1,9,9);
-    if (y != 0)
+    if (y !== 0)
     {
       ctx.fillRect(20+x*10+1,(y-1)*10+1,9,9); 
     }

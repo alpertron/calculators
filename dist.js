@@ -48,7 +48,7 @@ function clearScreen()
   var index;
   for (index=0; index<donotshow.length; index++)
   {
-    donotshow[parseInt(index, 10)].style.display = "none";
+    donotshow[index >> 0].style.display = "none";
   }
   get("mainmenu").style.display = "none";
   get("help").style.display = "none";
@@ -67,7 +67,7 @@ function setTextToClass(text, className)
   var index;
   for (index=0; index<elems.length; index++)
   {
-    elems[parseInt(index, 10)].innerHTML = text;
+    elems[index >> 0].innerHTML = text;
   }
 }
 
@@ -75,12 +75,93 @@ function getCityName(cityIndex, withCountries)
 {
   if (withCountries)
   {
-    return cityName[parseInt(cityIndex, 10)]+" ("+countryName[parseInt(cityIndex, 10)]+")";
+    return cityName[cityIndex >> 0]+" ("+countryName[cityIndex >> 0]+")";
   }
   else
   {
-    return cityName[parseInt(cityIndex, 10)];
+    return cityName[cityIndex >> 0];
   }
+}
+
+function getDistance(Lat1, Lon1, Lat2, Lon2)
+{
+  var q = Math.cos(Lat1*Rad)*Math.cos(Lat2*Rad)*Math.cos((Lon1-Lon2)*Rad)+Math.sin(Lat1*Rad)*Math.sin(Lat2*Rad);
+  if (q >= 1)
+  {
+    return 0;
+  }
+  if (q < -1)
+  {
+    return 20012;
+  }
+  return Math.round(6370*Math.acos(q));
+}
+
+function getDirection(Lat1, Lon1, Lat2, Lon2)
+{
+  var Angle;
+  var AngAux;
+  var Difference;
+
+  if (Lon1 === Lon2)
+  {
+    Angle = (Lat1>Lat2)?180:0;
+  }
+  else
+  {
+    if (Lat1 === 90*60 || Lat2 === -90*60)
+    {
+      Angle = 180;
+    }
+    else
+    {
+      if (Lat1 === -90*60 || Lat2 === 90*60)
+      {
+        Angle = 0;
+      }
+      else
+      {
+        Difference = Lon2 - Lon1;
+        Angle = 90 - (Math.round(180/Math.PI*Math.atan((Math.tan(Lat2*Rad)*Math.cos(Lat1*Rad)-Math.sin(Lat1*Rad)*Math.cos(Difference*Rad))/Math.sin(Difference*Rad))));
+        Difference = (Difference + 360*60) % (360*60);
+        if (Difference > 180*60)
+        {
+          Angle = (Angle + 180) % 360;
+        }
+      }
+    }
+  }
+  AngAux = (Angle + 348) % 360;
+  return Angle + " " + degreeText + (Angle===1?"":"s") + " (" + direction[parseInt(Math.floor(AngAux/22.5), 10)] + ")";
+}
+
+function getDaytime(Lat, Lon)
+{
+  var q;
+  var minutesDaytime;
+
+  if (Math.abs(Lat) === 90*60)
+  {
+    q = Lat;
+  }
+  else
+  {    // Use generalized equation (all values in degrees): (sin 0.83 + sin latitude * sin d) / (cos latitude * cos d)
+       // where d = Sun declination = 23.437 degrees for solstices.
+    q = (-0.01449 + Math.sin(Lat*Rad)*0.39774) / (Math.cos(Lat*Rad) * 0.9175);
+  }
+  if (q >= 1)
+  {
+    minutesDaytime = 0;
+  }
+  else if (q <= -1)
+  {
+    minutesDaytime = 1440;
+  }
+  else
+  {
+    minutesDaytime = Math.round(458.3662*Math.acos(q));
+  }
+  return Math.floor(minutesDaytime/60) + "h " + (minutesDaytime%60) + "m";
 }
 
 function test1(complete)
@@ -105,7 +186,7 @@ function test1(complete)
         cityTo = Math.floor(Math.random()*cityData.length);
       } while (cityFrom === cityTo);
     }
-    get("ord1").textContent = ordinal[parseInt(questionNbr - 1, 10)];
+    get("ord1").textContent = ordinal[(questionNbr - 1) >> 0];
     get("score1").textContent = score + " " + pointText + (score === 1?"":"s");
   }
   else
@@ -115,21 +196,21 @@ function test1(complete)
   }
   cityNameFrom = getCityName(cityFrom, withCountries || questionNbr === 0);
   cityNameTo = getCityName(cityTo, withCountries || questionNbr === 0);
-  LatFrom = Latitude[parseInt(cityFrom, 10)];
-  LongFrom = Longitude[parseInt(cityFrom, 10)];
-  LatTo = Latitude[parseInt(cityTo, 10)];
-  LongTo = Longitude[parseInt(cityTo, 10)];
+  LatFrom = Latitude[cityFrom >> 0];
+  LongFrom = Longitude[cityFrom >> 0];
+  LatTo = Latitude[cityTo >> 0];
+  LongTo = Longitude[cityTo >> 0];
   setTextToClass(cityNameFrom, "cityctry_from");
   setTextToClass(cityNameTo, "cityctry_to");
   show = document.getElementsByClassName(questionNbr === 0?"findDist": "notFindDist");
   for (index=0; index<show.length; index++)
   {
-    show[parseInt(index, 10)].style.display = "block";
+    show[index >> 0].style.display = "block";
   }
   show = document.getElementsByClassName(questionNbr === 0?"notFindDist": "findDist");
   for (index=0; index<show.length; index++)
   {
-    show[parseInt(index, 10)].style.display = "none";
+    show[index >> 0].style.display = "none";
   }
   if (complete)
   {
@@ -234,12 +315,12 @@ function test1(complete)
       test11 = document.getElementsByClassName("test1_1");
       for (index=0; index<test11.length; index++)
       {
-        test11[parseInt(index, 10)].style.display="none";
+        test11[index >> 0].style.display="none";
       }
       test12 = document.getElementsByClassName("test1_2");
       for (index=0; index<test12.length; index++)
       {
-        test12[parseInt(index, 10)].style.display="block";
+        test12[index >> 0].style.display="block";
       }
       get("nextq").style.display = (questionNbr>10? "none": "inline");
     }
@@ -249,12 +330,12 @@ function test1(complete)
     test11 = document.getElementsByClassName("test1_1");
     for (index=0; index<test11.length; index++)
     {
-      test11[parseInt(index, 10)].style.display="block";
+      test11[index >> 0].style.display="block";
     }
     test12 = document.getElementsByClassName("test1_2");
     for (index=0; index<test12.length; index++)
     {
-      test12[parseInt(index, 10)].style.display="none";
+      test12[index >> 0].style.display="none";
     }
   }
   get("test1").style.display="block";
@@ -267,93 +348,12 @@ function test1(complete)
   }
 }
 
-function getDistance(Lat1, Lon1, Lat2, Lon2)
-{
-  var q = Math.cos(Lat1*Rad)*Math.cos(Lat2*Rad)*Math.cos((Lon1-Lon2)*Rad)+Math.sin(Lat1*Rad)*Math.sin(Lat2*Rad);
-  if (q >= 1)
-  {
-    return 0;
-  }
-  if (q < -1)
-  {
-    return 20012;
-  }
-  return Math.round(6370*Math.acos(q));
-}
-
-function getDirection(Lat1, Lon1, Lat2, Lon2)
-{
-  var Angle;
-  var AngAux;
-  var Difference;
-
-  if (Lon1 === Lon2)
-  {
-    Angle = (Lat1>Lat2)?180:0;
-  }
-  else
-  {
-    if (Lat1 === 90*60 || Lat2 === -90*60)
-    {
-      Angle = 180;
-    }
-    else
-    {
-      if (Lat1 === -90*60 || Lat2 === 90*60)
-      {
-        Angle = 0;
-      }
-      else
-      {
-        Difference = Lon2 - Lon1;
-        Angle = 90 - (Math.round(180/Math.PI*Math.atan((Math.tan(Lat2*Rad)*Math.cos(Lat1*Rad)-Math.sin(Lat1*Rad)*Math.cos(Difference*Rad))/Math.sin(Difference*Rad))));
-        Difference = (Difference + 360*60) % (360*60);
-        if (Difference > 180*60)
-        {
-          Angle = (Angle + 180) % 360;
-        }
-      }
-    }
-  }
-  AngAux = (Angle + 348) % 360;
-  return Angle + " " + degreeText + (Angle===1?"":"s") + " (" + direction[parseInt(Math.floor(AngAux/22.5), 10)] + ")";
-}
-
-function getDaytime(Lat, Lon)
-{
-  var q;
-  var minutesDaytime;
-
-  if (Math.abs(Lat) === 90*60)
-  {
-    q = Lat;
-  }
-  else
-  {    // Use generalized equation (all values in degrees): (sin 0.83 + sin latitude * sin d) / (cos latitude * cos d)
-       // where d = Sun declination = 23.437 degrees for solstices.
-    q = (-0.01449 + Math.sin(Lat*Rad)*0.39774) / (Math.cos(Lat*Rad) * 0.9175);
-  }
-  if (q >= 1)
-  {
-    minutesDaytime = 0;
-  }
-  else if (q <= -1)
-  {
-    minutesDaytime = 1440;
-  }
-  else
-  {
-    minutesDaytime = Math.round(458.3662*Math.acos(q));
-  }
-  return Math.floor(minutesDaytime/60) + "h " + (minutesDaytime%60) + "m";
-}
-
 function test2()
 {
   var idx, innerIdx, randomValue;
   
   clearScreen();
-  get("ord2").textContent = ordinal[parseInt(questionNbr - 1, 10)];
+  get("ord2").textContent = ordinal[(questionNbr - 1) >> 0];
   for (idx=0; idx<6; idx++)
   {
     do
@@ -361,13 +361,13 @@ function test2()
       randomValue = Math.floor(Math.random()*cityData.length);
       for (innerIdx=0; innerIdx<idx; innerIdx++)
       {
-        if (cityIdx[parseInt(innerIdx, 10)] === randomValue)
+        if (cityIdx[innerIdx >> 0] === randomValue)
         {
           break;    
         }
       }
     } while (idx !== innerIdx);
-    cityIdx[parseInt(idx, 10)] = randomValue;
+    cityIdx[idx >> 0] = randomValue;
     get("city"+(idx+1)).textContent = getCityName(randomValue, withCountries);
   }
   get("score4").textContent = score + " " + pointText + (score === 1?"":"s");
@@ -388,40 +388,40 @@ function showResultsTest2(playerInput)
   {
     for (k=1; k<=5; k++)
     {
-      arrayDist[parseInt(i++, 10)] = getDistance(Latitude[parseInt(cityIdx[parseInt(j, 10)], 10)],
-             Longitude[parseInt(cityIdx[parseInt(j, 10)], 10)], Latitude[parseInt(cityIdx[parseInt(k, 10)], 10)],
-             Longitude[parseInt(cityIdx[parseInt(k, 10)], 10)]);
+      arrayDist[i++ >> 0] = getDistance(Latitude[cityIdx[j >> 0] >> 0],
+             Longitude[cityIdx[j >> 0] >> 0], Latitude[cityIdx[k >> 0] >> 0],
+             Longitude[cityIdx[k >> 0] >> 0]);
     }
   }
   for (j=0; j<24; j++)
   {
-    arrayComb[parseInt(j, 10)] = "123412431324134214231432213421432314234124132431312431423214324134123421412341324213423143124321".substring(j*4,j*4+4);
-    combination = "0" + arrayComb[parseInt(j, 10)] + "5";
-    arrayDistComb[parseInt(j, 10)] = 0;
+    arrayComb[j >> 0] = "123412431324134214231432213421432314234124132431312431423214324134123421412341324213423143124321".substring(j*4,j*4+4);
+    combination = "0" + arrayComb[j >> 0] + "5";
+    arrayDistComb[j >> 0] = 0;
     for (k=0; k<5; k++)
     {
       u = parseInt(combination.substring(k,k+1), 10);
       v = parseInt(combination.substring(k+1,k+2), 10);
-      arrayDistComb[parseInt(j, 10)] += arrayDist[parseInt(u*5+v-1, 10)];
+      arrayDistComb[j >> 0] += arrayDist[(u*5+v-1) >> 0];
     }
     for (k=j; k>0; k--)
     {
-      if (arrayDistComb[parseInt(k, 10)] > arrayDistComb[parseInt(k-1, 10)])
+      if (arrayDistComb[k >> 0] > arrayDistComb[(k-1) >> 0])
       {
         break;
       }
-      i = arrayDistComb[parseInt(k, 10)];
-      arrayDistComb[parseInt(k, 10)] = arrayDistComb[parseInt(k-1, 10)];
-      arrayDistComb[parseInt(k-1, 10)] = i;
-      temp = arrayComb[parseInt(k, 10)];
-      arrayComb[parseInt(k, 10)] = arrayComb[parseInt(k-1, 10)];
-      arrayComb[parseInt(k-1, 10)] = temp;
+      i = arrayDistComb[k >> 0];
+      arrayDistComb[k >> 0] = arrayDistComb[(k-1) >> 0];
+      arrayDistComb[(k-1) >> 0] = i;
+      temp = arrayComb[k >> 0];
+      arrayComb[k >> 0] = arrayComb[(k-1) >> 0];
+      arrayComb[(k-1) >> 0] = temp;
     }
   }
   position = -1;
   for (j=0; j<24; j++)
   {
-    combination = arrayComb[parseInt(j, 10)];
+    combination = arrayComb[j >> 0];
     if (combination === playerInput)
     {
       position = j;
@@ -481,14 +481,14 @@ function listCities(onlyList)
   for (idx=0; idx<cityData.length; idx++)
   {
     signLat = 0;
-    degminLat = Latitude[parseInt(idx, 10)];
+    degminLat = Latitude[idx >> 0];
     if (degminLat < 0)
     {
       degminLat = -degminLat;
       signLat = -1;
     }
     signLon = 0;
-    degminLon = Longitude[parseInt(idx, 10)];
+    degminLon = Longitude[idx >> 0];
     if (degminLon < 0)
     {
       degminLon = -degminLon;
@@ -553,17 +553,17 @@ function startUp()
   westText = get("West").innerHTML;
   for (index=0; index<cityData.length; index++)
   {
-    s = cityData[parseInt(index, 10)];
-    cityName[parseInt(index, 10)] = s.substring(0, s.indexOf(","));
-    countryName[parseInt(index, 10)] = s.substring(s.indexOf(",")+1, s.indexOf(":"));
+    s = cityData[index >> 0];
+    cityName[index >> 0] = s.substring(0, s.indexOf(","));
+    countryName[index >> 0] = s.substring(s.indexOf(",")+1, s.indexOf(":"));
     degmin = parseInt(s.substring(s.indexOf(":")+1, s.indexOf(";")), 10);
     degLat = Math.floor(Math.abs(degmin) / 100);
     minLat = Math.abs(degmin) % 100;
-    Latitude[parseInt(index, 10)] = (60 * degLat + minLat) * (degmin>0? 1:-1);       // Convert degrees and minutes to minutes.
+    Latitude[index >> 0] = (60 * degLat + minLat) * (degmin>0? 1:-1);       // Convert degrees and minutes to minutes.
     degmin = parseInt(s.substring(s.indexOf(";")+1, s.length), 10);
     degLon = Math.floor(Math.abs(degmin) / 100);
     minLon = Math.abs(degmin) % 100;
-    Longitude[parseInt(index, 10)] = (60 * degLon + minLon) * (degmin>0? 1:-1);      // Convert degrees and minutes to minutes.
+    Longitude[index >> 0] = (60 * degLon + minLon) * (degmin>0? 1:-1);      // Convert degrees and minutes to minutes.
   }
   get("1with").onclick = function ()
   {

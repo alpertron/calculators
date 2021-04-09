@@ -53,7 +53,7 @@
           get("solve").disabled = false;
           get("stop").disabled = true;
         }
-      }
+      };
     }
     if (asmjs)
     {      // Asm.js
@@ -119,7 +119,7 @@ function b64decode(str,out)
 {
   var ch, idx;
   var idxDest,idxSrc;
-  var blocks, left_over;
+  var blocks, leftOver;
   var byte0, byte1, byte2, byte3;
   var conv=new Int8Array(128);
   var len=str.length;
@@ -157,8 +157,8 @@ function b64decode(str,out)
     out[(idxDest+1) >> 0] = (byte1<<4) + (byte2>>2);
     out[(idxDest+2) >> 0] = (byte2<<6) + byte3;
   }
-  left_over = len & 3;
-  if (left_over === 2)
+  leftOver = len & 3;
+  if (leftOver === 2)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -166,7 +166,7 @@ function b64decode(str,out)
     out[idxDest >> 0] = (byte0<<2) + (byte1>>4);
     out[(idxDest+1) >> 0] = byte1<<4;
   }
-  else if (left_over === 3)
+  else if (leftOver === 3)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -186,6 +186,27 @@ if (!asmjs)
 }
 
 var url = window.location.pathname;
+function updateCache(cache)
+{
+  caches.open("cacheECM").then(function(tempCache)
+  {
+    tempCache.addAll([url].concat(calcURLs)).then(function()
+    {     // Copy cached resources to main cache and delete this one.
+      tempCache.matchAll().then(function(responseArr)
+      {   // All responses in array responseArr.
+        responseArr.forEach(function(responseTempCache, index, array)
+        {
+          cache.put(responseTempCache.url, responseTempCache);
+        });
+      })
+      .finally(function()
+      {
+        caches.delete("cacheECM");
+      });
+    });  
+  });
+}
+
 function fillCache()
 {
   // Test whether the HTML is already on the cache.
@@ -193,9 +214,9 @@ function fillCache()
   {
     cache.match(url).then(function (response)
     {
-      if (response === undefined)
+      if (typeof response === undefined)
       {     // HTML is not in cache.
-        UpdateCache(cache);
+        updateCache(cache);
       }
       else
       {     // Response is the HTML contents.
@@ -257,34 +278,14 @@ function fillCache()
           })
           .catch (function()     // Cannot fetch HTML.
           {
-            UpdateCache(cache);
+            updateCache(cache);
           });
-        })
+        });
       }
     });
   });
 }
 
-function UpdateCache(cache)
-{
-  caches.open("cacheECM").then(function(tempCache)
-  {
-    tempCache.addAll([url].concat(calcURLs)).then(function()
-    {     // Copy cached resources to main cache and delete this one.
-      tempCache.matchAll().then(function(responseArr)
-      {   // All responses in array responseArr.
-        responseArr.forEach(function(responseTempCache, index, array)
-        {
-          cache.put(responseTempCache.url, responseTempCache);
-        });
-      })
-      .finally(function()
-      {
-        caches.delete("cacheECM");
-      });
-    });  
-  });
-}
 
   window.onload = function ()
   {
