@@ -231,7 +231,10 @@ function test1(complete)
     if (questionNbr !== 0)
     {
       partialScore = Math.round(100 - 100 * Math.abs(Math.log(trueDist/playerDist)));
-      if (partialScore < 0) partialScore = 0;
+      if (partialScore < 0)
+      {
+        partialScore = 0;
+      }
       if (partialScore === 100)
       {
         interpretation = parcInterp[0];

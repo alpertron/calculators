@@ -101,4 +101,4 @@ self.onmessage = function (e)
     exports["doWork"]();
     return;
   });
-}
+};

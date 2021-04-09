@@ -521,7 +521,7 @@ function startUp()
       get("wzdinput").value = "";
       get("wzdinput").focus();
       oneexpr();
-    }
+    };
     get("wzdinput").onkeydown = function (event)
     {
       if (event.keyCode === 10 || event.keyCode === 13)
@@ -568,7 +568,7 @@ function startUp()
         }
       }
       return true;
-    }
+    };
     get("oneexpr").onclick = function ()
     {
       oneexpr();

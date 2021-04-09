@@ -55,7 +55,7 @@ function callWorker(param)
         get("steps").disabled = false;
         get("stop").disabled = true;
       }
-    }
+    };
   }
   if (asmjs)
   {      // Asm.js
@@ -145,7 +145,7 @@ function b64decode(str,out)
 {
   var ch, idx;
   var idxDest,idxSrc;
-  var blocks, left_over;
+  var blocks, leftOver;
   var byte0, byte1, byte2, byte3;
   var conv=new Int8Array(128);
   var len=str.length;
@@ -183,8 +183,8 @@ function b64decode(str,out)
     out[(idxDest+1) >> 0] = (byte1<<4) + (byte2>>2);
     out[(idxDest+2) >> 0] = (byte2<<6) + byte3;
   }
-  left_over = len & 3;
-  if (left_over === 2)
+  leftOver = len & 3;
+  if (leftOver === 2)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -192,7 +192,7 @@ function b64decode(str,out)
     out[idxDest >> 0] = (byte0<<2) + (byte1>>4);
     out[(idxDest+1) >> 0] = byte1<<4;
   }
-  else if (left_over === 3)
+  else if (leftOver === 3)
   {
     byte0 = conv[str.charCodeAt(idxSrc)];
     byte1 = conv[str.charCodeAt(idxSrc+1)];
@@ -240,7 +240,7 @@ function fillCache()
   {
     cache.match(url).then(function (response)
     {
-      if (response === undefined)
+      if (typeof response === "undefined")
       {     // HTML is not in cache.
         updateCache(cache);
       }
@@ -251,7 +251,7 @@ function fillCache()
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
         fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
         {
-          if (responseHTML.status != 200)
+          if (responseHTML.status !== 200)
           {
             return;        // HTML could not be retrieved, so go out.
           }
@@ -306,7 +306,7 @@ function fillCache()
           {
             updateCache(cache);
           });
-        })
+        });
       }
     });
   });

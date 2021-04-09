@@ -214,7 +214,7 @@ function fillCache()
   {
     cache.match(url).then(function (response)
     {
-      if (typeof response === undefined)
+      if (typeof response === "undefined")
       {     // HTML is not in cache.
         updateCache(cache);
       }

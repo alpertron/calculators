@@ -36,7 +36,7 @@ function get(x)
 }
 function exprText(es, en)
 {
-  return lang? exprTextEs + es: exprTextEn + en
+  return lang? exprTextEs + es: exprTextEn + en;
 }
 function callWorker(param)
 {
@@ -63,7 +63,7 @@ function callWorker(param)
         dlog.disabled = false;
         stop.disabled = true;
       }
-    }
+    };
   }
   if (asmjs)
   {      // Asm.js
@@ -119,6 +119,27 @@ var calcURLs = ["dilogW0000.js",
                 "dilog.webmanifest", "logdi.webmanifest", "dilog-icon-1x.png", "dilog-icon-2x.png", "dilog-icon-4x.png", "dilog-icon-180px.png", "dilog-icon-512px.png", "favicon.ico"];
 
 var url = window.location.pathname;
+function updateCache(cache)
+{
+  caches.open("cacheECM").then(function(tempCache)
+  {
+    tempCache.addAll([url].concat(calcURLs)).then(function()
+    {     // Copy cached resources to main cache and delete this one.
+      tempCache.matchAll().then(function(responseArr)
+      {   // All responses in array responseArr.
+        responseArr.forEach(function(responseTempCache, index, array)
+        {
+          cache.put(responseTempCache.url, responseTempCache);
+        });
+      })
+      .finally(function()
+      {
+        caches.delete("cacheECM");
+      });
+    });  
+  });
+}
+
 function fillCache()
 {
   // Test whether the HTML is already on the cache.
@@ -126,9 +147,9 @@ function fillCache()
   {
     cache.match(url).then(function (response)
     {
-      if (response === undefined)
+      if (typeof response === "undefined")
       {     // HTML is not in cache.
-        UpdateCache(cache);
+        updateCache(cache);
       }
       else
       {     // Response is the HTML contents.
@@ -190,32 +211,11 @@ function fillCache()
           })
           .catch (function()     // Cannot fetch HTML.
           {
-            UpdateCache(cache);
+            updateCache(cache);
           });
-        })
+        });
       }
     });
-  });
-}
-
-function UpdateCache(cache)
-{
-  caches.open("cacheECM").then(function(tempCache)
-  {
-    tempCache.addAll([url].concat(calcURLs)).then(function()
-    {     // Copy cached resources to main cache and delete this one.
-      tempCache.matchAll().then(function(responseArr)
-      {   // All responses in array responseArr.
-        responseArr.forEach(function(responseTempCache, index, array)
-        {
-          cache.put(responseTempCache.url, responseTempCache);
-        });
-      })
-      .finally(function()
-      {
-        caches.delete("cacheECM");
-      });
-    });  
   });
 }
 
