@@ -250,11 +250,11 @@ function b64decode(str,out)
   var byte0, byte1, byte2, byte3;
   var conv=new Int8Array(128);
   var len=str.length;
-  if(str.charAt(len-1)==="=")
+  if (str.charAt(len-1) === "=")
   {
     len--;
   }
-  if(str.charAt(len-1)=="=")
+  if (str.charAt(len-1) === "=")
   {
     len--;
   }
@@ -455,13 +455,13 @@ window.onload = function ()
   window.onclick = function(event)
   {
     var modal = get("modal");
-    if (event.target == modal)
+    if (event.target === modal)
     {
       modal.style.display = "none";
     }
   };
   digits = getStorage("ecmConfig");
-  if (digits == null || digits == "")
+  if (digits === null || digits === "")
   {
     digits = 6;
     config = "0010";
@@ -496,7 +496,7 @@ if (asmjs)
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (aEvt)
   {
-    if (req.readyState == 4 && req.status == 200)
+    if (req.readyState === 4 && req.status === 200)
     {
       fileContents = /** @type {ArrayBuffer} */ (req.response);
       if (workerParam)
@@ -519,11 +519,11 @@ else
     wasm = wasm.substring(0, wasm.length-1);
   }    
   var length = wasm.length*3/4;
-  if (wasm.charCodeAt(wasm.length-1)==61)
+  if (wasm.charCodeAt(wasm.length-1) === 61)
   {
     length--;
   }
-  if (wasm.charCodeAt(wasm.length-2)==61)
+  if (wasm.charCodeAt(wasm.length-2) === 61)
   {
     length--;
   }

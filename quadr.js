@@ -153,7 +153,7 @@ function b64decode(str,out)
   {
     len--;
   }
-  if(str.charAt(len-1) == "=")
+  if(str.charAt(len-1) === "=")
   {
     len--;
   }
@@ -278,9 +278,9 @@ function fillCache()
                     {
                       keys.forEach(function(requestCache, index, array)
                       {    // Traverse cache.
-                        if (requestCache.url.substring(0, indexZero+2) == urlTemp.substring(0, indexZero+2) &&
+                        if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
                             requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
-                            requestCache.url.substring(indexZero+4) == urlTemp.substring(indexZero+4))
+                            requestCache.url.substring(indexZero+4) === urlTemp.substring(indexZero+4))
                         {  // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
                           cache.delete(requestCache);
                         }  
@@ -362,7 +362,7 @@ window.onload = function ()
   }
   get("coefF").onkeypress = function(e)
   {
-    if ((e.which == 10 || e.which == 13) && this.value.trim().length > 0)
+    if ((e.which === 10 || e.which === 13) && this.value.trim().length > 0)
     {
       e.preventDefault();
       get("coefA").focus();

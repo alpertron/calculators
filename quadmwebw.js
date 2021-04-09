@@ -28,7 +28,7 @@ function ptrToString(ptr)
     for (i=0; i<1024; i++)
     {
       t = HEAPU8[((ptr++)>>0)];
-      if (t===0)
+      if (t === 0)
       {
         break;
       }

@@ -41,7 +41,7 @@ function styleButtons(style1, style2)
   {    // Continued fraction applet does not use wizard.
     get("openwizard").style.display = style1;
   }
-  if (get("stop") != null)
+  if (get("stop") !== null)
   {
     get("stop").style.display = style2;
   }
@@ -55,11 +55,11 @@ function b64decode(str,out)
   var byte0, byte1, byte2, byte3;
   var conv=new Int8Array(128);
   var len=str.length;
-  if(str.charAt(len-1)==="=")
+  if (str.charAt(len-1) === "=")
   {
     len--;
   }
-  if(str.charAt(len-1)=="=")
+  if (str.charAt(len-1) === "=")
   {
     len--;
   }
@@ -422,7 +422,7 @@ function wizardNext()
       wzdExamText.innerHTML = textExample + "sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";
       break;
     case 6:
-      if (wzdInput.value != "")
+      if (wzdInput.value !== "")
       {
         wizardTextInput += ";"+wzdInput.value;
       }
@@ -470,23 +470,23 @@ function startUp()
       var input = get("num").value;
       if (!e) e = window.event;
       var keyCode = e.keyCode || e.which;
-      if (keyCode == 13)
+      if (keyCode === 13)
       {  // Used pressed Enter key
         output = get("result")
-        if (input == "")
+        if (input === "")
         {
           res.innerHTML = (lang ? "Por favor ingrese un número o expresión." : "Please type a number or expression.");
           return;
         }
-        if (app==0)
+        if (app === 0)
         {
           res.innerHTML = "Computing sum of squares...";
         }
-        else if (app==1)
+        else if (app === 1)
         {
           res.innerHTML = "Calculando suma de cuadrados...";
         }
-        else if (app==2)
+        else if (app === 2)
         {
           res.innerHTML = "Computing sum of cubes...";
         }
@@ -521,9 +521,9 @@ function startUp()
     }
     get("wzdinput").onkeydown = function (event)
     {
-      if (event.keyCode == 10 || event.keyCode == 13)
+      if (event.keyCode === 10 || event.keyCode === 13)
       {
-        if (get("next").disabled == false)
+        if (!get("next").disabled)
         {                                // Next button is not disabled.
           wizardNext();                  // Perform same operation as if the user had pressed Next button.
         }
@@ -532,7 +532,7 @@ function startUp()
       }
       if (event.altKey)
       {                                  // User pressed ALT key.
-        if (event.keyCode == 80)
+        if (event.keyCode === 80)
         {                                // User pressed ALT-P.
           event.stopPropagation();       // Do not propagate key.
           event.preventDefault();
@@ -549,14 +549,14 @@ function startUp()
             oneexpr();
           }
         }
-        else if (event.keyCode == 68)
+        else if (event.keyCode === 68)
         {                                // User pressed ALT-D.
           event.stopPropagation();       // Do not propagate key.
           event.preventDefault();
           get("decW").checked = true;
           get("hexW").checked = false;
         }
-        else if (event.keyCode == 72)
+        else if (event.keyCode === 72)
         {                                // User pressed ALT-H.
           event.stopPropagation();       // Do not propagate key.
           event.preventDefault();
@@ -582,9 +582,9 @@ function startUp()
     {
       var inputValue = get("wzdinput").value;
       var nextBtn = get("next");
-      if (inputValue != "")
+      if (inputValue !== "")
       {         // User typed something on input box.
-        if (wizardStep == 1 || wizardStep == 9 || (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
+        if (wizardStep === 1 || wizardStep === 9 || (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
             inputValue.lastIndexOf("X") >= 0 || inputValue.lastIndexOf("C") >= 0))
         {       // At least one x or c. Indicate valid.
           nextBtn.disabled = false;
@@ -594,7 +594,7 @@ function startUp()
           nextBtn.disabled = true;
         }
       }
-      else if (wizardStep == 5)
+      else if (wizardStep === 5)
       {         // Last step is optional, so empty input is valid.
         nextBtn.disabled = false;
       }
@@ -609,7 +609,7 @@ function startUp()
       get("wizard").style.display = "none";
     };
   }
-  if (get("stop") != null)
+  if (get("stop") !== null)
   {
     get("stop").onclick = function ()
     {
@@ -622,7 +622,7 @@ function startUp()
       get("status").innerHTML = "";
     }
   };
-  if (get("continue") != null)
+  if (get("continue") !== null)
   {
     get("continue").onclick = function ()
     {
@@ -632,7 +632,7 @@ function startUp()
   }
   get("num").onkeydown = function (event)
   {
-    if ((event.keyCode == 10 || event.keyCode == 13) && event.ctrlKey)
+    if ((event.keyCode === 10 || event.keyCode === 13) && event.ctrlKey)
     {
       event.preventDefault();          // Do not propagate Enter key.
       performCalc();                   // Perform calculation.
@@ -646,7 +646,7 @@ function startUp()
     var helphelpStyle = get("helphelp").style;
     var result = get("result");
     var resultStyle = result.style;
-    if (helpStyle.display == "block" && result.innerHTML != "")     
+    if (helpStyle.display === "block" && result.innerHTML !== "")     
     {
       helpStyle.display = "none";
       helphelpStyle.display = resultStyle.display = "block";
@@ -690,9 +690,9 @@ function startUp()
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function (event)
     {
-      if (xhr.readyState == 4) 
+      if (xhr.readyState === 4) 
       {             // XHR finished.
-        if (xhr.status == 200)
+        if (xhr.status === 200)
         {           // PHP page loaded.
           alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
         }
@@ -711,7 +711,7 @@ function startUp()
     for (var i = 0; i < elements.length; i++)
     {
       var element = elements[i];
-      if (element.type == "radio" && element.checked == false)
+      if (element.type === "radio" && !element.checked)
       {
         continue;
       }
@@ -742,7 +742,7 @@ if (asmjs)
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (aEvt)
   {
-    if (req.readyState == 4 && req.status == 200)
+    if (req.readyState === 4 && req.status === 200)
     {
       fileContents = /** @type {ArrayBuffer} */ (req.response);
       if (workerParam)
@@ -765,11 +765,11 @@ else
     wasm = wasm.substring(0, wasm.length-1);
   }    
   var length = wasm.length*3/4;
-  if (wasm.charCodeAt(wasm.length-1)==61)
+  if (wasm.charCodeAt(wasm.length-1) === 61)
   {
     length--;
   }
-  if (wasm.charCodeAt(wasm.length-2)==61)
+  if (wasm.charCodeAt(wasm.length-2) === 61)
   {
     length--;
   }

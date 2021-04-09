@@ -145,7 +145,7 @@ function test1(complete)
     get("sun_from_1221").textContent = getDaytime(LatFrom, LongFrom);
     get("sun_to_0621").textContent = getDaytime(-LatTo, LongFrom);
     get("sun_to_1221").textContent = getDaytime(LatTo, LongFrom);
-    if (questionNbr != 0)
+    if (questionNbr !== 0)
     {
       partialScore = Math.round(100 - 100 * Math.abs(Math.log(trueDist/playerDist)));
       if (partialScore < 0) partialScore = 0;
@@ -314,7 +314,7 @@ function getDirection(Lat1, Lon1, Lat2, Lon2)
     }
   }
   AngAux = (Angle + 348) % 360;
-  return Angle + " " + degreeText + (Angle==1?"":"s") + " (" + direction[Math.floor(AngAux/22.5)] + ")";
+  return Angle + " " + degreeText + (Angle===1?"":"s") + " (" + direction[Math.floor(AngAux/22.5)] + ")";
 }
 
 function getDaytime(Lat, Lon)
@@ -364,7 +364,7 @@ function test2()
           break;    
         }
       }
-    } while (idx != innerIdx);
+    } while (idx !== innerIdx);
     cityIdx[idx] = randomValue;
     get("city"+(idx+1)).textContent = getCityName(randomValue, withCountries);
   }
@@ -602,7 +602,7 @@ function startUp()
         test1(true);                   // Second part of test 1.
       }
     }
-    if (key != 8 && key != 9 && key != 37 && key != 39 && key != 45)
+    if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45)
     {                                  // Not backspace, tab, right or left arrow or insert key.
       if (key >= 0x60 && key <= 0x69)
       {
@@ -623,7 +623,7 @@ function startUp()
       event.preventDefault();          // Do not propagate Enter key.
       showResultsTest2(value);         // Second part of test 2.
     }
-    if (key != 8 && key != 9 && key != 37 && key != 39 && key != 45)
+    if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45)
     {                                  // Not backspace, tab, right or left arrow or insert key.
       if (key >= 0x60 && key <= 0x69)
       {
@@ -678,7 +678,7 @@ function startUp()
       event.preventDefault();          // Do not propagate Enter key.
       get("cityTo").focus();           // Enter second city.
     }
-    if (key != 8 && key != 9 && key != 37 && key != 39 && key != 45)
+    if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45)
     {                                  // Not backspace, tab, right or left arrow or insert key.
       if (key >= 0x60 && key <= 0x69)
       {
@@ -701,7 +701,7 @@ function startUp()
       questionNbr = 0;
       test1(true);                     // Show distance between cities.
     }
-    if (key != 8 && key != 9 && key != 37 && key != 39 && key != 45)
+    if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45)
     {                                  // Not backspace, right or left arrow or insert key.
       if (key >= 0x60 && key <= 0x69)
       {

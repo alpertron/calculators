@@ -129,11 +129,11 @@ function b64decode(str,out)
   var byte0, byte1, byte2, byte3;
   var conv=new Int8Array(128);
   var len=str.length;
-  if(str.charAt(len-1)==="=")
+  if (str.charAt(len-1) === "=")
   {
     len--;
   }
-  if(str.charAt(len-1)=="=")
+  if (str.charAt(len-1) === "=")
   {
     len--;
   }
@@ -379,7 +379,7 @@ window.onload = function ()
     for (var i = 0; i < elements.length; i++)
     {
       var element = elements[i];
-      if (element.type === "radio" && element.checked === false)
+      if (element.type === "radio" && !element.checked)
       {
         continue;
       }

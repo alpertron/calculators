@@ -425,7 +425,7 @@ function fillCache()
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
         fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
         {
-          if (responseHTML.status != 200)
+          if (responseHTML.status !== 200)
           {
             return;        // HTML could not be retrieved, so go out.
           }
@@ -931,11 +931,11 @@ else
     wasm = wasm.substring(0, wasm.length-1);
   }    
   var length = wasm.length*3/4;
-  if (wasm.charCodeAt(wasm.length-1)==61)
+  if (wasm.charCodeAt(wasm.length-1) === 61)
   {
     length--;
   }
-  if (wasm.charCodeAt(wasm.length-2)==61)
+  if (wasm.charCodeAt(wasm.length-2) === 61)
   {
     length--;
   }

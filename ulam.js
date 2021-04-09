@@ -1174,7 +1174,7 @@ function PtrToString(ptr)
     for (i=0; i<1024; i++)
     {
       t = HEAP8[((ptr++)>>0)];
-      if (t==0)
+      if (t === 0)
       {
         break;
       }
@@ -1315,11 +1315,11 @@ function charDecode(ch)
   {                            // Character between 0 and 9.
     ch += 4;                   // Convert to range 52 to 61.
   }
-  else if (ch == 43)
+  else if (ch === 43)
   {                            // Character is a plus sign.
     ch = 62;                   // Convert to code 62.
   }
-  else if (ch == 47)
+  else if (ch === 47)
   {                            // Character is a slash.
     ch = 63;                   // Convert to code 63.
   }
@@ -1333,11 +1333,11 @@ function b64decode(str, out)
   var blocks,left_over;
   var len = str.length;
   // Ignore 
-  if (str.charAt(len-1) == "=")
+  if (str.charAt(len-1) === "=")
   {
     len--;
   }
-  if (str.charAt(len-1) == "=")
+  if (str.charAt(len-1) === "=")
   {
     len--;
   }
@@ -1349,12 +1349,12 @@ function b64decode(str, out)
     out[idxDest+2] = (charDecode(str.charCodeAt(idxSrc+2)) << 6) + charDecode(str.charCodeAt(idxSrc+3));
   }
   left_over = len & 3;
-  if (left_over == 2)
+  if (left_over === 2)
   {
     out[idxDest] = (charDecode(str.charCodeAt(idxSrc)) << 2) + ((charDecode(str.charCodeAt(idxSrc+1)) & 0x30) >> 4);
     out[idxDest+1] = (charDecode(str.charCodeAt(idxSrc+1)) << 4);
   }
-  else if (left_over == 3)
+  else if (left_over === 3)
   {
     out[idxDest] = (charDecode(str.charCodeAt(idxSrc)) << 2) + ((charDecode(str.charCodeAt(idxSrc+1)) & 0x30) >> 4);
     out[idxDest+1] = (charDecode(str.charCodeAt(idxSrc+1)) << 4) + (charDecode(str.charCodeAt(idxSrc+2)) >> 2);
@@ -1404,11 +1404,11 @@ function startLowLevelCode()
   else
   {                                      // WebAssembly initialization.
     length = wasm.length * 3 / 4;
-    if (wasm.charCodeAt(wasm.length - 1) == 61)
+    if (wasm.charCodeAt(wasm.length - 1) === 61)
     {                                    // Base64 ending equal sign found.
       length--;
     }
-    if (wasm.charCodeAt(wasm.length - 2) == 61)
+    if (wasm.charCodeAt(wasm.length - 2) === 61)
     {                                    // Another base64 ending equal sign found.
       length--;
     }
@@ -1432,7 +1432,7 @@ function startLowLevelCode()
 function checkStart()
 {
   return (center.value.length < start.value.length || 
-        (center.value.length == start.value.length && center.value < start.value));
+        (center.value.length === start.value.length && center.value < start.value));
 }
 
 function zoomIn()
@@ -1440,7 +1440,7 @@ function zoomIn()
   if (zoom < 32)
   {
     zoom <<= 1;
-    if (zoom == 32)
+    if (zoom === 32)
     {
       zoomin.disabled = true;
     }
@@ -1454,7 +1454,7 @@ function zoomOut()
   if (zoom > 1)
   {
     zoom >>= 1;
-    if (zoom == 1)
+    if (zoom === 1)
     {
       zoomout.disabled = true;
     }
@@ -1567,7 +1567,7 @@ function startUp()
     touch = touches[0];
     prevX1stTouch = Math.round(touch.pageX);
     prevY1stTouch = Math.round(touch.pageY);
-    if (touches.length == 2)
+    if (touches.length === 2)
     {
       touch = touches[1];
       prevX2ndTouch = Math.round(touch.pageX);
@@ -1581,9 +1581,9 @@ function startUp()
     var evt = e || window.event;
     var touches = evt.targetTouches;
     var touch1 = touches[0];
-	var newX = Math.round(touch1.pageX);
-	var newY = Math.round(touch1.pageY);
-    if (touches.length == 1)
+    var newX = Math.round(touch1.pageX);
+    var newY = Math.round(touch1.pageY);
+    if (touches.length === 1)
     {      // Drag gesture.
       if (newX != prevX1stTouch || newY != prevY1stTouch)
       {
@@ -1593,7 +1593,7 @@ function startUp()
         ShowInformation(-1, -1);
       }      
     }
-    else if (touches.length == 2 && !zoomDone)
+    else if (touches.length === 2 && !zoomDone)
     {      // Pinch (zoom in and zoom out) gesture.
       touch2 = evt.touches[1];
            // Get square of distance between fingers.
@@ -1619,9 +1619,9 @@ function startUp()
   {
     var evt = e || window.event;
     var key = evt.keyCode;
-    if (evt.ctrlKey == false && evt.altKey == false && evt.metaKey == false)
+    if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
     {                                    // No modifier key pressed.
-      if (key != 8 && key != 9 && key != 37 && key != 39 && key != 45 && key != 46)
+      if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45 && key !== 46)
       {                                  // Not backspace, tab, right or left arrow, insert or delete key.
         if (key >= 0x60 && key <= 0x69)
         {
@@ -1656,9 +1656,9 @@ function startUp()
   {
     var evt = e || window.event;
     var key = evt.keyCode;
-    if (evt.ctrlKey == false && evt.altKey == false && evt.metaKey == false)
+    if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
     {                                    // No modifier key pressed.
-      if (key != 8 && key != 9 && key != 37 && key != 39 && key != 45 && key != 46)
+      if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45 && key !== 46)
       {                                  // Not backspace, tab, right or left arrow, insert or delete key.
         if (key >= 0x60 && key <= 0x69)
         {
