@@ -623,7 +623,7 @@ function startUp()
         (lang ? "<p>Cálculo detenido por el usuario.</p>" :
                 "<p>Calculation stopped by user</p>");
       get("status").innerHTML = "";
-    }
+    };
   }
   if (get("continue") !== null)
   {
@@ -631,7 +631,7 @@ function startUp()
     {
       get("cont").style.display = "none";
       callWorker("C");  // Indicate worker that user pressed Continue button.
-    }
+    };
   }
   get("num").onkeydown = function (event)
   {
@@ -659,7 +659,7 @@ function startUp()
       helpStyle.display = "block";
       helphelpStyle.display = resultStyle.display = "none";
     }
-  }
+  };
   get("formlink").onclick = function ()
   {
     get("main").style.display = "none";
@@ -667,11 +667,11 @@ function startUp()
     get("formfeedback").reset();
     get("name").focus();
     return false;   // Do not follow the link.
-  }
+  };
   get("formcancel").onclick = function ()
   {
     endFeedback();
-  }
+  };
   get("formsend").onclick = function()
   {
     var userdata = get("userdata");
@@ -730,7 +730,7 @@ function startUp()
     }
     xhr.send(contents);
     return false;   // Send form only through JavaScript.
-  }
+  };
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.

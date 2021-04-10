@@ -294,7 +294,7 @@ function fillCache()
     get("solve").onclick = function ()
     {
       dowork(0);
-    }
+    };
     get("stop").onclick = function ()
     {
       worker.terminate();
@@ -304,12 +304,12 @@ function fillCache()
       get("result").innerHTML = 
         (lang? "<p>Cálculo detenido por el usuario.</p>" :
                    "<p>Calculation stopped by user</p>");
-    }
+    };
     get("helpbtn").onclick = function ()
     {
       get("help").style.display = "block";
       get("result").style.display = "none";
-    }
+    };
     get("formlink").onclick = function ()
     {
       get("main").style.display = "none";
@@ -317,11 +317,11 @@ function fillCache()
       get("formfeedback").reset();
       get("name").focus();
       return false;   // Do not follow the link.
-    }
+    };
     get("formcancel").onclick = function ()
     {
       endFeedback();
-    }
+    };
     get("formsend").onclick = function()
     {
       var userdata = get("userdata");
@@ -375,7 +375,7 @@ function fillCache()
       }
       xhr.send(contents);
       return false;   // Send form only through JavaScript.
-    }
+    };
     if ("serviceWorker" in navigator)
     { // Attempt to register service worker.
       // There is no need to do anything on registration success or failure in this JavaScript module.

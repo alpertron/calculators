@@ -298,11 +298,11 @@ window.onload = function ()
   get("eval").onclick = function ()
   {
     dowork(2);
-  }
+  };
   get("factor").onclick = function ()
   {
     dowork(0);
-  }
+  };
   get("stop").onclick = function ()
   {
     worker.terminate();
@@ -313,12 +313,12 @@ window.onload = function ()
     get("result").innerHTML = 
       (lang? "<p>Factorización detenida por el usuario.</p>" :
              "<p>Factorization stopped by user</p>");
-  }
+  };
   get("helpbtn").onclick = function ()
   {
     get("help").style.display = "block";
     get("result").style.display = "none";
-  }
+  };
   get("poly").oninput = function ()
   {
     var input = get("poly");
@@ -330,7 +330,7 @@ window.onload = function ()
       input.selectionStart = loc;
       input.selectionEnd = loc;
     }, 30);   
-  }
+  };
   get("formlink").onclick = function ()
   {
     get("main").style.display = "none";
@@ -338,11 +338,11 @@ window.onload = function ()
     get("formfeedback").reset();
     get("name").focus();
     return false;   // Do not follow the link.
-  }
+  };
   get("formcancel").onclick = function ()
   {
     endFeedback();
-  }
+  };
   get("formsend").onclick = function()
   {
     var userdata = get("userdata");
@@ -394,7 +394,7 @@ window.onload = function ()
     }
     xhr.send(contents);
     return false;   // Send form only through JavaScript.
-  }
+  };
 
   // Generate accordion.
   var acc = document.querySelectorAll("h2");

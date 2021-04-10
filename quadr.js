@@ -319,11 +319,11 @@ window.onload = function ()
   get("solve").onclick = function ()
   {
     dowork(0);
-  }
+  };
   get("steps").onclick = function ()
   {
     dowork(2);
-  }
+  };
   get("stop").onclick = function ()
   {
     worker.terminate();
@@ -334,32 +334,32 @@ window.onload = function ()
     get("result").innerHTML = 
       (lang? "<p>Cálculo detenido por el usuario.</p>" :
                  "<p>Calculation stopped by user</p>");
-  }
+  };
   get("helpbtn").onclick = function ()
   {
     get("help").style.display = "block";
     get("result").style.display = "none";
-  }
+  };
   get("coefA").onkeypress = function(e)
   {
     moveNext(e, this, "coefB");
-  } 
+  };
   get("coefB").onkeypress = function(e)
   {
     moveNext(e, this, "coefC");
-  }
+  };
   get("coefC").onkeypress = function(e)
   {
     moveNext(e, this, "coefD");
-  }
+  };
   get("coefD").onkeypress = function(e)
   {
     moveNext(e, this, "coefE");
-  }
+  };
   get("coefE").onkeypress = function(e)
   {
     moveNext(e, this, "coefF");
-  }
+  };
   get("coefF").onkeypress = function(e)
   {
     if ((e.which === 10 || e.which === 13) && this.value.trim().length > 0)
@@ -368,7 +368,7 @@ window.onload = function ()
       get("coefA").focus();
       dowork(0);
     }
-  }
+  };
   get("formlink").onclick = function ()
   {
     get("main").style.display = "none";
@@ -376,11 +376,11 @@ window.onload = function ()
     get("formfeedback").reset();
     get("name").focus();
     return false;   // Do not follow the link.
-  }
+  };
   get("formcancel").onclick = function ()
   {
     endFeedback();
-  }
+  };
   get("formsend").onclick = function()
   {
     var userdata = get("userdata");
@@ -435,7 +435,7 @@ window.onload = function ()
     }
     xhr.send(contents);
     return false;   // Send form only through JavaScript.
-  }
+  };
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
