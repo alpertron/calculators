@@ -382,7 +382,7 @@ function fillCache()
       navigator["serviceWorker"].register("calcSW.js").then(function() {}, function() {});
       fillCache();
     }
-  }
+  };
   if (asmjs)
   {
     var req = new XMLHttpRequest();

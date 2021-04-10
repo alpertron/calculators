@@ -163,7 +163,7 @@ function callWorker(param)
       var firstChar = e.data.substring(0, 1);
       if (firstChar === "9")
       {
-        console.log(e.data.substring(1));
+//        console.log(e.data.substring(1));
       }
       if (firstChar === "8")
       {

@@ -307,7 +307,7 @@ window.onload = function ()
   dlog.onclick = function ()
   {
     dowork(0);
-  }
+  };
   stop.onclick = function ()
   {
     worker.terminate();
@@ -317,12 +317,12 @@ window.onload = function ()
     result.innerHTML = 
       (lang? "<p>Cálculo detenido por el usuario.</p>" :
              "<p>Calculation stopped by user</p>");
-  }
+  };
   helpbtn.onclick = function ()
   {
     help.style.display = "block";
     result.style.display = "none";
-  }
+  };
   formlink.onclick = function ()
   {
     main.style.display = "none";
@@ -330,11 +330,11 @@ window.onload = function ()
     formfeedback.reset();
     name.focus();
     return false;   // Do not follow the link.
-  }
+  };
   formcancel.onclick = function ()
   {
     endFeedback();
-  }
+  };
   formsend.onclick = function()
   {
     if (adduserdata.checked)
@@ -387,14 +387,14 @@ window.onload = function ()
     }
     xhr.send(contents);
     return false;   // Send form only through JavaScript.
-  }
+  };
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
     navigator["serviceWorker"].register("calcSW.js").then(function() {}, function() {});
     fillCache();
   }
-}
+};
 if (asmjs)
 {
   var req = new XMLHttpRequest();
