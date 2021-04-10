@@ -1,3 +1,4 @@
+/*global HEAPU8, Module, _getInputStringPtr, _doWork*/
 function convertToString(ptr, str)
 {
   var dest = ptr;

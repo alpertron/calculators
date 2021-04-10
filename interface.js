@@ -641,7 +641,7 @@ function startUp()
       performCalc();                   // Perform calculation.
     }
     return true;
-  }
+  };
   get("helpbtn").onclick = function()
   {
     var help = get("help");

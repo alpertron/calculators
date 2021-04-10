@@ -1,3 +1,4 @@
+/*global mergeInto, HEAPU8, Module*/
 mergeInto(LibraryManager.library, 
 {
   databack: function(data)

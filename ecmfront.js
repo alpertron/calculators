@@ -72,6 +72,17 @@ function styleButtons(style1, style2)
   get("more").style.display = style2;
 }
 
+function saveConfig()
+{    
+  config = "1" +   // Batch mode
+           (get("verbose").checked? "1" : "0") +
+           (get("pretty").checked? "1" : "0") +
+           (get("cunnin").checked? "1" : "0") +
+           (get("hex").checked? "1" : "0");
+  digits = get("digits").value;
+  setStorage("ecmConfig", digits+","+config);
+}
+
 function b64decode(str,out)
 {
   var ch, idx;
@@ -163,7 +174,7 @@ function callWorker(param)
       var firstChar = e.data.substring(0, 1);
       if (firstChar === "9")
       {
-//        console.log(e.data.substring(1));
+        console.log(e.data.substring(1));
       }
       if (firstChar === "8")
       {
@@ -368,17 +379,6 @@ function wizardNext()
     wzdInput.value = "";
     wzdInput.focus();
   }
-}
-
-function saveConfig()
-{    
-  config = "1" +   // Batch mode
-           (get("verbose").checked? "1" : "0") +
-           (get("pretty").checked? "1" : "0") +
-           (get("cunnin").checked? "1" : "0") +
-           (get("hex").checked? "1" : "0");
-  digits = get("digits").value;
-  setStorage("ecmConfig", digits+","+config);
 }
 
 function updateVerbose(isVerbose)    
