@@ -16,6 +16,7 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*global instantiate*/
 // In order to reduce the number of files to read from Web server, this 
 // Javascript file includes both the Javascript in the main thread and the 
 // Javascript that drives WebAssembly on its own Web Worker.
@@ -270,14 +271,17 @@ function startLowLevelCode()
       "abort": function(q) {},
     };
     // check for imul support, and also for correctness ( https://bugs.webkit.org/show_bug.cgi?id=126345 )
-    if (!Math["imul"] || Math["imul"](0xffffffff, 5) !== -5) Math["imul"] = function imul(a, b)
+    if (!Math["imul"] || Math["imul"](0xffffffff, 5) !== -5)
     {
-      var ah  = a >>> 16;
-      var al = a & 0xffff;
-      var bh  = b >>> 16;
-      var bl = b & 0xffff;
-      return (al*bl + ((ah*bl + al*bh) << 16))|0;
-    };
+      Math["imul"] = function imul(a, b)
+      {
+        var ah  = a >>> 16;
+        var al = a & 0xffff;
+        var bh  = b >>> 16;
+        var bl = b & 0xffff;
+        return (al*bl + ((ah*bl + al*bh) << 16))|0;
+      };
+    }
     Math.imul = Math["imul"];
     asm = instantiate(env);  // Link asm.js module.
     asmGetInformation = asm.e;
