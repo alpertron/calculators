@@ -82,6 +82,27 @@ function getWidth()
   return Math.min(canvas.scrollWidth, canvas.width);
 }
 
+function drawSpiral(ctx, left, top, width, height)
+{
+  if (width !== 0 && height !== 0)
+  {
+    var rowNbr, leftPixelSrc, leftPixelDest;
+    var startX = left - (getWidth() >> 1);
+    var startY = top - (getHeight() >> 1);
+    asmDrawPartialUlamSpiral(startX, startX+width, -(startY+height), -startY);
+             // Copy from WebAssembly/asm.js buffer to Canvas double buffer.
+    leftPixelSrc = top*8192+left*4;
+    leftPixelDest = (top+32)*8192+left*4;
+    for (rowNbr=0; rowNbr<height; rowNbr++)
+    {
+      bitsCanvas.set(pixels.subarray(leftPixelSrc, leftPixelSrc + 4*width), leftPixelDest);
+      leftPixelSrc += 8192;
+      leftPixelDest += 8192;
+    }
+    ctx.putImageData(imgData, 0, -32, left, 32+top, width, height);
+  }
+}
+
 function moveSpiral(deltaX, deltaY)
 {      
   var ctx = canvas.getContext("2d");
@@ -141,32 +162,11 @@ function moveSpiral(deltaX, deltaY)
   }
 }
 
-function drawSpiral(ctx, left, top, width, height)
-{
-  if (width != 0 && height != 0)
-  {
-    var rowNbr, leftPixelSrc, leftPixelDest;
-    var startX = left - (getWidth() >> 1);
-    var startY = top - (getHeight() >> 1);
-    asmDrawPartialUlamSpiral(startX, startX+width, -(startY+height), -startY);
-             // Copy from WebAssembly/asm.js buffer to Canvas double buffer.
-    leftPixelSrc = top*8192+left*4;
-    leftPixelDest = (top+32)*8192+left*4;
-    for (rowNbr=0; rowNbr<height; rowNbr++)
-    {
-      bitsCanvas.set(pixels.subarray(leftPixelSrc, leftPixelSrc + 4*width), leftPixelDest);
-      leftPixelSrc += 8192;
-      leftPixelDest += 8192;
-    }
-    ctx.putImageData(imgData, 0, -32, left, 32+top, width, height);
-  }
-}
-
 function updateSpiral(input, nbr)
 {
   var idx;
   var value = input.value;
-  if (input != 0)
+  if (input !== 0)
   {
     for (idx=0; idx<value.length; idx++)  
     {
@@ -431,7 +431,7 @@ function startUp()
     newY -= rect.top;            // Now coordinates are relative to canvas.
     if (isMouseDown)
     {
-      if (newX != currentX || newY != currentY)
+      if (newX !== currentX || newY !== currentY)
       {
         moveSpiral(newX - currentX, newY - currentY);
         currentX = newX;
@@ -485,7 +485,7 @@ function startUp()
     var newY = Math.round(touch1.pageY);
     if (touches.length === 1)
     {      // Drag gesture.
-      if (newX != prevX1stTouch || newY != prevY1stTouch)
+      if (newX !== prevX1stTouch || newY !== prevY1stTouch)
       {
         moveSpiral(newX - prevX1stTouch, newY - prevY1stTouch);
         prevX1stTouch = newX;

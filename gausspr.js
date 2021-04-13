@@ -56,7 +56,7 @@ function ptrToString(ptr)
     for (i=0; i<1024; i++)
     {
       t = HEAP8[((ptr++)>>0)];
-      if (t==0)
+      if (t === 0)
       {
         break;
       }
@@ -81,6 +81,27 @@ function getHeight()
 function getWidth()
 {
   return Math.min(canvas.scrollWidth, canvas.width);
+}
+
+function drawGraphic(ctx, left, top, width, height)
+{
+  if (width !== 0 && height !== 0)
+  {
+    var rowNbr, leftPixelSrc, leftPixelDest;
+    var startX = left - (getWidth() >> 1);
+    var startY = top - (getHeight() >> 1);
+    asmDrawPartialGraphic(startX, startX+width, -(startY+height), -startY);
+             // Copy from WebAssembly/asm.js buffer to Canvas double buffer.
+    leftPixelSrc = top*8192+left*4;
+    leftPixelDest = (top+32)*8192+left*4;
+    for (rowNbr=0; rowNbr<height; rowNbr++)
+    {
+      bitsCanvas.set(pixels.subarray(leftPixelSrc, leftPixelSrc + 4*width), leftPixelDest);
+      leftPixelSrc += 8192;
+      leftPixelDest += 8192;
+    }
+    ctx.putImageData(imgData, 0, -32, left, 32+top, width, height);
+  }
 }
 
 function moveGraphic(deltaX, deltaY)
@@ -142,31 +163,10 @@ function moveGraphic(deltaX, deltaY)
   }
 }
 
-function drawGraphic(ctx, left, top, width, height)
-{
-  if (width != 0 && height != 0)
-  {
-    var rowNbr, leftPixelSrc, leftPixelDest;
-    var startX = left - (getWidth() >> 1);
-    var startY = top - (getHeight() >> 1);
-    asmDrawPartialGraphic(startX, startX+width, -(startY+height), -startY);
-             // Copy from WebAssembly/asm.js buffer to Canvas double buffer.
-    leftPixelSrc = top*8192+left*4;
-    leftPixelDest = (top+32)*8192+left*4;
-    for (rowNbr=0; rowNbr<height; rowNbr++)
-    {
-      bitsCanvas.set(pixels.subarray(leftPixelSrc, leftPixelSrc + 4*width), leftPixelDest);
-      leftPixelSrc += 8192;
-      leftPixelDest += 8192;
-    }
-    ctx.putImageData(imgData, 0, -32, left, 32+top, width, height);
-  }
-}
-
 function updateGraphic(nbr)
 {
   var idx, value, ctr;
-  if (nbr == 1)
+  if (nbr === 1)
   {
     ctr = 0;
     value = centerX.value;
@@ -262,7 +262,7 @@ function showInfo(ptrInfo)
   {
     centerY.value = infoText[2];
   } 
-  info.innerHTML = infoText[0];
+  information.innerHTML = infoText[0];
 }
 
 function startLowLevelCode()
@@ -282,15 +282,18 @@ function startLowLevelCode()
       "abort": function(q) {},
     };
     // check for imul support, and also for correctness ( https://bugs.webkit.org/show_bug.cgi?id=126345 )
-    if (!Math['imul'] || Math['imul'](0xffffffff, 5) !== -5) Math['imul'] = function imul(a, b)
+    if (!Math["imul"] || Math["imul"](0xffffffff, 5) !== -5)
     {
-      var ah  = a >>> 16;
-      var al = a & 0xffff;
-      var bh  = b >>> 16;
-      var bl = b & 0xffff;
-      return (al*bl + ((ah*bl + al*bh) << 16))|0;
-    };
-    Math.imul = Math['imul'];
+      Math["imul"] = function imul(a, b)
+      {
+        var ah  = a >>> 16;
+        var al = a & 0xffff;
+        var bh  = b >>> 16;
+        var bl = b & 0xffff;
+        return (al*bl + ((ah*bl + al*bh) << 16))|0;
+      };
+    }
+    Math.imul = Math["imul"];
     asm = instantiate(env);  // Link asm.js module.
     asmGetInformation = asm.a;
     asmDrawPartialGraphic = asm.a;
@@ -345,7 +348,7 @@ function zoomIn()
   if (zoom < 32)
   {
     zoom <<= 1;
-    if (zoom == 32)
+    if (zoom === 32)
     {
       zoomin.disabled = true;
     }
@@ -359,7 +362,7 @@ function zoomOut()
   if (zoom > 1)
   {
     zoom >>= 1;
-    if (zoom == 1)
+    if (zoom === 1)
     {
       zoomout.disabled = true;
     }
@@ -373,7 +376,7 @@ function keydown(e)
   var evt = e || window.event;
   var target = evt.target || evt.srcElement;
   var key = evt.keyCode;
-  if (evt.ctrlKey == false && evt.altKey == false && evt.metaKey == false)
+  if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
   {                                  // No modifier key pressed.
     if (key >= 0x60 && key <= 0x69)
     {
@@ -381,12 +384,12 @@ function keydown(e)
     }
     if (key >= 0x30 && key <= 0x39)
     {                                // Digit key has been pressed.
-      if (target.value.length >= 10 || (target.value.charAt(0) != '-' && target.value.length >= 9))
+      if (target.value.length >= 10 || (target.value.charAt(0) !== "-" && target.value.length >= 9))
       {                              // Number is too large.
         evt.preventDefault();        // Do not propagate this key.
       }
     }
-    else if (key == 109 || key == 189)
+    else if (key === 109 || key === 189)
     {                                // Key minus has been pressed.
       if (target.value.indexOf("-") >= 0)
       {                              // There is already a minus sign.
@@ -397,7 +400,7 @@ function keydown(e)
         beforeMinus = target.value;
       }
     }
-    else if (key != 8 && key != 9 && key != 37 && key != 39 && key != 45 && key != 46)
+    else if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45 && key !== 46)
     {                                // Not backspace, tab, right or left arrow, insert or delete key.
       evt.preventDefault();          // Do not propagate this key.  
     }
@@ -465,7 +468,7 @@ function startUp()
     newY -= rect.top;            // Now coordinates are relative to canvas.
     if (isMouseDown)
     {
-      if (newX != currentX || newY != currentY)
+      if (newX !== currentX || newY !== currentY)
       {
         moveGraphic(newX - currentX, newY - currentY);
         currentX = newX;
@@ -498,10 +501,10 @@ function startUp()
   {
     var evt = e || window.event;
     var touches = evt.targetTouches;
-    touch = touches[0];
+    var touch = touches[0];
     prevX1stTouch = Math.round(touch.pageX);
     prevY1stTouch = Math.round(touch.pageY);
-    if (touches.length == 2)
+    if (touches.length === 2)
     {
       touch = touches[1];
       prevX2ndTouch = Math.round(touch.pageX);
@@ -517,9 +520,9 @@ function startUp()
     var touch1 = touches[0];
     var newX = Math.round(touch1.pageX);
     var newY = Math.round(touch1.pageY);
-    if (touches.length == 1)
+    if (touches.length === 1)
     {      // Drag gesture.
-      if (newX != prevX1stTouch || newY != prevY1stTouch)
+      if (newX !== prevX1stTouch || newY !== prevY1stTouch)
       {
         moveGraphic(newX - prevX1stTouch, newY - prevY1stTouch);
         prevX1stTouch = newX;
@@ -527,7 +530,7 @@ function startUp()
         showInfo(asmGetInformation(-1, -1));
       }      
     }
-    else if (touches.length == 2 && !zoomDone)
+    else if (touches.length === 2 && !zoomDone)
     {      // Pinch (zoom in and zoom out) gesture.
       touch2 = evt.touches[1];
            // Get square of distance between fingers.
@@ -555,7 +558,7 @@ function startUp()
   };
   centerX.oninput = function()
   {
-    if (beforeMinus != "" && centerX.value != "-" + beforeMinus)
+    if (beforeMinus !== "" && centerX.value !== "-" + beforeMinus)
     {     // Minus sign is not in the first character. Move it to first character.
       centerX.value = "-" + beforeMinus;
     }
@@ -569,7 +572,7 @@ function startUp()
   };
   centerY.oninput = function()
   {
-    if (beforeMinus != "" && centerY.value != "-" + beforeMinus)
+    if (beforeMinus !== "" && centerY.value !== "-" + beforeMinus)
     {     // Minus sign is not in the first character. Move it to first character.
       centerY.value = "-" + beforeMinus;
     }
