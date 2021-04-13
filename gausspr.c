@@ -23,35 +23,19 @@ along with this program.If not, see <http://www.gnu.org/licenses/>.
 
 #define SMALL_NUMBER_BOUND 32768
 #ifdef __EMSCRIPTEN__
-#define MAX_WIDTH 2048
-#ifdef _USING64BITS_
+  #define MAX_WIDTH 2048
+  #define pixelXY(x, y) &pixels[y * MAX_WIDTH + x];
   unsigned int pixels[2048*MAX_WIDTH];
 #else
+  #include <SDL.h>
   #define pixels (unsigned int *)(4*MAX_WIDTH*32)
-#endif
-#else
-#include <SDL.h>
-SDL_Surface *screen, *doubleBuffer;
-int oldXCenter;
-int oldYCenter;
-int oldXFraction;
-int oldYFraction;
-int timer;
-int quit;
-#endif
-#ifdef __EMSCRIPTEN__
-#ifdef _USING64BITS_
-  #define pixelXY(x, y) &pixels[y * MAX_WIDTH + x];
-  #define nbrChanged            _nbrChanged
-  #define drawPartialGraphic    _drawPartialGraphic
-  #define ShowInformation       _ShowInformation
-  #define moveGraphic           _moveGraphic
-  #define showInfo              _showInfo
-#else
-  #define pixelXY(x, y) pixels + y * MAX_WIDTH + x;
-#endif
-#else
-  #define pixelXY(x, y) (Uint32*)doubleBuffer->pixels + y * width + x;
+  SDL_Surface *screen, *doubleBuffer;
+  int oldXCenter;
+  int oldYCenter;
+  int oldXFraction;
+  int oldYFraction;
+  int timer;
+  int quit;
 #endif
 
 char *appendInt(char *text, int value);
@@ -65,9 +49,7 @@ char *appendInt(char *text, int value);
 #define LIMIT(nbr) (int)(nbr%LIMB_RANGE), (int)(nbr/LIMB_RANGE)
 #define MAX_LINES  1000
 #define MAX_COLUMNS 2000
-char bottomText[500];
-char centerXText[30];
-char centerYText[30];
+char infoText[500];
 int TestNbr[NBR_LIMBS];
 unsigned int MontgomeryMultN;
 int MontgomeryMultR1[NBR_LIMBS+1];  // One more limb required for AdjustModN.
@@ -83,15 +65,6 @@ static int multiple[25][97];
 static char primes[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
                          43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };
 
-extern void showInfo(char *bottomText, char *centerXText, char *centerYText);
-#ifndef __EMSCRIPTEN__
-void showInfo(char *bottomText, char *centerXText, char *centerYText)
-{
-  printf("%s\n\n", bottomText);
-  printf("%s\n\n", centerXText);
-  printf("%s\n\n", centerYText);
-}
-#endif
 static void initMultipleArray(void)
 {
   int i, j, k;
@@ -166,55 +139,6 @@ static void AdjustModN(int *Nbr)
     *(Nbr+NBR_LIMBS) = 0;
   }
 }
-// This routine is a lot slower than multiplying by using Montgomery representation,
-// so it is used only when converting from normal representation to Montgomery.
-static void MultBigNbrModN(int *factor1, int *factor2, int *Product)
-{
-  int Prod[4];
-  int i;
-  unsigned int carry;
-  double dInvLimbRange = (double)1 / LIMB_RANGE;
-  Prod[0] = Prod[1] = Prod[2] = Prod[3] = 0;
-  for (i=0; i<NBR_LIMBS; i++)
-  {
-    // Multiply least or most significant limb of first factor by least significant limb of second factor.
-    int Nbr = *(factor1+i);
-    double dNbr = (double)Nbr;
-    int low = (Nbr * *factor2 + Prod[i]) & MAX_VALUE_LIMB;
-    double dAccum = dNbr * (double)*factor2 + (double)Prod[i];
-    Prod[i] = low;
-    if (low < HALF_INT_RANGE)
-    {
-      dAccum = ((dAccum + HALF_INT_RANGE / 2)*dInvLimbRange);
-    }
-    else
-    {
-      dAccum = ((dAccum - HALF_INT_RANGE / 2)*dInvLimbRange);
-    }
-    carry = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
-
-    // Multiply least or most significant limb of first factor by most significant limb of second factor.
-    low = (Nbr * *(factor2+1) + Prod[i+1] + carry) & MAX_VALUE_LIMB;
-    Prod[i+1] = low;
-    dAccum = dNbr * (double)*(factor2 + 1) + (double)Prod[i+1] + (double)carry;
-    if (low < HALF_INT_RANGE)
-    {
-      dAccum = ((dAccum + HALF_INT_RANGE / 2)*dInvLimbRange);
-    }
-    else
-    {
-      dAccum = ((dAccum - HALF_INT_RANGE / 2)*dInvLimbRange);
-    }
-    Prod[i+2] = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
-  }
-   // Modular adjustment.
-  AdjustModN(&Prod[1]);
-  AdjustModN(Prod);
-  *Product = Prod[0];
-  *(Product+1) = Prod[1];
-  *(Product+2) = Prod[2];
-}
-
 static void smallmodmult(int factor1, int factor2, int *product, int mod)
 {
   if (mod < SMALL_NUMBER_BOUND)
@@ -240,7 +164,9 @@ static void smallmodmult(int factor1, int factor2, int *product, int mod)
 
 static void MontgomeryMult(int *factor1, int *factor2, int *Product)
 {
+#ifndef _USING64BITS_
   int carry;
+#endif
   if (TestNbr[1] == 0)
   {
     smallmodmult(*factor1, *factor2, Product, TestNbr[0]);
@@ -340,14 +266,6 @@ static void AddBigNbr(int *Nbr1, int *Nbr2, int *Sum)
   *(Sum) = carry & MAX_INT_NBR;
   carry = (carry >> BITS_PER_GROUP) + *(Nbr1+1) + *(Nbr2+1);
   *(Sum+1) = carry & MAX_INT_NBR;
-}
-
-static void SubtBigNbr(int *Nbr1, int *Nbr2, int *Diff)
-{
-  int borrow = *(Nbr1) - *(Nbr2);
-  *(Diff) = borrow & MAX_INT_NBR;
-  borrow = (borrow >> BITS_PER_GROUP) + *(Nbr1+1) - *(Nbr2+1);
-  *(Diff+1) = borrow & MAX_INT_NBR;
 }
 
 static void AddBigNbrModN(int *Nbr1, int *Nbr2, int *Sum)
@@ -818,17 +736,17 @@ char *appendInt(char *text, int value)
   return text;
 }
 
-void ShowInformation(int x, int y)
+char *getInformation(int x, int y)
 {
   int xLogical, yLogical;
-  char *ptrText;
+  char *ptrText = infoText;
   
-  bottomText[0] = 0;   // Empty string.
+  infoText[0] = 0;   // Empty string.
   if (x >= 0)
   {
     xLogical = xCenter + ((xFraction + x - width / 2) >> thickness);
     yLogical = yCenter + 1 + ((yFraction - y + height / 2) >> thickness);
-    ptrText = appendInt(bottomText, xLogical);
+    ptrText = appendInt(infoText, xLogical);
     if (yLogical >= 0)
     {
       *ptrText++ = ' ';
@@ -844,11 +762,13 @@ void ShowInformation(int x, int y)
       ptrText = appendInt(ptrText, -yLogical);
     }
     *ptrText++ = 'i';
-    *ptrText++ = 0;
   }
-  appendInt(centerXText, xCenter);
-  appendInt(centerYText, yCenter);
-  showInfo(bottomText, centerXText, centerYText);
+  *ptrText++ = '^';       // Append separator.
+  ptrText = appendInt(ptrText, xCenter);
+  *ptrText++ = '^';       // Append separator.
+  ptrText = appendInt(ptrText, yCenter);
+  *ptrText = 0;
+  return infoText;
 }
 
 void moveGraphic(int deltaX, int deltaY)
@@ -885,7 +805,7 @@ int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
   {           
     xCenter = getValue(value);  // Changing center X.
     xFraction = 0;
-	value += strlen(value) + 1;
+    value += strlen(value) + 1;
     yCenter = getValue(value);  // Changing center Y.
     yFraction = 0;
   }
@@ -909,8 +829,6 @@ int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
     xFraction >>= 1;
     yFraction >>= 1;
   }
-  appendInt(centerXText, xCenter);
-  appendInt(centerYText, yCenter);
   return 0;
 }
 
@@ -924,12 +842,10 @@ size_t strlen(const char *s)
   }
   return a - s;
 }
-#ifdef _USING64BITS_
-unsigned int *_getPixels(void)
+unsigned int *getPixels(void)
 {
   return pixels;
 }
-#endif
 #else
 static void drawGraphic(void)
 {

@@ -10,7 +10,7 @@ my $wasmContents = "";
 my $wasmb64 = "";
 if ($#ARGV == 3)
 {
-  open my $wasmFile, '<', $ARGV[3] or die;
+  open my $wasmFile, '<', $ARGV[3] or die "couldn't open wasm file ".$ARGV[3];
   binmode $wasmFile;
   while (1)
   {
@@ -28,28 +28,25 @@ my $oldJS = "0000\.js";
 my $newJS = $commandLine."\.js";
 my $tempFile = "temp.tmp";
 my $step = 1;
-open(htmlFile, '<', $htmlFile) or die "couldn't open HTML file";
-open(jsFile, '<', $jsFile) or die "couldn't open JS file";
-open(tempFile, '>', $tempFile) or die "couldn't open temp file";
+open(htmlFile, '<', $htmlFile) or die "couldn't open HTML file ".$htmlFile;
+open(jsFile, '<', $jsFile) or die "couldn't open JS file ".$jsFile;
+open(tempFile, '>', $tempFile) or die "couldn't open temp file ".$tempFile;
 
 while (<htmlFile>)
 {
-  if (/^\<script type=\"text\/wasmb64\"/)
+  if (/id=\"wasmb64\"/)
   {
     print tempFile;
+    print tempFile $wasmb64;
     $step = 4;
-    next;
   }
   elsif (/^\<script\>/)
   {
     $step = 2;
   }
-  else 
+  elsif (/^\<\/script\>/)
   {
-    if (/^\<\/script\>/)
-    {
-      $step = 1;
-    }
+    $step = 1;
   }
   if ($step == 3)
   {
@@ -61,8 +58,6 @@ while (<htmlFile>)
   }
   elsif ($step == 4)
   {
-    print tempFile $wasmb64;
-    $step = 1;
   }
   else
   {

@@ -21,47 +21,25 @@
 #include <math.h>
 #include <stdint.h>
 
-#if defined _USING64BITS_ && defined __EMSCRIPTEN__
-#define EXTERNALIZE  __attribute__((visibility("default")))
-#else
-#define EXTERNALIZE	
-#endif
-
 #define SMALL_NUMBER_BOUND 32768
 #ifdef __EMSCRIPTEN__
-#define MAX_WIDTH 2048
-#ifdef _USING64BITS_
-  unsigned int pixels[2048*MAX_WIDTH];
-#else
-  #define pixels (unsigned int *)(4*MAX_WIDTH*32)
-#endif
-#else
-#include <SDL.h>
-SDL_Surface *screen, *doubleBuffer;
-int oldXCenter;
-int oldYCenter;
-int oldXFraction;
-int oldYFraction;
-int timer;
-int quit;
-#endif
-#ifdef __EMSCRIPTEN__
-#ifdef _USING64BITS_
+  #define EXTERNALIZE  __attribute__((visibility("default")))
+  #define MAX_WIDTH 2048
   #define pixelXY(x, y) &pixels[y * MAX_WIDTH + x];
-#else
-  #define pixelXY(x, y) pixels + y * MAX_WIDTH + x;
-#endif
-#else
+  unsigned int pixels[2048*MAX_WIDTH];
+#else     // Not Emscripten
+  #define EXTERNALIZE	
   #define pixelXY(x, y) (Uint32*)doubleBuffer->pixels + y * width + x;
+  #include <SDL.h>
+  SDL_Surface *screen, *doubleBuffer;
+  int oldXCenter;
+  int oldYCenter;
+  int oldXFraction;
+  int oldYFraction;
+  int timer;
+  int quit;
 #endif
 
-#ifdef _USING64BITS_
-  #define nbrChanged            _nbrChanged
-  #define drawPartialUlamSpiral _drawPartialUlamSpiral
-  #define ShowInformation       _ShowInformation
-  #define moveSpiral            _moveSpiral
-  #define showInfo              _showInfo
-#endif
 #define NBR_LIMBS  2
 #define BITS_PER_GROUP 31
 #define LIMB_RANGE (1U<<BITS_PER_GROUP)
@@ -72,15 +50,14 @@ int quit;
 #define LIMIT(nbr) (int)(nbr%LIMB_RANGE), (int)(nbr/LIMB_RANGE)
 #define MAX_LINES  1000
 #define MAX_COLUMNS 2000
-char bottomText[500];
-char centerText[30];
+char infoText[500];
 int TestNbr[NBR_LIMBS];
 unsigned int MontgomeryMultN;
 int MontgomeryMultR1[NBR_LIMBS+1];  // One more limb required for AdjustModN.
 int MontgomeryMultR2[NBR_LIMBS+1];
 int showAlgebraic;
-int thickness = 3;                           // Number of bits to shift.
-int xCenter, xFraction;                      // Range of fraction: 0 to (1 << thickness) - 1
+int thickness = 3;                  // Number of bits to shift.
+int xCenter, xFraction;             // Range of fraction: 0 to (1 << thickness) - 1
 int yCenter, yFraction;
 int width;
 int height;
@@ -89,14 +66,6 @@ char initMultipleArrayCalled;
 static int multiple[25][97];
 static char primes[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
                          43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };
-extern void showInfo(char *bottomText, char *centerText);
-#ifndef __EMSCRIPTEN__
-void showInfo(char *bottomText, char *centerText)
-{
-  printf("%s\n\n", bottomText);
-  printf("%s\n\n", centerText);
-}
-#endif
 void initMultipleArray(void)
 {
   int i, j, k;
@@ -173,7 +142,7 @@ void AdjustModN(int *Nbr)
 }
 // This routine is a lot slower than multiplying by using Montgomery representation,
 // so it is used only when converting from normal representation to Montgomery.
-void MultBigNbrModN(int *factor1, int *factor2, int *Product)
+void MultBigNbrModN(const int *factor1, const int *factor2, int *Product)
 {
   int Prod[4];
   int i;
@@ -243,9 +212,11 @@ static void smallmodmult(int factor1, int factor2, int *product, int mod)
   }
 }
 
-void MontgomeryMult(int *factor1, int *factor2, int *Product)
+void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
 {
+#ifndef _USING64BITS_
   int carry;
+#endif  
   if (TestNbr[1] == 0)
   {
     smallmodmult(*factor1, *factor2, Product, TestNbr[0]);
@@ -339,7 +310,7 @@ void MontgomeryMult(int *factor1, int *factor2, int *Product)
   *(Product+1) = Prod1;
 }
 
-void AddBigNbr(int *Nbr1, int *Nbr2, int *Sum)
+void AddBigNbr(const int *Nbr1, const int *Nbr2, int *Sum)
 {
   unsigned int carry = *(Nbr1) + *(Nbr2);
   *(Sum) = carry & MAX_INT_NBR;
@@ -347,7 +318,7 @@ void AddBigNbr(int *Nbr1, int *Nbr2, int *Sum)
   *(Sum+1) = carry & MAX_INT_NBR;
 }
 
-void SubtBigNbr(int *Nbr1, int *Nbr2, int *Diff)
+void SubtBigNbr(const int *Nbr1, const int *Nbr2, int *Diff)
 {
   int borrow = *(Nbr1) - *(Nbr2);
   *(Diff) = borrow & MAX_INT_NBR;
@@ -355,7 +326,7 @@ void SubtBigNbr(int *Nbr1, int *Nbr2, int *Diff)
   *(Diff+1) = borrow & MAX_INT_NBR;
 }
 
-void AddBigNbrModN(int *Nbr1, int *Nbr2, int *Sum)
+void AddBigNbrModN(const int *Nbr1, const int *Nbr2, int *Sum)
 {
   int Sum0, Sum1;
   int TestNbr0 = TestNbr[0];
@@ -398,7 +369,7 @@ void GetMontgomeryParms(void)
 // Perform Miller-Rabin test of number stored in variable TestNbr.
 // The bases to be used are 2, 3, 5, 7, 11, 13, 17, 19 and 23 which
 // ensures that any composite less than 3*10^18 is discarded.
-int isPrime(int *value)
+int isPrime(const int *value)
 {
   static char bases[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 0};
   // List of lowest composite numbers that passes Miller-Rabin for above bases (OEIS A014233).
@@ -703,7 +674,7 @@ void getN(int x, int y, int *value)
   AddBigNbr(value, startNumber, value);
 }
 
-void AddTwoLimbsPlusOneLimb(int *addend1, int addend2, int *sum)
+void AddTwoLimbsPlusOneLimb(const int *addend1, int addend2, int *sum)
 {
   int temp[2];
   temp[1] = 0;
@@ -921,12 +892,11 @@ size_t strlen(const char *s)
   }
   return a - s;
 }
-#ifdef _USING64BITS_
-unsigned int *_getPixels(void)
+
+unsigned int *getPixels(void)
 {
   return pixels;
 }
-#endif
 #endif
 
 char *appendInt(char *text, int value)
@@ -956,7 +926,7 @@ char *appendInt(char *text, int value)
 }
 
 // Convert the number from binary to string.
-char *appendInt64(char *text, int *value)
+char *appendInt64(char *text, const int *value)
 {
   int index, index2;
   int nbr0 = *value;
@@ -994,7 +964,7 @@ void ShowLabel(char *text, int b, int *indep)
   int i, p;
   int temp[2];
   int carry;
-  char *ptrText = &bottomText[strlen(bottomText)];
+  char *ptrText = &infoText[strlen(infoText)];
   int firstTime = 1;
   strcpy(ptrText, text);
   ptrText += strlen(ptrText);
@@ -1178,16 +1148,16 @@ void ShowLabel(char *text, int b, int *indep)
   strcpy(ptrText, "<br>");
 }
 
-EXTERNALIZE void ShowInformation(int x, int y)
+EXTERNALIZE char *getInformation(int x, int y)
 {
   int t;
   int value[2];
   int Nminustt[2];
   int indep[2];
   int xLogical, yLogical;
-  char *ptrText;
+  char *ptrText = infoText;
 
-  bottomText[0] = 0;   // Empty string.
+  infoText[0] = 0;   // Empty string.
   if (x>=0)
   {
     xLogical = xCenter + ((xFraction + x - width / 2) >> thickness);
@@ -1235,7 +1205,7 @@ EXTERNALIZE void ShowInformation(int x, int y)
       {                              // Lower quadrant
         ShowLabel("SW-NE: 4t<sup>2</sup>", 0, Nminustt);
         AddTwoLimbsPlusOneLimb(Nminustt, -t, indep);   // n - 4 * t*t - 2 * t
-        ShowLabel("NW-SE: 4t^2 + 2t", 2, indep);
+        ShowLabel("NW-SE: 4t<sup>2</sup> + 2t", 2, indep);
       }
       else
       {                             // Left quadrant
@@ -1244,7 +1214,7 @@ EXTERNALIZE void ShowInformation(int x, int y)
         ShowLabel("NW-SE: 4t<sup>2</sup> - 2t", -2, indep);
       }
     }
-    ptrText = &bottomText[strlen(bottomText)];
+    ptrText = &infoText[strlen(infoText)];
     *ptrText++ = 'x';
     *ptrText++ = '=';
     ptrText = appendInt(ptrText, xLogical);
@@ -1272,9 +1242,11 @@ EXTERNALIZE void ShowInformation(int x, int y)
     ptrText = appendInt(ptrText, t/2);
   }
   getN(xCenter, yCenter, value);
-  appendInt64(centerText, value);
-  showInfo(bottomText, centerText);
-}
+  *ptrText++ = '^';       // Separator between bottom text and center text.
+  ptrText = appendInt64(ptrText, value);
+  *ptrText = 0;
+  return infoText;
+}  
 
 EXTERNALIZE void moveSpiral(int deltaX, int deltaY)
 {
@@ -1288,7 +1260,7 @@ EXTERNALIZE void moveSpiral(int deltaX, int deltaY)
 
 // inputBoxNbr = 1 -> changing center
 // inputBoxNbr = 2 -> changing start value
-EXTERNALIZE int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
+EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
 { 
   int temp[2];
   int nbr0, nbr1;
@@ -1361,7 +1333,7 @@ EXTERNALIZE int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHe
   {           // Zoom in
     if (thickness == 5)
     {
-      return 0;
+      return NULL;
     }
     thickness++;
     xFraction <<= 1;
@@ -1371,15 +1343,16 @@ EXTERNALIZE int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHe
   {           // Zoom out
     if (thickness == 0)
     {
-      return 0;
+      return NULL;
     }
     thickness--;
     xFraction >>= 1;
     yFraction >>= 1;
   }
   getN(xCenter, yCenter, temp);
-  appendInt64(centerText, temp);
-  return 0;
+  infoText[0] = '^';
+  appendInt64(&infoText[1], temp);
+  return infoText;
 }
 
 #ifndef __EMSCRIPTEN__
