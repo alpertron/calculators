@@ -493,7 +493,7 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
 {
   int *ptrValue1, *ptrValue2, currentDegree;
   int degreeMin, degreeMax;
-  int degreePoly=0, degreeMono;
+  int degreePoly=0;
   int degree1 = *ptrArgument1;
   int degree2 = *ptrArgument2;
   if (degree1 <= 0)
@@ -606,6 +606,7 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
   }
   else
   {                 // Sum of polynomial and monomial.
+    int degreeMono;
     if (degree1 < 0)
     {
       UncompressBigIntegerB(ptrArgument1 + 1, &operand1);

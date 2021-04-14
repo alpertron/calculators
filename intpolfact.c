@@ -79,7 +79,6 @@ static int gauss(int nbrCols, int nbrRows)
 {
   int k, l;
   int row, col;
-  int pos;
 
   for (row = 0; row < nbrRows; row++)
   {
@@ -93,7 +92,7 @@ static int gauss(int nbrCols, int nbrRows)
   l = 0;
   for (k = 0; k < nbrCols && l < nbrRows; k++)
   {
-    pos = -1;
+    int pos = -1;
     /* Look for a pivot under the diagonal. */
     row = l;
     while (row < nbrRows && linkedBigIntIsZero(lambda[row][k]))
@@ -1861,7 +1860,7 @@ int getNextPrimeNoDuplicatedFactors(int primeIndex)
   int prime;
   int currentDegree;
   int degreeGcdMod;
-  int degree1, degree2;
+  int degree2;
   int degree = polyNonRepeatedFactors[0];
   initializeSmallPrimes(smallPrimes);
   // Get leading coefficient of polyNonRepeatedFactors.
@@ -1878,6 +1877,7 @@ int getNextPrimeNoDuplicatedFactors(int primeIndex)
       // repeated factors are present.
       // If the leading coefficient is multiple of prime, the prime cannot
       // be used.
+    int degree1;
     do
     {      // Loop while the leading coefficient is multiple of prime.
       prime = smallPrimes[++primeIndex];
@@ -1965,7 +1965,7 @@ int FactorPolyOverIntegers(void)
   int polXprocessed = FALSE;
   int* ptrFactorIntegerBak;
   int* ptrPolyLiftedOrig;
-  struct sFactorInfo* pstFactorInfoOrig, * pstFactorInfoRecord;
+  struct sFactorInfo* pstFactorInfoOrig;
   struct sFactorInfo* pstFactorInfoInteger = factorInfoInteger;
   initLinkedBigInt();
   ptrFactorInteger = polyInteger;
@@ -2014,6 +2014,7 @@ int FactorPolyOverIntegers(void)
        // coefficients of the original polynomial.
     int nbrFactorsRecord;
     int prime, primeIndex;
+    struct sFactorInfo* pstFactorInfoRecord;
     modulusIsZero = 1;
     // Get trailing coefficient.
     ptrSrc = &values[1];

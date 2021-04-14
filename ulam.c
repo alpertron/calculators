@@ -89,7 +89,7 @@ void AdjustModN(int *Nbr)
   int i, carry;
   int TrialQuotient;
   double dNbr, dModulus, dTrialQuotient;
-  double dAccumulator, dDelta;
+  double dDelta;
   double dVal = 1 / (double)LIMB_RANGE;
   double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
 
@@ -109,7 +109,7 @@ void AdjustModN(int *Nbr)
     int low = (*(Nbr + i) - TestNbr[i] * TrialQuotient + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
-    dAccumulator = *(Nbr+i) - TestNbr[i] * dTrialQuotient + carry + dDelta;
+    double dAccumulator = *(Nbr+i) - TestNbr[i] * dTrialQuotient + carry + dDelta;
     dDelta = 0;
     if (dAccumulator < 0)
     {

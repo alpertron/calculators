@@ -153,7 +153,6 @@ static void showXindex(int index)
 
 void showX(int multiplicity)
 {
-  int ctr;
   startLine();
   if (multiplicity > 2)
   {
@@ -165,6 +164,7 @@ void showX(int multiplicity)
   }
   else
   {
+    int ctr;
     for (ctr = 0; ctr < multiplicity; ctr++)
     {
       showXindex(indexRoot++);
@@ -1652,14 +1652,13 @@ static void ParseExpression(char* ptrExpr)
   {
     if (*ptrExpr == 'S')
     {    // Square root of next digits.
-      char c;
       if (pretty != PARI_GP)
       {
         startSqrt();
       }
       for (;;)
       {
-        c = *(++ptrExpr);
+        char c = *(++ptrExpr);
         if (c < '0' || c > '9')
         {
           break;
@@ -1721,7 +1720,6 @@ static int showRadicals(int num, int den, int multiple, int power2, char *times)
   char* ptrExpr;
   int sign;
   int mult;
-  int indexExpr;
   int result;
   char denom[15];
   num = num % den2;  // Convert to range 0 to 360 degrees.
@@ -1779,6 +1777,7 @@ static int showRadicals(int num, int den, int multiple, int power2, char *times)
   }
   else
   {  // Obtain cosine of num*pi/multiple.
+    int indexExpr;
     angle = (2*num * 15 / multiple) % 60;
     if (angle < 15)
     {     // Angle between 0 and 90 degrees.
@@ -1890,7 +1889,7 @@ static int showRadicals(int num, int den, int multiple, int power2, char *times)
 // Show cos(numerator34*Pi/34)
 static int showRadicals17(int numerator34)
 {
-  int index, sign, angle2;
+  int index, angle2;
   int angle = numerator34 % 68;        // Convert to range 0 to 360 degrees.
   if (angle < 0)
   {
@@ -1898,6 +1897,7 @@ static int showRadicals17(int numerator34)
   }
   if (angle % 2 == 0)
   {
+    int sign;
     angle /= 2;                       // Show cos(angle*Pi/17).
     if (angle < 9)
     {           // Range 0 to 90 degrees.
@@ -2045,7 +2045,7 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
 // num*B*pi/(den/17). Use the formula cos(a+b) = cos a * cos b - sin a * sin b.
 static void showComponent(int num, int den, int multiple, int power2, int toShow, char *realRoot)
 {
-  int denominCos, denominCos17;
+  int denominCos;
   int den2 = 2 * den;
   char * ptrStartRadicals = ptrOutput;
 
@@ -2058,6 +2058,7 @@ static void showComponent(int num, int den, int multiple, int power2, int toShow
   if (den % 17 == 0)
   {           // Denominator is multiple of 17.
     int numerator34, numeratorDen;
+    int denominCos17;
     den /= 17;
     multiple /= 17;
     ExtendedGCD(den, 17, &numerator34, &numeratorDen);
@@ -2205,7 +2206,7 @@ static void showTrig(int numerator, int denominator, char* multiplicand)
 
 static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
 {
-  int index, totient;
+  int index;
   int* ptrCoeff, currentDegree;
   // Polynomial must be palindromic of even degree
   // and the absolute value must be less than 10.
@@ -2239,7 +2240,7 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
       int prime = 2;
       int primeIndex = 0;
       int quotient = index;
-      totient = index;
+      int totient = index;
       while (quotient != 1 && prime*prime <= index)
       {
         if (quotient / prime * prime == quotient)
@@ -2402,9 +2403,10 @@ static void EndRadicand(int degree)
 
 static void GenerateRoots(int multiplicity, char* rationalRoot, int isNegative, int degree)
 {
-  int currentDegree, realNum, realDen;
+  int currentDegree, realDen;
   for (currentDegree = 0; currentDegree < degree; currentDegree++)
   {
+    int realNum;
     char realRoot[30000];
     char* ptrOutputBak = ptrOutput;
     ptrOutput = realRoot;
@@ -2472,7 +2474,7 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
   char rootQuadr[30000];
   char* ptrOutputBak;
   enum eSign signDiscr;
-  int ctr, isNegative;
+  int ctr;
   int currentDegree;
   int halfDegree = degree / 2;
   char degreeStr[20];
@@ -2529,6 +2531,7 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
   }
   if (signDiscr == SIGN_POSITIVE)
   {           // Roots of quadratic equation are real.
+    int isNegative;
     enum eSign Rat2SignBak;
     for (ctr = 0; ctr < 2; ctr++)
     {         // Show (Rat1 +/- Rat2*sqrt(Rat3))
@@ -2728,7 +2731,7 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
 // Save factor degrees sorting by ascending order.
 static void SaveFactorDegrees(int prime, int *piFactors, int nbrFactors)
 {
-  int currentFactor, newDegree;
+  int currentFactor;
   int* ptrFactors, *ptrOldFactor;
   int tmpDegree;
 
@@ -2737,7 +2740,7 @@ static void SaveFactorDegrees(int prime, int *piFactors, int nbrFactors)
   ptrFactors = piFactors;
   for (currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
   {
-    newDegree = factorInfo[currentFactor].degree;
+    int newDegree = factorInfo[currentFactor].degree;
     for (ptrOldFactor = ptrFactors; ptrOldFactor < piFactors; ptrOldFactor++)
     {
       if (newDegree < *ptrOldFactor)

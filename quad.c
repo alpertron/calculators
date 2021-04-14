@@ -805,9 +805,9 @@ void SolveQuadModEquation(void)
       int sol1Invalid = 0;
       int sol2Invalid = 0;
       BigInteger ValAOdd, ValBOdd, ValCOdd, squareRoot;
-      int nbrBitsSquareRoot, correctBits, nbrLimbs, ctr;
+      int correctBits, nbrLimbs, ctr;
       int bitsAZero;
-      int deltaZeros, deltaIsZero = 0;
+      int deltaIsZero = 0;
       // Compute discriminant = ValB^2 - 4*ValA*ValC.
       BigIntMultiply(&coeffLinear, &coeffLinear, &Tmp[0]);
       BigIntMultiply(&coeffQuadr, &coeffIndep, &discriminant);
@@ -965,6 +965,8 @@ void SolveQuadModEquation(void)
       }
       else
       {                        // Prime is not 2
+        int deltaZeros;
+        int nbrBitsSquareRoot;
         // Number of bits of square root of discriminant to compute: expon + bits_a + 1,
         // where bits_a is the number of least significant bits of a set to zero.
         // To compute the square root, compute the inverse of sqrt, so only multiplications are used.

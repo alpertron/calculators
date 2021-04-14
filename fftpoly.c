@@ -335,11 +335,11 @@ static void ConvertFactorToInternal(int* factor, complex* fftFactor, int len, in
 // lowest power of 2 greater or equal than the length of the second polynomial.
 void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
 {
-  complex* ptrFirst, * ptrSecond, * ptrProduct;
+  complex* ptrFirst, * ptrProduct;
   double invPower2;
   int power2plus1;
   int* ptrResult;
-  int ctr, chunkLen, index;
+  int chunkLen, index;
   int nbrLimbs = NumberLength + 1;
   int factor1DegreesProcessed = 0;
   int power2SecondFactor = 0;
@@ -349,6 +349,7 @@ void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
   if (len1 > len2)
   { // Degree of first polynomial is greater than degree of second polynomial.
     // Set results to polynomial zero.
+    int ctr;
     ptrFinalProduct = finalProduct;
     chunkLen = (len1 + len2 + 1) / 2;
     for (ctr = 0; ctr <= chunkLen; ctr++)
@@ -388,6 +389,7 @@ void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
     factor1DegreesProcessed += power2SecondFactor)
   {
     int index;
+    complex * ptrSecond;
     int lenFirstFactor = power2SecondFactor;
     if (lenFirstFactor > len1 - factor1DegreesProcessed)
     {

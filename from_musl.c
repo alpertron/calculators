@@ -20,7 +20,7 @@ void *memcpy(void *dest, const void *src, size_t n)
 #define RS <<
 
 	typedef uint32_t u32;
-	uint32_t w, x;
+	uint32_t x;
   if (n == 0)
   {
     return dest;
@@ -29,18 +29,18 @@ void *memcpy(void *dest, const void *src, size_t n)
 
 	if ((uintptr_t)d % 4 == 0) {
 		for (; n>=16; s+=16, d+=16, n-=16) {
-			*(u32 *)(d+0) = *(u32 *)(s+0);
-			*(u32 *)(d+4) = *(u32 *)(s+4);
-			*(u32 *)(d+8) = *(u32 *)(s+8);
-			*(u32 *)(d+12) = *(u32 *)(s+12);
+			*(u32 *)(d+0) = *(const u32 *)(s+0);
+			*(u32 *)(d+4) = *(const u32 *)(s+4);
+			*(u32 *)(d+8) = *(const u32 *)(s+8);
+			*(u32 *)(d+12) = *(const u32 *)(s+12);
 		}
 		if (n&8) {
-			*(u32 *)(d+0) = *(u32 *)(s+0);
-			*(u32 *)(d+4) = *(u32 *)(s+4);
+			*(u32 *)(d+0) = *(const u32 *)(s+0);
+			*(u32 *)(d+4) = *(const u32 *)(s+4);
 			d += 8; s += 8;
 		}
 		if (n&4) {
-			*(u32 *)(d+0) = *(u32 *)(s+0);
+			*(u32 *)(d+0) = *(const u32 *)(s+0);
 			d += 4; s += 4;
 		}
 		if (n&2) {
@@ -54,7 +54,7 @@ void *memcpy(void *dest, const void *src, size_t n)
 
 	if (n >= 32) switch ((uintptr_t)d % 4) {
 	case 1:
-		w = *(u32 *)s;
+    uint32_t w = *(u32 *)s;
 		*d++ = *s++;
 		*d++ = *s++;
 		*d++ = *s++;

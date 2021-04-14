@@ -488,10 +488,9 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
 void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
   /*@in@*/int* pDivisor, int divisorDegree, /*@out@*/int* ptrQuotient)
 {
-  int currentDegree, index;
+  int currentDegree;
   int nbrLimbs = NumberLength + 1;
   int divisorIsOne;
-  int* ptrQuot;
   int remainderDegree;
   int* ptrDivisor;
   int* ptrDividend;
@@ -535,9 +534,10 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
   }
   else
   {
-    ptrQuot = ptrQuotient + (dividendDegree - divisorDegree) * nbrLimbs;
+    int* ptrQuot = ptrQuotient + (dividendDegree - divisorDegree) * nbrLimbs;
     for (currentDegree = dividendDegree; currentDegree >= divisorDegree; currentDegree--)
     {
+      int index;
       ptrDividend = pDividend + currentDegree * nbrLimbs;
       IntArray2BigInteger(ptrDividend, &operand1);
       if (ptrQuotient != NULL)

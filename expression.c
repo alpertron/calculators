@@ -841,7 +841,6 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (charValue == '0' && exprIndexAux < exprLength - 2 &&
           *(expr+exprIndexAux + 1) == 'x')
       {  // hexadecimal
-        int i;
         int exprIndexFirstHexDigit = -1;
         exprIndexAux++;
         while (exprIndexAux < exprLength - 1)
@@ -870,7 +869,6 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         else
         {    // Generate big integer from hexadecimal number from right to left.
           carry.x = 0;
-          i = 0;  // limb number.
           shLeft = 0;
           offset = exprIndexAux;
           ptrLimb = &curStack.limbs[0];

@@ -333,12 +333,11 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
       int* ptrLowSecondFactor = &polyMultTemp[idxFactor2 * nbrLimbs];
       if (nbrLimbs == 2)
       {                        // Coefficients have only one limb.
-        int coefficient;
         ptrHighFirstFactor++;  // Point to limb to be exchanged.
         ptrLowSecondFactor++;  // Point to limb to be exchanged.
         for (i = 0; i < halfLength; i++)
         {
-          coefficient = *ptrHighFirstFactor;
+          int coefficient = *ptrHighFirstFactor;
           *ptrHighFirstFactor = *ptrLowSecondFactor;
           *ptrLowSecondFactor = coefficient;
           ptrHighFirstFactor += 2;
@@ -734,10 +733,8 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
   int degrees[15];
   int nbrDegrees = 0;
   int newtonDegree;
-  int* ptrCoeff;
   int deg;
   int nbrLimbs = NumberLength + 1;
-  int nextDegree;
 
   newtonDegree = polyDegree;
   // Compute degrees to use in Newton loop.
@@ -763,8 +760,9 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
   // Use poly5 as temporary polynomial 2-D(x)*F_n(x) (degree nextDegree).
   while (--nbrDegrees >= 0)
   {  
+    int* ptrCoeff; 
     int* ptrCoeff2, *ptrPolyMod;
-    nextDegree = degrees[nbrDegrees];
+    int nextDegree = degrees[nbrDegrees];
     // Initialize poly4 with the nextDegree most significant coefficients.
     ptrPolyMod = polyMod + nbrLimbs * (polyDegree - nextDegree);
     memcpy(poly4, ptrPolyMod, nextDegree * nbrLimbs * sizeof(limb));
