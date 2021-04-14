@@ -53,30 +53,36 @@ void CopyBigInt(BigInteger *pDest, BigInteger *pSrc)
 
 void AddBigInt(limb *pAddend1, limb *pAddend2, limb *pSum, int nbrLimbs)
 {
+  limb *ptrAddend1 = pAddend1;
+  limb *ptrAddend2 = pAddend2;
+  limb *ptrSum = pSum;
   unsigned int carry = 0;
   int i;
   for (i = 0; i < nbrLimbs; i++)
   {
-    carry = (carry >> BITS_PER_GROUP) + (unsigned int)pAddend1->x +
-                                        (unsigned int)pAddend2->x;
-    pAddend1++;
-    pAddend2++;
-    pSum->x = (int)carry & MAX_INT_NBR;
-    pSum++;
+    carry = (carry >> BITS_PER_GROUP) + (unsigned int)ptrAddend1->x +
+                                        (unsigned int)ptrAddend2->x;
+    ptrAddend1++;
+    ptrAddend2++;
+    ptrSum->x = (int)carry & MAX_INT_NBR;
+    ptrSum++;
   }
 }
 
 void SubtractBigInt(limb *pMinuend, limb *pSubtrahend, limb *pDiff, int nbrLimbs)
 {
+  limb *ptrMinuend = *pMinuend;
+  limb *ptrSubtrahend = *pSubtrahend;
+  limb *ptrDiff = *pDiff;
   int borrow = 0;
   int i;
   for (i = 0; i < nbrLimbs; i++)
   {
-    borrow = (borrow >> BITS_PER_INT_GROUP) + pMinuend->x - pSubtrahend->x;
-    pMinuend++;
-    pSubtrahend++;
-    pDiff->x = borrow & MAX_INT_NBR;
-    pDiff++;
+    borrow = (borrow >> BITS_PER_INT_GROUP) + ptrMinuend->x - ptrSubtrahend->x;
+    ptrMinuend++;
+    ptrSubtrahend++;
+    ptrDiff->x = borrow & MAX_INT_NBR;
+    ptrDiff++;
   }
 }
 
