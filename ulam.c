@@ -68,10 +68,10 @@ static char primes[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
                          43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };
 void initMultipleArray(void)
 {
-  int i, j, k;
+  int i, j;
   for (i = 0; i<25; i++)
   {
-    k = primes[i];
+    int k = primes[i];
     for (j = k / 2 + 1; j >= 0; j--)
     {
       multiple[i][j*j%k] = 1;
@@ -103,7 +103,6 @@ void AdjustModN(int *Nbr)
   // Compute Nbr <- Nbr - TrialQuotient * Modulus
   dTrialQuotient = (double)TrialQuotient;
   carry = 0;
-  dAccumulator = 0;
   dDelta = 0;
   for (i = 0; i < NBR_LIMBS; i++)
   {
@@ -146,11 +145,11 @@ void MultBigNbrModN(const int *factor1, const int *factor2, int *Product)
 {
   int Prod[4];
   int i;
-  unsigned int carry;
   double dInvLimbRange = (double)1 / LIMB_RANGE;
   Prod[0] = Prod[1] = Prod[2] = Prod[3] = 0;
   for (i=0; i<NBR_LIMBS; i++)
   {
+    unsigned int carry;
     // Multiply least or most significant limb of first factor by least significant limb of second factor.
     int Nbr = *(factor1+i);
     double dNbr = (double)Nbr;
@@ -230,7 +229,6 @@ void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
   int factor2_1 = *(factor2+1);
 #ifdef _USING64BITS_
   uint64_t Pr;
-  int32_t borrow;
   unsigned int Nbr, MontDig;
   
   Pr = (Nbr = *factor1) * (uint64_t)factor2_0;
@@ -247,6 +245,7 @@ void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
     
   if (Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP) || (Prod1 == TestNbr1 && Prod0 >= TestNbr0))
   {
+    int32_t borrow;
     Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
     Prod1 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
   }
@@ -387,7 +386,7 @@ int isPrime(const int *value)
     LIMIT((1ll << (2*BITS_PER_GROUP)) - 1)
   };
   int i, j;
-  int index, idxNbr, indexLSB, indexMSB, idxNbrMSB;
+  int index, indexLSB, indexMSB, idxNbrMSB;
   unsigned int mask, maskMSB;
   unsigned int prevBase = 1;
   unsigned int base;
@@ -412,7 +411,6 @@ int isPrime(const int *value)
   {
     return 0;              // Even numbers different from 2 are not prime.
   }
-  i = 1;
   for (i=1; i<sizeof(primes); i++)
   {
     base = primes[i];
@@ -507,6 +505,7 @@ int isPrime(const int *value)
   
   for (i=0, j=0; limits[j+1] < TestNbr1 || (limits[j+1] == TestNbr1 && limits[j] < TestNbr0); i++, j+=2)
   {
+    int idxNbr;
     base = bases[i];
     do                     // Compute next base in Montgomery representation.
     {
@@ -596,13 +595,13 @@ void multiply(int factor1, int factor2, int *prod)
 int algebraicFactor(int linear, int *indep)
 {
   int temp[2];
-  int iSqDelta, t1, t2, carry;
+  int iSqDelta, t1, t2;
   double dDelta, dFourAC;
   temp[0] = *indep;
   temp[1] = *(indep+1);
   if ((temp[1] & HALF_INT_RANGE))
   {    // Independent term is negative.
-    carry = -temp[0];
+    int carry = -temp[0];
     temp[0] = carry & MAX_INT_NBR;
     carry = (carry >> BITS_PER_GROUP) - temp[1];
     temp[1] = carry & MAX_INT_NBR;
@@ -902,7 +901,6 @@ unsigned int *getPixels(void)
 char *appendInt(char *text, int value)
 {
   int div = 1000000000;
-  int quot;
   int zeroIsSignificant = 0;
   if (value < 0)
   {
@@ -911,7 +909,7 @@ char *appendInt(char *text, int value)
   }
   do
   {
-    quot = value / div;
+    int quot = value / div;
     if (quot != 0 || zeroIsSignificant)
     {
       zeroIsSignificant = 1;
@@ -961,7 +959,7 @@ char *appendInt64(char *text, const int *value)
 
 void ShowLabel(char *text, int b, int *indep)
 {
-  int i, p;
+  int p;
   int temp[2];
   int carry;
   char *ptrText = &infoText[strlen(infoText)];
@@ -1113,6 +1111,7 @@ void ShowLabel(char *text, int b, int *indep)
       }
       else
       {
+        int i;
         for (i = 0; i<sizeof(primes)/sizeof(primes[0]); i++)
         {
           int deltaModP, indepModP;
@@ -1150,17 +1149,17 @@ void ShowLabel(char *text, int b, int *indep)
 
 EXTERNALIZE char *getInformation(int x, int y)
 {
-  int t;
   int value[2];
-  int Nminustt[2];
-  int indep[2];
-  int xLogical, yLogical;
+  int yLogical;
   char *ptrText = infoText;
 
   infoText[0] = 0;   // Empty string.
   if (x>=0)
   {
-    xLogical = xCenter + ((xFraction + x - width / 2) >> thickness);
+    int t;
+    int Nminustt[2];
+    int indep[2];
+    int xLogical = xCenter + ((xFraction + x - width / 2) >> thickness);
     yLogical = yCenter + 1 + ((yFraction - y + height / 2) >> thickness);
     getN(xLogical, yLogical, value);
     if (xLogical > yLogical && xLogical > -yLogical)
@@ -1264,15 +1263,15 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
 { 
   int temp[2];
   int nbr0, nbr1;
-  int diff, a;
+  int a;
   int index;
-  double dProd;
   width = newWidth;
   height = newHeight;
   nbr0 = nbr1 = 0;
   for (index=0; index<19; index++)
   {
     int charConverted;
+    double dProd;
     if (*value == 0)
     {      // End of string, so end of conversion from string to number.
       break;
@@ -1294,6 +1293,7 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
     nbr1 = (carry >> BITS_PER_GROUP) + nbr1;
     if (nbr1 > 0 || nbr0 >= 1)
     {       // nbr >= 1
+      int diff;
       a = ((int)sqrt(((double)nbr1*LIMB_RANGE + nbr0-1))+1)/2;
       diff = (nbr0 - 4*a*a) & MAX_INT_NBR;
       if (diff & HALF_INT_RANGE)
@@ -1394,7 +1394,7 @@ void iteration(void)
 {
   SDL_Event event;
   SDL_Rect rectSrc, rectDest;
-  int xMin, xMax, yMin, yMax, yBound, xMove, yMove;
+  int xMax, yMin, yMax, yBound, xMove, yMove;
         
   while (SDL_PollEvent(&event))
   {                           // New event arrived.
@@ -1452,6 +1452,7 @@ void iteration(void)
     if (oldXCenter != xCenter || oldYCenter != yCenter ||
         oldXFraction != xFraction || oldYFraction != yFraction)
     {
+      int xMin;
           // Move pixels of double buffer according to drag direction.
       xMove = (xCenter << thickness) + xFraction - (oldXCenter << thickness) - oldXFraction;
       yMove = (yCenter << thickness) + yFraction - (oldYCenter << thickness) - oldYFraction;

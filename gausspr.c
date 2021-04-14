@@ -67,10 +67,10 @@ static char primes[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
 
 static void initMultipleArray(void)
 {
-  int i, j, k;
+  int i, j;
   for (i = 0; i<25; i++)
   {
-    k = primes[i];
+    int k = primes[i];
     for (j = k / 2 + 1; j >= 0; j--)
     {
       multiple[i][j*j%k] = 1;
@@ -102,7 +102,6 @@ static void AdjustModN(int *Nbr)
   // Compute Nbr <- Nbr - TrialQuotient * Modulus
   dTrialQuotient = (double)TrialQuotient;
   carry = 0;
-  dAccumulator = 0;
   dDelta = 0;
   for (i = 0; i < NBR_LIMBS; i++)
   {
@@ -180,7 +179,6 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   int factor2_1 = *(factor2+1);
 #ifdef _USING64BITS_
   uint64_t Pr;
-  int32_t borrow;
   unsigned int Nbr, MontDig;
   
   Pr = (Nbr = *factor1) * (uint64_t)factor2_0;
@@ -197,6 +195,7 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
     
   if (Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP) || (Prod1 == (uint32_t)TestNbr1 && Prod0 >= (uint32_t)TestNbr0))
   {
+    int32_t borrow;
     Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
     Prod1 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
   }
@@ -329,7 +328,7 @@ static int isPrime(int *value)
     LIMIT(3000000000000000000ll)   // Greater than any argument of isPrime()
   };
   int i, j;
-  int index, idxNbr, indexLSB, indexMSB, idxNbrMSB;
+  int index, indexLSB, indexMSB, idxNbrMSB;
   unsigned int mask, maskMSB;
   unsigned int prevBase = 1;
   unsigned int base;
@@ -354,7 +353,6 @@ static int isPrime(int *value)
   {
     return 0;              // Even numbers different from 2 are not prime.
   }
-  i = 1;
   for (i=1; i<sizeof(primes); i++)
   {
     base = primes[i];
@@ -449,6 +447,7 @@ static int isPrime(int *value)
   
   for (i=0, j=0; limits[j+1] < TestNbr1 || (limits[j+1] == TestNbr1 && limits[j] < TestNbr0); i++, j+=2)
   {
+    int idxNbr;
     base = bases[i];
     do                     // Compute next base in Montgomery representation.
     {
@@ -713,7 +712,6 @@ void drawPartialGraphic(int xminDisp, int xmaxDisp, int yminDisp, int ymaxDisp)
 char *appendInt(char *text, int value)
 {
   int div = 1000000000;
-  int quot;
   int zeroIsSignificant = 0;
   if (value < 0)
   {
@@ -722,7 +720,7 @@ char *appendInt(char *text, int value)
   }
   do
   {
-    quot = value / div;
+    int quot = value / div;
     if (quot != 0 || zeroIsSignificant)
     {
       zeroIsSignificant = 1;
@@ -738,13 +736,13 @@ char *appendInt(char *text, int value)
 
 char *getInformation(int x, int y)
 {
-  int xLogical, yLogical;
+  int yLogical;
   char *ptrText = infoText;
   
   infoText[0] = 0;   // Empty string.
   if (x >= 0)
   {
-    xLogical = xCenter + ((xFraction + x - width / 2) >> thickness);
+    int xLogical = xCenter + ((xFraction + x - width / 2) >> thickness);
     yLogical = yCenter + 1 + ((yFraction - y + height / 2) >> thickness);
     ptrText = appendInt(infoText, xLogical);
     if (yLogical >= 0)
@@ -882,7 +880,7 @@ void iteration(void)
 {
   SDL_Event event;
   SDL_Rect rectSrc, rectDest;
-  int xMin, xMax, yMin, yMax, yBound, xMove, yMove;
+  int xMax, yMin, yMax, yBound, xMove, yMove;
         
   while (SDL_PollEvent(&event))
   {                           // New event arrived.
@@ -940,6 +938,7 @@ void iteration(void)
     if (oldXCenter != xCenter || oldYCenter != yCenter ||
         oldXFraction != xFraction || oldYFraction != yFraction)
     {
+      int xMin;
           // Move pixels of double buffer according to drag direction.
       xMove = (xCenter << thickness) + xFraction - (oldXCenter << thickness) - oldXFraction;
       yMove = (yCenter << thickness) + yFraction - (oldYCenter << thickness) - oldYFraction;
