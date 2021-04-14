@@ -43,7 +43,7 @@ static void DistinctDegreeFactorization(int polyDegree)
   int nbrFactor, degreeMin, degreeGcd;
   int *ptrPolyToFactor, *ptrValue1;
   // Set poly1 to x.
-  memset(poly1, 0, nbrLimbs*(polyDegree + 1)*sizeof(int));
+  (void)memset(poly1, 0, nbrLimbs*(polyDegree + 1)*sizeof(int));
   for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     poly1[currentDegree*nbrLimbs] = 1;
@@ -113,16 +113,16 @@ static void DistinctDegreeFactorization(int polyDegree)
 #endif
       // Copy polynomial to factor to poly3 and set leading coefficient to 1.
       ptrValue1 = &poly3[polyDegree*nbrLimbs];
-      memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0])*sizeof(int));
+      (void)memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0])*sizeof(int));
       SetNumberToOne(ptrValue1);  // Set leading coefficient to 1.
       powerPolynomial(poly1, poly3,  // Base and polynomial modulus.
         polyDegree, &primeMod,       // Degree of polynomials and exponent.
         poly2, NULL,                 // Power and pointer to callback.
         0, 1);
-      memcpy(poly1, poly2, polyDegree*nbrLimbs * sizeof(int));
+      (void)memcpy(poly1, poly2, polyDegree*nbrLimbs * sizeof(int));
       // Subtract x.
       IntArray2BigInteger(&poly2[nbrLimbs], &operand1);
-      memcpy(operand2.limbs, MontgomeryMultR1, NumberLength*sizeof(limb));
+      (void)memcpy(operand2.limbs, MontgomeryMultR1, NumberLength*sizeof(limb));
       operand2.nbrLimbs = NumberLengthR1;
       SubtBigNbrMod(operand1.limbs, operand2.limbs, operand1.limbs);
       BigInteger2IntArray(&poly2[nbrLimbs], &operand1);
@@ -149,8 +149,8 @@ static void DistinctDegreeFactorization(int polyDegree)
         pstNewFactorInfo->expectedDegree = currentDegree;
         pstFactorInfo->degree = polyDegree - degreeGcd;
         pstFactorInfo->ptr = &ptrPolyToFactor[degreeGcd*nbrLimbs];
-        memcpy(ptrPolyToFactor, poly4, degreeGcd*nbrLimbs*sizeof(int));
-        memcpy(pstFactorInfo->ptr, poly2, (polyDegree - degreeGcd + 1)*nbrLimbs*sizeof(int));
+        (void)memcpy(ptrPolyToFactor, poly4, degreeGcd*nbrLimbs*sizeof(int));
+        (void)memcpy(pstFactorInfo->ptr, poly2, (polyDegree - degreeGcd + 1)*nbrLimbs*sizeof(int));
         polyDegree -= degreeGcd;
         ptrPolyToFactor += degreeGcd*nbrLimbs;
         // Replace poly1 by poly1 mod ptrPolyToFactor
@@ -257,7 +257,7 @@ void SameDegreeFactorization(void)
       // Copy polynomial to factor to poly3 and set leading coefficient to 1.
       // All operations below will be done modulo this polynomial.
       ptrValue1 = &poly3[pstFactorInfo->degree*nbrLimbs];
-      memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0])*sizeof(int));
+      (void)memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0])*sizeof(int));
       SetNumberToOne(ptrValue1);  // Set leading coefficient to 1.
       if (attemptNbr == 1)
       {
@@ -345,7 +345,7 @@ void SameDegreeFactorization(void)
       { // If prime is 2, Compute poly2 = T+T^2+T^4+...+T^2^(d-1) mod f(x)
         // where T is the random polynomial.
         // Z <- T mod F.
-        memcpy(poly2, poly1, polyDegree*nbrLimbs*sizeof(int));
+        (void)memcpy(poly2, poly1, polyDegree*nbrLimbs*sizeof(int));
         for (currentDegree = 1; currentDegree < pstFactorInfo->expectedDegree; currentDegree++)
         {
           multPolynomialModPoly(poly1, poly1, poly1, polyDegree, poly3);
@@ -371,8 +371,8 @@ void SameDegreeFactorization(void)
         pstNewFactorInfo->multiplicity = pstFactorInfo->multiplicity;
         pstNewFactorInfo->expectedDegree = pstFactorInfo->expectedDegree;
         pstFactorInfo->degree = degreeGcd;
-        memcpy(ptrPolyToFactor, poly4, degreeGcd*nbrLimbs*sizeof(int));
-        memcpy(pstNewFactorInfo->ptr, poly2, (polyDegree - degreeGcd)*nbrLimbs*sizeof(int));
+        (void)memcpy(ptrPolyToFactor, poly4, degreeGcd*nbrLimbs*sizeof(int));
+        (void)memcpy(pstNewFactorInfo->ptr, poly2, (polyDegree - degreeGcd)*nbrLimbs*sizeof(int));
         polyDegree = degreeGcd;
         attemptNbr = 0;
         if (pstFactorInfo->expectedDegree == pstFactorInfo->degree)
@@ -469,7 +469,7 @@ int FactorModularPolynomial(int inputMontgomery)
       operand2.limbs[0].x = 1;
       if (NumberLength > 1)
       {
-        memset(&operand2.limbs[1], 0, (NumberLength - 1) * sizeof(limb));
+        (void)memset(&operand2.limbs[1], 0, (NumberLength - 1) * sizeof(limb));
       }
       modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     }
@@ -486,7 +486,7 @@ int FactorModularPolynomial(int inputMontgomery)
   {
     return EXPR_LEADING_COFF_MULTIPLE_OF_PRIME;
   }
-  memcpy(&TestNbr, primeMod.limbs, primeMod.nbrLimbs * sizeof(limb));
+  (void)memcpy(&TestNbr, primeMod.limbs, primeMod.nbrLimbs * sizeof(limb));
   NumberLength = primeMod.nbrLimbs;
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(primeMod.nbrLimbs);

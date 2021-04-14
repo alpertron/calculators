@@ -132,8 +132,8 @@ void GetMontgomeryParms(int len)
       if (value == 1)
       {
         powerOf2Exponent = (NumberLength - 1)*BITS_PER_GROUP + j;
-        memset(MontgomeryMultR1, 0, NumberLength*sizeof(limb));
-        memset(MontgomeryMultR2, 0, NumberLength * sizeof(limb));
+        (void)memset(MontgomeryMultR1, 0, NumberLength*sizeof(limb));
+        (void)memset(MontgomeryMultR2, 0, NumberLength * sizeof(limb));
         MontgomeryMultR1[0].x = 1;
         MontgomeryMultR2[0].x = 1;
         return;
@@ -178,7 +178,7 @@ void GetMontgomeryParms(int len)
   } while (j > 0);
   AdjustModN(MontgomeryMultR1, TestNbr, len);
   MontgomeryMultR1[NumberLength].x = 0;
-  memcpy(MontgomeryMultR2, MontgomeryMultR1, (NumberLength+1)*sizeof(limb));
+  (void)memcpy(MontgomeryMultR2, MontgomeryMultR1, (NumberLength+1)*sizeof(limb));
   for (NumberLengthR1 = NumberLength; NumberLengthR1 > 0; NumberLengthR1--)
   {
     if (MontgomeryMultR1[NumberLengthR1 - 1].x != 0)
@@ -189,7 +189,7 @@ void GetMontgomeryParms(int len)
   // Compute MontgomeryMultR2 as 2^(2*NumberLength*BITS_PER_GROUP) % TestNbr.
   for (j = NumberLength; j > 0; j--)
   {
-    memmove(&MontgomeryMultR2[1], &MontgomeryMultR2[0], NumberLength*sizeof(limb));
+    (void)memmove(&MontgomeryMultR2[1], &MontgomeryMultR2[0], NumberLength*sizeof(limb));
     MontgomeryMultR2[0].x = 0;
     AdjustModN(MontgomeryMultR2, TestNbr, len);
   }
@@ -1096,7 +1096,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
       MontgomeryMult11(factor1, factor2, product);
       return;
     }
-    memset(Prod, 0, NumberLength * sizeof(limb));
+    (void)memset(Prod, 0, NumberLength * sizeof(limb));
     for (i = 0; i < NumberLength; i++)
     {
       int32_t MontDig, Nbr;
@@ -1115,7 +1115,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
 #else
     double dLimbRange = (double)LIMB_RANGE;
     double dInvLimbRange = (double)1 / dLimbRange;
-    memset(Prod, 0, NumberLength*sizeof(limb));
+    (void)memset(Prod, 0, NumberLength*sizeof(limb));
     for (i = 0; i < NumberLength; i++)
     {
       int Nbr = (factor1 + i)->x;
@@ -1177,7 +1177,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
         carry.x >>= BITS_PER_GROUP;
       }
     }
-    memcpy(product, Prod, NumberLength*sizeof(limb));
+    (void)memcpy(product, Prod, NumberLength*sizeof(limb));
     return;
   }
   // Compute T
@@ -1325,7 +1325,7 @@ void BigIntModularPower(BigInteger *base, BigInteger *exponent, BigInteger *powe
   CompressLimbsBigInteger(aux5, base);
   modmult(aux5, MontgomeryMultR2, aux6);   // Convert base to Montgomery notation.
   modPow(aux6, exponent->limbs, exponent->nbrLimbs, aux5);
-  memset(aux4, 0, NumberLength * sizeof(limb)); // Convert power to standard notation.
+  (void)memset(aux4, 0, NumberLength * sizeof(limb)); // Convert power to standard notation.
   aux4[0].x = 1;
   modmult(aux4, aux5, aux6);
   UncompressLimbsBigInteger(aux6, power);
@@ -1338,7 +1338,7 @@ void BigIntModularPower(BigInteger *base, BigInteger *exponent, BigInteger *powe
 void modPow(limb *base, limb *exp, int nbrGroupsExp, limb *power)
 {
   int mask, index;
-  memcpy(power, MontgomeryMultR1, (NumberLength + 1)*sizeof(*power));  // power <- 1
+  (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1)*sizeof(*power));  // power <- 1
   for (index = nbrGroupsExp - 1; index >= 0; index--)
   {
     int groupExp = (int)(exp + index)->x;
@@ -1359,7 +1359,7 @@ void modPow(limb *base, limb *exp, int nbrGroupsExp, limb *power)
 void modPowLimb(limb *base, limb *exp, limb *power)
 {
   int mask, groupExp;
-  memcpy(power, MontgomeryMultR1, (NumberLength + 1)*sizeof(*power));  // power <- 1
+  (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1)*sizeof(*power));  // power <- 1
   groupExp = (int)exp->x;
   for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
   {
@@ -1374,7 +1374,7 @@ void modPowLimb(limb *base, limb *exp, limb *power)
 void modPowBaseInt(int base, limb *exp, int nbrGroupsExp, limb *power)
 {
   int mask, index;
-  memcpy(power, MontgomeryMultR1, (NumberLength+1)*sizeof(limb));  // power <- 1
+  (void)memcpy(power, MontgomeryMultR1, (NumberLength+1)*sizeof(limb));  // power <- 1
   for (index = nbrGroupsExp-1; index>=0; index--)
   {
     int groupExp = (int)(exp+index)->x;
@@ -1561,11 +1561,11 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
   size = (nbrLen+1)*sizeof(limb);
   (mod + nbrLen)->x = 0;
   (num + nbrLen)->x = 0;
-  memcpy(U, mod, size);
-  memcpy(V, num, size);
+  (void)memcpy(U, mod, size);
+  (void)memcpy(V, num, size);
     // Maximum value of R and S can be up to 2*M, so one more limb is needed.
-  memset(R, 0, size);   // R <- 0
-  memset(S, 0, size);   // S <- 1
+  (void)memset(R, 0, size);   // R <- 0
+  (void)memset(S, 0, size);   // S <- 1
   S[0].x = 1;
   lenRS = 1;
   k = steps = 0;
@@ -1672,16 +1672,16 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
       {  // compute now U and V and reset e, f, g and h.
          // U' <- eU + fV, V' <- gU + hV
         int len = (lenU > lenV ? lenU : lenV);
-        memset(&U[lenU].x, 0, (len - lenU + 1) * sizeof(limb));
-        memset(&V[lenV].x, 0, (len - lenV + 1) * sizeof(limb));
-        memcpy(Ubak, U, (len + 1) * sizeof(limb));
-        memcpy(Vbak, V, (len + 1) * sizeof(limb));
+        (void)memset(&U[lenU].x, 0, (len - lenU + 1) * sizeof(limb));
+        (void)memset(&V[lenV].x, 0, (len - lenV + 1) * sizeof(limb));
+        (void)memcpy(Ubak, U, (len + 1) * sizeof(limb));
+        (void)memcpy(Vbak, V, (len + 1) * sizeof(limb));
         AddMult(U, a, -b, V, -c, d, len);
         if ((U[lenU].x | V[lenV].x) & (1<<(BITS_PER_GROUP - 2)))
         {    // Complete expansion of U and V required for all steps.
             //  2. while V > 0 do
-          memcpy(U, Ubak, (len+1) * sizeof(limb));
-          memcpy(V, Vbak, (len+1) * sizeof(limb));
+          (void)memcpy(U, Ubak, (len+1) * sizeof(limb));
+          (void)memcpy(V, Vbak, (len+1) * sizeof(limb));
           b = c = 0;  // U' = U, V' = V.
           a = d = 1;
           while (lenV > 1 || V[0].x > 0)
@@ -1901,7 +1901,7 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
   R[nbrLen].x = 0;
   // At this moment R = x^(-1)*2^(k+m)
   // 11. return MonPro(R, 2^(m-k))
-  memset(S, 0, size);
+  (void)memset(S, 0, size);
   bitCount = nbrLen*BITS_PER_GROUP - k;
   if (bitCount < 0)
   {
@@ -1977,14 +1977,14 @@ void BigIntModularDivisionPower2(BigInteger *Num, BigInteger *Den, BigInteger *m
 void BigIntModularDivisionSaveTestNbr(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient)
 {
   int NumberLengthBak = NumberLength;
-  memcpy(U, TestNbr, (NumberLength + 1) * sizeof(limb));
+  (void)memcpy(U, TestNbr, (NumberLength + 1) * sizeof(limb));
   NumberLength = mod->nbrLimbs;
-  memcpy(TestNbr, mod->limbs, NumberLength * sizeof(limb));
+  (void)memcpy(TestNbr, mod->limbs, NumberLength * sizeof(limb));
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(NumberLength);
   BigIntModularDivision(Num, Den, mod, quotient);
   NumberLength = NumberLengthBak;
-  memcpy(TestNbr, U, (NumberLength+1) * sizeof(limb));
+  (void)memcpy(TestNbr, U, (NumberLength+1) * sizeof(limb));
 }
 
 // On input: 
@@ -2005,7 +2005,7 @@ static void ChineseRemainderTheorem(int shRight, BigInteger *result)
   }
   if (NumberLength > oddValue.nbrLimbs)
   {
-    memset(&oddValue.limbs[oddValue.nbrLimbs], 0, (NumberLength - oddValue.nbrLimbs) * sizeof(limb));
+    (void)memset(&oddValue.limbs[oddValue.nbrLimbs], 0, (NumberLength - oddValue.nbrLimbs) * sizeof(limb));
   }
   SubtractBigNbr((int *)resultModPower2, (int *)resultModOdd, (int *)aux3, NumberLength);
   ComputeInversePower2(oddValue.limbs, aux4, aux);
@@ -2040,7 +2040,7 @@ void BigIntGeneralModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *
     BigIntAdd(&tmpDen, &oddValue, &tmpDen);
   }
   NumberLength = oddValue.nbrLimbs;
-  memcpy(TestNbr, oddValue.limbs, NumberLength * sizeof(limb));
+  (void)memcpy(TestNbr, oddValue.limbs, NumberLength * sizeof(limb));
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(NumberLength);
   CompressLimbsBigInteger(aux3, &tmpDen);
@@ -2080,11 +2080,11 @@ enum eExprErr BigIntGeneralModularPower(BigInteger *base, BigInteger *exponent, 
     BigIntAdd(&tmpNum, &oddValue, &tmpNum);
   }
   NumberLength = oddValue.nbrLimbs;
-  memcpy(TestNbr, oddValue.limbs, NumberLength * sizeof(limb));
+  (void)memcpy(TestNbr, oddValue.limbs, NumberLength * sizeof(limb));
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(NumberLength);
   BigIntModularPower(&tmpNum, exponent, &tmpDen);
-  memcpy(resultModOdd, tmpDen.limbs, tmpDen.nbrLimbs * sizeof(limb));
+  (void)memcpy(resultModOdd, tmpDen.limbs, tmpDen.nbrLimbs * sizeof(limb));
   if (shRight > 0)
   {
     // Compute power mod power of 2.

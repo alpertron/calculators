@@ -49,11 +49,11 @@ void getBigIntegerFromLinked(struct linkedBigInt* pstLinkedBigInt, BigInteger* p
   int* pLimb = (int *)&pBigInt->limbs[LIMBS_PER_LINKED_NODE-2];
   pBigInt->nbrLimbs = pstLinkedBigInt->node[0];
   pBigInt->sign = pstLinkedBigInt->node[1];
-  memcpy(pBigInt->limbs, &pstLinkedBigInt->node[2], (LIMBS_PER_LINKED_NODE - 2)*sizeof(int));
+  (void)memcpy(pBigInt->limbs, &pstLinkedBigInt->node[2], (LIMBS_PER_LINKED_NODE - 2)*sizeof(int));
   while (pstLinkedBigInt->pstNext != NULL)
   {
     pstLinkedBigInt = pstLinkedBigInt->pstNext;
-    memcpy(pLimb, &pstLinkedBigInt->node, LIMBS_PER_LINKED_NODE * sizeof(int));
+    (void)memcpy(pLimb, &pstLinkedBigInt->node, LIMBS_PER_LINKED_NODE * sizeof(int));
     pLimb += LIMBS_PER_LINKED_NODE;
   }
 }
@@ -83,12 +83,12 @@ void setLinkedBigInteger(struct linkedBigInt** ppstLinkedBigInt, BigInteger* pBi
   *ppstLinkedBigInt = pstFirstFree;
   pstFirstFree->node[0] = pBigInt->nbrLimbs;
   pstFirstFree->node[1] = pBigInt->sign;
-  memcpy(&pstFirstFree->node[2], pBigInt->limbs, (LIMBS_PER_LINKED_NODE - 2)*sizeof(int));
+  (void)memcpy(&pstFirstFree->node[2], pBigInt->limbs, (LIMBS_PER_LINKED_NODE - 2)*sizeof(int));
   ctrLimbs = LIMBS_PER_LINKED_NODE - 2;
   while (ctrLimbs < pBigInt->nbrLimbs)
   {
     pstFirstFree = pstFirstFree->pstNext;
-    memcpy(&pstFirstFree->node, &pBigInt->limbs[ctrLimbs], LIMBS_PER_LINKED_NODE*sizeof(int));
+    (void)memcpy(&pstFirstFree->node, &pBigInt->limbs[ctrLimbs], LIMBS_PER_LINKED_NODE*sizeof(int));
     ctrLimbs += LIMBS_PER_LINKED_NODE;
   }
   pstLinkedBigInt = pstFirstFree->pstNext;

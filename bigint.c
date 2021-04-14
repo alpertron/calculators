@@ -429,7 +429,7 @@ void GcdBigNbr(int *pNbr1, int *pNbr2, int *pGcd, int nbrLen)
   BigIntToBigNbr(&BigInt1, pNbr1, nbrLen);
   BigIntToBigNbr(&BigInt2, pNbr2, nbrLen);
   BigIntGcd(&BigInt1, &BigInt2, &BigGcd);
-  memset(pGcd, 0, NumberLength * sizeof(int));
+  (void)memset(pGcd, 0, NumberLength * sizeof(int));
   BigNbrToBigInt(&BigGcd, pGcd);
 }
 
@@ -448,7 +448,7 @@ void MultBigNbrModN(int *Nbr1, int *Nbr2, int *Prod, int *Mod, int nbrLen)
     nbrLen--;
   }
   *(Nbr2+nbrLen) = 0;
-  memset(Prod, 0, nbrLen * sizeof(*Prod));
+  (void)memset(Prod, 0, nbrLen * sizeof(*Prod));
   i = nbrLen;
   do
   {
@@ -498,7 +498,7 @@ void ModInvBigInt(int *num, int *inv, int *mod, int nbrLenBigInt)
 {
   int NumberLengthBigInt;
   int NumberLengthBak = NumberLength;
-  memset(inv, 0, nbrLenBigInt*sizeof(int));
+  (void)memset(inv, 0, nbrLenBigInt*sizeof(int));
   while (nbrLenBigInt > 1)
   {
     if (*(mod + nbrLenBigInt - 1) != 0)
@@ -508,7 +508,7 @@ void ModInvBigInt(int *num, int *inv, int *mod, int nbrLenBigInt)
     nbrLenBigInt--;
   }
   NumberLength = nbrLenBigInt;
-  memcpy(TestNbr, mod, NumberLength * sizeof(limb));
+  (void)memcpy(TestNbr, mod, NumberLength * sizeof(limb));
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(NumberLength);
   BigIntToBigNbr(&Denominator, num, nbrLenBigInt);
@@ -521,6 +521,6 @@ void ModInvBigInt(int *num, int *inv, int *mod, int nbrLenBigInt)
   NumberLength = NumberLengthBak;
   if (NumberLengthBigInt < NumberLength)
   {
-    memset(inv + NumberLengthBigInt, 0, (NumberLength - NumberLengthBigInt) * sizeof(int));
+    (void)memset(inv + NumberLengthBigInt, 0, (NumberLength - NumberLengthBigInt) * sizeof(int));
   }
 }

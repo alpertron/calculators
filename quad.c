@@ -593,7 +593,7 @@ static void findQuadraticSolution(BigInteger* pSolution, int expon)
   int bitMask = 1;
   int* ptrSolution = (int*)pSolution->limbs;
   BigIntPowerOf2(&Q, expon);
-  memset(pSolution->limbs, 0, Q.nbrLimbs);
+  (void)memset(pSolution->limbs, 0, Q.nbrLimbs);
   while (expon > 0)
   {
     expon--;
@@ -721,7 +721,7 @@ void SolveQuadModEquation(void)
     }
     // Calculate z <- -ValC / ValB (mod ValN)
     NumberLength = modulus.nbrLimbs;
-    memcpy(TestNbr, modulus.limbs, NumberLength * sizeof(limb));
+    (void)memcpy(TestNbr, modulus.limbs, NumberLength * sizeof(limb));
     TestNbr[NumberLength].x = 0;
     GetMontgomeryParms(NumberLength);
     BigIntModularDivision(&coeffIndep, &coeffLinear, &modulus, &z);
@@ -793,7 +793,7 @@ void SolveQuadModEquation(void)
       else
       {
         NumberLength = Q.nbrLimbs;
-        memcpy(TestNbr, Q.limbs, NumberLength * sizeof(limb));
+        (void)memcpy(TestNbr, Q.limbs, NumberLength * sizeof(limb));
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&L, &V, &Q, &common.quad.Solution1[factorIndex]);
@@ -900,16 +900,16 @@ void SolveQuadModEquation(void)
               MultBigNbr((int*)squareRoot.limbs, (int*)squareRoot.limbs, (int*)tmp2.limbs, nbrLimbs);
               MultBigNbr((int*)tmp2.limbs, (int*)ValCOdd.limbs, (int*)tmp2.limbs, nbrLimbs);
               ChSignBigNbr((int*)tmp2.limbs, nbrLimbs);
-              memset(tmp1.limbs, 0, nbrLimbs * sizeof(limb));
+              (void)memset(tmp1.limbs, 0, nbrLimbs * sizeof(limb));
               tmp1.limbs[0].x = 3;
               AddBigNbr((int*)tmp1.limbs, (int*)tmp2.limbs, (int*)tmp2.limbs, nbrLimbs);
               MultBigNbr((int*)tmp2.limbs, (int*)squareRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
-              memcpy(squareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
+              (void)memcpy(squareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
               DivBigNbrByInt((int*)tmp1.limbs, 2, (int*)squareRoot.limbs, nbrLimbs);
             }
             // Get square root of ValCOdd from its inverse by multiplying by ValCOdd.
             MultBigNbr((int*)ValCOdd.limbs, (int*)squareRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
-            memcpy(squareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
+            (void)memcpy(squareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
             setNbrLimbs(&squareRoot);
             for (ctr = 0; ctr < bitsCZero / 2; ctr++)
             {
@@ -1025,7 +1025,7 @@ void SolveQuadModEquation(void)
         }
         intToBigInteger(&tmp2, 1);
         NumberLength = tmp1.nbrLimbs;
-        memcpy(TestNbr, tmp1.limbs, NumberLength * sizeof(limb));
+        (void)memcpy(TestNbr, tmp1.limbs, NumberLength * sizeof(limb));
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&tmp2, &ValAOdd, &tmp1, &Tmp[0]);
@@ -1049,7 +1049,7 @@ void SolveQuadModEquation(void)
           }
           if (nbrLimbs > discriminant.nbrLimbs)
           {
-            memset(&discriminant.limbs[nbrLimbs], 0, (nbrLimbs - discriminant.nbrLimbs) * sizeof(limb));
+            (void)memset(&discriminant.limbs[nbrLimbs], 0, (nbrLimbs - discriminant.nbrLimbs) * sizeof(limb));
           }
           BigIntRemainder(&discriminant, &prime, &Tmp[3]);
           if (Tmp[3].sign == SIGN_NEGATIVE)
@@ -1063,7 +1063,7 @@ void SolveQuadModEquation(void)
           }
           // Compute square root of discriminant.
           NumberLength = prime.nbrLimbs;
-          memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
+          (void)memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
           TestNbr[NumberLength].x = 0;
           GetMontgomeryParms(NumberLength);
           CopyBigInt(&Q, &prime);
@@ -1123,7 +1123,7 @@ void SolveQuadModEquation(void)
               // Get z <- x^q (mod p) in Montgomery notation.
               modPowBaseInt(x, Q.limbs, Q.nbrLimbs, Tmp[4].limbs);  // z
               // Step 4.
-              memcpy(Tmp[5].limbs, Tmp[4].limbs, NumberLength * sizeof(limb)); // y
+              (void)memcpy(Tmp[5].limbs, Tmp[4].limbs, NumberLength * sizeof(limb)); // y
               r = e;
               CopyBigInt(&K1, &Q);
               subtractdivide(&K1, 1, 2);
@@ -1135,14 +1135,14 @@ void SolveQuadModEquation(void)
               {
                 // Step 6
                 int k = 0;
-                memcpy(Tmp[10].limbs, Tmp[9].limbs, NumberLength * sizeof(limb));
+                (void)memcpy(Tmp[10].limbs, Tmp[9].limbs, NumberLength * sizeof(limb));
                 do
                 {
                   k++;
                   modmult(Tmp[10].limbs, Tmp[10].limbs, Tmp[10].limbs);
                 } while (memcmp(Tmp[10].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)));
                 // Step 7
-                memcpy(Tmp[11].limbs, Tmp[5].limbs, NumberLength * sizeof(limb)); // d
+                (void)memcpy(Tmp[11].limbs, Tmp[5].limbs, NumberLength * sizeof(limb)); // d
                 for (ctr = 0; ctr < r - k - 1; ctr++)
                 {
                   modmult(Tmp[11].limbs, Tmp[11].limbs, Tmp[11].limbs);
@@ -1155,7 +1155,7 @@ void SolveQuadModEquation(void)
               toConvert = Tmp[8].limbs;
             }
             // Convert from Montgomery to standard notation.
-            memset(Tmp[4].limbs, 0, NumberLength * sizeof(limb)); // Convert power to standard notation.
+            (void)memset(Tmp[4].limbs, 0, NumberLength * sizeof(limb)); // Convert power to standard notation.
             Tmp[4].limbs[0].x = 1;
             modmult(Tmp[4].limbs, toConvert, toConvert);
             UncompressLimbsBigInteger(toConvert, &SqrtDisc);
@@ -1369,7 +1369,7 @@ void SolveQuadModEquation(void)
         IntArray2BigInteger(astFactorsMod[E+1].ptrFactor, &K);
         BigIntPowerIntExp(&K, astFactorsMod[E+1].multiplicity, &L);
         NumberLength = prime.nbrLimbs;
-        memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
+        (void)memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&Q, &L, &prime, &Aux[T1]);
@@ -2265,8 +2265,8 @@ static void NonSquareDiscriminant(void)
     }
     pstFactor++;
   }
-  memset(counters, 0, sizeof(counters));
-  memset(isDescending, 0, sizeof(isDescending));
+  (void)memset(counters, 0, sizeof(counters));
+  (void)memset(isDescending, 0, sizeof(isDescending));
   intToBigInteger(&ValE, 1);  // Initialize multiplier to 1.
   // Loop that cycles through all square divisors of the independent term.
   equationNbr = 2;
@@ -3320,8 +3320,8 @@ static void PerfectSquareDiscriminant(void)
   // Use Gray code to use only one big number.
   // Gray code: 0->000, 1->001, 2->011, 3->010, 4->110, 5->111, 6->101, 7->100.
   // Change from zero to one means multiply, otherwise divide.
-  memset(counters, 0, sizeof(counters));
-  memset(isDescending, 0, sizeof(isDescending));
+  (void)memset(counters, 0, sizeof(counters));
+  (void)memset(isDescending, 0, sizeof(isDescending));
   intToBigInteger(&currentFactor, 1);
   for (;;)
   {

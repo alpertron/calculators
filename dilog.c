@@ -125,7 +125,7 @@ static void indicateCannotComputeLog(int indexBase, int indexExp)
 static int ComputeDLogModSubGroupOrder(int indexBase, int indexExp, BigInteger *Exponent, BigInteger *subGroupOrder)
 {
   // Set tmpBase to 1 in Montgomery notation.
-  memcpy(tmpBase.limbs, MontgomeryMultR1, NumberLength * sizeof(limb));
+  (void)memcpy(tmpBase.limbs, MontgomeryMultR1, NumberLength * sizeof(limb));
   // Set Exponent to zero.
   Exponent->limbs[0].x = 0;
   Exponent->nbrLimbs = 1;
@@ -212,7 +212,7 @@ void DiscreteLogarithm(void)
       ctr = multiplicity - ctr;
       intToBigInteger(&bigNbrB, ctr);   // Convert exponent to big integer.
       NumberLength = tmp2.nbrLimbs;
-      memcpy(TestNbr, tmp2.limbs, (NumberLength + 1) * sizeof(limb));
+      (void)memcpy(TestNbr, tmp2.limbs, (NumberLength + 1) * sizeof(limb));
       GetMontgomeryParms(NumberLength);
       BigIntModularPower(&tmpBase, &bigNbrB, &bigNbrA);
       BigIntRemainder(&power, &tmp2, &bigNbrB);
@@ -251,7 +251,7 @@ void DiscreteLogarithm(void)
     intToBigInteger(&logar, 0);     // logar <- 0
     intToBigInteger(&logarMult, 1); // logarMult <- 1
     NumberLength = mod.nbrLimbs;
-    memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
+    (void)memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
     TestNbr[NumberLength].x = 0;
     //    yieldFreq = 1000000 / (NumberLength*NumberLength);
     GetMontgomeryParms(NumberLength);
@@ -306,9 +306,9 @@ void DiscreteLogarithm(void)
       strcpy(ptr, " elements.");
       showText(textExp);
       NumberLength = mod.nbrLimbs;
-      memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
+      (void)memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
       NumberLengthOther = subGroupOrder.nbrLimbs;
-      memcpy(TestNbrOther, subGroupOrder.limbs, NumberLengthOther * sizeof(limb));
+      (void)memcpy(TestNbrOther, subGroupOrder.limbs, NumberLengthOther * sizeof(limb));
       TestNbr[NumberLength].x = 0;
       GetMontgomeryParms(NumberLength);
       nbrLimbs = subGroupOrder.nbrLimbs;
@@ -332,7 +332,7 @@ void DiscreteLogarithm(void)
         primRoot[0].x = 1;
         if (NumberLength > 1)
         {
-          memset(&primRoot[1], 0, (NumberLength - 1) * sizeof(limb));
+          (void)memset(&primRoot[1], 0, (NumberLength - 1) * sizeof(limb));
         }
         do
         {
@@ -343,7 +343,7 @@ void DiscreteLogarithm(void)
       else
       {           // Power is not 1, so the base is a primitive root.
         logMachineState = BASE_PRIMITIVE_ROOT;
-        memcpy(primRoot, baseMontg, NumberLength * sizeof(limb));
+        (void)memcpy(primRoot, baseMontg, NumberLength * sizeof(limb));
       }
       for (;;)
       {                  // Calculate discrete logarithm in subgroup.
@@ -356,18 +356,18 @@ void DiscreteLogarithm(void)
         CopyBigInt(&currentExp, &groupOrder);
         if (logMachineState == BASE_PRIMITIVE_ROOT)
         {
-          memcpy(basePHMontg, baseMontg, NumberLength * sizeof(limb));
-          memcpy(currPowerMontg, powerMontg, NumberLength * sizeof(limb));
+          (void)memcpy(basePHMontg, baseMontg, NumberLength * sizeof(limb));
+          (void)memcpy(currPowerMontg, powerMontg, NumberLength * sizeof(limb));
         }
         else if (logMachineState == CALC_LOG_BASE)
         {
-          memcpy(basePHMontg, primRoot, NumberLength * sizeof(limb));
-          memcpy(currPowerMontg, baseMontg, NumberLength * sizeof(limb));
+          (void)memcpy(basePHMontg, primRoot, NumberLength * sizeof(limb));
+          (void)memcpy(currPowerMontg, baseMontg, NumberLength * sizeof(limb));
         }
         else
         {           // logMachineState == CALC_LOG_POWER
-          memcpy(primRoot, basePHMontg, NumberLength * sizeof(limb));
-          memcpy(currPowerMontg, powerMontg, NumberLength * sizeof(limb));
+          (void)memcpy(primRoot, basePHMontg, NumberLength * sizeof(limb));
+          (void)memcpy(currPowerMontg, powerMontg, NumberLength * sizeof(limb));
         }
         for (indexExp = 0; indexExp < astFactorsGO[indexBase + 1].multiplicity; indexExp++)
         {
@@ -384,11 +384,11 @@ void DiscreteLogarithm(void)
           }
           else
           {        // Use Pollard's rho method with Brent's modification
-            memcpy(nbrPower, powerPHMontg, NumberLength * sizeof(limb));
-            memcpy(nbrBase, primRootPwr, NumberLength * sizeof(limb));
-            memcpy(nbrR2, nbrBase, NumberLength * sizeof(limb));
-            memset(nbrA2, 0, NumberLength * sizeof(limb));
-            memset(nbrB2, 0, NumberLength * sizeof(limb));
+            (void)memcpy(nbrPower, powerPHMontg, NumberLength * sizeof(limb));
+            (void)memcpy(nbrBase, primRootPwr, NumberLength * sizeof(limb));
+            (void)memcpy(nbrR2, nbrBase, NumberLength * sizeof(limb));
+            (void)memset(nbrA2, 0, NumberLength * sizeof(limb));
+            (void)memset(nbrB2, 0, NumberLength * sizeof(limb));
             nbrB2[0].x = 1;
             addA2.x = addB2.x = 0;
             mult2.x = 1;
@@ -397,9 +397,9 @@ void DiscreteLogarithm(void)
             EndPollardBrentRho = FALSE;
             do
             {
-              memcpy(nbrR, nbrR2, NumberLength * sizeof(limb));
-              memcpy(nbrA, nbrA2, NumberLength * sizeof(limb));
-              memcpy(nbrB, nbrB2, NumberLength * sizeof(limb));
+              (void)memcpy(nbrR, nbrR2, NumberLength * sizeof(limb));
+              (void)memcpy(nbrA, nbrA2, NumberLength * sizeof(limb));
+              (void)memcpy(nbrB, nbrB2, NumberLength * sizeof(limb));
               addA = addA2;
               addB = addB2;
               mult1 = mult2;
@@ -434,9 +434,9 @@ void DiscreteLogarithm(void)
                   addB2.x++;
                 }
                 // Exchange nbrR2 and nbrROther
-                memcpy(nbrTemp, nbrR2, NumberLength * sizeof(limb));
-                memcpy(nbrR2, nbrROther, NumberLength * sizeof(limb));
-                memcpy(nbrROther, nbrTemp, NumberLength * sizeof(limb));
+                (void)memcpy(nbrTemp, nbrR2, NumberLength * sizeof(limb));
+                (void)memcpy(nbrR2, nbrROther, NumberLength * sizeof(limb));
+                (void)memcpy(nbrROther, nbrTemp, NumberLength * sizeof(limb));
                 if (addA2.x >= (int)(LIMB_RANGE / 2) || addB2.x >= (int)(LIMB_RANGE / 2) ||
                     mult2.x >= (int)(LIMB_RANGE / 2))
                 {
@@ -491,7 +491,7 @@ void DiscreteLogarithm(void)
           BigIntAdd(&runningExp, &tmpBase, &runningExp);
           BigIntMultiply(&powSubGroupOrder, &subGroupOrder, &powSubGroupOrder);
           modPow(primRoot, subGroupOrder.limbs, subGroupOrder.nbrLimbs, tmpBase.limbs);
-          memcpy(primRoot, tmpBase.limbs, NumberLength * sizeof(limb));
+          (void)memcpy(primRoot, tmpBase.limbs, NumberLength * sizeof(limb));
         }
         if (logMachineState == BASE_PRIMITIVE_ROOT)
         {         // Discrete logarithm was determined for this subgroup.
@@ -562,7 +562,7 @@ void DiscreteLogarithm(void)
       }
       CopyBigInt(&nbrV[indexBase], &runningExp);
       NumberLength = powSubGroupOrder.nbrLimbs;
-      memcpy(TestNbr, powSubGroupOrder.limbs, NumberLength * sizeof(limb));
+      (void)memcpy(TestNbr, powSubGroupOrder.limbs, NumberLength * sizeof(limb));
       TestNbr[NumberLength].x = 0;
       GetMontgomeryParms(NumberLength);
       for (indexExp = 0; indexExp < indexBase; indexExp++)
@@ -589,7 +589,7 @@ void DiscreteLogarithm(void)
           ModInvBigNbr(tmp2.limbs, tmp2.limbs, TestNbr, NumberLength);
         }
         tmpBase.limbs[0].x = 1;
-        memset(&tmpBase.limbs[1], 0, (NumberLength - 1) * sizeof(limb));
+        (void)memset(&tmpBase.limbs[1], 0, (NumberLength - 1) * sizeof(limb));
         modmult(tmpBase.limbs, tmp2.limbs, tmp2.limbs);
         UncompressLimbsBigInteger(tmp2.limbs, &tmpBase);
         BigIntMultiply(&tmpBase, &nbrV[indexBase], &nbrV[indexBase]);
@@ -643,14 +643,14 @@ void DiscreteLogarithm(void)
       // If r = 0 and s = 0 do not change LM.
       BigIntPowerIntExp(&bigNbrB, expon + 1, &bigNbrA);
       NumberLength = bigNbrA.nbrLimbs;
-      memcpy(TestNbr, bigNbrA.limbs, NumberLength * sizeof(limb));
+      (void)memcpy(TestNbr, bigNbrA.limbs, NumberLength * sizeof(limb));
       GetMontgomeryParms(NumberLength);
       BigIntRemainder(&base, &bigNbrA, &tmpBase);
       CompressLimbsBigInteger(baseMontg, &tmpBase);
       modmult(baseMontg, MontgomeryMultR2, baseMontg);
       modPow(baseMontg, logarMult.limbs, logarMult.nbrLimbs, primRootPwr); // B^LM
       tmpBase.limbs[0].x = 1;   // Convert from Montgomery to standard notation.
-      memset(&tmpBase.limbs[1], 0, (NumberLength - 1) * sizeof(limb));
+      (void)memset(&tmpBase.limbs[1], 0, (NumberLength - 1) * sizeof(limb));
       modmult(primRootPwr, tmpBase.limbs, primRootPwr);                    // B^LM
       ModInvBigNbr(baseMontg, tmpBase.limbs, TestNbr, NumberLength);       // B^(-1)
       modPow(tmpBase.limbs, logar.limbs, logar.nbrLimbs, primRoot);        // B^(-L)

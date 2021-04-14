@@ -216,7 +216,7 @@ static void complexPolyFFT(complex* x, complex* y, int length)
   }
   if (exponentOdd)
   {     // Move data from x to y.
-    memcpy(y, x, length * sizeof(complex));
+    (void)memcpy(y, x, length * sizeof(complex));
   }
 }
 
@@ -371,7 +371,7 @@ void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
   {
     if (polyInvCached == NBR_CACHED && factor2 == polyInv)
     {   // Get transform of inverse of polynomial from cache.
-      memcpy(transf, polyInvTransf, power2plus1 * sizeof(transf[0]));
+      (void)memcpy(transf, polyInvTransf, power2plus1 * sizeof(transf[0]));
     }
     else
     {   // Second factor is not cached. Compute transform.
@@ -381,7 +381,7 @@ void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
     }
     if (polyInvCached == NBR_READY_TO_BE_CACHED && factor2 == polyInv)
     {   // Save transform of inverse of polynomial to cache.
-      memcpy(polyInvTransf, transf, power2plus1 * sizeof(transf[0]));
+      (void)memcpy(polyInvTransf, transf, power2plus1 * sizeof(transf[0]));
       polyInvCached = NBR_CACHED;
     }
   }
@@ -405,7 +405,7 @@ void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
     // use transform of second factor as the transform of first factor.
     if (factor1DegreesProcessed == 0 && factor1 == factor2)
     {
-      memcpy(transf, product, power2plus1 * sizeof(product[0]));   // transf <- DFT(secondFactor)
+      (void)memcpy(transf, product, power2plus1 * sizeof(product[0]));   // transf <- DFT(secondFactor)
     }
     // Perform convolution.
     // Overwrite transform of first factor with transform of product.

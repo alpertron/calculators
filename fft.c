@@ -230,7 +230,7 @@ static void complexFFT(complex *x, complex *y, int length)
   }
   if (exponentOdd)
   {     // Move data from x to y.
-    memcpy(y, x, length * sizeof(complex));
+    (void)memcpy(y, x, length * sizeof(complex));
   }
 }
 
@@ -409,11 +409,11 @@ void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int 
   {
     if (TestNbrCached == NBR_CACHED && factor2 == TestNbr)
     {
-      memcpy(transf, TestNbrTransf, power2plus1 * sizeof(transf[0]));
+      (void)memcpy(transf, TestNbrTransf, power2plus1 * sizeof(transf[0]));
     }
     else if (MontgomeryMultNCached == NBR_CACHED && factor2 == MontgomeryMultN)
     {
-      memcpy(transf, MontgomeryMultNTransf, power2plus1 * sizeof(transf[0]));
+      (void)memcpy(transf, MontgomeryMultNTransf, power2plus1 * sizeof(transf[0]));
     }
     else
     {
@@ -422,18 +422,18 @@ void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int 
     }
     if (TestNbrCached == NBR_READY_TO_BE_CACHED && factor2 == TestNbr)
     {
-      memcpy(TestNbrTransf, transf, power2plus1 * sizeof(transf[0]));
+      (void)memcpy(TestNbrTransf, transf, power2plus1 * sizeof(transf[0]));
       TestNbrCached = NBR_CACHED;
     }
     else if (MontgomeryMultNCached == NBR_READY_TO_BE_CACHED && factor2 == MontgomeryMultN)
     {
-      memcpy(MontgomeryMultNTransf, transf, power2plus1 * sizeof(transf[0]));
+      (void)memcpy(MontgomeryMultNTransf, transf, power2plus1 * sizeof(transf[0]));
       MontgomeryMultNCached = NBR_CACHED;
     }
   }
   else
   {
-    memcpy(transf, product, power2plus1 * sizeof(product[0]));   // transf <- DFT(secondFactor)
+    (void)memcpy(transf, product, power2plus1 * sizeof(product[0]));   // transf <- DFT(secondFactor)
   }
 
     // Perform convolution.
@@ -455,7 +455,7 @@ void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int 
   ptrProduct = transf;
   invPower2 = (double)1 / ((double)(power2 * 8));
   dCarry = 0;
-  memset(result, 0, 2*len * sizeof(limb));
+  (void)memset(result, 0, 2*len * sizeof(limb));
   bitExternal = 0;
   ptrResult = result;
   for (index = 0; index < power2; index++)

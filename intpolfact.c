@@ -608,7 +608,7 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
   {
     operand4.nbrLimbs = *ptrCoeff;
     operand4.sign = SIGN_POSITIVE;
-    memcpy(operand4.limbs, ptrCoeff+1, *ptrCoeff *sizeof(int));
+    (void)memcpy(operand4.limbs, ptrCoeff+1, *ptrCoeff *sizeof(int));
     BigIntRemainder(&operand4, &powerMod, &operand3);
     setLinkedBigInteger(&ptrCoeffs[traceNbr], &operand3);
     ptrCoeff += 1 + numLimbs(ptrCoeff);
@@ -733,16 +733,16 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
             if (nbrVectors == 1)
             {              // Coefficient is already reduced.
               *ptrCoeffDest = nbrLength;
-              memcpy(ptrCoeffDest + 1, ptrCoeffSrc + 1, nbrLength * sizeof(int));
+              (void)memcpy(ptrCoeffDest + 1, ptrCoeffSrc + 1, nbrLength * sizeof(int));
             }
             else
             {              // Reduce the coefficient mod powerMod.
               operand1.nbrLimbs = nbrLength;
               operand1.sign = SIGN_POSITIVE;
-              memcpy(operand1.limbs, ptrCoeffSrc + 1, nbrLength * sizeof(int));
+              (void)memcpy(operand1.limbs, ptrCoeffSrc + 1, nbrLength * sizeof(int));
               BigIntRemainder(&operand1, &powerMod, &operand2);
               *ptrCoeffDest = operand2.nbrLimbs;
-              memcpy(ptrCoeffDest + 1, operand2.limbs, operand2.nbrLimbs * sizeof(int));
+              (void)memcpy(ptrCoeffDest + 1, operand2.limbs, operand2.nbrLimbs * sizeof(int));
             }
             ptrCoeffSrc += 1 + nbrLength;
             ptrCoeffDest += 1 + NumberLength;
@@ -766,7 +766,7 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
           for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
           {
             nbrLength = 1 + numLimbs(ptrCoeffSrc);
-            memcpy(ptrCoeffDest, ptrCoeffSrc, nbrLength * sizeof(int));
+            (void)memcpy(ptrCoeffDest, ptrCoeffSrc, nbrLength * sizeof(int));
             ptrCoeffSrc += 1 + NumberLength;
             ptrCoeffDest += 1 + NumberLength;
           }
@@ -985,7 +985,7 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
       }
       modulusIsZero = 0;   // Perform modular operations.
       // Restart finding factors.
-      memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
+      (void)memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
     }
   }
   return 1;              // Factorization is complete.
@@ -1113,7 +1113,7 @@ static void vanHoeij(int prime, int nbrFactors)
   ptrDebugOutput += strlen(ptrDebugOutput);
   *ptrDebugOutput++ = '\n';
 #endif
-  memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
+  (void)memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
   // Get leading coefficient of polyNonRepeatedFactors.
   ptrSrc = &polyNonRepeatedFactors[1];
   for (degree1 = 0; degree1 < degreePolyToFactor; degree1++)
@@ -1201,7 +1201,7 @@ static void vanHoeij(int prime, int nbrFactors)
     }
     else if (delta > 0)
     {
-      memcpy(pstFactorInfo - delta, pstFactorInfo, sizeof(*pstFactorInfo));
+      (void)memcpy(pstFactorInfo - delta, pstFactorInfo, sizeof(*pstFactorInfo));
     }
     pstFactorInfo++;
   }
@@ -1845,7 +1845,7 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   }
   if (pstFactorInfo - pstFactorInfoInteger > 0)
   {
-    memmove(pstFactorInfoInteger + 1, pstFactorInfoInteger,
+    (void)memmove(pstFactorInfoInteger + 1, pstFactorInfoInteger,
       (pstFactorInfo - pstFactorInfoInteger) * sizeof(*pstFactorInfo));
   }
   pstFactorInfoInteger->multiplicity = 1;
@@ -1921,7 +1921,7 @@ void PerformSameDegreeFactorization(int prime)
 
 void FactorPolynomialModPrime(int prime)
 {
-  memset(factorInfo, 0, sizeof(factorInfo));
+  (void)memset(factorInfo, 0, sizeof(factorInfo));
   initFactorModularPoly(prime);
   FactorModularPolynomial(FALSE);   // Input is not in Montgomery notation.
 }
@@ -1970,7 +1970,7 @@ int FactorPolyOverIntegers(void)
   initLinkedBigInt();
   ptrFactorInteger = polyInteger;
   modulusIsZero = 1;
-  memset(factorInfoInteger, 0, sizeof(factorInfoInteger));
+  (void)memset(factorInfoInteger, 0, sizeof(factorInfoInteger));
   getContent(values, &contentPolyToFactor);
   CopyPolynomial(&origPolyToFactor[1], &values[1], degreePolyToFactor);
   origPolyToFactor[0] = degreePolyToFactor;

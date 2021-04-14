@@ -1219,7 +1219,7 @@ static void generateSieve(int* pSmallPrimes, char* sieve, BigInteger* pArgument,
 {
   int ctr;
   // Indicate numbers not divisible by small primes in advance.
-  memset(sieve, 0, COMPUTE_NEXT_PRIME_SIEVE_SIZE);
+  (void)memset(sieve, 0, COMPUTE_NEXT_PRIME_SIEVE_SIZE);
   for (ctr = 0; ctr < 1229; ctr++)
   {     // For each prime less than 10000...
     int prime = *pSmallPrimes++;
@@ -1468,7 +1468,7 @@ static enum eExprErr ComputeFibLucas(int origValue)
   pArgument = &curStack;
   pArgument->sign = SIGN_POSITIVE;
   pArgument->nbrLimbs = len;
-  memcpy(pArgument->limbs, pFibonAct, len * sizeof(limb));
+  (void)memcpy(pArgument->limbs, pFibonAct, len * sizeof(limb));
   return EXPR_OK;
 }
 
@@ -1724,7 +1724,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger
     *ptrDest = ((curLimb >> (BITS_PER_GROUP - rem)) | (prevLimb << rem)) & MAX_INT_NBR;
     if (delta > 0)
     {
-      memset(first->limbs, 0, delta * sizeof(limb));
+      (void)memset(first->limbs, 0, delta * sizeof(limb));
     }
     result->nbrLimbs += delta;
     if (result->limbs[result->nbrLimbs].x)

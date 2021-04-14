@@ -170,7 +170,7 @@ int fsquares(void)
   int divisor, base, idx;
   limb carry;
   nbrLimbs = origNbrLimbs;
-  memcpy(number, origNbr, nbrLimbs*sizeof(limb));
+  (void)memcpy(number, origNbr, nbrLimbs*sizeof(limb));
   squareRoot(number, Mult1, nbrLimbs, &Mult1Len);
   multiply(Mult1, Mult1, result, Mult1Len, NULL);
   if (memcmp(result, number, sizeof(limb)*nbrLimbs) == 0)
@@ -380,14 +380,14 @@ int fsquares(void)
         {
           // At this moment p should be prime, otherwise we must try another number.
           p[nbrLimbsP].x = 0;
-          memcpy(q, p, (nbrLimbsP+1)*sizeof(p[0]));
+          (void)memcpy(q, p, (nbrLimbsP+1)*sizeof(p[0]));
           nbrLimbsQ = nbrLimbsP;
           q[0].x--;                     // q = p - 1 (p is odd, so there is no carry).
-          memcpy(Mult3, q, (nbrLimbsQ+1)*sizeof(q[0]));
+          (void)memcpy(Mult3, q, (nbrLimbsQ+1)*sizeof(q[0]));
           Mult3Len = nbrLimbsP;
           DivideBigNbrByMaxPowerOf2(&shRightMult3, Mult3, &Mult3Len);
           base = 1;
-          memcpy(TestNbr, p, (nbrLimbsP+1)*sizeof(p[0]));
+          (void)memcpy(TestNbr, p, (nbrLimbsP+1)*sizeof(p[0]));
           GetMontgomeryParms(nbrLimbsP);
           sqrtFound = 0;
           do
@@ -404,7 +404,7 @@ int fsquares(void)
                 sqrtFound = 1;
                 break;      // Mult1^2 = -1 (mod p), so exit loop.
               }
-              memcpy(Mult1, Mult4, nbrLimbsP*sizeof(limb));
+              (void)memcpy(Mult1, Mult4, nbrLimbsP*sizeof(limb));
             }
             // If power (Mult4) is 1, that means that number is at least PRP,
             // so continue loop trying to find square root of -1.
@@ -415,7 +415,7 @@ int fsquares(void)
           }
           // Convert Mult1 from Montgomery notation to standard number
           // by multiplying by 1 in Montgomery notation.
-          memset(Mult2, 0, nbrLimbsP*sizeof(limb));
+          (void)memset(Mult2, 0, nbrLimbsP*sizeof(limb));
           Mult2[0].x = 1;
           modmult(Mult2, Mult1, Mult1);  // Mult1 = sqrt(-1) mod p.
           // Find the sum of two squares that equals this PRP x^2 + y^2 = p using
@@ -424,7 +424,7 @@ int fsquares(void)
 
           // Result is stored in biMult1 and biMult2.
           // Initialize real part to square root of (-1).
-          memcpy(biMult1.limbs, Mult1, nbrLimbsP * sizeof(limb));
+          (void)memcpy(biMult1.limbs, Mult1, nbrLimbsP * sizeof(limb));
           biMult1.nbrLimbs = nbrLimbsP;
           biMult1.sign = SIGN_POSITIVE;
           intToBigInteger(&biMult2, 1);   // Initialize imaginary part to 1.
@@ -433,7 +433,7 @@ int fsquares(void)
             biMult1.nbrLimbs--;
           }
           // Initialize real part to prime.
-          memcpy(biMult3.limbs, TestNbr, nbrLimbsP*sizeof(limb));
+          (void)memcpy(biMult3.limbs, TestNbr, nbrLimbsP*sizeof(limb));
           biMult3.nbrLimbs = nbrLimbsP;
           biMult3.sign = SIGN_POSITIVE;
           while (biMult3.nbrLimbs > 1 && biMult3.limbs[biMult3.nbrLimbs - 1].x == 0)
@@ -449,10 +449,10 @@ int fsquares(void)
           {
             nbrLimbs = biMult2.nbrLimbs;
           }
-          memset(Mult1, 0, (nbrLimbs + 1) * sizeof(limb));
-          memset(Mult2, 0, (nbrLimbs + 1) * sizeof(limb));
-          memcpy(Mult1, SquareMult1.limbs, SquareMult1.nbrLimbs * sizeof(limb));
-          memcpy(Mult2, SquareMult2.limbs, SquareMult2.nbrLimbs * sizeof(limb));
+          (void)memset(Mult1, 0, (nbrLimbs + 1) * sizeof(limb));
+          (void)memset(Mult2, 0, (nbrLimbs + 1) * sizeof(limb));
+          (void)memcpy(Mult1, SquareMult1.limbs, SquareMult1.nbrLimbs * sizeof(limb));
+          (void)memcpy(Mult2, SquareMult2.limbs, SquareMult2.nbrLimbs * sizeof(limb));
         }
         // Use the other divisors of modulus in order to get Mult1 and Mult2.
 
@@ -569,13 +569,13 @@ int fsquares(void)
   multiply(Mult1, Mult1, SquareMult1.limbs, Mult1Len, &tmp);
   SquareMult1.limbs[idx].x = 0;
   multiply(Mult2, Mult2, SquareMult2.limbs, Mult2Len, &tmp);
-  memset(&SquareMult2.limbs[Mult2Len << 1], 0, ((Mult1Len - Mult2Len) << 1)*sizeof(limb));
+  (void)memset(&SquareMult2.limbs[Mult2Len << 1], 0, ((Mult1Len - Mult2Len) << 1)*sizeof(limb));
   SquareMult2.limbs[idx].x = 0;
   multiply(Mult3, Mult3, SquareMult3.limbs, Mult3Len, &tmp);
-  memset(&SquareMult3.limbs[Mult3Len << 1], 0, ((Mult1Len - Mult3Len) << 1)*sizeof(limb));
+  (void)memset(&SquareMult3.limbs[Mult3Len << 1], 0, ((Mult1Len - Mult3Len) << 1)*sizeof(limb));
   SquareMult3.limbs[idx].x = 0;
   multiply(Mult4, Mult4, SquareMult4.limbs, Mult4Len, &tmp);
-  memset(&SquareMult4.limbs[Mult4Len << 1], 0, ((Mult1Len - Mult4Len) << 1)*sizeof(limb));
+  (void)memset(&SquareMult4.limbs[Mult4Len << 1], 0, ((Mult1Len - Mult4Len) << 1)*sizeof(limb));
   SquareMult4.limbs[idx].x = 0;
   idx++;
   AddBigInt(SquareMult1.limbs, SquareMult2.limbs, SquareMult1.limbs, idx);
@@ -629,7 +629,7 @@ void batchSquaresCallback(char **pptrOutput)
   NumberLength = toProcess.nbrLimbs;
   BigInteger2IntArray((int *)number, &toProcess);
   origNbrLimbs = toProcess.nbrLimbs;
-  memcpy(origNbr, toProcess.limbs, origNbrLimbs*sizeof(limb));
+  (void)memcpy(origNbr, toProcess.limbs, origNbrLimbs*sizeof(limb));
   result = fsquares();
   // Show the number to be decomposed into sum of squares.
   strcpy(ptrOutput, "<p>");

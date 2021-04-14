@@ -44,8 +44,8 @@ void Dec2Bin(char *decimal, limb *binary, int digits, int *bitGroups)
   for (nbrGroups = 1; nbrGroups*DIGITS_PER_LIMB < digits; nbrGroups *= 2)
   {
   }
-  memset(binary, 0, nbrGroups * sizeof(limb));
-  memset(power10000, 0, nbrGroups * sizeof(limb));
+  (void)memset(binary, 0, nbrGroups * sizeof(limb));
+  (void)memset(power10000, 0, nbrGroups * sizeof(limb));
   power10000[0].x = MAX_LIMB_CONVERSION;
   ptrDest = binary;
   for (ptrSrc = decimal + digits - 1; ptrSrc >= decimal + DIGITS_PER_LIMB-1; ptrSrc -= DIGITS_PER_LIMB)
@@ -71,13 +71,13 @@ void Dec2Bin(char *decimal, limb *binary, int digits, int *bitGroups)
     {
       ptrBinary = binary + innerGroup;
       multiply(power10000, ptrBinary + outerGroup, temp, outerGroup, NULL);
-      memset(ptrBinary + outerGroup, 0, outerGroup*sizeof(limb));
+      (void)memset(ptrBinary + outerGroup, 0, outerGroup*sizeof(limb));
       add(temp, ptrBinary, ptrBinary, 2*outerGroup);
     }
     if (outerGroup * 2 < nbrGroups)
     {    // Square power10000.
       multiply(power10000, power10000, temp, outerGroup, NULL);
-      memcpy(power10000, temp, (outerGroup * 2)*sizeof(limb));
+      (void)memcpy(power10000, temp, (outerGroup * 2)*sizeof(limb));
     }
   }
   // Determine first non-significant group.

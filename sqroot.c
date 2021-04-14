@@ -134,7 +134,7 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
       break;
     }
   }
-  memset(sqRoot, 0, (len+1)/2*sizeof(limb));
+  (void)memset(sqRoot, 0, (len+1)/2*sizeof(limb));
   if (index <= 1)
   {                // Argument is small, so compute directly its square root.
     if (index == 0)
@@ -168,7 +168,7 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
     len++;   // Make number of limbs even.
   }
   lenInvSqrt = (len + 5)>> 1;
-  memset(approxInvSqrt, 0, lenInvSqrt*sizeof(limb));
+  (void)memset(approxInvSqrt, 0, lenInvSqrt*sizeof(limb));
   // Initialize approximate inverse square root.
   invSqrt = LIMB_RANGE / sqrt(getMantissa(adjustedArgument+len, len)*LIMB_RANGE+1);
   approxInvSqrt[lenInvSqrt - 1].x = 1;
@@ -224,7 +224,7 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
     }
     // Multiply arrAux by approxInvSqrt.
     multiply(ptrArrAux+1, &approxInvSqrt[lenInvSqrt-limbLength], approxInv, limbLength, NULL);
-    memcpy(&approxInvSqrt[lenInvSqrt - limbLength], &approxInv[limbLength - 1], limbLength*sizeof(limb));
+    (void)memcpy(&approxInvSqrt[lenInvSqrt - limbLength], &approxInv[limbLength - 1], limbLength*sizeof(limb));
   }
   // Multiply approxInvSqrt by argument to obtain the square root.
   if (len > lenInvSqrt)

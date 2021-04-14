@@ -91,8 +91,8 @@ int main(int argc, char *argv[])
     divisor.sign = SIGN_POSITIVE;
   }
   // Insert garbage after dividend and divisor.
-  memset(&dividend.limbs[dividend.nbrLimbs], 0x45, 12);
-  memset(&divisor.limbs[divisor.nbrLimbs], 0x25, 12);
+  (void)memset(&dividend.limbs[dividend.nbrLimbs], 0x45, 12);
+  (void)memset(&divisor.limbs[divisor.nbrLimbs], 0x25, 12);
   BigIntDivide(&dividend, &divisor, &quotient);
   Bin2Dec(quotient.limbs, output, quotient.nbrLimbs, 0);
   if (quotient.sign == SIGN_POSITIVE)
@@ -166,9 +166,9 @@ int main(int argc, char *argv[])
       NumberLength = mod.nbrLimbs;
       if (num.nbrLimbs < mod.nbrLimbs)
       {
-        memset(&num.limbs[num.nbrLimbs], 0, (mod.nbrLimbs - num.nbrLimbs) * sizeof(limb));
+        (void)memset(&num.limbs[num.nbrLimbs], 0, (mod.nbrLimbs - num.nbrLimbs) * sizeof(limb));
       }
-      memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
+      (void)memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
       TestNbr[NumberLength].x = 0;
       GetMontgomeryParms(NumberLength);
       ModInvBigNbr(num.limbs, inv.limbs, mod.limbs, NumberLength);
@@ -260,14 +260,14 @@ int main(int argc, char *argv[])
     static int bitGroups;
     char textInput[500];
     textInput[0] = '1';
-    memset(&textInput[1], '0', 150);
+    (void)memset(&textInput[1], '0', 150);
     textInput[151] = 0;
     Dec2Bin(textInput, internalNotation, 151, &bitGroups);
     Bin2Dec(internalNotation, textInput, 17, 6);
     textInput[200] = 0;
   }
 #elif DEBUG_CODE == 15
-  memcpy(inputString, "6,-2,00102^1042+1""\0""2^1042+1=5^1(0)*16673^1(0)*627186185377^1(16673)*131294792925870751515684960383613518415615538737991528767912593379854404518341858118366491474959205710499826133822402120149306175263402700301^1(16673)*6864797660130609714981900799081393217269435300143305409394463459185543183397652346775704046543201000705776033378429553397612687501667381169885775070966579201^1(2)""\0\0""222""\0", 10001314 - 10000928 + 1);
+  (void)memcpy(inputString, "6,-2,00102^1042+1""\0""2^1042+1=5^1(0)*16673^1(0)*627186185377^1(16673)*131294792925870751515684960383613518415615538737991528767912593379854404518341858118366491474959205710499826133822402120149306175263402700301^1(16673)*6864797660130609714981900799081393217269435300143305409394463459185543183397652346775704046543201000705776033378429553397612687501667381169885775070966579201^1(2)""\0\0""222""\0", 10001314 - 10000928 + 1);
   doWork();
 #elif DEBUG_CODE == 16
 quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
@@ -295,12 +295,12 @@ quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 18
   int resultLen, k;
-  memset(factors, 0xEE, 1000 * sizeof(limb));
+  (void)memset(factors, 0xEE, 1000 * sizeof(limb));
   for (k = 0; k < 500; k++)
   {
     factor7[k] = 0x7FFFFFFF;
   }
-  memset(factors, 0x00, 2000 * sizeof(limb));
+  (void)memset(factors, 0x00, 2000 * sizeof(limb));
   fftMultiplication((limb *)factor7, (limb *)factor7, (limb *)factors, 4, &resultLen);
 #elif DEBUG_CODE == 19
   limb tempVal[4];

@@ -230,10 +230,10 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
     F4 = F2;
     while (F4 * 2 <= F3)
     {
-      memcpy(SieveArray + F4, SieveArray, F4*sizeof(*SieveArray));
+      (void)memcpy(SieveArray + F4, SieveArray, F4*sizeof(*SieveArray));
       F4 *= 2;
     }
-    memcpy(SieveArray + F4, SieveArray, (F3-F4) * sizeof(*SieveArray));
+    (void)memcpy(SieveArray + F4, SieveArray, (F3-F4) * sizeof(*SieveArray));
     if (F3 == X1 + 1)
     {
       break;
@@ -1872,7 +1872,7 @@ static void PartialRelationFound(
       // duplicates.
       mergeArrays(common.siqs.aindex, common.siqs.nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
       rowMatrixBbeforeMerge[0] = nbrColumns = rowMatrixB[LENGTH_OFFSET];
-      memcpy(&rowMatrixBbeforeMerge[1], &rowMatrixB[1], nbrColumns*sizeof(int));
+      (void)memcpy(&rowMatrixBbeforeMerge[1], &rowMatrixB[1], nbrColumns*sizeof(int));
       mergeArrays(rowPartials, nbrFactorsPartial, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
       nbrSquares = rowSquares[0];
       for (index = 1; index < nbrSquares; index++)
@@ -2113,7 +2113,7 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   nbrPartials = 0;
   common.siqs.newSeed = 0;
   common.siqs.nbrPrimesUsed = 0;
-  memset(common.siqs.primesUsed, 0, sizeof(common.siqs.primesUsed));
+  (void)memset(common.siqs.primesUsed, 0, sizeof(common.siqs.primesUsed));
 //  threadArray = new Thread[numberThreads];
   Temp = logLimbs(pNbrToFactor, origNumberLength);
   common.siqs.nbrFactorBasePrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.363 - 1);
@@ -2130,12 +2130,12 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   common.siqs.NbrPolynomials = (1 << (common.siqs.nbrFactorsA - 1)) - 1;
   common.siqs.factorSiqs.nbrLimbs = NumberLength;
   common.siqs.factorSiqs.sign = SIGN_POSITIVE;
-  memcpy(common.siqs.factorSiqs.limbs, pNbrToFactor, NumberLength * sizeof(limb));
+  (void)memcpy(common.siqs.factorSiqs.limbs, pNbrToFactor, NumberLength * sizeof(limb));
   NumberLength = BigNbrToBigInt(&common.siqs.factorSiqs, common.siqs.Modulus);
   common.siqs.Modulus[NumberLength++] = 0;
   common.siqs.Modulus[NumberLength] = 0;
-  memcpy(common.siqs.TestNbr2, common.siqs.Modulus, (NumberLength+1)*sizeof(int));
-  memset(common.siqs.matrixPartialHashIndex, 0xFF, sizeof(common.siqs.matrixPartialHashIndex));
+  (void)memcpy(common.siqs.TestNbr2, common.siqs.Modulus, (NumberLength+1)*sizeof(int));
+  (void)memset(common.siqs.matrixPartialHashIndex, 0xFF, sizeof(common.siqs.matrixPartialHashIndex));
 #ifdef __EMSCRIPTEN__
   InitSIQSStrings(common.siqs.SieveLimit);
   startSieveTenths = (int)(tenths() - originalTenthSecond);
@@ -2425,8 +2425,8 @@ void FactoringSIQS(limb *pNbrToFactor, limb *pFactor)
   /*********************************************/
   sieveThread(&common.siqs.TempResult);
   NumberLength = origNumberLength;
-  memcpy(pFactor, common.siqs.TempResult.limbs, common.siqs.TempResult.nbrLimbs * sizeof(limb));
-  memset(pFactor + common.siqs.TempResult.nbrLimbs, 0, (NumberLength - common.siqs.TempResult.nbrLimbs) * sizeof(limb));
+  (void)memcpy(pFactor, common.siqs.TempResult.limbs, common.siqs.TempResult.nbrLimbs * sizeof(limb));
+  (void)memset(pFactor + common.siqs.TempResult.nbrLimbs, 0, (NumberLength - common.siqs.TempResult.nbrLimbs) * sizeof(limb));
 
 #if 0
   for (threadNumber = 0; threadNumber<numberThreads; threadNumber++)
@@ -2504,13 +2504,13 @@ static int EraseSingletons(int nbrFactorBasePrimes)
   int *rowMatrixB;
   int matrixBlength = common.siqs.matrixBLength;
 
-  memset(common.siqs.newColumns, 0, matrixBlength*sizeof(int));
+  (void)memset(common.siqs.newColumns, 0, matrixBlength*sizeof(int));
   // Find singletons in matrixB storing in array vectExpParity the number
   // of primes in each column.
   do
   {   // The singleton removal phase must run until there are no more
       // singletons to erase.
-    memset(common.siqs.vectExpParity, 0, common.siqs.matrixBLength * sizeof(limb));
+    (void)memset(common.siqs.vectExpParity, 0, common.siqs.matrixBLength * sizeof(limb));
     for (row = matrixBlength - 1; row >= 0; row--)
     {                  // Traverse all rows of the matrix.
       rowMatrixB = common.siqs.matrixB[row];
@@ -2548,8 +2548,8 @@ static int EraseSingletons(int nbrFactorBasePrimes)
       {                // Singleton not found: move row upwards.
         if (delta != 0)
         {
-          memcpy(common.siqs.matrixB[row - delta], common.siqs.matrixB[row], sizeof(common.siqs.matrixB[0]));
-          memcpy(common.siqs.vectLeftHandSide[row - delta], common.siqs.vectLeftHandSide[row], sizeof(common.siqs.vectLeftHandSide[0]));
+          (void)memcpy(common.siqs.matrixB[row - delta], common.siqs.matrixB[row], sizeof(common.siqs.matrixB[0]));
+          (void)memcpy(common.siqs.vectLeftHandSide[row - delta], common.siqs.vectLeftHandSide[row], sizeof(common.siqs.vectLeftHandSide[0]));
         }
       }
     }
@@ -2586,7 +2586,7 @@ static unsigned char LinearAlgebraPhase(
     {
       char *ptrOutput = output;
       BigInteger k;
-      memcpy(k.limbs, vectLeftHandSide[j], NumberLength * sizeof(limb));
+      (void)memcpy(k.limbs, vectLeftHandSide[j], NumberLength * sizeof(limb));
       k.nbrLimbs = NumberLength;
       k.sign = SIGN_POSITIVE;
       BigInteger2Dec(&k, ptrOutput, 0);
@@ -2618,7 +2618,7 @@ static unsigned char LinearAlgebraPhase(
 
     IntToBigNbr(1, biT, NumberLength+1);
     IntToBigNbr(1, biR, NumberLength+1);
-    memset(common.siqs.vectExpParity, 0, matrixBlength * sizeof(common.siqs.vectExpParity[0]));
+    (void)memset(common.siqs.vectExpParity, 0, matrixBlength * sizeof(common.siqs.vectExpParity[0]));
     NumberLengthBak = NumberLength;
     if (common.siqs.Modulus[NumberLength - 1] == 0)
     {
@@ -2630,7 +2630,7 @@ static unsigned char LinearAlgebraPhase(
       {
         MultBigNbrModN(common.siqs.vectLeftHandSide[row], biR, biU, common.siqs.Modulus,
           NumberLength);
-        memcpy(biR, biU, (NumberLength + 1) * sizeof(biR[0]));
+        (void)memcpy(biR, biU, (NumberLength + 1) * sizeof(biR[0]));
         rowMatrixB = common.siqs.matrixB[row];
         for (j = rowMatrixB[LENGTH_OFFSET]-1; j >= 1; j--)
         {
@@ -2699,7 +2699,7 @@ static unsigned char InsertNewRelation(
   {
     char *ptrOutput = output;
     BigInteger k;
-    memcpy(k.limbs, biR, NumberLength * sizeof(limb));
+    (void)memcpy(k.limbs, biR, NumberLength * sizeof(limb));
     k.nbrLimbs = NumberLength;
     k.sign = SIGN_POSITIVE;
     BigInteger2Dec(&k, ptrOutput, 0);
@@ -2770,8 +2770,8 @@ static unsigned char InsertNewRelation(
   MultBigNbrModN(biU, biT, biR, common.siqs.Modulus, lenDivisor);
 
   // Add relation to matrix B.
-  memcpy(common.siqs.matrixB[congruencesFound], &rowMatrixB[0], nbrColumns * sizeof(int));
-  memcpy(common.siqs.vectLeftHandSide[congruencesFound], biR, NumberLengthMod * sizeof(int));
+  (void)memcpy(common.siqs.matrixB[congruencesFound], &rowMatrixB[0], nbrColumns * sizeof(int));
+  (void)memcpy(common.siqs.vectLeftHandSide[congruencesFound], biR, NumberLengthMod * sizeof(int));
   congruencesFound++;
   nbrColumns = *(rowMatrixB + LENGTH_OFFSET);
   for (k = 1; k < nbrColumns; k++)
@@ -2786,7 +2786,7 @@ static unsigned char InsertNewRelation(
   {
     char *ptrOutput = output;
     BigInteger k;
-    memcpy(k.limbs, biR, NumberLength * sizeof(limb));
+    (void)memcpy(k.limbs, biR, NumberLength * sizeof(limb));
     k.nbrLimbs = NumberLength;
     k.sign = SIGN_POSITIVE;
     BigInteger2Dec(&k, ptrOutput, 0);
@@ -2945,7 +2945,7 @@ static void MultiplyAByMatrix(int *Matr, int *TempMatr, int *ProdMatr)
   int *rowMatrixB;
 
   /* Compute TempMatr = B * Matr */
-  memset(TempMatr, 0, common.siqs.matrixBLength*sizeof(int));
+  (void)memset(TempMatr, 0, common.siqs.matrixBLength*sizeof(int));
   for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {
     int rowValue;
@@ -3072,13 +3072,13 @@ static void BlockLanczos(void)
   int *rowMatrixB, *ptrMatrixV, *ptrMatrixXmY;
 
   newDiagonalSSt = -1;
-  memset(matrixWinv, 0, sizeof(matrixWinv));
-  memset(matrixWinv1, 0, sizeof(matrixWinv1));
-  memset(matrixWinv2, 0, sizeof(matrixWinv2));
-  memset(matrixVtV0, 0, sizeof(matrixVtV0));
-  memset(matrixVt1V0, 0, sizeof(matrixVt1V0));
-  memset(matrixVt2V0, 0, sizeof(matrixVt2V0));
-  memset(matrixVt1AV1, 0, sizeof(matrixVt1AV1));
+  (void)memset(matrixWinv, 0, sizeof(matrixWinv));
+  (void)memset(matrixWinv1, 0, sizeof(matrixWinv1));
+  (void)memset(matrixWinv2, 0, sizeof(matrixWinv2));
+  (void)memset(matrixVtV0, 0, sizeof(matrixVtV0));
+  (void)memset(matrixVt1V0, 0, sizeof(matrixVt1V0));
+  (void)memset(matrixVt2V0, 0, sizeof(matrixVt2V0));
+  (void)memset(matrixVt1AV1, 0, sizeof(matrixVt1AV1));
 
   /* Initialize matrix X-Y and matrix V_0 with random data */
   dSeed = (double)123456789;
@@ -3163,10 +3163,10 @@ static void BlockLanczos(void)
 
       /* Selection of S(i) and W(i) */
 
-    memcpy(matrixTemp, matrixWinv2, sizeof(matrixTemp));
-    memcpy(matrixWinv2, matrixWinv1, sizeof(matrixTemp));
-    memcpy(matrixWinv1, matrixWinv, sizeof(matrixTemp));
-    memcpy(matrixWinv, matrixTemp, sizeof(matrixTemp));
+    (void)memcpy(matrixTemp, matrixWinv2, sizeof(matrixTemp));
+    (void)memcpy(matrixWinv2, matrixWinv1, sizeof(matrixTemp));
+    (void)memcpy(matrixWinv1, matrixWinv, sizeof(matrixTemp));
+    (void)memcpy(matrixWinv, matrixTemp, sizeof(matrixTemp));
 
     mask = 1;
     for (j = 31; j >= 0; j--)
@@ -3333,19 +3333,19 @@ static void BlockLanczos(void)
         MatrixAddition(matrixCalc1, matrixCalc2, matrixCalc2);
       }
     }
-    memcpy(common.siqs.matrixTemp2, common.siqs.matrixV2, sizeof(common.siqs.matrixTemp2));
-    memcpy(common.siqs.matrixV2, common.siqs.matrixV1, sizeof(common.siqs.matrixV2));
-    memcpy(common.siqs.matrixV1, common.siqs.matrixV, sizeof(common.siqs.matrixV1));
-    memcpy(common.siqs.matrixV, common.siqs.matrixCalc3, sizeof(common.siqs.matrixV));
-    memcpy(common.siqs.matrixCalc3, common.siqs.matrixTemp2, sizeof(common.siqs.matrixCalc3));
-    memcpy(matrixTemp, matrixVt2V0, sizeof(matrixTemp));
-    memcpy(matrixVt2V0, matrixVt1V0, sizeof(matrixVt2V0));
-    memcpy(matrixVt1V0, matrixVtV0, sizeof(matrixVt1V0));
-    memcpy(matrixVtV0, matrixCalc2, sizeof(matrixVtV0));
-    memcpy(matrixCalc2, matrixTemp, sizeof(matrixCalc2));
-    memcpy(matrixTemp, matrixVt1AV1, sizeof(matrixTemp));
-    memcpy(matrixVt1AV1, matrixVtAV, sizeof(matrixVt1AV1));
-    memcpy(matrixVtAV, matrixTemp, sizeof(matrixVtAV));
+    (void)memcpy(common.siqs.matrixTemp2, common.siqs.matrixV2, sizeof(common.siqs.matrixTemp2));
+    (void)memcpy(common.siqs.matrixV2, common.siqs.matrixV1, sizeof(common.siqs.matrixV2));
+    (void)memcpy(common.siqs.matrixV1, common.siqs.matrixV, sizeof(common.siqs.matrixV1));
+    (void)memcpy(common.siqs.matrixV, common.siqs.matrixCalc3, sizeof(common.siqs.matrixV));
+    (void)memcpy(common.siqs.matrixCalc3, common.siqs.matrixTemp2, sizeof(common.siqs.matrixCalc3));
+    (void)memcpy(matrixTemp, matrixVt2V0, sizeof(matrixTemp));
+    (void)memcpy(matrixVt2V0, matrixVt1V0, sizeof(matrixVt2V0));
+    (void)memcpy(matrixVt1V0, matrixVtV0, sizeof(matrixVt1V0));
+    (void)memcpy(matrixVtV0, matrixCalc2, sizeof(matrixVtV0));
+    (void)memcpy(matrixCalc2, matrixTemp, sizeof(matrixCalc2));
+    (void)memcpy(matrixTemp, matrixVt1AV1, sizeof(matrixTemp));
+    (void)memcpy(matrixVt1AV1, matrixVtAV, sizeof(matrixVt1AV1));
+    (void)memcpy(matrixVtAV, matrixTemp, sizeof(matrixVtAV));
   } /* end while */
 
     /* Find matrix V1:V2 = B * (X-Y:V) */
@@ -3550,7 +3550,7 @@ static void sieveThread(BigInteger *result)
   int inverseA, twiceInverseA;
   int NumberLengthA, NumberLengthB;
 
-  memset(biLinearCoeff, 0, sizeof(biLinearCoeff));
+  (void)memset(biLinearCoeff, 0, sizeof(biLinearCoeff));
 //  synchronized(amodq)
   {
     if (common.siqs.threadNumber == 0)
@@ -3565,7 +3565,7 @@ static void sieveThread(BigInteger *result)
         rowPrimeSieveData0 = &common.siqs.primeSieveData[i];
         rowPrimeSieveData->value = rowPrimeSieveData0->value;
         rowPrimeSieveData->modsqrt = rowPrimeSieveData0->modsqrt;
-        memcpy(rowPrimeSieveData->Bainv2, rowPrimeSieveData0->Bainv2, sizeof(rowPrimeSieveData0->Bainv2));
+        (void)memcpy(rowPrimeSieveData->Bainv2, rowPrimeSieveData0->Bainv2, sizeof(rowPrimeSieveData0->Bainv2));
       }
     }
 //    threadArray[threadNumber] = Thread.currentThread();
@@ -3895,15 +3895,15 @@ static void sieveThread(BigInteger *result)
       if ((uint32_t)biLinearCoeff[NumberLength - 1] >= (uint32_t)LIMB_RANGE)
       {                               // Number is negative.
         positive = FALSE;
-        memcpy(biT, biLinearCoeff, NumberLength * sizeof(biT[0]));
+        (void)memcpy(biT, biLinearCoeff, NumberLength * sizeof(biT[0]));
         ChSignBigNbr(biT, NumberLength);   // Make it positive.
-        memcpy(biAbsLinearCoeff, biT, sizeof(biT));
+        (void)memcpy(biAbsLinearCoeff, biT, sizeof(biT));
       }
       else
       {
         positive = TRUE;                       // B is positive.
                                                // Get B mod current prime. 
-        memcpy(biAbsLinearCoeff, biLinearCoeff, sizeof(biLinearCoeff));
+        (void)memcpy(biAbsLinearCoeff, biLinearCoeff, sizeof(biLinearCoeff));
       }
       for (NumberLengthB = NumberLength; NumberLengthB >= 2; NumberLengthB--)
       {

@@ -125,12 +125,12 @@ void GaussianFactorization(void)
       {                               // Prime is congruent to 1 (mod 4)
         CopyBigInt(&q, &prime);
         NumberLength = prime.nbrLimbs;
-        memcpy(&TestNbr, prime.limbs, NumberLength * sizeof(limb));
+        (void)memcpy(&TestNbr, prime.limbs, NumberLength * sizeof(limb));
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
         subtractdivide(&q, 1, 4);     // q = (prime-1)/4
-        memset(&K, 0, NumberLength * sizeof(limb));
-        memset(minusOneMont, 0, NumberLength * sizeof(limb));
+        (void)memset(&K, 0, NumberLength * sizeof(limb));
+        (void)memset(minusOneMont, 0, NumberLength * sizeof(limb));
         SubtBigNbrModN(minusOneMont, MontgomeryMultR1, minusOneMont, TestNbr, NumberLength);
         K[0].x = 1;
         do

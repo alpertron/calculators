@@ -85,14 +85,14 @@ void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultL
     length *= div;
   }
   karatLength = length;
-  memset(arr, 0, 2 * length*sizeof(limb));
-  memcpy(&arr[0], factor1, len*sizeof(limb));
-  memcpy(&arr[length], factor2, len*sizeof(limb));
+  (void)memset(arr, 0, 2 * length*sizeof(limb));
+  (void)memcpy(&arr[0], factor1, len*sizeof(limb));
+  (void)memcpy(&arr[length], factor2, len*sizeof(limb));
   Karatsuba(0, length);
-  memcpy(result, &arr[2 * (karatLength - length)], 2 * length * sizeof(limb));
+  (void)memcpy(result, &arr[2 * (karatLength - length)], 2 * length * sizeof(limb));
   if (pResultLen != NULL)
   {
-    memcpy(result, &arr[2 * (karatLength - length)], 2 * length * sizeof(limb));
+    (void)memcpy(result, &arr[2 * (karatLength - length)], 2 * length * sizeof(limb));
     if (karatLength > length && arr[2 * (karatLength - length)-1].x == 0)
     {
       *pResultLen = length * 2 - 1;
@@ -696,7 +696,7 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
   }
   arrayAux[prodCol].x = low;
 #endif
-  memcpy(&arr[idxFactor1], &arrayAux[0], 2 * nbrLen * sizeof(limb));
+  (void)memcpy(&arr[idxFactor1], &arrayAux[0], 2 * nbrLen * sizeof(limb));
   return;
 }
 

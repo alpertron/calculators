@@ -2034,8 +2034,8 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
     strcpy(ptrBeginning, ptrTimes);
     lenBeginning += (int)strlen(ptrBeginning);
   }
-  memmove(ptrStart + lenBeginning, ptrStart, strlen(ptrStart));
-  memcpy(ptrStart, beginning, lenBeginning);
+  (void)memmove(ptrStart + lenBeginning, ptrStart, strlen(ptrStart));
+  (void)memcpy(ptrStart, beginning, lenBeginning);
   ptrOutput += lenBeginning;
   *ptrOutput = 0;
 }
@@ -2278,7 +2278,7 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
       *ptrBase++ = *ptrCoeff* *(ptrCoeff + 1);
       ptrCoeff += 2;
     }
-    memset(prod, 0, degree * sizeof(int));
+    (void)memset(prod, 0, degree * sizeof(int));
     prod[1] = 1;    // Initialize polynomial to x.
     for (expon = 1; expon < index; expon++)
     {               // Multiply by x.
@@ -2291,7 +2291,7 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
     }
     // If result is 1, then the polynomial is cyclotomic.
     prod[0]--;
-    memset(base, 0, degree*sizeof(int));
+    (void)memset(base, 0, degree*sizeof(int));
     if (memcmp(base, prod, degree * sizeof(int)) == 0)
     {     // The polynomial is cyclotomic.
       int numerator;
@@ -2987,7 +2987,7 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
   for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {    // Copy coefficient and skip zero coefficients.
     int nbrLen = 1 + numLimbs(ptrCoeff);
-    memcpy(ptrCoeffDest, ptrCoeff, nbrLen * sizeof(int));
+    (void)memcpy(ptrCoeffDest, ptrCoeff, nbrLen * sizeof(int));
     ptrCoeff += nbrLen + 2*(gcdDegrees-1);
     ptrCoeffDest += nbrLen;
   }
@@ -2997,7 +2997,7 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
     int cycle2FoundInThisFactor = 0;
     int cycle3FoundInThisFactor = 0;
     struct sFactorInfo* pstFactorInfo;
-    memset(factorInfo, 0, sizeof(factorInfo));
+    (void)memset(factorInfo, 0, sizeof(factorInfo));
     primeIndex = getNextPrimeNoDuplicatedFactors(primeIndex);
     prime = smallPrimes[primeIndex];
     FactorPolynomialModPrime(prime);
@@ -3325,11 +3325,11 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
     CubicEquation(pstFactorInfo->ptrPolyLifted, multiplicity);
     break;
   case 4:
-    memcpy(polyIntegerBak, polyInteger, sizeof(polyInteger));
-    memcpy(factorInfoIntegerBak, factorInfoInteger, sizeof(factorInfoInteger));
+    (void)memcpy(polyIntegerBak, polyInteger, sizeof(polyInteger));
+    (void)memcpy(factorInfoIntegerBak, factorInfoInteger, sizeof(factorInfoInteger));
     QuarticEquation(pstFactorInfo->ptrPolyLifted, multiplicity);
-    memcpy(polyInteger, polyIntegerBak, sizeof(polyInteger));
-    memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
+    (void)memcpy(polyInteger, polyIntegerBak, sizeof(polyInteger));
+    (void)memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
     break;
   case 5:
     if (isLinearExponential(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree,
@@ -3342,11 +3342,11 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
     {          // If polynomial is S_n or A_n, indicate that the roots are not solvable.
       break;
     }
-    memcpy(polyIntegerBak, polyInteger, sizeof(polyInteger));
-    memcpy(factorInfoIntegerBak, factorInfoInteger, sizeof(factorInfoInteger));
+    (void)memcpy(polyIntegerBak, polyInteger, sizeof(polyInteger));
+    (void)memcpy(factorInfoIntegerBak, factorInfoInteger, sizeof(factorInfoInteger));
     QuinticEquation(pstFactorInfo->ptrPolyLifted, pstFactorInfo->multiplicity);
-    memcpy(polyInteger, polyIntegerBak, sizeof(polyInteger));
-    memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
+    (void)memcpy(polyInteger, polyIntegerBak, sizeof(polyInteger));
+    (void)memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
     break;
   default:
     if (isPalindromic(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree))

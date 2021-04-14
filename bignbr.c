@@ -43,7 +43,7 @@ void CopyBigInt(BigInteger *pDest, BigInteger *pSrc)
 {
   pDest->sign = pSrc->sign;
   pDest->nbrLimbs = pSrc->nbrLimbs;
-  memcpy(pDest->limbs, pSrc->limbs, (pSrc->nbrLimbs)*sizeof(limb));
+  (void)memcpy(pDest->limbs, pSrc->limbs, (pSrc->nbrLimbs)*sizeof(limb));
 }
 
 void AddBigInt(limb *pAddend1, limb *pAddend2, limb *pSum, int nbrLimbs)
@@ -257,12 +257,12 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
   }
   if (nbrLimbsFactor1 < nbrLimbsFactor2)
   {
-    memset(&pFactor1->limbs[nbrLimbsFactor1], 0, (nbrLimbsFactor2 - nbrLimbsFactor1)*sizeof(limb));
+    (void)memset(&pFactor1->limbs[nbrLimbsFactor1], 0, (nbrLimbsFactor2 - nbrLimbsFactor1)*sizeof(limb));
     nbrLimbs = nbrLimbsFactor2;
   }
   else
   {
-    memset(&pFactor2->limbs[nbrLimbsFactor2], 0, (nbrLimbsFactor1 - nbrLimbsFactor2)*sizeof(limb));
+    (void)memset(&pFactor2->limbs[nbrLimbsFactor2], 0, (nbrLimbsFactor1 - nbrLimbsFactor2)*sizeof(limb));
     nbrLimbs = nbrLimbsFactor1;
   }
   multiply(&pFactor1->limbs[0], &pFactor2->limbs[0], &pProduct->limbs[0], nbrLimbs, &nbrLimbs);
@@ -357,7 +357,7 @@ void expBigNbr(BigInteger *bignbr, double logar)
     bignbr->nbrLimbs++;
   }
   bignbr->nbrLimbs++;
-  memset(bignbr->limbs, 0, bignbr->nbrLimbs * sizeof(limb));
+  (void)memset(bignbr->limbs, 0, bignbr->nbrLimbs * sizeof(limb));
   bignbr->limbs[bignbr->nbrLimbs-1].x = mostSignificantLimb;
 }
 
@@ -1011,7 +1011,7 @@ void UncompressLimbsBigInteger(/*@in@*/limb *ptrValues, /*@out@*/BigInteger *big
   {
     int nbrLimbs;
     limb *ptrValue1;
-    memcpy(bigint->limbs, ptrValues, NumberLength*sizeof(limb));
+    (void)memcpy(bigint->limbs, ptrValues, NumberLength*sizeof(limb));
     ptrValue1 = ptrValues + NumberLength;
     for (nbrLimbs = NumberLength; nbrLimbs > 1; nbrLimbs--)
     {
@@ -1036,12 +1036,12 @@ void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, /*@in@*/BigInteger *bigin
     int nbrLimbs = bigint->nbrLimbs;
     if (nbrLimbs > NumberLength)
     {
-      memcpy(ptrValues, bigint->limbs, NumberLength*sizeof(limb));
+      (void)memcpy(ptrValues, bigint->limbs, NumberLength*sizeof(limb));
     }
     else
     {
-      memcpy(ptrValues, bigint->limbs, nbrLimbs * sizeof(limb));
-      memset(ptrValues + nbrLimbs, 0, (NumberLength - nbrLimbs) * sizeof(limb));
+      (void)memcpy(ptrValues, bigint->limbs, nbrLimbs * sizeof(limb));
+      (void)memset(ptrValues + nbrLimbs, 0, (NumberLength - nbrLimbs) * sizeof(limb));
     }
   }
 }
@@ -1053,17 +1053,17 @@ void LenAndLimbs2ArrLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbr
   {
     nbrLimbs = -nbrLimbs;
   }
-  memcpy(bigint, ptrValues+1, nbrLimbs*sizeof(limb));
+  (void)memcpy(bigint, ptrValues+1, nbrLimbs*sizeof(limb));
   if (nbrLen > nbrLimbs)
   {
-    memset(bigint + nbrLimbs, 0, (nbrLen - nbrLimbs) * sizeof(limb));
+    (void)memset(bigint + nbrLimbs, 0, (nbrLen - nbrLimbs) * sizeof(limb));
   }
 }
 
 void ArrLimbs2LenAndLimbs(/*@out@*/int *ptrValues, /*@in@*/limb *bigint, int nbrLen)
 {
   int nbrLimbs;
-  memcpy(ptrValues+1, bigint, (nbrLen-1) * sizeof(limb));
+  (void)memcpy(ptrValues+1, bigint, (nbrLen-1) * sizeof(limb));
   for (nbrLimbs = nbrLen-1; nbrLimbs > 1; nbrLimbs--)
   {
     if (*(ptrValues + nbrLimbs) != 0)
@@ -1125,7 +1125,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
         return Exponent;
       }
       pBase->nbrLimbs = pBigNbr->nbrLimbs;
-      memcpy(pBase->limbs, pBigNbr->limbs, pBase->nbrLimbs * sizeof(limb));
+      (void)memcpy(pBase->limbs, pBigNbr->limbs, pBase->nbrLimbs * sizeof(limb));
       return 1;
     }
     maxExpon = (int)(dLogBigNbr / log(101) + 0.5);
@@ -1323,7 +1323,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
     }
   }
   pBase->nbrLimbs = pBigNbr->nbrLimbs;
-  memcpy(pBase->limbs, pBigNbr->limbs, pBase->nbrLimbs*sizeof(limb));
+  (void)memcpy(pBase->limbs, pBigNbr->limbs, pBase->nbrLimbs*sizeof(limb));
   return 1;
 }
 
@@ -1454,7 +1454,7 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
   }
   if (index > 0)
   {   // Move limbs to final position.
-    memmove(number, &number[index], (nbrLimbs - index) * sizeof(limb));
+    (void)memmove(number, &number[index], (nbrLimbs - index) * sizeof(limb));
   }
   *pShRight = power2;
 }
@@ -1644,15 +1644,15 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
 #endif
   // Perform 2-SPRP test
   (limbs + nbrLimbs)->x = 0;
-  memcpy(q, limbs, (nbrLimbs + 1) * sizeof(limb));
+  (void)memcpy(q, limbs, (nbrLimbs + 1) * sizeof(limb));
   q[0]--;                     // q = p - 1 (p is odd, so there is no carry).
-  memcpy(Mult3, q, (nbrLimbs + 1) * sizeof(q[0]));
+  (void)memcpy(Mult3, q, (nbrLimbs + 1) * sizeof(q[0]));
   Mult3Len = nbrLimbs;
   DivideBigNbrByMaxPowerOf2(&ctr, Mult3, &Mult3Len);
-  memcpy(TestNbr, limbs, (nbrLimbs+1) * sizeof(limb));
+  (void)memcpy(TestNbr, limbs, (nbrLimbs+1) * sizeof(limb));
   GetMontgomeryParms(nbrLimbs);
   // Find Mult1 = 2^Mult3.
-  memcpy(Mult1, MontgomeryMultR1, (NumberLength + 1) * sizeof(limb));  // power <- 1
+  (void)memcpy(Mult1, MontgomeryMultR1, (NumberLength + 1) * sizeof(limb));  // power <- 1
   for (index = Mult3Len - 1; index >= 0; index--)
   {
     int groupExp = (int)Mult3[index].x;
@@ -1687,7 +1687,7 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
         i = -1;         // Number is strong pseudoprime.
         break;
       }
-      memcpy(Mult1, Mult4, nbrLimbs * sizeof(limb));
+      (void)memcpy(Mult1, Mult4, nbrLimbs * sizeof(limb));
     }
     if (i == ctr)
     {
@@ -1769,10 +1769,10 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   // V_{2k+1} = (D*U_{2k} + V_{2k})/2
   // Use the following temporary variables:
   // Mult1 for Q^n, Mult3 for U, Mult4 for V, Mult2 for temporary.
-  memcpy(Mult1, MontgomeryMultR1, (nbrLimbs + 1) * sizeof(limb)); // Q^0 <- 1.
+  (void)memcpy(Mult1, MontgomeryMultR1, (nbrLimbs + 1) * sizeof(limb)); // Q^0 <- 1.
   signPowQ = 1;
-  memset(Mult3, 0, (nbrLimbs + 1) * sizeof(limb));                // U_0 <- 0.
-  memcpy(Mult4, MontgomeryMultR1, (nbrLimbs + 1) * sizeof(limb)); 
+  (void)memset(Mult3, 0, (nbrLimbs + 1) * sizeof(limb));                // U_0 <- 0.
+  (void)memcpy(Mult4, MontgomeryMultR1, (nbrLimbs + 1) * sizeof(limb)); 
   AddBigNbrMod(Mult4, Mult4, Mult4);                              // V_0 <- 2.
   CopyBigInt(&expon, pValue);
   addbigint(&expon, 1);                            // expon <- n + 1.
@@ -1825,7 +1825,7 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
           SubtBigNbrMod(Mult4, Temp2.limbs, Mult4);
         }
         Halve(Mult4);                       // V <- (V +/- U*D)/2
-        memcpy(Mult3, Temp.limbs, NumberLength * sizeof(limb));
+        (void)memcpy(Mult3, Temp.limbs, NumberLength * sizeof(limb));
         modmultInt(Mult1, absQ, Mult1);     // Multiply power of Q by Q.
         signPowQ = -mult;                   // Attach correct sign to power.
         insidePowering = TRUE;
@@ -1876,12 +1876,12 @@ void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len)
   {
     limbs->x = nbr % MAX_VALUE_LIMB;
     (limbs+1)->x = nbr / MAX_VALUE_LIMB;
-    memset(limbs + 2, 0, (len-2) * sizeof(limb));
+    (void)memset(limbs + 2, 0, (len-2) * sizeof(limb));
   }
   else
   {
     limbs->x = nbr;
-    memset(limbs + 1, 0, (len-1) * sizeof(limb));
+    (void)memset(limbs + 1, 0, (len-1) * sizeof(limb));
   }
 }
 
@@ -1960,7 +1960,7 @@ void BigIntPowerOf2(BigInteger *pResult, int expon)
   int nbrLimbs = expon / BITS_PER_GROUP;
   if (nbrLimbs > 0)
   {
-    memset(pResult->limbs, 0, nbrLimbs * sizeof(limb));
+    (void)memset(pResult->limbs, 0, nbrLimbs * sizeof(limb));
   }
   pResult->limbs[nbrLimbs].x = 1 << (expon % BITS_PER_GROUP);
   pResult->nbrLimbs = nbrLimbs + 1;
@@ -2011,7 +2011,7 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   }
   if (index != 0)
   {
-    memmove(value, value + index, (numLimbs - index) * sizeof(limb));
+    (void)memmove(value, value + index, (numLimbs - index) * sizeof(limb));
   }
   if ((value + numLimbs - 1)->x != 0)
   {
