@@ -23,7 +23,12 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "expression.h"
 #include "skiptest.h"
 
-static BigInteger Temp, Temp2, Temp3, Base, Power, expon;
+static BigInteger Temp;
+static BigInteger Temp2;
+static BigInteger Temp3;
+static BigInteger Base;
+static BigInteger Power;
+static BigInteger expon;
 static char ProcessExpon[MAX_LEN*BITS_PER_GROUP + 1000];
 static char primes[MAX_LEN*BITS_PER_GROUP + 1000];
 extern limb Mult1[MAX_LEN];
@@ -117,7 +122,9 @@ void BigIntChSign(BigInteger *value)
 void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum)
 {
   int ctr, nbrLimbs;
-  limb *ptrAddend1, *ptrAddend2, *ptrSum;
+  limb *ptrAddend1;
+  limb *ptrAddend2;
+  limb *ptrSum;
   BigInteger *pTemp;
   if (pAddend1->nbrLimbs < pAddend2->nbrLimbs)
   {
@@ -771,12 +778,10 @@ int getRemainder(BigInteger *pBigInt, int divisor)
   limb *pLimb = &pBigInt->limbs[nbrLimbs - 1];
   for (ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
-    int quotient, dividend;
-    double dQuotient, dDividend;
-    dividend = (remainder << BITS_PER_INT_GROUP) + pLimb->x;
-    dDividend = (double)remainder * dLimb + pLimb->x;
-    dQuotient = floor(dDividend / dDivisor + 0.5);
-    quotient = (int)(unsigned int)dQuotient;   // quotient has correct value or 1 more.
+    int dividend = (remainder << BITS_PER_INT_GROUP) + pLimb->x;
+    double dDividend = (double)remainder * dLimb + pLimb->x;
+    double dQuotient = floor(dDividend / dDivisor + 0.5);
+    int quotient = (int)(unsigned int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - quotient * divisor;
     if ((unsigned int)remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
@@ -1084,17 +1089,23 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
   double dN;
   int nbrLimbs = pBigNbr->nbrLimbs;
   int maxExpon;
-  int h, j;
+  int h;
+  int j;
   int modulus;
   int intLog2root;
-  int primesLength, Exponent;
+  int primesLength;
+  int Exponent;
   int base = 0;
-  double log2N, log2root;
+  double log2N;
+  double log2root;
   int prime2310x1[] =
   { 2311, 4621, 9241, 11551, 18481, 25411, 32341, 34651, 43891, 50821 };
   // Primes of the form 2310x+1.
-  boolean expon2 = TRUE, expon3 = TRUE, expon5 = TRUE;
-  boolean expon7 = TRUE, expon11 = TRUE;
+  boolean expon2 = TRUE;
+  boolean expon3 = TRUE;
+  boolean expon5 = TRUE;
+  boolean expon7 = TRUE;
+  boolean expon11 = TRUE;
   double dLogBigNbr = logBigNbr(pBigNbr);
   if (pBigNbr->nbrLimbs > 10)
   {
@@ -1407,7 +1418,10 @@ void BigIntMultiplyBy2(BigInteger *nbr)
 void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
 {
   int power2 = 0;
-  int index, index2, mask, shRg;
+  int index;
+  int index2;
+  int mask;
+  int shRg;
   int nbrLimbs = *pNbrLimbs;
   // Start from least significant limb (number zero).
   for (index = 0; index < nbrLimbs; index++)
@@ -1492,8 +1506,10 @@ int JacobiSymbol(int upper, int lower)
 
 int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower)
 {
-  int t, power2;
-  BigInteger a, m;
+  int t;
+  int power2;
+  BigInteger a;
+  BigInteger m;
   BigInteger tmp;
   CopyBigInt(&m, lower);               // m <- lower
   DivideBigNbrByMaxPowerOf2(&power2, m.limbs, &m.nbrLimbs);
@@ -1601,7 +1617,14 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
 #ifdef __EMSCRIPTEN__
   char *ptrText;
 #endif
-  int Mult3Len, ctr, D, absQ, mult, mask, index, signPowQ;
+  int Mult3Len;
+  int ctr;
+  int D;
+  int absQ;
+  int mult;
+  int mask;
+  int index;
+  int signPowQ;
   int insidePowering = FALSE;
   int nbrLimbs = pValue->nbrLimbs;
   limb *limbs = pValue->limbs;
@@ -1919,8 +1942,10 @@ int BigIntIsOne(BigInteger* value)
 
 int BigIntEqual(BigInteger *value1, BigInteger *value2)
 {
-  int index, nbrLimbs;
-  limb *ptrValue1, *ptrValue2;
+  int index;
+  int nbrLimbs;
+  limb *ptrValue1;
+  limb *ptrValue2;
   if (value1->nbrLimbs != value2->nbrLimbs || value1->sign != value2->sign)
   {
     return 0;    // Numbers are not equal.
@@ -1975,8 +2000,13 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   int powerOf4;
   int powerOf2 = 0;
   int numLimbs = *pNbrLimbs;
-  int index, index2, power2gr, shRg, mask;
-  limb prevLimb, currLimb;
+  int index;
+  int index2;
+  int power2gr;
+  int shRg;
+  int mask;
+  limb prevLimb;
+  limb currLimb;
   // Start from least significant limb (number zero).
   for (index = 0; index < numLimbs; index++)
   {
