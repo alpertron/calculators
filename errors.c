@@ -29,30 +29,30 @@ void textError(char *ptrOutput, enum eExprErr rc)
   switch (rc)
   {
   case EXPR_NUMBER_TOO_LOW:
-    strcpy(ptrOutput, lang ? "Número muy pequeño" : "Number too low");
+    (void)strcpy(ptrOutput, lang ? "Número muy pequeño" : "Number too low");
     break;
   case EXPR_NUMBER_TOO_HIGH:
-    strcpy(ptrOutput, lang ? "Número muy grande (más de 10000 dígitos)" :
+    (void)strcpy(ptrOutput, lang ? "Número muy grande (más de 10000 dígitos)" :
       "Number too high (more than 10000 digits)");
     break;
   case EXPR_INTERM_TOO_HIGH:
-    strcpy(ptrOutput, lang ? "Número intermedio muy grande (más de 20000 dígitos" :
+    (void)strcpy(ptrOutput, lang ? "Número intermedio muy grande (más de 20000 dígitos" :
       "Intermediate number too high (more than 20000 digits)");
     break;
   case EXPR_DIVIDE_BY_ZERO:
-    strcpy(ptrOutput, lang ? "División por cero" : "Division by zero");
+    (void)strcpy(ptrOutput, lang ? "División por cero" : "Division by zero");
     break;
   case EXPR_PAREN_MISMATCH:
-    strcpy(ptrOutput, lang ? "Error de paréntesis" : "Parenthesis mismatch");
+    (void)strcpy(ptrOutput, lang ? "Error de paréntesis" : "Parenthesis mismatch");
     break;
   case EXPR_SYNTAX_ERROR:
     if (lang)
     {
-      strcpy(ptrOutput, "Error de sintaxis");
+      (void)strcpy(ptrOutput, "Error de sintaxis");
       if (expressionNbr > 0)
       {
         ptrOutput += strlen(ptrOutput);
-        strcpy(ptrOutput, " en la expresión ");
+        (void)strcpy(ptrOutput, " en la expresión ");
         ptrOutput += strlen(ptrOutput);
         *ptrOutput++ = (char)(expressionNbr + '0');
         *ptrOutput++ = 0;
@@ -60,11 +60,11 @@ void textError(char *ptrOutput, enum eExprErr rc)
     }
     else
     {
-      strcpy(ptrOutput, "Syntax error");
+      (void)strcpy(ptrOutput, "Syntax error");
       if (expressionNbr > 0)
       {
         ptrOutput += strlen(ptrOutput);
-        strcpy(ptrOutput, " in expression #");
+        (void)strcpy(ptrOutput, " in expression #");
         ptrOutput += strlen(ptrOutput);
         *ptrOutput++ = (char)(expressionNbr + '0');
         *ptrOutput++ = 0;
@@ -72,31 +72,31 @@ void textError(char *ptrOutput, enum eExprErr rc)
     }
     break;
   case EXPR_TOO_MANY_PAREN:
-    strcpy(ptrOutput, lang ? "Demasiados paréntesis" : "Too many parenthesis");
+    (void)strcpy(ptrOutput, lang ? "Demasiados paréntesis" : "Too many parenthesis");
     break;
   case EXPR_INVALID_PARAM:
-    strcpy(ptrOutput, lang ? "Parámetro inválido" : "Invalid parameter");
+    (void)strcpy(ptrOutput, lang ? "Parámetro inválido" : "Invalid parameter");
     break;
   case EXPR_ARGUMENTS_NOT_RELATIVELY_PRIME:
-    strcpy(ptrOutput, lang ? "MCD de los argumentos no es 1" : "GCD of arguments is not 1");
+    (void)strcpy(ptrOutput, lang ? "MCD de los argumentos no es 1" : "GCD of arguments is not 1");
     break;
   case EXPR_BREAK:
-    strcpy(ptrOutput, lang ? "Detenido por el usuario" : "Stopped by user");
+    (void)strcpy(ptrOutput, lang ? "Detenido por el usuario" : "Stopped by user");
     break;
   case EXPR_VAR_OR_COUNTER_REQUIRED:
     if (lang)
     {
-      strcpy(ptrOutput, "La expresión ");
+      (void)strcpy(ptrOutput, "La expresión ");
       ptrOutput += strlen(ptrOutput);
       *ptrOutput++ = (char)(expressionNbr + '0');
-      strcpy(ptrOutput, " debe incluir la variable <var>x</var> y/o el contador <var>c</var>");
+      (void)strcpy(ptrOutput, " debe incluir la variable <var>x</var> y/o el contador <var>c</var>");
     }
     else
     {
-      strcpy(ptrOutput, "Expression #");
+      (void)strcpy(ptrOutput, "Expression #");
       ptrOutput += strlen(ptrOutput);
       *ptrOutput++ = (char)(expressionNbr + '0');
-      strcpy(ptrOutput, " must include the variable <var>x</var> and/or the counter <var>c</var>");
+      (void)strcpy(ptrOutput, " must include the variable <var>x</var> and/or the counter <var>c</var>");
     }
     break;
   default:

@@ -22,7 +22,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 char* ptrOutput;
 void showText(char* text)
 {
-  strcpy(ptrOutput, text);
+  (void)strcpy(ptrOutput, text);
   ptrOutput += strlen(ptrOutput);
 }
 

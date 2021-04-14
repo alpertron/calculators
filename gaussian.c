@@ -40,7 +40,7 @@ extern BigInteger tofactor;
 
 static void showText(char *text)
 {
-  strcpy(ptrOutput, text);
+  (void)strcpy(ptrOutput, text);
   ptrOutput += strlen(ptrOutput);
 }
 
@@ -91,15 +91,15 @@ void GaussianFactorization(void)
     char *ptrFactorDec = tofactorDec;
     NumberLength = tofactor.nbrLimbs;
     BigInteger2IntArray(nbrToFactor, &tofactor);
-    strcpy(ptrFactorDec, "Re&sup2; + Im&sup2; = ");
+    (void)strcpy(ptrFactorDec, "Re&sup2; + Im&sup2; = ");
     ptrFactorDec += strlen(ptrFactorDec);
     Bin2Dec(ReValue.limbs, ptrFactorDec, ReValue.nbrLimbs, groupLen);
     ptrFactorDec += strlen(ptrFactorDec);
-    strcpy(ptrFactorDec, "&sup2; + ");
+    (void)strcpy(ptrFactorDec, "&sup2; + ");
     ptrFactorDec += strlen(ptrFactorDec);
     Bin2Dec(ImValue.limbs, ptrFactorDec, ImValue.nbrLimbs, groupLen);
     ptrFactorDec += strlen(ptrFactorDec);
-    strcpy(ptrFactorDec, "&sup2;");
+    (void)strcpy(ptrFactorDec, "&sup2;");
     ptrFactorDec += strlen(ptrFactorDec);
     factor(&tofactor, nbrToFactor, factorsNorm, astFactorsNorm);
     NbrFactorsNorm = astFactorsNorm[0].multiplicity;

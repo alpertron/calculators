@@ -322,7 +322,7 @@ void fcubesText(char *input, int groupLen)
     groupLength = groupLen;
   }
   BatchProcessing(input, &toProcess, &ptrOutput, NULL);
-  strcpy(ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
+  (void)strcpy(ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
     "</p><p>" COPYRIGHT_ENGLISH "</p>"));
 }
 
@@ -333,7 +333,7 @@ void batchCubesCallback(char **pptrOutput)
   NumberLength = toProcess.nbrLimbs;
   result = fcubes(&toProcess);
   // Show the number to be decomposed into sum of cubes.
-  strcpy(ptrOutput, "<p>");
+  (void)strcpy(ptrOutput, "<p>");
   ptrOutput += strlen(ptrOutput);
   if (hexadecimal)
   {
@@ -347,22 +347,22 @@ void batchCubesCallback(char **pptrOutput)
   switch (result)
   {
   case -1:
-    strcpy(ptrOutput, (lang==0?": This applet does not work if the number is congruent to 4 or 5 (mod 9)</p>":
+    (void)strcpy(ptrOutput, (lang==0?": This applet does not work if the number is congruent to 4 or 5 (mod 9)</p>":
       ": El applet no funciona si el número es congruente a 4 o 5 (mod 9)</p>"));
     *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   case 1:
-    strcpy(ptrOutput, (lang==0?": Internal error! Please send the number to the author of the applet.</p>":
+    (void)strcpy(ptrOutput, (lang==0?": Internal error! Please send the number to the author of the applet.</p>":
       ": ¡Error interno!Por favor envíe este número al autor del applet.</p>"));
     *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   case 2:
-    strcpy(ptrOutput, (lang==0?": User stopped the calculation</p>":": El usuario detuvo el cálculo</p>"));
+    (void)strcpy(ptrOutput, (lang==0?": User stopped the calculation</p>":": El usuario detuvo el cálculo</p>"));
     *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   }
   // Show decomposition in sum of 1, 2, 3 or 4 cubes.
-  strcpy(ptrOutput, " = ");
+  (void)strcpy(ptrOutput, " = ");
   ptrOutput += strlen(ptrOutput);
   if (Base1.sign == SIGN_NEGATIVE)
   {
@@ -381,11 +381,11 @@ void batchCubesCallback(char **pptrOutput)
   {
     *ptrOutput++ = ')';
   }
-  strcpy(ptrOutput, cube);
+  (void)strcpy(ptrOutput, cube);
   ptrOutput += strlen(ptrOutput);
   if (Base2.nbrLimbs != 1 || Base2.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, " + ");
+    (void)strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
     if (Base2.sign == SIGN_NEGATIVE)
     {
@@ -404,12 +404,12 @@ void batchCubesCallback(char **pptrOutput)
     {
       *ptrOutput++ = ')';
     }
-    strcpy(ptrOutput, cube);
+    (void)strcpy(ptrOutput, cube);
     ptrOutput += strlen(ptrOutput);
   }
   if (Base3.nbrLimbs != 1 || Base3.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, " + ");
+    (void)strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
     if (Base3.sign == SIGN_NEGATIVE)
     {
@@ -428,12 +428,12 @@ void batchCubesCallback(char **pptrOutput)
     {
       *ptrOutput++ = ')';
     }
-    strcpy(ptrOutput, cube);
+    (void)strcpy(ptrOutput, cube);
     ptrOutput += strlen(ptrOutput);
   }
   if (Base4.nbrLimbs != 1 || Base4.limbs[0].x != 0)
   {
-    strcpy(ptrOutput, " + ");
+    (void)strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
     if (Base4.sign == SIGN_NEGATIVE)
     {
@@ -452,7 +452,7 @@ void batchCubesCallback(char **pptrOutput)
     {
       *ptrOutput++ = ')';
     }
-    strcpy(ptrOutput, cube);
+    (void)strcpy(ptrOutput, cube);
     ptrOutput += strlen(ptrOutput);
   }
   *pptrOutput = ptrOutput;

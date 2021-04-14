@@ -79,10 +79,10 @@ static void ShowStatus(void)
   }
   oldTimeElapsed = elapsedTime;
   ptrStatus = status;
-  strcpy(ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
+  (void)strcpy(ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
   ptrStatus += strlen(ptrStatus);
   GetDHMS(&ptrStatus, elapsedTime / 10);
-  strcpy(ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Intentando suma de dos cuadrados de n &minus; " : "&nbsp;&nbsp;&nbsp;Attempting sum of two squares of <var>n</var> &minus; ");
+  (void)strcpy(ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Intentando suma de dos cuadrados de n &minus; " : "&nbsp;&nbsp;&nbsp;Attempting sum of two squares of <var>n</var> &minus; ");
   ptrStatus += strlen(ptrStatus);
   if (hexadecimal)
   {
@@ -92,11 +92,11 @@ static void ShowStatus(void)
   {
     int2dec(&ptrStatus, iMult3);
   } 
-  strcpy(ptrStatus, square);
+  (void)strcpy(ptrStatus, square);
   ptrStatus += strlen(ptrStatus);
   if (!Computing3Squares)
   {
-    strcpy(ptrStatus, " &minus; ");
+    (void)strcpy(ptrStatus, " &minus; ");
     ptrStatus += strlen(ptrStatus);
     if (hexadecimal)
     {
@@ -106,7 +106,7 @@ static void ShowStatus(void)
     {
       int2dec(&ptrStatus, iMult4);
     }
-    strcpy(ptrStatus, square);
+    (void)strcpy(ptrStatus, square);
   }
   databack(status);
 #endif
@@ -201,7 +201,7 @@ int fsquares(void)
     }
 #ifdef __EMSCRIPTEN__
     ptrOutput = tmpOutput;
-    strcpy(ptrOutput, "1<p><var>n</var> = ");
+    (void)strcpy(ptrOutput, "1<p><var>n</var> = ");
     ptrOutput += strlen(ptrOutput);
     if (hexadecimal)
     {
@@ -212,7 +212,7 @@ int fsquares(void)
       Bin2Dec(origNbr, ptrOutput, nbrLimbs, groupLength);
     }
     ptrOutput += strlen(ptrOutput);
-    strcpy(ptrOutput, "</p>");
+    (void)strcpy(ptrOutput, "</p>");
     databack(tmpOutput);
 #endif
     DivideBigNbrByMaxPowerOf4(&power4, number, &nbrLimbs);
@@ -611,12 +611,12 @@ void fsquaresText(char *input, int groupLen)
   }
   BatchProcessing(input, &toProcess, &ptrOutput, NULL);
 #ifdef __EMSCRIPTEN__
-  strcpy(ptrOutput, lang ? "<p>Transcurrió " : "<p>Time elapsed: ");
+  (void)strcpy(ptrOutput, lang ? "<p>Transcurrió " : "<p>Time elapsed: ");
   ptrOutput += strlen(ptrOutput);
   elapsedTime = (int)(tenths() - originalTenthSecond);
   GetDHMSt(&ptrOutput, elapsedTime);
 #endif
-  strcpy(ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
+  (void)strcpy(ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
     "</p><p>" COPYRIGHT_ENGLISH "</p>"));
 }
 
@@ -632,7 +632,7 @@ void batchSquaresCallback(char **pptrOutput)
   (void)memcpy(origNbr, toProcess.limbs, origNbrLimbs*sizeof(limb));
   result = fsquares();
   // Show the number to be decomposed into sum of squares.
-  strcpy(ptrOutput, "<p>");
+  (void)strcpy(ptrOutput, "<p>");
   ptrOutput += strlen(ptrOutput);
   if (hexadecimal)
   {
@@ -649,24 +649,24 @@ void batchSquaresCallback(char **pptrOutput)
     *ptrOutput++ = ' ';
     textError(ptrOutput, EXPR_NUMBER_TOO_LOW);
     ptrOutput += strlen(ptrOutput);
-    strcpy(ptrOutput, "</p>");
+    (void)strcpy(ptrOutput, "</p>");
     *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   }
   switch (result)
   {
   case 1:
-    strcpy(ptrOutput, (lang==0?": Internal error!\n\nPlease send the number to the author of the applet.</p>":
+    (void)strcpy(ptrOutput, (lang==0?": Internal error!\n\nPlease send the number to the author of the applet.</p>":
       ": ¡Error interno!\n\nPor favor envíe este número al autor del applet.</p>"));
     *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   case 2:
-    strcpy(ptrOutput, (lang==0?": User stopped the calculation":": El usuario detuvo el cálculo"));
+    (void)strcpy(ptrOutput, (lang==0?": User stopped the calculation":": El usuario detuvo el cálculo"));
     *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   }
   // Show the decomposition.
-  strcpy(ptrOutput, " = ");
+  (void)strcpy(ptrOutput, " = ");
   ptrOutput += strlen(ptrOutput);
   if (hexadecimal)
   {
@@ -677,11 +677,11 @@ void batchSquaresCallback(char **pptrOutput)
     Bin2Dec(Mult1, ptrOutput, Mult1Len, groupLength);
   }
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, square);
+  (void)strcpy(ptrOutput, square);
   ptrOutput += strlen(ptrOutput);
   if (Mult2Len != 1 || Mult2[0].x != 0)
   {
-    strcpy(ptrOutput, " + ");
+    (void)strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
     if (hexadecimal)
     {
@@ -692,12 +692,12 @@ void batchSquaresCallback(char **pptrOutput)
       Bin2Dec(Mult2, ptrOutput, Mult2Len, groupLength);
     }
     ptrOutput += strlen(ptrOutput);
-    strcpy(ptrOutput, square);
+    (void)strcpy(ptrOutput, square);
     ptrOutput += strlen(ptrOutput);
   }
   if (Mult3Len != 1 || Mult3[0].x != 0)
   {
-    strcpy(ptrOutput, " + ");
+    (void)strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
     if (hexadecimal)
     {
@@ -708,12 +708,12 @@ void batchSquaresCallback(char **pptrOutput)
       Bin2Dec(Mult3, ptrOutput, Mult3Len, groupLength);
     }
     ptrOutput += strlen(ptrOutput);
-    strcpy(ptrOutput, square);
+    (void)strcpy(ptrOutput, square);
     ptrOutput += strlen(ptrOutput);
   }
   if (Mult4Len != 1 || Mult4[0].x != 0)
   {
-    strcpy(ptrOutput, " + ");
+    (void)strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
     if (hexadecimal)
     {
@@ -724,10 +724,10 @@ void batchSquaresCallback(char **pptrOutput)
       Bin2Dec(Mult4, ptrOutput, Mult4Len, groupLength);
     }
     ptrOutput += strlen(ptrOutput);
-    strcpy(ptrOutput, square);
+    (void)strcpy(ptrOutput, square);
     ptrOutput += strlen(ptrOutput);
   }
-  strcpy(ptrOutput, "</p>");
+  (void)strcpy(ptrOutput, "</p>");
   ptrOutput += strlen(ptrOutput);
   *pptrOutput = ptrOutput;
 }

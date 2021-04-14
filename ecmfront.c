@@ -110,7 +110,7 @@ static void GetNumberOfDivisors(char **pptrOutput)
     BigIntMultiply(&factorValue, &result, &result);
     pstFactor++;
   }
-  strcpy(ptrOutput, lang ? "<p>Cantidad de divisores: " : "<p>Number of divisors: ");
+  (void)strcpy(ptrOutput, lang ? "<p>Cantidad de divisores: " : "<p>Number of divisors: ");
   ptrOutput += strlen(ptrOutput);
   if (hexadecimal)
   {
@@ -121,7 +121,7 @@ static void GetNumberOfDivisors(char **pptrOutput)
     BigInteger2Dec(&result, ptrOutput, groupLen);
   }
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "</p>");
+  (void)strcpy(ptrOutput, "</p>");
   ptrOutput += strlen(ptrOutput);
   *pptrOutput = ptrOutput;
 }
@@ -130,7 +130,7 @@ static void GetSumOfDivisors(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
   SumOfDivisors(&result);
-  strcpy(ptrOutput, lang ? "<p>Suma de divisores: " : "<p>Sum of divisors: ");
+  (void)strcpy(ptrOutput, lang ? "<p>Suma de divisores: " : "<p>Sum of divisors: ");
   ptrOutput += strlen(ptrOutput);
   if (hexadecimal)
   {
@@ -141,7 +141,7 @@ static void GetSumOfDivisors(char **pptrOutput)
     BigInteger2Dec(&result, ptrOutput, groupLen);
   }
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "</p>");
+  (void)strcpy(ptrOutput, "</p>");
   ptrOutput += strlen(ptrOutput);
   *pptrOutput = ptrOutput;
 }
@@ -150,7 +150,7 @@ static void GetEulerTotient(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
   Totient(&result);
-  strcpy(ptrOutput, lang ? "<p>Phi de Euler: " : "<p>Euler's totient: ");
+  (void)strcpy(ptrOutput, lang ? "<p>Phi de Euler: " : "<p>Euler's totient: ");
   ptrOutput += strlen(ptrOutput);
   if (hexadecimal)
   {
@@ -161,7 +161,7 @@ static void GetEulerTotient(char **pptrOutput)
     BigInteger2Dec(&result, ptrOutput, groupLen);
   }
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "</p>");
+  (void)strcpy(ptrOutput, "</p>");
   ptrOutput += strlen(ptrOutput);
   *pptrOutput = ptrOutput;
 }
@@ -190,7 +190,7 @@ static void GetMobius(char **pptrOutput)
       pstFactor++;
     }
   }
-  strcpy(ptrOutput, "<p>Möbius: ");
+  (void)strcpy(ptrOutput, "<p>Möbius: ");
   ptrOutput += strlen(ptrOutput);
   if (mobius < 0)
   {
@@ -198,7 +198,7 @@ static void GetMobius(char **pptrOutput)
     *ptrOutput++ = '-';
   }
   int2dec(&ptrOutput, mobius);
-  strcpy(ptrOutput, "</p>");
+  (void)strcpy(ptrOutput, "</p>");
   ptrOutput += strlen(ptrOutput);
   *pptrOutput = ptrOutput;
 }
@@ -721,7 +721,7 @@ static void varSquared(char **pptrOutput, char letter, char sign)
   char *ptrOutput = *pptrOutput;
   *ptrOutput++ = ' ';
   *ptrOutput++ = letter;
-  strcpy(ptrOutput, (prettyprint? "&sup2;": "^2"));
+  (void)strcpy(ptrOutput, (prettyprint? "&sup2;": "^2"));
   ptrOutput += strlen(ptrOutput);
   *ptrOutput++ = ' ';
   *ptrOutput++ = sign;
@@ -731,7 +731,7 @@ static void varSquared(char **pptrOutput, char letter, char sign)
 static void valueVar(char **pptrOutput, char letter, BigInteger *value)
 {
   char *ptrOutput = *pptrOutput;
-  strcpy(ptrOutput, "<p>");
+  (void)strcpy(ptrOutput, "<p>");
   ptrOutput += strlen(ptrOutput);
   *ptrOutput++ = letter;
   *ptrOutput++ = ' ';
@@ -746,7 +746,7 @@ static void valueVar(char **pptrOutput, char letter, BigInteger *value)
     BigInteger2Dec(value, ptrOutput, groupLen);
   }
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "</p>");
+  (void)strcpy(ptrOutput, "</p>");
   ptrOutput += strlen(ptrOutput);
   *pptrOutput = ptrOutput;
 }
@@ -754,7 +754,7 @@ static void valueVar(char **pptrOutput, char letter, BigInteger *value)
 static void ShowFourSquares(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
-  strcpy(ptrOutput, "<p>n =");
+  (void)strcpy(ptrOutput, "<p>n =");
   ptrOutput += strlen(ptrOutput);
   if (Quad4.nbrLimbs == 1 && Quad4.limbs[0].x == 0)
   {          // Quad4 equals zero.
@@ -763,7 +763,7 @@ static void ShowFourSquares(char **pptrOutput)
       if (Quad2.nbrLimbs == 1 && Quad2.limbs[0].x == 0)
       {      // Quad2, Quad3 and Quad4 equal zero.
         varSquared(&ptrOutput, 'a', ' ');
-        strcpy(ptrOutput, "</p>");
+        (void)strcpy(ptrOutput, "</p>");
         ptrOutput += strlen(ptrOutput);
         valueVar(&ptrOutput, 'a', &Quad1);
         *pptrOutput = ptrOutput;
@@ -771,7 +771,7 @@ static void ShowFourSquares(char **pptrOutput)
       }
       varSquared(&ptrOutput, 'a', '+');
       varSquared(&ptrOutput, 'b', ' ');
-      strcpy(ptrOutput, "</p>");
+      (void)strcpy(ptrOutput, "</p>");
       ptrOutput += strlen(ptrOutput);
       valueVar(&ptrOutput, 'a', &Quad1);
       valueVar(&ptrOutput, 'b', &Quad2);
@@ -781,7 +781,7 @@ static void ShowFourSquares(char **pptrOutput)
     varSquared(&ptrOutput, 'a', '+');
     varSquared(&ptrOutput, 'b', '+');
     varSquared(&ptrOutput, 'c', ' ');
-    strcpy(ptrOutput, "</p>");
+    (void)strcpy(ptrOutput, "</p>");
     ptrOutput += strlen(ptrOutput);
     valueVar(&ptrOutput, 'a', &Quad1);
     valueVar(&ptrOutput, 'b', &Quad2);
@@ -793,7 +793,7 @@ static void ShowFourSquares(char **pptrOutput)
   varSquared(&ptrOutput, 'b', '+');
   varSquared(&ptrOutput, 'c', '+');
   varSquared(&ptrOutput, 'd', ' ');
-  strcpy(ptrOutput, "</p>");
+  (void)strcpy(ptrOutput, "</p>");
   ptrOutput += strlen(ptrOutput);
   valueVar(&ptrOutput, 'a', &Quad1);
   valueVar(&ptrOutput, 'b', &Quad2);
@@ -834,7 +834,7 @@ void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
 #ifdef __EMSCRIPTEN__
         StepECM = 3;   // Show progress (in percentage) of sum of squares.
         ptrText = ShowFactoredPart(&tofactor, astFactorsMod);
-        strcpy(ptrText, lang ? "<p>Hallando suma de cuadrados.</p>" :
+        (void)strcpy(ptrText, lang ? "<p>Hallando suma de cuadrados.</p>" :
           "<p>Searching for sum of squares.</p>");
         ShowLowerText();
         sumSquaresModMult = lModularMult;
@@ -850,94 +850,94 @@ void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
 #ifdef __EMSCRIPTEN__
       if (lModularMult >= 0)
       {
-        strcpy(ptrOutput, lang?"<p>Multiplicaciones modulares:</p><ul>" :
+        (void)strcpy(ptrOutput, lang?"<p>Multiplicaciones modulares:</p><ul>" :
           "<p>Modular multiplications:</p><ul>");
         ptrOutput += strlen(ptrOutput);
         if (lModularMult - primeModMult - SIQSModMult - sumSquaresModMult > 0)
         {
-          strcpy(ptrOutput, "<li>ECM: ");
+          (void)strcpy(ptrOutput, "<li>ECM: ");
           ptrOutput += strlen(ptrOutput);
           long2dec(&ptrOutput, lModularMult - primeModMult - SIQSModMult - sumSquaresModMult);
-          strcpy(ptrOutput, "</li>");
+          (void)strcpy(ptrOutput, "</li>");
           ptrOutput += strlen(ptrOutput);
         }
         if (primeModMult > 0)
         {
-          strcpy(ptrOutput, lang ? "<li>Verificación de números primos probables: " :
+          (void)strcpy(ptrOutput, lang ? "<li>Verificación de números primos probables: " :
             "<li>Probable prime checking: ");
           ptrOutput += strlen(ptrOutput);
           long2dec(&ptrOutput, primeModMult);
-          strcpy(ptrOutput, "</li>");
+          (void)strcpy(ptrOutput, "</li>");
           ptrOutput += strlen(ptrOutput);
         }
         if (SIQSModMult > 0)
         {
-          strcpy(ptrOutput, "<li>SIQS: ");
+          (void)strcpy(ptrOutput, "<li>SIQS: ");
           ptrOutput += strlen(ptrOutput);
           long2dec(&ptrOutput, SIQSModMult);
-          strcpy(ptrOutput, "</li>");
+          (void)strcpy(ptrOutput, "</li>");
           ptrOutput += strlen(ptrOutput);
         }
         if (sumSquaresModMult > 0)
         {
-          strcpy(ptrOutput, lang? "<li>Suma de cuadrados: ": "<li>Sum of squares: ");
+          (void)strcpy(ptrOutput, lang? "<li>Suma de cuadrados: ": "<li>Sum of squares: ");
           ptrOutput += strlen(ptrOutput);
           long2dec(&ptrOutput, sumSquaresModMult);
-          strcpy(ptrOutput, "</li>");
+          (void)strcpy(ptrOutput, "</li>");
           ptrOutput += strlen(ptrOutput);
         }
-        strcpy(ptrOutput, "</ul>");
+        (void)strcpy(ptrOutput, "</ul>");
         ptrOutput += strlen(ptrOutput);
       }
       if (nbrSIQS > 0)
       {
-        strcpy(ptrOutput, "<p>SIQS:<ul><li>");
+        (void)strcpy(ptrOutput, "<p>SIQS:<ul><li>");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, polynomialsSieved);
-        strcpy(ptrOutput, lang? " polinomios utilizados": " polynomials sieved");
+        (void)strcpy(ptrOutput, lang? " polinomios utilizados": " polynomials sieved");
         ptrOutput += strlen(ptrOutput);
-        strcpy(ptrOutput, "</li><li>");
+        (void)strcpy(ptrOutput, "</li><li>");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, trialDivisions);
-        strcpy(ptrOutput, lang ? " conjuntos de divisiones de prueba" : " sets of trial divisions");
+        (void)strcpy(ptrOutput, lang ? " conjuntos de divisiones de prueba" : " sets of trial divisions");
         ptrOutput += strlen(ptrOutput);
-        strcpy(ptrOutput, "</li><li>");
+        (void)strcpy(ptrOutput, "</li><li>");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, smoothsFound);
-        strcpy(ptrOutput, lang ? " congruencias completas (1 de cada " :
+        (void)strcpy(ptrOutput, lang ? " congruencias completas (1 de cada " :
           " smooth congruences found (1 out of every ");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, ValuesSieved / smoothsFound);
-        strcpy(ptrOutput, lang? " valores)</li><li>": " values)</li><li>");
+        (void)strcpy(ptrOutput, lang? " valores)</li><li>": " values)</li><li>");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, totalPartials);
-        strcpy(ptrOutput, lang ? " congruencias parciales (1 de cada " :
+        (void)strcpy(ptrOutput, lang ? " congruencias parciales (1 de cada " :
           " partial congruences found (1 out of every ");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, ValuesSieved / totalPartials);
-        strcpy(ptrOutput, lang ? " valores)</li><li>" : " values)</li><li>");
+        (void)strcpy(ptrOutput, lang ? " valores)</li><li>" : " values)</li><li>");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, partialsFound);
-        strcpy(ptrOutput, lang ? " congruencias parciales útiles</li><li>Tamaño de la matriz binaria: " :
+        (void)strcpy(ptrOutput, lang ? " congruencias parciales útiles</li><li>Tamaño de la matriz binaria: " :
           " useful partial congruences</li><li>Size of binary matrix: ");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, matrixRows);
-        strcpy(ptrOutput, " &times; ");
+        (void)strcpy(ptrOutput, " &times; ");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, matrixCols);
-        strcpy(ptrOutput, "</li></ul>");
+        (void)strcpy(ptrOutput, "</li></ul>");
         ptrOutput += strlen(ptrOutput);
       }
       if (nbrSIQS > 0 || nbrECM > 0 || nbrPrimalityTests > 0)
       {
-        strcpy(ptrOutput, lang ? "<p>Tiempos:<ul>" : "<p>Timings:<ul>");
+        (void)strcpy(ptrOutput, lang ? "<p>Tiempos:<ul>" : "<p>Timings:<ul>");
         ptrOutput += strlen(ptrOutput);
         if (nbrPrimalityTests > 0)
         {
-          strcpy(ptrOutput, lang ? "<li>Test de primo probable de " : "<li>Probable prime test of ");
+          (void)strcpy(ptrOutput, lang ? "<li>Test de primo probable de " : "<li>Probable prime test of ");
           ptrOutput += strlen(ptrOutput);
           int2dec(&ptrOutput, nbrPrimalityTests);
-          strcpy(ptrOutput, lang ? " número" : " number");
+          (void)strcpy(ptrOutput, lang ? " número" : " number");
           ptrOutput += strlen(ptrOutput);
           if (nbrPrimalityTests != 1)
           {
@@ -946,52 +946,52 @@ void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
           *ptrOutput++ = ':';
           *ptrOutput++ = ' ';
           GetDHMSt(&ptrOutput, timePrimalityTests);
-          strcpy(ptrOutput, "</li>");
+          (void)strcpy(ptrOutput, "</li>");
           ptrOutput += strlen(ptrOutput);
         }
         if (nbrECM > 0)
         {
-          strcpy(ptrOutput, lang ? "<li>Factorización " : "<li>Factoring ");
+          (void)strcpy(ptrOutput, lang ? "<li>Factorización " : "<li>Factoring ");
           ptrOutput += strlen(ptrOutput);
           int2dec(&ptrOutput, nbrECM);
-          strcpy(ptrOutput, lang ? " número" : " number");
+          (void)strcpy(ptrOutput, lang ? " número" : " number");
           ptrOutput += strlen(ptrOutput);
           if (nbrECM != 1)
           {
             *ptrOutput++ = 's';
           }
-          strcpy(ptrOutput, lang ? " mediante ECM" : " using ECM:");
+          (void)strcpy(ptrOutput, lang ? " mediante ECM" : " using ECM:");
           ptrOutput += strlen(ptrOutput);
           *ptrOutput++ = ' ';
           GetDHMSt(&ptrOutput, timeECM - timeSIQS);
-          strcpy(ptrOutput, "</li>");
+          (void)strcpy(ptrOutput, "</li>");
           ptrOutput += strlen(ptrOutput);
         }
         if (nbrSIQS > 0)
         {
-          strcpy(ptrOutput, lang ? "<li>Factorización " : "<li>Factoring ");
+          (void)strcpy(ptrOutput, lang ? "<li>Factorización " : "<li>Factoring ");
           ptrOutput += strlen(ptrOutput);
           int2dec(&ptrOutput, nbrSIQS);
-          strcpy(ptrOutput, lang ? " número" : " number");
+          (void)strcpy(ptrOutput, lang ? " número" : " number");
           ptrOutput += strlen(ptrOutput);
           if (nbrSIQS != 1)
           {
             *ptrOutput++ = 's';
           }
-          strcpy(ptrOutput, lang ? " mediante SIQS" : " using SIQS:");
+          (void)strcpy(ptrOutput, lang ? " mediante SIQS" : " using SIQS:");
           ptrOutput += strlen(ptrOutput);
           *ptrOutput++ = ' ';
           GetDHMSt(&ptrOutput, timeSIQS);
-          strcpy(ptrOutput, "</li>");
+          (void)strcpy(ptrOutput, "</li>");
           ptrOutput += strlen(ptrOutput);
         }
-        strcpy(ptrOutput, "</ul>");
+        (void)strcpy(ptrOutput, "</ul>");
         ptrOutput += strlen(ptrOutput);
       }
 #endif
     }
   }
-  strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+  (void)strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 

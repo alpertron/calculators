@@ -65,7 +65,7 @@ static int Show(BigInteger *num, char *str, int t)
       num->sign = signTemp;
       ptrOutput += strlen(ptrOutput);
     }
-    strcpy(ptrOutput, str);
+    (void)strcpy(ptrOutput, str);
     ptrOutput += strlen(ptrOutput);
     return t | 1;
   }
@@ -85,11 +85,11 @@ void Show1(BigInteger *num, int t)
 void Solution(BigInteger *value)
 {
   SolNbr++;
-  strcpy(ptrOutput, "<li>x = ");
+  (void)strcpy(ptrOutput, "<li>x = ");
   ptrOutput += strlen(ptrOutput);
   BigInteger2Dec(value, ptrOutput, groupLen);
   ptrOutput += strlen(ptrOutput);
-  strcpy(ptrOutput, "</li>");
+  (void)strcpy(ptrOutput, "</li>");
   ptrOutput += strlen(ptrOutput);
 }
 
@@ -169,7 +169,7 @@ void SolveEquation(void)
       {    // Constant Equation
         if (ValC.nbrLimbs == 1 && ValC.limbs[0].x == 0)
         {  // 0 = 0
-          strcpy(ptrOutput, "<p>The equation is satisfied by any integer <var>x</var>.</p>");
+          (void)strcpy(ptrOutput, "<p>The equation is satisfied by any integer <var>x</var>.</p>");
           ptrOutput += strlen(ptrOutput);
         }
         else
@@ -261,12 +261,12 @@ void SolveEquation(void)
   {     // All values from 0 to GcdAll - 1 are solutions.
     if (GcdAll.nbrLimbs > 1 || GcdAll.limbs[0].x > 5)
     {
-      strcpy(ptrOutput, "<p>All values of <var>x</var> between 0 and ");
+      (void)strcpy(ptrOutput, "<p>All values of <var>x</var> between 0 and ");
       ptrOutput += strlen(ptrOutput);
       addbigint(&GcdAll, -1);
       BigInteger2Dec(&GcdAll, ptrOutput, groupLen);
       ptrOutput += strlen(ptrOutput);
-      strcpy(ptrOutput, " are solutions.</p>");
+      (void)strcpy(ptrOutput, " are solutions.</p>");
       ptrOutput += strlen(ptrOutput);
     }
     else
@@ -900,7 +900,7 @@ void textErrorQuadMod(char *pOutput, enum eExprErr rc)
   switch (rc)
   {
   case EXPR_MODULUS_MUST_BE_NONNEGATIVE:
-    strcpy(pOutput, lang ? "No debe ser negativo" :
+    (void)strcpy(pOutput, lang ? "No debe ser negativo" :
       "Must not be negative");
     break;
   default:
@@ -913,16 +913,16 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
   char *ptrBeginSol;
   enum eExprErr rc;
   ptrOutput = output;
-  strcpy(ptrOutput, "2<p>");
+  (void)strcpy(ptrOutput, "2<p>");
   ptrOutput = output + strlen(output);
   rc = ComputeExpression(quadrText, 1, &ValA);
   if (rc != EXPR_OK)
   {
-    strcpy(ptrOutput, lang ? "Coeficiente cuadrático: ": "Quadratic coefficient: ");
+    (void)strcpy(ptrOutput, lang ? "Coeficiente cuadrático: ": "Quadratic coefficient: ");
     ptrOutput = output + strlen(output);
     textErrorQuadMod(ptrOutput, rc);
     ptrOutput = output + strlen(output);
-    strcpy(ptrOutput, "</p>");
+    (void)strcpy(ptrOutput, "</p>");
     ptrOutput = output + strlen(output);
   }
   else
@@ -930,11 +930,11 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
     rc = ComputeExpression(linearText, 1, &ValB);
     if (rc != EXPR_OK)
     {
-      strcpy(ptrOutput, lang ? "Coeficiente lineal: " : "Linear coefficient: ");
+      (void)strcpy(ptrOutput, lang ? "Coeficiente lineal: " : "Linear coefficient: ");
       ptrOutput = output + strlen(output);
       textErrorQuadMod(ptrOutput, rc);
       ptrOutput = output + strlen(output);
-      strcpy(ptrOutput, "</p>");
+      (void)strcpy(ptrOutput, "</p>");
       ptrOutput = output + strlen(output);
     }
     else
@@ -942,11 +942,11 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
       rc = ComputeExpression(constText, 1, &ValC);
       if (rc != EXPR_OK)
       {
-        strcpy(ptrOutput, lang ? "Término independiente: " : "Constant coefficient: ");
+        (void)strcpy(ptrOutput, lang ? "Término independiente: " : "Constant coefficient: ");
         ptrOutput = output + strlen(output);
         textErrorQuadMod(ptrOutput, rc);
         ptrOutput = output + strlen(output);
-        strcpy(ptrOutput, "</p>");
+        (void)strcpy(ptrOutput, "</p>");
         ptrOutput = output + strlen(output);
       }
       else
@@ -958,11 +958,11 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
         }
         if (rc != EXPR_OK)
         {
-          strcpy(ptrOutput, lang ? "Módulo: " : "Modulus: ");
+          (void)strcpy(ptrOutput, lang ? "Módulo: " : "Modulus: ");
           ptrOutput = output + strlen(output);
           textErrorQuadMod(ptrOutput, rc);
           ptrOutput = output + strlen(output);
-          strcpy(ptrOutput, "</p>");
+          (void)strcpy(ptrOutput, "</p>");
           ptrOutput = output + strlen(output);
         }
         else
@@ -970,32 +970,32 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
           int u = Show(&ValA, " x&sup2;", 2);
           u = Show(&ValB, " x", u);
           Show1(&ValC, u);
-          strcpy(ptrOutput, " &equiv; 0 (mod ");
+          (void)strcpy(ptrOutput, " &equiv; 0 (mod ");
           ptrOutput += strlen(ptrOutput);
           BigInteger2Dec(&ValN, ptrOutput, groupLen);
           ptrOutput += strlen(ptrOutput);
-          strcpy(ptrOutput, ")</p>");
+          (void)strcpy(ptrOutput, ")</p>");
           ptrOutput += strlen(ptrOutput);
           SolNbr = 0;
           ptrBeginSol = ptrOutput;
-          strcpy(ptrOutput, "<ol>");
+          (void)strcpy(ptrOutput, "<ol>");
           ptrOutput += strlen(ptrOutput);
           SolveEquation();
           if (SolNbr == 0)
           {
             ptrOutput = ptrBeginSol;
-            strcpy(ptrOutput, lang? "<p>No hay soluciones.</p>": "<p>There are no solutions.</p>");
+            (void)strcpy(ptrOutput, lang? "<p>No hay soluciones.</p>": "<p>There are no solutions.</p>");
           }
           else
           {
-            strcpy(ptrOutput, "</ol>");
+            (void)strcpy(ptrOutput, "</ol>");
           }
           ptrOutput += strlen(ptrOutput);
         }
       }
     }
   }
-  strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+  (void)strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
     "<p>" COPYRIGHT_ENGLISH "</p>");
   ptrOutput += strlen(ptrOutput);
   *ptrOutput = 0;   // Add string terminator.

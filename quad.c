@@ -113,7 +113,7 @@ static struct stValidateCoeff astValidateCoeff[NBR_COEFF] =
 
 static void showText(char *text)
 {
-  strcpy(ptrOutput, text);
+  (void)strcpy(ptrOutput, text);
   ptrOutput += strlen(ptrOutput);
 }
 
@@ -421,11 +421,11 @@ static int Show(BigInteger *num, char *str, enum eLinearSolution t)
       BigInteger2Dec(num, ptrOutput, groupLen);
       num->sign = signTemp;
       ptrOutput += strlen(ptrOutput);
-      strcpy(ptrOutput, "&nbsp;&#8290;");
+      (void)strcpy(ptrOutput, "&nbsp;&#8290;");
     }
     else
     {
-      strcpy(ptrOutput, "&nbsp;");
+      (void)strcpy(ptrOutput, "&nbsp;");
     }
     if (*str)
     {
@@ -458,35 +458,35 @@ static void ShowEq(BigInteger *coeffA, BigInteger *coeffB, BigInteger *coeffC,
   char *ptrVar;
   enum eLinearSolution t;
   ptrVar = var;
-  strcpy(ptrVar, x);
+  (void)strcpy(ptrVar, x);
   ptrVar += strlen(ptrVar);
-  strcpy(ptrVar, squareText);
+  (void)strcpy(ptrVar, squareText);
   ptrVar += strlen(ptrVar);
   t = Show(coeffA, var, SOLUTION_FOUND);
 
   ptrVar = var;
-  strcpy(ptrVar, x);
+  (void)strcpy(ptrVar, x);
   ptrVar += strlen(ptrVar);
-  strcpy(ptrVar, "&#8290;");
+  (void)strcpy(ptrVar, "&#8290;");
   ptrVar += strlen(ptrVar);
-  strcpy(ptrVar, y);
+  (void)strcpy(ptrVar, y);
   ptrVar += strlen(ptrVar);
   t = Show(coeffB, var, t);
 
   ptrVar = var;
-  strcpy(ptrVar, y);
+  (void)strcpy(ptrVar, y);
   ptrVar += strlen(ptrVar);
-  strcpy(ptrVar, squareText);
+  (void)strcpy(ptrVar, squareText);
   ptrVar += strlen(ptrVar);
   t = Show(coeffC, var, t);
 
   ptrVar = var;
-  strcpy(ptrVar, x);
+  (void)strcpy(ptrVar, x);
   ptrVar += strlen(ptrVar);
   t = Show(coeffD, var, t);
 
   ptrVar = var;
-  strcpy(ptrVar, y);
+  (void)strcpy(ptrVar, y);
   ptrVar += strlen(ptrVar);
   t = Show(coeffE, var, t);
   Show1(coeffF, t);
@@ -4166,7 +4166,7 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
   astValidateCoeff[4].expression = coefEText;
   astValidateCoeff[5].expression = coefFText;
   ptrOutput = output;
-  strcpy(ptrOutput, "2<p>");
+  (void)strcpy(ptrOutput, "2<p>");
   ptrOutput = output + strlen(output);
   for (coeffNbr = 0; coeffNbr < NBR_COEFF; coeffNbr++)
   {
@@ -4174,11 +4174,11 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
                            pstValidateCoeff->bigint);
     if (rc != EXPR_OK)
     {
-      strcpy(ptrOutput, lang ? pstValidateCoeff->textSpanish : pstValidateCoeff->textEnglish);
+      (void)strcpy(ptrOutput, lang ? pstValidateCoeff->textSpanish : pstValidateCoeff->textEnglish);
       ptrOutput = output + strlen(output);
       textError(ptrOutput, rc);
       ptrOutput = output + strlen(output);
-      strcpy(ptrOutput, "</p>");
+      (void)strcpy(ptrOutput, "</p>");
       ptrOutput = output + strlen(output);
       break;
     }

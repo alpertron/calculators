@@ -1634,7 +1634,7 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
 #ifdef FACTORIZATION_APP
   StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
   ptrText = ShowFactoredPart(pValue, vFactors);
-  strcpy(ptrText, lang ? "<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
+  (void)strcpy(ptrText, lang ? "<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
     "<p>Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.</p>");
   ShowLowerText();
 #else
@@ -1736,21 +1736,21 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   ptrText = text;
   *ptrText++ = '3';
 #endif
-  strcpy(ptrText, lang ? "<p>Paso 2 del algoritmo BPSW de primos probables: Lucas fuerte con P=1, D=" :
+  (void)strcpy(ptrText, lang ? "<p>Paso 2 del algoritmo BPSW de primos probables: Lucas fuerte con P=1, D=" :
     "<p>Step 2 of BPSW probable prime algorithm: Strong Lucas with P=1, D=");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, D);
-  strcpy(ptrText, ", Q=");
+  (void)strcpy(ptrText, ", Q=");
   ptrText += strlen(ptrText);
   i = -absQ;        // Get value of Q to show it on screen.
   if (i < 0)
   {
-    strcpy(ptrText, "&minus;");
+    (void)strcpy(ptrText, "&minus;");
     ptrText += strlen(ptrText);
     i = -i;
   }
   int2dec(&ptrText, i);
-  strcpy(ptrText, "</p>");
+  (void)strcpy(ptrText, "</p>");
   ptrText += strlen(ptrText);
 #ifdef FACTORIZATION_APP
   ShowLowerText();

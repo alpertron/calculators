@@ -2394,27 +2394,27 @@ int HenselLifting(struct sFactorInfo* factorInfo, int compressPoly)
       char* ptrOutput = outputInfo;
       if (lang)
       {
-        strcpy(ptrOutput, "1<p>Aplicando lema de Hensel usando el número primo ");
+        (void)strcpy(ptrOutput, "1<p>Aplicando lema de Hensel usando el número primo ");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, primeMod.limbs[0].x);
-        strcpy(ptrOutput, " procesando exponente ");
+        (void)strcpy(ptrOutput, " procesando exponente ");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, currentExp);
-        strcpy(ptrOutput, " de ");
+        (void)strcpy(ptrOutput, " de ");
       }
       else
       {
-        strcpy(ptrOutput, "1<p>Hensel lifting using prime number ");
+        (void)strcpy(ptrOutput, "1<p>Hensel lifting using prime number ");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, primeMod.limbs[0].x);
-        strcpy(ptrOutput, " processing exponent ");
+        (void)strcpy(ptrOutput, " processing exponent ");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, currentExp);
-        strcpy(ptrOutput, " of ");
+        (void)strcpy(ptrOutput, " of ");
       }
       ptrOutput += strlen(ptrOutput);
       int2dec(&ptrOutput, exponentMod);
-      strcpy(ptrOutput, ".</p>");
+      (void)strcpy(ptrOutput, ".</p>");
       ptrOutput += strlen(ptrOutput);
       showElapsedTimeSec(&ptrOutput);
       databack(outputInfo);
@@ -2725,7 +2725,7 @@ void showPowerX(char **pptrOutput, int polyDegree)
   {
     if (pretty == PRETTY_PRINT)
     {
-      strcpy(ptrOutput, lang?"<span class=\"hide\">equis </span><span aria-hidden=\"true\"><var>x</var></span>":"<var>x</var>");
+      (void)strcpy(ptrOutput, lang?"<span class=\"hide\">equis </span><span aria-hidden=\"true\"><var>x</var></span>":"<var>x</var>");
       ptrOutput += strlen(ptrOutput);
     }
     else
@@ -2782,7 +2782,7 @@ static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int 
       }
       else
       {
-        strcpy(ptrOutput, pretty == PRETTY_PRINT? "&minus;": "-");
+        (void)strcpy(ptrOutput, pretty == PRETTY_PRINT? "&minus;": "-");
         ptrOutput += strlen(ptrOutput);
       }
       *ptrOutput++ = ' ';
@@ -2797,7 +2797,7 @@ static void showPolynomial(char **pptrOutput, int *ptrPoly, int polyDegree, int 
         {
           if (pretty == PRETTY_PRINT)
           {
-            strcpy(ptrOutput, "&#8290;");
+            (void)strcpy(ptrOutput, "&#8290;");
             ptrOutput += strlen(ptrOutput);
           }
           else if (pretty == PARI_GP)
@@ -2850,7 +2850,7 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
   }
   if (operand1.sign == SIGN_NEGATIVE)
   {
-    strcpy(ptrOutput, " &minus;");
+    (void)strcpy(ptrOutput, " &minus;");
     ptrOutput += strlen(ptrOutput);
   }
   if ((operand1.nbrLimbs != 1 || operand1.limbs[0].x != 1) || degree == 0)
@@ -2865,7 +2865,7 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
   showPolynomial(&ptrOutput, (modulusIsZero ? &values[1] : poly4), degree, groupLength);
   if (!modulusIsZero)
   {
-    strcpy(ptrOutput, " (mod ");
+    (void)strcpy(ptrOutput, " (mod ");
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(primeMod.limbs, ptrOutput, primeMod.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
@@ -2900,7 +2900,7 @@ void outputPolynomialFactor(char *ptrOutput, int groupLength, struct sFactorInfo
     UncompressBigIntegerB(ptrSrc, &operand1);
     if (operand1.sign == SIGN_NEGATIVE)
     {
-      strcpy(ptrOutput, "&minus;");
+      (void)strcpy(ptrOutput, "&minus;");
       ptrOutput += strlen(ptrOutput);
     }
     if (operand1.nbrLimbs != 1 || operand1.limbs[0].x != 1)
@@ -2929,40 +2929,40 @@ void textErrorPol(char *ptrOutput, enum eExprErr rc)
   switch (rc)
   {
   case EXPR_CANNOT_USE_X_IN_EXPONENT:
-    strcpy(text, lang?"No se puede usar variable en el exponente":
+    (void)strcpy(text, lang?"No se puede usar variable en el exponente":
                       "Cannot use variable in exponent");
     break;
   case EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER:
-    strcpy(text, lang ? "La división de polinomios no es entera" :
+    (void)strcpy(text, lang ? "La división de polinomios no es entera" :
                         "Polynomial division is not integer");
     break;
   case EXPR_DEGREE_TOO_HIGH:
-    strcpy(text, lang?"El grado del polinomio es muy elevado":
+    (void)strcpy(text, lang?"El grado del polinomio es muy elevado":
                       "Degree is too high");
     break;
   case EXPR_EXPONENT_TOO_LARGE:
-    strcpy(text, lang?"Exponente muy grande":"Exponent is too large");
+    (void)strcpy(text, lang?"Exponente muy grande":"Exponent is too large");
     break;
   case EXPR_EXPONENT_NEGATIVE:
-    strcpy(text, lang?"Exponente negativo":"Exponent is negative");
+    (void)strcpy(text, lang?"Exponente negativo":"Exponent is negative");
     break;
   case EXPR_LEADING_COFF_MULTIPLE_OF_PRIME:
-    strcpy(text, lang?"El primer coeficiente es múltiplo del número primo":
+    (void)strcpy(text, lang?"El primer coeficiente es múltiplo del número primo":
       "Leading coefficient multiple of prime");
     break;
   case EXPR_CANNOT_LIFT:
-    strcpy(text, lang?"No se puede elevar porque hay factores duplicados":
+    (void)strcpy(text, lang?"No se puede elevar porque hay factores duplicados":
       "Cannot lift because of duplicate factors modulo prime");
     break;
   case EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE:
-    strcpy(text, lang?"El módulo debe ser mayor que 1":"Modulus must be greater than one");
+    (void)strcpy(text, lang?"El módulo debe ser mayor que 1":"Modulus must be greater than one");
     break;
   case EXPR_MODULUS_MUST_BE_PRIME_EXP:
-    strcpy(text, lang ? "El módulo debe ser un número primo o una potencia de número primo" :
+    (void)strcpy(text, lang ? "El módulo debe ser un número primo o una potencia de número primo" :
       "Modulus must be a prime number or a power of a prime");
     break;
   case EXPR_MULTIPLE_VARIABLES_NOT_ACCEPTED:
-    strcpy(text, lang ? "No se aceptan múltiples variables" :
+    (void)strcpy(text, lang ? "No se aceptan múltiples variables" :
       "Multiple variables are not accepted");
     break;
   default:
@@ -2971,7 +2971,7 @@ void textErrorPol(char *ptrOutput, enum eExprErr rc)
   *ptrOutput++ = '<';
   *ptrOutput++ = 'p';
   *ptrOutput++ = '>';
-  strcpy(ptrOutput, text);
+  (void)strcpy(ptrOutput, text);
   ptrOutput += strlen(ptrOutput);
   *ptrOutput++ = '<';
   *ptrOutput++ = '/';

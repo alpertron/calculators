@@ -74,7 +74,7 @@ enum eLogMachineState
 };
 static void showText(char *text)
 {
-  strcpy(output, text);
+  (void)strcpy(output, text);
 }
 
 void textErrorDilog(char *ptrOutput, enum eExprErr rc)
@@ -84,15 +84,15 @@ void textErrorDilog(char *ptrOutput, enum eExprErr rc)
   switch (rc)
   {
   case EXPR_BASE_MUST_BE_POSITIVE:
-    strcpy(text, lang ? "La base debe ser mayor que cero" :
+    (void)strcpy(text, lang ? "La base debe ser mayor que cero" :
       "Base must be greater than zero");
     break;
   case EXPR_POWER_MUST_BE_POSITIVE:
-    strcpy(text, lang ? "La potencia debe ser mayor que cero" :
+    (void)strcpy(text, lang ? "La potencia debe ser mayor que cero" :
       "Power must be greater than zero");
     break;
   case EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE:
-    strcpy(text, lang ? "El módulo debe ser mayor que 1" : "Modulus must be greater than one");
+    (void)strcpy(text, lang ? "El módulo debe ser mayor que 1" : "Modulus must be greater than one");
     break;
   default:
     textError(text, rc);
@@ -100,7 +100,7 @@ void textErrorDilog(char *ptrOutput, enum eExprErr rc)
   *ptrOutput++ = '<';
   *ptrOutput++ = 'p';
   *ptrOutput++ = '>';
-  strcpy(ptrOutput, text);
+  (void)strcpy(ptrOutput, text);
   ptrOutput += strlen(ptrOutput);
   *ptrOutput++ = '<';
   *ptrOutput++ = '/';
@@ -113,10 +113,10 @@ static void indicateCannotComputeLog(int indexBase, int indexExp)
 {
   char *ptrText;
   struct sFactors *pstFactors = &astFactorsGO[indexBase + 1];
-  strcpy(textExp, "Cannot compute discrete logarithm: subgroup=");
+  (void)strcpy(textExp, "Cannot compute discrete logarithm: subgroup=");
   IntArray2BigInteger(pstFactors->ptrFactor, &tmpBase);
   Bin2Dec(tmpBase.limbs, textExp + strlen(textExp), tmpBase.nbrLimbs, groupLen);
-  strcpy(textExp + strlen(textExp), ", exponent=");
+  (void)strcpy(textExp + strlen(textExp), ", exponent=");
   ptrText = textExp + strlen(textExp);
   int2dec(&ptrText, indexExp);
   DiscreteLogPeriod.sign = SIGN_NEGATIVE;
@@ -257,10 +257,10 @@ void DiscreteLogarithm(void)
     GetMontgomeryParms(NumberLength);
 #if 0
     char *ptrText = textExp;
-    strcpy(ptrText, "<p>NumberLength (2) = ");
+    (void)strcpy(ptrText, "<p>NumberLength (2) = ");
     ptrText = ptrText + strlen(ptrText);
     int2dec(&ptrText, NumberLength);
-    strcpy(ptrText, "</p>");
+    (void)strcpy(ptrText, "</p>");
     DiscreteLogPeriod.sign = SIGN_NEGATIVE;
     return;
 #endif
@@ -285,7 +285,7 @@ void DiscreteLogarithm(void)
       NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
       IntArray2BigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
       subGroupOrder.limbs[subGroupOrder.nbrLimbs].x = 0;
-      strcpy(textExp, "Computing discrete logarithm in subgroup of ");
+      (void)strcpy(textExp, "Computing discrete logarithm in subgroup of ");
       Bin2Dec(subGroupOrder.limbs, textExp + strlen(textExp), subGroupOrder.nbrLimbs, groupLen);
       ptr = textExp + strlen(textExp);
       if (astFactorsGO[indexBase + 1].multiplicity > 1)
@@ -303,7 +303,7 @@ void DiscreteLogarithm(void)
         *ptr++ = 'p';
         *ptr++ = '>';
       }
-      strcpy(ptr, " elements.");
+      (void)strcpy(ptr, " elements.");
       showText(textExp);
       NumberLength = mod.nbrLimbs;
       (void)memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
@@ -840,7 +840,7 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
   }
   else
   {
-    strcpy(ptrOutput, lang?"<p>Hallar <var>exp</var> tal que ": 
+    (void)strcpy(ptrOutput, lang?"<p>Hallar <var>exp</var> tal que ": 
                            "<p>Find <var>exp</var> such that ");
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(base.limbs, ptrOutput, base.nbrLimbs, groupLength);
@@ -860,7 +860,7 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
       strcat(ptrOutput, lang? "Ningún valor de <var>exp</var> satisface la congruencia.</p>":
                               "There is no such value of <var>exp</var>.</p>");
       ptrOutput += strlen(ptrOutput);
-      strcpy(ptrOutput, textExp);
+      (void)strcpy(ptrOutput, textExp);
     }
     else
     {

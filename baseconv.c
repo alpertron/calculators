@@ -150,7 +150,7 @@ void int2hex(char **pOutput, int nbr)
   int significantZero = 0;
   unsigned int div = 0x10000000;
   unsigned int value = (unsigned int)nbr;
-  strcpy(ptrOutput, "<span class=\"hex\">");
+  (void)strcpy(ptrOutput, "<span class=\"hex\">");
   ptrOutput += strlen(ptrOutput);
   while (div > 0)
   {
@@ -169,7 +169,7 @@ void int2hex(char **pOutput, int nbr)
   {
     *ptrOutput++ = '0';
   }
-  strcpy(ptrOutput, "</span>");
+  (void)strcpy(ptrOutput, "</span>");
   ptrOutput += strlen(ptrOutput);
   *pOutput = ptrOutput;
 }
@@ -186,7 +186,7 @@ void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
     groupLength = -groupLength;
     showDigitsText = FALSE;
   }
-  strcpy(decimal, "<span class=\"hex\">");
+  (void)strcpy(decimal, "<span class=\"hex\">");
   decimal += strlen(decimal);
   nbrBits = nbrLimbs * BITS_PER_GROUP;
   mask = LIMB_RANGE / 2;
@@ -251,10 +251,10 @@ void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
   {
     *decimal++ = '(';
     int2dec(&decimal, digits);
-    strcpy(decimal, (lang == 0 ? " digits)" : " dígitos)"));
+    (void)strcpy(decimal, (lang == 0 ? " digits)" : " dígitos)"));
     decimal += strlen(decimal);
   }
-  strcpy(decimal, "</span>");
+  (void)strcpy(decimal, "</span>");
 }
 
   // Convert little-endian number to a string with space every groupLen digits.
@@ -363,7 +363,7 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLength)
   {
     *ptrDest++ = '(';
     int2dec(&ptrDest, digits);
-    strcpy(ptrDest, (lang==0?" digits)":" dígitos)"));
+    (void)strcpy(ptrDest, (lang==0?" digits)":" dígitos)"));
     ptrDest += strlen(ptrDest);
   }
   else if (ptrDest > decimal)

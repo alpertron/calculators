@@ -119,11 +119,11 @@ int main(int argc, char *argv[])
     return 0;
   }
   ptrInput = input;
-  strcpy(ptrInput, argv[1]);
+  (void)strcpy(ptrInput, argv[1]);
   ptrInput += strlen(ptrInput) + 1;
-  strcpy(ptrInput, argv[2]);
+  (void)strcpy(ptrInput, argv[2]);
   ptrInput += strlen(ptrInput) + 1;
-  strcpy(ptrInput, argv[3]);
+  (void)strcpy(ptrInput, argv[3]);
   ptrInput += strlen(ptrInput) + 1;
   contfracText(input, 20000);
   printf("%s\n", output);
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
     return 0;
   }
   ptrInput = input;
-  strcpy(ptrInput, argv[1]);
+  (void)strcpy(ptrInput, argv[1]);
   fsquaresText(input, 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 8
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
   lang = 0;
   hexadecimal = 0;
   char text[40000];
-  sprintf(text, "%s\n", argv[1]);
+  (void)sprintf(text, "%s\n", argv[1]);
   ecmFrontText(text, 1, NULL);
   printf("%s\n", output);
   return 0;
@@ -224,15 +224,15 @@ int main(int argc, char *argv[])
   {
     char *ptrKnownFactors = strchr(argv[1], '=');
 #if 0
-    strcpy(text, "10**45+572");
-//    strcpy(text, "x=10**45+572;x=x+1;c<1000;x");
+    (void)strcpy(text, "10**45+572");
+//    (void)strcpy(text, "x=10**45+572;x=x+1;c<1000;x");
     ecmFrontText(text, 1, ptrKnownFactors);
     printf("%s\n", output);
     ecmFrontText(NULL, 0, NULL);
     printf("%s\n", output);
     valuesProcessed = 0;
-    strcpy(text, "10**45+573");
-//    strcpy(text, "x=1;x=x+1;x<1001;c");
+    (void)strcpy(text, "10**45+573");
+//    (void)strcpy(text, "x=1;x=x+1;x<1001;c");
     ecmFrontText(text, 1, NULL);
     printf("%s\n", output);
     ecmFrontText(NULL, 0, NULL);
@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
       *ptrKnownFactors = 0;    // Replace equal sign by string terminator.
       ptrKnownFactors++;
     }
-    sprintf(text, "%s\n", argv[1]);
+    (void)sprintf(text, "%s\n", argv[1]);
     ecmFrontText(text, 1, ptrKnownFactors);
 //    ecmFrontText(text, 0, ptrKnownFactors);
     printf("%s\n", output);

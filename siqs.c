@@ -63,13 +63,13 @@ static void sieveThread(BigInteger *result);
 static void showMatrixSize(char *SIQSInfoText, int rows, int cols)
 {
   char *ptrText = ptrLowerText;  // Point after number that is being factored.
-  strcpy(ptrText, lang ? "<p>Resolviendo la matriz de congruencias de " : "<p>Solving ");
+  (void)strcpy(ptrText, lang ? "<p>Resolviendo la matriz de congruencias de " : "<p>Solving ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, rows);   // Show number of rows.
-  strcpy(ptrText, " &times; ");
+  (void)strcpy(ptrText, " &times; ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, cols);   // Show number of columns.
-  strcpy(ptrText, lang ? " usando el algoritmo de Lanczos en bloques.</p>":
+  (void)strcpy(ptrText, lang ? " usando el algoritmo de Lanczos en bloques.</p>":
                          " congruence matrix using Block Lanczos algorithm.</p>");
   databack(lowerText);
 }
@@ -77,16 +77,16 @@ static void showMatrixSize(char *SIQSInfoText, int rows, int cols)
 static void InitSIQSStrings(int SieveLimit)
 {
   char *ptrText = ptrLowerText;  // Point after number that is being factored.
-  strcpy(ptrText, lang ? "<p>Parámetros de SIQS: " : "<p>SIQS parameters: ");
+  (void)strcpy(ptrText, lang ? "<p>Parámetros de SIQS: " : "<p>SIQS parameters: ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, common.siqs.nbrFactorBasePrimes);   // Show number of primes in factor base.
-  strcpy(ptrText, lang ? " primos, límite de la criba: " : " primes, sieve limit: ");
+  (void)strcpy(ptrText, lang ? " primos, límite de la criba: " : " primes, sieve limit: ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, SieveLimit);  // Show sieve limit.
-  strcpy(ptrText, "</p>");
+  (void)strcpy(ptrText, "</p>");
   ptrText += strlen(ptrText);
   ptrSIQSStrings = ptrText;
-  strcpy(ptrText, lang ? "<p>Buscando el mejor multiplicador de Knuth-Schroeppel...</p>" :
+  (void)strcpy(ptrText, lang ? "<p>Buscando el mejor multiplicador de Knuth-Schroeppel...</p>" :
                          "<p>Searching for Knuth-Schroeppel multiplier...</p>");
   databack(lowerText);
 }
@@ -95,13 +95,13 @@ static void InitSIQSStrings(int SieveLimit)
 static void getMultAndFactorBase(int multiplier, int FactorBase)
 {
   char *ptrText = ptrSIQSStrings;
-  strcpy(ptrText, lang ? "<p>Multiplicador: " : "<p>Multiplier: ");
+  (void)strcpy(ptrText, lang ? "<p>Multiplicador: " : "<p>Multiplier: ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, multiplier);  // Show Knuth-Schroeppel multiplier.
-  strcpy(ptrText, lang ? ", base de factores: " : ", factor base: ");
+  (void)strcpy(ptrText, lang ? ", base de factores: " : ", factor base: ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, FactorBase);  // Show factor base.
-  strcpy(ptrText, "</p>");
+  (void)strcpy(ptrText, "</p>");
   ptrText += strlen(ptrText);
   ptrSIQSStrings = ptrText;
 }
@@ -112,43 +112,43 @@ static void ShowSIQSInfo(int timeSieve, int congruencesFound, int matrixBLength,
   int percentage = (int)((float)(congruencesFound * 100) / (float)matrixBLength);
   int u = (int)((double)timeSieve * (double)(matrixBLength - congruencesFound) / (double)congruencesFound);
   char *ptrText = SIQSInfo;
-  strcpy(ptrText, "4<p>");
+  (void)strcpy(ptrText, "4<p>");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, congruencesFound);  // Show number of congruences found.
-  strcpy(ptrText, lang ? " congruencias halladas (" : " congruences found (");
+  (void)strcpy(ptrText, lang ? " congruencias halladas (" : " congruences found (");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, percentage);  // Show number of congruences found.
-  strcpy(ptrText, lang ? "%) con " : "%) with ");
+  (void)strcpy(ptrText, lang ? "%) con " : "%) with ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, common.siqs.nbrPrimesUsed);
-  strcpy(ptrText, lang ? " primos diferentes." : " different primes.");
+  (void)strcpy(ptrText, lang ? " primos diferentes." : " different primes.");
   ptrText += strlen(ptrText);
-  strcpy(ptrText, lang ? "<br>Relaciones: " : "<br>Relations: ");
+  (void)strcpy(ptrText, lang ? "<br>Relaciones: " : "<br>Relations: ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, smoothsFound);   // Show number of full congruences.
-  strcpy(ptrText, lang ? " completas y " : " full and ");
+  (void)strcpy(ptrText, lang ? " completas y " : " full and ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, partialsFound);  // Show number of built congruences.
-  strcpy(ptrText, lang ? " obtenidas de " : " found from ");
+  (void)strcpy(ptrText, lang ? " obtenidas de " : " found from ");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, totalPartials);  // Show number of partial congruences.
-  strcpy(ptrText, lang ? " parciales.<br>" : " partials.<br>");
+  (void)strcpy(ptrText, lang ? " parciales.<br>" : " partials.<br>");
   ptrText += strlen(ptrText);
-  strcpy(ptrText, "<br><progress value=\"");
+  (void)strcpy(ptrText, "<br><progress value=\"");
   ptrText += strlen(ptrText);
   int2dec(&ptrText, percentage);
-  strcpy(ptrText, "\" max=\"100\"></progress><br>");
+  (void)strcpy(ptrText, "\" max=\"100\"></progress><br>");
   ptrText += strlen(ptrText);
   GetDHMS(&ptrText, elapsedTime);
   if (timeSieve > 1 && congruencesFound > 10)
   {
-    strcpy(ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+    (void)strcpy(ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
     ptrText += strlen(ptrText);
-    strcpy(ptrText, lang ? " Fin de la criba en " : " End sieve in ");
+    (void)strcpy(ptrText, lang ? " Fin de la criba en " : " End sieve in ");
     ptrText += strlen(ptrText);
     GetDHMS(&ptrText, u / 2);
   }
-  strcpy(ptrText, "</p>");
+  (void)strcpy(ptrText, "</p>");
   databack(SIQSInfo);
 }
 
@@ -3107,7 +3107,7 @@ static void BlockLanczos(void)
 #if DEBUG_SIQS
   {
     char *ptrOutput = output;
-    strcpy(ptrOutput, "MatrixBLength = ");
+    (void)strcpy(ptrOutput, "MatrixBLength = ");
     ptrOutput += strlen(ptrOutput);
     int2dec(&ptrOutput, matrixBLength);
     *ptrOutput = 0;
@@ -3125,15 +3125,15 @@ static void BlockLanczos(void)
       char SIQSInfo[200];
       char *ptrText = SIQSInfo;
       oldTimeElapsed = elapsedTime;
-      strcpy(ptrText, "4<p>");
+      (void)strcpy(ptrText, "4<p>");
       ptrText += strlen(ptrText);
       GetDHMS(&ptrText, elapsedTime/10);
-      strcpy(ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+      (void)strcpy(ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
       ptrText += strlen(ptrText);
-      strcpy(ptrText, lang? "Progreso del álgebra lineal: ": "Linear algebra progress: ");
+      (void)strcpy(ptrText, lang? "Progreso del álgebra lineal: ": "Linear algebra progress: ");
       ptrText += strlen(ptrText);
       int2dec(&ptrText, stepNbr * 3200 / matrixRows);
-      strcpy(ptrText, "%</p>");
+      (void)strcpy(ptrText, "%</p>");
       databack(SIQSInfo);
     }  
 #endif
@@ -3261,10 +3261,10 @@ static void BlockLanczos(void)
     char *ptrOutput = output;
     if (stepNbr < 200)
     {
-      strcpy(ptrOutput, "Step #");
+      (void)strcpy(ptrOutput, "Step #");
       ptrOutput += strlen(ptrOutput);
       int2dec(&ptrOutput, stepNbr);
-      strcpy(ptrOutput, ": matrixWinv1[0] = ");
+      (void)strcpy(ptrOutput, ": matrixWinv1[0] = ");
       ptrOutput += strlen(ptrOutput);
       int2dec(&ptrOutput, matrixWinv1[0]);
       *ptrOutput = 0;

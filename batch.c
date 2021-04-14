@@ -114,7 +114,7 @@ static void BatchError(char **pptrOutput, char *batchText, const char *errorText
   stringToHTML(&ptrOutput, batchText);
   *ptrOutput++ = ':';
   *ptrOutput++ = ' ';
-  strcpy(ptrOutput, errorText);
+  (void)strcpy(ptrOutput, errorText);
   ptrOutput += strlen(ptrOutput);
   *pptrOutput = ptrOutput;
   counterC = 0;
@@ -129,7 +129,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
   char *ptrConditionExpr = NULL;
   enum eExprErr rc = EXPR_OK;
   char *ptrCharFound, *ptrSrcString, *ptrStartExpr;
-  strcpy(ptrOutput, "2<ul><li>");
+  (void)strcpy(ptrOutput, "2<ul><li>");
   ptrOutput += strlen(ptrOutput);
   endValuesProcessed = valuesProcessed + 1000;
   if (pIsBatch != NULL)
@@ -162,7 +162,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     c = *ptrSrcString;
     if (c == 0)
     {   // Empty line.
-      strcpy(ptrOutput, "<br>");
+      (void)strcpy(ptrOutput, "<br>");
       ptrOutput += strlen(ptrOutput);
     }
     else if (c == '#')
@@ -348,7 +348,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         if (processExpression)
         {
           counterC++;
-          strcpy(ptrOutput, "</li><li>");
+          (void)strcpy(ptrOutput, "</li><li>");
           valuesProcessed++;
           ptrOutput += strlen(ptrOutput);
         }
@@ -383,13 +383,13 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         ptrOutput += strlen(ptrOutput);
       }
       counterC = 2;
-      strcpy(ptrOutput, "</li><li>");
+      (void)strcpy(ptrOutput, "</li><li>");
       valuesProcessed++;
       ptrOutput += strlen(ptrOutput);
     }
     if (counterC == 1)
     {
-      strcpy(ptrOutput, "</li>");
+      (void)strcpy(ptrOutput, "</li>");
       ptrOutput += strlen(ptrOutput);
     }
     if (ptrOutput >= &output[sizeof(output) - 200000])
@@ -415,11 +415,11 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
   if (counterC == 1)
   {
     ptrOutput--;             // Erase extra charaacter of </li>
-    strcpy(ptrOutput, lang ? "No hay valores para la expresión ingresada.":
+    (void)strcpy(ptrOutput, lang ? "No hay valores para la expresión ingresada.":
                              "There are no values for the requested expression.");
     ptrOutput += strlen(ptrOutput);
   }
-  strcpy(ptrOutput, "</ul>");
+  (void)strcpy(ptrOutput, "</ul>");
   ptrOutput += strlen(ptrOutput);
   *pptrOutput = ptrOutput;
   return rc;
