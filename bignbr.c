@@ -57,9 +57,12 @@ void AddBigInt(limb *pAddend1, limb *pAddend2, limb *pSum, int nbrLimbs)
   int i;
   for (i = 0; i < nbrLimbs; i++)
   {
-    carry = (carry >> BITS_PER_GROUP) + (unsigned int)(pAddend1++)->x +
-                                        (unsigned int)(pAddend2++)->x;
-    (pSum++)->x = (int)(carry & MAX_INT_NBR);
+    carry = (carry >> BITS_PER_GROUP) + (unsigned int)pAddend1->x +
+                                        (unsigned int)pAddend2->x;
+    pAddend1++;
+    pAddend2++;
+    pSum->x = (int)carry & MAX_INT_NBR;
+    pSum++;
   }
 }
 
@@ -69,8 +72,11 @@ void SubtractBigInt(limb *pMinuend, limb *pSubtrahend, limb *pDiff, int nbrLimbs
   int i;
   for (i = 0; i < nbrLimbs; i++)
   {
-    borrow = (borrow >> BITS_PER_INT_GROUP) + (pMinuend++)->x - (pSubtrahend++)->x;
-    (pDiff++)->x = borrow & MAX_INT_NBR;
+    borrow = (borrow >> BITS_PER_INT_GROUP) + pMinuend->x - pSubtrahend->x;
+    pMinuend++;
+    pSubtrahend++;
+    pDiff->x = borrow & MAX_INT_NBR;
+    pDiff++;
   }
 }
 
@@ -121,7 +127,8 @@ void BigIntChSign(BigInteger *value)
 
 void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum)
 {
-  int ctr, nbrLimbs;
+  int ctr;
+  int nbrLimbs;
   limb *ptrAddend1;
   limb *ptrAddend2;
   limb *ptrSum;
