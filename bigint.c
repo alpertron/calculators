@@ -21,18 +21,25 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 
 #define MAX_LIMBS_SIQS 15
-static BigInteger Numerator, Denominator, Modulus, Quotient;
-static BigInteger BigInt1, BigInt2, BigGcd;
+static BigInteger Numerator;
+static BigInteger Denominator;
+static BigInteger Modulus;
+static BigInteger Quotient;
+static BigInteger BigInt1;
+static BigInteger BigInt2;
+static BigInteger BigGcd;
 
 int NbrBak[MAX_LIMBS_SIQS];
 void ChSignBigNbr(int *nbr, int length)
 {
   int carry = 0;
   int ctr;
+  int *ptrNbr = nbr;
   for (ctr = 0; ctr < length; ctr++)
   {
     carry -= *nbr;
-    *nbr++ = carry & MAX_INT_NBR;
+    *ptrNbr = carry & MAX_INT_NBR;
+    ptrNbr++;
     carry >>= BITS_PER_INT_GROUP;
   }
 }
@@ -41,23 +48,31 @@ void ChSignBigNbrB(int *nbr, int length)
 {
   int carry = 0;
   int ctr;
+  int *ptrNbr = nbr;
   for (ctr = 0; ctr < length-1; ctr++)
   {
     carry -= *nbr;
-    *nbr++ = carry & MAX_INT_NBR;
+    *ptrNbr = carry & MAX_INT_NBR;
+    ptrNbr++;
     carry >>= BITS_PER_INT_GROUP;
   }
-  *nbr = carry - *nbr;
+  *ptrNbr = carry - *ptrNbr;
 }
 
 void AddBigNbr(int *pNbr1, int *pNbr2, int *pSum, int nbrLen)
 {
   unsigned int carry = 0;
   int i;
+  int *ptrNbr1 = pNbr1;
+  int *ptrNbr2 = pNbr2;
+  int *ptrSum = pSum;
   for (i = 0; i < nbrLen; i++)
   {
-    carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pNbr1++ + (unsigned int)*pNbr2++;
-    *pSum++ = (int)(carry & MAX_INT_NBR);
+    carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrNbr1 + (unsigned int)*ptrNbr2;
+    *ptrSum = (int)(carry & MAX_INT_NBR);
+    ptrNbr1++;
+    ptrNbr2++;
+    ptrSum++;
   }
 }
 
@@ -65,10 +80,16 @@ void SubtractBigNbr(int *pNbr1, int *pNbr2, int *pDiff, int nbrLen)
 {
   int borrow = 0;
   int i;
+  int *ptrNbr1 = pNbr1;
+  int *ptrNbr2 = pNbr2;
+  int *ptrDiff = pDiff;
   for (i = 0; i < nbrLen; i++)
   {
-    borrow = (borrow >> BITS_PER_INT_GROUP) + *pNbr1++ - *pNbr2++;
-    *pDiff++ = borrow & MAX_INT_NBR;
+    borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
+    *ptrDiff = borrow & MAX_INT_NBR;
+    ptrNbr1++;
+    ptrNbr2++;
+    ptrDiff++;
   }
 }
 
@@ -76,26 +97,38 @@ void AddBigNbrB(int *pNbr1, int *pNbr2, int *pSum, int nbrLen)
 {
   unsigned int carry = 0;
   int i;
+  int *ptrNbr1 = pNbr1;
+  int *ptrNbr2 = pNbr2;
+  int *ptrSum = pSum;
   for (i = 0; i < nbrLen-1; i++)
   {
-    carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pNbr1++ + (unsigned int)*pNbr2++;
-    *pSum++ = (int)(carry & MAX_INT_NBR);
+    carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrNbr1 + (unsigned int)*ptrNbr2;
+    *ptrSum = (int)(carry & MAX_INT_NBR);
+    ptrNbr1++;
+    ptrNbr2++;
+    ptrSum++;
   }
-  carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pNbr1++ + (unsigned int)*pNbr2++;
-  *pSum = (int)carry;
+  carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrNbr1 + (unsigned int)*ptrNbr2;
+  *ptrSum = (int)carry;
 }
 
 void SubtractBigNbrB(int *pNbr1, int *pNbr2, int *pDiff, int nbrLen)
 {
   int borrow = 0;
   int i;
+  int *ptrNbr1 = pNbr1;
+  int *ptrNbr2 = pNbr2;
+  int *ptrDiff = pDiff;
   for (i = 0; i < nbrLen-1; i++)
   {
-    borrow = (borrow >> BITS_PER_INT_GROUP) + *pNbr1++ - *pNbr2++;
-    *pDiff++ = borrow & MAX_INT_NBR;
+    borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
+    *pDiff = borrow & MAX_INT_NBR;
+    ptrNbr1++;
+    ptrNbr2++;
+    ptrDiff++;
   }
-  borrow = (borrow >> BITS_PER_INT_GROUP) + *pNbr1++ - *pNbr2++;
-  *pDiff++ = borrow;
+  borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
+  *ptrDiff = borrow;
 }
 
 void AddBigIntModN(int *pNbr1, int *pNbr2, int *pSum, int *pMod, int nbrLen)
