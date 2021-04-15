@@ -71,9 +71,9 @@ void AddBigInt(limb *pAddend1, limb *pAddend2, limb *pSum, int nbrLimbs)
 
 void SubtractBigInt(limb *pMinuend, limb *pSubtrahend, limb *pDiff, int nbrLimbs)
 {
-  limb *ptrMinuend = *pMinuend;
-  limb *ptrSubtrahend = *pSubtrahend;
-  limb *ptrDiff = *pDiff;
+  limb *ptrMinuend = pMinuend;
+  limb *ptrSubtrahend = pSubtrahend;
+  limb *ptrDiff = pDiff;
   int borrow = 0;
   int i;
   for (i = 0; i < nbrLimbs; i++)
