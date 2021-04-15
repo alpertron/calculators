@@ -22,8 +22,11 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "output.h"
 #include "polynomial.h"
 
-static BigInteger tmp1, tmp2, tmp3;
-static BigRational Rat1, Rat2;
+static BigInteger tmp1;
+static BigInteger tmp2;
+static BigInteger tmp3;
+static BigRational Rat1;
+static BigRational Rat2;
 
 // Let A = a_n/a_d, B = b_n/b_d, C = c_n/d_n
 // A = B+C means a_n = b_n*c_d + c_n*b_d, a_d = b_d * c_d

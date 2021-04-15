@@ -42,8 +42,12 @@ extern int bitLengthCycle[20];
 //         pPower2 = pointer to power of 2.
 static void MultiplyBigNbrByMinPowerOf2(int *pPower2, limb *number, int len, limb *dest)
 {
-  limb mostSignficLimb, oldLimb, newLimb;
-  int index2, mask, shLeft;
+  limb mostSignficLimb;
+  limb oldLimb;
+  limb newLimb;
+  int index2;
+  int mask;
+  int shLeft;
   limb *ptrDest;
 
   shLeft = 0;
@@ -76,8 +80,11 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, limb *number, int len, lim
 enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteger *pQuotient)
 {
   double inverse;
-  limb oldLimb, newLimb;
-  int nbrLimbs, nbrLimbsDividend, nbrLimbsDivisor;
+  limb oldLimb;
+  limb newLimb;
+  int nbrLimbs;
+  int nbrLimbsDividend;
+  int nbrLimbsDivisor;
 
   // Check whether the divisor is zero.
   if (pDivisor->limbs[0].x == 0 && pDivisor->nbrLimbs == 1)
@@ -137,10 +144,15 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     double dVal = 1 / (double)LIMB_RANGE;
     double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
 #endif
-    int i, TrialQuotient;
-    double dNbr, dInvDivisor, dTrialQuotient;
+    int i;
+    int TrialQuotient;
+    double dNbr;
+    double dInvDivisor;
+    double dTrialQuotient;
     double dDelta;
-    limb* ptrDividend, * ptrDivisor, *ptrQuotient;
+    limb* ptrDividend;
+    limb* ptrDivisor;
+    limb* ptrQuotient;
 
     (void)memcpy(adjustedArgument, pDividend->limbs, nbrLimbsDividend * sizeof(limb));
     adjustedArgument[nbrLimbsDividend].x = 0;

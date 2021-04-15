@@ -20,11 +20,19 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "bignbr.h"
 #include "expression.h"
 #include "highlevel.h"
-static BigInteger num, den, delta;
-static BigInteger Temp, bigTmp;
-static BigInteger U1, U2, U3;
-static BigInteger V1, V2, V3;
-static BigInteger startPeriodNum, startPeriodDen;
+static BigInteger num;
+static BigInteger den;
+static BigInteger delta;
+static BigInteger Temp;
+static BigInteger bigTmp;
+static BigInteger U1;
+static BigInteger U2;
+static BigInteger U3;
+static BigInteger V1;
+static BigInteger V2;
+static BigInteger V3;
+static BigInteger startPeriodNum;
+static BigInteger startPeriodDen;
 static char *ptrOutput;
 static void ShowRational(BigInteger *pNum, BigInteger *pDen);
 extern char hexadecimal;

@@ -27,13 +27,28 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 extern int64_t lModularMult;
 #endif
 
-static BigInteger groupOrder, subGroupOrder, powSubGroupOrder, powSubGroupOrderBak;
-static BigInteger Exponent, runningExp, baseExp, mod;
-static BigInteger logar, logarMult, runningExpBase;
+static BigInteger groupOrder;
+static BigInteger subGroupOrder;
+static BigInteger powSubGroupOrder;
+static BigInteger powSubGroupOrderBak;
+static BigInteger Exponent;
+static BigInteger runningExp;
+static BigInteger baseExp;
+static BigInteger mod;
+static BigInteger logar;
+static BigInteger logarMult;
+static BigInteger runningExpBase;
 static BigInteger currentExp;
-static BigInteger DiscreteLog, DiscreteLogPeriod;
-static BigInteger base, power, modulus, tmpBase, tmp2, baseModGO;
-static BigInteger bigNbrA, bigNbrB;
+static BigInteger DiscreteLog;
+static BigInteger DiscreteLogPeriod;
+static BigInteger base;
+static BigInteger power;
+static BigInteger modulus;
+static BigInteger tmpBase;
+static BigInteger tmp2,
+static BigInteger baseModGO;
+static BigInteger bigNbrA;
+static BigInteger bigNbrB;
 static BigInteger LastModulus;
 static int ExponentsGOComputed[400];
 static BigInteger nbrV[400];
@@ -150,12 +165,21 @@ static int ComputeDLogModSubGroupOrder(int indexBase, int indexExp, BigInteger *
 
 void DiscreteLogarithm(void)
 {
-  int indexBase, indexExp;
-  int index, expon;
-  limb addA, addB, addA2, addB2;
-  limb mult1, mult2;
-  double magnitude, firstLimit, secondLimit;
-  long long brentK, brentR;
+  int indexBase;
+  int indexExp;
+  int index;
+  int expon;
+  limb addA;
+  limb addB;
+  limb addA2;
+  limb addB2;
+  limb mult1;
+  limb mult2;
+  double magnitude;
+  double firstLimit;
+  double secondLimit;
+  long long brentK;
+  long long brentR;
   unsigned char EndPollardBrentRho;
   int nbrLimbs;
   struct sFactors *pstFactors;
@@ -889,7 +913,8 @@ EXTERNALIZE void doWork(void)
   int flags;
   int groupLen = 0;
   char *ptrData = inputString;
-  char *ptrPower, *ptrMod;
+  char *ptrPower;
+  char *ptrMod;
   groupLen = 0;
   while (*ptrData != ',')
   {
