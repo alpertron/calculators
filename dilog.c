@@ -45,7 +45,7 @@ static BigInteger base;
 static BigInteger power;
 static BigInteger modulus;
 static BigInteger tmpBase;
-static BigInteger tmp2,
+static BigInteger tmp2;
 static BigInteger baseModGO;
 static BigInteger bigNbrA;
 static BigInteger bigNbrB;

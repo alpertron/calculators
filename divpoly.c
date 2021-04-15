@@ -77,7 +77,8 @@ static void ReversePolynomial(int* ptrDest, int* ptrSrc)
 {
   int indexes[2 * MAX_DEGREE + 1];
   int* ptrIndex;
-  int index, numLength;
+  int index;
+  int numLength;
   int degreePoly = *ptrSrc;
   if (degreePoly < 0)
   {    // Monomial.
@@ -314,9 +315,9 @@ int DivPolynomialExpr(int* ptrArgument1, int* ptrArgument2, enum eDivType type)
   }
   else
   {
-currentDegree = getDegreePoly(poly1, degree2 - 1);
-*ptrArgument1 = currentDegree;
-FromPoly(currentDegree, ptrArgument1, poly1); // Move modulus to poly1.
+    currentDegree = getDegreePoly(poly1, degree2 - 1);
+    *ptrArgument1 = currentDegree;
+    FromPoly(currentDegree, ptrArgument1, poly1); // Move modulus to poly1.
   }
   return EXPR_OK;
 }

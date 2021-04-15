@@ -30,7 +30,10 @@ extern int skipPrimality;
 extern int64_t lModularMult;
 #endif
 extern BigInteger tofactor;
-static BigInteger Quad1, Quad2, Quad3, Quad4;
+static BigInteger Quad1;
+static BigInteger Quad2;
+static BigInteger Quad3;
+static BigInteger Quad4;
 extern BigInteger factorValue;
 static BigInteger result;
 static void ComputeFourSquares(struct sFactors *pstFactors);
@@ -205,7 +208,8 @@ static void GetMobius(char **pptrOutput)
 
 static void modPowShowStatus(limb *base, limb *exp, int nbrGroupsExp, limb *power)
 {
-  int mask, index;
+  int mask;
+  int index;
   (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1) * sizeof(*power));  // power <- 1
   for (index = nbrGroupsExp - 1; index >= 0; index--)
   {
@@ -230,7 +234,8 @@ static void modPowShowStatus(limb *base, limb *exp, int nbrGroupsExp, limb *powe
 static int isSumOfThreeSquares(struct sFactors* pstFactors, BigInteger* pTmp)
 {
   struct sFactors *pstFactor = pstFactors + 1; // Point to first factor in array of factors.
-  int indexPrimes, shRight;
+  int indexPrimes;
+  int shRight;
   int factor2MultiplicityEven = TRUE;
   int sumTwoSquares = TRUE;
   for (indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--)
@@ -274,10 +279,16 @@ static void ComputeThreeSquares(BigInteger *pTmp,
 {
   int arrFactors[400];
   int diff = 1;
-  int shRight, shRightPower, count;
+  int shRight;
+  int shRightPower;
+  int count;
   int expon;
   int *ptrArrFactors;
-  int sqrtFound, nbrLimbs, i, powerLen, base;
+  int sqrtFound;
+  int nbrLimbs;
+  int i;
+  int powerLen;
+  int base;
   CopyBigInt(pTmp, &tofactor);
   DivideBigNbrByMaxPowerOf4(&shRight, pTmp->limbs, &pTmp->nbrLimbs);
   for (diff = 1; ; diff++)
@@ -456,8 +467,26 @@ static void ComputeThreeSquares(BigInteger *pTmp,
 static void ComputeFourSquares(struct sFactors *pstFactors)
 {
   int indexPrimes;
-  static BigInteger p, q, K, Mult1, Mult2, Mult3, Mult4;
-  static BigInteger Tmp, Tmp1, Tmp2, Tmp3, Tmp4, M1, M2, M3, M4, M5, M6, M7, M8;
+  static BigInteger p;
+  static BigInteger q;
+  static BigInteger K;
+  static BigInteger Mult1;
+  static BigInteger Mult2;
+  static BigInteger Mult3;
+  static BigInteger Mult4;
+  static BigInteger Tmp;
+  static BigInteger Tmp1;
+  static BigInteger Tmp2;
+  static BigInteger Tmp3;
+  static BigInteger Tmp4;
+  static BigInteger M1;
+  static BigInteger M2;
+  static BigInteger M3;
+  static BigInteger M4;
+  static BigInteger M5;
+  static BigInteger M6;
+  static BigInteger M7;
+  static BigInteger M8;
   struct sFactors *pstFactor;
   static limb minusOneMont[MAX_LEN];
 
