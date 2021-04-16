@@ -55,7 +55,10 @@ int nbrSIQS;
 int timeECM;
 int timePrimalityTests;
 int timeSIQS;
-static int nbrPrimes, indexPrimes, DegreeAurif, NextEC;
+static int nbrPrimes;
+static int indexPrimes;
+static int DegreeAurif;
+static int NextEC;
 static BigInteger power, prime;
 int *factorArr[FACTOR_ARRSIZE];
 static int indexM, maxIndexM;
@@ -64,9 +67,15 @@ static int EC;
 static int SmallPrime[670]; /* Primes < 5000 */
 static void add3(limb *x3, limb *z3, limb *x2, limb *z2, limb *x1, limb *z1, limb *x, limb *z);
 static void duplicate(limb *x2, limb *z2, limb *x1, limb *z1);
-static BigInteger Temp1, Temp2, Temp3, Temp4;
-BigInteger factorValue, tofactor;
-char prettyprint, cunningham, hexadecimal;
+static BigInteger Temp1;
+static BigInteger Temp2;
+static BigInteger Temp3;
+static BigInteger Temp4;
+BigInteger factorValue;
+BigInteger tofactor;
+char prettyprint;
+char cunningham;
+char hexadecimal;
 long long Gamma[386];
 long long Delta[386];
 long long AurifQ[386];
@@ -116,7 +125,10 @@ static void GetYieldFrequency(void)
                           /* returns the number of modular multiplications */
 static int lucas_cost(int n, double v)
 {
-  int c, d, e, r;
+  int c;
+  int d;
+  int e;
+  int r;
 
   d = n;
   r = (int)((double)d / v + 0.5);
@@ -428,7 +440,10 @@ static int gcdIsOne(limb *value)
 
 static void GenerateSieve(int initial)
 {
-  int i, j, Q, initModQ;
+  int i;
+  int j;
+  int Q;
+  int initModQ;
   for (i = 0; i < 10*SIEVE_SIZE; i += SIEVE_SIZE)
   {
     (void)memcpy(&common.ecm.sieve[i], common.ecm.sieve2310, SIEVE_SIZE);
@@ -499,7 +514,9 @@ static int Cos(int N)
 
 static int intTotient(int N)
 {
-  int totient, argumentDivisor, trialDivisor;
+  int totient;
+  int argumentDivisor;
+  int trialDivisor;
 
   totient = argumentDivisor = N;
   if (argumentDivisor % 2 == 0)
@@ -540,7 +557,9 @@ static int intTotient(int N)
 
 int Moebius(int N)
 {
-  int moebius, argumentDivisor, trialDivisor;
+  int moebius;
+  int argumentDivisor;
+  int trialDivisor;
 
   moebius = 1;
   argumentDivisor = N;
@@ -588,7 +607,10 @@ int Moebius(int N)
 
 void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, BigInteger *BigBase)
 {
-  static BigInteger x, Csal, Dsal, Nbr1;
+  static BigInteger x;
+  static BigInteger Csal;
+  static BigInteger Dsal;
+  static BigInteger Nbr1;
   int k;
 
   BigIntPowerIntExp(BigBase, L, &x);   // x <- BigBase^L.
@@ -724,9 +746,11 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
   char url[200];
   char *ptrUrl;
 #endif
-  int Expon2, k;
+  int Expon2;
+  int k;
   char *ptrFactorsAscii;
-  BigInteger Nbr1, Nbr2;
+  BigInteger Nbr1;
+  BigInteger Nbr2;
 
   common.saveFactors.text[0] = 0;    // Indicate no new factor found in advance.
   Expon2 = Expon;
@@ -817,8 +841,14 @@ static boolean ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFac
   char status[200];
   char *ptrStatus;
 #endif
-  BigInteger NFp1, NFm1, nthRoot, rootN1, rootN, rootbak;
-  BigInteger nextroot, dif;
+  BigInteger NFp1;
+  BigInteger NFm1;
+  BigInteger nthRoot;
+  BigInteger rootN1;
+  BigInteger rootN;
+  BigInteger rootbak;
+  BigInteger nextroot;
+  BigInteger dif;
   double log2N;
 #ifdef __EMSCRIPTEN__
   int elapsedTime = (int)(tenths() - originalTenthSecond);
@@ -1053,10 +1083,18 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
   int primes[] = { 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61 };
   int nbrs[17];
   int diffs[17];
-  int i, j, m, r;
-  int nbrLimbs, nbrIterations;
-  BigInteger sqrRoot, nextroot;
-  BigInteger a, c, sqr, val;
+  int i;
+  int j;
+  int m;
+  int r;
+  int nbrLimbs;
+  int nbrIterations;
+  BigInteger sqrRoot;
+  BigInteger nextroot;
+  BigInteger a;
+  BigInteger c;
+  BigInteger sqr;
+  BigInteger val;
   if ((nbr->limbs[0].x & 1) == 0)
   { // nbr Even
     r = 0;
@@ -1164,9 +1202,17 @@ static enum eEcmResult ecmCurve(BigInteger *N)
 #ifdef __EMSCRIPTEN__
     char *ptrText;
 #endif
-    int I, Pass;
-    int i, j, u;
-    long long L1, L2, LS, P, IP, Paux = 1;
+    int I;
+    int Pass;
+    int i;
+    int j;
+    int u;
+    long long L1;
+    long long L2;
+    long long LS;
+    long long P;
+    long long IP;
+    long long Paux = 1;
     if (NextEC > 0)
     {
       EC = NextEC;
@@ -1734,6 +1780,7 @@ char *ShowFactoredPart(BigInteger *pNbr, void *vFactors)
   ptrLowerText += strlen(ptrLowerText);
   return ptrLowerText;
 }
+
 void ShowLowerText(void)
 {
   databack(lowerText);
@@ -1742,7 +1789,8 @@ void ShowLowerText(void)
 
 static void ecm(BigInteger *N, struct sFactors *pstFactors)
 {
-  int P, Q;
+  int P;
+  int Q;
 #ifndef __EMSCRIPTEN__
   (void)pstFactors;     // Ignore parameter.
 #endif
@@ -2001,7 +2049,9 @@ void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, i
 
 static void SortFactors(struct sFactors *pstFactors)
 {
-  int factorNumber, factorNumber2, ctr;
+  int factorNumber;
+  int factorNumber2;
+  int ctr;
   struct sFactors *pstCurFactor = pstFactors + 1;
   struct sFactors stTempFactor;
   int *ptrNewFactor;
@@ -2331,7 +2381,9 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   SIQSModMult = 0;
 #endif
   int factorsFound = FALSE;
-  int nbrLimbsQ, countdown, ctr;
+  int nbrLimbsQ;
+  int countdown;
+  int ctr;
   int nbrLimbs = pValue->nbrLimbs;
   int sqrtOneFound = FALSE;
   int sqrtMinusOneFound = FALSE;
@@ -2514,8 +2566,11 @@ void factor(BigInteger* toFactor, int* number, int* factors, struct sFactors* ps
 void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors)
 {
   struct sFactors *pstCurFactor;
-  int factorNbr, expon;
-  int remainder, nbrLimbs, ctr;
+  int factorNbr;
+  int expon;
+  int remainder;
+  int nbrLimbs;
+  int ctr;
   int *ptrFactor;
   int dividend;
   char *ptrCharFound;

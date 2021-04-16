@@ -46,7 +46,8 @@ extern int polyInv[COMPRESSED_POLY_MAX_LENGTH];
 static void initCosinesArray(void)
 {
   struct sCosSin* ptrCosSin;
-  const struct sCosSin *ptrOldCosSin, * ptrCosSinDelta;
+  const struct sCosSin *ptrOldCosSin;
+  const struct sCosSin *ptrCosSinDelta;
   double invLimb = 1 / (double)LIMB_RANGE;
   double invSqLimb = invLimb * invLimb;
   int index;
@@ -148,7 +149,8 @@ static void initCosinesArray(void)
 // length is power of 2.
 static void complexPolyFFT(complex* x, complex* y, int length)
 {
-  int j, J;
+  int j;
+  int J;
   int halfLength = length / 2;
   int step = (1 << POWERS_2) / length;
   int exponentOdd = 0;
@@ -335,11 +337,13 @@ static void ConvertFactorToInternal(int* factor, complex* fftFactor, int len, in
 // lowest power of 2 greater or equal than the length of the second polynomial.
 void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
 {
-  complex* ptrFirst, * ptrProduct;
+  complex *ptrFirst;
+  complex *ptrProduct;
   double invPower2;
   int power2plus1;
   int* ptrResult;
-  int chunkLen, index;
+  int chunkLen;
+  int index;
   int nbrLimbs = NumberLength + 1;
   int factor1DegreesProcessed = 0;
   int power2SecondFactor = 0;

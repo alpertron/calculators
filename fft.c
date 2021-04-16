@@ -162,7 +162,8 @@ static void initCosinesArray(void)
 // length is power of 2.
 static void complexFFT(complex *x, complex *y, int length)
 {
-  int j, J;
+  int j;
+  int J;
   int halfLength = length / 2;
   int step = (1 << POWERS_2) / length;
   int exponentOdd = 0;
@@ -377,10 +378,13 @@ static int ReduceLimbs(limb *factor, complex *fftFactor, int len)
 */
 void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen)
 {
-  complex *ptrFirst, *ptrSecond, *ptrProduct;
+  complex *ptrFirst;
+  complex *ptrSecond;
+  complex *ptrProduct;
   double invPower2;
   double dCarry;
-  int fftLen, bitExternal;
+  int fftLen;
+  int bitExternal;
   int power2plus1;
   limb *ptrResult;
   fftLen = ReduceLimbs(factor1, firstFactor, len);

@@ -22,10 +22,24 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "highlevel.h"
 #include "batch.h"
 static BigInteger value;
-static BigInteger Base1, Base2, Base3, Base4;
-static BigInteger P, Q, R, S, a, b;
-static BigInteger P1, Q1, R1, S1;
-static BigInteger tmpP1, tmpQ1, tmpR1, tmpS1;
+static BigInteger Base1;
+static BigInteger Base2;
+static BigInteger Base3;
+static BigInteger Base4;
+static BigInteger P;
+static BigInteger Q;
+static BigInteger R;
+static BigInteger S;
+static BigInteger a;
+static BigInteger b;
+static BigInteger P1;
+static BigInteger Q1;
+static BigInteger R1;
+static BigInteger S1;
+static BigInteger tmpP1;
+static BigInteger tmpQ1;
+static BigInteger tmpR1;
+static BigInteger tmpS1;
 static BigInteger toProcess;
 static int groupLength;
 static char *cube = "<span class=\"bigger\">³</span>";
@@ -83,7 +97,8 @@ static void SortBigIntegers(BigInteger *pValue1, BigInteger *pValue2)
   enum eSign tmpSign;
   limb tmp;
   int index;
-  limb *ptr1, *ptr2;
+  limb *ptr1;
+  limb *ptr2;
   int nbrLimbs1 = pValue1->nbrLimbs;
   int nbrLimbs2 = pValue2->nbrLimbs;
   if (nbrLimbs1 > nbrLimbs2)
@@ -138,8 +153,13 @@ static void EvaluateQuadraticPoly(BigInteger *pResult, BigInteger *pValue, int q
 
 static int fcubes(BigInteger *pArgument)
 {
-  int mod18, modulus, i, mod83, mask;
-  int pow, exp;
+  int mod18;
+  int modulus;
+  int i;
+  int mod83;
+  int mask;
+  int pow;
+  int exp;
   boolean converted = FALSE;
   CopyBigInt(&value, pArgument);
   // Compute argument mod 18.

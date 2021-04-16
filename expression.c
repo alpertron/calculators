@@ -54,7 +54,8 @@ static int comprStackOffset[PAREN_STACK_SIZE];
 static char stackOperators[PAREN_STACK_SIZE];
 static limb fibon2[MAX_LEN];
 extern limb MontgomeryR1[MAX_LEN];
-static int stackIndex, exprIndex;
+static int stackIndex;
+static int exprIndex;
 static int exprLength;
 static int doComputeSubExpression = TRUE;
 static int computeSubExprStackThreshold = 0;
@@ -95,7 +96,9 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
   char *funcName, int funcArgs, int leftNumberFlag);
 static int type;
 static int valueXused;
-static BigInteger curStack, curStack2, curStack3;
+static BigInteger curStack;
+static BigInteger curStack2;
+static BigInteger curStack3;
 
 static char priority[] = 
 {
@@ -193,7 +196,8 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
   enum eExprErr retcode;
   limb carry;
   boolean leftNumberFlag = FALSE;
-  int exprIndexAux, offset;
+  int exprIndexAux;
+  int offset;
   enum eExprErr SubExprResult;
   int len;
   limb largeLen;
@@ -1164,7 +1168,8 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
 {
   int index;
   int funcNameLen = (int)strlen(funcName);
-  char *ptrExpr, *ptrFuncName;
+  char *ptrExpr;
+  char *ptrFuncName;
 
   if (exprIndex + funcNameLen > exprLength)
   {
@@ -1410,8 +1415,10 @@ static enum eExprErr ComputeFibLucas(int origValue)
 {
   BigInteger *pArgument = &curStack;
   limb largeVal;
-  int val, len;
-  limb *pFibonPrev, *pFibonAct;
+  int val;
+  int len;
+  limb *pFibonPrev;
+  limb *pFibonAct;
   if (pArgument->sign == SIGN_NEGATIVE)
   {
     return EXPR_INVALID_PARAM;
@@ -1592,7 +1599,8 @@ static int ComputeConcatFact(void)
   stackIndex--;
   BigInteger *mode = &curStack;
   BigInteger factorValue;
-  int factorNumber, nbrFactors;
+  int factorNumber;
+  int nbrFactors;
   int descend = mode->limbs[0].x & 1;
   int repeated = mode->limbs[0].x & 2;
   char *ptrTextFactor = textFactor;
@@ -1672,7 +1680,8 @@ static int ComputeRevDigits(void)
   stackIndex++;
   getCurrentStackValue(&curStack2);   // Get second argument.
   stackIndex--;
-  BigInteger argum, Temp;
+  BigInteger argum;
+  BigInteger Temp;
   BigInteger *result = &curStack;
   BigInteger *radix = &curStack2;
   CopyBigInt(&argum, &curStack);
@@ -1690,8 +1699,10 @@ static int ComputeRevDigits(void)
 static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger *result)
 {
   int ctr;
-  int prevLimb, curLimb;
-  int *ptrDest, *ptrSrc;
+  int prevLimb;
+  int curLimb;
+  int *ptrDest;
+  int *ptrSrc;
   int shiftCtr = second->limbs[0].x;
   int delta = shiftCtr / BITS_PER_GROUP;
   int rem = shiftCtr % BITS_PER_GROUP;
