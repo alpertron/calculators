@@ -205,9 +205,12 @@ void prac(int n, limb *x, limb *z, limb *xT, limb *zT, limb *xT2, limb *zT2)
 {
   int d, e, r, i;
   limb *t;
-  limb *xA = x, *zA = z;
-  limb *xB = common.ecm.Aux1, *zB = common.ecm.Aux2;
-  limb *xC = common.ecm.Aux3, *zC = common.ecm.Aux4;
+  limb *xA = x;
+  limb *zA = z;
+  limb *xB = common.ecm.Aux1;
+  limb *zB = common.ecm.Aux2;
+  limb *xC = common.ecm.Aux3;
+  limb *zC = common.ecm.Aux4;
   double v[] =
   {
     1.61803398875,

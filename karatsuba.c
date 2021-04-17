@@ -146,7 +146,8 @@ static int absSubtract(int idxMinuend, int idxSubtrahend,
 static void ClassicalMult2Limbs(int idxFactor1, int idxFactor2)
 {
   int i=0;
-  uint32_t factor2_i, factor2_iPlus1;
+  uint32_t factor2_i;
+  uint32_t factor2_iPlus1;
   uint64_t Pr;
   M(0); M(1);
   PROLOG_MULTIPLICATION_DOUBLE;
@@ -158,7 +159,8 @@ static void ClassicalMult2Limbs(int idxFactor1, int idxFactor2)
 static void ClassicalMult3Limbs(int idxFactor1, int idxFactor2)
 {
   int i=0;
-  uint32_t factor2_i, factor2_iPlus1;
+  uint32_t factor2_i;
+  uint32_t factor2_iPlus1;
   uint64_t Pr;
   M(0); M(1); M(2);
   PROLOG_MULTIPLICATION_DOUBLE;
@@ -219,7 +221,8 @@ static void ClassicalMult6Limbs(int idxFactor1, int idxFactor2)
   M(0); M(1); M(2); M(3); M(4); M(5);
   for (i = 0; i < 6; i+=2)
   {
-    uint32_t factor2_i, factor2_iPlus1;
+    uint32_t factor2_i;
+    uint32_t factor2_iPlus1;
     uint64_t Pr;
     PROLOG_MULTIPLICATION_DOUBLE;
     MULT_MACRO_DOUBLE(0, 1, 2);
@@ -269,7 +272,8 @@ static void ClassicalMult8Limbs(int idxFactor1, int idxFactor2)
   M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7);
   for (i = 0; i < 8; i += 2)
   {
-    uint32_t factor2_i, factor2_iPlus1;
+    uint32_t factor2_i;
+    uint32_t factor2_iPlus1;
     uint64_t Pr;
     PROLOG_MULTIPLICATION_DOUBLE;
     MULT_MACRO_DOUBLE(0, 1, 2);
@@ -327,7 +331,8 @@ static void ClassicalMult10Limbs(int idxFactor1, int idxFactor2)
   M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
   for (i = 0; i < 10; i+=2)
   {
-    uint32_t factor2_i, factor2_iPlus1;
+    uint32_t factor2_i;
+    uint32_t factor2_iPlus1;
     uint64_t Pr;
     PROLOG_MULTIPLICATION_DOUBLE;
     MULT_MACRO_DOUBLE(0, 1, 2);
@@ -394,7 +399,8 @@ static void ClassicalMult12Limbs(int idxFactor1, int idxFactor2)
   M(10); M(11);
   for (i = 0; i < 12; i += 2)
   {
-    uint32_t factor2_i, factor2_iPlus1;
+    uint32_t factor2_i;
+    uint32_t factor2_iPlus1;
     uint64_t Pr;
     PROLOG_MULTIPLICATION_DOUBLE;
     MULT_MACRO_DOUBLE(0, 1, 2);
@@ -470,7 +476,8 @@ static void ClassicalMult14Limbs(int idxFactor1, int idxFactor2)
   M(10); M(11); M(12); M(13);
   for (i = 0; i < 14; i += 2)
   {
-    uint32_t factor2_i, factor2_iPlus1;
+    uint32_t factor2_i;
+    uint32_t factor2_iPlus1;
     uint64_t Pr;
     PROLOG_MULTIPLICATION_DOUBLE;
     MULT_MACRO_DOUBLE(0, 1, 2);
@@ -554,7 +561,8 @@ static void ClassicalMult16Limbs(int idxFactor1, int idxFactor2)
   M(10); M(11); M(12); M(13); M(14); M(15);
   for (i = 0; i < 16; i += 2)
   {
-    uint32_t factor2_i, factor2_iPlus1;
+    uint32_t factor2_i;
+    uint32_t factor2_iPlus1;
     uint64_t Pr;
     PROLOG_MULTIPLICATION_DOUBLE;
     MULT_MACRO_DOUBLE(0, 1, 2);
@@ -652,8 +660,10 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
     break;
   }
 #else
-  limb *ptrFactor1, *ptrFactor2;
-  int prodCol, fact1Col;
+  limb *ptrFactor1;
+  limb *ptrFactor2;
+  int prodCol;
+  int fact1Col;
   double dRangeLimb = (double)LIMB_RANGE;
   double dInvRangeLimb = 1 / dRangeLimb;
   int low = 0;              // Low limb of sums of multiplications.
@@ -709,10 +719,14 @@ static struct stKaratsubaStack
 
 static void Karatsuba(int idxFactor1, int nbrLen)
 {
-  int i, idxFactor2;
-  unsigned int carry1First, carry1Second;
+  int i;
+  int idxFactor2;
+  unsigned int carry1First;
+  unsigned int carry1Second;
   unsigned int carry2Second;
-  limb *ptrResult, *ptrHigh, tmp;
+  limb *ptrResult;
+  limb *ptrHigh;
+  limb tmp;
   int sign;
   int halfLength;
   int diffIndex = 2 * nbrLen;

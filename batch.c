@@ -124,11 +124,14 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
 {
   int endValuesProcessed;
   char *ptrOutput = output;
-  char *NextExpr, *EndExpr;
+  char *NextExpr;
+  char *EndExpr;
   char *ptrExprToProcess = NULL;
   char *ptrConditionExpr = NULL;
   enum eExprErr rc = EXPR_OK;
-  char *ptrCharFound, *ptrSrcString, *ptrStartExpr;
+  char *ptrCharFound;
+  char *ptrSrcString;
+  char *ptrStartExpr;
   (void)strcpy(ptrOutput, "2<ul><li>");
   ptrOutput += strlen(ptrOutput);
   endValuesProcessed = valuesProcessed + 1000;
