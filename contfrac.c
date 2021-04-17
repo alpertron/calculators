@@ -35,7 +35,7 @@ static BigInteger startPeriodNum;
 static BigInteger startPeriodDen;
 static char *ptrOutput;
 static void ShowRational(BigInteger *pNum, BigInteger *pDen);
-extern char hexadecimal;
+extern bool hexadecimal;
 static void showText(char *text)
 {
   (void)strcpy(ptrOutput, text);

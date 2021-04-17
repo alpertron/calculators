@@ -318,7 +318,7 @@ void endParen(void)
   }
 }
 
-void showPlusSignOn(int condPlus, int type)
+void showPlusSignOn(bool condPlus, int type)
 {
   if (type & TYPE_PM_SPACE_BEFORE)
   {
@@ -820,7 +820,7 @@ static void showFirstTermQuarticEq(int ctr)
   if (!BigIntIsZero(&RatCubic.numerator))
   {
     showRationalNoParen(&RatCubic);
-    showPlusSignOn(ctr == 0 || ctr == 1, TYPE_PM_SPACE_BEFORE);
+    showPlusSignOn((ctr == 0) || (ctr == 1), TYPE_PM_SPACE_BEFORE);
   }
   else
   {
@@ -883,7 +883,7 @@ static void biquadraticEquation(int multiplicity)
         Rat1.numerator.sign = SIGN_POSITIVE;
         showSquareRootOfRational(&Rat1, 2, ptrTimes);
       }
-      showPlusSignOn(ctr == 0 || ctr == 2, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       if (isSquareRoot2)
       {
         showRational(&Rat5);
@@ -939,7 +939,7 @@ static void biquadraticEquation(int multiplicity)
         {
           if (ctr2 == 1)
           {
-            showPlusSignOn(ctr == 0 || ctr == 2, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+            showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
             showText(ptrI);
             showText(ptrTimes);
             *ptrOutput++ = ' ';
@@ -1186,7 +1186,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
       BigIntChSign(&RatS.numerator);
       showSquareRootOfRational(&RatS, 2, ptrTimes);
       BigIntChSign(&RatS.numerator);
-      showPlusSignOn(ctr == 1 || ctr == 2, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      showPlusSignOn((ctr == 1) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       showSquareRootOfComplex(szMinus, " + ");
       endParen();
     }
@@ -1427,11 +1427,11 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
     RatDeprLinear.numerator.sign = SIGN_POSITIVE;
     for (ctr = 0; ctr < 4; ctr++)
     {
-      isImaginary = ((ctr == 0 || ctr == 1) == (RatDeprLinear.numerator.sign == SIGN_POSITIVE));
+      isImaginary = ((ctr <= 1) == (RatDeprLinear.numerator.sign == SIGN_POSITIVE));
       showX(multiplicity);
       showFirstTermQuarticEq(ctr);
       showText(" <var>S</var> ");
-      showPlusSignOn(ctr == 0 || ctr == 2, TYPE_PM_SPACE_AFTER);
+      showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_AFTER);
       if (pretty != PARI_GP)
       {
         showRatConstants((isImaginary? "i": "1"), "2");
@@ -1576,7 +1576,7 @@ static void QuarticEquation(int* ptrPolynomial, int multiplicity)
       showX(multiplicity);
       showFirstTermQuarticEq(ctr);
       showText(" <var>S</var> ");
-      showPlusSignOn(ctr == 0 || ctr == 2, TYPE_PM_SPACE_AFTER);
+      showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_AFTER);
       if (pretty != PARI_GP)
       {
         showRatConstants((isImaginary? "i":"1"), "2");

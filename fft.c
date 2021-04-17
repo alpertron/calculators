@@ -168,7 +168,7 @@ static void complexFFT(complex *x, complex *y, int length)
   int J;
   int halfLength = length / 2;
   int step = (1 << POWERS_2) / length;
-  int exponentOdd = 0;
+  bool exponentOdd = false;
   complex *ptrX = x;
   complex *ptrY = y;
   complex *ptrZ;
@@ -205,7 +205,7 @@ static void complexFFT(complex *x, complex *y, int length)
     ptrX = ptrY - length;
     ptrY = ptrTemp;
     ptrZ = ptrX + halfLength;
-    exponentOdd = 1 - exponentOdd;
+    exponentOdd = !exponentOdd;
     for (angle = 0; angle < HALF_CIRCLE; angle += step)
     {
       double rootReal = Cosine[angle];

@@ -46,7 +46,7 @@ enum eDivType
 };
 
 #ifndef lang  
-  extern int lang;
+  extern bool lang;
 #endif
 extern BigInteger Quintic;
 extern BigInteger Quartic;

@@ -41,7 +41,7 @@ EXTERNALIZE void doWork(void)
     flags = flags * 10 + *ptrData - '0';
   } while (*(++ptrData) != ',');
 #ifndef lang  
-  lang = flags & 1;
+  lang = ((flags & 1)? true: false);
 #endif
   onlyEvaluate = (unsigned char)(flags & 2);
   pretty = (enum eOutput)(flags/4);

@@ -8,7 +8,7 @@ void QuinticEquation(int* ptrPolynomial, int multiplicity);
 void startLine(void);
 void endLine(void);
 void showX(int multiplicity);
-void showPlusSignOn(int condPlus, int type);
+void showPlusSignOn(bool condPlus, int type);
 void startParen(void);
 void endParen(void);
 void startSqrt(void);

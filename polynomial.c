@@ -94,7 +94,7 @@ int numLimbs(int *pLen)
   return nbrLimbs;
 }
 
-static int isFunc(char **ppcInput, char *funcName)
+static bool isFunc(char **ppcInput, char *funcName)
 {
   char *pcInput = *ppcInput;
   char *ptrFuncName = funcName;

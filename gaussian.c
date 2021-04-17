@@ -329,7 +329,7 @@ EXTERNALIZE void doWork(void)
   ptrData++;             // Skip comma.
   flags = *ptrData;
 #ifndef lang  
-  lang = flags & 1;
+  lang = ((flags & 1)? true: false);
 #endif
   ptrData += 2;          // Skip flags and comma.
   gaussianText(ptrData, (flags & 2)+'0');

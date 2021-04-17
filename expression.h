@@ -46,7 +46,7 @@ enum eExprErr
   EXPR_NOT_FOUND,
 };
 #ifndef lang  
-  extern int lang;
+  extern bool lang;
 #endif
 extern char inputString[1000000];
 extern char output[3000000];

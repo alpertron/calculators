@@ -60,7 +60,7 @@ static int exprLength;
 static int doComputeSubExpression = TRUE;
 static int computeSubExprStackThreshold = 0;
 #ifndef lang  
-  int lang;
+  bool lang;
 #endif
 char output[3000000];
 limb Mult1[MAX_LEN];

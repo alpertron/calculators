@@ -150,9 +150,9 @@ void BigIntOr(BigInteger *firstArg, BigInteger *secondArg, BigInteger *result);
 void BigIntXor(BigInteger *firstArg, BigInteger *secondArg, BigInteger *result);
 void ConvertToTwosComplement(BigInteger *value);
 #ifdef FACTORIZATION_APP
-int BpswPrimalityTest(/*@in@*/BigInteger *pValue, void *vFactors);
+bool BpswPrimalityTest(/*@in@*/BigInteger *pValue, void *vFactors);
 #else
-int BpswPrimalityTest(/*@in@*/BigInteger *pValue);
+bool BpswPrimalityTest(/*@in@*/BigInteger *pValue);
 #endif
 void IntArray2BigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint);
 void BigInteger2IntArray(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint);

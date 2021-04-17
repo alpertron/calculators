@@ -42,7 +42,7 @@ int stackOperators[PAREN_STACK_SIZE];
 static int stackIndex;
 static int exprIndex;
 #ifndef lang  
-  int lang;
+  bool lang;
 #endif
 char output[3000000];
 limb Mult1[MAX_LEN];

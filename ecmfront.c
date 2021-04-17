@@ -42,7 +42,7 @@ static void GetMobius(char **pptrOutput);
 static void GetNumberOfDivisors(char **pptrOutput);
 static void GetSumOfDivisors(char **pptrOutput);
 static void ShowFourSquares(char **pptrOutput);
-static int doFactorization;
+static bool doFactorization;
 static char *knownFactors;
 
 #ifdef FACTORIZATION_APP
@@ -237,7 +237,7 @@ static int isSumOfThreeSquares(struct sFactors* pstFactors, BigInteger* pTmp)
   int indexPrimes;
   int shRight;
   int factor2MultiplicityEven = TRUE;
-  int sumTwoSquares = TRUE;
+  bool sumTwoSquares = true;
   for (indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--)
   {
     if (pstFactor->multiplicity % 2 != 0)
@@ -248,7 +248,7 @@ static int isSumOfThreeSquares(struct sFactors* pstFactors, BigInteger* pTmp)
       }
       if (*(pstFactor->ptrFactor + 1) % 4 == 3)
       {                                        // Prime has the form 4k+3, so exit loop.
-        sumTwoSquares = FALSE;
+        sumTwoSquares = false;
         break;
       }
     }
@@ -831,7 +831,7 @@ static void ShowFourSquares(char **pptrOutput)
   *pptrOutput = ptrOutput;
 }
 
-void ecmFrontText(char *tofactorText, int performFactorization, char *factors)
+void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
 {
   char *ptrOutput;
   int isBatch;
@@ -1034,7 +1034,7 @@ EXTERNALIZE void doWork(void)
 #endif
   if (*ptrData == 'C')
   {    // User pressed Continue button.
-    ecmFrontText(NULL, 0, NULL); // The 3rd parameter includes known factors.
+    ecmFrontText(NULL, false, NULL); // The 3rd parameter includes known factors.
 #ifdef __EMSCRIPTEN__
     databack(output);
 #endif
@@ -1053,7 +1053,7 @@ EXTERNALIZE void doWork(void)
     flags = -*(++ptrData);
   }
 #ifndef lang  
-  lang = flags & 1;
+  lang = ((flags & 1)? true: false);
 #endif
 #ifdef __EMSCRIPTEN__
   if ((flags & (-2)) == '4')
@@ -1081,10 +1081,17 @@ EXTERNALIZE void doWork(void)
   {
     if (ptrKnownFactors)
     {
-      flags = 2;  // do factorization.
+      flags = 2;  // Do factorization.
     }
   }
-  ecmFrontText(ptrData, flags & 2, ptrKnownFactors); // The 3rd parameter includes known factors.
+  if (flags & 2)
+  {               // Do factorization.
+    ecmFrontText(ptrData, true, ptrKnownFactors); // The 3rd parameter includes known factors.
+  }
+  else
+  {               // Do not perform factorization.
+    ecmFrontText(ptrData, false, ptrKnownFactors); // The 3rd parameter includes known factors.
+  }
 #ifdef __EMSCRIPTEN__
   databack(output);
 #endif

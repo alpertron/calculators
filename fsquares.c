@@ -30,7 +30,7 @@
 #define SUBT 12
 static int primediv[256];
 static int primeexp[256];
-char hexadecimal;
+bool hexadecimal;
 static limb number[MAX_LEN];
 static limb origNbr[MAX_LEN];
 static limb p[MAX_LEN];
@@ -816,17 +816,17 @@ EXTERNALIZE void doWork(void)
     app = app * 10 + *ptrData - '0';
   }
 #ifndef lang  
-  lang = app & 1;
+  lang = ((flags & 1)? true: false);
 #endif
   app >>= 1;
   if (app & 0x20)
   {
     app &= 0x1F;
-    hexadecimal = 1;
+    hexadecimal = true;
   }
   else
   {
-    hexadecimal = 0;
+    hexadecimal = false;
   }
 #if defined(applic)
   #if applic == 0

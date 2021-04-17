@@ -43,7 +43,7 @@ static BigInteger tmpS1;
 static BigInteger toProcess;
 static int groupLength;
 static char *cube = "<span class=\"bigger\">³</span>";
-extern char hexadecimal;
+extern bool hexadecimal;
 static int sums[] =
 {
   6, 0, 1, -1, -1, 0, -1, 0, 1, 1,

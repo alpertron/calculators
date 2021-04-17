@@ -95,33 +95,34 @@ void setLinkedBigInteger(struct linkedBigInt** ppstLinkedBigInt, BigInteger* pBi
   pstFirstFree->pstNext = NULL;    // End of link of big number.
   pstFirstFree = pstLinkedBigInt;  // First link of first area.
 }
-int linkedBigIntIsZero(struct linkedBigInt* pstLinkedBigInt)
+
+bool linkedBigIntIsZero(struct linkedBigInt* pstLinkedBigInt)
 {
   if (pstLinkedBigInt->node[0] == 1 && pstLinkedBigInt->node[2] == 0)
   {
-    return 1;    // Number is zero.
+    return true;    // Number is zero.
   }
-  return 0;      // Number is not zero.
+  return false;     // Number is not zero.
 }
 
-int linkedBigIntIsOne(struct linkedBigInt* pstLinkedBigInt)
+bool linkedBigIntIsOne(struct linkedBigInt* pstLinkedBigInt)
 {
   if (pstLinkedBigInt->node[0] == 1 && pstLinkedBigInt->node[2] == 1 &&
     pstLinkedBigInt->node[1] == SIGN_POSITIVE)
   {
-    return 1;    // Number is one.
+    return true;    // Number is one.
   }
-  return 0;      // Number is not one.
+  return false;     // Number is not one.
 }
 
-int linkedBigIntIsMinusOne(struct linkedBigInt* pstLinkedBigInt)
+bool linkedBigIntIsMinusOne(struct linkedBigInt* pstLinkedBigInt)
 {
   if (pstLinkedBigInt->node[0] == 1 && pstLinkedBigInt->node[2] == 1 &&
     pstLinkedBigInt->node[1] == SIGN_NEGATIVE)
   {
-    return 1;    // Number is minus one.
+    return true;    // Number is minus one.
   }
-  return 0;      // Number is not minus one.
+  return false;     // Number is not minus one.
 }
 
 void linkedBigIntChSign(struct linkedBigInt* pstLinkedBigInt)

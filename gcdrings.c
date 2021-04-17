@@ -62,23 +62,23 @@ void GaussianGCD(BigInteger *realA, BigInteger *imagA, BigInteger *realB, BigInt
   intToBigInteger(imagGcd, 0);
   for (;;)
   {
-    int GcdIsAtimesD = FALSE;
+    bool GcdIsAtimesD = false;
     int type;
     if (BigIntEqual(realA, realB) && BigIntEqual(imagA, imagB))
     {         // A and B are associates.
-      GcdIsAtimesD = TRUE;
+      GcdIsAtimesD = true;
     }
     BigIntChSign(realB);
     BigIntChSign(imagB);
     if (BigIntEqual(realA, realB) && BigIntEqual(imagA, imagB))
     {         // A and B are associates.
-      GcdIsAtimesD = TRUE;
+      GcdIsAtimesD = true;
     }
     BigIntChSign(realB);
     BigIntChSign(imagB);
     if (BigIntIsZero(realB) && BigIntIsZero(imagB))
     {
-      GcdIsAtimesD = TRUE;
+      GcdIsAtimesD = true;
     }
     if (GcdIsAtimesD)
     {        // The GCD is d*a
@@ -478,13 +478,13 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
     // if type of quaternions are odd, convert them to even by multiplying by units.
     ConvertQuaternionToEvenType(scalarA, vecIA, vecJA, vecKA, temp1, temp2, temp3);
     ConvertQuaternionToEvenType(scalarB, vecIB, vecJB, vecKB, temp1, temp2, temp3);
-    int GcdIsAtimesD = FALSE;
+    int GcdIsAtimesD = false;
     int exponA;
     int exponB;
     if (BigIntEqual(scalarA, scalarB) && BigIntEqual(vecIA, vecIB) &&
       BigIntEqual(vecJA, vecJB) && BigIntEqual(vecKA, vecKB))
     {         // A and B are associates.
-      GcdIsAtimesD = TRUE;
+      GcdIsAtimesD = true;
     }
     BigIntChSign(scalarB);
     BigIntChSign(vecIB);
@@ -493,7 +493,7 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
     if (BigIntEqual(scalarA, scalarB) && BigIntEqual(vecIA, vecIB) &&
       BigIntEqual(vecJA, vecJB) && BigIntEqual(vecKA, vecKB))
     {         // A and B are associates.
-      GcdIsAtimesD = TRUE;
+      GcdIsAtimesD = true;
     }
     BigIntChSign(scalarB);
     BigIntChSign(vecIB);
@@ -501,7 +501,7 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
     BigIntChSign(vecKB);
     if (BigIntIsZero(scalarB) && BigIntIsZero(vecIB) && BigIntIsZero(vecJB) && BigIntIsZero(vecKB))
     {
-      GcdIsAtimesD = TRUE;
+      GcdIsAtimesD = true;
     }
     if (BigIntIsZero(scalarA) && BigIntIsZero(vecIA) && BigIntIsZero(vecJA) && BigIntIsZero(vecKA))
     {
@@ -509,7 +509,7 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
       CopyBigInt(vecIA, vecIB);
       CopyBigInt(vecJA, vecJB);
       CopyBigInt(vecKA, vecKB);
-      GcdIsAtimesD = TRUE;
+      GcdIsAtimesD = true;
     }
     if (GcdIsAtimesD)
     {        // The GCD is d*a

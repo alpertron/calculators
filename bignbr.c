@@ -1620,9 +1620,9 @@ void initializeSmallPrimes(int* pSmallPrimes)
 //         2 = composite: does not pass 2-SPRP test.
 //         3 = composite: does not pass strong Lucas test.
 #if FACTORIZATION_APP
-int BpswPrimalityTest(/*@in@*/BigInteger *pValue, void *vFactors)
+bool BpswPrimalityTest(/*@in@*/BigInteger *pValue, void *vFactors)
 #else
-int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
+bool BpswPrimalityTest(/*@in@*/BigInteger *pValue)
 #endif
 {
 #if defined(__EMSCRIPTEN__) && !defined(FACTORIZATION_APP)

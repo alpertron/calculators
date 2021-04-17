@@ -56,16 +56,16 @@ extern int matrixCols;
 extern int nbrPartials;
 
 extern char tofactorDec[MAX_LEN*12];
-extern char prettyprint;
-extern char cunningham;
-extern char hexadecimal;
+extern bool prettyprint;
+extern bool cunningham;
+extern bool hexadecimal;
 extern struct sFactors stFactors[MAX_FACTORS];
 extern int *factorArr[FACTOR_ARRSIZE];
 void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors);
 void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors);
 void FactoringSIQS(limb *pNbrToFactor, limb *pFactor);
 #ifndef lang  
-  extern int lang;
+  extern bool lang;
 #endif
 extern int nbrToFactor[MAX_LEN];
 extern struct sFactors astFactorsMod[MAX_FACTORS];

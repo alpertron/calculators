@@ -402,7 +402,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     }
     if ((*ptrCurrBatchFactor & 0xDF) == 'x')
     {      // Loop mode.
-      if (ptrConditionExpr)
+      if (ptrConditionExpr != NULL)
       {
         ptrCurrBatchFactor += strlen(ptrConditionExpr) + 1;
         ptrConditionExpr = NULL;

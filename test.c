@@ -11,7 +11,7 @@
 #endif
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
-void ecmFrontText(char *tofactorText, int doFactorization, char *knownFactors);
+void ecmFrontText(char *tofactorText, bool doFactorization, char *knownFactors);
 int Factor1[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00 };
 int Factor2[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00 };
 int Factor3[] = { 29504, 29490, 19798, 633, 181, 0, 0, 0, 0, 0 };
@@ -25,7 +25,6 @@ int quotientPoly[20];
 struct sFactors astFactors[1000];
 extern int number[MAX_LEN];
 extern int nbrLimbs;
-extern int lang;
 extern int groupLen;
 extern limb TestNbr[MAX_LEN];
 char expr[] = "123456789012345";
@@ -211,45 +210,42 @@ int main(int argc, char *argv[])
   printf("%s\n", output);
 #elif DEBUG_CODE == 13
   skipPrimality = 0;
-  lang = 0;
-  hexadecimal = 0;
+  lang = false;
+  hexadecimal = false;
   char text[40000];
   (void)sprintf(text, "%s\n", argv[1]);
-  ecmFrontText(text, 1, NULL);
+  ecmFrontText(text, true, NULL);
   printf("%s\n", output);
   return 0;
   if (argc == 3)
   {
-    ecmFrontText(argv[1], 1, argv[2]);
+    ecmFrontText(argv[1], true, argv[2]);
     printf("%s\n", output);
   }
   else if (argc == 2)
   {
     char *ptrKnownFactors = strchr(argv[1], '=');
 #if 0
-    (void)strcpy(text, "10**45+572");
-//    (void)strcpy(text, "x=10**45+572;x=x+1;c<1000;x");
-    ecmFrontText(text, 1, ptrKnownFactors);
+    (void)strcpy(text, "x=10**45+572;x=x+1;c<1000;x");
+    ecmFrontText(text, true, ptrKnownFactors);
     printf("%s\n", output);
-    ecmFrontText(NULL, 0, NULL);
+    ecmFrontText(NULL, false, NULL);
     printf("%s\n", output);
     valuesProcessed = 0;
     (void)strcpy(text, "10**45+573");
-//    (void)strcpy(text, "x=1;x=x+1;x<1001;c");
-    ecmFrontText(text, 1, NULL);
+    ecmFrontText(text, true, NULL);
     printf("%s\n", output);
-    ecmFrontText(NULL, 0, NULL);
+    ecmFrontText(NULL, false, NULL);
     printf("%s\n", output);
     return 0;
 #endif
-    if (ptrKnownFactors)
+    if (ptrKnownFactors != NULL)
     {                          // There is equal sign.
       *ptrKnownFactors = 0;    // Replace equal sign by string terminator.
       ptrKnownFactors++;
     }
     (void)sprintf(text, "%s\n", argv[1]);
-    ecmFrontText(text, 1, ptrKnownFactors);
-//    ecmFrontText(text, 0, ptrKnownFactors);
+    ecmFrontText(text, true, ptrKnownFactors);
     printf("%s\n", output);
   }
   else

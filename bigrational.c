@@ -317,7 +317,7 @@ static void showRationalPretty(BigRational* rat)
 
 void showRationalNoParen(BigRational* rat)
 {
-  int denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
+  bool denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
   if (pretty != PARI_GP && denominatorIsNotOne)
   {
     showRationalPretty(rat);
@@ -333,7 +333,7 @@ void showRationalNoParen(BigRational* rat)
 
 void showRationalOverStr(BigRational* rat, char *str, char *ptrTimes)
 {
-  int denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
+  bool denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
   if (pretty != PARI_GP)
   {
     showText(pretty == PRETTY_PRINT?
@@ -368,8 +368,8 @@ void showRationalOverStr(BigRational* rat, char *str, char *ptrTimes)
 
 void showRational(BigRational* rat)
 {
-  int denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
-  int showParen;
+  bool denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
+  bool showParen;
   if (pretty != PARI_GP && denominatorIsNotOne)
   {
     showRationalPretty(rat);
