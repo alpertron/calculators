@@ -120,7 +120,7 @@ static int absSubtract(int idxMinuend, int idxSubtrahend,
       break;
     }
   }
-  if (i>=0 && arr[idxMinuend + i].x < arr[idxSubtrahend + i].x)
+  if ((i>=0) && (arr[idxMinuend + i].x < arr[idxSubtrahend + i].x))
   {
     sign = 1;
     i = idxMinuend;    // Exchange minuend and subtrahend.

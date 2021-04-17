@@ -45,7 +45,7 @@ void Dec2Bin(char *decimal, limb *binary, int digits, int *bitGroups)
   int outerGroup;
   int innerGroup;
   int nbrGroups = 1;
-  for (nbrGroups = 1; nbrGroups*DIGITS_PER_LIMB < digits; nbrGroups *= 2)
+  for (nbrGroups = 1; (nbrGroups*DIGITS_PER_LIMB) < digits; nbrGroups *= 2)
   {
   }
   (void)memset(binary, 0, nbrGroups * sizeof(limb));
@@ -107,7 +107,7 @@ void int2dec(char **pOutput, int nbr)
     int digit;
 
     digit = value/div;
-    if (digit > 0 || significantZero != 0)
+    if ((digit > 0) || (significantZero != 0))
     {
       significantZero = 1;
       *ptrOutput++ = (char)(digit + (int)'0');
@@ -133,7 +133,7 @@ void long2dec(char **pOutput, uint64_t nbr)
     int digit;
 
     digit = (int)(value / div);
-    if (digit > 0 || significantZero != 0)
+    if ((digit > 0) || (significantZero != 0))
     {
       significantZero = 1;
       *ptrOutput++ = (char)(digit + (int)'0');
@@ -161,7 +161,7 @@ void int2hex(char **pOutput, int nbr)
     int digit;
 
     digit = value / div;
-    if (digit > 0 || significantZero != 0)
+    if ((digit > 0) || (significantZero != 0))
     {
       significantZero = 1;
       *ptrOutput++ = (char)(digit >= 10? digit + (int)('A'-10): digit + (int)'0');
@@ -246,14 +246,14 @@ void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
         *decimal++ = (char)(digit + 'A' - 10);
       }
       digits++;
-      if (--currentGroupDigit == 0 && nbrHexDigits != 1)
+      if ((--currentGroupDigit == 0) && (nbrHexDigits != 1))
       {
         *decimal++ = ' ';
         currentGroupDigit = groupLength;
       }
     } while (--nbrHexDigits > 0);
   }
-  if (digits > 30 && showDigitsText)
+  if ((digits > 30) && showDigitsText)
   {
     *decimal++ = '(';
     int2dec(&decimal, digits);
@@ -346,7 +346,7 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLength)
     }
     for (count = DIGITS_PER_LIMB-1; count >= 0; count--)
     {
-      if (digit[count] != 0 || significantZero != 0)
+      if ((digit[count] != 0) || (significantZero != 0))
       {
         digits++;
         *ptrDest++ = (char)(digit[count] + (int)'0');
@@ -368,7 +368,7 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLength)
     *ptrDest = '\0';
     return;
   }
-  if (digits > 30 && showDigitsText)
+  if ((digits > 30) && showDigitsText)
   {
     *ptrDest++ = '(';
     int2dec(&ptrDest, digits);

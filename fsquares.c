@@ -214,7 +214,7 @@ int fsquares(void)
     {
       sieve[i] = 0;
     }
-    for (i = 3; i*i < MAX_SIEVE / 2; i += 2)
+    for (i = 3; (i*i) < MAX_SIEVE / 2; i += 2)
     {
       j = i*i - 3;
       j = (j % 2 == 0) ? j / 2 : (j + i) / 2;
@@ -452,7 +452,7 @@ int fsquares(void)
           biMult1.nbrLimbs = nbrLimbsP;
           biMult1.sign = SIGN_POSITIVE;
           intToBigInteger(&biMult2, 1);   // Initialize imaginary part to 1.
-          while (biMult1.nbrLimbs > 1 && biMult1.limbs[biMult1.nbrLimbs - 1].x == 0)
+          while ((biMult1.nbrLimbs > 1) && (biMult1.limbs[biMult1.nbrLimbs - 1].x == 0))
           {
             biMult1.nbrLimbs--;
           }

@@ -140,7 +140,7 @@ static int lucas_cost(int n, double v)
     return (ADD * n);
   }
   d = n - r;
-  e = 2 * r - n;
+  e = (2 * r) - n;
   c = DUP + ADD; /* initial duplicate and final addition */
   while (d != e)
   {
@@ -157,7 +157,7 @@ static int lucas_cost(int n, double v)
       d = r;
       c += 3 * ADD; /* 3 additions */
     }
-    else if (4 * d <= 5 * e && (d - e) % 6 == 0)
+    else if ((4 * d <= 5 * e) && ((d - e) % 6 == 0))
     { /* condition 2 */
       d = (d - e) / 2;
       c += ADD + DUP; /* one addition, one duplicate */

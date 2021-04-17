@@ -91,8 +91,8 @@ void floordiv(BigInteger *num, BigInteger *den, BigInteger *result)
 {
   BigInteger rem;
   BigIntRemainder(num, den, &rem);
-  if (((num->sign == SIGN_NEGATIVE && den->sign == SIGN_POSITIVE) ||
-    (num->sign == SIGN_POSITIVE && !BigIntIsZero(num) && den->sign == SIGN_NEGATIVE)) && !BigIntIsZero(&rem))
+  if ((((num->sign == SIGN_NEGATIVE) && (den->sign == SIGN_POSITIVE)) ||
+    ((num->sign == SIGN_POSITIVE) && !BigIntIsZero(num) && (den->sign == SIGN_NEGATIVE))) && !BigIntIsZero(&rem))
   {
     BigIntDivide(num, den, result);
     addbigint(result, -1);
@@ -108,8 +108,8 @@ void ceildiv(BigInteger*num, BigInteger *den, BigInteger *result)
   BigInteger rem;
   BigIntDivide(num, den, result);
   BigIntRemainder(num, den, &rem);
-  if (((num->sign == SIGN_POSITIVE && !BigIntIsZero(num) && den->sign == SIGN_POSITIVE) ||
-    (num->sign == SIGN_NEGATIVE && den->sign == SIGN_NEGATIVE)) && !BigIntIsZero(&rem))
+  if ((((num->sign == SIGN_POSITIVE) && !BigIntIsZero(num) && (den->sign == SIGN_POSITIVE)) ||
+    ((num->sign == SIGN_NEGATIVE) && (den->sign == SIGN_NEGATIVE))) && !BigIntIsZero(&rem))
   {
     addbigint(result, 1);
   }
@@ -155,7 +155,7 @@ void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum)
         break;
       }
     }
-    if (ctr >= 0 && pAddend1->limbs[ctr].x < pAddend2->limbs[ctr].x)
+    if ((ctr >= 0) && (pAddend1->limbs[ctr].x < pAddend2->limbs[ctr].x))
     {
       pTemp = pAddend1;
       pAddend1 = pAddend2;
@@ -202,14 +202,14 @@ void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum)
       borrow = (borrow >> BITS_PER_INT_GROUP) + (ptrAddend1++)->x;
       (ptrSum++)->x = borrow & MAX_INT_NBR;
     }
-    while (nbrLimbs > 1 && pSum->limbs[nbrLimbs - 1].x == 0)
+    while ((nbrLimbs > 1) && (pSum->limbs[nbrLimbs - 1].x == 0))
     {     // Loop that deletes non-significant zeros.
       nbrLimbs--;
     }
   }
   pSum->nbrLimbs = nbrLimbs;
   pSum->sign = pAddend1->sign;
-  if (pSum->nbrLimbs == 1 && pSum->limbs[0].x == 0)
+  if ((pSum->nbrLimbs == 1) && (pSum->limbs[0].x == 0))
   {          // Result is zero.
     pSum->sign = SIGN_POSITIVE;
   }
@@ -221,9 +221,12 @@ void BigIntNegate(BigInteger *pSrc, BigInteger *pDest)
   {
     CopyBigInt(pDest, pSrc);
   }
-  if (pSrc->sign == SIGN_POSITIVE && (pSrc->nbrLimbs!=1 || pSrc->limbs[0].x != 0))
+  if (pSrc->sign == SIGN_POSITIVE)
   {
-    pDest->sign = SIGN_NEGATIVE;
+    if ((pSrc->nbrLimbs!=1) || (pSrc->limbs[0].x != 0))
+    {
+      pDest->sign = SIGN_NEGATIVE;
+    }
   }
   else
   {
@@ -247,7 +250,7 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
   int nbrLimbsFactor2 = pFactor2->nbrLimbs;
   int nbrLimbs;
   BigInteger *temp;
-  if (pFactor1->nbrLimbs == 1 || pFactor2->nbrLimbs == 1)
+  if ((pFactor1->nbrLimbs == 1) || (pFactor2->nbrLimbs == 1))
   {       // At least one the factors has only one limb.
     int factor2;
     if (pFactor1->nbrLimbs == 1)
@@ -262,15 +265,15 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
     return EXPR_OK;
   }
 #ifdef FACTORIZATION_APP
-  if (pFactor1->nbrLimbs + pFactor2->nbrLimbs > 664380 / BITS_PER_GROUP + 1)  // 2^664380 ~ 10^200000
+  if ((pFactor1->nbrLimbs + pFactor2->nbrLimbs) > (664380 / BITS_PER_GROUP + 1))  // 2^664380 ~ 10^200000
 #else
-  if (pFactor1->nbrLimbs + pFactor2->nbrLimbs > 66438 / BITS_PER_GROUP + 1)  // 2^66438 ~ 10^20000
+  if ((pFactor1->nbrLimbs + pFactor2->nbrLimbs) > (66438 / BITS_PER_GROUP + 1))  // 2^66438 ~ 10^20000
 #endif
   {
     return EXPR_INTERM_TOO_HIGH;
   }
-  if (nbrLimbsFactor1 * nbrLimbsFactor1 < nbrLimbsFactor2 ||
-    nbrLimbsFactor2 * nbrLimbsFactor2 < nbrLimbsFactor1)
+  if ((nbrLimbsFactor1 * nbrLimbsFactor1 < nbrLimbsFactor2) ||
+    (nbrLimbsFactor2 * nbrLimbsFactor2 < nbrLimbsFactor1))
   {    // One of the factors is a lot smaller than the other.
        // Use classical multiplication.
    // return EXPR_OK;
@@ -292,7 +295,7 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
     nbrLimbs--;
   }
   pProduct->nbrLimbs = nbrLimbs;
-  if (nbrLimbs == 1 && pProduct->limbs[0].x == 0)
+  if ((nbrLimbs == 1) && (pProduct->limbs[0].x == 0))
   {
     pProduct->sign = SIGN_POSITIVE;
   }
@@ -313,7 +316,7 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
 enum eExprErr BigIntRemainder(BigInteger *pDividend, BigInteger *pDivisor, BigInteger *pRemainder)
 {
   enum eExprErr rc;
-  if (pDivisor->limbs[0].x == 0 && pDivisor->nbrLimbs == 1)
+  if (BigIntIsZero(pDivisor))
   {   // If divisor = 0, then remainder is the dividend.
     return EXPR_OK;
   }
@@ -429,7 +432,7 @@ enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int exponent, BigInteger *pPo
   int mask;
   double base;
   enum eExprErr rc;
-  if (pBase->nbrLimbs == 1 && pBase->limbs[0].x == 0)
+  if (BigIntIsZero(pBase))
   {     // Base = 0 -> power = 0
     pPower->limbs[0].x = 0;
     pPower->nbrLimbs = 1;
@@ -484,7 +487,7 @@ enum eExprErr BigIntPower(BigInteger *pBase, BigInteger *pExponent, BigInteger *
   }
   if (pExponent->nbrLimbs > 1)
   {     // Exponent too high.
-    if (pBase->nbrLimbs == 1 && pBase->limbs[0].x < 2)
+    if ((pBase->nbrLimbs == 1) && (pBase->limbs[0].x < 2))
     {     // Base = 0 -> power = 0
       pPower->limbs[0].x = pBase->limbs[0].x;
       pPower->nbrLimbs = 1;
@@ -533,7 +536,7 @@ void BigIntDivide2(BigInteger *pArg)
     (ptrLimb--)->x = (int)(carry >> 1);
     carry &= 1;
   }
-  if (nbrLimbs > 1 && pArg->limbs[nbrLimbs - 1].x == 0)
+  if ((nbrLimbs > 1) && (pArg->limbs[nbrLimbs - 1].x == 0))
   {     // Most significant limb is zero, so reduce size by one limb.
     pArg->nbrLimbs--;
   }
@@ -573,7 +576,7 @@ boolean TestBigNbrEqual(BigInteger *pNbr1, BigInteger *pNbr2)
   }
   if (pNbr1->sign != pNbr2->sign)
   {        // Sign of numbers are different.
-    if (pNbr1->nbrLimbs == 1 && pNbr1->limbs[0].x == 0 && pNbr2->limbs[0].x == 0)
+    if ((pNbr1->nbrLimbs == 1) && (pNbr1->limbs[0].x == 0) && (pNbr2->limbs[0].x == 0))
     {              // Both numbers are zero.
       return TRUE;
     }
@@ -596,12 +599,12 @@ void BigIntGcd(BigInteger *pArg1, BigInteger *pArg2, BigInteger *pResult)
   int nbrLimbs1 = pArg1->nbrLimbs;
   int nbrLimbs2 = pArg2->nbrLimbs;
   int power2;
-  if (nbrLimbs1 == 1 && pArg1->limbs[0].x == 0)
+  if (BigIntIsZero(pArg1))
   {               // First argument is zero, so the GCD is second argument.
     CopyBigInt(pResult, pArg2);
     return;
   }
-  if (nbrLimbs2 == 1 && pArg2->limbs[0].x == 0)
+  if (BigIntIsZero(pArg2))
   {               // Second argument is zero, so the GCD is first argument.
     CopyBigInt(pResult, pArg1);
     return;
@@ -686,7 +689,7 @@ static void subtFromAbsValue(limb *pLimbs, int *pNbrLimbs, int subt)
         break;
       }
     } while (--((pLimbs + ctr)->x) < 0);   // Continue loop if there is borrow.
-    if (nbrLimbs > 1 && (pLimbs + nbrLimbs - 1)->x == 0)
+    if ((nbrLimbs > 1) && ((pLimbs + nbrLimbs - 1)->x == 0))
     {
       nbrLimbs--;
     }
@@ -774,7 +777,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
     }
     (pLimbs--)->x = (int)quotient;
   }
-  if (nbrLimbs > 1 && pBigInt->limbs[nbrLimbs - 1].x == 0)
+  if ((nbrLimbs > 1) && (pBigInt->limbs[nbrLimbs - 1].x == 0))
   {   // Most significant limb is now zero, so discard it.
     nbrLimbs--;
   }
@@ -803,7 +806,7 @@ int getRemainder(BigInteger *pBigInt, int divisor)
     }
     pLimb--;
   }
-  if (pBigInt->sign == SIGN_NEGATIVE && remainder != 0)
+  if ((pBigInt->sign == SIGN_NEGATIVE) && (remainder != 0))
   {
     remainder = divisor - remainder;
   }
@@ -1129,15 +1132,15 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
       double dLogBase = log(base);
       Exponent = (int)(dLogBigNbr / dLogBase - 1);
       dProd = dLogBigNbr - Exponent * dLogBase;
-      if (dProd > 0.00000000001 || dProd < -0.00000000001)
+      if ((dProd > 0.00000000001) || (dProd < -0.00000000001))
       {
         Exponent++;
         dProd = dLogBigNbr - Exponent * dLogBase;
-        if (dProd > 0.00000000001 || dProd < -0.00000000001)
+        if ((dProd > 0.00000000001) || (dProd < -0.00000000001))
         {
           Exponent++;
           dProd = dLogBigNbr - Exponent * dLogBase;
-          if (dProd > 0.00000000001 || dProd < -0.00000000001)
+          if ((dProd > 0.00000000001) || (dProd < -0.00000000001))
           {
             continue;           // Test next base.
           }
@@ -1163,23 +1166,23 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
   {
     int testprime = prime2310x1[h];
     int mod = getRemainder(pBigNbr, testprime);
-    if (expon2 && intModPow(mod, testprime / 2, testprime) > 1)
+    if (expon2 && (intModPow(mod, testprime / 2, testprime) > 1))
     {
       expon2 = FALSE;
     }
-    if (expon3 && intModPow(mod, testprime / 3, testprime) > 1)
+    if (expon3 && (intModPow(mod, testprime / 3, testprime) > 1))
     {
       expon3 = FALSE;
     }
-    if (expon5 && intModPow(mod, testprime / 5, testprime) > 1)
+    if (expon5 && (intModPow(mod, testprime / 5, testprime) > 1))
     {
       expon5 = FALSE;
     }
-    if (expon7 && intModPow(mod, testprime / 7, testprime) > 1)
+    if (expon7 && (intModPow(mod, testprime / 7, testprime) > 1))
     {
       expon7 = FALSE;
     }
-    if (expon11 && intModPow(mod, testprime / 11, testprime) > 1)
+    if (expon11 && (intModPow(mod, testprime / 11, testprime) > 1))
     {
       expon11 = FALSE;
     }
@@ -1230,23 +1233,23 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
   for (Exponent = maxExpon; Exponent >= 2; Exponent--)
   {
     int k, prime;
-    if (Exponent % 2 == 0 && !expon2)
+    if ((Exponent % 2 == 0) && !expon2)
     {
       continue; // Not a square
     }
-    if (Exponent % 3 == 0 && !expon3)
+    if ((Exponent % 3 == 0) && !expon3)
     {
       continue; // Not a cube
     }
-    if (Exponent % 5 == 0 && !expon5)
+    if ((Exponent % 5 == 0) && !expon5)
     {
       continue; // Not a fifth power
     }
-    if (Exponent % 7 == 0 && !expon7)
+    if ((Exponent % 7 == 0) && !expon7)
     {
       continue; // Not a 7th power
     }
-    if (Exponent % 11 == 0 && !expon11)
+    if ((Exponent % 11 == 0) && !expon11)
     {
       continue; // Not an 11th power
     }
@@ -1265,15 +1268,15 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
       double dQuot;
       base = (int)dN - 1;
       dQuot = dN / base;
-      if (dQuot > 1.0000000001 || dQuot < 0.9999999999)
+      if ((dQuot > 1.0000000001) || (dQuot < 0.9999999999))
       {
         base++;
         dQuot = dN / base;
-        if (dQuot > 1.0000000001 || dQuot < 0.9999999999)
+        if ((dQuot > 1.0000000001) || (dQuot < 0.9999999999))
         {
           base++;
           dQuot = dN / base;
-          if (dQuot > 1.0000000001 || dQuot < 0.9999999999)
+          if ((dQuot > 1.0000000001) || (dQuot < 0.9999999999))
           {
             continue;   // Exponent is incorrect. Check next one.
           }
@@ -1329,7 +1332,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
       BigIntPowerIntExp(pBase, Exponent-1, &Temp3); // Temp3 <- x^(e-1)
       BigIntMultiply(&Temp3, pBase, &Temp2);        // Temp2 <- x^e 
       BigIntSubt(pBigNbr, &Temp2, &Temp2);            // Compare to radicand.
-      if (Temp2.nbrLimbs == 1 && Temp2.limbs[0].x == 0)
+      if (BigIntIsZero(&Temp2))
       {                     // Perfect power, so go out.
         return Exponent;
       }
@@ -1339,7 +1342,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
       }
       BigIntDivide(pBigNbr, &Temp3, &Temp);         // Temp -> N/x^(e-1)
       BigIntSubt(&Temp, pBase, &Temp2);             // Temp2 -> N/x^(e-1) - x
-      if (Temp2.nbrLimbs == 1 && Temp2.limbs[0].x == 0)
+      if (BigIntIsZero(&Temp2))
       {     // New approximation will be the same as previous. Go out.
         break;
       }
@@ -1398,7 +1401,7 @@ void BigIntDivideBy2(BigInteger *nbr)
     curLimb = nextLimb;
   }
   *ptrDest = (curLimb >> 1) & MAX_INT_NBR;
-  if (nbrLimbs > 1 && nbr->limbs[nbrLimbs - 1].x == 0)
+  if ((nbrLimbs > 1) && (nbr->limbs[nbrLimbs - 1].x == 0))
   {
     nbr->nbrLimbs--;
   }
@@ -1499,7 +1502,7 @@ int JacobiSymbol(int upper, int lower)
     while ((a & 1) == 0)
     {     // a is even.
       a >>= 1;
-      if ((m & 7) == 3 || (m & 7) == 5)
+      if (((m & 7) == 3) || ((m & 7) == 5))
       {   // m = 3 or m = 5 (mod 8)
         t = -t;
       }
@@ -1511,7 +1514,7 @@ int JacobiSymbol(int upper, int lower)
     }
     a = a % m;
   }
-  if (m == 1 || m == -1)
+  if ((m == 1) || (m == -1))
   {
     return t;
   }
@@ -1537,7 +1540,7 @@ int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower)
       t = -1;
     }
   }
-  while (a.nbrLimbs > 1 || a.limbs[0].x != 0)  // a != 0
+  while (!BigIntIsZero(&a))             // a != 0
   {
     while ((a.limbs[0].x & 1) == 0)
     {     // a is even.
@@ -1557,7 +1560,7 @@ int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower)
     BigIntRemainder(&a, &m, &tmp);
     CopyBigInt(&a, &tmp);              // a <- a % m;   
   }
-  if (m.nbrLimbs == 1 && m.limbs[0].x == 1)
+  if ((m.nbrLimbs == 1) && (m.limbs[0].x == 1))
   {              // Absolute value of m is 1.
     return t;
   }
@@ -1643,7 +1646,7 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   int nbrLimbs = pValue->nbrLimbs;
   limb *limbs = pValue->limbs;
   BigInteger tmp;
-  if (nbrLimbs == 1 && limbs->x <= 2)
+  if ((nbrLimbs == 1) && (limbs->x <= 2))
   {
     return 0;    // Indicate prime.
   }
@@ -1659,9 +1662,9 @@ int BpswPrimalityTest(/*@in@*/BigInteger *pValue)
     {
       int primeProd = smallPrimes[primeIndex] * smallPrimes[primeIndex+1] * smallPrimes[primeIndex+2];
       int remainder = getRemainder(pValue, primeProd);
-      if (remainder % smallPrimes[primeIndex] == 0 ||
-        remainder % smallPrimes[primeIndex + 1] == 0 ||
-        remainder % smallPrimes[primeIndex + 2] == 0)
+      if ((remainder % smallPrimes[primeIndex] == 0) ||
+        (remainder % smallPrimes[primeIndex + 1] == 0) ||
+        (remainder % smallPrimes[primeIndex + 2] == 0))
       {
         return 1;   // Number is divisible by small number. Indicate composite.
       }
@@ -1938,7 +1941,7 @@ int BigNbrIsZero(limb *value)
 
 int BigIntIsZero(BigInteger *value)
 {
-  if (value->nbrLimbs == 1 && value->limbs[0].x == 0)
+  if ((value->nbrLimbs == 1) && (value->limbs[0].x == 0))
   {
     return 1;    // Number is zero.
   }
@@ -1947,7 +1950,7 @@ int BigIntIsZero(BigInteger *value)
 
 int BigIntIsOne(BigInteger* value)
 {
-  if (value->nbrLimbs == 1 && value->limbs[0].x == 1 && value->sign == SIGN_POSITIVE)
+  if ((value->nbrLimbs == 1) && (value->limbs[0].x == 1) && (value->sign == SIGN_POSITIVE))
   {
     return 1;    // Number is zero.
   }
@@ -1960,7 +1963,7 @@ int BigIntEqual(BigInteger *value1, BigInteger *value2)
   int nbrLimbs;
   limb *ptrValue1;
   limb *ptrValue2;
-  if (value1->nbrLimbs != value2->nbrLimbs || value1->sign != value2->sign)
+  if ((value1->nbrLimbs != value2->nbrLimbs) || (value1->sign != value2->sign))
   {
     return 0;    // Numbers are not equal.
   }
@@ -2096,7 +2099,7 @@ void BigIntAnd(BigInteger *firstArg, BigInteger *secondArg, BigInteger *result)
       result->limbs[idx].x = firstArg->limbs[idx].x;
     }
   }
-  if (firstArg->sign == SIGN_POSITIVE || secondArg->sign == SIGN_POSITIVE)
+  if ((firstArg->sign == SIGN_POSITIVE) || (secondArg->sign == SIGN_POSITIVE))
   {
     result->sign = SIGN_POSITIVE;
   }
@@ -2135,7 +2138,7 @@ void BigIntOr(BigInteger *firstArg, BigInteger *secondArg, BigInteger *result)
       result->limbs[idx].x = firstArg->limbs[idx].x;
     }
   }
-  if (firstArg->sign == SIGN_NEGATIVE || secondArg->sign == SIGN_NEGATIVE)
+  if ((firstArg->sign == SIGN_NEGATIVE) || (secondArg->sign == SIGN_NEGATIVE))
   {
     result->sign = SIGN_NEGATIVE;
   }

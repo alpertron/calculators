@@ -63,8 +63,8 @@ static void stringToHTML(char **pptrOutput, char *ptrString)
         (*(ptrString + 2) & 0x3F);
       ptrString += 3;
     }
-    if (character >= ' ' && character < 127 && character != '<' &&
-      character != '>' && character != '&')
+    if ((character >= ' ') && (character < 127) && (character != '<') &&
+      (character != '>') && (character != '&'))
     {  // Safe to copy character.
       *ptrOutput++ = (char)character;
     }
@@ -101,7 +101,7 @@ static char evalExpression(char *expr, BigInteger *ptrResult)
 static void SkipSpaces(char **pptrText)
 {
   char *ptrText = *pptrText;
-  while (*ptrText == ' ' || *ptrText == 9)
+  while ((*ptrText == ' ') || (*ptrText == 9))
   {  // Skip spaces or tabs.
     ptrText++;
   }
@@ -173,7 +173,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       *ptrOutput++ = '#';
       stringToHTML(&ptrOutput, ptrCurrBatchFactor + 1);
     }
-    else if (c == 'x' || c == 'X')
+    else if ((c == 'x') || (c == 'X'))
     {   // Loop format: x=<orig expr>; x=<next expr>; <end expr>; <expr to factor>[; <factor cond>]
 #ifdef __EMSCRIPTEN__
       ptrInputText = "";
@@ -212,7 +212,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         }
         ptrStartExpr = ptrCharFound + 1;
         SkipSpaces(&ptrStartExpr);
-        if (*ptrStartExpr != 'x' && *ptrStartExpr != 'X')
+        if ((*ptrStartExpr != 'x') && (*ptrStartExpr != 'X'))
         {
           BatchError(&ptrOutput, batchText,
             lang ? "falta variable x en la segunda expresión" :
@@ -289,7 +289,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           ptrOutput += strlen(ptrOutput); 
           break;   // Cannot compute end expression, so go out.
         }
-        if (valueFound->nbrLimbs == 1 && valueFound->limbs[0].x == 0)
+        if (BigIntIsZero(valueFound))
         {    // result is zero: end of loop
           firstExprProcessed = FALSE;
           break;
@@ -305,7 +305,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           rc = evalExpression(ptrConditionExpr, valueFound);
           if (rc == EXPR_OK)
           {
-            if (valueFound->nbrLimbs == 1 && valueFound->limbs[0].x == 0)
+            if (BigIntIsZero(valueFound))
             {   // Do not compute factor expression if condition is false.
               processExpression = FALSE;
             }
@@ -314,7 +314,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           {
             textError(ptrOutput, rc);
             ptrOutput += strlen(ptrOutput);
-            if (rc == EXPR_SYNTAX_ERROR || rc == EXPR_VAR_OR_COUNTER_REQUIRED)
+            if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED))
             {   // Do not show multiple errors.
               break;
             }
@@ -334,7 +334,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
             textError(ptrOutput, rc);
             ptrOutput += strlen(ptrOutput);
           }
-          if (rc == EXPR_SYNTAX_ERROR || rc == EXPR_VAR_OR_COUNTER_REQUIRED)
+          if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED))
           {   // Do not show multiple errors.
             break;
           }
@@ -355,7 +355,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           valuesProcessed++;
           ptrOutput += strlen(ptrOutput);
         }
-        if (rc == EXPR_SYNTAX_ERROR || rc == EXPR_VAR_OR_COUNTER_REQUIRED)
+        if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED))
         {      // Do not show these errors multiple times.
           firstExprProcessed = FALSE;
           break;

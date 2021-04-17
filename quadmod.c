@@ -62,9 +62,9 @@ char *ptrOutput;
 
 static int Show(BigInteger *num, char *str, int t)
 {
-  if (num->nbrLimbs > 1 || num->limbs[0].x != 0)
+  if (!BigIntIsZero(num))
   {     // num is not zero.
-    if ((t & 1) != 0 && num->sign == SIGN_POSITIVE)
+    if (((t & 1) != 0) && (num->sign == SIGN_POSITIVE))
     {
       *ptrOutput++ = ' ';
       *ptrOutput++ = '+';
@@ -74,7 +74,7 @@ static int Show(BigInteger *num, char *str, int t)
       *ptrOutput++ = ' ';
       *ptrOutput++ = '-';
     }
-    if (num->nbrLimbs != 1 || num->limbs[0].x != 1)
+    if ((num->nbrLimbs != 1) || (num->limbs[0].x != 1))
     {    // num is not 1 or -1.
       int signTemp = num->sign;
       num->sign = SIGN_POSITIVE;
@@ -93,7 +93,7 @@ static int Show(BigInteger *num, char *str, int t)
 void Show1(BigInteger *num, int t)
 {
   int u = Show(num, "", t);
-  if ((u & 1) == 0 || (num->nbrLimbs == 1 && num->limbs[0].x == 1))
+  if (((u & 1) == 0) || ((num->nbrLimbs == 1) && (num->limbs[0].x == 1)))
   {
     BigInteger2Dec(num, ptrOutput, groupLen);
     ptrOutput += strlen(ptrOutput);
@@ -182,13 +182,13 @@ void SolveEquation(void)
   int E;
   struct sFactors *pstFactor;
 
-  if (ValN.nbrLimbs == 1 && ValN.limbs[0].x == 0)
-  {        // Mod 0 => Equation in integer numbers
-    if (ValA.nbrLimbs == 1 && ValA.limbs[0].x == 0)
+  if (BigIntIsZero(&ValN))
+  {        // Mod zero => Equation in integer numbers
+    if (BigIntIsZero(&ValA))
     {      // Not Quadratic Equation
-      if (ValB.nbrLimbs == 1 && ValB.limbs[0].x == 0)
+      if (BigIntIsZero(&ValB))
       {    // Constant Equation
-        if (ValC.nbrLimbs == 1 && ValC.limbs[0].x == 0)
+        if (BigIntIsZero(&ValC))
         {  // 0 = 0
           (void)strcpy(ptrOutput, "<p>The equation is satisfied by any integer <var>x</var>.</p>");
           ptrOutput += strlen(ptrOutput);
@@ -201,7 +201,7 @@ void SolveEquation(void)
       else
       {        // Linear Equation: ValB * x + ValC = 0.
         BigIntRemainder(&ValC, &ValB, &Aux[0]);
-        if (Aux[0].nbrLimbs == 1 && Aux[0].limbs[0].x == 0)
+        if (BigIntIsZero(&Aux[0]))
         {      // ValC is multiple of ValB: solution is -ValC / ValB.
           BigIntDivide(&ValC, &ValB, &Aux[0]);
           BigIntNegate(&Aux[0], &Aux[0]);
@@ -229,14 +229,14 @@ void SolveEquation(void)
       V.sign = SIGN_POSITIVE;
       BigIntMultiply(&V, &V, &Aux[0]);
       BigIntSubt(&Aux[0], &discriminant, &Aux[0]);
-      if (Aux[0].nbrLimbs != 1 || Aux[0].limbs[0].x != 0)
+      if (!BigIntIsZero(&Aux[0]))
       {  // discriminant has no integer square root.
         return;
       }
       multint(&Aux[0], &ValA, 2);    // Denominator
       BigIntSubt(&V, &ValB, &Aux[1]);
       BigIntRemainder(&Aux[1], &Aux[0], &Aux[2]);
-      if (Aux[2].nbrLimbs == 1 && Aux[2].limbs[0].x == 0)
+      if (BigIntIsZero(&Aux[2]))
       {      // (V-ValB)/(2*ValA) is integer: it is a solution.
         BigIntDivide(&Aux[1], &Aux[0], &Aux[2]);
         Solution(&Aux[2]);
@@ -244,7 +244,7 @@ void SolveEquation(void)
       BigIntNegate(&V, &V);
       BigIntSubt(&V, &ValB, &Aux[1]);
       BigIntRemainder(&Aux[1], &Aux[0], &Aux[2]);
-      if (Aux[2].nbrLimbs == 1 && Aux[2].limbs[0].x == 0)
+      if (BigIntIsZero(&Aux[2]))
       {      // (-V-ValB)/(2*ValA) is integer: it is a solution.
         BigIntDivide(&Aux[1], &Aux[0], &Aux[2]);
         Solution(&Aux[2]);
@@ -261,7 +261,7 @@ void SolveEquation(void)
   BigIntGcd(&ValA, &ValB, &Aux[0]);
   BigIntGcd(&ValC, &Aux[0], &GcdAll);
   BigIntRemainder(&ValC, &GcdAll, &Aux[0]);
-  if (Aux[0].nbrLimbs != 1 || Aux[0].limbs[0].x != 0)
+  if (!BigIntIsZero(&Aux[0]))
   {  // ValC must be multiple of gcd(ValA, ValB).
      // Otherwise go out because there are no solutions.
     return;
@@ -278,9 +278,9 @@ void SolveEquation(void)
   BigIntDivide(&ValN, &GcdAll, &Aux[0]);
   CopyBigInt(&ValN, &Aux[0]);
   CopyBigInt(&ValNn, &ValN);
-  if (ValNn.nbrLimbs == 1 && ValNn.limbs[0].x == 1)
+  if ((ValNn.nbrLimbs == 1) && (ValNn.limbs[0].x == 1))
   {     // All values from 0 to GcdAll - 1 are solutions.
-    if (GcdAll.nbrLimbs > 1 || GcdAll.limbs[0].x > 5)
+    if ((GcdAll.nbrLimbs > 1) || (GcdAll.limbs[0].x > 5))
     {
       (void)strcpy(ptrOutput, "<p>All values of <var>x</var> between 0 and ");
       ptrOutput += strlen(ptrOutput);
@@ -302,10 +302,10 @@ void SolveEquation(void)
     return;
   }
   BigIntRemainder(&ValA, &ValN, &Aux[0]);
-  if (Aux[0].nbrLimbs == 1 && Aux[0].limbs[0].x == 0)
+  if (BigIntIsZero(&Aux[0]))
   {           // Linear equation.
     BigIntGcd(&ValB, &ValN, &Aux[0]);
-    if (Aux[0].nbrLimbs != 1 || Aux[0].limbs[0].x != 1)
+    if ((Aux[0].nbrLimbs != 1) || (Aux[0].limbs[0].x != 1))
     {         // ValB and ValN are not coprime. Go out.
       return;
     }
@@ -330,7 +330,7 @@ void SolveEquation(void)
     return;
   }
   BigIntSubt(&LastModulus, &ValN, &Aux[0]);
-  if (Aux[0].nbrLimbs > 1 || Aux[0].limbs[0].x != 0)
+  if (!BigIntIsZero(&Aux[0]))
   {     // Last modulus is different from ValN.
     CopyBigInt(&LastModulus, &ValN);
     NumberLength = ValN.nbrLimbs;
@@ -348,10 +348,9 @@ void SolveEquation(void)
     expon = pstFactor->multiplicity;
     BigIntPowerIntExp(&prime, expon, &V);
     BigIntRemainder(&ValA, &V, &L);
-    if (L.nbrLimbs == 1 && L.limbs[0].x == 0)
+    if (BigIntIsZero(&L))
     {     // ValA multiple of prime, means linear equation mod prime.
-      if (ValB.nbrLimbs == 1 && ValB.limbs[0].x == 0 &&
-        !(ValC.nbrLimbs == 1 && ValC.limbs[0].x == 0))
+      if ((BigIntIsZero(&ValB)) && !(BigIntIsZero(&ValC)))
       {
         return;  // There are no solutions: ValB=0 and ValC!=0
       }
@@ -360,7 +359,7 @@ void SolveEquation(void)
       BigIntDivide(&ValB, &U, &V);
       BigIntDivide(&ValC, &U, &L);
       BigIntNegate(&V, &V);
-      if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
+      if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
       {      // If prime is 2.
         BigIntModularDivisionPower2(&L, &V, &Q, &Solution1[factorIndex]);
       }
@@ -385,7 +384,7 @@ void SolveEquation(void)
       BigIntMultiply(&ValA, &ValC, &discriminant);
       multint(&discriminant, &discriminant, 4);
       BigIntSubt(&Aux[0], &discriminant, &discriminant);
-      if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
+      if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
       {         /* Prime p is 2 */
         int bitsBZero, bitsCZero;
         // ax^2 + bx + c = 0 (mod 2^expon)
@@ -401,7 +400,7 @@ void SolveEquation(void)
         DivideBigNbrByMaxPowerOf2(&bitsBZero, ValBOdd.limbs, &ValBOdd.nbrLimbs);
         CopyBigInt(&ValCOdd, &ValC);
         DivideBigNbrByMaxPowerOf2(&bitsCZero, ValCOdd.limbs, &ValCOdd.nbrLimbs);
-        if (bitsAZero > 0 && bitsBZero > 0 && bitsCZero > 0)
+        if ((bitsAZero > 0) && (bitsBZero > 0) && (bitsCZero > 0))
         {
           int minExpon = bitsAZero;
           if (minExpon < bitsBZero)
@@ -417,12 +416,12 @@ void SolveEquation(void)
           bitsCZero -= minExpon;
           expon -= minExpon;
         }
-        if ((bitsAZero == 0 && bitsBZero == 0 && bitsCZero == 0) ||
-          (bitsAZero > 0 && bitsBZero > 0 && bitsCZero == 0))
+        if (((bitsAZero == 0) && (bitsBZero == 0) && (bitsCZero == 0)) ||
+          ((bitsAZero > 0) && (bitsBZero > 0) && (bitsCZero == 0)))
         {
           return;   // No solutions, so go out.
         }
-        if (bitsAZero == 0 && bitsBZero > 0)
+        if ((bitsAZero == 0) && (bitsBZero > 0))
         {           // The solution in this case requires square root.
           // compute s = ((b/2)^2 - a*c)/a^2; r = p_2(s), q = o_2(s).
           CopyBigInt(&tmp1, &ValB);
@@ -448,7 +447,7 @@ void SolveEquation(void)
           else
           {
             DivideBigNbrByMaxPowerOf2(&bitsCZero, ValCOdd.limbs, &ValCOdd.nbrLimbs);
-            if ((ValCOdd.limbs[0].x & 7) != 1 || (bitsCZero & 1))
+            if (((ValCOdd.limbs[0].x & 7) != 1) || (bitsCZero & 1))
             {
               return;                             // q != 1 or p2(r) == 0, so go out.
             }
@@ -500,7 +499,7 @@ void SolveEquation(void)
           BigIntSubt(&tmp1, &sqrRoot, &tmp2);
           BigIntAnd(&tmp2, &K1, &Solution2[factorIndex]);
         }
-        else if (bitsAZero == 0 && bitsBZero == 0)
+        else if ((bitsAZero == 0) && (bitsBZero == 0))
         {
           CopyBigInt(&Quadr, &ValA);
           BigIntMultiplyBy2(&Quadr);         // 2a
@@ -543,7 +542,7 @@ void SolveEquation(void)
         for (;;)
         {
           BigIntRemainder(&ValAOdd, &prime, &tmp1);
-          if (tmp1.nbrLimbs > 1 || tmp1.limbs[0].x != 0)
+          if (!BigIntIsZero(&tmp1))
           {
             break;
           }
@@ -562,7 +561,7 @@ void SolveEquation(void)
           for (;;)
           {
             BigIntRemainder(&discriminant, &prime, &tmp1);
-            if (tmp1.nbrLimbs > 1 || tmp1.limbs[0].x != 0)
+            if (!BigIntIsZero(&tmp1))
             {
               break;
             }
@@ -570,7 +569,7 @@ void SolveEquation(void)
             deltaZeros++;
           }
         }
-        if ((deltaZeros & 1) && deltaZeros < expon)
+        if ((deltaZeros & 1) && (deltaZeros < expon))
         {          // If delta is of type m*prime^n where m is not multiple of prime
                    // and n is odd, there is no solution, so go out.
           return;
@@ -585,7 +584,7 @@ void SolveEquation(void)
         {
           BigIntAdd(&tmp1, &ValAOdd, &ValAOdd);
         }
-        else if (ValAOdd.nbrLimbs > 1 || ValAOdd.limbs[0].x != 0)
+        else if (!BigIntIsZero(&ValAOdd))
         {
           BigIntSubt(&tmp1, &ValAOdd, &ValAOdd);
         }
@@ -596,7 +595,7 @@ void SolveEquation(void)
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&tmp2, &ValAOdd, &tmp1, &Aux[0]);
         CopyBigInt(&ValAOdd, &Aux[0]);
-        if (discriminant.nbrLimbs == 1 && discriminant.limbs[0].x == 0)
+        if (BigIntIsZero(&discriminant))
         {     // Discriminant is zero.
           (void)memset(sqrRoot.limbs, 0, nbrLimbs * sizeof(limb));
           deltaIsZero = 1;
@@ -769,7 +768,7 @@ void SolveEquation(void)
         for (ctr = 0; ctr < bitsAZero; ctr++)
         {
           BigIntRemainder(&tmp1, &prime, &tmp2);
-          if (tmp2.nbrLimbs > 1 || tmp2.limbs[0].x != 0)
+          if (!BigIntIsZero(&tmp2))
           {   // Cannot divide by prime, so go out.
             sol1Invalid = 1;
             break;
@@ -786,7 +785,7 @@ void SolveEquation(void)
         for (ctr = 0; ctr < bitsAZero; ctr++)
         {
           BigIntRemainder(&tmp1, &prime, &tmp2);
-          if (tmp2.nbrLimbs > 1 || tmp2.limbs[0].x != 0)
+          if (!BigIntIsZero(&tmp2))
           {   // Cannot divide by prime, so go out.
             sol2Invalid = 1;
             break;
@@ -896,7 +895,7 @@ void SolveEquation(void)
       IntArray2BigInteger(astFactorsMod[T1+1].ptrFactor, &K);
       BigIntPowerIntExp(&K, astFactorsMod[T1+1].multiplicity, &prime);
       BigIntSubt(&Solution1[T1], &Solution2[T1], &K1);
-      if (K1.nbrLimbs == 1 && K1.limbs[0].x == 0)
+      if ((K1.nbrLimbs == 1) && (K1.limbs[0].x == 0))
       {     // Solution1[T1] == Solution2[T1]
         Exponents[T1] += 2;
       }
@@ -973,7 +972,7 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
       else
       {
         rc = ComputeExpression(modText, 1, &ValN);
-        if (rc == EXPR_OK && ValN.sign == SIGN_NEGATIVE)
+        if ((rc == EXPR_OK) && (ValN.sign == SIGN_NEGATIVE))
         {
           rc = EXPR_MODULUS_MUST_BE_NONNEGATIVE;
         }

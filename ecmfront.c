@@ -105,7 +105,7 @@ static void GetNumberOfDivisors(char **pptrOutput)
   for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
     int *ptrFactor = pstFactor->ptrFactor;
-    if (*ptrFactor == 1 && *(ptrFactor + 1) < 2)
+    if ((*ptrFactor == 1) && (*(ptrFactor + 1) < 2))
     {                        // Factor is 1.
       break;
     }

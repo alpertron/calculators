@@ -87,7 +87,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
   int nbrLimbsDivisor;
 
   // Check whether the divisor is zero.
-  if (pDivisor->limbs[0].x == 0 && pDivisor->nbrLimbs == 1)
+  if ((pDivisor->limbs[0].x == 0) && (pDivisor->nbrLimbs == 1))
   {  // Indicate overflow if divisor is zero.
     return EXPR_NUMBER_TOO_HIGH;
   }

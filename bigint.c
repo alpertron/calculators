@@ -478,7 +478,7 @@ void MultBigNbrModN(int *Nbr1, int *Nbr2, int *Prod, int *Mod, int nbrLen)
   int i;
   int arr[MAX_LIMBS_SIQS];
 
-  if (nbrLen >= 2 && *(Mod + nbrLen - 1) == 0)
+  if ((nbrLen >= 2) && (*(Mod + nbrLen - 1) == 0))
   {
     nbrLen--;
   }
@@ -502,7 +502,7 @@ void MultBigNbrModN(int *Nbr1, int *Nbr2, int *Prod, int *Mod, int nbrLen)
 
 void MultBigNbrByIntModN(int *Nbr1, int Nbr2, int *Prod, int *Mod, int nbrLen)
 {
-  if (nbrLen >= 2 && *(Mod + nbrLen - 1) == 0)
+  if ((nbrLen >= 2) && (*(Mod + nbrLen - 1) == 0))
   {
     nbrLen--;
   }
