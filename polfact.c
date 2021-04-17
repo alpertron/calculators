@@ -37,7 +37,8 @@ extern int poly4[1000000];
 // Perform distinct degree factorization
 static void DistinctDegreeFactorization(int polyDegree)
 {
-  struct sFactorInfo *pstFactorInfo, *pstNewFactorInfo;
+  struct sFactorInfo *pstFactorInfo;
+  struct sFactorInfo *pstNewFactorInfo;
   int nbrLimbs = primeMod.nbrLimbs + 1;
   int currentDegree;
   int nbrFactor;

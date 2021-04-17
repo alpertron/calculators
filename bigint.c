@@ -189,7 +189,8 @@ void MultBigNbrByInt(int *bigFactor, int factor, int *bigProd, int nbrLen)
   double dFactor;
   double dVal = 1 / (double)(1U<<BITS_PER_INT_GROUP);
   int factorPositive = 1;
-  int ctr, carry;
+  int ctr;
+  int carry;
   if (factor < 0)
   {     // If factor is negative, indicate it and compute its absolute value.
     factorPositive = 0;

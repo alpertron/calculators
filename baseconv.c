@@ -37,9 +37,13 @@ void Dec2Bin(char *decimal, limb *binary, int digits, int *bitGroups)
 {
   // First step: separate in groups of DIGITS_PER_LIMB digits.
   char *ptrSrc;
-  limb *ptrDest, *ptrBinary;
-  int digit, groupNbr, multiplier;
-  int outerGroup, innerGroup;
+  limb *ptrDest;
+  limb *ptrBinary;
+  int digit;
+  int groupNbr;
+  int multiplier;
+  int outerGroup;
+  int innerGroup;
   int nbrGroups = 1;
   for (nbrGroups = 1; nbrGroups*DIGITS_PER_LIMB < digits; nbrGroups *= 2)
   {
@@ -178,7 +182,9 @@ void int2hex(char **pOutput, int nbr)
 void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
 {
   int showDigitsText = TRUE;
-  int nbrBits, mask, value;
+  int nbrBits;
+  int mask;
+  int value;
   int digits = 0;
 
   if (groupLength <= 0)

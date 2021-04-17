@@ -50,7 +50,10 @@ static int counters[400];
 static char isDescending[400];
 static int originalMultiplicities[400];
 static int Exponents[400];
-static BigInteger Q, K1, tmp1, tmp2;
+static BigInteger Q;
+static BigInteger K1;
+static BigInteger tmp1;
+static BigInteger tmp2;
 static BigInteger Aux[400];
 static BigInteger ValA;
 static BigInteger ValB;
@@ -135,12 +138,17 @@ static void ContFracPell(void);
 static BigInteger Tmp[13];
 static int indexEvenMultiplicity[400];
 static int nbrPrimesEvenMultiplicity;
-static int equationNbr, contfracEqNbr;
+static int equationNbr;
+static int contfracEqNbr;
 static char positiveDenominator;
 static char *ptrVarNameX;
 static char *ptrVarNameY;
-static char *varX, *varY, *varXnoTrans, *varYnoTrans;
-static BigInteger K, L;
+static char *varX;
+static char *varY;
+static char *varXnoTrans;
+static char *varYnoTrans;
+static BigInteger K;
+static BigInteger L;
 #define NBR_COEFF 6
 struct stValidateCoeff
 {
@@ -407,7 +415,8 @@ static void showSolutionXY(BigInteger *X, BigInteger *Y)
 
 void ShowXY(BigInteger *X, BigInteger *Y)
 {
-  enum eSign signX, signY;
+  enum eSign signX;
+  enum eSign signY;
   if (showSolution == TWO_SOLUTIONS)
   {
     solFound = 1;
@@ -686,7 +695,10 @@ static void findQuadraticSolution(BigInteger* pSolution, int expon)
 // Solve congruence an^2 + bn + c = 0 (mod n) where n is different from zero.
 void SolveQuadModEquation(void)
 {
-  int factorIndex, expon, T1, E;
+  int factorIndex;
+  int expon;
+  int T1;
+  int E;
   static BigInteger GcdAll;
   static BigInteger ValNn;
   static BigInteger z;

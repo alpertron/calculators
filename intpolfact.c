@@ -50,10 +50,12 @@ struct linkedBigInt* matrixBL[MAX_MATRIX_SIZE][MAX_MATRIX_SIZE];
 struct linkedBigInt* detProdB[MAX_MATRIX_SIZE];
 struct linkedBigInt* traces[MAX_MATRIX_SIZE * 10];
 struct linkedBigInt* ptrCoeffs[MAX_MATRIX_SIZE * 10];
-BigInteger powerBoundA, powerExtraBits;
+BigInteger powerBoundA;
+BigInteger powerExtraBits;
 static int* ptrFactorInteger;
 
-static BigInteger contentPolyToFactor, halfPowerMod;
+static BigInteger contentPolyToFactor;
+static BigInteger halfPowerMod;
 static int origPolyToFactor[1000000];
 static int polyToFactor[1000000];
 static int factorX[] = { 1, 0, 1, 1 }; // Polynomial is x.

@@ -173,7 +173,8 @@ void GetMontgomeryParms(int len)
   }
   else
   {
-    int x, N;
+    int x;
+    int N;
     x = N = (int)TestNbr[0].x;   // 2 least significant bits of inverse correct.
     x = x * (2 - N * x);         // 4 least significant bits of inverse correct.
     x = x * (2 - N * x);         // 8 least significant bits of inverse correct.
@@ -220,7 +221,8 @@ void AdjustModN(limb *Nbr, limb *Modulus, int nbrLen)
   int carry;
   double dVal = 1 / (double)LIMB_RANGE;
   double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
-  double dDelta, dTrialQuotient;
+  double dDelta;
+  double dTrialQuotient;
 #endif
   int i;
   int TrialQuotient;

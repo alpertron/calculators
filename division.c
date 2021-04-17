@@ -244,7 +244,10 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     int nbrLimbsQuotient;
     int power2;
     limb *ptrDest;
-    limb *ptrDivisor, *ptrDividend, *ptrQuotient, *ptrQuot;
+    limb *ptrDivisor;
+    limb *ptrDividend;
+    limb *ptrQuotient;
+    limb *ptrQuot;
     
     nbrLimbs += 3;    // Use this number of limbs for intermediate calculations.
     if (nbrLimbs > nbrLimbsDivisor)

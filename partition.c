@@ -158,7 +158,8 @@ void partition(int val, BigInteger *pResult)
   partArray[0] = partArray[val + limbs];
   for (index = 1; index<limbs; index++)
   {
-    long numerator, prodmod;
+    long numerator;
+    long prodmod;
     currentPrime = partArray[val + index];
     prodmod = 1;
     for (k = index - 1; k >= 0; k--)
@@ -191,7 +192,8 @@ void partition(int val, BigInteger *pResult)
   {
     int mult;
     int prod[2];
-    unsigned int carry1 = 0, carry2 = 0;
+    unsigned int carry1 = 0;
+    unsigned int carry2 = 0;
     // Update product of modulus by multiplying by next prime.
     mult = partArray[val + index - 1];
     for (idx = 0; idx < prodModulusLimbs; idx++)

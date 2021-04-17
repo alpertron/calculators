@@ -33,7 +33,8 @@ static struct sFactors astFactorsNorm[1000];
 static int factorsNorm[10000];
 static int NbrFactorsNorm;
 static limb K[MAX_LEN];
-static BigInteger mult1, mult2;
+static BigInteger mult1;
+static BigInteger mult2;
 static limb minusOneMont[MAX_LEN];
 static void DivideGaussian(BigInteger *real, BigInteger *imag);
 static BigInteger value[2];
@@ -93,7 +94,8 @@ void GaussianFactorization(void)
   showText("<ul>");
   if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 1)
   {           // norm greater than 1. Factor norm.
-    int index, index2;
+    int index;
+    int index2;
     char *ptrFactorDec = tofactorDec;
     NumberLength = tofactor.nbrLimbs;
     BigInteger2IntArray(nbrToFactor, &tofactor);
@@ -247,7 +249,10 @@ void GaussianFactorization(void)
 
 static void DivideGaussian(BigInteger *real, BigInteger *imag)
 {
-  BigInteger Tmp, norm, realNum, imagNum;
+  BigInteger Tmp;
+  BigInteger norm;
+  BigInteger realNum;
+  BigInteger imagNum;
   CopyBigInt(&Tmp, real);
   Tmp.sign = SIGN_POSITIVE;
   BigIntMultiply(real, real, &norm);

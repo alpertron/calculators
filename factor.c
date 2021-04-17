@@ -59,7 +59,8 @@ static int nbrPrimes;
 static int indexPrimes;
 static int DegreeAurif;
 static int NextEC;
-static BigInteger power, prime;
+static BigInteger power;
+static BigInteger prime;
 int *factorArr[FACTOR_ARRSIZE];
 static int indexM;
 static int maxIndexM;
@@ -203,7 +204,10 @@ static int lucas_cost(int n, double v)
 /* computes nP from P=(x:z) and puts the result in (x:z). Assumes n>2. */
 void prac(int n, limb *x, limb *z, limb *xT, limb *zT, limb *xT2, limb *zT2)
 {
-  int d, e, r, i;
+  int d;
+  int e;
+  int r;
+  int i;
   limb *t;
   limb *xA = x;
   limb *zA = z;

@@ -51,11 +51,14 @@ extern int partialsFound;
 extern uint64_t ValuesSieved;
 extern int congruencesFound;
 extern int polynomialsSieved;
-extern int matrixRows, matrixCols;
+extern int matrixRows;
+extern int matrixCols;
 extern int nbrPartials;
 
 extern char tofactorDec[MAX_LEN*12];
-extern char prettyprint, cunningham, hexadecimal;
+extern char prettyprint;
+extern char cunningham;
+extern char hexadecimal;
 extern struct sFactors stFactors[MAX_FACTORS];
 extern int *factorArr[FACTOR_ARRSIZE];
 void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors);

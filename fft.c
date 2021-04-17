@@ -98,7 +98,8 @@ static void initCosinesArray(void)
     }
     else
     {
-      int firstProd[6], secondProd[6];
+      int firstProd[6];
+      int secondProd[6];
       // Compute cos(A+B) = cos A cos B - sin A sin B.
       ptrOldCosSin = ptrCosSin - mask;   // Pointer to cos/sin A.
       MultBigNbrComplete(ptrOldCosSin->Cos, ptrCosSinDelta->Cos, firstProd, 2);

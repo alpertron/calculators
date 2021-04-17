@@ -72,7 +72,8 @@ typedef struct BigRational
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR2[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
-extern int NumberLength, NumberLengthR1;
+extern int NumberLength;
+extern int NumberLengthR1;
 extern int groupLen;
 extern char MontgomeryMultNCached;
 extern char TestNbrCached;

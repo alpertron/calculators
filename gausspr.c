@@ -29,7 +29,8 @@ along with this program.If not, see <http://www.gnu.org/licenses/>.
 #else
   #include <SDL.h>
   #define pixels (unsigned int *)(4*MAX_WIDTH*32)
-  SDL_Surface *screen, *doubleBuffer;
+  SDL_Surface *screen;
+  SDL_Surface *doubleBuffer;
   int oldXCenter;
   int oldYCenter;
   int oldXFraction;
@@ -69,7 +70,8 @@ static char primes[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
 
 static void initMultipleArray(void)
 {
-  int i, j;
+  int i;
+  int j;
   for (i = 0; i<25; i++)
   {
     int k = primes[i];
@@ -180,12 +182,14 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   }
   int TestNbr0 = TestNbr[0];
   int TestNbr1 = TestNbr[1];
-  uint32_t Prod0, Prod1;
+  uint32_t Prod0;
+  uint32_t Prod1;
   int factor2_0 = *factor2;
   int factor2_1 = *(factor2+1);
 #ifdef _USING64BITS_
   uint64_t Pr;
-  unsigned int Nbr, MontDig;
+  unsigned int Nbr;
+  unsigned int MontDig;
   
   Pr = (Nbr = *factor1) * (uint64_t)factor2_0;
   MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_INT_NBR;

@@ -31,7 +31,8 @@
   #define EXTERNALIZE	
   #define pixelXY(x, y) (Uint32*)doubleBuffer->pixels + y * width + x;
   #include <SDL.h>
-  SDL_Surface *screen, *doubleBuffer;
+  SDL_Surface *screen;
+  SDL_Surface *doubleBuffer;
   int oldXCenter;
   int oldYCenter;
   int oldXFraction;
@@ -230,7 +231,8 @@ void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
   }
   int TestNbr0 = TestNbr[0];
   int TestNbr1 = TestNbr[1];
-  uint32_t Prod0, Prod1;
+  uint32_t Prod0;
+  uint32_t Prod1;
   int factor2_0 = *factor2;
   int factor2_1 = *(factor2+1);
 #ifdef _USING64BITS_

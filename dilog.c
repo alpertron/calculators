@@ -201,7 +201,8 @@ void DiscreteLogarithm(void)
   intToBigInteger(&DiscreteLogPeriod, 1); // DiscreteLogPeriod <- 1
   for (index = 1; index <= NbrFactorsMod; index++)
   {
-    int mostSignificantDword, leastSignificantDword;
+    int mostSignificantDword;
+    int leastSignificantDword;
     int NbrFactors;
     int *ptrPrime;
     int multiplicity;

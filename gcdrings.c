@@ -479,7 +479,8 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
     ConvertQuaternionToEvenType(scalarA, vecIA, vecJA, vecKA, temp1, temp2, temp3);
     ConvertQuaternionToEvenType(scalarB, vecIB, vecJB, vecKB, temp1, temp2, temp3);
     int GcdIsAtimesD = FALSE;
-    int exponA, exponB;
+    int exponA;
+    int exponB;
     if (BigIntEqual(scalarA, scalarB) && BigIntEqual(vecIA, vecIB) &&
       BigIntEqual(vecJA, vecJB) && BigIntEqual(vecKA, vecKB))
     {         // A and B are associates.

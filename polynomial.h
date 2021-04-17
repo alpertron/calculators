@@ -48,7 +48,12 @@ enum eDivType
 #ifndef lang  
   extern int lang;
 #endif
-extern BigInteger Quintic, Quartic, Cubic, Quadratic, Linear, Independent;
+extern BigInteger Quintic;
+extern BigInteger Quartic;
+extern BigInteger Cubic;
+extern BigInteger Quadratic;
+extern BigInteger Linear;
+extern BigInteger Independent;
 extern struct sFactorInfo factorInfo[MAX_DEGREE];
 extern struct sFactorInfo factorInfoInteger[MAX_DEGREE];
 extern BigInteger primeMod;              // p

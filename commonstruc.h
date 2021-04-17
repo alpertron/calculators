@@ -143,7 +143,11 @@ struct stEcm
   limb root[GROUP_SIZE][MAX_LEN];
   int sieveidx[GROUP_SIZE];
   limb GcdAccumulated[MAX_LEN];
-  limb *fieldAA, *fieldTX, *fieldTZ, *fieldUX, *fieldUZ;
+  limb *fieldAA;
+  limb *fieldTX;
+  limb *fieldTZ;
+  limb *fieldUX;
+  limb *fieldUZ;
   unsigned char sieve[10 * SIEVE_SIZE];
   unsigned char sieve2310[SIEVE_SIZE];
   unsigned char ProcessExpon[(332199 + 7) / 8];
