@@ -39,7 +39,7 @@ static void showPolynomial(char** pptrOutput, int* ptrPoly, int polyDegree, int 
 BigInteger primeMod;              // p
 int exponentMod;                  // k
 BigInteger powerMod;              // p^k
-int modulusIsZero;
+bool modulusIsZero;
 int degree;
 static BigInteger value;
 BigInteger operand1;
@@ -163,15 +163,15 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
       input++;
     }
     cUppercase = c & 0xDF;
-    if (cUppercase >= 'A' && cUppercase <= 'Z')
+    if ((cUppercase >= 'A') && (cUppercase <= 'Z'))
     {          // Letter found.
-      if (variableLetter != cUppercase && variableLetter != ' ')
+      if ((variableLetter != cUppercase) && (variableLetter != ' '))
       {
         return EXPR_MULTIPLE_VARIABLES_NOT_ACCEPTED;
       }
       variableLetter = cUppercase;
     }
-    if (c == '*' && *input == '*')
+    if ((c == '*') && (*input == '*'))
     {          // Convert double asterisk to exponentiation.
       c = '^';
       input++;
@@ -184,7 +184,8 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
         while (stackOperIndex > 0)
         {      // Send operators to output.
           s = stackOper[--stackOperIndex];
-          if (s != '+' && s != '-' && s != '*' && s != '^' && s != '/' && s != '%' && s != TOKEN_UNARY_MINUS)
+          if ((s != '+') && (s != '-') && (s != '*') && (s != '^') &&
+            (s != '/') && (s != '%') && (s != TOKEN_UNARY_MINUS))
           {    // Operator on stack has less precedence.
             stackOperIndex++;
             break;
@@ -206,7 +207,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
         while (stackOperIndex > 0)
         {      // Send operators to output.
           s = stackOper[--stackOperIndex];
-          if (s != '^' && s != '*' && s != '/' && s != '%')
+          if ((s != '^') && (s != '*') && (s != '/') && (s != '%'))
           {    // Operator on stack has less precedence.
             stackOperIndex++;
             break;
@@ -330,10 +331,10 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
         *ptrOutput++ = 'x';
         prevTokenIsNumber = TRUE;
       }
-      else if (c >= '0' && c <= '9')
+      else if ((c >= '0') && (c <= '9'))
       {          // Number.
         ptrInput = input;
-        while (*ptrInput >= '0' && *ptrInput <= '9')
+        while ((*ptrInput >= '0') && (*ptrInput <= '9'))
         {        // Find end of number.
           ptrInput++;
         }
@@ -449,7 +450,7 @@ static int NegatePolynomialExpr(int *ptrArgument)
     ptrValue1++;
     for (currentDegree = val; currentDegree >= 0; currentDegree--)
     {
-      if (*ptrValue1 == 1 && *(ptrValue1 + 1) == 0)
+      if ((*ptrValue1 == 1) && (*(ptrValue1 + 1) == 0))
       {          // If value is zero, it does not have to be changed.
         *ptrValue2++ = 1;
         *ptrValue2++ = 0;
@@ -569,7 +570,7 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
       return EXPR_OK;
     }
   }
-  if (degree1 > 0 && degree2 > 0)
+  if ((degree1 > 0) && (degree2 > 0))
   {           // Sum of two polynomials.
     int *ptrPolyMin;
     int *ptrPolyMax;
@@ -731,7 +732,7 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
   int currentDegree;
   int degree1 = *ptrArgument1;
   int degree2 = *ptrArgument2;
-  if (degree1 <= 0 && degree2 <= 0)
+  if ((degree1 <= 0) && (degree2 <= 0))
   {        // Product of two monomials.
     if (degree1 + degree2 < -MAX_DEGREE)
     {
@@ -753,7 +754,7 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
     valuesIndex = (int)(ptrArgument1+2+*(ptrArgument1+1) - &values[0]);
     return EXPR_OK;
   }
-  if (degree1 > 0 && degree2 > 0)
+  if ((degree1 > 0) && (degree2 > 0))
   {        // Product of two polynomials.
     if (degree1 + degree2 > MAX_DEGREE)
     {
@@ -1461,7 +1462,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
       potentialDegreeGcd = degreeGcdMod;
     }
     ptrSrc = &poly3[0];
-    if (polyS[0] == 0 && polyS[1] == 1 && polyS[2] == 0)
+    if ((polyS[0] == 0) && (polyS[1] == 1) && (polyS[2] == 0))
     {                                // If previous polynomial is zero, g_m <- (b * g_p) mod p.
       ptrDest = &polyS[1];
       for (degree = 0; degree <= potentialDegreeGcd; degree++)
@@ -1546,7 +1547,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
     poly5[0] = argF[0];
     CopyPolynomial(&poly5[1], &argF[1], degree);
     rc = DivideIntegerPolynomial(poly5, polyT, TYPE_MODULUS);
-    if (rc == EXPR_OK && poly5[0] == 0 && poly5[1] == 1 && poly5[2] == 0)
+    if ((rc == EXPR_OK) && (poly5[0] == 0) && (poly5[1] == 1) && (poly5[2] == 0))
     {           // Remainder is zero.
       if (argG[0] < 0)
       {
@@ -1559,7 +1560,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
       poly5[0] = argG[0];
       CopyPolynomial(&poly5[1], &argG[1], degree);
       rc = DivideIntegerPolynomial(poly5, polyT, TYPE_MODULUS);
-      if (rc == EXPR_OK && poly5[0] == 0 && poly5[1] == 1 && poly5[2] == 0)
+      if ((rc == EXPR_OK) && (poly5[0] == 0) && (poly5[1] == 1) && (poly5[2] == 0))
       {           // Remainder is zero.
                   // Return h*gcd(contentF, contentG)
         BigIntGcd(&contentF, &contentG, &operand1);
@@ -1596,7 +1597,7 @@ void PolyModularGcd(int *arg1, int degree1, int *arg2, int degree2, int *gcd, in
   int currentDegree;
   if (degree2 == 0)
   {
-    if (*arg2 == 1 && *(arg2 + 1) == 0)
+    if ((*arg2 == 1) && (*(arg2 + 1) == 0))
     {     // Number is zero. GCD is first argument.
       *degreeGcd = degree1;
       (void)memcpy(gcd, arg1, (degree1+1)*nbrLimbs*sizeof(int));
@@ -1753,7 +1754,7 @@ int DerPolynomial(int *ptrArgument)
       LenAndLimbs2ArrLimbs(ptrArgument + 1, operand1.limbs, nbrLimbs);
       modmultInt(operand1.limbs, -degreePoly, operand1.limbs);
       ArrLimbs2LenAndLimbs(ptrArgument + 1, operand1.limbs, nbrLimbs);
-      if (*(ptrArgument + 1) == 1 && *(ptrArgument + 2) == 0)
+      if ((*(ptrArgument + 1) == 1) && (*(ptrArgument + 2) == 0))
       {   // Only coefficient is zero. Set degree to zero.
         *ptrArgument = 0;
       }
@@ -2120,7 +2121,7 @@ static void ExtendedGcdPolynomial(/*@in@*/int *ptrA, int degreeA, /*@in@*/int *p
   // P2 <- modular inverse of gcd (stored in operand5).
   nbrLimbs = NumberLength;
   ModInvBigNbr(operand5.limbs, (limb*)(ptrP2 + 1), powerMod.limbs, powerMod.nbrLimbs);
-  while (nbrLimbs > 1 && *(ptrP2 + nbrLimbs) == 0)
+  while ((nbrLimbs > 1) && (*(ptrP2 + nbrLimbs) == 0))
   {
     nbrLimbs--;
   }
@@ -2913,9 +2914,9 @@ void outputPolynomialFactor(char *ptrOutput, int groupLength, struct sFactorInfo
 {
   int polyDegree = pstFactorInfo->degree;
   int multiplicity = pstFactorInfo->multiplicity;
-  int isMonomial = (polyDegree == 1 && *pstFactorInfo->ptrPolyLifted == 1 &&
-     *(pstFactorInfo->ptrPolyLifted+1) == 0);
-  if (multiplicity > 1 && !isMonomial)
+  int isMonomial = ((polyDegree == 1) && (*pstFactorInfo->ptrPolyLifted == 1) &&
+     (*(pstFactorInfo->ptrPolyLifted+1) == 0));
+  if ((multiplicity > 1) && !isMonomial)
   {
     *ptrOutput++ = '(';
   }

@@ -59,7 +59,7 @@ extern struct sFactorInfo factorInfoInteger[MAX_DEGREE];
 extern BigInteger primeMod;              // p
 extern int exponentMod;                  // k
 extern BigInteger powerMod;              // p^k
-extern int modulusIsZero;
+extern bool modulusIsZero;
 extern BigInteger operand1;
 extern BigInteger operand2;
 extern BigInteger operand3;

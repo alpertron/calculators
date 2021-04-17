@@ -71,7 +71,6 @@ extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 char texto[500];
 void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs);
-int checkMinusOne(limb *value, int nbrLimbs);
 void batchCubesCallback(char **pptrOutput);
 #ifdef __EMSCRIPTEN__
 void contfracText(char *input, int groupLen);

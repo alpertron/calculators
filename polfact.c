@@ -221,7 +221,7 @@ void SameDegreeFactorization(void)
   int primeInt = (int)primeMod.limbs[0].x;
   int nbrLimbs = primeMod.nbrLimbs + 1;
   int polyNbr = 1;
-  int isCharacteristic2 = primeMod.nbrLimbs == 1 && primeMod.limbs[0].x == 2;
+  int isCharacteristic2 = (primeMod.nbrLimbs == 1) && (primeMod.limbs[0].x == 2);
   for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
     int polyDegree = pstFactorInfo->degree;
@@ -367,7 +367,7 @@ void SameDegreeFactorization(void)
         }
       }
       PolyModularGcd(poly3, polyDegree, poly2, getDegreePoly(poly2, polyDegree - 1), poly4, &degreeGcd);
-      if (degreeGcd != 0 && degreeGcd != polyDegree)
+      if ((degreeGcd != 0) && (degreeGcd != polyDegree))
       {   // Non-trivial factor found.
         ptrValue1 = &poly4[degreeGcd*nbrLimbs];
         SetNumberToOne(ptrValue1);
@@ -447,7 +447,7 @@ static void SortFactors(BigInteger *modulus)
             }
           }
         }
-        if (currentDegree >= 0 && *(ptrValue1 + index) > *(ptrValue2 + index))
+        if ((currentDegree >= 0) && (*(ptrValue1 + index) > *(ptrValue2 + index)))
         {
           stFactorInfoTemp = *pstFactorInfo;
           *pstFactorInfo = *pstFactorInfo2;
@@ -496,7 +496,7 @@ int FactorModularPolynomial(int inputMontgomery)
     BigInteger2IntArray(&valuesPrime[currentDegree*nbrLimbsPrime], &operand1);
     ptrValue1 += 1 + numLimbs(ptrValue1);
   }
-  if (operand1.nbrLimbs == 1 && operand1.limbs[0].x == 0)
+  if (BigIntIsZero(&operand1))
   {
     return EXPR_LEADING_COFF_MULTIPLE_OF_PRIME;
   }
@@ -577,16 +577,20 @@ void polyFactText(char *modText, char *polyText, int groupLength)
   modulusIsZero = 0;
   if (rc == EXPR_OK)
   {
-    if (powerMod.nbrLimbs == 1 && powerMod.limbs[0].x == 0)
+    if (BigIntIsZero(&powerMod))
     {
       modulusIsZero = 1;
     }
-    else if (powerMod.sign == SIGN_NEGATIVE || (powerMod.nbrLimbs == 1 && powerMod.limbs[0].x < 2))
-    {
+    else if (powerMod.sign == SIGN_NEGATIVE)
+    {                  // Negative is not greater than 1.
+      rc = EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE;
+    }
+    else if ((powerMod.nbrLimbs == 1) && (powerMod.limbs[0].x < 2))
+    {                  // Positive number is less 2.
       rc = EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE;
     }
   }
-  if (rc == EXPR_OK && !modulusIsZero)
+  if ((rc == EXPR_OK) && (!modulusIsZero))
   {
     expon = PowerCheck(&powerMod, &primeMod);
 #if FACTORIZATION_APP

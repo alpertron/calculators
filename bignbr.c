@@ -1355,20 +1355,20 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
   return 1;
 }
 
-int checkOne(limb *value, int nbrLimbs)
+bool checkOne(limb *value, int nbrLimbs)
 {
   int idx;
   for (idx = 0; idx < nbrLimbs; idx++)
   {
     if ((value++)->x != MontgomeryMultR1[idx].x)
     {
-      return 0;    // Go out if value is not 1 (mod p)
+      return false;    // Go out if value is not 1 (mod p)
     }
   }
-  return 1;
+  return true;
 }
 
-int checkMinusOne(limb *value, int nbrLimbs)
+bool checkMinusOne(limb *value, int nbrLimbs)
 {
   int idx;
   unsigned int carry;
@@ -1378,11 +1378,11 @@ int checkMinusOne(limb *value, int nbrLimbs)
     carry += (unsigned int)(value++)->x + (unsigned int)MontgomeryMultR1[idx].x;
     if ((carry & MAX_VALUE_LIMB) != (unsigned int)TestNbr[idx].x)
     {
-      return 0;    // Go out if value is not -1 (mod p)
+      return false;    // Go out if value is not -1 (mod p)
     }
     carry >>= BITS_PER_GROUP;
   }
-  return 1;
+  return true;
 }
 
 void BigIntDivideBy2(BigInteger *nbr)
@@ -1925,7 +1925,7 @@ void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len)
   }
 }
 
-int BigNbrIsZero(limb *value)
+bool BigNbrIsZero(limb *value)
 {
   int ctr;
   for (ctr = 0; ctr < NumberLength; ctr++)
@@ -1939,7 +1939,7 @@ int BigNbrIsZero(limb *value)
   return 1;      // Number is zero
 }
 
-int BigIntIsZero(BigInteger *value)
+bool BigIntIsZero(BigInteger *value)
 {
   if ((value->nbrLimbs == 1) && (value->limbs[0].x == 0))
   {
@@ -1948,7 +1948,7 @@ int BigIntIsZero(BigInteger *value)
   return 0;      // Number is not zero.
 }
 
-int BigIntIsOne(BigInteger* value)
+bool BigIntIsOne(BigInteger* value)
 {
   if ((value->nbrLimbs == 1) && (value->limbs[0].x == 1) && (value->sign == SIGN_POSITIVE))
   {
@@ -1957,7 +1957,7 @@ int BigIntIsOne(BigInteger* value)
   return 0;      // Number is not zero.
 }
 
-int BigIntEqual(BigInteger *value1, BigInteger *value2)
+bool BigIntEqual(BigInteger *value1, BigInteger *value2)
 {
   int index;
   int nbrLimbs;
