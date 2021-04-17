@@ -55,9 +55,11 @@ unsigned int MontgomeryMultN;
 int MontgomeryMultR1[NBR_LIMBS+1];  // One more limb required for AdjustModN.
 int MontgomeryMultR2[NBR_LIMBS+1];
 int showAlgebraic;
-int thickness = 3;                           // Number of bits to shift.
-int xCenter, xFraction;                      // Range of fraction: 0 to (1 << thickness) - 1
-int yCenter, yFraction;
+int thickness = 3;                  // Number of bits to shift.
+int xCenter;
+int xFraction;                      // Range of fraction: 0 to (1 << thickness) - 1
+int yCenter;
+int yFraction;
 int width;
 int height;
 char initMultipleArrayCalled;
@@ -85,9 +87,12 @@ static void initMultipleArray(void)
 // Compute Nbr <- Nbr mod TestNbr.
 static void AdjustModN(int *Nbr)
 {
-  int i, carry;
+  int i;
+  int carry;
   int TrialQuotient;
-  double dNbr, dModulus, dTrialQuotient;
+  double dNbr;
+  double dModulus;
+  double dTrialQuotient;
   double dDelta;
   double dVal = 1 / (double)LIMB_RANGE;
   double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
@@ -270,7 +275,8 @@ static void AddBigNbr(int *Nbr1, int *Nbr2, int *Sum)
 
 static void AddBigNbrModN(int *Nbr1, int *Nbr2, int *Sum)
 {
-  int Sum0, Sum1;
+  int Sum0;
+  int Sum1;
   int TestNbr0 = TestNbr[0];
   int TestNbr1 = TestNbr[1];
   unsigned int carry = *Nbr1 + *Nbr2;
@@ -328,9 +334,11 @@ static int isPrime(int *value)
     LIMIT(341550071728321ll),      // Bases 2, 3, 5, 7, 11, 13, 17 and 19
     LIMIT(3000000000000000000ll)   // Greater than any argument of isPrime()
   };
-  int i, j;
+  int i;
+  int j;
   int index, indexLSB, indexMSB, idxNbrMSB;
-  unsigned int mask, maskMSB;
+  unsigned int mask;
+  unsigned int maskMSB;
   unsigned int prevBase = 1;
   unsigned int base;
   int baseInMontRepres[NBR_LIMBS];
@@ -543,10 +551,21 @@ static void multiply(int factor1, int factor2, int *prod)
  // 3) y=0, x is prime and x=3 (mod 4)
 static void setPoint(int x, int y)
 {
-  int xPhysical, yPhysical;
-  int row, col, firstRow, firstCol, lastRow, lastCol;
-  int firstRow2, lastRow2, firstCol2, lastCol2;
-  int xSquared[NBR_LIMBS], ySquared[NBR_LIMBS], check[NBR_LIMBS];
+  int xPhysical;
+  int yPhysical;
+  int row;
+  int col;
+  int firstRow;
+  int firstCol;
+  int lastRow;
+  int lastCol;
+  int firstRow2;
+  int lastRow2;
+  int firstCol2;
+  int lastCol2;
+  int xSquared[NBR_LIMBS];
+  int ySquared[NBR_LIMBS];
+  int check[NBR_LIMBS];
   unsigned int *ptrPixel;
   unsigned int color;
 #ifdef __EMSCRIPTEN__  
@@ -691,7 +710,8 @@ static void setPoint(int x, int y)
 
 void drawPartialGraphic(int xminDisp, int xmaxDisp, int yminDisp, int ymaxDisp)
 {
-  int x, y;
+  int x;
+  int y;
   if (initMultipleArrayCalled == 0)
   {
     initMultipleArray();
@@ -880,8 +900,14 @@ static void setNewVideoMode(void)
 void iteration(void)
 {
   SDL_Event event;
-  SDL_Rect rectSrc, rectDest;
-  int xMax, yMin, yMax, yBound, xMove, yMove;
+  SDL_Rect rectSrc;
+  SDL_Rect rectDest;
+  int xMax;
+  int yMin;
+  int yMax;
+  int yBound;
+  int xMove;
+  int yMove;
         
   while (SDL_PollEvent(&event))
   {                           // New event arrived.

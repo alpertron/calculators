@@ -61,7 +61,8 @@ static complex TestNbrTransf[MAX_FFT_LEN];
 static void initCosinesArray(void)
 {
   struct sCosSin* ptrCosSin;
-  const struct sCosSin* ptrOldCosSin, * ptrCosSinDelta;
+  const struct sCosSin* ptrOldCosSin;
+  const struct sCosSin* ptrCosSinDelta;
   double invLimb = 1 / (double)LIMB_RANGE;
   double invSqLimb = invLimb * invLimb;
   int index;

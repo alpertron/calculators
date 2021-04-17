@@ -1008,7 +1008,8 @@ void BigInteger2IntArray(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint)
   }
   else
   {
-    int ctr, nbrLimbs;
+    int ctr;
+    int nbrLimbs;
     nbrLimbs = getNbrLimbs(destLimb);
     *ptrValues++ = (bigint->sign == SIGN_POSITIVE ? nbrLimbs : -nbrLimbs);
     for (ctr = 0; ctr < nbrLimbs; ctr++)

@@ -96,7 +96,8 @@ struct stSiqs
   BigInteger factorSiqs;
   PrimeSieveData *firstPrimeSieveData;
   BigInteger TempResult;
-  BigInteger biTemp1, biTemp2;
+  BigInteger biTemp1;
+  BigInteger biTemp2;
   unsigned char logar2;
   char threshold;
 };

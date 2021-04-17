@@ -61,8 +61,10 @@ static int DegreeAurif;
 static int NextEC;
 static BigInteger power, prime;
 int *factorArr[FACTOR_ARRSIZE];
-static int indexM, maxIndexM;
-static int foundByLehman, performLehman;
+static int indexM;
+static int maxIndexM;
+static int foundByLehman;
+static int performLehman;
 static int EC;
 static int SmallPrime[670]; /* Primes < 5000 */
 static void add3(limb *x3, limb *z3, limb *x2, limb *z2, limb *x1, limb *z1, limb *x, limb *z);

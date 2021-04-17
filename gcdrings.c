@@ -358,9 +358,16 @@ static void TestCombination(BigInteger *scalarA, BigInteger *vecIA, BigInteger *
   int nbr, int *pCombination)
 {
   int ctr;
-  struct approx appScalarA, appVecIA, appVecJA, appVecKA;
-  struct approx appScalarB, appVecIB, appVecJB, appVecKB;
-  struct approx sum, temp;
+  struct approx appScalarA;
+  struct approx appVecIA;
+  struct approx appVecJA;
+  struct approx appVecKA;
+  struct approx appScalarB;
+  struct approx appVecIB;
+  struct approx appVecJB;
+  struct approx appVecKB;
+  struct approx sum;
+  struct approx temp;
   approximate(scalarA, &appScalarA);
   approximate(vecIA, &appVecIA);
   approximate(vecJA, &appVecJA);
@@ -460,7 +467,8 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
   BigInteger *temp1, BigInteger *temp2, BigInteger *temp3, BigInteger *temp4)
 {
   int combination;
-  struct approx sumA, sumB;
+  struct approx sumA;
+  struct approx sumB;
   intToBigInteger(scalarGcd, 1);     // Initialize d to 1.
   intToBigInteger(vecIGcd, 0);
   intToBigInteger(vecJGcd, 0);

@@ -43,18 +43,29 @@ static BigInteger SquareMult1;
 static BigInteger SquareMult2;
 static BigInteger SquareMult3;
 static BigInteger SquareMult4;
-static int iMult3, iMult4;
-static int Mult1Len, Mult2Len, Mult3Len, Mult4Len, power4;
+static int iMult3;
+static int iMult4;
+static int Mult1Len;
+static int Mult2Len;
+static int Mult3Len;
+static int Mult4Len;
+static int power4;
 static limb result[MAX_LEN];
-static int nbrLimbs, origNbrLimbs, groupLength;
+static int nbrLimbs;
+static int origNbrLimbs;
+static int groupLength;
 static int sieve[MAX_SIEVE];
-static int TerminateThread, sum;
+static int TerminateThread;
+static int sum;
 static int nbrModExp;
 static int Computing3Squares;
 static char tmpOutput[MAX_LEN*12];
 int app;
 static char *square = "<span class=\"bigger\">²</span>";
-static BigInteger biMult1, biMult2, biMult3, biMult4;
+static BigInteger biMult1;
+static BigInteger biMult2;
+static BigInteger biMult3;
+static BigInteger biMult4;
 static BigInteger toProcess;
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
@@ -117,7 +128,8 @@ static void SortBigNbrs(limb *mult1, int *mult1Len, limb *mult2, int *mult2Len)
 {
   limb tmp;
   int index;
-  limb *ptr1, *ptr2;
+  limb *ptr1;
+  limb *ptr2;
   int len = *mult1Len;
   if (len > *mult2Len)
   {
@@ -164,10 +176,22 @@ int fsquares(void)
 #ifdef __EMSCRIPTEN__
   char *ptrOutput;
 #endif
-  int sqrtFound, r, tmp;
-  int i, j, numberMod8, nbrDivisors;
-  int index, nbrLimbsP, nbrLimbsQ, shRight, shRightMult3, count;
-  int divisor, base, idx;
+  int sqrtFound;
+  int r;
+  int tmp;
+  int i;
+  int j;
+  int numberMod8;
+  int nbrDivisors;
+  int index;
+  int nbrLimbsP;
+  int nbrLimbsQ;
+  int shRight;
+  int shRightMult3;
+  int count;
+  int divisor;
+  int base;
+  int idx;
   limb carry;
   nbrLimbs = origNbrLimbs;
   (void)memcpy(number, origNbr, nbrLimbs*sizeof(limb));

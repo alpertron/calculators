@@ -167,7 +167,8 @@ static void ContFrac(void)
   else
   {     // delta is not a perfect square. Periodic continued fraction.
     char ended;
-    int periodIndex, index;
+    int periodIndex;
+    int index;
         // PQa algorithm for (P+G)/Q where G = sqrt(discriminant):
         // If D - U^2 is not multiple of V then 
         //   U = U*V

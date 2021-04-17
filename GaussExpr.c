@@ -39,7 +39,8 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 BigInteger stackRealValues[PAREN_STACK_SIZE];
 BigInteger stackImagValues[PAREN_STACK_SIZE];
 int stackOperators[PAREN_STACK_SIZE];
-static int stackIndex, exprIndex;
+static int stackIndex;
+static int exprIndex;
 #ifndef lang  
   int lang;
 #endif
@@ -85,15 +86,23 @@ enum eExprErr ComputeGaussianExpression(char *expr, BigInteger *ExpressionResult
 
 static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
 {
-  int c, i, j;
+  int c;
+  int i;
+  int j;
   int exprIndexAux;
-  int SubExprResult,len;
-  static BigInteger factorialResult, Tmp;
+  int SubExprResult;
+  int len;
+  static BigInteger factorialResult;
+  static BigInteger Tmp;
   static BigInteger *ptrBigInt;
-  static BigInteger *ptrRe, *ptrIm;
-  limb carry, largeLen;
+  static BigInteger *ptrRe;
+  static BigInteger *ptrIm;
+  limb carry;
+  limb largeLen;
   limb *ptrLimb;
-  int retcode, shLeft, offset;
+  int retcode;
+  int shLeft;
+  int offset;
   int leftNumberFlag = 0;
   int startStackIndex = stackIndex;
   
@@ -585,7 +594,8 @@ static int func(char *expr, BigInteger *ExpressionResult,
 {
   int index;
   int funcNameLen = (int)strlen(funcName);
-  char *ptrExpr, *ptrFuncName;
+  char *ptrExpr;
+  char *ptrFuncName;
 
   if (exprIndex + funcNameLen > exprLength)
   {
@@ -654,8 +664,16 @@ static int ComputeSubExpr(void)
 {
   int retcode;
   int stackOper;
-  static BigInteger Re1, Re2, Im1, Im2, Re, Im, ReTmp, ImTmp;
-  static BigInteger Result[2], norm;
+  static BigInteger Re1;
+  static BigInteger Re2;
+  static BigInteger Im1;
+  static BigInteger Im2;
+  static BigInteger Re;
+  static BigInteger Im;
+  static BigInteger ReTmp;
+  static BigInteger ImTmp;
+  static BigInteger Result[2];
+  static BigInteger norm;
   stackIndex--;
 
   stackOper = stackOperators[stackIndex];
@@ -725,10 +743,13 @@ static int ComputeSubExpr(void)
 static int ComputeFibonacci(void)
 {
   BigInteger *ptrBigInt;
-  BigInteger FibonPrev, FibonAct, FibonNext;
+  BigInteger FibonPrev;
+  BigInteger FibonAct;
+  BigInteger FibonNext;
   BigInteger Re = stackRealValues[stackIndex];
   BigInteger Im = stackImagValues[stackIndex];
-  int i, arg;
+  int i;
+  int arg;
   if (Im.nbrLimbs > 1 || Im.limbs[0].x != 0)
   {     // Imaginary part of argument must be zero.
     return EXPR_INVALID_PARAM;
@@ -767,7 +788,9 @@ static int ComputeFibonacci(void)
 static int ComputeLucas(void)
 {
   int i, arg;
-  BigInteger FibonPrev, FibonAct, FibonNext;
+  BigInteger FibonPrev;
+  BigInteger FibonAct;
+  BigInteger FibonNext;
   BigInteger Re = stackRealValues[stackIndex];
   BigInteger Im = stackImagValues[stackIndex];
   BigInteger *ptrBigInt;
@@ -860,7 +883,8 @@ static void GetRemainder(BigInteger *norm, BigInteger *ReDividend, BigInteger *I
   BigInteger *ReDivisor, BigInteger *ImDivisor,
   BigInteger *Re, BigInteger *Im)
 {
-  BigInteger ReTmp, ImTmp;
+  BigInteger ReTmp;
+  BigInteger ImTmp;
   int signBak;
   // Re <- ((Re1*Re2+Im1*Im2)*2/norm+1)/2
   BigIntMultiply(ReDividend, ReDivisor, &ReTmp);
@@ -902,7 +926,9 @@ static void GetRemainder(BigInteger *norm, BigInteger *ReDividend, BigInteger *I
 
 static int ComputeGCD(void)
 {
-  BigInteger Re, Im, Tmp;
+  BigInteger Re;
+  BigInteger Im;
+  BigInteger Tmp;
   BigInteger Re1 = stackRealValues[stackIndex];
   BigInteger Re2 = stackRealValues[stackIndex+1];
   BigInteger Im1 = stackImagValues[stackIndex];
@@ -945,9 +971,14 @@ static int ComputeGCD(void)
 
 static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigInteger *Im2)
 {
-  int expon, mask;
+  int expon;
+  int mask;
   double base;
-  BigInteger norm, ReTmp, ImTmp, Re, Im;
+  BigInteger norm;
+  BigInteger ReTmp;
+  BigInteger ImTmp;
+  BigInteger Re;
+  BigInteger Im;
 
   if (Im2->nbrLimbs > 1 || Im2->limbs[0].x != 0 || Re2->sign == SIGN_NEGATIVE)
   {          // Exponent must be positive or zero.
@@ -1018,10 +1049,11 @@ static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigIn
 
 static int ComputeModPow(void)
 {
-  BigInteger Result[2];
   int mask;
-  BigInteger norm, ReTmp, ImTmp;
-
+  BigInteger Result[2];
+  BigInteger norm;
+  BigInteger ReTmp;
+  BigInteger ImTmp;
   BigInteger ReBase = stackRealValues[stackIndex];
   BigInteger ImBase = stackImagValues[stackIndex];
   BigInteger ReExp = stackRealValues[stackIndex+1];
@@ -1125,9 +1157,17 @@ static int ModInv(BigInteger *RealNbr, BigInteger *ImagNbr,
                   BigInteger *RealMod, BigInteger *ImagMod,
                   BigInteger *Result)
 {
-  BigInteger ReG0, ReG1, ImG0, ImG1;
-  BigInteger ReU0, ReU1, ImU0, ImU1;
-  BigInteger Re, Im, Tmp;
+  BigInteger ReG0;
+  BigInteger ReG1;
+  BigInteger ImG0;
+  BigInteger ImG1;
+  BigInteger ReU0;
+  BigInteger ReU1;
+  BigInteger ImU0;
+  BigInteger ImU1;
+  BigInteger Re;
+  BigInteger Im;
+  BigInteger Tmp;
 
   if (RealMod->nbrLimbs == 1 && ImagMod->nbrLimbs == 1 &&
       RealMod->limbs[0].x == 0 && ImagMod->limbs[0].x == 0)
@@ -1208,7 +1248,13 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
                   BigInteger *Result)
 {
   int i;
-  BigInteger Re, Im, ReMin, ImMin, norm, Tmp, normmin;
+  BigInteger Re;
+  BigInteger Im;
+  BigInteger ReMin;
+  BigInteger ImMin;
+  BigInteger norm;
+  BigInteger Tmp;
+  BigInteger normmin;
   if (ReDen->nbrLimbs == 1 && ImDen->nbrLimbs == 1 &&
       ReDen->limbs[0].x == 0 && ImDen->limbs[0].x == 0)
   {      // Denominator is zero.

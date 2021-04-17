@@ -26,7 +26,8 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 
 #define PAREN_STACK_SIZE 100
 
-static BigInteger ReValue, ImValue;
+static BigInteger ReValue;
+static BigInteger ImValue;
 static char *ptrOutput;
 static struct sFactors astFactorsNorm[1000];
 static int factorsNorm[10000];
@@ -69,7 +70,12 @@ static void showNumber(BigInteger *real, BigInteger *imag)
 
 void GaussianFactorization(void)
 {
-  BigInteger prime, q, r, M1, M2, Tmp;
+  BigInteger prime;
+  BigInteger q;
+  BigInteger r;
+  BigInteger M1;
+  BigInteger M2;
+  BigInteger Tmp;
   struct sFactors *pstFactor;
 
   BigIntMultiply(&ReValue, &ReValue, &tofactor);
