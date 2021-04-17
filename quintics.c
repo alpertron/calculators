@@ -77,7 +77,11 @@ enum
 
 static BigRational RatValues[7];  // T1, T2, T3, T4, l0, v and O.
 static BigRational RatRoot;       // Rational root of polynomial F20.
-static BigRational RatM, RatN, RatR, RatR2, RatS2;
+static BigRational RatM;
+static BigRational RatN;
+static BigRational RatR;
+static BigRational RatR2;
+static BigRational RatS2;
 static int firstNumberShown;
 
 // Coefficients taken from Dummit's Solving Solvable Quintics article.
@@ -4057,7 +4061,8 @@ static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
 // where t is the rational root of polynomial F20.
 static void computeArrayValues(void)
 {
-  int index, ctr;
+  int index;
+  int ctr;
   struct BigRational* pRatValues = &RatValues[0];
   struct monomial* pstMonomial = arrayF;
 

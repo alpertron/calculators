@@ -57,8 +57,10 @@ int MontgomeryMultR1[NBR_LIMBS+1];  // One more limb required for AdjustModN.
 int MontgomeryMultR2[NBR_LIMBS+1];
 int showAlgebraic;
 int thickness = 3;                  // Number of bits to shift.
-int xCenter, xFraction;             // Range of fraction: 0 to (1 << thickness) - 1
-int yCenter, yFraction;
+int xCenter;
+int xFraction;             // Range of fraction: 0 to (1 << thickness) - 1
+int yCenter;
+int yFraction;
 int width;
 int height;
 int startNumber[2] = {1, 0};
@@ -68,7 +70,8 @@ static char primes[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
                          43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };
 void initMultipleArray(void)
 {
-  int i, j;
+  int i;
+  int j;
   for (i = 0; i<25; i++)
   {
     int k = primes[i];
@@ -86,9 +89,12 @@ void initMultipleArray(void)
 // Compute Nbr <- Nbr mod TestNbr.
 void AdjustModN(int *Nbr)
 {
-  int i, carry;
+  int i;
+  int carry;
   int TrialQuotient;
-  double dNbr, dModulus, dTrialQuotient;
+  double dNbr;
+  double dModulus;
+  double dTrialQuotient;
   double dDelta;
   double dVal = 1 / (double)LIMB_RANGE;
   double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
@@ -327,7 +333,8 @@ void SubtBigNbr(const int *Nbr1, const int *Nbr2, int *Diff)
 
 void AddBigNbrModN(const int *Nbr1, const int *Nbr2, int *Sum)
 {
-  int Sum0, Sum1;
+  int Sum0;
+  int Sum1;
   int TestNbr0 = TestNbr[0];
   int TestNbr1 = TestNbr[1];
   unsigned int carry = *Nbr1 + *Nbr2;
@@ -346,7 +353,8 @@ void AddBigNbrModN(const int *Nbr1, const int *Nbr2, int *Sum)
 
 void GetMontgomeryParms(void)
 {
-  int N, x;
+  int N;
+  int x;
 
   MontgomeryMultR1[1] = 0;
   if (TestNbr[1] == 0)
@@ -385,9 +393,14 @@ int isPrime(const int *value)
     LIMIT(341550071728321ll),      // Bases 2, 3, 5, 7, 11, 13, 17 and 19
     LIMIT((1ll << (2*BITS_PER_GROUP)) - 1)
   };
-  int i, j;
-  int index, indexLSB, indexMSB, idxNbrMSB;
-  unsigned int mask, maskMSB;
+  int i;
+  int j;
+  int index;
+  int indexLSB;
+  int indexMSB;
+  int idxNbrMSB;
+  unsigned int mask;
+  unsigned int maskMSB;
   unsigned int prevBase = 1;
   unsigned int base;
   int baseInMontRepres[NBR_LIMBS];
@@ -595,8 +608,11 @@ void multiply(int factor1, int factor2, int *prod)
 int algebraicFactor(int linear, int *indep)
 {
   int temp[2];
-  int iSqDelta, t1, t2;
-  double dDelta, dFourAC;
+  int iSqDelta;
+  int t1;
+  int t2;
+  double dDelta;
+  double dFourAC;
   temp[0] = *indep;
   temp[1] = *(indep+1);
   if ((temp[1] & HALF_INT_RANGE))
@@ -692,10 +708,22 @@ void AddTwoLimbsPlusOneLimb(const int *addend1, int addend2, int *sum)
 void setPoint(int x, int y)
 {
   int value[2];
-  int xPhysical, yPhysical, absx, absy, currY;
-  int row, col, firstRow, firstCol, lastRow, lastCol;
-  int t, linear1, linear2;
-  int indep1[2], indep2[2];
+  int xPhysical;
+  int yPhysical;
+  int absx;
+  int absy;
+  int currY;
+  int row;
+  int col;
+  int firstRow;
+  int firstCol;
+  int lastRow;
+  int lastCol;
+  int t;
+  int linear1;
+  int linear2;
+  int indep1[2];
+  int indep2[2];
   int Nminustt[2];
   unsigned int algebraicColor;
   unsigned int color;
@@ -851,7 +879,8 @@ void setPoint(int x, int y)
 
 EXTERNALIZE void drawPartialUlamSpiral(int xminDisp, int xmaxDisp, int yminDisp, int ymaxDisp)
 {
-  int x, y;
+  int x;
+  int y;
   if (initMultipleArrayCalled == 0)
   {
     initMultipleArray();
@@ -926,7 +955,8 @@ char *appendInt(char *text, int value)
 // Convert the number from binary to string.
 char *appendInt64(char *text, const int *value)
 {
-  int index, index2;
+  int index;
+  int index2;
   int nbr0 = *value;
   int nbr1 = *(value+1);
   // Convert digits from right to left.
@@ -1262,7 +1292,8 @@ EXTERNALIZE void moveSpiral(int deltaX, int deltaY)
 EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
 { 
   int temp[2];
-  int nbr0, nbr1;
+  int nbr0;
+  int nbr1;
   int a;
   int index;
   width = newWidth;
@@ -1393,8 +1424,14 @@ void setNewVideoMode(void)
 void iteration(void)
 {
   SDL_Event event;
-  SDL_Rect rectSrc, rectDest;
-  int xMax, yMin, yMax, yBound, xMove, yMove;
+  SDL_Rect rectSrc;
+  SDL_Rect rectDest;
+  int xMax;
+  int yMin;
+  int yMax;
+  int yBound;
+  int xMove;
+  int yMove;
         
   while (SDL_PollEvent(&event))
   {                           // New event arrived.

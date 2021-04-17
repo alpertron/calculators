@@ -45,9 +45,13 @@ static void MultiplyBigNbrByMinPowerOf4(/*@in@*/ int *pPower4, /*@in@*/limb *num
   int power4;
   int power2 = 0;
   limb mostSignficLimb;
-  int index2, mask, shLeft;
-  limb prevLimb, currLimb;
-  limb *ptrDest, *ptrSrc;
+  int index2;
+  int mask;
+  int shLeft;
+  limb prevLimb;
+  limb currLimb;
+  limb *ptrDest;
+  limb *ptrSrc;
 
   ptrSrc = number;
   if ((len & 1) != 0)
@@ -93,7 +97,9 @@ static void MultiplyBigNbrByMinPowerOf4(/*@in@*/ int *pPower4, /*@in@*/limb *num
 
 void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/int *pLenSqRoot)
 {
-  int index, lenInvSqrt, lenInvSqrt2;
+  int index;
+  int lenInvSqrt;
+  int lenInvSqrt2;
   int bitLength;
   int bitLengthNbrCycles;
   int idx;
@@ -101,7 +107,8 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
   limb *ptrApproxInvSqrt;
   limb *ptrArrAux;
   int shRight;
-  limb *ptrDest, *ptrSrc;
+  limb *ptrDest;
+  limb *ptrSrc;
   double invSqrt;
   int currLimb;
 

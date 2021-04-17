@@ -40,8 +40,11 @@ static void DistinctDegreeFactorization(int polyDegree)
   struct sFactorInfo *pstFactorInfo, *pstNewFactorInfo;
   int nbrLimbs = primeMod.nbrLimbs + 1;
   int currentDegree;
-  int nbrFactor, degreeMin, degreeGcd;
-  int *ptrPolyToFactor, *ptrValue1;
+  int nbrFactor;
+  int degreeMin;
+  int degreeGcd;
+  int *ptrPolyToFactor;
+  int *ptrValue1;
   // Set poly1 to x.
   (void)memset(poly1, 0, nbrLimbs*(polyDegree + 1)*sizeof(int));
   for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
@@ -208,8 +211,12 @@ void SameDegreeFactorization(void)
 {
   struct sFactorInfo *pstFactorInfo = factorInfo;
   struct sFactorInfo *pstNewFactorInfo;
-  int *ptrValue1, *ptrPolyToFactor;
-  int nbrFactor, currentDegree, index, degreeGcd;
+  int *ptrValue1;
+  int *ptrPolyToFactor;
+  int nbrFactor;
+  int currentDegree;
+  int index;
+  int degreeGcd;
   int primeInt = (int)primeMod.limbs[0].x;
   int nbrLimbs = primeMod.nbrLimbs + 1;
   int polyNbr = 1;
@@ -389,10 +396,15 @@ void SameDegreeFactorization(void)
 // Sort factors on ascending degree, and then by coefficient.
 static void SortFactors(BigInteger *modulus)
 {
-  struct sFactorInfo *pstFactorInfo, *pstFactorInfo2;
+  struct sFactorInfo *pstFactorInfo;
+  struct sFactorInfo *pstFactorInfo2;
   struct sFactorInfo stFactorInfoTemp;
-  int currentDegree, nbrFactor, nbrFactor2, index;
-  int *ptrValue1, *ptrValue2;
+  int currentDegree;
+  int nbrFactor;
+  int nbrFactor2;
+  int index;
+  int *ptrValue1;
+  int *ptrValue2;
   int nbrLimbs = modulus->nbrLimbs + 1;
   pstFactorInfo = factorInfo;
   for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
@@ -453,7 +465,8 @@ int FactorModularPolynomial(int inputMontgomery)
 {
   int nbrFactor;
   struct sFactorInfo* ptrFactorInfo;
-  int currentDegree, rc;
+  int currentDegree;
+  int rc;
   int *ptrValue1;
   int nbrLimbsPrime = primeMod.nbrLimbs + 1; // Add 1 for length;
   degree = values[0];

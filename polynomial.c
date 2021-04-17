@@ -42,12 +42,18 @@ BigInteger powerMod;              // p^k
 int modulusIsZero;
 int degree;
 static BigInteger value;
-BigInteger operand1, operand2, operand3, operand4, operand5;
+BigInteger operand1;
+BigInteger operand2;
+BigInteger operand3;
+BigInteger operand4;
+BigInteger operand5;
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR2[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
-extern int NumberLength, NumberLengthR1;
-static int prime, primeIndex;
+extern int NumberLength;
+extern int NumberLengthR1;
+static int prime;
+static int primeIndex;
 static char RPNbuffer[COMPRESSED_POLY_MAX_LENGTH];
 int values[COMPRESSED_POLY_MAX_LENGTH];
 int valuesIndex;
@@ -117,7 +123,9 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
   int prevTokenIsNumber = FALSE;
   char s;
   char *ptrInput;
-  int index, limb, bitNbr;
+  int index;
+  int limb;
+  int bitNbr;
   char variableLetter = ' ';  // Indicate variable letter not known yet.
   while (*input != '\0')
   {
@@ -491,8 +499,11 @@ void UncompressBigIntegerB(int *ptrValues, BigInteger *bigint)
 // and ptrArgument2. Use poly1 as a temporary buffer to hold the sum.
 static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
 {
-  int *ptrValue1, *ptrValue2, currentDegree;
-  int degreeMin, degreeMax;
+  int *ptrValue1;
+  int *ptrValue2;
+  int currentDegree;
+  int degreeMin;
+  int degreeMax;
   int degreePoly=0;
   int degree1 = *ptrArgument1;
   int degree2 = *ptrArgument2;
@@ -560,7 +571,8 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
   }
   if (degree1 > 0 && degree2 > 0)
   {           // Sum of two polynomials.
-    int *ptrPolyMin, *ptrPolyMax;
+    int *ptrPolyMin;
+    int *ptrPolyMax;
     if (degree1 > degree2)
     {
       degreeMin = degree2;
@@ -711,9 +723,11 @@ int *CopyPolyProduct(int *ptrSrc, int *ptrDest, int degree)
 
 static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
 {
-  int degreeMono, degreePoly;
+  int degreeMono;
+  int degreePoly;
   int nbrLimbs = powerMod.nbrLimbs + 1;
-  int *ptrValue1, *ptrValue2;
+  int *ptrValue1;
+  int *ptrValue2;
   int currentDegree;
   int degree1 = *ptrArgument1;
   int degree2 = *ptrArgument2;
@@ -892,7 +906,8 @@ static int PowerPolynomialExpr(int *ptrArgument1, int expon)
   limb exponLimb;
   int degreePower;
   int mask;
-  int *ptrValue1, *ptrValue2;
+  int *ptrValue1;
+  int *ptrValue2;
   int currentDegree;
   int nbrLimbs = powerMod.nbrLimbs + 1;
   int degreeBase = *ptrArgument1;
@@ -1009,10 +1024,19 @@ int ComputePolynomial(char *input, int expo)
   int *stackValues[STACK_OPER_SIZE];
   int stackIndex = 0;
   int insideExpon = FALSE;
-  int *ptrValue1, *ptrValue2;
-  int len, index, bitNbr, bitCtr, valueNbr;
+  int *ptrValue1;
+  int *ptrValue2;
+  int len;
+  int index;
+  int bitNbr;
+  int bitCtr;
+  int valueNbr;
   char *ptrRPNbuffer;
-  int rc, count, val, pwr, expon;
+  int rc;
+  int count;
+  int val;
+  int pwr;
+  int expon;
   int currentDegree;
   degree = 1;
   exponentMod = expo;
@@ -1359,11 +1383,17 @@ int getModPolynomial(int *polyMod, int *poly, BigInteger *content)
 
 void PolynomialGcd(int *argF, int *argG, int *gcd)
 {
-  static BigInteger contentF, contentG, contentH;
-  static BigInteger modulus, gcdLeadingCoeff;
+  static BigInteger contentF;
+  static BigInteger contentG;
+  static BigInteger contentH;
+  static BigInteger modulus;
+  static BigInteger gcdLeadingCoeff;
   int *ptrLeadingCoeff;
-  int *ptrSrc, *ptrDest, *ptrPrev;
-  int potentialDegreeGcd, tmp;
+  int *ptrSrc;
+  int *ptrDest;
+  int *ptrPrev;
+  int potentialDegreeGcd;
+  int tmp;
   int rc;
   initializeSmallPrimes(smallPrimes);
   prime = 65537;
@@ -1561,7 +1591,8 @@ void PolyModularGcd(int *arg1, int degree1, int *arg2, int degree2, int *gcd, in
   int *ptrTemp;
   int degreeMax = degree1;
   int degreeMin = degree2;
-  int temp, index;
+  int temp;
+  int index;
   int currentDegree;
   if (degree2 == 0)
   {

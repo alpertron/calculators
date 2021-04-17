@@ -25,7 +25,8 @@ int quotientPoly[20];
 struct sFactors astFactors[1000];
 extern int number[MAX_LEN];
 extern int nbrLimbs;
-extern int lang, groupLen;
+extern int lang;
+extern int groupLen;
 extern limb TestNbr[MAX_LEN];
 char expr[] = "123456789012345";
 int Product[32];
@@ -33,7 +34,9 @@ char input[MAX_LEN*4];
 extern char tofactorDec[MAX_LEN*12];
 extern int app;
 extern int skipPrimality;
-BigInteger dividend, divisor, quotient;
+BigInteger dividend;
+BigInteger divisor;
+BigInteger quotient;
 int main(int argc, char *argv[])
 {
   (void)argc;  // Parameter is not used. 

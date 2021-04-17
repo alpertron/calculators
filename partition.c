@@ -28,7 +28,8 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 static int partArray[100000 + 1000];
 static limb prodModulus[MAX_LEN];
 static int prodModulusLimbs;
-static BigInteger prod, factor;
+static BigInteger prod;
+static BigInteger factor;
 
 static void smallMultiply(int factor1, int factor2, int *prod)
 {
@@ -58,7 +59,13 @@ static void smallMultiply(int factor1, int factor2, int *prod)
 // in order to find the number of limbs needed to compute the partition.
 void partition(int val, BigInteger *pResult)
 {
-  int index, currentPrime, Q, k, n, sum, idx;
+  int index;
+  int currentPrime;
+  int Q;
+  int k;
+  int n;
+  int sum;
+  int idx;
   // Compute approximate number of limbs: log(p(n))/log(2^31)
   // pi * sqrt(2/3)/log(2^31) < 0.12, so 0.12 is selected.
   int limbs = (int)(0.12*sqrt(val) + 1);
@@ -243,7 +250,8 @@ static int numberofBitsSetToOne(int value)
 
 static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulated, BigInteger *result)
 {
-  int index, offset;
+  int index;
+  int offset;
   int nbrGroupsAccumulated = *pNbrGroupsAccumulated;
   *pNbrGroupsAccumulated = nbrGroupsAccumulated + 1;
   prod.limbs[1].x = (int)(factorAccum / (double)LIMB_RANGE);
@@ -305,7 +313,8 @@ void factorial(BigInteger *result, int argument)
 
 void primorial(BigInteger *result, int argument)
 {
-  int ctr, j;
+  int ctr;
+  int j;
   int nbrGroupsAccumulated = 1;
   double factorAccum = 1;
   double maxFactorAccum = (double)(1 << 30) * (double)(1 << 23);

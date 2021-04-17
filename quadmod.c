@@ -24,19 +24,37 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "factor.h"
 
 static BigInteger sqrRoot;
-static BigInteger Quadr, Linear, Const;
-static BigInteger tmp1, tmp2, ValAOdd, ValBOdd, ValCOdd;
+static BigInteger Quadr;
+static BigInteger Linear;
+static BigInteger Const;
+static BigInteger tmp1;
+static BigInteger tmp2;
+static BigInteger ValAOdd;
+static BigInteger ValBOdd;
+static BigInteger ValCOdd;
 static BigInteger GcdAll;
 static BigInteger ValNn;
-static BigInteger z, Mult, currentSolution;
-static BigInteger U, SqrtDisc, prime, K1;
-static BigInteger discriminant, V, K, Q, L;
+static BigInteger z;
+static BigInteger Mult;
+static BigInteger currentSolution;
+static BigInteger U;
+static BigInteger SqrtDisc;
+static BigInteger prime;
+static BigInteger K1;
+static BigInteger discriminant;
+static BigInteger V;
+static BigInteger K;
+static BigInteger Q;
+static BigInteger L;
 static BigInteger Solution1[400];
 static BigInteger Solution2[400];
 static BigInteger Increment[400];
 static int Exponents[400];
 static BigInteger Aux[400];
-BigInteger ValA, ValB, ValC, ValN;
+BigInteger ValA;
+BigInteger ValB;
+BigInteger ValC;
+BigInteger ValN;
 static int SolNbr;
 static BigInteger LastModulus;
 static int nbrFactors;
@@ -158,7 +176,10 @@ static void findQuadraticSolution(BigInteger* pSolution, int expon)
 
 void SolveEquation(void)
 {
-  int factorIndex, expon, T1, E;
+  int factorIndex;
+  int expon;
+  int T1;
+  int E;
   struct sFactors *pstFactor;
 
   if (ValN.nbrLimbs == 1 && ValN.limbs[0].x == 0)

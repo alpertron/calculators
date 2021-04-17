@@ -21,15 +21,48 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "rootseq.h"
 #define NBR_COEFF 6
 
-BigInteger Quintic, Quartic, Cubic, Quadratic, Linear, Independent;
-BigInteger discr, commonDenom, tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
-BigRational RatQuartic, RatCubic, RatQuadratic, RatLinear, RatIndependent;
-BigRational RatDeprCubic, RatDeprQuadratic, RatDeprLinear, RatDeprIndependent;
-BigRational RatDiscr, RatDelta0, RatDelta1, RatD;
-BigRational Rat1, Rat2, Rat3, Rat4, Rat5, RatS;
+BigInteger Quintic;
+BigInteger Quartic;
+BigInteger Cubic;
+BigInteger Quadratic;
+BigInteger Linear;
+BigInteger Independent;
+BigInteger discr;
+BigInteger commonDenom;
+BigInteger tmp0;
+BigInteger tmp1;
+BigInteger tmp2;
+BigInteger tmp3;
+BigInteger tmp4;
+BigInteger tmp5;
+BigInteger tmp6;
+BigInteger tmp7;
+BigRational RatQuartic;
+BigRational RatCubic;
+BigRational RatQuadratic;
+BigRational RatLinear;
+BigRational RatIndependent;
+BigRational RatDeprCubic;
+BigRational RatDeprQuadratic;
+BigRational RatDeprLinear;
+BigRational RatDeprIndependent;
+BigRational RatDiscr;
+BigRational RatDelta0;
+BigRational RatDelta1;
+BigRational RatD;
+BigRational Rat1;
+BigRational Rat2;
+BigRational Rat3;
+BigRational Rat4;
+BigRational Rat5;
+BigRational RatS;
 int indexRoot;
-char *ptrMinus, *ptrTimes;
-char* ptrSin, * ptrCos, *ptrPi, *ptrI;
+char *ptrMinus;
+char *ptrTimes;
+char *ptrSin;
+char *ptrCos;
+char *ptrPi;
+char *ptrI;
 static int totients[2 * MAX_DEGREE + 1];
 enum
 {
@@ -1162,9 +1195,11 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
 
 static void QuarticEquation(int* ptrPolynomial, int multiplicity)
 {
-  int ctr, isImaginary;
+  int ctr;
+  int isImaginary;
   int* ptrValues;
-  enum eSign sign1, sign2;
+  enum eSign sign1;
+  enum eSign sign2;
   UncompressBigIntegerB(ptrPolynomial, &Independent);
   ptrPolynomial += 1 + numLimbs(ptrPolynomial);
   UncompressBigIntegerB(ptrPolynomial, &Linear);
@@ -1889,7 +1924,8 @@ static int showRadicals(int num, int den, int multiple, int power2, char *times)
 // Show cos(numerator34*Pi/34)
 static int showRadicals17(int numerator34)
 {
-  int index, angle2;
+  int index;
+  int angle2;
   int angle = numerator34 % 68;        // Convert to range 0 to 360 degrees.
   if (angle < 0)
   {
@@ -2146,7 +2182,8 @@ static void outputRadicandsForCosSin(int num, int den, char *realRoot)
 //      i * multiplicand * sin(realNum*pi/realDen)
 static void showTrig(int numerator, int denominator, char* multiplicand)
 {
-  char num[300], den[300];
+  char num[300];
+  char den[300];
   char* ptrNum = den;
   int2dec(&ptrNum, denominator);
   *ptrNum = 0;  // Include string terminator.
@@ -2207,7 +2244,8 @@ static void showTrig(int numerator, int denominator, char* multiplicand)
 static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
 {
   int index;
-  int* ptrCoeff, currentDegree;
+  int* ptrCoeff;
+  int currentDegree;
   // Polynomial must be palindromic of even degree
   // and the absolute value must be less than 10.
   if (degree % 2 == 1)
@@ -2732,7 +2770,8 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
 static void SaveFactorDegrees(int prime, int *piFactors, int nbrFactors)
 {
   int currentFactor;
-  int* ptrFactors, *ptrOldFactor;
+  int* ptrFactors;
+  int* ptrOldFactor;
   int tmpDegree;
 
   *piFactors++ = prime;

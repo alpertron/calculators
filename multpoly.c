@@ -46,8 +46,10 @@ extern int poly5[COMPRESSED_POLY_MAX_LENGTH];
 // Accumulate products by result coefficient.
 static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int nbrLimbs)
 {
-  int i, j;
-  int* ptrFactor1, * ptrFactor2;
+  int i;
+  int j;
+  int* ptrFactor1;
+  int* ptrFactor2;
 #ifndef _USING64BITS_
   limb result;
 #endif
@@ -207,9 +209,14 @@ static struct stKaratsubaStack
 // Recursive Karatsuba function.
 static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
 {
-  int i, idxFactor2;
-  int* ptrResult, * ptrHigh, * ptr1, * ptr2;
-  int sum, modulus;
+  int i;
+  int idxFactor2;
+  int* ptrResult;
+  int* ptrHigh;
+  int* ptr1;
+  int* ptr2;
+  int sum;
+  int modulus;
   int halfLength;
   int diffIndex = 2 * nbrLen;
   static struct stKaratsubaStack* pstKaratsubaStack = astKaratsubaStack;
@@ -553,9 +560,12 @@ static void MultIntegerPolynomial(int degree1, int degree2,
   /*@in@*/int* factor1, /*@in@*/int* factor2)
 {
   int indexes[2][MAX_DEGREE + 1];
-  int* ptrIndex, * piTemp;
-  int currentDegree, index, degreeF2;
+  int* ptrIndex;
+  int* piTemp;
   int* piDest;
+  int currentDegree;
+  int index;
+  int degreeF2;
 
   if (degree1 < degree2)
   {       // Force degree1 >= degree2.
@@ -797,7 +807,8 @@ void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   /*@out@*/int* polyProduct,
   int polyDegree, /*@in@*/int* polyMod)
 {
-  int currentDegree, index;
+  int currentDegree;
+  int index;
   int nbrLimbs = NumberLength + 1;
   // Compute T
   MultPolynomial(polyDegree, polyDegree, polyFact1, polyFact2);
@@ -842,9 +853,12 @@ void multPolynomialModPoly(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   /*@out@*/int* polyProduct,
   int polyDegree, /*@in@*/int* polyMod)
 {
-  int index1, index2;
+  int index1;
+  int index2;
   int nbrLimbs = NumberLength + 1;
-  int* ptrPoly1, * ptrPoly2, * ptrPolyTemp;
+  int* ptrPoly1;
+  int* ptrPoly2;
+  int* ptrPolyTemp;
   // Initialize polyMultTemp with the most significant half of product.
   ptrPolyTemp = polyMultTemp + (polyDegree - 1) * nbrLimbs;
   for (index1 = polyDegree - 1; index1 >= 0; index1--)
@@ -906,4 +920,3 @@ void multPolynomialModPoly(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   }
   (void)memcpy(polyProduct, polyMultTemp, polyDegree * nbrLimbs * sizeof(int));
 }
-
