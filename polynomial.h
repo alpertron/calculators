@@ -60,7 +60,11 @@ extern BigInteger primeMod;              // p
 extern int exponentMod;                  // k
 extern BigInteger powerMod;              // p^k
 extern int modulusIsZero;
-extern BigInteger operand1, operand2, operand3, operand4, operand5;
+extern BigInteger operand1;
+extern BigInteger operand2;
+extern BigInteger operand3;
+extern BigInteger operand4;
+extern BigInteger operand5;
 extern int values[1000000];
 extern int poly1[1000000];
 extern int poly2[1000000];

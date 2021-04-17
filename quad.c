@@ -562,11 +562,12 @@ static void showFactors(BigInteger *value)
     showMinus();
   }
   pstFactor = &astFactorsMod[1];
-  for (index = 0; index < nbrFactors; index++, pstFactor++)
+  for (index = 0; index < nbrFactors; index++)
   {
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);
     if (pstFactor->multiplicity == 0)
     {
+      pstFactor++;
       continue;
     }
     if (factorShown)
@@ -581,6 +582,7 @@ static void showFactors(BigInteger *value)
       showText("</sup>");
     }
     factorShown = 1;
+    pstFactor++;
   }
   if (!factorShown)
   {      // No factor shown. Show 1.

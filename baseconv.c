@@ -267,7 +267,10 @@ void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
   // In order to perform a faster conversion, use groups of DIGITS_PER_LIMB digits.
 void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLength)
 {
-  int len, index, index2, count;
+  int len;
+  int index;
+  int index2;
+  int count;
   limb *ptrSrc = binary + nbrLimbs - 1;
   char *ptrDest;
   int significantZero = 0;

@@ -237,7 +237,8 @@ void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
   int factor2_1 = *(factor2+1);
 #ifdef _USING64BITS_
   uint64_t Pr;
-  unsigned int Nbr, MontDig;
+  unsigned int Nbr;
+  unsigned int MontDig;
   
   Pr = (Nbr = *factor1) * (uint64_t)factor2_0;
   MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_INT_NBR;
