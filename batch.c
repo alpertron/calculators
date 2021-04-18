@@ -28,7 +28,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 static char *ptrEndBatchFactor;
 static char *ptrCurrBatchFactor;
 static char *ptrNextBatchFactor;
-static int firstExprProcessed;
+static bool firstExprProcessed;
 int valuesProcessed;
 char outputExpr[200000];
 #ifdef __EMSCRIPTEN__
@@ -120,7 +120,7 @@ static void BatchError(char **pptrOutput, char *batchText, const char *errorText
   counterC = 0;
 }
 
-enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pptrOutput, int *pIsBatch)
+enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pptrOutput, bool *pIsBatch)
 {
   int endValuesProcessed;
   char *ptrOutput = output;
@@ -137,19 +137,19 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
   endValuesProcessed = valuesProcessed + 1000;
   if (pIsBatch != NULL)
   {
-    *pIsBatch = FALSE;    // Indicate not batch processing in advance.
+    *pIsBatch = false;    // Indicate not batch processing in advance.
   }
   if (valuesProcessed == 0)
   {        // Start batch factorization.
     ptrCurrBatchFactor = batchText;
     ptrEndBatchFactor = batchText + strlen(batchText);
-    firstExprProcessed = FALSE;
+    firstExprProcessed = false;
   }
   for (; ptrCurrBatchFactor < ptrEndBatchFactor; ptrCurrBatchFactor += strlen(ptrCurrBatchFactor) + 1)
   {  // Get next line.
     char c;
     expressionNbr = 0;
-    if (firstExprProcessed == FALSE)
+    if (firstExprProcessed == false)
     {
       valueX.nbrLimbs = 0;     // Invalidate variable x and counter c.
       ptrNextBatchFactor = findChar(ptrCurrBatchFactor, '\n');
@@ -178,7 +178,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
 #ifdef __EMSCRIPTEN__
       ptrInputText = "";
 #endif
-      if (firstExprProcessed == FALSE)
+      if (!firstExprProcessed)
       {
         ptrCharFound = findChar(ptrSrcString + 1, ';');
         if (ptrCharFound == NULL)
@@ -256,7 +256,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         {
           ptrConditionExpr++;
         }
-        firstExprProcessed = TRUE;
+        firstExprProcessed = true;
       }
       else
       {
@@ -276,11 +276,11 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       }
       if (pIsBatch != NULL)
       {
-        *pIsBatch = TRUE;    // Indicate batch processing.
+        *pIsBatch = true;    // Indicate batch processing.
       }
       while (ptrOutput < &output[sizeof(output) - 200000])
       {      // Perform loop.
-        int processExpression = TRUE;
+        bool processExpression = true;
         expressionNbr = 3;
         rc = evalExpression(EndExpr, valueFound);
         if (rc != EXPR_OK)
@@ -291,7 +291,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         }
         if (BigIntIsZero(valueFound))
         {    // result is zero: end of loop
-          firstExprProcessed = FALSE;
+          firstExprProcessed = false;
           break;
         }
         if (valuesProcessed >= endValuesProcessed)
@@ -307,7 +307,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           {
             if (BigIntIsZero(valueFound))
             {   // Do not compute factor expression if condition is false.
-              processExpression = FALSE;
+              processExpression = false;
             }
           }
           else
@@ -318,7 +318,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
             {   // Do not show multiple errors.
               break;
             }
-            processExpression = FALSE;
+            processExpression = false;
           }
         }
         if (processExpression)
@@ -357,7 +357,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         }
         if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED))
         {      // Do not show these errors multiple times.
-          firstExprProcessed = FALSE;
+          firstExprProcessed = false;
           break;
         }
       }

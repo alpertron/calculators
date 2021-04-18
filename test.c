@@ -1,4 +1,5 @@
-#include "stdio.h"
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "bignbr.h"
@@ -32,7 +33,7 @@ int Product[32];
 char input[MAX_LEN*4];
 extern char tofactorDec[MAX_LEN*12];
 extern int app;
-extern int skipPrimality;
+extern bool skipPrimality;
 BigInteger dividend;
 BigInteger divisor;
 BigInteger quotient;
@@ -209,7 +210,7 @@ int main(int argc, char *argv[])
   gaussianText(argv[1], argv[2][0]);
   printf("%s\n", output);
 #elif DEBUG_CODE == 13
-  skipPrimality = 0;
+  skipPrimality = false;
   lang = false;
   hexadecimal = false;
   char text[40000];

@@ -462,7 +462,7 @@ static void SortFactors(BigInteger *modulus)
 
 // Input: values = degree, coefficient degree 0, coefficient degree 1, etc.
 // Output: factorInfo = structure that holds the factors.
-int FactorModularPolynomial(int inputMontgomery)
+int FactorModularPolynomial(bool inputMontgomery)
 {
   int nbrFactor;
   struct sFactorInfo* ptrFactorInfo;
@@ -520,7 +520,7 @@ int FactorModularPolynomial(int inputMontgomery)
       SameDegreeFactorization();
     }
   }
-  if (inputMontgomery == FALSE)
+  if (inputMontgomery == false)
   {
     return EXPR_OK;
   }
@@ -565,7 +565,7 @@ static int FactorPolynomial(char *input, int expo)
   {
     return FactorPolyOverIntegers();
   }
-  return FactorModularPolynomial(TRUE);   // Input is in Montgomery notation.
+  return FactorModularPolynomial(true);   // Input is in Montgomery notation.
 }
 
 void polyFactText(char *modText, char *polyText, int groupLength)

@@ -37,11 +37,6 @@ struct mylimb
 };
 #define MAX_VALUE_LIMB (LIMB_RANGE-1)
 typedef struct mylimb limb;
-typedef enum eBoolean
-{
-  FALSE = 0,
-  TRUE,
-} boolean;
 
 enum eSign
 {
@@ -138,7 +133,7 @@ void BigIntPowerOf2(BigInteger *pResult, int expon);
 int getRemainder(BigInteger *pBigInt, int divisor);
 void subtractdivide(BigInteger *pBigInt, int subt, int divisor);
 void addbigint(BigInteger *pResult, int addend);
-boolean TestBigNbrEqual(BigInteger *pNbr1, BigInteger *pNbr2);
+bool TestBigNbrEqual(BigInteger *pNbr1, BigInteger *pNbr2);
 void CopyBigInt(BigInteger *pDest, BigInteger *pSrc);
 void ModInvBigNbr(limb *num, limb *inv, limb *mod, int NumberLength);
 int modInv(int NbrMod, int currentPrime);
@@ -224,7 +219,7 @@ enum eExprErr BigRationalDivide(BigRational* pDividend, BigRational* pDivisor, B
 enum eExprErr BigRationalMultiplyByInt(BigRational* pFactor1, int factor2, BigRational* pProduct);
 enum eExprErr BigRationalDivideByInt(BigRational* pDividend, int divisor, BigRational* pQuotient);
 void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart);
-int BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot);
+bool BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot);
 void ForceDenominatorPositive(BigRational* rat);
 void showRational(BigRational* rat);
 void showRationalNoParen(BigRational* rat);

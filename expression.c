@@ -57,7 +57,7 @@ extern limb MontgomeryR1[MAX_LEN];
 static int stackIndex;
 static int exprIndex;
 static int exprLength;
-static int doComputeSubExpression = TRUE;
+static bool doComputeSubExpression = true;
 static int computeSubExprStackThreshold = 0;
 #ifndef lang  
   bool lang;
@@ -95,7 +95,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger
 static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
   char *funcName, int funcArgs, int leftNumberFlag);
 static int type;
-static int valueXused;
+static bool valueXused;
 static BigInteger curStack;
 static BigInteger curStack2;
 static BigInteger curStack3;
@@ -138,8 +138,8 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
   {      // Number of open and closing parentheses do not match.
     return EXPR_PAREN_MISMATCH;
   }
-  doComputeSubExpression = TRUE;
-  valueXused = FALSE;
+  doComputeSubExpression = true;
+  valueXused = false;
   stackIndex = 0;
   comprStackOffset[0] = 0;
   exprIndex = 0;
@@ -154,7 +154,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
   {
     return EXPR_NUMBER_TOO_HIGH;
   }
-  if (valueX.nbrLimbs > 0 && valueXused == FALSE)
+  if (valueX.nbrLimbs > 0 && !valueXused)
   {
     return EXPR_VAR_OR_COUNTER_REQUIRED;
   }
@@ -195,7 +195,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
   int shLeft;
   enum eExprErr retcode;
   limb carry;
-  boolean leftNumberFlag = FALSE;
+  bool leftNumberFlag = false;
   int exprIndexAux;
   int offset;
   enum eExprErr SubExprResult;
@@ -319,7 +319,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (charValue == '!')
     {           // Calculating factorial.
-      if (leftNumberFlag == FALSE)
+      if (!leftNumberFlag)
       {
         return EXPR_SYNTAX_ERROR;
       }
@@ -347,7 +347,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (charValue == '#')
     {           // Calculating primorial.
-      if (leftNumberFlag == FALSE)
+      if (!leftNumberFlag)
       {
         return EXPR_SYNTAX_ERROR;
       }
@@ -742,7 +742,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_SYNTAX_ERROR;
       }
-      valueXused = TRUE;
+      valueXused = true;
       exprIndex++;
       if (stackIndex > 0)
       {
@@ -755,7 +755,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return retcode;
       }
-      leftNumberFlag = TRUE;
+      leftNumberFlag = true;
       continue;
     }
     else if ((charValue & 0xDF) == 'C')
@@ -765,7 +765,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         return EXPR_SYNTAX_ERROR;
       }
       intToBigInteger(&curStack, counterC);
-      valueXused = TRUE;
+      valueXused = true;
       exprIndex++;
       if (stackIndex > 0)
       {
@@ -778,12 +778,12 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return retcode;
       }
-      leftNumberFlag = TRUE;
+      leftNumberFlag = true;
       continue;
     }
     else if (charValue == '(')
     {
-      if (leftNumberFlag == TRUE)
+      if (leftNumberFlag)
       {
         return EXPR_SYNTAX_ERROR;
       }
@@ -813,10 +813,10 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         if (stackOperators[stackIndex-1] == OPER_AND ||
           stackOperators[stackIndex-1] == OPER_OR)
         {
-          if (doComputeSubExpression == FALSE &&
-              stackIndex == computeSubExprStackThreshold)
+          if (!doComputeSubExpression &&
+              (stackIndex == computeSubExprStackThreshold))
           {
-            doComputeSubExpression = TRUE;
+            doComputeSubExpression = true;
           }
         }
       }
@@ -938,7 +938,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       currentStackOffset = comprStackOffset[stackIndex];
       comprStackOffset[stackIndex + 1] = currentStackOffset +
           numLimbs((int*)&comprStackValues[currentStackOffset]) + 1;
-      leftNumberFlag = TRUE;
+      leftNumberFlag = true;
       continue;
     }
     if (charValue <= MAXIMUM_OPERATOR)
@@ -982,10 +982,10 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           if (stackOperators[stackIndex-1] == OPER_AND ||
             stackOperators[stackIndex-1] == OPER_OR)
           {
-            if (doComputeSubExpression == FALSE &&
-              stackIndex == computeSubExprStackThreshold)
+            if (!doComputeSubExpression &&
+              (stackIndex == computeSubExprStackThreshold))
             {
-              doComputeSubExpression = TRUE;
+              doComputeSubExpression = true;
             }
           }
         }
@@ -1001,7 +1001,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         getCurrentStackValue(&curStack);
         if (BigIntIsZero(&curStack))
         {
-          doComputeSubExpression = FALSE;
+          doComputeSubExpression = false;
           computeSubExprStackThreshold = stackIndex;
         }
       }
@@ -1011,7 +1011,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         if (curStack.sign == SIGN_NEGATIVE && curStack.nbrLimbs == 1 &&
           curStack.limbs[0].x == 1)
         {       // Number is -1.
-          doComputeSubExpression = FALSE;
+          doComputeSubExpression = false;
           computeSubExprStackThreshold = stackIndex;
         }
       }
@@ -1021,7 +1021,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     return EXPR_SYNTAX_ERROR;
   }                              /* end while */
-  if (leftNumberFlag == FALSE)
+  if (!leftNumberFlag)
   {
     return EXPR_SYNTAX_ERROR;
   }
@@ -1220,7 +1220,7 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
   return EXPR_OK;
 }
 
-static void generateSieve(int* pSmallPrimes, char* sieve, BigInteger* pArgument, int isNext)
+static void generateSieve(int* pSmallPrimes, char* sieve, BigInteger* pArgument, bool isNext)
 {
   int ctr;
   // Indicate numbers not divisible by small primes in advance.
@@ -1297,7 +1297,7 @@ static int ComputeBack(void)
     {        // Loop that searches for previous probable prime.
       int ctr;
       addbigint(pResult, -COMPUTE_NEXT_PRIME_SIEVE_SIZE);
-      generateSieve(smallPrimes, sieve, pResult, TRUE);
+      generateSieve(smallPrimes, sieve, pResult, true);
       for (ctr = COMPUTE_NEXT_PRIME_SIEVE_SIZE-1; ctr >= 0; ctr--)
       {
         if (sieve[ctr] == 0)
@@ -1364,7 +1364,7 @@ static int ComputeNext(void)
     for (;;)
     {        // Loop that searches for next probable prime.
       int ctr;
-      generateSieve(smallPrimes, sieve, pResult, TRUE);
+      generateSieve(smallPrimes, sieve, pResult, true);
       for (ctr = 0; ctr<COMPUTE_NEXT_PRIME_SIEVE_SIZE; ctr++)
       {
         if (sieve[ctr] == 0)

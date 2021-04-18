@@ -816,7 +816,7 @@ EXTERNALIZE void doWork(void)
     app = app * 10 + *ptrData - '0';
   }
 #ifndef lang  
-  lang = ((flags & 1)? true: false);
+  lang = ((app & 1)? true: false);
 #endif
   app >>= 1;
   if (app & 0x20)

@@ -26,7 +26,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #include "batch.h"
 
 #ifdef __EMSCRIPTEN__
-extern int skipPrimality;
+extern bool skipPrimality;
 extern int64_t lModularMult;
 #endif
 extern BigInteger tofactor;
@@ -231,12 +231,12 @@ static void modPowShowStatus(limb *base, limb *exp, int nbrGroupsExp, limb *powe
 // A number is a sum of 3 squares if it has not the form 4^n*(8k+7) and
 // there is a prime factor of the form 4k+3 with odd multiplicity.
 
-static int isSumOfThreeSquares(struct sFactors* pstFactors, BigInteger* pTmp)
+static bool isSumOfThreeSquares(struct sFactors* pstFactors, BigInteger* pTmp)
 {
   struct sFactors *pstFactor = pstFactors + 1; // Point to first factor in array of factors.
   int indexPrimes;
   int shRight;
-  int factor2MultiplicityEven = TRUE;
+  bool factor2MultiplicityEven = true;
   bool sumTwoSquares = true;
   for (indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--)
   {
@@ -244,7 +244,7 @@ static int isSumOfThreeSquares(struct sFactors* pstFactors, BigInteger* pTmp)
     {                                          // Prime factor multiplicity is odd.
       if (*pstFactor->ptrFactor == 1 && *(pstFactor->ptrFactor + 1) == 2)
       {
-        factor2MultiplicityEven = FALSE;
+        factor2MultiplicityEven = false;
       }
       if (*(pstFactor->ptrFactor + 1) % 4 == 3)
       {                                        // Prime has the form 4k+3, so exit loop.
@@ -256,11 +256,11 @@ static int isSumOfThreeSquares(struct sFactors* pstFactors, BigInteger* pTmp)
   }
   if (sumTwoSquares)
   {
-    return FALSE;                              // Number can be expressed as sum of two squares.
+    return false;                              // Number can be expressed as sum of two squares.
   }
-  if (factor2MultiplicityEven == FALSE)
+  if (!factor2MultiplicityEven)
   {
-    return FALSE;                              // Number can be expressed as a sum of four squares.
+    return false;                              // Number can be expressed as a sum of four squares.
   }
   CopyBigInt(pTmp, &tofactor);                 // Divide by power of 4.
   DivideBigNbrByMaxPowerOf4(&shRight, pTmp->limbs, &pTmp->nbrLimbs);
@@ -834,14 +834,14 @@ static void ShowFourSquares(char **pptrOutput)
 void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
 {
   char *ptrOutput;
-  int isBatch;
+  bool isBatch;
   knownFactors = factors;
   if (valuesProcessed == 0)
   {
     doFactorization = performFactorization;
   }
   enum eExprErr rc = BatchProcessing(tofactorText, &tofactor, &ptrOutput, &isBatch);
-  if (isBatch == FALSE)
+  if (!isBatch)
   {
     if (rc == EXPR_OK && doFactorization)
     {
@@ -1058,7 +1058,7 @@ EXTERNALIZE void doWork(void)
 #ifdef __EMSCRIPTEN__
   if ((flags & (-2)) == '4')
   {
-    skipPrimality = TRUE;
+    skipPrimality = true;
     flags = 2;           // Do factorization.
   }
 #endif

@@ -261,13 +261,13 @@ void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart)
   BigIntDivide(&RatPart->denominator, &tmp1, &RatPart->denominator);
 }
 
-int BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
+bool BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
 {
   if (BigIntIsZero(&RatArgum->numerator))
   {
     intToBigInteger(&RatSqRoot->numerator, 0);
     intToBigInteger(&RatSqRoot->denominator, 1);
-    return TRUE;
+    return true;
   }
   // Divide numerator and denominator by their gcd.
   BigIntGcd(&RatArgum->numerator, &RatArgum->denominator, &tmp1);
@@ -279,7 +279,7 @@ int BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
   BigIntSubt(&tmp2, &RatArgum->numerator, &tmp2);
   if (!BigIntIsZero(&tmp2))
   {          // Numerator is not a perfect square.
-    return FALSE;
+    return false;
   }
   
   CopyBigInt(&RatSqRoot->numerator, &tmp1);
@@ -289,10 +289,10 @@ int BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
   BigIntSubt(&tmp2, &RatArgum->denominator, &tmp2);
   if (!BigIntIsZero(&tmp2))
   {          // Denominator is not a perfect square.
-    return FALSE;
+    return false;
   }
   CopyBigInt(&RatSqRoot->denominator, &tmp1);
-  return TRUE;
+  return true;
 }
 
 static void showRationalPretty(BigRational* rat)

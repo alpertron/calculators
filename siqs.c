@@ -46,7 +46,7 @@ int nbrPartials;
 unsigned char SIQSInfoText[300];
 int numberThreads = 1;
 extern int NumberLength;
-static unsigned char InsertNewRelation(
+static bool InsertNewRelation(
   int *rowMatrixB,
   int *biT, int *biU, int *biR,
   int NumberLength);
@@ -1023,31 +1023,31 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
   }
   else
   {   // Dividend has at least two limbs.
-    unsigned char mostSignificantLimbZero = FALSE;
+    bool mostSignificantLimbZero = false;
     double dRem, dCurrentPrime;
     double dDivid, dLimbMult, dQuot;
     int Dividend;
     int nbr, iRem;
     int left, right, median;
-    unsigned char fullRemainder;
+    bool fullRemainder;
     int indexFactorA = 0;
     int newFactorAIndex;
-    unsigned char testFactorA = TRUE;
+    bool testFactorA = true;
     newFactorAIndex = common.siqs.aindex[0];
     rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[1];
     for (index = 1; testFactorA; index++)
     {
-      fullRemainder = FALSE;
+      fullRemainder = false;
       if (index < 3)
       {
-        fullRemainder = TRUE;
+        fullRemainder = true;
       }
       else if (index == newFactorAIndex)
       {
-        fullRemainder = TRUE;
+        fullRemainder = true;
         if (++indexFactorA == common.siqs.nbrFactorsA)
         {
-          testFactorA = FALSE;   // All factors of A were tested.
+          testFactorA = false;   // All factors of A were tested.
         }
         else
         {
@@ -1056,7 +1056,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
       }
       for (;;)
       {
-        if (fullRemainder == FALSE)
+        if (fullRemainder == false)
         {
           rowPrimeSieveData = primeSieveData + index;
           Divisor = rowPrimeSieveData->value;
@@ -1085,7 +1085,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
             }
             break;              // Process next prime.
           }
-          fullRemainder = TRUE;
+          fullRemainder = true;
         }
         Divisor = rowPrimeTrialDivisionData->value;
         divis = (int)Divisor;
@@ -1218,7 +1218,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               {
                 if (++indexFactorA == common.siqs.nbrFactorsA)
                 {
-                  testFactorA = FALSE;   // All factors of A were tested.
+                  testFactorA = false;   // All factors of A were tested.
                 }
                 else
                 {
@@ -1333,10 +1333,10 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
     rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[index];
     for (; index < nbrFactorBasePrimes; index++)
     {
-      fullRemainder = FALSE;
+      fullRemainder = false;
       for (;;)
       {
-        if (fullRemainder == FALSE)
+        if (fullRemainder == false)
         {
           Divisor = rowPrimeSieveData->value;
           divis = (int)Divisor;
@@ -1364,7 +1364,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
             }
             break;              // Process next prime.
           }
-          fullRemainder = TRUE;
+          fullRemainder = true;
         }
         Divisor = rowPrimeTrialDivisionData->value;
         divis = (int)Divisor;
@@ -1498,7 +1498,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               {
                 if (++indexFactorA == common.siqs.nbrFactorsA)
                 {
-                  testFactorA = FALSE;   // All factors of A were tested.
+                  testFactorA = false;   // All factors of A were tested.
                 }
                 else
                 {
@@ -1963,9 +1963,9 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   int rowSquares[], int biDividend[],
   int NumberLength, int biT[], int *biLinearCoeff,
   int biR[], int biU[], int biV[],
-  int indexFactorsA[], unsigned char oddPolynomial)
+  int indexFactorsA[], bool oddPolynomial)
 {
-  unsigned char positive;
+  bool positive;
   int NumberLengthDivid;
   int index;
   int Divid;
@@ -1986,10 +1986,10 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   /* factor biDividend */
 
   NumberLengthDivid = NumberLength; /* Number length for dividend */
-  positive = TRUE;
+  positive = true;
   if ((uint32_t)biDividend[NumberLengthDivid - 1] >= (uint32_t)LIMB_RANGE)
   { /* Negative */
-    positive = FALSE;
+    positive = false;
     ChSignBigNbr(biDividend, NumberLengthDivid); // Convert to positive
   }
   rowSquares[0] = 1;
@@ -2571,7 +2571,7 @@ static int EraseSingletons(int nbrFactorBasePrimes)
 /************************/
 /* Linear algebra phase */
 /************************/
-static unsigned char LinearAlgebraPhase(
+static bool LinearAlgebraPhase(
   int *biT, int *biR, int *biU,
   int NumberLength)
 {
@@ -2673,16 +2673,16 @@ static unsigned char LinearAlgebraPhase(
       }
       if (index < NumberLength)
       { /* GCD is not 1 */
-        return TRUE;
+        return true;
       }
     }
     mask *= 2;
   }
-  return FALSE;
+  return false;
 }
 
 int nn;
-static unsigned char InsertNewRelation(
+static bool InsertNewRelation(
   int *rowMatrixB,
   int *biT, int *biU, int *biR,
   int NumberLengthMod)
@@ -2693,7 +2693,7 @@ static unsigned char InsertNewRelation(
   // Insert it only if it is different from previous relations.
   if (congruencesFound >= common.siqs.matrixBLength)
   {                   // Discard excess congruences.
-    return TRUE;
+    return true;
   }
 #if DEBUG_SIQS
   {
@@ -2729,7 +2729,7 @@ static unsigned char InsertNewRelation(
       }
       if (k == nbrColumns)
       {
-        return FALSE; // Do not insert same relation.
+        return false; // Do not insert same relation.
       }
     }
     curRowMatrixB += MAX_FACTORS_RELATION;
@@ -2795,7 +2795,7 @@ static unsigned char InsertNewRelation(
     printf("%s\n", output);
   }
 #endif
-  return TRUE;
+  return true;
 }
 
 static int intModInv(int NbrMod, int currentPrime)
@@ -3546,7 +3546,7 @@ static void sieveThread(BigInteger *result)
   int *piDividend;
   int rowMatrixBbeforeMerge[200];
   int rowMatrixB[200];
-  unsigned char positive;
+  bool positive;
   int inverseA, twiceInverseA;
   int NumberLengthA, NumberLengthB;
 
@@ -3894,14 +3894,14 @@ static void sieveThread(BigInteger *result)
       }
       if ((uint32_t)biLinearCoeff[NumberLength - 1] >= (uint32_t)LIMB_RANGE)
       {                               // Number is negative.
-        positive = FALSE;
+        positive = false;
         (void)memcpy(biT, biLinearCoeff, NumberLength * sizeof(biT[0]));
         ChSignBigNbr(biT, NumberLength);   // Make it positive.
         (void)memcpy(biAbsLinearCoeff, biT, sizeof(biT));
       }
       else
       {
-        positive = TRUE;                       // B is positive.
+        positive = true;                       // B is positive.
                                                // Get B mod current prime. 
         (void)memcpy(biAbsLinearCoeff, biLinearCoeff, sizeof(biLinearCoeff));
       }
@@ -4062,7 +4062,7 @@ static void sieveThread(BigInteger *result)
                   rowSquares,
                   biDividend, NumberLength, biT,
                   biLinearCoeff, biR, biU, biV,
-                  indexFactorsA, FALSE);
+                  indexFactorsA, false);
                 if (congruencesFound >= common.siqs.matrixBLength)
                 {               // All congruences were found: stop sieving.
                   index2 = 0;
@@ -4083,7 +4083,7 @@ static void sieveThread(BigInteger *result)
                   rowSquares,
                   biDividend, NumberLength, biT,
                   biLinearCoeff, biR, biU, biV,
-                  indexFactorsA, TRUE);
+                  indexFactorsA, true);
                 if (congruencesFound >= common.siqs.matrixBLength)
                 {               // All congruences were found: stop sieving.
                   index2 = 0;

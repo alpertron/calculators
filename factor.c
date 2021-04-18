@@ -48,7 +48,7 @@ extern char *ptrInputText;
 union uCommon common;
 int64_t primeModMult;
 int StepECM;
-int skipPrimality;
+bool skipPrimality;
 int nbrECM;
 int nbrPrimalityTests;
 int nbrSIQS;
@@ -64,8 +64,8 @@ static BigInteger prime;
 int *factorArr[FACTOR_ARRSIZE];
 static int indexM;
 static int maxIndexM;
-static int foundByLehman;
-static int performLehman;
+static bool foundByLehman;
+static bool performLehman;
 static int EC;
 static int SmallPrime[670]; /* Primes < 5000 */
 static void add3(limb *x3, limb *z3, limb *x2, limb *z2, limb *x1, limb *z1, limb *x, limb *z);
@@ -844,7 +844,7 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
   }
 }
 
-static boolean ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFactor, int Exponent)
+static bool ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFactor, int Exponent)
 {
 #ifdef __EMSCRIPTEN__
   char status[200];
@@ -891,7 +891,7 @@ static boolean ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFac
     if (dif.nbrLimbs == 1 && dif.limbs[0].x == 0)
     { // Perfect power
       Cunningham(pstFactors, &nthRoot, Exponent, -1, nbrToFactor);
-      return TRUE;
+      return true;
     }
     addbigint(&dif, 1);                         // dif <- dif + 1
     BigIntDivide(&dif, &rootN1, &Temp1);        // Temp1 <- dif / rootN1
@@ -914,7 +914,7 @@ static boolean ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFac
     if (dif.nbrLimbs == 1 && dif.limbs[0].x == 0)
     { // Perfect power
       Cunningham(pstFactors, &nthRoot, Exponent, 1, nbrToFactor);
-      return TRUE;
+      return true;
     }
     addbigint(&dif, 1);                         // dif <- dif + 1
     BigIntDivide(&dif, &rootN1, &Temp1);        // Temp1 <- dif / rootN1
@@ -928,13 +928,13 @@ static boolean ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFac
     }
     CopyBigInt(&nthRoot, &nextroot);
   }
-  return FALSE;
+  return false;
 }
 
 static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
 {
-  char plus1 = FALSE;
-  char minus1 = FALSE;
+  bool plus1 = false;
+  bool minus1 = false;
   int Exponent = 0;
   int i, j;
   int modulus;
@@ -1266,7 +1266,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
       (void)memcpy(common.ecm.GD, potentialFactor.limbs, NumberLength * sizeof(limb));
       (void)memset(&common.ecm.GD[potentialFactor.nbrLimbs], 0, 
              (NumberLength - potentialFactor.nbrLimbs) * sizeof(limb));
-      foundByLehman = TRUE;
+      foundByLehman = true;
       return FACTOR_FOUND;
     }
     L1 = 2000;
@@ -1748,7 +1748,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
         }
       }
     } /* end for Pass */
-    performLehman = TRUE;
+    performLehman = true;
   }       /* End curve calculation */
 }
 #ifdef __EMSCRIPTEN__
@@ -1843,7 +1843,7 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
       }
     } while (Q * Q <= P);
   }
-  foundByLehman = FALSE;
+  foundByLehman = false;
   do
   {
     enum eEcmResult ecmResp = ecmCurve(N);
@@ -2389,13 +2389,13 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   nbrECM = 0;
   SIQSModMult = 0;
 #endif
-  int factorsFound = FALSE;
+  bool factorsFound = false;
   int nbrLimbsQ;
   int countdown;
   int ctr;
   int nbrLimbs = pValue->nbrLimbs;
-  int sqrtOneFound = FALSE;
-  int sqrtMinusOneFound = FALSE;
+  bool sqrtOneFound = false;
+  bool sqrtMinusOneFound = false;
   int Aux1Len;
   limb *pValueLimbs = pValue->limbs;
   (pValueLimbs + nbrLimbs)->x = 0;
@@ -2427,7 +2427,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
         if (!sqrtOneFound)
         {          // Save it to perform GCD later.
           (void)memcpy(common.ecm.Zaux, common.ecm.Aux2, nbrLimbs*sizeof(limb));
-          sqrtOneFound = TRUE;
+          sqrtOneFound = true;
         }
         else
         {          // Try to find non-trivial factor by doing GCD.
@@ -2439,7 +2439,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
               memcmp(pValue->limbs, Temp4.limbs, NumberLength * sizeof(limb))))
           {          // Non-trivial factor found.
             insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
-            factorsFound = TRUE;
+            factorsFound = true;
           }
         }
                    // Try to find non-trivial factor by doing GCD.
@@ -2452,7 +2452,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
             memcmp(pValue->limbs, Temp4.limbs, NumberLength * sizeof(limb))))
         {          // Non-trivial factor found.
           insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
-          factorsFound = TRUE;
+          factorsFound = true;
         }
         i = ctr;
         continue;  // Find more factors.
@@ -2462,7 +2462,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
         if (!sqrtMinusOneFound)
         {          // Save it to perform GCD later.
           (void)memcpy(common.ecm.Xaux, common.ecm.Aux2, nbrLimbs * sizeof(limb));
-          sqrtOneFound = TRUE;
+          sqrtOneFound = true;
         }
         else
         {          // Try to find non-trivial factor by doing GCD.
@@ -2474,7 +2474,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
               memcmp(pValue->limbs, Temp4.limbs, NumberLength * sizeof(limb))))
           {          // Non-trivial factor found.
             insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
-            factorsFound = TRUE;
+            factorsFound = true;
           }
         }
         i = ctr;
@@ -2713,7 +2713,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
     int upperBoundIndex;
     int upperBound = pstCurFactor->upperBound;
     int delta;
-    int restartFactoring = FALSE;
+    bool restartFactoring = false;
     // If number is prime, do not process it.
     if (upperBound == 0)
     {     // Factor is prime.
@@ -2808,7 +2808,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
             }
           }
           insertIntFactor(pstFactors, pstCurFactor, upperBound, expon, &common.trialDiv.cofactor);
-          restartFactoring = TRUE;
+          restartFactoring = true;
           break;
         }
         if (restartFactoring)
@@ -2836,7 +2836,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
           if (dividend % upperBound == 0)
           {            // Factor found.
             insertIntFactor(pstFactors, pstCurFactor, upperBound, 1, NULL);
-            restartFactoring = TRUE;
+            restartFactoring = true;
             break;
           }
           upperBound = smallPrimes[++upperBoundIndex];
@@ -2871,7 +2871,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
 #ifdef FACTORIZATION_APP
     if (skipPrimality)
     {
-      skipPrimality = FALSE;
+      skipPrimality = false;
       result = 1;
     }
     else

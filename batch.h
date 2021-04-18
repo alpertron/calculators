@@ -20,7 +20,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #define _BATCH_H
 extern int valuesProcessed;
 
-enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pptrOutput, int *pIsBatch);
+enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pptrOutput, bool *pIsBatch);
 void batchCallback(char **pptrOutput);
 char *findChar(char *str, char c);
 #ifdef __EMSCRIPTEN__

@@ -181,7 +181,7 @@ void int2hex(char **pOutput, int nbr)
 // Convert little-endian number to a string with space every groupLen digits.
 void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
 {
-  int showDigitsText = TRUE;
+  bool showDigitsText = true;
   int nbrBits;
   int mask;
   int value;
@@ -190,7 +190,7 @@ void Bin2Hex(limb *binary, char *decimal, int nbrLimbs, int groupLength)
   if (groupLength <= 0)
   {
     groupLength = -groupLength;
-    showDigitsText = FALSE;
+    showDigitsText = false;
   }
   (void)strcpy(decimal, "<span class=\"hex\">");
   decimal += strlen(decimal);
@@ -277,12 +277,12 @@ void Bin2Dec(limb *binary, char *decimal, int nbrLimbs, int groupLength)
   int groupCtr;
   int digit[DIGITS_PER_LIMB];
   int digits=0;
-  int showDigitsText = TRUE;
+  bool showDigitsText = true;
 
   if (groupLength <= 0)
   {
     groupLength = -groupLength;
-    showDigitsText = FALSE;
+    showDigitsText = false;
   }
   power10000[0].x = ptrSrc->x % MAX_LIMB_CONVERSION;
   power10000[1].x = ptrSrc->x / MAX_LIMB_CONVERSION;

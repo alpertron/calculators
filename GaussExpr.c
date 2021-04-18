@@ -112,7 +112,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
     char charValue = *(expr + exprIndex);
     if (charValue == '!')
     {           // Calculating factorial.
-      if (leftNumberFlag == FALSE)
+      if (leftNumberFlag == false)
       {
         return EXPR_SYNTAX_ERROR;
       }
@@ -153,7 +153,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (charValue == '#')
     {           // Calculating primorial.
-      if (leftNumberFlag == FALSE)
+      if (leftNumberFlag == false)
       {
         return EXPR_SYNTAX_ERROR;
       }

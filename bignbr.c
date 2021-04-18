@@ -29,8 +29,8 @@ static BigInteger Temp3;
 static BigInteger Base;
 static BigInteger Power;
 static BigInteger expon;
-static char ProcessExpon[MAX_LEN*BITS_PER_GROUP + 1000];
-static char primes[MAX_LEN*BITS_PER_GROUP + 1000];
+static bool ProcessExpon[MAX_LEN*BITS_PER_GROUP + 1000];
+static bool primes[MAX_LEN*BITS_PER_GROUP + 1000];
 extern limb Mult1[MAX_LEN];
 extern limb Mult2[MAX_LEN];
 extern limb Mult3[MAX_LEN];
@@ -221,17 +221,7 @@ void BigIntNegate(BigInteger *pSrc, BigInteger *pDest)
   {
     CopyBigInt(pDest, pSrc);
   }
-  if (pSrc->sign == SIGN_POSITIVE)
-  {
-    if ((pSrc->nbrLimbs!=1) || (pSrc->limbs[0].x != 0))
-    {
-      pDest->sign = SIGN_NEGATIVE;
-    }
-  }
-  else
-  {
-    pDest->sign = SIGN_POSITIVE;
-  }
+  BigIntChSign(pDest);
 }
 
 void BigIntSubt(BigInteger *pMinuend, BigInteger *pSubtrahend, BigInteger *pDifference)
@@ -565,22 +555,22 @@ static void BigIntMutiplyPower2(BigInteger *pArg, int power2)
   pArg->nbrLimbs = nbrLimbs;
 }
 
-boolean TestBigNbrEqual(BigInteger *pNbr1, BigInteger *pNbr2)
+bool TestBigNbrEqual(BigInteger *pNbr1, BigInteger *pNbr2)
 {
   int ctr;
   limb *ptrLimbs1 = pNbr1->limbs;
   limb *ptrLimbs2 = pNbr2->limbs;
   if (pNbr1->nbrLimbs != pNbr2->nbrLimbs)
   {        // Sizes of numbers are different.
-    return FALSE;
+    return false;
   }
   if (pNbr1->sign != pNbr2->sign)
   {        // Sign of numbers are different.
     if ((pNbr1->nbrLimbs == 1) && (pNbr1->limbs[0].x == 0) && (pNbr2->limbs[0].x == 0))
     {              // Both numbers are zero.
-      return TRUE;
+      return true;
     }
-    return FALSE;
+    return false;
   }
 
            // Check whether both numbers are equal.
@@ -588,16 +578,14 @@ boolean TestBigNbrEqual(BigInteger *pNbr1, BigInteger *pNbr2)
   {
     if ((ptrLimbs1 + ctr)->x != (ptrLimbs2 + ctr)->x)
     {      // Numbers are different.
-      return FALSE;
+      return false;
     }
   }        // Numbers are equal.
-  return TRUE;
+  return true;
 }
 
 void BigIntGcd(BigInteger *pArg1, BigInteger *pArg2, BigInteger *pResult)
 {
-  int nbrLimbs1 = pArg1->nbrLimbs;
-  int nbrLimbs2 = pArg2->nbrLimbs;
   int power2;
   if (BigIntIsZero(pArg1))
   {               // First argument is zero, so the GCD is second argument.
@@ -1118,11 +1106,11 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
   int prime2310x1[] =
   { 2311, 4621, 9241, 11551, 18481, 25411, 32341, 34651, 43891, 50821 };
   // Primes of the form 2310x+1.
-  boolean expon2 = TRUE;
-  boolean expon3 = TRUE;
-  boolean expon5 = TRUE;
-  boolean expon7 = TRUE;
-  boolean expon11 = TRUE;
+  bool expon2 = true;
+  bool expon3 = true;
+  bool expon5 = true;
+  bool expon7 = true;
+  bool expon11 = true;
   double dLogBigNbr = logBigNbr(pBigNbr);
   if (pBigNbr->nbrLimbs > 10)
   {
@@ -1168,39 +1156,39 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
     int mod = getRemainder(pBigNbr, testprime);
     if (expon2 && (intModPow(mod, testprime / 2, testprime) > 1))
     {
-      expon2 = FALSE;
+      expon2 = false;
     }
     if (expon3 && (intModPow(mod, testprime / 3, testprime) > 1))
     {
-      expon3 = FALSE;
+      expon3 = false;
     }
     if (expon5 && (intModPow(mod, testprime / 5, testprime) > 1))
     {
-      expon5 = FALSE;
+      expon5 = false;
     }
     if (expon7 && (intModPow(mod, testprime / 7, testprime) > 1))
     {
-      expon7 = FALSE;
+      expon7 = false;
     }
     if (expon11 && (intModPow(mod, testprime / 11, testprime) > 1))
     {
-      expon11 = FALSE;
+      expon11 = false;
     }
   }
   primesLength = 2 * maxExpon + 3;
   for (h = 2; h <= maxExpon; h++)
   {
-    ProcessExpon[h] = TRUE;
+    ProcessExpon[h] = true;
   }
   for (h = 2; h < primesLength; h++)
   {
-    primes[h] = TRUE;
+    primes[h] = true;
   }
   for (h = 2; h * h < primesLength; h++)
   { // Generation of primes
     for (j = h * h; j < primesLength; j += h)
     { // using Eratosthenes sieve
-      primes[j] = FALSE;
+      primes[j] = false;
     }
   }
   for (h = 13; h < primesLength; h++)
@@ -1217,7 +1205,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
           {
             for (j = h; j <= maxExpon; j += h)
             {
-              ProcessExpon[j] = FALSE;
+              ProcessExpon[j] = false;
             }
             break;
           }
@@ -1642,7 +1630,7 @@ bool BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   int mask;
   int index;
   int signPowQ;
-  int insidePowering = FALSE;
+  bool insidePowering = false;
   int nbrLimbs = pValue->nbrLimbs;
   limb *limbs = pValue->limbs;
   BigInteger tmp;
@@ -1868,7 +1856,7 @@ bool BpswPrimalityTest(/*@in@*/BigInteger *pValue)
         (void)memcpy(Mult3, Temp.limbs, NumberLength * sizeof(limb));
         modmultInt(Mult1, absQ, Mult1);     // Multiply power of Q by Q.
         signPowQ = -mult;                   // Attach correct sign to power.
-        insidePowering = TRUE;
+        insidePowering = true;
       }
     }
   }
@@ -1997,14 +1985,14 @@ double getMantissa(limb *ptrLimb, int nbrLimbs)
   return dN;
 }
 
-void BigIntPowerOf2(BigInteger *pResult, int expon)
+void BigIntPowerOf2(BigInteger *pResult, int exponent)
 {
-  int nbrLimbs = expon / BITS_PER_GROUP;
+  int nbrLimbs = exponent / BITS_PER_GROUP;
   if (nbrLimbs > 0)
   {
     (void)memset(pResult->limbs, 0, nbrLimbs * sizeof(limb));
   }
-  pResult->limbs[nbrLimbs].x = 1 << (expon % BITS_PER_GROUP);
+  pResult->limbs[nbrLimbs].x = 1 << (exponent % BITS_PER_GROUP);
   pResult->nbrLimbs = nbrLimbs + 1;
   pResult->sign = SIGN_POSITIVE;
 }

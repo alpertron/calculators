@@ -120,7 +120,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
   int exponOperatorCounter = 0;
   char stackOper[STACK_OPER_SIZE];
   int stackOperIndex = 0;
-  int prevTokenIsNumber = FALSE;
+  bool prevTokenIsNumber = false;
   char s;
   char *ptrInput;
   int index;
@@ -140,7 +140,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
     inputTemp = input;
     if (isFunc(&inputTemp, "GCD"))
     {
-      if (prevTokenIsNumber == FALSE)
+      if (prevTokenIsNumber == false)
       {
         input = inputTemp;
         stackOper[stackOperIndex++] = TOKEN_GCD;  // Push token onto stack.
@@ -150,7 +150,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
     }
     else if (isFunc(&inputTemp, "DER"))
     {
-      if (prevTokenIsNumber == FALSE)
+      if (prevTokenIsNumber == false)
       {
         input = inputTemp;
         stackOper[stackOperIndex++] = TOKEN_DER;  // Push token onto stack.
@@ -176,9 +176,9 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
       c = '^';
       input++;
     }
-    if (prevTokenIsNumber != FALSE)
+    if (prevTokenIsNumber)
     {
-      prevTokenIsNumber = FALSE;
+      prevTokenIsNumber = false;
       if (c == '+' || c == '-')
       {        // Binary plus or minus
         while (stackOperIndex > 0)
@@ -229,7 +229,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
           }
           stackOper[stackOperIndex++] = '*';    // Push operator onto stack.
           *ptrOutput++ = 'x';
-          prevTokenIsNumber = TRUE;
+          prevTokenIsNumber = true;
         }
         else
         {
@@ -288,7 +288,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
         if (c == ',')
         {
           stackOper[stackOperIndex++] = s;  // Push back paren.
-          prevTokenIsNumber = FALSE;
+          prevTokenIsNumber = false;
         }
         else
         {
@@ -300,7 +300,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
               *ptrOutput++ = stackOper[--stackOperIndex];
             }
           }
-          prevTokenIsNumber = TRUE;
+          prevTokenIsNumber = true;
         }
       }
       else
@@ -329,7 +329,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
           return EXPR_CANNOT_USE_X_IN_EXPONENT;
         }
         *ptrOutput++ = 'x';
-        prevTokenIsNumber = TRUE;
+        prevTokenIsNumber = true;
       }
       else if ((c >= '0') && (c <= '9'))
       {          // Number.
@@ -390,7 +390,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
             }
           }
         }
-        prevTokenIsNumber = TRUE;
+        prevTokenIsNumber = true;
       }
       else
       {
@@ -398,7 +398,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
       }
     }
   }
-  if (prevTokenIsNumber == FALSE)
+  if (prevTokenIsNumber == false)
   {
     return EXPR_SYNTAX_ERROR;
   }
@@ -1024,7 +1024,7 @@ int ComputePolynomial(char *input, int expo)
 {
   int *stackValues[STACK_OPER_SIZE];
   int stackIndex = 0;
-  int insideExpon = FALSE;
+  bool insideExpon = false;
   int *ptrValue1;
   int *ptrValue2;
   int len;
@@ -1094,10 +1094,10 @@ int ComputePolynomial(char *input, int expo)
       valuesIndex += 1 + values[valuesIndex];
       break;
     case TOKEN_START_EXPON:
-      insideExpon = TRUE;
+      insideExpon = true;
       break;
     case TOKEN_END_EXPON:
-      insideExpon = FALSE;
+      insideExpon = false;
       break;
     case TOKEN_UNARY_MINUS:
       ptrValue1 = stackValues[stackIndex - 1];
@@ -1830,7 +1830,7 @@ void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *ex
 {
   int mask;
   int nbrLimbs = NumberLength + 1;
-  int powerIsOne = TRUE;
+  bool powerIsOne = true;
   int nbrBits = 0;
   int index = expon->nbrLimbs - 1;
   int bitCounter = 0;
@@ -1855,7 +1855,7 @@ void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *ex
         {
           CopyPolynomialFixedCoeffSize(polyPower, polyBase, polyDegree, nbrLimbs);
           nbrBits = (index + 1) * BITS_PER_GROUP - bitCounter;
-          powerIsOne = FALSE;
+          powerIsOne = false;
           bitCounter = curMultip * nbrBits;
         }
         else
@@ -2057,7 +2057,7 @@ static void ExtendedGcdPolynomial(/*@in@*/int *ptrA, int degreeA, /*@in@*/int *p
   int degreeR, degreeOldR;
   int nbrQuotients = 0;
   int nbrLimbs = NumberLength + 1;
-  int polyExchanged = FALSE;
+  bool polyExchanged = false;
   int currentDegree;
   int degreeU;
   int counter;
@@ -2072,7 +2072,7 @@ static void ExtendedGcdPolynomial(/*@in@*/int *ptrA, int degreeA, /*@in@*/int *p
     tmpPtr = ptrA;
     ptrA = ptrB;
     ptrB = tmpPtr;
-    polyExchanged = TRUE;
+    polyExchanged = true;
 	}
   ptrR = ptrP1;
   ptrOldR = ptrP2;

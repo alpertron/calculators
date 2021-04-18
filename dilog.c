@@ -180,7 +180,7 @@ void DiscreteLogarithm(void)
   double secondLimit;
   long long brentK;
   long long brentR;
-  unsigned char EndPollardBrentRho;
+  bool EndPollardBrentRho;
   int nbrLimbs;
   struct sFactors *pstFactors;
   enum eLogMachineState logMachineState;
@@ -419,7 +419,7 @@ void DiscreteLogarithm(void)
             mult2.x = 1;
             brentR = 1;
             brentK = 0;
-            EndPollardBrentRho = FALSE;
+            EndPollardBrentRho = false;
             do
             {
               (void)memcpy(nbrR, nbrR2, NumberLength * sizeof(limb));
@@ -474,11 +474,11 @@ void DiscreteLogarithm(void)
                 }
                 if (!memcmp(nbrR, nbrR2, NumberLength * sizeof(limb)))
                 {
-                  EndPollardBrentRho = TRUE;
+                  EndPollardBrentRho = true;
                   break;
                 }
               } while (brentK < brentR);
-            } while (EndPollardBrentRho == FALSE);
+            } while (!EndPollardBrentRho);
             ExchangeMods();                  // TestNbr <- subGroupOrder
             // nbrA <- (nbrA * mult1 + addA) % subGroupOrder
             AdjustExponent(nbrA, mult1, addA, &subGroupOrder);

@@ -160,7 +160,7 @@ static int fcubes(BigInteger *pArgument)
   int mask;
   int pow;
   int exp;
-  boolean converted = FALSE;
+  bool converted = false;
   CopyBigInt(&value, pArgument);
   // Compute argument mod 18.
   mod18 = getRemainder(pArgument, 18);
@@ -170,7 +170,7 @@ static int fcubes(BigInteger *pArgument)
   }
   if (mod18 == 16)
   {             // Change sign.
-    converted = TRUE;
+    converted = true;
     BigIntNegate(&value, &value);
   }
   for (i = 0; i<(int)(sizeof(sums)/sizeof(sums[0])); i += 10)

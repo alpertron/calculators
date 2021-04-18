@@ -82,7 +82,7 @@ static BigRational RatN;
 static BigRational RatR;
 static BigRational RatR2;
 static BigRational RatS2;
-static int firstNumberShown;
+static bool firstNumberShown;
 
 // Coefficients taken from Dummit's Solving Solvable Quintics article.
 static struct stQuinticF20
@@ -4480,7 +4480,7 @@ static void NumberIsNotRational(enum eSign sign)
       showRationalNoParen(&Rat3);
       showPlusSignOn(sign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
     }
-    firstNumberShown = TRUE;
+    firstNumberShown = true;
   }
 }
 
@@ -4498,7 +4498,7 @@ static void showRn(int groupOrder)
   //             if O < 0: plus for R_1 and R_2, minus for R_3 and R_4.
   for (ctr = 1; ctr <= 4; ctr++)
   {
-    firstNumberShown = FALSE;
+    firstNumberShown = false;
     BigRational* ptrRatR = (groupOrder == 10 || ctr == 1 || ctr == 4 ? &RatR : &RatR2);
     BigRational* ptrRatS = (groupOrder == 10 || ctr == 1 || ctr == 4 ? &RatS : &RatS2);
     enum eSign firstSign, secondSign;
@@ -4539,7 +4539,7 @@ static void showRn(int groupOrder)
       ForceDenominatorPositive(&Rat2);
       if (!BigIntIsZero(&Rat2.numerator))
       {
-        firstNumberShown = TRUE;
+        firstNumberShown = true;
         start5thRoot();
         if (!BigIntIsZero(&Rat1.numerator))
         {
@@ -4662,7 +4662,7 @@ static void showRn(int groupOrder)
           else
           {
             start5thRoot();
-            firstNumberShown = TRUE;
+            firstNumberShown = true;
             showRational(&Rat2);
           }
         }

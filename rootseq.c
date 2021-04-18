@@ -659,6 +659,7 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
         }
         else
         {
+          showText(ptrMinus);
           if (pretty == PRETTY_PRINT)
           {
             showRatConstants("<var>r</var> + <var>s</var>", "2");
@@ -1084,7 +1085,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
     *ptrOutput++ = ' ';
     if (RatS.numerator.sign == SIGN_POSITIVE)
     {             // S is real.
-      int isImaginary;
+      bool isImaginary;
       showSquareRootOfRational(&RatS, 2, ptrTimes);
       if (ctr == 0 || ctr == 1)
       {   // Change sign so we always consider q/S.
@@ -1093,11 +1094,11 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
       // Determine whether the radicand is positive or not.
       if (Rat1.numerator.sign == SIGN_POSITIVE && Rat3.numerator.sign == SIGN_POSITIVE)
       {
-        isImaginary = FALSE;
+        isImaginary = false;
       }
       else if (Rat1.numerator.sign == SIGN_NEGATIVE && Rat3.numerator.sign == SIGN_NEGATIVE)
       {
-        isImaginary = TRUE;
+        isImaginary = true;
       }
       else
       {

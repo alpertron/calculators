@@ -1958,7 +1958,7 @@ void FactorPolynomialModPrime(int prime)
 {
   (void)memset(factorInfo, 0, sizeof(factorInfo));
   initFactorModularPoly(prime);
-  FactorModularPolynomial(FALSE);   // Input is not in Montgomery notation.
+  FactorModularPolynomial(false);   // Input is not in Montgomery notation.
 }
 
 static void CopyFactorsFoundToRecord(void)
@@ -1999,7 +1999,7 @@ int FactorPolyOverIntegers(void)
   int attemptNbr;
   int factorNbr;
   int currentDegree;
-  int polXprocessed = FALSE;
+  bool polXprocessed = false;
   int* ptrFactorIntegerBak;
   int* ptrPolyLiftedOrig;
   struct sFactorInfo* pstFactorInfoOrig;
@@ -2020,7 +2020,7 @@ int FactorPolyOverIntegers(void)
   for (currentDegree = 0; currentDegree <= degreePolyToFactor; currentDegree++)
   {
     UncompressBigIntegerB(ptrSrc, &operand1);
-    if (polXprocessed == FALSE)
+    if (polXprocessed == false)
     {
       if (BigIntIsZero(&operand1))
       {
@@ -2037,7 +2037,7 @@ int FactorPolyOverIntegers(void)
         pstFactorInfoInteger++;
         polyToFactor[0] = degreePolyToFactor - currentDegree;
       }
-      polXprocessed = TRUE;
+      polXprocessed = true;
     }
     BigIntDivide(&operand1, &contentPolyToFactor, &operand2);
     NumberLength = operand2.nbrLimbs;
