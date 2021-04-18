@@ -33,13 +33,12 @@ int NbrBak[MAX_LIMBS_SIQS];
 void ChSignBigNbr(int *nbr, int length)
 {
   int carry = 0;
-  int ctr;
-  int *ptrNbr = nbr;
-  for (ctr = 0; ctr < length; ctr++)
+  int *ptrNbr;
+  int *ptrEndNbr = nbr + length;
+  for (ptrNbr = nbr; ptrNbr < ptrEndNbr; ptrNbr++)
   {
-    carry -= *nbr;
+    carry -= *ptrNbr;
     *ptrNbr = carry & MAX_INT_NBR;
-    ptrNbr++;
     carry >>= BITS_PER_INT_GROUP;
   }
 }
@@ -47,85 +46,80 @@ void ChSignBigNbr(int *nbr, int length)
 void ChSignBigNbrB(int *nbr, int length)
 {
   int carry = 0;
-  int ctr;
   int *ptrNbr = nbr;
-  for (ctr = 0; ctr < length-1; ctr++)
+  int *ptrEndNbr = nbr + length - 1;
+  for (ptrNbr = nbr; ptrNbr < ptrEndNbr; ptrNbr++)
   {
-    carry -= *nbr;
+    carry -= *ptrNbr;
     *ptrNbr = carry & MAX_INT_NBR;
-    ptrNbr++;
     carry >>= BITS_PER_INT_GROUP;
   }
   *ptrNbr = carry - *ptrNbr;
 }
 
-void AddBigNbr(int *pNbr1, int *pNbr2, int *pSum, int nbrLen)
+void AddBigNbr(const int *pNbr1, const int *pNbr2, int *pSum, int nbrLen)
 {
   unsigned int carry = 0;
-  int i;
-  int *ptrNbr1 = pNbr1;
-  int *ptrNbr2 = pNbr2;
-  int *ptrSum = pSum;
-  for (i = 0; i < nbrLen; i++)
+  const int *ptrNbr1 = pNbr1;
+  const int *ptrNbr2 = pNbr2;
+  int *ptrSum;
+  int *ptrEndSum = pSum + nbrLen;
+  for (ptrSum = pSum; ptrSum < ptrEndSum; ptrSum++)
   {
     carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrNbr1 + (unsigned int)*ptrNbr2;
     *ptrSum = (int)(carry & MAX_INT_NBR);
     ptrNbr1++;
     ptrNbr2++;
-    ptrSum++;
   }
 }
 
-void SubtractBigNbr(int *pNbr1, int *pNbr2, int *pDiff, int nbrLen)
+void SubtractBigNbr(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen)
 {
   int borrow = 0;
-  int i;
-  int *ptrNbr1 = pNbr1;
-  int *ptrNbr2 = pNbr2;
+  const int *ptrNbr1 = pNbr1;
+  const int *ptrNbr2 = pNbr2;
   int *ptrDiff = pDiff;
-  for (i = 0; i < nbrLen; i++)
+  int *ptrEndDiff = pDiff + nbrLen;
+  for (ptrDiff = pDiff; ptrDiff < ptrEndDiff; ptrDiff++)
   {
     borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
     *ptrDiff = borrow & MAX_INT_NBR;
     ptrNbr1++;
     ptrNbr2++;
-    ptrDiff++;
   }
 }
 
-void AddBigNbrB(int *pNbr1, int *pNbr2, int *pSum, int nbrLen)
+void AddBigNbrB(const int *pNbr1, const int *pNbr2, int *pSum, int nbrLen)
 {
   unsigned int carry = 0;
-  int i;
-  int *ptrNbr1 = pNbr1;
-  int *ptrNbr2 = pNbr2;
-  int *ptrSum = pSum;
-  for (i = 0; i < nbrLen-1; i++)
+  const int *ptrNbr1 = pNbr1;
+  const int *ptrNbr2 = pNbr2;
+  int *ptrSum;
+  int* ptrEndSum = pSum + nbrLen - 1;
+  for (ptrSum = pSum; ptrSum < ptrEndSum; ptrSum++)
   {
     carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrNbr1 + (unsigned int)*ptrNbr2;
     *ptrSum = (int)(carry & MAX_INT_NBR);
     ptrNbr1++;
     ptrNbr2++;
-    ptrSum++;
   }
   carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrNbr1 + (unsigned int)*ptrNbr2;
   *ptrSum = (int)carry;
 }
 
-void SubtractBigNbrB(int *pNbr1, int *pNbr2, int *pDiff, int nbrLen)
+void SubtractBigNbrB(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen)
 {
   int borrow = 0;
-  int i;
-  int *ptrNbr1 = pNbr1;
-  int *ptrNbr2 = pNbr2;
-  int *ptrDiff = pDiff;
-  for (i = 0; i < nbrLen-1; i++)
+  const int *ptrNbr1 = pNbr1;
+  const int *ptrNbr2 = pNbr2;
+  int *ptrDiff;
+  int* ptrEndDiff = pDiff + nbrLen - 1;
+  for (ptrDiff = pDiff; ptrDiff < ptrEndDiff; ptrDiff++)
   {
     borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
-    *pDiff = borrow & MAX_INT_NBR;
+    *ptrDiff = borrow & MAX_INT_NBR;
     ptrNbr1++;
     ptrNbr2++;
-    ptrDiff++;
   }
   borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
   *ptrDiff = borrow;
@@ -512,21 +506,21 @@ void MultBigNbrByIntModN(int *Nbr1, int Nbr2, int *Prod, int *Mod, int nbrLen)
 
 int intDoubleModPow(int NbrMod, int Expon, int currentPrime)
 {
-  double Power = 1;
-  double Square = NbrMod;
-  double Modulus = currentPrime;
+  double dPower = 1;
+  double dSquare = NbrMod;
+  double dModulus = currentPrime;
   while (Expon != 0)
   {
     if ((Expon & 1) == 1)
     {
-      Power *= Square;
-      Power -= floor(Power / Modulus)*Modulus;
+      dPower *= dSquare;
+      dPower -= floor(dPower / dModulus)*dModulus;
     }
-    Square *= Square;
-    Square -= floor(Square / Modulus)*Modulus;
+    dSquare *= dSquare;
+    dSquare -= floor(dSquare / dModulus)*dModulus;
     Expon >>= 1;
   }
-  return (int)Power;
+  return (int)dPower;
 }
 
 void ModInvBigInt(int *num, int *inv, int *mod, int nbrLenBigInt)

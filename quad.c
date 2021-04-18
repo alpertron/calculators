@@ -208,7 +208,7 @@ static void showAlso(void)
 
 static void startResultBox(enum eLinearSolution Ret)
 {
-  if (teach && Ret != NO_SOLUTIONS)
+  if (teach && (Ret != NO_SOLUTIONS))
   {
     showText("<div class=\"outerbox\"><div class=\"box\">");
   }
@@ -216,7 +216,7 @@ static void startResultBox(enum eLinearSolution Ret)
 
 static void endResultBox(enum eLinearSolution Ret)
 {
-  if (teach && Ret != NO_SOLUTIONS)
+  if (teach && (Ret != NO_SOLUTIONS))
   {
     showText("</div></div>");
   }
@@ -259,7 +259,7 @@ static void ShowLinInd(BigInteger *lin, BigInteger *ind, char *var)
   *ptrOutput++ = ' ';
   if (!BigIntIsZero(lin))
   {
-    if (lin->nbrLimbs != 1 || lin->limbs[0].x != 1)
+    if ((lin->nbrLimbs != 1) || (lin->limbs[0].x != 1))
     {     // abs(lin) is not 1
       CopyBigInt(&Aux[0], lin);
       Aux[0].sign = SIGN_POSITIVE;   // Do not show negative sign twice.
@@ -276,7 +276,7 @@ int PrintLinear(enum eLinearSolution Ret, char *var)
   {
     return 0;
   }
-  if (var == varT && !teach)
+  if ((var == varT) && !teach)
   {
     showAlso();
   }
@@ -307,7 +307,7 @@ int PrintLinear(enum eLinearSolution Ret, char *var)
 static void PrintQuad(BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeffInd, 
                       char *var1, char *var2)
 {
-  if (coeffT2->nbrLimbs == 1 && coeffT2->limbs[0].x == 1)
+  if ((coeffT2->nbrLimbs == 1) && (coeffT2->limbs[0].x == 1))
   {             // abs(coeffT2) = 1
     if (coeffT2->sign == SIGN_POSITIVE)
     {           // coeffT2 = 1
@@ -335,7 +335,7 @@ static void PrintQuad(BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeff
   {
     showText(" + ");
   }
-  if (coeffT->nbrLimbs == 1 && coeffT->limbs[0].x == 1)
+  if ((coeffT->nbrLimbs == 1) && (coeffT->limbs[0].x == 1))
   {     // abs(coeffT) = 1
     showText(var1);
     showText("&#8290;");
@@ -388,7 +388,7 @@ static void PrintQuad(BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeff
     {
       shownbr(coeffInd);
     }
-    else if (coeffInd->nbrLimbs > 1 || coeffInd->limbs[0].x > 1)
+    else if ((coeffInd->nbrLimbs > 1) || (coeffInd->limbs[0].x > 1))
     {
       shownbr(coeffInd);
       showText("&nbsp;&#8290;");
@@ -458,9 +458,9 @@ void ShowXY(BigInteger *X, BigInteger *Y)
 
 static int Show(BigInteger *num, char *str, enum eLinearSolution t)
 {
-  if (num->nbrLimbs > 1 || num->limbs[0].x != 0)
+  if ((num->nbrLimbs > 1) || (num->limbs[0].x != 0))
   {     // num is not zero.
-    if ((t & 1) != 0 && num->sign == SIGN_POSITIVE)
+    if (((t & 1) != 0) && (num->sign == SIGN_POSITIVE))
     {
       *ptrOutput++ = ' ';
       *ptrOutput++ = '+';
@@ -470,7 +470,7 @@ static int Show(BigInteger *num, char *str, enum eLinearSolution t)
       *ptrOutput++ = ' ';
       *ptrOutput++ = '-';
     }
-    if (num->nbrLimbs != 1 || num->limbs[0].x != 1)
+    if ((num->nbrLimbs != 1) || (num->limbs[0].x != 1))
     {    // num is not 1 or -1.
       int signTemp = num->sign;
       num->sign = SIGN_POSITIVE;
@@ -498,7 +498,7 @@ static void Show1(BigInteger *num, enum eLinearSolution t)
 {
   int u = Show(num, "", t);
   *ptrOutput++ = ' ';
-  if ((u & 1) == 0 || (num->nbrLimbs == 1 && num->limbs[0].x == 1))
+  if (((u & 1) == 0) || ((num->nbrLimbs == 1) && (num->limbs[0].x == 1)))
   {
     enum eSign sign = num->sign;
     num->sign = SIGN_POSITIVE;
@@ -748,9 +748,9 @@ void SolveQuadModEquation(void)
   BigIntDivide(&modulus, &GcdAll, &Tmp[0]);
   CopyBigInt(&modulus, &Tmp[0]);
   CopyBigInt(&ValNn, &modulus);
-  if (ValNn.nbrLimbs == 1 && ValNn.limbs[0].x == 1)
+  if ((ValNn.nbrLimbs == 1) && (ValNn.limbs[0].x == 1))
   {     // All values from 0 to GcdAll - 1 are solutions.
-    if (GcdAll.nbrLimbs > 1 || GcdAll.limbs[0].x > 5)
+    if ((GcdAll.nbrLimbs > 1) || (GcdAll.limbs[0].x > 5))
     {
       showText("<p>All values of <var>x</var> between 0 and ");
       addbigint(&GcdAll, -1);
@@ -781,7 +781,7 @@ void SolveQuadModEquation(void)
   if (BigIntIsZero(&Tmp[0]))
   {           // Linear equation.
     BigIntGcd(&coeffLinear, &modulus, &Tmp[0]);
-    if (Tmp[0].nbrLimbs != 1 || Tmp[0].limbs[0].x != 1)
+    if ((Tmp[0].nbrLimbs != 1) || (Tmp[0].limbs[0].x != 1))
     {         // ValB and ValN are not coprime. Go out.
       return;
     }
@@ -852,7 +852,7 @@ void SolveQuadModEquation(void)
       BigIntDivide(&coeffLinear, &U, &V);
       BigIntDivide(&coeffIndep, &U, &L);
       BigIntNegate(&V, &V);
-      if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
+      if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
       {      // If prime is 2.
         BigIntModularDivisionPower2(&L, &V, &Q, &common.quad.Solution1[factorIndex]);
       }
@@ -880,7 +880,7 @@ void SolveQuadModEquation(void)
       multint(&discriminant, &discriminant, 4);
       BigIntSubt(&Tmp[0], &discriminant, &discriminant);
       CopyBigInt(&ValAOdd, &coeffQuadr);
-      if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
+      if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
       {         /* Prime p is 2 */
         int bitsBZero, bitsCZero;
         int origExpon = expon;
@@ -897,7 +897,7 @@ void SolveQuadModEquation(void)
         DivideBigNbrByMaxPowerOf2(&bitsBZero, ValBOdd.limbs, &ValBOdd.nbrLimbs);
         CopyBigInt(&ValCOdd, &coeffIndep);
         DivideBigNbrByMaxPowerOf2(&bitsCZero, ValCOdd.limbs, &ValCOdd.nbrLimbs);
-        if (bitsAZero > 0 && bitsBZero > 0 && bitsCZero > 0)
+        if ((bitsAZero > 0) && (bitsBZero > 0) && (bitsCZero > 0))
         {
           int minExpon = bitsAZero;
           if (minExpon < bitsBZero)
@@ -913,13 +913,13 @@ void SolveQuadModEquation(void)
           bitsCZero -= minExpon;
           expon -= minExpon;
         }
-        if ((bitsAZero == 0 && bitsBZero == 0 && bitsCZero == 0) ||
-          (bitsAZero > 0 && bitsBZero > 0 && bitsCZero == 0))
+        if (((bitsAZero == 0) && (bitsBZero == 0) && (bitsCZero == 0)) ||
+          ((bitsAZero > 0) && (bitsBZero > 0) && (bitsCZero == 0)))
         {
           NoSolsModPrime(origExpon);
           return;   // No solutions, so go out.
         }
-        if (bitsAZero == 0 && bitsBZero > 0)
+        if ((bitsAZero == 0) && (bitsBZero > 0))
         {           // The solution in this case requires square root.
           // compute s = ((b/2)^2 - a*c)/a^2; r = p_2(s), q = o_2(s).
           CopyBigInt(&tmp1, &coeffLinear);
@@ -945,7 +945,7 @@ void SolveQuadModEquation(void)
           else
           {
             DivideBigNbrByMaxPowerOf2(&bitsCZero, ValCOdd.limbs, &ValCOdd.nbrLimbs);
-            if ((ValCOdd.limbs[0].x & 7) != 1 || (bitsCZero & 1))
+            if (((ValCOdd.limbs[0].x & 7) != 1) || (bitsCZero & 1))
             {
               NoSolsModPrime(origExpon);
               return;                             // q != 1 or p2(r) == 0, so go out.
@@ -998,7 +998,7 @@ void SolveQuadModEquation(void)
           BigIntSubt(&tmp1, &squareRoot, &tmp2);
           BigIntAnd(&tmp2, &K1, &common.quad.Solution2[factorIndex]);
         }
-        else if (bitsAZero == 0 && bitsBZero == 0)
+        else if ((bitsAZero == 0) && (bitsBZero == 0))
         {
           CopyBigInt(&Quadr, &coeffQuadr);
           BigIntMultiplyBy2(&Quadr);          // 2a
@@ -1042,7 +1042,7 @@ void SolveQuadModEquation(void)
         for (;;)
         {
           BigIntRemainder(&ValAOdd, &prime, &tmp1);
-          if (tmp1.nbrLimbs > 1 || tmp1.limbs[0].x != 0)
+          if ((tmp1.nbrLimbs > 1) || (tmp1.limbs[0].x != 0))
           {
             break;
           }
@@ -1061,7 +1061,7 @@ void SolveQuadModEquation(void)
           for (;;)
           {
             BigIntRemainder(&discriminant, &prime, &tmp1);
-            if (tmp1.nbrLimbs > 1 || tmp1.limbs[0].x != 0)
+            if ((tmp1.nbrLimbs > 1) || (tmp1.limbs[0].x != 0))
             {
               break;
             }
@@ -1069,7 +1069,7 @@ void SolveQuadModEquation(void)
             deltaZeros++;
           }
         }
-        if ((deltaZeros & 1) && deltaZeros < expon)
+        if ((deltaZeros & 1) && (deltaZeros < expon))
         {          // If delta is of type m*prime^n where m is not multiple of prime
                    // and n is odd, there is no solution, so go out.
           NoSolsModPrime(expon);
@@ -1085,7 +1085,7 @@ void SolveQuadModEquation(void)
         {
           BigIntAdd(&tmp1, &ValAOdd, &ValAOdd);
         }
-        else if (ValAOdd.nbrLimbs > 1 || ValAOdd.limbs[0].x != 0)
+        else if ((ValAOdd.nbrLimbs > 1) || (ValAOdd.limbs[0].x != 0))
         {
           BigIntSubt(&tmp1, &ValAOdd, &ValAOdd);
         }
@@ -1270,7 +1270,7 @@ void SolveQuadModEquation(void)
         for (ctr = 0; ctr < bitsAZero; ctr++)
         {
           BigIntRemainder(&tmp1, &prime, &tmp2);
-          if (tmp2.nbrLimbs > 1 || tmp2.limbs[0].x != 0)
+          if ((tmp2.nbrLimbs > 1) || (tmp2.limbs[0].x != 0))
           {   // Cannot divide by prime, so go out.
             sol1Invalid = 1;
             break;
@@ -1287,7 +1287,7 @@ void SolveQuadModEquation(void)
         for (ctr = 0; ctr < bitsAZero; ctr++)
         {
           BigIntRemainder(&tmp1, &prime, &tmp2);
-          if (tmp2.nbrLimbs > 1 || tmp2.limbs[0].x != 0)
+          if ((tmp2.nbrLimbs > 1) || (tmp2.limbs[0].x != 0))
           {   // Cannot divide by prime, so go out.
             sol2Invalid = 1;
             break;
@@ -1513,7 +1513,8 @@ static void paren(BigInteger *num)
 enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger *coeffInd)
 {
   BigInteger q;
-  int showSteps, stepNbr;
+  bool showSteps;
+  int stepNbr;
   if (teach)
   {
     showText(lang? "<p>Esta es una ecuación lineal ": "<p>This is a linear equation ");
@@ -1566,7 +1567,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
     }
   }
   BigIntGcd(coeffX, coeffY, &U1);
-  if (U1.nbrLimbs > 1 || U1.limbs[0].x != 1)
+  if ((U1.nbrLimbs > 1) || (U1.limbs[0].x != 1))
   {                  // GCD is not 1.
     if (teach)
     {
@@ -1606,7 +1607,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
   intToBigInteger(&V1, 0);    // V1 <- 0
   intToBigInteger(&V2, 1);    // V2 <- 1
   CopyBigInt(&V3, coeffY);    // V3 <- coeffY
-  showSteps = (coeffX->nbrLimbs == 1 && coeffY->nbrLimbs == 1);
+  showSteps = ((coeffX->nbrLimbs == 1) && (coeffY->nbrLimbs == 1));
   stepNbr = 1;
   if (teach && showSteps)
   {
@@ -1676,7 +1677,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
     paren(&U3);    // U3
     CopyBigInt(&bigTmp, coeffInd);
     BigIntChSign(&bigTmp);
-    if (q.sign != SIGN_POSITIVE || q.nbrLimbs != 1 || q.limbs[0].x != 1)
+    if ((q.sign != SIGN_POSITIVE) || (q.nbrLimbs != 1) || (q.limbs[0].x != 1))
     {    // Multiplier is not 1.
       showText(lang? "</p><p>Multiplicando la última ecuación por ": 
         "</p><p>Multiplying the last equation by ");
@@ -1742,7 +1743,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
   BigIntAdd(&Xind, &q, &Xind);        // Xind <- Xind + coeffY * delta
   BigIntMultiply(&U1, coeffX, &q);
   BigIntSubt(&Yind, &q, &Yind);       // Yind <- Yind - coeffX * delta
-  if (Xlin.sign == SIGN_NEGATIVE && Ylin.sign == SIGN_NEGATIVE)
+  if ((Xlin.sign == SIGN_NEGATIVE) && (Ylin.sign == SIGN_NEGATIVE))
   {    // If both coefficients are negative, make them positive.
     BigIntChSign(&Xlin);
     BigIntChSign(&Ylin);
@@ -2054,7 +2055,7 @@ static void callbackQuadModParabolic(BigInteger *value)
     {
       showText("&minus; ");
     }
-    if (ValU.nbrLimbs > 1 || ValU.limbs[0].x > 1)
+    if ((ValU.nbrLimbs > 1) || (ValU.limbs[0].x > 1))
     {         // Absolute value of U is not 1.
       ValH.sign = SIGN_POSITIVE;
       shownbr(&ValH);
@@ -2341,7 +2342,7 @@ static void NonSquareDiscriminant(void)
   intToBigInteger(&ValM, 0);
   varXnoTrans = "<var>X</var>";
   varYnoTrans = "<var>Y</var>";
-  if (bigTmp.nbrLimbs != 1 || bigTmp.limbs[0].x != 1)
+  if ((bigTmp.nbrLimbs != 1) || (bigTmp.limbs[0].x != 1))
   {                        // gcd(a, K) is not equal to 1.
     if (teach)
     {
@@ -2372,7 +2373,7 @@ static void NonSquareDiscriminant(void)
       BigIntMultiply(&U1, &ValM, &U1);
       BigIntAdd(&U1, &ValA, &U1);
       BigIntGcd(&U1, &ValK, &bigTmp);
-      if (bigTmp.nbrLimbs == 1 && bigTmp.limbs[0].x == 1)
+      if ((bigTmp.nbrLimbs == 1) && (bigTmp.limbs[0].x == 1))
       {
         addbigint(&ValM, 1);  // Increment M.
         BigIntChSign(&ValM);  // Change sign to indicate type.
@@ -2386,7 +2387,7 @@ static void NonSquareDiscriminant(void)
       BigIntMultiply(&U1, &ValM, &U1);
       BigIntAdd(&U1, &ValC, &U1);
       BigIntGcd(&U1, &ValK, &bigTmp);
-    } while (bigTmp.nbrLimbs != 1 || bigTmp.limbs[0].x != 1);
+    } while ((bigTmp.nbrLimbs != 1) || (bigTmp.limbs[0].x != 1));
     // Compute 2am + b or 2cm + b as required.
     BigIntAdd(&U2, &U2, &U2);
     BigIntAdd(&U2, &ValB, &U2);
@@ -2491,7 +2492,7 @@ static void NonSquareDiscriminant(void)
     if (teach)
     {
       showText("<p>");
-      if (ValE.nbrLimbs > 1 || ValE.limbs[0].x > 1)
+      if ((ValE.nbrLimbs > 1) || (ValE.limbs[0].x > 1))
       {
         if (BigIntIsZero(&ValM))
         {       // No unimodular transforation.
@@ -2535,7 +2536,7 @@ static void NonSquareDiscriminant(void)
       showText(lang ? " e " : " and ");
       showText(varY);
       showText(lang ? " primos entre sí.</p>" : " coprime.</p>");
-      if (ValE.nbrLimbs > 1 || ValE.limbs[0].x > 1)
+      if ((ValE.nbrLimbs > 1) || (ValE.limbs[0].x > 1))
       {
         showText(lang ? "<p>De la ecuación " : "<p>From equation ");
         showEqNbr(BigIntIsZero(&ValM)? 1: 3);
@@ -2614,7 +2615,7 @@ static void NonSquareDiscriminant(void)
       break;
     }
   }
-  if (showRecursiveSolution && callbackQuadModType == CBACK_QMOD_HYPERBOLIC)
+  if (showRecursiveSolution && (callbackQuadModType == CBACK_QMOD_HYPERBOLIC))
   {   // Show recursive solution.
     ContFracPell();
   }
@@ -2689,7 +2690,7 @@ static void NonSquareDiscrSolution(BigInteger *value)
   }
   BigIntMultiply(&bigTmp, &ValI, &bigTmp);// Kv
   BigIntSubt(&ValZ, &bigTmp, &ValZ);      // U = tu - Kv
-  if (teach && (ValE.nbrLimbs > 1 || ValE.limbs[0].x > 1))
+  if (teach && ((ValE.nbrLimbs > 1) || (ValE.limbs[0].x > 1)))
   {     // E > 1
     showText(lang? "<p>De ": "<p>From ");
     showEqNbr(equationNbr);
@@ -2848,7 +2849,7 @@ static int PerformTransformation(BigInteger *value)
   // Compute gcd(P, Q, R)
   BigIntGcd(&ValP, &ValQ, &ValH);   // Use ValH and ValI as temporary variables.
   BigIntGcd(&ValH, &ValR, &ValI);
-  if (ValI.nbrLimbs == 1 && ValI.limbs[0].x == 1)
+  if ((ValI.nbrLimbs == 1) && (ValI.limbs[0].x == 1))
   {         // Gcd equals 1.
     return 1;
   }
@@ -2867,10 +2868,10 @@ static void callbackQuadModElliptic(BigInteger *value)
   {      // No solutions because gcd(P, Q, R) > 1.
     return;
   }
-  if (ValP.sign == SIGN_POSITIVE && ValP.nbrLimbs == 1)
+  if ((ValP.sign == SIGN_POSITIVE) && (ValP.nbrLimbs == 1))
   {
     int Plow = ValP.limbs[0].x;
-    if ((discr.nbrLimbs > 1 || discr.limbs[0].x > 4) && Plow == 1)
+    if (((discr.nbrLimbs > 1) || (discr.limbs[0].x > 4)) && (Plow == 1))
     {      // Discriminant is less than -4 and P equals 1.
       intToBigInteger(&ValH, 1);
       intToBigInteger(&ValI, 0);
@@ -2878,7 +2879,7 @@ static void callbackQuadModElliptic(BigInteger *value)
       equationNbr += 2;
       return;
     }
-    if (discr.nbrLimbs == 1 && discr.limbs[0].x == 4)
+    if ((discr.nbrLimbs == 1) && (discr.limbs[0].x == 4))
     {      // Discriminant is equal to -4.
       CopyBigInt(&ValG, &ValQ);
       BigIntDivideBy2(&ValG);
@@ -2933,7 +2934,7 @@ static void callbackQuadModElliptic(BigInteger *value)
         return;
       }
     }
-    if (discr.nbrLimbs == 1 && discr.limbs[0].x == 3)
+    if ((discr.nbrLimbs == 1) && (discr.limbs[0].x == 3))
     {      // Discriminant is equal to -3.
       if (Plow == 1)
       {
@@ -3096,7 +3097,7 @@ static void callbackQuadModElliptic(BigInteger *value)
     BigIntMultiply(&ValR, &V1, &bigTmp);    // R*V1
     BigIntMultiply(&bigTmp, &V1, &bigTmp);  // R*V1^2
     BigIntAdd(&ValO, &bigTmp, &ValO);       // P*U1^2 + Q*U1*V1 + R*V1^2
-    if (ValO.sign == SIGN_POSITIVE && ValO.nbrLimbs == 1 && ValO.limbs[0].x == 1)
+    if ((ValO.sign == SIGN_POSITIVE) && (ValO.nbrLimbs == 1) && (ValO.limbs[0].x == 1))
     {                                       // a*U1^2 + b*U1*V1 + c*V1^2 = 1.
       int D;
       CopyBigInt(&ValH, &U1);
@@ -3104,11 +3105,11 @@ static void callbackQuadModElliptic(BigInteger *value)
       ShowSolutionFromConvergent();
       NonSquareDiscrSolution(value);        // (U1, V1)
       D = discr.limbs[0].x;
-      if (discr.nbrLimbs > 1 || D > 4)
+      if ((discr.nbrLimbs > 1) || (D > 4))
       {                                     // Discriminant is less than -4, go out.
         break;
       }
-      if (D == 3 || D == 4)
+      if ((D == 3) || (D == 4))
       {                                     // Discriminant is equal to -3 or -4.
         getNextConvergent();
         CopyBigInt(&ValH, &U1);
@@ -3170,7 +3171,7 @@ static void CheckSolutionSquareDiscr(void)
       solutions = 1;
     }
   }
-  if (teach && solutions == 0)
+  if (teach && (solutions == 0))
   {
     showText(lang ? "<p>El sistema de dos ecuaciones no tiene soluciones <var>X</var>, <var>Y</var> enteras.</p>" :
       "<p>The system of two equations does not have integer solutions <var>X</var>, <var>Y</var>.</p>");
@@ -3228,7 +3229,7 @@ static void PerfectSquareDiscriminant(void)
     shownbr(&ValL);
     showText("</p><p>");
     BigIntMultiply(&ValR, &ValS, &V3);
-    if (V3.nbrLimbs > 1 || V3.limbs[0].x > 1)
+    if ((V3.nbrLimbs > 1) || (V3.limbs[0].x > 1))
     {
       BigIntDivide(&V1, &ValR, &V1);
       BigIntDivide(&V2, &ValR, &V2);
@@ -3469,7 +3470,7 @@ static void CheckStartOfContinuedFractionPeriod(void)
     if (bigTmp.sign == SIGN_POSITIVE)
     {           // Second check |u+g| > |v| passed.
       BigIntSubt(&ValU, &ValG, &Tmp2);          // Tmp2 <- u - floor(g)
-      if (Tmp2.sign == SIGN_NEGATIVE || BigIntIsZero(&Tmp2))
+      if ((Tmp2.sign == SIGN_NEGATIVE) || (BigIntIsZero(&Tmp2)))
       {         // Round down number to integer.
         addbigint(&Tmp2, -1);
       }
@@ -3628,11 +3629,11 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
   isIntegerPart = 1;
   for (;;)
   {
-    if (ValV.nbrLimbs == 1 && ValV.limbs[0].x == (Beven ? 1 : 2) &&
-      (index & 1) == (ValK.sign == ValV.sign ? 0 : 1))
+    if ((ValV.nbrLimbs == 1) && (ValV.limbs[0].x == (Beven ? 1 : 2)) &&
+      ((index & 1) == (ValK.sign == ValV.sign ? 0 : 1)))
     {         // Found solution.
-      if (discr.nbrLimbs == 1 && discr.limbs[0].x == 5 && ValA.sign != ValK.sign && 
-        solutionNbr == FIRST_SOLUTION)
+      if ((discr.nbrLimbs == 1) && (discr.limbs[0].x == 5) && (ValA.sign != ValK.sign) && 
+        (solutionNbr == FIRST_SOLUTION))
       {       // Determinant is 5 and aK < 0. Use exceptional solution (U1-U2)/(V1-V2).
         BigIntSubt(&V1, &V2, &ValH);
         BigIntSubt(&U1, &U2, &ValI);
@@ -3716,7 +3717,7 @@ static void ShowResult(char *text, BigInteger *value)
 
 static void ShowAllRecSols(void)
 {
-  if (ValP.nbrLimbs > 2 || ValQ.nbrLimbs > 2)
+  if ((ValP.nbrLimbs > 2) || (ValQ.nbrLimbs > 2))
   {
     if (BigIntIsZero(&ValAlpha) && BigIntIsZero(&ValBeta))
     {
@@ -3853,7 +3854,7 @@ static void ContFracPell(void)
         CopyBigInt(&ValVBak, &ValV);
       }
       periodLength++;
-    } while (periodLength == 1 || !BigIntEqual(&ValU, &ValUBak) || !BigIntEqual(&ValV, &ValVBak));
+    } while ((periodLength == 1) || !BigIntEqual(&ValU, &ValUBak) || !BigIntEqual(&ValV, &ValVBak));
     intToBigInteger(&ValU, 0);    // Reset values of U and V.
     intToBigInteger(&ValV, 1);
   }
@@ -3893,12 +3894,12 @@ static void ContFracPell(void)
       sign = SIGN_POSITIVE;
     }
     // Expecting denominator to be 1 (B even or odd) or 4 (B odd) with correct sign.
-    if (ValV.nbrLimbs != 1 || ValV.sign != sign)
+    if ((ValV.nbrLimbs != 1) || (ValV.sign != sign))
     {   
       continue;
     }
     limbValue = ValV.limbs[0].x;
-    if (limbValue != 1 && (Beven || limbValue != 4))
+    if ((limbValue != 1) && (Beven || (limbValue != 4)))
     {
       continue;
     }
@@ -3929,7 +3930,7 @@ static void ContFracPell(void)
     BigIntMultiply(&ValC, &V1, &ValQ);
     BigIntChSign(&ValQ);                      // Q <- -cs
     BigIntMultiply(&ValA, &V1, &ValR);        // R <- as
-    if (!Beven && limbValue == 1)
+    if (!Beven && (limbValue == 1))
     {
       BigIntAdd(&ValQ, &ValQ, &ValQ);         // Q <- -2cs
       BigIntAdd(&ValR, &ValR, &ValR);         // R <- 2as
@@ -4055,7 +4056,7 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   BigIntChSign(&ValU);
   BigIntChSign(&ValV);
   contfracEqNbr = equationNbr + 3;
-  if (ValU.limbs[0].x == 3 && ValV.limbs[0].x == 9)
+  if ((ValU.limbs[0].x == 3) && (ValV.limbs[0].x == 9))
   {
     contfracEqNbr++;
   }

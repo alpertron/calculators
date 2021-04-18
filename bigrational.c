@@ -94,6 +94,7 @@ enum eExprErr BigRationalSubt(BigRational* pAddend1, BigRational* pAddend2, BigR
 
 void BigRationalNegate(BigRational* pSrc, BigRational* pDest)
 {
+  (void)pDest;
   BigIntChSign(&pSrc->numerator);
 }
 

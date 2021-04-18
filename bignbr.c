@@ -1920,29 +1920,29 @@ bool BigNbrIsZero(limb *value)
   {
     if (value->x != 0)
     {
-      return 0;  // Number is not zero.
+      return false;  // Number is not zero.
     }
     value++;
   }
-  return 1;      // Number is zero
+  return true;       // Number is zero
 }
 
 bool BigIntIsZero(BigInteger *value)
 {
   if ((value->nbrLimbs == 1) && (value->limbs[0].x == 0))
   {
-    return 1;    // Number is zero.
+    return true;     // Number is zero.
   }
-  return 0;      // Number is not zero.
+  return false;      // Number is not zero.
 }
 
 bool BigIntIsOne(BigInteger* value)
 {
   if ((value->nbrLimbs == 1) && (value->limbs[0].x == 1) && (value->sign == SIGN_POSITIVE))
   {
-    return 1;    // Number is zero.
+    return true;     // Number is zero.
   }
-  return 0;      // Number is not zero.
+  return false;      // Number is not zero.
 }
 
 bool BigIntEqual(BigInteger *value1, BigInteger *value2)
@@ -1953,7 +1953,7 @@ bool BigIntEqual(BigInteger *value1, BigInteger *value2)
   limb *ptrValue2;
   if ((value1->nbrLimbs != value2->nbrLimbs) || (value1->sign != value2->sign))
   {
-    return 0;    // Numbers are not equal.
+    return false;    // Numbers are not equal.
   }
   nbrLimbs = value1->nbrLimbs;
   ptrValue1 = value1->limbs;
@@ -1962,12 +1962,12 @@ bool BigIntEqual(BigInteger *value1, BigInteger *value2)
   {
     if (ptrValue1->x != ptrValue2->x)
     {
-      return 0; // Numbers are not equal.
+      return false;  // Numbers are not equal.
     }
     ptrValue1++;
     ptrValue2++;
   }
-  return 1;     // Numbers are equal.
+  return true;       // Numbers are equal.
 }
 
 double getMantissa(limb *ptrLimb, int nbrLimbs)

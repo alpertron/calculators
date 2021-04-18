@@ -140,7 +140,7 @@ static void ShowSIQSInfo(int timeSieve, int congruencesFound, int matrixBLength,
   (void)strcpy(ptrText, "\" max=\"100\"></progress><br>");
   ptrText += strlen(ptrText);
   GetDHMS(&ptrText, elapsedTime);
-  if (timeSieve > 1 && congruencesFound > 10)
+  if ((timeSieve > 1) && (congruencesFound > 10))
   {
     (void)strcpy(ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
     ptrText += strlen(ptrText);
@@ -938,8 +938,8 @@ static int getIndexFromDivisor(double dDivid)
     nbr = common.siqs.primeTrialDivisionData[median].value;
     if (nbr < dDivid)
     {
-      if (median == left &&
-        congruencesFound >= common.siqs.matrixBLength)
+      if ((median == left) &&
+        (congruencesFound >= common.siqs.matrixBLength))
       {
         return 0;
       }
@@ -1076,7 +1076,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           {
             iRem %= divis;
           }
-          if (iRem != 0 && iRem != divis - rowPrimeSieveData->difsoln)
+          if ((iRem != 0) && (iRem != divis - rowPrimeSieveData->difsoln))
           {
             if (expParity != 0)
             {
@@ -1206,7 +1206,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         if (mostSignificantLimbZero)
         {
           NumberLengthDividend--;
-          if (NumberLengthDividend <= 2 && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
+          if ((NumberLengthDividend <= 2) && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
           {       // Number fits in a double.
             double dDividend = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
             int sqrtDivid = (int)(floor(sqrt((double)dDividend)));
@@ -1214,7 +1214,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
             for (; index < common.siqs.nbrFactorBasePrimes; index++)
             {
               Divisor = rowPrimeSieveData->value;
-              if (testFactorA && index == newFactorAIndex)
+              if ((testFactorA) && (index == newFactorAIndex))
               {
                 if (++indexFactorA == common.siqs.nbrFactorsA)
                 {
@@ -1254,7 +1254,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                   }
                   if (factor > upperBound)
                   {
-                    if (factor > common.siqs.largePrimeUpperBound || bigfactor > 1)
+                    if ((factor > common.siqs.largePrimeUpperBound) || (bigfactor > 1))
                     {
                       return 0;   // Discard relation.
                     }
@@ -1278,7 +1278,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
                 factor = (int)dDivid;
                 if (factor > upperBound)
                 {
-                  if (factor > common.siqs.largePrimeUpperBound || bigfactor > 1)
+                  if ((factor > common.siqs.largePrimeUpperBound) || (bigfactor > 1))
                   {
                     return 0;   // Discard relation.
                   }
@@ -1305,8 +1305,8 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
               {                     // End of trial division.
                 rowSquares[0] = nbrSquares;
                 index = common.siqs.nbrFactorBasePrimes - 1;
-                if (dDividend <= common.siqs.primeTrialDivisionData[index].value &&
-                  dDividend > 1)
+                if ((dDividend <= common.siqs.primeTrialDivisionData[index].value) &&
+                  (dDividend > 1))
                 {          // Perform binary search to find the index.
                   index = getIndexFromDivisor(dDividend);
                   rowMatrixBbeforeMerge[nbrColumns++] = index;
@@ -1355,7 +1355,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
           {
             iRem %= divis;
           }
-          if (iRem != 0 && iRem != divis - rowPrimeSieveData->difsoln)
+          if ((iRem != 0) && (iRem != divis - rowPrimeSieveData->difsoln))
           {
             if (expParity != 0)
             {
@@ -1485,7 +1485,7 @@ static int PerformTrialDivision(PrimeSieveData *primeSieveData,
         if (mostSignificantLimbZero)
         {
           NumberLengthDividend--;
-          if (NumberLengthDividend <= 2 && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
+          if ((NumberLengthDividend <= 2) && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
           {        // Number fits in a double.
             double dDividend = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
             int sqrtDivid = (int)(floor(sqrt((double)dDividend)));
@@ -1720,7 +1720,7 @@ static void PartialRelationFound(
 
     rowPartial = common.siqs.matrixPartial[hashIndex];
     oldDivid = rowPartial[0];
-    if (newDivid == oldDivid || newDivid == -oldDivid)
+    if ((newDivid == oldDivid) || (newDivid == -oldDivid))
     {   // Match of partials.
       double dRem, dDivisor;
       for (index = 0; index < squareRootSize; index++)
@@ -2049,7 +2049,7 @@ static unsigned int getFactorsOfA(unsigned int seed, int *indexA)
       i = (int)(((double)seed * (double)common.siqs.span)/(double)0x100000000ll + common.siqs.indexMinFactorA);
       for (index2 = 0; index2 < index; index2++)
       {
-        if (indexA[index2] == i || indexA[index2] == i + 1)
+        if ((indexA[index2] == i) || (indexA[index2] == i + 1))
         {
           break;
         }
@@ -2662,7 +2662,7 @@ static bool LinearAlgebraPhase(
         break;
       }
     }
-    if (index < NumberLength || biT[0] > 1)
+    if ((index < NumberLength) || (biT[0] > 1))
     {   // GCD is not zero or 1.
       for (index = 0; index < NumberLength; index++)
       {
@@ -4535,7 +4535,7 @@ static unsigned char isProbablePrime(double bValue)
     Prod0 = (Pr = ((MontDig * valueLO + Pr) >> 31) +
       MontDig * valueHI + BaseHI * BaseHI + Prod1) & 0x7FFFFFFFL;
     Prod1 = Pr >> 31;
-    if (Prod1 > valueHI || (Prod1 == valueHI && Prod0 >= valueLO))
+    if ((Prod1 > valueHI) || ((Prod1 == valueHI) && (Prod0 >= valueLO)))
     {
       Prod0 = (Pr = Prod0 - valueLO) & 0x7FFFFFFFL;
       Prod1 = ((Pr >> 31) + Prod1 - valueHI) & 0x7FFFFFFFL;

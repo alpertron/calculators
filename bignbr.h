@@ -172,10 +172,10 @@ enum eExprErr BigIntGeneralModularPower(BigInteger *base, BigInteger *exponent, 
 
 void ChSignBigNbr(int *nbr, int length);
 void ChSignBigNbrB(int *nbr, int length);
-void AddBigNbr(int *pNbr1, int *pNbr2, int *pSum, int nbrLen);
-void SubtractBigNbr(int *pNbr1, int *pNbr2, int *pDiff, int nbrLen);
-void AddBigNbrB(int *pNbr1, int *pNbr2, int *pSum, int nbrLen);
-void SubtractBigNbrB(int *pNbr1, int *pNbr2, int *pDiff, int nbrLen);
+void AddBigNbr(const int *pNbr1, const int *pNbr2, int *pSum, int nbrLen);
+void SubtractBigNbr(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen);
+void AddBigNbrB(const int *pNbr1, const int *pNbr2, int *pSum, int nbrLen);
+void SubtractBigNbrB(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen);
 void AddBigIntModN(int *pNbr1, int *pNbr2, int *pSum, int *pMod, int nbrLen);
 void SubtractBigNbrModN(int *pNbr1, int *pNbr2, int *pDiff, int *pMod, int nbrLen);
 void MultBigNbrByInt(int *bigFactor, int factor, int *bigProd, int nbrLen);
