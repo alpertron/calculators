@@ -318,8 +318,8 @@ static void showRationalPretty(BigRational* rat)
 
 void showRationalNoParen(BigRational* rat)
 {
-  bool denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
-  if (pretty != PARI_GP && denominatorIsNotOne)
+  bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) || (rat->denominator.limbs[0].x != 1));
+  if ((pretty != PARI_GP) && denominatorIsNotOne)
   {
     showRationalPretty(rat);
     return;
@@ -334,7 +334,7 @@ void showRationalNoParen(BigRational* rat)
 
 void showRationalOverStr(BigRational* rat, char *str, char *ptrTimes)
 {
-  bool denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
+  bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) || (rat->denominator.limbs[0].x != 1));
   if (pretty != PARI_GP)
   {
     showText(pretty == PRETTY_PRINT?
@@ -369,14 +369,14 @@ void showRationalOverStr(BigRational* rat, char *str, char *ptrTimes)
 
 void showRational(BigRational* rat)
 {
-  bool denominatorIsNotOne = (rat->denominator.nbrLimbs != 1 || rat->denominator.limbs[0].x != 1);
+  bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) || (rat->denominator.limbs[0].x != 1));
   bool showParen;
-  if (pretty != PARI_GP && denominatorIsNotOne)
+  if ((pretty != PARI_GP) && denominatorIsNotOne)
   {
     showRationalPretty(rat);
     return;
   }
-  showParen = denominatorIsNotOne || rat->numerator.sign == SIGN_NEGATIVE;
+  showParen = denominatorIsNotOne || (rat->numerator.sign == SIGN_NEGATIVE);
   if (showParen)
   {
     *ptrOutput++ = '(';
@@ -396,11 +396,11 @@ void showRational(BigRational* rat)
 void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int root,
   char *ptrTimes)
 {
-  if (SqrPart->numerator.nbrLimbs != 1 || SqrPart->numerator.limbs[0].x != 1 ||
-    SqrPart->denominator.nbrLimbs != 1 || SqrPart->denominator.limbs[0].x != 1)
+  if ((SqrPart->numerator.nbrLimbs != 1) || (SqrPart->numerator.limbs[0].x != 1) ||
+    (SqrPart->denominator.nbrLimbs != 1) || (SqrPart->denominator.limbs[0].x != 1))
   {       // Square root part is not 1.
-    if (RatPart->numerator.nbrLimbs != 1 || RatPart->numerator.limbs[0].x != 1 ||
-      RatPart->denominator.nbrLimbs != 1 || RatPart->denominator.limbs[0].x != 1)
+    if ((RatPart->numerator.nbrLimbs != 1) || (RatPart->numerator.limbs[0].x != 1) ||
+      (RatPart->denominator.nbrLimbs != 1) || (RatPart->denominator.limbs[0].x != 1))
     {     // Absolute value of rational part is not 1.
       if (root == 2)
       {

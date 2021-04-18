@@ -118,7 +118,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
   int nbrParen = 0;
   char* ptrExpr = expr;
   // Check that the parentheses are balanced.
-  while (*ptrExpr != 0 && *ptrExpr != ';')
+  while ((*ptrExpr != 0) && (*ptrExpr != ';'))
   {
     if (*ptrExpr == '(')
     {
@@ -154,7 +154,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
   {
     return EXPR_NUMBER_TOO_HIGH;
   }
-  if (valueX.nbrLimbs > 0 && !valueXused)
+  if ((valueX.nbrLimbs) > 0 && !valueXused)
   {
     return EXPR_VAR_OR_COUNTER_REQUIRED;
   }
@@ -212,7 +212,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     char charValue;
 
     charValue = *(expr+exprIndex);
-    if (charValue == ' ' || charValue == 9)
+    if ((charValue == ' ') || (charValue == 9))
     {           // Ignore spaces and horizontal tabs.
       exprIndex++;
       continue;
@@ -222,7 +222,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       charValue = OPER_POWER;
       exprIndex++;
     }
-    else if (charValue == '*' && *(expr + exprIndex + 1) == '*')
+    else if ((charValue == '*') && (*(expr + exprIndex + 1) == '*'))
     {           // Double asterisk is exponentiation operation too.
       charValue = OPER_POWER;
       exprIndex += 2;
@@ -252,22 +252,22 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       charValue = OPER_MINUS;
       exprIndex++;
     }
-    else if (charValue == '<' && *(expr + exprIndex + 1) == '=')
+    else if ((charValue == '<') && (*(expr + exprIndex + 1) == '='))
     {
       charValue = OPER_NOT_GREATER;
       exprIndex += 2;
     }
-    else if (charValue == '>' && *(expr + exprIndex + 1) == '=')
+    else if ((charValue == '>') && (*(expr + exprIndex + 1) == '='))
     {
       charValue = OPER_NOT_LESS;
       exprIndex += 2;
     }
-    else if (charValue == '!' && *(expr + exprIndex + 1) == '=')
+    else if ((charValue == '!') && (*(expr + exprIndex + 1) == '='))
     {
       charValue = OPER_NOT_EQUAL;
       exprIndex += 2;
     }
-    else if (charValue == '=' && *(expr + exprIndex + 1) == '=')
+    else if ((charValue == '=') && (*(expr + exprIndex + 1) == '='))
     {
       charValue = OPER_EQUAL;
       exprIndex += 2;
@@ -282,37 +282,37 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       charValue = OPER_LESS;
       exprIndex++;
     }
-    else if ((charValue & 0xDF) == 'N' && (*(expr + exprIndex + 1) & 0xDF) == 'O' &&
-      (*(expr + exprIndex + 2) & 0xDF) == 'T')
+    else if (((charValue & 0xDF) == 'N') && ((*(expr + exprIndex + 1) & 0xDF) == 'O') &&
+      ((*(expr + exprIndex + 2) & 0xDF) == 'T'))
     {
       charValue = OPER_NOT;
       exprIndex += 3;
     }
-    else if ((charValue & 0xDF) == 'A' && (*(expr + exprIndex + 1) & 0xDF) == 'N' &&
-      (*(expr + exprIndex + 2) & 0xDF) == 'D')
+    else if (((charValue & 0xDF) == 'A') && ((*(expr + exprIndex + 1) & 0xDF)) == 'N' &&
+      ((*(expr + exprIndex + 2) & 0xDF) == 'D'))
     {
       charValue = OPER_AND;
       exprIndex += 3;
     }
-    else if ((charValue & 0xDF) == 'O' && (*(expr + exprIndex + 1) & 0xDF) == 'R')
+    else if (((charValue & 0xDF) == 'O') && ((*(expr + exprIndex + 1) & 0xDF) == 'R'))
     {
       charValue = OPER_OR;
       exprIndex += 2;
     }
-    else if ((charValue & 0xDF) == 'X' && (*(expr + exprIndex + 1) & 0xDF) == 'O' &&
-      (*(expr + exprIndex + 2) & 0xDF) == 'R')
+    else if (((charValue & 0xDF) == 'X') && ((*(expr + exprIndex + 1) & 0xDF) == 'O') &&
+      ((*(expr + exprIndex + 2) & 0xDF) == 'R'))
     {
       charValue = OPER_XOR;
       exprIndex += 3;
     }
-    else if ((charValue & 0xDF) == 'S' && (*(expr + exprIndex + 1) & 0xDF) == 'H' &&
-      (*(expr + exprIndex + 2) & 0xDF) == 'L')
+    else if (((charValue & 0xDF) == 'S') && ((*(expr + exprIndex + 1) & 0xDF) == 'H') &&
+      ((*(expr + exprIndex + 2) & 0xDF) == 'L'))
     {
       charValue = OPER_SHL;
       exprIndex += 3;
     }
-    else if ((charValue & 0xDF) == 'S' && (*(expr + exprIndex + 1) & 0xDF) == 'H' &&
-      (*(expr + exprIndex + 2) & 0xDF) == 'R')
+    else if (((charValue & 0xDF) == 'S') && ((*(expr + exprIndex + 1) & 0xDF) == 'H') &&
+      ((*(expr + exprIndex + 2) & 0xDF) == 'R'))
     {
       charValue = OPER_SHR;
       exprIndex += 3;
@@ -329,9 +329,9 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         return EXPR_INTERM_TOO_HIGH;
       }
 #ifdef FACTORIZATION_APP
-      if (curStack.limbs[0].x < 0 || curStack.limbs[0].x >= 47177)
+      if ((curStack.limbs[0].x < 0) || (curStack.limbs[0].x >= 47177))
 #else
-      if (curStack.limbs[0].x < 0 || curStack.limbs[0].x >= 5984)
+      if ((curStack.limbs[0].x < 0) || (curStack.limbs[0].x >= 5984))
 #endif
       {
         return EXPR_INTERM_TOO_HIGH;
@@ -369,9 +369,9 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         }
         len = (int)largeLen.x;
 #ifdef FACTORIZATION_APP
-        if (len < 0 || len > 460490)
+        if ((len < 0) || (len > 460490))
 #else
-        if (len < 0 || len > 46049)
+        if ((len < 0) || (len > 46049))
 #endif
         {
           return EXPR_INTERM_TOO_HIGH;
@@ -738,7 +738,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if ((charValue & 0xDF) == 'X')
     {
-      if (leftNumberFlag || valueX.nbrLimbs == 0)
+      if (leftNumberFlag || (valueX.nbrLimbs == 0))
       {
         return EXPR_SYNTAX_ERROR;
       }
@@ -760,7 +760,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if ((charValue & 0xDF) == 'C')
     {
-      if (leftNumberFlag || valueX.nbrLimbs == 0)
+      if (leftNumberFlag || (valueX.nbrLimbs == 0))
       {
         return EXPR_SYNTAX_ERROR;
       }
@@ -796,22 +796,22 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       exprIndex++;
       continue;
     }
-    else if (charValue == ')' || charValue == ',')
+    else if ((charValue == ')') || (charValue == ','))
     {
       int curStackOperand;
       if (leftNumberFlag == 0)
       {       // Previous item should be a number or variable.
         return EXPR_SYNTAX_ERROR;
       }
-      while (stackIndex > startStackIndex &&
-        stackOperators[stackIndex - 1] != '(')
+      while ((stackIndex > startStackIndex) &&
+        (stackOperators[stackIndex - 1] != '('))
       {
         if ((SubExprResult = ComputeSubExpr()) != 0)
         {
           return SubExprResult;
         }
-        if (stackOperators[stackIndex-1] == OPER_AND ||
-          stackOperators[stackIndex-1] == OPER_OR)
+        if ((stackOperators[stackIndex-1] == OPER_AND) ||
+          (stackOperators[stackIndex-1] == OPER_OR))
         {
           if (!doComputeSubExpression &&
               (stackIndex == computeSubExprStackThreshold))
@@ -838,24 +838,24 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       exprIndex++;
       continue;
     }
-    else if (charValue >= '0' && charValue <= '9')
+    else if ((charValue >= '0') && (charValue <= '9'))
     {
       int currentStackOffset;
       exprIndexAux = exprIndex;
-      if (charValue == '0' && exprIndexAux < exprLength - 2 &&
-          *(expr+exprIndexAux + 1) == 'x')
+      if ((charValue == '0') && (exprIndexAux < exprLength - 2) &&
+          (*(expr+exprIndexAux + 1) == 'x'))
       {  // hexadecimal
         int exprIndexFirstHexDigit = -1;
         exprIndexAux++;
         while (exprIndexAux < exprLength - 1)
         {
           charValue = *(expr+exprIndexAux + 1);
-          if ((charValue >= '0' && charValue <= '9') ||
-              (charValue >= 'A' && charValue <= 'F') ||
-              (charValue >= 'a' && charValue <= 'f'))
+          if (((charValue >= '0') && (charValue <= '9')) ||
+              ((charValue >= 'A') && (charValue <= 'F')) ||
+              ((charValue >= 'a') && (charValue <= 'f')))
           {
             exprIndexAux++;
-            if (charValue != '0' && exprIndexFirstHexDigit < 0)
+            if ((charValue != '0') && (exprIndexFirstHexDigit < 0))
             {
               exprIndexFirstHexDigit = exprIndexAux;
             }
@@ -879,11 +879,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           for (; exprIndexAux >= exprIndexFirstHexDigit; exprIndexAux--)
           {
             c = *(expr + exprIndexAux);
-            if (c >= '0' && c <= '9')
+            if ((c >= '0') && (c <= '9'))
             {
               c -= '0';
             }
-            else if (c >= 'A' && c <= 'F')
+            else if ((c >= 'A') && (c <= 'F'))
             {
               c -= 'A' - 10;
             }
@@ -900,7 +900,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
               carry.x = c >> (4 - shLeft);
             }
           }
-          if (carry.x != 0 || ptrLimb == &curStack.limbs[0])
+          if ((carry.x != 0) || (ptrLimb == &curStack.limbs[0]))
           {
             (ptrLimb++)->x = carry.x;
           }
@@ -914,7 +914,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         while (exprIndexAux < exprLength - 1)
         {
           charValue = *(expr+exprIndexAux + 1);
-          if (charValue >= '0' && charValue <= '9')
+          if ((charValue >= '0') && (charValue <= '9'))
           {
             exprIndexAux++;
           }
@@ -943,7 +943,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     if (charValue <= MAXIMUM_OPERATOR)
     {
-      if ((charValue == OPER_PLUS || charValue == OPER_MINUS) && leftNumberFlag == 0)
+      if (((charValue == OPER_PLUS) || (charValue == OPER_MINUS)) && (leftNumberFlag == false))
       {                    // Unary plus/minus operator
         if (charValue == OPER_PLUS)
         {
@@ -951,7 +951,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         }
         else
         {
-          if (stackIndex > startStackIndex && stackOperators[stackIndex - 1] == OPER_UNARY_MINUS)
+          if ((stackIndex > startStackIndex) && (stackOperators[stackIndex - 1] == OPER_UNARY_MINUS))
           {
             stackIndex--;
             continue;
@@ -971,16 +971,16 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       }
       if (charValue != OPER_POWER)
       {  // Power operator has right associativity.
-        while (stackIndex > startStackIndex &&
-          stackOperators[stackIndex - 1] != '(' &&
-          priority[(int)stackOperators[stackIndex - 1]] <= priority[(int)charValue])
+        while ((stackIndex > startStackIndex) &&
+          (stackOperators[stackIndex - 1] != '(') &&
+          (priority[(int)stackOperators[stackIndex - 1]] <= priority[(int)charValue]))
         {
           if ((SubExprResult = ComputeSubExpr()) != 0)
           {
             return SubExprResult;
           }
-          if (stackOperators[stackIndex-1] == OPER_AND ||
-            stackOperators[stackIndex-1] == OPER_OR)
+          if ((stackOperators[stackIndex-1] == OPER_AND) ||
+            (stackOperators[stackIndex-1] == OPER_OR))
           {
             if (!doComputeSubExpression &&
               (stackIndex == computeSubExprStackThreshold))
@@ -1008,8 +1008,8 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       else if (charValue == OPER_OR)
       {
         getCurrentStackValue(&curStack);
-        if (curStack.sign == SIGN_NEGATIVE && curStack.nbrLimbs == 1 &&
-          curStack.limbs[0].x == 1)
+        if ((curStack.sign == SIGN_NEGATIVE) && (curStack.nbrLimbs == 1) &&
+          (curStack.limbs[0].x == 1))
         {       // Number is -1.
           doComputeSubExpression = false;
           computeSubExprStackThreshold = stackIndex;
@@ -1025,7 +1025,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
   {
     return EXPR_SYNTAX_ERROR;
   }
-  while (stackIndex > startStackIndex && stackOperators[stackIndex - 1] != '(')
+  while ((stackIndex > startStackIndex) && (stackOperators[stackIndex - 1] != '('))
   {
     if ((SubExprResult = ComputeSubExpr()) != 0)
     {
@@ -1105,27 +1105,27 @@ static enum eExprErr ComputeSubExpr(void)
     break;
   case OPER_EQUAL:
     BigIntSubt(firstArg, secondArg, result);
-    intToBigInteger(result, (result->nbrLimbs == 1 && result->limbs[0].x == 0? -1: 0));
+    intToBigInteger(result, ((result->nbrLimbs == 1) && (result->limbs[0].x == 0? -1: 0)));
     break;
   case OPER_NOT_EQUAL:
     BigIntSubt(firstArg, secondArg, result);
-    intToBigInteger(result, (result->nbrLimbs == 1 && result->limbs[0].x == 0 ? 0 : -1));
+    intToBigInteger(result, ((result->nbrLimbs == 1) && (result->limbs[0].x == 0 ? 0 : -1)));
     break;
   case OPER_GREATER:
     BigIntSubt(secondArg, firstArg, result);
-    intToBigInteger(result, result->sign == SIGN_NEGATIVE ? -1 : 0);
+    intToBigInteger(result, (result->sign == SIGN_NEGATIVE) ? -1 : 0);
     break;
   case OPER_NOT_GREATER:
     BigIntSubt(secondArg, firstArg, result);
-    intToBigInteger(result, result->sign == SIGN_NEGATIVE ? 0 : -1);
+    intToBigInteger(result, (result->sign == SIGN_NEGATIVE) ? 0 : -1);
     break;
   case OPER_LESS:
     BigIntSubt(firstArg, secondArg, result);
-    intToBigInteger(result, result->sign == SIGN_NEGATIVE ? -1 : 0);
+    intToBigInteger(result, (result->sign == SIGN_NEGATIVE) ? -1 : 0);
     break;
   case OPER_NOT_LESS:
     BigIntSubt(firstArg, secondArg, result);
-    intToBigInteger(result, result->sign == SIGN_NEGATIVE ? 0 : -1);
+    intToBigInteger(result, (result->sign == SIGN_NEGATIVE) ? 0 : -1);
     break;
   case OPER_SHL:
     ShiftLeft(firstArg, secondArg, result);
@@ -1192,7 +1192,7 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
     return EXPR_SYNTAX_ERROR;
   }
   SkipSpaces(expr);
-  if (exprIndex == exprLength || *(expr + exprIndex++) != '(')
+  if ((exprIndex == exprLength) || (*(expr + exprIndex++) != '('))
   {
     return EXPR_SYNTAX_ERROR;
   }
@@ -1210,7 +1210,7 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
     if (retcode != 0) { return retcode; }
     SkipSpaces(expr);
     compareChar = (index == funcArgs - 1 ? ')' : ',');
-    if (exprIndex == exprLength || *(expr + exprIndex++) != compareChar)
+    if ((exprIndex == exprLength) || (*(expr + exprIndex++) != compareChar))
     {
       return EXPR_SYNTAX_ERROR;
     }
@@ -1328,7 +1328,8 @@ static int ComputeNext(void)
   limb *pResultLimbs = pResult->limbs;
   limb *pArgumentLimbs = pArgument->limbs;
   pResult->sign = SIGN_POSITIVE;
-  if (pArgument->sign == SIGN_NEGATIVE || (pArgument->nbrLimbs == 1 && pArgumentLimbs->x < 2))
+  if ((pArgument->sign == SIGN_NEGATIVE) ||
+    ((pArgument->nbrLimbs == 1) && (pArgumentLimbs->x < 2)))
   {
     pResult->nbrLimbs = 1;
     pResultLimbs->x = 2;
@@ -1395,13 +1396,13 @@ static enum eExprErr ComputeModInv(void)
   getCurrentStackValue(&curStack2);   // Get second argument of MODINV.
   stackIndex--;
   pDiv = &curStack2;
-  if (pDiv->nbrLimbs == 1 && pDiv->limbs[0].x == 0)
+  if ((pDiv->nbrLimbs == 1) && (pDiv->limbs[0].x == 0))
   {
     return EXPR_DIVIDE_BY_ZERO;
   }
   // Check that the arguments are relatively prime.
   BigIntGcd(&curStack, &curStack2, &one);
-  if (one.nbrLimbs != 1 || one.limbs[0].x != 1)
+  if ((one.nbrLimbs != 1) || (one.limbs[0].x != 1))
   {
     return EXPR_ARGUMENTS_NOT_RELATIVELY_PRIME;
   }
@@ -1604,7 +1605,7 @@ static int ComputeConcatFact(void)
   int descend = mode->limbs[0].x & 1;
   int repeated = mode->limbs[0].x & 2;
   char *ptrTextFactor = textFactor;
-  if (mode->nbrLimbs > 1 || mode->sign == SIGN_NEGATIVE || mode->limbs[0].x > 3)
+  if ((mode->nbrLimbs > 1) || (mode->sign == SIGN_NEGATIVE) || (mode->limbs[0].x > 3))
   {      // The valid modes are 0, 1, 2 and 3.
     return EXPR_INVALID_PARAM;
   }
@@ -1647,7 +1648,7 @@ static int ComputeSumDigits(void)
   BigInteger *radix = &curStack2;
   CopyBigInt(&argum, &curStack);
   intToBigInteger(result, 0);
-  while (argum.nbrLimbs > 1 || argum.limbs[0].x > 0)
+  while ((argum.nbrLimbs > 1) || (argum.limbs[0].x > 0))
   {
     BigIntRemainder(&argum, radix, &Temp);
     BigIntAdd(result, &Temp, result);
@@ -1665,7 +1666,7 @@ static int ComputeNumDigits(void)
   BigInteger *result = &curStack;
   BigInteger *radix = &curStack2;
   int digits = 0;
-  while (result->nbrLimbs > 1 || result->limbs[0].x > 0)
+  while (!BigIntIsZero(result))
   {
     BigIntDivide(result, radix, result);
     digits++;
@@ -1686,7 +1687,7 @@ static int ComputeRevDigits(void)
   BigInteger *radix = &curStack2;
   CopyBigInt(&argum, &curStack);
   intToBigInteger(result, 0);
-  while (argum.nbrLimbs > 1 || argum.limbs[0].x > 0)
+  while (!BigIntIsZero(&argum))
   {
     BigIntRemainder(&argum, radix, &Temp);
     BigIntMultiply(result, radix, result);
@@ -1746,7 +1747,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger
   else
   {     // Perform shift right.
     int isNegative = 0;
-    if (second->nbrLimbs > 1 || shiftCtr > first->nbrLimbs * BITS_PER_GROUP)
+    if ((second->nbrLimbs > 1) || (shiftCtr > first->nbrLimbs * BITS_PER_GROUP))
     {   // Shift too much to the right. Result is zero or -1.
       if (first->sign == SIGN_POSITIVE)
       {
@@ -1778,7 +1779,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger
     }
     *ptrDest = ((prevLimb >> rem) | (curLimb << (BITS_PER_GROUP - rem))) & MAX_INT_NBR;
     result->nbrLimbs -= delta + 1;
-    if (result->nbrLimbs == 0 || result->limbs[result->nbrLimbs].x)
+    if ((result->nbrLimbs == 0) || (result->limbs[result->nbrLimbs].x))
     {
       result->nbrLimbs++;
     }

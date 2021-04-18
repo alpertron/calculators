@@ -59,7 +59,7 @@ void *memcpy(void *dest, const void *src, size_t n)
     switch ((uintptr_t)d % 4)
     {
       case 1:
-        w = *(u32 *)s;
+        w = *(const u32 *)s;
         *d++ = *s++;
         *d++ = *s++;
 		    *d++ = *s++;
@@ -77,7 +77,7 @@ void *memcpy(void *dest, const void *src, size_t n)
 	     	}
 	    	break;
 	    case 2:
-		    w = *(u32 *)s;
+		    w = *(const u32 *)s;
 		    *d++ = *s++;
 		    *d++ = *s++;
 		    n -= 2;
@@ -94,7 +94,7 @@ void *memcpy(void *dest, const void *src, size_t n)
 		    }
 		    break;
 	    case 3:
-		    w = *(u32 *)s;
+		    w = *(const u32 *)s;
 	    	*d++ = *s++;
 		    n -= 1;
 		    for (; n>=19; s+=16, d+=16, n-=16)

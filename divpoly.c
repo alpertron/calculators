@@ -213,7 +213,7 @@ int DivideIntegerPolynomial(int* pDividend, int* pDivisor, enum eDivType type)
   // Compute degree discarding leading coefficients set to zero.
   while (degree > 0)
   {
-    if (*(ptrResult + 1) != 1 || *(ptrResult + 2) != 0)
+    if ((*(ptrResult + 1) != 1) || (*(ptrResult + 2) != 0))
     {            // Coefficient is not zero.
       break;
     }
@@ -232,7 +232,7 @@ int DivPolynomialExpr(int* ptrArgument1, int* ptrArgument2, enum eDivType type)
   int currentDegree;
   int degree1 = *ptrArgument1;
   int degree2 = *ptrArgument2;
-  if (*ptrArgument2 == 0 && *(ptrArgument2 + 1) == 1 && *(ptrArgument2 + 2) == 0)
+  if ((*ptrArgument2 == 0) && (*(ptrArgument2 + 1) == 1) && (*(ptrArgument2 + 2) == 0))
   {        // Divisor is zero
     if (type == TYPE_DIVISION)
     {
@@ -240,7 +240,7 @@ int DivPolynomialExpr(int* ptrArgument1, int* ptrArgument2, enum eDivType type)
     }
     return EXPR_OK;   // a mod 0 = a.
   }
-  if (degree1 <= 0 && degree2 <= 0)
+  if ((degree1 <= 0) && (degree2 <= 0))
   {        // Division of two monomials.
     if (degree1 > degree2)
     {      // Degree of dividend less than degree of divisor.
@@ -527,7 +527,7 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
       BigInteger2IntArray(pDividend + currentDegree * nbrLimbs, &operand2);
     }
   }
-  if (divisorDegree > 16 && dividendDegree < 4*divisorDegree)
+  if ((divisorDegree > 16) && (dividendDegree < 4*divisorDegree))
 //  if (0)
   {         // Newton division is faster.
     PolynomialNewtonDivision(pDividend, dividendDegree,
@@ -546,7 +546,7 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
         BigInteger2IntArray(ptrQuot, &operand1);  // Store coefficient of quotient.
       }
       ptrDivisor = pDivisor + divisorDegree * nbrLimbs;
-      if (NumberLength == 1 && TestNbr[0].x <= 32768)
+      if ((NumberLength == 1) && (TestNbr[0].x <= 32768))
       {
         int mod = TestNbr[0].x;
         ptrDividend++;

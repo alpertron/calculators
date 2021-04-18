@@ -176,8 +176,8 @@ static void GetMobius(char **pptrOutput)
   struct sFactors *pstFactor;
   int mobius = 1;
   pstFactor = &astFactorsMod[1];
-  if (astFactorsMod[0].multiplicity > 1 || *pstFactor->ptrFactor != 1 ||
-    *(pstFactor->ptrFactor + 1) != 1)
+  if ((astFactorsMod[0].multiplicity > 1) || (*pstFactor->ptrFactor != 1) ||
+    (*(pstFactor->ptrFactor + 1) != 1))
   {                                // Number to factor is not 1.
     int factorNumber;
     for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
@@ -242,7 +242,7 @@ static bool isSumOfThreeSquares(struct sFactors* pstFactors, BigInteger* pTmp)
   {
     if (pstFactor->multiplicity % 2 != 0)
     {                                          // Prime factor multiplicity is odd.
-      if (*pstFactor->ptrFactor == 1 && *(pstFactor->ptrFactor + 1) == 2)
+      if ((*pstFactor->ptrFactor == 1) && (*(pstFactor->ptrFactor + 1) == 2))
       {
         factor2MultiplicityEven = false;
       }
@@ -308,7 +308,7 @@ static void ComputeThreeSquares(BigInteger *pTmp,
         subtractdivide(pTmp2, 0, prime);
         expon++;
       }
-      if ((expon % 2 == 1 && prime % 4 == 3) || pTmp2->limbs[0].x % 4 == 3)
+      if (((expon % 2 == 1) && (prime % 4 == 3)) || (pTmp2->limbs[0].x % 4 == 3))
       {  // Number cannot be expressed as a sum of three squares.
         break;
       }
@@ -324,12 +324,12 @@ static void ComputeThreeSquares(BigInteger *pTmp,
     {      // Number cannot be expressed as a sum of three squares.
       continue;
     }
-    if (pTmp2->nbrLimbs == 1 && pTmp2->limbs[0].x == 1)
+    if ((pTmp2->nbrLimbs == 1) && (pTmp2->limbs[0].x == 1))
     {      // Cofactor equals 1.
       intToBigInteger(&Quad1, 1);
       intToBigInteger(&Quad2, 0);
     }
-    else if (pTmp2->nbrLimbs == 1 && pTmp2->limbs[0].x == 2)
+    else if ((pTmp2->nbrLimbs == 1) && (pTmp2->limbs[0].x == 2))
     {      // Cofactor equals 2.
       intToBigInteger(&Quad1, 1);
       intToBigInteger(&Quad2, 1);
@@ -383,7 +383,7 @@ static void ComputeThreeSquares(BigInteger *pTmp,
       // pTmp1->limbs = sqrt(-1) mod p.
       modmult(pTmp4->limbs, pTmp1->limbs, pTmp1->limbs);
       pTmp1->nbrLimbs = nbrLimbs;
-      while (pTmp1->nbrLimbs > 0 && pTmp1->limbs[pTmp1->nbrLimbs - 1].x == 0)
+      while ((pTmp1->nbrLimbs > 0) && (pTmp1->limbs[pTmp1->nbrLimbs - 1].x == 0))
       {
         pTmp1->nbrLimbs--;
       }
@@ -399,7 +399,7 @@ static void ComputeThreeSquares(BigInteger *pTmp,
       (void)memcpy(pTmp3->limbs, TestNbr, nbrLimbs * sizeof(limb));
       pTmp3->nbrLimbs = nbrLimbs;
       pTmp3->sign = SIGN_POSITIVE;
-      while (pTmp3->nbrLimbs > 1 && pTmp3->limbs[pTmp3->nbrLimbs - 1].x == 0)
+      while ((pTmp3->nbrLimbs > 1) && (pTmp3->limbs[pTmp3->nbrLimbs - 1].x == 0))
       {
         pTmp3->nbrLimbs--;
       }
@@ -494,13 +494,13 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
   intToBigInteger(&Quad2, 0);
   intToBigInteger(&Quad3, 0);
   intToBigInteger(&Quad4, 0);
-  if (tofactor.nbrLimbs < 25 && isSumOfThreeSquares(pstFactors, &Tmp))
+  if ((tofactor.nbrLimbs < 25) && isSumOfThreeSquares(pstFactors, &Tmp))
   {                                // Decompose in sum of 3 squares if less than 200 digits.
     ComputeThreeSquares(&Tmp, &Tmp1, &Tmp2, &Tmp3, &Tmp4, &M1, &M2);
     return;
   }
   pstFactor = pstFactors + 1;      // Point to first factor in array of factors.
-  if (pstFactors->multiplicity == 1 && *pstFactor->ptrFactor == 1)
+  if ((pstFactors->multiplicity == 1) && (*pstFactor->ptrFactor == 1))
   {
     if (*(pstFactor->ptrFactor + 1) == 1)
     {                            // Number to factor is 1.
@@ -523,7 +523,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
     IntArray2BigInteger(pstFactor->ptrFactor, &p);
     CopyBigInt(&q, &p);
     addbigint(&q, -1);             // q <- p-1
-    if (p.nbrLimbs == 1 && p.limbs[0].x == 2)
+    if ((p.nbrLimbs == 1) && (p.limbs[0].x == 2))
     {
       intToBigInteger(&Mult1, 1);  // 2 = 1^2 + 1^2 + 0^2 + 0^2
       intToBigInteger(&Mult2, 1);
@@ -573,7 +573,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
         (void)memcpy(Mult3.limbs, TestNbr, p.nbrLimbs * sizeof(limb));
         Mult3.nbrLimbs = p.nbrLimbs;
         Mult3.sign = SIGN_POSITIVE;
-        while (Mult3.nbrLimbs > 1 && Mult3.limbs[Mult3.nbrLimbs - 1].x == 0)
+        while ((Mult3.nbrLimbs > 1) && (Mult3.limbs[Mult3.nbrLimbs - 1].x == 0))
         {
           Mult3.nbrLimbs--;
         }
@@ -785,11 +785,11 @@ static void ShowFourSquares(char **pptrOutput)
   char *ptrOutput = *pptrOutput;
   (void)strcpy(ptrOutput, "<p>n =");
   ptrOutput += strlen(ptrOutput);
-  if (Quad4.nbrLimbs == 1 && Quad4.limbs[0].x == 0)
+  if (BigIntIsZero(&Quad4))
   {          // Quad4 equals zero.
-    if (Quad3.nbrLimbs == 1 && Quad3.limbs[0].x == 0)
+    if (BigIntIsZero(&Quad3))
     {        // Quad3 and Quad4 equal zero.
-      if (Quad2.nbrLimbs == 1 && Quad2.limbs[0].x == 0)
+      if (BigIntIsZero(&Quad2))
       {      // Quad2, Quad3 and Quad4 equal zero.
         varSquared(&ptrOutput, 'a', ' ');
         (void)strcpy(ptrOutput, "</p>");
@@ -843,7 +843,7 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
   enum eExprErr rc = BatchProcessing(tofactorText, &tofactor, &ptrOutput, &isBatch);
   if (!isBatch)
   {
-    if (rc == EXPR_OK && doFactorization)
+    if ((rc == EXPR_OK) && doFactorization)
     {
 #ifdef __EMSCRIPTEN__
       int64_t sumSquaresModMult;
@@ -853,7 +853,7 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
 #ifdef __EMSCRIPTEN__
         char* ptrText;
 #endif
-        if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 0)
+        if (!BigIntIsZero(&tofactor))
         {      // Number to factor is not zero.
           GetNumberOfDivisors(&ptrOutput);
           GetSumOfDivisors(&ptrOutput);
@@ -957,7 +957,7 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
         (void)strcpy(ptrOutput, "</li></ul>");
         ptrOutput += strlen(ptrOutput);
       }
-      if (nbrSIQS > 0 || nbrECM > 0 || nbrPrimalityTests > 0)
+      if ((nbrSIQS > 0) || (nbrECM > 0) || (nbrPrimalityTests > 0))
       {
         (void)strcpy(ptrOutput, lang ? "<p>Tiempos:<ul>" : "<p>Timings:<ul>");
         ptrOutput += strlen(ptrOutput);
