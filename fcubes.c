@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <string.h>
-#include <stdio.h>
 #include "bignbr.h"
 #include "highlevel.h"
 #include "batch.h"
@@ -164,7 +163,7 @@ static int fcubes(BigInteger *pArgument)
   CopyBigInt(&value, pArgument);
   // Compute argument mod 18.
   mod18 = getRemainder(pArgument, 18);
-  if (mod18 == 4 || mod18 == 5 || mod18 == 13 || mod18 == 14)
+  if ((mod18 == 4) || (mod18 == 5) || (mod18 == 13) || (mod18 == 14))
   {
     return -1;  // Applet does not work if the number is congruent to 4 or 5 (mod 9)
   }
@@ -176,7 +175,7 @@ static int fcubes(BigInteger *pArgument)
   for (i = 0; i<(int)(sizeof(sums)/sizeof(sums[0])); i += 10)
   {
     modulus = sums[i];
-    if ((getRemainder(&value, modulus) + modulus)% modulus == sums[i + 1])
+    if (((getRemainder(&value, modulus) + modulus)% modulus) == sums[i + 1])
     {
       break;
     }
@@ -197,9 +196,9 @@ static int fcubes(BigInteger *pArgument)
     EvaluateQuadraticPoly(&Base3, &value, 9828, 485, 4);
     EvaluateQuadraticPoly(&Base4, &value, -9828, -971, -22);
   }
-  else if (getRemainder(&value, 83 * 108) == 83*46)
+  else if (getRemainder(&value, 83 * 108) == (83*46))
   {           // If value == 83*46 (mod 83*108)...
-    subtractdivide(&value, 83*46, 83*108); // value <-(value - (83*46)) / (83*108)
+    subtractdivide(&value, 83*46, (83*108)); // value <-(value - (83*46)) / (83*108)
     EvaluateQuadraticPoly(&Base1, &value, 29484, 25143, 5371);
     EvaluateQuadraticPoly(&Base2, &value, -29484, -25089, -5348);
     EvaluateQuadraticPoly(&Base3, &value, 9828, 8129, 1682);
@@ -218,18 +217,20 @@ static int fcubes(BigInteger *pArgument)
       // Q1 <- 0
       // R1 <- 0
       // S1 <- 1
-    P.limbs[1].x = S.limbs[1].x = 52;
-    P.limbs[0].x = S.limbs[0].x = 819632865;
+    P.limbs[1].x = 52;
+    P.limbs[0].x = 819632865;
     Q.limbs[1].x = 3063;
     Q.limbs[0].x = 687764496;
-    R.limbs[1].x = 0;
-    R.limbs[0].x = 1923517596;
-    P.nbrLimbs = Q.nbrLimbs = R.nbrLimbs = S.nbrLimbs = 3;
-    P.sign = Q.sign = R.sign = S.sign = SIGN_NEGATIVE;
-    P1.limbs[0].x = S1.limbs[0].x = 1;
-    Q1.limbs[0].x = R1.limbs[0].x = 0;
-    P1.nbrLimbs = Q1.nbrLimbs = R1.nbrLimbs = S1.nbrLimbs = 1;
-    P1.sign = Q1.sign = R1.sign = S1.sign = SIGN_POSITIVE;
+    Q.nbrLimbs = 2;
+    P.nbrLimbs = 2;
+    Q.sign = SIGN_NEGATIVE;
+    P.sign = SIGN_NEGATIVE;
+    CopyBigInt(&S, &P);
+    intToBigInteger(&R, -1923517596);
+    intToBigInteger(&P1, 1);
+    intToBigInteger(&Q1, 0);
+    intToBigInteger(&R1, 0);
+    intToBigInteger(&S1, 1);
     mod83 = getRemainder(&value, 83);
     pow = 71;
     exp = 0;
@@ -238,10 +239,11 @@ static int fcubes(BigInteger *pArgument)
       exp++;
       pow = (pow * 50) % 83;
     }
-    if (exp > 82 / 2)
+    if (exp > (82 / 2))
     {
       exp = 82 - exp;
-      Q.sign = R.sign = SIGN_POSITIVE;
+      Q.sign = SIGN_POSITIVE;
+      R.sign = SIGN_POSITIVE;
     }  // Now exp is in range 0-41.
     mask = 32;
     while (mask > 0)
@@ -307,7 +309,7 @@ static int fcubes(BigInteger *pArgument)
     BigIntAdd(&tmpP1, &Base4, &Base4);
   }
 
-  if (converted != 0)
+  if (converted)
   {
     BigIntNegate(&Base1, &Base1);
     BigIntNegate(&Base2, &Base2);
@@ -327,19 +329,19 @@ static int fcubes(BigInteger *pArgument)
 
   getSumOfCubes();  // tmpP1 = Base1^3 - Base2^3 - Base3^3 - Base4^3
   BigIntSubt(&tmpP1, pArgument, &tmpQ1);
-  if (tmpQ1.nbrLimbs != 1 || tmpQ1.limbs[0].x != 0)
+  if ((tmpQ1.nbrLimbs != 1) || (tmpQ1.limbs[0].x != 0))
   {
     return 1;       // Result does not validate.
   }
   return 0;
 }
 
-void fcubesText(char *input, int groupLen)
+void fcubesText(char *input, int grpLen)
 {
   char *ptrOutput;
   if (valuesProcessed == 0)
   {
-    groupLength = groupLen;
+    groupLength = grpLen;
   }
   BatchProcessing(input, &toProcess, &ptrOutput, NULL);
   (void)strcpy(ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
@@ -367,17 +369,17 @@ void batchCubesCallback(char **pptrOutput)
   switch (result)
   {
   case -1:
-    (void)strcpy(ptrOutput, (lang==0?": This applet does not work if the number is congruent to 4 or 5 (mod 9)</p>":
-      ": El applet no funciona si el número es congruente a 4 o 5 (mod 9)</p>"));
+    (void)strcpy(ptrOutput, (lang?": El applet no funciona si el número es congruente a 4 o 5 (mod 9)</p>":
+      ": This applet does not work if the number is congruent to 4 or 5 (mod 9)</p>"));
     *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   case 1:
-    (void)strcpy(ptrOutput, (lang==0?": Internal error! Please send the number to the author of the applet.</p>":
-      ": ¡Error interno!Por favor envíe este número al autor del applet.</p>"));
+    (void)strcpy(ptrOutput, (lang?": ¡Error interno!Por favor envíe este número al autor del applet.</p>":
+      ": Internal error! Please send the number to the author of the applet.</p>"));
     *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   case 2:
-    (void)strcpy(ptrOutput, (lang==0?": User stopped the calculation</p>":": El usuario detuvo el cálculo</p>"));
+    (void)strcpy(ptrOutput, (lang?": El usuario detuvo el cálculo</p>": ": User stopped the calculation</p>"));
     *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
   }
@@ -386,7 +388,8 @@ void batchCubesCallback(char **pptrOutput)
   ptrOutput += strlen(ptrOutput);
   if (Base1.sign == SIGN_NEGATIVE)
   {
-    *ptrOutput++ = '(';
+    *ptrOutput = '(';
+    ptrOutput++;
   }
   if (hexadecimal)
   {
@@ -399,17 +402,19 @@ void batchCubesCallback(char **pptrOutput)
   ptrOutput += strlen(ptrOutput);
   if (Base1.sign == SIGN_NEGATIVE)
   {
-    *ptrOutput++ = ')';
+    *ptrOutput = ')';
+    ptrOutput++;
   }
   (void)strcpy(ptrOutput, cube);
   ptrOutput += strlen(ptrOutput);
-  if (Base2.nbrLimbs != 1 || Base2.limbs[0].x != 0)
+  if (!BigIntIsZero(&Base2))
   {
     (void)strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
     if (Base2.sign == SIGN_NEGATIVE)
     {
-      *ptrOutput++ = '(';
+      *ptrOutput = '(';
+      ptrOutput++;
     }
     if (hexadecimal)
     {
@@ -422,18 +427,20 @@ void batchCubesCallback(char **pptrOutput)
     ptrOutput += strlen(ptrOutput);
     if (Base2.sign == SIGN_NEGATIVE)
     {
-      *ptrOutput++ = ')';
+      *ptrOutput = ')';
+      ptrOutput++;
     }
     (void)strcpy(ptrOutput, cube);
     ptrOutput += strlen(ptrOutput);
   }
-  if (Base3.nbrLimbs != 1 || Base3.limbs[0].x != 0)
+  if (!BigIntIsZero(&Base3))
   {
     (void)strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
     if (Base3.sign == SIGN_NEGATIVE)
     {
-      *ptrOutput++ = '(';
+      *ptrOutput = '(';
+      ptrOutput++;
     }
     if (hexadecimal)
     {
@@ -446,18 +453,20 @@ void batchCubesCallback(char **pptrOutput)
     ptrOutput += strlen(ptrOutput);
     if (Base3.sign == SIGN_NEGATIVE)
     {
-      *ptrOutput++ = ')';
+      *ptrOutput = ')';
+      ptrOutput++;
     }
     (void)strcpy(ptrOutput, cube);
     ptrOutput += strlen(ptrOutput);
   }
-  if (Base4.nbrLimbs != 1 || Base4.limbs[0].x != 0)
+  if (!BigIntIsZero(&Base4))
   {
     (void)strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
     if (Base4.sign == SIGN_NEGATIVE)
     {
-      *ptrOutput++ = '(';
+      *ptrOutput = '(';
+      ptrOutput++;
     }
     if (hexadecimal)
     {
@@ -470,7 +479,8 @@ void batchCubesCallback(char **pptrOutput)
     ptrOutput += strlen(ptrOutput);
     if (Base4.sign == SIGN_NEGATIVE)
     {
-      *ptrOutput++ = ')';
+      *ptrOutput = ')';
+      ptrOutput++;
     }
     (void)strcpy(ptrOutput, cube);
     ptrOutput += strlen(ptrOutput);

@@ -1,5 +1,5 @@
-void fcubesText(char *input, int groupLen);
-void fsquaresText(char *input, int groupLen);
+void fcubesText(char *input, int grpLen);
+void fsquaresText(char *input, int grpLen);
 void contfracText(char *input, int GroupLen);
 void polyFactText(char *modText, char *polyText, int groupLen);
 void quadmodText(char *quadrText, char *linearText, char *constText, char *modText, int groupLength);

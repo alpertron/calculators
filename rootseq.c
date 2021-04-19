@@ -621,8 +621,8 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
         *ptrOutput++ = '=';
         *ptrOutput++ = ' ';
         startCbrt();
-        if (Rat2.numerator.nbrLimbs == 1 && Rat2.numerator.limbs[0].x == 1 &&
-          Rat2.denominator.nbrLimbs == 1 && Rat2.denominator.limbs[0].x == 1)
+        if ((Rat2.numerator.nbrLimbs == 1) && (Rat2.numerator.limbs[0].x == 1) &&
+          (Rat2.denominator.nbrLimbs == 1) && (Rat2.denominator.limbs[0].x == 1))
         {
           if (ctr == 0)
           {
@@ -978,12 +978,12 @@ static void biquadraticEquation(int multiplicity)
          // If c <= 0 and negative sqrt = > c^2 > c^2 - 4e => e > 0
         if (ctr == 0 || ctr == 2)
         {    // Positive sqrt
-          isX2Positive = (RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE ||
-            RatDeprIndependent.numerator.sign == SIGN_NEGATIVE);
+          isX2Positive = ((RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE) ||
+            (RatDeprIndependent.numerator.sign == SIGN_NEGATIVE));
         }
         else
         {    // Negative sqrt
-          isX2Positive = ((RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE || 
+          isX2Positive = (((RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE) || 
             BigIntIsZero(&RatDeprQuadratic.numerator)) &&
             RatDeprIndependent.numerator.sign == SIGN_POSITIVE);
         }

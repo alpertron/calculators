@@ -622,7 +622,7 @@ int fsquares(void)
   return 0;
 }
 
-void fsquaresText(char *input, int groupLen)
+void fsquaresText(char *input, int grpLen)
 {
   char *ptrOutput;
 #ifdef __EMSCRIPTEN__
@@ -630,7 +630,7 @@ void fsquaresText(char *input, int groupLen)
 #endif
   if (valuesProcessed == 0)
   {
-    groupLength = groupLen;
+    groupLength = grpLen;
   }
   BatchProcessing(input, &toProcess, &ptrOutput, NULL);
 #ifdef __EMSCRIPTEN__
