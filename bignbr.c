@@ -956,7 +956,7 @@ int intModPow(int NbrMod, int Expon, int currentPrime)
   return (int)power;
 }
 
-void IntArray2BigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint)
+void IntArray2BigInteger(const int *ptrValues, /*@out@*/BigInteger *bigint)
 {
   limb *destLimb = bigint->limbs;
   int nbrLimbs = *ptrValues++;
@@ -989,28 +989,28 @@ void IntArray2BigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint)
   }
 }
 
-void BigInteger2IntArray(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint)
+void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint)
 {
-  limb *destLimb = bigint->limbs;
+  const limb *srcLimb = bigint->limbs;
   if (NumberLength == 1)
   {
     *ptrValues = (bigint->sign == SIGN_POSITIVE? 1: -1);
-    *(ptrValues + 1) = (int)(destLimb->x);
+    *(ptrValues + 1) = (int)(srcLimb->x);
   }
   else
   {
     int ctr;
     int nbrLimbs;
-    nbrLimbs = getNbrLimbs(destLimb);
+    nbrLimbs = getNbrLimbs(srcLimb);
     *ptrValues++ = (bigint->sign == SIGN_POSITIVE ? nbrLimbs : -nbrLimbs);
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
-      *ptrValues++ = (int)((destLimb++)->x);
+      *ptrValues++ = (int)((srcLimb++)->x);
     }
   }
 }
 
-void UncompressLimbsBigInteger(/*@in@*/limb *ptrValues, /*@out@*/BigInteger *bigint)
+void UncompressLimbsBigInteger(const limb *ptrValues, /*@out@*/BigInteger *bigint)
 {
   if (NumberLength == 1)
   {
@@ -1020,7 +1020,7 @@ void UncompressLimbsBigInteger(/*@in@*/limb *ptrValues, /*@out@*/BigInteger *big
   else
   {
     int nbrLimbs;
-    limb *ptrValue1;
+    const limb *ptrValue1;
     (void)memcpy(bigint->limbs, ptrValues, NumberLength*sizeof(limb));
     ptrValue1 = ptrValues + NumberLength;
     for (nbrLimbs = NumberLength; nbrLimbs > 1; nbrLimbs--)
@@ -1035,7 +1035,7 @@ void UncompressLimbsBigInteger(/*@in@*/limb *ptrValues, /*@out@*/BigInteger *big
   }
 }
 
-void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, /*@in@*/BigInteger *bigint)
+void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, const BigInteger *bigint)
 {
   if (NumberLength == 1)
   {

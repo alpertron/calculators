@@ -203,7 +203,8 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
     (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * factor2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
   Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
     
-  if (Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP) || (Prod1 == (uint32_t)TestNbr1 && Prod0 >= (uint32_t)TestNbr0))
+  if ((Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP)) ||
+     ((Prod1 == (uint32_t)TestNbr1) && (Prod0 >= (uint32_t)TestNbr0)))
   {
     int32_t borrow;
     Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
@@ -257,8 +258,8 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   }
   Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
   
-  if ((unsigned int)Prod1 > (unsigned int)TestNbr1 ||
-       ((unsigned int)Prod1 == (unsigned int)TestNbr1 && (unsigned int)Prod0 >= (unsigned int)TestNbr0))
+  if (((unsigned int)Prod1 > (unsigned int)TestNbr1) ||
+       (((unsigned int)Prod1 == (unsigned int)TestNbr1) && ((unsigned int)Prod0 >= (unsigned int)TestNbr0)))
   {        // Prod >= TestNbr, so perform Prod <- Prod - TestNbr
     carry = Prod0 - TestNbr0;
     Prod0 = carry & MAX_VALUE_LIMB;
@@ -287,7 +288,8 @@ static void AddBigNbrModN(int *Nbr1, int *Nbr2, int *Sum)
   Sum0 = carry & MAX_INT_NBR;
   carry = (carry >> BITS_PER_GROUP) + *(Nbr1 + 1) + *(Nbr2 + 1);
   Sum1 = carry & MAX_INT_NBR;
-  if (carry > (unsigned int)TestNbr1 || (carry == (unsigned int)TestNbr1 && Sum0 >= TestNbr0))
+  if ((carry > (unsigned int)TestNbr1) || 
+     ((carry == (unsigned int)TestNbr1) && (Sum0 >= TestNbr0)))
   {
     int borrow = Sum0 - TestNbr0;
     Sum0 = borrow & MAX_INT_NBR;
@@ -458,7 +460,7 @@ static int isPrime(int *value)
   }
   maskMSB = (1<<(indexMSB % BITS_PER_GROUP));
   
-  for (i=0, j=0; limits[j+1] < TestNbr1 || (limits[j+1] == TestNbr1 && limits[j] < TestNbr0); i++, j+=2)
+  for (i=0, j=0; (limits[j+1] < TestNbr1) || ((limits[j+1] == TestNbr1) && (limits[j] < TestNbr0)); i++, j+=2)
   {
     int idxNbr;
     base = bases[i];
@@ -488,12 +490,12 @@ static int isPrime(int *value)
     }
        // If power equals 1 or -1 in Montgomery representation,
        // another base must be tried.
-    if (power[0] == MontgomeryMultR1[0] && power[1] == MontgomeryMultR1[1])
+    if ((power[0] == MontgomeryMultR1[0]) && (power[1] == MontgomeryMultR1[1]))
     {
       continue;   // power equals 1, so another base must be tried.
     }
     AddBigNbrModN(power, MontgomeryMultR1, temp);
-    if (temp[0] == 0 && temp[1] == 0)
+    if ((temp[0] == 0) && (temp[1] == 0))
     {
       continue;   // power equals -1, so another base must be tried.
     }
@@ -506,12 +508,12 @@ static int isPrime(int *value)
         idxNbr--;
       }
       MontgomeryMult(power, power, power);
-      if (power[0] == MontgomeryMultR1[0] && power[1] == MontgomeryMultR1[1])
+      if ((power[0] == MontgomeryMultR1[0]) && (power[1] == MontgomeryMultR1[1]))
       {
         return 0;  // power equals 1, so number is composite.
       }
       AddBigNbrModN(power, MontgomeryMultR1, temp);
-      if (temp[0] == 0 && temp[1] == 0)
+      if ((temp[0] == 0) && (temp[1] == 0))
       {            // power equals -1.
         break;
       }
@@ -588,7 +590,7 @@ static void setPoint(int x, int y)
   {   // Number is imaginary.
     check[0] = (y >= 0 ? y : -y);
     check[1] = 0;
-    if ((check[0] & 0x03) == 3 && isPrime(check))
+    if (((check[0] & 0x03) == 3) && isPrime(check))
     {                          // Number is gaussian prime.
       color = colorGreen;
     }
@@ -597,7 +599,7 @@ static void setPoint(int x, int y)
   {   // Number is real.
     check[0] = (x >= 0 ? x : -x);
     check[1] = 0;
-    if ((check[0] & 0x03) == 3 && isPrime(check))
+    if (((check[0] & 0x03) == 3) && isPrime(check))
     {                          // Number is gaussian prime.
       color = colorGreen;
     }
@@ -638,7 +640,7 @@ static void setPoint(int x, int y)
     if (x == 0)
     {                     // Draw Y axis if possible.
       col = xPhysical + (1 << (thickness - 1));
-      if (col >= 0 && col < width)
+      if ((col >= 0) && (col < width))
       {
         ptrPixel = pixelXY(col, firstRow);
         for (row = firstRow; row < lastRow; row++)
@@ -655,7 +657,7 @@ static void setPoint(int x, int y)
     else if (x % 10 == 0)
     {
       col = xPhysical + (1 << (thickness - 1));
-      if (col >= 0 && col < width)
+      if ((col >= 0) && (col < width))
       {
         firstRow2 = yPhysical + (1 << (thickness-2));
         lastRow2 = firstRow2 + (1 << (thickness-1));
@@ -679,7 +681,7 @@ static void setPoint(int x, int y)
     if (y == 0)
     {                     // Draw X axis if possible.
       row = yPhysical + (1 << (thickness - 1));
-      if (row >= 0 && row < height)
+      if ((row >= 0) && (row < height))
       {
         ptrPixel = pixelXY(firstCol, row);
         for (col = firstCol; col < lastCol; col++)
@@ -692,7 +694,7 @@ static void setPoint(int x, int y)
     else if (y % 10 == 0)
     {
       row = yPhysical + (1 << (thickness - 1));
-      if (row >= 0 && row < height)
+      if ((row >= 0) && (row < height))
       {
         firstCol2 = xPhysical + (1 << (thickness - 2));
         lastCol2 = firstCol2 + (1 << (thickness - 1));
@@ -746,7 +748,7 @@ char *appendInt(char *text, int value)
   do
   {
     int quot = value / div;
-    if (quot != 0 || zeroIsSignificant)
+    if ((quot != 0) || zeroIsSignificant)
     {
       zeroIsSignificant = 1;
       *text++ = (char)quot + '0';
@@ -966,8 +968,8 @@ void iteration(void)
   if (++timer == 6)
   {
     timer = 0;
-    if (oldXCenter != xCenter || oldYCenter != yCenter ||
-        oldXFraction != xFraction || oldYFraction != yFraction)
+    if ((oldXCenter != xCenter) || (oldYCenter != yCenter) ||
+        (oldXFraction != xFraction) || (oldYFraction != yFraction))
     {
       int xMin;
           // Move pixels of double buffer according to drag direction.

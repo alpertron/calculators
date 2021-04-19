@@ -55,10 +55,12 @@ static limb Vbak[MAX_LEN];
 static BigInteger tmpDen;
 static BigInteger tmpNum;
 static BigInteger oddValue;
+static BigInteger tmpFact1;
+static BigInteger tmpFact2;
 
-int getNbrLimbs(limb *bigNbr)
+int getNbrLimbs(const limb *bigNbr)
 {
-  limb *ptrLimb = bigNbr + NumberLength;
+  const limb *ptrLimb = bigNbr + NumberLength;
   while (ptrLimb > bigNbr)
   {
     if ((--ptrLimb)->x != 0)
@@ -121,7 +123,7 @@ void GetMontgomeryParms(int len)
   TestNbr[len].x = 0;
   NumberLength = len;
   NumberLength2 = len + len;
-  if (NumberLength == 1)
+  if (NumberLength == 1 && ((TestNbr[0].x & 1) != 0))
   {
     MontgomeryMultR1[0].x = 1;
     MontgomeryMultR2[0].x = 1;
@@ -1098,10 +1100,10 @@ void modmult(limb *factor1, limb *factor2, limb *product)
 #endif
   if (powerOf2Exponent != 0)
   {    // TestNbr is a power of 2.
-    UncompressLimbsBigInteger(factor1, &tmpNum);
-    UncompressLimbsBigInteger(factor2, &tmpDen);
-    BigIntMultiply(&tmpNum, &tmpDen, &tmpNum);
-    CompressLimbsBigInteger(product, &tmpNum);
+    UncompressLimbsBigInteger(factor1, &tmpFact1);
+    UncompressLimbsBigInteger(factor2, &tmpFact2);
+    BigIntMultiply(&tmpFact1, &tmpFact2, &tmpFact1);
+    CompressLimbsBigInteger(product, &tmpFact1);
     (product + powerOf2Exponent / BITS_PER_GROUP)->x &= (1 << (powerOf2Exponent % BITS_PER_GROUP)) - 1;
     return;
   }

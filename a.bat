@@ -166,5 +166,6 @@ perl replaceEmbeddedJS.pl %1 CUAD.HTM quadS.js quadS.wasm
 
 java -jar %compilerName% --compilation_level WHITESPACE_ONLY --js dist.js --js_output_file dist%1.js
 
+call w.bat
 perl csp.pl
 :end

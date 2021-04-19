@@ -903,12 +903,15 @@ EXTERNALIZE void drawPartialUlamSpiral(int xminDisp, int xmaxDisp, int yminDisp,
 }      /* end method drawUlamSpiral */
 
 #ifdef __EMSCRIPTEN__
-char *(void)strcpy(char *dest, const char *src)
+char *strcpy(char *dest, const char *src)
 {
+  const char *source = src;
   char *dst = dest;
-  while (*src)
+  while (*source != 0)
   {
-    *dst++ = *src++;
+    *dst = *source;
+    dst++;
+    source++;
   }
   *dst = 0;
   return dest;
@@ -917,7 +920,7 @@ char *(void)strcpy(char *dest, const char *src)
 size_t strlen(const char *s)
 {
   const char *a = s;
-  while (*a)
+  while (*a != 0)
   {
     a++;
   }

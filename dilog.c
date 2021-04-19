@@ -137,30 +137,26 @@ static void indicateCannotComputeLog(int indexBase, int indexExp)
   DiscreteLogPeriod.sign = SIGN_NEGATIVE;
 }
 
-static int ComputeDLogModSubGroupOrder(int indexBase, int indexExp, BigInteger *Exponent, BigInteger *subGroupOrder)
+static bool ComputeDLogModSubGroupOrder(int indexBase, int indexExp, BigInteger *bigExp, BigInteger *bigSubGroupOrder)
 {
   // Set tmpBase to 1 in Montgomery notation.
   (void)memcpy(tmpBase.limbs, MontgomeryMultR1, NumberLength * sizeof(limb));
   // Set Exponent to zero.
-  Exponent->limbs[0].x = 0;
-  Exponent->nbrLimbs = 1;
-  Exponent->sign = SIGN_POSITIVE;
-  for (;;)
+  intToBigInteger(bigExp, 0);
+  while (!TestBigNbrEqual(bigExp, bigSubGroupOrder))
   {
-    if (TestBigNbrEqual(Exponent, subGroupOrder))
-    {    // All exponents have been tried and logarithm has not been found, so go out.
-      indicateCannotComputeLog(indexBase, indexExp);
-      return 0;
-    }
     if (!memcmp(tmpBase.limbs, powerPHMontg, NumberLength * sizeof(limb)))
     {    // Logarithm for this subgroup has been found. Go out.
-      return 1;
+      return true;
     }
          // Set tmpBase to next power.
     modmult(tmpBase.limbs, primRootPwr, tmpBase.limbs);
          // Set next exponent.
-    addbigint(Exponent, 1);
+    addbigint(bigExp, 1);
   }
+  // All exponents have been tried and logarithm has not been found, so go out.
+  indicateCannotComputeLog(indexBase, indexExp);
+  return false;
 }
 
 void DiscreteLogarithm(void)
@@ -211,7 +207,7 @@ void DiscreteLogarithm(void)
     NumberLength = *ptrPrime;
     IntArray2BigInteger(ptrPrime, &groupOrder);
     BigIntRemainder(&base, &groupOrder, &tmpBase);
-    if (tmpBase.nbrLimbs == 1 && tmpBase.limbs[0].x == 0)
+    if (BigIntIsZero(&tmpBase))
     {     // modulus and base are not relatively prime.
       int ctr;
       multiplicity = astFactorsMod[index].multiplicity;
@@ -255,7 +251,7 @@ void DiscreteLogarithm(void)
     else
     {     // modulus and base are relatively prime.
       BigIntRemainder(&power, &groupOrder, &bigNbrB);
-      if (bigNbrB.nbrLimbs == 1 && bigNbrB.limbs[0].x == 0)
+      if (BigIntIsZero(&bigNbrB))
       {   // power is multiple of prime. Error.
         showText("There is no discrete logarithm");
         DiscreteLogPeriod.sign = SIGN_NEGATIVE;
@@ -372,12 +368,8 @@ void DiscreteLogarithm(void)
       }
       for (;;)
       {                  // Calculate discrete logarithm in subgroup.
-        runningExp.nbrLimbs = 1;     // runningExp <- 0
-        runningExp.limbs[0].x = 0;
-        runningExp.sign = SIGN_POSITIVE;
-        powSubGroupOrder.nbrLimbs = 1;     // powSubGroupOrder <- 1
-        powSubGroupOrder.limbs[0].x = 1;
-        powSubGroupOrder.sign = SIGN_POSITIVE;
+        intToBigInteger(&runningExp, 0);       // runningExp <- 0
+        intToBigInteger(&powSubGroupOrder, 1); // powSubGroupOrder <- 1
         CopyBigInt(&currentExp, &groupOrder);
         if (logMachineState == BASE_PRIMITIVE_ROOT)
         {
@@ -401,9 +393,9 @@ void DiscreteLogarithm(void)
           modPow(currPowerMontg, currentExp.limbs, currentExp.nbrLimbs, powerPHMontg);
           BigIntDivide(&baseExp, &subGroupOrder, &baseExp);
           if (subGroupOrder.nbrLimbs == 1 && subGroupOrder.limbs[0].x < 20)
-          {       // subGroupOrder less than 20.
+          {        // subGroupOrder less than 20.
             if (!ComputeDLogModSubGroupOrder(indexBase, indexExp, &Exponent, &subGroupOrder))
-            {
+            {      // Cannot find logarithm, so go out.
               return;
             }
           }
@@ -539,14 +531,15 @@ void DiscreteLogarithm(void)
           do
           {
             BigIntRemainder(&runningExpBase, &subGroupOrder, &tmpBase);
-            if (tmpBase.nbrLimbs > 1 || tmpBase.limbs[0].x != 0)
+            if (!BigIntIsZero(&tmpBase))
             {    // runningExpBase is not multiple of subGroupOrder
-              BigIntModularDivisionSaveTestNbr(&runningExp, &runningExpBase, &powSubGroupOrderBak, &tmpBase);
+              BigIntModularDivisionSaveTestNbr(&runningExp, &runningExpBase,
+                &powSubGroupOrderBak, &tmpBase);
               CopyBigInt(&runningExp, &tmpBase);
               break;
             }
             BigIntRemainder(&runningExp, &subGroupOrder, &tmpBase);
-            if (tmpBase.nbrLimbs > 1 || tmpBase.limbs[0].x != 0)
+            if (!BigIntIsZero(&tmpBase))
             {    // runningExpBase is not multiple of subGroupOrder
               showText("There is no discrete logarithm");
               DiscreteLogPeriod.sign = SIGN_NEGATIVE;
@@ -564,11 +557,11 @@ void DiscreteLogarithm(void)
               break;
             }
             BigIntRemainder(&runningExpBase, &subGroupOrder, &tmpBase);
-          } while (tmpBase.nbrLimbs == 1 && tmpBase.limbs[0].x == 0);
+          } while (BigIntIsZero(&tmpBase));
           CopyBigInt(&powSubGroupOrder, &powSubGroupOrderBak);
           // The logarithm is runningExp / runningExpBase mod powSubGroupOrder
           // When powSubGroupOrder is even, we cannot use Montgomery.
-          if (powSubGroupOrder.limbs[0].x & 1)
+          if ((powSubGroupOrder.limbs[0].x & 1) == 1)
           {          // powSubGroupOrder is odd.
             BigIntModularDivisionSaveTestNbr(&runningExp, &runningExpBase, &powSubGroupOrder, &tmpBase);
             CopyBigInt(&runningExp, &tmpBase);
@@ -638,7 +631,7 @@ void DiscreteLogarithm(void)
         if ((lsbPower & mask) == 1)
         {
           intToBigInteger(&logar, 0);
-          intToBigInteger(&logarMult, (lsbBase == 1 ? 1 : 2));
+          intToBigInteger(&logarMult, ((lsbBase == 1)? 1 : 2));
         }
         else if (((lsbPower - lsbBase) & mask) == 0)
         {
@@ -684,12 +677,12 @@ void DiscreteLogarithm(void)
       modmult(primRoot, tmp2.limbs, primRoot);                             // P*B^(-L)
       BigIntDivide(&bigNbrA, &bigNbrB, &tmpBase);
       UncompressLimbsBigInteger(primRootPwr, &tmp2);
-      BigIntDivide(&tmp2, &tmpBase, &bigNbrA);                             // s
+      BigIntDivide(&tmp2, &tmpBase, &bigNbrA);                             // r
       UncompressLimbsBigInteger(primRoot, &baseModGO);   // Use baseMontGO as temp var.
-      BigIntDivide(&baseModGO, &tmpBase, &tmp2);                           // r
-      if (bigNbrA.nbrLimbs == 1 && bigNbrA.limbs[0].x == 0)
+      BigIntDivide(&baseModGO, &tmpBase, &tmp2);                           // s
+      if (BigIntIsZero(&bigNbrA))
       {            // r equals zero.
-        if (tmp2.nbrLimbs != 1 || tmp2.limbs[0].x != 0)
+        if (!BigIntIsZero(&tmp2))
         {          // s does not equal zero.
           showText("There is no discrete logarithm");
           DiscreteLogPeriod.sign = SIGN_NEGATIVE;
@@ -801,11 +794,11 @@ static void ExchangeMods(void)
 }
 
 // nbr = (nbr * mult + add) % subGroupOrder
-static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *subGroupOrder)
+static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *bigSubGroupOrder)
 {
   unsigned int carry;
   int j;
-  int nbrLimbs = subGroupOrder->nbrLimbs;
+  int nbrLimbs = bigSubGroupOrder->nbrLimbs;
   (nbr + nbrLimbs)->x = 0;
   MultBigNbrByInt((int *)nbr, mult.x, (int *)nbr, nbrLimbs+1);
   carry = add.x;
@@ -815,7 +808,7 @@ static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *subGroupO
     nbr[j].x = (int)(carry & MAX_VALUE_LIMB);
     carry >>= BITS_PER_GROUP;
   }
-  AdjustModN(nbr, subGroupOrder->limbs, nbrLimbs);
+  AdjustModN(nbr, bigSubGroupOrder->limbs, nbrLimbs);
 }
 
 void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
@@ -825,7 +818,7 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
   rc = ComputeExpression(baseText, 1, &base);
   if (rc == EXPR_OK)
   {
-    if (base.sign == SIGN_NEGATIVE || (base.nbrLimbs == 1 && base.limbs[0].x == 0))
+    if (base.sign == SIGN_NEGATIVE || BigIntIsZero(&base))
     {
       rc = EXPR_BASE_MUST_BE_POSITIVE;
     }
@@ -836,7 +829,7 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
   }
   if (rc == EXPR_OK)
   {
-    if (power.sign == SIGN_NEGATIVE || (power.nbrLimbs == 1 && base.limbs[0].x == 0))
+    if (power.sign == SIGN_NEGATIVE || BigIntIsZero(&power))
     {
       rc = EXPR_POWER_MUST_BE_POSITIVE;
     }

@@ -137,7 +137,7 @@ bool TestBigNbrEqual(BigInteger *pNbr1, BigInteger *pNbr2);
 void CopyBigInt(BigInteger *pDest, BigInteger *pSrc);
 void ModInvBigNbr(limb *num, limb *inv, limb *mod, int NumberLength);
 int modInv(int NbrMod, int currentPrime);
-int getNbrLimbs(limb *bigNbr);
+int getNbrLimbs(const limb *bigNbr);
 void BigIntDivide2(BigInteger *pArg);
 int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase);
 void BigIntAnd(BigInteger *firstArg, BigInteger *secondArg, BigInteger *result);
@@ -149,10 +149,10 @@ bool BpswPrimalityTest(/*@in@*/BigInteger *pValue, void *vFactors);
 #else
 bool BpswPrimalityTest(/*@in@*/BigInteger *pValue);
 #endif
-void IntArray2BigInteger(/*@in@*/int *ptrValues, /*@out@*/BigInteger *bigint);
-void BigInteger2IntArray(/*@out@*/int *ptrValues, /*@in@*/BigInteger *bigint);
-void UncompressLimbsBigInteger(/*@in@*/limb *ptrValues, /*@out@*/BigInteger *bigint);
-void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, /*@in@*/BigInteger *bigint);
+void IntArray2BigInteger(const int *ptrValues, /*@out@*/BigInteger *bigint);
+void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint);
+void UncompressLimbsBigInteger(const limb *ptrValues, /*@out@*/BigInteger *bigint);
+void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, const BigInteger *bigint);
 void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len);
 void ComputeInversePower2(/*@in@*/limb *value, /*@out@*/limb *result, /*@out@*/limb *aux);
 bool BigNbrIsZero(limb *value);

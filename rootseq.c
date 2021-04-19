@@ -659,7 +659,10 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
         }
         else
         {
-          showText(ptrMinus);
+          if (BigIntIsZero(&RatQuadratic.numerator))
+          {
+            showText(ptrMinus);
+          }
           if (pretty == PRETTY_PRINT)
           {
             showRatConstants("<var>r</var> + <var>s</var>", "2");

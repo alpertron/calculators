@@ -30,12 +30,4 @@ copy gaussprU.js gaussprV.js
 perl replaceEmbeddedJS.pl 0000 GAUSSPR.HTM gaussprV.js gausspr.wasm
 perl replaceEmbeddedJS.pl 0000 PRGAUSS.HTM gaussprU.js gausspr.wasm
 
-goto end
-rem java -jar %compilerName% -D lang=0 %compilerOptions% --js polyfact.js --js_output_file polfactE.js
-rem if errorlevel 1 goto end
-rem perl replaceEmbeddedJS.pl %1 POLFACT.HTM polfactE.js polfactE.wasm
-rem java -jar %compilerName% -D lang=1 %compilerOptions% --js polyfact.js --js_output_file polfactS.js
-rem if errorlevel 1 goto end
-rem perl replaceEmbeddedJS.pl %1 FACTPOL.HTM polfactS.js polfactS.wasm
-
 :end
