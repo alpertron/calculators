@@ -76,8 +76,8 @@ enum eExprErr ComputeGaussianExpression(char *expr, BigInteger *ExpressionResult
   exprIndex = 0;
   retcode = ComputeExpr(expr, ExpressionResult);
   if (retcode != 0) {return retcode;}
-  if (ExpressionResult[0].nbrLimbs > 2215 &&    // 10000/log_10(32768)
-      ExpressionResult[1].nbrLimbs > 2215)
+  if ((ExpressionResult[0].nbrLimbs > 2215) &&    // 10000/log_10(32768)
+      (ExpressionResult[1].nbrLimbs > 2215))
   {
     return EXPR_NUMBER_TOO_HIGH;
   }
@@ -116,17 +116,16 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_SYNTAX_ERROR;
       }
-      ptrBigInt = &stackImagValues[stackIndex];
-      if (ptrBigInt->nbrLimbs > 1 || ptrBigInt->limbs[0].x != 0)
-      {
+      if (!BigIntIsZero(&stackImagValues[stackIndex]))
+      {         // Imaginary part must be zero.
         return EXPR_INVALID_PARAM;
       }
       if (stackRealValues[stackIndex].nbrLimbs > 1)
       {
         return EXPR_INTERM_TOO_HIGH;
       }
-      if (stackRealValues[stackIndex].limbs[0].x < 0 ||
-          stackRealValues[stackIndex].limbs[0].x > 5984)
+      if ((stackRealValues[stackIndex].limbs[0].x < 0) ||
+          (stackRealValues[stackIndex].limbs[0].x > 5984))
       {
         return EXPR_INTERM_TOO_HIGH;
       }
@@ -157,9 +156,8 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_SYNTAX_ERROR;
       }
-      ptrBigInt = &stackImagValues[stackIndex];
-      if (ptrBigInt->nbrLimbs > 1 || ptrBigInt->limbs[0].x != 0)
-      {
+      if (!BigIntIsZero(&stackImagValues[stackIndex]))
+      {         // Imaginary part must be zero.
         return EXPR_INVALID_PARAM;
       }
       if (stackRealValues[stackIndex].nbrLimbs > 2)
@@ -175,7 +173,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         largeLen.x = stackRealValues[stackIndex].limbs[0].x;
       }
-      if (largeLen.x < 0 || largeLen.x > 46049)
+      if ((largeLen.x < 0) || (largeLen.x > 46049))
       {
         return EXPR_INTERM_TOO_HIGH;
       }
@@ -297,7 +295,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (retcode != 0) {return retcode;}
       leftNumberFlag = 1;
     }
-    else if (charValue == '+' || charValue == '-')
+    else if ((charValue == '+') || (charValue == '-'))
     {
       if (leftNumberFlag == 0)
       {      // Unary plus/minus operator
@@ -308,7 +306,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         }
         else
         {
-          if (stackIndex > startStackIndex && stackOperators[stackIndex-1] == '_')
+          if ((stackIndex > startStackIndex) && (stackOperators[stackIndex-1] == '_'))
           {
             stackIndex--;
             continue;
@@ -321,22 +319,22 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
           continue;
         }
       }
-      if (stackIndex > startStackIndex &&
-          stackOperators[stackIndex-1] != '(')
+      if ((stackIndex > startStackIndex) &&
+          (stackOperators[stackIndex-1] != '('))
       {
         if ((SubExprResult = ComputeSubExpr()) != 0)
         {
           return SubExprResult;
         }
-        if (stackIndex > startStackIndex &&
-            stackOperators[stackIndex-1] != '(')
+        if ((stackIndex > startStackIndex) &&
+            (stackOperators[stackIndex-1] != '('))
         {
           if ((SubExprResult = ComputeSubExpr()) != 0)
           {
             return SubExprResult;
           }
-          if (stackIndex > startStackIndex &&
-              stackOperators[stackIndex-1] != '(')
+          if ((stackIndex > startStackIndex) &&
+              (stackOperators[stackIndex-1] != '('))
           {
             if ((SubExprResult = ComputeSubExpr()) != 0)
             {
@@ -348,25 +346,25 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       stackOperators[stackIndex++] = charValue;
       leftNumberFlag = 0;
     }                               /* end if */
-    else if (charValue == '*' || charValue == '/' || charValue == '%')
+    else if ((charValue == '*') || (charValue == '/') || (charValue == '%'))
     {
       if (leftNumberFlag == 0)
       {
         return EXPR_SYNTAX_ERROR;
       }
-      if (stackIndex > startStackIndex && (stackOperators[stackIndex-1] == '^' ||
-          stackOperators[stackIndex-1] == '*' ||
-          stackOperators[stackIndex-1] == '/'))
+      if ((stackIndex > startStackIndex) && ((stackOperators[stackIndex-1] == '^') ||
+          (stackOperators[stackIndex-1] == '*') ||
+          (stackOperators[stackIndex-1] == '/')))
       {
         if ((SubExprResult = ComputeSubExpr()) != 0)
         {
           return SubExprResult;
         }
-        if (stackIndex > startStackIndex &&
-             (stackOperators[stackIndex-1] == '^' ||
-              stackOperators[stackIndex-1] == '*' ||
-              stackOperators[stackIndex-1] == '/' ||
-              stackOperators[stackIndex-1] == '%'))
+        if ((stackIndex > startStackIndex) &&
+             ((stackOperators[stackIndex-1] == '^') ||
+              (stackOperators[stackIndex-1] == '*') ||
+              (stackOperators[stackIndex-1] == '/') ||
+              (stackOperators[stackIndex-1] == '%')))
         {
           if ((SubExprResult = ComputeSubExpr()) != 0)
           {
@@ -398,28 +396,28 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       }
       stackOperators[stackIndex++] = charValue;
     }                           
-    else if (charValue == ')' || charValue == ',')
+    else if ((charValue == ')') || (charValue == ','))
     {
       if (leftNumberFlag == 0)
       {
         return EXPR_SYNTAX_ERROR;
       }
-      if (stackIndex > startStackIndex &&
-          stackOperators[stackIndex-1] != '(')
+      if ((stackIndex > startStackIndex) &&
+          (stackOperators[stackIndex-1] != '('))
       {
         if ((SubExprResult = ComputeSubExpr()) != 0)
         {
           return SubExprResult;
         }
-        if (stackIndex > startStackIndex &&
-            stackOperators[stackIndex-1] != '(')
+        if ((stackIndex > startStackIndex) &&
+            (stackOperators[stackIndex-1] != '('))
         {
           if ((SubExprResult = ComputeSubExpr()) != 0)
           {
             return SubExprResult;
           }
-          if (stackIndex > startStackIndex &&
-              stackOperators[stackIndex-1] != '(')
+          if ((stackIndex > startStackIndex) &&
+              (stackOperators[stackIndex-1] != '('))
           {
             if ((SubExprResult = ComputeSubExpr()) != 0)
             {
@@ -441,7 +439,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       stackImagValues[stackIndex] = stackImagValues[stackIndex+1];
       leftNumberFlag = 1;
     }
-    else if (charValue == 'i' || charValue == 'I')
+    else if ((charValue == 'i') || (charValue == 'I'))
     {
       if (leftNumberFlag == 0)
       {
@@ -464,25 +462,25 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         CopyBigInt(&Tmp, &stackImagValues[stackIndex]);
         CopyBigInt(&stackImagValues[stackIndex], ptrBigInt);
         CopyBigInt(ptrBigInt, &Tmp);
-        if (ptrBigInt->nbrLimbs > 1 || ptrBigInt->limbs[0].x != 0)
+        if (!BigIntIsZero(ptrBigInt))
         {            // Real coefficient is not zero: change sign
           ptrBigInt->sign = (ptrBigInt->sign == SIGN_POSITIVE ? SIGN_NEGATIVE : SIGN_POSITIVE);
         }
       }
     }
-    else if (charValue >= '0' && charValue <= '9')
+    else if ((charValue >= '0') && (charValue <= '9'))
     {
       exprIndexAux = exprIndex;
-      if (charValue == '0' && exprIndexAux < exprLength - 2 &&
-        *(expr + exprIndexAux + 1) == 'x')
+      if ((charValue == '0') && (exprIndexAux < exprLength - 2) &&
+        (*(expr + exprIndexAux + 1) == 'x'))
       {  // hexadecimal
         exprIndexAux += 2;
         while (exprIndexAux < exprLength - 1)
         {
           charValue = *(expr + exprIndexAux + 1);
-          if ((charValue >= '0' && charValue <= '9') ||
-            (charValue >= 'A' && charValue <= 'F') ||
-            (charValue >= 'a' && charValue <= 'f'))
+          if (((charValue >= '0') && (charValue <= '9')) ||
+            ((charValue >= 'A') && (charValue <= 'F')) ||
+            ((charValue >= 'a') && (charValue <= 'f')))
           {
             exprIndexAux++;
           }
@@ -500,11 +498,11 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         for (; exprIndexAux >= exprIndex + 2; exprIndexAux--)
         {
           c = *(expr + exprIndexAux);
-          if (c >= '0' && c <= '9')
+          if ((c >= '0') && (c <= '9'))
           {
             c -= '0';
           }
-          else if (c >= 'A' && c <= 'F')
+          else if ((c >= 'A') && (c <= 'F'))
           {
             c -= 'A' + 10;
           }
@@ -531,7 +529,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         while (exprIndexAux < exprLength - 1)
         {
           charValue = *(expr + exprIndexAux + 1);
-          if (charValue >= '0' && charValue <= '9')
+          if ((charValue >= '0') && (charValue <= '9'))
           {
             exprIndexAux++;
           }
@@ -559,19 +557,19 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
   {
     return EXPR_SYNTAX_ERROR;
   }
-  if (stackIndex > startStackIndex && stackOperators[stackIndex-1] != '(')
+  if ((stackIndex > startStackIndex) && (stackOperators[stackIndex-1] != '('))
   {
     if ((SubExprResult = ComputeSubExpr()) != 0)
     {
       return SubExprResult;
     }
-    if (stackIndex > startStackIndex && stackOperators[stackIndex-1] != '(')
+    if ((stackIndex > startStackIndex) && (stackOperators[stackIndex-1] != '('))
     {
       if ((SubExprResult = ComputeSubExpr()) != 0)
       {
         return SubExprResult;
       }
-      if (stackIndex > startStackIndex && stackOperators[stackIndex-1] != '(')
+      if ((stackIndex > startStackIndex) && (stackOperators[stackIndex-1] != '('))
       {
         if ((SubExprResult = ComputeSubExpr()) != 0)
         {
@@ -618,7 +616,7 @@ static int func(char *expr, BigInteger *ExpressionResult,
     return EXPR_SYNTAX_ERROR;
   }
   SkipSpaces(expr);
-  if (exprIndex == exprLength || *(expr+exprIndex++) != '(')
+  if ((exprIndex == exprLength) || (*(expr+exprIndex++) != '('))
   {
     return EXPR_SYNTAX_ERROR;
   }
@@ -636,7 +634,7 @@ static int func(char *expr, BigInteger *ExpressionResult,
     if (retcode != 0) {return retcode;}
     SkipSpaces(expr);
     compareChar = (index == funcArgs-1? ')': ',');
-    if (exprIndex == exprLength || *(expr+exprIndex++) != compareChar)
+    if ((exprIndex == exprLength) || (*(expr+exprIndex++) != compareChar))
     {
       return EXPR_SYNTAX_ERROR;
     }
@@ -699,7 +697,7 @@ static int ComputeSubExpr(void)
       BigIntMultiply(&Re2, &Re2, &ReTmp);
       BigIntMultiply(&Im2, &Im2, &ImTmp);
       BigIntAdd(&ReTmp, &ImTmp, &norm);       // norm <- re2^2 + im2^2.
-      if (norm.nbrLimbs == 1 && norm.limbs[0].x == 0)
+      if (BigIntIsZero(&norm))
       {              // norm is zero.
         return EXPR_INTERM_TOO_HIGH;
       }
@@ -722,8 +720,8 @@ static int ComputeSubExpr(void)
       CopyBigInt(&stackImagValues[stackIndex], &Result[1]);
       return 0;
     case '*':
-      if (Re1.nbrLimbs + Im1.nbrLimbs > 4430 || Re1.nbrLimbs + Im2.nbrLimbs > 4430 ||
-          Re2.nbrLimbs + Im1.nbrLimbs > 4430 || Re2.nbrLimbs + Im2.nbrLimbs > 4430)
+      if ((Re1.nbrLimbs + Im1.nbrLimbs > 4430) || (Re1.nbrLimbs + Im2.nbrLimbs > 4430) ||
+          (Re2.nbrLimbs + Im1.nbrLimbs > 4430) || (Re2.nbrLimbs + Im2.nbrLimbs > 4430))
       {           // Result with more than 20000 digits.
         return EXPR_INTERM_TOO_HIGH;
       }
@@ -747,10 +745,9 @@ static int ComputeFibonacci(void)
   BigInteger FibonAct;
   BigInteger FibonNext;
   BigInteger Re = stackRealValues[stackIndex];
-  BigInteger Im = stackImagValues[stackIndex];
   int i;
   int arg;
-  if (Im.nbrLimbs > 1 || Im.limbs[0].x != 0)
+  if (!BigIntIsZero(&stackImagValues[stackIndex]))
   {     // Imaginary part of argument must be zero.
     return EXPR_INVALID_PARAM;
   }
@@ -792,10 +789,9 @@ static int ComputeLucas(void)
   BigInteger FibonAct;
   BigInteger FibonNext;
   BigInteger Re = stackRealValues[stackIndex];
-  BigInteger Im = stackImagValues[stackIndex];
   BigInteger *ptrBigInt;
 
-  if (Im.nbrLimbs > 1 || Im.limbs[0].x != 0)
+  if (!BigIntIsZero(&stackImagValues[stackIndex]))
   {     // Imaginary part of argument must be zero.
     return EXPR_INVALID_PARAM;
   }
@@ -838,9 +834,8 @@ static int ComputePartition(void)
   limb largeVal;
   int val;
 
-  pArgument = &stackImagValues[stackIndex];
-  if (pArgument->nbrLimbs > 1 || pArgument->limbs[0].x != 0)
-  {
+  if (!BigIntIsZero(&stackImagValues[stackIndex]))
+  {         // Imaginary part must be zero.
     return EXPR_INVALID_PARAM;
   }
   pArgument = &stackRealValues[stackIndex];
@@ -895,7 +890,7 @@ static void GetRemainder(BigInteger *norm, BigInteger *ReDividend, BigInteger *I
   ReTmp.sign = SIGN_POSITIVE;
   BigIntDivide(&ReTmp, norm, Re);
   subtractdivide(Re, -1, 2);
-  if (Re->nbrLimbs != 1 || Re->limbs[0].x != 0)
+  if (!BigIntIsZero(Re))
   {
     Re->sign = signBak;
   }
@@ -908,7 +903,7 @@ static void GetRemainder(BigInteger *norm, BigInteger *ReDividend, BigInteger *I
   ImTmp.sign = SIGN_POSITIVE;
   BigIntDivide(&ImTmp, norm, Im);
   subtractdivide(Im, -1, 2);
-  if (Im->nbrLimbs != 1 || Im->limbs[0].x != 0)
+  if (!BigIntIsZero(Im))
   {
     Im->sign = signBak;
   }
@@ -933,8 +928,7 @@ static int ComputeGCD(void)
   BigInteger Re2 = stackRealValues[stackIndex+1];
   BigInteger Im1 = stackImagValues[stackIndex];
   BigInteger Im2 = stackImagValues[stackIndex+1];
-  while (Re2.nbrLimbs > 1 || Im2.nbrLimbs > 1 ||
-         Re2.limbs[0].x != 0 || Im2.limbs[0].x != 0)
+  while (!BigIntIsZero(&Re2) || !BigIntIsZero(&Im2))
   {   // Second argument is not zero.
     BigInteger norm;
     BigIntMultiply(&Re2, &Re2, &Re);
@@ -980,7 +974,7 @@ static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigIn
   BigInteger Re;
   BigInteger Im;
 
-  if (Im2->nbrLimbs > 1 || Im2->limbs[0].x != 0 || Re2->sign == SIGN_NEGATIVE)
+  if (!BigIntIsZero(Im2) || Re2->sign == SIGN_NEGATIVE)
   {          // Exponent must be positive or zero.
     return EXPR_INVALID_PARAM;
   }
@@ -1061,7 +1055,7 @@ static int ComputeModPow(void)
   BigInteger ReMod = stackRealValues[stackIndex+2];
   BigInteger ImMod = stackImagValues[stackIndex+2];
   BigInteger Re, Im;
-  if (ImExp.nbrLimbs > 1 || ImExp.limbs[0].x != 0)
+  if (!BigIntIsZero(&ImExp))
   {         // Imaginary part must be zero.
     return EXPR_INVALID_PARAM;
   }
@@ -1082,8 +1076,7 @@ static int ComputeModPow(void)
   Im.limbs[0].x = 0;
   Re.nbrLimbs = Im.nbrLimbs = 1;
   Re.sign = Im.sign = SIGN_POSITIVE;
-  if (ReMod.nbrLimbs == 1 && ImMod.nbrLimbs == 1 &&
-      ReMod.limbs[0].x == 0 && ImMod.limbs[0].x == 0)
+  if (BigIntIsZero(&ReMod) && BigIntIsZero(&ImMod))
   {   /* Modulus is zero */
     ComputePower(&ReBase, &ReExp, &ImBase, &ImExp);
   }
@@ -1169,8 +1162,7 @@ static int ModInv(BigInteger *RealNbr, BigInteger *ImagNbr,
   BigInteger Im;
   BigInteger Tmp;
 
-  if (RealMod->nbrLimbs == 1 && ImagMod->nbrLimbs == 1 &&
-      RealMod->limbs[0].x == 0 && ImagMod->limbs[0].x == 0)
+  if (BigIntIsZero(RealMod) && BigIntIsZero(ImagMod))
   {          // Argument is zero.
     return EXPR_INVALID_PARAM;
   }
@@ -1185,8 +1177,7 @@ static int ModInv(BigInteger *RealNbr, BigInteger *ImagNbr,
   ReU1.limbs[0].x = ImU0.limbs[0].x = ImU1.limbs[0].x = 0;
   ReU1.nbrLimbs = ImU0.nbrLimbs = ImU1.nbrLimbs = 1;
   ReU1.sign = ImU0.sign = ImU1.sign = SIGN_POSITIVE;
-  while (ReG1.nbrLimbs != 1 || ImG1.nbrLimbs != 1 ||
-         ReG1.limbs[0].x != 0 || ImG1.limbs[0].x != 0)
+  while (!BigIntIsZero(&ReG1) || !BigIntIsZero(&ImG1))
   {            // G1 is not zero.
     BigInteger norm;
     BigIntMultiply(&ReG1, &ReG1, &Re);
@@ -1235,8 +1226,7 @@ static int ModInv(BigInteger *RealNbr, BigInteger *ImagNbr,
     BigIntNegate(&ImU0, &ReU0);
     CopyBigInt(&ImU0, &Tmp);
   }
-  if (ReG0.nbrLimbs != 1 || ImG0.nbrLimbs != 1 ||
-      ReG0.limbs[0].x != 1 || ImG0.limbs[0].x != 0)
+  if (ReG0.nbrLimbs != 1 || ReG0.limbs[0].x != 1 || !BigIntIsZero(&ImG0))
   {         // G0 is not 1.
     return EXPR_INVALID_PARAM;
   }
@@ -1255,8 +1245,7 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
   BigInteger norm;
   BigInteger Tmp;
   BigInteger normmin;
-  if (ReDen->nbrLimbs == 1 && ImDen->nbrLimbs == 1 &&
-      ReDen->limbs[0].x == 0 && ImDen->limbs[0].x == 0)
+  if (BigIntIsZero(ReDen) && BigIntIsZero(ImDen))
   {      // Denominator is zero.
     CopyBigInt(Result, ReNum);
     CopyBigInt(Result+1, ImNum);
@@ -1329,7 +1318,7 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
       BigIntMultiply(&Im, &Im, &Tmp);
       BigIntAdd(&norm, &Tmp, &norm);
       BigIntSubt(&norm, &normmin, &Tmp);
-      if (normmin.sign == SIGN_NEGATIVE || Tmp.sign == SIGN_NEGATIVE)
+      if ((normmin.sign == SIGN_NEGATIVE) || (Tmp.sign == SIGN_NEGATIVE))
       {
         CopyBigInt(&normmin, &norm);
         CopyBigInt(&ReMin, &Re);

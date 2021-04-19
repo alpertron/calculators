@@ -113,12 +113,12 @@ static void ContFrac(void)
   // Validate input.
   if (den.nbrLimbs==1 && den.limbs[0].x==0)
   {
-    showText(lang != 0? "<p>Error: El denominador es cero.</p>": "<p>Error: The denominator is zero.</p>");
+    showText(lang? "<p>Error: El denominador es cero.</p>": "<p>Error: The denominator is zero.</p>");
     return;
   }
   if (delta.sign==SIGN_NEGATIVE)
   {   /* Complex number */
-    showText(lang != 0? "<p>El número no es real, por lo que no tiene desarrollo en fracciones continuas.</p>":
+    showText(lang? "<p>El número no es real, por lo que no tiene desarrollo en fracciones continuas.</p>":
                    "<p>The number is not real, so it does not have continued fraction expansion.</p>");
     return;
   }
@@ -257,13 +257,13 @@ static void ContFrac(void)
         showText("//");
       }
       showText("<br /><span aria-hidden=\"true\">");
-      showText(lang != 0 ? "donde la parte periódica está señalada en negrita</span>" :
+      showText(lang? "donde la parte periódica está señalada en negrita</span>" :
         "where the periodic part is marked in bold</span>");
       if (periodIndex > 1)
       {
-        showText(lang != 0 ? " (el período tiene " : " (the period has ");
+        showText(lang? " (el período tiene " : " (the period has ");
         int2dec(&ptrOutput, periodIndex);
-        showText(lang != 0 ? " coeficientes)" : " coefficients)");
+        showText(lang? " coeficientes)" : " coefficients)");
       }
     }
     else
@@ -276,10 +276,10 @@ static void ContFrac(void)
       {
         showText("... </span>");
       }
-      showText(lang != 0 ? "<br />donde la parte periódica (truncada a partir de los " :
+      showText(lang? "<br />donde la parte periódica (truncada a partir de los " :
         "//<br />where the periodic part (truncated after ");
       int2dec(&ptrOutput, periodIndex);
-      showText(lang != 0 ? " convergentes) está señalada en negrita.</p>" :
+      showText(lang? " convergentes) está señalada en negrita.</p>" :
         " convergents) is marked in bold.</p>");
     }
   }
@@ -360,15 +360,15 @@ void contfracText(char *input, int GroupLen)
 {
   char *ptrInput = input;
   ptrOutput = output;
-  if (getNumber(&num, lang != 0? "Numerador": "Numerator", &ptrInput) != 0)
+  if (getNumber(&num, lang? "Numerador": "Numerator", &ptrInput) != 0)
   {
     return;
   }
-  if (getNumber(&delta, lang != 0 ?"Argumento de la raíz cuadrada": "Square root argument", &ptrInput) != 0)
+  if (getNumber(&delta, lang?"Argumento de la raíz cuadrada": "Square root argument", &ptrInput) != 0)
   {
     return;
   }
-  if (getNumber(&den, lang != 0 ?"Denominador": "Denominator", &ptrInput) != 0)
+  if (getNumber(&den, lang?"Denominador": "Denominator", &ptrInput) != 0)
   {
     return;
   }

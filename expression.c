@@ -154,7 +154,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
   {
     return EXPR_NUMBER_TOO_HIGH;
   }
-  if ((valueX.nbrLimbs) > 0 && !valueXused)
+  if ((valueX.nbrLimbs > 0) && !valueXused)
   {
     return EXPR_VAR_OR_COUNTER_REQUIRED;
   }

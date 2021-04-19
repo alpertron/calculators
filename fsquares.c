@@ -58,7 +58,7 @@ static int sieve[MAX_SIEVE];
 static int TerminateThread;
 static int sum;
 static int nbrModExp;
-static int Computing3Squares;
+static bool Computing3Squares;
 static char tmpOutput[MAX_LEN*12];
 int app;
 static char *square = "<span class=\"bigger\">²</span>";
@@ -240,7 +240,7 @@ int fsquares(void)
 #endif
     DivideBigNbrByMaxPowerOf4(&power4, number, &nbrLimbs);
     Mult1Len = Mult2Len = 1;
-    if (nbrLimbs == 1 && number[0].x < 4)
+    if ((nbrLimbs == 1) && (number[0].x < 4))
     {
       iMult3 = iMult4 = 0;
       switch (number[0].x)
@@ -283,7 +283,7 @@ int fsquares(void)
 
       if (numberMod8 != 7)
       {              // n!=7 (mod 8) => Sum of three squares
-        Computing3Squares = 1;
+        Computing3Squares = true;
         iMult4 = 0;
         iMult3 = -1;
       }
@@ -291,7 +291,7 @@ int fsquares(void)
       {              // n==7 (mod 8) => Sum of four squares
         iMult3 = -1;
         iMult4 = 0;
-        Computing3Squares = 0;
+        Computing3Squares = false;
       }
       // If number is a sum of three squares, subtract a small square.
       // If number is a sum of four squares, subtract two small squares.
@@ -305,7 +305,7 @@ int fsquares(void)
         {
           return 2;
         }
-        if (Computing3Squares == 0 && iMult3 >= iMult4)
+        if (!Computing3Squares && (iMult3 >= iMult4))
         {
           iMult3 = 1;
           iMult4++;
@@ -355,7 +355,7 @@ int fsquares(void)
         divisor = 3;
         for (i = 0; i < MAX_SIEVE / 2; i++)
         {
-          if (sieve[i] >= 0 && (sieve[i] - sum) % divisor == 0)
+          if ((sieve[i] >= 0) && ((sieve[i] - sum) % divisor == 0))
           {                          // Divisor found.
             primediv[nbrDivisors] = divisor;   // Store divisor.
             primeexp[nbrDivisors] = 0;         // Store exponent.
@@ -381,7 +381,7 @@ int fsquares(void)
               }
               primeexp[nbrDivisors]++;       // Increment exponent.
             }
-            if ((divisor & 0x03) == 3 && (primeexp[nbrDivisors] & 1) != 0)
+            if (((divisor & 0x03) == 3) && ((primeexp[nbrDivisors] & 1) != 0))
             {                   // Divisor of the form 4k+3 not square.
               goto compute_squares_loop;  // Discard this value.
             }
@@ -390,7 +390,7 @@ int fsquares(void)
           divisor += 2;
         }
 
-        if (p[0].x == 1 && nbrLimbsP == 1)
+        if ((p[0].x == 1) && (nbrLimbsP == 1))
         {         // number is the product of only small primes 4k+1 and
                   // squares of primes 4k+3.
           Mult1[0].x = 1;
@@ -459,7 +459,7 @@ int fsquares(void)
           (void)memcpy(biMult3.limbs, TestNbr, nbrLimbsP*sizeof(limb));
           biMult3.nbrLimbs = nbrLimbsP;
           biMult3.sign = SIGN_POSITIVE;
-          while (biMult3.nbrLimbs > 1 && biMult3.limbs[biMult3.nbrLimbs - 1].x == 0)
+          while ((biMult3.nbrLimbs > 1) && (biMult3.limbs[biMult3.nbrLimbs - 1].x == 0))
           {
             biMult3.nbrLimbs--;
           }
@@ -486,7 +486,7 @@ int fsquares(void)
           {
             MultBigNbrByInt((int*)Mult1, divisor, (int*)Mult1, nbrLimbs + 1);
             MultBigNbrByInt((int*)Mult2, divisor, (int*)Mult2, nbrLimbs + 1);
-            if (Mult1[nbrLimbs].x != 0 || Mult2[nbrLimbs].x != 0)
+            if ((Mult1[nbrLimbs].x != 0) || (Mult2[nbrLimbs].x != 0))
             {
               nbrLimbs++;
               Mult1[nbrLimbs].x = 0;
@@ -522,7 +522,7 @@ int fsquares(void)
                 // negative. In this case replace it by its absolute value.
               ChSignBigNbr((int *)Mult2, nbrLimbs+1);
             }
-            if (Mult1[nbrLimbs].x != 0 || Mult2[nbrLimbs].x != 0)
+            if ((Mult1[nbrLimbs].x != 0) || (Mult2[nbrLimbs].x != 0))
             {
               nbrLimbs++;
               Mult1[nbrLimbs].x = 0;
@@ -538,7 +538,7 @@ int fsquares(void)
     {
       MultBigNbrByInt((int*)Mult1, 2, (int*)Mult1, nbrLimbs + 1);
       MultBigNbrByInt((int*)Mult2, 2, (int*)Mult2, nbrLimbs + 1);
-      if (Mult1[nbrLimbs].x != 0 || Mult2[nbrLimbs].x != 0)
+      if ((Mult1[nbrLimbs].x != 0) || (Mult2[nbrLimbs].x != 0))
       {
         nbrLimbs++;
         Mult1[nbrLimbs].x = 0;
@@ -554,7 +554,7 @@ int fsquares(void)
     {
       MultBigNbrByInt((int*)Mult3, 2, (int*)Mult3, nbrLimbsP + 1);
       MultBigNbrByInt((int*)Mult4, 2, (int*)Mult4, nbrLimbsP + 1);
-      if (Mult3[nbrLimbsP].x != 0 || Mult4[nbrLimbsP].x != 0)
+      if ((Mult3[nbrLimbsP].x != 0) || (Mult4[nbrLimbsP].x != 0))
       {
         nbrLimbsP++;
       }
@@ -562,20 +562,20 @@ int fsquares(void)
       Mult4[nbrLimbsP].x = 0;
     }
     Mult1Len = Mult2Len = nbrLimbs;
-    while (Mult1[Mult1Len-1].x == 0 && Mult1Len > 1)
+    while ((Mult1[Mult1Len-1].x == 0) && (Mult1Len > 1))
     {
       Mult1Len--;
     }
-    while (Mult2[Mult2Len-1].x == 0 && Mult2Len > 1)
+    while ((Mult2[Mult2Len-1].x == 0) && (Mult2Len > 1))
     {
       Mult2Len--;
     }
     Mult3Len = Mult4Len = nbrLimbsP;
-    while (Mult3[Mult3Len-1].x == 0 && Mult3Len > 1)
+    while ((Mult3[Mult3Len-1].x == 0) && (Mult3Len > 1))
     {
       Mult3Len--;
     }
-    while (Mult1[Mult4Len-1].x == 0 && Mult4Len > 1)
+    while ((Mult1[Mult4Len-1].x == 0) && (Mult4Len > 1))
     {
       Mult4Len--;
     }
@@ -604,7 +604,7 @@ int fsquares(void)
   AddBigInt(SquareMult1.limbs, SquareMult2.limbs, SquareMult1.limbs, idx);
   AddBigInt(SquareMult1.limbs, SquareMult3.limbs, SquareMult1.limbs, idx);
   AddBigInt(SquareMult1.limbs, SquareMult4.limbs, SquareMult1.limbs, idx);
-  while (idx > 1 && SquareMult1.limbs[idx - 1].x == 0)
+  while ((idx > 1) && (SquareMult1.limbs[idx - 1].x == 0))
   {
     idx--;
   }
@@ -702,7 +702,7 @@ void batchSquaresCallback(char **pptrOutput)
   ptrOutput += strlen(ptrOutput);
   (void)strcpy(ptrOutput, square);
   ptrOutput += strlen(ptrOutput);
-  if (Mult2Len != 1 || Mult2[0].x != 0)
+  if ((Mult2Len != 1) || (Mult2[0].x != 0))
   {
     (void)strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
@@ -718,7 +718,7 @@ void batchSquaresCallback(char **pptrOutput)
     (void)strcpy(ptrOutput, square);
     ptrOutput += strlen(ptrOutput);
   }
-  if (Mult3Len != 1 || Mult3[0].x != 0)
+  if ((Mult3Len != 1) || (Mult3[0].x != 0))
   {
     (void)strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);
@@ -734,7 +734,7 @@ void batchSquaresCallback(char **pptrOutput)
     (void)strcpy(ptrOutput, square);
     ptrOutput += strlen(ptrOutput);
   }
-  if (Mult4Len != 1 || Mult4[0].x != 0)
+  if ((Mult4Len != 1) || (Mult4[0].x != 0))
   {
     (void)strcpy(ptrOutput, " + ");
     ptrOutput += strlen(ptrOutput);

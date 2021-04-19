@@ -252,7 +252,7 @@ void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
     (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * factor2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
   Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
     
-  if (Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP) || (Prod1 == TestNbr1 && Prod0 >= TestNbr0))
+  if (Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP) || ((Prod1 == TestNbr1) && (Prod0 >= TestNbr0)))
   {
     int32_t borrow;
     Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
@@ -306,8 +306,8 @@ void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
   }
   Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
   
-  if ((unsigned int)Prod1 > (unsigned int)TestNbr1 ||
-       ((unsigned int)Prod1 == (unsigned int)TestNbr1 && (unsigned int)Prod0 >= (unsigned int)TestNbr0))
+  if (((unsigned int)Prod1 > (unsigned int)TestNbr1) ||
+       (((unsigned int)Prod1 == (unsigned int)TestNbr1) && ((unsigned int)Prod0 >= (unsigned int)TestNbr0)))
   {        // Prod >= TestNbr, so perform Prod <- Prod - TestNbr
     carry = Prod0 - TestNbr0;
     Prod0 = carry & MAX_VALUE_LIMB;
@@ -344,7 +344,7 @@ void AddBigNbrModN(const int *Nbr1, const int *Nbr2, int *Sum)
   Sum0 = carry & MAX_INT_NBR;
   carry = (carry >> BITS_PER_GROUP) + *(Nbr1 + 1) + *(Nbr2 + 1);
   Sum1 = carry & MAX_INT_NBR;
-  if (carry > (unsigned int)TestNbr1 || (carry == (unsigned int)TestNbr1 && Sum0 >= TestNbr0))
+  if ((carry > (unsigned int)TestNbr1) || ((carry == (unsigned int)TestNbr1) && (Sum0 >= TestNbr0)))
   {
     int borrow = Sum0 - TestNbr0;
     Sum0 = borrow & MAX_INT_NBR;
@@ -397,7 +397,6 @@ int isPrime(const int *value)
     LIMIT((1ll << (2*BITS_PER_GROUP)) - 1)
   };
   int i;
-  int j;
   int index;
   int indexLSB;
   int indexMSB;
@@ -519,7 +518,7 @@ int isPrime(const int *value)
   }
   maskMSB = (1<<(indexMSB % BITS_PER_GROUP));
   
-  for (i=0, j=0; limits[j+1] < TestNbr1 || (limits[j+1] == TestNbr1 && limits[j] < TestNbr0); i++, j+=2)
+  for (i=0; (limits[i+i+1] < TestNbr1) || ((limits[i+i+1] == TestNbr1) && (limits[i+i] < TestNbr0)); i++)
   {
     int idxNbr;
     base = bases[i];
@@ -549,12 +548,12 @@ int isPrime(const int *value)
     }
        // If power equals 1 or -1 in Montgomery representation,
        // another base must be tried.
-    if (power[0] == MontgomeryMultR1[0] && power[1] == MontgomeryMultR1[1])
+    if ((power[0] == MontgomeryMultR1[0]) && (power[1] == MontgomeryMultR1[1]))
     {
       continue;   // power equals 1, so another base must be tried.
     }
     AddBigNbrModN(power, MontgomeryMultR1, temp);
-    if (temp[0] == 0 && temp[1] == 0)
+    if ((temp[0] == 0) && (temp[1] == 0))
     {
       continue;   // power equals -1, so another base must be tried.
     }
@@ -567,12 +566,12 @@ int isPrime(const int *value)
         idxNbr--;
       }
       MontgomeryMult(power, power, power);
-      if (power[0] == MontgomeryMultR1[0] && power[1] == MontgomeryMultR1[1])
+      if ((power[0] == MontgomeryMultR1[0]) && (power[1] == MontgomeryMultR1[1]))
       {
         return 0;  // power equals 1, so number is composite.
       }
       AddBigNbrModN(power, MontgomeryMultR1, temp);
-      if (temp[0] == 0 && temp[1] == 0)
+      if ((temp[0] == 0) && (temp[1] == 0))
       {            // power equals -1.
         break;
       }
@@ -645,14 +644,14 @@ int algebraicFactor(int linear, int *indep)
   multiply(2*t1 + linear, t1, temp);
   AddBigNbr(temp, indep, temp);
   AddBigNbr(temp, indep, temp);
-  if (temp[0] != 0 || temp[1] != 0)
+  if ((temp[0] != 0) || (temp[1] != 0))
   {
     return 0;
   }
   multiply(2*t2 + linear, t2, temp);
   AddBigNbr(temp, indep, temp);
   AddBigNbr(temp, indep, temp);
-  if (temp[0] != 0 || temp[1] != 0)
+  if ((temp[0] != 0) || (temp[1] != 0))
   {
     return 0;
   }
@@ -662,20 +661,20 @@ int algebraicFactor(int linear, int *indep)
 void getN(int x, int y, int *value)
 {
   int addend[2];
-  if (x >= 0 && x >= y && x >= -y)
+  if ((x >= 0) && (x >= y) && (x >= -y))
   {                     // Right quadrant.
     multiply(4 * x + 3, x, value);
     addend[0] = y & MAX_INT_NBR;
     addend[1] = (y >> BITS_PER_GROUP) & MAX_INT_NBR;
   }
-  else if (y >= 0 && y>x && y>-x)
+  else if ((y >= 0) && (y > x) && (y > -x))
   {                     // Top quadrant.
     multiply(4 * y - 3, y, value);
     x = -x;
     addend[0] = x & MAX_INT_NBR;
     addend[1] = (x >> BITS_PER_GROUP) & MAX_INT_NBR;
   }
-  else if (x <= 0 && x <= y && x <= -y)
+  else if ((x <= 0) && (x <= y) && (x <= -y))
   {                     // Left quadrant.
     multiply(4 * x + 1, x, value);
     y = -y;
@@ -753,7 +752,7 @@ void setPoint(int x, int y)
   }
   xPhysical = width / 2 + ((x - xCenter) << thickness) - xFraction;
   yPhysical = height / 2 - ((y - yCenter) << thickness) + yFraction;
-  if ((value[1] != 0 || value[0] != 2) && (value[0] & 1) == 0)
+  if (((value[1] != 0) || (value[0] != 2)) && (value[0] & 1) == 0)
   {     // value is not 2 and it is even
     color = algebraicColor;
   }
@@ -763,11 +762,11 @@ void setPoint(int x, int y)
   }
   else
   {
-    if (x > y && x > -y)
+    if ((x > y) && (x > -y))
     {
       t = x;
     }
-    else if (x < y && x < -y)
+    else if ((x < y) && (x < -y))
     {
       t = -x;
     }
@@ -849,9 +848,9 @@ void setPoint(int x, int y)
     color = colorWhite;
     absx = (x>0 ? x : -x);
     absy = (y>0 ? y : -y);
-    if (absx >= absy && !(x == -y && y<0))
+    if ((absx >= absy) && !((x == -y) && (y < 0)))
     {
-      if (xPhysical >= 0 && xPhysical < width)
+      if ((xPhysical >= 0) && (xPhysical < width))
       {
         ptrPixel = pixelXY(xPhysical, firstRow);
         for (row = firstRow; row < lastRow; row++)
@@ -865,10 +864,11 @@ void setPoint(int x, int y)
         }
       }
     }
-    if ((absx < absy && !(x == y - 1 && y>0)) || (absx == absy && y <= 0))
+    if (((absx < absy) && !(x == y - 1 && y>0)) ||
+        ((absx == absy) && (y <= 0)))
     {
       currY = yPhysical + (1 << thickness) - 1;
-      if (currY >= 0 && currY < height)
+      if ((currY >= 0) && (currY < height))
       {
         ptrPixel = pixelXY(firstCol, currY);
         for (col = firstCol; col < lastCol; col++)
@@ -945,7 +945,7 @@ char *appendInt(char *text, int value)
   do
   {
     int quot = value / div;
-    if (quot != 0 || zeroIsSignificant)
+    if ((quot != 0) || zeroIsSignificant)
     {
       zeroIsSignificant = 1;
       *text++ = (char)quot + '0';
@@ -1004,7 +1004,7 @@ void ShowLabel(char *text, int b, int *indep)
   ptrText += strlen(ptrText);
   temp[0] = *indep;
   temp[1] = *(indep+1);
-  if (temp[1] != 0 || temp[0] != 0)
+  if ((temp[1] != 0) || (temp[0] != 0))
   {      // Independent term is not zero.
     *ptrText++ = ' ';
     if ((temp[1] & HALF_INT_RANGE) == 0)
@@ -1024,7 +1024,7 @@ void ShowLabel(char *text, int b, int *indep)
     }
     ptrText = appendInt64(ptrText, temp);
   }
-  if (b != 0 || temp[0] != 0 || temp[1] != 0)
+  if ((b != 0) || (temp[0] != 0) || (temp[1] != 0))
   {      // linear and independent terms are not zero.
     if (algebraicFactor(b, indep))
     {
@@ -1088,7 +1088,7 @@ void ShowLabel(char *text, int b, int *indep)
       temp[1] = *(indep+1);
       if ((temp[0] & 1) == 0)
       {           // Independent term is even
-        if ((b & 3) == 0 && (temp[0] & 3) == 0)
+        if (((b & 3) == 0) && ((temp[0] & 3) == 0))
         {         // Both linear and independent term are multiple of 4.
           (void)strcpy(ptrText, " = 4 (t<sup>2</sup>");
           b /= 4;
@@ -1198,11 +1198,11 @@ EXTERNALIZE char *getInformation(int x, int y)
     int xLogical = xCenter + ((xFraction + x - width / 2) >> thickness);
     yLogical = yCenter + 1 + ((yFraction - y + height / 2) >> thickness);
     getN(xLogical, yLogical, value);
-    if (xLogical > yLogical && xLogical > -yLogical)
+    if ((xLogical > yLogical) && (xLogical > -yLogical))
     {
       t = xLogical;
     }
-    else if (xLogical < yLogical && xLogical < -yLogical)
+    else if ((xLogical < yLogical) && (xLogical < -yLogical))
     {
       t = -xLogical;
     }
@@ -1328,7 +1328,7 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
     carry = nbr0 + 1;
     nbr0 = carry & MAX_INT_NBR;
     nbr1 = (carry >> BITS_PER_GROUP) + nbr1;
-    if (nbr1 > 0 || nbr0 >= 1)
+    if ((nbr1 > 0) || (nbr0 >= 1))
     {       // nbr >= 1
       int diff;
       a = ((int)sqrt(((double)nbr1*LIMB_RANGE + nbr0-1))+1)/2;
@@ -1492,8 +1492,8 @@ void iteration(void)
   if (++timer == 6)
   {
     timer = 0;
-    if (oldXCenter != xCenter || oldYCenter != yCenter ||
-        oldXFraction != xFraction || oldYFraction != yFraction)
+    if ((oldXCenter != xCenter) || (oldYCenter != yCenter) ||
+        (oldXFraction != xFraction) || (oldYFraction != yFraction))
     {
       int xMin;
           // Move pixels of double buffer according to drag direction.

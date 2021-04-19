@@ -123,7 +123,7 @@ void GetMontgomeryParms(int len)
   TestNbr[len].x = 0;
   NumberLength = len;
   NumberLength2 = len + len;
-  if (NumberLength == 1 && ((TestNbr[0].x & 1) != 0))
+  if ((NumberLength == 1) && ((TestNbr[0].x & 1) != 0))
   {
     MontgomeryMultR1[0].x = 1;
     MontgomeryMultR2[0].x = 1;
@@ -307,7 +307,7 @@ void AddBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Sum, limb *mod, int nbrLen)
     Sum[i].x = (int)(borrow & MAX_VALUE_LIMB);
   }
 
-  if (carry < LIMB_RANGE && borrow < 0)
+  if ((carry < LIMB_RANGE) && (borrow < 0))
   {
     carry = 0;
     for (i = 0; i < nbrLen; i++)
@@ -395,7 +395,8 @@ static void MontgomeryMult2(limb *pNbr1, limb *pNbr2, limb *pProd)
       (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
     Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
-  if (Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP) || (Prod1 == TestNbr1 && Prod0 >= TestNbr0))
+  if ((Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP)) ||
+     ((Prod1 == TestNbr1) && (Prod0 >= TestNbr0)))
   {
     int32_t borrow;
     Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
@@ -430,9 +431,8 @@ static void MontgomeryMult3(limb *pNbr1, limb *pNbr2, limb *pProd)
       (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + (uint32_t)Prod2) & MAX_INT_NBR;
     Prod2 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
-  if (Pr >= ((uint64_t)(TestNbr2 + 1) << BITS_PER_GROUP)
-    || (Prod2 == TestNbr2
-      && (Prod1 > TestNbr1 || (Prod1 == TestNbr1 && (Prod0 >= TestNbr0)))))
+  if ((Pr >= ((uint64_t)(TestNbr2 + 1) << BITS_PER_GROUP))
+    || ((Prod2 == TestNbr2) && ((Prod1 > TestNbr1) || ((Prod1 == TestNbr1) && (Prod0 >= TestNbr0)))))
   {
     int32_t borrow;
     Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
@@ -1226,7 +1226,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
         break;
       }
     }
-    if (j<0 || (unsigned int)Prod[j].x >= (unsigned int)TestNbr[j].x)
+    if ((j<0) || ((unsigned int)Prod[j].x >= (unsigned int)TestNbr[j].x))
     {        // Prod >= TestNbr, so perform Prod <- Prod - TestNbr
       carry.x = 0;
       for (count = 0; count < NumberLength; count++)
@@ -1276,7 +1276,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
       }
     }
   }
-  if (cy >= LIMB_RANGE || (product + count)->x >= TestNbr[count].x)
+  if ((cy >= LIMB_RANGE) || ((product + count)->x >= TestNbr[count].x))
   {  // The number is greater or equal than Testnbr. Subtract it.
     int borrow = 0;
     for (count = 0; count < NumberLength; count++)
@@ -1671,7 +1671,7 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
   lowU = U[0].x;
   lowV = V[0].x;
   // Initialize highU and highV.
-  if (lenU > 1 || lenV > 1)
+  if ((lenU > 1) || (lenV > 1))
   {
     double highU;
     double highV;
@@ -1763,7 +1763,7 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
           (void)memcpy(V, Vbak, (len+1) * sizeof(limb));
           b = c = 0;  // U' = U, V' = V.
           a = d = 1;
-          while (lenV > 1 || V[0].x > 0)
+          while ((lenV > 1) || (V[0].x > 0))
           {
             //  3.   if U even then U <- U / 2, S <- 2S
             if ((U[0].x & 1) == 0)
@@ -1826,7 +1826,7 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
               break;
             }
           }
-          if (lenV == 1 && V[0].x == 0)
+          if ((lenV == 1) && (V[0].x == 0))
           {
             break;
           }
@@ -1839,7 +1839,7 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
             U[i].x = ((U[i].x >> (BITS_PER_GROUP - 1)) | (U[i + 1].x << 1)) & MAX_VALUE_LIMB;
           }
           U[lenU].x = 0;
-          while (lenU > 0 && U[lenU - 1].x == 0)
+          while ((lenU > 0) && (U[lenU - 1].x == 0))
           {
             lenU--;
           }
@@ -1848,14 +1848,14 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
             V[i].x = ((V[i].x >> (BITS_PER_GROUP - 1)) | (V[i + 1].x << 1)) & MAX_VALUE_LIMB;
           }
           V[lenV].x = 0;
-          while (lenV > 0 && V[lenV - 1].x == 0)
+          while ((lenV > 0) && (V[lenV - 1].x == 0))
           {
             lenV--;
           }
         }
         steps = 0;
         AddMult(R, a, b, S, c, d, lenRS);
-        if (R[lenRS].x != 0 || S[lenRS].x != 0)
+        if ((R[lenRS].x != 0) || (S[lenRS].x != 0))
         {
           lenRS++;
         }
@@ -1863,7 +1863,7 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
         lowV = V[0].x;
         b = c = 0;  // U' = U, V' = V.
         a = d = 1;
-        if (lenU == 0 || lenV == 0 || (lenV == 1 && lenU == 1))
+        if ((lenU == 0) || (lenV == 0) || ((lenV == 1) && (lenU == 1)))
         {
           break;
         }
@@ -2145,7 +2145,7 @@ void BigIntGeneralModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *
 enum eExprErr BigIntGeneralModularPower(BigInteger *base, BigInteger *exponent, BigInteger *mod, BigInteger *power)
 {
   int shRight;
-  if (mod->nbrLimbs == 1 && mod->limbs[0].x == 0)
+  if ((mod->nbrLimbs == 1) && (mod->limbs[0].x == 0))
   {            // Modulus is zero.
     return BigIntPower(base, exponent, power);
   }
