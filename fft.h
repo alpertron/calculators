@@ -37,7 +37,7 @@ struct sCosSin
 #define HALF_CIRCLE    (1 << (POWERS_2 - 1))
 #define CIRCLE_MASK    ((1 << POWERS_2) - 1)
 
-extern const struct sCosSin cossinPowerOneHalf[];
+extern const struct sCosSin cossinPowerOneHalf[15];
 
 #endif
 

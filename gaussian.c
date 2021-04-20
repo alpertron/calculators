@@ -86,13 +86,13 @@ void GaussianFactorization(void)
 #ifdef __EMSCRIPTEN__
   originalTenthSecond = tenths();
 #endif
-  if (tofactor.nbrLimbs == 1 && tofactor.limbs[0].x == 0)
+  if (BigIntIsZero(&tofactor))
   {                // Norm is zero.
     showText("<ul><li>Any gaussian prime divides this number</li></ul>");
     return;
   }
   showText("<ul>");
-  if (tofactor.nbrLimbs > 1 || tofactor.limbs[0].x > 1)
+  if ((tofactor.nbrLimbs > 1) || (tofactor.limbs[0].x > 1))
   {           // norm greater than 1. Factor norm.
     int index;
     int index2;
@@ -117,7 +117,7 @@ void GaussianFactorization(void)
       int *ptrPrime = pstFactor->ptrFactor;
       NumberLength = *ptrPrime;
       IntArray2BigInteger(ptrPrime, &prime);
-      if (prime.nbrLimbs == 1 && prime.limbs[0].x == 2)
+      if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
       {             // Prime factor is 2.
         for (index2 = 0; index2 < pstFactor->multiplicity; index2++)
         {
@@ -160,7 +160,7 @@ void GaussianFactorization(void)
           BigIntMultiply(&mult2, &mult2, &Tmp);
           BigIntAdd(&tofactor, &Tmp, &Tmp);
           BigIntDivide(&Tmp, &prime, &tofactor);
-          if (tofactor.nbrLimbs == 1 && tofactor.limbs[0].x == 1)
+          if ((tofactor.nbrLimbs == 1) && (tofactor.limbs[0].x == 1))
           {        // norm equals 1.
             break;
           }
@@ -222,7 +222,7 @@ void GaussianFactorization(void)
     }
   }
   // Process units: 1, -1, i, -i.
-  if (ReValue.nbrLimbs == 1 && ReValue.limbs[0].x == 1)
+  if ((ReValue.nbrLimbs == 1) && (ReValue.limbs[0].x == 1))
   {
     if (ReValue.sign == SIGN_POSITIVE)
     {             // Value is 1.
@@ -265,10 +265,10 @@ static void DivideGaussian(BigInteger *real, BigInteger *imag)
   BigIntMultiply(&ReValue, imag, &Tmp);
   BigIntSubt(&imagNum, &Tmp, &imagNum);
   BigIntRemainder(&realNum, &norm, &Tmp);
-  if (Tmp.nbrLimbs == 1 && Tmp.limbs[0].x == 0)
+  if (BigIntIsZero(&Tmp))
   {
     BigIntRemainder(&imagNum, &norm, &Tmp);
-    if (Tmp.nbrLimbs == 1 && Tmp.limbs[0].x == 0)
+    if (BigIntIsZero(&Tmp))
     {
       BigIntDivide(&realNum, &norm, &ReValue);
       BigIntDivide(&imagNum, &norm, &ImValue);

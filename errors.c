@@ -18,85 +18,88 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include "bignbr.h"
 #include "expression.h"
 
 int expressionNbr;
 void textError(char *ptrOutput, enum eExprErr rc)
 {
+  char* ptrOut = ptrOutput;
   switch (rc)
   {
   case EXPR_NUMBER_TOO_LOW:
-    (void)strcpy(ptrOutput, lang ? "Número muy pequeño" : "Number too low");
+    (void)strcpy(ptrOut, lang ? "Número muy pequeño" : "Number too low");
     break;
   case EXPR_NUMBER_TOO_HIGH:
-    (void)strcpy(ptrOutput, lang ? "Número muy grande (más de 10000 dígitos)" :
+    (void)strcpy(ptrOut, lang ? "Número muy grande (más de 10000 dígitos)" :
       "Number too high (more than 10000 digits)");
     break;
   case EXPR_INTERM_TOO_HIGH:
-    (void)strcpy(ptrOutput, lang ? "Número intermedio muy grande (más de 20000 dígitos" :
+    (void)strcpy(ptrOut, lang ? "Número intermedio muy grande (más de 20000 dígitos" :
       "Intermediate number too high (more than 20000 digits)");
     break;
   case EXPR_DIVIDE_BY_ZERO:
-    (void)strcpy(ptrOutput, lang ? "División por cero" : "Division by zero");
+    (void)strcpy(ptrOut, lang ? "División por cero" : "Division by zero");
     break;
   case EXPR_PAREN_MISMATCH:
-    (void)strcpy(ptrOutput, lang ? "Error de paréntesis" : "Parenthesis mismatch");
+    (void)strcpy(ptrOut, lang ? "Error de paréntesis" : "Parenthesis mismatch");
     break;
   case EXPR_SYNTAX_ERROR:
     if (lang)
     {
-      (void)strcpy(ptrOutput, "Error de sintaxis");
+      (void)strcpy(ptrOut, "Error de sintaxis");
       if (expressionNbr > 0)
       {
-        ptrOutput += strlen(ptrOutput);
-        (void)strcpy(ptrOutput, " en la expresión ");
-        ptrOutput += strlen(ptrOutput);
-        *ptrOutput++ = (char)(expressionNbr + '0');
-        *ptrOutput++ = 0;
+        ptrOut += strlen(ptrOut);
+        (void)strcpy(ptrOut, " en la expresión ");
+        ptrOut += strlen(ptrOut);
+        *ptrOut = (char)(expressionNbr + '0');
+        ptrOut++;
+        *ptrOut = 0;
       }
     }
     else
     {
-      (void)strcpy(ptrOutput, "Syntax error");
+      (void)strcpy(ptrOut, "Syntax error");
       if (expressionNbr > 0)
       {
-        ptrOutput += strlen(ptrOutput);
-        (void)strcpy(ptrOutput, " in expression #");
-        ptrOutput += strlen(ptrOutput);
-        *ptrOutput++ = (char)(expressionNbr + '0');
-        *ptrOutput++ = 0;
+        ptrOut += strlen(ptrOut);
+        (void)strcpy(ptrOut, " in expression #");
+        ptrOut += strlen(ptrOut);
+        *ptrOut = (char)(expressionNbr + '0');
+        ptrOut++;
+        *ptrOut = 0;
       }
     }
     break;
   case EXPR_TOO_MANY_PAREN:
-    (void)strcpy(ptrOutput, lang ? "Demasiados paréntesis" : "Too many parenthesis");
+    (void)strcpy(ptrOut, lang ? "Demasiados paréntesis" : "Too many parenthesis");
     break;
   case EXPR_INVALID_PARAM:
-    (void)strcpy(ptrOutput, lang ? "Parámetro inválido" : "Invalid parameter");
+    (void)strcpy(ptrOut, lang ? "Parámetro inválido" : "Invalid parameter");
     break;
   case EXPR_ARGUMENTS_NOT_RELATIVELY_PRIME:
-    (void)strcpy(ptrOutput, lang ? "MCD de los argumentos no es 1" : "GCD of arguments is not 1");
+    (void)strcpy(ptrOut, lang ? "MCD de los argumentos no es 1" : "GCD of arguments is not 1");
     break;
   case EXPR_BREAK:
-    (void)strcpy(ptrOutput, lang ? "Detenido por el usuario" : "Stopped by user");
+    (void)strcpy(ptrOut, lang ? "Detenido por el usuario" : "Stopped by user");
     break;
   case EXPR_VAR_OR_COUNTER_REQUIRED:
     if (lang)
     {
-      (void)strcpy(ptrOutput, "La expresión ");
-      ptrOutput += strlen(ptrOutput);
-      *ptrOutput++ = (char)(expressionNbr + '0');
-      (void)strcpy(ptrOutput, " debe incluir la variable <var>x</var> y/o el contador <var>c</var>");
+      (void)strcpy(ptrOut, "La expresión ");
+      ptrOut += strlen(ptrOut);
+      *ptrOut = (char)(expressionNbr + '0');
+      ptrOut++;
+      (void)strcpy(ptrOut, " debe incluir la variable <var>x</var> y/o el contador <var>c</var>");
     }
     else
     {
-      (void)strcpy(ptrOutput, "Expression #");
-      ptrOutput += strlen(ptrOutput);
-      *ptrOutput++ = (char)(expressionNbr + '0');
-      (void)strcpy(ptrOutput, " must include the variable <var>x</var> and/or the counter <var>c</var>");
+      (void)strcpy(ptrOut, "Expression #");
+      ptrOut += strlen(ptrOut);
+      *ptrOut = (char)(expressionNbr + '0');
+      ptrOut++;
+      (void)strcpy(ptrOut, " must include the variable <var>x</var> and/or the counter <var>c</var>");
     }
     break;
   default:

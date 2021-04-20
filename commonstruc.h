@@ -70,7 +70,7 @@ struct stSiqs
   unsigned int newSeed;
   int NbrPolynomials;
   int SieveLimit;
-  int matrixPartial[MAX_PRIMES * 8][MAX_LIMBS_SIQS/2 + 4];
+  int matrixPartial[MAX_PRIMES * 8][(MAX_LIMBS_SIQS/2) + 4];
   int vectLeftHandSide[MAX_PRIMES+50][MAX_LIMBS_SIQS + 4];
   int matrixPartialHashIndex[2048];
   int matrixB[MAX_PRIMES + 50][MAX_FACTORS_RELATION];

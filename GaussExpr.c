@@ -720,8 +720,8 @@ static int ComputeSubExpr(void)
       CopyBigInt(&stackImagValues[stackIndex], &Result[1]);
       return 0;
     case '*':
-      if ((Re1.nbrLimbs + Im1.nbrLimbs > 4430) || (Re1.nbrLimbs + Im2.nbrLimbs > 4430) ||
-          (Re2.nbrLimbs + Im1.nbrLimbs > 4430) || (Re2.nbrLimbs + Im2.nbrLimbs > 4430))
+      if (((Re1.nbrLimbs + Im1.nbrLimbs) > 4430) || ((Re1.nbrLimbs + Im2.nbrLimbs) > 4430) ||
+          ((Re2.nbrLimbs + Im1.nbrLimbs) > 4430) || ((Re2.nbrLimbs + Im2.nbrLimbs) > 4430))
       {           // Result with more than 20000 digits.
         return EXPR_INTERM_TOO_HIGH;
       }

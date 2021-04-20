@@ -472,7 +472,7 @@ void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int roo
     else
     {
       showRational(SqrPart);
-      showText(root == 2 ? "^(1/2)" : "^(1/4)");
+      showText((root == 2)? "^(1/2)" : "^(1/4)");
     }
   }
   else

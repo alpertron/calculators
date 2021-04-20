@@ -374,7 +374,7 @@ void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
   power2plus1 = power2 + 1;
   if (factor1 != factor2)
   {
-    if (polyInvCached == NBR_CACHED && factor2 == polyInv)
+    if ((polyInvCached == NBR_CACHED) && (factor2 == polyInv))
     {   // Get transform of inverse of polynomial from cache.
       (void)memcpy(transf, polyInvTransf, power2plus1 * sizeof(transf[0]));
     }
@@ -384,7 +384,7 @@ void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
       complexPolyFFT(secondFactor, tempFFT, power2);
       ConvertHalfToFullSizeFFT(tempFFT, transf, power2);  // transf <- DFT(secondFactor)
     }
-    if (polyInvCached == NBR_READY_TO_BE_CACHED && factor2 == polyInv)
+    if ((polyInvCached == NBR_READY_TO_BE_CACHED) && (factor2 == polyInv))
     {   // Save transform of inverse of polynomial to cache.
       (void)memcpy(polyInvTransf, transf, power2plus1 * sizeof(transf[0]));
       polyInvCached = NBR_CACHED;
@@ -408,7 +408,7 @@ void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
 
     // If first factor is equal to second factor and this is the first loop,
     // use transform of second factor as the transform of first factor.
-    if (factor1DegreesProcessed == 0 && factor1 == factor2)
+    if ((factor1DegreesProcessed == 0) && (factor1 == factor2))
     {
       (void)memcpy(transf, product, power2plus1 * sizeof(product[0]));   // transf <- DFT(secondFactor)
     }

@@ -682,7 +682,7 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
             *ptrOutput++ = ' ';
             showText(ptrTimes);
             *ptrOutput++ = ' ';
-            showRatConstants(pretty == TEX? "r - s" :
+            showRatConstants((pretty == TEX)? "r - s" :
               "<var>r</var> &minus; <var>s</var>", "2");
             showText(ptrTimes);
             startSqrt();

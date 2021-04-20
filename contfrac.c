@@ -111,7 +111,7 @@ static void ContFrac(void)
   ptrOutput += strlen(ptrOutput);
   showText("</span></span></span></p>");
   // Validate input.
-  if (den.nbrLimbs==1 && den.limbs[0].x==0)
+  if (BigIntIsZero(&den))
   {
     showText(lang? "<p>Error: El denominador es cero.</p>": "<p>Error: The denominator is zero.</p>");
     return;
@@ -134,7 +134,7 @@ static void ContFrac(void)
   intToBigInteger(&U2, 0);
   intToBigInteger(&V1, 0);
   intToBigInteger(&V2, 1);
-  if (delta.nbrLimbs == 1 && delta.limbs[0].x == 0)
+  if (BigIntIsZero(&delta))
   {   /* Rational number */
     ShowRational(&num, &den);
     return;
@@ -142,7 +142,7 @@ static void ContFrac(void)
   (void)BigIntMultiply(&num, &num, &Temp);
   BigIntSubt(&delta, &Temp, &Temp);  // Temp <- delta - num^2.
   (void)BigIntRemainder(&Temp, &den, &Temp);
-  if (Temp.nbrLimbs != 1 || Temp.limbs[0].x != 0)
+  if (!BigIntIsZero(&Temp))
   {            // If delta - num^2 is not multiple of den...
     int sign;
     (void)BigIntMultiply(&delta, &den, &delta);
@@ -333,7 +333,7 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
     CopyBigInt(pDen, pNum);
     CopyBigInt(pNum, &Tmp);
   }
-  if (!hexadecimal && sep[0] == ',')
+  if (!hexadecimal && (sep[0] == ','))
   {         // Inside continued fraction. Close it.
     showText("//");
   }

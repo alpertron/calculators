@@ -18,6 +18,7 @@
     */
 #ifndef _BIGNBR_H
 #define _BIGNBR_H
+#include <stdint.h>
 #ifdef FACTORIZATION_APP
 #define MAX_LEN 25000        // 200000 digits
 #else
@@ -79,7 +80,7 @@ extern int percentageBPSW;
 #endif
 
 #include "expression.h"
-#include <stdint.h>
+
 void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen);
 void squareRoot(limb *argument, limb *sqRoot, int len, int *pLenSqRoot);
 void Dec2Bin(char *decimal, limb *binary, int digits, int *bitGroups);

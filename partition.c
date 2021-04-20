@@ -260,7 +260,7 @@ static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulat
   prod.limbs[0].x = (int)(factorAccum - (double)LIMB_RANGE * (double)prod.limbs[1].x);
   prod.nbrLimbs = (prod.limbs[1].x == 0 ? 1 : 2);
   prod.sign = SIGN_POSITIVE;
-  if ((nbrGroupsAccumulated & 1) == 0 || result != NULL)
+  if (((nbrGroupsAccumulated & 1) == 0) || (result != NULL))
   {     // Even means that k multiplications have to be done, where k is the number of 
         // bits set to zero at the right.
     index = numberofBitsSetToOne(nbrGroupsAccumulated - 1);
@@ -325,7 +325,7 @@ void primorial(BigInteger *result, int argument)
   {
     for (j = 2; j*j <= ctr; j++)
     {
-      if (ctr / j * j == ctr)
+      if ((ctr / j) * j == ctr)
       {   // Number is not prime.
         break;
       }

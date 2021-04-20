@@ -312,7 +312,7 @@ static void addApprox(struct approx *addend1, struct approx *addend2, struct app
   {
     mantissa1 += mantissa2;
   }
-  else if (nbrLimbs1 == nbrLimbs2 + 1)
+  else if (nbrLimbs1 == (nbrLimbs2 + 1))
   {
     mantissa1 += mantissa2 / (double)LIMB_RANGE;
   }
