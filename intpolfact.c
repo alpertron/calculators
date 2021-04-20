@@ -18,7 +18,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include "bignbr.h"
 #include "linkedbignbr.h"
@@ -725,8 +724,9 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
   {
     int* ptrMod32768;
 #if DEBUG_VANHOEIJ
-    (void)sprintf(ptrDebugOutput, "stepNbr = %d\n", stepNbr);
+    (void)strcpy(ptrDebugOutput, "stepNbr = ");
     ptrDebugOutput += strlen(ptrDebugOutput);
+    int2dec(&ptrDebugOutput, stepNbr);
 #endif
     NumberLength = powerMod.nbrLimbs;
     for (nbrVector = 0; nbrVector < nbrVectors; nbrVector++)
@@ -1138,8 +1138,11 @@ static void vanHoeij(int prime, int nbrFactors)
   a0 = b + exponDifference;
   exponentMod = a0;
 #if DEBUG_VANHOEIJ
-  (void)sprintf(ptrDebugOutput, LF "====================================================="
-    LF "prime = %d, root bound = ", prime);
+  (void)strcpy(ptrDebugOutput, LF "====================================================="
+    LF "prime = ");
+  ptrDebugOutput += strlen(ptrDebugOutput);
+  int2dec(&ptrDebugOutput, prime);
+  (void)strcpy(ptrDebugOutput, "root bound = ");
   ptrDebugOutput += strlen(ptrDebugOutput);
   BigInteger2Dec(&bound, ptrDebugOutput, 0);
   ptrDebugOutput += strlen(ptrDebugOutput);
@@ -1295,8 +1298,20 @@ static void vanHoeij(int prime, int nbrFactors)
     intToBigInteger(&operand1, prime);
     BigIntPowerIntExp(&operand1, b, &powerBoundA);
 #if DEBUG_VANHOEIJ
-    (void)sprintf(ptrDebugOutput, LF "====================================================="
-      LF "prime = %d, a0 = %d, b0 = %d, exponDifference = %d" LF, prime, a0, b, exponDifference);
+    (void)strcpy(ptrDebugOutput, LF "====================================================="
+      LF "prime = ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    int2dec(&ptrDebugOutput, prime);
+    (void)strcpy(ptrDebugOutput, ", a0 = ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    int2dec(&ptrDebugOutput, a0);
+    (void)strcpy(ptrDebugOutput, ", b0 = ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    int2dec(&ptrDebugOutput, b);
+    (void)strcpy(ptrDebugOutput, ", exponDifference = ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    int2dec(&ptrDebugOutput, exponDifference);
+    (void)strcpy(ptrDebugOutput, LF);
     ptrDebugOutput += strlen(ptrDebugOutput);
 #endif
     intToBigInteger(&operand5, 1);
@@ -1589,15 +1604,16 @@ static void vanHoeij(int prime, int nbrFactors)
       }
     }
 #if DEBUG_VANHOEIJ
-    (void)sprintf(ptrDebugOutput, LF "squareFormula = %d", squareFormula);
+    (void)strcpy(ptrDebugOutput, LF "squareFormula = ");
     ptrDebugOutput += strlen(ptrDebugOutput);
+    int2dec(&ptrDebugOutput, squareFormula);
 #endif
 
     // Step 6: If r' = 1, return "irreducible".
     if (r1 == 1)
     {                 // Polynomial is irreducible.
 #if DEBUG_VANHOEIJ
-      (void)sprintf(ptrDebugOutput, LF "r' = 1 -> irreducible." LF);
+      (void)strcpy(ptrDebugOutput, LF "r' = 1 -> irreducible." LF);
 #ifdef __EMSCRIPTEN__
       output[0] = '1';
       (void)strcpy(&output[1], debugOutput);
@@ -1679,7 +1695,13 @@ static void vanHoeij(int prime, int nbrFactors)
     // by r and r by r'
     rank = gauss(nbrFactors, r1);  // Dimension of matrix BL.
 #if DEBUG_VANHOEIJ
-    (void)sprintf(ptrDebugOutput, LF "squareFormula = %d, rank = %d" LF, squareFormula, rank);
+    (void)strcpy(ptrDebugOutput, LF "squareFormula = ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    int2dec(&ptrDebugOutput, squareFormula);
+    (void)strcpy(ptrDebugOutput, ", rank = ");
+    ptrDebugOutput += strlen(ptrDebugOutput);
+    int2dec(&ptrDebugOutput, rank);
+    (void)strcpy(ptrDebugOutput, LF);
     ptrDebugOutput += strlen(ptrDebugOutput);
 #endif
     nbrRequiredTraces++;
@@ -1736,7 +1758,13 @@ static void vanHoeij(int prime, int nbrFactors)
     if (nbrCol < nbrFactors)
     {                   // Invalid matrix. Try again with bigger matrix.
 #if DEBUG_VANHOEIJ
-      (void)sprintf(ptrDebugOutput, "nbrCol = %d, nbrFactors = %d. They should have been equal." LF, nbrCol, nbrFactors);
+      (void)strcpy(ptrDebugOutput, "nbrCol = ");
+      ptrDebugOutput += strlen(ptrDebugOutput);
+      int2dec(&ptrDebugOutput, nbrCol);
+      (void)strcpy(ptrDebugOutput, ", nbrFactors = ");
+      ptrDebugOutput += strlen(ptrDebugOutput);
+      int2dec(&ptrDebugOutput, nbrFactors);
+      (void)strcpy(ptrDebugOutput, "They should have been equal." LF);
       ptrDebugOutput += strlen(ptrDebugOutput);
 #endif
       continue;
@@ -1764,7 +1792,7 @@ static void vanHoeij(int prime, int nbrFactors)
     if (AttemptToFactor(nbrVectors, nbrFactors, &newNbrFactors))
     {
 #if DEBUG_VANHOEIJ
-      (void)sprintf(ptrDebugOutput, "nbrVector == nbrVectors" LF);
+      (void)strcpy(ptrDebugOutput, "nbrVector == nbrVectors" LF);
 #ifdef __EMSCRIPTEN__
       output[0] = '1';
       (void)strcpy(&output[1], debugOutput);

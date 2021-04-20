@@ -21,7 +21,6 @@
 
 #include <string.h>
 #include "bignbr.h"
-#include <stdio.h>
 #include <math.h>
 #include <stdint.h>
 

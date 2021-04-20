@@ -18,7 +18,6 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include "bignbr.h"
 #include "highlevel.h"

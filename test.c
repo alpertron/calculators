@@ -1,5 +1,5 @@
-#include <stdbool.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include "bignbr.h"
@@ -214,7 +214,8 @@ int main(int argc, char *argv[])
   lang = false;
   hexadecimal = false;
   char text[40000];
-  (void)sprintf(text, "%s\n", argv[1]);
+  (void)strcpy(text, argv[1]);
+  (void)strcpy(text + strlen(text), "\n");
   ecmFrontText(text, true, NULL);
   printf("%s\n", output);
   return 0;
