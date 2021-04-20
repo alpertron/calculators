@@ -24,7 +24,7 @@ along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 
 struct linkedBigInt astLinkedBigInt[NBR_LINKED_NODES];
 struct linkedBigInt* pstFirstFree;
-int initLinkedBigIntDone;
+bool initLinkedBigIntDone = false;
 
 void initLinkedBigInt(void)
 {
@@ -34,9 +34,9 @@ void initLinkedBigInt(void)
   {            // Linked list already init. Go out.
     return;
   }
-  initLinkedBigIntDone = 1;
+  initLinkedBigIntDone = true;
   pstFirstFree = &astLinkedBigInt[0];
-  for (ctr = 0; ctr < NBR_LINKED_NODES - 1; ctr++)
+  for (ctr = 0; ctr < (NBR_LINKED_NODES - 1); ctr++)
   {
     pstLinkedBigInt->pstNext = pstLinkedBigInt + 1;
     pstLinkedBigInt++;
@@ -46,32 +46,33 @@ void initLinkedBigInt(void)
 
 void getBigIntegerFromLinked(struct linkedBigInt* pstLinkedBigInt, BigInteger* pBigInt)
 {
+  struct linkedBigInt* pstCurrentBigInt;
   int* pLimb = (int *)&pBigInt->limbs[LIMBS_PER_LINKED_NODE-2];
   pBigInt->nbrLimbs = pstLinkedBigInt->node[0];
   pBigInt->sign = pstLinkedBigInt->node[1];
   (void)memcpy(pBigInt->limbs, &pstLinkedBigInt->node[2], (LIMBS_PER_LINKED_NODE - 2)*sizeof(int));
-  while (pstLinkedBigInt->pstNext != NULL)
+  pstCurrentBigInt = pstLinkedBigInt;
+  while (pstCurrentBigInt->pstNext != NULL)
   {
-    pstLinkedBigInt = pstLinkedBigInt->pstNext;
-    (void)memcpy(pLimb, &pstLinkedBigInt->node, LIMBS_PER_LINKED_NODE * sizeof(int));
+    pstCurrentBigInt = pstCurrentBigInt->pstNext;
+    (void)memcpy(pLimb, &pstCurrentBigInt->node, LIMBS_PER_LINKED_NODE * sizeof(int));
     pLimb += LIMBS_PER_LINKED_NODE;
   }
 }
 
 static void deleteLinkedBigInteger(struct linkedBigInt* pstLinkedBigInt)
 {
-  struct linkedBigInt* pstOldFirstFree;
-
   if (pstLinkedBigInt != NULL)
   {    // Send this linked big number to linked free area.
-    pstOldFirstFree = pstFirstFree;
+    struct linkedBigInt* pstOldFirstFree = pstFirstFree;
+    struct linkedBigInt* pstDeletedBigInt = pstLinkedBigInt;
     pstFirstFree = pstLinkedBigInt;
-    while (pstLinkedBigInt->pstNext != NULL)
+    while (pstDeletedBigInt->pstNext != NULL)
     {   // Loop to find last element of linked big number.
-      pstLinkedBigInt = pstLinkedBigInt->pstNext;
+      pstDeletedBigInt = pstDeletedBigInt->pstNext;
     }
     // Make the old linked big number to be the first part of linked free area.
-    pstLinkedBigInt->pstNext = pstOldFirstFree;
+    pstDeletedBigInt->pstNext = pstOldFirstFree;
   }
 }
 
@@ -98,7 +99,7 @@ void setLinkedBigInteger(struct linkedBigInt** ppstLinkedBigInt, BigInteger* pBi
 
 bool linkedBigIntIsZero(struct linkedBigInt* pstLinkedBigInt)
 {
-  if (pstLinkedBigInt->node[0] == 1 && pstLinkedBigInt->node[2] == 0)
+  if ((pstLinkedBigInt->node[0] == 1) && (pstLinkedBigInt->node[2] == 0))
   {
     return true;    // Number is zero.
   }
@@ -107,8 +108,8 @@ bool linkedBigIntIsZero(struct linkedBigInt* pstLinkedBigInt)
 
 bool linkedBigIntIsOne(struct linkedBigInt* pstLinkedBigInt)
 {
-  if (pstLinkedBigInt->node[0] == 1 && pstLinkedBigInt->node[2] == 1 &&
-    pstLinkedBigInt->node[1] == SIGN_POSITIVE)
+  if ((pstLinkedBigInt->node[0] == 1) && (pstLinkedBigInt->node[2] == 1) &&
+    (pstLinkedBigInt->node[1] == (int)SIGN_POSITIVE))
   {
     return true;    // Number is one.
   }
@@ -117,8 +118,8 @@ bool linkedBigIntIsOne(struct linkedBigInt* pstLinkedBigInt)
 
 bool linkedBigIntIsMinusOne(struct linkedBigInt* pstLinkedBigInt)
 {
-  if (pstLinkedBigInt->node[0] == 1 && pstLinkedBigInt->node[2] == 1 &&
-    pstLinkedBigInt->node[1] == SIGN_NEGATIVE)
+  if ((pstLinkedBigInt->node[0] == 1) && (pstLinkedBigInt->node[2] == 1) &&
+    (pstLinkedBigInt->node[1] == (int)SIGN_NEGATIVE))
   {
     return true;    // Number is minus one.
   }
@@ -127,11 +128,11 @@ bool linkedBigIntIsMinusOne(struct linkedBigInt* pstLinkedBigInt)
 
 void linkedBigIntChSign(struct linkedBigInt* pstLinkedBigInt)
 {
-  if (pstLinkedBigInt->node[0] == 1 && pstLinkedBigInt->node[2] == 0)
+  if ((pstLinkedBigInt->node[0] == 1) && (pstLinkedBigInt->node[2] == 0))
   {    // Value is zero. Do not change sign.
     return;
   }
-  if (pstLinkedBigInt->node[1] == SIGN_POSITIVE)
+  if (pstLinkedBigInt->node[1] == (int)SIGN_POSITIVE)
   {
     pstLinkedBigInt->node[1] = SIGN_NEGATIVE;
   }
