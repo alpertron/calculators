@@ -56,7 +56,7 @@ static void DistinctDegreeFactorization(int polyDegree)
   pstFactorInfo = factorInfo;
   for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
-    if (pstFactorInfo->degree < 2 || pstFactorInfo->expectedDegree != 0)
+    if ((pstFactorInfo->degree < 2) || (pstFactorInfo->expectedDegree != 0))
     {             // Polynomial is completely factored. Try next one.
       if (pstFactorInfo->expectedDegree == 0)
       {
@@ -221,12 +221,12 @@ void SameDegreeFactorization(void)
   int primeInt = (int)primeMod.limbs[0].x;
   int nbrLimbs = primeMod.nbrLimbs + 1;
   int polyNbr = 1;
-  int isCharacteristic2 = (primeMod.nbrLimbs == 1) && (primeMod.limbs[0].x == 2);
+  int isCharacteristic2 = ((primeMod.nbrLimbs == 1) && (primeMod.limbs[0].x == 2));
   for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
     int polyDegree = pstFactorInfo->degree;
-    if (polyDegree < 2 || polyDegree == pstFactorInfo->expectedDegree ||
-      pstFactorInfo->expectedDegree == 0)
+    if ((polyDegree < 2) || (polyDegree == pstFactorInfo->expectedDegree) ||
+      (pstFactorInfo->expectedDegree == 0))
     {             // Polynomial is completely factored. Try next one.
       pstFactorInfo++;
       continue;
@@ -570,7 +570,7 @@ static int FactorPolynomial(char *input, int expo)
 
 void polyFactText(char *modText, char *polyText, int groupLength)
 {
-  char *ptrOutput;
+  char *ptrOut;
   enum eExprErr rc;
   int expon = 0;
   rc = ComputeExpression(modText, 1, &powerMod);
@@ -607,29 +607,29 @@ void polyFactText(char *modText, char *polyText, int groupLength)
     rc = FactorPolynomial(polyText, expon);
   }
   output[0] = '2';
-  ptrOutput = &output[1];
+  ptrOut = &output[1];
   if (rc != EXPR_OK)
   {
-    textErrorPol(ptrOutput, rc);
-    ptrOutput += strlen(ptrOutput);
+    textErrorPol(ptrOut, rc);
+    ptrOut += strlen(ptrOut);
   }
   else
   {
-    (void)strcpy(ptrOutput, lang ? "<h2>Polinomio ingresado</h2>" : "<h2>Your polynomial</h2>");
-    ptrOutput += strlen(ptrOutput);
+    (void)strcpy(ptrOut, lang ? "<h2>Polinomio ingresado</h2>" : "<h2>Your polynomial</h2>");
+    ptrOut += strlen(ptrOut);
     if (onlyEvaluate)
     {
-      (void)strcpy(ptrOutput, "<p>");
+      (void)strcpy(ptrOut, "<p>");
     }
     else
     {
-      (void)strcpy(ptrOutput, "<p id=\"pol\">");
+      (void)strcpy(ptrOut, "<p id=\"pol\">");
     }
-    ptrOutput += strlen(ptrOutput);
-    outputOriginalPolynomial(ptrOutput, groupLength);
-    ptrOutput += strlen(ptrOutput);
-    (void)strcpy(ptrOutput, "</p>");
-    ptrOutput += strlen(ptrOutput);
+    ptrOut += strlen(ptrOut);
+    outputOriginalPolynomial(ptrOut, groupLength);
+    ptrOut += strlen(ptrOut);
+    (void)strcpy(ptrOut, "</p>");
+    ptrOut += strlen(ptrOut);
     if (onlyEvaluate == 0)
     {
       int nbrFactor;
@@ -643,12 +643,12 @@ void polyFactText(char *modText, char *polyText, int groupLength)
       {
         pstFactorInfo = factorInfo;
       }
-      (void)strcpy(ptrOutput, lang? "<h2>Factores irreducibles del polinomio</h2>": "<h2>Irreducible polynomial factors</h2>");
-      ptrOutput += strlen(ptrOutput);
-      if (nbrFactorsFound == 0 || (nbrFactorsFound == 1 && pstFactorInfo->multiplicity == 1))
+      (void)strcpy(ptrOut, lang? "<h2>Factores irreducibles del polinomio</h2>": "<h2>Irreducible polynomial factors</h2>");
+      ptrOut += strlen(ptrOut);
+      if ((nbrFactorsFound == 0) || ((nbrFactorsFound == 1) && (pstFactorInfo->multiplicity == 1)))
       {
-        (void)strcpy(ptrOutput, lang ? "<p>El polinomio es irreducible</p>" : "<p>The polynomial is irreducible</p>");
-        ptrOutput += strlen(ptrOutput);
+        (void)strcpy(ptrOut, lang ? "<p>El polinomio es irreducible</p>" : "<p>The polynomial is irreducible</p>");
+        ptrOut += strlen(ptrOut);
       }
       else
       {   // Get number of factors including multiplicity.
@@ -659,11 +659,11 @@ void polyFactText(char *modText, char *polyText, int groupLength)
           totalFactors += pstFactorInfo->multiplicity;
           pstFactorInfo++;
         }
-        (void)strcpy(ptrOutput, lang ? "Los " : "The ");
-        ptrOutput += strlen(ptrOutput);
-        int2dec(&ptrOutput, totalFactors);
-        (void)strcpy(ptrOutput, lang ? " factores son:</p>" : " factors are:</p>");
-        ptrOutput += strlen(ptrOutput);
+        (void)strcpy(ptrOut, lang ? "Los " : "The ");
+        ptrOut += strlen(ptrOut);
+        int2dec(&ptrOut, totalFactors);
+        (void)strcpy(ptrOut, lang ? " factores son:</p>" : " factors are:</p>");
+        ptrOut += strlen(ptrOut);
         if (modulusIsZero)
         {
           pstFactorInfo = factorInfoInteger;
@@ -673,92 +673,93 @@ void polyFactText(char *modText, char *polyText, int groupLength)
           pstFactorInfo = factorInfo;
         }
         // Output factors
-        *ptrOutput++ = '<';
-        *ptrOutput++ = 'u';
-        *ptrOutput++ = 'l';
-        *ptrOutput++ = '>';
+        *ptrOut++ = '<';
+        *ptrOut++ = 'u';
+        *ptrOut++ = 'l';
+        *ptrOut++ = '>';
         if (pretty == TEX)
         {
-          (void)strcpy(ptrOutput, "<li>\\begin{array}{l}</li>");
-          ptrOutput += strlen(ptrOutput);
+          (void)strcpy(ptrOut, "<li>\\begin{array}{l}</li>");
+          ptrOut += strlen(ptrOut);
         }
         if (!modulusIsZero)
         {
           IntArray2BigInteger(&poly4[degree * nbrLimbs], &operand5);
         }
-        if ((operand5.nbrLimbs != 1 || operand5.limbs[0].x != 1 || operand5.sign == SIGN_NEGATIVE) || nbrFactorsFound == 0)
+        if ((operand5.nbrLimbs != 1) || (operand5.limbs[0].x != 1) ||
+          (operand5.sign == SIGN_NEGATIVE) || (nbrFactorsFound == 0))
         {     // Leading coefficient is not 1 or degree is zero.
-          *ptrOutput++ = '<';
-          *ptrOutput++ = 'l';
-          *ptrOutput++ = 'i';
-          *ptrOutput++ = '>';
+          *ptrOut++ = '<';
+          *ptrOut++ = 'l';
+          *ptrOut++ = 'i';
+          *ptrOut++ = '>';
           if (operand5.sign == SIGN_NEGATIVE)
           {
-            (void)strcpy(ptrOutput, " &minus;");
-            ptrOutput += strlen(ptrOutput);
+            (void)strcpy(ptrOut, " &minus;");
+            ptrOut += strlen(ptrOut);
           }
-          Bin2Dec(operand5.limbs, ptrOutput, operand5.nbrLimbs, groupLength);
-          ptrOutput += strlen(ptrOutput);
-          *ptrOutput++ = '<';
-          *ptrOutput++ = '/';
-          *ptrOutput++ = 'l';
-          *ptrOutput++ = 'i';
-          *ptrOutput++ = '>';
+          Bin2Dec(operand5.limbs, ptrOut, operand5.nbrLimbs, groupLength);
+          ptrOut += strlen(ptrOut);
+          *ptrOut++ = '<';
+          *ptrOut++ = '/';
+          *ptrOut++ = 'l';
+          *ptrOut++ = 'i';
+          *ptrOut++ = '>';
         }
         for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
         {
-          *ptrOutput++ = '<';
-          *ptrOutput++ = 'l';
-          *ptrOutput++ = 'i';
-          *ptrOutput++ = '>';
+          *ptrOut++ = '<';
+          *ptrOut++ = 'l';
+          *ptrOut++ = 'i';
+          *ptrOut++ = '>';
           if (pretty == TEX)
           {
-            (void)strcpy(ptrOutput, "\\bullet\\,\\,");
-            ptrOutput += strlen(ptrOutput);
+            (void)strcpy(ptrOut, "\\bullet\\,\\,");
+            ptrOut += strlen(ptrOut);
           }
-          outputPolynomialFactor(ptrOutput, groupLength, pstFactorInfo);
-          ptrOutput += strlen(ptrOutput);
+          outputPolynomialFactor(ptrOut, groupLength, pstFactorInfo);
+          ptrOut += strlen(ptrOut);
           if (pretty == TEX)
           {
-            (void)strcpy(ptrOutput, "\\\\");
-            ptrOutput += strlen(ptrOutput);
+            (void)strcpy(ptrOut, "\\\\");
+            ptrOut += strlen(ptrOut);
           }
-          *ptrOutput++ = '<';
-          *ptrOutput++ = '/';
-          *ptrOutput++ = 'l';
-          *ptrOutput++ = 'i';
-          *ptrOutput++ = '>';
+          *ptrOut++ = '<';
+          *ptrOut++ = '/';
+          *ptrOut++ = 'l';
+          *ptrOut++ = 'i';
+          *ptrOut++ = '>';
           pstFactorInfo++;
         }
         if (pretty == TEX)
         {
-          (void)strcpy(ptrOutput, "<li>\\end{array}</li>");
-          ptrOutput += strlen(ptrOutput);
+          (void)strcpy(ptrOut, "<li>\\end{array}</li>");
+          ptrOut += strlen(ptrOut);
         }
-        *ptrOutput++ = '<';
-        *ptrOutput++ = '/';
-        *ptrOutput++ = 'u';
-        *ptrOutput++ = 'l';
-        *ptrOutput++ = '>';
+        *ptrOut++ = '<';
+        *ptrOut++ = '/';
+        *ptrOut++ = 'u';
+        *ptrOut++ = 'l';
+        *ptrOut++ = '>';
       }
       if (modulusIsZero)
       {
-        (void)strcpy(ptrOutput, lang ? "<h2>Raíces</h2>" : "<h2>Roots</h2>");
-        ptrOutput += strlen(ptrOutput);
+        (void)strcpy(ptrOut, lang ? "<h2>Raíces</h2>" : "<h2>Roots</h2>");
+        ptrOut += strlen(ptrOut);
         if (degree > 1)
         {
-          (void)strcpy(ptrOutput, lang ? "Las " : "The ");
-          ptrOutput += strlen(ptrOutput);
-          int2dec(&ptrOutput, degree);
-          (void)strcpy(ptrOutput, lang ? " raíces son:</p>" : " roots are:</p>");
-          ptrOutput += strlen(ptrOutput);
+          (void)strcpy(ptrOut, lang ? "Las " : "The ");
+          ptrOut += strlen(ptrOut);
+          int2dec(&ptrOut, degree);
+          (void)strcpy(ptrOut, lang ? " raíces son:</p>" : " roots are:</p>");
+          ptrOut += strlen(ptrOut);
         }
-        (void)strcpy(ptrOutput, "<ul>");
-        ptrOutput += strlen(ptrOutput);
+        (void)strcpy(ptrOut, "<ul>");
+        ptrOut += strlen(ptrOut);
         if (pretty == TEX)
         {
-          (void)strcpy(ptrOutput, "<li>\\begin{array}{l}</li>");
-          ptrOutput += strlen(ptrOutput);
+          (void)strcpy(ptrOut, "<li>\\begin{array}{l}</li>");
+          ptrOut += strlen(ptrOut);
         }
         indexRoot = 1;
         pstFactorInfo = factorInfoInteger;
@@ -766,26 +767,26 @@ void polyFactText(char *modText, char *polyText, int groupLength)
         {
           if (nbrFactorsFound == 1)
           {    // Do not show polynomial factor number.
-            getRootsPolynomial(-1, &ptrOutput, pstFactorInfo, groupLength);
+            getRootsPolynomial(-1, &ptrOut, pstFactorInfo, groupLength);
           }
           else
           {
-            getRootsPolynomial(nbrFactor, &ptrOutput, pstFactorInfo, groupLength);
+            getRootsPolynomial(nbrFactor, &ptrOut, pstFactorInfo, groupLength);
           }
           pstFactorInfo++;
         }
         if (pretty == TEX)
         {
-          (void)strcpy(ptrOutput, "<li>\\end{array}</li>");
-          ptrOutput += strlen(ptrOutput);
+          (void)strcpy(ptrOut, "<li>\\end{array}</li>");
+          ptrOut += strlen(ptrOut);
         }
       }
-      (void)strcpy(ptrOutput, "</ul>");
-      ptrOutput += strlen(ptrOutput);
+      (void)strcpy(ptrOut, "</ul>");
+      ptrOut += strlen(ptrOut);
       // Show time only when factoring, not when just evaluating polynomial.
-      showElapsedTime(&ptrOutput);
+      showElapsedTime(&ptrOut);
     }
   }
-  (void)strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+  (void)strcpy(ptrOut, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
                            "<p>" COPYRIGHT_ENGLISH "</p>");
 }

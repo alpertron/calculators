@@ -215,7 +215,7 @@ void DiscreteLogarithm(void)
       for (ctr = multiplicity; ctr > 0; ctr--)
       {
         BigIntRemainder(&bigNbrA, &groupOrder, &bigNbrB);
-        if (bigNbrB.nbrLimbs != 1 || bigNbrB.limbs[0].x != 0)
+        if (!BigIntIsZero(&bigNbrB))
         {    // Exit loop if integer division cannot be performed
           break;
         }
@@ -238,7 +238,7 @@ void DiscreteLogarithm(void)
       BigIntModularPower(&tmpBase, &bigNbrB, &bigNbrA);
       BigIntRemainder(&power, &tmp2, &bigNbrB);
       BigIntSubt(&bigNbrA, &bigNbrB, &bigNbrA);
-      if (bigNbrA.nbrLimbs == 1 && bigNbrA.limbs[0].x == 0)
+      if ((bigNbrA.nbrLimbs == 1) && (bigNbrA.limbs[0].x == 0))
       {
         intToBigInteger(&DiscreteLog, ctr);     // DiscreteLog <- exponent
         intToBigInteger(&DiscreteLogPeriod, 0); // DiscreteLogPeriod <- 0
@@ -392,7 +392,7 @@ void DiscreteLogarithm(void)
           BigIntDivide(&currentExp, &subGroupOrder, &currentExp);
           modPow(currPowerMontg, currentExp.limbs, currentExp.nbrLimbs, powerPHMontg);
           BigIntDivide(&baseExp, &subGroupOrder, &baseExp);
-          if (subGroupOrder.nbrLimbs == 1 && subGroupOrder.limbs[0].x < 20)
+          if ((subGroupOrder.nbrLimbs == 1) && (subGroupOrder.limbs[0].x < 20))
           {        // subGroupOrder less than 20.
             if (!ComputeDLogModSubGroupOrder(indexBase, indexExp, &Exponent, &subGroupOrder))
             {      // Cannot find logarithm, so go out.
@@ -454,8 +454,8 @@ void DiscreteLogarithm(void)
                 (void)memcpy(nbrTemp, nbrR2, NumberLength * sizeof(limb));
                 (void)memcpy(nbrR2, nbrROther, NumberLength * sizeof(limb));
                 (void)memcpy(nbrROther, nbrTemp, NumberLength * sizeof(limb));
-                if (addA2.x >= (int)(LIMB_RANGE / 2) || addB2.x >= (int)(LIMB_RANGE / 2) ||
-                    mult2.x >= (int)(LIMB_RANGE / 2))
+                if ((addA2.x >= (int)(LIMB_RANGE / 2)) || (addB2.x >= (int)(LIMB_RANGE / 2)) ||
+                    (mult2.x >= (int)(LIMB_RANGE / 2)))
                 {
                   // nbrA2 <- (nbrA2 * mult2 + addA2) % subGroupOrder
                   AdjustExponent(nbrA2, mult2, addA2, &subGroupOrder);
@@ -552,7 +552,7 @@ void DiscreteLogarithm(void)
             BigIntDivide(&powSubGroupOrderBak, &subGroupOrder, &tmpBase);
             CopyBigInt(&powSubGroupOrderBak, &tmpBase);
             ExponentsGOComputed[indexBase]--;
-            if (tmpBase.nbrLimbs == 1 && tmpBase.limbs[0].x == 1)
+            if ((tmpBase.nbrLimbs == 1) && (tmpBase.limbs[0].x == 1))
             {
               break;
             }
@@ -602,7 +602,7 @@ void DiscreteLogarithm(void)
         NumberLength = powSubGroupOrder.nbrLimbs;
         CompressLimbsBigInteger(tmp2.limbs, &tmpBase);
         modmult(tmp2.limbs, MontgomeryMultR2, tmp2.limbs);
-        if (NumberLength > 1 || TestNbr[0].x != 1)
+        if ((NumberLength > 1) || (TestNbr[0].x != 1))
         {           // If TestNbr != 1 ...
           ModInvBigNbr(tmp2.limbs, tmp2.limbs, TestNbr, NumberLength);
         }
@@ -620,7 +620,7 @@ void DiscreteLogarithm(void)
     multiplicity = astFactorsMod[index].multiplicity;
     IntArray2BigInteger(ptrPrime, &bigNbrB);
     expon = 1;
-    if (bigNbrB.nbrLimbs == 1 && bigNbrB.limbs[0].x == 2)
+    if ((bigNbrB.nbrLimbs == 1) && (bigNbrB.limbs[0].x == 2))
     {            // Prime factor is 2. Base and power are odd at this moment.
       int lsbBase = base.limbs[0].x;
       int lsbPower = power.limbs[0].x;
@@ -818,7 +818,7 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
   rc = ComputeExpression(baseText, 1, &base);
   if (rc == EXPR_OK)
   {
-    if (base.sign == SIGN_NEGATIVE || BigIntIsZero(&base))
+    if ((base.sign == SIGN_NEGATIVE) || BigIntIsZero(&base))
     {
       rc = EXPR_BASE_MUST_BE_POSITIVE;
     }
@@ -829,7 +829,7 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
   }
   if (rc == EXPR_OK)
   {
-    if (power.sign == SIGN_NEGATIVE || BigIntIsZero(&power))
+    if ((power.sign == SIGN_NEGATIVE) || BigIntIsZero(&power))
     {
       rc = EXPR_POWER_MUST_BE_POSITIVE;
     }
@@ -840,7 +840,7 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
   }
   if (rc == EXPR_OK)
   {
-    if (modulus.sign == SIGN_NEGATIVE || (modulus.nbrLimbs == 1 && modulus.limbs[0].x < 2))
+    if ((modulus.sign == SIGN_NEGATIVE) || ((modulus.nbrLimbs == 1) && (modulus.limbs[0].x < 2)))
     {
       rc = EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE;
     }
@@ -886,7 +886,7 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
       ptrOutput += strlen(ptrOutput);
       Bin2Dec(DiscreteLog.limbs, ptrOutput, DiscreteLog.nbrLimbs, groupLength);
       ptrOutput += strlen(ptrOutput);
-      if (DiscreteLogPeriod.nbrLimbs != 1 || DiscreteLogPeriod.limbs[0].x != 0)
+      if (!BigIntIsZero(&DiscreteLogPeriod))
       {   // Discrete log period is not zero.
         strcat(ptrOutput, " + ");
         ptrOutput += strlen(ptrOutput);

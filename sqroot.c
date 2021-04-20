@@ -159,8 +159,8 @@ void squareRoot(/*@in@*/limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*
       }
       sqRoot->x = (int)dArg;
       MultBigNbr(&sqRoot->x, &sqRoot->x, square, 1);
-      if (square[1] > (argument + 1)->x ||
-        (square[1] == (argument + 1)->x && square[0] > argument->x))
+      if ((square[1] > (argument + 1)->x) ||
+        ((square[1] == (argument + 1)->x) && (square[0] > argument->x)))
       {
         sqRoot->x--;
       }
