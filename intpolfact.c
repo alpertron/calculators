@@ -95,12 +95,12 @@ static int gauss(int nbrCols, int nbrRows)
   }
 
   l = 0;
-  for (k = 0; k < nbrCols && l < nbrRows; k++)
+  for (k = 0; (k < nbrCols) && (l < nbrRows); k++)
   {
     int pos = -1;
     /* Look for a pivot under the diagonal. */
     row = l;
-    while (row < nbrRows && linkedBigIntIsZero(lambda[row][k]))
+    while ((row < nbrRows) && (linkedBigIntIsZero(lambda[row][k])))
     {
       row++;
     }
@@ -109,11 +109,11 @@ static int gauss(int nbrCols, int nbrRows)
       /* No pivot found; try to find a unique 1 above */
     {
       row = 0;
-      while (row < l && linkedBigIntIsZero(lambda[row][k]))
+      while ((row < l) && linkedBigIntIsZero(lambda[row][k]))
       {
         row++;
       }
-      if (row == l || !linkedBigIntIsOne(lambda[row][k]))
+      if ((row == l) || !linkedBigIntIsOne(lambda[row][k]))
       {
         return -1;           // No pivot found, go out.
       }
@@ -129,7 +129,7 @@ static int gauss(int nbrCols, int nbrRows)
     }
 
     // We have found a non-zero element on the k-th column
-    for (; row < nbrRows && pos == -1; row++)
+    for (; (row < nbrRows) && (pos == -1); row++)
     {
       if (linkedBigIntIsMinusOne(lambda[row][k]))   // Value is -1.
       {   // invert all elements on i-th row
@@ -158,14 +158,14 @@ static int gauss(int nbrCols, int nbrRows)
       {
         // M[i] = M[i] - M[l]
         getBigIntegerFromLinked(lambda[row][k], &tmp1);
-        if (row != l && !BigIntIsZero(&tmp1))
+        if ((row != l) && !BigIntIsZero(&tmp1))
         {
           intToLinkedBigInt(&lambda[row][k], 0);
           for (col = k + 1; col < nbrCols; col++)
           {
             // *x = *x + (*y)*t1
             getBigIntegerFromLinked(lambda[l][col], &tmp5);
-            BigIntMultiply(&tmp5, &tmp1, &tmp0);
+            (void)BigIntMultiply(&tmp5, &tmp1, &tmp0);
             getBigIntegerFromLinked(lambda[row][col], &tmp5);
             BigIntSubt(&tmp5, &tmp0, &tmp5);
             setLinkedBigInteger(&lambda[row][col], &tmp5);
@@ -215,12 +215,12 @@ static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
       {           // U_j <- U_j + lambda_{k,j} * U_k
         getBigIntegerFromLinked(lambda[k][colJ], &tmp4);
         getBigIntegerFromLinked(detProdB[k], &tmp5);
-        BigIntMultiply(&tmp4, &tmp5, &tmp2);
+        (void)BigIntMultiply(&tmp4, &tmp5, &tmp2);
         BigIntSubt(&tmp1, &tmp2, &tmp1);
       }
       // U_j <- U_j / lambda_{j,j}
       getBigIntegerFromLinked(lambda[colJ][colJ], &tmp4);
-      BigIntDivide(&tmp1, &tmp4, &tmp5);
+      (void)BigIntDivide(&tmp1, &tmp4, &tmp5);
       setLinkedBigInteger(&detProdB[colJ], &tmp5);
     }
     for (colJ = colI; colJ < nbrCols; colJ++)
@@ -233,12 +233,12 @@ static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
         {
           getBigIntegerFromLinked(basisStar[row][colJ], &tmp4);
           getBigIntegerFromLinked(basisStar[row][k], &tmp5);
-          BigIntMultiply(&tmp4, &tmp5, &tmp3);
+          (void)BigIntMultiply(&tmp4, &tmp5, &tmp3);
           BigIntAdd(&tmp2, &tmp3, &tmp2);
         }
         // lambda_{j,i} <- lambda_{j,i} + tmp2 * U_k
         getBigIntegerFromLinked(detProdB[k], &tmp5);
-        BigIntMultiply(&tmp2, &tmp5, &tmp2);
+        (void)BigIntMultiply(&tmp2, &tmp5, &tmp2);
         BigIntAdd(&tmp1, &tmp2, &tmp1);
       }
       setLinkedBigInteger(&lambda[colJ][colI], &tmp1);
@@ -275,25 +275,25 @@ static void PerformREDI(int k, int l, int size)
     BigIntSubt(&tmp0, &tmp5, &tmp0);  // tmp0 <- 2 lambda_{k, l} - d_l
   }
   multint(&tmp1, &tmp5, 2);           // tmp1 <- 2 d_l
-  BigIntDivide(&tmp0, &tmp1, &tmp2); // tmp2 <- q.
+  (void)BigIntDivide(&tmp0, &tmp1, &tmp2); // tmp2 <- q.
   for (row = 0; row < size; row++)
   {  // Loop that computes b_k <- b_k - q*b_l
     getBigIntegerFromLinked(basis[row][l], &tmp5);
-    BigIntMultiply(&tmp2, &tmp5, &tmp0);  // tmp0 <- q*b_l
+    (void)BigIntMultiply(&tmp2, &tmp5, &tmp0);  // tmp0 <- q*b_l
     getBigIntegerFromLinked(basis[row][k], &tmp5);
     BigIntSubt(&tmp5, &tmp0, &tmp5);
     setLinkedBigInteger(&basis[row][k], &tmp5);
   }
     // lambda_{k, l} <- lambda_{k, l} - q*d_l
   getBigIntegerFromLinked(detProdB[l], &tmp5);
-  BigIntMultiply(&tmp2, &tmp5, &tmp0);               // tmp0 <- q*d_l
+  (void)BigIntMultiply(&tmp2, &tmp5, &tmp0);    // tmp0 <- q*d_l
   getBigIntegerFromLinked(lambda[k][l], &tmp5);
   BigIntSubt(&tmp5, &tmp0, &tmp5);
   setLinkedBigInteger(&lambda[k][l], &tmp5);
   for (i = 0; i < l; i++)
   { // lambda_{k, i} <- lambda_{k, i} - q*lambda_{l, i}
     getBigIntegerFromLinked(lambda[l][i], &tmp5);
-    BigIntMultiply(&tmp2, &tmp5, &tmp0);   // tmp0 <- q*lambda_{l, i}
+    (void)BigIntMultiply(&tmp2, &tmp5, &tmp0);   // tmp0 <- q*lambda_{l, i}
     getBigIntegerFromLinked(lambda[k][i], &tmp5);
     BigIntSubt(&tmp5, &tmp0, &tmp5);
     setLinkedBigInteger(&lambda[k][i], &tmp5);
@@ -324,9 +324,9 @@ static void PerformSWAPI(int k, int kMax, int size)
     // Set B <- (d_{k-2}*d_k + lambda^2)/d_{k-1}
     // d_{k-2}*d_k + lambda^2 is already in tmp3.
   getBigIntegerFromLinked(detProdB[k - 1], &tmp5);
-  BigIntDivide(&tmp3, &tmp5, &tmp1);                   // tmp1 <- B
+  (void)BigIntDivide(&tmp3, &tmp5, &tmp1);                   // tmp1 <- B
 #if DEBUG_VANHOEIJ
-  if (size == 16 && z<1000)
+  if ((size == 16) && (z < 1000))
   {
     z++;
     (void)strcpy(ptrDebugOutput, "k = ");
@@ -365,18 +365,18 @@ static void PerformSWAPI(int k, int kMax, int size)
     // lambda_{i, k} <- (d_k*lambda_{i, k-1} - lambda * t)/d_{k-1}
     getBigIntegerFromLinked(detProdB[k], &tmp4);
     getBigIntegerFromLinked(lambda[i][k - 1], &tmp5);
-    BigIntMultiply(&tmp4, &tmp5, &tmp3);
-    BigIntMultiply(&tmp0, &tmp2, &tmp4);       // tmp4 <- lambda * t
+    (void)BigIntMultiply(&tmp4, &tmp5, &tmp3);
+    (void)BigIntMultiply(&tmp0, &tmp2, &tmp4);       // tmp4 <- lambda * t
     BigIntSubt(&tmp3, &tmp4, &tmp3);
     getBigIntegerFromLinked(detProdB[k - 1], &tmp5);
-    BigIntDivide(&tmp3, &tmp5, &tmp4);
+    (void)BigIntDivide(&tmp3, &tmp5, &tmp4);
     setLinkedBigInteger(&lambda[i][k], &tmp4);
     // lambda_{i, k-1} <- (B*t + lambda * lambda_{i, k})/d_k
-    BigIntMultiply(&tmp1, &tmp2, &tmp3);       // tmp3 <- B * t
-    BigIntMultiply(&tmp0, &tmp4, &tmp4);
+    (void)BigIntMultiply(&tmp1, &tmp2, &tmp3);       // tmp3 <- B * t
+    (void)BigIntMultiply(&tmp0, &tmp4, &tmp4);
     BigIntAdd(&tmp3, &tmp4, &tmp3);
     getBigIntegerFromLinked(detProdB[k], &tmp4);
-    BigIntDivide(&tmp3, &tmp4, &tmp5);
+    (void)BigIntDivide(&tmp3, &tmp4, &tmp5);
     setLinkedBigInteger(&lambda[i][k - 1], &tmp5);
   }
   setLinkedBigInteger(&detProdB[k - 1], &tmp1);     // d_{k-1} <- B.
@@ -413,7 +413,8 @@ void integralLLL(int size)
     (void)strcpy(ptrOutput, " in matrix of");
   }
   ptrOutput += strlen(ptrOutput);
-  *ptrOutput++ = ' ';
+  *ptrOutput = ' ';
+  ptrOutput++;
   int2dec(&ptrOutput, size);
   (void)strcpy(ptrOutput, " &times; ");
   ptrOutput += strlen(ptrOutput);
@@ -431,7 +432,7 @@ void integralLLL(int size)
   for (row = 0; row < size; row++)
   {       // Loop that generates the scalar product B_0 * B_0.
     getBigIntegerFromLinked(basis[row][0], &tmp5);
-    BigIntMultiply(&tmp5, &tmp5, &tmp0);
+    (void)BigIntMultiply(&tmp5, &tmp5, &tmp0);
     getBigIntegerFromLinked(detProdB[0], &tmp5);
     BigIntAdd(&tmp5, &tmp0, &tmp5);
     setLinkedBigInteger(&detProdB[0], &tmp5);     // d_{k-1} <- B.
@@ -449,16 +450,16 @@ void integralLLL(int size)
         {
           getBigIntegerFromLinked(basis[row][colK], &tmp4);
           getBigIntegerFromLinked(basis[row][colJ], &tmp5);
-          BigIntMultiply(&tmp4, &tmp5, &tmp0);
+          (void)BigIntMultiply(&tmp4, &tmp5, &tmp0);
           BigIntAdd(&tmp2, &tmp0, &tmp2);
         }
         for (colI = 0; colI < colJ; colI++)
         {    // Set u <- (d_i * u - lambda_{k, i} * lambda_{j, i}) / d_{i-1}
           getBigIntegerFromLinked(detProdB[colI], &tmp5);
-          BigIntMultiply(&tmp5, &tmp2, &tmp0);  // d_i * u
+          (void)BigIntMultiply(&tmp5, &tmp2, &tmp0);  // d_i * u
           getBigIntegerFromLinked(lambda[colK][colI], &tmp4);
           getBigIntegerFromLinked(lambda[colJ][colI], &tmp5);
-          BigIntMultiply(&tmp4, &tmp5, &tmp1);  // lambda_{k, i} * lambda_{j, i}
+          (void)BigIntMultiply(&tmp4, &tmp5, &tmp1);  // lambda_{k, i} * lambda_{j, i}
           if (colI == 0)
           {
             BigIntSubt(&tmp0, &tmp1, &tmp2);           // d_{i-1} = 0
@@ -467,7 +468,7 @@ void integralLLL(int size)
           {
             BigIntSubt(&tmp0, &tmp1, &tmp0);
             getBigIntegerFromLinked(detProdB[colI - 1], &tmp5);
-            BigIntDivide(&tmp0, &tmp5, &tmp2);
+            (void)BigIntDivide(&tmp0, &tmp5, &tmp2);
           }
         }
         if (colJ < colK)
@@ -527,17 +528,17 @@ void integralLLL(int size)
       if (colK > 1)
       {                // Multiply by d_{k-2} if k>=0
         getBigIntegerFromLinked(detProdB[colK - 2], &tmp5);
-        BigIntMultiply(&tmp0, &tmp5, &tmp0);
+        (void)BigIntMultiply(&tmp0, &tmp5, &tmp0);
       }
                        // Compute lambda_{k, k-1})^2
       getBigIntegerFromLinked(lambda[colK][colK - 1], &tmp5);
-      BigIntMultiply(&tmp5, &tmp5, &tmp1);
+      (void)BigIntMultiply(&tmp5, &tmp5, &tmp1);
                        // Compute d_k * d_{k-2} + lambda_{k, k-1})^2
       BigIntAdd(&tmp0, &tmp1, &tmp3);
       multint(&tmp0, &tmp3, 4);           // tmp0 = Left Hand Side.
                        // Compute (d_{k-1})^2 
       getBigIntegerFromLinked(detProdB[colK - 1], &tmp5);
-      BigIntMultiply(&tmp5, &tmp5, &tmp1);
+      (void)BigIntMultiply(&tmp5, &tmp5, &tmp1);
                        // Compute 3 * (d_{k-1})^2 = Right hand side.
       multint(&tmp1, &tmp1, 3);
       BigIntSubt(&tmp0, &tmp1, &tmp0);    // tmp0 = LHS - RHS.
@@ -586,7 +587,7 @@ void integralLLL(int size)
 // Compute remainder such that the result is in range -divisor/2 to divisor/2.
 static void BigIntSymmetricRemainder(BigInteger* dividend, BigInteger* divisor, BigInteger* result)
 {
-  BigIntRemainder(dividend, divisor, result);
+  (void)BigIntRemainder(dividend, divisor, result);
   // Convert trace to range -powerExtraBits/2 to powerExtraBits/2
   if (result->sign == SIGN_NEGATIVE)
   {
@@ -624,7 +625,7 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
     operand4.nbrLimbs = *ptrCoeff;
     operand4.sign = SIGN_POSITIVE;
     (void)memcpy(operand4.limbs, ptrCoeff+1, *ptrCoeff *sizeof(int));
-    BigIntRemainder(&operand4, &powerMod, &operand3);
+    (void)BigIntRemainder(&operand4, &powerMod, &operand3);
     setLinkedBigInteger(&ptrCoeffs[traceNbr], &operand3);
     ptrCoeff += 1 + numLimbs(ptrCoeff);
   }
@@ -643,7 +644,7 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
     *ptrDebugOutput++ = ',';
     *ptrDebugOutput++ = ' ';
 #endif
-    BigIntMultiply(&operand3, &operand1, &operand3);
+    (void)BigIntMultiply(&operand3, &operand1, &operand3);
     setLinkedBigInteger(&ptrCoeffs[traceNbr], &operand3);
   }
 #if DEBUG_VANHOEIJ
@@ -654,7 +655,7 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
   ptrTrace = &traces[0];
   intToLinkedBigInt(ptrTrace, polyDegree);
   intToBigInteger(&operand1, polyDegree);
-  BigIntRemainder(&operand1, &powerMod, &tmp5);
+  (void)BigIntRemainder(&operand1, &powerMod, &tmp5);
   setLinkedBigInteger(&traces[0], &tmp5);
   for (traceNbr = 1; traceNbr < nbrTraces; traceNbr++)
   {
@@ -675,10 +676,10 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
       {
         getBigIntegerFromLinked(ptrCoeffs[traceNbr - degree - 1], &operand3);
         getBigIntegerFromLinked(traces[degree], &tmp4);
-        BigIntMultiply(&tmp4, &operand3, &operand1);
+        (void)BigIntMultiply(&tmp4, &operand3, &operand1);
         BigIntSubt(&tmp5, &operand1, &tmp5);
         // Get remainder of quotient of result by p^a.
-        BigIntRemainder(&tmp5, &powerMod, &tmp5);
+        (void)BigIntRemainder(&tmp5, &powerMod, &tmp5);
       }
     }
     setLinkedBigInteger(ptrTrace, &tmp5);
@@ -693,14 +694,14 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
     // Subtract the remainder from the computed trace.
     BigIntSubt(&tmp5, &operand2, &tmp5);
     // Divide the result by p^b
-    BigIntDivide(&tmp5, &powerBoundA, &tmp5);
+    (void)BigIntDivide(&tmp5, &powerBoundA, &tmp5);
     // Get remainder of quotient of result divided by p^(a-b)
     BigIntSymmetricRemainder(&tmp5, &powerExtraBits, &tmp5);
     setLinkedBigInteger(ptrTrace, &tmp5);
   }
 }
 
-static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
+static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
 {
   int currentDegree;
   int currentFactor;
@@ -761,7 +762,7 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
               operand1.nbrLimbs = nbrLength;
               operand1.sign = SIGN_POSITIVE;
               (void)memcpy(operand1.limbs, ptrCoeffSrc + 1, nbrLength * sizeof(int));
-              BigIntRemainder(&operand1, &powerMod, &operand2);
+              (void)BigIntRemainder(&operand1, &powerMod, &operand2);
               *ptrCoeffDest = operand2.nbrLimbs;
               (void)memcpy(ptrCoeffDest + 1, operand2.limbs, operand2.nbrLimbs * sizeof(int));
             }
@@ -826,12 +827,12 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         BigIntSubt(&operand1, &bound, &operand2);
         if (operand2.sign == SIGN_POSITIVE)
         {
-          return 0;     // Coefficient is too high.
+          return false;     // Coefficient is too high.
         }
         BigIntAdd(&operand1, &bound, &operand2);
         if (operand2.sign == SIGN_NEGATIVE)
         {
-          return 0;     // Coefficient is too low.
+          return false;     // Coefficient is too low.
         }
         *ptrMod32768++ = 1;
         if (*ptrSrc >= 0)
@@ -863,7 +864,7 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         {
           *ptrMod32768++ = (-operand1.limbs[0].x) & 32767;
         }
-        BigIntMultiply(&operand1, &leadingCoeff, &operand2);
+        (void)BigIntMultiply(&operand1, &leadingCoeff, &operand2);
         NumberLength = operand2.nbrLimbs;
         BigInteger2IntArray(ptrDest, &operand2);
         ptrSrc += 1 + numLimbs(ptrSrc);
@@ -876,11 +877,11 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
           // polynomial times the leading coefficient.
         UncompressBigIntegerB(&polyS[1], &operand1);
         UncompressBigIntegerB(&poly5[1], &operand2);
-        BigIntRemainder(&operand1, &operand2, &operand3);
+        (void)BigIntRemainder(&operand1, &operand2, &operand3);
         if (!BigIntIsZero(&operand3))
         {    // Constant term of product does not divide constant term of
              // original polynomial, so go out.
-          return 0;
+          return false;
         }
           // Check that f(1) divides F(1) and f(-1) divides F(-1).
           // Accumulate even coefficients of F in operand1 and odd
@@ -923,16 +924,16 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         {
           if (!BigIntIsZero(&tmp2))
           {
-            return 0;   // f(1) is zero and F(1) is not. Go out.
+            return false;   // f(1) is zero and F(1) is not. Go out.
           }
         }
         else
         {
           BigIntAdd(&operand1, &operand2, &tmp2);   // Get F(1).
-          BigIntRemainder(&tmp2, &tmp1, &tmp3);
+          (void)BigIntRemainder(&tmp2, &tmp1, &tmp3);
           if (!BigIntIsZero(&tmp3))
           {    // f(1) does not divide F(1), so go out.
-            return 0;
+            return false;
           }
         }
         BigIntSubt(&operand3, &operand4, &tmp1);    // Get f(-1).
@@ -941,15 +942,15 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         {
           if (!BigIntIsZero(&tmp2))
           {
-            return 0;   // f(-1) is zero and F(-1) is not. Go out.
+            return false;   // f(-1) is zero and F(-1) is not. Go out.
           }
         }
         else
         {
-          BigIntRemainder(&tmp2, &tmp1, &tmp3);
+          (void)BigIntRemainder(&tmp2, &tmp1, &tmp3);
           if (!BigIntIsZero(&tmp3))
           {    // f(-1) does not divide F(-1), so go out.
-            return 0;
+            return false;
           }
         }
         // Divide both polynomials mod 32768. If the remainder is
@@ -966,18 +967,18 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         {
           if (*(ptrMod32768+1) != 0)
           {
-            return 0;         // Coefficient of remainder is not zero. Go out.
+            return false;         // Coefficient of remainder is not zero. Go out.
           }
           ptrMod32768 += 2;   // Point to next coefficient.
         }
         rc = DivideIntegerPolynomial(polyS, poly5, TYPE_MODULUS);
         if (rc == EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER)
         {               // Cannot perform the division.
-          return 0;
+          return false;
         }
-        if (polyS[0] != 0 || polyS[1] != 1 || polyS[2] != 0)
+        if ((polyS[0] != 0) || (polyS[1] != 1) || (polyS[2] != 0))
         {              // Remainder is not zero.
-          return 0;    // Number to factor does not divide this polynomial.
+          return false;    // Number to factor does not divide this polynomial.
         }
       }
       else
@@ -991,7 +992,7 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         for (currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
         {
           UncompressBigIntegerB(ptrSrc, &operand2);
-          BigIntDivide(&operand2, &operand4, &operand3);
+          (void)BigIntDivide(&operand2, &operand4, &operand3);
           NumberLength = operand3.nbrLimbs;
           BigInteger2IntArray(ptrDest, &operand3);
           ptrSrc += 1 + numLimbs(ptrSrc);
@@ -1009,7 +1010,7 @@ static int AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
       (void)memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
     }
   }
-  return 1;              // Factorization is complete.
+  return true;              // Factorization is complete.
 }
 
 // Find Knuth-Cohen bound for coefficients of polynomial factors:
@@ -1039,12 +1040,12 @@ static void ComputeCoeffBounds(void)
   else
   {      // Polynomial.
     maxDegreeFactor = (degreePolyToFactor + 1) / 2;
-    BigIntMultiply(&operand1, &operand1, &operand1);
+    (void)BigIntMultiply(&operand1, &operand1, &operand1);
     for (degree1 = 1; degree1 <= degreePolyToFactor; degree1++)
     {
       ptrSrc += 1 + numLimbs(ptrSrc);
       UncompressBigIntegerB(ptrSrc, &operand3);   // The last loop sets operand3 to the leading coefficient.
-      BigIntMultiply(&operand3, &operand3, &operand2);
+      (void)BigIntMultiply(&operand3, &operand3, &operand2);
       BigIntAdd(&operand1, &operand2, &operand1);
     }
     squareRoot(operand1.limbs, operand2.limbs, operand1.nbrLimbs, &operand2.nbrLimbs);
@@ -1070,8 +1071,8 @@ static void ComputeCoeffBounds(void)
     CopyBigInt(&operand4, &operand2);
     multint(&operand2, &operand2, maxDegreeFactor - degree1);
     subtractdivide(&operand2, 0, degree1);  // operand2 <- binomial(n-1, j)
-    BigIntMultiply(&operand1, &operand2, &operand5);
-    BigIntMultiply(&operand3, &operand4, &operand4);
+    (void)BigIntMultiply(&operand1, &operand2, &operand5);
+    (void)BigIntMultiply(&operand3, &operand4, &operand4);
     BigIntAdd(&operand5, &operand4, &operand5);
     // If operand5 > bound, set bound to operand5.
     BigIntSubt(&operand5, &bound, &operand4);
@@ -1174,7 +1175,7 @@ static void vanHoeij(int prime, int nbrFactors)
   GetMontgomeryParms(powerMod.nbrLimbs);
   // Polynomials in AttemptToFactor are multiplied by the leading
   // coefficient, so multiply the coefficient bound as well.
-  BigIntMultiply(&bound, &leadingCoeff, &bound);
+  (void)BigIntMultiply(&bound, &leadingCoeff, &bound);
   for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
   {
     intToLinkedBigInt(&lambda[0][ctr1], 0);
@@ -1183,7 +1184,7 @@ static void vanHoeij(int prime, int nbrFactors)
   for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
   {
     intToLinkedBigInt(&lambda[0][ctr1], 1);
-    AttemptToFactor(1, nbrFactors, &newNbrFactors);
+    (void)AttemptToFactor(1, nbrFactors, &newNbrFactors);
     intToLinkedBigInt(&lambda[0][ctr1], 0);
   }
   currentAttempts = 0;
@@ -1194,7 +1195,7 @@ static void vanHoeij(int prime, int nbrFactors)
     for (ctr2 = ctr1 + 1; ctr2 < nbrFactors; ctr2++)
     {
       intToLinkedBigInt(&lambda[0][ctr2], 1);
-      AttemptToFactor(1, nbrFactors, &newNbrFactors);
+      (void)AttemptToFactor(1, nbrFactors, &newNbrFactors);
       currentAttempts++;
 #ifdef __EMSCRIPTEN__
       int elapsedTime = (int)(tenths() - originalTenthSecond);
@@ -1220,7 +1221,7 @@ static void vanHoeij(int prime, int nbrFactors)
     intToLinkedBigInt(&lambda[0][ctr1], 0);
   }
   // Restore value of bound.
-  BigIntDivide(&bound, &leadingCoeff, &bound);
+  (void)BigIntDivide(&bound, &leadingCoeff, &bound);
   if (newNbrFactors <= 1)
   {   // Zero or 1 factor left. Polynomial completely factored, so go out.
     return;
@@ -1249,7 +1250,7 @@ static void vanHoeij(int prime, int nbrFactors)
   intToBigInteger(&operand1, prime);
   BigIntPowerIntExp(&operand1, exponDifference, &powerExtraBits);
   CopyBigInt(&powerBoundA, &powerMod);
-  BigIntMultiply(&powerExtraBits, &powerMod, &powerBoundA);
+  (void)BigIntMultiply(&powerExtraBits, &powerMod, &powerBoundA);
   ComputeCoeffBounds();     // bound = Bound of coefficient of factors.
   log_rootbound = logBigNbr(&bound) / logPrime;
   exponentMod = a0;
@@ -1404,7 +1405,7 @@ static void vanHoeij(int prime, int nbrFactors)
         {
           getBigIntegerFromLinked(lambda[nbrRow][j], &tmp4);
           getBigIntegerFromLinked(matrixBL[j][nbrCol], &tmp5);
-          BigIntMultiply(&tmp4, &tmp5, &operand2);
+          (void)BigIntMultiply(&tmp4, &tmp5, &operand2);
           BigIntAdd(&operand1, &operand2, &operand1);
         }
         setLinkedBigInteger(&basisStar[nbrRow + nbrVectors][nbrCol], &operand1);
@@ -1530,7 +1531,7 @@ static void vanHoeij(int prime, int nbrFactors)
         {
           getBigIntegerFromLinked(matrixBL[nbrRow][j], &tmp4);
           getBigIntegerFromLinked(lambda[j][nbrCol], &tmp5);
-          BigIntMultiply(&tmp4, &tmp5, &operand2);
+          (void)BigIntMultiply(&tmp4, &tmp5, &operand2);
           BigIntAdd(&operand1, &operand2, &operand1);
         }
         setLinkedBigInteger(&basisStar[nbrRow][nbrCol], &operand1);
@@ -1578,7 +1579,7 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       getBigIntegerFromLinked(lambda[r1 - 1][r1 - 1], &tmp4);
       getBigIntegerFromLinked(lambda[r1 - 2][r1 - 2], &tmp5);
-      BigIntDivide(&tmp4, &tmp5, &operand1);
+      (void)BigIntDivide(&tmp4, &tmp5, &operand1);
       BigInteger2Dec(&operand1, ptrDebugOutput, 0);
       ptrDebugOutput += strlen(ptrDebugOutput);
       *ptrDebugOutput++ = ' ';
@@ -1597,8 +1598,8 @@ static void vanHoeij(int prime, int nbrFactors)
       // The norm of B*[r1] is lambda_{r1, r1} / lambda_{r1-1, r1-1}.
       getBigIntegerFromLinked(lambda[r1 - 1][r1 - 1], &tmp4);
       getBigIntegerFromLinked(lambda[r1 - 2][r1 - 2], &tmp5);
-      BigIntDivide(&tmp4, &tmp5, &operand1);
-      if (operand1.nbrLimbs == 1 && operand1.limbs[0].x <= squareFormula)
+      (void)BigIntDivide(&tmp4, &tmp5, &operand1);
+      if ((operand1.nbrLimbs == 1) && (operand1.limbs[0].x <= squareFormula))
       {
         break;        // r' was found.
       }
@@ -2067,7 +2068,7 @@ int FactorPolyOverIntegers(void)
       }
       polXprocessed = true;
     }
-    BigIntDivide(&operand1, &contentPolyToFactor, &operand2);
+    (void)BigIntDivide(&operand1, &contentPolyToFactor, &operand2);
     NumberLength = operand2.nbrLimbs;
     BigInteger2IntArray(ptrDest, &operand2);
     ptrSrc += 1 + numLimbs(ptrSrc);
@@ -2090,7 +2091,7 @@ int FactorPolyOverIntegers(void)
       ptrSrc += 1 + numLimbs(ptrSrc);
     }
     UncompressBigIntegerB(ptrSrc, &operand2);
-    BigIntMultiply(&operand1, &operand2, &trailingCoeff);
+    (void)BigIntMultiply(&operand1, &operand2, &trailingCoeff);
     // Compute F/gcd(F, F') where F is the polynomial to factor.
     // In the next loop we will attempt to factor gcd(F, F').
     degreePolyToFactor = polyToFactor[0];
