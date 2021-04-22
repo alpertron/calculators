@@ -952,7 +952,7 @@ void SolveQuadModEquation(void)
             }
             if (expon > 1)
             {
-              expon--;
+              expon -= (bitsCZero / 2) + 1;
             }
             // Find square root of ValCOdd.
             // First approximation to inverse of square root.

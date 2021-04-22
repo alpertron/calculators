@@ -151,7 +151,7 @@ static void findQuadraticSolution(BigInteger* pSolution, int expon)
       BigIntDivideBy2(&tmp1);           // Quadr/2
       BigIntAdd(&Const, &tmp1, &Const);
 
-      // Linear <- 2*Quadr + Linear  and Quadr <- 2*Quadr.
+      // Linear <- 2*Quadr + Linear and Quadr <- 2*Quadr.
       BigIntMultiplyBy2(&Quadr);          // Quadr*2
       BigIntAdd(&Linear, &Quadr, &Linear);
       BigIntAnd(&Linear, &K1, &Linear);   // Reduce mod 2^expon
@@ -180,7 +180,7 @@ void SolveEquation(void)
   int expon;
   int T1;
   int E;
-  struct sFactors *pstFactor;
+  const struct sFactors *pstFactor;
 
   if (BigIntIsZero(&ValN))
   {        // Mod zero => Equation in integer numbers
@@ -453,7 +453,7 @@ void SolveEquation(void)
             }
             if (expon > 1)
             {
-              expon--;
+              expon -= (bitsCZero / 2) + 1;
             }
             // Find square root of ValCOdd.
             // First approximation to inverse of square root.

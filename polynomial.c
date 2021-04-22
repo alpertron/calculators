@@ -1433,13 +1433,13 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
       // the gcd of the leading coefficients.
     } while (getRemainder(&modulus, prime) == 0 ||
       getRemainder(&gcdLeadingCoeff, prime) == 0);
-    modulusIsZero = 0;
+    modulusIsZero = false;
     intToBigInteger(&primeMod, prime);
     computePower(1);
     degree1 = getModPolynomial(poly1, argF, &contentF);
     degree2 = getModPolynomial(poly2, argG, &contentG);
     PolyModularGcd(poly1, degree1, poly2, degree2, poly3, &degreeGcdMod);
-    modulusIsZero = 1;
+    modulusIsZero = true;
     if (degreeGcdMod == 0)
     {                                // Polynomial GCD is the GCD of both contents.
       BigIntGcd(&contentF, &contentG, &gcdLeadingCoeff);

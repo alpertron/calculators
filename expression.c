@@ -1176,7 +1176,7 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
   }
   ptrExpr = expr + exprIndex;
   ptrFuncName = funcName;
-  while (*ptrFuncName)
+  while (*ptrFuncName != 0)
   {
     if ((*ptrExpr & 0xDF) != *ptrFuncName)
     {

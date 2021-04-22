@@ -573,12 +573,12 @@ void polyFactText(char *modText, char *polyText, int groupLength)
   enum eExprErr rc;
   int expon = 0;
   rc = ComputeExpression(modText, 1, &powerMod);
-  modulusIsZero = 0;
+  modulusIsZero = false;
   if (rc == EXPR_OK)
   {
     if (BigIntIsZero(&powerMod))
     {
-      modulusIsZero = 1;
+      modulusIsZero = true;
     }
     else if (powerMod.sign == SIGN_NEGATIVE)
     {                  // Negative is not greater than 1.
