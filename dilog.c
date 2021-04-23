@@ -87,7 +87,8 @@ enum eLogMachineState
   CALC_LOG_BASE,
   CALC_LOG_POWER,
 };
-static void showText(char *text)
+
+static void showText(const char *text)
 {
   (void)strcpy(output, text);
 }
@@ -127,7 +128,7 @@ void textErrorDilog(char *ptrOutput, enum eExprErr rc)
 static void indicateCannotComputeLog(int indexBase, int indexExp)
 {
   char *ptrText;
-  struct sFactors *pstFactors = &astFactorsGO[indexBase + 1];
+  const struct sFactors *pstFactors = &astFactorsGO[indexBase + 1];
   (void)strcpy(textExp, "Cannot compute discrete logarithm: subgroup=");
   IntArray2BigInteger(pstFactors->ptrFactor, &tmpBase);
   Bin2Dec(tmpBase.limbs, textExp + strlen(textExp), tmpBase.nbrLimbs, groupLen);
@@ -161,16 +162,14 @@ static bool ComputeDLogModSubGroupOrder(int indexBase, int indexExp, BigInteger 
 
 void DiscreteLogarithm(void)
 {
-  int indexBase;
   int indexExp;
-  int index;
   int expon;
   limb addA;
   limb addB;
-  limb addA2;
-  limb addB2;
+  limb addA2 = { 0 };
+  limb addB2 = { 0 };
   limb mult1;
-  limb mult2;
+  limb mult2 = { 0 };
   double magnitude;
   double firstLimit;
   double secondLimit;
@@ -178,7 +177,7 @@ void DiscreteLogarithm(void)
   long long brentR;
   bool EndPollardBrentRho;
   int nbrLimbs;
-  struct sFactors *pstFactors;
+  const struct sFactors *pstFactors;
   enum eLogMachineState logMachineState;
   char *ptr;
 
@@ -195,12 +194,12 @@ void DiscreteLogarithm(void)
   }
   intToBigInteger(&DiscreteLog, 0);       // DiscreteLog <- 0
   intToBigInteger(&DiscreteLogPeriod, 1); // DiscreteLogPeriod <- 1
-  for (index = 1; index <= NbrFactorsMod; index++)
+  for (int index = 1; index <= NbrFactorsMod; index++)
   {
     int mostSignificantDword;
     int leastSignificantDword;
     int NbrFactors;
-    int *ptrPrime;
+    const int *ptrPrime;
     int multiplicity;
 
     ptrPrime = astFactorsMod[index].ptrFactor;
@@ -301,7 +300,7 @@ void DiscreteLogarithm(void)
         TestNbr[leastSignificantDword].x) / 3;
     }
     secondLimit = firstLimit * 2;
-    for (indexBase = 0; indexBase < NbrFactors; indexBase++)
+    for (int indexBase = 0; indexBase < NbrFactors; indexBase++)
     {
       NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
       IntArray2BigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
@@ -759,7 +758,7 @@ void DiscreteLogarithm(void)
 static void ExchangeMods(void)
 {
   int count;
-  limb aux;
+  limb aux = { 0 };
   limb *ptrTestNbr;
   limb *ptrTestNbrOther;
   limb *ptrMontgomeryMultR1;
@@ -797,12 +796,11 @@ static void ExchangeMods(void)
 static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *bigSubGroupOrder)
 {
   unsigned int carry;
-  int j;
   int nbrLimbs = bigSubGroupOrder->nbrLimbs;
   (nbr + nbrLimbs)->x = 0;
   MultBigNbrByInt((int *)nbr, mult.x, (int *)nbr, nbrLimbs+1);
   carry = add.x;
-  for (j = 0; j<=nbrLimbs; j++)
+  for (int j = 0; j<=nbrLimbs; j++)
   {
     carry += nbr[j].x;
     nbr[j].x = (int)(carry & MAX_VALUE_LIMB);

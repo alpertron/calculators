@@ -26,7 +26,7 @@
 #include "batch.h"
 #include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 16
+#define DEBUG_CODE 11
 #endif
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -218,6 +218,7 @@ int main(int argc, char *argv[])
     return 0;
   }
   dilogText(argv[1], argv[2], argv[3], 6);
+  dilogText(argv[1], argv[2], argv[3], 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 12
   if (argc != 3)
@@ -289,20 +290,7 @@ int main(int argc, char *argv[])
   (void)memcpy(inputString, "6,-2,00102^1042+1""\0""2^1042+1=5^1(0)*16673^1(0)*627186185377^1(16673)*131294792925870751515684960383613518415615538737991528767912593379854404518341858118366491474959205710499826133822402120149306175263402700301^1(16673)*6864797660130609714981900799081393217269435300143305409394463459185543183397652346775704046543201000705776033378429553397612687501667381169885775070966579201^1(2)""\0\0""222""\0", 10001314 - 10000928 + 1);
   doWork();
 #elif DEBUG_CODE == 16
-quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
-//quadmodText("1", "0", "4", "8", 6);
-//quadmodText("1", "-8", "17", "10586", 6);
-//quadmodText("1", "0", "-316", "36", 6);
-//quadmodText("1", "-8", "-17", "11", 6);
-//quadmodText("1", "0", "-316", "2340", 6);
-//quadmodText("1", "0", "-41", "5^10", 6);
-//quadmodText("7", "3", "5", "77", 6);
-//quadmodText("8", "3", "7", "16", 6);
-//quadmodText("1", "1", "-42", "10000", 6);
-//quadmodText("1", "0", "-41", "625", 6);
-//quadmodText("1", "1", "0", "112856782", 6);
-//  quadmodText("1", "1", "0", "56428391", 6);
-//  quadmodText("1", "1", "0", "2", 6);
+  quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 17
   if (argc != 7)
