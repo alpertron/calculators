@@ -31,7 +31,7 @@ void startParen(void);
 void endParen(void);
 void startSqrt(void);
 void endSqrt(void);
-void showRatConstants(char* numerator, char* denominator);
+void showRatConstants(const char* numerator, const char* denominator);
 void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* pstFactorInfo, int groupLength);
 
 extern BigInteger Quintic;

@@ -72,7 +72,7 @@ extern int polyLifted[1000000];
 extern int polyS[1000000];
 extern int poly5[1000000];
 int polyInteger[1000000];
-static void GenerateIntegerPolynomial(int* polyMod, int* polyInt, int degreePoly);
+static void GenerateIntegerPolynomial(const int* polyMod, int* polyInt, int degreePoly);
 static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly);
 static int numberLLL;
 
@@ -80,7 +80,6 @@ static int numberLLL;
 // The output will be located in matrix lambda.
 static int gauss(int nbrCols, int nbrRows)
 {
-  int k;
   int l;
   int row;
   int col;
@@ -95,7 +94,7 @@ static int gauss(int nbrCols, int nbrRows)
   }
 
   l = 0;
-  for (k = 0; (k < nbrCols) && (l < nbrRows); k++)
+  for (int k = 0; (k < nbrCols) && (l < nbrRows); k++)
   {
     int pos = -1;
     /* Look for a pivot under the diagonal. */
@@ -188,11 +187,9 @@ static int gauss(int nbrCols, int nbrRows)
 // (Gama1, Howgrave - Graham, Nguyen)
 static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
 {
-  int colI;
   int colJ;
   int k;
-  int row;
-  for (colI = 0; colI < nbrCols; colI++)
+  for (int colI = 0; colI < nbrCols; colI++)
   {
     if (colI == 0)
     {             // U_0 <- 1
@@ -229,7 +226,7 @@ static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
       for (k = 0; k <= colI; k++)
       {         // tmp2 <- scalar product b_j * b_k 
         intToBigInteger(&tmp2, 0);
-        for (row = 0; row < nbrRows; row++)
+        for (int row = 0; row < nbrRows; row++)
         {
           getBigIntegerFromLinked(basisStar[row][colJ], &tmp4);
           getBigIntegerFromLinked(basisStar[row][k], &tmp5);
@@ -248,8 +245,6 @@ static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
 
 static void PerformREDI(int k, int l, int size)
 {
-  int i;
-  int row;
   // If |2 lambda_{k, l}| <= d_l, go out.
   getBigIntegerFromLinked(lambda[k][l], &tmp4);
   multint(&tmp0, &tmp4, 2);          // tmp0 <- 2 lambda_{k, l}
@@ -276,7 +271,7 @@ static void PerformREDI(int k, int l, int size)
   }
   multint(&tmp1, &tmp5, 2);           // tmp1 <- 2 d_l
   (void)BigIntDivide(&tmp0, &tmp1, &tmp2); // tmp2 <- q.
-  for (row = 0; row < size; row++)
+  for (int row = 0; row < size; row++)
   {  // Loop that computes b_k <- b_k - q*b_l
     getBigIntegerFromLinked(basis[row][l], &tmp5);
     (void)BigIntMultiply(&tmp2, &tmp5, &tmp0);  // tmp0 <- q*b_l
@@ -290,7 +285,7 @@ static void PerformREDI(int k, int l, int size)
   getBigIntegerFromLinked(lambda[k][l], &tmp5);
   BigIntSubt(&tmp5, &tmp0, &tmp5);
   setLinkedBigInteger(&lambda[k][l], &tmp5);
-  for (i = 0; i < l; i++)
+  for (int i = 0; i < l; i++)
   { // lambda_{k, i} <- lambda_{k, i} - q*lambda_{l, i}
     getBigIntegerFromLinked(lambda[l][i], &tmp5);
     (void)BigIntMultiply(&tmp2, &tmp5, &tmp0);   // tmp0 <- q*lambda_{l, i}
@@ -302,18 +297,15 @@ static void PerformREDI(int k, int l, int size)
 
 static void PerformSWAPI(int k, int kMax, int size)
 {                   // On entry: k >= 1
-  int row;
-  int i;
-  int j;
   struct linkedBigInt* pstLinkedBigInt;
   // Exchange b_k with b_{k-1}
-  for (row = 0; row < size; row++)
+  for (int row = 0; row < size; row++)
   {
     pstLinkedBigInt = basis[row][k];
     basis[row][k] = basis[row][k - 1];
     basis[row][k - 1] = pstLinkedBigInt;
   }
-  for (j = 0; j < k - 1; j++)
+  for (int j = 0; j < k - 1; j++)
   {  // Exchange lambda_{k, j} with lambda_{k-1, j}
     pstLinkedBigInt = lambda[k][j];
     lambda[k][j] = lambda[k - 1][j];
@@ -358,7 +350,7 @@ static void PerformSWAPI(int k, int kMax, int size)
     *ptrDebugOutput++ = '\n';
   }
 #endif
-  for (i = k+1; i <= kMax; i++)
+  for (int i = k+1; i <= kMax; i++)
   {
     // t <- lambda_{i, k}
     getBigIntegerFromLinked(lambda[i][k], &tmp2);     // tmp2 <- t
@@ -392,9 +384,6 @@ void integralLLL(int size)
   int colK;
   int colKMax;
   int row;
-  int colI;
-  int colJ;
-  int l;
 #ifdef __EMSCRIPTEN__
   char outputInfo[1000];
   char* ptrOutput = outputInfo;
@@ -442,7 +431,7 @@ void integralLLL(int size)
     if (colK > colKMax)
     { // Perform incremental Gram-Schmidt
       colKMax = colK;
-      for (colJ = 0; colJ <= colK; colJ++)
+      for (int colJ = 0; colJ <= colK; colJ++)
       {
         // Compute u <- scalar product of b_k and b_j (use tmp2 for u)
         intToBigInteger(&tmp2, 0);
@@ -453,7 +442,7 @@ void integralLLL(int size)
           (void)BigIntMultiply(&tmp4, &tmp5, &tmp0);
           BigIntAdd(&tmp2, &tmp0, &tmp2);
         }
-        for (colI = 0; colI < colJ; colI++)
+        for (int colI = 0; colI < colJ; colI++)
         {    // Set u <- (d_i * u - lambda_{k, i} * lambda_{j, i}) / d_{i-1}
           getBigIntegerFromLinked(detProdB[colI], &tmp5);
           (void)BigIntMultiply(&tmp5, &tmp2, &tmp0);  // d_i * u
@@ -552,7 +541,7 @@ void integralLLL(int size)
         colK--;
       }
     }
-    for (l = colK - 2; l >= 0; l--)
+    for (int l = colK - 2; l >= 0; l--)
     {
       PerformREDI(colK, l, size);
     }
@@ -612,11 +601,10 @@ static void BigIntSymmetricRemainder(BigInteger* dividend, BigInteger* divisor, 
 static void ComputeTraces(int nbrTraces, int nbrCol)
 {
   int traceNbr;
-  int* ptrCoeff;
+  const int* ptrCoeff;
   int polyDegree;
-  int degree;
   struct linkedBigInt** ptrTrace;
-  struct sFactorInfo* pstFactorInfo = &factorInfoRecord[nbrCol];
+  const struct sFactorInfo* pstFactorInfo = &factorInfoRecord[nbrCol];
   // Get pointers to the coefficients.
   polyDegree = pstFactorInfo->degree;          // Degree of polynomial factor
   ptrCoeff = pstFactorInfo->ptrPolyLifted;     // coefficients of polynomial factor.
@@ -670,12 +658,12 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
     {
       intToBigInteger(&tmp5, 0);
     }
-    for (degree = 1; degree < traceNbr; degree++)
+    for (int currDegree = 1; currDegree < traceNbr; currDegree++)
     {   // Subtract - E_{n-deg}*Tr_deg(P)
-      if (traceNbr - degree <= polyDegree)
+      if (traceNbr - currDegree <= polyDegree)
       {
-        getBigIntegerFromLinked(ptrCoeffs[traceNbr - degree - 1], &operand3);
-        getBigIntegerFromLinked(traces[degree], &tmp4);
+        getBigIntegerFromLinked(ptrCoeffs[traceNbr - currDegree - 1], &operand3);
+        getBigIntegerFromLinked(traces[currDegree], &tmp4);
         (void)BigIntMultiply(&tmp4, &operand3, &operand1);
         BigIntSubt(&tmp5, &operand1, &tmp5);
         // Get remainder of quotient of result by p^a.
@@ -704,9 +692,6 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
 static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
 {
   int currentDegree;
-  int currentFactor;
-  int nbrVector;
-  int stepNbr;
   int degreeProd;
   int degreeFactor;
   int rc;
@@ -721,7 +706,7 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
   int divisorMod32768[2 * MAX_DEGREE + 1];
   // In step 1 we check that all factors can be found. If this succeeds,
   // in step 2 we insert factors in final array of polynomial factors.
-  for (stepNbr = 1; stepNbr <= 2; stepNbr++)
+  for (int stepNbr = 1; stepNbr <= 2; stepNbr++)
   {
     int* ptrMod32768;
 #if DEBUG_VANHOEIJ
@@ -730,7 +715,7 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
     int2dec(&ptrDebugOutput, stepNbr);
 #endif
     NumberLength = powerMod.nbrLimbs;
-    for (nbrVector = 0; nbrVector < nbrVectors; nbrVector++)
+    for (int nbrVector = 0; nbrVector < nbrVectors; nbrVector++)
     {
       // Test whether the product of the polynomial factors
       // defined by this vector divides the original polynomial.
@@ -740,11 +725,11 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
       NumberLength = powerMod.nbrLimbs;
       degreeProd = 0;     // Set product to 1.
       pstFactorInfo = factorInfoRecord;
-      for (currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
+      for (int currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
       {
         if (!linkedBigIntIsZero(lambda[nbrVector][currentFactor]))
         {                 // Multiply this polynomial.
-          int* ptrCoeffSrc = pstFactorInfo->ptrPolyLifted;    // Source
+          const int* ptrCoeffSrc = pstFactorInfo->ptrPolyLifted;    // Source
           int* ptrCoeffDest = poly2;                          // Destination
           int nbrLength;
           degreeFactor = pstFactorInfo->degree;
@@ -1023,7 +1008,7 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
 static void ComputeCoeffBounds(void)
 {
   int degreePolyToFactor;
-  int* ptrSrc;
+  const int* ptrSrc;
   int maxDegreeFactor;
   int degree1;
 
@@ -1104,7 +1089,6 @@ static void vanHoeij(int prime, int nbrFactors)
   int nbrStepsDone = 0;
 #endif
   int nbrVectors;
-  int nbrColsTraces;
   int r1;
   int nbrRequiredTraces;
   int firstTrace;
@@ -1121,18 +1105,16 @@ static void vanHoeij(int prime, int nbrFactors)
   int C;
   int j;
   int rank;
-  int degree1;
-  int* ptrSrc;
+  const int* ptrSrc;
   struct sFactorInfo* pstFactorInfo;
   int degreePolyToFactor = polyNonRepeatedFactors[0];
-  int nbrFactor;
   int newNumberLength;
   int newNbrFactors;
   int ctr1;
-  int ctr2;
   int currentAttempts;
+#ifdef __EMSCRIPTEN__
   int maxAttempts;
-
+#endif
   numberLLL = 0;
   exponDifference = (int)(6.0 * (double)nbrFactors * log(2.0) / log(prime));
   b = (int)(b0 + (ceil(log(3) * log_rootbound) / logPrime) + 3);
@@ -1152,7 +1134,7 @@ static void vanHoeij(int prime, int nbrFactors)
   (void)memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
   // Get leading coefficient of polyNonRepeatedFactors.
   ptrSrc = &polyNonRepeatedFactors[1];
-  for (degree1 = 0; degree1 < degreePolyToFactor; degree1++)
+  for (int degree1 = 0; degree1 < degreePolyToFactor; degree1++)
   {
     ptrSrc += 1 + numLimbs(ptrSrc);
   }
@@ -1188,11 +1170,13 @@ static void vanHoeij(int prime, int nbrFactors)
     intToLinkedBigInt(&lambda[0][ctr1], 0);
   }
   currentAttempts = 0;
+#ifdef __EMSCRIPTEN__
   maxAttempts = nbrFactors * (nbrFactors - 1) / 2;
+#endif
   for (ctr1 = 0; ctr1 < nbrFactors; ctr1++)
   {
     intToLinkedBigInt(&lambda[0][ctr1], 1);
-    for (ctr2 = ctr1 + 1; ctr2 < nbrFactors; ctr2++)
+    for (int ctr2 = ctr1 + 1; ctr2 < nbrFactors; ctr2++)
     {
       intToLinkedBigInt(&lambda[0][ctr2], 1);
       (void)AttemptToFactor(1, nbrFactors, &newNbrFactors);
@@ -1229,7 +1213,7 @@ static void vanHoeij(int prime, int nbrFactors)
   // Discard the entries with multiplicity zero in the stored factors array.
   pstFactorInfo = factorInfoRecord;
   delta = 0;
-  for (nbrFactor = 0; nbrFactor < nbrFactors; nbrFactor++)
+  for (int nbrFactor = 0; nbrFactor < nbrFactors; nbrFactor++)
   {
     if (pstFactorInfo->multiplicity == 0)
     {
@@ -1252,7 +1236,6 @@ static void vanHoeij(int prime, int nbrFactors)
   CopyBigInt(&powerBoundA, &powerMod);
   (void)BigIntMultiply(&powerExtraBits, &powerMod, &powerBoundA);
   ComputeCoeffBounds();     // bound = Bound of coefficient of factors.
-  log_rootbound = logBigNbr(&bound) / logPrime;
   exponentMod = a0;
   computePower(exponentMod);
   modulusIsZero = false;    // Use modular arithmetic for polynomials.
@@ -1269,7 +1252,6 @@ static void vanHoeij(int prime, int nbrFactors)
   nbrRequiredTraces = 1;        // Initialize nbrRequiredTraces.
   firstTrace = 1;               // First trace to use for matrix M.
   nbrVectors = nbrFactors;      // Initialize nbrVectors.
-  nbrColsTraces = nbrFactors;
   for (;;)
   {
     int squareFormula;
@@ -1277,7 +1259,6 @@ static void vanHoeij(int prime, int nbrFactors)
     firstTrace += nbrRequiredTraces - 1;
     if (nbrVectors >= nbrFactors)
     {
-      nbrColsTraces = nbrFactors;
       nbrVectors = nbrFactors;
       // Initialize matrix BL with identity matrix (length nbrFactors).
       for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
@@ -1290,9 +1271,6 @@ static void vanHoeij(int prime, int nbrFactors)
       }
     }
 // Get b such that p^b is greater than the bounds on the cofficients.
-//    b = (int)(b0 + (ceil(log(firstTrace + nbrRequiredTraces + 1) * log_rootbound) / logPrime) + 3);
-//    b = (int)(b0 + (ceil(log(3) * log_rootbound) / logPrime) + 3);
-//    a0 = b + exponDifference;
     computePower(a0);
     newNumberLength = NumberLength;
     exponentMod = a0;
@@ -1493,7 +1471,7 @@ static void vanHoeij(int prime, int nbrFactors)
     *ptrDebugOutput++ = '.';
     *ptrDebugOutput = 0;
 #endif
-    // Step 3: Replace the upper r*(r+s) submatrix L of M by BL*L;
+    // Step 3: Replace the upper r*(r+s) submatrix L of M by BL*L.
     // Then set BL <- BL*L of dimension n0*(r+s)
     // M is now of dimension (n0+s)*(r+s) of rank r+s.
     // First move down the rows of M.
@@ -1503,8 +1481,10 @@ static void vanHoeij(int prime, int nbrFactors)
       struct linkedBigInt** ptrLBIDest = &basisStar[nbrRow - nbrVectors + nbrFactors][0];
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        getBigIntegerFromLinked(*ptrLBISrc++, &tmp5);
-        setLinkedBigInteger(ptrLBIDest++, &tmp5);
+        getBigIntegerFromLinked(*ptrLBISrc, &tmp5);
+        ptrLBISrc++;
+        setLinkedBigInteger(ptrLBIDest, &tmp5);
+        ptrLBIDest++;
       }
     }
     // Copy L to array lambda.
@@ -1514,8 +1494,10 @@ static void vanHoeij(int prime, int nbrFactors)
       struct linkedBigInt** ptrLBIDest = &lambda[nbrRow][0];
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
-        getBigIntegerFromLinked(*ptrLBISrc++, &tmp5);
-        setLinkedBigInteger(ptrLBIDest++, &tmp5);
+        getBigIntegerFromLinked(*ptrLBISrc, &tmp5);
+        ptrLBISrc++;
+        setLinkedBigInteger(ptrLBIDest, &tmp5);
+        ptrLBIDest++;
       }
     }
     // Multiply matrixBL (nbrFactors rows and nbrVectors columns) by
@@ -1545,8 +1527,10 @@ static void vanHoeij(int prime, int nbrFactors)
       struct linkedBigInt** ptrLBIDest = &matrixBL[nbrRow][0];
       for (nbrCol = 0; nbrCol < nbrVectors; nbrCol++)
       {
-        getBigIntegerFromLinked(*ptrLBISrc++, &tmp5);
-        setLinkedBigInteger(ptrLBIDest++, &tmp5);
+        getBigIntegerFromLinked(*ptrLBISrc, &tmp5);
+        ptrLBISrc++;
+        setLinkedBigInteger(ptrLBIDest, &tmp5);
+        ptrLBIDest++;
       }
     }
 
@@ -1652,7 +1636,8 @@ static void vanHoeij(int prime, int nbrFactors)
       {
         getBigIntegerFromLinked(*ptrLBIDest, &tmp5);
         subtractdivide(&tmp5, 0, C);
-        setLinkedBigInteger(ptrLBIDest++, &tmp5);
+        setLinkedBigInteger(ptrLBIDest, &tmp5);
+        ptrLBIDest++;
       }
     }
 
@@ -1808,13 +1793,12 @@ static void vanHoeij(int prime, int nbrFactors)
 }
 
 // Generate integer polynomial from modular polynomial.
-static void GenerateIntegerPolynomial(int* polyMod, int* polyInt, int degreePoly)
+static void GenerateIntegerPolynomial(const int* polyMod, int* polyInt, int degreePoly)
 {
-  int currentDegree;
   *polyInt = degreePoly;
-  int* ptrSrc = polyMod;
+  const int* ptrSrc = polyMod;
   int* ptrDest = polyInt + 1;
-  for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
+  for (int currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
   {
     NumberLength = powerMod.nbrLimbs;
     IntArray2BigInteger(ptrSrc, &operand1);
@@ -1836,13 +1820,13 @@ static void GenerateIntegerPolynomial(int* polyMod, int* polyInt, int degreePoly
 static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
 {
   struct sFactorInfo* pstFactorInfoInteger;
-  struct sFactorInfo* pstFactorInfo;
+  const struct sFactorInfo* pstFactorInfo;
   int indexNewFactor[MAX_DEGREE];
   int indexOldFactor[MAX_DEGREE];
   int currentDegree;
   int index;
   int* ptrIndex;
-  int* ptrOldFactor;
+  const int* ptrOldFactor;
 
   // Fill indexes to start of each coefficient.
   ptrIndex = &indexNewFactor[0];
@@ -1902,10 +1886,10 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
     }
   }
   // Move elements of array factorInfoInteger to make room for new factor.
-  for (pstFactorInfo = pstFactorInfoInteger;
-    pstFactorInfo->ptrPolyLifted != NULL;
-    pstFactorInfo++)
+  pstFactorInfo = pstFactorInfoInteger;
+  while (pstFactorInfo->ptrPolyLifted != NULL)
   {
+    pstFactorInfo++;
   }
   if (pstFactorInfo - pstFactorInfoInteger > 0)
   {
@@ -1920,16 +1904,15 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
 
 int getNextPrimeNoDuplicatedFactors(int primeIndex)
 {
-  int* ptrSrc;
+  const int* ptrSrc;
   int prime;
-  int currentDegree;
   int degreeGcdMod;
   int degree2;
-  int degree = polyNonRepeatedFactors[0];
+  int polyDegree = polyNonRepeatedFactors[0];
   initializeSmallPrimes(smallPrimes);
   // Get leading coefficient of polyNonRepeatedFactors.
   ptrSrc = &polyNonRepeatedFactors[1];
-  for (currentDegree = 0; currentDegree < degree; currentDegree++)
+  for (int currentDegree = 0; currentDegree < polyDegree; currentDegree++)
   {
     ptrSrc += 1 + numLimbs(ptrSrc);
   }
@@ -1949,7 +1932,6 @@ int getNextPrimeNoDuplicatedFactors(int primeIndex)
     modulusIsZero = false;
     intToBigInteger(&primeMod, prime);
     computePower(1);
-    ptrSrc = &polyNonRepeatedFactors[1];
     intToBigInteger(&operand5, 1);
     degree2 = getModPolynomial(&poly2[1], polyNonRepeatedFactors, &operand5);
     poly2[0] = degree2;
@@ -1992,11 +1974,10 @@ void FactorPolynomialModPrime(int prime)
 
 static void CopyFactorsFoundToRecord(void)
 {
-  struct sFactorInfo* pstFactorInfoOrig = factorInfo;
+  const struct sFactorInfo* pstFactorInfoOrig = factorInfo;
   struct sFactorInfo* pstFactorInfoRecord = factorInfoRecord;
   int *ptrPolyLiftedRecord = polyLiftedRecord;
-  int factorNbr;
-  for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
+  for (int factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
   {
     if (pstFactorInfoOrig->ptr == NULL)
     {    // No more factors.
@@ -2020,14 +2001,11 @@ static void CopyFactorsFoundToRecord(void)
 int FactorPolyOverIntegers(void)
 {
   int degreePolyToFactor = values[0];
-  int degree1;
   int primeRecord = 0;
   int expon;
-  int* ptrSrc;
+  const int* ptrSrc;
   int* ptrDest;
-  int attemptNbr;
   int factorNbr;
-  int currentDegree;
   bool polXprocessed = false;
   int* ptrFactorIntegerBak;
   int* ptrPolyLiftedOrig;
@@ -2046,7 +2024,7 @@ int FactorPolyOverIntegers(void)
   polyToFactor[0] = degreePolyToFactor;
   ptrSrc = &origPolyToFactor[1];
   ptrDest = &polyToFactor[1];
-  for (currentDegree = 0; currentDegree <= degreePolyToFactor; currentDegree++)
+  for (int currentDegree = 0; currentDegree <= degreePolyToFactor; currentDegree++)
   {
     UncompressBigIntegerB(ptrSrc, &operand1);
     if (polXprocessed == false)
@@ -2079,14 +2057,15 @@ int FactorPolyOverIntegers(void)
        // The trailing coefficient of factors must divide the product of the trailing and leading
        // coefficients of the original polynomial.
     int nbrFactorsRecord;
-    int prime, primeIndex;
-    struct sFactorInfo* pstFactorInfoRecord;
+    int prime;
+    int primeIndex;
+    const struct sFactorInfo* pstFactorInfoRecord;
     modulusIsZero = true;
     // Get trailing coefficient.
     ptrSrc = &values[1];
     UncompressBigIntegerB(ptrSrc, &operand1);
     // Get leading coefficient.
-    for (degree1 = 0; degree1 < degreePolyToFactor; degree1++)
+    for (int degree1 = 0; degree1 < degreePolyToFactor; degree1++)
     {
       ptrSrc += 1 + numLimbs(ptrSrc);
     }
@@ -2103,7 +2082,6 @@ int FactorPolyOverIntegers(void)
     polyNonRepeatedFactors[0] = degreePolyToFactor;
     DivideIntegerPolynomial(polyNonRepeatedFactors, polyToFactor, TYPE_DIVISION);
     primeIndex = 0;
-    prime = 2;
     ComputeCoeffBounds();   // bound = Bound of coefficient of factors.
     // Up to 5 different prime moduli are tested to minimize the number
     // of factors because the Van Hoeij algorithm speed depends on
@@ -2112,7 +2090,7 @@ int FactorPolyOverIntegers(void)
 
     // The big number ensures that the first copy is done.
     nbrFactorsRecord = 100000;
-    for (attemptNbr = 1; attemptNbr < 5; attemptNbr++)
+    for (int attemptNbr = 1; attemptNbr < 5; attemptNbr++)
     {
       int nbrFactors;
       primeIndex = getNextPrimeNoDuplicatedFactors(primeIndex);
@@ -2120,7 +2098,8 @@ int FactorPolyOverIntegers(void)
       // Find expon such that prime^expon >= 2 * bound
       BigIntMultiplyBy2(&bound);
       intToBigInteger(&operand1, prime);
-      for (expon = 1; ; expon++)
+      expon = 1;
+      for (;;)
       {
         // Compare operand1 = prime^expon against 2 * bound.
         BigIntSubt(&operand1, &bound, &operand4);
@@ -2129,6 +2108,7 @@ int FactorPolyOverIntegers(void)
           break;     // prime^expon >= 2 * bound -> go out.
         }
         multint(&operand1, &operand1, prime);
+        expon++;
       }
       FactorPolynomialModPrime(prime);
           // Get number of factors found.

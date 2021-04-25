@@ -252,6 +252,8 @@ int fsquares(void)
         /* no break */
       case 1:
         Mult1[0].x = 1;
+      default:
+        break;
       }
     }
     else
@@ -276,7 +278,7 @@ int fsquares(void)
             Divid.x = number[j].x + (Rem.x * LimbModQ);
             Rem.x = (int)((unsigned int)Divid.x % Q);
           }
-          sieve[i] = (int)Rem.x;
+          sieve[i] = Rem.x;
         }
       }
 
@@ -297,7 +299,7 @@ int fsquares(void)
       // If the result is not the product of a power of 2, small primes
       // of the form 4k+1 and squares of primes of the form (4k+3)^2
       // and a (big) prime, try with other squares.
-    compute_squares_loop:
+compute_squares_loop:
       for (;;)
       {
         if (TerminateThread != 0)

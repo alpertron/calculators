@@ -197,10 +197,10 @@ void showX(int multiplicity)
   }
   else
   {
-    int ctr;
-    for (ctr = 0; ctr < multiplicity; ctr++)
+    for (int ctr = 0; ctr < multiplicity; ctr++)
     {
-      showXindex(indexRoot++);
+      showXindex(indexRoot);
+      indexRoot++;
       showText(" = ");
     }
   }
@@ -338,7 +338,7 @@ void showPlusSignOn(bool condPlus, int type)
   }
 }
 // Compute x = -c_0 / c_1
-static void LinearEquation(int *ptrPolynomial, int multiplicity)
+static void LinearEquation(const int *ptrPolynomial, int multiplicity)
 {
   showX(multiplicity);
   UncompressBigIntegerB(ptrPolynomial, &Independent);
@@ -395,7 +395,7 @@ static int ProcessQuadraticEquation(enum eSign* pSignDescr)
 // If delta > 0 -> x = (-c_1 +/- sqrt(delta))/(2*c_2)
 // If delta < 0 -> x = (-c_1 +/- i*sqrt(-delta))/(2*c_2)
 // Delta cannot be zero because the roots are different.
-static void QuadraticEquation(int* ptrPolynomial, int multiplicity)
+static void QuadraticEquation(const int* ptrPolynomial, int multiplicity)
 {
   int ctr;
   enum eSign signDiscr;
@@ -473,7 +473,7 @@ static void CbrtIndep(void)
   }
 }
 
-void showRatConstants(char* numerator, char* denominator)
+void showRatConstants(const char* numerator, const char* denominator)
 {
   if (pretty == PRETTY_PRINT)
   {
@@ -493,7 +493,7 @@ void showRatConstants(char* numerator, char* denominator)
   }
 }
 
-static void CubicEquation(int* ptrPolynomial, int multiplicity)
+static void CubicEquation(const int* ptrPolynomial, int multiplicity)
 {
   int ctr;
   UncompressBigIntegerB(ptrPolynomial, &Independent);
@@ -569,7 +569,7 @@ static void CubicEquation(int* ptrPolynomial, int multiplicity)
           CbrtIndep();     // q^(1/3)
           showPlusSignOn(ctr == 1, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
           if (pretty != PARI_GP)
-          {             // Show i/2.
+          {                // Show i/2.
             showRatConstants("i", "2");
           }
           else
@@ -828,7 +828,7 @@ static void showFirstTermQuarticEq(int ctr)
   }
   else
   {
-    if (ctr == 2 || ctr == 3)
+    if ((ctr == 2) || (ctr == 3))
     {
       showText(ptrMinus);
     }
@@ -847,7 +847,8 @@ static void biquadraticEquation(int multiplicity)
   {           // e is a perfect square. Rat3 = sqrt(r).
     for (ctr = 0; ctr < 4; ctr++)
     {
-      int isSquareRoot1, isSquareRoot2;
+      bool isSquareRoot1;
+      bool isSquareRoot2;
       showX(multiplicity);
       BigRationalSubt(&Rat3, &RatDeprQuadratic, &Rat1);
       BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat2);
@@ -938,8 +939,7 @@ static void biquadraticEquation(int multiplicity)
       showFirstTermQuarticEq(ctr);
       if (RatDiscr.numerator.sign == SIGN_NEGATIVE)
       {  // x = +/- sqrt((sqrt(e) - c) / 2) +/- i * sqrt((sqrt(e) + c) / 2)
-        int ctr2;
-        for (ctr2 = 0; ctr2 < 2; ctr2++)
+        for (int ctr2 = 0; ctr2 < 2; ctr2++)
         {
           if (ctr2 == 1)
           {
@@ -1031,7 +1031,7 @@ static void biquadraticEquation(int multiplicity)
 }
 
 // Show real or imaginary part of square root of u + q/S
-static void showSquareRootOfComplex(char* plus, char* minus)
+static void showSquareRootOfComplex(const char* plus, const char* minus)
 {
   startSqrt();
   // Divide square root part by 4*16.
@@ -1060,8 +1060,7 @@ static void showSquareRootOfComplex(char* plus, char* minus)
 
 static void FerrariResolventHasRationalRoot(int multiplicity)
 {
-  int ctr;
-  int* ptrValues = factorInfoInteger[0].ptrPolyLifted;
+  const int* ptrValues = factorInfoInteger[0].ptrPolyLifted;
   UncompressBigIntegerB(ptrValues, &RatS.numerator);
   ptrValues += 1 + numLimbs(ptrValues);
   UncompressBigIntegerB(ptrValues, &RatS.denominator);   // RatS <- -root
@@ -1081,7 +1080,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
   CopyBigInt(&Rat2.denominator, &RatS.numerator);
   MultiplyRationalBySqrtRational(&Rat1, &Rat2);          // q/S
   RatDeprLinear.numerator.sign = SIGN_POSITIVE;
-  for (ctr = 0; ctr < 4; ctr++)
+  for (int ctr = 0; ctr < 4; ctr++)
   {
     showX(multiplicity);
     showFirstTermQuarticEq(ctr);                         // Show -b/4a and next sign.
@@ -1150,7 +1149,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
       }
       BigRationalMultiplyByInt(&Rat1, 4, &Rat1);
       BigRationalMultiplyByInt(&Rat3, 4, &Rat3);
-      if (ctr == 0 || ctr == 1)
+      if (ctr <= 1)
       {   // Restore sign of q/S.
         BigIntChSign(&Rat1.numerator);
       }
@@ -1197,7 +1196,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
   }
 }
 
-static void QuarticEquation(int* ptrPolynomial, int multiplicity)
+static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
 {
   int ctr;
   int isImaginary;
@@ -1669,7 +1668,7 @@ static void ExtendedGCD(int first, int second, int* pMult1st, int* pMult2nd)
   *pMult2nd = mult2ndOld;
 }
 
-static void showRatString(char* num, char* den)
+static void showRatString(const char* num, const char* den)
 {
   if (pretty != PARI_GP)
   {
@@ -1685,7 +1684,7 @@ static void showRatString(char* num, char* den)
   }
 }
 
-static void ParseExpression(char* ptrExpr)
+static void ParseExpression(const char* ptrExpr)
 {
   while (*ptrExpr != 0)
   {
@@ -1749,14 +1748,14 @@ static void ParseExpression(char* ptrExpr)
 // Show cos(num*pi/den) as radicals.
 // The output is the sign and the value of the denominator, or zero
 // if the result is zero.
-static int showRadicals(int num, int den, int multiple, int power2, char *times)
+static int showRadicals(int num, int den, int multiple, int power2, const char *times)
 {
   int arraySigns[10];
   int indexSigns = 0;
   int exprDen;
   int den2 = 2 * den;
   int angle;
-  char* ptrExpr;
+  const char* ptrExpr;
   int sign;
   int mult;
   int result;
@@ -1774,11 +1773,11 @@ static int showRadicals(int num, int den, int multiple, int power2, char *times)
   {
     return -1;
   }
-  if (num * 2 == den || num*2 == den*3)
+  if ((num * 2 == den) || (num*2 == den*3))
   {
     return 0;
   }
-  while (num % 2 == 0 && den % 2 == 0)
+  while ((num % 2 == 0) && (den % 2 == 0))
   {
     num /= 2;
     den /= 2;
@@ -1862,7 +1861,7 @@ static int showRadicals(int num, int den, int multiple, int power2, char *times)
   {
     arraySigns[indexSigns] = sign;
     angle = num * 15 / multiple % (60*mult);
-    if (angle < 15*mult || angle > 45*mult)
+    if ((angle < 15*mult) || (angle > 45*mult))
     {     // Angle between 0 and 90 degrees.
           // or from 270 to 360 degrees.
       sign = 1;
@@ -1989,7 +1988,7 @@ static int showRadicals17(int numerator34)
   return -8;
 }
 
-static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst, char *realRoot)
+static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst, const char *realRoot)
 {
   char beginning[500];
   char* ptrBeginning = beginning;
@@ -2069,7 +2068,7 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
   (void)strcpy(ptrBeginning, realRoot);
   ptrBeginning += strlen(ptrBeginning);
   lenBeginning = (int)(ptrBeginning - &beginning[0]);
-  if (*realRoot != 0 && lenBeginning != 0 && *ptrStart != 0)
+  if ((*realRoot != 0) && lenBeginning != 0 && (*ptrStart != 0))
   {
     (void)strcpy(ptrBeginning, ptrTimes);
     lenBeginning += (int)strlen(ptrBeginning);
@@ -2083,7 +2082,7 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
 // If den is multiple of 17, compute the extended GCD of 17 and den/17.
 // Let the results be A and B respectively. so num*pi/den = num*A*pi/17 +
 // num*B*pi/(den/17). Use the formula cos(a+b) = cos a * cos b - sin a * sin b.
-static void showComponent(int num, int den, int multiple, int power2, int toShow, char *realRoot)
+static void showComponent(int num, int den, int multiple, int power2, int toShow, const char *realRoot)
 {
   int denominCos;
   int den2 = 2 * den;
@@ -2097,7 +2096,8 @@ static void showComponent(int num, int den, int multiple, int power2, int toShow
   }
   if (den % 17 == 0)
   {           // Denominator is multiple of 17.
-    int numerator34, numeratorDen;
+    int numerator34;
+    int numeratorDen;
     int denominCos17;
     den /= 17;
     multiple /= 17;
@@ -2137,7 +2137,7 @@ static void showComponent(int num, int den, int multiple, int power2, int toShow
 
 // Try to find a radical expression for cos(num*pi/den) + 
 // i*sin(num*pi/den). If it is not possible, return with no output.
-static void outputRadicandsForCosSin(int num, int den, char *realRoot)
+static void outputRadicandsForCosSin(int num, int den, const char *realRoot)
 {
   // den must be 3^e3 * 5^e5 * 17^e17 * 2^k, where the exponents can be 0 or 1.
   // At this moment we do not consider other Fermat prime numbers.
@@ -2184,7 +2184,7 @@ static void outputRadicandsForCosSin(int num, int den, char *realRoot)
 
 // Show multiplicand * cos(realNum*pi/realDen) + 
 //      i * multiplicand * sin(realNum*pi/realDen)
-static void showTrig(int numerator, int denominator, char* multiplicand)
+static void showTrig(int numerator, int denominator, const char* multiplicand)
 {
   char num[300];
   char den[300];
@@ -2245,27 +2245,27 @@ static void showTrig(int numerator, int denominator, char* multiplicand)
   }
 }
 
-static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
+static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyDegree)
 {
   int index;
-  int* ptrCoeff;
+  const int* ptrCoeff;
   int currentDegree;
   // Polynomial must be palindromic of even degree
   // and the absolute value must be less than 10.
-  if (degree % 2 == 1)
+  if (polyDegree % 2 == 1)
   {      // Polynomial has odd degree so it cannot be cyclotomic.
-    return 0;
+    return false;
   }
   ptrCoeff = ptrPolynomial;
-  for (index = 0; index <= degree; index++)
+  for (index = 0; index <= polyDegree; index++)
   {
     if (*ptrCoeff != 1 && *ptrCoeff != -1)
     {            // Too low ot too high.
-      return 0;
+      return false;
     }
     if (*(ptrCoeff + 1) >= 10)
     {            // Absolute value too high.
-      return 0;
+      return false;
     }
     ptrCoeff += 2;
   }
@@ -2303,29 +2303,28 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
     }
   }
   // Degree of cyclotomic polynomial n is totient(n).
-  for (index = degree; index <= 2 * MAX_DEGREE; index++)
+  for (index = polyDegree; index <= 2 * MAX_DEGREE; index++)
   {
-    if (degree != totients[index])
+    if (polyDegree != totients[index])
     {   // Degree is not correct.
       continue;
     }
     // Test whether x^degree - 1 divides this polynomial.
     int base[MAX_DEGREE];
     int prod[MAX_DEGREE];
-    int expon;
     int* ptrBase = base;
     ptrCoeff = ptrPolynomial;
-    for (currentDegree = 0; currentDegree <= degree; currentDegree++)
+    for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
       *ptrBase++ = *ptrCoeff* *(ptrCoeff + 1);
       ptrCoeff += 2;
     }
-    (void)memset(prod, 0, degree * sizeof(int));
+    (void)memset(prod, 0, polyDegree * sizeof(int));
     prod[1] = 1;    // Initialize polynomial to x.
-    for (expon = 1; expon < index; expon++)
+    for (int expon = 1; expon < index; expon++)
     {               // Multiply by x.
-      int coeffMaxDegree = prod[degree - 1];
-      for (currentDegree = degree - 1; currentDegree > 0; currentDegree--)
+      int coeffMaxDegree = prod[polyDegree - 1];
+      for (currentDegree = polyDegree - 1; currentDegree > 0; currentDegree--)
       {
         prod[currentDegree] = prod[currentDegree-1] - coeffMaxDegree * base[currentDegree];
       }
@@ -2333,13 +2332,12 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
     }
     // If result is 1, then the polynomial is cyclotomic.
     prod[0]--;
-    (void)memset(base, 0, degree*sizeof(int));
-    if (memcmp(base, prod, degree * sizeof(int)) == 0)
+    (void)memset(base, 0, polyDegree*sizeof(int));
+    if (memcmp(base, prod, polyDegree * sizeof(int)) == 0)
     {     // The polynomial is cyclotomic.
-      int numerator;
       int denIsOdd = index % 2;
       int realDen = denIsOdd ? index : index / 2;
-      for (numerator = 1; numerator < index; numerator++)
+      for (int numerator = 1; numerator < index; numerator++)
       {
         int realNum;
         if (gcd(numerator, index) > 1)
@@ -2353,49 +2351,49 @@ static int TestCyclotomic(int* ptrPolynomial, int multiplicity, int degree)
         outputRadicandsForCosSin(realNum, realDen, "");
         endLine();
       }
-      return 1;
+      return true;
     }
   }
-  return 0;         // polynomial is not cyclotomic.
+  return false;         // polynomial is not cyclotomic.
 }
 
-static int isPalindromic(int* ptrPolynomial, int degree)
+static bool isPalindromic(int* ptrPolynomial, int polyDegree)
 {
   int currentDegree;
   int *ptrs[MAX_DEGREE+1];
   int* ptrCoeff = ptrPolynomial;
   // Get pointers to coefficients.
-  for (currentDegree = 0; currentDegree <= degree; currentDegree++)
+  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     ptrs[currentDegree] = ptrCoeff;
     ptrCoeff += 1 + numLimbs(ptrCoeff);
   }
-  for (currentDegree = 0; currentDegree <= degree / 2; currentDegree++)
+  for (currentDegree = 0; currentDegree <= polyDegree / 2; currentDegree++)
   {
-    if (*ptrs[currentDegree] != *ptrs[degree - currentDegree])
+    if (*ptrs[currentDegree] != *ptrs[polyDegree - currentDegree])
     {
-      return 0;    // Polynomial is not palindromic.
+      return false;    // Polynomial is not palindromic.
     }
-    if (memcmp(ptrs[currentDegree] + 1, ptrs[degree - currentDegree] + 1,
+    if (memcmp(ptrs[currentDegree] + 1, ptrs[polyDegree - currentDegree] + 1,
       numLimbs(ptrs[currentDegree])))
     {
-      return 0;    // Polynomial is not palindromic.
+      return false;    // Polynomial is not palindromic.
     }
   }
-  return 1;        // Polynomial is palindromic.
+  return true;        // Polynomial is palindromic.
 }
 
-static void StartRadicand(int degree)
+static void StartRadicand(int polyDegree)
 {
   if (pretty == PRETTY_PRINT)
   {
     (void)strcpy(ptrOutput, "<span class=\"");
     ptrOutput += strlen(ptrOutput);
-    if (degree < 10)
+    if (polyDegree < 10)
     {       // degree has 1 digit.
       (void)strcpy(ptrOutput, "root");
     }
-    else if (degree < 100)
+    else if (polyDegree < 100)
     {       // degree has 2 digits.
       (void)strcpy(ptrOutput, "root2dig");
     }
@@ -2406,7 +2404,7 @@ static void StartRadicand(int degree)
     ptrOutput += strlen(ptrOutput);
     (void)strcpy(ptrOutput, "\"><span class=\"befrad\">");
     ptrOutput += strlen(ptrOutput);
-    int2dec(&ptrOutput, degree);
+    int2dec(&ptrOutput, polyDegree);
     (void)strcpy(ptrOutput, "</span><span class=\"radicand2\">");
     ptrOutput += strlen(ptrOutput);
   }
@@ -2414,13 +2412,13 @@ static void StartRadicand(int degree)
   {
     (void)strcpy(ptrOutput, "\\sqrt[");
     ptrOutput += strlen(ptrOutput);
-    int2dec(&ptrOutput, degree);
+    int2dec(&ptrOutput, polyDegree);
     (void)strcpy(ptrOutput, "]{");
     ptrOutput += strlen(ptrOutput);
   }
 }
 
-static void EndRadicand(int degree)
+static void EndRadicand(int polyDegree)
 {
   if (pretty == PRETTY_PRINT)
   {
@@ -2437,29 +2435,29 @@ static void EndRadicand(int degree)
     *ptrOutput++ = '(';
     *ptrOutput++ = '1';
     *ptrOutput++ = '/';
-    int2dec(&ptrOutput, degree);
+    int2dec(&ptrOutput, polyDegree);
     *ptrOutput++ = ')';
   }
   *ptrOutput = 0;
 }
 
-static void GenerateRoots(int multiplicity, char* rationalRoot, int isNegative, int degree)
+static void GenerateRoots(int multiplicity, const char* rationalRoot, int isNegative, int polyDegree)
 {
-  int currentDegree, realDen;
-  for (currentDegree = 0; currentDegree < degree; currentDegree++)
+  int realDen;
+  for (int currentDegree = 0; currentDegree < polyDegree; currentDegree++)
   {
     int realNum;
     char realRoot[30000];
     char* ptrOutputBak = ptrOutput;
     ptrOutput = realRoot;
     int numer = 2 * currentDegree + (isNegative ? 1 : 0);
-    int gcdNumDen = gcd(numer, degree);
+    int gcdNumDen = gcd(numer, polyDegree);
     realNum = numer / gcdNumDen;
-    realDen = degree / gcdNumDen;
-    StartRadicand(degree);
+    realDen = polyDegree / gcdNumDen;
+    StartRadicand(polyDegree);
     (void)strcpy(ptrOutput, rationalRoot);
     ptrOutput += strlen(ptrOutput);
-    EndRadicand(degree);
+    EndRadicand(polyDegree);
     ptrOutput = ptrOutputBak;
     showX(multiplicity);
     showTrig(realNum, realDen, realRoot);
@@ -2468,7 +2466,7 @@ static void GenerateRoots(int multiplicity, char* rationalRoot, int isNegative, 
   }
 }
 
-static void ShowRootsOfRationalNumbers(int degree, int multiplicity)
+static void ShowRootsOfRationalNumbers(int polyDegree, int multiplicity)
 {
   char rationalRoot[30000];
   char* ptrOutputBak = ptrOutput;
@@ -2484,46 +2482,45 @@ static void ShowRootsOfRationalNumbers(int degree, int multiplicity)
   *ptrOutput = 0;
   ptrOutput = ptrOutputBak;
   // Generate roots.
-  GenerateRoots(multiplicity, rationalRoot, isNegative, degree);
+  GenerateRoots(multiplicity, rationalRoot, isNegative, polyDegree);
 }
 
 // If polynomial has the form ax^n + b, show its roots.
-static int isLinearExponential(int* ptrPolynomial, int degree, int multiplicity)
+static bool isLinearExponential(const int* ptrPolynomial, int polyDegree, int multiplicity)
 {
-  int currentDegree;
   // Get constant term.
   NumberLength = *ptrPolynomial;
   IntArray2BigInteger(ptrPolynomial, &Rat1.numerator);
   ptrPolynomial += 1 + numLimbs(ptrPolynomial);
-  for (currentDegree=1; currentDegree < degree; currentDegree++)
+  for (int currentDegree=1; currentDegree < polyDegree; currentDegree++)
   {
     if (*ptrPolynomial != 1 || *(ptrPolynomial + 1) != 0)
     {
-      return 0;    // Polynomial does not have format ax^n + b.
+      return false;    // Polynomial does not have format ax^n + b.
     }
     ptrPolynomial += 1 + numLimbs(ptrPolynomial);
   }
   // Get leading coefficient.
   NumberLength = *ptrPolynomial;
   IntArray2BigInteger(ptrPolynomial, &Rat1.denominator);
-  ShowRootsOfRationalNumbers(degree, multiplicity);
-  return 1;
+  ShowRootsOfRationalNumbers(polyDegree, multiplicity);
+  return true;
 }
 
 // If polynomial has the form ax^(2n) + bx^n+c, show its roots.
-static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplicity)
+static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int multiplicity)
 {
   char rootQuadr[30000];
   char* ptrOutputBak;
   enum eSign signDiscr;
   int ctr;
   int currentDegree;
-  int halfDegree = degree / 2;
+  int halfDegree = polyDegree / 2;
   char degreeStr[20];
   char* ptrDegreeStr;
-  if (degree % 2 != 0)
+  if (polyDegree % 2 != 0)
   {          // If degree is odd, it is not quadratic, so go out.
-    return 0;
+    return false;
   }
   // Get constant term.
   NumberLength = *ptrPolynomial;
@@ -2533,7 +2530,7 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
   {
     if (*ptrPolynomial != 1 || *(ptrPolynomial + 1) != 0)
     {
-      return 0;    // Polynomial does not have format ax^n + b.
+      return false;    // Polynomial does not have format ax^n + b.
     }
     ptrPolynomial += 1 + numLimbs(ptrPolynomial);
   }
@@ -2545,7 +2542,7 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
   {
     if (*ptrPolynomial != 1 || *(ptrPolynomial + 1) != 0)
     {
-      return 0;    // Polynomial does not have format ax^n + b.
+      return false;    // Polynomial does not have format ax^n + b.
     }
     ptrPolynomial += 1 + numLimbs(ptrPolynomial);
   }
@@ -2569,7 +2566,7 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
       BigRationalDivideByInt(&Rat1, -2, &Rat1);
       ShowRootsOfRationalNumbers(halfDegree, multiplicity);
     }
-    return 1;
+    return true;
   }
   if (signDiscr == SIGN_POSITIVE)
   {           // Roots of quadratic equation are real.
@@ -2635,7 +2632,7 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
       // Change sign of second term.
       Rat2.numerator.sign ^= SIGN_POSITIVE ^ SIGN_NEGATIVE;
     }
-    return 1;
+    return true;
   }
   // Roots: (Rat1^2+Rat2^2*Rat3)^(1/deg)*cos/sin((1/(deg/2))*(n*pi+/-arctan(Rat2*sqrt(Rat3)/Rat1))
   BigRationalMultiply(&Rat2, &Rat2, &Rat4);
@@ -2669,9 +2666,9 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
           ptrOutput += strlen(ptrOutput);
           *ptrOutput++ = ' ';
         }
-        StartRadicand(degree);
+        StartRadicand(polyDegree);
         showRationalNoParen(&Rat4);
-        EndRadicand(degree);
+        EndRadicand(polyDegree);
         *ptrOutput++ = ' ';
         (void)strcpy(ptrOutput, ptrTimes);
         ptrOutput += strlen(ptrOutput);
@@ -2767,13 +2764,12 @@ static int isQuadraticExponential(int* ptrPolynomial, int degree, int multiplici
       endLine();
     }
   }
-  return 1;
+  return true;
 }
 
 // Save factor degrees sorting by ascending order.
 static void SaveFactorDegrees(int prime, int *piFactors, int nbrFactors)
 {
-  int currentFactor;
   int* ptrFactors;
   int* ptrOldFactor;
   int tmpDegree;
@@ -2781,7 +2777,7 @@ static void SaveFactorDegrees(int prime, int *piFactors, int nbrFactors)
   *piFactors++ = prime;
   *piFactors++ = nbrFactors;
   ptrFactors = piFactors;
-  for (currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
+  for (int currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
   {
     int newDegree = factorInfo[currentFactor].degree;
     for (ptrOldFactor = ptrFactors; ptrOldFactor < piFactors; ptrOldFactor++)
@@ -2802,13 +2798,10 @@ static void SaveFactorDegrees(int prime, int *piFactors, int nbrFactors)
   }
 }
 
-static void showDegrees(int *factors)
+static void showDegrees(const int *factors)
 {
-  int nbrFactors;
-  int currentFactor;
-
-  nbrFactors = *++factors;
-  for (currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
+  int nbrFactors = *++factors;
+  for (int currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
   {
     if (currentFactor != 0)
     {
@@ -2826,7 +2819,7 @@ static void showDegrees(int *factors)
   }
 }
 
-static void ShowNoSolvableSpanish(int* firstArray, int* secondArray,
+static void ShowNoSolvableSpanish(const int* firstArray, const int* secondArray,
   int numberDifferentX, int nbrFactor, int gcdDegrees)
 {
   if (firstArray != secondArray)
@@ -2861,7 +2854,7 @@ static void ShowNoSolvableSpanish(int* firstArray, int* secondArray,
   showText(" (el grupo de Galois contiene un ciclo de longitud ");
 }
 
-static void ShowNoSolvableEnglish(int* firstArray, int* secondArray,
+static void ShowNoSolvableEnglish(const int* firstArray, const int* secondArray,
   int numberDifferentX, int nbrFactor, int gcdDegrees)
 {
   if (firstArray != secondArray)
@@ -2896,7 +2889,7 @@ static void ShowNoSolvableEnglish(int* firstArray, int* secondArray,
   showText(" (the Galois group contains a cycle of ");
 }
 
-static void showExplanation(int left, char* oper1, int middle, char* oper2, int right)
+static void showExplanation(int left, const char* oper1, int middle, const char* oper2, int right)
 {
   *ptrOutput++ = ' ';
   *ptrOutput++ = '(';
@@ -2944,11 +2937,11 @@ static int isPrime(int value)
 // If the factor of prime degree is n/2 < p < n-2, or if n/3 < p <= n/2 and
 // the largest degree is odd and greater than n/2, then the polynomial is not
 // solvable with radicals.
-static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial, 
+static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial, 
   int polyDegree, int multiplicity)
 {
-  char* ptrStrPrimeHalfSp = "primo mayor que la mitad del grado del polinomio";
-  char* ptrStrPrimeHalfEn = "prime length greater than half the degree of polynomial";
+  const char* ptrStrPrimeHalfSp = "primo mayor que la mitad del grado del polinomio";
+  const char* ptrStrPrimeHalfEn = "prime length greater than half the degree of polynomial";
   int factorDegreesCycle2Or3[MAX_DEGREE+2];
   int factorDegreesCycleP[MAX_DEGREE + 2];  // n/2 < p
   int factorDegreesCycleOther[MAX_DEGREE + 2]; // n/3 < p < n/2
@@ -2962,7 +2955,7 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
   int primeIndex = -1;
   int gcdDegrees = 0;
   int currentDegree;
-  int* ptrCoeff;
+  const int* ptrCoeff;
   int* ptrCoeffDest;
   factorDegreesCycleP[1] = 0;
   // Compute GCD of all degrees of coefficients different from zero.
@@ -2971,7 +2964,7 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
   ptrCoeff = ptrPolynomial;
   for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
-    if (*ptrCoeff != 1 || *(ptrCoeff + 1) != 0)
+    if ((*ptrCoeff != 1) || (*(ptrCoeff + 1) != 0))
     {            // Coefficient is not zero.
       gcdDegrees = gcd(currentDegree, gcdDegrees);
       if (gcdDegrees == 1)
@@ -3022,7 +3015,7 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
       int2dec(&ptrOutput, polyDegree);
       showText(" which is less than 5.");
     }
-    return 1;
+    return true;
   }
   ptrCoeff = ptrPolynomial;
   ptrCoeffDest = polyNonRepeatedFactors;
@@ -3036,10 +3029,10 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
   }
   do
   {
-    int factorNbr, nbrFactors;
+    int nbrFactors;
     int cycle2FoundInThisFactor = 0;
     int cycle3FoundInThisFactor = 0;
-    struct sFactorInfo* pstFactorInfo;
+    const struct sFactorInfo* pstFactorInfo;
     (void)memset(factorInfo, 0, sizeof(factorInfo));
     primeIndex = getNextPrimeNoDuplicatedFactors(primeIndex);
     prime = smallPrimes[primeIndex];
@@ -3056,13 +3049,13 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
       pstFactorInfo++;
     }
     pstFactorInfo = factorInfo;
-    for (factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
+    for (int factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
     {
-      int currentDegree;
-      currentDegree = pstFactorInfo->degree;
-      if (currentDegree % 2 == 0)
+      int currDegree;
+      currDegree = pstFactorInfo->degree;
+      if (currDegree % 2 == 0)
       {
-        if (currentDegree == 2)
+        if (currDegree == 2)
         {
           cycle2FoundInThisFactor++;
         }
@@ -3071,9 +3064,9 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
           cycle2FoundInThisFactor = 2;
         }
       }
-      if (currentDegree % 3 == 0)
+      if (currDegree % 3 == 0)
       {
-        if (currentDegree == 3)
+        if (currDegree == 3)
         {
           cycle3FoundInThisFactor++;
         }
@@ -3082,23 +3075,23 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
           cycle3FoundInThisFactor = 2;
         }
       }
-      if (currentDegree > 3 && currentDegree > degree / 2)
+      if (currDegree > 3 && currDegree > degree / 2)
       {
-        if (isPrime(currentDegree))
+        if (isPrime(currDegree))
         {      // Current degree > n/2 and is prime.
-          if (currentDegree < degree - 2)
+          if (currDegree < degree - 2)
           {
             SaveFactorDegrees(prime, factorDegreesCycleP, nbrFactors);
-            cyclePrGtNOver2ToLess2Found = currentDegree;
+            cyclePrGtNOver2ToLess2Found = currDegree;
           }
           else if (cyclePrGtNOver2Found == 0)
           {    // If first condition holds, the polynomial is not solvable.
             SaveFactorDegrees(prime, factorDegreesCycleP, nbrFactors);
-            cyclePrGtNOver2Found = currentDegree;
-            cycleOddGtNOver2Found = currentDegree;
+            cyclePrGtNOver2Found = currDegree;
+            cycleOddGtNOver2Found = currDegree;
           }
         }
-        else if (currentDegree % 2 == 1 && currentDegree < degree)
+        else if (currDegree % 2 == 1 && currDegree < degree)
         {      // Current degree > n/2, it is odd and less than the polynomial degree.
           if (cycleOddGtNOver2Found == 0)
           {    // If first condition holds, the polynomial is not solvable.
@@ -3107,9 +3100,9 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
             pstFactorInfo = factorInfo;
             for (factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
             {
-              if (pstFactorInfo->degree < currentDegree)
+              if (pstFactorInfo->degree < currDegree)
               {
-                if (gcd(pstFactorInfo->degree, currentDegree) != 1)
+                if (gcd(pstFactorInfo->degree, currDegree) != 1)
                 {
                   break;
                 }
@@ -3119,21 +3112,21 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
             if (factorNbr == nbrFactors)
             {      // All degrees are coprime to current degree.
               SaveFactorDegrees(prime, factorDegreesCycleP, nbrFactors);
-              cycleOddGtNOver2Found = currentDegree;
+              cycleOddGtNOver2Found = currDegree;
             }
           }
         }
       }
-      else if (currentDegree > 3 && currentDegree > degree / 3)
+      else if (currDegree > 3 && currDegree > degree / 3)
       {
-        if (isPrime(currentDegree) && degree % currentDegree != 0)
+        if (isPrime(currDegree) && degree % currDegree != 0)
         {      // Current degree > n/3, it is prime, and it does not divide the degree.
                // Ensure that only this degree is multiple of itself.
           int nbrMultiples = 0;
           pstFactorInfo = factorInfo;
           for (factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
           {
-            if (pstFactorInfo->degree % currentDegree == 0)
+            if (pstFactorInfo->degree % currDegree == 0)
             {
               nbrMultiples++;
             }
@@ -3142,7 +3135,7 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
           if (nbrMultiples == 1)
           {           // Only one multiple of currentDegree expected.
             SaveFactorDegrees(prime, factorDegreesCycleOther, nbrFactors);
-            cyclePrGtNOver3Found = currentDegree;
+            cyclePrGtNOver3Found = currDegree;
             if (degree % 2 == 1)
             {         // If degree is odd, the group is very transitive.
               break;
@@ -3279,9 +3272,9 @@ static int isSymmetricOrAlternating(int nbrFactor, int* ptrPolynomial,
   }
   else
   {
-    return 0;
+    return false;
   }
-  return 1;
+  return true;
 }
 
 void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* pstFactorInfo, int groupLength)

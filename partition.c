@@ -30,11 +30,11 @@ static int prodModulusLimbs;
 static BigInteger prod;
 static BigInteger factor;
 
-static void smallMultiply(int factor1, int factor2, int *prod)
+static void smallMultiply(int factor1, int factor2, int *product)
 {
   int low = (factor1 * factor2) & MAX_VALUE_LIMB;
   double dAccum = (double)factor1 * (double)factor2;
-  *prod = low;
+  *product = low;
   if (low < HALF_INT_RANGE)
   {
     dAccum = ((dAccum + HALF_INT_RANGE / 2) / LIMB_RANGE);
@@ -43,7 +43,7 @@ static void smallMultiply(int factor1, int factor2, int *prod)
   {
     dAccum = ((dAccum - HALF_INT_RANGE / 2) / LIMB_RANGE);
   }
-  *(prod + 1) = (unsigned int)dAccum;
+  *(product + 1) = (unsigned int)dAccum;
 }
 
 // Compute the partitions of an integer p(n)
@@ -190,17 +190,17 @@ void partition(int val, BigInteger *pResult)
   for (index = 1; index<limbs; index++)
   {
     int mult;
-    int prod[2];
+    int product[2];
     unsigned int carry1 = 0;
     unsigned int carry2 = 0;
     // Update product of modulus by multiplying by next prime.
     mult = partArray[val + index - 1];
     for (idx = 0; idx < prodModulusLimbs; idx++)
     {
-      smallMultiply(mult, prodModulus[idx].x, prod);
-      carry1 += (unsigned int)prod[0];
+      smallMultiply(mult, prodModulus[idx].x, product);
+      carry1 += (unsigned int)product[0];
       prodModulus[idx].x = (int)carry1 & MAX_VALUE_LIMB;
-      carry1 = (carry1 >> BITS_PER_GROUP) + (unsigned int)prod[1];
+      carry1 = (carry1 >> BITS_PER_GROUP) + (unsigned int)product[1];
     }
     if (carry1 != 0)
     {  // New limb needed.
@@ -213,10 +213,10 @@ void partition(int val, BigInteger *pResult)
     mult = partArray[index];
     for (idx = 0; idx < prodModulusLimbs; idx++)
     {
-      smallMultiply(mult, prodModulus[idx].x, prod);
-      carry1 += (unsigned int)prod[0];
+      smallMultiply(mult, prodModulus[idx].x, product);
+      carry1 += (unsigned int)product[0];
       carry2 += (carry1 & MAX_VALUE_LIMB) + pResult->limbs[idx].x;
-      carry1 = (carry1 >> BITS_PER_GROUP) + (unsigned int)prod[1];
+      carry1 = (carry1 >> BITS_PER_GROUP) + (unsigned int)product[1];
       pResult->limbs[idx].x = (int)carry2 & MAX_VALUE_LIMB;
       carry2 = (carry2 >> BITS_PER_GROUP);
     }
@@ -294,12 +294,11 @@ static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulat
 // Using partArray as a buffer, accumulate products up to two limbs, then multiply the groups recursively.
 void factorial(BigInteger *result, int argument)
 {
-  int ctr;
   int nbrGroupsAccumulated = 1;
   double factorAccum = 1;
   double maxFactorAccum = (double)(1 << 30) * (double)(1 << 23);
   partArray[0] = 20;     // Index of first big integer.
-  for (ctr = 1; ctr <= argument; ctr++)
+  for (int ctr = 1; ctr <= argument; ctr++)
   {
     if (factorAccum * ctr > maxFactorAccum)
     {

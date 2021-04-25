@@ -37,30 +37,30 @@ static void Karatsuba(int idxFactor1, int nbrLen);
   arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;                            \
   Pr = prod_iPlus1 + (uint64_t)factor2_i * factor1_1 +                  \
        (uint64_t)factor2_iPlus1 * factor1_0 + (Pr >> BITS_PER_GROUP);   \
-  arrayAux[i + 1].x = (int32_t)Pr & MAX_INT_NBR;
+  arrayAux[i + 1].x = (int32_t)Pr & MAX_INT_NBR
 #define MULT_MACRO_DOUBLE(m, n, p)                                      \
   Pr = prod_iPlus##p + (uint64_t)factor2_i * factor1_##p +              \
     (uint64_t)factor2_iPlus1 * factor1_##n + (Pr >> BITS_PER_GROUP);    \
-  prod_iPlus##m = (int32_t)Pr & MAX_INT_NBR;
+  prod_iPlus##m = (int32_t)Pr & MAX_INT_NBR
 #define EPILOG_MULTIPLICATION_DOUBLE(m, n)                              \
   Pr = (uint64_t)factor2_iPlus1 * factor1_##n + (Pr >> BITS_PER_GROUP); \
   prod_iPlus##m = (uint32_t)Pr & MAX_INT_NBR;                           \
-  prod_iPlus##n = (uint32_t)(Pr >> BITS_PER_GROUP);
+  prod_iPlus##n = (uint32_t)(Pr >> BITS_PER_GROUP)
 
 #define PROLOG_MULTIPLICATION_SINGLE(m)                                 \
   factor2_i = arr[idxFactor2 + m].x;                                    \
   Pr = prod_iPlus0 + (uint64_t)factor2_i * factor1_0;                   \
-  arrayAux[m].x = (int32_t)Pr & MAX_INT_NBR;
+  arrayAux[m].x = (int32_t)Pr & MAX_INT_NBR 
 #define MULT_MACRO_SINGLE(m, n)                                         \
   Pr = prod_iPlus##m + (uint64_t)factor2_i * factor1_##m +              \
        (Pr >> BITS_PER_GROUP);                                          \
-  arrayAux[n].x = (int32_t)Pr & MAX_INT_NBR;
+  arrayAux[n].x = (int32_t)Pr & MAX_INT_NBR
 #define EPILOG_MULTIPLICATION_SINGLE(m)                                 \
-  arrayAux[m].x = (int32_t)(Pr >> BITS_PER_GROUP);
+  arrayAux[m].x = (int32_t)(Pr >> BITS_PER_GROUP)
 
 #define M(n)                                                            \
   uint32_t factor1_##n = arr[idxFactor1 + n].x;                         \
-  uint32_t prod_iPlus##n = 0;
+  uint32_t prod_iPlus##n = 0
 
 void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen)
 {
@@ -173,9 +173,8 @@ static void ClassicalMult3Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult4Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   M(0); M(1); M(2); M(3);
-  for (i = 0; i < 4; i += 2)
+  for (int i = 0; i < 4; i += 2)
   {
     uint32_t factor2_i;
     uint32_t factor2_iPlus1;
@@ -193,11 +192,10 @@ static void ClassicalMult4Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult5Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   uint32_t factor2_i;
   uint64_t Pr;
   M(0); M(1); M(2); M(3); M(4);
-  for (i = 0; i < 4; i+=2)
+  for (int i = 0; i < 4; i+=2)
   {
     uint32_t factor2_iPlus1;
     PROLOG_MULTIPLICATION_DOUBLE;
@@ -216,9 +214,8 @@ static void ClassicalMult5Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult6Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   M(0); M(1); M(2); M(3); M(4); M(5);
-  for (i = 0; i < 6; i+=2)
+  for (int i = 0; i < 6; i+=2)
   {
     uint32_t factor2_i;
     uint32_t factor2_iPlus1;
@@ -240,11 +237,10 @@ static void ClassicalMult6Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult7Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   uint32_t factor2_i;
   uint64_t Pr;
   M(0); M(1); M(2); M(3); M(4); M(5); M(6);
-  for (i = 0; i < 6; i += 2)
+  for (int i = 0; i < 6; i += 2)
   {
     uint32_t factor2_iPlus1;
     PROLOG_MULTIPLICATION_DOUBLE;
@@ -267,9 +263,8 @@ static void ClassicalMult7Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult8Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7);
-  for (i = 0; i < 8; i += 2)
+  for (int i = 0; i < 8; i += 2)
   {
     uint32_t factor2_i;
     uint32_t factor2_iPlus1;
@@ -295,11 +290,10 @@ static void ClassicalMult8Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult9Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   uint32_t factor2_i;
   uint64_t Pr;
   M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8);
-  for (i = 0; i < 8; i += 2)
+  for (int i = 0; i < 8; i += 2)
   {
     uint32_t factor2_iPlus1;
     PROLOG_MULTIPLICATION_DOUBLE;
@@ -326,9 +320,8 @@ static void ClassicalMult9Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult10Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
-  for (i = 0; i < 10; i+=2)
+  for (int i = 0; i < 10; i+=2)
   {
     uint32_t factor2_i;
     uint32_t factor2_iPlus1;
@@ -358,11 +351,10 @@ static void ClassicalMult10Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult11Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   uint32_t factor2_i;
   uint64_t Pr;
   M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9); M(10);
-  for (i = 0; i < 10; i += 2)
+  for (int i = 0; i < 10; i += 2)
   {
     uint32_t factor2_iPlus1;
     PROLOG_MULTIPLICATION_DOUBLE;
@@ -393,10 +385,9 @@ static void ClassicalMult11Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult12Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
   M(10); M(11);
-  for (i = 0; i < 12; i += 2)
+  for (int i = 0; i < 12; i += 2)
   {
     uint32_t factor2_i;
     uint32_t factor2_iPlus1;
@@ -430,12 +421,11 @@ static void ClassicalMult12Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult13Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   uint32_t factor2_i;
   uint64_t Pr;
   M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
   M(10); M(11); M(12);
-  for (i = 0; i < 12; i += 2)
+  for (int i = 0; i < 12; i += 2)
   {
     uint32_t factor2_iPlus1;
     PROLOG_MULTIPLICATION_DOUBLE;
@@ -470,10 +460,9 @@ static void ClassicalMult13Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult14Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
   M(10); M(11); M(12); M(13);
-  for (i = 0; i < 14; i += 2)
+  for (int i = 0; i < 14; i += 2)
   {
     uint32_t factor2_i;
     uint32_t factor2_iPlus1;
@@ -511,12 +500,11 @@ static void ClassicalMult14Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult15Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   uint32_t factor2_i;
   uint64_t Pr;
   M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
   M(10); M(11); M(12); M(13); M(14);
-  for (i = 0; i < 14; i += 2)
+  for (int i = 0; i < 14; i += 2)
   {
     uint32_t factor2_iPlus1;
     PROLOG_MULTIPLICATION_DOUBLE;
@@ -555,10 +543,9 @@ static void ClassicalMult15Limbs(int idxFactor1, int idxFactor2)
 
 static void ClassicalMult16Limbs(int idxFactor1, int idxFactor2)
 {
-  int i;
   M(0); M(1); M(2); M(3); M(4); M(5); M(6); M(7); M(8); M(9);
   M(10); M(11); M(12); M(13); M(14); M(15);
-  for (i = 0; i < 16; i += 2)
+  for (int i = 0; i < 16; i += 2)
   {
     uint32_t factor2_i;
     uint32_t factor2_iPlus1;
@@ -657,6 +644,8 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
   case 16:
     ClassicalMult16Limbs(idxFactor1, idxFactor2);
     break;
+  default:
+    break;
   }
 #else
   limb *ptrFactor1;
@@ -709,12 +698,14 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
   return;
 }
 
-static struct stKaratsubaStack
+struct stKaratsubaStack
 {
   int idxFactor1;
   int sign;
   int stage;
-} astKaratsubaStack[16];
+};
+
+static struct stKaratsubaStack astKaratsubaStack[16];
 
 static void Karatsuba(int idxFactor1, int nbrLen)
 {
@@ -724,7 +715,7 @@ static void Karatsuba(int idxFactor1, int nbrLen)
   unsigned int carry1Second;
   unsigned int carry2Second;
   limb *ptrResult;
-  limb *ptrHigh;
+  const limb *ptrHigh;
   limb tmp;
   int sign;
   int halfLength;

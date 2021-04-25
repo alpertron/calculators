@@ -30,10 +30,10 @@ struct linkedBigInt
 
 void initLinkedBigInt(void);
 void getBigIntegerFromLinked(struct linkedBigInt* pstLinkedBigInt, BigInteger* pBigInt);
-void setLinkedBigInteger(struct linkedBigInt** pstLinkedBigInt, BigInteger* pBigInt);
-bool linkedBigIntIsZero(struct linkedBigInt* pstLinkedBigInt);
-bool linkedBigIntIsOne(struct linkedBigInt* pstLinkedBigInt);
-bool linkedBigIntIsMinusOne(struct linkedBigInt* pstLinkedBigInt);
+void setLinkedBigInteger(struct linkedBigInt** pstLinkedBigInt, const BigInteger* pBigInt);
+bool linkedBigIntIsZero(const struct linkedBigInt* pstLinkedBigInt);
+bool linkedBigIntIsOne(const struct linkedBigInt* pstLinkedBigInt);
+bool linkedBigIntIsMinusOne(const struct linkedBigInt* pstLinkedBigInt);
 void linkedBigIntChSign(struct linkedBigInt* pstLinkedBigInt);
 void intToLinkedBigInt(struct linkedBigInt** ppstLinkedBigInt, int value);
 

@@ -70,7 +70,7 @@ BigInteger valueX;
 int counterC;
 #define fibon1 MontgomeryR1
 static enum eExprErr ComputeSubExpr(void);
-static void SkipSpaces(char *expr);
+static void SkipSpaces(const char *expr);
 static int ComputeBack(void);
 static int ComputeNext(void);
 #ifdef FACTORIZATION_FUNCTIONS
@@ -90,9 +90,9 @@ static enum eExprErr ComputeModInv(void);
 static enum eExprErr ComputeFibLucas(int origValue);
 static enum eExprErr ComputePartition(void);
 static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult);
-static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger *result);
-static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
-  char *funcName, int funcArgs, int leftNumberFlag);
+static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger* second, BigInteger* result);
+static enum eExprErr func(char* expr, BigInteger* ExpressionResult,
+  const char* funcName, int funcArgs, int leftNumberFlag);
 static int type;
 static bool valueXused;
 static BigInteger curStack;
@@ -115,7 +115,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
 {
   int retcode;
   int nbrParen = 0;
-  char* ptrExpr = expr;
+  const char* ptrExpr = expr;
   // Check that the parentheses are balanced.
   while ((*ptrExpr != 0) && (*ptrExpr != ';'))
   {
@@ -160,7 +160,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
   return 0;
 }
 
-static int numLimbs(int* pLen)
+static int numLimbs(const int* pLen)
 {
   int nbrLimbs = *pLen;
   if (nbrLimbs < 0)
@@ -177,7 +177,7 @@ static void getCurrentStackValue(BigInteger* pValue)
   IntArray2BigInteger((int *)ptrStackValue, pValue);
 }
 
-enum eExprErr setStackValue(BigInteger* pValue)
+enum eExprErr setStackValue(const BigInteger* pValue)
 {
   int currentOffset = comprStackOffset[stackIndex];
   if (currentOffset >= COMPR_STACK_SIZE - sizeof(BigInteger) / sizeof(limb))
@@ -287,7 +287,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       charValue = OPER_NOT;
       exprIndex += 3;
     }
-    else if (((charValue & 0xDF) == 'A') && ((*(expr + exprIndex + 1) & 0xDF)) == 'N' &&
+    else if (((charValue & 0xDF) == 'A') && ((*(expr + exprIndex + 1) & 0xDF) == 'N') &&
       ((*(expr + exprIndex + 2) & 0xDF) == 'D'))
     {
       charValue = OPER_AND;
@@ -335,7 +335,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_INTERM_TOO_HIGH;
       }
-      factorial(&curStack, (int)curStack.limbs[0].x);
+      factorial(&curStack, curStack.limbs[0].x);
       retcode = setStackValue(&curStack);
       if (retcode != EXPR_OK)
       {
@@ -366,7 +366,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         {
           largeLen.x = curStack.limbs[0].x;
         }
-        len = (int)largeLen.x;
+        len = largeLen.x;
 #ifdef FACTORIZATION_APP
         if ((len < 0) || (len > 460490))
 #else
@@ -375,7 +375,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         {
           return EXPR_INTERM_TOO_HIGH;
         }
-        primorial(&curStack, (int)curStack.limbs[0].x);
+        primorial(&curStack, curStack.limbs[0].x);
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -1014,6 +1014,10 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           computeSubExprStackThreshold = stackIndex;
         }
       }
+      if (stackIndex >= sizeof(stackOperators))
+      {
+        return EXPR_TOO_MANY_PAREN;
+      }
       stackOperators[stackIndex++] = charValue;
       leftNumberFlag = 0;
       continue;
@@ -1039,7 +1043,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
   return EXPR_OK;
 }
 
-static void SkipSpaces(char *expr)
+static void SkipSpaces(const char *expr)
 {
   while (*(expr + exprIndex))
   {
@@ -1153,6 +1157,8 @@ static enum eExprErr ComputeSubExpr(void)
   case OPER_XOR:    // Perform binary XOR.
     BigIntXor(firstArg, secondArg, result);
     break;
+  default:
+    break;
   }
   retcode = setStackValue(&curStack);
   if (retcode != EXPR_OK)
@@ -1163,12 +1169,11 @@ static enum eExprErr ComputeSubExpr(void)
 }
 
 static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
-  char *funcName, int funcArgs, int leftNumberFlag)
+  const char *funcName, int funcArgs, int leftNumberFlag)
 {
-  int index;
   int funcNameLen = (int)strlen(funcName);
-  char *ptrExpr;
-  char *ptrFuncName;
+  const char *ptrExpr;
+  const char *ptrFuncName;
 
   if (exprIndex + funcNameLen > exprLength)
   {
@@ -1191,11 +1196,12 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
     return EXPR_SYNTAX_ERROR;
   }
   SkipSpaces(expr);
-  if ((exprIndex == exprLength) || (*(expr + exprIndex++) != '('))
+  if ((exprIndex == exprLength) || (*(expr + exprIndex) != '('))
   {
     return EXPR_SYNTAX_ERROR;
   }
-  for (index = 0; index < funcArgs; index++)
+  exprIndex++;
+  for (int index = 0; index < funcArgs; index++)
   {
     int retcode;
     char compareChar;
@@ -1209,22 +1215,26 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
     if (retcode != 0) { return retcode; }
     SkipSpaces(expr);
     compareChar = (index == funcArgs - 1 ? ')' : ',');
-    if ((exprIndex == exprLength) || (*(expr + exprIndex++) != compareChar))
+    if (exprIndex == exprLength)
     {
       return EXPR_SYNTAX_ERROR;
     }
+    if (*(expr + exprIndex) != compareChar)
+    {
+      return EXPR_SYNTAX_ERROR;
+    }
+    exprIndex++;
     stackIndex++;
   }
   stackIndex -= funcArgs;
   return EXPR_OK;
 }
 
-static void generateSieve(int* pSmallPrimes, char* sieve, BigInteger* pArgument, bool isNext)
+static void generateSieve(const int* pSmallPrimes, char* sieve, BigInteger* pArgument, bool isNext)
 {
-  int ctr;
   // Indicate numbers not divisible by small primes in advance.
   (void)memset(sieve, 0, COMPUTE_NEXT_PRIME_SIEVE_SIZE);
-  for (ctr = 0; ctr < 1229; ctr++)
+  for (int ctr = 0; ctr < 1229; ctr++)
   {     // For each prime less than 10000...
     int prime = *pSmallPrimes++;
     int remainder = getRemainder(pArgument, prime);
@@ -1257,7 +1267,7 @@ static int ComputeBack(void)
   BigInteger *pArgument = &curStack;
   BigInteger *pResult = &curStack;
   limb *pResultLimbs = pResult->limbs;
-  limb *pArgumentLimbs = pArgument->limbs;
+  const limb *pArgumentLimbs = pArgument->limbs;
   pResult->sign = SIGN_POSITIVE;
   if (pArgument->sign == SIGN_NEGATIVE)
   {
@@ -1294,10 +1304,9 @@ static int ComputeBack(void)
   {          // Big number: use sieve.
     for (;;)
     {        // Loop that searches for previous probable prime.
-      int ctr;
       addbigint(pResult, -COMPUTE_NEXT_PRIME_SIEVE_SIZE);
       generateSieve(smallPrimes, sieve, pResult, true);
-      for (ctr = COMPUTE_NEXT_PRIME_SIEVE_SIZE-1; ctr >= 0; ctr--)
+      for (int ctr = COMPUTE_NEXT_PRIME_SIEVE_SIZE-1; ctr >= 0; ctr--)
       {
         if (sieve[ctr] == 0)
         {   // Number is not divisible by primes less than 1000.
@@ -1325,7 +1334,7 @@ static int ComputeNext(void)
   BigInteger *pArgument = &curStack;
   BigInteger *pResult = &curStack;
   limb *pResultLimbs = pResult->limbs;
-  limb *pArgumentLimbs = pArgument->limbs;
+  const limb *pArgumentLimbs = pArgument->limbs;
   pResult->sign = SIGN_POSITIVE;
   if ((pArgument->sign == SIGN_NEGATIVE) ||
     ((pArgument->nbrLimbs == 1) && (pArgumentLimbs->x < 2)))
@@ -1363,9 +1372,8 @@ static int ComputeNext(void)
   {          // Big number: use sieve.
     for (;;)
     {        // Loop that searches for next probable prime.
-      int ctr;
       generateSieve(smallPrimes, sieve, pResult, true);
-      for (ctr = 0; ctr<COMPUTE_NEXT_PRIME_SIEVE_SIZE; ctr++)
+      for (int ctr = 0; ctr<COMPUTE_NEXT_PRIME_SIEVE_SIZE; ctr++)
       {
         if (sieve[ctr] == 0)
         {   // Number is not divisible by primes less than 1000.
@@ -1388,7 +1396,7 @@ static int ComputeNext(void)
 
 static enum eExprErr ComputeModInv(void)
 {
-  BigInteger one;
+  static BigInteger one;
   BigInteger* pDiv;
   getCurrentStackValue(&curStack);    // Get first argument of MODINV.
   stackIndex++;
@@ -1436,7 +1444,7 @@ static enum eExprErr ComputeFibLucas(int origValue)
   {
     return EXPR_INTERM_TOO_HIGH;
   }
-  val = (int)largeVal.x;
+  val = largeVal.x;
   pFibonPrev = fibon1;
   pFibonAct = fibon2;
   len = 1;
@@ -1446,12 +1454,12 @@ static enum eExprErr ComputeFibLucas(int origValue)
   }
   else
   {
-    int i, j;
+    int j;
     // For Lucas sequences: FibonPrev = 2, FibonAct = 1
     // For Fibonacci sequences: FibonPrev = 0, FibonAct = 1
     fibon1[0].x = origValue;
     fibon2[0].x = 1;
-    for (i = 1; i < val; i++)
+    for (int i = 1; i < val; i++)
     {
       limb *pTemp;
       unsigned int carry = 0;
@@ -1481,7 +1489,7 @@ static enum eExprErr ComputeFibLucas(int origValue)
 
 static enum eExprErr ComputePartition(void)
 {
-  BigInteger *pArgument = &curStack;
+  const BigInteger *pArgument = &curStack;
   limb largeVal;
   int val;
 
@@ -1505,7 +1513,7 @@ static enum eExprErr ComputePartition(void)
   {
     return EXPR_INTERM_TOO_HIGH;
   }
-  val = (int)largeVal.x;
+  val = largeVal.x;
   if (val > 100000)
   {
     return EXPR_INVALID_PARAM;
@@ -1597,9 +1605,8 @@ static int ComputeConcatFact(void)
   stackIndex++;
   getCurrentStackValue(&curStack2);   // Get second argument.
   stackIndex--;
-  BigInteger *mode = &curStack;
-  BigInteger factorValue;
-  int factorNumber;
+  const BigInteger *mode = &curStack;
+  static BigInteger factorValue;
   int nbrFactors;
   int descend = mode->limbs[0].x & 1;
   int repeated = mode->limbs[0].x & 2;
@@ -1610,10 +1617,11 @@ static int ComputeConcatFact(void)
   }
   PerformFactorization(&curStack2);   // Factor second argument.
   nbrFactors = astFactorsMod[0].multiplicity;
-  for (factorNumber = 1; factorNumber <= nbrFactors; factorNumber++)
+  for (int factorNumber = 1; factorNumber <= nbrFactors; factorNumber++)
   {
     int ctr;
-    struct sFactors* pstFactor = &astFactorsMod[descend ? nbrFactors - factorNumber + 1 : factorNumber];
+    const struct sFactors* pstFactor =
+          &astFactorsMod[descend ? nbrFactors - factorNumber + 1 : factorNumber];
     NumberLength = *(pstFactor->ptrFactor);
     IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
     ctr = (repeated ? pstFactor->multiplicity : 1);
@@ -1642,12 +1650,13 @@ static int ComputeSumDigits(void)
   stackIndex++;
   getCurrentStackValue(&curStack2);   // Get second argument.
   stackIndex--;
-  BigInteger argum, Temp;
+  static BigInteger argum;
+  static BigInteger Temp;
   BigInteger *result = &curStack;
   BigInteger *radix = &curStack2;
   CopyBigInt(&argum, &curStack);
   intToBigInteger(result, 0);
-  while ((argum.nbrLimbs > 1) || (argum.limbs[0].x > 0))
+  while (!BigIntIsZero(&argum))
   {
     BigIntRemainder(&argum, radix, &Temp);
     BigIntAdd(result, &Temp, result);
@@ -1680,8 +1689,8 @@ static int ComputeRevDigits(void)
   stackIndex++;
   getCurrentStackValue(&curStack2);   // Get second argument.
   stackIndex--;
-  BigInteger argum;
-  BigInteger Temp;
+  static BigInteger argum;
+  static BigInteger Temp;
   BigInteger *result = &curStack;
   BigInteger *radix = &curStack2;
   CopyBigInt(&argum, &curStack);
@@ -1696,13 +1705,13 @@ static int ComputeRevDigits(void)
   return EXPR_OK;
 }
 
-static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger *result)
+static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigInteger *result)
 {
   int ctr;
   int prevLimb;
   int curLimb;
   int *ptrDest;
-  int *ptrSrc;
+  const int *ptrSrc;
   int shiftCtr = second->limbs[0].x;
   int delta = shiftCtr / BITS_PER_GROUP;
   int rem = shiftCtr % BITS_PER_GROUP;
@@ -1745,7 +1754,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger
   }
   else
   {     // Perform shift right.
-    int isNegative = 0;
+    bool isNegative = false;
     if ((second->nbrLimbs > 1) || (shiftCtr > first->nbrLimbs * BITS_PER_GROUP))
     {   // Shift too much to the right. Result is zero or -1.
       if (first->sign == SIGN_POSITIVE)
@@ -1760,7 +1769,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger
     }
     if (first->sign == SIGN_NEGATIVE)
     {   // If it is negative, add 1, perform shift right, and finally subtract 1 to result.
-      isNegative = 1;
+      isNegative = true;
       addbigint(first, 1);
     }
     // Shift right the absolute value.
@@ -1791,8 +1800,8 @@ static enum eExprErr ShiftLeft(BigInteger* first, BigInteger *second, BigInteger
 }
 
 #ifndef __EMSCRIPTEN__
-void databack(char *data)
+void databack(const char *data)
 {
-  (void *)data;
+  (void)data;
 }
 #endif

@@ -40,13 +40,13 @@ static void DivideGaussian(BigInteger *real, BigInteger *imag);
 static BigInteger value[2];
 extern BigInteger tofactor;
 
-static void showText(char *text)
+static void showText(const char *text)
 {
   (void)strcpy(ptrOutput, text);
   ptrOutput += strlen(ptrOutput);
 }
 
-static void showNumber(BigInteger *real, BigInteger *imag)
+static void showNumber(BigInteger *real, const BigInteger *imag)
 {
   BigInteger Tmp;
   CopyBigInt(&Tmp, imag);
@@ -108,7 +108,6 @@ void GaussianFactorization(void)
     Bin2Dec(ImValue.limbs, ptrFactorDec, ImValue.nbrLimbs, groupLen);
     ptrFactorDec += strlen(ptrFactorDec);
     (void)strcpy(ptrFactorDec, "&sup2;");
-    ptrFactorDec += strlen(ptrFactorDec);
     factor(&tofactor, nbrToFactor, factorsNorm, astFactorsNorm);
     NbrFactorsNorm = astFactorsNorm[0].multiplicity;
     pstFactor = &astFactorsNorm[1];

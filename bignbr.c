@@ -23,6 +23,13 @@
 #include "expression.h"
 #include "skiptest.h"
 
+enum eOper
+{
+  OPER_AND = 0,
+  OPER_OR,
+  OPER_XOR,
+};
+
 static BigInteger Temp;
 static BigInteger Temp2;
 static BigInteger Temp3;
@@ -44,7 +51,7 @@ int smallPrimes[SMALL_PRIMES_ARRLEN+1];
 int percentageBPSW;
 #endif
 
-void CopyBigInt(BigInteger *pDest, BigInteger *pSrc)
+void CopyBigInt(BigInteger *pDest, const BigInteger *pSrc)
 {
   pDest->sign = pSrc->sign;
   pDest->nbrLimbs = pSrc->nbrLimbs;
@@ -89,7 +96,7 @@ void SubtractBigInt(limb *pMinuend, limb *pSubtrahend, limb *pDiff, int nbrLimbs
 // If address of num and result match, BigIntDivide will overwrite num, so it must be executed after processing num.
 void floordiv(BigInteger *num, BigInteger *den, BigInteger *result)
 {
-  BigInteger rem;
+  static BigInteger rem;
   BigIntRemainder(num, den, &rem);
   if ((((num->sign == SIGN_NEGATIVE) && (den->sign == SIGN_POSITIVE)) ||
     ((num->sign == SIGN_POSITIVE) && !BigIntIsZero(num) && (den->sign == SIGN_NEGATIVE))) && !BigIntIsZero(&rem))
@@ -105,7 +112,7 @@ void floordiv(BigInteger *num, BigInteger *den, BigInteger *result)
 
 void ceildiv(BigInteger*num, BigInteger *den, BigInteger *result)
 {
-  BigInteger rem;
+  static BigInteger rem;
   BigIntDivide(num, den, result);
   BigIntRemainder(num, den, &rem);
   if ((((num->sign == SIGN_POSITIVE) && !BigIntIsZero(num) && (den->sign == SIGN_POSITIVE)) ||
@@ -131,16 +138,22 @@ void BigIntChSign(BigInteger *value)
   }
 }
 
-void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum)
+static void InternalBigIntAdd(const BigInteger *pAddend1, const BigInteger *pAddend2, 
+  BigInteger *pSum, enum eSign addend2Sign)
 {
   int ctr;
   int nbrLimbs;
-  limb *ptrAddend1;
-  limb *ptrAddend2;
+  const limb *ptrAddend1;
+  const limb *ptrAddend2;
   limb *ptrSum;
-  BigInteger *pTemp;
+  const BigInteger *pTemp;
+  enum eSign addend1Sign = pAddend1->sign;
+  enum eSign tmpSign;
   if (pAddend1->nbrLimbs < pAddend2->nbrLimbs)
   {
+    tmpSign = addend1Sign;
+    addend1Sign = addend2Sign;
+    addend2Sign = tmpSign;
     pTemp = pAddend1;
     pAddend1 = pAddend2;
     pAddend2 = pTemp;
@@ -157,6 +170,9 @@ void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum)
     }
     if ((ctr >= 0) && (pAddend1->limbs[ctr].x < pAddend2->limbs[ctr].x))
     {
+      tmpSign = addend1Sign;
+      addend1Sign = addend2Sign;
+      addend2Sign = tmpSign;
       pTemp = pAddend1;
       pAddend1 = pAddend2;
       pAddend2 = pTemp;
@@ -167,7 +183,7 @@ void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum)
   ptrAddend1 = pAddend1->limbs;
   ptrAddend2 = pAddend2->limbs;
   ptrSum = pSum->limbs;
-  if (pAddend1->sign == pAddend2->sign)
+  if (addend1Sign == addend2Sign)
   {             // Both addends have the same sign. Sum their absolute values.
     unsigned int carry = 0;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
@@ -208,14 +224,19 @@ void BigIntAdd(BigInteger *pAddend1, BigInteger *pAddend2, BigInteger *pSum)
     }
   }
   pSum->nbrLimbs = nbrLimbs;
-  pSum->sign = pAddend1->sign;
+  pSum->sign = addend1Sign;
   if ((pSum->nbrLimbs == 1) && (pSum->limbs[0].x == 0))
   {          // Result is zero.
     pSum->sign = SIGN_POSITIVE;
   }
 }
 
-void BigIntNegate(BigInteger *pSrc, BigInteger *pDest)
+void BigIntAdd(const BigInteger* pAddend1, const BigInteger* pAddend2, BigInteger* pSum)
+{
+  InternalBigIntAdd(pAddend1, pAddend2, pSum, pAddend2->sign);
+}
+
+void BigIntNegate(const BigInteger *pSrc, BigInteger *pDest)
 {
   if (pSrc != pDest)
   {
@@ -224,13 +245,15 @@ void BigIntNegate(BigInteger *pSrc, BigInteger *pDest)
   BigIntChSign(pDest);
 }
 
-void BigIntSubt(BigInteger *pMinuend, BigInteger *pSubtrahend, BigInteger *pDifference)
+void BigIntSubt(const BigInteger *pMinuend, const BigInteger *pSubtrahend, BigInteger *pDifference)
 {
-  BigIntNegate(pSubtrahend, pSubtrahend);
-  BigIntAdd(pMinuend, pSubtrahend, pDifference);
-  if (pSubtrahend != pDifference)
+  if (pSubtrahend->sign == SIGN_POSITIVE)
   {
-    BigIntNegate(pSubtrahend, pSubtrahend);    // Put original sign back.
+    InternalBigIntAdd(pMinuend, pSubtrahend, pDifference, SIGN_NEGATIVE);
+  }
+  else
+  {
+    InternalBigIntAdd(pMinuend, pSubtrahend, pDifference, SIGN_POSITIVE);
   }
 }
 
@@ -308,6 +331,7 @@ enum eExprErr BigIntRemainder(BigInteger *pDividend, BigInteger *pDivisor, BigIn
   enum eExprErr rc;
   if (BigIntIsZero(pDivisor))
   {   // If divisor = 0, then remainder is the dividend.
+    CopyBigInt(pRemainder, pDividend);
     return EXPR_OK;
   }
   CopyBigInt(&Temp2, pDividend);
@@ -842,7 +866,7 @@ void addbigint(BigInteger *pResult, int addend)
   pResult->nbrLimbs = nbrLimbs;
 }
 
-void multint(BigInteger *pResult, BigInteger *pMult, int factor)
+void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
 {
 #ifdef _USING64BITS_
   int64_t carry;
@@ -851,10 +875,9 @@ void multint(BigInteger *pResult, BigInteger *pMult, int factor)
   double dFactor;
   double dVal = 1 / (double)LIMB_RANGE;
 #endif
-  int factorPositive = 1;
-  int ctr;
+  bool factorPositive = true;
   int nbrLimbs = pMult->nbrLimbs;
-  limb *pLimb = pMult->limbs;
+  const limb *pLimb = pMult->limbs;
   limb *pResultLimb = pResult->limbs;
   if (factor == 0)
   {   // Any number multiplied by zero is zero.
@@ -863,14 +886,14 @@ void multint(BigInteger *pResult, BigInteger *pMult, int factor)
   }
   if (factor < 0)
   {     // If factor is negative, indicate it and compute its absolute value.
-    factorPositive = 0;
+    factorPositive = false;
     factor = -factor;
   }
 #ifndef _USING64BITS_
   dFactor = (double)factor;
 #endif
   carry = 0;
-  for (ctr = 0; ctr < nbrLimbs; ctr++)
+  for (int ctr = 0; ctr < nbrLimbs; ctr++)
   {
 #ifdef _USING64BITS_
     carry += (int64_t)pLimb->x * (int64_t)factor;
@@ -899,7 +922,7 @@ void multint(BigInteger *pResult, BigInteger *pMult, int factor)
   }
   pResult->nbrLimbs = nbrLimbs;
   pResult->sign = pMult->sign;
-  if (factorPositive == 0)
+  if (!factorPositive)
   {
     BigIntNegate(pResult, pResult);
   }
@@ -1092,7 +1115,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
 {
   limb *ptrLimb;
   double dN;
-  int nbrLimbs = pBigNbr->nbrLimbs;
+  int nbrLimbs;
   int maxExpon;
   int h;
   int j;
@@ -1513,9 +1536,9 @@ int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower)
 {
   int t;
   int power2;
-  BigInteger a;
-  BigInteger m;
-  BigInteger tmp;
+  static BigInteger a;
+  static BigInteger m;
+  static BigInteger tmp;
   CopyBigInt(&m, lower);               // m <- lower
   DivideBigNbrByMaxPowerOf2(&power2, m.limbs, &m.nbrLimbs);
   BigIntRemainder(upper, lower, &a);   // a <- upper % lower
@@ -1633,7 +1656,7 @@ bool BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   bool insidePowering = false;
   int nbrLimbs = pValue->nbrLimbs;
   limb *limbs = pValue->limbs;
-  BigInteger tmp;
+  static BigInteger tmp;
   if ((nbrLimbs == 1) && (limbs->x <= 2))
   {
     return 0;    // Indicate prime.
@@ -1913,10 +1936,9 @@ void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len)
   }
 }
 
-bool BigNbrIsZero(limb *value)
+bool BigNbrIsZero(const limb *value)
 {
-  int ctr;
-  for (ctr = 0; ctr < NumberLength; ctr++)
+  for (int ctr = 0; ctr < NumberLength; ctr++)
   {
     if (value->x != 0)
     {
@@ -1927,7 +1949,7 @@ bool BigNbrIsZero(limb *value)
   return true;       // Number is zero
 }
 
-bool BigIntIsZero(BigInteger *value)
+bool BigIntIsZero(const BigInteger *value)
 {
   if ((value->nbrLimbs == 1) && (value->limbs[0].x == 0))
   {
@@ -1936,7 +1958,7 @@ bool BigIntIsZero(BigInteger *value)
   return false;      // Number is not zero.
 }
 
-bool BigIntIsOne(BigInteger* value)
+bool BigIntIsOne(const BigInteger* value)
 {
   if ((value->nbrLimbs == 1) && (value->limbs[0].x == 1) && (value->sign == SIGN_POSITIVE))
   {
@@ -1945,12 +1967,12 @@ bool BigIntIsOne(BigInteger* value)
   return false;      // Number is not zero.
 }
 
-bool BigIntEqual(BigInteger *value1, BigInteger *value2)
+bool BigIntEqual(const BigInteger *value1, const BigInteger *value2)
 {
   int index;
   int nbrLimbs;
-  limb *ptrValue1;
-  limb *ptrValue2;
+  const limb *ptrValue1;
+  const limb *ptrValue2;
   if ((value1->nbrLimbs != value2->nbrLimbs) || (value1->sign != value2->sign))
   {
     return false;    // Numbers are not equal.
@@ -2009,7 +2031,6 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   int index2;
   int power2gr;
   int shRg;
-  int mask;
   limb prevLimb;
   limb currLimb;
   // Start from least significant limb (number zero).
@@ -2021,7 +2042,7 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
     }
     powerOf2 += BITS_PER_GROUP;
   }
-  for (mask = 0x1; mask <= (int)MAX_VALUE_LIMB; mask *= 2)
+  for (int mask = 0x1; (unsigned int)mask <= MAX_VALUE_LIMB; mask *= 2)
   {
     if (((value + index)->x & mask) != 0)
     {
@@ -2059,124 +2080,108 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   *pPower4 = powerOf4;
 }
 
-void BigIntAnd(BigInteger *firstArg, BigInteger *secondArg, BigInteger *result)
+static void InternalBigIntLogical(const BigInteger *firstArg,
+  const BigInteger *secondArg, BigInteger *result, enum eOper operation)
 {
   int idx;
-  BigInteger *tmpptr;
+  int carryFirst = 0;
+  int carrySecond = 0;
+  int limbFirst;
+  int limbSecond;
+  const BigInteger *tmpptr;
   if (firstArg->nbrLimbs < secondArg->nbrLimbs)
   {    // After the exchange, firstArg has not fewer limbs than secondArg.
     tmpptr = firstArg;
     firstArg = secondArg;
     secondArg = tmpptr;
   }
-  ConvertToTwosComplement(firstArg);
-  ConvertToTwosComplement(secondArg);
   for (idx = 0; idx < secondArg->nbrLimbs; idx++)
   {
-    result->limbs[idx].x = firstArg->limbs[idx].x & secondArg->limbs[idx].x;
+    limbFirst = firstArg->limbs[idx].x;
+    limbSecond = secondArg->limbs[idx].x;
+    if (firstArg->sign == SIGN_NEGATIVE)
+    {
+      carryFirst -= limbFirst;
+      limbFirst = carryFirst & MAX_INT_NBR;
+      carryFirst >>= 31;
+    }
+    if (secondArg->sign == SIGN_NEGATIVE)
+    {
+      carrySecond -= limbSecond;
+      limbSecond = carrySecond & MAX_INT_NBR;
+      carrySecond >>= 31;
+    }
+    if (operation == OPER_AND)
+    {
+      result->limbs[idx].x = limbFirst & limbSecond;
+    }
+    else if (operation == OPER_OR)
+    {
+      result->limbs[idx].x = limbFirst | limbSecond;
+    }
+    else
+    {
+      result->limbs[idx].x = limbFirst ^ limbSecond;
+    }
   }
-  if (secondArg->sign == SIGN_POSITIVE)
+  if (firstArg->sign == SIGN_POSITIVE)
   {
-    result->nbrLimbs = secondArg->nbrLimbs;
+    limbFirst = 0;
   }
   else
   {
-    result->nbrLimbs = firstArg->nbrLimbs;
-    for (; idx < firstArg->nbrLimbs; idx++)
+    limbFirst = -1;
+  }
+  for (; idx < firstArg->nbrLimbs; idx++)
+  {
+    limbSecond = secondArg->limbs[idx].x;
+    if (secondArg->sign == SIGN_NEGATIVE)
     {
-      result->limbs[idx].x = firstArg->limbs[idx].x;
+      carrySecond -= limbSecond;
+      limbSecond = carrySecond & MAX_INT_NBR;
+      carrySecond >>= 31;
+    }
+    if (operation == OPER_AND)
+    {
+      result->limbs[idx].x = limbFirst & limbSecond;
+    }
+    else if (operation == OPER_OR)
+    {
+      result->limbs[idx].x = limbFirst | limbSecond;
+    }
+    else
+    {
+      result->limbs[idx].x = limbFirst ^ limbSecond;
     }
   }
-  if ((firstArg->sign == SIGN_POSITIVE) || (secondArg->sign == SIGN_POSITIVE))
+  if ((result->limbs[idx-1].x & 0x80000000) == 0)
   {
     result->sign = SIGN_POSITIVE;
   }
   else
   {
     result->sign = SIGN_NEGATIVE;
-  }
-  ConvertToTwosComplement(result);
-}
-
-void BigIntOr(BigInteger *firstArg, BigInteger *secondArg, BigInteger *result)
-{
-  int idx;
-  BigInteger *tmpptr;
-  if (firstArg->nbrLimbs < secondArg->nbrLimbs)
-  {    // After the exchange, firstArg has not fewer limbs than secondArg.
-    tmpptr = firstArg;
-    firstArg = secondArg;
-    secondArg = tmpptr;
-  }
-  ConvertToTwosComplement(firstArg);
-  ConvertToTwosComplement(secondArg);
-  for (idx = 0; idx < secondArg->nbrLimbs; idx++)
-  {
-    result->limbs[idx].x = firstArg->limbs[idx].x | secondArg->limbs[idx].x;
-  }
-  if (secondArg->sign == SIGN_NEGATIVE)
-  {
-    result->nbrLimbs = secondArg->nbrLimbs;
-  }
-  else
-  {
-    result->nbrLimbs = firstArg->nbrLimbs;
-    for (; idx < firstArg->nbrLimbs; idx++)
-    {
-      result->limbs[idx].x = firstArg->limbs[idx].x;
-    }
-  }
-  if ((firstArg->sign == SIGN_NEGATIVE) || (secondArg->sign == SIGN_NEGATIVE))
-  {
-    result->sign = SIGN_NEGATIVE;
-  }
-  else
-  {
-    result->sign = SIGN_POSITIVE;
-  }
-  ConvertToTwosComplement(result);
-}
-
-void BigIntXor(BigInteger *firstArg, BigInteger *secondArg, BigInteger *result)
-{
-  int idx;
-  BigInteger *tmpptr;
-  if (firstArg->nbrLimbs < secondArg->nbrLimbs)
-  {    // After the exchange, firstArg has not fewer limbs than secondArg.
-    tmpptr = firstArg;
-    firstArg = secondArg;
-    secondArg = tmpptr;
-  }
-  ConvertToTwosComplement(firstArg);
-  ConvertToTwosComplement(secondArg);
-  for (idx = 0; idx < secondArg->nbrLimbs; idx++)
-  {
-    result->limbs[idx].x = firstArg->limbs[idx].x ^ secondArg->limbs[idx].x;
-  }
-  if (secondArg->sign == SIGN_POSITIVE)
-  {
-    for (; idx < firstArg->nbrLimbs; idx++)
-    {
-      result->limbs[idx].x = firstArg->limbs[idx].x;
-    }
-  }
-  else
-  {
-    for (; idx < firstArg->nbrLimbs; idx++)
-    {
-      result->limbs[idx].x = firstArg->limbs[idx].x ^ MAX_INT_NBR;
-    }
-  }
-  if ((firstArg->sign == SIGN_NEGATIVE) != (secondArg->sign == SIGN_NEGATIVE))
-  {
-    result->sign = SIGN_NEGATIVE;
-  }
-  else
-  {
-    result->sign = SIGN_POSITIVE;
   }
   result->nbrLimbs = firstArg->nbrLimbs;
   ConvertToTwosComplement(result);
+}
+
+void BigIntAnd(const BigInteger* firstArg,
+  const BigInteger* secondArg, BigInteger* result)
+{
+  InternalBigIntLogical(firstArg, secondArg, result, OPER_AND);
+}
+
+void BigIntOr(const BigInteger* firstArg,
+  const BigInteger* secondArg, BigInteger* result)
+{
+  InternalBigIntLogical(firstArg, secondArg, result, OPER_OR);
+}
+
+void BigIntXor(const BigInteger* firstArg,
+  const BigInteger* secondArg, BigInteger* result)
+{
+  InternalBigIntLogical(firstArg, secondArg, result, OPER_XOR);
 }
 
 void ConvertToTwosComplement(BigInteger *value)

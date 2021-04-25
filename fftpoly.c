@@ -117,7 +117,7 @@ static void initCosinesArray(void)
   Cosine[3 * QUARTER_CIRCLE] = 0;
 }
 
-/*
+#if 0
   Algorithm 9.5.6 of Crandall and Pomerance book Prime Numbers:
   X, Y: Pointers to complex numbers.
 
@@ -145,13 +145,11 @@ static void initCosinesArray(void)
   }
   if (d even) return complex data at X.
   return complex data at Y.
-*/
+#endif
 
 // length is power of 2.
 static void complexPolyFFT(complex* x, complex* y, int length)
 {
-  int j;
-  int J;
   int halfLength = length / 2;
   int step = (1 << POWERS_2) / length;
   int exponentOdd = 0;
@@ -184,7 +182,7 @@ static void complexPolyFFT(complex* x, complex* y, int length)
     ptrY++;
     ptrZ++;
   }
-  for (J = 2; J < length; J *= 2)
+  for (int J = 2; J < length; J *= 2)
   {
     step *= 2;
     ptrTemp = ptrX - halfLength;
@@ -197,7 +195,7 @@ static void complexPolyFFT(complex* x, complex* y, int length)
       double rootReal = Cosine[angle];
       double rootImag = Cosine[angle + QUARTER_CIRCLE];
       complex* ptrW = ptrY + J;
-      for (j = J; j > 0; j--)
+      for (int j = J; j > 0; j--)
       {
         double tempReal = ptrX->real;
         double tempImag = ptrX->imaginary;
@@ -233,14 +231,13 @@ static void complexPolyFFT(complex* x, complex* y, int length)
 // Bi(k) = cos( PI k / N)
 static void ConvertHalfToFullSizeFFT(complex* halfSizeFFT, complex* fullSizeFFT, int power2)
 {
-  int k;
   int step = (1 << (POWERS_2 - 1)) / power2;
   complex* ptrFullSizeFFT = fullSizeFFT;
   complex* ptrHalfSizeFFT = halfSizeFFT;
   complex* ptrHalfSizeFFTRev = halfSizeFFT + power2;
   ptrHalfSizeFFTRev->real = halfSizeFFT->real;
   ptrHalfSizeFFTRev->imaginary = halfSizeFFT->imaginary;
-  for (k = 0; k < power2; k++)
+  for (int k = 0; k < power2; k++)
   {
     int angle = k * step;
     double diffReal = ptrHalfSizeFFT->real - ptrHalfSizeFFTRev->real;
@@ -271,12 +268,11 @@ static void ConvertHalfToFullSizeFFT(complex* halfSizeFFT, complex* fullSizeFFT,
 // IBi(k) = -cos( PI k / N)
 static void ConvertFullToHalfSizeFFT(complex* fullSizeFFT, complex* halfSizeFFT, int power2)
 {
-  int k;
   int step = (1 << (POWERS_2 - 1)) / power2;
   complex* ptrFullSizeFFT = fullSizeFFT;
   complex* ptrFullSizeFFTRev = fullSizeFFT + power2;
   complex* ptrHalfSizeFFT = halfSizeFFT;
-  for (k = 0; k < power2; k++)
+  for (int k = 0; k < power2; k++)
   {
     int angle = k * step;
     double diffReal = ptrFullSizeFFT->real - ptrFullSizeFFTRev->real;
@@ -296,10 +292,10 @@ static void ConvertFullToHalfSizeFFT(complex* fullSizeFFT, complex* halfSizeFFT,
   }
 }
 
-static void ConvertFactorToInternal(int* factor, complex* fftFactor, int len, int maxLen)
+static void ConvertFactorToInternal(const int* factor, complex* fftFactor, int len, int maxLen)
 {
   int ctr = 0;
-  int* ptrFactor = factor+1;  // Point to constant coefficient.
+  const int* ptrFactor = factor+1;  // Point to constant coefficient.
   complex* ptrInternalFactor = fftFactor;
   for (ctr = 2; ctr <= len; ctr += 2)
   {
@@ -322,7 +318,7 @@ static void ConvertFactorToInternal(int* factor, complex* fftFactor, int len, in
   }
 }
 
-/*
+#if 0
    Algorithm 9.5.12 of Crandall and Pomerance book Prime Numbers:
 
    Zero-pad x and y until each has length 2D.
@@ -332,11 +328,11 @@ static void ConvertFactorToInternal(int* factor, complex* fftFactor, int len, in
    z = DFT^(-1)(Z)
    z = round(z)    // Round elementwise
    Delete leading zeros.
-*/
+#endif
 // If degree of first polynomial is greater than the degree of the second polynomial,
 // subdivide the coefficients of the first polynomial in groups of K, where K is the
 // lowest power of 2 greater or equal than the length of the second polynomial.
-void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
+void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, int len2)
 {
   complex *ptrFirst;
   complex *ptrProduct;
@@ -346,7 +342,6 @@ void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
   int chunkLen;
   int index;
   int nbrLimbs = NumberLength + 1;
-  int factor1DegreesProcessed = 0;
   int power2SecondFactor = 0;
   int power2;
   int modulus = TestNbr[0].x;
@@ -354,10 +349,9 @@ void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
   if (len1 > len2)
   { // Degree of first polynomial is greater than degree of second polynomial.
     // Set results to polynomial zero.
-    int ctr;
     ptrFinalProduct = finalProduct;
     chunkLen = (len1 + len2 + 1) / 2;
-    for (ctr = 0; ctr <= chunkLen; ctr++)
+    for (int ctr = 0; ctr <= chunkLen; ctr++)
     {
       ptrFinalProduct->real = 0;         // Initialize coefficient to zero.
       ptrFinalProduct->imaginary = 0;
@@ -365,8 +359,10 @@ void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
     }
   }
   // Get least power of 2 greater or equal than the degree of second factor.
-  for (power2SecondFactor = 1; power2SecondFactor < len2; power2SecondFactor *= 2)
+  power2SecondFactor = 1;
+  while (power2SecondFactor < len2)
   {
+    power2SecondFactor *= 2;
   }
   // Get transform of second factor outside multiplication loop,
   // because it has to be computed only once.
@@ -390,10 +386,9 @@ void fftPolyMult(int *factor1, int* factor2, int* result, int len1, int len2)
       polyInvCached = NBR_CACHED;
     }
   }
-  for (factor1DegreesProcessed = 0; factor1DegreesProcessed < len1;
+  for (int factor1DegreesProcessed = 0; factor1DegreesProcessed < len1;
     factor1DegreesProcessed += power2SecondFactor)
   {
-    int index;
     complex * ptrSecond;
     int lenFirstFactor = power2SecondFactor;
     if (lenFirstFactor > len1 - factor1DegreesProcessed)

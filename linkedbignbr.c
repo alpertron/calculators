@@ -28,7 +28,6 @@ bool initLinkedBigIntDone = false;
 
 void initLinkedBigInt(void)
 {
-  int ctr;
   struct linkedBigInt* pstLinkedBigInt = astLinkedBigInt;
   if (initLinkedBigIntDone)
   {            // Linked list already init. Go out.
@@ -36,7 +35,7 @@ void initLinkedBigInt(void)
   }
   initLinkedBigIntDone = true;
   pstFirstFree = &astLinkedBigInt[0];
-  for (ctr = 0; ctr < (NBR_LINKED_NODES - 1); ctr++)
+  for (int ctr = 0; ctr < (NBR_LINKED_NODES - 1); ctr++)
   {
     pstLinkedBigInt->pstNext = pstLinkedBigInt + 1;
     pstLinkedBigInt++;
@@ -76,7 +75,7 @@ static void deleteLinkedBigInteger(struct linkedBigInt* pstLinkedBigInt)
   }
 }
 
-void setLinkedBigInteger(struct linkedBigInt** ppstLinkedBigInt, BigInteger* pBigInt)
+void setLinkedBigInteger(struct linkedBigInt** ppstLinkedBigInt, const BigInteger* pBigInt)
 {
   int ctrLimbs;
   struct linkedBigInt* pstLinkedBigInt = *ppstLinkedBigInt;
@@ -97,7 +96,7 @@ void setLinkedBigInteger(struct linkedBigInt** ppstLinkedBigInt, BigInteger* pBi
   pstFirstFree = pstLinkedBigInt;  // First link of first area.
 }
 
-bool linkedBigIntIsZero(struct linkedBigInt* pstLinkedBigInt)
+bool linkedBigIntIsZero(const struct linkedBigInt* pstLinkedBigInt)
 {
   if ((pstLinkedBigInt->node[0] == 1) && (pstLinkedBigInt->node[2] == 0))
   {
@@ -106,20 +105,20 @@ bool linkedBigIntIsZero(struct linkedBigInt* pstLinkedBigInt)
   return false;     // Number is not zero.
 }
 
-bool linkedBigIntIsOne(struct linkedBigInt* pstLinkedBigInt)
+bool linkedBigIntIsOne(const struct linkedBigInt* pstLinkedBigInt)
 {
   if ((pstLinkedBigInt->node[0] == 1) && (pstLinkedBigInt->node[2] == 1) &&
-    (pstLinkedBigInt->node[1] == (int)SIGN_POSITIVE))
+    (pstLinkedBigInt->node[1] == SIGN_POSITIVE))
   {
     return true;    // Number is one.
   }
   return false;     // Number is not one.
 }
 
-bool linkedBigIntIsMinusOne(struct linkedBigInt* pstLinkedBigInt)
+bool linkedBigIntIsMinusOne(const struct linkedBigInt* pstLinkedBigInt)
 {
   if ((pstLinkedBigInt->node[0] == 1) && (pstLinkedBigInt->node[2] == 1) &&
-    (pstLinkedBigInt->node[1] == (int)SIGN_NEGATIVE))
+    (pstLinkedBigInt->node[1] == SIGN_NEGATIVE))
   {
     return true;    // Number is minus one.
   }
@@ -132,7 +131,7 @@ void linkedBigIntChSign(struct linkedBigInt* pstLinkedBigInt)
   {    // Value is zero. Do not change sign.
     return;
   }
-  if (pstLinkedBigInt->node[1] == (int)SIGN_POSITIVE)
+  if (pstLinkedBigInt->node[1] == SIGN_POSITIVE)
   {
     pstLinkedBigInt->node[1] = SIGN_NEGATIVE;
   }

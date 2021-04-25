@@ -31,7 +31,7 @@ int stamp(void);
 #else
 #define EXTERNALIZE	
 #endif
-void databack(char *data);
+void databack(const char *data);
 
 enum eExprErr
 {

@@ -60,7 +60,7 @@ static BigInteger LastModulus;
 static int nbrFactors;
 char *ptrOutput;
 
-static int Show(BigInteger *num, char *str, int t)
+static int Show(BigInteger *num, const char *str, int t)
 {
   if (!BigIntIsZero(num))
   {     // num is not zero.
@@ -176,10 +176,8 @@ static void findQuadraticSolution(BigInteger* pSolution, int expon)
 
 void SolveEquation(void)
 {
-  int factorIndex;
   int expon;
   int T1;
-  int E;
   const struct sFactors *pstFactor;
 
   if (BigIntIsZero(&ValN))
@@ -292,8 +290,7 @@ void SolveEquation(void)
     }
     else
     {
-      int ctr;
-      for (ctr = 0; ctr < GcdAll.limbs[0].x; ctr++)
+      for (int ctr = 0; ctr < GcdAll.limbs[0].x; ctr++)
       {
         intToBigInteger(&Aux[0], ctr);
         Solution(&Aux[0]);
@@ -341,7 +338,7 @@ void SolveEquation(void)
   intToBigInteger(&Q, 0);
   nbrFactors = astFactorsMod[0].multiplicity;
   pstFactor = &astFactorsMod[1];
-  for (factorIndex = 0; factorIndex<nbrFactors; factorIndex++)
+  for (int factorIndex = 0; factorIndex<nbrFactors; factorIndex++)
   {
     NumberLength = *pstFactor->ptrFactor;
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);
@@ -375,10 +372,14 @@ void SolveEquation(void)
     }
     else
     {                   /* If quadratic equation mod p */
-      int nbrBitsSquareRoot, correctBits, nbrLimbs, bitsAZero, ctr;
-      int deltaZeros, deltaIsZero = 0;
-      int sol1Invalid = 0;
-      int sol2Invalid = 0;
+      int nbrBitsSquareRoot;
+      int correctBits;
+      int nbrLimbs;
+      int bitsAZero;
+      int ctr;
+      int deltaZeros;
+      bool sol1Invalid = false;
+      bool sol2Invalid = false;
       // Compute discriminant = ValB^2 - 4*ValA*ValC.
       BigIntMultiply(&ValB, &ValB, &Aux[0]);
       BigIntMultiply(&ValA, &ValC, &discriminant);
@@ -386,7 +387,8 @@ void SolveEquation(void)
       BigIntSubt(&Aux[0], &discriminant, &discriminant);
       if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
       {         /* Prime p is 2 */
-        int bitsBZero, bitsCZero;
+        int bitsBZero;
+        int bitsCZero;
         // ax^2 + bx + c = 0 (mod 2^expon)
         // This follows the paper Complete solving the quadratic equation mod 2^n
         // of Dehnavi, Shamsabad and Rishakani.
@@ -526,7 +528,7 @@ void SolveEquation(void)
           CopyBigInt(&Linear, &ValB);
           CopyBigInt(&Const, &ValC);
           findQuadraticSolution(&Solution1[factorIndex], expon);
-          sol2Invalid = 1;
+          sol2Invalid = true;
         }
         BigIntPowerOf2(&Q, expon);         // Store increment.
       }
@@ -598,8 +600,6 @@ void SolveEquation(void)
         if (BigIntIsZero(&discriminant))
         {     // Discriminant is zero.
           (void)memset(sqrRoot.limbs, 0, nbrLimbs * sizeof(limb));
-          deltaIsZero = 1;
-          nbrBitsSquareRoot = expon + bitsAZero;
         }
         else
         {      // Discriminant is not zero.
@@ -681,7 +681,8 @@ void SolveEquation(void)
               x = 1;
               do
               {
-                intToBigInteger(&Aux[3], ++x);
+                x++;
+                intToBigInteger(&Aux[3], x);
               } while (BigIntJacobiSymbol(&Aux[3], &prime) >= 0);
               // Step 3.
               // Get z <- x^q (mod p) in Montgomery notation.
@@ -770,7 +771,7 @@ void SolveEquation(void)
           BigIntRemainder(&tmp1, &prime, &tmp2);
           if (!BigIntIsZero(&tmp2))
           {   // Cannot divide by prime, so go out.
-            sol1Invalid = 1;
+            sol1Invalid = true;
             break;
           }
           BigIntDivide(&tmp1, &prime, &tmp1);
@@ -787,7 +788,7 @@ void SolveEquation(void)
           BigIntRemainder(&tmp1, &prime, &tmp2);
           if (!BigIntIsZero(&tmp2))
           {   // Cannot divide by prime, so go out.
-            sol2Invalid = 1;
+            sol2Invalid = true;
             break;
           }
           BigIntDivide(&tmp1, &prime, &tmp1);
@@ -857,7 +858,7 @@ void SolveEquation(void)
       IntArray2BigInteger(pstFactor->ptrFactor, &prime);
       BigIntPowerIntExp(&prime, pstFactor->multiplicity, &K1);
       CopyBigInt(&prime, &K1);
-      for (E = 0; E<T1; E++)
+      for (int E = 0; E<T1; E++)
       {
         BigIntSubt(&Aux[T1], &Aux[E], &Q);
         IntArray2BigInteger(astFactorsMod[E+1].ptrFactor, &K);
@@ -917,13 +918,13 @@ void SolveEquation(void)
 
 void textErrorQuadMod(char *pOutput, enum eExprErr rc)
 {
-  switch (rc)
+  if (rc == EXPR_MODULUS_MUST_BE_NONNEGATIVE)
   {
-  case EXPR_MODULUS_MUST_BE_NONNEGATIVE:
     (void)strcpy(pOutput, lang ? "No debe ser negativo" :
       "Must not be negative");
-    break;
-  default:
+  }
+  else
+  {
     textError(pOutput, rc);
   }
 }

@@ -809,9 +809,63 @@ static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *bigSubGro
   AdjustModN(nbr, bigSubGroupOrder->limbs, nbrLimbs);
 }
 
-void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
+static void generateOutput(enum eExprErr rc, int groupLength)
 {
-  char *ptrOutput;
+  char* ptrOutput;
+  output[0] = '2';
+  ptrOutput = &output[1];
+  if (rc != EXPR_OK)
+  {
+    textErrorDilog(output + 1, rc);
+    ptrOutput = output + strlen(output);
+  }
+  else
+  {
+    (void)strcpy(ptrOutput, lang ? "<p>Hallar <var>exp</var> tal que " :
+      "<p>Find <var>exp</var> such that ");
+    ptrOutput += strlen(ptrOutput);
+    Bin2Dec(base.limbs, ptrOutput, base.nbrLimbs, groupLength);
+    ptrOutput += strlen(ptrOutput);
+    strcat(ptrOutput, "<sup><var>exp</var></sup> &equiv; ");
+    ptrOutput += strlen(ptrOutput);
+    Bin2Dec(power.limbs, ptrOutput, power.nbrLimbs, groupLength);
+    ptrOutput += strlen(ptrOutput);
+    strcat(ptrOutput, " (mod ");
+    ptrOutput += strlen(ptrOutput);
+    Bin2Dec(modulus.limbs, ptrOutput, modulus.nbrLimbs, groupLength);
+    ptrOutput += strlen(ptrOutput);
+    strcat(ptrOutput, ")</p><p>");
+    ptrOutput += strlen(ptrOutput);
+    if (DiscreteLogPeriod.sign == SIGN_NEGATIVE)
+    {
+      strcat(ptrOutput, lang ? "Ningún valor de <var>exp</var> satisface la congruencia.</p>" :
+        "There is no such value of <var>exp</var>.</p>");
+      ptrOutput += strlen(ptrOutput);
+      (void)strcpy(ptrOutput, textExp);
+    }
+    else
+    {
+      strcat(ptrOutput, "<var>exp</var> = ");
+      ptrOutput += strlen(ptrOutput);
+      Bin2Dec(DiscreteLog.limbs, ptrOutput, DiscreteLog.nbrLimbs, groupLength);
+      ptrOutput += strlen(ptrOutput);
+      if (!BigIntIsZero(&DiscreteLogPeriod))
+      {   // Discrete log period is not zero.
+        strcat(ptrOutput, " + ");
+        ptrOutput += strlen(ptrOutput);
+        Bin2Dec(DiscreteLogPeriod.limbs, ptrOutput, DiscreteLogPeriod.nbrLimbs, groupLength);
+        ptrOutput += strlen(ptrOutput);
+        strcat(ptrOutput, "<var>k</var>");
+      }
+      strcat(ptrOutput, "</p>");
+    }
+  }
+  strcat(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+    "<p>" COPYRIGHT_ENGLISH "</p>");
+}
+
+void dilogText(char* baseText, char* powerText, char* modText, int groupLength)
+{
   enum eExprErr rc;
   rc = ComputeExpression(baseText, 1, &base);
   if (rc == EXPR_OK)
@@ -847,56 +901,7 @@ void dilogText(char *baseText, char *powerText, char *modText, int groupLength)
   {
     DiscreteLogarithm();
   }
-  output[0] = '2';
-  ptrOutput = &output[1];
-  if (rc != EXPR_OK)
-  {
-    textErrorDilog(output + 1, rc);
-    ptrOutput = output + strlen(output);
-  }
-  else
-  {
-    (void)strcpy(ptrOutput, lang?"<p>Hallar <var>exp</var> tal que ": 
-                           "<p>Find <var>exp</var> such that ");
-    ptrOutput += strlen(ptrOutput);
-    Bin2Dec(base.limbs, ptrOutput, base.nbrLimbs, groupLength);
-    ptrOutput += strlen(ptrOutput);
-    strcat(ptrOutput, "<sup><var>exp</var></sup> &equiv; ");
-    ptrOutput += strlen(ptrOutput);
-    Bin2Dec(power.limbs, ptrOutput, power.nbrLimbs, groupLength);
-    ptrOutput += strlen(ptrOutput);
-    strcat(ptrOutput, " (mod ");
-    ptrOutput += strlen(ptrOutput);
-    Bin2Dec(modulus.limbs, ptrOutput, modulus.nbrLimbs, groupLength);
-    ptrOutput += strlen(ptrOutput);
-    strcat(ptrOutput, ")</p><p>");
-    ptrOutput += strlen(ptrOutput);
-    if (DiscreteLogPeriod.sign == SIGN_NEGATIVE)
-    {
-      strcat(ptrOutput, lang? "Ningún valor de <var>exp</var> satisface la congruencia.</p>":
-                              "There is no such value of <var>exp</var>.</p>");
-      ptrOutput += strlen(ptrOutput);
-      (void)strcpy(ptrOutput, textExp);
-    }
-    else
-    {
-      strcat(ptrOutput, "<var>exp</var> = ");
-      ptrOutput += strlen(ptrOutput);
-      Bin2Dec(DiscreteLog.limbs, ptrOutput, DiscreteLog.nbrLimbs, groupLength);
-      ptrOutput += strlen(ptrOutput);
-      if (!BigIntIsZero(&DiscreteLogPeriod))
-      {   // Discrete log period is not zero.
-        strcat(ptrOutput, " + ");
-        ptrOutput += strlen(ptrOutput);
-        Bin2Dec(DiscreteLogPeriod.limbs, ptrOutput, DiscreteLogPeriod.nbrLimbs, groupLength);
-        ptrOutput += strlen(ptrOutput);
-        strcat(ptrOutput, "<var>k</var>");
-      }
-      strcat(ptrOutput, "</p>");
-    }
-  }
-  strcat(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
-                           "<p>" COPYRIGHT_ENGLISH "</p>");
+  generateOutput(rc, groupLength);
 }
 
 #ifdef __EMSCRIPTEN__

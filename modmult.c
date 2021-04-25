@@ -77,14 +77,13 @@ void ComputeInversePower2(limb *value, limb *result, limb *tmp)
   int x;
   int j;
   limb Cy;
-  int currLen;
-  x = N = (int)value->x;       // 2 least significant bits of inverse correct.
+  x = N = value->x;            // 2 least significant bits of inverse correct.
   x = x * (2 - N * x);         // 4 least significant bits of inverse correct.
   x = x * (2 - N * x);         // 8 least significant bits of inverse correct.
   x = x * (2 - N * x);         // 16 least significant bits of inverse correct.
   x = x * (2 - N * x);         // 32 least significant bits of inverse correct.
   result->x = x & MAX_VALUE_LIMB;
-  for (currLen = 2; currLen < NumberLength; currLen <<= 1)
+  for (int currLen = 2; currLen < NumberLength; currLen <<= 1)
   {
     multiply(value, result, tmp, currLen, NULL);    // tmp <- N * x
     Cy.x = 2 - tmp[0].x;
@@ -176,7 +175,7 @@ void GetMontgomeryParms(int len)
   {
     int x;
     int N;
-    x = N = (int)TestNbr[0].x;   // 2 least significant bits of inverse correct.
+    x = N = TestNbr[0].x;        // 2 least significant bits of inverse correct.
     x = x * (2 - N * x);         // 4 least significant bits of inverse correct.
     x = x * (2 - N * x);         // 8 least significant bits of inverse correct.
     x = x * (2 - N * x);         // 16 least significant bits of inverse correct.
@@ -285,7 +284,7 @@ void AdjustModN(limb *Nbr, limb *Modulus, int nbrLen)
   }
 }
 
-void AddBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Sum, limb *mod, int nbrLen)
+void AddBigNbrModN(const limb *Nbr1, const limb *Nbr2, limb *Sum, const limb *mod, int nbrLen)
 {
   unsigned int carry;
   int borrow;
@@ -318,7 +317,7 @@ void AddBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Sum, limb *mod, int nbrLen)
   }
 }
 
-void SubtBigNbrModN(limb *Nbr1, limb *Nbr2, limb *Diff, limb *mod, int nbrLen)
+void SubtBigNbrModN(const limb *Nbr1, const limb *Nbr2, limb *Diff, const limb *mod, int nbrLen)
 {
   int i;
   int borrow = 0;
@@ -374,9 +373,8 @@ void smallmodmult(int factor1, int factor2, limb *product, int mod)
 // end if
 
 #ifdef _USING64BITS_
-static void MontgomeryMult2(limb *pNbr1, limb *pNbr2, limb *pProd)
+static void MontgomeryMult2(const limb *pNbr1, const limb *pNbr2, limb *pProd)
 {
-  int i;
   uint64_t Pr;
   uint32_t Prod0 = 0;
   uint32_t Prod1 = 0;
@@ -384,14 +382,14 @@ static void MontgomeryMult2(limb *pNbr1, limb *pNbr2, limb *pProd)
   uint32_t TestNbr1 = TestNbr[1].x;
   uint32_t Nbr2_0 = pNbr2->x;
   uint32_t Nbr2_1 = (pNbr2 + 1)->x;
-  for (i = 0; i<2; i++)
+  for (int i = 0; i<2; i++)
   {
     uint32_t Nbr;
     uint32_t MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + (uint32_t)Prod0;
+    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
     Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
     Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
   if ((Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP)) ||
@@ -405,9 +403,8 @@ static void MontgomeryMult2(limb *pNbr1, limb *pNbr2, limb *pProd)
   (pProd + 1)->x = Prod1;
 }
 
-static void MontgomeryMult3(limb *pNbr1, limb *pNbr2, limb *pProd)
+static void MontgomeryMult3(const limb *pNbr1, const limb *pNbr2, limb *pProd)
 {
-  int i;
   uint64_t Pr;
   uint32_t Prod0 = 0;
   uint32_t Prod1 = 0;
@@ -418,16 +415,16 @@ static void MontgomeryMult3(limb *pNbr1, limb *pNbr2, limb *pProd)
   uint32_t Nbr2_0 = pNbr2->x;
   uint32_t Nbr2_1 = (pNbr2 + 1)->x;
   uint32_t Nbr2_2 = (pNbr2 + 2)->x;
-  for (i = 0; i<3; i++)
+  for (int i = 0; i<3; i++)
   {
     uint32_t MontDig;
     uint32_t Nbr;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + (uint32_t)Prod0;
+    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
     Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
     Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + (uint32_t)Prod2) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
     Prod2 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
   if ((Pr >= ((uint64_t)(TestNbr2 + 1) << BITS_PER_GROUP))
@@ -443,9 +440,8 @@ static void MontgomeryMult3(limb *pNbr1, limb *pNbr2, limb *pProd)
   (pProd + 2)->x = Prod2;
 }
 
-static void MontgomeryMult4(limb *pNbr1, limb *pNbr2, limb *pProd)
+static void MontgomeryMult4(const limb *pNbr1, const limb *pNbr2, limb *pProd)
 {
-  int i;
   uint64_t Pr;
   uint32_t Prod0 = 0;
   uint32_t Prod1 = 0;
@@ -459,17 +455,18 @@ static void MontgomeryMult4(limb *pNbr1, limb *pNbr2, limb *pProd)
   uint32_t Nbr2_1 = (pNbr2 + 1)->x;
   uint32_t Nbr2_2 = (pNbr2 + 2)->x;
   uint32_t Nbr2_3 = (pNbr2 + 3)->x;
-  for (i = 0; i<4; i++)
+  for (int i = 0; i<4; i++)
   {
-    uint32_t Nbr, MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + (uint32_t)Prod0;
+    uint32_t Nbr;
+    uint32_t MontDig;
+    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
     Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
     Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + (uint32_t)Prod2) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
     Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + (uint32_t)Prod3) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
     Prod3 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
   if (Pr >= ((uint64_t)(TestNbr3 + 1) << BITS_PER_GROUP)
@@ -490,9 +487,8 @@ static void MontgomeryMult4(limb *pNbr1, limb *pNbr2, limb *pProd)
   (pProd + 3)->x = Prod3;
 }
 
-static void MontgomeryMult5(limb *pNbr1, limb *pNbr2, limb *pProd)
+static void MontgomeryMult5(const limb *pNbr1, const limb *pNbr2, limb *pProd)
 {
-  int i;
   uint64_t Pr;
   uint32_t Prod0 = 0;
   uint32_t Prod1 = 0;
@@ -509,19 +505,20 @@ static void MontgomeryMult5(limb *pNbr1, limb *pNbr2, limb *pProd)
   uint32_t Nbr2_2 = (pNbr2 + 2)->x;
   uint32_t Nbr2_3 = (pNbr2 + 3)->x;
   uint32_t Nbr2_4 = (pNbr2 + 4)->x;
-  for (i = 0; i<5; i++)
+  for (int i = 0; i<5; i++)
   {
-    uint32_t Nbr, MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + (uint32_t)Prod0;
+    uint32_t Nbr;
+    uint32_t MontDig;
+    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
     Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
     Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + (uint32_t)Prod2) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
     Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + (uint32_t)Prod3) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
     Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + (uint32_t)Prod4) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
     Prod4 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
   if (Pr >= ((uint64_t)(TestNbr4 + 1) << BITS_PER_GROUP)
@@ -546,9 +543,8 @@ static void MontgomeryMult5(limb *pNbr1, limb *pNbr2, limb *pProd)
   (pProd + 4)->x = Prod4;
 }
 
-static void MontgomeryMult6(limb *pNbr1, limb *pNbr2, limb *pProd)
+static void MontgomeryMult6(const limb *pNbr1, const limb *pNbr2, limb *pProd)
 {
-  int i;
   uint64_t Pr;
   uint32_t Prod0 = 0;
   uint32_t Prod1 = 0;
@@ -568,21 +564,22 @@ static void MontgomeryMult6(limb *pNbr1, limb *pNbr2, limb *pProd)
   uint32_t Nbr2_3 = (pNbr2 + 3)->x;
   uint32_t Nbr2_4 = (pNbr2 + 4)->x;
   uint32_t Nbr2_5 = (pNbr2 + 5)->x;
-  for (i = 0; i<6; i++)
+  for (int i = 0; i<6; i++)
   {
-    uint32_t Nbr, MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + (uint32_t)Prod0;
+    uint32_t Nbr;
+    uint32_t MontDig;
+    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
     Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
     Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + (uint32_t)Prod2) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
     Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + (uint32_t)Prod3) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
     Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + (uint32_t)Prod4) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
     Prod4 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + (uint32_t)Prod5) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + Prod5) & MAX_INT_NBR;
     Prod5 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
   if (Pr >= ((uint64_t)(TestNbr5 + 1) << BITS_PER_GROUP)
@@ -613,9 +610,8 @@ static void MontgomeryMult6(limb *pNbr1, limb *pNbr2, limb *pProd)
   (pProd + 5)->x = Prod5;
 }
 
-static void MontgomeryMult7(limb *pNbr1, limb *pNbr2, limb *pProd)
+static void MontgomeryMult7(const limb *pNbr1, const limb *pNbr2, limb *pProd)
 {
-  int i;
   uint64_t Pr;
   uint32_t Prod0 = 0;
   uint32_t Prod1 = 0;
@@ -624,37 +620,38 @@ static void MontgomeryMult7(limb *pNbr1, limb *pNbr2, limb *pProd)
   uint32_t Prod4 = 0;
   uint32_t Prod5 = 0;
   uint32_t Prod6 = 0;
-  int TestNbr0 = (int)TestNbr[0].x;
-  int TestNbr1 = (int)TestNbr[1].x;
-  int TestNbr2 = (int)TestNbr[2].x;
-  int TestNbr3 = (int)TestNbr[3].x;
-  int TestNbr4 = (int)TestNbr[4].x;
-  int TestNbr5 = (int)TestNbr[5].x;
-  int TestNbr6 = (int)TestNbr[6].x;
-  int Nbr2_0 = (int)pNbr2->x;
-  int Nbr2_1 = (int)(pNbr2 + 1)->x;
-  int Nbr2_2 = (int)(pNbr2 + 2)->x;
-  int Nbr2_3 = (int)(pNbr2 + 3)->x;
-  int Nbr2_4 = (int)(pNbr2 + 4)->x;
-  int Nbr2_5 = (int)(pNbr2 + 5)->x;
-  int Nbr2_6 = (int)(pNbr2 + 6)->x;
-  for (i = 0; i<7; i++)
+  uint32_t TestNbr0 = TestNbr[0].x;
+  uint32_t TestNbr1 = TestNbr[1].x;
+  uint32_t TestNbr2 = TestNbr[2].x;
+  uint32_t TestNbr3 = TestNbr[3].x;
+  uint32_t TestNbr4 = TestNbr[4].x;
+  uint32_t TestNbr5 = TestNbr[5].x;
+  uint32_t TestNbr6 = TestNbr[6].x;
+  int Nbr2_0 = pNbr2->x;
+  int Nbr2_1 = (pNbr2 + 1)->x;
+  int Nbr2_2 = (pNbr2 + 2)->x;
+  int Nbr2_3 = (pNbr2 + 3)->x;
+  int Nbr2_4 = (pNbr2 + 4)->x;
+  int Nbr2_5 = (pNbr2 + 5)->x;
+  int Nbr2_6 = (pNbr2 + 6)->x;
+  for (int i = 0; i<7; i++)
   {
-    uint32_t Nbr, MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + (uint32_t)Prod0;
+    uint32_t Nbr;
+    uint32_t MontDig;
+    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
     Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
     Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + (uint32_t)Prod2) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
     Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + (uint32_t)Prod3) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
     Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + (uint32_t)Prod4) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
     Prod4 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + (uint32_t)Prod5) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + Prod5) & MAX_INT_NBR;
     Prod5 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + (uint32_t)Prod6) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + Prod6) & MAX_INT_NBR;
     Prod6 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
   if (Pr >= ((uint64_t)(TestNbr6 + 1) << BITS_PER_GROUP)
@@ -672,13 +669,13 @@ static void MontgomeryMult7(limb *pNbr1, limb *pNbr2, limb *pProd)
                           && (Prod0 >= TestNbr0)))))))))))))
   {
     int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
+    Prod0 = (borrow = (int32_t)Prod0 - TestNbr0) & MAX_INT_NBR;
     Prod1 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
     Prod2 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2) & MAX_INT_NBR;
     Prod3 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3) & MAX_INT_NBR;
     Prod4 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4) & MAX_INT_NBR;
     Prod5 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod5 - (int32_t)TestNbr5) & MAX_INT_NBR;
-    Prod6 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod6 - (int32_t)TestNbr6) & MAX_INT_NBR;
+    Prod6 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod6 - TestNbr6) & MAX_INT_NBR;
   }
   pProd->x = Prod0;
   (pProd + 1)->x = Prod1;
@@ -689,9 +686,8 @@ static void MontgomeryMult7(limb *pNbr1, limb *pNbr2, limb *pProd)
   (pProd + 6)->x = Prod6;
 }
 
-static void MontgomeryMult8(limb *pNbr1, limb *pNbr2, limb *pProd)
+static void MontgomeryMult8(const limb *pNbr1, const limb *pNbr2, limb *pProd)
 {
-  int i;
   uint64_t Pr;
   uint32_t Prod0 = 0;
   uint32_t Prod1 = 0;
@@ -717,25 +713,26 @@ static void MontgomeryMult8(limb *pNbr1, limb *pNbr2, limb *pProd)
   uint32_t Nbr2_5 = (pNbr2 + 5)->x;
   uint32_t Nbr2_6 = (pNbr2 + 6)->x;
   uint32_t Nbr2_7 = (pNbr2 + 7)->x;
-  for (i = 0; i<8; i++)
+  for (int i = 0; i<8; i++)
   {
-    uint32_t Nbr, MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + (uint32_t)Prod0;
+    uint32_t Nbr;
+    uint32_t MontDig;
+    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
     Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
     Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + (uint32_t)Prod2) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
     Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + (uint32_t)Prod3) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
     Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + (uint32_t)Prod4) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
     Prod4 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + (uint32_t)Prod5) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + Prod5) & MAX_INT_NBR;
     Prod5 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + (uint32_t)Prod6) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + Prod6) & MAX_INT_NBR;
     Prod6 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr7 + (uint64_t)Nbr * Nbr2_7 + (uint32_t)Prod7) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr7 + (uint64_t)Nbr * Nbr2_7 + Prod7) & MAX_INT_NBR;
     Prod7 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
   if (Pr >= ((uint64_t)(TestNbr7 + 1) << BITS_PER_GROUP)
@@ -773,9 +770,8 @@ static void MontgomeryMult8(limb *pNbr1, limb *pNbr2, limb *pProd)
   (pProd + 6)->x = (int)Prod6;
   (pProd + 7)->x = (int)Prod7;
 }
-static void MontgomeryMult9(limb *pNbr1, limb *pNbr2, limb *pProd)
+static void MontgomeryMult9(const limb *pNbr1, const limb *pNbr2, limb *pProd)
 {
-  int i;
   uint64_t Pr;
   uint32_t Prod0 = 0;
   uint32_t Prod1 = 0;
@@ -804,27 +800,28 @@ static void MontgomeryMult9(limb *pNbr1, limb *pNbr2, limb *pProd)
   uint32_t Nbr2_6 = (pNbr2 + 6)->x;
   uint32_t Nbr2_7 = (pNbr2 + 7)->x;
   uint32_t Nbr2_8 = (pNbr2 + 8)->x;
-  for (i = 0; i<9; i++)
+  for (int i = 0; i<9; i++)
   {
-    uint32_t Nbr, MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + (uint32_t)Prod0;
+    uint32_t Nbr;
+    uint32_t MontDig;
+    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
     Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
     Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + (uint32_t)Prod2) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
     Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + (uint32_t)Prod3) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
     Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + (uint32_t)Prod4) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
     Prod4 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + (uint32_t)Prod5) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + Prod5) & MAX_INT_NBR;
     Prod5 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + (uint32_t)Prod6) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + Prod6) & MAX_INT_NBR;
     Prod6 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr7 + (uint64_t)Nbr * Nbr2_7 + (uint32_t)Prod7) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr7 + (uint64_t)Nbr * Nbr2_7 + Prod7) & MAX_INT_NBR;
     Prod7 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr8 + (uint64_t)Nbr * Nbr2_8 + (uint32_t)Prod8) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr8 + (uint64_t)Nbr * Nbr2_8 + Prod8) & MAX_INT_NBR;
     Prod8 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
   if (Pr >= ((uint64_t)(TestNbr8 + 1) << BITS_PER_GROUP)
@@ -867,9 +864,8 @@ static void MontgomeryMult9(limb *pNbr1, limb *pNbr2, limb *pProd)
   (pProd + 8)->x = Prod8;
 }
 
-static void MontgomeryMult10(limb *pNbr1, limb *pNbr2, limb *pProd)
+static void MontgomeryMult10(const limb *pNbr1, const limb *pNbr2, limb *pProd)
 {
-  int i;
   uint64_t Pr;
   uint32_t Prod0 = 0;
   uint32_t Prod1 = 0;
@@ -901,29 +897,30 @@ static void MontgomeryMult10(limb *pNbr1, limb *pNbr2, limb *pProd)
   uint32_t Nbr2_7 = (pNbr2 + 7)->x;
   uint32_t Nbr2_8 = (pNbr2 + 8)->x;
   uint32_t Nbr2_9 = (pNbr2 + 9)->x;
-  for (i = 0; i<10; i++)
+  for (int i = 0; i<10; i++)
   {
-    uint32_t Nbr, MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + (uint32_t)Prod0;
+    uint32_t Nbr;
+    uint32_t MontDig;
+    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
     Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
     Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + (uint32_t)Prod2) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
     Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + (uint32_t)Prod3) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
     Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + (uint32_t)Prod4) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
     Prod4 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + (uint32_t)Prod5) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + Prod5) & MAX_INT_NBR;
     Prod5 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + (uint32_t)Prod6) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + Prod6) & MAX_INT_NBR;
     Prod6 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr7 + (uint64_t)Nbr * Nbr2_7 + (uint32_t)Prod7) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr7 + (uint64_t)Nbr * Nbr2_7 + Prod7) & MAX_INT_NBR;
     Prod7 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr8 + (uint64_t)Nbr * Nbr2_8 + (uint32_t)Prod8) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr8 + (uint64_t)Nbr * Nbr2_8 + Prod8) & MAX_INT_NBR;
     Prod8 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr9 + (uint64_t)Nbr * Nbr2_9 + (uint32_t)Prod9) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr9 + (uint64_t)Nbr * Nbr2_9 + Prod9) & MAX_INT_NBR;
     Prod9 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
   if (Pr >= ((uint64_t)(TestNbr9 + 1) << BITS_PER_GROUP)
@@ -970,9 +967,8 @@ static void MontgomeryMult10(limb *pNbr1, limb *pNbr2, limb *pProd)
   (pProd + 9)->x = Prod9;
 }
 
-static void MontgomeryMult11(limb *pNbr1, limb *pNbr2, limb *pProd)
+static void MontgomeryMult11(const limb *pNbr1, const limb *pNbr2, limb *pProd)
 {
-  int i;
   uint64_t Pr;
   uint32_t Prod0 = 0;
   uint32_t Prod1 = 0;
@@ -1007,31 +1003,32 @@ static void MontgomeryMult11(limb *pNbr1, limb *pNbr2, limb *pProd)
   uint32_t Nbr2_8 = (pNbr2 + 8)->x;
   uint32_t Nbr2_9 = (pNbr2 + 9)->x;
   uint32_t Nbr2_10 = (pNbr2 + 10)->x;
-  for (i = 0; i<11; i++)
+  for (int i = 0; i<11; i++)
   {
-    uint32_t Nbr, MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + (uint32_t)Prod0;
+    uint32_t Nbr;
+    uint32_t MontDig;
+    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
     Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
     Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + (uint32_t)Prod2) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
     Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + (uint32_t)Prod3) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
     Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + (uint32_t)Prod4) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
     Prod4 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + (uint32_t)Prod5) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + Prod5) & MAX_INT_NBR;
     Prod5 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + (uint32_t)Prod6) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + Prod6) & MAX_INT_NBR;
     Prod6 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr7 + (uint64_t)Nbr * Nbr2_7 + (uint32_t)Prod7) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr7 + (uint64_t)Nbr * Nbr2_7 + Prod7) & MAX_INT_NBR;
     Prod7 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr8 + (uint64_t)Nbr * Nbr2_8 + (uint32_t)Prod8) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr8 + (uint64_t)Nbr * Nbr2_8 + Prod8) & MAX_INT_NBR;
     Prod8 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr9 + (uint64_t)Nbr * Nbr2_9 + (uint32_t)Prod9) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr9 + (uint64_t)Nbr * Nbr2_9 + Prod9) & MAX_INT_NBR;
     Prod9 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr10 + (uint64_t)Nbr * Nbr2_10 + (uint32_t)Prod10) & MAX_INT_NBR;
+      (uint64_t)MontDig * TestNbr10 + (uint64_t)Nbr * Nbr2_10 + Prod10) & MAX_INT_NBR;
     Prod10 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
   if (Pr >= ((uint64_t)(TestNbr10 + 1) << BITS_PER_GROUP)
@@ -1118,7 +1115,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
   }
   if (NumberLength <= 12)
   {     // Small numbers.
-    int i, j;
+    int j;
 #ifdef _USING64BITS_
     switch (NumberLength)
     {
@@ -1152,9 +1149,11 @@ void modmult(limb *factor1, limb *factor2, limb *product)
     case 11:
       MontgomeryMult11(factor1, factor2, product);
       return;
+    default:
+      break;
     }
     (void)memset(Prod, 0, NumberLength * sizeof(limb));
-    for (i = 0; i < NumberLength; i++)
+    for (int i = 0; i < NumberLength; i++)
     {
       int32_t MontDig;
       int32_t Nbr;
@@ -1174,7 +1173,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
     double dLimbRange = (double)LIMB_RANGE;
     double dInvLimbRange = (double)1 / dLimbRange;
     (void)memset(Prod, 0, NumberLength*sizeof(limb));
-    for (i = 0; i < NumberLength; i++)
+    for (int i = 0; i < NumberLength; i++)
     {
       int Nbr = (factor1 + i)->x;
       double dNbr = (double)Nbr;
@@ -1276,7 +1275,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
     }
   }
   if ((cy >= LIMB_RANGE) || ((product + count)->x >= TestNbr[count].x))
-  {  // The number is greater or equal than Testnbr. Subtract it.
+  {  // The number is greater or equal than TestNbr. Subtract it.
     int borrow = 0;
     for (count = 0; count < NumberLength; count++)
     {
@@ -1302,7 +1301,7 @@ void modmultIntExtended(limb *factorBig, int factorInt, limb *result, limb *pTes
   int i;
   int TrialQuotient;
   limb *ptrFactorBig;
-  limb *ptrTestNbr;
+  const limb *ptrTestNbr;
   double dTestNbr;
   double dFactorBig;
   if (nbrLen == 1)
@@ -1382,7 +1381,7 @@ void modmultInt(limb *factorBig, int factorInt, limb *result)
 // Compute power = base^exponent (mod modulus)
 // Assumes GetMontgomeryParms routine for modulus already called.
 // This works only for odd moduli.
-void BigIntModularPower(BigInteger *base, BigInteger *exponent, BigInteger *power)
+void BigIntModularPower(const BigInteger *base, const BigInteger *exponent, BigInteger *power)
 {
   CompressLimbsBigInteger(aux5, base);
   modmult(aux5, MontgomeryMultR2, aux6);   // Convert base to Montgomery notation.
@@ -1397,15 +1396,13 @@ void BigIntModularPower(BigInteger *base, BigInteger *exponent, BigInteger *powe
 //        exp  = exponent.
 //        nbrGroupsExp = number of limbs of exponent.
 // Output: power = power in Montgomery notation.
-void modPow(limb *base, limb *exp, int nbrGroupsExp, limb *power)
+void modPow(limb *base, const limb *exp, int nbrGroupsExp, limb *power)
 {
-  int mask;
-  int index;
   (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1)*sizeof(*power));  // power <- 1
-  for (index = nbrGroupsExp - 1; index >= 0; index--)
+  for (int index = nbrGroupsExp - 1; index >= 0; index--)
   {
-    int groupExp = (int)(exp + index)->x;
-    for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+    int groupExp = (exp + index)->x;
+    for (int mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
     {
       modmult(power, power, power);
       if ((groupExp & mask) != 0)
@@ -1419,13 +1416,12 @@ void modPow(limb *base, limb *exp, int nbrGroupsExp, limb *power)
 // Input: base = base in Montgomery notation.
 //        exp  = exponent.
 // Output: power = power in Montgomery notation.
-void modPowLimb(limb *base, limb *exp, limb *power)
+void modPowLimb(limb *base, const limb *exp, limb *power)
 {
-  int mask;
   int groupExp;
   (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1)*sizeof(*power));  // power <- 1
-  groupExp = (int)exp->x;
-  for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+  groupExp = exp->x;
+  for (int mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
   {
     modmult(power, power, power);
     if ((groupExp & mask) != 0)
@@ -1435,15 +1431,13 @@ void modPowLimb(limb *base, limb *exp, limb *power)
   }
 }
 
-void modPowBaseInt(int base, limb *exp, int nbrGroupsExp, limb *power)
+void modPowBaseInt(int base, const limb *exp, int nbrGroupsExp, limb *power)
 {
-  int mask;
-  int index;
   (void)memcpy(power, MontgomeryMultR1, (NumberLength+1)*sizeof(limb));  // power <- 1
-  for (index = nbrGroupsExp-1; index>=0; index--)
+  for (int index = nbrGroupsExp-1; index>=0; index--)
   {
-    int groupExp = (int)(exp+index)->x;
-    for (mask = 1<<(BITS_PER_GROUP-1); mask > 0; mask >>= 1)
+    int groupExp = (exp+index)->x;
+    for (int mask = 1<<(BITS_PER_GROUP-1); mask > 0; mask >>= 1)
     {
       modmult(power, power, power);
       if ((groupExp & mask) != 0)
@@ -1461,8 +1455,7 @@ static void AddMult(limb *firstBig, int e, int f, limb *secondBig, int g, int h,
 #ifdef _USING64BITS_
   int64_t carryU = 0;
   int64_t carryV = 0;
-  int ctr;
-  for (ctr = 0; ctr <= nbrLen; ctr++)
+  for (int ctr = 0; ctr <= nbrLen; ctr++)
   {
     int u = firstBig->x;
     int v = secondBig->x;
@@ -1475,7 +1468,6 @@ static void AddMult(limb *firstBig, int e, int f, limb *secondBig, int g, int h,
   }
 #else
   double dVal = 1 / (double)LIMB_RANGE;
-  int ctr;
   int carryU;
   int carryV;
   double dFactorE = (double)e;
@@ -1483,7 +1475,7 @@ static void AddMult(limb *firstBig, int e, int f, limb *secondBig, int g, int h,
   double dFactorG = (double)g;
   double dFactorH = (double)h;
   carryU = carryV = 0;
-  for (ctr = 0; ctr <= nbrLen; ctr++)
+  for (int ctr = 0; ctr <= nbrLen; ctr++)
   {
     int u = firstBig->x;
     int v = secondBig->x;
@@ -1519,7 +1511,7 @@ static void AddMult(limb *firstBig, int e, int f, limb *secondBig, int g, int h,
 
 // Perform first <- (first - second) / 2
 // first must be greater than second.
-static int HalveDifference(limb *first, limb *second, int len)
+static int HalveDifference(limb *first, const limb *second, int len)
 {
   int i;
   int borrow;
@@ -2020,7 +2012,8 @@ void BigIntModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *mod, Bi
 }
 
 // Modular division when modulus is a power of 2.
-void BigIntModularDivisionPower2(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient)
+void BigIntModularDivisionPower2(BigInteger *Num, BigInteger *Den,
+   const BigInteger *mod, BigInteger *quotient)
 {
   int NumberLengthBak = NumberLength;
   NumberLength = mod->nbrLimbs;
@@ -2029,8 +2022,7 @@ void BigIntModularDivisionPower2(BigInteger *Num, BigInteger *Den, BigInteger *m
   if (Num->sign != Den->sign)
   {   // Sign of numerator is different from divisor, so negate aux3.
     int Cy = 0;
-    int idx;
-    for (idx = 0; idx < NumberLength; idx++)
+    for (int idx = 0; idx < NumberLength; idx++)
     {
       Cy -= aux3[idx].x;
       aux3[idx].x = Cy & MAX_VALUE_LIMB;
@@ -2100,7 +2092,8 @@ static void ChineseRemainderTheorem(int shRight, BigInteger *result)
 // so the division is done separately by calculating the division modulo
 // n/2^k (n odd) and 2^k and then merge the results using Chinese Remainder
 // Theorem.
-void BigIntGeneralModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient)
+void BigIntGeneralModularDivision(BigInteger *Num, BigInteger *Den, 
+   const BigInteger *mod, BigInteger *quotient)
 {
   int shRight;
   CopyBigInt(&oddValue, mod);
@@ -2141,7 +2134,8 @@ void BigIntGeneralModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *
 // so the division is done separately by calculating the division modulo
 // n/2^k (n odd) and 2^k and then merge the results using Chinese Remainder
 // Theorem.
-enum eExprErr BigIntGeneralModularPower(BigInteger *base, BigInteger *exponent, BigInteger *mod, BigInteger *power)
+enum eExprErr BigIntGeneralModularPower(BigInteger *base, BigInteger *exponent, 
+  const BigInteger *mod, BigInteger *power)
 {
   int shRight;
   if ((mod->nbrLimbs == 1) && (mod->limbs[0].x == 0))

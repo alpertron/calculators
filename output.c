@@ -20,7 +20,7 @@
 #include "output.h"
 
 char* ptrOutput;
-void showText(char* text)
+void showText(const char* text)
 {
   (void)strcpy(ptrOutput, text);
   ptrOutput += strlen(ptrOutput);

@@ -65,24 +65,25 @@ static void initCosinesArray(void)
   const struct sCosSin* ptrCosSinDelta;
   double invLimb = 1 / (double)LIMB_RANGE;
   double invSqLimb = invLimb * invLimb;
-  int index;
+  int index = 1;
   cossin[0].Cos[0] = MAX_VALUE_LIMB;                       // cos(0) = 1
   cossin[0].Cos[1] = MAX_VALUE_LIMB;
   cossin[0].Sin[0] = 0;                                    // sin(0) = 0
   cossin[0].Sin[1] = 0;
   ptrCosSin = &cossin[1];
-  for (index=1; ; index++)
+  for (;;)
   {
     // Get order of least significant non-zero bit.
-    int bitNbr;
+    int bitNbr = 0;
     int mask = 1;
-    for (bitNbr = 0; ; bitNbr++)
+    for (;;)
     {
       if (index & mask)
       {
         break;
       }
       mask *= 2;
+      bitNbr++;
     }
     if (bitNbr == POWERS_2 - 2)
     {
@@ -115,6 +116,7 @@ static void initCosinesArray(void)
       ptrCosSin->Sin[1] = *(firstProd + 3);
     }
     ptrCosSin++;
+    index++;
   }
   // Convert from integers to doubles and send the results to the final array.
   ptrCosSin = cossin;
@@ -131,7 +133,7 @@ static void initCosinesArray(void)
   Cosine[QUARTER_CIRCLE] = 0;
   Cosine[3*QUARTER_CIRCLE] = 0;
 }
-/*
+#if 0
   Algorithm 9.5.6 of Crandall and Pomerance book Prime Numbers:
   X, Y: Pointers to complex numbers.
 
@@ -159,13 +161,12 @@ static void initCosinesArray(void)
   }
   if (d even) return complex data at X.
   return complex data at Y.
-*/ 
+#endif
 
 // length is power of 2.
 static void complexFFT(complex *x, complex *y, int length)
 {
   int j;
-  int J;
   int halfLength = length / 2;
   int step = (1 << POWERS_2) / length;
   bool exponentOdd = false;
@@ -198,7 +199,7 @@ static void complexFFT(complex *x, complex *y, int length)
     ptrY++;
     ptrZ++;
   }
-  for (J = 2; J < length; J *= 2)
+  for (int J = 2; J < length; J *= 2)
   {
     step *= 2;
     ptrTemp = ptrX - halfLength;
@@ -247,14 +248,13 @@ static void complexFFT(complex *x, complex *y, int length)
 // Bi(k) = cos( PI k / N)
 static void ConvertHalfToFullSizeFFT(complex *halfSizeFFT, complex *fullSizeFFT, int power2)
 {
-  int k;
   int step = (1 << (POWERS_2-1)) / power2;
   complex *ptrFullSizeFFT = fullSizeFFT;
   complex *ptrHalfSizeFFT = halfSizeFFT;
   complex *ptrHalfSizeFFTRev = halfSizeFFT + power2;
   ptrHalfSizeFFTRev->real = halfSizeFFT->real;
   ptrHalfSizeFFTRev->imaginary = halfSizeFFT->imaginary;
-  for (k = 0; k < power2; k++)
+  for (int k = 0; k < power2; k++)
   {
     int angle = k * step;
     double diffReal = ptrHalfSizeFFT->real - ptrHalfSizeFFTRev->real;
@@ -285,12 +285,11 @@ static void ConvertHalfToFullSizeFFT(complex *halfSizeFFT, complex *fullSizeFFT,
 // IBi(k) = -cos( PI k / N)
 static void ConvertFullToHalfSizeFFT(complex *fullSizeFFT, complex *halfSizeFFT, int power2)
 {
-  int k;
   int step = (1 << (POWERS_2 - 1)) / power2;
   complex *ptrFullSizeFFT = fullSizeFFT;
   complex *ptrFullSizeFFTRev = fullSizeFFT + power2;
   complex *ptrHalfSizeFFT = halfSizeFFT;
-  for (k = 0; k < power2; k++)
+  for (int k = 0; k < power2; k++)
   {
     int angle = k * step;
     double diffReal = ptrFullSizeFFT->real - ptrFullSizeFFTRev->real;
@@ -317,11 +316,11 @@ static void ConvertFullToHalfSizeFFT(complex *fullSizeFFT, complex *halfSizeFFT,
 // correspond to imaginary component.
 // This code requires that FFT_LIMB_SIZE > BITS_PER_GROUP/2.
 // At this moment FFT_LIMB_SIZE = 19 and BITS_PER_GROUP = 31.
-static int ReduceLimbs(limb *factor, complex *fftFactor, int len)
+static int ReduceLimbs(const limb *factor, complex *fftFactor, int len)
 {
   int bitExternal = 0;  // Least significant bit of current external limb
                         // that corresponds to bit zero of FFT internal limb.
-  limb *ptrFactor = factor;
+  const limb *ptrFactor = factor;
   complex *ptrInternalFactor = fftFactor;
   for (;;)
   {
@@ -360,7 +359,7 @@ static int ReduceLimbs(limb *factor, complex *fftFactor, int len)
   return (int)(ptrInternalFactor - fftFactor);
 }
 
-/*
+#if 0
    Algorithm 9.5.12 of Crandall and Pomerance book Prime Numbers:
 
    Zero-pad x and y until each has length 2D.
@@ -377,8 +376,9 @@ static int ReduceLimbs(limb *factor, complex *fftFactor, int len)
      carry = floor(v/B)
    }
    Delete leading zeros.
-*/
-void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen)
+#endif
+
+void fftMultiplication(const limb *factor1, const limb *factor2, limb *result, int len, int *pResultLen)
 {
   complex *ptrFirst;
   complex *ptrSecond;
@@ -396,9 +396,11 @@ void fftMultiplication(limb *factor1, limb *factor2, limb *result, int len, int 
     ReduceLimbs(factor2, secondFactor, len);
   }
   // Get next power of 2 to len.
-  int power2, index;
-  for (power2 = 1; power2 < fftLen; power2 *= 2)
+  int power2 = 1;
+  int index;
+  while (power2 < fftLen)
   {
+    power2 *= 2;
   }
   power2 += power2;
   for (index = fftLen; index < power2; index++)

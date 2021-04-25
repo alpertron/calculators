@@ -382,6 +382,8 @@ void batchCubesCallback(char **pptrOutput)
     (void)strcpy(ptrOutput, (lang?": El usuario detuvo el cálculo</p>": ": User stopped the calculation</p>"));
     *pptrOutput = ptrOutput + strlen(ptrOutput);
     return;
+  default:
+    break;
   }
   // Show decomposition in sum of 1, 2, 3 or 4 cubes.
   (void)strcpy(ptrOutput, " = ");

@@ -36,7 +36,7 @@ static BigInteger startPeriodDen;
 static char *ptrOutput;
 static void ShowRational(BigInteger *pNum, BigInteger *pDen);
 extern bool hexadecimal;
-static void showText(char *text)
+static void showText(const char *text)
 {
   (void)strcpy(ptrOutput, text);
   ptrOutput += strlen(ptrOutput);
@@ -89,7 +89,7 @@ static void ShowConvergents(int index, BigInteger *coeff)
 
 static void ContFrac(void)
 {
-  BigInteger intSqrt;
+  static BigInteger intSqrt;
 
   ptrOutput = output;
   // Show formula.
@@ -99,8 +99,6 @@ static void ContFrac(void)
   showText("<span class=\"fup\">");
   BigInteger2Dec(&num, ptrOutput, groupLen);    // Show numerator.
   ptrOutput += strlen(ptrOutput);
-//  (void)strcpy(ptrOutput, lang ? " más la raíz cuadrada de " : " plus the square root of ");
-//  ptrOutput += strlen(ptrOutput);
   showText(" + <span class=\"sqrtout\"><span class=\"sqrtin\">");
   BigInteger2Dec(&delta, ptrOutput, groupLen);  // Show radicand.
   ptrOutput += strlen(ptrOutput);
@@ -166,7 +164,7 @@ static void ContFrac(void)
   }
   else
   {     // delta is not a perfect square. Periodic continued fraction.
-    char ended;
+    bool ended;
     int periodIndex;
     int index;
         // PQa algorithm for (P+G)/Q where G = sqrt(discriminant):
@@ -189,7 +187,7 @@ static void ContFrac(void)
     intToBigInteger(&startPeriodDen, -1);
     index = 0;
     periodIndex = 0;
-    ended = 0;
+    ended = false;
     do
     {
       BigIntAdd(&num, &intSqrt, &bigTmp);
@@ -218,13 +216,10 @@ static void ContFrac(void)
       index++;
       if (startPeriodNum.sign == SIGN_POSITIVE)
       {             // Already inside period.
-        if (++periodIndex == 100000)
-        {
-          break;    // Too many coefficients. Go out.
-        }
+        periodIndex++;
         if (BigIntEqual(&num, &startPeriodNum) && BigIntEqual(&den, &startPeriodDen))
         {           // New period started.
-          ended = 1;
+          ended = true;
           break;    // Go out in this case.
         }
       }
@@ -289,8 +284,8 @@ static void ContFrac(void)
 
 static void ShowRational(BigInteger *pNum, BigInteger *pDen)
 {
-  BigInteger Tmp;
-  char *sep;
+  static BigInteger Tmp;
+  const char *sep;
   int index = 0;
 
   BigIntGcd(pNum, pDen, &Tmp);     // Tmp <- GCD of numerator and denominator.
@@ -339,7 +334,7 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
   }
 }
 
-static int getNumber(BigInteger *pNumber, char *title, char **pptrInput)
+static int getNumber(BigInteger *pNumber, const char *title, char **pptrInput)
 {
   enum eExprErr rc;
   rc = ComputeExpression(*pptrInput, 1, pNumber);

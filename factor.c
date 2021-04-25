@@ -510,11 +510,13 @@ static void GenerateSieve(int initial)
 
 static int Cos(int N)
 {
-  switch (N % 8)
+  int NMod8 = N % 8;
+  if (NMod8 == 0)
   {
-  case 0:
     return 1;
-  case 4:
+  }
+  if (NMod8 == 4)
+  {
     return -1;
   }
   return 0;
@@ -664,7 +666,10 @@ void InsertAurifFactors(struct sFactors *pstFactors, BigInteger *BigBase, int Ex
     && (Expon / Base % 2 != 0)
     && (((Base % 4 != 1) && (Incre == 1)) || ((Base % 4 == 1) && (Incre == -1))))
   {
-    int N1, q, L, k;
+    int N1;
+    int q1;
+    int L;
+    int k;
     int N = Base;
     if (N % 4 == 1)
     {
@@ -695,9 +700,8 @@ void InsertAurifFactors(struct sFactors *pstFactors, BigInteger *BigBase, int Ex
     Gamma[0] = Delta[0] = 1;
     for (k = 1; k <= DegreeAurif / 2; k++)
     {
-      int j;
       Gamma[k] = Delta[k] = 0;
-      for (j = 0; j < k; j++)
+      for (int j = 0; j < k; j++)
       {
         Gamma[k] =
           Gamma[k]
@@ -725,16 +729,16 @@ void InsertAurifFactors(struct sFactors *pstFactors, BigInteger *BigBase, int Ex
     {
       Delta[k] = Delta[DegreeAurif - k - 1];
     }
-    q = Expon / Base;
+    q1 = Expon / Base;
     L = 1;
-    while (L * L <= q)
+    while (L * L <= q1)
     {
-      if (q % L == 0)
+      if (q1 % L == 0)
       {
         GetAurifeuilleFactor(pstFactors,L, BigBase);
-        if (q != L * L)
+        if (q1 != L * L)
         {
-          GetAurifeuilleFactor(pstFactors, q / L, BigBase);
+          GetAurifeuilleFactor(pstFactors, q1 / L, BigBase);
         }
       }
       L += 2;
@@ -742,7 +746,7 @@ void InsertAurifFactors(struct sFactors *pstFactors, BigInteger *BigBase, int Ex
   }
 }
 
-void copyString(char *textFromServer)
+void copyString(const char *textFromServer)
 {
   (void)strcpy(common.saveFactors.text, textFromServer);
 }
@@ -757,8 +761,8 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
   int Expon2;
   int k;
   char *ptrFactorsAscii;
-  BigInteger Nbr1;
-  BigInteger Nbr2;
+  static BigInteger Nbr1;
+  static BigInteger Nbr2;
 
   common.saveFactors.text[0] = 0;    // Indicate no new factor found in advance.
   Expon2 = Expon;
@@ -843,20 +847,20 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
   }
 }
 
-static bool ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFactor, int Exponent)
+static bool ProcessExponent(struct sFactors *pstFactors, BigInteger *numToFactor, int Exponent)
 {
 #ifdef __EMSCRIPTEN__
   char status[200];
   char *ptrStatus;
 #endif
-  BigInteger NFp1;
-  BigInteger NFm1;
-  BigInteger nthRoot;
-  BigInteger rootN1;
-  BigInteger rootN;
-  BigInteger rootbak;
-  BigInteger nextroot;
-  BigInteger dif;
+  static BigInteger NFp1;
+  static BigInteger NFm1;
+  static BigInteger nthRoot;
+  static BigInteger rootN1;
+  static BigInteger rootN;
+  static BigInteger rootbak;
+  static BigInteger nextroot;
+  static BigInteger dif;
   double log2N;
 #ifdef __EMSCRIPTEN__
   int elapsedTime = (int)(tenths() - originalTenthSecond);
@@ -875,9 +879,9 @@ static bool ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFactor
     databack(status);
 }
 #endif
-  CopyBigInt(&NFp1, nbrToFactor);
+  CopyBigInt(&NFp1, numToFactor);
   addbigint(&NFp1, 1);                    // NFp1 <- NumberToFactor + 1
-  CopyBigInt(&NFm1, nbrToFactor);
+  CopyBigInt(&NFm1, numToFactor);
   addbigint(&NFm1, -1);                   // NFm1 <- NumberToFactor - 1
   log2N = logBigNbr(&NFp1) / Exponent;    // Find nth root of number to factor.
   expBigNbr(&nthRoot, log2N);
@@ -889,7 +893,7 @@ static bool ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFactor
     BigIntSubt(&NFp1, &rootN, &dif);            // dif <- NFp1 - rootN
     if (BigIntIsZero(&dif))
     { // Perfect power
-      Cunningham(pstFactors, &nthRoot, Exponent, -1, nbrToFactor);
+      Cunningham(pstFactors, &nthRoot, Exponent, -1, numToFactor);
       return true;
     }
     addbigint(&dif, 1);                         // dif <- dif + 1
@@ -912,7 +916,7 @@ static bool ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFactor
     BigIntSubt(&NFm1, &rootN, &dif);            // dif <- NFm1 - rootN
     if (BigIntIsZero(&dif))
     { // Perfect power
-      Cunningham(pstFactors, &nthRoot, Exponent, 1, nbrToFactor);
+      Cunningham(pstFactors, &nthRoot, Exponent, 1, numToFactor);
       return true;
     }
     addbigint(&dif, 1);                         // dif <- dif + 1
@@ -930,21 +934,21 @@ static bool ProcessExponent(struct sFactors *pstFactors, BigInteger *nbrToFactor
   return false;
 }
 
-static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
+static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *numToFactor)
 {
   bool plus1 = false;
   bool minus1 = false;
   int Exponent = 0;
   int i, j;
   int modulus;
-  int mod9 = getRemainder(nbrToFactor, 9);
-  int maxExpon = nbrToFactor->nbrLimbs * BITS_PER_GROUP;
+  int mod9 = getRemainder(numToFactor, 9);
+  int maxExpon = numToFactor->nbrLimbs * BITS_PER_GROUP;
   int numPrimes = 2 * maxExpon + 3;
-  double logar = logBigNbr(nbrToFactor);
+  double logar = logBigNbr(numToFactor);
   // 33219 = logarithm base 2 of max number supported = 10^10000.
   // Let n = a^b +/- 1 (n = number to factor).
   // If n!=1 or n!=0 or n!=7 (mod 8), then b cannot be even.
-  modulus = nbrToFactor->limbs[0].x & 7;
+  modulus = numToFactor->limbs[0].x & 7;
   if ((modulus == 0) || (modulus == 1) || (modulus == 7))
   {       // b can be even
     (void)memset(common.ecm.ProcessExpon, 0xFF, sizeof(common.ecm.ProcessExpon));
@@ -975,9 +979,9 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
            // of p^2, otherwise it cannot be a perfect power.
       uint64_t remainder;
       int index;
-      int rem = getRemainder(nbrToFactor, i);
+      int rem = getRemainder(numToFactor, i);
       longToBigInteger(&Temp1, (uint64_t)i*(uint64_t)i);
-      BigIntRemainder(nbrToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
+      BigIntRemainder(numToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
       remainder = (uint64_t)Temp2.limbs[0].x;
       if ((rem == 1) || (rem == i - 1))
       {
@@ -1025,7 +1029,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
       continue;
     if (!(common.ecm.ProcessExpon[Exponent >> 3] & (1 << (Exponent & 7))))
       continue;
-    if (ProcessExponent(pstFactors, nbrToFactor, Exponent))
+    if (ProcessExponent(pstFactors, numToFactor, Exponent))
       return;
   }
   for (; Exponent >= 2; Exponent--)
@@ -1038,7 +1042,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *nbrToFactor)
     {
       continue;
     }
-    if (ProcessExponent(pstFactors, nbrToFactor, Exponent))
+    if (ProcessExponent(pstFactors, numToFactor, Exponent))
     {
       return;
     }
@@ -1092,17 +1096,16 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
   int nbrs[17];
   int diffs[17];
   int i;
-  int j;
   int m;
   int r;
   int nbrLimbs;
   int nbrIterations;
-  BigInteger sqrRoot;
-  BigInteger nextroot;
-  BigInteger a;
-  BigInteger c;
-  BigInteger sqr;
-  BigInteger val;
+  static BigInteger sqrRoot;
+  static BigInteger nextroot;
+  static BigInteger a;
+  static BigInteger c;
+  static BigInteger sqr;
+  static BigInteger val;
   if ((nbr->limbs[0].x & 1) == 0)
   { // nbr Even
     r = 0;
@@ -1156,7 +1159,7 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
   {
     nbrIterations = 1000 * factor->nbrLimbs;
   }
-  for (j = 0; j < nbrIterations; j++)
+  for (int j = 0; j < nbrIterations; j++)
   {
     for (i = 0; i < 17; i++)
     {
@@ -1200,7 +1203,7 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
 
 static enum eEcmResult ecmCurve(BigInteger *N)
 {
-  BigInteger potentialFactor;
+  static BigInteger potentialFactor;
 #ifdef __EMSCRIPTEN__
   char text[20];
 #endif
@@ -1209,6 +1212,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
   {
 #ifdef __EMSCRIPTEN__
     char *ptrText;
+    long long Paux = 1;
 #endif
     int I;
     int Pass;
@@ -1220,7 +1224,6 @@ static enum eEcmResult ecmCurve(BigInteger *N)
     long long LS;
     long long P;
     long long IP;
-    long long Paux = 1;
     if (NextEC > 0)
     {
       EC = NextEC;
@@ -1271,7 +1274,9 @@ static enum eEcmResult ecmCurve(BigInteger *N)
     L1 = 2000;
     L2 = 200000;
     LS = 45;
+#ifdef __EMSCRIPTEN__
     Paux = EC;
+#endif
     nbrPrimes = 303; /* Number of primes less than 2000 */
     if (EC > 25)
     {
@@ -1280,7 +1285,9 @@ static enum eEcmResult ecmCurve(BigInteger *N)
         L1 = 50000;
         L2 = 5000000;
         LS = 224;
+#ifdef __EMSCRIPTEN__
         Paux = EC - 24;
+#endif
         nbrPrimes = 5133; /* Number of primes less than 50000 */
       }
       else
@@ -1290,7 +1297,9 @@ static enum eEcmResult ecmCurve(BigInteger *N)
           L1 = 1000000;
           L2 = 100000000;
           LS = 1001;
+#ifdef __EMSCRIPTEN__
           Paux = EC - 299;
+#endif
           nbrPrimes = 78498; /* Number of primes less than 1000000 */
         }
         else
@@ -1298,7 +1307,9 @@ static enum eEcmResult ecmCurve(BigInteger *N)
           L1 = 11000000;
           L2 = 1100000000;
           LS = 3316;
+#ifdef __EMSCRIPTEN__
           Paux = EC - 1900;
+#endif
           nbrPrimes = 726517; /* Number of primes less than 11000000 */
         }
       }
@@ -1541,7 +1552,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
       }
       else
       {
-        common.ecm.sieve2310[(common.ecm.sieveidx[j++] = u / 2)] = (unsigned char)0;
+        common.ecm.sieve2310[common.ecm.sieveidx[j++] = u / 2] = (unsigned char)0;
       }
     }
     (void)memcpy(&common.ecm.sieve2310[HALF_SIEVE_SIZE], &common.ecm.sieve2310[0], HALF_SIEVE_SIZE);
@@ -2571,7 +2582,7 @@ void factor(BigInteger* toFactor, int* number, int* factors, struct sFactors* ps
 
 // pstFactors -> ptrFactor points to end of factors.
 // pstFactors -> multiplicity indicates the number of different factors.
-void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors)
+void factorExt(BigInteger *toFactor, const int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors)
 {
   struct sFactors *pstCurFactor;
   int factorNbr;
@@ -2641,7 +2652,7 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
       {     // Error on processing exponent.
         break;
       }
-      char *ptrCharFound = findChar(pcKnownFactors, ',');
+      ptrCharFound = findChar(pcKnownFactors, ',');
       if (ptrCharFound != NULL)
       {
         if (getNextInteger(&pcKnownFactors, &pstCurFactor->upperBound, ','))
@@ -2767,7 +2778,9 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
       {        // Number has at least 2 limbs: Trial division by small numbers.
         while (pstCurFactor->upperBound != 0)
         {            // Factor found.
-          int expon, index, delta;
+          int exponent;
+          int index;
+          int deltaIndex;
           ptrFactor = pstCurFactor->ptrFactor;
           remainder = RemDivBigNbrByInt(ptrFactor + 1, upperBound, nbrLimbs);
           if (remainder != 0)
@@ -2775,9 +2788,9 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
             break;
           }
           // Small factor found. Find the exponent.
-          expon = 1;
+          exponent = 1;
           index = 0;
-          delta = 1;
+          deltaIndex = 1;
           CopyBigInt(&common.trialDiv.cofactor, &prime);
           subtractdivide(&common.trialDiv.cofactor, 0, upperBound);
           intToBigInteger(&common.trialDiv.power[0], upperBound);
@@ -2791,22 +2804,22 @@ void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors 
             }
             CopyBigInt(&common.trialDiv.cofactor, &common.trialDiv.quotient);
             BigIntMultiply(&common.trialDiv.power[index], &common.trialDiv.power[index], &common.trialDiv.power[index+1]);
-            expon += delta;
-            delta <<= 1;
+            exponent += deltaIndex;
+            deltaIndex <<= 1;
             index++;
           }
           for (index--; index >= 0; index--)
           {
-            delta >>= 1;
+            deltaIndex >>= 1;
             BigIntDivide(&common.trialDiv.cofactor, &common.trialDiv.power[index], &common.trialDiv.quotient);
             BigIntMultiply(&common.trialDiv.quotient, &common.trialDiv.power[index], &common.trialDiv.temp);
             if (BigIntEqual(&common.trialDiv.temp, &common.trialDiv.cofactor))
             {    // It is a multiple.
               CopyBigInt(&common.trialDiv.cofactor, &common.trialDiv.quotient);
-              expon += delta;
+              exponent += deltaIndex;
             }
           }
-          insertIntFactor(pstFactors, pstCurFactor, upperBound, expon, &common.trialDiv.cofactor);
+          insertIntFactor(pstFactors, pstCurFactor, upperBound, exponent, &common.trialDiv.cofactor);
           restartFactoring = true;
           break;
         }
@@ -2965,7 +2978,7 @@ EXTERNALIZE char *getFactorsAsciiPtr(void)
   return common.saveFactors.text;
 }
 
-static void intArrayToBigInteger(int *ptrValues, BigInteger *bigint)
+static void intArrayToBigInteger(const int *ptrValues, BigInteger *bigint)
 {
   bigint->sign = SIGN_POSITIVE;
   bigint->nbrLimbs = *ptrValues;
@@ -2977,10 +2990,9 @@ void Totient(BigInteger *result)
 {
   static BigInteger TempVar;
   struct sFactors *pstFactor;
-  int factorNumber;
   intToBigInteger(result, 1);  // Set result to 1.
   pstFactor = &astFactorsMod[1];
-  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  for (int factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
     intArrayToBigInteger(pstFactor->ptrFactor, &factorValue);
     if ((factorValue.nbrLimbs == 1) && (factorValue.limbs[0].x == 1))
@@ -3019,10 +3031,9 @@ void MinFactor(BigInteger* result)
 
 void MaxFactor(BigInteger* result)
 {
-  int factorNumber;
   struct sFactors* pstFactor = &astFactorsMod[1];
   intArrayToBigInteger(pstFactor->ptrFactor, result);
-  for (factorNumber = 2; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  for (int factorNumber = 2; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
     intArrayToBigInteger((++pstFactor)->ptrFactor, &factorValue);
     BigIntSubt(&factorValue, result, &factorValue);
@@ -3061,10 +3072,9 @@ void SumOfDivisors(BigInteger *result)
 void NumberOfDivisors(BigInteger *result)
 {
   struct sFactors *pstFactor;
-  int factorNumber;
   intToBigInteger(result, 1);  // Set result to 1.
   pstFactor = &astFactorsMod[1];
-  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  for (int factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
     intArrayToBigInteger(pstFactor->ptrFactor, &factorValue);
     if ((factorValue.nbrLimbs == 1) && (factorValue.limbs[0].x == 1))

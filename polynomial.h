@@ -81,10 +81,10 @@ extern int polyInvCached;
 
 typedef void (*powerCback)(int percentage);
 void SetNumberToOne(/*@out@*/int *ptrValue1);
-void PolyModularGcd(int *arg1, int degree1, int *arg2, int degree2, int *gcd, int *degreeGcd);
+void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *gcd, int *degreeGcd);
 void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *expon,
                      int *polyPower, powerCback cback, int curMultip, int nbrMultip);
-int getDegreePoly(int *poly, int polyDegree);
+int getDegreePoly(const int *poly, int polyDegree);
 void DividePolynomial(/*@in@*/int *pDividend, int dividendDegree, /*@in@*/int *pDivisor,
                       int divisorDegree, /*@out@*/int *ptrQuotient);
 void multPolynomialModPoly(/*@in@*/int *polyFact1, /*@in@*/int *polyFact2, /*@out@*/int *polyProduct,
@@ -104,22 +104,22 @@ int DerPolynomial(int *ptrArgument);
 void PolynomialGcd(int *argF, int *argG, int *gcd);
 int DivideIntegerPolynomial(int *pDividend, int *pDivisor, enum eDivType type);
 int getModPolynomial(int *polyMod, int *poly, BigInteger *content);
-int *CopyPolynomial(int *ptrDest, int *ptrSrc, int degree);
-int *CopyPolynomialFixedCoeffSize(int *ptrDest, int *ptrSrc, int degree, int coeffSize);
+int *CopyPolynomial(int *ptrDest, const int *ptrSrc, int polyDegree);
+int *CopyPolynomialFixedCoeffSize(int *ptrDest, const int *ptrSrc, int degree, int coeffSize);
 void computePower(int expo);
-void UncompressBigIntegerB(int *ptrValues, BigInteger *bigint);
-int numLimbs(int *pLen);
+void UncompressBigIntegerB(const int *ptrValues, BigInteger *bigint);
+int numLimbs(const int *pLen);
 void polyToStandardNotation(int *nbr, int qtyNbrs);
 void polyToMontgomeryNotation(int *nbr, int qtyNbrs);
 int *getContent(int *poly, BigInteger *content);
-int *CopyPolyProduct(int *ptrSrc, int *ptrDest, int degree);
+int *CopyPolyProduct(const int *ptrSrc, int *ptrDest, int polyDegree);
 int FactorPolyOverIntegers(void);
 void polyFactText(char* modText, char* polyText, int groupLength);
 void showPowerX(char** pptrOutput, int polyDegree);
 int FactorModularPolynomial(bool inputMontgomery);
 int getNextPrimeNoDuplicatedFactors(int prime);
 void FactorPolynomialModPrime(int prime);
-void fftPolyMult(int* factor1, int* factor2, int* result, int len, int maxLen);
+void fftPolyMult(const int* factor1, const int* factor2, int* result, int len, int maxLen);
 void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   /*@out@*/int* polyProduct,
   int polyDegree, /*@in@*/int* polyMod);

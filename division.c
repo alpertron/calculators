@@ -39,7 +39,7 @@ extern int bitLengthCycle[20];
 // Multiply by a power of 2 such that the most significant bit of most significant limb is one.
 // output: pNbrLimbs = pointer to number of limbs
 //         pPower2 = pointer to power of 2.
-static void MultiplyBigNbrByMinPowerOf2(int *pPower2, limb *number, int len, limb *dest)
+static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int len, limb *dest)
 {
   limb mostSignficLimb;
   limb oldLimb;
@@ -86,7 +86,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
   int nbrLimbsDivisor;
 
   // Check whether the divisor is zero.
-  if ((pDivisor->limbs[0].x == 0) && (pDivisor->nbrLimbs == 1))
+  if (BigIntIsZero(pDivisor))
   {  // Indicate overflow if divisor is zero.
     return EXPR_NUMBER_TOO_HIGH;
   }
@@ -96,9 +96,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
   nbrLimbs = nbrLimbsDividend - nbrLimbsDivisor;
   if (nbrLimbs < 0)
   {   // Absolute value of dividend is less than absolute value of divisor.
-    pQuotient->limbs[0].x = 0;
-    pQuotient->nbrLimbs = 1;
-    pQuotient->sign = SIGN_POSITIVE;
+    intToBigInteger(pQuotient, 0);
     return EXPR_OK;
   }
   if (nbrLimbs == 0)
@@ -112,9 +110,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     }
     if (pDividend->limbs[nbrLimbs].x < pDivisor->limbs[nbrLimbs].x)
     {   // Dividend is less than divisor, so quotient is zero.
-      pQuotient->limbs[0].x = 0;
-      pQuotient->nbrLimbs = 1;
-      pQuotient->sign = SIGN_POSITIVE;
+      intToBigInteger(pQuotient, 0);
       return EXPR_OK;
     }
   }
@@ -147,10 +143,12 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     int TrialQuotient;
     double dNbr;
     double dInvDivisor;
+#ifndef _USING64BITS_
     double dTrialQuotient;
     double dDelta;
+#endif
     limb* ptrDividend;
-    limb* ptrDivisor;
+    const limb* ptrDivisor;
     limb* ptrQuotient;
 
     (void)memcpy(adjustedArgument, pDividend->limbs, nbrLimbsDividend * sizeof(limb));
@@ -168,9 +166,11 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
         TrialQuotient = MAX_VALUE_LIMB;
       }
       // Compute Nbr <- Nbr - TrialQuotient * Modulus
+#ifndef _USING64BITS_
       dTrialQuotient = (double)TrialQuotient;
-      carry = 0;
       dDelta = 0;
+#endif
+      carry = 0;
       ptrDividend = &adjustedArgument[nbrLimbsDividend - nbrLimbsDivisor];
       ptrDivisor = pDivisor->limbs;
       for (i = 0; i <= nbrLimbsDivisor; i++)

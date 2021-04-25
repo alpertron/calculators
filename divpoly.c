@@ -117,7 +117,6 @@ int DivideIntegerPolynomial(int* pDividend, int* pDivisor, enum eDivType type)
   int* ptrResult;
   int degreeDividend;
   int degreeDivisor;
-  int degreeQuotient;
   int* ptrQuotient;
   // Move arguments to temporary storage with most significant coefficient
   // first.
@@ -141,11 +140,11 @@ int DivideIntegerPolynomial(int* pDividend, int* pDivisor, enum eDivType type)
   }
   ptrQuotient = poly3;
   *ptrQuotient++ = degreeDividend - degreeDivisor;
-  for (degreeQuotient = degreeDividend - degreeDivisor;
+  for (int degreeQuotient = degreeDividend - degreeDivisor;
     degreeQuotient >= 0; degreeQuotient--)
   {
-    int* ptrDividend = &poly1[1];
-    int* ptrDivisor = &poly2[1];
+    const int* ptrDividend = &poly1[1];
+    const int* ptrDivisor = &poly2[1];
     int* ptrRemainder = &poly4[1];
     UncompressBigIntegerB(ptrDividend, &operand1);
     UncompressBigIntegerB(ptrDivisor, &operand2);
@@ -322,12 +321,11 @@ int DivPolynomialExpr(int* ptrArgument1, int* ptrArgument2, enum eDivType type)
 }
 
 // Reverse coefficients of polynomials. Both polynomials must be different.
-static void ReverseModularPolynomial(int* ptrSrc, int* ptrRev, int degree)
+static void ReverseModularPolynomial(const int* ptrSrc, int* ptrRev, int polyDegree)
 {
-  int currentDegree;
   int nbrLimbs = NumberLength + 1;
-  ptrRev += degree * nbrLimbs;
-  for (currentDegree = 0; currentDegree <= degree; currentDegree++)
+  ptrRev += polyDegree * nbrLimbs;
+  for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     (void)memcpy(ptrRev, ptrSrc, nbrLimbs * sizeof(limb));
     ptrSrc += nbrLimbs;
@@ -342,7 +340,8 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
   int quotientDegree = dividendDegree - divisorDegree;
   int oldDegree = 1;
   int currentDegree;
-  int* ptrRemainder, * ptrProd;
+  int* ptrRemainder;
+  int *ptrProd;
   int nbrLimbs = NumberLength + 1;
   int degrees[15];
   int nbrDegrees = 0;
@@ -393,7 +392,7 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
     // g is stored in inverseDivisor.
     // oldDegree = size of g.
     int* ptrProduct, * ptrDest;
-    int currentDegree;
+    int currDegree;
     int newDegree = degrees[nbrDegrees];
     // Compute f*g.
     MultPolynomial(newDegree - 1, oldDegree - 1, revDividend, inverseDivisor);
@@ -410,7 +409,7 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
       {
         polyTmp[1] += mod;
       }
-      for (currentDegree = 1; currentDegree < newDegree; currentDegree++)
+      for (currDegree = 1; currDegree < newDegree; currDegree++)
       {                    // Get the negative of all coefficients of f*g.
         ptrProduct += 2;   // Point to next coefficient of f*g.
         ptrDest += 2;      // Point to next coefficient of 2 - f*g.
@@ -434,7 +433,7 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
       SubtBigNbrMod(operand1.limbs, operand2.limbs, operand2.limbs);
       ArrLimbs2LenAndLimbs(polyTmp, operand2.limbs, nbrLimbs);
       (void)memset(operand1.limbs, 0, nbrLimbs * sizeof(limb));
-      for (currentDegree = 1; currentDegree < newDegree; currentDegree++)
+      for (currDegree = 1; currDegree < newDegree; currDegree++)
       {                    // Get the negative of all coefficients of f*g.
         ptrProduct += nbrLimbs;  // Point to next coefficient of f*g.
         ptrDest += nbrLimbs;     // Point to next coefficient of 2 - f*g.
@@ -491,7 +490,6 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
   int currentDegree;
   int nbrLimbs = NumberLength + 1;
   int divisorIsOne;
-  int remainderDegree;
   int* ptrDivisor;
   int* ptrDividend;
   if (divisorDegree > dividendDegree)
@@ -503,7 +501,6 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
     }
     return;
   }
-  remainderDegree = dividendDegree - divisorDegree;
   IntArray2BigInteger(pDivisor + divisorDegree * nbrLimbs, &operand1);
   (void)memcpy(operand5.limbs, operand1.limbs, NumberLength * sizeof(int));
   if (NumberLength == 1)

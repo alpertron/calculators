@@ -39,13 +39,14 @@ static enum eShowSolution
   SECOND_SOLUTION,
 } showSolution;
 
-static enum eCallbackQuadModType
+enum eCallbackQuadModType
 {
   CBACK_QMOD_PARABOLIC = 0,
   CBACK_QMOD_ELLIPTIC,
   CBACK_QMOD_HYPERBOLIC,
-} callbackQuadModType;
+};
 
+static enum eCallbackQuadModType callbackQuadModType;
 static int counters[400];
 static char isDescending[400];
 static int originalMultiplicities[400];
@@ -129,7 +130,7 @@ static BigInteger Yplus;
 static BigInteger Yminus;
 static BigInteger *Xbak;
 static BigInteger *Ybak;
-static int Show(BigInteger *num, char *str, enum eLinearSolution t);
+static int Show(BigInteger *num, const char *str, enum eLinearSolution t);
 static void Show1(BigInteger *num, enum eLinearSolution t);
 static void callbackQuadModParabolic(BigInteger *value);
 static void callbackQuadModElliptic(BigInteger *value);
@@ -167,7 +168,7 @@ static struct stValidateCoeff astValidateCoeff[NBR_COEFF] =
   { NULL, &ValF, "Coeficiente <var>f</var>: ", "Coefficient <var>f</var>: " },
 };
 
-static void showText(char *text)
+static void showText(const char *text)
 {
   (void)strcpy(ptrOutput, text);
   ptrOutput += strlen(ptrOutput);
@@ -237,7 +238,7 @@ static void ShowLin(BigInteger *coeffX, BigInteger *coeffY, BigInteger *coeffInd
   Show1(coeffInd, t);
 }
 
-static void ShowLinInd(BigInteger *lin, BigInteger *ind, char *var)
+static void ShowLinInd(BigInteger *lin, BigInteger *ind, const char *var)
 {
   if (BigIntIsZero(ind) && BigIntIsZero(lin))
   {
@@ -270,7 +271,7 @@ static void ShowLinInd(BigInteger *lin, BigInteger *ind, char *var)
   }
 }
 
-int PrintLinear(enum eLinearSolution Ret, char *var)
+int PrintLinear(enum eLinearSolution Ret, const char *var)
 {
   if (Ret == NO_SOLUTIONS)
   {
@@ -305,7 +306,7 @@ int PrintLinear(enum eLinearSolution Ret, char *var)
 }
 
 static void PrintQuad(BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeffInd, 
-                      char *var1, char *var2)
+                      const char *var1, const char *var2)
 {
   if ((coeffT2->nbrLimbs == 1) && (coeffT2->limbs[0].x == 1))
   {             // abs(coeffT2) = 1
@@ -456,7 +457,7 @@ void ShowXY(BigInteger *X, BigInteger *Y)
   }
 }
 
-static int Show(BigInteger *num, char *str, enum eLinearSolution t)
+static int Show(BigInteger *num, const char *str, enum eLinearSolution t)
 {
   if ((num->nbrLimbs > 1) || (num->limbs[0].x != 0))
   {     // num is not zero.
@@ -518,7 +519,6 @@ static void ShowEq(BigInteger *coeffA, BigInteger *coeffB, BigInteger *coeffC,
   (void)strcpy(ptrVar, x);
   ptrVar += strlen(ptrVar);
   (void)strcpy(ptrVar, squareText);
-  ptrVar += strlen(ptrVar);
   t = Show(coeffA, var, SOLUTION_FOUND);
 
   ptrVar = var;
@@ -527,33 +527,24 @@ static void ShowEq(BigInteger *coeffA, BigInteger *coeffB, BigInteger *coeffC,
   (void)strcpy(ptrVar, "&#8290;");
   ptrVar += strlen(ptrVar);
   (void)strcpy(ptrVar, y);
-  ptrVar += strlen(ptrVar);
   t = Show(coeffB, var, t);
 
   ptrVar = var;
   (void)strcpy(ptrVar, y);
   ptrVar += strlen(ptrVar);
   (void)strcpy(ptrVar, squareText);
-  ptrVar += strlen(ptrVar);
   t = Show(coeffC, var, t);
 
-  ptrVar = var;
-  (void)strcpy(ptrVar, x);
-  ptrVar += strlen(ptrVar);
-  t = Show(coeffD, var, t);
+  t = Show(coeffD, x, t);
 
-  ptrVar = var;
-  (void)strcpy(ptrVar, y);
-  ptrVar += strlen(ptrVar);
-  t = Show(coeffE, var, t);
+  t = Show(coeffE, y, t);
   Show1(coeffF, t);
 }
 
 static void showFactors(BigInteger *value)
 {
-  int index;
-  struct sFactors *pstFactor;
-  int nbrFactors = astFactorsMod[0].multiplicity;
+  const struct sFactors *pstFactor;
+  int numFactors = astFactorsMod[0].multiplicity;
   int factorShown = 0;
   shownbr(value);
   showText(" = ");
@@ -562,7 +553,7 @@ static void showFactors(BigInteger *value)
     showMinus();
   }
   pstFactor = &astFactorsMod[1];
-  for (index = 0; index < nbrFactors; index++)
+  for (int index = 0; index < numFactors; index++)
   {
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);
     if (pstFactor->multiplicity == 0)
@@ -697,7 +688,6 @@ static void findQuadraticSolution(BigInteger* pSolution, int expon)
 // Solve congruence an^2 + bn + c = 0 (mod n) where n is different from zero.
 void SolveQuadModEquation(void)
 {
-  int factorIndex;
   int expon;
   int T1;
   int E;
@@ -710,7 +700,7 @@ void SolveQuadModEquation(void)
   static BigInteger SqrtDisc;
   static BigInteger discriminant;
   static BigInteger V;
-  struct sFactors *pstFactor;
+  const struct sFactors *pstFactor;
 
   modulus.sign = SIGN_POSITIVE;
   BigIntRemainder(&coeffQuadr, &modulus, &coeffQuadr);
@@ -760,12 +750,11 @@ void SolveQuadModEquation(void)
     }
     else
     {
-      int ctr;
       if (teach)
       {
         showText("<ol>");
       }
-      for (ctr = 0; ctr < GcdAll.limbs[0].x; ctr++)
+      for (int ctr = 0; ctr < GcdAll.limbs[0].x; ctr++)
       {
         intToBigInteger(&Tmp[0], ctr);
         SolutionX(&Tmp[0]);
@@ -829,7 +818,7 @@ void SolveQuadModEquation(void)
   intToBigInteger(&Q, 0);
   nbrFactors = astFactorsMod[0].multiplicity;   // Get number of different prime factors.
   pstFactor = &astFactorsMod[1];                // Point to first prime factor information.
-  for (factorIndex = 0; factorIndex<nbrFactors; factorIndex++)
+  for (int factorIndex = 0; factorIndex<nbrFactors; factorIndex++)
   {
     expon = pstFactor->multiplicity;            // Get exponent multiplicity.
     if (expon == 0)
@@ -868,12 +857,16 @@ void SolveQuadModEquation(void)
     }
     else
     {                   // Quadratic equation mod prime
-      int sol1Invalid = 0;
-      int sol2Invalid = 0;
-      BigInteger ValAOdd, ValBOdd, ValCOdd, squareRoot;
-      int correctBits, nbrLimbs, ctr;
+      bool sol1Invalid = false;
+      bool sol2Invalid = false;
+      static BigInteger ValAOdd;
+      static BigInteger ValBOdd;
+      static BigInteger ValCOdd;
+      static BigInteger squareRoot;
+      int correctBits;
+      int nbrLimbs;
+      int ctr;
       int bitsAZero;
-      int deltaIsZero = 0;
       // Compute discriminant = ValB^2 - 4*ValA*ValC.
       BigIntMultiply(&coeffLinear, &coeffLinear, &Tmp[0]);
       BigIntMultiply(&coeffQuadr, &coeffIndep, &discriminant);
@@ -882,7 +875,8 @@ void SolveQuadModEquation(void)
       CopyBigInt(&ValAOdd, &coeffQuadr);
       if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
       {         /* Prime p is 2 */
-        int bitsBZero, bitsCZero;
+        int bitsBZero;
+        int bitsCZero;
         int origExpon = expon;
         // ax^2 + bx + c = 0 (mod 2^expon)
         // This follows the paper Complete solving the quadratic equation mod 2^n
@@ -1025,7 +1019,7 @@ void SolveQuadModEquation(void)
           CopyBigInt(&Linear, &coeffLinear);
           CopyBigInt(&Const, &coeffIndep);
           findQuadraticSolution(&common.quad.Solution1[factorIndex], expon);
-          sol2Invalid = 1;
+          sol2Invalid = true;
         }
         BigIntPowerOf2(&Q, expon);         // Store increment.
       }
@@ -1099,8 +1093,6 @@ void SolveQuadModEquation(void)
         if (BigIntIsZero(&discriminant))
         {     // Discriminant is zero.
           intToBigInteger(&squareRoot, 0);
-          deltaIsZero = 1;
-          nbrBitsSquareRoot = expon + bitsAZero;
         }
         else
         {      // Discriminant is not zero.
@@ -1183,7 +1175,8 @@ void SolveQuadModEquation(void)
               x = 1;
               do
               {
-                intToBigInteger(&Tmp[3], ++x);
+                x++;
+                intToBigInteger(&Tmp[3], x);
               } while (BigIntJacobiSymbol(&Tmp[3], &prime) >= 0);
               // Step 3.
               // Get z <- x^q (mod p) in Montgomery notation.
@@ -1272,7 +1265,7 @@ void SolveQuadModEquation(void)
           BigIntRemainder(&tmp1, &prime, &tmp2);
           if ((tmp2.nbrLimbs > 1) || (tmp2.limbs[0].x != 0))
           {   // Cannot divide by prime, so go out.
-            sol1Invalid = 1;
+            sol1Invalid = true;
             break;
           }
           BigIntDivide(&tmp1, &prime, &tmp1);
@@ -1289,7 +1282,7 @@ void SolveQuadModEquation(void)
           BigIntRemainder(&tmp1, &prime, &tmp2);
           if ((tmp2.nbrLimbs > 1) || (tmp2.limbs[0].x != 0))
           {   // Cannot divide by prime, so go out.
-            sol2Invalid = 1;
+            sol2Invalid = true;
             break;
           }
           BigIntDivide(&tmp1, &prime, &tmp1);
@@ -2768,10 +2761,10 @@ static void ShowSolutionFromConvergent(void)
   }
 }
 
-static void showFirstSolution(char *discr, char *valueP)
+static void showFirstSolution(const char *discrim, const char *valueP)
 {
   showText(lang ? "<p>Cuando el discriminante vale ": "<p>When the discriminant equals ");
-  showText(discr);
+  showText(discrim);
   showText(lang ? " y" : " and");
   showText(" <var>P</var> = ");
   showText(valueP);
@@ -2781,7 +2774,7 @@ static void showFirstSolution(char *discr, char *valueP)
   showText(", <var>k</var>) = (");
 }
 
-static void showOtherSolution(char *ordinal)
+static void showOtherSolution(const char *ordinal)
 {
   showText(lang ? "<p>La ": "<p>The ");
   showText(ordinal);
@@ -3393,7 +3386,7 @@ static void PerfectSquareDiscriminant(void)
   intToBigInteger(&currentFactor, 1);
   for (;;)
   {
-    struct sFactors* pstFactor;
+    const struct sFactors* pstFactor;
     CheckSolutionSquareDiscr();       // Process positive divisor.
     BigIntChSign(&currentFactor);
     CheckSolutionSquareDiscr();       // Process negative divisor.
@@ -3707,7 +3700,7 @@ static void ShowRecSol(char variable, BigInteger *coefX,
   Show1(coefInd, t);
 }
 
-static void ShowResult(char *text, BigInteger *value)
+static void ShowResult(const char *text, BigInteger *value)
 {
   showText(text);
   showText(" = ");
@@ -4254,7 +4247,7 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
   }
   if (coeffNbr == NBR_COEFF)
   {
-    char* ptrBeginSol;
+    const char* ptrBeginSol;
     showText("<h2>");
     ShowEq(&ValA, &ValB, &ValC, &ValD, &ValE, &ValF, "x", "y");
     showText(" = 0</h2>");

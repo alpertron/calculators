@@ -30,7 +30,9 @@ int attemptNbr;
 char *ptrPercentageOutput;
 #endif
 
+#ifdef __EMSCRIPTEN__
 static char outputText[20000];
+#endif
 extern int poly4[1000000];
 
 // Perform distinct degree factorization
@@ -40,7 +42,6 @@ static void DistinctDegreeFactorization(int polyDegree)
   struct sFactorInfo *pstNewFactorInfo;
   int nbrLimbs = primeMod.nbrLimbs + 1;
   int currentDegree;
-  int nbrFactor;
   int degreeMin;
   int degreeGcd;
   int *ptrPolyToFactor;
@@ -53,7 +54,7 @@ static void DistinctDegreeFactorization(int polyDegree)
   }
   SetNumberToOne(&poly1[nbrLimbs]);
   pstFactorInfo = factorInfo;
-  for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+  for (int nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
     if ((pstFactorInfo->degree < 2) || (pstFactorInfo->expectedDegree != 0))
     {             // Polynomial is completely factored. Try next one.
@@ -213,15 +214,14 @@ void SameDegreeFactorization(void)
   struct sFactorInfo *pstNewFactorInfo;
   int *ptrValue1;
   int *ptrPolyToFactor;
-  int nbrFactor;
   int currentDegree;
   int index;
   int degreeGcd;
-  int primeInt = (int)primeMod.limbs[0].x;
+  int primeInt = primeMod.limbs[0].x;
   int nbrLimbs = primeMod.nbrLimbs + 1;
   int polyNbr = 1;
   int isCharacteristic2 = ((primeMod.nbrLimbs == 1) && (primeMod.limbs[0].x == 2));
-  for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+  for (int nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
     int polyDegree = pstFactorInfo->degree;
     if ((polyDegree < 2) || (polyDegree == pstFactorInfo->expectedDegree) ||
@@ -238,7 +238,8 @@ void SameDegreeFactorization(void)
       operand1.nbrLimbs = 1;
     }
     ptrPolyToFactor = pstFactorInfo->ptr;
-    for (attemptNbr = 1;; attemptNbr++, polyNbr++)
+    attemptNbr = 1;
+    for (;;)
     {
 #ifdef __EMSCRIPTEN__
       char *ptrOutput = outputText;
@@ -388,29 +389,29 @@ void SameDegreeFactorization(void)
         }
         GetPolyInvParm(polyDegree, ptrPolyToFactor);
       }
+      attemptNbr++;
+      polyNbr++;
     }
     pstFactorInfo++;
   }
 }
 
 // Sort factors on ascending degree, and then by coefficient.
-static void SortFactors(BigInteger *modulus)
+static void SortFactors(const BigInteger *modulus)
 {
   struct sFactorInfo *pstFactorInfo;
   struct sFactorInfo *pstFactorInfo2;
   struct sFactorInfo stFactorInfoTemp;
   int currentDegree;
-  int nbrFactor;
-  int nbrFactor2;
   int index;
-  int *ptrValue1;
-  int *ptrValue2;
+  const int *ptrValue1;
+  const int *ptrValue2;
   int nbrLimbs = modulus->nbrLimbs + 1;
   pstFactorInfo = factorInfo;
-  for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+  for (int nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
     pstFactorInfo2 = pstFactorInfo + 1;
-    for (nbrFactor2 = nbrFactor + 1; nbrFactor2 < nbrFactorsFound; nbrFactor2++)
+    for (int nbrFactor2 = nbrFactor + 1; nbrFactor2 < nbrFactorsFound; nbrFactor2++)
     {
       if (pstFactorInfo->degree > pstFactorInfo2->degree)
       {
@@ -463,15 +464,13 @@ static void SortFactors(BigInteger *modulus)
 // Output: factorInfo = structure that holds the factors.
 int FactorModularPolynomial(bool inputMontgomery)
 {
-  int nbrFactor;
   struct sFactorInfo* ptrFactorInfo;
-  int currentDegree;
   int rc;
-  int *ptrValue1;
-  int nbrLimbsPrime = primeMod.nbrLimbs + 1; // Add 1 for length;
+  const int *ptrValue1;
+  int nbrLimbsPrime = primeMod.nbrLimbs + 1; // Add 1 for length.
   degree = values[0];
   ptrValue1 = &values[1];
-  for (currentDegree = 0; currentDegree <= degree; currentDegree++)
+  for (int currentDegree = 0; currentDegree <= degree; currentDegree++)
   {
     NumberLength = numLimbs(ptrValue1);
     IntArray2BigInteger(ptrValue1, &operand1);
@@ -525,7 +524,7 @@ int FactorModularPolynomial(bool inputMontgomery)
   }
   // Convert original polynomial from Montgomery to standard notation.
   ptrFactorInfo = factorInfo;
-  for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+  for (int nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
     polyToStandardNotation(ptrFactorInfo->ptr, ptrFactorInfo->degree);
     ptrFactorInfo++;
@@ -536,7 +535,7 @@ int FactorModularPolynomial(bool inputMontgomery)
   {
     return rc;
   }
-  SortFactors(rc != 0 ? &primeMod : &powerMod);
+  SortFactors((rc != 0)? &primeMod : &powerMod);
   return rc;
 }
 
@@ -652,8 +651,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
       else
       {   // Get number of factors including multiplicity.
         int totalFactors = 0;
-        int ctr;
-        for (ctr = 0; ctr < nbrFactorsFound; ctr++)
+        for (int ctr = 0; ctr < nbrFactorsFound; ctr++)
         {
           totalFactors += pstFactorInfo->multiplicity;
           pstFactorInfo++;

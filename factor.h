@@ -62,7 +62,7 @@ extern bool hexadecimal;
 extern struct sFactors stFactors[MAX_FACTORS];
 extern int *factorArr[FACTOR_ARRSIZE];
 void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors);
-void factorExt(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors);
+void factorExt(BigInteger *toFactor, const int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors);
 void FactoringSIQS(limb *pNbrToFactor, limb *pFactor);
 #ifndef lang  
   extern bool lang;
