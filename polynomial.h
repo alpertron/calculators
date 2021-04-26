@@ -82,13 +82,13 @@ extern int polyInvCached;
 typedef void (*powerCback)(int percentage);
 void SetNumberToOne(/*@out@*/int *ptrValue1);
 void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *gcd, int *degreeGcd);
-void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *expon,
-                     int *polyPower, powerCback cback, int curMultip, int nbrMultip);
+void powerPolynomial(int* polyBase, int* polyMod, int polyDegree, const BigInteger* expon,
+  int* polyPower, powerCback callback, int curMultip, int nbrMultip);
 int getDegreePoly(const int *poly, int polyDegree);
 void DividePolynomial(/*@in@*/int *pDividend, int dividendDegree, /*@in@*/int *pDivisor,
                       int divisorDegree, /*@out@*/int *ptrQuotient);
-void multPolynomialModPoly(/*@in@*/int *polyFact1, /*@in@*/int *polyFact2, /*@out@*/int *polyProduct,
-                    int polyDegree, /*@in@*/int *polyMod);
+void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
+  /*@out@*/int* polyProduct, int polyDegree, const int* polyMod);
 void MultPolynomial(int degree1, int degree2, /*@in@*/int *factor1, /*@in@*/int *factor2);
 void GetPolyInvParm(int polyDegree, /*@in@*/int *polyMod);
 int ComputePolynomial(char *input, int expo);
@@ -99,11 +99,11 @@ int HenselLifting(struct sFactorInfo* factorInfo, int compressPoly);
 void polyToStandardNotation(int *nbr, int qtyNbrs);
 void textErrorPol(char *output, enum eExprErr rc);
 void outputOriginalPolynomial(char *ptrOutput, int groupLen);
-void outputPolynomialFactor(char* ptrOutput, int groupLength, struct sFactorInfo* pstFactorInfo);
+void outputPolynomialFactor(char* ptrOutput, int groupLength, const struct sFactorInfo* pstFactorInfo);
 int DerPolynomial(int *ptrArgument);
 void PolynomialGcd(int *argF, int *argG, int *gcd);
-int DivideIntegerPolynomial(int *pDividend, int *pDivisor, enum eDivType type);
-int getModPolynomial(int *polyMod, int *poly, BigInteger *content);
+int DivideIntegerPolynomial(int *pDividend, const int *pDivisor, enum eDivType type);
+int getModPolynomial(int *polyMod, const int *poly, BigInteger *content);
 int *CopyPolynomial(int *ptrDest, const int *ptrSrc, int polyDegree);
 int *CopyPolynomialFixedCoeffSize(int *ptrDest, const int *ptrSrc, int degree, int coeffSize);
 void computePower(int expo);

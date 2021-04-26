@@ -71,7 +71,7 @@ int getNbrLimbs(const limb *bigNbr)
 }
 
 // Find the inverse of value mod 2^(NumberLength*BITS_PER_GROUP)
-void ComputeInversePower2(limb *value, limb *result, limb *tmp)
+void ComputeInversePower2(const limb *value, limb *result, limb *tmp)
 {
   int N;
   int x;
@@ -213,7 +213,7 @@ void GetMontgomeryParms(int len)
 
 // Compute Nbr <- Nbr mod Modulus.
 // Modulus has NumberLength limbs.
-void AdjustModN(limb *Nbr, limb *Modulus, int nbrLen)
+void AdjustModN(limb *Nbr, const limb *Modulus, int nbrLen)
 {
 #ifdef _USING64BITS_
   int64_t carry;
@@ -1080,7 +1080,7 @@ static void MontgomeryMult11(const limb *pNbr1, const limb *pNbr2, limb *pProd)
 }
 #endif
 
-void modmult(limb *factor1, limb *factor2, limb *product)
+void modmult(const limb *factor1, const limb *factor2, limb *product)
 {
   limb carry;
   int count;
@@ -1287,7 +1287,7 @@ void modmult(limb *factor1, limb *factor2, limb *product)
 }
 
 // Multiply big number in Montgomery notation by integer.
-void modmultIntExtended(limb *factorBig, int factorInt, limb *result, limb *pTestNbr, int nbrLen)
+void modmultIntExtended(limb *factorBig, int factorInt, limb *result, const limb *pTestNbr, int nbrLen)
 {
 #ifdef _USING64BITS_
   int64_t carry;
@@ -1396,7 +1396,7 @@ void BigIntModularPower(const BigInteger *base, const BigInteger *exponent, BigI
 //        exp  = exponent.
 //        nbrGroupsExp = number of limbs of exponent.
 // Output: power = power in Montgomery notation.
-void modPow(limb *base, const limb *exp, int nbrGroupsExp, limb *power)
+void modPow(const limb *base, const limb *exp, int nbrGroupsExp, limb *power)
 {
   (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1)*sizeof(*power));  // power <- 1
   for (int index = nbrGroupsExp - 1; index >= 0; index--)
@@ -1416,7 +1416,7 @@ void modPow(limb *base, const limb *exp, int nbrGroupsExp, limb *power)
 // Input: base = base in Montgomery notation.
 //        exp  = exponent.
 // Output: power = power in Montgomery notation.
-void modPowLimb(limb *base, const limb *exp, limb *power)
+void modPowLimb(const limb *base, const limb *exp, limb *power)
 {
   int groupExp;
   (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1)*sizeof(*power));  // power <- 1
@@ -2012,7 +2012,7 @@ void BigIntModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *mod, Bi
 }
 
 // Modular division when modulus is a power of 2.
-void BigIntModularDivisionPower2(BigInteger *Num, BigInteger *Den,
+void BigIntModularDivisionPower2(const BigInteger *Num, const BigInteger *Den,
    const BigInteger *mod, BigInteger *quotient)
 {
   int NumberLengthBak = NumberLength;
@@ -2134,7 +2134,7 @@ void BigIntGeneralModularDivision(BigInteger *Num, BigInteger *Den,
 // so the division is done separately by calculating the division modulo
 // n/2^k (n odd) and 2^k and then merge the results using Chinese Remainder
 // Theorem.
-enum eExprErr BigIntGeneralModularPower(BigInteger *base, BigInteger *exponent, 
+enum eExprErr BigIntGeneralModularPower(BigInteger *base, const BigInteger *exponent, 
   const BigInteger *mod, BigInteger *power)
 {
   int shRight;

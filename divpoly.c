@@ -33,7 +33,7 @@ static int revDividend[COMPRESSED_POLY_MAX_LENGTH];
 static int inverseDivisor[COMPRESSED_POLY_MAX_LENGTH];
 static int polyTmp[COMPRESSED_POLY_MAX_LENGTH];
 
-static void ToPoly(int polyDegree, int* polySrc, int* polyDest)
+static void ToPoly(int polyDegree, const int* polySrc, int* polyDest)
 {
   int currentDegree;
   polySrc++;
@@ -59,11 +59,10 @@ static void ToPoly(int polyDegree, int* polySrc, int* polyDest)
   }
 }
 
-static void FromPoly(int polyDegree, int* polyDest, int* polySrc)
+static void FromPoly(int polyDegree, int* polyDest, const int* polySrc)
 {
-  int currentDegree;
   *polyDest++ = polyDegree;
-  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+  for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     int nbrLimbs = *(polySrc)+1;
     (void)memcpy(polyDest, polySrc, nbrLimbs * sizeof(int));
@@ -72,7 +71,7 @@ static void FromPoly(int polyDegree, int* polyDest, int* polySrc)
   }
 }
 
-static void ReversePolynomial(int* ptrDest, int* ptrSrc)
+static void ReversePolynomial(int* ptrDest, const int* ptrSrc)
 {
   int indexes[2 * MAX_DEGREE + 1];
   int* ptrIndex;
@@ -105,14 +104,14 @@ static void ReversePolynomial(int* ptrDest, int* ptrSrc)
   *ptrDest++ = degreePoly;
   for (degree = degreePoly; degree >= 0; degree--)
   {
-    int* ptrSrcCoeff = ptrSrc + indexes[degree];
+    const int* ptrSrcCoeff = ptrSrc + indexes[degree];
     numLength = numLimbs(ptrSrcCoeff) + 1;
     (void)memcpy(ptrDest, ptrSrcCoeff, numLength * sizeof(int));
     ptrDest += numLength;
   }
 }
 
-int DivideIntegerPolynomial(int* pDividend, int* pDivisor, enum eDivType type)
+int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType type)
 {
   int* ptrResult;
   int degreeDividend;
@@ -391,7 +390,8 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
     // f is stored in revDividend.
     // g is stored in inverseDivisor.
     // oldDegree = size of g.
-    int* ptrProduct, * ptrDest;
+    const int* ptrProduct;
+    int *ptrDest;
     int currDegree;
     int newDegree = degrees[nbrDegrees];
     // Compute f*g.

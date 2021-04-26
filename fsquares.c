@@ -58,9 +58,11 @@ static int TerminateThread;
 static int sum;
 static int nbrModExp;
 static bool Computing3Squares;
-static char tmpOutput[MAX_LEN*12];
+#ifdef __EMSCRIPTEN__
+  static char tmpOutput[MAX_LEN*12];
+  static char* square = "<span class=\"bigger\">²</span>";
+#endif
 int app;
-static char *square = "<span class=\"bigger\">²</span>";
 static BigInteger biMult1;
 static BigInteger biMult2;
 static BigInteger biMult3;
@@ -252,6 +254,7 @@ int fsquares(void)
         /* no break */
       case 1:
         Mult1[0].x = 1;
+        break;
       default:
         break;
       }

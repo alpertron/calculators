@@ -21,7 +21,7 @@ extern char* ptrOutput;
 
 void showText(const char* text);
 void showMinus(void);
-void shownbr(BigInteger* value);
+void shownbr(const BigInteger* value);
 void showInt(int value);
 
 

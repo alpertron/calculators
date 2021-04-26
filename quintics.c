@@ -75,6 +75,12 @@ enum
   index_O,
 };
 
+struct stQuinticF20
+{
+  unsigned short pqrs;
+  short coeff;
+};
+
 static BigRational RatValues[7];  // T1, T2, T3, T4, l0, v and O.
 static BigRational RatRoot;       // Rational root of polynomial F20.
 static BigRational RatM;
@@ -85,11 +91,7 @@ static BigRational RatS2;
 static bool firstNumberShown;
 
 // Coefficients taken from Dummit's Solving Solvable Quintics article.
-static struct stQuinticF20
-{
-  unsigned short pqrs;
-  short coeff;
-} astQuinticF20[] =
+static struct stQuinticF20 astQuinticF20[] =
 {
   // Coefficients of independent term
 {P0 + Q8 + R0 + S0, 1},      // q^8
@@ -3918,7 +3920,7 @@ static void FactorPolynomialF20(void)
 {
   int ctr;
   int* ptrValues;
-  struct stQuinticF20* pstQuinticF20;
+  const struct stQuinticF20* pstQuinticF20;
   values[0] = 6;          // Degree of polynomial to factor.
   ptrValues = &values[1];
 
@@ -3931,7 +3933,8 @@ static void FactorPolynomialF20(void)
   intToBigInteger(&tmp3, 0);
   intToBigInteger(&tmp4, 0);
   intToBigInteger(&tmp5, 0);
-  for (pstQuinticF20 = astQuinticF20; ; pstQuinticF20++)
+  pstQuinticF20 = astQuinticF20;
+  for (;;)
   {
     if (pstQuinticF20->pqrs == END_COEFF)
     {
@@ -3958,31 +3961,34 @@ static void FactorPolynomialF20(void)
       {
         break;
       }
-      continue;
     }
-    intToBigInteger(&Rat2.numerator, pstQuinticF20->coeff);
-    intToBigInteger(&Rat2.denominator, 1);
-    // Multiply by power of p.
-    for (ctr = pstQuinticF20->pqrs & 0xF000; ctr > 0; ctr -= 0x1000)
+    else
     {
-      BigRationalMultiply(&Rat2, &RatDeprCubic, &Rat2);
+      intToBigInteger(&Rat2.numerator, pstQuinticF20->coeff);
+      intToBigInteger(&Rat2.denominator, 1);
+      // Multiply by power of p.
+      for (ctr = pstQuinticF20->pqrs & 0xF000; ctr > 0; ctr -= 0x1000)
+      {
+        BigRationalMultiply(&Rat2, &RatDeprCubic, &Rat2);
+      }
+      // Multiply by power of q.
+      for (ctr = pstQuinticF20->pqrs & 0x0F00; ctr > 0; ctr -= 0x0100)
+      {
+        BigRationalMultiply(&Rat2, &RatDeprQuadratic, &Rat2);
+      }
+      // Multiply by power of r.
+      for (ctr = pstQuinticF20->pqrs & 0x00F0; ctr > 0; ctr -= 0x0010)
+      {
+        BigRationalMultiply(&Rat2, &RatDeprLinear, &Rat2);
+      }
+      // Multiply by power of s.
+      for (ctr = pstQuinticF20->pqrs & 0x000F; ctr > 0; ctr--)
+      {
+        BigRationalMultiply(&Rat2, &RatDeprIndependent, &Rat2);
+      }
+      BigRationalAdd(&Rat1, &Rat2, &Rat1);
     }
-    // Multiply by power of q.
-    for (ctr = pstQuinticF20->pqrs & 0x0F00; ctr > 0; ctr -= 0x0100)
-    {
-      BigRationalMultiply(&Rat2, &RatDeprQuadratic, &Rat2);
-    }
-    // Multiply by power of r.
-    for (ctr = pstQuinticF20->pqrs & 0x00F0; ctr > 0; ctr -= 0x0010)
-    {
-      BigRationalMultiply(&Rat2, &RatDeprLinear, &Rat2);
-    }
-    // Multiply by power of s.
-    for (ctr = pstQuinticF20->pqrs & 0x000F; ctr > 0; ctr--)
-    {
-      BigRationalMultiply(&Rat2, &RatDeprIndependent, &Rat2);
-    }
-    BigRationalAdd(&Rat1, &Rat2, &Rat1);
+    pstQuinticF20++;
   }
   NumberLength = tmp0.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp0);
@@ -4011,7 +4017,6 @@ static void FactorPolynomialF20(void)
 static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
 {
   struct monomial* pstMonomial = *ppstMonomial;
-  int ctr;
   intToBigInteger(&rat->numerator, 0);
   intToBigInteger(&rat->denominator, 1);
   while (pstMonomial->coefficient != 0)
@@ -4019,7 +4024,7 @@ static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
     int exponents = pstMonomial->exponents;
     intToBigInteger(&Rat1.numerator, 1);
     intToBigInteger(&Rat1.denominator, 1);
-    for (ctr = 4; ctr >= 0; ctr--)
+    for (int ctr = 4; ctr >= 0; ctr--)
     {
       BigRationalMultiply(&Rat1, &Rat1, &Rat1);
       if (exponents & (FIVEexp << ctr))
@@ -4061,19 +4066,17 @@ static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
 // where t is the rational root of polynomial F20.
 static void computeArrayValues(void)
 {
-  int index;
-  int ctr;
   struct BigRational* pRatValues = &RatValues[0];
   struct monomial* pstMonomial = arrayF;
 
   computeFormula(&pstMonomial, &Rat5);    // Compute F.
   pstMonomial = arrayB;
-  for (index = 0; index < sizeof(RatValues)/sizeof(RatValues[0]); index++)
+  for (int index = 0; index < sizeof(RatValues)/sizeof(RatValues[0]); index++)
   {
     computeFormula(&pstMonomial, pRatValues);
     intToBigInteger(&Rat3.numerator, 1);
     intToBigInteger(&Rat3.denominator, 1);
-    for (ctr = 1; ctr <= 5; ctr++)
+    for (int ctr = 1; ctr <= 5; ctr++)
     {
       BigRationalMultiply(&Rat3, &RatRoot, &Rat3);
       computeFormula(&pstMonomial, &Rat4);
@@ -4146,7 +4149,7 @@ static void showSqrt5(void)
   }
 }
 
-static void showMinusOnePlusMinusSqrt5(char *sign)
+static void showMinusOnePlusMinusSqrt5(const char *sign)
 {
   *ptrOutput++ = '(';
   showText(ptrMinus);
@@ -4156,7 +4159,7 @@ static void showMinusOnePlusMinusSqrt5(char *sign)
   *ptrOutput++ = ')';
 }
 
-static void showSqrtTenPlusMinusTwoTimesSqrt5(char *sign)
+static void showSqrtTenPlusMinusTwoTimesSqrt5(const char *sign)
 {
   startSqrt();
   showText("10 ");
@@ -4222,7 +4225,6 @@ static void showSqRoot2(enum eSign sign)
 
 static void ShowQuinticsRootsRealR(int multiplicity)
 {
-  int ctr;
   BigRationalDivideByInt(&RatQuartic, -5, &RatQuartic);
   ForceDenominatorPositive(&RatQuartic);
   startLine();
@@ -4349,7 +4351,7 @@ static void ShowQuinticsRootsRealR(int multiplicity)
     showText(" <var>R</var><sub>1</sub>)");
   }
   endLine();
-  for (ctr = 1; ctr <= 5; ctr++)
+  for (int ctr = 1; ctr <= 5; ctr++)
   {
     showX(multiplicity);
     if (!BigIntIsZero(&RatQuartic.numerator))
@@ -4452,6 +4454,8 @@ static void ShowQuinticsRootsRealR(int multiplicity)
         showText("(<var>S</var><sub>2</sub> - I * <var>T</var><sub>2</sub>) / 20");
       }
       break;
+    default:
+      break;
     }
     endLine();
   }
@@ -4486,7 +4490,6 @@ static void NumberIsNotRational(enum eSign sign)
 
 static void showRn(int groupOrder)
 {
-  int ctr;
   // If group order is 20:
   // R_i = l0 - T1 +/- 5*T2 +/- sqrt(r+s*d) +/- sqrt(r-s*d)
   // Otherwise:
@@ -4496,7 +4499,7 @@ static void showRn(int groupOrder)
   //             if O < 0: plus for R_2 and R_4, minus for R_1 and R_3.
   // Third  +/-: if O > 0: plus for R_1 and R_3, minus for R_2 and R_4.
   //             if O < 0: plus for R_1 and R_2, minus for R_3 and R_4.
-  for (ctr = 1; ctr <= 4; ctr++)
+  for (int ctr = 1; ctr <= 4; ctr++)
   {
     firstNumberShown = false;
     BigRational* ptrRatR = (groupOrder == 10 || ctr == 1 || ctr == 4 ? &RatR : &RatR2);
@@ -4728,8 +4731,7 @@ static void GaloisGroupHasOrder20(int multiplicity)
     // Third  +/-: if O > 0: plus for R_1 and R_3, minus for R_2 and R_4.
     //             if O < 0: plus for R_1 and R_2, minus for R_3 and R_4.
 
-    int ctr;
-    for (ctr = 1; ctr <= 4; ctr++)
+    for (int ctr = 1; ctr <= 4; ctr++)
     {
       startLine();
       if (pretty == TEX)
@@ -4798,7 +4800,6 @@ static void GaloisGroupHasOrder10(int multiplicity)
 static void GaloisGroupHasOrder5(int multiplicity)
 {
   (void)multiplicity;
-  int ctr;
   // Compute the roots l1, l2, l3 and l4 of the pair of quadratic equations.
   // l1, l4 = (-(T1 + T2*d) +/- sqrt(M + N*d)) / 2
   // l2, l3 = (-(T1 - T2*d) +/- sqrt(M - N*d)) / 2
@@ -4854,7 +4855,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
   BigRationalSubt(&RatValues[index_l0], &Rat1, &Rat1);  // l
   enum eSign signRat2 = Rat2.numerator.sign;
   Rat2.numerator.sign = SIGN_POSITIVE;
-  for (ctr = 1; ctr <= 4; ctr++)
+  for (int ctr = 1; ctr <= 4; ctr++)
   {
     startLine();
     if (pretty == TEX)
@@ -4905,7 +4906,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
       *ptrOutput++ = ' ';
     }
     showText(ptrTimes);
-    if (ctr == 1 || ctr == 3)
+    if ((ctr == 1) || (ctr == 3))
     {
       showSqrtTenPlusMinusTwoTimesSqrt5("+");
     }
@@ -4914,7 +4915,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
       showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
     }
     BigRationalSubt(&RatValues[index_T3], &RatValues[index_T2], &Rat3);  // l3 - l2
-    if (ctr == 2 || ctr == 3)
+    if ((ctr == 2) || (ctr == 3))
     {
       BigRationalDivideByInt(&Rat3, 4, &Rat3);
     }
@@ -4928,7 +4929,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
     showRational(&Rat3);
     *ptrOutput++ = ' ';
     showText(ptrTimes);
-    if (ctr == 2 || ctr == 4)
+    if ((ctr == 2) || (ctr == 4))
     {
       showSqrtTenPlusMinusTwoTimesSqrt5("+");
     }
@@ -4942,10 +4943,10 @@ static void GaloisGroupHasOrder5(int multiplicity)
   }
 }
 
-void QuinticEquation(int* ptrPolynomial, int multiplicity)
+void QuinticEquation(const int* ptrPolynomial, int multiplicity)
 {
   struct monomial* pstMonomial;
-  int* ptr;
+  const int* ptr;
   UncompressBigIntegerB(ptrPolynomial, &Independent);
   ptrPolynomial += 1 + numLimbs(ptrPolynomial);
   UncompressBigIntegerB(ptrPolynomial, &Linear);

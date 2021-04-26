@@ -30,8 +30,15 @@
 #define KARATSUBA_POLY_CUTOFF      16
 #define SQRT_KARATSUBA_POLY_CUTOFF 4
 
+struct stKaratsubaStack
+{
+  int idxFactor1;
+  int stage;
+};
+
 //#define ADJUST_MODULUS(sum, modulus) sum += modulus & (sum >> 31);
 #define ADJUST_MODULUS(sum, modulus) if (sum < 0) {sum += modulus;}
+static struct stKaratsubaStack astKaratsubaStack[10];
 static BigInteger coeff[2 * KARATSUBA_POLY_CUTOFF];
 int polyInv[COMPRESSED_POLY_MAX_LENGTH];
 int polyInvCached;
@@ -49,7 +56,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
   int i;
   int j;
   int* ptrFactor1;
-  int* ptrFactor2;
+  const int* ptrFactor2;
 #ifndef _USING64BITS_
   limb result;
 #endif
@@ -200,21 +207,15 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
   return;
 }
 
-static struct stKaratsubaStack
-{
-  int idxFactor1;
-  int stage;
-} astKaratsubaStack[10];
-
 // Recursive Karatsuba function.
 static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
 {
   int i;
   int idxFactor2;
   int* ptrResult;
-  int* ptrHigh;
-  int* ptr1;
-  int* ptr2;
+  const int* ptrHigh;
+  const int* ptr1;
+  const int* ptr2;
   int sum;
   int modulus;
   int halfLength;
@@ -639,7 +640,6 @@ static void MultIntegerPolynomial(int degree1, int degree2,
 // Multiply factor1 by factor2. The result will be stored in polyMultTemp.
 void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int* factor2)
 {
-  int currentDegree;
   int* ptrValue1;
   int nbrLimbs;
   int karatDegree;
@@ -652,9 +652,11 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
   if (degree1 * degree1 < degree2 || degree2 * degree2 < degree1)
   {    // One of the factors is a lot smaller than the other.
        // Use classical multiplication of polynomials.
-    int* ptrSrc1, * ptrSrc2;
+    const int *ptrSrc1;
+    const int *ptrSrc2;
     int degreeProd = degree1 + degree2;
-    int currentDegree1, currentDegree2;
+    int currentDegree1;
+    int currentDegree2;
     // Initialize product to zero.
     int* ptrDest = polyMultTemp;
     for (currentDegree1 = 0; currentDegree1 <= degreeProd; currentDegree1++)
@@ -687,7 +689,7 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
         {
           for (currentDegree2 = 0; currentDegree2 <= degree2; currentDegree2++)
           {
-            if (*ptrSrc2 != 1 || *(ptrSrc2 + 1) != 0)
+            if ((*ptrSrc2 != 1) || (*(ptrSrc2 + 1) != 0))
             {       // Only process factor if it is not zero.
               IntArray2BigInteger(ptrSrc2, &operand2);
               modmult(operand2.limbs, operand3.limbs, operand2.limbs);
@@ -725,7 +727,7 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
   }
   // Initialize Karatsuba polynomial.
   ptrValue1 = polyMultTemp;
-  for (currentDegree = 3 * karatDegree; currentDegree > 0; currentDegree--)
+  for (int currentDegree = 3 * karatDegree; currentDegree > 0; currentDegree--)
   {
     *ptrValue1 = 1;        // Initialize coefficient to zero.
     *(ptrValue1 + 1) = 0;
@@ -743,7 +745,6 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
   int degrees[15];
   int nbrDegrees = 0;
   int newtonDegree;
-  int deg;
   int nbrLimbs = NumberLength + 1;
 
   newtonDegree = polyDegree;
@@ -771,7 +772,8 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
   while (--nbrDegrees >= 0)
   {  
     int* ptrCoeff; 
-    int* ptrCoeff2, *ptrPolyMod;
+    const int* ptrCoeff2;
+    const int *ptrPolyMod;
     int nextDegree = degrees[nbrDegrees];
     // Initialize poly4 with the nextDegree most significant coefficients.
     ptrPolyMod = polyMod + nbrLimbs * (polyDegree - nextDegree);
@@ -782,7 +784,7 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
     ptrCoeff = poly5;   // Destination of 2-D(x)*F_n(x).
     ptrCoeff2 = &polyMultTemp[newtonDegree * nbrLimbs];  // Source of D(x)*F_n(x).
     (void)memset(operand2.limbs, 0, nbrLimbs * sizeof(limb));
-    for (deg = 0; deg < nextDegree; deg++)
+    for (int deg = 0; deg < nextDegree; deg++)
     {
       LenAndLimbs2ArrLimbs(ptrCoeff2, operand3.limbs, nbrLimbs);
       SubtBigNbrMod(operand2.limbs, operand3.limbs, operand3.limbs);
@@ -849,15 +851,15 @@ void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
 }
 
 // Multiply two polynomials mod polyMod.
-void multPolynomialModPoly(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
-  /*@out@*/int* polyProduct,
-  int polyDegree, /*@in@*/int* polyMod)
+void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
+  /*@out@*/int* polyProduct, int polyDegree, const int* polyMod)
 {
   int index1;
   int index2;
   int nbrLimbs = NumberLength + 1;
-  int* ptrPoly1;
-  int* ptrPoly2;
+  const int* ptrPoly1;
+  const int* ptrPoly2;
+  int* ptrPoly3;
   int* ptrPolyTemp;
   // Initialize polyMultTemp with the most significant half of product.
   ptrPolyTemp = polyMultTemp + (polyDegree - 1) * nbrLimbs;
@@ -883,20 +885,20 @@ void multPolynomialModPoly(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   // Get remainder of long division by polyMod and append next limbs of the product.
   for (index1 = polyDegree - 2; index1 >= 0; index1--)
   {
-    ptrPoly2 = &polyMultTemp[(polyDegree - 1) * nbrLimbs];
+    ptrPoly3 = &polyMultTemp[(polyDegree - 1) * nbrLimbs];
     // Back up leading coefficient.
-    (void)memcpy(ptrPoly2 + nbrLimbs, ptrPoly2, nbrLimbs * sizeof(int));
-    IntArray2BigInteger(ptrPoly2, &operand3);
+    (void)memcpy(ptrPoly3 + nbrLimbs, ptrPoly3, nbrLimbs * sizeof(int));
+    IntArray2BigInteger(ptrPoly3, &operand3);
     ptrPoly1 = polyMod + polyDegree * nbrLimbs;
     for (index2 = polyDegree - 2; index2 >= 0; index2--)
     {
       ptrPoly1 -= nbrLimbs;
-      ptrPoly2 -= nbrLimbs;
+      ptrPoly3 -= nbrLimbs;
       IntArray2BigInteger(ptrPoly1, &operand1);
       modmult(operand3.limbs, operand1.limbs, operand1.limbs);
-      IntArray2BigInteger(ptrPoly2, &operand2);
+      IntArray2BigInteger(ptrPoly3, &operand2);
       SubtBigNbrMod(operand2.limbs, operand1.limbs, operand1.limbs);
-      BigInteger2IntArray(ptrPoly2 + nbrLimbs, &operand1);
+      BigInteger2IntArray(ptrPoly3 + nbrLimbs, &operand1);
     }
     ptrPoly1 = polyFact1 + index1 * nbrLimbs;
     ptrPoly2 = polyFact2;

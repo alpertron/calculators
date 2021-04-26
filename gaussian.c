@@ -46,7 +46,7 @@ static void showText(const char *text)
   ptrOutput += strlen(ptrOutput);
 }
 
-static void showNumber(BigInteger *real, const BigInteger *imag)
+static void showNumber(const BigInteger *real, const BigInteger *imag)
 {
   BigInteger Tmp;
   CopyBigInt(&Tmp, imag);
@@ -77,7 +77,7 @@ void GaussianFactorization(void)
   BigInteger M1;
   BigInteger M2;
   BigInteger Tmp;
-  struct sFactors *pstFactor;
+  const struct sFactors *pstFactor;
 
   BigIntMultiply(&ReValue, &ReValue, &tofactor);
   BigIntMultiply(&ImValue, &ImValue, &Tmp);
@@ -94,7 +94,6 @@ void GaussianFactorization(void)
   showText("<ul>");
   if ((tofactor.nbrLimbs > 1) || (tofactor.limbs[0].x > 1))
   {           // norm greater than 1. Factor norm.
-    int index;
     int index2;
     char *ptrFactorDec = tofactorDec;
     NumberLength = tofactor.nbrLimbs;
@@ -111,9 +110,9 @@ void GaussianFactorization(void)
     factor(&tofactor, nbrToFactor, factorsNorm, astFactorsNorm);
     NbrFactorsNorm = astFactorsNorm[0].multiplicity;
     pstFactor = &astFactorsNorm[1];
-    for (index = 0; index < NbrFactorsNorm; index++)
+    for (int index = 0; index < NbrFactorsNorm; index++)
     {
-      int *ptrPrime = pstFactor->ptrFactor;
+      const int *ptrPrime = pstFactor->ptrFactor;
       NumberLength = *ptrPrime;
       IntArray2BigInteger(ptrPrime, &prime);
       if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))

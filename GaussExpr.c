@@ -53,9 +53,9 @@ static int exprLength;
 static int ComputeExpr(char *expr, BigInteger *ExpressionResult);
 static int ComputeSubExpr(void);
 static int ComputeGCD(void);
-static int func(char *expr, BigInteger *ExpressionResult,
-  char *funcName, int funcArgs, int leftNumberFlag);
-static void SkipSpaces(char *expr);
+static int func(char* expr, BigInteger* ExpressionResult,
+  const char* funcName, int funcArgs, int leftNumberFlag);
+static void SkipSpaces(const char *expr);
 static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
   BigInteger *ReDen, BigInteger *ImDen,
   BigInteger *Result);
@@ -65,9 +65,9 @@ static int ComputeModPow(void);
 static int ComputeModInv(void);
 static int ComputePartition(void);
 static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigInteger *Im2);
-static int ModInv(BigInteger *RealNbr, BigInteger *ImagNbr,
-  BigInteger *RealMod, BigInteger *ImagMod,
-  BigInteger *Result);
+static int ModInv(const BigInteger* RealNbr, const BigInteger* ImagNbr,
+  BigInteger* RealMod, BigInteger* ImagMod,
+  BigInteger* Result);
 
 enum eExprErr ComputeGaussianExpression(char *expr, BigInteger *ExpressionResult)
 {
@@ -103,7 +103,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
   int retcode;
   int shLeft;
   int offset;
-  int leftNumberFlag = 0;
+  bool leftNumberFlag = false;
   int startStackIndex = stackIndex;
   
   exprLength = (int)strlen(expr);
@@ -129,7 +129,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_INTERM_TOO_HIGH;
       }
-      len = (int)stackRealValues[stackIndex].limbs[0].x;
+      len = stackRealValues[stackIndex].limbs[0].x;
       factorialResult.limbs[0].x = 1;
       factorialResult.nbrLimbs = 1;
       factorialResult.sign = SIGN_POSITIVE;
@@ -177,7 +177,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_INTERM_TOO_HIGH;
       }
-      len = (int)largeLen.x;
+      len = largeLen.x;
       factorialResult.limbs[0].x = 1;
       factorialResult.nbrLimbs = 1;
       factorialResult.sign = SIGN_POSITIVE;
@@ -214,7 +214,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (retcode != 0) {return retcode;}
       retcode = ComputeGCD();
       if (retcode != 0) {return retcode;}
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
     }
     else if ((retcode = func(expr, ExpressionResult,
                              "RE", 1, leftNumberFlag)) <= 0)
@@ -227,7 +227,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return retcode;
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
     }
     else if ((retcode = func(expr, ExpressionResult,
                              "NORM", 1, leftNumberFlag)) <= 0)
@@ -242,7 +242,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       ptrBigInt->limbs[0].x = 0;
       ptrBigInt->nbrLimbs = 1;
       ptrBigInt->sign = SIGN_POSITIVE;
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
     }
     else if ((retcode = func(expr, ExpressionResult,
                              "IM", 1, leftNumberFlag)) <= 0)
@@ -253,7 +253,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       ptrBigInt->limbs[0].x = 0;
       ptrBigInt->nbrLimbs = 1;
       ptrBigInt->sign = SIGN_POSITIVE;
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
     }
     else if ((retcode = func(expr, ExpressionResult,
                              "MODPOW", 3, leftNumberFlag)) <= 0)
@@ -261,7 +261,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (retcode != 0) {return retcode;}
       retcode = ComputeModPow();
       if (retcode != 0) {return retcode;}
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
     }
     else if ((retcode = func(expr, ExpressionResult,
                              "MODINV", 2, leftNumberFlag)) <= 0)
@@ -269,7 +269,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (retcode != 0) {return retcode;}
       retcode = ComputeModInv();
       if (retcode != 0) {return retcode;}
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
     }
     else if ((retcode = func(expr, ExpressionResult,
                              "F", 1, leftNumberFlag)) <= 0)
@@ -277,7 +277,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (retcode != 0) {return retcode;}
       retcode = ComputeFibonacci();
       if (retcode != 0) {return retcode;}
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
     }
     else if ((retcode = func(expr, ExpressionResult,
                              "L", 1, leftNumberFlag)) <= 0)
@@ -285,7 +285,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (retcode != 0) {return retcode;}
       retcode = ComputeLucas();
       if (retcode != 0) {return retcode;}
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
     }
     else if ((retcode = func(expr, ExpressionResult,
                              "P", 1, leftNumberFlag)) <= 0)
@@ -293,7 +293,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (retcode != 0) {return retcode;}
       retcode = ComputePartition();
       if (retcode != 0) {return retcode;}
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
     }
     else if ((charValue == '+') || (charValue == '-'))
     {
@@ -344,7 +344,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         }                           /* end if */
       }                             /* end if */
       stackOperators[stackIndex++] = charValue;
-      leftNumberFlag = 0;
+      leftNumberFlag = false;
     }                               /* end if */
     else if ((charValue == '*') || (charValue == '/') || (charValue == '%'))
     {
@@ -373,7 +373,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         }                         /* end if */
       }                           /* end if */
       stackOperators[stackIndex++] = charValue;
-      leftNumberFlag = 0;
+      leftNumberFlag = false;
     }                             
     else if (charValue == '^')
     {
@@ -382,7 +382,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         return EXPR_SYNTAX_ERROR;
       }
       stackOperators[stackIndex++] = charValue;
-      leftNumberFlag = 0;
+      leftNumberFlag = false;
     }                           /* end if */
     else if (charValue == '(')
     {
@@ -437,7 +437,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       stackIndex--;    /* Discard ')' */
       stackRealValues[stackIndex] = stackRealValues[stackIndex+1];
       stackImagValues[stackIndex] = stackImagValues[stackIndex+1];
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
     }
     else if ((charValue == 'i') || (charValue == 'I'))
     {
@@ -454,7 +454,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         ptrBigInt->nbrLimbs = 1;
         ptrBigInt->sign = SIGN_POSITIVE;
 
-        leftNumberFlag = 1;
+        leftNumberFlag = true;
       }
       else
       {     // Multiply by i. First exchange imaginary and real coefficients.
@@ -549,7 +549,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       ptrBigInt->limbs[0].x = 0;     // Initialize imaginary part to zero.
       ptrBigInt->nbrLimbs = 1;
       ptrBigInt->sign = SIGN_POSITIVE;
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
     }                            /* end if */
     exprIndex++;
   }                              /* end while */
@@ -588,12 +588,11 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
 }
 
 static int func(char *expr, BigInteger *ExpressionResult,
-                char *funcName, int funcArgs, int leftNumberFlag)
+                const char *funcName, int funcArgs, int leftNumberFlag)
 {
-  int index;
   int funcNameLen = (int)strlen(funcName);
-  char *ptrExpr;
-  char *ptrFuncName;
+  const char *ptrExpr;
+  const char *ptrFuncName;
 
   if (exprIndex + funcNameLen > exprLength)
   {
@@ -620,7 +619,7 @@ static int func(char *expr, BigInteger *ExpressionResult,
   {
     return EXPR_SYNTAX_ERROR;
   }
-  for (index = 0; index < funcArgs; index++)
+  for (int index = 0; index < funcArgs; index++)
   {
     int retcode;
     char compareChar;
@@ -645,7 +644,7 @@ static int func(char *expr, BigInteger *ExpressionResult,
   return 0;
 }
 
-static void SkipSpaces(char *expr)
+static void SkipSpaces(const char *expr)
 {
   while (*(expr+exprIndex))
   {
@@ -734,6 +733,8 @@ static int ComputeSubExpr(void)
       return 0;
     case '^':
       return ComputePower(&Re1, &Re2, &Im1, &Im2);
+    default:
+      break;
   }                /* end switch */
   return 0;
 }
@@ -745,7 +746,6 @@ static int ComputeFibonacci(void)
   BigInteger FibonAct;
   BigInteger FibonNext;
   BigInteger Re = stackRealValues[stackIndex];
-  int i;
   int arg;
   if (!BigIntIsZero(&stackImagValues[stackIndex]))
   {     // Imaginary part of argument must be zero.
@@ -768,7 +768,7 @@ static int ComputeFibonacci(void)
   FibonAct.limbs[0].x = 0;
   FibonPrev.nbrLimbs = FibonAct.nbrLimbs = 1;
   FibonPrev.sign = FibonAct.sign = SIGN_POSITIVE;
-  for (i=1; i<=arg; i++)
+  for (int i=1; i<=arg; i++)
   {
     BigIntAdd(&FibonPrev, &FibonAct, &FibonNext);
     CopyBigInt(&FibonPrev, &FibonAct);
@@ -784,7 +784,7 @@ static int ComputeFibonacci(void)
 
 static int ComputeLucas(void)
 {
-  int i, arg;
+  int arg;
   BigInteger FibonPrev;
   BigInteger FibonAct;
   BigInteger FibonNext;
@@ -799,7 +799,7 @@ static int ComputeLucas(void)
   {
     return EXPR_INTERM_TOO_HIGH;
   }
-  arg = (int)Re.limbs[0].x;
+  arg = Re.limbs[0].x;
   if (arg > 9572)
   {
     return EXPR_INTERM_TOO_HIGH;
@@ -814,7 +814,7 @@ static int ComputeLucas(void)
   FibonPrev.nbrLimbs = FibonAct.nbrLimbs = 1;
   FibonPrev.sign = SIGN_NEGATIVE;
   FibonAct.sign = SIGN_POSITIVE;
-  for (i = 1; i <= arg; i++)
+  for (int i = 1; i <= arg; i++)
   {
     BigIntAdd(&FibonPrev, &FibonAct, &FibonNext);
     CopyBigInt(&FibonPrev, &FibonAct);
@@ -859,7 +859,7 @@ static int ComputePartition(void)
   {
     return EXPR_INTERM_TOO_HIGH;
   }
-  val = (int)largeVal.x;
+  val = largeVal.x;
   if (val > 100000)
   {
     return EXPR_INVALID_PARAM;
@@ -966,7 +966,6 @@ static int ComputeGCD(void)
 static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigInteger *Im2)
 {
   int expon;
-  int mask;
   double base;
   BigInteger norm;
   BigInteger ReTmp;
@@ -1011,7 +1010,7 @@ static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigIn
   Im.limbs[0].x = 0;
   Re.nbrLimbs = Im.nbrLimbs = 1;
   Re.sign = Im.sign = SIGN_POSITIVE;
-  for (mask = 1 << 30; mask != 0; mask >>= 1)
+  for (int mask = 1 << 30; mask != 0; mask >>= 1)
   {
     if ((expon & mask) != 0)
     {
@@ -1043,18 +1042,25 @@ static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigIn
 
 static int ComputeModPow(void)
 {
-  int mask;
-  BigInteger Result[2];
-  BigInteger norm;
-  BigInteger ReTmp;
-  BigInteger ImTmp;
-  BigInteger ReBase = stackRealValues[stackIndex];
-  BigInteger ImBase = stackImagValues[stackIndex];
-  BigInteger ReExp = stackRealValues[stackIndex+1];
-  BigInteger ImExp = stackImagValues[stackIndex+1];
-  BigInteger ReMod = stackRealValues[stackIndex+2];
-  BigInteger ImMod = stackImagValues[stackIndex+2];
-  BigInteger Re, Im;
+  static BigInteger Result[2];
+  static BigInteger norm;
+  static BigInteger ReTmp;
+  static BigInteger ImTmp;
+  static BigInteger ReBase;
+  static BigInteger ImBase;
+  static BigInteger ReExp;
+  static BigInteger ImExp;
+  static BigInteger ReMod;
+  static BigInteger ImMod;
+  static BigInteger Re;
+  static BigInteger Im;
+  CopyBigInt(&ReBase, &stackRealValues[stackIndex]);
+  CopyBigInt(&ImBase, &stackImagValues[stackIndex]);
+  CopyBigInt(&ReExp, &stackRealValues[stackIndex+1]);
+  CopyBigInt(&ImExp, &stackImagValues[stackIndex+1]);
+  CopyBigInt(&ReMod, &stackRealValues[stackIndex+2]);
+  CopyBigInt(&ImMod, &stackImagValues[stackIndex+2]);
+
   if (!BigIntIsZero(&ImExp))
   {         // Imaginary part must be zero.
     return EXPR_INVALID_PARAM;
@@ -1082,14 +1088,13 @@ static int ComputeModPow(void)
   }
   else
   {                            /* Modulus is not zero */
-    int index;
     BigIntMultiply(&ReMod, &ReMod, &ReTmp);
     BigIntMultiply(&ImMod, &ImMod, &ImTmp);
     BigIntAdd(&ReTmp, &ImTmp, &norm);
-    for (index = ReExp.nbrLimbs - 1; index >= 0; index--)
+    for (int index = ReExp.nbrLimbs - 1; index >= 0; index--)
     {
       int groupExp = (int)ReExp.limbs[index].x;
-      for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+      for (int mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
       {
         // Let Re + i*Im <- (Re + i*Im)^2
         BigIntMultiply(&Re, &Re, &ReTmp);
@@ -1146,21 +1151,21 @@ static int ComputeModInv(void)
   return 0;
 }
 
-static int ModInv(BigInteger *RealNbr, BigInteger *ImagNbr,
+static int ModInv(const BigInteger *RealNbr, const BigInteger *ImagNbr,
                   BigInteger *RealMod, BigInteger *ImagMod,
                   BigInteger *Result)
 {
-  BigInteger ReG0;
-  BigInteger ReG1;
-  BigInteger ImG0;
-  BigInteger ImG1;
-  BigInteger ReU0;
-  BigInteger ReU1;
-  BigInteger ImU0;
-  BigInteger ImU1;
-  BigInteger Re;
-  BigInteger Im;
-  BigInteger Tmp;
+  static BigInteger ReG0;
+  static BigInteger ReG1;
+  static BigInteger ImG0;
+  static BigInteger ImG1;
+  static BigInteger ReU0;
+  static BigInteger ReU1;
+  static BigInteger ImU0;
+  static BigInteger ImU1;
+  static BigInteger Re;
+  static BigInteger Im;
+  static BigInteger Tmp;
 
   if (BigIntIsZero(RealMod) && BigIntIsZero(ImagMod))
   {          // Argument is zero.
@@ -1226,7 +1231,7 @@ static int ModInv(BigInteger *RealNbr, BigInteger *ImagNbr,
     BigIntNegate(&ImU0, &ReU0);
     CopyBigInt(&ImU0, &Tmp);
   }
-  if (ReG0.nbrLimbs != 1 || ReG0.limbs[0].x != 1 || !BigIntIsZero(&ImG0))
+  if ((ReG0.nbrLimbs != 1) || (ReG0.limbs[0].x != 1) || !BigIntIsZero(&ImG0))
   {         // G0 is not 1.
     return EXPR_INVALID_PARAM;
   }
@@ -1237,7 +1242,6 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
                   BigInteger *ReDen, BigInteger *ImDen,
                   BigInteger *Result)
 {
-  int i;
   BigInteger Re;
   BigInteger Im;
   BigInteger ReMin;
@@ -1263,7 +1267,7 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
   normmin.limbs[0].x = 1;
   normmin.nbrLimbs = 1;
   normmin.sign = SIGN_NEGATIVE;
-  for (i=0; i<9; i++)
+  for (int i=0; i<9; i++)
   {
     switch (i)
     {
@@ -1310,6 +1314,8 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
         BigIntAdd(&Re, ImDen, &Re);
         BigIntSubt(ImNum, ReDen, &Im);
         BigIntAdd(&Im, ImDen, &Im);
+        break;
+      default:
         break;
     }
     if (Re.sign == SIGN_POSITIVE)

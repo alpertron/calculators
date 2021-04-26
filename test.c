@@ -205,8 +205,7 @@ int main(int argc, char *argv[])
   }
   pretty = PRETTY_PRINT;
   pretty = PARI_GP;
-  int ctr;
-  for (ctr = 0; ctr < 1; ctr++)
+  for (int ctr = 0; ctr < 1; ctr++)
   {
     polyFactText(argv[1], argv[2], 7);
   }

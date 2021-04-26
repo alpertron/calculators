@@ -96,15 +96,14 @@ static void ExponentToBigInteger(int exponent, BigInteger *bigint)
 static void GetNumberOfDivisors(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
-  struct sFactors *pstFactor;
-  int factorNumber;
+  const struct sFactors *pstFactor;
   result.limbs[0].x = 1;    // Set result to 1.
   result.nbrLimbs = 1;
   result.sign = SIGN_POSITIVE;
   pstFactor = &astFactorsMod[1];
-  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  for (int factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
-    int *ptrFactor = pstFactor->ptrFactor;
+    const int *ptrFactor = pstFactor->ptrFactor;
     if ((*ptrFactor == 1) && (*(ptrFactor + 1) < 2))
     {                        // Factor is 1.
       break;
@@ -173,14 +172,13 @@ static void GetEulerTotient(char **pptrOutput)
 static void GetMobius(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
-  struct sFactors *pstFactor;
+  const struct sFactors *pstFactor;
   int mobius = 1;
   pstFactor = &astFactorsMod[1];
   if ((astFactorsMod[0].multiplicity > 1) || (*pstFactor->ptrFactor != 1) ||
     (*(pstFactor->ptrFactor + 1) != 1))
   {                                // Number to factor is not 1.
-    int factorNumber;
-    for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+    for (int factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
     {
       if (pstFactor->multiplicity == 1)
       {
@@ -206,18 +204,16 @@ static void GetMobius(char **pptrOutput)
   *pptrOutput = ptrOutput;
 }
 
-static void modPowShowStatus(limb *base, limb *exp, int nbrGroupsExp, limb *power)
+static void modPowShowStatus(limb *base, const limb *exp, int nbrGroupsExp, limb *power)
 {
-  int mask;
-  int index;
   (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1) * sizeof(*power));  // power <- 1
-  for (index = nbrGroupsExp - 1; index >= 0; index--)
+  for (int index = nbrGroupsExp - 1; index >= 0; index--)
   {
-    int groupExp = (int)(exp + index)->x;
+    int groupExp = (exp + index)->x;
 #ifdef __EMSCRIPTEN__
     percentageBPSW = (nbrGroupsExp - index) * 100 / nbrGroupsExp;
 #endif
-    for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+    for (int mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
     {
       modmult(power, power, power);
       if ((groupExp & mask) != 0)
@@ -231,14 +227,13 @@ static void modPowShowStatus(limb *base, limb *exp, int nbrGroupsExp, limb *powe
 // A number is a sum of 3 squares if it has not the form 4^n*(8k+7) and
 // there is a prime factor of the form 4k+3 with odd multiplicity.
 
-static bool isSumOfThreeSquares(struct sFactors* pstFactors, BigInteger* pTmp)
+static bool isSumOfThreeSquares(const struct sFactors* pstFactors, BigInteger* pTmp)
 {
-  struct sFactors *pstFactor = pstFactors + 1; // Point to first factor in array of factors.
-  int indexPrimes;
+  const struct sFactors *pstFactor = pstFactors + 1; // Point to first factor in array of factors.
   int shRight;
   bool factor2MultiplicityEven = true;
   bool sumTwoSquares = true;
-  for (indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--)
+  for (int indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--)
   {
     if (pstFactor->multiplicity % 2 != 0)
     {                                          // Prime factor multiplicity is odd.
@@ -295,7 +290,7 @@ static void ComputeThreeSquares(BigInteger *pTmp,
   {
     int primeIndex = 0;
     int prime = 2;
-    int* ptrArrFactorsBak;
+    const int* ptrArrFactorsBak;
     ptrArrFactors = arrFactors;
     intToBigInteger(pTmp1, diff*diff);
     BigIntSubt(pTmp, pTmp1, pTmp2);
@@ -487,7 +482,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
   static BigInteger M6;
   static BigInteger M7;
   static BigInteger M8;
-  struct sFactors *pstFactor;
+  const struct sFactors *pstFactor;
   static limb minusOneMont[MAX_LEN];
 
   intToBigInteger(&Quad1, 1);      // 1 = 1^2 + 0^2 + 0^2 + 0^2
@@ -757,7 +752,7 @@ static void varSquared(char **pptrOutput, char letter, char sign)
   *pptrOutput = ptrOutput;
 }
 
-static void valueVar(char **pptrOutput, char letter, BigInteger *value)
+static void valueVar(char **pptrOutput, char letter, const BigInteger *value)
 {
   char *ptrOutput = *pptrOutput;
   (void)strcpy(ptrOutput, "<p>");
@@ -1028,7 +1023,8 @@ EXTERNALIZE void doWork(void)
 {
   int flags;
   char *ptrData = inputString;
-  char *ptrWebStorage, *ptrKnownFactors;
+  char *ptrWebStorage;
+  char *ptrKnownFactors;
 #ifdef __EMSCRIPTEN__
   originalTenthSecond = tenths();
 #endif

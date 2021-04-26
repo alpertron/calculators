@@ -167,7 +167,7 @@ static void ContFrac(void)
     bool ended;
     int periodIndex;
     int index;
-        // PQa algorithm for (P+G)/Q where G = sqrt(discriminant):
+        // PQa algorithm for (P+G)/Q where G = sqrt(discriminant)
         // If D - U^2 is not multiple of V then 
         //   U = U*V
         //   V = V*V

@@ -101,7 +101,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   int bitLengthNbrCycles;
   int idx;
   limb prev;
-  limb *ptrApproxInvSqrt;
+  const limb *ptrApproxInvSqrt;
   limb *ptrArrAux;
   int shRight;
   limb *ptrDest;

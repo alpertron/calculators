@@ -22,7 +22,7 @@
 #define TYPE_PM_SPACE_BEFORE 1
 #define TYPE_PM_SPACE_AFTER  2
 
-void QuinticEquation(int* ptrPolynomial, int multiplicity);
+void QuinticEquation(const int* ptrPolynomial, int multiplicity);
 void startLine(void);
 void endLine(void);
 void showX(int multiplicity);

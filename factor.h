@@ -61,9 +61,9 @@ extern bool cunningham;
 extern bool hexadecimal;
 extern struct sFactors stFactors[MAX_FACTORS];
 extern int *factorArr[FACTOR_ARRSIZE];
-void factor(BigInteger *toFactor, int *number, int *factors, struct sFactors *pstFactors);
+void factor(BigInteger *toFactor, const int *number, int *factors, struct sFactors *pstFactors);
 void factorExt(BigInteger *toFactor, const int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors);
-void FactoringSIQS(limb *pNbrToFactor, limb *pFactor);
+void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor);
 #ifndef lang  
   extern bool lang;
 #endif
@@ -78,7 +78,7 @@ void MaxFactor(BigInteger* result);
 void SumOfDivisors(BigInteger *result);
 void NumberOfDivisors(BigInteger *result);
 #ifdef FACTORIZATION_APP
-char *ShowFactoredPart(BigInteger *nbr, void *vFactors);
+char *ShowFactoredPart(BigInteger *nbr, const void *vFactors);
 void ShowLowerText(void);
 #endif
 #endif

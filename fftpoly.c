@@ -56,24 +56,26 @@ static void initCosinesArray(void)
   cossin[0].Sin[0] = 0;                                    // sin(0) = 0
   cossin[0].Sin[1] = 0;
   ptrCosSin = &cossin[1];
-  for (index = 1; ; index++)
+  index = 1;
+  for (;;)
   {
     // Get order of least significant non-zero bit.
-    int bitNbr;
+    int bitNbr = 0;
     int mask = 1;
-    for (bitNbr = 0; ; bitNbr++)
+    for (;;)
     {
       if (index & mask)
       {
         break;
       }
       mask *= 2;
+      bitNbr++;
     }
     if (bitNbr == POWERS_2 - 2)
     {
       break;
     }
-    ptrCosSinDelta = &cossinPowerOneHalf[(POWERS_2 - 3 - bitNbr)];  // Pointer to cos/sin B.
+    ptrCosSinDelta = &cossinPowerOneHalf[POWERS_2 - 3 - bitNbr];  // Pointer to cos/sin B.
     if (index == mask)
     {
       ptrCosSin->Cos[0] = ptrCosSinDelta->Cos[0];
@@ -100,6 +102,7 @@ static void initCosinesArray(void)
       ptrCosSin->Sin[1] = *(firstProd + 3);
     }
     ptrCosSin++;
+    index++;
   }
   // Convert from integers to doubles and send the results to the final array.
   ptrCosSin = cossin;

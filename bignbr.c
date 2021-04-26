@@ -58,14 +58,13 @@ void CopyBigInt(BigInteger *pDest, const BigInteger *pSrc)
   (void)memcpy(pDest->limbs, pSrc->limbs, (pSrc->nbrLimbs)*sizeof(limb));
 }
 
-void AddBigInt(limb *pAddend1, limb *pAddend2, limb *pSum, int nbrLimbs)
+void AddBigInt(const limb *pAddend1, const limb *pAddend2, limb *pSum, int nbrLimbs)
 {
-  limb *ptrAddend1 = pAddend1;
-  limb *ptrAddend2 = pAddend2;
+  const limb *ptrAddend1 = pAddend1;
+  const limb *ptrAddend2 = pAddend2;
   limb *ptrSum = pSum;
   unsigned int carry = 0;
-  int i;
-  for (i = 0; i < nbrLimbs; i++)
+  for (int i = 0; i < nbrLimbs; i++)
   {
     carry = (carry >> BITS_PER_GROUP) + (unsigned int)ptrAddend1->x +
                                         (unsigned int)ptrAddend2->x;
@@ -76,14 +75,13 @@ void AddBigInt(limb *pAddend1, limb *pAddend2, limb *pSum, int nbrLimbs)
   }
 }
 
-void SubtractBigInt(limb *pMinuend, limb *pSubtrahend, limb *pDiff, int nbrLimbs)
+void SubtractBigInt(const limb *pMinuend, const limb *pSubtrahend, limb *pDiff, int nbrLimbs)
 {
-  limb *ptrMinuend = pMinuend;
-  limb *ptrSubtrahend = pSubtrahend;
+  const limb *ptrMinuend = pMinuend;
+  const limb *ptrSubtrahend = pSubtrahend;
   limb *ptrDiff = pDiff;
   int borrow = 0;
-  int i;
-  for (i = 0; i < nbrLimbs; i++)
+  for (int i = 0; i < nbrLimbs; i++)
   {
     borrow = (borrow >> BITS_PER_INT_GROUP) + ptrMinuend->x - ptrSubtrahend->x;
     ptrMinuend++;
@@ -289,7 +287,7 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
     (nbrLimbsFactor2 * nbrLimbsFactor2 < nbrLimbsFactor1))
   {    // One of the factors is a lot smaller than the other.
        // Use classical multiplication.
-   // return EXPR_OK;
+   // return EXPR_OK
   }
   if (nbrLimbsFactor1 < nbrLimbsFactor2)
   {
@@ -398,7 +396,7 @@ void expBigNbr(BigInteger *bignbr, double logar)
   bignbr->limbs[bignbr->nbrLimbs-1].x = mostSignificantLimb;
 }
 
-double logBigNbr(BigInteger *pBigNbr)
+double logBigNbr(const BigInteger *pBigNbr)
 {
   int nbrLimbs;
   double logar;
@@ -424,7 +422,7 @@ double logBigNbr(BigInteger *pBigNbr)
   return logar;
 }
 
-double logLimbs(limb *pBigNbr, int nbrLimbs)
+double logLimbs(const limb *pBigNbr, int nbrLimbs)
 {
   double logar;
   if (nbrLimbs > 1)
@@ -441,9 +439,8 @@ double logLimbs(limb *pBigNbr, int nbrLimbs)
   return logar;
 }
 
-enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int exponent, BigInteger *pPower)
+enum eExprErr BigIntPowerIntExp(const BigInteger *pBase, int exponent, BigInteger *pPower)
 {
-  int mask;
   double base;
   enum eExprErr rc;
   if (BigIntIsZero(pBase))
@@ -466,7 +463,7 @@ enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int exponent, BigInteger *pPo
   pPower->sign = SIGN_POSITIVE;
   pPower->nbrLimbs = 1;
   pPower->limbs[0].x = 1;
-  for (mask = 1 << 30; mask != 0; mask >>= 1)
+  for (int mask = 1 << 30; mask != 0; mask >>= 1)
   {
     if ((exponent & mask) != 0)
     {
@@ -492,7 +489,7 @@ enum eExprErr BigIntPowerIntExp(BigInteger *pBase, int exponent, BigInteger *pPo
   return EXPR_OK;
 }
 
-enum eExprErr BigIntPower(BigInteger *pBase, BigInteger *pExponent, BigInteger *pPower)
+enum eExprErr BigIntPower(const BigInteger *pBase, const BigInteger *pExponent, BigInteger *pPower)
 {
   int exponent;
   if (pExponent->sign == SIGN_NEGATIVE)
@@ -579,11 +576,10 @@ static void BigIntMutiplyPower2(BigInteger *pArg, int power2)
   pArg->nbrLimbs = nbrLimbs;
 }
 
-bool TestBigNbrEqual(BigInteger *pNbr1, BigInteger *pNbr2)
+bool TestBigNbrEqual(const BigInteger *pNbr1, const BigInteger *pNbr2)
 {
-  int ctr;
-  limb *ptrLimbs1 = pNbr1->limbs;
-  limb *ptrLimbs2 = pNbr2->limbs;
+  const limb *ptrLimbs1 = pNbr1->limbs;
+  const limb *ptrLimbs2 = pNbr2->limbs;
   if (pNbr1->nbrLimbs != pNbr2->nbrLimbs)
   {        // Sizes of numbers are different.
     return false;
@@ -598,7 +594,7 @@ bool TestBigNbrEqual(BigInteger *pNbr1, BigInteger *pNbr2)
   }
 
            // Check whether both numbers are equal.
-  for (ctr = pNbr1->nbrLimbs - 1; ctr >= 0; ctr--)
+  for (int ctr = pNbr1->nbrLimbs - 1; ctr >= 0; ctr--)
   {
     if ((ptrLimbs1 + ctr)->x != (ptrLimbs2 + ctr)->x)
     {      // Numbers are different.
@@ -608,7 +604,7 @@ bool TestBigNbrEqual(BigInteger *pNbr1, BigInteger *pNbr2)
   return true;
 }
 
-void BigIntGcd(BigInteger *pArg1, BigInteger *pArg2, BigInteger *pResult)
+void BigIntGcd(const BigInteger *pArg1, const BigInteger *pArg2, BigInteger *pResult)
 {
   int power2;
   if (BigIntIsZero(pArg1))
@@ -664,7 +660,6 @@ void BigIntGcd(BigInteger *pArg1, BigInteger *pArg2, BigInteger *pResult)
 
 static void addToAbsValue(limb *pLimbs, int *pNbrLimbs, int addend)
 {
-  int ctr;
   int nbrLimbs = *pNbrLimbs;
   pLimbs->x += addend;
   if ((unsigned int)pLimbs->x < LIMB_RANGE)
@@ -672,7 +667,7 @@ static void addToAbsValue(limb *pLimbs, int *pNbrLimbs, int addend)
     return;
   }
   pLimbs->x -= LIMB_RANGE;
-  for (ctr = 1; ctr < nbrLimbs; ctr++)
+  for (int ctr = 1; ctr < nbrLimbs; ctr++)
   {
     pLimbs++;        // Point to next most significant limb.
     if (pLimbs->x != MAX_INT_NBR)
@@ -714,41 +709,11 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   int nbrLimbs = pBigInt->nbrLimbs;
   // Point to most significant limb.
   limb *pLimbs;
-  int ctr;
   int remainder = 0;
   double dDivisor = (double)divisor;
   double dInvDivisor = 1 / dDivisor;
   double dLimb = (double)LIMB_RANGE;
 
-#if 0
-  char *ptrOutput = output;
-  *ptrOutput++ ='2';
-  *ptrOutput++ = '(';
-  int2dec(&ptrOutput, pBigInt->sign);
-  *ptrOutput++ = ',';
-  *ptrOutput++ = ' ';
-  int2dec(&ptrOutput, pBigInt->nbrLimbs);
-  *ptrOutput++ = ';';
-  *ptrOutput++ = ' ';
-  int2dec(&ptrOutput, pBigInt->limbs[0].x);
-  *ptrOutput++ = ',';
-  *ptrOutput++ = ' ';
-  int2dec(&ptrOutput, pBigInt->limbs[1].x);
-  *ptrOutput++ = ',';
-  *ptrOutput++ = ' ';
-  *ptrOutput++ = ')';
-  *ptrOutput++ = ',';
-  *ptrOutput++ = ' ';
-  int2dec(&ptrOutput, subt);
-  *ptrOutput++ = ',';
-  *ptrOutput++ = ' ';
-  int2dec(&ptrOutput, divisor);
-//  databack(output);
-  if ((unsigned int)pBigInt->limbs[0].x >= LIMB_RANGE)
-  {
-    remainder = 1;
-  }
-#endif
   if (subt >= 0)
   {
     if (pBigInt->sign == SIGN_POSITIVE)
@@ -773,14 +738,12 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   }
   pLimbs = pBigInt->limbs + nbrLimbs - 1;
   // Divide number by divisor.
-  for (ctr = nbrLimbs - 1; ctr >= 0; ctr--)
+  for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
-    double dDividend, dQuotient;
-    unsigned int quotient, dividend;
-    dividend = (remainder << BITS_PER_INT_GROUP) + pLimbs->x;
-    dDividend = (double)remainder * dLimb + pLimbs->x;
-    dQuotient = dDividend * dInvDivisor + 0.5;
-    quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
+    unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + pLimbs->x;
+    double dDividend = (double)remainder * dLimb + pLimbs->x;
+    double dQuotient = dDividend * dInvDivisor + 0.5;
+    unsigned int quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - quotient * divisor;
     if (remainder < 0)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
@@ -796,15 +759,14 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   pBigInt->nbrLimbs = nbrLimbs;
 }
 
-int getRemainder(BigInteger *pBigInt, int divisor)
+int getRemainder(const BigInteger *pBigInt, int divisor)
 {
-  int ctr;
   int remainder = 0;
   int nbrLimbs = pBigInt->nbrLimbs;
   double dDivisor = (double)divisor;
   double dLimb = 0x80000000;
-  limb *pLimb = &pBigInt->limbs[nbrLimbs - 1];
-  for (ctr = nbrLimbs - 1; ctr >= 0; ctr--)
+  const limb *pLimb = &pBigInt->limbs[nbrLimbs - 1];
+  for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
     int dividend = (remainder << BITS_PER_INT_GROUP) + pLimb->x;
     double dDividend = (double)remainder * dLimb + pLimb->x;
@@ -928,7 +890,7 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
   }
 }
 
-void multadd(BigInteger *pResult, int iMult, BigInteger *pMult, int addend)
+void multadd(BigInteger *pResult, int iMult, const BigInteger *pMult, int addend)
 {
   multint(pResult, pMult, iMult);
   addbigint(pResult, addend);
@@ -936,7 +898,8 @@ void multadd(BigInteger *pResult, int iMult, BigInteger *pMult, int addend)
 
 // Compute *pResult -> *pMult1 * iMult1 + *pMult2 * iMult2
 // Use Temp as temporary variable.
-void addmult(BigInteger *pResult, BigInteger *pMult1, int iMult1, BigInteger *pMult2, int iMult2)
+void addmult(BigInteger *pResult, const BigInteger *pMult1, int iMult1, 
+  const BigInteger *pMult2, int iMult2)
 {
   multint(pResult, pMult1, iMult1);
   multint(&Temp, pMult2, iMult2);
@@ -944,7 +907,7 @@ void addmult(BigInteger *pResult, BigInteger *pMult1, int iMult1, BigInteger *pM
 }
 
 // Get number of bits of given big integer.
-int bitLength(BigInteger *pBigNbr)
+int bitLength(const BigInteger *pBigNbr)
 {
   unsigned int mask;
   int bitCount;
@@ -1079,7 +1042,7 @@ void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, const BigInteger *bigint)
   }
 }
 
-void LenAndLimbs2ArrLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbrLen)
+void LenAndLimbs2ArrLimbs(const int *ptrValues, /*@out@*/limb *bigint, int nbrLen)
 {
   int nbrLimbs = *ptrValues;
   if (nbrLimbs < 0)
@@ -1093,7 +1056,7 @@ void LenAndLimbs2ArrLimbs(/*@in@*/int *ptrValues, /*@out@*/limb *bigint, int nbr
   }
 }
 
-void ArrLimbs2LenAndLimbs(/*@out@*/int *ptrValues, /*@in@*/limb *bigint, int nbrLen)
+void ArrLimbs2LenAndLimbs(/*@out@*/int *ptrValues, const limb *bigint, int nbrLen)
 {
   int nbrLimbs;
   (void)memcpy(ptrValues+1, bigint, (nbrLen-1) * sizeof(limb));
@@ -1366,10 +1329,9 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
   return 1;
 }
 
-bool checkOne(limb *value, int nbrLimbs)
+bool checkOne(const limb *value, int nbrLimbs)
 {
-  int idx;
-  for (idx = 0; idx < nbrLimbs; idx++)
+  for (int idx = 0; idx < nbrLimbs; idx++)
   {
     if ((value++)->x != MontgomeryMultR1[idx].x)
     {
@@ -1379,12 +1341,11 @@ bool checkOne(limb *value, int nbrLimbs)
   return true;
 }
 
-bool checkMinusOne(limb *value, int nbrLimbs)
+bool checkMinusOne(const limb *value, int nbrLimbs)
 {
-  int idx;
   unsigned int carry;
   carry = 0;
-  for (idx = 0; idx < nbrLimbs; idx++)
+  for (int idx = 0; idx < nbrLimbs; idx++)
   {
     carry += (unsigned int)(value++)->x + (unsigned int)MontgomeryMultR1[idx].x;
     if ((carry & MAX_VALUE_LIMB) != (unsigned int)TestNbr[idx].x)
@@ -1398,14 +1359,10 @@ bool checkMinusOne(limb *value, int nbrLimbs)
 
 void BigIntDivideBy2(BigInteger *nbr)
 {
-  int ctr;
-  int nbrLimbs;
-  int curLimb;
-  int *ptrDest;
-  nbrLimbs = nbr->nbrLimbs;
-  ptrDest = &nbr->limbs[0].x;
-  curLimb = *ptrDest;
-  for (ctr = 1; ctr < nbrLimbs; ctr++)
+  int nbrLimbs = nbr->nbrLimbs;
+  int *ptrDest = &nbr->limbs[0].x;
+  int curLimb = *ptrDest;
+  for (int ctr = 1; ctr < nbrLimbs; ctr++)
   {  // Process starting from least significant limb.
     int nextLimb = *(ptrDest + 1);
     *ptrDest++ = ((curLimb >> 1) | (nextLimb << (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
@@ -1420,14 +1377,13 @@ void BigIntDivideBy2(BigInteger *nbr)
 
 void BigIntMultiplyBy2(BigInteger *nbr)
 {
-  int ctr;
   int nbrLimbs;
   int prevLimb;
   int *ptrDest;
   nbrLimbs = nbr->nbrLimbs;
   ptrDest = &nbr->limbs[0].x;
   prevLimb = 0;
-  for (ctr = 0; ctr < nbrLimbs; ctr++)
+  for (int ctr = 0; ctr < nbrLimbs; ctr++)
   {  // Process starting from least significant limb.
     int curLimb = *ptrDest;
     *ptrDest++ = ((curLimb << 1) | (prevLimb >> (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
@@ -1593,14 +1549,14 @@ static void Halve(limb *pValue)
 
 void initializeSmallPrimes(int* pSmallPrimes)
 {
-  int ctr, P;
+  int P;
   if (*pSmallPrimes != 0)
   {
     return;
   }
   P = 3;
   *pSmallPrimes++ = 2;
-  for (ctr = 1; ctr <= SMALL_PRIMES_ARRLEN; ctr++)
+  for (int ctr = 1; ctr <= SMALL_PRIMES_ARRLEN; ctr++)
   {     // Loop that fills the SmallPrime array.
     int Q;
     *pSmallPrimes++ = P; /* Store prime */
@@ -1631,7 +1587,7 @@ void initializeSmallPrimes(int* pSmallPrimes)
 //         2 = composite: does not pass 2-SPRP test.
 //         3 = composite: does not pass strong Lucas test.
 #if FACTORIZATION_APP
-bool BpswPrimalityTest(/*@in@*/BigInteger *pValue, void *vFactors)
+bool BpswPrimalityTest(/*@in@*/BigInteger *pValue, const void *vFactors)
 #else
 bool BpswPrimalityTest(/*@in@*/BigInteger *pValue)
 #endif
@@ -1667,9 +1623,8 @@ bool BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   }
   if (nbrLimbs > 1)
   {              // Check whether it is divisible by small number.
-    int primeIndex;
     initializeSmallPrimes(smallPrimes);
-    for (primeIndex = 0; primeIndex < 180; primeIndex += 3)
+    for (int primeIndex = 0; primeIndex < 180; primeIndex += 3)
     {
       int primeProd = smallPrimes[primeIndex] * smallPrimes[primeIndex+1] * smallPrimes[primeIndex+2];
       int remainder = getRemainder(pValue, primeProd);
@@ -1768,7 +1723,8 @@ bool BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   }
   // At this point, the number is not perfect square, so find value of D.
   mult = 1;
-  for (D = 5; ; D += 2)
+  D = 5;
+  for (;;)
   {
     int rem = getRemainder(pValue, D);
     if (JacobiSymbol(rem, D*mult) == -1)
@@ -1776,6 +1732,7 @@ bool BpswPrimalityTest(/*@in@*/BigInteger *pValue)
       break;
     }
     mult = -mult;
+    D += 2;
   }
   absQ = (D + 1) >> 2;
 #ifdef __EMSCRIPTEN__
@@ -1969,7 +1926,6 @@ bool BigIntIsOne(const BigInteger* value)
 
 bool BigIntEqual(const BigInteger *value1, const BigInteger *value2)
 {
-  int index;
   int nbrLimbs;
   const limb *ptrValue1;
   const limb *ptrValue2;
@@ -1980,7 +1936,7 @@ bool BigIntEqual(const BigInteger *value1, const BigInteger *value2)
   nbrLimbs = value1->nbrLimbs;
   ptrValue1 = value1->limbs;
   ptrValue2 = value2->limbs;
-  for (index = 0; index < nbrLimbs; index++)
+  for (int index = 0; index < nbrLimbs; index++)
   {
     if (ptrValue1->x != ptrValue2->x)
     {
@@ -1992,7 +1948,7 @@ bool BigIntEqual(const BigInteger *value1, const BigInteger *value2)
   return true;       // Numbers are equal.
 }
 
-double getMantissa(limb *ptrLimb, int nbrLimbs)
+double getMantissa(const limb *ptrLimb, int nbrLimbs)
 {
   double dN = (double)(ptrLimb - 1)->x;
   double dInvLimb = 1 / (double)LIMB_RANGE;
@@ -2028,7 +1984,6 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   int powerOf2 = 0;
   int numLimbs = *pNbrLimbs;
   int index;
-  int index2;
   int power2gr;
   int shRg;
   limb prevLimb;
@@ -2059,7 +2014,7 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
     index--;
   }
   prevLimb.x = 0;
-  for (index2 = numLimbs - 1; index2 >= index; index2--)
+  for (int index2 = numLimbs - 1; index2 >= index; index2--)
   {
     currLimb.x = (value + index2)->x;
     (value + index2)->x = ((currLimb.x >> shRg) | (prevLimb.x << (BITS_PER_GROUP - shRg))) & MAX_VALUE_LIMB;

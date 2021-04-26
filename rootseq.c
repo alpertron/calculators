@@ -971,12 +971,12 @@ static void biquadraticEquation(int multiplicity)
       }
       else
       {  // x = sqrt(-c/2 +/- sqrt(c^2 - 4e)/2)
-        int isX2Positive;
+        bool isX2Positive;
          // If c >= 0 and positive sqrt => c^2 < c^2 - 4e => e < 0.
          // If c > 0 and negative sqrt = > x^2 is always negative.
          // If c < 0 and positive sqrt = > x^2 is always positive.
          // If c <= 0 and negative sqrt = > c^2 > c^2 - 4e => e > 0
-        if (ctr == 0 || ctr == 2)
+        if ((ctr == 0) || (ctr == 2))
         {    // Positive sqrt
           isX2Positive = ((RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE) ||
             (RatDeprIndependent.numerator.sign == SIGN_NEGATIVE));
@@ -1011,7 +1011,7 @@ static void biquadraticEquation(int multiplicity)
             BigIntChSign(&Rat1.numerator);
           }
           showRational(&Rat1);
-          if (ctr == 0 || ctr == 2)
+          if ((ctr == 0) || (ctr == 2))
           {    // Positive sqrt
             showPlusSignOn(isX2Positive, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
           }
@@ -1907,7 +1907,7 @@ static int showRadicals(int num, int den, int multiple, int power2, const char *
     }
   }
   // Interpret expression.
-  if (power2 == 0 && strcmp(ptrExpr, "1") == 0)
+  if ((power2 == 0) && (strcmp(ptrExpr, "1") == 0))
   {
     return sign * exprDen;
   }

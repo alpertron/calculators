@@ -100,7 +100,7 @@ void Show1(BigInteger *num, int t)
   }
 }
 
-void Solution(BigInteger *value)
+void Solution(const BigInteger *value)
 {
   SolNbr++;
   (void)strcpy(ptrOutput, "<li>x = ");

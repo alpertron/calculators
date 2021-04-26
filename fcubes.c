@@ -150,7 +150,7 @@ static void EvaluateQuadraticPoly(BigInteger *pResult, BigInteger *pValue, int q
   addbigint(pResult, constant);
 }
 
-static int fcubes(BigInteger *pArgument)
+static int fcubes(const BigInteger *pArgument)
 {
   int mod18;
   int modulus;

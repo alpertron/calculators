@@ -276,7 +276,7 @@ static void ConvertQuaternionToEvenType(BigInteger *scalar, BigInteger *vecI, Bi
   DivideQuaternionBy2(scalar, vecI, vecJ, vecK);
 }
 
-static void approximate(BigInteger *nbr, struct approx *appNbr)
+static void approximate(const BigInteger *nbr, struct approx *appNbr)
 {
   int nbrLimbs = nbr->nbrLimbs;
   appNbr->expon = nbrLimbs;
@@ -291,7 +291,7 @@ if (nbr->sign == SIGN_NEGATIVE)
 }
 }
 
-static void addApprox(struct approx *addend1, struct approx *addend2, struct approx *sum)
+static void addApprox(const struct approx *addend1, const struct approx *addend2, struct approx *sum)
 {
   int nbrLimbs1 = addend1->expon;
   int nbrLimbs2 = addend2->expon;
@@ -335,7 +335,7 @@ static void addApprox(struct approx *addend1, struct approx *addend2, struct app
   sum->mantissa = mantissa1;
 }
 
-static void squareApprox(struct approx *value, struct approx *square)
+static void squareApprox(const struct approx *value, struct approx *square)
 {
   int nbrLimbs = value->expon + value->expon - 1;
   double mantissa = value->mantissa * value->mantissa / (double)LIMB_RANGE;
@@ -352,11 +352,12 @@ static void squareApprox(struct approx *value, struct approx *square)
 // if sum < min, set *pCombination to nbr and set min to sum.
 // let sum = |scalarA - scalarB| + |vecIA - vecIB| + |vecJA - vecJB| + |vecKA - vecKB|
 // if sum < min, set *pCombination to nbr+1 and set min to sum.
-static void TestCombination(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, BigInteger *vecKA,
-  BigInteger *scalarB, BigInteger *vecIB, BigInteger *vecJB, BigInteger *vecKB,
+static void TestCombination(const BigInteger *scalarA, const BigInteger *vecIA,
+  const BigInteger *vecJA, const BigInteger *vecKA,
+  const BigInteger *scalarB, const BigInteger *vecIB,
+  const BigInteger *vecJB, const BigInteger *vecKB,
   int nbr, int *pCombination)
 {
-  int ctr;
   struct approx appScalarA;
   struct approx appVecIA;
   struct approx appVecJA;
@@ -375,7 +376,7 @@ static void TestCombination(BigInteger *scalarA, BigInteger *vecIA, BigInteger *
   approximate(vecIB, &appVecIB);
   approximate(vecJB, &appVecJB);
   approximate(vecKB, &appVecKB);
-  for (ctr = 0; ctr < 2; ctr++)
+  for (int ctr = 0; ctr < 2; ctr++)
   {  // If ctr=0, find the square of norm of A+B.
      // If ctr=1, find the square of norm of A-B.
     addApprox(&appScalarA, &appScalarB, &sum);
@@ -412,8 +413,10 @@ static void TestCombination(BigInteger *scalarA, BigInteger *vecIA, BigInteger *
 // If *pCombination > 1, subtract 2 to it and go out.
 // If *pCombination = 0, perform A <- A + B.
 // If *pCombination = 1, perform A <- A - B.
-static void AddCombination(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, BigInteger *vecKA,
-  BigInteger *scalarB, BigInteger *vecIB, BigInteger *vecJB, BigInteger *vecKB,
+static void AddCombination(BigInteger *scalarA, BigInteger *vecIA,
+  BigInteger *vecJA, BigInteger *vecKA,
+  const BigInteger *scalarB, const BigInteger *vecIB,
+  const BigInteger *vecJB, const BigInteger *vecKB,
   int *pCombination)
 {
   int combination = *pCombination;
@@ -435,7 +438,8 @@ static void AddCombination(BigInteger *scalarA, BigInteger *vecIA, BigInteger *v
 }
 
 // Compute sum as the sum of the squares of all components.
-static void getApproxHeight(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK,
+static void getApproxHeight(const BigInteger *scalar, const BigInteger *vecI,
+  const BigInteger *vecJ, const BigInteger *vecK,
   struct approx *sum)
 {
   struct approx appTemp;

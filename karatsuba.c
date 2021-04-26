@@ -62,7 +62,8 @@ static void Karatsuba(int idxFactor1, int nbrLen);
   uint32_t factor1_##n = arr[idxFactor1 + n].x;                         \
   uint32_t prod_iPlus##n = 0
 
-void multiply(limb *factor1, limb *factor2, limb *result, int len, int *pResultLen)
+void multiply(const limb *factor1, const limb *factor2, limb *result,
+  int len, int *pResultLen)
 {
   int length = len;
 #if defined(FACTORIZATION_APP) || defined(BIGCALC_APP)

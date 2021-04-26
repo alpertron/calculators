@@ -166,7 +166,6 @@ static void initCosinesArray(void)
 // length is power of 2.
 static void complexFFT(complex *x, complex *y, int length)
 {
-  int j;
   int halfLength = length / 2;
   int step = (1 << POWERS_2) / length;
   bool exponentOdd = false;
@@ -212,7 +211,7 @@ static void complexFFT(complex *x, complex *y, int length)
       double rootReal = Cosine[angle];
       double rootImag = Cosine[angle + QUARTER_CIRCLE];
       complex *ptrW = ptrY + J;
-      for (j = J; j > 0; j--)
+      for (int j = J; j > 0; j--)
       {
         double tempReal = ptrX->real;
         double tempImag = ptrX->imaginary;

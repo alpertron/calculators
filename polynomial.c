@@ -122,7 +122,6 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
   bool prevTokenIsNumber = false;
   char s;
   char *ptrInput;
-  int index;
   int limb;
   int bitNbr;
   char variableLetter = ' ';  // Indicate variable letter not known yet.
@@ -347,7 +346,7 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
             return EXPR_EXPONENT_TOO_LARGE;
           }
           *ptrOutput++ = TOKEN_NUMBER;
-          limb = (int)value.limbs[0].x;
+          limb = value.limbs[0].x;
           for (bitNbr = BITS_PER_GROUP; bitNbr > 0; bitNbr -= 8)
           {
             *ptrOutput++ = (char)limb;
@@ -379,9 +378,9 @@ static int ConvertToReversePolishNotation(char *input, char *ptrOutput)
           }
           *ptrOutput++ = (char)(value.nbrLimbs >> 8);
           *ptrOutput++ = (char)value.nbrLimbs;
-          for (index = 0; index < value.nbrLimbs; index++)
+          for (int index = 0; index < value.nbrLimbs; index++)
           {
-            limb = (int)value.limbs[index].x;
+            limb = value.limbs[index].x;
             for (bitNbr = BITS_PER_GROUP; bitNbr > 0; bitNbr -= 8)
             {
               *ptrOutput++ = (char)limb;
@@ -570,8 +569,8 @@ static int AddPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
   }
   if ((degree1 > 0) && (degree2 > 0))
   {           // Sum of two polynomials.
-    int *ptrPolyMin;
-    int *ptrPolyMax;
+    const int *ptrPolyMin;
+    const int *ptrPolyMax;
     if (degree1 > degree2)
     {
       degreeMin = degree2;
@@ -1029,7 +1028,6 @@ int ComputePolynomial(char *input, int expo)
   int val;
   int pwr;
   int expon;
-  int currentDegree;
   degree = 1;
   exponentMod = expo;
   // Use operand1 as temporary variable to store the exponent.
@@ -1258,7 +1256,7 @@ int ComputePolynomial(char *input, int expo)
     degree = -values[0];
     values[0] = degree;
     ptrValue1 = &values[1];
-    for (currentDegree = 0; currentDegree < degree; currentDegree++)
+    for (int currentDegree = 0; currentDegree < degree; currentDegree++)
     {
       *ptrValue1++ = 1;   // Initialize coefficient to zero.
       *ptrValue1++ = 0;
@@ -1334,7 +1332,7 @@ int *getContent(int *poly, BigInteger *content)
 }
 
 // Get polynomial divided content mod prime.
-int getModPolynomial(int *polyMod, int *poly, BigInteger *content)
+int getModPolynomial(int *polyMod, const int *poly, BigInteger *content)
 {
   int currentDegree;
   int degreePoly = *poly++;
@@ -1419,7 +1417,9 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
   polyS[2] = 0;
   for (;;)
   {
-    int degree1, degree2, degreeGcdMod;
+    int degree1;
+    int degree2;
+    int degreeGcdMod;
     do
     { // Find next prime.
       prime = smallPrimes[++primeIndex];
@@ -1726,7 +1726,7 @@ static int GcdPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
 
 int DerPolynomial(int *ptrArgument)
 {
-  int* ptrSrc;
+  const int* ptrSrc;
   int *ptrDest;
   int nbrLimbs;
   int degreePoly = *ptrArgument;
@@ -1815,10 +1815,9 @@ void polyToMontgomeryNotation(int *nbr, int qtyNbrs)
 }
 
   // Perform polyPower <- polyBase ^ expon (mod polyMod)
-void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *expon,
+void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, const BigInteger *expon,
                      int *polyPower, powerCback callback, int curMultip, int nbrMultip)
 {
-  int mask;
   int nbrLimbs = NumberLength + 1;
   bool powerIsOne = true;
   int nbrBits = 0;
@@ -1828,8 +1827,8 @@ void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, BigInteger *ex
   *(polyBase + polyDegree * nbrLimbs + 1) = 0;
   for (; index >= 0; index--)
   {
-    int groupExp = (int)(expon->limbs[index].x);
-    for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+    int groupExp = expon->limbs[index].x;
+    for (int mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
     {
       if (!powerIsOne)
       {
@@ -2907,7 +2906,7 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
   *ptrOutput = 0;    // Append string terminator.
 }
 
-void outputPolynomialFactor(char *ptrOutput, int groupLength, struct sFactorInfo* pstFactorInfo)
+void outputPolynomialFactor(char *ptrOutput, int groupLength, const struct sFactorInfo* pstFactorInfo)
 {
   int polyDegree = pstFactorInfo->degree;
   int multiplicity = pstFactorInfo->multiplicity;
@@ -2921,7 +2920,7 @@ void outputPolynomialFactor(char *ptrOutput, int groupLength, struct sFactorInfo
   {
     int currentDegree;
     // Get leading coefficient.
-    int *ptrSrc = pstFactorInfo->ptrPolyLifted;
+    const int *ptrSrc = pstFactorInfo->ptrPolyLifted;
     for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
     {
       ptrSrc += 1 + numLimbs(ptrSrc);

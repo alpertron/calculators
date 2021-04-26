@@ -67,8 +67,9 @@ static bool foundByLehman;
 static bool performLehman;
 static int EC;
 static int SmallPrime[670]; /* Primes < 5000 */
-static void add3(limb *x3, limb *z3, limb *x2, limb *z2, limb *x1, limb *z1, limb *x, limb *z);
-static void duplicate(limb *x2, limb *z2, limb *x1, limb *z1);
+static void add3(limb* x3, limb* z3, const limb* x2, const limb* z2,
+  const limb* x1, const limb* z1, limb* x, limb* z);
+static void duplicate(limb* x2, limb* z2, const limb* x1, const limb* z1);
 static BigInteger Temp1;
 static BigInteger Temp2;
 static BigInteger Temp3;
@@ -86,7 +87,7 @@ extern int q[MAX_LEN];
 int nbrToFactor[MAX_LEN];
 struct sFactors astFactorsMod[5000];
 int factorsMod[20000];
-static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor,
+static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divisor,
   int type);
 static char *findChar(char *str, char c);
 enum eEcmResult
@@ -367,8 +368,8 @@ Uses the following global variables:
 Modifies: x3, z3, u, v, w.
 (x3,z3) may be identical to (x2,z2) and to (x,z)
 */
-static void add3(limb *x3, limb *z3, limb *x2, limb *z2,
-                 limb *x1, limb *z1, limb *x, limb *z)
+static void add3(limb *x3, limb *z3, const limb *x2, const limb *z2,
+                 const limb *x1, const limb *z1, limb *x, limb *z)
 {
   limb *t = common.ecm.fieldTX;
   limb *u = common.ecm.fieldTZ;
@@ -406,7 +407,7 @@ Uses the following global variables:
 - u, v, w : auxiliary variables
 Modifies: x2, z2, u, v, w
 */
-static void duplicate(limb *x2, limb *z2, limb *x1, limb *z1)
+static void duplicate(limb *x2, limb *z2, const limb *x1, const limb *z1)
 {
   limb *u = common.ecm.fieldUZ;
   limb *v = common.ecm.fieldTX;
@@ -423,7 +424,7 @@ static void duplicate(limb *x2, limb *z2, limb *x1, limb *z1)
 }
 /* End of code adapted from Paul Zimmermann's ECM4C */
 
-static int gcdIsOne(limb *value)
+static int gcdIsOne(const limb *value)
 {
   UncompressLimbsBigInteger(value, &Temp1);
   UncompressLimbsBigInteger(TestNbr, &Temp2);
@@ -615,7 +616,7 @@ int Moebius(int N)
   return moebius;
 }
 
-void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, BigInteger *BigBase)
+void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, const BigInteger *BigBase)
 {
   static BigInteger x;
   static BigInteger Csal;
@@ -647,7 +648,7 @@ void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, BigInteger *BigBas
 }
 
 // Get Aurifeuille factors.
-void InsertAurifFactors(struct sFactors *pstFactors, BigInteger *BigBase, int Expon, int Incre)
+void InsertAurifFactors(struct sFactors *pstFactors, const BigInteger *BigBase, int Expon, int Incre)
 {
   int Base = BigBase->limbs[0].x;
   if ((BigBase->nbrLimbs != 1) || (Base >= 386))
@@ -751,8 +752,8 @@ void copyString(const char *textFromServer)
   (void)strcpy(common.saveFactors.text, textFromServer);
 }
 
-void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
-                int increment, BigInteger *BigOriginal)
+static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, int Expon,
+                int increment, const BigInteger *BigOriginal)
 {
 #ifdef __EMSCRIPTEN__
   char url[200];
@@ -847,7 +848,7 @@ void Cunningham(struct sFactors *pstFactors, BigInteger *BigBase, int Expon,
   }
 }
 
-static bool ProcessExponent(struct sFactors *pstFactors, BigInteger *numToFactor, int Exponent)
+static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numToFactor, int Exponent)
 {
 #ifdef __EMSCRIPTEN__
   char status[200];
@@ -939,7 +940,8 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *numToFactor)
   bool plus1 = false;
   bool minus1 = false;
   int Exponent = 0;
-  int i, j;
+  int i;
+  int j;
   int modulus;
   int mod9 = getRemainder(numToFactor, 9);
   int maxExpon = numToFactor->nbrLimbs * BITS_PER_GROUP;
@@ -1024,13 +1026,21 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *numToFactor)
     double u = logar / log(j) + .000005;
     Exponent = (int)floor(u);
     if (u - Exponent > .00001)
+    {
       continue;
+    }
     if ((Exponent % 3 == 0) && (mod9 > 2) && (mod9 < 7))
+    {
       continue;
+    }
     if (!(common.ecm.ProcessExpon[Exponent >> 3] & (1 << (Exponent & 7))))
+    {
       continue;
+    }
     if (ProcessExponent(pstFactors, numToFactor, Exponent))
+    {
       return;
+    }
   }
   for (; Exponent >= 2; Exponent--)
   {
@@ -1762,7 +1772,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
   }       /* End curve calculation */
 }
 #ifdef __EMSCRIPTEN__
-char *ShowFactoredPart(BigInteger *pNbr, void *vFactors)
+char *ShowFactoredPart(BigInteger *pNbr, const void *vFactors)
 {
   struct sFactors *pstFactors = (struct sFactors *)vFactors;
   ptrLowerText = lowerText;
@@ -1806,7 +1816,7 @@ void ShowLowerText(void)
 }
 #endif
 
-static void ecm(BigInteger *N, struct sFactors *pstFactors)
+static void ecm(BigInteger *N, const struct sFactors *pstFactors)
 {
   int P;
   int Q;
@@ -1817,8 +1827,8 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
   common.ecm.fieldTZ = common.ecm.TZ;
   common.ecm.fieldUX = common.ecm.UX;
   common.ecm.fieldUZ = common.ecm.UZ;
-  //  int Prob;
-  //  BigInteger NN;
+  //  int Prob
+  //  BigInteger NN
 
   common.ecm.fieldAA = common.ecm.AA;
   NumberLength = N->nbrLimbs;
@@ -1840,7 +1850,7 @@ static void ecm(BigInteger *N, struct sFactors *pstFactors)
   indexM = 1;
   for (indexM = 1; indexM < sizeof(SmallPrime)/sizeof(SmallPrime[0]); indexM++)
   {     // Loop that fills the SmallPrime array.
-    SmallPrime[indexM] = (int)P; /* Store prime */
+    SmallPrime[indexM] = P; /* Store prime */
     do
     {
       P += 2;
@@ -1887,7 +1897,7 @@ void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, i
   ptrOutput += strlen(ptrOutput);
   if (doFactorization)
   {
-    struct sFactors *pstFactor;
+    const struct sFactors *pstFactor;
     pstFactor = pstFactors+1;
     if ((tofactor.sign == SIGN_POSITIVE) && (pstFactors->multiplicity == 1) && (pstFactor->multiplicity == 1) &&
       ((*pstFactor->ptrFactor > 1) || (*(pstFactor->ptrFactor + 1) > 1)))
@@ -2069,7 +2079,6 @@ void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, i
 static void SortFactors(struct sFactors *pstFactors)
 {
   int factorNumber;
-  int factorNumber2;
   int ctr;
   struct sFactors *pstCurFactor = pstFactors + 1;
   struct sFactors stTempFactor;
@@ -2078,10 +2087,10 @@ static void SortFactors(struct sFactors *pstFactors)
   for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++, pstCurFactor++)
   {
     pstNewFactor = pstCurFactor + 1;
-    for (factorNumber2 = factorNumber + 1; factorNumber2 <= pstFactors->multiplicity; factorNumber2++, pstNewFactor++)
+    for (int factorNumber2 = factorNumber + 1; factorNumber2 <= pstFactors->multiplicity; factorNumber2++, pstNewFactor++)
     {
-      int *ptrFactor = pstCurFactor->ptrFactor;
-      int *ptrFactor2 = pstNewFactor->ptrFactor;
+      const int *ptrFactor = pstCurFactor->ptrFactor;
+      const int *ptrFactor2 = pstNewFactor->ptrFactor;
       if (*ptrFactor < *ptrFactor2)
       {     // Factors already in correct order.
         continue;
@@ -2120,20 +2129,21 @@ static void SortFactors(struct sFactors *pstFactors)
   // Find location for new factors.
   ptrNewFactor = 0;
   pstCurFactor = pstFactors + 1;
-  for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++, pstCurFactor++)
+  for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++)
   {
     int *ptrPotentialNewFactor = pstCurFactor->ptrFactor + *(pstCurFactor->ptrFactor) + 1;
     if (ptrPotentialNewFactor > ptrNewFactor)
     {
       ptrNewFactor = ptrPotentialNewFactor;
     }
+    pstCurFactor++;
   }
   pstFactors->ptrFactor = ptrNewFactor;
 }
 
 // Insert new factor found into factor array. This factor array must be sorted.
-static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFactorDividend, int divisor, 
-  int expon, BigInteger *cofactor)
+static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFactorDividend,
+  int divisor, int expon, const BigInteger *cofactor)
 {
   struct sFactors *pstCurFactor;
   int multiplicity;
@@ -2205,15 +2215,14 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
 
 // Insert new factor found into factor array. This factor array must be sorted.
 // The divisor must be also sorted.
-static void insertBigFactor(struct sFactors *pstFactors, BigInteger *divisor, int type)
+static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divisor, int type)
 {
   struct sFactors *pstCurFactor;
-  int factorNumber;
   int lastFactorNumber = pstFactors->multiplicity;
   struct sFactors *pstNewFactor = pstFactors + lastFactorNumber + 1;
   int *ptrNewFactorLimbs = pstFactors->ptrFactor;
   pstCurFactor = pstFactors + 1;
-  for (factorNumber = 1; factorNumber <= lastFactorNumber; factorNumber++, pstCurFactor++)
+  for (int factorNumber = 1; factorNumber <= lastFactorNumber; factorNumber++, pstCurFactor++)
   {     // For each known factor...
     int *ptrFactor = pstCurFactor->ptrFactor;
     NumberLength = *ptrFactor;
@@ -2401,7 +2410,6 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
 #endif
   bool factorsFound = false;
   int nbrLimbsQ;
-  int countdown;
   int ctr;
   int nbrLimbs = pValue->nbrLimbs;
   bool sqrtOneFound = false;
@@ -2418,9 +2426,8 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   (void)memcpy(TestNbr, pValueLimbs, nbrLimbs * sizeof(limb));
   TestNbr[nbrLimbs].x = 0;
   GetMontgomeryParms(nbrLimbs);
-  for (countdown = 20; countdown > 0; countdown--)
+  for (int countdown = 20; countdown > 0; countdown--)
   {
-    int i;
     NumberLength = nbrLimbs;
     randomBase = (int)((uint64_t)randomBase * 89547121 + 1762281733) & MAX_INT_NBR;
     modPowBaseInt(randomBase, common.ecm.Aux1, Aux1Len, common.ecm.Aux2); // Aux2 = base^Aux1.
@@ -2429,7 +2436,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
     {
       continue;    // This base cannot find a factor. Try another one.
     }
-    for (i = 0; i < ctr; i++)
+    for (int i = 0; i < ctr; i++)
     {              // Loop that squares number.
       modmult(common.ecm.Aux2, common.ecm.Aux2, common.ecm.Aux3);
       if (checkOne(common.ecm.Aux3, nbrLimbs) != 0)
@@ -2575,7 +2582,7 @@ static void factorSmallInt(int toFactor, int* factors, struct sFactors* pstFacto
   pstFactors->multiplicity = factorsFound;
 }
 
-void factor(BigInteger* toFactor, int* number, int* factors, struct sFactors* pstFactors)
+void factor(BigInteger* toFactor, const int* number, int* factors, struct sFactors* pstFactors)
 {
   factorExt(toFactor, number, factors, pstFactors, NULL);
 }
@@ -2585,12 +2592,11 @@ void factor(BigInteger* toFactor, int* number, int* factors, struct sFactors* ps
 void factorExt(BigInteger *toFactor, const int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors)
 {
   struct sFactors *pstCurFactor;
-  int factorNbr;
   int expon;
   int remainder;
   int nbrLimbs;
   int ctr;
-  int *ptrFactor;
+  const int *ptrFactor;
   int dividend;
   char *ptrCharFound;
   int result;
@@ -2718,11 +2724,10 @@ void factorExt(BigInteger *toFactor, const int *number, int *factors, struct sFa
     PowerPM1Check(pstFactors, toFactor);
   }
   pstCurFactor = pstFactors + 1;
-  for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
+  for (int factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
   {
     int upperBoundIndex;
     int upperBound = pstCurFactor->upperBound;
-    int delta;
     bool restartFactoring = false;
     // If number is prime, do not process it.
     if (upperBound == 0)
@@ -2733,7 +2738,7 @@ void factorExt(BigInteger *toFactor, const int *number, int *factors, struct sFa
     upperBoundIndex = 0;
     if (upperBound < 100000)
     {
-      for (delta = 8192; delta > 0; delta >>= 1)
+      for (int delta = 8192; delta > 0; delta >>= 1)
       {
         int tempUpperBoundIndex = upperBoundIndex + delta;
         if (tempUpperBoundIndex >= SMALL_PRIMES_ARRLEN)
@@ -2989,7 +2994,7 @@ static void intArrayToBigInteger(const int *ptrValues, BigInteger *bigint)
 void Totient(BigInteger *result)
 {
   static BigInteger TempVar;
-  struct sFactors *pstFactor;
+  const struct sFactors *pstFactor;
   intToBigInteger(result, 1);  // Set result to 1.
   pstFactor = &astFactorsMod[1];
   for (int factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
@@ -3016,7 +3021,7 @@ void NumFactors(BigInteger* result)
 void MinFactor(BigInteger* result)
 {
   int factorNumber;
-  struct sFactors* pstFactor = &astFactorsMod[1];
+  const struct sFactors* pstFactor = &astFactorsMod[1];
   intArrayToBigInteger(pstFactor->ptrFactor, result);
   for (factorNumber = 2; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
@@ -3031,7 +3036,7 @@ void MinFactor(BigInteger* result)
 
 void MaxFactor(BigInteger* result)
 {
-  struct sFactors* pstFactor = &astFactorsMod[1];
+  const struct sFactors* pstFactor = &astFactorsMod[1];
   intArrayToBigInteger(pstFactor->ptrFactor, result);
   for (int factorNumber = 2; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
@@ -3047,11 +3052,10 @@ void MaxFactor(BigInteger* result)
 // Find sum of divisors as the product of (p^(e+1)-1)/(p-1) where p=prime and e=exponent.
 void SumOfDivisors(BigInteger *result)
 {
-  struct sFactors *pstFactor;
-  int factorNumber;
+  const struct sFactors *pstFactor;
   intToBigInteger(result, 1);  // Set result to 1.
   pstFactor = &astFactorsMod[1];
-  for (factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  for (int factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
     intArrayToBigInteger(pstFactor->ptrFactor, &factorValue);
     if ((factorValue.nbrLimbs == 1) && (factorValue.limbs[0].x == 1))
@@ -3071,7 +3075,7 @@ void SumOfDivisors(BigInteger *result)
 // Find number of divisors as the product of e+1 where p=prime and e=exponent.
 void NumberOfDivisors(BigInteger *result)
 {
-  struct sFactors *pstFactor;
+  const struct sFactors *pstFactor;
   intToBigInteger(result, 1);  // Set result to 1.
   pstFactor = &astFactorsMod[1];
   for (int factorNumber = 1; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)

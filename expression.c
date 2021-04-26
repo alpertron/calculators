@@ -402,7 +402,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -425,7 +425,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -442,7 +442,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
 #ifdef FACTORIZATION_FUNCTIONS
@@ -460,7 +460,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -477,7 +477,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -493,7 +493,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         {
           return retcode;
         }
-        leftNumberFlag = 1;
+        leftNumberFlag = true;
       }
       continue;
     }
@@ -511,7 +511,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -528,7 +528,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -545,7 +545,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -562,7 +562,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
 #endif
@@ -580,7 +580,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -597,7 +597,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -614,7 +614,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -642,7 +642,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -660,7 +660,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -678,7 +678,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -696,7 +696,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -714,7 +714,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((retcode = func(expr, ExpressionResult,
@@ -732,7 +732,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           return retcode;
         }
       }
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       continue;
     }
     else if ((charValue & 0xDF) == 'X')
@@ -833,7 +833,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       comprStackOffset[stackIndex - 1] = curStackOperand;
       comprStackOffset[stackIndex] += numLimbs(&comprStackValues[curStackOperand].x) + 1;
       stackIndex--;    /* Discard ')' */
-      leftNumberFlag = 1;
+      leftNumberFlag = true;
       exprIndex++;
       continue;
     }
@@ -1019,7 +1019,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         return EXPR_TOO_MANY_PAREN;
       }
       stackOperators[stackIndex++] = charValue;
-      leftNumberFlag = 0;
+      leftNumberFlag = false;
       continue;
     }
     return EXPR_SYNTAX_ERROR;
@@ -1230,7 +1230,8 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
   return EXPR_OK;
 }
 
-static void generateSieve(const int* pSmallPrimes, char* sieve, BigInteger* pArgument, bool isNext)
+static void generateSieve(const int* pSmallPrimes, char* sieve,
+  const BigInteger* pArgument, bool isNext)
 {
   // Indicate numbers not divisible by small primes in advance.
   (void)memset(sieve, 0, COMPUTE_NEXT_PRIME_SIEVE_SIZE);
@@ -1264,7 +1265,7 @@ static void generateSieve(const int* pSmallPrimes, char* sieve, BigInteger* pArg
 static int ComputeBack(void)
 {
   char sieve[COMPUTE_NEXT_PRIME_SIEVE_SIZE];
-  BigInteger *pArgument = &curStack;
+  const BigInteger *pArgument = &curStack;
   BigInteger *pResult = &curStack;
   limb *pResultLimbs = pResult->limbs;
   const limb *pArgumentLimbs = pArgument->limbs;
@@ -1331,7 +1332,7 @@ static int ComputeBack(void)
 static int ComputeNext(void)
 {
   char sieve[COMPUTE_NEXT_PRIME_SIEVE_SIZE];
-  BigInteger *pArgument = &curStack;
+  const BigInteger *pArgument = &curStack;
   BigInteger *pResult = &curStack;
   limb *pResultLimbs = pResult->limbs;
   const limb *pArgumentLimbs = pArgument->limbs;
@@ -1397,7 +1398,7 @@ static int ComputeNext(void)
 static enum eExprErr ComputeModInv(void)
 {
   static BigInteger one;
-  BigInteger* pDiv;
+  const BigInteger* pDiv;
   getCurrentStackValue(&curStack);    // Get first argument of MODINV.
   stackIndex++;
   getCurrentStackValue(&curStack2);   // Get second argument of MODINV.

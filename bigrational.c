@@ -92,7 +92,7 @@ enum eExprErr BigRationalSubt(BigRational* pAddend1, BigRational* pAddend2, BigR
   return BigIntDivide(&tmp2, &tmp3, &pSum->denominator);
 }
 
-void BigRationalNegate(BigRational* pSrc, BigRational* pDest)
+void BigRationalNegate(BigRational* pSrc, const BigRational* pDest)
 {
   (void)pDest;
   BigIntChSign(&pSrc->numerator);
@@ -183,7 +183,6 @@ static void TryToSimplifyRatSqrt(BigInteger* RatPart, BigInteger* SqrPart, int d
 
 void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart)
 {
-  int ctr;
   if (BigIntIsZero(&SqrPart->numerator))
   {
     intToBigInteger(&RatPart->numerator, 0);
@@ -251,7 +250,7 @@ void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart)
   // Divide numerator and denominator by small numbers.
   TryToSimplifyRatSqrt(&RatPart->numerator, &SqrPart->numerator, 2);
   TryToSimplifyRatSqrt(&RatPart->denominator, &SqrPart->denominator, 2);
-  for (ctr = 3; ctr < 300; ctr += 2)
+  for (int ctr = 3; ctr < 300; ctr += 2)
   {
     TryToSimplifyRatSqrt(&RatPart->numerator, &SqrPart->numerator, ctr);
     TryToSimplifyRatSqrt(&RatPart->denominator, &SqrPart->denominator, ctr);
@@ -332,7 +331,7 @@ void showRationalNoParen(BigRational* rat)
   }
 }
 
-void showRationalOverStr(BigRational* rat, char *str, char *ptrTimes)
+void showRationalOverStr(BigRational* rat, const char *str, const char *ptrTimes)
 {
   bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) || (rat->denominator.limbs[0].x != 1));
   if (pretty != PARI_GP)
@@ -394,7 +393,7 @@ void showRational(BigRational* rat)
 }
 
 void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int root,
-  char *ptrTimes)
+  const char *ptrTimes)
 {
   if ((SqrPart->numerator.nbrLimbs != 1) || (SqrPart->numerator.limbs[0].x != 1) ||
     (SqrPart->denominator.nbrLimbs != 1) || (SqrPart->denominator.limbs[0].x != 1))
@@ -481,7 +480,7 @@ void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int roo
   }
 }
 
-void showSquareRootOfRational(BigRational* rat, int root, char *ptrTimes)
+void showSquareRootOfRational(const BigRational* rat, int root, const char *ptrTimes)
 {
   intToBigInteger(&Rat1.numerator, 1);
   intToBigInteger(&Rat1.denominator, 1);

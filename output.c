@@ -31,7 +31,7 @@ void showMinus(void)
   showText("&minus;");
 }
 
-void shownbr(BigInteger* value)
+void shownbr(const BigInteger* value)
 {
   BigInteger2Dec(value, ptrOutput, groupLen);
   ptrOutput += strlen(ptrOutput);

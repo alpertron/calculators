@@ -31,13 +31,13 @@ enum eLinearSolution
   INFINITE_SOLUTIONS,
 };
 
-static enum eShowSolution
+enum eShowSolution
 {
   ONE_SOLUTION = 0,
   TWO_SOLUTIONS,
   FIRST_SOLUTION,
   SECOND_SOLUTION,
-} showSolution;
+};
 
 enum eCallbackQuadModType
 {
@@ -46,6 +46,7 @@ enum eCallbackQuadModType
   CBACK_QMOD_HYPERBOLIC,
 };
 
+static enum eShowSolution showSolution;
 static enum eCallbackQuadModType callbackQuadModType;
 static int counters[400];
 static char isDescending[400];
@@ -130,8 +131,8 @@ static BigInteger Yplus;
 static BigInteger Yminus;
 static BigInteger *Xbak;
 static BigInteger *Ybak;
-static int Show(BigInteger *num, const char *str, enum eLinearSolution t);
-static void Show1(BigInteger *num, enum eLinearSolution t);
+static int Show(const BigInteger *num, const char *str, enum eLinearSolution t);
+static void Show1(const BigInteger *num, enum eLinearSolution t);
 static void callbackQuadModParabolic(BigInteger *value);
 static void callbackQuadModElliptic(BigInteger *value);
 static void callbackQuadModHyperbolic(BigInteger *value);
@@ -179,7 +180,7 @@ static void showMinus(void)
   showText("&minus;");
 }
 
-static void shownbr(BigInteger *value)
+static void shownbr(const BigInteger *value)
 {
   BigInteger2Dec(value, ptrOutput, groupLen);
   ptrOutput += strlen(ptrOutput);
@@ -230,7 +231,8 @@ static void showEqNbr(int nbr)
   showText(")</span>");
 }
 
-static void ShowLin(BigInteger *coeffX, BigInteger *coeffY, BigInteger *coeffInd, char *x, char *y)
+static void ShowLin(const BigInteger *coeffX, const BigInteger *coeffY, const BigInteger *coeffInd,
+  const char *x, const char *y)
 {
   enum eLinearSolution t;
   t = Show(coeffX, x, SOLUTION_FOUND);
@@ -238,7 +240,7 @@ static void ShowLin(BigInteger *coeffX, BigInteger *coeffY, BigInteger *coeffInd
   Show1(coeffInd, t);
 }
 
-static void ShowLinInd(BigInteger *lin, BigInteger *ind, const char *var)
+static void ShowLinInd(const BigInteger *lin, const BigInteger *ind, const char *var)
 {
   if (BigIntIsZero(ind) && BigIntIsZero(lin))
   {
@@ -305,7 +307,7 @@ int PrintLinear(enum eLinearSolution Ret, const char *var)
   return 0;
 }
 
-static void PrintQuad(BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeffInd, 
+static void PrintQuad(const BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeffInd, 
                       const char *var1, const char *var2)
 {
   if ((coeffT2->nbrLimbs == 1) && (coeffT2->limbs[0].x == 1))
@@ -405,7 +407,7 @@ static void PrintQuad(BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeff
   }
 }
 
-static void showSolutionXY(BigInteger *X, BigInteger *Y)
+static void showSolutionXY(const BigInteger *X, const BigInteger *Y)
 {
   showText("<p>x = ");
   shownbr(ExchXY ? Y : X);
@@ -457,9 +459,9 @@ void ShowXY(BigInteger *X, BigInteger *Y)
   }
 }
 
-static int Show(BigInteger *num, const char *str, enum eLinearSolution t)
+static int Show(const BigInteger *num, const char *str, enum eLinearSolution t)
 {
-  if ((num->nbrLimbs > 1) || (num->limbs[0].x != 0))
+  if (!BigIntIsZero(num))
   {     // num is not zero.
     if (((t & 1) != 0) && (num->sign == SIGN_POSITIVE))
     {
@@ -473,11 +475,8 @@ static int Show(BigInteger *num, const char *str, enum eLinearSolution t)
     }
     if ((num->nbrLimbs != 1) || (num->limbs[0].x != 1))
     {    // num is not 1 or -1.
-      int signTemp = num->sign;
-      num->sign = SIGN_POSITIVE;
       *ptrOutput++ = ' ';
-      BigInteger2Dec(num, ptrOutput, groupLen);
-      num->sign = signTemp;
+      Bin2Dec(num->limbs, ptrOutput, num->nbrLimbs, groupLen);
       ptrOutput += strlen(ptrOutput);
       (void)strcpy(ptrOutput, "&nbsp;&#8290;");
     }
@@ -495,22 +494,20 @@ static int Show(BigInteger *num, const char *str, enum eLinearSolution t)
   return t;
 }
 
-static void Show1(BigInteger *num, enum eLinearSolution t)
+static void Show1(const BigInteger *num, enum eLinearSolution t)
 {
   int u = Show(num, "", t);
   *ptrOutput++ = ' ';
   if (((u & 1) == 0) || ((num->nbrLimbs == 1) && (num->limbs[0].x == 1)))
-  {
-    enum eSign sign = num->sign;
-    num->sign = SIGN_POSITIVE;
-    BigInteger2Dec(num, ptrOutput, groupLen);
-    num->sign = sign;
+  {          // Show absolute value of num.
+    Bin2Dec(num->limbs, ptrOutput, num->nbrLimbs, groupLen);
     ptrOutput += strlen(ptrOutput);
   }
 }
 
-static void ShowEq(BigInteger *coeffA, BigInteger *coeffB, BigInteger *coeffC, 
-  BigInteger *coeffD, BigInteger *coeffE, BigInteger *coeffF, char *x, char *y)
+static void ShowEq(const BigInteger *coeffA, const BigInteger *coeffB, const BigInteger *coeffC, 
+  const BigInteger *coeffD, const BigInteger *coeffE, const BigInteger *coeffF,
+  const char *x, const char *y)
 {
   char var[30];
   char *ptrVar;
@@ -541,7 +538,7 @@ static void ShowEq(BigInteger *coeffA, BigInteger *coeffB, BigInteger *coeffC,
   Show1(coeffF, t);
 }
 
-static void showFactors(BigInteger *value)
+static void showFactors(const BigInteger *value)
 {
   const struct sFactors *pstFactor;
   int numFactors = astFactorsMod[0].multiplicity;
@@ -690,7 +687,6 @@ void SolveQuadModEquation(void)
 {
   int expon;
   int T1;
-  int E;
   static BigInteger GcdAll;
   static BigInteger ValNn;
   static BigInteger z;
@@ -1167,7 +1163,9 @@ void SolveQuadModEquation(void)
               // Step 6. Find the smallest value of k such that w^(2^k) = 1 (mod p)
               // Step 7. Set d <- y^(2^(r-k-1)) mod p, y <- d^2 mod p, r <- k, v <- dv mod p, w <- wy mod p.
               // Step 8. Go to step 5.
-              int x, e, r;
+              int x;
+              int e;
+              int r;
               // Step 1.
               subtractdivide(&Q, 1, 1);   // Q <- (prime-1).
               DivideBigNbrByMaxPowerOf2(&e, Q.limbs, &Q.nbrLimbs);
@@ -1418,7 +1416,7 @@ void SolveQuadModEquation(void)
       IntArray2BigInteger(pstFactor->ptrFactor, &prime);
       BigIntPowerIntExp(&prime, pstFactor->multiplicity, &K1);
       CopyBigInt(&prime, &K1);
-      for (E = 0; E<T1; E++)
+      for (int E = 0; E<T1; E++)
       {
         if (astFactorsMod[E + 1].multiplicity == 0)
         {
@@ -1487,7 +1485,7 @@ void SolveQuadModEquation(void)
   }
 }
 
-static void paren(BigInteger *num)
+static void paren(const BigInteger *num)
 {
   if (num->sign == SIGN_NEGATIVE)
   {
@@ -2198,7 +2196,7 @@ static void callbackQuadModParabolic(BigInteger *value)
   }
 }
 
-static void ShowPoint(BigInteger *X, BigInteger *Y)
+static void ShowPoint(const BigInteger *X, const BigInteger *Y)
 {
   int solution = 0;
   if (teach)
@@ -2283,7 +2281,6 @@ static void ShowPoint(BigInteger *X, BigInteger *Y)
 static void NonSquareDiscriminant(void)
 {
   enum eSign ValKSignBak;
-  int factorNbr;
   int numFactors;
   struct sFactors *pstFactor;
              // Find GCD(a,b,c)
@@ -2317,7 +2314,7 @@ static void NonSquareDiscriminant(void)
   nbrPrimesEvenMultiplicity = 0;
   numFactors = astFactorsMod[0].multiplicity;
   pstFactor = &astFactorsMod[1];
-  for (factorNbr = 1; factorNbr <= numFactors; factorNbr++)
+  for (int factorNbr = 1; factorNbr <= numFactors; factorNbr++)
   {
     if (pstFactor->multiplicity > 1)
     {      // At least prime is squared.
@@ -3689,8 +3686,8 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
   CopyBigInt(value, &Tmp[11]);   // Restore value.
 }
 
-static void ShowRecSol(char variable, BigInteger *coefX,
-                       BigInteger *coefY, BigInteger *coefInd)
+static void ShowRecSol(char variable, const BigInteger *coefX,
+                       const BigInteger *coefY, const BigInteger *coefInd)
 {
   enum eLinearSolution t;
   *ptrOutput++ = variable;
@@ -3700,7 +3697,7 @@ static void ShowRecSol(char variable, BigInteger *coefX,
   Show1(coefInd, t);
 }
 
-static void ShowResult(const char *text, BigInteger *value)
+static void ShowResult(const char *text, const BigInteger *value)
 {
   showText(text);
   showText(" = ");

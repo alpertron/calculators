@@ -44,14 +44,12 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
   limb mostSignficLimb;
   limb oldLimb;
   limb newLimb;
-  int index2;
-  int mask;
   int shLeft;
   limb *ptrDest;
 
   shLeft = 0;
   mostSignficLimb.x = (number + len - 1)->x;
-  for (mask = LIMB_RANGE/2; mask > 0; mask >>= 1)
+  for (int mask = LIMB_RANGE/2; mask > 0; mask >>= 1)
   {
     if ((mostSignficLimb.x & mask) != 0)
     {
@@ -62,7 +60,7 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
   ptrDest = dest;
   // Multiply number by this power.
   oldLimb.x = 0;
-  for (index2 = len; index2 > 0; index2--)
+  for (int index2 = len; index2 > 0; index2--)
   {
     newLimb.x = ptrDest->x;
     (ptrDest++)->x = ((newLimb.x << shLeft) |
@@ -236,15 +234,14 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
   else
   {        // Divisor has more than 32 limbs. Use Newton algorithm 
            // to find the inverse and then multiply by dividend.
-    int index;
     int bitLength;
     int bitLengthNbrCycles;
     int idx;
     int nbrLimbsQuotient;
     int power2;
     limb *ptrDest;
-    limb *ptrDivisor;
-    limb *ptrDividend;
+    const limb *ptrDivisor;
+    const limb *ptrDividend;
     limb *ptrQuotient;
     limb *ptrQuot;
     
@@ -330,7 +327,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     // Shift left quotient power2 bits into result.
     ptrDest = &approxInv[nbrLimbs - 1];
     oldLimb.x = 0;
-    for (index = nbrLimbs; index >= 0; index--)
+    for (int index = nbrLimbs; index >= 0; index--)
     {
       newLimb.x = ptrDest->x;
       (ptrDest++)->x = ((newLimb.x << power2) |

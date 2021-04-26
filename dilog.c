@@ -138,7 +138,8 @@ static void indicateCannotComputeLog(int indexBase, int indexExp)
   DiscreteLogPeriod.sign = SIGN_NEGATIVE;
 }
 
-static bool ComputeDLogModSubGroupOrder(int indexBase, int indexExp, BigInteger *bigExp, BigInteger *bigSubGroupOrder)
+static bool ComputeDLogModSubGroupOrder(int indexBase, int indexExp, 
+  BigInteger *bigExp, const BigInteger *bigSubGroupOrder)
 {
   // Set tmpBase to 1 in Montgomery notation.
   (void)memcpy(tmpBase.limbs, MontgomeryMultR1, NumberLength * sizeof(limb));
@@ -273,7 +274,7 @@ void DiscreteLogarithm(void)
     NumberLength = mod.nbrLimbs;
     (void)memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
     TestNbr[NumberLength].x = 0;
-    //    yieldFreq = 1000000 / (NumberLength*NumberLength);
+    //    yieldFreq = 1000000 / (NumberLength*NumberLength)
     GetMontgomeryParms(NumberLength);
 #if 0
     char *ptrText = textExp;
