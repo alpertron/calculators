@@ -1774,7 +1774,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
 #ifdef __EMSCRIPTEN__
 char *ShowFactoredPart(BigInteger *pNbr, const void *vFactors)
 {
-  struct sFactors *pstFactors = (struct sFactors *)vFactors;
+  const struct sFactors *pstFactors = (const struct sFactors *)vFactors;
   ptrLowerText = lowerText;
   *ptrLowerText++ = '3';
   if ((vFactors != NULL) && (pstFactors->multiplicity > 1))
@@ -1890,7 +1890,7 @@ static void ecm(BigInteger *N, const struct sFactors *pstFactors)
   StepECM = 0; /* do not show pass number on screen */
 }
 
-void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, int doFactorization)
+void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOutput, int doFactorization)
 {
   char *ptrOutput = *pptrOutput;
   (void)strcpy(ptrOutput, tofactorDec);

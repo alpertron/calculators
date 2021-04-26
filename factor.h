@@ -70,7 +70,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor);
 extern int nbrToFactor[MAX_LEN];
 extern struct sFactors astFactorsMod[MAX_FACTORS];
 extern int factorsMod[20000];
-void SendFactorizationToOutput(struct sFactors *pstFactors, char **pptrOutput, int doFactorization);
+void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOutput, int doFactorization);
 void Totient(BigInteger *result);
 void NumFactors(BigInteger* result);
 void MinFactor(BigInteger* result);

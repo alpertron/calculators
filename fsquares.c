@@ -60,6 +60,8 @@ static int nbrModExp;
 static bool Computing3Squares;
 #ifdef __EMSCRIPTEN__
   static char tmpOutput[MAX_LEN*12];
+#endif
+#ifdef FSQUARES_APP
   static char* square = "<span class=\"bigger\">²</span>";
 #endif
 int app;
