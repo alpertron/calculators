@@ -83,6 +83,8 @@ extern int percentageBPSW;
 
 void multiply(const limb* factor1, const limb* factor2, limb* result,
   int len, int* pResultLen);
+void multiplyWithBothLen(const limb* factor1, const limb* factor2, limb* result,
+  int len1, int len2, int* pResultLen);
 void squareRoot(const limb *argument, limb *sqRoot, int len, int *pLenSqRoot);
 void Dec2Bin(const char *decimal, limb *binary, int digits, int *bitGroups);
 void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength);
@@ -112,9 +114,10 @@ void BigIntChSign(BigInteger *value);
 void BigIntAdd(const BigInteger *pAddend1, const BigInteger *pAddend2, BigInteger *pSum);
 void BigIntSubt(const BigInteger* pMinuend, const BigInteger* pSubtrahend, BigInteger* pDifference);
 void BigIntNegate(const BigInteger *pSrc, BigInteger *pDest);
-enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteger *pQuotient);
-enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInteger *pProduct);
-enum eExprErr BigIntRemainder(BigInteger *pDividend, BigInteger *pDivisor, BigInteger *pRemainder);
+enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivisor, BigInteger *pQuotient);
+enum eExprErr BigIntMultiply(const BigInteger *pFactor1, const BigInteger *pFactor2, BigInteger *pProduct);
+enum eExprErr BigIntRemainder(const BigInteger* pDividend,
+  const BigInteger* pDivisor, BigInteger* pRemainder);
 enum eExprErr BigIntPower(const BigInteger *pBase, const BigInteger *pExponent, BigInteger *pPower);
 enum eExprErr BigIntPowerIntExp(const BigInteger *pBase, int exponent, BigInteger *pPower);
 void floordiv(BigInteger *num, BigInteger *den, BigInteger *result);
@@ -124,13 +127,14 @@ void BigIntDivideBy2(BigInteger *nbr);
 void BigInteger2Dec(const BigInteger *pBigInt, char *decimal, int groupLength);
 void BigInteger2Hex(const BigInteger *pBigInt, char *decimal, int groupLength);
 void BigIntGcd(const BigInteger *pArg1, const BigInteger *pArg2, BigInteger *pResult);
-void BigIntGeneralModularDivision(BigInteger *Num, BigInteger *Den, 
+void BigIntGeneralModularDivision(const BigInteger *Num, const BigInteger *Den, 
   const BigInteger *mod, BigInteger *quotient);
-void BigIntModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient);
+void BigIntModularDivision(const BigInteger* Num, const BigInteger* Den,
+  const BigInteger* mod, BigInteger* quotient);
 void BigIntModularDivisionPower2(const BigInteger* Num, const BigInteger* Den,
   const BigInteger* mod, BigInteger* quotient);
-void BigIntModularDivisionSaveTestNbr(BigInteger *Num, BigInteger *Den,
-  BigInteger *mod, BigInteger *quotient);
+void BigIntModularDivisionSaveTestNbr(const BigInteger* Num, const BigInteger* Den,
+  const BigInteger* mod, BigInteger* quotient);
 void multint(BigInteger *pResult, const BigInteger *pMult, int factor);
 void multadd(BigInteger *pResult, int iMult, const BigInteger *pMult, int addend);
 void addmult(BigInteger* pResult, const BigInteger* pMult1, int iMult1,
@@ -174,7 +178,7 @@ bool checkOne(const limb *value, int nbrLimbs);
 bool checkMinusOne(const limb *value, int nbrLimbs);
 void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs);
 void BigIntModularPower(const BigInteger *base, const BigInteger *exponent, BigInteger *power);
-enum eExprErr BigIntGeneralModularPower(BigInteger* base, const BigInteger* exponent,
+enum eExprErr BigIntGeneralModularPower(const BigInteger* base, const BigInteger* exponent,
   const BigInteger* mod, BigInteger* power);
 
 void ChSignBigNbr(int *nbr, int length);
@@ -205,7 +209,8 @@ int JacobiSymbol(int upper, int lower);
 int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower);
 void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs);
 void smallmodmult(int factor1, int factor2, limb *product, int mod);
-void fftMultiplication(const limb *factor1, const limb *factor2, limb *result, int len, int *pResultLen);
+void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
+  int len1, int len2, int *pResultLen);
 
 typedef void(*mmCback)(void);
 void GaussianGCD(BigInteger *realA, BigInteger *imagA, BigInteger *realB, BigInteger *imagB,

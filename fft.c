@@ -377,7 +377,8 @@ static int ReduceLimbs(const limb *factor, complex *fftFactor, int len)
    Delete leading zeros.
 #endif
 
-void fftMultiplication(const limb *factor1, const limb *factor2, limb *result, int len, int *pResultLen)
+void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
+  int len1, int len2, int *pResultLen)
 {
   complex *ptrFirst;
   complex *ptrSecond;
@@ -385,27 +386,38 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result, i
   double invPower2;
   double dCarry;
   int fftLen;
+  int fftLen1;
+  int fftLen2 = 0;
   int bitExternal;
   int power2plus1;
   limb *ptrResult;
-  fftLen = ReduceLimbs(factor1, firstFactor, len);
-  if (factor1 != factor2 && !(TestNbrCached == NBR_CACHED && factor2 == TestNbr) &&
-    !(MontgomeryMultNCached == NBR_CACHED && factor2 == MontgomeryMultN))
-  {
-    ReduceLimbs(factor2, secondFactor, len);
-  }
-  // Get next power of 2 to len.
   int power2 = 1;
   int index;
+  int sumLen;
+  fftLen1 = ReduceLimbs(factor1, firstFactor, len1);
+  if ((factor1 != factor2) && !((TestNbrCached == NBR_CACHED) && (factor2 == TestNbr)) &&
+    !((MontgomeryMultNCached == NBR_CACHED) && (factor2 == MontgomeryMultN)))
+  {
+    fftLen2 = ReduceLimbs(factor2, secondFactor, len2);
+  }
+  // Get next power of 2 to len (the greatest of the two lengths).
+  fftLen = fftLen1;
+  if (fftLen < fftLen2)
+  {
+    fftLen = fftLen2;
+  }
   while (power2 < fftLen)
   {
     power2 *= 2;
   }
   power2 += power2;
-  for (index = fftLen; index < power2; index++)
+  for (index = fftLen1; index < power2; index++)
   {
     firstFactor[index].real = 0;
     firstFactor[index].imaginary = 0;
+  }
+  for (index = fftLen2; index < power2; index++)
+  {
     secondFactor[index].real = 0;
     secondFactor[index].imaginary = 0;
   }
@@ -462,7 +474,8 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result, i
   ptrProduct = transf;
   invPower2 = (double)1 / ((double)(power2 * 8));
   dCarry = 0;
-  (void)memset(result, 0, 2*len * sizeof(limb));
+  sumLen = len1 + len2;
+  (void)memset(result, 0, sumLen * sizeof(limb));
   bitExternal = 0;
   ptrResult = result;
   for (index = 0; index < power2; index++)
@@ -483,7 +496,7 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result, i
     if (bitExternal >= BITS_PER_GROUP)
     {
       bitExternal -= BITS_PER_GROUP;
-      if (++ptrResult - result == 2 * len)
+      if (++ptrResult - result == sumLen)
       {
         break;
       }
@@ -503,7 +516,7 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result, i
     if (bitExternal >= BITS_PER_GROUP)
     {
       bitExternal -= BITS_PER_GROUP;
-      if (++ptrResult - result == 2 * len)
+      if (++ptrResult - result == sumLen)
       {
         break;
       }
@@ -512,10 +525,10 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result, i
   }
   if (pResultLen != NULL)
   {
-    if ((result + len - 1)->x == 0)
+    while ((sumLen > 1) && ((result + sumLen - 1)->x == 0))
     {
-      len--;
+      sumLen--;
     }
-    *pResultLen = len;
+    *pResultLen = sumLen;
   }
 }

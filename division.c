@@ -74,7 +74,7 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
 // After computing the number of limbs of the results, this routine finds the inverse
 // of the divisor and then multiplies it by the dividend using nbrLimbs+1 limbs.
 // After that, the quotient is adjusted.
-enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteger *pQuotient)
+enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivisor, BigInteger *pQuotient)
 {
   double inverse;
   limb oldLimb;
@@ -151,12 +151,15 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
 
     (void)memcpy(adjustedArgument, pDividend->limbs, nbrLimbsDividend * sizeof(limb));
     adjustedArgument[nbrLimbsDividend].x = 0;
-    pDivisor->limbs[pDivisor->nbrLimbs].x = 0;
     pQuotient->nbrLimbs = nbrLimbsDividend - nbrLimbsDivisor + 1;
     ptrQuotient = &pQuotient->limbs[nbrLimbsDividend - nbrLimbsDivisor];
     dInvDivisor = 1/getMantissa(&pDivisor->limbs[nbrLimbsDivisor], nbrLimbsDivisor);
     for (; nbrLimbsDividend >= nbrLimbsDivisor; nbrLimbsDividend--)
     {
+#ifndef _USING64BITS_
+      int low;
+      double dAccumulator;
+#endif
       dNbr = getMantissa(&adjustedArgument[nbrLimbsDividend+1], nbrLimbsDividend+1)*LIMB_RANGE;
       TrialQuotient = (int)(unsigned int)floor(dNbr * dInvDivisor + 0.5);
       if ((unsigned int)TrialQuotient >= LIMB_RANGE)
@@ -171,17 +174,17 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
       carry = 0;
       ptrDividend = &adjustedArgument[nbrLimbsDividend - nbrLimbsDivisor];
       ptrDivisor = pDivisor->limbs;
-      for (i = 0; i <= nbrLimbsDivisor; i++)
+      for (i = 0; i < nbrLimbsDivisor; i++)
       {
 #ifdef _USING64BITS_
         carry += (int64_t)ptrDividend->x - ptrDivisor->x * (int64_t)TrialQuotient;
         ptrDividend->x = (int)carry & MAX_VALUE_LIMB;
         carry >>= BITS_PER_GROUP;
 #else
-        int low = (ptrDividend->x - ptrDivisor->x * TrialQuotient + carry) & MAX_INT_NBR;
+        low = (ptrDividend->x - ptrDivisor->x * TrialQuotient + carry) & MAX_INT_NBR;
         // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
         // In that case, there would be an error of +/- 1.
-        double dAccumulator = ptrDividend->x - ptrDivisor->x * dTrialQuotient + carry + dDelta;
+        dAccumulator = ptrDividend->x - ptrDivisor->x * dTrialQuotient + carry + dDelta;
         dDelta = 0;
         if (dAccumulator < 0)
         {
@@ -201,6 +204,33 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
         ptrDividend++;
         ptrDivisor++;
       }
+#ifdef _USING64BITS_
+      carry += (int64_t)ptrDividend->x;
+      ptrDividend->x = (int)carry & MAX_VALUE_LIMB;
+      carry >>= BITS_PER_GROUP;
+#else
+      low = (ptrDividend->x + carry) & MAX_INT_NBR;
+      // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
+      // In that case, there would be an error of +/- 1.
+      dAccumulator = ptrDividend->x + carry + dDelta;
+      dDelta = 0;
+      if (dAccumulator < 0)
+      {
+        dAccumulator += dSquareLimb;
+        dDelta = -(double)LIMB_RANGE;
+      }
+      if (low < HALF_INT_RANGE)
+      {
+        carry = (int)floor((dAccumulator + HALF_INT_RANGE / 2) * dVal);
+      }
+      else
+      {
+        carry = (int)floor((dAccumulator - HALF_INT_RANGE / 2) * dVal);
+      }
+      ptrDividend->x = low;
+#endif
+      ptrDividend++;
+      ptrDivisor++;
       ptrDividend->x = carry & MAX_INT_NBR;
       if ((adjustedArgument[nbrLimbsDividend].x & MAX_VALUE_LIMB) != 0)
       {
@@ -232,7 +262,7 @@ enum eExprErr BigIntDivide(BigInteger *pDividend, BigInteger *pDivisor, BigInteg
     }
   }
   else
-  {        // Divisor has more than 32 limbs. Use Newton algorithm 
+  {        // Divisor has more than 64 limbs. Use Newton algorithm 
            // to find the inverse and then multiply by dividend.
     int bitLength;
     int bitLengthNbrCycles;

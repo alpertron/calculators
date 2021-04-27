@@ -1654,7 +1654,7 @@ static int ComputeSumDigits(void)
   static BigInteger argum;
   static BigInteger Temp;
   BigInteger *result = &curStack;
-  BigInteger *radix = &curStack2;
+  const BigInteger *radix = &curStack2;
   CopyBigInt(&argum, &curStack);
   intToBigInteger(result, 0);
   while (!BigIntIsZero(&argum))
@@ -1673,7 +1673,7 @@ static int ComputeNumDigits(void)
   getCurrentStackValue(&curStack2);   // Get second argument.
   stackIndex--;
   BigInteger *result = &curStack;
-  BigInteger *radix = &curStack2;
+  const BigInteger *radix = &curStack2;
   int digits = 0;
   while (!BigIntIsZero(result))
   {
@@ -1693,7 +1693,7 @@ static int ComputeRevDigits(void)
   static BigInteger argum;
   static BigInteger Temp;
   BigInteger *result = &curStack;
-  BigInteger *radix = &curStack2;
+  const BigInteger *radix = &curStack2;
   CopyBigInt(&argum, &curStack);
   intToBigInteger(result, 0);
   while (!BigIntIsZero(&argum))

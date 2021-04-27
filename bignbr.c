@@ -255,12 +255,12 @@ void BigIntSubt(const BigInteger *pMinuend, const BigInteger *pSubtrahend, BigIn
   }
 }
 
-enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInteger *pProduct)
+enum eExprErr BigIntMultiply(const BigInteger *pFactor1, const BigInteger *pFactor2, BigInteger *pProduct)
 {
   int nbrLimbsFactor1 = pFactor1->nbrLimbs;
   int nbrLimbsFactor2 = pFactor2->nbrLimbs;
   int nbrLimbs;
-  BigInteger *temp;
+  const BigInteger *temp;
   if ((pFactor1->nbrLimbs == 1) || (pFactor2->nbrLimbs == 1))
   {       // At least one the factors has only one limb.
     int factor2;
@@ -289,17 +289,8 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
        // Use classical multiplication.
    // return EXPR_OK
   }
-  if (nbrLimbsFactor1 < nbrLimbsFactor2)
-  {
-    (void)memset(&pFactor1->limbs[nbrLimbsFactor1], 0, (nbrLimbsFactor2 - nbrLimbsFactor1)*sizeof(limb));
-    nbrLimbs = nbrLimbsFactor2;
-  }
-  else
-  {
-    (void)memset(&pFactor2->limbs[nbrLimbsFactor2], 0, (nbrLimbsFactor1 - nbrLimbsFactor2)*sizeof(limb));
-    nbrLimbs = nbrLimbsFactor1;
-  }
-  multiply(&pFactor1->limbs[0], &pFactor2->limbs[0], &pProduct->limbs[0], nbrLimbs, &nbrLimbs);
+  multiplyWithBothLen(&pFactor1->limbs[0], &pFactor2->limbs[0], &pProduct->limbs[0],
+    nbrLimbsFactor1, nbrLimbsFactor2, &nbrLimbs);
   nbrLimbs = nbrLimbsFactor1 + nbrLimbsFactor2;
   if (pProduct->limbs[nbrLimbs - 1].x == 0)
   {
@@ -324,7 +315,8 @@ enum eExprErr BigIntMultiply(BigInteger *pFactor1, BigInteger *pFactor2, BigInte
   return EXPR_OK;
 }
 
-enum eExprErr BigIntRemainder(BigInteger *pDividend, BigInteger *pDivisor, BigInteger *pRemainder)
+enum eExprErr BigIntRemainder(const BigInteger *pDividend,
+  const BigInteger *pDivisor, BigInteger *pRemainder)
 {
   enum eExprErr rc;
   if (BigIntIsZero(pDivisor))

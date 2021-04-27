@@ -62,14 +62,24 @@ static void Karatsuba(int idxFactor1, int nbrLen);
   uint32_t factor1_##n = arr[idxFactor1 + n].x;                         \
   uint32_t prod_iPlus##n = 0
 
-void multiply(const limb *factor1, const limb *factor2, limb *result,
-  int len, int *pResultLen)
+void multiply(const limb* factor1, const limb* factor2, limb* result,
+  int len, int* pResultLen)
 {
-  int length = len;
+  multiplyWithBothLen(factor1, factor2, result, len, len, pResultLen);
+}
+
+void multiplyWithBothLen(const limb *factor1, const limb *factor2, limb *result,
+  int len1, int len2, int *pResultLen)
+{  // Compute the maximum length.
+  int length = len1;
+  if (length < len2)
+  {
+    length = len2;
+  }
 #if defined(FACTORIZATION_APP) || defined(BIGCALC_APP)
   if (length > 100)
   {
-    fftMultiplication(factor1, factor2, result, len, pResultLen);
+    fftMultiplication(factor1, factor2, result, len1, len2, pResultLen);
     return;
   }
 #endif
@@ -86,14 +96,14 @@ void multiply(const limb *factor1, const limb *factor2, limb *result,
   }
   karatLength = length;
   (void)memset(arr, 0, 2 * length*sizeof(limb));
-  (void)memcpy(&arr[0], factor1, len*sizeof(limb));
-  (void)memcpy(&arr[length], factor2, len*sizeof(limb));
+  (void)memcpy(&arr[0], factor1, len1*sizeof(limb));
+  (void)memcpy(&arr[length], factor2, len2*sizeof(limb));
   Karatsuba(0, length);
   (void)memcpy(result, &arr[2 * (karatLength - length)], 2 * length * sizeof(limb));
   if (pResultLen != NULL)
   {
     (void)memcpy(result, &arr[2 * (karatLength - length)], 2 * length * sizeof(limb));
-    if (karatLength > length && arr[2 * (karatLength - length)-1].x == 0)
+    if ((karatLength > length) && (arr[2 * (karatLength - length)-1].x == 0))
     {
       *pResultLen = length * 2 - 1;
     }

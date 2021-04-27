@@ -1988,7 +1988,8 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
 }
 
 // Compute modular division for odd moduli.
-void BigIntModularDivision(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient)
+void BigIntModularDivision(const BigInteger *Num, const BigInteger *Den,
+  const BigInteger *mod, BigInteger *quotient)
 {
   NumberLength = mod->nbrLimbs;
   // Reduce Num modulo mod.
@@ -2044,7 +2045,8 @@ void BigIntModularDivisionPower2(const BigInteger *Num, const BigInteger *Den,
   NumberLength = NumberLengthBak;
 }
 
-void BigIntModularDivisionSaveTestNbr(BigInteger *Num, BigInteger *Den, BigInteger *mod, BigInteger *quotient)
+void BigIntModularDivisionSaveTestNbr(const BigInteger *Num, const BigInteger *Den,
+  const BigInteger *mod, BigInteger *quotient)
 {
   int NumberLengthBak = NumberLength;
   (void)memcpy(U, TestNbr, (NumberLength + 1) * sizeof(limb));
@@ -2092,7 +2094,7 @@ static void ChineseRemainderTheorem(int shRight, BigInteger *result)
 // so the division is done separately by calculating the division modulo
 // n/2^k (n odd) and 2^k and then merge the results using Chinese Remainder
 // Theorem.
-void BigIntGeneralModularDivision(BigInteger *Num, BigInteger *Den, 
+void BigIntGeneralModularDivision(const BigInteger *Num, const BigInteger *Den, 
    const BigInteger *mod, BigInteger *quotient)
 {
   int shRight;
@@ -2134,7 +2136,7 @@ void BigIntGeneralModularDivision(BigInteger *Num, BigInteger *Den,
 // so the division is done separately by calculating the division modulo
 // n/2^k (n odd) and 2^k and then merge the results using Chinese Remainder
 // Theorem.
-enum eExprErr BigIntGeneralModularPower(BigInteger *base, const BigInteger *exponent, 
+enum eExprErr BigIntGeneralModularPower(const BigInteger *base, const BigInteger *exponent, 
   const BigInteger *mod, BigInteger *power)
 {
   int shRight;

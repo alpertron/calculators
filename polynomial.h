@@ -103,7 +103,7 @@ void outputPolynomialFactor(char* ptrOutput, int groupLength, const struct sFact
 int DerPolynomial(int *ptrArgument);
 void PolynomialGcd(int *argF, int *argG, int *gcd);
 int DivideIntegerPolynomial(int *pDividend, const int *pDivisor, enum eDivType type);
-int getModPolynomial(int *polyMod, const int *poly, BigInteger *content);
+int getModPolynomial(int *polyMod, const int *poly, const BigInteger *content);
 int *CopyPolynomial(int *ptrDest, const int *ptrSrc, int polyDegree);
 int *CopyPolynomialFixedCoeffSize(int *ptrDest, const int *ptrSrc, int degree, int coeffSize);
 void computePower(int expo);

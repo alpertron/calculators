@@ -719,7 +719,7 @@ int *CopyPolyProduct(const int *ptrSrc, int *ptrDest, int polyDegree)
   return ptrValueDest;
 }
 
-static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
+static int MultPolynomialExpr(int *ptrArgument1, const int *ptrArgument2)
 {
   int degreeMono;
   int degreePoly;
@@ -729,6 +729,7 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
   int currentDegree;
   int degree1 = *ptrArgument1;
   int degree2 = *ptrArgument2;
+  const int* ptrValueSrc;
   if ((degree1 <= 0) && (degree2 <= 0))
   {        // Product of two monomials.
     if (degree1 + degree2 < -MAX_DEGREE)
@@ -775,12 +776,12 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
         ptrValue2 += nbrLimbs;
       }
       // Copy second factor to poly2
-      ptrValue1 = ptrArgument2 + 1;
+      ptrValueSrc = ptrArgument2 + 1;
       ptrValue2 = poly2;
       for (currentDegree = 0; currentDegree <= degree2; currentDegree++)
       {
-        (void)memcpy(ptrValue2, ptrValue1, (1 + *ptrValue1) * sizeof(int));
-        ptrValue1 += 1 + *ptrValue1;
+        (void)memcpy(ptrValue2, ptrValueSrc, (1 + *ptrValueSrc) * sizeof(int));
+        ptrValueSrc += 1 + *ptrValueSrc;
         ptrValue2 += nbrLimbs;
       }
     }
@@ -811,9 +812,37 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
     degreeMono = -degree1;
     degreePoly = degree2;
          // Point to first coefficient of polynomial.
-    ptrValue1 = ptrArgument2 + 1;
+    ptrValueSrc = ptrArgument2 + 1;
          // Get coefficient of monomial.
     UncompressBigIntegerB(ptrArgument1 + 1, &operand1);
+    if (degreeMono + degreePoly > MAX_DEGREE)
+    {
+      return EXPR_DEGREE_TOO_HIGH;
+    }
+    // Multiply all coefficients of polynomial by the coefficient
+    // of monomial storing the resulting polynomial on poly1.
+    ptrValue2 = poly1;    // Initialize pointer to product.
+    for (currentDegree = 0; currentDegree < degreeMono; currentDegree++)
+    {
+      *ptrValue2++ = 1;
+      *ptrValue2++ = 0;
+    }
+    for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
+    {
+      UncompressBigIntegerB(ptrValueSrc, &operand2);
+      ptrValueSrc += 1 + numLimbs(ptrValueSrc);
+      if (modulusIsZero)
+      {
+        BigIntMultiply(&operand1, &operand2, &operand3);
+        NumberLength = operand3.nbrLimbs;
+      }
+      else
+      {
+        modmult(operand1.limbs, operand2.limbs, operand3.limbs);
+      }
+      BigInteger2IntArray(ptrValue2, &operand3);
+      ptrValue2 += 1 + numLimbs(ptrValue2);
+    }
   }
   else
   {      // Second factor is monomial.
@@ -823,34 +852,34 @@ static int MultPolynomialExpr(int *ptrArgument1, int *ptrArgument2)
     ptrValue1 = ptrArgument1 + 1;
          // Get coefficient of monomial.
     UncompressBigIntegerB(ptrArgument2 + 1, &operand1);
-  }
-  if (degreeMono + degreePoly > MAX_DEGREE)
-  {
-    return EXPR_DEGREE_TOO_HIGH;
-  }
-     // Multiply all coefficients of polynomial by the coefficient
-     // of monomial storing the resulting polynomial on poly1.
-  ptrValue2 = poly1;    // Initialize pointer to product.
-  for (currentDegree = 0; currentDegree < degreeMono; currentDegree++)
-  {
-    *ptrValue2++ = 1;
-    *ptrValue2++ = 0;
-  }
-  for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
-  {
-    UncompressBigIntegerB(ptrValue1, &operand2);
-    if (modulusIsZero)
+    if (degreeMono + degreePoly > MAX_DEGREE)
     {
-      BigIntMultiply(&operand1, &operand2, &operand3);
-      NumberLength = operand3.nbrLimbs;
+      return EXPR_DEGREE_TOO_HIGH;
     }
-    else
+    // Multiply all coefficients of polynomial by the coefficient
+    // of monomial storing the resulting polynomial on poly1.
+    ptrValue2 = poly1;    // Initialize pointer to product.
+    for (currentDegree = 0; currentDegree < degreeMono; currentDegree++)
     {
-      modmult(operand1.limbs, operand2.limbs, operand3.limbs);
+      *ptrValue2++ = 1;
+      *ptrValue2++ = 0;
     }
-    BigInteger2IntArray(ptrValue2, &operand3);
-    ptrValue1 += 1 + numLimbs(ptrValue1);
-    ptrValue2 += 1 + numLimbs(ptrValue2);
+    for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
+    {
+      UncompressBigIntegerB(ptrValue1, &operand2);
+      ptrValue1 += 1 + numLimbs(ptrValue1);
+      if (modulusIsZero)
+      {
+        BigIntMultiply(&operand1, &operand2, &operand3);
+        NumberLength = operand3.nbrLimbs;
+      }
+      else
+      {
+        modmult(operand1.limbs, operand2.limbs, operand3.limbs);
+      }
+      BigInteger2IntArray(ptrValue2, &operand3);
+      ptrValue2 += 1 + numLimbs(ptrValue2);
+    }
   }
   *ptrArgument1 = degreeMono + degreePoly;
   ptrValue1 = ptrArgument1 + 1;
@@ -1332,7 +1361,7 @@ int *getContent(int *poly, BigInteger *content)
 }
 
 // Get polynomial divided content mod prime.
-int getModPolynomial(int *polyMod, const int *poly, BigInteger *content)
+int getModPolynomial(int *polyMod, const int *poly, const BigInteger *content)
 {
   int currentDegree;
   int degreePoly = *poly++;

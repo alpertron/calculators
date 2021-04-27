@@ -68,7 +68,7 @@ static bool performLehman;
 static int EC;
 static int SmallPrime[670]; /* Primes < 5000 */
 static void add3(limb* x3, limb* z3, const limb* x2, const limb* z2,
-  const limb* x1, const limb* z1, limb* x, limb* z);
+  const limb* x1, const limb* z1, const limb* x, const limb* z);
 static void duplicate(limb* x2, limb* z2, const limb* x1, const limb* z1);
 static BigInteger Temp1;
 static BigInteger Temp2;
@@ -369,7 +369,7 @@ Modifies: x3, z3, u, v, w.
 (x3,z3) may be identical to (x2,z2) and to (x,z)
 */
 static void add3(limb *x3, limb *z3, const limb *x2, const limb *z2,
-                 const limb *x1, const limb *z1, limb *x, limb *z)
+                 const limb *x1, const limb *z1, const limb *x, const limb *z)
 {
   limb *t = common.ecm.fieldTX;
   limb *u = common.ecm.fieldTZ;
@@ -935,7 +935,7 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
   return false;
 }
 
-static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *numToFactor)
+static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFactor)
 {
   bool plus1 = false;
   bool minus1 = false;
@@ -1060,7 +1060,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, BigInteger *numToFactor)
 }
 
 // Perform Lehman algorithm
-static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
+static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
 {
   int bitsSqrLow[] =
   {
@@ -1211,7 +1211,7 @@ static void Lehman(BigInteger *nbr, int k, BigInteger *factor)
   intToBigInteger(factor, 1);   // Factor not found.
 }
 
-static enum eEcmResult ecmCurve(BigInteger *N)
+static enum eEcmResult ecmCurve(const BigInteger *N)
 {
   static BigInteger potentialFactor;
 #ifdef __EMSCRIPTEN__
@@ -1233,7 +1233,6 @@ static enum eEcmResult ecmCurve(BigInteger *N)
     long long L2;
     long long LS;
     long long P;
-    long long IP;
     if (NextEC > 0)
     {
       EC = NextEC;
@@ -1461,7 +1460,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
       {
         indexPrimes++;
         P = SmallPrime[indexM];
-        for (IP = P; IP <= L1; IP *= P)
+        for (long long IP = P; IP <= L1; IP *= P)
         {
           prac((int)P, common.ecm.X, common.ecm.Z, common.ecm.W1, common.ecm.W2, common.ecm.W3, common.ecm.W4);
         }
@@ -1772,7 +1771,7 @@ static enum eEcmResult ecmCurve(BigInteger *N)
   }       /* End curve calculation */
 }
 #ifdef __EMSCRIPTEN__
-char *ShowFactoredPart(BigInteger *pNbr, const void *vFactors)
+char *ShowFactoredPart(const BigInteger *pNbr, const void *vFactors)
 {
   const struct sFactors *pstFactors = (const struct sFactors *)vFactors;
   ptrLowerText = lowerText;
@@ -1816,7 +1815,7 @@ void ShowLowerText(void)
 }
 #endif
 
-static void ecm(BigInteger *N, const struct sFactors *pstFactors)
+static void ecm(const BigInteger *N, const struct sFactors *pstFactors)
 {
   int P;
   int Q;
@@ -2387,7 +2386,7 @@ static int getNextInteger(char **ppcFactors, int *result, char delimiter)
   {   // Exponent is too large.
     return 1;
   }
-  *result = (int)Temp1.limbs[0].x;
+  *result = Temp1.limbs[0].x;
   *ppcFactors = ptrCharFound+1;
   return 0;
 }
@@ -2582,14 +2581,15 @@ static void factorSmallInt(int toFactor, int* factors, struct sFactors* pstFacto
   pstFactors->multiplicity = factorsFound;
 }
 
-void factor(BigInteger* toFactor, const int* number, int* factors, struct sFactors* pstFactors)
+void factor(const BigInteger* toFactor, const int* number, int* factors, struct sFactors* pstFactors)
 {
   factorExt(toFactor, number, factors, pstFactors, NULL);
 }
 
 // pstFactors -> ptrFactor points to end of factors.
 // pstFactors -> multiplicity indicates the number of different factors.
-void factorExt(BigInteger *toFactor, const int *number, int *factors, struct sFactors *pstFactors, char *pcKnownFactors)
+void factorExt(const BigInteger *toFactor, const int *number, 
+  int *factors, struct sFactors *pstFactors, char *pcKnownFactors)
 {
   struct sFactors *pstCurFactor;
   int expon;
@@ -3020,10 +3020,9 @@ void NumFactors(BigInteger* result)
 
 void MinFactor(BigInteger* result)
 {
-  int factorNumber;
   const struct sFactors* pstFactor = &astFactorsMod[1];
   intArrayToBigInteger(pstFactor->ptrFactor, result);
-  for (factorNumber = 2; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
+  for (int factorNumber = 2; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
     intArrayToBigInteger((++pstFactor)->ptrFactor, &factorValue);
     BigIntSubt(&factorValue, result, &factorValue);
