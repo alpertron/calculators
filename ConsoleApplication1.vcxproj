@@ -175,6 +175,7 @@
     <ClCompile Include="intpolfact.c" />
     <ClCompile Include="linkedbignbr.c" />
     <ClCompile Include="multpoly.c" />
+    <ClCompile Include="polyexpr.c" />
     <ClCompile Include="quintics.c" />
     <ClCompile Include="contfrac.c" />
     <ClCompile Include="dilog.c" />

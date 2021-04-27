@@ -78,6 +78,10 @@ extern int degree;
 extern int *ptrOrigPoly;
 extern int degreeOrigPoly;
 extern int polyInvCached;
+extern int valuesIndex;
+extern int poly5[COMPRESSED_POLY_MAX_LENGTH];
+extern int polyNonRepeatedFactors[];
+
 
 typedef void (*powerCback)(int percentage);
 void SetNumberToOne(/*@out@*/int *ptrValue1);
@@ -124,5 +128,5 @@ void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   /*@out@*/int* polyProduct,
   int polyDegree, /*@in@*/int* polyMod);
 void SameDegreeFactorization(void);
-extern int polyNonRepeatedFactors[];
+int DivPolynomialExpr(int* ptrArgument1, int* ptrArgument2, enum eDivType type);
 #endif
