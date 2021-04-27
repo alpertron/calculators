@@ -73,7 +73,7 @@ static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
     char* inputTemp;
     char c = *input;
     char cUppercase;
-    if (c == ' ' || c == 9)
+    if ((c == ' ') || (c == 9))
     {          // Ignore any spaces and tabs.
       input++;
       continue;
@@ -120,7 +120,7 @@ static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
     if (prevTokenIsNumber)
     {
       prevTokenIsNumber = false;
-      if (c == '+' || c == '-')
+      if ((c == '+') || (c == '-'))
       {        // Binary plus or minus
         while (stackOperIndex > 0)
         {      // Send operators to output.
@@ -142,8 +142,8 @@ static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
         }
         stackOper[stackOperIndex++] = c;  // Push operator onto stack.
       }
-      else if (c == '*' || c == '(' || c == '/' || c == '%' ||
-        cUppercase == variableLetter)
+      else if ((c == '*') || (c == '(') || (c == '/') || (c == '%') ||
+        (cUppercase == variableLetter))
       {
         while (stackOperIndex > 0)
         {      // Send operators to output.
@@ -203,7 +203,7 @@ static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
           *ptrOutput++ = TOKEN_START_EXPON;
         }
       }
-      else if (c == ')' || c == ',')
+      else if ((c == ')') || (c == ','))
       {
         s = '\0'; // Assume parenthesis mismatch.
         while (stackOperIndex > 0)
@@ -235,8 +235,8 @@ static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
         {
           if (stackOperIndex > 0)
           {
-            if (stackOper[stackOperIndex - 1] == TOKEN_GCD ||
-              stackOper[stackOperIndex - 1] == TOKEN_DER)
+            if ((stackOper[stackOperIndex - 1] == TOKEN_GCD) ||
+              (stackOper[stackOperIndex - 1] == TOKEN_DER))
             {
               *ptrOutput++ = stackOper[--stackOperIndex];
             }
@@ -369,7 +369,7 @@ static int NegatePolynomialExpr(int* ptrArgument)
   int val = *ptrValue1;
   if (val <= 0)
   {          // Monomial
-    if (*(ptrValue1 + 1) != 1 || *(ptrValue1 + 2) != 0)
+    if ((*(ptrValue1 + 1) != 1) || (*(ptrValue1 + 2) != 0))
     {        // Coefficient is not zero
       if (modulusIsZero)
       {
@@ -635,7 +635,7 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
   ptrValue2 = ptrValue1;
   for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
   {
-    if (*ptrValue1 != 1 || *(ptrValue1 + 1) != 0)
+    if ((*ptrValue1 != 1) || (*(ptrValue1 + 1) != 0))
     {                    // Coefficient is not zero
       degreeMax = currentDegree;
       // Store point to coefficient not zero of maximum degree.

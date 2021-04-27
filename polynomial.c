@@ -248,8 +248,8 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
       prime = smallPrimes[++primeIndex];
       // Ensure that the prime does not divide the modulus or
       // the gcd of the leading coefficients.
-    } while (getRemainder(&modulus, prime) == 0 ||
-      getRemainder(&gcdLeadingCoeff, prime) == 0);
+    } while ((getRemainder(&modulus, prime) == 0) ||
+      (getRemainder(&gcdLeadingCoeff, prime) == 0));
     modulusIsZero = false;
     intToBigInteger(&primeMod, prime);
     computePower(1);
@@ -568,7 +568,7 @@ int DerPolynomial(int *ptrArgument)
       LenAndLimbs2ArrLimbs(ptrSrc, operand1.limbs, nbrLimbs);
       modmultInt(operand1.limbs, degree, operand1.limbs);
       ArrLimbs2LenAndLimbs(ptrDest, operand1.limbs, nbrLimbs);
-      if (*ptrDest != 1 || *(ptrDest + 1) != 0)
+      if ((*ptrDest != 1) || (*(ptrDest + 1) != 0))
       {
         derivDegreePoly = degree-1;
       }
@@ -1597,7 +1597,7 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
   {
     const int* ptrValue1 = ptrPoly + indexes[currentDegree];
     int len = numLimbs(ptrValue1);
-    if (len != 1 || *(ptrValue1 + 1) != 0)
+    if ((len != 1) || (*(ptrValue1 + 1) != 0))
     {            // Coefficient is not zero.
       *ptrOutput++ = ' ';
       if (*ptrValue1 > 0)
@@ -1610,7 +1610,7 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
         ptrOutput += strlen(ptrOutput);
       }
       *ptrOutput++ = ' ';
-      if (len != 1 || *(ptrValue1 + 1) != 1)
+      if ((len != 1) || (*(ptrValue1 + 1) != 1))
       {            // Absolute value of coefficient is not one.
         NumberLength = numLimbs(ptrValue1);
         IntArray2BigInteger(ptrValue1, &operand1);
@@ -1676,7 +1676,7 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
     (void)strcpy(ptrOutput, " &minus;");
     ptrOutput += strlen(ptrOutput);
   }
-  if ((operand1.nbrLimbs != 1 || operand1.limbs[0].x != 1) || degree == 0)
+  if ((operand1.nbrLimbs != 1) || (operand1.limbs[0].x != 1) || (degree == 0))
   {     // Leading coefficient is not 1 or degree is zero.
     Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
@@ -1726,7 +1726,7 @@ void outputPolynomialFactor(char *ptrOutput, int groupLength, const struct sFact
       (void)strcpy(ptrOutput, "&minus;");
       ptrOutput += strlen(ptrOutput);
     }
-    if (operand1.nbrLimbs != 1 || operand1.limbs[0].x != 1)
+    if ((operand1.nbrLimbs != 1) || (operand1.limbs[0].x != 1))
     {     // Absolute value is not 1.
       Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLength);
       ptrOutput += strlen(ptrOutput);

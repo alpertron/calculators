@@ -224,7 +224,7 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
   return EXPR_OK;
 }
 
-int DivPolynomialExpr(int* ptrArgument1, int* ptrArgument2, enum eDivType type)
+int DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType type)
 {
   int currentDegree;
   int degree1 = *ptrArgument1;
