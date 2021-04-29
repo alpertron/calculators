@@ -123,6 +123,9 @@ static int lucas_cost(int n, double v)
       e /= 2;
       c += ADD + DUP; /* one addition, one duplicate */
     }
+    else
+    { /* no more conditions */
+    }
   }
   return c;
 }
@@ -445,13 +448,15 @@ static void GenerateSieve(int initial)
 /*******************************/
 enum eEcmResult ecmStep1(void)
 {
+  int bufSize;
   int I;
   int P;
   int i;
   int u;
   (void)memcpy(common.ecm.Xaux, common.ecm.X, NumberSizeBytes);
   (void)memcpy(common.ecm.Zaux, common.ecm.Z, NumberSizeBytes);
-  (void)memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, (NumberLength + 1) * sizeof(limb));
+  bufSize = (NumberLength + 1) * sizeof(limb);
+  (void)memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, bufSize);
   for (int pass = 0; pass < 2; pass++)
   {
     /* For powers of 2 */
@@ -802,7 +807,7 @@ enum eEcmResult ecmStep2(void)
         continue;
       }
       // GD <- GCD(GcdAccumulated, TestNbr)
-      if (memcmp(common.ecm.GD, TestNbr, NumberSizeBytes))
+      if (memcmp(common.ecm.GD, TestNbr, NumberSizeBytes) != 0)
       {           // GCD is not 1 or TestNbr
         return FACTOR_FOUND;
       }
@@ -815,7 +820,7 @@ static void initSmallPrimeArray(void)
 {
   int potentialPrime = 3;
   SmallPrime[0] = 2;
-  for (indexM = 1; indexM < sizeof(SmallPrime) / sizeof(SmallPrime[0]); indexM++)
+  for (indexM = 1; indexM < (int)(sizeof(SmallPrime) / sizeof(SmallPrime[0])); indexM++)
   {     // Loop that fills the SmallPrime array.
     int divisor;
     SmallPrime[indexM] = potentialPrime; /* Store prime */
@@ -838,7 +843,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
   int EC = *pEC;
   int NextEC = *pNextEC;
   enum eEcmResult result;
-  NumberSizeBytes = NumberLength * sizeof(limb);
+  NumberSizeBytes = NumberLength * (int)sizeof(limb);
 #ifdef __EMSCRIPTEN__
   char text[20];
 #endif
@@ -859,8 +864,9 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
       NextEC = -1;
       if (EC >= TYP_SIQS)
       {
+        int bufSize = (NumberLength - 1) * sizeof(limb);
         common.ecm.GD[0].x = 1;   // Set GD to 1.
-        (void)memset(&common.ecm.GD[1], 0, (NumberLength - 1) * sizeof(limb));
+        (void)memset(&common.ecm.GD[1], 0, bufSize);
         *pEC = EC;
         *pNextEC = NextEC;
         return FACTOR_FOUND;
