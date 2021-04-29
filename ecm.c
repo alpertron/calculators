@@ -56,12 +56,10 @@ static void duplicate(limb* x2, limb* z2, const limb* x1, const limb* z1);
 static int lucas_cost(int n, double v)
 {
   int c;
-  int d;
   int e;
-  int r;
-
-  d = n;
-  r = (int)((double)d / v + 0.5);
+  int d = n;
+  double dr = ((double)d / v) + 0.5;
+  int r = (int)dr;
   if (r >= n)
   {
     return (ADD * n);
@@ -79,12 +77,12 @@ static int lucas_cost(int n, double v)
     }
     if ((4 * d <= 5 * e) && (((d + e) % 3) == 0))
     { /* condition 1 */
-      r = (2 * d - e) / 3;
-      e = (2 * e - d) / 3;
+      r = ((2 * d) - e) / 3;
+      e = ((2 * e) - d) / 3;
       d = r;
       c += 3 * ADD; /* 3 additions */
     }
-    else if ((4 * d <= 5 * e) && ((d - e) % 6 == 0))
+    else if (((4 * d) <= (5 * e)) && (((d - e) % 6) == 0))
     { /* condition 2 */
       d = (d - e) / 2;
       c += ADD + DUP; /* one addition, one duplicate */
@@ -94,32 +92,32 @@ static int lucas_cost(int n, double v)
       d -= e;
       c += ADD; /* one addition */
     }
-    else if ((d + e) % 2 == 0)
+    else if (((d + e) % 2) == 0)
     { /* condition 4 */
       d = (d - e) / 2;
       c += ADD + DUP; /* one addition, one duplicate */
     }
-    else if (d % 2 == 0)
+    else if ((d % 2) == 0)
     { /* condition 5 */
       d /= 2;
       c += ADD + DUP; /* one addition, one duplicate */
     }
-    else if (d % 3 == 0)
+    else if ((d % 3) == 0)
     { /* condition 6 */
-      d = d / 3 - e;
-      c += 3 * ADD + DUP; /* three additions, one duplicate */
+      d = (d / 3) - e;
+      c += (3 * ADD) + DUP; /* three additions, one duplicate */
     }
-    else if ((d + e) % 3 == 0)
+    else if (((d + e) % 3) == 0)
     { /* condition 7 */
-      d = (d - 2 * e) / 3;
+      d = ((d - 2) * e) / 3;
       c += 3 * ADD + DUP; /* three additions, one duplicate */
     }
-    else if ((d - e) % 3 == 0)
+    else if (((d - e) % 3) == 0)
     { /* condition 8 */
       d = (d - e) / 3;
       c += 3 * ADD + DUP; /* three additions, one duplicate */
     }
-    else if (e % 2 == 0)
+    else if ((e % 2) == 0)
     { /* condition 9 */
       e /= 2;
       c += ADD + DUP; /* one addition, one duplicate */
@@ -142,7 +140,7 @@ void prac(int n, limb* x, limb* z, limb* xT, limb* zT, limb* xT2, limb* zT2)
   limb* zB = common.ecm.Aux2;
   limb* xC = common.ecm.Aux3;
   limb* zC = common.ecm.Aux4;
-  double v[] =
+  const double v[] =
   {
     1.61803398875,
     1.72360679775,
@@ -168,10 +166,10 @@ void prac(int n, limb* x, limb* z, limb* xT, limb* zT, limb* xT2, limb* zT2)
     }
   }
   d = n;
-  r = (int)((double)d / v[i] + 0.5);
+  r = (int)(((double)d / v[i]) + 0.5);
   /* first iteration always begins by Condition 3, then a swap */
   d = n - r;
-  e = 2 * r - n;
+  e = (2 * r) - n;
   (void)memcpy(xB, xA, NumberLength * sizeof(limb));   // B <- A
   (void)memcpy(zB, zA, NumberLength * sizeof(limb));
   (void)memcpy(xC, xA, NumberLength * sizeof(limb));   // C <- A
@@ -380,7 +378,7 @@ static void GenerateSieve(int initial)
   int j;
   int Q;
   int initModQ;
-  for (i = 0; i < 10 * SIEVE_SIZE; i += SIEVE_SIZE)
+  for (i = 0; i < (10 * SIEVE_SIZE); i += SIEVE_SIZE)
   {
     (void)memcpy(&common.ecm.sieve[i], common.ecm.sieve2310, SIEVE_SIZE);
   }
@@ -393,7 +391,7 @@ static void GenerateSieve(int initial)
 #endif
   do
   {
-    if (initial > Q * Q)
+    if (initial > (Q * Q))
     {
       initModQ = initial % Q;
       if (initModQ & 1)
@@ -408,17 +406,17 @@ static void GenerateSieve(int initial)
       {    // initModQ is even
         i = Q - (initModQ >> 1);
       }
-      for (; i < 10 * SIEVE_SIZE; i += Q)
+      for (; i < (10 * SIEVE_SIZE); i += Q)
       {
         common.ecm.sieve[i] = 1; /* Composite */
       }
     }
     else
     {
-      i = Q * Q - initial;
-      if (i < 20 * SIEVE_SIZE)
+      i = (Q * Q) - initial;
+      if (i < (20 * SIEVE_SIZE))
       {
-        for (i = i / 2; i < 10 * SIEVE_SIZE; i += Q)
+        for (i = i / 2; i < (10 * SIEVE_SIZE); i += Q)
         {
           common.ecm.sieve[i] = 1; /* Composite */
         }
@@ -432,7 +430,7 @@ static void GenerateSieve(int initial)
 #if MAX_PRIME_SIEVE == 11
   } while (Q < 5000);
 #else
-} while (Q < 10 * SIEVE_SIZE);
+} while (Q < (10 * SIEVE_SIZE));
 #endif
 }
 

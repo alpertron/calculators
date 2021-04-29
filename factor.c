@@ -118,32 +118,32 @@ static int intTotient(int argument)
   int trialDivisor;
   int argumentDivisor = argument;
   int totient = argumentDivisor;
-  if (argumentDivisor % 2 == 0)
+  if ((argumentDivisor % 2) == 0)
   {
     totient /= 2;
     do
     {
       argumentDivisor /= 2;
-    } while (argumentDivisor % 2 == 0);
+    } while ((argumentDivisor % 2) == 0);
   }
-  if (argumentDivisor % 3 == 0)
+  if ((argumentDivisor % 3) == 0)
   {
     totient = totient * 2 / 3;
     do
     {
       argumentDivisor /= 3;
-    } while (argumentDivisor % 3 == 0);
+    } while ((argumentDivisor % 3) == 0);
   }
   trialDivisor = 5;
-  while (trialDivisor * trialDivisor <= argumentDivisor)
+  while ((trialDivisor * trialDivisor) <= argumentDivisor)
   {
-    if ((trialDivisor % 3 != 0) && (argumentDivisor % trialDivisor == 0))
+    if (((trialDivisor % 3) != 0) && ((argumentDivisor % trialDivisor) == 0))
     {
       totient = totient * (trialDivisor - 1) / trialDivisor;
       do
       {
         argumentDivisor /= trialDivisor;
-      } while (argumentDivisor % trialDivisor == 0);
+      } while ((argumentDivisor % trialDivisor) == 0);
     }
     trialDivisor += 2;
   }
@@ -183,13 +183,13 @@ int Moebius(int argument)
   trialDivisor = 5;
   while (trialDivisor * trialDivisor <= argumentDivisor)
   {
-    if (trialDivisor % 3 != 0)
+    if ((trialDivisor % 3) != 0)
     {
-      while (argumentDivisor % trialDivisor == 0)
+      while ((argumentDivisor % trialDivisor) == 0)
       {
         moebius = -moebius;
         argumentDivisor /= trialDivisor;
-        if (argumentDivisor % trialDivisor == 0)
+        if ((argumentDivisor % trialDivisor) == 0)
         {
           return 0;
         }
@@ -243,24 +243,24 @@ void InsertAurifFactors(struct sFactors *pstFactors, const BigInteger *BigBase, 
   {
     return;    // Base is very big, so go out.
   }
-  if ((Expon % 2 == 0) && (Incre == -1))
+  if (((Expon % 2) == 0) && (Incre == -1))
   {
     do
     {
       Expon /= 2;
-    } while (Expon % 2 == 0);
-    Incre = Base % 4 - 2;
+    } while ((Expon % 2) == 0);
+    Incre = (Base % 4) - 2;
   }
-  if ((Expon % Base == 0)
-    && (Expon / Base % 2 != 0)
-    && (((Base % 4 != 1) && (Incre == 1)) || ((Base % 4 == 1) && (Incre == -1))))
+  if (((Expon % Base) == 0)
+    && (((Expon / Base) % 2) != 0)
+    && ((((Base % 4) != 1) && (Incre == 1)) || (((Base % 4) == 1) && (Incre == -1))))
   {
     int N1;
     int q1;
     int L;
     int k;
     int N = Base;
-    if (N % 4 == 1)
+    if ((N % 4) == 1)
     {
       N1 = N;
     }
@@ -287,30 +287,19 @@ void InsertAurifFactors(struct sFactors *pstFactors, const BigInteger *BigBase, 
       AurifQ[k] = t1;
     }
     Gamma[0] = Delta[0] = 1;
-    for (k = 1; k <= DegreeAurif / 2; k++)
+    for (k = 1; k <= (DegreeAurif / 2); k++)
     {
       Gamma[k] = Delta[k] = 0;
       for (int j = 0; j < k; j++)
       {
-        Gamma[k] =
-          Gamma[k]
-          + N * AurifQ[2 * k
-          - 2 * j
-          - 1] * Delta[j]
-          - AurifQ[2 * k
-          - 2 * j] * Gamma[j];
-        Delta[k] =
-          Delta[k]
-          + AurifQ[2 * k
-          + 1
-          - 2 * j] * Gamma[j]
-          - AurifQ[2 * k
-          - 2 * j] * Delta[j];
+        int m = 2 * (k - j);
+        Gamma[k] = Gamma[k] + (N * AurifQ[m - 1] * Delta[j]) - (AurifQ[m] * Gamma[j]);
+        Delta[k] = Delta[k] + (AurifQ[m + 1] * Gamma[j]) - (AurifQ[m] * Delta[j]);
       }
       Gamma[k] /= 2 * k;
-      Delta[k] = (Delta[k] + Gamma[k]) / (2 * k + 1);
+      Delta[k] = (Delta[k] + Gamma[k]) / ((2 * k) + 1);
     }
-    for (k = DegreeAurif / 2 + 1; k <= DegreeAurif; k++)
+    for (k = (DegreeAurif / 2) + 1; k <= DegreeAurif; k++)
     {
       Gamma[k] = Gamma[DegreeAurif - k];
     }
@@ -320,12 +309,12 @@ void InsertAurifFactors(struct sFactors *pstFactors, const BigInteger *BigBase, 
     }
     q1 = Expon / Base;
     L = 1;
-    while (L * L <= q1)
+    while ((L * L) <= q1)
     {
-      if (q1 % L == 0)
+      if ((q1 % L) == 0)
       {
         GetAurifeuilleFactor(pstFactors,L, BigBase);
-        if (q1 != L * L)
+        if (q1 != (L * L))
         {
           GetAurifeuilleFactor(pstFactors, q1 / L, BigBase);
         }
@@ -371,7 +360,8 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
     int2dec(&ptrUrl, Expon);
     (void)strcpy(ptrUrl, "&type=");
     ptrUrl += strlen(ptrUrl);
-    *ptrUrl++ = (increment > 0? 'p': 'm');
+    *ptrUrl = ((increment > 0)? 'p': 'm');
+    ptrUrl++;
     *ptrUrl = 0;
     getCunn(url, common.saveFactors.text);
 #endif
@@ -396,7 +386,7 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
     ptrFactorsAscii = ptrEndFactor;
     insertBigFactor(pstFactors, &Nbr1, TYP_TABLE);
   }
-  while ((Expon2 % 2 == 0) && (increment == -1))
+  while (((Expon2 % 2) == 0) && (increment == -1))
   {
     Expon2 /= 2;
     BigIntPowerIntExp(BigBase, Expon2, &Nbr1);
@@ -405,11 +395,11 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
     InsertAurifFactors(pstFactors,BigBase, Expon2, 1);
   }
   k = 1;
-  while (k * k <= Expon)
+  while ((k * k) <= Expon)
   {
-    if (Expon % k == 0)
+    if ((Expon % k) == 0)
     {
-      if (k % 2 != 0)
+      if ((k % 2) != 0)
       { /* Only for odd exponent */
         BigIntPowerIntExp(BigBase, Expon / k, &Nbr1);
         addbigint(&Nbr1, increment);
