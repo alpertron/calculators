@@ -162,26 +162,26 @@ int Moebius(int argument)
 
   moebius = 1;
   argumentDivisor = argument;
-  if (argumentDivisor % 2 == 0)
+  if ((argumentDivisor % 2) == 0)
   {
     moebius = -moebius;
     argumentDivisor /= 2;
-    if (argumentDivisor % 2 == 0)
+    if ((argumentDivisor % 2) == 0)
     {
       return 0;
     }
   }
-  if (argumentDivisor % 3 == 0)
+  if ((argumentDivisor % 3) == 0)
   {
     moebius = -moebius;
     argumentDivisor /= 3;
-    if (argumentDivisor % 3 == 0)
+    if ((argumentDivisor % 3) == 0)
     {
       return 0;
     }
   }
   trialDivisor = 5;
-  while (trialDivisor * trialDivisor <= argumentDivisor)
+  while ((trialDivisor * trialDivisor) <= argumentDivisor)
   {
     if ((trialDivisor % 3) != 0)
     {
@@ -410,7 +410,7 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
         insertBigFactor(pstFactors, &Nbr1, TYP_TABLE);
         InsertAurifFactors(pstFactors, BigBase, Expon / k, increment);
       }
-      if ((Expon / k) % 2 != 0)
+      if (((Expon / k) % 2) != 0)
       { /* Only for odd exponent */
         BigIntPowerIntExp(BigBase, k, &Nbr1);
         addbigint(&Nbr1, increment); 
@@ -443,7 +443,7 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
   double log2N;
 #ifdef __EMSCRIPTEN__
   int elapsedTime = (int)(tenths() - originalTenthSecond);
-  if (elapsedTime / 10 != oldTimeElapsed / 10)
+  if ((elapsedTime / 10) != (oldTimeElapsed / 10))
   {
     oldTimeElapsed = elapsedTime;
     ptrStatus = status;
@@ -523,7 +523,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   int modulus;
   int mod9 = getRemainder(numToFactor, 9);
   int maxExpon = numToFactor->nbrLimbs * BITS_PER_GROUP;
-  int numPrimes = 2 * maxExpon + 3;
+  int numPrimes = (2 * maxExpon) + 3;
   double logar = logBigNbr(numToFactor);
   // 33219 = logarithm base 2 of max number supported = 10^10000.
   // Let n = a^b +/- 1 (n = number to factor).
@@ -538,7 +538,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
     (void)memset(common.ecm.ProcessExpon, 0xAA, sizeof(common.ecm.ProcessExpon));
   }
   (void)memset(common.ecm.primes, 0xFF, sizeof(common.ecm.primes));
-  for (i = 2; i * i < numPrimes; i++)
+  for (i = 2; (i * i) < numPrimes; i++)
   {       // Generation of primes using sieve of Eratosthenes.
     if (common.ecm.primes[i >> 3] & (1 << (i & 7)))
     {     // Number i is prime.
@@ -563,7 +563,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
       longToBigInteger(&Temp1, (uint64_t)i*(uint64_t)i);
       BigIntRemainder(numToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
       remainder = (uint64_t)Temp2.limbs[0].x;
-      if ((rem == 1) || (rem == i - 1))
+      if ((rem == 1) || (rem == (i - 1)))
       {
         if (Temp2.nbrLimbs > 1)
         {
@@ -572,7 +572,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
         // NumberFactor cannot be a power + 1 if condition holds.
         plus1 = ((rem == 1) && (remainder != 1));
         // NumberFactor cannot be a power - 1 if condition holds.
-        minus1 = ((rem == i - 1) && (remainder != (uint64_t)i*(uint64_t)i - 1));
+        minus1 = ((rem == (i - 1)) && (remainder != (((uint64_t)i*(uint64_t)i) - 1)));
       }
       index = i / 2;
       if (!(common.ecm.ProcessExpon[index >> 3] & (1<<(index&7))))
@@ -580,7 +580,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
         continue;
       }
       modulus = remainder % i;
-      if ((modulus > (plus1 ? 1 : 2)) && (modulus < (minus1 ? i - 1 : i - 2)))
+      if ((modulus > (plus1 ? 1 : 2)) && (modulus < (minus1 ? (i - 1) : (i - 2))))
       {
         for (j = index; j <= maxExpon; j += index)
         {
@@ -589,7 +589,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
       }
       else
       {
-        if (modulus == i - 2)
+        if (modulus == (i - 2))
         {
           for (j = i - 1; j <= maxExpon; j += i - 1)
           {
@@ -603,7 +603,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   {
     double u = logar / log(j) + .000005;
     Exponent = (int)floor(u);
-    if (u - Exponent > .00001)
+    if ((u - Exponent) > .00001)
     {
       continue;
     }
@@ -701,7 +701,7 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
   }
   else
   {
-    if (k % 2 == 0)
+    if ((k % 2) == 0)
     { // k Even
       r = 1;
       m = 2;

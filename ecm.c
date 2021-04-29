@@ -75,7 +75,7 @@ static int lucas_cost(int n, double v)
       d = e;
       e = r;
     }
-    if ((4 * d <= 5 * e) && (((d + e) % 3) == 0))
+    if (((4 * d) <= 5 * e) && (((d + e) % 3) == 0))
     { /* condition 1 */
       r = ((2 * d) - e) / 3;
       e = ((2 * e) - d) / 3;
@@ -110,12 +110,12 @@ static int lucas_cost(int n, double v)
     else if (((d + e) % 3) == 0)
     { /* condition 7 */
       d = ((d - 2) * e) / 3;
-      c += 3 * ADD + DUP; /* three additions, one duplicate */
+      c += (3 * ADD) + DUP; /* three additions, one duplicate */
     }
     else if (((d - e) % 3) == 0)
     { /* condition 8 */
       d = (d - e) / 3;
-      c += 3 * ADD + DUP; /* three additions, one duplicate */
+      c += (3 * ADD) + DUP; /* three additions, one duplicate */
     }
     else if ((e % 2) == 0)
     { /* condition 9 */
@@ -192,8 +192,8 @@ void prac(int n, limb* x, limb* z, limb* xT, limb* zT, limb* xT2, limb* zT2)
     /* do the first line of Table 4 whose condition qualifies */
     if ((4 * d <= 5 * e) && (((d + e) % 3) == 0))
     { /* condition 1 */
-      r = (2 * d - e) / 3;
-      e = (2 * e - d) / 3;
+      r = ((2 * d) - e) / 3;
+      e = ((2 * e) - d) / 3;
       d = r;
       add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T = f(A,B,C) */
       add3(xT2, zT2, xT, zT, xA, zA, xB, zB); /* T2 = f(T,A,B) */
@@ -205,7 +205,7 @@ void prac(int n, limb* x, limb* z, limb* xT, limb* zT, limb* xT2, limb* zT2)
       zA = zT2;
       zT2 = t; /* swap A and T2 */
     }
-    else if ((4 * d <= 5 * e) && ((d - e) % 6 == 0))
+    else if (((4 * d) <= (5 * e)) && (((d - e) % 6) == 0))
     { /* condition 2 */
       d = (d - e) / 2;
       add3(xB, zB, xA, zA, xB, zB, xC, zC); /* B = f(A,B,C) */
@@ -224,21 +224,21 @@ void prac(int n, limb* x, limb* z, limb* xT, limb* zT, limb* xT2, limb* zT2)
       zT = zC;
       zC = t; /* circular permutation (B,T,C) */
     }
-    else if ((d + e) % 2 == 0)
+    else if (((d + e) % 2) == 0)
     { /* condition 4 */
       d = (d - e) / 2;
       add3(xB, zB, xB, zB, xA, zA, xC, zC); /* B = f(B,A,C) */
       duplicate(xA, zA, xA, zA); /* A = 2*A */
     }
-    else if (d % 2 == 0)
+    else if ((d % 2) == 0)
     { /* condition 5 */
       d /= 2;
       add3(xC, zC, xC, zC, xA, zA, xB, zB); /* C = f(C,A,B) */
       duplicate(xA, zA, xA, zA); /* A = 2*A */
     }
-    else if (d % 3 == 0)
+    else if ((d % 3) == 0)
     { /* condition 6 */
-      d = d / 3 - e;
+      d = (d / 3) - e;
       duplicate(xT, zT, xA, zA); /* T1 = 2*A */
       add3(xT2, zT2, xA, zA, xB, zB, xC, zC); /* T2 = f(A,B,C) */
       add3(xA, zA, xT, zT, xA, zA, xA, zA); /* A = f(T1,A,A) */
@@ -252,15 +252,15 @@ void prac(int n, limb* x, limb* z, limb* xT, limb* zT, limb* xT2, limb* zT2)
       zB = zT;
       zT = t; /* circular permutation (C,B,T) */
     }
-    else if ((d + e) % 3 == 0)
+    else if (((d + e) % 3) == 0)
     { /* condition 7 */
-      d = (d - 2 * e) / 3;
+      d = (d - (2 * e)) / 3;
       add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T1 = f(A,B,C) */
       add3(xB, zB, xT, zT, xA, zA, xB, zB); /* B = f(T1,A,B) */
       duplicate(xT, zT, xA, zA);
       add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
     }
-    else if ((d - e) % 3 == 0)
+    else if (((d - e) % 3) == 0)
     { /* condition 8 */
       d = (d - e) / 3;
       add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T1 = f(A,B,C) */
@@ -274,7 +274,7 @@ void prac(int n, limb* x, limb* z, limb* xT, limb* zT, limb* xT2, limb* zT2)
       duplicate(xT, zT, xA, zA);
       add3(xA, zA, xA, zA, xT, zT, xA, zA); /* A = 3*A */
     }
-    else if (e % 2 == 0)
+    else if ((e % 2) == 0)
     { /* condition 9 */
       e /= 2;
       add3(xC, zC, xC, zC, xB, zB, xA, zA); /* C = f(C,B,A) */
@@ -510,11 +510,11 @@ enum eEcmResult ecmStep1(void)
     for (i = 0; i < SIEVE_SIZE; i++)
     {
       common.ecm.sieve2310[i] =
-        (((u % 3 == 0)
-          || (u % 5 == 0)
-          || (u % 7 == 0)
+        ((((u % 3) == 0)
+          || ((u % 5) == 0)
+          || ((u % 7) == 0)
 #if MAX_PRIME_SIEVE == 11
-          || (u % 11 == 0)
+          || ((u % 11) == 0)
 #endif
           ) ? (unsigned char)1 : (unsigned char)0);
       u += 2;
@@ -526,20 +526,20 @@ enum eEcmResult ecmStep1(void)
 
       /* Walk through sieve */
 
-      for (i = 0; i < 10 * SIEVE_SIZE; i++)
+      for (i = 0; i < (10 * SIEVE_SIZE); i++)
       {
         if (common.ecm.sieve[i] != 0)
         {
           continue; /* Do not process composites */
         }
-        if (P + 2 * i > boundStep1)
+        if ((P + (2 * i)) > boundStep1)
         {
           break;
         }
 #ifdef __EMSCRIPTEN__
         indexPrimes++;
 #endif
-        prac(P + 2 * i, common.ecm.X, common.ecm.Z, common.ecm.W1,
+        prac(P + (2 * i), common.ecm.X, common.ecm.Z, common.ecm.W1,
           common.ecm.W2, common.ecm.W3, common.ecm.W4);
         if (pass == 0)
         {
@@ -585,9 +585,9 @@ enum eEcmResult ecmStep2(void)
   j = 0;
   for (int u = 1; u < SIEVE_SIZE; u += 2)
   {
-    if ((u % 3 == 0) || (u % 5 == 0) || (u % 7 == 0)
+    if (((u % 3) == 0) || ((u % 5) == 0) || ((u % 7) == 0)
 #if MAX_PRIME_SIEVE == 11
-      || (u % 11 == 0)
+      || ((u % 11) == 0)
 #endif
       )
     {
