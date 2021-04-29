@@ -129,15 +129,20 @@ void AddBigIntModN(const int *pNbr1, const int *pNbr2, int *pSum, const int *pMo
   int i;
   for (i = 0; i < nbrLen; i++)
   {
-    carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pNbr1++ + (unsigned int)*pNbr2++;
-    *pSum++ = (int)(carry & MAX_INT_NBR);
+    carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pNbr1 + (unsigned int)*pNbr2;
+    *pSum = (int)(carry & MAX_INT_NBR);
+    pNbr1++;
+    pNbr2++;
+    pSum++;
   }
   carry >>= BITS_PER_INT_GROUP;
   pSum -= nbrLen;
   for (i = 0; i < nbrLen; i++)
   {
-    borrow = (borrow >> BITS_PER_INT_GROUP) + *pSum - *pMod++;
-    *pSum++ = borrow & MAX_INT_NBR;
+    borrow = (borrow >> BITS_PER_INT_GROUP) + *pSum - *pMod;
+    *pSum = borrow & MAX_INT_NBR;
+    pMod++;
+    pSum++;
   }
   borrow >>= BITS_PER_INT_GROUP;
   if (borrow + (int)carry != 0)
@@ -147,8 +152,10 @@ void AddBigIntModN(const int *pNbr1, const int *pNbr2, int *pSum, const int *pMo
     carry = 0;
     for (i = 0; i < nbrLen; i++)
     {
-      carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pSum + (unsigned int)*pMod++;
-      *pSum++ = (int)(carry & MAX_INT_NBR);
+      carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pSum + (unsigned int)*pMod;
+      *pSum = (int)(carry & MAX_INT_NBR);
+      pMod++;
+      pSum++;
     }
   }
 }
@@ -159,8 +166,11 @@ void SubtractBigNbrModN(const int *pNbr1, const int *pNbr2, int *pDiff, const in
   int i;
   for (i = 0; i < nbrLen; i++)
   {
-    borrow = (borrow >> BITS_PER_INT_GROUP) + *pNbr1++ - *pNbr2++;
-    *pDiff++ = borrow & MAX_INT_NBR;
+    borrow = (borrow >> BITS_PER_INT_GROUP) + *pNbr1 - *pNbr2;
+    *pDiff = borrow & MAX_INT_NBR;
+    pNbr1++;
+    pNbr2++;
+    pDiff++;
   }
   if (borrow != 0)
   {
@@ -168,8 +178,10 @@ void SubtractBigNbrModN(const int *pNbr1, const int *pNbr2, int *pDiff, const in
     pDiff -= nbrLen;
     for (i = 0; i < nbrLen; i++)
     {
-      carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pDiff + (unsigned int)*pMod++;
-      *pDiff++ = (int)(carry & MAX_INT_NBR);
+      carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pDiff + (unsigned int)*pMod;
+      *pDiff = (int)(carry & MAX_INT_NBR);
+      pMod++;
+      pDiff++;
     }
   }
 }
@@ -201,7 +213,8 @@ void MultBigNbrByInt(const int *bigFactor, int factor, int *bigProd, int nbrLen)
     {
       carry = (int)floor(((double)*bigFactor * dFactor + (double)carry - HALF_INT_RANGE/2)*dVal);
     }
-    *bigProduct++ = low;
+    *bigProduct = low;
+    bigProduct++;
     bigFactor++;
   }
   if (factorPositive == 0)
@@ -237,7 +250,8 @@ void MultBigNbrByIntB(const int *bigFactor, int factor, int *bigProd, int nbrLen
     {
       carry = (int)floor(((double)*bigFactor * dFactor + (double)carry - HALF_INT_RANGE / 2)*dVal);
     }
-    *bigProduct++ = low;
+    *bigProduct = low;
+    bigProduct++;
     bigFactor++;
   }
   *bigProduct = *bigFactor * factor + carry;
@@ -266,7 +280,8 @@ void DivBigNbrByInt(const int *pDividend, int divisor, int *pQuotient, int nbrLe
       quotient--;
       remainder += divisor;
     }
-    *pQuotient-- = quotient;
+    *pQuotient = quotient;
+    pQuotient--;
     pDividend--;
   }
 }
@@ -312,7 +327,8 @@ void MultBigNbr(const int *pFactor1, const int *pFactor2, int *pProd, int nbrLen
       dAccumulator += (double)factor1 * (double)factor2;
     }
     low &= MAX_INT_NBR;    // Trim extra bits.
-    *pProd++ = low;
+    *pProd = low;
+    pProd++;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
@@ -352,7 +368,8 @@ void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, in
       dAccumulator += (double)factor1 * (double)factor2;
     }
     low &= MAX_INT_NBR;    // Trim extra bits.
-    *pProd++ = low;
+    *pProd = low;
+    pProd++;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
@@ -375,7 +392,8 @@ void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, in
       dAccumulator += (double)factor1 * (double)factor2;
     }
     low &= MAX_INT_NBR;    // Trim extra bits.
-    *pProd++ = low;
+    *pProd = low;
+    pProd++;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
@@ -406,7 +424,8 @@ void IntToBigNbr(int value, int *bigNbr, int nbrLength)
   }
   for (; nbrLength > 1; nbrLength--)
   {
-    *++bigNbr = value;
+    bigNbr++;
+    *bigNbr = value;
   }
 }
 
@@ -417,7 +436,9 @@ int BigNbrToBigInt(const BigInteger *pBigNbr, int *pBigInt)
   const limb *ptrLimb = pBigNbr->limbs;
   for (int ctr = 0; ctr < nbrLenBigNbr; ctr++)
   {
-    *ptrBigInt++ = ptrLimb++->x;
+    *ptrBigInt = ptrLimb->x;
+    ptrBigInt++;
+    ptrLimb++;
   }
   return nbrLenBigNbr;
 }
@@ -430,16 +451,20 @@ void BigIntToBigNbr(BigInteger *pBigNbr, const int *pBigInt, int nbrLenBigInt)
   pBigNbr->sign = SIGN_POSITIVE;
   for (int ctr = 0; ctr < nbrLenBigInt; ctr++)
   {
-    ptrLimb++->x = *ptrBigInt++;
+    ptrLimb->x = *ptrBigInt;
+    ptrLimb++;
+    ptrBigInt++;
   }
   nbrLimbs = nbrLenBigInt;
   do
   {
-    if ((--ptrLimb)->x != 0)
+    ptrLimb--;
+    if (ptrLimb->x != 0)
     {
       break;
     }
-  } while (--nbrLimbs > 1);
+    nbrLimbs--;
+  } while (nbrLimbs > 1);
   pBigNbr->nbrLimbs = nbrLimbs;
 }
 
@@ -471,12 +496,14 @@ void MultBigNbrModN(const int *Nbr1, int *Nbr2, int *Prod, int *Mod, int nbrLen)
   i = nbrLen;
   do
   {
-    int Nbr = *(Nbr1 + --i);
+    i--;
+    int Nbr = *(Nbr1 + i);
     int j = nbrLen;
     do
     {
       *(Prod+j) = *(Prod + j - 1);
-    } while (--j > 0);
+      j--;
+    } while (j > 0);
     Prod[0] = 0;
     AdjustBigIntModN(Prod, Mod, nbrLen);
     MultBigNbrByIntModN(Nbr2, Nbr, arr, Mod, nbrLen);

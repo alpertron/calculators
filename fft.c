@@ -85,7 +85,7 @@ static void initCosinesArray(void)
       mask *= 2;
       bitNbr++;
     }
-    if (bitNbr == POWERS_2 - 2)
+    if (bitNbr == (POWERS_2 - 2))
     {
       break;
     }
@@ -340,7 +340,7 @@ static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
     {                   // All bits of input limb have been used.
       bitExternal -= BITS_PER_GROUP;
       ptrFactor++;
-      if (ptrFactor - factor == len)
+      if ((ptrFactor - factor) == len)
       {
         ptrInternalFactor->imaginary = 0;
         ptrInternalFactor++;
@@ -436,11 +436,11 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   power2plus1 = power2 + 1;
   if (factor1 != factor2)
   {
-    if (TestNbrCached == NBR_CACHED && factor2 == TestNbr)
+    if ((TestNbrCached == NBR_CACHED) && (factor2 == TestNbr))
     {
       (void)memcpy(transf, TestNbrTransf, power2plus1 * sizeof(transf[0]));
     }
-    else if (MontgomeryMultNCached == NBR_CACHED && factor2 == MontgomeryMultN)
+    else if ((MontgomeryMultNCached == NBR_CACHED) && (factor2 == MontgomeryMultN))
     {
       (void)memcpy(transf, MontgomeryMultNTransf, power2plus1 * sizeof(transf[0]));
     }
@@ -449,12 +449,12 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
       complexFFT(secondFactor, tempFFT, power2);
       ConvertHalfToFullSizeFFT(tempFFT, transf, power2);  // transf <- DFT(secondFactor)
     }
-    if (TestNbrCached == NBR_READY_TO_BE_CACHED && factor2 == TestNbr)
+    if ((TestNbrCached == NBR_READY_TO_BE_CACHED) && (factor2 == TestNbr))
     {
       (void)memcpy(TestNbrTransf, transf, power2plus1 * sizeof(transf[0]));
       TestNbrCached = NBR_CACHED;
     }
-    else if (MontgomeryMultNCached == NBR_READY_TO_BE_CACHED && factor2 == MontgomeryMultN)
+    else if ((MontgomeryMultNCached == NBR_READY_TO_BE_CACHED) && (factor2 == MontgomeryMultN))
     {
       (void)memcpy(MontgomeryMultNTransf, transf, power2plus1 * sizeof(transf[0]));
       MontgomeryMultNCached = NBR_CACHED;

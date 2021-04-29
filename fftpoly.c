@@ -71,7 +71,7 @@ static void initCosinesArray(void)
       mask *= 2;
       bitNbr++;
     }
-    if (bitNbr == POWERS_2 - 2)
+    if (bitNbr == (POWERS_2 - 2))
     {
       break;
     }
