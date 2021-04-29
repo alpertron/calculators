@@ -607,7 +607,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
     {
       continue;
     }
-    if ((Exponent % 3 == 0) && (mod9 > 2) && (mod9 < 7))
+    if (((Exponent % 3) == 0) && (mod9 > 2) && (mod9 < 7))
     {
       continue;
     }
@@ -736,7 +736,7 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
   {
     int pr = primes[i];
     nbrs[i] = getRemainder(&c, pr);    // nbrs[i] <- c % primes[i]
-    diffs[i] = m * (getRemainder(&a, pr) * 2 + m) % pr;
+    diffs[i] = m * ((getRemainder(&a, pr) * 2) + m) % pr;
   }
   nbrLimbs = factor->nbrLimbs;
   if (nbrLimbs > 10)
@@ -783,7 +783,7 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
     for (i = 0; i < 17; i++)
     {
       nbrs[i] = (nbrs[i] + diffs[i]) % primes[i];
-      diffs[i] = (diffs[i] + 2 * m * m) % primes[i];
+      diffs[i] = (diffs[i] + (2 * m * m)) % primes[i];
     }
   }
   intToBigInteger(factor, 1);   // Factor not found.
