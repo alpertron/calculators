@@ -29,7 +29,7 @@
 extern int nbrPrimes;
 extern int indexPrimes;
 extern char* ptrLowerText;
-extern char lowerText[];
+extern char lowerText[MAX_LEN * 16];
 #endif
 extern int StepECM;
 extern int maxIndexM;
@@ -128,7 +128,7 @@ static int lucas_cost(int n, double v)
 }
 
 /* computes nP from P=(x:z) and puts the result in (x:z). Assumes n>2. */
-void prac(int n, limb* x, limb* z, limb* xT, limb* zT, limb* xT2, limb* zT2)
+void prac(int n, limb* x, limb *z)
 {
   int d;
   int e;
@@ -141,6 +141,10 @@ void prac(int n, limb* x, limb* z, limb* xT, limb* zT, limb* xT2, limb* zT2)
   limb* zB = common.ecm.Aux2;
   limb* xC = common.ecm.Aux3;
   limb* zC = common.ecm.Aux4;
+  limb* xT = common.ecm.W1;
+  limb* zT = common.ecm.W2;
+  limb* xT2 = common.ecm.W3;
+  limb* zT2 = common.ecm.W4;
   const double v[] =
   {
     1.61803398875,
@@ -395,9 +399,9 @@ static void GenerateSieve(int initial)
     if (initial > (Q * Q))
     {
       initModQ = initial % Q;
-      if (initModQ & 1)
+      if ((initModQ & 1) != 0)
       {    // initModQ is odd
-        i = (Q - initModQ) >> 1;
+        i = (Q - initModQ) / 2;
       }
       else if (initModQ == 0)
       {
@@ -405,7 +409,7 @@ static void GenerateSieve(int initial)
       }
       else
       {    // initModQ is even
-        i = Q - (initModQ >> 1);
+        i = Q - (initModQ / 2);
       }
       for (; i < (10 * SIEVE_SIZE); i += Q)
       {
@@ -427,11 +431,12 @@ static void GenerateSieve(int initial)
         break;
       }
     }
-    Q = SmallPrime[++j];
+    j++;
+    Q = SmallPrime[j];
 #if MAX_PRIME_SIEVE == 11
   } while (Q < 5000);
 #else
-} while (Q < (10 * SIEVE_SIZE));
+  } while (Q < (10 * SIEVE_SIZE));
 #endif
 }
 
@@ -488,7 +493,7 @@ enum eEcmResult ecmStep1(void)
       P = SmallPrime[indexM];
       for (long long IP = P; IP <= boundStep1; IP *= P)
       {
-        prac(P, common.ecm.X, common.ecm.Z, common.ecm.W1, common.ecm.W2, common.ecm.W3, common.ecm.W4);
+        prac(P, common.ecm.X, common.ecm.Z);
       }
       indexM++;
       if (pass == 0)
@@ -529,7 +534,7 @@ enum eEcmResult ecmStep1(void)
 
       for (i = 0; i < (10 * SIEVE_SIZE); i++)
       {
-        if (common.ecm.sieve[i] != 0)
+        if (common.ecm.sieve[i] != 0U)
         {
           continue; /* Do not process composites */
         }
@@ -540,8 +545,7 @@ enum eEcmResult ecmStep1(void)
 #ifdef __EMSCRIPTEN__
         indexPrimes++;
 #endif
-        prac(P + (2 * i), common.ecm.X, common.ecm.Z, common.ecm.W1,
-          common.ecm.W2, common.ecm.W3, common.ecm.W4);
+        prac(P + (2 * i), common.ecm.X, common.ecm.Z);
         if (pass == 0)
         {
           modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.Aux1);
@@ -592,11 +596,12 @@ enum eEcmResult ecmStep2(void)
 #endif
       )
     {
-      common.ecm.sieve2310[u / 2] = (unsigned char)1;
+      common.ecm.sieve2310[u / 2] = 1U;
     }
     else
     {
-      common.ecm.sieve2310[common.ecm.sieveidx[j++] = u / 2] = (unsigned char)0;
+      common.ecm.sieve2310[common.ecm.sieveidx[j] = u / 2] = 0U;
+      j++;
     }
   }
   (void)memcpy(&common.ecm.sieve2310[HALF_SIEVE_SIZE], &common.ecm.sieve2310[0], HALF_SIEVE_SIZE);
@@ -738,7 +743,7 @@ enum eEcmResult ecmStep2(void)
         for (int i = 0; i < GROUP_SIZE; i++)
         {
           j = common.ecm.sieveidx[i]; // 0 < J < HALF_SIEVE_SIZE
-          if ((common.ecm.sieve[J + j] != 0) && (common.ecm.sieve[J - 1 - j] != 0))
+          if ((common.ecm.sieve[J + j] != 0U) && (common.ecm.sieve[J - 1 - j] != 0U))
           {
             continue; // Do not process if both are composite numbers.
           }
@@ -810,7 +815,6 @@ static void initSmallPrimeArray(void)
 {
   int potentialPrime = 3;
   SmallPrime[0] = 2;
-  indexM = 1;
   for (indexM = 1; indexM < sizeof(SmallPrime) / sizeof(SmallPrime[0]); indexM++)
   {     // Loop that fills the SmallPrime array.
     int divisor;
@@ -818,14 +822,14 @@ static void initSmallPrimeArray(void)
     do
     {
       potentialPrime += 2;
-      for (divisor = 3; divisor * divisor <= potentialPrime; divisor += 2)
+      for (divisor = 3; (divisor * divisor) <= potentialPrime; divisor += 2)
       { /* Check if P is prime */
-        if (potentialPrime % divisor == 0)
+        if ((potentialPrime % divisor) == 0)
         {
           break;  /* Composite */
         }
       }
-    } while (divisor * divisor <= potentialPrime);
+    } while ((divisor * divisor) <= potentialPrime);
   }
 }
 
@@ -883,7 +887,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
       if ((nbrDigits > 30) && (nbrDigits <= 90))  // If between 30 and 90 digits...         
       {                             // Switch to SIQS.
         int limit = limits[(nbrDigits - 31) / 5];
-        if (EC % 50000000 >= limit)
+        if ((EC % 50000000) >= limit)
         {                           // Switch to SIQS.
           EC += TYP_SIQS;
           *pEC = EC;

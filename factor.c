@@ -794,7 +794,8 @@ char *ShowFactoredPart(const BigInteger *pNbr, const void *vFactors)
 {
   const struct sFactors *pstFactors = (const struct sFactors *)vFactors;
   ptrLowerText = lowerText;
-  *ptrLowerText++ = '3';
+  *ptrLowerText = '3';
+  ptrLowerText++;
   if ((vFactors != NULL) && (pstFactors->multiplicity > 1))
   {    // Some factorization known.
     int NumberLengthBak = NumberLength;
