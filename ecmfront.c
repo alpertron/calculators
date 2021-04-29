@@ -36,7 +36,7 @@ static BigInteger Quad3;
 static BigInteger Quad4;
 extern BigInteger factorValue;
 static BigInteger result;
-static void ComputeFourSquares(struct sFactors *pstFactors);
+static void ComputeFourSquares(const struct sFactors *pstFactors);
 static void GetEulerTotient(char **pptrOutput);
 static void GetMobius(char **pptrOutput);
 static void GetNumberOfDivisors(char **pptrOutput);
@@ -204,7 +204,7 @@ static void GetMobius(char **pptrOutput)
   *pptrOutput = ptrOutput;
 }
 
-static void modPowShowStatus(limb *base, const limb *exp, int nbrGroupsExp, limb *power)
+static void modPowShowStatus(const limb *base, const limb *exp, int nbrGroupsExp, limb *power)
 {
   (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1) * sizeof(*power));  // power <- 1
   for (int index = nbrGroupsExp - 1; index >= 0; index--)
@@ -276,7 +276,6 @@ static void ComputeThreeSquares(BigInteger *pTmp,
   int diff = 1;
   int shRight;
   int shRightPower;
-  int count;
   int expon;
   int *ptrArrFactors;
   int sqrtFound;
@@ -286,11 +285,13 @@ static void ComputeThreeSquares(BigInteger *pTmp,
   int base;
   CopyBigInt(pTmp, &tofactor);
   DivideBigNbrByMaxPowerOf4(&shRight, pTmp->limbs, &pTmp->nbrLimbs);
-  for (diff = 1; ; diff++)
+  diff = 0;
+  for (;;)
   {
     int primeIndex = 0;
     int prime = 2;
     const int* ptrArrFactorsBak;
+    diff++;
     ptrArrFactors = arrFactors;
     intToBigInteger(pTmp1, diff*diff);
     BigIntSubt(pTmp, pTmp1, pTmp2);
@@ -442,7 +443,7 @@ static void ComputeThreeSquares(BigInteger *pTmp,
     intToBigInteger(&Quad3, diff);
     intToBigInteger(&Quad4, 0);
     // Perform shift left.
-    for (count = 0; count < shRight; count++)
+    for (int count = 0; count < shRight; count++)
     {
       BigIntAdd(&Quad1, &Quad1, &Quad1);
       BigIntAdd(&Quad2, &Quad2, &Quad2);
@@ -459,7 +460,7 @@ static void ComputeThreeSquares(BigInteger *pTmp,
   }
 }
 
-static void ComputeFourSquares(struct sFactors *pstFactors)
+static void ComputeFourSquares(const struct sFactors *pstFactors)
 {
   int indexPrimes;
   static BigInteger p;
@@ -681,7 +682,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
     CopyBigInt(&Quad1, &Tmp1);
   } /* end for indexPrimes */
   pstFactor = pstFactors + 1;      // Point to first factor in array of factors.
-  for (indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--, pstFactor++)
+  for (indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--)
   {
     NumberLength = *pstFactor->ptrFactor;
     IntArray2BigInteger(pstFactor->ptrFactor, &p);
@@ -690,6 +691,7 @@ static void ComputeFourSquares(struct sFactors *pstFactors)
     BigIntMultiply(&Quad2, &K, &Quad2);
     BigIntMultiply(&Quad3, &K, &Quad3);
     BigIntMultiply(&Quad4, &K, &Quad4);
+    pstFactor++;
   }
   Quad1.sign = SIGN_POSITIVE;
   Quad2.sign = SIGN_POSITIVE;
@@ -847,6 +849,7 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
       {        // Number to factor is non-negative.
 #ifdef __EMSCRIPTEN__
         char* ptrText;
+        sumSquaresModMult = 0;           // No sum of squares.
 #endif
         if (!BigIntIsZero(&tofactor))
         {      // Number to factor is not zero.
@@ -931,14 +934,14 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
         (void)strcpy(ptrOutput, lang ? " congruencias completas (1 de cada " :
           " smooth congruences found (1 out of every ");
         ptrOutput += strlen(ptrOutput);
-        int2dec(&ptrOutput, ValuesSieved / smoothsFound);
+        int2dec(&ptrOutput, (int)(ValuesSieved / smoothsFound));
         (void)strcpy(ptrOutput, lang? " valores)</li><li>": " values)</li><li>");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, totalPartials);
         (void)strcpy(ptrOutput, lang ? " congruencias parciales (1 de cada " :
           " partial congruences found (1 out of every ");
         ptrOutput += strlen(ptrOutput);
-        int2dec(&ptrOutput, ValuesSieved / totalPartials);
+        int2dec(&ptrOutput, (int)(ValuesSieved / totalPartials));
         (void)strcpy(ptrOutput, lang ? " valores)</li><li>" : " values)</li><li>");
         ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, partialsFound);
@@ -1019,6 +1022,7 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
+#ifndef _MSC_VER
 EXTERNALIZE void doWork(void)
 {
   int flags;
@@ -1073,12 +1077,9 @@ EXTERNALIZE void doWork(void)
   {
     ptrKnownFactors++;
   }
-  if (flags & 0x80)
+  if ((flags & 0x80) && ptrKnownFactors != NULL)
   {
-    if (ptrKnownFactors)
-    {
-      flags = 2;  // Do factorization.
-    }
+    flags = 2;  // Do factorization.
   }
   if (flags & 2)
   {               // Do factorization.
@@ -1092,3 +1093,4 @@ EXTERNALIZE void doWork(void)
   databack(output);
 #endif
 }
+#endif

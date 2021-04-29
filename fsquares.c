@@ -104,9 +104,11 @@ static void ShowStatus(void)
   else
   {
     int2dec(&ptrStatus, iMult3);
-  } 
+  }
+#ifdef FSQUARES_APP
   (void)strcpy(ptrStatus, square);
   ptrStatus += strlen(ptrStatus);
+#endif
   if (!Computing3Squares)
   {
     (void)strcpy(ptrStatus, " &minus; ");
@@ -119,7 +121,9 @@ static void ShowStatus(void)
     {
       int2dec(&ptrStatus, iMult4);
     }
+#ifdef FSQUARES_APP
     (void)strcpy(ptrStatus, square);
+#endif
   }
   databack(status);
 #endif
@@ -782,7 +786,7 @@ void batchCallback(char **pptrOutput)
 }
 #endif
 
-#ifdef __EMSCRIPTEN__
+#if defined __EMSCRIPTEN__ && !defined _MSC_VER
 EXTERNALIZE void doWork(void)
 {
   int groupLen = 0;

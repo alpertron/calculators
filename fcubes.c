@@ -142,7 +142,8 @@ static void SortBigIntegers(BigInteger *pValue1, BigInteger *pValue2)
   }
 }
 
-static void EvaluateQuadraticPoly(BigInteger *pResult, BigInteger *pValue, int quad, int linear, int constant)
+static void EvaluateQuadraticPoly(BigInteger *pResult, const BigInteger *pValue,
+  int quad, int linear, int constant)
 {
   multadd(pResult, quad, pValue, linear);
   // Multiply result by value.

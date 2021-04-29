@@ -24,7 +24,7 @@
 #include "polynomial.h"
 #include "showtime.h"
 
-#ifdef __EMSCRIPTEN__
+#if defined __EMSCRIPTEN__ && !defined _MSC_VER
 EXTERNALIZE void doWork(void)
 {
   int flags = 0;
@@ -46,7 +46,6 @@ EXTERNALIZE void doWork(void)
   pretty = (enum eOutput)(flags/4);
   ptrData++;          // Skip comma.
   polyFactText(ptrData, ptrData + strlen(ptrData) + 1, groupLen);
-  ptrData += strlen(ptrData);
   databack(output);
 }
 #endif

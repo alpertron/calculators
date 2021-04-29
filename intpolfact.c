@@ -574,7 +574,8 @@ void integralLLL(int size)
 }
 
 // Compute remainder such that the result is in range -divisor/2 to divisor/2.
-static void BigIntSymmetricRemainder(BigInteger* dividend, BigInteger* divisor, BigInteger* result)
+static void BigIntSymmetricRemainder(const BigInteger* dividend,
+  const BigInteger* divisor, BigInteger* result)
 {
   (void)BigIntRemainder(dividend, divisor, result);
   // Convert trace to range -powerExtraBits/2 to powerExtraBits/2
@@ -696,7 +697,7 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
   int degreeFactor;
   int rc;
   struct sFactorInfo* pstFactorInfo;
-  int* ptrSrc;
+  const int* ptrSrc;
   int* ptrDest;
   int nbrTmp[1000];
   int nbrTmp2[1000];

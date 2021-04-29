@@ -171,6 +171,7 @@
     <ClCompile Include="bignbr.c" />
     <ClCompile Include="bigrational.c" />
     <ClCompile Include="divpoly.c" />
+    <ClCompile Include="ecm.c" />
     <ClCompile Include="fftpoly.c" />
     <ClCompile Include="intpolfact.c" />
     <ClCompile Include="linkedbignbr.c" />

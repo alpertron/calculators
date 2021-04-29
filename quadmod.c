@@ -60,7 +60,7 @@ static BigInteger LastModulus;
 static int nbrFactors;
 char *ptrOutput;
 
-static int Show(BigInteger *num, const char *str, int t)
+static int Show(const BigInteger *num, const char *str, int t)
 {
   if (!BigIntIsZero(num))
   {     // num is not zero.
@@ -76,11 +76,8 @@ static int Show(BigInteger *num, const char *str, int t)
     }
     if ((num->nbrLimbs != 1) || (num->limbs[0].x != 1))
     {    // num is not 1 or -1.
-      int signTemp = num->sign;
-      num->sign = SIGN_POSITIVE;
       *ptrOutput++ = ' ';
-      BigInteger2Dec(num, ptrOutput, groupLen);
-      num->sign = signTemp;
+      Bin2Dec(num->limbs, ptrOutput, num->nbrLimbs, groupLen);
       ptrOutput += strlen(ptrOutput);
     }
     (void)strcpy(ptrOutput, str);
@@ -90,7 +87,7 @@ static int Show(BigInteger *num, const char *str, int t)
   return t;
 }
 
-void Show1(BigInteger *num, int t)
+void Show1(const BigInteger *num, int t)
 {
   int u = Show(num, "", t);
   if (((u & 1) == 0) || ((num->nbrLimbs == 1) && (num->limbs[0].x == 1)))
@@ -1022,7 +1019,7 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
   *ptrOutput = 0;   // Add string terminator.
 }
 
-#ifdef __EMSCRIPTEN__
+#if defined __EMSCRIPTEN__ && !defined _MSC_VER
 EXTERNALIZE void doWork(void)
 {
   int flags;

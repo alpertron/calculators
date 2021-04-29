@@ -26,7 +26,7 @@
 #ifdef __EMSCRIPTEN__
 int stamp(void);
 #endif
-#if defined _USING64BITS_ && defined __EMSCRIPTEN__
+#if defined _USING64BITS_ && defined __EMSCRIPTEN__ && !defined _MSC_VER
 #define EXTERNALIZE  __attribute__((visibility("default")))
 #else
 #define EXTERNALIZE	

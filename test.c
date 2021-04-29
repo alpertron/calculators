@@ -26,7 +26,7 @@
 #include "batch.h"
 #include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 9
+#define DEBUG_CODE 13
 #endif
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -363,3 +363,33 @@ int main(int argc, char *argv[])
 #endif
   return 0;
 }
+#ifdef __EMSCRIPTEN__
+void databack(const char* data)
+{
+  printf("%s\n", data);
+}
+
+double tenths(void)
+{
+  return 0;
+}
+
+void startSkipTest(void)
+{
+  // Nothing to do in this stub implementation.
+}
+
+void endSkipTest(void)
+{
+  // Nothing to do in this stub implementation.
+}
+
+void getCunn(const char* url, char* factorsFromServer)
+{
+  (void)url;
+  (void)factorsFromServer;
+  // Nothing to do in this stub implementation.
+}
+
+#endif
+

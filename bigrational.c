@@ -31,7 +31,8 @@ static BigRational Rat2;
 // Let A = a_n/a_d, B = b_n/b_d, C = c_n/d_n
 // A = B+C means a_n = b_n*c_d + c_n*b_d, a_d = b_d * c_d
 // Then divide A_n and A_d by their GCD.
-enum eExprErr BigRationalAdd(BigRational* pAddend1, BigRational* pAddend2, BigRational* pSum)
+enum eExprErr BigRationalAdd(const BigRational* pAddend1,
+  const BigRational* pAddend2, BigRational* pSum)
 {
   enum eExprErr rc;
   rc = BigIntMultiply(&pAddend1->numerator, &pAddend2->denominator, &tmp1);
@@ -63,7 +64,8 @@ enum eExprErr BigRationalAdd(BigRational* pAddend1, BigRational* pAddend2, BigRa
 // Let A = a_n/a_d, B = b_n/b_d, C = c_n/d_n
 // A = B-C means a_n = b_n*c_d - c_n*b_d, a_d = b_d * c_d
 // Then divide A_n and A_d by their GCD.
-enum eExprErr BigRationalSubt(BigRational* pAddend1, BigRational* pAddend2, BigRational* pSum)
+enum eExprErr BigRationalSubt(const BigRational* pAddend1, 
+  const BigRational* pAddend2, BigRational* pSum)
 {
   enum eExprErr rc;
   rc = BigIntMultiply(&pAddend1->numerator, &pAddend2->denominator, &tmp1);
@@ -98,7 +100,8 @@ void BigRationalNegate(BigRational* pSrc, const BigRational* pDest)
   BigIntChSign(&pSrc->numerator);
 }
 
-enum eExprErr BigRationalDivide(BigRational* pDividend, BigRational* pDivisor, BigRational* pQuotient)
+enum eExprErr BigRationalDivide(const BigRational* pDividend, 
+  const BigRational* pDivisor, BigRational* pQuotient)
 {
   enum eExprErr rc;
   rc = BigIntMultiply(&pDividend->numerator, &pDivisor->denominator, &tmp1);
@@ -121,7 +124,8 @@ enum eExprErr BigRationalDivide(BigRational* pDividend, BigRational* pDivisor, B
   return BigIntDivide(&tmp2, &tmp3, &pQuotient->denominator);
 }
 
-enum eExprErr BigRationalMultiply(BigRational* pFactor1, BigRational* pFactor2, BigRational* pProduct)
+enum eExprErr BigRationalMultiply(const BigRational* pFactor1, 
+  const BigRational* pFactor2, BigRational* pProduct)
 {
   enum eExprErr rc;
   rc = BigIntMultiply(&pFactor1->numerator, &pFactor2->numerator, &tmp1);
@@ -144,7 +148,8 @@ enum eExprErr BigRationalMultiply(BigRational* pFactor1, BigRational* pFactor2, 
   return BigIntDivide(&tmp2, &tmp3, &pProduct->denominator);
 }
 
-enum eExprErr BigRationalMultiplyByInt(BigRational* pFactor1, int factor2, BigRational* pProduct)
+enum eExprErr BigRationalMultiplyByInt(const BigRational* pFactor1,
+  int factor2, BigRational* pProduct)
 {
   multint(&tmp1, &pFactor1->numerator, factor2);
   BigIntGcd(&tmp1, &pFactor1->denominator, &tmp3);
@@ -153,7 +158,8 @@ enum eExprErr BigRationalMultiplyByInt(BigRational* pFactor1, int factor2, BigRa
   return EXPR_OK;
 }
 
-enum eExprErr BigRationalDivideByInt(BigRational* pDividend, int divisor, BigRational* pQuotient)
+enum eExprErr BigRationalDivideByInt(const BigRational* pDividend,
+  int divisor, BigRational* pQuotient)
 {
   multint(&tmp1, &pDividend->denominator, divisor);
   BigIntGcd(&tmp1, &pDividend->numerator, &tmp3);
@@ -295,7 +301,7 @@ bool BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
   return true;
 }
 
-static void showRationalPretty(BigRational* rat)
+static void showRationalPretty(const BigRational* rat)
 {
   if (pretty == PRETTY_PRINT)
   {
@@ -315,7 +321,7 @@ static void showRationalPretty(BigRational* rat)
   }
 }
 
-void showRationalNoParen(BigRational* rat)
+void showRationalNoParen(const BigRational* rat)
 {
   bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) || (rat->denominator.limbs[0].x != 1));
   if ((pretty != PARI_GP) && denominatorIsNotOne)
@@ -331,7 +337,7 @@ void showRationalNoParen(BigRational* rat)
   }
 }
 
-void showRationalOverStr(BigRational* rat, const char *str, const char *ptrTimes)
+void showRationalOverStr(const BigRational* rat, const char *str, const char *ptrTimes)
 {
   bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) || (rat->denominator.limbs[0].x != 1));
   if (pretty != PARI_GP)
@@ -366,7 +372,7 @@ void showRationalOverStr(BigRational* rat, const char *str, const char *ptrTimes
   }
 }
 
-void showRational(BigRational* rat)
+void showRational(const BigRational* rat)
 {
   bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) || (rat->denominator.limbs[0].x != 1));
   bool showParen;

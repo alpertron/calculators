@@ -2651,8 +2651,7 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
     int multiplicand;
     for (ctr = 0; ctr < 2; ctr++)
     {
-      int component;
-      for (component = 0; component < 2; component++)
+      for (int component = 0; component < 2; component++)
       {
         if (component == 0)
         {            // Showing real part.

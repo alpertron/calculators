@@ -22,8 +22,24 @@
 #define FACTOR_ARRSIZE (2*MAX_FACTORS)
 #include "showtime.h"
 #ifdef __EMSCRIPTEN__
-void getCunn(char *url, char *factorsFromServer);
+void getCunn(const char *url, char *factorsFromServer);
 #endif
+
+#define TYP_AURIF    100000000
+#define TYP_TABLE    150000000
+#define TYP_SIQS     200000000
+#define TYP_LEHMAN   250000000
+#define TYP_RABIN    300000000
+#define TYP_DIVISION 350000000
+#define TYP_EC       400000000
+
+enum eEcmResult
+{
+  FACTOR_NOT_FOUND = 0,
+  FACTOR_FOUND,
+  CHANGE_TO_SIQS,
+};
+
 struct sFactors
 {
   int *ptrFactor;
@@ -78,6 +94,7 @@ void MinFactor(BigInteger* result);
 void MaxFactor(BigInteger* result);
 void SumOfDivisors(BigInteger *result);
 void NumberOfDivisors(BigInteger *result);
+enum eEcmResult ecmCurve(int* pEC, int* pNextEC);
 #ifdef FACTORIZATION_APP
 char *ShowFactoredPart(const BigInteger *nbr, const void *vFactors);
 void ShowLowerText(void);

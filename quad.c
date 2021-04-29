@@ -133,7 +133,7 @@ static BigInteger *Xbak;
 static BigInteger *Ybak;
 static int Show(const BigInteger *num, const char *str, enum eLinearSolution t);
 static void Show1(const BigInteger *num, enum eLinearSolution t);
-static void callbackQuadModParabolic(BigInteger *value);
+static void callbackQuadModParabolic(const BigInteger *value);
 static void callbackQuadModElliptic(BigInteger *value);
 static void callbackQuadModHyperbolic(BigInteger *value);
 static void ContFracPell(void);
@@ -307,7 +307,7 @@ int PrintLinear(enum eLinearSolution Ret, const char *var)
   return 0;
 }
 
-static void PrintQuad(const BigInteger *coeffT2, BigInteger *coeffT, BigInteger *coeffInd, 
+static void PrintQuad(const BigInteger *coeffT2, const BigInteger *coeffT, const BigInteger *coeffInd, 
                       const char *var1, const char *var2)
 {
   if ((coeffT2->nbrLimbs == 1) && (coeffT2->limbs[0].x == 1))
@@ -352,9 +352,8 @@ static void PrintQuad(const BigInteger *coeffT2, BigInteger *coeffT, BigInteger 
   {
     if (coeffT->sign == SIGN_NEGATIVE)
     {
-      coeffT->sign = SIGN_POSITIVE;
-      shownbr(coeffT);
-      coeffT->sign = SIGN_NEGATIVE;
+      Bin2Dec(coeffT->limbs, ptrOutput, coeffT->nbrLimbs, groupLen);
+      ptrOutput += strlen(ptrOutput);
     }
     else
     {
@@ -370,11 +369,9 @@ static void PrintQuad(const BigInteger *coeffT2, BigInteger *coeffT, BigInteger 
   }
   if (!BigIntIsZero(coeffInd))
   {
-    enum eSign oldSign = coeffInd->sign;
-    coeffInd->sign = SIGN_POSITIVE;
     if (!BigIntIsZero(coeffT) || !BigIntIsZero(coeffT2))
     {
-      if (oldSign == SIGN_NEGATIVE)
+      if (coeffInd->sign == SIGN_NEGATIVE)
       {
         showText(" &minus; ");
       }
@@ -383,17 +380,19 @@ static void PrintQuad(const BigInteger *coeffT2, BigInteger *coeffT, BigInteger 
         showText(" + ");
       }
     }
-    else if (oldSign == SIGN_NEGATIVE)
+    else if (coeffInd->sign == SIGN_NEGATIVE)
     {
       showText(" &minus;");
     }
     if (var2 == NULL)
     {
-      shownbr(coeffInd);
+      Bin2Dec(coeffInd->limbs, ptrOutput, coeffInd->nbrLimbs, groupLen);
+      ptrOutput += strlen(ptrOutput);
     }
     else if ((coeffInd->nbrLimbs > 1) || (coeffInd->limbs[0].x > 1))
     {
-      shownbr(coeffInd);
+      Bin2Dec(coeffInd->limbs, ptrOutput, coeffInd->nbrLimbs, groupLen);
+      ptrOutput += strlen(ptrOutput);
       showText("&nbsp;&#8290;");
       showText(var2);
       showSquare();
@@ -403,7 +402,6 @@ static void PrintQuad(const BigInteger *coeffT2, BigInteger *coeffT, BigInteger 
       showText(var2);
       showSquare();
     }
-    coeffInd->sign = oldSign;
   }
 }
 
@@ -2029,7 +2027,7 @@ static void ComputeYDiscrZero(void)
   BigIntMultiply(&V3, &ValZ, &V3);
 }
 
-static void callbackQuadModParabolic(BigInteger *value)
+static void callbackQuadModParabolic(const BigInteger *value)
 {  // The argument of this function is T. t = T - d + uk (k arbitrary).
    // Compute ValR <- (T^2 - v)/u
   if (teach)
@@ -2784,7 +2782,7 @@ static void showOtherSolution(const char *ordinal)
 // Output:
 // 0 = There are no solutions because gcd(P, Q, R) > 1
 // 1 = gcd(P, Q, R) = 1.
-static int PerformTransformation(BigInteger *value)
+static int PerformTransformation(const BigInteger *value)
 {
   // Compute P <- (at^2+bt+c)/K
   BigIntMultiply(&ValA, value, &ValQ);
@@ -4261,13 +4259,17 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
-#ifdef __EMSCRIPTEN__
+#if defined __EMSCRIPTEN__ && !defined _MSC_VER
 EXTERNALIZE void doWork(void)
 {
   int flags;
   char *ptrData = inputString;
-  char *ptrCoeffA, *ptrCoeffB, *ptrCoeffC;
-  char *ptrCoeffD, *ptrCoeffE, *ptrCoeffF;
+  char* ptrCoeffA;
+  char* ptrCoeffB;
+  char *ptrCoeffC;
+  char* ptrCoeffD;
+  char* ptrCoeffE;
+  char *ptrCoeffF;
   groupLen = 0;
   while (*ptrData != ',')
   {

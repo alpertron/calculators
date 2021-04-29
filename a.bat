@@ -18,27 +18,27 @@ set polfactOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s T
 cmd /c emcc %jsCommon% %polfactFiles% %polfactOptions% -o polfactW%1.js
 if errorlevel 1 goto end
 
-set dilogFiles=expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c dilog.c bignbr.c showtime.c inputstr.c fft.c
+set dilogFiles=expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c dilog.c bignbr.c showtime.c inputstr.c fft.c
 set dilogOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
 cmd /c emcc %jsCommon% %dilogFiles% %dilogOptions% -o dilogW%1.js
 if errorlevel 1 goto end
 
-set quadmodFiles=expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c quadmod.c bignbr.c showtime.c inputstr.c fft.c
+set quadmodFiles=expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c quadmod.c bignbr.c showtime.c inputstr.c fft.c
 set quadmodOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
 cmd /c emcc %jsCommon% %quadmodFiles% %quadmodOptions% -o quadmodW%1.js
 if errorlevel 1 goto end
 
-set gaussianFiles=GaussExpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c gaussian.c output.c bignbr.c showtime.c inputstr.c fft.c
+set gaussianFiles=GaussExpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c gaussian.c output.c bignbr.c showtime.c inputstr.c fft.c
 set gaussianOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
 cmd /c emcc %jsCommon% %gaussianFiles% %gaussianOptions% -o gaussianW%1.js
 if errorlevel 1 goto end
 
-set ecmFiles=batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c ecmfront.c gcdrings.c bignbr.c showtime.c inputstr.c
+set ecmFiles=batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c ecmfront.c gcdrings.c bignbr.c showtime.c inputstr.c
 set ecmOptions=-DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DENABLE_VERBOSE=1 -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456
 cmd /c emcc %jsCommon% %ecmFiles% %ecmOptions% -o ecmW%1.js
 if errorlevel 1 goto end
 
-set quadFiles=batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c siqs.c quad.c output.c bignbr.c showtime.c inputstr.c
+set quadFiles=batch.c fft.c expression.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c quad.c output.c bignbr.c showtime.c inputstr.c
 set quadOptions=-DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456
 cmd /c emcc %jsCommon% %quadFiles% %quadOptions% -o quadW%1.js
 if errorlevel 1 goto end

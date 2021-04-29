@@ -36,7 +36,7 @@ static limb K[MAX_LEN];
 static BigInteger mult1;
 static BigInteger mult2;
 static limb minusOneMont[MAX_LEN];
-static void DivideGaussian(BigInteger *real, BigInteger *imag);
+static void DivideGaussian(const BigInteger *real, const BigInteger *imag);
 static BigInteger value[2];
 extern BigInteger tofactor;
 
@@ -48,8 +48,6 @@ static void showText(const char *text)
 
 static void showNumber(const BigInteger *real, const BigInteger *imag)
 {
-  BigInteger Tmp;
-  CopyBigInt(&Tmp, imag);
   if (real->sign == SIGN_NEGATIVE)
   {
     showText("-");
@@ -64,7 +62,7 @@ static void showNumber(const BigInteger *real, const BigInteger *imag)
   {
     showText(" - ");
   }
-  Bin2Dec(Tmp.limbs, ptrOutput, Tmp.nbrLimbs, groupLen);
+  Bin2Dec(imag->limbs, ptrOutput, imag->nbrLimbs, groupLen);
   ptrOutput += strlen(ptrOutput);
   showText(" i");
 }
@@ -245,7 +243,7 @@ void GaussianFactorization(void)
   showText("</ul>");
 }
 
-static void DivideGaussian(BigInteger *real, BigInteger *imag)
+static void DivideGaussian(const BigInteger *real, const BigInteger *imag)
 {
   BigInteger Tmp;
   BigInteger norm;
@@ -314,7 +312,7 @@ void gaussianText(char *valueText, int doFactorization)
                            "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
-#ifdef __EMSCRIPTEN__
+#if defined __EMSCRIPTEN__ && !defined _MSC_VER
 EXTERNALIZE void doWork(void)
 {
   int flags;

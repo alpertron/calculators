@@ -1579,9 +1579,9 @@ void initializeSmallPrimes(int* pSmallPrimes)
 //         2 = composite: does not pass 2-SPRP test.
 //         3 = composite: does not pass strong Lucas test.
 #if FACTORIZATION_APP
-bool BpswPrimalityTest(/*@in@*/BigInteger *pValue, const void *vFactors)
+bool BpswPrimalityTest(const BigInteger *pValue, const void *vFactors)
 #else
-bool BpswPrimalityTest(/*@in@*/BigInteger *pValue)
+bool BpswPrimalityTest(const BigInteger *pValue)
 #endif
 {
 #if defined(__EMSCRIPTEN__) && !defined(FACTORIZATION_APP)
@@ -1603,7 +1603,7 @@ bool BpswPrimalityTest(/*@in@*/BigInteger *pValue)
   int signPowQ;
   bool insidePowering = false;
   int nbrLimbs = pValue->nbrLimbs;
-  limb *limbs = pValue->limbs;
+  const limb *limbs = pValue->limbs;
   static BigInteger tmp;
   if ((nbrLimbs == 1) && (limbs->x <= 2))
   {
@@ -1641,19 +1641,20 @@ bool BpswPrimalityTest(/*@in@*/BigInteger *pValue)
 #endif
 #endif
   // Perform 2-SPRP test
-  (limbs + nbrLimbs)->x = 0;
-  (void)memcpy(q, limbs, (nbrLimbs + 1) * sizeof(limb));
+  (void)memcpy(q, limbs, nbrLimbs * sizeof(limb));
+  q[nbrLimbs] = 0;
   q[0]--;                     // q = p - 1 (p is odd, so there is no carry).
   (void)memcpy(Mult3, q, (nbrLimbs + 1) * sizeof(q[0]));
   Mult3Len = nbrLimbs;
   DivideBigNbrByMaxPowerOf2(&ctr, Mult3, &Mult3Len);
-  (void)memcpy(TestNbr, limbs, (nbrLimbs+1) * sizeof(limb));
+  (void)memcpy(TestNbr, limbs, nbrLimbs * sizeof(limb));
+  TestNbr[nbrLimbs].x = 0;
   GetMontgomeryParms(nbrLimbs);
   // Find Mult1 = 2^Mult3.
   (void)memcpy(Mult1, MontgomeryMultR1, (NumberLength + 1) * sizeof(limb));  // power <- 1
   for (index = Mult3Len - 1; index >= 0; index--)
   {
-    int groupExp = (int)Mult3[index].x;
+    int groupExp = Mult3[index].x;
 #ifdef __EMSCRIPTEN__
     percentageBPSW = (Mult3Len - index) * 100 / Mult3Len;
 #endif
@@ -1785,7 +1786,7 @@ bool BpswPrimalityTest(/*@in@*/BigInteger *pValue)
 #ifdef __EMSCRIPTEN__
     percentageBPSW = (expon.nbrLimbs - index) * 100 / expon.nbrLimbs;
 #endif
-    int groupExp = (int)(expon.limbs[index].x);
+    int groupExp = expon.limbs[index].x;
     for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
     {
       if (insidePowering)

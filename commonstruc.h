@@ -152,6 +152,9 @@ struct stEcm
   unsigned char sieve2310[SIEVE_SIZE];
   unsigned char ProcessExpon[(332199 + 7) / 8];
   unsigned char primes[(2 * 332199 + 3 + 7) / 8];
+  BigInteger Temp1;
+  BigInteger Temp2;
+  BigInteger Temp3;
 };
 
 struct stTrialDivision
