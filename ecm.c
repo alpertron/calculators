@@ -38,6 +38,7 @@ static int SmallPrime[670]; /* Primes < 5000 */
 static int boundStep1;
 static int boundStep2;
 static int sqrtBoundStep1;
+static int NumberSizeBytes;
 
 /* ECM limits for 30, 35, ..., 95 digits */
 static int limits[] = { 10, 10, 10, 10, 10, 15, 22, 26, 35, 50, 100, 150, 250 };
@@ -170,10 +171,10 @@ void prac(int n, limb* x, limb* z, limb* xT, limb* zT, limb* xT2, limb* zT2)
   /* first iteration always begins by Condition 3, then a swap */
   d = n - r;
   e = (2 * r) - n;
-  (void)memcpy(xB, xA, NumberLength * (int)sizeof(limb));   // B <- A
-  (void)memcpy(zB, zA, NumberLength * (int)sizeof(limb));
-  (void)memcpy(xC, xA, NumberLength * (int)sizeof(limb));   // C <- A
-  (void)memcpy(zC, zA, NumberLength * (int)sizeof(limb));
+  (void)memcpy(xB, xA, NumberSizeBytes);   // B <- A
+  (void)memcpy(zB, zA, NumberSizeBytes);
+  (void)memcpy(xC, xA, NumberSizeBytes);   // C <- A
+  (void)memcpy(zC, zA, NumberSizeBytes);
   duplicate(xA, zA, xA, zA); /* A=2*A */
   while (d != e)
   {
@@ -310,13 +311,13 @@ static void add3(limb* x3, limb* z3, const limb* x2, const limb* z2,
   modmult(t, t, w);       // w = 4*(x1*x2-z1*z2)^2
   SubtBigNbrModN(u, v, t, TestNbr, NumberLength);   // t = 2*(x2*z1-x1*z2)
   modmult(t, t, v);       // v = 4*(x2*z1-x1*z2)^2
-  if (!memcmp(x, x3, NumberLength * (int)sizeof(limb)))
+  if (!memcmp(x, x3, NumberSizeBytes))
   {
-    (void)memcpy(u, x, NumberLength * (int)sizeof(int));
-    (void)memcpy(t, w, NumberLength * (int)sizeof(int));
+    (void)memcpy(u, x, NumberSizeBytes);
+    (void)memcpy(t, w, NumberSizeBytes);
     modmult(z, t, w);
     modmult(v, u, z3);
-    (void)memcpy(x3, w, NumberLength * (int)sizeof(int));
+    (void)memcpy(x3, w, NumberSizeBytes);
   }
   else
   {
@@ -443,9 +444,9 @@ enum eEcmResult ecmStep1(void)
   int P;
   int i;
   int u;
-  (void)memcpy(common.ecm.Xaux, common.ecm.X, NumberLength * (int)sizeof(limb));
-  (void)memcpy(common.ecm.Zaux, common.ecm.Z, NumberLength * (int)sizeof(limb));
-  (void)memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, (NumberLength + 1) * (int)sizeof(limb));
+  (void)memcpy(common.ecm.Xaux, common.ecm.X, NumberSizeBytes);
+  (void)memcpy(common.ecm.Zaux, common.ecm.Z, NumberSizeBytes);
+  (void)memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, (NumberLength + 1) * sizeof(limb));
   for (int pass = 0; pass < 2; pass++)
   {
     /* For powers of 2 */
@@ -466,7 +467,7 @@ enum eEcmResult ecmStep1(void)
     if (pass == 0)
     {
       modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.Aux1);
-      (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux1, NumberLength * (int)sizeof(limb));
+      (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux1, NumberSizeBytes);
     }
     else
     {
@@ -493,7 +494,7 @@ enum eEcmResult ecmStep1(void)
       if (pass == 0)
       {
         modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.Aux1);
-        (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux1, NumberLength * (int)sizeof(limb));
+        (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux1, NumberSizeBytes);
       }
       else
       {
@@ -544,7 +545,7 @@ enum eEcmResult ecmStep1(void)
         if (pass == 0)
         {
           modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.Aux1);
-          (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux1, NumberLength * (int)sizeof(limb));
+          (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux1, NumberSizeBytes);
         }
         else
         {
@@ -560,8 +561,8 @@ enum eEcmResult ecmStep1(void)
     {
       if (BigNbrIsZero(common.ecm.GcdAccumulated))
       { // If GcdAccumulated is
-        (void)memcpy(common.ecm.X, common.ecm.Xaux, NumberLength * (int)sizeof(limb));
-        (void)memcpy(common.ecm.Z, common.ecm.Zaux, NumberLength * (int)sizeof(limb));
+        (void)memcpy(common.ecm.X, common.ecm.Xaux, NumberSizeBytes);
+        (void)memcpy(common.ecm.Z, common.ecm.Zaux, NumberSizeBytes);
         continue; // multiple of TestNbr, continue.
       }
       if (gcdIsOne(common.ecm.GcdAccumulated) > 1)
@@ -599,15 +600,15 @@ enum eEcmResult ecmStep2(void)
     }
   }
   (void)memcpy(&common.ecm.sieve2310[HALF_SIEVE_SIZE], &common.ecm.sieve2310[0], HALF_SIEVE_SIZE);
-  (void)memcpy(common.ecm.Xaux, common.ecm.X, NumberLength * (int)sizeof(limb));  // (X:Z) -> Q (output
-  (void)memcpy(common.ecm.Zaux, common.ecm.Z, NumberLength * (int)sizeof(limb));  //         from step 1)
+  (void)memcpy(common.ecm.Xaux, common.ecm.X, NumberSizeBytes);  // (X:Z) -> Q (output
+  (void)memcpy(common.ecm.Zaux, common.ecm.Z, NumberSizeBytes);  //         from step 1)
   for (int pass = 0; pass < 2; pass++)
   {
     int Qaux;
     int J;
-    (void)memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, NumberLength * (int)sizeof(limb));
-    (void)memcpy(common.ecm.UX, common.ecm.X, NumberLength * (int)sizeof(limb));
-    (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberLength * (int)sizeof(limb));  // (UX:UZ) -> Q 
+    (void)memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, NumberSizeBytes);
+    (void)memcpy(common.ecm.UX, common.ecm.X, NumberSizeBytes);
+    (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberSizeBytes);  // (UX:UZ) -> Q 
     ModInvBigNbr(common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
     modmult(common.ecm.Aux1, common.ecm.X, common.ecm.root[0]); // root[0] <- X/Z (Q)
     J = 0;
@@ -634,8 +635,8 @@ enum eEcmResult ecmStep2(void)
     modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z); // (X:Z) -> 3Q
     for (I = 5; I < SIEVE_SIZE; I += 2)
     {
-      (void)memcpy(common.ecm.WX, common.ecm.X, NumberLength * (int)sizeof(limb));
-      (void)memcpy(common.ecm.WZ, common.ecm.Z, NumberLength * (int)sizeof(limb));
+      (void)memcpy(common.ecm.WX, common.ecm.X, NumberSizeBytes);
+      (void)memcpy(common.ecm.WZ, common.ecm.Z, NumberSizeBytes);
       SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
       AddBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
       modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W1);
@@ -651,7 +652,7 @@ enum eEcmResult ecmStep2(void)
       if (pass == 0)
       {
         modmult(common.ecm.GcdAccumulated, common.ecm.Aux1, common.ecm.Aux2);
-        (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux2, NumberLength * (int)sizeof(limb));
+        (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux2, NumberSizeBytes);
       }
       else
       {
@@ -662,8 +663,8 @@ enum eEcmResult ecmStep2(void)
       }
       if (I == HALF_SIEVE_SIZE)
       {
-        (void)memcpy(common.ecm.DX, common.ecm.X, NumberLength * (int)sizeof(limb));
-        (void)memcpy(common.ecm.DZ, common.ecm.Z, NumberLength * (int)sizeof(limb));  // (DX:DZ) -> HALF_SIEVE_SIZE*Q
+        (void)memcpy(common.ecm.DX, common.ecm.X, NumberSizeBytes);
+        (void)memcpy(common.ecm.DZ, common.ecm.Z, NumberSizeBytes);  // (DX:DZ) -> HALF_SIEVE_SIZE*Q
       }
       if (((I % 3) != 0) && ((I % 5) != 0) && ((I % 7) != 0)
 #if MAX_PRIME_SIEVE == 11
@@ -675,8 +676,8 @@ enum eEcmResult ecmStep2(void)
         ModInvBigNbr(common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
         modmult(common.ecm.Aux1, common.ecm.X, common.ecm.root[J]); // root[J] <- X/Z
       }
-      (void)memcpy(common.ecm.UX, common.ecm.WX, NumberLength * (int)sizeof(limb));  // (UX:UZ) <-
-      (void)memcpy(common.ecm.UZ, common.ecm.WZ, NumberLength * (int)sizeof(limb));  // Previous (X:Z)
+      (void)memcpy(common.ecm.UX, common.ecm.WX, NumberSizeBytes);  // (UX:UZ) <-
+      (void)memcpy(common.ecm.UZ, common.ecm.WZ, NumberSizeBytes);  // Previous (X:Z)
     } /* end for I */
     AddBigNbrModN(common.ecm.DX, common.ecm.DZ, common.ecm.Aux1, TestNbr, NumberLength);
     modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W1);
@@ -687,8 +688,8 @@ enum eEcmResult ecmStep2(void)
     modmult(common.ecm.Aux1, common.ecm.AA, common.ecm.Aux2);
     AddBigNbrModN(common.ecm.Aux2, common.ecm.W2, common.ecm.Aux3, TestNbr, NumberLength);
     modmult(common.ecm.Aux1, common.ecm.Aux3, common.ecm.Z);
-    (void)memcpy(common.ecm.UX, common.ecm.X, NumberLength * (int)sizeof(limb));
-    (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberLength * (int)sizeof(limb));    // (UX:UZ) -> SIEVE_SIZE*Q
+    (void)memcpy(common.ecm.UX, common.ecm.X, NumberSizeBytes);
+    (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberSizeBytes);    // (UX:UZ) -> SIEVE_SIZE*Q
     AddBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
     modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.W1);
     SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
@@ -743,7 +744,7 @@ enum eEcmResult ecmStep2(void)
           }
           SubtBigNbrModN(common.ecm.Aux1, common.ecm.root[i], common.ecm.M, TestNbr, NumberLength);
           modmult(common.ecm.GcdAccumulated, common.ecm.M, common.ecm.Aux2);
-          (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux2, NumberLength * (int)sizeof(limb));
+          (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux2, NumberSizeBytes);
         }
         if (pass != 0)
         {
@@ -759,8 +760,8 @@ enum eEcmResult ecmStep2(void)
       }   // End for.
       if (indexM != 0)
       { // Update (X:Z)
-        (void)memcpy(common.ecm.WX, common.ecm.X, NumberLength * (int)sizeof(limb));
-        (void)memcpy(common.ecm.WZ, common.ecm.Z, NumberLength * (int)sizeof(limb));
+        (void)memcpy(common.ecm.WX, common.ecm.X, NumberSizeBytes);
+        (void)memcpy(common.ecm.WZ, common.ecm.Z, NumberSizeBytes);
         SubtBigNbrModN(common.ecm.X, common.ecm.Z, common.ecm.Aux1, TestNbr, NumberLength);
         AddBigNbrModN(common.ecm.TX, common.ecm.TZ, common.ecm.Aux2, TestNbr, NumberLength);
         modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.W1);
@@ -773,8 +774,8 @@ enum eEcmResult ecmStep2(void)
         SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
         modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
         modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z);
-        (void)memcpy(common.ecm.UX, common.ecm.WX, NumberLength * (int)sizeof(limb));
-        (void)memcpy(common.ecm.UZ, common.ecm.WZ, NumberLength * (int)sizeof(limb));
+        (void)memcpy(common.ecm.UX, common.ecm.WX, NumberSizeBytes);
+        (void)memcpy(common.ecm.UZ, common.ecm.WZ, NumberSizeBytes);
       }
     } // end for Q
     if (pass == 0)
@@ -782,8 +783,8 @@ enum eEcmResult ecmStep2(void)
       int rc;
       if (BigNbrIsZero(common.ecm.GcdAccumulated))
       { // If GcdAccumulated is zero
-        (void)memcpy(common.ecm.X, common.ecm.Xaux, NumberLength * (int)sizeof(limb));
-        (void)memcpy(common.ecm.Z, common.ecm.Zaux, NumberLength * (int)sizeof(limb));
+        (void)memcpy(common.ecm.X, common.ecm.Xaux, NumberSizeBytes);
+        (void)memcpy(common.ecm.Z, common.ecm.Zaux, NumberSizeBytes);
         continue; // multiple of TestNbr, continue.
       }
       rc = gcdIsOne(common.ecm.GcdAccumulated);
@@ -796,7 +797,7 @@ enum eEcmResult ecmStep2(void)
         continue;
       }
       // GD <- GCD(GcdAccumulated, TestNbr)
-      if (memcmp(common.ecm.GD, TestNbr, NumberLength * (int)sizeof(limb)))
+      if (memcmp(common.ecm.GD, TestNbr, NumberSizeBytes))
       {           // GCD is not 1 or TestNbr
         return FACTOR_FOUND;
       }
@@ -807,13 +808,12 @@ enum eEcmResult ecmStep2(void)
 
 static void initSmallPrimeArray(void)
 {
-  int potentialPrime;
-  int divisor;
+  int potentialPrime = 3;
   SmallPrime[0] = 2;
-  potentialPrime = 3;
   indexM = 1;
-  for (indexM = 1; indexM < (int)sizeof(SmallPrime) / (int)sizeof(SmallPrime[0]); indexM++)
+  for (indexM = 1; indexM < sizeof(SmallPrime) / sizeof(SmallPrime[0]); indexM++)
   {     // Loop that fills the SmallPrime array.
+    int divisor;
     SmallPrime[indexM] = potentialPrime; /* Store prime */
     do
     {
@@ -834,6 +834,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
   int EC = *pEC;
   int NextEC = *pNextEC;
   enum eEcmResult result;
+  NumberSizeBytes = NumberLength * sizeof(limb);
 #ifdef __EMSCRIPTEN__
   char text[20];
 #endif
@@ -855,7 +856,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
       if (EC >= TYP_SIQS)
       {
         common.ecm.GD[0].x = 1;   // Set GD to 1.
-        (void)memset(&common.ecm.GD[1], 0, (NumberLength - 1) * (int)sizeof(limb));
+        (void)memset(&common.ecm.GD[1], 0, (NumberLength - 1) * sizeof(limb));
         *pEC = EC;
         *pNextEC = NextEC;
         return FACTOR_FOUND;
@@ -947,7 +948,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
 
     //  Compute A0 <- 2 * (EC+1)*modinv(3 * (EC+1) ^ 2 - 1, N) mod N
                                                // Aux2 <- 1 in Montgomery notation.
-    (void)memcpy(common.ecm.Aux2, MontgomeryMultR1, NumberLength * (int)sizeof(limb));
+    (void)memcpy(common.ecm.Aux2, MontgomeryMultR1, NumberSizeBytes);
     modmultInt(common.ecm.Aux2, EC + 1, common.ecm.Aux2);            // Aux2 <- EC + 1.
     modmultInt(common.ecm.Aux2, 2, common.ecm.Aux1);                 // Aux1 <- 2*(EC+1)
     modmultInt(common.ecm.Aux2, EC + 1, common.ecm.Aux3);            // Aux3 <- (EC + 1)^2
