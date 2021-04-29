@@ -124,98 +124,108 @@ void SubtractBigNbrB(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen)
 
 void AddBigIntModN(const int *pNbr1, const int *pNbr2, int *pSum, const int *pMod, int nbrLen)
 {
+  const int* ptrNbr1 = pNbr1;
+  const int* ptrNbr2 = pNbr2;
+  int* ptrSum = pSum;
+  const int* ptrMod = pMod;
   int borrow = 0;
   unsigned int carry = 0;
   int i;
   for (i = 0; i < nbrLen; i++)
   {
-    carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pNbr1 + (unsigned int)*pNbr2;
-    *pSum = (int)(carry & MAX_INT_NBR);
-    pNbr1++;
-    pNbr2++;
-    pSum++;
+    carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrNbr1 + (unsigned int)*ptrNbr2;
+    *ptrSum = (int)(carry & MAX_INT_NBR);
+    ptrNbr1++;
+    ptrNbr2++;
+    ptrSum++;
   }
   carry >>= BITS_PER_INT_GROUP;
-  pSum -= nbrLen;
+  ptrSum -= nbrLen;
   for (i = 0; i < nbrLen; i++)
   {
-    borrow = (borrow >> BITS_PER_INT_GROUP) + *pSum - *pMod;
-    *pSum = borrow & MAX_INT_NBR;
-    pMod++;
-    pSum++;
+    borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrSum - *ptrMod;
+    *ptrSum = borrow & MAX_INT_NBR;
+    ptrMod++;
+    ptrSum++;
   }
   borrow >>= BITS_PER_INT_GROUP;
   if (borrow + (int)carry != 0)
   {    // Sum is less than zero. Add Mod again.
-    pSum -= nbrLen;
-    pMod -= nbrLen;
+    ptrSum -= nbrLen;
+    ptrMod -= nbrLen;
     carry = 0;
     for (i = 0; i < nbrLen; i++)
     {
-      carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pSum + (unsigned int)*pMod;
-      *pSum = (int)(carry & MAX_INT_NBR);
-      pMod++;
-      pSum++;
+      carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrSum + (unsigned int)*ptrMod;
+      *ptrSum = (int)(carry & MAX_INT_NBR);
+      ptrMod++;
+      ptrSum++;
     }
   }
 }
 
 void SubtractBigNbrModN(const int *pNbr1, const int *pNbr2, int *pDiff, const int *pMod, int nbrLen)
 {
+  const int* ptrNbr1 = pNbr1;
+  const int* ptrNbr2 = pNbr2;
+  int* ptrDiff = pDiff;
+  const int* ptrMod = pMod;
   int borrow = 0;
   int i;
   for (i = 0; i < nbrLen; i++)
   {
-    borrow = (borrow >> BITS_PER_INT_GROUP) + *pNbr1 - *pNbr2;
-    *pDiff = borrow & MAX_INT_NBR;
-    pNbr1++;
-    pNbr2++;
-    pDiff++;
+    borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
+    *ptrDiff = borrow & MAX_INT_NBR;
+    ptrNbr1++;
+    ptrNbr2++;
+    ptrDiff++;
   }
   if (borrow != 0)
   {
     unsigned int carry = 0;
-    pDiff -= nbrLen;
+    ptrDiff -= nbrLen;
     for (i = 0; i < nbrLen; i++)
     {
-      carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*pDiff + (unsigned int)*pMod;
-      *pDiff = (int)(carry & MAX_INT_NBR);
-      pMod++;
-      pDiff++;
+      carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrDiff + (unsigned int)*ptrMod;
+      *ptrDiff = (int)(carry & MAX_INT_NBR);
+      ptrMod++;
+      ptrDiff++;
     }
   }
 }
 
-void MultBigNbrByInt(const int *bigFactor, int factor, int *bigProd, int nbrLen)
+void MultBigNbrByInt(const int *pBigFactor, int factor, int *bigProd, int nbrLen)
 {
+  int secondFactor = factor;
+  const int* ptrBigFactor = pBigFactor;
   int *bigProduct = bigProd;
   double dFactor;
   double dVal = 1 / (double)(1U<<BITS_PER_INT_GROUP);
   int factorPositive = 1;
   int carry;
-  if (factor < 0)
+  if (secondFactor < 0)
   {     // If factor is negative, indicate it and compute its absolute value.
     factorPositive = 0;
-    factor = -factor;
+    secondFactor = -secondFactor;
   }
-  dFactor = (double)factor;
+  dFactor = (double)secondFactor;
   carry = 0;
   for (int ctr = 0; ctr < nbrLen; ctr++)
   {
-    int low = (*bigFactor * factor + carry) & MAX_INT_NBR;
+    int low = (*ptrBigFactor * secondFactor + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      carry = (int)floor(((double)*bigFactor * dFactor + (double)carry + HALF_INT_RANGE/2)*dVal);
+      carry = (int)floor(((double)*ptrBigFactor * dFactor + (double)carry + HALF_INT_RANGE/2)*dVal);
     }
     else
     {
-      carry = (int)floor(((double)*bigFactor * dFactor + (double)carry - HALF_INT_RANGE/2)*dVal);
+      carry = (int)floor(((double)*ptrBigFactor * dFactor + (double)carry - HALF_INT_RANGE/2)*dVal);
     }
     *bigProduct = low;
     bigProduct++;
-    bigFactor++;
+    ptrBigFactor++;
   }
   if (factorPositive == 0)
   {         // If factor is negative, change sign of product.
@@ -237,18 +247,18 @@ void MultBigNbrByIntB(const int *bigFactor, int factor, int *bigProd, int nbrLen
   }
   dFactor = (double)factor;
   carry = 0;
-  for (int ctr = 0; ctr < nbrLen-1; ctr++)
+  for (int ctr = 0; ctr < (nbrLen-1); ctr++)
   {
     int low = (*bigFactor * factor + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      carry = (int)floor(((double)*bigFactor * dFactor + (double)carry + HALF_INT_RANGE / 2)*dVal);
+      carry = (int)floor((((double)*bigFactor * dFactor) + (double)carry + (HALF_INT_RANGE / 2))*dVal);
     }
     else
     {
-      carry = (int)floor(((double)*bigFactor * dFactor + (double)carry - HALF_INT_RANGE / 2)*dVal);
+      carry = (int)floor((((double)*bigFactor * dFactor) + (double)carry - (HALF_INT_RANGE / 2))*dVal);
     }
     *bigProduct = low;
     bigProduct++;
@@ -263,26 +273,28 @@ void MultBigNbrByIntB(const int *bigFactor, int factor, int *bigProd, int nbrLen
 
 void DivBigNbrByInt(const int *pDividend, int divisor, int *pQuotient, int nbrLen)
 {
+  const int* ptrDividend = pDividend;
+  int* ptrQuotient = pQuotient;
   int remainder = 0;
   double dDivisor = (double)divisor;
   double dLimb = 0x80000000;
-  pDividend += nbrLen - 1;
-  pQuotient += nbrLen - 1;
+  ptrDividend += nbrLen - 1;
+  ptrQuotient += nbrLen - 1;
   for (int ctr = nbrLen - 1; ctr >= 0; ctr--)
   {
-    int dividend = (remainder << BITS_PER_INT_GROUP) + *pDividend;
-    double dDividend = (double)remainder * dLimb + *pDividend;
+    int dividend = (remainder << BITS_PER_INT_GROUP) + *ptrDividend;
+    double dDividend = ((double)remainder * dLimb) + *ptrDividend;
     // quotient has correct value or 1 more.
-    int quotient = (unsigned int)(dDividend / dDivisor + 0.5);
-    remainder = dividend - quotient * divisor;
+    int quotient = (unsigned int)((dDividend / dDivisor) + 0.5);
+    remainder = dividend - (quotient * divisor);
     if ((unsigned int)remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
       quotient--;
       remainder += divisor;
     }
-    *pQuotient = quotient;
-    pQuotient--;
-    pDividend--;
+    *ptrQuotient = quotient;
+    ptrQuotient--;
+    ptrDividend--;
   }
 }
 
@@ -297,8 +309,8 @@ int RemDivBigNbrByInt(const int *pDividend, int divisor, int nbrLen)
     unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + *pDividend;
     double dDividend = (double)remainder * dLimb + *pDividend;
          // quotient has correct value or 1 more.
-    unsigned int quotient = (unsigned int)(dDividend / dDivisor + 0.5);
-    remainder = dividend - quotient * divisor;
+    unsigned int quotient = (unsigned int)((dDividend / dDivisor) + 0.5);
+    remainder = dividend - (quotient * divisor);
     if ((unsigned int)remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
       quotient--;
@@ -311,6 +323,7 @@ int RemDivBigNbrByInt(const int *pDividend, int divisor, int nbrLen)
 
 void MultBigNbr(const int *pFactor1, const int *pFactor2, int *pProd, int nbrLen)
 {
+  int* ptrProd = pProd;
   double dRangeLimb = (double)(1U << BITS_PER_INT_GROUP);
   double dInvRangeLimb = 1 / dRangeLimb;
   int low = 0;
@@ -327,22 +340,22 @@ void MultBigNbr(const int *pFactor1, const int *pFactor2, int *pProd, int nbrLen
       dAccumulator += (double)factor1 * (double)factor2;
     }
     low &= MAX_INT_NBR;    // Trim extra bits.
-    *pProd = low;
-    pProd++;
+    *ptrProd = low;
+    ptrProd++;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      dAccumulator = floor((dAccumulator + HALF_INT_RANGE/2)*dInvRangeLimb);
+      dAccumulator = floor((dAccumulator + (HALF_INT_RANGE/2))*dInvRangeLimb);
     }
     else
     {
-      dAccumulator = floor((dAccumulator - HALF_INT_RANGE/2)*dInvRangeLimb);
+      dAccumulator = floor((dAccumulator - (HALF_INT_RANGE/2))*dInvRangeLimb);
     }
     low = (int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
   }
-  *pProd = low;
-  *(pProd+1) = (int)floor(dAccumulator/dRangeLimb);
+  *ptrProd = low;
+  *(ptrProd+1) = (int)floor(dAccumulator/dRangeLimb);
 }
 
 // On input: pFactor1 and pFactor2: pointers to factors.
