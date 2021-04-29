@@ -25,6 +25,12 @@
 #include "commonstruc.h"
 #include "skiptest.h"
 
+#if MAX_PRIME_SIEVE == 11
+#define MAX_SIEVE_PRIME    5000
+#else
+#define MAX_SIEVE_PRIME    (10 * SIEVE_SIZE)
+#endif
+
 #ifdef __EMSCRIPTEN__
 extern int nbrPrimes;
 extern int indexPrimes;
@@ -137,6 +143,7 @@ void prac(int n, limb* x, limb *z)
   int e;
   int r;
   int i;
+  double dr;
   limb* t;
   limb* xA = x;
   limb* zA = z;
@@ -174,7 +181,8 @@ void prac(int n, limb* x, limb *z)
     }
   }
   d = n;
-  r = (int)(((double)d / v[i]) + 0.5);
+  dr = ((double)d / v[i]) + 0.5;
+  r = (int)dr;
   /* first iteration always begins by Condition 3, then a swap */
   d = n - r;
   e = (2 * r) - n;
@@ -287,6 +295,10 @@ void prac(int n, limb* x, limb *z)
       e /= 2;
       add3(xC, zC, xC, zC, xB, zB, xA, zA); /* C = f(C,B,A) */
       duplicate(xB, zB, xB, zB); /* B = 2*B */
+    }
+    else
+    {
+      /* no more conditions */
     }
   }
   add3(x, z, xA, zA, xB, zB, xC, zC);
@@ -436,11 +448,7 @@ static void GenerateSieve(int initial)
     }
     j++;
     Q = SmallPrime[j];
-#if MAX_PRIME_SIEVE == 11
-  } while (Q < 5000);
-#else
-  } while (Q < (10 * SIEVE_SIZE));
-#endif
+  } while (Q < MAX_SIEVE_PRIME);
 }
 
 /*******************************/
@@ -455,7 +463,7 @@ enum eEcmResult ecmStep1(void)
   int u;
   (void)memcpy(common.ecm.Xaux, common.ecm.X, NumberSizeBytes);
   (void)memcpy(common.ecm.Zaux, common.ecm.Z, NumberSizeBytes);
-  bufSize = (NumberLength + 1) * sizeof(limb);
+  bufSize = (NumberLength + 1) * (int)sizeof(limb);
   (void)memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, bufSize);
   for (int pass = 0; pass < 2; pass++)
   {
@@ -605,7 +613,8 @@ enum eEcmResult ecmStep2(void)
     }
     else
     {
-      common.ecm.sieve2310[common.ecm.sieveidx[j] = u / 2] = 0U;
+      common.ecm.sieveidx[j] = u / 2;
+      common.ecm.sieve2310[common.ecm.sieveidx[j]] = 0U;
       j++;
     }
   }
@@ -819,8 +828,9 @@ enum eEcmResult ecmStep2(void)
 static void initSmallPrimeArray(void)
 {
   int potentialPrime = 3;
+  int nbrPrimes = (int)(sizeof(SmallPrime) / sizeof(SmallPrime[0]));
   SmallPrime[0] = 2;
-  for (indexM = 1; indexM < (int)(sizeof(SmallPrime) / sizeof(SmallPrime[0])); indexM++)
+  for (indexM = 1; indexM < nbrPrimes; indexM++)
   {     // Loop that fills the SmallPrime array.
     int divisor;
     SmallPrime[indexM] = potentialPrime; /* Store prime */
@@ -828,7 +838,7 @@ static void initSmallPrimeArray(void)
     {
       potentialPrime += 2;
       for (divisor = 3; (divisor * divisor) <= potentialPrime; divisor += 2)
-      { /* Check if P is prime */
+      { /* Check if potentialPrime is prime */
         if ((potentialPrime % divisor) == 0)
         {
           break;  /* Composite */
@@ -864,7 +874,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
       NextEC = -1;
       if (EC >= TYP_SIQS)
       {
-        int bufSize = (NumberLength - 1) * sizeof(limb);
+        int bufSize = (NumberLength - 1) * (int)sizeof(limb);
         common.ecm.GD[0].x = 1;   // Set GD to 1.
         (void)memset(&common.ecm.GD[1], 0, bufSize);
         *pEC = EC;
