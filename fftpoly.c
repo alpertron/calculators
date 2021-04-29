@@ -146,7 +146,10 @@ static void initCosinesArray(void)
     Y = Y - D;
     (X,Y) = (Y,X);
   }
-  if (d even) return complex data at X.
+  if (d even)
+  {
+    return complex data at X.
+  }
   return complex data at Y.
 #endif
 
@@ -307,20 +310,23 @@ static void ConvertFactorToInternal(const int* factor,
   {
     ptrInternalFactor->real = *ptrFactor;
     ptrFactor += 2;            // Point to next coefficient.
-    ptrInternalFactor++->imaginary = *ptrFactor;
+    ptrInternalFactor->imaginary = *ptrFactor;
+    ptrInternalFactor++;
     ptrFactor += 2;            // Point to next coefficient.
   }
   if (len & 1)
   {
     ctr += 2;
     ptrInternalFactor->real = *ptrFactor;
-    ptrInternalFactor++->imaginary = 0;
+    ptrInternalFactor->imaginary = 0;
+    ptrInternalFactor++;
   }
   maxLen++;
   for (; ctr <= maxLen; ctr += 2)
   {
     ptrInternalFactor->real = 0;
-    ptrInternalFactor++->imaginary = 0;
+    ptrInternalFactor->imaginary = 0;
+    ptrInternalFactor++;
   }
 }
 
@@ -464,12 +470,16 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
   for (index = 0; index < chunkLen; index++)
   {
     int coeff = (int)floor((ptrProduct->real * invPower2) + 0.5);
-    *ptrResult++ = 1;
-    *ptrResult++ = coeff % modulus;
+    *ptrResult = 1;
+    ptrResult++;
+    *ptrResult = coeff % modulus;
+    ptrResult++;
     // Imaginary part. Use negative value for inverse FFT.
     coeff = (int)floor(-(ptrProduct->imaginary * invPower2) + 0.5);
-    *ptrResult++ = 1;
-    *ptrResult++ = coeff % modulus;
+    *ptrResult = 1;
+    ptrResult++;
+    *ptrResult = coeff % modulus;
+    ptrResult++;
     ptrProduct++;
   }
 }

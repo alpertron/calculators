@@ -160,7 +160,10 @@ static void initCosinesArray(void)
     Y = Y - D;
     (X,Y) = (Y,X);
   }
-  if (d even) return complex data at X.
+  if (d even)
+  {
+    return complex data at X.
+  }
   return complex data at Y.
 #endif
 
@@ -468,8 +471,10 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   ptrProduct = product;
   for (index = 0; index <= power2; index++)
   {
-    double real = ptrFirst->real*ptrSecond->real - ptrFirst->imaginary*ptrSecond->imaginary;
-    ptrProduct->imaginary = ptrFirst->real*ptrSecond->imaginary + ptrFirst->imaginary*ptrSecond->real;
+    double real = (ptrFirst->real*ptrSecond->real) - 
+      (ptrFirst->imaginary*ptrSecond->imaginary);
+    ptrProduct->imaginary = (ptrFirst->real*ptrSecond->imaginary) +
+      (ptrFirst->imaginary*ptrSecond->real);
     ptrProduct->real = real;
     ptrFirst++;
     ptrSecond++;
@@ -525,7 +530,8 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
     if (bitExternal >= BITS_PER_GROUP)
     {
       bitExternal -= BITS_PER_GROUP;
-      if (++ptrResult - result == sumLen)
+      ptrResult++;
+      if (ptrResult - result == sumLen)
       {
         break;
       }
