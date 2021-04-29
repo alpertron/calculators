@@ -19,11 +19,11 @@
 #ifndef __FFT_H
 #define __FFT_H
 
-typedef struct sComplex
+struct sComplex
 {
   double real;
   double imaginary;
-} complex;
+};
 
 struct sCosSin
 {

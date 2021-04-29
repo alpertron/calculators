@@ -31,14 +31,14 @@
 // first the least significant limb, then the most significant limb.
 
 static struct sCosSin cossin[4 << (POWERS_2 - 2)];
-static double Cosine[5 * QUARTER_CIRCLE + 1];
-static complex firstFactor[MAX_FFT_LEN];
-static complex secondFactor[MAX_FFT_LEN];
-static complex transf[MAX_FFT_LEN];
-static complex product[MAX_FFT_LEN];
-static complex finalProduct[MAX_FFT_LEN];
-static complex tempFFT[MAX_FFT_LEN];
-static complex polyInvTransf[MAX_FFT_LEN];
+static double Cosine[(5 * QUARTER_CIRCLE) + 1];
+static struct sComplex firstFactor[MAX_FFT_LEN];
+static struct sComplex secondFactor[MAX_FFT_LEN];
+static struct sComplex transf[MAX_FFT_LEN];
+static struct sComplex product[MAX_FFT_LEN];
+static struct sComplex finalProduct[MAX_FFT_LEN];
+static struct sComplex tempFFT[MAX_FFT_LEN];
+static struct sComplex polyInvTransf[MAX_FFT_LEN];
 extern int polyInv[COMPRESSED_POLY_MAX_LENGTH];
 
 // Use formulas sin(A+B) = sin A cos B + cos A sin B
@@ -108,12 +108,12 @@ static void initCosinesArray(void)
   ptrCosSin = cossin;
   for (index = 0; index < QUARTER_CIRCLE; index++)
   {
-    double cosine = (double)ptrCosSin->Cos[0] * invSqLimb + (double)ptrCosSin->Cos[1] * invLimb;
+    double cosine = ((double)ptrCosSin->Cos[0] * invSqLimb) + ((double)ptrCosSin->Cos[1] * invLimb);
     Cosine[index] = cosine;
     Cosine[HALF_CIRCLE - index] = -cosine;
     Cosine[HALF_CIRCLE + index] = -cosine;
-    Cosine[2 * HALF_CIRCLE - index] = cosine;
-    Cosine[2 * HALF_CIRCLE + index] = cosine;
+    Cosine[(2 * HALF_CIRCLE) - index] = cosine;
+    Cosine[(2 * HALF_CIRCLE) + index] = cosine;
     ptrCosSin++;
   }
   Cosine[QUARTER_CIRCLE] = 0;
@@ -151,15 +151,15 @@ static void initCosinesArray(void)
 #endif
 
 // length is power of 2.
-static void complexPolyFFT(complex* x, complex* y, int length)
+static void complexPolyFFT(struct sComplex* x, struct sComplex* y, int length)
 {
   int halfLength = length / 2;
   int step = (1 << POWERS_2) / length;
   int exponentOdd = 0;
-  complex* ptrX = x;
-  complex* ptrY = y;
-  complex* ptrZ;
-  complex* ptrTemp;
+  struct sComplex* ptrX = x;
+  struct sComplex* ptrY = y;
+  const struct sComplex* ptrZ;
+  struct sComplex* ptrTemp;
   int angle;
   if (Cosine[0] == 0)
   {    // Cosines array not initialized yet. Initialize array.
@@ -179,8 +179,8 @@ static void complexPolyFFT(complex* x, complex* y, int length)
     tempReal -= Zreal;
     tempImag -= Zimag;
     ptrY++;
-    ptrY->real = rootReal * tempReal - rootImag * tempImag;
-    ptrY->imaginary = rootReal * tempImag + rootImag * tempReal;
+    ptrY->real = (rootReal * tempReal) - (rootImag * tempImag);
+    ptrY->imaginary = (rootReal * tempImag) + (rootImag * tempReal);
     ptrX++;
     ptrY++;
     ptrZ++;
@@ -197,7 +197,7 @@ static void complexPolyFFT(complex* x, complex* y, int length)
     {
       double rootReal = Cosine[angle];
       double rootImag = Cosine[angle + QUARTER_CIRCLE];
-      complex* ptrW = ptrY + J;
+      struct sComplex* ptrW = ptrY + J;
       for (int j = J; j > 0; j--)
       {
         double tempReal = ptrX->real;
@@ -208,8 +208,8 @@ static void complexPolyFFT(complex* x, complex* y, int length)
         ptrY->imaginary = tempImag + Zimag;
         tempReal -= Zreal;
         tempImag -= Zimag;
-        ptrW->real = rootReal * tempReal - rootImag * tempImag;
-        ptrW->imaginary = rootReal * tempImag + rootImag * tempReal;
+        ptrW->real = (rootReal * tempReal) - (rootImag * tempImag);
+        ptrW->imaginary = (rootReal * tempImag) + (rootImag * tempReal);
         ptrX++;
         ptrY++;
         ptrZ++;
@@ -220,7 +220,7 @@ static void complexPolyFFT(complex* x, complex* y, int length)
   }
   if (exponentOdd)
   {     // Move data from x to y.
-    (void)memcpy(y, x, length * sizeof(complex));
+    (void)memcpy(y, x, length * sizeof(struct sComplex));
   }
 }
 
@@ -232,12 +232,13 @@ static void complexPolyFFT(complex* x, complex* y, int length)
 // Ai(k) = –cos( PI k / N)
 // Br(k) = 1 + sin( PI k / N)
 // Bi(k) = cos( PI k / N)
-static void ConvertHalfToFullSizeFFT(complex* halfSizeFFT, complex* fullSizeFFT, int power2)
+static void ConvertHalfToFullSizeFFT(struct sComplex* halfSizeFFT, 
+  struct sComplex* fullSizeFFT, int power2)
 {
   int step = (1 << (POWERS_2 - 1)) / power2;
-  complex* ptrFullSizeFFT = fullSizeFFT;
-  complex* ptrHalfSizeFFT = halfSizeFFT;
-  complex* ptrHalfSizeFFTRev = halfSizeFFT + power2;
+  struct sComplex* ptrFullSizeFFT = fullSizeFFT;
+  const struct sComplex* ptrHalfSizeFFT = halfSizeFFT;
+  struct sComplex* ptrHalfSizeFFTRev = halfSizeFFT + power2;
   ptrHalfSizeFFTRev->real = halfSizeFFT->real;
   ptrHalfSizeFFTRev->imaginary = halfSizeFFT->imaginary;
   for (int k = 0; k < power2; k++)
@@ -248,11 +249,11 @@ static void ConvertHalfToFullSizeFFT(complex* halfSizeFFT, complex* fullSizeFFT,
     double negativeSine = Cosine[angle + QUARTER_CIRCLE];
     double cosine = Cosine[angle];
     ptrFullSizeFFT->real = ptrHalfSizeFFT->real + ptrHalfSizeFFTRev->real +
-      diffReal * negativeSine +
-      sumImag * cosine;
+      (diffReal * negativeSine) +
+      (sumImag * cosine);
     ptrFullSizeFFT->imaginary = ptrHalfSizeFFT->imaginary - ptrHalfSizeFFTRev->imaginary +
-      sumImag * negativeSine -
-      diffReal * cosine;
+      (sumImag * negativeSine) -
+      (diffReal * cosine);
     ptrHalfSizeFFT++;
     ptrHalfSizeFFTRev--;
     ptrFullSizeFFT++;
@@ -269,12 +270,13 @@ static void ConvertHalfToFullSizeFFT(complex* halfSizeFFT, complex* fullSizeFFT,
 // IAi(k) = cos( PI k / N)
 // IBr(k) = 1 + sin( PI k / N)
 // IBi(k) = -cos( PI k / N)
-static void ConvertFullToHalfSizeFFT(complex* fullSizeFFT, complex* halfSizeFFT, int power2)
+static void ConvertFullToHalfSizeFFT(const struct sComplex* fullSizeFFT,
+  struct sComplex* halfSizeFFT, int power2)
 {
   int step = (1 << (POWERS_2 - 1)) / power2;
-  complex* ptrFullSizeFFT = fullSizeFFT;
-  complex* ptrFullSizeFFTRev = fullSizeFFT + power2;
-  complex* ptrHalfSizeFFT = halfSizeFFT;
+  const struct sComplex* ptrFullSizeFFT = fullSizeFFT;
+  const struct sComplex* ptrFullSizeFFTRev = fullSizeFFT + power2;
+  struct sComplex* ptrHalfSizeFFT = halfSizeFFT;
   for (int k = 0; k < power2; k++)
   {
     int angle = k * step;
@@ -283,23 +285,24 @@ static void ConvertFullToHalfSizeFFT(complex* fullSizeFFT, complex* halfSizeFFT,
     double negativeSine = Cosine[angle + QUARTER_CIRCLE];
     double cosine = Cosine[angle];
     ptrHalfSizeFFT->real = ptrFullSizeFFT->real + ptrFullSizeFFTRev->real +
-      diffReal * negativeSine -
-      sumImag * cosine;
+      (diffReal * negativeSine) -
+      (sumImag * cosine);
     // Negative sign for imaginary part required for inverse FFT.
     ptrHalfSizeFFT->imaginary = -(ptrFullSizeFFT->imaginary - ptrFullSizeFFTRev->imaginary +
-      sumImag * negativeSine +
-      diffReal * cosine);
+      (sumImag * negativeSine) +
+      (diffReal * cosine));
     ptrHalfSizeFFT++;
     ptrFullSizeFFT++;
     ptrFullSizeFFTRev--;
   }
 }
 
-static void ConvertFactorToInternal(const int* factor, complex* fftFactor, int len, int maxLen)
+static void ConvertFactorToInternal(const int* factor,
+  struct sComplex* fftFactor, int len, int maxLen)
 {
   int ctr = 0;
   const int* ptrFactor = factor+1;  // Point to constant coefficient.
-  complex* ptrInternalFactor = fftFactor;
+  struct sComplex* ptrInternalFactor = fftFactor;
   for (ctr = 2; ctr <= len; ctr += 2)
   {
     ptrInternalFactor->real = *ptrFactor;
@@ -337,8 +340,8 @@ static void ConvertFactorToInternal(const int* factor, complex* fftFactor, int l
 // lowest power of 2 greater or equal than the length of the second polynomial.
 void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, int len2)
 {
-  complex *ptrFirst;
-  complex *ptrProduct;
+  struct sComplex *ptrFirst;
+  const struct sComplex *ptrProduct;
   double invPower2;
   int power2plus1;
   int* ptrResult;
@@ -348,7 +351,7 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
   int power2SecondFactor = 0;
   int power2;
   int modulus = TestNbr[0].x;
-  complex* ptrFinalProduct;
+  struct sComplex* ptrFinalProduct;
   if (len1 > len2)
   { // Degree of first polynomial is greater than degree of second polynomial.
     // Set results to polynomial zero.
@@ -392,15 +395,15 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
   for (int factor1DegreesProcessed = 0; factor1DegreesProcessed < len1;
     factor1DegreesProcessed += power2SecondFactor)
   {
-    complex * ptrSecond;
+    const struct sComplex * ptrSecond;
     int lenFirstFactor = power2SecondFactor;
     if (lenFirstFactor > len1 - factor1DegreesProcessed)
     {
       lenFirstFactor = len1 - factor1DegreesProcessed;
     }
     // Get transform of first polynomial.
-    ConvertFactorToInternal(factor1 + factor1DegreesProcessed*nbrLimbs,
-      firstFactor, lenFirstFactor, 2*power2);
+    ConvertFactorToInternal(factor1 + factor1DegreesProcessed * nbrLimbs,
+      firstFactor, lenFirstFactor, 2 * power2);
     complexPolyFFT(firstFactor, tempFFT, power2);
     ConvertHalfToFullSizeFFT(tempFFT, product, power2);   // product <- DFT(firstFactor)
 
@@ -416,8 +419,10 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
     ptrSecond = transf;
     for (index = 0; index <= power2; index++)
     {   // Perform complex multiplication componentwise.
-      double real = ptrFirst->real * ptrSecond->real - ptrFirst->imaginary * ptrSecond->imaginary;
-      ptrFirst->imaginary = ptrFirst->real * ptrSecond->imaginary + ptrFirst->imaginary * ptrSecond->real;
+      double real = (ptrFirst->real * ptrSecond->real) - 
+        (ptrFirst->imaginary * ptrSecond->imaginary);
+      ptrFirst->imaginary = (ptrFirst->real * ptrSecond->imaginary) +
+        (ptrFirst->imaginary * ptrSecond->real);
       ptrFirst->real = real;
       ptrFirst++;
       ptrSecond++;
@@ -458,11 +463,11 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
   chunkLen = (len1 + len2 + 1) / 2;
   for (index = 0; index < chunkLen; index++)
   {
-    int coeff = (int)floor(ptrProduct->real * invPower2 + 0.5);
+    int coeff = (int)floor((ptrProduct->real * invPower2) + 0.5);
     *ptrResult++ = 1;
     *ptrResult++ = coeff % modulus;
     // Imaginary part. Use negative value for inverse FFT.
-    coeff = (int)floor(-ptrProduct->imaginary * invPower2 + 0.5);
+    coeff = (int)floor(-(ptrProduct->imaginary * invPower2) + 0.5);
     *ptrResult++ = 1;
     *ptrResult++ = coeff % modulus;
     ptrProduct++;
