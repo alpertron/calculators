@@ -66,8 +66,8 @@ static void initCosinesArray(void)
   double invLimb = 1 / (double)LIMB_RANGE;
   double invSqLimb = invLimb * invLimb;
   int index = 1;
-  cossin[0].Cos[0] = MAX_VALUE_LIMB;                       // cos(0) = 1
-  cossin[0].Cos[1] = MAX_VALUE_LIMB;
+  cossin[0].Cos[0] = (int)MAX_VALUE_LIMB;                  // cos(0) = 1
+  cossin[0].Cos[1] = (int)MAX_VALUE_LIMB;
   cossin[0].Sin[0] = 0;                                    // sin(0) = 0
   cossin[0].Sin[1] = 0;
   ptrCosSin = &cossin[1];
@@ -78,7 +78,7 @@ static void initCosinesArray(void)
     int mask = 1;
     for (;;)
     {
-      if (index & mask)
+      if ((index & mask) != 0)
       {
         break;
       }
@@ -330,7 +330,7 @@ static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
   for (;;)
   {
     int real = ptrFactor->x >> bitExternal;
-    if (ptrFactor - factor < len - 1)
+    if ((ptrFactor - factor) < (len - 1))
     {                   // Do not read outside input buffer.
       real += ((ptrFactor + 1)->x << (BITS_PER_GROUP - bitExternal));
     }
@@ -390,8 +390,8 @@ static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
 void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   int len1, int len2, int *pResultLen)
 {
-  struct sComplex *ptrFirst;
-  struct sComplex *ptrSecond;
+  const struct sComplex *ptrFirst;
+  const struct sComplex *ptrSecond;
   struct sComplex *ptrProduct;
   double invPower2;
   double dCarry;
@@ -459,6 +459,9 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
       (void)memcpy(MontgomeryMultNTransf, transf, power2plus1 * sizeof(transf[0]));
       MontgomeryMultNCached = NBR_CACHED;
     }
+    else
+    {  // No more conditions.
+    }
   }
   else
   {
@@ -496,9 +499,9 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
     int fftResult;
 
     // Real part.
-    dCarry += floor(ptrProduct->real * invPower2 + 0.5);
+    dCarry += floor((ptrProduct->real * invPower2) + 0.5);
     dQuot = floor(dCarry / (double)FFT_LIMB_RANGE);
-    fftResult = (int)(dCarry - dQuot * (double)FFT_LIMB_RANGE);
+    fftResult = (int)(dCarry - (dQuot * (double)FFT_LIMB_RANGE));
     ptrResult->x |= (fftResult << bitExternal) & MAX_INT_NBR;
     if (bitExternal > (BITS_PER_GROUP - FFT_LIMB_SIZE))
     {
