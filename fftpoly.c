@@ -221,7 +221,7 @@ static void complexPolyFFT(struct sComplex* x, struct sComplex* y, int length)
       ptrY += J;
     }
   }
-  if (exponentOdd)
+  if (exponentOdd != 0)
   {     // Move data from x to y.
     (void)memcpy(y, x, length * sizeof(struct sComplex));
   }
@@ -314,7 +314,7 @@ static void ConvertFactorToInternal(const int* factor,
     ptrInternalFactor++;
     ptrFactor += 2;            // Point to next coefficient.
   }
-  if (len & 1)
+  if ((len & 1) != 0)
   {
     ctr += 2;
     ptrInternalFactor->real = *ptrFactor;
@@ -346,7 +346,6 @@ static void ConvertFactorToInternal(const int* factor,
 // lowest power of 2 greater or equal than the length of the second polynomial.
 void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, int len2)
 {
-  struct sComplex *ptrFirst;
   const struct sComplex *ptrProduct;
   double invPower2;
   int power2plus1;
@@ -401,14 +400,15 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
   for (int factor1DegreesProcessed = 0; factor1DegreesProcessed < len1;
     factor1DegreesProcessed += power2SecondFactor)
   {
+    struct sComplex* ptrFirst;
     const struct sComplex * ptrSecond;
     int lenFirstFactor = power2SecondFactor;
-    if (lenFirstFactor > len1 - factor1DegreesProcessed)
+    if (lenFirstFactor > (len1 - factor1DegreesProcessed))
     {
       lenFirstFactor = len1 - factor1DegreesProcessed;
     }
     // Get transform of first polynomial.
-    ConvertFactorToInternal(factor1 + factor1DegreesProcessed * nbrLimbs,
+    ConvertFactorToInternal(factor1 + (factor1DegreesProcessed * nbrLimbs),
       firstFactor, lenFirstFactor, 2 * power2);
     complexPolyFFT(firstFactor, tempFFT, power2);
     ConvertHalfToFullSizeFFT(tempFFT, product, power2);   // product <- DFT(firstFactor)
@@ -464,7 +464,7 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
   {
     ptrProduct = product;
   }
-  invPower2 = (double)1 / ((double)(power2 * 8));
+  invPower2 = 1.0 / ((double)(power2 * 8));
   ptrResult = result;
   chunkLen = (len1 + len2 + 1) / 2;
   for (index = 0; index < chunkLen; index++)

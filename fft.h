@@ -31,11 +31,11 @@ struct sCosSin
   int Sin[2];
 };
 
-#define FFT_LIMB_RANGE  (int)(1U << FFT_LIMB_SIZE)
+#define FFT_LIMB_RANGE  (int)(1UL << FFT_LIMB_SIZE)
 #define MAX_VALUE_FFT_LIMB (int)(FFT_LIMB_RANGE - 1)
-#define QUARTER_CIRCLE (int)(1U << (POWERS_2 - 2))
-#define HALF_CIRCLE    (int)(1U << (POWERS_2 - 1))
-#define CIRCLE_MASK    (int)((1U << POWERS_2) - 1)
+#define QUARTER_CIRCLE (int)(1UL << (POWERS_2 - 2))
+#define HALF_CIRCLE    (int)(1UL << (POWERS_2 - 1))
+#define CIRCLE_MASK    (int)((1UL << POWERS_2) - 1)
 
 extern const struct sCosSin cossinPowerOneHalf[15];
 

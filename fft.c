@@ -348,7 +348,7 @@ static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
       }
     }
     int imaginary = ptrFactor->x >> bitExternal;
-    if (ptrFactor - factor < len - 1)
+    if ((ptrFactor - factor) < (len - 1))
     {                   // Do not read outside input buffer.
       imaginary += (ptrFactor + 1)->x << (BITS_PER_GROUP - bitExternal);
     }
@@ -523,9 +523,9 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
     dCarry += floor((-ptrProduct->imaginary * invPower2) + 0.5);
     ptrProduct++;
     dQuot = floor(dCarry / (double)FFT_LIMB_RANGE);
-    fftResult = (int)(dCarry - dQuot * (double)FFT_LIMB_RANGE);
+    fftResult = (int)(dCarry - (dQuot * (double)FFT_LIMB_RANGE));
     ptrResult->x |= (fftResult << bitExternal) & MAX_INT_NBR;
-    if (bitExternal > BITS_PER_GROUP - FFT_LIMB_SIZE)
+    if (bitExternal > (BITS_PER_GROUP - FFT_LIMB_SIZE))
     {
       (ptrResult + 1)->x |= (fftResult >> (BITS_PER_GROUP - bitExternal)) & MAX_INT_NBR;
     }
@@ -534,7 +534,7 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
     {
       bitExternal -= BITS_PER_GROUP;
       ptrResult++;
-      if (ptrResult - result == sumLen)
+      if ((ptrResult - result) == sumLen)
       {
         break;
       }
