@@ -200,9 +200,10 @@ void MultBigNbrByInt(const int *pBigFactor, int factor, int *bigProd, int nbrLen
   const int* ptrBigFactor = pBigFactor;
   int *bigProduct = bigProd;
   double dFactor;
-  double dVal = 1 / (double)(1U<<BITS_PER_INT_GROUP);
+  double dVal = 1.0 / (double)(1U << BITS_PER_INT_GROUP);
   int factorPositive = 1;
   int carry;
+  double dCarry;
   if (secondFactor < 0)
   {     // If factor is negative, indicate it and compute its absolute value.
     factorPositive = 0;
@@ -212,17 +213,19 @@ void MultBigNbrByInt(const int *pBigFactor, int factor, int *bigProd, int nbrLen
   carry = 0;
   for (int ctr = 0; ctr < nbrLen; ctr++)
   {
-    int low = (*ptrBigFactor * secondFactor + carry) & MAX_INT_NBR;
+    int low = ((*ptrBigFactor * secondFactor) + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
+    dCarry = ((double)*ptrBigFactor * dFactor) + (double)carry;
     if (low < HALF_INT_RANGE)
     {
-      carry = (int)floor(((double)*ptrBigFactor * dFactor + (double)carry + HALF_INT_RANGE/2)*dVal);
+      dCarry = floor((dCarry + (double)(HALF_INT_RANGE / 2)) * dVal);
     }
     else
     {
-      carry = (int)floor(((double)*ptrBigFactor * dFactor + (double)carry - HALF_INT_RANGE/2)*dVal);
+      dCarry = floor((dCarry - (double)(HALF_INT_RANGE / 2)) * dVal);
     }
+    carry = (int)dCarry;
     *bigProduct = low;
     bigProduct++;
     ptrBigFactor++;
@@ -237,7 +240,7 @@ void MultBigNbrByIntB(const int *bigFactor, int factor, int *bigProd, int nbrLen
 {
   int *bigProduct = bigProd;
   double dFactor;
-  double dVal = 1 / (double)(1U << BITS_PER_INT_GROUP);
+  double dVal = 1.0 / (double)(1U << BITS_PER_INT_GROUP);
   int factorPositive = 1;
   int carry;
   if (factor < 0)
@@ -249,22 +252,25 @@ void MultBigNbrByIntB(const int *bigFactor, int factor, int *bigProd, int nbrLen
   carry = 0;
   for (int ctr = 0; ctr < (nbrLen-1); ctr++)
   {
+    double dCarry;
     int low = (*bigFactor * factor + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
+    dCarry = ((double)*bigFactor * dFactor) + (double)carry;
     if (low < HALF_INT_RANGE)
     {
-      carry = (int)floor((((double)*bigFactor * dFactor) + (double)carry + (HALF_INT_RANGE / 2))*dVal);
+      dCarry = floor((dCarry + (double)(HALF_INT_RANGE / 2)) * dVal);
     }
     else
     {
-      carry = (int)floor((((double)*bigFactor * dFactor) + (double)carry - (HALF_INT_RANGE / 2))*dVal);
+      dCarry = floor((dCarry - (double)(HALF_INT_RANGE / 2)) * dVal);
     }
+    carry = (int)dCarry;
     *bigProduct = low;
     bigProduct++;
     bigFactor++;
   }
-  *bigProduct = *bigFactor * factor + carry;
+  *bigProduct = (*bigFactor * factor) + carry;
   if (factorPositive == 0)
   {         // If factor is negative, change sign of product.
     ChSignBigNbrB(bigProd, nbrLen);
@@ -300,14 +306,15 @@ void DivBigNbrByInt(const int *pDividend, int divisor, int *pQuotient, int nbrLe
 
 int RemDivBigNbrByInt(const int *pDividend, int divisor, int nbrLen)
 {
+  const int* ptrDividend = pDividend;
   int remainder = 0;
   double dDivisor = (double)divisor;
   double dLimb = 0x80000000;
-  pDividend += nbrLen - 1;
+  ptrDividend += nbrLen - 1;
   for (int ctr = nbrLen - 1; ctr >= 0; ctr--)
   {
-    unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + *pDividend;
-    double dDividend = (double)remainder * dLimb + *pDividend;
+    unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + *ptrDividend;
+    double dDividend = ((double)remainder * dLimb) + *ptrDividend;
          // quotient has correct value or 1 more.
     unsigned int quotient = (unsigned int)((dDividend / dDivisor) + 0.5);
     remainder = dividend - (quotient * divisor);
@@ -316,7 +323,7 @@ int RemDivBigNbrByInt(const int *pDividend, int divisor, int nbrLen)
       quotient--;
       remainder += divisor;
     }
-    pDividend--;
+    ptrDividend--;
   }
   return remainder;
 }
@@ -363,6 +370,7 @@ void MultBigNbr(const int *pFactor1, const int *pFactor2, int *pProd, int nbrLen
 //           nbrLen: number of limbs of factors.
 void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, int nbrLen)
 {
+  int* ptrProd = pProd;
   double dRangeLimb = (double)(1U << BITS_PER_INT_GROUP);
   double dInvRangeLimb = 1 / dRangeLimb;
   int low = 0;
@@ -381,8 +389,8 @@ void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, in
       dAccumulator += (double)factor1 * (double)factor2;
     }
     low &= MAX_INT_NBR;    // Trim extra bits.
-    *pProd = low;
-    pProd++;
+    *ptrProd = low;
+    ptrProd++;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
@@ -395,7 +403,7 @@ void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, in
     }
     low = (int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
   }
-  for (; i < 2*nbrLen; i++)
+  for (; i < (2*nbrLen); i++)
   {
     for (j = i-nbrLen+1; j < nbrLen; j++)
     {
@@ -405,8 +413,8 @@ void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, in
       dAccumulator += (double)factor1 * (double)factor2;
     }
     low &= MAX_INT_NBR;    // Trim extra bits.
-    *pProd = low;
-    pProd++;
+    *ptrProd = low;
+    ptrProd++;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
@@ -419,26 +427,27 @@ void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, in
     }
     low = (int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
   }
-  *pProd = low;
-  *(pProd + 1) = (int)floor(dAccumulator / dRangeLimb);
+  *ptrProd = low;
+  *(ptrProd + 1) = (int)floor(dAccumulator / dRangeLimb);
 }
 
 void IntToBigNbr(int value, int *bigNbr, int nbrLength)
 {
+  int signExtended;
   if (value >= 0)
   {     // value is positive.
     *bigNbr = value;
-    value = 0;
+    signExtended = 0;
   }
   else
   {     // value is negative.
     *bigNbr = value & MAX_INT_NBR;
-    value = MAX_INT_NBR;
+    signExtended = MAX_INT_NBR;
   }
   for (; nbrLength > 1; nbrLength--)
   {
     bigNbr++;
-    *bigNbr = value;
+    *bigNbr = signExtended;
   }
 }
 
