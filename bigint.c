@@ -203,7 +203,6 @@ void MultBigNbrByInt(const int *pBigFactor, int factor, int *bigProd, int nbrLen
   double dVal = 1.0 / (double)(1U << BITS_PER_INT_GROUP);
   int factorPositive = 1;
   int carry;
-  double dCarry;
   if (secondFactor < 0)
   {     // If factor is negative, indicate it and compute its absolute value.
     factorPositive = 0;
@@ -213,6 +212,7 @@ void MultBigNbrByInt(const int *pBigFactor, int factor, int *bigProd, int nbrLen
   carry = 0;
   for (int ctr = 0; ctr < nbrLen; ctr++)
   {
+    double dCarry;
     int low = ((*ptrBigFactor * secondFactor) + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
@@ -433,21 +433,22 @@ void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, in
 
 void IntToBigNbr(int value, int *bigNbr, int nbrLength)
 {
+  int* ptrBigNbr = bigNbr;
   int signExtended;
   if (value >= 0)
   {     // value is positive.
-    *bigNbr = value;
+    *ptrBigNbr = value;
     signExtended = 0;
   }
   else
   {     // value is negative.
-    *bigNbr = value & MAX_INT_NBR;
+    *ptrBigNbr = value & MAX_INT_NBR;
     signExtended = MAX_INT_NBR;
   }
-  for (; nbrLength > 1; nbrLength--)
+  for (int index = 1; index < nbrLength; index++)
   {
-    bigNbr++;
-    *bigNbr = signExtended;
+    ptrBigNbr++;
+    *ptrBigNbr = signExtended;
   }
 }
 
@@ -545,19 +546,20 @@ void MultBigNbrByIntModN(int *Nbr1, int Nbr2, int *Prod, int *Mod, int nbrLen)
 
 int intDoubleModPow(int NbrMod, int Expon, int currentPrime)
 {
+  int exponent = Expon;
   double dPower = 1;
   double dSquare = NbrMod;
   double dModulus = currentPrime;
-  while (Expon != 0)
+  while (exponent != 0)
   {
-    if ((Expon & 1) == 1)
+    if ((exponent & 1) == 1)
     {
       dPower *= dSquare;
       dPower -= floor(dPower / dModulus)*dModulus;
     }
     dSquare *= dSquare;
     dSquare -= floor(dSquare / dModulus)*dModulus;
-    Expon >>= 1;
+    exponent >>= 1;
   }
   return (int)dPower;
 }
@@ -567,20 +569,20 @@ void ModInvBigInt(const int *num, int *inv, const int *mod, int nbrLenBigInt)
   int NumberLengthBigInt;
   int NumberLengthBak = NumberLength;
   (void)memset(inv, 0, nbrLenBigInt*sizeof(int));
-  while (nbrLenBigInt > 1)
+  NumberLength = nbrLenBigInt;
+  while (NumberLength > 1)
   {
-    if (*(mod + nbrLenBigInt - 1) != 0)
+    if (*(mod + NumberLength - 1) != 0)
     {
       break;
     }
-    nbrLenBigInt--;
+    NumberLength--;
   }
-  NumberLength = nbrLenBigInt;
   (void)memcpy(TestNbr, mod, NumberLength * sizeof(limb));
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(NumberLength);
-  BigIntToBigNbr(&Denominator, num, nbrLenBigInt);
-  BigIntToBigNbr(&Modulus, mod, nbrLenBigInt);
+  BigIntToBigNbr(&Denominator, num, NumberLength);
+  BigIntToBigNbr(&Modulus, mod, NumberLength);
   Numerator.sign = SIGN_POSITIVE;
   Numerator.nbrLimbs = 1;
   Numerator.limbs[0].x = 1;    // Numerator <- 1.
