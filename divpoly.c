@@ -36,44 +36,49 @@ static int polyTmp[COMPRESSED_POLY_MAX_LENGTH];
 static void ToPoly(int polyDegree, const int* polySrc, int* polyDest)
 {
   int currentDegree;
-  polySrc++;
+  int* ptrPolyDest = polyDest;
+  const int *ptrPolySrc = polySrc + 1;
   if (polyDegree < 0)
   {    // Polynomial is a monomial
     for (currentDegree = 0; currentDegree < -polyDegree; currentDegree++)
     {
-      *polyDest = 1;
-      *(polyDest + 1) = 0;
-      polyDest += NumberLength + 1;
+      *ptrPolyDest = 1;
+      *(ptrPolyDest + 1) = 0;
+      ptrPolyDest += NumberLength + 1;
     }
-    (void)memcpy(polyDest, polySrc, (*(polySrc)+1) * sizeof(int));
+    (void)memcpy(ptrPolyDest, ptrPolySrc, (*(ptrPolySrc)+1) * sizeof(int));
   }
   else
   {   // Polynomial
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
-      int nbrLimbs = *(polySrc)+1;
-      (void)memcpy(polyDest, polySrc, nbrLimbs * sizeof(int));
-      polyDest += NumberLength + 1;
-      polySrc += nbrLimbs;
+      int nbrLimbs = *(ptrPolySrc)+1;
+      (void)memcpy(ptrPolyDest, ptrPolySrc, nbrLimbs * sizeof(int));
+      ptrPolyDest += NumberLength + 1;
+      ptrPolySrc += nbrLimbs;
     }
   }
 }
 
 static void FromPoly(int polyDegree, int* polyDest, const int* polySrc)
 {
-  *polyDest++ = polyDegree;
+  const int* ptrPolySrc = polySrc;
+  int* ptrPolyDest = polyDest;
+  *ptrPolyDest = polyDegree;
+  ptrPolyDest++;
   for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
-    int nbrLimbs = *(polySrc)+1;
-    (void)memcpy(polyDest, polySrc, nbrLimbs * sizeof(int));
-    polyDest += NumberLength + 1;
-    polySrc += nbrLimbs;
+    int nbrLimbs = *(ptrPolySrc)+1;
+    (void)memcpy(ptrPolyDest, ptrPolySrc, nbrLimbs * sizeof(int));
+    ptrPolyDest += NumberLength + 1;
+    ptrPolySrc += nbrLimbs;
   }
 }
 
 static void ReversePolynomial(int* ptrDest, const int* ptrSrc)
 {
-  int indexes[2 * MAX_DEGREE + 1];
+  int* pDest = ptrDest;
+  int indexes[(2 * MAX_DEGREE) + 1];
   int* ptrIndex;
   int index;
   int numLength;
@@ -81,14 +86,17 @@ static void ReversePolynomial(int* ptrDest, const int* ptrSrc)
   if (degreePoly < 0)
   {    // Monomial.
     degreePoly = -degreePoly;
-    *ptrDest++ = degreePoly;
+    *pDest = degreePoly;
+    pDest++;
     numLength = numLimbs(ptrSrc + 1) + 1;
-    (void)memcpy(ptrDest, ptrSrc + 1, numLength * sizeof(int));
-    ptrDest += numLength;
+    (void)memcpy(pDest, ptrSrc + 1, numLength * sizeof(int));
+    pDest += numLength;
     for (degree = 0; degree < degreePoly; degree++)
     {
-      *ptrDest++ = 1;   // Set coefficient to zero.
-      *ptrDest++ = 0;
+      *pDest = 1;   // Set coefficient to zero.
+      pDest++;
+      *pDest = 0;
+      pDest++;
     }
     return;
   }
@@ -97,17 +105,19 @@ static void ReversePolynomial(int* ptrDest, const int* ptrSrc)
   index = 1;
   for (degree = 0; degree <= degreePoly; degree++)
   {
-    *ptrIndex++ = index;
+    *ptrIndex = index;
+    ptrIndex++;
     index += numLimbs(ptrSrc + index) + 1;
   }
   // Copy to destination.
-  *ptrDest++ = degreePoly;
+  *pDest = degreePoly;
+  pDest++;
   for (degree = degreePoly; degree >= 0; degree--)
   {
     const int* ptrSrcCoeff = ptrSrc + indexes[degree];
     numLength = numLimbs(ptrSrcCoeff) + 1;
-    (void)memcpy(ptrDest, ptrSrcCoeff, numLength * sizeof(int));
-    ptrDest += numLength;
+    (void)memcpy(pDest, ptrSrcCoeff, numLength * sizeof(int));
+    pDest += numLength;
   }
 }
 
@@ -133,12 +143,13 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
     }
     else
     {                   // Remainder is equal to dividend.
-      CopyPolynomial(poly1, pDividend, *pDividend);
+      (void)CopyPolynomial(poly1, pDividend, *pDividend);
     }
     return EXPR_OK;
   }
   ptrQuotient = poly3;
-  *ptrQuotient++ = degreeDividend - degreeDivisor;
+  *ptrQuotient = degreeDividend - degreeDivisor;
+  ptrQuotient++;
   for (int degreeQuotient = degreeDividend - degreeDivisor;
     degreeQuotient >= 0; degreeQuotient--)
   {
@@ -147,7 +158,7 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
     int* ptrRemainder = &poly4[1];
     UncompressBigIntegerB(ptrDividend, &operand1);
     UncompressBigIntegerB(ptrDivisor, &operand2);
-    BigIntRemainder(&operand1, &operand2, &operand3);
+    (void)BigIntRemainder(&operand1, &operand2, &operand3);
     if (!BigIntIsZero(&operand3))
     {
       return EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER;
@@ -261,7 +272,7 @@ int DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType 
     UncompressBigIntegerB(ptrArgument2 + 1, &operand2);
     if (modulusIsZero)
     {
-      BigIntRemainder(&operand1, &operand2, &operand3);
+      (void)BigIntRemainder(&operand1, &operand2, &operand3);
       if (!BigIntIsZero(&operand3))
       {    // Remainder is not zero.
         return EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER;
@@ -322,13 +333,15 @@ int DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType 
 // Reverse coefficients of polynomials. Both polynomials must be different.
 static void ReverseModularPolynomial(const int* ptrSrc, int* ptrRev, int polyDegree)
 {
+  const int* pSrc = ptrSrc;
+  int* pRev = ptrRev;
   int nbrLimbs = NumberLength + 1;
-  ptrRev += polyDegree * nbrLimbs;
+  pRev += polyDegree * nbrLimbs;
   for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
-    (void)memcpy(ptrRev, ptrSrc, nbrLimbs * sizeof(limb));
-    ptrSrc += nbrLimbs;
-    ptrRev -= nbrLimbs;
+    (void)memcpy(pRev, pSrc, nbrLimbs * sizeof(limb));
+    pSrc += nbrLimbs;
+    pRev -= nbrLimbs;
   }
 }
 
@@ -380,7 +393,8 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
   // Compute degrees to use in Newton loop.
   while (newtonDegree > 1)
   {
-    degrees[nbrDegrees++] = newtonDegree;
+    degrees[nbrDegrees] = newtonDegree;
+    nbrDegrees++;
     newtonDegree = (newtonDegree + 1) / 2;
   }
   // Perform Newton loop.
@@ -501,7 +515,7 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
     }
     return;
   }
-  IntArray2BigInteger(pDivisor + divisorDegree * nbrLimbs, &operand1);
+  IntArray2BigInteger(pDivisor + (divisorDegree * nbrLimbs), &operand1);
   (void)memcpy(operand5.limbs, operand1.limbs, NumberLength * sizeof(int));
   if (NumberLength == 1)
   {
@@ -518,12 +532,12 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
     // Multiply dividend by this number.
     for (currentDegree = 0; currentDegree <= dividendDegree; currentDegree++)
     {
-      IntArray2BigInteger(pDividend + currentDegree * nbrLimbs, &operand2);
+      IntArray2BigInteger(pDividend + (currentDegree * nbrLimbs), &operand2);
       modmult(operand1.limbs, operand2.limbs, operand2.limbs);
-      BigInteger2IntArray(pDividend + currentDegree * nbrLimbs, &operand2);
+      BigInteger2IntArray(pDividend + (currentDegree * nbrLimbs), &operand2);
     }
   }
-  if ((divisorDegree > 16) && (dividendDegree < 4*divisorDegree))
+  if ((divisorDegree > 16) && (dividendDegree < (4*divisorDegree)))
 //  if (0)
   {         // Newton division is faster.
     PolynomialNewtonDivision(pDividend, dividendDegree,
@@ -535,13 +549,13 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
     for (currentDegree = dividendDegree; currentDegree >= divisorDegree; currentDegree--)
     {
       int index;
-      ptrDividend = pDividend + currentDegree * nbrLimbs;
+      ptrDividend = pDividend + (currentDegree * nbrLimbs);
       IntArray2BigInteger(ptrDividend, &operand1);
       if (ptrQuotient != NULL)
       {
         BigInteger2IntArray(ptrQuot, &operand1);  // Store coefficient of quotient.
       }
-      ptrDivisor = pDivisor + divisorDegree * nbrLimbs;
+      ptrDivisor = pDivisor + (divisorDegree * nbrLimbs);
       if ((NumberLength == 1) && (TestNbr[0].x <= 32768))
       {
         int mod = TestNbr[0].x;
@@ -549,7 +563,7 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
         ptrDivisor++;
         for (index = 0; index <= divisorDegree; index++)
         {
-          *ptrDividend = (*ptrDividend - *ptrDivisor * operand1.limbs[0].x) % mod;
+          *ptrDividend = (*ptrDividend - (*ptrDivisor * operand1.limbs[0].x)) % mod;
           if (*ptrDividend < 0)
           {
             *ptrDividend += mod;

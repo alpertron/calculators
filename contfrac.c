@@ -52,38 +52,61 @@ static void ShowConvergents(int index, BigInteger *coeff)
   CopyBigInt(&V2, &V1);
   BigIntMultiply(coeff, &V2, &V1);
   BigIntAdd(&V1, &V3, &V1);
-  *ptrOutput++ = 'A';
-  *ptrOutput++ = '[';
+  *ptrOutput = 'A';
+  ptrOutput++;
+  *ptrOutput = '[';
+  ptrOutput++;
   int2dec(&ptrOutput, index);
-  *ptrOutput++ = ']';
-  *ptrOutput++ = '/';
-  *ptrOutput++ = 'B';
-  *ptrOutput++ = '[';
+  *ptrOutput = ']';
+  ptrOutput++;
+  *ptrOutput = '/';
+  ptrOutput++;
+  *ptrOutput = 'B';
+  ptrOutput++;
+  *ptrOutput = '[';
+  ptrOutput++;
   int2dec(&ptrOutput, index);
-  *ptrOutput++ = ']';
-  *ptrOutput++ = ' ';
-  *ptrOutput++ = '=';
-  *ptrOutput++ = ' ';
+  *ptrOutput = ']';
+  ptrOutput++;
+  *ptrOutput = ' ';
+  ptrOutput++;
+  *ptrOutput = '=';
+  ptrOutput++;
+  *ptrOutput = ' ';
+  ptrOutput++;
   BigInteger2Dec(&U1, ptrOutput, groupLen);  // Show continued fraction convergent.
   ptrOutput += strlen(ptrOutput);
-  *ptrOutput++ = '/';
+  *ptrOutput = '/';
+  ptrOutput++;
   BigInteger2Dec(&V1, ptrOutput, groupLen);  // Show continued fraction convergent.
   ptrOutput += strlen(ptrOutput);
-  *ptrOutput++ = ',';
-  *ptrOutput++ = ' ';
-  *ptrOutput++ = 'a';
-  *ptrOutput++ = '[';
+  *ptrOutput = ',';
+  ptrOutput++;
+  *ptrOutput = ' ';
+  ptrOutput++;
+  *ptrOutput = 'a';
+  ptrOutput++;
+  *ptrOutput = '[';
+  ptrOutput++;
   int2dec(&ptrOutput, index);
-  *ptrOutput++ = ']';
-  *ptrOutput++ = ' ';
-  *ptrOutput++ = '=';
-  *ptrOutput++ = ' ';
+  *ptrOutput = ']';
+  ptrOutput++;
+  *ptrOutput = ' ';
+  ptrOutput++;
+  *ptrOutput = '=';
+  ptrOutput++;
+  *ptrOutput = ' ';
+  ptrOutput++;
   BigInteger2Dec(coeff, ptrOutput, groupLen);  // Show continued fraction coefficient.
   ptrOutput += strlen(ptrOutput);
-  *ptrOutput++ = '<';
-  *ptrOutput++ = 'b';
-  *ptrOutput++ = 'r';
-  *ptrOutput++ = '>';
+  *ptrOutput = '<';
+  ptrOutput++;
+  *ptrOutput = 'b';
+  ptrOutput++;
+  *ptrOutput = 'r';
+  ptrOutput++;
+  *ptrOutput = '>';
+  ptrOutput++;
   *ptrOutput = 0;
 }
 
@@ -142,7 +165,7 @@ static void ContFrac(void)
   (void)BigIntRemainder(&Temp, &den, &Temp);
   if (!BigIntIsZero(&Temp))
   {            // If delta - num^2 is not multiple of den...
-    int sign;
+    enum eSign sign;
     (void)BigIntMultiply(&delta, &den, &delta);
     (void)BigIntMultiply(&delta, &den, &delta);   // delta <- delta*den^2
     sign = den.sign;
@@ -200,18 +223,18 @@ static void ContFrac(void)
       {      // Show convergent checkbox not checked.
         BigInteger2Dec(&Temp, ptrOutput, groupLen);  // Show continued fraction coefficient.
         ptrOutput += strlen(ptrOutput);
-        (void)strcpy(ptrOutput, (index == 0 ? " + //" : ", ")); // Show separator.
+        (void)strcpy(ptrOutput, ((index == 0)? " + //" : ", ")); // Show separator.
         ptrOutput += strlen(ptrOutput);
       }
       if (hexadecimal)
       {      // Show convergent checkbox is checked.
         ShowConvergents(index, &Temp);
       }
-      BigIntMultiply(&Temp, &den, &bigTmp);  // U <- a*V - U
+      (void)BigIntMultiply(&Temp, &den, &bigTmp);  // U <- a*V - U
       BigIntSubt(&bigTmp, &num, &num);
-      BigIntMultiply(&num, &num, &bigTmp);   // V <- (D - U^2)/V
+      (void)BigIntMultiply(&num, &num, &bigTmp);   // V <- (D - U^2)/V
       BigIntSubt(&delta, &bigTmp, &bigTmp);
-      BigIntDivide(&bigTmp, &den, &Temp);
+      (void)BigIntDivide(&bigTmp, &den, &Temp);
       CopyBigInt(&den, &Temp);
       index++;
       if (startPeriodNum.sign == SIGN_POSITIVE)
@@ -239,7 +262,7 @@ static void ContFrac(void)
           }
         }
       }
-    } while (ptrOutput - &output[0] < sizeof(output) - 30000);
+    } while ((ptrOutput - &output[0]) < (sizeof(output) - 30000));
     if (!hexadecimal)
     {        // Show convergent checkbox not checked.
       ptrOutput -= 2;                       // Delete extra comma and space at the end.
@@ -292,7 +315,7 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
   (void)BigIntDivide(pNum, &Tmp, pNum);
   (void)BigIntDivide(pDen, &Tmp, pDen);
   floordiv(pNum, pDen, &Tmp);
-  BigIntMultiply(pDen, &Tmp, &bigTmp);
+  (void)BigIntMultiply(pDen, &Tmp, &bigTmp);
   BigIntSubt(pNum, &bigTmp, pNum);   // Reduce numerator.
   if (hexadecimal)
   {      // Show convergent checkbox is checked.
@@ -323,7 +346,7 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
       }
       sep = ", ";
     }
-    BigIntMultiply(pNum, &Tmp, &bigTmp);
+    (void)BigIntMultiply(pNum, &Tmp, &bigTmp);
     BigIntSubt(pDen, &bigTmp, &Tmp);
     CopyBigInt(pDen, pNum);
     CopyBigInt(pNum, &Tmp);
@@ -341,12 +364,14 @@ static int getNumber(BigInteger *pNumber, const char *title, char **pptrInput)
   if (rc != EXPR_OK)
   {
     showText(title);
-    *ptrOutput++ = ':';
-    *ptrOutput++ = ' ';
+    *ptrOutput = ':';
+    ptrOutput++;
+    *ptrOutput = ' ';
+    ptrOutput++;
     textError(output, rc);
     return 1;
   }
-  *pptrInput += strlen(*pptrInput) + 1;  // Skip terminator.
+  *pptrInput += strlen(*pptrInput) + 1U;  // Skip terminator.
   return 0;
 }
 
