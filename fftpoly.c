@@ -64,7 +64,7 @@ static void initCosinesArray(void)
     int mask = 1;
     for (;;)
     {
-      if (index & mask)
+      if ((index & mask) != 0)
       {
         break;
       }
