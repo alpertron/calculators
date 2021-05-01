@@ -355,15 +355,16 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
             (void)memcpy(nbrTemp, nbrR2, NumberSizeBytes);
             (void)memcpy(nbrR2, nbrROther, NumberSizeBytes);
             (void)memcpy(nbrROther, nbrTemp, NumberSizeBytes);
-            if ((addA2.x >= (int)(LIMB_RANGE / 2)) || (addB2.x >= (int)(LIMB_RANGE / 2)) ||
-              (mult2.x >= (int)(LIMB_RANGE / 2)))
+            if ((addA2.x >= ((int)LIMB_RANGE / 2)) || (addB2.x >= ((int)LIMB_RANGE / 2)) ||
+              (mult2.x >= ((int)LIMB_RANGE / 2)))
             {
               // nbrA2 <- (nbrA2 * mult2 + addA2) % subGroupOrder
               AdjustExponent(nbrA2, mult2, addA2, &subGroupOrder);
               // nbrB2 <- (nbrB2 * mult2 + addB2) % subGroupOrder
               AdjustExponent(nbrB2, mult2, addB2, &subGroupOrder);
               mult2.x = 1;
-              addA2.x = addB2.x = 0;
+              addA2.x = 0;
+              addB2.x = 0;
             }
             if (!memcmp(nbrR, nbrR2, NumberSizeBytes))
             {
@@ -531,8 +532,8 @@ static bool DiscrLogPowerPrimeSubgroup(int multiplicity, const int *ptrPrime)
     int lsbPower = power.limbs[0].x;
     if (multiplicity > 1)
     {
-      int mask = (multiplicity == 2 ? 3 : 7);
-      expon = (multiplicity == 2 ? 2 : 3);
+      int mask = ((multiplicity == 2)? 3 : 7);
+      expon = ((multiplicity == 2)? 2 : 3);
       if ((lsbPower & mask) == 1)
       {
         intToBigInteger(&logar, 0);
@@ -726,10 +727,10 @@ void DiscreteLogarithm(void)
     else
     {
       leastSignificantDword = NumberLength - 2;
-      firstLimit = ((double)TestNbr[mostSignificantDword].x * LIMB_RANGE +
-        TestNbr[leastSignificantDword].x) / 3;
+      firstLimit = ((double)TestNbr[mostSignificantDword].x * (double)LIMB_RANGE +
+        (double)TestNbr[leastSignificantDword].x) / 3.0;
     }
-    secondLimit = firstLimit * 2;
+    secondLimit = firstLimit * 2.0;
     for (int indexBase = 0; indexBase < NbrFactors; indexBase++)
     {
       rc = ComputeDiscrLogInPrimeSubgroup(indexBase, firstLimit, secondLimit,
@@ -774,7 +775,7 @@ void DiscreteLogarithm(void)
       return;
     }
     (void)BigIntDivide(&logarMult, &tmpBase, &tmp2);
-    if (tmp2.limbs[0].x & 1)
+    if ((tmp2.limbs[0].x & 1) != 0)
     {     // h is odd.
       BigIntSubt(&logar, &DiscreteLog, &tmpBase);
       BigIntModularDivisionSaveTestNbr(&tmpBase, &DiscreteLogPeriod, &tmp2, &bigNbrA);
@@ -850,7 +851,7 @@ static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *bigSubGro
   carry = add.x;
   for (int j = 0; j<=nbrLimbs; j++)
   {
-    carry += nbr[j].x;
+    carry += (unsigned int)nbr[j].x;
     nbr[j].x = (int)(carry & MAX_VALUE_LIMB);
     carry >>= BITS_PER_GROUP;
   }
@@ -874,41 +875,42 @@ static void generateOutput(enum eExprErr rc, int groupLength)
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(base.limbs, ptrOutput, base.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
-    strcat(ptrOutput, "<sup><var>exp</var></sup> &equiv; ");
+    (void)strcpy(ptrOutput, "<sup><var>exp</var></sup> &equiv; ");
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(power.limbs, ptrOutput, power.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
-    strcat(ptrOutput, " (mod ");
+    (void)strcpy(ptrOutput, " (mod ");
     ptrOutput += strlen(ptrOutput);
     Bin2Dec(modulus.limbs, ptrOutput, modulus.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
-    strcat(ptrOutput, ")</p><p>");
+    (void)strcpy(ptrOutput, ")</p><p>");
     ptrOutput += strlen(ptrOutput);
     if (DiscreteLogPeriod.sign == SIGN_NEGATIVE)
     {
-      strcat(ptrOutput, lang ? "Ningún valor de <var>exp</var> satisface la congruencia.</p>" :
+      (void)strcpy(ptrOutput, lang ? "Ningún valor de <var>exp</var> satisface la congruencia.</p>" :
         "There is no such value of <var>exp</var>.</p>");
       ptrOutput += strlen(ptrOutput);
       (void)strcpy(ptrOutput, textExp);
     }
     else
     {
-      strcat(ptrOutput, "<var>exp</var> = ");
+      (void)strcpy(ptrOutput, "<var>exp</var> = ");
       ptrOutput += strlen(ptrOutput);
       Bin2Dec(DiscreteLog.limbs, ptrOutput, DiscreteLog.nbrLimbs, groupLength);
       ptrOutput += strlen(ptrOutput);
       if (!BigIntIsZero(&DiscreteLogPeriod))
       {   // Discrete log period is not zero.
-        strcat(ptrOutput, " + ");
+        (void)strcpy(ptrOutput, " + ");
         ptrOutput += strlen(ptrOutput);
         Bin2Dec(DiscreteLogPeriod.limbs, ptrOutput, DiscreteLogPeriod.nbrLimbs, groupLength);
         ptrOutput += strlen(ptrOutput);
-        strcat(ptrOutput, "<var>k</var>");
+        (void)strcpy(ptrOutput, "<var>k</var>");
       }
-      strcat(ptrOutput, "</p>");
+      (void)strcpy(ptrOutput, "</p>");
     }
+    ptrOutput += strlen(ptrOutput);
   }
-  strcat(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+  (void)strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
@@ -963,7 +965,7 @@ EXTERNALIZE void doWork(void)
   groupLen = 0;
   while (*ptrData != ',')
   {
-    groupLen = groupLen * 10 + (*ptrData - '0');
+    groupLen = (groupLen * 10) + (*ptrData - '0');
     ptrData++;
   }
   ptrData++;             // Skip comma.
