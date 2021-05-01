@@ -79,10 +79,10 @@ void partition(int val, BigInteger *pResult)
       do
       {
         currentPrime -= 2;
-      } while (currentPrime % 3 == 0);
+      } while ((currentPrime % 3) == 0);
       for (Q = 5; Q <= SQRT_MAX_VALUE_LIMB; Q += 6)
       { /* Check if Base is prime */
-        if (currentPrime % Q == 0)
+        if ((currentPrime % Q) == 0)
         {
           break;     /* Composite */
         }
@@ -99,7 +99,7 @@ void partition(int val, BigInteger *pResult)
     partArray[index] = currentPrime;
   }
   // Perform modular arithmetic.
-  for (index = val; index<val + limbs; index++)
+  for (index = val; index < (val + limbs); index++)
   {
     currentPrime = partArray[index];
     sum = 1;                          // Initialize p(0) mod currentPrime.
@@ -199,10 +199,10 @@ void partition(int val, BigInteger *pResult)
     {
       smallMultiply(mult, prodModulus[idx].x, product);
       carry1 += (unsigned int)product[0];
-      prodModulus[idx].x = (int)carry1 & MAX_VALUE_LIMB;
+      prodModulus[idx].x = (int)(carry1 & MAX_VALUE_LIMB);
       carry1 = (carry1 >> BITS_PER_GROUP) + (unsigned int)product[1];
     }
-    if (carry1 != 0)
+    if (carry1 != 0U)
     {  // New limb needed.
       prodModulus[idx].x = carry1;
       pResult->limbs[idx].x = 0;
@@ -217,10 +217,10 @@ void partition(int val, BigInteger *pResult)
       carry1 += (unsigned int)product[0];
       carry2 += (carry1 & MAX_VALUE_LIMB) + pResult->limbs[idx].x;
       carry1 = (carry1 >> BITS_PER_GROUP) + (unsigned int)product[1];
-      pResult->limbs[idx].x = (int)carry2 & MAX_VALUE_LIMB;
+      pResult->limbs[idx].x = (int)(carry2 & MAX_VALUE_LIMB);
       carry2 = (carry2 >> BITS_PER_GROUP);
     }
-    if (carry1 + carry2 != 0)
+    if ((carry1 + carry2) != 0)
     {  // New limb needed.
       prodModulus[idx].x = 0;
       pResult->limbs[idx].x = carry1 + carry2;
@@ -237,14 +237,15 @@ void partition(int val, BigInteger *pResult)
 
 static int numberofBitsSetToOne(int value)
 {
-  int bitsSet = 0;  
-  while (value > 0)
+  int bitsSet = 0;
+  int shiftedValue = value;
+  while (shiftedValue > 0)
   {
-    if (value & 1)
+    if ((shiftedValue & 1) != 0)
     {
       bitsSet++;
     }
-    value >>= 1;
+    shiftedValue >>= 1;
   }
   return bitsSet;
 }
@@ -256,8 +257,8 @@ static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulat
   int nbrGroupsAccumulated = *pNbrGroupsAccumulated;
   *pNbrGroupsAccumulated = nbrGroupsAccumulated + 1;
   prod.limbs[1].x = (int)(factorAccum / (double)LIMB_RANGE);
-  prod.limbs[0].x = (int)(factorAccum - (double)LIMB_RANGE * (double)prod.limbs[1].x);
-  prod.nbrLimbs = (prod.limbs[1].x == 0 ? 1 : 2);
+  prod.limbs[0].x = (int)(factorAccum - ((double)LIMB_RANGE * (double)prod.limbs[1].x));
+  prod.nbrLimbs = ((prod.limbs[1].x == 0) ? 1 : 2);
   prod.sign = SIGN_POSITIVE;
   if (((nbrGroupsAccumulated & 1) == 0) || (result != NULL))
   {     // Even means that k multiplications have to be done, where k is the number of 
@@ -300,7 +301,7 @@ void factorial(BigInteger *result, int argument)
   partArray[0] = 20;     // Index of first big integer.
   for (int ctr = 1; ctr <= argument; ctr++)
   {
-    if (factorAccum * ctr > maxFactorAccum)
+    if ((factorAccum * (double)ctr) > maxFactorAccum)
     {
       ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, NULL);
       factorAccum = 1;
@@ -320,14 +321,14 @@ void primorial(BigInteger *result, int argument)
   partArray[0] = 20;     // Index of first big integer.
   for (int ctr = 2; ctr <= argument; ctr++)
   {
-    for (j = 2; j*j <= ctr; j++)
+    for (j = 2; (j*j) <= ctr; j++)
     {
-      if ((ctr / j) * j == ctr)
+      if (((ctr / j) * j) == ctr)
       {   // Number is not prime.
         break;
       }
     }
-    if (j*j > ctr)
+    if ((j*j) > ctr)
     {     // Number is prime, perform multiplication.
       if (factorAccum * ctr > maxFactorAccum)
       {

@@ -153,8 +153,8 @@ enum eExprErr BigRationalMultiplyByInt(const BigRational* pFactor1,
 {
   multint(&tmp1, &pFactor1->numerator, factor2);
   BigIntGcd(&tmp1, &pFactor1->denominator, &tmp3);
-  BigIntDivide(&tmp1, &tmp3, &pProduct->numerator);
-  BigIntDivide(&pFactor1->denominator, &tmp3, &pProduct->denominator);
+  (void)BigIntDivide(&tmp1, &tmp3, &pProduct->numerator);
+  (void)BigIntDivide(&pFactor1->denominator, &tmp3, &pProduct->denominator);
   return EXPR_OK;
 }
 
@@ -163,8 +163,8 @@ enum eExprErr BigRationalDivideByInt(const BigRational* pDividend,
 {
   multint(&tmp1, &pDividend->denominator, divisor);
   BigIntGcd(&tmp1, &pDividend->numerator, &tmp3);
-  BigIntDivide(&tmp1, &tmp3, &pQuotient->denominator);
-  BigIntDivide(&pDividend->numerator, &tmp3, &pQuotient->numerator);
+  (void)BigIntDivide(&tmp1, &tmp3, &pQuotient->denominator);
+  (void)BigIntDivide(&pDividend->numerator, &tmp3, &pQuotient->numerator);
   return EXPR_OK;
 }
 
@@ -199,34 +199,34 @@ void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart)
   }
   // Divide numerator and denominator by their gcd.
   BigIntGcd(&SqrPart->numerator, &SqrPart->denominator, &tmp1);
-  BigIntDivide(&SqrPart->numerator, &tmp1, &SqrPart->numerator);
-  BigIntDivide(&SqrPart->denominator, &tmp1, &SqrPart->denominator);
+  (void)BigIntDivide(&SqrPart->numerator, &tmp1, &SqrPart->numerator);
+  (void)BigIntDivide(&SqrPart->denominator, &tmp1, &SqrPart->denominator);
   // Get A = gcd(numerator of rational, denominator of sqrt)
   BigIntGcd(&RatPart->numerator, &SqrPart->denominator, &tmp1);
   // Get B = gcd(numerator of rational, denominator of sqrt / A)
-  BigIntDivide(&SqrPart->denominator, &tmp1, &tmp2);
+  (void)BigIntDivide(&SqrPart->denominator, &tmp1, &tmp2);
   BigIntGcd(&tmp1, &tmp2, &tmp3);
   // Compute numerator of rational <- numerator of rational / B
-  BigIntDivide(&RatPart->numerator, &tmp3, &RatPart->numerator);
+  (void)BigIntDivide(&RatPart->numerator, &tmp3, &RatPart->numerator);
   // Compute denominator of sqrt <- denominator of sqrt / B^2
-  BigIntDivide(&SqrPart->denominator, &tmp3, &SqrPart->denominator);
-  BigIntDivide(&SqrPart->denominator, &tmp3, &SqrPart->denominator);
+  (void)BigIntDivide(&SqrPart->denominator, &tmp3, &SqrPart->denominator);
+  (void)BigIntDivide(&SqrPart->denominator, &tmp3, &SqrPart->denominator);
   // Get A = gcd(denominator of rational, numerator of sqrt)
   BigIntGcd(&RatPart->denominator, &SqrPart->numerator, &tmp1);
   // Get B = gcd(denominator of rational, numerator of sqrt / A)
-  BigIntDivide(&SqrPart->numerator, &tmp1, &tmp2);
+  (void)BigIntDivide(&SqrPart->numerator, &tmp1, &tmp2);
   BigIntGcd(&tmp1, &tmp2, &tmp3);
   // Compute denominator of rational <- denominator of rational / B
-  BigIntDivide(&RatPart->denominator, &tmp3, &RatPart->denominator);
+  (void)BigIntDivide(&RatPart->denominator, &tmp3, &RatPart->denominator);
   // Compute numerator of sqrt <- numerator of sqrt / B^2
-  BigIntDivide(&SqrPart->numerator, &tmp3, &SqrPart->numerator);
-  BigIntDivide(&SqrPart->numerator, &tmp3, &SqrPart->numerator);
+  (void)BigIntDivide(&SqrPart->numerator, &tmp3, &SqrPart->numerator);
+  (void)BigIntDivide(&SqrPart->numerator, &tmp3, &SqrPart->numerator);
   // Let A = gcd(numerator of rational, denominator of sqrt)
   BigIntGcd(&RatPart->numerator, &SqrPart->denominator, &tmp1);
   // Divide numerator of rational by this gcd.
-  BigIntDivide(&RatPart->numerator, &tmp1, &RatPart->numerator);
+  (void)BigIntDivide(&RatPart->numerator, &tmp1, &RatPart->numerator);
   // Divide denominator of sqrt by this gcd.
-  BigIntDivide(&SqrPart->denominator, &tmp1, &SqrPart->denominator);
+  (void)BigIntDivide(&SqrPart->denominator, &tmp1, &SqrPart->denominator);
   // Multiply numerator of sqrt by the gcd.
   BigIntMultiply(&SqrPart->numerator, &tmp1, &SqrPart->numerator);
   ForceDenominatorPositive(SqrPart);
@@ -263,8 +263,8 @@ void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart)
   }
   // Divide numerator and denominator by their gcd.
   BigIntGcd(&RatPart->numerator, &RatPart->denominator, &tmp1);
-  BigIntDivide(&RatPart->numerator, &tmp1, &RatPart->numerator);
-  BigIntDivide(&RatPart->denominator, &tmp1, &RatPart->denominator);
+  (void)BigIntDivide(&RatPart->numerator, &tmp1, &RatPart->numerator);
+  (void)BigIntDivide(&RatPart->denominator, &tmp1, &RatPart->denominator);
 }
 
 bool BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
@@ -277,8 +277,8 @@ bool BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
   }
   // Divide numerator and denominator by their gcd.
   BigIntGcd(&RatArgum->numerator, &RatArgum->denominator, &tmp1);
-  BigIntDivide(&RatArgum->numerator, &tmp1, &RatArgum->numerator);
-  BigIntDivide(&RatArgum->denominator, &tmp1, &RatArgum->denominator);
+  (void)BigIntDivide(&RatArgum->numerator, &tmp1, &RatArgum->numerator);
+  (void)BigIntDivide(&RatArgum->denominator, &tmp1, &RatArgum->denominator);
   // Process numerator.
   squareRoot(RatArgum->numerator.limbs, tmp1.limbs, RatArgum->numerator.nbrLimbs, &tmp1.nbrLimbs);
   BigIntMultiply(&tmp1, &tmp1, &tmp2);
@@ -342,10 +342,10 @@ void showRationalOverStr(const BigRational* rat, const char *str, const char *pt
   bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) || (rat->denominator.limbs[0].x != 1));
   if (pretty != PARI_GP)
   {
-    showText(pretty == PRETTY_PRINT?
+    showText((pretty == PRETTY_PRINT)?
       "<span class=\"fraction\"><span class=\"numerator\">": "\\frac{");
     shownbr(&rat->numerator);
-    showText(pretty == PRETTY_PRINT ? "</span><span class=\"denominator\">": "}{");
+    showText((pretty == PRETTY_PRINT)? "</span><span class=\"denominator\">": "}{");
     if (denominatorIsNotOne)
     {
       shownbr(&rat->denominator);
@@ -353,7 +353,7 @@ void showRationalOverStr(const BigRational* rat, const char *str, const char *pt
       showText(" ");
     }
     showText(str);
-    showText(pretty == PRETTY_PRINT ? "</span></span>": "}");
+    showText((pretty == PRETTY_PRINT)? "</span></span>": "}");
     return;
   }
   shownbr(&rat->numerator);
@@ -384,7 +384,8 @@ void showRational(const BigRational* rat)
   showParen = denominatorIsNotOne || (rat->numerator.sign == SIGN_NEGATIVE);
   if (showParen)
   {
-    *ptrOutput++ = '(';
+    *ptrOutput = '(';
+    ptrOutput++;
   }
   shownbr(&rat->numerator);
   if (denominatorIsNotOne)
@@ -394,7 +395,8 @@ void showRational(const BigRational* rat)
   }
   if (showParen)
   {
-    *ptrOutput++ = ')';
+    *ptrOutput = ')';
+    ptrOutput++;
   }
 }
 
@@ -431,21 +433,23 @@ void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int roo
           showText("^(1/2)");
         }
       }
-      if (pretty == 0)
+      if (pretty == PRETTY_PRINT)
       {
-        *ptrOutput++ = ' ';
+        *ptrOutput = ' ';
+        ptrOutput++;
       }
       showText(ptrTimes);
       if (pretty == 0)
       {
-        *ptrOutput++ = ' ';
+        *ptrOutput = ' ';
+        ptrOutput++;
       }
     }
     else
     {     // Absolute value of rational part is 1.
       if (RatPart->numerator.sign == SIGN_NEGATIVE)
       {   // Rational part is 1. Show negative sign.
-        showText(pretty != PARI_GP? "&minus;": "-");
+        showText((pretty != PARI_GP)? "&minus;": "-");
       }
     }
     if (pretty == PRETTY_PRINT)

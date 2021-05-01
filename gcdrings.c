@@ -81,16 +81,17 @@ void GaussianGCD(BigInteger *realA, BigInteger *imagA, BigInteger *realB, BigInt
     }
     if (GcdIsAtimesD)
     {        // The GCD is d*a
-      BigIntMultiply(realA, realGcd, temp1);
-      BigIntMultiply(imagA, imagGcd, temp2);
+      (void)BigIntMultiply(realA, realGcd, temp1);
+      (void)BigIntMultiply(imagA, imagGcd, temp2);
       BigIntSubt(temp1, temp2, realB);
-      BigIntMultiply(realA, imagGcd, temp1);
-      BigIntMultiply(imagA, realGcd, temp2);
+      (void)BigIntMultiply(realA, imagGcd, temp1);
+      (void)BigIntMultiply(imagA, realGcd, temp2);
       BigIntAdd(temp1, temp2, imagGcd);
       CopyBigInt(realGcd, realB);
       return;
     }
-    if (realB->nbrLimbs == 1 && imagB->nbrLimbs == 1 && realB->limbs[0].x + imagB->limbs[0].x == 1)
+    if ((realB->nbrLimbs == 1) && (imagB->nbrLimbs == 1) &&
+      ((realB->limbs[0].x + imagB->limbs[0].x) == 1))
     {        // B is a unit. GCD already found in d.
       return;
     }
@@ -231,7 +232,7 @@ static void ConvertQuaternionToEvenType(BigInteger *scalar, BigInteger *vecI, Bi
   }
 
   sumCoeff = Mod4(scalar) + Mod4(vecI) + Mod4(vecJ) + Mod4(vecK);
-  if (sumCoeff == 6 || sumCoeff == 10)
+  if ((sumCoeff == 6) || (sumCoeff == 10))
   {     // Odd number of '3' in coefficients of A. Multiply by (1/2)(1+i+j+k)
     // Compute scalar part of the product: d_1*a_1 - d_i*a_i - d_j*a_j - d_k*a_k.
     BigIntSubt(scalar, vecI, temp1);
@@ -315,13 +316,16 @@ static void addApprox(const struct approx *addend1, const struct approx *addend2
   {
     mantissa1 += mantissa2 / (double)LIMB_RANGE;
   }
-  if (mantissa1 >= (double)LIMB_RANGE * (double)LIMB_RANGE ||
-    mantissa1 <= -(double)LIMB_RANGE * (double)LIMB_RANGE)
+  else
+  {    // No more conditions.
+  }
+  if ((mantissa1 >= ((double)LIMB_RANGE * (double)LIMB_RANGE)) ||
+    (mantissa1 <= (-(double)LIMB_RANGE * (double)LIMB_RANGE)))
   {
     mantissa1 /= (double)LIMB_RANGE;
     nbrLimbs1++;
   }
-  if (nbrLimbs1 > 1 && mantissa1 < (double)LIMB_RANGE && mantissa1 > -(double)LIMB_RANGE)
+  if ((nbrLimbs1 > 1) && (mantissa1 < (double)LIMB_RANGE) && (mantissa1 > -(double)LIMB_RANGE))
   {
     nbrLimbs1--;
     mantissa1 *= (double)LIMB_RANGE;
@@ -395,8 +399,8 @@ static void TestCombination(const BigInteger *scalarA, const BigInteger *vecIA,
     {     // Sum is multiple of 1+i so norm will be divided by 1+i in next loop.
       sum.mantissa /= 2;
     }
-    if ((nbr == 0 && ctr == 0) ||
-      (sum.expon < appMin.expon || (sum.expon == appMin.expon && sum.mantissa < appMin.mantissa)))
+    if (((nbr == 0) && (ctr == 0)) ||
+      ((sum.expon < appMin.expon) || ((sum.expon == appMin.expon) && (sum.mantissa < appMin.mantissa))))
     {
       appMin.expon = sum.expon;
       appMin.mantissa = sum.mantissa;
@@ -481,7 +485,7 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
     // if type of quaternions are odd, convert them to even by multiplying by units.
     ConvertQuaternionToEvenType(scalarA, vecIA, vecJA, vecKA, temp1, temp2, temp3);
     ConvertQuaternionToEvenType(scalarB, vecIB, vecJB, vecKB, temp1, temp2, temp3);
-    int GcdIsAtimesD = false;
+    bool GcdIsAtimesD = false;
     int exponA;
     int exponB;
     if (BigIntEqual(scalarA, scalarB) && BigIntEqual(vecIA, vecIB) &&
@@ -517,39 +521,39 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
     if (GcdIsAtimesD)
     {        // The GCD is d*a
       // Compute scalar part of the product: d_1*a_1 - d_i*a_i - d_j*a_j - d_k*a_k.
-      BigIntMultiply(scalarGcd, scalarA, temp1);
-      BigIntMultiply(vecIGcd, vecIA, temp4);
+      (void)BigIntMultiply(scalarGcd, scalarA, temp1);
+      (void)BigIntMultiply(vecIGcd, vecIA, temp4);
       BigIntSubt(temp1, temp4, temp1);
-      BigIntMultiply(vecJGcd, vecJA, temp4);
+      (void)BigIntMultiply(vecJGcd, vecJA, temp4);
       BigIntSubt(temp1, temp4, temp1);
-      BigIntMultiply(vecKGcd, vecKA, temp4);
+      (void)BigIntMultiply(vecKGcd, vecKA, temp4);
       BigIntSubt(temp1, temp4, temp1);
 
       // Compute coefficient of "i" of the product: d_1*a_i + d_i*a_1 + d_j*a_k - d_k*a_j.
-      BigIntMultiply(scalarGcd, vecIA, temp2);
-      BigIntMultiply(vecIGcd, scalarA, temp4);
+      (void)BigIntMultiply(scalarGcd, vecIA, temp2);
+      (void)BigIntMultiply(vecIGcd, scalarA, temp4);
       BigIntAdd(temp2, temp4, temp2);
-      BigIntMultiply(vecJGcd, vecKA, temp4);
+      (void)BigIntMultiply(vecJGcd, vecKA, temp4);
       BigIntAdd(temp2, temp4, temp2);
-      BigIntMultiply(vecKGcd, vecJA, temp4);
+      (void)BigIntMultiply(vecKGcd, vecJA, temp4);
       BigIntSubt(temp2, temp4, temp2);
 
       // Compute coefficient of "j" of the product: d_1*a_j - d_i*a_k + d_j*a_1 + d_k*a_i.
-      BigIntMultiply(scalarGcd, vecJA, temp3);
-      BigIntMultiply(vecIGcd, vecKA, temp4);
+      (void)BigIntMultiply(scalarGcd, vecJA, temp3);
+      (void)BigIntMultiply(vecIGcd, vecKA, temp4);
       BigIntSubt(temp3, temp4, temp3);
-      BigIntMultiply(vecJGcd, scalarA, temp4);
+      (void)BigIntMultiply(vecJGcd, scalarA, temp4);
       BigIntAdd(temp3, temp4, temp3);
-      BigIntMultiply(vecKGcd, vecIA, temp4);
+      (void)BigIntMultiply(vecKGcd, vecIA, temp4);
       BigIntAdd(temp3, temp4, temp3);
 
       // Compute coefficient of "k" of the product: d_1*a_k + d_i*a_j - d_j*a_i + d_k*a_1.
-      BigIntMultiply(vecKGcd, scalarA, vecKGcd);
-      BigIntMultiply(scalarGcd, vecKA, temp4);
+      (void)BigIntMultiply(vecKGcd, scalarA, vecKGcd);
+      (void)BigIntMultiply(scalarGcd, vecKA, temp4);
       BigIntAdd(vecKGcd, temp4, vecKGcd);
-      BigIntMultiply(vecIGcd, vecJA, temp4);
+      (void)BigIntMultiply(vecIGcd, vecJA, temp4);
       BigIntSubt(vecKGcd, temp4, vecKGcd);
-      BigIntMultiply(vecJGcd, vecIA, temp4);
+      (void)BigIntMultiply(vecJGcd, vecIA, temp4);
       BigIntAdd(vecKGcd, temp4, vecKGcd);
 
       CopyBigInt(scalarGcd, temp1);
@@ -558,11 +562,12 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
       ConvertQuaternionToEvenType(scalarGcd, vecIGcd, vecJGcd, vecKGcd, temp1, temp2, temp3);
       return;
     }
-    if (scalarB->nbrLimbs == 1 && vecIB->nbrLimbs == 1 && vecJB->nbrLimbs == 1 && vecKB->nbrLimbs == 1)
+    if ((scalarB->nbrLimbs == 1) && (vecIB->nbrLimbs == 1) &&
+      (vecJB->nbrLimbs == 1) && (vecKB->nbrLimbs == 1))
     {
       int magnitude = scalarB->limbs[0].x | vecIB->limbs[0].x |
         vecJB->limbs[0].x | vecKB->limbs[0].x;
-      if (scalarB->limbs[0].x & 1)
+      if ((scalarB->limbs[0].x & 1) != 0)
       {          // If the absolute values of all four coefficients equal 1, B is a unit.
         if (magnitude == 1)
         {        // B is a unit. GCD already found in d.
@@ -598,7 +603,7 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
       {
         MultiplyQuaternionBy2(scalarGcd, vecIGcd, vecJGcd, vecKGcd);
       }
-      if (exponA & 1)
+      if ((exponA & 1) != 0)
       {
         MultiplyQuaternionBy1PlusI(scalarGcd, vecIGcd, vecJGcd, vecKGcd, temp1);
       }
@@ -614,7 +619,7 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
     // Replace a by x.
     getApproxHeight(scalarA, vecIA, vecJA, vecKA, &sumA);
     getApproxHeight(scalarB, vecIB, vecJB, vecKB, &sumB);
-    if (sumA.expon < sumB.expon || (sumA.expon == sumB.expon && sumA.mantissa < sumB.mantissa))
+    if ((sumA.expon < sumB.expon) || ((sumA.expon == sumB.expon) && (sumA.mantissa < sumB.mantissa)))
     {    // Exchange A and B.
       CopyBigInt(temp1, scalarA);
       CopyBigInt(scalarA, scalarB);
