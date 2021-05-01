@@ -703,7 +703,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   limb *pLimbs;
   int remainder = 0;
   double dDivisor = (double)divisor;
-  double dInvDivisor = 1 / dDivisor;
+  double dInvDivisor = 1.0 / dDivisor;
   double dLimb = (double)LIMB_RANGE;
 
   if (subt >= 0)
@@ -827,7 +827,7 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
 #else
   int carry;
   double dFactor;
-  double dVal = 1 / (double)LIMB_RANGE;
+  double dVal = 1.0 / (double)LIMB_RANGE;
 #endif
   bool factorPositive = true;
   int nbrLimbs = pMult->nbrLimbs;
@@ -1286,7 +1286,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
     }
     else
     {
-      dN += 1 / (double)LIMB_RANGE;
+      dN += 1.0 / (double)LIMB_RANGE;
       ptrLimb->x = (int)trunc(dN);
       dN -= trunc(dN);
       (ptrLimb - 1)->x = (int)trunc(dN*LIMB_RANGE);
@@ -1944,7 +1944,7 @@ bool BigIntEqual(const BigInteger *value1, const BigInteger *value2)
 double getMantissa(const limb *ptrLimb, int nbrLimbs)
 {
   double dN = (double)(ptrLimb - 1)->x;
-  double dInvLimb = 1 / (double)LIMB_RANGE;
+  double dInvLimb = 1.0 / (double)LIMB_RANGE;
   if (nbrLimbs > 1)
   {
     dN += (double)(ptrLimb - 2)->x * dInvLimb;

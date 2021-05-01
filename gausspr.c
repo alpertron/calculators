@@ -96,7 +96,7 @@ static void AdjustModN(int *Nbr)
   double dModulus;
   double dTrialQuotient;
   double dDelta;
-  double dVal = 1 / (double)LIMB_RANGE;
+  double dVal = 1.0 / (double)LIMB_RANGE;
   double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
 
   dModulus = (double)TestNbr[1] + (double)TestNbr[0] * dVal;
@@ -211,7 +211,7 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
     Prod1 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
   }
 #else
-  double dInvLimbRange = (double)1 / (double)LIMB_RANGE;
+  double dInvLimbRange = 1.0 / (double)LIMB_RANGE;
   int Nbr = *(factor1);
   double dNbr = (double)Nbr;
   int low = Nbr * factor2_0;

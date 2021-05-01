@@ -664,7 +664,7 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
   int prodCol;
   int fact1Col;
   double dRangeLimb = (double)LIMB_RANGE;
-  double dInvRangeLimb = 1 / dRangeLimb;
+  double dInvRangeLimb = 1.0 / dRangeLimb;
   int low = 0;              // Low limb of sums of multiplications.
   double dAccumulator = 0;  // Approximation to the sum of multiplications.
   int factor1, factor2;

@@ -134,7 +134,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     int64_t carry;
 #else
     int carry;
-    double dVal = 1 / (double)LIMB_RANGE;
+    double dVal = 1.0 / (double)LIMB_RANGE;
     double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
 #endif
     int i;

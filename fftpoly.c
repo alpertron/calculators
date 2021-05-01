@@ -48,7 +48,7 @@ static void initCosinesArray(void)
   struct sCosSin* ptrCosSin;
   const struct sCosSin *ptrOldCosSin;
   const struct sCosSin *ptrCosSinDelta;
-  double invLimb = 1 / (double)LIMB_RANGE;
+  double invLimb = 1.0 / (double)LIMB_RANGE;
   double invSqLimb = invLimb * invLimb;
   int index;
   cossin[0].Cos[0] = MAX_VALUE_LIMB;                       // cos(0) = 1
@@ -464,7 +464,7 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
   {
     ptrProduct = product;
   }
-  invPower2 = 1.0 / ((double)(power2 * 8));
+  invPower2 = 0.125 / (double)power2;
   ptrResult = result;
   chunkLen = (len1 + len2 + 1) / 2;
   for (index = 0; index < chunkLen; index++)

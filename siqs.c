@@ -2476,7 +2476,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   }
   common.siqs.nbrPrimes2 = common.siqs.nbrFactorBasePrimes - 4;
   Prod = sqrt(2 * dNumberToFactor) / (double)common.siqs.SieveLimit;
-  fact = (int)pow(Prod, 1 / (float)common.siqs.nbrFactorsA);
+  fact = (int)pow(Prod, 1.0 / (double)common.siqs.nbrFactorsA);
   i = 2;
   while (common.siqs.primeSieveData[i].value <= fact)
   {

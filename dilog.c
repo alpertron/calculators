@@ -189,7 +189,6 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   long long brentK;
   long long brentR;
   bool EndPollardBrentRho;
-  const struct sFactors* pstFactors;
 
   NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
   IntArray2BigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
@@ -487,6 +486,8 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   GetMontgomeryParms(NumberLength);
   for (indexExp = 0; indexExp < indexBase; indexExp++)
   {
+    const struct sFactors* pstFactors;
+
     // nbrV[indexBase] <- (nbrV[indexBase] - nbrV[indexExp])*
     //                     modinv(PrimesGO[indexExp]^(ExponentsGO[indexExp]),
     //                     powSubGroupOrder)

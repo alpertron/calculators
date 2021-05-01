@@ -63,7 +63,7 @@ static void initCosinesArray(void)
   struct sCosSin* ptrCosSin;
   const struct sCosSin* ptrOldCosSin;
   const struct sCosSin* ptrCosSinDelta;
-  double invLimb = 1 / (double)LIMB_RANGE;
+  double invLimb = 1.0 / (double)LIMB_RANGE;
   double invSqLimb = invLimb * invLimb;
   int index = 1;
   cossin[0].Cos[0] = (int)MAX_VALUE_LIMB;                  // cos(0) = 1
@@ -487,7 +487,7 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   // Perform inverse DFT of product.
   complexFFT(tempFFT, transf, power2);
   ptrProduct = transf;
-  invPower2 = (double)1 / ((double)(power2 * 8));
+  invPower2 = 0.125 / (double)power2;
   dCarry = 0;
   sumLen = len1 + len2;
   (void)memset(result, 0, sumLen * sizeof(limb));

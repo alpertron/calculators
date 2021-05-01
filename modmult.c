@@ -219,7 +219,7 @@ void AdjustModN(limb *Nbr, const limb *Modulus, int nbrLen)
   int64_t carry;
 #else
   int carry;
-  double dVal = 1 / (double)LIMB_RANGE;
+  double dVal = 1.0 / (double)LIMB_RANGE;
   double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
   double dDelta;
   double dTrialQuotient;
@@ -1171,7 +1171,7 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
     }
 #else
     double dLimbRange = (double)LIMB_RANGE;
-    double dInvLimbRange = (double)1 / dLimbRange;
+    double dInvLimbRange = 1.0 / dLimbRange;
     (void)memset(Prod, 0, NumberLength*sizeof(limb));
     for (int i = 0; i < NumberLength; i++)
     {
@@ -1295,7 +1295,7 @@ void modmultIntExtended(limb *factorBig, int factorInt, limb *result, const limb
   double dTrialQuotient;
   double dAccumulator;
   double dFactorInt;
-  double dInvLimbRange = 1 / (double)LIMB_RANGE;
+  double dInvLimbRange = 1.0 / (double)LIMB_RANGE;
   int low;
 #endif
   int i;
@@ -1467,7 +1467,7 @@ static void AddMult(limb *firstBig, int e, int f, limb *secondBig, int g, int h,
     carryV >>= BITS_PER_GROUP;
   }
 #else
-  double dVal = 1 / (double)LIMB_RANGE;
+  double dVal = 1.0 / (double)LIMB_RANGE;
   int carryU;
   int carryV;
   double dFactorE = (double)e;

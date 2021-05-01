@@ -97,7 +97,7 @@ void AdjustModN(int *Nbr)
   double dModulus;
   double dTrialQuotient;
   double dDelta;
-  double dVal = 1 / (double)LIMB_RANGE;
+  double dVal = 1.0 / (double)LIMB_RANGE;
   double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
 
   dModulus = (double)TestNbr[1] + (double)TestNbr[0] * dVal;
@@ -152,7 +152,7 @@ void MultBigNbrModN(const int *factor1, const int *factor2, int *Product)
 {
   int Prod[4];
   int i;
-  double dInvLimbRange = (double)1 / LIMB_RANGE;
+  double dInvLimbRange = 1.0 / (double)LIMB_RANGE;
   Prod[0] = 0;
   Prod[1] = 0;
   Prod[2] = 0;
@@ -264,7 +264,7 @@ void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
     Prod1 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
   }
 #else
-  double dInvLimbRange = (double)1 / (double)LIMB_RANGE;
+  double dInvLimbRange = 1.0 / (double)LIMB_RANGE;
   int Nbr = *(factor1);
   double dNbr = (double)Nbr;
   int low = Nbr * factor2_0;
@@ -275,7 +275,7 @@ void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
   // At this moment dAccum is multiple of LIMB_RANGE.
   dAccum = floor((dAccum*dInvLimbRange) + 0.5);
   low = ((unsigned int)dAccum + (MontDig * TestNbr1) +
-               Nbr * factor2_1) & MAX_VALUE_LIMB;
+               (Nbr * factor2_1)) & MAX_VALUE_LIMB;
   dAccum += (dMontDig * TestNbr1) + (dNbr * factor2_1);
   Prod0 = low;
   if (low < HALF_INT_RANGE)

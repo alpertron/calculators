@@ -332,7 +332,7 @@ void MultBigNbr(const int *pFactor1, const int *pFactor2, int *pProd, int nbrLen
 {
   int* ptrProd = pProd;
   double dRangeLimb = (double)(1U << BITS_PER_INT_GROUP);
-  double dInvRangeLimb = 1 / dRangeLimb;
+  double dInvRangeLimb = 1.0 / dRangeLimb;
   int low = 0;
   int factor1;
   int factor2;
@@ -372,7 +372,7 @@ void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, in
 {
   int* ptrProd = pProd;
   double dRangeLimb = (double)(1U << BITS_PER_INT_GROUP);
-  double dInvRangeLimb = 1 / dRangeLimb;
+  double dInvRangeLimb = 1.0 / dRangeLimb;
   int low = 0;
   int i;
   int j;
