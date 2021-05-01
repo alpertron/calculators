@@ -76,7 +76,7 @@ void initMultipleArray(void)
   for (i = 0; i<25; i++)
   {
     int k = primes[i];
-    for (j = k / 2 + 1; j >= 0; j--)
+    for (j = (k / 2) + 1; j >= 0; j--)
     {
       multiple[i][j*j%k] = 1;
     }
@@ -102,10 +102,10 @@ void AdjustModN(int *Nbr)
 
   dModulus = (double)TestNbr[1] + (double)TestNbr[0] * dVal;
   dNbr = (double)Nbr[2] * (double)LIMB_RANGE + (double)Nbr[1] + (double)Nbr[0] * dVal;
-  TrialQuotient = (int)(unsigned int)floor(dNbr / dModulus + 0.5);
+  TrialQuotient = (int)(unsigned int)floor((dNbr / dModulus) + 0.5);
   if ((unsigned int)TrialQuotient >= LIMB_RANGE)
   {   // Maximum value for limb.
-    TrialQuotient = MAX_VALUE_LIMB;
+    TrialQuotient = (int)MAX_VALUE_LIMB;
   }
   // Compute Nbr <- Nbr - TrialQuotient * Modulus
   dTrialQuotient = (double)TrialQuotient;
@@ -113,23 +113,23 @@ void AdjustModN(int *Nbr)
   dDelta = 0;
   for (i = 0; i < NBR_LIMBS; i++)
   {
-    int low = (*(Nbr + i) - TestNbr[i] * TrialQuotient + carry) & MAX_INT_NBR;
+    int low = (*(Nbr + i) - (TestNbr[i] * TrialQuotient) + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
-    double dAccumulator = *(Nbr+i) - TestNbr[i] * dTrialQuotient + carry + dDelta;
+    double dAccumulator = *(Nbr+i) - (TestNbr[i] * dTrialQuotient) + carry + dDelta;
     dDelta = 0;
-    if (dAccumulator < 0)
+    if (dAccumulator < 0.0)
     {
       dAccumulator += dSquareLimb;
       dDelta = -(double)LIMB_RANGE;
     }
-    if (low < HALF_INT_RANGE)
+    if (low < (int)HALF_INT_RANGE)
     {
-      carry = (int)floor((dAccumulator + HALF_INT_RANGE / 2)*dVal);
+      carry = (int)floor((dAccumulator + (HALF_INT_RANGE / 2))*dVal);
     }
     else
     {
-      carry = (int)floor((dAccumulator - HALF_INT_RANGE / 2)*dVal);
+      carry = (int)floor((dAccumulator - (HALF_INT_RANGE / 2))*dVal);
     }
     *(Nbr + i) = low;
   }
@@ -153,23 +153,26 @@ void MultBigNbrModN(const int *factor1, const int *factor2, int *Product)
   int Prod[4];
   int i;
   double dInvLimbRange = (double)1 / LIMB_RANGE;
-  Prod[0] = Prod[1] = Prod[2] = Prod[3] = 0;
+  Prod[0] = 0;
+  Prod[1] = 0;
+  Prod[2] = 0;
+  Prod[3] = 0;
   for (i=0; i<NBR_LIMBS; i++)
   {
     unsigned int carry;
     // Multiply least or most significant limb of first factor by least significant limb of second factor.
     int Nbr = *(factor1+i);
     double dNbr = (double)Nbr;
-    int low = (Nbr * *factor2 + Prod[i]) & MAX_VALUE_LIMB;
+    int low = ((Nbr * *factor2) + Prod[i]) & MAX_VALUE_LIMB;
     double dAccum = dNbr * (double)*factor2 + (double)Prod[i];
     Prod[i] = low;
     if (low < HALF_INT_RANGE)
     {
-      dAccum = ((dAccum + HALF_INT_RANGE / 2)*dInvLimbRange);
+      dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2))*dInvLimbRange);
     }
     else
     {
-      dAccum = ((dAccum - HALF_INT_RANGE / 2)*dInvLimbRange);
+      dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2))*dInvLimbRange);
     }
     carry = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
 
@@ -207,8 +210,8 @@ static void smallmodmult(int factor1, int factor2, int *product, int mod)
     *product = (int64_t)factor1 * factor2 % mod;
 #else
       // Round up quotient.
-    int quotient = (int)floor((double)factor1 * (double)factor2 / (double)mod + 0.5);
-    int remainder = factor1 * factor2 - quotient * mod;
+    int quotient = (int)floor(((double)factor1 * (double)factor2 / (double)mod) + 0.5);
+    int remainder = (factor1 * factor2) - (quotient * mod);
     if (remainder < 0)
     {    // Quotient was 1 more than expected. Adjust remainder.
       remainder += mod;
@@ -240,22 +243,24 @@ void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
   unsigned int Nbr;
   unsigned int MontDig;
   
-  Pr = (Nbr = *factor1) * (uint64_t)factor2_0;
+  Nbr = *factor1;
+  Pr = Nbr * (uint64_t)factor2_0;
   MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_INT_NBR;
   Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-    (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * factor2_1) & MAX_INT_NBR;
+    ((uint64_t)MontDig * TestNbr1) + ((uint64_t)Nbr * factor2_1)) & MAX_INT_NBR;
   Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
-    
-  Pr = (Nbr = *(factor1 + 1)) * (uint64_t)factor2_0 + (uint32_t)Prod0;
+   
+  Nbr = *(factor1 + 1);
+  Pr = (Nbr * (uint64_t)factor2_0) + (uint32_t)Prod0;
   MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_INT_NBR;
   Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-    (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * factor2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
+    ((uint64_t)MontDig * TestNbr1) + ((uint64_t)Nbr * factor2_1) + (uint32_t)Prod1) & MAX_INT_NBR;
   Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
     
   if (Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP) || ((Prod1 == TestNbr1) && (Prod0 >= TestNbr0)))
   {
-    int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
+    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
+    Prod0 = borrow & MAX_INT_NBR;
     Prod1 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
   }
 #else
@@ -268,41 +273,41 @@ void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
   double dMontDig = (double)MontDig;
   dAccum += dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
-  dAccum = floor(dAccum*dInvLimbRange + 0.5);
-  low = ((unsigned int)dAccum + MontDig * TestNbr1 +
+  dAccum = floor((dAccum*dInvLimbRange) + 0.5);
+  low = ((unsigned int)dAccum + (MontDig * TestNbr1) +
                Nbr * factor2_1) & MAX_VALUE_LIMB;
-  dAccum += dMontDig * TestNbr1 + dNbr * factor2_1;
+  dAccum += (dMontDig * TestNbr1) + (dNbr * factor2_1);
   Prod0 = low;
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + HALF_INT_RANGE / 2)*dInvLimbRange);
+    dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2))*dInvLimbRange);
   }
   else
   {
-    dAccum = ((dAccum - HALF_INT_RANGE / 2)*dInvLimbRange);
+    dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2))*dInvLimbRange);
   }
   Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
   
   Nbr = *(factor1 + 1);
   dNbr = (double)Nbr;
-  low = Nbr * factor2_0 + Prod0;
-  dAccum = dNbr * (double)factor2_0 + (double)Prod0;
+  low = (Nbr * factor2_0) + Prod0;
+  dAccum = (dNbr * (double)factor2_0) + (double)Prod0;
   MontDig = (low * MontgomeryMultN) & MAX_VALUE_LIMB;
   dMontDig = (double)MontDig;
   dAccum += dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
-  dAccum = floor(dAccum*dInvLimbRange + 0.5);
-  low = ((unsigned int)dAccum + MontDig * TestNbr1 +
-               Nbr * factor2_1 + Prod1) & MAX_VALUE_LIMB;
-  dAccum += dMontDig * TestNbr1 + dNbr * factor2_1 + (unsigned int)Prod1;
+  dAccum = floor((dAccum*dInvLimbRange) + 0.5);
+  low = ((unsigned int)dAccum + (MontDig * TestNbr1) +
+               (Nbr * factor2_1) + Prod1) & MAX_VALUE_LIMB;
+  dAccum += (dMontDig * TestNbr1) + (dNbr * factor2_1) + (unsigned int)Prod1;
   Prod0 = low;
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + HALF_INT_RANGE / 2)*dInvLimbRange);
+    dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2))*dInvLimbRange);
   }
   else
   {
-    dAccum = ((dAccum - HALF_INT_RANGE / 2)*dInvLimbRange);
+    dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2))*dInvLimbRange);
   }
   Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
   
@@ -435,7 +440,7 @@ int isPrime(const int *value)
       {
         return 1;          // Number is prime.
       }
-      if (TestNbr0 % base == 0)
+      if ((TestNbr0 % base) == 0)
       {
         return 0;          // Number is multiple of base, so it is composite.
       }
@@ -525,7 +530,8 @@ int isPrime(const int *value)
     do                     // Compute next base in Montgomery representation.
     {
       AddBigNbrModN(baseInMontRepres, MontgomeryMultR1, baseInMontRepres);
-    } while (++prevBase < base);
+      prevBase++;
+    } while (prevBase < base);
 
     power[0] = baseInMontRepres[0];
     power[1] = baseInMontRepres[1];
@@ -840,7 +846,8 @@ void setPoint(int x, int y)
     ptrPixel = pixelXY(firstCol, row);
     for (col = firstCol; col < lastCol; col++)
     {
-      *ptrPixel++ = color;
+      *ptrPixel = color;
+      ptrPixel++;
     }
   }
   if (thickness >= 2)
@@ -873,7 +880,8 @@ void setPoint(int x, int y)
         ptrPixel = pixelXY(firstCol, currY);
         for (col = firstCol; col < lastCol; col++)
         {
-          *ptrPixel++ = color;
+          *ptrPixel = color;
+          ptrPixel++;
         }
       }
     }
@@ -940,7 +948,8 @@ char *appendInt(char *text, int value)
   if (value < 0)
   {
     value = -value;
-    *text++ = '-';
+    *text = '-';
+    text++;
   }
   do
   {
@@ -948,12 +957,14 @@ char *appendInt(char *text, int value)
     if ((quot != 0) || zeroIsSignificant)
     {
       zeroIsSignificant = 1;
-      *text++ = (char)quot + '0';
+      *text = (char)quot + '0';
+      text++;
       value -= quot*div;
     }
     div /= 10;
   } while (div > 1);
-  *text++ = (char)value + '0';
+  *text = (char)value + '0';
+  text++;
   *text = 0;
   return text;
 }
@@ -975,7 +986,8 @@ char *appendInt64(char *text, const int *value)
     nbr1 = nbr1 / 10;
     dDivid = (double)rem * (double)LIMB_RANGE + (double)nbr0;
     nbr0 = (int)(dDivid / 10);
-    *(--text) = (int)(dDivid - (double)nbr0*10) + '0';
+    text--;
+    *text = (int)(dDivid - (double)nbr0*10) + '0';
   }
   for (index = 0; index < 18; index++)
   {
@@ -1006,22 +1018,25 @@ void ShowLabel(char *text, int b, int *indep)
   temp[1] = *(indep+1);
   if ((temp[1] != 0) || (temp[0] != 0))
   {      // Independent term is not zero.
-    *ptrText++ = ' ';
+    *ptrText = ' ';
+    ptrText++;
     if ((temp[1] & HALF_INT_RANGE) == 0)
     {    // Independent term is positive.
-      *ptrText++ = '+';
-      *ptrText++ = ' ';
+      *ptrText = '+';
+      ptrText++;
     }
     else
     {    // Independent term is negative.
-      *ptrText++ = '-';
-      *ptrText++ = ' ';
-         // Change its sign.
+      *ptrText = '-';
+      ptrText++;
+      // Change its sign.
       carry = -temp[0];
       temp[0] = carry & MAX_INT_NBR;
       carry = (carry >> BITS_PER_GROUP) - temp[1];
       temp[1] = carry & MAX_INT_NBR;
     }
+    *ptrText = ' ';
+    ptrText++;
     ptrText = appendInt64(ptrText, temp);
   }
   if ((b != 0) || (temp[0] != 0) || (temp[1] != 0))
@@ -1048,14 +1063,16 @@ void ShowLabel(char *text, int b, int *indep)
         (void)strcpy(ptrText, " = (2t + ");
         ptrText += strlen(ptrText);
         ptrText = appendInt(ptrText, t1);
-        *ptrText++ = ')';
+        *ptrText = ')';
+        ptrText++;
       }
       else if (t1 < 0)
       {
         (void)strcpy(ptrText, " = (2t - ");
         ptrText += strlen(ptrText);
         ptrText = appendInt(ptrText, -t1);
-        *ptrText++ = ')';
+        *ptrText = ')';
+        ptrText++;
       }
       else
       {
@@ -1067,14 +1084,16 @@ void ShowLabel(char *text, int b, int *indep)
         (void)strcpy(ptrText, " (2t + ");
         ptrText += strlen(ptrText);
         ptrText = appendInt(ptrText, t2);
-        *ptrText++ = ')';
+        *ptrText = ')';
+        ptrText++;
       }
       else if (t2 < 0)
       {
         (void)strcpy(ptrText, " (2t - ");
         ptrText += strlen(ptrText);
         ptrText = appendInt(ptrText, -t2);
-        *ptrText++ = ')';
+        *ptrText = ')';
+        ptrText++;
       }
       else
       {
@@ -1124,9 +1143,12 @@ void ShowLabel(char *text, int b, int *indep)
         }
         if (temp[1] & HALF_INT_RANGE)
         {     // Independent term is negative.
-          *ptrText++ = ' ';
-          *ptrText++ = '-';
-          *ptrText++ = ' ';
+          *ptrText = ' ';
+          ptrText++;
+          *ptrText = '-';
+          ptrText++;
+          *ptrText = ' ';
+          ptrText++;
               // Change sign.
           carry = -temp[0];
           temp[0] = carry & MAX_INT_NBR;
@@ -1136,9 +1158,12 @@ void ShowLabel(char *text, int b, int *indep)
         }
         else
         {
-          *ptrText++ = ' ';
-          *ptrText++ = '+';
-          *ptrText++ = ' ';
+          *ptrText = ' ';
+          ptrText++;
+          *ptrText = '+';
+          ptrText++;
+          *ptrText = ' ';
+          ptrText++;
           ptrText = appendInt64(ptrText, temp);
         }
         ptrText += strlen(ptrText);
@@ -1161,13 +1186,17 @@ void ShowLabel(char *text, int b, int *indep)
             if (firstTime)
             {
               firstTime = 0;
-              *ptrText++ = ' ';
-              *ptrText++ = '(';
+              *ptrText = ' ';
+              ptrText++;
+              *ptrText = '(';
+              ptrText++;
             }
             else
             {
-              *ptrText++ = ',';
-              *ptrText++ = ' ';
+              *ptrText = ',';
+              ptrText++;
+              *ptrText = ' ';
+              ptrText++;
             }
             ptrText = appendInt(ptrText, p);
           }
@@ -1250,34 +1279,56 @@ EXTERNALIZE char *getInformation(int x, int y)
       }
     }
     ptrText = &infoText[strlen(infoText)];
-    *ptrText++ = 'x';
-    *ptrText++ = '=';
+    *ptrText = 'x';
+    ptrText++;
+    *ptrText = '=';
+    ptrText++;
     ptrText = appendInt(ptrText, xLogical);
-    *ptrText++ = ',';
-    *ptrText++ = ' ';
-    *ptrText++ = 'y';
-    *ptrText++ = '=';
+    *ptrText = ',';
+    ptrText++;
+    *ptrText = ' ';
+    ptrText++;
+    *ptrText = 'y';
+    ptrText++;
+    *ptrText = '=';
+    ptrText++;
     ptrText = appendInt(ptrText, yLogical);
-    *ptrText++ = ',';
-    *ptrText++ = ' ';
-    *ptrText++ = 'n';
-    *ptrText++ = '=';
-    *ptrText++ = '<';
-    *ptrText++ = 'b';
-    *ptrText++ = '>';
+    *ptrText = ',';
+    ptrText++;
+    *ptrText = ' ';
+    ptrText++;
+    *ptrText = 'n';
+    ptrText++;
+    *ptrText = '=';
+    ptrText++;
+    *ptrText = '<';
+    ptrText++;
+    *ptrText = 'b';
+    ptrText++;
+    *ptrText = '>';
+    ptrText++;
     ptrText = appendInt64(ptrText, value);
-    *ptrText++ = '<';
-    *ptrText++ = '/';
-    *ptrText++ = 'b';
-    *ptrText++ = '>';
-    *ptrText++ = ',';
-    *ptrText++ = ' ';
-    *ptrText++ = 't';
-    *ptrText++ = '=';
+    *ptrText = '<';
+    ptrText++;
+    *ptrText = '/';
+    ptrText++;
+    *ptrText = 'b';
+    ptrText++;
+    *ptrText = '>';
+    ptrText++;
+    *ptrText = ',';
+    ptrText++;
+    *ptrText = ' ';
+    ptrText++;
+    *ptrText = 't';
+    ptrText++;
+    *ptrText = '=';
+    ptrText++;
     ptrText = appendInt(ptrText, t/2);
   }
   getN(xCenter, yCenter, value);
-  *ptrText++ = '^';       // Separator between bottom text and center text.
+  *ptrText = '^';       // Separator between bottom text and center text.
+  ptrText++;
   ptrText = appendInt64(ptrText, value);
   *ptrText = 0;
   return infoText;
@@ -1313,7 +1364,8 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
     {      // End of string, so end of conversion from string to number.
       break;
     }
-    charConverted = (*value++ - '0');
+    charConverted = (*value - '0');
+    value++;
     dProd = (double)nbr0 * 10 + charConverted;
     nbr0 = (nbr0 * 10 + charConverted) & MAX_INT_NBR;
     nbr1 = nbr1 * 10 + (int)(dProd / LIMB_RANGE);
@@ -1489,7 +1541,8 @@ void iteration(void)
       }
     }
   }
-  if (++timer == 6)
+  timer++;
+  if (timer == 6)
   {
     timer = 0;
     if ((oldXCenter != xCenter) || (oldYCenter != yCenter) ||

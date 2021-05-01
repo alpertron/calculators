@@ -96,6 +96,7 @@ static void showText(const char *text)
 void textErrorDilog(char *ptrOutput, enum eExprErr rc)
 {
   char text[150];
+  char* pOutput = ptrOutput;
 
   switch (rc)
   {
@@ -113,16 +114,23 @@ void textErrorDilog(char *ptrOutput, enum eExprErr rc)
   default:
     textError(text, rc);
   }
-  *ptrOutput++ = '<';
-  *ptrOutput++ = 'p';
-  *ptrOutput++ = '>';
-  (void)strcpy(ptrOutput, text);
-  ptrOutput += strlen(ptrOutput);
-  *ptrOutput++ = '<';
-  *ptrOutput++ = '/';
-  *ptrOutput++ = 'p';
-  *ptrOutput++ = '>';
-  *ptrOutput = 0;    // Add terminator character.
+  *pOutput = '<';
+  pOutput++;
+  *pOutput = 'p';
+  pOutput++;
+  *pOutput = '>';
+  pOutput++;
+  (void)strcpy(pOutput, text);
+  pOutput += strlen(pOutput);
+  *pOutput = '<';
+  pOutput++;
+  *pOutput = '/';
+  pOutput++;
+  *pOutput = 'p';
+  pOutput++;
+  *pOutput = '>';
+  pOutput++;
+  *pOutput = 0;    // Add terminator character.
 }
 
 static void indicateCannotComputeLog(int indexBase, int indexExp)
@@ -206,7 +214,7 @@ void DiscreteLogarithm(void)
     ptrPrime = astFactorsMod[index].ptrFactor;
     NumberLength = *ptrPrime;
     IntArray2BigInteger(ptrPrime, &groupOrder);
-    BigIntRemainder(&base, &groupOrder, &tmpBase);
+    (void)BigIntRemainder(&base, &groupOrder, &tmpBase);
     if (BigIntIsZero(&tmpBase))
     {     // modulus and base are not relatively prime.
       int ctr;
@@ -214,7 +222,7 @@ void DiscreteLogarithm(void)
       CopyBigInt(&bigNbrA, &power);
       for (ctr = multiplicity; ctr > 0; ctr--)
       {
-        BigIntRemainder(&bigNbrA, &groupOrder, &bigNbrB);
+        (void)BigIntRemainder(&bigNbrA, &groupOrder, &bigNbrB);
         if (!BigIntIsZero(&bigNbrB))
         {    // Exit loop if integer division cannot be performed
           break;
@@ -227,8 +235,8 @@ void DiscreteLogarithm(void)
         continue;
       }
       // Compute prime^mutliplicity.
-      BigIntPowerIntExp(&groupOrder, multiplicity, &tmp2);
-      BigIntRemainder(&base, &tmp2, &tmpBase);
+      (void)BigIntPowerIntExp(&groupOrder, multiplicity, &tmp2);
+      (void)BigIntRemainder(&base, &tmp2, &tmpBase);
       // Get tentative exponent.
       ctr = multiplicity - ctr;
       intToBigInteger(&bigNbrB, ctr);   // Convert exponent to big integer.
@@ -236,7 +244,7 @@ void DiscreteLogarithm(void)
       (void)memcpy(TestNbr, tmp2.limbs, (NumberLength + 1) * sizeof(limb));
       GetMontgomeryParms(NumberLength);
       BigIntModularPower(&tmpBase, &bigNbrB, &bigNbrA);
-      BigIntRemainder(&power, &tmp2, &bigNbrB);
+      (void)BigIntRemainder(&power, &tmp2, &bigNbrB);
       BigIntSubt(&bigNbrA, &bigNbrB, &bigNbrA);
       if ((bigNbrA.nbrLimbs == 1) && (bigNbrA.limbs[0].x == 0))
       {
@@ -250,7 +258,7 @@ void DiscreteLogarithm(void)
     }
     else
     {     // modulus and base are relatively prime.
-      BigIntRemainder(&power, &groupOrder, &bigNbrB);
+      (void)BigIntRemainder(&power, &groupOrder, &bigNbrB);
       if (BigIntIsZero(&bigNbrB))
       {   // power is multiple of prime. Error.
         showText("There is no discrete logarithm");
@@ -259,7 +267,7 @@ void DiscreteLogarithm(void)
       }
     }
     CompressLimbsBigInteger(baseMontg, &tmpBase);
-    BigIntRemainder(&power, &groupOrder, &tmpBase);
+    (void)BigIntRemainder(&power, &groupOrder, &tmpBase);
     CompressLimbsBigInteger(powerMontg, &tmpBase);
     // Compute group order as the prime minus 1.
     groupOrder.limbs[0].x--;
@@ -311,18 +319,29 @@ void DiscreteLogarithm(void)
       ptr = textExp + strlen(textExp);
       if (astFactorsGO[indexBase + 1].multiplicity > 1)
       {
-        *ptr++ = '<';
-        *ptr++ = 's';
-        *ptr++ = 'u';
-        *ptr++ = 'p';
-        *ptr++ = '>';
+        *ptr = '<';
+        ptr++;
+        *ptr = 's';
+        ptr++;
+        *ptr = 'u';
+        ptr++;
+        *ptr = 'p';
+        ptr++;
+        *ptr = '>';
+        ptr++;
         int2dec(&ptr, astFactorsGO[indexBase + 1].multiplicity);
-        *ptr++ = '<';
-        *ptr++ = '/';
-        *ptr++ = 's';
-        *ptr++ = 'u';
-        *ptr++ = 'p';
-        *ptr++ = '>';
+        *ptr = '<';
+        ptr++;
+        *ptr = '/';
+        ptr++;
+        *ptr = 's';
+        ptr++;
+        *ptr = 'u';
+        ptr++;
+        *ptr = 'p';
+        ptr++;
+        *ptr = '>';
+        ptr++;
       }
       (void)strcpy(ptr, " elements.");
       showText(textExp);
@@ -407,7 +426,8 @@ void DiscreteLogarithm(void)
             (void)memset(nbrA2, 0, NumberLength * sizeof(limb));
             (void)memset(nbrB2, 0, NumberLength * sizeof(limb));
             nbrB2[0].x = 1;
-            addA2.x = addB2.x = 0;
+            addA2.x = 0;
+            addB2.x = 0;
             mult2.x = 1;
             brentR = 1;
             brentK = 0;
@@ -504,9 +524,9 @@ void DiscreteLogarithm(void)
           modPow(primRoot, Exponent.limbs, Exponent.nbrLimbs, tmpBase.limbs);
           ModInvBigNbr(tmpBase.limbs, tmpBase.limbs, TestNbr, NumberLength);
           modmult(tmpBase.limbs, currPowerMontg, currPowerMontg);
-          BigIntMultiply(&Exponent, &powSubGroupOrder, &tmpBase);
+          (void)BigIntMultiply(&Exponent, &powSubGroupOrder, &tmpBase);
           BigIntAdd(&runningExp, &tmpBase, &runningExp);
-          BigIntMultiply(&powSubGroupOrder, &subGroupOrder, &powSubGroupOrder);
+          (void)BigIntMultiply(&powSubGroupOrder, &subGroupOrder, &powSubGroupOrder);
           modPow(primRoot, subGroupOrder.limbs, subGroupOrder.nbrLimbs, tmpBase.limbs);
           (void)memcpy(primRoot, tmpBase.limbs, NumberLength * sizeof(limb));
         }
@@ -530,7 +550,7 @@ void DiscreteLogarithm(void)
           CopyBigInt(&powSubGroupOrderBak, &powSubGroupOrder);
           do
           {
-            BigIntRemainder(&runningExpBase, &subGroupOrder, &tmpBase);
+            (void)BigIntRemainder(&runningExpBase, &subGroupOrder, &tmpBase);
             if (!BigIntIsZero(&tmpBase))
             {    // runningExpBase is not multiple of subGroupOrder
               BigIntModularDivisionSaveTestNbr(&runningExp, &runningExpBase,
@@ -538,7 +558,7 @@ void DiscreteLogarithm(void)
               CopyBigInt(&runningExp, &tmpBase);
               break;
             }
-            BigIntRemainder(&runningExp, &subGroupOrder, &tmpBase);
+            (void)BigIntRemainder(&runningExp, &subGroupOrder, &tmpBase);
             if (!BigIntIsZero(&tmpBase))
             {    // runningExpBase is not multiple of subGroupOrder
               showText("There is no discrete logarithm");
@@ -556,7 +576,7 @@ void DiscreteLogarithm(void)
             {
               break;
             }
-            BigIntRemainder(&runningExpBase, &subGroupOrder, &tmpBase);
+            (void)BigIntRemainder(&runningExpBase, &subGroupOrder, &tmpBase);
           } while (BigIntIsZero(&tmpBase));
           CopyBigInt(&powSubGroupOrder, &powSubGroupOrderBak);
           // The logarithm is runningExp / runningExpBase mod powSubGroupOrder
@@ -590,7 +610,7 @@ void DiscreteLogarithm(void)
         //                     powSubGroupOrder)
         NumberLength = mod.nbrLimbs;
         BigIntSubt(&nbrV[indexBase], &nbrV[indexExp], &nbrV[indexBase]);
-        BigIntRemainder(&nbrV[indexBase], &powSubGroupOrder, &nbrV[indexBase]);
+        (void)BigIntRemainder(&nbrV[indexBase], &powSubGroupOrder, &nbrV[indexBase]);
         if (nbrV[indexBase].sign == SIGN_NEGATIVE)
         {
           BigIntAdd(&nbrV[indexBase], &powSubGroupOrder, &nbrV[indexBase]);
@@ -598,7 +618,7 @@ void DiscreteLogarithm(void)
         pstFactors = &astFactorsGO[indexExp + 1];
         IntArray2BigInteger(pstFactors->ptrFactor, &tmpBase);
         BigIntPowerIntExp(&tmpBase, ExponentsGOComputed[indexExp], &tmpBase);
-        BigIntRemainder(&tmpBase, &powSubGroupOrder, &tmpBase);
+        (void)BigIntRemainder(&tmpBase, &powSubGroupOrder, &tmpBase);
         NumberLength = powSubGroupOrder.nbrLimbs;
         CompressLimbsBigInteger(tmp2.limbs, &tmpBase);
         modmult(tmp2.limbs, MontgomeryMultR2, tmp2.limbs);
@@ -610,12 +630,12 @@ void DiscreteLogarithm(void)
         (void)memset(&tmpBase.limbs[1], 0, (NumberLength - 1) * sizeof(limb));
         modmult(tmpBase.limbs, tmp2.limbs, tmp2.limbs);
         UncompressLimbsBigInteger(tmp2.limbs, &tmpBase);
-        BigIntMultiply(&tmpBase, &nbrV[indexBase], &nbrV[indexBase]);
+        (void)BigIntMultiply(&tmpBase, &nbrV[indexBase], &nbrV[indexBase]);
       }
-      BigIntRemainder(&nbrV[indexBase], &powSubGroupOrder, &nbrV[indexBase]);
-      BigIntMultiply(&nbrV[indexBase], &logarMult, &tmpBase);
+      (void)BigIntRemainder(&nbrV[indexBase], &powSubGroupOrder, &nbrV[indexBase]);
+      (void)BigIntMultiply(&nbrV[indexBase], &logarMult, &tmpBase);
       BigIntAdd(&logar, &tmpBase, &logar);
-      BigIntMultiply(&logarMult, &powSubGroupOrder, &logarMult);
+      (void)BigIntMultiply(&logarMult, &powSubGroupOrder, &logarMult);
     }
     multiplicity = astFactorsMod[index].multiplicity;
     IntArray2BigInteger(ptrPrime, &bigNbrB);
@@ -663,7 +683,7 @@ void DiscreteLogarithm(void)
       NumberLength = bigNbrA.nbrLimbs;
       (void)memcpy(TestNbr, bigNbrA.limbs, NumberLength * sizeof(limb));
       GetMontgomeryParms(NumberLength);
-      BigIntRemainder(&base, &bigNbrA, &tmpBase);
+      (void)BigIntRemainder(&base, &bigNbrA, &tmpBase);
       CompressLimbsBigInteger(baseMontg, &tmpBase);
       modmult(baseMontg, MontgomeryMultR2, baseMontg);
       modPow(baseMontg, logarMult.limbs, logarMult.nbrLimbs, primRootPwr); // B^LM
@@ -672,7 +692,7 @@ void DiscreteLogarithm(void)
       modmult(primRootPwr, tmpBase.limbs, primRootPwr);                    // B^LM
       ModInvBigNbr(baseMontg, tmpBase.limbs, TestNbr, NumberLength);       // B^(-1)
       modPow(tmpBase.limbs, logar.limbs, logar.nbrLimbs, primRoot);        // B^(-L)
-      BigIntRemainder(&power, &bigNbrA, &tmpBase);
+      (void)BigIntRemainder(&power, &bigNbrA, &tmpBase);
       CompressLimbsBigInteger(tmp2.limbs, &tmpBase);
       modmult(primRoot, tmp2.limbs, primRoot);                             // P*B^(-L)
       BigIntDivide(&bigNbrA, &bigNbrB, &tmpBase);
@@ -692,9 +712,9 @@ void DiscreteLogarithm(void)
       else
       {            // r does not equal zero.
         BigIntModularDivisionSaveTestNbr(&tmp2, &bigNbrA, &bigNbrB, &tmpBase);          // m
-        BigIntMultiply(&tmpBase, &logarMult, &tmp2);
+        (void)BigIntMultiply(&tmpBase, &logarMult, &tmp2);
         BigIntAdd(&logar, &tmp2, &logar);
-        BigIntMultiply(&logarMult, &bigNbrB, &logarMult);
+        (void)BigIntMultiply(&logarMult, &bigNbrB, &logarMult);
       }
     }
     // Based on logar and logarMult, compute DiscreteLog and DiscreteLogPeriod
@@ -718,8 +738,8 @@ void DiscreteLogarithm(void)
     //   DL <- t % DLP
 
     BigIntGcd(&logarMult, &DiscreteLogPeriod, &tmpBase);
-    BigIntRemainder(&logar, &tmpBase, &bigNbrA);
-    BigIntRemainder(&DiscreteLog, &tmpBase, &bigNbrB);
+    (void)BigIntRemainder(&logar, &tmpBase, &bigNbrA);
+    (void)BigIntRemainder(&DiscreteLog, &tmpBase, &bigNbrB);
     if (!TestBigNbrEqual(&bigNbrA, &bigNbrB))
     {
       showText("There is no discrete logarithm");
@@ -731,7 +751,7 @@ void DiscreteLogarithm(void)
     {     // h is odd.
       BigIntSubt(&logar, &DiscreteLog, &tmpBase);
       BigIntModularDivisionSaveTestNbr(&tmpBase, &DiscreteLogPeriod, &tmp2, &bigNbrA);
-      BigIntMultiply(&DiscreteLogPeriod, &bigNbrA, &tmpBase);
+      (void)BigIntMultiply(&DiscreteLogPeriod, &bigNbrA, &tmpBase);
       BigIntAdd(&tmpBase, &DiscreteLog, &tmpBase);
     }
     else
@@ -739,11 +759,11 @@ void DiscreteLogarithm(void)
       BigIntDivide(&DiscreteLogPeriod, &tmpBase, &bigNbrB);
       BigIntSubt(&DiscreteLog, &logar, &tmpBase);
       BigIntModularDivisionSaveTestNbr(&tmpBase, &logarMult, &bigNbrB, &bigNbrA);
-      BigIntMultiply(&logarMult, &bigNbrA, &tmpBase);
+      (void)BigIntMultiply(&logarMult, &bigNbrA, &tmpBase);
       BigIntAdd(&tmpBase, &logar, &tmpBase);
     }
-    BigIntMultiply(&DiscreteLogPeriod, &tmp2, &DiscreteLogPeriod);
-    BigIntRemainder(&tmpBase, &DiscreteLogPeriod, &DiscreteLog);
+    (void)BigIntMultiply(&DiscreteLogPeriod, &tmp2, &DiscreteLogPeriod);
+    (void)BigIntRemainder(&tmpBase, &DiscreteLogPeriod, &DiscreteLog);
   }
 #if 0
   textExp.setText(DiscreteLog.toString());
@@ -916,7 +936,8 @@ EXTERNALIZE void doWork(void)
   groupLen = 0;
   while (*ptrData != ',')
   {
-    groupLen = groupLen * 10 + (*ptrData++ - '0');
+    groupLen = groupLen * 10 + (*ptrData - '0');
+    ptrData++;
   }
   ptrData++;             // Skip comma.
   flags = *ptrData;
