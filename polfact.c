@@ -177,7 +177,7 @@ static void percentageCallback(int percentage)
 #ifdef __EMSCRIPTEN__
   int elapsedTime = (int)(tenths() - originalTenthSecond);
   char *ptrOutput = ptrPercentageOutput;
-  if (elapsedTime / 10 != oldTimeElapsed / 10)
+  if ((elapsedTime / 10) != (oldTimeElapsed / 10))
   {
     oldTimeElapsed = elapsedTime;
     int2dec(&ptrOutput, percentage);

@@ -24,8 +24,8 @@
 #include "fft.h"
 
 #define FFT_LIMB_SIZE   18
-#define MAX_FFT_LEN        (MAX_LEN * BITS_PER_GROUP / FFT_LIMB_SIZE + 10)
-#define POWERS_2       17
+#define MAX_FFT_LEN     (((MAX_LEN * BITS_PER_GROUP) / FFT_LIMB_SIZE) + 10)
+#define POWERS_2        17
 // In the next array, all numbers are represented by two elements,
 // first the least significant limb, then the most significant limb.
 const struct sCosSin cossinPowerOneHalf[] =

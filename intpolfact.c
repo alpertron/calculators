@@ -305,7 +305,7 @@ static void PerformSWAPI(int k, int kMax, int size)
     basis[row][k] = basis[row][k - 1];
     basis[row][k - 1] = pstLinkedBigInt;
   }
-  for (int j = 0; j < k - 1; j++)
+  for (int j = 0; j < (k - 1); j++)
   {  // Exchange lambda_{k, j} with lambda_{k-1, j}
     pstLinkedBigInt = lambda[k][j];
     lambda[k][j] = lambda[k - 1][j];
@@ -661,7 +661,7 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
     }
     for (int currDegree = 1; currDegree < traceNbr; currDegree++)
     {   // Subtract - E_{n-deg}*Tr_deg(P)
-      if (traceNbr - currDegree <= polyDegree)
+      if ((traceNbr - currDegree) <= polyDegree)
       {
         getBigIntegerFromLinked(ptrCoeffs[traceNbr - currDegree - 1], &operand3);
         getBigIntegerFromLinked(traces[currDegree], &tmp4);
@@ -1393,9 +1393,9 @@ static void vanHoeij(int prime, int nbrFactors)
 
     // Initialize lower-right half of matrix M.
 
-    for (nbrRow = nbrVectors; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
+    for (nbrRow = nbrVectors; nbrRow < (nbrVectors + nbrRequiredTraces); nbrRow++)
     {
-      for (nbrCol = nbrVectors; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
+      for (nbrCol = nbrVectors; nbrCol < (nbrVectors + nbrRequiredTraces); nbrCol++)
       {
         if (nbrRow == nbrCol)
         {

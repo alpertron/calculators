@@ -619,8 +619,8 @@ void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, const BigInteg
   int nbrBits = 0;
   int index = expon->nbrLimbs - 1;
   int bitCounter = 0;
-  *(polyBase + polyDegree * nbrLimbs) = 1;
-  *(polyBase + polyDegree * nbrLimbs + 1) = 0;
+  *(polyBase + (polyDegree * nbrLimbs)) = 1;
+  *(polyBase + (polyDegree * nbrLimbs) + 1) = 0;
   for (; index >= 0; index--)
   {
     int groupExp = expon->limbs[index].x;
@@ -721,7 +721,7 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
   // Check whether the derivative is zero.
   for (currentDegree = polyDegree-1; currentDegree >= 0; currentDegree--)
   {
-    ptrValue1 = &poly1[currentDegree*nbrLimbs+1];
+    ptrValue1 = &poly1[(currentDegree*nbrLimbs)+1];
     for (index = 1; index < nbrLimbs; index++)
     {
       if (*ptrValue1++ != 0)

@@ -842,7 +842,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     {
       int currentStackOffset;
       exprIndexAux = exprIndex;
-      if ((charValue == '0') && (exprIndexAux < exprLength - 2) &&
+      if ((charValue == '0') && (exprIndexAux < (exprLength - 2)) &&
           (*(expr+exprIndexAux + 1) == 'x'))
       {  // hexadecimal
         int exprIndexFirstHexDigit = -1;
@@ -911,7 +911,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       }
       else
       {                   // Decimal number.
-        while (exprIndexAux < exprLength - 1)
+        while (exprIndexAux < (exprLength - 1))
         {
           charValue = *(expr+exprIndexAux + 1);
           if ((charValue >= '0') && (charValue <= '9'))
@@ -1111,11 +1111,11 @@ static enum eExprErr ComputeSubExpr(void)
     break;
   case OPER_EQUAL:
     BigIntSubt(firstArg, secondArg, result);
-    intToBigInteger(result, ((result->nbrLimbs == 1) && (result->limbs[0].x == 0? -1: 0)));
+    intToBigInteger(result, ((result->nbrLimbs == 1) && ((result->limbs[0].x == 0)? -1: 0)));
     break;
   case OPER_NOT_EQUAL:
     BigIntSubt(firstArg, secondArg, result);
-    intToBigInteger(result, ((result->nbrLimbs == 1) && ((result->limbs[0].x == 0) ? 0 : -1)));
+    intToBigInteger(result, ((result->nbrLimbs == 1) && ((result->limbs[0].x == 0)? 0 : -1)));
     break;
   case OPER_GREATER:
     BigIntSubt(secondArg, firstArg, result);
@@ -1217,7 +1217,7 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
     retcode = ComputeExpr(expr, ExpressionResult);
     if (retcode != 0) { return retcode; }
     SkipSpaces(expr);
-    compareChar = (index == funcArgs - 1 ? ')' : ',');
+    compareChar = ((index == funcArgs - 1)? ')' : ',');
     if (exprIndex == exprLength)
     {
       return EXPR_SYNTAX_ERROR;

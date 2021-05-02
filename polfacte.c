@@ -37,7 +37,7 @@ EXTERNALIZE void doWork(void)
   ptrData++;         // Skip comma.
   do
   {
-    flags = flags * 10 + *ptrData - '0';
+    flags = (flags * 10) + *ptrData - '0';
   } while (*(++ptrData) != ',');
 #ifndef lang  
   lang = ((flags & 1)? true: false);

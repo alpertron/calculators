@@ -253,7 +253,7 @@ void MultBigNbrByIntB(const int *bigFactor, int factor, int *bigProd, int nbrLen
   for (int ctr = 0; ctr < (nbrLen-1); ctr++)
   {
     double dCarry;
-    int low = (*bigFactor * factor + carry) & MAX_INT_NBR;
+    int low = ((*bigFactor * factor) + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     dCarry = ((double)*bigFactor * dFactor) + (double)carry;

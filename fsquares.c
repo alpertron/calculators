@@ -223,7 +223,7 @@ int fsquares(void)
     for (i = 3; (i*i) < (MAX_SIEVE / 2); i += 2)
     {
       j = (i*i) - 3;
-      j = (j % 2 == 0) ? (j / 2) : ((j + i) / 2);
+      j = ((j % 2) == 0) ? (j / 2) : ((j + i) / 2);
       for (; j < (MAX_SIEVE / 2); j += i)
       {
         sieve[j] = -1;             // Indicate number is composite.
@@ -364,7 +364,7 @@ compute_squares_loop:
           nbrDivisors = 0;
         }
         divisor = 3;
-        for (i = 0; i < MAX_SIEVE / 2; i++)
+        for (i = 0; i < (MAX_SIEVE / 2); i++)
         {
           if ((sieve[i] >= 0) && (((sieve[i] - sum) % divisor) == 0))
           {                          // Divisor found.

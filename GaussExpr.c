@@ -477,7 +477,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         (*(expr + exprIndexAux + 1) == 'x'))
       {  // hexadecimal
         exprIndexAux += 2;
-        while (exprIndexAux < exprLength - 1)
+        while (exprIndexAux < (exprLength - 1))
         {
           charValue = *(expr + exprIndexAux + 1);
           if (((charValue >= '0') && (charValue <= '9')) ||
@@ -596,7 +596,7 @@ static int func(char *expr, BigInteger *ExpressionResult,
   const char *ptrExpr;
   const char *ptrFuncName;
 
-  if (exprIndex + funcNameLen > exprLength)
+  if ((exprIndex + funcNameLen) > exprLength)
   {
     return 1;
   }
@@ -634,11 +634,12 @@ static int func(char *expr, BigInteger *ExpressionResult,
     retcode = ComputeExpr(expr, ExpressionResult);
     if (retcode != 0) {return retcode;}
     SkipSpaces(expr);
-    compareChar = ((index == funcArgs-1)? ')': ',');
-    if ((exprIndex == exprLength) || (*(expr+exprIndex++) != compareChar))
+    compareChar = ((index == (funcArgs-1))? ')': ',');
+    if ((exprIndex == exprLength) || (*(expr+exprIndex) != compareChar))
     {
       return EXPR_SYNTAX_ERROR;
     }
+    exprIndex++;
     stackIndex++;
   }
   stackIndex -= funcArgs;

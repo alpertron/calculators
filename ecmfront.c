@@ -511,7 +511,7 @@ static void ComputeFourSquares(const struct sFactors *pstFactors)
   for (indexPrimes = pstFactors -> multiplicity - 1; indexPrimes >= 0; 
        indexPrimes--, pstFactor++)
   {
-    if (pstFactor -> multiplicity % 2 == 0)
+    if ((pstFactor -> multiplicity % 2) == 0)
     {                              // Prime factor appears twice.
       continue;
     }

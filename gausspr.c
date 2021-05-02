@@ -159,7 +159,7 @@ static void smallmodmult(int factor1, int factor2, int *product, int mod)
 #else
       // Round up quotient.
     int quotient = (int)floor((double)factor1 * (double)factor2 / (double)mod + 0.5);
-    int remainder = factor1 * factor2 - quotient * mod;
+    int remainder = (factor1 * factor2) - (quotient * mod);
     if (remainder < 0)
     {    // Quotient was 1 more than expected. Adjust remainder.
       remainder += mod;

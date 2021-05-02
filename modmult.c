@@ -79,10 +79,10 @@ void ComputeInversePower2(const limb *value, limb *result, limb *tmp)
   limb Cy;
   N = value->x;                // 2 least significant bits of inverse correct.
   x = N;
-  x = x * (2 - N * x);         // 4 least significant bits of inverse correct.
-  x = x * (2 - N * x);         // 8 least significant bits of inverse correct.
-  x = x * (2 - N * x);         // 16 least significant bits of inverse correct.
-  x = x * (2 - N * x);         // 32 least significant bits of inverse correct.
+  x = x * (2 - (N * x));       // 4 least significant bits of inverse correct.
+  x = x * (2 - (N * x));       // 8 least significant bits of inverse correct.
+  x = x * (2 - (N * x));       // 16 least significant bits of inverse correct.
+  x = x * (2 - (N * x));       // 32 least significant bits of inverse correct.
   result->x = x & MAX_VALUE_LIMB;
   for (int currLen = 2; currLen < NumberLength; currLen <<= 1)
   {

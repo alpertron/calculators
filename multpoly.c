@@ -60,7 +60,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
 #ifndef _USING64BITS_
   limb result;
 #endif
-  for (i = 0; i < 2 * coeffLen - 1; i++)
+  for (i = 0; i < (2 * coeffLen) - 1; i++)
   {    // Process each limb of product (least to most significant limb).
     if (i < coeffLen)
     {   // Processing first half (least significant) of product.
@@ -668,7 +668,7 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
     ptrSrc1 = factor1;
     for (currentDegree1 = 0; currentDegree1 <= degree1; currentDegree1++)
     {
-      if (*ptrSrc1 != 1 || *(ptrSrc1 + 1) != 0)
+      if ((*ptrSrc1 != 1) || *(ptrSrc1 + 1) != 0)
       {       // Only process factor if it is not zero.
         IntArray2BigInteger(ptrSrc1, &operand3);
         ptrSrc2 = factor2;
