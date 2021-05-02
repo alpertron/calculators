@@ -63,7 +63,7 @@ char *ptrSin;
 char *ptrCos;
 char *ptrPi;
 char *ptrI;
-static int totients[2 * MAX_DEGREE + 1];
+static int totients[(2 * MAX_DEGREE) + 1];
 enum
 {
   SHOW_REAL = 0,
@@ -612,7 +612,7 @@ static void CubicEquation(const int* ptrPolynomial, int multiplicity)
         {
           showText("<var>");
         }
-        *ptrOutput++ = (ctr == 0 ? 'r' : 's');
+        *ptrOutput++ = ((ctr == 0)? 'r' : 's');
         if (pretty == PRETTY_PRINT)
         {
           showText("</var>");

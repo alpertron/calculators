@@ -944,13 +944,13 @@ void SolveQuadModEquation(void)
             }
             // Find square root of ValCOdd.
             // First approximation to inverse of square root.
-            squareRoot.limbs[0].x = ((ValCOdd.limbs[0].x & 15) == 1 ? 1 : 3);
+            squareRoot.limbs[0].x = (((ValCOdd.limbs[0].x & 15) == 1) ? 1 : 3);
             correctBits = 2;
             nbrLimbs = 1;
             while (correctBits < expon)
             {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
               correctBits *= 2;
-              nbrLimbs = correctBits / BITS_PER_GROUP + 1;
+              nbrLimbs = (correctBits / BITS_PER_GROUP) + 1;
               MultBigNbr((int*)squareRoot.limbs, (int*)squareRoot.limbs, (int*)tmp2.limbs, nbrLimbs);
               MultBigNbr((int*)tmp2.limbs, (int*)ValCOdd.limbs, (int*)tmp2.limbs, nbrLimbs);
               ChSignBigNbr((int*)tmp2.limbs, nbrLimbs);
@@ -965,7 +965,7 @@ void SolveQuadModEquation(void)
             MultBigNbr((int*)ValCOdd.limbs, (int*)squareRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
             (void)memcpy(squareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
             setNbrLimbs(&squareRoot);
-            for (ctr = 0; ctr < bitsCZero / 2; ctr++)
+            for (ctr = 0; ctr < (bitsCZero / 2); ctr++)
             {
               BigIntMultiplyBy2(&squareRoot);
             }

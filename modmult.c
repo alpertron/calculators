@@ -130,7 +130,7 @@ void GetMontgomeryParms(int len)
     return;
   }
   // Check whether TestNbr is a power of 2.
-  for (j = 0; j < NumberLength-1; j++)
+  for (j = 0; j < (NumberLength-1); j++)
   {
     if (TestNbr[j].x != 0)
     {
@@ -144,7 +144,7 @@ void GetMontgomeryParms(int len)
     {
       if (value == 1)
       {
-        powerOf2Exponent = (NumberLength - 1)*BITS_PER_GROUP + j;
+        powerOf2Exponent = ((NumberLength - 1)*BITS_PER_GROUP) + j;
         (void)memset(MontgomeryMultR1, 0, NumberLength*sizeof(limb));
         (void)memset(MontgomeryMultR2, 0, NumberLength * sizeof(limb));
         MontgomeryMultR1[0].x = 1;
@@ -249,10 +249,11 @@ void AdjustModN(limb *Nbr, const limb *Modulus, int nbrLen)
     Nbr[i].x = (int)carry & MAX_VALUE_LIMB;
     carry >>= BITS_PER_GROUP;
 #else
-    int low = (Nbr[i].x - Modulus[i].x * TrialQuotient + carry) & MAX_INT_NBR;
+    int low = (Nbr[i].x - (Modulus[i].x * TrialQuotient) + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
-    double dAccumulator = Nbr[i].x - Modulus[i].x * dTrialQuotient + carry + dDelta;
+    double dAccumulator = (double)Nbr[i].x - ((double)Modulus[i].x * dTrialQuotient) +
+      (double)carry + dDelta;
     dDelta = 0;
     if (dAccumulator < 0)
     {
@@ -351,7 +352,7 @@ void smallmodmult(int factor1, int factor2, limb *product, int mod)
 #else
       // Round up quotient.
     int quotient = (int)floor((double)factor1 * (double)factor2 / (double)mod + 0.5);
-    int remainder = factor1 * factor2 - quotient * mod;
+    int remainder = (factor1 * factor2) - (quotient * mod);
     if (remainder < 0)
     {    // Quotient was 1 more than expected. Adjust remainder.
       remainder += mod;

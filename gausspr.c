@@ -113,10 +113,10 @@ static void AdjustModN(int *Nbr)
   for (i = 0; i < NBR_LIMBS; i++)
   {
     double dAccumulator;
-    int low = (*(Nbr + i) - TestNbr[i] * TrialQuotient + carry) & MAX_INT_NBR;
+    int low = (*(Nbr + i) - (TestNbr[i] * TrialQuotient) + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
-    dAccumulator = *(Nbr+i) - TestNbr[i] * dTrialQuotient + carry + dDelta;
+    dAccumulator = *(Nbr+i) - (TestNbr[i] * dTrialQuotient) + carry + dDelta;
     dDelta = 0;
     if (dAccumulator < 0)
     {
@@ -193,13 +193,13 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   
   Pr = (Nbr = *factor1) * (uint64_t)factor2_0;
   MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_INT_NBR;
-  Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
+  Prod0 = (Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
     (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * factor2_1) & MAX_INT_NBR;
   Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
     
   Pr = (Nbr = *(factor1 + 1)) * (uint64_t)factor2_0 + (uint32_t)Prod0;
   MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_INT_NBR;
-  Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
+  Prod0 = (Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
     (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * factor2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
   Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
     
@@ -220,7 +220,7 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   double dMontDig = (double)MontDig;
   dAccum += dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
-  dAccum = floor(dAccum*dInvLimbRange + 0.5);
+  dAccum = floor((dAccum*dInvLimbRange) + 0.5);
   low = ((unsigned int)dAccum + MontDig * TestNbr1 +
                Nbr * factor2_1) & MAX_VALUE_LIMB;
   dAccum += dMontDig * TestNbr1 + dNbr * factor2_1;

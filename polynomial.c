@@ -97,7 +97,7 @@ void ConvertToMonic(int *poly, int polyDegree)
   int currentDegree;
   if (NumberLength == 1)
   {         // Modulus size is one limb.
-    int inverse = modInv(*(poly + polyDegree * 2 + 1), TestNbr[0].x);
+    int inverse = modInv(*(poly + (polyDegree * 2) + 1), TestNbr[0].x);
     int* ptrPoly = poly + 1;
     intToBigInteger(&operand1, inverse);
     if (TestNbr[0].x <= 32768)
@@ -123,13 +123,13 @@ void ConvertToMonic(int *poly, int polyDegree)
   }
   else
   {         // General case.
-    IntArray2BigInteger(poly + polyDegree * nbrLimbs, &operand1);
+    IntArray2BigInteger(poly + (polyDegree * nbrLimbs), &operand1);
     ModInvBigNbr(operand1.limbs, operand1.limbs, TestNbr, NumberLength);
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
-      IntArray2BigInteger(poly + currentDegree * nbrLimbs, &operand2);
+      IntArray2BigInteger(poly + (currentDegree * nbrLimbs), &operand2);
       modmult(operand1.limbs, operand2.limbs, operand2.limbs);
-      BigInteger2IntArray(poly + currentDegree * nbrLimbs, &operand2);
+      BigInteger2IntArray(poly + (currentDegree * nbrLimbs), &operand2);
     }
   }
 }
@@ -487,10 +487,11 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
                // Discard any leading zero coefficient.
     while (degreeMax >= 0)
     {
-      ptrTemp = ptrArgMax + degreeMax*nbrLimbs;
-      for (index = *ptrTemp++; index > 0; index--)
+      ptrTemp = ptrArgMax + (degreeMax*nbrLimbs);
+      for (index = *ptrTemp; index > 0; index--)
       {
-        if (*ptrTemp++ != 0)
+        ptrTemp++;
+        if (*ptrTemp != 0)
         {      // Coefficient is not zero.
           break;
         }

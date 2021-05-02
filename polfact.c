@@ -76,7 +76,7 @@ static void DistinctDegreeFactorization(int polyDegree)
     {
 #ifdef __EMSCRIPTEN__
       int elapsedTime = (int)(tenths() - originalTenthSecond);
-      if (elapsedTime / 10 != oldTimeElapsed / 10)
+      if ((elapsedTime / 10) != (oldTimeElapsed / 10))
       {
         char *ptrOutput = outputText;
         oldTimeElapsed = elapsedTime;
@@ -422,8 +422,8 @@ static void SortFactors(const BigInteger *modulus)
       else if (pstFactorInfo->degree == pstFactorInfo2->degree)
       {
         index = 0;
-        ptrValue1 = pstFactorInfo->ptrPolyLifted + pstFactorInfo->degree * nbrLimbs;
-        ptrValue2 = pstFactorInfo2->ptrPolyLifted + pstFactorInfo->degree * nbrLimbs;
+        ptrValue1 = pstFactorInfo->ptrPolyLifted + (pstFactorInfo->degree * nbrLimbs);
+        ptrValue2 = pstFactorInfo2->ptrPolyLifted + (pstFactorInfo->degree * nbrLimbs);
         for (currentDegree = pstFactorInfo->degree - 1; currentDegree >= 0; currentDegree--)
         {
           ptrValue1 -= nbrLimbs;

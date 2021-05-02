@@ -703,8 +703,8 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
   int nbrTmp2[1000];
   int nbrTmp3[1000];
   int TestNbr0Bak;
-  int dividendMod32768[2 * MAX_DEGREE + 1];
-  int divisorMod32768[2 * MAX_DEGREE + 1];
+  int dividendMod32768[(2 * MAX_DEGREE) + 1];
+  int divisorMod32768[(2 * MAX_DEGREE) + 1];
   // In step 1 we check that all factors can be found. If this succeeds,
   // in step 2 we insert factors in final array of polynomial factors.
   for (int stepNbr = 1; stepNbr <= 2; stepNbr++)
@@ -1577,7 +1577,7 @@ static void vanHoeij(int prime, int nbrFactors)
     // sqrt(c^2*n_0 + s*n_0^2/4)
 
     // Compute square of formula.
-    squareFormula = nbrFactors * C * C + nbrRequiredTraces * nbrFactors * nbrFactors / 4;
+    squareFormula = (nbrFactors * C * C) + (nbrRequiredTraces * nbrFactors * nbrFactors / 4);
     for (r1 = nbrVectors + nbrRequiredTraces; r1 > 1; r1--)
     {
       // The norm of B*[r1] is lambda_{r1, r1} / lambda_{r1-1, r1-1}.
@@ -1832,7 +1832,7 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   // Fill indexes to start of each coefficient.
   ptrIndex = &indexNewFactor[0];
   index = 0;
-  for (currentDegree = 0; currentDegree <= degreePoly+1; currentDegree++)
+  for (currentDegree = 0; currentDegree <= (degreePoly+1); currentDegree++)
   {
     *ptrIndex++ = index;
     index += numLimbs(ptrFactor + index) + 1;
@@ -1892,7 +1892,7 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   {
     pstFactorInfo++;
   }
-  if (pstFactorInfo - pstFactorInfoInteger > 0)
+  if ((pstFactorInfo - pstFactorInfoInteger) > 0)
   {
     (void)memmove(pstFactorInfoInteger + 1, pstFactorInfoInteger,
       (pstFactorInfo - pstFactorInfoInteger) * sizeof(*pstFactorInfo));

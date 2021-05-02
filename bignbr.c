@@ -36,8 +36,8 @@ static BigInteger Temp3;
 static BigInteger Base;
 static BigInteger Power;
 static BigInteger expon;
-static bool ProcessExpon[MAX_LEN*BITS_PER_GROUP + 1000];
-static bool primes[MAX_LEN*BITS_PER_GROUP + 1000];
+static bool ProcessExpon[(MAX_LEN*BITS_PER_GROUP) + 1000];
+static bool primes[(MAX_LEN*BITS_PER_GROUP) + 1000];
 extern limb Mult1[MAX_LEN];
 extern limb Mult2[MAX_LEN];
 extern limb Mult3[MAX_LEN];
@@ -122,7 +122,7 @@ void ceildiv(BigInteger*num, BigInteger *den, BigInteger *result)
 
 void BigIntChSign(BigInteger *value)
 {
-  if (value->nbrLimbs == 1 && value->limbs[0].x == 0)
+  if ((value->nbrLimbs == 1) && (value->limbs[0].x == 0))
   {    // Value is zero. Do not change sign.
     return;
   }
@@ -276,15 +276,17 @@ enum eExprErr BigIntMultiply(const BigInteger *pFactor1, const BigInteger *pFact
     return EXPR_OK;
   }
 #ifdef FACTORIZATION_APP
-  if ((pFactor1->nbrLimbs + pFactor2->nbrLimbs) > (664380 / BITS_PER_GROUP + 1))  // 2^664380 ~ 10^200000
+  // 2^664380 ~ 10^200000
+  if ((pFactor1->nbrLimbs + pFactor2->nbrLimbs) > ((664380 / BITS_PER_GROUP) + 1))
 #else
-  if ((pFactor1->nbrLimbs + pFactor2->nbrLimbs) > (66438 / BITS_PER_GROUP + 1))  // 2^66438 ~ 10^20000
+  // 2^66438 ~ 10^20000
+  if ((pFactor1->nbrLimbs + pFactor2->nbrLimbs) > ((66438 / BITS_PER_GROUP) + 1))
 #endif
   {
     return EXPR_INTERM_TOO_HIGH;
   }
-  if ((nbrLimbsFactor1 * nbrLimbsFactor1 < nbrLimbsFactor2) ||
-    (nbrLimbsFactor2 * nbrLimbsFactor2 < nbrLimbsFactor1))
+  if (((nbrLimbsFactor1 * nbrLimbsFactor1) < nbrLimbsFactor2) ||
+    ((nbrLimbsFactor2 * nbrLimbsFactor2) < nbrLimbsFactor1))
   {    // One of the factors is a lot smaller than the other.
        // Use classical multiplication.
    // return EXPR_OK

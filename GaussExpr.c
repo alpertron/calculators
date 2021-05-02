@@ -183,14 +183,14 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       factorialResult.sign = SIGN_POSITIVE;
       for (i = 2; i <= len; i++)
       {      // Multiply by prime numbers only.
-        for (j = 2; j*j <= i; j++)
+        for (j = 2; (j*j) <= i; j++)
         {
-          if (i / j*j == i)
+          if ((i / j*j) == i)
           {   // Number is not prime.
             break;
           }
         }
-        if (j*j > i)
+        if ((j*j) > i)
         {     // Number is prime, perform multiplication.
           carry.x = 0;
           for (j = 0; j < factorialResult.nbrLimbs; j++)
@@ -464,14 +464,14 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         CopyBigInt(ptrBigInt, &Tmp);
         if (!BigIntIsZero(ptrBigInt))
         {            // Real coefficient is not zero: change sign
-          ptrBigInt->sign = (ptrBigInt->sign == SIGN_POSITIVE ? SIGN_NEGATIVE : SIGN_POSITIVE);
+          ptrBigInt->sign = ((ptrBigInt->sign == SIGN_POSITIVE)? SIGN_NEGATIVE : SIGN_POSITIVE);
         }
       }
     }
     else if ((charValue >= '0') && (charValue <= '9'))
     {
       exprIndexAux = exprIndex;
-      if ((charValue == '0') && (exprIndexAux < exprLength - 2) &&
+      if ((charValue == '0') && (exprIndexAux < (exprLength - 2)) &&
         (*(expr + exprIndexAux + 1) == 'x'))
       {  // hexadecimal
         exprIndexAux += 2;
@@ -632,7 +632,7 @@ static int func(char *expr, BigInteger *ExpressionResult,
     retcode = ComputeExpr(expr, ExpressionResult);
     if (retcode != 0) {return retcode;}
     SkipSpaces(expr);
-    compareChar = (index == funcArgs-1? ')': ',');
+    compareChar = ((index == funcArgs-1)? ')': ',');
     if ((exprIndex == exprLength) || (*(expr+exprIndex++) != compareChar))
     {
       return EXPR_SYNTAX_ERROR;

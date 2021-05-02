@@ -304,7 +304,7 @@ static void ComputeThreeSquares(BigInteger *pTmp,
         subtractdivide(pTmp2, 0, prime);
         expon++;
       }
-      if (((expon % 2 == 1) && (prime % 4 == 3)) || (pTmp2->limbs[0].x % 4 == 3))
+      if ((((expon % 2) == 1) && ((prime % 4) == 3)) || ((pTmp2->limbs[0].x % 4) == 3))
       {  // Number cannot be expressed as a sum of three squares.
         break;
       }
@@ -423,7 +423,7 @@ static void ComputeThreeSquares(BigInteger *pTmp,
         for (;;)
         {
           r = (int)sqrt((double)(prime - j * j));
-          if (r*r + j * j == prime)
+          if ((r*r) + (j * j) == prime)
           {
             break;
           }

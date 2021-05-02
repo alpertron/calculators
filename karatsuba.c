@@ -33,17 +33,17 @@ static void Karatsuba(int idxFactor1, int nbrLen);
 #define PROLOG_MULTIPLICATION_DOUBLE                                    \
   factor2_i = arr[idxFactor2 + i].x;                                    \
   factor2_iPlus1 = arr[idxFactor2 + i + 1].x;                           \
-  Pr = prod_iPlus0 + (uint64_t)factor2_i * factor1_0;                   \
+  Pr = prod_iPlus0 + ((uint64_t)factor2_i * factor1_0);                 \
   arrayAux[i].x = (int32_t)Pr & MAX_INT_NBR;                            \
-  Pr = prod_iPlus1 + (uint64_t)factor2_i * factor1_1 +                  \
-       (uint64_t)factor2_iPlus1 * factor1_0 + (Pr >> BITS_PER_GROUP);   \
+  Pr = prod_iPlus1 + ((uint64_t)factor2_i * factor1_1) +                \
+       ((uint64_t)factor2_iPlus1 * factor1_0) + (Pr >> BITS_PER_GROUP); \
   arrayAux[i + 1].x = (int32_t)Pr & MAX_INT_NBR
 #define MULT_MACRO_DOUBLE(m, n, p)                                      \
-  Pr = prod_iPlus##p + (uint64_t)factor2_i * factor1_##p +              \
+  Pr = prod_iPlus##p + ((uint64_t)factor2_i * factor1_##p) +            \
     (uint64_t)factor2_iPlus1 * factor1_##n + (Pr >> BITS_PER_GROUP);    \
   prod_iPlus##m = (int32_t)Pr & MAX_INT_NBR
 #define EPILOG_MULTIPLICATION_DOUBLE(m, n)                              \
-  Pr = (uint64_t)factor2_iPlus1 * factor1_##n + (Pr >> BITS_PER_GROUP); \
+  Pr = ((uint64_t)factor2_iPlus1 * factor1_##n) + (Pr >> BITS_PER_GROUP); \
   prod_iPlus##m = (uint32_t)Pr & MAX_INT_NBR;                           \
   prod_iPlus##n = (uint32_t)(Pr >> BITS_PER_GROUP)
 
@@ -105,7 +105,7 @@ void multiplyWithBothLen(const limb *factor1, const limb *factor2, limb *result,
     (void)memcpy(result, &arr[2 * (karatLength - length)], 2 * length * sizeof(limb));
     if ((karatLength > length) && (arr[2 * (karatLength - length)-1].x == 0))
     {
-      *pResultLen = length * 2 - 1;
+      *pResultLen = (length * 2) - 1;
     }
     else
     {

@@ -53,7 +53,7 @@ static void stringToHTML(char **pptrOutput, const char *ptrString)
     }
     else if ((c & 0x60) == 0x40)
     {            // 2-byte UTF-8 character
-      character = (c & 0x1F) * 64 + (*(ptrString + 1) & 0x3F);
+      character = ((c & 0x1F) * 64) + (*(ptrString + 1) & 0x3F);
       ptrString += 2;
     }
     else

@@ -146,9 +146,9 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
   retcode = ComputeExpr(expr, ExpressionResult);
   if (retcode != 0) { return retcode; }
 #ifdef FACTORIZATION_APP
-  if (ExpressionResult[0].nbrLimbs > 332192 / BITS_PER_GROUP + 1)   // 100000/log_10(2) = 332192
+  if (ExpressionResult[0].nbrLimbs > ((332192 / BITS_PER_GROUP) + 1))   // 100000/log_10(2) = 332192
 #else
-  if (ExpressionResult[0].nbrLimbs > 33219 / BITS_PER_GROUP + 1)    // 10000/log_10(2) = 33219
+  if (ExpressionResult[0].nbrLimbs > ((33219 / BITS_PER_GROUP) + 1))    // 10000/log_10(2) = 33219
 #endif
   {
     return EXPR_NUMBER_TOO_HIGH;
@@ -846,7 +846,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {  // hexadecimal
         int exprIndexFirstHexDigit = -1;
         exprIndexAux++;
-        while (exprIndexAux < exprLength - 1)
+        while (exprIndexAux < (exprLength - 1))
         {
           charValue = *(expr+exprIndexAux + 1);
           if (((charValue >= '0') && (charValue <= '9')) ||
@@ -1112,7 +1112,7 @@ static enum eExprErr ComputeSubExpr(void)
     break;
   case OPER_NOT_EQUAL:
     BigIntSubt(firstArg, secondArg, result);
-    intToBigInteger(result, ((result->nbrLimbs == 1) && (result->limbs[0].x == 0 ? 0 : -1)));
+    intToBigInteger(result, ((result->nbrLimbs == 1) && ((result->limbs[0].x == 0) ? 0 : -1)));
     break;
   case OPER_GREATER:
     BigIntSubt(secondArg, firstArg, result);
@@ -1175,7 +1175,7 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
   const char *ptrExpr;
   const char *ptrFuncName;
 
-  if (exprIndex + funcNameLen > exprLength)
+  if ((exprIndex + funcNameLen) > exprLength)
   {
     return EXPR_NOT_FOUND;
   }
@@ -1622,7 +1622,7 @@ static int ComputeConcatFact(void)
   {
     int ctr;
     const struct sFactors* pstFactor =
-          &astFactorsMod[descend ? nbrFactors - factorNumber + 1 : factorNumber];
+          &astFactorsMod[descend ? (nbrFactors - factorNumber + 1) : factorNumber];
     NumberLength = *(pstFactor->ptrFactor);
     IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
     ctr = (repeated ? pstFactor->multiplicity : 1);

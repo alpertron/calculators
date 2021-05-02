@@ -456,7 +456,7 @@ void SolveEquation(void)
             }
             // Find square root of ValCOdd.
             // First approximation to inverse of square root.
-            sqrRoot.limbs[0].x = ((ValCOdd.limbs[0].x & 15) == 1 ? 1 : 3);
+            sqrRoot.limbs[0].x = (((ValCOdd.limbs[0].x & 15) == 1)? 1 : 3);
             correctBits = 2;
             nbrLimbs = 1;
             while (correctBits < expon)
@@ -477,7 +477,7 @@ void SolveEquation(void)
             MultBigNbr((int*)ValCOdd.limbs, (int*)sqrRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
             (void)memcpy(sqrRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
             setNbrLimbs(&sqrRoot);
-            for (ctr = 0; ctr < bitsCZero / 2; ctr++)
+            for (ctr = 0; ctr < (bitsCZero / 2); ctr++)
             {
               BigIntMultiplyBy2(&sqrRoot);
             }

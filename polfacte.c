@@ -32,7 +32,7 @@ EXTERNALIZE void doWork(void)
   char* ptrData = inputString;
   while (*ptrData != ',')
   {
-    groupLen = groupLen * 10 + (*ptrData++ - '0');
+    groupLen = (groupLen * 10) + (*ptrData++ - '0');
   }
   ptrData++;         // Skip comma.
   do

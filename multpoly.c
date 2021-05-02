@@ -488,20 +488,20 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
           // Obtain coefficient from xH*yH*b^2 + xL*yL
           LenAndLimbs2ArrLimbs(ptrResult, operand3.limbs, nbrLimbs);
           // Obtain coefficient from xH*yH
-          LenAndLimbs2ArrLimbs(ptrResult + halfLength * nbrLimbs, operand1.limbs, nbrLimbs);
+          LenAndLimbs2ArrLimbs(ptrResult + (halfLength * nbrLimbs), operand1.limbs, nbrLimbs);
           // Add these coefficients.
           AddBigNbrMod(operand3.limbs, operand1.limbs, operand3.limbs);
           // Obtain coefficient from xL*yL
-          LenAndLimbs2ArrLimbs(ptrResult - halfLength * nbrLimbs, operand2.limbs, nbrLimbs);
+          LenAndLimbs2ArrLimbs(ptrResult - (halfLength * nbrLimbs), operand2.limbs, nbrLimbs);
           AddBigNbrMod(operand2.limbs, operand3.limbs, operand2.limbs);
           // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
           ArrLimbs2LenAndLimbs(ptrResult, operand2.limbs, nbrLimbs);
           // Obtain coefficient from xH*yH
-          LenAndLimbs2ArrLimbs(ptrResult + nbrLen * nbrLimbs, operand2.limbs, nbrLimbs);
+          LenAndLimbs2ArrLimbs(ptrResult + (nbrLen * nbrLimbs), operand2.limbs, nbrLimbs);
           // Add coefficient from xL*yL
           AddBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
           // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-          ArrLimbs2LenAndLimbs(ptrResult + halfLength * nbrLimbs, operand3.limbs, nbrLimbs);
+          ArrLimbs2LenAndLimbs(ptrResult + (halfLength * nbrLimbs), operand3.limbs, nbrLimbs);
           // Point to next address.
           ptrResult += nbrLimbs;
         }
@@ -621,7 +621,7 @@ static void MultIntegerPolynomial(int degree1, int degree2,
     BigInteger2IntArray(piDest, &operand4);
     piDest += 1 + numLimbs(piDest);
   }
-  for (; currentDegree <= degree1 + degree2; currentDegree++)
+  for (; currentDegree <= (degree1 + degree2); currentDegree++)
   {
     intToBigInteger(&operand4, 0);
     for (degreeF2 = currentDegree - degree1; degreeF2 <= degree2; degreeF2++)
@@ -649,7 +649,7 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
     return;
   }
   nbrLimbs = NumberLength + 1;
-  if (degree1 * degree1 < degree2 || degree2 * degree2 < degree1)
+  if (((degree1 * degree1) < degree2) || ((degree2 * degree2) < degree1))
   {    // One of the factors is a lot smaller than the other.
        // Use classical multiplication of polynomials.
     const int *ptrSrc1;
@@ -680,7 +680,7 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
           ptrDest++;
           for (currentDegree2 = 0; currentDegree2 <= degree2; currentDegree2++)
           {
-            *ptrDest = (*ptrDest + operand3.limbs[0].x * *ptrSrc2) % mod;
+            *ptrDest = (*ptrDest + (operand3.limbs[0].x * *ptrSrc2)) % mod;
             ptrSrc2 += 2;
             ptrDest += 2;
           }
@@ -708,8 +708,8 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
   }
   // Find the least power of 2 greater or equal than the maximum of factor1 and factor2.
   karatDegree = (degree1 > degree2 ? degree1 : degree2) + 1;
-  if (NumberLength == 1 && karatDegree > 50 &&
-    karatDegree < 1000000 / TestNbr[0].x / TestNbr[0].x)
+  if ((NumberLength == 1) && (karatDegree > 50) &&
+    (karatDegree < (1000000 / TestNbr[0].x / TestNbr[0].x)))
   {
     fftPolyMult(factor1, factor2, polyMultTemp, degree1+1, degree2+1);
     return;

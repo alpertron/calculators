@@ -622,7 +622,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   }
   for (; Exponent >= 2; Exponent--)
   {
-    if ((Exponent % 3 == 0) && (mod9 > 2) && (mod9 < 7))
+    if (((Exponent % 3) == 0) && (mod9 > 2) && (mod9 < 7))
     {
       continue;
     }

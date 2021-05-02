@@ -216,7 +216,7 @@ int fsquares(void)
   else
   {          // number is not a perfect square.
     nbrModExp = 0;
-    for (i = 0; i < MAX_SIEVE / 2; i++)
+    for (i = 0; i < (MAX_SIEVE / 2); i++)
     {
       sieve[i] = 0;
     }
@@ -512,7 +512,7 @@ compute_squares_loop:
             for (;;)
             {
               r = (int)sqrt((double)(divisor - j*j));
-              if (r*r + j*j == divisor)
+              if ((r*r) + (j*j) == divisor)
               {
                 break;
               }

@@ -61,7 +61,7 @@ static void MultiplyBigNbrByMinPowerOf4(int *pPower4, const limb *number, int le
   }
   shLeft = 0;
   mostSignficLimb.x = (number + len - 1)->x;
-  for (int mask = (int)LIMB_RANGE/2; mask > 0; mask >>= 1)
+  for (int mask = (int)(LIMB_RANGE/2U); mask > 0; mask >>= 1)
   {
     if ((mostSignficLimb.x & mask) != 0)
     {
@@ -252,7 +252,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   lenInvSqrt2 = (length+1) / 2;
   if (approxInv[(2 * lenInvSqrt) - lenInvSqrt2-2].x > (7 << (BITS_PER_GROUP-3)))
   {                   // Increment square root.
-    for (idx = (2 * lenInvSqrt) - lenInvSqrt2-1; idx < 2*lenInvSqrt-1; idx++)
+    for (idx = (2 * lenInvSqrt) - lenInvSqrt2-1; idx < (2*lenInvSqrt)-1; idx++)
     {
       approxInv[idx].x = (approxInv[idx].x + 1) & MAX_INT_NBR;
       if (approxInv[idx].x != 0)
@@ -285,7 +285,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
     }
     if (adjustedArgument[idx].x < approxInvSqrt[idx].x)
     {                // Incorrect square root: roll back.
-      for (idx = 2 * lenInvSqrt - lenInvSqrt2-1; idx < 2 * lenInvSqrt-1; idx++)
+      for (idx = (2 * lenInvSqrt) - lenInvSqrt2-1; idx < (2 * lenInvSqrt) - 1; idx++)
       {
         approxInv[idx].x--;
         if (approxInv[idx].x >= 0)

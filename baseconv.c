@@ -286,7 +286,8 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
   len = (power10000[1].x == 0 ? 1 : 2); // Initialize array length.
   for (index = nbrLimbs - 2; index >= 0; index--)
   {
-    double dCarry, dQuotient;
+    double dCarry;
+    double dQuotient;
     limb *ptrPower;
 
     // Multiply by FIRST_MULT and then by SECOND_MULT, so there is never
@@ -298,7 +299,8 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
     {
       dCarry = dQuotient + (double)ptrPower->x * FIRST_MULT;
       dQuotient = floor(dCarry / MAX_LIMB_CONVERSION);
-      (ptrPower++)->x = (int)(dCarry - dQuotient * MAX_LIMB_CONVERSION);
+      ptrPower->x = (int)(dCarry - (dQuotient * (double)MAX_LIMB_CONVERSION));
+      ptrPower++;
     }
     if (dQuotient != 0)
     {
