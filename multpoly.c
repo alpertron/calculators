@@ -196,7 +196,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
   }
   else
   {
-    for (i = 0; i < 2 * coeffLen - 1; i++)
+    for (i = 0; i < (2 * coeffLen) - 1; i++)
     {
       ArrLimbs2LenAndLimbs(ptrFactor1, coeff[i].limbs, nbrLimbs);
       ptrFactor1 += nbrLimbs;
@@ -707,7 +707,7 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
     return;
   }
   // Find the least power of 2 greater or equal than the maximum of factor1 and factor2.
-  karatDegree = (degree1 > degree2 ? degree1 : degree2) + 1;
+  karatDegree = ((degree1 > degree2)? degree1 : degree2) + 1;
   if ((NumberLength == 1) && (karatDegree > 50) &&
     (karatDegree < (1000000 / TestNbr[0].x / TestNbr[0].x)))
   {
@@ -865,7 +865,7 @@ void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
   ptrPolyTemp = polyMultTemp + (polyDegree - 1) * nbrLimbs;
   for (index1 = polyDegree - 1; index1 >= 0; index1--)
   {
-    ptrPoly1 = polyFact1 + index1 * nbrLimbs;
+    ptrPoly1 = polyFact1 + (index1 * nbrLimbs);
     ptrPoly2 = polyFact2 + (polyDegree - 1) * nbrLimbs;
     IntArray2BigInteger(ptrPoly1, &operand1);
     IntArray2BigInteger(ptrPoly2, &operand2);
@@ -889,7 +889,7 @@ void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
     // Back up leading coefficient.
     (void)memcpy(ptrPoly3 + nbrLimbs, ptrPoly3, nbrLimbs * sizeof(int));
     IntArray2BigInteger(ptrPoly3, &operand3);
-    ptrPoly1 = polyMod + polyDegree * nbrLimbs;
+    ptrPoly1 = polyMod + (polyDegree * nbrLimbs);
     for (index2 = polyDegree - 2; index2 >= 0; index2--)
     {
       ptrPoly1 -= nbrLimbs;

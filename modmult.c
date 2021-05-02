@@ -138,7 +138,7 @@ void GetMontgomeryParms(int len)
       break;
     }
   }
-  if (j == NumberLength - 1)
+  if (j == (NumberLength - 1))
   {
     int value = TestNbr[NumberLength - 1].x;
     for (j = 0; j < BITS_PER_GROUP; j++)
@@ -233,7 +233,7 @@ void AdjustModN(limb *Nbr, const limb *Modulus, int nbrLen)
 
   dInvModulus = 1/getMantissa(Modulus+nbrLen, nbrLen);
   dNbr = getMantissa(Nbr + nbrLen + 1, nbrLen + 1) * LIMB_RANGE;
-  TrialQuotient = (int)(unsigned int)floor(dNbr * dInvModulus + 0.5);
+  TrialQuotient = (int)(unsigned int)floor((dNbr * dInvModulus) + 0.5);
   if ((unsigned int)TrialQuotient >= LIMB_RANGE)
   {   // Maximum value for limb.
     TrialQuotient = MAX_VALUE_LIMB;
@@ -247,7 +247,7 @@ void AdjustModN(limb *Nbr, const limb *Modulus, int nbrLen)
   for (i = 0; i <= nbrLen; i++)
   {
 #ifdef _USING64BITS_
-    carry += (int64_t)Nbr[i].x - Modulus[i].x * (int64_t)TrialQuotient;
+    carry += (int64_t)Nbr[i].x - (Modulus[i].x * (int64_t)TrialQuotient);
     Nbr[i].x = (int)carry & MAX_VALUE_LIMB;
     carry >>= BITS_PER_GROUP;
 #else
@@ -426,7 +426,7 @@ static void MontgomeryMult3(const limb *pNbr1, const limb *pNbr2, limb *pProd)
     uint32_t Nbr;
     Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
+    Prod0 = (Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
       (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
     Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
       (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
@@ -466,7 +466,7 @@ static void MontgomeryMult4(const limb *pNbr1, const limb *pNbr2, limb *pProd)
     uint32_t MontDig;
     Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
+    Prod0 = (Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
       (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
     Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
       (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;

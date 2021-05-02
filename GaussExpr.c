@@ -528,7 +528,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       }
       else
       {                   // Decimal number.
-        while (exprIndexAux < exprLength - 1)
+        while (exprIndexAux < (exprLength - 1))
         {
           charValue = *(expr + exprIndexAux + 1);
           if ((charValue >= '0') && (charValue <= '9'))

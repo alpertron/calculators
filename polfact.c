@@ -72,7 +72,7 @@ static void DistinctDegreeFactorization(int polyDegree)
     // then compute the gcd between the polynomial to be factored and
     // the computed polynomial less x. If the degree of GCD is > 0, then the
     // GCD is the product of all factors of degree indicated by currentDegree.
-    for (currentDegree = 1; currentDegree * 2 <= polyDegree; currentDegree++)
+    for (currentDegree = 1; (currentDegree * 2) <= polyDegree; currentDegree++)
     {
 #ifdef __EMSCRIPTEN__
       int elapsedTime = (int)(tenths() - originalTenthSecond);

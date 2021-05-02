@@ -180,7 +180,7 @@ static void getCurrentStackValue(BigInteger* pValue)
 enum eExprErr setStackValue(const BigInteger* pValue)
 {
   int currentOffset = comprStackOffset[stackIndex];
-  if (currentOffset >= COMPR_STACK_SIZE - sizeof(BigInteger) / sizeof(limb))
+  if (currentOffset >= (COMPR_STACK_SIZE - sizeof(BigInteger) / sizeof(limb)))
   {
     return EXPR_OUT_OF_MEMORY;
   }

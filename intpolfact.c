@@ -1184,7 +1184,7 @@ static void vanHoeij(int prime, int nbrFactors)
       currentAttempts++;
 #ifdef __EMSCRIPTEN__
       int elapsedTime = (int)(tenths() - originalTenthSecond);
-      if (elapsedTime / 10 != oldTimeElapsed / 10)
+      if ((elapsedTime / 10) != (oldTimeElapsed / 10))
       {
         oldTimeElapsed = elapsedTime;
         ptrOutput = output;
@@ -1246,7 +1246,7 @@ static void vanHoeij(int prime, int nbrFactors)
     for (nbrCol = 0; nbrCol < nbrFactors; nbrCol++)
     {
       intToLinkedBigInt(&matrixBL[nbrRow][nbrCol],
-        (nbrRow == nbrCol ? 1 : 0));
+        ((nbrRow == nbrCol)? 1 : 0));
     }
   }
   // Initialize variables for van Hoeij algorithm.
@@ -1324,10 +1324,10 @@ static void vanHoeij(int prime, int nbrFactors)
     // Use basisStar for matrix m.
     for (nbrRow = 0; nbrRow < nbrVectors; nbrRow++)   // Loop for upper half
     {
-      for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
+      for (nbrCol = 0; nbrCol < (nbrVectors + nbrRequiredTraces); nbrCol++)
       {
         intToLinkedBigInt(&basisStar[nbrRow][nbrCol],
-          (nbrRow == nbrCol ? C : 0));
+          ((nbrRow == nbrCol)? C : 0));
       }
     }
 
@@ -1447,7 +1447,7 @@ static void vanHoeij(int prime, int nbrFactors)
     integralLLL(nbrVectors + nbrRequiredTraces);
 
     // Copy matrix M to basisStar.
-    for (nbrRow = 0; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
+    for (nbrRow = 0; nbrRow < (nbrVectors + nbrRequiredTraces); nbrRow++)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {

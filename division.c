@@ -184,7 +184,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
         low = (ptrDividend->x - (ptrDivisor->x * TrialQuotient) + carry) & MAX_INT_NBR;
         // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
         // In that case, there would be an error of +/- 1.
-        dAccumulator = ptrDividend->x - ptrDivisor->x * dTrialQuotient + carry + dDelta;
+        dAccumulator = ptrDividend->x - (ptrDivisor->x * dTrialQuotient) + carry + dDelta;
         dDelta = 0;
         if (dAccumulator < 0)
         {
@@ -382,7 +382,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     {
       nbrLimbsQuotient++;
     }
-    ptrQuotient = &approxInv[2 * nbrLimbs - nbrLimbsQuotient];
+    ptrQuotient = &approxInv[(2 * nbrLimbs) - nbrLimbsQuotient];
     if (approxInv[(2 * nbrLimbs) - 1].x == 0)
     {  // Most significant byte is zero, so it is not part of the quotient. 
       ptrQuotient--;

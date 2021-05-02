@@ -271,7 +271,7 @@ enum eExprErr BigIntMultiply(const BigInteger *pFactor1, const BigInteger *pFact
       pFactor2 = temp;
     }
       // Multiply BigInteger by integer.
-    factor2 = (pFactor2->sign == SIGN_POSITIVE? pFactor2->limbs[0].x : -pFactor2->limbs[0].x);
+    factor2 = ((pFactor2->sign == SIGN_POSITIVE)? pFactor2->limbs[0].x : -pFactor2->limbs[0].x);
     multint(pProduct, pFactor1, factor2);
     return EXPR_OK;
   }
@@ -736,7 +736,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   {
     unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + pLimbs->x;
     double dDividend = ((double)remainder * dLimb) + pLimbs->x;
-    double dQuotient = dDividend * dInvDivisor + 0.5;
+    double dQuotient = (dDividend * dInvDivisor) + 0.5;
     unsigned int quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - quotient * divisor;
     if (remainder < 0)
