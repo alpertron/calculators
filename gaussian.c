@@ -117,8 +117,10 @@ void GaussianFactorization(void)
       {             // Prime factor is 2.
         for (index2 = 0; index2 < pstFactor->multiplicity; index2++)
         {
-          M1.nbrLimbs = M2.nbrLimbs = 1;
-          M1.limbs[0].x = M2.limbs[0].x = 1;
+          M1.nbrLimbs = 1;
+          M2.nbrLimbs = 1;
+          M1.limbs[0].x = 1;
+          M2.limbs[0].x = 1;
           M1.sign = SIGN_POSITIVE;
           M2.sign = SIGN_NEGATIVE;
           DivideGaussian(&M1, &M1);           // Divide by 1+i

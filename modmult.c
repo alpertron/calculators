@@ -77,7 +77,8 @@ void ComputeInversePower2(const limb *value, limb *result, limb *tmp)
   int x;
   int j;
   limb Cy;
-  x = N = value->x;            // 2 least significant bits of inverse correct.
+  N = value->x;                // 2 least significant bits of inverse correct.
+  x = N;
   x = x * (2 - N * x);         // 4 least significant bits of inverse correct.
   x = x * (2 - N * x);         // 8 least significant bits of inverse correct.
   x = x * (2 - N * x);         // 16 least significant bits of inverse correct.
@@ -175,7 +176,8 @@ void GetMontgomeryParms(int len)
   {
     int x;
     int N;
-    x = N = TestNbr[0].x;        // 2 least significant bits of inverse correct.
+    N = TestNbr[0].x;            // 2 least significant bits of inverse correct.
+    x = N;
     x = x * (2 - N * x);         // 4 least significant bits of inverse correct.
     x = x * (2 - N * x);         // 8 least significant bits of inverse correct.
     x = x * (2 - N * x);         // 16 least significant bits of inverse correct.
@@ -387,17 +389,19 @@ static void MontgomeryMult2(const limb *pNbr1, const limb *pNbr2, limb *pProd)
   {
     uint32_t Nbr;
     uint32_t MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
+    Nbr = (pNbr1 + i)->x;
+    Pr = (Nbr * (uint64_t)Nbr2_0) + Prod0;
     MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
+    Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
+      ((uint64_t)MontDig * TestNbr1) + ((uint64_t)Nbr * Nbr2_1) + Prod1;
+    Prod0 = Pr & MAX_INT_NBR;
     Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
   }
   if ((Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP)) ||
      ((Prod1 == TestNbr1) && (Prod0 >= TestNbr0)))
   {
-    int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
+    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
+    Prod0 = borrow & MAX_INT_NBR;
     Prod1 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
   }
   pProd->x = Prod0;

@@ -322,14 +322,16 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if ((stackIndex > startStackIndex) &&
           (stackOperators[stackIndex-1] != '('))
       {
-        if ((SubExprResult = ComputeSubExpr()) != 0)
+        SubExprResult = ComputeSubExpr();
+        if (SubExprResult != 0)
         {
           return SubExprResult;
         }
         if ((stackIndex > startStackIndex) &&
             (stackOperators[stackIndex-1] != '('))
         {
-          if ((SubExprResult = ComputeSubExpr()) != 0)
+          SubExprResult = ComputeSubExpr();
+          if (SubExprResult != 0)
           {
             return SubExprResult;
           }
@@ -766,8 +768,10 @@ static int ComputeFibonacci(void)
   }
   FibonPrev.limbs[0].x = 1;
   FibonAct.limbs[0].x = 0;
-  FibonPrev.nbrLimbs = FibonAct.nbrLimbs = 1;
-  FibonPrev.sign = FibonAct.sign = SIGN_POSITIVE;
+  FibonPrev.nbrLimbs = 1;
+  FibonAct.nbrLimbs = 1;
+  FibonPrev.sign = SIGN_POSITIVE; 
+  FibonAct.sign = SIGN_POSITIVE;
   for (int i=1; i<=arg; i++)
   {
     BigIntAdd(&FibonPrev, &FibonAct, &FibonNext);

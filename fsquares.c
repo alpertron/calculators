@@ -86,7 +86,7 @@ static void ShowStatus(void)
   char status[200];
   char *ptrStatus = status;
   int elapsedTime = (int)(tenths() - originalTenthSecond);
-  if (elapsedTime / 10 == oldTimeElapsed / 10)
+  if ((elapsedTime / 10) == (oldTimeElapsed / 10))
   {
     return;
   }
@@ -220,11 +220,11 @@ int fsquares(void)
     {
       sieve[i] = 0;
     }
-    for (i = 3; (i*i) < MAX_SIEVE / 2; i += 2)
+    for (i = 3; (i*i) < (MAX_SIEVE / 2); i += 2)
     {
-      j = i*i - 3;
-      j = (j % 2 == 0) ? j / 2 : (j + i) / 2;
-      for (; j < MAX_SIEVE / 2; j += i)
+      j = (i*i) - 3;
+      j = (j % 2 == 0) ? (j / 2) : ((j + i) / 2);
+      for (; j < (MAX_SIEVE / 2); j += i)
       {
         sieve[j] = -1;             // Indicate number is composite.
       }
@@ -249,7 +249,8 @@ int fsquares(void)
     Mult1Len = Mult2Len = 1;
     if ((nbrLimbs == 1) && (number[0].x < 4))
     {
-      iMult3 = iMult4 = 0;
+      iMult3 = 0;
+      iMult4 = 0;
       switch (number[0].x)
       {
       case 3:
@@ -271,7 +272,7 @@ int fsquares(void)
 
       // Fill sieve array
 
-      for (i = 0; i < MAX_SIEVE / 2; i++)
+      for (i = 0; i < (MAX_SIEVE / 2); i++)
       {
         if (sieve[i] >= 0)                        // If prime...
         {
@@ -280,7 +281,7 @@ int fsquares(void)
           int LimbModQ;
           int Q;
           Rem.x = 0;
-          Q = 2 * i + 3;                          // Prime
+          Q = (2 * i) + 3;                        // Prime
           LimbModQ = (int)(LIMB_RANGE % Q);
           for (j = nbrLimbs - 1; j >= 0; j--)
           {
@@ -324,7 +325,7 @@ compute_squares_loop:
         {
           iMult3++;
         }
-        sum = iMult3 * iMult3 + iMult4 * iMult4;
+        sum = (iMult3 * iMult3) + (iMult4 * iMult4);
         carry.x = number[0].x - sum;
         p[0].x = carry.x & MAX_VALUE_LIMB;
         carry.x >>= BITS_PER_GROUP;
@@ -365,7 +366,7 @@ compute_squares_loop:
         divisor = 3;
         for (i = 0; i < MAX_SIEVE / 2; i++)
         {
-          if ((sieve[i] >= 0) && ((sieve[i] - sum) % divisor == 0))
+          if ((sieve[i] >= 0) && (((sieve[i] - sum) % divisor) == 0))
           {                          // Divisor found.
             primediv[nbrDivisors] = divisor;   // Store divisor.
             primeexp[nbrDivisors] = 0;         // Store exponent.
@@ -511,7 +512,7 @@ compute_squares_loop:
             j = 1;
             for (;;)
             {
-              r = (int)sqrt((double)(divisor - j*j));
+              r = (int)sqrt((double)(divisor - (j*j)));
               if ((r*r) + (j*j) == divisor)
               {
                 break;

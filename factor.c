@@ -286,10 +286,12 @@ void InsertAurifFactors(struct sFactors *pstFactors, const BigInteger *BigBase, 
       t1 = Moebius(N1 / t2) * intTotient(t2) * Cos((N - 1) * k);
       AurifQ[k] = t1;
     }
-    Gamma[0] = Delta[0] = 1;
+    Gamma[0] = 1;
+    Delta[0] = 1;
     for (k = 1; k <= (DegreeAurif / 2); k++)
     {
-      Gamma[k] = Delta[k] = 0;
+      Gamma[k] = 0;
+      Delta[k] = 0;
       for (int j = 0; j < k; j++)
       {
         int m = 2 * (k - j);

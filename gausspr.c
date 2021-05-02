@@ -191,16 +191,20 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   unsigned int Nbr;
   unsigned int MontDig;
   
-  Pr = (Nbr = *factor1) * (uint64_t)factor2_0;
+  Nbr = *factor1;
+  Pr = Nbr * (uint64_t)factor2_0;
   MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_INT_NBR;
-  Prod0 = (Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
-    (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * factor2_1) & MAX_INT_NBR;
+  Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
+    (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * factor2_1;
+  Prod0 = Pr & MAX_INT_NBR;
   Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
     
-  Pr = (Nbr = *(factor1 + 1)) * (uint64_t)factor2_0 + (uint32_t)Prod0;
+  Nbr = *(factor1 + 1);
+  Pr = Nbr * (uint64_t)factor2_0 + (uint32_t)Prod0;
   MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_INT_NBR;
-  Prod0 = (Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
-    (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * factor2_1 + (uint32_t)Prod1) & MAX_INT_NBR;
+  Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
+    (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * factor2_1 + (uint32_t)Prod1;
+  Prod0 = Pr & MAX_INT_NBR;
   Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
     
   if ((Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP)) ||
@@ -221,40 +225,40 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   dAccum += dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
   dAccum = floor((dAccum*dInvLimbRange) + 0.5);
-  low = ((unsigned int)dAccum + MontDig * TestNbr1 +
-               Nbr * factor2_1) & MAX_VALUE_LIMB;
-  dAccum += dMontDig * TestNbr1 + dNbr * factor2_1;
+  low = ((unsigned int)dAccum + (MontDig * TestNbr1) +
+               (Nbr * factor2_1)) & MAX_VALUE_LIMB;
+  dAccum += (dMontDig * TestNbr1) + (dNbr * factor2_1);
   Prod0 = low;
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + HALF_INT_RANGE / 2)*dInvLimbRange);
+    dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2U))*dInvLimbRange);
   }
   else
   {
-    dAccum = ((dAccum - HALF_INT_RANGE / 2)*dInvLimbRange);
+    dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2U))*dInvLimbRange);
   }
   Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
   
   Nbr = *(factor1 + 1);
   dNbr = (double)Nbr;
-  low = Nbr * factor2_0 + Prod0;
-  dAccum = dNbr * (double)factor2_0 + (double)Prod0;
+  low = (Nbr * factor2_0) + Prod0;
+  dAccum = (dNbr * (double)factor2_0) + (double)Prod0;
   MontDig = (low * MontgomeryMultN) & MAX_VALUE_LIMB;
   dMontDig = (double)MontDig;
   dAccum += dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
-  dAccum = floor(dAccum*dInvLimbRange + 0.5);
-  low = ((unsigned int)dAccum + MontDig * TestNbr1 +
-               Nbr * factor2_1 + Prod1) & MAX_VALUE_LIMB;
-  dAccum += dMontDig * TestNbr1 + dNbr * factor2_1 + (unsigned int)Prod1;
+  dAccum = floor((dAccum*dInvLimbRange) + 0.5);
+  low = ((unsigned int)dAccum + (MontDig * TestNbr1) +
+               (Nbr * factor2_1) + Prod1) & MAX_VALUE_LIMB;
+  dAccum += (dMontDig * TestNbr1) + (dNbr * factor2_1) + (unsigned int)Prod1;
   Prod0 = low;
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + HALF_INT_RANGE / 2)*dInvLimbRange);
+    dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2U))*dInvLimbRange);
   }
   else
   {
-    dAccum = ((dAccum - HALF_INT_RANGE / 2)*dInvLimbRange);
+    dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2U))*dInvLimbRange);
   }
   Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
   
@@ -323,7 +327,7 @@ static void GetMontgomeryParms(void)
 // Perform Miller-Rabin test of number stored in variable TestNbr.
 // The bases to be used are 2, 3, 5, 7, 11, 13, 17, 19 and 23 which
 // ensures that any composite less than 3*10^18 is discarded.
-static int isPrime(int *value)
+static bool isPrime(int *value)
 {
   static char bases[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 0};
   // List of lowest composite numbers that passes Miller-Rabin for above bases (OEIS A014233).
@@ -351,22 +355,24 @@ static int isPrime(int *value)
   int power[NBR_LIMBS];
   int temp[NBR_LIMBS];
     // Convert parameter to big number (2 limbs of 31 bits each).
-  int TestNbr0 = TestNbr[0] = value[0];
-  int TestNbr1 = TestNbr[1] = value[1];
+  int TestNbr0 = value[0];
+  TestNbr[0] = value[0];
+  int TestNbr1 = value[1];
+  TestNbr[1] = value[1];
   if (TestNbr1 == 0)
   {
     if (TestNbr0 == 1)
     {
-      return 0;            // 1 is not prime.
+      return false;            // 1 is not prime.
     }
     else if (TestNbr0 == 2)
     {
-      return 1;            // 2 is prime.
+      return true;            // 2 is prime.
     }
   }
   if ((TestNbr0 & 1) == 0)
   {
-    return 0;              // Even numbers different from 2 are not prime.
+    return false;              // Even numbers different from 2 are not prime.
   }
   for (i=1; i<sizeof(primes); i++)
   {
@@ -375,17 +381,17 @@ static int isPrime(int *value)
     {
       if (TestNbr0 == base)
       {
-        return 1;          // Number is prime.
+        return true;          // Number is prime.
       }
       if (TestNbr0 % base == 0)
       {
-        return 0;          // Number is multiple of base, so it is composite.
+        return false;          // Number is multiple of base, so it is composite.
       }
     }
     // Check whether TestNbr is multiple of base. In this case the number would be composite.
     else if (((TestNbr1 % base) * (LIMB_RANGE % base) + TestNbr0 % base) % base == 0)  // No overflow possible.
     {
-      return 0;            // Number is multiple of base, so it is composite.
+      return false;            // Number is multiple of base, so it is composite.
     }
   }
   GetMontgomeryParms();
@@ -510,21 +516,21 @@ static int isPrime(int *value)
       MontgomeryMult(power, power, power);
       if ((power[0] == MontgomeryMultR1[0]) && (power[1] == MontgomeryMultR1[1]))
       {
-        return 0;  // power equals 1, so number is composite.
+        return false;  // power equals 1, so number is composite.
       }
       AddBigNbrModN(power, MontgomeryMultR1, temp);
       if ((temp[0] == 0) && (temp[1] == 0))
-      {            // power equals -1.
+      {                // power equals -1.
         break;
       }
     }
     if (index >= 0)
     {
-      continue;    // power equals -1, so another base must be tried.
+      continue;        // power equals -1, so another base must be tried.
     }
-    return 0;      // base^(n-1) != 1 (mod n) is not 1, so number is composite.
+    return false;      // base^(n-1) != 1 (mod n) is not 1, so number is composite.
   }
-  return 1;        // All Miller-Rabin tests were passed, so number is prime.
+  return true;         // All Miller-Rabin tests were passed, so number is prime.
 }
 
 static void multiply(int factor1, int factor2, int *prod)
@@ -541,11 +547,11 @@ static void multiply(int factor1, int factor2, int *prod)
   *prod = low;
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + HALF_INT_RANGE / 2) / LIMB_RANGE);
+    dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2U)) / LIMB_RANGE);
   }
   else
   {
-    dAccum = ((dAccum - HALF_INT_RANGE / 2) / LIMB_RANGE);
+    dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2U)) / LIMB_RANGE);
   }
   *(prod+1) = (unsigned int)dAccum;
 #endif 
