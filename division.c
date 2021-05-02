@@ -312,7 +312,8 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     bitLength = nbrLimbs*BITS_PER_GROUP;
     while (bitLength >= BITS_PER_GROUP)
     {
-      bitLengthCycle[bitLengthNbrCycles++] = bitLength;
+      bitLengthCycle[bitLengthNbrCycles] = bitLength;
+      bitLengthNbrCycles++;
       bitLength = (bitLength + 1) >> 1;
     }
     // Each loop increments precision.
@@ -398,7 +399,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
         }
         (ptrQuotient + idx)->x = 0;
       }
-      if (idx >= nbrLimbsQuotient && ptrDividend->x < ptrDivisor->x)
+      if ((idx >= nbrLimbsQuotient) && (ptrDividend->x < ptrDivisor->x))
       {                // Roll back on overflow.
         for (idx = 0; idx <= nbrLimbsQuotient; idx++)
         {

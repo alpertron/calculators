@@ -561,6 +561,8 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
            // of p^2, otherwise it cannot be a perfect power.
       uint64_t remainder;
       int index;
+      int minRemainder;
+      int maxRemainder;
       int rem = getRemainder(numToFactor, i);
       longToBigInteger(&Temp1, (uint64_t)i*(uint64_t)i);
       BigIntRemainder(numToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
@@ -582,7 +584,23 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
         continue;
       }
       modulus = remainder % i;
-      if ((modulus > (plus1 ? 1 : 2)) && (modulus < (minus1 ? (i - 1) : (i - 2))))
+      if (plus1)
+      {
+        minRemainder = 1;
+      }
+      else
+      {
+        minRemainder = 2;
+      }
+      if (minus1)
+      {
+        maxRemainder = i - 1;
+      }
+      else
+      {
+        maxRemainder = i - 2;
+      }
+      if ((modulus > minRemainder) && (modulus < maxRemainder))
       {
         for (j = index; j <= maxExpon; j += index)
         {

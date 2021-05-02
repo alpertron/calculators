@@ -223,7 +223,14 @@ int fsquares(void)
     for (i = 3; (i*i) < (MAX_SIEVE / 2); i += 2)
     {
       j = (i*i) - 3;
-      j = ((j % 2) == 0) ? (j / 2) : ((j + i) / 2);
+      if ((j % 2) == 0)
+      {
+        j = j / 2;
+      }
+      else
+      {
+        j = (j + i) / 2;
+      }
       for (; j < (MAX_SIEVE / 2); j += i)
       {
         sieve[j] = -1;             // Indicate number is composite.

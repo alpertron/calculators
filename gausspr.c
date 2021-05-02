@@ -20,6 +20,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define SMALL_NUMBER_BOUND 32768
 #ifdef __EMSCRIPTEN__

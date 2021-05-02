@@ -1240,7 +1240,8 @@ static void generateSieve(const int* pSmallPrimes, char* sieve,
   (void)memset(sieve, 0, COMPUTE_NEXT_PRIME_SIEVE_SIZE);
   for (int ctr = 0; ctr < 1229; ctr++)
   {     // For each prime less than 10000...
-    int prime = *pSmallPrimes++;
+    int prime = *pSmallPrimes;
+    pSmallPrimes++;
     int remainder = getRemainder(pArgument, prime);
     // Compute first element of sieve to indicate multiple of prime.
     if (isNext)
@@ -1624,8 +1625,15 @@ static int ComputeConcatFact(void)
   for (int factorNumber = 1; factorNumber <= nbrFactors; factorNumber++)
   {
     int ctr;
-    const struct sFactors* pstFactor =
-          &astFactorsMod[descend ? (nbrFactors - factorNumber + 1) : factorNumber];
+    const struct sFactors* pstFactor;
+    if (descend)
+    {
+      pstFactor = &astFactorsMod[nbrFactors - factorNumber + 1];
+    }
+    else
+    {
+      pstFactor = &astFactorsMod[factorNumber];
+    }
     NumberLength = *(pstFactor->ptrFactor);
     IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
     ctr = (repeated ? pstFactor->multiplicity : 1);

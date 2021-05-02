@@ -188,13 +188,15 @@ static void InternalBigIntAdd(const BigInteger *pAddend1, const BigInteger *pAdd
     {
       carry = (carry >> BITS_PER_GROUP) + (unsigned int)(ptrAddend1++)->x +
         (unsigned int)(ptrAddend2++)->x;
-      (ptrSum++)->x = (int)(carry & MAX_INT_NBR);
+      ptrSum->x = (int)(carry & MAX_INT_NBR);
+      ptrSum++;
     }
     nbrLimbs = pAddend1->nbrLimbs;
     for (; ctr < nbrLimbs; ctr++)
     {
       carry = (carry >> BITS_PER_GROUP) + (unsigned int)(ptrAddend1++)->x;
-      (ptrSum++)->x = (int)(carry & MAX_INT_NBR);
+      ptrSum->x = (int)(carry & MAX_INT_NBR);
+      ptrSum++;
     }
     if (carry >= LIMB_RANGE)
     {
@@ -738,7 +740,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
     double dDividend = ((double)remainder * dLimb) + pLimbs->x;
     double dQuotient = (dDividend * dInvDivisor) + 0.5;
     unsigned int quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
-    remainder = dividend - quotient * divisor;
+    remainder = dividend - (quotient * divisor);
     if (remainder < 0)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
       quotient--;

@@ -190,8 +190,10 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
   {    // Optimization for the case when there is only one limb.
     for (i = 0; i < (2 * coeffLen) - 1; i++)
     {
-      *ptrFactor1++ = 1;
-      *ptrFactor1++ = coeff[i].limbs[0].x;
+      *ptrFactor1 = 1;
+      ptrFactor1++;
+      *ptrFactor1 = coeff[i].limbs[0].x;
+      ptrFactor1++;
     }
   }
   else
@@ -900,7 +902,7 @@ void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
       SubtBigNbrMod(operand2.limbs, operand1.limbs, operand1.limbs);
       BigInteger2IntArray(ptrPoly3 + nbrLimbs, &operand1);
     }
-    ptrPoly1 = polyFact1 + index1 * nbrLimbs;
+    ptrPoly1 = polyFact1 + (index1 * nbrLimbs);
     ptrPoly2 = polyFact2;
     IntArray2BigInteger(ptrPoly1, &operand1);
     IntArray2BigInteger(ptrPoly2, &operand2);

@@ -146,7 +146,8 @@ static void DistinctDegreeFactorization(int polyDegree)
         SetNumberToOne(ptrValue1);
         DividePolynomial(poly3, polyDegree, poly4, degreeGcd, poly2);
         // Quotient located in poly2.
-        pstNewFactorInfo = &factorInfo[nbrFactorsFound++];
+        pstNewFactorInfo = &factorInfo[nbrFactorsFound];
+        nbrFactorsFound++;
         pstNewFactorInfo->ptr = ptrPolyToFactor;
         pstNewFactorInfo->degree = degreeGcd;
         pstNewFactorInfo->multiplicity = pstFactorInfo->multiplicity;
@@ -215,7 +216,6 @@ void SameDegreeFactorization(void)
   int *ptrValue1;
   int *ptrPolyToFactor;
   int currentDegree;
-  int index;
   int degreeGcd;
   int primeInt = primeMod.limbs[0].x;
   int nbrLimbs = primeMod.nbrLimbs + 1;
@@ -292,12 +292,14 @@ void SameDegreeFactorization(void)
       else
       {   // Coefficient range can be from 0 to prime-1.
         int polyCoeff = polyNbr;
-        for (currentDegree = 0; polyCoeff != 0; currentDegree++)
+        currentDegree = 0;
+        while (polyCoeff != 0)
         {
           *ptrValue1 = 1;
           *(ptrValue1 + 1) = polyCoeff % primeInt;
           polyCoeff /= primeInt;
           ptrValue1 += nbrLimbs;
+          currentDegree++;
         }
         *ptrValue1 = 1;
         *(ptrValue1 + 1) = 1;
@@ -357,7 +359,7 @@ void SameDegreeFactorization(void)
         for (currentDegree = 1; currentDegree < pstFactorInfo->expectedDegree; currentDegree++)
         {
           multPolynomialModPoly(poly1, poly1, poly1, polyDegree, poly3);
-          for (index = 0; index < polyDegree; index++)
+          for (int index = 0; index < polyDegree; index++)
           {
             IntArray2BigInteger(&poly1[index*nbrLimbs], &operand1);
             IntArray2BigInteger(&poly2[index*nbrLimbs], &operand2);
@@ -373,7 +375,8 @@ void SameDegreeFactorization(void)
         SetNumberToOne(ptrValue1);
         DividePolynomial(poly3, polyDegree, poly4, degreeGcd, poly2);
         // Quotient located in poly2.
-        pstNewFactorInfo = &factorInfo[nbrFactorsFound++];
+        pstNewFactorInfo = &factorInfo[nbrFactorsFound];
+        nbrFactorsFound++;
         pstNewFactorInfo->ptr = &ptrPolyToFactor[degreeGcd*nbrLimbs];
         pstNewFactorInfo->degree = polyDegree - degreeGcd;
         pstNewFactorInfo->multiplicity = pstFactorInfo->multiplicity;
@@ -628,7 +631,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
     ptrOut += strlen(ptrOut);
     (void)strcpy(ptrOut, "</p>");
     ptrOut += strlen(ptrOut);
-    if (onlyEvaluate == 0)
+    if (!onlyEvaluate)
     {
       int nbrFactor;
       int nbrLimbs = powerMod.nbrLimbs + 1;
@@ -670,10 +673,14 @@ void polyFactText(char *modText, char *polyText, int groupLength)
           pstFactorInfo = factorInfo;
         }
         // Output factors
-        *ptrOut++ = '<';
-        *ptrOut++ = 'u';
-        *ptrOut++ = 'l';
-        *ptrOut++ = '>';
+        *ptrOut = '<';
+        ptrOut++;
+        *ptrOut = 'u';
+        ptrOut++;
+        *ptrOut = 'l';
+        ptrOut++;
+        *ptrOut = '>';
+        ptrOut++;
         if (pretty == TEX)
         {
           (void)strcpy(ptrOut, "<li>\\begin{array}{l}</li>");
@@ -686,10 +693,14 @@ void polyFactText(char *modText, char *polyText, int groupLength)
         if ((operand5.nbrLimbs != 1) || (operand5.limbs[0].x != 1) ||
           (operand5.sign == SIGN_NEGATIVE) || (nbrFactorsFound == 0))
         {     // Leading coefficient is not 1 or degree is zero.
-          *ptrOut++ = '<';
-          *ptrOut++ = 'l';
-          *ptrOut++ = 'i';
-          *ptrOut++ = '>';
+          *ptrOut = '<';
+          ptrOut++;
+          *ptrOut = 'l';
+          ptrOut++;
+          *ptrOut = 'i';
+          ptrOut++;
+          *ptrOut = '>';
+          ptrOut++;
           if (operand5.sign == SIGN_NEGATIVE)
           {
             (void)strcpy(ptrOut, " &minus;");
@@ -697,18 +708,27 @@ void polyFactText(char *modText, char *polyText, int groupLength)
           }
           Bin2Dec(operand5.limbs, ptrOut, operand5.nbrLimbs, groupLength);
           ptrOut += strlen(ptrOut);
-          *ptrOut++ = '<';
-          *ptrOut++ = '/';
-          *ptrOut++ = 'l';
-          *ptrOut++ = 'i';
-          *ptrOut++ = '>';
+          *ptrOut = '<';
+          ptrOut++; 
+          *ptrOut = '/';
+          ptrOut++;
+          *ptrOut = 'l';
+          ptrOut++;
+          *ptrOut = 'i';
+          ptrOut++;
+          *ptrOut = '>';
+          ptrOut++;
         }
         for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
         {
-          *ptrOut++ = '<';
-          *ptrOut++ = 'l';
-          *ptrOut++ = 'i';
-          *ptrOut++ = '>';
+          *ptrOut = '<';
+          ptrOut++;
+          *ptrOut = 'l';
+          ptrOut++;
+          *ptrOut = 'i';
+          ptrOut++;
+          *ptrOut = '>';
+          ptrOut++;
           if (pretty == TEX)
           {
             (void)strcpy(ptrOut, "\\bullet\\,\\,");
@@ -721,11 +741,16 @@ void polyFactText(char *modText, char *polyText, int groupLength)
             (void)strcpy(ptrOut, "\\\\");
             ptrOut += strlen(ptrOut);
           }
-          *ptrOut++ = '<';
-          *ptrOut++ = '/';
-          *ptrOut++ = 'l';
-          *ptrOut++ = 'i';
-          *ptrOut++ = '>';
+          *ptrOut = '<';
+          ptrOut++;
+          *ptrOut = '/';
+          ptrOut++;
+          *ptrOut = 'l';
+          ptrOut++;
+          *ptrOut = 'i';
+          ptrOut++;
+          *ptrOut = '>';
+          ptrOut++;
           pstFactorInfo++;
         }
         if (pretty == TEX)
@@ -733,11 +758,16 @@ void polyFactText(char *modText, char *polyText, int groupLength)
           (void)strcpy(ptrOut, "<li>\\end{array}</li>");
           ptrOut += strlen(ptrOut);
         }
-        *ptrOut++ = '<';
-        *ptrOut++ = '/';
-        *ptrOut++ = 'u';
-        *ptrOut++ = 'l';
-        *ptrOut++ = '>';
+        *ptrOut = '<';
+        ptrOut++;
+        *ptrOut = '/';
+        ptrOut++;
+        *ptrOut = 'u';
+        ptrOut++;
+        *ptrOut = 'l';
+        ptrOut++;
+        *ptrOut = '>';
+        ptrOut++;
       }
       if (modulusIsZero)
       {

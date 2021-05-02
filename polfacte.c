@@ -32,7 +32,8 @@ EXTERNALIZE void doWork(void)
   char* ptrData = inputString;
   while (*ptrData != ',')
   {
-    groupLen = (groupLen * 10) + (*ptrData++ - '0');
+    groupLen = (groupLen * 10) + (*ptrData - '0');
+    ptrData++;
   }
   ptrData++;         // Skip comma.
   do
@@ -42,8 +43,19 @@ EXTERNALIZE void doWork(void)
 #ifndef lang  
   lang = ((flags & 1)? true: false);
 #endif
-  onlyEvaluate = (unsigned char)(flags & 2);
-  pretty = (enum eOutput)(flags/4);
+  onlyEvaluate = ((flags & 2) != 0);
+  switch (flags / 4)
+  {
+  case 0:
+    pretty = PRETTY_PRINT;
+    break;
+  case 1:
+    pretty = TEX;
+    break;
+  default:
+    pretty = PARI_GP;
+    break;
+  }
   ptrData++;          // Skip comma.
   polyFactText(ptrData, ptrData + strlen(ptrData) + 1, groupLen);
   databack(output);

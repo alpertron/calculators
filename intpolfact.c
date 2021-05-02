@@ -820,15 +820,17 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         {
           return false;     // Coefficient is too low.
         }
-        *ptrMod32768++ = 1;
+        *ptrMod32768 = 1;
+        ptrMod32768++;
         if (*ptrSrc >= 0)
         {
-          *ptrMod32768++ = *(ptrSrc+1) & 32767;
+          *ptrMod32768 = *(ptrSrc+1) & 32767;
         }
         else
         {
-          *ptrMod32768++ = (-*(ptrSrc + 1)) & 32767;
+          *ptrMod32768 = (-*(ptrSrc + 1)) & 32767;
         }
+        ptrMod32768++;
         ptrSrc += 1 + numLimbs(ptrSrc);
       }
       modulusIsZero = true;   // Perform integer division.
@@ -841,15 +843,17 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
       for (currentDegree = 0; currentDegree <= polyS[0]; currentDegree++)
       {
         UncompressBigIntegerB(ptrSrc, &operand1);
-        *ptrMod32768++ = 1;
+        *ptrMod32768 = 1;
+        ptrMod32768++;
         if (operand1.sign == SIGN_POSITIVE)
         {
-          *ptrMod32768++ = operand1.limbs[0].x & 32767;
+          *ptrMod32768 = operand1.limbs[0].x & 32767;
         }
         else
         {
-          *ptrMod32768++ = (-operand1.limbs[0].x) & 32767;
+          *ptrMod32768 = (-operand1.limbs[0].x) & 32767;
         }
+        ptrMod32768++;
         (void)BigIntMultiply(&operand1, &leadingCoeff, &operand2);
         NumberLength = operand2.nbrLimbs;
         BigInteger2IntArray(ptrDest, &operand2);
@@ -1267,7 +1271,7 @@ static void vanHoeij(int prime, int nbrFactors)
         for (nbrCol = 0; nbrCol < nbrFactors; nbrCol++)
         {
           intToLinkedBigInt(&matrixBL[nbrRow][nbrCol],
-            (nbrRow == nbrCol ? 1 : 0));
+            ((nbrRow == nbrCol)? 1 : 0));
         }
       }
     }
@@ -1449,7 +1453,7 @@ static void vanHoeij(int prime, int nbrFactors)
     // Copy matrix M to basisStar.
     for (nbrRow = 0; nbrRow < (nbrVectors + nbrRequiredTraces); nbrRow++)
     {
-      for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
+      for (nbrCol = 0; nbrCol < (nbrVectors + nbrRequiredTraces); nbrCol++)
       {
         getBigIntegerFromLinked(basis[nbrRow][nbrCol], &tmp5);
         setLinkedBigInteger(&basisStar[nbrRow][nbrCol], &tmp5);

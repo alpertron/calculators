@@ -8,12 +8,12 @@ int memcmp(const void *vl, const void *vr, size_t n)
 {
   const unsigned char *l=(const unsigned char *)vl;
   const unsigned char *r=(const unsigned char *)vr;
-  for (; n && (*l == *r); n--)
+  for (; (n != 0) && (*l == *r); n--)
   {
     l++;
     r++;
   }
-  return n ? (*l-*r) : 0;
+  return (n != 0)? (*l-*r) : 0;
 }
 
 void *memcpy(void *dest, const void *src, size_t n)

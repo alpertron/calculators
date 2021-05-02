@@ -73,7 +73,7 @@ extern int polyMultTemp[1000000];
 extern int valuesPrime[1000000];
 extern int nbrFactorsFound;
 extern enum eOutput pretty;
-extern unsigned char onlyEvaluate;
+extern bool onlyEvaluate;
 extern int degree;
 extern int *ptrOrigPoly;
 extern int degreeOrigPoly;

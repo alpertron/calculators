@@ -64,7 +64,7 @@ int polyMultTemp[COMPRESSED_POLY_MAX_LENGTH];
 int polyLifted[COMPRESSED_POLY_MAX_LENGTH];
 int polyLiftedNew[COMPRESSED_POLY_MAX_LENGTH];
 enum eOutput pretty;
-unsigned char onlyEvaluate = 0;
+bool onlyEvaluate = 0;
 struct sFactorInfo factorInfo[MAX_DEGREE];
 int nbrFactorsFound;
 int *ptrOrigPoly;
