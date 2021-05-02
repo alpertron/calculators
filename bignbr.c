@@ -871,7 +871,7 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
     pResultLimb++;
     carry >>= BITS_PER_GROUP;
 #else
-    int low = (pLimb->x * factor + carry) & MAX_INT_NBR;
+    int low = ((pLimb->x * factor) + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)

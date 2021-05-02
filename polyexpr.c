@@ -139,7 +139,8 @@ static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
             exponOperatorCounter--;
             if (exponOperatorCounter == 0)
             {
-              *ptrOutput++ = TOKEN_END_EXPON;
+              *ptrOutput = TOKEN_END_EXPON;
+              ptrOutput++;
             }
           }
           *ptrOutput = s;
@@ -848,7 +849,7 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
     ptrValue1 = ptrArgument1 + 1;
     // Get coefficient of monomial.
     UncompressBigIntegerB(ptrArgument2 + 1, &operand1);
-    if (degreeMono + degreePoly > MAX_DEGREE)
+    if ((degreeMono + degreePoly) > MAX_DEGREE)
     {
       return EXPR_DEGREE_TOO_HIGH;
     }
@@ -1093,7 +1094,7 @@ int ComputePolynomial(char* input, int expo)
       ptrRPNbuffer++;
       values[valuesIndex] = 0;   // Degree.
       valuesIndex++;
-      len = (int)(unsigned char)*(ptrRPNbuffer) * 256 + (unsigned char)*(ptrRPNbuffer + 1);
+      len = ((int)(unsigned char)*(ptrRPNbuffer) * 256) + (unsigned char)*(ptrRPNbuffer + 1);
       values[valuesIndex] = len;
       valuesIndex++;
       ptrRPNbuffer++;

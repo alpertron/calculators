@@ -53,8 +53,8 @@ static int exprLength;
 static int ComputeExpr(char *expr, BigInteger *ExpressionResult);
 static int ComputeSubExpr(void);
 static int ComputeGCD(void);
-static int func(char* expr, BigInteger* ExpressionResult,
-  const char* funcName, int funcArgs, int leftNumberFlag);
+static bool func(char* expr, BigInteger* ExpressionResult,
+  const char* funcName, int funcArgs, bool leftNumberFlag, int* pResult);
 static void SkipSpaces(const char *expr);
 static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
   BigInteger *ReDen, BigInteger *ImDen,
@@ -208,16 +208,14 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       }
       CopyBigInt(&stackRealValues[stackIndex], &factorialResult);
     }
-    else if ((retcode = func(expr, ExpressionResult,
-                             "GCD", 2, leftNumberFlag)) <= 0)
+    else if (func(expr, ExpressionResult, "GCD", 2, leftNumberFlag, &retcode))
     {
       if (retcode != 0) {return retcode;}
       retcode = ComputeGCD();
       if (retcode != 0) {return retcode;}
       leftNumberFlag = true;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-                             "RE", 1, leftNumberFlag)) <= 0)
+    else if (func(expr, ExpressionResult, "RE", 1, leftNumberFlag, &retcode))
     {
       ptrBigInt = &stackImagValues[stackIndex];
       ptrBigInt->limbs[0].x = 0;
@@ -229,8 +227,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       }
       leftNumberFlag = true;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-                             "NORM", 1, leftNumberFlag)) <= 0)
+    else if (func(expr, ExpressionResult, "NORM", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) {return retcode;}
       ptrRe = &stackRealValues[stackIndex];
@@ -244,8 +241,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       ptrBigInt->sign = SIGN_POSITIVE;
       leftNumberFlag = true;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-                             "IM", 1, leftNumberFlag)) <= 0)
+    else if (func(expr, ExpressionResult, "IM", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) {return retcode;}
       stackRealValues[stackIndex] = stackImagValues[stackIndex];
@@ -255,40 +251,35 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       ptrBigInt->sign = SIGN_POSITIVE;
       leftNumberFlag = true;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-                             "MODPOW", 3, leftNumberFlag)) <= 0)
+    else if (func(expr, ExpressionResult, "MODPOW", 3, leftNumberFlag, &retcode))
     {
       if (retcode != 0) {return retcode;}
       retcode = ComputeModPow();
       if (retcode != 0) {return retcode;}
       leftNumberFlag = true;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-                             "MODINV", 2, leftNumberFlag)) <= 0)
+    else if (func(expr, ExpressionResult, "MODINV", 2, leftNumberFlag, &retcode))
     {
       if (retcode != 0) {return retcode;}
       retcode = ComputeModInv();
       if (retcode != 0) {return retcode;}
       leftNumberFlag = true;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-                             "F", 1, leftNumberFlag)) <= 0)
+    else if (func(expr, ExpressionResult, "F", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) {return retcode;}
       retcode = ComputeFibonacci();
       if (retcode != 0) {return retcode;}
       leftNumberFlag = true;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-                             "L", 1, leftNumberFlag)) <= 0)
+    else if (func(expr, ExpressionResult, "L", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) {return retcode;}
       retcode = ComputeLucas();
       if (retcode != 0) {return retcode;}
       leftNumberFlag = true;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-                             "P", 1, leftNumberFlag)) <= 0)
+    else if (func(expr, ExpressionResult, "P", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) {return retcode;}
       retcode = ComputePartition();
@@ -297,7 +288,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if ((charValue == '+') || (charValue == '-'))
     {
-      if (leftNumberFlag == 0)
+      if (!leftNumberFlag)
       {      // Unary plus/minus operator
         exprIndex++;
         if (charValue == '+')
@@ -315,7 +306,8 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
           {
             return EXPR_TOO_MANY_PAREN;
           }
-          stackOperators[stackIndex++] = '_'; /* Unary minus */
+          stackOperators[stackIndex] = '_'; /* Unary minus */
+          stackIndex++;
           continue;
         }
       }
@@ -345,7 +337,8 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
           }                         /* end if */
         }                           /* end if */
       }                             /* end if */
-      stackOperators[stackIndex++] = charValue;
+      stackOperators[stackIndex] = charValue;
+      stackIndex++;
       leftNumberFlag = false;
     }                               /* end if */
     else if ((charValue == '*') || (charValue == '/') || (charValue == '%'))
@@ -374,7 +367,8 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
           }
         }                         /* end if */
       }                           /* end if */
-      stackOperators[stackIndex++] = charValue;
+      stackOperators[stackIndex] = charValue;
+      stackIndex++;
       leftNumberFlag = false;
     }                             
     else if (charValue == '^')
@@ -383,7 +377,8 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_SYNTAX_ERROR;
       }
-      stackOperators[stackIndex++] = charValue;
+      stackOperators[stackIndex] = charValue;
+      stackIndex++;
       leftNumberFlag = false;
     }                           /* end if */
     else if (charValue == '(')
@@ -396,7 +391,8 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_TOO_MANY_PAREN;
       }
-      stackOperators[stackIndex++] = charValue;
+      stackOperators[stackIndex] = charValue;
+      stackIndex++;
     }                           
     else if ((charValue == ')') || (charValue == ','))
     {
@@ -517,11 +513,13 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
           if (shLeft >= BITS_PER_GROUP)
           {
             shLeft -= BITS_PER_GROUP;
-            (ptrLimb++)->x = carry.x & MAX_VALUE_LIMB;
+            ptrLimb->x = carry.x & MAX_VALUE_LIMB;
+            ptrLimb++;
             carry.x >>= BITS_PER_GROUP;
           }
         }
-        (ptrLimb++)->x = carry.x;
+        ptrLimb->x = carry.x;
+        ptrLimb++;
         exprIndex = offset;
         stackRealValues[stackIndex].nbrLimbs = (int)(ptrLimb - &stackRealValues[stackIndex].limbs[0]);
         stackRealValues[stackIndex].sign = SIGN_POSITIVE;
@@ -589,8 +587,8 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
   return 0;
 }
 
-static int func(char *expr, BigInteger *ExpressionResult,
-                const char *funcName, int funcArgs, int leftNumberFlag)
+static bool func(char *expr, BigInteger *ExpressionResult,
+                const char *funcName, int funcArgs, bool leftNumberFlag, int *pResult)
 {
   int funcNameLen = (int)strlen(funcName);
   const char *ptrExpr;
@@ -598,7 +596,7 @@ static int func(char *expr, BigInteger *ExpressionResult,
 
   if ((exprIndex + funcNameLen) > exprLength)
   {
-    return 1;
+    return false;           // Next characters are not a function name.
   }
   ptrExpr = expr + exprIndex;
   ptrFuncName = funcName;
@@ -606,21 +604,24 @@ static int func(char *expr, BigInteger *ExpressionResult,
   {
     if ((*ptrExpr & 0xDF) != *ptrFuncName)
     {
-      return 1;
+      return false;         // Next characters are not a function name.
     }
     ptrExpr++;
     ptrFuncName++;
   }
   exprIndex += funcNameLen;
-  if (leftNumberFlag == 1)
+  if (leftNumberFlag)
   {
-    return EXPR_SYNTAX_ERROR;
+    *pResult = EXPR_SYNTAX_ERROR;
+    return true;
   }
   SkipSpaces(expr);
-  if ((exprIndex == exprLength) || (*(expr+exprIndex++) != '('))
+  if ((exprIndex == exprLength) || (*(expr+exprIndex) != '('))
   {
-    return EXPR_SYNTAX_ERROR;
+    *pResult = EXPR_SYNTAX_ERROR;
+    return true;
   }
+  exprIndex++;
   for (int index = 0; index < funcArgs; index++)
   {
     int retcode;
@@ -629,7 +630,8 @@ static int func(char *expr, BigInteger *ExpressionResult,
     SkipSpaces(expr);
     if (stackIndex >= PAREN_STACK_SIZE)
     {
-      return EXPR_TOO_MANY_PAREN;
+      *pResult = EXPR_TOO_MANY_PAREN;
+      return true;
     }
     retcode = ComputeExpr(expr, ExpressionResult);
     if (retcode != 0) {return retcode;}
@@ -637,14 +639,16 @@ static int func(char *expr, BigInteger *ExpressionResult,
     compareChar = ((index == (funcArgs-1))? ')': ',');
     if ((exprIndex == exprLength) || (*(expr+exprIndex) != compareChar))
     {
-      return EXPR_SYNTAX_ERROR;
+      *pResult = EXPR_SYNTAX_ERROR;
+      return true;
     }
     exprIndex++;
     stackIndex++;
   }
   stackIndex -= funcArgs;
   exprIndex--;
-  return 0;
+  *pResult = EXPR_OK;
+  return true;
 }
 
 static void SkipSpaces(const char *expr)
@@ -816,7 +820,8 @@ static int ComputeLucas(void)
   // Initialize FibonPrev <- -1, FibonAct <-2.
   FibonPrev.limbs[0].x = 1;
   FibonAct.limbs[0].x = 2;
-  FibonPrev.nbrLimbs = FibonAct.nbrLimbs = 1;
+  FibonPrev.nbrLimbs = 1;
+  FibonAct.nbrLimbs = 1;
   FibonPrev.sign = SIGN_NEGATIVE;
   FibonAct.sign = SIGN_POSITIVE;
   for (int i = 1; i <= arg; i++)

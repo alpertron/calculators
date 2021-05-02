@@ -211,8 +211,8 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   if ((Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP)) ||
      ((Prod1 == (uint32_t)TestNbr1) && (Prod0 >= (uint32_t)TestNbr0)))
   {
-    int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
+    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
+    Prod0 = borrow & MAX_INT_NBR;
     Prod1 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
   }
 #else

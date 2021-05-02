@@ -887,7 +887,7 @@ static void ExtendedGcdPolynomial(/*@in@*/int *pointerA, int degreeA, /*@in@*/in
   {  // If R is not constant...
     do
     {
-      IntArray2BigInteger(ptrR + degreeR * (NumberLength+1), &operand1);
+      IntArray2BigInteger(ptrR + (degreeR * (NumberLength+1)), &operand1);
       BigIntRemainder(&operand1, &primeMod, &operand2);
       if (!BigIntIsZero(&operand2))
       {
@@ -946,7 +946,7 @@ static void ExtendedGcdPolynomial(/*@in@*/int *pointerA, int degreeA, /*@in@*/in
   {
     int tmpDegree;
     int offset;
-    int degreeQ = (int)((ptrQuotients[counter + 1] - ptrQuotients[counter]) / nbrLimbs - 1);
+    int degreeQ = (int)(((ptrQuotients[counter + 1] - ptrQuotients[counter]) / nbrLimbs) - 1);
     // Multiply ptrR by ptrQuotients[counter]. The result will be stored in polyMultTemp.
     MultPolynomial(degreeR, degreeQ, ptrR, ptrQuotients[counter]);
     // Compute ptrOldR <- ptrOldR - polyMultTemp.

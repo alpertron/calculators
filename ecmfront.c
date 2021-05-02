@@ -893,7 +893,7 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
         (void)strcpy(ptrOutput, lang?"<p>Multiplicaciones modulares:</p><ul>" :
           "<p>Modular multiplications:</p><ul>");
         ptrOutput += strlen(ptrOutput);
-        if (lModularMult - primeModMult - SIQSModMult - sumSquaresModMult > 0)
+        if ((lModularMult - primeModMult - SIQSModMult - sumSquaresModMult) > 0)
         {
           (void)strcpy(ptrOutput, "<li>ECM: ");
           ptrOutput += strlen(ptrOutput);

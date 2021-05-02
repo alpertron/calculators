@@ -1530,7 +1530,7 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       struct linkedBigInt** ptrLBISrc = &basisStar[nbrRow][0];
       struct linkedBigInt** ptrLBIDest = &lambda[nbrRow][0];
-      for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
+      for (nbrCol = 0; nbrCol < (nbrVectors + nbrRequiredTraces); nbrCol++)
       {
         getBigIntegerFromLinked(*ptrLBISrc, &tmp5);
         ptrLBISrc++;

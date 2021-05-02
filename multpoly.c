@@ -243,16 +243,20 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
         if (nbrLimbs == 2)
         {
           ptrResult++;
-          while (((--i & 0x80000000) | *ptrResult) == 0)
+          i--;
+          while (((i & 0x80000000) | *ptrResult) == 0)
           {   // Loop not finished and coefficient is not zero.
             ptrResult += nbrLimbs;
+            i--;
           }
         }
         else
         {
-          while (((--i & 0x80000000) | (*ptrResult - 1) | *(ptrResult + 1)) == 0)
+          i--;
+          while (((i & 0x80000000) | (*ptrResult - 1) | *(ptrResult + 1)) == 0)
           {   // Loop not finished and coefficient is not zero.
             ptrResult += nbrLimbs;
+            i--;
           }
         }
         if (i < 0)
@@ -284,16 +288,20 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
           if (nbrLimbs == 2)
           {
             ptrResult++;
-            while (((--i & 0x80000000) | *ptrResult) == 0)
+            i--;
+            while (((i & 0x80000000) | *ptrResult) == 0)
             {   // Loop not finished and coefficient is not zero.
               ptrResult += nbrLimbs;
+              i--;
             }
           }
           else
           {
+            i--;
             while (((--i & 0x80000000) | (*ptrResult - 1) | *(ptrResult + 1)) == 0)
             {   // Loop not finished and coefficient is not zero.
               ptrResult += nbrLimbs;
+              i--;
             }
           }
           if (i < 0)
@@ -584,14 +592,16 @@ static void MultIntegerPolynomial(int degree1, int degree2,
   index = 0;
   for (currentDegree = 0; currentDegree <= degree1; currentDegree++)
   {
-    *ptrIndex++ = index;
+    *ptrIndex = index;
+    ptrIndex++;
     index += numLimbs(factor1 + index) + 1;
   }
   ptrIndex = &indexes[1][0];
   index = 0;
   for (currentDegree = 0; currentDegree <= degree2; currentDegree++)
   {
-    *ptrIndex++ = index;
+    *ptrIndex = index;
+    ptrIndex++;
     index += numLimbs(factor2 + index) + 1;
   }
   piDest = polyMultTemp;
@@ -753,7 +763,8 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
   // Compute degrees to use in Newton loop.
   while (newtonDegree > 1)
   {
-    degrees[nbrDegrees++] = newtonDegree;
+    degrees[nbrDegrees] = newtonDegree;
+    nbrDegrees++;
     newtonDegree = (newtonDegree + 1) / 2;
   }
 
@@ -771,7 +782,8 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
   // where F = polyInv (degree newtonDegree)
   // and D = polyMod (degree nextDegree).
   // Use poly5 as temporary polynomial 2-D(x)*F_n(x) (degree nextDegree).
-  while (--nbrDegrees >= 0)
+  nbrDegrees--;
+  while (nbrDegrees >= 0)
   {  
     int* ptrCoeff; 
     const int* ptrCoeff2;
@@ -799,6 +811,7 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
     (void)memcpy(polyInv, &polyMultTemp[newtonDegree * nbrLimbs],
         (nextDegree+1) * nbrLimbs * sizeof(limb));
     newtonDegree = nextDegree;
+    nbrDegrees--;
   }
   polyInvCached = NBR_READY_TO_BE_CACHED;
 }

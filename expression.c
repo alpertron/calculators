@@ -91,8 +91,8 @@ static enum eExprErr ComputeFibLucas(int origValue);
 static enum eExprErr ComputePartition(void);
 static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult);
 static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger* second, BigInteger* result);
-static enum eExprErr func(char* expr, BigInteger* ExpressionResult,
-  const char* funcName, int funcArgs, int leftNumberFlag);
+static bool func(char* expr, BigInteger* ExpressionResult,
+  const char* funcName, int funcArgs, int leftNumberFlag, enum eExprErr *pRetCode);
 static int type;
 static bool valueXused;
 static BigInteger curStack;
@@ -385,8 +385,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       exprIndex++;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "GCD", 2, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "GCD", 2, leftNumberFlag, &retcode))
     {
       if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
@@ -405,8 +404,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "MODPOW", 3, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "MODPOW", 3, leftNumberFlag, &retcode))
     {
       if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
@@ -428,8 +426,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "MODINV", 2, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "MODINV", 2, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -446,8 +443,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       continue;
     }
 #ifdef FACTORIZATION_FUNCTIONS
-    else if ((retcode = func(expr, ExpressionResult,
-      "TOTIENT", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "TOTIENT", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -463,8 +459,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "NUMDIVS", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "NUMDIVS", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -480,8 +475,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "SUMDIVS", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "SUMDIVS", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -497,8 +491,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       }
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "MINFACT", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "MINFACT", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -514,8 +507,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "MAXFACT", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "MAXFACT", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -531,8 +523,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "NUMFACT", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "NUMFACT", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -548,8 +539,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "CONCATFACT", 2, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "CONCATFACT", 2, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -566,8 +556,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       continue;
     }
 #endif
-    else if ((retcode = func(expr, ExpressionResult,
-      "SUMDIGITS", 2, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "SUMDIGITS", 2, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -583,8 +572,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "NUMDIGITS", 2, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "NUMDIGITS", 2, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -600,8 +588,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "REVDIGITS", 2, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "REVDIGITS", 2, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -617,8 +604,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "ISPRIME", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "ISPRIME", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -645,8 +631,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "F", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "F", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -663,8 +648,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "L", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "L", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -681,8 +665,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "P", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "P", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -699,8 +682,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "N", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "N", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -717,8 +699,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
-    else if ((retcode = func(expr, ExpressionResult,
-      "B", 1, leftNumberFlag)) != EXPR_NOT_FOUND)
+    else if (func(expr, ExpressionResult, "B", 1, leftNumberFlag, &retcode))
     {
       if (retcode != 0) { return retcode; }
       if (doComputeSubExpression)
@@ -1177,8 +1158,8 @@ static enum eExprErr ComputeSubExpr(void)
   return EXPR_OK;
 }
 
-static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
-  const char *funcName, int funcArgs, int leftNumberFlag)
+static bool func(char* expr, BigInteger* ExpressionResult,
+  const char* funcName, int funcArgs, int leftNumberFlag, enum eExprErr* pRetCode)
 {
   int funcNameLen = (int)strlen(funcName);
   const char *ptrExpr;
@@ -1186,7 +1167,7 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
 
   if ((exprIndex + funcNameLen) > exprLength)
   {
-    return EXPR_NOT_FOUND;
+    return false;      // Next characters are not a function name.
   }
   ptrExpr = expr + exprIndex;
   ptrFuncName = funcName;
@@ -1194,7 +1175,7 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
   {
     if ((*ptrExpr & 0xDF) != *ptrFuncName)
     {
-      return EXPR_NOT_FOUND;
+      return false;    // Next characters are not a function name.
     }
     ptrExpr++;
     ptrFuncName++;
@@ -1202,12 +1183,14 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
   exprIndex += funcNameLen;
   if (leftNumberFlag == 1)
   {
-    return EXPR_SYNTAX_ERROR;
+    *pRetCode = EXPR_SYNTAX_ERROR;
+    return true;
   }
   SkipSpaces(expr);
   if ((exprIndex == exprLength) || (*(expr + exprIndex) != '('))
   {
-    return EXPR_SYNTAX_ERROR;
+    *pRetCode = EXPR_SYNTAX_ERROR;
+    return true;
   }
   exprIndex++;
   for (int index = 0; index < funcArgs; index++)
@@ -1218,7 +1201,8 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
     SkipSpaces(expr);
     if (stackIndex >= PAREN_STACK_SIZE)
     {
-      return EXPR_TOO_MANY_PAREN;
+      *pRetCode = EXPR_TOO_MANY_PAREN;
+      return true;
     }
     retcode = ComputeExpr(expr, ExpressionResult);
     if (retcode != 0) { return retcode; }
@@ -1226,17 +1210,20 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
     compareChar = ((index == (funcArgs - 1))? ')' : ',');
     if (exprIndex == exprLength)
     {
-      return EXPR_SYNTAX_ERROR;
+      *pRetCode = EXPR_SYNTAX_ERROR;
+      return true;
     }
     if (*(expr + exprIndex) != compareChar)
     {
-      return EXPR_SYNTAX_ERROR;
+      *pRetCode = EXPR_SYNTAX_ERROR;
+      return true;
     }
     exprIndex++;
     stackIndex++;
   }
   stackIndex -= funcArgs;
-  return EXPR_OK;
+  *pRetCode = EXPR_OK;
+  return true;
 }
 
 static void generateSieve(const int* pSmallPrimes, char* sieve,
@@ -1756,7 +1743,8 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
 
     for (ctr = nbrLimbs; ctr > 0; ctr--)
     {  // Process starting from most significant limb.
-      *ptrDest-- = ((curLimb >> (BITS_PER_GROUP - rem)) | (prevLimb << rem)) & MAX_INT_NBR;
+      *ptrDest = ((curLimb >> (BITS_PER_GROUP - rem)) | (prevLimb << rem)) & MAX_INT_NBR;
+      ptrDest--;
       prevLimb = curLimb;
       ptrSrc--;
       curLimb = *ptrSrc;
@@ -1775,7 +1763,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
   else
   {     // Perform shift right.
     bool isNegative = false;
-    if ((second->nbrLimbs > 1) || (shiftCtr > first->nbrLimbs * BITS_PER_GROUP))
+    if ((second->nbrLimbs > 1) || (shiftCtr > (first->nbrLimbs * BITS_PER_GROUP)))
     {   // Shift too much to the right. Result is zero or -1.
       if (first->sign == SIGN_POSITIVE)
       {

@@ -579,7 +579,8 @@ compute_squares_loop:
       Mult3[nbrLimbsP].x = 0;
       Mult4[nbrLimbsP].x = 0;
     }
-    Mult1Len = Mult2Len = nbrLimbs;
+    Mult1Len = nbrLimbs;
+    Mult2Len = nbrLimbs;
     while ((Mult1[Mult1Len-1].x == 0) && (Mult1Len > 1))
     {
       Mult1Len--;
@@ -588,7 +589,8 @@ compute_squares_loop:
     {
       Mult2Len--;
     }
-    Mult3Len = Mult4Len = nbrLimbsP;
+    Mult3Len = nbrLimbsP;
+    Mult4Len = nbrLimbsP;
     while ((Mult3[Mult3Len-1].x == 0) && (Mult3Len > 1))
     {
       Mult3Len--;
