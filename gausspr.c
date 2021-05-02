@@ -75,7 +75,7 @@ static void initMultipleArray(void)
   for (i = 0; i<25; i++)
   {
     int k = primes[i];
-    for (j = k / 2 + 1; j >= 0; j--)
+    for (j = (k / 2) + 1; j >= 0; j--)
     {
       multiple[i][j*j%k] = 1;
     }
@@ -101,7 +101,7 @@ static void AdjustModN(int *Nbr)
 
   dModulus = (double)TestNbr[1] + (double)TestNbr[0] * dVal;
   dNbr = (double)Nbr[2] * (double)LIMB_RANGE + (double)Nbr[1] + (double)Nbr[0] * dVal;
-  TrialQuotient = (int)(unsigned int)floor(dNbr / dModulus + 0.5);
+  TrialQuotient = (int)(unsigned int)floor((dNbr / dModulus) + 0.5);
   if ((unsigned int)TrialQuotient >= LIMB_RANGE)
   {   // Maximum value for limb.
     TrialQuotient = MAX_VALUE_LIMB;

@@ -379,7 +379,7 @@ void expBigNbr(BigInteger *bignbr, double logar)
   logar /= log(2);
   bignbr->sign = SIGN_POSITIVE;
   bignbr->nbrLimbs = (int)floor(logar / BITS_PER_GROUP);
-  mostSignificantLimb = (unsigned int)floor(exp((logar - BITS_PER_GROUP*bignbr->nbrLimbs) * log(2)) + 0.5);
+  mostSignificantLimb = (unsigned int)floor(exp((logar - (BITS_PER_GROUP*bignbr->nbrLimbs)) * log(2)) + 0.5);
   if (mostSignificantLimb == LIMB_RANGE)
   {
     mostSignificantLimb = 1;
@@ -735,7 +735,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
     unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + pLimbs->x;
-    double dDividend = (double)remainder * dLimb + pLimbs->x;
+    double dDividend = ((double)remainder * dLimb) + pLimbs->x;
     double dQuotient = dDividend * dInvDivisor + 0.5;
     unsigned int quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - quotient * divisor;

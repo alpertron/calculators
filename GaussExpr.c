@@ -497,7 +497,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
         shLeft = 0;
         offset = exprIndexAux;
         ptrLimb = &stackRealValues[stackIndex].limbs[0];
-        for (; exprIndexAux >= exprIndex + 2; exprIndexAux--)
+        for (; exprIndexAux >= (exprIndex + 2); exprIndexAux--)
         {
           c = *(expr + exprIndexAux);
           if ((c >= '0') && (c <= '9'))
@@ -978,7 +978,7 @@ static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigIn
   BigInteger Re;
   BigInteger Im;
 
-  if (!BigIntIsZero(Im2) || Re2->sign == SIGN_NEGATIVE)
+  if (!BigIntIsZero(Im2) || (Re2->sign == SIGN_NEGATIVE))
   {          // Exponent must be positive or zero.
     return EXPR_INVALID_PARAM;
   }

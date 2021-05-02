@@ -235,13 +235,13 @@ static bool isSumOfThreeSquares(const struct sFactors* pstFactors, BigInteger* p
   bool sumTwoSquares = true;
   for (int indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--)
   {
-    if (pstFactor->multiplicity % 2 != 0)
+    if ((pstFactor->multiplicity % 2) != 0)
     {                                          // Prime factor multiplicity is odd.
       if ((*pstFactor->ptrFactor == 1) && (*(pstFactor->ptrFactor + 1) == 2))
       {
         factor2MultiplicityEven = false;
       }
-      if (*(pstFactor->ptrFactor + 1) % 4 == 3)
+      if ((*(pstFactor->ptrFactor + 1) % 4) == 3)
       {                                        // Prime has the form 4k+3, so exit loop.
         sumTwoSquares = false;
         break;
@@ -422,7 +422,7 @@ static void ComputeThreeSquares(BigInteger *pTmp,
         int r;
         for (;;)
         {
-          r = (int)sqrt((double)(prime - j * j));
+          r = (int)sqrt((double)(prime - (j * j)));
           if ((r*r) + (j * j) == prime)
           {
             break;

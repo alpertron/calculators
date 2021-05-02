@@ -462,7 +462,7 @@ void SolveEquation(void)
             while (correctBits < expon)
             {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
               correctBits *= 2;
-              nbrLimbs = correctBits / BITS_PER_GROUP + 1;
+              nbrLimbs = (correctBits / BITS_PER_GROUP) + 1;
               MultBigNbr((int*)sqrRoot.limbs, (int*)sqrRoot.limbs, (int*)tmp2.limbs, nbrLimbs);
               MultBigNbr((int*)tmp2.limbs, (int*)ValCOdd.limbs, (int*)tmp2.limbs, nbrLimbs);
               ChSignBigNbr((int*)tmp2.limbs, nbrLimbs);

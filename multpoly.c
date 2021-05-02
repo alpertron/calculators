@@ -84,7 +84,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
 #endif
       ptrFactor1++;
       ptrFactor2++;
-      if (modulus < 32768 / SQRT_KARATSUBA_POLY_CUTOFF)
+      if (modulus < (32768 / SQRT_KARATSUBA_POLY_CUTOFF))
       {          // Sum of products fits in one limb.
         for (; j >= 3; j -= 4)
         {
@@ -188,7 +188,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
   ptrFactor1 = &polyMultTemp[idxFactor1 * nbrLimbs];
   if (nbrLimbs == 2)
   {    // Optimization for the case when there is only one limb.
-    for (i = 0; i < 2 * coeffLen - 1; i++)
+    for (i = 0; i < (2 * coeffLen) - 1; i++)
     {
       *ptrFactor1++ = 1;
       *ptrFactor1++ = coeff[i].limbs[0].x;
@@ -673,7 +673,7 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
         IntArray2BigInteger(ptrSrc1, &operand3);
         ptrSrc2 = factor2;
         ptrDest = &polyMultTemp[currentDegree1 * nbrLimbs];
-        if (NumberLength == 1 && TestNbr[0].x <= 32768)
+        if ((NumberLength == 1) && (TestNbr[0].x <= 32768))
         {
           int mod = TestNbr[0].x;
           ptrSrc2++;
@@ -776,7 +776,7 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
     const int *ptrPolyMod;
     int nextDegree = degrees[nbrDegrees];
     // Initialize poly4 with the nextDegree most significant coefficients.
-    ptrPolyMod = polyMod + nbrLimbs * (polyDegree - nextDegree);
+    ptrPolyMod = polyMod + (nbrLimbs * (polyDegree - nextDegree));
     (void)memcpy(poly4, ptrPolyMod, nextDegree * nbrLimbs * sizeof(limb));
     SetNumberToOne(&poly4[nextDegree * nbrLimbs]);
     polyInvCached = NBR_READY_TO_BE_CACHED;
@@ -814,7 +814,7 @@ void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   int nbrLimbs = NumberLength + 1;
   // Compute T
   MultPolynomial(polyDegree, polyDegree, polyFact1, polyFact2);
-  (void)memcpy(polyMultT, polyMultTemp, (2 * polyDegree + 1) * nbrLimbs * sizeof(limb));
+  (void)memcpy(polyMultT, polyMultTemp, ((2 * polyDegree) + 1) * nbrLimbs * sizeof(limb));
   // Compute m
   MultPolynomial(polyDegree, polyDegree, &polyMultT[polyDegree * nbrLimbs], polyInv);
   (void)memcpy(polyMultM, &polyMultTemp[polyDegree * nbrLimbs],

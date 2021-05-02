@@ -161,7 +161,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       double dAccumulator;
 #endif
       dNbr = getMantissa(&adjustedArgument[nbrLimbsDividend+1], nbrLimbsDividend+1)*LIMB_RANGE;
-      TrialQuotient = (int)(unsigned int)floor(dNbr * dInvDivisor + 0.5);
+      TrialQuotient = (int)(unsigned int)floor((dNbr * dInvDivisor) + 0.5);
       if ((unsigned int)TrialQuotient >= LIMB_RANGE)
       {   // Maximum value for limb.
         TrialQuotient = MAX_VALUE_LIMB;
@@ -323,7 +323,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       int limbLength;
 
       bitLength = bitLengthCycle[bitLengthNbrCycles];
-      limbLength = (bitLength + 3 * (BITS_PER_GROUP)-1) / BITS_PER_GROUP;
+      limbLength = (bitLength + (3 * BITS_PER_GROUP)-1) / BITS_PER_GROUP;
       if (limbLength > nbrLimbs)
       {
         limbLength = nbrLimbs;

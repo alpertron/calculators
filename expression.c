@@ -1217,7 +1217,7 @@ static enum eExprErr func(char *expr, BigInteger *ExpressionResult,
     retcode = ComputeExpr(expr, ExpressionResult);
     if (retcode != 0) { return retcode; }
     SkipSpaces(expr);
-    compareChar = ((index == funcArgs - 1)? ')' : ',');
+    compareChar = ((index == (funcArgs - 1))? ')' : ',');
     if (exprIndex == exprLength)
     {
       return EXPR_SYNTAX_ERROR;
@@ -1727,9 +1727,9 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
       return EXPR_INTERM_TOO_HIGH;
     }
 #ifdef FACTORIZATION_APP
-    if ((unsigned int)(first->nbrLimbs * BITS_PER_GROUP + shiftCtr) > 664380)
+    if ((unsigned int)((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 664380)
 #else
-    if ((unsigned int)(first->nbrLimbs * BITS_PER_GROUP + shiftCtr) > 66438)
+    if ((unsigned int)((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 66438)
 #endif
     {   // Shift too much to the left.
       return EXPR_INTERM_TOO_HIGH;

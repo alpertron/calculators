@@ -1409,9 +1409,9 @@ static void vanHoeij(int prime, int nbrFactors)
     }
 
     // Copy matrix M to basis.
-    for (nbrRow = 0; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
+    for (nbrRow = 0; nbrRow < (nbrVectors + nbrRequiredTraces); nbrRow++)
     {
-      for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
+      for (nbrCol = 0; nbrCol < (nbrVectors + nbrRequiredTraces); nbrCol++)
       {
         getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
         setLinkedBigInteger(&basis[nbrRow][nbrCol], &tmp5);
@@ -1954,7 +1954,7 @@ static void initFactorModularPoly(int prime)
   degreePolyToFactor = getModPolynomial(&poly1[1], polyNonRepeatedFactors, &operand5);
   poly1[0] = degreePolyToFactor;
   polyBackup[0] = values[0];
-  CopyPolynomial(&polyBackup[1], &values[1], values[0] >= 0 ? values[0] : 0);
+  CopyPolynomial(&polyBackup[1], &values[1], (values[0] >= 0)? values[0] : 0);
   values[0] = degreePolyToFactor;
   CopyPolynomial(&values[1], &poly1[1], degreePolyToFactor);
   modulusIsZero = false;

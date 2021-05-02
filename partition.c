@@ -330,7 +330,7 @@ void primorial(BigInteger *result, int argument)
     }
     if ((j*j) > ctr)
     {     // Number is prime, perform multiplication.
-      if (factorAccum * ctr > maxFactorAccum)
+      if ((factorAccum * ctr) > maxFactorAccum)
       {
         ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, NULL);
         factorAccum = 1;

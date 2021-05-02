@@ -417,7 +417,7 @@ static int NegatePolynomialExpr(int* ptrArgument)
     }
     if (!modulusIsZero)
     {
-      if (ptrArgument + 1 + (ptrValue2 - &poly1[0]) > values + sizeof(values) / sizeof(values[0]))
+      if ((ptrArgument + 1 + (ptrValue2 - &poly1[0])) > (values + sizeof(values) / sizeof(values[0])))
       {
         return EXPR_OUT_OF_MEMORY;
       }

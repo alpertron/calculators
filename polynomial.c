@@ -441,14 +441,14 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
       if (nbrLimbs == 2)
       {        // Modulus size is one limb.
         int modulus = TestNbr[0].x;
-        int value1 = modulus - *(ptrArgMax + currentDegree * 2 + 1);
+        int value1 = modulus - *(ptrArgMax + (currentDegree * 2) + 1);
         const int *ptrPolynomial = ptrArgMin + 1;
         ptrTemp++;
         if (modulus < 32767)
         {
           for (index = 0; index <= degreeMin; index++)
           {
-            *ptrTemp = (*ptrTemp + *ptrPolynomial * value1) % modulus;
+            *ptrTemp = (*ptrTemp + (*ptrPolynomial * value1)) % modulus;
             ptrTemp += 2;
             ptrPolynomial += 2;
           }
@@ -471,10 +471,10 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
       }
       else
       {        // General case.
-        IntArray2BigInteger(ptrArgMax + currentDegree * nbrLimbs, &operand1);
+        IntArray2BigInteger(ptrArgMax + (currentDegree * nbrLimbs), &operand1);
         for (index = 0; index <= degreeMin; index++)
         {
-          IntArray2BigInteger(ptrArgMin + index * nbrLimbs, &operand2);
+          IntArray2BigInteger(ptrArgMin + (index * nbrLimbs), &operand2);
           modmult(operand1.limbs, operand2.limbs, operand2.limbs);
           IntArray2BigInteger(ptrTemp, &operand3);
           SubtBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
@@ -639,7 +639,7 @@ void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, const BigInteg
         if (powerIsOne)
         {
           CopyPolynomialFixedCoeffSize(polyPower, polyBase, polyDegree, nbrLimbs);
-          nbrBits = (index + 1) * BITS_PER_GROUP - bitCounter;
+          nbrBits = ((index + 1) * BITS_PER_GROUP) - bitCounter;
           powerIsOne = false;
           bitCounter = curMultip * nbrBits;
         }
@@ -661,7 +661,7 @@ int getDegreePoly(const int *poly, int polyDegree)
   }
   while (polyDegree > 0)
   {
-    const int *ptrTemp = poly + polyDegree*(NumberLength + 1);
+    const int *ptrTemp = poly + (polyDegree*(NumberLength + 1));
     int len = *ptrTemp;
     for (int index = len; index > 0; index--)
     {
@@ -764,7 +764,7 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
         DividePolynomial(poly4, degreeW, poly3, degreeY, poly1);     // poly1 = z
         // z^i is divisor of the original polynomial.
         degreeZ = degreeW - degreeY;
-        for (currentDegree = 0; currentDegree < i*expon; currentDegree++)
+        for (currentDegree = 0; currentDegree < (i*expon); currentDegree++)
         {
           DividePolynomial(ptrOrigPoly, degreeOrigPoly, poly1, degreeZ, poly4);
           degreeOrigPoly -= degreeZ;

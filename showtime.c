@@ -30,17 +30,25 @@ void GetDHMS(char **pptrText, int seconds)
 {
   char *ptrText = *pptrText;
   int2dec(&ptrText, seconds / 86400);         // Show number of days.
-  *ptrText++ = 'd';
-  *ptrText++ = ' ';
+  *ptrText = 'd';
+  ptrText++;
+  *ptrText = ' ';
+  ptrText++;
   int2dec(&ptrText, (seconds / 3600) % 24);   // Show number of hours.
-  *ptrText++ = 'h';
-  *ptrText++ = ' ';
+  *ptrText = 'h';
+  ptrText++;
+  *ptrText = ' ';
+  ptrText++;
   int2dec(&ptrText, (seconds / 60) % 60);     // Show number of minutes.
-  *ptrText++ = 'm';
-  *ptrText++ = ' ';
+  *ptrText = 'm';
+  ptrText++;
+  *ptrText = ' ';
+  ptrText++;
   int2dec(&ptrText, seconds % 60);            // Show number of seconds.
-  *ptrText++ = 's';
-  *ptrText++ = ' ';
+  *ptrText = 's';
+  ptrText++;
+  *ptrText = ' ';
+  ptrText++;
   *pptrText = ptrText;
 }
 
@@ -49,10 +57,14 @@ void GetDHMSt(char **pptrText, int tenths)
   char *ptrText;
   GetDHMS(pptrText, tenths / 10);
   ptrText = *pptrText - 2;
-  *ptrText++ = '.';
-  *ptrText++ = (char)(tenths % 10 + '0');
-  *ptrText++ = 's';
-  *ptrText++ = ' ';
+  *ptrText = '.';
+  ptrText++;
+  *ptrText = (char)((tenths % 10) + '0');
+  ptrText++;
+  *ptrText = 's';
+  ptrText++;
+  *ptrText = ' ';
+  ptrText++;
   *pptrText = ptrText;
 }
 

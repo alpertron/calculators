@@ -49,7 +49,7 @@ void Dec2Bin(const char *decimal, limb *binary, int digits, int *bitGroups)
   (void)memset(power10000, 0, nbrGroups * sizeof(limb));
   power10000[0].x = MAX_LIMB_CONVERSION;
   ptrDest = binary;
-  for (ptrSrc = decimal + digits - 1; ptrSrc >= decimal + DIGITS_PER_LIMB-1; ptrSrc -= DIGITS_PER_LIMB)
+  for (ptrSrc = decimal + digits - 1; ptrSrc >= (decimal + DIGITS_PER_LIMB-1); ptrSrc -= DIGITS_PER_LIMB)
   {
     int limbContents = 0;
     for (digit = DIGITS_PER_LIMB-1; digit >= 0; digit--)
@@ -77,7 +77,7 @@ void Dec2Bin(const char *decimal, limb *binary, int digits, int *bitGroups)
       (void)memset(ptrBinary + outerGroup, 0, outerGroup*sizeof(limb));
       add(temp, ptrBinary, ptrBinary, 2*outerGroup);
     }
-    if (outerGroup * 2 < nbrGroups)
+    if ((outerGroup * 2) < nbrGroups)
     {    // Square power10000.
       multiply(power10000, power10000, temp, outerGroup, NULL);
       (void)memcpy(power10000, temp, (outerGroup * 2)*sizeof(limb));
@@ -167,7 +167,7 @@ void int2hex(char **pOutput, int nbr)
     if ((digit > 0) || (significantZero != 0))
     {
       significantZero = 1;
-      *ptrOutput = (char)(digit >= 10? digit + ('A'-10): digit + '0');
+      *ptrOutput = (char)((digit >= 10)? (digit + ('A'-10)): (digit + '0'));
       ptrOutput++;
     }
     value %= div;
@@ -270,7 +270,7 @@ void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
     *decimal = '(';
     decimal++;
     int2dec(&decimal, digits);
-    (void)strcpy(decimal, (lang == 0 ? " digits)" : " dígitos)"));
+    (void)strcpy(decimal, (lang?" dígitos)": " digits)"));
     decimal += strlen(decimal);
   }
   (void)strcpy(decimal, "</span>");
@@ -299,7 +299,7 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
   }
   power10000[0].x = ptrSrc->x % MAX_LIMB_CONVERSION;
   power10000[1].x = ptrSrc->x / MAX_LIMB_CONVERSION;
-  len = (power10000[1].x == 0 ? 1 : 2); // Initialize array length.
+  len = ((power10000[1].x == 0)? 1 : 2); // Initialize array length.
   for (index = nbrLimbs - 2; index >= 0; index--)
   {
     double dCarry;

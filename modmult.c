@@ -178,10 +178,10 @@ void GetMontgomeryParms(int len)
     int N;
     N = TestNbr[0].x;            // 2 least significant bits of inverse correct.
     x = N;
-    x = x * (2 - N * x);         // 4 least significant bits of inverse correct.
-    x = x * (2 - N * x);         // 8 least significant bits of inverse correct.
-    x = x * (2 - N * x);         // 16 least significant bits of inverse correct.
-    x = x * (2 - N * x);         // 32 least significant bits of inverse correct.
+    x = x * (2 - (N * x));       // 4 least significant bits of inverse correct.
+    x = x * (2 - (N * x));       // 8 least significant bits of inverse correct.
+    x = x * (2 - (N * x));       // 16 least significant bits of inverse correct.
+    x = x * (2 - (N * x));       // 32 least significant bits of inverse correct.
     MontgomeryMultN[0].x = (-x) & MAX_VALUE_LIMB;    // Change sign
   }
   // Compute MontgomeryMultR1 as 1 in Montgomery notation,
