@@ -186,15 +186,18 @@ static void InternalBigIntAdd(const BigInteger *pAddend1, const BigInteger *pAdd
     unsigned int carry = 0;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
-      carry = (carry >> BITS_PER_GROUP) + (unsigned int)(ptrAddend1++)->x +
-        (unsigned int)(ptrAddend2++)->x;
+      carry = (carry >> BITS_PER_GROUP) + (unsigned int)ptrAddend1->x +
+        (unsigned int)ptrAddend2->x;
+      ptrAddend1++;
+      ptrAddend2++;
       ptrSum->x = (int)(carry & MAX_INT_NBR);
       ptrSum++;
     }
     nbrLimbs = pAddend1->nbrLimbs;
     for (; ctr < nbrLimbs; ctr++)
     {
-      carry = (carry >> BITS_PER_GROUP) + (unsigned int)(ptrAddend1++)->x;
+      carry = (carry >> BITS_PER_GROUP) + (unsigned int)ptrAddend1->x;
+      ptrAddend1++;
       ptrSum->x = (int)(carry & MAX_INT_NBR);
       ptrSum++;
     }
@@ -209,14 +212,19 @@ static void InternalBigIntAdd(const BigInteger *pAddend1, const BigInteger *pAdd
     int borrow = 0;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
-      borrow = (borrow >> BITS_PER_INT_GROUP) + (ptrAddend1++)->x - (ptrAddend2++)->x;
-      (ptrSum++)->x = borrow & MAX_INT_NBR;
+      borrow = (borrow >> BITS_PER_INT_GROUP) + ptrAddend1->x - ptrAddend2->x;
+      ptrSum->x = borrow & MAX_INT_NBR;
+      ptrAddend1++;
+      ptrAddend2++;
+      ptrSum++;
     }
     nbrLimbs = pAddend1->nbrLimbs;
     for (; ctr < nbrLimbs; ctr++)
     {
-      borrow = (borrow >> BITS_PER_INT_GROUP) + (ptrAddend1++)->x;
-      (ptrSum++)->x = borrow & MAX_INT_NBR;
+      borrow = (borrow >> BITS_PER_INT_GROUP) + ptrAddend1->x;
+      ptrSum->x = borrow & MAX_INT_NBR;
+      ptrAddend1++;
+      ptrSum++;
     }
     while ((nbrLimbs > 1) && (pSum->limbs[nbrLimbs - 1].x == 0))
     {     // Loop that deletes non-significant zeros.
@@ -369,7 +377,8 @@ void longToBigInteger(BigInteger *bigint, long long value)
   }
   do
   {
-    bigint->limbs[nbrLimbs++].x = (int)value & MAX_VALUE_LIMB;
+    bigint->limbs[nbrLimbs].x = (int)value & MAX_VALUE_LIMB;
+    nbrLimbs++;
     value >>= BITS_PER_GROUP;
   } while (value != 0);
   bigint->nbrLimbs = nbrLimbs;
@@ -540,7 +549,8 @@ void BigIntDivide2(BigInteger *pArg)
   for (; ctr >= 0; ctr--)
   {
     carry = (carry << BITS_PER_GROUP) + (unsigned int)ptrLimb->x;
-    (ptrLimb--)->x = (int)(carry >> 1);
+    ptrLimb->x = (int)(carry >> 1);
+    ptrLimb--;
     carry &= 1;
   }
   if ((nbrLimbs > 1) && (pArg->limbs[nbrLimbs - 1].x == 0))
@@ -687,7 +697,8 @@ static void subtFromAbsValue(limb *pLimbs, int *pNbrLimbs, int subt)
     do
     {      // Loop that adjust number if there is borrow.
       (pLimbs + ctr)->x += LIMB_RANGE;
-      if (++ctr == nbrLimbs)
+      ctr++;
+      if (ctr == nbrLimbs)
       {    // All limbs processed. Exit loop.
         break;
       }
@@ -746,7 +757,8 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
       quotient--;
       remainder += divisor;
     }
-    (pLimbs--)->x = (int)quotient;
+    pLimbs->x = (int)quotient;
+    pLimbs--;
   }
   if ((nbrLimbs > 1) && (pBigInt->limbs[nbrLimbs - 1].x == 0))
   {   // Most significant limb is now zero, so discard it.
@@ -855,7 +867,8 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
   {
 #ifdef _USING64BITS_
     carry += (int64_t)pLimb->x * (int64_t)factor;
-    (pResultLimb++)->x = (int)carry & MAX_VALUE_LIMB;
+    pResultLimb->x = (int)carry & MAX_VALUE_LIMB;
+    pResultLimb++;
     carry >>= BITS_PER_GROUP;
 #else
     int low = (pLimb->x * factor + carry) & MAX_INT_NBR;
@@ -869,7 +882,8 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
     {
       carry = (int)(((double)(pLimb->x) * dFactor + (double)carry - HALF_INT_RANGE / 2)*dVal);
     }
-    (pResultLimb++)->x = low;
+    pResultLimb->x = low;
+    pResultLimb++;
 #endif
     pLimb++;
   }
@@ -941,7 +955,8 @@ int intModPow(int NbrMod, int Expon, int currentPrime)
 void IntArray2BigInteger(const int *ptrValues, /*@out@*/BigInteger *bigint)
 {
   limb *destLimb = bigint->limbs;
-  int nbrLimbs = *ptrValues++;
+  int nbrLimbs = *ptrValues;
+  ptrValues++;
   if (nbrLimbs > 0)
   {
     bigint->sign = SIGN_POSITIVE;
@@ -962,11 +977,14 @@ void IntArray2BigInteger(const int *ptrValues, /*@out@*/BigInteger *bigint)
     bigint->nbrLimbs = nbrLimbs;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
-      (destLimb++)->x = *ptrValues++;
+      destLimb->x = *ptrValues;
+      destLimb++;
+      ptrValues++;
     }
     for (; ctr < NumberLength; ctr++)
     {
-      (destLimb++)->x = 0;
+      destLimb->x = 0;
+      destLimb++;
     }
   }
 }
@@ -981,13 +999,15 @@ void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint)
   }
   else
   {
-    int ctr;
     int nbrLimbs;
     nbrLimbs = getNbrLimbs(srcLimb);
-    *ptrValues++ = (bigint->sign == SIGN_POSITIVE ? nbrLimbs : -nbrLimbs);
-    for (ctr = 0; ctr < nbrLimbs; ctr++)
+    *ptrValues = (bigint->sign == SIGN_POSITIVE ? nbrLimbs : -nbrLimbs);
+    ptrValues++;
+    for (int ctr = 0; ctr < nbrLimbs; ctr++)
     {
-      *ptrValues++ = (int)((srcLimb++)->x);
+      *ptrValues = srcLimb->x;
+      ptrValues++;
+      srcLimb++;
     }
   }
 }
@@ -1007,7 +1027,7 @@ void UncompressLimbsBigInteger(const limb *ptrValues, /*@out@*/BigInteger *bigin
     ptrValue1 = ptrValues + NumberLength;
     for (nbrLimbs = NumberLength; nbrLimbs > 1; nbrLimbs--)
     {
-      --ptrValue1;
+      ptrValue1--;
       if (ptrValue1->x != 0)
       {
         break;
@@ -1192,7 +1212,8 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
             break;
           }
         }
-        if (++processed > 10)
+        processed++;
+        if (processed > 10)
         {
           break;
         }
@@ -1254,21 +1275,23 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
       }
     }
     // If p = prime = k*expon+1, and n = r (mod p), it must be r^k = 1 (mod p)
-    for (k=1; ; k++)
+    k = 1;
+    for (;;)
     {
       prime = k * Exponent + 1;
       // Test that prime is really prime.
-      for (j = 2; j*j <= prime; j++)
+      for (j = 2; (j*j) <= prime; j++)
       {
-        if (prime / j * j == prime)
+        if ((prime / j * j) == prime)
         {   // Number is not prime.
           break;
         }
       }
-      if (j*j > prime)
+      if ((j*j) > prime)
       {     // Number is prime.
         break;
       }
+      k++;
     }
     if (base != prime)
     {     // Prime just generated is different from the number to check primality.
@@ -1327,12 +1350,14 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
 
 bool checkOne(const limb *value, int nbrLimbs)
 {
+  const limb *ptrValue = value;
   for (int idx = 0; idx < nbrLimbs; idx++)
   {
-    if ((value++)->x != MontgomeryMultR1[idx].x)
+    if (ptrValue->x != MontgomeryMultR1[idx].x)
     {
       return false;    // Go out if value is not 1 (mod p)
     }
+    ptrValue++;
   }
   return true;
 }
@@ -1343,7 +1368,8 @@ bool checkMinusOne(const limb *value, int nbrLimbs)
   carry = 0;
   for (int idx = 0; idx < nbrLimbs; idx++)
   {
-    carry += (unsigned int)(value++)->x + (unsigned int)MontgomeryMultR1[idx].x;
+    carry += (unsigned int)value->x + (unsigned int)MontgomeryMultR1[idx].x;
+    value++;
     if ((carry & MAX_VALUE_LIMB) != (unsigned int)TestNbr[idx].x)
     {
       return false;    // Go out if value is not -1 (mod p)
@@ -1361,7 +1387,8 @@ void BigIntDivideBy2(BigInteger *nbr)
   for (int ctr = 1; ctr < nbrLimbs; ctr++)
   {  // Process starting from least significant limb.
     int nextLimb = *(ptrDest + 1);
-    *ptrDest++ = ((curLimb >> 1) | (nextLimb << (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
+    *ptrDest = ((curLimb >> 1) | (nextLimb << (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
+    ptrDest++;
     curLimb = nextLimb;
   }
   *ptrDest = (curLimb >> 1) & MAX_INT_NBR;
@@ -1382,7 +1409,8 @@ void BigIntMultiplyBy2(BigInteger *nbr)
   for (int ctr = 0; ctr < nbrLimbs; ctr++)
   {  // Process starting from least significant limb.
     int curLimb = *ptrDest;
-    *ptrDest++ = ((curLimb << 1) | (prevLimb >> (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
+    *ptrDest = ((curLimb << 1) | (prevLimb >> (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
+    ptrDest++;
     prevLimb = curLimb;
   }
   if (prevLimb & (1 << (BITS_PER_GROUP - 1)))
@@ -1551,11 +1579,13 @@ void initializeSmallPrimes(int* pSmallPrimes)
     return;
   }
   P = 3;
-  *pSmallPrimes++ = 2;
+  *pSmallPrimes = 2;
+  pSmallPrimes++;
   for (int ctr = 1; ctr <= SMALL_PRIMES_ARRLEN; ctr++)
   {     // Loop that fills the SmallPrime array.
     int Q;
-    *pSmallPrimes++ = P; /* Store prime */
+    *pSmallPrimes = P; /* Store prime */
+    pSmallPrimes++;
     do
     {
       P += 2;
@@ -1739,7 +1769,8 @@ bool BpswPrimalityTest(const BigInteger *pValue)
   ptrText = ShowFactoredPart(pValue, vFactors);
 #else
   ptrText = text;
-  *ptrText++ = '3';
+  *ptrText = '3';
+  ptrText++;
 #endif
   (void)strcpy(ptrText, lang ? "<p>Paso 2 del algoritmo BPSW de primos probables: Lucas fuerte con P=1, D=" :
     "<p>Step 2 of BPSW probable prime algorithm: Strong Lucas with P=1, D=");

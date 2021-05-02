@@ -66,17 +66,22 @@ static int Show(const BigInteger *num, const char *str, int t)
   {     // num is not zero.
     if (((t & 1) != 0) && (num->sign == SIGN_POSITIVE))
     {
-      *ptrOutput++ = ' ';
-      *ptrOutput++ = '+';
+      *ptrOutput = ' ';
+      ptrOutput++;
+      *ptrOutput = '+';
+      ptrOutput++;
     }
     if (num->sign == SIGN_NEGATIVE)
     {
-      *ptrOutput++ = ' ';
-      *ptrOutput++ = '-';
+      *ptrOutput = ' ';
+      ptrOutput++;
+      *ptrOutput = '-';
+      ptrOutput++;
     }
     if ((num->nbrLimbs != 1) || (num->limbs[0].x != 1))
     {    // num is not 1 or -1.
-      *ptrOutput++ = ' ';
+      *ptrOutput = ' ';
+      ptrOutput++;
       Bin2Dec(num->limbs, ptrOutput, num->nbrLimbs, groupLen);
       ptrOutput += strlen(ptrOutput);
     }
@@ -1028,7 +1033,8 @@ EXTERNALIZE void doWork(void)
   groupLen = 0;
   while (*ptrData != ',')
   {
-    groupLen = groupLen * 10 + (*ptrData++ - '0');
+    groupLen = (groupLen * 10) + (*ptrData - '0');
+    ptrData++;
   }
   ptrData++;                    // Skip comma.
   flags = *ptrData;

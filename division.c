@@ -63,8 +63,9 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
   for (int index2 = len; index2 > 0; index2--)
   {
     newLimb.x = ptrDest->x;
-    (ptrDest++)->x = ((newLimb.x << shLeft) |
+    ptrDest->x = ((newLimb.x << shLeft) |
       (oldLimb.x >> (BITS_PER_GROUP - shLeft))) & MAX_VALUE_LIMB;
+    ptrDest++;
     oldLimb.x = newLimb.x;
   }
   ptrDest->x = oldLimb.x >> (BITS_PER_GROUP - shLeft);
@@ -318,7 +319,8 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     }
     // Each loop increments precision.
     // Use Newton iteration: x_{n+1} = x_n * (2 - x_n)
-    while (--bitLengthNbrCycles >= 0)
+    bitLengthNbrCycles--;
+    while (bitLengthNbrCycles >= 0)
     {
       limb *ptrArrAux;
       int limbLength;
@@ -343,6 +345,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       // Multiply arrAux by approxInv.
       multiply(&arrAux[limbLength], &approxInv[nbrLimbs - limbLength], approxInv, limbLength, NULL);
       (void)memmove(&approxInv[nbrLimbs - limbLength], &approxInv[limbLength - 1], limbLength*sizeof(limb));
+      bitLengthNbrCycles--;
     }
     // Multiply approxInv by argument to obtain the quotient.
     if (nbrLimbsDividend >= nbrLimbs)
@@ -361,8 +364,9 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     for (int index = nbrLimbs; index >= 0; index--)
     {
       newLimb.x = ptrDest->x;
-      (ptrDest++)->x = ((newLimb.x << power2) |
+      ptrDest->x = ((newLimb.x << power2) |
         (oldLimb.x >> (BITS_PER_GROUP - power2))) & MAX_VALUE_LIMB;
+      ptrDest++;
       oldLimb.x = newLimb.x;
     }
 
@@ -403,7 +407,8 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       {                // Roll back on overflow.
         for (idx = 0; idx <= nbrLimbsQuotient; idx++)
         {
-          if (--((ptrQuotient + idx)->x) >= 0)
+          ((ptrQuotient + idx)->x)--;
+          if (((ptrQuotient + idx)->x) >= 0)
           {
             break;
           }
@@ -443,11 +448,13 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
         ptrQuotient = ptrQuot;
         for (idx = 0; idx < nbrLimbsQuotient; idx++)
         {
-          if (--(ptrQuotient->x) >= 0)
+          (ptrQuotient->x)--;
+          if (ptrQuotient->x >= 0)
           {
             break;
           }
-          (ptrQuotient++)->x = MAX_VALUE_LIMB;
+          ptrQuotient->x = MAX_VALUE_LIMB;
+          ptrQuotient++;
         }
         if (idx == nbrLimbsQuotient)
         {

@@ -322,7 +322,8 @@ EXTERNALIZE void doWork(void)
   groupLen = 0;
   while (*ptrData != ',')
   {
-    groupLen = (groupLen * 10) + (*ptrData++ - '0');
+    groupLen = (groupLen * 10) + (*ptrData - '0');
+    ptrData++;
   }
   ptrData++;             // Skip comma.
   flags = *ptrData;

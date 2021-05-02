@@ -66,14 +66,18 @@ static void stringToHTML(char **pptrOutput, const char *ptrString)
     if ((character >= ' ') && (character < 127) && (character != '<') &&
       (character != '>') && (character != '&'))
     {  // Safe to copy character.
-      *ptrOutput++ = (char)character;
+      *ptrOutput = (char)character;
+      ptrOutput++;
     }
     else
     {  // Insert HTML entity.
-      *ptrOutput++ = '&';
-      *ptrOutput++ = '#';
+      *ptrOutput = '&';
+      ptrOutput++;
+      *ptrOutput = '#';
+      ptrOutput++;
       int2dec(&ptrOutput, character);
-      *ptrOutput++ = ';';
+      *ptrOutput = ';';
+      ptrOutput++;
     }
   }
   *pptrOutput = ptrOutput;
@@ -91,7 +95,8 @@ static char evalExpression(const char *expr, BigInteger *ptrResult)
       break;
     }
     // Copy character to output expression.
-    *ptrOutputExpr++ = c;
+    *ptrOutputExpr = c;
+    ptrOutputExpr++;
     ptrInputExpr++;
   }
   *ptrOutputExpr = 0;   // Append string terminator.
@@ -112,8 +117,10 @@ static void BatchError(char **pptrOutput, const char *batchText, const char *err
 {
   char *ptrOutput = *pptrOutput;
   stringToHTML(&ptrOutput, batchText);
-  *ptrOutput++ = ':';
-  *ptrOutput++ = ' ';
+  *ptrOutput = ':';
+  ptrOutput++;
+  *ptrOutput = ' ';
+  ptrOutput++;
   (void)strcpy(ptrOutput, errorText);
   ptrOutput += strlen(ptrOutput);
   *pptrOutput = ptrOutput;
@@ -170,7 +177,8 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     }
     else if (c == '#')
     {   // Copy comment to output, but convert non-safe characters to entities.
-      *ptrOutput++ = '#';
+      *ptrOutput = '#';
+      ptrOutput++;
       stringToHTML(&ptrOutput, ptrCurrBatchFactor + 1);
     }
     else if ((c == 'x') || (c == 'X'))

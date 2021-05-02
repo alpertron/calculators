@@ -1993,8 +1993,10 @@ static void CopyFactorsFoundToRecord(void)
     ptrPolyLiftedRecord = CopyPolynomialFixedCoeffSize(ptrPolyLiftedRecord,
       pstFactorInfoOrig->ptr,
       pstFactorInfoOrig->degree - 1, primeMod.nbrLimbs + 1);
-    *ptrPolyLiftedRecord++ = 1;    // Leading coefficient should be 1.
-    *ptrPolyLiftedRecord++ = 1;
+    *ptrPolyLiftedRecord = 1;    // Leading coefficient should be 1.
+    ptrPolyLiftedRecord++;
+    *ptrPolyLiftedRecord = 1;
+    ptrPolyLiftedRecord++;
     pstFactorInfoOrig++;
     pstFactorInfoRecord++;
   }
