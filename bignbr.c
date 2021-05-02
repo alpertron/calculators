@@ -777,10 +777,10 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
   for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
     int dividend = (remainder << BITS_PER_INT_GROUP) + pLimb->x;
-    double dDividend = (double)remainder * dLimb + pLimb->x;
-    double dQuotient = floor(dDividend / dDivisor + 0.5);
+    double dDividend = ((double)remainder * dLimb) + (double)pLimb->x;
+    double dQuotient = floor((dDividend / dDivisor) + 0.5);
     int quotient = (int)(unsigned int)dQuotient;   // quotient has correct value or 1 more.
-    remainder = dividend - quotient * divisor;
+    remainder = dividend - (quotient * divisor);
     if ((unsigned int)remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
       quotient--;

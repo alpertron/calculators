@@ -137,7 +137,8 @@ void ConvertToMonic(int *poly, int polyDegree)
 // The content is the GCD of all coefficients with the sign equal to the sign of the leading coefficient.
 int *getContent(int *poly, BigInteger *content)
 {
-  int currentDegree = *poly++;
+  int currentDegree = *poly;
+  poly++;
   if (currentDegree < 0)
   {
     currentDegree = 0;    // Monomial: process only one coefficient.
@@ -158,13 +159,16 @@ int *getContent(int *poly, BigInteger *content)
 int getModPolynomial(int *polyMod, const int *poly, const BigInteger *content)
 {
   int currentDegree;
-  int degreePoly = *poly++;
+  int degreePoly = *poly;
+  poly++;
   if (degreePoly < 0)
   {     // Monomial.
     for (currentDegree = degreePoly; currentDegree < 0; currentDegree++)
     {
-      *polyMod++ = 1;       // Initialize coefficient to zero.
-      *polyMod++ = 0;
+      *polyMod = 1;       // Initialize coefficient to zero.
+      polyMod++;
+      *polyMod = 0;
+      polyMod++;
     }
     NumberLength = numLimbs(poly);
     UncompressBigIntegerB(poly, &operand1);  // Get coefficient.
@@ -245,7 +249,8 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
     int degreeGcdMod;
     do
     { // Find next prime.
-      prime = smallPrimes[++primeIndex];
+      primeIndex++;
+      prime = smallPrimes[primeIndex];
       // Ensure that the prime does not divide the modulus or
       // the gcd of the leading coefficients.
     } while ((getRemainder(&modulus, prime) == 0) ||
@@ -665,7 +670,8 @@ int getDegreePoly(const int *poly, int polyDegree)
     int len = *ptrTemp;
     for (int index = len; index > 0; index--)
     {
-      if (*++ptrTemp != 0)
+      ptrTemp++;
+      if (*ptrTemp != 0)
       {      // Coefficient is not zero.
         return polyDegree;
       }
@@ -724,10 +730,11 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
     ptrValue1 = &poly1[(currentDegree*nbrLimbs)+1];
     for (index = 1; index < nbrLimbs; index++)
     {
-      if (*ptrValue1++ != 0)
+      if (*ptrValue1 != 0)
       {         // Coefficient of derivative is not zero.
         break;
       }
+      ptrValue1++;
     }
     if (index < nbrLimbs)
     {           // Coefficient of derivative is not zero.
@@ -770,7 +777,8 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
           degreeOrigPoly -= degreeZ;
           (void)memcpy(ptrOrigPoly, poly4, (degreeOrigPoly+1)*nbrLimbs*sizeof(int));
         }
-        pstFactorInfo = &factorInfo[nbrFactorsFound++];
+        pstFactorInfo = &factorInfo[nbrFactorsFound];
+        nbrFactorsFound++;
         pstFactorInfo -> ptr = ptrOrigPoly;
         pstFactorInfo -> degree = degreeZ;
         pstFactorInfo -> multiplicity = i*expon;
@@ -885,7 +893,8 @@ static void ExtendedGcdPolynomial(/*@in@*/int *pointerA, int degreeA, /*@in@*/in
       {
         break;
       }
-    } while (--degreeR != 0);
+      degreeR--;
+    } while (degreeR != 0);
     if (degreeR == 0)
     {
       break;
@@ -894,7 +903,8 @@ static void ExtendedGcdPolynomial(/*@in@*/int *pointerA, int degreeA, /*@in@*/in
     // ptrQuotient points to quotient of division.
     // ptrOldR points to the remainder.
     // Save pointer to the quotient.
-    ptrQuotients[nbrQuotients++] = ptrQuotient;
+    ptrQuotients[nbrQuotients] = ptrQuotient;
+    nbrQuotients++;
     // Move pointer to new quotient after this quotient.
     ptrQuotient += (degreeOldR - degreeR + 1)*nbrLimbs;
     // Exchange pointers.
@@ -1201,8 +1211,10 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
     ptrDest = CopyPolynomial(ptrDest, polyS, degreeS);
     for (currentDegree = degreeS + 1; currentDegree < degreeFactor; currentDegree++)
     {
-      *ptrDest++ = 1;
-      *ptrDest++ = 0;
+      *ptrDest = 1;
+      ptrDest++;
+      *ptrDest = 0;
+      ptrDest++;
     }
     pstFactorInfo++;
   }
@@ -1294,7 +1306,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
       BigIntDivide(&operand1, &operand5, &operand1);
       // Store coefficient of subtraction.
       ptrDest = &poly3[currentDegree * (oldNumberLength + 1)];
-      *ptrDest++ = operand1.nbrLimbs;
+      *ptrDest = operand1.nbrLimbs;
+      ptrDest++;
       (void)memcpy(ptrDest, operand1.limbs, operand1.nbrLimbs * sizeof(int));
     }
     computePower(currentExp);
@@ -1319,12 +1332,14 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
       polyToStandardNotation(poly1, degreeFactor);  // Convert g to standard notation.
       // f_i(x) <- f_i(x) + m*g(x)
       const int *ptrFi = pstFactorInfo->ptrPolyLifted;
-      *(ptrNewFactor++) = ptrDest;                 // Point to f_i(x) mod new modulus.
+      *ptrNewFactor = ptrDest;                   // Point to f_i(x) mod new modulus.
+      ptrNewFactor++;
       for (currentDegree = 0; currentDegree < degreeFactor; currentDegree++)
       {                 // Loop that computes f_i + m*g
         // Get coefficient of g.
         ptrSrc = &poly1[currentDegree * nbrLimbs];
-        operand1.nbrLimbs = *ptrSrc++;
+        operand1.nbrLimbs = *ptrSrc;
+        ptrSrc++;
         (void)memcpy(operand1.limbs, ptrSrc, operand1.nbrLimbs * sizeof(int));
         if (currentExp * 2 > newExponent)
         {
@@ -1332,13 +1347,15 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
           BigIntRemainder(&operand1, &operand5, &operand1);
         }
         // Get coefficient of f_i.
-        operand2.nbrLimbs = *ptrFi++;
+        operand2.nbrLimbs = *ptrFi;
+        ptrFi++;
         (void)memcpy(operand2.limbs, ptrFi, operand2.nbrLimbs * sizeof(int));
         ptrFi += operand2.nbrLimbs;
         BigIntMultiply(&operand1, &powerMod, &operand1);  // poly1 <- m*g
         BigIntAdd(&operand1, &operand2, &operand1);       // poly1 <- f_i + m*g
         // Store coefficient of new f_i (no spaces between coefficients).
-        *ptrDest++ = operand1.nbrLimbs;
+        *ptrDest = operand1.nbrLimbs;
+        ptrDest++;
         (void)memcpy(ptrDest, &operand1.limbs, operand1.nbrLimbs*sizeof(int));
         ptrDest += operand1.nbrLimbs;    // Point to next coeffficient of f_i.
       }
@@ -1367,7 +1384,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
       degreeFactor = pstFactorInfo->degree;
       (void)memcpy(poly1, poly4, (degree + 1) * nbrLimbs * sizeof(int));
                                         // poly2 <- f_i(x) in Montgomery notation.
-      getFi(degreeFactor, *ptrNewFactor++, nbrLimbs);
+      getFi(degreeFactor, *ptrNewFactor, nbrLimbs);
+      ptrNewFactor++;
       DividePolynomial(poly1, degree,   // Dividend = f.
         poly2, degreeFactor,            // Divisor = f_i.
         poly5);                         // Quotient = f / f_i.
@@ -1401,7 +1419,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
       // Divide coefficient by m.
       BigIntDivide(&operand1, &powerMod, &operand1);
       // Store coefficient of quotient.
-      *ptrDest++ = operand1.nbrLimbs;
+      *ptrDest = operand1.nbrLimbs;
+      ptrDest++;
       (void)memcpy(ptrDest, operand1.limbs, operand1.nbrLimbs * sizeof(int));
       ptrDest += oldNumberLength;
       ptrSrc += nbrLimbs;
@@ -1433,7 +1452,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
       {                 // Loop that computes a_i - m*g
         // Get coefficient of g.
         ptrSrc = &poly4[currentDegree * nbrLimbs];
-        operand1.nbrLimbs = *ptrSrc++;
+        operand1.nbrLimbs = *ptrSrc;
+        ptrSrc++;
         (void)memcpy(operand1.limbs, ptrSrc, operand1.nbrLimbs * sizeof(int));
         if (!BigIntIsZero(&operand1))                     // g <- -g (mod m)
         {
@@ -1446,7 +1466,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
         BigIntMultiply(&operand1, &powerMod, &operand1);  // poly1 <- m*g
         BigIntAdd(&operand1, &operand2, &operand1);       // poly1 <- a_i + m*g
         // Store coefficient of new a_i.
-        *ptrDest++ = operand1.nbrLimbs;
+        *ptrDest = operand1.nbrLimbs;
+        ptrDest++;
         (void)memcpy(ptrDest, operand1.limbs, operand1.nbrLimbs * sizeof(int));
         ptrDest += operand1.nbrLimbs;  // Point to next coefficient of a_i.
       }
@@ -1464,8 +1485,10 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
       ptrA[nbrFactor] = ptrDest;
       for (currentDegree = 0; currentDegree <= degreeA; currentDegree++)
       {
-        nbrLimbs = *ptrSrc++;
-        *ptrDest++ = nbrLimbs;
+        nbrLimbs = *ptrSrc;
+        ptrSrc++;
+        *ptrDest = nbrLimbs;
+        ptrDest++;
         (void)memcpy(ptrDest, ptrSrc, nbrLimbs * sizeof(int));
         ptrDest += nbrLimbs;
         ptrSrc += nbrLimbs;
@@ -1511,29 +1534,44 @@ static void showPower(char **pptrOutput, int exponent)
   char *ptrOutput = *pptrOutput;
   if (pretty == PRETTY_PRINT)
   {
-    *ptrOutput++ = '<';
-    *ptrOutput++ = 's';
-    *ptrOutput++ = 'u';
-    *ptrOutput++ = 'p';
-    *ptrOutput++ = '>';
+    *ptrOutput = '<';
+    ptrOutput++;
+    *ptrOutput = 's';
+    ptrOutput++;
+    *ptrOutput = 'u';
+    ptrOutput++;
+    *ptrOutput = 'p';
+    ptrOutput++;
+    *ptrOutput = '>';
+    ptrOutput++;
     int2dec(&ptrOutput, exponent);
-    *ptrOutput++ = '<';
-    *ptrOutput++ = '/';
-    *ptrOutput++ = 's';
-    *ptrOutput++ = 'u';
-    *ptrOutput++ = 'p';
-    *ptrOutput++ = '>';
+    *ptrOutput = '<';
+    ptrOutput++;
+    *ptrOutput = '/';
+    ptrOutput++;
+    *ptrOutput = 's';
+    ptrOutput++;
+    *ptrOutput = 'u';
+    ptrOutput++;
+    *ptrOutput = 'p';
+    ptrOutput++;
+    *ptrOutput = '>';
+    ptrOutput++;
   }
   else if (pretty == TEX)
   {
-    *ptrOutput++ = '^';
-    *ptrOutput++ = '{';
+    *ptrOutput = '^';
+    ptrOutput++;
+    *ptrOutput = '{';
+    ptrOutput++;
     int2dec(&ptrOutput, exponent);
-    *ptrOutput++ = '}';
+    *ptrOutput = '}';
+    ptrOutput++;
   }
   else
   {
-    *ptrOutput++ = '^';
+    *ptrOutput = '^';
+    ptrOutput++;
     int2dec(&ptrOutput, exponent);
   }
   *pptrOutput = ptrOutput;
@@ -1544,7 +1582,8 @@ void showPowerX(char **pptrOutput, int polyDegree)
   char *ptrOutput = *pptrOutput;
   if (polyDegree == 0)
   {
-    *ptrOutput++ = '1';
+    *ptrOutput = '1';
+    ptrOutput++;
   }
   else
   {
@@ -1555,7 +1594,8 @@ void showPowerX(char **pptrOutput, int polyDegree)
     }
     else
     {
-      *ptrOutput++ = 'x';
+      *ptrOutput = 'x';
+      ptrOutput++;
     }
     if (polyDegree != 1)
     {
@@ -1581,7 +1621,8 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
     int index = 0;
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
-      *ptrIndex++ = index;
+      *ptrIndex = index;
+      ptrIndex++;
       index += numLimbs(ptrPoly + index) + 1;
     }
   }
@@ -1591,7 +1632,8 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
     nbrLimbs = NumberLength + 1;
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
-      *ptrIndex++ = currentDegree * nbrLimbs;
+      *ptrIndex = currentDegree * nbrLimbs;
+      ptrIndex++;
     }
   }
   for (currentDegree = polyDegree - 1; currentDegree >= 0; currentDegree--)
@@ -1600,17 +1642,20 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
     int len = numLimbs(ptrValue1);
     if ((len != 1) || (*(ptrValue1 + 1) != 0))
     {            // Coefficient is not zero.
-      *ptrOutput++ = ' ';
+      *ptrOutput = ' ';
+      ptrOutput++;
       if (*ptrValue1 > 0)
       {
-        *ptrOutput++ = '+';
+        *ptrOutput = '+';
+        ptrOutput++;
       }
       else
       {
         (void)strcpy(ptrOutput, pretty == PRETTY_PRINT? "&minus;": "-");
         ptrOutput += strlen(ptrOutput);
       }
-      *ptrOutput++ = ' ';
+      *ptrOutput = ' ';
+      ptrOutput++;
       if ((len != 1) || (*(ptrValue1 + 1) != 1))
       {            // Absolute value of coefficient is not one.
         NumberLength = numLimbs(ptrValue1);
@@ -1627,7 +1672,8 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
           }
           else if (pretty == PARI_GP)
           {
-            *ptrOutput++ = '*';
+            *ptrOutput = '*';
+            ptrOutput++;
           }
           showPowerX(&ptrOutput, currentDegree);
         }
@@ -1697,7 +1743,8 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
     {
       showPower(&ptrOutput, exponentMod);
     }
-    *ptrOutput++ = ')';
+    *ptrOutput = ')';
+    ptrOutput++;
   }
   *ptrOutput = 0;    // Append string terminator.
 }
@@ -1710,14 +1757,14 @@ void outputPolynomialFactor(char *ptrOutput, int groupLength, const struct sFact
      (*(pstFactorInfo->ptrPolyLifted+1) == 0));
   if ((multiplicity > 1) && !isMonomial)
   {
-    *ptrOutput++ = '(';
+    *ptrOutput = '(';
+    ptrOutput++;
   }
   if (modulusIsZero)
   {
-    int currentDegree;
     // Get leading coefficient.
     const int *ptrSrc = pstFactorInfo->ptrPolyLifted;
-    for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
+    for (int currentDegree = 0; currentDegree < polyDegree; currentDegree++)
     {
       ptrSrc += 1 + numLimbs(ptrSrc);
     }
@@ -1739,7 +1786,8 @@ void outputPolynomialFactor(char *ptrOutput, int groupLength, const struct sFact
   {
     if (!isMonomial)
     {
-      *ptrOutput++ = ')';
+      *ptrOutput = ')';
+      ptrOutput++;
     }
     showPower(&ptrOutput, multiplicity);
   }
@@ -1792,14 +1840,21 @@ void textErrorPol(char *ptrOutput, enum eExprErr rc)
   default:
     textError(text, rc);
   }
-  *ptrOutput++ = '<';
-  *ptrOutput++ = 'p';
-  *ptrOutput++ = '>';
+  *ptrOutput = '<';
+  ptrOutput++;
+  *ptrOutput = 'p';
+  ptrOutput++;
+  *ptrOutput = '>';
+  ptrOutput++;
   (void)strcpy(ptrOutput, text);
   ptrOutput += strlen(ptrOutput);
-  *ptrOutput++ = '<';
-  *ptrOutput++ = '/';
-  *ptrOutput++ = 'p';
-  *ptrOutput++ = '>';
+  *ptrOutput = '<';
+  ptrOutput++;
+  *ptrOutput = '/';
+  ptrOutput++;
+  *ptrOutput = 'p';
+  ptrOutput++;
+  *ptrOutput = '>';
+  ptrOutput++;
   *ptrOutput = 0;    // Add terminator character.
 }

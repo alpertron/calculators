@@ -415,9 +415,9 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
           (ptrQuotient + idx)->x = MAX_VALUE_LIMB;
         }
       }
-      if (approxInv[2 * nbrLimbs - 1].x != 0)
+      if (approxInv[(2 * nbrLimbs) - 1].x != 0)
       {    // Most significant byte is not zero, so it is part of the quotient.
-        ptrQuot = &approxInv[2 * nbrLimbs - nbrLimbsQuotient];
+        ptrQuot = &approxInv[(2 * nbrLimbs) - nbrLimbsQuotient];
       }
       // Test whether the quotient is correct.
       // It is correct only if multiplied by the divisor, it is <= than the dividend.

@@ -791,7 +791,8 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         return EXPR_TOO_MANY_PAREN;
       }
       comprStackOffset[stackIndex + 1] = comprStackOffset[stackIndex];
-      stackOperators[stackIndex++] = charValue;
+      stackOperators[stackIndex] = charValue;
+      stackIndex++;
       exprIndex++;
       continue;
     }
@@ -896,13 +897,15 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
             if (shLeft >= BITS_PER_GROUP)
             {
               shLeft -= BITS_PER_GROUP;
-              (ptrLimb++)->x = carry.x & MAX_VALUE_LIMB;
+              ptrLimb->x = carry.x & MAX_VALUE_LIMB;
+              ptrLimb++;
               carry.x = c >> (4 - shLeft);
             }
           }
           if ((carry.x != 0) || (ptrLimb == &curStack.limbs[0]))
           {
-            (ptrLimb++)->x = carry.x;
+            ptrLimb->x = carry.x;
+            ptrLimb++;
           }
           exprIndex = offset + 1;
           curStack.nbrLimbs = (int)(ptrLimb - &curStack.limbs[0]);
@@ -960,7 +963,8 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           {
             return EXPR_TOO_MANY_PAREN;
           }
-          stackOperators[stackIndex++] = OPER_UNARY_MINUS; /* Unary minus */
+          stackOperators[stackIndex] = OPER_UNARY_MINUS; /* Unary minus */
+          stackIndex++;
           continue;
         }
       }
@@ -1020,7 +1024,8 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_TOO_MANY_PAREN;
       }
-      stackOperators[stackIndex++] = charValue;
+      stackOperators[stackIndex] = charValue;
+      stackIndex++;
       leftNumberFlag = false;
       continue;
     }
@@ -1062,7 +1067,8 @@ static void SkipSpaces(const char *expr)
 static enum eExprErr ComputeSubExpr(void)
 {
   enum eExprErr retcode;
-  char stackOper = stackOperators[--stackIndex];
+  stackIndex--;
+  char stackOper = stackOperators[stackIndex];
   getCurrentStackValue(&curStack);    // Get first argument of GCD.
   stackIndex++;
   getCurrentStackValue(&curStack2);   // Get second argument of GCD.
@@ -1597,7 +1603,8 @@ static int ComputeMinFact(void)
       intToBigInteger(&curStack, prime);
       return EXPR_OK;
     }
-    prime = smallPrimes[++primeIndex];
+    primeIndex++;
+    prime = smallPrimes[primeIndex];
   } while (prime < 32767);
   PerformFactorization(&curStack);
   MinFactor(&curStack);
@@ -1751,7 +1758,8 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
     {  // Process starting from most significant limb.
       *ptrDest-- = ((curLimb >> (BITS_PER_GROUP - rem)) | (prevLimb << rem)) & MAX_INT_NBR;
       prevLimb = curLimb;
-      curLimb = *--ptrSrc;
+      ptrSrc--;
+      curLimb = *ptrSrc;
     }
     *ptrDest = ((curLimb >> (BITS_PER_GROUP - rem)) | (prevLimb << rem)) & MAX_INT_NBR;
     if (delta > 0)
@@ -1793,9 +1801,11 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
 
     for (ctr = delta; ctr < nbrLimbs; ctr++)
     {  // Process starting from least significant limb.
-      *ptrDest++ = ((prevLimb >> rem) | (curLimb << (BITS_PER_GROUP - rem))) & MAX_INT_NBR;
+      *ptrDest = ((prevLimb >> rem) | (curLimb << (BITS_PER_GROUP - rem))) & MAX_INT_NBR;
+      ptrDest++;
       prevLimb = curLimb;
-      curLimb = *++ptrSrc;
+      ptrSrc++;
+      curLimb = *ptrSrc;
     }
     *ptrDest = ((prevLimb >> rem) | (curLimb << (BITS_PER_GROUP - rem))) & MAX_INT_NBR;
     result->nbrLimbs -= delta + 1;

@@ -433,8 +433,10 @@ static int NegatePolynomialExpr(int* ptrArgument)
     {
       if ((*ptrValue1 == 1) && (*(ptrValue1 + 1) == 0))
       {          // If value is zero, it does not have to be changed.
-        *ptrValue2++ = 1;
-        *ptrValue2++ = 0;
+        *ptrValue2 = 1;
+        ptrValue2++;
+        *ptrValue2 = 0;
+        ptrValue2++;
         ptrValue1 += 2;              // Point to next coefficient.
       }
       else if (modulusIsZero)
@@ -724,7 +726,7 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
   const int* ptrValueSrc;
   if ((degree1 <= 0) && (degree2 <= 0))
   {        // Product of two monomials.
-    if (degree1 + degree2 < -MAX_DEGREE)
+    if ((degree1 + degree2) < -MAX_DEGREE)
     {
       return EXPR_DEGREE_TOO_HIGH;
     }
@@ -746,7 +748,7 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
   }
   if ((degree1 > 0) && (degree2 > 0))
   {        // Product of two polynomials.
-    if (degree1 + degree2 > MAX_DEGREE)
+    if ((degree1 + degree2) > MAX_DEGREE)
     {
       return EXPR_DEGREE_TOO_HIGH;
     }
@@ -788,7 +790,7 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
     {
       ptrValue1 = ptrArgument1 + 1;
       ptrValue2 = polyMultTemp;
-      for (currentDegree = 0; currentDegree <= degree1 + degree2; currentDegree++)
+      for (currentDegree = 0; currentDegree <= (degree1 + degree2); currentDegree++)
       {
         (void)memcpy(ptrValue1, ptrValue2, (1 + *ptrValue2) * sizeof(int));
         ptrValue1 += 1 + *ptrValue1;
@@ -807,7 +809,7 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
     ptrValueSrc = ptrArgument2 + 1;
     // Get coefficient of monomial.
     UncompressBigIntegerB(ptrArgument1 + 1, &operand1);
-    if (degreeMono + degreePoly > MAX_DEGREE)
+    if ((degreeMono + degreePoly) > MAX_DEGREE)
     {
       return EXPR_DEGREE_TOO_HIGH;
     }
@@ -933,7 +935,7 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
   int degreeBase = *ptrArgument1;
   if (degreeBase <= 0)
   {              // Monomial.
-    if (-degreeBase * expon > MAX_DEGREE)
+    if ((-degreeBase * expon) > MAX_DEGREE)
     {
       return EXPR_DEGREE_TOO_HIGH;
     }

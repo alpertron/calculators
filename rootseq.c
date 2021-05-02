@@ -1015,7 +1015,7 @@ static void biquadraticEquation(int multiplicity)
         {    // Negative sqrt
           isX2Positive = (((RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE) || 
             BigIntIsZero(&RatDeprQuadratic.numerator)) &&
-            RatDeprIndependent.numerator.sign == SIGN_POSITIVE);
+            (RatDeprIndependent.numerator.sign == SIGN_POSITIVE));
         }
         if (!isX2Positive)
         {

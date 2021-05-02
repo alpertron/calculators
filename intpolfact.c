@@ -327,27 +327,35 @@ static void PerformSWAPI(int k, int kMax, int size)
     (void)strcpy(ptrDebugOutput, ", z = ");
     ptrDebugOutput += strlen(ptrDebugOutput);
     int2dec(&ptrDebugOutput, z);
-    *ptrDebugOutput++ = '\r';
-    *ptrDebugOutput++ = '\n';
+    *ptrDebugOutput = '\r';
+    ptrDebugOutput++;
+    *ptrDebugOutput = '\n';
+    ptrDebugOutput++;
     (void)strcpy(ptrDebugOutput, "tmp3 = ");
     ptrDebugOutput += strlen(ptrDebugOutput);
     BigInteger2Dec(&tmp3, ptrDebugOutput, 0);
     ptrDebugOutput += strlen(ptrDebugOutput);
-    *ptrDebugOutput++ = '\r';
-    *ptrDebugOutput++ = '\n';
+    *ptrDebugOutput = '\r';
+    ptrDebugOutput++;
+    *ptrDebugOutput = '\n';
+    ptrDebugOutput++;
     (void)strcpy(ptrDebugOutput, "detProdB[k-1] = ");
     ptrDebugOutput += strlen(ptrDebugOutput);
     getBigIntegerFromLinked(detProdB[k - 1], &tmp5);
     BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
     ptrDebugOutput += strlen(ptrDebugOutput);
-    *ptrDebugOutput++ = '\r';
-    *ptrDebugOutput++ = '\n';
+    *ptrDebugOutput = '\r';
+    ptrDebugOutput++;
+    *ptrDebugOutput = '\n';
+    ptrDebugOutput++;
     (void)strcpy(ptrDebugOutput, "B = ");
     ptrDebugOutput += strlen(ptrDebugOutput);
     BigInteger2Dec(&tmp1, ptrDebugOutput, 0);
     ptrDebugOutput += strlen(ptrDebugOutput);
-    *ptrDebugOutput++ = '\r';
-    *ptrDebugOutput++ = '\n';
+    *ptrDebugOutput = '\r';
+    ptrDebugOutput++;
+    *ptrDebugOutput = '\n';
+    ptrDebugOutput++;
   }
 #endif
   for (int i = k+1; i <= kMax; i++)
@@ -391,14 +399,16 @@ void integralLLL(int size)
   {
     (void)strcpy(ptrOutput, "1<p>Calculando LLL número ");
     ptrOutput += strlen(ptrOutput);
-    int2dec(&ptrOutput, ++numberLLL);
+    numberLLL++;
+    int2dec(&ptrOutput, numberLLL);
     (void)strcpy(ptrOutput, " en matriz de");
   }
   else
   {
     (void)strcpy(ptrOutput, "1<p>Computing LLL #");
     ptrOutput += strlen(ptrOutput);
-    int2dec(&ptrOutput, ++numberLLL);
+    numberLLL++;
+    int2dec(&ptrOutput, numberLLL);
     (void)strcpy(ptrOutput, " in matrix of");
   }
   ptrOutput += strlen(ptrOutput);
@@ -480,15 +490,19 @@ void integralLLL(int size)
         (void)strcpy(ptrDebugOutput, "Row #");
         ptrDebugOutput += strlen(ptrDebugOutput);
         int2dec(&ptrDebugOutput, row);
-        *ptrDebugOutput++ = ':';
-        *ptrDebugOutput++ = ' ';
+        *ptrDebugOutput = ':';
+        ptrDebugOutput++;
+        *ptrDebugOutput = ' ';
+        ptrDebugOutput++;
         for (colI = 0; colI < size; colI++)
         {
           getBigIntegerFromLinked(lambda[row][colI], &tmp5);
           BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
           ptrDebugOutput += strlen(ptrDebugOutput);
-          *ptrDebugOutput++ = ',';
-          *ptrDebugOutput++ = ' ';
+          *ptrDebugOutput = ',';
+          ptrDebugOutput++;
+          *ptrDebugOutput = ' ';
+          ptrDebugOutput++;
         }
         *(ptrDebugOutput - 2) = '\r';
         *(ptrDebugOutput - 1) = '\n';
@@ -499,8 +513,10 @@ void integralLLL(int size)
       {
         BigInteger2Dec(&detProdB[colI], ptrDebugOutput, 0);
         ptrDebugOutput += strlen(ptrDebugOutput);
-        *ptrDebugOutput++ = ',';
-        *ptrDebugOutput++ = ' ';
+        *ptrDebugOutput = ',';
+        ptrDebugOutput++;
+        *ptrDebugOutput = ' ';
+        ptrDebugOutput++;
       }
       *(ptrDebugOutput - 2) = '\r';
       *(ptrDebugOutput - 1) = '\n';
@@ -555,22 +571,27 @@ void integralLLL(int size)
         (void)strcpy(ptrDebugOutput, "Row #");
         ptrDebugOutput += strlen(ptrDebugOutput);
         int2dec(&ptrDebugOutput, row);
-        *ptrDebugOutput++ = ':';
-        *ptrDebugOutput++ = ' ';
+        *ptrDebugOutput = ':';
+        ptrDebugOutput++;
+        *ptrDebugOutput = ' ';
+        ptrDebugOutput++;
         for (colI = 0; colI < size; colI++)
         {
           getBigIntegerFromLinked(basis[row][colI], &tmp5);
           BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
           ptrDebugOutput += strlen(ptrDebugOutput);
-          *ptrDebugOutput++ = ',';
-          *ptrDebugOutput++ = ' ';
+          *ptrDebugOutput = ',';
+          ptrDebugOutput++;
+          *ptrDebugOutput = ' ';
+          ptrDebugOutput++;
         }
         *(ptrDebugOutput - 2) = '\r';
         *(ptrDebugOutput - 1) = '\n';
       }
     }
 #endif
-  } while (++colK < size);
+    colK++;
+  } while (colK < size);
 }
 
 // Compute remainder such that the result is in range -divisor/2 to divisor/2.
@@ -630,8 +651,10 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
 #if DEBUG_VANHOEIJ
     BigInteger2Dec(&operand3, ptrDebugOutput, 0);
     ptrDebugOutput += strlen(ptrDebugOutput);
-    *ptrDebugOutput++ = ',';
-    *ptrDebugOutput++ = ' ';
+    *ptrDebugOutput = ',';
+    ptrDebugOutput++;
+    *ptrDebugOutput = ' ';
+    ptrDebugOutput++;
 #endif
     (void)BigIntMultiply(&operand3, &operand1, &operand3);
     setLinkedBigInteger(&ptrCoeffs[traceNbr], &operand3);
@@ -1134,7 +1157,8 @@ static void vanHoeij(int prime, int nbrFactors)
   ptrDebugOutput += strlen(ptrDebugOutput);
   BigInteger2Dec(&bound, ptrDebugOutput, 0);
   ptrDebugOutput += strlen(ptrDebugOutput);
-  *ptrDebugOutput++ = '\n';
+  *ptrDebugOutput = '\n';
+  ptrDebugOutput++;
 #endif
   (void)memset(arrNbrFactors, 0, sizeof(arrNbrFactors));
   // Get leading coefficient of polyNonRepeatedFactors.
@@ -1349,8 +1373,10 @@ static void vanHoeij(int prime, int nbrFactors)
         ptrDebugOutput += strlen(ptrDebugOutput);
         if (nbrRow < firstTrace + nbrRequiredTraces - 1)
         {
-          *ptrDebugOutput++ = ',';
-          *ptrDebugOutput++ = ' ';
+          *ptrDebugOutput = ',';
+          ptrDebugOutput++;
+          *ptrDebugOutput = ' ';
+          ptrDebugOutput++;
         }
       }
       (void)strcpy(ptrDebugOutput, LF);
@@ -1425,7 +1451,8 @@ static void vanHoeij(int prime, int nbrFactors)
     (void)strcpy(ptrDebugOutput, LF "Matrix M before LLL (");
     ptrDebugOutput += strlen(ptrDebugOutput);
     int2dec(&ptrDebugOutput, nbrVectors + nbrRequiredTraces);
-    *ptrDebugOutput++ = '*';
+    *ptrDebugOutput = '*';
+    ptrDebugOutput++;
     int2dec(&ptrDebugOutput, nbrVectors + nbrRequiredTraces);
     (void)strcpy(ptrDebugOutput, "): ");
     ptrDebugOutput += strlen(ptrDebugOutput);
@@ -1438,13 +1465,16 @@ static void vanHoeij(int prime, int nbrFactors)
         ptrDebugOutput += strlen(ptrDebugOutput);
         if (nbrCol < nbrVectors + nbrRequiredTraces - 1)
         {
-          *ptrDebugOutput++ = ',';
+          *ptrDebugOutput = ',';
+          ptrDebugOutput++;
         }
         intToLinkedBigInt(&lambda[nbrRow][nbrCol], 0);  // DEBUG BORRAR
       }
-      *ptrDebugOutput++ = ';';
+      *ptrDebugOutput = ';';
+      ptrDebugOutput++;
     }
-    *ptrDebugOutput++ = '.';
+    *ptrDebugOutput = '.';
+    ptrDebugOutput++;
 
 #endif
     // Step 2: LLL-reduce the (r+s)*(r+s) matrix M (of rank r+s).
@@ -1469,11 +1499,14 @@ static void vanHoeij(int prime, int nbrFactors)
         getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
         BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
         ptrDebugOutput += strlen(ptrDebugOutput);
-        *ptrDebugOutput++ = ' ';
+        *ptrDebugOutput = ' ';
+        ptrDebugOutput++;
       }
-      *ptrDebugOutput++ = ';';
+      *ptrDebugOutput = ';';
+      ptrDebugOutput++;
     }
-    *ptrDebugOutput++ = '.';
+    *ptrDebugOutput = '.';
+    ptrDebugOutput++;
     *ptrDebugOutput = 0;
 #endif
     // Step 3: Replace the upper r*(r+s) submatrix L of M by BL*L.
@@ -1484,7 +1517,7 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       struct linkedBigInt** ptrLBISrc = &basisStar[nbrRow][0];
       struct linkedBigInt** ptrLBIDest = &basisStar[nbrRow - nbrVectors + nbrFactors][0];
-      for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
+      for (nbrCol = 0; nbrCol < (nbrVectors + nbrRequiredTraces); nbrCol++)
       {
         getBigIntegerFromLinked(*ptrLBISrc, &tmp5);
         ptrLBISrc++;
@@ -1549,11 +1582,14 @@ static void vanHoeij(int prime, int nbrFactors)
         getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
         BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
         ptrDebugOutput += strlen(ptrDebugOutput);
-        *ptrDebugOutput++ = ' ';
+        *ptrDebugOutput = ' ';
+        ptrDebugOutput++;
       }
-      *ptrDebugOutput++ = ';';
+      *ptrDebugOutput = ';';
+      ptrDebugOutput++;
     }
-    *ptrDebugOutput++ = '.';
+    *ptrDebugOutput = '.';
+    ptrDebugOutput++;
     *ptrDebugOutput = 0;
 #endif
     // Step 4: Perform Gram-Schmidt orthogonalization on M.
@@ -1571,9 +1607,11 @@ static void vanHoeij(int prime, int nbrFactors)
       (void)BigIntDivide(&tmp4, &tmp5, &operand1);
       BigInteger2Dec(&operand1, ptrDebugOutput, 0);
       ptrDebugOutput += strlen(ptrDebugOutput);
-      *ptrDebugOutput++ = ' ';
+      *ptrDebugOutput = ' ';
+      ptrDebugOutput++;
     }
-    *ptrDebugOutput++ = '.';
+    *ptrDebugOutput = '.';
+    ptrDebugOutput++;
     *ptrDebugOutput = 0;
 #endif
     // Step 5: Let r' the largest value such that all c_i of
@@ -1656,11 +1694,14 @@ static void vanHoeij(int prime, int nbrFactors)
         getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
         BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
         ptrDebugOutput += strlen(ptrDebugOutput);
-        *ptrDebugOutput++ = ' ';
+        *ptrDebugOutput = ' ';
+        ptrDebugOutput++;
       }
-      *ptrDebugOutput++ = ';';
+      *ptrDebugOutput = ';';
+      ptrDebugOutput++;
     }
-    *ptrDebugOutput++ = '.';
+    *ptrDebugOutput = '.';
+    ptrDebugOutput++;
     *ptrDebugOutput = 0;
 #ifdef __EMSCRIPTEN__
     {
@@ -1698,7 +1739,8 @@ static void vanHoeij(int prime, int nbrFactors)
     nbrRequiredTraces++;
     nbrVectors = r1;
 #if 0
-    if (++nbrStepsDone == 10)
+    nbsStepsDone++;
+    if (nbrStepsDone == 10)
     {
 #ifdef __EMSCRIPTEN__
       output[0] = '1';
@@ -1723,11 +1765,14 @@ static void vanHoeij(int prime, int nbrFactors)
         getBigIntegerFromLinked(lambda[nbrRow][nbrCol], &tmp5);
         BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
         ptrDebugOutput += strlen(ptrDebugOutput);
-        *ptrDebugOutput++ = ' ';
+        *ptrDebugOutput = ' ';
+        ptrDebugOutput++;
       }
-      *ptrDebugOutput++ = ';';
+      *ptrDebugOutput = ';';
+      ptrDebugOutput++;
     }
-    *ptrDebugOutput++ = '.';
+    *ptrDebugOutput = '.';
+    ptrDebugOutput++;
     *ptrDebugOutput = 0;
 #endif
     // There must be only one number different from zero in each column.
@@ -1838,7 +1883,8 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   index = 0;
   for (currentDegree = 0; currentDegree <= (degreePoly+1); currentDegree++)
   {
-    *ptrIndex++ = index;
+    *ptrIndex = index;
+    ptrIndex++;
     index += numLimbs(ptrFactor + index) + 1;
   }
   for (pstFactorInfoInteger = factorInfoInteger;
@@ -1860,7 +1906,8 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
     index = 0;
     for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
     {   // Loop that gets the pointers to coefficients of stored factor.
-      *ptrIndex++ = index;
+      *ptrIndex = index;
+      ptrIndex++;
       index += numLimbs(ptrOldFactor + index) + 1;
     }
     // Compare coefficients starting from higher degrees.
@@ -1932,7 +1979,8 @@ int getNextPrimeNoDuplicatedFactors(int primeIndex)
     int degree1;
     do
     {      // Loop while the leading coefficient is multiple of prime.
-      prime = smallPrimes[++primeIndex];
+      primeIndex++;
+      prime = smallPrimes[primeIndex];
     } while (getRemainder(&leadingCoeff, prime) == 0);
     modulusIsZero = false;
     intToBigInteger(&primeMod, prime);

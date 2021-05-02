@@ -52,7 +52,8 @@ void batchCallback(char **pptrOutput)
   NumberLength = tofactor.nbrLimbs;
   if (tofactor.sign == SIGN_NEGATIVE)
   {
-    *ptrFactorDec++ = '-';
+    *ptrFactorDec = '-';
+    ptrFactorDec++;
   }
   BigInteger2IntArray(nbrToFactor, &tofactor);
   if (*nbrToFactor < 0)
@@ -196,7 +197,8 @@ static void GetMobius(char **pptrOutput)
   if (mobius < 0)
   {
     mobius = -mobius;
-    *ptrOutput++ = '-';
+    *ptrOutput = '-';
+    ptrOutput++;
   }
   int2dec(&ptrOutput, mobius);
   (void)strcpy(ptrOutput, "</p>");
@@ -310,10 +312,13 @@ static void ComputeThreeSquares(BigInteger *pTmp,
       }
       if (expon > 0)
       {
-        *ptrArrFactors++ = prime;
-        *ptrArrFactors++ = expon;
+        *ptrArrFactors = prime;
+        ptrArrFactors++;
+        *ptrArrFactors = expon;
+        ptrArrFactors++;
       }
-      prime = smallPrimes[++primeIndex];
+      primeIndex++;
+      prime = smallPrimes[primeIndex];
     } while (prime < 32768);
     ptrArrFactorsBak = ptrArrFactors;
     if (prime < 32768)
@@ -745,12 +750,16 @@ static void ComputeFourSquares(const struct sFactors *pstFactors)
 static void varSquared(char **pptrOutput, char letter, char sign)
 {
   char *ptrOutput = *pptrOutput;
-  *ptrOutput++ = ' ';
-  *ptrOutput++ = letter;
+  *ptrOutput = ' ';
+  ptrOutput++;
+  *ptrOutput = letter;
+  ptrOutput++;
   (void)strcpy(ptrOutput, (prettyprint? "&sup2;": "^2"));
   ptrOutput += strlen(ptrOutput);
-  *ptrOutput++ = ' ';
-  *ptrOutput++ = sign;
+  *ptrOutput = ' ';
+  ptrOutput++;
+  *ptrOutput = sign;
+  ptrOutput++;
   *pptrOutput = ptrOutput;
 }
 
@@ -759,10 +768,14 @@ static void valueVar(char **pptrOutput, char letter, const BigInteger *value)
   char *ptrOutput = *pptrOutput;
   (void)strcpy(ptrOutput, "<p>");
   ptrOutput += strlen(ptrOutput);
-  *ptrOutput++ = letter;
-  *ptrOutput++ = ' ';
-  *ptrOutput++ = '=';
-  *ptrOutput++ = ' ';
+  *ptrOutput = letter;
+  ptrOutput++;
+  *ptrOutput = ' ';
+  ptrOutput++;
+  *ptrOutput = '=';
+  ptrOutput++;
+  *ptrOutput = ' ';
+  ptrOutput++;
   if (hexadecimal)
   {
     BigInteger2Hex(value, ptrOutput, groupLen);
@@ -968,10 +981,13 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
           ptrOutput += strlen(ptrOutput);
           if (nbrPrimalityTests != 1)
           {
-            *ptrOutput++ = 's';
+            *ptrOutput = 's';
+            ptrOutput++;
           }
-          *ptrOutput++ = ':';
-          *ptrOutput++ = ' ';
+          *ptrOutput = ':';
+          ptrOutput++;
+          *ptrOutput = ' ';
+          ptrOutput++;
           GetDHMSt(&ptrOutput, timePrimalityTests);
           (void)strcpy(ptrOutput, "</li>");
           ptrOutput += strlen(ptrOutput);
@@ -985,11 +1001,13 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
           ptrOutput += strlen(ptrOutput);
           if (nbrECM != 1)
           {
-            *ptrOutput++ = 's';
+            *ptrOutput = 's';
+            ptrOutput++;
           }
           (void)strcpy(ptrOutput, lang ? " mediante ECM" : " using ECM:");
           ptrOutput += strlen(ptrOutput);
-          *ptrOutput++ = ' ';
+          *ptrOutput = ' ';
+          ptrOutput++;
           GetDHMSt(&ptrOutput, timeECM - timeSIQS);
           (void)strcpy(ptrOutput, "</li>");
           ptrOutput += strlen(ptrOutput);
@@ -1003,11 +1021,13 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
           ptrOutput += strlen(ptrOutput);
           if (nbrSIQS != 1)
           {
-            *ptrOutput++ = 's';
+            *ptrOutput = 's';
+            ptrOutput++;
           }
           (void)strcpy(ptrOutput, lang ? " mediante SIQS" : " using SIQS:");
           ptrOutput += strlen(ptrOutput);
-          *ptrOutput++ = ' ';
+          *ptrOutput = ' ';
+          ptrOutput++;
           GetDHMSt(&ptrOutput, timeSIQS);
           (void)strcpy(ptrOutput, "</li>");
           ptrOutput += strlen(ptrOutput);
@@ -1044,13 +1064,15 @@ EXTERNALIZE void doWork(void)
   groupLen = 0;
   while (*ptrData != ',')
   {
-    groupLen = groupLen * 10 + (*ptrData++ - '0');
+    groupLen = (groupLen * 10) + (*ptrData - '0');
+    ptrData++;
   }
   ptrData++;             // Skip comma.
   flags = *ptrData;
   if (flags == '-')
   {
-    flags = -*(++ptrData);
+    ptrData++;
+    flags = -*ptrData;
   }
 #ifndef lang  
   lang = ((flags & 1)? true: false);
