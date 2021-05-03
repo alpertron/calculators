@@ -42,8 +42,7 @@ extern BigInteger tofactor;
 
 static void showText(const char *text)
 {
-  (void)strcpy(ptrOutput, text);
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, text);
 }
 
 static void showNumber(const BigInteger *real, const BigInteger *imag)
@@ -96,15 +95,13 @@ void GaussianFactorization(void)
     char *ptrFactorDec = tofactorDec;
     NumberLength = tofactor.nbrLimbs;
     BigInteger2IntArray(nbrToFactor, &tofactor);
-    (void)strcpy(ptrFactorDec, "Re&sup2; + Im&sup2; = ");
-    ptrFactorDec += strlen(ptrFactorDec);
+    copyStr(&ptrFactorDec, "Re&sup2; + Im&sup2; = ");
     Bin2Dec(ReValue.limbs, ptrFactorDec, ReValue.nbrLimbs, groupLen);
     ptrFactorDec += strlen(ptrFactorDec);
-    (void)strcpy(ptrFactorDec, "&sup2; + ");
-    ptrFactorDec += strlen(ptrFactorDec);
+    copyStr(&ptrFactorDec, "&sup2; + ");
     Bin2Dec(ImValue.limbs, ptrFactorDec, ImValue.nbrLimbs, groupLen);
     ptrFactorDec += strlen(ptrFactorDec);
-    (void)strcpy(ptrFactorDec, "&sup2;");
+    copyStr(&ptrFactorDec, "&sup2;");
     factor(&tofactor, nbrToFactor, factorsNorm, astFactorsNorm);
     NbrFactorsNorm = astFactorsNorm[0].multiplicity;
     pstFactor = &astFactorsNorm[1];
@@ -310,8 +307,8 @@ void gaussianText(char *valueText, int doFactorization)
     textError(ptrOutput, rc);
     ptrOutput = output + strlen(output);
   }
-  strcat(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
-                           "<p>" COPYRIGHT_ENGLISH "</p>");
+  copyStr(&ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+                             "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
 #if defined __EMSCRIPTEN__ && !defined _MSC_VER

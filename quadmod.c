@@ -85,8 +85,7 @@ static int Show(const BigInteger *num, const char *str, int t)
       Bin2Dec(num->limbs, ptrOutput, num->nbrLimbs, groupLen);
       ptrOutput += strlen(ptrOutput);
     }
-    (void)strcpy(ptrOutput, str);
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, str);
     return t | 1;
   }
   return t;
@@ -105,12 +104,10 @@ void Show1(const BigInteger *num, int t)
 void Solution(const BigInteger *value)
 {
   SolNbr++;
-  (void)strcpy(ptrOutput, "<li>x = ");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, "<li>x = ");
   BigInteger2Dec(value, ptrOutput, groupLen);
   ptrOutput += strlen(ptrOutput);
-  (void)strcpy(ptrOutput, "</li>");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, "</li>");
 }
 
 static void setNbrLimbs(BigInteger* pBigNbr)
@@ -190,8 +187,7 @@ void SolveEquation(void)
       {    // Constant Equation
         if (BigIntIsZero(&ValC))
         {  // 0 = 0
-          (void)strcpy(ptrOutput, "<p>The equation is satisfied by any integer <var>x</var>.</p>");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, "<p>The equation is satisfied by any integer <var>x</var>.</p>");
         }
         else
         {
@@ -282,13 +278,11 @@ void SolveEquation(void)
   {     // All values from 0 to GcdAll - 1 are solutions.
     if ((GcdAll.nbrLimbs > 1) || (GcdAll.limbs[0].x > 5))
     {
-      (void)strcpy(ptrOutput, "<p>All values of <var>x</var> between 0 and ");
-      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, "<p>All values of <var>x</var> between 0 and ");
       addbigint(&GcdAll, -1);
       BigInteger2Dec(&GcdAll, ptrOutput, groupLen);
       ptrOutput += strlen(ptrOutput);
-      (void)strcpy(ptrOutput, " are solutions.</p>");
-      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, " are solutions.</p>");
     }
     else
     {
@@ -936,41 +930,34 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
   char *ptrBeginSol;
   enum eExprErr rc;
   ptrOutput = output;
-  (void)strcpy(ptrOutput, "2<p>");
-  ptrOutput = output + strlen(output);
+  copyStr(&ptrOutput, "2<p>");
   rc = ComputeExpression(quadrText, 1, &ValA);
   if (rc != EXPR_OK)
   {
-    (void)strcpy(ptrOutput, lang ? "Coeficiente cuadrático: ": "Quadratic coefficient: ");
-    ptrOutput = output + strlen(output);
+    copyStr(&ptrOutput, lang ? "Coeficiente cuadrático: ": "Quadratic coefficient: ");
     textErrorQuadMod(ptrOutput, rc);
-    ptrOutput = output + strlen(output);
-    (void)strcpy(ptrOutput, "</p>");
-    ptrOutput = output + strlen(output);
+    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, "</p>");
   }
   else
   {
     rc = ComputeExpression(linearText, 1, &ValB);
     if (rc != EXPR_OK)
     {
-      (void)strcpy(ptrOutput, lang ? "Coeficiente lineal: " : "Linear coefficient: ");
-      ptrOutput = output + strlen(output);
+      copyStr(&ptrOutput, lang ? "Coeficiente lineal: " : "Linear coefficient: ");
       textErrorQuadMod(ptrOutput, rc);
       ptrOutput = output + strlen(output);
-      (void)strcpy(ptrOutput, "</p>");
-      ptrOutput = output + strlen(output);
+      copyStr(&ptrOutput, "</p>");
     }
     else
     {
       rc = ComputeExpression(constText, 1, &ValC);
       if (rc != EXPR_OK)
       {
-        (void)strcpy(ptrOutput, lang ? "Término independiente: " : "Constant coefficient: ");
-        ptrOutput = output + strlen(output);
+        copyStr(&ptrOutput, lang ? "Término independiente: " : "Constant coefficient: ");
         textErrorQuadMod(ptrOutput, rc);
-        ptrOutput = output + strlen(output);
-        (void)strcpy(ptrOutput, "</p>");
-        ptrOutput = output + strlen(output);
+        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, "</p>");
       }
       else
       {
@@ -981,47 +968,39 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
         }
         if (rc != EXPR_OK)
         {
-          (void)strcpy(ptrOutput, lang ? "Módulo: " : "Modulus: ");
-          ptrOutput = output + strlen(output);
+          copyStr(&ptrOutput, lang ? "Módulo: " : "Modulus: ");
           textErrorQuadMod(ptrOutput, rc);
-          ptrOutput = output + strlen(output);
-          (void)strcpy(ptrOutput, "</p>");
-          ptrOutput = output + strlen(output);
+          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, "</p>");
         }
         else
         {
           int u = Show(&ValA, " x&sup2;", 2);
           u = Show(&ValB, " x", u);
           Show1(&ValC, u);
-          (void)strcpy(ptrOutput, " &equiv; 0 (mod ");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, " &equiv; 0 (mod ");
           BigInteger2Dec(&ValN, ptrOutput, groupLen);
           ptrOutput += strlen(ptrOutput);
-          (void)strcpy(ptrOutput, ")</p>");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, ")</p>");
           SolNbr = 0;
           ptrBeginSol = ptrOutput;
-          (void)strcpy(ptrOutput, "<ol>");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, "<ol>");
           SolveEquation();
           if (SolNbr == 0)
           {
             ptrOutput = ptrBeginSol;
-            (void)strcpy(ptrOutput, lang? "<p>No hay soluciones.</p>": "<p>There are no solutions.</p>");
+            copyStr(&ptrOutput, lang? "<p>No hay soluciones.</p>": "<p>There are no solutions.</p>");
           }
           else
           {
-            (void)strcpy(ptrOutput, "</ol>");
+            copyStr(&ptrOutput, "</ol>");
           }
-          ptrOutput += strlen(ptrOutput);
         }
       }
     }
   }
-  (void)strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+  copyStr(&ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
     "<p>" COPYRIGHT_ENGLISH "</p>");
-  ptrOutput += strlen(ptrOutput);
-  *ptrOutput = 0;   // Add string terminator.
 }
 
 #if defined __EMSCRIPTEN__ && !defined _MSC_VER

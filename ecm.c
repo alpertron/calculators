@@ -955,16 +955,13 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
     }
 #ifdef __EMSCRIPTEN__
     ptrText = ptrLowerText;  // Point after number that is being factored.
-    (void)strcpy(ptrText, lang ? "<p>Curva " : "<p>Curve ");
-    ptrText += strlen(ptrText);
+    copyStr(&ptrText, lang ? "<p>Curva " : "<p>Curve ");
     int2dec(&ptrText, EC);   // Show curve number.
-    (void)strcpy(ptrText, lang ? " usando límites B1=" : " using bounds B1=");
-    ptrText += strlen(ptrText);
+    copyStr(&ptrText, lang ? " usando límites B1=" : " using bounds B1=");
     int2dec(&ptrText, boundStep1);   // Show first bound.
-    (void)strcpy(ptrText, lang ? " y B2=" : " and B2=");
-    ptrText += strlen(ptrText);
+    copyStr(&ptrText, lang ? " y B2=" : " and B2=");
     int2dec(&ptrText, boundStep2);   // Show second bound.
-    (void)strcpy(ptrText, "</p>");
+    copyStr(&ptrText, "</p>");
     databack(lowerText);
 #endif
 

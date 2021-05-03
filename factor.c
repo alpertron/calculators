@@ -354,14 +354,11 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
                     "4<p>Requesting known primitive factors from Web server.</p>");
     // Format URL.
     ptrUrl = url;
-    (void)strcpy(ptrUrl, "factors.pl?base=");
-    ptrUrl += strlen(ptrUrl);
+    copyStr(&ptrUrl, "factors.pl?base=");
     int2dec(&ptrUrl, BigBase->limbs[0].x);
-    (void)strcpy(ptrUrl, "&expon=");
-    ptrUrl += strlen(ptrUrl);
+    copyStr(&ptrUrl, "&expon=");
     int2dec(&ptrUrl, Expon);
-    (void)strcpy(ptrUrl, "&type=");
-    ptrUrl += strlen(ptrUrl);
+    copyStr(&ptrUrl, "&type=");
     *ptrUrl = ((increment > 0)? 'p': 'm');
     ptrUrl++;
     *ptrUrl = 0;
@@ -449,12 +446,10 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
   {
     oldTimeElapsed = elapsedTime;
     ptrStatus = status;
-    (void)strcpy(ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
-    ptrStatus += strlen(ptrStatus);
+    copyStr(&ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
     GetDHMS(&ptrStatus, elapsedTime / 10);
-    (void)strcpy(ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Exponente potencia +/- 1: " :
+    copyStr(&ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Exponente potencia +/- 1: " :
       "&nbsp;&nbsp;&nbsp;Power +/- 1 exponent: ");
-    ptrStatus += strlen(ptrStatus);
     int2dec(&ptrStatus, Exponent);
     *ptrStatus = 0;                       // Add string terminator.
     databack(status);
@@ -819,22 +814,19 @@ char *ShowFactoredPart(const BigInteger *pNbr, const void *vFactors)
   if ((vFactors != NULL) && (pstFactors->multiplicity > 1))
   {    // Some factorization known.
     int NumberLengthBak = NumberLength;
-    (void)strcpy(ptrLowerText, "<p class=\"blue\">");
-    ptrLowerText += strlen(ptrLowerText);
+    copyStr(&ptrLowerText, "<p class=\"blue\">");
     SendFactorizationToOutput(pstFactors, &ptrLowerText, 1);
-    (void)strcpy(ptrLowerText, "</p>");
-    ptrLowerText += strlen(ptrLowerText);
+    copyStr(&ptrLowerText, "</p>");
     NumberLength = NumberLengthBak;
   }
   if (StepECM == 3)
   {
-    (void)strcpy(ptrLowerText, lang ? "<p>Comprobando si es primo " : "<p>Testing primality of ");
+    copyStr(&ptrLowerText, lang ? "<p>Comprobando si es primo " : "<p>Testing primality of ");
   }
   else
   {
-    (void)strcpy(ptrLowerText, lang ? "<p>Factorizando " : "<p>Factoring ");
+    copyStr(&ptrLowerText, lang ? "<p>Factorizando " : "<p>Factoring ");
   }
-  ptrLowerText += strlen(ptrLowerText);
   if (hexadecimal)
   {
     Bin2Hex(pNbr->limbs, ptrLowerText, pNbr->nbrLimbs, groupLen);
@@ -844,8 +836,7 @@ char *ShowFactoredPart(const BigInteger *pNbr, const void *vFactors)
     Bin2Dec(pNbr->limbs, ptrLowerText, pNbr->nbrLimbs, groupLen);
   }
   ptrLowerText += strlen(ptrLowerText);
-  (void)strcpy(ptrLowerText, "</p>");
-  ptrLowerText += strlen(ptrLowerText);
+  copyStr(&ptrLowerText, "</p>");
   return ptrLowerText;
 }
 
@@ -941,8 +932,7 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
 void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOutput, int doFactorization)
 {
   char *ptrOutput = *pptrOutput;
-  (void)strcpy(ptrOutput, tofactorDec);
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, tofactorDec);
   if (doFactorization)
   {
     const struct sFactors *pstFactor;
@@ -950,14 +940,12 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
     if ((tofactor.sign == SIGN_POSITIVE) && (pstFactors->multiplicity == 1) && (pstFactor->multiplicity == 1) &&
       ((*pstFactor->ptrFactor > 1) || (*(pstFactor->ptrFactor + 1) > 1)))
     {    // Do not show zero or one as prime.
-      (void)strcpy(ptrOutput, lang ? " es primo" : " is prime");
-      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, lang ? " es primo" : " is prime");
     }
     else
     {
       int i = 0;
-      (void)strcpy(ptrOutput, " = ");
-      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, " = ");
       if (tofactor.sign == SIGN_NEGATIVE)
       {
         *ptrOutput++ = '-';
@@ -965,13 +953,12 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
         {
           if (prettyprint)
           {
-            (void)strcpy(ptrOutput, "1 &times; ");
+            copyStr(&ptrOutput, "1 &times; ");
           }
           else
           {
-            (void)strcpy(ptrOutput, "1 * ");
+            copyStr(&ptrOutput, "1 * ");
           }
-          ptrOutput += strlen(ptrOutput);
         }
       }
       for (;;)
@@ -991,11 +978,9 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
         {
           if (prettyprint)
           {
-            (void)strcpy(ptrOutput, "<sup>");
-            ptrOutput += strlen(ptrOutput);
+            copyStr(&ptrOutput, "<sup>");
             int2dec(&ptrOutput, pstFactor->multiplicity);
-            (void)strcpy(ptrOutput, "</sup>");
-            ptrOutput += strlen(ptrOutput);
+            copyStr(&ptrOutput, "</sup>");
           }
           else
           {
@@ -1009,99 +994,85 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
         if (type > 0)
         {
           int compositeType = type / 50000000 * 50000000;
-          (void)strcpy(ptrOutput, " <span class=\"verbose\">(");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, " <span class=\"verbose\">(");
           if (compositeType == TYP_AURIF)
           {
-            (void)strcpy(ptrOutput, "Aurifeuille");
-            ptrOutput += strlen(ptrOutput);
+            copyStr(&ptrOutput, "Aurifeuille");
             if (!isPrime)
             {
-              (void)strcpy(ptrOutput, lang ? " - Compuesto" : " - Composite");
+              copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
             }
           }
           else if (compositeType == TYP_TABLE)
           {
-            (void)strcpy(ptrOutput, lang ? "Tabla" : "Table");
-            ptrOutput += strlen(ptrOutput);
+            copyStr(&ptrOutput, lang ? "Tabla" : "Table");
             if (!isPrime)
             {
-              (void)strcpy(ptrOutput, lang ? " - Compuesto" : " - Composite");
+              copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
             }
           }
           else if (compositeType == TYP_SIQS)
           {
-            (void)strcpy(ptrOutput, lang? "<abbr title=\"Criba cuadrática autoinicializada\">SIQS</abbr>":
-                                    "<abbr title=\"Self-Initializing Quadratic Sieve\">SIQS</abbr>");
-            ptrOutput += strlen(ptrOutput);
+            copyStr(&ptrOutput, lang? "<abbr title=\"Criba cuadrática autoinicializada\">SIQS</abbr>":
+                                "<abbr title=\"Self-Initializing Quadratic Sieve\">SIQS</abbr>");
             if (!isPrime)
             {
-              (void)strcpy(ptrOutput, lang ? " - Compuesto" : " - Composite");
+              copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
             }
           }
           else if (compositeType == TYP_LEHMAN)
           {
-            (void)strcpy(ptrOutput, "Lehman");
-            ptrOutput += strlen(ptrOutput);
+            copyStr(&ptrOutput, "Lehman");
             if (!isPrime)
             {
-              (void)strcpy(ptrOutput, lang ? " - Compuesto" : " - Composite");
+              copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
             }
           }
           else if (compositeType == TYP_RABIN)
           {
-            (void)strcpy(ptrOutput, lang ? "Miller y Rabin" : "Miller &amp; Rabin");
-            ptrOutput += strlen(ptrOutput);
+            copyStr(&ptrOutput, lang ? "Miller y Rabin" : "Miller &amp; Rabin");
             if (!isPrime)
             {
-              (void)strcpy(ptrOutput, lang ? " - Compuesto" : " - Composite");
+              copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
             }
           }
           else if (compositeType == TYP_DIVISION)
           {
-            (void)strcpy(ptrOutput, lang ? "División" : "Division");
-            ptrOutput += strlen(ptrOutput);
+            copyStr(&ptrOutput, lang ? "División" : "Division");
             if (!isPrime)
             {
-              (void)strcpy(ptrOutput, lang ? " - Compuesto" : " - Composite");
+              copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
             }
           }
           else if (type > TYP_EC)
           {
             if (isPrime)
             {
-              (void)strcpy(ptrOutput, lang ? "<abbr title=\"Método de curvas elípticas\">ECM</abbr>, curva " :
+              copyStr(&ptrOutput, lang ? "<abbr title=\"Método de curvas elípticas\">ECM</abbr>, curva " :
                 "<abbr title=\"Elliptic curve method\">ECM</abbr>, curve ");
-              ptrOutput += strlen(ptrOutput);
               int2dec(&ptrOutput, type - TYP_EC);
               *ptrOutput = 0;     // Add string terminator.
             }
             else
             {
-              (void)strcpy(ptrOutput, lang ? "Compuesto" : "Composite");
+              copyStr(&ptrOutput, lang ? "Compuesto" : "Composite");
             }
           }
           else if (!isPrime)
           {
-            (void)strcpy(ptrOutput, lang ? "Compuesto": "Composite");
+            copyStr(&ptrOutput, lang ? "Compuesto": "Composite");
           }
-          ptrOutput += strlen(ptrOutput);
-          (void)strcpy(ptrOutput, ")</span>");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, ")</span>");
         }
         else if (!isPrime)
         {
-          (void)strcpy(ptrOutput, "<span class=\"terse\"> (");
-          ptrOutput += strlen(ptrOutput);
-          (void)strcpy(ptrOutput, lang ? "Compuesto" : "Composite");
-          ptrOutput += strlen(ptrOutput);
-          (void)strcpy(ptrOutput, ")</span>");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, "<span class=\"terse\"> (");
+          copyStr(&ptrOutput, lang ? "Compuesto" : "Composite");
+          copyStr(&ptrOutput, ")</span>");
         }
         if (type < 0)
         {
-          (void)strcpy(ptrOutput, " (Unknown)");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, " (Unknown)");
         }
 #endif
         if (++i == pstFactors->multiplicity)
@@ -1110,13 +1081,12 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
         }
         if (prettyprint)
         {
-          (void)strcpy(ptrOutput, " &times; ");
+          copyStr(&ptrOutput, " &times; ");
         }
         else
         {
-          (void)strcpy(ptrOutput, " * ");
+          copyStr(&ptrOutput, " * ");
         }
-        ptrOutput += strlen(ptrOutput);
         pstFactor++;
       }
     }
@@ -1336,33 +1306,28 @@ static void showECMStatus(void)
   }
   oldTimeElapsed = elapsedTime;
   ptrStatus = status;
-  (void)strcpy(ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
-  ptrStatus += strlen(ptrStatus);
+  copyStr(&ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
   GetDHMS(&ptrStatus, elapsedTime / 10);
-  (void)strcpy(ptrStatus, "&nbsp;&nbsp;&nbsp;");  // Separate with three spaces.
-  ptrStatus += strlen(ptrStatus);
+  copyStr(&ptrStatus, "&nbsp;&nbsp;&nbsp;");  // Separate with three spaces.
   switch (StepECM)
   {
   case 1:
-    (void)strcpy(ptrStatus, lang ? "Paso 1: " : "Step 1: ");
-    ptrStatus += strlen(ptrStatus);
+    copyStr(&ptrStatus, lang ? "Paso 1: " : "Step 1: ");
     int2dec(&ptrStatus, indexPrimes / (nbrPrimes / 100));
     *ptrStatus++ = '%';
     break;
   case 2:
-    (void)strcpy(ptrStatus, lang ? "Paso 2: " : "Step 2: ");
-    ptrStatus += strlen(ptrStatus);
+    copyStr(&ptrStatus, lang ? "Paso 2: " : "Step 2: ");
     int2dec(&ptrStatus, maxIndexM == 0 ? 0 : indexM / (maxIndexM / 100));
     *ptrStatus++ = '%';
     break;
   case 3:
-    (void)strcpy(ptrStatus, lang ? "Progreso: " : "Progress: ");
-    ptrStatus += strlen(ptrStatus);
+    copyStr(&ptrStatus, lang ? "Progreso: " : "Progress: ");
     int2dec(&ptrStatus, percentageBPSW);
     *ptrStatus++ = '%';
     break;
   }
-  (void)strcpy(ptrStatus, "</p>");
+  copyStr(&ptrStatus, "</p>");
   databack(status);
 }
 
@@ -1380,8 +1345,7 @@ static void SaveFactors(struct sFactors *pstFactors)
   }
   oldNbrFactors = pstFactors->multiplicity;
   *ptrText++ = '8';
-  (void)strcpy(ptrText, ptrInputText);
-  ptrText += strlen(ptrText);
+  copyStr(&ptrText, ptrInputText);
   *ptrText++ = '=';
   for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
   {
@@ -1826,7 +1790,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
         nbrLimbs = *pstCurFactor->ptrFactor;
       }
 #ifdef __EMSCRIPTEN__
-      (void)strcpy(ptrText, lang ? "<p>División por primos menores que 100000.</p>" :
+      copyStr(&ptrText, lang ? "<p>División por primos menores que 100000.</p>" :
         "<p>Trial division by primes less than 100000.</p>");
       ShowLowerText();
 #endif
@@ -1922,7 +1886,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
 #ifdef __EMSCRIPTEN__
 #ifdef FACTORIZATION_APP
       StepECM = 0;
-      (void)strcpy(ptrText, lang ? "<p>Verificando si el número es potencia perfecta.<p>" :
+      copyStr(&ptrText, lang ? "<p>Verificando si el número es potencia perfecta.<p>" :
         "<p>Testing whether the number is perfect power or not.</p>");
       ShowLowerText();
 #else

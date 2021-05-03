@@ -18,12 +18,12 @@
 //
 #include <string.h>
 #include "output.h"
+#include "bignbr.h"
 
 char* ptrOutput;
 void showText(const char* text)
 {
-  (void)strcpy(ptrOutput, text);
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, text);
 }
 
 void showMinus(void)

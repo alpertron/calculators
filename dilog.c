@@ -121,8 +121,7 @@ void textErrorDilog(char *ptrOutput, enum eExprErr rc)
   pOutput++;
   *pOutput = '>';
   pOutput++;
-  (void)strcpy(pOutput, text);
-  pOutput += strlen(pOutput);
+  copyStr(&pOutput, text);
   *pOutput = '<';
   pOutput++;
   *pOutput = '/';
@@ -136,13 +135,13 @@ void textErrorDilog(char *ptrOutput, enum eExprErr rc)
 
 static void indicateCannotComputeLog(int indexBase, int indexExp)
 {
-  char *ptrText;
+  char *ptrText = textExp;
   const struct sFactors *pstFactors = &astFactorsGO[indexBase + 1];
-  (void)strcpy(textExp, "Cannot compute discrete logarithm: subgroup=");
+  copyStr(&ptrText, "Cannot compute discrete logarithm: subgroup=");
   IntArray2BigInteger(pstFactors->ptrFactor, &tmpBase);
-  Bin2Dec(tmpBase.limbs, textExp + strlen(textExp), tmpBase.nbrLimbs, groupLen);
-  (void)strcpy(textExp + strlen(textExp), ", exponent=");
-  ptrText = textExp + strlen(textExp);
+  Bin2Dec(tmpBase.limbs, ptrText, tmpBase.nbrLimbs, groupLen);
+  ptrText += strlen(ptrText);
+  copyStr(&ptrText, ", exponent=");
   int2dec(&ptrText, indexExp);
   DiscreteLogPeriod.sign = SIGN_NEGATIVE;
 }
@@ -193,9 +192,10 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
   IntArray2BigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
   subGroupOrder.limbs[subGroupOrder.nbrLimbs].x = 0;
-  (void)strcpy(textExp, "Computing discrete logarithm in subgroup of ");
-  Bin2Dec(subGroupOrder.limbs, textExp + strlen(textExp), subGroupOrder.nbrLimbs, groupLen);
-  ptr = textExp + strlen(textExp);
+  ptr = textExp;
+  copyStr(&ptr, "Computing discrete logarithm in subgroup of ");
+  Bin2Dec(subGroupOrder.limbs, ptr, subGroupOrder.nbrLimbs, groupLen);
+  ptr += strlen(ptr);
   if (astFactorsGO[indexBase + 1].multiplicity > 1)
   {
     *ptr = '<';
@@ -222,7 +222,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
     *ptr = '>';
     ptr++;
   }
-  (void)strcpy(ptr, " elements.");
+  copyStr(&ptr, " elements.");
   showText(textExp);
   NumberLength = mod.nbrLimbs;
   (void)memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
@@ -709,10 +709,9 @@ void DiscreteLogarithm(void)
     GetMontgomeryParms(NumberLength);
 #if 0
     char *ptrText = textExp;
-    (void)strcpy(ptrText, "<p>NumberLength (2) = ");
-    ptrText = ptrText + strlen(ptrText);
+    copyStr(&ptrText, "<p>NumberLength (2) = ");
     int2dec(&ptrText, NumberLength);
-    (void)strcpy(ptrText, "</p>");
+    copyStr(&ptrText, "</p>");
     DiscreteLogPeriod.sign = SIGN_NEGATIVE;
     return;
 #endif
@@ -871,47 +870,39 @@ static void generateOutput(enum eExprErr rc, int groupLength)
   }
   else
   {
-    (void)strcpy(ptrOutput, lang ? "<p>Hallar <var>exp</var> tal que " :
+    copyStr(&ptrOutput, lang ? "<p>Hallar <var>exp</var> tal que " :
       "<p>Find <var>exp</var> such that ");
-    ptrOutput += strlen(ptrOutput);
     Bin2Dec(base.limbs, ptrOutput, base.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
-    (void)strcpy(ptrOutput, "<sup><var>exp</var></sup> &equiv; ");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, "<sup><var>exp</var></sup> &equiv; ");
     Bin2Dec(power.limbs, ptrOutput, power.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
-    (void)strcpy(ptrOutput, " (mod ");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, " (mod ");
     Bin2Dec(modulus.limbs, ptrOutput, modulus.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
-    (void)strcpy(ptrOutput, ")</p><p>");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, ")</p><p>");
     if (DiscreteLogPeriod.sign == SIGN_NEGATIVE)
     {
-      (void)strcpy(ptrOutput, lang ? "Ningún valor de <var>exp</var> satisface la congruencia.</p>" :
+      copyStr(&ptrOutput, lang ? "Ningún valor de <var>exp</var> satisface la congruencia.</p>" :
         "There is no such value of <var>exp</var>.</p>");
-      ptrOutput += strlen(ptrOutput);
-      (void)strcpy(ptrOutput, textExp);
+      copyStr(&ptrOutput, textExp);
     }
     else
     {
-      (void)strcpy(ptrOutput, "<var>exp</var> = ");
-      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, "<var>exp</var> = ");
       Bin2Dec(DiscreteLog.limbs, ptrOutput, DiscreteLog.nbrLimbs, groupLength);
       ptrOutput += strlen(ptrOutput);
       if (!BigIntIsZero(&DiscreteLogPeriod))
       {   // Discrete log period is not zero.
-        (void)strcpy(ptrOutput, " + ");
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, " + ");
         Bin2Dec(DiscreteLogPeriod.limbs, ptrOutput, DiscreteLogPeriod.nbrLimbs, groupLength);
         ptrOutput += strlen(ptrOutput);
-        (void)strcpy(ptrOutput, "<var>k</var>");
+        copyStr(&ptrOutput, "<var>k</var>");
       }
-      (void)strcpy(ptrOutput, "</p>");
+      copyStr(&ptrOutput, "</p>");
     }
-    ptrOutput += strlen(ptrOutput);
   }
-  (void)strcpy(ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+  copyStr(&ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 

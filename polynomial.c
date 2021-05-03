@@ -1232,28 +1232,22 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
       char* ptrOutput = outputInfo;
       if (lang)
       {
-        (void)strcpy(ptrOutput, "1<p>Aplicando lema de Hensel usando el número primo ");
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, "1<p>Aplicando lema de Hensel usando el número primo ");
         int2dec(&ptrOutput, primeMod.limbs[0].x);
-        (void)strcpy(ptrOutput, " procesando exponente ");
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, " procesando exponente ");
         int2dec(&ptrOutput, currentExp);
-        (void)strcpy(ptrOutput, " de ");
+        copyStr(&ptrOutput, " de ");
       }
       else
       {
-        (void)strcpy(ptrOutput, "1<p>Hensel lifting using prime number ");
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, "1<p>Hensel lifting using prime number ");
         int2dec(&ptrOutput, primeMod.limbs[0].x);
-        (void)strcpy(ptrOutput, " processing exponent ");
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, " processing exponent ");
         int2dec(&ptrOutput, currentExp);
-        (void)strcpy(ptrOutput, " of ");
+        copyStr(&ptrOutput, " of ");
       }
-      ptrOutput += strlen(ptrOutput);
       int2dec(&ptrOutput, exponentMod);
-      (void)strcpy(ptrOutput, ".</p>");
-      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, ".</p>");
       showElapsedTimeSec(&ptrOutput);
       databack(outputInfo);
     }
@@ -1589,8 +1583,7 @@ void showPowerX(char **pptrOutput, int polyDegree)
   {
     if (pretty == PRETTY_PRINT)
     {
-      (void)strcpy(ptrOutput, lang?"<span class=\"hide\">equis </span><span aria-hidden=\"true\"><var>x</var></span>":"<var>x</var>");
-      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, lang?"<span class=\"hide\">equis </span><span aria-hidden=\"true\"><var>x</var></span>":"<var>x</var>");
     }
     else
     {
@@ -1651,8 +1644,7 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
       }
       else
       {
-        (void)strcpy(ptrOutput, pretty == PRETTY_PRINT? "&minus;": "-");
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, pretty == PRETTY_PRINT? "&minus;": "-");
       }
       *ptrOutput = ' ';
       ptrOutput++;
@@ -1667,8 +1659,7 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
         {
           if (pretty == PRETTY_PRINT)
           {
-            (void)strcpy(ptrOutput, "&#8290;");
-            ptrOutput += strlen(ptrOutput);
+            copyStr(&ptrOutput, "&#8290;");
           }
           else if (pretty == PARI_GP)
           {
@@ -1720,8 +1711,7 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
   }
   if (operand1.sign == SIGN_NEGATIVE)
   {
-    (void)strcpy(ptrOutput, " &minus;");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, " &minus;");
   }
   if ((operand1.nbrLimbs != 1) || (operand1.limbs[0].x != 1) || (degree == 0))
   {     // Leading coefficient is not 1 or degree is zero.
@@ -1735,8 +1725,7 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
   showPolynomial(&ptrOutput, (modulusIsZero ? &values[1] : poly4), degree, groupLength);
   if (!modulusIsZero)
   {
-    (void)strcpy(ptrOutput, " (mod ");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, " (mod ");
     Bin2Dec(primeMod.limbs, ptrOutput, primeMod.nbrLimbs, groupLength);
     ptrOutput += strlen(ptrOutput);
     if (exponentMod != 1)
@@ -1771,8 +1760,7 @@ void outputPolynomialFactor(char *ptrOutput, int groupLength, const struct sFact
     UncompressBigIntegerB(ptrSrc, &operand1);
     if (operand1.sign == SIGN_NEGATIVE)
     {
-      (void)strcpy(ptrOutput, "&minus;");
-      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, "&minus;");
     }
     if ((operand1.nbrLimbs != 1) || (operand1.limbs[0].x != 1))
     {     // Absolute value is not 1.
@@ -1846,8 +1834,7 @@ void textErrorPol(char *ptrOutput, enum eExprErr rc)
   ptrOutput++;
   *ptrOutput = '>';
   ptrOutput++;
-  (void)strcpy(ptrOutput, text);
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, text);
   *ptrOutput = '<';
   ptrOutput++;
   *ptrOutput = '/';

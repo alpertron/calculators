@@ -1772,22 +1772,18 @@ bool BpswPrimalityTest(const BigInteger *pValue)
   *ptrText = '3';
   ptrText++;
 #endif
-  (void)strcpy(ptrText, lang ? "<p>Paso 2 del algoritmo BPSW de primos probables: Lucas fuerte con P=1, D=" :
+  copyStr(&ptrText, lang ? "<p>Paso 2 del algoritmo BPSW de primos probables: Lucas fuerte con P=1, D=" :
     "<p>Step 2 of BPSW probable prime algorithm: Strong Lucas with P=1, D=");
-  ptrText += strlen(ptrText);
   int2dec(&ptrText, D);
-  (void)strcpy(ptrText, ", Q=");
-  ptrText += strlen(ptrText);
+  copyStr(&ptrText, ", Q=");
   i = -absQ;        // Get value of Q to show it on screen.
   if (i < 0)
   {
-    (void)strcpy(ptrText, "&minus;");
-    ptrText += strlen(ptrText);
+    copyStr(&ptrText, "&minus;");
     i = -i;
   }
   int2dec(&ptrText, i);
-  (void)strcpy(ptrText, "</p>");
-  ptrText += strlen(ptrText);
+  copyStr(&ptrText, "</p>");
 #ifdef FACTORIZATION_APP
   ShowLowerText();
 #else

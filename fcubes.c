@@ -345,7 +345,7 @@ void fcubesText(char *input, int grpLen)
     groupLength = grpLen;
   }
   BatchProcessing(input, &toProcess, &ptrOutput, NULL);
-  (void)strcpy(ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
+  copyStr(&ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
     "</p><p>" COPYRIGHT_ENGLISH "</p>"));
 }
 
@@ -356,8 +356,7 @@ void batchCubesCallback(char **pptrOutput)
   NumberLength = toProcess.nbrLimbs;
   result = fcubes(&toProcess);
   // Show the number to be decomposed into sum of cubes.
-  (void)strcpy(ptrOutput, "<p>");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, "<p>");
   if (hexadecimal)
   {
     BigInteger2Hex(&toProcess, ptrOutput, groupLength);
@@ -370,25 +369,24 @@ void batchCubesCallback(char **pptrOutput)
   switch (result)
   {
   case -1:
-    (void)strcpy(ptrOutput, (lang?": El applet no funciona si el número es congruente a 4 o 5 (mod 9)</p>":
+    copyStr(&ptrOutput, (lang?": El applet no funciona si el número es congruente a 4 o 5 (mod 9)</p>":
       ": This applet does not work if the number is congruent to 4 or 5 (mod 9)</p>"));
-    *pptrOutput = ptrOutput + strlen(ptrOutput);
+    *pptrOutput = ptrOutput;
     return;
   case 1:
-    (void)strcpy(ptrOutput, (lang?": ¡Error interno!Por favor envíe este número al autor del applet.</p>":
+    copyStr(&ptrOutput, (lang?": ¡Error interno!Por favor envíe este número al autor del applet.</p>":
       ": Internal error! Please send the number to the author of the applet.</p>"));
-    *pptrOutput = ptrOutput + strlen(ptrOutput);
+    *pptrOutput = ptrOutput;
     return;
   case 2:
-    (void)strcpy(ptrOutput, (lang?": El usuario detuvo el cálculo</p>": ": User stopped the calculation</p>"));
-    *pptrOutput = ptrOutput + strlen(ptrOutput);
+    copyStr(&ptrOutput, (lang?": El usuario detuvo el cálculo</p>": ": User stopped the calculation</p>"));
+    *pptrOutput = ptrOutput;
     return;
   default:
     break;
   }
   // Show decomposition in sum of 1, 2, 3 or 4 cubes.
-  (void)strcpy(ptrOutput, " = ");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, " = ");
   if (Base1.sign == SIGN_NEGATIVE)
   {
     *ptrOutput = '(';
@@ -408,12 +406,10 @@ void batchCubesCallback(char **pptrOutput)
     *ptrOutput = ')';
     ptrOutput++;
   }
-  (void)strcpy(ptrOutput, cube);
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, cube);
   if (!BigIntIsZero(&Base2))
   {
-    (void)strcpy(ptrOutput, " + ");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, " + ");
     if (Base2.sign == SIGN_NEGATIVE)
     {
       *ptrOutput = '(';
@@ -433,13 +429,11 @@ void batchCubesCallback(char **pptrOutput)
       *ptrOutput = ')';
       ptrOutput++;
     }
-    (void)strcpy(ptrOutput, cube);
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, cube);
   }
   if (!BigIntIsZero(&Base3))
   {
-    (void)strcpy(ptrOutput, " + ");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, " + ");
     if (Base3.sign == SIGN_NEGATIVE)
     {
       *ptrOutput = '(';
@@ -459,13 +453,11 @@ void batchCubesCallback(char **pptrOutput)
       *ptrOutput = ')';
       ptrOutput++;
     }
-    (void)strcpy(ptrOutput, cube);
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, cube);
   }
   if (!BigIntIsZero(&Base4))
   {
-    (void)strcpy(ptrOutput, " + ");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, " + ");
     if (Base4.sign == SIGN_NEGATIVE)
     {
       *ptrOutput = '(';
@@ -485,8 +477,7 @@ void batchCubesCallback(char **pptrOutput)
       *ptrOutput = ')';
       ptrOutput++;
     }
-    (void)strcpy(ptrOutput, cube);
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, cube);
   }
   *pptrOutput = ptrOutput;
 }

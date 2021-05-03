@@ -171,8 +171,7 @@ static struct stValidateCoeff astValidateCoeff[NBR_COEFF] =
 
 static void showText(const char *text)
 {
-  (void)strcpy(ptrOutput, text);
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, text);
 }
 
 static void showMinus(void)
@@ -476,15 +475,11 @@ static int Show(const BigInteger *num, const char *str, enum eLinearSolution t)
       *ptrOutput++ = ' ';
       Bin2Dec(num->limbs, ptrOutput, num->nbrLimbs, groupLen);
       ptrOutput += strlen(ptrOutput);
-      (void)strcpy(ptrOutput, "&nbsp;&#8290;");
+      copyStr(&ptrOutput, "&nbsp;&#8290;");
     }
     else
     {
-      (void)strcpy(ptrOutput, "&nbsp;");
-    }
-    if (*str)
-    {
-      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, "&nbsp;");
     }
     showText(str);
     return t | 1;
@@ -511,23 +506,19 @@ static void ShowEq(const BigInteger *coeffA, const BigInteger *coeffB, const Big
   char *ptrVar;
   enum eLinearSolution t;
   ptrVar = var;
-  (void)strcpy(ptrVar, x);
-  ptrVar += strlen(ptrVar);
-  (void)strcpy(ptrVar, squareText);
+  copyStr(&ptrVar, x);
+  copyStr(&ptrVar, squareText);
   t = Show(coeffA, var, SOLUTION_FOUND);
 
   ptrVar = var;
-  (void)strcpy(ptrVar, x);
-  ptrVar += strlen(ptrVar);
-  (void)strcpy(ptrVar, "&#8290;");
-  ptrVar += strlen(ptrVar);
-  (void)strcpy(ptrVar, y);
+  copyStr(&ptrVar, x);
+  copyStr(&ptrVar, "&#8290;");
+  copyStr(&ptrVar, y);
   t = Show(coeffB, var, t);
 
   ptrVar = var;
-  (void)strcpy(ptrVar, y);
-  ptrVar += strlen(ptrVar);
-  (void)strcpy(ptrVar, squareText);
+  copyStr(&ptrVar, y);
+  copyStr(&ptrVar, squareText);
   t = Show(coeffC, var, t);
 
   t = Show(coeffD, x, t);
@@ -4222,20 +4213,17 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
   astValidateCoeff[4].expression = coefEText;
   astValidateCoeff[5].expression = coefFText;
   ptrOutput = output;
-  (void)strcpy(ptrOutput, "2<p>");
-  ptrOutput = output + strlen(output);
+  copyStr(&ptrOutput, "2<p>");
   for (coeffNbr = 0; coeffNbr < NBR_COEFF; coeffNbr++)
   {
     rc = ComputeExpression(pstValidateCoeff->expression, 1,
                            pstValidateCoeff->bigint);
     if (rc != EXPR_OK)
     {
-      (void)strcpy(ptrOutput, lang ? pstValidateCoeff->textSpanish : pstValidateCoeff->textEnglish);
-      ptrOutput = output + strlen(output);
+      copyStr(&ptrOutput, lang ? pstValidateCoeff->textSpanish : pstValidateCoeff->textEnglish);
       textError(ptrOutput, rc);
-      ptrOutput = output + strlen(output);
-      (void)strcpy(ptrOutput, "</p>");
-      ptrOutput = output + strlen(output);
+      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, "</p>");
       break;
     }
     pstValidateCoeff++;

@@ -321,26 +321,22 @@ static void PerformSWAPI(int k, int kMax, int size)
   if ((size == 16) && (z < 1000))
   {
     z++;
-    (void)strcpy(ptrDebugOutput, "k = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, "k = ");
     int2dec(&ptrDebugOutput, k);
-    (void)strcpy(ptrDebugOutput, ", z = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, ", z = ");
     int2dec(&ptrDebugOutput, z);
     *ptrDebugOutput = '\r';
     ptrDebugOutput++;
     *ptrDebugOutput = '\n';
     ptrDebugOutput++;
-    (void)strcpy(ptrDebugOutput, "tmp3 = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, "tmp3 = ");
     BigInteger2Dec(&tmp3, ptrDebugOutput, 0);
     ptrDebugOutput += strlen(ptrDebugOutput);
     *ptrDebugOutput = '\r';
     ptrDebugOutput++;
     *ptrDebugOutput = '\n';
     ptrDebugOutput++;
-    (void)strcpy(ptrDebugOutput, "detProdB[k-1] = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, "detProdB[k-1] = ");
     getBigIntegerFromLinked(detProdB[k - 1], &tmp5);
     BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
     ptrDebugOutput += strlen(ptrDebugOutput);
@@ -348,8 +344,7 @@ static void PerformSWAPI(int k, int kMax, int size)
     ptrDebugOutput++;
     *ptrDebugOutput = '\n';
     ptrDebugOutput++;
-    (void)strcpy(ptrDebugOutput, "B = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, "B = ");
     BigInteger2Dec(&tmp1, ptrDebugOutput, 0);
     ptrDebugOutput += strlen(ptrDebugOutput);
     *ptrDebugOutput = '\r';
@@ -395,31 +390,25 @@ void integralLLL(int size)
 #ifdef __EMSCRIPTEN__
   char outputInfo[1000];
   char* ptrOutput = outputInfo;
+  numberLLL++;
   if (lang)
   {
-    (void)strcpy(ptrOutput, "1<p>Calculando LLL número ");
-    ptrOutput += strlen(ptrOutput);
-    numberLLL++;
+    copyStr(&ptrOutput, "1<p>Calculando LLL número ");
     int2dec(&ptrOutput, numberLLL);
-    (void)strcpy(ptrOutput, " en matriz de");
+    copyStr(&ptrOutput, " en matriz de");
   }
   else
   {
-    (void)strcpy(ptrOutput, "1<p>Computing LLL #");
-    ptrOutput += strlen(ptrOutput);
-    numberLLL++;
+    copyStr(&ptrOutput, "1<p>Computing LLL #");
     int2dec(&ptrOutput, numberLLL);
-    (void)strcpy(ptrOutput, " in matrix of");
+    copyStr(&ptrOutput, " in matrix of");
   }
-  ptrOutput += strlen(ptrOutput);
   *ptrOutput = ' ';
   ptrOutput++;
   int2dec(&ptrOutput, size);
-  (void)strcpy(ptrOutput, " &times; ");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, " &times; ");
   int2dec(&ptrOutput, size);
-  (void)strcpy(ptrOutput, ".</p>");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, ".</p>");
   showElapsedTimeSec(&ptrOutput);
   databack(outputInfo);
 #endif
@@ -483,12 +472,10 @@ void integralLLL(int size)
 #if DEBUG_VANHOEIJ
     if (size == 16)
     {
-      (void)strcpy(ptrDebugOutput, "lambda: ");
-      ptrDebugOutput += strlen(ptrDebugOutput);
+      copyStr(&ptrDebugOutput, "lambda: ");
       for (row = 0; row < size; row++)
       {
-        (void)strcpy(ptrDebugOutput, "Row #");
-        ptrDebugOutput += strlen(ptrDebugOutput);
+        copyStr(&ptrDebugOutput, "Row #");
         int2dec(&ptrDebugOutput, row);
         *ptrDebugOutput = ':';
         ptrDebugOutput++;
@@ -507,8 +494,7 @@ void integralLLL(int size)
         *(ptrDebugOutput - 2) = '\r';
         *(ptrDebugOutput - 1) = '\n';
       }
-      (void)strcpy(ptrDebugOutput, "detProdB: ");
-      ptrDebugOutput += strlen(ptrDebugOutput);
+      copyStr(&ptrDebugOutput, "detProdB: ");
       for (colI = 0; colI < size; colI++)
       {
         BigInteger2Dec(&detProdB[colI], ptrDebugOutput, 0);
@@ -564,12 +550,10 @@ void integralLLL(int size)
 #if DEBUG_VANHOEIJ
     if (size == 16)
     {
-      (void)strcpy(ptrDebugOutput, "basis: ");
-      ptrDebugOutput += strlen(ptrDebugOutput);
+      copyStr(&ptrDebugOutput, "basis: ");
       for (row = 0; row < size; row++)
       {
-        (void)strcpy(ptrDebugOutput, "Row #");
-        ptrDebugOutput += strlen(ptrDebugOutput);
+        copyStr(&ptrDebugOutput, "Row #");
         int2dec(&ptrDebugOutput, row);
         *ptrDebugOutput = ':';
         ptrDebugOutput++;
@@ -642,8 +626,7 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
   // Compute coefficients of P.
   intToBigInteger(&operand1, 1);
 #if DEBUG_VANHOEIJ
-  (void)strcpy(ptrDebugOutput, "Coefficients: ");
-  ptrDebugOutput += strlen(ptrDebugOutput);
+  copyStr(&ptrDebugOutput, "Coefficients: ");
 #endif
   for (traceNbr = 0; traceNbr < polyDegree; traceNbr++)
   {
@@ -660,8 +643,7 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
     setLinkedBigInteger(&ptrCoeffs[traceNbr], &operand3);
   }
 #if DEBUG_VANHOEIJ
-  (void)strcpy(ptrDebugOutput, LF);
-  ptrDebugOutput += strlen(ptrDebugOutput);
+  copyStr(&ptrDebugOutput, LF);
 #endif
   // Store traces of polynomial P in matrix traces.
   ptrTrace = &traces[0];
@@ -734,8 +716,7 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
   {
     int* ptrMod32768;
 #if DEBUG_VANHOEIJ
-    (void)strcpy(ptrDebugOutput, "stepNbr = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, "stepNbr = ");
     int2dec(&ptrDebugOutput, stepNbr);
 #endif
     NumberLength = powerMod.nbrLimbs;
@@ -1149,12 +1130,10 @@ static void vanHoeij(int prime, int nbrFactors)
   a0 = b + exponDifference;
   exponentMod = a0;
 #if DEBUG_VANHOEIJ
-  (void)strcpy(ptrDebugOutput, LF "====================================================="
+  copyStr(&ptrDebugOutput, LF "====================================================="
     LF "prime = ");
-  ptrDebugOutput += strlen(ptrDebugOutput);
   int2dec(&ptrDebugOutput, prime);
-  (void)strcpy(ptrDebugOutput, "root bound = ");
-  ptrDebugOutput += strlen(ptrDebugOutput);
+  copyStr(&ptrDebugOutput, "root bound = ");
   BigInteger2Dec(&bound, ptrDebugOutput, 0);
   ptrDebugOutput += strlen(ptrDebugOutput);
   *ptrDebugOutput = '\n';
@@ -1216,15 +1195,12 @@ static void vanHoeij(int prime, int nbrFactors)
       {
         oldTimeElapsed = elapsedTime;
         ptrOutput = output;
-        (void)strcpy(ptrOutput, lang? "1<p>Obteniendo factores de dos factores modulares: prueba ":
+        copyStr(&ptrOutput, lang? "1<p>Obteniendo factores de dos factores modulares: prueba ":
                                 "1<p>Finding factors from two modular factors: attempt ");
-        ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, currentAttempts);
-        (void)strcpy(ptrOutput, lang ? " de " : " of ");
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, lang ? " de " : " of ");
         int2dec(&ptrOutput, maxAttempts);
-        (void)strcpy(ptrOutput, "</p>");
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, "</p>");
         showElapsedTimeSec(&ptrOutput);
         databack(output);
       }
@@ -1306,21 +1282,16 @@ static void vanHoeij(int prime, int nbrFactors)
     intToBigInteger(&operand1, prime);
     BigIntPowerIntExp(&operand1, b, &powerBoundA);
 #if DEBUG_VANHOEIJ
-    (void)strcpy(ptrDebugOutput, LF "====================================================="
+    copyStr(&ptrDebugOutput, LF "====================================================="
       LF "prime = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
     int2dec(&ptrDebugOutput, prime);
-    (void)strcpy(ptrDebugOutput, ", a0 = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, ", a0 = ");
     int2dec(&ptrDebugOutput, a0);
-    (void)strcpy(ptrDebugOutput, ", b0 = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, ", b0 = ");
     int2dec(&ptrDebugOutput, b);
-    (void)strcpy(ptrDebugOutput, ", exponDifference = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, ", exponDifference = ");
     int2dec(&ptrDebugOutput, exponDifference);
-    (void)strcpy(ptrDebugOutput, LF);
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, LF);
 #endif
     intToBigInteger(&operand5, 1);
     values[0] = polyNonRepeatedFactors[0];
@@ -1364,8 +1335,7 @@ static void vanHoeij(int prime, int nbrFactors)
     {
       ComputeTraces(firstTrace + nbrRequiredTraces, factorNbr);
 #if DEBUG_VANHOEIJ
-      (void)strcpy(ptrDebugOutput, "Traces: ");
-      ptrDebugOutput += strlen(ptrDebugOutput);
+      copyStr(&ptrDebugOutput, "Traces: ");
       for (nbrRow = firstTrace; nbrRow < firstTrace + nbrRequiredTraces; nbrRow++)
       {
         getBigIntegerFromLinked(traces[nbrRow], &tmp5);
@@ -1379,8 +1349,7 @@ static void vanHoeij(int prime, int nbrFactors)
           ptrDebugOutput++;
         }
       }
-      (void)strcpy(ptrDebugOutput, LF);
-      ptrDebugOutput += strlen(ptrDebugOutput);
+      copyStr(&ptrDebugOutput, LF);
 #endif
       // Use traces 1 to RequiredTraces
       // (i.e. Tr[1] to Tr[nbrRequiredTraces])
@@ -1448,14 +1417,12 @@ static void vanHoeij(int prime, int nbrFactors)
       }
     }
 #if DEBUG_VANHOEIJ
-    (void)strcpy(ptrDebugOutput, LF "Matrix M before LLL (");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, LF "Matrix M before LLL (");
     int2dec(&ptrDebugOutput, nbrVectors + nbrRequiredTraces);
     *ptrDebugOutput = '*';
     ptrDebugOutput++;
     int2dec(&ptrDebugOutput, nbrVectors + nbrRequiredTraces);
-    (void)strcpy(ptrDebugOutput, "): ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, "): ");
     for (nbrRow = 0; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
@@ -1490,8 +1457,7 @@ static void vanHoeij(int prime, int nbrFactors)
       }
     }
 #if DEBUG_VANHOEIJ
-    (void)strcpy(ptrDebugOutput, LF "Matrix M after LLL: " LF);
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, LF "Matrix M after LLL: " LF);
     for (nbrRow = 0; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
@@ -1573,8 +1539,7 @@ static void vanHoeij(int prime, int nbrFactors)
     }
 
 #if DEBUG_VANHOEIJ
-    (void)strcpy(ptrDebugOutput, LF "Matrix M before Gram-Schmidt" LF);
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, LF "Matrix M before Gram-Schmidt" LF);
     for (nbrRow = 0; nbrRow < nbrVectors + nbrRequiredTraces; nbrRow++)
     {
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
@@ -1598,8 +1563,7 @@ static void vanHoeij(int prime, int nbrFactors)
     GramSchmidtOrthogonalization(nbrFactors + nbrRequiredTraces, nbrVectors + nbrRequiredTraces);
 
 #if DEBUG_VANHOEIJ
-    (void)strcpy(ptrDebugOutput, LF "Norms after Gram-Schmidt: ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, LF "Norms after Gram-Schmidt: ");
     for (r1 = 2; r1 <= nbrVectors + nbrRequiredTraces; r1++)
     {
       getBigIntegerFromLinked(lambda[r1 - 1][r1 - 1], &tmp4);
@@ -1632,8 +1596,7 @@ static void vanHoeij(int prime, int nbrFactors)
       }
     }
 #if DEBUG_VANHOEIJ
-    (void)strcpy(ptrDebugOutput, LF "squareFormula = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, LF "squareFormula = ");
     int2dec(&ptrDebugOutput, squareFormula);
 #endif
 
@@ -1641,7 +1604,7 @@ static void vanHoeij(int prime, int nbrFactors)
     if (r1 == 1)
     {                 // Polynomial is irreducible.
 #if DEBUG_VANHOEIJ
-      (void)strcpy(ptrDebugOutput, LF "r' = 1 -> irreducible." LF);
+      copyStr(&ptrDebugOutput, LF "r' = 1 -> irreducible." LF);
 #ifdef __EMSCRIPTEN__
       output[0] = '1';
       (void)strcpy(&output[1], debugOutput);
@@ -1660,11 +1623,11 @@ static void vanHoeij(int prime, int nbrFactors)
       char* ptrOutput = outputInfo;
       if (lang)
       {
-        (void)strcpy(ptrOutput, "1<p>Paso 7</p>");
+        copyStr(&ptrOutput, "1<p>Paso 7</p>");
       }
       else
       {
-        (void)strcpy(ptrOutput, "1<p>Step 7</p>");
+        copyStr(&ptrOutput, "1<p>Step 7</p>");
       }
       databack(outputInfo);
     }
@@ -1685,8 +1648,7 @@ static void vanHoeij(int prime, int nbrFactors)
     }
 
 #if DEBUG_VANHOEIJ
-    (void)strcpy(ptrDebugOutput, LF "Matrix BL before Gauss: ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, LF "Matrix BL before Gauss: ");
     for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
     {
       for (nbrCol = 0; nbrCol < r1; nbrCol++)
@@ -1709,11 +1671,11 @@ static void vanHoeij(int prime, int nbrFactors)
       char* ptrOutput = outputInfo;
       if (lang)
       {
-        (void)strcpy(ptrOutput, "1<p>Paso 8</p>");
+        copyStr(&ptrOutput, "1<p>Paso 8</p>");
       }
       else
       {
-        (void)strcpy(ptrOutput, "1<p>Step 8</p>");
+        copyStr(&ptrOutput, "1<p>Step 8</p>");
       }
       databack(outputInfo);
     }
@@ -1727,14 +1689,11 @@ static void vanHoeij(int prime, int nbrFactors)
     // by r and r by r'
     rank = gauss(nbrFactors, r1);  // Dimension of matrix BL.
 #if DEBUG_VANHOEIJ
-    (void)strcpy(ptrDebugOutput, LF "squareFormula = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, LF "squareFormula = ");
     int2dec(&ptrDebugOutput, squareFormula);
-    (void)strcpy(ptrDebugOutput, ", rank = ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, ", rank = ");
     int2dec(&ptrDebugOutput, rank);
-    (void)strcpy(ptrDebugOutput, LF);
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, LF);
 #endif
     nbrRequiredTraces++;
     nbrVectors = r1;
@@ -1756,8 +1715,7 @@ static void vanHoeij(int prime, int nbrFactors)
       continue;
     }
 #if DEBUG_VANHOEIJ
-    (void)strcpy(ptrDebugOutput, LF "Matrix R after Gauss: ");
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    copyStr(&ptrDebugOutput, LF "Matrix R after Gauss: ");
     for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
     {
       for (nbrCol = 0; nbrCol < r1; nbrCol++)
@@ -1794,14 +1752,11 @@ static void vanHoeij(int prime, int nbrFactors)
     if (nbrCol < nbrFactors)
     {                   // Invalid matrix. Try again with bigger matrix.
 #if DEBUG_VANHOEIJ
-      (void)strcpy(ptrDebugOutput, "nbrCol = ");
-      ptrDebugOutput += strlen(ptrDebugOutput);
+      copyStr(&ptrDebugOutput, "nbrCol = ");
       int2dec(&ptrDebugOutput, nbrCol);
-      (void)strcpy(ptrDebugOutput, ", nbrFactors = ");
-      ptrDebugOutput += strlen(ptrDebugOutput);
+      copyStr(&ptrDebugOutput, ", nbrFactors = ");
       int2dec(&ptrDebugOutput, nbrFactors);
-      (void)strcpy(ptrDebugOutput, "They should have been equal." LF);
-      ptrDebugOutput += strlen(ptrDebugOutput);
+      copyStr(&ptrDebugOutput, "They should have been equal." LF);
 #endif
       continue;
     }
@@ -1815,20 +1770,19 @@ static void vanHoeij(int prime, int nbrFactors)
     char* ptrOutput = outputInfo;
     if (lang)
     {
-      (void)strcpy(ptrOutput, "1<p>Verificando si los polinomios hallados son factores irreducibles.</p>");
+      copyStr(&ptrOutput, "1<p>Verificando si los polinomios hallados son factores irreducibles.</p>");
     }
     else
     {
-      (void)strcpy(ptrOutput, "1<p>Testing whether the polynomials found are irreducible factors.</p>");
+      copyStr(&ptrOutput, "1<p>Testing whether the polynomials found are irreducible factors.</p>");
     }
-    ptrOutput += strlen(ptrOutput);
     showElapsedTimeSec(&ptrOutput);
     databack(outputInfo);
 #endif
     if (AttemptToFactor(nbrVectors, nbrFactors, &newNbrFactors))
     {
 #if DEBUG_VANHOEIJ
-      (void)strcpy(ptrDebugOutput, "nbrVector == nbrVectors" LF);
+      copyStr(&ptrDebugOutput, "nbrVector == nbrVectors" LF);
 #ifdef __EMSCRIPTEN__
       output[0] = '1';
       (void)strcpy(&output[1], debugOutput);

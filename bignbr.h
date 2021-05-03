@@ -243,4 +243,5 @@ void showRationalNoParen(const BigRational* rat);
 void showRationalOverStr(const BigRational* rat, const char* str, const char *ptrTimes);
 void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int root, const char *ptrTimes);
 void showSquareRootOfRational(const BigRational* rat, int root, const char *ptrTimes);
+void copyStr(char** pptrString, const char* stringToCopy);
 #endif

@@ -806,10 +806,10 @@ static void CubicEquation(const int* ptrPolynomial, int multiplicity)
             char* ptrNumer = numer;
             *ptrNumer = '2';
             ptrNumer++;
-            (void)strcpy(ptrNumer, ptrTimes);
+            copyStr(&ptrNumer, ptrTimes);
             *ptrNumer = ' ';
             ptrNumer++;
-            (void)strcpy(ptrNumer, ptrPi);
+            copyStr(&ptrNumer, ptrPi);
             showRatConstants(numer, "3");
           }
           else
@@ -825,10 +825,10 @@ static void CubicEquation(const int* ptrPolynomial, int multiplicity)
             char* ptrNumer = numer;
             *ptrNumer = '4';
             ptrNumer++;
-            (void)strcpy(ptrNumer, ptrTimes);
+            copyStr(&ptrNumer, ptrTimes);
             *ptrNumer = ' ';
             ptrNumer++;
-            (void)strcpy(ptrNumer, ptrPi);
+            copyStr(&ptrNumer, ptrPi);
             showRatConstants(numer, "3");
           }
           else
@@ -1200,10 +1200,11 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
       // x3,4 = -(b/4a) +/- sqrt((k+u)/2) + i*(-S) +/- sqrt((k-u)/2))
       // Get value of k^2.
       char szMinus[10];
+      char* pszMinus = &szMinus[1];
       szMinus[0] = ' ';
-      (void)strcpy(&szMinus[1], ptrMinus);
-      szMinus[1 + strlen(ptrMinus)] = ' ';
-      szMinus[2 + strlen(ptrMinus)] = 0;
+      copyStr(&pszMinus, ptrMinus);
+      *pszMinus = ' ';
+      *(pszMinus + 1) = 0;
 
       BigRationalMultiply(&RatDeprLinear, &RatDeprLinear, &Rat4);
       BigRationalDivide(&Rat4, &RatS, &Rat4);            // q^2 / S^2 (S^2 negative)
@@ -2046,14 +2047,13 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
   }
   if (denomin < 0)
   {
-    (void)strcpy(ptrBeginning, pretty == PRETTY_PRINT ? "&minus;" : "-");
+    copyStr(&ptrBeginning, pretty == PRETTY_PRINT ? "&minus;" : "-");
     denomin = -denomin;    // Make it positive.
   }
   else if ((toShow == SHOW_IMAG) || (isFirst == 0))
   {
-    (void)strcpy(ptrBeginning, " + ");
+    copyStr(&ptrBeginning, " + ");
   }
-  ptrBeginning += strlen(ptrBeginning);
   if (denomin == 1)
   {
     if (toShow == SHOW_IMAG)
@@ -2070,15 +2070,13 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
         *ptrBeginning = ' ';
         ptrBeginning++;
       }
-      (void)strcpy(ptrBeginning, ptrTimes);
-      ptrBeginning += strlen(ptrBeginning);
+      copyStr(&ptrBeginning, ptrTimes);
     }
   }
   else if (pretty != PARI_GP)
   {
-    (void)strcpy(ptrBeginning, pretty == TEX? "\\frac{":
+    copyStr(&ptrBeginning, pretty == TEX? "\\frac{":
       "<span class=\"fraction\"><span class=\"numerator\">");
-    ptrBeginning += strlen(ptrBeginning);
     if (pretty == PARI_GP)
     {
       *ptrBeginning = (toShow == SHOW_REAL ? '1' : 'I');
@@ -2088,13 +2086,10 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
       *ptrBeginning = (toShow == SHOW_REAL ? '1' : 'i');
     }
     ptrBeginning++;
-    (void)strcpy(ptrBeginning, pretty == TEX? "}{": "</span><span class=\"denominator\">");
-    ptrBeginning += strlen(ptrBeginning);
+    copyStr(&ptrBeginning, pretty == TEX? "}{": "</span><span class=\"denominator\">");
     int2dec(&ptrBeginning, denomin);
-    (void)strcpy(ptrBeginning, pretty == TEX? "}": "</span></span> ");
-    ptrBeginning += strlen(ptrBeginning);
-    (void)strcpy(ptrBeginning, ptrTimes);
-    ptrBeginning += strlen(ptrBeginning);
+    copyStr(&ptrBeginning, pretty == TEX? "}": "</span></span> ");
+    copyStr(&ptrBeginning, ptrTimes);
   }
   else
   {
@@ -2118,14 +2113,12 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
     ptrBeginning++;
     *ptrBeginning = 0;          // Add terminator at end of string.
   }
-  (void)strcpy(ptrBeginning, realRoot);
-  ptrBeginning += strlen(ptrBeginning);
-  lenBeginning = (int)(ptrBeginning - &beginning[0]);
+  copyStr(&ptrBeginning, realRoot);
   if ((*realRoot != 0) && lenBeginning != 0 && (*ptrStart != 0))
   {
-    (void)strcpy(ptrBeginning, ptrTimes);
-    lenBeginning += (int)strlen(ptrBeginning);
+    copyStr(&ptrBeginning, ptrTimes);
   }
+  lenBeginning = (int)(ptrBeginning - &beginning[0]);
   (void)memmove(ptrStart + lenBeginning, ptrStart, strlen(ptrStart));
   (void)memcpy(ptrStart, beginning, lenBeginning);
   ptrOutput += lenBeginning;
@@ -2261,10 +2254,9 @@ static void showTrig(int numerator, int denominator, const char* multiplicand)
     int2dec(&ptrNum, numerator);
     *ptrOutput = ' ';
     ptrOutput++;
-    (void)strcpy(ptrNum, ptrTimes);
-    ptrNum += strlen(ptrNum);
+    copyStr(&ptrNum, ptrTimes);
   }
-  (void)strcpy(ptrNum, ptrPi);
+  copyStr(&ptrNum, ptrPi);
   showRatString(num, den);
   if (pretty == TEX)
   {
@@ -2448,34 +2440,28 @@ static void StartRadicand(int polyDegree)
 {
   if (pretty == PRETTY_PRINT)
   {
-    (void)strcpy(ptrOutput, "<span class=\"");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, "<span class=\"");
     if (polyDegree < 10)
     {       // degree has 1 digit.
-      (void)strcpy(ptrOutput, "root");
+      copyStr(&ptrOutput, "root");
     }
     else if (polyDegree < 100)
     {       // degree has 2 digits.
-      (void)strcpy(ptrOutput, "root2dig");
+      copyStr(&ptrOutput, "root2dig");
     }
     else
     {       // degree has 3 digits.
-      (void)strcpy(ptrOutput, "root3dig");
+      copyStr(&ptrOutput, "root3dig");
     }
-    ptrOutput += strlen(ptrOutput);
-    (void)strcpy(ptrOutput, "\"><span class=\"befrad\">");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, "\"><span class=\"befrad\">");
     int2dec(&ptrOutput, polyDegree);
-    (void)strcpy(ptrOutput, "</span><span class=\"radicand2\">");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, "</span><span class=\"radicand2\">");
   }
   else if (pretty == TEX)
   {
-    (void)strcpy(ptrOutput, "\\sqrt[");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, "\\sqrt[");
     int2dec(&ptrOutput, polyDegree);
-    (void)strcpy(ptrOutput, "]{");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, "]{");
   }
 }
 
@@ -2483,8 +2469,7 @@ static void EndRadicand(int polyDegree)
 {
   if (pretty == PRETTY_PRINT)
   {
-    (void)strcpy(ptrOutput, "</span></span>");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, "</span></span>");
   }
   else if (pretty == TEX)
   {
@@ -2522,8 +2507,7 @@ static void GenerateRoots(int multiplicity, const char* rationalRoot, int isNega
     realNum = numer / gcdNumDen;
     realDen = polyDegree / gcdNumDen;
     StartRadicand(polyDegree);
-    (void)strcpy(ptrOutput, rationalRoot);
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, rationalRoot);
     EndRadicand(polyDegree);
     ptrOutput = ptrOutputBak;
     showX(multiplicity);
@@ -2729,10 +2713,8 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
         }
         else
         {            // Showing imaginary part.
-          (void)strcpy(ptrOutput, pretty==PARI_GP? " + I ": " + i ");
-          ptrOutput += strlen(ptrOutput);
-          (void)strcpy(ptrOutput, ptrTimes);
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, pretty==PARI_GP? " + I ": " + i ");
+          copyStr(&ptrOutput, ptrTimes);
           *ptrOutput = ' ';
           ptrOutput++;
         }
@@ -2741,25 +2723,22 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
         EndRadicand(polyDegree);
         *ptrOutput = ' ';
         ptrOutput++;
-        (void)strcpy(ptrOutput, ptrTimes);
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, ptrTimes);
         if (component)
         {
-          (void)strcpy(ptrOutput, ptrSin);
+          copyStr(&ptrOutput, ptrSin);
         }
         else
         {
-          (void)strcpy(ptrOutput, ptrCos);
+          copyStr(&ptrOutput, ptrCos);
         }
-        ptrOutput += strlen(ptrOutput);
         startParen();
         if (pretty != PARI_GP)
         {
           showRatString("1", degreeStr);
           *ptrOutput = ' ';
           ptrOutput++;
-          (void)strcpy(ptrOutput, ptrTimes);
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, ptrTimes);
         }
         else
         {
@@ -2767,8 +2746,7 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
           ptrOutput++;
           *ptrOutput = '/';
           ptrOutput++;
-          (void)strcpy(ptrOutput, degreeStr);
-          ptrOutput += strlen(degreeStr);
+          copyStr(&ptrOutput, degreeStr);
           *ptrOutput = '*';
           ptrOutput++;
         }
@@ -2783,11 +2761,9 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
           if (multiplicand != 1)
           {
             int2dec(&ptrOutput, multiplicand);
-            (void)strcpy(ptrOutput, pretty != PARI_GP ? "&#8290; " : "*");
-            ptrOutput += strlen(ptrOutput);
+            copyStr(&ptrOutput, pretty != PARI_GP ? "&#8290; " : "*");
           }
-          (void)strcpy(ptrOutput, ptrPi);
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, ptrPi);
           *ptrOutput = ' ';
           ptrOutput++;
         }
@@ -2795,28 +2771,25 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
         {
           if (multiplicand != 0)
           {
-            (void)strcpy(ptrOutput, "+ ");
-            ptrOutput += strlen(ptrOutput);
+            copyStr(&ptrOutput, "+ ");
           }
         }
         else
         {
-          (void)strcpy(ptrOutput, pretty == PRETTY_PRINT ? "&minus; " : "- ");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, pretty == PRETTY_PRINT ? "&minus; " : "- ");
         }
         if (pretty == PRETTY_PRINT)
         {
-          (void)strcpy(ptrOutput, "arctan");
+          copyStr(&ptrOutput, "arctan");
         }
         else if (pretty == TEX)
         {
-          (void)strcpy(ptrOutput, "\\arctan{");
+          copyStr(&ptrOutput, "\\arctan{");
         }
         else
         {
-          (void)strcpy(ptrOutput, "atan{");
+          copyStr(&ptrOutput, "atan{");
         }
-        ptrOutput += strlen(ptrOutput);
         ShowRationalAndSqrParts(&Rat5, &Rat3, 2, ptrTimes);
         if (pretty == PARI_GP)
         {

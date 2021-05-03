@@ -82,36 +82,28 @@ static void DistinctDegreeFactorization(int polyDegree)
         oldTimeElapsed = elapsedTime;
         if (lang)
         {
-          (void)strcpy(ptrOutput, "1<p>Factorización de distintos grados: buscando factores de grado ");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, "1<p>Factorización de distintos grados: buscando factores de grado ");
           int2dec(&ptrOutput, currentDegree);
-          (void)strcpy(ptrOutput, " (máx.  ");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, " (máx.  ");
           int2dec(&ptrOutput, (polyDegree + 1) / 2);
-          (void)strcpy(ptrOutput, ") del factor número ");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, ") del factor número ");
           int2dec(&ptrOutput, nbrFactor + 1);
-          (void)strcpy(ptrOutput, " de ");
+          copyStr(&ptrOutput, " de ");
         }
         else
         {
-          (void)strcpy(ptrOutput, "1<p>Distinct degree factorization: searching for factors of degree ");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, "1<p>Distinct degree factorization: searching for factors of degree ");
           int2dec(&ptrOutput, currentDegree);
-          (void)strcpy(ptrOutput, " (max.  ");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, " (max.  ");
           int2dec(&ptrOutput, (polyDegree + 1) / 2);
-          (void)strcpy(ptrOutput, ") of factor number ");
-          ptrOutput += strlen(ptrOutput);
+          copyStr(&ptrOutput, ") of factor number ");
           int2dec(&ptrOutput, nbrFactor + 1);
-          (void)strcpy(ptrOutput, " of ");
+          copyStr(&ptrOutput, " of ");
         }
-        ptrOutput += strlen(ptrOutput);
         int2dec(&ptrOutput, nbrFactorsFound);
-        (void)strcpy(ptrOutput, lang ? ".</p><p>Transcurrió " : ".</p><p>Time elapsed: ");
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, lang ? ".</p><p>Transcurrió " : ".</p><p>Time elapsed: ");
         GetDHMS(&ptrOutput, elapsedTime / 10);
-        (void)strcpy(ptrOutput, "</p>");
+        copyStr(&ptrOutput, "</p>");
         databack(outputText);
       }
 #endif
@@ -184,22 +176,18 @@ static void percentageCallback(int percentage)
     int2dec(&ptrOutput, percentage);
     if (lang)
     {
-      (void)strcpy(ptrOutput, "% del ");
-      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, "% del ");
       int2dec(&ptrOutput, attemptNbr);
-      (void)strcpy(ptrOutput, ".º intento");
-      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, ".º intento");
     }
     else
     {
-      (void)strcpy(ptrOutput, "% of attempt #");
-      ptrOutput += strlen(ptrOutput);
+      copyStr(&ptrOutput, "% of attempt #");
       int2dec(&ptrOutput, attemptNbr);
     }
-    (void)strcpy(ptrOutput, lang ? ".</p><p>Transcurrió " : ".</p><p>Time elapsed: ");
-    ptrOutput += strlen(ptrOutput);
+    copyStr(&ptrOutput, lang ? ".</p><p>Transcurrió " : ".</p><p>Time elapsed: ");
     GetDHMS(&ptrOutput, elapsedTime / 10);
-    (void)strcpy(ptrOutput, "</p>");
+    copyStr(&ptrOutput, "</p>");
     databack(outputText);
   }
 #else
@@ -245,22 +233,19 @@ void SameDegreeFactorization(void)
       char *ptrOutput = outputText;
       if (lang)
       {
-        (void)strcpy(ptrOutput, "1<p>Factorización del mismo grado: buscando ");
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, "1<p>Factorización del mismo grado: buscando ");
         int2dec(&ptrOutput, polyDegree / pstFactorInfo->expectedDegree);
-        (void)strcpy(ptrOutput, " factores de grado ");
+        copyStr(&ptrOutput, " factores de grado ");
       }
       else
       {
-        (void)strcpy(ptrOutput, "1<p>Equal degree factorization: searching for ");
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, "1<p>Equal degree factorization: searching for ");
         int2dec(&ptrOutput, polyDegree / pstFactorInfo->expectedDegree);
-        (void)strcpy(ptrOutput, " factors of degree ");
+        copyStr(&ptrOutput, " factors of degree ");
       }
-      ptrOutput += strlen(ptrOutput);
       int2dec(&ptrOutput, pstFactorInfo->expectedDegree);
-      (void)strcpy(ptrOutput, ".</p><p>");
-      ptrPercentageOutput = ptrOutput + strlen(ptrOutput);
+      copyStr(&ptrOutput, ".</p><p>");
+      ptrPercentageOutput = ptrOutput;
 #endif
       // Copy polynomial to factor to poly3 and set leading coefficient to 1.
       // All operations below will be done modulo this polynomial.
@@ -616,21 +601,18 @@ void polyFactText(char *modText, char *polyText, int groupLength)
   }
   else
   {
-    (void)strcpy(ptrOut, lang ? "<h2>Polinomio ingresado</h2>" : "<h2>Your polynomial</h2>");
-    ptrOut += strlen(ptrOut);
+    copyStr(&ptrOut, lang ? "<h2>Polinomio ingresado</h2>" : "<h2>Your polynomial</h2>");
     if (onlyEvaluate)
     {
-      (void)strcpy(ptrOut, "<p>");
+      copyStr(&ptrOut, "<p>");
     }
     else
     {
-      (void)strcpy(ptrOut, "<p id=\"pol\">");
+      copyStr(&ptrOut, "<p id=\"pol\">");
     }
-    ptrOut += strlen(ptrOut);
     outputOriginalPolynomial(ptrOut, groupLength);
     ptrOut += strlen(ptrOut);
-    (void)strcpy(ptrOut, "</p>");
-    ptrOut += strlen(ptrOut);
+    copyStr(&ptrOut, "</p>");
     if (!onlyEvaluate)
     {
       int nbrFactor;
@@ -644,12 +626,10 @@ void polyFactText(char *modText, char *polyText, int groupLength)
       {
         pstFactorInfo = factorInfo;
       }
-      (void)strcpy(ptrOut, lang? "<h2>Factores irreducibles del polinomio</h2>": "<h2>Irreducible polynomial factors</h2>");
-      ptrOut += strlen(ptrOut);
+      copyStr(&ptrOut, lang? "<h2>Factores irreducibles del polinomio</h2>": "<h2>Irreducible polynomial factors</h2>");
       if ((nbrFactorsFound == 0) || ((nbrFactorsFound == 1) && (pstFactorInfo->multiplicity == 1)))
       {
-        (void)strcpy(ptrOut, lang ? "<p>El polinomio es irreducible</p>" : "<p>The polynomial is irreducible</p>");
-        ptrOut += strlen(ptrOut);
+        copyStr(&ptrOut, lang ? "<p>El polinomio es irreducible</p>" : "<p>The polynomial is irreducible</p>");
       }
       else
       {   // Get number of factors including multiplicity.
@@ -659,11 +639,9 @@ void polyFactText(char *modText, char *polyText, int groupLength)
           totalFactors += pstFactorInfo->multiplicity;
           pstFactorInfo++;
         }
-        (void)strcpy(ptrOut, lang ? "Los " : "The ");
-        ptrOut += strlen(ptrOut);
+        copyStr(&ptrOut, lang ? "Los " : "The ");
         int2dec(&ptrOut, totalFactors);
-        (void)strcpy(ptrOut, lang ? " factores son:</p>" : " factors are:</p>");
-        ptrOut += strlen(ptrOut);
+        copyStr(&ptrOut, lang ? " factores son:</p>" : " factors are:</p>");
         if (modulusIsZero)
         {
           pstFactorInfo = factorInfoInteger;
@@ -683,8 +661,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
         ptrOut++;
         if (pretty == TEX)
         {
-          (void)strcpy(ptrOut, "<li>\\begin{array}{l}</li>");
-          ptrOut += strlen(ptrOut);
+          copyStr(&ptrOut, "<li>\\begin{array}{l}</li>");
         }
         if (!modulusIsZero)
         {
@@ -703,8 +680,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
           ptrOut++;
           if (operand5.sign == SIGN_NEGATIVE)
           {
-            (void)strcpy(ptrOut, " &minus;");
-            ptrOut += strlen(ptrOut);
+            copyStr(&ptrOut, " &minus;");
           }
           Bin2Dec(operand5.limbs, ptrOut, operand5.nbrLimbs, groupLength);
           ptrOut += strlen(ptrOut);
@@ -731,15 +707,13 @@ void polyFactText(char *modText, char *polyText, int groupLength)
           ptrOut++;
           if (pretty == TEX)
           {
-            (void)strcpy(ptrOut, "\\bullet\\,\\,");
-            ptrOut += strlen(ptrOut);
+            copyStr(&ptrOut, "\\bullet\\,\\,");
           }
           outputPolynomialFactor(ptrOut, groupLength, pstFactorInfo);
           ptrOut += strlen(ptrOut);
           if (pretty == TEX)
           {
-            (void)strcpy(ptrOut, "\\\\");
-            ptrOut += strlen(ptrOut);
+            copyStr(&ptrOut, "\\\\");
           }
           *ptrOut = '<';
           ptrOut++;
@@ -755,8 +729,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
         }
         if (pretty == TEX)
         {
-          (void)strcpy(ptrOut, "<li>\\end{array}</li>");
-          ptrOut += strlen(ptrOut);
+          copyStr(&ptrOut, "<li>\\end{array}</li>");
         }
         *ptrOut = '<';
         ptrOut++;
@@ -771,22 +744,17 @@ void polyFactText(char *modText, char *polyText, int groupLength)
       }
       if (modulusIsZero)
       {
-        (void)strcpy(ptrOut, lang ? "<h2>Raíces</h2>" : "<h2>Roots</h2>");
-        ptrOut += strlen(ptrOut);
+        copyStr(&ptrOut, lang ? "<h2>Raíces</h2>" : "<h2>Roots</h2>");
         if (degree > 1)
         {
-          (void)strcpy(ptrOut, lang ? "Las " : "The ");
-          ptrOut += strlen(ptrOut);
+          copyStr(&ptrOut, lang ? "Las " : "The ");
           int2dec(&ptrOut, degree);
-          (void)strcpy(ptrOut, lang ? " raíces son:</p>" : " roots are:</p>");
-          ptrOut += strlen(ptrOut);
+          copyStr(&ptrOut, lang ? " raíces son:</p>" : " roots are:</p>");
         }
-        (void)strcpy(ptrOut, "<ul>");
-        ptrOut += strlen(ptrOut);
+        copyStr(&ptrOut, "<ul>");
         if (pretty == TEX)
         {
-          (void)strcpy(ptrOut, "<li>\\begin{array}{l}</li>");
-          ptrOut += strlen(ptrOut);
+          copyStr(&ptrOut, "<li>\\begin{array}{l}</li>");
         }
         indexRoot = 1;
         pstFactorInfo = factorInfoInteger;
@@ -804,16 +772,14 @@ void polyFactText(char *modText, char *polyText, int groupLength)
         }
         if (pretty == TEX)
         {
-          (void)strcpy(ptrOut, "<li>\\end{array}</li>");
-          ptrOut += strlen(ptrOut);
+          copyStr(&ptrOut, "<li>\\end{array}</li>");
         }
       }
-      (void)strcpy(ptrOut, "</ul>");
-      ptrOut += strlen(ptrOut);
+      copyStr(&ptrOut, "</ul>");
       // Show time only when factoring, not when just evaluating polynomial.
       showElapsedTime(&ptrOut);
     }
   }
-  (void)strcpy(ptrOut, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
-                           "<p>" COPYRIGHT_ENGLISH "</p>");
+  copyStr(&ptrOut, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
+                          "<p>" COPYRIGHT_ENGLISH "</p>");
 }

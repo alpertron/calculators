@@ -38,11 +38,10 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen);
 extern bool hexadecimal;
 static void showText(const char *text)
 {
-  (void)strcpy(ptrOutput, text);
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, text);
 }
 
-static void ShowConvergents(int index, BigInteger *coeff)
+static void ShowConvergents(int index, const BigInteger *coeff)
 {
   CopyBigInt(&U3, &U2);                   // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
   CopyBigInt(&U2, &U1);
@@ -117,8 +116,7 @@ static void ContFrac(void)
   ptrOutput = output;
   // Show formula.
   showText("2<p><var>x</var> = <span class=\"fraction\"><span class=\"offscr\">");
-  (void)strcpy(ptrOutput, lang ? " la fracción cuyo numerador es </span>" : " the fraction whose numerator is </span>");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, lang ? " la fracción cuyo numerador es </span>" : " the fraction whose numerator is </span>");
   showText("<span class=\"fup\">");
   BigInteger2Dec(&num, ptrOutput, groupLen);    // Show numerator.
   ptrOutput += strlen(ptrOutput);
@@ -126,8 +124,7 @@ static void ContFrac(void)
   BigInteger2Dec(&delta, ptrOutput, groupLen);  // Show radicand.
   ptrOutput += strlen(ptrOutput);
   showText("</span></span></span><span class=\"bar\"> </span><span class=\"fdn\"><span class=\"offscr\">");
-  (void)strcpy(ptrOutput, lang ? " y el denominador es </span>" : " and the denominator is </span>");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, lang ? " y el denominador es </span>" : " and the denominator is </span>");
   BigInteger2Dec(&den, ptrOutput, groupLen);    // Show denominator.
   ptrOutput += strlen(ptrOutput);
   showText("</span></span></span></p>");
@@ -223,8 +220,7 @@ static void ContFrac(void)
       {      // Show convergent checkbox not checked.
         BigInteger2Dec(&Temp, ptrOutput, groupLen);  // Show continued fraction coefficient.
         ptrOutput += strlen(ptrOutput);
-        (void)strcpy(ptrOutput, ((index == 0)? " + //" : ", ")); // Show separator.
-        ptrOutput += strlen(ptrOutput);
+        copyStr(&ptrOutput, ((index == 0)? " + //" : ", ")); // Show separator.
       }
       if (hexadecimal)
       {      // Show convergent checkbox is checked.

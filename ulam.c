@@ -913,18 +913,18 @@ EXTERNALIZE void drawPartialUlamSpiral(int xminDisp, int xmaxDisp, int yminDisp,
 }      /* end method drawUlamSpiral */
 
 #ifdef __EMSCRIPTEN__
-char *strcpy(char *dest, const char *src)
+void copyStr(char** pptrString, const char* stringToCopy)
 {
-  const char *source = src;
-  char *dst = dest;
-  while (*source != 0)
+  char* ptrString = *pptrString;
+  const char* ptrStringToCopy = stringToCopy;
+  while (*ptrStringToCopy != '\0')
   {
-    *dst = *source;
-    dst++;
-    source++;
+    *ptrString = *ptrStringToCopy;
+    ptrString++;
+    ptrStringToCopy++;
   }
-  *dst = 0;
-  return dest;
+  *ptrString = '\0';
+  *pptrString = ptrString;
 }
 
 size_t strlen(const char *s)
@@ -1014,8 +1014,7 @@ void ShowLabel(char *text, int b, int *indep)
   int carry;
   char *ptrText = &infoText[strlen(infoText)];
   int firstTime = 1;
-  (void)strcpy(ptrText, text);
-  ptrText += strlen(ptrText);
+  copyStr(&ptrText, text);
   temp[0] = *indep;
   temp[1] = *(indep+1);
   if ((temp[1] != 0) || (temp[0] != 0))
@@ -1062,45 +1061,39 @@ void ShowLabel(char *text, int b, int *indep)
       ptrText += strlen(ptrText);
       if (t1 > 0)
       {
-        (void)strcpy(ptrText, " = (2t + ");
-        ptrText += strlen(ptrText);
+        copyStr(&ptrText, " = (2t + ");
         ptrText = appendInt(ptrText, t1);
         *ptrText = ')';
         ptrText++;
       }
       else if (t1 < 0)
       {
-        (void)strcpy(ptrText, " = (2t - ");
-        ptrText += strlen(ptrText);
+        copyStr(&ptrText, " = (2t - ");
         ptrText = appendInt(ptrText, -t1);
         *ptrText = ')';
         ptrText++;
       }
       else
       {
-        (void)strcpy(ptrText, " = 2t");
-        ptrText += strlen(ptrText);
+        copyStr(&ptrText, " = 2t");
       }
       if (t2 > 0)
       {
-        (void)strcpy(ptrText, " (2t + ");
-        ptrText += strlen(ptrText);
+        copyStr(&ptrText, " (2t + ");
         ptrText = appendInt(ptrText, t2);
         *ptrText = ')';
         ptrText++;
       }
       else if (t2 < 0)
       {
-        (void)strcpy(ptrText, " (2t - ");
-        ptrText += strlen(ptrText);
+        copyStr(&ptrText, " (2t - ");
         ptrText = appendInt(ptrText, -t2);
         *ptrText = ')';
         ptrText++;
       }
       else
       {
-        (void)strcpy(ptrText, " 2t");
-        ptrText += strlen(ptrText);
+        copyStr(&ptrText, " 2t");
       }
     }
     else
@@ -1111,37 +1104,34 @@ void ShowLabel(char *text, int b, int *indep)
       {           // Independent term is even
         if (((b & 3) == 0) && ((temp[0] & 3) == 0))
         {         // Both linear and independent term are multiple of 4.
-          (void)strcpy(ptrText, " = 4 (t<sup>2</sup>");
+          copyStr(&ptrText, " = 4 (t<sup>2</sup>");
           b /= 4;
           temp[0] = ((temp[0] >> 2) | (temp[1] << (BITS_PER_GROUP-2))) & MAX_INT_NBR;
           temp[1] = (temp[1] << (32-BITS_PER_GROUP)) >> (2 + (32 - BITS_PER_GROUP));   // Divide by 4.
         }
         else
         {
-          (void)strcpy(ptrText, " = 2 (2t<sup>2</sup>");
+          copyStr(&ptrText, " = 2 (2t<sup>2</sup>");
           b /= 2;
           temp[0] = ((temp[0] >> 1) | (temp[1] << (BITS_PER_GROUP-1))) & MAX_INT_NBR;
           temp[1] = (temp[1] << (32-BITS_PER_GROUP)) >> (1 + (32 - BITS_PER_GROUP));   // Divide by 2.
         }
-        ptrText += strlen(ptrText);
         if (b != 0)
         {
           if (b < 0)
           {
-            (void)strcpy(ptrText, " - ");
+            copyStr(&ptrText, " - ");
             b = -b;
           }
           else
           {
-            (void)strcpy(ptrText, " + ");
+            copyStr(&ptrText, " + ");
           }
-          ptrText += strlen(ptrText);
           if (b != 1)
           {
             ptrText = appendInt(ptrText, b);
           }
-          (void)strcpy(ptrText, "t");
-          ptrText++;
+          copyStr(&ptrText, "t");
         }
         if (temp[1] & HALF_INT_RANGE)
         {     // Independent term is negative.
@@ -1169,8 +1159,7 @@ void ShowLabel(char *text, int b, int *indep)
           ptrText = appendInt64(ptrText, temp);
         }
         ptrText += strlen(ptrText);
-        (void)strcpy(ptrText, ")");
-        ptrText++;
+        copyStr(&ptrText, ")");
       }
       else
       {
@@ -1205,13 +1194,12 @@ void ShowLabel(char *text, int b, int *indep)
         }         /* end for */
         if (firstTime == 0)
         {
-          (void)strcpy(ptrText, ")");
-          ptrText++;
+          copyStr(&ptrText, ")");
         }
       }           /* end if */
     }             /* end if */
   }               /* end if */
-  (void)strcpy(ptrText, "<br>");
+  copyStr(&ptrText, "<br>");
 }
 
 EXTERNALIZE char *getInformation(int x, int y)

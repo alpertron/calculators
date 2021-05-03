@@ -73,25 +73,21 @@ void GetDHMSt(char **pptrText, int tenths)
 void showElapsedTime(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
-  (void)strcpy(ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
 #ifdef __EMSCRIPTEN__
   GetDHMSt(&ptrOutput, (int)(tenths() - originalTenthSecond));
 #endif
-  (void)strcpy(ptrOutput, "</p>");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, "</p>");
   *pptrOutput = ptrOutput;
 }
 
 void showElapsedTimeSec(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
-  (void)strcpy(ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
 #ifdef __EMSCRIPTEN__
   GetDHMS(&ptrOutput, (int)(tenths() - originalTenthSecond) / 10);
 #endif
-  (void)strcpy(ptrOutput, "</p>");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, "</p>");
   *pptrOutput = ptrOutput;
 }

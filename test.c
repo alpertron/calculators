@@ -140,12 +140,12 @@ int main(int argc, char *argv[])
     return 0;
   }
   ptrInput = input;
-  (void)strcpy(ptrInput, argv[1]);
-  ptrInput += strlen(ptrInput) + 1;
-  (void)strcpy(ptrInput, argv[2]);
-  ptrInput += strlen(ptrInput) + 1;
-  (void)strcpy(ptrInput, argv[3]);
-  ptrInput += strlen(ptrInput) + 1;
+  copyStr(&ptrInput, argv[1]);
+  ptrInput++;
+  copyStr(&ptrInput, argv[2]);
+  ptrInput++;
+  copyStr(&ptrInput, argv[3]);
+  ptrInput++;
   contfracText(input, 20000);
   printf("%s\n", output);
 #elif DEBUG_CODE == 7
@@ -232,8 +232,9 @@ int main(int argc, char *argv[])
   lang = false;
   hexadecimal = false;
   char text[40000];
-  (void)strcpy(text, argv[1]);
-  (void)strcpy(text + strlen(text), "\n");
+  char* ptrText = text;
+  copyStr(&ptrText, argv[1]);
+  copyStr(&ptrText, "\n");
   ecmFrontText(text, true, NULL);
   printf("%s\n", output);
   return 0;

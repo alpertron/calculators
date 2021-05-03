@@ -157,8 +157,7 @@ void int2hex(char **pOutput, int nbr)
   bool significantZero = false;
   unsigned int div = 0x10000000;
   unsigned int value = (unsigned int)nbr;
-  (void)strcpy(ptrOutput, "<span class=\"hex\">");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, "<span class=\"hex\">");
   while (div > 0)
   {
     int digit;
@@ -178,8 +177,7 @@ void int2hex(char **pOutput, int nbr)
     *ptrOutput = '0';
     ptrOutput++;
   }
-  (void)strcpy(ptrOutput, "</span>");
-  ptrOutput += strlen(ptrOutput);
+  copyStr(&ptrOutput, "</span>");
   *pOutput = ptrOutput;
 }
 
@@ -199,8 +197,7 @@ void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
     grpLen = -grpLen;
     showDigitsText = false;
   }
-  (void)strcpy(ptrDecimal, "<span class=\"hex\">");
-  ptrDecimal += strlen(ptrDecimal);
+  copyStr(&ptrDecimal, "<span class=\"hex\">");
   nbrBits = nbrLimbs * BITS_PER_GROUP;
   mask = LIMB_RANGE / 2;
   value = (binary + nbrLimbs - 1)->x;
@@ -272,10 +269,9 @@ void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
     *ptrDecimal = '(';
     ptrDecimal++;
     int2dec(&ptrDecimal, digits);
-    (void)strcpy(ptrDecimal, (lang?" dígitos)": " digits)"));
-    ptrDecimal += strlen(ptrDecimal);
+    copyStr(&ptrDecimal, (lang?" dígitos)": " digits)"));
   }
-  (void)strcpy(ptrDecimal, "</span>");
+  copyStr(&ptrDecimal, "</span>");
 }
 
   // Convert little-endian number to a string with space every groupLen digits.
@@ -398,8 +394,7 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
     *ptrDest = '(';
     ptrDest++;
     int2dec(&ptrDest, digits);
-    (void)strcpy(ptrDest, (lang?" dígitos)": " digits)"));
-    ptrDest += strlen(ptrDest);
+    copyStr(&ptrDest, (lang?" dígitos)": " digits)"));
   }
   else if (ptrDest > decimal)
   {
@@ -456,4 +451,18 @@ void BigInteger2Hex(const BigInteger *pBigInt, char *decimal, int groupLength)
     decimal++;
   }
   Bin2Hex(pBigInt->limbs, decimal, pBigInt->nbrLimbs, groupLength);
+}
+
+void copyStr(char** pptrString, const char* stringToCopy)
+{
+  char* ptrString = *pptrString;
+  const char* ptrStringToCopy = stringToCopy;
+  while (*ptrStringToCopy != '\0')
+  {
+    *ptrString = *ptrStringToCopy;
+    ptrString++;
+    ptrStringToCopy++;
+  }
+  *ptrString = '\0';
+  *pptrString = ptrString;
 }
