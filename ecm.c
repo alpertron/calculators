@@ -116,7 +116,7 @@ static int lucas_cost(int n, double v)
     }
     else if (((d + e) % 3) == 0)
     { /* condition 7 */
-      d = ((d - 2) * e) / 3;
+      d = (d - (2 * e)) / 3;
       c += (3 * ADD) + DUP; /* three additions, one duplicate */
     }
     else if (((d - e) % 3) == 0)
@@ -898,6 +898,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
         EC += TYP_SIQS;
         *pEC = EC;
         *pNextEC = NextEC;
+        memcpy(common.ecm.GD, TestNbr, NumberSizeBytes);
         return CHANGE_TO_SIQS;
       }
       if ((nbrDigits > 30) && (nbrDigits <= 90))  // If between 30 and 90 digits...         
@@ -908,6 +909,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
           EC += TYP_SIQS;
           *pEC = EC;
           *pNextEC = NextEC;
+          memcpy(common.ecm.GD, TestNbr, NumberSizeBytes);
           return CHANGE_TO_SIQS;
         }
       }

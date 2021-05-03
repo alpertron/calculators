@@ -1069,7 +1069,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
     newFactorAIndex = common.siqs.aindex[0];
     rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[1];
     index = 1;
-    do
+    while (testFactorA)
     {
       fullRemainder = false;
       if (index < 3)
@@ -1366,11 +1366,11 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
       }             /* end while */
       rowPrimeTrialDivisionData++;
       index++;
-    } while (testFactorA);              /* end do-while */
+    }              /* end while */
     int nbrFactorBasePrimes = common.siqs.nbrFactorBasePrimes;
     rowPrimeSieveData = primeSieveData + index;
     rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[index];
-    do
+    while (index < nbrFactorBasePrimes)
     {
       fullRemainder = false;
       for (;;)
@@ -1394,7 +1394,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
           {
             iRem %= divis;
           }
-          if ((iRem != 0) && (iRem != divis - rowPrimeSieveData->difsoln))
+          if ((iRem != 0) && (iRem != (divis - rowPrimeSieveData->difsoln)))
           {
             if (expParity != 0)
             {
@@ -1532,13 +1532,13 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
           if ((NumberLengthDividend <= 2) && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
           {        // Number fits in a double.
             double dDividend = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
-            int sqrtDivid = (int)(floor(sqrt((double)dDividend)));
+            int sqrtDivid = (int)floor(sqrt(dDividend));
             for (; index < common.siqs.nbrFactorBasePrimes; index++)
             {
               double dDivisor;
               Divisor = rowPrimeSieveData->value;
               dDivisor = (double)Divisor;
-              if (testFactorA && index == newFactorAIndex)
+              if (testFactorA && (index == newFactorAIndex))
               {
                 if (++indexFactorA == common.siqs.nbrFactorsA)
                 {
@@ -1552,7 +1552,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
               while (dDividend == floor(dDividend / dDivisor) * dDivisor)
               {           // dDivid is multiple of Divisor.
                 dDividend /= dDivisor;
-                sqrtDivid = (int)floor(sqrt((double)dDividend));
+                sqrtDivid = (int)floor(sqrt(dDividend));
                 expParity = 1 - expParity;
                 if (expParity == 0)
                 {
@@ -1573,8 +1573,8 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
                 Divisor = (int)dDividend;
                 rowSquares[0] = nbrSquares;
                 index = common.siqs.nbrFactorBasePrimes - 1;
-                if (Divisor <= common.siqs.primeTrialDivisionData[index].value &&
-                  Divisor > 1)
+                if ((Divisor <= common.siqs.primeTrialDivisionData[index].value) &&
+                  (Divisor > 1))
                 {          // Perform binary search to find the index.
                   left = -1;
                   median = right = common.siqs.nbrFactorBasePrimes;
@@ -1584,8 +1584,8 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
                     nbr = common.siqs.primeTrialDivisionData[median].value;
                     if (nbr < Divisor)
                     {
-                      if (median == left &&
-                        congruencesFound >= common.siqs.matrixBLength)
+                      if ((median == left) &&
+                        (congruencesFound >= common.siqs.matrixBLength))
                       {
                         return 0;
                       }
@@ -1621,7 +1621,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
       rowPrimeSieveData++;
       rowPrimeTrialDivisionData++;
       index++;
-    } while (index < nbrFactorBasePrimes);
+    }               /* end while */
   }
   rowSquares[0] = nbrSquares;
   rowMatrixBbeforeMerge[0] = nbrColumns;
@@ -1826,7 +1826,7 @@ static void PartialRelationFound(
       for (index = 1; index < common.siqs.nbrFactorBasePrimes; index++)
       {
         expParity = 0;
-        if (index >= common.siqs.indexMinFactorA && indexFactorA < common.siqs.nbrFactorsA)
+        if ((index >= common.siqs.indexMinFactorA) && (indexFactorA < common.siqs.nbrFactorsA))
         {
           if (index == indexFactorsA[indexFactorA])
           {
@@ -1891,7 +1891,7 @@ static void PartialRelationFound(
           }
           if (NumberLengthDivid <= 2)
           {
-            if (biT0 == 1 && biT1 == 0)
+            if ((biT0 == 1) && (biT1 == 0))
             {               // biT = 1, so division has ended.
               break;
             }
@@ -1940,7 +1940,7 @@ static void PartialRelationFound(
           DivBigNbrByInt(biU, common.siqs.multiplier, biU, nbrLength);
         }
       }
-      if (rowMatrixB[0] > 1 &&
+      if ((rowMatrixB[0] > 1) &&
         InsertNewRelation(rowMatrixB, biT, biU, biR, nbrLength))
       {
         partialsFound++;
@@ -1956,7 +1956,7 @@ static void PartialRelationFound(
   } /* end while */
 //  synchronized(firstPrimeSieveData)
   {
-    if (hashIndex == -1 && nbrPartials < MAX_PRIMES * 8)
+    if ((hashIndex == -1) && (nbrPartials < MAX_PRIMES * 8))
     { // No match and partials table is not full.
       // Add partial to table of partials.
       if (prev >= 0)
@@ -2075,7 +2075,7 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   }
   else
   {
-    if (Divid > 0 && Divid < common.siqs.largePrimeUpperBound)
+    if ((Divid > 0) && (Divid < common.siqs.largePrimeUpperBound))
     {
       PartialRelationFound(positive, rowMatrixB,
         rowMatrixBbeforeMerge,
@@ -2103,7 +2103,7 @@ static unsigned int getFactorsOfA(unsigned int seed, int *indexA)
       i = (int)(((double)seed * (double)common.siqs.span)/(double)0x100000000LL + common.siqs.indexMinFactorA);
       for (index2 = 0; index2 < index; index2++)
       {
-        if ((indexA[index2] == i) || (indexA[index2] == i + 1))
+        if ((indexA[index2] == i) || (indexA[index2] == (i + 1)))
         {
           break;
         }
@@ -2166,7 +2166,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   double bestadjust;
   int i;
   int j;
-  int arrmult[] = { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43,
+  const int arrmult[] = { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43,
     47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };
   double adjustment[sizeof(arrmult)/sizeof(arrmult[0])];
   double dNumberToFactor;
@@ -2291,7 +2291,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
     common.siqs.logar2 = (unsigned char)1;
     break;
   }
-  if (common.siqs.multiplier != 1 && common.siqs.multiplier != 2)
+  if ((common.siqs.multiplier != 1) && (common.siqs.multiplier != 2))
   {
     rowPrimeSieveData = &common.siqs.primeSieveData[2];
     rowPrimeTrialDivisionData = &common.siqs.primeTrialDivisionData[2];
@@ -2321,7 +2321,8 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   while (j < common.siqs.nbrFactorBasePrimes)
   { /* select small primes */
     NbrMod = RemDivBigNbrByInt(common.siqs.Modulus, currentPrime, NumberLength);
-    if (currentPrime != common.siqs.multiplier && JacobiSymbol(NbrMod, currentPrime) == 1)
+    if ((currentPrime != common.siqs.multiplier) && 
+      (JacobiSymbol(NbrMod, currentPrime) == 1))
     {
       double dBase;
       double dPower;
@@ -2502,8 +2503,8 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
     //new Thread(this).start();                // Start new thread.
     //synchronized(amodq)
     {
-//      while (threadArray[threadNumber] == null &&
-//        getTerminateThread() == FALSE)
+//      while ((threadArray[threadNumber] == null) &&
+//        (getTerminateThread() == FALSE))
       {
         //try
         //{
@@ -2515,7 +2516,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   }
   //synchronized(matrixB)
   {
-    while (common.siqs.factorSiqs == null && getTerminateThread() == FALSE)
+    while ((common.siqs.factorSiqs == null) && (getTerminateThread() == FALSE))
     {
       try
       {
@@ -2524,7 +2525,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
       catch (InterruptedException ie) {}
     }
   }
-  if (/*getTerminateThread() ||*/ (common.siqs.TempResult.nbrLimbs == 1 && common.siqs.TempResult.limbs[0].x == 0))
+  if (/*getTerminateThread() ||*/ ((common.siqs.TempResult.nbrLimbs == 1) && (common.siqs.TempResult.limbs[0].x == 0)))
   {
     //throw new ArithmeticException();
   }
@@ -3307,7 +3308,7 @@ static void BlockLanczos(void)
         newDiagonalSSt |= currentMask;
         for (k = 31; k >= 0; k--)
         {
-          if (k != currentOrder && ((matrixD[k] & currentMask) != 0))
+          if ((k != currentOrder) && ((matrixD[k] & currentMask) != 0))
           {
             matrixWinv[k] ^= Temp;
             matrixD[k] ^= Temp1;
@@ -4393,7 +4394,7 @@ static int SQUFOF(double N, int queue[])
         {
           queueIndex = 0;
         }
-        if (r == s && (P - t) % s == 0)
+        if ((r == s) && (((P - t) % s) == 0))
         {
           break;
         }
@@ -4490,7 +4491,7 @@ static int SQUFOF(double N, int queue[])
             {
               qRev = (S3 + PRev) / QRev;
               P1Rev = qRev*QRev - PRev;
-              if (PRev == P1Rev && QRev > 6)
+              if ((PRev == P1Rev) && (QRev > 6))
               {
                 if (QRev % 3 == 0)
                 {
@@ -4509,7 +4510,7 @@ static int SQUFOF(double N, int queue[])
               PRev = P1Rev;
               qRev = (S3 + PRev) / QRev;
               P1Rev = qRev*QRev - PRev;
-              if (PRev == P1Rev && QRev > 6)
+              if ((PRev == P1Rev) && (QRev > 6))
               {
                 if (QRev % 3 == 0)
                 {
@@ -4535,7 +4536,7 @@ static int SQUFOF(double N, int queue[])
           {
             queueIndex3 = QUEUE_LENGTH;
           }
-          if (r3 == s3 && (P3 - t3) % s3 == 0)
+          if ((r3 == s3) && ((P3 - t3) % s3 == 0))
           {
             break;
           }

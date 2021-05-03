@@ -67,7 +67,6 @@ void Dec2Bin(const char *decimal, limb *binary, int digits, int *bitGroups)
     multiplier *= 10;
   }
   ptrDest->x = digit;
-  ptrDest++;
   for (int outerGroup = 1; outerGroup < nbrGroups; outerGroup += outerGroup)
   {
     for (int innerGroup = 0; innerGroup < nbrGroups; innerGroup += 2*outerGroup)
@@ -98,7 +97,7 @@ void Dec2Bin(const char *decimal, limb *binary, int digits, int *bitGroups)
 void int2dec(char **pOutput, int nbr)
 {
   char *ptrOutput = *pOutput;
-  int significantZero = 0;
+  bool significantZero = false;
   unsigned int div = 1000000000;
   unsigned int value = (unsigned int)nbr;
   while (div > 0)
@@ -106,16 +105,16 @@ void int2dec(char **pOutput, int nbr)
     int digit;
 
     digit = value/div;
-    if ((digit > 0) || (significantZero != 0))
+    if ((digit > 0) || significantZero)
     {
-      significantZero = 1;
+      significantZero = true;
       *ptrOutput = (char)(digit + '0');
       ptrOutput++;
     }
     value %= div;
     div /= 10;
   }
-  if (significantZero == 0)
+  if (!significantZero)
   {
     *ptrOutput = '0';
     ptrOutput++;
@@ -126,24 +125,25 @@ void int2dec(char **pOutput, int nbr)
 void long2dec(char **pOutput, uint64_t nbr)
 {
   char *ptrOutput = *pOutput;
-  int significantZero = 0;
+  bool significantZero = false;
   uint64_t div = 1000000000000000000LL;
   uint64_t value = nbr;
   while (div > 0)
   {
     int digit;
+    uint64_t digit64 = value / div;
 
-    digit = (int)(value / div);
-    if ((digit > 0) || (significantZero != 0))
+    digit = (int)digit64;
+    if ((digit > 0) || significantZero)
     {
-      significantZero = 1;
+      significantZero = true;
       *ptrOutput = (char)(digit + '0');
       ptrOutput++;
     }
     value %= div;
     div /= 10;
   }
-  if (significantZero == 0)
+  if (significantZero == false)
   {
     *ptrOutput = '0';
     ptrOutput++;
@@ -154,7 +154,7 @@ void long2dec(char **pOutput, uint64_t nbr)
 void int2hex(char **pOutput, int nbr)
 {
   char *ptrOutput = *pOutput;
-  int significantZero = 0;
+  bool significantZero = false;
   unsigned int div = 0x10000000;
   unsigned int value = (unsigned int)nbr;
   (void)strcpy(ptrOutput, "<span class=\"hex\">");
@@ -164,16 +164,16 @@ void int2hex(char **pOutput, int nbr)
     int digit;
 
     digit = value / div;
-    if ((digit > 0) || (significantZero != 0))
+    if ((digit > 0) || significantZero)
     {
-      significantZero = 1;
+      significantZero = true;
       *ptrOutput = (char)((digit >= 10)? (digit + ('A'-10)): (digit + '0'));
       ptrOutput++;
     }
     value %= div;
     div /= 10;
   }
-  if (significantZero == 0)
+  if (!significantZero)
   {
     *ptrOutput = '0';
     ptrOutput++;
@@ -186,26 +186,28 @@ void int2hex(char **pOutput, int nbr)
 // Convert little-endian number to a string with space every groupLen digits.
 void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
 {
+  int grpLen = groupLength;
+  char* ptrDecimal = decimal;
   bool showDigitsText = true;
   int nbrBits;
   int mask;
   int value;
   int digits = 0;
 
-  if (groupLength <= 0)
+  if (grpLen <= 0)
   {
-    groupLength = -groupLength;
+    grpLen = -grpLen;
     showDigitsText = false;
   }
-  (void)strcpy(decimal, "<span class=\"hex\">");
-  decimal += strlen(decimal);
+  (void)strcpy(ptrDecimal, "<span class=\"hex\">");
+  ptrDecimal += strlen(ptrDecimal);
   nbrBits = nbrLimbs * BITS_PER_GROUP;
   mask = LIMB_RANGE / 2;
   value = (binary + nbrLimbs - 1)->x;
   if (value == 0)
   {
-    *decimal = '0';
-    decimal++;
+    *ptrDecimal = '0';
+    ptrDecimal++;
   }
   else
   {
@@ -216,13 +218,13 @@ void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
       mask >>= 1;
       nbrBits--;
     }
-    nbrHexDigits = (nbrBits + 3) >> 2;
-    if (groupLength > 0)
+    nbrHexDigits = (nbrBits + 3)/4;
+    if (grpLen > 0)
     {
-      currentGroupDigit = nbrHexDigits % groupLength;
+      currentGroupDigit = nbrHexDigits % grpLen;
       if (currentGroupDigit == 0)
       {
-        currentGroupDigit = groupLength;
+        currentGroupDigit = grpLen;
       }
     }
     do
@@ -231,7 +233,7 @@ void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
       do
       {
         digit *= 2;
-        if (value & mask)
+        if ((value & mask) != 0)
         {
           digit++;
         }
@@ -243,37 +245,37 @@ void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
           mask = LIMB_RANGE / 2;
         }
         nbrBits--;
-      } while (nbrBits & 3);
+      } while ((nbrBits & 3) != 0);
       if (digit < 10)
       {        // Convert 0 - 9 to '0' - '9'.
-        *decimal = (char)(digit + '0');
-        decimal++;
+        *ptrDecimal = (char)(digit + '0');
+        ptrDecimal++;
       }
       else
       {        // Convert 10 - 15 to 'A' - 'F'.
-        *decimal = (char)(digit + 'A' - 10);
-        decimal++;
+        *ptrDecimal = (char)(digit + 'A' - 10);
+        ptrDecimal++;
       }
       digits++;
       currentGroupDigit--;
       if ((currentGroupDigit == 0) && (nbrHexDigits != 1))
       {
-        *decimal = ' ';
-        decimal++;
-        currentGroupDigit = groupLength;
+        *ptrDecimal = ' ';
+        ptrDecimal++;
+        currentGroupDigit = grpLen;
       }
       nbrHexDigits--;
     } while (nbrHexDigits > 0);
   }
   if ((digits > 30) && showDigitsText)
   {
-    *decimal = '(';
-    decimal++;
-    int2dec(&decimal, digits);
-    (void)strcpy(decimal, (lang?" dígitos)": " digits)"));
-    decimal += strlen(decimal);
+    *ptrDecimal = '(';
+    ptrDecimal++;
+    int2dec(&ptrDecimal, digits);
+    (void)strcpy(ptrDecimal, (lang?" dígitos)": " digits)"));
+    ptrDecimal += strlen(ptrDecimal);
   }
-  (void)strcpy(decimal, "</span>");
+  (void)strcpy(ptrDecimal, "</span>");
 }
 
   // Convert little-endian number to a string with space every groupLen digits.
@@ -286,7 +288,7 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
   int count;
   const limb *ptrSrc = binary + nbrLimbs - 1;
   char *ptrDest;
-  int significantZero = 0;
+  bool significantZero = false;
   int groupCtr;
   int digit[DIGITS_PER_LIMB];
   int digits=0;
@@ -313,15 +315,14 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
     dQuotient = 0;
     for (index2 = 0; index2 < len; index2++)
     {
-      dCarry = dQuotient + (double)ptrPower->x * FIRST_MULT;
-      dQuotient = floor(dCarry / MAX_LIMB_CONVERSION);
+      dCarry = dQuotient + (double)ptrPower->x * (double)FIRST_MULT;
+      dQuotient = floor(dCarry / (double)MAX_LIMB_CONVERSION);
       ptrPower->x = (int)(dCarry - (dQuotient * (double)MAX_LIMB_CONVERSION));
       ptrPower++;
     }
     if (dQuotient != 0)
     {
       ptrPower->x = (int)dQuotient;
-      ptrPower++;
       len++;
     }
     ptrPower = power10000;
@@ -329,7 +330,7 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
     dQuotient = ptrSrc->x;
     for (index2 = 0; index2 < len; index2++)
     {
-      dCarry = dQuotient + (double)ptrPower->x * SECOND_MULT;
+      dCarry = dQuotient + ((double)ptrPower->x * (double)SECOND_MULT);
       dQuotient = floor(dCarry / MAX_LIMB_CONVERSION);
       ptrPower->x = (int)(dCarry - (dQuotient * (double)MAX_LIMB_CONVERSION));
       ptrPower++;
@@ -366,7 +367,7 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
     }
     for (count = DIGITS_PER_LIMB-1; count >= 0; count--)
     {
-      if ((digit[count] != 0) || (significantZero != 0))
+      if ((digit[count] != 0) || significantZero)
       {
         digits++;
         *ptrDest = (char)(digit[count] + '0');
@@ -376,7 +377,7 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
           *ptrDest = ' ';
           ptrDest++;
         }
-        significantZero = 1;
+        significantZero = true;
       }
       groupCtr--;
       if (groupCtr == 0)
@@ -385,7 +386,7 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
       }
     }
   }
-  if (significantZero == 0)
+  if (!significantZero)
   {     // Number is zero.
     *ptrDest = '0';
     ptrDest++;
@@ -404,27 +405,33 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
   {
     *(ptrDest-1) = '\0';       // Add terminator.
   }
+  else
+  {                            // Nothing to do.
+  }
 }
 
 static void add(const limb *addend1, const limb *addend2, limb *sum, int length)
 {
+  const limb* ptrAddend1 = addend1;
+  const limb* ptrAddend2 = addend2;
+  limb* ptrSum = sum;
   unsigned int carry;
   carry = 0;
   for (int i = 0; i < length; i++)
   {
-    carry += (unsigned int)addend1->x + (unsigned int)addend2->x;
-    addend1++;
-    addend2++;
+    carry += (unsigned int)ptrAddend1->x + (unsigned int)ptrAddend2->x;
+    ptrAddend1++;
+    ptrAddend2++;
     if (carry >= LIMB_RANGE)
     {
-      sum->x = (int)(carry - LIMB_RANGE);
-      sum++;
+      ptrSum->x = (int)(carry - LIMB_RANGE);
+      ptrSum++;
       carry = 1;
     }
     else
     {
-      sum->x = (int)carry;
-      sum++;
+      ptrSum->x = (int)carry;
+      ptrSum++;
       carry = 0;
     }
   }

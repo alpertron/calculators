@@ -56,15 +56,16 @@ static int ComputeGCD(void);
 static bool func(char* expr, BigInteger* ExpressionResult,
   const char* funcName, int funcArgs, bool leftNumberFlag, int* pResult);
 static void SkipSpaces(const char *expr);
-static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
-  BigInteger *ReDen, BigInteger *ImDen,
-  BigInteger *Result);
+static int Modulo(BigInteger* ReNum, BigInteger* ImNum,
+  const BigInteger* ReDen, const BigInteger* ImDen,
+  BigInteger* Result);
 static int ComputeFibonacci(void);
 static int ComputeLucas(void);
 static int ComputeModPow(void);
 static int ComputeModInv(void);
 static int ComputePartition(void);
-static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigInteger *Im2);
+static int ComputePower(const BigInteger* Re1, const BigInteger* Re2,
+  const BigInteger* Im1, const BigInteger* Im2);
 static int ModInv(const BigInteger* RealNbr, const BigInteger* ImagNbr,
   BigInteger* RealMod, BigInteger* ImagMod,
   BigInteger* Result);
@@ -95,8 +96,8 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
   static BigInteger factorialResult;
   static BigInteger Tmp;
   static BigInteger *ptrBigInt;
-  static BigInteger *ptrRe;
-  static BigInteger *ptrIm;
+  const static BigInteger *ptrRe;
+  const static BigInteger *ptrIm;
   limb carry;
   limb largeLen;
   limb *ptrLimb;
@@ -884,8 +885,8 @@ static int ComputePartition(void)
 
 // Replace dividend by the remainder.
 // Back-up sign of dividend and then divide positive by positive (divisor is always positive).
-static void GetRemainder(BigInteger *norm, BigInteger *ReDividend, BigInteger *ImDividend,
-  BigInteger *ReDivisor, BigInteger *ImDivisor,
+static void GetRemainder(const BigInteger *norm, BigInteger *ReDividend, BigInteger *ImDividend,
+  const BigInteger *ReDivisor, const BigInteger *ImDivisor,
   BigInteger *Re, BigInteger *Im)
 {
   BigInteger ReTmp;
@@ -973,10 +974,12 @@ static int ComputeGCD(void)
   return 0;
 }
 
-static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigInteger *Im2)
+static int ComputePower(const BigInteger *Re1, const BigInteger *Re2,
+  const BigInteger *Im1, const BigInteger *Im2)
 {
   int expon;
   double base;
+  bool performPower = false;
   BigInteger norm;
   BigInteger ReTmp;
   BigInteger ImTmp;
@@ -1024,29 +1027,30 @@ static int ComputePower(BigInteger *Re1, BigInteger *Re2, BigInteger *Im1, BigIn
   {
     if ((expon & mask) != 0)
     {
-      for (; mask != 0; mask >>= 1)
+      performPower = true;
+    }
+    if (performPower)
+    {
+      BigIntMultiply(&Re, &Re, &ReTmp);         // ReTmp <- re*re - im*im.
+      BigIntMultiply(&Im, &Im, &ImTmp);
+      BigIntSubt(&ReTmp, &ImTmp, &ReTmp);
+      BigIntMultiply(&Re, &Im, &Im);            // Im <- 2*re*im
+      BigIntAdd(&Im, &Im, &Im);
+      CopyBigInt(&Re, &ReTmp);
+      if ((expon & mask) != 0)
       {
-        BigIntMultiply(&Re, &Re, &ReTmp);         // ReTmp <- re*re - im*im.
-        BigIntMultiply(&Im, &Im, &ImTmp);
-        BigIntSubt(&ReTmp, &ImTmp, &ReTmp);
-        BigIntMultiply(&Re, &Im, &Im);            // Im <- 2*re*im
-        BigIntAdd(&Im, &Im, &Im);
-        CopyBigInt(&Re, &ReTmp);
-        if ((expon & mask) != 0)
-        {
-          BigIntMultiply(Re1, &Re, &ReTmp);       // Re2 <- re1*re - im1*im.
-          BigIntMultiply(Im1, &Im, &ImTmp);
-          BigIntSubt(&ReTmp, &ImTmp, Re2);
-          BigIntMultiply(Re1, &Im, &ReTmp);       // Im <- re1*im + im1*re.
-          BigIntMultiply(Im1, &Re, &ImTmp);
-          BigIntAdd(&ReTmp, &ImTmp, &Im);
-          CopyBigInt(&Re, Re2);
-        }
+        BigIntMultiply(Re1, &Re, &ReTmp);       // Re2 <- re1*re - im1*im.
+        BigIntMultiply(Im1, &Im, &ImTmp);
+        BigIntSubt(&ReTmp, &ImTmp, &stackRealValues[stackIndex]);
+        BigIntMultiply(Re1, &Im, &ReTmp);       // Im <- re1*im + im1*re.
+        BigIntMultiply(Im1, &Re, &ImTmp);
+        BigIntAdd(&ReTmp, &ImTmp, &Im);
+        CopyBigInt(&Re, &stackRealValues[stackIndex]);
       }
     }
   }
-  stackRealValues[stackIndex] = Re;
-  stackImagValues[stackIndex] = Im;
+  CopyBigInt(&stackRealValues[stackIndex], &Re);
+  CopyBigInt(&stackImagValues[stackIndex], &Im);
   return EXPR_OK;
 }
 
@@ -1249,7 +1253,7 @@ static int ModInv(const BigInteger *RealNbr, const BigInteger *ImagNbr,
 }
 
 static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
-                  BigInteger *ReDen, BigInteger *ImDen,
+                  const BigInteger *ReDen, const BigInteger *ImDen,
                   BigInteger *Result)
 {
   BigInteger Re;
