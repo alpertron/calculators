@@ -98,9 +98,9 @@ void int2dec(char **pOutput, int nbr)
 {
   char *ptrOutput = *pOutput;
   bool significantZero = false;
-  unsigned int div = 1000000000;
+  unsigned int div = 1000000000U;
   unsigned int value = (unsigned int)nbr;
-  while (div > 0)
+  while (div > 0U)
   {
     int digit;
 
@@ -184,6 +184,7 @@ void int2hex(char **pOutput, int nbr)
 // Convert little-endian number to a string with space every groupLen digits.
 void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
 {
+  int numLimbs = nbrLimbs;
   int grpLen = groupLength;
   char* ptrDecimal = decimal;
   bool showDigitsText = true;
@@ -198,9 +199,9 @@ void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
     showDigitsText = false;
   }
   copyStr(&ptrDecimal, "<span class=\"hex\">");
-  nbrBits = nbrLimbs * BITS_PER_GROUP;
-  mask = LIMB_RANGE / 2;
-  value = (binary + nbrLimbs - 1)->x;
+  nbrBits = numLimbs * BITS_PER_GROUP;
+  mask = (int)LIMB_RANGE / 2;
+  value = (binary + numLimbs - 1)->x;
   if (value == 0)
   {
     *ptrDecimal = '0';
@@ -237,8 +238,8 @@ void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
         mask >>= 1;
         if (mask == 0)
         {
-          nbrLimbs--;
-          value = (binary + nbrLimbs - 1)->x;
+          numLimbs--;
+          value = (binary + numLimbs - 1)->x;
           mask = LIMB_RANGE / 2;
         }
         nbrBits--;
@@ -278,6 +279,7 @@ void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
   // In order to perform a faster conversion, use groups of DIGITS_PER_LIMB digits.
 void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
 {
+  int grpLen = groupLength;
   int len;
   int index;
   int index2;
@@ -290,9 +292,9 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
   int digits=0;
   bool showDigitsText = true;
 
-  if (groupLength <= 0)
+  if (grpLen <= 0)
   {
-    groupLength = -groupLength;
+    grpLen = -grpLen;
     showDigitsText = false;
   }
   power10000[0].x = ptrSrc->x % MAX_LIMB_CONVERSION;
@@ -316,7 +318,7 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
       ptrPower->x = (int)(dCarry - (dQuotient * (double)MAX_LIMB_CONVERSION));
       ptrPower++;
     }
-    if (dQuotient != 0)
+    if (dQuotient != 0.0)
     {
       ptrPower->x = (int)dQuotient;
       len++;
@@ -327,7 +329,7 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
     for (index2 = 0; index2 < len; index2++)
     {
       dCarry = dQuotient + ((double)ptrPower->x * (double)SECOND_MULT);
-      dQuotient = floor(dCarry / MAX_LIMB_CONVERSION);
+      dQuotient = floor(dCarry / (double)MAX_LIMB_CONVERSION);
       ptrPower->x = (int)(dCarry - (dQuotient * (double)MAX_LIMB_CONVERSION));
       ptrPower++;
     }
@@ -344,12 +346,12 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
   ptrDest = decimal;
   ptrSrc = &power10000[len-1];
   groupCtr = len * DIGITS_PER_LIMB;
-  if (groupLength != 0)
+  if (grpLen != 0)
   {
-    groupCtr %= groupLength;
+    groupCtr %= grpLen;
     if (groupCtr == 0)
     {
-      groupCtr = groupLength;
+      groupCtr = grpLen;
     }
   }
   for (index = len; index > 0; index--)
@@ -378,7 +380,7 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
       groupCtr--;
       if (groupCtr == 0)
       {
-        groupCtr = groupLength;
+        groupCtr = grpLen;
       }
     }
   }
@@ -419,7 +421,7 @@ static void add(const limb *addend1, const limb *addend2, limb *sum, int length)
     ptrAddend2++;
     if (carry >= LIMB_RANGE)
     {
-      ptrSum->x = (int)(carry - LIMB_RANGE);
+      ptrSum->x = (int)carry - (int)LIMB_RANGE;
       ptrSum++;
       carry = 1;
     }
@@ -435,12 +437,13 @@ static void add(const limb *addend1, const limb *addend2, limb *sum, int length)
 
 void BigInteger2Dec(const BigInteger *pBigInt, char *decimal, int groupLength)
 {
+  char* ptrDecimal = decimal;
   if (pBigInt->sign == SIGN_NEGATIVE)
   {
-    *decimal = '-';
-    decimal++;
+    *ptrDecimal = '-';
+    ptrDecimal++;
   }
-  Bin2Dec(pBigInt->limbs, decimal, pBigInt->nbrLimbs, groupLength);
+  Bin2Dec(pBigInt->limbs, ptrDecimal, pBigInt->nbrLimbs, groupLength);
 }
 
 void BigInteger2Hex(const BigInteger *pBigInt, char *decimal, int groupLength)
