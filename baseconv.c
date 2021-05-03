@@ -128,7 +128,7 @@ void long2dec(char **pOutput, uint64_t nbr)
   bool significantZero = false;
   uint64_t div = 1000000000000000000LL;
   uint64_t value = nbr;
-  while (div > 0)
+  while (div > 0U)
   {
     int digit;
     uint64_t digit64 = value / div;
@@ -240,7 +240,7 @@ void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
         {
           numLimbs--;
           value = (binary + numLimbs - 1)->x;
-          mask = LIMB_RANGE / 2;
+          mask = (int)LIMB_RANGE / 2;
         }
         nbrBits--;
       } while ((nbrBits & 3) != 0);
@@ -313,7 +313,7 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
     dQuotient = 0;
     for (index2 = 0; index2 < len; index2++)
     {
-      dCarry = dQuotient + (double)ptrPower->x * (double)FIRST_MULT;
+      dCarry = dQuotient + ((double)ptrPower->x * (double)FIRST_MULT);
       dQuotient = floor(dCarry / (double)MAX_LIMB_CONVERSION);
       ptrPower->x = (int)(dCarry - (dQuotient * (double)MAX_LIMB_CONVERSION));
       ptrPower++;
@@ -448,12 +448,13 @@ void BigInteger2Dec(const BigInteger *pBigInt, char *decimal, int groupLength)
 
 void BigInteger2Hex(const BigInteger *pBigInt, char *decimal, int groupLength)
 {
+  char* ptrDecimal = decimal;
   if (pBigInt->sign == SIGN_NEGATIVE)
   {
-    *decimal = '-';
-    decimal++;
+    *ptrDecimal = '-';
+    ptrDecimal++;
   }
-  Bin2Hex(pBigInt->limbs, decimal, pBigInt->nbrLimbs, groupLength);
+  Bin2Hex(pBigInt->limbs, ptrDecimal, pBigInt->nbrLimbs, groupLength);
 }
 
 void copyStr(char** pptrString, const char* stringToCopy)

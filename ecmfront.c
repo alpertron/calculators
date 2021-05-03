@@ -79,9 +79,9 @@ void batchCallback(char **pptrOutput)
 
 static void ExponentToBigInteger(int exponent, BigInteger *bigint)
 {
-  if (exponent > MAX_VALUE_LIMB)
+  if (exponent > (int)MAX_VALUE_LIMB)
   {
-    bigint->limbs[0].x = exponent - MAX_VALUE_LIMB;
+    bigint->limbs[0].x = exponent - (int)MAX_VALUE_LIMB;
     bigint->limbs[1].x = 1;
     bigint->nbrLimbs = 2;
   }
@@ -110,7 +110,7 @@ static void GetNumberOfDivisors(char **pptrOutput)
       break;
     }
     ExponentToBigInteger(pstFactor->multiplicity, &factorValue);
-    BigIntMultiply(&factorValue, &result, &result);
+    (void)BigIntMultiply(&factorValue, &result, &result);
     pstFactor++;
   }
   copyStr(&ptrOutput, lang ? "<p>Cantidad de divisores: " : "<p>Number of divisors: ");
@@ -639,39 +639,39 @@ static void ComputeFourSquares(const struct sFactors *pstFactors)
     } /* end prime not 2 */
 
     // Compute Tmp1 <- Mult1*Quad1 + Mult2*Quad2 + Mult3*Quad3 + Mult4*Quad4
-    BigIntMultiply(&Mult1, &Quad1, &Tmp);
-    BigIntMultiply(&Mult2, &Quad2, &Tmp4);
+    (void)BigIntMultiply(&Mult1, &Quad1, &Tmp);
+    (void)BigIntMultiply(&Mult2, &Quad2, &Tmp4);
     BigIntAdd(&Tmp, &Tmp4, &Tmp);
-    BigIntMultiply(&Mult3, &Quad3, &Tmp4);
+    (void)BigIntMultiply(&Mult3, &Quad3, &Tmp4);
     BigIntAdd(&Tmp, &Tmp4, &Tmp);
-    BigIntMultiply(&Mult4, &Quad4, &Tmp4);
+    (void)BigIntMultiply(&Mult4, &Quad4, &Tmp4);
     BigIntAdd(&Tmp, &Tmp4, &Tmp1);
 
     // Compute Tmp2 <- Mult1*Quad2 - Mult2*Quad1 + Mult3*Quad4 - Mult4*Quad3
-    BigIntMultiply(&Mult1, &Quad2, &Tmp);
-    BigIntMultiply(&Mult2, &Quad1, &Tmp4);
+    (void)BigIntMultiply(&Mult1, &Quad2, &Tmp);
+    (void)BigIntMultiply(&Mult2, &Quad1, &Tmp4);
     BigIntSubt(&Tmp, &Tmp4, &Tmp);
-    BigIntMultiply(&Mult3, &Quad4, &Tmp4);
+    (void)BigIntMultiply(&Mult3, &Quad4, &Tmp4);
     BigIntAdd(&Tmp, &Tmp4, &Tmp);
-    BigIntMultiply(&Mult4, &Quad3, &Tmp4);
+    (void)BigIntMultiply(&Mult4, &Quad3, &Tmp4);
     BigIntSubt(&Tmp, &Tmp4, &Tmp2);
 
     // Compute Tmp3 <- Mult1*Quad3 - Mult3*Quad1 - Mult2*Quad4 + Mult4*Quad2
-    BigIntMultiply(&Mult1, &Quad3, &Tmp);
-    BigIntMultiply(&Mult3, &Quad1, &Tmp4);
+    (void)BigIntMultiply(&Mult1, &Quad3, &Tmp);
+    (void)BigIntMultiply(&Mult3, &Quad1, &Tmp4);
     BigIntSubt(&Tmp, &Tmp4, &Tmp);
-    BigIntMultiply(&Mult2, &Quad4, &Tmp4);
+    (void)BigIntMultiply(&Mult2, &Quad4, &Tmp4);
     BigIntSubt(&Tmp, &Tmp4, &Tmp);
-    BigIntMultiply(&Mult4, &Quad2, &Tmp4);
+    (void)BigIntMultiply(&Mult4, &Quad2, &Tmp4);
     BigIntAdd(&Tmp, &Tmp4, &Tmp3);
 
     // Compute Quad4 <- Mult1*Quad4 - Mult4*Quad1 + Mult2*Quad3 - Mult3*Quad2
-    BigIntMultiply(&Mult1, &Quad4, &Tmp);
-    BigIntMultiply(&Mult4, &Quad1, &Tmp4);
+    (void)BigIntMultiply(&Mult1, &Quad4, &Tmp);
+    (void)BigIntMultiply(&Mult4, &Quad1, &Tmp4);
     BigIntSubt(&Tmp, &Tmp4, &Tmp);
-    BigIntMultiply(&Mult2, &Quad3, &Tmp4);
+    (void)BigIntMultiply(&Mult2, &Quad3, &Tmp4);
     BigIntAdd(&Tmp, &Tmp4, &Tmp);
-    BigIntMultiply(&Mult3, &Quad2, &Tmp4);
+    (void)BigIntMultiply(&Mult3, &Quad2, &Tmp4);
     BigIntSubt(&Tmp, &Tmp4, &Quad4);
 
     CopyBigInt(&Quad3, &Tmp3);
@@ -683,11 +683,11 @@ static void ComputeFourSquares(const struct sFactors *pstFactors)
   {
     NumberLength = *pstFactor->ptrFactor;
     IntArray2BigInteger(pstFactor->ptrFactor, &p);
-    BigIntPowerIntExp(&p, pstFactor->multiplicity / 2, &K);
-    BigIntMultiply(&Quad1, &K, &Quad1);
-    BigIntMultiply(&Quad2, &K, &Quad2);
-    BigIntMultiply(&Quad3, &K, &Quad3);
-    BigIntMultiply(&Quad4, &K, &Quad4);
+    (void)BigIntPowerIntExp(&p, pstFactor->multiplicity / 2, &K);
+    (void)BigIntMultiply(&Quad1, &K, &Quad1);
+    (void)BigIntMultiply(&Quad2, &K, &Quad2);
+    (void)BigIntMultiply(&Quad3, &K, &Quad3);
+    (void)BigIntMultiply(&Quad4, &K, &Quad4);
     pstFactor++;
   }
   Quad1.sign = SIGN_POSITIVE;
