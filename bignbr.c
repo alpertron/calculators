@@ -1137,7 +1137,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
         }
       }
       intToBigInteger(pBase, base);
-      BigIntPowerIntExp(pBase, Exponent, &Temp3);
+      (void)BigIntPowerIntExp(pBase, Exponent, &Temp3);
       if (BigIntEqual(&Temp3, pBigNbr))
       {
         return Exponent;
@@ -1322,7 +1322,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
     // Perform Newton iteration for n-th root.
     for (;;)
     {   // Check whether the approximate root is actually exact.
-      BigIntPowerIntExp(pBase, Exponent-1, &Temp3); // Temp3 <- x^(e-1)
+      (void)BigIntPowerIntExp(pBase, Exponent-1, &Temp3); // Temp3 <- x^(e-1)
       BigIntMultiply(&Temp3, pBase, &Temp2);        // Temp2 <- x^e 
       BigIntSubt(pBigNbr, &Temp2, &Temp2);            // Compare to radicand.
       if (BigIntIsZero(&Temp2))

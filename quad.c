@@ -813,7 +813,7 @@ void SolveQuadModEquation(void)
     }
     NumberLength = *pstFactor->ptrFactor;
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);   // Get value of prime factor.
-    BigIntPowerIntExp(&prime, expon, &V);       // Get value of prime power.
+    (void)BigIntPowerIntExp(&prime, expon, &V);       // Get value of prime power.
     BigIntRemainder(&coeffQuadr, &V, &L);       // Check whether quadratic coefficient is multiple of prime power.
     if (BigIntIsZero(&L))
     {     // ValA multiple of prime, means linear equation mod prime.
@@ -1057,7 +1057,7 @@ void SolveQuadModEquation(void)
         deltaZeros >>= 1;
         // Compute inverse of -2*A (mod prime^(expon - deltaZeros)).
         BigIntAdd(&ValAOdd, &ValAOdd, &ValAOdd);
-        BigIntPowerIntExp(&prime, expon - deltaZeros, &tmp1);
+        (void)BigIntPowerIntExp(&prime, expon - deltaZeros, &tmp1);
         BigIntRemainder(&ValAOdd, &tmp1, &ValAOdd);
         nbrLimbs = tmp1.nbrLimbs;
         if (ValAOdd.sign == SIGN_NEGATIVE)
@@ -1083,7 +1083,7 @@ void SolveQuadModEquation(void)
         {      // Discriminant is not zero.
           // Find number of digits of square root to compute.
           nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
-          BigIntPowerIntExp(&prime, nbrBitsSquareRoot, &tmp1);
+          (void)BigIntPowerIntExp(&prime, nbrBitsSquareRoot, &tmp1);
           nbrLimbs = tmp1.nbrLimbs;
           BigIntRemainder(&discriminant, &tmp1, &discriminant);
           if (discriminant.sign == SIGN_NEGATIVE)
@@ -1244,7 +1244,7 @@ void SolveQuadModEquation(void)
           }
         }
         correctBits = expon - deltaZeros;
-        BigIntPowerIntExp(&prime, correctBits, &Q);      // Store increment.
+        (void)BigIntPowerIntExp(&prime, correctBits, &Q);      // Store increment.
         // Compute x = (b + sqrt(discriminant)) / (-2a) and x = (b - sqrt(discriminant)) / (-2a)
         BigIntAdd(&coeffLinear, &squareRoot, &tmp1);
         for (ctr = 0; ctr < bitsAZero; ctr++)
@@ -1304,7 +1304,7 @@ void SolveQuadModEquation(void)
       if (teach)
       {
         int last;
-        BigIntPowerIntExp(&prime, expon, &V);       // Get value of prime power.
+        (void)BigIntPowerIntExp(&prime, expon, &V);       // Get value of prime power.
         intToBigInteger(&ValH, 0);
         showText(lang ? "<p>Soluciones módulo " : "<p>Solutions modulo ");
         shownbr(&prime);
@@ -1383,7 +1383,7 @@ void SolveQuadModEquation(void)
     }
     CopyBigInt(&currentSolution, &Aux[T1]);
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);
-    BigIntPowerIntExp(&prime, pstFactor->multiplicity, &Mult);
+    (void)BigIntPowerIntExp(&prime, pstFactor->multiplicity, &Mult);
     for (T1++; T1<nbrFactors; T1++)
     {
       pstFactor++;
@@ -1403,7 +1403,7 @@ void SolveQuadModEquation(void)
       }
       NumberLength = *pstFactor->ptrFactor;
       IntArray2BigInteger(pstFactor->ptrFactor, &prime);
-      BigIntPowerIntExp(&prime, pstFactor->multiplicity, &K1);
+      (void)BigIntPowerIntExp(&prime, pstFactor->multiplicity, &K1);
       CopyBigInt(&prime, &K1);
       for (int E = 0; E<T1; E++)
       {
@@ -1413,7 +1413,7 @@ void SolveQuadModEquation(void)
         }
         BigIntSubt(&Aux[T1], &Aux[E], &Q);
         IntArray2BigInteger(astFactorsMod[E+1].ptrFactor, &K);
-        BigIntPowerIntExp(&K, astFactorsMod[E+1].multiplicity, &L);
+        (void)BigIntPowerIntExp(&K, astFactorsMod[E+1].multiplicity, &L);
         NumberLength = prime.nbrLimbs;
         (void)memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
         TestNbr[NumberLength].x = 0;
@@ -1449,7 +1449,7 @@ void SolveQuadModEquation(void)
         continue;     // Do not process prime factors for which the multiplicity is zero.
       }
       IntArray2BigInteger(astFactorsMod[T1+1].ptrFactor, &K);         // Get prime factor.
-      BigIntPowerIntExp(&K, astFactorsMod[T1+1].multiplicity, &prime); // Get prime power.
+      (void)BigIntPowerIntExp(&K, astFactorsMod[T1+1].multiplicity, &prime); // Get prime power.
       if (BigIntEqual(&common.quad.Solution1[T1], &common.quad.Solution2[T1]))
       {     // common.quad.Solution1[T1] == common.quad.Solution2[T1]
         Exponents[T1] += 2;

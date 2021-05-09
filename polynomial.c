@@ -1276,7 +1276,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
     {
       newExponent = exponentMod;
     }
-    BigIntPowerIntExp(&primeMod, currentExp, &operand5);
+    (void)BigIntPowerIntExp(&primeMod, currentExp, &operand5);
     computePower(newExponent);         // Compute powerMod and init Montgomery parms.
     newNumberLength = NumberLength;
     nbrLimbs = NumberLength + 1;
@@ -1354,7 +1354,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
         (void)memcpy(operand1.limbs, ptrSrc, operand1.nbrLimbs * sizeof(int));
         if (currentExp * 2 > newExponent)
         {
-          BigIntPowerIntExp(&primeMod, newExponent - currentExp, &operand5);
+          (void)BigIntPowerIntExp(&primeMod, newExponent - currentExp, &operand5);
           BigIntRemainder(&operand1, &operand5, &operand1);
         }
         // Get coefficient of f_i.

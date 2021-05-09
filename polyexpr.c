@@ -948,7 +948,7 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
     }
     if (modulusIsZero)
     {
-      BigIntPowerIntExp(&operand1, expon, &operand2);
+      (void)BigIntPowerIntExp(&operand1, expon, &operand2);
       NumberLength = operand2.nbrLimbs;
     }
     else
@@ -1030,7 +1030,7 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
 
 void computePower(int expo)
 {
-  BigIntPowerIntExp(&primeMod, expo, &powerMod);
+  (void)BigIntPowerIntExp(&primeMod, expo, &powerMod);
   (void)memcpy(TestNbr, powerMod.limbs, powerMod.nbrLimbs * sizeof(limb));
   NumberLength = powerMod.nbrLimbs;
   TestNbr[NumberLength].x = 0;

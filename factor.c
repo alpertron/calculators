@@ -212,7 +212,7 @@ void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, const BigInteger *
   static BigInteger Nbr1;
   int k;
 
-  BigIntPowerIntExp(BigBase, L, &x);   // x <- BigBase^L.
+  (void)BigIntPowerIntExp(BigBase, L, &x);   // x <- BigBase^L.
   intToBigInteger(&Csal, 1);
   intToBigInteger(&Dsal, 1);
   for (k = 1; k < DegreeAurif; k++)
@@ -227,7 +227,7 @@ void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, const BigInteger *
   longToBigInteger(&Nbr1, Gamma[k]);
   BigIntMultiply(&Csal, &x, &Csal);
   BigIntAdd(&Csal, &Nbr1, &Csal);        // Csal <- Csal * x + Gamma[k]
-  BigIntPowerIntExp(BigBase, (L + 1) / 2, &Nbr1);   // Nbr1 <- Dsal * base^((L+1)/2)
+  (void)BigIntPowerIntExp(BigBase, (L + 1) / 2, &Nbr1);   // Nbr1 <- Dsal * base^((L+1)/2)
   BigIntMultiply(&Dsal, &Nbr1, &Nbr1);
   BigIntAdd(&Csal, &Nbr1, &Dsal);
   insertBigFactor(pstFactors, &Dsal, TYP_AURIF);
@@ -388,7 +388,7 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
   while (((Expon2 % 2) == 0) && (increment == -1))
   {
     Expon2 /= 2;
-    BigIntPowerIntExp(BigBase, Expon2, &Nbr1);
+    (void)BigIntPowerIntExp(BigBase, Expon2, &Nbr1);
     addbigint(&Nbr1, increment);
     insertBigFactor(pstFactors, &Nbr1, TYP_TABLE);
     InsertAurifFactors(pstFactors,BigBase, Expon2, 1);
@@ -400,7 +400,7 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
     {
       if ((k % 2) != 0)
       { /* Only for odd exponent */
-        BigIntPowerIntExp(BigBase, Expon / k, &Nbr1);
+        (void)BigIntPowerIntExp(BigBase, Expon / k, &Nbr1);
         addbigint(&Nbr1, increment);
         BigIntGcd(&Nbr1, BigOriginal, &Nbr2);   // Nbr2 <- gcd(Base^(Expon/k)+incre, original)
         insertBigFactor(pstFactors, &Nbr2, TYP_TABLE);
@@ -411,7 +411,7 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
       }
       if (((Expon / k) % 2) != 0)
       { /* Only for odd exponent */
-        BigIntPowerIntExp(BigBase, k, &Nbr1);
+        (void)BigIntPowerIntExp(BigBase, k, &Nbr1);
         addbigint(&Nbr1, increment); 
         BigIntGcd(&Nbr1, BigOriginal, &Nbr2);   // Nbr2 <- gcd(Base^k+incre, original)
         insertBigFactor(pstFactors, &Nbr2, TYP_TABLE);
@@ -464,7 +464,7 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
   rootbak = nthRoot;
   for (;;)
   {
-    BigIntPowerIntExp(&nthRoot, Exponent - 1, &rootN1); // rootN1 <- nthRoot ^ (Exponent-1)
+    (void)BigIntPowerIntExp(&nthRoot, Exponent - 1, &rootN1); // rootN1 <- nthRoot ^ (Exponent-1)
     BigIntMultiply(&nthRoot, &rootN1, &rootN);  // rootN <- nthRoot ^ Exponent
     BigIntSubt(&NFp1, &rootN, &dif);            // dif <- NFp1 - rootN
     if (BigIntIsZero(&dif))
@@ -487,7 +487,7 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
   nthRoot = rootbak;
   for (;;)
   {
-    BigIntPowerIntExp(&nthRoot, Exponent - 1, &rootN1); // rootN1 <- nthRoot ^ (Exponent-1)
+    (void)BigIntPowerIntExp(&nthRoot, Exponent - 1, &rootN1); // rootN1 <- nthRoot ^ (Exponent-1)
     BigIntMultiply(&nthRoot, &rootN1, &rootN);     // rootN <- nthRoot ^ Exponent
     BigIntSubt(&NFm1, &rootN, &dif);            // dif <- NFm1 - rootN
     if (BigIntIsZero(&dif))
@@ -2019,7 +2019,7 @@ void Totient(BigInteger *result)
     {   // If factor is 1 do not do anything.
       continue;
     }
-    BigIntPowerIntExp(&factorValue, pstFactor->multiplicity - 1, &TempVar);   // p^(e-1)
+    (void)BigIntPowerIntExp(&factorValue, pstFactor->multiplicity - 1, &TempVar);   // p^(e-1)
     BigIntMultiply(result, &TempVar, result);
     intArrayToBigInteger(pstFactor->ptrFactor, &TempVar);
     addbigint(&TempVar, -1);   // p-1
@@ -2076,7 +2076,7 @@ void SumOfDivisors(BigInteger *result)
     {   // If factor is 1 do not do anything.
       continue;
     }
-    BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Temp1);   // p^(e+1)
+    (void)BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Temp1);   // p^(e+1)
     addbigint(&Temp1, -1);   // p^(e+1)-1
     BigIntMultiply(result, &Temp1, &Temp2);
     intArrayToBigInteger(pstFactor->ptrFactor, &Temp1);

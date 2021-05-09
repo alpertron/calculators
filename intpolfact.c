@@ -1156,11 +1156,11 @@ static void vanHoeij(int prime, int nbrFactors)
   modulusIsZero = false;    // Use modular arithmetic for polynomials.
   intToBigInteger(&operand5, 1);
   values[0] = polyNonRepeatedFactors[0];
-  getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
+  (void)getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
 #if DEBUG_HENSEL_LIFTING
   ptrOutput2 = ptrDebugOutput;
 #endif
-  HenselLifting(factorInfoRecord, 1);
+  (void)HenselLifting(factorInfoRecord, 1);
 #if DEBUG_HENSEL_LIFTING
   ptrDebugOutput = ptrOutput2; ptrOutput2 = NULL;
 #endif
@@ -1243,7 +1243,7 @@ static void vanHoeij(int prime, int nbrFactors)
   // Compute powerBoundA as powerExtraBits * powerMod.
   exponDifference = (int)(6.0 * (double)nbrFactors * log(2.0) / log(prime));
   intToBigInteger(&operand1, prime);
-  BigIntPowerIntExp(&operand1, exponDifference, &powerExtraBits);
+  (void)BigIntPowerIntExp(&operand1, exponDifference, &powerExtraBits);
   CopyBigInt(&powerBoundA, &powerMod);
   (void)BigIntMultiply(&powerExtraBits, &powerMod, &powerBoundA);
   ComputeCoeffBounds();     // bound = Bound of coefficient of factors.
@@ -1286,7 +1286,7 @@ static void vanHoeij(int prime, int nbrFactors)
     newNumberLength = NumberLength;
     exponentMod = a0;
     intToBigInteger(&operand1, prime);
-    BigIntPowerIntExp(&operand1, b, &powerBoundA);
+    (void)BigIntPowerIntExp(&operand1, b, &powerBoundA);
 #if DEBUG_VANHOEIJ
     copyStr(&ptrDebugOutput, LF "====================================================="
       LF "prime = ");
@@ -1301,12 +1301,12 @@ static void vanHoeij(int prime, int nbrFactors)
 #endif
     intToBigInteger(&operand5, 1);
     values[0] = polyNonRepeatedFactors[0];
-    getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
+    (void)getModPolynomial(&values[1], polyNonRepeatedFactors, &operand5);
     NumberLength = newNumberLength;
     // use exponDifference additional bits instead of a fixed number
 
     intToBigInteger(&operand1, prime);
-    BigIntPowerIntExp(&operand1, exponDifference, &powerExtraBits);
+    (void)BigIntPowerIntExp(&operand1, exponDifference, &powerExtraBits);
 
     C = (int)(ceil(sqrt(nbrRequiredTraces * nbrFactors) / 2));
 
@@ -1982,7 +1982,7 @@ void FactorPolynomialModPrime(int prime)
 {
   (void)memset(factorInfo, 0, sizeof(factorInfo));
   initFactorModularPoly(prime);
-  FactorModularPolynomial(false);   // Input is not in Montgomery notation.
+  (void)FactorModularPolynomial(false);   // Input is not in Montgomery notation.
 }
 
 static void CopyFactorsFoundToRecord(void)

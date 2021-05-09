@@ -339,7 +339,7 @@ void SolveEquation(void)
     NumberLength = *pstFactor->ptrFactor;
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);
     expon = pstFactor->multiplicity;
-    BigIntPowerIntExp(&prime, expon, &V);
+    (void)BigIntPowerIntExp(&prime, expon, &V);
     BigIntRemainder(&ValA, &V, &L);
     if (BigIntIsZero(&L))
     {     // ValA multiple of prime, means linear equation mod prime.
@@ -575,7 +575,7 @@ void SolveEquation(void)
         deltaZeros >>= 1;
         // Compute inverse of -2*A (mod prime^(expon - deltaZeros)).
         BigIntAdd(&ValAOdd, &ValAOdd, &ValAOdd);
-        BigIntPowerIntExp(&prime, expon - deltaZeros, &tmp1);
+        (void)BigIntPowerIntExp(&prime, expon - deltaZeros, &tmp1);
         BigIntRemainder(&ValAOdd, &tmp1, &ValAOdd);
         nbrLimbs = tmp1.nbrLimbs;
         if (ValAOdd.sign == SIGN_NEGATIVE)
@@ -601,7 +601,7 @@ void SolveEquation(void)
         {      // Discriminant is not zero.
           // Find number of digits of square root to compute.
           nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
-          BigIntPowerIntExp(&prime, nbrBitsSquareRoot, &tmp1);
+          (void)BigIntPowerIntExp(&prime, nbrBitsSquareRoot, &tmp1);
           nbrLimbs = tmp1.nbrLimbs;
           BigIntRemainder(&discriminant, &tmp1, &discriminant);
           if (discriminant.sign == SIGN_NEGATIVE)
@@ -759,7 +759,7 @@ void SolveEquation(void)
           }
         }
         correctBits = expon - deltaZeros;
-        BigIntPowerIntExp(&prime, correctBits, &Q);      // Store increment.
+        (void)BigIntPowerIntExp(&prime, correctBits, &Q);      // Store increment.
         // Compute x = (b + sqrt(discriminant)) / (-2a) and x = (b - sqrt(discriminant)) / (-2a)
         BigIntAdd(&ValB, &sqrRoot, &tmp1);
         for (ctr = 0; ctr < bitsAZero; ctr++)
@@ -836,7 +836,7 @@ void SolveEquation(void)
     nbrFactors = astFactorsMod[0].multiplicity;
     pstFactor = &astFactorsMod[1];
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);
-    BigIntPowerIntExp(&prime, pstFactor->multiplicity, &Mult);
+    (void)BigIntPowerIntExp(&prime, pstFactor->multiplicity, &Mult);
     for (T1 = 1; T1<nbrFactors; T1++)
     {
       pstFactor++;
@@ -852,13 +852,13 @@ void SolveEquation(void)
       }
       NumberLength = *pstFactor->ptrFactor;
       IntArray2BigInteger(pstFactor->ptrFactor, &prime);
-      BigIntPowerIntExp(&prime, pstFactor->multiplicity, &K1);
+      (void)BigIntPowerIntExp(&prime, pstFactor->multiplicity, &K1);
       CopyBigInt(&prime, &K1);
       for (int E = 0; E<T1; E++)
       {
         BigIntSubt(&Aux[T1], &Aux[E], &Q);
         IntArray2BigInteger(astFactorsMod[E+1].ptrFactor, &K);
-        BigIntPowerIntExp(&K, astFactorsMod[E+1].multiplicity, &L);
+        (void)BigIntPowerIntExp(&K, astFactorsMod[E+1].multiplicity, &L);
         NumberLength = prime.nbrLimbs;
         (void)memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
         TestNbr[NumberLength].x = 0;
@@ -890,7 +890,7 @@ void SolveEquation(void)
     for (T1 = nbrFactors - 1; T1 >= 0; T1--)
     {
       IntArray2BigInteger(astFactorsMod[T1+1].ptrFactor, &K);
-      BigIntPowerIntExp(&K, astFactorsMod[T1+1].multiplicity, &prime);
+      (void)BigIntPowerIntExp(&K, astFactorsMod[T1+1].multiplicity, &prime);
       BigIntSubt(&Solution1[T1], &Solution2[T1], &K1);
       if ((K1.nbrLimbs == 1) && (K1.limbs[0].x == 0))
       {     // Solution1[T1] == Solution2[T1]
