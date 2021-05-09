@@ -60,20 +60,20 @@ static void duplicate(limb* x2, limb* z2, const limb* x1, const limb* z1);
 #define DUP 5  /* number of multiplications in a duplicate */
 
 /* returns the number of modular multiplications */
-static int lucas_cost(int n, double v)
+static int lucas_cost(int multiplier, double v)
 {
-  int c;
+  int nbrMultiplications;
   int e;
-  int d = n;
+  int d = multiplier;
   double dr = ((double)d / v) + 0.5;
   int r = (int)dr;
-  if (r >= n)
+  if (r >= multiplier)
   {
-    return (ADD * n);
+    return (ADD * multiplier);
   }
-  d = n - r;
-  e = (2 * r) - n;
-  c = DUP + ADD; /* initial duplicate and final addition */
+  d = multiplier - r;
+  e = (2 * r) - multiplier;
+  nbrMultiplications = DUP + ADD; /* initial duplicate and final addition */
   while (d != e)
   {
     if (d < e)
@@ -87,57 +87,57 @@ static int lucas_cost(int n, double v)
       r = ((2 * d) - e) / 3;
       e = ((2 * e) - d) / 3;
       d = r;
-      c += 3 * ADD; /* 3 additions */
+      nbrMultiplications += 3 * ADD; /* 3 additions */
     }
     else if (((4 * d) <= (5 * e)) && (((d - e) % 6) == 0))
     { /* condition 2 */
       d = (d - e) / 2;
-      c += ADD + DUP; /* one addition, one duplicate */
+      nbrMultiplications += ADD + DUP; /* one addition, one duplicate */
     }
     else if (d <= (4 * e))
     { /* condition 3 */
       d -= e;
-      c += ADD; /* one addition */
+      nbrMultiplications += ADD; /* one addition */
     }
     else if (((d + e) % 2) == 0)
     { /* condition 4 */
       d = (d - e) / 2;
-      c += ADD + DUP; /* one addition, one duplicate */
+      nbrMultiplications += ADD + DUP; /* one addition, one duplicate */
     }
     else if ((d % 2) == 0)
     { /* condition 5 */
       d /= 2;
-      c += ADD + DUP; /* one addition, one duplicate */
+      nbrMultiplications += ADD + DUP; /* one addition, one duplicate */
     }
     else if ((d % 3) == 0)
     { /* condition 6 */
       d = (d / 3) - e;
-      c += (3 * ADD) + DUP; /* three additions, one duplicate */
+      nbrMultiplications += (3 * ADD) + DUP; /* three additions, one duplicate */
     }
     else if (((d + e) % 3) == 0)
     { /* condition 7 */
       d = (d - (2 * e)) / 3;
-      c += (3 * ADD) + DUP; /* three additions, one duplicate */
+      nbrMultiplications += (3 * ADD) + DUP; /* three additions, one duplicate */
     }
     else if (((d - e) % 3) == 0)
     { /* condition 8 */
       d = (d - e) / 3;
-      c += (3 * ADD) + DUP; /* three additions, one duplicate */
+      nbrMultiplications += (3 * ADD) + DUP; /* three additions, one duplicate */
     }
     else if ((e % 2) == 0)
     { /* condition 9 */
       e /= 2;
-      c += ADD + DUP; /* one addition, one duplicate */
+      nbrMultiplications += ADD + DUP; /* one addition, one duplicate */
     }
     else
     { /* no more conditions */
     }
   }
-  return c;
+  return nbrMultiplications;
 }
 
 /* computes nP from P=(x:z) and puts the result in (x:z). Assumes n>2. */
-void prac(int n, limb* x, limb *z)
+void prac(int multiplier, limb* x, limb *z)
 {
   int d;
   int e;
@@ -169,23 +169,23 @@ void prac(int n, limb* x, limb *z)
     1.38196601125 };
 
   /* chooses the best value of v */
-  r = lucas_cost(n, v[0]);
+  r = lucas_cost(multiplier, v[0]);
   i = 0;
   for (d = 1; d < 10; d++)
   {
-    e = lucas_cost(n, v[d]);
+    e = lucas_cost(multiplier, v[d]);
     if (e < r)
     {
       r = e;
       i = d;
     }
   }
-  d = n;
+  d = multiplier;
   dr = ((double)d / v[i]) + 0.5;
   r = (int)dr;
   /* first iteration always begins by Condition 3, then a swap */
-  d = n - r;
-  e = (2 * r) - n;
+  d = multiplier - r;
+  e = (2 * r) - multiplier;
   (void)memcpy(xB, xA, NumberSizeBytes);   // B <- A
   (void)memcpy(zB, zA, NumberSizeBytes);
   (void)memcpy(xC, xA, NumberSizeBytes);   // C <- A

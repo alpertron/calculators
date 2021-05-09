@@ -52,7 +52,7 @@ struct linkedBigInt* ptrCoeffs[MAX_MATRIX_SIZE * 10];
 BigInteger powerBoundA;
 BigInteger powerExtraBits;
 static int* ptrFactorInteger;
-
+static int intPolyMultiplicity;
 static BigInteger contentPolyToFactor;
 static BigInteger halfPowerMod;
 static int origPolyToFactor[1000000];
@@ -70,7 +70,13 @@ struct sFactorInfo factorInfoInteger[MAX_DEGREE];
 static int arrNbrFactors[MAX_DEGREE];
 extern int polyLifted[1000000];
 extern int polyS[1000000];
+extern int poly4[1000000];
 extern int poly5[1000000];
+int polyA[1000000];
+int polyB[1000000];
+int polyC[1000000];
+int polyD[1000000];
+int polySqFreeFact[1000000];
 int polyInteger[1000000];
 static void GenerateIntegerPolynomial(const int* polyMod, int* polyInt, int degreePoly);
 static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly);
@@ -1902,7 +1908,7 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
     (void)memmove(pstFactorInfoInteger + 1, pstFactorInfoInteger,
       (pstFactorInfo - pstFactorInfoInteger) * sizeof(*pstFactorInfo));
   }
-  pstFactorInfoInteger->multiplicity = 1;
+  pstFactorInfoInteger->multiplicity = intPolyMultiplicity;
   pstFactorInfoInteger->ptrPolyLifted = ptrFactor;
   pstFactorInfoInteger->degree = degreePoly;
   ptrFactorInteger += indexNewFactor[degreePoly + 1];
@@ -2005,10 +2011,65 @@ static void CopyFactorsFoundToRecord(void)
   pstFactorInfoRecord->ptr = NULL; // Indicate that there are no more factors.
 }
 
+// Apply Yun's algorithm for integer squarefree factorization.
+// Let f = (a_1) * (a_2)^2 * (a_3)^3 * ... * (a_k)^k (all polynomials).
+//
+// b <- f, d <- f', a <- gcd(b, d)
+// repeat
+//   b <- b/a, c <- d/a, d <- c - b', a <- gcd(b, d)
+//   output a
+// until a = b.
+// f = PolyToFactor.
+// Store polynomial factors in array pointed by pstFactorInfoInteger.
+// poly1 = a
+// poly2 = b
+// poly3 = c
+// poly4 = d
+
+static int IntegerSquarefreeFactorization(void)
+{
+  int* ptrPolySqFreeFact = polySqFreeFact;
+  int multiplicity = 1;
+  int nbrFactors = 0;
+  polyB[0] = polyToFactor[0];
+  CopyPolynomial(&polyB[1], &polyToFactor[1], polyToFactor[0]);    // b <- f
+  polyD[0] = polyToFactor[0];
+  CopyPolynomial(&polyD[1], &polyToFactor[1], polyToFactor[0]);    // d <- f
+  DerPolynomial(polyD);                                            // d <- f'
+  PolynomialGcd(polyB, polyD, polyA);                              // a <- gcd(b, d)
+  DivideIntegerPolynomial(polyB, polyA, TYPE_DIVISION);            // b <- b/a
+  do
+  {
+    polyC[0] = polyD[0];
+    CopyPolynomial(&polyC[1], &polyD[1], polyD[0]);                // c <- d
+    DivideIntegerPolynomial(polyC, polyA, TYPE_DIVISION);          // c <- d/a
+    tempPoly[0] = polyB[0];
+    CopyPolynomial(&tempPoly[1], &polyB[1], polyB[0]);             // temp <- b
+    DerPolynomial(tempPoly);                                       // temp <- b'
+    SubtractIntegerPolynomial(polyC, tempPoly, polyD);             // d <- c - b'
+    PolynomialGcd(polyB, polyD, polyA);                            // a <- gcd(b, d)
+    if (polyA[0] != 0)
+    {
+      // Copy polynomial polyA to factor array if its degree is not zero.
+      *ptrPolySqFreeFact = multiplicity;
+      ptrPolySqFreeFact++;
+      *ptrPolySqFreeFact = polyA[0];
+      ptrPolySqFreeFact++;
+      ptrPolySqFreeFact = CopyPolynomial(ptrPolySqFreeFact, &polyA[1], polyA[0]);
+      nbrFactors++;
+    }
+    multiplicity++;
+    DivideIntegerPolynomial(polyB, polyA, TYPE_DIVISION);          // b <- b/a
+    // Continue loop if b does not equal 1.
+  } while ((polyB[0] != 0) || (polyB[1] != 1) || (polyB[2] != 1));
+  return nbrFactors;
+}
+
 // Input: values = degree, coefficient degree 0, coefficient degree 1, etc.
 // Output: factorInfo = structure that holds the factors.
 int FactorPolyOverIntegers(void)
 {
+  const int* ptrPolySqFreeFact = polySqFreeFact;
   int degreePolyToFactor = values[0];
   int primeRecord = 0;
   int expon;
@@ -2018,6 +2079,7 @@ int FactorPolyOverIntegers(void)
   bool polXprocessed = false;
   int* ptrFactorIntegerBak;
   int* ptrPolyLiftedOrig;
+  int nbrSquareFreeFactors;
   struct sFactorInfo* pstFactorInfoOrig;
   struct sFactorInfo* pstFactorInfoInteger = factorInfoInteger;
   initLinkedBigInt();
@@ -2028,7 +2090,7 @@ int FactorPolyOverIntegers(void)
   CopyPolynomial(&origPolyToFactor[1], &values[1], degreePolyToFactor);
   origPolyToFactor[0] = degreePolyToFactor;
   // polyToFactor -> original polynomial / content of polynomial.
-  // Let n the degree of the least coefficient different from zero.
+  // Let n be the degree of the least coefficient different from zero.
   // Then x^n divides the polynomial.
   polyToFactor[0] = degreePolyToFactor;
   ptrSrc = &origPolyToFactor[1];
@@ -2061,7 +2123,8 @@ int FactorPolyOverIntegers(void)
     ptrSrc += 1 + numLimbs(ptrSrc);
     ptrDest += 1 + numLimbs(ptrDest);
   }
-  while (polyToFactor[0] != 0)
+  nbrSquareFreeFactors = IntegerSquarefreeFactorization();
+  for (int squareFreeFactor = 0; squareFreeFactor < nbrSquareFreeFactors; squareFreeFactor++)
   {    // At least degree 1.
        // The trailing coefficient of factors must divide the product of the trailing and leading
        // coefficients of the original polynomial.
@@ -2070,26 +2133,28 @@ int FactorPolyOverIntegers(void)
     int primeIndex;
     const struct sFactorInfo* pstFactorInfoRecord;
     modulusIsZero = true;
+    intPolyMultiplicity = *ptrPolySqFreeFact;
+    ptrPolySqFreeFact++;
+    polyNonRepeatedFactors[0] = *ptrPolySqFreeFact;
+    ptrPolySqFreeFact++;
+    ptrDest = &polyNonRepeatedFactors[1];
+    for (int currentDegree = 0; currentDegree <= polyNonRepeatedFactors[0]; currentDegree++)
+    {         // Copy polynomial.
+      int numLength = numLimbs(ptrPolySqFreeFact) + 1;
+      (void)memcpy(ptrDest, ptrPolySqFreeFact, numLength * sizeof(int));
+      ptrPolySqFreeFact += numLength;
+      ptrDest += numLength;
+    }
     // Get trailing coefficient.
-    ptrSrc = &values[1];
+    ptrSrc = &polyNonRepeatedFactors[1];
     UncompressBigIntegerB(ptrSrc, &operand1);
     // Get leading coefficient.
-    for (int degree1 = 0; degree1 < degreePolyToFactor; degree1++)
+    for (int degree1 = 0; degree1 < polyNonRepeatedFactors[0]; degree1++)
     {
       ptrSrc += 1 + numLimbs(ptrSrc);
     }
     UncompressBigIntegerB(ptrSrc, &operand2);
     (void)BigIntMultiply(&operand1, &operand2, &trailingCoeff);
-    // Compute F/gcd(F, F') where F is the polynomial to factor.
-    // In the next loop we will attempt to factor gcd(F, F').
-    degreePolyToFactor = polyToFactor[0];
-    CopyPolynomial(&polyNonRepeatedFactors[1], &polyToFactor[1], degreePolyToFactor);
-    CopyPolynomial(&tempPoly[1], &polyToFactor[1], degreePolyToFactor);
-    tempPoly[0] = degreePolyToFactor;
-    DerPolynomial(tempPoly);
-    PolynomialGcd(tempPoly, polyToFactor, polyToFactor);
-    polyNonRepeatedFactors[0] = degreePolyToFactor;
-    DivideIntegerPolynomial(polyNonRepeatedFactors, polyToFactor, TYPE_DIVISION);
     primeIndex = 0;
     ComputeCoeffBounds();   // bound = Bound of coefficient of factors.
     // Up to 5 different prime moduli are tested to minimize the number

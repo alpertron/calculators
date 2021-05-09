@@ -73,12 +73,6 @@ int valuesIndex;
 static int *ptrA[MAX_DEGREE];
 static int* ptrNewFactors[MAX_DEGREE];
 
-enum eAdjustType
-{
-  ADJUST_PERFORM_ADDITION = 0,
-  ADJUST_PERFORM_SUBTRACTION
-};
-
 int numLimbs(const int *pLen)
 {
   int nbrLimbs = *pLen;
@@ -214,6 +208,18 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
   int potentialDegreeGcd;
   int tmp;
   int rc;
+  if ((*argF == 0) && (*(argF + 1) == 1) && (*(argF + 2) == 0))
+  {         // F equals zero, so the GCD is G.
+    *gcd = *argG;
+    CopyPolynomial(gcd+1, argG+1, *argG);
+    return;
+  }
+  if ((*argG == 0) && (*(argG + 1) == 1) && (*(argG + 2) == 0))
+  {         // G equals zero, so the GCD is F.
+    *gcd = *argF;
+    CopyPolynomial(gcd + 1, argF + 1, *argF);
+    return;
+  }
   initializeSmallPrimes(smallPrimes);
   prime = 65537;
   primeIndex = 6543;
@@ -336,7 +342,6 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
     CopyBigInt(&operand4, &modulus);
     BigIntDivideBy2(&operand4);           // operand4 <- modulus / 2.
     // Get the primitive part of g_m in polyT.
-    getContent(polyS, &contentH);
     polyT[0] = potentialDegreeGcd;
     ptrSrc = &polyS[1];
     ptrDest = &polyT[1];
@@ -350,6 +355,18 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
       {
         BigIntSubt(&operand1, &modulus, &operand1);
       }
+      NumberLength = operand1.nbrLimbs;
+      BigInteger2IntArray(ptrDest, &operand1);
+      ptrSrc += 1 + numLimbs(ptrSrc);
+      ptrDest += 1 + numLimbs(ptrDest);
+    }
+    CopyPolynomial(&polyS[1], &polyT[1], potentialDegreeGcd);
+    getContent(polyS, &contentH);
+    ptrSrc = &polyS[1];
+    ptrDest = &polyT[1];
+    for (degree = 0; degree <= potentialDegreeGcd; degree++)
+    {
+      UncompressBigIntegerB(ptrSrc, &operand1);
       BigIntDivide(&operand1, &contentH, &operand2);
       NumberLength = operand2.nbrLimbs;
       BigInteger2IntArray(ptrDest, &operand2);
@@ -1844,4 +1861,61 @@ void textErrorPol(char *ptrOutput, enum eExprErr rc)
   *ptrOutput = '>';
   ptrOutput++;
   *ptrOutput = 0;    // Add terminator character.
+}
+
+void SubtractIntegerPolynomial(const int* minuend, const int* subtrahend, int* difference)
+{
+  int degreeMinuend = *minuend;
+  int degreeSubtrahend = *subtrahend;
+  const int* ptrMinuend = minuend + 1;
+  const int* ptrSubtrahend = subtrahend + 1;
+  int* ptrDifference = difference + 1;
+  int minDegree = degreeMinuend;
+  int currentDegree;
+  int degreeDifference;
+  if (minDegree > degreeSubtrahend)
+  {
+    minDegree = degreeSubtrahend;
+  }
+  for (currentDegree = 0; currentDegree <= minDegree; currentDegree++)
+  {
+    UncompressBigIntegerB(ptrMinuend, &operand1);
+    UncompressBigIntegerB(ptrSubtrahend, &operand2);
+    BigIntSubt(&operand1, &operand2, &operand3);
+    NumberLength = operand3.nbrLimbs;
+    BigInteger2IntArray(ptrDifference, &operand3);
+    ptrMinuend += 1 + numLimbs(ptrMinuend);
+    ptrSubtrahend += 1 + numLimbs(ptrSubtrahend);
+    ptrDifference += 1 + numLimbs(ptrDifference);
+  }
+  if (degreeMinuend > minDegree)
+  {
+    CopyPolynomial(ptrDifference, ptrMinuend, degreeMinuend - minDegree);
+    *difference = degreeMinuend;
+  }
+  else if (degreeSubtrahend > minDegree)
+  {
+    for (; currentDegree <= degreeSubtrahend; currentDegree++)
+    {
+      *ptrDifference = -*ptrSubtrahend;
+      memcpy(ptrDifference + 1, ptrSubtrahend + 1, numLimbs(ptrSubtrahend));
+      ptrSubtrahend += 1 + numLimbs(ptrSubtrahend);
+      ptrDifference += 1 + numLimbs(ptrDifference);
+    }
+  }
+  else
+  {  // Both minuend and subtrahend have the same degree.
+     // Erase the most significant coefficients which are zero.
+    degreeDifference = 0;
+    ptrDifference = difference + 1;
+    for (currentDegree = 0; currentDegree <= degreeMinuend; currentDegree++)
+    {
+      if ((*ptrDifference != 1) || (*(ptrDifference + 1) != 0))
+      {
+        degreeDifference = currentDegree;
+      }
+      ptrDifference += numLimbs(ptrDifference) + 1;
+    }
+    *difference = degreeDifference;
+  }
 }

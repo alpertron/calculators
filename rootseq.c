@@ -2114,6 +2114,7 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
     *ptrBeginning = 0;          // Add terminator at end of string.
   }
   copyStr(&ptrBeginning, realRoot);
+  lenBeginning = (int)(ptrBeginning - &beginning[0]);
   if ((*realRoot != 0) && lenBeginning != 0 && (*ptrStart != 0))
   {
     copyStr(&ptrBeginning, ptrTimes);

@@ -105,6 +105,7 @@ void textErrorPol(char *output, enum eExprErr rc);
 void outputOriginalPolynomial(char *ptrOutput, int groupLen);
 void outputPolynomialFactor(char* ptrOutput, int groupLength, const struct sFactorInfo* pstFactorInfo);
 int DerPolynomial(int *ptrArgument);
+void SubtractIntegerPolynomial(const int* minuend, const int* subtrahend, int* difference);
 void PolynomialGcd(int *argF, int *argG, int *gcd);
 int DivideIntegerPolynomial(int *pDividend, const int *pDivisor, enum eDivType type);
 int getModPolynomial(int *polyMod, const int *poly, const BigInteger *content);
