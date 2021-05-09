@@ -518,7 +518,7 @@ int FactorModularPolynomial(bool inputMontgomery)
     ptrFactorInfo++;
   }
   OrigPolyFromMontgomeryToStandard();
-  rc = HenselLifting(factorInfo, 0);
+  rc = HenselLifting(factorInfo, false);
   if (rc != EXPR_OK)
   {
     return rc;

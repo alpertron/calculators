@@ -99,7 +99,7 @@ int ComputePolynomial(char *input, int expo);
 void OrigPolyFromMontgomeryToStandard(void);
 void ConvertToMonic(int *poly, int polyDegree);
 void SquareFreeFactorization(int polyDegree, int *poly, int expon);
-int HenselLifting(struct sFactorInfo* factorInfo, int compressPoly);
+int HenselLifting(struct sFactorInfo* factorInfo, bool compressPoly);
 void polyToStandardNotation(int *nbr, int qtyNbrs);
 void textErrorPol(char *output, enum eExprErr rc);
 void outputOriginalPolynomial(char *ptrOutput, int groupLen);

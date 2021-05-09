@@ -1160,7 +1160,7 @@ static void vanHoeij(int prime, int nbrFactors)
 #if DEBUG_HENSEL_LIFTING
   ptrOutput2 = ptrDebugOutput;
 #endif
-  (void)HenselLifting(factorInfoRecord, 1);
+  (void)HenselLifting(factorInfoRecord, true);
 #if DEBUG_HENSEL_LIFTING
   ptrDebugOutput = ptrOutput2; ptrOutput2 = NULL;
 #endif
@@ -1917,9 +1917,7 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
 int getNextPrimeNoDuplicatedFactors(int primeIndex)
 {
   const int* ptrSrc;
-  int prime;
   int degreeGcdMod;
-  int degree2;
   int polyDegree = polyNonRepeatedFactors[0];
   initializeSmallPrimes(smallPrimes);
   // Get leading coefficient of polyNonRepeatedFactors.
@@ -1937,6 +1935,8 @@ int getNextPrimeNoDuplicatedFactors(int primeIndex)
       // If the leading coefficient is multiple of prime, the prime cannot
       // be used.
     int degree1;
+    int degree2;
+    int prime;
     do
     {      // Loop while the leading coefficient is multiple of prime.
       primeIndex++;

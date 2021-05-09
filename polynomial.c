@@ -131,65 +131,68 @@ void ConvertToMonic(int *poly, int polyDegree)
 // The content is the GCD of all coefficients with the sign equal to the sign of the leading coefficient.
 int *getContent(int *poly, BigInteger *content)
 {
-  int currentDegree = *poly;
-  poly++;
+  int* ptrPoly = poly;
+  int currentDegree = *ptrPoly;
+  ptrPoly++;
   if (currentDegree < 0)
   {
     currentDegree = 0;    // Monomial: process only one coefficient.
   }
-  UncompressBigIntegerB(poly, content);
+  UncompressBigIntegerB(ptrPoly, content);
   for (; currentDegree > 0; currentDegree--)
   {
-    poly += 1 + numLimbs(poly);
-    UncompressBigIntegerB(poly, &operand1);
+    ptrPoly += 1 + numLimbs(ptrPoly);
+    UncompressBigIntegerB(ptrPoly, &operand1);
     BigIntGcd(content, &operand1, &operand2);
     CopyBigInt(content, &operand2);
     content->sign = operand1.sign;
   }
-  return poly;
+  return ptrPoly;
 }
 
 // Get polynomial divided content mod prime.
 int getModPolynomial(int *polyMod, const int *poly, const BigInteger *content)
 {
+  int* ptrPolyMod = polyMod;
+  const int* ptrPoly = poly;
   int currentDegree;
-  int degreePoly = *poly;
-  poly++;
+  int degreePoly = *ptrPoly;
+  ptrPoly++;
   if (degreePoly < 0)
   {     // Monomial.
     for (currentDegree = degreePoly; currentDegree < 0; currentDegree++)
     {
-      *polyMod = 1;       // Initialize coefficient to zero.
-      polyMod++;
-      *polyMod = 0;
-      polyMod++;
+      *ptrPolyMod = 1;       // Initialize coefficient to zero.
+      ptrPolyMod++;
+      *ptrPolyMod = 0;
+      ptrPolyMod++;
     }
-    NumberLength = numLimbs(poly);
-    UncompressBigIntegerB(poly, &operand1);  // Get coefficient.
-    BigIntDivide(&operand1, content, &operand2);
-    BigIntRemainder(&operand2, &powerMod, &operand1);
+    NumberLength = numLimbs(ptrPoly);
+    UncompressBigIntegerB(ptrPoly, &operand1);  // Get coefficient.
+    (void)BigIntDivide(&operand1, content, &operand2);
+    (void)BigIntRemainder(&operand2, &powerMod, &operand1);
     if (operand1.sign == SIGN_NEGATIVE)
     {
       BigIntAdd(&operand1, &powerMod, &operand1);
     }
     NumberLength = operand1.nbrLimbs;
-    BigInteger2IntArray(polyMod, &operand1);
+    BigInteger2IntArray(ptrPolyMod, &operand1);
     return -degreePoly;
   }
   for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
   {
-    NumberLength = numLimbs(poly);
-    UncompressBigIntegerB(poly, &operand1);  // Get coefficient.
-    BigIntDivide(&operand1, content, &operand2);
-    BigIntRemainder(&operand2, &powerMod, &operand1);
+    NumberLength = numLimbs(ptrPoly);
+    UncompressBigIntegerB(ptrPoly, &operand1);  // Get coefficient.
+    (void)BigIntDivide(&operand1, content, &operand2);
+    (void)BigIntRemainder(&operand2, &powerMod, &operand1);
     if (operand1.sign == SIGN_NEGATIVE)
     {
       BigIntAdd(&operand1, &powerMod, &operand1);
     }
     NumberLength = operand1.nbrLimbs;
-    BigInteger2IntArray(polyMod, &operand1);
-    poly += 1 + numLimbs(poly);
-    polyMod += 1 + numLimbs(polyMod);
+    BigInteger2IntArray(ptrPolyMod, &operand1);
+    ptrPoly += 1 + numLimbs(ptrPoly);
+    ptrPolyMod += 1 + numLimbs(ptrPolyMod);
   }
   return degreePoly;
 }
@@ -367,7 +370,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
     for (degree = 0; degree <= potentialDegreeGcd; degree++)
     {
       UncompressBigIntegerB(ptrSrc, &operand1);
-      BigIntDivide(&operand1, &contentH, &operand2);
+      (void)BigIntDivide(&operand1, &contentH, &operand2);
       NumberLength = operand2.nbrLimbs;
       BigInteger2IntArray(ptrDest, &operand2);
       ptrSrc += 1 + numLimbs(ptrSrc);
@@ -606,6 +609,7 @@ void DerPolynomial(int *ptrArgument)
 // Convert from Montgomery notation to standard notation by multiplying by 1.
 void polyToStandardNotation(int *nbr, int qtyNbrs)
 {
+  int* ptrNbr = nbr;
   // Initialize operand2.limbs to 1 (little-endian).
   operand2.limbs[0].x = 1;
   if (NumberLength > 1)
@@ -614,10 +618,10 @@ void polyToStandardNotation(int *nbr, int qtyNbrs)
   }
   for (int currentNbr = 0; currentNbr < qtyNbrs; currentNbr++)
   {
-    IntArray2BigInteger(nbr, &operand1);
+    IntArray2BigInteger(ptrNbr, &operand1);
     modmult(operand1.limbs, operand2.limbs, operand1.limbs);
-    BigInteger2IntArray(nbr, &operand1);
-    nbr += NumberLength + 1;
+    BigInteger2IntArray(ptrNbr, &operand1);
+    ptrNbr += NumberLength + 1;
   }
 }
 
@@ -650,7 +654,7 @@ void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, const BigInteg
     {
       if (!powerIsOne)
       {
-        if (callback)
+        if (callback != NULL)
         {
           callback(100 * bitCounter/(nbrBits*nbrMultip));
         }
@@ -677,25 +681,27 @@ void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, const BigInteg
 
 int getDegreePoly(const int *poly, int polyDegree)
 {
+  int currentDegree;
   if (polyDegree <= 0)
   {
     return 0;
   }
-  while (polyDegree > 0)
+  currentDegree = polyDegree;
+  while (currentDegree > 0)
   {
-    const int *ptrTemp = poly + (polyDegree*(NumberLength + 1));
+    const int *ptrTemp = poly + (currentDegree*(NumberLength + 1));
     int len = *ptrTemp;
     for (int index = len; index > 0; index--)
     {
       ptrTemp++;
       if (*ptrTemp != 0)
       {      // Coefficient is not zero.
-        return polyDegree;
+        return currentDegree;
       }
     }
-    polyDegree--;
+    currentDegree--;
   }
-  return polyDegree;
+  return currentDegree;
 }
 
 #if 0
@@ -905,7 +911,7 @@ static void ExtendedGcdPolynomial(/*@in@*/int *pointerA, int degreeA, /*@in@*/in
     do
     {
       IntArray2BigInteger(ptrR + (degreeR * (NumberLength+1)), &operand1);
-      BigIntRemainder(&operand1, &primeMod, &operand2);
+      (void)BigIntRemainder(&operand1, &primeMod, &operand2);
       if (!BigIntIsZero(&operand2))
       {
         break;
@@ -1100,8 +1106,9 @@ static int getAi(int nbrFactor, int degreeA)
 // Get polynomial factor f_i. This factor is stored with no spaces
 // between coefficients. The output is in Montgomery notation in
 // polynomial poly2.
-static void getFi(int degreeFactor, const int *ptrSrc, int nbrLimbs)
+static void getFi(int degreeFactor, const int *src, int nbrLimbs)
 {
+  const int* ptrSrc = src;
   int *ptrDest = poly2;       // Copy f_i to poly2.
   for (int currentDegree = 0; currentDegree < degreeFactor; currentDegree++)
   {
@@ -1117,7 +1124,7 @@ static void getFi(int degreeFactor, const int *ptrSrc, int nbrLimbs)
 // Move factors f_i from polyLiftedNew to polyLifted, then adjust
 // factorInfo[...].ptrPolyLifted to point to the new factors.
 // There are no spaces between coefficients.
-static void MoveFactorsAndFixPointers(struct sFactorInfo* ptrFactorInfo, int compressPoly)
+static void MoveFactorsAndFixPointers(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
 {
   struct sFactorInfo* pstFactorInfo = ptrFactorInfo;
   const int* ptrSrc = polyLiftedNew;
@@ -1155,7 +1162,7 @@ static void MoveFactorsAndFixPointers(struct sFactorInfo* ptrFactorInfo, int com
 // Hensel lifting only works when there are no repeated factors mod p,
 // so this condition is tested.
 
-int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
+int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
 {
   int currentExp = 1;
   int nbrFactor;
@@ -1314,7 +1321,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
         nbrLen--;
       }
       operand1.nbrLimbs = nbrLen;
-      BigIntDivide(&operand1, &operand5, &operand1);
+      (void)BigIntDivide(&operand1, &operand5, &operand1);
       // Store coefficient of subtraction.
       ptrDest = &poly3[currentDegree * (oldNumberLength + 1)];
       *ptrDest = operand1.nbrLimbs;
@@ -1428,7 +1435,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
       operand1.nbrLimbs = *ptrSrc;
       (void)memcpy(operand1.limbs, ptrSrc + 1, operand1.nbrLimbs * sizeof(int));
       // Divide coefficient by m.
-      BigIntDivide(&operand1, &powerMod, &operand1);
+      (void)BigIntDivide(&operand1, &powerMod, &operand1);
       // Store coefficient of quotient.
       *ptrDest = operand1.nbrLimbs;
       ptrDest++;
@@ -1506,7 +1513,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, int compressPoly)
       }
       pstFactorInfo++;
     }
-    MoveFactorsAndFixPointers(ptrFactorInfo, 1);   // Output is compressed.
+    MoveFactorsAndFixPointers(ptrFactorInfo, true);   // Output is compressed.
   }
   MoveFactorsAndFixPointers(ptrFactorInfo, compressPoly);
   return EXPR_OK;
