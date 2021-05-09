@@ -975,7 +975,7 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
   }
   else
   {
-    CopyPolynomial(ptrValue2, ptrValue1, degreeBase);
+    (void)CopyPolynomial(ptrValue2, ptrValue1, degreeBase);
   }
   SetNumberToOne(&poly2[0]); // Initialize power with polynomial 1.
   degreePower = 0;
@@ -986,7 +986,7 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
     degreePower <<= 1;
     if (modulusIsZero)
     {
-      CopyPolynomial(poly2, polyMultTemp, degreePower);
+      (void)CopyPolynomial(poly2, polyMultTemp, degreePower);
     }
     else
     {
@@ -998,7 +998,7 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
       degreePower += degreeBase;
       if (modulusIsZero)
       {
-        CopyPolynomial(poly2, polyMultTemp, degreePower);
+        (void)CopyPolynomial(poly2, polyMultTemp, degreePower);
       }
       else
       {
@@ -1154,11 +1154,7 @@ int ComputePolynomial(char* input, int expo)
       break;
     case TOKEN_DER:
       ptrValue1 = stackValues[stackIndex - 1];
-      rc = DerPolynomial(ptrValue1);
-      if (rc != EXPR_OK)
-      {
-        return rc;
-      }
+      DerPolynomial(ptrValue1);
       break;
     case '+':
       stackIndex--;

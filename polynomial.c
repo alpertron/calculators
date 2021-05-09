@@ -211,13 +211,13 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
   if ((*argF == 0) && (*(argF + 1) == 1) && (*(argF + 2) == 0))
   {         // F equals zero, so the GCD is G.
     *gcd = *argG;
-    CopyPolynomial(gcd+1, argG+1, *argG);
+    (void)CopyPolynomial(gcd+1, argG+1, *argG);
     return;
   }
   if ((*argG == 0) && (*(argG + 1) == 1) && (*(argG + 2) == 0))
   {         // G equals zero, so the GCD is F.
     *gcd = *argF;
-    CopyPolynomial(gcd + 1, argF + 1, *argF);
+    (void)CopyPolynomial(gcd + 1, argF + 1, *argF);
     return;
   }
   initializeSmallPrimes(smallPrimes);
@@ -335,7 +335,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
         ptrPrev += 1 + numLimbs(ptrPrev);
         ptrDest += 1 + numLimbs(ptrDest);
       }
-      CopyPolynomial(&polyS[1], &polyT[1], potentialDegreeGcd);
+      (void)CopyPolynomial(&polyS[1], &polyT[1], potentialDegreeGcd);
     }
     polyS[0] = potentialDegreeGcd;
     multint(&modulus, &modulus, prime);   // modulus <- modulus*prime.
@@ -360,8 +360,8 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
       ptrSrc += 1 + numLimbs(ptrSrc);
       ptrDest += 1 + numLimbs(ptrDest);
     }
-    CopyPolynomial(&polyS[1], &polyT[1], potentialDegreeGcd);
-    getContent(polyS, &contentH);
+    (void)CopyPolynomial(&polyS[1], &polyT[1], potentialDegreeGcd);
+    (void)getContent(polyS, &contentH);
     ptrSrc = &polyS[1];
     ptrDest = &polyT[1];
     for (degree = 0; degree <= potentialDegreeGcd; degree++)
@@ -383,7 +383,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
       degree = argF[0];
     }
     poly5[0] = argF[0];
-    CopyPolynomial(&poly5[1], &argF[1], degree);
+    (void)CopyPolynomial(&poly5[1], &argF[1], degree);
     rc = DivideIntegerPolynomial(poly5, polyT, TYPE_MODULUS);
     if ((rc == EXPR_OK) && (poly5[0] == 0) && (poly5[1] == 1) && (poly5[2] == 0))
     {           // Remainder is zero.
@@ -396,7 +396,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
         degree = argG[0];
       }
       poly5[0] = argG[0];
-      CopyPolynomial(&poly5[1], &argG[1], degree);
+      (void)CopyPolynomial(&poly5[1], &argG[1], degree);
       rc = DivideIntegerPolynomial(poly5, polyT, TYPE_MODULUS);
       if ((rc == EXPR_OK) && (poly5[0] == 0) && (poly5[1] == 1) && (poly5[2] == 0))
       {           // Remainder is zero.
@@ -542,7 +542,7 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
   }
 }
 
-int DerPolynomial(int *ptrArgument)
+void DerPolynomial(int *ptrArgument)
 {
   const int* ptrSrc;
   int *ptrDest;
@@ -570,7 +570,7 @@ int DerPolynomial(int *ptrArgument)
         *ptrArgument = 0;
       }
     }
-    return EXPR_OK;
+    return;
   }
   ptrSrc = ptrArgument + 1;
   ptrDest = &poly1[1];
@@ -598,9 +598,9 @@ int DerPolynomial(int *ptrArgument)
     }
     ptrDest += 1 + numLimbs(ptrDest);
   }
-  CopyPolynomial(ptrArgument + 1, &poly1[1], derivDegreePoly);
+  (void)CopyPolynomial(ptrArgument + 1, &poly1[1], derivDegreePoly);
   *ptrArgument = derivDegreePoly;
-  return EXPR_OK;
+  return;
 }
 
 // Convert from Montgomery notation to standard notation by multiplying by 1.
@@ -660,7 +660,7 @@ void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, const BigInteg
       {
         if (powerIsOne)
         {
-          CopyPolynomialFixedCoeffSize(polyPower, polyBase, polyDegree, nbrLimbs);
+          (void)CopyPolynomialFixedCoeffSize(polyPower, polyBase, polyDegree, nbrLimbs);
           nbrBits = ((index + 1) * BITS_PER_GROUP) - bitCounter;
           powerIsOne = false;
           bitCounter = curMultip * nbrBits;
@@ -1890,7 +1890,7 @@ void SubtractIntegerPolynomial(const int* minuend, const int* subtrahend, int* d
   }
   if (degreeMinuend > minDegree)
   {
-    CopyPolynomial(ptrDifference, ptrMinuend, degreeMinuend - minDegree);
+    (void)CopyPolynomial(ptrDifference, ptrMinuend, degreeMinuend - minDegree);
     *difference = degreeMinuend;
   }
   else if (degreeSubtrahend > minDegree)

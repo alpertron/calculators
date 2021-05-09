@@ -893,7 +893,7 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         {
           UncompressBigIntegerB(ptrDest, &tmp1);
           ptrDest += 1 + numLimbs(ptrDest);
-          if (currentDegree & 1)
+          if ((currentDegree & 1) != 0)
           {
             BigIntAdd(&operand2, &tmp1, &operand2);
           }
@@ -985,7 +985,7 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
       {
         int degreePoly;
         // Get principal part of poly5 and store it to poly2.
-        getContent(poly5, &operand4);   // Content of polynomial.
+        (void)getContent(poly5, &operand4);   // Content of polynomial.
         poly2[0] = poly5[0];
         ptrSrc = &poly5[1];
         ptrDest = &poly2[1];
@@ -999,10 +999,10 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
           ptrDest += 1 + numLimbs(ptrDest);
         }
         // Copy this principal part to poly5.
-        CopyPolynomial(&poly5[1], &poly2[1], poly5[0]);
-        DivideIntegerPolynomial(polyNonRepeatedFactors, poly5, TYPE_DIVISION);
+        (void)CopyPolynomial(&poly5[1], &poly2[1], poly5[0]);
+        (void)DivideIntegerPolynomial(polyNonRepeatedFactors, poly5, TYPE_DIVISION);
         degreePoly = poly5[0];
-        CopyPolynomial(ptrFactorInteger, &poly5[1], degreePoly);
+        (void)CopyPolynomial(ptrFactorInteger, &poly5[1], degreePoly);
         InsertIntegerPolynomialFactor(ptrFactorInteger, degreePoly);
       }
       modulusIsZero = false;   // Perform modular operations.
@@ -1966,9 +1966,9 @@ static void initFactorModularPoly(int prime)
   degreePolyToFactor = getModPolynomial(&poly1[1], polyNonRepeatedFactors, &operand5);
   poly1[0] = degreePolyToFactor;
   polyBackup[0] = values[0];
-  CopyPolynomial(&polyBackup[1], &values[1], (values[0] >= 0)? values[0] : 0);
+  (void)CopyPolynomial(&polyBackup[1], &values[1], (values[0] >= 0)? values[0] : 0);
   values[0] = degreePolyToFactor;
-  CopyPolynomial(&values[1], &poly1[1], degreePolyToFactor);
+  (void)CopyPolynomial(&values[1], &poly1[1], degreePolyToFactor);
   modulusIsZero = false;
 }
 
@@ -2032,19 +2032,19 @@ static int IntegerSquarefreeFactorization(void)
   int multiplicity = 1;
   int nbrFactors = 0;
   polyB[0] = polyToFactor[0];
-  CopyPolynomial(&polyB[1], &polyToFactor[1], polyToFactor[0]);    // b <- f
+  (void)CopyPolynomial(&polyB[1], &polyToFactor[1], polyToFactor[0]); // b <- f
   polyD[0] = polyToFactor[0];
-  CopyPolynomial(&polyD[1], &polyToFactor[1], polyToFactor[0]);    // d <- f
+  (void)CopyPolynomial(&polyD[1], &polyToFactor[1], polyToFactor[0]); // d <- f
   DerPolynomial(polyD);                                            // d <- f'
   PolynomialGcd(polyB, polyD, polyA);                              // a <- gcd(b, d)
-  DivideIntegerPolynomial(polyB, polyA, TYPE_DIVISION);            // b <- b/a
+  (void)DivideIntegerPolynomial(polyB, polyA, TYPE_DIVISION);      // b <- b/a
   do
   {
     polyC[0] = polyD[0];
-    CopyPolynomial(&polyC[1], &polyD[1], polyD[0]);                // c <- d
-    DivideIntegerPolynomial(polyC, polyA, TYPE_DIVISION);          // c <- d/a
+    (void)CopyPolynomial(&polyC[1], &polyD[1], polyD[0]);          // c <- d
+    (void)DivideIntegerPolynomial(polyC, polyA, TYPE_DIVISION);    // c <- d/a
     tempPoly[0] = polyB[0];
-    CopyPolynomial(&tempPoly[1], &polyB[1], polyB[0]);             // temp <- b
+    (void)CopyPolynomial(&tempPoly[1], &polyB[1], polyB[0]);       // temp <- b
     DerPolynomial(tempPoly);                                       // temp <- b'
     SubtractIntegerPolynomial(polyC, tempPoly, polyD);             // d <- c - b'
     PolynomialGcd(polyB, polyD, polyA);                            // a <- gcd(b, d)
@@ -2059,7 +2059,7 @@ static int IntegerSquarefreeFactorization(void)
       nbrFactors++;
     }
     multiplicity++;
-    DivideIntegerPolynomial(polyB, polyA, TYPE_DIVISION);          // b <- b/a
+    (void)DivideIntegerPolynomial(polyB, polyA, TYPE_DIVISION);    // b <- b/a
     // Continue loop if b does not equal 1.
   } while ((polyB[0] != 0) || (polyB[1] != 1) || (polyB[2] != 1));
   return nbrFactors;
@@ -2086,8 +2086,8 @@ int FactorPolyOverIntegers(void)
   ptrFactorInteger = polyInteger;
   modulusIsZero = true;
   (void)memset(factorInfoInteger, 0, sizeof(factorInfoInteger));
-  getContent(values, &contentPolyToFactor);
-  CopyPolynomial(&origPolyToFactor[1], &values[1], degreePolyToFactor);
+  (void)getContent(values, &contentPolyToFactor);
+  (void)CopyPolynomial(&origPolyToFactor[1], &values[1], degreePolyToFactor);
   origPolyToFactor[0] = degreePolyToFactor;
   // polyToFactor -> original polynomial / content of polynomial.
   // Let n be the degree of the least coefficient different from zero.
@@ -2247,7 +2247,7 @@ int FactorPolyOverIntegers(void)
     }
   }
   modulusIsZero = true;
-  CopyPolynomial(&values[1], &origPolyToFactor[1], origPolyToFactor[0]);
+  (void)CopyPolynomial(&values[1], &origPolyToFactor[1], origPolyToFactor[0]);
   values[0] = origPolyToFactor[0];
   CopyBigInt(&operand5, &contentPolyToFactor);
   // Find number of factors.
