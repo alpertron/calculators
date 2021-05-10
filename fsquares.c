@@ -647,7 +647,7 @@ void fsquaresText(char *input, int grpLen)
   {
     groupLength = grpLen;
   }
-  BatchProcessing(input, &toProcess, &ptrOutput, NULL);
+  (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL);
 #ifdef __EMSCRIPTEN__
   copyStr(&ptrOutput, lang ? "<p>Transcurrió " : "<p>Time elapsed: ");
   elapsedTime = (int)(tenths() - originalTenthSecond);

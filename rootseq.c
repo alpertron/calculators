@@ -1370,7 +1370,7 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
   ptrValues += 1 + numLimbs(ptrValues);
   NumberLength = tmp3.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp3);
-  FactorPolyOverIntegers();
+  (void)FactorPolyOverIntegers();
   if (factorInfoInteger[0].degree == 1)
   {   // Rational root find. Get root.
     FerrariResolventHasRationalRoot(multiplicity);
@@ -2500,7 +2500,7 @@ static void EndRadicand(int polyDegree)
   *ptrOutput = 0;
 }
 
-static void GenerateRoots(int multiplicity, const char* rationalRoot, int isNegative, int polyDegree)
+static void GenerateRoots(int multiplicity, const char* rationalRoot, bool isNegative, int polyDegree)
 {
   for (int currentDegree = 0; currentDegree < polyDegree; currentDegree++)
   {
@@ -2528,10 +2528,10 @@ static void ShowRootsOfRationalNumbers(int polyDegree, int multiplicity)
 {
   char rationalRoot[30000];
   char* ptrOutputBak = ptrOutput;
-  int isNegative = 0;
+  bool isNegative = false;
   if (Rat1.numerator.sign == Rat1.denominator.sign)
   {
-    isNegative = 1;
+    isNegative = true;
   }
   Rat1.numerator.sign = SIGN_POSITIVE;
   Rat1.denominator.sign = SIGN_POSITIVE;
@@ -2628,16 +2628,16 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
   }
   if (signDiscr == SIGN_POSITIVE)
   {           // Roots of quadratic equation are real.
-    int isNegative;
+    bool isNegative;
     enum eSign Rat2SignBak;
     for (ctr = 0; ctr < 2; ctr++)
     {         // Show (Rat1 +/- Rat2*sqrt(Rat3))
-      isNegative = 0;
+      isNegative = false;
       if (Rat1.numerator.sign == Rat2.numerator.sign)
       {
         if (Rat1.numerator.sign == SIGN_NEGATIVE)
         {
-          isNegative = 1;
+          isNegative = true;
         }
       }
       else
@@ -2648,7 +2648,7 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
         BigRationalSubt(&Rat5, &Rat4, &Rat4);
         if (Rat1.numerator.sign == Rat4.numerator.sign)
         {
-          isNegative = 1;
+          isNegative = true;
         }
       }
       if (isNegative)
@@ -2731,7 +2731,7 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
         *ptrOutput = ' ';
         ptrOutput++;
         copyStr(&ptrOutput, ptrTimes);
-        if (component)
+        if (component != 0)
         {
           copyStr(&ptrOutput, ptrSin);
         }
@@ -2978,26 +2978,26 @@ static void showExplanation(int left, const char* oper1, int middle, const char*
   ptrOutput++;
 }
 
-static int isPrime(int value)
+static bool isPrime(int value)
 {
   int divisor = 3;
   if (value == 2)
   {
-    return 1;
+    return true;
   }
   if ((value & 1) == 0)
   {
-    return 0;        // Even value different from 2: composite.
+    return false;        // Even value different from 2: composite.
   }
   while ((divisor * divisor) <= value)
   {
     if ((value % divisor) == 0)
     {
-      return 0;      // Composite.
+      return false;      // Composite.
     }
     divisor += 2;
   }
-  return 1;          // Prime value.
+  return true;           // Prime value.
 }
 
 // If polynomial is S_n or A_n, indicate that the roots are not solvable.
@@ -3232,7 +3232,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
         SaveFactorDegrees(prime, factorDegreesCycle2Or3, nbrFactors);
       }
     }
-    if (cyclePrGtNOver2ToLess2Found)
+    if (cyclePrGtNOver2ToLess2Found != 0)
     {           // Group is very transitive.
       break;
     }

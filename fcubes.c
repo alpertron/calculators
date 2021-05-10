@@ -344,7 +344,7 @@ void fcubesText(char *input, int grpLen)
   {
     groupLength = grpLen;
   }
-  BatchProcessing(input, &toProcess, &ptrOutput, NULL);
+  (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL);
   copyStr(&ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
     "</p><p>" COPYRIGHT_ENGLISH "</p>"));
 }

@@ -307,7 +307,7 @@ void SameDegreeFactorization(void)
           poly2, percentageCallback,   // Power and pointer to callback.
           0, degreeFactor);
         // Save base^((p-1)/2) on poly4.
-        CopyPolynomialFixedCoeffSize(poly4, poly2, polyDegree, nbrLimbs);
+        (void)CopyPolynomialFixedCoeffSize(poly4, poly2, polyDegree, nbrLimbs);
         for (currentDegree = 1; currentDegree < degreeFactor; currentDegree++)
         {
           // Square polynomial and multiply by base to get base^(p^(q-1)).
@@ -330,7 +330,7 @@ void SameDegreeFactorization(void)
             poly4, polyDegree,                 // Product and degree of poly.
             poly3);                            // Polynomial modulus.
         }
-        CopyPolynomialFixedCoeffSize(poly2, poly4, polyDegree, nbrLimbs);
+        (void)CopyPolynomialFixedCoeffSize(poly2, poly4, polyDegree, nbrLimbs);
         // Subtract 1.
         IntArray2BigInteger(&poly2[0], &operand1);
         SubtBigNbrMod(operand1.limbs, MontgomeryMultR1, operand1.limbs);

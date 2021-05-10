@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
 #elif DEBUG_CODE == 9
   if (argc != 3)
   {
-    printf("modulus polynomial\n");
+    (void)printf("modulus polynomial\n");
     return 0;
   }
   pretty = PRETTY_PRINT;
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
   {
     polyFactText(argv[1], argv[2], 7);
   }
-  printf("%s\n", output);
+  (void)printf("%s\n", output);
 #elif DEBUG_CODE == 11
   if (argc != 4)
   {
@@ -367,7 +367,7 @@ int main(int argc, char *argv[])
 #ifdef __EMSCRIPTEN__
 void databack(const char* data)
 {
-  printf("%s\n", data);
+  (void)printf("%s\n", data);
 }
 
 double tenths(void)

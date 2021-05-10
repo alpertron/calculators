@@ -1034,7 +1034,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
 
 static void SkipSpaces(const char *expr)
 {
-  while (*(expr + exprIndex))
+  while (*(expr + exprIndex) != '\0')
   {
     if (*(expr + exprIndex) > ' ')
     {
@@ -1121,7 +1121,11 @@ static enum eExprErr ComputeSubExpr(void)
     intToBigInteger(result, (result->sign == SIGN_NEGATIVE) ? 0 : -1);
     break;
   case OPER_SHL:
-    ShiftLeft(firstArg, secondArg, result);
+    retcode = ShiftLeft(firstArg, secondArg, result);
+    if (retcode != EXPR_OK)
+    {
+      return retcode;
+    }
     break;
   case OPER_SHR:
     if (secondArg->sign == SIGN_POSITIVE)
@@ -1132,7 +1136,11 @@ static enum eExprErr ComputeSubExpr(void)
     {
       secondArg->sign = SIGN_POSITIVE;
     }
-    ShiftLeft(firstArg, secondArg, result);
+    retcode = ShiftLeft(firstArg, secondArg, result);
+    if (retcode != EXPR_OK)
+    {
+      return retcode;
+    }
     break;
   case OPER_NOT:    // Perform binary NOT as result <- -1 - argument.
     intToBigInteger(firstArg, -1);
@@ -1607,8 +1615,8 @@ static int ComputeConcatFact(void)
   const BigInteger *mode = &curStack;
   static BigInteger factorValue;
   int nbrFactors;
-  int descend = mode->limbs[0].x & 1;
-  int repeated = mode->limbs[0].x & 2;
+  bool descend = ((mode->limbs[0].x & 1)? true: false);
+  bool repeated = ((mode->limbs[0].x & 2)? true: false);
   char *ptrTextFactor = textFactor;
   if ((mode->nbrLimbs > 1) || (mode->sign == SIGN_NEGATIVE) || (mode->limbs[0].x > 3))
   {      // The valid modes are 0, 1, 2 and 3.
@@ -1755,7 +1763,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
       (void)memset(first->limbs, 0, delta * sizeof(limb));
     }
     result->nbrLimbs += delta;
-    if (result->limbs[result->nbrLimbs].x)
+    if (result->limbs[result->nbrLimbs].x != 0)
     {
       result->nbrLimbs++;
     }

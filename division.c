@@ -397,7 +397,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     {                   // Increment quotient.
       for (idx = 0; idx <= nbrLimbsQuotient; idx++)
       {
-        if ((++((ptrQuotient + idx)->x)) & MAX_INT_NBR)
+        if (((++((ptrQuotient + idx)->x)) & MAX_INT_NBR) != 0)
         {
           break;
         }

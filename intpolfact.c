@@ -909,7 +909,7 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         {
           UncompressBigIntegerB(ptrDest, &tmp1);
           ptrDest += 1 + numLimbs(ptrDest);
-          if (currentDegree & 1)
+          if ((currentDegree & 1) != 0)
           {
             BigIntAdd(&operand4, &tmp1, &operand4);
           }

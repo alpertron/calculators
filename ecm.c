@@ -908,7 +908,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
           EC += TYP_SIQS;
           *pEC = EC;
           *pNextEC = NextEC;
-          memcpy(common.ecm.GD, TestNbr, NumberSizeBytes);
+          (void)memcpy(common.ecm.GD, TestNbr, NumberSizeBytes);
           return CHANGE_TO_SIQS;
         }
       }

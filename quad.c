@@ -98,10 +98,10 @@ static BigInteger Yind;
 static BigInteger Xlin;
 static BigInteger Ylin;
 static int nbrFactors;
-static int solFound;
-static char teach = 1;
+static bool solFound;
+static bool teach = true;
 static char also;
-static char ExchXY;
+static bool ExchXY;
 static char *ptrOutput;
 static char *divgcd;
 static char *varT = "t";
@@ -419,7 +419,7 @@ void ShowXY(BigInteger *X, BigInteger *Y)
   enum eSign signY;
   if (showSolution == TWO_SOLUTIONS)
   {
-    solFound = 1;
+    solFound = true;
     if (Xbak->nbrLimbs == 0)
     {
       CopyBigInt(Xbak, X);
@@ -531,7 +531,7 @@ static void showFactors(const BigInteger *value)
 {
   const struct sFactors *pstFactor;
   int numFactors = astFactorsMod[0].multiplicity;
-  int factorShown = 0;
+  bool factorShown = false;
   shownbr(value);
   showText(" = ");
   if (value->sign == SIGN_NEGATIVE)
@@ -558,7 +558,7 @@ static void showFactors(const BigInteger *value)
       showInt(pstFactor->multiplicity);
       showText("</sup>");
     }
-    factorShown = 1;
+    factorShown = true;
     pstFactor++;
   }
   if (!factorShown)
@@ -635,7 +635,7 @@ static void findQuadraticSolution(BigInteger* pSolution, int expon)
     expon--;
     BigIntPowerOf2(&K1, expon);
     addbigint(&K1, -1);
-    if (Const.limbs[0].x & 1)
+    if ((Const.limbs[0].x & 1) != 0)
     {        // Const is odd.
       *ptrSolution |= bitMask;
       // Const <- Quadr/2 + floor(Linear/2) + floor(Const/2) + 1
@@ -1177,7 +1177,7 @@ void SolveQuadModEquation(void)
               modmult(Tmp[6].limbs, Tmp[7].limbs, Tmp[8].limbs);         // v
               modmult(Tmp[8].limbs, Tmp[7].limbs, Tmp[9].limbs);         // w
               // Step 5
-              while (memcmp(Tmp[9].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)))
+              while (memcmp(Tmp[9].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)) != 0)
               {
                 // Step 6
                 int k = 0;
@@ -1186,7 +1186,7 @@ void SolveQuadModEquation(void)
                 {
                   k++;
                   modmult(Tmp[10].limbs, Tmp[10].limbs, Tmp[10].limbs);
-                } while (memcmp(Tmp[10].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)));
+                } while (memcmp(Tmp[10].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)) != 0);
                 // Step 7
                 (void)memcpy(Tmp[11].limbs, Tmp[5].limbs, NumberLength * sizeof(limb)); // d
                 for (ctr = 0; ctr < (r - k - 1); ctr++)
@@ -1223,7 +1223,7 @@ void SolveQuadModEquation(void)
             intToBigInteger(&tmp1, 3);
             BigIntSubt(&tmp1, &tmp2, &tmp2);
             (void)BigIntMultiply(&tmp2, &squareRoot, &tmp1);
-            if (tmp1.limbs[0].x & 1)
+            if ((tmp1.limbs[0].x & 1) != 0)
             {
               BigIntAdd(&tmp1, &Q, &tmp1);
             }
@@ -1303,7 +1303,7 @@ void SolveQuadModEquation(void)
       }
       if (teach)
       {
-        int last;
+        bool last;
         (void)BigIntPowerIntExp(&prime, expon, &V);       // Get value of prime power.
         intToBigInteger(&ValH, 0);
         showText(lang ? "<p>Soluciones módulo " : "<p>Solutions modulo ");
@@ -1366,14 +1366,14 @@ void SolveQuadModEquation(void)
     pstFactor = &astFactorsMod[1];
     for (T1 = 0; T1 < nbrFactors; T1++)
     {
-      if (pstFactor->multiplicity)
+      if (pstFactor->multiplicity != 0)
       {
         break;   // Do not process prime factors for which the multiplicity is zero.
       }
       pstFactor++;
     }
     multint(&Aux[T1], &common.quad.Increment[T1], Exponents[T1] >> 1);
-    if (Exponents[T1] & 1)
+    if ((Exponents[T1] & 1) != 0)
     {
       BigIntAdd(&Aux[T1], &common.quad.Solution2[T1], &Aux[T1]);
     }
@@ -1393,7 +1393,7 @@ void SolveQuadModEquation(void)
       }
       expon = Exponents[T1];
       multint(&Aux[T1], &common.quad.Increment[T1], expon >> 1);
-      if (expon & 1)
+      if ((expon & 1) != 0)
       {
         BigIntAdd(&Aux[T1], &common.quad.Solution2[T1], &Aux[T1]);
       }
@@ -1733,10 +1733,10 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
 
 static void EnsureCoeffAIsNotZero(void)
 {
-  ExchXY = 0;
+  ExchXY = false;
   if (BigIntIsZero(&ValA))
   {      // Next algorithm does not work if A = 0. In this case, exchange x and y.
-    ExchXY = 1;
+    ExchXY = true;
     CopyBigInt(&bigTmp, &ValA);   // Exchange coefficients of x^2 and y^2.
     CopyBigInt(&ValA, &ValC);
     CopyBigInt(&ValC, &bigTmp);
@@ -3477,7 +3477,7 @@ static void ShowArgumentContinuedFraction(void)
     showText(" / 4");
   }
   showText("</span></span>) / ");
-  if (ValB.limbs[0].x & 1)
+  if ((ValB.limbs[0].x & 1) != 0)
   {
     showText(positiveDenominator?"(": "(&minus;");
     showText("2<var>R</var>) = ");
@@ -3624,7 +3624,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
         ShowSolutionFromConvergent();
       }
       showSolution = TWO_SOLUTIONS;
-      solFound = 0;
+      solFound = false;
       NonSquareDiscrSolution(value);
       if (solFound)
       {
@@ -4268,7 +4268,7 @@ EXTERNALIZE void doWork(void)
 #ifndef lang  
   lang = ((flags & 1)? true: false);
 #endif
-  teach = flags & 2;
+  teach = ((flags & 2)? true: false);
   ptrCoeffA = ptrData + 2;  // Skip flags and comma.
   ptrCoeffB = ptrCoeffA + strlen(ptrCoeffA) + 1;
   ptrCoeffC = ptrCoeffB + strlen(ptrCoeffB) + 1;

@@ -537,7 +537,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   (void)memset(common.ecm.primes, 0xFF, sizeof(common.ecm.primes));
   for (i = 2; (i * i) < numPrimes; i++)
   {       // Generation of primes using sieve of Eratosthenes.
-    if (common.ecm.primes[i >> 3] & (1 << (i & 7)))
+    if ((common.ecm.primes[i >> 3] & (1 << (i & 7))) != 0)
     {     // Number i is prime.
       for (j = i * i; j < numPrimes; j += i)
       {   // Mark multiple of i as composite.
@@ -990,7 +990,7 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
         }
 #ifdef ENABLE_VERBOSE
         int type = pstFactor->type;
-        int isPrime = (pstFactor->upperBound == 0);
+        bool isPrime = (pstFactor->upperBound == 0)? true: false;
         if (type > 0)
         {
           int compositeType = type / 50000000 * 50000000;

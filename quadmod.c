@@ -137,7 +137,7 @@ static void findQuadraticSolution(BigInteger* pSolution, int expon)
     expon--;
     BigIntPowerOf2(&K1, expon);
     addbigint(&K1, -1);
-    if (Const.limbs[0].x & 1)
+    if ((Const.limbs[0].x & 1) != 0)
     {        // Const is odd.
       *ptrSolution |= bitMask;
   // Const <- Quadr/2 + floor(Linear/2) + floor(Const/2) + 1
@@ -692,7 +692,7 @@ void SolveEquation(void)
               modmult(Aux[6].limbs, Aux[7].limbs, Aux[8].limbs);         // v
               modmult(Aux[8].limbs, Aux[7].limbs, Aux[9].limbs);         // w
               // Step 5
-              while (memcmp(Aux[9].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)))
+              while (memcmp(Aux[9].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)) != 0)
               {
                 // Step 6
                 int k = 0;
@@ -701,7 +701,7 @@ void SolveEquation(void)
                 {
                   k++;
                   modmult(Aux[10].limbs, Aux[10].limbs, Aux[10].limbs);
-                } while (memcmp(Aux[10].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)));
+                } while (memcmp(Aux[10].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)) != 0);
                 // Step 7
                 (void)memcpy(Aux[11].limbs, Aux[5].limbs, NumberLength * sizeof(limb)); // d
                 for (ctr = 0; ctr < (r - k - 1); ctr++)
@@ -738,7 +738,7 @@ void SolveEquation(void)
             intToBigInteger(&tmp1, 3);
             BigIntSubt(&tmp1, &tmp2, &tmp2);
             (void)BigIntMultiply(&tmp2, &sqrRoot, &tmp1);
-            if (tmp1.limbs[0].x & 1)
+            if ((tmp1.limbs[0].x & 1) != 0)
             {
               BigIntAdd(&tmp1, &Q, &tmp1);
             }
@@ -824,7 +824,7 @@ void SolveEquation(void)
   do
   {
     multint(&Aux[0], &Increment[0], Exponents[0] >> 1);
-    if (Exponents[0] & 1)
+    if ((Exponents[0] & 1) != 0)
     {
       BigIntAdd(&Aux[0], &Solution2[0], &Aux[0]);
     }
@@ -842,7 +842,7 @@ void SolveEquation(void)
       pstFactor++;
       expon = Exponents[T1];
       multint(&Aux[T1], &Increment[T1], expon >> 1);
-      if (expon & 1)
+      if ((expon & 1) != 0)
       {
         BigIntAdd(&Aux[T1], &Solution2[T1], &Aux[T1]);
       }

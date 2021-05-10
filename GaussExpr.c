@@ -602,7 +602,7 @@ static bool func(char *expr, BigInteger *ExpressionResult,
   }
   ptrExpr = expr + exprIndex;
   ptrFuncName = funcName;
-  while (*ptrFuncName)
+  while (*ptrFuncName != NULL)
   {
     if ((*ptrExpr & 0xDF) != *ptrFuncName)
     {
@@ -655,7 +655,7 @@ static bool func(char *expr, BigInteger *ExpressionResult,
 
 static void SkipSpaces(const char *expr)
 {
-  while (*(expr+exprIndex))
+  while (*(expr+exprIndex) != '\0')
   {
     if (*(expr + exprIndex) > ' ')
     {
@@ -1101,7 +1101,7 @@ static int ComputeModPow(void)
   Re.sign = Im.sign = SIGN_POSITIVE;
   if (BigIntIsZero(&ReMod) && BigIntIsZero(&ImMod))
   {   /* Modulus is zero */
-    ComputePower(&ReBase, &ReExp, &ImBase, &ImExp);
+    (void)ComputePower(&ReBase, &ReExp, &ImBase, &ImExp);
   }
   else
   {                            /* Modulus is not zero */
@@ -1141,7 +1141,7 @@ static int ComputeModPow(void)
         }
       }
     }
-    Modulo(&Re, &Im, &ReMod, &ImMod, Result);
+    (void)Modulo(&Re, &Im, &ReMod, &ImMod, Result);
     stackRealValues[stackIndex] = Result[0];
     stackImagValues[stackIndex] = Result[1];
     return 0;

@@ -40,7 +40,7 @@ static bool isFunc(char** ppcInput, const char* funcName)
 {
   char* pcInput = *ppcInput;
   const char* ptrFuncName = funcName;
-  while (*ptrFuncName)
+  while (*ptrFuncName != '\0')
   {
     if ((*pcInput & 0xDF) != *ptrFuncName)
     {

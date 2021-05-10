@@ -1044,7 +1044,7 @@ EXTERNALIZE void doWork(void)
   {
     groupLen = -groupLen;  // Do not show number of digts.
   }
-  if (ptrKnownFactors)
+  if (ptrKnownFactors != NULL)
   {
     ptrKnownFactors++;
   }
@@ -1052,7 +1052,7 @@ EXTERNALIZE void doWork(void)
   {
     flags = 2;  // Do factorization.
   }
-  if (flags & 2)
+  if ((flags & 2) != 0)
   {               // Do factorization.
     ecmFrontText(ptrData, true, ptrKnownFactors); // The 3rd parameter includes known factors.
   }
