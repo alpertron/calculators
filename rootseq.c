@@ -2405,7 +2405,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
           continue;
         }
         showX(multiplicity);
-        realNum = denIsOdd ? (2 * numerator) : numerator;
+        realNum = (denIsOdd ? (2 * numerator) : numerator);
         // Show cos(realNum*pi/realDen) + i sin(realNum*pi/realDen)
         showTrig(realNum, realDen, "");
         outputRadicandsForCosSin(realNum, realDen, "");
@@ -2576,7 +2576,7 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
   int halfDegree = polyDegree / 2;
   char degreeStr[20];
   char* ptrDegreeStr;
-  if (polyDegree % 2 != 0)
+  if ((polyDegree % 2) != 0)
   {          // If degree is odd, it is not quadratic, so go out.
     return false;
   }
@@ -2720,7 +2720,7 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
         }
         else
         {            // Showing imaginary part.
-          copyStr(&ptrOutput, pretty==PARI_GP? " + I ": " + i ");
+          copyStr(&ptrOutput, (pretty==PARI_GP)? " + I ": " + i ");
           copyStr(&ptrOutput, ptrTimes);
           *ptrOutput = ' ';
           ptrOutput++;
@@ -2768,7 +2768,7 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
           if (multiplicand != 1)
           {
             int2dec(&ptrOutput, multiplicand);
-            copyStr(&ptrOutput, pretty != PARI_GP ? "&#8290; " : "*");
+            copyStr(&ptrOutput, (pretty != PARI_GP)? "&#8290; " : "*");
           }
           copyStr(&ptrOutput, ptrPi);
           *ptrOutput = ' ';
@@ -2783,7 +2783,7 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
         }
         else
         {
-          copyStr(&ptrOutput, pretty == PRETTY_PRINT ? "&minus; " : "- ");
+          copyStr(&ptrOutput, (pretty == PRETTY_PRINT)? "&minus; " : "- ");
         }
         if (pretty == PRETTY_PRINT)
         {
@@ -2868,7 +2868,7 @@ static void showDegrees(const int *factors)
   {
     if (currentFactor != 0)
     {
-      if (currentFactor == nbrFactors - 1)
+      if (currentFactor == (nbrFactors - 1))
       {
         showText(lang ? " y " : " and ");
       }
@@ -2989,9 +2989,9 @@ static int isPrime(int value)
   {
     return 0;        // Even value different from 2: composite.
   }
-  while (divisor * divisor <= value)
+  while ((divisor * divisor) <= value)
   {
-    if (value % divisor == 0)
+    if ((value % divisor) == 0)
     {
       return 0;      // Composite.
     }
@@ -3098,7 +3098,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
   {    // Copy coefficient and skip zero coefficients.
     int nbrLen = 1 + numLimbs(ptrCoeff);
     (void)memcpy(ptrCoeffDest, ptrCoeff, nbrLen * sizeof(int));
-    ptrCoeff += nbrLen + 2*(gcdDegrees-1);
+    ptrCoeff += nbrLen + (2*(gcdDegrees-1));
     ptrCoeffDest += nbrLen;
   }
   do
@@ -3127,7 +3127,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
     {
       int currDegree;
       currDegree = pstFactorInfo->degree;
-      if (currDegree % 2 == 0)
+      if ((currDegree % 2) == 0)
       {
         if (currDegree == 2)
         {
@@ -3138,7 +3138,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
           cycle2FoundInThisFactor = 2;
         }
       }
-      if (currDegree % 3 == 0)
+      if ((currDegree % 3) == 0)
       {
         if (currDegree == 3)
         {
@@ -3153,7 +3153,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
       {
         if (isPrime(currDegree))
         {      // Current degree > n/2 and is prime.
-          if (currDegree < degree - 2)
+          if (currDegree < (degree - 2))
           {
             SaveFactorDegrees(prime, factorDegreesCycleP, nbrFactors);
             cyclePrGtNOver2ToLess2Found = currDegree;
@@ -3200,7 +3200,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
           pstFactorInfo = factorInfo;
           for (factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
           {
-            if (pstFactorInfo->degree % currDegree == 0)
+            if ((pstFactorInfo->degree % currDegree) == 0)
             {
               nbrMultiples++;
             }
@@ -3210,7 +3210,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
           {           // Only one multiple of currentDegree expected.
             SaveFactorDegrees(prime, factorDegreesCycleOther, nbrFactors);
             cyclePrGtNOver3Found = currDegree;
-            if (degree % 2 == 1)
+            if ((degree % 2) == 1)
             {         // If degree is odd, the group is very transitive.
               break;
             }
