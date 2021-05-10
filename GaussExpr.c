@@ -233,8 +233,8 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if (retcode != 0) {return retcode;}
       ptrRe = &stackRealValues[stackIndex];
       ptrIm = &stackImagValues[stackIndex];
-      BigIntMultiply(ptrRe, ptrRe, &factorialResult);    // norm <- re2^2 + im2^2.
-      BigIntMultiply(ptrIm, ptrIm, &Tmp);
+      (void)BigIntMultiply(ptrRe, ptrRe, &factorialResult);    // norm <- re2^2 + im2^2.
+      (void)BigIntMultiply(ptrIm, ptrIm, &Tmp);
       BigIntAdd(&factorialResult, &Tmp, &stackRealValues[stackIndex]);  
       ptrBigInt = &stackImagValues[stackIndex];
       ptrBigInt->limbs[0].x = 0;
@@ -701,18 +701,18 @@ static int ComputeSubExpr(void)
       BigIntNegate(&Im2, &stackImagValues[stackIndex]);
       return 0;
     case '/':
-      BigIntMultiply(&Re2, &Re2, &ReTmp);
-      BigIntMultiply(&Im2, &Im2, &ImTmp);
+      (void)BigIntMultiply(&Re2, &Re2, &ReTmp);
+      (void)BigIntMultiply(&Im2, &Im2, &ImTmp);
       BigIntAdd(&ReTmp, &ImTmp, &norm);       // norm <- re2^2 + im2^2.
       if (BigIntIsZero(&norm))
       {              // norm is zero.
         return EXPR_INTERM_TOO_HIGH;
       }
-      BigIntMultiply(&Re1, &Re2, &ReTmp);
-      BigIntMultiply(&Im1, &Im2, &ImTmp);
+      (void)BigIntMultiply(&Re1, &Re2, &ReTmp);
+      (void)BigIntMultiply(&Im1, &Im2, &ImTmp);
       BigIntAdd(&ReTmp, &ImTmp, &Re);         // Re <- re1*re2 + im1*im2.
-      BigIntMultiply(&Im1, &Re2, &ReTmp);
-      BigIntMultiply(&Re1, &Im2, &ImTmp);
+      (void)BigIntMultiply(&Im1, &Re2, &ReTmp);
+      (void)BigIntMultiply(&Re1, &Im2, &ImTmp);
       BigIntSubt(&ReTmp, &ImTmp, &Im);        // Im <- im1*re2 - re1*im2.
       BigIntDivide(&Re, &norm, &stackRealValues[stackIndex]);
       BigIntDivide(&Im, &norm, &stackImagValues[stackIndex]);
@@ -732,11 +732,11 @@ static int ComputeSubExpr(void)
       {           // Result with more than 20000 digits.
         return EXPR_INTERM_TOO_HIGH;
       }
-      BigIntMultiply(&Re1, &Re2, &ReTmp);       // Re <- re1*re2 - im1*im2.
-      BigIntMultiply(&Im1, &Im2, &ImTmp);
+      (void)BigIntMultiply(&Re1, &Re2, &ReTmp);       // Re <- re1*re2 - im1*im2.
+      (void)BigIntMultiply(&Im1, &Im2, &ImTmp);
       BigIntSubt(&ReTmp, &ImTmp, &stackRealValues[stackIndex]);
-      BigIntMultiply(&Im1, &Re2, &ReTmp);       // Im <- im1*re2 + re1*im2.
-      BigIntMultiply(&Re1, &Im2, &ImTmp);
+      (void)BigIntMultiply(&Im1, &Re2, &ReTmp);       // Im <- im1*re2 + re1*im2.
+      (void)BigIntMultiply(&Re1, &Im2, &ImTmp);
       BigIntAdd(&ReTmp, &ImTmp, &stackImagValues[stackIndex]);
       return 0;
     case '^':
@@ -893,8 +893,8 @@ static void GetRemainder(const BigInteger *norm, BigInteger *ReDividend, BigInte
   BigInteger ImTmp;
   int signBak;
   // Re <- ((Re1*Re2+Im1*Im2)*2/norm+1)/2
-  BigIntMultiply(ReDividend, ReDivisor, &ReTmp);
-  BigIntMultiply(ImDividend, ImDivisor, &ImTmp);
+  (void)BigIntMultiply(ReDividend, ReDivisor, &ReTmp);
+  (void)BigIntMultiply(ImDividend, ImDivisor, &ImTmp);
   BigIntAdd(&ReTmp, &ImTmp, &ReTmp);
   multint(&ReTmp, &ReTmp, 2);
   signBak = ReTmp.sign;
@@ -906,8 +906,8 @@ static void GetRemainder(const BigInteger *norm, BigInteger *ReDividend, BigInte
     Re->sign = signBak;
   }
   // Im <- ((Im1*Re2-Re1*Im2)*2/norm+1)/2
-  BigIntMultiply(ImDividend, ReDivisor, &ReTmp);
-  BigIntMultiply(ReDividend, ImDivisor, &ImTmp);
+  (void)BigIntMultiply(ImDividend, ReDivisor, &ReTmp);
+  (void)BigIntMultiply(ReDividend, ImDivisor, &ImTmp);
   BigIntSubt(&ReTmp, &ImTmp, &ImTmp);
   multint(&ImTmp, &ImTmp, 2);
   signBak = ImTmp.sign;
@@ -919,14 +919,14 @@ static void GetRemainder(const BigInteger *norm, BigInteger *ReDividend, BigInte
     Im->sign = signBak;
   }
   // Re1 <- Re1 - Re*Re2 + Im*Im2
-  BigIntMultiply(Re, ReDivisor, &ReTmp);
+  (void)BigIntMultiply(Re, ReDivisor, &ReTmp);
   BigIntSubt(ReDividend, &ReTmp, ReDividend);
-  BigIntMultiply(Im, ImDivisor, &ReTmp);
+  (void)BigIntMultiply(Im, ImDivisor, &ReTmp);
   BigIntAdd(ReDividend, &ReTmp, ReDividend);
   // Im1 <- Im1 - Im*Re2 - Re*Im2
-  BigIntMultiply(Im, ReDivisor, &ReTmp);
+  (void)BigIntMultiply(Im, ReDivisor, &ReTmp);
   BigIntSubt(ImDividend, &ReTmp, ImDividend);
-  BigIntMultiply(Re, ImDivisor, &ReTmp);
+  (void)BigIntMultiply(Re, ImDivisor, &ReTmp);
   BigIntSubt(ImDividend, &ReTmp, ImDividend);
 }
 
@@ -942,8 +942,8 @@ static int ComputeGCD(void)
   while (!BigIntIsZero(&Re2) || !BigIntIsZero(&Im2))
   {   // Second argument is not zero.
     BigInteger norm;
-    BigIntMultiply(&Re2, &Re2, &Re);
-    BigIntMultiply(&Im2, &Im2, &Im);
+    (void)BigIntMultiply(&Re2, &Re2, &Re);
+    (void)BigIntMultiply(&Im2, &Im2, &Im);
     BigIntAdd(&Re, &Im, &norm);
     // Get remainder of (Re1+i*Im1)/(Re2*i*Im2)
     // Overwrite Re1 and Im1 with that remainder.
@@ -1002,8 +1002,8 @@ static int ComputePower(const BigInteger *Re1, const BigInteger *Re2,
   {
     expon = Re2->limbs[0].x;
   }
-  BigIntMultiply(Re1, Re1, &ReTmp);
-  BigIntMultiply(Im1, Im1, &ImTmp);
+  (void)BigIntMultiply(Re1, Re1, &ReTmp);
+  (void)BigIntMultiply(Im1, Im1, &ImTmp);
   BigIntAdd(&ReTmp, &ImTmp, &norm);  // norm <- re1^2 + im1^2.
   if (norm.nbrLimbs > 1)
   {
@@ -1031,19 +1031,19 @@ static int ComputePower(const BigInteger *Re1, const BigInteger *Re2,
     }
     if (performPower)
     {
-      BigIntMultiply(&Re, &Re, &ReTmp);         // ReTmp <- re*re - im*im.
-      BigIntMultiply(&Im, &Im, &ImTmp);
+      (void)BigIntMultiply(&Re, &Re, &ReTmp);         // ReTmp <- re*re - im*im.
+      (void)BigIntMultiply(&Im, &Im, &ImTmp);
       BigIntSubt(&ReTmp, &ImTmp, &ReTmp);
-      BigIntMultiply(&Re, &Im, &Im);            // Im <- 2*re*im
+      (void)BigIntMultiply(&Re, &Im, &Im);            // Im <- 2*re*im
       BigIntAdd(&Im, &Im, &Im);
       CopyBigInt(&Re, &ReTmp);
       if ((expon & mask) != 0)
       {
-        BigIntMultiply(Re1, &Re, &ReTmp);       // Re2 <- re1*re - im1*im.
-        BigIntMultiply(Im1, &Im, &ImTmp);
+        (void)BigIntMultiply(Re1, &Re, &ReTmp);       // Re2 <- re1*re - im1*im.
+        (void)BigIntMultiply(Im1, &Im, &ImTmp);
         BigIntSubt(&ReTmp, &ImTmp, &stackRealValues[stackIndex]);
-        BigIntMultiply(Re1, &Im, &ReTmp);       // Im <- re1*im + im1*re.
-        BigIntMultiply(Im1, &Re, &ImTmp);
+        (void)BigIntMultiply(Re1, &Im, &ReTmp);       // Im <- re1*im + im1*re.
+        (void)BigIntMultiply(Im1, &Re, &ImTmp);
         BigIntAdd(&ReTmp, &ImTmp, &Im);
         CopyBigInt(&Re, &stackRealValues[stackIndex]);
       }
@@ -1102,8 +1102,8 @@ static int ComputeModPow(void)
   }
   else
   {                            /* Modulus is not zero */
-    BigIntMultiply(&ReMod, &ReMod, &ReTmp);
-    BigIntMultiply(&ImMod, &ImMod, &ImTmp);
+    (void)BigIntMultiply(&ReMod, &ReMod, &ReTmp);
+    (void)BigIntMultiply(&ImMod, &ImMod, &ImTmp);
     BigIntAdd(&ReTmp, &ImTmp, &norm);
     for (int index = ReExp.nbrLimbs - 1; index >= 0; index--)
     {
@@ -1111,10 +1111,10 @@ static int ComputeModPow(void)
       for (int mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
       {
         // Let Re + i*Im <- (Re + i*Im)^2
-        BigIntMultiply(&Re, &Re, &ReTmp);
-        BigIntMultiply(&Im, &Im, &ImTmp);
+        (void)BigIntMultiply(&Re, &Re, &ReTmp);
+        (void)BigIntMultiply(&Im, &Im, &ImTmp);
         BigIntSubt(&ReTmp, &ImTmp, &ReTmp);
-        BigIntMultiply(&Re, &Im, &ImTmp);
+        (void)BigIntMultiply(&Re, &Im, &ImTmp);
         BigIntAdd(&ImTmp, &ImTmp, &Im);
         CopyBigInt(&Re, &ReTmp);
         // Replace (Re + i*Im) by the remainder of
@@ -1124,11 +1124,11 @@ static int ComputeModPow(void)
         if ((groupExp & mask) != 0)
         {
           // Let Re + i*Im <- (Re + i*Im)*(ReBase + i*ImBase)
-          BigIntMultiply(&ReBase, &Re, &ReTmp);
-          BigIntMultiply(&ImBase, &Im, &ImTmp);
+          (void)BigIntMultiply(&ReBase, &Re, &ReTmp);
+          (void)BigIntMultiply(&ImBase, &Im, &ImTmp);
           BigIntSubt(&ReTmp, &ImTmp, &ReTmp);
-          BigIntMultiply(&ImBase, &Re, &ImTmp);
-          BigIntMultiply(&ReBase, &Im, &Re);
+          (void)BigIntMultiply(&ImBase, &Re, &ImTmp);
+          (void)BigIntMultiply(&ReBase, &Im, &Re);
           BigIntAdd(&Re, &ImTmp, &Im);
           CopyBigInt(&Re, &ReTmp);
           // Replace (Re + i*Im) by the remainder of
@@ -1199,8 +1199,8 @@ static int ModInv(const BigInteger *RealNbr, const BigInteger *ImagNbr,
   while (!BigIntIsZero(&ReG1) || !BigIntIsZero(&ImG1))
   {            // G1 is not zero.
     BigInteger norm;
-    BigIntMultiply(&ReG1, &ReG1, &Re);
-    BigIntMultiply(&ImG1, &ImG1, &Im);
+    (void)BigIntMultiply(&ReG1, &ReG1, &Re);
+    (void)BigIntMultiply(&ImG1, &ImG1, &Im);
     BigIntAdd(&Re, &Im, &norm);
     // Replace G0 by the remainder of G0/G1.
     GetRemainder(&norm, &ReG0, &ImG0, &ReG1, &ImG1, &Re, &Im);
@@ -1211,13 +1211,13 @@ static int ModInv(const BigInteger *RealNbr, const BigInteger *ImagNbr,
     CopyBigInt(&Tmp, &ImG0);
     CopyBigInt(&ImG0, &ImG1);
     CopyBigInt(&ImG1, &Tmp);
-    BigIntMultiply(&Re, &ReU1, &Tmp);
+    (void)BigIntMultiply(&Re, &ReU1, &Tmp);
     BigIntSubt(&ReU0, &Tmp, &ReU0);
-    BigIntMultiply(&Im, &ImU1, &Tmp);
+    (void)BigIntMultiply(&Im, &ImU1, &Tmp);
     BigIntAdd(&ReU0, &Tmp, &ReU0);
-    BigIntMultiply(&Im, &ReU1, &Tmp);
+    (void)BigIntMultiply(&Im, &ReU1, &Tmp);
     BigIntSubt(&ImU0, &Tmp, &ImU0);
-    BigIntMultiply(&Re, &ImU1, &Tmp);
+    (void)BigIntMultiply(&Re, &ImU1, &Tmp);
     BigIntSubt(&ImU0, &Tmp, &ImU0);
     // Exchange U0 and U1.
     CopyBigInt(&Tmp, &ReU0);
@@ -1272,8 +1272,8 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
   ReMin.limbs[0].x = ImMin.limbs[0].x = 0;
   ReMin.nbrLimbs = ImMin.nbrLimbs = 1;
   ReMin.sign = ImMin.sign = SIGN_POSITIVE;
-  BigIntMultiply(ReDen, ReDen, &norm);
-  BigIntMultiply(ImDen, ImDen, &Tmp);
+  (void)BigIntMultiply(ReDen, ReDen, &norm);
+  (void)BigIntMultiply(ImDen, ImDen, &Tmp);
   BigIntAdd(&norm, &Tmp, &norm);
   // Replace Num by the remainder of Num/Den.
   GetRemainder(&norm, ReNum, ImNum, ReDen, ImDen, &Re, &Im);
@@ -1334,8 +1334,8 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
     }
     if (Re.sign == SIGN_POSITIVE)
     {
-      BigIntMultiply(&Re, &Re, &norm);
-      BigIntMultiply(&Im, &Im, &Tmp);
+      (void)BigIntMultiply(&Re, &Re, &norm);
+      (void)BigIntMultiply(&Im, &Im, &Tmp);
       BigIntAdd(&norm, &Tmp, &norm);
       BigIntSubt(&norm, &normmin, &Tmp);
       if ((normmin.sign == SIGN_NEGATIVE) || (Tmp.sign == SIGN_NEGATIVE))

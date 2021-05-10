@@ -364,15 +364,15 @@ static void LinearEquation(const int *ptrPolynomial, int multiplicity)
 static int ProcessQuadraticEquation(enum eSign* pSignDescr)
 {
   // Compute discriminant (delta = linear^2 - 4*quadratic*independent).
-  BigIntMultiply(&Linear, &Linear, &tmp1);
-  BigIntMultiply(&Quadratic, &Independent, &tmp2);
+  (void)BigIntMultiply(&Linear, &Linear, &tmp1);
+  (void)BigIntMultiply(&Quadratic, &Independent, &tmp2);
   multint(&tmp2, &tmp2, 4);
   BigIntSubt(&tmp1, &tmp2, &discr);
   if (discr.sign == SIGN_POSITIVE)
   {
     squareRoot(discr.limbs, tmp4.limbs, discr.nbrLimbs, &tmp4.nbrLimbs);
     tmp4.sign = SIGN_POSITIVE;
-    BigIntMultiply(&tmp4, &tmp4, &tmp5);
+    (void)BigIntMultiply(&tmp4, &tmp4, &tmp5);
     BigIntSubt(&tmp5, &discr, &tmp5);
     if (BigIntIsZero(&tmp5))
     {           // Discriminant is perfect square. Roots are rational numbers.
@@ -388,8 +388,8 @@ static int ProcessQuadraticEquation(enum eSign* pSignDescr)
   CopyBigInt(&Rat2.denominator, &Quadratic);
   CopyBigInt(&Rat3.numerator, &discr);
   intToBigInteger(&Rat3.denominator, 1);
-  BigRationalDivideByInt(&Rat1, -2, &Rat1);
-  BigRationalDivideByInt(&Rat2, 2, &Rat2);
+  (void)BigRationalDivideByInt(&Rat1, -2, &Rat1);
+  (void)BigRationalDivideByInt(&Rat2, 2, &Rat2);
   ForceDenominatorPositive(&Rat1);
   ForceDenominatorPositive(&Rat2);
   Rat2.numerator.sign = SIGN_POSITIVE;
@@ -424,7 +424,7 @@ static void QuadraticEquation(const int* ptrPolynomial, int multiplicity)
       }
       CopyBigInt(&Rat1.numerator, &tmp1);        
       CopyBigInt(&Rat1.denominator, &Quadratic);
-      BigRationalDivideByInt(&Rat1, -2, &Rat1);
+      (void)BigRationalDivideByInt(&Rat1, -2, &Rat1);
       ForceDenominatorPositive(&Rat1);
       showRationalNoParen(&Rat1);        
       endLine();
@@ -522,12 +522,12 @@ static void CubicEquation(const int* ptrPolynomial, int multiplicity)
   CopyBigInt(&RatIndependent.denominator, &Cubic);
   // Compute coefficients of depressed equation x^3 + px + q
   // where: p = -b^2/3 + c, q = 2b^3/27 - bc/3 + d.
-  BigRationalDivideByInt(&RatQuadratic, 3, &Rat1);
+  (void)BigRationalDivideByInt(&RatQuadratic, 3, &Rat1);
   BigRationalMultiply(&Rat1, &RatQuadratic, &RatDeprLinear);   // b^2/3
   BigRationalMultiply(&Rat1, &RatLinear, &RatDeprIndependent); // bc/3
   BigRationalMultiply(&RatDeprLinear, &RatQuadratic, &Rat1);   // b^3/3
-  BigRationalMultiplyByInt(&Rat1, 2, &Rat1);                   // 2b^3/3
-  BigRationalDivideByInt(&Rat1, 9, &Rat1);                     // 2b^3/27
+  (void)BigRationalMultiplyByInt(&Rat1, 2, &Rat1);                   // 2b^3/3
+  (void)BigRationalDivideByInt(&Rat1, 9, &Rat1);                     // 2b^3/27
   BigRationalSubt(&RatLinear, &RatDeprLinear, &RatDeprLinear); // p
   BigRationalSubt(&RatIndependent, &RatDeprIndependent, &RatDeprIndependent); // d - bc/3
   BigRationalAdd(&RatDeprIndependent, &Rat1, &RatDeprIndependent); // q
@@ -535,10 +535,10 @@ static void CubicEquation(const int* ptrPolynomial, int multiplicity)
   BigRationalMultiply(&RatDeprIndependent, &RatDeprIndependent, &RatDiscr);  // q^2
   BigRationalMultiply(&RatDeprLinear, &RatDeprLinear, &Rat1);  // p^2
   BigRationalMultiply(&RatDeprLinear, &Rat1, &Rat1);           // p^3
-  BigRationalMultiplyByInt(&Rat1, 4, &Rat1);                   // 4p^3
-  BigRationalDivideByInt(&Rat1, 27, &Rat1);                    // 4p^3/27
+  (void)BigRationalMultiplyByInt(&Rat1, 4, &Rat1);                   // 4p^3
+  (void)BigRationalDivideByInt(&Rat1, 27, &Rat1);                    // 4p^3/27
   BigRationalAdd(&RatDiscr, &Rat1, &RatDiscr);                 // q^2 + 4p^3/27
-  BigRationalDivideByInt(&RatQuadratic, -3, &RatQuadratic);    // -b/3
+  (void)BigRationalDivideByInt(&RatQuadratic, -3, &RatQuadratic);    // -b/3
   ForceDenominatorPositive(&RatQuadratic);
   if (RatDiscr.numerator.sign == RatDiscr.denominator.sign)
   {   // Discriminant is negative. Use Cardan's formula.
@@ -614,10 +614,10 @@ static void CubicEquation(const int* ptrPolynomial, int multiplicity)
     }
     else
     {
-      BigRationalDivideByInt(&RatDeprIndependent, -2, &Rat3);
+      (void)BigRationalDivideByInt(&RatDeprIndependent, -2, &Rat3);
       intToBigInteger(&Rat1.numerator, 1);
       intToBigInteger(&Rat1.denominator, 1);
-      BigRationalDivideByInt(&RatDiscr, 4, &Rat2);
+      (void)BigRationalDivideByInt(&RatDiscr, 4, &Rat2);
       MultiplyRationalBySqrtRational(&Rat1, &Rat2);
       for (ctr = 0; ctr < 2; ctr++)
       {
@@ -749,12 +749,12 @@ static void CubicEquation(const int* ptrPolynomial, int multiplicity)
     }
     startParen();
     BigRationalDivide(&RatDeprIndependent, &RatDeprLinear, &Rat1); // q/p
-    BigRationalMultiplyByInt(&Rat1, 3, &Rat1);                     // 3q/p
-    BigRationalDivideByInt(&Rat1, 2, &Rat1);                       // 3q/(2p)
+    (void)BigRationalMultiplyByInt(&Rat1, 3, &Rat1);                     // 3q/p
+    (void)BigRationalDivideByInt(&Rat1, 2, &Rat1);                       // 3q/(2p)
     ForceDenominatorPositive(&Rat1);
     CopyBigInt(&Rat2.numerator, &RatDeprLinear.denominator);
     CopyBigInt(&Rat2.denominator, &RatDeprLinear.numerator);       // 1/p
-    BigRationalMultiplyByInt(&Rat2, -3, &Rat2);                    // -3/p
+    (void)BigRationalMultiplyByInt(&Rat2, -3, &Rat2);                    // -3/p
     ForceDenominatorPositive(&Rat2);
     MultiplyRationalBySqrtRational(&Rat1, &Rat2);
     ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
@@ -762,7 +762,7 @@ static void CubicEquation(const int* ptrPolynomial, int multiplicity)
     endLine();
     intToBigInteger(&Rat1.numerator, 2);
     intToBigInteger(&Rat1.denominator, 1);               // 2
-    BigRationalDivideByInt(&RatDeprLinear, -3, &Rat2);   // -p/3
+    (void)BigRationalDivideByInt(&RatDeprLinear, -3, &Rat2);   // -p/3
     MultiplyRationalBySqrtRational(&Rat1, &Rat2);
     signRat1 = Rat1.numerator.sign;
     Rat1.numerator.sign = SIGN_POSITIVE;
@@ -871,7 +871,7 @@ static void biquadraticEquation(int multiplicity)
 
   // Solutions are x = +/- sqrt((sqrt(r)-p/2)/2) +/- sqrt((-sqrt(r)-p/2)/2)
   // Test whether e is a perfect square.
-  BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
+  (void)BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
   if (BigRationalSquareRoot(&RatDeprIndependent, &Rat3))
   {           // e is a perfect square. Rat3 = sqrt(r).
     for (ctr = 0; ctr < 4; ctr++)
@@ -882,8 +882,8 @@ static void biquadraticEquation(int multiplicity)
       BigRationalSubt(&Rat3, &RatDeprQuadratic, &Rat1);
       BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat2);
       BigIntChSign(&Rat2.numerator);
-      BigRationalDivideByInt(&Rat1, 2, &Rat1);
-      BigRationalDivideByInt(&Rat2, 2, &Rat2);
+      (void)BigRationalDivideByInt(&Rat1, 2, &Rat1);
+      (void)BigRationalDivideByInt(&Rat2, 2, &Rat2);
       ForceDenominatorPositive(&Rat1);
       ForceDenominatorPositive(&Rat2);
       // Rat1 must be greater than Rat2. Exchange them if needed.
@@ -952,7 +952,7 @@ static void biquadraticEquation(int multiplicity)
   {      // e is not a perfect square.
          // Compute discriminant as c^2-4e
     BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &RatDiscr);
-    BigRationalMultiplyByInt(&RatDeprIndependent, 4, &Rat1);
+    (void)BigRationalMultiplyByInt(&RatDeprIndependent, 4, &Rat1);
     BigRationalSubt(&RatDiscr, &Rat1, &RatDiscr);
     ForceDenominatorPositive(&RatDiscr);
     intToBigInteger(&Rat1.numerator, 1);
@@ -1065,9 +1065,9 @@ static void showSquareRootOfComplex(const char* plus, const char* minus)
 {
   startSqrt();
   // Divide square root part by 4*16.
-  BigRationalDivideByInt(&Rat4, 4*16, &Rat4);  
+  (void)BigRationalDivideByInt(&Rat4, 4*16, &Rat4);
   // Divide rational part by 2*4.
-  BigRationalDivideByInt(&Rat3, 2*4, &Rat3);
+  (void)BigRationalDivideByInt(&Rat3, 2*4, &Rat3);
   showSquareRootOfRational(&Rat4, 2, ptrTimes);
   if (Rat3.numerator.sign == SIGN_POSITIVE)
   {
@@ -1083,9 +1083,9 @@ static void showSquareRootOfComplex(const char* plus, const char* minus)
   }
   endSqrt();
   // Restore square root part.
-  BigRationalMultiplyByInt(&Rat4, 4*16, &Rat4);
+  (void)BigRationalMultiplyByInt(&Rat4, 4*16, &Rat4);
   // Restore rational part.
-  BigRationalMultiplyByInt(&Rat3, 2*4, &Rat3);
+  (void)BigRationalMultiplyByInt(&Rat3, 2*4, &Rat3);
 }
 
 static void FerrariResolventHasRationalRoot(int multiplicity)
@@ -1094,9 +1094,9 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
   UncompressBigIntegerB(ptrValues, &RatS.numerator);
   ptrValues += 1 + numLimbs(ptrValues);
   UncompressBigIntegerB(ptrValues, &RatS.denominator);   // RatS <- -root
-  BigRationalDivideByInt(&RatS, -2, &RatS);              // RatS <- S^2 (as on Wikipedia article).
+  (void)BigRationalDivideByInt(&RatS, -2, &RatS);              // RatS <- S^2 (as on Wikipedia article).
   ForceDenominatorPositive(&RatS);
-  BigRationalMultiplyByInt(&RatS, 4, &Rat3);             // 4S^2
+  (void)BigRationalMultiplyByInt(&RatS, 4, &Rat3);             // 4S^2
   BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat3);
   BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat3);       // 4S^2 + 2p
   ForceDenominatorPositive(&Rat3);
@@ -1166,8 +1166,8 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
         BigIntChSign(&Rat3.numerator);
       }
       startSqrt();
-      BigRationalDivideByInt(&Rat1, 4, &Rat1);
-      BigRationalDivideByInt(&Rat3, 4, &Rat3);
+      (void)BigRationalDivideByInt(&Rat1, 4, &Rat1);
+      (void)BigRationalDivideByInt(&Rat3, 4, &Rat3);
       ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
       showPlusSignOn(Rat3.numerator.sign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       if (Rat3.numerator.sign == SIGN_POSITIVE)
@@ -1180,8 +1180,8 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
         showRationalNoParen(&Rat3);
         BigIntChSign(&Rat3.numerator);
       }
-      BigRationalMultiplyByInt(&Rat1, 4, &Rat1);
-      BigRationalMultiplyByInt(&Rat3, 4, &Rat3);
+      (void)BigRationalMultiplyByInt(&Rat1, 4, &Rat1);
+      (void)BigRationalMultiplyByInt(&Rat3, 4, &Rat3);
       if (ctr <= 1)
       {   // Restore sign of q/S.
         BigIntChSign(&Rat1.numerator);
@@ -1262,71 +1262,71 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
   BigRationalMultiply(&RatCubic, &RatCubic, &RatDeprQuadratic);       // b^2
   BigRationalMultiply(&RatCubic, &RatDeprQuadratic, &RatDeprLinear);  // b^3
   BigRationalMultiply(&RatCubic, &RatQuadratic, &RatDeprIndependent); // bc
-  BigRationalMultiplyByInt(&RatDeprIndependent, 16, &RatDeprIndependent);  // 16bc
-  BigRationalMultiplyByInt(&RatLinear, -64, &Rat1);                   // -64d
+  (void)BigRationalMultiplyByInt(&RatDeprIndependent, 16, &RatDeprIndependent);  // 16bc
+  (void)BigRationalMultiplyByInt(&RatLinear, -64, &Rat1);                   // -64d
   BigRationalAdd(&RatDeprIndependent, &Rat1, &RatDeprIndependent);    // 16bc - 64d
   BigRationalMultiply(&RatDeprIndependent, &RatCubic, &RatDeprIndependent);   // 16b^2*c - 64bd
   BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &Rat1);   // b^4
-  BigRationalMultiplyByInt(&Rat1, -3, &Rat1);                         // -3b^4
+  (void)BigRationalMultiplyByInt(&Rat1, -3, &Rat1);                         // -3b^4
   BigRationalAdd(&RatDeprIndependent, &Rat1, &RatDeprIndependent);    // -3b^4 + 16b^2*c - 64bd
-  BigRationalDivideByInt(&RatDeprIndependent, 256, &RatDeprIndependent); // (-3b^4 + 16b^2*c - 64bd)/256
+  (void)BigRationalDivideByInt(&RatDeprIndependent, 256, &RatDeprIndependent); // (-3b^4 + 16b^2*c - 64bd)/256
   BigRationalAdd(&RatDeprIndependent, &RatIndependent, &RatDeprIndependent); // (3b^4 + 16b^2*c - 64bd)/256 + e
 
-  BigRationalMultiplyByInt(&RatDeprQuadratic, 3, &RatDeprQuadratic);  // 3b^2
-  BigRationalDivideByInt(&RatDeprQuadratic, 8, &RatDeprQuadratic);    // 3b^2/8
+  (void)BigRationalMultiplyByInt(&RatDeprQuadratic, 3, &RatDeprQuadratic);  // 3b^2
+  (void)BigRationalDivideByInt(&RatDeprQuadratic, 8, &RatDeprQuadratic);    // 3b^2/8
   BigRationalSubt(&RatQuadratic, &RatDeprQuadratic, &RatDeprQuadratic); // c - 3b^2/8
   ForceDenominatorPositive(&RatDeprQuadratic);
   BigRationalMultiply(&RatCubic, &RatQuadratic, &Rat1);               // bc
-  BigRationalMultiplyByInt(&Rat1, 4, &Rat1);                          // 4bc
+  (void)BigRationalMultiplyByInt(&Rat1, 4, &Rat1);                          // 4bc
   BigRationalSubt(&RatDeprLinear, &Rat1, &RatDeprLinear);             // b^3 - 4bc
-  BigRationalDivideByInt(&RatDeprLinear, 8, &RatDeprLinear);          // (b^3 - 4bc)/8
+  (void)BigRationalDivideByInt(&RatDeprLinear, 8, &RatDeprLinear);          // (b^3 - 4bc)/8
   BigRationalAdd(&RatDeprLinear, &RatLinear, &RatDeprLinear);         // (b^3 - 4bc)/8 + d
   // Compute delta0 = c^2 - 3bd + 12e and delta1 = 2c^3 - 9bcd + 27b^2*e + 27d^2 - 72ce
   // delta1 = c(2c^2 - 9bd - 72e) + 27(b^2*e + d^2)
   BigRationalMultiply(&RatQuadratic, &RatQuadratic, &RatDelta0);      // c^2
-  BigRationalMultiplyByInt(&RatDelta0, 2, &RatDelta1);                // 2c^2
+  (void)BigRationalMultiplyByInt(&RatDelta0, 2, &RatDelta1);                // 2c^2
   BigRationalMultiply(&RatLinear, &RatCubic, &Rat1);                  // bd
-  BigRationalMultiplyByInt(&Rat1, 3, &Rat1);                          // 3bd
+  (void)BigRationalMultiplyByInt(&Rat1, 3, &Rat1);                          // 3bd
   BigRationalSubt(&RatDelta0, &Rat1, &RatDelta0);                     // c^2 - 3bd
-  BigRationalMultiplyByInt(&Rat1, 3, &Rat1);                          // 9bd
+  (void)BigRationalMultiplyByInt(&Rat1, 3, &Rat1);                          // 9bd
   BigRationalSubt(&RatDelta1, &Rat1, &RatDelta1);                     // 2c^2 - 9bd
-  BigRationalMultiplyByInt(&RatIndependent, 12, &Rat1);               // 12e
+  (void)BigRationalMultiplyByInt(&RatIndependent, 12, &Rat1);               // 12e
   BigRationalAdd(&RatDelta0, &Rat1, &RatDelta0);                      // c^2 - 3bd + 12e
-  BigRationalMultiplyByInt(&RatIndependent, 72, &Rat1);               // 72e
+  (void)BigRationalMultiplyByInt(&RatIndependent, 72, &Rat1);               // 72e
   BigRationalSubt(&RatDelta1, &Rat1, &RatDelta1);                     // 2c^2 - 9bd - 72e
   BigRationalMultiply(&RatDelta1, &RatQuadratic, &RatDelta1);         // c(2c^2 - 9bd - 72e)
   BigRationalMultiply(&RatCubic, &RatCubic, &Rat1);                   // b^2
   BigRationalMultiply(&Rat1, &RatIndependent, &Rat1);                 // b^2*e
   BigRationalMultiply(&RatLinear, &RatLinear, &Rat2);                 // d^2
   BigRationalAdd(&Rat1, &Rat2, &Rat1);                                // b^2*e + d^2
-  BigRationalMultiplyByInt(&Rat1, 27, &Rat1);                         // 27(b^2*e + d^2)
+  (void)BigRationalMultiplyByInt(&Rat1, 27, &Rat1);                         // 27(b^2*e + d^2)
   BigRationalAdd(&RatDelta1, &Rat1, &RatDelta1);                      // c(2c^2 - 9bd - 72e) + 27(b^2*e + d^2)
   // Compute discriminant (delta)/(-27) = delta1^2 - 4 delta0^3.
   BigRationalMultiply(&RatDelta1, &RatDelta1, &RatDiscr);             // delta1^2
   BigRationalMultiply(&RatDelta0, &RatDelta0, &Rat1);                 // delta0^2
   BigRationalMultiply(&Rat1, &RatDelta0, &Rat1);                      // delta0^3
-  BigRationalMultiplyByInt(&Rat1, 4, &Rat1);                          // 4 delta0^3
+  (void)BigRationalMultiplyByInt(&Rat1, 4, &Rat1);                          // 4 delta0^3
   BigRationalSubt(&RatDiscr, &Rat1, &RatDiscr);                       // delta1^2 - 4 delta0^3
   ForceDenominatorPositive(&RatDiscr);
   // Compute D = 64e - 16c^2 + 16b^2*c - 16bd - 3b^4
-  BigRationalMultiplyByInt(&RatIndependent, 64, &RatD);               // 64e
+  (void)BigRationalMultiplyByInt(&RatIndependent, 64, &RatD);               // 64e
   BigRationalMultiply(&RatCubic, &RatCubic, &Rat1);                   // b^2
   BigRationalSubt(&Rat1, &RatQuadratic, &Rat1);                       // b^2 - c
   BigRationalMultiply(&Rat1, &RatQuadratic, &Rat1);                   // b^2*c - c^2
   BigRationalMultiply(&RatCubic, &RatLinear, &Rat2);                  // bd
   BigRationalSubt(&Rat1, &Rat2, &Rat1);                               // b^2*c - c - bd
-  BigRationalMultiplyByInt(&Rat1, 16, &Rat1);                         // 16(b^2*c - c - bd)
+  (void)BigRationalMultiplyByInt(&Rat1, 16, &Rat1);                         // 16(b^2*c - c - bd)
   BigRationalAdd(&RatD, &Rat1, &RatD);                                // 64e - 16c^2 + 16b^2*c - 16bd
   BigRationalMultiply(&RatCubic, &RatCubic, &Rat2);                   // b^2
   BigRationalMultiply(&Rat2, &Rat2, &Rat2);                           // b^4
-  BigRationalMultiplyByInt(&Rat2, 3, &Rat2);                          // 3b^4
+  (void)BigRationalMultiplyByInt(&Rat2, 3, &Rat2);                          // 3b^4
   BigRationalSubt(&RatD, &Rat2, &RatD);                               // D
   ForceDenominatorPositive(&RatD);
 
-  BigRationalMultiplyByInt(&Rat1, 16, &Rat1);                         // 16c^2
+  (void)BigRationalMultiplyByInt(&Rat1, 16, &Rat1);                         // 16c^2
   BigRationalSubt(&RatD, &Rat1, &RatD);                               // 64e - 16c^2
 
-  BigRationalDivideByInt(&RatCubic, -4, &RatCubic);                   // -b/4
+  (void)BigRationalDivideByInt(&RatCubic, -4, &RatCubic);             // -b/4
   ForceDenominatorPositive(&RatCubic);
   if (BigIntIsZero(&RatDeprLinear.numerator))
   {             // Biquadratic equation. No cube root needed in this case.
@@ -1337,26 +1337,26 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
   // Lodovico Ferrari's resolvent equation is:
   // 8x^3 + 8px^2 + (2p^2-8r)x - q^2 = 0
   BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &Rat2);
-  BigRationalMultiplyByInt(&Rat2, 2, &Rat2);                  // 2p^2
-  BigRationalMultiplyByInt(&RatDeprIndependent, -8, &Rat3);   // -8r
+  (void)BigRationalMultiplyByInt(&Rat2, 2, &Rat2);                  // 2p^2
+  (void)BigRationalMultiplyByInt(&RatDeprIndependent, -8, &Rat3);   // -8r
   BigRationalAdd(&Rat2, &Rat3, &Rat2);
-  BigRationalMultiplyByInt(&RatDeprQuadratic, 8, &Rat1);      // 8p
+  (void)BigRationalMultiplyByInt(&RatDeprQuadratic, 8, &Rat1);      // 8p
   BigRationalMultiply(&RatDeprLinear, &RatDeprLinear, &Rat3); // q^2
   BigRationalNegate(&Rat3, &Rat3);                            // -q^2
   // Convert from rational to integer coefficients.
   // Cubic coefficient.
   multint(&tmp3, &Rat1.denominator, 8);
-  BigIntMultiply(&tmp3, &Rat2.denominator, &tmp3);
-  BigIntMultiply(&tmp3, &Rat3.denominator, &tmp3);
+  (void)BigIntMultiply(&tmp3, &Rat2.denominator, &tmp3);
+  (void)BigIntMultiply(&tmp3, &Rat3.denominator, &tmp3);
   // Quadratic coefficient.
-  BigIntMultiply(&Rat1.numerator, &Rat2.denominator, &tmp2);
-  BigIntMultiply(&tmp2, &Rat3.denominator, &tmp2);
+  (void)BigIntMultiply(&Rat1.numerator, &Rat2.denominator, &tmp2);
+  (void)BigIntMultiply(&tmp2, &Rat3.denominator, &tmp2);
   // Linear coefficient.
-  BigIntMultiply(&Rat2.numerator, &Rat1.denominator, &tmp1);
-  BigIntMultiply(&tmp1, &Rat3.denominator, &tmp1);
+  (void)BigIntMultiply(&Rat2.numerator, &Rat1.denominator, &tmp1);
+  (void)BigIntMultiply(&tmp1, &Rat3.denominator, &tmp1);
   // Independent term.
-  BigIntMultiply(&Rat3.numerator, &Rat1.denominator, &tmp0);
-  BigIntMultiply(&tmp0, &Rat2.denominator, &tmp0);
+  (void)BigIntMultiply(&Rat3.numerator, &Rat1.denominator, &tmp0);
+  (void)BigIntMultiply(&tmp0, &Rat2.denominator, &tmp0);
   values[0] = 3;
   ptrValues = &values[1];
   NumberLength = tmp0.nbrLimbs;
@@ -1403,14 +1403,14 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
     if (Rat2.numerator.nbrLimbs == 1 && Rat2.numerator.limbs[0].x == 1)
     {
       BigRationalAdd(&RatDelta1, &Rat2, &Rat1);
-      BigRationalDivideByInt(&Rat1, 2, &Rat1);
+      (void)BigRationalDivideByInt(&Rat1, 2, &Rat1);
       showRationalNoParen(&Rat1);
     }
     else
     {
-      BigRationalDivideByInt(&RatDelta1, 2, &RatDelta1);
+      (void)BigRationalDivideByInt(&RatDelta1, 2, &RatDelta1);
       showRationalNoParen(&RatDelta1);
-      BigRationalMultiplyByInt(&RatDelta1, 2, &RatDelta1);
+      (void)BigRationalMultiplyByInt(&RatDelta1, 2, &RatDelta1);
       showText(" + ");
       ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
     }
@@ -1452,7 +1452,7 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
     {
       showText("<var>Q</var> / 3 ");
     }
-    BigRationalDivideByInt(&RatDelta0, 3, &Rat1);
+    (void)BigRationalDivideByInt(&RatDelta0, 3, &Rat1);
     ForceDenominatorPositive(&Rat1);
     showPlusSignOn(Rat1.numerator.sign == SIGN_POSITIVE, TYPE_PM_SPACE_AFTER);
     CopyBigInt(&Rat2.numerator, &Rat1.numerator);
@@ -1507,7 +1507,7 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
         {
           showPlusSignOn(isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
         }
-        BigRationalMultiplyByInt(&RatDeprQuadratic, 2, &Rat1);  // 2p
+        (void)BigRationalMultiplyByInt(&RatDeprQuadratic, 2, &Rat1);  // 2p
         Rat1.numerator.sign = SIGN_POSITIVE;
         showRationalNoParen(&Rat1);
       }
@@ -1543,7 +1543,7 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
     }
     startParen();
     BigRationalDivide(&RatDelta1, &RatDelta0, &Rat1);
-    BigRationalDivideByInt(&Rat1, 2, &Rat1);
+    (void)BigRationalDivideByInt(&Rat1, 2, &Rat1);
     CopyBigInt(&Rat2.numerator, &RatDelta0.denominator);
     CopyBigInt(&Rat2.denominator, &RatDelta0.numerator);
     MultiplyRationalBySqrtRational(&Rat1, &Rat2);
@@ -1601,7 +1601,7 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
       ptrOutput++;
     }
     endLine();
-    BigRationalMultiplyByInt(&RatDeprQuadratic, -2, &Rat1);
+    (void)BigRationalMultiplyByInt(&RatDeprQuadratic, -2, &Rat1);
     ForceDenominatorPositive(&Rat1);
     sign1 = Rat1.numerator.sign;
     Rat1.numerator.sign = SIGN_POSITIVE;
@@ -1647,7 +1647,7 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
         {
           showPlusSignOn(isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
         }
-        BigRationalMultiplyByInt(&RatDeprQuadratic, 2, &Rat1);  // 2p
+        (void)BigRationalMultiplyByInt(&RatDeprQuadratic, 2, &Rat1);  // 2p
         Rat1.numerator.sign = SIGN_POSITIVE;
         showRationalNoParen(&Rat1);
       }
@@ -2615,7 +2615,7 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
       }
       CopyBigInt(&Rat1.numerator, &tmp1);
       CopyBigInt(&Rat1.denominator, &Quadratic);
-      BigRationalDivideByInt(&Rat1, -2, &Rat1);
+      (void)BigRationalDivideByInt(&Rat1, -2, &Rat1);
       ShowRootsOfRationalNumbers(halfDegree, multiplicity);
     }
     return true;

@@ -196,10 +196,10 @@ void SolveEquation(void)
       }
       else
       {        // Linear Equation: ValB * x + ValC = 0.
-        BigIntRemainder(&ValC, &ValB, &Aux[0]);
+        (void)BigIntRemainder(&ValC, &ValB, &Aux[0]);
         if (BigIntIsZero(&Aux[0]))
         {      // ValC is multiple of ValB: solution is -ValC / ValB.
-          BigIntDivide(&ValC, &ValB, &Aux[0]);
+          (void)BigIntDivide(&ValC, &ValB, &Aux[0]);
           BigIntNegate(&Aux[0], &Aux[0]);
           Solution(&Aux[0]);
         }
@@ -212,8 +212,8 @@ void SolveEquation(void)
     else
     {                       // Quadratic Equation
       // The discriminant is ValB * ValB - 4 * ValA * ValC.
-      BigIntMultiply(&ValB, &ValB, &Aux[0]);
-      BigIntMultiply(&ValA, &ValC, &Aux[1]);
+      (void)BigIntMultiply(&ValB, &ValB, &Aux[0]);
+      (void)BigIntMultiply(&ValA, &ValC, &Aux[1]);
       multint(&Aux[1], &Aux[1], 4);
       BigIntSubt(&Aux[0], &Aux[1], &discriminant);
       if (discriminant.sign == SIGN_NEGATIVE)
@@ -223,7 +223,7 @@ void SolveEquation(void)
       // Set V to square root of discriminant.
       squareRoot(discriminant.limbs, V.limbs, discriminant.nbrLimbs, &V.nbrLimbs);
       V.sign = SIGN_POSITIVE;
-      BigIntMultiply(&V, &V, &Aux[0]);
+      (void)BigIntMultiply(&V, &V, &Aux[0]);
       BigIntSubt(&Aux[0], &discriminant, &Aux[0]);
       if (!BigIntIsZero(&Aux[0]))
       {  // discriminant has no integer square root.
@@ -231,18 +231,18 @@ void SolveEquation(void)
       }
       multint(&Aux[0], &ValA, 2);    // Denominator
       BigIntSubt(&V, &ValB, &Aux[1]);
-      BigIntRemainder(&Aux[1], &Aux[0], &Aux[2]);
+      (void)BigIntRemainder(&Aux[1], &Aux[0], &Aux[2]);
       if (BigIntIsZero(&Aux[2]))
       {      // (V-ValB)/(2*ValA) is integer: it is a solution.
-        BigIntDivide(&Aux[1], &Aux[0], &Aux[2]);
+        (void)BigIntDivide(&Aux[1], &Aux[0], &Aux[2]);
         Solution(&Aux[2]);
       }
       BigIntNegate(&V, &V);
       BigIntSubt(&V, &ValB, &Aux[1]);
-      BigIntRemainder(&Aux[1], &Aux[0], &Aux[2]);
+      (void)BigIntRemainder(&Aux[1], &Aux[0], &Aux[2]);
       if (BigIntIsZero(&Aux[2]))
       {      // (-V-ValB)/(2*ValA) is integer: it is a solution.
-        BigIntDivide(&Aux[1], &Aux[0], &Aux[2]);
+        (void)BigIntDivide(&Aux[1], &Aux[0], &Aux[2]);
         Solution(&Aux[2]);
       }
     }
@@ -251,12 +251,12 @@ void SolveEquation(void)
   }
   // Modulus is not zero.
   ValN.sign = SIGN_POSITIVE;
-  BigIntRemainder(&ValA, &ValN, &ValA);
-  BigIntRemainder(&ValB, &ValN, &ValB);
-  BigIntRemainder(&ValC, &ValN, &ValC);
+  (void)BigIntRemainder(&ValA, &ValN, &ValA);
+  (void)BigIntRemainder(&ValB, &ValN, &ValB);
+  (void)BigIntRemainder(&ValC, &ValN, &ValC);
   BigIntGcd(&ValA, &ValB, &Aux[0]);
   BigIntGcd(&ValC, &Aux[0], &GcdAll);
-  BigIntRemainder(&ValC, &GcdAll, &Aux[0]);
+  (void)BigIntRemainder(&ValC, &GcdAll, &Aux[0]);
   if (!BigIntIsZero(&Aux[0]))
   {  // ValC must be multiple of gcd(ValA, ValB).
      // Otherwise go out because there are no solutions.
@@ -265,13 +265,13 @@ void SolveEquation(void)
   BigIntGcd(&ValN, &GcdAll, &Aux[0]);
   CopyBigInt(&GcdAll, &Aux[0]);
   // Divide all coefficients by gcd(ValA, ValB).
-  BigIntDivide(&ValA, &GcdAll, &Aux[0]);
+  (void)BigIntDivide(&ValA, &GcdAll, &Aux[0]);
   CopyBigInt(&ValA, &Aux[0]);
-  BigIntDivide(&ValB, &GcdAll, &Aux[0]);
+  (void)BigIntDivide(&ValB, &GcdAll, &Aux[0]);
   CopyBigInt(&ValB, &Aux[0]);
-  BigIntDivide(&ValC, &GcdAll, &Aux[0]);
+  (void)BigIntDivide(&ValC, &GcdAll, &Aux[0]);
   CopyBigInt(&ValC, &Aux[0]);
-  BigIntDivide(&ValN, &GcdAll, &Aux[0]);
+  (void)BigIntDivide(&ValN, &GcdAll, &Aux[0]);
   CopyBigInt(&ValN, &Aux[0]);
   CopyBigInt(&ValNn, &ValN);
   if ((ValNn.nbrLimbs == 1) && (ValNn.limbs[0].x == 1))
@@ -294,7 +294,7 @@ void SolveEquation(void)
     }
     return;
   }
-  BigIntRemainder(&ValA, &ValN, &Aux[0]);
+  (void)BigIntRemainder(&ValA, &ValN, &Aux[0]);
   if (BigIntIsZero(&Aux[0]))
   {           // Linear equation.
     BigIntGcd(&ValB, &ValN, &Aux[0]);
@@ -313,7 +313,7 @@ void SolveEquation(void)
     {
       BigIntAdd(&z, &ValN, &z);
     }
-    BigIntMultiply(&ValNn, &GcdAll, &Aux[0]);
+    (void)BigIntMultiply(&ValNn, &GcdAll, &Aux[0]);
     do
     {
       Solution(&z);
@@ -340,7 +340,7 @@ void SolveEquation(void)
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);
     expon = pstFactor->multiplicity;
     (void)BigIntPowerIntExp(&prime, expon, &V);
-    BigIntRemainder(&ValA, &V, &L);
+    (void)BigIntRemainder(&ValA, &V, &L);
     if (BigIntIsZero(&L))
     {     // ValA multiple of prime, means linear equation mod prime.
       if ((BigIntIsZero(&ValB)) && !(BigIntIsZero(&ValC)))
@@ -348,9 +348,9 @@ void SolveEquation(void)
         return;  // There are no solutions: ValB=0 and ValC!=0
       }
       BigIntGcd(&ValB, &V, &U);
-      BigIntDivide(&V, &U, &Q);
-      BigIntDivide(&ValB, &U, &V);
-      BigIntDivide(&ValC, &U, &L);
+      (void)BigIntDivide(&V, &U, &Q);
+      (void)BigIntDivide(&ValB, &U, &V);
+      (void)BigIntDivide(&ValC, &U, &L);
       BigIntNegate(&V, &V);
       if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
       {      // If prime is 2.
@@ -377,8 +377,8 @@ void SolveEquation(void)
       bool sol1Invalid = false;
       bool sol2Invalid = false;
       // Compute discriminant = ValB^2 - 4*ValA*ValC.
-      BigIntMultiply(&ValB, &ValB, &Aux[0]);
-      BigIntMultiply(&ValA, &ValC, &discriminant);
+      (void)BigIntMultiply(&ValB, &ValB, &Aux[0]);
+      (void)BigIntMultiply(&ValA, &ValC, &discriminant);
       multint(&discriminant, &discriminant, 4);
       BigIntSubt(&Aux[0], &discriminant, &discriminant);
       if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
@@ -424,8 +424,8 @@ void SolveEquation(void)
           // compute s = ((b/2)^2 - a*c)/a^2; r = p_2(s), q = o_2(s).
           CopyBigInt(&tmp1, &ValB);
           BigIntDivideBy2(&tmp1);
-          BigIntMultiply(&tmp1, &tmp1, &tmp1);  // (b/2)^2
-          BigIntMultiply(&ValA, &ValC, &tmp2);  // a*c
+          (void)BigIntMultiply(&tmp1, &tmp1, &tmp1);  // (b/2)^2
+          (void)BigIntMultiply(&ValA, &ValC, &tmp2);  // a*c
           BigIntSubt(&tmp1, &tmp2, &tmp1);      // (b/2)^2 - a*c
           BigIntPowerOf2(&K1, expon);
           addbigint(&K1, -1);
@@ -433,9 +433,9 @@ void SolveEquation(void)
           NumberLength = K1.nbrLimbs;
           ComputeInversePower2(ValAOdd.limbs, tmp2.limbs, tmp1.limbs);
           setNbrLimbs(&tmp2);
-          BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
+          (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
           BigIntAnd(&ValCOdd, &K1, &ValCOdd);      // ((b/2) - a*c)/a mod 2^n
-          BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
+          (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
           BigIntAnd(&ValCOdd, &K1, &ValCOdd);      // ((b/2) - a*c)/a^2 mod 2^n
           if (BigIntIsZero(&ValCOdd))
           {
@@ -489,7 +489,7 @@ void SolveEquation(void)
           setNbrLimbs(&tmp2);
           CopyBigInt(&tmp1, &ValB);
           BigIntDivideBy2(&tmp1);               // b/2
-          BigIntMultiply(&tmp1, &tmp2, &tmp1);  // b/2a
+          (void)BigIntMultiply(&tmp1, &tmp2, &tmp1);  // b/2a
           BigIntChSign(&tmp1);                  // -b/2a
           BigIntAnd(&tmp1, &K1, &tmp1);         // -b/2a mod 2^expon
           BigIntAdd(&tmp1, &sqrRoot, &tmp2);
@@ -539,15 +539,15 @@ void SolveEquation(void)
         bitsAZero = 0;
         for (;;)
         {
-          BigIntRemainder(&ValAOdd, &prime, &tmp1);
+          (void)BigIntRemainder(&ValAOdd, &prime, &tmp1);
           if (!BigIntIsZero(&tmp1))
           {
             break;
           }
-          BigIntDivide(&ValAOdd, &prime, &ValAOdd);
+          (void)BigIntDivide(&ValAOdd, &prime, &ValAOdd);
           bitsAZero++;
         }
-        BigIntRemainder(&discriminant, &V, &discriminant);
+        (void)BigIntRemainder(&discriminant, &V, &discriminant);
         // Get maximum power of prime which divide discriminant.
         if (BigIntIsZero(&discriminant))
         {      // Discriminant is zero.
@@ -558,12 +558,12 @@ void SolveEquation(void)
           deltaZeros = 0;
           for (;;)
           {
-            BigIntRemainder(&discriminant, &prime, &tmp1);
+            (void)BigIntRemainder(&discriminant, &prime, &tmp1);
             if (!BigIntIsZero(&tmp1))
             {
               break;
             }
-            BigIntDivide(&discriminant, &prime, &discriminant);
+            (void)BigIntDivide(&discriminant, &prime, &discriminant);
             deltaZeros++;
           }
         }
@@ -576,7 +576,7 @@ void SolveEquation(void)
         // Compute inverse of -2*A (mod prime^(expon - deltaZeros)).
         BigIntAdd(&ValAOdd, &ValAOdd, &ValAOdd);
         (void)BigIntPowerIntExp(&prime, expon - deltaZeros, &tmp1);
-        BigIntRemainder(&ValAOdd, &tmp1, &ValAOdd);
+        (void)BigIntRemainder(&ValAOdd, &tmp1, &ValAOdd);
         nbrLimbs = tmp1.nbrLimbs;
         if (ValAOdd.sign == SIGN_NEGATIVE)
         {
@@ -603,7 +603,7 @@ void SolveEquation(void)
           nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
           (void)BigIntPowerIntExp(&prime, nbrBitsSquareRoot, &tmp1);
           nbrLimbs = tmp1.nbrLimbs;
-          BigIntRemainder(&discriminant, &tmp1, &discriminant);
+          (void)BigIntRemainder(&discriminant, &tmp1, &discriminant);
           if (discriminant.sign == SIGN_NEGATIVE)
           {
             BigIntAdd(&discriminant, &tmp1, &discriminant);
@@ -612,7 +612,7 @@ void SolveEquation(void)
           {
             (void)memset(&discriminant.limbs[nbrLimbs], 0, (nbrLimbs - discriminant.nbrLimbs) * sizeof(limb));
           }
-          BigIntRemainder(&discriminant, &prime, &Aux[3]);
+          (void)BigIntRemainder(&discriminant, &prime, &Aux[3]);
           if (Aux[3].sign == SIGN_NEGATIVE)
           {
             BigIntAdd(&Aux[3], &prime, &Aux[3]);
@@ -730,32 +730,32 @@ void SolveEquation(void)
           while (correctBits < nbrBitsSquareRoot)
           {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
             correctBits *= 2;
-            BigIntMultiply(&Q, &Q, &Q);           // Square Q.
-            BigIntMultiply(&sqrRoot, &sqrRoot, &tmp1);
-            BigIntRemainder(&tmp1, &Q, &tmp2);
-            BigIntMultiply(&tmp2, &discriminant, &tmp1);
-            BigIntRemainder(&tmp1, &Q, &tmp2);
+            (void)BigIntMultiply(&Q, &Q, &Q);           // Square Q.
+            (void)BigIntMultiply(&sqrRoot, &sqrRoot, &tmp1);
+            (void)BigIntRemainder(&tmp1, &Q, &tmp2);
+            (void)BigIntMultiply(&tmp2, &discriminant, &tmp1);
+            (void)BigIntRemainder(&tmp1, &Q, &tmp2);
             intToBigInteger(&tmp1, 3);
             BigIntSubt(&tmp1, &tmp2, &tmp2);
-            BigIntMultiply(&tmp2, &sqrRoot, &tmp1);
+            (void)BigIntMultiply(&tmp2, &sqrRoot, &tmp1);
             if (tmp1.limbs[0].x & 1)
             {
               BigIntAdd(&tmp1, &Q, &tmp1);
             }
             BigIntDivide2(&tmp1);
-            BigIntRemainder(&tmp1, &Q, &sqrRoot);
+            (void)BigIntRemainder(&tmp1, &Q, &sqrRoot);
           }
           // Get square root of discriminant from its inverse by multiplying by discriminant.
           if (sqrRoot.sign == SIGN_NEGATIVE)
           {
             BigIntAdd(&sqrRoot, &Q, &sqrRoot);
           }
-          BigIntMultiply(&sqrRoot, &discriminant, &sqrRoot);
-          BigIntRemainder(&sqrRoot, &Q, &sqrRoot);
+          (void)BigIntMultiply(&sqrRoot, &discriminant, &sqrRoot);
+          (void)BigIntRemainder(&sqrRoot, &Q, &sqrRoot);
           // Multiply by square root of discriminant by prime^deltaZeros.
           for (ctr = 0; ctr < deltaZeros; ctr++)
           {
-            BigIntMultiply(&sqrRoot, &prime, &sqrRoot);
+            (void)BigIntMultiply(&sqrRoot, &prime, &sqrRoot);
           }
         }
         correctBits = expon - deltaZeros;
@@ -764,16 +764,16 @@ void SolveEquation(void)
         BigIntAdd(&ValB, &sqrRoot, &tmp1);
         for (ctr = 0; ctr < bitsAZero; ctr++)
         {
-          BigIntRemainder(&tmp1, &prime, &tmp2);
+          (void)BigIntRemainder(&tmp1, &prime, &tmp2);
           if (!BigIntIsZero(&tmp2))
           {   // Cannot divide by prime, so go out.
             sol1Invalid = true;
             break;
           }
-          BigIntDivide(&tmp1, &prime, &tmp1);
+          (void)BigIntDivide(&tmp1, &prime, &tmp1);
         }
-        BigIntMultiply(&tmp1, &ValAOdd, &tmp1);
-        BigIntRemainder(&tmp1, &Q, &Solution1[factorIndex]);
+        (void)BigIntMultiply(&tmp1, &ValAOdd, &tmp1);
+        (void)BigIntRemainder(&tmp1, &Q, &Solution1[factorIndex]);
         if (Solution1[factorIndex].sign == SIGN_NEGATIVE)
         {
           BigIntAdd(&Solution1[factorIndex], &Q, &Solution1[factorIndex]);
@@ -781,16 +781,16 @@ void SolveEquation(void)
         BigIntSubt(&ValB, &sqrRoot, &tmp1);
         for (ctr = 0; ctr < bitsAZero; ctr++)
         {
-          BigIntRemainder(&tmp1, &prime, &tmp2);
+          (void)BigIntRemainder(&tmp1, &prime, &tmp2);
           if (!BigIntIsZero(&tmp2))
           {   // Cannot divide by prime, so go out.
             sol2Invalid = true;
             break;
           }
-          BigIntDivide(&tmp1, &prime, &tmp1);
+          (void)BigIntDivide(&tmp1, &prime, &tmp1);
         }
-        BigIntMultiply(&tmp1, &ValAOdd, &tmp1);
-        BigIntRemainder(&tmp1, &Q, &Solution2[factorIndex]);
+        (void)BigIntMultiply(&tmp1, &ValAOdd, &tmp1);
+        (void)BigIntRemainder(&tmp1, &Q, &Solution2[factorIndex]);
         if (Solution2[factorIndex].sign == SIGN_NEGATIVE)
         {
           BigIntAdd(&Solution2[factorIndex], &Q, &Solution2[factorIndex]);
@@ -865,12 +865,12 @@ void SolveEquation(void)
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&Q, &L, &prime, &Aux[T1]);
       }
-      BigIntRemainder(&Aux[T1], &prime, &L);
+      (void)BigIntRemainder(&Aux[T1], &prime, &L);
       CopyBigInt(&Aux[T1], &L);
       // currentSolution <- Aux[T1] * Mult + currentSolution
-      BigIntMultiply(&Aux[T1], &Mult, &L);
+      (void)BigIntMultiply(&Aux[T1], &Mult, &L);
       BigIntAdd(&currentSolution, &L, &currentSolution);
-      BigIntMultiply(&K1, &Mult, &Mult);
+      (void)BigIntMultiply(&K1, &Mult, &Mult);
     }   /* end for */
     intToBigInteger(&V, 0);
     for (;;)
@@ -882,7 +882,7 @@ void SolveEquation(void)
         break;
       }
       // The solution is V*ValNn + currentSolution
-      BigIntMultiply(&V, &ValNn, &K1);
+      (void)BigIntMultiply(&V, &ValNn, &K1);
       BigIntAdd(&K1, &currentSolution, &K1);
       Solution(&K1);
       addbigint(&V, 1);  // V <- V + 1

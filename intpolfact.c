@@ -1516,7 +1516,7 @@ static void vanHoeij(int prime, int nbrFactors)
     // to top of array M.
     for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
     {
-      for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
+      for (nbrCol = 0; nbrCol < (nbrVectors + nbrRequiredTraces); nbrCol++)
       {
         intToBigInteger(&operand1, 0);     // Initialize sum.
         for (j = 0; j < nbrVectors; j++)

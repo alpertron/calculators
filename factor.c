@@ -218,17 +218,17 @@ void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, const BigInteger *
   for (k = 1; k < DegreeAurif; k++)
   {
     longToBigInteger(&Nbr1, Gamma[k]);
-    BigIntMultiply(&Csal, &x, &Csal);
+    (void)BigIntMultiply(&Csal, &x, &Csal);
     BigIntAdd(&Csal, &Nbr1, &Csal);      // Csal <- Csal * x + Gamma[k]
     longToBigInteger(&Nbr1, Delta[k]);
-    BigIntMultiply(&Dsal, &x, &Dsal);
+    (void)BigIntMultiply(&Dsal, &x, &Dsal);
     BigIntAdd(&Dsal, &Nbr1, &Dsal);      // Dsal <- Dsal * x + Gamma[k]
   }
   longToBigInteger(&Nbr1, Gamma[k]);
-  BigIntMultiply(&Csal, &x, &Csal);
+  (void)BigIntMultiply(&Csal, &x, &Csal);
   BigIntAdd(&Csal, &Nbr1, &Csal);        // Csal <- Csal * x + Gamma[k]
   (void)BigIntPowerIntExp(BigBase, (L + 1) / 2, &Nbr1);   // Nbr1 <- Dsal * base^((L+1)/2)
-  BigIntMultiply(&Dsal, &Nbr1, &Nbr1);
+  (void)BigIntMultiply(&Dsal, &Nbr1, &Nbr1);
   BigIntAdd(&Csal, &Nbr1, &Dsal);
   insertBigFactor(pstFactors, &Dsal, TYP_AURIF);
   BigIntSubt(&Csal, &Nbr1, &Dsal);
@@ -405,7 +405,7 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
         BigIntGcd(&Nbr1, BigOriginal, &Nbr2);   // Nbr2 <- gcd(Base^(Expon/k)+incre, original)
         insertBigFactor(pstFactors, &Nbr2, TYP_TABLE);
         CopyBigInt(&Temp1, BigOriginal);
-        BigIntDivide(&Temp1, &Nbr2, &Nbr1);
+        (void)BigIntDivide(&Temp1, &Nbr2, &Nbr1);
         insertBigFactor(pstFactors, &Nbr1, TYP_TABLE);
         InsertAurifFactors(pstFactors, BigBase, Expon / k, increment);
       }
@@ -416,7 +416,7 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
         BigIntGcd(&Nbr1, BigOriginal, &Nbr2);   // Nbr2 <- gcd(Base^k+incre, original)
         insertBigFactor(pstFactors, &Nbr2, TYP_TABLE);
         CopyBigInt(&Temp1, BigOriginal);
-        BigIntDivide(&Temp1, &Nbr2, &Nbr1);
+        (void)BigIntDivide(&Temp1, &Nbr2, &Nbr1);
         insertBigFactor(pstFactors, &Nbr1, TYP_TABLE);
         InsertAurifFactors(pstFactors, BigBase, k, increment);
       }
@@ -465,7 +465,7 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
   for (;;)
   {
     (void)BigIntPowerIntExp(&nthRoot, Exponent - 1, &rootN1); // rootN1 <- nthRoot ^ (Exponent-1)
-    BigIntMultiply(&nthRoot, &rootN1, &rootN);  // rootN <- nthRoot ^ Exponent
+    (void)BigIntMultiply(&nthRoot, &rootN1, &rootN);  // rootN <- nthRoot ^ Exponent
     BigIntSubt(&NFp1, &rootN, &dif);            // dif <- NFp1 - rootN
     if (BigIntIsZero(&dif))
     { // Perfect power
@@ -473,7 +473,7 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
       return true;
     }
     addbigint(&dif, 1);                         // dif <- dif + 1
-    BigIntDivide(&dif, &rootN1, &Temp1);        // Temp1 <- dif / rootN1
+    (void)BigIntDivide(&dif, &rootN1, &Temp1);  // Temp1 <- dif / rootN1
     subtractdivide(&Temp1, 0, Exponent);        // Temp1 <- Temp1 / Exponent
     BigIntAdd(&Temp1, &nthRoot, &nextroot);     // nextroot <- Temp1 + nthRoot
     addbigint(&nextroot, -1);                   // nextroot <- nextroot - 1
@@ -488,7 +488,7 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
   for (;;)
   {
     (void)BigIntPowerIntExp(&nthRoot, Exponent - 1, &rootN1); // rootN1 <- nthRoot ^ (Exponent-1)
-    BigIntMultiply(&nthRoot, &rootN1, &rootN);     // rootN <- nthRoot ^ Exponent
+    (void)BigIntMultiply(&nthRoot, &rootN1, &rootN);     // rootN <- nthRoot ^ Exponent
     BigIntSubt(&NFm1, &rootN, &dif);            // dif <- NFm1 - rootN
     if (BigIntIsZero(&dif))
     { // Perfect power
@@ -496,7 +496,7 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
       return true;
     }
     addbigint(&dif, 1);                         // dif <- dif + 1
-    BigIntDivide(&dif, &rootN1, &Temp1);        // Temp1 <- dif / rootN1
+    (void)BigIntDivide(&dif, &rootN1, &Temp1);  // Temp1 <- dif / rootN1
     subtractdivide(&Temp1, 0, Exponent);        // Temp1 <- Temp1 / Exponent
     BigIntAdd(&Temp1, &nthRoot, &nextroot);     // nextroot <- Temp1 + nthRoot
     addbigint(&nextroot, -1);                   // nextroot <- nextroot - 1
@@ -560,7 +560,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
       int maxRemainder;
       int rem = getRemainder(numToFactor, i);
       longToBigInteger(&Temp1, (uint64_t)i*(uint64_t)i);
-      BigIntRemainder(numToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
+      (void)BigIntRemainder(numToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
       remainder = (uint64_t)Temp2.limbs[0].x;
       if ((rem == 1) || (rem == (i - 1)))
       {
@@ -728,7 +728,7 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
     }
   }
   intToBigInteger(&sqr, k<<2);
-  BigIntMultiply(&sqr, nbr, &sqr);
+  (void)BigIntMultiply(&sqr, nbr, &sqr);
   squareRoot(sqr.limbs, sqrRoot.limbs, sqr.nbrLimbs, &sqrRoot.nbrLimbs);
   sqrRoot.sign = SIGN_POSITIVE;
   CopyBigInt(&a, &sqrRoot);
@@ -736,7 +736,7 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
   {
     if ((a.limbs[0].x & (m-1)) == r)
     {
-      BigIntMultiply(&a, &a, &nextroot);
+      (void)BigIntMultiply(&a, &a, &nextroot);
       BigIntSubt(&nextroot, &sqr, &nextroot);
       if (nextroot.sign == SIGN_POSITIVE)
       {
@@ -745,7 +745,7 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
     }
     addbigint(&a, 1);                         // a <- a + 1
   }
-  BigIntMultiply(&a, &a, &nextroot);
+  (void)BigIntMultiply(&a, &a, &nextroot);
   BigIntSubt(&nextroot, &sqr, &c);
   for (i = 0; i < 17; i++)
   {
@@ -783,7 +783,7 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
     { // Test for perfect square
       intToBigInteger(&c, m * j);           // c <- m * j
       BigIntAdd(&a, &c, &val);
-      BigIntMultiply(&val, &val, &c);       // c <- val * val
+      (void)BigIntMultiply(&val, &val, &c);       // c <- val * val
       BigIntSubt(&c, &sqr, &c);             // c <- val * val - sqr
       squareRoot(c.limbs, sqrRoot.limbs, c.nbrLimbs, &sqrRoot.nbrLimbs);
       sqrRoot.sign = SIGN_POSITIVE;         // sqrRoot <- sqrt(c)
@@ -1258,7 +1258,7 @@ static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divis
     // known factor / GCD and generate a new known factor entry.
     NumberLength = Temp3.nbrLimbs;
     BigInteger2IntArray(ptrNewFactorLimbs, &Temp3);      // Append new known factor.
-    BigIntDivide(&Temp2, &Temp3, &Temp4);                // Divide by this factor.
+    (void)BigIntDivide(&Temp2, &Temp3, &Temp4);          // Divide by this factor.
     NumberLength = Temp4.nbrLimbs;
     BigInteger2IntArray(ptrFactor, &Temp4);              // Overwrite old known factor.
     pstNewFactor->multiplicity = pstCurFactor->multiplicity;
@@ -1816,14 +1816,14 @@ void factorExt(const BigInteger *toFactor, const int *number,
           intToBigInteger(&common.trialDiv.power[0], upperBound);
           for (;;)
           {      // Test whether the cofactor is multiple of power.
-            BigIntDivide(&common.trialDiv.cofactor, &common.trialDiv.power[index], &common.trialDiv.quotient);
-            BigIntMultiply(&common.trialDiv.quotient, &common.trialDiv.power[index], &common.trialDiv.temp);
+            (void)BigIntDivide(&common.trialDiv.cofactor, &common.trialDiv.power[index], &common.trialDiv.quotient);
+            (void)BigIntMultiply(&common.trialDiv.quotient, &common.trialDiv.power[index], &common.trialDiv.temp);
             if (!BigIntEqual(&common.trialDiv.temp, &common.trialDiv.cofactor))
             {    // Not a multiple, so exit loop.
               break;
             }
             CopyBigInt(&common.trialDiv.cofactor, &common.trialDiv.quotient);
-            BigIntMultiply(&common.trialDiv.power[index], &common.trialDiv.power[index], &common.trialDiv.power[index+1]);
+            (void)BigIntMultiply(&common.trialDiv.power[index], &common.trialDiv.power[index], &common.trialDiv.power[index+1]);
             exponent += deltaIndex;
             deltaIndex <<= 1;
             index++;
@@ -1831,8 +1831,8 @@ void factorExt(const BigInteger *toFactor, const int *number,
           for (index--; index >= 0; index--)
           {
             deltaIndex >>= 1;
-            BigIntDivide(&common.trialDiv.cofactor, &common.trialDiv.power[index], &common.trialDiv.quotient);
-            BigIntMultiply(&common.trialDiv.quotient, &common.trialDiv.power[index], &common.trialDiv.temp);
+            (void)BigIntDivide(&common.trialDiv.cofactor, &common.trialDiv.power[index], &common.trialDiv.quotient);
+            (void)BigIntMultiply(&common.trialDiv.quotient, &common.trialDiv.power[index], &common.trialDiv.temp);
             if (BigIntEqual(&common.trialDiv.temp, &common.trialDiv.cofactor))
             {    // It is a multiple.
               CopyBigInt(&common.trialDiv.cofactor, &common.trialDiv.quotient);
@@ -2020,10 +2020,10 @@ void Totient(BigInteger *result)
       continue;
     }
     (void)BigIntPowerIntExp(&factorValue, pstFactor->multiplicity - 1, &TempVar);   // p^(e-1)
-    BigIntMultiply(result, &TempVar, result);
+    (void)BigIntMultiply(result, &TempVar, result);
     intArrayToBigInteger(pstFactor->ptrFactor, &TempVar);
     addbigint(&TempVar, -1);   // p-1
-    BigIntMultiply(result, &TempVar, result);
+    (void)BigIntMultiply(result, &TempVar, result);
     pstFactor++;
   }
 }
@@ -2078,10 +2078,10 @@ void SumOfDivisors(BigInteger *result)
     }
     (void)BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Temp1);   // p^(e+1)
     addbigint(&Temp1, -1);   // p^(e+1)-1
-    BigIntMultiply(result, &Temp1, &Temp2);
+    (void)BigIntMultiply(result, &Temp1, &Temp2);
     intArrayToBigInteger(pstFactor->ptrFactor, &Temp1);
     addbigint(&Temp1, -1);   // p-1
-    BigIntDivide(&Temp2, &Temp1, result);
+    (void)BigIntDivide(&Temp2, &Temp1, result);
     pstFactor++;
   }
 }

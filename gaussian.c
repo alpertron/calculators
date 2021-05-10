@@ -76,8 +76,8 @@ void GaussianFactorization(void)
   BigInteger Tmp;
   const struct sFactors *pstFactor;
 
-  BigIntMultiply(&ReValue, &ReValue, &tofactor);
-  BigIntMultiply(&ImValue, &ImValue, &Tmp);
+  (void)BigIntMultiply(&ReValue, &ReValue, &tofactor);
+  (void)BigIntMultiply(&ImValue, &ImValue, &Tmp);
   BigIntAdd(&tofactor, &Tmp, &tofactor);
   NbrFactorsNorm = 0;
 #ifdef __EMSCRIPTEN__
@@ -151,16 +151,16 @@ void GaussianFactorization(void)
         for (;;)
         {
           // norm <- (mult1^2 + mult2^2) / prime
-          BigIntMultiply(&mult1, &mult1, &tofactor);
-          BigIntMultiply(&mult2, &mult2, &Tmp);
+          (void)BigIntMultiply(&mult1, &mult1, &tofactor);
+          (void)BigIntMultiply(&mult2, &mult2, &Tmp);
           BigIntAdd(&tofactor, &Tmp, &Tmp);
-          BigIntDivide(&Tmp, &prime, &tofactor);
+          (void)BigIntDivide(&Tmp, &prime, &tofactor);
           if ((tofactor.nbrLimbs == 1) && (tofactor.limbs[0].x == 1))
           {        // norm equals 1.
             break;
           }
-          BigIntRemainder(&mult1, &tofactor, &M1);
-          BigIntRemainder(&mult2, &tofactor, &M2);
+          (void)BigIntRemainder(&mult1, &tofactor, &M1);
+          (void)BigIntRemainder(&mult2, &tofactor, &M2);
           BigIntAdd(&M1, &M1, &Tmp);
           BigIntSubt(&tofactor, &Tmp, &Tmp);
           if (Tmp.sign == SIGN_NEGATIVE)
@@ -174,15 +174,15 @@ void GaussianFactorization(void)
             BigIntSubt(&M2, &tofactor, &M2);
           }
           // Compute q <- (mult1*M1 + mult2*M2) / norm
-          BigIntMultiply(&mult1, &M1, &q);
-          BigIntMultiply(&mult2, &M2, &Tmp);
+          (void)BigIntMultiply(&mult1, &M1, &q);
+          (void)BigIntMultiply(&mult2, &M2, &Tmp);
           BigIntAdd(&q, &Tmp, &Tmp);
-          BigIntDivide(&Tmp, &tofactor, &q);
+          (void)BigIntDivide(&Tmp, &tofactor, &q);
           // Compute Mult2 <- (mult1*M2 - mult2*M1) / tofactor
-          BigIntMultiply(&mult1, &M2, &r);
-          BigIntMultiply(&mult2, &M1, &Tmp);
+          (void)BigIntMultiply(&mult1, &M2, &r);
+          (void)BigIntMultiply(&mult2, &M1, &Tmp);
           BigIntSubt(&r, &Tmp, &Tmp);
-          BigIntDivide(&Tmp, &tofactor, &mult2);
+          (void)BigIntDivide(&Tmp, &tofactor, &mult2);
           CopyBigInt(&mult1, &q);
           mult1.sign = SIGN_POSITIVE;    // mult1 <- abs(mult1)
           mult2.sign = SIGN_POSITIVE;    // mult2 <- abs(mult2)
@@ -250,23 +250,23 @@ static void DivideGaussian(const BigInteger *real, const BigInteger *imag)
   BigInteger imagNum;
   CopyBigInt(&Tmp, real);
   Tmp.sign = SIGN_POSITIVE;
-  BigIntMultiply(real, real, &norm);
-  BigIntMultiply(imag, imag, &Tmp);
+  (void)BigIntMultiply(real, real, &norm);
+  (void)BigIntMultiply(imag, imag, &Tmp);
   BigIntAdd(&norm, &Tmp, &norm);
-  BigIntMultiply(&ReValue, real, &realNum);
-  BigIntMultiply(&ImValue, imag, &Tmp);
+  (void)BigIntMultiply(&ReValue, real, &realNum);
+  (void)BigIntMultiply(&ImValue, imag, &Tmp);
   BigIntAdd(&realNum, &Tmp, &realNum);
-  BigIntMultiply(&ImValue, real, &imagNum);
-  BigIntMultiply(&ReValue, imag, &Tmp);
+  (void)BigIntMultiply(&ImValue, real, &imagNum);
+  (void)BigIntMultiply(&ReValue, imag, &Tmp);
   BigIntSubt(&imagNum, &Tmp, &imagNum);
-  BigIntRemainder(&realNum, &norm, &Tmp);
+  (void)BigIntRemainder(&realNum, &norm, &Tmp);
   if (BigIntIsZero(&Tmp))
   {
-    BigIntRemainder(&imagNum, &norm, &Tmp);
+    (void)BigIntRemainder(&imagNum, &norm, &Tmp);
     if (BigIntIsZero(&Tmp))
     {
-      BigIntDivide(&realNum, &norm, &ReValue);
-      BigIntDivide(&imagNum, &norm, &ImValue);
+      (void)BigIntDivide(&realNum, &norm, &ReValue);
+      (void)BigIntDivide(&imagNum, &norm, &ImValue);
       showText("<li>");
       showNumber(real, imag);
       showText("</li>");

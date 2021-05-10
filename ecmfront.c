@@ -1048,7 +1048,7 @@ EXTERNALIZE void doWork(void)
   {
     ptrKnownFactors++;
   }
-  if ((flags & 0x80) && ptrKnownFactors != NULL)
+  if ((flags & 0x80) && (ptrKnownFactors != NULL))
   {
     flags = 2;  // Do factorization.
   }

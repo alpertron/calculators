@@ -497,7 +497,7 @@ void GcdBigNbr(const int *pNbr1, const int *pNbr2, int *pGcd, int nbrLen)
   BigIntToBigNbr(&BigInt2, pNbr2, nbrLen);
   BigIntGcd(&BigInt1, &BigInt2, &BigGcd);
   (void)memset(pGcd, 0, NumberLength * sizeof(int));
-  BigNbrToBigInt(&BigGcd, pGcd);
+  (void)BigNbrToBigInt(&BigGcd, pGcd);
 }
 
 void AdjustBigIntModN(int *Nbr, int *Mod, int nbrLen)

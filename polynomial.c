@@ -298,7 +298,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
       for (degree = 0; degree <= potentialDegreeGcd; degree++)
       {
         UncompressBigIntegerB(ptrSrc, &operand1);
-        BigIntMultiply(&operand1, &gcdLeadingCoeff, &operand1);
+        (void)BigIntMultiply(&operand1, &gcdLeadingCoeff, &operand1);
         intToBigInteger(&operand1, getRemainder(&operand1, prime));
         NumberLength = operand1.nbrLimbs;
         BigInteger2IntArray(ptrDest, &operand1);
@@ -411,7 +411,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
         for (degree = 0; degree <= potentialDegreeGcd; degree++)
         {
           UncompressBigIntegerB(ptrSrc, &operand2);
-          BigIntMultiply(&operand1, &operand2, &operand3);
+          (void)BigIntMultiply(&operand1, &operand2, &operand3);
           NumberLength = operand3.nbrLimbs;
           BigInteger2IntArray(ptrDest, &operand3);
           ptrSrc += 1 + numLimbs(ptrSrc);
@@ -1250,7 +1250,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
     int degreeA;
 #ifdef __EMSCRIPTEN__
     int elapsedTime = (int)(tenths() - originalTenthSecond);
-    if (elapsedTime / 10 != oldTimeElapsed / 10)
+    if ((elapsedTime / 10) != (oldTimeElapsed / 10))
     {
       char outputInfo[1000];
       char* ptrOutput = outputInfo;
@@ -1359,7 +1359,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
         operand1.nbrLimbs = *ptrSrc;
         ptrSrc++;
         (void)memcpy(operand1.limbs, ptrSrc, operand1.nbrLimbs * sizeof(int));
-        if (currentExp * 2 > newExponent)
+        if ((currentExp * 2) > newExponent)
         {
           (void)BigIntPowerIntExp(&primeMod, newExponent - currentExp, &operand5);
           BigIntRemainder(&operand1, &operand5, &operand1);
@@ -1369,7 +1369,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
         ptrFi++;
         (void)memcpy(operand2.limbs, ptrFi, operand2.nbrLimbs * sizeof(int));
         ptrFi += operand2.nbrLimbs;
-        BigIntMultiply(&operand1, &powerMod, &operand1);  // poly1 <- m*g
+        (void)BigIntMultiply(&operand1, &powerMod, &operand1);  // poly1 <- m*g
         BigIntAdd(&operand1, &operand2, &operand1);       // poly1 <- f_i + m*g
         // Store coefficient of new f_i (no spaces between coefficients).
         *ptrDest = operand1.nbrLimbs;
@@ -1481,7 +1481,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
         ptrSrc = &poly1[currentDegree * nbrLimbs];
         operand2.nbrLimbs = *ptrSrc++;
         (void)memcpy(operand2.limbs, ptrSrc, operand2.nbrLimbs * sizeof(int));
-        BigIntMultiply(&operand1, &powerMod, &operand1);  // poly1 <- m*g
+        (void)BigIntMultiply(&operand1, &powerMod, &operand1);  // poly1 <- m*g
         BigIntAdd(&operand1, &operand2, &operand1);       // poly1 <- a_i + m*g
         // Store coefficient of new a_i.
         *ptrDest = operand1.nbrLimbs;

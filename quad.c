@@ -688,24 +688,24 @@ void SolveQuadModEquation(void)
   const struct sFactors *pstFactor;
 
   modulus.sign = SIGN_POSITIVE;
-  BigIntRemainder(&coeffQuadr, &modulus, &coeffQuadr);
+  (void)BigIntRemainder(&coeffQuadr, &modulus, &coeffQuadr);
   if (coeffQuadr.sign == SIGN_NEGATIVE)
   {
     BigIntAdd(&coeffQuadr, &modulus, &coeffQuadr);
   }
-  BigIntRemainder(&coeffLinear, &modulus, &coeffLinear);
+  (void)BigIntRemainder(&coeffLinear, &modulus, &coeffLinear);
   if (coeffLinear.sign == SIGN_NEGATIVE)
   {
     BigIntAdd(&coeffLinear, &modulus, &coeffLinear);
   }
-  BigIntRemainder(&coeffIndep, &modulus, &coeffIndep);
+  (void)BigIntRemainder(&coeffIndep, &modulus, &coeffIndep);
   if (coeffIndep.sign == SIGN_NEGATIVE)
   {
     BigIntAdd(&coeffIndep, &modulus, &coeffIndep);
   }
   BigIntGcd(&coeffQuadr, &coeffLinear, &Tmp[0]);
   BigIntGcd(&coeffIndep, &Tmp[0], &GcdAll);
-  BigIntRemainder(&coeffIndep, &GcdAll, &Tmp[0]);
+  (void)BigIntRemainder(&coeffIndep, &GcdAll, &Tmp[0]);
   if (!BigIntIsZero(&Tmp[0]))
   {  // ValC must be multiple of gcd(ValA, ValB).
      // Otherwise go out because there are no solutions.
@@ -714,13 +714,13 @@ void SolveQuadModEquation(void)
   BigIntGcd(&modulus, &GcdAll, &Tmp[0]);
   CopyBigInt(&GcdAll, &Tmp[0]);
   // Divide all coefficients by gcd(ValA, ValB).
-  BigIntDivide(&coeffQuadr, &GcdAll, &Tmp[0]);
+  (void)BigIntDivide(&coeffQuadr, &GcdAll, &Tmp[0]);
   CopyBigInt(&coeffQuadr, &Tmp[0]);
-  BigIntDivide(&coeffLinear, &GcdAll, &Tmp[0]);
+  (void)BigIntDivide(&coeffLinear, &GcdAll, &Tmp[0]);
   CopyBigInt(&coeffLinear, &Tmp[0]);
-  BigIntDivide(&coeffIndep, &GcdAll, &Tmp[0]);
+  (void)BigIntDivide(&coeffIndep, &GcdAll, &Tmp[0]);
   CopyBigInt(&coeffIndep, &Tmp[0]);
-  BigIntDivide(&modulus, &GcdAll, &Tmp[0]);
+  (void)BigIntDivide(&modulus, &GcdAll, &Tmp[0]);
   CopyBigInt(&modulus, &Tmp[0]);
   CopyBigInt(&ValNn, &modulus);
   if ((ValNn.nbrLimbs == 1) && (ValNn.limbs[0].x == 1))
@@ -751,7 +751,7 @@ void SolveQuadModEquation(void)
     }
     return;
   }
-  BigIntRemainder(&coeffQuadr, &modulus, &Tmp[0]);
+  (void)BigIntRemainder(&coeffQuadr, &modulus, &Tmp[0]);
   if (BigIntIsZero(&Tmp[0]))
   {           // Linear equation.
     BigIntGcd(&coeffLinear, &modulus, &Tmp[0]);
@@ -770,7 +770,7 @@ void SolveQuadModEquation(void)
     {
       BigIntAdd(&z, &modulus, &z);
     }
-    BigIntMultiply(&ValNn, &GcdAll, &Tmp[0]);
+    (void)BigIntMultiply(&ValNn, &GcdAll, &Tmp[0]);
     if (teach)
     {
       showText("<ol>");
@@ -814,7 +814,7 @@ void SolveQuadModEquation(void)
     NumberLength = *pstFactor->ptrFactor;
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);   // Get value of prime factor.
     (void)BigIntPowerIntExp(&prime, expon, &V);       // Get value of prime power.
-    BigIntRemainder(&coeffQuadr, &V, &L);       // Check whether quadratic coefficient is multiple of prime power.
+    (void)BigIntRemainder(&coeffQuadr, &V, &L);       // Check whether quadratic coefficient is multiple of prime power.
     if (BigIntIsZero(&L))
     {     // ValA multiple of prime, means linear equation mod prime.
       if (BigIntIsZero(&coeffLinear) && !BigIntIsZero(&coeffIndep))
@@ -822,9 +822,9 @@ void SolveQuadModEquation(void)
         return;  // There are no solutions: ValB is equal to zero and ValC is different from zero.
       }
       BigIntGcd(&coeffLinear, &V, &U);
-      BigIntDivide(&V, &U, &Q);
-      BigIntDivide(&coeffLinear, &U, &V);
-      BigIntDivide(&coeffIndep, &U, &L);
+      (void)BigIntDivide(&V, &U, &Q);
+      (void)BigIntDivide(&coeffLinear, &U, &V);
+      (void)BigIntDivide(&coeffIndep, &U, &L);
       BigIntNegate(&V, &V);
       if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
       {      // If prime is 2.
@@ -853,8 +853,8 @@ void SolveQuadModEquation(void)
       int ctr;
       int bitsAZero;
       // Compute discriminant = ValB^2 - 4*ValA*ValC.
-      BigIntMultiply(&coeffLinear, &coeffLinear, &Tmp[0]);
-      BigIntMultiply(&coeffQuadr, &coeffIndep, &discriminant);
+      (void)BigIntMultiply(&coeffLinear, &coeffLinear, &Tmp[0]);
+      (void)BigIntMultiply(&coeffQuadr, &coeffIndep, &discriminant);
       multint(&discriminant, &discriminant, 4);
       BigIntSubt(&Tmp[0], &discriminant, &discriminant);
       CopyBigInt(&ValAOdd, &coeffQuadr);
@@ -903,8 +903,8 @@ void SolveQuadModEquation(void)
           // compute s = ((b/2)^2 - a*c)/a^2; r = p_2(s), q = o_2(s).
           CopyBigInt(&tmp1, &coeffLinear);
           BigIntDivideBy2(&tmp1);
-          BigIntMultiply(&tmp1, &tmp1, &tmp1);  // (b/2)^2
-          BigIntMultiply(&coeffQuadr, &coeffIndep, &tmp2);  // a*c
+          (void)BigIntMultiply(&tmp1, &tmp1, &tmp1);  // (b/2)^2
+          (void)BigIntMultiply(&coeffQuadr, &coeffIndep, &tmp2);  // a*c
           BigIntSubt(&tmp1, &tmp2, &tmp1);      // (b/2)^2 - a*c
           BigIntPowerOf2(&K1, expon);
           addbigint(&K1, -1);
@@ -912,9 +912,9 @@ void SolveQuadModEquation(void)
           NumberLength = K1.nbrLimbs;
           ComputeInversePower2(ValAOdd.limbs, tmp2.limbs, tmp1.limbs);
           setNbrLimbs(&tmp2);
-          BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
+          (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
           BigIntAnd(&ValCOdd, &K1, &ValCOdd);      // ((b/2) - a*c)/a mod 2^n
-          BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
+          (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
           BigIntAnd(&ValCOdd, &K1, &ValCOdd);      // ((b/2) - a*c)/a^2 mod 2^n
           if (BigIntIsZero(&ValCOdd))
           {
@@ -969,7 +969,7 @@ void SolveQuadModEquation(void)
           setNbrLimbs(&tmp2);
           CopyBigInt(&tmp1, &coeffLinear);
           BigIntDivideBy2(&tmp1);               // b/2
-          BigIntMultiply(&tmp1, &tmp2, &tmp1);  // b/2a
+          (void)BigIntMultiply(&tmp1, &tmp2, &tmp1);  // b/2a
           BigIntChSign(&tmp1);                  // -b/2a
           BigIntAnd(&tmp1, &K1, &tmp1);         // -b/2a mod 2^expon
           BigIntAdd(&tmp1, &squareRoot, &tmp2);
@@ -1020,15 +1020,15 @@ void SolveQuadModEquation(void)
         bitsAZero = 0;
         for (;;)
         {
-          BigIntRemainder(&ValAOdd, &prime, &tmp1);
+          (void)BigIntRemainder(&ValAOdd, &prime, &tmp1);
           if ((tmp1.nbrLimbs > 1) || (tmp1.limbs[0].x != 0))
           {
             break;
           }
-          BigIntDivide(&ValAOdd, &prime, &ValAOdd);
+          (void)BigIntDivide(&ValAOdd, &prime, &ValAOdd);
           bitsAZero++;
         }
-        BigIntRemainder(&discriminant, &V, &discriminant);
+        (void)BigIntRemainder(&discriminant, &V, &discriminant);
         // Get maximum power of prime which divide discriminant.
         if (BigIntIsZero(&discriminant))
         {      // Discriminant is zero.
@@ -1039,12 +1039,12 @@ void SolveQuadModEquation(void)
           deltaZeros = 0;
           for (;;)
           {
-            BigIntRemainder(&discriminant, &prime, &tmp1);
+            (void)BigIntRemainder(&discriminant, &prime, &tmp1);
             if ((tmp1.nbrLimbs > 1) || (tmp1.limbs[0].x != 0))
             {
               break;
             }
-            BigIntDivide(&discriminant, &prime, &discriminant);
+            (void)BigIntDivide(&discriminant, &prime, &discriminant);
             deltaZeros++;
           }
         }
@@ -1058,7 +1058,7 @@ void SolveQuadModEquation(void)
         // Compute inverse of -2*A (mod prime^(expon - deltaZeros)).
         BigIntAdd(&ValAOdd, &ValAOdd, &ValAOdd);
         (void)BigIntPowerIntExp(&prime, expon - deltaZeros, &tmp1);
-        BigIntRemainder(&ValAOdd, &tmp1, &ValAOdd);
+        (void)BigIntRemainder(&ValAOdd, &tmp1, &ValAOdd);
         nbrLimbs = tmp1.nbrLimbs;
         if (ValAOdd.sign == SIGN_NEGATIVE)
         {
@@ -1085,7 +1085,7 @@ void SolveQuadModEquation(void)
           nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
           (void)BigIntPowerIntExp(&prime, nbrBitsSquareRoot, &tmp1);
           nbrLimbs = tmp1.nbrLimbs;
-          BigIntRemainder(&discriminant, &tmp1, &discriminant);
+          (void)BigIntRemainder(&discriminant, &tmp1, &discriminant);
           if (discriminant.sign == SIGN_NEGATIVE)
           {
             BigIntAdd(&discriminant, &tmp1, &discriminant);
@@ -1094,7 +1094,7 @@ void SolveQuadModEquation(void)
           {
             (void)memset(&discriminant.limbs[nbrLimbs], 0, (nbrLimbs - discriminant.nbrLimbs) * sizeof(limb));
           }
-          BigIntRemainder(&discriminant, &prime, &Tmp[3]);
+          (void)BigIntRemainder(&discriminant, &prime, &Tmp[3]);
           if (Tmp[3].sign == SIGN_NEGATIVE)
           {
             BigIntAdd(&Tmp[3], &prime, &Tmp[3]);
@@ -1215,32 +1215,32 @@ void SolveQuadModEquation(void)
           while (correctBits < nbrBitsSquareRoot)
           {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
             correctBits *= 2;
-            BigIntMultiply(&Q, &Q, &Q);           // Square Q.
-            BigIntMultiply(&squareRoot, &squareRoot, &tmp1);
-            BigIntRemainder(&tmp1, &Q, &tmp2);
-            BigIntMultiply(&tmp2, &discriminant, &tmp1);
-            BigIntRemainder(&tmp1, &Q, &tmp2);
+            (void)BigIntMultiply(&Q, &Q, &Q);           // Square Q.
+            (void)BigIntMultiply(&squareRoot, &squareRoot, &tmp1);
+            (void)BigIntRemainder(&tmp1, &Q, &tmp2);
+            (void)BigIntMultiply(&tmp2, &discriminant, &tmp1);
+            (void)BigIntRemainder(&tmp1, &Q, &tmp2);
             intToBigInteger(&tmp1, 3);
             BigIntSubt(&tmp1, &tmp2, &tmp2);
-            BigIntMultiply(&tmp2, &squareRoot, &tmp1);
+            (void)BigIntMultiply(&tmp2, &squareRoot, &tmp1);
             if (tmp1.limbs[0].x & 1)
             {
               BigIntAdd(&tmp1, &Q, &tmp1);
             }
             BigIntDivide2(&tmp1);
-            BigIntRemainder(&tmp1, &Q, &squareRoot);
+            (void)BigIntRemainder(&tmp1, &Q, &squareRoot);
           }
           // Get square root of discriminant from its inverse by multiplying by discriminant.
           if (squareRoot.sign == SIGN_NEGATIVE)
           {
             BigIntAdd(&squareRoot, &Q, &squareRoot);
           }
-          BigIntMultiply(&squareRoot, &discriminant, &squareRoot);
-          BigIntRemainder(&squareRoot, &Q, &squareRoot);
+          (void)BigIntMultiply(&squareRoot, &discriminant, &squareRoot);
+          (void)BigIntRemainder(&squareRoot, &Q, &squareRoot);
           // Multiply by square root of discriminant by prime^deltaZeros.
           for (ctr = 0; ctr < deltaZeros; ctr++)
           {
-            BigIntMultiply(&squareRoot, &prime, &squareRoot);
+            (void)BigIntMultiply(&squareRoot, &prime, &squareRoot);
           }
         }
         correctBits = expon - deltaZeros;
@@ -1249,16 +1249,16 @@ void SolveQuadModEquation(void)
         BigIntAdd(&coeffLinear, &squareRoot, &tmp1);
         for (ctr = 0; ctr < bitsAZero; ctr++)
         {
-          BigIntRemainder(&tmp1, &prime, &tmp2);
+          (void)BigIntRemainder(&tmp1, &prime, &tmp2);
           if ((tmp2.nbrLimbs > 1) || (tmp2.limbs[0].x != 0))
           {   // Cannot divide by prime, so go out.
             sol1Invalid = true;
             break;
           }
-          BigIntDivide(&tmp1, &prime, &tmp1);
+          (void)BigIntDivide(&tmp1, &prime, &tmp1);
         }
-        BigIntMultiply(&tmp1, &ValAOdd, &tmp1);
-        BigIntRemainder(&tmp1, &Q, &common.quad.Solution1[factorIndex]);
+        (void)BigIntMultiply(&tmp1, &ValAOdd, &tmp1);
+        (void)BigIntRemainder(&tmp1, &Q, &common.quad.Solution1[factorIndex]);
         if (common.quad.Solution1[factorIndex].sign == SIGN_NEGATIVE)
         {
           BigIntAdd(&common.quad.Solution1[factorIndex], &Q, &common.quad.Solution1[factorIndex]);
@@ -1266,16 +1266,16 @@ void SolveQuadModEquation(void)
         BigIntSubt(&coeffLinear, &squareRoot, &tmp1);
         for (ctr = 0; ctr < bitsAZero; ctr++)
         {
-          BigIntRemainder(&tmp1, &prime, &tmp2);
+          (void)BigIntRemainder(&tmp1, &prime, &tmp2);
           if ((tmp2.nbrLimbs > 1) || (tmp2.limbs[0].x != 0))
           {   // Cannot divide by prime, so go out.
             sol2Invalid = true;
             break;
           }
-          BigIntDivide(&tmp1, &prime, &tmp1);
+          (void)BigIntDivide(&tmp1, &prime, &tmp1);
         }
-        BigIntMultiply(&tmp1, &ValAOdd, &tmp1);
-        BigIntRemainder(&tmp1, &Q, &common.quad.Solution2[factorIndex]);
+        (void)BigIntMultiply(&tmp1, &ValAOdd, &tmp1);
+        (void)BigIntRemainder(&tmp1, &Q, &common.quad.Solution2[factorIndex]);
         if (common.quad.Solution2[factorIndex].sign == SIGN_NEGATIVE)
         {
           BigIntAdd(&common.quad.Solution2[factorIndex], &Q, &common.quad.Solution2[factorIndex]);
@@ -1420,12 +1420,12 @@ void SolveQuadModEquation(void)
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&Q, &L, &prime, &Aux[T1]);
       }
-      BigIntRemainder(&Aux[T1], &prime, &L);
+      (void)BigIntRemainder(&Aux[T1], &prime, &L);
       CopyBigInt(&Aux[T1], &L);
       // currentSolution <- Aux[T1] * Mult + currentSolution
-      BigIntMultiply(&Aux[T1], &Mult, &L);
+      (void)BigIntMultiply(&Aux[T1], &Mult, &L);
       BigIntAdd(&currentSolution, &L, &currentSolution);
-      BigIntMultiply(&K1, &Mult, &Mult);
+      (void)BigIntMultiply(&K1, &Mult, &Mult);
     }   /* end for */
     intToBigInteger(&V, 0);
     for (;;)
@@ -1437,7 +1437,7 @@ void SolveQuadModEquation(void)
         break;
       }
       // The solution is V*ValNn + currentSolution
-      BigIntMultiply(&V, &ValNn, &K1);
+      (void)BigIntMultiply(&V, &ValNn, &K1);
       BigIntAdd(&K1, &currentSolution, &K1);
       SolutionX(&K1);
       addbigint(&V, 1);  // V <- V + 1
@@ -1514,7 +1514,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
         return INFINITE_SOLUTIONS;     // Infinite number of solutions
       }
     }
-    BigIntRemainder(coeffInd, coeffY, &Aux[0]);
+    (void)BigIntRemainder(coeffInd, coeffY, &Aux[0]);
     if (!BigIntIsZero(&Aux[0]))
     {
       return NO_SOLUTIONS;             // No solutions
@@ -1523,7 +1523,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
     {
       intToBigInteger(&Xind, 0);
       intToBigInteger(&Xlin, 1);
-      BigIntDivide(coeffInd, coeffY, &Yind);
+      (void)BigIntDivide(coeffInd, coeffY, &Yind);
       BigIntNegate(&Yind, &Yind);
       intToBigInteger(&Ylin, 0);
       return SOLUTION_FOUND;           // Solution found
@@ -1531,7 +1531,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
   }
   if (BigIntIsZero(coeffY))
   {
-    BigIntRemainder(coeffInd, coeffX, &Aux[0]);
+    (void)BigIntRemainder(coeffInd, coeffX, &Aux[0]);
     if (!BigIntIsZero(&Aux[0]))
     {
       return NO_SOLUTIONS;             // No solutions
@@ -1540,7 +1540,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
     {
       intToBigInteger(&Yind, 0);
       intToBigInteger(&Ylin, 1);
-      BigIntDivide(coeffInd, coeffX, &Xind);
+      (void)BigIntDivide(coeffInd, coeffX, &Xind);
       BigIntNegate(&Xind, &Xind);
       intToBigInteger(&Xlin, 0);
       return SOLUTION_FOUND;           // Solution found
@@ -1560,7 +1560,7 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
       shownbr(&U1);
       showText(".</p>");
     }
-    BigIntRemainder(coeffInd, &U1, &U2);
+    (void)BigIntRemainder(coeffInd, &U1, &U2);
     if (!BigIntIsZero(&U2))
     {
       if (teach)
@@ -1569,9 +1569,9 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
       }
       return NO_SOLUTIONS;            // No solutions
     }
-    BigIntDivide(coeffX, &U1, coeffX);   // Divide all coefficients by the gcd.
-    BigIntDivide(coeffY, &U1, coeffY);
-    BigIntDivide(coeffInd, &U1, coeffInd);
+    (void)BigIntDivide(coeffX, &U1, coeffX);   // Divide all coefficients by the gcd.
+    (void)BigIntDivide(coeffY, &U1, coeffY);
+    (void)BigIntDivide(coeffInd, &U1, coeffInd);
   }
   if (teach)
   {
@@ -1616,28 +1616,28 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
       showText("<br>");
     }
     floordiv(&U3, &V3, &q);                 // q <- floor(U3 / V3).
-    BigIntMultiply(&q, &V1, &bigTmp);
+    (void)BigIntMultiply(&q, &V1, &bigTmp);
     BigIntSubt(&U1, &bigTmp, &bigTmp);      // T <- U1 - q * V1
     CopyBigInt(&U1, &V1);                   // U1 <- V1
     CopyBigInt(&V1, &bigTmp);               // V1 <- T
-    BigIntMultiply(&q, &V2, &bigTmp);
+    (void)BigIntMultiply(&q, &V2, &bigTmp);
     BigIntSubt(&U2, &bigTmp, &bigTmp);      // T <- U2 - q * V2
     CopyBigInt(&U2, &V2);                   // U2 <- V2
     CopyBigInt(&V2, &bigTmp);               // V2 <- T
-    BigIntMultiply(&q, &V3, &bigTmp);
+    (void)BigIntMultiply(&q, &V3, &bigTmp);
     BigIntSubt(&U3, &bigTmp, &bigTmp);      // T <- U3 - q * V3
     CopyBigInt(&U3, &V3);                   // U3 <- V3
     CopyBigInt(&V3, &bigTmp);               // V3 <- T
     stepNbr++;
   }
-  BigIntDivide(coeffInd, &U3, &q);
+  (void)BigIntDivide(coeffInd, &U3, &q);
   BigIntChSign(&q);                         // q <- -coeffInd / U3
   // Xind <- -U1 * coeffInd / U3
-  BigIntMultiply(&U1, &q, &Xind);
+  (void)BigIntMultiply(&U1, &q, &Xind);
   // Xlin <- coeffY
   CopyBigInt(&Xlin, coeffY);
   // Yind <- -U2 * coeffInd / U3
-  BigIntMultiply(&U2, &q, &Yind);
+  (void)BigIntMultiply(&U2, &q, &Yind);
   // Ylin <- -coeffX
   CopyBigInt(&Ylin, coeffX);
   BigIntChSign(&Ylin);
@@ -1701,14 +1701,14 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
 
   // Substitute variables so the independent coefficients can be minimized.
   // Reuse variables U1, U2, U3, V1, V2, V3.
-  BigIntMultiply(coeffX, coeffX, &U1);
-  BigIntMultiply(coeffY, coeffY, &q);
+  (void)BigIntMultiply(coeffX, coeffX, &U1);
+  (void)BigIntMultiply(coeffY, coeffY, &q);
   BigIntAdd(&U1, &q, &U1);                  // U1 <- coeffX^2 + coeffY^2
   CopyBigInt(&U2, &U1);
   BigIntDivideBy2(&U2);                     // U2 <- (coeffX^2 + coeffY^2)/2
-  BigIntMultiply(coeffX, &Yind, &q);
+  (void)BigIntMultiply(coeffX, &Yind, &q);
   BigIntAdd(&U2, &q, &U2);
-  BigIntMultiply(coeffY, &Xind, &q);
+  (void)BigIntMultiply(coeffY, &Xind, &q);
   BigIntSubt(&U2, &q, &U2);
   floordiv(&U2, &U1, &U1);                  // U1 <- delta to add to t'
   if (teach)
@@ -1719,9 +1719,9 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
     showText(" + t' ");
     showText(lang?"finalmente obtenemos:</p>": "we finally obtain:</p>");
   }
-  BigIntMultiply(&U1, coeffY, &q);
+  (void)BigIntMultiply(&U1, coeffY, &q);
   BigIntAdd(&Xind, &q, &Xind);        // Xind <- Xind + coeffY * delta
-  BigIntMultiply(&U1, coeffX, &q);
+  (void)BigIntMultiply(&U1, coeffX, &q);
   BigIntSubt(&Yind, &q, &Yind);       // Yind <- Yind - coeffX * delta
   if ((Xlin.sign == SIGN_NEGATIVE) && (Ylin.sign == SIGN_NEGATIVE))
   {    // If both coefficients are negative, make them positive.
@@ -1780,15 +1780,15 @@ static void DiscriminantIsZero(void)
     showSquare();
     if (ExchXY)
     {
-      BigIntMultiply(&ValA, &ValE, &ValH);
-      BigIntMultiply(&ValA, &ValD, &ValI);
+      (void)BigIntMultiply(&ValA, &ValE, &ValH);
+      (void)BigIntMultiply(&ValA, &ValD, &ValI);
     }
     else
     {
-      BigIntMultiply(&ValA, &ValD, &ValH);
-      BigIntMultiply(&ValA, &ValE, &ValI);
+      (void)BigIntMultiply(&ValA, &ValD, &ValH);
+      (void)BigIntMultiply(&ValA, &ValE, &ValI);
     }
-    BigIntMultiply(&ValA, &ValF, &ValJ);
+    (void)BigIntMultiply(&ValA, &ValF, &ValJ);
     multint(&ValH, &ValH, 4);
     multint(&ValI, &ValI, 4);
     multint(&ValJ, &ValJ, 4);
@@ -1827,15 +1827,15 @@ static void DiscriminantIsZero(void)
     showSquare();
     showText(" = ");
   }
-  BigIntMultiply(&ValB, &ValD, &Aux[0]);
-  BigIntMultiply(&ValA, &ValE, &Aux[1]);
+  (void)BigIntMultiply(&ValB, &ValD, &Aux[0]);
+  (void)BigIntMultiply(&ValA, &ValE, &Aux[1]);
   multint(&Aux[2], &Aux[1], 2);
   BigIntSubt(&Aux[0], &Aux[2], &Aux[1]);
   multint(&ValU, &Aux[1], 2);
 
   // Compute v <- d^2 - 4af
-  BigIntMultiply(&ValD, &ValD, &Aux[2]);
-  BigIntMultiply(&ValA, &ValF, &Aux[1]);
+  (void)BigIntMultiply(&ValD, &ValD, &Aux[2]);
+  (void)BigIntMultiply(&ValA, &ValF, &Aux[1]);
   multint(&Aux[3], &Aux[1], 4);
   BigIntSubt(&Aux[2], &Aux[3], &ValV);
   if (teach)
@@ -1888,7 +1888,7 @@ static void DiscriminantIsZero(void)
     // v must be a perfect square, otherwise there are no solutions.
     squareRoot(ValV.limbs, ValG.limbs, ValV.nbrLimbs, &ValG.nbrLimbs);
     ValG.sign = SIGN_POSITIVE;          // g <- sqrt(v).
-    BigIntMultiply(&ValG, &ValG, &Aux[3]);
+    (void)BigIntMultiply(&ValG, &ValG, &Aux[3]);
     if (!BigIntEqual(&ValV, &Aux[3]))
     {   // v is not perfect square.
       if (teach)
@@ -1975,47 +1975,47 @@ static void DiscriminantIsZero(void)
 static void ComputeXDiscrZero(void)
 {
   // Let m = 2be - 4cd
-  BigIntMultiply(&ValB, &ValE, &U3);
-  BigIntMultiply(&ValC, &ValD, &bigTmp);
+  (void)BigIntMultiply(&ValB, &ValE, &U3);
+  (void)BigIntMultiply(&ValC, &ValD, &bigTmp);
   BigIntAdd(&bigTmp, &bigTmp, &bigTmp);
   BigIntSubt(&U3, &bigTmp, &U3);
   BigIntAdd(&U3, &U3, &U3);        // U3 <- m
                                    // Compute V1 <- (x'j - k)/2a + mx'^2
-  BigIntMultiply(&U2, &ValJ, &bigTmp);
+  (void)BigIntMultiply(&U2, &ValJ, &bigTmp);
   BigIntSubt(&bigTmp, &ValK, &bigTmp);
-  BigIntDivide(&bigTmp, &ValA, &V1);
+  (void)BigIntDivide(&bigTmp, &ValA, &V1);
   BigIntDivideBy2(&V1);
-  BigIntMultiply(&U3, &U2, &bigTmp);
-  BigIntMultiply(&bigTmp, &U2, &bigTmp);
+  (void)BigIntMultiply(&U3, &U2, &bigTmp);
+  (void)BigIntMultiply(&bigTmp, &U2, &bigTmp);
   BigIntAdd(&V1, &bigTmp, &V1);
   // Compute V2 <- (j/2a + 2mx')z
-  BigIntDivide(&ValJ, &ValA, &V2);
+  (void)BigIntDivide(&ValJ, &ValA, &V2);
   BigIntDivideBy2(&V2);
-  BigIntMultiply(&U3, &U2, &bigTmp);
+  (void)BigIntMultiply(&U3, &U2, &bigTmp);
   BigIntAdd(&bigTmp, &bigTmp, &bigTmp);
   BigIntAdd(&V2, &bigTmp, &V2);
-  BigIntMultiply(&V2, &ValZ, &V2);
+  (void)BigIntMultiply(&V2, &ValZ, &V2);
   // Compute V3 <- m*z^2
-  BigIntMultiply(&U3, &ValZ, &V3);
-  BigIntMultiply(&V3, &ValZ, &V3);
+  (void)BigIntMultiply(&U3, &ValZ, &V3);
+  (void)BigIntMultiply(&V3, &ValZ, &V3);
 }
 
 // Compute coefficients of y: V1 + V2 * w + V3 * w^2
 static void ComputeYDiscrZero(void)
 {
   // Compute V1 <- r + sx' + ux'^2
-  BigIntMultiply(&ValU, &U2, &V1);
+  (void)BigIntMultiply(&ValU, &U2, &V1);
   BigIntAdd(&V1, &ValS, &V1);
-  BigIntMultiply(&V1, &U2, &V1);
+  (void)BigIntMultiply(&V1, &U2, &V1);
   BigIntAdd(&V1, &ValR, &V1);
   // Compute V2 <- (s + 2ux')z
-  BigIntMultiply(&ValU, &U2, &V2);
+  (void)BigIntMultiply(&ValU, &U2, &V2);
   BigIntAdd(&V2, &V2, &V2);
   BigIntAdd(&V2, &ValS, &V2);
-  BigIntMultiply(&V2, &ValZ, &V2);
+  (void)BigIntMultiply(&V2, &ValZ, &V2);
   // Compute V3 <- uz^2
-  BigIntMultiply(&ValU, &ValZ, &V3);
-  BigIntMultiply(&V3, &ValZ, &V3);
+  (void)BigIntMultiply(&ValU, &ValZ, &V3);
+  (void)BigIntMultiply(&V3, &ValZ, &V3);
 }
 
 static void callbackQuadModParabolic(const BigInteger *value)
@@ -2047,9 +2047,9 @@ static void callbackQuadModParabolic(const BigInteger *value)
     showText(" (");
     showText(lang? "donde <var>k</var> puede ser cualquier entero).</p>": "where <var>k</var> is any integer).</p>");
   }
-  BigIntMultiply(value, value, &bigTmp);
+  (void)BigIntMultiply(value, value, &bigTmp);
   BigIntSubt(&bigTmp, &ValV, &bigTmp);
-  BigIntDivide(&bigTmp, &ValU, &ValR);
+  (void)BigIntDivide(&bigTmp, &ValU, &ValR);
    // Compute ValS <- 2*T
   BigIntAdd(value, value, &ValS);
   if (teach)
@@ -2085,11 +2085,11 @@ static void callbackQuadModParabolic(const BigInteger *value)
       intToBigInteger(&ValJ, 0);
       ShowLinInd(&ValK, &ValJ, ptrVarNameX);
       showText(" = ");
-      BigIntMultiply(&ValB, &ValU, &ValJ);
+      (void)BigIntMultiply(&ValB, &ValU, &ValJ);
       BigIntChSign(&ValJ);               // Quadratic coeff = -bU.
-      BigIntMultiply(&ValB, &ValS, &bigTmp);
+      (void)BigIntMultiply(&ValB, &ValS, &bigTmp);
       BigIntSubt(&ValU, &bigTmp, &ValI); // Linear coeff = U - bS.
-      BigIntMultiply(&ValB, &ValR, &bigTmp);
+      (void)BigIntMultiply(&ValB, &ValR, &bigTmp);
       BigIntSubt(&ValH, &bigTmp, &ValH); // Independent coeff = H - bR.
       PrintQuad(&ValJ, &ValI, &ValH, "<var>k</var>", NULL);
       showText("</p>");
@@ -2097,7 +2097,7 @@ static void callbackQuadModParabolic(const BigInteger *value)
     // if independent coefficient is not multiple of GCD(I, K) then show that
     // there are no solutions. Note that J is always multiple of K.
     BigIntGcd(&ValI, &ValK, &ValJ);
-    BigIntRemainder(&ValH, &ValJ, &bigTmp);
+    (void)BigIntRemainder(&ValH, &ValJ, &bigTmp);
     if (!BigIntIsZero(&bigTmp))
     {
       showText(lang ? "<p>El coeficiente independiente ": "<p>The independent coefficient ");
@@ -2110,33 +2110,33 @@ static void callbackQuadModParabolic(const BigInteger *value)
   }
    // Find k from the congruence jk = K (mod z) where j = u-bs, K = d+br-T, z = 2a
    // Compute j <- u-bs
-  BigIntMultiply(&ValB, &ValS, &bigTmp);
+  (void)BigIntMultiply(&ValB, &ValS, &bigTmp);
   BigIntSubt(&ValU, &bigTmp, &ValJ);
    // Compute K <- d+br-T
-  BigIntMultiply(&ValB, &ValR, &bigTmp);
+  (void)BigIntMultiply(&ValB, &ValR, &bigTmp);
   BigIntAdd(&ValD, &bigTmp, &bigTmp);
   BigIntSubt(&bigTmp, value, &ValK);
    // Compute z <- 2a
   BigIntAdd(&ValA, &ValA, &ValZ);
   // If K is not multiple of gcd(j, z) there is no solution.
   BigIntGcd(&ValJ, &ValZ, &bigTmp);
-  BigIntRemainder(&ValK, &bigTmp, &U1);
+  (void)BigIntRemainder(&ValK, &bigTmp, &U1);
   if (!BigIntIsZero(&U1))
   {
     return;
   }
   // Compute g = gcd(j, K, z), then recalculate j <- j/g, K <- K/g, z <- z/g
   BigIntGcd(&bigTmp, &ValK, &U1);
-  BigIntDivide(&ValJ, &U1, &U2);    // U2 <- j
-  BigIntDivide(&ValK, &U1, &U3);    // U3 <- K
-  BigIntDivide(&ValZ, &U1, &ValZ);
+  (void)BigIntDivide(&ValJ, &U1, &U2);    // U2 <- j
+  (void)BigIntDivide(&ValK, &U1, &U3);    // U3 <- K
+  (void)BigIntDivide(&ValZ, &U1, &ValZ);
   ValZ.sign = SIGN_POSITIVE;        // Use positive sign for modulus.
-  BigIntRemainder(&U2, &ValZ, &U2);    
+  (void)BigIntRemainder(&U2, &ValZ, &U2);
   if (U2.sign == SIGN_NEGATIVE)
   {
     BigIntAdd(&U2, &ValZ, &U2);
   }
-  BigIntRemainder(&U3, &ValZ, &U3);
+  (void)BigIntRemainder(&U3, &ValZ, &U3);
   if (U3.sign == SIGN_NEGATIVE)
   {
     BigIntAdd(&U3, &ValZ, &U3);
@@ -2207,10 +2207,10 @@ static void ShowPoint(const BigInteger *X, const BigInteger *Y)
     shownbr(&Tmp2);
     showText("</p>");
   }
-  BigIntRemainder(&Tmp1, &ValDiv, &bigTmp);
+  (void)BigIntRemainder(&Tmp1, &ValDiv, &bigTmp);
   if (BigIntIsZero(&bigTmp))
   {
-    BigIntRemainder(&Tmp2, &ValDiv, &bigTmp);
+    (void)BigIntRemainder(&Tmp2, &ValDiv, &bigTmp);
     if (BigIntIsZero(&bigTmp))
     {
       if (teach)
@@ -2220,8 +2220,8 @@ static void ShowPoint(const BigInteger *X, const BigInteger *Y)
         shownbr(&ValDiv);
         showText(":</p>");
       }
-      BigIntDivide(&Tmp1, &ValDiv, &Tmp1);
-      BigIntDivide(&Tmp2, &ValDiv, &Tmp2);
+      (void)BigIntDivide(&Tmp1, &ValDiv, &Tmp1);
+      (void)BigIntDivide(&Tmp2, &ValDiv, &Tmp2);
       if (callbackQuadModType == CBACK_QMOD_HYPERBOLIC)
       {
         if (teach)
@@ -2276,13 +2276,13 @@ static void NonSquareDiscriminant(void)
   BigIntGcd(&ValA, &ValB, &bigTmp);
   BigIntGcd(&ValC, &bigTmp, &ValGcdHomog);
     // Divide A, B, C and K by this GCD.
-  BigIntDivide(&ValA, &ValGcdHomog, &ValA);
-  BigIntDivide(&ValB, &ValGcdHomog, &ValB);
-  BigIntDivide(&ValC, &ValGcdHomog, &ValC);
-  BigIntDivide(&ValK, &ValGcdHomog, &ValK);
+  (void)BigIntDivide(&ValA, &ValGcdHomog, &ValA);
+  (void)BigIntDivide(&ValB, &ValGcdHomog, &ValB);
+  (void)BigIntDivide(&ValC, &ValGcdHomog, &ValC);
+  (void)BigIntDivide(&ValK, &ValGcdHomog, &ValK);
   // Divide discriminant by the square of GCD.
-  BigIntDivide(&discr, &ValGcdHomog, &discr);
-  BigIntDivide(&discr, &ValGcdHomog, &discr);
+  (void)BigIntDivide(&discr, &ValGcdHomog, &discr);
+  (void)BigIntDivide(&discr, &ValGcdHomog, &discr);
   if (BigIntIsZero(&ValK))
   {          // If k=0, the only solution is (X, Y) = (0, 0)
     ShowPoint(&ValK, &ValK);
@@ -2347,9 +2347,9 @@ static void NonSquareDiscriminant(void)
     do
     {                         // Compute U1 = cm^2 + bm + a and exit loop if this
                               // value is not coprime to K.
-      BigIntMultiply(&ValC, &ValM, &U2);
+      (void)BigIntMultiply(&ValC, &ValM, &U2);
       BigIntAdd(&U2, &ValB, &U1);
-      BigIntMultiply(&U1, &ValM, &U1);
+      (void)BigIntMultiply(&U1, &ValM, &U1);
       BigIntAdd(&U1, &ValA, &U1);
       BigIntGcd(&U1, &ValK, &bigTmp);
       if ((bigTmp.nbrLimbs == 1) && (bigTmp.limbs[0].x == 1))
@@ -2361,9 +2361,9 @@ static void NonSquareDiscriminant(void)
       addbigint(&ValM, 1);    // Increment M.
                               // Compute U1 = am^2 + bm + c and loop while this
                               // value is not coprime to K.
-      BigIntMultiply(&ValA, &ValM, &U2);
+      (void)BigIntMultiply(&ValA, &ValM, &U2);
       BigIntAdd(&U2, &ValB, &U1);
-      BigIntMultiply(&U1, &ValM, &U1);
+      (void)BigIntMultiply(&U1, &ValM, &U1);
       BigIntAdd(&U1, &ValC, &U1);
       BigIntGcd(&U1, &ValK, &bigTmp);
     } while ((bigTmp.nbrLimbs != 1) || (bigTmp.limbs[0].x != 1));
@@ -2522,8 +2522,8 @@ static void NonSquareDiscriminant(void)
         showText(lang ? " obtenemos " : " we obtain ");
         PrintQuad(&ValA, &ValB, &ValC, varX, varY);
         showText(" = ");
-        BigIntMultiply(&ValK, &ValE, &ValH);
-        BigIntMultiply(&ValH, &ValE, &ValH);
+        (void)BigIntMultiply(&ValK, &ValE, &ValH);
+        (void)BigIntMultiply(&ValH, &ValE, &ValH);
         shownbr(&ValH);
         showText(" / ");
         shownbr(&ValE);
@@ -2560,10 +2560,10 @@ static void NonSquareDiscriminant(void)
         {
           NumberLength = *pstFactor->ptrFactor;
           IntArray2BigInteger(pstFactor->ptrFactor, &bigTmp);
-          BigIntMultiply(&bigTmp, &bigTmp, &U3);
+          (void)BigIntMultiply(&bigTmp, &bigTmp, &U3);
           pstFactor->multiplicity -= 2;
-          BigIntDivide(&ValK, &U3, &ValK);       // Divide by square of prime.
-          BigIntMultiply(&ValE, &bigTmp, &ValE); // Multiply multiplier by prime.counters[index]++;
+          (void)BigIntDivide(&ValK, &U3, &ValK);       // Divide by square of prime.
+          (void)BigIntMultiply(&ValE, &bigTmp, &ValE); // Multiply multiplier by prime.counters[index]++
           counters[index] += 2;
           break;
         }
@@ -2580,10 +2580,10 @@ static void NonSquareDiscriminant(void)
           pstFactor = &astFactorsMod[indexEvenMultiplicity[index]];
           NumberLength = *pstFactor->ptrFactor;
           IntArray2BigInteger(pstFactor->ptrFactor, &bigTmp);
-          BigIntMultiply(&bigTmp, &bigTmp, &U3);
+          (void)BigIntMultiply(&bigTmp, &bigTmp, &U3);
           pstFactor->multiplicity += 2;
-          BigIntMultiply(&ValK, &U3, &ValK);     // Multiply by square of prime.
-          BigIntDivide(&ValE, &bigTmp, &ValE);   // Divide multiplier by prime.counters[index]++;
+          (void)BigIntMultiply(&ValK, &U3, &ValK);     // Multiply by square of prime.
+          (void)BigIntDivide(&ValE, &bigTmp, &ValE);   // Divide multiplier by prime.counters[index]++
           counters[index] -= 2;
           break;
         }
@@ -2632,7 +2632,7 @@ static void UnimodularSubstitution(void)
     showBeforeUnimodularSubstitution();
     ValM.sign = SIGN_POSITIVE;
     BigIntAdd(&ValZ, &ValO, &Tmp[0]);     // x
-    BigIntMultiply(&Tmp[0], &ValM, &Tmp[1]);
+    (void)BigIntMultiply(&Tmp[0], &ValM, &Tmp[1]);
     BigIntSubt(&Tmp[1], &ValZ, &Tmp[1]);  // y
     ValM.sign = SIGN_NEGATIVE;
   }
@@ -2645,7 +2645,7 @@ static void UnimodularSubstitution(void)
   {     // Perform the substitution: x = mX + (m-1)Y, y = X + Y
     showBeforeUnimodularSubstitution();
     BigIntAdd(&ValZ, &ValO, &Tmp[1]);     // y
-    BigIntMultiply(&Tmp[1], &ValM, &Tmp[0]);
+    (void)BigIntMultiply(&Tmp[1], &ValM, &Tmp[0]);
     BigIntSubt(&Tmp[0], &ValO, &Tmp[0]);  // x
   }
 }
@@ -2660,14 +2660,14 @@ static void NonSquareDiscrSolution(BigInteger *value)
 {
   CopyBigInt(&Tmp[12], value);            // Back up value.
   // Get value of tu - Kv
-  BigIntMultiply(value, &ValH, &ValZ);    // tu
+  (void)BigIntMultiply(value, &ValH, &ValZ);    // tu
   CopyBigInt(&bigTmp, &ValK);
   if (callbackQuadModType == CBACK_QMOD_HYPERBOLIC)
   {
     BigIntChSign(&bigTmp);                // Get K
     bigTmp.sign = SIGN_NEGATIVE;
   }
-  BigIntMultiply(&bigTmp, &ValI, &bigTmp);// Kv
+  (void)BigIntMultiply(&bigTmp, &ValI, &bigTmp);// Kv
   BigIntSubt(&ValZ, &bigTmp, &ValZ);      // U = tu - Kv
   if (teach && ((ValE.nbrLimbs > 1) || (ValE.limbs[0].x > 1)))
   {     // E > 1
@@ -2682,8 +2682,8 @@ static void NonSquareDiscrSolution(BigInteger *value)
     showText(" = ");
     shownbr(&ValH);
   }
-  BigIntMultiply(&ValZ, &ValE, &ValZ);    // X = (tu - Kv)*E
-  BigIntMultiply(&ValH, &ValE, &ValO);    // Y = u*E
+  (void)BigIntMultiply(&ValZ, &ValE, &ValZ);    // X = (tu - Kv)*E
+  (void)BigIntMultiply(&ValH, &ValE, &ValO);    // Y = u*E
   Xbak = &Xplus;
   Ybak = &Yplus;
   UnimodularSubstitution();               // Undo unimodular substitution
@@ -2704,17 +2704,17 @@ static void getNextConvergent(void)
   floordiv(&ValU, &ValV, &bigTmp);
   // Values of U3 and V3 are not used, so they can be overwritten now.
   // Compute new value of ValU and ValV.
-  BigIntMultiply(&bigTmp, &ValV, &U3);
+  (void)BigIntMultiply(&bigTmp, &ValV, &U3);
   BigIntSubt(&ValU, &U3, &U3);
   CopyBigInt(&ValU, &ValV);
   CopyBigInt(&ValV, &U3);
   // Compute new convergents: h_n = a_n*h_{n-1} + h_{n-2}, k_n = k_n*k_{n-1} + k_{n-2}
-  BigIntMultiply(&bigTmp, &U1, &V3);
+  (void)BigIntMultiply(&bigTmp, &U1, &V3);
   BigIntAdd(&V3, &U2, &V3);
   CopyBigInt(&U3, &U2);
   CopyBigInt(&U2, &U1);
   CopyBigInt(&U1, &V3);
-  BigIntMultiply(&bigTmp, &V1, &bigTmp);
+  (void)BigIntMultiply(&bigTmp, &V1, &bigTmp);
   BigIntAdd(&bigTmp, &V2, &bigTmp);
   CopyBigInt(&V3, &V2);
   CopyBigInt(&V2, &V1);
@@ -2776,17 +2776,17 @@ static void showOtherSolution(const char *ordinal)
 static int PerformTransformation(const BigInteger *value)
 {
   // Compute P <- (at^2+bt+c)/K
-  BigIntMultiply(&ValA, value, &ValQ);
+  (void)BigIntMultiply(&ValA, value, &ValQ);
   BigIntAdd(&ValQ, &ValB, &ValP);
-  BigIntMultiply(&ValP, value, &ValP);
+  (void)BigIntMultiply(&ValP, value, &ValP);
   BigIntAdd(&ValP, &ValC, &ValP);
-  BigIntDivide(&ValP, &ValK, &ValP);
+  (void)BigIntDivide(&ValP, &ValK, &ValP);
   // Compute Q <- -(2at + b).
   BigIntAdd(&ValQ, &ValQ, &ValQ);
   BigIntAdd(&ValQ, &ValB, &ValQ);
   BigIntChSign(&ValQ);
   // Compute R <- aK
-  BigIntMultiply(&ValA, &ValK, &ValR);
+  (void)BigIntMultiply(&ValA, &ValK, &ValR);
   if (teach)
   {
     showText(lang ? "<p>La transformación " : "<p>The transformation ");
@@ -3018,7 +3018,7 @@ static void callbackQuadModElliptic(BigInteger *value)
       shownbr(&bigTmp);
       // Values of U3 and V3 are not used, so they can be overwritten now.
       // Compute new value of ValU and ValV.
-      BigIntMultiply(&bigTmp, &ValV, &U3);
+      (void)BigIntMultiply(&bigTmp, &ValV, &U3);
       BigIntSubt(&ValU, &U3, &U3);
       CopyBigInt(&ValU, &ValV);
       CopyBigInt(&ValV, &U3);
@@ -3041,7 +3041,7 @@ static void callbackQuadModElliptic(BigInteger *value)
   }
   // Compute bound L = sqrt(4P/(-D))
   multint(&U1, &ValP, 4);
-  BigIntDivide(&U1, &discr, &U1);
+  (void)BigIntDivide(&U1, &discr, &U1);
   BigIntChSign(&U1);               // 4P/(-D)
   squareRoot(U1.limbs, ValL.limbs, U1.nbrLimbs, &ValL.nbrLimbs);  // sqrt(4P/(-D))
 
@@ -3069,12 +3069,12 @@ static void callbackQuadModElliptic(BigInteger *value)
       break;                            // Bound exceeded, so go out.
     }
     // Test whether P*U1^2 + Q*U1*V1 + R*V1^2 = 1.
-    BigIntMultiply(&ValP, &U1, &ValO);      // P*U1
-    BigIntMultiply(&ValQ, &V1, &bigTmp);    // Q*V1
-    BigIntAdd(&ValO, &bigTmp, &ValO);       // P*U1 + Q*V1
-    BigIntMultiply(&ValO, &U1, &ValO);      // P*U1^2 + Q*U1*V1
-    BigIntMultiply(&ValR, &V1, &bigTmp);    // R*V1
-    BigIntMultiply(&bigTmp, &V1, &bigTmp);  // R*V1^2
+    (void)BigIntMultiply(&ValP, &U1, &ValO);      // P*U1
+    (void)BigIntMultiply(&ValQ, &V1, &bigTmp);    // Q*V1
+    BigIntAdd(&ValO, &bigTmp, &ValO);             // P*U1 + Q*V1
+    (void)BigIntMultiply(&ValO, &U1, &ValO);      // P*U1^2 + Q*U1*V1
+    (void)BigIntMultiply(&ValR, &V1, &bigTmp);    // R*V1
+    (void)BigIntMultiply(&bigTmp, &V1, &bigTmp);  // R*V1^2
     BigIntAdd(&ValO, &bigTmp, &ValO);       // P*U1^2 + Q*U1*V1 + R*V1^2
     if ((ValO.sign == SIGN_POSITIVE) && (ValO.nbrLimbs == 1) && (ValO.limbs[0].x == 1))
     {                                       // a*U1^2 + b*U1*V1 + c*V1^2 = 1.
@@ -3113,7 +3113,7 @@ static void callbackQuadModElliptic(BigInteger *value)
 static void CheckSolutionSquareDiscr(void)
 {
   int solutions = 0;
-  BigIntDivide(&ValZ, &currentFactor, &ValN);
+  (void)BigIntDivide(&ValZ, &currentFactor, &ValN);
   if (teach)
   {
     intToBigInteger(&ValJ, 0);
@@ -3129,23 +3129,23 @@ static void CheckSolutionSquareDiscr(void)
   }
   // (IL - HM)X = NI - cM
   // (IL - HM)Y = cL - NH
-  BigIntMultiply(&ValI, &ValL, &ValO);
-  BigIntMultiply(&ValH, &ValM, &bigTmp);
+  (void)BigIntMultiply(&ValI, &ValL, &ValO);
+  (void)BigIntMultiply(&ValH, &ValM, &bigTmp);
   BigIntSubt(&ValO, &bigTmp, &ValO);           // ValO = Denominator.
-  BigIntMultiply(&ValN, &ValI, &ValP);
-  BigIntMultiply(&currentFactor, &ValM, &bigTmp);
+  (void)BigIntMultiply(&ValN, &ValI, &ValP);
+  (void)BigIntMultiply(&currentFactor, &ValM, &bigTmp);
   BigIntSubt(&ValP, &bigTmp, &ValP);           // ValP = Numerator of X.
-  BigIntRemainder(&ValP, &ValO, &U2);
+  (void)BigIntRemainder(&ValP, &ValO, &U2);
   if (BigIntIsZero(&U2))
   {
-    BigIntDivide(&ValP, &ValO, &U1);           // X found.
-    BigIntMultiply(&currentFactor, &ValL, &ValP); 
-    BigIntMultiply(&ValN, &ValH, &bigTmp);     
+    (void)BigIntDivide(&ValP, &ValO, &U1);     // X found.
+    (void)BigIntMultiply(&currentFactor, &ValL, &ValP);
+    (void)BigIntMultiply(&ValN, &ValH, &bigTmp);
     BigIntSubt(&ValP, &bigTmp, &ValP);         // ValP = Numerator of Y.
-    BigIntRemainder(&ValP, &ValO, &U3);
+    (void)BigIntRemainder(&ValP, &ValO, &U3);
     if (BigIntIsZero(&U3))
     {
-      BigIntDivide(&ValP, &ValO, &U2);         // Y found.
+      (void)BigIntDivide(&ValP, &ValO, &U2);   // Y found.
       ShowPoint(&U1, &U2);                     // Show results.
       solutions = 1;
     }
@@ -3189,7 +3189,7 @@ static void PerfectSquareDiscriminant(void)
     BigIntSubt(&ValB, &ValG, &ValI);
     BigIntGcd(&ValH, &ValI, &ValS);
     // Let L = 4ak
-    BigIntMultiply(&ValA, &ValK, &ValL);
+    (void)BigIntMultiply(&ValA, &ValK, &ValL);
     multint(&ValL, &ValL, 4);
     if (teach)
     {
@@ -3207,14 +3207,14 @@ static void PerfectSquareDiscriminant(void)
     showText(") = ");
     shownbr(&ValL);
     showText("</p><p>");
-    BigIntMultiply(&ValR, &ValS, &V3);
+    (void)BigIntMultiply(&ValR, &ValS, &V3);
     if ((V3.nbrLimbs > 1) || (V3.limbs[0].x > 1))
     {
-      BigIntDivide(&V1, &ValR, &V1);
-      BigIntDivide(&V2, &ValR, &V2);
-      BigIntDivide(&ValH, &ValS, &ValH);
-      BigIntDivide(&ValI, &ValS, &ValI);
-      BigIntRemainder(&ValL, &V3, &bigTmp);
+      (void)BigIntDivide(&V1, &ValR, &V1);
+      (void)BigIntDivide(&V2, &ValR, &V2);
+      (void)BigIntDivide(&ValH, &ValS, &ValH);
+      (void)BigIntDivide(&ValI, &ValS, &ValI);
+      (void)BigIntRemainder(&ValL, &V3, &bigTmp);
       if (!BigIntIsZero(&bigTmp))
       {
         shownbr(&V3);
@@ -3227,7 +3227,7 @@ static void PerfectSquareDiscriminant(void)
       showText(") = ");
       if (BigIntIsZero(&bigTmp))
       {
-        BigIntDivide(&ValL, &V3, &ValL);
+        (void)BigIntDivide(&ValL, &V3, &ValL);
       }
       shownbr(&ValL);
       showText("</p><p>");
@@ -3249,23 +3249,23 @@ static void PerfectSquareDiscriminant(void)
       PrintLinear(ret, "t");
       endResultBox(ret);
       // Solve bDx + cDy + b*alpha + c*beta = 0
-      BigIntMultiply(&ValB, &discr, &Aux[0]);
-      BigIntMultiply(&ValC, &discr, &Aux[1]);
-      BigIntMultiply(&ValB, &ValAlpha, &Aux[2]);
-      BigIntMultiply(&ValC, &ValBeta, &bigTmp);
+      (void)BigIntMultiply(&ValB, &discr, &Aux[0]);
+      (void)BigIntMultiply(&ValC, &discr, &Aux[1]);
+      (void)BigIntMultiply(&ValB, &ValAlpha, &Aux[2]);
+      (void)BigIntMultiply(&ValC, &ValBeta, &bigTmp);
       BigIntAdd(&Aux[2], &bigTmp, &Aux[2]);
     }
     else
     {    // Coefficient a does not equal zero.
       // Solve 2aD x + (b+g)D y = 2a*alpha + (b+g)*beta
-      BigIntMultiply(&ValA, &discr, &Aux[0]);
+      (void)BigIntMultiply(&ValA, &discr, &Aux[0]);
       BigIntAdd(&Aux[0], &Aux[0], &Aux[0]);
       BigIntAdd(&ValB, &ValG, &Aux[1]);
-      BigIntMultiply(&Aux[1], &discr, &Aux[1]);
-      BigIntMultiply(&ValA, &ValAlpha, &Aux[2]);
+      (void)BigIntMultiply(&Aux[1], &discr, &Aux[1]);
+      (void)BigIntMultiply(&ValA, &ValAlpha, &Aux[2]);
       BigIntAdd(&Aux[2], &Aux[2], &Aux[2]);
       BigIntAdd(&ValB, &ValG, &bigTmp);
-      BigIntMultiply(&bigTmp, &ValBeta, &bigTmp);
+      (void)BigIntMultiply(&bigTmp, &ValBeta, &bigTmp);
       BigIntAdd(&Aux[2], &bigTmp, &Aux[2]);
       BigIntChSign(&Aux[2]);
       ret = LinearEq(&Aux[0], &Aux[1], &Aux[2]);
@@ -3273,14 +3273,14 @@ static void PerfectSquareDiscriminant(void)
       PrintLinear(ret, "t");
       endResultBox(ret);
       // Solve 2aD x + (b-g)D y = 2a*alpha + (b-g)*beta
-      BigIntMultiply(&ValA, &discr, &Aux[0]);
+      (void)BigIntMultiply(&ValA, &discr, &Aux[0]);
       BigIntAdd(&Aux[0], &Aux[0], &Aux[0]);
       BigIntSubt(&ValB, &ValG, &Aux[1]);
-      BigIntMultiply(&Aux[1], &discr, &Aux[1]);
-      BigIntMultiply(&ValA, &ValAlpha, &Aux[2]);
+      (void)BigIntMultiply(&Aux[1], &discr, &Aux[1]);
+      (void)BigIntMultiply(&ValA, &ValAlpha, &Aux[2]);
       BigIntAdd(&Aux[2], &Aux[2], &Aux[2]);
       BigIntSubt(&ValB, &ValG, &bigTmp);
-      BigIntMultiply(&bigTmp, &ValBeta, &bigTmp);
+      (void)BigIntMultiply(&bigTmp, &ValBeta, &bigTmp);
       BigIntAdd(&Aux[2], &bigTmp, &Aux[2]);
       BigIntChSign(&Aux[2]);
     }
@@ -3299,16 +3299,16 @@ static void PerfectSquareDiscriminant(void)
   else
   {
     // If R*S does not divide 4ak, there is no solution.
-    BigIntMultiply(&ValR, &ValS, &U1);
-    BigIntMultiply(&ValA, &ValK, &U2);
+    (void)BigIntMultiply(&ValR, &ValS, &U1);
+    (void)BigIntMultiply(&ValA, &ValK, &U2);
     multadd(&U3, 4, &U2, 0);
   }
-  BigIntRemainder(&U3, &U1, &U2);
+  (void)BigIntRemainder(&U3, &U1, &U2);
   if (!BigIntIsZero(&U2))
   {
     return;
   }
-  BigIntDivide(&U3, &U1, &ValZ);
+  (void)BigIntDivide(&U3, &U1, &ValZ);
   if (teach)
   {
     showText(lang ? "Tenemos que hallar todos los factores del término derecho.</p>" :
@@ -3336,32 +3336,32 @@ static void PerfectSquareDiscriminant(void)
   }
   if (BigIntIsZero(&ValA))
   {
-    intToBigInteger(&ValH, 0);              // H <- 0
-    intToBigInteger(&ValI, 1);              // I <- 1
-    BigIntDivide(&ValB, &ValR, &ValL);      // L <- b/R
-    BigIntDivide(&ValC, &ValR, &ValM);      // M <- c/R
+    intToBigInteger(&ValH, 0);                    // H <- 0
+    intToBigInteger(&ValI, 1);                    // I <- 1
+    (void)BigIntDivide(&ValB, &ValR, &ValL);      // L <- b/R
+    (void)BigIntDivide(&ValC, &ValR, &ValM);      // M <- c/R
   }
   else
   {
-    BigIntAdd(&ValA, &ValA, &U3);           // 2a
-    BigIntDivide(&U3, &ValR, &ValH);        // H <- 2a/R
-    BigIntDivide(&U3, &ValS, &ValL);        // L <- 2a/S
+    BigIntAdd(&ValA, &ValA, &U3);                 // 2a
+    (void)BigIntDivide(&U3, &ValR, &ValH);        // H <- 2a/R
+    (void)BigIntDivide(&U3, &ValS, &ValL);        // L <- 2a/S
     BigIntAdd(&ValB, &ValG, &ValI);
-    BigIntDivide(&ValI, &ValR, &ValI);      // I <- (b+g)/R
+    (void)BigIntDivide(&ValI, &ValR, &ValI);      // I <- (b+g)/R
     BigIntSubt(&ValB, &ValG, &ValM);
-    BigIntDivide(&ValM, &ValS, &ValM);      // M <- (b-g)/S
+    (void)BigIntDivide(&ValM, &ValS, &ValM);      // M <- (b-g)/S
   }
-  BigIntMultiply(&ValH, &ValAlpha, &ValK);  // H * alpha
-  BigIntMultiply(&ValI, &ValBeta, &bigTmp); // I * beta
+  (void)BigIntMultiply(&ValH, &ValAlpha, &ValK);  // H * alpha
+  (void)BigIntMultiply(&ValI, &ValBeta, &bigTmp); // I * beta
   BigIntAdd(&ValK, &bigTmp, &ValK);         // K <- H * alpha + I * beta
-  BigIntMultiply(&ValL, &ValAlpha, &ValO);  // L * alpha
-  BigIntMultiply(&ValM, &ValBeta, &bigTmp); // M * beta
+  (void)BigIntMultiply(&ValL, &ValAlpha, &ValO);  // L * alpha
+  (void)BigIntMultiply(&ValM, &ValBeta, &bigTmp); // M * beta
   BigIntAdd(&ValO, &bigTmp, &ValO);         // O <- L * alpha + M * beta
   // Compute denominator: D(IL - MH)
-  BigIntMultiply(&ValI, &ValL, &ValDen);    // IL
-  BigIntMultiply(&ValM, &ValH, &bigTmp);    // MH
+  (void)BigIntMultiply(&ValI, &ValL, &ValDen);    // IL
+  (void)BigIntMultiply(&ValM, &ValH, &bigTmp);    // MH
   BigIntSubt(&ValDen, &bigTmp, &ValDen);    // IL - MH
-  BigIntMultiply(&ValDen, &discr, &ValDen); // D(IL - MH)
+  (void)BigIntMultiply(&ValDen, &discr, &ValDen); // D(IL - MH)
 
   // Loop that finds all factors of Z.
   // Use Gray code to use only one big number.
@@ -3390,7 +3390,7 @@ static void PerfectSquareDiscriminant(void)
         else
         {
           IntArray2BigInteger(pstFactor->ptrFactor, &prime);
-          BigIntMultiply(&currentFactor, &prime, &currentFactor);
+          (void)BigIntMultiply(&currentFactor, &prime, &currentFactor);
           counters[index]++;
           break;
         }
@@ -3405,7 +3405,7 @@ static void PerfectSquareDiscriminant(void)
         else
         {
           IntArray2BigInteger(pstFactor->ptrFactor, &prime);
-          BigIntDivide(&currentFactor, &prime, &currentFactor);
+          (void)BigIntDivide(&currentFactor, &prime, &currentFactor);
           counters[index]--;
           break;
         }
@@ -3528,9 +3528,9 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
   char isIntegerPart;
   char Beven = ((ValB.limbs[0].x & 1) == 0);
   // If (D-U^2) is not multiple of V, exit routine.
-  BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
+  (void)BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
   BigIntSubt(&ValL, &bigTmp, &bigTmp);   // D - U^2
-  BigIntRemainder(&bigTmp, &ValV, &bigTmp);
+  (void)BigIntRemainder(&bigTmp, &ValV, &bigTmp);
   if (!BigIntIsZero(&bigTmp))
   {
     return;
@@ -3581,11 +3581,11 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
       }
       shownbr(&Tmp1);
       // Update numerator and denominator.
-      BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
+      (void)BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
       BigIntSubt(&bigTmp, &ValU, &ValU);
-      BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
+      (void)BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
       BigIntSubt(&ValL, &bigTmp, &bigTmp);
-      BigIntDivide(&bigTmp, &ValV, &Tmp1);
+      (void)BigIntDivide(&bigTmp, &ValV, &Tmp1);
       CopyBigInt(&ValV, &Tmp1);
     }
     showText("</span>// ");
@@ -3656,18 +3656,18 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
     // Update convergents.
     CopyBigInt(&U3, &U2);                  // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
     CopyBigInt(&U2, &U1);
-    BigIntMultiply(&Tmp1, &U2, &U1);
+    (void)BigIntMultiply(&Tmp1, &U2, &U1);
     BigIntAdd(&U1, &U3, &U1);
     CopyBigInt(&V3, &V2);                  // V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
     CopyBigInt(&V2, &V1);
-    BigIntMultiply(&Tmp1, &V2, &V1);
+    (void)BigIntMultiply(&Tmp1, &V2, &V1);
     BigIntAdd(&V1, &V3, &V1);
     // Update numerator and denominator.
-    BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
+    (void)BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
     BigIntSubt(&bigTmp, &ValU, &ValU);
-    BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
+    (void)BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
     BigIntSubt(&ValL, &bigTmp, &bigTmp);
-    BigIntDivide(&bigTmp, &ValV, &Tmp1);
+    (void)BigIntDivide(&bigTmp, &ValV, &Tmp1);
     CopyBigInt(&ValV, &Tmp1);
     index++;
     isIntegerPart = 0;
@@ -3733,11 +3733,11 @@ static void ShowAllRecSols(void)
   }
   // Compute x_{n-1} from x_n and y_n
   // Compute new value of K and L as: Knew <- L*Q - K*S and Lnew <- K*R - L*P
-  BigIntMultiply(&ValL, &ValQ, &Tmp1);
-  BigIntMultiply(&ValK, &ValS, &bigTmp);
+  (void)BigIntMultiply(&ValL, &ValQ, &Tmp1);
+  (void)BigIntMultiply(&ValK, &ValS, &bigTmp);
   BigIntSubt(&Tmp1, &bigTmp, &Tmp1);
-  BigIntMultiply(&ValK, &ValR, &Tmp2);
-  BigIntMultiply(&ValL, &ValP, &bigTmp);
+  (void)BigIntMultiply(&ValK, &ValR, &Tmp2);
+  (void)BigIntMultiply(&ValL, &ValP, &bigTmp);
   BigIntSubt(&Tmp2, &bigTmp, &ValL);
   CopyBigInt(&ValK, &Tmp1);
   // Compute new values of P, Q, R and S as: Pnew <- S, Qnew <- -Q, Rnew <- -R, Snew <- P
@@ -3803,8 +3803,8 @@ static void ContFracPell(void)
   }
   squareRoot(ValH.limbs, ValG.limbs, ValH.nbrLimbs, &ValG.nbrLimbs);
   ValG.sign = SIGN_POSITIVE;          // g <- sqrt(discr).
-  BigIntMultiply(&discr, &ValGcdHomog, &discr);
-  BigIntMultiply(&discr, &ValGcdHomog, &discr);  // Obtain original discriminant.
+  (void)BigIntMultiply(&discr, &ValGcdHomog, &discr);
+  (void)BigIntMultiply(&discr, &ValGcdHomog, &discr);  // Obtain original discriminant.
   intToBigInteger(&U1, 1);
   intToBigInteger(&U2, 0);
   intToBigInteger(&V1, 0);
@@ -3821,11 +3821,11 @@ static void ContFracPell(void)
         addbigint(&bigTmp, 1);
       }
       floordiv(&bigTmp, &ValV, &Tmp1);       // Tmp1 = Term of continued fraction.
-      BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
+      (void)BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
       BigIntSubt(&bigTmp, &ValU, &ValU);
-      BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
+      (void)BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
       BigIntSubt(&ValL, &bigTmp, &bigTmp);
-      BigIntDivide(&bigTmp, &ValV, &Tmp1);
+      (void)BigIntDivide(&bigTmp, &ValV, &Tmp1);
       CopyBigInt(&ValV, &Tmp1);
       if (periodLength < 0)
       {
@@ -3852,17 +3852,17 @@ static void ContFracPell(void)
     floordiv(&bigTmp, &ValV, &Tmp1);       // Tmp1 = Term of continued fraction.
     CopyBigInt(&U3, &U2);                  // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
     CopyBigInt(&U2, &U1);
-    BigIntMultiply(&Tmp1, &U2, &U1);
+    (void)BigIntMultiply(&Tmp1, &U2, &U1);
     BigIntAdd(&U1, &U3, &U1);
     CopyBigInt(&V3, &V2);                  // V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
     CopyBigInt(&V2, &V1);
-    BigIntMultiply(&Tmp1, &V2, &V1);
+    (void)BigIntMultiply(&Tmp1, &V2, &V1);
     BigIntAdd(&V1, &V3, &V1);
-    BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
+    (void)BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
     BigIntSubt(&bigTmp, &ValU, &ValU);
-    BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
+    (void)BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
     BigIntSubt(&ValH, &bigTmp, &bigTmp);
-    BigIntDivide(&bigTmp, &ValV, &Tmp1);
+    (void)BigIntDivide(&bigTmp, &ValV, &Tmp1);
     CopyBigInt(&ValV, &Tmp1);
     if (sign == SIGN_POSITIVE)
     {
@@ -3891,13 +3891,13 @@ static void ContFracPell(void)
     {
       CopyBigInt(&ValQ, &ValB);
       BigIntDivideBy2(&ValQ);
-      BigIntMultiply(&ValQ, &V1, &bigTmp);
+      (void)BigIntMultiply(&ValQ, &V1, &bigTmp);
       BigIntSubt(&U1, &bigTmp, &ValP);        // P <- r - (b/2)s
       BigIntAdd(&U1, &bigTmp, &ValS);         // S <- r + (b/2)s
     }
     else
     {
-      BigIntMultiply(&ValB, &V1, &bigTmp);
+      (void)BigIntMultiply(&ValB, &V1, &bigTmp);
       BigIntSubt(&U1, &bigTmp, &ValP);        // P <- r - bs
       BigIntAdd(&U1, &bigTmp, &ValS);         // S <- r + bs
       if (limbValue == 4)
@@ -3906,50 +3906,50 @@ static void ContFracPell(void)
         BigIntDivideBy2(&ValS);               // S <- (r + bs)/2
       }
     }
-    BigIntMultiply(&ValC, &V1, &ValQ);
+    (void)BigIntMultiply(&ValC, &V1, &ValQ);
     BigIntChSign(&ValQ);                      // Q <- -cs
-    BigIntMultiply(&ValA, &V1, &ValR);        // R <- as
+    (void)BigIntMultiply(&ValA, &V1, &ValR);        // R <- as
     if (!Beven && (limbValue == 1))
     {
       BigIntAdd(&ValQ, &ValQ, &ValQ);         // Q <- -2cs
       BigIntAdd(&ValR, &ValR, &ValR);         // R <- 2as
     }
-    BigIntMultiply(&ValAlpha, &ValP, &ValK);
-    BigIntMultiply(&ValBeta, &ValQ, &bigTmp);
+    (void)BigIntMultiply(&ValAlpha, &ValP, &ValK);
+    (void)BigIntMultiply(&ValBeta, &ValQ, &bigTmp);
     BigIntAdd(&ValK, &bigTmp, &ValK);
-    BigIntMultiply(&ValAlpha, &ValR, &ValL);
-    BigIntMultiply(&ValBeta, &ValS, &bigTmp);
+    (void)BigIntMultiply(&ValAlpha, &ValR, &ValL);
+    (void)BigIntMultiply(&ValBeta, &ValS, &bigTmp);
     BigIntAdd(&ValL, &bigTmp, &ValL);
     // Check whether alpha - K and beta - L are multiple of discriminant.
     BigIntSubt(&ValAlpha, &ValK, &bigTmp);
-    BigIntRemainder(&bigTmp, &discr, &bigTmp);
+    (void)BigIntRemainder(&bigTmp, &discr, &bigTmp);
     if (BigIntIsZero(&bigTmp))
     {
       BigIntSubt(&ValBeta, &ValL, &bigTmp);
-      BigIntRemainder(&bigTmp, &discr, &bigTmp);
+      (void)BigIntRemainder(&bigTmp, &discr, &bigTmp);
       if (BigIntIsZero(&bigTmp))
       {    // Solution found.
         BigIntSubt(&ValAlpha, &ValK, &ValK);
-        BigIntDivide(&ValK, &discr, &ValK);
+        (void)BigIntDivide(&ValK, &discr, &ValK);
         BigIntSubt(&ValBeta, &ValL, &ValL);
-        BigIntDivide(&ValL, &discr, &ValL);
+        (void)BigIntDivide(&ValL, &discr, &ValL);
         ShowAllRecSols();
         return;
       }
     }
     // Check whether alpha + K and beta + L are multiple of discriminant.
     BigIntAdd(&ValAlpha, &ValK, &bigTmp);
-    BigIntRemainder(&bigTmp, &discr, &bigTmp);
+    (void)BigIntRemainder(&bigTmp, &discr, &bigTmp);
     if (BigIntIsZero(&bigTmp))
     {
       BigIntAdd(&ValBeta, &ValL, &bigTmp);
-      BigIntRemainder(&bigTmp, &discr, &bigTmp);
+      (void)BigIntRemainder(&bigTmp, &discr, &bigTmp);
       if (BigIntIsZero(&bigTmp))
       {    // Solution found.
         BigIntAdd(&ValAlpha, &ValK, &ValK);
-        BigIntDivide(&ValK, &discr, &ValK);
+        (void)BigIntDivide(&ValK, &discr, &ValK);
         BigIntAdd(&ValBeta, &ValL, &ValL);
-        BigIntDivide(&ValL, &discr, &ValL);
+        (void)BigIntDivide(&ValL, &discr, &ValL);
         BigIntChSign(&ValP);
         BigIntChSign(&ValQ);
         BigIntChSign(&ValR);
@@ -3971,13 +3971,13 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   }
   // Compute P = floor((2*a*theta + b)/2)
   BigIntAdd(&ValA, &ValA, &ValP);
-  BigIntMultiply(&ValP, value, &ValP);
+  (void)BigIntMultiply(&ValP, value, &ValP);
   BigIntAdd(&ValP, &ValB, &ValP);
   subtractdivide(&ValP, ValP.limbs[0].x & 1, 2);
   // Compute Q = a*abs(K)
   CopyBigInt(&ValQ, &ValK);
   ValQ.sign = SIGN_POSITIVE;
-  BigIntMultiply(&ValQ, &ValA, &ValQ);
+  (void)BigIntMultiply(&ValQ, &ValA, &ValQ);
   // Find U, V, L so we can compute the continued fraction expansion of (U+sqrt(L))/V.
   CopyBigInt(&ValL, &discr);
   if (Beven)
@@ -3994,9 +3994,9 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   }
   BigIntChSign(&ValU);
   // If L-U^2 is not multiple of V, there is no solution, so go out.
-  BigIntMultiply(&ValU, &ValU, &bigTmp);
+  (void)BigIntMultiply(&ValU, &ValU, &bigTmp);
   BigIntSubt(&ValL, &bigTmp, &bigTmp);
-  BigIntRemainder(&bigTmp, &ValV, &bigTmp);
+  (void)BigIntRemainder(&bigTmp, &ValV, &bigTmp);
   if (!BigIntIsZero(&bigTmp))
   {
     if (teach)
@@ -4068,7 +4068,7 @@ void SolveQuadEquation(void)
   BigIntGcd(&Aux[0], &ValC, &Aux[1]);
   BigIntGcd(&Aux[1], &ValD, &Aux[0]);
   BigIntGcd(&Aux[0], &ValE, &Aux[1]);
-  BigIntRemainder(&ValF, &Aux[1], &Aux[0]);
+  (void)BigIntRemainder(&ValF, &Aux[1], &Aux[0]);
   if (!BigIntIsZero(&Aux[0]))
   {   // F is not multiple of GCD(A, B, C, D, E) so there are no solutions.
     if (teach)
@@ -4085,12 +4085,12 @@ void SolveQuadEquation(void)
     return;
   }
   // Divide all coefficients by GCD(A, B, C, D, E)
-  BigIntDivide(&ValA, &Aux[1], &ValA);
-  BigIntDivide(&ValB, &Aux[1], &ValB);
-  BigIntDivide(&ValC, &Aux[1], &ValC);
-  BigIntDivide(&ValD, &Aux[1], &ValD);
-  BigIntDivide(&ValE, &Aux[1], &ValE);
-  BigIntDivide(&ValF, &Aux[1], &ValF);
+  (void)BigIntDivide(&ValA, &Aux[1], &ValA);
+  (void)BigIntDivide(&ValB, &Aux[1], &ValB);
+  (void)BigIntDivide(&ValC, &Aux[1], &ValC);
+  (void)BigIntDivide(&ValD, &Aux[1], &ValD);
+  (void)BigIntDivide(&ValE, &Aux[1], &ValE);
+  (void)BigIntDivide(&ValF, &Aux[1], &ValF);
   // Test whether the equation is linear. A = B = C = 0.
   if (BigIntIsZero(&ValA) && BigIntIsZero(&ValB) && BigIntIsZero(&ValC))
   {
@@ -4101,8 +4101,8 @@ void SolveQuadEquation(void)
     return;
   }
   // Compute discriminant: b^2 - 4ac.
-  BigIntMultiply(&ValB, &ValB, &Aux[0]);
-  BigIntMultiply(&ValA, &ValC, &Aux[1]);
+  (void)BigIntMultiply(&ValB, &ValB, &Aux[0]);
+  (void)BigIntMultiply(&ValA, &ValC, &Aux[1]);
   multint(&Aux[2], &Aux[1], 4);
   BigIntSubt(&Aux[0], &Aux[2], &discr);
   if (teach)
@@ -4121,30 +4121,30 @@ void SolveQuadEquation(void)
   }
   // Discriminant is not zero. Translate the origin (x, y) by (alpha, beta).
   // Compute alpha = 2cd - be
-  BigIntMultiply(&ValC, &ValD, &ValAlpha);
+  (void)BigIntMultiply(&ValC, &ValD, &ValAlpha);
   BigIntAdd(&ValAlpha, &ValAlpha, &ValAlpha);
-  BigIntMultiply(&ValB, &ValE, &bigTmp);
+  (void)BigIntMultiply(&ValB, &ValE, &bigTmp);
   BigIntSubt(&ValAlpha, &bigTmp, &ValAlpha);
   // Compute beta = 2ae - bd
-  BigIntMultiply(&ValA, &ValE, &ValBeta);
+  (void)BigIntMultiply(&ValA, &ValE, &ValBeta);
   BigIntAdd(&ValBeta, &ValBeta, &ValBeta);
-  BigIntMultiply(&ValB, &ValD, &bigTmp);
+  (void)BigIntMultiply(&ValB, &ValD, &bigTmp);
   BigIntSubt(&ValBeta, &bigTmp, &ValBeta);
   // We get the equation ax^2 + bxy + cy^2 = k
   // where k = -D (ae^2 - bed + cd^2 + fD)
-  BigIntMultiply(&ValA, &ValE, &ValK);     // ae
-  BigIntMultiply(&ValK, &ValE, &ValK);     // ae^2
-  BigIntMultiply(&ValB, &ValE, &bigTmp);   // be
-  BigIntMultiply(&bigTmp, &ValD, &bigTmp); // bed
-  BigIntSubt(&ValK, &bigTmp, &ValK);       // ae^2 - bed
-  BigIntMultiply(&ValC, &ValD, &bigTmp);   // cd
-  BigIntMultiply(&bigTmp, &ValD, &bigTmp); // cd^2
-  BigIntAdd(&ValK, &bigTmp, &ValK);        // ae^2 - bed + cd^2
-  BigIntMultiply(&ValF, &discr, &bigTmp);  // fD
-  BigIntAdd(&ValK, &bigTmp, &ValK);        // ae^2 - bed + cd^2 + fD
-  BigIntMultiply(&ValK, &discr, &ValK);    // D (ae^2 - bed + cd^2 + fD)
-  BigIntChSign(&ValK);                     // k
-                                           // Let t=gcd(a,b,c). If k is not multiple of t, there are no solutions.
+  (void)BigIntMultiply(&ValA, &ValE, &ValK);     // ae
+  (void)BigIntMultiply(&ValK, &ValE, &ValK);     // ae^2
+  (void)BigIntMultiply(&ValB, &ValE, &bigTmp);   // be
+  (void)BigIntMultiply(&bigTmp, &ValD, &bigTmp); // bed
+  BigIntSubt(&ValK, &bigTmp, &ValK);             // ae^2 - bed
+  (void)BigIntMultiply(&ValC, &ValD, &bigTmp);   // cd
+  (void)BigIntMultiply(&bigTmp, &ValD, &bigTmp); // cd^2
+  BigIntAdd(&ValK, &bigTmp, &ValK);              // ae^2 - bed + cd^2
+  (void)BigIntMultiply(&ValF, &discr, &bigTmp);  // fD
+  BigIntAdd(&ValK, &bigTmp, &ValK);              // ae^2 - bed + cd^2 + fD
+  (void)BigIntMultiply(&ValK, &discr, &ValK);    // D (ae^2 - bed + cd^2 + fD)
+  BigIntChSign(&ValK);                           // k
+                     // Let t=gcd(a,b,c). If k is not multiple of t, there are no solutions.
   if (teach)
   {
     showText(lang ? "<p>Sea <var>D</var> el discriminante. Aplicamos la transformación de Legendre " :
@@ -4171,7 +4171,7 @@ void SolveQuadEquation(void)
   }
   BigIntGcd(&ValA, &ValB, &bigTmp);
   BigIntGcd(&bigTmp, &ValC, &U1);
-  BigIntRemainder(&ValK, &U1, &bigTmp);
+  (void)BigIntRemainder(&ValK, &U1, &bigTmp);
   if (!BigIntIsZero(&bigTmp))
   {
     if (teach)
@@ -4191,7 +4191,7 @@ void SolveQuadEquation(void)
   }
   squareRoot(discr.limbs, ValG.limbs, discr.nbrLimbs, &ValG.nbrLimbs);
   ValG.sign = SIGN_POSITIVE;
-  BigIntMultiply(&ValG, &ValG, &bigTmp);
+  (void)BigIntMultiply(&ValG, &ValG, &bigTmp);
   if (BigIntEqual(&bigTmp, &discr))
   {   // Discriminant is a perfect square.
     PerfectSquareDiscriminant();
