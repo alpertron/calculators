@@ -1318,7 +1318,7 @@ static void showECMStatus(void)
     break;
   case 2:
     copyStr(&ptrStatus, lang ? "Paso 2: " : "Step 2: ");
-    int2dec(&ptrStatus, (maxIndexM == 0)? 0 : indexM / (maxIndexM / 100));
+    int2dec(&ptrStatus, (maxIndexM == 0)? 0 : (indexM / (maxIndexM / 100)));
     *ptrStatus++ = '%';
     break;
   case 3:

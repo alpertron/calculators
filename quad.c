@@ -3609,7 +3609,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
   for (;;)
   {
     if ((ValV.nbrLimbs == 1) && (ValV.limbs[0].x == (Beven ? 1 : 2)) &&
-      ((index & 1) == (ValK.sign == ValV.sign ? 0 : 1)))
+      ((index & 1) == ((ValK.sign == ValV.sign)? 0 : 1)))
     {         // Found solution.
       if ((discr.nbrLimbs == 1) && (discr.limbs[0].x == 5) && (ValA.sign != ValK.sign) && 
         (solutionNbr == FIRST_SOLUTION))

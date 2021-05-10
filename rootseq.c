@@ -1634,7 +1634,7 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
       showText("4 ");
       showText(ptrTimes);
       showText("<var>S</var>");
-      showText(pretty == PRETTY_PRINT?"&sup2;": "^2");
+      showText((pretty == PRETTY_PRINT)?"&sup2;": "^2");
       *ptrOutput = ' ';
       ptrOutput++;
       if (!BigIntIsZero(&RatDeprQuadratic.numerator))
@@ -1693,13 +1693,13 @@ static void ExtendedGCD(int first, int second, int* pMult1st, int* pMult2nd)
   {
     int quot = first / second;
     int temp = second;
-    second = first - quot * second;
+    second = first - (quot * second);
     first = temp;
     temp = mult1st;
-    mult1st = mult1stOld - quot * mult1st;
+    mult1st = mult1stOld - (quot * mult1st);
     mult1stOld = temp;
     temp = mult2nd;
-    mult2nd = mult2ndOld - quot * mult2nd;
+    mult2nd = mult2ndOld - (quot * mult2nd);
     mult2ndOld = temp;
   }
   *pMult1st = mult1stOld;
@@ -1915,7 +1915,7 @@ static int showRadicals(int num, int den, int multiple, int power2, const char *
   }
   for (indexSigns = 0; indexSigns < power2; indexSigns++)
   {
-    if (indexSigns == power2 - 1)
+    if (indexSigns == (power2 - 1))
     {
       if ((indexSigns > 0) && (exprDen != 2))
       {
@@ -1961,7 +1961,7 @@ static int showRadicals(int num, int den, int multiple, int power2, const char *
   {
     endSqrt();
   }
-  result = (power2 > 1? 2 : exprDen);
+  result = ((power2 > 1)? 2 : exprDen);
   if (strcmp(ptrExpr, "1") && (result != 1))
   {
     showText(times);
@@ -1979,7 +1979,7 @@ static int showRadicals17(int numerator34)
   {
     angle += 68;
   }
-  if (angle % 2 == 0)
+  if ((angle % 2) == 0)
   {
     int sign;
     angle /= 2;                       // Show cos(angle*Pi/17).
@@ -2047,7 +2047,7 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
   }
   if (denomin < 0)
   {
-    copyStr(&ptrBeginning, pretty == PRETTY_PRINT ? "&minus;" : "-");
+    copyStr(&ptrBeginning, (pretty == PRETTY_PRINT)? "&minus;" : "-");
     denomin = -denomin;    // Make it positive.
   }
   else if ((toShow == SHOW_IMAG) || (isFirst == 0))
@@ -2075,20 +2075,20 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
   }
   else if (pretty != PARI_GP)
   {
-    copyStr(&ptrBeginning, pretty == TEX? "\\frac{":
+    copyStr(&ptrBeginning, (pretty == TEX)? "\\frac{":
       "<span class=\"fraction\"><span class=\"numerator\">");
     if (pretty == PARI_GP)
     {
-      *ptrBeginning = (toShow == SHOW_REAL ? '1' : 'I');
+      *ptrBeginning = ((toShow == SHOW_REAL)? '1' : 'I');
     }
     else
     {
-      *ptrBeginning = (toShow == SHOW_REAL ? '1' : 'i');
+      *ptrBeginning = ((toShow == SHOW_REAL)? '1' : 'i');
     }
     ptrBeginning++;
-    copyStr(&ptrBeginning, pretty == TEX? "}{": "</span><span class=\"denominator\">");
+    copyStr(&ptrBeginning, (pretty == TEX)? "}{": "</span><span class=\"denominator\">");
     int2dec(&ptrBeginning, denomin);
-    copyStr(&ptrBeginning, pretty == TEX? "}": "</span></span> ");
+    copyStr(&ptrBeginning, (pretty == TEX)? "}": "</span></span> ");
     copyStr(&ptrBeginning, ptrTimes);
   }
   else
@@ -2141,7 +2141,7 @@ static void showComponent(int num, int den, int multiple, int power2, int toShow
   {
     num += den2;
   }
-  if (den % 17 == 0)
+  if ((den % 17) == 0)
   {           // Denominator is multiple of 17.
     int numerator34;
     int numeratorDen;
@@ -2163,13 +2163,13 @@ static void showComponent(int num, int den, int multiple, int power2, int toShow
         // Show sin(A).
     ptrStartRadicals = ptrOutput;
     *ptrOutput = 0;
-    if (den % 2 == 1)
+    if ((den % 2) == 1)
     {
-      denominCos = showRadicals(den - numeratorDen * 2, den * 2, multiple, 1, ptrTimes);
+      denominCos = showRadicals(den - (numeratorDen * 2), den * 2, multiple, 1, ptrTimes);
     }
     else
     {
-      denominCos = showRadicals(den / 2 - numeratorDen, den, multiple, power2, ptrTimes);
+      denominCos = showRadicals((den / 2) - numeratorDen, den, multiple, power2, ptrTimes);
     }
     if (denominCos != 0)
     {    // Show sin(B).
@@ -2191,23 +2191,23 @@ static void outputRadicandsForCosSin(int num, int den, const char *realRoot)
   int multiple = 1;
   int power2 = 0;
   int quot = den;
-  if (quot % 3 == 0)
+  if ((quot % 3) == 0)
   {
     multiple *= 3;
     quot /= 3;
   }
-  if (quot % 5 == 0)
+  if ((quot % 5) == 0)
   {
     multiple *= 5;
     quot /= 5;
   }
-  if (quot % 17 == 0)
+  if ((quot % 17) == 0)
   {
     multiple *= 17;
     quot /= 17;
   }
   // At this moment quot should be a power of 2.
-  while (quot % 2 == 0)
+  while ((quot % 2) == 0)
   {
     power2++;
     quot /= 2;
