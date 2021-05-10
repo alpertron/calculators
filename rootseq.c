@@ -322,7 +322,7 @@ void endParen(void)
 
 void showPlusSignOn(bool condPlus, int type)
 {
-  if (type & TYPE_PM_SPACE_BEFORE)
+  if ((type & TYPE_PM_SPACE_BEFORE) != 0)
   {
     *ptrOutput = ' ';
     ptrOutput++;
@@ -336,7 +336,7 @@ void showPlusSignOn(bool condPlus, int type)
   {
     showText(ptrMinus);
   }
-  if (type & TYPE_PM_SPACE_AFTER)
+  if ((type & TYPE_PM_SPACE_AFTER) != 0)
   {
     *ptrOutput = ' ';
     ptrOutput++;
@@ -1722,8 +1722,9 @@ static void showRatString(const char* num, const char* den)
   }
 }
 
-static void ParseExpression(const char* ptrExpr)
+static void ParseExpression(const char* expr)
 {
+  const char* ptrExpr = expr;
   while (*ptrExpr != 0)
   {
     if (*ptrExpr == 'S')
@@ -1789,8 +1790,11 @@ static void ParseExpression(const char* ptrExpr)
 // Show cos(num*pi/den) as radicals.
 // The output is the sign and the value of the denominator, or zero
 // if the result is zero.
-static int showRadicals(int num, int den, int multiple, int power2, const char *times)
+static int showRadicals(int numerator, int denominator, int multiple,
+  int power2, const char *times)
 {
+  int num = numerator;
+  int den = denominator;
   int arraySigns[10];
   int indexSigns = 0;
   int exprDen;
@@ -2033,8 +2037,10 @@ static int showRadicals17(int numerator34)
   return -8;
 }
 
-static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst, const char *realRoot)
+static void AdjustComponent(int denominator, char* ptrStart, int toShow,
+  int isFirst, const char *realRoot)
 {
+  int denomin = denominator;
   char beginning[500];
   char* ptrBeginning = beginning;
   int lenBeginning;
@@ -2097,11 +2103,11 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
     ptrBeginning++;
     if (pretty == PARI_GP)
     {
-      *ptrBeginning = (toShow == SHOW_REAL ? '1' : 'I');
+      *ptrBeginning = ((toShow == SHOW_REAL)? '1' : 'I');
     }
     else
     {
-      *ptrBeginning = (toShow == SHOW_REAL ? '1' : 'i');
+      *ptrBeginning = ((toShow == SHOW_REAL)? '1' : 'i');
     }
     ptrBeginning++;
     *ptrBeginning = '/';
@@ -2221,11 +2227,11 @@ static void outputRadicandsForCosSin(int num, int den, const char *realRoot)
   showComponent(num, den, multiple, power2, SHOW_REAL, realRoot);
   if (power2 == 0)
   {
-    showComponent(den-num*2, den*2, multiple, 1, SHOW_IMAG, realRoot);
+    showComponent(den-(num*2), den*2, multiple, 1, SHOW_IMAG, realRoot);
   }
   else
   {
-    showComponent(den/2 - num, den, multiple, power2, SHOW_IMAG, realRoot);
+    showComponent((den/2) - num, den, multiple, power2, SHOW_IMAG, realRoot);
   }
 }
 
@@ -2304,7 +2310,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
   int currentDegree;
   // Polynomial must be palindromic of even degree
   // and the absolute value must be less than 10.
-  if (polyDegree % 2 == 1)
+  if ((polyDegree % 2) == 1)
   {      // Polynomial has odd degree so it cannot be cyclotomic.
     return false;
   }
@@ -2329,7 +2335,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
     totients[3] = 2;
     // Compute totient[index] as index*(p1-1)/p1*(p2-1)/p2*...
     // where p_n is a prime factor of index.
-    for (index = 4; index <= 2*MAX_DEGREE; index++)
+    for (index = 4; index <= (2*MAX_DEGREE); index++)
     {
       int prime = 2;
       int primeIndex = 0;
@@ -2337,13 +2343,13 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
       int totient = index;
       while ((quotient != 1) && ((prime*prime) <= index))
       {
-        if (quotient / prime * prime == quotient)
+        if (((quotient / prime) * prime) == quotient)
         {   // Prime dividing index was found.
           totient = totient * (prime - 1) / prime;
           do
           {
             quotient /= prime;
-          } while (quotient / prime * prime == quotient);
+          } while (((quotient / prime) * prime) == quotient);
         }
         primeIndex++;
         prime = smallPrimes[primeIndex];
@@ -2356,7 +2362,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
     }
   }
   // Degree of cyclotomic polynomial n is totient(n).
-  for (index = polyDegree; index <= 2 * MAX_DEGREE; index++)
+  for (index = polyDegree; index <= (2 * MAX_DEGREE); index++)
   {
     if (polyDegree != totients[index])
     {   // Degree is not correct.
@@ -2380,7 +2386,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
       int coeffMaxDegree = prod[polyDegree - 1];
       for (currentDegree = polyDegree - 1; currentDegree > 0; currentDegree--)
       {
-        prod[currentDegree] = prod[currentDegree-1] - coeffMaxDegree * base[currentDegree];
+        prod[currentDegree] = prod[currentDegree-1] - (coeffMaxDegree * base[currentDegree]);
       }
       prod[0] = -coeffMaxDegree * base[0];
     }
@@ -2390,7 +2396,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
     if (memcmp(base, prod, polyDegree * sizeof(int)) == 0)
     {     // The polynomial is cyclotomic.
       int denIsOdd = index % 2;
-      int realDen = denIsOdd ? index : index / 2;
+      int realDen = denIsOdd ? index : (index / 2);
       for (int numerator = 1; numerator < index; numerator++)
       {
         int realNum;
@@ -2399,7 +2405,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
           continue;
         }
         showX(multiplicity);
-        realNum = denIsOdd ? 2 * numerator : numerator;
+        realNum = denIsOdd ? (2 * numerator) : numerator;
         // Show cos(realNum*pi/realDen) + i sin(realNum*pi/realDen)
         showTrig(realNum, realDen, "");
         outputRadicandsForCosSin(realNum, realDen, "");
@@ -2422,14 +2428,14 @@ static bool isPalindromic(int* ptrPolynomial, int polyDegree)
     ptrs[currentDegree] = ptrCoeff;
     ptrCoeff += 1 + numLimbs(ptrCoeff);
   }
-  for (currentDegree = 0; currentDegree <= polyDegree / 2; currentDegree++)
+  for (currentDegree = 0; currentDegree <= (polyDegree / 2); currentDegree++)
   {
     if (*ptrs[currentDegree] != *ptrs[polyDegree - currentDegree])
     {
       return false;    // Polynomial is not palindromic.
     }
     if (memcmp(ptrs[currentDegree] + 1, ptrs[polyDegree - currentDegree] + 1,
-      numLimbs(ptrs[currentDegree])))
+      numLimbs(ptrs[currentDegree])) != 0)
     {
       return false;    // Polynomial is not palindromic.
     }
@@ -2496,14 +2502,14 @@ static void EndRadicand(int polyDegree)
 
 static void GenerateRoots(int multiplicity, const char* rationalRoot, int isNegative, int polyDegree)
 {
-  int realDen;
   for (int currentDegree = 0; currentDegree < polyDegree; currentDegree++)
   {
     int realNum;
+    int realDen;
     char realRoot[30000];
     char* ptrOutputBak = ptrOutput;
     ptrOutput = realRoot;
-    int numer = 2 * currentDegree + (isNegative ? 1 : 0);
+    int numer = (2 * currentDegree) + (isNegative ? 1 : 0);
     int gcdNumDen = gcd(numer, polyDegree);
     realNum = numer / gcdNumDen;
     realDen = polyDegree / gcdNumDen;

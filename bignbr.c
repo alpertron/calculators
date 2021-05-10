@@ -876,12 +876,12 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      carry = (int)(((double)(pLimb->x) * dFactor + (double)carry +
+      carry = (int)((((double)(pLimb->x) * dFactor) + (double)carry +
         (double)(HALF_INT_RANGE / 2))*dVal);
     }
     else
     {
-      carry = (int)(((double)(pLimb->x) * dFactor + (double)carry -
+      carry = (int)((((double)(pLimb->x) * dFactor) + (double)carry -
         (double)(HALF_INT_RANGE / 2))*dVal);
     }
     pResultLimb->x = low;
