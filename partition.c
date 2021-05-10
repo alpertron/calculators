@@ -268,7 +268,7 @@ static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulat
     {
       index--;
       IntArray2BigInteger(&partArray[partArray[index]], &factor);
-      BigIntMultiply(&prod, &factor, &prod);
+      (void)BigIntMultiply(&prod, &factor, &prod);
       nbrGroupsAccumulated >>= 1;
     }
     offset = partArray[index];

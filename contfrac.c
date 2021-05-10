@@ -45,11 +45,11 @@ static void ShowConvergents(int index, const BigInteger *coeff)
 {
   CopyBigInt(&U3, &U2);                   // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
   CopyBigInt(&U2, &U1);
-  BigIntMultiply(coeff, &U2, &U1);
+  (void)BigIntMultiply(coeff, &U2, &U1);
   BigIntAdd(&U1, &U3, &U1);
   CopyBigInt(&V3, &V2);                   // V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
   CopyBigInt(&V2, &V1);
-  BigIntMultiply(coeff, &V2, &V1);
+  (void)BigIntMultiply(coeff, &V2, &V1);
   BigIntAdd(&V1, &V3, &V1);
   *ptrOutput = 'A';
   ptrOutput++;

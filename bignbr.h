@@ -120,8 +120,8 @@ enum eExprErr BigIntRemainder(const BigInteger* pDividend,
   const BigInteger* pDivisor, BigInteger* pRemainder);
 enum eExprErr BigIntPower(const BigInteger *pBase, const BigInteger *pExponent, BigInteger *pPower);
 enum eExprErr BigIntPowerIntExp(const BigInteger *pBase, int exponent, BigInteger *pPower);
-void floordiv(BigInteger *num, BigInteger *den, BigInteger *result);
-void ceildiv(BigInteger *num, BigInteger *den, BigInteger *result);
+void floordiv(const BigInteger *num, const BigInteger *den, BigInteger *result);
+void ceildiv(const BigInteger *num, const BigInteger *den, BigInteger *result);
 void BigIntMultiplyBy2(BigInteger *nbr);
 void BigIntDivideBy2(BigInteger *nbr);
 void BigInteger2Dec(const BigInteger *pBigInt, char *decimal, int groupLength);
@@ -222,18 +222,18 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
 void MultiplyQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
 void DivideQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
 
-enum eExprErr BigRationalAdd(const BigRational* pAddend1,
+void BigRationalAdd(const BigRational* pAddend1,
   const BigRational* pAddend2, BigRational* pSum);
-enum eExprErr BigRationalSubt(const BigRational* pAddend1,
+void BigRationalSubt(const BigRational* pAddend1,
   const BigRational* pAddend2, BigRational* pSum);
 void BigRationalNegate(BigRational* pSrc, const BigRational* pDest);
-enum eExprErr BigRationalMultiply(const BigRational* pFactor1,
+void BigRationalMultiply(const BigRational* pFactor1,
   const BigRational* pFactor2, BigRational* pProduct);
-enum eExprErr BigRationalDivide(const BigRational* pDividend,
+void BigRationalDivide(const BigRational* pDividend,
   const BigRational* pDivisor, BigRational* pQuotient);
-enum eExprErr BigRationalMultiplyByInt(const BigRational* pFactor1,
+void BigRationalMultiplyByInt(const BigRational* pFactor1,
   int factor2, BigRational* pProduct);
-enum eExprErr BigRationalDivideByInt(const BigRational* pDividend,
+void BigRationalDivideByInt(const BigRational* pDividend,
   int divisor, BigRational* pQuotient);
 void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart);
 bool BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot);
@@ -241,7 +241,8 @@ void ForceDenominatorPositive(BigRational* rat);
 void showRational(const BigRational* rat);
 void showRationalNoParen(const BigRational* rat);
 void showRationalOverStr(const BigRational* rat, const char* str, const char *ptrTimes);
-void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int root, const char *ptrTimes);
+void ShowRationalAndSqrParts(const BigRational* RatPart, const BigRational* SqrPart,
+  int root, const char *ptrTimes);
 void showSquareRootOfRational(const BigRational* rat, int root, const char *ptrTimes);
 void copyStr(char** pptrString, const char* stringToCopy);
 #endif

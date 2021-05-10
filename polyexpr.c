@@ -736,7 +736,7 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
     UncompressBigIntegerB(ptrArgument2 + 1, &operand2);
     if (modulusIsZero)
     {
-      BigIntMultiply(&operand1, &operand2, &operand1);
+      (void)BigIntMultiply(&operand1, &operand2, &operand1);
       NumberLength = operand1.nbrLimbs;
     }
     else
@@ -830,7 +830,7 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
       ptrValueSrc += 1 + numLimbs(ptrValueSrc);
       if (modulusIsZero)
       {
-        BigIntMultiply(&operand1, &operand2, &operand3);
+        (void)BigIntMultiply(&operand1, &operand2, &operand3);
         NumberLength = operand3.nbrLimbs;
       }
       else
@@ -869,7 +869,7 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
       ptrValue1 += 1 + numLimbs(ptrValue1);
       if (modulusIsZero)
       {
-        BigIntMultiply(&operand1, &operand2, &operand3);
+        (void)BigIntMultiply(&operand1, &operand2, &operand3);
         NumberLength = operand3.nbrLimbs;
       }
       else

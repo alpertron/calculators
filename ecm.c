@@ -597,7 +597,6 @@ enum eEcmResult ecmStep1(void)
 /******************************************************/
 enum eEcmResult ecmStep2(void)
 {
-  int I;
   int j;
   StepECM = 2;
   j = 0;
@@ -652,7 +651,7 @@ enum eEcmResult ecmStep2(void)
     SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
     modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
     modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z); // (X:Z) -> 3Q
-    for (I = 5; I < SIEVE_SIZE; I += 2)
+    for (int I = 5; I < SIEVE_SIZE; I += 2)
     {
       (void)memcpy(common.ecm.WX, common.ecm.X, NumberSizeBytes);
       (void)memcpy(common.ecm.WZ, common.ecm.Z, NumberSizeBytes);
@@ -898,7 +897,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
         EC += TYP_SIQS;
         *pEC = EC;
         *pNextEC = NextEC;
-        memcpy(common.ecm.GD, TestNbr, NumberSizeBytes);
+        (void)memcpy(common.ecm.GD, TestNbr, NumberSizeBytes);
         return CHANGE_TO_SIQS;
       }
       if ((nbrDigits > 30) && (nbrDigits <= 90))  // If between 30 and 90 digits...         

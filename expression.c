@@ -1664,9 +1664,9 @@ static int ComputeSumDigits(void)
   intToBigInteger(result, 0);
   while (!BigIntIsZero(&argum))
   {
-    BigIntRemainder(&argum, radix, &Temp);
+    (void)BigIntRemainder(&argum, radix, &Temp);
     BigIntAdd(result, &Temp, result);
-    BigIntDivide(&argum, radix, &argum);
+    (void)BigIntDivide(&argum, radix, &argum);
   }
   return EXPR_OK;
 }
@@ -1682,7 +1682,7 @@ static int ComputeNumDigits(void)
   int digits = 0;
   while (!BigIntIsZero(result))
   {
-    BigIntDivide(result, radix, result);
+    (void)BigIntDivide(result, radix, result);
     digits++;
   }
   intToBigInteger(result, digits);
@@ -1703,10 +1703,10 @@ static int ComputeRevDigits(void)
   intToBigInteger(result, 0);
   while (!BigIntIsZero(&argum))
   {
-    BigIntRemainder(&argum, radix, &Temp);
-    BigIntMultiply(result, radix, result);
+    (void)BigIntRemainder(&argum, radix, &Temp);
+    (void)BigIntMultiply(result, radix, result);
     BigIntAdd(result, &Temp, result);
-    BigIntDivide(&argum, radix, &argum);
+    (void)BigIntDivide(&argum, radix, &argum);
   }
   return EXPR_OK;
 }

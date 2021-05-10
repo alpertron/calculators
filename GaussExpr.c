@@ -331,7 +331,8 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
           if ((stackIndex > startStackIndex) &&
               (stackOperators[stackIndex-1] != '('))
           {
-            if ((SubExprResult = ComputeSubExpr()) != 0)
+            SubExprResult = ComputeSubExpr();
+            if (SubExprResult != 0)
             {
               return SubExprResult;
             }
@@ -714,8 +715,8 @@ static int ComputeSubExpr(void)
       (void)BigIntMultiply(&Im1, &Re2, &ReTmp);
       (void)BigIntMultiply(&Re1, &Im2, &ImTmp);
       BigIntSubt(&ReTmp, &ImTmp, &Im);        // Im <- im1*re2 - re1*im2.
-      BigIntDivide(&Re, &norm, &stackRealValues[stackIndex]);
-      BigIntDivide(&Im, &norm, &stackImagValues[stackIndex]);
+      (void)BigIntDivide(&Re, &norm, &stackRealValues[stackIndex]);
+      (void)BigIntDivide(&Im, &norm, &stackImagValues[stackIndex]);
       return 0;
     case '%':
       retcode = Modulo(&Re1, &Im1, &Re2, &Im2, Result);
@@ -899,7 +900,7 @@ static void GetRemainder(const BigInteger *norm, BigInteger *ReDividend, BigInte
   multint(&ReTmp, &ReTmp, 2);
   signBak = ReTmp.sign;
   ReTmp.sign = SIGN_POSITIVE;
-  BigIntDivide(&ReTmp, norm, Re);
+  (void)BigIntDivide(&ReTmp, norm, Re);
   subtractdivide(Re, -1, 2);
   if (!BigIntIsZero(Re))
   {
@@ -912,7 +913,7 @@ static void GetRemainder(const BigInteger *norm, BigInteger *ReDividend, BigInte
   multint(&ImTmp, &ImTmp, 2);
   signBak = ImTmp.sign;
   ImTmp.sign = SIGN_POSITIVE;
-  BigIntDivide(&ImTmp, norm, Im);
+  (void)BigIntDivide(&ImTmp, norm, Im);
   subtractdivide(Im, -1, 2);
   if (!BigIntIsZero(Im))
   {
@@ -1021,8 +1022,10 @@ static int ComputePower(const BigInteger *Re1, const BigInteger *Re2,
   /* Compute actual power */
   Re.limbs[0].x = 1;      // Initialize Re <- 1, Im <- 0.
   Im.limbs[0].x = 0;
-  Re.nbrLimbs = Im.nbrLimbs = 1;
-  Re.sign = Im.sign = SIGN_POSITIVE;
+  Re.nbrLimbs = 1;
+  Im.nbrLimbs = 1;
+  Re.sign = SIGN_POSITIVE; 
+  Im.sign = SIGN_POSITIVE;
   for (int mask = 1 << 30; mask != 0; mask >>= 1)
   {
     if ((expon & mask) != 0)
@@ -1193,9 +1196,15 @@ static int ModInv(const BigInteger *RealNbr, const BigInteger *ImagNbr,
   ReU0.limbs[0].x = 1;
   ReU0.nbrLimbs = 1;
   ReU0.sign = SIGN_POSITIVE;
-  ReU1.limbs[0].x = ImU0.limbs[0].x = ImU1.limbs[0].x = 0;
-  ReU1.nbrLimbs = ImU0.nbrLimbs = ImU1.nbrLimbs = 1;
-  ReU1.sign = ImU0.sign = ImU1.sign = SIGN_POSITIVE;
+  ReU1.limbs[0].x = 0; 
+  ImU0.limbs[0].x = 0; 
+  ImU1.limbs[0].x = 0;
+  ReU1.nbrLimbs = 1; 
+  ImU0.nbrLimbs = 1; 
+  ImU1.nbrLimbs = 1;
+  ReU1.sign = SIGN_POSITIVE; 
+  ImU0.sign = SIGN_POSITIVE; 
+  ImU1.sign = SIGN_POSITIVE;
   while (!BigIntIsZero(&ReG1) || !BigIntIsZero(&ImG1))
   {            // G1 is not zero.
     BigInteger norm;
@@ -1269,9 +1278,12 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
     CopyBigInt(Result+1, ImNum);
     return 0;
   }
-  ReMin.limbs[0].x = ImMin.limbs[0].x = 0;
-  ReMin.nbrLimbs = ImMin.nbrLimbs = 1;
-  ReMin.sign = ImMin.sign = SIGN_POSITIVE;
+  ReMin.limbs[0].x = 0; 
+  ImMin.limbs[0].x = 0;
+  ReMin.nbrLimbs = 1; 
+  ImMin.nbrLimbs = 1;
+  ReMin.sign = SIGN_POSITIVE; 
+  ImMin.sign = SIGN_POSITIVE;
   (void)BigIntMultiply(ReDen, ReDen, &norm);
   (void)BigIntMultiply(ImDen, ImDen, &Tmp);
   BigIntAdd(&norm, &Tmp, &norm);

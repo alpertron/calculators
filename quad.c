@@ -272,11 +272,11 @@ static void ShowLinInd(const BigInteger *lin, const BigInteger *ind, const char 
   }
 }
 
-int PrintLinear(enum eLinearSolution Ret, const char *var)
+static void PrintLinear(enum eLinearSolution Ret, const char *var)
 {
   if (Ret == NO_SOLUTIONS)
   {
-    return 0;
+    return;
   }
   if ((var == varT) && !teach)
   {
@@ -285,7 +285,7 @@ int PrintLinear(enum eLinearSolution Ret, const char *var)
   if (Ret == INFINITE_SOLUTIONS)
   {
     showText("<p>x, y: any integer</p>");
-    return 1;
+    return;
   }
   if (ExchXY)
   {
@@ -303,7 +303,7 @@ int PrintLinear(enum eLinearSolution Ret, const char *var)
   showText("<br>y = ");
   ShowLinInd(&Ylin, &Yind, var);
   showText("</p>");
-  return 0;
+  return;
 }
 
 static void PrintQuad(const BigInteger *coeffT2, const BigInteger *coeffT, const BigInteger *coeffInd, 

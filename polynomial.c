@@ -1362,7 +1362,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
         if ((currentExp * 2) > newExponent)
         {
           (void)BigIntPowerIntExp(&primeMod, newExponent - currentExp, &operand5);
-          BigIntRemainder(&operand1, &operand5, &operand1);
+          (void)BigIntRemainder(&operand1, &operand5, &operand1);
         }
         // Get coefficient of f_i.
         operand2.nbrLimbs = *ptrFi;

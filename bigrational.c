@@ -31,67 +31,33 @@ static BigRational Rat2;
 // Let A = a_n/a_d, B = b_n/b_d, C = c_n/d_n
 // A = B+C means a_n = b_n*c_d + c_n*b_d, a_d = b_d * c_d
 // Then divide A_n and A_d by their GCD.
-enum eExprErr BigRationalAdd(const BigRational* pAddend1,
+void BigRationalAdd(const BigRational* pAddend1,
   const BigRational* pAddend2, BigRational* pSum)
 {
-  enum eExprErr rc;
-  rc = BigIntMultiply(&pAddend1->numerator, &pAddend2->denominator, &tmp1);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
-  rc = BigIntMultiply(&pAddend2->numerator, &pAddend1->denominator, &tmp2);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
+  (void)BigIntMultiply(&pAddend1->numerator, &pAddend2->denominator, &tmp1);
+  (void)BigIntMultiply(&pAddend2->numerator, &pAddend1->denominator, &tmp2);
   BigIntAdd(&tmp1, &tmp2, &tmp1);
-  rc = BigIntMultiply(&pAddend1->denominator, &pAddend2->denominator, &tmp2);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
+  (void)BigIntMultiply(&pAddend1->denominator, &pAddend2->denominator, &tmp2);
   // At this moment tmp1 is the numerator and tmp2 is the denominator.
   BigIntGcd(&tmp1, &tmp2, &tmp3);
-  rc = BigIntDivide(&tmp1, &tmp3, &pSum->numerator);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
-  return BigIntDivide(&tmp2, &tmp3, &pSum->denominator);
+  (void)BigIntDivide(&tmp1, &tmp3, &pSum->numerator);
+  (void)BigIntDivide(&tmp2, &tmp3, &pSum->denominator);
 }
 
 // Let A = a_n/a_d, B = b_n/b_d, C = c_n/d_n
 // A = B-C means a_n = b_n*c_d - c_n*b_d, a_d = b_d * c_d
 // Then divide A_n and A_d by their GCD.
-enum eExprErr BigRationalSubt(const BigRational* pAddend1, 
+void BigRationalSubt(const BigRational* pAddend1, 
   const BigRational* pAddend2, BigRational* pSum)
 {
-  enum eExprErr rc;
-  rc = BigIntMultiply(&pAddend1->numerator, &pAddend2->denominator, &tmp1);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
-  rc = BigIntMultiply(&pAddend2->numerator, &pAddend1->denominator, &tmp2);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
+  (void)BigIntMultiply(&pAddend1->numerator, &pAddend2->denominator, &tmp1);
+  (void)BigIntMultiply(&pAddend2->numerator, &pAddend1->denominator, &tmp2);
   BigIntSubt(&tmp1, &tmp2, &tmp1);
-  rc = BigIntMultiply(&pAddend1->denominator, &pAddend2->denominator, &tmp2);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
+  (void)BigIntMultiply(&pAddend1->denominator, &pAddend2->denominator, &tmp2);
   // At this moment tmp1 is the numerator and tmp2 is the denominator.
   BigIntGcd(&tmp1, &tmp2, &tmp3);
-  rc = BigIntDivide(&tmp1, &tmp3, &pSum->numerator);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
-  return BigIntDivide(&tmp2, &tmp3, &pSum->denominator);
+  (void)BigIntDivide(&tmp1, &tmp3, &pSum->numerator);
+  (void)BigIntDivide(&tmp2, &tmp3, &pSum->denominator);
 }
 
 void BigRationalNegate(BigRational* pSrc, const BigRational* pDest)
@@ -100,72 +66,44 @@ void BigRationalNegate(BigRational* pSrc, const BigRational* pDest)
   BigIntChSign(&pSrc->numerator);
 }
 
-enum eExprErr BigRationalDivide(const BigRational* pDividend, 
+void BigRationalDivide(const BigRational* pDividend, 
   const BigRational* pDivisor, BigRational* pQuotient)
 {
-  enum eExprErr rc;
-  rc = BigIntMultiply(&pDividend->numerator, &pDivisor->denominator, &tmp1);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
-  rc = BigIntMultiply(&pDivisor->numerator, &pDividend->denominator, &tmp2);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
+  (void)BigIntMultiply(&pDividend->numerator, &pDivisor->denominator, &tmp1);
+  (void)BigIntMultiply(&pDivisor->numerator, &pDividend->denominator, &tmp2);
   // At this moment tmp1 is the numerator and tmp2 is the denominator.
   BigIntGcd(&tmp1, &tmp2, &tmp3);
-  rc = BigIntDivide(&tmp1, &tmp3, &pQuotient->numerator);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
-  return BigIntDivide(&tmp2, &tmp3, &pQuotient->denominator);
+  (void)BigIntDivide(&tmp1, &tmp3, &pQuotient->numerator);
+  (void)BigIntDivide(&tmp2, &tmp3, &pQuotient->denominator);
 }
 
-enum eExprErr BigRationalMultiply(const BigRational* pFactor1, 
+void BigRationalMultiply(const BigRational* pFactor1, 
   const BigRational* pFactor2, BigRational* pProduct)
 {
-  enum eExprErr rc;
-  rc = BigIntMultiply(&pFactor1->numerator, &pFactor2->numerator, &tmp1);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
-  rc = BigIntMultiply(&pFactor1->denominator, &pFactor2->denominator, &tmp2);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
+  (void)BigIntMultiply(&pFactor1->numerator, &pFactor2->numerator, &tmp1);
+  (void)BigIntMultiply(&pFactor1->denominator, &pFactor2->denominator, &tmp2);
   // At this moment tmp1 is the numerator and tmp2 is the denominator.
   BigIntGcd(&tmp1, &tmp2, &tmp3);
-  rc = BigIntDivide(&tmp1, &tmp3, &pProduct->numerator);
-  if (rc != EXPR_OK)
-  {
-    return rc;
-  }
-  return BigIntDivide(&tmp2, &tmp3, &pProduct->denominator);
+  (void)BigIntDivide(&tmp1, &tmp3, &pProduct->numerator);
+  (void)BigIntDivide(&tmp2, &tmp3, &pProduct->denominator);
 }
 
-enum eExprErr BigRationalMultiplyByInt(const BigRational* pFactor1,
+void BigRationalMultiplyByInt(const BigRational* pFactor1,
   int factor2, BigRational* pProduct)
 {
   multint(&tmp1, &pFactor1->numerator, factor2);
   BigIntGcd(&tmp1, &pFactor1->denominator, &tmp3);
   (void)BigIntDivide(&tmp1, &tmp3, &pProduct->numerator);
   (void)BigIntDivide(&pFactor1->denominator, &tmp3, &pProduct->denominator);
-  return EXPR_OK;
 }
 
-enum eExprErr BigRationalDivideByInt(const BigRational* pDividend,
+void BigRationalDivideByInt(const BigRational* pDividend,
   int divisor, BigRational* pQuotient)
 {
   multint(&tmp1, &pDividend->denominator, divisor);
   BigIntGcd(&tmp1, &pDividend->numerator, &tmp3);
   (void)BigIntDivide(&tmp1, &tmp3, &pQuotient->denominator);
   (void)BigIntDivide(&pDividend->numerator, &tmp3, &pQuotient->numerator);
-  return EXPR_OK;
 }
 
 void ForceDenominatorPositive(BigRational* rat)
@@ -228,7 +166,7 @@ void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart)
   // Divide denominator of sqrt by this gcd.
   (void)BigIntDivide(&SqrPart->denominator, &tmp1, &SqrPart->denominator);
   // Multiply numerator of sqrt by the gcd.
-  BigIntMultiply(&SqrPart->numerator, &tmp1, &SqrPart->numerator);
+  (void)BigIntMultiply(&SqrPart->numerator, &tmp1, &SqrPart->numerator);
   ForceDenominatorPositive(SqrPart);
   ForceDenominatorPositive(RatPart);
   // 
@@ -236,21 +174,21 @@ void MultiplyRationalBySqrtRational(BigRational* RatPart, BigRational* SqrPart)
   // If numerator of SqrPart is a perfect square, multiply the square root by
   // the numerator of RatPart and replace the numerator of SqrPart by 1.
   squareRoot(SqrPart->numerator.limbs, tmp1.limbs, SqrPart->numerator.nbrLimbs, &tmp1.nbrLimbs);
-  BigIntMultiply(&tmp1, &tmp1, &tmp2);
+  (void)BigIntMultiply(&tmp1, &tmp1, &tmp2);
   BigIntSubt(&tmp2, &SqrPart->numerator, &tmp2);
   if (BigIntIsZero(&tmp2))
   {
-    BigIntMultiply(&RatPart->numerator, &tmp1, &RatPart->numerator);
+    (void)BigIntMultiply(&RatPart->numerator, &tmp1, &RatPart->numerator);
     intToBigInteger(&SqrPart->numerator, 1);
   }
   // If denominator of SqrPart is a perfect square, multiply the square root by
   // the denominator of RatPart and replace the denominator of SqrPart by 1.
   squareRoot(SqrPart->denominator.limbs, tmp1.limbs, SqrPart->denominator.nbrLimbs, &tmp1.nbrLimbs);
-  BigIntMultiply(&tmp1, &tmp1, &tmp2);
+  (void)BigIntMultiply(&tmp1, &tmp1, &tmp2);
   BigIntSubt(&tmp2, &SqrPart->denominator, &tmp2);
   if (BigIntIsZero(&tmp2))
   {
-    BigIntMultiply(&RatPart->denominator, &tmp1, &RatPart->denominator);
+    (void)BigIntMultiply(&RatPart->denominator, &tmp1, &RatPart->denominator);
     intToBigInteger(&SqrPart->denominator, 1);
   }
   // Divide numerator and denominator by small numbers.
@@ -281,7 +219,7 @@ bool BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
   (void)BigIntDivide(&RatArgum->denominator, &tmp1, &RatArgum->denominator);
   // Process numerator.
   squareRoot(RatArgum->numerator.limbs, tmp1.limbs, RatArgum->numerator.nbrLimbs, &tmp1.nbrLimbs);
-  BigIntMultiply(&tmp1, &tmp1, &tmp2);
+  (void)BigIntMultiply(&tmp1, &tmp1, &tmp2);
   BigIntSubt(&tmp2, &RatArgum->numerator, &tmp2);
   if (!BigIntIsZero(&tmp2))
   {          // Numerator is not a perfect square.
@@ -291,7 +229,7 @@ bool BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
   CopyBigInt(&RatSqRoot->numerator, &tmp1);
   // Process denominator.
   squareRoot(RatArgum->denominator.limbs, tmp1.limbs, RatArgum->denominator.nbrLimbs, &tmp1.nbrLimbs);
-  BigIntMultiply(&tmp1, &tmp1, &tmp2);
+  (void)BigIntMultiply(&tmp1, &tmp1, &tmp2);
   BigIntSubt(&tmp2, &RatArgum->denominator, &tmp2);
   if (!BigIntIsZero(&tmp2))
   {          // Denominator is not a perfect square.
@@ -400,7 +338,7 @@ void showRational(const BigRational* rat)
   }
 }
 
-void ShowRationalAndSqrParts(BigRational* RatPart, BigRational* SqrPart, int root,
+void ShowRationalAndSqrParts(const BigRational* RatPart, const BigRational* SqrPart, int root,
   const char *ptrTimes)
 {
   if ((SqrPart->numerator.nbrLimbs != 1) || (SqrPart->numerator.limbs[0].x != 1) ||

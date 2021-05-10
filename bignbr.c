@@ -92,27 +92,27 @@ void SubtractBigInt(const limb *pMinuend, const limb *pSubtrahend, limb *pDiff, 
 }
 
 // If address of num and result match, BigIntDivide will overwrite num, so it must be executed after processing num.
-void floordiv(BigInteger *num, BigInteger *den, BigInteger *result)
+void floordiv(const BigInteger *num, const BigInteger *den, BigInteger *result)
 {
   static BigInteger rem;
-  BigIntRemainder(num, den, &rem);
+  (void)BigIntRemainder(num, den, &rem);
   if ((((num->sign == SIGN_NEGATIVE) && (den->sign == SIGN_POSITIVE)) ||
     ((num->sign == SIGN_POSITIVE) && !BigIntIsZero(num) && (den->sign == SIGN_NEGATIVE))) && !BigIntIsZero(&rem))
   {
-    BigIntDivide(num, den, result);
+    (void)BigIntDivide(num, den, result);
     addbigint(result, -1);
   }
   else
   {
-    BigIntDivide(num, den, result);
+    (void)BigIntDivide(num, den, result);
   }
 }
 
-void ceildiv(BigInteger*num, BigInteger *den, BigInteger *result)
+void ceildiv(const BigInteger*num, const BigInteger *den, BigInteger *result)
 {
   static BigInteger rem;
-  BigIntDivide(num, den, result);
-  BigIntRemainder(num, den, &rem);
+  (void)BigIntDivide(num, den, result);
+  (void)BigIntRemainder(num, den, &rem);
   if ((((num->sign == SIGN_POSITIVE) && !BigIntIsZero(num) && (den->sign == SIGN_POSITIVE)) ||
     ((num->sign == SIGN_NEGATIVE) && (den->sign == SIGN_NEGATIVE))) && !BigIntIsZero(&rem))
   {
@@ -1323,7 +1323,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
     for (;;)
     {   // Check whether the approximate root is actually exact.
       (void)BigIntPowerIntExp(pBase, Exponent-1, &Temp3); // Temp3 <- x^(e-1)
-      BigIntMultiply(&Temp3, pBase, &Temp2);        // Temp2 <- x^e 
+      (void)BigIntMultiply(&Temp3, pBase, &Temp2);        // Temp2 <- x^e 
       BigIntSubt(pBigNbr, &Temp2, &Temp2);            // Compare to radicand.
       if (BigIntIsZero(&Temp2))
       {                     // Perfect power, so go out.
@@ -1333,7 +1333,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
       {                     // x^e > radicand -> not perfect power, so go out.
         break;
       }
-      BigIntDivide(pBigNbr, &Temp3, &Temp);         // Temp -> N/x^(e-1)
+      (void)BigIntDivide(pBigNbr, &Temp3, &Temp);         // Temp -> N/x^(e-1)
       BigIntSubt(&Temp, pBase, &Temp2);             // Temp2 -> N/x^(e-1) - x
       if (BigIntIsZero(&Temp2))
       {     // New approximation will be the same as previous. Go out.
@@ -1521,7 +1521,7 @@ int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower)
   static BigInteger tmp;
   CopyBigInt(&m, lower);               // m <- lower
   DivideBigNbrByMaxPowerOf2(&power2, m.limbs, &m.nbrLimbs);
-  BigIntRemainder(upper, lower, &a);   // a <- upper % lower
+  (void)BigIntRemainder(upper, lower, &a);   // a <- upper % lower
   t = 1;
   if (upper->sign == SIGN_NEGATIVE)
   {
@@ -1548,7 +1548,7 @@ int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower)
     {   // a = 3 and m = 3 (mod 4)
       t = -t;
     }
-    BigIntRemainder(&a, &m, &tmp);
+    (void)BigIntRemainder(&a, &m, &tmp);
     CopyBigInt(&a, &tmp);              // a <- a % m;   
   }
   if ((m.nbrLimbs == 1) && (m.limbs[0].x == 1))
@@ -1740,7 +1740,7 @@ bool BpswPrimalityTest(const BigInteger *pValue)
   // At this point, the number is 2-SPRP, so check whether the number is perfect square.
   squareRoot(pValue->limbs, tmp.limbs, pValue->nbrLimbs, &tmp.nbrLimbs);
   tmp.sign = SIGN_POSITIVE;
-  BigIntMultiply(&tmp, &tmp, &tmp);
+  (void)BigIntMultiply(&tmp, &tmp, &tmp);
   if (BigIntEqual(pValue, &tmp))
   {                  // Number is perfect square.
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)

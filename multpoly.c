@@ -612,7 +612,7 @@ static void MultIntegerPolynomial(int degree1, int degree2,
     {
       UncompressBigIntegerB(factor2 + indexes[1][degreeF2], &operand1);
       UncompressBigIntegerB(factor1 + indexes[0][currentDegree - degreeF2], &operand2);
-      BigIntMultiply(&operand1, &operand2, &operand3);
+      (void)BigIntMultiply(&operand1, &operand2, &operand3);
       BigIntAdd(&operand4, &operand3, &operand4);
       NumberLength = operand4.nbrLimbs;
     }
@@ -626,7 +626,7 @@ static void MultIntegerPolynomial(int degree1, int degree2,
     {
       UncompressBigIntegerB(factor2 + indexes[1][degreeF2], &operand1);
       UncompressBigIntegerB(factor1 + indexes[0][currentDegree - degreeF2], &operand2);
-      BigIntMultiply(&operand1, &operand2, &operand3);
+      (void)BigIntMultiply(&operand1, &operand2, &operand3);
       BigIntAdd(&operand4, &operand3, &operand4);
       NumberLength = operand4.nbrLimbs;
     }
@@ -640,7 +640,7 @@ static void MultIntegerPolynomial(int degree1, int degree2,
     {
       UncompressBigIntegerB(factor2 + indexes[1][degreeF2], &operand1);
       UncompressBigIntegerB(factor1 + indexes[0][currentDegree - degreeF2], &operand2);
-      BigIntMultiply(&operand1, &operand2, &operand3);
+      (void)BigIntMultiply(&operand1, &operand2, &operand3);
       BigIntAdd(&operand4, &operand3, &operand4);
       NumberLength = operand4.nbrLimbs;
     }

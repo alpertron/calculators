@@ -163,7 +163,7 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
     {
       return EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER;
     }
-    BigIntDivide(&operand1, &operand2, &operand3);
+    (void)BigIntDivide(&operand1, &operand2, &operand3);
     NumberLength = operand3.nbrLimbs;
     BigInteger2IntArray(ptrQuotient, &operand3);
     ptrQuotient += 1 + NumberLength;
@@ -188,7 +188,7 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
         ptrDividend += numLimbs(ptrDividend) + 1;
         ptrDivisor += numLimbs(ptrDivisor) + 1;
         UncompressBigIntegerB(ptrDivisor, &operand2);
-        BigIntMultiply(&operand2, &operand3, &operand2);
+        (void)BigIntMultiply(&operand2, &operand3, &operand2);
         UncompressBigIntegerB(ptrDividend, &operand1);
         BigIntSubt(&operand1, &operand2, &operand2);
         NumberLength = operand2.nbrLimbs;
@@ -280,7 +280,7 @@ int DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType 
       {    // Remainder is not zero.
         return EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER;
       }
-      BigIntDivide(&operand1, &operand2, &operand3);
+      (void)BigIntDivide(&operand1, &operand2, &operand3);
       CopyBigInt(&operand1, &operand3);
       NumberLength = operand1.nbrLimbs;
     }
