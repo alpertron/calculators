@@ -704,7 +704,7 @@ void SolveEquation(void)
                 } while (memcmp(Aux[10].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)));
                 // Step 7
                 (void)memcpy(Aux[11].limbs, Aux[5].limbs, NumberLength * sizeof(limb)); // d
-                for (ctr = 0; ctr < r - k - 1; ctr++)
+                for (ctr = 0; ctr < (r - k - 1); ctr++)
                 {
                   modmult(Aux[11].limbs, Aux[11].limbs, Aux[11].limbs);
                 }

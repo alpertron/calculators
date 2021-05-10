@@ -1411,7 +1411,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
                                         // polyMultTemp <- (f / f_i) * a_i
       MultPolynomial(degreeA, degree - degreeFactor, poly1, poly5);
       ptrDest = poly3;
-      for (currentDegree = 0; currentDegree <= degree - degreeFactor + degreeA; currentDegree++)
+      for (currentDegree = 0; currentDegree <= (degree - degreeFactor + degreeA); currentDegree++)
       {
         // Get coefficient of sum.
         IntArray2BigInteger(ptrDest, &operand1);

@@ -1120,16 +1120,16 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
     {             // S is real.
       bool isImaginary;
       showSquareRootOfRational(&RatS, 2, ptrTimes);
-      if (ctr == 0 || ctr == 1)
+      if ((ctr == 0) || (ctr == 1))
       {   // Change sign so we always consider q/S.
         BigIntChSign(&Rat1.numerator);
       }
       // Determine whether the radicand is positive or not.
-      if (Rat1.numerator.sign == SIGN_POSITIVE && Rat3.numerator.sign == SIGN_POSITIVE)
+      if ((Rat1.numerator.sign == SIGN_POSITIVE) && (Rat3.numerator.sign == SIGN_POSITIVE))
       {
         isImaginary = false;
       }
-      else if (Rat1.numerator.sign == SIGN_NEGATIVE && Rat3.numerator.sign == SIGN_NEGATIVE)
+      else if ((Rat1.numerator.sign == SIGN_NEGATIVE) && (Rat3.numerator.sign == SIGN_NEGATIVE))
       {
         isImaginary = true;
       }
@@ -1141,7 +1141,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
         BigRationalMultiply(&Rat3, &Rat3, &Rat4);
         BigRationalSubt(&Rat5, &Rat4, &Rat5);
         ForceDenominatorPositive(&Rat5);
-        if (Rat1.numerator.sign == SIGN_POSITIVE && Rat3.numerator.sign == SIGN_NEGATIVE)
+        if ((Rat1.numerator.sign == SIGN_POSITIVE) && (Rat3.numerator.sign == SIGN_NEGATIVE))
         {
           isImaginary = (Rat5.numerator.sign != SIGN_POSITIVE);
         }
@@ -1150,7 +1150,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
           isImaginary = (Rat5.numerator.sign == SIGN_POSITIVE);
         }
       }
-      showPlusSignOn(ctr == 0 || ctr == 2, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       if (isImaginary)
       {
         showText(ptrI);
@@ -1400,7 +1400,7 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
       showText("Q = ");
     }
     startCbrt();
-    if (Rat2.numerator.nbrLimbs == 1 && Rat2.numerator.limbs[0].x == 1)
+    if ((Rat2.numerator.nbrLimbs == 1) && (Rat2.numerator.limbs[0].x == 1))
     {
       BigRationalAdd(&RatDelta1, &Rat2, &Rat1);
       (void)BigRationalDivideByInt(&Rat1, 2, &Rat1);
@@ -1917,7 +1917,7 @@ static int showRadicals(int num, int den, int multiple, int power2, const char *
   {
     if (indexSigns == power2 - 1)
     {
-      if (indexSigns > 0 && exprDen != 2)
+      if ((indexSigns > 0) && (exprDen != 2))
       {
         char* ptrDenom = denom;
         if (exprDen == 1)
@@ -1962,7 +1962,7 @@ static int showRadicals(int num, int den, int multiple, int power2, const char *
     endSqrt();
   }
   result = (power2 > 1? 2 : exprDen);
-  if (strcmp(ptrExpr, "1") && result != 1)
+  if (strcmp(ptrExpr, "1") && (result != 1))
   {
     showText(times);
   }
@@ -2115,7 +2115,7 @@ static void AdjustComponent(int denomin, char* ptrStart, int toShow, int isFirst
   }
   copyStr(&ptrBeginning, realRoot);
   lenBeginning = (int)(ptrBeginning - &beginning[0]);
-  if ((*realRoot != 0) && lenBeginning != 0 && (*ptrStart != 0))
+  if ((*realRoot != 0) && (lenBeginning != 0) && (*ptrStart != 0))
   {
     copyStr(&ptrBeginning, ptrTimes);
   }
@@ -2311,7 +2311,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
   ptrCoeff = ptrPolynomial;
   for (index = 0; index <= polyDegree; index++)
   {
-    if (*ptrCoeff != 1 && *ptrCoeff != -1)
+    if ((*ptrCoeff != 1) && (*ptrCoeff != -1))
     {            // Too low ot too high.
       return false;
     }
@@ -2335,7 +2335,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
       int primeIndex = 0;
       int quotient = index;
       int totient = index;
-      while (quotient != 1 && prime*prime <= index)
+      while ((quotient != 1) && (prime*prime <= index))
       {
         if (quotient / prime * prime == quotient)
         {   // Prime dividing index was found.
@@ -3143,7 +3143,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
           cycle3FoundInThisFactor = 2;
         }
       }
-      if (currDegree > 3 && currDegree > degree / 2)
+      if ((currDegree > 3) && (currDegree > (degree / 2)))
       {
         if (isPrime(currDegree))
         {      // Current degree > n/2 and is prime.
@@ -3159,7 +3159,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
             cycleOddGtNOver2Found = currDegree;
           }
         }
-        else if (currDegree % 2 == 1 && currDegree < degree)
+        else if (((currDegree % 2) == 1) && (currDegree < degree))
         {      // Current degree > n/2, it is odd and less than the polynomial degree.
           if (cycleOddGtNOver2Found == 0)
           {    // If first condition holds, the polynomial is not solvable.
@@ -3185,9 +3185,9 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
           }
         }
       }
-      else if (currDegree > 3 && currDegree > degree / 3)
+      else if ((currDegree > 3) && ((currDegree > degree) / 3))
       {
-        if (isPrime(currDegree) && degree % currDegree != 0)
+        if (isPrime(currDegree) && ((degree % currDegree) != 0))
         {      // Current degree > n/3, it is prime, and it does not divide the degree.
                // Ensure that only this degree is multiple of itself.
           int nbrMultiples = 0;
@@ -3213,7 +3213,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
       }
       pstFactorInfo++;
     }
-    if (cycle2Found == 0 && cycle3Found == 0)
+    if ((cycle2Found == 0) && (cycle3Found == 0))
     {
       if (cycle2FoundInThisFactor == 1)
       {
@@ -3235,7 +3235,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
     {           // Group is very transitive.
       break;
     }
-    if (((cycle2Found != 0) || (cycle3Found != 0)) && cyclePrGtNOver2Found != 0)
+    if (((cycle2Found != 0) || (cycle3Found != 0)) && (cyclePrGtNOver2Found != 0))
     {           // Polynomial is not solvable with radicals. Exit loop.
       break;
     }
@@ -3263,7 +3263,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
     *ptrOutput = ')';
     ptrOutput++;
   }
-  else if (cyclePrGtNOver3Found != 0 && degree % 2 == 1)
+  else if ((cyclePrGtNOver3Found != 0) && ((degree % 2) == 1))
   {     // Group is very transitive.
     if (lang)
     {    // Spanish
@@ -3286,7 +3286,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
       showText(") is odd)");
     }
   }
-  else if (cyclePrGtNOver3Found != 0 && cycleOddGtNOver2Found != 0)
+  else if ((cyclePrGtNOver3Found != 0) && (cycleOddGtNOver2Found != 0))
   {     // Group is very transitive.
     if (lang)
     {    // Spanish
@@ -3316,7 +3316,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
     *ptrOutput = ')';
     ptrOutput++;
   }
-  else if (((cycle2Found != 0) || (cycle3Found != 0)) && cyclePrGtNOver2Found != 0)
+  else if (((cycle2Found != 0) || (cycle3Found != 0)) && (cyclePrGtNOver2Found != 0))
   {
     if (lang)
     {    // Spanish

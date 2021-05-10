@@ -1189,7 +1189,7 @@ void SolveQuadModEquation(void)
                 } while (memcmp(Tmp[10].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)));
                 // Step 7
                 (void)memcpy(Tmp[11].limbs, Tmp[5].limbs, NumberLength * sizeof(limb)); // d
-                for (ctr = 0; ctr < r - k - 1; ctr++)
+                for (ctr = 0; ctr < (r - k - 1); ctr++)
                 {
                   modmult(Tmp[11].limbs, Tmp[11].limbs, Tmp[11].limbs);
                 }
@@ -2240,7 +2240,7 @@ static void ShowPoint(const BigInteger *X, const BigInteger *Y)
       showRecursiveSolution = 1; // Show recursive solution if it exists.
     }
   }
-  if (teach && solution == 0)
+  if (teach && (solution == 0))
   {
     showText(lang ? "<p>Estos números no son múltiplos de" : "<p>These numbers are not multiple of");
     showText(" <var>D</var> = ");
