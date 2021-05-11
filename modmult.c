@@ -62,7 +62,8 @@ int getNbrLimbs(const limb *bigNbr)
   const limb *ptrLimb = bigNbr + NumberLength;
   while (ptrLimb > bigNbr)
   {
-    if ((--ptrLimb)->x != 0)
+    ptrLimb--;
+    if (ptrLimb->x != 0)
     {
       return (int)(ptrLimb - bigNbr + 1);
     }
@@ -190,7 +191,8 @@ void GetMontgomeryParms(int len)
   MontgomeryMultR1[j].x = 1;
   do
   {
-    MontgomeryMultR1[--j].x = 0;
+    j--;
+    MontgomeryMultR1[j].x = 0;
   } while (j > 0);
   AdjustModN(MontgomeryMultR1, TestNbr, len);
   MontgomeryMultR1[NumberLength].x = 0;
@@ -1466,8 +1468,10 @@ static void AddMult(limb *firstBig, int e, int f, limb *secondBig, int g, int h,
     int v = secondBig->x;
     carryU += u*(int64_t)e + v*(int64_t)f;
     carryV += u*(int64_t)g + v*(int64_t)h;
-    (firstBig++)->x = (int)(carryU & MAX_INT_NBR);
-    (secondBig++)->x = (int)(carryV & MAX_INT_NBR);
+    firstBig->x = (int)(carryU & MAX_INT_NBR);
+    secondBig->x = (int)(carryV & MAX_INT_NBR);
+    firstBig++;
+    secondBig++;
     carryU >>= BITS_PER_GROUP;
     carryV >>= BITS_PER_GROUP;
   }
@@ -1508,8 +1512,10 @@ static void AddMult(limb *firstBig, int e, int f, limb *secondBig, int g, int h,
     {
       carryV = (int)floor(dCarry - 0.25);
     }
-    (firstBig++)->x = lowU;
-    (secondBig++)->x = lowV;
+    firstBig->x = lowU;
+    secondBig->x = lowV;
+    firstBig++;
+    secondBig++;
   }
 #endif
 }
@@ -1743,7 +1749,8 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
       }
       //  7.   k <- k + 1
       // Adjust variables.
-      if (++steps == BITS_PER_GROUP - 1)
+      steps++;
+      if (steps == BITS_PER_GROUP - 1)
       {  // compute now U and V and reset e, f, g and h.
          // U' <- eU + fV, V' <- gU + hV
         int len = (lenU > lenV ? lenU : lenV);
@@ -1817,7 +1824,8 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
               }
             }
             //  7.   k <- k + 1
-            if (++k % (BITS_PER_GROUP - 1) == 0)
+            k++;
+            if (k % (BITS_PER_GROUP - 1) == 0)
             {
               break;
             }
@@ -1930,7 +1938,8 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
         a *= 2; b *= 2;  // R <- 2R
       }
       //  7.   k <- k + 1
-      if (++steps == BITS_PER_GROUP - 1)
+      steps++;
+      if (steps == BITS_PER_GROUP - 1)
       {  // compute now R and S and reset a, b, c and d.
          // R' <- aR + bS, S' <- cR + dS
         AddMult(R, a, b, S, c, d, nbrLen + 1);

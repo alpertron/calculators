@@ -25,7 +25,6 @@ void *memcpy(void *dest, const void *src, size_t n)
 #define RS <<
 
   typedef uint32_t u32;
-  uint32_t x;
   if (n == 0)
   {
     return dest;
@@ -73,6 +72,7 @@ void *memcpy(void *dest, const void *src, size_t n)
 
   if (n >= 32)
   {
+    uint32_t x;
     uint32_t w;
     switch ((uintptr_t)d % 4)
     {

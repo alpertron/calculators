@@ -2405,7 +2405,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
           continue;
         }
         showX(multiplicity);
-        realNum = (denIsOdd ? (2 * numerator) : numerator);
+        realNum = ((denIsOdd ? (2 * numerator) : numerator));
         // Show cos(realNum*pi/realDen) + i sin(realNum*pi/realDen)
         showTrig(realNum, realDen, "");
         outputRadicandsForCosSin(realNum, realDen, "");
@@ -2628,11 +2628,10 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
   }
   if (signDiscr == SIGN_POSITIVE)
   {           // Roots of quadratic equation are real.
-    bool isNegative;
     enum eSign Rat2SignBak;
     for (ctr = 0; ctr < 2; ctr++)
     {         // Show (Rat1 +/- Rat2*sqrt(Rat3))
-      isNegative = false;
+      bool isNegative = false;
       if (Rat1.numerator.sign == Rat2.numerator.sign)
       {
         if (Rat1.numerator.sign == SIGN_NEGATIVE)
@@ -3237,7 +3236,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
       break;
     }
     if ((cyclePrGtNOver3Found != 0) && 
-       ((degree % 2 == 1) || (cycleOddGtNOver2Found != 0) || (cyclePrGtNOver2Found != 0)))
+       (((degree % 2) == 1) || (cycleOddGtNOver2Found != 0) || (cyclePrGtNOver2Found != 0)))
     {           // Group is very transitive.
       break;
     }

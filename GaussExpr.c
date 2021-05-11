@@ -353,7 +353,8 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
           (stackOperators[stackIndex-1] == '*') ||
           (stackOperators[stackIndex-1] == '/')))
       {
-        if ((SubExprResult = ComputeSubExpr()) != 0)
+        SubExprResult = ComputeSubExpr();
+        if (SubExprResult != 0)
         {
           return SubExprResult;
         }
@@ -1097,8 +1098,10 @@ static int ComputeModPow(void)
   // Re <- 1, Im <- 0
   Re.limbs[0].x = 1;
   Im.limbs[0].x = 0;
-  Re.nbrLimbs = Im.nbrLimbs = 1;
-  Re.sign = Im.sign = SIGN_POSITIVE;
+  Re.nbrLimbs = 1;
+  Im.nbrLimbs = 1;
+  Re.sign = SIGN_POSITIVE; 
+  Im.sign = SIGN_POSITIVE;
   if (BigIntIsZero(&ReMod) && BigIntIsZero(&ImMod))
   {   /* Modulus is zero */
     (void)ComputePower(&ReBase, &ReExp, &ImBase, &ImExp);

@@ -874,7 +874,6 @@ void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
   int nbrLimbs = NumberLength + 1;
   const int* ptrPoly1;
   const int* ptrPoly2;
-  int* ptrPoly3;
   int* ptrPolyTemp;
   // Initialize polyMultTemp with the most significant half of product.
   ptrPolyTemp = polyMultTemp + (polyDegree - 1) * nbrLimbs;
@@ -900,7 +899,7 @@ void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
   // Get remainder of long division by polyMod and append next limbs of the product.
   for (index1 = polyDegree - 2; index1 >= 0; index1--)
   {
-    ptrPoly3 = &polyMultTemp[(polyDegree - 1) * nbrLimbs];
+    int* ptrPoly3 = &polyMultTemp[(polyDegree - 1) * nbrLimbs];
     // Back up leading coefficient.
     (void)memcpy(ptrPoly3 + nbrLimbs, ptrPoly3, nbrLimbs * sizeof(int));
     IntArray2BigInteger(ptrPoly3, &operand3);

@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -1013,7 +1014,6 @@ void ShowLabel(char *text, int b, int *indep)
   int temp[2];
   int carry;
   char *ptrText = &infoText[strlen(infoText)];
-  int firstTime = 1;
   copyStr(&ptrText, text);
   temp[0] = *indep;
   temp[1] = *(indep+1);
@@ -1164,6 +1164,7 @@ void ShowLabel(char *text, int b, int *indep)
       else
       {
         int i;
+        bool firstTime = true;
         for (i = 0; i<sizeof(primes)/sizeof(primes[0]); i++)
         {
           int deltaModP, indepModP;
@@ -1176,7 +1177,7 @@ void ShowLabel(char *text, int b, int *indep)
           {
             if (firstTime)
             {
-              firstTime = 0;
+              firstTime = false;
               *ptrText = ' ';
               ptrText++;
               *ptrText = '(';
@@ -1192,7 +1193,7 @@ void ShowLabel(char *text, int b, int *indep)
             ptrText = appendInt(ptrText, p);
           }
         }         /* end for */
-        if (firstTime == 0)
+        if (firstTime == false)
         {
           copyStr(&ptrText, ")");
         }

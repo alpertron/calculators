@@ -248,16 +248,19 @@ static void ShowLinInd(const BigInteger *lin, const BigInteger *ind, const char 
   {
     shownbr(ind);
   }
-  *ptrOutput++ = ' ';
+  *ptrOutput = ' ';
+  ptrOutput++;
   if (lin->sign == SIGN_NEGATIVE)
   {
     showMinus();
   }
   else if (!BigIntIsZero(lin) && !BigIntIsZero(ind))
   {
-    *ptrOutput++ = '+';
+    *ptrOutput = '+';
+    ptrOutput++;
   }
-  *ptrOutput++ = ' ';
+  *ptrOutput = ' ';
+  ptrOutput++;
   if (!BigIntIsZero(lin))
   {
     if ((lin->nbrLimbs != 1) || (lin->limbs[0].x != 1))
@@ -266,7 +269,8 @@ static void ShowLinInd(const BigInteger *lin, const BigInteger *ind, const char 
       Aux[0].sign = SIGN_POSITIVE;   // Do not show negative sign twice.
       shownbr(&Aux[0]);
     }
-    *ptrOutput++ = ' ';
+    *ptrOutput = ' ';
+    ptrOutput++;
     showText(var);
   }
 }
@@ -312,7 +316,8 @@ static void PrintQuad(const BigInteger *coeffT2, const BigInteger *coeffT, const
   {             // abs(coeffT2) = 1
     if (coeffT2->sign == SIGN_POSITIVE)
     {           // coeffT2 = 1
-      *ptrOutput++ = ' ';
+      *ptrOutput = ' ';
+      ptrOutput++;
     }
     else
     {           // coeffT2 = -1
@@ -324,7 +329,8 @@ static void PrintQuad(const BigInteger *coeffT2, const BigInteger *coeffT, const
   else if (!BigIntIsZero(coeffT2))
   {             // coeffT2 is not zero.
     shownbr(coeffT2);
-    *ptrOutput++ = ' ';
+    *ptrOutput = ' ';
+    ptrOutput++;
     showText(var1);
     showSquare();
   }
@@ -458,17 +464,22 @@ static int Show(const BigInteger *num, const char *str, enum eLinearSolution t)
   {     // num is not zero.
     if (((t & 1) != 0) && (num->sign == SIGN_POSITIVE))
     {
-      *ptrOutput++ = ' ';
-      *ptrOutput++ = '+';
+      *ptrOutput = ' ';
+      ptrOutput++;
+      *ptrOutput = '+';
+      ptrOutput++;
     }
     if (num->sign == SIGN_NEGATIVE)
     {
-      *ptrOutput++ = ' ';
-      *ptrOutput++ = '-';
+      *ptrOutput = ' ';
+      ptrOutput++;
+      *ptrOutput = '-';
+      ptrOutput++;
     }
     if ((num->nbrLimbs != 1) || (num->limbs[0].x != 1))
     {    // num is not 1 or -1.
-      *ptrOutput++ = ' ';
+      *ptrOutput = ' ';
+      ptrOutput++;
       Bin2Dec(&ptrOutput, num->limbs, num->nbrLimbs, groupLen);
       copyStr(&ptrOutput, "&nbsp;&#8290;");
     }
@@ -485,7 +496,8 @@ static int Show(const BigInteger *num, const char *str, enum eLinearSolution t)
 static void Show1(const BigInteger *num, enum eLinearSolution t)
 {
   int u = Show(num, "", t);
-  *ptrOutput++ = ' ';
+  *ptrOutput = ' ';
+  ptrOutput++;
   if (((u & 1) == 0) || ((num->nbrLimbs == 1) && (num->limbs[0].x == 1)))
   {          // Show absolute value of num.
     Bin2Dec(&ptrOutput, num->limbs, num->nbrLimbs, groupLen);
@@ -1005,7 +1017,6 @@ void SolveQuadModEquation(void)
       else
       {                        // Prime is not 2
         int deltaZeros;
-        int nbrBitsSquareRoot;
         // Number of bits of square root of discriminant to compute: expon + bits_a + 1,
         // where bits_a is the number of least significant bits of a set to zero.
         // To compute the square root, compute the inverse of sqrt, so only multiplications are used.
@@ -1076,7 +1087,7 @@ void SolveQuadModEquation(void)
         else
         {      // Discriminant is not zero.
           // Find number of digits of square root to compute.
-          nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
+          int nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
           (void)BigIntPowerIntExp(&prime, nbrBitsSquareRoot, &tmp1);
           nbrLimbs = tmp1.nbrLimbs;
           (void)BigIntRemainder(&discriminant, &tmp1, &discriminant);
@@ -1472,9 +1483,11 @@ static void paren(const BigInteger *num)
 {
   if (num->sign == SIGN_NEGATIVE)
   {
-    *ptrOutput++ = '(';
+    *ptrOutput = '(';
+    ptrOutput++;
     shownbr(num);
-    *ptrOutput++ = ')';
+    *ptrOutput = ')';
+    ptrOutput++;
     *ptrOutput = 0;
   }
   else
@@ -2303,7 +2316,8 @@ static void NonSquareDiscriminant(void)
     if (pstFactor->multiplicity > 1)
     {      // At least prime is squared.
       indexEvenMultiplicity[nbrPrimesEvenMultiplicity] = factorNbr;
-      originalMultiplicities[nbrPrimesEvenMultiplicity++] = pstFactor->multiplicity & (~1); // Convert to even.
+      originalMultiplicities[nbrPrimesEvenMultiplicity] = pstFactor->multiplicity & (~1); // Convert to even.
+      nbrPrimesEvenMultiplicity++;
     }
     pstFactor++;
   }
@@ -3021,7 +3035,7 @@ static void callbackQuadModElliptic(BigInteger *value)
       {
         break;
       }
-      if (coeffNbr++ == 0)
+      if (coeffNbr == 0)
       {
         showText("+ //");
       }
@@ -3029,6 +3043,7 @@ static void callbackQuadModElliptic(BigInteger *value)
       {
         showText(", ");
       }
+      coeffNbr++;
     }
     showText("// ");
     showEqNbr(equationNbr+2);
@@ -3568,7 +3583,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
         addbigint(&bigTmp, 1);
       }
       floordiv(&bigTmp, &ValV, &Tmp1);       // Tmp1 = Term of continued fraction.
-      if (index++ == 1)
+      if (index == 1)
       {
         showText("+ // ");
       }
@@ -3576,6 +3591,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
       {
         showText(", ");
       }
+      index++;
       shownbr(&Tmp1);
       // Update numerator and denominator.
       (void)BigIntMultiply(&Tmp1, &ValV, &bigTmp); // U <- a*V - U
@@ -3676,7 +3692,8 @@ static void ShowRecSol(char variable, const BigInteger *coefX,
                        const BigInteger *coefY, const BigInteger *coefInd)
 {
   enum eLinearSolution t;
-  *ptrOutput++ = variable;
+  *ptrOutput = variable;
+  ptrOutput++;
   showText("<sub>n+1</sub> = ");
   t = Show(coefX, "x<sub>n</sub>", SOLUTION_FOUND);
   t = Show(coefY, "y<sub>n</sub>", t);
@@ -3722,10 +3739,14 @@ static void ShowAllRecSols(void)
   else
   {
     ShowRecSol('x', &ValP, &ValQ, &ValK);
-    *ptrOutput++ = '<';
-    *ptrOutput++ = 'b';
-    *ptrOutput++ = 'r';
-    *ptrOutput++ = '>';
+    *ptrOutput = '<';
+    ptrOutput++;
+    *ptrOutput = 'b';
+    ptrOutput++;
+    *ptrOutput = 'r';
+    ptrOutput++;
+    *ptrOutput = '>';
+    ptrOutput++;
     ShowRecSol('y', &ValR, &ValS, &ValL);
   }
   // Compute x_{n-1} from x_n and y_n
@@ -3744,7 +3765,7 @@ static void ShowAllRecSols(void)
   CopyBigInt(&ValP, &ValS);
   CopyBigInt(&ValS, &bigTmp);
   showText(lang? "<p>y también:</p>": "<p>and also:</p>");
-  if (ValP.nbrLimbs > 2 || ValQ.nbrLimbs > 2)
+  if ((ValP.nbrLimbs > 2) || (ValQ.nbrLimbs > 2))
   {
     showText("<p>");
     ShowResult("P", &ValP);
@@ -3763,16 +3784,24 @@ static void ShowAllRecSols(void)
   else
   {
     ShowRecSol('x', &ValP, &ValQ, &ValK);
-    *ptrOutput++ = '<';
-    *ptrOutput++ = 'b';
-    *ptrOutput++ = 'r';
-    *ptrOutput++ = '>';
+    *ptrOutput = '<';
+    ptrOutput++;
+    *ptrOutput = 'b';
+    ptrOutput++;
+    *ptrOutput = 'r';
+    ptrOutput++;
+    *ptrOutput = '>';
+    ptrOutput++;
     ShowRecSol('y', &ValR, &ValS, &ValL);
   }
-  *ptrOutput++ = '<';
-  *ptrOutput++ = '/';
-  *ptrOutput++ = 'p';
-  *ptrOutput++ = '>';
+  *ptrOutput = '<';
+  ptrOutput++;
+  *ptrOutput = '/';
+  ptrOutput++;
+  *ptrOutput = 'p';
+  ptrOutput++;
+  *ptrOutput = '>';
+  ptrOutput++;
 }
 // Use continued fraction of sqrt(B^2-4AC)
 // If the convergent is r/s we get:
@@ -3879,7 +3908,8 @@ static void ContFracPell(void)
     {
       continue;
     }
-    if (++periodNbr*periodLength % ValGcdHomog.limbs[0].x != 0)
+    periodNbr++;
+    if (((periodNbr*periodLength) % ValGcdHomog.limbs[0].x) != 0)
     {
       continue;
     }
@@ -4257,7 +4287,8 @@ EXTERNALIZE void doWork(void)
   groupLen = 0;
   while (*ptrData != ',')
   {
-    groupLen = groupLen * 10 + (*ptrData++ - '0');
+    groupLen = (groupLen * 10) + (*ptrData - '0');
+    ptrData++;
   }
   ptrData++;                    // Skip comma.
   flags = *ptrData;

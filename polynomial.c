@@ -1206,7 +1206,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
     // Init poly2 coefficients to zero.
     for (int index = 0; index < pstFactorInfo->degree; index++)
     {
-      *ptrPoly2++ = 1;
+      *ptrPoly2 = 1;
+      ptrPoly2++;
       *ptrPoly2 = 0;
       ptrPoly2 += NumberLength;
     }
@@ -1479,7 +1480,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
         }
         // Get coefficient of a_i.
         ptrSrc = &poly1[currentDegree * nbrLimbs];
-        operand2.nbrLimbs = *ptrSrc++;
+        operand2.nbrLimbs = *ptrSrc;
+        ptrSrc++;
         (void)memcpy(operand2.limbs, ptrSrc, operand2.nbrLimbs * sizeof(int));
         (void)BigIntMultiply(&operand1, &powerMod, &operand1);  // poly1 <- m*g
         BigIntAdd(&operand1, &operand2, &operand1);       // poly1 <- a_i + m*g

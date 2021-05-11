@@ -947,7 +947,8 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
       copyStr(&ptrOutput, " = ");
       if (tofactor.sign == SIGN_NEGATIVE)
       {
-        *ptrOutput++ = '-';
+        *ptrOutput = '-';
+        ptrOutput++;
         if ((tofactor.nbrLimbs > 1) || (tofactor.limbs[0].x > 1))
         {
           if (prettyprint)
@@ -982,7 +983,8 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
           }
           else
           {
-            *ptrOutput++ = '^';
+            *ptrOutput = '^';
+            ptrOutput++;
             int2dec(&ptrOutput, pstFactor->multiplicity);
           }
         }
@@ -1073,7 +1075,8 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
           copyStr(&ptrOutput, " (Unknown)");
         }
 #endif
-        if (++i == pstFactors->multiplicity)
+        i++;
+        if (i == pstFactors->multiplicity)
         {
           break;
         }
@@ -1312,17 +1315,20 @@ static void showECMStatus(void)
   case 1:
     copyStr(&ptrStatus, lang ? "Paso 1: " : "Step 1: ");
     int2dec(&ptrStatus, indexPrimes / (nbrPrimes / 100));
-    *ptrStatus++ = '%';
+    *ptrStatus = '%';
+    ptrStatus++;
     break;
   case 2:
     copyStr(&ptrStatus, lang ? "Paso 2: " : "Step 2: ");
     int2dec(&ptrStatus, (maxIndexM == 0)? 0 : (indexM / (maxIndexM / 100)));
-    *ptrStatus++ = '%';
+    *ptrStatus = '%';
+    ptrStatus++;
     break;
   case 3:
     copyStr(&ptrStatus, lang ? "Progreso: " : "Progress: ");
     int2dec(&ptrStatus, percentageBPSW);
-    *ptrStatus++ = '%';
+    *ptrStatus = '%';
+    ptrStatus++;
     break;
   }
   copyStr(&ptrStatus, "</p>");
@@ -1342,27 +1348,34 @@ static void SaveFactors(struct sFactors *pstFactors)
     return;
   }
   oldNbrFactors = pstFactors->multiplicity;
-  *ptrText++ = '8';
+  *ptrText = '8';
+  ptrText++;
   copyStr(&ptrText, ptrInputText);
-  *ptrText++ = '=';
+  *ptrText = '=';
+  ptrText++;
   for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
   {
     if (factorNbr > 1)
     {
-      *ptrText++ = '*';
+      *ptrText = '*';
+      ptrText++;
     }
     NumberLength = *pstCurFactor->ptrFactor;
     IntArray2BigInteger(pstCurFactor->ptrFactor, &bigint);
     BigInteger2Dec(&ptrText, &bigint, -100000);   // Factors are saved in decimal.
-    *ptrText++ = '^';
+    *ptrText = '^';
+    ptrText++;
     int2dec(&ptrText, pstCurFactor->multiplicity);
-    *ptrText++ = '(';
+    *ptrText = '(';
+    ptrText++;
     int2dec(&ptrText, pstCurFactor->upperBound);
-    *ptrText++ = ',';
+    *ptrText = ',';
+    ptrText++;
     int2dec(&ptrText, pstCurFactor->type);
-    *ptrText++ = ')';
+    *ptrText = ')';
+    ptrText++;
   }
-  *ptrText++ = 0;
+  *ptrText = 0;
   databack(common.saveFactors.text);
 #endif
 }
@@ -1525,8 +1538,10 @@ static void factorSmallInt(int toFactor, int* factors, struct sFactors* pstFacto
     ptrFactor->multiplicity = 1;
     ptrFactor->type = 0;
     ptrFactor->upperBound = 0;
-    *ptrFactorLimbs++ = 1;
-    *ptrFactorLimbs++ = toFactor;
+    *ptrFactorLimbs = 1;
+    ptrFactorLimbs++;
+    *ptrFactorLimbs = toFactor;
+    ptrFactorLimbs++;
     pstFactors->multiplicity = 1;
     return;
   }
@@ -1546,8 +1561,10 @@ static void factorSmallInt(int toFactor, int* factors, struct sFactors* pstFacto
       ptrFactor->multiplicity = multiplicity;
       ptrFactor->type = 0;
       ptrFactor->upperBound = 0;
-      *ptrFactorLimbs++ = 1;
-      *ptrFactorLimbs++ = primeFactor;
+      *ptrFactorLimbs = 1;
+      ptrFactorLimbs++;
+      *ptrFactorLimbs = primeFactor;
+      ptrFactorLimbs++;
       ptrFactor++;
     }
   }
@@ -1572,8 +1589,10 @@ static void factorSmallInt(int toFactor, int* factors, struct sFactors* pstFacto
       ptrFactor->multiplicity = multiplicity;
       ptrFactor->type = 0;
       ptrFactor->upperBound = 0;
-      *ptrFactorLimbs++ = 1;
-      *ptrFactorLimbs++ = primeFactor;
+      *ptrFactorLimbs = 1;
+      ptrFactorLimbs++;
+      *ptrFactorLimbs = primeFactor;
+      ptrFactorLimbs++;
       ptrFactor++;
     }
   }
@@ -1584,8 +1603,10 @@ static void factorSmallInt(int toFactor, int* factors, struct sFactors* pstFacto
     ptrFactor->multiplicity = 1;
     ptrFactor->type = 0;
     ptrFactor->upperBound = 0;
-    *ptrFactorLimbs++ = 1;
-    *ptrFactorLimbs++ = toFactor;
+    *ptrFactorLimbs = 1;
+    ptrFactorLimbs++;
+    *ptrFactorLimbs = toFactor;
+    ptrFactorLimbs++;
     ptrFactor++;
   }
   pstFactors->multiplicity = factorsFound;
@@ -1720,9 +1741,11 @@ void factorExt(const BigInteger *toFactor, const int *number,
       if (*pcKnownFactors == ',')
       {
         NextEC = 0;        // Curve number
-        while (*++pcKnownFactors != 0)
+        pcKnownFactors++;
+        while (*pcKnownFactors != '\0')
         {
           NextEC = NextEC * 10 + (*pcKnownFactors & 0x0F);
+          pcKnownFactors++;
         }
         oldNbrFactors = pstFactors->multiplicity;
         break;
@@ -1850,7 +1873,8 @@ void factorExt(const BigInteger *toFactor, const int *number,
         {     // Number completely factored.
           break;
         }
-        upperBound = smallPrimes[++upperBoundIndex];
+        upperBoundIndex++;
+        upperBound = smallPrimes[upperBoundIndex];
       }
       if (restartFactoring)
       {
@@ -1868,7 +1892,8 @@ void factorExt(const BigInteger *toFactor, const int *number,
             restartFactoring = true;
             break;
           }
-          upperBound = smallPrimes[++upperBoundIndex];
+          upperBoundIndex++;
+          upperBound = smallPrimes[upperBoundIndex];
         }
         if (restartFactoring)
         {
@@ -2036,7 +2061,8 @@ void MinFactor(BigInteger* result)
   intArrayToBigInteger(pstFactor->ptrFactor, result);
   for (int factorNumber = 2; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
-    intArrayToBigInteger((++pstFactor)->ptrFactor, &factorValue);
+    pstFactor++;
+    intArrayToBigInteger(pstFactor->ptrFactor, &factorValue);
     BigIntSubt(&factorValue, result, &factorValue);
     if (factorValue.sign == SIGN_NEGATIVE)
     {
@@ -2051,7 +2077,8 @@ void MaxFactor(BigInteger* result)
   intArrayToBigInteger(pstFactor->ptrFactor, result);
   for (int factorNumber = 2; factorNumber <= astFactorsMod[0].multiplicity; factorNumber++)
   {
-    intArrayToBigInteger((++pstFactor)->ptrFactor, &factorValue);
+    pstFactor++;
+    intArrayToBigInteger(pstFactor->ptrFactor, &factorValue);
     BigIntSubt(&factorValue, result, &factorValue);
     if (factorValue.sign == SIGN_POSITIVE)
     {

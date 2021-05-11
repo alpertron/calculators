@@ -366,7 +366,6 @@ void SolveEquation(void)
     }
     else
     {                   /* If quadratic equation mod p */
-      int nbrBitsSquareRoot;
       int correctBits;
       int nbrLimbs;
       int bitsAZero;
@@ -598,7 +597,7 @@ void SolveEquation(void)
         else
         {      // Discriminant is not zero.
           // Find number of digits of square root to compute.
-          nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
+          int nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
           (void)BigIntPowerIntExp(&prime, nbrBitsSquareRoot, &tmp1);
           nbrLimbs = tmp1.nbrLimbs;
           (void)BigIntRemainder(&discriminant, &tmp1, &discriminant);
