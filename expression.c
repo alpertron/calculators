@@ -1531,15 +1531,16 @@ static enum eExprErr ComputePartition(void)
 #ifdef FACTORIZATION_FUNCTIONS
 static void PerformFactorization(BigInteger *tofactor)
 {
+  char* ptrFactorDec = tofactorDec;
   NumberLength = tofactor->nbrLimbs;
   BigInteger2IntArray(nbrToFactor, tofactor);
   if (hexadecimal)
   {
-    Bin2Hex(tofactor->limbs, tofactorDec, tofactor->nbrLimbs, groupLen);
+    Bin2Hex(&ptrFactorDec, tofactor->limbs, tofactor->nbrLimbs, groupLen);
   }
   else
   {
-    Bin2Dec(tofactor->limbs, tofactorDec, tofactor->nbrLimbs, groupLen);
+    Bin2Dec(&ptrFactorDec, tofactor->limbs, tofactor->nbrLimbs, groupLen);
   }
   factor(tofactor, nbrToFactor, factorsMod, astFactorsMod);
 }
@@ -1641,8 +1642,7 @@ static int ComputeConcatFact(void)
     ctr = (repeated ? pstFactor->multiplicity : 1);
     for (; ctr > 0; ctr--)
     {
-      BigInteger2Dec(&factorValue, ptrTextFactor, 0);
-      ptrTextFactor += strlen(ptrTextFactor);
+      BigInteger2Dec(&ptrTextFactor, &factorValue, 0);
     }
   }
   if (ptrTextFactor == &textFactor[0])

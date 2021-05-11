@@ -62,11 +62,11 @@ void batchCallback(char **pptrOutput)
   }
   if (hexadecimal)
   {
-    Bin2Hex(tofactor.limbs, ptrFactorDec, tofactor.nbrLimbs, groupLen);
+    Bin2Hex(&ptrFactorDec, tofactor.limbs, tofactor.nbrLimbs, groupLen);
   }
   else
   {
-    Bin2Dec(tofactor.limbs, ptrFactorDec, tofactor.nbrLimbs, groupLen);
+    Bin2Dec(&ptrFactorDec, tofactor.limbs, tofactor.nbrLimbs, groupLen);
   }
   if (doFactorization)
   {
@@ -116,13 +116,12 @@ static void GetNumberOfDivisors(char **pptrOutput)
   copyStr(&ptrOutput, lang ? "<p>Cantidad de divisores: " : "<p>Number of divisors: ");
   if (hexadecimal)
   {
-    BigInteger2Hex(&result, ptrOutput, groupLen);
+    BigInteger2Hex(&ptrOutput, &result, groupLen);
   }
   else
   {
-    BigInteger2Dec(&result, ptrOutput, groupLen);
+    BigInteger2Dec(&ptrOutput, &result, groupLen);
   }
-  ptrOutput += strlen(ptrOutput);
   copyStr(&ptrOutput, "</p>");
   *pptrOutput = ptrOutput;
 }
@@ -134,13 +133,12 @@ static void GetSumOfDivisors(char **pptrOutput)
   copyStr(&ptrOutput, lang ? "<p>Suma de divisores: " : "<p>Sum of divisors: ");
   if (hexadecimal)
   {
-    BigInteger2Hex(&result, ptrOutput, groupLen);
+    BigInteger2Hex(&ptrOutput, &result, groupLen);
   }
   else
   {
-    BigInteger2Dec(&result, ptrOutput, groupLen);
+    BigInteger2Dec(&ptrOutput, &result, groupLen);
   }
-  ptrOutput += strlen(ptrOutput);
   copyStr(&ptrOutput, "</p>");
   *pptrOutput = ptrOutput;
 }
@@ -152,13 +150,12 @@ static void GetEulerTotient(char **pptrOutput)
   copyStr(&ptrOutput, lang ? "<p>Phi de Euler: " : "<p>Euler's totient: ");
   if (hexadecimal)
   {
-    BigInteger2Hex(&result, ptrOutput, groupLen);
+    BigInteger2Hex(&ptrOutput, &result, groupLen);
   }
   else
   {
-    BigInteger2Dec(&result, ptrOutput, groupLen);
+    BigInteger2Dec(&ptrOutput, &result, groupLen);
   }
-  ptrOutput += strlen(ptrOutput);
   copyStr(&ptrOutput, "</p>");
   *pptrOutput = ptrOutput;
 }
@@ -768,13 +765,12 @@ static void valueVar(char **pptrOutput, char letter, const BigInteger *value)
   ptrOutput++;
   if (hexadecimal)
   {
-    BigInteger2Hex(value, ptrOutput, groupLen);
+    BigInteger2Hex(&ptrOutput, value, groupLen);
   }
   else
   {
-    BigInteger2Dec(value, ptrOutput, groupLen);
+    BigInteger2Dec(&ptrOutput, value, groupLen);
   }
-  ptrOutput += strlen(ptrOutput);
   copyStr(&ptrOutput, "</p>");
   *pptrOutput = ptrOutput;
 }

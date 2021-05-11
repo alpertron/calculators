@@ -2638,8 +2638,7 @@ static bool LinearAlgebraPhase(int *biT, int *biR, int *biU, int nbrLength)
       (void)memcpy(k.limbs, vectLeftHandSide[j], NumberLength * sizeof(limb));
       k.nbrLimbs = NumberLength;
       k.sign = SIGN_POSITIVE;
-      BigInteger2Dec(&k, ptrOutput, 0);
-      ptrOutput += strlen(ptrOutput);
+      BigInteger2Dec(&ptrOutput, &k, 0);
       *ptrOutput++ = ',';
       for (i = 1; i < matrixB[j][0]; i++)
       {
@@ -2752,8 +2751,7 @@ static bool InsertNewRelation(
     (void)memcpy(k.limbs, biR, NumberLength * sizeof(limb));
     k.nbrLimbs = NumberLength;
     k.sign = SIGN_POSITIVE;
-    BigInteger2Dec(&k, ptrOutput, 0);
-    ptrOutput += strlen(ptrOutput);
+    BigInteger2Dec(&ptrOutput, &k, 0);
     *ptrOutput++ = ',';
     for (i = 1; i < *rowMatrixB; i++)
     {
@@ -2839,8 +2837,7 @@ static bool InsertNewRelation(
     (void)memcpy(k.limbs, biR, NumberLength * sizeof(limb));
     k.nbrLimbs = NumberLength;
     k.sign = SIGN_POSITIVE;
-    BigInteger2Dec(&k, ptrOutput, 0);
-    ptrOutput += strlen(ptrOutput);
+    BigInteger2Dec(&ptrOutput, &k, 0);
     *ptrOutput = 0;
     printf("%s\n", output);
   }

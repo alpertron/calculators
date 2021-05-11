@@ -22,9 +22,9 @@
 #include "expression.h"
 
 int expressionNbr;
-void textError(char *ptrOutput, enum eExprErr rc)
+void textError(char **pptrOutput, enum eExprErr rc)
 {
-  char* ptrOut = ptrOutput;
+  char* ptrOut = *pptrOutput;
   switch (rc)
   {
   case EXPR_NUMBER_TOO_LOW:
@@ -99,4 +99,5 @@ void textError(char *ptrOutput, enum eExprErr rc)
   default:
     break;
   }
+  *pptrOutput = ptrOut;
 }

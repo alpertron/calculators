@@ -336,23 +336,20 @@ static void PerformSWAPI(int k, int kMax, int size)
     *ptrDebugOutput = '\n';
     ptrDebugOutput++;
     copyStr(&ptrDebugOutput, "tmp3 = ");
-    BigInteger2Dec(&tmp3, ptrDebugOutput, 0);
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    BigInteger2Dec(&ptrDebugOutput, &tmp3, 0);
     *ptrDebugOutput = '\r';
     ptrDebugOutput++;
     *ptrDebugOutput = '\n';
     ptrDebugOutput++;
     copyStr(&ptrDebugOutput, "detProdB[k-1] = ");
     getBigIntegerFromLinked(detProdB[k - 1], &tmp5);
-    BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    BigInteger2Dec(&ptrDebugOutput, &tmp5, 0);
     *ptrDebugOutput = '\r';
     ptrDebugOutput++;
     *ptrDebugOutput = '\n';
     ptrDebugOutput++;
     copyStr(&ptrDebugOutput, "B = ");
-    BigInteger2Dec(&tmp1, ptrDebugOutput, 0);
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    BigInteger2Dec(&ptrDebugOutput, &tmp1, 0);
     *ptrDebugOutput = '\r';
     ptrDebugOutput++;
     *ptrDebugOutput = '\n';
@@ -490,8 +487,7 @@ void integralLLL(int size)
         for (colI = 0; colI < size; colI++)
         {
           getBigIntegerFromLinked(lambda[row][colI], &tmp5);
-          BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
-          ptrDebugOutput += strlen(ptrDebugOutput);
+          BigInteger2Dec(&ptrDebugOutput, &tmp5, 0);
           *ptrDebugOutput = ',';
           ptrDebugOutput++;
           *ptrDebugOutput = ' ';
@@ -503,8 +499,7 @@ void integralLLL(int size)
       copyStr(&ptrDebugOutput, "detProdB: ");
       for (colI = 0; colI < size; colI++)
       {
-        BigInteger2Dec(&detProdB[colI], ptrDebugOutput, 0);
-        ptrDebugOutput += strlen(ptrDebugOutput);
+        BigInteger2Dec(&ptrDebugOutput, &detProdB[colI], 0);
         *ptrDebugOutput = ',';
         ptrDebugOutput++;
         *ptrDebugOutput = ' ';
@@ -568,8 +563,7 @@ void integralLLL(int size)
         for (colI = 0; colI < size; colI++)
         {
           getBigIntegerFromLinked(basis[row][colI], &tmp5);
-          BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
-          ptrDebugOutput += strlen(ptrDebugOutput);
+          BigInteger2Dec(&ptrDebugOutput, &tmp5, 0);
           *ptrDebugOutput = ',';
           ptrDebugOutput++;
           *ptrDebugOutput = ' ';
@@ -638,8 +632,7 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
   {
     getBigIntegerFromLinked(ptrCoeffs[traceNbr], &operand3);
 #if DEBUG_VANHOEIJ
-    BigInteger2Dec(&operand3, ptrDebugOutput, 0);
-    ptrDebugOutput += strlen(ptrDebugOutput);
+    BigInteger2Dec(&ptrDebugOutput, &operand3, 0);
     *ptrDebugOutput = ',';
     ptrDebugOutput++;
     *ptrDebugOutput = ' ';
@@ -1140,8 +1133,7 @@ static void vanHoeij(int prime, int nbrFactors)
     LF "prime = ");
   int2dec(&ptrDebugOutput, prime);
   copyStr(&ptrDebugOutput, "root bound = ");
-  BigInteger2Dec(&bound, ptrDebugOutput, 0);
-  ptrDebugOutput += strlen(ptrDebugOutput);
+  BigInteger2Dec(&ptrDebugOutput, &bound, 0);
   *ptrDebugOutput = '\n';
   ptrDebugOutput++;
 #endif
@@ -1345,8 +1337,7 @@ static void vanHoeij(int prime, int nbrFactors)
       for (nbrRow = firstTrace; nbrRow < firstTrace + nbrRequiredTraces; nbrRow++)
       {
         getBigIntegerFromLinked(traces[nbrRow], &tmp5);
-        BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
-        ptrDebugOutput += strlen(ptrDebugOutput);
+        BigInteger2Dec(&ptrDebugOutput, &tmp5, 0);
         if (nbrRow < firstTrace + nbrRequiredTraces - 1)
         {
           *ptrDebugOutput = ',';
@@ -1434,8 +1425,7 @@ static void vanHoeij(int prime, int nbrFactors)
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
         getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
-        BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
-        ptrDebugOutput += strlen(ptrDebugOutput);
+        BigInteger2Dec(&ptrDebugOutput, &tmp5, 0);
         if (nbrCol < nbrVectors + nbrRequiredTraces - 1)
         {
           *ptrDebugOutput = ',';
@@ -1469,8 +1459,7 @@ static void vanHoeij(int prime, int nbrFactors)
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
         getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
-        BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
-        ptrDebugOutput += strlen(ptrDebugOutput);
+        BigInteger2Dec(&ptrDebugOutput, &tmp5, 0);
         *ptrDebugOutput = ' ';
         ptrDebugOutput++;
       }
@@ -1551,8 +1540,7 @@ static void vanHoeij(int prime, int nbrFactors)
       for (nbrCol = 0; nbrCol < nbrVectors + nbrRequiredTraces; nbrCol++)
       {
         getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
-        BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
-        ptrDebugOutput += strlen(ptrDebugOutput);
+        BigInteger2Dec(&ptrDebugOutput, &tmp5, 0);
         *ptrDebugOutput = ' ';
         ptrDebugOutput++;
       }
@@ -1575,8 +1563,7 @@ static void vanHoeij(int prime, int nbrFactors)
       getBigIntegerFromLinked(lambda[r1 - 1][r1 - 1], &tmp4);
       getBigIntegerFromLinked(lambda[r1 - 2][r1 - 2], &tmp5);
       (void)BigIntDivide(&tmp4, &tmp5, &operand1);
-      BigInteger2Dec(&operand1, ptrDebugOutput, 0);
-      ptrDebugOutput += strlen(ptrDebugOutput);
+      BigInteger2Dec(&ptrDebugOutput, &operand1, 0);
       *ptrDebugOutput = ' ';
       ptrDebugOutput++;
     }
@@ -1660,8 +1647,7 @@ static void vanHoeij(int prime, int nbrFactors)
       for (nbrCol = 0; nbrCol < r1; nbrCol++)
       {
         getBigIntegerFromLinked(basisStar[nbrRow][nbrCol], &tmp5);
-        BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
-        ptrDebugOutput += strlen(ptrDebugOutput);
+        BigInteger2Dec(&ptrDebugOutput, &tmp5, 0);
         *ptrDebugOutput = ' ';
         ptrDebugOutput++;
       }
@@ -1727,8 +1713,7 @@ static void vanHoeij(int prime, int nbrFactors)
       for (nbrCol = 0; nbrCol < r1; nbrCol++)
       {
         getBigIntegerFromLinked(lambda[nbrRow][nbrCol], &tmp5);
-        BigInteger2Dec(&tmp5, ptrDebugOutput, 0);
-        ptrDebugOutput += strlen(ptrDebugOutput);
+        BigInteger2Dec(&ptrDebugOutput, &tmp5, 0);
         *ptrDebugOutput = ' ';
         ptrDebugOutput++;
       }

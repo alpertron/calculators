@@ -33,8 +33,7 @@ void showMinus(void)
 
 void shownbr(const BigInteger* value)
 {
-  BigInteger2Dec(value, ptrOutput, groupLen);
-  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&ptrOutput, value, groupLen);
 }
 
 void showInt(int value)

@@ -237,13 +237,12 @@ int fsquares(void)
     copyStr(&ptrOutput, "1<p><var>n</var> = ");
     if (hexadecimal)
     {
-      Bin2Hex(origNbr, ptrOutput, nbrLimbs, groupLength);
+      Bin2Hex(&ptrOutput, origNbr, nbrLimbs, groupLength);
     }
     else
     {
-      Bin2Dec(origNbr, ptrOutput, nbrLimbs, groupLength);
+      Bin2Dec(&ptrOutput, origNbr, nbrLimbs, groupLength);
     }
-    ptrOutput += strlen(ptrOutput);
     copyStr(&ptrOutput, "</p>");
     databack(tmpOutput);
 #endif
@@ -672,19 +671,17 @@ void batchSquaresCallback(char **pptrOutput)
   copyStr(&ptrOutput, "<p>");
   if (hexadecimal)
   {
-    BigInteger2Hex(&toProcess, ptrOutput, groupLength);
+    BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
   }
   else
   {
-    BigInteger2Dec(&toProcess, ptrOutput, groupLength);
+    BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
   }
-  ptrOutput += strlen(ptrOutput);
   if (toProcess.sign == SIGN_NEGATIVE)
   {
     *ptrOutput++ = ':';
     *ptrOutput++ = ' ';
-    textError(ptrOutput, EXPR_NUMBER_TOO_LOW);
-    ptrOutput += strlen(ptrOutput);
+    textError(&ptrOutput, EXPR_NUMBER_TOO_LOW);
     copyStr(&ptrOutput, "</p>");
     *pptrOutput = ptrOutput;
     return;
@@ -705,26 +702,24 @@ void batchSquaresCallback(char **pptrOutput)
   copyStr(&ptrOutput, " = ");
   if (hexadecimal)
   {
-    Bin2Hex(Mult1, ptrOutput, Mult1Len, groupLength);
+    Bin2Hex(&ptrOutput, Mult1, Mult1Len, groupLength);
   }
   else
   {
-    Bin2Dec(Mult1, ptrOutput, Mult1Len, groupLength);
+    Bin2Dec(&ptrOutput, Mult1, Mult1Len, groupLength);
   }
-  ptrOutput += strlen(ptrOutput);
   copyStr(&ptrOutput, square);
   if ((Mult2Len != 1) || (Mult2[0].x != 0))
   {
     copyStr(&ptrOutput, " + ");
     if (hexadecimal)
     {
-      Bin2Hex(Mult2, ptrOutput, Mult2Len, groupLength);
+      Bin2Hex(&ptrOutput, Mult2, Mult2Len, groupLength);
     }
     else
     {
-      Bin2Dec(Mult2, ptrOutput, Mult2Len, groupLength);
+      Bin2Dec(&ptrOutput, Mult2, Mult2Len, groupLength);
     }
-    ptrOutput += strlen(ptrOutput);
     copyStr(&ptrOutput, square);
   }
   if ((Mult3Len != 1) || (Mult3[0].x != 0))
@@ -732,13 +727,12 @@ void batchSquaresCallback(char **pptrOutput)
     copyStr(&ptrOutput, " + ");
     if (hexadecimal)
     {
-      Bin2Hex(Mult3, ptrOutput, Mult3Len, groupLength);
+      Bin2Hex(&ptrOutput, Mult3, Mult3Len, groupLength);
     }
     else
     {
-      Bin2Dec(Mult3, ptrOutput, Mult3Len, groupLength);
+      Bin2Dec(&ptrOutput, Mult3, Mult3Len, groupLength);
     }
-    ptrOutput += strlen(ptrOutput);
     copyStr(&ptrOutput, square);
   }
   if ((Mult4Len != 1) || (Mult4[0].x != 0))
@@ -746,13 +740,12 @@ void batchSquaresCallback(char **pptrOutput)
     copyStr(&ptrOutput, " + ");
     if (hexadecimal)
     {
-      Bin2Hex(Mult4, ptrOutput, Mult4Len, groupLength);
+      Bin2Hex(&ptrOutput, Mult4, Mult4Len, groupLength);
     }
     else
     {
-      Bin2Dec(Mult4, ptrOutput, Mult4Len, groupLength);
+      Bin2Dec(&ptrOutput, Mult4, Mult4Len, groupLength);
     }
-    ptrOutput += strlen(ptrOutput);
     copyStr(&ptrOutput, square);
   }
   copyStr(&ptrOutput, "</p>");

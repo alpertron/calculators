@@ -602,7 +602,7 @@ static bool func(char *expr, BigInteger *ExpressionResult,
   }
   ptrExpr = expr + exprIndex;
   ptrFuncName = funcName;
-  while (*ptrFuncName != NULL)
+  while (*ptrFuncName != '\0')
   {
     if ((*ptrExpr & 0xDF) != *ptrFuncName)
     {

@@ -51,8 +51,7 @@ static void showNumber(const BigInteger *real, const BigInteger *imag)
   {
     showText("-");
   }
-  Bin2Dec(real->limbs, ptrOutput, real->nbrLimbs, groupLen);
-  ptrOutput += strlen(ptrOutput);
+  Bin2Dec(&ptrOutput, real->limbs, real->nbrLimbs, groupLen);
   if (imag->sign == SIGN_POSITIVE)
   {
     showText(" + ");
@@ -61,8 +60,7 @@ static void showNumber(const BigInteger *real, const BigInteger *imag)
   {
     showText(" - ");
   }
-  Bin2Dec(imag->limbs, ptrOutput, imag->nbrLimbs, groupLen);
-  ptrOutput += strlen(ptrOutput);
+  Bin2Dec(&ptrOutput, imag->limbs, imag->nbrLimbs, groupLen);
   showText(" i");
 }
 
@@ -96,11 +94,9 @@ void GaussianFactorization(void)
     NumberLength = tofactor.nbrLimbs;
     BigInteger2IntArray(nbrToFactor, &tofactor);
     copyStr(&ptrFactorDec, "Re&sup2; + Im&sup2; = ");
-    Bin2Dec(ReValue.limbs, ptrFactorDec, ReValue.nbrLimbs, groupLen);
-    ptrFactorDec += strlen(ptrFactorDec);
+    Bin2Dec(&ptrFactorDec, ReValue.limbs, ReValue.nbrLimbs, groupLen);
     copyStr(&ptrFactorDec, "&sup2; + ");
-    Bin2Dec(ImValue.limbs, ptrFactorDec, ImValue.nbrLimbs, groupLen);
-    ptrFactorDec += strlen(ptrFactorDec);
+    Bin2Dec(&ptrFactorDec, ImValue.limbs, ImValue.nbrLimbs, groupLen);
     copyStr(&ptrFactorDec, "&sup2;");
     factor(&tofactor, nbrToFactor, factorsNorm, astFactorsNorm);
     NbrFactorsNorm = astFactorsNorm[0].multiplicity;
@@ -304,8 +300,7 @@ void gaussianText(char *valueText, int doFactorization)
   }
   if (rc != EXPR_OK)
   {
-    textError(ptrOutput, rc);
-    ptrOutput = output + strlen(output);
+    textError(&ptrOutput, rc);
   }
   copyStr(&ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
                              "<p>" COPYRIGHT_ENGLISH "</p>");

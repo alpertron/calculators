@@ -73,12 +73,10 @@ static void ShowConvergents(int index, const BigInteger *coeff)
   ptrOutput++;
   *ptrOutput = ' ';
   ptrOutput++;
-  BigInteger2Dec(&U1, ptrOutput, groupLen);  // Show continued fraction convergent.
-  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&ptrOutput, &U1, groupLen);  // Show continued fraction convergent.
   *ptrOutput = '/';
   ptrOutput++;
-  BigInteger2Dec(&V1, ptrOutput, groupLen);  // Show continued fraction convergent.
-  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&ptrOutput, &V1, groupLen);  // Show continued fraction convergent.
   *ptrOutput = ',';
   ptrOutput++;
   *ptrOutput = ' ';
@@ -96,8 +94,7 @@ static void ShowConvergents(int index, const BigInteger *coeff)
   ptrOutput++;
   *ptrOutput = ' ';
   ptrOutput++;
-  BigInteger2Dec(coeff, ptrOutput, groupLen);  // Show continued fraction coefficient.
-  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&ptrOutput, coeff, groupLen);  // Show continued fraction coefficient.
   *ptrOutput = '<';
   ptrOutput++;
   *ptrOutput = 'b';
@@ -118,15 +115,12 @@ static void ContFrac(void)
   showText("2<p><var>x</var> = <span class=\"fraction\"><span class=\"offscr\">");
   copyStr(&ptrOutput, lang ? " la fracción cuyo numerador es </span>" : " the fraction whose numerator is </span>");
   showText("<span class=\"fup\">");
-  BigInteger2Dec(&num, ptrOutput, groupLen);    // Show numerator.
-  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&ptrOutput, &num, groupLen);    // Show numerator.
   showText(" + <span class=\"sqrtout\"><span class=\"sqrtin\">");
-  BigInteger2Dec(&delta, ptrOutput, groupLen);  // Show radicand.
-  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&ptrOutput, &delta, groupLen);  // Show radicand.
   showText("</span></span></span><span class=\"bar\"> </span><span class=\"fdn\"><span class=\"offscr\">");
   copyStr(&ptrOutput, lang ? " y el denominador es </span>" : " and the denominator is </span>");
-  BigInteger2Dec(&den, ptrOutput, groupLen);    // Show denominator.
-  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&ptrOutput, &den, groupLen);    // Show denominator.
   showText("</span></span></span></p>");
   // Validate input.
   if (BigIntIsZero(&den))
@@ -218,8 +212,7 @@ static void ContFrac(void)
       floordiv(&bigTmp, &den, &Temp);         // Temp = Term of continued fraction.
       if (!hexadecimal)
       {      // Show convergent checkbox not checked.
-        BigInteger2Dec(&Temp, ptrOutput, groupLen);  // Show continued fraction coefficient.
-        ptrOutput += strlen(ptrOutput);
+        BigInteger2Dec(&ptrOutput, &Temp, groupLen);  // Show continued fraction coefficient.
         copyStr(&ptrOutput, ((index == 0)? " + //" : ", ")); // Show separator.
       }
       if (hexadecimal)
@@ -319,8 +312,7 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
   }
   else
   {
-    BigInteger2Dec(&Tmp, ptrOutput, groupLen);  // Show convergent.
-    ptrOutput += strlen(ptrOutput);
+    BigInteger2Dec(&ptrOutput, &Tmp, groupLen);  // Show convergent.
   }
   (void)BigIntRemainder(pNum, pDen, pNum);
   sep = " + //";
@@ -337,8 +329,7 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
       else
       {
         showText(sep);
-        BigInteger2Dec(&Tmp, ptrOutput, groupLen);  // Show convergent.
-        ptrOutput += strlen(ptrOutput);
+        BigInteger2Dec(&ptrOutput, &Tmp, groupLen);  // Show convergent.
       }
       sep = ", ";
     }
@@ -364,7 +355,7 @@ static int getNumber(BigInteger *pNumber, const char *title, char **pptrInput)
     ptrOutput++;
     *ptrOutput = ' ';
     ptrOutput++;
-    textError(output, rc);
+    textError(&ptrOutput, rc);
     return 1;
   }
   *pptrInput += strlen(*pptrInput) + 1U;  // Skip terminator.

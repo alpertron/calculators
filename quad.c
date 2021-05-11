@@ -179,10 +179,9 @@ static void showMinus(void)
   showText("&minus;");
 }
 
-static void shownbr(const BigInteger *value)
+static void shownbr(const BigInteger* value)
 {
-  BigInteger2Dec(value, ptrOutput, groupLen);
-  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&ptrOutput, value, groupLen);
 }
 
 static void showInt(int value)
@@ -351,8 +350,7 @@ static void PrintQuad(const BigInteger *coeffT2, const BigInteger *coeffT, const
   {
     if (coeffT->sign == SIGN_NEGATIVE)
     {
-      Bin2Dec(coeffT->limbs, ptrOutput, coeffT->nbrLimbs, groupLen);
-      ptrOutput += strlen(ptrOutput);
+      Bin2Dec(&ptrOutput, coeffT->limbs, coeffT->nbrLimbs, groupLen);
     }
     else
     {
@@ -385,13 +383,11 @@ static void PrintQuad(const BigInteger *coeffT2, const BigInteger *coeffT, const
     }
     if (var2 == NULL)
     {
-      Bin2Dec(coeffInd->limbs, ptrOutput, coeffInd->nbrLimbs, groupLen);
-      ptrOutput += strlen(ptrOutput);
+      Bin2Dec(&ptrOutput, coeffInd->limbs, coeffInd->nbrLimbs, groupLen);
     }
     else if ((coeffInd->nbrLimbs > 1) || (coeffInd->limbs[0].x > 1))
     {
-      Bin2Dec(coeffInd->limbs, ptrOutput, coeffInd->nbrLimbs, groupLen);
-      ptrOutput += strlen(ptrOutput);
+      Bin2Dec(&ptrOutput, coeffInd->limbs, coeffInd->nbrLimbs, groupLen);
       showText("&nbsp;&#8290;");
       showText(var2);
       showSquare();
@@ -473,8 +469,7 @@ static int Show(const BigInteger *num, const char *str, enum eLinearSolution t)
     if ((num->nbrLimbs != 1) || (num->limbs[0].x != 1))
     {    // num is not 1 or -1.
       *ptrOutput++ = ' ';
-      Bin2Dec(num->limbs, ptrOutput, num->nbrLimbs, groupLen);
-      ptrOutput += strlen(ptrOutput);
+      Bin2Dec(&ptrOutput, num->limbs, num->nbrLimbs, groupLen);
       copyStr(&ptrOutput, "&nbsp;&#8290;");
     }
     else
@@ -493,8 +488,7 @@ static void Show1(const BigInteger *num, enum eLinearSolution t)
   *ptrOutput++ = ' ';
   if (((u & 1) == 0) || ((num->nbrLimbs == 1) && (num->limbs[0].x == 1)))
   {          // Show absolute value of num.
-    Bin2Dec(num->limbs, ptrOutput, num->nbrLimbs, groupLen);
-    ptrOutput += strlen(ptrOutput);
+    Bin2Dec(&ptrOutput, num->limbs, num->nbrLimbs, groupLen);
   }
 }
 
@@ -573,8 +567,7 @@ static void SolutionX(BigInteger *value)
   if (teach)
   {
     showText("<li><var>T</var> = ");
-    BigInteger2Dec(value, ptrOutput, groupLen);
-    ptrOutput += strlen(ptrOutput);
+    BigInteger2Dec(&ptrOutput, value, groupLen);
     showText("</li>");
   }
   if (callbackQuadModType == CBACK_QMOD_PARABOLIC)
@@ -729,8 +722,7 @@ void SolveQuadModEquation(void)
     {
       showText("<p>All values of <var>x</var> between 0 and ");
       addbigint(&GcdAll, -1);
-      BigInteger2Dec(&GcdAll, ptrOutput, groupLen);
-      ptrOutput += strlen(ptrOutput);
+      BigInteger2Dec(&ptrOutput, &GcdAll, groupLen);
       showText(" are solutions.</p>");
     }
     else
@@ -789,9 +781,11 @@ void SolveQuadModEquation(void)
   }
   if (callbackQuadModType == CBACK_QMOD_PARABOLIC)
   {    // For elliptic case, the factorization is already done.
+    char* ptrFactorDec;
     NumberLength = modulus.nbrLimbs;
     BigInteger2IntArray(nbrToFactor, &modulus);
-    Bin2Dec(modulus.limbs, tofactorDec, modulus.nbrLimbs, groupLen);
+    ptrFactorDec = tofactorDec;
+    Bin2Dec(&ptrFactorDec, modulus.limbs, modulus.nbrLimbs, groupLen);
     factor(&modulus, nbrToFactor, factorsMod, astFactorsMod);
     if (teach)
     {
@@ -1485,8 +1479,7 @@ static void paren(const BigInteger *num)
   }
   else
   {
-    BigInteger2Dec(num, ptrOutput, groupLen);
-    ptrOutput += strlen(ptrOutput);
+    BigInteger2Dec(&ptrOutput, num, groupLen);
   }
 }
 
@@ -2272,6 +2265,7 @@ static void NonSquareDiscriminant(void)
   enum eSign ValKSignBak;
   int numFactors;
   struct sFactors *pstFactor;
+  char* ptrFactorDec;
              // Find GCD(a,b,c)
   BigIntGcd(&ValA, &ValB, &bigTmp);
   BigIntGcd(&ValC, &bigTmp, &ValGcdHomog);
@@ -2296,7 +2290,8 @@ static void NonSquareDiscriminant(void)
   ValK.sign = SIGN_POSITIVE;
   NumberLength = ValK.nbrLimbs;
   BigInteger2IntArray(nbrToFactor, &ValK);
-  Bin2Dec(ValK.limbs, tofactorDec, ValK.nbrLimbs, groupLen);
+  ptrFactorDec = tofactorDec;
+  Bin2Dec(&ptrFactorDec, ValK.limbs, ValK.nbrLimbs, groupLen);
   factor(&ValK, nbrToFactor, factorsMod, astFactorsMod);
   ValK.sign = ValKSignBak;
   // Find all indexes of prime factors with even multiplicity.
@@ -3162,6 +3157,7 @@ static void PerfectSquareDiscriminant(void)
   enum eLinearSolution ret;
   int index;
   enum eSign signTemp;
+  char* ptrFactorDec;
 
   if (BigIntIsZero(&ValA))
   { // Let R = gcd(b, c)
@@ -3319,7 +3315,8 @@ static void PerfectSquareDiscriminant(void)
   signTemp = ValZ.sign;
   ValZ.sign = SIGN_POSITIVE;  // Factor positive number.
   BigInteger2IntArray(nbrToFactor, &ValZ);
-  Bin2Dec(ValZ.limbs, tofactorDec, ValZ.nbrLimbs, groupLen);
+  ptrFactorDec = tofactorDec;
+  Bin2Dec(&ptrFactorDec, ValZ.limbs, ValZ.nbrLimbs, groupLen);
   factor(&ValZ, nbrToFactor, factorsMod, astFactorsMod);
   ValZ.sign = signTemp;       // Restore sign of Z = 4ak/RS.
   // x = (NI - JM) / D(IL - MH) and y = (JL - NH) / D(IL - MH)
@@ -4221,8 +4218,7 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
     if (rc != EXPR_OK)
     {
       copyStr(&ptrOutput, lang ? pstValidateCoeff->textSpanish : pstValidateCoeff->textEnglish);
-      textError(ptrOutput, rc);
-      ptrOutput += strlen(ptrOutput);
+      textError(&ptrOutput, rc);
       copyStr(&ptrOutput, "</p>");
       break;
     }

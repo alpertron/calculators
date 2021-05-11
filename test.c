@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
   //squareRoot(Factor1, Factor2, 7, &len);
   while (1);
 #elif DEBUG_CODE == 4
+  char* ptrOutput;
   if (argv[1][0] == '-')
   {
     Dec2Bin(&argv[1][1], dividend.limbs, (int)strlen(&argv[1][1]), &dividend.nbrLimbs);
@@ -115,7 +116,8 @@ int main(int argc, char *argv[])
   (void)memset(&dividend.limbs[dividend.nbrLimbs], 0x45, 12);
   (void)memset(&divisor.limbs[divisor.nbrLimbs], 0x25, 12);
   BigIntDivide(&dividend, &divisor, &quotient);
-  Bin2Dec(quotient.limbs, output, quotient.nbrLimbs, 0);
+  ptrOutput = output;
+  Bin2Dec(&ptrOutput, quotient.limbs, quotient.nbrLimbs, 0);
   if (quotient.sign == SIGN_POSITIVE)
   {
     printf("Quotient = %s\n", output);
@@ -161,6 +163,7 @@ int main(int argc, char *argv[])
   printf("%s\n", output);
 #elif DEBUG_CODE == 8
   char *ptrInput;
+  char* ptrOutput;
   enum eExprErr rc;
   int NumberLength;
   BigInteger num, mod, inv;
@@ -173,14 +176,16 @@ int main(int argc, char *argv[])
   rc = ComputeExpression(argv[1], 1, &num);
   if (rc != EXPR_OK)
   {
-    textError(output, rc);
+    ptrOutput = output;
+    textError(&ptrOutput, rc);
   }
   else
   {
     rc = ComputeExpression(argv[2], 1, &mod);
     if (rc != EXPR_OK)
     {
-      textError(output, rc);
+      ptrOutput = output;
+      textError(&ptrOutput, rc);
     }
     else
     {
@@ -193,7 +198,8 @@ int main(int argc, char *argv[])
       TestNbr[NumberLength].x = 0;
       GetMontgomeryParms(NumberLength);
       ModInvBigNbr(num.limbs, inv.limbs, mod.limbs, NumberLength);
-      Bin2Dec(inv.limbs, output, NumberLength, 200);
+      ptrOutput = output;
+      Bin2Dec(&ptrOutput, inv.limbs, NumberLength, 200);
     }
   }
   printf("%s", output);
@@ -279,11 +285,12 @@ int main(int argc, char *argv[])
     limb internalNotation[100];
     static int bitGroups;
     char textInput[500];
+    char* ptrTextInput = textInput;
     textInput[0] = '1';
     (void)memset(&textInput[1], '0', 150);
     textInput[151] = 0;
     Dec2Bin(textInput, internalNotation, 151, &bitGroups);
-    Bin2Dec(internalNotation, textInput, 17, 6);
+    Bin2Dec(&ptrTextInput, internalNotation, 17, 6);
     textInput[200] = 0;
   }
 #elif DEBUG_CODE == 15
@@ -312,6 +319,7 @@ int main(int argc, char *argv[])
 #elif DEBUG_CODE == 19
   limb tempVal[4];
   limb tempRes[4];
+  char* ptrOutput;
   // TestNbr = 5^18
   TestNbr[0].x = 1128244537;
   TestNbr[1].x = 441554605;
@@ -323,14 +331,18 @@ int main(int argc, char *argv[])
   tempVal[1].x = 1720066743;
   tempVal[2].x = 0;
   tempVal[3].x = 0;
-  Bin2Dec(tempVal, output, 3, 0);
+  ptrOutput = output;
+  Bin2Dec(&ptrOutput, tempVal, 3, 0);
   printf("Value = %s\n", output);
-  Bin2Dec(MontgomeryMultR1, output, NumberLength, 0);
+  ptrOutput = output;
+  Bin2Dec(&ptrOutput, MontgomeryMultR1, NumberLength, 0);
   printf("MontgomeryMultR1 = %s\n", output);
-  Bin2Dec(TestNbr, output, NumberLength, 0);
+  ptrOutput = output;
+  Bin2Dec(&ptrOutput, TestNbr, NumberLength, 0);
   printf("TestNbr = %s\n", output);
   ModInvBigNbr(tempVal, tempRes, TestNbr, 3);
-  Bin2Dec(tempRes, output, 3, 0);
+  ptrOutput = output;
+  Bin2Dec(&ptrOutput, tempRes, 3, 0);
   printf("Inverse = %s", output);
 #elif DEBUG_CODE == 20
   int ctr;

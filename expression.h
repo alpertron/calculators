@@ -76,7 +76,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
 void partition(int val, BigInteger *pResult);
 void factorial(BigInteger *result, int argument);
 void primorial(BigInteger *result, int argument);
-void textError(char * ptrOutput, enum eExprErr rc);
+void textError(char **pptrOutput, enum eExprErr rc);
 void initializeSmallPrimes(int* pSmallPrimes);
 #else
 #endif

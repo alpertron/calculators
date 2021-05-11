@@ -82,8 +82,7 @@ static int Show(const BigInteger *num, const char *str, int t)
     {    // num is not 1 or -1.
       *ptrOutput = ' ';
       ptrOutput++;
-      Bin2Dec(num->limbs, ptrOutput, num->nbrLimbs, groupLen);
-      ptrOutput += strlen(ptrOutput);
+      Bin2Dec(&ptrOutput, num->limbs, num->nbrLimbs, groupLen);
     }
     copyStr(&ptrOutput, str);
     return t | 1;
@@ -96,8 +95,7 @@ void Show1(const BigInteger *num, int t)
   int u = Show(num, "", t);
   if (((u & 1) == 0) || ((num->nbrLimbs == 1) && (num->limbs[0].x == 1)))
   {
-    BigInteger2Dec(num, ptrOutput, groupLen);
-    ptrOutput += strlen(ptrOutput);
+    BigInteger2Dec(&ptrOutput, num, groupLen);
   }
 }
 
@@ -105,8 +103,7 @@ void Solution(const BigInteger *value)
 {
   SolNbr++;
   copyStr(&ptrOutput, "<li>x = ");
-  BigInteger2Dec(value, ptrOutput, groupLen);
-  ptrOutput += strlen(ptrOutput);
+  BigInteger2Dec(&ptrOutput, value, groupLen);
   copyStr(&ptrOutput, "</li>");
 }
 
@@ -280,8 +277,7 @@ void SolveEquation(void)
     {
       copyStr(&ptrOutput, "<p>All values of <var>x</var> between 0 and ");
       addbigint(&GcdAll, -1);
-      BigInteger2Dec(&GcdAll, ptrOutput, groupLen);
-      ptrOutput += strlen(ptrOutput);
+      BigInteger2Dec(&ptrOutput, &GcdAll, groupLen);
       copyStr(&ptrOutput, " are solutions.</p>");
     }
     else
@@ -325,10 +321,12 @@ void SolveEquation(void)
   BigIntSubt(&LastModulus, &ValN, &Aux[0]);
   if (!BigIntIsZero(&Aux[0]))
   {     // Last modulus is different from ValN.
+    char* ptrFactorDec;
     CopyBigInt(&LastModulus, &ValN);
     NumberLength = ValN.nbrLimbs;
     BigInteger2IntArray(nbrToFactor, &ValN);
-    Bin2Dec(ValN.limbs, tofactorDec, ValN.nbrLimbs, groupLen);
+    ptrFactorDec = tofactorDec;
+    Bin2Dec(&ptrFactorDec, ValN.limbs, ValN.nbrLimbs, groupLen);
     factor(&ValN, nbrToFactor, factorsMod, astFactorsMod);
   }
   intToBigInteger(&Q, 0);
@@ -912,16 +910,16 @@ void SolveEquation(void)
   } while (T1 >= 0);
 }
 
-void textErrorQuadMod(char *pOutput, enum eExprErr rc)
+void textErrorQuadMod(char **pptrOutput, enum eExprErr rc)
 {
   if (rc == EXPR_MODULUS_MUST_BE_NONNEGATIVE)
   {
-    (void)strcpy(pOutput, lang ? "No debe ser negativo" :
+    copyStr(pptrOutput, lang ? "No debe ser negativo" :
       "Must not be negative");
   }
   else
   {
-    textError(pOutput, rc);
+    textError(pptrOutput, rc);
   }
 }
 
@@ -935,8 +933,7 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
   if (rc != EXPR_OK)
   {
     copyStr(&ptrOutput, lang ? "Coeficiente cuadrático: ": "Quadratic coefficient: ");
-    textErrorQuadMod(ptrOutput, rc);
-    ptrOutput += strlen(ptrOutput);
+    textErrorQuadMod(&ptrOutput, rc);
     copyStr(&ptrOutput, "</p>");
   }
   else
@@ -945,8 +942,7 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
     if (rc != EXPR_OK)
     {
       copyStr(&ptrOutput, lang ? "Coeficiente lineal: " : "Linear coefficient: ");
-      textErrorQuadMod(ptrOutput, rc);
-      ptrOutput = output + strlen(output);
+      textErrorQuadMod(&ptrOutput, rc);
       copyStr(&ptrOutput, "</p>");
     }
     else
@@ -955,8 +951,7 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
       if (rc != EXPR_OK)
       {
         copyStr(&ptrOutput, lang ? "Término independiente: " : "Constant coefficient: ");
-        textErrorQuadMod(ptrOutput, rc);
-        ptrOutput += strlen(ptrOutput);
+        textErrorQuadMod(&ptrOutput, rc);
         copyStr(&ptrOutput, "</p>");
       }
       else
@@ -969,8 +964,7 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
         if (rc != EXPR_OK)
         {
           copyStr(&ptrOutput, lang ? "Módulo: " : "Modulus: ");
-          textErrorQuadMod(ptrOutput, rc);
-          ptrOutput += strlen(ptrOutput);
+          textErrorQuadMod(&ptrOutput, rc);
           copyStr(&ptrOutput, "</p>");
         }
         else
@@ -979,8 +973,7 @@ void quadmodText(char *quadrText, char *linearText, char *constText, char *modTe
           u = Show(&ValB, " x", u);
           Show1(&ValC, u);
           copyStr(&ptrOutput, " &equiv; 0 (mod ");
-          BigInteger2Dec(&ValN, ptrOutput, groupLen);
-          ptrOutput += strlen(ptrOutput);
+          BigInteger2Dec(&ptrOutput, &ValN, groupLen);
           copyStr(&ptrOutput, ")</p>");
           SolNbr = 0;
           ptrBeginSol = ptrOutput;

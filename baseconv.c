@@ -182,11 +182,11 @@ void int2hex(char **pOutput, int nbr)
 }
 
 // Convert little-endian number to a string with space every groupLen digits.
-void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
+void Bin2Hex(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength)
 {
   int numLimbs = nbrLimbs;
   int grpLen = groupLength;
-  char* ptrDecimal = decimal;
+  char* ptrDecimal = *ppDecimal;
   bool showDigitsText = true;
   int nbrBits;
   int mask;
@@ -273,11 +273,12 @@ void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
     copyStr(&ptrDecimal, (lang?" dígitos)": " digits)"));
   }
   copyStr(&ptrDecimal, "</span>");
+  *ppDecimal = ptrDecimal;
 }
 
   // Convert little-endian number to a string with space every groupLen digits.
   // In order to perform a faster conversion, use groups of DIGITS_PER_LIMB digits.
-void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
+void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength)
 {
   int grpLen = groupLength;
   int len;
@@ -343,7 +344,7 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
   // At this moment the array power10000 has the representation
   // of the number in base 10000 in little-endian. Convert to
   // ASCII separating every groupLength characters.
-  ptrDest = decimal;
+  ptrDest = *ppDecimal;
   ptrSrc = &power10000[len-1];
   groupCtr = len * DIGITS_PER_LIMB;
   if (grpLen != 0)
@@ -388,23 +389,23 @@ void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength)
   {     // Number is zero.
     *ptrDest = '0';
     ptrDest++;
-    *ptrDest = '\0';
-    return;
   }
-  if ((digits > 30) && showDigitsText)
+  else if ((digits > 30) && showDigitsText)
   {
     *ptrDest = '(';
     ptrDest++;
     int2dec(&ptrDest, digits);
     copyStr(&ptrDest, (lang?" dígitos)": " digits)"));
   }
-  else if (ptrDest > decimal)
+  else if (ptrDest > *ppDecimal)
   {
-    *(ptrDest-1) = '\0';       // Add terminator.
+    ptrDest--;
   }
   else
   {                            // Nothing to do.
   }
+  *ptrDest = '\0';             // Add terminator.
+  *ppDecimal = ptrDest;
 }
 
 static void add(const limb *addend1, const limb *addend2, limb *sum, int length)
@@ -435,26 +436,28 @@ static void add(const limb *addend1, const limb *addend2, limb *sum, int length)
   return;
 }
 
-void BigInteger2Dec(const BigInteger *pBigInt, char *decimal, int groupLength)
+void BigInteger2Dec(char **ppDecimal, const BigInteger *pBigInt, int groupLength)
 {
-  char* ptrDecimal = decimal;
+  char* ptrDecimal = *ppDecimal;
   if (pBigInt->sign == SIGN_NEGATIVE)
   {
     *ptrDecimal = '-';
     ptrDecimal++;
   }
-  Bin2Dec(pBigInt->limbs, ptrDecimal, pBigInt->nbrLimbs, groupLength);
+  Bin2Dec(&ptrDecimal, pBigInt->limbs, pBigInt->nbrLimbs, groupLength);
+  *ppDecimal = ptrDecimal;
 }
 
-void BigInteger2Hex(const BigInteger *pBigInt, char *decimal, int groupLength)
+void BigInteger2Hex(char** ppDecimal, const BigInteger* pBigInt, int groupLength)
 {
-  char* ptrDecimal = decimal;
+  char* ptrDecimal = *ppDecimal;
   if (pBigInt->sign == SIGN_NEGATIVE)
   {
     *ptrDecimal = '-';
     ptrDecimal++;
   }
-  Bin2Hex(pBigInt->limbs, ptrDecimal, pBigInt->nbrLimbs, groupLength);
+  Bin2Hex(&ptrDecimal, pBigInt->limbs, pBigInt->nbrLimbs, groupLength);
+  *ppDecimal = ptrDecimal;
 }
 
 void copyStr(char** pptrString, const char* stringToCopy)

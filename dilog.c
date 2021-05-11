@@ -93,35 +93,33 @@ static void showText(const char *text)
   (void)strcpy(output, text);
 }
 
-void textErrorDilog(char *ptrOutput, enum eExprErr rc)
+void textErrorDilog(char **pptrOutput, enum eExprErr rc)
 {
-  char text[150];
-  char* pOutput = ptrOutput;
+  char* pOutput = *pptrOutput;
 
-  switch (rc)
-  {
-  case EXPR_BASE_MUST_BE_POSITIVE:
-    (void)strcpy(text, lang ? "La base debe ser mayor que cero" :
-      "Base must be greater than zero");
-    break;
-  case EXPR_POWER_MUST_BE_POSITIVE:
-    (void)strcpy(text, lang ? "La potencia debe ser mayor que cero" :
-      "Power must be greater than zero");
-    break;
-  case EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE:
-    (void)strcpy(text, lang ? "El módulo debe ser mayor que 1" : "Modulus must be greater than one");
-    break;
-  default:
-    textError(text, rc);
-    break;
-  }
   *pOutput = '<';
   pOutput++;
   *pOutput = 'p';
   pOutput++;
   *pOutput = '>';
   pOutput++;
-  copyStr(&pOutput, text);
+  switch (rc)
+  {
+  case EXPR_BASE_MUST_BE_POSITIVE:
+    copyStr(&pOutput, lang ? "La base debe ser mayor que cero" :
+      "Base must be greater than zero");
+    break;
+  case EXPR_POWER_MUST_BE_POSITIVE:
+    copyStr(&pOutput, lang ? "La potencia debe ser mayor que cero" :
+      "Power must be greater than zero");
+    break;
+  case EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE:
+    copyStr(&pOutput, lang ? "El módulo debe ser mayor que 1" : "Modulus must be greater than one");
+    break;
+  default:
+    textError(&pOutput, rc);
+    break;
+  }
   *pOutput = '<';
   pOutput++;
   *pOutput = '/';
@@ -131,6 +129,7 @@ void textErrorDilog(char *ptrOutput, enum eExprErr rc)
   *pOutput = '>';
   pOutput++;
   *pOutput = 0;    // Add terminator character.
+  *pptrOutput = pOutput;
 }
 
 static void indicateCannotComputeLog(int indexBase, int indexExp)
@@ -139,8 +138,7 @@ static void indicateCannotComputeLog(int indexBase, int indexExp)
   const struct sFactors *pstFactors = &astFactorsGO[indexBase + 1];
   copyStr(&ptrText, "Cannot compute discrete logarithm: subgroup=");
   IntArray2BigInteger(pstFactors->ptrFactor, &tmpBase);
-  Bin2Dec(tmpBase.limbs, ptrText, tmpBase.nbrLimbs, groupLen);
-  ptrText += strlen(ptrText);
+  Bin2Dec(&ptrText, tmpBase.limbs, tmpBase.nbrLimbs, groupLen);
   copyStr(&ptrText, ", exponent=");
   int2dec(&ptrText, indexExp);
   DiscreteLogPeriod.sign = SIGN_NEGATIVE;
@@ -194,8 +192,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   subGroupOrder.limbs[subGroupOrder.nbrLimbs].x = 0;
   ptr = textExp;
   copyStr(&ptr, "Computing discrete logarithm in subgroup of ");
-  Bin2Dec(subGroupOrder.limbs, ptr, subGroupOrder.nbrLimbs, groupLen);
-  ptr += strlen(ptr);
+  Bin2Dec(&ptr, subGroupOrder.limbs, subGroupOrder.nbrLimbs, groupLen);
   if (astFactorsGO[indexBase + 1].multiplicity > 1)
   {
     *ptr = '<';
@@ -618,8 +615,10 @@ void DiscreteLogarithm(void)
   NumberLength = modulus.nbrLimbs;
   if (!TestBigNbrEqual(&LastModulus, &modulus))
   {
+    char* ptrToFactorDec;
     BigInteger2IntArray(nbrToFactor, &modulus);
-    Bin2Dec(modulus.limbs, tofactorDec, modulus.nbrLimbs, groupLen);
+    ptrToFactorDec = tofactorDec;
+    Bin2Dec(&ptrToFactorDec, modulus.limbs, modulus.nbrLimbs, groupLen);
     factor(&modulus, nbrToFactor, factorsMod, astFactorsMod);
     NbrFactorsMod = astFactorsMod[0].multiplicity;
   }
@@ -865,21 +864,17 @@ static void generateOutput(enum eExprErr rc, int groupLength)
   ptrOutput = &output[1];
   if (rc != EXPR_OK)
   {
-    textErrorDilog(output + 1, rc);
-    ptrOutput = output + strlen(output);
+    textErrorDilog(&ptrOutput, rc);
   }
   else
   {
     copyStr(&ptrOutput, lang ? "<p>Hallar <var>exp</var> tal que " :
       "<p>Find <var>exp</var> such that ");
-    Bin2Dec(base.limbs, ptrOutput, base.nbrLimbs, groupLength);
-    ptrOutput += strlen(ptrOutput);
+    Bin2Dec(&ptrOutput, base.limbs, base.nbrLimbs, groupLength);
     copyStr(&ptrOutput, "<sup><var>exp</var></sup> &equiv; ");
-    Bin2Dec(power.limbs, ptrOutput, power.nbrLimbs, groupLength);
-    ptrOutput += strlen(ptrOutput);
+    Bin2Dec(&ptrOutput, power.limbs, power.nbrLimbs, groupLength);
     copyStr(&ptrOutput, " (mod ");
-    Bin2Dec(modulus.limbs, ptrOutput, modulus.nbrLimbs, groupLength);
-    ptrOutput += strlen(ptrOutput);
+    Bin2Dec(&ptrOutput, modulus.limbs, modulus.nbrLimbs, groupLength);
     copyStr(&ptrOutput, ")</p><p>");
     if (DiscreteLogPeriod.sign == SIGN_NEGATIVE)
     {
@@ -890,13 +885,11 @@ static void generateOutput(enum eExprErr rc, int groupLength)
     else
     {
       copyStr(&ptrOutput, "<var>exp</var> = ");
-      Bin2Dec(DiscreteLog.limbs, ptrOutput, DiscreteLog.nbrLimbs, groupLength);
-      ptrOutput += strlen(ptrOutput);
+      Bin2Dec(&ptrOutput, DiscreteLog.limbs, DiscreteLog.nbrLimbs, groupLength);
       if (!BigIntIsZero(&DiscreteLogPeriod))
       {   // Discrete log period is not zero.
         copyStr(&ptrOutput, " + ");
-        Bin2Dec(DiscreteLogPeriod.limbs, ptrOutput, DiscreteLogPeriod.nbrLimbs, groupLength);
-        ptrOutput += strlen(ptrOutput);
+        Bin2Dec(&ptrOutput, DiscreteLogPeriod.limbs, DiscreteLogPeriod.nbrLimbs, groupLength);
         copyStr(&ptrOutput, "<var>k</var>");
       }
       copyStr(&ptrOutput, "</p>");

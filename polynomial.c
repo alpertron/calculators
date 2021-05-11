@@ -1677,8 +1677,7 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
         NumberLength = numLimbs(ptrValue1);
         IntArray2BigInteger(ptrValue1, &operand1);
         operand1.sign = SIGN_POSITIVE;
-        Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLength);
-        ptrOutput += strlen(ptrOutput);
+        Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
         if (currentDegree > 0)
         {
           if (pretty == PRETTY_PRINT)
@@ -1703,11 +1702,12 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
   NumberLength = NumberLengthBak;
 }
 
-void outputOriginalPolynomial(char* ptrOutput, int groupLength)
+void outputOriginalPolynomial(char** pptrOutput, int groupLength)
 {
   int currentDegree;
   const int* ptrValue1;
   int nbrLimbs = powerMod.nbrLimbs + 1;
+  char* ptrOutput = *pptrOutput;
   degree = values[0];
   ptrValue1 = &values[1];
   if (!modulusIsZero)
@@ -1739,8 +1739,7 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
   }
   if ((operand1.nbrLimbs != 1) || (operand1.limbs[0].x != 1) || (degree == 0))
   {     // Leading coefficient is not 1 or degree is zero.
-    Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLength);
-    ptrOutput += strlen(ptrOutput);
+    Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
   }
   if (degree > 0)
   {
@@ -1750,8 +1749,7 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
   if (!modulusIsZero)
   {
     copyStr(&ptrOutput, " (mod ");
-    Bin2Dec(primeMod.limbs, ptrOutput, primeMod.nbrLimbs, groupLength);
-    ptrOutput += strlen(ptrOutput);
+    Bin2Dec(&ptrOutput, primeMod.limbs, primeMod.nbrLimbs, groupLength);
     if (exponentMod != 1)
     {
       showPower(&ptrOutput, exponentMod);
@@ -1760,14 +1758,16 @@ void outputOriginalPolynomial(char* ptrOutput, int groupLength)
     ptrOutput++;
   }
   *ptrOutput = 0;    // Append string terminator.
+  *pptrOutput = ptrOutput;
 }
 
-void outputPolynomialFactor(char *ptrOutput, int groupLength, const struct sFactorInfo* pstFactorInfo)
+void outputPolynomialFactor(char **pptrOutput, int groupLength, const struct sFactorInfo* pstFactorInfo)
 {
   int polyDegree = pstFactorInfo->degree;
   int multiplicity = pstFactorInfo->multiplicity;
   int isMonomial = ((polyDegree == 1) && (*pstFactorInfo->ptrPolyLifted == 1) &&
      (*(pstFactorInfo->ptrPolyLifted+1) == 0));
+  char* ptrOutput = *pptrOutput;
   if ((multiplicity > 1) && !isMonomial)
   {
     *ptrOutput = '(';
@@ -1788,8 +1788,7 @@ void outputPolynomialFactor(char *ptrOutput, int groupLength, const struct sFact
     }
     if ((operand1.nbrLimbs != 1) || (operand1.limbs[0].x != 1))
     {     // Absolute value is not 1.
-      Bin2Dec(operand1.limbs, ptrOutput, operand1.nbrLimbs, groupLength);
-      ptrOutput += strlen(ptrOutput);
+      Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
     }
   }
   showPowerX(&ptrOutput, polyDegree);
@@ -1804,61 +1803,60 @@ void outputPolynomialFactor(char *ptrOutput, int groupLength, const struct sFact
     showPower(&ptrOutput, multiplicity);
   }
   *ptrOutput = 0;    // Append string terminator.
+  *pptrOutput = ptrOutput;
 }
 
-void textErrorPol(char *ptrOutput, enum eExprErr rc)
+void textErrorPol(char **pptrOutput, enum eExprErr rc)
 {
-  char text[150];
-
-  switch (rc)
-  {
-  case EXPR_CANNOT_USE_X_IN_EXPONENT:
-    (void)strcpy(text, lang?"No se puede usar variable en el exponente":
-                      "Cannot use variable in exponent");
-    break;
-  case EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER:
-    (void)strcpy(text, lang ? "La división de polinomios no es entera" :
-                        "Polynomial division is not integer");
-    break;
-  case EXPR_DEGREE_TOO_HIGH:
-    (void)strcpy(text, lang?"El grado del polinomio es muy elevado":
-                      "Degree is too high");
-    break;
-  case EXPR_EXPONENT_TOO_LARGE:
-    (void)strcpy(text, lang?"Exponente muy grande":"Exponent is too large");
-    break;
-  case EXPR_EXPONENT_NEGATIVE:
-    (void)strcpy(text, lang?"Exponente negativo":"Exponent is negative");
-    break;
-  case EXPR_LEADING_COFF_MULTIPLE_OF_PRIME:
-    (void)strcpy(text, lang?"El primer coeficiente es múltiplo del número primo":
-      "Leading coefficient multiple of prime");
-    break;
-  case EXPR_CANNOT_LIFT:
-    (void)strcpy(text, lang?"No se puede elevar porque hay factores duplicados":
-      "Cannot lift because of duplicate factors modulo prime");
-    break;
-  case EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE:
-    (void)strcpy(text, lang?"El módulo debe ser mayor que 1":"Modulus must be greater than one");
-    break;
-  case EXPR_MODULUS_MUST_BE_PRIME_EXP:
-    (void)strcpy(text, lang ? "El módulo debe ser un número primo o una potencia de número primo" :
-      "Modulus must be a prime number or a power of a prime");
-    break;
-  case EXPR_MULTIPLE_VARIABLES_NOT_ACCEPTED:
-    (void)strcpy(text, lang ? "No se aceptan múltiples variables" :
-      "Multiple variables are not accepted");
-    break;
-  default:
-    textError(text, rc);
-  }
+  char *ptrOutput = *pptrOutput;
   *ptrOutput = '<';
   ptrOutput++;
   *ptrOutput = 'p';
   ptrOutput++;
   *ptrOutput = '>';
   ptrOutput++;
-  copyStr(&ptrOutput, text);
+  switch (rc)
+  {
+  case EXPR_CANNOT_USE_X_IN_EXPONENT:
+    copyStr(&ptrOutput, lang ? "No se puede usar variable en el exponente" :
+      "Cannot use variable in exponent");
+    break;
+  case EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER:
+    copyStr(&ptrOutput, lang ? "La división de polinomios no es entera" :
+      "Polynomial division is not integer");
+    break;
+  case EXPR_DEGREE_TOO_HIGH:
+    copyStr(&ptrOutput, lang ? "El grado del polinomio es muy elevado" :
+      "Degree is too high");
+    break;
+  case EXPR_EXPONENT_TOO_LARGE:
+    copyStr(&ptrOutput, lang ? "Exponente muy grande" : "Exponent is too large");
+    break;
+  case EXPR_EXPONENT_NEGATIVE:
+    copyStr(&ptrOutput, lang ? "Exponente negativo" : "Exponent is negative");
+    break;
+  case EXPR_LEADING_COFF_MULTIPLE_OF_PRIME:
+    copyStr(&ptrOutput, lang ? "El primer coeficiente es múltiplo del número primo" :
+      "Leading coefficient multiple of prime");
+    break;
+  case EXPR_CANNOT_LIFT:
+    copyStr(&ptrOutput, lang ? "No se puede elevar porque hay factores duplicados" :
+      "Cannot lift because of duplicate factors modulo prime");
+    break;
+  case EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE:
+    copyStr(&ptrOutput, lang ? "El módulo debe ser mayor que 1" : "Modulus must be greater than one");
+    break;
+  case EXPR_MODULUS_MUST_BE_PRIME_EXP:
+    copyStr(&ptrOutput, lang ? "El módulo debe ser un número primo o una potencia de número primo" :
+      "Modulus must be a prime number or a power of a prime");
+    break;
+  case EXPR_MULTIPLE_VARIABLES_NOT_ACCEPTED:
+    copyStr(&ptrOutput, lang ? "No se aceptan múltiples variables" :
+      "Multiple variables are not accepted");
+    break;
+  default:
+    textError(&ptrOutput, rc);
+  }
   *ptrOutput = '<';
   ptrOutput++;
   *ptrOutput = '/';
@@ -1868,6 +1866,7 @@ void textErrorPol(char *ptrOutput, enum eExprErr rc)
   *ptrOutput = '>';
   ptrOutput++;
   *ptrOutput = 0;    // Add terminator character.
+  *pptrOutput = ptrOutput;
 }
 
 void SubtractIntegerPolynomial(const int* minuend, const int* subtrahend, int* difference)

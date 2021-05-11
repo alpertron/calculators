@@ -829,13 +829,12 @@ char *ShowFactoredPart(const BigInteger *pNbr, const void *vFactors)
   }
   if (hexadecimal)
   {
-    Bin2Hex(pNbr->limbs, ptrLowerText, pNbr->nbrLimbs, groupLen);
+    Bin2Hex(&ptrLowerText, pNbr->limbs, pNbr->nbrLimbs, groupLen);
   }
   else
   {
-    Bin2Dec(pNbr->limbs, ptrLowerText, pNbr->nbrLimbs, groupLen);
+    Bin2Dec(&ptrLowerText, pNbr->limbs, pNbr->nbrLimbs, groupLen);
   }
-  ptrLowerText += strlen(ptrLowerText);
   copyStr(&ptrLowerText, "</p>");
   return ptrLowerText;
 }
@@ -967,13 +966,12 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
         IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
         if (hexadecimal)
         {
-          Bin2Hex(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
+          Bin2Hex(&ptrOutput, factorValue.limbs, factorValue.nbrLimbs, groupLen);
         }
         else
         {
-          Bin2Dec(factorValue.limbs, ptrOutput, factorValue.nbrLimbs, groupLen);
+          Bin2Dec(&ptrOutput, factorValue.limbs, factorValue.nbrLimbs, groupLen);
         }
-        ptrOutput += strlen(ptrOutput);
         if (pstFactor->multiplicity > 1)
         {
           if (prettyprint)
@@ -1355,8 +1353,7 @@ static void SaveFactors(struct sFactors *pstFactors)
     }
     NumberLength = *pstCurFactor->ptrFactor;
     IntArray2BigInteger(pstCurFactor->ptrFactor, &bigint);
-    BigInteger2Dec(&bigint, ptrText, -100000);   // Factors are saved in decimal.
-    ptrText += strlen(ptrText);
+    BigInteger2Dec(&ptrText, &bigint, -100000);   // Factors are saved in decimal.
     *ptrText++ = '^';
     int2dec(&ptrText, pstCurFactor->multiplicity);
     *ptrText++ = '(';

@@ -596,8 +596,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
   ptrOut = &output[1];
   if (rc != EXPR_OK)
   {
-    textErrorPol(ptrOut, rc);
-    ptrOut += strlen(ptrOut);
+    textErrorPol(&ptrOut, rc);
   }
   else
   {
@@ -610,8 +609,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
     {
       copyStr(&ptrOut, "<p id=\"pol\">");
     }
-    outputOriginalPolynomial(ptrOut, groupLength);
-    ptrOut += strlen(ptrOut);
+    outputOriginalPolynomial(&ptrOut, groupLength);
     copyStr(&ptrOut, "</p>");
     if (!onlyEvaluate)
     {
@@ -682,8 +680,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
           {
             copyStr(&ptrOut, " &minus;");
           }
-          Bin2Dec(operand5.limbs, ptrOut, operand5.nbrLimbs, groupLength);
-          ptrOut += strlen(ptrOut);
+          Bin2Dec(&ptrOut, operand5.limbs, operand5.nbrLimbs, groupLength);
           *ptrOut = '<';
           ptrOut++; 
           *ptrOut = '/';
@@ -709,8 +706,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
           {
             copyStr(&ptrOut, "\\bullet\\,\\,");
           }
-          outputPolynomialFactor(ptrOut, groupLength, pstFactorInfo);
-          ptrOut += strlen(ptrOut);
+          outputPolynomialFactor(&ptrOut, groupLength, pstFactorInfo);
           if (pretty == TEX)
           {
             copyStr(&ptrOut, "\\\\");

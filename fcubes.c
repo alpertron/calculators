@@ -359,13 +359,12 @@ void batchCubesCallback(char **pptrOutput)
   copyStr(&ptrOutput, "<p>");
   if (hexadecimal)
   {
-    BigInteger2Hex(&toProcess, ptrOutput, groupLength);
+    BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
   }
   else
   {
-    BigInteger2Dec(&toProcess, ptrOutput, groupLength);
+    BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
   }
-  ptrOutput += strlen(ptrOutput);
   switch (result)
   {
   case -1:
@@ -394,13 +393,12 @@ void batchCubesCallback(char **pptrOutput)
   }
   if (hexadecimal)
   {
-    BigInteger2Hex(&Base1, ptrOutput, groupLength);
+    BigInteger2Hex(&ptrOutput, &Base1, groupLength);
   }
   else
   {
-    BigInteger2Dec(&Base1, ptrOutput, groupLength);
+    BigInteger2Dec(&ptrOutput, &Base1, groupLength);
   }
-  ptrOutput += strlen(ptrOutput);
   if (Base1.sign == SIGN_NEGATIVE)
   {
     *ptrOutput = ')';
@@ -417,13 +415,12 @@ void batchCubesCallback(char **pptrOutput)
     }
     if (hexadecimal)
     {
-      BigInteger2Hex(&Base2, ptrOutput, groupLength);
+      BigInteger2Hex(&ptrOutput, &Base2, groupLength);
     }
     else
     {
-      BigInteger2Dec(&Base2, ptrOutput, groupLength);
+      BigInteger2Dec(&ptrOutput, &Base2, groupLength);
     }
-    ptrOutput += strlen(ptrOutput);
     if (Base2.sign == SIGN_NEGATIVE)
     {
       *ptrOutput = ')';
@@ -441,13 +438,12 @@ void batchCubesCallback(char **pptrOutput)
     }
     if (hexadecimal)
     {
-      BigInteger2Hex(&Base3, ptrOutput, groupLength);
+      BigInteger2Hex(&ptrOutput, &Base3, groupLength);
     }
     else
     {
-      BigInteger2Dec(&Base3, ptrOutput, groupLength);
+      BigInteger2Dec(&ptrOutput, &Base3, groupLength);
     }
-    ptrOutput += strlen(ptrOutput);
     if (Base3.sign == SIGN_NEGATIVE)
     {
       *ptrOutput = ')';
@@ -465,13 +461,12 @@ void batchCubesCallback(char **pptrOutput)
     }
     if (hexadecimal)
     {
-      BigInteger2Hex(&Base4, ptrOutput, groupLength);
+      BigInteger2Hex(&ptrOutput, &Base4, groupLength);
     }
     else
     {
-      BigInteger2Dec(&Base4, ptrOutput, groupLength);
+      BigInteger2Dec(&ptrOutput, &Base4, groupLength);
     }
-    ptrOutput += strlen(ptrOutput);
     if (Base4.sign == SIGN_NEGATIVE)
     {
       *ptrOutput = ')';

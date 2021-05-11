@@ -87,8 +87,8 @@ void multiplyWithBothLen(const limb* factor1, const limb* factor2, limb* result,
   int len1, int len2, int* pResultLen);
 void squareRoot(const limb *argument, limb *sqRoot, int len, int *pLenSqRoot);
 void Dec2Bin(const char *decimal, limb *binary, int digits, int *bitGroups);
-void Bin2Dec(const limb *binary, char *decimal, int nbrLimbs, int groupLength);
-void Bin2Hex(const limb *binary, char *decimal, int nbrLimbs, int groupLength);
+void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength);
+void Bin2Hex(char** ppDecimal, const limb *binary, int nbrLimbs, int groupLength);
 void long2dec(char **pOutput, uint64_t nbr);
 void int2dec(char **pOutput, int nbr);
 void int2hex(char **pOutput, int nbr);
@@ -124,8 +124,8 @@ void floordiv(const BigInteger *num, const BigInteger *den, BigInteger *result);
 void ceildiv(const BigInteger *num, const BigInteger *den, BigInteger *result);
 void BigIntMultiplyBy2(BigInteger *nbr);
 void BigIntDivideBy2(BigInteger *nbr);
-void BigInteger2Dec(const BigInteger *pBigInt, char *decimal, int groupLength);
-void BigInteger2Hex(const BigInteger *pBigInt, char *decimal, int groupLength);
+void BigInteger2Dec(char **ppDecimal, const BigInteger *pBigInt, int groupLength);
+void BigInteger2Hex(char** ppDecimal, const BigInteger *pBigInt, int groupLength);
 void BigIntGcd(const BigInteger *pArg1, const BigInteger *pArg2, BigInteger *pResult);
 void BigIntGeneralModularDivision(const BigInteger *Num, const BigInteger *Den, 
   const BigInteger *mod, BigInteger *quotient);

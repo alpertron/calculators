@@ -210,8 +210,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         CopyBigInt(&valueX, valueFound);
         if (rc != EXPR_OK)
         {
-          textError(ptrOutput, rc);
-          ptrOutput += strlen(ptrOutput);
+          textError(&ptrOutput, rc);
           ptrOutput += 4;
           continue;
         }
@@ -290,8 +289,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         rc = evalExpression(EndExpr, valueFound);
         if (rc != EXPR_OK)
         {
-          textError(ptrOutput, rc);
-          ptrOutput += strlen(ptrOutput); 
+          textError(&ptrOutput, rc);
           break;   // Cannot compute end expression, so go out.
         }
         if (BigIntIsZero(valueFound))
@@ -317,8 +315,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           }
           else
           {
-            textError(ptrOutput, rc);
-            ptrOutput += strlen(ptrOutput);
+            textError(&ptrOutput, rc);
             if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED))
             {   // Do not show multiple errors.
               break;
@@ -336,8 +333,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           }
           else
           {
-            textError(ptrOutput, rc);
-            ptrOutput += strlen(ptrOutput);
+            textError(&ptrOutput, rc);
           }
           if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED))
           {   // Do not show multiple errors.
@@ -348,8 +344,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         rc = evalExpression(NextExpr, valueFound);
         if (rc != EXPR_OK)
         {
-          textError(ptrOutput, rc);
-          ptrOutput += strlen(ptrOutput);
+          textError(&ptrOutput, rc);
           break;   // Cannot compute next expression, so go out.
         }
         CopyBigInt(&valueX, valueFound);
@@ -386,8 +381,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       }
       else
       {
-        textError(ptrOutput, rc);
-        ptrOutput += strlen(ptrOutput);
+        textError(&ptrOutput, rc);
       }
       counterC = 2;
       copyStr(&ptrOutput, "</li><li>");
