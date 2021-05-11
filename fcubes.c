@@ -41,7 +41,7 @@ static BigInteger tmpR1;
 static BigInteger tmpS1;
 static BigInteger toProcess;
 static int groupLength;
-static char *cube = "<span class=\"bigger\">³</span>";
+static const char *cube = "<span class=\"bigger\">³</span>";
 extern bool hexadecimal;
 static int sums[] =
 {

@@ -80,7 +80,7 @@ extern int degreeOrigPoly;
 extern int polyInvCached;
 extern int valuesIndex;
 extern int poly5[COMPRESSED_POLY_MAX_LENGTH];
-extern int polyNonRepeatedFactors[];
+extern int polyNonRepeatedFactors[1000000];
 
 
 typedef void (*powerCback)(int percentage);

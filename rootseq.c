@@ -57,12 +57,12 @@ BigRational Rat4;
 BigRational Rat5;
 BigRational RatS;
 int indexRoot;
-char *ptrMinus;
-char *ptrTimes;
-char *ptrSin;
-char *ptrCos;
-char *ptrPi;
-char *ptrI;
+const char *ptrMinus;
+const char *ptrTimes;
+const char *ptrSin;
+const char *ptrCos;
+const char *ptrPi;
+const char *ptrI;
 static int totients[(2 * MAX_DEGREE) + 1];
 enum
 {
