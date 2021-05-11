@@ -392,27 +392,27 @@ void integralLLL(int size)
   int row;
 #ifdef __EMSCRIPTEN__
   char outputInfo[1000];
-  char* ptrOutput = outputInfo;
+  char* ptrOut = outputInfo;
   numberLLL++;
   if (lang)
   {
-    copyStr(&ptrOutput, "1<p>Calculando LLL número ");
-    int2dec(&ptrOutput, numberLLL);
-    copyStr(&ptrOutput, " en matriz de");
+    copyStr(&ptrOut, "1<p>Calculando LLL número ");
+    int2dec(&ptrOut, numberLLL);
+    copyStr(&ptrOut, " en matriz de");
   }
   else
   {
-    copyStr(&ptrOutput, "1<p>Computing LLL #");
-    int2dec(&ptrOutput, numberLLL);
-    copyStr(&ptrOutput, " in matrix of");
+    copyStr(&ptrOut, "1<p>Computing LLL #");
+    int2dec(&ptrOut, numberLLL);
+    copyStr(&ptrOut, " in matrix of");
   }
-  *ptrOutput = ' ';
-  ptrOutput++;
-  int2dec(&ptrOutput, size);
-  copyStr(&ptrOutput, " &times; ");
-  int2dec(&ptrOutput, size);
-  copyStr(&ptrOutput, ".</p>");
-  showElapsedTimeSec(&ptrOutput);
+  *ptrOut = ' ';
+  ptrOut++;
+  int2dec(&ptrOut, size);
+  copyStr(&ptrOut, " &times; ");
+  int2dec(&ptrOut, size);
+  copyStr(&ptrOut, ".</p>");
+  showElapsedTimeSec(&ptrOut);
   databack(outputInfo);
 #endif
   colK = 1;

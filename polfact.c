@@ -78,32 +78,32 @@ static void DistinctDegreeFactorization(int polyDegree)
       int elapsedTime = (int)(tenths() - originalTenthSecond);
       if ((elapsedTime / 10) != (oldTimeElapsed / 10))
       {
-        char *ptrOutput = outputText;
+        char *ptrOut = outputText;
         oldTimeElapsed = elapsedTime;
         if (lang)
         {
-          copyStr(&ptrOutput, "1<p>Factorización de distintos grados: buscando factores de grado ");
-          int2dec(&ptrOutput, currentDegree);
-          copyStr(&ptrOutput, " (máx.  ");
-          int2dec(&ptrOutput, (polyDegree + 1) / 2);
-          copyStr(&ptrOutput, ") del factor número ");
-          int2dec(&ptrOutput, nbrFactor + 1);
-          copyStr(&ptrOutput, " de ");
+          copyStr(&ptrOut, "1<p>Factorización de distintos grados: buscando factores de grado ");
+          int2dec(&ptrOut, currentDegree);
+          copyStr(&ptrOut, " (máx.  ");
+          int2dec(&ptrOut, (polyDegree + 1) / 2);
+          copyStr(&ptrOut, ") del factor número ");
+          int2dec(&ptrOut, nbrFactor + 1);
+          copyStr(&ptrOut, " de ");
         }
         else
         {
-          copyStr(&ptrOutput, "1<p>Distinct degree factorization: searching for factors of degree ");
-          int2dec(&ptrOutput, currentDegree);
-          copyStr(&ptrOutput, " (max.  ");
-          int2dec(&ptrOutput, (polyDegree + 1) / 2);
-          copyStr(&ptrOutput, ") of factor number ");
-          int2dec(&ptrOutput, nbrFactor + 1);
-          copyStr(&ptrOutput, " of ");
+          copyStr(&ptrOut, "1<p>Distinct degree factorization: searching for factors of degree ");
+          int2dec(&ptrOut, currentDegree);
+          copyStr(&ptrOut, " (max.  ");
+          int2dec(&ptrOut, (polyDegree + 1) / 2);
+          copyStr(&ptrOut, ") of factor number ");
+          int2dec(&ptrOut, nbrFactor + 1);
+          copyStr(&ptrOut, " of ");
         }
-        int2dec(&ptrOutput, nbrFactorsFound);
-        copyStr(&ptrOutput, lang ? ".</p><p>Transcurrió " : ".</p><p>Time elapsed: ");
-        GetDHMS(&ptrOutput, elapsedTime / 10);
-        copyStr(&ptrOutput, "</p>");
+        int2dec(&ptrOut, nbrFactorsFound);
+        copyStr(&ptrOut, lang ? ".</p><p>Transcurrió " : ".</p><p>Time elapsed: ");
+        GetDHMS(&ptrOut, elapsedTime / 10);
+        copyStr(&ptrOut, "</p>");
         databack(outputText);
       }
 #endif
@@ -169,25 +169,25 @@ static void percentageCallback(int percentage)
 {
 #ifdef __EMSCRIPTEN__
   int elapsedTime = (int)(tenths() - originalTenthSecond);
-  char *ptrOutput = ptrPercentageOutput;
+  char *ptrOut = ptrPercentageOutput;
   if ((elapsedTime / 10) != (oldTimeElapsed / 10))
   {
     oldTimeElapsed = elapsedTime;
-    int2dec(&ptrOutput, percentage);
+    int2dec(&ptrOut, percentage);
     if (lang)
     {
-      copyStr(&ptrOutput, "% del ");
-      int2dec(&ptrOutput, attemptNbr);
-      copyStr(&ptrOutput, ".º intento");
+      copyStr(&ptrOut, "% del ");
+      int2dec(&ptrOut, attemptNbr);
+      copyStr(&ptrOut, ".º intento");
     }
     else
     {
-      copyStr(&ptrOutput, "% of attempt #");
-      int2dec(&ptrOutput, attemptNbr);
+      copyStr(&ptrOut, "% of attempt #");
+      int2dec(&ptrOut, attemptNbr);
     }
-    copyStr(&ptrOutput, lang ? ".</p><p>Transcurrió " : ".</p><p>Time elapsed: ");
-    GetDHMS(&ptrOutput, elapsedTime / 10);
-    copyStr(&ptrOutput, "</p>");
+    copyStr(&ptrOut, lang ? ".</p><p>Transcurrió " : ".</p><p>Time elapsed: ");
+    GetDHMS(&ptrOut, elapsedTime / 10);
+    copyStr(&ptrOut, "</p>");
     databack(outputText);
   }
 #else

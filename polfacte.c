@@ -28,11 +28,11 @@
 EXTERNALIZE void doWork(void)
 {
   int flags = 0;
-  int groupLen = 0;
+  int groupLength = 0;
   char* ptrData = inputString;
   while (*ptrData != ',')
   {
-    groupLen = (groupLen * 10) + (*ptrData - '0');
+    groupLength = (groupLength * 10) + (*ptrData - '0');
     ptrData++;
   }
   ptrData++;         // Skip comma.
@@ -57,7 +57,7 @@ EXTERNALIZE void doWork(void)
     break;
   }
   ptrData++;          // Skip comma.
-  polyFactText(ptrData, ptrData + strlen(ptrData) + 1, groupLen);
+  polyFactText(ptrData, ptrData + strlen(ptrData) + 1, groupLength);
   databack(output);
 }
 #endif

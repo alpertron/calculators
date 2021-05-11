@@ -943,14 +943,14 @@ void dilogText(char* baseText, char* powerText, char* modText, int groupLength)
 EXTERNALIZE void doWork(void)
 {
   int flags;
-  int groupLen = 0;
+  int groupLength = 0;
   char *ptrData = inputString;
   char *ptrPower;
   char *ptrMod;
-  groupLen = 0;
+  groupLength = 0;
   while (*ptrData != ',')
   {
-    groupLen = (groupLen * 10) + (*ptrData - '0');
+    groupLength = (groupLength * 10) + (*ptrData - '0');
     ptrData++;
   }
   ptrData++;             // Skip comma.
@@ -961,7 +961,7 @@ EXTERNALIZE void doWork(void)
   ptrData += 2;          // Skip flags and comma.
   ptrPower = ptrData + strlen(ptrData) + 1;
   ptrMod = ptrPower + strlen(ptrPower) + 1;
-  dilogText(ptrData, ptrPower, ptrMod, groupLen);
+  dilogText(ptrData, ptrPower, ptrMod, groupLength);
   databack(output);
 }
 #endif
