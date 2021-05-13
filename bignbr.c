@@ -137,8 +137,9 @@ void BigIntChSign(BigInteger *value)
 }
 
 static void InternalBigIntAdd(const BigInteger *pAddend1, const BigInteger *pAddend2, 
-  BigInteger *pSum, enum eSign addend2Sign)
+  BigInteger *pSum, enum eSign addend2sign)
 {
+  int addend2Sign = addend2sign;
   int ctr;
   int nbrLimbs;
   const limb *ptrAddend1;
@@ -957,11 +958,12 @@ int intModPow(int NbrMod, int Expon, int currentPrime)
   return (int)power;
 }
 
-void IntArray2BigInteger(const int *ptrValues, /*@out@*/BigInteger *bigint)
+void IntArray2BigInteger(const int *ptrValues, BigInteger *bigint)
 {
+  const int* piValues = ptrValues;
   limb *destLimb = bigint->limbs;
-  int nbrLimbs = *ptrValues;
-  ptrValues++;
+  int nbrLimbs = *piValues;
+  piValues++;
   if (nbrLimbs > 0)
   {
     bigint->sign = SIGN_POSITIVE;
@@ -973,7 +975,7 @@ void IntArray2BigInteger(const int *ptrValues, /*@out@*/BigInteger *bigint)
   }
   if (NumberLength == 1)
   {
-    destLimb->x = *ptrValues;
+    destLimb->x = *piValues;
     bigint->nbrLimbs = 1;
   }
   else
@@ -982,9 +984,9 @@ void IntArray2BigInteger(const int *ptrValues, /*@out@*/BigInteger *bigint)
     bigint->nbrLimbs = nbrLimbs;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
-      destLimb->x = *ptrValues;
+      destLimb->x = *piValues;
       destLimb++;
-      ptrValues++;
+      piValues++;
     }
     for (; ctr < NumberLength; ctr++)
     {

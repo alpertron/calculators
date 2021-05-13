@@ -568,9 +568,13 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
 }
 
 // Multiply factor1 by factor2.The result will be stored in polyMultTemp.
-static void MultIntegerPolynomial(int degree1, int degree2,
-  /*@in@*/int* factor1, /*@in@*/int* factor2)
+static void MultIntegerPolynomial(int deg1, int deg2,
+  /*@in@*/int* fact1, /*@in@*/int* fact2)
 {
+  int degree1 = deg1;
+  int degree2 = deg2;
+  int* factor1 = fact1;
+  int* factor2 = fact2;
   int indexes[2][MAX_DEGREE + 1];
   int* ptrIndex;
   int* piTemp;

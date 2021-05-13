@@ -1394,13 +1394,14 @@ static void SaveFactors(struct sFactors *pstFactors)
 
 static char *findChar(char *str, char c)
 {
-  while (*str != 0)
+  char* ptrStr = str;
+  while (*ptrStr != '\0')
   {
-    if (*str == c)
+    if (*ptrStr == c)
     {
-      return str;
+      return ptrStr;
     }
-    str++;
+    ptrStr++;
   }
   return NULL;
 }

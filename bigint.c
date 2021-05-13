@@ -535,12 +535,13 @@ void MultBigNbrModN(const int *Nbr1, int *Nbr2, int *Prod, int *Mod, int nbrLen)
 
 void MultBigNbrByIntModN(int *Nbr1, int Nbr2, int *Prod, int *Mod, int nbrLen)
 {
-  if ((nbrLen >= 2) && (*(Mod + nbrLen - 1) == 0))
+  int nbrLength = nbrLen;
+  if ((nbrLength >= 2) && (*(Mod + nbrLength - 1) == 0))
   {
-    nbrLen--;
+    nbrLength--;
   }
-  *(Nbr1+nbrLen) = 0;
-  modmultIntExtended((limb *)Nbr1, Nbr2, (limb *)Prod, (limb *)Mod, nbrLen);
+  *(Nbr1+nbrLength) = 0;
+  modmultIntExtended((limb *)Nbr1, Nbr2, (limb *)Prod, (limb *)Mod, nbrLength);
 }
 
 int intDoubleModPow(int NbrMod, int Expon, int currentPrime)

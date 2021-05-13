@@ -627,12 +627,13 @@ void polyToStandardNotation(int *nbr, int qtyNbrs)
 
 void polyToMontgomeryNotation(int *nbr, int qtyNbrs)
 {
+  int* ptrNbr = nbr;
   for (int currentNbr = qtyNbrs - 1; currentNbr >= 0; currentNbr--)
   {
-    IntArray2BigInteger(nbr, &operand1);
+    IntArray2BigInteger(ptrNbr, &operand1);
     modmult(operand1.limbs, MontgomeryMultR2, operand1.limbs);
-    BigInteger2IntArray(nbr, &operand1);
-    nbr += NumberLength + 1;
+    BigInteger2IntArray(ptrNbr, &operand1);
+    ptrNbr += NumberLength + 1;
   }
 }
 
@@ -869,10 +870,14 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
 // Given coprime polynomials A and B, find polynomials U and V such that
 // A*U + B*V = 1 (mod powerMod). Polynomial V is not required on output.
 // Use Montgomery notation.
-static void ExtendedGcdPolynomial(/*@in@*/int *pointerA, int degreeA, /*@in@*/int *pointerB,
-  int degreeB, /*@out@*/int *ptrQ,
+static void ExtendedGcdPolynomial(/*@in@*/int *pointrA, int degA, /*@in@*/int * pointrB,
+  int degB, /*@out@*/int *ptrQ,
   /*@out@*/int *ptrP1, /*@out@*/int *ptrP2, /*@out@*/int *ptrU, /*@out@*/int *pDegreeU)
 {
+  int* pointerA = pointrA;
+  int* pointerB = pointrB;
+  int degreeA = degA;
+  int degreeB = degB;
   int *ptrQuotient = ptrQ;
   int *ptrQuotients[MAX_DEGREE+1];
   int* tmpPtr;
@@ -882,9 +887,9 @@ static void ExtendedGcdPolynomial(/*@in@*/int *pointerA, int degreeA, /*@in@*/in
   int degreeOldR;
   int nbrQuotients = 0;
   int nbrLimbs = NumberLength + 1;
-  bool polyExchanged = false;
   int currentDegree;
   int degreeU;
+  bool polyExchanged = false;
 
   // Ensure that degree of A is greater than degree of B.
   // Variable polyExchange indicates whether the polynomials were exchanged or not.

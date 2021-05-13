@@ -119,29 +119,31 @@ void multiplyWithBothLen(const limb *factor1, const limb *factor2, limb *result,
 static int absSubtract(int idxMinuend, int idxSubtrahend,
                        int idxResult, int nbrLen)
 {
+  int indexMinuend = idxMinuend;
+  int indexSubtrahend = idxSubtrahend;
   int sign = 0;
   limb carry;
   int i;
   limb *ptrArray;
   for (i = nbrLen-1; i>=0; i--)
   {
-    if (arr[idxMinuend + i].x != arr[idxSubtrahend + i].x)
+    if (arr[indexMinuend + i].x != arr[indexSubtrahend + i].x)
     {
       break;
     }
   }
-  if ((i>=0) && (arr[idxMinuend + i].x < arr[idxSubtrahend + i].x))
+  if ((i>=0) && (arr[indexMinuend + i].x < arr[indexSubtrahend + i].x))
   {
     sign = 1;
-    i = idxMinuend;    // Exchange minuend and subtrahend.
-    idxMinuend = idxSubtrahend;
-    idxSubtrahend = i;
+    i = indexMinuend;    // Exchange minuend and subtrahend.
+    indexMinuend = indexSubtrahend;
+    indexSubtrahend = i;
   }
   ptrArray = arr;
   carry.x = 0;
   for (i = nbrLen; i > 0; i--)
   {
-    carry.x = (carry.x >> BITS_PER_GROUP) + (ptrArray+idxMinuend)->x - (ptrArray + idxSubtrahend)->x;
+    carry.x = (carry.x >> BITS_PER_GROUP) + (ptrArray+indexMinuend)->x - (ptrArray + indexSubtrahend)->x;
     (ptrArray + idxResult)->x = carry.x & MAX_VALUE_LIMB;
     ptrArray++;
   }
