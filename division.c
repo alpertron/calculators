@@ -49,9 +49,9 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
 
   shLeft = 0;
   mostSignficLimb.x = (number + len - 1)->x;
-  for (int mask = LIMB_RANGE/2; mask > 0; mask >>= 1)
+  for (unsigned int mask = LIMB_RANGE/2; mask > 0; mask >>= 1)
   {
-    if ((mostSignficLimb.x & mask) != 0)
+    if (((unsigned int)mostSignficLimb.x & mask) != 0U)
     {
       break;
     }
@@ -63,12 +63,12 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
   for (int index2 = len; index2 > 0; index2--)
   {
     newLimb.x = ptrDest->x;
-    ptrDest->x = ((newLimb.x << shLeft) |
-      (oldLimb.x >> (BITS_PER_GROUP - shLeft))) & MAX_VALUE_LIMB;
+    ptrDest->x = (int)((((unsigned int)newLimb.x << shLeft) |
+      ((unsigned int)oldLimb.x >> (BITS_PER_GROUP - shLeft))) & MAX_VALUE_LIMB);
     ptrDest++;
     oldLimb.x = newLimb.x;
   }
-  ptrDest->x = oldLimb.x >> (BITS_PER_GROUP - shLeft);
+  ptrDest->x = (int)((unsigned int)oldLimb.x >> (BITS_PER_GROUP - shLeft));
   *pPower2 = shLeft;
 }
 
@@ -165,12 +165,12 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       TrialQuotient = (int)(unsigned int)floor((dNbr * dInvDivisor) + 0.5);
       if ((unsigned int)TrialQuotient >= LIMB_RANGE)
       {   // Maximum value for limb.
-        TrialQuotient = MAX_VALUE_LIMB;
+        TrialQuotient = (int)MAX_VALUE_LIMB;
       }
       // Compute Nbr <- Nbr - TrialQuotient * Modulus
 #ifndef _USING64BITS_
       dTrialQuotient = (double)TrialQuotient;
-      dDelta = 0;
+      dDelta = 0.0;
 #endif
       carry = 0;
       ptrDividend = &adjustedArgument[nbrLimbsDividend - nbrLimbsDivisor];
@@ -179,26 +179,27 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       {
 #ifdef _USING64BITS_
         carry += (int64_t)ptrDividend->x - (ptrDivisor->x * (int64_t)TrialQuotient);
-        ptrDividend->x = (int)carry & MAX_VALUE_LIMB;
+        ptrDividend->x = (int)((unsigned int)carry & MAX_VALUE_LIMB);
         carry >>= BITS_PER_GROUP;
 #else
         low = (ptrDividend->x - (ptrDivisor->x * TrialQuotient) + carry) & MAX_INT_NBR;
         // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
         // In that case, there would be an error of +/- 1.
-        dAccumulator = ptrDividend->x - (ptrDivisor->x * dTrialQuotient) + carry + dDelta;
-        dDelta = 0;
-        if (dAccumulator < 0)
+        dAccumulator = (double)ptrDividend->x - (ptrDivisor->x * dTrialQuotient) +
+          (double)carry + dDelta;
+        dDelta = 0.0;
+        if (dAccumulator < 0.0)
         {
           dAccumulator += dSquareLimb;
           dDelta = -(double)LIMB_RANGE;
         }
         if (low < HALF_INT_RANGE)
         {
-          carry = (int)floor((dAccumulator + HALF_INT_RANGE / 2) * dVal);
+          carry = (int)floor((dAccumulator + (double)(HALF_INT_RANGE / 2)) * dVal);
         }
         else
         {
-          carry = (int)floor((dAccumulator - HALF_INT_RANGE / 2) * dVal);
+          carry = (int)floor((dAccumulator - (double)(HALF_INT_RANGE / 2)) * dVal);
         }
         ptrDividend->x = low;
 #endif
@@ -213,9 +214,9 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       low = (ptrDividend->x + carry) & MAX_INT_NBR;
       // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
       // In that case, there would be an error of +/- 1.
-      dAccumulator = ptrDividend->x + carry + dDelta;
-      dDelta = 0;
-      if (dAccumulator < 0)
+      dAccumulator = (double)ptrDividend->x + (double)carry + dDelta;
+      dDelta = 0.0;
+      if (dAccumulator < 0.0)
       {
         dAccumulator += dSquareLimb;
         dDelta = -(double)LIMB_RANGE;
