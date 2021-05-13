@@ -2387,7 +2387,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
     (void)memset(base, 0, polyDegree*sizeof(int));
     if (memcmp(base, prod, polyDegree * sizeof(int)) == 0)
     {     // The polynomial is cyclotomic.
-      int denIsOdd = index % 2;
+      int denIsOdd = ((index % 2) == 1)? true: false;
       int realDen = denIsOdd ? index : (index / 2);
       for (int numerator = 1; numerator < index; numerator++)
       {

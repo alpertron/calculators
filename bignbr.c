@@ -674,7 +674,7 @@ static void addToAbsValue(limb *pLimbs, int *pNbrLimbs, int addend)
   {     // No overflow. Go out of routine.
     return;
   }
-  ptrLimbs->x -= LIMB_RANGE;
+  ptrLimbs->x -= (int)LIMB_RANGE;
   for (int ctr = 1; ctr < nbrLimbs; ctr++)
   {
     ptrLimbs++;        // Point to next most significant limb.
@@ -863,7 +863,7 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
     intMult = -intMult;
   }
 #ifndef _USING64BITS_
-  dFactor = (double)factor;
+  dFactor = (double)intMult;
 #endif
   carry = 0;
   for (int ctr = 0; ctr < nbrLimbs; ctr++)

@@ -26,8 +26,8 @@
 #endif
 #define BITS_PER_GROUP 31
 #define BITS_PER_INT_GROUP 31
-#define HALF_INT_RANGE (1 << (BITS_PER_INT_GROUP - 1))
-#define MAX_INT_NBR ((int)((1U << BITS_PER_INT_GROUP)-1))
+#define HALF_INT_RANGE ((int)(0x80000000U >> (32 - BITS_PER_INT_GROUP)))
+#define MAX_INT_NBR ((int)((0x80000000U >> (31 - BITS_PER_INT_GROUP))-1))
 #define LIMB_RANGE (1U<<BITS_PER_GROUP)
 #define SMALL_NUMBER_BOUND 32768
 #define SMALL_PRIMES_ARRLEN  9592  // Number of primes less than 100000.

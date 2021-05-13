@@ -347,7 +347,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
 
       // At this moment the order is: xL, xH, yL, yH.
       // Exchange high part of first factor with low part of 2nd factor.
-      halfLength = nbrLength >> 1;
+      halfLength = nbrLength / 2;
       int* ptrHighFirstFactor = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
       int* ptrLowSecondFactor = &polyMultTemp[idxFactor2 * nbrLimbs];
       if (nbrLimbs == 2)
