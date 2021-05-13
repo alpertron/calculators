@@ -151,15 +151,120 @@ static void EvaluateQuadraticPoly(BigInteger *pResult, const BigInteger *pValue,
   addbigint(pResult, constant);
 }
 
+// Perform Pell solution of Demjanenko's theorem
+// Using these values of P, Q, R and S, a and b will be
+// always one and zero (mod 6) respectively.
+// P <- -112488782561 = -(52*2^31+819632865)
+// Q <- -6578430178320 = -(3063*2^31+687764496)
+// R <- -1923517596 = -(0*2^31+1923517596)
+// S <- P
+// P1 <- 1
+// Q1 <- 0
+// R1 <- 0
+// S1 <- 1
+static void Demjanenko(void)
+{
+  int mod83;
+  int pow;
+  int exp;
+  int mask;
+  P.limbs[1].x = 52;
+  P.limbs[0].x = 819632865;
+  Q.limbs[1].x = 3063;
+  Q.limbs[0].x = 687764496;
+  Q.nbrLimbs = 2;
+  P.nbrLimbs = 2;
+  Q.sign = SIGN_NEGATIVE;
+  P.sign = SIGN_NEGATIVE;
+  CopyBigInt(&S, &P);
+  intToBigInteger(&R, -1923517596);
+  intToBigInteger(&P1, 1);
+  intToBigInteger(&Q1, 0);
+  intToBigInteger(&R1, 0);
+  intToBigInteger(&S1, 1);
+  mod83 = getRemainder(&value, 83);
+  pow = 71;
+  exp = 0;
+  while (pow != mod83)
+  {
+    exp++;
+    pow = (pow * 50) % 83;
+  }
+  if (exp > (82 / 2))
+  {
+    exp = 82 - exp;
+    Q.sign = SIGN_POSITIVE;
+    R.sign = SIGN_POSITIVE;
+  }  // Now exp is in range 0-41.
+  mask = 32;
+  while (mask > 0)
+  {
+    // tmpP1 <- P1*P1 + Q1*R1
+    // tmpQ1 <- (P1+S1) * Q1
+    // tmpR1 <- (P1+S1) * R1
+    // tmpS1 <- S1*S1 + Q1*R1
+    // P1 <- tmpP1
+    // Q1 <- tmpQ1
+    // R1 <- tmpR1
+    // S1 <- tmpS1
+    (void)BigIntMultiply(&P1, &P1, &tmpP1);
+    (void)BigIntMultiply(&Q1, &R1, &tmpQ1);
+    (void)BigIntMultiply(&S1, &S1, &tmpS1);
+    BigIntAdd(&P1, &S1, &tmpR1);
+    BigIntAdd(&tmpP1, &tmpQ1, &P1);
+    BigIntAdd(&tmpS1, &tmpQ1, &S1);
+    (void)BigIntMultiply(&tmpR1, &Q1, &Q1);
+    (void)BigIntMultiply(&tmpR1, &R1, &R1);
+    if ((exp & mask) != 0)
+    {
+      // tmpP1 <- P*P1 + Q*R1
+      // tmpQ1 <- P*Q1 + Q*S1
+      // tmpR1 <- R*P1 + S*R1
+      // tmpS1 <- R*Q1 + S*S1
+      // P1 <- tmpP1
+      // Q1 <- tmpQ1
+      // R1 <- tmpR1
+      // S1 <- tmpS1
+      (void)BigIntMultiply(&P, &P1, &tmpP1);
+      (void)BigIntMultiply(&Q, &R1, &tmpQ1);
+      (void)BigIntMultiply(&R, &P1, &tmpR1);
+      (void)BigIntMultiply(&S, &R1, &tmpS1);
+      BigIntAdd(&tmpP1, &tmpQ1, &P1);
+      BigIntAdd(&tmpR1, &tmpS1, &R1);
+      (void)BigIntMultiply(&P, &Q1, &tmpP1);
+      (void)BigIntMultiply(&Q, &S1, &tmpQ1);
+      (void)BigIntMultiply(&R, &Q1, &tmpR1);
+      (void)BigIntMultiply(&S, &S1, &tmpS1);
+      BigIntAdd(&tmpP1, &tmpQ1, &Q1);
+      BigIntAdd(&tmpR1, &tmpS1, &S1);
+    }
+    mask >>= 1;
+  }
+  addmult(&a, &P1, -3041, &Q1, -52);   // a <- -3041*P1 - 52*Q1
+  addmult(&b, &R1, -3041, &S1, -52);   // b <- -3041*R1 - 52*S1
+  addmult(&Base1, &a, 27, &b, -928);   // Base1 <- 27*a - 928*b
+  addmult(&Base2, &a, -9, &b, -602);   // Base2 <- -9*a - 602*b
+  addmult(&Base3, &a, 25, &b, -2937);  // Base3 <- 25*a - 2937*b
+  addmult(&Base4, &a, -19, &b, 2746);  // Base4 <- -19*a - 2746*b
+  // a <- (value - Base1^3 - Base2^3 - Base3^3 - Base4^3)/(18*83)
+  getSumOfCubes();  // tmpP1 = Base1^3 + Base2^3 + Base3^3 + Base4^3
+  BigIntSubt(&value, &tmpP1, &a);
+  subtractdivide(&a, 0, 18 * 83);      // Divide a by 18*83.
+  multint(&tmpP1, &a, 10);             // Base1 <- Base1 + 10*a
+  BigIntAdd(&tmpP1, &Base1, &Base1);
+  multint(&tmpP1, &a, -19);            // Base2 <- Base2 - 19*a
+  BigIntAdd(&tmpP1, &Base2, &Base2);
+  multint(&tmpP1, &a, -24);            // Base3 <- Base3 - 24*a
+  BigIntAdd(&tmpP1, &Base3, &Base3);
+  multint(&tmpP1, &a, 27);             // Base4 <- Base4 + 27*a
+  BigIntAdd(&tmpP1, &Base4, &Base4);
+}
+
 static int fcubes(const BigInteger *pArgument)
 {
   int mod18;
   int modulus;
   int i;
-  int mod83;
-  int mask;
-  int pow;
-  int exp;
   bool converted = false;
   CopyBigInt(&value, pArgument);
   // Compute argument mod 18.
@@ -173,143 +278,42 @@ static int fcubes(const BigInteger *pArgument)
     converted = true;
     BigIntNegate(&value, &value);
   }
-  for (i = 0; i<(int)(sizeof(sums)/sizeof(sums[0])); i += 10)
+  for (i = (int)(sizeof(sums) / sizeof(sums[0]))-10; i>=0; i -= 10)
   {
     modulus = sums[i];
     if (((getRemainder(&value, modulus) + modulus)% modulus) == sums[i + 1])
     {
+      subtractdivide(&value, sums[i + 1], modulus);      // value <- (value-sums[i+1])/modulus
+      multadd(&Base1, sums[i + 2], &value, sums[i + 3]); // Base1 <- sums[i+2]*value+sums[i+3]
+      multadd(&Base2, sums[i + 4], &value, sums[i + 5]); // Base2 <- sums[i+4]*value+sums[i+5]
+      multadd(&Base3, sums[i + 6], &value, sums[i + 7]); // Base3 <- sums[i+6]*value+sums[i+7]
+      multadd(&Base4, sums[i + 8], &value, sums[i + 9]); // Base4 <- sums[i+8]*value+sums[i+9]
       break;
     }
   }
-  if (i<(int)(sizeof(sums) / sizeof(sums[0])))
+  if (i < 0)
   {
-    subtractdivide(&value, sums[i + 1], modulus);      // value <- (value-sums[i+1])/modulus
-    multadd(&Base1, sums[i + 2], &value, sums[i + 3]); // Base1 <- sums[i+2]*value+sums[i+3]
-    multadd(&Base2, sums[i + 4], &value, sums[i + 5]); // Base2 <- sums[i+4]*value+sums[i+5]
-    multadd(&Base3, sums[i + 6], &value, sums[i + 7]); // Base3 <- sums[i+6]*value+sums[i+7]
-    multadd(&Base4, sums[i + 8], &value, sums[i + 9]); // Base4 <- sums[i+8]*value+sums[i+9]
-  }
-  else if (getRemainder(&value, 54) == 2)
-  {           // If value == 2 (mod 54)...
-    subtractdivide(&value, 2, 54);   // value <- (value-2)/54
-    EvaluateQuadraticPoly(&Base1, &value, 29484, 2211, 43);
-    EvaluateQuadraticPoly(&Base2, &value, -29484, -2157, -41);
-    EvaluateQuadraticPoly(&Base3, &value, 9828, 485, 4);
-    EvaluateQuadraticPoly(&Base4, &value, -9828, -971, -22);
-  }
-  else if (getRemainder(&value, 83 * 108) == (83*46))
-  {           // If value == 83*46 (mod 83*108)...
-    subtractdivide(&value, 83*46, (83*108)); // value <-(value - (83*46)) / (83*108)
-    EvaluateQuadraticPoly(&Base1, &value, 29484, 25143, 5371);
-    EvaluateQuadraticPoly(&Base2, &value, -29484, -25089, -5348);
-    EvaluateQuadraticPoly(&Base3, &value, 9828, 8129, 1682);
-    EvaluateQuadraticPoly(&Base4, &value, -9828, -8615, -1889);
-  }
-  else
-  {
-      // Perform Pell solution of Demjanenko's theorem
-      // Using these values of P, Q, R and S, a and b will be
-      // always one and zero (mod 6) respectively.
-      // P <- -112488782561 = -(52*2^31+819632865)
-      // Q <- -6578430178320 = -(3063*2^31+687764496)
-      // R <- -1923517596 = -(0*2^31+1923517596)
-      // S <- P
-      // P1 <- 1
-      // Q1 <- 0
-      // R1 <- 0
-      // S1 <- 1
-    P.limbs[1].x = 52;
-    P.limbs[0].x = 819632865;
-    Q.limbs[1].x = 3063;
-    Q.limbs[0].x = 687764496;
-    Q.nbrLimbs = 2;
-    P.nbrLimbs = 2;
-    Q.sign = SIGN_NEGATIVE;
-    P.sign = SIGN_NEGATIVE;
-    CopyBigInt(&S, &P);
-    intToBigInteger(&R, -1923517596);
-    intToBigInteger(&P1, 1);
-    intToBigInteger(&Q1, 0);
-    intToBigInteger(&R1, 0);
-    intToBigInteger(&S1, 1);
-    mod83 = getRemainder(&value, 83);
-    pow = 71;
-    exp = 0;
-    while (pow != mod83)
-    {
-      exp++;
-      pow = (pow * 50) % 83;
+    if (getRemainder(&value, 54) == 2)
+    {           // If value == 2 (mod 54)...
+      subtractdivide(&value, 2, 54);   // value <- (value-2)/54
+      EvaluateQuadraticPoly(&Base1, &value, 29484, 2211, 43);
+      EvaluateQuadraticPoly(&Base2, &value, -29484, -2157, -41);
+      EvaluateQuadraticPoly(&Base3, &value, 9828, 485, 4);
+      EvaluateQuadraticPoly(&Base4, &value, -9828, -971, -22);
     }
-    if (exp > (82 / 2))
-    {
-      exp = 82 - exp;
-      Q.sign = SIGN_POSITIVE;
-      R.sign = SIGN_POSITIVE;
-    }  // Now exp is in range 0-41.
-    mask = 32;
-    while (mask > 0)
-    {
-      // tmpP1 <- P1*P1 + Q1*R1
-      // tmpQ1 <- (P1+S1) * Q1
-      // tmpR1 <- (P1+S1) * R1
-      // tmpS1 <- S1*S1 + Q1*R1
-      // P1 <- tmpP1
-      // Q1 <- tmpQ1
-      // R1 <- tmpR1
-      // S1 <- tmpS1
-      (void)BigIntMultiply(&P1, &P1, &tmpP1);
-      (void)BigIntMultiply(&Q1, &R1, &tmpQ1);
-      (void)BigIntMultiply(&S1, &S1, &tmpS1);
-      BigIntAdd(&P1, &S1, &tmpR1);
-      BigIntAdd(&tmpP1, &tmpQ1, &P1);
-      BigIntAdd(&tmpS1, &tmpQ1, &S1);
-      (void)BigIntMultiply(&tmpR1, &Q1, &Q1);
-      (void)BigIntMultiply(&tmpR1, &R1, &R1);
-      if ((exp & mask) != 0)
-      {
-        // tmpP1 <- P*P1 + Q*R1
-        // tmpQ1 <- P*Q1 + Q*S1
-        // tmpR1 <- R*P1 + S*R1
-        // tmpS1 <- R*Q1 + S*S1
-        // P1 <- tmpP1
-        // Q1 <- tmpQ1
-        // R1 <- tmpR1
-        // S1 <- tmpS1
-        (void)BigIntMultiply(&P, &P1, &tmpP1);
-        (void)BigIntMultiply(&Q, &R1, &tmpQ1);
-        (void)BigIntMultiply(&R, &P1, &tmpR1);
-        (void)BigIntMultiply(&S, &R1, &tmpS1);
-        BigIntAdd(&tmpP1, &tmpQ1, &P1);
-        BigIntAdd(&tmpR1, &tmpS1, &R1);
-        (void)BigIntMultiply(&P, &Q1, &tmpP1);
-        (void)BigIntMultiply(&Q, &S1, &tmpQ1);
-        (void)BigIntMultiply(&R, &Q1, &tmpR1);
-        (void)BigIntMultiply(&S, &S1, &tmpS1);
-        BigIntAdd(&tmpP1, &tmpQ1, &Q1);
-        BigIntAdd(&tmpR1, &tmpS1, &S1);
-      }
-      mask >>= 1;
+    else if (getRemainder(&value, 83 * 108) == (83 * 46))
+    {           // If value == 83*46 (mod 83*108)...
+      subtractdivide(&value, 83 * 46, (83 * 108)); // value <-(value - (83*46)) / (83*108)
+      EvaluateQuadraticPoly(&Base1, &value, 29484, 25143, 5371);
+      EvaluateQuadraticPoly(&Base2, &value, -29484, -25089, -5348);
+      EvaluateQuadraticPoly(&Base3, &value, 9828, 8129, 1682);
+      EvaluateQuadraticPoly(&Base4, &value, -9828, -8615, -1889);
     }
-    addmult(&a, &P1, -3041, &Q1, -52);   // a <- -3041*P1 - 52*Q1
-    addmult(&b, &R1, -3041, &S1, -52);   // b <- -3041*R1 - 52*S1
-    addmult(&Base1, &a, 27, &b, -928);   // Base1 <- 27*a - 928*b
-    addmult(&Base2, &a, -9, &b, -602);   // Base2 <- -9*a - 602*b
-    addmult(&Base3, &a, 25, &b, -2937);  // Base3 <- 25*a - 2937*b
-    addmult(&Base4, &a, -19, &b, 2746);  // Base4 <- -19*a - 2746*b
-    // a <- (value - Base1^3 - Base2^3 - Base3^3 - Base4^3)/(18*83)
-    getSumOfCubes();  // tmpP1 = Base1^3 + Base2^3 + Base3^3 + Base4^3
-    BigIntSubt(&value, &tmpP1, &a);
-    subtractdivide(&a, 0, 18 * 83);      // Divide a by 18*83.
-    multint(&tmpP1, &a, 10);             // Base1 <- Base1 + 10*a
-    BigIntAdd(&tmpP1, &Base1, &Base1);
-    multint(&tmpP1, &a, -19);            // Base2 <- Base2 - 19*a
-    BigIntAdd(&tmpP1, &Base2, &Base2);
-    multint(&tmpP1, &a, -24);            // Base3 <- Base3 - 24*a
-    BigIntAdd(&tmpP1, &Base3, &Base3);
-    multint(&tmpP1, &a, 27);             // Base4 <- Base4 + 27*a
-    BigIntAdd(&tmpP1, &Base4, &Base4);
+    else
+    {
+      Demjanenko();
+    }
   }
-
   if (converted)
   {
     BigIntNegate(&Base1, &Base1);
@@ -349,6 +353,32 @@ void fcubesText(char *input, int grpLen)
     "</p><p>" COPYRIGHT_ENGLISH "</p>"));
 }
 
+// Show cube number. Use parentheses for negative numbers.
+static void showCube(char** pptrOutput, const BigInteger* pBase)
+{
+  char* ptrOutput = *pptrOutput;
+  if (pBase->sign == SIGN_NEGATIVE)
+  {
+    *ptrOutput = '(';
+    ptrOutput++;
+  }
+  if (hexadecimal)
+  {
+    BigInteger2Hex(&ptrOutput, pBase, groupLength);
+  }
+  else
+  {
+    BigInteger2Dec(&ptrOutput, pBase, groupLength);
+  }
+  if (Base1.sign == SIGN_NEGATIVE)
+  {
+    *ptrOutput = ')';
+    ptrOutput++;
+  }
+  copyStr(&ptrOutput, cube);
+  *pptrOutput = ptrOutput;
+}
+
 void batchCubesCallback(char **pptrOutput)
 {
   int result;
@@ -386,93 +416,21 @@ void batchCubesCallback(char **pptrOutput)
   }
   // Show decomposition in sum of 1, 2, 3 or 4 cubes.
   copyStr(&ptrOutput, " = ");
-  if (Base1.sign == SIGN_NEGATIVE)
-  {
-    *ptrOutput = '(';
-    ptrOutput++;
-  }
-  if (hexadecimal)
-  {
-    BigInteger2Hex(&ptrOutput, &Base1, groupLength);
-  }
-  else
-  {
-    BigInteger2Dec(&ptrOutput, &Base1, groupLength);
-  }
-  if (Base1.sign == SIGN_NEGATIVE)
-  {
-    *ptrOutput = ')';
-    ptrOutput++;
-  }
-  copyStr(&ptrOutput, cube);
+  showCube(&ptrOutput, &Base1);
   if (!BigIntIsZero(&Base2))
   {
     copyStr(&ptrOutput, " + ");
-    if (Base2.sign == SIGN_NEGATIVE)
-    {
-      *ptrOutput = '(';
-      ptrOutput++;
-    }
-    if (hexadecimal)
-    {
-      BigInteger2Hex(&ptrOutput, &Base2, groupLength);
-    }
-    else
-    {
-      BigInteger2Dec(&ptrOutput, &Base2, groupLength);
-    }
-    if (Base2.sign == SIGN_NEGATIVE)
-    {
-      *ptrOutput = ')';
-      ptrOutput++;
-    }
-    copyStr(&ptrOutput, cube);
+    showCube(&ptrOutput, &Base2);
   }
   if (!BigIntIsZero(&Base3))
   {
     copyStr(&ptrOutput, " + ");
-    if (Base3.sign == SIGN_NEGATIVE)
-    {
-      *ptrOutput = '(';
-      ptrOutput++;
-    }
-    if (hexadecimal)
-    {
-      BigInteger2Hex(&ptrOutput, &Base3, groupLength);
-    }
-    else
-    {
-      BigInteger2Dec(&ptrOutput, &Base3, groupLength);
-    }
-    if (Base3.sign == SIGN_NEGATIVE)
-    {
-      *ptrOutput = ')';
-      ptrOutput++;
-    }
-    copyStr(&ptrOutput, cube);
+    showCube(&ptrOutput, &Base3);
   }
   if (!BigIntIsZero(&Base4))
   {
     copyStr(&ptrOutput, " + ");
-    if (Base4.sign == SIGN_NEGATIVE)
-    {
-      *ptrOutput = '(';
-      ptrOutput++;
-    }
-    if (hexadecimal)
-    {
-      BigInteger2Hex(&ptrOutput, &Base4, groupLength);
-    }
-    else
-    {
-      BigInteger2Dec(&ptrOutput, &Base4, groupLength);
-    }
-    if (Base4.sign == SIGN_NEGATIVE)
-    {
-      *ptrOutput = ')';
-      ptrOutput++;
-    }
-    copyStr(&ptrOutput, cube);
+    showCube(&ptrOutput, &Base4);
   }
   *pptrOutput = ptrOutput;
 }

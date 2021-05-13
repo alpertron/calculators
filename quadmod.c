@@ -666,7 +666,9 @@ void SolveEquation(void)
               // Step 6. Find the smallest value of k such that w^(2^k) = 1 (mod p)
               // Step 7. Set d <- y^(2^(r-k-1)) mod p, y <- d^2 mod p, r <- k, v <- dv mod p, w <- wy mod p.
               // Step 8. Go to step 5.
-              int x, e, r;
+              int x;
+              int e;
+              int r;
               // Step 1.
               subtractdivide(&Q, 1, 1);   // Q <- (prime-1).
               DivideBigNbrByMaxPowerOf2(&e, Q.limbs, &Q.nbrLimbs);
@@ -1000,7 +1002,10 @@ EXTERNALIZE void doWork(void)
 {
   int flags;
   char *ptrData = inputString;
-  char *ptrQuadrCoeff, *ptrLinearCoeff, *ptrConstCoeff, *ptrMod;
+  char* ptrQuadrCoeff;
+  char* ptrLinearCoeff;
+  char* ptrConstCoeff;
+  char* ptrMod;
   groupLen = 0;
   while (*ptrData != ',')
   {

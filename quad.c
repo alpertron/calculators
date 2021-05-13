@@ -853,7 +853,7 @@ void SolveQuadModEquation(void)
       static BigInteger ValAOdd;
       static BigInteger ValBOdd;
       static BigInteger ValCOdd;
-      static BigInteger squareRoot;
+      static BigInteger bigSquareRoot;
       int correctBits;
       int nbrLimbs;
       int ctr;
@@ -924,7 +924,7 @@ void SolveQuadModEquation(void)
           BigIntAnd(&ValCOdd, &K1, &ValCOdd);      // ((b/2) - a*c)/a^2 mod 2^n
           if (BigIntIsZero(&ValCOdd))
           {
-            intToBigInteger(&squareRoot, 0);
+            intToBigInteger(&bigSquareRoot, 0);
             expon -= expon / 2;
           }
           else
@@ -941,30 +941,30 @@ void SolveQuadModEquation(void)
             }
             // Find square root of ValCOdd.
             // First approximation to inverse of square root.
-            squareRoot.limbs[0].x = (((ValCOdd.limbs[0].x & 15) == 1) ? 1 : 3);
+            bigSquareRoot.limbs[0].x = (((ValCOdd.limbs[0].x & 15) == 1) ? 1 : 3);
             correctBits = 2;
             nbrLimbs = 1;
             while (correctBits < expon)
             {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
               correctBits *= 2;
               nbrLimbs = (correctBits / BITS_PER_GROUP) + 1;
-              MultBigNbr((int*)squareRoot.limbs, (int*)squareRoot.limbs, (int*)tmp2.limbs, nbrLimbs);
+              MultBigNbr((int*)bigSquareRoot.limbs, (int*)bigSquareRoot.limbs, (int*)tmp2.limbs, nbrLimbs);
               MultBigNbr((int*)tmp2.limbs, (int*)ValCOdd.limbs, (int*)tmp2.limbs, nbrLimbs);
               ChSignBigNbr((int*)tmp2.limbs, nbrLimbs);
               (void)memset(tmp1.limbs, 0, nbrLimbs * sizeof(limb));
               tmp1.limbs[0].x = 3;
               AddBigNbr((int*)tmp1.limbs, (int*)tmp2.limbs, (int*)tmp2.limbs, nbrLimbs);
-              MultBigNbr((int*)tmp2.limbs, (int*)squareRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
-              (void)memcpy(squareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
-              DivBigNbrByInt((int*)tmp1.limbs, 2, (int*)squareRoot.limbs, nbrLimbs);
+              MultBigNbr((int*)tmp2.limbs, (int*)bigSquareRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
+              (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
+              DivBigNbrByInt((int*)tmp1.limbs, 2, (int*)bigSquareRoot.limbs, nbrLimbs);
             }
             // Get square root of ValCOdd from its inverse by multiplying by ValCOdd.
-            MultBigNbr((int*)ValCOdd.limbs, (int*)squareRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
-            (void)memcpy(squareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
-            setNbrLimbs(&squareRoot);
+            MultBigNbr((int*)ValCOdd.limbs, (int*)bigSquareRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
+            (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
+            setNbrLimbs(&bigSquareRoot);
             for (ctr = 0; ctr < (bitsCZero / 2); ctr++)
             {
-              BigIntMultiplyBy2(&squareRoot);
+              BigIntMultiplyBy2(&bigSquareRoot);
             }
           }
           // x = sqrRoot - b/2a.
@@ -978,9 +978,9 @@ void SolveQuadModEquation(void)
           (void)BigIntMultiply(&tmp1, &tmp2, &tmp1);  // b/2a
           BigIntChSign(&tmp1);                  // -b/2a
           BigIntAnd(&tmp1, &K1, &tmp1);         // -b/2a mod 2^expon
-          BigIntAdd(&tmp1, &squareRoot, &tmp2);
+          BigIntAdd(&tmp1, &bigSquareRoot, &tmp2);
           BigIntAnd(&tmp2, &K1, &common.quad.Solution1[factorIndex]);
-          BigIntSubt(&tmp1, &squareRoot, &tmp2);
+          BigIntSubt(&tmp1, &bigSquareRoot, &tmp2);
           BigIntAnd(&tmp2, &K1, &common.quad.Solution2[factorIndex]);
         }
         else if ((bitsAZero == 0) && (bitsBZero == 0))
@@ -1082,7 +1082,7 @@ void SolveQuadModEquation(void)
         CopyBigInt(&ValAOdd, &Tmp[0]);
         if (BigIntIsZero(&discriminant))
         {     // Discriminant is zero.
-          intToBigInteger(&squareRoot, 0);
+          intToBigInteger(&bigSquareRoot, 0);
         }
         else
         {      // Discriminant is not zero.
@@ -1213,7 +1213,7 @@ void SolveQuadModEquation(void)
           }
           // Obtain inverse of square root stored in SqrtDisc (mod prime).
           intToBigInteger(&tmp2, 1);
-          BigIntModularDivision(&tmp2, &SqrtDisc, &prime, &squareRoot);
+          BigIntModularDivision(&tmp2, &SqrtDisc, &prime, &bigSquareRoot);
           correctBits = 1;
           CopyBigInt(&Q, &prime);
           // Obtain nbrBitsSquareRoot correct digits of inverse square root.
@@ -1221,37 +1221,37 @@ void SolveQuadModEquation(void)
           {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
             correctBits *= 2;
             (void)BigIntMultiply(&Q, &Q, &Q);           // Square Q.
-            (void)BigIntMultiply(&squareRoot, &squareRoot, &tmp1);
+            (void)BigIntMultiply(&bigSquareRoot, &bigSquareRoot, &tmp1);
             (void)BigIntRemainder(&tmp1, &Q, &tmp2);
             (void)BigIntMultiply(&tmp2, &discriminant, &tmp1);
             (void)BigIntRemainder(&tmp1, &Q, &tmp2);
             intToBigInteger(&tmp1, 3);
             BigIntSubt(&tmp1, &tmp2, &tmp2);
-            (void)BigIntMultiply(&tmp2, &squareRoot, &tmp1);
+            (void)BigIntMultiply(&tmp2, &bigSquareRoot, &tmp1);
             if ((tmp1.limbs[0].x & 1) != 0)
             {
               BigIntAdd(&tmp1, &Q, &tmp1);
             }
             BigIntDivide2(&tmp1);
-            (void)BigIntRemainder(&tmp1, &Q, &squareRoot);
+            (void)BigIntRemainder(&tmp1, &Q, &bigSquareRoot);
           }
           // Get square root of discriminant from its inverse by multiplying by discriminant.
-          if (squareRoot.sign == SIGN_NEGATIVE)
+          if (bigSquareRoot.sign == SIGN_NEGATIVE)
           {
-            BigIntAdd(&squareRoot, &Q, &squareRoot);
+            BigIntAdd(&bigSquareRoot, &Q, &bigSquareRoot);
           }
-          (void)BigIntMultiply(&squareRoot, &discriminant, &squareRoot);
-          (void)BigIntRemainder(&squareRoot, &Q, &squareRoot);
+          (void)BigIntMultiply(&bigSquareRoot, &discriminant, &bigSquareRoot);
+          (void)BigIntRemainder(&bigSquareRoot, &Q, &bigSquareRoot);
           // Multiply by square root of discriminant by prime^deltaZeros.
           for (ctr = 0; ctr < deltaZeros; ctr++)
           {
-            (void)BigIntMultiply(&squareRoot, &prime, &squareRoot);
+            (void)BigIntMultiply(&bigSquareRoot, &prime, &bigSquareRoot);
           }
         }
         correctBits = expon - deltaZeros;
         (void)BigIntPowerIntExp(&prime, correctBits, &Q);      // Store increment.
         // Compute x = (b + sqrt(discriminant)) / (-2a) and x = (b - sqrt(discriminant)) / (-2a)
-        BigIntAdd(&coeffLinear, &squareRoot, &tmp1);
+        BigIntAdd(&coeffLinear, &bigSquareRoot, &tmp1);
         for (ctr = 0; ctr < bitsAZero; ctr++)
         {
           (void)BigIntRemainder(&tmp1, &prime, &tmp2);
@@ -1268,7 +1268,7 @@ void SolveQuadModEquation(void)
         {
           BigIntAdd(&common.quad.Solution1[factorIndex], &Q, &common.quad.Solution1[factorIndex]);
         }
-        BigIntSubt(&coeffLinear, &squareRoot, &tmp1);
+        BigIntSubt(&coeffLinear, &bigSquareRoot, &tmp1);
         for (ctr = 0; ctr < bitsAZero; ctr++)
         {
           (void)BigIntRemainder(&tmp1, &prime, &tmp2);

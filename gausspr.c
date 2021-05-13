@@ -306,7 +306,8 @@ static void AddBigNbrModN(int *Nbr1, int *Nbr2, int *Sum)
 
 static void GetMontgomeryParms(void)
 {
-  int N, x;
+  int N;
+  int x;
 
   MontgomeryMultR1[1] = 0;
   if (TestNbr[1] == 0)
