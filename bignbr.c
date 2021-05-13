@@ -501,7 +501,7 @@ enum eExprErr BigIntPower(const BigInteger *pBase, const BigInteger *pExponent, 
   {    // Negative exponent not accepted.
     return EXPR_INVALID_PARAM;
   }
-  if (pExponent->nbrLimbs > 1)
+  if (pExponent->nbrLimbs > 2)
   {     // Exponent too high.
     if ((pBase->nbrLimbs == 1) && (pBase->limbs[0].x < 2))
     {     // Base = 0 -> power = 0

@@ -2097,17 +2097,10 @@ static void AdjustComponent(int denominator, char* ptrStart, int toShow,
     copyStr(&ptrBeginning, ptrTimes);
   }
   else
-  {
+  {             // PARI-GP
     *ptrBeginning = '(';
     ptrBeginning++;
-    if (pretty == PARI_GP)
-    {
-      *ptrBeginning = ((toShow == SHOW_REAL)? '1' : 'I');
-    }
-    else
-    {
-      *ptrBeginning = ((toShow == SHOW_REAL)? '1' : 'i');
-    }
+    *ptrBeginning = ((toShow == SHOW_REAL)? '1' : 'I');
     ptrBeginning++;
     *ptrBeginning = '/';
     ptrBeginning++;

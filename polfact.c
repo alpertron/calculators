@@ -523,7 +523,7 @@ int FactorModularPolynomial(bool inputMontgomery)
   {
     return rc;
   }
-  SortFactors((rc != 0)? &primeMod : &powerMod);
+  SortFactors(&powerMod);
   return rc;
 }
 

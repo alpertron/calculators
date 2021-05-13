@@ -992,7 +992,7 @@ static int ComputePower(const BigInteger *Re1, const BigInteger *Re2,
   {          // Exponent must be positive or zero.
     return EXPR_INVALID_PARAM;
   }
-  if (Re2->nbrLimbs > 1)
+  if (Re2->nbrLimbs > 2)
   {
     return EXPR_INTERM_TOO_HIGH;
   }

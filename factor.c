@@ -1869,10 +1869,6 @@ void factorExt(const BigInteger *toFactor, const int *number,
           pstCurFactor = pstFactors;
           break;
         }
-        if (nbrLimbs == 1)
-        {     // Number completely factored.
-          break;
-        }
         upperBoundIndex++;
         upperBound = smallPrimes[upperBoundIndex];
       }

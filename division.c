@@ -294,7 +294,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     {
       approxInv[nbrLimbs - 2].x = 0;
     }
-    else if (inverse >= 2)
+    else if (inverse == 2)
     {
       approxInv[nbrLimbs - 2].x = MAX_VALUE_LIMB;
       approxInv[nbrLimbs - 3].x = MAX_VALUE_LIMB;

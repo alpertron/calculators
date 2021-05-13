@@ -354,11 +354,6 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           copyStr(&ptrOutput, "</li><li>");
           valuesProcessed++;
         }
-        if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED))
-        {      // Do not show these errors multiple times.
-          firstExprProcessed = false;
-          break;
-        }
       }
       if (valuesProcessed >= endValuesProcessed)
       {

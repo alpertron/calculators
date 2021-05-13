@@ -72,8 +72,8 @@ void *memcpy(void *dest, const void *src, size_t n)
 
   if (n >= 32)
   {
-    const uint32_t x;
-    const uint32_t w;
+    uint32_t x;
+    uint32_t w;
     switch ((uintptr_t)d % 4)
     {
       case 1:
@@ -327,11 +327,11 @@ void *memset(void *dest, int c, size_t n)
 char *strcpy(char *dest, const char *src)
 {
   char *dst = dest;
-  while (*src != NULL)
+  while (*src != '\0')
   {
     *dst++ = *src++;
   }
-  *dst = 0;
+  *dst = '\0';
   return dest;
 }
 
