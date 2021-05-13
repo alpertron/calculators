@@ -1902,6 +1902,7 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
 int getNextPrimeNoDuplicatedFactors(int primeIndex)
 {
   const int* ptrSrc;
+  int primeIdx = primeIndex;
   int degreeGcdMod;
   int polyDegree = polyNonRepeatedFactors[0];
   initializeSmallPrimes(smallPrimes);
@@ -1924,8 +1925,8 @@ int getNextPrimeNoDuplicatedFactors(int primeIndex)
     int prime;
     do
     {      // Loop while the leading coefficient is multiple of prime.
-      primeIndex++;
-      prime = smallPrimes[primeIndex];
+      primeIdx++;
+      prime = smallPrimes[primeIdx];
     } while (getRemainder(&leadingCoeff, prime) == 0);
     modulusIsZero = false;
     intToBigInteger(&primeMod, prime);
@@ -1937,7 +1938,7 @@ int getNextPrimeNoDuplicatedFactors(int primeIndex)
     degree1 = getModPolynomial(poly1, polyNonRepeatedFactors, &operand5);
     PolyModularGcd(poly1, degree1, &poly2[1], poly2[0], poly3, &degreeGcdMod);
   } while (degreeGcdMod > 0);
-  return primeIndex;
+  return primeIdx;
 }
 
 static void initFactorModularPoly(int prime)

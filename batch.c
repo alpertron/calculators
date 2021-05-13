@@ -37,11 +37,12 @@ char *ptrInputText;
 
 static void stringToHTML(char **pptrOutput, const char *ptrString)
 {
+  const char* ptrStr = ptrString;
   int character;
   char *ptrOutput = *pptrOutput;
   for (;;)
   {
-    char c = *ptrString;
+    char c = *ptrStr;
     if (c == 0)
     {
       break;    // End of string, so go out.
@@ -49,19 +50,19 @@ static void stringToHTML(char **pptrOutput, const char *ptrString)
     if ((c & 0x80) == 0)
     {           // 1-byte UTF-8 character
       character = c;
-      ptrString++;
+      ptrStr++;
     }
     else if ((c & 0x60) == 0x40)
     {            // 2-byte UTF-8 character
-      character = ((c & 0x1F) * 64) + (*(ptrString + 1) & 0x3F);
-      ptrString += 2;
+      character = ((c & 0x1F) * 64) + (*(ptrStr + 1) & 0x3F);
+      ptrStr += 2;
     }
     else
     {            // 3-byte UTF-8 character
       character = ((c & 0x1F) << 12) +
-        ((*(ptrString + 1) & 0x3F) << 6) +
-        (*(ptrString + 2) & 0x3F);
-      ptrString += 3;
+        ((*(ptrStr + 1) & 0x3F) << 6) +
+        (*(ptrStr + 2) & 0x3F);
+      ptrStr += 3;
     }
     if ((character >= ' ') && (character < 127) && (character != '<') &&
       (character != '>') && (character != '&'))
@@ -419,13 +420,14 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
 
 char *findChar(char *str, char c)
 {
-  while (*str != 0)
+  char* ptrStr = str;
+  while (*ptrStr != '\0')
   {
-    if (*str == c)
+    if (*ptrStr == c)
     {
-      return str;
+      return ptrStr;
     }
-    str++;
+    ptrStr++;
   }
   return NULL;
 }

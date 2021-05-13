@@ -136,9 +136,11 @@ void BigIntChSign(BigInteger *value)
   }
 }
 
-static void InternalBigIntAdd(const BigInteger *pAddend1, const BigInteger *pAddend2, 
+static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2, 
   BigInteger *pSum, enum eSign addend2sign)
 {
+  const BigInteger* pAddend1 = pAdd1;
+  const BigInteger* pAddend2 = pAdd2;
   int addend2Sign = addend2sign;
   int ctr;
   int nbrLimbs;

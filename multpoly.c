@@ -210,9 +210,10 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
 }
 
 // Recursive Karatsuba function.
-static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
+static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
 {
   int i;
+  int idxFactor1 = idxFact1;
   int nbrLength = nbrLen;
   int idxFactor2;
   int* ptrResult;

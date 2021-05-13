@@ -1537,8 +1537,9 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   return factorsFound;
 }
 
-static void factorSmallInt(int toFactor, int* factors, struct sFactors* pstFactors)
+static void factorSmallInt(int intToFactor, int* factors, struct sFactors* pstFactors)
 {
+  int toFactor = intToFactor;
   int factorsFound = 0;
   int primeFactor;
   int multiplicity;

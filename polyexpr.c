@@ -890,14 +890,15 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
 
 void SetNumberToOne(/*@out@*/int* ptrValue1)
 {
+  int* ptrToValue1 = ptrValue1;
   const limb* destLimb;
-  *ptrValue1 = NumberLengthR1;
-  ptrValue1++;
+  *ptrToValue1 = NumberLengthR1;
+  ptrToValue1++;
   destLimb = MontgomeryMultR1;
   for (int ctr = 0; ctr < NumberLengthR1; ctr++)
   {
-    *ptrValue1 = destLimb->x;
-    ptrValue1++;
+    *ptrToValue1 = destLimb->x;
+    ptrToValue1++;
     destLimb++;
   }
 }
@@ -916,8 +917,10 @@ int* CopyPolynomial(int* dest, const int* src, int polyDegree)
   return ptrDest;
 }
 
-int* CopyPolynomialFixedCoeffSize(int* ptrDest, const int* ptrSrc, int polyDegree, int coeffSize)
+int* CopyPolynomialFixedCoeffSize(int* dest, const int* src, int polyDegree, int coeffSize)
 {
+  int* ptrDest = dest;
+  const int* ptrSrc = src;
   for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     int numLength = numLimbs(ptrSrc) + 1;

@@ -36,10 +36,11 @@ static char outputText[20000];
 extern int poly4[1000000];
 
 // Perform distinct degree factorization
-static void DistinctDegreeFactorization(int polyDegree)
+static void DistinctDegreeFactorization(int polyDeg)
 {
   struct sFactorInfo *pstFactorInfo;
   struct sFactorInfo *pstNewFactorInfo;
+  int polyDegree = polyDeg;
   int nbrLimbs = primeMod.nbrLimbs + 1;
   int currentDegree;
   int degreeMin;
