@@ -980,7 +980,7 @@ static int ComputeGCD(void)
 static int ComputePower(const BigInteger *Re1, const BigInteger *Re2,
   const BigInteger *Im1, const BigInteger *Im2)
 {
-  int expon;
+  unsigned int expon;
   double base;
   bool performPower = false;
   BigInteger norm;
@@ -997,13 +997,10 @@ static int ComputePower(const BigInteger *Re1, const BigInteger *Re2,
   {
     return EXPR_INTERM_TOO_HIGH;
   }
+  expon = (unsigned int)Re2->limbs[0].x;
   if (Re2->nbrLimbs == 2)
   {
-    expon = Re2->limbs[0].x + (Re2->limbs[1].x << BITS_PER_GROUP);
-  }
-  else
-  {
-    expon = Re2->limbs[0].x;
+    expon += (unsigned int)Re2->limbs[1].x << BITS_PER_GROUP;
   }
   (void)BigIntMultiply(Re1, Re1, &ReTmp);
   (void)BigIntMultiply(Im1, Im1, &ImTmp);
@@ -1011,7 +1008,7 @@ static int ComputePower(const BigInteger *Re1, const BigInteger *Re2,
   if (norm.nbrLimbs > 1)
   {
     base = log((double)(norm.limbs[norm.nbrLimbs - 2].x + (norm.limbs[norm.nbrLimbs - 1].x << BITS_PER_GROUP)) +
-      (double)(norm.nbrLimbs - 2)*log((double)(1 << BITS_PER_GROUP)));
+      (double)(norm.nbrLimbs - 2)*log((double)(1U << BITS_PER_GROUP)));
   }
   else
   {
@@ -1028,7 +1025,7 @@ static int ComputePower(const BigInteger *Re1, const BigInteger *Re2,
   Im.nbrLimbs = 1;
   Re.sign = SIGN_POSITIVE; 
   Im.sign = SIGN_POSITIVE;
-  for (int mask = 1 << 30; mask != 0; mask >>= 1)
+  for (unsigned int mask = 1U << 30; mask != 0; mask >>= 1)
   {
     if ((expon & mask) != 0)
     {

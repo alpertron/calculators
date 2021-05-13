@@ -213,6 +213,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
 static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
 {
   int i;
+  int nbrLength = nbrLen;
   int idxFactor2;
   int* ptrResult;
   const int* ptrHigh;
@@ -221,7 +222,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
   int sum;
   int modulus;
   int halfLength;
-  int diffIndex = 2 * nbrLen;
+  int diffIndex = 2 * nbrLength;
   static struct stKaratsubaStack* pstKaratsubaStack = astKaratsubaStack;
   static int coeffic[MAX_LEN];
   int stage = 0;
@@ -234,12 +235,12 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
     switch (stage)
     {
     case 0:
-      idxFactor2 = idxFactor1 + nbrLen;
-      if (nbrLen <= KARATSUBA_POLY_CUTOFF)
+      idxFactor2 = idxFactor1 + nbrLength;
+      if (nbrLength <= KARATSUBA_POLY_CUTOFF)
       {
         // Check if one of the factors is equal to zero.
         ptrResult = &polyMultTemp[idxFactor1 * nbrLimbs];
-        i = nbrLen;
+        i = nbrLength;
         if (nbrLimbs == 2)
         {
           ptrResult++;
@@ -265,7 +266,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
           if (nbrLimbs == 2)
           {
             ptrResult++;
-            for (i = nbrLen; i > 0; i--)
+            for (i = nbrLength; i > 0; i--)
             {
               *ptrResult = 0;
               ptrResult += nbrLimbs;
@@ -273,7 +274,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
           }
           else
           {
-            for (i = nbrLen; i > 0; i--)
+            for (i = nbrLength; i > 0; i--)
             {
               *ptrResult = 1;
               *(ptrResult + 1) = 0;
@@ -284,7 +285,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
         else
         {     // First factor is not zero. Check second.
           ptrResult = &polyMultTemp[idxFactor2 * nbrLimbs];
-          i = nbrLen;
+          i = nbrLength;
           if (nbrLimbs == 2)
           {
             ptrResult++;
@@ -310,7 +311,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
             if (nbrLimbs == 2)
             {
               ptrResult++;
-              for (i = nbrLen; i > 0; i--)
+              for (i = nbrLength; i > 0; i--)
               {
                 *ptrResult = 0;
                 ptrResult += nbrLimbs;
@@ -318,7 +319,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
             }
             else
             {
-              for (i = nbrLen; i > 0; i--)
+              for (i = nbrLength; i > 0; i--)
               {
                 *ptrResult = 1;
                 *(ptrResult + 1) = 0;
@@ -328,13 +329,13 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
           }
           else
           {   // Both factors not zero: perform standard classical polynomial multiplcation.
-            ClassicalPolyMult(idxFactor1, idxFactor2, nbrLen, nbrLimbs);
+            ClassicalPolyMult(idxFactor1, idxFactor2, nbrLength, nbrLimbs);
           }
         }
         pstKaratsubaStack--;
         idxFactor1 = pstKaratsubaStack->idxFactor1;
-        nbrLen *= 2;
-        diffIndex -= nbrLen;
+        nbrLength *= 2;
+        diffIndex -= nbrLength;
         stage = pstKaratsubaStack->stage;
         break;
       }
@@ -346,7 +347,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
 
       // At this moment the order is: xL, xH, yL, yH.
       // Exchange high part of first factor with low part of 2nd factor.
-      halfLength = nbrLen >> 1;
+      halfLength = nbrLength >> 1;
       int* ptrHighFirstFactor = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
       int* ptrLowSecondFactor = &polyMultTemp[idxFactor2 * nbrLimbs];
       if (nbrLimbs == 2)
@@ -434,14 +435,14 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
       pstKaratsubaStack->stage = 1;
       pstKaratsubaStack++;
       // Multiply both low parts.
-      diffIndex += nbrLen;
-      nbrLen = halfLength;
+      diffIndex += nbrLength;
+      nbrLength = halfLength;
       break;
     case 1:
       // Multiply both high parts.
-      idxFactor1 += nbrLen;
-      diffIndex += nbrLen;
-      nbrLen >>= 1;
+      idxFactor1 += nbrLength;
+      diffIndex += nbrLength;
+      nbrLength >>= 1;
       pstKaratsubaStack->stage = 2;
       pstKaratsubaStack++;
       stage = 0;         // Start new Karatsuba multiplication.
@@ -449,32 +450,32 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
     case 2:
       // Multiply the differences.
       idxFactor1 = diffIndex;
-      diffIndex += nbrLen;
-      nbrLen >>= 1;
+      diffIndex += nbrLength;
+      nbrLength >>= 1;
       pstKaratsubaStack->stage = 3;
       pstKaratsubaStack++;
       stage = 0;         // Start new Karatsuba multiplication.
       break;
     default:
-      halfLength = nbrLen >> 1;
+      halfLength = nbrLength >> 1;
       // Obtain (b+1)(xH*yH*b + xL*yL) = xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
       // The first and last terms are already in correct locations.
       // Add (xL*yL+xH*yH)*b.
       ptrResult = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
       if (nbrLimbs == 2)
       {        // Optimization for small numbers.
-        int nbrLen2 = nbrLen * 2;
+        int nbrLen2 = nbrLength * 2;
         modulus = TestNbr[0].x;
         ptrResult++;
         for (i = halfLength; i > 0; i--)
         {
           // First addend is the coefficient from xH*yH*b^2 + xL*yL
           // Second addend is the coefficient from xH*yH
-          int coeffTmp = *ptrResult + *(ptrResult + nbrLen) - modulus;
+          int coeffTmp = *ptrResult + *(ptrResult + nbrLength) - modulus;
           // If sum < 0 do sum <- sum + modulus else do nothing.
           ADJUST_MODULUS(coeffTmp, modulus);
           // Third addend is xL*yL. Add all three coefficients.
-          sum = coeffTmp + *(ptrResult - nbrLen) - modulus;
+          sum = coeffTmp + *(ptrResult - nbrLength) - modulus;
           // If sum < 0 do sum <- sum + modulus else do nothing.
           ADJUST_MODULUS(sum, modulus);
           // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
@@ -486,7 +487,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
           // If sum < 0 do sum <- sum + modulus else do nothing.
           ADJUST_MODULUS(sum, modulus);
           // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-          *(ptrResult + nbrLen) = sum;
+          *(ptrResult + nbrLength) = sum;
           // Point to next address.
           ptrResult += 2;
         }
@@ -507,7 +508,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
           // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
           ArrLimbs2LenAndLimbs(ptrResult, operand2.limbs, nbrLimbs);
           // Obtain coefficient from xH*yH
-          LenAndLimbs2ArrLimbs(ptrResult + (nbrLen * nbrLimbs), operand2.limbs, nbrLimbs);
+          LenAndLimbs2ArrLimbs(ptrResult + (nbrLength * nbrLimbs), operand2.limbs, nbrLimbs);
           // Add coefficient from xL*yL
           AddBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
           // Store coefficient of xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
@@ -524,7 +525,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
         modulus = TestNbr[0].x;
         ptrResult++;           // Point to limb to process.
         ptrHigh++;             // Point to limb to process.
-        for (i = nbrLen; i >= 2; i -= 2)
+        for (i = nbrLength; i >= 2; i -= 2)
         {
           sum = *ptrResult + *ptrHigh - modulus;
           // If sum < 0 do sum <- sum + modulus else do nothing.
@@ -547,7 +548,7 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
       }
       else
       {        // General case.
-        for (i = nbrLen; i > 0; i--)
+        for (i = nbrLength; i > 0; i--)
         {
           LenAndLimbs2ArrLimbs(ptrResult, operand3.limbs, nbrLimbs);
           LenAndLimbs2ArrLimbs(ptrHigh, operand2.limbs, nbrLimbs);
@@ -557,8 +558,8 @@ static void KaratsubaPoly(int idxFactor1, int nbrLen, int nbrLimbs)
           ptrResult += nbrLimbs;
         }
       }
-      nbrLen *= 2;
-      diffIndex -= nbrLen;
+      nbrLength *= 2;
+      diffIndex -= nbrLength;
       pstKaratsubaStack--;
       idxFactor1 = pstKaratsubaStack->idxFactor1;
       stage = pstKaratsubaStack->stage;

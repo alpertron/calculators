@@ -368,19 +368,20 @@ void intToBigInteger(BigInteger *bigint, int value)
 
 void longToBigInteger(BigInteger *bigint, long long value)
 {
+  long long llValue = value;
   int nbrLimbs = 0;
   bigint->sign = SIGN_POSITIVE;
-  if (value < 0)
+  if (llValue < 0)
   {
     bigint->sign = SIGN_NEGATIVE;
-    value = -value;
+    llValue = -llValue;
   }
   do
   {
-    bigint->limbs[nbrLimbs].x = (int)value & MAX_VALUE_LIMB;
+    bigint->limbs[nbrLimbs].x = (int)llValue & MAX_VALUE_LIMB;
     nbrLimbs++;
-    value >>= BITS_PER_GROUP;
-  } while (value != 0);
+    llValue >>= BITS_PER_GROUP;
+  } while (llValue != 0);
   bigint->nbrLimbs = nbrLimbs;
 }
 
@@ -666,25 +667,26 @@ void BigIntGcd(const BigInteger *pArg1, const BigInteger *pArg2, BigInteger *pRe
 
 static void addToAbsValue(limb *pLimbs, int *pNbrLimbs, int addend)
 {
+  limb* ptrLimbs = pLimbs;
   int nbrLimbs = *pNbrLimbs;
-  pLimbs->x += addend;
-  if ((unsigned int)pLimbs->x < LIMB_RANGE)
+  ptrLimbs->x += addend;
+  if ((unsigned int)ptrLimbs->x < LIMB_RANGE)
   {     // No overflow. Go out of routine.
     return;
   }
-  pLimbs->x -= LIMB_RANGE;
+  ptrLimbs->x -= LIMB_RANGE;
   for (int ctr = 1; ctr < nbrLimbs; ctr++)
   {
-    pLimbs++;        // Point to next most significant limb.
-    if (pLimbs->x != MAX_INT_NBR)
+    ptrLimbs++;        // Point to next most significant limb.
+    if (ptrLimbs->x != MAX_INT_NBR)
     {   // No overflow. Go out of routine.
-      (pLimbs->x)++;   // Add carry.
+      (ptrLimbs->x)++;   // Add carry.
       return;
     }
-    pLimbs->x = 0;
+    ptrLimbs->x = 0;
   }
   (*pNbrLimbs)++;        // Result has an extra limb.
-  (pLimbs + 1)->x = 1;   // Most significant limb must be 1.
+  (ptrLimbs + 1)->x = 1;   // Most significant limb must be 1.
 }
 
 static void subtFromAbsValue(limb *pLimbs, int *pNbrLimbs, int subt)
@@ -845,19 +847,20 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
   double dFactor;
   double dVal = 1.0 / (double)LIMB_RANGE;
 #endif
+  int intMult = factor;
   bool factorPositive = true;
   int nbrLimbs = pMult->nbrLimbs;
   const limb *pLimb = pMult->limbs;
   limb *pResultLimb = pResult->limbs;
-  if (factor == 0)
+  if (intMult == 0)
   {   // Any number multiplied by zero is zero.
     intToBigInteger(pResult, 0);
     return;
   }
-  if (factor < 0)
+  if (intMult < 0)
   {     // If factor is negative, indicate it and compute its absolute value.
     factorPositive = false;
-    factor = -factor;
+    intMult = -intMult;
   }
 #ifndef _USING64BITS_
   dFactor = (double)factor;
@@ -866,7 +869,7 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
   for (int ctr = 0; ctr < nbrLimbs; ctr++)
   {
 #ifdef _USING64BITS_
-    carry += (int64_t)pLimb->x * (int64_t)factor;
+    carry += (int64_t)pLimb->x * (int64_t)intMult;
     pResultLimb->x = (int)carry & MAX_VALUE_LIMB;
     pResultLimb++;
     carry >>= BITS_PER_GROUP;
@@ -1003,7 +1006,7 @@ void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint)
   {
     int nbrLimbs;
     nbrLimbs = getNbrLimbs(srcLimb);
-    *ptrValues = (bigint->sign == SIGN_POSITIVE ? nbrLimbs : -nbrLimbs);
+    *ptrValues = ((bigint->sign == SIGN_POSITIVE)? nbrLimbs : -nbrLimbs);
     ptrValues++;
     for (int ctr = 0; ctr < nbrLimbs; ctr++)
     {

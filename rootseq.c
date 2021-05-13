@@ -2397,7 +2397,14 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
           continue;
         }
         showX(multiplicity);
-        realNum = (denIsOdd ? (2 * numerator) : numerator);
+        if (denIsOdd)
+        {
+          realNum = 2 * numerator;
+        }
+        else
+        {
+          realNum = numerator;
+        }
         // Show cos(realNum*pi/realDen) + i sin(realNum*pi/realDen)
         showTrig(realNum, realDen, "");
         outputRadicandsForCosSin(realNum, realDen, "");

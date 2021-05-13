@@ -1559,7 +1559,7 @@ static void factorSmallInt(int toFactor, int* factors, struct sFactors* pstFacto
   for (primeFactor = 2; primeFactor <= 3; primeFactor++)
   {
     multiplicity = 0;
-    while (toFactor % primeFactor == 0)
+    while ((toFactor % primeFactor) == 0)
     {
       toFactor /= primeFactor;
       multiplicity++;

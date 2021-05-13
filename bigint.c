@@ -395,11 +395,11 @@ void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, in
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      dAccumulator = floor((dAccumulator + HALF_INT_RANGE / 2)*dInvRangeLimb);
+      dAccumulator = floor((dAccumulator + (double)(HALF_INT_RANGE / 2))*dInvRangeLimb);
     }
     else
     {
-      dAccumulator = floor((dAccumulator - HALF_INT_RANGE / 2)*dInvRangeLimb);
+      dAccumulator = floor((dAccumulator - (double)(HALF_INT_RANGE / 2))*dInvRangeLimb);
     }
     low = (int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
   }
@@ -507,16 +507,15 @@ void AdjustBigIntModN(int *Nbr, int *Mod, int nbrLen)
 
 void MultBigNbrModN(const int *Nbr1, int *Nbr2, int *Prod, int *Mod, int nbrLen)
 {
-  int i;
+  int i = nbrLen;
   int arr[MAX_LIMBS_SIQS];
 
-  if ((nbrLen >= 2) && (*(Mod + nbrLen - 1) == 0))
+  if ((i >= 2) && (*(Mod + i - 1) == 0))
   {
-    nbrLen--;
+    i--;
   }
-  *(Nbr2+nbrLen) = 0;
+  *(Nbr2+i) = 0;
   (void)memset(Prod, 0, nbrLen * sizeof(*Prod));
-  i = nbrLen;
   do
   {
     i--;

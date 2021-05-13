@@ -303,6 +303,7 @@ static void ConvertFullToHalfSizeFFT(const struct sComplex* fullSizeFFT,
 static void ConvertFactorToInternal(const int* factor,
   struct sComplex* fftFactor, int len, int maxLen)
 {
+  int maxLength = maxLen;
   int ctr = 0;
   const int* ptrFactor = factor+1;  // Point to constant coefficient.
   struct sComplex* ptrInternalFactor = fftFactor;
@@ -321,8 +322,8 @@ static void ConvertFactorToInternal(const int* factor,
     ptrInternalFactor->imaginary = 0;
     ptrInternalFactor++;
   }
-  maxLen++;
-  for (; ctr <= maxLen; ctr += 2)
+  maxLength++;
+  for (; ctr <= maxLength; ctr += 2)
   {
     ptrInternalFactor->real = 0;
     ptrInternalFactor->imaginary = 0;
