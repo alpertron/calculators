@@ -231,7 +231,6 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       ptrDividend->x = low;
 #endif
       ptrDividend++;
-      ptrDivisor++;
       ptrDividend->x = carry & MAX_INT_NBR;
       if ((adjustedArgument[nbrLimbsDividend].x & MAX_VALUE_LIMB) != 0)
       {

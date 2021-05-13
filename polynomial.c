@@ -1626,7 +1626,6 @@ void showPowerX(char **pptrOutput, int polyDegree)
 
 static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree, int groupLength)
 {
-  int nbrLimbs = NumberLength + 1;
   int currentDegree;
   char *ptrOutput = *pptrOutput;
   int *ptrIndex;
@@ -1647,6 +1646,7 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
   }
   else
   {
+    int nbrLimbs;
     NumberLength = powerMod.nbrLimbs;
     nbrLimbs = NumberLength + 1;
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)

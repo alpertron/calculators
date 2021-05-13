@@ -3538,7 +3538,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
   int index = 0;
   int periodIndex = 0;
   char isIntegerPart;
-  char Beven = ((ValB.limbs[0].x & 1) == 0);
+  bool isBeven = ((ValB.limbs[0].x & 1) == 0);
   // If (D-U^2) is not multiple of V, exit routine.
   (void)BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
   BigIntSubt(&ValL, &bigTmp, &bigTmp);   // D - U^2
@@ -3621,7 +3621,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
   isIntegerPart = 1;
   for (;;)
   {
-    if ((ValV.nbrLimbs == 1) && (ValV.limbs[0].x == (Beven ? 1 : 2)) &&
+    if ((ValV.nbrLimbs == 1) && (ValV.limbs[0].x == (isBeven ? 1 : 2)) &&
       ((index & 1) == ((ValK.sign == ValV.sign)? 0 : 1)))
     {         // Found solution.
       if ((discr.nbrLimbs == 1) && (discr.limbs[0].x == 5) && (ValA.sign != ValK.sign) && 
@@ -3816,14 +3816,14 @@ static void ShowAllRecSols(void)
 static void ContFracPell(void)
 {
   enum eSign sign = SIGN_POSITIVE;
-  char Beven = ((ValB.limbs[0].x & 1) == 0);
+  bool isBeven = ((ValB.limbs[0].x & 1) == 0);
   int periodNbr = 0;
   int periodLength;
   // Initialize variables.
   intToBigInteger(&ValU, 0);
   intToBigInteger(&ValV, 1);
   CopyBigInt(&ValH, &discr);
-  if (Beven)
+  if (isBeven)
   {
     subtractdivide(&ValH, 0, 4);
   }
@@ -3904,7 +3904,7 @@ static void ContFracPell(void)
       continue;
     }
     limbValue = ValV.limbs[0].x;
-    if ((limbValue != 1) && (Beven || (limbValue != 4)))
+    if ((limbValue != 1) && (isBeven || (limbValue != 4)))
     {
       continue;
     }
@@ -3914,7 +3914,7 @@ static void ContFracPell(void)
       continue;
     }
     // Found solution.
-    if (Beven)
+    if (isBeven)
     {
       CopyBigInt(&ValQ, &ValB);
       BigIntDivideBy2(&ValQ);
@@ -3936,7 +3936,7 @@ static void ContFracPell(void)
     (void)BigIntMultiply(&ValC, &V1, &ValQ);
     BigIntChSign(&ValQ);                      // Q <- -cs
     (void)BigIntMultiply(&ValA, &V1, &ValR);        // R <- as
-    if (!Beven && (limbValue == 1))
+    if (!isBeven && (limbValue == 1))
     {
       BigIntAdd(&ValQ, &ValQ, &ValQ);         // Q <- -2cs
       BigIntAdd(&ValR, &ValR, &ValR);         // R <- 2as
@@ -3990,7 +3990,7 @@ static void ContFracPell(void)
 
 static void callbackQuadModHyperbolic(BigInteger *value)
 {
-  char Beven = ((ValB.limbs[0].x & 1) == 0);
+  bool isBeven = ((ValB.limbs[0].x & 1) == 0);
   positiveDenominator = 1;
   if (PerformTransformation(value) == 0)
   {      // No solutions because gcd(P, Q, R) > 1.
@@ -4007,7 +4007,7 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   (void)BigIntMultiply(&ValQ, &ValA, &ValQ);
   // Find U, V, L so we can compute the continued fraction expansion of (U+sqrt(L))/V.
   CopyBigInt(&ValL, &discr);
-  if (Beven)
+  if (isBeven)
   {
     CopyBigInt(&ValU, &ValP);       // U <- P
     subtractdivide(&ValL, 0, 4);    // Argument of square root is discriminant/4.
@@ -4036,7 +4036,7 @@ static void callbackQuadModHyperbolic(BigInteger *value)
       showText("<var>D</var> &minus; <var>Q</var>");
       showSquare();
       showText(lang ? " no es múltiplo de " : " is not multiple of ");
-      if (ValB.limbs[0].x & 1)
+      if ((ValB.limbs[0].x & 1) != 0)
       {                       // Odd discriminant.
         showText("2");
       }
@@ -4068,13 +4068,13 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   }
   ContFrac(value, SECOND_SOLUTION);   // Continued fraction of (-U+G)/(-V)
   showSolution = ONE_SOLUTION;
-  if (Xplus.nbrLimbs)
+  if (Xplus.nbrLimbs != 0)
   {
     startResultBox(SOLUTION_FOUND);
     ShowXY(&Xplus, &Yplus);
     endResultBox(SOLUTION_FOUND);
   }
-  if (Xminus.nbrLimbs)
+  if (Xminus.nbrLimbs != 0)
   {
     startResultBox(SOLUTION_FOUND);
     ShowXY(&Xminus, &Yminus);

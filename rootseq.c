@@ -1603,7 +1603,6 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
     endLine();
     BigRationalMultiplyByInt(&RatDeprQuadratic, -2, &Rat1);
     ForceDenominatorPositive(&Rat1);
-    sign1 = Rat1.numerator.sign;
     Rat1.numerator.sign = SIGN_POSITIVE;
     CopyBigInt(&Rat2.numerator, &RatDeprLinear.numerator);
     CopyBigInt(&Rat2.denominator, &RatDeprLinear.denominator);
@@ -3246,7 +3245,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
     }
   } while (prime < 100);
   int numberDifferentX = multiplicity * polyDegree * gcdDegrees;
-  if (cyclePrGtNOver2ToLess2Found)
+  if (cyclePrGtNOver2ToLess2Found != 0)
   {     // Group is very transitive.
     if (lang)
     {    // Spanish

@@ -550,7 +550,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   // If -2<=n<=2 (mod p) does not hold, b cannot be multiple of (p-1)/2.
   for (i = 2; i < numPrimes; i++)
   {
-    if (common.ecm.primes[i>>3] & (1 << (i & 7)))
+    if ((common.ecm.primes[i>>3] & (1 << (i & 7))) != 0)
     {      // i is prime according to sieve.
            // If n+/-1 is multiple of p, then it must be multiple
            // of p^2, otherwise it cannot be a perfect power.
@@ -815,7 +815,7 @@ char *ShowFactoredPart(const BigInteger *pNbr, const void *vFactors)
   {    // Some factorization known.
     int NumberLengthBak = NumberLength;
     copyStr(&ptrLowerText, "<p class=\"blue\">");
-    SendFactorizationToOutput(pstFactors, &ptrLowerText, 1);
+    SendFactorizationToOutput(pstFactors, &ptrLowerText, true);
     copyStr(&ptrLowerText, "</p>");
     NumberLength = NumberLengthBak;
   }
@@ -928,7 +928,7 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
   StepECM = 0; /* do not show pass number on screen */
 }
 
-void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOutput, int doFactorization)
+void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOutput, bool doFactorization)
 {
   char *ptrOutput = *pptrOutput;
   copyStr(&ptrOutput, tofactorDec);
@@ -1195,8 +1195,9 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
       pstCurFactor->multiplicity += pstFactorDividend->multiplicity * expon;
       ptrValue = pstFactorDividend->ptrFactor;
       if ((*ptrValue == 1) && (*(ptrValue + 1) == 1))
-      {    // Dividend is 1 now so discard it.
-        *pstFactorDividend = *(pstFactors + pstFactors->multiplicity--);
+      {    // Dividend is 1 now, so discard it.
+        *pstFactorDividend = *(pstFactors + pstFactors->multiplicity);
+        pstFactors->multiplicity--;
       }
       SortFactors(pstFactors);
       return;
@@ -1607,7 +1608,6 @@ static void factorSmallInt(int toFactor, int* factors, struct sFactors* pstFacto
     ptrFactorLimbs++;
     *ptrFactorLimbs = toFactor;
     ptrFactorLimbs++;
-    ptrFactor++;
   }
   pstFactors->multiplicity = factorsFound;
 }

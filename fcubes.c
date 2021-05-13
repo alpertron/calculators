@@ -263,7 +263,6 @@ static void Demjanenko(void)
 static int fcubes(const BigInteger *pArgument)
 {
   int mod18;
-  int modulus;
   int i;
   bool converted = false;
   CopyBigInt(&value, pArgument);
@@ -280,7 +279,7 @@ static int fcubes(const BigInteger *pArgument)
   }
   for (i = (int)(sizeof(sums) / sizeof(sums[0]))-10; i>=0; i -= 10)
   {
-    modulus = sums[i];
+    int modulus = sums[i];
     if (((getRemainder(&value, modulus) + modulus)% modulus) == sums[i + 1])
     {
       subtractdivide(&value, sums[i + 1], modulus);      // value <- (value-sums[i+1])/modulus

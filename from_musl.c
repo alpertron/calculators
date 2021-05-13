@@ -72,8 +72,8 @@ void *memcpy(void *dest, const void *src, size_t n)
 
   if (n >= 32)
   {
-    uint32_t x;
-    uint32_t w;
+    const uint32_t x;
+    const uint32_t w;
     switch ((uintptr_t)d % 4)
     {
       case 1:
@@ -84,13 +84,13 @@ void *memcpy(void *dest, const void *src, size_t n)
         n -= 3;
         for (; n>=17; n-=16)
         {
-          x = *(u32 *)(s+1);
+          x = *(const u32 *)(s+1);
           *(u32 *)(d+0) = (w LS 24) | (x RS 8);
-          w = *(u32 *)(s+5);
+          w = *(const u32 *)(s+5);
           *(u32 *)(d+4) = (x LS 24) | (w RS 8);
-          x = *(u32 *)(s+9);
+          x = *(const u32 *)(s+9);
           *(u32 *)(d+8) = (w LS 24) | (x RS 8);
-          w = *(u32 *)(s+13);
+          w = *(const u32 *)(s+13);
           *(u32 *)(d+12) = (x LS 24) | (w RS 8);
           s += 16;
           d += 16;
@@ -103,13 +103,13 @@ void *memcpy(void *dest, const void *src, size_t n)
         n -= 2;
         for (; n>=18; n-=16)
         {
-          x = *(u32 *)(s+2);
+          x = *(const u32 *)(s+2);
           *(u32 *)(d+0) = (w LS 16) | (x RS 16);
-          w = *(u32 *)(s+6);
+          w = *(const u32 *)(s+6);
           *(u32 *)(d+4) = (x LS 16) | (w RS 16);
-          x = *(u32 *)(s+10);
+          x = *(const u32 *)(s+10);
           *(u32 *)(d+8) = (w LS 16) | (x RS 16);
-          w = *(u32 *)(s+14);
+          w = *(const u32 *)(s+14);
           *(u32 *)(d+12) = (x LS 16) | (w RS 16);
           s += 16;
           d += 16;
@@ -121,13 +121,13 @@ void *memcpy(void *dest, const void *src, size_t n)
         n -= 1;
         for (; n>=19; n-=16)
         {
-          x = *(u32 *)(s+3);
+          x = *(const u32 *)(s+3);
           *(u32 *)(d+0) = (w LS 8) | (x RS 24);
-          w = *(u32 *)(s+7);
+          w = *(const u32 *)(s+7);
           *(u32 *)(d+4) = (x LS 8) | (w RS 24);
-          x = *(u32 *)(s+11);
+          x = *(const u32 *)(s+11);
           *(u32 *)(d+8) = (w LS 8) | (x RS 24);
-          w = *(u32 *)(s+15);
+          w = *(const u32 *)(s+15);
           *(u32 *)(d+12) = (x LS 8) | (w RS 24);
           s += 16;
           d += 16;

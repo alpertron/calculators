@@ -773,7 +773,6 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
           }
           degreeProd += degreeFactor;
           ptrCoeffDest = poly1;                     // Destination
-          degreeFactor = pstFactorInfo->degree;
           for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
           {
             nbrLength = 1 + numLimbs(ptrCoeffSrc);

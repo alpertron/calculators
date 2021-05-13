@@ -55,7 +55,7 @@ extern bool skipPrimality;
 BigInteger dividend;
 BigInteger divisor;
 BigInteger quotient;
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   (void)argc;  // Parameter is not used. 
 #if DEBUG_CODE == 1
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
     printf("%s\n\n", output);
   }
 #elif DEBUG_CODE == 6
-  char *ptrInput;
+  char* ptrInput;
   if (argc != 4)
   {
     printf("num delta den\n");
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
   contfracText(input, 20000);
   printf("%s\n", output);
 #elif DEBUG_CODE == 7
-  char *ptrInput;
+  char* ptrInput;
   if (argc != 2)
   {
     printf("num\n");
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
   fsquaresText(input, 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 8
-  char *ptrInput;
+  char* ptrInput;
   char* ptrOutput;
   enum eExprErr rc;
   int NumberLength;
@@ -243,6 +243,7 @@ int main(int argc, char *argv[])
   ecmFrontText(text, true, NULL);
   printf("%s\n", output);
   return 0;
+#if 0
   if (argc == 3)
   {
     ecmFrontText(argv[1], true, argv[2]);
@@ -279,6 +280,7 @@ int main(int argc, char *argv[])
     printf("value [known factors]\n");
     return 0;
   }
+#endif
 #elif DEBUG_CODE == 14
   {
     limb internalNotation[100];

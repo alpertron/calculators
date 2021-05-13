@@ -45,7 +45,7 @@ void ChSignBigNbr(int *nbr, int length)
 void ChSignBigNbrB(int *nbr, int length)
 {
   int carry = 0;
-  int *ptrNbr = nbr;
+  int *ptrNbr;
   const int *ptrEndNbr = nbr + length - 1;
   for (ptrNbr = nbr; ptrNbr < ptrEndNbr; ptrNbr++)
   {

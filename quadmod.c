@@ -370,7 +370,6 @@ void SolveEquation(void)
       int nbrLimbs;
       int bitsAZero;
       int ctr;
-      int deltaZeros;
       bool sol1Invalid = false;
       bool sol2Invalid = false;
       // Compute discriminant = ValB^2 - 4*ValA*ValC.
@@ -527,6 +526,7 @@ void SolveEquation(void)
       }
       else
       {                        // Prime is not 2
+        int deltaZeros;
         // Number of bits of square root of discriminant to compute: expon + bits_a + 1,
         // where bits_a is the number of least significant bits of a set to zero.
         // To compute the square root, compute the inverse of sqrt, so only multiplications are used.
