@@ -1103,15 +1103,16 @@ static void SortFactors(struct sFactors *pstFactors)
   struct sFactors stTempFactor;
   int *ptrNewFactor;
   struct sFactors *pstNewFactor;
-  for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++, pstCurFactor++)
+  for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++)
   {
     pstNewFactor = pstCurFactor + 1;
-    for (int factorNumber2 = factorNumber + 1; factorNumber2 <= pstFactors->multiplicity; factorNumber2++, pstNewFactor++)
+    for (int factorNumber2 = factorNumber + 1; factorNumber2 <= pstFactors->multiplicity; factorNumber2++)
     {
       const int *ptrFactor = pstCurFactor->ptrFactor;
       const int *ptrFactor2 = pstNewFactor->ptrFactor;
       if (*ptrFactor < *ptrFactor2)
       {     // Factors already in correct order.
+        pstNewFactor++;
         continue;
       }
       if (*ptrFactor == *ptrFactor2)
@@ -1125,6 +1126,7 @@ static void SortFactors(struct sFactors *pstFactors)
         }
         if (*(ptrFactor + ctr) < *(ptrFactor2 + ctr))
         {     // Factors already in correct order.
+          pstNewFactor++;
           continue;
         }
         if (*(ptrFactor + ctr) == *(ptrFactor2 + ctr))
@@ -1136,6 +1138,7 @@ static void SortFactors(struct sFactors *pstFactors)
             (void)memmove(pstNewFactor, pstNewFactor + 1, ctr * sizeof(struct sFactors));
           }
           pstFactors->multiplicity--;   // Indicate one less known factor.
+          pstNewFactor++;
           continue;
         }
       }
@@ -1143,7 +1146,9 @@ static void SortFactors(struct sFactors *pstFactors)
       (void)memcpy(&stTempFactor, pstCurFactor, sizeof(struct sFactors));
       (void)memcpy(pstCurFactor, pstNewFactor, sizeof(struct sFactors));
       (void)memcpy(pstNewFactor, &stTempFactor, sizeof(struct sFactors));
+      pstNewFactor++;
     }
+    pstCurFactor++;
   }
   // Find location for new factors.
   ptrNewFactor = 0;
@@ -1242,7 +1247,7 @@ static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divis
   struct sFactors *pstNewFactor = pstFactors + lastFactorNumber + 1;
   int *ptrNewFactorLimbs = pstFactors->ptrFactor;
   pstCurFactor = pstFactors + 1;
-  for (int factorNumber = 1; factorNumber <= lastFactorNumber; factorNumber++, pstCurFactor++)
+  for (int factorNumber = 1; factorNumber <= lastFactorNumber; factorNumber++)
   {     // For each known factor...
     int *ptrFactor = pstCurFactor->ptrFactor;
     NumberLength = *ptrFactor;
@@ -1250,10 +1255,12 @@ static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divis
     BigIntGcd(divisor, &Temp2, &Temp3);         // Temp3 is the GCD between known factor and divisor.
     if ((Temp3.nbrLimbs == 1) && (Temp3.limbs[0].x < 2))
     {                                           // divisor is not a new factor (GCD = 0 or 1).
+      pstCurFactor++;
       continue;
     }
     if (TestBigNbrEqual(&Temp2, &Temp3))
     {                                           // GCD is equal to known factor.
+      pstCurFactor++;
       continue;
     }
     // At this moment both GCD and known factor / GCD are new known factors. Replace the known factor by
@@ -1286,6 +1293,7 @@ static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divis
     pstNewFactor++;
     pstFactors->multiplicity++;
     ptrNewFactorLimbs += 1 + Temp3.nbrLimbs;
+    pstCurFactor++;
   }
   // Sort factors in ascending order. If two factors are equal, coalesce them.
   // Divide number by factor just found.
@@ -1354,7 +1362,7 @@ static void SaveFactors(struct sFactors *pstFactors)
   copyStr(&ptrText, ptrInputText);
   *ptrText = '=';
   ptrText++;
-  for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++, pstCurFactor++)
+  for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++)
   {
     if (factorNbr > 1)
     {
@@ -1375,6 +1383,7 @@ static void SaveFactors(struct sFactors *pstFactors)
     int2dec(&ptrText, pstCurFactor->type);
     *ptrText = ')';
     ptrText++;
+    pstCurFactor++;
   }
   *ptrText = 0;
   databack(common.saveFactors.text);
@@ -1452,10 +1461,10 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   for (int countdown = 20; countdown > 0; countdown--)
   {
     NumberLength = nbrLimbs;
-    randomBase = (int)((uint64_t)randomBase * 89547121 + 1762281733) & MAX_INT_NBR;
+    randomBase = (int)(((uint64_t)randomBase * 89547121) + 1762281733) & MAX_INT_NBR;
     modPowBaseInt(randomBase, common.ecm.Aux1, Aux1Len, common.ecm.Aux2); // Aux2 = base^Aux1.
                                                  // If Mult1 = 1 or Mult1 = TestNbr-1, then try next base.
-    if (checkOne(common.ecm.Aux2, nbrLimbs) != 0 || checkMinusOne(common.ecm.Aux2, nbrLimbs) != 0)
+    if (checkOne(common.ecm.Aux2, nbrLimbs) || checkMinusOne(common.ecm.Aux2, nbrLimbs))
     {
       continue;    // This base cannot find a factor. Try another one.
     }

@@ -3390,38 +3390,32 @@ static void PerfectSquareDiscriminant(void)
     CheckSolutionSquareDiscr();       // Process negative divisor.
     BigIntChSign(&currentFactor);
     pstFactor = &astFactorsMod[1];
-    for (index = 0; index < nbrFactors; index++, pstFactor++)
+    for (index = 0; index < nbrFactors; index++)
     {            // Loop that increments counters.
       if (isDescending[index] == 0)
       {          // Ascending.
         if (counters[index] == pstFactor->multiplicity)
         {
           isDescending[index] = 1;    // Next time it will be descending.
+          pstFactor++;
           continue;
         }
-        else
-        {
-          IntArray2BigInteger(pstFactor->ptrFactor, &prime);
-          (void)BigIntMultiply(&currentFactor, &prime, &currentFactor);
-          counters[index]++;
-          break;
-        }
+        IntArray2BigInteger(pstFactor->ptrFactor, &prime);
+        (void)BigIntMultiply(&currentFactor, &prime, &currentFactor);
+        counters[index]++;
+        break;
       }
-      else
-      {         // Descending.
-        if (counters[index] == 0)
-        {
-          isDescending[index] = 0;    // Next time it will be ascending.
-          continue;
-        }
-        else
-        {
-          IntArray2BigInteger(pstFactor->ptrFactor, &prime);
-          (void)BigIntDivide(&currentFactor, &prime, &currentFactor);
-          counters[index]--;
-          break;
-        }
+               // Descending.
+      if (counters[index] == 0)
+      {
+        isDescending[index] = 0;    // Next time it will be ascending.
+        pstFactor++;
+        continue;
       }
+      IntArray2BigInteger(pstFactor->ptrFactor, &prime);
+      (void)BigIntDivide(&currentFactor, &prime, &currentFactor);
+      counters[index]--;
+      break;
     }
     if (index == nbrFactors)
     {               // All factors have been found. Exit loop.

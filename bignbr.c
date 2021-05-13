@@ -996,8 +996,8 @@ void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint)
   const limb *srcLimb = bigint->limbs;
   if (NumberLength == 1)
   {
-    *ptrValues = (bigint->sign == SIGN_POSITIVE? 1: -1);
-    *(ptrValues + 1) = (int)(srcLimb->x);
+    *ptrValues = ((bigint->sign == SIGN_POSITIVE)? 1: -1);
+    *(ptrValues + 1) = srcLimb->x;
   }
   else
   {

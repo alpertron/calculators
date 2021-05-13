@@ -1670,7 +1670,7 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
       }
       else
       {
-        copyStr(&ptrOutput, pretty == PRETTY_PRINT? "&minus;": "-");
+        copyStr(&ptrOutput, (pretty == PRETTY_PRINT)? "&minus;": "-");
       }
       *ptrOutput = ' ';
       ptrOutput++;

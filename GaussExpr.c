@@ -364,7 +364,8 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
               (stackOperators[stackIndex-1] == '/') ||
               (stackOperators[stackIndex-1] == '%')))
         {
-          if ((SubExprResult = ComputeSubExpr()) != 0)
+          SubExprResult = ComputeSubExpr();
+          if (SubExprResult != 0)
           {
             return SubExprResult;
           }

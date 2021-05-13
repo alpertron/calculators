@@ -464,7 +464,8 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     (void)memcpy(&pQuotient->limbs[0], ptrQuot, nbrLimbsQuotient*sizeof(limb));
     pQuotient->nbrLimbs = nbrLimbsQuotient;
   }
-  if (pDividend->sign == pDivisor->sign || (pQuotient->limbs[0].x == 0 && pQuotient->nbrLimbs == 1))
+  if ((pDividend->sign == pDivisor->sign) ||
+    ((pQuotient->limbs[0].x == 0) && (pQuotient->nbrLimbs == 1)))
   {
     pQuotient->sign = SIGN_POSITIVE;
   }

@@ -722,11 +722,11 @@ static void ComputeFourSquares(const struct sFactors *pstFactors)
       return;
     }
   }
-  for (indexPrimes = pstFactors -> multiplicity - 1; indexPrimes >= 0; 
-       indexPrimes--, pstFactor++)
+  for (indexPrimes = pstFactors -> multiplicity - 1; indexPrimes >= 0; indexPrimes--)
   {
     if ((pstFactor -> multiplicity % 2) == 0)
     {                              // Prime factor appears twice.
+      pstFactor++;
       continue;
     }
     NumberLength = *pstFactor->ptrFactor;
@@ -759,6 +759,7 @@ static void ComputeFourSquares(const struct sFactors *pstFactors)
       } /* end if p = 3 (mod 4) */
     } /* end prime not 2 */
     GenerateSumOfFourSquaresOfPQ();
+    pstFactor++;
   } /* end for indexPrimes */
   pstFactor = pstFactors + 1;      // Point to first factor in array of factors.
   for (indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--)

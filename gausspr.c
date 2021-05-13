@@ -315,7 +315,8 @@ static void GetMontgomeryParms(void)
     MontgomeryMultR1[0] = 1;
     return;
   }
-  x = N = (int) TestNbr[0]; // 2 least significant bits of inverse correct.
+  N = (int)TestNbr[0]; // 2 least significant bits of inverse correct.
+  x = N;
   x = x * (2 - N * x); // 4 least significant bits of inverse correct.
   x = x * (2 - N * x); // 8 least significant bits of inverse correct.
   x = x * (2 - N * x); // 16 least significant bits of inverse correct.
