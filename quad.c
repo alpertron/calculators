@@ -631,14 +631,15 @@ static void setNbrLimbs(BigInteger* pBigNbr)
 // when Quadr is even and Linear is odd. In this case there is unique solution.
 static void findQuadraticSolution(BigInteger* pSolution, int expon)
 {
+  int exponent = expon;
   int bitMask = 1;
   int* ptrSolution = (int*)pSolution->limbs;
-  BigIntPowerOf2(&Q, expon);
+  BigIntPowerOf2(&Q, exponent);
   (void)memset(pSolution->limbs, 0, Q.nbrLimbs);
-  while (expon > 0)
+  while (exponent > 0)
   {
-    expon--;
-    BigIntPowerOf2(&K1, expon);
+    exponent--;
+    BigIntPowerOf2(&K1, exponent);
     addbigint(&K1, -1);
     if ((Const.limbs[0].x & 1) != 0)
     {        // Const is odd.

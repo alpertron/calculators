@@ -1237,12 +1237,13 @@ static bool func(char* expr, BigInteger* ExpressionResult,
 static void generateSieve(const int* pSmallPrimes, char* sieve,
   const BigInteger* pArgument, bool isNext)
 {
+  const int* ptrSmallPrimes = pSmallPrimes;
   // Indicate numbers not divisible by small primes in advance.
   (void)memset(sieve, 0, COMPUTE_NEXT_PRIME_SIEVE_SIZE);
   for (int ctr = 0; ctr < 1229; ctr++)
   {     // For each prime less than 10000...
-    int prime = *pSmallPrimes;
-    pSmallPrimes++;
+    int prime = *ptrSmallPrimes;
+    ptrSmallPrimes++;
     int remainder = getRemainder(pArgument, prime);
     // Compute first element of sieve to indicate multiple of prime.
     if (isNext)

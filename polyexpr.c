@@ -59,6 +59,7 @@ static bool isFunc(char** ppcInput, const char* funcName)
 // be power = p^k.
 static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
 {
+  char* pInput = input;
   int exponOperatorCounter = 0;
   char stackOper[STACK_OPER_SIZE];
   int stackOperIndex = 0;
@@ -68,22 +69,22 @@ static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
   int limb;
   int bitNbr;
   char variableLetter = ' ';  // Indicate variable letter not known yet.
-  while (*input != '\0')
+  while (*pInput != '\0')
   {
     char* inputTemp;
-    char c = *input;
+    char c = *pInput;
     char cUppercase;
     if ((c == ' ') || (c == 9))
     {          // Ignore any spaces and tabs.
-      input++;
+      pInput++;
       continue;
     }
-    inputTemp = input;
+    inputTemp = pInput;
     if (isFunc(&inputTemp, "GCD"))
     {
       if (prevTokenIsNumber == false)
       {
-        input = inputTemp;
+        pInput = inputTemp;
         stackOper[stackOperIndex] = TOKEN_GCD;  // Push token onto stack.
         stackOperIndex++;
         continue;
@@ -94,7 +95,7 @@ static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
     {
       if (prevTokenIsNumber == false)
       {
-        input = inputTemp;
+        pInput = inputTemp;
         stackOper[stackOperIndex] = TOKEN_DER;  // Push token onto stack.
         stackOperIndex++;
         continue;
@@ -103,7 +104,7 @@ static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
     }
     else
     {
-      input++;
+      pInput++;
     }
     cUppercase = c & 0xDF;
     if ((cUppercase >= 'A') && (cUppercase <= 'Z'))
@@ -114,10 +115,10 @@ static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
       }
       variableLetter = cUppercase;
     }
-    if ((c == '*') && (*input == '*'))
+    if ((c == '*') && (*pInput == '*'))
     {          // Convert double asterisk to exponentiation.
       c = '^';
-      input++;
+      pInput++;
     }
     if (prevTokenIsNumber)
     {
@@ -306,13 +307,13 @@ static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
       }
       else if ((c >= '0') && (c <= '9'))
       {          // Number.
-        ptrInput = input;
+        ptrInput = pInput;
         while ((*ptrInput >= '0') && (*ptrInput <= '9'))
         {        // Find end of number.
           ptrInput++;
         }
-        Dec2Bin(input - 1, value.limbs, (int)(ptrInput + 1 - input), &value.nbrLimbs);
-        input = ptrInput;
+        Dec2Bin(pInput - 1, value.limbs, (int)(ptrInput + 1 - pInput), &value.nbrLimbs);
+        pInput = ptrInput;
         value.sign = SIGN_POSITIVE;
         if (exponOperatorCounter != 0)
         {
@@ -901,8 +902,10 @@ void SetNumberToOne(/*@out@*/int* ptrValue1)
   }
 }
 
-int* CopyPolynomial(int* ptrDest, const int* ptrSrc, int polyDegree)
+int* CopyPolynomial(int* dest, const int* src, int polyDegree)
 {
+  int* ptrDest = dest;
+  const int* ptrSrc = src;
   for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     int numLength = numLimbs(ptrSrc) + 1;

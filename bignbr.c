@@ -266,8 +266,10 @@ void BigIntSubt(const BigInteger *pMinuend, const BigInteger *pSubtrahend, BigIn
   }
 }
 
-enum eExprErr BigIntMultiply(const BigInteger *pFactor1, const BigInteger *pFactor2, BigInteger *pProduct)
+enum eExprErr BigIntMultiply(const BigInteger *pFact1, const BigInteger *pFact2, BigInteger *pProduct)
 {
+  const BigInteger* pFactor1 = pFact1;
+  const BigInteger* pFactor2 = pFact2;
   int nbrLimbsFactor1 = pFactor1->nbrLimbs;
   int nbrLimbsFactor2 = pFactor2->nbrLimbs;
   int nbrLimbs;
@@ -561,8 +563,9 @@ void BigIntDivide2(BigInteger *pArg)
   }
 }
 
-static void BigIntMutiplyPower2(BigInteger *pArg, int power2)
+static void BigIntMutiplyPower2(BigInteger *pArg, int powerOf2)
 {
+  int power2 = powerOf2;
   int ctr;
   int nbrLimbs = pArg->nbrLimbs;
   limb *ptrLimbs = pArg->limbs;
@@ -800,13 +803,14 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
 
 void addbigint(BigInteger *pResult, int addend)
 {
+  int intAddend = addend;
   int sign;
   int nbrLimbs = pResult->nbrLimbs;
   limb *pResultLimbs = pResult->limbs;
   sign = pResult->sign;
-  if (addend < 0)
+  if (intAddend < 0)
   {
-    addend = -addend;
+    intAddend = -intAddend;
     if (sign == SIGN_POSITIVE)
     {
       sign = SIGN_NEGATIVE;
@@ -818,13 +822,13 @@ void addbigint(BigInteger *pResult, int addend)
   }
   if (sign == SIGN_POSITIVE)
   {   // Add addend to absolute value of pResult.
-    addToAbsValue(pResultLimbs, &nbrLimbs, addend);
+    addToAbsValue(pResultLimbs, &nbrLimbs, intAddend);
   }
   else
   {  // Subtract addend from absolute value of pResult.
     if (nbrLimbs == 1)
     {
-      pResultLimbs->x -= addend;
+      pResultLimbs->x -= intAddend;
       if (pResultLimbs->x < 0)
       {
         pResultLimbs->x = -pResultLimbs->x;
@@ -833,7 +837,7 @@ void addbigint(BigInteger *pResult, int addend)
     }
     else
     {     // More than one limb.
-      subtFromAbsValue(pResultLimbs, &nbrLimbs, addend);
+      subtFromAbsValue(pResultLimbs, &nbrLimbs, intAddend);
     }
   }
   pResult->nbrLimbs = nbrLimbs;
@@ -944,16 +948,17 @@ int bitLength(const BigInteger *pBigNbr)
 
 int intModPow(int NbrMod, int Expon, int currentPrime)
 {
+  int exponent = Expon;
   unsigned int power = 1;
   unsigned int square = (unsigned int)NbrMod;
-  while (Expon != 0)
+  while (exponent != 0)
   {
-    if ((Expon & 1) == 1)
+    if ((exponent & 1) == 1)
     {
       power = (power * square) % (unsigned int)currentPrime;
     }
     square = (square * square) % (unsigned int)currentPrime;
-    Expon >>= 1;
+    exponent >>= 1;
   }
   return (int)power;
 }
@@ -998,22 +1003,23 @@ void IntArray2BigInteger(const int *ptrValues, BigInteger *bigint)
 
 void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint)
 {
+  int* pValues = ptrValues;
   const limb *srcLimb = bigint->limbs;
   if (NumberLength == 1)
   {
-    *ptrValues = ((bigint->sign == SIGN_POSITIVE)? 1: -1);
-    *(ptrValues + 1) = srcLimb->x;
+    *pValues = ((bigint->sign == SIGN_POSITIVE)? 1: -1);
+    *(pValues + 1) = srcLimb->x;
   }
   else
   {
     int nbrLimbs;
     nbrLimbs = getNbrLimbs(srcLimb);
-    *ptrValues = ((bigint->sign == SIGN_POSITIVE)? nbrLimbs : -nbrLimbs);
-    ptrValues++;
+    *pValues = ((bigint->sign == SIGN_POSITIVE)? nbrLimbs : -nbrLimbs);
+    pValues++;
     for (int ctr = 0; ctr < nbrLimbs; ctr++)
     {
-      *ptrValues = srcLimb->x;
-      ptrValues++;
+      *pValues = srcLimb->x;
+      pValues++;
       srcLimb++;
     }
   }

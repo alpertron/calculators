@@ -1090,11 +1090,12 @@ static void ComputeCoeffBounds(void)
 // n = nbrColsTraces
 // r = nbrVectors (number of columns of BL)
 // s = nbrRequiredTraces
-static void vanHoeij(int prime, int nbrFactors)
+static void vanHoeij(int prime, int numFactors)
 {
 #if DEBUG_VANHOEIJ
   int nbrStepsDone = 0;
 #endif
+  int nbrFactors = numFactors;
   int nbrVectors;
   int r1;
   int nbrRequiredTraces;

@@ -1242,6 +1242,7 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
 // The divisor must be also sorted.
 static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divisor, int type)
 {
+  int typeFactor = type;
   struct sFactors *pstCurFactor;
   int lastFactorNumber = pstFactors->multiplicity;
   struct sFactors *pstNewFactor = pstFactors + lastFactorNumber + 1;
@@ -1273,22 +1274,22 @@ static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divis
     pstNewFactor->multiplicity = pstCurFactor->multiplicity;
     pstNewFactor->ptrFactor = ptrNewFactorLimbs;
     pstNewFactor->upperBound = pstCurFactor->upperBound;
-    if (type < 50000000)
+    if (typeFactor < 50000000)
     {          // Factor found using ECM.
       pstNewFactor->type = TYP_EC + EC;
-      type = pstCurFactor->type / 50000000 * 50000000;
-      if (type == 0)
+      typeFactor = pstCurFactor->type / 50000000 * 50000000;
+      if (typeFactor == 0)
       {
         pstCurFactor->type = TYP_DIVISION + EC;
       }
       else
       {
-        pstCurFactor->type = type + EC;
+        pstCurFactor->type = typeFactor + EC;
       }
     }
     else
     {          // Found otherwise.
-      pstNewFactor->type = type;
+      pstNewFactor->type = typeFactor;
     }
     pstNewFactor++;
     pstFactors->multiplicity++;
