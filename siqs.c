@@ -2439,7 +2439,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
       sqrt(dNumberToFactor) * common.siqs.SieveLimit /
       (FactorBase * 64) /
       common.siqs.primeSieveData[j + 1].value)
-      / log(3) + 0x80);
+      / LOG_3 + 0x80);
   common.siqs.firstLimit = (int)(log(dNumberToFactor) / 3);
   for (common.siqs.secondLimit = common.siqs.firstLimit; common.siqs.secondLimit < common.siqs.nbrFactorBasePrimes; common.siqs.secondLimit++)
   {

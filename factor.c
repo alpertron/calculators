@@ -236,8 +236,11 @@ void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, const BigInteger *
 }
 
 // Get Aurifeuille factors.
-void InsertAurifFactors(struct sFactors *pstFactors, const BigInteger *BigBase, int Expon, int Incre)
+void InsertAurifFactors(struct sFactors *pstFactors, const BigInteger *BigBase,
+  int exponent, int increment)
 {
+  int Incre = increment;
+  int Expon = exponent;
   int Base = BigBase->limbs[0].x;
   if ((BigBase->nbrLimbs != 1) || (Base >= 386))
   {

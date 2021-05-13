@@ -28,7 +28,6 @@
 #include "musl.h"
 
 #define MAX_MATRIX_SIZE  200
-
 char* ptrOutput2;
 #if DEBUG_VANHOEIJ
 char debugOutput[20000000];
@@ -1124,8 +1123,8 @@ static void vanHoeij(int prime, int numFactors)
   int maxAttempts;
 #endif
   numberLLL = 0;
-  exponDifference = (int)(6.0 * (double)nbrFactors * log(2.0) / log(prime));
-  b = (int)(b0 + (ceil(log(3) * log_rootbound) / logPrime) + 3);
+  exponDifference = (int)(6.0 * (double)nbrFactors * LOG_2 / log(prime));
+  b = (int)(b0 + (ceil(LOG_3 * log_rootbound) / logPrime) + 3);
   a0 = b + exponDifference;
   exponentMod = a0;
 #if DEBUG_VANHOEIJ
@@ -1233,7 +1232,7 @@ static void vanHoeij(int prime, int numFactors)
   // Compute powerExtraBits as a power of prime with 3 times
   // the number of bits of nbrFactors (the number of polynomial factors).
   // Compute powerBoundA as powerExtraBits * powerMod.
-  exponDifference = (int)(6.0 * (double)nbrFactors * log(2.0) / log(prime));
+  exponDifference = (int)(6.0 * (double)nbrFactors * LOG_2 / log(prime));
   intToBigInteger(&operand1, prime);
   (void)BigIntPowerIntExp(&operand1, exponDifference, &powerExtraBits);
   CopyBigInt(&powerBoundA, &powerMod);

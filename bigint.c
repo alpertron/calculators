@@ -238,25 +238,27 @@ void MultBigNbrByInt(const int *pBigFactor, int factor, int *bigProd, int nbrLen
 
 void MultBigNbrByIntB(const int *bigFactor, int factor, int *bigProd, int nbrLen)
 {
+  const int* bigFact = bigFactor;
+  int fact = factor;
   int *bigProduct = bigProd;
   double dFactor;
   double dVal = 1.0 / (double)(1U << BITS_PER_INT_GROUP);
   int factorPositive = 1;
   int carry;
-  if (factor < 0)
+  if (fact < 0)
   {     // If factor is negative, indicate it and compute its absolute value.
     factorPositive = 0;
-    factor = -factor;
+    fact = -fact;
   }
-  dFactor = (double)factor;
+  dFactor = (double)fact;
   carry = 0;
   for (int ctr = 0; ctr < (nbrLen-1); ctr++)
   {
     double dCarry;
-    int low = ((*bigFactor * factor) + carry) & MAX_INT_NBR;
+    int low = ((*bigFact * fact) + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
-    dCarry = ((double)*bigFactor * dFactor) + (double)carry;
+    dCarry = ((double)*bigFact * dFactor) + (double)carry;
     if (low < HALF_INT_RANGE)
     {
       dCarry = floor((dCarry + (double)(HALF_INT_RANGE / 2)) * dVal);
@@ -268,9 +270,9 @@ void MultBigNbrByIntB(const int *bigFactor, int factor, int *bigProd, int nbrLen
     carry = (int)dCarry;
     *bigProduct = low;
     bigProduct++;
-    bigFactor++;
+    bigFact++;
   }
-  *bigProduct = (*bigFactor * factor) + carry;
+  *bigProduct = (*bigFact * fact) + carry;
   if (factorPositive == 0)
   {         // If factor is negative, change sign of product.
     ChSignBigNbrB(bigProd, nbrLen);

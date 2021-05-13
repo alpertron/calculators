@@ -827,9 +827,10 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
 // m <- (T*polyInv)/x^polyDegree
 // return T - m*polyMod
 void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
-  /*@out@*/int* polyProduct,
+  /*@out@*/int* polyProd,
   int polyDegree, /*@in@*/int* polyMod)
 {
+  int* polyProduct = polyProd;
   int currentDegree;
   int index;
   int nbrLimbs = NumberLength + 1;

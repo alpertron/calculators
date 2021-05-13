@@ -123,8 +123,9 @@ static void setNbrLimbs(BigInteger* pBigNbr)
 
 // Find quadratic solution of Quadr*x^2 + Linear*x + Const = 0 (mod 2^expon)
 // when Quadr is even and Linear is odd. In this case there is unique solution.
-static void findQuadraticSolution(BigInteger* pSolution, int expon)
+static void findQuadraticSolution(BigInteger* pSolution, int exponent)
 {
+  int expon = exponent;
   int bitMask = 1;
   int *ptrSolution = (int *)pSolution->limbs;
   BigIntPowerOf2(&Q, expon);

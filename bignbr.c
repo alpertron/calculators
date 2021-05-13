@@ -390,13 +390,13 @@ void longToBigInteger(BigInteger *bigint, long long value)
   bigint->nbrLimbs = nbrLimbs;
 }
 
-void expBigNbr(BigInteger *bignbr, double logar)
+void expBigNbr(BigInteger *bignbr, double logarithm)
 {
   unsigned int mostSignificantLimb;
-  logar /= log(2);
+  double logar = logarithm / LOG_2;
   bignbr->sign = SIGN_POSITIVE;
   bignbr->nbrLimbs = (int)floor(logar / BITS_PER_GROUP);
-  mostSignificantLimb = (unsigned int)floor(exp((logar - (BITS_PER_GROUP*bignbr->nbrLimbs)) * log(2)) + 0.5);
+  mostSignificantLimb = (unsigned int)floor(exp((logar - (BITS_PER_GROUP*bignbr->nbrLimbs)) * LOG_2) + 0.5);
   if (mostSignificantLimb == LIMB_RANGE)
   {
     mostSignificantLimb = 1;
@@ -428,7 +428,7 @@ double logBigNbr(const BigInteger *pBigNbr)
     {
       logar = log(value + (double)pBigNbr->limbs[nbrLimbs - 3].x / LIMB_RANGE);
     }
-    logar += (double)((nbrLimbs - 2)*BITS_PER_GROUP)*log(2);
+    logar += (double)((nbrLimbs - 2)*BITS_PER_GROUP) * LOG_2;
   }
   return logar;
 }
@@ -1165,7 +1165,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
   }
   else
   {
-    maxExpon = (int)(dLogBigNbr / log(2) + 0.5);
+    maxExpon = (int)(dLogBigNbr / LOG_2 + 0.5);
   }
   for (h = 0; h < sizeof(prime2310x1) / sizeof(prime2310x1[0]); h++)
   {
@@ -1235,7 +1235,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
       }
     }
   }
-  log2N = dLogBigNbr / log(2);
+  log2N = dLogBigNbr / LOG_2;
   for (Exponent = maxExpon; Exponent >= 2; Exponent--)
   {
     int k, prime;
@@ -1268,7 +1268,7 @@ int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
     intLog2root = (int)floor(log2root/ BITS_PER_GROUP);
     nbrLimbs = intLog2root + 1;
     ptrLimb = &pBase->limbs[nbrLimbs - 1];
-    dN = exp((log2root - intLog2root*BITS_PER_GROUP) * log(2));
+    dN = exp((log2root - intLog2root*BITS_PER_GROUP) * LOG_2);
     if (nbrLimbs == 1)
     {
       double dQuot;

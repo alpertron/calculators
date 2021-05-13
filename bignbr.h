@@ -31,6 +31,8 @@
 #define LIMB_RANGE (1U<<BITS_PER_GROUP)
 #define SMALL_NUMBER_BOUND 32768
 #define SMALL_PRIMES_ARRLEN  9592  // Number of primes less than 100000.
+#define LOG_2            0.69314718055994531
+#define LOG_3            1.09861228866810969
 
 struct mylimb
 {

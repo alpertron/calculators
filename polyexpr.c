@@ -57,8 +57,9 @@ static bool isFunc(char** ppcInput, const char* funcName)
 // If the number is part of the exponent it has to be reduced by
 // using the modulus phi = (p-1)*p^(k-1), otherwise the modulus will
 // be power = p^k.
-static int ConvertToReversePolishNotation(char* input, char* ptrOutput)
+static int ConvertToReversePolishNotation(char* input, char* ptrOut)
 {
+  char* ptrOutput = ptrOut;
   char* pInput = input;
   int exponOperatorCounter = 0;
   char stackOper[STACK_OPER_SIZE];
