@@ -434,7 +434,7 @@ double logBigNbr(const BigInteger *pBigNbr)
 
 double logLimbs(const limb *pBigNbr, int nbrLimbs)
 {
-  double logar = (double)(nbrLimbs - 1) * LOG_2 * (double)BITS_PER_GROUP;
+  double logar;
   if (nbrLimbs > 1)
   {
     logar = log((double)(pBigNbr + nbrLimbs - 2)->x +
