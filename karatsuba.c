@@ -669,8 +669,9 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
   double dInvRangeLimb = 1.0 / dRangeLimb;
   int low = 0;              // Low limb of sums of multiplications.
   double dAccumulator = 0;  // Approximation to the sum of multiplications.
-  int factor1, factor2;
-  for (prodCol = 0; prodCol < 2 * nbrLen - 1; prodCol++)
+  int factor1;
+  int factor2;
+  for (prodCol = 0; prodCol < (2 * nbrLen) - 1; prodCol++)
   {    // Process each limb of product (least to most significant limb).
     if (prodCol < nbrLen)
     {   // Processing first half (least significant) of product.
@@ -686,8 +687,10 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
     }
     for (; fact1Col>=0; fact1Col--)
     {
-      factor1 = (ptrFactor1++)->x;
-      factor2 = (ptrFactor2--)->x;
+      factor1 = ptrFactor1->x;
+      ptrFactor1++;
+      factor2 = ptrFactor2->x;
+      ptrFactor2--;
       low += factor1 * factor2;
       dAccumulator += (double)factor1 * (double)factor2;
     }
@@ -697,11 +700,11 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      dAccumulator = floor(dAccumulator * dInvRangeLimb + 0.25);
+      dAccumulator = floor((dAccumulator * dInvRangeLimb) + 0.25);
     }
     else
     {
-      dAccumulator = floor(dAccumulator * dInvRangeLimb - 0.25);
+      dAccumulator = floor((dAccumulator * dInvRangeLimb) - 0.25);
     }
     low = (unsigned int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
   }
@@ -772,7 +775,8 @@ static void Karatsuba(int idxFactor1, int nbrLen)
         {    // One of the factors is equal to zero.
           for (i = nbrLen - 1; i >= 0; i--)
           {
-            arr[idxFactor1 + i].x = arr[idxFactor2 + i].x = 0;
+            arr[idxFactor1 + i].x = 0;
+            arr[idxFactor2 + i].x = 0;
           }
         }
         else

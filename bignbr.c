@@ -1134,16 +1134,16 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
     {     // Check whether pBigNbr is perfect power of these bases.
       double dProd;
       double dLogBase = log(base);
-      Exponent = (int)(dLogBigNbr / dLogBase - 1);
-      dProd = dLogBigNbr - Exponent * dLogBase;
+      Exponent = (int)((dLogBigNbr / dLogBase) - 1);
+      dProd = dLogBigNbr - ((double)Exponent * dLogBase);
       if ((dProd > 0.00000000001) || (dProd < -0.00000000001))
       {
         Exponent++;
-        dProd = dLogBigNbr - Exponent * dLogBase;
+        dProd -= dLogBase;
         if ((dProd > 0.00000000001) || (dProd < -0.00000000001))
         {
           Exponent++;
-          dProd = dLogBigNbr - Exponent * dLogBase;
+          dProd -= dLogBase;
           if ((dProd > 0.00000000001) || (dProd < -0.00000000001))
           {
             continue;           // Test next base.
@@ -1160,11 +1160,11 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
       (void)memcpy(pBase->limbs, pBigNbr->limbs, pBase->nbrLimbs * sizeof(limb));
       return 1;
     }
-    maxExpon = (int)(dLogBigNbr / log(101) + 0.5);
+    maxExpon = (int)((dLogBigNbr / log(101)) + 0.5);
   }
   else
   {
-    maxExpon = (int)(dLogBigNbr / LOG_2 + 0.5);
+    maxExpon = (int)((dLogBigNbr / LOG_2) + 0.5);
   }
   for (h = 0; h < sizeof(prime2310x1) / sizeof(prime2310x1[0]); h++)
   {
@@ -1191,7 +1191,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
       expon11 = false;
     }
   }
-  primesLength = 2 * maxExpon + 3;
+  primesLength = (2 * maxExpon) + 3;
   for (h = 2; h <= maxExpon; h++)
   {
     ProcessExpon[h] = true;
@@ -1200,7 +1200,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
   {
     primes[h] = true;
   }
-  for (h = 2; h * h < primesLength; h++)
+  for (h = 2; (h * h) < primesLength; h++)
   { // Generation of primes
     for (j = h * h; j < primesLength; j += h)
     { // using Eratosthenes sieve
@@ -1212,7 +1212,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
     if (primes[h])
     {
       int processed = 0;
-      for (j = 2 * h + 1; j < primesLength; j += 2 * h)
+      for (j = (2 * h) + 1; j < primesLength; j += 2 * h)
       {
         if (primes[j])
         {
@@ -1237,24 +1237,25 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
   log2N = dLogBigNbr / LOG_2;
   for (Exponent = maxExpon; Exponent >= 2; Exponent--)
   {
-    int k, prime;
-    if ((Exponent % 2 == 0) && !expon2)
+    int k;
+    int prime;
+    if (((Exponent % 2) == 0) && !expon2)
     {
       continue; // Not a square
     }
-    if ((Exponent % 3 == 0) && !expon3)
+    if (((Exponent % 3) == 0) && !expon3)
     {
       continue; // Not a cube
     }
-    if ((Exponent % 5 == 0) && !expon5)
+    if (((Exponent % 5) == 0) && !expon5)
     {
       continue; // Not a fifth power
     }
-    if ((Exponent % 7 == 0) && !expon7)
+    if (((Exponent % 7) == 0) && !expon7)
     {
       continue; // Not a 7th power
     }
-    if ((Exponent % 11 == 0) && !expon11)
+    if (((Exponent % 11) == 0) && !expon11)
     {
       continue; // Not an 11th power
     }

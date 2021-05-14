@@ -231,22 +231,22 @@ void SameDegreeFactorization(void)
     for (;;)
     {
 #ifdef __EMSCRIPTEN__
-      char *ptrOutput = outputText;
+      char *ptrOutputText = outputText;
       if (lang)
       {
-        copyStr(&ptrOutput, "1<p>Factorización del mismo grado: buscando ");
-        int2dec(&ptrOutput, polyDegree / pstFactorInfo->expectedDegree);
-        copyStr(&ptrOutput, " factores de grado ");
+        copyStr(&ptrOutputText, "1<p>Factorización del mismo grado: buscando ");
+        int2dec(&ptrOutputText, polyDegree / pstFactorInfo->expectedDegree);
+        copyStr(&ptrOutputText, " factores de grado ");
       }
       else
       {
-        copyStr(&ptrOutput, "1<p>Equal degree factorization: searching for ");
-        int2dec(&ptrOutput, polyDegree / pstFactorInfo->expectedDegree);
-        copyStr(&ptrOutput, " factors of degree ");
+        copyStr(&ptrOutputText, "1<p>Equal degree factorization: searching for ");
+        int2dec(&ptrOutputText, polyDegree / pstFactorInfo->expectedDegree);
+        copyStr(&ptrOutputText, " factors of degree ");
       }
-      int2dec(&ptrOutput, pstFactorInfo->expectedDegree);
-      copyStr(&ptrOutput, ".</p><p>");
-      ptrPercentageOutput = ptrOutput;
+      int2dec(&ptrOutputText, pstFactorInfo->expectedDegree);
+      copyStr(&ptrOutputText, ".</p><p>");
+      ptrPercentageOutput = ptrOutputText;
 #endif
       // Copy polynomial to factor to poly3 and set leading coefficient to 1.
       // All operations below will be done modulo this polynomial.

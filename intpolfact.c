@@ -1612,14 +1612,14 @@ static void vanHoeij(int prime, int numFactors)
 #ifdef __EMSCRIPTEN__
     {
       char outputInfo[1000];
-      char* ptrOutput = outputInfo;
+      char* ptrOutputInfo = outputInfo;
       if (lang)
       {
-        copyStr(&ptrOutput, "1<p>Paso 7</p>");
+        copyStr(&ptrOutputInfo, "1<p>Paso 7</p>");
       }
       else
       {
-        copyStr(&ptrOutput, "1<p>Step 7</p>");
+        copyStr(&ptrOutputInfo, "1<p>Step 7</p>");
       }
       databack(outputInfo);
     }
@@ -1659,14 +1659,14 @@ static void vanHoeij(int prime, int numFactors)
 #ifdef __EMSCRIPTEN__
     {
       char outputInfo[1000];
-      char* ptrOutput = outputInfo;
+      char* ptrOutputInfo = outputInfo;
       if (lang)
       {
-        copyStr(&ptrOutput, "1<p>Paso 8</p>");
+        copyStr(&ptrOutputInfo, "1<p>Paso 8</p>");
       }
       else
       {
-        copyStr(&ptrOutput, "1<p>Step 8</p>");
+        copyStr(&ptrOutputInfo, "1<p>Step 8</p>");
       }
       databack(outputInfo);
     }
@@ -1757,16 +1757,16 @@ static void vanHoeij(int prime, int numFactors)
     GetMontgomeryParms(powerMod.nbrLimbs);
 #ifdef __EMSCRIPTEN__
     char outputInfo[1000];
-    char* ptrOutput = outputInfo;
+    char* ptrOutputInfo = outputInfo;
     if (lang)
     {
-      copyStr(&ptrOutput, "1<p>Verificando si los polinomios hallados son factores irreducibles.</p>");
+      copyStr(&ptrOutputInfo, "1<p>Verificando si los polinomios hallados son factores irreducibles.</p>");
     }
     else
     {
-      copyStr(&ptrOutput, "1<p>Testing whether the polynomials found are irreducible factors.</p>");
+      copyStr(&ptrOutputInfo, "1<p>Testing whether the polynomials found are irreducible factors.</p>");
     }
-    showElapsedTimeSec(&ptrOutput);
+    showElapsedTimeSec(&ptrOutputInfo);
     databack(outputInfo);
 #endif
     if (AttemptToFactor(nbrVectors, nbrFactors, &newNbrFactors))

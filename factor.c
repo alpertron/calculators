@@ -1588,12 +1588,12 @@ static void factorSmallInt(int intToFactor, int* factors, struct sFactors* pstFa
     (unsigned int)primeFactor * (unsigned int)primeFactor <= (unsigned int)toFactor;
     primeFactor += 2)
   {
-    if (primeFactor % 3 == 0)
+    if ((primeFactor % 3) == 0)
     {
       continue;
     }
     multiplicity = 0;
-    while (toFactor % primeFactor == 0)
+    while ((toFactor % primeFactor) == 0)
     {
       toFactor /= primeFactor;
       multiplicity++;

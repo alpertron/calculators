@@ -266,11 +266,11 @@ void AdjustModN(limb *Nbr, const limb *Modulus, int nbrLen)
     }
     if (low < HALF_INT_RANGE)
     {
-      carry = (int)floor((dAccumulator + HALF_INT_RANGE / 2)*dVal);
+      carry = (int)floor((dAccumulator + (double)(HALF_INT_RANGE / 2))*dVal);
     }
     else
     {
-      carry = (int)floor((dAccumulator - HALF_INT_RANGE / 2)*dVal);
+      carry = (int)floor((dAccumulator - (double)(HALF_INT_RANGE / 2))*dVal);
     }
     Nbr[i].x = low;
 #endif

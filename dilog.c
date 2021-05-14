@@ -327,7 +327,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
             }
             else
             {
-              magnitude = (double)nbrR2[mostSignificantDword].x * LIMB_RANGE +
+              magnitude = ((double)nbrR2[mostSignificantDword].x * (double)LIMB_RANGE) +
                 nbrR2[leastSignificantDword].x;
             }
             if (magnitude < firstLimit)

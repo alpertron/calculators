@@ -407,21 +407,24 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       if ((stackIndex > startStackIndex) &&
           (stackOperators[stackIndex-1] != '('))
       {
-        if ((SubExprResult = ComputeSubExpr()) != 0)
+        SubExprResult = ComputeSubExpr();
+        if (SubExprResult != 0)
         {
           return SubExprResult;
         }
         if ((stackIndex > startStackIndex) &&
             (stackOperators[stackIndex-1] != '('))
         {
-          if ((SubExprResult = ComputeSubExpr()) != 0)
+          SubExprResult = ComputeSubExpr();
+          if (SubExprResult != 0)
           {
             return SubExprResult;
           }
           if ((stackIndex > startStackIndex) &&
               (stackOperators[stackIndex-1] != '('))
           {
-            if ((SubExprResult = ComputeSubExpr()) != 0)
+            SubExprResult = ComputeSubExpr();
+            if (SubExprResult != 0)
             {
               return SubExprResult;
             }
@@ -563,19 +566,22 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
   }
   if ((stackIndex > startStackIndex) && (stackOperators[stackIndex-1] != '('))
   {
-    if ((SubExprResult = ComputeSubExpr()) != 0)
+    SubExprResult = ComputeSubExpr();
+    if (SubExprResult != 0)
     {
       return SubExprResult;
     }
     if ((stackIndex > startStackIndex) && (stackOperators[stackIndex-1] != '('))
     {
-      if ((SubExprResult = ComputeSubExpr()) != 0)
+      SubExprResult = ComputeSubExpr();
+      if (SubExprResult != 0)
       {
         return SubExprResult;
       }
       if ((stackIndex > startStackIndex) && (stackOperators[stackIndex-1] != '('))
       {
-        if ((SubExprResult = ComputeSubExpr()) != 0)
+        SubExprResult = ComputeSubExpr();
+        if (SubExprResult != 0)
         {
           return SubExprResult;
         }

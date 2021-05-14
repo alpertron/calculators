@@ -37,11 +37,11 @@ static void smallMultiply(int factor1, int factor2, int *product)
   *product = low;
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + HALF_INT_RANGE / 2) / LIMB_RANGE);
+    dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2)) / (double)LIMB_RANGE);
   }
   else
   {
-    dAccum = ((dAccum - HALF_INT_RANGE / 2) / LIMB_RANGE);
+    dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2)) / (double)LIMB_RANGE);
   }
   *(product + 1) = (unsigned int)dAccum;
 }

@@ -421,11 +421,11 @@ void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, in
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      dAccumulator = floor((dAccumulator + HALF_INT_RANGE / 2)*dInvRangeLimb);
+      dAccumulator = floor((dAccumulator + (double)(HALF_INT_RANGE / 2))*dInvRangeLimb);
     }
     else
     {
-      dAccumulator = floor((dAccumulator - HALF_INT_RANGE / 2)*dInvRangeLimb);
+      dAccumulator = floor((dAccumulator - (double)(HALF_INT_RANGE / 2))*dInvRangeLimb);
     }
     low = (int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
   }
