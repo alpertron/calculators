@@ -723,9 +723,11 @@ struct stKaratsubaStack
 
 static struct stKaratsubaStack astKaratsubaStack[16];
 
-static void Karatsuba(int idxFactor1, int nbrLen)
+static void Karatsuba(int indexFactor1, int numLen)
 {
+  int nbrLen = numLen;
   int i;
+  int idxFactor1 = indexFactor1;
   int idxFactor2;
   unsigned int carry1First;
   unsigned int carry1Second;
@@ -826,7 +828,7 @@ static void Karatsuba(int idxFactor1, int nbrLen)
       // Multiply both high parts.
       idxFactor1 += nbrLen;
       diffIndex += nbrLen;
-      nbrLen >>= 1;
+      nbrLen /= 2;
       pstKaratsubaStack->stage = 2;
       pstKaratsubaStack++;
       stage = 0;         // Start new Karatsuba multiplication.

@@ -1637,6 +1637,7 @@ void factor(const BigInteger* toFactor, const int* number, int* factors, struct 
 void factorExt(const BigInteger *toFactor, const int *number, 
   int *factors, struct sFactors *pstFactors, char *pcKnownFactors)
 {
+  char* ptrKnownFactors = pcKnownFactors;
   struct sFactors *pstCurFactor;
   int expon;
   int remainder;
@@ -1672,7 +1673,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
   modmultCallback = showECMStatus;   // Set callback.
 #endif
   pstCurFactor = pstFactors + 1;
-  if (pcKnownFactors == NULL)
+  if (ptrKnownFactors == NULL)
   {   // No factors known.
     (void)memcpy(factors, number, (1 + *number) * sizeof(int));
     pstFactors->multiplicity = 1;
@@ -1689,36 +1690,36 @@ void factorExt(const BigInteger *toFactor, const int *number,
   {   // Insert factors saved on Web Storage.
     pstFactors->multiplicity = 0;
     pstFactors->ptrFactor = factors;
-    while (*pcKnownFactors != 0)
+    while (*ptrKnownFactors != 0)
     {
-      ptrCharFound = findChar(pcKnownFactors, '^');
+      ptrCharFound = findChar(ptrKnownFactors, '^');
       if (ptrCharFound == NULL)
       {
         break;
       }
       *ptrCharFound = 0;
-      Dec2Bin(pcKnownFactors, prime.limbs, (int)(ptrCharFound - pcKnownFactors), &prime.nbrLimbs);
+      Dec2Bin(ptrKnownFactors, prime.limbs, (int)(ptrCharFound - ptrKnownFactors), &prime.nbrLimbs);
       BigInteger2IntArray(pstFactors->ptrFactor, &prime);
-      pcKnownFactors = ptrCharFound + 1;
-      if (getNextInteger(&pcKnownFactors, &pstCurFactor->multiplicity, '('))
+      ptrKnownFactors = ptrCharFound + 1;
+      if (getNextInteger(&ptrKnownFactors, &pstCurFactor->multiplicity, '('))
       {     // Error on processing exponent.
         break;
       }
-      ptrCharFound = findChar(pcKnownFactors, ',');
+      ptrCharFound = findChar(ptrKnownFactors, ',');
       if (ptrCharFound != NULL)
       {
-        if (getNextInteger(&pcKnownFactors, &pstCurFactor->upperBound, ','))
+        if (getNextInteger(&ptrKnownFactors, &pstCurFactor->upperBound, ','))
         {     // Error on processing upper bound.
           break;
         }
-        if (getNextInteger(&pcKnownFactors, &pstCurFactor->type, ')'))
+        if (getNextInteger(&ptrKnownFactors, &pstCurFactor->type, ')'))
         {     // Error on processing upper bound.
           break;
         }
       }
       else
       {
-        if (getNextInteger(&pcKnownFactors, &pstCurFactor->upperBound, ')'))
+        if (getNextInteger(&ptrKnownFactors, &pstCurFactor->upperBound, ')'))
         {     // Error on processing upper bound.
           break;
         }
@@ -1728,14 +1729,14 @@ void factorExt(const BigInteger *toFactor, const int *number,
       pstCurFactor->ptrFactor = pstFactors->ptrFactor;
       pstFactors->ptrFactor += 1 + *pstFactors->ptrFactor;
       pstCurFactor++;
-      if (*pcKnownFactors == '*')
+      if (*ptrKnownFactors == '*')
       {
-        pcKnownFactors++;  // Skip multiplication sign.
+        ptrKnownFactors++;  // Skip multiplication sign.
       }
-      if (*pcKnownFactors == ';')
+      if (*ptrKnownFactors == ';')
       {
-        pcKnownFactors++;  // Skip separation between known factors and factor entered by user.
-        Dec2Bin(pcKnownFactors, prime.limbs, (int)strlen(pcKnownFactors), &prime.nbrLimbs);
+        ptrKnownFactors++;  // Skip separation between known factors and factor entered by user.
+        Dec2Bin(ptrKnownFactors, prime.limbs, (int)strlen(ptrKnownFactors), &prime.nbrLimbs);
         if (foundByLehman)
         {
           insertBigFactor(pstFactors, &prime, TYP_LEHMAN);
@@ -1753,14 +1754,14 @@ void factorExt(const BigInteger *toFactor, const int *number,
 #endif
         break;
       }
-      if (*pcKnownFactors == ',')
+      if (*ptrKnownFactors == ',')
       {
         NextEC = 0;        // Curve number
-        pcKnownFactors++;
-        while (*pcKnownFactors != '\0')
+        ptrKnownFactors++;
+        while (*ptrKnownFactors != '\0')
         {
-          NextEC = NextEC * 10 + (*pcKnownFactors & 0x0F);
-          pcKnownFactors++;
+          NextEC = NextEC * 10 + (*ptrKnownFactors & 0x0F);
+          ptrKnownFactors++;
         }
         oldNbrFactors = pstFactors->multiplicity;
         break;

@@ -1268,7 +1268,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
     intLog2root = (int)floor(log2root/ BITS_PER_GROUP);
     nbrLimbs = intLog2root + 1;
     ptrLimb = &pBase->limbs[nbrLimbs - 1];
-    dN = exp((log2root - intLog2root*BITS_PER_GROUP) * LOG_2);
+    dN = exp((log2root - (intLog2root*BITS_PER_GROUP)) * LOG_2);
     if (nbrLimbs == 1)
     {
       double dQuot;
@@ -1293,7 +1293,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
     k = 1;
     for (;;)
     {
-      prime = k * Exponent + 1;
+      prime = (k * Exponent) + 1;
       // Test that prime is really prime.
       for (j = 2; (j*j) <= prime; j++)
       {
@@ -1379,12 +1379,13 @@ bool checkOne(const limb *value, int nbrLimbs)
 
 bool checkMinusOne(const limb *value, int nbrLimbs)
 {
+  const limb* limbValue = value;
   unsigned int carry;
   carry = 0;
   for (int idx = 0; idx < nbrLimbs; idx++)
   {
-    carry += (unsigned int)value->x + (unsigned int)MontgomeryMultR1[idx].x;
-    value++;
+    carry += (unsigned int)limbValue->x + (unsigned int)MontgomeryMultR1[idx].x;
+    limbValue++;
     if ((carry & MAX_VALUE_LIMB) != (unsigned int)TestNbr[idx].x)
     {
       return false;    // Go out if value is not -1 (mod p)
