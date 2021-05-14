@@ -1008,11 +1008,12 @@ static int ComputePower(const BigInteger *Re1, const BigInteger *Re2,
   if (norm.nbrLimbs > 1)
   {
     base = log((double)(norm.limbs[norm.nbrLimbs - 2].x + (norm.limbs[norm.nbrLimbs - 1].x << BITS_PER_GROUP)) +
-      (double)(norm.nbrLimbs - 2)*log((double)(1U << BITS_PER_GROUP)));
+      (double)(norm.nbrLimbs - 2) * LOG_2 * (double)BITS_PER_GROUP);
   }
   else
   {
-    base = log((double)(norm.limbs[norm.nbrLimbs - 1].x) + (double)(norm.nbrLimbs - 1)*log((double)(1 << BITS_PER_GROUP)));
+    base = log((double)(norm.limbs[norm.nbrLimbs - 1].x) +
+      (double)(norm.nbrLimbs - 1) * LOG_2 * (double)BITS_PER_GROUP);
   }
   if (base*(double)expon > 23026)
   {   // More than 20000 digits. 23026 = log(10^10000) (norm is already squared).

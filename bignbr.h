@@ -151,7 +151,7 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int NumberLength);
 int modInv(int NbrMod, int currentPrime);
 int getNbrLimbs(const limb *bigNbr);
 void BigIntDivide2(BigInteger *pArg);
-int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase);
+int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase);
 void BigIntAnd(const BigInteger *firstArg, const BigInteger *secondArg, BigInteger *result);
 void BigIntOr(const BigInteger *firstArg, const BigInteger *secondArg, BigInteger *result);
 void BigIntXor(const BigInteger *firstArg, const BigInteger *secondArg, BigInteger *result);

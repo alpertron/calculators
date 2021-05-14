@@ -390,13 +390,12 @@ void longToBigInteger(BigInteger *bigint, long long value)
   bigint->nbrLimbs = nbrLimbs;
 }
 
-void expBigNbr(BigInteger *bignbr, double logarithm)
+void expBigNbr(BigInteger *bignbr, double logar)
 {
   unsigned int mostSignificantLimb;
-  double logar = logarithm / LOG_2;
   bignbr->sign = SIGN_POSITIVE;
   bignbr->nbrLimbs = (int)floor(logar / BITS_PER_GROUP);
-  mostSignificantLimb = (unsigned int)floor(exp((logar - (BITS_PER_GROUP*bignbr->nbrLimbs)) * LOG_2) + 0.5);
+  mostSignificantLimb = (unsigned int)floor(exp(logar - (double)(BITS_PER_GROUP*bignbr->nbrLimbs) * LOG_2) + 0.5);
   if (mostSignificantLimb == LIMB_RANGE)
   {
     mostSignificantLimb = 1;
@@ -435,17 +434,17 @@ double logBigNbr(const BigInteger *pBigNbr)
 
 double logLimbs(const limb *pBigNbr, int nbrLimbs)
 {
-  double logar;
+  double logar = (double)(nbrLimbs - 1) * LOG_2 * (double)BITS_PER_GROUP;
   if (nbrLimbs > 1)
   {
-    logar = log((double)((pBigNbr + nbrLimbs - 2)->x +
-                ((double)(pBigNbr + nbrLimbs - 1)->x * LIMB_RANGE))) +
-      (double)(nbrLimbs - 2)*log((double)LIMB_RANGE);
+    logar = log((double)(pBigNbr + nbrLimbs - 2)->x +
+      ((double)(pBigNbr + nbrLimbs - 1)->x * (double)LIMB_RANGE)) +
+      (double)(nbrLimbs - 2) * LOG_2 * (double)BITS_PER_GROUP;
   }
   else
   {
-    logar = log((double)((pBigNbr+nbrLimbs - 1)->x)) +
-      (double)(nbrLimbs - 1)*log((double)LIMB_RANGE);
+    logar = log((double)((pBigNbr + nbrLimbs - 1)->x)) +
+      (double)(nbrLimbs - 1) * LOG_2 * (double)BITS_PER_GROUP;
   }
   return logar;
 }
@@ -1105,7 +1104,7 @@ void ArrLimbs2LenAndLimbs(/*@out@*/int *ptrValues, const limb *bigint, int nbrLe
 // a perfect power. If it is not, it returns one.
 // If it is a perfect power, it returns the exponent and 
 // it fills the buffer pointed by pBase with the base.
-int PowerCheck(BigInteger *pBigNbr, BigInteger *pBase)
+int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
 {
   limb *ptrLimb;
   double dN;
