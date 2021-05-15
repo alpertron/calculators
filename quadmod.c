@@ -584,6 +584,9 @@ void SolveEquation(void)
         {
           BigIntSubt(&tmp1, &ValAOdd, &ValAOdd);
         }
+        else
+        {            // Nothing to do.
+        }
         intToBigInteger(&tmp2, 1);
         NumberLength = tmp1.nbrLimbs;
         (void)memcpy(TestNbr, tmp1.limbs, NumberLength * sizeof(limb));

@@ -557,9 +557,12 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       ptrBigInt->nbrLimbs = 1;
       ptrBigInt->sign = SIGN_POSITIVE;
       leftNumberFlag = true;
-    }                            /* end if */
+    }
+    else
+    {                                // Nothing to do.
+    }                                // end if.
     exprIndex++;
-  }                              /* end while */
+  }                                  // end while.
   if (leftNumberFlag == 0)
   {
     return EXPR_SYNTAX_ERROR;

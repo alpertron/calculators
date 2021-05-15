@@ -1225,6 +1225,9 @@ static void vanHoeij(int prime, int numFactors)
     {
       (void)memcpy(pstFactorInfo - delta, pstFactorInfo, sizeof(*pstFactorInfo));
     }
+    else
+    {           // Nothing to do.
+    }
     pstFactorInfo++;
   }
   nbrFactors = newNbrFactors;

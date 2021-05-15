@@ -123,7 +123,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
     {
       nbrParen++;
     }
-    else if (*ptrExpr == ')')
+    if (*ptrExpr == ')')
     {
       nbrParen--;
     }
@@ -767,7 +767,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_SYNTAX_ERROR;
       }
-      if (stackIndex >= PAREN_STACK_SIZE)
+      if (stackIndex >= (PAREN_STACK_SIZE-1))
       {
         return EXPR_TOO_MANY_PAREN;
       }

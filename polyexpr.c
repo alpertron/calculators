@@ -676,7 +676,7 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
       {    // New coefficient is greater than old coefficient.
         (void)memmove(ptrValue1 + differenceOfDegrees, ptrValue1, (ptrArgument2 - ptrValue1) * sizeof(int));
       }
-      else if (differenceOfDegrees < 0)
+      if (differenceOfDegrees < 0)
       {
         (void)memmove(ptrValue1, ptrValue1 - differenceOfDegrees, (ptrArgument2 - ptrValue1 - differenceOfDegrees) * sizeof(int));
       }

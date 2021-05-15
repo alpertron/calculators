@@ -735,7 +735,7 @@ static void Karatsuba(int indexFactor1, int numLen)
   limb *ptrResult;
   const limb *ptrHigh;
   limb tmp;
-  int sign;
+  int sign = 0;
   int halfLength;
   int diffIndex = 2 * nbrLen;
   static struct stKaratsubaStack *pstKaratsubaStack = astKaratsubaStack;

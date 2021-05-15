@@ -97,6 +97,9 @@ static void GetYieldFrequency(void)
   {
     yieldFreq = yieldFreq / 100 * 100;
   }
+  else
+  {      // Nothing to do.
+  }
 }
 
 static int Cos(int N)
@@ -1556,7 +1559,6 @@ static void factorSmallInt(int intToFactor, int* factors, struct sFactors* pstFa
     *ptrFactorLimbs = 1;
     ptrFactorLimbs++;
     *ptrFactorLimbs = toFactor;
-    ptrFactorLimbs++;
     pstFactors->multiplicity = 1;
     return;
   }

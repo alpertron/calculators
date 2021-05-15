@@ -432,7 +432,7 @@ static void AddCombination(BigInteger *scalarA, BigInteger *vecIA,
     BigIntAdd(vecJA, vecJB, vecJA);
     BigIntAdd(vecKA, vecKB, vecKA);
   }
-  else if (combination == 1)
+  if (combination == 1)
   {
     BigIntSubt(scalarA, scalarB, scalarA);
     BigIntSubt(vecIA, vecIB, vecIA);

@@ -180,6 +180,9 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
     }           // At this moment, the absolute value of addend1 is greater than
                 // or equal than the absolute value of addend2.
   }
+  else
+  {             // Nothing to do.
+  }
   nbrLimbs = pAddend2->nbrLimbs;
   ptrAddend1 = pAddend1->limbs;
   ptrAddend2 = pAddend2->limbs;

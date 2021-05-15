@@ -2059,6 +2059,9 @@ static void AdjustComponent(int denominator, char* ptrStart, int toShow,
   {
     copyStr(&ptrBeginning, " + ");
   }
+  else
+  {          // Nothing to do.
+  }
   if (denomin == 1)
   {
     if (toShow == SHOW_IMAG)
@@ -2387,7 +2390,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
     (void)memset(base, 0, polyDegree*sizeof(int));
     if (memcmp(base, prod, polyDegree * sizeof(int)) == 0)
     {     // The polynomial is cyclotomic.
-      int denIsOdd = ((index % 2) == 1)? true: false;
+      bool denIsOdd = ((index % 2) == 1)? true: false;
       int realDen = denIsOdd ? index : (index / 2);
       for (int numerator = 1; numerator < index; numerator++)
       {

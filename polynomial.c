@@ -1691,7 +1691,7 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
           {
             copyStr(&ptrOutput, "&#8290;");
           }
-          else if (pretty == PARI_GP)
+          if (pretty == PARI_GP)
           {
             *ptrOutput = '*';
             ptrOutput++;

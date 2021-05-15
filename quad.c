@@ -259,6 +259,9 @@ static void ShowLinInd(const BigInteger *lin, const BigInteger *ind, const char 
     *ptrOutput = '+';
     ptrOutput++;
   }
+  else
+  {            // Nothing to do.
+  }
   *ptrOutput = ' ';
   ptrOutput++;
   if (!BigIntIsZero(lin))

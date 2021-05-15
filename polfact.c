@@ -160,6 +160,9 @@ static void DistinctDegreeFactorization(int polyDeg)
           GetPolyInvParm(polyDegree, ptrPolyToFactor);
         }
       }
+      else
+      {            // Nothing to do.
+      }
     }
     if (polyDegree > 0)
     {
