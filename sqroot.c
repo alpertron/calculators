@@ -70,7 +70,7 @@ static void MultiplyBigNbrByMinPowerOf4(int *pPower4, const limb *number, int le
     shLeft++;
   }
   power2 = (power2 + shLeft) & (-2);
-  power4 = power2 / 2;
+  power4 = power2 >> 1;
   ptrDest = dest;
   if (power2 > BITS_PER_GROUP)
   {
@@ -117,7 +117,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   // limbs set to MAX_VALUE_LIMB, there could be overflow. Set the square root directly.
   if ((length & 1) == 0)
   {      // Even number of limbs.
-    for (index = length / 2; index < length; index++)
+    for (index = length >> 1; index < length; index++)
     {
       if ((argument + index)->x != (int)MAX_VALUE_LIMB)
       {
@@ -126,11 +126,11 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
     }
     if (index == length)
     {   // Set square root and go out.
-      for (index = (length / 2) - 1; index >= 0; index--)
+      for (index = (length >> 1) - 1; index >= 0; index--)
       {
         (sqRoot + index)->x = (int)MAX_VALUE_LIMB;
       }
-      *pLenSqRoot = length / 2;
+      *pLenSqRoot = length >> 1;
       return;
     }
   }
@@ -175,7 +175,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   {
     length++;   // Make number of limbs even.
   }
-  lenInvSqrt = (length + 5) / 2;
+  lenInvSqrt = (length + 5) >> 1;
   (void)memset(approxInvSqrt, 0, lenInvSqrt*sizeof(limb));
   // Initialize approximate inverse square root.
   invSqrt = (double)LIMB_RANGE / 
@@ -249,7 +249,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   {
     multiply(approxInvSqrt, adjustedArgument, approxInv, length, NULL);
   }             // approxInv holds the square root.
-  lenInvSqrt2 = (length+1) / 2;
+  lenInvSqrt2 = (length+1) >> 1;
   if (approxInv[(2 * lenInvSqrt) - lenInvSqrt2-2].x > (7 << (BITS_PER_GROUP-3)))
   {                   // Increment square root.
     for (idx = (2 * lenInvSqrt) - lenInvSqrt2-1; idx < (2*lenInvSqrt)-1; idx++)
@@ -296,7 +296,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
       }
     }
   }
-  length = (length + 1) / 2;
+  length = (length + 1) >> 1;
   *pLenSqRoot = length;
   // Shift right shRight bits into result.
   ptrSrc = &approxInv[(2 * lenInvSqrt) - *pLenSqRoot - 1 + length - 1];

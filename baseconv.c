@@ -200,7 +200,7 @@ void Bin2Hex(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
   }
   copyStr(&ptrDecimal, "<span class=\"hex\">");
   nbrBits = numLimbs * BITS_PER_GROUP;
-  mask = (int)LIMB_RANGE / 2;
+  mask = HALF_INT_RANGE;
   value = (binary + numLimbs - 1)->x;
   if (value == 0)
   {
@@ -240,7 +240,7 @@ void Bin2Hex(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
         {
           numLimbs--;
           value = (binary + numLimbs - 1)->x;
-          mask = (int)LIMB_RANGE / 2;
+          mask = HALF_INT_RANGE;
         }
         nbrBits--;
       } while ((nbrBits & 3) != 0);

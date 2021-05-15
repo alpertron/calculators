@@ -90,7 +90,7 @@ void multiplyWithBothLen(const limb *factor1, const limb *factor2, limb *result,
     while (length > KARATSUBA_CUTOFF)
     {
       div *= 2;
-      length = (length + 1) / 2;
+      length = (length + 1) >> 1;
     }
     length *= div;
   }
@@ -803,7 +803,7 @@ static void Karatsuba(int indexFactor1, int numLen)
 
       // At this moment the order is: xL, xH, yL, yH.
       // Exchange high part of first factor with low part of 2nd factor.
-      halfLength = nbrLen / 2;
+      halfLength = nbrLen >> 1;
       for (i = idxFactor1 + halfLength; i<idxFactor2; i++)
       {
         tmp.x = arr[i].x;

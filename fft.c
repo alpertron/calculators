@@ -170,7 +170,7 @@ static void initCosinesArray(void)
 // length is power of 2.
 static void complexFFT(struct sComplex *x, struct sComplex *y, int length)
 {
-  int halfLength = length / 2;
+  int halfLength = length >> 1;
   int step = (1 << POWERS_2) / length;
   bool exponentOdd = false;
   struct sComplex *ptrX = x;

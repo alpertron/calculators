@@ -759,22 +759,38 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
       subtFromAbsValue(pBigInt->limbs, &nbrLimbs, -subt);
     }
   }
-  pLimbs = pBigInt->limbs + nbrLimbs - 1;
-  // Divide number by divisor.
-  for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
-  {
-    unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + pLimbs->x;
-    double dDividend = ((double)remainder * dLimb) + (double)pLimbs->x;
-    double dQuotient = (dDividend * dInvDivisor) + 0.5;
-    unsigned int quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
-    remainder = dividend - (quotient * divisor);
-    if (remainder < 0)
-    {     // remainder not in range 0 <= remainder < divisor. Adjust.
-      quotient--;
-      remainder += divisor;
+  if (divisor == 2)
+  {      // Use shifts for divisions by 2.
+    limb* ptrDest = pBigInt->limbs;
+    int curLimb = ptrDest->x;
+    for (int ctr = 1; ctr < nbrLimbs; ctr++)
+    {  // Process starting from least significant limb.
+      int nextLimb = (ptrDest + 1)->x;
+      ptrDest->x = ((curLimb >> 1) | (nextLimb << (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
+      ptrDest++;
+      curLimb = nextLimb;
     }
-    pLimbs->x = (int)quotient;
-    pLimbs--;
+    ptrDest->x = (curLimb >> 1) & MAX_INT_NBR;
+  }
+  else
+  {
+    pLimbs = pBigInt->limbs + nbrLimbs - 1;
+    // Divide number by divisor.
+    for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
+    {
+      unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + pLimbs->x;
+      double dDividend = ((double)remainder * dLimb) + (double)pLimbs->x;
+      double dQuotient = (dDividend * dInvDivisor) + 0.5;
+      unsigned int quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
+      remainder = dividend - (quotient * divisor);
+      if (remainder < 0)
+      {     // remainder not in range 0 <= remainder < divisor. Adjust.
+        quotient--;
+        remainder += divisor;
+      }
+      pLimbs->x = (int)quotient;
+      pLimbs--;
+    }
   }
   if ((nbrLimbs > 1) && (pBigInt->limbs[nbrLimbs - 1].x == 0))
   {   // Most significant limb is now zero, so discard it.
@@ -1437,7 +1453,7 @@ void BigIntMultiplyBy2(BigInteger *nbr)
     ptrDest++;
     prevLimb = curLimb;
   }
-  if ((prevLimb & MAX_INT_NBR) != 0)
+  if ((prevLimb & HALF_INT_RANGE) != 0)
   {
     ptrDest->x = 1;
     nbr->nbrLimbs++;

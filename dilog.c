@@ -351,8 +351,8 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
             (void)memcpy(nbrTemp, nbrR2, NumberSizeBytes);
             (void)memcpy(nbrR2, nbrROther, NumberSizeBytes);
             (void)memcpy(nbrROther, nbrTemp, NumberSizeBytes);
-            if ((addA2.x >= ((int)LIMB_RANGE / 2)) || (addB2.x >= ((int)LIMB_RANGE / 2)) ||
-              (mult2.x >= ((int)LIMB_RANGE / 2)))
+            if ((addA2.x >= HALF_INT_RANGE) || (addB2.x >= HALF_INT_RANGE) ||
+              (mult2.x >= HALF_INT_RANGE))
             {
               // nbrA2 <- (nbrA2 * mult2 + addA2) % subGroupOrder
               AdjustExponent(nbrA2, mult2, addA2, &subGroupOrder);
