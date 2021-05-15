@@ -24,7 +24,9 @@
 #include "polynomial.h"
 #include "showtime.h"
 #include "rootseq.h"
-
+#ifdef FACTORIZATION_APP
+#include "factor.h"
+#endif
 int attemptNbr;
 #ifdef __EMSCRIPTEN__
 char *ptrPercentageOutput;

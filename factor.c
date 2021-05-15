@@ -808,13 +808,12 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
 }
 
 #ifdef __EMSCRIPTEN__
-char *ShowFactoredPart(const BigInteger *pNbr, const void *vFactors)
+char *ShowFactoredPart(const BigInteger *pNbr, const struct sFactors* pstFactors)
 {
-  const struct sFactors *pstFactors = (const struct sFactors *)vFactors;
   ptrLowerText = lowerText;
   *ptrLowerText = '3';
   ptrLowerText++;
-  if ((vFactors != NULL) && (pstFactors->multiplicity > 1))
+  if ((pstFactors != NULL) && (pstFactors->multiplicity > 1))
   {    // Some factorization known.
     int NumberLengthBak = NumberLength;
     copyStr(&ptrLowerText, "<p class=\"blue\">");
@@ -1410,23 +1409,23 @@ static char *findChar(char *str, char c)
   return NULL;
 }
 
-static int getNextInteger(char **ppcFactors, int *result, char delimiter)
+static bool getNextInteger(char **ppcFactors, int *result, char delimiter)
 {
   char *pcFactors = *ppcFactors;
   char *ptrCharFound = findChar(pcFactors, delimiter);
   if (ptrCharFound == NULL)
   {
-    return 1;
+    return true;
   }
   *ptrCharFound = 0;
   Dec2Bin(pcFactors, Temp1.limbs, (int)(ptrCharFound - pcFactors), &Temp1.nbrLimbs);
   if (Temp1.nbrLimbs != 1)
   {   // Exponent is too large.
-    return 1;
+    return true;
   }
   *result = Temp1.limbs[0].x;
   *ppcFactors = ptrCharFound+1;
-  return 0;
+  return false;
 }
 
 // Return: 0 = No factors found.

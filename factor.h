@@ -96,7 +96,8 @@ void SumOfDivisors(BigInteger *result);
 void NumberOfDivisors(BigInteger *result);
 enum eEcmResult ecmCurve(int* pEC, int* pNextEC);
 #ifdef FACTORIZATION_APP
-char *ShowFactoredPart(const BigInteger *nbr, const void *vFactors);
+char* ShowFactoredPart(const BigInteger* pNbr, const struct sFactors* pstFactors);
 void ShowLowerText(void);
+bool BpswPrimalityTest(const BigInteger* pValue, const struct sFactors* pstFactors);
 #endif
 #endif

@@ -1418,20 +1418,19 @@ void BigIntMultiplyBy2(BigInteger *nbr)
 {
   int nbrLimbs;
   int prevLimb;
-  int *ptrDest;
+  limb *ptrDest = &nbr->limbs[0];
   nbrLimbs = nbr->nbrLimbs;
-  ptrDest = &nbr->limbs[0].x;
   prevLimb = 0;
   for (int ctr = 0; ctr < nbrLimbs; ctr++)
   {  // Process starting from least significant limb.
-    int curLimb = *ptrDest;
-    *ptrDest = ((curLimb << 1) | (prevLimb >> (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
+    int curLimb = ptrDest->x;
+    ptrDest->x = ((curLimb << 1) | (prevLimb >> (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
     ptrDest++;
     prevLimb = curLimb;
   }
-  if (prevLimb & (1 << (BITS_PER_GROUP - 1)))
+  if ((prevLimb & MAX_INT_NBR) != 0)
   {
-    *ptrDest = 1;
+    ptrDest->x = 1;
     nbr->nbrLimbs++;
   }
 }
@@ -1444,7 +1443,6 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
   int power2 = 0;
   int index;
   int index2;
-  int mask;
   int shRg;
   int nbrLimbs = *pNbrLimbs;
   // Start from least significant limb (number zero).
@@ -1461,9 +1459,9 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
     *pShRight = power2;
     return;
   }
-  for (mask = 0x1; (unsigned int)mask <= MAX_VALUE_LIMB; mask *= 2)
+  for (unsigned int mask = 1U; mask <= MAX_VALUE_LIMB; mask *= 2)
   {
-    if ((number[index].x & mask) != 0)
+    if (((unsigned int)number[index].x & mask) != 0)
     {
       break;
     }
@@ -1629,7 +1627,7 @@ void initializeSmallPrimes(int* pSmallPrimes)
 //         2 = composite: does not pass 2-SPRP test.
 //         3 = composite: does not pass strong Lucas test.
 #if FACTORIZATION_APP
-bool BpswPrimalityTest(const BigInteger *pValue, const void *vFactors)
+bool BpswPrimalityTest(const BigInteger* pValue, const struct sFactors* pstFactors)
 #else
 bool BpswPrimalityTest(const BigInteger *pValue)
 #endif
@@ -1638,7 +1636,7 @@ bool BpswPrimalityTest(const BigInteger *pValue)
   char text[200];
 #endif
 #if !defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
-  (void)vFactors;    // Parameter is not used.
+  (void)pstFactors;    // Parameter is not used.
 #endif
 #ifdef __EMSCRIPTEN__
   char *ptrText;
@@ -1681,7 +1679,7 @@ bool BpswPrimalityTest(const BigInteger *pValue)
 #ifdef __EMSCRIPTEN__
 #ifdef FACTORIZATION_APP
   StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
-  ptrText = ShowFactoredPart(pValue, vFactors);
+  ptrText = ShowFactoredPart(pValue, pstFactors);
   (void)strcpy(ptrText, lang ? "<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
     "<p>Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.</p>");
   ShowLowerText();
@@ -1782,7 +1780,7 @@ bool BpswPrimalityTest(const BigInteger *pValue)
   int i;
 #ifdef FACTORIZATION_APP
   StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
-  ptrText = ShowFactoredPart(pValue, vFactors);
+  ptrText = ShowFactoredPart(pValue, pstFactors);
 #else
   ptrText = text;
   *ptrText = '3';

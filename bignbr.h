@@ -156,9 +156,7 @@ void BigIntAnd(const BigInteger *firstArg, const BigInteger *secondArg, BigInteg
 void BigIntOr(const BigInteger *firstArg, const BigInteger *secondArg, BigInteger *result);
 void BigIntXor(const BigInteger *firstArg, const BigInteger *secondArg, BigInteger *result);
 void ConvertToTwosComplement(BigInteger *value);
-#ifdef FACTORIZATION_APP
-bool BpswPrimalityTest(const BigInteger *pValue, const void *vFactors);
-#else
+#ifndef FACTORIZATION_APP
 bool BpswPrimalityTest(const BigInteger *pValue);
 #endif
 void IntArray2BigInteger(const int *ptrValues, /*@out@*/BigInteger *bigint);
