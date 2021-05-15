@@ -803,7 +803,7 @@ static void Karatsuba(int indexFactor1, int numLen)
 
       // At this moment the order is: xL, xH, yL, yH.
       // Exchange high part of first factor with low part of 2nd factor.
-      halfLength = nbrLen >> 1;
+      halfLength = nbrLen / 2;
       for (i = idxFactor1 + halfLength; i<idxFactor2; i++)
       {
         tmp.x = arr[i].x;
@@ -875,13 +875,17 @@ static void Karatsuba(int indexFactor1, int numLen)
       carry1First = 0;
       for (i = halfLength; i > 0; i--)
       {
-        ptrResult->x = (carry1First = (carry1First >> BITS_PER_GROUP) + ptrResult->x) & MAX_VALUE_LIMB;
+        carry1First = (carry1First >> BITS_PER_GROUP) + ptrResult->x;
+        ptrResult->x = carry1First & MAX_VALUE_LIMB;
         ptrResult++;
-        ptrResult->x = (carry1First = (carry1First >> BITS_PER_GROUP) + ptrResult->x) & MAX_VALUE_LIMB;
+        carry1First = (carry1First >> BITS_PER_GROUP) + ptrResult->x;
+        ptrResult->x = carry1First & MAX_VALUE_LIMB;
         ptrResult++;
-        ptrResult->x = (carry1First = (carry1First >> BITS_PER_GROUP) + ptrResult->x) & MAX_VALUE_LIMB;
+        carry1First = (carry1First >> BITS_PER_GROUP) + ptrResult->x;
+        ptrResult->x = carry1First & MAX_VALUE_LIMB;
         ptrResult++;
-        ptrResult->x = (carry1First = (carry1First >> BITS_PER_GROUP) + ptrResult->x) & MAX_VALUE_LIMB;
+        carry1First = (carry1First >> BITS_PER_GROUP) + ptrResult->x;
+        ptrResult->x = carry1First & MAX_VALUE_LIMB;
         ptrResult++;
       }
       // Compute final product.

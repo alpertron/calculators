@@ -141,7 +141,6 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
 {
   const BigInteger* pAddend1 = pAdd1;
   const BigInteger* pAddend2 = pAdd2;
-  int addend2Sign = addend2sign;
   int ctr;
   int nbrLimbs;
   const limb *ptrAddend1;
@@ -149,6 +148,7 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
   limb *ptrSum;
   const BigInteger *pTemp;
   enum eSign addend1Sign = pAddend1->sign;
+  enum eSign addend2Sign = addend2sign;
   enum eSign tmpSign;
   if (pAddend1->nbrLimbs < pAddend2->nbrLimbs)
   {
@@ -196,7 +196,7 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
         (unsigned int)ptrAddend2->x;
       ptrAddend1++;
       ptrAddend2++;
-      ptrSum->x = (int)(carry & MAX_INT_NBR);
+      ptrSum->x = (int)(carry & (unsigned int)MAX_INT_NBR);
       ptrSum++;
     }
     nbrLimbs = pAddend1->nbrLimbs;
@@ -386,7 +386,7 @@ void longToBigInteger(BigInteger *bigint, long long value)
   }
   do
   {
-    bigint->limbs[nbrLimbs].x = (int)llValue & MAX_VALUE_LIMB;
+    bigint->limbs[nbrLimbs].x = (int)((unsigned int)llValue & MAX_VALUE_LIMB);
     nbrLimbs++;
     llValue >>= BITS_PER_GROUP;
   } while (llValue != 0);
@@ -396,9 +396,10 @@ void longToBigInteger(BigInteger *bigint, long long value)
 void expBigNbr(BigInteger *bignbr, double logar)
 {
   unsigned int mostSignificantLimb;
+  int nbrBits = BITS_PER_GROUP * bignbr->nbrLimbs;
   bignbr->sign = SIGN_POSITIVE;
   bignbr->nbrLimbs = (int)floor(logar / BITS_PER_GROUP);
-  mostSignificantLimb = (unsigned int)floor(exp(logar - (double)(BITS_PER_GROUP*bignbr->nbrLimbs) * LOG_2) + 0.5);
+  mostSignificantLimb = (unsigned int)floor(exp(logar - ((double)nbrBits * LOG_2)) + 0.5);
   if (mostSignificantLimb == LIMB_RANGE)
   {
     mostSignificantLimb = 1;
@@ -420,6 +421,7 @@ double logBigNbr(const BigInteger *pBigNbr)
   }
   else
   {
+    int nbrBits;
     double value = pBigNbr->limbs[nbrLimbs - 2].x +
                   (double)pBigNbr->limbs[nbrLimbs - 1].x * LIMB_RANGE;
     if (nbrLimbs == 2)
@@ -430,7 +432,8 @@ double logBigNbr(const BigInteger *pBigNbr)
     {
       logar = log(value + (double)pBigNbr->limbs[nbrLimbs - 3].x / LIMB_RANGE);
     }
-    logar += (double)((nbrLimbs - 2)*BITS_PER_GROUP) * LOG_2;
+    nbrBits = (nbrLimbs - 2) * BITS_PER_GROUP;
+    logar += (double)nbrBits * LOG_2;
   }
   return logar;
 }
@@ -438,16 +441,19 @@ double logBigNbr(const BigInteger *pBigNbr)
 double logLimbs(const limb *pBigNbr, int nbrLimbs)
 {
   double logar;
+  int nbrBits;
   if (nbrLimbs > 1)
   {
+    nbrBits = (nbrLimbs - 2) * BITS_PER_GROUP;
     logar = log((double)(pBigNbr + nbrLimbs - 2)->x +
       ((double)(pBigNbr + nbrLimbs - 1)->x * (double)LIMB_RANGE)) +
-      (double)(nbrLimbs - 2) * LOG_2 * (double)BITS_PER_GROUP;
+      (double)nbrBits * LOG_2;
   }
   else
   {
+    nbrBits = (nbrLimbs - 1) * BITS_PER_GROUP;
     logar = log((double)((pBigNbr + nbrLimbs - 1)->x)) +
-      (double)(nbrLimbs - 1) * LOG_2 * (double)BITS_PER_GROUP;
+      (double)nbrBits * LOG_2;
   }
   return logar;
 }
@@ -476,18 +482,18 @@ enum eExprErr BigIntPowerIntExp(const BigInteger *pBase, int exponent, BigIntege
   pPower->sign = SIGN_POSITIVE;
   pPower->nbrLimbs = 1;
   pPower->limbs[0].x = 1;
-  for (int mask = 1 << 30; mask != 0; mask >>= 1)
+  for (unsigned int mask = 1 << 30; mask != 0; mask >>= 1)
   {
-    if ((exponent & mask) != 0)
+    if (((unsigned int)exponent & mask) != 0U)
     {
-      for (; mask != 0; mask >>= 1)
+      for (unsigned int mask2 = mask; mask2 != 0; mask2 >>= 1)
       {
         rc = BigIntMultiply(pPower, pPower, pPower);
         if (rc != EXPR_OK)
         {
           return rc;
         }
-        if ((exponent & mask) != 0)
+        if (((unsigned int)exponent & mask2) != 0U)
         {
           rc = BigIntMultiply(pPower, &Base, pPower);
           if (rc != EXPR_OK)
@@ -582,7 +588,7 @@ static void BigIntMutiplyPower2(BigInteger *pArg, int powerOf2)
       (ptrLimbs + ctr)->x = (int)(carry & MAX_VALUE_LIMB);
       carry >>= BITS_PER_GROUP;
     }
-    if (carry != 0)
+    if (carry != 0U)
     {
       (ptrLimbs + ctr)->x = (int)carry;
       nbrLimbs++;
@@ -706,7 +712,7 @@ static void subtFromAbsValue(limb *pLimbs, int *pNbrLimbs, int subt)
     int ctr = 0;
     do
     {      // Loop that adjust number if there is borrow.
-      (pLimbs + ctr)->x += LIMB_RANGE;
+      (pLimbs + ctr)->x += (int)LIMB_RANGE;
       ctr++;
       if (ctr == nbrLimbs)
       {    // All limbs processed. Exit loop.
@@ -758,7 +764,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
     unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + pLimbs->x;
-    double dDividend = ((double)remainder * dLimb) + pLimbs->x;
+    double dDividend = ((double)remainder * dLimb) + (double)pLimbs->x;
     double dQuotient = (dDividend * dInvDivisor) + 0.5;
     unsigned int quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - (quotient * divisor);
@@ -808,7 +814,7 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
 void addbigint(BigInteger *pResult, int addend)
 {
   int intAddend = addend;
-  int sign;
+  enum eSign sign;
   int nbrLimbs = pResult->nbrLimbs;
   limb *pResultLimbs = pResult->limbs;
   sign = pResult->sign;
@@ -879,7 +885,7 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
   {
 #ifdef _USING64BITS_
     carry += (int64_t)pLimb->x * (int64_t)intMult;
-    pResultLimb->x = (int)carry & MAX_VALUE_LIMB;
+    pResultLimb->x = (int)((unsigned int)carry & MAX_VALUE_LIMB);
     pResultLimb++;
     carry >>= BITS_PER_GROUP;
 #else
@@ -889,12 +895,12 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
     if (low < HALF_INT_RANGE)
     {
       carry = (int)((((double)(pLimb->x) * dFactor) + (double)carry +
-        (double)(HALF_INT_RANGE / 2))*dVal);
+        (double)FOURTH_INT_RANGE)*dVal);
     }
     else
     {
       carry = (int)((((double)(pLimb->x) * dFactor) + (double)carry -
-        (double)(HALF_INT_RANGE / 2))*dVal);
+        (double)FOURTH_INT_RANGE)*dVal);
     }
     pResultLimb->x = low;
     pResultLimb++;
@@ -1481,7 +1487,7 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
     *pNbrLimbs = nbrLimbs - index - 1;
   }
       // Move number shRg bits to the right.
-  for (index2 = index; index2 < nbrLimbs-1; index2++)
+  for (index2 = index; index2 < (nbrLimbs-1); index2++)
   {
     number[index2].x = ((number[index2].x >> shRg) |
                         (number[index2+1].x << (BITS_PER_GROUP - shRg))) &

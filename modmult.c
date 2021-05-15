@@ -266,11 +266,11 @@ void AdjustModN(limb *Nbr, const limb *Modulus, int nbrLen)
     }
     if (low < HALF_INT_RANGE)
     {
-      carry = (int)floor((dAccumulator + (double)(HALF_INT_RANGE / 2))*dVal);
+      carry = (int)floor((dAccumulator + (double)FOURTH_INT_RANGE)*dVal);
     }
     else
     {
-      carry = (int)floor((dAccumulator - (double)(HALF_INT_RANGE / 2))*dVal);
+      carry = (int)floor((dAccumulator - (double)FOURTH_INT_RANGE)*dVal);
     }
     Nbr[i].x = low;
 #endif
@@ -1201,11 +1201,11 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
         // In that case, there would be an error of +/- 1.
         if (low < HALF_INT_RANGE)
         {
-          dAccum = ((dAccum + HALF_INT_RANGE / 2)*dInvLimbRange);
+          dAccum = ((dAccum + (double)FOURTH_INT_RANGE)*dInvLimbRange);
         }
         else
         {
-          dAccum = ((dAccum - HALF_INT_RANGE / 2)*dInvLimbRange);
+          dAccum = ((dAccum - (double)FOURTH_INT_RANGE)*dInvLimbRange);
         }
         low = (int)(dAccum - floor(dAccum * dInvLimbRange) * dLimbRange);
         dAccum += dMontDig * TestNbr[j].x + dNbr * (factor2 + j)->x + (unsigned int)Prod[j].x;
@@ -1215,11 +1215,11 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
       }
       if (low < HALF_INT_RANGE)
       {
-        dAccum = ((dAccum + HALF_INT_RANGE / 2)*dInvLimbRange);
+        dAccum = ((dAccum + (double)FOURTH_INT_RANGE)*dInvLimbRange);
       }
       else
       {
-        dAccum = ((dAccum - HALF_INT_RANGE / 2)*dInvLimbRange);
+        dAccum = ((dAccum - (double)FOURTH_INT_RANGE)*dInvLimbRange);
       }
       Prod[j - 1].x = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
     }

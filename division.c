@@ -195,11 +195,11 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
         }
         if (low < HALF_INT_RANGE)
         {
-          carry = (int)floor((dAccumulator + (double)(HALF_INT_RANGE / 2)) * dVal);
+          carry = (int)floor((dAccumulator + (double)FOURTH_INT_RANGE) * dVal);
         }
         else
         {
-          carry = (int)floor((dAccumulator - (double)(HALF_INT_RANGE / 2)) * dVal);
+          carry = (int)floor((dAccumulator - (double)FOURTH_INT_RANGE) * dVal);
         }
         ptrDividend->x = low;
 #endif
@@ -223,11 +223,11 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       }
       if (low < HALF_INT_RANGE)
       {
-        carry = (int)floor((dAccumulator + (double)(HALF_INT_RANGE / 2)) * dVal);
+        carry = (int)floor((dAccumulator + (double)FOURTH_INT_RANGE) * dVal);
       }
       else
       {
-        carry = (int)floor((dAccumulator - (double)(HALF_INT_RANGE / 2)) * dVal);
+        carry = (int)floor((dAccumulator - (double)FOURTH_INT_RANGE) * dVal);
       }
       ptrDividend->x = low;
 #endif

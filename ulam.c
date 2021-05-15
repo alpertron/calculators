@@ -126,11 +126,11 @@ void AdjustModN(int *Nbr)
     }
     if (low < (int)HALF_INT_RANGE)
     {
-      carry = (int)floor((dAccumulator + (HALF_INT_RANGE / 2))*dVal);
+      carry = (int)floor((dAccumulator + (double)FOURTH_INT_RANGE)*dVal);
     }
     else
     {
-      carry = (int)floor((dAccumulator - (HALF_INT_RANGE / 2))*dVal);
+      carry = (int)floor((dAccumulator - (double)FOURTH_INT_RANGE)*dVal);
     }
     *(Nbr + i) = low;
   }
@@ -169,11 +169,11 @@ void MultBigNbrModN(const int *factor1, const int *factor2, int *Product)
     Prod[i] = low;
     if (low < HALF_INT_RANGE)
     {
-      dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2))*dInvLimbRange);
+      dAccum = ((dAccum + (double)FOURTH_INT_RANGE)*dInvLimbRange);
     }
     else
     {
-      dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2))*dInvLimbRange);
+      dAccum = ((dAccum - (double)FOURTH_INT_RANGE)*dInvLimbRange);
     }
     carry = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
 
@@ -183,11 +183,11 @@ void MultBigNbrModN(const int *factor1, const int *factor2, int *Product)
     dAccum = dNbr * (double)*(factor2 + 1) + (double)Prod[i+1] + (double)carry;
     if (low < HALF_INT_RANGE)
     {
-      dAccum = ((dAccum + HALF_INT_RANGE / 2)*dInvLimbRange);
+      dAccum = ((dAccum + (double)FOURTH_INT_RANGE)*dInvLimbRange);
     }
     else
     {
-      dAccum = ((dAccum - HALF_INT_RANGE / 2)*dInvLimbRange);
+      dAccum = ((dAccum - (double)FOURTH_INT_RANGE)*dInvLimbRange);
     }
     Prod[i+2] = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
   }
@@ -283,11 +283,11 @@ void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
   Prod0 = low;
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2))*dInvLimbRange);
+    dAccum = ((dAccum + (double)FOURTH_INT_RANGE)*dInvLimbRange);
   }
   else
   {
-    dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2))*dInvLimbRange);
+    dAccum = ((dAccum - (double)FOURTH_INT_RANGE)*dInvLimbRange);
   }
   Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
   
@@ -306,11 +306,11 @@ void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
   Prod0 = low;
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2))*dInvLimbRange);
+    dAccum = ((dAccum + (double)FOURTH_INT_RANGE)*dInvLimbRange);
   }
   else
   {
-    dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2))*dInvLimbRange);
+    dAccum = ((dAccum - (double)FOURTH_INT_RANGE)*dInvLimbRange);
   }
   Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
   
@@ -605,11 +605,11 @@ void multiply(int factor1, int factor2, int *prod)
   *prod = low;
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + HALF_INT_RANGE / 2) / LIMB_RANGE);
+    dAccum = ((dAccum + (double)FOURTH_INT_RANGE) / LIMB_RANGE);
   }
   else
   {
-    dAccum = ((dAccum - HALF_INT_RANGE / 2) / LIMB_RANGE);
+    dAccum = ((dAccum - (double)FOURTH_INT_RANGE) / LIMB_RANGE);
   }
   *(prod+1) = (unsigned int)dAccum;
 #endif 

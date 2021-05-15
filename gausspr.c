@@ -43,10 +43,11 @@
 char *appendInt(char *text, int value);
 #define NBR_LIMBS  2
 #define BITS_PER_GROUP 31
-#define LIMB_RANGE (1U<<BITS_PER_GROUP)
-#define MAX_INT_NBR ((int)((1U << BITS_PER_GROUP)-1))
-#define HALF_INT_RANGE (1 << (BITS_PER_GROUP - 1))
-#define MAX_VALUE_LIMB (LIMB_RANGE-1)
+#define LIMB_RANGE       0x80000000U
+#define MAX_INT_NBR      0x7FFFFFFF
+#define HALF_INT_RANGE   0x40000000
+#define FOURTH_INT_RANGE 0x20000000
+#define MAX_VALUE_LIMB   (LIMB_RANGE-1U)
 
 #define LIMIT(nbr) (int)(nbr%LIMB_RANGE), (int)(nbr/LIMB_RANGE)
 #define MAX_LINES  1000
@@ -126,11 +127,11 @@ static void AdjustModN(int *Nbr)
     }
     if (low < HALF_INT_RANGE)
     {
-      carry = (int)floor((dAccumulator + HALF_INT_RANGE / 2)*dVal);
+      carry = (int)floor((dAccumulator + (double)FOURTH_INT_RANGE)*dVal);
     }
     else
     {
-      carry = (int)floor((dAccumulator - HALF_INT_RANGE / 2)*dVal);
+      carry = (int)floor((dAccumulator - (double)FOURTH_INT_RANGE)*dVal);
     }
     *(Nbr + i) = low;
   }
@@ -232,11 +233,11 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   Prod0 = low;
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2U))*dInvLimbRange);
+    dAccum = ((dAccum + (double)FOURTH_INT_RANGE)*dInvLimbRange);
   }
   else
   {
-    dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2U))*dInvLimbRange);
+    dAccum = ((dAccum - (double)FOURTH_INT_RANGE)*dInvLimbRange);
   }
   Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
   
@@ -255,11 +256,11 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   Prod0 = low;
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2U))*dInvLimbRange);
+    dAccum = ((dAccum + (double)FOURTH_INT_RANGE)*dInvLimbRange);
   }
   else
   {
-    dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2U))*dInvLimbRange);
+    dAccum = ((dAccum - (double)FOURTH_INT_RANGE)*dInvLimbRange);
   }
   Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
   
@@ -550,11 +551,11 @@ static void multiply(int factor1, int factor2, int *prod)
   *prod = low;
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + (double)(HALF_INT_RANGE / 2U)) / LIMB_RANGE);
+    dAccum = ((dAccum + (double)FOURTH_INT_RANGE) / LIMB_RANGE);
   }
   else
   {
-    dAccum = ((dAccum - (double)(HALF_INT_RANGE / 2U)) / LIMB_RANGE);
+    dAccum = ((dAccum - (double)FOURTH_INT_RANGE) / LIMB_RANGE);
   }
   *(prod+1) = (unsigned int)dAccum;
 #endif 

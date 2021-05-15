@@ -219,11 +219,11 @@ void MultBigNbrByInt(const int *pBigFactor, int factor, int *bigProd, int nbrLen
     dCarry = ((double)*ptrBigFactor * dFactor) + (double)carry;
     if (low < HALF_INT_RANGE)
     {
-      dCarry = floor((dCarry + (double)(HALF_INT_RANGE / 2)) * dVal);
+      dCarry = floor((dCarry + (double)FOURTH_INT_RANGE) * dVal);
     }
     else
     {
-      dCarry = floor((dCarry - (double)(HALF_INT_RANGE / 2)) * dVal);
+      dCarry = floor((dCarry - (double)FOURTH_INT_RANGE) * dVal);
     }
     carry = (int)dCarry;
     *bigProduct = low;
@@ -261,11 +261,11 @@ void MultBigNbrByIntB(const int *bigFactor, int factor, int *bigProd, int nbrLen
     dCarry = ((double)*bigFact * dFactor) + (double)carry;
     if (low < HALF_INT_RANGE)
     {
-      dCarry = floor((dCarry + (double)(HALF_INT_RANGE / 2)) * dVal);
+      dCarry = floor((dCarry + (double)FOURTH_INT_RANGE) * dVal);
     }
     else
     {
-      dCarry = floor((dCarry - (double)(HALF_INT_RANGE / 2)) * dVal);
+      dCarry = floor((dCarry - (double)FOURTH_INT_RANGE) * dVal);
     }
     carry = (int)dCarry;
     *bigProduct = low;
@@ -355,11 +355,11 @@ void MultBigNbr(const int *pFactor1, const int *pFactor2, int *pProd, int nbrLen
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      dAccumulator = floor((dAccumulator + (HALF_INT_RANGE/2))*dInvRangeLimb);
+      dAccumulator = floor((dAccumulator + (double)FOURTH_INT_RANGE)*dInvRangeLimb);
     }
     else
     {
-      dAccumulator = floor((dAccumulator - (HALF_INT_RANGE/2))*dInvRangeLimb);
+      dAccumulator = floor((dAccumulator - (double)FOURTH_INT_RANGE)*dInvRangeLimb);
     }
     low = (int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
   }
@@ -397,11 +397,11 @@ void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, in
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      dAccumulator = floor((dAccumulator + (double)(HALF_INT_RANGE / 2))*dInvRangeLimb);
+      dAccumulator = floor((dAccumulator + (double)FOURTH_INT_RANGE)*dInvRangeLimb);
     }
     else
     {
-      dAccumulator = floor((dAccumulator - (double)(HALF_INT_RANGE / 2))*dInvRangeLimb);
+      dAccumulator = floor((dAccumulator - (double)FOURTH_INT_RANGE)*dInvRangeLimb);
     }
     low = (int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
   }
@@ -421,11 +421,11 @@ void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, in
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      dAccumulator = floor((dAccumulator + (double)(HALF_INT_RANGE / 2))*dInvRangeLimb);
+      dAccumulator = floor((dAccumulator + (double)FOURTH_INT_RANGE)*dInvRangeLimb);
     }
     else
     {
-      dAccumulator = floor((dAccumulator - (double)(HALF_INT_RANGE / 2))*dInvRangeLimb);
+      dAccumulator = floor((dAccumulator - (double)FOURTH_INT_RANGE)*dInvRangeLimb);
     }
     low = (int)(dAccumulator - floor(dAccumulator * dInvRangeLimb) * dRangeLimb);
   }

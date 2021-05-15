@@ -1761,7 +1761,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
         ptrKnownFactors++;
         while (*ptrKnownFactors != '\0')
         {
-          NextEC = NextEC * 10 + (*ptrKnownFactors & 0x0F);
+          NextEC = (NextEC * 10) + (*ptrKnownFactors & 0x0F);
           ptrKnownFactors++;
         }
         oldNbrFactors = pstFactors->multiplicity;
@@ -1899,7 +1899,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
         while ((upperBound < 65535) &&
                 (((unsigned int)upperBound * (unsigned int)upperBound) <= (unsigned int)dividend))
         {              // Trial division by small numbers.
-          if (dividend % upperBound == 0)
+          if ((dividend % upperBound) == 0)
           {            // Factor found.
             insertIntFactor(pstFactors, pstCurFactor, upperBound, 1, NULL);
             restartFactoring = true;
