@@ -39,7 +39,7 @@ struct mylimb
 {
   int x;
 };
-#define MAX_VALUE_LIMB   (LIMB_RANGE-1U)
+#define MAX_VALUE_LIMB   0x7FFFFFFFU
 typedef struct mylimb limb;
 
 enum eSign

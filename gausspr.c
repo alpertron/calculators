@@ -47,7 +47,7 @@ char *appendInt(char *text, int value);
 #define MAX_INT_NBR      0x7FFFFFFF
 #define HALF_INT_RANGE   0x40000000
 #define FOURTH_INT_RANGE 0x20000000
-#define MAX_VALUE_LIMB   (LIMB_RANGE-1U)
+#define MAX_VALUE_LIMB   0x7FFFFFFFU
 
 #define LIMIT(nbr) (int)(nbr%LIMB_RANGE), (int)(nbr/LIMB_RANGE)
 #define MAX_LINES  1000
