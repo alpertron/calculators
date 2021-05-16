@@ -66,7 +66,7 @@ int yCenter;
 int yFraction;
 int width;
 int height;
-char initMultipleArrayCalled;
+bool initMultipleArrayCalled;
 static int multiple[25][97];
 static char primes[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
                          43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };
@@ -83,7 +83,7 @@ static void initMultipleArray(void)
       multiple[i][j*j%k] = 1;
     }
   }
-  initMultipleArrayCalled = 1;
+  initMultipleArrayCalled = true;
 }
 
 // Each limb has 31 bits, so with 2 limbs these routines can use numbers up to 2^62
@@ -695,14 +695,14 @@ static void setPoint(int x, int y)
         }
       }
     }
-    else if (x % 10 == 0)
+    else if ((x % 10) == 0)
     {
       col = xPhysical + (1 << (thickness - 1));
       if ((col >= 0) && (col < width))
       {
         firstRow2 = yPhysical + (1 << (thickness-2));
         lastRow2 = firstRow2 + (1 << (thickness-1));
-        firstRow2 = (firstRow2<0 ? 0 : firstRow2);
+        firstRow2 = ((firstRow2 < 0)? 0 : firstRow2);
         if (lastRow2 > height)
         {
           lastRow2 = height;
@@ -739,7 +739,7 @@ static void setPoint(int x, int y)
       {
         firstCol2 = xPhysical + (1 << (thickness - 2));
         lastCol2 = firstCol2 + (1 << (thickness - 1));
-        firstCol2 = (firstCol2<0 ? 0 : firstCol2);
+        firstCol2 = ((firstCol2 < 0)? 0 : firstCol2);
         if (lastCol2 > width)
         {
           lastCol2 = width;
@@ -759,7 +759,7 @@ void drawPartialGraphic(int xminDisp, int xmaxDisp, int yminDisp, int ymaxDisp)
 {
   int x;
   int y;
-  if (initMultipleArrayCalled == 0)
+  if (initMultipleArrayCalled == false)
   {
     initMultipleArray();
   }
@@ -784,7 +784,8 @@ char *appendInt(char *text, int value)
   if (value < 0)
   {
     value = -value;
-    *text++ = '-';
+    *text = '-';
+    text++;
   }
   do
   {
@@ -792,12 +793,14 @@ char *appendInt(char *text, int value)
     if ((quot != 0) || zeroIsSignificant)
     {
       zeroIsSignificant = 1;
-      *text++ = (char)quot + '0';
+      *text = (char)quot + '0';
+      text++;
       value -= quot*div;
     }
     div /= 10;
   } while (div > 1);
-  *text++ = (char)value + '0';
+  *text = (char)value + '0';
+  text++;
   *text = 0;
   return text;
 }
@@ -815,23 +818,32 @@ char *getInformation(int x, int y)
     ptrText = appendInt(infoText, xLogical);
     if (yLogical >= 0)
     {
-      *ptrText++ = ' ';
-      *ptrText++ = '+';
-      *ptrText++ = ' ';
+      *ptrText = ' ';
+      ptrText++;
+      *ptrText = '+';
+      ptrText++;
+      *ptrText = ' ';
+      ptrText++;
       ptrText = appendInt(ptrText, yLogical);
     }
     else
     {
-      *ptrText++ = ' ';
-      *ptrText++ = '-';
-      *ptrText++ = ' ';
+      *ptrText = ' ';
+      ptrText++;
+      *ptrText = '-';
+      ptrText++;
+      *ptrText = ' ';
+      ptrText++;
       ptrText = appendInt(ptrText, -yLogical);
     }
-    *ptrText++ = 'i';
+    *ptrText = 'i';
+    ptrText++;
   }
-  *ptrText++ = '^';       // Append separator.
+  *ptrText = '^';       // Append separator.
+  ptrText++;
   ptrText = appendInt(ptrText, xCenter);
-  *ptrText++ = '^';       // Append separator.
+  *ptrText = '^';       // Append separator.
+  ptrText++;
   ptrText = appendInt(ptrText, yCenter);
   *ptrText = 0;
   return infoText;
@@ -854,11 +866,12 @@ static int getValue(char *value)
   if (*value == '-')
   {
     sign = 1;
-	value++;
+    value++;
   }
-  while (*value)
+  while (*value != '\0')
   {
-    nbr = (nbr * 10) + (*value++ - '0');
+    nbr = (nbr * 10) + (*value - '0');
+    value++;
   }
   return sign? -nbr: nbr;
 }
@@ -1006,7 +1019,8 @@ void iteration(void)
       }
     }
   }
-  if (++timer == 6)
+  timer++;
+  if (timer == 6)
   {
     timer = 0;
     if ((oldXCenter != xCenter) || (oldYCenter != yCenter) ||

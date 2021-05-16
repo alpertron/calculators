@@ -57,7 +57,7 @@ int TestNbr[NBR_LIMBS];
 unsigned int MontgomeryMultN;
 int MontgomeryMultR1[NBR_LIMBS+1];  // One more limb required for AdjustModN.
 int MontgomeryMultR2[NBR_LIMBS+1];
-int showAlgebraic;
+bool showAlgebraic;
 int thickness = 3;                  // Number of bits to shift.
 int xCenter;
 int xFraction;             // Range of fraction: 0 to (1 << thickness) - 1
@@ -708,21 +708,21 @@ static void getN(int valX, int valY, int *value)
   }
   else if ((y >= 0) && (y > x) && (y > -x))
   {                     // Top quadrant.
-    multiply(4 * y - 3, y, value);
+    multiply((4 * y) - 3, y, value);
     x = -x;
     addend[0] = x & MAX_INT_NBR;
     addend[1] = (x >> BITS_PER_GROUP) & MAX_INT_NBR;
   }
   else if ((x <= 0) && (x <= y) && (x <= -y))
   {                     // Left quadrant.
-    multiply(4 * x + 1, x, value);
+    multiply((4 * x) + 1, x, value);
     y = -y;
     addend[0] = y & MAX_INT_NBR;
     addend[1] = (y >> BITS_PER_GROUP) & MAX_INT_NBR;
   }
   else
   {                     // Bottom quadrant.
-    multiply(4 * y - 1, y, value);
+    multiply((4 * y) - 1, y, value);
     addend[0] = x & MAX_INT_NBR;
     addend[1] = (x >> BITS_PER_GROUP) & MAX_INT_NBR;
   }
@@ -789,9 +789,9 @@ void setPoint(int x, int y)
   {                          // Color black.
     algebraicColor = colorBlack;
   }
-  xPhysical = width / 2 + ((x - xCenter) << thickness) - xFraction;
-  yPhysical = height / 2 - ((y - yCenter) << thickness) + yFraction;
-  if (((value[1] != 0) || (value[0] != 2)) && (value[0] & 1) == 0)
+  xPhysical = (width / 2) + ((x - xCenter) << thickness) - xFraction;
+  yPhysical = (height / 2) - ((y - yCenter) << thickness) + yFraction;
+  if (((value[1] != 0) || (value[0] != 2)) && ((value[0] & 1) == 0))
   {     // value is not 2 and it is even
     color = algebraicColor;
   }
@@ -862,8 +862,8 @@ void setPoint(int x, int y)
       color = colorBlack;
     }
   }
-  firstCol = (xPhysical<0? 0: xPhysical);
-  firstRow = (yPhysical<0? 0: yPhysical);
+  firstCol = ((xPhysical < 0)? 0: xPhysical);
+  firstRow = ((yPhysical < 0)? 0: yPhysical);
   lastCol = xPhysical + (1 << thickness);
   if (lastCol > width)
   {
@@ -886,8 +886,8 @@ void setPoint(int x, int y)
   if (thickness >= 2)
   {
     color = colorWhite;
-    absx = (x>0 ? x : -x);
-    absy = (y>0 ? y : -y);
+    absx = ((x > 0)? x : -x);
+    absy = ((y > 0)? y : -y);
     if ((absx >= absy) && !((x == -y) && (y < 0)))
     {
       if ((xPhysical >= 0) && (xPhysical < width))
@@ -1381,6 +1381,7 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
   for (index=0; index<19; index++)
   {
     int charConverted;
+    int prod;
     double dProd;
     if (*value == 0)
     {      // End of string, so end of conversion from string to number.
@@ -1388,9 +1389,10 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
     }
     charConverted = (*value - '0');
     value++;
-    dProd = (double)nbr0 * 10 + charConverted;
-    nbr0 = (nbr0 * 10 + charConverted) & MAX_INT_NBR;
-    nbr1 = nbr1 * 10 + (int)(dProd / LIMB_RANGE);
+    prod = (nbr0 * 10) + charConverted;
+    dProd = (double)prod;
+    nbr0 = ((nbr0 * 10) + charConverted) & MAX_INT_NBR;
+    nbr1 = (nbr1 * 10) + (int)(dProd / LIMB_RANGE);
   }
   if (inputBoxNbr == 1)
   {           // Changing center
@@ -1407,13 +1409,13 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
       int diff;
       a = ((int)sqrt(((double)nbr1*LIMB_RANGE + nbr0-1))+1)/2;
       diff = (nbr0 - 4*a*a) & MAX_INT_NBR;
-      if (diff & HALF_INT_RANGE)
+      if ((diff & HALF_INT_RANGE) != 0)
       {     // Number is negative.
         diff -= MAX_INT_NBR;
       }
-      if (diff < -2*a+2)
+      if (diff < 2 - (2*a))
       {
-        xCenter = -3*a + 1 - diff;
+        xCenter = (-3*a) + 1 - diff;
         yCenter = a;
       }
       else if (diff <= 0)
