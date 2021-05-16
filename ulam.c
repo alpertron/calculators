@@ -518,7 +518,7 @@ bool isPrime(const int *value)
   mask = TestNbr1;
   indexMSB = BITS_PER_GROUP;
   idxNbrMSB = 1;
-  if (mask == 0)
+  if (mask == 0U)
   {    // Most significant bit is inside low limb.
     mask = TestNbr0;
     indexMSB = 0;
@@ -576,7 +576,7 @@ bool isPrime(const int *value)
       }
       MontgomeryMult(power, power, power);
 
-      if (TestNbr[idxNbr] & mask)
+      if (((unsigned int)TestNbr[idxNbr] & mask) != 0U)
       {
         MontgomeryMult(power, baseInMontRepres, power);
       }
@@ -648,11 +648,12 @@ int algebraicFactor(int linear, int *indep)
   int iSqDelta;
   int t1;
   int t2;
+  double dLinear;
   double dDelta;
   double dFourAC;
   temp[0] = *indep;
   temp[1] = *(indep+1);
-  if ((temp[1] & HALF_INT_RANGE))
+  if ((temp[1] & HALF_INT_RANGE) != 0)
   {    // Independent term is negative.
     int carry = -temp[0];
     temp[0] = carry & MAX_INT_NBR;
@@ -660,15 +661,16 @@ int algebraicFactor(int linear, int *indep)
     temp[1] = carry & MAX_INT_NBR;
   }
   dFourAC = ((double)temp[1] * MAX_VALUE_LIMB + (double)temp[0]) * 16;
-  if (*(indep + 1) & HALF_INT_RANGE)
+  dLinear = (double)linear;
+  if ((*(indep + 1) & HALF_INT_RANGE) != 0)
   {    // Independent term is negative.
-    dDelta = linear * linear + dFourAC;
+    dDelta = (dLinear * dLinear) + dFourAC;
   }
   else
   {    // Independent term is positive.
-    dDelta = linear * linear - dFourAC;
+    dDelta = (dLinear * dLinear) - dFourAC;
   }
-  if (dDelta < 0)
+  if (dDelta < 0.0)
   {
     return 0;   // No real roots.
   }

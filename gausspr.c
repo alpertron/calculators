@@ -117,8 +117,8 @@ static void AdjustModN(int *Nbr)
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     dAccumulator = *(Nbr+i) - (TestNbr[i] * dTrialQuotient) + carry + dDelta;
-    dDelta = 0;
-    if (dAccumulator < 0)
+    dDelta = 0.0;
+    if (dAccumulator < 0.0)
     {
       dAccumulator += dSquareLimb;
       dDelta = -(double)LIMB_RANGE;
@@ -389,7 +389,7 @@ static bool isPrime(int *value)
     {
       return false;            // 1 is not prime.
     }
-    else if (TestNbr0 == 2)
+    if (TestNbr0 == 2)
     {
       return true;            // 2 is prime.
     }
@@ -407,13 +407,14 @@ static bool isPrime(int *value)
       {
         return true;          // Number is prime.
       }
-      if (TestNbr0 % base == 0)
+      if ((TestNbr0 % base) == 0)
       {
         return false;          // Number is multiple of base, so it is composite.
       }
     }
     // Check whether TestNbr is multiple of base. In this case the number would be composite.
-    else if (((TestNbr1 % base) * (LIMB_RANGE % base) + TestNbr0 % base) % base == 0)  // No overflow possible.
+    // No overflow possible in next expression.
+    else if ((((TestNbr1 % base) * (LIMB_RANGE % base) + (TestNbr0 % base)) % base) == 0)
     {
       return false;            // Number is multiple of base, so it is composite.
     }
@@ -458,7 +459,7 @@ static bool isPrime(int *value)
   mask = TestNbr1;
   indexMSB = BITS_PER_GROUP;
   idxNbrMSB = 1;
-  if (mask == 0)
+  if (mask == 0U)
   {    // Most significant bit is inside low limb.
     mask = TestNbr0;
     indexMSB = 0;
@@ -615,12 +616,12 @@ static void setPoint(int x, int y)
   Uint32 colorGreen = SDL_MapRGBA(doubleBuffer->format, 0, 192, 0, 255);
   Uint32 colorWhite = SDL_MapRGBA(doubleBuffer->format, 192, 192, 192, 255);
 #endif
-  xPhysical = width / 2 + ((x - xCenter) << thickness) - xFraction;
-  yPhysical = height / 2 - ((y - yCenter) << thickness) + yFraction;
+  xPhysical = (width / 2) + ((x - xCenter) << thickness) - xFraction;
+  yPhysical = (height / 2) - ((y - yCenter) << thickness) + yFraction;
   color = colorBlack;          // Indicate not prime in advance.
   if (x == 0)
   {   // Number is imaginary.
-    check[0] = (y >= 0 ? y : -y);
+    check[0] = ((y >= 0)? y : -y);
     check[1] = 0;
     if (((check[0] & 0x03) == 3) && isPrime(check))
     {                          // Number is gaussian prime.
@@ -629,7 +630,7 @@ static void setPoint(int x, int y)
   }
   else if (y == 0)
   {   // Number is real.
-    check[0] = (x >= 0 ? x : -x);
+    check[0] = ((x >= 0)? x : -x);
     check[1] = 0;
     if (((check[0] & 0x03) == 3) && isPrime(check))
     {                          // Number is gaussian prime.
@@ -723,7 +724,7 @@ static void setPoint(int x, int y)
         }
       }
     }
-    else if (y % 10 == 0)
+    else if ((y % 10) == 0)
     {
       row = yPhysical + (1 << (thickness - 1));
       if ((row >= 0) && (row < height))
@@ -801,8 +802,8 @@ char *getInformation(int x, int y)
   infoText[0] = 0;   // Empty string.
   if (x >= 0)
   {
-    int xLogical = xCenter + ((xFraction + x - width / 2) >> thickness);
-    yLogical = yCenter + 1 + ((yFraction - y + height / 2) >> thickness);
+    int xLogical = xCenter + ((xFraction + x - (width / 2)) >> thickness);
+    yLogical = yCenter + 1 + ((yFraction - y + (height / 2)) >> thickness);
     ptrText = appendInt(infoText, xLogical);
     if (yLogical >= 0)
     {
@@ -849,7 +850,7 @@ static int getValue(char *value)
   }
   while (*value)
   {
-    nbr = nbr*10 + (*value++ - '0');
+    nbr = (nbr * 10) + (*value++ - '0');
   }
   return sign? -nbr: nbr;
 }
