@@ -32,4 +32,5 @@ void multiply(int factor1, int factor2, int *prod);
 void AddBigNbr(const int *Nbr1, const int *Nbr2, int *Sum);
 void SubtBigNbr(const int *Nbr1, const int *Nbr2, int *Diff);
 int getPrime(int index);
+char* appendInt(char* text, int intValue);
 #endif

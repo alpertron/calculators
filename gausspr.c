@@ -44,7 +44,6 @@
   #define pixels pixelArray
 #endif
 
-char *appendInt(char *text, int value);
 #define MAX_LINES  1000
 #define MAX_COLUMNS 2000
 static char infoText[500];
@@ -241,34 +240,6 @@ void drawPartialGraphic(int xminDisp, int xmaxDisp, int yminDisp, int ymaxDisp)
     }  /* end for y */
   }    /* end for x */
 }      /* end method drawPartialGraphic */
-
-char *appendInt(char *text, int value)
-{
-  int div = 1000000000;
-  int zeroIsSignificant = 0;
-  if (value < 0)
-  {
-    value = -value;
-    *text = '-';
-    text++;
-  }
-  do
-  {
-    int quot = value / div;
-    if ((quot != 0) || zeroIsSignificant)
-    {
-      zeroIsSignificant = 1;
-      *text = (char)quot + '0';
-      text++;
-      value -= quot*div;
-    }
-    div /= 10;
-  } while (div > 1);
-  *text = (char)value + '0';
-  text++;
-  *text = 0;
-  return text;
-}
 
 char *getInformation(int x, int y)
 {

@@ -1953,7 +1953,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
 #ifdef __EMSCRIPTEN__
       nbrPrimalityTests++;
       primeModMult += lModularMult - oldModularMult;
-      if (prime.nbrLimbs > 3322 / BITS_PER_GROUP)  // 3322 = 1000*log_2(10) -> 1000 digits
+      if (prime.nbrLimbs > (3322 / BITS_PER_GROUP))  // 3322 = 1000*log_2(10) -> 1000 digits
       {
         endSkipTest();
       }

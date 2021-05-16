@@ -404,34 +404,6 @@ unsigned int *getPixels(void)
 }
 #endif
 
-char *appendInt(char *text, int value)
-{
-  int div = 1000000000;
-  int zeroIsSignificant = 0;
-  if (value < 0)
-  {
-    value = -value;
-    *text = '-';
-    text++;
-  }
-  do
-  {
-    int quot = value / div;
-    if ((quot != 0) || zeroIsSignificant)
-    {
-      zeroIsSignificant = 1;
-      *text = (char)quot + '0';
-      text++;
-      value -= quot*div;
-    }
-    div /= 10;
-  } while (div > 1);
-  *text = (char)value + '0';
-  text++;
-  *text = 0;
-  return text;
-}
-
 // Convert the number from binary to string.
 char *appendInt64(char *text, const int *value)
 {
@@ -439,8 +411,9 @@ char *appendInt64(char *text, const int *value)
   int index2;
   int nbr0 = *value;
   int nbr1 = *(value+1);
+  
   // Convert digits from right to left.
-  text += 19;
+  char* ptrText = text + 19;
   for (index = 0; index < 19; index++)
   {
     // Divide value by 10 and obtain the remainder.
@@ -449,23 +422,23 @@ char *appendInt64(char *text, const int *value)
     nbr1 = nbr1 / 10;
     dDivid = (double)rem * (double)LIMB_RANGE + (double)nbr0;
     nbr0 = (int)(dDivid / 10);
-    text--;
-    *text = (int)(dDivid - (double)nbr0*10) + '0';
+    ptrText--;
+    *ptrText = (int)(dDivid - (double)nbr0*10) + '0';
   }
   for (index = 0; index < 18; index++)
   {
-    if (*(text+index) != '0')
+    if (*(ptrText+index) != '0')
     {
       break;    // Most significant digit found.
     }
   }
   for (index2 = index; index2 < 19; index2++)
   {
-    *(text+index2-index) = *(text+index2);
+    *(ptrText+index2-index) = *(ptrText+index2);
   }
-  text += index2-index;
-  *text = 0;    // Set string terminator.
-  return text;
+  ptrText += index2-index;
+  *ptrText = 0;    // Set string terminator.
+  return ptrText;
 }
 
 void ShowLabel(char *text, int b, int *indep)
@@ -716,7 +689,7 @@ EXTERNALIZE char *getInformation(int x, int y)
     }
     else
     {
-      if (xLogical - yLogical >= 0)
+      if ((xLogical - yLogical) >= 0)
       {                              // Lower quadrant
         ShowLabel("SW-NE: 4t<sup>2</sup>", 0, Nminustt);
         AddTwoLimbsPlusOneLimb(Nminustt, -t, indep);   // n - 4 * t*t - 2 * t
@@ -802,7 +775,6 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
   int temp[2];
   int nbr0;
   int nbr1;
-  int a;
   int index;
   width = newWidth;
   height = newHeight;
@@ -836,13 +808,13 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
     if ((nbr1 > 0) || (nbr0 >= 1))
     {       // nbr >= 1
       int diff;
-      a = ((int)sqrt(((double)nbr1*LIMB_RANGE + nbr0-1))+1)/2;
-      diff = (nbr0 - 4*a*a) & MAX_INT_NBR;
+      int a = ((int)sqrt((((double)nbr1*LIMB_RANGE) + nbr0-1))+1)/2;
+      diff = (nbr0 - (4*a*a)) & MAX_INT_NBR;
       if ((diff & HALF_INT_RANGE) != 0)
       {     // Number is negative.
         diff -= MAX_INT_NBR;
       }
-      if (diff < 2 - (2*a))
+      if (diff < (2 - (2*a)))
       {
         xCenter = (-3*a) + 1 - diff;
         yCenter = a;
@@ -852,7 +824,7 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
         xCenter = -a;
         yCenter = -a + 1 - diff;
       }
-      else if (diff <= 2*a)
+      else if (diff <= (2*a))
       {
         xCenter = diff - a - 1;
         yCenter = -a;
@@ -860,7 +832,7 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
       else
       {
         xCenter = a;
-        yCenter = diff - 3*a - 1;
+        yCenter = diff - (3*a) - 1;
       }
     }
     xFraction = 0;

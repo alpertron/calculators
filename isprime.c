@@ -546,3 +546,33 @@ void multiply(int factor1, int factor2, int *prod)
   *(prod+1) = (unsigned int)dAccum;
 #endif 
 }
+
+char* appendInt(char* text, int intValue)
+{
+  char* ptrText = text;
+  int value = intValue;
+  int div = 1000000000;
+  bool zeroIsSignificant = false;
+  if (value < 0)
+  {
+    value = -value;
+    *ptrText = '-';
+    ptrText++;
+  }
+  do
+  {
+    int quot = value / div;
+    if ((quot != 0) || zeroIsSignificant)
+    {
+      zeroIsSignificant = true;
+      *ptrText = (char)quot + '0';
+      ptrText++;
+      value -= quot * div;
+    }
+    div /= 10;
+  } while (div > 1);
+  *ptrText = (char)value + '0';
+  ptrText++;
+  *ptrText = 0;
+  return ptrText;
+}
