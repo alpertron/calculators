@@ -26,11 +26,11 @@
 #ifdef __EMSCRIPTEN__
   #define EXTERNALIZE  __attribute__((visibility("default")))
   #define MAX_WIDTH 2048
-  #define pixelXY(x, y) &pixels[y * MAX_WIDTH + x];
+  #define pixelXY(x, y) (&pixels[y * MAX_WIDTH + x])
   unsigned int pixels[2048*MAX_WIDTH];
 #else     // Not Emscripten
   #define EXTERNALIZE	
-  #define pixelXY(x, y) (Uint32*)doubleBuffer->pixels + y * width + x;
+  #define pixelXY(x, y) ((Uint32*)doubleBuffer->pixels + y * width + x)
   #include <SDL.h>
   SDL_Surface *screen;
   SDL_Surface *doubleBuffer;
@@ -375,11 +375,12 @@ void GetMontgomeryParms(void)
     MontgomeryMultR1[0] = 1;
     return;
   }
-  x = N = (int) TestNbr[0]; // 2 least significant bits of inverse correct.
-  x = x * (2 - N * x); // 4 least significant bits of inverse correct.
-  x = x * (2 - N * x); // 8 least significant bits of inverse correct.
-  x = x * (2 - N * x); // 16 least significant bits of inverse correct.
-  x = x * (2 - N * x); // 32 least significant bits of inverse correct.
+  N = (int)TestNbr[0];
+  x = N;                 // 2 least significant bits of inverse correct.
+  x = x * (2 - (N * x)); // 4 least significant bits of inverse correct.
+  x = x * (2 - (N * x)); // 8 least significant bits of inverse correct.
+  x = x * (2 - (N * x)); // 16 least significant bits of inverse correct.
+  x = x * (2 - (N * x)); // 32 least significant bits of inverse correct.
   MontgomeryMultN = (-x) & MAX_INT_NBR;
   MontgomeryMultR1[2] = 1;
   MontgomeryMultR1[0] = 0;
@@ -391,20 +392,20 @@ void GetMontgomeryParms(void)
 // ensures that any composite less than 3*10^18 is discarded.
 int isPrime(const int *value)
 {
-  static char bases[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 0};
+  static const char bases[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 0};
   // List of lowest composite numbers that passes Miller-Rabin for above bases (OEIS A014233).
-  static int limits[] =
+  static const int limits[] =
   {
-    LIMIT(0),
-    LIMIT(2047ll),                 // Base 2
-    LIMIT(1373653ll),              // Bases 2 and 3
-    LIMIT(25326001ll),             // Bases 2, 3 and 5
-    LIMIT(3215031751ll),           // Bases 2, 3, 5 and 7
-    LIMIT(2152302898747ll),        // Bases 2, 3, 5, 7 and 11
-    LIMIT(3474749660383ll),        // Bases 2, 3, 5, 7, 11 and 13
-    LIMIT(341550071728321ll),      // Bases 2, 3, 5, 7, 11, 13 and 17
-    LIMIT(341550071728321ll),      // Bases 2, 3, 5, 7, 11, 13, 17 and 19
-    LIMIT((1ll << (2*BITS_PER_GROUP)) - 1)
+    LIMIT(0ULL),
+    LIMIT(2047ULL),                 // Base 2
+    LIMIT(1373653ULL),              // Bases 2 and 3
+    LIMIT(25326001ULL),             // Bases 2, 3 and 5
+    LIMIT(3215031751ULL),           // Bases 2, 3, 5 and 7
+    LIMIT(2152302898747ULL),        // Bases 2, 3, 5, 7 and 11
+    LIMIT(3474749660383ULL),        // Bases 2, 3, 5, 7, 11 and 13
+    LIMIT(341550071728321ULL),      // Bases 2, 3, 5, 7, 11, 13 and 17
+    LIMIT(341550071728321ULL),      // Bases 2, 3, 5, 7, 11, 13, 17 and 19
+    LIMIT((1LL << (2*BITS_PER_GROUP)) - 1)
   };
   int i;
   int index;

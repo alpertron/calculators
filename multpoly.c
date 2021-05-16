@@ -36,8 +36,8 @@ struct stKaratsubaStack
   int stage;
 };
 
-//#define ADJUST_MODULUS(sum, modulus) sum += modulus & (sum >> 31);
-#define ADJUST_MODULUS(sum, modulus) if (sum < 0) {sum += modulus;}
+#define ADJUST_MODULUS(sum, modulus) sum += modulus & (sum >> 31);
+//#define ADJUST_MODULUS(sum, modulus) if (sum < 0) {sum += modulus;}
 static struct stKaratsubaStack astKaratsubaStack[10];
 static BigInteger coeff[2 * KARATSUBA_POLY_CUTOFF];
 int polyInv[COMPRESSED_POLY_MAX_LENGTH];
