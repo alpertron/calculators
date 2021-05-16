@@ -24,6 +24,8 @@
 
 #define SMALL_NUMBER_BOUND 32768
 #ifndef __EMSCRIPTEN__
+  #define EXTERNALIZE	
+  #define pixelXY(x, y) ((Uint32*)doubleBuffer->pixels + (y * width) + x)
   #include <SDL.h>
   #define pixels (unsigned int *)(4*MAX_WIDTH*32)
   SDL_Surface* screen;
@@ -36,8 +38,9 @@
   int quit;
 #else        // Emscripten
   #define MAX_WIDTH 2048
-  #define pixelXY(x, y) &pixels[y * MAX_WIDTH + x];
-  unsigned int pixels[2048 * MAX_WIDTH];
+  #define pixelXY(x, y) (&pixels[(y * MAX_WIDTH) + x])
+  unsigned int pixelArray[2048 * MAX_WIDTH];
+  #define pixels pixelArray
 #endif
 
 char *appendInt(char *text, int value);
@@ -418,6 +421,9 @@ static bool isPrime(int *value)
     {
       return false;            // Number is multiple of base, so it is composite.
     }
+    else
+    {                          // Nothing to do.
+    }
   }
   GetMontgomeryParms();
   baseInMontRepres[0] = MontgomeryMultR1[0];
@@ -499,7 +505,8 @@ static bool isPrime(int *value)
     do                     // Compute next base in Montgomery representation.
     {
       AddBigNbrModN(baseInMontRepres, MontgomeryMultR1, baseInMontRepres);
-    } while (++prevBase < base);
+      prevBase++;
+    } while (prevBase < base);
     i++;
     j += 2;
     power[0] = baseInMontRepres[0];
@@ -509,7 +516,7 @@ static bool isPrime(int *value)
     for (index = indexMSB-1; index >= indexLSB; index--)
     {
       mask >>= 1;
-      if (mask == 0)
+      if (mask == 0U)
       {
         mask = HALF_INT_RANGE;
         idxNbr--;
@@ -647,8 +654,8 @@ static void setPoint(int x, int y)
       color = colorGreen;
     }
   }
-  firstCol = (xPhysical<0? 0: xPhysical);
-  firstRow = (yPhysical<0? 0: yPhysical);
+  firstCol = ((xPhysical < 0)? 0: xPhysical);
+  firstRow = ((yPhysical < 0)? 0: yPhysical);
   lastCol = xPhysical + (1 << thickness);
   if (lastCol > width)
   {
@@ -664,7 +671,8 @@ static void setPoint(int x, int y)
     ptrPixel = pixelXY(firstCol, row);
     for (col = firstCol; col < lastCol; col++)
     {
-      *ptrPixel++ = color;
+      *ptrPixel = color;
+      ptrPixel++;
     }
   }
   if (thickness >= 2)

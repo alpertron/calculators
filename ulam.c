@@ -25,7 +25,7 @@
 #define SMALL_NUMBER_BOUND 32768
 #ifndef __EMSCRIPTEN__
   #define EXTERNALIZE	
-  #define pixelXY(x, y) ((Uint32*)doubleBuffer->pixels + y * width + x)
+  #define pixelXY(x, y) ((Uint32*)doubleBuffer->pixels + (y * width) + x)
   #include <SDL.h>
   SDL_Surface* screen;
   SDL_Surface* doubleBuffer;
@@ -38,7 +38,7 @@
 #else     // Emscripten
   #define EXTERNALIZE  __attribute__((visibility("default")))
   #define MAX_WIDTH 2048
-  #define pixelXY(x, y) (&pixels[y * MAX_WIDTH + x])
+  #define pixelXY(x, y) (&pixels[(y * MAX_WIDTH) + x])
   unsigned int pixels[2048 * MAX_WIDTH];
 #endif
 
@@ -660,7 +660,7 @@ int algebraicFactor(int linear, int *indep)
     carry = (carry >> BITS_PER_GROUP) - temp[1];
     temp[1] = carry & MAX_INT_NBR;
   }
-  dFourAC = ((double)temp[1] * MAX_VALUE_LIMB + (double)temp[0]) * 16;
+  dFourAC = (((double)temp[1] * MAX_VALUE_LIMB) + (double)temp[0]) * 16;
   dLinear = (double)linear;
   if ((*(indep + 1) & HALF_INT_RANGE) != 0)
   {    // Independent term is negative.
@@ -678,14 +678,14 @@ int algebraicFactor(int linear, int *indep)
   t1 = (int)(((double)(-linear) + iSqDelta) / 4);    // t1 and t2 are less than 2^31 so
   t2 = (int)(((double)(-linear) - iSqDelta) / 4);    // they fit into a double.
 
-  multiply(2*t1 + linear, t1, temp);
+  multiply((2*t1) + linear, t1, temp);
   AddBigNbr(temp, indep, temp);
   AddBigNbr(temp, indep, temp);
   if ((temp[0] != 0) || (temp[1] != 0))
   {
     return 0;
   }
-  multiply(2*t2 + linear, t2, temp);
+  multiply((2*t2) + linear, t2, temp);
   AddBigNbr(temp, indep, temp);
   AddBigNbr(temp, indep, temp);
   if ((temp[0] != 0) || (temp[1] != 0))
@@ -695,12 +695,14 @@ int algebraicFactor(int linear, int *indep)
   return 1;  // Twice the roots are integer numbers
 }
 
-void getN(int x, int y, int *value)
+static void getN(int valX, int valY, int *value)
 {
+  int x = valX;
+  int y = valY;
   int addend[2];
   if ((x >= 0) && (x >= y) && (x >= -y))
   {                     // Right quadrant.
-    multiply(4 * x + 3, x, value);
+    multiply((4 * x) + 3, x, value);
     addend[0] = y & MAX_INT_NBR;
     addend[1] = (y >> BITS_PER_GROUP) & MAX_INT_NBR;
   }
@@ -1073,19 +1075,20 @@ void ShowLabel(char *text, int b, int *indep)
     if (algebraicFactor(b, indep))
     {
       double dDelta;
+      double dB = (double)b;
       double dFourAC = ((double)temp[1] * MAX_VALUE_LIMB + (double)temp[0]) * 16;
-      if (*(indep + 1) & HALF_INT_RANGE)
+      if (((unsigned int)*(indep + 1) & HALF_INT_RANGE) != 0U)
       {    // Independent term is negative.
-        dDelta = b * b + dFourAC;
+        dDelta = (dB *dB) + dFourAC;
       }
       else
       {    // Independent term is positive.
-        dDelta = b * b - dFourAC;
+        dDelta = (dB * dB) - dFourAC;
       }
-      int iSqDelta = (int)(sqrt(dDelta) + 0.5);              // Convert to nearest integer.
-      int t1 = (int)(((double)(-b) + iSqDelta) / 4);         // t1 and t2 are less than 2^31 so
-      int t2 = (int)(((double)(-b) - iSqDelta) / 4);         // they fit into a double.
-                                                            /* Twice the roots are integer numbers */
+      int iSqDelta = (int)(sqrt(dDelta) + 0.5);             // Convert to nearest integer.
+      int t1 = (int)((-dB + iSqDelta) / 4);                 // t1 and t2 are less than 2^31 so
+      int t2 = (int)((-dB - iSqDelta) / 4);                 // they fit into a double.
+                                                            // Twice the roots are integer numbers
       ptrText += strlen(ptrText);
       if (t1 > 0)
       {
