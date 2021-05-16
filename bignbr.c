@@ -1575,7 +1575,7 @@ int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower)
     while ((a.limbs[0].x & 1) == 0)
     {     // a is even.
       BigIntDivideBy2(&a);              // a <- a / 2
-      if ((m.limbs[0].x & 7) == 3 || (m.limbs[0].x & 7) == 5)
+      if (((m.limbs[0].x & 7) == 3) || ((m.limbs[0].x & 7) == 5))
       {   // m = 3 or m = 5 (mod 8)
         t = -t;
       }

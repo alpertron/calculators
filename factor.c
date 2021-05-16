@@ -1623,7 +1623,6 @@ static void factorSmallInt(int intToFactor, int* factors, struct sFactors* pstFa
     *ptrFactorLimbs = 1;
     ptrFactorLimbs++;
     *ptrFactorLimbs = toFactor;
-    ptrFactorLimbs++;
   }
   pstFactors->multiplicity = factorsFound;
 }
@@ -1944,7 +1943,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
     else
     {
 #ifdef __EMSCRIPTEN__
-      if (prime.nbrLimbs > 3322 / BITS_PER_GROUP)  // 3322 = 1000*log_2(10) -> 1000 digits
+      if (prime.nbrLimbs > (3322 / BITS_PER_GROUP))  // 3322 = 1000*log_2(10) -> 1000 digits
       {
         startSkipTest();
       }

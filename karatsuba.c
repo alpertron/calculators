@@ -897,13 +897,15 @@ static void Karatsuba(int indexFactor1, int numLen)
         for (i = nbrLen; i > 0; i--)
         {
           borrow += ptrResult->x - (ptrHigh++)->x;
-          (ptrResult++)->x = borrow & MAX_VALUE_LIMB;
+          ptrResult->x = borrow & MAX_VALUE_LIMB;
+          ptrResult++;
           borrow >>= BITS_PER_GROUP;
         }
         for (i = halfLength; i > 0; i--)
         {
           borrow += ptrResult->x;
-          (ptrResult++)->x = borrow & MAX_VALUE_LIMB;
+          ptrResult->x = borrow & MAX_VALUE_LIMB;
+          ptrResult++;
           borrow >>= BITS_PER_GROUP;
         }
       }

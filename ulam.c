@@ -820,9 +820,9 @@ void setPoint(int x, int y)
     t = t + t;
     multiply(t, t, Nminustt);
     SubtBigNbr(value, Nminustt, Nminustt);
-    if (x + y >= 0)
+    if ((x + y) >= 0)
     {
-      if (x - y >= 0)
+      if ((x - y) >= 0)
       {                                 // Right quadrant
         AddTwoLimbsPlusOneLimb(Nminustt, -2*t, indep1);  // n - 4 * t*t - 4 * t
         AddTwoLimbsPlusOneLimb(Nminustt, -t, indep2);    // n - 4 * t*t - 2 * t
@@ -904,7 +904,7 @@ void setPoint(int x, int y)
         }
       }
     }
-    if (((absx < absy) && !(x == y - 1 && y>0)) ||
+    if (((absx < absy) && !(x == (y - 1) && y>0)) ||
         ((absx == absy) && (y <= 0)))
     {
       currY = yPhysical + (1 << thickness) - 1;
