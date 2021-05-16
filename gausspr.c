@@ -23,33 +23,34 @@
 #include <stdbool.h>
 
 #define SMALL_NUMBER_BOUND 32768
-#ifdef __EMSCRIPTEN__
-  #define MAX_WIDTH 2048
-  #define pixelXY(x, y) &pixels[y * MAX_WIDTH + x];
-  unsigned int pixels[2048*MAX_WIDTH];
-#else
+#ifndef __EMSCRIPTEN__
   #include <SDL.h>
   #define pixels (unsigned int *)(4*MAX_WIDTH*32)
-  SDL_Surface *screen;
-  SDL_Surface *doubleBuffer;
+  SDL_Surface* screen;
+  SDL_Surface* doubleBuffer;
   int oldXCenter;
   int oldYCenter;
   int oldXFraction;
   int oldYFraction;
   int timer;
   int quit;
+#else        // Emscripten
+  #define MAX_WIDTH 2048
+  #define pixelXY(x, y) &pixels[y * MAX_WIDTH + x];
+  unsigned int pixels[2048 * MAX_WIDTH];
 #endif
 
 char *appendInt(char *text, int value);
 #define NBR_LIMBS  2
 #define BITS_PER_GROUP 31
 #define LIMB_RANGE       0x80000000U
+#define LIMB_RANGE_L     0x80000000ULL
 #define MAX_INT_NBR      0x7FFFFFFF
 #define HALF_INT_RANGE   0x40000000
 #define FOURTH_INT_RANGE 0x20000000
 #define MAX_VALUE_LIMB   0x7FFFFFFFU
 
-#define LIMIT(nbr) (int)(nbr%LIMB_RANGE), (int)(nbr/LIMB_RANGE)
+#define LIMIT(nbr) (int)(nbr%LIMB_RANGE_L), (int)(nbr/LIMB_RANGE_L)
 #define MAX_LINES  1000
 #define MAX_COLUMNS 2000
 char infoText[500];
