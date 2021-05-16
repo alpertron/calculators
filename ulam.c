@@ -865,7 +865,7 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
   }
   getN(xCenter, yCenter, temp);
   infoText[0] = '^';
-  appendInt64(&infoText[1], temp);
+  (void)appendInt64(&infoText[1], temp);
   return infoText;
 }
 
@@ -873,7 +873,7 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
 
 void drawUlamSpiral(void)
 {
-  if (SDL_MUSTLOCK(doubleBuffer))
+  if (SDL_MUSTLOCK(doubleBuffer) != 0)
   {
     SDL_LockSurface(doubleBuffer);
   }
@@ -909,14 +909,8 @@ void iteration(void)
   SDL_Event event;
   SDL_Rect rectSrc;
   SDL_Rect rectDest;
-  int xMax;
-  int yMin;
-  int yMax;
-  int yBound;
-  int xMove;
-  int yMove;
         
-  while (SDL_PollEvent(&event))
+  while (SDL_PollEvent(&event) != 0)
   {                           // New event arrived.
     if (event.type == SDL_QUIT)
     {                         // Quit event arrived, so exit application.
@@ -924,7 +918,7 @@ void iteration(void)
     }
     if (event.type == SDL_MOUSEMOTION)
     {
-      if (event.motion.state & SDL_BUTTON_LMASK)
+      if ((event.motion.state & SDL_BUTTON_LMASK) != 0)
       {                        // Drag operation.
         xFraction -= event.motion.xrel;
         xCenter += xFraction >> thickness;
@@ -974,9 +968,12 @@ void iteration(void)
         (oldXFraction != xFraction) || (oldYFraction != yFraction))
     {
       int xMin;
-          // Move pixels of double buffer according to drag direction.
-      xMove = (xCenter << thickness) + xFraction - (oldXCenter << thickness) - oldXFraction;
-      yMove = (yCenter << thickness) + yFraction - (oldYCenter << thickness) - oldYFraction;
+      int xMax;
+      int yMin;
+      int yMax;
+      // Move pixels of double buffer according to drag direction.
+      int xMove = (xCenter << thickness) + xFraction - (oldXCenter << thickness) - oldXFraction;
+      int yMove = (yCenter << thickness) + yFraction - (oldYCenter << thickness) - oldYFraction;
       if (xMove > 0)
       {           // Move pixels to left.
         rectDest.x = 0;
@@ -1016,7 +1013,7 @@ void iteration(void)
       yMax = height / 2;
       if (yMove > 0)
       {              // Move pixels up.
-        yBound = yMax - yMove;
+        int yBound = yMax - yMove;
                      // Draw bottom rectangle.
         drawPartialUlamSpiral(xMin, xMax, yBound, yMax);
         if (xMove > 0)
