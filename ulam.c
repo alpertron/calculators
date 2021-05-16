@@ -60,14 +60,12 @@ static bool initMultipleArrayCalled;
 
 static void initMultipleArray(void)
 {
-  int i;
-  int j;
   if (initMultipleArrayCalled == false)
   {
-    for (i = 0; i<NBR_SMALL_PRIMES; i++)
+    for (int i = 0; i<NBR_SMALL_PRIMES; i++)
     {
       int k = getPrime(i);
-      for (j = (k / 2) + 1; j >= 0; j--)
+      for (int j = (k / 2) + 1; j >= 0; j--)
       {
         multiple[i][j*j%k] = 1;
       }
@@ -77,7 +75,7 @@ static void initMultipleArray(void)
 }
 
 // Check whether 4x^2 + bx + c has integer roots (b is a very small number).
-int algebraicFactor(int linear, int *indep)
+bool algebraicFactor(int linear, int *indep)
 {
   int temp[2];
   int iSqDelta;
@@ -107,7 +105,7 @@ int algebraicFactor(int linear, int *indep)
   }
   if (dDelta < 0.0)
   {
-    return 0;   // No real roots.
+    return false;   // No real roots.
   }
   iSqDelta = (int)(sqrt(dDelta) + 0.5);              // Convert to nearest integer.
   t1 = (int)(((double)(-linear) + iSqDelta) / 4);    // t1 and t2 are less than 2^31 so
@@ -118,16 +116,16 @@ int algebraicFactor(int linear, int *indep)
   AddBigNbr(temp, indep, temp);
   if ((temp[0] != 0) || (temp[1] != 0))
   {
-    return 0;
+    return false;
   }
   multiply((2*t2) + linear, t2, temp);
   AddBigNbr(temp, indep, temp);
   AddBigNbr(temp, indep, temp);
   if ((temp[0] != 0) || (temp[1] != 0))
   {
-    return 0;
+    return false;
   }
-  return 1;  // Twice the roots are integer numbers
+  return true;  // Twice the roots are integer numbers
 }
 
 static void getN(int valX, int valY, int *value)
@@ -277,7 +275,7 @@ void setPoint(int x, int y)
       indep1[0] = Nminustt[0];                          // n - 4 * t*t
       indep1[1] = Nminustt[1];
       linear1 = 0;
-      if (x - y >= 0)
+      if ((x - y) >= 0)
       {                                 // Lower quadrant
         AddTwoLimbsPlusOneLimb(Nminustt, -t, indep2);   // n - 4 * t*t - 2 * t
         linear2 = 2;
@@ -339,7 +337,7 @@ void setPoint(int x, int y)
         }
       }
     }
-    if (((absx < absy) && !(x == (y - 1) && y>0)) ||
+    if (((absx < absy) && !(x == (y - 1) && (y > 0))) ||
         ((absx == absy) && (y <= 0)))
     {
       currY = yPhysical + (1 << thickness) - 1;
@@ -472,7 +470,6 @@ char *appendInt64(char *text, const int *value)
 
 void ShowLabel(char *text, int b, int *indep)
 {
-  int p;
   int temp[2];
   int carry;
   char *ptrText = &infoText[strlen(infoText)];
@@ -508,7 +505,7 @@ void ShowLabel(char *text, int b, int *indep)
     {
       double dDelta;
       double dB = (double)b;
-      double dFourAC = ((double)temp[1] * MAX_VALUE_LIMB + (double)temp[0]) * 16;
+      double dFourAC = (((double)temp[1] * (double)MAX_VALUE_LIMB) + (double)temp[0]) * 16;
       if (((unsigned int)*(indep + 1) & HALF_INT_RANGE) != 0U)
       {    // Independent term is negative.
         dDelta = (dB *dB) + dFourAC;
@@ -596,7 +593,7 @@ void ShowLabel(char *text, int b, int *indep)
           }
           copyStr(&ptrText, "t");
         }
-        if (temp[1] & HALF_INT_RANGE)
+        if ((temp[1] & HALF_INT_RANGE) != 0)
         {     // Independent term is negative.
           *ptrText = ' ';
           ptrText++;
@@ -632,7 +629,7 @@ void ShowLabel(char *text, int b, int *indep)
         {
           int deltaModP;
           int indepModP;
-          p = getPrime(i);
+          int p = getPrime(i);
           // delta = b*b - 16*indep
           // Find delta mod p.
           indepModP = (((*(indep+1)%p)*(LIMB_RANGE%p)) + *(indep)%p) % p;
@@ -670,7 +667,6 @@ void ShowLabel(char *text, int b, int *indep)
 EXTERNALIZE char *getInformation(int x, int y)
 {
   int value[2];
-  int yLogical;
   char *ptrText = infoText;
 
   infoText[0] = 0;   // Empty string.
@@ -679,8 +675,8 @@ EXTERNALIZE char *getInformation(int x, int y)
     int t;
     int Nminustt[2];
     int indep[2];
-    int xLogical = xCenter + ((xFraction + x - width / 2) >> thickness);
-    yLogical = yCenter + 1 + ((yFraction - y + height / 2) >> thickness);
+    int xLogical = xCenter + ((xFraction + x - (width / 2)) >> thickness);
+    int yLogical = yCenter + 1 + ((yFraction - y + (height / 2)) >> thickness);
     getN(xLogical, yLogical, value);
     if ((xLogical > yLogical) && (xLogical > -yLogical))
     {
@@ -701,9 +697,9 @@ EXTERNALIZE char *getInformation(int x, int y)
     t = t + t;
     multiply(t, t, Nminustt);
     SubtBigNbr(value, Nminustt, Nminustt);
-    if (xLogical + yLogical >= 0)
+    if ((xLogical + yLogical) >= 0)
     {
-      if (xLogical - yLogical >= 0)
+      if ((xLogical - yLogical) >= 0)
       {                              // Right quadrant
         AddTwoLimbsPlusOneLimb(Nminustt, -2*t, indep);  // n - 4 * t*t - 4 * t
         ShowLabel("SW-NE: 4t<sup>2</sup> + 4t", 4, indep);

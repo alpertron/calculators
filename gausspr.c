@@ -165,9 +165,9 @@ static void setPoint(int x, int y)
       col = xPhysical + (1 << (thickness - 1));
       if ((col >= 0) && (col < width))
       {
-        firstRow2 = yPhysical + (1 << (thickness-2));
-        lastRow2 = firstRow2 + (1 << (thickness-1));
-        firstRow2 = ((firstRow2 < 0)? 0 : firstRow2);
+        firstRow2 = yPhysical + (1 << (thickness - 2));
+        lastRow2 = firstRow2 + (1 << (thickness - 1));
+        firstRow2 = ((firstRow2 < 0) ? 0 : firstRow2);
         if (lastRow2 > height)
         {
           lastRow2 = height;
@@ -183,6 +183,9 @@ static void setPoint(int x, int y)
 #endif    
         }
       }
+    }
+    else
+    {                     // Nothing to do.
     }
     if (y == 0)
     {                     // Draw X axis if possible.
@@ -269,14 +272,13 @@ char *appendInt(char *text, int value)
 
 char *getInformation(int x, int y)
 {
-  int yLogical;
   char *ptrText = infoText;
   
   infoText[0] = 0;   // Empty string.
   if (x >= 0)
   {
     int xLogical = xCenter + ((xFraction + x - (width / 2)) >> thickness);
-    yLogical = yCenter + 1 + ((yFraction - y + (height / 2)) >> thickness);
+    int yLogical = yCenter + 1 + ((yFraction - y + (height / 2)) >> thickness);
     ptrText = appendInt(infoText, xLogical);
     if (yLogical >= 0)
     {
@@ -377,7 +379,7 @@ int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
 size_t strlen(const char *s)
 {
   const char *a = s;
-  while (*a)
+  while (*a != '\0')
   {
     a++;
   }
@@ -390,7 +392,7 @@ unsigned int *getPixels(void)
 #else
 static void drawGraphic(void)
 {
-  if (SDL_MUSTLOCK(doubleBuffer))
+  if (SDL_MUSTLOCK(doubleBuffer) != 0)
   {
     SDL_LockSurface(doubleBuffer);
   }
@@ -424,12 +426,6 @@ void iteration(void)
   SDL_Event event;
   SDL_Rect rectSrc;
   SDL_Rect rectDest;
-  int xMax;
-  int yMin;
-  int yMax;
-  int yBound;
-  int xMove;
-  int yMove;
         
   while (SDL_PollEvent(&event))
   {                           // New event arrived.
@@ -439,7 +435,7 @@ void iteration(void)
     }
     if (event.type == SDL_MOUSEMOTION)
     {
-      if (event.motion.state & SDL_BUTTON_LMASK)
+      if ((event.motion.state & SDL_BUTTON_LMASK) != 0)
       {                        // Drag operation.
         xFraction -= event.motion.xrel;
         xCenter += xFraction >> thickness;
@@ -489,9 +485,12 @@ void iteration(void)
         (oldXFraction != xFraction) || (oldYFraction != yFraction))
     {
       int xMin;
-          // Move pixels of double buffer according to drag direction.
-      xMove = (xCenter << thickness) + xFraction - (oldXCenter << thickness) - oldXFraction;
-      yMove = (yCenter << thickness) + yFraction - (oldYCenter << thickness) - oldYFraction;
+      int xMax;
+      int yMin;
+      int yMax;
+      // Move pixels of double buffer according to drag direction.
+      int xMove = (xCenter << thickness) + xFraction - (oldXCenter << thickness) - oldXFraction;
+      int yMove = (yCenter << thickness) + yFraction - (oldYCenter << thickness) - oldYFraction;
       if (xMove > 0)
       {           // Move pixels to left.
         rectDest.x = 0;
@@ -527,11 +526,11 @@ void iteration(void)
       }
       xMin = -width / 2;
       xMax = width / 2;
-      yMin = -height / 2,
+      yMin = -height / 2;
       yMax = height / 2;
       if (yMove > 0)
       {              // Move pixels up.
-        yBound = yMax - yMove;
+        int yBound = yMax - yMove;
                      // Draw bottom rectangle.
         drawPartialGraphic(xMin, xMax, yBound, yMax);
         if (xMove > 0)
