@@ -425,32 +425,32 @@ static bool isPrime(int *value)
        // Find index of least significant bit set disregarding bit 0.
   mask = TestNbr0 & (MAX_INT_NBR-1);
   indexLSB = 0;
-  if (mask == 0)
+  if (mask == 0U)
   {    // Least significant bit is inside high limb.
     mask = TestNbr1;
     indexLSB = BITS_PER_GROUP;
   }
-  if ((mask & 0xFFFF) == 0)
+  if ((mask & 0xFFFFU) == 0U)
   {    // Least significant bit is somewhere between bits 31-16.
     mask >>= 16;
     indexLSB += 16;
   }
-  if ((mask & 0xFF) == 0)
+  if ((mask & 0xFFU) == 0U)
   {    // Least significant bit is somewhere between bits 15-8.
     mask >>= 8;
     indexLSB += 8;
   }
-  if ((mask & 0x0F) == 0)
+  if ((mask & 0x0FU) == 0U)
   {    // Least significant bit is somewhere between bits 7-4.
     mask >>= 4;
     indexLSB += 4;
   }
-  if ((mask & 0x03) == 0)
+  if ((mask & 0x03U) == 0U)
   {    // Least significant bit is between bits 3-2.
     mask >>= 2;
     indexLSB += 2;
   }
-  if ((mask & 0x01) == 0)
+  if ((mask & 0x01U) == 0U)
   {    // Least significant bit is bit 1.
     indexLSB++;
   }
@@ -464,27 +464,27 @@ static bool isPrime(int *value)
     indexMSB = 0;
     idxNbrMSB = 0;
   }
-  if (mask & 0xFFFF0000)
+  if ((mask & 0xFFFF0000U) != 0U)
   {    // Most significant bit is somewhere between bits 31-16.
     mask >>= 16;
     indexMSB += 16;
   }
-  if (mask & 0xFF00)
+  if ((mask & 0xFF00U) != 0U)
   {    // Most significant bit is somewhere between bits 15-8.
     mask >>= 8;
     indexMSB += 8;
   }
-  if (mask & 0xF0)
+  if ((mask & 0xF0U) != 0U)
   {    // Most significant bit is somewhere between bits 7-4.
     mask >>= 4;
     indexMSB += 4;
   }
-  if (mask & 0x0C)
+  if ((mask & 0x0CU) != 0U)
   {    // Most significant bit is between bits 3-2.
     mask >>= 2;
     indexMSB += 2;
   }
-  if (mask & 0x02)
+  if ((mask & 0x02U) != 0U)
   {    // Most significant bit is bit 1.
     indexMSB++;
   }
@@ -515,7 +515,7 @@ static bool isPrime(int *value)
       }
       MontgomeryMult(power, power, power);
 
-      if (TestNbr[idxNbr] & mask)
+      if (((unsigned int)TestNbr[idxNbr] & mask) != 0U)
       {
         MontgomeryMult(power, baseInMontRepres, power);
       }

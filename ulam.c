@@ -389,7 +389,7 @@ void GetMontgomeryParms(void)
 // Perform Miller-Rabin test of number stored in variable TestNbr.
 // The bases to be used are 2, 3, 5, 7, 11, 13, 17, 19 and 23 which
 // ensures that any composite less than 3*10^18 is discarded.
-int isPrime(const int *value)
+bool isPrime(const int *value)
 {
   static const char bases[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 0};
   // List of lowest composite numbers that passes Miller-Rabin for above bases (OEIS A014233).
@@ -438,22 +438,24 @@ int isPrime(const int *value)
   int power[NBR_LIMBS];
   int temp[NBR_LIMBS];
     // Convert parameter to big number (2 limbs of 31 bits each).
-  int TestNbr0 = TestNbr[0] = value[0];
-  int TestNbr1 = TestNbr[1] = value[1];
+  int TestNbr0 = value[0]; 
+  int TestNbr1 = value[1];
+  TestNbr[0] = value[0];
+  TestNbr[1] = value[1];
   if (TestNbr1 == 0)
   {
     if (TestNbr0 == 1)
     {
-      return 0;            // 1 is not prime.
+      return false;            // 1 is not prime.
     }
-    else if (TestNbr0 == 2)
+    if (TestNbr0 == 2)
     {
-      return 1;            // 2 is prime.
+      return true;             // 2 is prime.
     }
   }
   if ((TestNbr0 & 1) == 0)
   {
-    return 0;              // Even numbers different from 2 are not prime.
+    return false;              // Even numbers different from 2 are not prime.
   }
   for (i=1; i<sizeof(primes); i++)
   {
@@ -462,18 +464,18 @@ int isPrime(const int *value)
     {
       if (TestNbr0 == base)
       {
-        return 1;          // Number is prime.
+        return true;           // Number is prime.
       }
       if ((TestNbr0 % base) == 0)
       {
-        return 0;          // Number is multiple of base, so it is composite.
+        return false;          // Number is multiple of base, so it is composite.
       }
     }
     // Check whether TestNbr is multiple of base. In this case the number would be composite.
     // No overflow possible in next expression.
     else if ((((TestNbr1 % base) * (LIMB_RANGE % base) + (TestNbr0 % base)) % base) == 0)
     {
-      return 0;            // Number is multiple of base, so it is composite.
+      return false;            // Number is multiple of base, so it is composite.
     }
   }
   GetMontgomeryParms();
@@ -483,32 +485,32 @@ int isPrime(const int *value)
        // Find index of least significant bit set disregarding bit 0.
   mask = TestNbr0 & (MAX_INT_NBR-1);
   indexLSB = 0;
-  if (mask == 0)
+  if (mask == 0U)
   {    // Least significant bit is inside high limb.
     mask = TestNbr1;
     indexLSB = BITS_PER_GROUP;
   }
-  if ((mask & 0xFFFF) == 0)
+  if ((mask & 0xFFFFU) == 0U)
   {    // Least significant bit is somewhere between bits 31-16.
     mask >>= 16;
     indexLSB += 16;
   }
-  if ((mask & 0xFF) == 0)
+  if ((mask & 0xFFU) == 0U)
   {    // Least significant bit is somewhere between bits 15-8.
     mask >>= 8;
     indexLSB += 8;
   }
-  if ((mask & 0x0F) == 0)
+  if ((mask & 0x0FU) == 0U)
   {    // Least significant bit is somewhere between bits 7-4.
     mask >>= 4;
     indexLSB += 4;
   }
-  if ((mask & 0x03) == 0)
+  if ((mask & 0x03U) == 0U)
   {    // Least significant bit is between bits 3-2.
     mask >>= 2;
     indexLSB += 2;
   }
-  if ((mask & 0x01) == 0)
+  if ((mask & 0x01U) == 0U)
   {    // Least significant bit is bit 1.
     indexLSB++;
   }
@@ -522,36 +524,38 @@ int isPrime(const int *value)
     indexMSB = 0;
     idxNbrMSB = 0;
   }
-  if (mask & 0xFFFF0000)
+  if ((mask & 0xFFFF0000U) != 0U)
   {    // Most significant bit is somewhere between bits 31-16.
     mask >>= 16;
     indexMSB += 16;
   }
-  if (mask & 0xFF00)
+  if ((mask & 0xFF00U) != 0U)
   {    // Most significant bit is somewhere between bits 15-8.
     mask >>= 8;
     indexMSB += 8;
   }
-  if (mask & 0xF0)
+  if ((mask & 0xF0U) != 0U)
   {    // Most significant bit is somewhere between bits 7-4.
     mask >>= 4;
     indexMSB += 4;
   }
-  if (mask & 0x0C)
+  if ((mask & 0x0CU) != 0U)
   {    // Most significant bit is between bits 3-2.
     mask >>= 2;
     indexMSB += 2;
   }
-  if (mask & 0x02)
+  if ((mask & 0x02U) != 0U)
   {    // Most significant bit is bit 1.
     indexMSB++;
   }
-  maskMSB = (1<<(indexMSB % BITS_PER_GROUP));
+  maskMSB = (1U << (indexMSB % BITS_PER_GROUP));
   
-  for (i=0; (limits[i+i+1] < TestNbr1) || ((limits[i+i+1] == TestNbr1) && (limits[i+i] < TestNbr0)); i++)
+  i = 0;
+  while ((limits[i+i+1] < TestNbr1) || ((limits[i+i+1] == TestNbr1) && (limits[i+i] < TestNbr0)))
   {
     int idxNbr;
     base = bases[i];
+    i++;
     do                     // Compute next base in Montgomery representation.
     {
       AddBigNbrModN(baseInMontRepres, MontgomeryMultR1, baseInMontRepres);
@@ -599,21 +603,21 @@ int isPrime(const int *value)
       MontgomeryMult(power, power, power);
       if ((power[0] == MontgomeryMultR1[0]) && (power[1] == MontgomeryMultR1[1]))
       {
-        return 0;  // power equals 1, so number is composite.
+        return false;  // power equals 1, so number is composite.
       }
       AddBigNbrModN(power, MontgomeryMultR1, temp);
       if ((temp[0] == 0) && (temp[1] == 0))
-      {            // power equals -1.
+      {               // power equals -1.
         break;
       }
     }
     if (index >= 0)
     {
-      continue;    // power equals -1, so another base must be tried.
+      continue;       // power equals -1, so another base must be tried.
     }
-    return 0;      // base^(n-1) != 1 (mod n) is not 1, so number is composite.
+    return false;     // base^(n-1) != 1 (mod n) is not 1, so number is composite.
   }
-  return 1;        // All Miller-Rabin tests were passed, so number is prime.
+  return true;        // All Miller-Rabin tests were passed, so number is prime.
 }
 
 void multiply(int factor1, int factor2, int *prod)
