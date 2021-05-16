@@ -42,16 +42,14 @@
   unsigned int pixels[2048 * MAX_WIDTH];
 #endif
 
-#define NBR_LIMBS  2
+#define NBR_LIMBS         2
 #define BITS_PER_GROUP    31
 #define LIMB_RANGE        0x80000000U
-#define LIMB_RANGE_L      0x80000000ULL
 #define MAX_INT_NBR       0x7FFFFFFF
 #define HALF_INT_RANGE    0x40000000
 #define FOURTH_INT_RANGE  0x20000000
 #define MAX_VALUE_LIMB    0x7FFFFFFFU
 
-#define LIMIT(nbr) (int)(nbr % LIMB_RANGE_L), (int)(nbr / LIMB_RANGE_L)
 #define MAX_LINES  1000
 #define MAX_COLUMNS 2000
 char infoText[500];
@@ -395,18 +393,37 @@ int isPrime(const int *value)
 {
   static const char bases[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 0};
   // List of lowest composite numbers that passes Miller-Rabin for above bases (OEIS A014233).
+  // The first number is the limit modulo 2^31, the second number is the limit divided 2^31.
   static const int limits[] =
   {
-    LIMIT(0ULL),
-    LIMIT(2047ULL),                 // Base 2
-    LIMIT(1373653ULL),              // Bases 2 and 3
-    LIMIT(25326001ULL),             // Bases 2, 3 and 5
-    LIMIT(3215031751ULL),           // Bases 2, 3, 5 and 7
-    LIMIT(2152302898747ULL),        // Bases 2, 3, 5, 7 and 11
-    LIMIT(3474749660383ULL),        // Bases 2, 3, 5, 7, 11 and 13
-    LIMIT(341550071728321ULL),      // Bases 2, 3, 5, 7, 11, 13 and 17
-    LIMIT(341550071728321ULL),      // Bases 2, 3, 5, 7, 11, 13, 17 and 19
-    LIMIT((1LL << (2*BITS_PER_GROUP)) - 1)
+    0, 0,
+
+    // Base 2: limit = 2047
+    2047, 0,
+
+    // Bases 2 and 3: limit = 1373653
+    1373653, 0,
+
+    // Bases 2, 3 and 5: limit = 25326001
+    25326001, 0,
+
+    // Bases 2, 3, 5 and 7: limit = 3215031751
+    1067548103, 1,
+
+    // Bases 2, 3, 5, 7 and 11: limit = 2152302898747
+    524283451, 1002,
+
+    // Bases 2, 3, 5, 7, 11 and 13: limit = 3474749660383
+    121117919, 1618,
+
+    // Bases 2, 3, 5, 7, 11, 13 and 17: limit = 341550071728321
+    1387448513, 159046,
+
+    // Bases 2, 3, 5, 7, 11, 13, 17 and 19: limit = 341550071728321
+    1387448513, 159046,
+
+    // Greater than any argument of isPrime()
+    0, 2000000000,
   };
   int i;
   int index;
@@ -453,7 +470,8 @@ int isPrime(const int *value)
       }
     }
     // Check whether TestNbr is multiple of base. In this case the number would be composite.
-    else if (((TestNbr1 % base) * (LIMB_RANGE % base) + TestNbr0 % base) % base == 0)  // No overflow possible.
+    // No overflow possible in next expression.
+    else if ((((TestNbr1 % base) * (LIMB_RANGE % base) + (TestNbr0 % base)) % base) == 0)
     {
       return 0;            // Number is multiple of base, so it is composite.
     }
