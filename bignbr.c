@@ -196,7 +196,7 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
         (unsigned int)ptrAddend2->x;
       ptrAddend1++;
       ptrAddend2++;
-      ptrSum->x = (int)(carry & (unsigned int)MAX_INT_NBR);
+      ptrSum->x = (int)(carry & MAX_INT_NBR_U);
       ptrSum++;
     }
     nbrLimbs = pAddend1->nbrLimbs;
@@ -204,7 +204,7 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
     {
       carry = (carry >> BITS_PER_GROUP) + (unsigned int)ptrAddend1->x;
       ptrAddend1++;
-      ptrSum->x = (int)(carry & MAX_INT_NBR);
+      ptrSum->x = (int)(carry & MAX_INT_NBR_U);
       ptrSum++;
     }
     if (carry >= LIMB_RANGE)
@@ -482,11 +482,11 @@ enum eExprErr BigIntPowerIntExp(const BigInteger *pBase, int exponent, BigIntege
   pPower->sign = SIGN_POSITIVE;
   pPower->nbrLimbs = 1;
   pPower->limbs[0].x = 1;
-  for (unsigned int mask = 1 << 30; mask != 0; mask >>= 1)
+  for (unsigned int mask = HALF_INT_RANGE_U; mask != 0U; mask >>= 1)
   {
     if (((unsigned int)exponent & mask) != 0U)
     {
-      for (unsigned int mask2 = mask; mask2 != 0; mask2 >>= 1)
+      for (unsigned int mask2 = mask; mask2 != 0U; mask2 >>= 1)
       {
         rc = BigIntMultiply(pPower, pPower, pPower);
         if (rc != EXPR_OK)
@@ -731,7 +731,6 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
 {
   int nbrLimbs = pBigInt->nbrLimbs;
   // Point to most significant limb.
-  limb *pLimbs;
   int remainder = 0;
   double dDivisor = (double)divisor;
   double dInvDivisor = 1.0 / dDivisor;
@@ -774,11 +773,12 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   }
   else
   {
-    pLimbs = pBigInt->limbs + nbrLimbs - 1;
+    limb* pLimbs = pBigInt->limbs + nbrLimbs - 1;
     // Divide number by divisor.
     for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
     {
-      unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + pLimbs->x;
+      unsigned int dividend = ((unsigned int)remainder << BITS_PER_INT_GROUP) + 
+        (unsigned int)pLimbs->x;
       double dDividend = ((double)remainder * dLimb) + (double)pLimbs->x;
       double dQuotient = (dDividend * dInvDivisor) + 0.5;
       unsigned int quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
@@ -1264,6 +1264,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
   {
     int k;
     int prime;
+    int nbrBits;
     if (((Exponent % 2) == 0) && !expon2)
     {
       continue; // Not a square
@@ -1289,16 +1290,17 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
       continue;
     }
     // Initialize approximation to n-th root (n = Exponent).
-    log2root = log2N / Exponent;
-    intLog2root = (int)floor(log2root/ BITS_PER_GROUP);
+    log2root = log2N / (double)Exponent;
+    intLog2root = (int)floor(log2root/ (double)BITS_PER_GROUP);
     nbrLimbs = intLog2root + 1;
     ptrLimb = &pBase->limbs[nbrLimbs - 1];
-    dN = exp((log2root - (intLog2root*BITS_PER_GROUP)) * LOG_2);
+    nbrBits = intLog2root * BITS_PER_GROUP;
+    dN = exp((log2root - (double)nbrBits) * LOG_2);
     if (nbrLimbs == 1)
     {
       double dQuot;
       base = (int)dN - 1;
-      dQuot = dN / base;
+      dQuot = dN / (double)base;
       if ((dQuot > 1.0000000001) || (dQuot < 0.9999999999))
       {
         base++;
@@ -1353,10 +1355,11 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
     }
     else
     {
-      dN += 1.0 / (double)LIMB_RANGE;
+      double dLimbRange = (double)LIMB_RANGE;
+      dN += 1.0 / dLimbRange;
       ptrLimb->x = (int)trunc(dN);
       dN -= trunc(dN);
-      (ptrLimb - 1)->x = (int)trunc(dN*LIMB_RANGE);
+      (ptrLimb - 1)->x = (int)trunc(dN * dLimbRange);
     }
     pBase->nbrLimbs = nbrLimbs;
     // Perform Newton iteration for n-th root.
@@ -1486,7 +1489,7 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
   }
   for (unsigned int mask = 1U; mask <= MAX_VALUE_LIMB; mask *= 2)
   {
-    if (((unsigned int)number[index].x & mask) != 0)
+    if (((unsigned int)number[index].x & mask) != 0U)
     {
       break;
     }
@@ -1958,13 +1961,14 @@ void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len)
 
 bool BigNbrIsZero(const limb *value)
 {
+  const limb* ptrValue = value;
   for (int ctr = 0; ctr < NumberLength; ctr++)
   {
-    if (value->x != 0)
+    if (ptrValue->x != 0)
     {
       return false;  // Number is not zero.
     }
-    value++;
+    ptrValue++;
   }
   return true;       // Number is zero
 }

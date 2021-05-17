@@ -62,7 +62,7 @@ static bool Computing3Squares;
   static char tmpOutput[MAX_LEN*12];
 #endif
 #ifdef FSQUARES_APP
-  static char* square = "<span class=\"bigger\">²</span>";
+  static const char* square = "<span class=\"bigger\">²</span>";
 #endif
 int app;
 static BigInteger biMult1;
@@ -84,7 +84,7 @@ static void ShowStatus(void)
 {
 #ifdef __EMSCRIPTEN__
   char status[200];
-  char *ptrStatus = status;
+  char *ptrStatus;
   int elapsedTime = (int)(tenths() - originalTenthSecond);
   if ((elapsedTime / 10) == (oldTimeElapsed / 10))
   {
