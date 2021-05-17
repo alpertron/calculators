@@ -581,7 +581,7 @@ static void BigIntMutiplyPower2(BigInteger *pArg, int powerOf2)
   limb *ptrLimbs = pArg->limbs;
   for (; power2 > 0; power2--)
   {
-    unsigned int carry = 0;
+    unsigned int carry = 0U;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
       carry += (unsigned int)(ptrLimbs + ctr)->x << 1;
@@ -731,7 +731,6 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
 {
   int nbrLimbs = pBigInt->nbrLimbs;
   // Point to most significant limb.
-  int remainder = 0;
   double dDivisor = (double)divisor;
   double dInvDivisor = 1.0 / dDivisor;
   double dLimb = (double)LIMB_RANGE;
@@ -773,6 +772,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   }
   else
   {
+    int remainder = 0;
     limb* pLimbs = pBigInt->limbs + nbrLimbs - 1;
     // Divide number by divisor.
     for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
@@ -1144,6 +1144,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
   int base = 0;
   double log2N;
   double log2root;
+  double dMaxExpon;
   int prime2310x1[] =
   { 2311, 4621, 9241, 11551, 18481, 25411, 32341, 34651, 43891, 50821 };
   // Primes of the form 2310x+1.
@@ -1185,12 +1186,13 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
       (void)memcpy(pBase->limbs, pBigNbr->limbs, pBase->nbrLimbs * sizeof(limb));
       return 1;
     }
-    maxExpon = (int)((dLogBigNbr / log(101)) + 0.5);
+    dMaxExpon = (dLogBigNbr / log(101)) + 0.5;
   }
   else
   {
-    maxExpon = (int)((dLogBigNbr / LOG_2) + 0.5);
+    dMaxExpon = (dLogBigNbr / LOG_2) + 0.5;
   }
+  maxExpon = (int)dMaxExpon;
   for (h = 0; h < sizeof(prime2310x1) / sizeof(prime2310x1[0]); h++)
   {
     int testprime = prime2310x1[h];
@@ -1304,11 +1306,11 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
       if ((dQuot > 1.0000000001) || (dQuot < 0.9999999999))
       {
         base++;
-        dQuot = dN / base;
+        dQuot = dN / (double)base;
         if ((dQuot > 1.0000000001) || (dQuot < 0.9999999999))
         {
           base++;
-          dQuot = dN / base;
+          dQuot = dN / (double)base;
           if ((dQuot > 1.0000000001) || (dQuot < 0.9999999999))
           {
             continue;   // Exponent is incorrect. Check next one.
@@ -1616,29 +1618,30 @@ static void Halve(limb *pValue)
 void initializeSmallPrimes(int* pSmallPrimes)
 {
   int P;
-  if (*pSmallPrimes != 0)
+  int* ptrSmallPrimes = pSmallPrimes;
+  if (*ptrSmallPrimes != 0)
   {
     return;
   }
   P = 3;
-  *pSmallPrimes = 2;
-  pSmallPrimes++;
+  *ptrSmallPrimes = 2;
+  ptrSmallPrimes++;
   for (int ctr = 1; ctr <= SMALL_PRIMES_ARRLEN; ctr++)
   {     // Loop that fills the SmallPrime array.
     int Q;
-    *pSmallPrimes = P; /* Store prime */
-    pSmallPrimes++;
+    *ptrSmallPrimes = P; /* Store prime */
+    ptrSmallPrimes++;
     do
     {
       P += 2;
-      for (Q = 3; Q * Q <= P; Q += 2)
+      for (Q = 3; (Q * Q) <= P; Q += 2)
       { /* Check if P is prime */
-        if (P % Q == 0)
+        if ((P % Q) == 0)
         {
           break;  /* Composite */
         }
       }
-    } while (Q * Q <= P);
+    } while ((Q * Q) <= P);
   }
 }
 
@@ -1696,9 +1699,9 @@ bool BpswPrimalityTest(const BigInteger *pValue)
     {
       int primeProd = smallPrimes[primeIndex] * smallPrimes[primeIndex+1] * smallPrimes[primeIndex+2];
       int remainder = getRemainder(pValue, primeProd);
-      if ((remainder % smallPrimes[primeIndex] == 0) ||
-        (remainder % smallPrimes[primeIndex + 1] == 0) ||
-        (remainder % smallPrimes[primeIndex + 2] == 0))
+      if (((remainder % smallPrimes[primeIndex]) == 0) ||
+        ((remainder % smallPrimes[primeIndex + 1]) == 0) ||
+        ((remainder % smallPrimes[primeIndex + 2]) == 0))
       {
         return 1;   // Number is divisible by small number. Indicate composite.
       }
