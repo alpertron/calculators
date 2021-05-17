@@ -1160,7 +1160,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
     {     // Check whether pBigNbr is perfect power of these bases.
       double dProd;
       double dLogBase = log(base);
-      Exponent = (int)((dLogBigNbr / dLogBase) - 1);
+      Exponent = (int)(dLogBigNbr / dLogBase) - 1;
       dProd = dLogBigNbr - ((double)Exponent * dLogBase);
       if ((dProd > 0.00000000001) || (dProd < -0.00000000001))
       {
@@ -1658,9 +1658,9 @@ void initializeSmallPrimes(int* pSmallPrimes)
 //         2 = composite: does not pass 2-SPRP test.
 //         3 = composite: does not pass strong Lucas test.
 #if FACTORIZATION_APP
-bool BpswPrimalityTest(const BigInteger* pValue, const struct sFactors* pstFactors)
+int BpswPrimalityTest(const BigInteger* pValue, const struct sFactors* pstFactors)
 #else
-bool BpswPrimalityTest(const BigInteger *pValue)
+int BpswPrimalityTest(const BigInteger *pValue)
 #endif
 {
 #if defined(__EMSCRIPTEN__) && !defined(FACTORIZATION_APP)

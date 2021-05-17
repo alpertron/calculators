@@ -1302,9 +1302,9 @@ static int ComputeBack(void)
     {        // Loop that searches for previous probable prime.
       addbigint(pResult, -2);
 #ifdef FACTORIZATION_APP
-    } while (BpswPrimalityTest(pResult, NULL));  // Continue loop if not probable prime.
+    } while (BpswPrimalityTest(pResult, NULL) != 0);  // Continue loop if not probable prime.
 #else
-    } while (BpswPrimalityTest(pResult));        // Continue loop if not probable prime.
+    } while (BpswPrimalityTest(pResult) != 0);        // Continue loop if not probable prime.
 #endif
   }
   else

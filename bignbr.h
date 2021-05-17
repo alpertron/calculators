@@ -160,7 +160,7 @@ void BigIntOr(const BigInteger *firstArg, const BigInteger *secondArg, BigIntege
 void BigIntXor(const BigInteger *firstArg, const BigInteger *secondArg, BigInteger *result);
 void ConvertToTwosComplement(BigInteger *value);
 #ifndef FACTORIZATION_APP
-bool BpswPrimalityTest(const BigInteger *pValue);
+int BpswPrimalityTest(const BigInteger *pValue);
 #endif
 void IntArray2BigInteger(const int *ptrValues, /*@out@*/BigInteger *bigint);
 void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint);

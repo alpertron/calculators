@@ -98,6 +98,6 @@ enum eEcmResult ecmCurve(int* pEC, int* pNextEC);
 #ifdef FACTORIZATION_APP
 char* ShowFactoredPart(const BigInteger* pNbr, const struct sFactors* pstFactors);
 void ShowLowerText(void);
-bool BpswPrimalityTest(const BigInteger* pValue, const struct sFactors* pstFactors);
+int BpswPrimalityTest(const BigInteger* pValue, const struct sFactors* pstFactors);
 #endif
 #endif

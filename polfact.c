@@ -586,9 +586,9 @@ void polyFactText(char *modText, char *polyText, int groupLength)
   {
     expon = PowerCheck(&powerMod, &primeMod);
 #if FACTORIZATION_APP
-    if (BpswPrimalityTest(&primeMod, NULL))
+    if (BpswPrimalityTest(&primeMod, NULL) != 0)
 #else
-    if (BpswPrimalityTest(&primeMod))
+    if (BpswPrimalityTest(&primeMod) != 0)
 #endif
     {    // Number is composite
       rc = EXPR_MODULUS_MUST_BE_PRIME_EXP;
