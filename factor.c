@@ -784,6 +784,9 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
       { // Not a perfect square
         break;
       }
+      else
+      {              // Nothing to do.
+      }
     }
     if (i == 17)
     { // Test for perfect square

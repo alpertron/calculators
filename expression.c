@@ -925,6 +925,9 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
       leftNumberFlag = true;
       continue;
     }
+    else
+    {              // Nothing to do.
+    }
     if (charValue <= MAXIMUM_OPERATOR)
     {
       if (((charValue == OPER_PLUS) || (charValue == OPER_MINUS)) && (leftNumberFlag == false))

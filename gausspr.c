@@ -219,6 +219,9 @@ static void setPoint(int x, int y)
         }
       }
     }
+    else
+    {              // Nothing to do.
+    }
   }
 }     /* end method setPoint */
 

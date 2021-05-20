@@ -448,6 +448,9 @@ static void SortFactors(const BigInteger *modulus)
           *pstFactorInfo2 = stFactorInfoTemp;
         }
       }
+      else
+      {              // Nothing to do.
+      }
       pstFactorInfo2++;
     }
     pstFactorInfo++;

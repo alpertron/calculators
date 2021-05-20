@@ -811,6 +811,9 @@ void SolveEquation(void)
       {     // Solution2 is invalid. Overwrite it with Solution1.
         CopyBigInt(&Solution2[factorIndex], &Solution1[factorIndex]);
       }
+      else
+      {              // Nothing to do.
+      }
       BigIntSubt(&Solution2[factorIndex], &Solution1[factorIndex], &Aux[0]);
       if (Aux[0].sign == SIGN_NEGATIVE)
       {     // Solution2 is less than Solution1, so exchange them.

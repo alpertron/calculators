@@ -337,6 +337,9 @@ static void PrintQuad(const BigInteger *coeffT2, const BigInteger *coeffT, const
     showText(var1);
     showSquare();
   }
+  else
+  {              // Nothing to do.
+  }
   if (coeffT->sign == SIGN_NEGATIVE)
   {
     showText(" &minus; ");

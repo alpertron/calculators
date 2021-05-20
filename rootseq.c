@@ -1990,10 +1990,6 @@ static int showRadicals17(int numerator34)
   {
     angle += 68;
   }
-  if (angle == 17 || angle == 51)
-  {    // These angles correspond to 90 and 270 degrees. They cannot occur.
-    return 1;
-  }
   if ((angle % 2) == 0)
   {
     int sign;
@@ -2481,7 +2477,7 @@ static void StartRadicand(int polyDegree)
     int2dec(&ptrOutput, polyDegree);
     copyStr(&ptrOutput, "</span><span class=\"radicand2\">");
   }
-  else if (pretty == TEX)
+  if (pretty == TEX)
   {
     copyStr(&ptrOutput, "\\sqrt[");
     int2dec(&ptrOutput, polyDegree);
