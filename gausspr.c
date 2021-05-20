@@ -294,33 +294,36 @@ void moveGraphic(int deltaX, int deltaY)
   yFraction &= (1 << thickness) - 1; 
 }
 
-static int getValue(char *value)
+static int getValue(char **ppValue)
 {
+  char *ptrValue = *ppValue;
   int nbr = 0;
   int sign = 0;
-  if (*value == '-')
+  if (*ptrValue == '-')
   {
     sign = 1;
-    value++;
+    ptrValue++;
   }
-  while (*value != '\0')
+  while (*ptrValue != '\0')
   {
-    nbr = (nbr * 10) + (*value - '0');
-    value++;
+    nbr = (nbr * 10) + (*ptrValue - '0');
+    ptrValue++;
   }
+  *ppValue = ptrValue;
   return sign? -nbr: nbr;
 }
 
 int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
 {
+  char* ptrValue = value;
   width = newWidth;
   height = newHeight;
   if (inputBoxNbr == 1)
   {           
-    xCenter = getValue(value);  // Changing center X.
+    xCenter = getValue(&ptrValue);  // Changing center X.
     xFraction = 0;
-    value += strlen(value) + 1;
-    yCenter = getValue(value);  // Changing center Y.
+    ptrValue++;
+    yCenter = getValue(&ptrValue);  // Changing center Y.
     yFraction = 0;
   }
   else if (inputBoxNbr == 3)
@@ -371,7 +374,7 @@ static void drawGraphic(void)
                      width / 2,
                      -height / 2,
                      height / 2);
-  if (SDL_MUSTLOCK(doubleBuffer))
+  if (SDL_MUSTLOCK(doubleBuffer) != 0)
   {
     SDL_UnlockSurface(doubleBuffer);
   }
@@ -398,7 +401,7 @@ void iteration(void)
   SDL_Rect rectSrc;
   SDL_Rect rectDest;
         
-  while (SDL_PollEvent(&event))
+  while (SDL_PollEvent(&event) != 0)
   {                           // New event arrived.
     if (event.type == SDL_QUIT)
     {                         // Quit event arrived, so exit application.
@@ -491,7 +494,7 @@ void iteration(void)
         rectSrc.h = rectDest.h;
       }
       SDL_BlitSurface(doubleBuffer, &rectSrc, doubleBuffer, &rectDest);
-      if (SDL_MUSTLOCK(doubleBuffer))
+      if (SDL_MUSTLOCK(doubleBuffer) != 0)
       {
         SDL_LockSurface(doubleBuffer);
       }
@@ -544,7 +547,7 @@ void iteration(void)
           drawPartialGraphic(xMin, xMin - xMove, yMin, yMax);
         }
       }
-      if (SDL_MUSTLOCK(doubleBuffer))
+      if (SDL_MUSTLOCK(doubleBuffer) != 0)
       {
         SDL_UnlockSurface(doubleBuffer);
       }

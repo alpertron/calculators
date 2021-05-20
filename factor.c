@@ -1969,7 +1969,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
     }
     if (result > 1)
     {    // Number is 2-Fermat probable prime. Try to factor it.
-      if (factorCarmichael(&prime, pstFactors))
+      if (factorCarmichael(&prime, pstFactors) != 0)
       {                               // Factors found.
         factorNbr--;                  // Test whether factor found is prime.
         pstCurFactor--;

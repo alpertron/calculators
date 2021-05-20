@@ -441,8 +441,9 @@ char *appendInt64(char *text, const int *value)
   return ptrText;
 }
 
-void ShowLabel(char *text, int b, int *indep)
+void ShowLabel(char *text, int linear, int *indep)
 {
+  int b = linear;
   int temp[2];
   int carry;
   char *ptrText = &infoText[strlen(infoText)];
@@ -771,25 +772,25 @@ EXTERNALIZE void moveSpiral(int deltaX, int deltaY)
 // inputBoxNbr = 1 -> changing center
 // inputBoxNbr = 2 -> changing start value
 EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
-{ 
+{
+  char* ptrValue = value;
   int temp[2];
-  int nbr0;
-  int nbr1;
+  int nbr0 = 0;
+  int nbr1 = 0;
   int index;
   width = newWidth;
   height = newHeight;
-  nbr0 = nbr1 = 0;
   for (index=0; index<19; index++)
   {
     int charConverted;
     int prod;
     double dProd;
-    if (*value == 0)
+    if (*ptrValue == 0)
     {      // End of string, so end of conversion from string to number.
       break;
     }
-    charConverted = (*value - '0');
-    value++;
+    charConverted = (*ptrValue - '0');
+    ptrValue++;
     prod = (nbr0 * 10) + charConverted;
     dProd = (double)prod;
     nbr0 = ((nbr0 * 10) + charConverted) & MAX_INT_NBR;
@@ -881,7 +882,7 @@ void drawUlamSpiral(void)
                         width / 2,
                         -height / 2,
                         height / 2);
-  if (SDL_MUSTLOCK(doubleBuffer))
+  if (SDL_MUSTLOCK(doubleBuffer) != 0)
   {
     SDL_UnlockSurface(doubleBuffer);
   }
@@ -1003,7 +1004,7 @@ void iteration(void)
         rectSrc.h = rectDest.h;
       }
       SDL_BlitSurface(doubleBuffer, &rectSrc, doubleBuffer, &rectDest);
-      if (SDL_MUSTLOCK(doubleBuffer))
+      if (SDL_MUSTLOCK(doubleBuffer) != 0)
       {
         SDL_LockSurface(doubleBuffer);
       }
@@ -1056,7 +1057,7 @@ void iteration(void)
           drawPartialUlamSpiral(xMin, xMin - xMove, yMin, yMax);
         }
       }
-      if (SDL_MUSTLOCK(doubleBuffer))
+      if (SDL_MUSTLOCK(doubleBuffer) != 0)
       {
         SDL_UnlockSurface(doubleBuffer);
       }

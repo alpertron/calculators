@@ -506,7 +506,7 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
 {
   int currentDegree;
   int nbrLimbs = NumberLength + 1;
-  int divisorIsOne;
+  bool divisorIsOne;
   int* ptrDivisor;
   int* ptrDividend;
   if (divisorDegree > dividendDegree)
@@ -548,7 +548,11 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
   }
   else
   {
-    int* ptrQuot = ptrQuotient + (dividendDegree - divisorDegree) * nbrLimbs;
+    int* ptrQuot;
+    if (ptrQuotient != NULL)
+    {
+      ptrQuot = ptrQuotient + (dividendDegree - divisorDegree) * nbrLimbs;
+    }
     for (currentDegree = dividendDegree; currentDegree >= divisorDegree; currentDegree--)
     {
       int index;
