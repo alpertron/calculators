@@ -343,8 +343,9 @@ void showPlusSignOn(bool condPlus, int type)
   }
 }
 // Compute x = -c_0 / c_1
-static void LinearEquation(const int *ptrPolynomial, int multiplicity)
+static void LinearEquation(const int *polynomial, int multiplicity)
 {
+  const int* ptrPolynomial = polynomial;
   showX(multiplicity);
   UncompressBigIntegerB(ptrPolynomial, &Independent);
   ptrPolynomial += 1 + numLimbs(ptrPolynomial);
@@ -1668,8 +1669,10 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
   }
 }
 
-static int gcd(int a, int b)
+static int gcd(int first, int second)
 {
+  int a = first;
+  int b = second;
   while (b != 0)
   {
     int c = a % b;
@@ -1683,17 +1686,19 @@ static int gcd(int a, int b)
 // first * Mult1st + second * Mult2nd = 1.
 static void ExtendedGCD(int first, int second, int* pMult1st, int* pMult2nd)
 {
+  int a = first;
+  int b = second;
   int mult1stOld = 1;
   int mult1st = 0;
   int mult2ndOld = 0;
   int mult2nd = 1;
 
-  while (second != 0)
+  while (b != 0)
   {
-    int quot = first / second;
-    int temp = second;
-    second = first - (quot * second);
-    first = temp;
+    int quot = a / b;
+    int temp = b;
+    b = a - (quot * b);
+    a = temp;
     temp = mult1st;
     mult1st = mult1stOld - (quot * mult1st);
     mult1stOld = temp;
@@ -1789,9 +1794,11 @@ static void ParseExpression(const char* expr)
 // Show cos(num*pi/den) as radicals.
 // The output is the sign and the value of the denominator, or zero
 // if the result is zero.
-static int showRadicals(int numerator, int denominator, int multiple,
-  int power2, const char *times)
+static int showRadicals(int numerator, int denominator, int multipl,
+  int powerOf2, const char *times)
 {
+  int multiple = multipl;
+  int power2 = powerOf2;
   int num = numerator;
   int den = denominator;
   int arraySigns[10];
@@ -2132,30 +2139,32 @@ static void AdjustComponent(int denominator, char* ptrStart, int toShow,
 // num*B*pi/(den/17). Use the formula cos(a+b) = cos a * cos b - sin a * sin b.
 static void showComponent(int num, int den, int multiple, int power2, int toShow, const char *realRoot)
 {
+  int numer = num;
+  int denom = den;
   int denominCos;
-  int den2 = 2 * den;
+  int den2 = 2 * denom;
   char * ptrStartRadicals = ptrOutput;
 
   *ptrOutput = 0;
-  num = num % den2;  // Convert to range 0 to 360 degrees.
-  if (num < 0)
+  numer = numer % den2;  // Convert to range 0 to 360 degrees.
+  if (numer < 0)
   {
-    num += den2;
+    numer += den2;
   }
-  if ((den % 17) == 0)
+  if ((denom % 17) == 0)
   {           // Denominator is multiple of 17.
     int numerator34;
     int numeratorDen;
     int denominCos17;
-    den /= 17;
+    denom /= 17;
     multiple /= 17;
-    ExtendedGCD(den, 17, &numerator34, &numeratorDen);
-    numerator34 *= 2*num;
-    numeratorDen *= num;
+    ExtendedGCD(denom, 17, &numerator34, &numeratorDen);
+    numerator34 *= 2*numer;
+    numeratorDen *= numer;
     // The original angle is multDen*pi/den + mult17*pi/17 = A + B.
     // Show cos(A) * cos(B) - sin(A) * sin(B).
         // Show cos(A).
-    denominCos = showRadicals(numeratorDen, den, multiple, power2, ptrTimes);
+    denominCos = showRadicals(numeratorDen, denom, multiple, power2, ptrTimes);
     if (denominCos != 0)
     {   // Show cos(B).
       denominCos17 = showRadicals17(numerator34);
@@ -2164,13 +2173,13 @@ static void showComponent(int num, int den, int multiple, int power2, int toShow
         // Show sin(A).
     ptrStartRadicals = ptrOutput;
     *ptrOutput = 0;
-    if ((den % 2) == 1)
+    if ((denom % 2) == 1)
     {
-      denominCos = showRadicals(den - (numeratorDen * 2), den * 2, multiple, 1, ptrTimes);
+      denominCos = showRadicals(denom - (numeratorDen * 2), denom * 2, multiple, 1, ptrTimes);
     }
     else
     {
-      denominCos = showRadicals((den / 2) - numeratorDen, den, multiple, power2, ptrTimes);
+      denominCos = showRadicals((denom / 2) - numeratorDen, denom, multiple, power2, ptrTimes);
     }
     if (denominCos != 0)
     {    // Show sin(B).
@@ -2179,7 +2188,7 @@ static void showComponent(int num, int den, int multiple, int power2, int toShow
     }
     return;
   }
-  denominCos = showRadicals(num, den, multiple, power2, "");
+  denominCos = showRadicals(numer, denom, multiple, power2, "");
   AdjustComponent(denominCos, ptrStartRadicals, toShow, 1, realRoot);
 }
 
@@ -2829,8 +2838,9 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
 }
 
 // Save factor degrees sorting by ascending order.
-static void SaveFactorDegrees(int prime, int *piFactors, int nbrFactors)
+static void SaveFactorDegrees(int prime, int *factors, int nbrFactors)
 {
+  int* piFactors = factors;
   int* ptrFactors;
   int* ptrOldFactor;
   int tmpDegree;
@@ -2863,8 +2873,9 @@ static void SaveFactorDegrees(int prime, int *piFactors, int nbrFactors)
 
 static void showDegrees(const int *factors)
 {
-  factors++;
-  int nbrFactors = *factors;
+  const int* piFactors = factors;
+  piFactors++;
+  int nbrFactors = *piFactors;
   for (int currentFactor = 0; currentFactor < nbrFactors; currentFactor++)
   {
     if (currentFactor != 0)
@@ -2881,8 +2892,8 @@ static void showDegrees(const int *factors)
         ptrOutput++;
       }
     }
-    factors++;
-    int2dec(&ptrOutput, *factors);
+    piFactors++;
+    int2dec(&ptrOutput, *piFactors);
   }
 }
 
@@ -3012,8 +3023,9 @@ static bool isPrime(int value)
 // the largest degree is odd and greater than n/2, then the polynomial is not
 // solvable with radicals.
 static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial, 
-  int polyDegree, int multiplicity)
+  int polyDeg, int multiplicity)
 {
+  int polyDegree = polyDeg;
   const char* ptrStrPrimeHalfSp = "primo mayor que la mitad del grado del polinomio";
   const char* ptrStrPrimeHalfEn = "prime length greater than half the degree of polynomial";
   int factorDegreesCycle2Or3[MAX_DEGREE+2];

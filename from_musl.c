@@ -4,8 +4,9 @@
 #include <string.h>
 union fi { double f; uint64_t i; };
 
-int memcmp(const void *vl, const void *vr, size_t n)
+int memcmp(const void *vl, const void *vr, size_t count)
 {
+  size_t n = count;
   const unsigned char *l=(const unsigned char *)vl;
   const unsigned char *r=(const unsigned char *)vr;
   for (; (n != 0) && (*l == *r); n--)
@@ -16,8 +17,9 @@ int memcmp(const void *vl, const void *vr, size_t n)
   return (n != 0)? (*l-*r) : 0;
 }
 
-void *memcpy(void *dest, const void *src, size_t n)
+void *memcpy(void *dest, const void *src, size_t count)
 {
+  size_t n = count;
   unsigned char *d = (unsigned char *)dest;
   const unsigned char *s = (const unsigned char *)src;
 
