@@ -3179,6 +3179,9 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
             cyclePrGtNOver2Found = currDegree;
             cycleOddGtNOver2Found = currDegree;
           }
+          else
+          {              // Nothing to do.
+          }
         }
         else if (((currDegree % 2) == 1) && (currDegree < degree))
         {      // Current degree > n/2, it is odd and less than the polynomial degree.

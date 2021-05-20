@@ -348,6 +348,9 @@ static void PrintQuad(const BigInteger *coeffT2, const BigInteger *coeffT, const
   {
     showText(" + ");
   }
+  else
+  {              // Nothing to do.
+  }
   if ((coeffT->nbrLimbs == 1) && (coeffT->limbs[0].x == 1))
   {     // abs(coeffT) = 1
     showText(var1);

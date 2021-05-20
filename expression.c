@@ -994,7 +994,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           computeSubExprStackThreshold = stackIndex;
         }
       }
-      else if (charValue == OPER_OR)
+      if (charValue == OPER_OR)
       {
         getCurrentStackValue(&curStack);
         if ((curStack.sign == SIGN_NEGATIVE) && (curStack.nbrLimbs == 1) &&

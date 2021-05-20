@@ -927,7 +927,7 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
 
       break;
     }
-    else if (ecmResp == FACTOR_FOUND)
+    if (ecmResp == FACTOR_FOUND)
     {
       break;
     }

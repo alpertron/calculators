@@ -584,6 +584,9 @@ void polyFactText(char *modText, char *polyText, int groupLength)
     {                  // Positive number is less 2.
       rc = EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE;
     }
+    else
+    {              // Nothing to do.
+    }
   }
   if ((rc == EXPR_OK) && (!modulusIsZero))
   {
