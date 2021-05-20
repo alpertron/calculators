@@ -915,7 +915,8 @@ static void Karatsuba(int indexFactor1, int numLen)
         for (i = nbrLen; i > 0; i--)
         {
           carry += (unsigned int)ptrResult->x + (unsigned int)(ptrHigh++)->x;
-          (ptrResult++)->x = (int)(carry & MAX_VALUE_LIMB);
+          ptrResult->x = (int)(carry & MAX_VALUE_LIMB);
+          ptrResult++;
           carry >>= BITS_PER_GROUP;
         }
         for (i = halfLength; i > 0; i--)
@@ -931,6 +932,7 @@ static void Karatsuba(int indexFactor1, int numLen)
       idxFactor1 = pstKaratsubaStack->idxFactor1;
       stage = pstKaratsubaStack->stage;
       sign = pstKaratsubaStack->sign;
+      break;
     }     // End switch
   } while (stage >= 0);
 }

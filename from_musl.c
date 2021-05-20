@@ -31,9 +31,11 @@ void *memcpy(void *dest, const void *src, size_t count)
   {
     return dest;
   }
-  for (; (((uintptr_t)s % 4) != 0) && n; n--)
+  for (; (((uintptr_t)s % 4) != 0) && (n != 0); n--)
   {
-    *d++ = *s++;
+    *d = *s;
+    d++;
+    s++;
   }
 
   if (((uintptr_t)d % 4) == 0)
@@ -62,8 +64,10 @@ void *memcpy(void *dest, const void *src, size_t count)
     }
     if ((n & 2) != 0)
     {
-      *d++ = *s++;
-      *d++ = *s++;
+      *d = *s;
+      *(d + 1) = *(s + 1);
+      d += 2;
+      s += 2;
     }
     if ((n & 1) != 0)
     {
@@ -80,9 +84,11 @@ void *memcpy(void *dest, const void *src, size_t count)
     {
       case 1:
         w = *(const u32 *)s;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
+        *d = *s;
+        *(d + 1) = *(s + 1);
+        *(d + 2) = *(s + 2);
+        d += 3;
+        s += 3;
         n -= 3;
         for (; n>=17; n-=16)
         {
@@ -100,8 +106,10 @@ void *memcpy(void *dest, const void *src, size_t count)
         break;
       case 2:
         w = *(const u32 *)s;
-        *d++ = *s++;
-        *d++ = *s++;
+        *d = *s;
+        *(d + 1) = *(s + 1);
+        d += 2;
+        s += 2;
         n -= 2;
         for (; n>=18; n-=16)
         {
@@ -119,7 +127,9 @@ void *memcpy(void *dest, const void *src, size_t count)
         break;
       case 3:
         w = *(const u32 *)s;
-        *d++ = *s++;
+        *d = *s;
+        d++;
+        s++;
         n -= 1;
         for (; n>=19; n-=16)
         {
@@ -139,23 +149,53 @@ void *memcpy(void *dest, const void *src, size_t count)
   }
   if ((n & 16) != 0)
   {
-    *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
-    *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
-    *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
-    *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+    *d = *s;
+    *(d + 1) = *(s + 1);
+    *(d + 2) = *(s + 2);
+    *(d + 3) = *(s + 3);
+    *(d + 4) = *(s + 4);
+    *(d + 5) = *(s + 5);
+    *(d + 6) = *(s + 6);
+    *(d + 7) = *(s + 7);
+    *(d + 8) = *(s + 8);
+    *(d + 9) = *(s + 9);
+    *(d + 10) = *(s + 10);
+    *(d + 11) = *(s + 11);
+    *(d + 12) = *(s + 12);
+    *(d + 13) = *(s + 13);
+    *(d + 14) = *(s + 14);
+    *(d + 15) = *(s + 15);
+    d += 16;
+    s += 16;
   }
   if ((n & 8) != 0)
   {
-    *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
-    *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+    *d = *s;
+    *(d + 1) = *(s + 1);
+    *(d + 2) = *(s + 2);
+    *(d + 3) = *(s + 3);
+    *(d + 4) = *(s + 4);
+    *(d + 5) = *(s + 5);
+    *(d + 6) = *(s + 6);
+    *(d + 7) = *(s + 7);
+    d += 8;
+    s += 8;
   }
   if ((n & 4) != 0)
   {
-    *d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+    *d = *s;
+    *(d + 1) = *(s + 1);
+    *(d + 2) = *(s + 2);
+    *(d + 3) = *(s + 3);
+    d += 4;
+    s += 4;
   }
   if ((n & 2) != 0)
   {
-    *d++ = *s++; *d++ = *s++;
+    *d = *s;
+    *(d + 1) = *(s + 1);
+    d += 2;
+    s += 2;
   }
   if ((n & 1) != 0)
   {
@@ -185,11 +225,14 @@ void *memmove(void *dest, const void *src, size_t n)
     {
       while (((uintptr_t)d % WS) != 0)
       {
-        if (!n--)
+        if (n == 0)
         {
           return dest;
         }
-        *d++ = *s++;
+        n--;
+        *d = *s;
+        d++;
+        s++;
       }
       for (; n>=WS; n-=WS)
       {
@@ -198,9 +241,11 @@ void *memmove(void *dest, const void *src, size_t n)
         s+=WS;
       }
     }
-    for (; n; n--)
+    for (; n != 0; n--)
     {
-      *d++ = *s++;
+      *d = *s;
+      d++;
+      s++;
     }
   }
   else
@@ -209,7 +254,11 @@ void *memmove(void *dest, const void *src, size_t n)
     {
       while (((uintptr_t)(d+n) % WS) != 0)
       {
-        if (!n--) return dest;
+        if (n == 0)
+        {
+          return dest;
+        }
+        n--;
         d[n] = s[n];
       }
       while (n>=WS)
@@ -331,7 +380,9 @@ char *strcpy(char *dest, const char *src)
   char *dst = dest;
   while (*src != '\0')
   {
-    *dst++ = *src++;
+    *dst = *src;
+    dst++;
+    src++;
   }
   *dst = '\0';
   return dest;

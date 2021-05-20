@@ -564,6 +564,7 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
       pstKaratsubaStack--;
       idxFactor1 = pstKaratsubaStack->idxFactor1;
       stage = pstKaratsubaStack->stage;
+      break;
     }     // End switch
   } while (stage >= 0);
 }

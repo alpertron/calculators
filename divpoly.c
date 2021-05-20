@@ -548,7 +548,7 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
   }
   else
   {
-    int* ptrQuot;
+    int* ptrQuot = NULL;
     if (ptrQuotient != NULL)
     {
       ptrQuot = ptrQuotient + (dividendDegree - divisorDegree) * nbrLimbs;

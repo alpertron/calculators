@@ -256,10 +256,13 @@ int fsquares(void)
       {
       case 3:
         iMult3 = 1;
-        /* no break */
+        Mult2[0].x = 1;
+        Mult1[0].x = 1;
+        break;
       case 2:
         Mult2[0].x = 1;
-        /* no break */
+        Mult1[0].x = 1;
+        break;
       case 1:
         Mult1[0].x = 1;
         break;
@@ -310,9 +313,9 @@ int fsquares(void)
       // If the result is not the product of a power of 2, small primes
       // of the form 4k+1 and squares of primes of the form (4k+3)^2
       // and a (big) prime, try with other squares.
-compute_squares_loop:
       for (;;)
       {
+        bool multipleOf4kPlus3 = false;
         if (TerminateThread != 0)
         {
           return 2;
@@ -392,16 +395,20 @@ compute_squares_loop:
                 nbrLimbsP--;
               }
               primeexp[nbrDivisors]++;       // Increment exponent.
-            }
+            }    // End for
             if (((divisor & 0x03) == 3) && ((primeexp[nbrDivisors] & 1) != 0))
             {                   // Divisor of the form 4k+3 not square.
-              goto compute_squares_loop;  // Discard this value.
+              multipleOf4kPlus3 = true;
+              break;            // Discard this value.
             }
             nbrDivisors++;
           }
           divisor += 2;
+        }         // End for
+        if (multipleOf4kPlus3)
+        {                // Number cannot be expressed as sum of two squares.
+          continue;
         }
-
         if ((p[0].x == 1) && (nbrLimbsP == 1))
         {         // number is the product of only small primes 4k+1 and
                   // squares of primes 4k+3.

@@ -1863,6 +1863,7 @@ void textErrorPol(char **pptrOutput, enum eExprErr rc)
     break;
   default:
     textError(&ptrOutput, rc);
+    break;
   }
   *ptrOutput = '<';
   ptrOutput++;
