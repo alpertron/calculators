@@ -688,8 +688,10 @@ void batchSquaresCallback(char **pptrOutput)
   }
   if (toProcess.sign == SIGN_NEGATIVE)
   {
-    *ptrOutput++ = ':';
-    *ptrOutput++ = ' ';
+    *ptrOutput = ':';
+    ptrOutput++;
+    *ptrOutput = ' ';
+    ptrOutput++;
     textError(&ptrOutput, EXPR_NUMBER_TOO_LOW);
     copyStr(&ptrOutput, "</p>");
     *pptrOutput = ptrOutput;

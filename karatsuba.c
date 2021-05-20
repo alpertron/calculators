@@ -757,20 +757,22 @@ static void Karatsuba(int indexFactor1, int numLen)
         ptrResult = &arr[idxFactor1];
         for (i = nbrLen; i > 0; i--)
         {
-          if ((ptrResult++)->x != 0)
+          if (ptrResult->x != 0)
           {
             break;
           }
+          ptrResult++;
         }
         if (i > 0)
         {     // First factor is not zero. Check second.
           ptrResult = &arr[idxFactor2];
           for (i = nbrLen; i > 0; i--)
           {
-            if ((ptrResult++)->x != 0)
+            if (ptrResult->x != 0)
             {
               break;
             }
+            ptrResult++;
           }
         }
         if (i == 0)
@@ -896,7 +898,8 @@ static void Karatsuba(int indexFactor1, int numLen)
         int borrow = 0;
         for (i = nbrLen; i > 0; i--)
         {
-          borrow += ptrResult->x - (ptrHigh++)->x;
+          borrow += ptrResult->x - ptrHigh->x;
+          ptrHigh++;
           ptrResult->x = borrow & MAX_VALUE_LIMB;
           ptrResult++;
           borrow >>= BITS_PER_GROUP;
@@ -914,7 +917,8 @@ static void Karatsuba(int indexFactor1, int numLen)
         unsigned int carry = 0;
         for (i = nbrLen; i > 0; i--)
         {
-          carry += (unsigned int)ptrResult->x + (unsigned int)(ptrHigh++)->x;
+          carry += (unsigned int)ptrResult->x + (unsigned int)ptrHigh->x;
+          ptrHigh++;
           ptrResult->x = (int)(carry & MAX_VALUE_LIMB);
           ptrResult++;
           carry >>= BITS_PER_GROUP;
@@ -922,7 +926,8 @@ static void Karatsuba(int indexFactor1, int numLen)
         for (i = halfLength; i > 0; i--)
         {
           carry += (unsigned int)ptrResult->x;
-          (ptrResult++)->x = (int)(carry & MAX_VALUE_LIMB);
+          ptrResult->x = (int)(carry & MAX_VALUE_LIMB);
+          ptrResult++;
           carry >>= BITS_PER_GROUP;
         }
       }

@@ -33,6 +33,7 @@ int valuesProcessed;
 char outputExpr[200000];
 #ifdef __EMSCRIPTEN__
 char *ptrInputText;
+char emptyInputText;
 #endif
 
 static void stringToHTML(char **pptrOutput, const char *ptrString)
@@ -182,7 +183,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     else if ((c == 'x') || (c == 'X'))
     {   // Loop format: x=<orig expr>; x=<next expr>; <end expr>; <expr to factor>[; <factor cond>]
 #ifdef __EMSCRIPTEN__
-      ptrInputText = "";
+      ptrInputText = &emptyInputText;
 #endif
       if (!firstExprProcessed)
       {
