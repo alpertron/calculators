@@ -1583,6 +1583,59 @@ int modInv(int NbrMod, int currentPrime)
   return U1 + (currentPrime & (U1 >> 31));
 }
 
+static void InitHighUandV(int lenU, int lenV, double *pHighU, double *pHighV)
+{
+  double highU;
+  double highV;
+  double dLimbRange = (double)LIMB_RANGE;
+  if (lenV >= lenU)
+  {
+    highV = ((double)V[lenV - 1].x * dLimbRange) + (double)V[lenV - 2].x;
+    if (lenV >= 3)
+    {
+      highV += (double)V[lenV - 3].x / dLimbRange;
+    }
+    if (lenV == lenU)
+    {
+      highU = ((double)U[lenV - 1].x * dLimbRange) + (double)U[lenV - 2].x;
+    }
+    else if (lenV == (lenU + 1))
+    {
+      highU = (double)U[lenV - 2].x;
+    }
+    else
+    {
+      highU = 0;
+    }
+    if ((lenV <= (lenU + 2)) && (lenV >= 3))
+    {
+      highU += (double)U[lenV - 3].x / dLimbRange;
+    }
+  }
+  else
+  {
+    highU = ((double)U[lenU - 1].x * (double)LIMB_RANGE) + (double)U[lenU - 2].x;
+    if (lenU >= 3)
+    {
+      highU += (double)U[lenU - 3].x / dLimbRange;
+    }
+    if (lenU == (lenV + 1))
+    {
+      highV = (double)V[lenU - 2].x;
+    }
+    else
+    {
+      highV = 0;
+    }
+    if ((lenU <= (lenV + 2)) && (lenU >= 3))
+    {
+      highV += (double)V[lenU - 3].x / dLimbRange;
+    }
+  }
+  *pHighU = highU;
+  *pHighV = highV;
+}
+
 /***********************************************************************/
 /* NAME: ModInvBigNbr                                                  */
 /*                                                                     */
@@ -1648,10 +1701,13 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
   (void)memset(S, 0, size);   // S <- 1
   S[0].x = 1;
   lenRS = 1;
-  k = steps = 0;
+  k = 0;
+  steps = 0;
   // R' <- aR + bS, S' <- cR + dS
-  a = d = 1;  // R' = R, S' = S.
-  b = c = 0;
+  a = 1;  // R' = R, S' = S.
+  d = 1;
+  b = 0;
+  c = 0;
   // Find length of U.
   for (lenU = nbrLen - 1; lenU > 0; lenU--)
   {
@@ -1677,34 +1733,7 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
   {
     double highU;
     double highV;
-    if (lenV >= lenU)
-    {
-      highV = (double)V[lenV - 1].x * (double)LIMB_RANGE + (double)V[lenV - 2].x;
-      if (lenV == lenU)
-      {
-        highU = (double)U[lenV - 1].x * (double)LIMB_RANGE + (double)U[lenV - 2].x;
-      }
-      else if (lenV == lenU + 1)
-      {
-        highU = (double)U[lenV - 2].x;
-      }
-      else
-      {
-        highU = 0;
-      }
-    }
-    else
-    {
-      highU = (double)U[lenU - 1].x * (double)LIMB_RANGE + (double)U[lenU - 2].x;
-      if (lenU == lenV + 1)
-      {
-        highV = (double)V[lenU - 2].x;
-      }
-      else
-      {
-        highV = 0;
-      }
-    }
+    InitHighUandV(lenU, lenV, &highU, &highV);
     //  2. while V > 0 do
     for (;;)
     {
@@ -1714,7 +1743,8 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
         lowU >>= 1;
         highV += highV;
         // R' <- aR + bS, S' <- cR + dS
-        c *= 2; d *= 2;  // Multiply S by 2.
+        c *= 2;
+        d *= 2;  // Multiply S by 2.
       }
       //  4.   elsif V even then V <- V / 2, R <- 2R
       else if ((lowV & 1) == 0)
@@ -1722,7 +1752,8 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
         lowV >>= 1;
         highU += highU;
         // R' <- aR + bS, S' <- cR + dS
-        a *= 2; b *= 2;  // Multiply R by 2.
+        a *= 2;
+        b *= 2;  // Multiply R by 2.
       }
       else
       {
@@ -1733,8 +1764,10 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
           highU -= highV;
           highV += highV;
           // R' <- aR + bS, S' <- cR + dS
-          a += c; b += d;  // R <- R + S
-          c *= 2; d *= 2;  // S <- 2S
+          a += c;
+          b += d;  // R <- R + S
+          c *= 2;
+          d *= 2;  // S <- 2S
         }
         //  6.   elsif V >= U then V <- (V - U) / 2, S <- S + R, R <- 2R
         else
@@ -1743,14 +1776,16 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
           highV -= highU;
           highU += highU;
           // R' <- aR + bS, S' <- cR + dS
-          c += a; d += b;  // S <- S + R
-          a *= 2; b *= 2;  // R <- 2R
+          c += a;
+          d += b;  // S <- S + R
+          a *= 2;
+          b *= 2;  // R <- 2R
         }
       }
       //  7.   k <- k + 1
       // Adjust variables.
       steps++;
-      if (steps == BITS_PER_GROUP - 1)
+      if (steps == (BITS_PER_GROUP - 1))
       {  // compute now U and V and reset e, f, g and h.
          // U' <- eU + fV, V' <- gU + hV
         int len = (lenU > lenV ? lenU : lenV);
@@ -1764,8 +1799,10 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
             //  2. while V > 0 do
           (void)memcpy(U, Ubak, (len+1) * sizeof(limb));
           (void)memcpy(V, Vbak, (len+1) * sizeof(limb));
-          b = c = 0;  // U' = U, V' = V.
-          a = d = 1;
+          b = 0;
+          c = 0;  // U' = U, V' = V.
+          a = 1;
+          d = 1;
           while ((lenV > 1) || (V[0].x > 0))
           {
             //  3.   if U even then U <- U / 2, S <- 2S
@@ -1780,7 +1817,8 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
                 lenU--;
               }
               // R' <- aR + bS, S' <- cR + dS
-              c *= 2; d *= 2;  // Multiply S by 2.
+              c *= 2;
+              d *= 2;  // Multiply S by 2.
             }
             //  4.   elsif V even then V <- V / 2, R <- 2R
             else if ((V[0].x & 1) == 0)
@@ -1794,7 +1832,8 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
                 lenV--;
               }
               // R' <- aR + bS, S' <- cR + dS
-              a *= 2; b *= 2;  // Multiply R by 2.
+              a *= 2;
+              b *= 2;  // Multiply R by 2.
             }
             //  5.   elsif U >= V  then U <- (U - V) / 2, R <- R + S, S <- 2S
             else
@@ -1811,16 +1850,20 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
               {     // U > V
                 lenU = HalveDifference(U, V, len); // U <- (U - V) / 2
                                                    // R' <- aR + bS, S' <- cR + dS
-                a += c; b += d;  // R <- R + S
-                c *= 2; d *= 2;  // S <- 2S
+                a += c;
+                b += d;  // R <- R + S
+                c *= 2;
+                d *= 2;  // S <- 2S
               }
               //  6.   elsif V >= U then V <- (V - U) / 2, S <- S + R, R <- 2R
               else
               {    // V >= U
                 lenV = HalveDifference(V, U, len); // V <- (V - U) / 2
                                                    // R' <- aR + bS, S' <- cR + dS
-                c += a; d += b;  // S <- S + R
-                a *= 2; b *= 2;  // R <- 2R
+                c += a;
+                d += b;  // S <- S + R
+                a *= 2;
+                b *= 2;  // R <- 2R
               }
             }
             //  7.   k <- k + 1
@@ -1865,40 +1908,15 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
         }
         lowU = U[0].x;
         lowV = V[0].x;
-        b = c = 0;  // U' = U, V' = V.
-        a = d = 1;
+        b = 0;
+        c = 0;  // U' = U, V' = V.
+        a = 1;
+        d = 1;
         if ((lenU == 0) || (lenV == 0) || ((lenV == 1) && (lenU == 1)))
         {
           break;
         }
-        if (lenV >= lenU)
-        {
-          highV = (double)V[lenV - 1].x * (double)LIMB_RANGE + (double)V[lenV - 2].x;
-          if (lenV == lenU)
-          {
-            highU = (double)U[lenV - 1].x * (double)LIMB_RANGE + (double)U[lenV - 2].x;
-          }
-          else if (lenV == lenU + 1)
-          {
-            highU = (double)U[lenV - 2].x;
-          }
-          else
-          {
-            highU = 0;
-          }
-        }
-        else
-        {
-          highU = (double)U[lenU - 1].x * (double)LIMB_RANGE + (double)U[lenU - 2].x;
-          if (lenU == lenV + 1)
-          {
-            highV = (double)V[lenU - 2].x;
-          }
-          else
-          {
-            highV = 0;
-          }
-        }
+        InitHighUandV(lenU, lenV, &highU, &highV);
       }
     }
   }
@@ -1912,39 +1930,47 @@ void ModInvBigNbr(limb *num, limb *inv, limb *mod, int nbrLen)
       {     // U is even.
         lowU >>= 1;
         // R' <- aR + bS, S' <- cR + dS
-        c *= 2; d *= 2;  // Multiply S by 2.
+        c *= 2;
+        d *= 2;  // Multiply S by 2.
       }
       //  4.   elsif V even then V <- V / 2, R <- 2R
       else if ((lowV & 1) == 0)
       {    // V is even.
         lowV >>= 1;
         // R' <- aR + bS, S' <- cR + dS
-        a *= 2; b *= 2;  // Multiply R by 2.
+        a *= 2;
+        b *= 2;  // Multiply R by 2.
       }
       //  5.   elsif U >= V  then U <- (U - V) / 2, R <- R + S, S <- 2S
       else if (lowU > lowV)
       {     // U > V. Perform U <- (U - V) / 2
         lowU = (lowU - lowV) >> 1;
         // R' <- aR + bS, S' <- cR + dS
-        a += c; b += d;  // R <- R + S
-        c *= 2; d *= 2;  // S <- 2S
+        a += c;
+        b += d;  // R <- R + S
+        c *= 2;
+        d *= 2;  // S <- 2S
       }
       //  6.   elsif V >= U then V <- (V - U) / 2, S <- S + R, R <- 2R
       else
-      {    // V >= U. Perfrom V <- (V - U) / 2
+      {    // V >= U. Perform V <- (V - U) / 2
         lowV = (lowV - lowU) >> 1;
         // R' <- aR + bS, S' <- cR + dS
-        c += a; d += b;  // S <- S + R
-        a *= 2; b *= 2;  // R <- 2R
+        c += a;
+        d += b;  // S <- S + R
+        a *= 2;
+        b *= 2;  // R <- 2R
       }
       //  7.   k <- k + 1
       steps++;
-      if (steps == BITS_PER_GROUP - 1)
+      if (steps == (BITS_PER_GROUP - 1))
       {  // compute now R and S and reset a, b, c and d.
          // R' <- aR + bS, S' <- cR + dS
         AddMult(R, a, b, S, c, d, nbrLen + 1);
-        b = c = 0;  // R' = R, S' = S.
-        a = d = 1;
+        b = 0;     // R' = R, S' = S.
+        c = 0;
+        a = 1;
+        d = 1;
         k += steps;
         steps = 0;
       }
