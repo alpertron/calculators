@@ -22,6 +22,21 @@
 #include <math.h>
 #include <stdint.h>
 #include "bignbr.h"
+
+#define MONTMULT_LIMB_START   \
+    uint32_t MontDig;  \
+    uint32_t Nbr;      \
+    Nbr = (pNbr1 + i)->x;   \
+    Pr = (uint64_t)Nbr * (uint64_t)Nbr2_0 + (uint64_t)Prod0; \
+    MontDig = ((uint32_t)Pr * (uint32_t)MontgomeryMultN[0].x) & MAX_INT_NBR_U; \
+    Pr += (uint64_t)MontDig * (uint64_t)TestNbr0
+#define MONTMULT_LIMB(curr, next)  \
+    Pr = (Pr >> BITS_PER_GROUP) +  \
+    (uint64_t)MontDig * (uint64_t)TestNbr##next + (uint64_t)Nbr * (uint64_t)Nbr2_##next + (uint64_t)Prod##next; \
+    Prod##curr = (uint32_t)Pr & MAX_INT_NBR_U
+#define MONTMULT_LIMB_END(curr)   \
+    Prod##curr = (uint32_t)(Pr >> BITS_PER_GROUP)
+
 char MontgomeryMultNCached;
 char TestNbrCached;
 limb MontgomeryR1[MAX_LEN];
@@ -389,22 +404,16 @@ static void MontgomeryMult2(const limb *pNbr1, const limb *pNbr2, limb *pProd)
   uint32_t Nbr2_1 = (pNbr2 + 1)->x;
   for (int i = 0; i<2; i++)
   {
-    uint32_t Nbr;
-    uint32_t MontDig;
-    Nbr = (pNbr1 + i)->x;
-    Pr = (Nbr * (uint64_t)Nbr2_0) + Prod0;
-    MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
-      ((uint64_t)MontDig * TestNbr1) + ((uint64_t)Nbr * Nbr2_1) + Prod1;
-    Prod0 = Pr & MAX_INT_NBR;
-    Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
+    MONTMULT_LIMB_START;
+    MONTMULT_LIMB(0, 1);
+    MONTMULT_LIMB_END(1);
   }
   if ((Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP)) ||
      ((Prod1 == TestNbr1) && (Prod0 >= TestNbr0)))
   {
     int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
-    Prod0 = borrow & MAX_INT_NBR;
-    Prod1 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
+    Prod0 = (unsigned int)borrow & MAX_INT_NBR_U;
+    Prod1 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR_U;
   }
   pProd->x = Prod0;
   (pProd + 1)->x = Prod1;
@@ -424,22 +433,18 @@ static void MontgomeryMult3(const limb *pNbr1, const limb *pNbr2, limb *pProd)
   uint32_t Nbr2_2 = (pNbr2 + 2)->x;
   for (int i = 0; i<3; i++)
   {
-    uint32_t MontDig;
-    uint32_t Nbr;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
-    MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Prod0 = (Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
-    Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
-    Prod2 = (uint32_t)(Pr >> BITS_PER_GROUP);
+    MONTMULT_LIMB_START;
+    MONTMULT_LIMB(0, 1);
+    MONTMULT_LIMB(1, 2);
+    MONTMULT_LIMB_END(2);
   }
   if ((Pr >= ((uint64_t)(TestNbr2 + 1) << BITS_PER_GROUP))
     || ((Prod2 == TestNbr2) && ((Prod1 > TestNbr1) || ((Prod1 == TestNbr1) && (Prod0 >= TestNbr0)))))
   {
-    int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
-    Prod1 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
+    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
+    Prod0 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1;
+    Prod1 = (uint32_t)borrow & MAX_INT_NBR_U;
     Prod2 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2) & MAX_INT_NBR;
   }
   pProd->x = Prod0;
@@ -464,29 +469,25 @@ static void MontgomeryMult4(const limb *pNbr1, const limb *pNbr2, limb *pProd)
   uint32_t Nbr2_3 = (pNbr2 + 3)->x;
   for (int i = 0; i<4; i++)
   {
-    uint32_t Nbr;
-    uint32_t MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
-    MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Prod0 = (Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
-    Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
-    Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
-    Prod3 = (uint32_t)(Pr >> BITS_PER_GROUP);
+    MONTMULT_LIMB_START;
+    MONTMULT_LIMB(0, 1);
+    MONTMULT_LIMB(1, 2);
+    MONTMULT_LIMB(2, 3);
+    MONTMULT_LIMB_END(3);
   }
   if (Pr >= ((uint64_t)(TestNbr3 + 1) << BITS_PER_GROUP)
-    || (Prod3 == TestNbr3
-      && (Prod2 > TestNbr2
-        || (Prod2 == TestNbr2
-          && (Prod1 > TestNbr1 || (Prod1 == TestNbr1 && (Prod0 >= TestNbr0)))))))
+    || ((Prod3 == TestNbr3)
+      && ((Prod2 > TestNbr2)
+        || ((Prod2 == TestNbr2)
+          && ((Prod1 > TestNbr1) || ((Prod1 == TestNbr1) && (Prod0 >= TestNbr0)))))))
   {
-    int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
-    Prod1 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
-    Prod2 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2) & MAX_INT_NBR;
-    Prod3 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3) & MAX_INT_NBR;
+    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
+    Prod0 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1;
+    Prod1 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2;
+    Prod2 = (uint32_t)borrow & MAX_INT_NBR_U;
+    Prod3 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3) & MAX_INT_NBR_U;
   }
   pProd->x = Prod0;
   (pProd + 1)->x = Prod1;
@@ -514,34 +515,30 @@ static void MontgomeryMult5(const limb *pNbr1, const limb *pNbr2, limb *pProd)
   uint32_t Nbr2_4 = (pNbr2 + 4)->x;
   for (int i = 0; i<5; i++)
   {
-    uint32_t Nbr;
-    uint32_t MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
-    MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
-    Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
-    Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
-    Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
-    Prod4 = (uint32_t)(Pr >> BITS_PER_GROUP);
+    MONTMULT_LIMB_START;
+    MONTMULT_LIMB(0, 1);
+    MONTMULT_LIMB(1, 2);
+    MONTMULT_LIMB(2, 3);
+    MONTMULT_LIMB(3, 4);
+    MONTMULT_LIMB_END(4);
   }
   if (Pr >= ((uint64_t)(TestNbr4 + 1) << BITS_PER_GROUP)
-    || (Prod4 == TestNbr4
-      && (Prod3 > TestNbr3
-        || (Prod3 == TestNbr3
-          && (Prod2 > TestNbr2
-            || (Prod2 == TestNbr2
-              && (Prod1 > TestNbr1 || (Prod1 == TestNbr1 && (Prod0 >= TestNbr0)))))))))
+    || ((Prod4 == TestNbr4)
+      && ((Prod3 > TestNbr3)
+        || ((Prod3 == TestNbr3)
+          && ((Prod2 > TestNbr2)
+            || ((Prod2 == TestNbr2)
+              && ((Prod1 > TestNbr1) || ((Prod1 == TestNbr1) && (Prod0 >= TestNbr0)))))))))
   {
-    int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
-    Prod1 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
-    Prod2 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2) & MAX_INT_NBR;
-    Prod3 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3) & MAX_INT_NBR;
-    Prod4 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4) & MAX_INT_NBR;
+    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
+    Prod0 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1;
+    Prod1 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2;
+    Prod2 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3;
+    Prod3 = (uint32_t)borrow & MAX_INT_NBR_U;
+    Prod4 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4) & MAX_INT_NBR_U;
   }
   pProd->x = Prod0;
   (pProd + 1)->x = Prod1;
@@ -573,40 +570,36 @@ static void MontgomeryMult6(const limb *pNbr1, const limb *pNbr2, limb *pProd)
   uint32_t Nbr2_5 = (pNbr2 + 5)->x;
   for (int i = 0; i<6; i++)
   {
-    uint32_t Nbr;
-    uint32_t MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
-    MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
-    Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
-    Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
-    Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
-    Prod4 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + Prod5) & MAX_INT_NBR;
-    Prod5 = (uint32_t)(Pr >> BITS_PER_GROUP);
+    MONTMULT_LIMB_START;
+    MONTMULT_LIMB(0, 1);
+    MONTMULT_LIMB(1, 2);
+    MONTMULT_LIMB(2, 3);
+    MONTMULT_LIMB(3, 4);
+    MONTMULT_LIMB(4, 5);
+    MONTMULT_LIMB_END(5);
   }
   if (Pr >= ((uint64_t)(TestNbr5 + 1) << BITS_PER_GROUP)
-    || (Prod5 == TestNbr5
-      && (Prod4 > TestNbr4
-        || (Prod4 == TestNbr4
-          && (Prod3 > TestNbr3
-            || (Prod3 == TestNbr3
-              && (Prod2 > TestNbr2
-                || (Prod2 == TestNbr2
-                  && (Prod1 > TestNbr1
-                    || (Prod1 == TestNbr1
+    || ((Prod5 == TestNbr5)
+      && ((Prod4 > TestNbr4)
+        || ((Prod4 == TestNbr4)
+          && ((Prod3 > TestNbr3)
+            || ((Prod3 == TestNbr3)
+              && ((Prod2 > TestNbr2)
+                || ((Prod2 == TestNbr2)
+                  && ((Prod1 > TestNbr1)
+                    || ((Prod1 == TestNbr1)
                       && (Prod0 >= TestNbr0)))))))))))
   {
-    int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
-    Prod1 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
-    Prod2 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2) & MAX_INT_NBR;
-    Prod3 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3) & MAX_INT_NBR;
-    Prod4 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4) & MAX_INT_NBR;
+    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
+    Prod0 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1;
+    Prod1 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2;
+    Prod2 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3;
+    Prod3 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4;
+    Prod4 = (uint32_t)borrow & MAX_INT_NBR_U;
     Prod5 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod5 - (int32_t)TestNbr5) & MAX_INT_NBR;
   }
   pProd->x = Prod0;
@@ -643,45 +636,41 @@ static void MontgomeryMult7(const limb *pNbr1, const limb *pNbr2, limb *pProd)
   int Nbr2_6 = (pNbr2 + 6)->x;
   for (int i = 0; i<7; i++)
   {
-    uint32_t Nbr;
-    uint32_t MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
-    MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
-    Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
-    Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
-    Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
-    Prod4 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + Prod5) & MAX_INT_NBR;
-    Prod5 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + Prod6) & MAX_INT_NBR;
-    Prod6 = (uint32_t)(Pr >> BITS_PER_GROUP);
+    MONTMULT_LIMB_START;
+    MONTMULT_LIMB(0, 1);
+    MONTMULT_LIMB(1, 2);
+    MONTMULT_LIMB(2, 3);
+    MONTMULT_LIMB(3, 4);
+    MONTMULT_LIMB(4, 5);
+    MONTMULT_LIMB(5, 6);
+    MONTMULT_LIMB_END(6);
   }
   if (Pr >= ((uint64_t)(TestNbr6 + 1) << BITS_PER_GROUP)
-    || (Prod6 == TestNbr6
-      && (Prod5 > TestNbr5
-        || (Prod5 == TestNbr5
-          && (Prod4 > TestNbr4
-            || (Prod4 == TestNbr4
-              && (Prod3 > TestNbr3
-                || (Prod3 == TestNbr3
-                  && (Prod2 > TestNbr2
-                    || (Prod2 == TestNbr2
-                      && (Prod1 > TestNbr1
-                        || (Prod1 == TestNbr1
+    || ((Prod6 == TestNbr6)
+      && ((Prod5 > TestNbr5)
+        || ((Prod5 == TestNbr5)
+          && ((Prod4 > TestNbr4)
+            || ((Prod4 == TestNbr4)
+              && ((Prod3 > TestNbr3)
+                || ((Prod3 == TestNbr3)
+                  && ((Prod2 > TestNbr2)
+                    || ((Prod2 == TestNbr2)
+                      && ((Prod1 > TestNbr1)
+                        || ((Prod1 == TestNbr1)
                           && (Prod0 >= TestNbr0)))))))))))))
   {
-    int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - TestNbr0) & MAX_INT_NBR;
-    Prod1 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
-    Prod2 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2) & MAX_INT_NBR;
-    Prod3 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3) & MAX_INT_NBR;
-    Prod4 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4) & MAX_INT_NBR;
-    Prod5 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod5 - (int32_t)TestNbr5) & MAX_INT_NBR;
+    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
+    Prod0 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1;
+    Prod1 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2;
+    Prod2 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3;
+    Prod3 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4;
+    Prod4 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod5 - (int32_t)TestNbr5;
+    Prod5 = (uint32_t)borrow & MAX_INT_NBR_U;
     Prod6 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod6 - TestNbr6) & MAX_INT_NBR;
   }
   pProd->x = Prod0;
@@ -722,50 +711,46 @@ static void MontgomeryMult8(const limb *pNbr1, const limb *pNbr2, limb *pProd)
   uint32_t Nbr2_7 = (pNbr2 + 7)->x;
   for (int i = 0; i<8; i++)
   {
-    uint32_t Nbr;
-    uint32_t MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
-    MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
-    Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
-    Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
-    Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
-    Prod4 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + Prod5) & MAX_INT_NBR;
-    Prod5 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + Prod6) & MAX_INT_NBR;
-    Prod6 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr7 + (uint64_t)Nbr * Nbr2_7 + Prod7) & MAX_INT_NBR;
-    Prod7 = (uint32_t)(Pr >> BITS_PER_GROUP);
+    MONTMULT_LIMB_START;
+    MONTMULT_LIMB(0, 1);
+    MONTMULT_LIMB(1, 2);
+    MONTMULT_LIMB(2, 3);
+    MONTMULT_LIMB(3, 4);
+    MONTMULT_LIMB(4, 5);
+    MONTMULT_LIMB(5, 6);
+    MONTMULT_LIMB(6, 7);
+    MONTMULT_LIMB_END(7);
   }
   if (Pr >= ((uint64_t)(TestNbr7 + 1) << BITS_PER_GROUP)
-    || (Prod7 == TestNbr7
-      && (Prod6 > TestNbr6
-        || (Prod6 == TestNbr6
-          && (Prod5 > TestNbr5
-            || (Prod5 == TestNbr5
-              && (Prod4 > TestNbr4
-                || (Prod4 == TestNbr4
-                  && (Prod3 > TestNbr3
-                    || (Prod3 == TestNbr3
-                      && (Prod2 > TestNbr2
-                        || (Prod2 == TestNbr2
-                          && (Prod1 > TestNbr1
-                            || (Prod1 == TestNbr1
+    || ((Prod7 == TestNbr7)
+      && ((Prod6 > TestNbr6)
+        || ((Prod6 == TestNbr6)
+          && ((Prod5 > TestNbr5)
+            || ((Prod5 == TestNbr5)
+              && ((Prod4 > TestNbr4)
+                || ((Prod4 == TestNbr4)
+                  && ((Prod3 > TestNbr3)
+                    || ((Prod3 == TestNbr3)
+                      && ((Prod2 > TestNbr2)
+                        || ((Prod2 == TestNbr2)
+                          && ((Prod1 > TestNbr1)
+                            || ((Prod1 == TestNbr1)
                               && (Prod0 >= TestNbr0)))))))))))))))
   {
-    int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
-    Prod1 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
-    Prod2 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2) & MAX_INT_NBR;
-    Prod3 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3) & MAX_INT_NBR;
-    Prod4 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4) & MAX_INT_NBR;
-    Prod5 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod5 - (int32_t)TestNbr5) & MAX_INT_NBR;
-    Prod6 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod6 - (int32_t)TestNbr6) & MAX_INT_NBR;
+    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
+    Prod0 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1;
+    Prod1 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2;
+    Prod2 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3;
+    Prod3 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4;
+    Prod4 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod5 - (int32_t)TestNbr5;
+    Prod5 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod6 - (int32_t)TestNbr6;
+    Prod6 = (uint32_t)borrow & MAX_INT_NBR_U;
     Prod7 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod7 - (int32_t)TestNbr7) & MAX_INT_NBR;
   }
   pProd->x = (int)Prod0;
@@ -809,55 +794,51 @@ static void MontgomeryMult9(const limb *pNbr1, const limb *pNbr2, limb *pProd)
   uint32_t Nbr2_8 = (pNbr2 + 8)->x;
   for (int i = 0; i<9; i++)
   {
-    uint32_t Nbr;
-    uint32_t MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
-    MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
-    Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
-    Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
-    Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
-    Prod4 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + Prod5) & MAX_INT_NBR;
-    Prod5 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + Prod6) & MAX_INT_NBR;
-    Prod6 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr7 + (uint64_t)Nbr * Nbr2_7 + Prod7) & MAX_INT_NBR;
-    Prod7 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr8 + (uint64_t)Nbr * Nbr2_8 + Prod8) & MAX_INT_NBR;
-    Prod8 = (uint32_t)(Pr >> BITS_PER_GROUP);
+    MONTMULT_LIMB_START;
+    MONTMULT_LIMB(0, 1);
+    MONTMULT_LIMB(1, 2);
+    MONTMULT_LIMB(2, 3);
+    MONTMULT_LIMB(3, 4);
+    MONTMULT_LIMB(4, 5);
+    MONTMULT_LIMB(5, 6);
+    MONTMULT_LIMB(6, 7);
+    MONTMULT_LIMB(7, 8);
+    MONTMULT_LIMB_END(8);
   }
   if (Pr >= ((uint64_t)(TestNbr8 + 1) << BITS_PER_GROUP)
-    || (Prod8 == TestNbr8
-      && (Prod7 > TestNbr7
-        || (Prod7 == TestNbr7
-          && (Prod6 > TestNbr6
-            || (Prod6 == TestNbr6
-              && (Prod5 > TestNbr5
-                || (Prod5 == TestNbr5
-                  && (Prod4 > TestNbr4
-                    || (Prod4 == TestNbr4
-                      && (Prod3 > TestNbr3
-                        || (Prod3 == TestNbr3
-                          && (Prod2 > TestNbr2
-                            || (Prod2 == TestNbr2
-                              && (Prod1 > TestNbr1
-                                || (Prod1 == TestNbr1
+    || ((Prod8 == TestNbr8)
+      && ((Prod7 > TestNbr7)
+        || ((Prod7 == TestNbr7)
+          && ((Prod6 > TestNbr6)
+            || ((Prod6 == TestNbr6)
+              && ((Prod5 > TestNbr5)
+                || ((Prod5 == TestNbr5)
+                  && ((Prod4 > TestNbr4)
+                    || ((Prod4 == TestNbr4)
+                      && ((Prod3 > TestNbr3)
+                        || ((Prod3 == TestNbr3)
+                          && ((Prod2 > TestNbr2)
+                            || ((Prod2 == TestNbr2)
+                              && ((Prod1 > TestNbr1)
+                                || ((Prod1 == TestNbr1)
                                   && (Prod0 >= TestNbr0)))))))))))))))))
   {
-    int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
-    Prod1 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
-    Prod2 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2) & MAX_INT_NBR;
-    Prod3 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3) & MAX_INT_NBR;
-    Prod4 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4) & MAX_INT_NBR;
-    Prod5 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod5 - (int32_t)TestNbr5) & MAX_INT_NBR;
-    Prod6 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod6 - (int32_t)TestNbr6) & MAX_INT_NBR;
-    Prod7 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod7 - (int32_t)TestNbr7) & MAX_INT_NBR;
+    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
+    Prod0 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1;
+    Prod1 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2;
+    Prod2 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3;
+    Prod3 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4;
+    Prod4 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod5 - (int32_t)TestNbr5;
+    Prod5 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod6 - (int32_t)TestNbr6;
+    Prod6 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod7 - (int32_t)TestNbr7;
+    Prod7 = (uint32_t)borrow & MAX_INT_NBR_U;
     Prod8 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod8 - (int32_t)TestNbr8) & MAX_INT_NBR;
   }
   pProd->x = Prod0;
@@ -906,60 +887,56 @@ static void MontgomeryMult10(const limb *pNbr1, const limb *pNbr2, limb *pProd)
   uint32_t Nbr2_9 = (pNbr2 + 9)->x;
   for (int i = 0; i<10; i++)
   {
-    uint32_t Nbr;
-    uint32_t MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
-    MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
-    Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
-    Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
-    Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
-    Prod4 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + Prod5) & MAX_INT_NBR;
-    Prod5 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + Prod6) & MAX_INT_NBR;
-    Prod6 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr7 + (uint64_t)Nbr * Nbr2_7 + Prod7) & MAX_INT_NBR;
-    Prod7 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr8 + (uint64_t)Nbr * Nbr2_8 + Prod8) & MAX_INT_NBR;
-    Prod8 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr9 + (uint64_t)Nbr * Nbr2_9 + Prod9) & MAX_INT_NBR;
-    Prod9 = (uint32_t)(Pr >> BITS_PER_GROUP);
+    MONTMULT_LIMB_START;
+    MONTMULT_LIMB(0, 1);
+    MONTMULT_LIMB(1, 2);
+    MONTMULT_LIMB(2, 3);
+    MONTMULT_LIMB(3, 4);
+    MONTMULT_LIMB(4, 5);
+    MONTMULT_LIMB(5, 6);
+    MONTMULT_LIMB(6, 7);
+    MONTMULT_LIMB(7, 8);
+    MONTMULT_LIMB(8, 9);
+    MONTMULT_LIMB_END(9);
   }
   if (Pr >= ((uint64_t)(TestNbr9 + 1) << BITS_PER_GROUP)
-    || (Prod9 == TestNbr9
-      && (Prod8 > TestNbr8
-        || (Prod8 == TestNbr8
-          && (Prod7 > TestNbr7
-            || (Prod7 == TestNbr7
-              && (Prod6 > TestNbr6
-                || (Prod6 == TestNbr6
-                  && (Prod5 > TestNbr5
-                    || (Prod5 == TestNbr5
-                      && (Prod4 > TestNbr4
-                        || (Prod4 == TestNbr4
-                          && (Prod3 > TestNbr3
-                            || (Prod3 == TestNbr3
-                              && (Prod2 > TestNbr2
-                                || (Prod2 == TestNbr2
-                                  && (Prod1 > TestNbr1
-                                    || (Prod1 == TestNbr1
+    || ((Prod9 == TestNbr9)
+      && ((Prod8 > TestNbr8)
+        || ((Prod8 == TestNbr8)
+          && ((Prod7 > TestNbr7)
+            || ((Prod7 == TestNbr7)
+              && ((Prod6 > TestNbr6)
+                || ((Prod6 == TestNbr6)
+                  && ((Prod5 > TestNbr5)
+                    || ((Prod5 == TestNbr5)
+                      && ((Prod4 > TestNbr4)
+                        || ((Prod4 == TestNbr4)
+                          && ((Prod3 > TestNbr3)
+                            || ((Prod3 == TestNbr3)
+                              && ((Prod2 > TestNbr2)
+                                || ((Prod2 == TestNbr2)
+                                  && ((Prod1 > TestNbr1)
+                                    || ((Prod1 == TestNbr1)
                                       && (Prod0 >= TestNbr0)))))))))))))))))))
   {
-    int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
-    Prod1 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
-    Prod2 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2) & MAX_INT_NBR;
-    Prod3 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3) & MAX_INT_NBR;
-    Prod4 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4) & MAX_INT_NBR;
-    Prod5 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod5 - (int32_t)TestNbr5) & MAX_INT_NBR;
-    Prod6 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod6 - (int32_t)TestNbr6) & MAX_INT_NBR;
-    Prod7 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod7 - (int32_t)TestNbr7) & MAX_INT_NBR;
-    Prod8 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod8 - (int32_t)TestNbr8) & MAX_INT_NBR;
+    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
+    Prod0 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1;
+    Prod1 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2;
+    Prod2 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3;
+    Prod3 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4;
+    Prod4 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod5 - (int32_t)TestNbr5;
+    Prod5 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod6 - (int32_t)TestNbr6;
+    Prod6 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod7 - (int32_t)TestNbr7;
+    Prod7 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod8 - (int32_t)TestNbr8;
+    Prod8 = (uint32_t)borrow & MAX_INT_NBR_U;
     Prod9 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod9 - (int32_t)TestNbr9) & MAX_INT_NBR;
   }
   pProd->x = Prod0;
@@ -1012,65 +989,61 @@ static void MontgomeryMult11(const limb *pNbr1, const limb *pNbr2, limb *pProd)
   uint32_t Nbr2_10 = (pNbr2 + 10)->x;
   for (int i = 0; i<11; i++)
   {
-    uint32_t Nbr;
-    uint32_t MontDig;
-    Pr = (Nbr = (pNbr1 + i)->x) * (uint64_t)Nbr2_0 + Prod0;
-    MontDig = ((uint32_t)Pr * MontgomeryMultN[0].x) & MAX_INT_NBR;
-    Prod0 = (Pr = (((uint64_t)MontDig * TestNbr0 + Pr) >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * Nbr2_1 + Prod1) & MAX_INT_NBR;
-    Prod1 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr2 + (uint64_t)Nbr * Nbr2_2 + Prod2) & MAX_INT_NBR;
-    Prod2 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr3 + (uint64_t)Nbr * Nbr2_3 + Prod3) & MAX_INT_NBR;
-    Prod3 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr4 + (uint64_t)Nbr * Nbr2_4 + Prod4) & MAX_INT_NBR;
-    Prod4 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr5 + (uint64_t)Nbr * Nbr2_5 + Prod5) & MAX_INT_NBR;
-    Prod5 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr6 + (uint64_t)Nbr * Nbr2_6 + Prod6) & MAX_INT_NBR;
-    Prod6 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr7 + (uint64_t)Nbr * Nbr2_7 + Prod7) & MAX_INT_NBR;
-    Prod7 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr8 + (uint64_t)Nbr * Nbr2_8 + Prod8) & MAX_INT_NBR;
-    Prod8 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr9 + (uint64_t)Nbr * Nbr2_9 + Prod9) & MAX_INT_NBR;
-    Prod9 = (Pr = (Pr >> BITS_PER_GROUP) +
-      (uint64_t)MontDig * TestNbr10 + (uint64_t)Nbr * Nbr2_10 + Prod10) & MAX_INT_NBR;
-    Prod10 = (uint32_t)(Pr >> BITS_PER_GROUP);
+    MONTMULT_LIMB_START;
+    MONTMULT_LIMB(0, 1);
+    MONTMULT_LIMB(1, 2);
+    MONTMULT_LIMB(2, 3);
+    MONTMULT_LIMB(3, 4);
+    MONTMULT_LIMB(4, 5);
+    MONTMULT_LIMB(5, 6);
+    MONTMULT_LIMB(6, 7);
+    MONTMULT_LIMB(7, 8);
+    MONTMULT_LIMB(8, 9);
+    MONTMULT_LIMB(9, 10);
+    MONTMULT_LIMB_END(10);
   }
   if (Pr >= ((uint64_t)(TestNbr10 + 1) << BITS_PER_GROUP)
-    || (Prod10 == TestNbr10
-      && (Prod9 > TestNbr9
-        || (Prod9 == TestNbr9
-          && (Prod8 > TestNbr8
-            || (Prod8 == TestNbr8
-              && (Prod7 > TestNbr7
-                || (Prod7 == TestNbr7
-                  && (Prod6 > TestNbr6
-                    || (Prod6 == TestNbr6
-                      && (Prod5 > TestNbr5
-                        || (Prod5 == TestNbr5
-                          && (Prod4 > TestNbr4
-                            || (Prod4 == TestNbr4
-                              && (Prod3 > TestNbr3
-                                || (Prod3 == TestNbr3
-                                  && (Prod2 > TestNbr2
-                                    || (Prod2 == TestNbr2
-                                      && (Prod1 > TestNbr1
-                                        || (Prod1 == TestNbr1
+    || ((Prod10 == TestNbr10)
+      && ((Prod9 > TestNbr9)
+        || ((Prod9 == TestNbr9)
+          && ((Prod8 > TestNbr8)
+            || ((Prod8 == TestNbr8)
+              && ((Prod7 > TestNbr7)
+                || ((Prod7 == TestNbr7)
+                  && ((Prod6 > TestNbr6)
+                    || ((Prod6 == TestNbr6)
+                      && ((Prod5 > TestNbr5)
+                        || ((Prod5 == TestNbr5)
+                          && ((Prod4 > TestNbr4)
+                            || ((Prod4 == TestNbr4)
+                              && ((Prod3 > TestNbr3)
+                                || ((Prod3 == TestNbr3)
+                                  && ((Prod2 > TestNbr2)
+                                    || ((Prod2 == TestNbr2)
+                                      && ((Prod1 > TestNbr1)
+                                        || ((Prod1 == TestNbr1)
                                           && (Prod0 >= TestNbr0)))))))))))))))))))))
   {
-    int32_t borrow;
-    Prod0 = (borrow = (int32_t)Prod0 - (int32_t)TestNbr0) & MAX_INT_NBR;
-    Prod1 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
-    Prod2 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2) & MAX_INT_NBR;
-    Prod3 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3) & MAX_INT_NBR;
-    Prod4 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4) & MAX_INT_NBR;
-    Prod5 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod5 - (int32_t)TestNbr5) & MAX_INT_NBR;
-    Prod6 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod6 - (int32_t)TestNbr6) & MAX_INT_NBR;
-    Prod7 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod7 - (int32_t)TestNbr7) & MAX_INT_NBR;
-    Prod8 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod8 - (int32_t)TestNbr8) & MAX_INT_NBR;
-    Prod9 = (borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod9 - (int32_t)TestNbr9) & MAX_INT_NBR;
+    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
+    Prod0 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1;
+    Prod1 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod2 - (int32_t)TestNbr2;
+    Prod2 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod3 - (int32_t)TestNbr3;
+    Prod3 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod4 - (int32_t)TestNbr4;
+    Prod4 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod5 - (int32_t)TestNbr5;
+    Prod5 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod6 - (int32_t)TestNbr6;
+    Prod6 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod7 - (int32_t)TestNbr7;
+    Prod7 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod8 - (int32_t)TestNbr8;
+    Prod8 = (uint32_t)borrow & MAX_INT_NBR_U;
+    borrow = (borrow >> BITS_PER_GROUP) + (int32_t)Prod9 - (int32_t)TestNbr9;
+    Prod9 = (uint32_t)borrow & MAX_INT_NBR_U;
     Prod10 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod10 - (int32_t)TestNbr10) & MAX_INT_NBR;
   }
   pProd->x = Prod0;
