@@ -87,9 +87,9 @@ bool algebraicFactor(int linear, int *indep)
   if (((unsigned int)temp[1] & HALF_INT_RANGE_U) != 0U)
   {    // Independent term is negative.
     int carry = -temp[0];
-    temp[0] = carry & MAX_INT_NBR;
+    temp[0] = carry & MAX_VALUE_LIMB;
     carry = (carry >> BITS_PER_GROUP) - temp[1];
-    temp[1] = carry & MAX_INT_NBR;
+    temp[1] = carry & MAX_VALUE_LIMB;
   }
   dFourAC = (((double)temp[1] * MAX_VALUE_LIMB) + (double)temp[0]) * 16;
   dLinear = (double)linear;
@@ -134,28 +134,28 @@ static void getN(int valX, int valY, int *value)
   if ((x >= 0) && (x >= y) && (x >= -y))
   {                     // Right quadrant.
     multiply((4 * x) + 3, x, value);
-    addend[0] = y & MAX_INT_NBR;
-    addend[1] = (y >> BITS_PER_GROUP) & MAX_INT_NBR;
+    addend[0] = y & MAX_VALUE_LIMB;
+    addend[1] = (y >> BITS_PER_GROUP) & MAX_VALUE_LIMB;
   }
   else if ((y >= 0) && (y > x) && (y > -x))
   {                     // Top quadrant.
     multiply((4 * y) - 3, y, value);
     x = -x;
-    addend[0] = x & MAX_INT_NBR;
-    addend[1] = (x >> BITS_PER_GROUP) & MAX_INT_NBR;
+    addend[0] = x & MAX_VALUE_LIMB;
+    addend[1] = (x >> BITS_PER_GROUP) & MAX_VALUE_LIMB;
   }
   else if ((x <= 0) && (x <= y) && (x <= -y))
   {                     // Left quadrant.
     multiply((4 * x) + 1, x, value);
     y = -y;
-    addend[0] = y & MAX_INT_NBR;
-    addend[1] = (y >> BITS_PER_GROUP) & MAX_INT_NBR;
+    addend[0] = y & MAX_VALUE_LIMB;
+    addend[1] = (y >> BITS_PER_GROUP) & MAX_VALUE_LIMB;
   }
   else
   {                     // Bottom quadrant.
     multiply((4 * y) - 1, y, value);
-    addend[0] = x & MAX_INT_NBR;
-    addend[1] = (x >> BITS_PER_GROUP) & MAX_INT_NBR;
+    addend[0] = x & MAX_VALUE_LIMB;
+    addend[1] = (x >> BITS_PER_GROUP) & MAX_VALUE_LIMB;
   }
   AddBigNbr(value, addend, value);
   AddBigNbr(value, startNumber, value);
@@ -420,8 +420,8 @@ char *appendInt64(char *text, const int *value)
 {
   int index;
   int index2;
-  int nbr0 = *value;
-  int nbr1 = *(value+1);
+  int nbrLo = *value;
+  int nbrHi = *(value+1);
   
   // Convert digits from right to left.
   char* ptrText = text + 19;
@@ -429,12 +429,12 @@ char *appendInt64(char *text, const int *value)
   {
     // Divide value by 10 and obtain the remainder.
     double dDivid;
-    int rem = nbr1 % 10;
-    nbr1 = nbr1 / 10;
-    dDivid = (double)rem * (double)LIMB_RANGE + (double)nbr0;
-    nbr0 = (int)(dDivid / 10.0);
+    int rem = nbrHi % 10;
+    nbrHi = nbrHi / 10;
+    dDivid = (double)rem * (double)LIMB_RANGE + (double)nbrLo;
+    nbrLo = (int)(dDivid / 10.0);
     ptrText--;
-    *ptrText = (int)(dDivid - (double)nbr0*10.0) + '0';
+    *ptrText = (int)(dDivid - (double)nbrLo * 10.0) + '0';
   }
   for (index = 0; index < 18; index++)
   {
@@ -476,9 +476,9 @@ void ShowLabel(char *text, int linear, int *indep)
       ptrText++;
       // Change its sign.
       carry = -temp[0];
-      temp[0] = carry & MAX_INT_NBR;
+      temp[0] = carry & MAX_VALUE_LIMB;
       carry = (carry >> BITS_PER_GROUP) - temp[1];
-      temp[1] = carry & MAX_INT_NBR;
+      temp[1] = carry & MAX_VALUE_LIMB;
     }
     *ptrText = ' ';
     ptrText++;
@@ -551,14 +551,14 @@ void ShowLabel(char *text, int linear, int *indep)
         {         // Both linear and independent term are multiple of 4.
           copyStr(&ptrText, " = 4 (t<sup>2</sup>");
           b /= 4;
-          temp[0] = ((temp[0] >> 2) | (temp[1] << (BITS_PER_GROUP-2))) & MAX_INT_NBR;
+          temp[0] = ((temp[0] >> 2) | (temp[1] << (BITS_PER_GROUP-2))) & MAX_VALUE_LIMB;
           temp[1] = (temp[1] << (32-BITS_PER_GROUP)) >> (2 + (32 - BITS_PER_GROUP));   // Divide by 4.
         }
         else
         {
           copyStr(&ptrText, " = 2 (2t<sup>2</sup>");
           b /= 2;
-          temp[0] = ((temp[0] >> 1) | (temp[1] << (BITS_PER_GROUP-1))) & MAX_INT_NBR;
+          temp[0] = ((temp[0] >> 1) | (temp[1] << (BITS_PER_GROUP-1))) & MAX_VALUE_LIMB;
           temp[1] = (temp[1] << (32-BITS_PER_GROUP)) >> (1 + (32 - BITS_PER_GROUP));   // Divide by 2.
         }
         if (b != 0)
@@ -588,9 +588,9 @@ void ShowLabel(char *text, int linear, int *indep)
           ptrText++;
               // Change sign.
           carry = -temp[0];
-          temp[0] = carry & MAX_INT_NBR;
+          temp[0] = carry & MAX_VALUE_LIMB;
           carry = (carry >> BITS_PER_GROUP) - temp[1];
-          temp[1] = carry & MAX_INT_NBR;
+          temp[1] = carry & MAX_VALUE_LIMB;
           ptrText = appendInt64(ptrText, temp);
         }
         else
@@ -788,15 +788,14 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
 {
   char* ptrValue = value;
   int temp[2];
-  int nbr0 = 0;
-  int nbr1 = 0;
+  int nbrLo = 0;
+  int nbrHi = 0;
   int index;
   width = newWidth;
   height = newHeight;
   for (index=0; index<19; index++)
   {
     int charConverted;
-    int prod;
     double dProd;
     if (*ptrValue == 0)
     {      // End of string, so end of conversion from string to number.
@@ -804,26 +803,25 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
     }
     charConverted = (*ptrValue - '0');
     ptrValue++;
-    prod = (nbr0 * 10) + charConverted;
-    dProd = (double)prod;
-    nbr0 = ((nbr0 * 10) + charConverted) & MAX_INT_NBR;
-    nbr1 = (nbr1 * 10) + (int)(dProd / LIMB_RANGE);
+    dProd = ((double)nbrLo * 10.0) + (double)charConverted;
+    nbrLo = ((nbrLo * 10) + charConverted) & MAX_VALUE_LIMB;
+    nbrHi = (nbrHi * 10) + (int)(dProd / (double)LIMB_RANGE);
   }
   if (inputBoxNbr == 1)
   {           // Changing center
               // nbr <- nbr - startNumber + 1 
     unsigned int carry;
-    int borrow = nbr0 - startNumber[0];
-    nbr0 = borrow & MAX_INT_NBR;
-    nbr1 = ((borrow >> BITS_PER_GROUP) + nbr1 - startNumber[1]) & MAX_INT_NBR;           
-    carry = nbr0 + 1;
-    nbr0 = carry & MAX_INT_NBR;
-    nbr1 = (carry >> BITS_PER_GROUP) + nbr1;
-    if ((nbr1 > 0) || (nbr0 >= 1))
+    int borrow = nbrLo - startNumber[0];
+    nbrLo = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
+    nbrHi = ((borrow >> BITS_PER_GROUP) + nbrHi - startNumber[1]) & MAX_VALUE_LIMB;           
+    carry = nbrLo + 1;
+    nbrLo = carry & MAX_VALUE_LIMB;
+    nbrHi += (carry >> BITS_PER_GROUP);
+    if ((nbrHi > 0) || (nbrLo >= 1))
     {       // nbr >= 1
       int diff;
-      int a = ((int)sqrt((((double)nbr1*LIMB_RANGE) + nbr0-1))+1)/2;
-      diff = (nbr0 - (4*a*a)) & MAX_INT_NBR;
+      int a = ((int)sqrt((((double)nbrHi * (double)LIMB_RANGE) + nbrLo - 1))+1)/2;
+      diff = (nbrLo - (4*a*a)) & MAX_VALUE_LIMB;
       if (((unsigned int)diff & HALF_INT_RANGE_U) != 0U)
       {     // Number is negative.
         diff -= MAX_INT_NBR;
@@ -854,8 +852,8 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
   }
   else if (inputBoxNbr == 2)
   {           // Changing start number.
-    startNumber[0] = nbr0;
-    startNumber[1] = nbr1;
+    startNumber[0] = nbrLo;
+    startNumber[1] = nbrHi;
   }
   else if (inputBoxNbr == 3)
   {           // Zoom in
