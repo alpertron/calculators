@@ -224,10 +224,10 @@ void modPowBaseInt(int base, const limb* exp, int nbrGroupsExp, limb* power)
   for (int index = nbrGroupsExp - 1; index >= 0; index--)
   {
     int groupExp = (exp + index)->x;
-    for (int mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+    for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
     {
       modmult(power, power, power);
-      if ((groupExp & mask) != 0)
+      if (((unsigned int)groupExp & mask) != 0U)
       {
         modmultInt(power, base, power);
       }
@@ -775,7 +775,7 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
     for (i = 0; i <= nbrLen; i++)
     {
       borrow += R[i].x - (mod + i)->x;
-      R[i].x = borrow & MAX_VALUE_LIMB;
+      R[i].x = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
       borrow >>= BITS_PER_GROUP;
     }
   }
@@ -784,7 +784,7 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
   for (i = 0; i <= nbrLen; i++)
   {
     borrow += (mod + i)->x - R[i].x;
-    R[i].x = borrow & MAX_VALUE_LIMB;
+    R[i].x = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
     borrow >>= BITS_PER_GROUP;
   }
   R[nbrLen].x = 0;
@@ -849,7 +849,7 @@ void BigIntModularDivisionPower2(const BigInteger* Num, const BigInteger* Den,
     for (int idx = 0; idx < NumberLength; idx++)
     {
       Cy -= aux3[idx].x;
-      aux3[idx].x = Cy & MAX_VALUE_LIMB;
+      aux3[idx].x = (int)((unsigned int)Cy & MAX_VALUE_LIMB);
       Cy >>= BITS_PER_GROUP;
     }
   }
@@ -1046,7 +1046,7 @@ void ComputeInversePower2(const limb *value, limb *result, limb *tmp)
   for (j = 1; j < NumberLength; j++)
   {
     Cy.x = (Cy.x >> BITS_PER_GROUP) - tmp[j].x;
-    tmp[j].x = Cy.x & MAX_VALUE_LIMB;
+    tmp[j].x = (int)((unsigned int)Cy.x & MAX_VALUE_LIMB);
   }                                                    // tmp <- 2 - N * x
   multiply(result, tmp, result, NumberLength, NULL);   // tmp <- x * (2 - N * x)
 }
@@ -1125,7 +1125,7 @@ void GetMontgomeryParms(int len)
     x = x * (2 - (N * x));       // 8 least significant bits of inverse correct.
     x = x * (2 - (N * x));       // 16 least significant bits of inverse correct.
     x = x * (2 - (N * x));       // 32 least significant bits of inverse correct.
-    MontgomeryMultN[0].x = (-x) & MAX_VALUE_LIMB;    // Change sign
+    MontgomeryMultN[0].x = (int)((unsigned int)(-x) & MAX_VALUE_LIMB);    // Change sign
   }
   // Compute MontgomeryMultR1 as 1 in Montgomery notation,
   // this is 2^(NumberLength*BITS_PER_GROUP) % TestNbr.
@@ -2074,7 +2074,7 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
       int32_t MontDig;
       int32_t Nbr = (factor1 + i)->x;
       int64_t Pr = ((int64_t)Nbr * (int64_t)factor2->x) + (int64_t)Prod[0].x;
-      MontDig = ((int32_t)Pr * MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
+      MontDig = (int32_t)(((uint32_t)Pr * (uint32_t)MontgomeryMultN[0].x) & MAX_VALUE_LIMB);
       Pr = (((int64_t)MontDig * (int64_t)TestNbr[0].x + Pr) >> BITS_PER_GROUP) +
         ((int64_t)MontDig * (int64_t)TestNbr[1].x) + ((int64_t)Nbr * (int64_t)(factor2 + 1)->x) + (int64_t)Prod[1].x;
       Prod[0].x = (int)((unsigned int)Pr & MAX_VALUE_LIMB);
@@ -2200,7 +2200,7 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
     {
       borrow = (borrow >> BITS_PER_GROUP) +
         (product + count)->x - TestNbr[count].x;
-      (product + count)->x = (int)(borrow & MAX_VALUE_LIMB);
+      (product + count)->x = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
     }
   }
 }
