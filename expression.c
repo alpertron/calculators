@@ -113,7 +113,7 @@ static char priority[] =
 
 enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResult)
 {
-  int retcode;
+  enum eExprErr retcode;
   int nbrParen = 0;
   const char* ptrExpr = expr;
   // Check that the parentheses are balanced.

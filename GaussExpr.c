@@ -72,7 +72,7 @@ static int ModInv(const BigInteger* RealNbr, const BigInteger* ImagNbr,
 
 enum eExprErr ComputeGaussianExpression(char *expr, BigInteger *ExpressionResult)
 {
-  int retcode;
+  enum eExprErr retcode;
   stackIndex = 0;
   exprIndex = 0;
   retcode = ComputeExpr(expr, ExpressionResult);
