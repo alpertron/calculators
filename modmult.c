@@ -133,18 +133,18 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
     (result + i)->x = low;
     if (low < HALF_INT_RANGE)
     {
-      dAccumulator = floor(dAccumulator * dInvLimbRange + 0.25);
+      dAccumulator = floor((dAccumulator * dInvLimbRange) + 0.25);
     }
     else
     {
-      dAccumulator = floor(dAccumulator * dInvLimbRange - 0.25);
+      dAccumulator = floor((dAccumulator * dInvLimbRange) - 0.25);
     }
-    low = (int)dAccumulator & MAX_VALUE_LIMB;
+    low = (int)((unsigned int)dAccumulator & MAX_VALUE_LIMB);
     ptrFactorBig++;
     ptrTestNbr++;
   }
 #endif
-  while (((result + nbrLen)->x & MAX_VALUE_LIMB) != 0)
+  while (((unsigned int)(result + nbrLen)->x & MAX_VALUE_LIMB) != 0U)
   {
     ptrFactorBig = result;
     ptrTestNbr = pTestNbr;
@@ -189,10 +189,10 @@ void modPow(const limb* base, const limb* exp, int nbrGroupsExp, limb* power)
   for (int index = nbrGroupsExp - 1; index >= 0; index--)
   {
     int groupExp = (exp + index)->x;
-    for (int mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+    for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
     {
       modmult(power, power, power);
-      if ((groupExp & mask) != 0)
+      if (((unsigned int)groupExp & mask) != 0U)
       {
         modmult(power, base, power);
       }
@@ -246,8 +246,8 @@ static void AddMult(limb* firstBig, int e, int f, limb* secondBig, int g, int h,
   {
     int u = firstBig->x;
     int v = secondBig->x;
-    carryU += u * (int64_t)e + v * (int64_t)f;
-    carryV += u * (int64_t)g + v * (int64_t)h;
+    carryU += (u * (int64_t)e) + (v * (int64_t)f);
+    carryV += (u * (int64_t)g) + (v * (int64_t)h);
     firstBig->x = (int)(carryU & MAX_INT_NBR);
     secondBig->x = (int)(carryV & MAX_INT_NBR);
     firstBig++;
@@ -1244,8 +1244,7 @@ void AddBigNbrModN(const limb *Nbr1, const limb *Nbr2, limb *Sum, const limb *mo
   borrow = 0;
   for (i = 0; i < nbrLen; i++)
   {
-    borrow = (borrow >> BITS_PER_GROUP) +
-       (unsigned int)Sum[i].x - (mod + i)->x;
+    borrow = (borrow >> BITS_PER_GROUP) + Sum[i].x - (mod + i)->x;
     Sum[i].x = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
   }
 
@@ -2075,12 +2074,12 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
       MontDig = ((int32_t)Pr * MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
       Pr = (((int64_t)MontDig * (int64_t)TestNbr[0].x + Pr) >> BITS_PER_GROUP) +
         ((int64_t)MontDig * (int64_t)TestNbr[1].x) + ((int64_t)Nbr * (int64_t)(factor2 + 1)->x) + (int64_t)Prod[1].x;
-      Prod[0].x = Pr & MAX_VALUE_LIMB;
+      Prod[0].x = (int)((unsigned int)Pr & MAX_VALUE_LIMB);
       for (j = 2; j < NumberLength; j++)
       {
         Pr = (Pr >> BITS_PER_GROUP) + ((int64_t)MontDig * (int64_t)TestNbr[j].x) +
           ((int64_t)Nbr * (int64_t)(factor2 + j)->x) + (int64_t)Prod[j].x;
-        Prod[j - 1].x = ((int32_t)Pr & MAX_VALUE_LIMB);
+        Prod[j - 1].x = (int)((unsigned int)Pr & MAX_VALUE_LIMB);
       }
       Prod[j - 1].x = (int32_t)(Pr >> BITS_PER_GROUP);
     }
@@ -2147,7 +2146,7 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
       for (count = 0; count < NumberLength; count++)
       {
         carry.x += Prod[count].x - TestNbr[count].x;
-        Prod[count].x = carry.x & MAX_VALUE_LIMB;
+        Prod[count].x = (int)((unsigned int)carry.x & MAX_VALUE_LIMB);
         carry.x >>= BITS_PER_GROUP;
       }
     }
