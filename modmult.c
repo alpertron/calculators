@@ -1147,16 +1147,16 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
     {
       int32_t MontDig;
       int32_t Nbr = (factor1 + i)->x;
-      int64_t Pr = Nbr * (int64_t)factor2->x + (uint32_t)Prod[0].x;
+      int64_t Pr = (int64_t)Nbr * (int64_t)factor2->x + (int64_t)Prod[0].x;
       MontDig = ((int32_t)Pr * MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
       Pr = (((int64_t)MontDig * (int64_t)TestNbr[0].x + Pr) >> BITS_PER_GROUP) +
-        ((int64_t)MontDig * TestNbr[1].x) + ((int64_t)Nbr * (factor2 + 1)->x) + (uint32_t)Prod[1].x;
+        ((int64_t)MontDig * (int64_t)TestNbr[1].x) + ((int64_t)Nbr * (int64_t)(factor2 + 1)->x) + (int64_t)Prod[1].x;
       Prod[0].x = Pr & MAX_VALUE_LIMB;
       for (j = 2; j < NumberLength; j++)
       {
-        Pr = (Pr >> BITS_PER_GROUP) +
-          ((int64_t)MontDig * TestNbr[j].x) + ((int64_t)Nbr * (factor2 + j)->x) + (uint32_t)Prod[j].x;
-        Prod[j - 1].x = (Pr & MAX_VALUE_LIMB);
+        Pr = (Pr >> BITS_PER_GROUP) + ((int64_t)MontDig * (int64_t)TestNbr[j].x) +
+          ((int64_t)Nbr * (int64_t)(factor2 + j)->x) + (int64_t)Prod[j].x;
+        Prod[j - 1].x = ((int32_t)Pr & MAX_VALUE_LIMB);
       }
       Prod[j - 1].x = (int32_t)(Pr >> BITS_PER_GROUP);
     }
@@ -1168,15 +1168,15 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
     {
       int Nbr = (factor1 + i)->x;
       double dNbr = (double)Nbr;
-      int low = Nbr * factor2->x + Prod[0].x;
+      int low = (Nbr * factor2->x) + Prod[0].x;
       double dAccum = dNbr * (double)factor2->x + (double)Prod[0].x;
       int MontDig = (low * MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
       double dMontDig = (double)MontDig;
       dAccum += dMontDig * (double)TestNbr[0].x;
       // At this moment dAccum is multiple of LIMB_RANGE.
-      dAccum = floor(dAccum*dInvLimbRange + 0.5);
-      low = ((unsigned int)dAccum + MontDig * TestNbr[1].x +
-                   Nbr * (factor2 + 1)->x + Prod[1].x) & MAX_VALUE_LIMB;
+      dAccum = floor((dAccum*dInvLimbRange) + 0.5);
+      low = ((int)dAccum + (MontDig * TestNbr[1].x) +
+                   (Nbr * (factor2 + 1)->x) + Prod[1].x) & MAX_VALUE_LIMB;
       dAccum += dMontDig * TestNbr[1].x + dNbr * (factor2 + 1)->x + (unsigned int)Prod[1].x;
       Prod[0].x = low;
       for (j = 2; j < NumberLength; j++)
