@@ -220,13 +220,13 @@ void *memmove(void *dest, const void *src, size_t count)
   }
   if (((s + n) <= d) || ((d + n) <= s))
   {
-    return (void)memcpy(d, s, n);
+    return memcpy(d, s, n);
   }
   if (d<s)
   {
     if (((uintptr_t)s % WS) == ((uintptr_t)d % WS))
     {
-      while (((uintptr_t)d % WS) != 0)
+      while (((uintptr_t)d % WS) != 0U)
       {
         if (n == 0U)
         {
@@ -255,7 +255,7 @@ void *memmove(void *dest, const void *src, size_t count)
   {
     if (((uintptr_t)s % WS) == ((uintptr_t)d % WS))
     {
-      while (((uintptr_t)(d+n) % WS) != 0)
+      while (((uintptr_t)(d+n) % WS) != 0U)
       {
         if (n == 0U)
         {
@@ -267,7 +267,7 @@ void *memmove(void *dest, const void *src, size_t count)
       while (n>=WS)
       {
         n-=WS;
-        *(WT *)(d+n) = *(WT *)(s+n);
+        *(WT *)(d+n) = *(const WT *)(s+n);
       }
     }
     while (n != 0U)

@@ -47,9 +47,9 @@
 #define MAX_COLUMNS 2000
 static char infoText[500];
 static bool showAlgebraic;
-static int thickness = 3;         // Number of bits to shift.
+static int thickness = 8;         // Number of pixels for each square.
 static int xCenter;
-static int xFraction;             // Range of fraction: 0 to (1 << thickness) - 1
+static int xFraction;             // Range of fraction: 0 to thickness - 1
 static int yCenter;
 static int yFraction;
 static int width;
@@ -222,8 +222,8 @@ void setPoint(int x, int y)
   {                          // Color black.
     algebraicColor = colorBlack;
   }
-  xPhysical = (width / 2) + ((x - xCenter) << thickness) - xFraction;
-  yPhysical = (height / 2) - ((y - yCenter) << thickness) + yFraction;
+  xPhysical = (width / 2) + ((x - xCenter) * thickness) - xFraction;
+  yPhysical = (height / 2) - ((y - yCenter) * thickness) + yFraction;
   if (((value[1] != 0) || (value[0] != 2)) && ((value[0] & 1) == 0))
   {     // value is not 2 and it is even
     color = algebraicColor;
@@ -297,12 +297,12 @@ void setPoint(int x, int y)
   }
   firstCol = ((xPhysical < 0)? 0: xPhysical);
   firstRow = ((yPhysical < 0)? 0: yPhysical);
-  lastCol = xPhysical + (1 << thickness);
+  lastCol = xPhysical + thickness;
   if (lastCol > width)
   {
     lastCol = width;
   }
-  lastRow = yPhysical + (1 << thickness);
+  lastRow = yPhysical + thickness;
   if (lastRow > height)
   {
     lastRow = height;
@@ -316,7 +316,7 @@ void setPoint(int x, int y)
       ptrPixel++;
     }
   }
-  if (thickness >= 2)
+  if (thickness >= 4)
   {
     color = colorWhite;
     absx = ((x > 0)? x : -x);
@@ -340,7 +340,7 @@ void setPoint(int x, int y)
     if (((absx < absy) && !(x == (y - 1) && (y > 0))) ||
         ((absx == absy) && (y <= 0)))
     {
-      currY = yPhysical + (1 << thickness) - 1;
+      currY = yPhysical + thickness - 1;
       if ((currY >= 0) && (currY < height))
       {
         ptrPixel = pixelXY(firstCol, currY);
@@ -358,10 +358,11 @@ EXTERNALIZE void drawPartialUlamSpiral(int xminDisp, int xmaxDisp, int yminDisp,
 {
   int x;
   int y;
-  int xmin = xCenter + ((xFraction + xminDisp) >> thickness);
-  int xmax = xCenter + ((xFraction + xmaxDisp) >> thickness);
-  int ymin = yCenter - ((-yFraction - yminDisp) >> thickness);
-  int ymax = yCenter - ((-yFraction - ymaxDisp) >> thickness);
+  int adjust = 16384 / thickness;
+  int xmin = xCenter + ((xFraction + xminDisp + 16384) / thickness) - adjust;
+  int xmax = xCenter + ((xFraction + xmaxDisp + 16384) / thickness) - adjust;
+  int ymin = yCenter - ((-yFraction - yminDisp + 16384) / thickness) + adjust;
+  int ymax = yCenter - ((-yFraction - ymaxDisp + 16384) / thickness) + adjust;
 
   initMultipleArray();
   for (x = xmin; x <= xmax; x++)
@@ -649,8 +650,9 @@ EXTERNALIZE char *getInformation(int x, int y)
     int t;
     int Nminustt[2];
     int indep[2];
-    int xLogical = xCenter + ((xFraction + x - (width / 2)) >> thickness);
-    int yLogical = yCenter + 1 + ((yFraction - y + (height / 2)) >> thickness);
+    int adjust = 16384 / thickness;
+    int xLogical = xCenter + ((xFraction + x - (width / 2) + 16384) / thickness) - adjust;
+    int yLogical = yCenter + 1 + ((yFraction - y + (height / 2) + 16384) / thickness) - adjust;
     getN(xLogical, yLogical, value);
     if ((xLogical > yLogical) && (xLogical > -yLogical))
     {
@@ -761,12 +763,13 @@ EXTERNALIZE char *getInformation(int x, int y)
 
 EXTERNALIZE void moveSpiral(int deltaX, int deltaY)
 {
+  int adjust = 16384 / thickness;
   xFraction -= deltaX;
-  xCenter += xFraction >> thickness;
-  xFraction &= (1 << thickness) - 1;
+  xCenter += ((xFraction + 16384) / thickness) - adjust;
+  xFraction &= thickness - 1;
   yFraction += deltaY;
-  yCenter += yFraction >> thickness;
-  yFraction &= (1 << thickness) - 1; 
+  yCenter += ((yFraction + 16384) / thickness) - adjust;
+  yFraction &= thickness - 1; 
 }
 
 // inputBoxNbr = 1 -> changing center
@@ -846,21 +849,21 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
   }
   else if (inputBoxNbr == 3)
   {           // Zoom in
-    if (thickness == 5)
+    if (thickness == 32)
     {
       return NULL;
     }
-    thickness++;
+    thickness *= 2;
     xFraction <<= 1;
     yFraction <<= 1;
   }
   else
   {           // Zoom out
-    if (thickness == 0)
+    if (thickness == 1)
     {
       return NULL;
     }
-    thickness--;
+    thickness /= 2;
     xFraction >>= 1;
     yFraction >>= 1;
   }
@@ -921,12 +924,13 @@ void iteration(void)
     {
       if ((event.motion.state & SDL_BUTTON_LMASK) != 0)
       {                        // Drag operation.
+        int adjust = 16384 / thickness;
         xFraction -= event.motion.xrel;
-        xCenter += xFraction >> thickness;
-        xFraction &= (1 << thickness) - 1;
+        xCenter += ((xFraction + 16384) / thickness) - adjust;
+        xFraction &= thickness - 1;
         yFraction += event.motion.yrel;
-        yCenter += yFraction >> thickness;
-        yFraction &= (1 << thickness) - 1;
+        yCenter += ((yFraction + 16384) / thickness) - adjust;
+        yFraction &= thickness - 1;
       }
       else
       {                        // Show information.
@@ -937,9 +941,9 @@ void iteration(void)
     {
       if (event.button.button == SDL_BUTTON_WHEELUP)
       {
-        if (thickness < 5)
+        if (thickness < 32)
         {
-          thickness++;
+          thickness *= 2;
           xFraction <<= 1;
           yFraction <<= 1;
           drawUlamSpiral();
@@ -947,9 +951,9 @@ void iteration(void)
       }
       else if (event.button.button == SDL_BUTTON_WHEELDOWN)
       {
-        if (thickness > 0)
+        if (thickness > 1)
         {
-          thickness--;
+          thickness /= 2;
           xFraction >>= 1;
           yFraction >>= 1;
           drawUlamSpiral();
@@ -973,8 +977,8 @@ void iteration(void)
       int yMin;
       int yMax;
       // Move pixels of double buffer according to drag direction.
-      int xMove = (xCenter << thickness) + xFraction - (oldXCenter << thickness) - oldXFraction;
-      int yMove = (yCenter << thickness) + yFraction - (oldYCenter << thickness) - oldYFraction;
+      int xMove = (xCenter * thickness) + xFraction - (oldXCenter * thickness) - oldXFraction;
+      int yMove = (yCenter * thickness) + yFraction - (oldYCenter * thickness) - oldYFraction;
       if (xMove > 0)
       {           // Move pixels to left.
         rectDest.x = 0;
