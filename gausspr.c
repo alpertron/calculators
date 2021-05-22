@@ -26,9 +26,7 @@
 #define SMALL_NUMBER_BOUND 32768
 #ifndef __EMSCRIPTEN__
   #define EXTERNALIZE	
-  #define pixelXY(x, y) ((Uint32*)doubleBuffer->pixels + (y * width) + x)
   #include <SDL.h>
-  #define pixels (unsigned int *)(4*MAX_WIDTH*32)
   SDL_Surface* screen;
   SDL_Surface* doubleBuffer;
   int oldXCenter;
@@ -39,9 +37,7 @@
   int quit;
 #else        // Emscripten
   #define MAX_WIDTH 2048
-  #define pixelXY(x, y) (&pixels[(y * MAX_WIDTH) + x])
   unsigned int pixelArray[2048 * MAX_WIDTH];
-  #define pixels pixelArray
 #endif
 
 #define MAX_LINES  1000
@@ -132,7 +128,11 @@ static void setPoint(int x, int y)
   }
   for (row = firstRow; row < lastRow; row++)
   {
-    ptrPixel = pixelXY(firstCol, row);
+#ifdef EMSCRIPTEN
+    ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol];
+#else
+    ptrPixel = (Uint32*)doubleBuffer->pixels + (row * width) + firstCol;
+#endif
     for (col = firstCol; col < lastCol; col++)
     {
       *ptrPixel = color;
@@ -147,7 +147,11 @@ static void setPoint(int x, int y)
       col = xPhysical + (thickness / 2);
       if ((col >= 0) && (col < width))
       {
-        ptrPixel = pixelXY(col, firstRow);
+#ifdef EMSCRIPTEN
+        ptrPixel = &pixelArray[(firstRow * MAX_WIDTH) + col];
+#else
+        ptrPixel = (Uint32*)doubleBuffer->pixels + (firstRow * width) + col;
+#endif
         for (row = firstRow; row < lastRow; row++)
         {
           *ptrPixel = color;
@@ -171,7 +175,11 @@ static void setPoint(int x, int y)
         {
           lastRow2 = height;
         }
-        ptrPixel = pixelXY(col, firstRow2);
+#ifdef EMSCRIPTEN
+        ptrPixel = &pixelArray[(firstRow2 * MAX_WIDTH) + col];
+#else
+        ptrPixel = (Uint32*)doubleBuffer->pixels + (firstRow2 * width) + col;
+#endif
         for (row = firstRow2; row < lastRow2; row++)
         {
           *ptrPixel = color;
@@ -191,7 +199,11 @@ static void setPoint(int x, int y)
       row = yPhysical + (thickness / 2);
       if ((row >= 0) && (row < height))
       {
-        ptrPixel = pixelXY(firstCol, row);
+#ifdef EMSCRIPTEN
+        ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol];
+#else
+        ptrPixel = (Uint32*)doubleBuffer->pixels + (row * width) + firstCol;
+#endif
         for (col = firstCol; col < lastCol; col++)
         {
           *ptrPixel = color;
@@ -211,7 +223,11 @@ static void setPoint(int x, int y)
         {
           lastCol2 = width;
         }
-        ptrPixel = pixelXY(firstCol2, row);
+#ifdef EMSCRIPTEN
+        ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol2];
+#else
+        ptrPixel = (Uint32*)doubleBuffer->pixels + (row * width) + firstCol2;
+#endif
         for (col = firstCol2; col < lastCol2; col++)
         {
           *ptrPixel = color;
@@ -355,18 +371,9 @@ int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
 }
 
 #ifdef __EMSCRIPTEN__
-size_t strlen(const char *s)
-{
-  const char *a = s;
-  while (*a != '\0')
-  {
-    a++;
-  }
-  return a - s;
-}
 unsigned int *getPixels(void)
 {
-  return pixels;
+  return pixelArray;
 }
 #else
 static void drawGraphic(void)

@@ -26,7 +26,6 @@
 #define NBR_SMALL_PRIMES   25
 #ifndef __EMSCRIPTEN__
   #define EXTERNALIZE	
-  #define pixelXY(x, y) ((Uint32*)doubleBuffer->pixels + (y * width) + x)
   #include <SDL.h>
   SDL_Surface* screen;
   SDL_Surface* doubleBuffer;
@@ -39,8 +38,7 @@
 #else     // Emscripten
   #define EXTERNALIZE  __attribute__((visibility("default")))
   #define MAX_WIDTH 2048
-  #define pixelXY(x, y) (&pixels[(y * MAX_WIDTH) + x])
-  unsigned int pixels[2048 * MAX_WIDTH];
+  unsigned int pixelArray[2048 * MAX_WIDTH];
 #endif
 
 #define MAX_LINES  1000
@@ -309,7 +307,11 @@ void setPoint(int x, int y)
   }
   for (row = firstRow; row < lastRow; row++)
   {
-    ptrPixel = pixelXY(firstCol, row);
+#ifdef EMSCRIPTEN
+    ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol];
+#else
+    ptrPixel = (Uint32*)doubleBuffer->pixels + (row * width) + firstCol;
+#endif
     for (col = firstCol; col < lastCol; col++)
     {
       *ptrPixel = color;
@@ -325,7 +327,11 @@ void setPoint(int x, int y)
     {
       if ((xPhysical >= 0) && (xPhysical < width))
       {
-        ptrPixel = pixelXY(xPhysical, firstRow);
+#ifdef EMSCRIPTEN
+        ptrPixel = &pixelArray[(firstRow * MAX_WIDTH) + xPhysical];
+#else
+        ptrPixel = (Uint32*)doubleBuffer->pixels + (firstRow * width) + xPhysical;
+#endif
         for (row = firstRow; row < lastRow; row++)
         {
           *ptrPixel = color;
@@ -343,7 +349,11 @@ void setPoint(int x, int y)
       currY = yPhysical + thickness - 1;
       if ((currY >= 0) && (currY < height))
       {
-        ptrPixel = pixelXY(firstCol, currY);
+#ifdef EMSCRIPTEN
+        ptrPixel = &pixelArray[(currY * MAX_WIDTH) + firstCol];
+#else
+        ptrPixel = (Uint32*)doubleBuffer->pixels + (currY * width) + firstCol;
+#endif
         for (col = firstCol; col < lastCol; col++)
         {
           *ptrPixel = color;
@@ -401,7 +411,7 @@ size_t strlen(const char *s)
 
 unsigned int *getPixels(void)
 {
-  return pixels;
+  return pixelArray;
 }
 #endif
 
