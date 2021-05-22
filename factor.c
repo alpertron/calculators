@@ -543,11 +543,11 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   (void)memset(common.ecm.primes, 0xFF, sizeof(common.ecm.primes));
   for (i = 2; (i * i) < numPrimes; i++)
   {       // Generation of primes using sieve of Eratosthenes.
-    if ((common.ecm.primes[i >> 3] & (1 << (i & 7))) != 0)
+    if ((common.ecm.primes[i >> 3] & (1U << (i & 7))) != 0U)
     {     // Number i is prime.
       for (j = i * i; j < numPrimes; j += i)
       {   // Mark multiple of i as composite.
-        common.ecm.primes[j >> 3] &= ~(1 << (j & 7));
+        common.ecm.primes[j >> 3] &= ~(1U << (j & 7));
       }
     }
   }
@@ -556,7 +556,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   // If -2<=n<=2 (mod p) does not hold, b cannot be multiple of (p-1)/2.
   for (i = 2; i < numPrimes; i++)
   {
-    if ((common.ecm.primes[i>>3] & (1 << (i & 7))) != 0)
+    if ((common.ecm.primes[i>>3] & (1U << (i & 7))) != 0U)
     {      // i is prime according to sieve.
            // If n+/-1 is multiple of p, then it must be multiple
            // of p^2, otherwise it cannot be a perfect power.
@@ -575,16 +575,16 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
           remainder += (uint64_t)Temp2.limbs[1].x << BITS_PER_GROUP;
         }
         // NumberFactor cannot be a power + 1 if condition holds.
-        plus1 = ((rem == 1) && (remainder != 1));
+        plus1 = ((rem == 1) && (remainder != 1U));
         // NumberFactor cannot be a power - 1 if condition holds.
-        minus1 = ((rem == (i - 1)) && (remainder != (((uint64_t)i*(uint64_t)i) - 1)));
+        minus1 = ((rem == (i - 1)) && (remainder != (((uint64_t)i*(uint64_t)i) - 1U)));
       }
       index = i / 2;
-      if (!(common.ecm.ProcessExpon[index >> 3] & (1<<(index&7))))
+      if ((common.ecm.ProcessExpon[index >> 3] & (1U << (index&7))) == 0U)
       {
         continue;
       }
-      modulus = remainder % i;
+      modulus = (int)(remainder % (uint64_t)i);
       if (plus1)
       {
         minRemainder = 1;
@@ -605,7 +605,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
       {
         for (j = index; j <= maxExpon; j += index)
         {
-          common.ecm.ProcessExpon[j >> 3] &= ~(1 << (j&7));
+          common.ecm.ProcessExpon[j >> 3] &= ~(1U << (j & 7));
         }
       }
       else
@@ -614,7 +614,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
         {
           for (j = i - 1; j <= maxExpon; j += i - 1)
           {
-            common.ecm.ProcessExpon[j >> 3] &= ~(1 << (j & 7));
+            common.ecm.ProcessExpon[j >> 3] &= ~(1U << (j & 7));
           }
         }
       }
@@ -624,7 +624,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   {
     double u = logar / log(j) + .000005;
     Exponent = (int)floor(u);
-    if ((u - Exponent) > .00001)
+    if ((u - (double)Exponent) > .00001)
     {
       continue;
     }
@@ -632,7 +632,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
     {
       continue;
     }
-    if (!(common.ecm.ProcessExpon[Exponent >> 3] & (1 << (Exponent & 7))))
+    if ((common.ecm.ProcessExpon[Exponent >> 3] & (1U << (Exponent & 7))) == 0U)
     {
       continue;
     }
@@ -775,12 +775,12 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
       int shiftBits = nbrs[i];
       if (shiftBits < 32)
       {
-        if ((bitsSqrLow[i] & (1 << shiftBits)) == 0)
+        if (((unsigned int)bitsSqrLow[i] & (1U << shiftBits)) == 0U)
         { // Not a perfect square
           break;
         }
       }
-      else if ((bitsSqrHigh[i] & (1 << (shiftBits-32))) == 0)
+      else if (((unsigned int)bitsSqrHigh[i] & (1U << (shiftBits-32))) == 0U)
       { // Not a perfect square
         break;
       }
@@ -874,6 +874,7 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
 #ifndef __EMSCRIPTEN__
   (void)pstFactors;     // Ignore parameter.
 #endif
+  int NumberLengthBytes;
   static BigInteger potentialFactor;
   common.ecm.fieldTX = common.ecm.TX;
   common.ecm.fieldTZ = common.ecm.TZ;
@@ -884,15 +885,16 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
 
   common.ecm.fieldAA = common.ecm.AA;
   NumberLength = numToFactor->nbrLimbs;
-  (void)memcpy(TestNbr, numToFactor->limbs, NumberLength * sizeof(limb));
+  NumberLengthBytes = NumberLength * (int)sizeof(limb);
+  (void)memcpy(TestNbr, numToFactor->limbs, NumberLengthBytes);
   GetYieldFrequency();
   GetMontgomeryParms(NumberLength);
-  (void)memset(common.ecm.M, 0, NumberLength * sizeof(limb));
-  (void)memset(common.ecm.DX, 0, NumberLength * sizeof(limb));
-  (void)memset(common.ecm.DZ, 0, NumberLength * sizeof(limb));
-  (void)memset(common.ecm.W3, 0, NumberLength * sizeof(limb));
-  (void)memset(common.ecm.W4, 0, NumberLength * sizeof(limb));
-  (void)memset(common.ecm.GD, 0, NumberLength * sizeof(limb));
+  (void)memset(common.ecm.M, 0, NumberLengthBytes);
+  (void)memset(common.ecm.DX, 0, NumberLengthBytes);
+  (void)memset(common.ecm.DZ, 0, NumberLengthBytes);
+  (void)memset(common.ecm.W3, 0, NumberLengthBytes);
+  (void)memset(common.ecm.W4, 0, NumberLengthBytes);
+  (void)memset(common.ecm.GD, 0, NumberLengthBytes);
 #ifdef __EMSCRIPTEN__
   ptrLowerText = ShowFactoredPart(numToFactor, pstFactors);
 #endif
@@ -905,7 +907,7 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
     Lehman(numToFactor, EC % 50000000, &potentialFactor);
     if (potentialFactor.nbrLimbs > 1)
     {                // Factor found.
-      (void)memcpy(common.ecm.GD, potentialFactor.limbs, NumberLength * sizeof(limb));
+      (void)memcpy(common.ecm.GD, potentialFactor.limbs, NumberLengthBytes);
       (void)memset(&common.ecm.GD[potentialFactor.nbrLimbs], 0,
         (NumberLength - potentialFactor.nbrLimbs) * sizeof(limb));
       foundByLehman = true;
@@ -916,7 +918,7 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
     {    // Perform SIQS
 #ifdef __EMSCRIPTEN__
       double originalTenths = tenths();
-      uint64_t oldModularMult = lModularMult;
+      int64_t oldModularMult = lModularMult;
 #endif
       FactoringSIQS(TestNbr, common.ecm.GD);
 #ifdef __EMSCRIPTEN__
@@ -931,7 +933,7 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
     {
       break;
     }
-  } while (!memcmp(common.ecm.GD, TestNbr, NumberLength*sizeof(limb)) ||
+  } while ((memcmp(common.ecm.GD, TestNbr, NumberLengthBytes) == 0) ||
            isOne(common.ecm.GD, NumberLength));
   StepECM = 0; /* do not show pass number on screen */
 }
@@ -1070,6 +1072,9 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
           {
             copyStr(&ptrOutput, lang ? "Compuesto": "Composite");
           }
+          else
+          {            // Nothing to do.
+          }
           copyStr(&ptrOutput, ")</span>");
         }
         else if (!isPrime)
@@ -1159,7 +1164,7 @@ static void SortFactors(struct sFactors *pstFactors)
     pstCurFactor++;
   }
   // Find location for new factors.
-  ptrNewFactor = 0;
+  ptrNewFactor = NULL;
   pstCurFactor = pstFactors + 1;
   for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++)
   {
@@ -1200,7 +1205,7 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   }
   // Check whether prime is already in factor list.
   pstCurFactor = pstFactors+1;
-  for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++, pstCurFactor++)
+  for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++)
   {
     ptrValue = pstCurFactor->ptrFactor;  // Point to factor in factor array.
     if ((*ptrValue == 1) && (*(ptrValue+1) == divisor))
@@ -1219,6 +1224,7 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
     {   // Factor in factor list is greater than factor to insert. Exit loop.
       break;
     }
+    pstCurFactor++;
   }
   pstFactors->multiplicity++; // Indicate new known factor.
   multiplicity = pstFactorDividend->multiplicity;
@@ -1348,6 +1354,8 @@ static void showECMStatus(void)
     *ptrStatus = '%';
     ptrStatus++;
     break;
+  default:
+    break;
   }
   copyStr(&ptrStatus, "</p>");
   databack(status);
@@ -1471,7 +1479,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   for (int countdown = 20; countdown > 0; countdown--)
   {
     NumberLength = nbrLimbs;
-    randomBase = (int)(((uint64_t)randomBase * 89547121) + 1762281733) & MAX_INT_NBR;
+    randomBase = (int)((((uint64_t)randomBase * 89547121U) + 1762281733U) & MAX_INT_NBR_U);
     modPowBaseInt(randomBase, common.ecm.Aux1, Aux1Len, common.ecm.Aux2); // Aux2 = base^Aux1.
                                                  // If Mult1 = 1 or Mult1 = TestNbr-1, then try next base.
     if (checkOne(common.ecm.Aux2, nbrLimbs) || checkMinusOne(common.ecm.Aux2, nbrLimbs))
@@ -1950,7 +1958,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
       {
         startSkipTest();
       }
-      uint64_t oldModularMult = lModularMult;
+      int64_t oldModularMult = lModularMult;
 #endif
       result = BpswPrimalityTest(&prime, pstFactors);
 #ifdef __EMSCRIPTEN__
