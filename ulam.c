@@ -82,14 +82,17 @@ bool algebraicFactor(int linear, int *indep)
   double dLinear;
   double dDelta;
   double dFourAC;
+  double dSqDelta;
   temp[0] = *indep;
   temp[1] = *(indep+1);
   if (((unsigned int)temp[1] & HALF_INT_RANGE_U) != 0U)
   {    // Independent term is negative.
     int carry = -temp[0];
-    temp[0] = (int)((unsigned int)carry & MAX_VALUE_LIMB);
-    carry = (carry >> BITS_PER_GROUP) - temp[1];
-    temp[1] = (int)((unsigned int)carry & MAX_VALUE_LIMB);
+    unsigned int tmp = (unsigned int)carry & MAX_VALUE_LIMB;
+    temp[0] = (int)tmp;
+    carry = ((carry >= 0)? -temp[1]: (MAX_INT_NBR - temp[1]));
+    tmp = (unsigned int)carry & MAX_VALUE_LIMB;
+    temp[1] = (int)tmp;
   }
   dFourAC = (((double)temp[1] * MAX_VALUE_LIMB) + (double)temp[0]) * 16;
   dLinear = (double)linear;
@@ -105,7 +108,8 @@ bool algebraicFactor(int linear, int *indep)
   {
     return false;   // No real roots.
   }
-  iSqDelta = (int)(sqrt(dDelta) + 0.5);              // Convert to nearest integer.
+  dSqDelta = sqrt(dDelta) + 0.5;                     // Convert to nearest integer.
+  iSqDelta = (int)dSqDelta;
   t1 = (int)(((double)(-linear) + iSqDelta) / 4);    // t1 and t2 are less than 2^31 so
   t2 = (int)(((double)(-linear) - iSqDelta) / 4);    // they fit into a double.
 
@@ -131,30 +135,35 @@ static void getN(int valX, int valY, int *value)
   int x = valX;
   int y = valY;
   int addend[2];
+  unsigned int tmp;
   if ((x >= 0) && (x >= y) && (x >= -y))
   {                     // Right quadrant.
     multiply((4 * x) + 3, x, value);
-    addend[0] = (int)((unsigned int)y & MAX_VALUE_LIMB);
+    tmp = (unsigned int)y & MAX_VALUE_LIMB;
+    addend[0] = (int)tmp;
     addend[1] = ((y >= 0)? 0: MAX_INT_NBR);
   }
   else if ((y >= 0) && (y > x) && (y > -x))
   {                     // Top quadrant.
     multiply((4 * y) - 3, y, value);
     x = -x;
-    addend[0] = (int)((unsigned int)x & MAX_VALUE_LIMB);
+    tmp = (unsigned int)x & MAX_VALUE_LIMB;
+    addend[0] = (int)tmp;
     addend[1] = ((x >= 0) ? 0 : MAX_INT_NBR);
   }
   else if ((x <= 0) && (x <= y) && (x <= -y))
   {                     // Left quadrant.
     multiply((4 * x) + 1, x, value);
     y = -y;
-    addend[0] = (int)((unsigned int)y & MAX_VALUE_LIMB);
+    tmp = (unsigned int)y & MAX_VALUE_LIMB;
+    addend[0] = (int)tmp;
     addend[1] = ((y >= 0) ? 0 : MAX_INT_NBR);
   }
   else
   {                     // Bottom quadrant.
     multiply((4 * y) - 1, y, value);
-    addend[0] = (int)((unsigned int)x & MAX_VALUE_LIMB);
+    tmp = (unsigned int)x & MAX_VALUE_LIMB;
+    addend[0] = (int)tmp;
     addend[1] = ((x >= 0) ? 0 : MAX_INT_NBR);
   }
   AddBigNbr(value, addend, value);
@@ -499,7 +508,8 @@ void ShowLabel(char *text, int linear, int *indep)
       {    // Independent term is positive.
         dDelta = (dB * dB) - dFourAC;
       }
-      int iSqDelta = (int)(sqrt(dDelta) + 0.5);             // Convert to nearest integer.
+      double dSqDelta = sqrt(dDelta) + 0.5;                 // Convert to nearest integer.
+      int iSqDelta = (int)dSqDelta;
       int t1 = (int)((-dB + iSqDelta) / 4);                 // t1 and t2 are less than 2^31 so
       int t2 = (int)((-dB - iSqDelta) / 4);                 // they fit into a double.
                                                             // Twice the roots are integer numbers
@@ -547,19 +557,28 @@ void ShowLabel(char *text, int linear, int *indep)
       temp[1] = *(indep+1);
       if ((temp[0] & 1) == 0)
       {           // Independent term is even
+        unsigned int tmp;
         if (((b & 3) == 0) && ((temp[0] & 3) == 0))
         {         // Both linear and independent term are multiple of 4.
           copyStr(&ptrText, " = 4 (t<sup>2</sup>");
           b /= 4;
-          temp[0] = ((temp[0] >> 2) | (temp[1] << (BITS_PER_GROUP-2))) & MAX_VALUE_LIMB;
-          temp[1] = (temp[1] << (32-BITS_PER_GROUP)) >> (2 + (32 - BITS_PER_GROUP));   // Divide by 4.
+          // Divide by temp[1]: temp[0] by 4.
+          tmp = (((unsigned int)temp[0] >> 2) |
+            ((unsigned int)temp[1] << (BITS_PER_GROUP - 2))) & MAX_VALUE_LIMB;
+          temp[0] = (int)tmp;
+          tmp = ((unsigned int)temp[1] << (32-BITS_PER_GROUP)) >> (2 + (32 - BITS_PER_GROUP));
+          temp[1] = (int)tmp;
         }
         else
         {
           copyStr(&ptrText, " = 2 (2t<sup>2</sup>");
           b /= 2;
-          temp[0] = ((temp[0] >> 1) | (temp[1] << (BITS_PER_GROUP-1))) & MAX_VALUE_LIMB;
-          temp[1] = (temp[1] << (32-BITS_PER_GROUP)) >> (1 + (32 - BITS_PER_GROUP));   // Divide by 2.
+          // Divide by temp[1]: temp[0] by 2.
+          tmp = (((unsigned int)temp[0] >> 1) |
+            ((unsigned int)temp[1] << (BITS_PER_GROUP-1))) & MAX_VALUE_LIMB;
+          temp[0] = (int)tmp;
+          tmp = ((unsigned int)temp[1] << (32-BITS_PER_GROUP)) >> (1 + (32 - BITS_PER_GROUP));
+          temp[1] = (int)tmp;
         }
         if (b != 0)
         {
@@ -617,7 +636,7 @@ void ShowLabel(char *text, int linear, int *indep)
           int p = getPrime(i);
           // delta = b*b - 16*indep
           // Find delta mod p.
-          indepModP = (((*(indep+1)%p)*(LIMB_RANGE%p)) + *(indep)%p) % p;
+          indepModP = (((*(indep+1)%p)*((MAX_INT_NBR-p+1)%p)) + *(indep)%p) % p;
           deltaModP = (((((b%p) * (b%p)) - (16*indepModP)) % p) + p) % p;
           if (multiple[i][deltaModP] == 0)
           {
@@ -791,6 +810,7 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
   int nbrLo = 0;
   int nbrHi = 0;
   int index;
+  unsigned int tmp;
   width = newWidth;
   height = newHeight;
   for (index=0; index<19; index++)
@@ -805,7 +825,8 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
     ptrValue++;
     dProd = ((double)nbrLo * 10.0) + (double)charConverted;
     nbrLo = (nbrLo * 10) + charConverted;
-    nbrLo = (int)((unsigned int)nbrLo & MAX_VALUE_LIMB);
+    tmp = (unsigned int)nbrLo & MAX_VALUE_LIMB;
+    nbrLo = (int)tmp;
     nbrHi = (nbrHi * 10) + (int)(dProd / (double)LIMB_RANGE);
   }
   if (inputBoxNbr == 1)
@@ -813,17 +834,20 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
               // nbr <- nbr - startNumber + 1 
     unsigned int carry;
     int borrow = nbrLo - startNumber[0];
-    nbrLo = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
+    tmp = (unsigned int)borrow & MAX_VALUE_LIMB;
+    nbrLo = (int)tmp;
     nbrHi = ((borrow >> BITS_PER_GROUP) + nbrHi - startNumber[1]) & MAX_VALUE_LIMB;           
     carry = nbrLo + 1;
-    nbrLo = (int)(carry & MAX_VALUE_LIMB);
+    tmp = carry & MAX_VALUE_LIMB;
+    nbrLo = (int)tmp;
     nbrHi += (int)(carry >> BITS_PER_GROUP);
     if ((nbrHi > 0) || (nbrLo >= 1))
     {       // nbr >= 1
       int diff;
       int a = ((int)sqrt((((double)nbrHi * (double)LIMB_RANGE) + nbrLo - 1))+1)/2;
       diff = nbrLo - (4 * a * a);
-      diff = (int)((unsigned int)diff & MAX_VALUE_LIMB);
+      tmp = (unsigned int)diff & MAX_VALUE_LIMB;
+      diff = (int)tmp;
       if (((unsigned int)diff & HALF_INT_RANGE_U) != 0U)
       {     // Number is negative.
         diff -= MAX_INT_NBR;
@@ -1024,7 +1048,7 @@ void iteration(void)
       }
       xMin = -width / 2;
       xMax = width / 2;
-      yMin = -height / 2,
+      yMin = -height / 2;
       yMax = height / 2;
       if (yMove > 0)
       {              // Move pixels up.
