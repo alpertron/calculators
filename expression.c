@@ -873,12 +873,12 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
             {
               c -= 'a' - 10;
             }
-            carry.x += c << shLeft;
+            carry.x += (int)((unsigned int)c << shLeft);
             shLeft += 4;   // 4 bits per hex digit.
             if (shLeft >= BITS_PER_GROUP)
             {
               shLeft -= BITS_PER_GROUP;
-              ptrLimb->x = carry.x & MAX_VALUE_LIMB;
+              ptrLimb->x = (int)((unsigned int)carry.x & MAX_VALUE_LIMB);
               ptrLimb++;
               carry.x = c >> (4 - shLeft);
             }
@@ -952,7 +952,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           continue;
         }
       }
-      if ((leftNumberFlag == 0) != (charValue == OPER_NOT))
+      if ((leftNumberFlag == false) != (charValue == OPER_NOT))
       {     // Missing left operator if operator is not NOT or
             // extra left operator if operator is NOT.
         return EXPR_SYNTAX_ERROR;
@@ -1004,7 +1004,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
           computeSubExprStackThreshold = stackIndex;
         }
       }
-      if (stackIndex >= sizeof(stackOperators))
+      if (stackIndex >= (int)sizeof(stackOperators))
       {
         return EXPR_TOO_MANY_PAREN;
       }
@@ -1206,7 +1206,7 @@ static bool func(char* expr, BigInteger* ExpressionResult,
   exprIndex++;
   for (int index = 0; index < funcArgs; index++)
   {
-    int retcode;
+    enum eExprErr retcode;
     char compareChar;
 
     SkipSpaces(expr);
@@ -1216,7 +1216,11 @@ static bool func(char* expr, BigInteger* ExpressionResult,
       return true;
     }
     retcode = ComputeExpr(expr, ExpressionResult);
-    if (retcode != EXPR_OK) { return retcode; }
+    if (retcode != EXPR_OK)
+    {
+      *pRetCode = retcode;
+      return true;
+    }
     SkipSpaces(expr);
     compareChar = ((index == (funcArgs - 1))? ')' : ',');
     if (exprIndex == exprLength)
@@ -1301,14 +1305,16 @@ static int ComputeBack(void)
   pResultLimbs->x |= 1;  // If number is even, use next odd number.
   if (pResult->nbrLimbs == 1)
   {
+    int rc;
     do
     {        // Loop that searches for previous probable prime.
       addbigint(pResult, -2);
 #ifdef FACTORIZATION_APP
-    } while (BpswPrimalityTest(pResult, NULL) != 0);  // Continue loop if not probable prime.
+      rc = BpswPrimalityTest(pResult, NULL);  // Continue loop if not probable prime.
 #else
-    } while (BpswPrimalityTest(pResult) != 0);        // Continue loop if not probable prime.
+      rc = BpswPrimalityTest(pResult);          // Continue loop if not probable prime.
 #endif
+    } while (rc != 0);
   }
   else
   {          // Big number: use sieve.
@@ -1475,11 +1481,11 @@ static enum eExprErr ComputeFibLucas(int origValue)
       unsigned int carry = 0;
       for (j = 0; j < len; j++)
       {
-        carry += (pFibonPrev + j)->x + (pFibonAct + j)->x;
-        (pFibonPrev + j)->x = carry & MAX_VALUE_LIMB;
+        carry += (unsigned int)(pFibonPrev + j)->x + (unsigned int)(pFibonAct + j)->x;
+        (pFibonPrev + j)->x = (int)(carry & MAX_VALUE_LIMB);
         carry >>= BITS_PER_GROUP;
       }
-      if (carry != 0)
+      if (carry != 0U)
       {
         (pFibonPrev + j)->x = carry;
         (pFibonAct + j)->x = 0;
@@ -1513,7 +1519,8 @@ static enum eExprErr ComputePartition(void)
   }
   if (pArgument->nbrLimbs == 2)
   {
-    largeVal.x = pArgument->limbs[0].x + (pArgument->limbs[1].x << BITS_PER_GROUP);
+    largeVal.x = pArgument->limbs[0].x + 
+      (int)((unsigned int)pArgument->limbs[1].x << BITS_PER_GROUP);
   }
   else
   {
@@ -1741,9 +1748,9 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
       return EXPR_INTERM_TOO_HIGH;
     }
 #ifdef FACTORIZATION_APP
-    if ((unsigned int)((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 664380)
+    if ((unsigned int)((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 664380U)
 #else
-    if ((unsigned int)((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 66438)
+    if ((unsigned int)((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 66438U)
 #endif
     {   // Shift too much to the left.
       return EXPR_INTERM_TOO_HIGH;
