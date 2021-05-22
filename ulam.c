@@ -84,7 +84,7 @@ bool algebraicFactor(int linear, int *indep)
   double dFourAC;
   temp[0] = *indep;
   temp[1] = *(indep+1);
-  if ((temp[1] & HALF_INT_RANGE) != 0)
+  if (((unsigned int)temp[1] & HALF_INT_RANGE_U) != 0U)
   {    // Independent term is negative.
     int carry = -temp[0];
     temp[0] = carry & MAX_INT_NBR;
@@ -93,7 +93,7 @@ bool algebraicFactor(int linear, int *indep)
   }
   dFourAC = (((double)temp[1] * MAX_VALUE_LIMB) + (double)temp[0]) * 16;
   dLinear = (double)linear;
-  if ((*(indep + 1) & HALF_INT_RANGE) != 0)
+  if (((unsigned int)*(indep + 1) & HALF_INT_RANGE_U) != 0U)
   {    // Independent term is negative.
     dDelta = (dLinear * dLinear) + dFourAC;
   }
@@ -432,9 +432,9 @@ char *appendInt64(char *text, const int *value)
     int rem = nbr1 % 10;
     nbr1 = nbr1 / 10;
     dDivid = (double)rem * (double)LIMB_RANGE + (double)nbr0;
-    nbr0 = (int)(dDivid / 10);
+    nbr0 = (int)(dDivid / 10.0);
     ptrText--;
-    *ptrText = (int)(dDivid - (double)nbr0*10) + '0';
+    *ptrText = (int)(dDivid - (double)nbr0*10.0) + '0';
   }
   for (index = 0; index < 18; index++)
   {
@@ -465,7 +465,7 @@ void ShowLabel(char *text, int linear, int *indep)
   {      // Independent term is not zero.
     *ptrText = ' ';
     ptrText++;
-    if ((temp[1] & HALF_INT_RANGE) == 0)
+    if (((unsigned int)temp[1] & HALF_INT_RANGE_U) == 0U)
     {    // Independent term is positive.
       *ptrText = '+';
       ptrText++;
@@ -491,7 +491,7 @@ void ShowLabel(char *text, int linear, int *indep)
       double dDelta;
       double dB = (double)b;
       double dFourAC = (((double)temp[1] * (double)MAX_VALUE_LIMB) + (double)temp[0]) * 16;
-      if (((unsigned int)*(indep + 1) & HALF_INT_RANGE) != 0U)
+      if (((unsigned int)*(indep + 1) & HALF_INT_RANGE_U) != 0U)
       {    // Independent term is negative.
         dDelta = (dB *dB) + dFourAC;
       }
@@ -578,7 +578,7 @@ void ShowLabel(char *text, int linear, int *indep)
           }
           copyStr(&ptrText, "t");
         }
-        if ((temp[1] & HALF_INT_RANGE) != 0)
+        if (((unsigned int)temp[1] & HALF_INT_RANGE_U) != 0U)
         {     // Independent term is negative.
           *ptrText = ' ';
           ptrText++;
@@ -824,7 +824,7 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
       int diff;
       int a = ((int)sqrt((((double)nbr1*LIMB_RANGE) + nbr0-1))+1)/2;
       diff = (nbr0 - (4*a*a)) & MAX_INT_NBR;
-      if ((diff & HALF_INT_RANGE) != 0)
+      if (((unsigned int)diff & HALF_INT_RANGE_U) != 0U)
       {     // Number is negative.
         diff -= MAX_INT_NBR;
       }
