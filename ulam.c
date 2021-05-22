@@ -481,13 +481,16 @@ void ShowLabel(char *text, int linear, int *indep)
     }
     else
     {    // Independent term is negative.
+      unsigned int tmp;
       *ptrText = '-';
       ptrText++;
       // Change its sign.
       carry = -temp[0];
-      temp[0] = (int)((unsigned int)carry & MAX_VALUE_LIMB);
-      carry = (carry >> BITS_PER_GROUP) - temp[1];
-      temp[1] = (int)((unsigned int)carry & MAX_VALUE_LIMB);
+      tmp = (unsigned int)carry & MAX_VALUE_LIMB;
+      temp[0] = (int)tmp;
+      carry = ((carry >= 0)? - temp[1]: (MAX_INT_NBR - temp[1]));
+      tmp = (unsigned int)carry & MAX_VALUE_LIMB;
+      temp[1] = (int)tmp;
     }
     *ptrText = ' ';
     ptrText++;
@@ -836,7 +839,9 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
     int borrow = nbrLo - startNumber[0];
     tmp = (unsigned int)borrow & MAX_VALUE_LIMB;
     nbrLo = (int)tmp;
-    nbrHi = ((borrow >> BITS_PER_GROUP) + nbrHi - startNumber[1]) & MAX_VALUE_LIMB;           
+    nbrHi += ((borrow >= 0) ? -startNumber[1] : (MAX_INT_NBR - startNumber[1]));
+    tmp = (unsigned int)nbrHi & MAX_VALUE_LIMB;
+    nbrHi = (int)tmp;
     carry = nbrLo + 1;
     tmp = carry & MAX_VALUE_LIMB;
     nbrLo = (int)tmp;
