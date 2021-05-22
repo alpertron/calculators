@@ -47,9 +47,9 @@
 #define MAX_LINES  1000
 #define MAX_COLUMNS 2000
 static char infoText[500];
-static int thickness = 3;              // Number of bits to shift.
+static int thickness = 8;              // Number of bits to shift.
 static int xCenter;
-static int xFraction;                  // Range of fraction: 0 to (1 << thickness) - 1
+static int xFraction;                  // Range of fraction: 0 to thickness - 1
 static int yCenter;
 static int yFraction;
 static int width;
@@ -87,8 +87,8 @@ static void setPoint(int x, int y)
   Uint32 colorGreen = SDL_MapRGBA(doubleBuffer->format, 0, 192, 0, 255);
   Uint32 colorWhite = SDL_MapRGBA(doubleBuffer->format, 192, 192, 192, 255);
 #endif
-  xPhysical = (width / 2) + ((x - xCenter) << thickness) - xFraction;
-  yPhysical = (height / 2) - ((y - yCenter) << thickness) + yFraction;
+  xPhysical = (width / 2) + ((x - xCenter) * thickness) - xFraction;
+  yPhysical = (height / 2) - ((y - yCenter) * thickness) + yFraction;
   color = colorBlack;          // Indicate not prime in advance.
   if (x == 0)
   {   // Number is imaginary.
@@ -120,12 +120,12 @@ static void setPoint(int x, int y)
   }
   firstCol = ((xPhysical < 0)? 0: xPhysical);
   firstRow = ((yPhysical < 0)? 0: yPhysical);
-  lastCol = xPhysical + (1 << thickness);
+  lastCol = xPhysical + thickness;
   if (lastCol > width)
   {
     lastCol = width;
   }
-  lastRow = yPhysical + (1 << thickness);
+  lastRow = yPhysical + thickness;
   if (lastRow > height)
   {
     lastRow = height;
@@ -139,12 +139,12 @@ static void setPoint(int x, int y)
       ptrPixel++;
     }
   }
-  if (thickness >= 2)
+  if (thickness >= 4)
   {
     color = colorWhite;
     if (x == 0)
     {                     // Draw Y axis if possible.
-      col = xPhysical + (1 << (thickness - 1));
+      col = xPhysical + (thickness / 2);
       if ((col >= 0) && (col < width))
       {
         ptrPixel = pixelXY(col, firstRow);
@@ -161,11 +161,11 @@ static void setPoint(int x, int y)
     }
     else if ((x % 10) == 0)
     {
-      col = xPhysical + (1 << (thickness - 1));
+      col = xPhysical + (thickness / 2);
       if ((col >= 0) && (col < width))
       {
-        firstRow2 = yPhysical + (1 << (thickness - 2));
-        lastRow2 = firstRow2 + (1 << (thickness - 1));
+        firstRow2 = yPhysical + (thickness / 4);
+        lastRow2 = firstRow2 + (thickness / 2);
         firstRow2 = ((firstRow2 < 0) ? 0 : firstRow2);
         if (lastRow2 > height)
         {
@@ -188,7 +188,7 @@ static void setPoint(int x, int y)
     }
     if (y == 0)
     {                     // Draw X axis if possible.
-      row = yPhysical + (1 << (thickness - 1));
+      row = yPhysical + (thickness / 2);
       if ((row >= 0) && (row < height))
       {
         ptrPixel = pixelXY(firstCol, row);
@@ -201,11 +201,11 @@ static void setPoint(int x, int y)
     }
     else if ((y % 10) == 0)
     {
-      row = yPhysical + (1 << (thickness - 1));
+      row = yPhysical + (thickness / 2);
       if ((row >= 0) && (row < height))
       {
-        firstCol2 = xPhysical + (1 << (thickness - 2));
-        lastCol2 = firstCol2 + (1 << (thickness - 1));
+        firstCol2 = xPhysical + (thickness / 4);
+        lastCol2 = firstCol2 + (thickness / 2);
         firstCol2 = ((firstCol2 < 0)? 0 : firstCol2);
         if (lastCol2 > width)
         {
@@ -229,11 +229,11 @@ void drawPartialGraphic(int xminDisp, int xmaxDisp, int yminDisp, int ymaxDisp)
 {
   int x;
   int y;
-  
-  int xmin = xCenter + ((xFraction + xminDisp) >> thickness);
-  int xmax = xCenter + ((xFraction + xmaxDisp) >> thickness);
-  int ymin = yCenter - ((-yFraction - yminDisp) >> thickness);
-  int ymax = yCenter - ((-yFraction - ymaxDisp) >> thickness);
+  int adjust = 16384 / thickness;
+  int xmin = xCenter + ((xFraction + xminDisp + 16384) / thickness) - adjust;
+  int xmax = xCenter + ((xFraction + xmaxDisp + 16384) / thickness) - adjust;
+  int ymin = yCenter - ((-yFraction - yminDisp + 16384) / thickness) + adjust;
+  int ymax = yCenter - ((-yFraction - ymaxDisp + 16384) / thickness) + adjust;
 
   for (x = xmin; x <= xmax; x++)
   {
@@ -251,8 +251,9 @@ char *getInformation(int x, int y)
   infoText[0] = 0;   // Empty string.
   if (x >= 0)
   {
-    int xLogical = xCenter + ((xFraction + x - (width / 2)) >> thickness);
-    int yLogical = yCenter + 1 + ((yFraction - y + (height / 2)) >> thickness);
+    int adjust = 16384 / thickness;
+    int xLogical = xCenter + ((xFraction + x - (width / 2) + 16384) / thickness) - adjust;
+    int yLogical = yCenter + 1 + ((yFraction - y + (height / 2) + 16384) / thickness) - adjust;
     ptrText = appendInt(infoText, xLogical);
     if (yLogical >= 0)
     {
@@ -289,12 +290,13 @@ char *getInformation(int x, int y)
 
 void moveGraphic(int deltaX, int deltaY)
 {
+  int adjust = 16384 / thickness;
   xFraction -= deltaX;
-  xCenter += xFraction >> thickness;
-  xFraction &= (1 << thickness) - 1;
+  xCenter += ((xFraction + 16384) / thickness) - adjust;
+  xFraction &= thickness - 1;
   yFraction += deltaY;
-  yCenter += yFraction >> thickness;
-  yFraction &= (1 << thickness) - 1; 
+  yCenter += ((yFraction + 16384) / thickness) - adjust;
+  yFraction &= thickness - 1; 
 }
 
 static int getValue(char **ppValue)
@@ -331,21 +333,21 @@ int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
   }
   else if (inputBoxNbr == 3)
   {           // Zoom in
-    if (thickness == 5)
+    if (thickness == 32)
     {
       return 0;
     }
-    thickness++;
+    thickness *= 2;
     xFraction <<= 1;
     yFraction <<= 1;
   }
   else
   {           // Zoom out
-    if (thickness == 0)
+    if (thickness == 1)
     {
       return 0;
     }
-    thickness--;
+    thickness /= 2;
     xFraction >>= 1;
     yFraction >>= 1;
   }
@@ -414,12 +416,13 @@ void iteration(void)
     {
       if ((event.motion.state & SDL_BUTTON_LMASK) != 0)
       {                        // Drag operation.
+        int adjust = 16384 / thickness
         xFraction -= event.motion.xrel;
-        xCenter += xFraction >> thickness;
-        xFraction &= (1 << thickness) - 1;
+        xCenter += ((xFraction + 16384) / thickness) - adjust;
+        xFraction &= thickness - 1;
         yFraction += event.motion.yrel;
-        yCenter += yFraction >> thickness;
-        yFraction &= (1 << thickness) - 1;
+        yCenter += ((yFraction + 16384) / thickness) - adjust;
+        yFraction &= thickness - 1;
       }
       else
       {                        // Show information.
@@ -430,9 +433,9 @@ void iteration(void)
     {
       if (event.button.button == SDL_BUTTON_WHEELUP)
       {
-        if (thickness < 5)
+        if (thickness < 32)
         {
-          thickness++;
+          thickness *= 2;
           xFraction <<= 1;
           yFraction <<= 1;
           drawGraphic();
@@ -440,9 +443,9 @@ void iteration(void)
       }
       else if (event.button.button == SDL_BUTTON_WHEELDOWN)
       {
-        if (thickness > 0)
+        if (thickness > 1)
         {
-          thickness--;
+          thickness /= 2;
           xFraction >>= 1;
           yFraction >>= 1;
           drawGraphic();
@@ -466,8 +469,8 @@ void iteration(void)
       int yMin;
       int yMax;
       // Move pixels of double buffer according to drag direction.
-      int xMove = (xCenter << thickness) + xFraction - (oldXCenter << thickness) - oldXFraction;
-      int yMove = (yCenter << thickness) + yFraction - (oldYCenter << thickness) - oldYFraction;
+      int xMove = ((xCenter - oldXCenter) * thickness) + xFraction - oldXFraction;
+      int yMove = ((yCenter - oldYCenter) * thickness) + yFraction - oldYFraction;
       if (xMove > 0)
       {           // Move pixels to left.
         rectDest.x = 0;
