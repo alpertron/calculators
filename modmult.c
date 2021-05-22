@@ -124,8 +124,9 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
   dAccumulator = 0;
   for (i = 0; i <= nbrLen; i++)
   {
-    dAccumulator += ptrFactorBig->x * dFactorInt - dTrialQuotient * ptrTestNbr->x;
-    low += ptrFactorBig->x * factorInt - TrialQuotient * ptrTestNbr->x;
+    dAccumulator += ((double)ptrFactorBig->x * dFactorInt) -
+      (dTrialQuotient * (double)ptrTestNbr->x);
+    low += (ptrFactorBig->x * factorInt) - (TrialQuotient * ptrTestNbr->x);
     low &= MAX_VALUE_LIMB;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
@@ -1038,7 +1039,7 @@ void ComputeInversePower2(const limb *value, limb *result, limb *tmp)
   // Perform last approximation to inverse.
   multiply(value, result, tmp, NumberLength, NULL);    // tmp <- N * x
   Cy.x = 2 - tmp[0].x;
-  tmp[0].x = Cy.x & MAX_VALUE_LIMB;
+  tmp[0].x = (int)((unsigned int)Cy.x & MAX_VALUE_LIMB);
   for (j = 1; j < NumberLength; j++)
   {
     Cy.x = (Cy.x >> BITS_PER_GROUP) - tmp[j].x;
@@ -1106,7 +1107,7 @@ void GetMontgomeryParms(int len)
     for (j = 0; j < NumberLength; j++)
     {
       Cy.x = (Cy.x >> BITS_PER_GROUP) - ptrResult->x;
-      ptrResult->x = Cy.x & MAX_VALUE_LIMB;
+      ptrResult->x = (int)((unsigned int)Cy.x & MAX_VALUE_LIMB);
       ptrResult++;
     }
     ptrResult->x = 0;
@@ -1188,7 +1189,7 @@ void AdjustModN(limb *Nbr, const limb *Modulus, int nbrLen)
   {
 #ifdef _USING64BITS_
     carry += (int64_t)Nbr[i].x - (Modulus[i].x * (int64_t)TrialQuotient);
-    Nbr[i].x = (int)carry & MAX_VALUE_LIMB;
+    Nbr[i].x = (int)((unsigned int)carry & MAX_VALUE_LIMB);
     carry >>= BITS_PER_GROUP;
 #else
     int low = (Nbr[i].x - (Modulus[i].x * TrialQuotient) + carry) & MAX_INT_NBR;
@@ -1196,8 +1197,8 @@ void AdjustModN(limb *Nbr, const limb *Modulus, int nbrLen)
     // In that case, there would be an error of +/- 1.
     double dAccumulator = (double)Nbr[i].x - ((double)Modulus[i].x * dTrialQuotient) +
       (double)carry + dDelta;
-    dDelta = 0;
-    if (dAccumulator < 0)
+    dDelta = 0.0;
+    if (dAccumulator < 0.0)
     {
       dAccumulator += dSquareLimb;
       dDelta = -(double)LIMB_RANGE;
@@ -1214,7 +1215,7 @@ void AdjustModN(limb *Nbr, const limb *Modulus, int nbrLen)
 #endif
   }
   Nbr[i].x = (int)carry & MAX_INT_NBR;
-  if ((Nbr[nbrLen].x & MAX_VALUE_LIMB) != 0)
+  if (((unsigned int)Nbr[nbrLen].x & MAX_VALUE_LIMB) != 0U)
   {
     unsigned int cy = 0;
     for (i = 0; i < nbrLen; i++)
@@ -1245,7 +1246,7 @@ void AddBigNbrModN(const limb *Nbr1, const limb *Nbr2, limb *Sum, const limb *mo
   {
     borrow = (borrow >> BITS_PER_GROUP) +
        (unsigned int)Sum[i].x - (mod + i)->x;
-    Sum[i].x = (int)(borrow & MAX_VALUE_LIMB);
+    Sum[i].x = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
   }
 
   if ((carry < LIMB_RANGE) && (borrow < 0))
@@ -1267,7 +1268,7 @@ void SubtBigNbrModN(const limb *Nbr1, const limb *Nbr2, limb *Diff, const limb *
   for (i = 0; i < nbrLen; i++)
   {
     borrow = (borrow >> BITS_PER_GROUP) + (Nbr1 + i)->x - (Nbr2 + i)->x;
-    Diff[i].x = (int)(borrow & MAX_VALUE_LIMB);
+    Diff[i].x = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
   }
   if (borrow < 0)
   {
