@@ -471,11 +471,11 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
   if (powerOf2Exponent != 0)
   {    // TestNbr is a power of 2.
     ComputeInversePower2(num, inv, aux);
-    (inv + powerOf2Exponent / BITS_PER_GROUP)->x &= (1 << (powerOf2Exponent % BITS_PER_GROUP)) - 1;
+    (inv + (powerOf2Exponent / BITS_PER_GROUP))->x &= (1 << (powerOf2Exponent % BITS_PER_GROUP)) - 1;
     return;
   }
   //  1. U <- M, V <- X, R <- 0, S <- 1, k <- 0
-  size = (nbrLen + 1) * sizeof(limb);
+  size = (nbrLen + 1) * (int)sizeof(limb);
   (mod + nbrLen)->x = 0;
   (num + nbrLen)->x = 0;
   (void)memcpy(U, mod, size);
