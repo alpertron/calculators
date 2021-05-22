@@ -790,7 +790,7 @@ void batchCallback(char **pptrOutput)
 #if defined __EMSCRIPTEN__ && !defined _MSC_VER
 EXTERNALIZE void doWork(void)
 {
-  int groupLen = 0;
+  int grpLen = 0;
   char *ptrData = inputString;
   originalTenthSecond = tenths();
   if (*ptrData == 'C')
@@ -817,7 +817,7 @@ EXTERNALIZE void doWork(void)
   valuesProcessed = 0;
   while (*ptrData != ',')
   {
-    groupLen = (groupLen * 10) + (*ptrData - '0');
+    grpLen = (grpLen * 10) + (*ptrData - '0');
     ptrData++;
   }
   ptrData++;             // Skip comma.
@@ -825,7 +825,7 @@ EXTERNALIZE void doWork(void)
   if (*(ptrData + 1) != ',')
   {
     ptrData++;
-    app = app * 10 + *ptrData - '0';
+    app = (app * 10) + *ptrData - '0';
   }
 #ifndef lang  
   lang = ((app & 1)? true: false);
@@ -842,23 +842,23 @@ EXTERNALIZE void doWork(void)
   }
 #if defined(applic)
   #if applic == 0
-    fsquaresText(ptrData+2, groupLen);    
+    fsquaresText(ptrData+2, grpLen);    
   #elif applic == 1
-    fcubesText(ptrData+2, groupLen);
+    fcubesText(ptrData+2, grpLen);
   #else
-    contfracText(ptrData+2, groupLen);
+    contfracText(ptrData+2, grpLen);
   #endif  
 #else
   switch (app)
   {
   case 0:
-    fsquaresText(ptrData+2, groupLen);
+    fsquaresText(ptrData+2, grpLen);
     break;
   case 1:
-    fcubesText(ptrData+2, groupLen);
+    fcubesText(ptrData+2, grpLen);
     break;
   case 2:
-    contfracText(ptrData+2, groupLen);
+    contfracText(ptrData+2, grpLen);
     break;
   default:
     break;

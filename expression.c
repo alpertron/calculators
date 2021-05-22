@@ -144,7 +144,7 @@ enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResul
   exprIndex = 0;
   type = typ;
   retcode = ComputeExpr(expr, ExpressionResult);
-  if (retcode != 0) { return retcode; }
+  if (retcode != EXPR_OK) { return retcode; }
 #ifdef FACTORIZATION_APP
   if (ExpressionResult[0].nbrLimbs > ((332192 / BITS_PER_GROUP) + 1))   // 100000/log_10(2) = 332192
 #else
@@ -360,7 +360,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         if (curStack.nbrLimbs == 2)
         {
           largeLen.x = curStack.limbs[0].x +
-            (curStack.limbs[1].x << BITS_PER_GROUP);
+            (int)((unsigned int)curStack.limbs[1].x << BITS_PER_GROUP);
         }
         else
         {
@@ -428,11 +428,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "MODINV", 2, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         retcode = ComputeModInv();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -445,11 +445,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
 #ifdef FACTORIZATION_FUNCTIONS
     else if (func(expr, ExpressionResult, "TOTIENT", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         retcode = ComputeTotient();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -461,11 +461,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "NUMDIVS", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         retcode = ComputeNumDivs();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -477,11 +477,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "SUMDIVS", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         retcode = ComputeSumDivs();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -493,11 +493,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "MINFACT", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         retcode = ComputeMinFact();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -509,11 +509,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "MAXFACT", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         retcode = ComputeMaxFact();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -525,11 +525,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "NUMFACT", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         retcode = ComputeNumFact();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -541,11 +541,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "CONCATFACT", 2, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         retcode = ComputeConcatFact();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -558,11 +558,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
 #endif
     else if (func(expr, ExpressionResult, "SUMDIGITS", 2, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         retcode = ComputeSumDigits();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -574,11 +574,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "NUMDIGITS", 2, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         retcode = ComputeNumDigits();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -590,11 +590,11 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "REVDIGITS", 2, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         retcode = ComputeRevDigits();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -606,7 +606,7 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "ISPRIME", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         getCurrentStackValue(&curStack);    // Get argument.
@@ -633,12 +633,12 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "F", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         getCurrentStackValue(&curStack);    // Get argument.
         retcode = ComputeFibLucas(0);
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -650,12 +650,12 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "L", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         getCurrentStackValue(&curStack);    // Get argument.
         retcode = ComputeFibLucas(2);
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -667,12 +667,12 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "P", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         getCurrentStackValue(&curStack);    // Get argument.
         retcode = ComputePartition();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -684,12 +684,12 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "N", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         getCurrentStackValue(&curStack);    // Get argument.
         retcode = ComputeNext();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -701,12 +701,12 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "B", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) { return retcode; }
+      if (retcode != EXPR_OK) { return retcode; }
       if (doComputeSubExpression)
       {
         getCurrentStackValue(&curStack);    // Get argument.
         retcode = ComputeBack();
-        if (retcode != 0) { return retcode; }
+        if (retcode != EXPR_OK) { return retcode; }
         retcode = setStackValue(&curStack);
         if (retcode != EXPR_OK)
         {
@@ -1216,7 +1216,7 @@ static bool func(char* expr, BigInteger* ExpressionResult,
       return true;
     }
     retcode = ComputeExpr(expr, ExpressionResult);
-    if (retcode != 0) { return retcode; }
+    if (retcode != EXPR_OK) { return retcode; }
     SkipSpaces(expr);
     compareChar = ((index == (funcArgs - 1))? ')' : ',');
     if (exprIndex == exprLength)

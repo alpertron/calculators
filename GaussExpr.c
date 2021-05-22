@@ -76,7 +76,7 @@ enum eExprErr ComputeGaussianExpression(char *expr, BigInteger *ExpressionResult
   stackIndex = 0;
   exprIndex = 0;
   retcode = ComputeExpr(expr, ExpressionResult);
-  if (retcode != 0) {return retcode;}
+  if (retcode != EXPR_OK) {return retcode;}
   if ((ExpressionResult[0].nbrLimbs > 2215) &&    // 10000/log_10(32768)
       (ExpressionResult[1].nbrLimbs > 2215))
   {
@@ -211,9 +211,9 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "GCD", 2, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       retcode = ComputeGCD();
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       leftNumberFlag = true;
     }
     else if (func(expr, ExpressionResult, "RE", 1, leftNumberFlag, &retcode))
@@ -222,7 +222,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
       ptrBigInt->limbs[0].x = 0;
       ptrBigInt->nbrLimbs = 1;
       ptrBigInt->sign = SIGN_POSITIVE;
-      if (retcode != 0)
+      if (retcode != EXPR_OK)
       {
         return retcode;
       }
@@ -230,7 +230,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "NORM", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       ptrRe = &stackRealValues[stackIndex];
       ptrIm = &stackImagValues[stackIndex];
       (void)BigIntMultiply(ptrRe, ptrRe, &factorialResult);    // norm <- re2^2 + im2^2.
@@ -244,7 +244,7 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "IM", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       stackRealValues[stackIndex] = stackImagValues[stackIndex];
       ptrBigInt = &stackImagValues[stackIndex];
       ptrBigInt->limbs[0].x = 0;
@@ -254,37 +254,37 @@ static int ComputeExpr(char *expr, BigInteger *ExpressionResult)
     }
     else if (func(expr, ExpressionResult, "MODPOW", 3, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       retcode = ComputeModPow();
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       leftNumberFlag = true;
     }
     else if (func(expr, ExpressionResult, "MODINV", 2, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       retcode = ComputeModInv();
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       leftNumberFlag = true;
     }
     else if (func(expr, ExpressionResult, "F", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       retcode = ComputeFibonacci();
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       leftNumberFlag = true;
     }
     else if (func(expr, ExpressionResult, "L", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       retcode = ComputeLucas();
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       leftNumberFlag = true;
     }
     else if (func(expr, ExpressionResult, "P", 1, leftNumberFlag, &retcode))
     {
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       retcode = ComputePartition();
-      if (retcode != 0) {return retcode;}
+      if (retcode != EXPR_OK) {return retcode;}
       leftNumberFlag = true;
     }
     else if ((charValue == '+') || (charValue == '-'))
@@ -647,7 +647,7 @@ static bool func(char *expr, BigInteger *ExpressionResult,
       return true;
     }
     retcode = ComputeExpr(expr, ExpressionResult);
-    if (retcode != 0) {return retcode;}
+    if (retcode != EXPR_OK) {return retcode;}
     SkipSpaces(expr);
     compareChar = ((index == (funcArgs-1))? ')': ',');
     if ((exprIndex == exprLength) || (*(expr+exprIndex) != compareChar))
@@ -731,7 +731,7 @@ static int ComputeSubExpr(void)
       return 0;
     case '%':
       retcode = Modulo(&Re1, &Im1, &Re2, &Im2, Result);
-      if (retcode != 0)
+      if (retcode != EXPR_OK)
       {
         return retcode;
       }
@@ -1096,7 +1096,7 @@ static int ComputeModPow(void)
     int retcode;
     BigIntNegate(&ReExp, &ReExp);
     retcode = ModInv(&ReBase, &ImBase, &ReMod, &ImMod, Result);
-    if (retcode != 0)
+    if (retcode != EXPR_OK)
     {
       return retcode;
     }
@@ -1170,7 +1170,7 @@ static int ComputeModInv(void)
     &stackRealValues[stackIndex + 1],
     &stackImagValues[stackIndex + 1],
     Result);
-  if (retcode != 0)
+  if (retcode != EXPR_OK)
   {
     return retcode;
   }
