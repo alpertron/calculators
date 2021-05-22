@@ -208,10 +208,11 @@ void *memcpy(void *dest, const void *src, size_t count)
 #ifdef __clang__
 #define WT size_t
 #define WS (sizeof(WT))
-void *memmove(void *dest, const void *src, size_t n)
+void *memmove(void *dest, const void *src, size_t count)
 {
   char *d = dest;
   const char *s = src;
+  size_t n = count;
 
   if (d == s)
   {
@@ -238,7 +239,7 @@ void *memmove(void *dest, const void *src, size_t n)
       }
       for (; n>=WS; n-=WS)
       {
-        *(WT *)d = *(WT *)s;
+        *(WT *)d = *(const WT *)s;
         d+=WS;
         s+=WS;
       }
