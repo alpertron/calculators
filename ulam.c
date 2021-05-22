@@ -408,16 +408,6 @@ void copyStr(char** pptrString, const char* stringToCopy)
   *pptrString = ptrString;
 }
 
-size_t strlen(const char *s)
-{
-  const char *a = s;
-  while (*a != 0)
-  {
-    a++;
-  }
-  return a - s;
-}
-
 unsigned int *getPixels(void)
 {
   return pixelArray;
@@ -461,12 +451,12 @@ char *appendInt64(char *text, const int *value)
   return ptrText;
 }
 
-void ShowLabel(char *text, int linear, int *indep)
+void ShowLabel(char **pptrText, char *text, int linear, int *indep)
 {
   int b = linear;
   int temp[2];
   int carry;
-  char *ptrText = &infoText[strlen(infoText)];
+  char *ptrText = *pptrText;
   copyStr(&ptrText, text);
   temp[0] = *indep;
   temp[1] = *(indep+1);
@@ -505,7 +495,7 @@ void ShowLabel(char *text, int linear, int *indep)
       double dFourAC = (((double)temp[1] * (double)MAX_VALUE_LIMB) + (double)temp[0]) * 16;
       if (((unsigned int)*(indep + 1) & HALF_INT_RANGE_U) != 0U)
       {    // Independent term is negative.
-        dDelta = (dB *dB) + dFourAC;
+        dDelta = (dB * dB) + dFourAC;
       }
       else
       {    // Independent term is positive.
@@ -516,7 +506,6 @@ void ShowLabel(char *text, int linear, int *indep)
       int t1 = (int)((-dB + iSqDelta) / 4);                 // t1 and t2 are less than 2^31 so
       int t2 = (int)((-dB - iSqDelta) / 4);                 // they fit into a double.
                                                             // Twice the roots are integer numbers
-      ptrText += strlen(ptrText);
       if (t1 > 0)
       {
         copyStr(&ptrText, " = (2t + ");
@@ -602,6 +591,7 @@ void ShowLabel(char *text, int linear, int *indep)
         }
         if (((unsigned int)temp[1] & HALF_INT_RANGE_U) != 0U)
         {     // Independent term is negative.
+          unsigned int tmp;
           *ptrText = ' ';
           ptrText++;
           *ptrText = '-';
@@ -610,9 +600,11 @@ void ShowLabel(char *text, int linear, int *indep)
           ptrText++;
               // Change sign.
           carry = -temp[0];
-          temp[0] = (int)((unsigned int)carry & MAX_VALUE_LIMB);
-          carry = (carry >> BITS_PER_GROUP) - temp[1];
-          temp[1] = (int)((unsigned int)carry & MAX_VALUE_LIMB);
+          tmp = (unsigned int)carry & MAX_VALUE_LIMB;
+          temp[0] = (int)tmp;
+          carry = ((carry >= 0) ? -temp[1] : (MAX_INT_NBR - temp[1]));
+          tmp = (unsigned int)carry & MAX_VALUE_LIMB;
+          temp[1] = (int)tmp;
           ptrText = appendInt64(ptrText, temp);
         }
         else
@@ -625,7 +617,6 @@ void ShowLabel(char *text, int linear, int *indep)
           ptrText++;
           ptrText = appendInt64(ptrText, temp);
         }
-        ptrText += strlen(ptrText);
         copyStr(&ptrText, ")");
       }
       else
@@ -669,6 +660,7 @@ void ShowLabel(char *text, int linear, int *indep)
     }             /* end if */
   }               /* end if */
   copyStr(&ptrText, "<br>");
+  *pptrText = ptrText;
 }
 
 EXTERNALIZE char *getInformation(int x, int y)
@@ -710,34 +702,33 @@ EXTERNALIZE char *getInformation(int x, int y)
       if ((xLogical - yLogical) >= 0)
       {                              // Right quadrant
         AddTwoLimbsPlusOneLimb(Nminustt, -2*t, indep);  // n - 4 * t*t - 4 * t
-        ShowLabel("SW-NE: 4t<sup>2</sup> + 4t", 4, indep);
+        ShowLabel(&ptrText, "SW-NE: 4t<sup>2</sup> + 4t", 4, indep);
         AddTwoLimbsPlusOneLimb(Nminustt, -t, indep);    // n - 4 * t*t - 2 * t
-        ShowLabel("NW-SE: 4t<sup>2</sup> + 2t", 2, indep);
+        ShowLabel(&ptrText, "NW-SE: 4t<sup>2</sup> + 2t", 2, indep);
       }
       else
       {                              // Upper quadrant
         AddTwoLimbsPlusOneLimb(Nminustt, 2*t, indep);  // n - 4 * t*t + 4 * t
-        ShowLabel("SW-NE: 4t<sup>2</sup> - 4t", -4, indep);
+        ShowLabel(&ptrText, "SW-NE: 4t<sup>2</sup> - 4t", -4, indep);
         AddTwoLimbsPlusOneLimb(Nminustt, t, indep);    // n - 4 * t*t + 2 * t
-        ShowLabel("NW-SE: 4t<sup>2</sup> - 2t", -2, indep);
+        ShowLabel(&ptrText, "NW-SE: 4t<sup>2</sup> - 2t", -2, indep);
       }
     }
     else
     {
       if ((xLogical - yLogical) >= 0)
       {                              // Lower quadrant
-        ShowLabel("SW-NE: 4t<sup>2</sup>", 0, Nminustt);
+        ShowLabel(&ptrText, "SW-NE: 4t<sup>2</sup>", 0, Nminustt);
         AddTwoLimbsPlusOneLimb(Nminustt, -t, indep);   // n - 4 * t*t - 2 * t
-        ShowLabel("NW-SE: 4t<sup>2</sup> + 2t", 2, indep);
+        ShowLabel(&ptrText, "NW-SE: 4t<sup>2</sup> + 2t", 2, indep);
       }
       else
       {                             // Left quadrant
-        ShowLabel("SW-NE: 4t<sup>2</sup>", 0, Nminustt);
+        ShowLabel(&ptrText, "SW-NE: 4t<sup>2</sup>", 0, Nminustt);
         AddTwoLimbsPlusOneLimb(Nminustt, t, indep);    // n - 4 * t*t + 2 * t
-        ShowLabel("NW-SE: 4t<sup>2</sup> - 2t", -2, indep);
+        ShowLabel(&ptrText, "NW-SE: 4t<sup>2</sup> - 2t", -2, indep);
       }
     }
-    ptrText = &infoText[strlen(infoText)];
     *ptrText = 'x';
     ptrText++;
     *ptrText = '=';
