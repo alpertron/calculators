@@ -87,9 +87,9 @@ bool algebraicFactor(int linear, int *indep)
   if (((unsigned int)temp[1] & HALF_INT_RANGE_U) != 0U)
   {    // Independent term is negative.
     int carry = -temp[0];
-    temp[0] = carry & MAX_VALUE_LIMB;
+    temp[0] = (int)((unsigned int)carry & MAX_VALUE_LIMB);
     carry = (carry >> BITS_PER_GROUP) - temp[1];
-    temp[1] = carry & MAX_VALUE_LIMB;
+    temp[1] = (int)((unsigned int)carry & MAX_VALUE_LIMB);
   }
   dFourAC = (((double)temp[1] * MAX_VALUE_LIMB) + (double)temp[0]) * 16;
   dLinear = (double)linear;
@@ -134,28 +134,28 @@ static void getN(int valX, int valY, int *value)
   if ((x >= 0) && (x >= y) && (x >= -y))
   {                     // Right quadrant.
     multiply((4 * x) + 3, x, value);
-    addend[0] = y & MAX_VALUE_LIMB;
-    addend[1] = (y >> BITS_PER_GROUP) & MAX_VALUE_LIMB;
+    addend[0] = (int)((unsigned int)y & MAX_VALUE_LIMB);
+    addend[1] = ((y >= 0)? 0: MAX_INT_NBR);
   }
   else if ((y >= 0) && (y > x) && (y > -x))
   {                     // Top quadrant.
     multiply((4 * y) - 3, y, value);
     x = -x;
-    addend[0] = x & MAX_VALUE_LIMB;
-    addend[1] = (x >> BITS_PER_GROUP) & MAX_VALUE_LIMB;
+    addend[0] = (int)((unsigned int)x & MAX_VALUE_LIMB);
+    addend[1] = ((x >= 0) ? 0 : MAX_INT_NBR);
   }
   else if ((x <= 0) && (x <= y) && (x <= -y))
   {                     // Left quadrant.
     multiply((4 * x) + 1, x, value);
     y = -y;
-    addend[0] = y & MAX_VALUE_LIMB;
-    addend[1] = (y >> BITS_PER_GROUP) & MAX_VALUE_LIMB;
+    addend[0] = (int)((unsigned int)y & MAX_VALUE_LIMB);
+    addend[1] = ((y >= 0) ? 0 : MAX_INT_NBR);
   }
   else
   {                     // Bottom quadrant.
     multiply((4 * y) - 1, y, value);
-    addend[0] = x & MAX_VALUE_LIMB;
-    addend[1] = (x >> BITS_PER_GROUP) & MAX_VALUE_LIMB;
+    addend[0] = (int)((unsigned int)x & MAX_VALUE_LIMB);
+    addend[1] = ((x >= 0) ? 0 : MAX_INT_NBR);
   }
   AddBigNbr(value, addend, value);
   AddBigNbr(value, startNumber, value);
@@ -476,9 +476,9 @@ void ShowLabel(char *text, int linear, int *indep)
       ptrText++;
       // Change its sign.
       carry = -temp[0];
-      temp[0] = carry & MAX_VALUE_LIMB;
+      temp[0] = (int)((unsigned int)carry & MAX_VALUE_LIMB);
       carry = (carry >> BITS_PER_GROUP) - temp[1];
-      temp[1] = carry & MAX_VALUE_LIMB;
+      temp[1] = (int)((unsigned int)carry & MAX_VALUE_LIMB);
     }
     *ptrText = ' ';
     ptrText++;
@@ -588,9 +588,9 @@ void ShowLabel(char *text, int linear, int *indep)
           ptrText++;
               // Change sign.
           carry = -temp[0];
-          temp[0] = carry & MAX_VALUE_LIMB;
+          temp[0] = (int)((unsigned int)carry & MAX_VALUE_LIMB);
           carry = (carry >> BITS_PER_GROUP) - temp[1];
-          temp[1] = carry & MAX_VALUE_LIMB;
+          temp[1] = (int)((unsigned int)carry & MAX_VALUE_LIMB);
           ptrText = appendInt64(ptrText, temp);
         }
         else
@@ -804,7 +804,8 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
     charConverted = (*ptrValue - '0');
     ptrValue++;
     dProd = ((double)nbrLo * 10.0) + (double)charConverted;
-    nbrLo = ((nbrLo * 10) + charConverted) & MAX_VALUE_LIMB;
+    nbrLo = (nbrLo * 10) + charConverted;
+    nbrLo = (int)((unsigned int)nbrLo & MAX_VALUE_LIMB);
     nbrHi = (nbrHi * 10) + (int)(dProd / (double)LIMB_RANGE);
   }
   if (inputBoxNbr == 1)
@@ -815,13 +816,14 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
     nbrLo = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
     nbrHi = ((borrow >> BITS_PER_GROUP) + nbrHi - startNumber[1]) & MAX_VALUE_LIMB;           
     carry = nbrLo + 1;
-    nbrLo = carry & MAX_VALUE_LIMB;
-    nbrHi += (carry >> BITS_PER_GROUP);
+    nbrLo = (int)(carry & MAX_VALUE_LIMB);
+    nbrHi += (int)(carry >> BITS_PER_GROUP);
     if ((nbrHi > 0) || (nbrLo >= 1))
     {       // nbr >= 1
       int diff;
       int a = ((int)sqrt((((double)nbrHi * (double)LIMB_RANGE) + nbrLo - 1))+1)/2;
-      diff = (nbrLo - (4*a*a)) & MAX_VALUE_LIMB;
+      diff = nbrLo - (4 * a * a);
+      diff = (int)((unsigned int)diff & MAX_VALUE_LIMB);
       if (((unsigned int)diff & HALF_INT_RANGE_U) != 0U)
       {     // Number is negative.
         diff -= MAX_INT_NBR;
