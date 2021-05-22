@@ -43,7 +43,7 @@ static void Karatsuba(int idxFactor1, int nbrLen);
     (uint64_t)factor2_iPlus1 * factor1_##n + (Pr >> BITS_PER_GROUP);    \
   prod_iPlus##m = (int32_t)Pr & MAX_INT_NBR
 #define EPILOG_MULTIPLICATION_DOUBLE(m, n)                              \
-  Pr = ((uint64_t)factor2_iPlus1 * factor1_##n) + (Pr >> BITS_PER_GROUP); \
+  Pr = ((uint64_t)factor2_iPlus1 * (uint64_t)factor1_##n) + (Pr >> BITS_PER_GROUP); \
   prod_iPlus##m = (uint32_t)Pr & MAX_INT_NBR;                           \
   prod_iPlus##n = (uint32_t)(Pr >> BITS_PER_GROUP)
 

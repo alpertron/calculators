@@ -591,7 +591,6 @@ void ShowLabel(char **pptrText, char *text, int linear, int *indep)
         }
         if (((unsigned int)temp[1] & HALF_INT_RANGE_U) != 0U)
         {     // Independent term is negative.
-          unsigned int tmp;
           *ptrText = ' ';
           ptrText++;
           *ptrText = '-';

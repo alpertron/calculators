@@ -58,14 +58,16 @@ void ChSignBigNbrB(int *nbr, int length)
 
 void AddBigNbr(const int *pNbr1, const int *pNbr2, int *pSum, int nbrLen)
 {
-  unsigned int carry = 0;
+  unsigned int carry = 0U;
   const int *ptrNbr1 = pNbr1;
   const int *ptrNbr2 = pNbr2;
   const int *ptrEndSum = pSum + nbrLen;
   for (int *ptrSum = pSum; ptrSum < ptrEndSum; ptrSum++)
   {
+    unsigned int tmp;
     carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrNbr1 + (unsigned int)*ptrNbr2;
-    *ptrSum = (int)(carry & MAX_INT_NBR);
+    tmp = carry & MAX_INT_NBR_U;
+    *ptrSum = (int)tmp;
     ptrNbr1++;
     ptrNbr2++;
   }
@@ -79,8 +81,10 @@ void SubtractBigNbr(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen)
   const int *ptrEndDiff = pDiff + nbrLen;
   for (int *ptrDiff = pDiff; ptrDiff < ptrEndDiff; ptrDiff++)
   {
+    unsigned int tmp;
     borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
-    *ptrDiff = borrow & MAX_INT_NBR;
+    tmp = (unsigned int)borrow & MAX_INT_NBR_U;
+    *ptrDiff = (int)tmp;
     ptrNbr1++;
     ptrNbr2++;
   }
@@ -88,15 +92,17 @@ void SubtractBigNbr(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen)
 
 void AddBigNbrB(const int *pNbr1, const int *pNbr2, int *pSum, int nbrLen)
 {
-  unsigned int carry = 0;
+  unsigned int carry = 0U;
   const int *ptrNbr1 = pNbr1;
   const int *ptrNbr2 = pNbr2;
   int *ptrSum;
   const int* ptrEndSum = pSum + nbrLen - 1;
   for (ptrSum = pSum; ptrSum < ptrEndSum; ptrSum++)
   {
+    unsigned int tmp;
     carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrNbr1 + (unsigned int)*ptrNbr2;
-    *ptrSum = (int)(carry & MAX_INT_NBR);
+    tmp = carry & MAX_INT_NBR_U;
+    *ptrSum = (int)tmp;
     ptrNbr1++;
     ptrNbr2++;
   }
@@ -113,8 +119,10 @@ void SubtractBigNbrB(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen)
   const int* ptrEndDiff = pDiff + nbrLen - 1;
   for (ptrDiff = pDiff; ptrDiff < ptrEndDiff; ptrDiff++)
   {
+    unsigned int tmp;
     borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
-    *ptrDiff = borrow & MAX_INT_NBR;
+    tmp = (unsigned int)borrow & MAX_INT_NBR_U;
+    *ptrDiff = (int)tmp;
     ptrNbr1++;
     ptrNbr2++;
   }
@@ -129,12 +137,14 @@ void AddBigIntModN(const int *pNbr1, const int *pNbr2, int *pSum, const int *pMo
   int* ptrSum = pSum;
   const int* ptrMod = pMod;
   int borrow = 0;
-  unsigned int carry = 0;
+  unsigned int carry = 0U;
+  unsigned int tmp;
   int i;
   for (i = 0; i < nbrLen; i++)
   {
     carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrNbr1 + (unsigned int)*ptrNbr2;
-    *ptrSum = (int)(carry & MAX_INT_NBR);
+    tmp = carry & MAX_INT_NBR_U;
+    *ptrSum = (int)tmp;
     ptrNbr1++;
     ptrNbr2++;
     ptrSum++;
@@ -144,12 +154,13 @@ void AddBigIntModN(const int *pNbr1, const int *pNbr2, int *pSum, const int *pMo
   for (i = 0; i < nbrLen; i++)
   {
     borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrSum - *ptrMod;
-    *ptrSum = borrow & MAX_INT_NBR;
+    tmp = (unsigned int)borrow & MAX_INT_NBR_U;
+    *ptrSum = (int)tmp;
     ptrMod++;
     ptrSum++;
   }
   borrow >>= BITS_PER_INT_GROUP;
-  if (borrow + (int)carry != 0)
+  if ((borrow + (int)carry) != 0)
   {    // Sum is less than zero. Add Mod again.
     ptrSum -= nbrLen;
     ptrMod -= nbrLen;
@@ -157,7 +168,8 @@ void AddBigIntModN(const int *pNbr1, const int *pNbr2, int *pSum, const int *pMo
     for (i = 0; i < nbrLen; i++)
     {
       carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrSum + (unsigned int)*ptrMod;
-      *ptrSum = (int)(carry & MAX_INT_NBR);
+      tmp = carry & MAX_INT_NBR_U;
+      *ptrSum = (int)tmp;
       ptrMod++;
       ptrSum++;
     }
@@ -171,23 +183,26 @@ void SubtractBigNbrModN(const int *pNbr1, const int *pNbr2, int *pDiff, const in
   int* ptrDiff = pDiff;
   const int* ptrMod = pMod;
   int borrow = 0;
+  unsigned int tmp;
   int i;
   for (i = 0; i < nbrLen; i++)
   {
     borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
-    *ptrDiff = borrow & MAX_INT_NBR;
+    tmp = (unsigned int)borrow & MAX_INT_NBR_U;
+    *ptrDiff = (int)tmp;
     ptrNbr1++;
     ptrNbr2++;
     ptrDiff++;
   }
   if (borrow != 0)
   {
-    unsigned int carry = 0;
+    unsigned int carry = 0U;
     ptrDiff -= nbrLen;
     for (i = 0; i < nbrLen; i++)
     {
       carry = (carry >> BITS_PER_INT_GROUP) + (unsigned int)*ptrDiff + (unsigned int)*ptrMod;
-      *ptrDiff = (int)(carry & MAX_INT_NBR);
+      tmp = carry & MAX_INT_NBR_U;
+      *ptrDiff = (int)tmp;
       ptrMod++;
       ptrDiff++;
     }
