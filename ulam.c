@@ -545,11 +545,23 @@ void ShowLabel(char **pptrText, char *text, int linear, int *indep)
     }
     else
     {
+      unsigned int tmp;
+      char textSign = '+';
       temp[0] = *indep;
       temp[1] = *(indep+1);
+      if (((unsigned int)temp[1] & HALF_INT_RANGE_U) != 0U)
+      {     // Independent term is negative.
+        textSign = '-';
+        // Change sign of number.
+        carry = -temp[0];
+        tmp = (unsigned int)carry & MAX_VALUE_LIMB;
+        temp[0] = (int)tmp;
+        carry = ((carry >= 0) ? -temp[1] : (MAX_INT_NBR - temp[1]));
+        tmp = (unsigned int)carry & MAX_VALUE_LIMB;
+        temp[1] = (int)tmp;
+      }
       if ((temp[0] & 1) == 0)
       {           // Independent term is even
-        unsigned int tmp;
         if (((b & 3) == 0) && ((temp[0] & 3) == 0))
         {         // Both linear and independent term are multiple of 4.
           copyStr(&ptrText, " = 4 (t<sup>2</sup>");
@@ -558,7 +570,7 @@ void ShowLabel(char **pptrText, char *text, int linear, int *indep)
           tmp = (((unsigned int)temp[0] >> 2) |
             ((unsigned int)temp[1] << (BITS_PER_GROUP - 2))) & MAX_VALUE_LIMB;
           temp[0] = (int)tmp;
-          tmp = ((unsigned int)temp[1] << (32-BITS_PER_GROUP)) >> (2 + (32 - BITS_PER_GROUP));
+          tmp = (unsigned int)temp[1] >> 2;
           temp[1] = (int)tmp;
         }
         else
@@ -569,7 +581,7 @@ void ShowLabel(char **pptrText, char *text, int linear, int *indep)
           tmp = (((unsigned int)temp[0] >> 1) |
             ((unsigned int)temp[1] << (BITS_PER_GROUP-1))) & MAX_VALUE_LIMB;
           temp[0] = (int)tmp;
-          tmp = ((unsigned int)temp[1] << (32-BITS_PER_GROUP)) >> (1 + (32 - BITS_PER_GROUP));
+          tmp = (unsigned int)temp[1] >> 1;
           temp[1] = (int)tmp;
         }
         if (b != 0)
@@ -589,33 +601,13 @@ void ShowLabel(char **pptrText, char *text, int linear, int *indep)
           }
           copyStr(&ptrText, "t");
         }
-        if (((unsigned int)temp[1] & HALF_INT_RANGE_U) != 0U)
-        {     // Independent term is negative.
-          *ptrText = ' ';
-          ptrText++;
-          *ptrText = '-';
-          ptrText++;
-          *ptrText = ' ';
-          ptrText++;
-              // Change sign.
-          carry = -temp[0];
-          tmp = (unsigned int)carry & MAX_VALUE_LIMB;
-          temp[0] = (int)tmp;
-          carry = ((carry >= 0) ? -temp[1] : (MAX_INT_NBR - temp[1]));
-          tmp = (unsigned int)carry & MAX_VALUE_LIMB;
-          temp[1] = (int)tmp;
-          ptrText = appendInt64(ptrText, temp);
-        }
-        else
-        {
-          *ptrText = ' ';
-          ptrText++;
-          *ptrText = '+';
-          ptrText++;
-          *ptrText = ' ';
-          ptrText++;
-          ptrText = appendInt64(ptrText, temp);
-        }
+        *ptrText = ' ';
+        ptrText++;
+        *ptrText = textSign;
+        ptrText++;
+        *ptrText = ' ';
+        ptrText++;
+        ptrText = appendInt64(ptrText, temp);
         copyStr(&ptrText, ")");
       }
       else

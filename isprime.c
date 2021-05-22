@@ -70,7 +70,7 @@ static void AdjustModN(int *Nbr)
     int low = (*(Nbr + i) - (TestNbr[i] * TrialQuotient) + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
-    dAccumulator = *(Nbr+i) - (TestNbr[i] * dTrialQuotient) + carry + dDelta;
+    dAccumulator = *(Nbr+i) - ((double)TestNbr[i] * dTrialQuotient) + (double)carry + dDelta;
     dDelta = 0.0;
     if (dAccumulator < 0.0)
     {
@@ -88,13 +88,15 @@ static void AdjustModN(int *Nbr)
     *(Nbr + i) = low;
   }
   *(Nbr + NBR_LIMBS) = (*(Nbr + NBR_LIMBS) + carry) & MAX_INT_NBR;
-  if ((*(Nbr+NBR_LIMBS) & MAX_VALUE_LIMB) != 0)
+  if (((unsigned int)*(Nbr+NBR_LIMBS) & MAX_VALUE_LIMB) != 0U)
   {
     unsigned int cy = 0;
     for (i = 0; i < NBR_LIMBS; i++)
     {
+      unsigned int tmp;
       cy += (unsigned int)*(Nbr+i) + (unsigned int)TestNbr[i];
-      *(Nbr+i) = (int)(cy & MAX_VALUE_LIMB);
+      tmp = cy & MAX_VALUE_LIMB;
+      *(Nbr+i) = (int)tmp;
       cy >>= BITS_PER_GROUP;
     }
     *(Nbr+NBR_LIMBS) = 0;
@@ -147,26 +149,26 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   
   Nbr = *factor1;
   Pr = Nbr * (uint64_t)factor2_0;
-  MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_INT_NBR;
-  Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
-    (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * factor2_1;
-  Prod0 = Pr & MAX_INT_NBR;
+  MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_VALUE_LIMB;
+  Pr = ((((uint64_t)MontDig * (uint64_t)TestNbr0) + Pr) >> BITS_PER_GROUP) +
+    ((uint64_t)MontDig * (uint64_t)TestNbr1) + ((uint64_t)Nbr * (uint64_t)factor2_1);
+  Prod0 = (uint32_t)(Pr & MAX_VALUE_LIMB);
   Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
     
   Nbr = *(factor1 + 1);
   Pr = Nbr * (uint64_t)factor2_0 + (uint32_t)Prod0;
-  MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_INT_NBR;
+  MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_VALUE_LIMB;
   Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
-    (uint64_t)MontDig * TestNbr1 + (uint64_t)Nbr * factor2_1 + (uint32_t)Prod1;
-  Prod0 = Pr & MAX_INT_NBR;
+    ((uint64_t)MontDig * (uint64_t)TestNbr1) + ((uint64_t)Nbr * (uint64_t)factor2_1) + (uint32_t)Prod1;
+  Prod0 = (uint32_t)(Pr & MAX_VALUE_LIMB);
   Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
     
   if ((Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP)) ||
      ((Prod1 == (uint32_t)TestNbr1) && (Prod0 >= (uint32_t)TestNbr0)))
   {
     int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
-    Prod0 = borrow & MAX_INT_NBR;
-    Prod1 = ((borrow >> BITS_PER_GROUP) + (int32_t)Prod1 - (int32_t)TestNbr1) & MAX_INT_NBR;
+    Prod0 = (uint32_t)borrow & MAX_VALUE_LIMB;
+    Prod1 = (uint32_t)((borrow >> BITS_PER_GROUP) + (uint32_t)Prod1 - (uint32_t)TestNbr1) & MAX_VALUE_LIMB;
   }
 #else
   double dInvLimbRange = 1.0 / (double)LIMB_RANGE;
