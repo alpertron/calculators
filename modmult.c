@@ -257,19 +257,20 @@ static void AddMult(limb* firstBig, int e, int f, limb* secondBig, int g, int h,
   }
 #else
   double dVal = 1.0 / (double)LIMB_RANGE;
-  int carryU;
-  int carryV;
+  int carryU = 0;
+  int carryV = 0;
   double dFactorE = (double)e;
   double dFactorF = (double)f;
   double dFactorG = (double)g;
   double dFactorH = (double)h;
-  carryU = carryV = 0;
   for (int ctr = 0; ctr <= nbrLen; ctr++)
   {
     int u = firstBig->x;
     int v = secondBig->x;
-    int lowU = (carryU + u * e + v * f) & MAX_INT_NBR;
-    int lowV = (carryV + u * g + v * h) & MAX_INT_NBR;
+    int lowU = carryU + (u * e) + (v * f);
+    int lowV = carryV + (u * g) + (v * h);
+    lowU = (int)((unsigned int)lowU & MAX_VALUE_LIMB);
+    lowV = (int)((unsigned int)lowV & MAX_VALUE_LIMB);
     // Subtract or add 0.25 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     double dCarry = ((double)carryU + (double)u * dFactorE +
@@ -309,13 +310,13 @@ static int HalveDifference(limb* first, const limb* second, int len)
   int prevLimb;
   // Perform first <- (first - second)/2.
   borrow = first->x - second->x;
-  prevLimb = borrow & MAX_VALUE_LIMB;
+  prevLimb = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
   borrow >>= BITS_PER_GROUP;
   for (i = 1; i < len; i++)
   {
     int currLimb;
     borrow += (first + i)->x - (second + i)->x;
-    currLimb = borrow & MAX_VALUE_LIMB;
+    currLimb = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
     borrow >>= BITS_PER_GROUP;
     (first + i - 1)->x = ((prevLimb >> 1) |
       (currLimb << (BITS_PER_GROUP - 1))) & MAX_VALUE_LIMB;
@@ -1032,7 +1033,7 @@ void ComputeInversePower2(const limb *value, limb *result, limb *tmp)
     for (j = 1; j < currLen; j++)
     {
       Cy.x = (Cy.x >> BITS_PER_GROUP) - tmp[j].x;
-      tmp[j].x = Cy.x & MAX_VALUE_LIMB;
+      tmp[j].x = (int)((unsigned int)Cy.x & MAX_VALUE_LIMB);
     }                                                  // tmp <- 2 - N * x
     multiply(result, tmp, result, currLen, NULL);      // tmp <- x * (2 - N * x)
   }
