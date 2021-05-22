@@ -9,12 +9,12 @@ int memcmp(const void *vl, const void *vr, size_t count)
   size_t n = count;
   const unsigned char *l=(const unsigned char *)vl;
   const unsigned char *r=(const unsigned char *)vr;
-  for (; (n != 0) && (*l == *r); n--)
+  for (; (n != 0U) && (*l == *r); n--)
   {
     l++;
     r++;
   }
-  return (n != 0)? (*l-*r) : 0;
+  return (n != 0U)? (*l-*r) : 0;
 }
 
 void *memcpy(void *dest, const void *src, size_t count)
@@ -27,20 +27,20 @@ void *memcpy(void *dest, const void *src, size_t count)
 #define RS <<
 
   typedef uint32_t u32;
-  if (n == 0)
+  if (n == 0U)
   {
     return dest;
   }
-  for (; (((uintptr_t)s % 4) != 0) && (n != 0); n--)
+  for (; (((uintptr_t)s % 4U) != 0U) && (n != 0U); n--)
   {
     *d = *s;
     d++;
     s++;
   }
 
-  if (((uintptr_t)d % 4) == 0)
+  if (((uintptr_t)d % 4U) == 0U)
   {
-    for (; n>=16; n-=16)
+    for (; n>=16U; n-=16U)
     {
       *(u32 *)(d+0) = *(const u32 *)(s+0);
       *(u32 *)(d+4) = *(const u32 *)(s+4);
@@ -49,38 +49,38 @@ void *memcpy(void *dest, const void *src, size_t count)
       s+=16;
       d+=16;
     }
-    if ((n & 8) != 0)
+    if ((n & 8U) != 0U)
     {
       *(u32 *)(d+0) = *(const u32 *)(s+0);
       *(u32 *)(d+4) = *(const u32 *)(s+4);
       d += 8;
       s += 8;
     }
-    if ((n & 4) != 0)
+    if ((n & 4U) != 0U)
     {
       *(u32 *)(d+0) = *(const u32 *)(s+0);
       d += 4;
       s += 4;
     }
-    if ((n & 2) != 0)
+    if ((n & 2U) != 0U)
     {
       *d = *s;
       *(d + 1) = *(s + 1);
       d += 2;
       s += 2;
     }
-    if ((n & 1) != 0)
+    if ((n & 1U) != 0U)
     {
       *d = *s;
     }
     return dest;
   }
 
-  if (n >= 32)
+  if (n >= 32U)
   {
     uint32_t x;
     uint32_t w;
-    switch ((uintptr_t)d % 4)
+    switch ((uintptr_t)d % 4U)
     {
       case 1:
         w = *(const u32 *)s;
@@ -89,8 +89,8 @@ void *memcpy(void *dest, const void *src, size_t count)
         *(d + 2) = *(s + 2);
         d += 3;
         s += 3;
-        n -= 3;
-        for (; n>=17; n-=16)
+        n -= 3U;
+        for (; n>=17U; n-=16U)
         {
           x = *(const u32 *)(s+1);
           *(u32 *)(d+0) = (w LS 24) | (x RS 8);
@@ -110,8 +110,8 @@ void *memcpy(void *dest, const void *src, size_t count)
         *(d + 1) = *(s + 1);
         d += 2;
         s += 2;
-        n -= 2;
-        for (; n>=18; n-=16)
+        n -= 2U;
+        for (; n>=18U; n-=16U)
         {
           x = *(const u32 *)(s+2);
           *(u32 *)(d+0) = (w LS 16) | (x RS 16);
@@ -130,8 +130,8 @@ void *memcpy(void *dest, const void *src, size_t count)
         *d = *s;
         d++;
         s++;
-        n -= 1;
-        for (; n>=19; n-=16)
+        n -= 1U;
+        for (; n>=19U; n-=16U)
         {
           x = *(const u32 *)(s+3);
           *(u32 *)(d+0) = (w LS 8) | (x RS 24);
@@ -145,9 +145,11 @@ void *memcpy(void *dest, const void *src, size_t count)
           d += 16;
         }
         break;
+      default:
+        break;
     }
   }
-  if ((n & 16) != 0)
+  if ((n & 16U) != 0U)
   {
     *d = *s;
     *(d + 1) = *(s + 1);
@@ -168,7 +170,7 @@ void *memcpy(void *dest, const void *src, size_t count)
     d += 16;
     s += 16;
   }
-  if ((n & 8) != 0)
+  if ((n & 8U) != 0U)
   {
     *d = *s;
     *(d + 1) = *(s + 1);
@@ -181,7 +183,7 @@ void *memcpy(void *dest, const void *src, size_t count)
     d += 8;
     s += 8;
   }
-  if ((n & 4) != 0)
+  if ((n & 4U) != 0U)
   {
     *d = *s;
     *(d + 1) = *(s + 1);
@@ -190,14 +192,14 @@ void *memcpy(void *dest, const void *src, size_t count)
     d += 4;
     s += 4;
   }
-  if ((n & 2) != 0)
+  if ((n & 2U) != 0U)
   {
     *d = *s;
     *(d + 1) = *(s + 1);
     d += 2;
     s += 2;
   }
-  if ((n & 1) != 0)
+  if ((n & 1U) != 0U)
   {
     *d = *s;
   }
@@ -225,7 +227,7 @@ void *memmove(void *dest, const void *src, size_t n)
     {
       while (((uintptr_t)d % WS) != 0)
       {
-        if (n == 0)
+        if (n == 0U)
         {
           return dest;
         }
@@ -241,7 +243,7 @@ void *memmove(void *dest, const void *src, size_t n)
         s+=WS;
       }
     }
-    for (; n != 0; n--)
+    for (; n != 0U; n--)
     {
       *d = *s;
       d++;
@@ -254,7 +256,7 @@ void *memmove(void *dest, const void *src, size_t n)
     {
       while (((uintptr_t)(d+n) % WS) != 0)
       {
-        if (n == 0)
+        if (n == 0U)
         {
           return dest;
         }
@@ -267,7 +269,7 @@ void *memmove(void *dest, const void *src, size_t n)
         *(WT *)(d+n) = *(WT *)(s+n);
       }
     }
-    while (n != 0)
+    while (n != 0U)
     {
       n--;
       d[n] = s[n];
@@ -286,23 +288,23 @@ void *memset(void *dest, int c, size_t n)
    * conditional ensures that all the subsequently used
    * offsets are well-defined and in the dest region. */
 
-  if (n == 0)
+  if (n == 0U)
   {
     return dest;
   }
-  s[0] = s[n-1] = (unsigned char)c;
-  if (n <= 2)
+  s[0] = s[n-1U] = (unsigned char)c;
+  if (n <= 2U)
   {
     return dest;
   }
-  s[1] = s[n-2] = (unsigned char)c;
-  s[2] = s[n-3] = (unsigned char)c;
-  if (n <= 6)
+  s[1] = s[n-2U] = (unsigned char)c;
+  s[2] = s[n-3U] = (unsigned char)c;
+  if (n <= 6U)
   { 
     return dest; 
   }
-  s[3] = s[n-4] = (unsigned char)c;
-  if (n <= 8)
+  s[3] = s[n-4U] = (unsigned char)c;
+  if (n <= 8U)
   {
     return dest;
   }
@@ -312,10 +314,10 @@ void *memset(void *dest, int c, size_t n)
    * already took care of any head/tail that get cut off
    * by the alignment. */
 
-  k = (~(uintptr_t)s+1) & 3;
+  k = (~(uintptr_t)s+1) & 3U;
   s += k;
   n -= k;
-  n &= -4;
+  n &= -4U;
 
   typedef uint32_t  u32;
   typedef uint64_t  u64;
@@ -364,7 +366,7 @@ void *memset(void *dest, int c, size_t n)
    * safely ignored. */
 
   u64 c64 = c32 | ((u64)c32 << 32);
-  for (; n >= 32; n-=32)
+  for (; n >= 32U; n-=32U)
   {
     *(u64 *)(s+0) = c64;
     *(u64 *)(s+8) = c64;
