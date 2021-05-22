@@ -1078,7 +1078,7 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
   unsigned int cy;
   int index;
 #ifdef __EMSCRIPTEN__
-  if (modmultCallback)
+  if (modmultCallback != NULL)
   {
     modmultCallback();
     lModularMult++;
@@ -1088,9 +1088,9 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
   {    // TestNbr is a power of 2.
     UncompressLimbsBigInteger(factor1, &tmpFact1);
     UncompressLimbsBigInteger(factor2, &tmpFact2);
-    BigIntMultiply(&tmpFact1, &tmpFact2, &tmpFact1);
+    (void)BigIntMultiply(&tmpFact1, &tmpFact2, &tmpFact1);
     CompressLimbsBigInteger(product, &tmpFact1);
-    (product + powerOf2Exponent / BITS_PER_GROUP)->x &= (1 << (powerOf2Exponent % BITS_PER_GROUP)) - 1;
+    (product + (powerOf2Exponent / BITS_PER_GROUP))->x &= (1 << (powerOf2Exponent % BITS_PER_GROUP)) - 1;
     return;
   }
   if (NumberLength == 1)
@@ -1146,16 +1146,17 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
     for (int i = 0; i < NumberLength; i++)
     {
       int32_t MontDig;
-      int32_t Nbr;
-      int64_t Pr;
-      Pr = (Nbr = (factor1 + i)->x) * (int64_t)factor2->x + (uint32_t)Prod[0].x;
+      int32_t Nbr = (factor1 + i)->x;
+      int64_t Pr = Nbr * (int64_t)factor2->x + (uint32_t)Prod[0].x;
       MontDig = ((int32_t)Pr * MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
-      Prod[0].x = (Pr = (((int64_t)MontDig * TestNbr[0].x + Pr) >> BITS_PER_GROUP) +
-        (int64_t)MontDig * TestNbr[1].x + (int64_t)Nbr * (factor2 + 1)->x + (uint32_t)Prod[1].x) & MAX_VALUE_LIMB;
+      Pr = (((int64_t)MontDig * (int64_t)TestNbr[0].x + Pr) >> BITS_PER_GROUP) +
+        ((int64_t)MontDig * TestNbr[1].x) + ((int64_t)Nbr * (factor2 + 1)->x) + (uint32_t)Prod[1].x;
+      Prod[0].x = Pr & MAX_VALUE_LIMB;
       for (j = 2; j < NumberLength; j++)
       {
-        Prod[j - 1].x = ((Pr = (Pr >> BITS_PER_GROUP) +
-          (int64_t)MontDig * TestNbr[j].x + (int64_t)Nbr * (factor2 + j)->x + (uint32_t)Prod[j].x) & MAX_VALUE_LIMB);
+        Pr = (Pr >> BITS_PER_GROUP) +
+          ((int64_t)MontDig * TestNbr[j].x) + ((int64_t)Nbr * (factor2 + j)->x) + (uint32_t)Prod[j].x;
+        Prod[j - 1].x = (Pr & MAX_VALUE_LIMB);
       }
       Prod[j - 1].x = (int32_t)(Pr >> BITS_PER_GROUP);
     }
