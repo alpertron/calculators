@@ -286,11 +286,11 @@ int fsquares(void)
           int Q;
           Rem.x = 0;
           Q = (2 * i) + 3;                        // Prime
-          LimbModQ = (int)(LIMB_RANGE % Q);
+          LimbModQ = (int)(LIMB_RANGE % (unsigned int)Q);
           for (j = nbrLimbs - 1; j >= 0; j--)
           {
             Divid.x = number[j].x + (Rem.x * LimbModQ);
-            Rem.x = (int)((unsigned int)Divid.x % Q);
+            Rem.x = (int)((unsigned int)Divid.x % (unsigned int)Q);
           }
           sieve[i] = Rem.x;
         }
@@ -331,17 +331,17 @@ int fsquares(void)
         }
         sum = (iMult3 * iMult3) + (iMult4 * iMult4);
         carry.x = number[0].x - sum;
-        p[0].x = carry.x & MAX_VALUE_LIMB;
+        p[0].x = (int)((unsigned int)carry.x & MAX_VALUE_LIMB);
         carry.x >>= BITS_PER_GROUP;
         if (nbrLimbs > 1)
         {
           carry.x += number[1].x;
-          p[1].x = carry.x & MAX_VALUE_LIMB;
+          p[1].x = (int)((unsigned int)carry.x & MAX_VALUE_LIMB);
           carry.x >>= BITS_PER_GROUP;
           for (index = 2; index < nbrLimbs; index++)
           {
             carry.x += number[index].x;
-            p[index].x = carry.x & MAX_VALUE_LIMB;
+            p[index].x = (int)((unsigned int)carry.x & MAX_VALUE_LIMB);
             carry.x >>= BITS_PER_GROUP;
           }
         }
@@ -377,11 +377,12 @@ int fsquares(void)
             for (;;)
             {
               // Compute the remainder of p and divisor.
-              int LimbModDivisor = (int)(LIMB_RANGE % divisor);
+              int LimbModDivisor = (int)(LIMB_RANGE % (unsigned int)divisor);
               carry.x = 0;
               for (index = nbrLimbsP - 1; index >= 0; index--)
               {
-                carry.x = ((unsigned int)(carry.x * LimbModDivisor) + p[index].x) % divisor;
+                carry.x = (int)((unsigned int)(carry.x * LimbModDivisor) + p[index].x) % 
+                  (unsigned int)divisor;
               }
               if (carry.x != 0)
               {     // Number is not a multiple of "divisor".
@@ -668,14 +669,14 @@ void fsquaresText(char *input, int grpLen)
 #ifdef FSQUARES_APP
 void batchSquaresCallback(char **pptrOutput)
 {
-  int result;
+  int rc;
   char *ptrOutput;
   ptrOutput = *pptrOutput;
   NumberLength = toProcess.nbrLimbs;
   BigInteger2IntArray((int *)number, &toProcess);
   origNbrLimbs = toProcess.nbrLimbs;
   (void)memcpy(origNbr, toProcess.limbs, origNbrLimbs*sizeof(limb));
-  result = fsquares();
+  rc = fsquares();
   // Show the number to be decomposed into sum of squares.
   copyStr(&ptrOutput, "<p>");
   if (hexadecimal)
@@ -697,7 +698,7 @@ void batchSquaresCallback(char **pptrOutput)
     *pptrOutput = ptrOutput;
     return;
   }
-  switch (result)
+  switch (rc)
   {
   case 1:
     copyStr(&ptrOutput, (lang ? ": ¡Error interno!\n\nPor favor envíe este número al autor del applet.</p>":
@@ -708,6 +709,8 @@ void batchSquaresCallback(char **pptrOutput)
     copyStr(&ptrOutput, (lang?": El usuario detuvo el cálculo": ": User stopped the calculation"));
     *pptrOutput = ptrOutput;
     return;
+  default:
+    break;
   }
   // Show the decomposition.
   copyStr(&ptrOutput, " = ");
@@ -856,6 +859,8 @@ EXTERNALIZE void doWork(void)
     break;
   case 2:
     contfracText(ptrData+2, groupLen);
+    break;
+  default:
     break;
   }
 #endif
