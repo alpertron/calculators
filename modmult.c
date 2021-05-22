@@ -208,10 +208,10 @@ void modPowLimb(const limb* base, const limb* exp, limb* power)
   int groupExp;
   (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1) * sizeof(*power));  // power <- 1
   groupExp = exp->x;
-  for (int mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+  for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
   {
     modmult(power, power, power);
-    if ((groupExp & mask) != 0)
+    if (((unsigned int)groupExp & mask) != 0U)
     {
       modmult(power, base, power);
     }
@@ -239,19 +239,21 @@ void modPowBaseInt(int base, const limb* exp, int nbrGroupsExp, limb* power)
 /* U <- U', V <- V'                                                    */
 static void AddMult(limb* firstBig, int e, int f, limb* secondBig, int g, int h, int nbrLen)
 {
+  limb* ptrFirstBig = firstBig;
+  limb* ptrSecondBig = secondBig;
 #ifdef _USING64BITS_
   int64_t carryU = 0;
   int64_t carryV = 0;
   for (int ctr = 0; ctr <= nbrLen; ctr++)
   {
-    int u = firstBig->x;
-    int v = secondBig->x;
+    int u = ptrFirstBig->x;
+    int v = ptrSecondBig->x;
     carryU += (u * (int64_t)e) + (v * (int64_t)f);
     carryV += (u * (int64_t)g) + (v * (int64_t)h);
-    firstBig->x = (int)(carryU & MAX_INT_NBR);
-    secondBig->x = (int)(carryV & MAX_INT_NBR);
-    firstBig++;
-    secondBig++;
+    ptrFirstBig->x = (int)(carryU & MAX_INT_NBR);
+    ptrSecondBig->x = (int)(carryV & MAX_INT_NBR);
+    ptrFirstBig++;
+    ptrSecondBig++;
     carryU >>= BITS_PER_GROUP;
     carryV >>= BITS_PER_GROUP;
   }
@@ -265,8 +267,8 @@ static void AddMult(limb* firstBig, int e, int f, limb* secondBig, int g, int h,
   double dFactorH = (double)h;
   for (int ctr = 0; ctr <= nbrLen; ctr++)
   {
-    int u = firstBig->x;
-    int v = secondBig->x;
+    int u = ptrFirstBig->x;
+    int v = ptrSecondBig->x;
     int lowU = carryU + (u * e) + (v * f);
     int lowV = carryV + (u * g) + (v * h);
     lowU = (int)((unsigned int)lowU & MAX_VALUE_LIMB);
@@ -293,10 +295,10 @@ static void AddMult(limb* firstBig, int e, int f, limb* secondBig, int g, int h,
     {
       carryV = (int)floor(dCarry - 0.25);
     }
-    firstBig->x = lowU;
-    secondBig->x = lowV;
-    firstBig++;
-    secondBig++;
+    ptrFirstBig->x = lowU;
+    ptrSecondBig->x = lowV;
+    ptrFirstBig++;
+    ptrSecondBig++;
   }
 #endif
 }
