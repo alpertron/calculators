@@ -305,8 +305,9 @@ static void AddMult(limb* firstBig, int e, int f, limb* secondBig, int g, int h,
 
 // Perform first <- (first - second) / 2
 // first must be greater than second.
-static int HalveDifference(limb* first, const limb* second, int len)
+static int HalveDifference(limb* first, const limb* second, int length)
 {
+  int len = length;
   int i;
   int borrow;
   int prevLimb;
@@ -347,7 +348,7 @@ int modInv(int NbrMod, int currentPrime)
   int U3 = currentPrime;
   while (V3 != 0)
   {
-    if (U3 < V3 + V3)
+    if (U3 < (V3 + V3))
     {               // QQ = 1
       T1 = U1 - V1;
       T3 = U3 - V3;
@@ -355,8 +356,8 @@ int modInv(int NbrMod, int currentPrime)
     else
     {
       QQ = U3 / V3;
-      T1 = U1 - V1 * QQ;
-      T3 = U3 - V3 * QQ;
+      T1 = U1 - (V1 * QQ);
+      T3 = U3 - (V3 * QQ);
     }
     U1 = V1;
     U3 = V3;
