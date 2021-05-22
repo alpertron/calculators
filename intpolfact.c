@@ -2111,7 +2111,14 @@ int FactorPolyOverIntegers(void)
     ptrSrc += 1 + numLimbs(ptrSrc);
     ptrDest += 1 + numLimbs(ptrDest);
   }
-  nbrSquareFreeFactors = IntegerSquarefreeFactorization();
+  if (polyToFactor[0] == 0)
+  {
+    nbrSquareFreeFactors = 0;
+  }
+  else
+  {
+    nbrSquareFreeFactors = IntegerSquarefreeFactorization();
+  }
   for (int squareFreeFactor = 0; squareFreeFactor < nbrSquareFreeFactors; squareFreeFactor++)
   {    // At least degree 1.
        // The trailing coefficient of factors must divide the product of the trailing and leading
