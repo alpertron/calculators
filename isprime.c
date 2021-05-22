@@ -158,12 +158,12 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   Nbr = *(factor1 + 1);
   Pr = Nbr * (uint64_t)factor2_0 + (uint32_t)Prod0;
   MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_VALUE_LIMB;
-  Pr = ((((uint64_t)MontDig * TestNbr0) + Pr) >> BITS_PER_GROUP) +
+  Pr = ((((uint64_t)MontDig * (uint64_t)TestNbr0) + Pr) >> BITS_PER_GROUP) +
     ((uint64_t)MontDig * (uint64_t)TestNbr1) + ((uint64_t)Nbr * (uint64_t)factor2_1) + (uint32_t)Prod1;
   Prod0 = (uint32_t)(Pr & MAX_VALUE_LIMB);
   Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
     
-  if ((Pr >= ((uint64_t)(TestNbr1 + 1) << BITS_PER_GROUP)) ||
+  if (((Pr >> BITS_PER_GROUP) > (uint64_t)TestNbr1) ||
      ((Prod1 == (uint32_t)TestNbr1) && (Prod0 >= (uint32_t)TestNbr0)))
   {
     int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
@@ -176,14 +176,16 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   double dNbr = (double)Nbr;
   int low = Nbr * factor2_0;
   double dAccum = dNbr * (double)factor2_0;
-  int MontDig = (low * MontgomeryMultN) & MAX_VALUE_LIMB;
+  unsigned int tmp = ((unsigned int)low * MontgomeryMultN) & MAX_VALUE_LIMB;
+  int MontDig = (int)tmp;
   double dMontDig = (double)MontDig;
   dAccum += dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
   dAccum = floor((dAccum*dInvLimbRange) + 0.5);
-  low = ((unsigned int)dAccum + (MontDig * TestNbr1) +
-               (Nbr * factor2_1)) & MAX_VALUE_LIMB;
-  dAccum += (dMontDig * TestNbr1) + (dNbr * factor2_1);
+  tmp = ((unsigned int)dAccum + ((unsigned int)MontDig * (unsigned int)TestNbr1) +
+               ((unsigned int)Nbr * (unsigned int)factor2_1)) & MAX_VALUE_LIMB;
+  low = (int)tmp;
+  dAccum += (dMontDig * (double)TestNbr1) + (dNbr * (double)factor2_1);
   Prod0 = low;
   if (low < HALF_INT_RANGE)
   {
@@ -199,7 +201,8 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   dNbr = (double)Nbr;
   low = (Nbr * factor2_0) + Prod0;
   dAccum = (dNbr * (double)factor2_0) + (double)Prod0;
-  MontDig = (low * MontgomeryMultN) & MAX_VALUE_LIMB;
+  tmp = ((unsigned int)low * MontgomeryMultN) & MAX_VALUE_LIMB;
+  MontDig = (int)tmp;
   dMontDig = (double)MontDig;
   dAccum += dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
@@ -221,8 +224,9 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   if (((unsigned int)Prod1 > (unsigned int)TestNbr1) ||
        (((unsigned int)Prod1 == (unsigned int)TestNbr1) && ((unsigned int)Prod0 >= (unsigned int)TestNbr0)))
   {        // Prod >= TestNbr, so perform Prod <- Prod - TestNbr
-    carry = Prod0 - TestNbr0;
-    Prod0 = carry & MAX_VALUE_LIMB;
+    carry = (int)Prod0 - TestNbr0;
+    tmp = (unsigned int)carry & MAX_VALUE_LIMB;
+    Prod0 = (int)tmp;
     Prod1 = ((carry >> BITS_PER_GROUP) + Prod1 - TestNbr1) & MAX_VALUE_LIMB;
   }
 #endif  
