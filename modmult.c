@@ -98,7 +98,7 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
   (factorBig + nbrLen)->x = 0;
   dTestNbr = getMantissa(pTestNbr + nbrLen, nbrLen);
   dFactorBig = getMantissa(factorBig + nbrLen, nbrLen);
-  TrialQuotient = (int)(unsigned int)floor(dFactorBig * (double)factorInt / dTestNbr + 0.5);
+  TrialQuotient = (int)(unsigned int)floor((dFactorBig * (double)factorInt / dTestNbr) + 0.5);
   if ((unsigned int)TrialQuotient >= LIMB_RANGE)
   {   // Maximum value for limb.
     TrialQuotient = MAX_VALUE_LIMB;
@@ -110,8 +110,8 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
   carry = 0;
   for (i = 0; i <= nbrLen; i++)
   {
-    carry += (int64_t)ptrFactorBig->x * factorInt -
-      (int64_t)TrialQuotient * ptrTestNbr->x;
+    carry += ((int64_t)ptrFactorBig->x * factorInt) -
+      ((int64_t)TrialQuotient * ptrTestNbr->x);
     (result + i)->x = (int)carry & MAX_INT_NBR;
     carry >>= BITS_PER_GROUP;
     ptrFactorBig++;
@@ -1022,12 +1022,12 @@ void ComputeInversePower2(const limb *value, limb *result, limb *tmp)
   x = x * (2 - (N * x));       // 8 least significant bits of inverse correct.
   x = x * (2 - (N * x));       // 16 least significant bits of inverse correct.
   x = x * (2 - (N * x));       // 32 least significant bits of inverse correct.
-  result->x = x & MAX_VALUE_LIMB;
+  result->x = (int)((unsigned int)x & MAX_VALUE_LIMB);
   for (int currLen = 2; currLen < NumberLength; currLen <<= 1)
   {
     multiply(value, result, tmp, currLen, NULL);    // tmp <- N * x
     Cy.x = 2 - tmp[0].x;
-    tmp[0].x = Cy.x & MAX_VALUE_LIMB;
+    tmp[0].x = (int)((unsigned int)Cy.x & MAX_VALUE_LIMB);
     for (j = 1; j < currLen; j++)
     {
       Cy.x = (Cy.x >> BITS_PER_GROUP) - tmp[j].x;
