@@ -575,6 +575,13 @@ void DerPolynomial(int *ptrArgument)
     }
     return;
   }
+  if (degreePoly == 0)
+  {      // Degree of polynomial is zero: result polynomial must be zero.
+    *ptrArgument = 0;
+    *(ptrArgument+1) = 1;
+    *(ptrArgument+2) = 0;
+    return;
+  }
   ptrSrc = ptrArgument + 1;
   ptrDest = &poly1[1];
   for (degree = 1; degree <= degreePoly; degree++)
