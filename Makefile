@@ -26,42 +26,42 @@ all: $(targets)
 
 ecm: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco ecmfront.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco test_ecm.fco
-	gcc expression.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
+	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco ecmfront.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco test_ecm.fco -lm -o $@
 
 quad: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco quad.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quad.fco
-	gcc expression.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
+	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco quad.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quad.fco -lm -o $@
 
 dilog: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco dilog.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_dilog.fco
-	gcc expression.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
+	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco dilog.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_dilog.fco -lm -o $@
 
 quadmod: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco quadmod.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quadmod.fco
-	gcc expression.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
+	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco quadmod.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quadmod.fco -lm -o $@
 
-fsquares: expression.sqo parseexpr.fco partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
+fsquares: expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
 fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fsquares.sqo
-	gcc expression.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
+	gcc expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
 fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fsquares.sqo -lm -o $@
 
-fcubes: expression.sqo parseexpr.fco partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
+fcubes: expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
 fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fcubes.sqo
-	gcc expression.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
+	gcc expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
 fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fcubes.sqo -lm -o $@
 
-contfrac: expression.sqo parseexpr.fco partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
+contfrac: expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
 fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_contfrac.sqo
-	gcc expression.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
+	gcc expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
 fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_contfrac.sqo -lm -o $@
 
 polfact: expression.oto parseexpr.plo partition.oto errors.oto bigint.oto linkedbignbr.oto division.oto baseconv.oto karatsuba.oto modmult.oto sqroot.oto \
 rootseq.oto quintics.oto bigrational.oto output.oto polynomial.oto polyexpr.oto multpoly.oto divpoly.oto fftpoly.oto polfact.oto bignbr.oto showtime.oto from_musl.oto inputstr.oto fft.oto test_polfact.oto intpolfact.oto
-	gcc expression.oto partition.oto errors.oto bigint.oto linkedbignbr.oto division.oto baseconv.oto karatsuba.oto modmult.oto sqroot.oto \
+	gcc expression.oto parseexpr.plo partition.oto errors.oto bigint.oto linkedbignbr.oto division.oto baseconv.oto karatsuba.oto modmult.oto sqroot.oto \
 rootseq.oto quintics.oto bigrational.oto output.oto polynomial.oto polyexpr.oto multpoly.oto divpoly.oto fftpoly.oto polfact.oto bignbr.oto showtime.oto from_musl.oto inputstr.oto fft.oto test_polfact.oto intpolfact.oto -lm -o $@
 
 %.fco : %.c $(h_files)
