@@ -53,6 +53,9 @@ static bool isFunc(const char** ppcInput, const struct sFuncOperExpr** ppstFuncO
       {           // Not a letter. Perform exact comparison.
         break;    // Function name not found.
       }
+      else
+      {           // Nothing to do.
+      }
       pcInput++;
       ptrFuncName++;
     }
@@ -90,7 +93,8 @@ static void getHexValue(const char** pptrInput)
   }
   else
   {    // Generate big integer from hexadecimal number from right to left.
-    int carry = 0;
+    unsigned int unsignedLimb;
+    unsigned int carry = 0;
     int shLeft = 0;
     limb* ptrLimb = &value.limbs[0];
     for (const char* ptrHexNbr = ptrInput - 1; ptrHexNbr >= ptrFirstHexDigit; ptrHexNbr--)
@@ -108,14 +112,15 @@ static void getHexValue(const char** pptrInput)
       {
         c -= 'a' - 10;
       }
-      carry += (int)((unsigned int)c << shLeft);
+      carry += (unsigned int)c << shLeft;
       shLeft += 4;   // 4 bits per hex digit.
       if (shLeft >= BITS_PER_GROUP)
       {
         shLeft -= BITS_PER_GROUP;
-        ptrLimb->x = (int)((unsigned int)carry & MAX_VALUE_LIMB);
+        unsignedLimb = carry & MAX_VALUE_LIMB;
+        ptrLimb->x = (int)unsignedLimb;
         ptrLimb++;
-        carry = c >> (4 - shLeft);
+        carry = (unsigned int)c >> (4 - shLeft);
       }
     }
     if ((carry != 0) || (ptrLimb == &value.limbs[0]))
@@ -123,7 +128,8 @@ static void getHexValue(const char** pptrInput)
       ptrLimb->x = carry;
       ptrLimb++;
     }
-    value.nbrLimbs = (int)(ptrLimb - &value.limbs[0]);
+    unsignedLimb = (unsigned int)(ptrLimb - &value.limbs[0]);
+    value.nbrLimbs = (int)unsignedLimb;
   }
   *pptrInput = ptrInput;
 }
@@ -134,7 +140,6 @@ static enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput
   const char* pInput = *ppInput;
   char* ptrOutput = *ppOutput;
   const char* ptrInput = pInput;
-  int limbValue;
   if ((*ptrInput == '0') && ((*(ptrInput + 1) == 'x') || (*(ptrInput + 1) == 'X')))
   {              // Hexadecimal number.
     getHexValue(&ptrInput);
@@ -159,13 +164,13 @@ static enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput
     }
     value.nbrLimbs--;
   }
-  *ptrOutput = (char)(value.nbrLimbs >> 8);
+  *ptrOutput = (char)((unsigned int)value.nbrLimbs >> 8);
   ptrOutput++;
   *ptrOutput = (char)value.nbrLimbs;
   ptrOutput++;
   for (int index = 0; index < value.nbrLimbs; index++)
   {
-    limbValue = value.limbs[index].x;
+    unsigned int limbValue = (unsigned int)value.limbs[index].x;
     for (int bitNbr = BITS_PER_GROUP; bitNbr > 0; bitNbr -= 8)
     {
       *ptrOutput = (char)limbValue;
@@ -337,9 +342,6 @@ static enum eExprErr parsePrevTokenIsNumber(const char** ppInput, char** ppOutpu
   enum eParseExpr eParseExpr)
 {
   enum eExprErr rc;
-  short oper;
-  char priority;
-  char s;
   const char* pInput = *ppInput;
   char* ptrOutput = *ppOutput;
   char c = *pInput;
@@ -356,6 +358,9 @@ static enum eExprErr parsePrevTokenIsNumber(const char** ppInput, char** ppOutpu
   pstOperatorExpr = binaryOperExpr;
   if (isFunc(&pInput, &pstOperatorExpr) || forceMultiplication)
   {              // Operator name was found.
+    short oper;
+    char priority;
+    char s;
     bool isInfix = false;
     if (forceMultiplication)
     {
@@ -570,7 +575,7 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
       if (isFunc(&pInput, &pstFuncOperExpr))
       {          // Unary operator name was found.
                  // Push operator onto stack.
-        stackOper[stackOperIndex] = (char)pstFuncOperExpr->token;
+        stackOper[stackOperIndex] = pstFuncOperExpr->token;
         stackOperIndex++;
         prevTokenIsNumber = false;
         continue;
