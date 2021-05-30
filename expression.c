@@ -94,10 +94,10 @@ struct sFuncOperExpr stFuncOperIntExpr[] =
   {"AND", OPER_AND, -8},
   {"==", OPER_EQUAL, 6},
   {"!=", OPER_NOT_EQUAL, 6},
-  {"<", OPER_LESS, 6},
-  {">", OPER_GREATER, 6},
   {">=", OPER_NOT_LESS, 6},
   {"<=", OPER_NOT_GREATER, 6},
+  {"<", OPER_LESS, 6},
+  {">", OPER_GREATER, 6},
   {"SHL", OPER_SHL, 5},
   {"SHR", OPER_SHR, 5},
   {"+", OPER_PLUS, 4},
@@ -221,6 +221,16 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       (void)memcpy(&comprStackValues[currentOffset+1], ptrRPNbuffer, nbrLenBytes);
       ptrRPNbuffer += nbrLenBytes;
       comprStackOffset[stackIndex+1] = currentOffset + 1 + len;
+      break;
+
+    case TOKEN_VAR:
+      stackIndex++;
+      CopyBigInt(&curStack, &valueX);
+      break;
+
+    case TOKEN_COUNTER:
+      stackIndex++;
+      intToBigInteger(&curStack, counterC);
       break;
 
     case TOKEN_GCD:
@@ -752,7 +762,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
         break;
       }
       getCurrentStackValue(&curStack);
-      BigIntSubt(&curStack, &curStack2, &curStack3);
+      BigIntSubt(&curStack2, &curStack, &curStack3);
       intToBigInteger(&curStack, (curStack3.sign == SIGN_NEGATIVE) ? -1 : 0);
       break;
 
@@ -764,7 +774,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
         break;
       }
       getCurrentStackValue(&curStack);
-      BigIntSubt(&curStack, &curStack2, &curStack3);
+      BigIntSubt(&curStack2, &curStack, &curStack3);
       intToBigInteger(&curStack, (curStack3.sign == SIGN_NEGATIVE) ? 0 : -1);
       break;
 
@@ -907,6 +917,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       BigIntXor(&curStack, &curStack2, &curStack3);
       CopyBigInt(&curStack, &curStack3);
       break;
+
     default:
       break;
     }

@@ -916,8 +916,8 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
   carry = 0;
   for (int ctr = 0; ctr < nbrLimbs; ctr++)
   {
-    unsigned int unsignedLimb;
 #ifdef _USING64BITS_
+    unsigned int unsignedLimb;
     carry += (int64_t)pLimb->x * (int64_t)intMult;
     unsignedLimb = (unsigned int)carry & MAX_VALUE_LIMB;
     pResultLimb->x = (int)unsignedLimb;

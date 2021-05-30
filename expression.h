@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 29 de mayo de 2021."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 29 May 2021."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 30 de mayo de 2021."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 30 May 2021."
 
 #include <stdbool.h>
 #ifdef __EMSCRIPTEN__
