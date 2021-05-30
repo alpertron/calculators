@@ -14,7 +14,7 @@ int memcmp(const void *vl, const void *vr, size_t count)
     l++;
     r++;
   }
-  return (n != 0U)? (*l-*r) : 0;
+  return (n != 0U)? (int)(*l-*r) : 0;
 }
 
 void *memcpy(void *dest, const void *src, size_t count)
@@ -293,18 +293,22 @@ void *memset(void *dest, int c, size_t n)
   {
     return dest;
   }
-  s[0] = s[n-1U] = (unsigned char)c;
+  s[0] = (unsigned char)c; 
+  s[n-1U] = (unsigned char)c;
   if (n <= 2U)
   {
     return dest;
   }
-  s[1] = s[n-2U] = (unsigned char)c;
-  s[2] = s[n-3U] = (unsigned char)c;
+  s[1] = (unsigned char)c; 
+  s[n-2U] = (unsigned char)c;
+  s[2] = (unsigned char)c; 
+  s[n-3U] = (unsigned char)c;
   if (n <= 6U)
   { 
     return dest; 
   }
-  s[3] = s[n-4U] = (unsigned char)c;
+  s[3] = (unsigned char)c;
+  s[n-4U] = (unsigned char)c;
   if (n <= 8U)
   {
     return dest;

@@ -193,13 +193,15 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
   if (addend1Sign == addend2Sign)
   {             // Both addends have the same sign. Sum their absolute values.
     unsigned int carry = 0;
+    unsigned int limbValue;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
       carry = (carry >> BITS_PER_GROUP) + (unsigned int)ptrAddend1->x +
         (unsigned int)ptrAddend2->x;
       ptrAddend1++;
       ptrAddend2++;
-      ptrSum->x = (int)(carry & MAX_INT_NBR_U);
+      limbValue = carry & MAX_INT_NBR_U;
+      ptrSum->x = (int)limbValue;
       ptrSum++;
     }
     nbrLimbs = pAddend1->nbrLimbs;
@@ -379,20 +381,26 @@ void intToBigInteger(BigInteger *bigint, int value)
 
 void longToBigInteger(BigInteger *bigint, long long value)
 {
-  long long llValue = value;
+  unsigned long long ullValue;
   int nbrLimbs = 0;
-  bigint->sign = SIGN_POSITIVE;
-  if (llValue < 0)
+  unsigned int limbValue;
+  if (value >= 0)
+  {
+    bigint->sign = SIGN_POSITIVE;
+    ullValue = (unsigned long long)value;
+  }
+  else
   {
     bigint->sign = SIGN_NEGATIVE;
-    llValue = -llValue;
+    ullValue = (unsigned long long)(-value);
   }
   do
   {
-    bigint->limbs[nbrLimbs].x = (int)((unsigned int)llValue & MAX_VALUE_LIMB);
+    limbValue = (unsigned int)ullValue & MAX_VALUE_LIMB;
+    bigint->limbs[nbrLimbs].x = (int)limbValue;
     nbrLimbs++;
-    llValue >>= BITS_PER_GROUP;
-  } while (llValue != 0);
+    ullValue >>= BITS_PER_GROUP;
+  } while (ullValue != 0U);
   bigint->nbrLimbs = nbrLimbs;
 }
 
@@ -400,9 +408,10 @@ void expBigNbr(BigInteger *bignbr, double logar)
 {
   unsigned int mostSignificantLimb;
   int nbrBits;
+  int sizeBytes;
   bignbr->sign = SIGN_POSITIVE;
-  bignbr->nbrLimbs = (int)floor(logar / BITS_PER_GROUP);
-  nbrBits = BITS_PER_GROUP * bignbr->nbrLimbs;;
+  bignbr->nbrLimbs = (int)floor(logar / (double)BITS_PER_GROUP);
+  nbrBits = BITS_PER_GROUP * bignbr->nbrLimbs;
   mostSignificantLimb = (unsigned int)floor(exp(logar - ((double)nbrBits * LOG_2)) + 0.5);
   if (mostSignificantLimb == LIMB_RANGE)
   {
@@ -410,7 +419,8 @@ void expBigNbr(BigInteger *bignbr, double logar)
     bignbr->nbrLimbs++;
   }
   bignbr->nbrLimbs++;
-  (void)memset(bignbr->limbs, 0, bignbr->nbrLimbs * sizeof(limb));
+  sizeBytes = bignbr->nbrLimbs * (int)sizeof(limb);
+  (void)memset(bignbr->limbs, 0, sizeBytes);
   bignbr->limbs[bignbr->nbrLimbs-1].x = mostSignificantLimb;
 }
 
@@ -588,8 +598,10 @@ static void BigIntMutiplyPower2(BigInteger *pArg, int powerOf2)
     unsigned int carry = 0U;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
+      unsigned int unsignedLimb;
       carry += (unsigned int)(ptrLimbs + ctr)->x << 1;
-      (ptrLimbs + ctr)->x = (int)(carry & MAX_VALUE_LIMB);
+      unsignedLimb = carry & MAX_VALUE_LIMB;
+      (ptrLimbs + ctr)->x = (int)unsignedLimb;
       carry >>= BITS_PER_GROUP;
     }
     if (carry != 0U)
@@ -903,9 +915,11 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
   carry = 0;
   for (int ctr = 0; ctr < nbrLimbs; ctr++)
   {
+    unsigned int unsignedLimb;
 #ifdef _USING64BITS_
     carry += (int64_t)pLimb->x * (int64_t)intMult;
-    pResultLimb->x = (int)((unsigned int)carry & MAX_VALUE_LIMB);
+    unsignedLimb = (unsigned int)carry & MAX_VALUE_LIMB;
+    pResultLimb->x = (int)unsignedLimb;
     pResultLimb++;
     carry >>= BITS_PER_GROUP;
 #else
@@ -1066,7 +1080,8 @@ void UncompressLimbsBigInteger(const limb *ptrValues, /*@out@*/BigInteger *bigin
   {
     int nbrLimbs;
     const limb *ptrValue1;
-    (void)memcpy(bigint->limbs, ptrValues, NumberLength*sizeof(limb));
+    int numberLengthBytes = NumberLength * (int)sizeof(limb);
+    (void)memcpy(bigint->limbs, ptrValues, numberLengthBytes);
     ptrValue1 = ptrValues + NumberLength;
     for (nbrLimbs = NumberLength; nbrLimbs > 1; nbrLimbs--)
     {
@@ -1088,15 +1103,18 @@ void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, const BigInteger *bigint)
   }
   else
   {
+    int numberLengthBytes = NumberLength * (int)sizeof(limb);
     int nbrLimbs = bigint->nbrLimbs;
     if (nbrLimbs > NumberLength)
     {
-      (void)memcpy(ptrValues, bigint->limbs, NumberLength*sizeof(limb));
+      (void)memcpy(ptrValues, bigint->limbs, numberLengthBytes);
     }
     else
     {
-      (void)memcpy(ptrValues, bigint->limbs, nbrLimbs * sizeof(limb));
-      (void)memset(ptrValues + nbrLimbs, 0, (NumberLength - nbrLimbs) * sizeof(limb));
+      int nbrLimbsBytes = nbrLimbs * (int)sizeof(limb);
+      (void)memcpy(ptrValues, bigint->limbs, nbrLimbsBytes);
+      nbrLimbsBytes = numberLengthBytes - nbrLimbsBytes;
+      (void)memset(ptrValues + nbrLimbs, 0, nbrLimbsBytes);
     }
   }
 }
@@ -1104,21 +1122,26 @@ void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, const BigInteger *bigint)
 void LenAndLimbs2ArrLimbs(const int *ptrValues, /*@out@*/limb *bigint, int nbrLen)
 {
   int nbrLimbs = *ptrValues;
+  int nbrLimbsBytes;
   if (nbrLimbs < 0)
   {
     nbrLimbs = -nbrLimbs;
   }
-  (void)memcpy(bigint, ptrValues+1, nbrLimbs*sizeof(limb));
+  nbrLimbsBytes = nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(bigint, ptrValues+1, nbrLimbsBytes);
   if (nbrLen > nbrLimbs)
   {
-    (void)memset(bigint + nbrLimbs, 0, (nbrLen - nbrLimbs) * sizeof(limb));
+    int nbrLenBytes = nbrLen * (int)sizeof(limb);
+    nbrLimbsBytes = nbrLenBytes - nbrLimbsBytes;
+    (void)memset(bigint + nbrLimbs, 0, nbrLimbsBytes);
   }
 }
 
 void ArrLimbs2LenAndLimbs(/*@out@*/int *ptrValues, const limb *bigint, int nbrLen)
 {
   int nbrLimbs;
-  (void)memcpy(ptrValues+1, bigint, (nbrLen-1) * sizeof(limb));
+  int nbrLimbsBytes = (nbrLen - 1) * (int)sizeof(limb);
+  (void)memcpy(ptrValues+1, bigint, nbrLimbsBytes);
   for (nbrLimbs = nbrLen-1; nbrLimbs > 1; nbrLimbs--)
   {
     if (*(ptrValues + nbrLimbs) != 0)
@@ -1162,9 +1185,11 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
   {
     for (base = 2; base <= 100; base++)
     {     // Check whether pBigNbr is perfect power of these bases.
+      int nbrLimbsBytes;
       double dProd;
       double dLogBase = log(base);
-      Exponent = (int)(dLogBigNbr / dLogBase) - 1;
+      double dExponent = dLogBigNbr / dLogBase;
+      Exponent = (int)dExponent - 1;
       dProd = dLogBigNbr - ((double)Exponent * dLogBase);
       if ((dProd > 0.00000000001) || (dProd < -0.00000000001))
       {
@@ -1187,7 +1212,8 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
         return Exponent;
       }
       pBase->nbrLimbs = pBigNbr->nbrLimbs;
-      (void)memcpy(pBase->limbs, pBigNbr->limbs, pBase->nbrLimbs * sizeof(limb));
+      nbrLimbsBytes = pBase->nbrLimbs * (int)sizeof(limb);
+      (void)memcpy(pBase->limbs, pBigNbr->limbs, nbrLimbsBytes);
       return 1;
     }
     dMaxExpon = (dLogBigNbr / log(101)) + 0.5;
