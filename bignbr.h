@@ -170,7 +170,7 @@ void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len);
 void ComputeInversePower2(const limb *value, /*@out@*/limb *result, /*@out@*/limb *aux);
 bool BigNbrIsZero(const limb *value);
 void intToBigInteger(BigInteger *bigint, int value);
-void longToBigInteger(BigInteger *bigint, long long value);
+void longToBigInteger(BigInteger *bigint, int64_t value);
 void expBigNbr(BigInteger *bignbr, double logar);
 double logBigNbr(const BigInteger *pBigNbr);
 double logLimbs(const limb *pBigNbr, int nbrLimbs);

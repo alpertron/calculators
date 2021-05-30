@@ -209,7 +209,8 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
     {
       carry = (carry >> BITS_PER_GROUP) + (unsigned int)ptrAddend1->x;
       ptrAddend1++;
-      ptrSum->x = (int)(carry & MAX_INT_NBR_U);
+      limbValue = carry & MAX_INT_NBR_U;
+      ptrSum->x = (int)limbValue;
       ptrSum++;
     }
     if (carry >= LIMB_RANGE)
@@ -379,20 +380,20 @@ void intToBigInteger(BigInteger *bigint, int value)
   bigint->nbrLimbs = 1;
 }
 
-void longToBigInteger(BigInteger *bigint, long long value)
+void longToBigInteger(BigInteger *bigint, int64_t value)
 {
-  unsigned long long ullValue;
+  uint64_t ullValue;
   int nbrLimbs = 0;
   unsigned int limbValue;
   if (value >= 0)
   {
     bigint->sign = SIGN_POSITIVE;
-    ullValue = (unsigned long long)value;
+    ullValue = (uint64_t)value;
   }
   else
   {
     bigint->sign = SIGN_NEGATIVE;
-    ullValue = (unsigned long long)(-value);
+    ullValue = (uint64_t)(-value);
   }
   do
   {
@@ -1707,7 +1708,8 @@ int BpswPrimalityTest(const BigInteger *pValue)
   int D;
   int absQ;
   int mult;
-  int mask;
+  unsigned int mask;
+  int nbrLimbsBytes;
   int index;
   int signPowQ;
   bool insidePowering = false;
@@ -1767,10 +1769,10 @@ int BpswPrimalityTest(const BigInteger *pValue)
 #ifdef __EMSCRIPTEN__
     percentageBPSW = (Mult3Len - index) * 100 / Mult3Len;
 #endif
-    for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+    for (mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
     {
       modmult(Mult1, Mult1, Mult1);
-      if ((groupExp & mask) != 0)
+      if (((unsigned int)groupExp & mask) != 0U)
       {
         modmultInt(Mult1, 2, Mult1);
       }
@@ -1876,10 +1878,11 @@ int BpswPrimalityTest(const BigInteger *pValue)
   // V_{2k+1} = (D*U_{2k} + V_{2k})/2
   // Use the following temporary variables:
   // Mult1 for Q^n, Mult3 for U, Mult4 for V, Mult2 for temporary.
-  (void)memcpy(Mult1, MontgomeryMultR1, (nbrLimbs + 1) * sizeof(limb)); // Q^0 <- 1.
+  nbrLimbsBytes = (nbrLimbs + 1) * (int)sizeof(limb);
+  (void)memcpy(Mult1, MontgomeryMultR1, nbrLimbsBytes); // Q^0 <- 1.
   signPowQ = 1;
-  (void)memset(Mult3, 0, (nbrLimbs + 1) * sizeof(limb));                // U_0 <- 0.
-  (void)memcpy(Mult4, MontgomeryMultR1, (nbrLimbs + 1) * sizeof(limb)); 
+  (void)memset(Mult3, 0, nbrLimbsBytes);                // U_0 <- 0.
+  (void)memcpy(Mult4, MontgomeryMultR1, nbrLimbsBytes);
   AddBigNbrMod(Mult4, Mult4, Mult4);                              // V_0 <- 2.
   CopyBigInt(&expon, pValue);
   addbigint(&expon, 1);                            // expon <- n + 1.
@@ -1893,7 +1896,7 @@ int BpswPrimalityTest(const BigInteger *pValue)
     percentageBPSW = (expon.nbrLimbs - index) * 100 / expon.nbrLimbs;
 #endif
     int groupExp = expon.limbs[index].x;
-    for (mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+    for (mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
     {
       if (insidePowering)
       {
@@ -1914,7 +1917,7 @@ int BpswPrimalityTest(const BigInteger *pValue)
         signPowQ = 1;                          // Indicate it is positive. 
         modmult(Mult1, Mult1, Mult1);          // Square power of Q.
       }
-      if ((groupExp & mask) != 0)
+      if (((unsigned int)groupExp & mask) != 0U)
       {        // Bit of exponent is equal to 1.
         // U_{2k+1} = (U_{2k} + V_{2k})/2
         // V_{2k+1} = (D*U_{2k} + V_{2k})/2
@@ -1979,16 +1982,22 @@ int BpswPrimalityTest(const BigInteger *pValue)
 
 void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len)
 {
-  if (nbr >= MAX_VALUE_LIMB)
+  unsigned int uiNbr = (unsigned int)nbr;
+  int lenBytes;
+  if (uiNbr >= MAX_VALUE_LIMB)
   {
-    limbs->x = nbr % MAX_VALUE_LIMB;
-    (limbs+1)->x = nbr / MAX_VALUE_LIMB;
-    (void)memset(limbs + 2, 0, (len-2) * sizeof(limb));
+    unsigned int unsignedLimb = uiNbr % MAX_VALUE_LIMB;
+    limbs->x = (int)unsignedLimb;
+    unsignedLimb = uiNbr / MAX_VALUE_LIMB;
+    (limbs+1)->x = unsignedLimb;
+    lenBytes = (len - 2) * (int)sizeof(limb);
+    (void)memset(limbs + 2, 0, lenBytes);
   }
   else
   {
     limbs->x = nbr;
-    (void)memset(limbs + 1, 0, (len-1) * sizeof(limb));
+    lenBytes = (len - 1) * (int)sizeof(limb);
+    (void)memset(limbs + 1, 0, lenBytes);
   }
 }
 
@@ -2068,7 +2077,8 @@ void BigIntPowerOf2(BigInteger *pResult, int exponent)
   int nbrLimbs = exponent / BITS_PER_GROUP;
   if (nbrLimbs > 0)
   {
-    (void)memset(pResult->limbs, 0, nbrLimbs * sizeof(limb));
+    int nbrLimbsBytes = nbrLimbs * (int)sizeof(limb);
+    (void)memset(pResult->limbs, 0, nbrLimbsBytes);
   }
   pResult->limbs[nbrLimbs].x = 1 << (exponent % BITS_PER_GROUP);
   pResult->nbrLimbs = nbrLimbs + 1;
