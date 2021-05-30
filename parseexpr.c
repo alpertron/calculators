@@ -345,7 +345,7 @@ static enum eExprErr parsePrevTokenIsNumber(const char** ppInput, char** ppOutpu
   const char* pInput = *ppInput;
   char* ptrOutput = *ppOutput;
   char c = *pInput;
-  const struct sFuncOperExpr* pstOperatorExpr = rightFuncExpr;
+  const struct sFuncOperExpr* pstOperatorExpr;
   prevTokenIsNumber = false;
   pstOperatorExpr = binaryOperExpr;
   if (isFunc(&pInput, &pstOperatorExpr) || forceMultiplication)
@@ -426,14 +426,16 @@ static enum eExprErr parsePrevTokenIsNumber(const char** ppInput, char** ppOutpu
         exponOperatorCounter++;
       }
     }
-  }
-  else if (isFunc(&pInput, &pstOperatorExpr))
-  {           // Right function found.
-    *ptrOutput = (char)(pstOperatorExpr->token);
-    ptrOutput++;
     *ppInput = pInput;
     *ppOutput = ptrOutput;
     return EXPR_OK;
+  }
+  pstOperatorExpr = rightFuncExpr;
+  if (isFunc(&pInput, &pstOperatorExpr))
+  {           // Right function found.
+    *ptrOutput = (char)(pstOperatorExpr->token);
+    ptrOutput++;
+    prevTokenIsNumber = true;
   }
   else if ((c == ')') || (c == ','))
   {
