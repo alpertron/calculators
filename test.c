@@ -26,7 +26,7 @@
 #include "batch.h"
 #include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 9
+#define DEBUG_CODE 13
 #endif
 void dilogText(char *baseText, char *powerText, char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
     printf("num mod\n");
     return 0;
   }
-  rc = ComputeExpression(argv[1], 1, &num);
+  rc = ComputeExpression(argv[1], &num);
   if (rc != EXPR_OK)
   {
     ptrOutput = output;
@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
   }
   else
   {
-    rc = ComputeExpression(argv[2], 1, &mod);
+    rc = ComputeExpression(argv[2], &mod);
     if (rc != EXPR_OK)
     {
       ptrOutput = output;

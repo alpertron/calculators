@@ -944,32 +944,36 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
             return false;
           }
         }
-        // Divide both polynomials mod 32768. If the remainder is
+        // If the leading coefficient of the divisor is odd,
+        // divide both polynomials mod 32768. If the remainder is
         // not zero, the integer division will not be performed.
-        TestNbr0Bak = TestNbr[0].x;
-        TestNbr[0].x = 32768;
-        modulusIsZero = false;
-        DividePolynomial(dividendMod32768, polyS[0], divisorMod32768, poly5[0], NULL);
-        modulusIsZero = true;
-        TestNbr[0].x = TestNbr0Bak;
-        // Test whether the remainder is zero.
-        ptrMod32768 = dividendMod32768;
-        for (currentDegree = 0; currentDegree < poly5[0]; currentDegree++)
+        if ((divisorMod32768[2 * poly5[0] + 1] % 2) != 0)
         {
-          if (*(ptrMod32768+1) != 0)
+          TestNbr0Bak = TestNbr[0].x;
+          TestNbr[0].x = 32768;
+          modulusIsZero = false;
+          DividePolynomial(dividendMod32768, polyS[0], divisorMod32768, poly5[0], NULL);
+          modulusIsZero = true;
+          TestNbr[0].x = TestNbr0Bak;
+          // Test whether the remainder is zero.
+          ptrMod32768 = dividendMod32768;
+          for (currentDegree = 0; currentDegree < poly5[0]; currentDegree++)
           {
-            return false;         // Coefficient of remainder is not zero. Go out.
+            if (*(ptrMod32768 + 1) != 0)
+            {
+              return false;         // Coefficient of remainder is not zero. Go out.
+            }
+            ptrMod32768 += 2;   // Point to next coefficient.
           }
-          ptrMod32768 += 2;   // Point to next coefficient.
-        }
-        rc = DivideIntegerPolynomial(polyS, poly5, TYPE_MODULUS);
-        if (rc == EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER)
-        {               // Cannot perform the division.
-          return false;
-        }
-        if ((polyS[0] != 0) || (polyS[1] != 1) || (polyS[2] != 0))
-        {              // Remainder is not zero.
-          return false;    // Number to factor does not divide this polynomial.
+          rc = DivideIntegerPolynomial(polyS, poly5, TYPE_MODULUS);
+          if (rc == EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER)
+          {               // Cannot perform the division.
+            return false;
+          }
+          if ((polyS[0] != 0) || (polyS[1] != 1) || (polyS[2] != 0))
+          {              // Remainder is not zero.
+            return false;    // Number to factor does not divide this polynomial.
+          }
         }
       }
       else

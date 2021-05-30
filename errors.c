@@ -75,6 +75,12 @@ void textError(char **pptrOutput, enum eExprErr rc)
   case EXPR_INVALID_PARAM:
     copyStr(&ptrOut, lang ? "Parámetro inválido" : "Invalid parameter");
     break;
+  case EXPR_TOO_FEW_ARGUMENTS:
+    copyStr(&ptrOut, lang ? "Muy pocos argumentos" : "Too few arguments");
+    break;
+  case EXPR_TOO_MANY_ARGUMENTS:
+    copyStr(&ptrOut, lang ? "Demasiados argumentos" : "Too many arguments");
+    break;
   case EXPR_ARGUMENTS_NOT_RELATIVELY_PRIME:
     copyStr(&ptrOut, lang ? "MCD de los argumentos no es 1" : "GCD of arguments is not 1");
     break;

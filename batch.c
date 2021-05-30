@@ -85,7 +85,7 @@ static void stringToHTML(char **pptrOutput, const char *ptrString)
   *pptrOutput = ptrOutput;
 }
 
-static char evalExpression(const char *expr, BigInteger *ptrResult)
+static enum eExprErr evalExpression(const char *expr, BigInteger *ptrResult)
 {
   const char *ptrInputExpr = expr;
   char *ptrOutputExpr = outputExpr;
@@ -102,7 +102,7 @@ static char evalExpression(const char *expr, BigInteger *ptrResult)
     ptrInputExpr++;
   }
   *ptrOutputExpr = 0;   // Append string terminator.
-  return ComputeExpression(outputExpr, 1, ptrResult);
+  return ComputeExpression(outputExpr, ptrResult);
 }
 
 static void SkipSpaces(char **pptrText)
@@ -371,7 +371,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       {
         output[0] = '6';  // Show Continue button.
       }
-      rc = ComputeExpression(ptrSrcString, 1, valueFound);
+      rc = ComputeExpression(ptrSrcString, valueFound);
       if (rc == EXPR_OK)
       {
         batchCallback(&ptrOutput);

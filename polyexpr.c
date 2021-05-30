@@ -23,389 +23,33 @@
 #include <stdint.h>
 #include "bignbr.h"
 #include "polynomial.h"
+#include "expression.h"
 
-#define STACK_OPER_SIZE            100
-#define TOKEN_NUMBER               '0'
-#define TOKEN_START_EXPON          '1'
-#define TOKEN_END_EXPON            '2'
-#define TOKEN_UNARY_MINUS          '3'
-#define TOKEN_GCD                  '4'
-#define TOKEN_DER                  '5'
-
-static BigInteger value;
-static char RPNbuffer[COMPRESSED_POLY_MAX_LENGTH];
+#define TOKEN_GCD    32
+#define TOKEN_DER    33
 static int GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2);
 
-static bool isFunc(char** ppcInput, const char* funcName)
+struct sFuncOperExpr stFuncOperPolyExpr[] =
 {
-  char* pcInput = *ppcInput;
-  const char* ptrFuncName = funcName;
-  while (*ptrFuncName != '\0')
-  {
-    if ((*pcInput & 0xDF) != *ptrFuncName)
-    {
-      return 0;    // Function name not found.
-    }
-    pcInput++;
-    ptrFuncName++;
-  }
-  *ppcInput = pcInput;
-  return 1;        // Function name was found.
-}
-
-// Convert to Reverse Polish Notation using Shunting-yard algorithm
-// If the number is part of the exponent it has to be reduced by
-// using the modulus phi = (p-1)*p^(k-1), otherwise the modulus will
-// be power = p^k.
-static int ConvertToReversePolishNotation(char* input, char* ptrOut)
-{
-  char* ptrOutput = ptrOut;
-  char* pInput = input;
-  int exponOperatorCounter = 0;
-  char stackOper[STACK_OPER_SIZE];
-  int stackOperIndex = 0;
-  bool prevTokenIsNumber = false;
-  char s;
-  char* ptrInput;
-  int limb;
-  int bitNbr;
-  char variableLetter = ' ';  // Indicate variable letter not known yet.
-  while (*pInput != '\0')
-  {
-    char* inputTemp;
-    char c = *pInput;
-    char cUppercase;
-    if ((c == ' ') || (c == 9))
-    {          // Ignore any spaces and tabs.
-      pInput++;
-      continue;
-    }
-    inputTemp = pInput;
-    if (isFunc(&inputTemp, "GCD"))
-    {
-      if (prevTokenIsNumber == false)
-      {
-        pInput = inputTemp;
-        stackOper[stackOperIndex] = TOKEN_GCD;  // Push token onto stack.
-        stackOperIndex++;
-        continue;
-      }
-      c = '*';
-    }
-    else if (isFunc(&inputTemp, "DER"))
-    {
-      if (prevTokenIsNumber == false)
-      {
-        pInput = inputTemp;
-        stackOper[stackOperIndex] = TOKEN_DER;  // Push token onto stack.
-        stackOperIndex++;
-        continue;
-      }
-      c = '*';
-    }
-    else
-    {
-      pInput++;
-    }
-    cUppercase = c & 0xDF;
-    if ((cUppercase >= 'A') && (cUppercase <= 'Z'))
-    {          // Letter found.
-      if ((variableLetter != cUppercase) && (variableLetter != ' '))
-      {
-        return EXPR_MULTIPLE_VARIABLES_NOT_ACCEPTED;
-      }
-      variableLetter = cUppercase;
-    }
-    if ((c == '*') && (*pInput == '*'))
-    {          // Convert double asterisk to exponentiation.
-      c = '^';
-      pInput++;
-    }
-    if (prevTokenIsNumber)
-    {
-      prevTokenIsNumber = false;
-      if ((c == '+') || (c == '-'))
-      {        // Binary plus or minus
-        while (stackOperIndex > 0)
-        {      // Send operators to output.
-          stackOperIndex--;
-          s = stackOper[stackOperIndex];
-          if ((s != '+') && (s != '-') && (s != '*') && (s != '^') &&
-            (s != '/') && (s != '%') && (s != TOKEN_UNARY_MINUS))
-          {    // Operator on stack has less precedence.
-            stackOperIndex++;
-            break;
-          }
-          if (s == '^')
-          {
-            exponOperatorCounter--;
-            if (exponOperatorCounter == 0)
-            {
-              *ptrOutput = TOKEN_END_EXPON;
-              ptrOutput++;
-            }
-          }
-          *ptrOutput = s;
-          ptrOutput++;
-        }
-        stackOper[stackOperIndex] = c;  // Push operator onto stack.
-        stackOperIndex++;
-      }
-      else if ((c == '*') || (c == '(') || (c == '/') || (c == '%') ||
-        (cUppercase == variableLetter))
-      {
-        while (stackOperIndex > 0)
-        {      // Send operators to output.
-          stackOperIndex--;
-          s = stackOper[stackOperIndex];
-          if ((s != '^') && (s != '*') && (s != '/') && (s != '%'))
-          {    // Operator on stack has less precedence.
-            stackOperIndex++;
-            break;
-          }
-          if (s == '^')
-          {
-            exponOperatorCounter--;
-            if (exponOperatorCounter == 0)
-            {
-              *ptrOutput = TOKEN_END_EXPON;
-              ptrOutput++;
-            }
-          }
-          *ptrOutput = s;
-          ptrOutput++;
-        }
-        if (cUppercase == variableLetter)
-        {
-          if (exponOperatorCounter != 0)
-          {
-            return EXPR_CANNOT_USE_X_IN_EXPONENT;
-          }
-          stackOper[stackOperIndex] = '*';    // Push operator onto stack.
-          stackOperIndex++;
-          *ptrOutput = 'x';
-          ptrOutput++;
-          prevTokenIsNumber = true;
-        }
-        else
-        {
-          if (c == '(')
-          {
-            stackOper[stackOperIndex] = '*';  // Push operator onto stack.
-            stackOperIndex++;
-          }
-          stackOper[stackOperIndex] = c;      // Push operator onto stack.
-          stackOperIndex++;
-        }
-      }
-      else if (c == '^')
-      {
-        while (stackOperIndex > 0)
-        {      // Send operators to output.
-          stackOperIndex--;
-          s = stackOper[stackOperIndex];
-          if (s != '^')
-          {    // Operator on stack has less precedence.
-            stackOperIndex++;
-            break;
-          }
-          exponOperatorCounter--;
-          if (exponOperatorCounter == 0)
-          {
-            *ptrOutput = TOKEN_END_EXPON;
-            ptrOutput++;
-          }
-          *ptrOutput = s;
-          ptrOutput++;
-        }
-        stackOper[stackOperIndex] = c;  // Push operator onto stack.
-        stackOperIndex++;
-        exponOperatorCounter++;
-        if (exponOperatorCounter == 1)
-        {
-          *ptrOutput = TOKEN_START_EXPON;
-          ptrOutput++;
-        }
-      }
-      else if ((c == ')') || (c == ','))
-      {
-        s = '\0'; // Assume parenthesis mismatch.
-        while (stackOperIndex > 0)
-        {      // Send operators to output.
-          stackOperIndex--;
-          s = stackOper[stackOperIndex];
-          if (s == '(')
-          {    // Operator on stack has less precedence.
-            break;
-          }
-          if (s == '^')
-          {
-            exponOperatorCounter--;
-            if (exponOperatorCounter == 0)
-            {
-              *ptrOutput = TOKEN_END_EXPON;
-              ptrOutput++;
-            }
-          }
-          *ptrOutput = s;
-          ptrOutput++;
-        }
-        if (s != '(')
-        {     // Parentheses mismatch.
-          return EXPR_PAREN_MISMATCH;
-        }
-        if (c == ',')
-        {
-          stackOper[stackOperIndex] = s;  // Push back paren.
-          stackOperIndex++;
-          prevTokenIsNumber = false;
-        }
-        else
-        {
-          if (stackOperIndex > 0)
-          {
-            if ((stackOper[stackOperIndex - 1] == TOKEN_GCD) ||
-              (stackOper[stackOperIndex - 1] == TOKEN_DER))
-            {
-              stackOperIndex--;
-              *ptrOutput = stackOper[stackOperIndex];
-              ptrOutput++;
-            }
-          }
-          prevTokenIsNumber = true;
-        }
-      }
-      else
-      {
-        return EXPR_SYNTAX_ERROR;
-      }
-    }
-    else
-    {    // Not a number before this token.
-      if (c == '+')
-      {          // Unary plus, nothing to do.
-
-      }
-      else if (c == '-')
-      {          // Unary minus.
-        stackOper[stackOperIndex] = TOKEN_UNARY_MINUS;  // Push operator onto stack.
-        stackOperIndex++;
-      }
-      else if (c == '(')
-      {          // Open parenthesis.
-        stackOper[stackOperIndex] = '(';  // Push operator onto stack.
-        stackOperIndex++;
-      }
-      else if (cUppercase == variableLetter)
-      {
-        if (exponOperatorCounter != 0)
-        {
-          return EXPR_CANNOT_USE_X_IN_EXPONENT;
-        }
-        *ptrOutput = 'x';
-        ptrOutput++;
-        prevTokenIsNumber = true;
-      }
-      else if ((c >= '0') && (c <= '9'))
-      {          // Number.
-        ptrInput = pInput;
-        while ((*ptrInput >= '0') && (*ptrInput <= '9'))
-        {        // Find end of number.
-          ptrInput++;
-        }
-        Dec2Bin(pInput - 1, value.limbs, (int)(ptrInput + 1 - pInput), &value.nbrLimbs);
-        pInput = ptrInput;
-        value.sign = SIGN_POSITIVE;
-        if (exponOperatorCounter != 0)
-        {
-          if (value.nbrLimbs != 1)
-          {
-            return EXPR_EXPONENT_TOO_LARGE;
-          }
-          *ptrOutput = TOKEN_NUMBER;
-          ptrOutput++;
-          limb = value.limbs[0].x;
-          for (bitNbr = BITS_PER_GROUP; bitNbr > 0; bitNbr -= 8)
-          {
-            *ptrOutput = (char)limb;
-            ptrOutput++;
-            limb >>= 8;
-          }
-        }
-        else
-        {
-          if (!modulusIsZero)
-          {
-            // Reduce mod power outside exponent.
-            (void)BigIntRemainder(&value, &powerMod, &value);
-            if (value.nbrLimbs < NumberLength)
-            {    // Fill with zeros.
-              (void)memset(&value.limbs[value.nbrLimbs], 0, (NumberLength - value.nbrLimbs) * sizeof(int));
-            }
-            // Convert to Montgomery notation.
-            modmult(value.limbs, MontgomeryMultR2, value.limbs);
-            value.nbrLimbs = NumberLength;
-          }
-          *ptrOutput = TOKEN_NUMBER;
-          ptrOutput++;
-          while (value.nbrLimbs > 1)
-          {
-            if (value.limbs[value.nbrLimbs - 1].x != 0)
-            {
-              break;
-            }
-            value.nbrLimbs--;
-          }
-          *ptrOutput = (char)(value.nbrLimbs >> 8);
-          ptrOutput++;
-          *ptrOutput = (char)value.nbrLimbs;
-          ptrOutput++;
-          for (int index = 0; index < value.nbrLimbs; index++)
-          {
-            limb = value.limbs[index].x;
-            for (bitNbr = BITS_PER_GROUP; bitNbr > 0; bitNbr -= 8)
-            {
-              *ptrOutput = (char)limb;
-              ptrOutput++;
-              limb >>= 8;
-            }
-          }
-        }
-        prevTokenIsNumber = true;
-      }
-      else
-      {
-        return EXPR_SYNTAX_ERROR;
-      }
-    }
-  }
-  if (prevTokenIsNumber == false)
-  {
-    return EXPR_SYNTAX_ERROR;
-  }
-  while (stackOperIndex > 0)
-  {      // Send operators to output.
-    stackOperIndex--;
-    s = stackOper[stackOperIndex];
-    if (s == '^')
-    {
-      exponOperatorCounter--;
-      if (exponOperatorCounter == 0)
-      {
-        *ptrOutput = TOKEN_END_EXPON;
-        ptrOutput++;
-      }
-    }
-    if (s == '(')
-    {    // Operator on stack has less precedence.
-      return EXPR_PAREN_MISMATCH;
-    }
-    *ptrOutput = s;
-    ptrOutput++;
-  }
-  *ptrOutput = '\0';
-  return EXPR_OK;
-}
+  // First section: functions
+  {"GCD", TOKEN_GCD + TWO_PARMS, 0},
+  {"DER", TOKEN_DER + ONE_PARM, 0},
+  {NULL, 0},
+  // Second section: functions written at right of argument.
+  {NULL, 0},
+  // Third section: unary operators.
+  {"-", OPER_UNARY_MINUS, 3},
+  {NULL, 0},
+  // Fourth section: binary operators.
+  {"**", OPER_POWER, 1}, // This must be located before multiplication operator.
+  {"+", OPER_PLUS, 3},
+  {"-", OPER_MINUS, 3},
+  {"*", OPER_MULTIPLY, 2},
+  {"%", OPER_REMAINDER, 2},
+  {"/", OPER_DIVIDE, 2},
+  {"^", OPER_POWER, 1},
+  {NULL, 0},
+};
 
 static int NegatePolynomialExpr(int* ptrArgument)
 {
@@ -1057,10 +701,7 @@ int ComputePolynomial(char* input, int expo)
   int* ptrValue1;
   int* ptrValue2;
   int len;
-  int bitNbr;
-  int bitCtr;
-  int valueNbr;
-  const char* ptrRPNbuffer;
+  char* ptrRPNbuffer;
   int rc;
   int val;
   int pwr;
@@ -1069,57 +710,39 @@ int ComputePolynomial(char* input, int expo)
   exponentMod = expo;
   // Use operand1 as temporary variable to store the exponent.
   computePower(expo);
-  rc = ConvertToReversePolishNotation(input, RPNbuffer);
+  rc = ConvertToReversePolishNotation(input, &ptrRPNbuffer, stFuncOperPolyExpr,
+    PARSE_EXPR_POLYNOMIAL, NULL);
   if (rc != EXPR_OK)
   {
     return rc;
   }
   stackIndex = 0;
   valuesIndex = 0;
-  ptrRPNbuffer = RPNbuffer;
   while (*ptrRPNbuffer != '\0')
   {
+    int nbrSizeBytes;
     switch (*ptrRPNbuffer)
     {
     case TOKEN_NUMBER:
       stackValues[stackIndex] = &values[valuesIndex];
       stackIndex++;
-      if (insideExpon != 0)
-      {                    // Inside exponent: only one limb accepted.
-        bitCtr = 0;
-        valueNbr = 0;
-        for (bitNbr = BITS_PER_GROUP; bitNbr > 0; bitNbr -= 8)
-        {
-          ptrRPNbuffer++;
-          valueNbr += (int)(unsigned char)*ptrRPNbuffer << bitCtr;
-          bitCtr += 8;
-        }
-        values[valuesIndex] = valueNbr;
-        valuesIndex++;
-        break;
-      }
       ptrRPNbuffer++;
-      values[valuesIndex] = 0;   // Degree.
-      valuesIndex++;
-      len = ((int)(unsigned char)*(ptrRPNbuffer) * 256) + (unsigned char)*(ptrRPNbuffer + 1);
-      values[valuesIndex] = len;
-      valuesIndex++;
-      ptrRPNbuffer++;
-      for (int index = 0; index < len; index++)
+      len = 1;
+      if (!insideExpon)
       {
-        bitCtr = 0;
-        valueNbr = 0;
-        for (bitNbr = BITS_PER_GROUP; bitNbr > 0; bitNbr -= 8)
-        {
-          ptrRPNbuffer++;
-          valueNbr += (int)(unsigned char)*ptrRPNbuffer << bitCtr;
-          bitCtr += 8;
-        }
-        values[valuesIndex] = valueNbr;
+        len = ((int)(unsigned char)*ptrRPNbuffer * 256) + (unsigned char)*(ptrRPNbuffer + 1);
+        values[valuesIndex] = 0;   // Degree.
         valuesIndex++;
+        values[valuesIndex] = len;
+        valuesIndex++;
+        ptrRPNbuffer += 2;
       }
+      nbrSizeBytes = len * sizeof(limb);
+      memcpy(&values[valuesIndex], ptrRPNbuffer, nbrSizeBytes);
+      ptrRPNbuffer += nbrSizeBytes - 1;
+      valuesIndex += len;
       break;
-    case 'x':
+    case TOKEN_VAR:
       stackValues[stackIndex] = &values[valuesIndex];
       stackIndex++;
       values[valuesIndex] = -1;   // Degree of monomial
@@ -1134,7 +757,7 @@ int ComputePolynomial(char* input, int expo)
     case TOKEN_END_EXPON:
       insideExpon = false;
       break;
-    case TOKEN_UNARY_MINUS:
+    case OPER_UNARY_MINUS:
       ptrValue1 = stackValues[stackIndex - 1];
       if (insideExpon != 0)
       {
@@ -1163,7 +786,7 @@ int ComputePolynomial(char* input, int expo)
       ptrValue1 = stackValues[stackIndex - 1];
       DerPolynomial(ptrValue1);
       break;
-    case '+':
+    case OPER_PLUS:
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
@@ -1184,7 +807,7 @@ int ComputePolynomial(char* input, int expo)
         }
       }
       break;
-    case '-':
+    case OPER_MINUS:
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
@@ -1210,7 +833,7 @@ int ComputePolynomial(char* input, int expo)
         }
       }
       break;
-    case '*':
+    case OPER_MULTIPLY:
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
@@ -1231,7 +854,7 @@ int ComputePolynomial(char* input, int expo)
         }
       }
       break;
-    case '/':
+    case OPER_DIVIDE:
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
@@ -1248,7 +871,7 @@ int ComputePolynomial(char* input, int expo)
         }
       }
       break;
-    case '%':
+    case OPER_REMAINDER:
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
@@ -1265,7 +888,7 @@ int ComputePolynomial(char* input, int expo)
         }
       }
       break;
-    case '^':
+    case OPER_POWER:
       stackIndex--;
       expon = *stackValues[stackIndex];
       if (expon < 0)

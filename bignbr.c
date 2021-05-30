@@ -25,9 +25,9 @@
 
 enum eOper
 {
-  OPER_AND = 0,
-  OPER_OR,
-  OPER_XOR,
+  OPERATION_AND = 0,
+  OPERATION_OR,
+  OPERATION_XOR,
 };
 
 static BigInteger Temp;
@@ -53,9 +53,12 @@ int percentageBPSW;
 
 void CopyBigInt(BigInteger *pDest, const BigInteger *pSrc)
 {
-  pDest->sign = pSrc->sign;
-  pDest->nbrLimbs = pSrc->nbrLimbs;
-  (void)memcpy(pDest->limbs, pSrc->limbs, (pSrc->nbrLimbs)*sizeof(limb));
+  if (pDest != pSrc)
+  {
+    pDest->sign = pSrc->sign;
+    pDest->nbrLimbs = pSrc->nbrLimbs;
+    (void)memcpy(pDest->limbs, pSrc->limbs, (pSrc->nbrLimbs) * sizeof(limb));
+  }
 }
 
 void AddBigInt(const limb *pAddend1, const limb *pAddend2, limb *pSum, int nbrLimbs)
@@ -396,9 +399,10 @@ void longToBigInteger(BigInteger *bigint, long long value)
 void expBigNbr(BigInteger *bignbr, double logar)
 {
   unsigned int mostSignificantLimb;
-  int nbrBits = BITS_PER_GROUP * bignbr->nbrLimbs;
+  int nbrBits;
   bignbr->sign = SIGN_POSITIVE;
   bignbr->nbrLimbs = (int)floor(logar / BITS_PER_GROUP);
+  nbrBits = BITS_PER_GROUP * bignbr->nbrLimbs;;
   mostSignificantLimb = (unsigned int)floor(exp(logar - ((double)nbrBits * LOG_2)) + 0.5);
   if (mostSignificantLimb == LIMB_RANGE)
   {
@@ -1556,7 +1560,7 @@ int JacobiSymbol(int upper, int lower)
   return 0;
 }
 
-int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower)
+int BigIntJacobiSymbol(const BigInteger *upper, const BigInteger *lower)
 {
   int t;
   int power2;
@@ -1593,7 +1597,7 @@ int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower)
       t = -t;
     }
     (void)BigIntRemainder(&a, &m, &tmp);
-    CopyBigInt(&a, &tmp);              // a <- a % m;   
+    CopyBigInt(&a, &tmp);              // a <- a % m  
   }
   if ((m.nbrLimbs == 1) && (m.limbs[0].x == 1))
   {              // Absolute value of m is 1.
@@ -2136,11 +2140,11 @@ static void InternalBigIntLogical(const BigInteger *firstArg,
       limbSecond = carrySecond & MAX_INT_NBR;
       carrySecond >>= 31;
     }
-    if (operation == OPER_AND)
+    if (operation == OPERATION_AND)
     {
       result->limbs[idx].x = limbFirst & limbSecond;
     }
-    else if (operation == OPER_OR)
+    else if (operation == OPERATION_OR)
     {
       result->limbs[idx].x = limbFirst | limbSecond;
     }
@@ -2166,11 +2170,11 @@ static void InternalBigIntLogical(const BigInteger *firstArg,
       limbSecond = carrySecond & MAX_INT_NBR;
       carrySecond >>= 31;
     }
-    if (operation == OPER_AND)
+    if (operation == OPERATION_AND)
     {
       result->limbs[idx].x = limbFirst & limbSecond;
     }
-    else if (operation == OPER_OR)
+    else if (operation == OPERATION_OR)
     {
       result->limbs[idx].x = limbFirst | limbSecond;
     }
@@ -2179,13 +2183,40 @@ static void InternalBigIntLogical(const BigInteger *firstArg,
       result->limbs[idx].x = limbFirst ^ limbSecond;
     }
   }
-  if ((result->limbs[idx-1].x & 0x80000000) == 0)
+  // Generate sign of result according to operation and
+  // signs of arguments.
+  if (operation == OPERATION_AND)
   {
-    result->sign = SIGN_POSITIVE;
+    if ((firstArg->sign == SIGN_NEGATIVE) && (secondArg->sign == SIGN_NEGATIVE))
+    {
+      result->sign = SIGN_NEGATIVE;
+    }
+    else
+    {
+      result->sign = SIGN_POSITIVE;
+    }
   }
-  else
+  else if (operation == OPERATION_OR)
   {
-    result->sign = SIGN_NEGATIVE;
+    if ((firstArg->sign == SIGN_POSITIVE) && (secondArg->sign == SIGN_POSITIVE))
+    {
+      result->sign = SIGN_POSITIVE;
+    }
+    else
+    {
+      result->sign = SIGN_NEGATIVE;
+    }
+  }
+  else     // XOR operation
+  {
+    if (firstArg->sign == secondArg->sign)
+    {
+      result->sign = SIGN_POSITIVE;
+    }
+    else
+    {
+      result->sign = SIGN_NEGATIVE;
+    }
   }
   result->nbrLimbs = firstArg->nbrLimbs;
   ConvertToTwosComplement(result);
@@ -2194,19 +2225,19 @@ static void InternalBigIntLogical(const BigInteger *firstArg,
 void BigIntAnd(const BigInteger* firstArg,
   const BigInteger* secondArg, BigInteger* result)
 {
-  InternalBigIntLogical(firstArg, secondArg, result, OPER_AND);
+  InternalBigIntLogical(firstArg, secondArg, result, OPERATION_AND);
 }
 
 void BigIntOr(const BigInteger* firstArg,
   const BigInteger* secondArg, BigInteger* result)
 {
-  InternalBigIntLogical(firstArg, secondArg, result, OPER_OR);
+  InternalBigIntLogical(firstArg, secondArg, result, OPERATION_OR);
 }
 
 void BigIntXor(const BigInteger* firstArg,
   const BigInteger* secondArg, BigInteger* result)
 {
-  InternalBigIntLogical(firstArg, secondArg, result, OPER_XOR);
+  InternalBigIntLogical(firstArg, secondArg, result, OPERATION_XOR);
 }
 
 void ConvertToTwosComplement(BigInteger *value)

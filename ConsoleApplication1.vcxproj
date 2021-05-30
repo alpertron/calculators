@@ -152,7 +152,7 @@
       <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;FACTORIZATION_FUNCTIONS;_USING64BITS_;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;FACTORIZATION_APP;_USING64BITS_</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;FACTORIZATION_FUNCTIONS;_USING64BITS_;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;FACTORIZATION_APP;POLYEXPR=1</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/F 3000000 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -176,6 +176,7 @@
     <ClCompile Include="intpolfact.c" />
     <ClCompile Include="linkedbignbr.c" />
     <ClCompile Include="multpoly.c" />
+    <ClCompile Include="parseexpr.c" />
     <ClCompile Include="polyexpr.c" />
     <ClCompile Include="quintics.c" />
     <ClCompile Include="contfrac.c" />

@@ -902,7 +902,7 @@ static void generateOutput(enum eExprErr rc, int groupLength)
 void dilogText(char* baseText, char* powerText, char* modText, int groupLength)
 {
   enum eExprErr rc;
-  rc = ComputeExpression(baseText, 1, &base);
+  rc = ComputeExpression(baseText, &base);
   if (rc == EXPR_OK)
   {
     if ((base.sign == SIGN_NEGATIVE) || BigIntIsZero(&base))
@@ -912,7 +912,7 @@ void dilogText(char* baseText, char* powerText, char* modText, int groupLength)
   }
   if (rc == EXPR_OK)
   {
-    rc = ComputeExpression(powerText, 1, &power);
+    rc = ComputeExpression(powerText, &power);
   }
   if (rc == EXPR_OK)
   {
@@ -923,7 +923,7 @@ void dilogText(char* baseText, char* powerText, char* modText, int groupLength)
   }
   if (rc == EXPR_OK)
   {
-    rc = ComputeExpression(modText, 1, &modulus);
+    rc = ComputeExpression(modText, &modulus);
   }
   if (rc == EXPR_OK)
   {

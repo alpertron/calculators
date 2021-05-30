@@ -23,41 +23,97 @@
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
+
+#ifdef FACTORIZATION_FUNCTIONS
+#define TOKEN_TOTIENT    32
+#define TOKEN_SUMDIVS    33
+#define TOKEN_NUMDIVS    34
+#define TOKEN_MINFACT    35
+#define TOKEN_MAXFACT    36
+#define TOKEN_NUMFACT    37
+#define TOKEN_CONCATFACT 38
+#endif
+#define TOKEN_FACTORIAL  39
+#define TOKEN_PRIMORIAL  40
+#define TOKEN_GCD        41
+#define TOKEN_MODPOW     42
+#define TOKEN_MODINV     43
+#define TOKEN_SUMDIGITS  44
+#define TOKEN_NUMDIGITS  45
+#define TOKEN_REVDIGITS  46
+#define TOKEN_ISPRIME    47
+#define TOKEN_F          48
+#define TOKEN_L          49
+#define TOKEN_P          50
+#define TOKEN_N          51
+#define TOKEN_B          52
+
 #define PAREN_STACK_SIZE           5000
 #define COMPR_STACK_SIZE        1000000
-#define OPER_POWER                    0
-#define OPER_MULTIPLY                 1
-#define OPER_DIVIDE                   2
-#define OPER_REMAINDER                3
-#define OPER_UNARY_MINUS              4
-#define OPER_PLUS                     5
-#define OPER_MINUS                    6
-#define OPER_SHR                      7
-#define OPER_SHL                      8
-#define OPER_NOT_GREATER              9
-#define OPER_NOT_LESS                10
-#define OPER_NOT_EQUAL               11
-#define OPER_EQUAL                   12
-#define OPER_GREATER                 13
-#define OPER_LESS                    14
-#define OPER_NOT                     15
-#define OPER_AND                     16
-#define OPER_OR                      17
-#define OPER_XOR                     18
-#define MAXIMUM_OPERATOR             18
 
 #define COMPUTE_NEXT_PRIME_SIEVE_SIZE 2000
+#define DO_NOT_SHORT_CIRCUIT  (COMPR_STACK_SIZE + 100)  // Larger than stack size.
+
+struct sFuncOperExpr stFuncOperIntExpr[] =
+{
+  // First section: functions
+#ifdef FACTORIZATION_FUNCTIONS
+  {"TOTIENT", TOKEN_TOTIENT + ONE_PARM, 0},
+  {"SUMDIVS", TOKEN_SUMDIVS + ONE_PARM, 0},
+  {"NUMDIVS", TOKEN_NUMDIVS + ONE_PARM, 0},
+  {"MINFACT", TOKEN_MINFACT + ONE_PARM, 0},
+  {"MAXFACT", TOKEN_MAXFACT + ONE_PARM, 0},
+  {"NUMFACT", TOKEN_NUMFACT + ONE_PARM, 0},
+  {"CONCATFACT", TOKEN_CONCATFACT + TWO_PARMS, 0},
+#endif
+  {"GCD", TOKEN_GCD + TWO_PARMS, 0},
+  {"MODPOW", TOKEN_MODPOW + THREE_PARMS, 0},
+  {"MODINV", TOKEN_MODINV + TWO_PARMS, 0},
+  {"SUMDIGITS", TOKEN_SUMDIGITS + TWO_PARMS, 0},
+  {"NUMDIGITS", TOKEN_NUMDIGITS + TWO_PARMS, 0},
+  {"REVDIGITS", TOKEN_REVDIGITS + TWO_PARMS, 0},
+  {"ISPRIME", TOKEN_ISPRIME + ONE_PARM, 0},
+  {"F", TOKEN_F + ONE_PARM, 0},
+  {"L", TOKEN_L + ONE_PARM, 0},
+  {"P", TOKEN_P + ONE_PARM, 0},
+  {"N", TOKEN_N + ONE_PARM, 0},
+  {"B", TOKEN_B + ONE_PARM, 0},
+  {NULL, 0, 0},
+  // Second section: functions written at right of argument.
+  {"#", TOKEN_PRIMORIAL, 0},
+  {"!", TOKEN_FACTORIAL, 0},
+  {NULL, 0, 0},
+  // Third section: unary operators.
+  {"-", OPER_UNARY_MINUS, 3},
+  {"NOT", OPER_NOT, 7},
+  {NULL, 0, 0},
+  // Fourth section: binary operators.
+  {"**", OPER_POWER, 1}, // This must be located before multiplication operator.
+  {"XOR", OPER_XOR, 8},
+  {"OR", OPER_OR, -8},
+  {"AND", OPER_AND, -8},
+  {"==", OPER_EQUAL, 6},
+  {"!=", OPER_NOT_EQUAL, 6},
+  {"<", OPER_LESS, 6},
+  {">", OPER_GREATER, 6},
+  {">=", OPER_NOT_LESS, 6},
+  {"<=", OPER_NOT_GREATER, 6},
+  {"SHL", OPER_SHL, 5},
+  {"SHR", OPER_SHR, 5},
+  {"+", OPER_PLUS, 4},
+  {"-", OPER_MINUS, 4},
+  {"*", OPER_MULTIPLY, 2},
+  {"%", OPER_REMAINDER, 2},
+  {"/", OPER_DIVIDE, 2},
+  {"^", OPER_POWER, 1},
+  {NULL, 0, 0},
+};
 
 static limb comprStackValues[COMPR_STACK_SIZE];
 static int comprStackOffset[PAREN_STACK_SIZE];
-static char stackOperators[PAREN_STACK_SIZE];
 static limb fibon2[MAX_LEN];
 extern limb MontgomeryR1[MAX_LEN];
 static int stackIndex;
-static int exprIndex;
-static int exprLength;
-static bool doComputeSubExpression = true;
-static int computeSubExprStackThreshold = 0;
 #ifndef lang  
   bool lang;
 #endif
@@ -69,18 +125,16 @@ int q[MAX_LEN];
 BigInteger valueX;
 int counterC;
 #define fibon1 MontgomeryR1
-static enum eExprErr ComputeSubExpr(void);
-static void SkipSpaces(const char *expr);
-static int ComputeBack(void);
-static int ComputeNext(void);
+static enum eExprErr ComputeBack(void);
+static enum eExprErr ComputeNext(void);
 #ifdef FACTORIZATION_FUNCTIONS
-static int ComputeTotient(void);
-static int ComputeNumFact(void);
-static int ComputeMaxFact(void);
-static int ComputeMinFact(void);
-static int ComputeNumDivs(void);
-static int ComputeSumDivs(void);
-static int ComputeConcatFact(void);
+static enum eExprErr ComputeTotient(void);
+static enum eExprErr ComputeNumFact(void);
+static enum eExprErr ComputeMaxFact(void);
+static enum eExprErr ComputeMinFact(void);
+static enum eExprErr ComputeNumDivs(void);
+static enum eExprErr ComputeSumDivs(void);
+static enum eExprErr ComputeConcatFact(void);
 static char textFactor[MAX_LEN*12];
 #endif
 static int ComputeSumDigits(void);
@@ -89,76 +143,10 @@ static int ComputeNumDigits(void);
 static enum eExprErr ComputeModInv(void);
 static enum eExprErr ComputeFibLucas(int origValue);
 static enum eExprErr ComputePartition(void);
-static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult);
 static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger* second, BigInteger* result);
-static bool func(char* expr, BigInteger* ExpressionResult,
-  const char* funcName, int funcArgs, int leftNumberFlag, enum eExprErr *pRetCode);
-static int type;
-static bool valueXused;
 static BigInteger curStack;
 static BigInteger curStack2;
 static BigInteger curStack3;
-
-static char priority[] = 
-{
-  1,                // Power
-  2, 2, 2,          // Multiply, divide and remainder.
-  3,                // Unary minus.
-  4, 4,             // Plus and minus.
-  5, 5,             // Shift right and left.
-  6, 6, 6, 6, 6, 6, // Six comparison operators (equal, greater, less, etc.)
-  7,                // NOT.
-  8, 8, 8,          // AND, OR, XOR.
-};
-
-enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResult)
-{
-  enum eExprErr retcode;
-  int nbrParen = 0;
-  const char* ptrExpr = expr;
-  // Check that the parentheses are balanced.
-  while ((*ptrExpr != 0) && (*ptrExpr != ';'))
-  {
-    if (*ptrExpr == '(')
-    {
-      nbrParen++;
-    }
-    if (*ptrExpr == ')')
-    {
-      nbrParen--;
-    }
-    if (nbrParen < 0)
-    {    // More closing parentheses than opening ones.
-      return EXPR_PAREN_MISMATCH;
-    }
-    ptrExpr++;
-  }
-  if (nbrParen != 0)
-  {      // Number of open and closing parentheses do not match.
-    return EXPR_PAREN_MISMATCH;
-  }
-  doComputeSubExpression = true;
-  valueXused = false;
-  stackIndex = 0;
-  comprStackOffset[0] = 0;
-  exprIndex = 0;
-  type = typ;
-  retcode = ComputeExpr(expr, ExpressionResult);
-  if (retcode != EXPR_OK) { return retcode; }
-#ifdef FACTORIZATION_APP
-  if (ExpressionResult[0].nbrLimbs > ((332192 / BITS_PER_GROUP) + 1))   // 100000/log_10(2) = 332192
-#else
-  if (ExpressionResult[0].nbrLimbs > ((33219 / BITS_PER_GROUP) + 1))    // 10000/log_10(2) = 33219
-#endif
-  {
-    return EXPR_NUMBER_TOO_HIGH;
-  }
-  if ((valueX.nbrLimbs > 0) && !valueXused)
-  {
-    return EXPR_VAR_OR_COUNTER_REQUIRED;
-  }
-  return 0;
-}
 
 static int numLimbs(const int* pLen)
 {
@@ -173,11 +161,11 @@ static int numLimbs(const int* pLen)
 static void getCurrentStackValue(BigInteger* pValue)
 {
   limb* ptrStackValue = &comprStackValues[comprStackOffset[stackIndex]];
-  NumberLength = numLimbs((int *)ptrStackValue);
-  IntArray2BigInteger((int *)ptrStackValue, pValue);
+  NumberLength = numLimbs((int*)ptrStackValue);
+  IntArray2BigInteger((int*)ptrStackValue, pValue);
 }
 
-enum eExprErr setStackValue(const BigInteger* pValue)
+static enum eExprErr setStackValue(const BigInteger* pValue)
 {
   int currentOffset = comprStackOffset[stackIndex];
   if (currentOffset >= (COMPR_STACK_SIZE - sizeof(BigInteger) / sizeof(limb)))
@@ -186,147 +174,419 @@ enum eExprErr setStackValue(const BigInteger* pValue)
   }
   NumberLength = pValue->nbrLimbs;
   BigInteger2IntArray((int*)&comprStackValues[currentOffset], pValue);
+  comprStackOffset[stackIndex + 1] = currentOffset + pValue->nbrLimbs + 1;
   return EXPR_OK;
 }
 
-static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
+enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
 {
-  int shLeft;
+  bool valueXused;
   enum eExprErr retcode;
-  limb carry;
-  bool leftNumberFlag = false;
-  int exprIndexAux;
-  int offset;
-  enum eExprErr SubExprResult;
+  char* ptrRPNbuffer;
   int len;
-  limb largeLen;
-  limb *ptrLimb;
-  BigInteger *pBigInt;
-  int c;
-  int startStackIndex = stackIndex;
-  
-  exprLength = (int)strlen(expr);
-  while (exprIndex < exprLength)
+  int stackIndexThreshold = DO_NOT_SHORT_CIRCUIT;
+  retcode = ConvertToReversePolishNotation(expr, &ptrRPNbuffer, stFuncOperIntExpr,
+    PARSE_EXPR_INTEGER, &valueXused);
+  if (retcode != EXPR_OK)
   {
-    char charValue;
-
-    charValue = *(expr+exprIndex);
-    if ((charValue == ' ') || (charValue == 9))
-    {           // Ignore spaces and horizontal tabs.
-      exprIndex++;
-      continue;
-    }
-    if (charValue == '^')
-    {           // Caret is exponentiation operation.
-      charValue = OPER_POWER;
-      exprIndex++;
-    }
-    else if ((charValue == '*') && (*(expr + exprIndex + 1) == '*'))
-    {           // Double asterisk is exponentiation operation too.
-      charValue = OPER_POWER;
-      exprIndex += 2;
-    }
-    else if (charValue == '*')
+    return retcode;
+  }
+  stackIndex = -1;
+  comprStackOffset[0] = 0;
+  while (*ptrRPNbuffer != '\0')
+  {
+    char c = *ptrRPNbuffer;
+    int currentOffset;
+    int nbrLenBytes;
+    switch (c)
     {
-      charValue = OPER_MULTIPLY;
-      exprIndex++;
-    }
-    else if (charValue == '/')
-    {
-      charValue = OPER_DIVIDE;
-      exprIndex++;
-    }
-    else if (charValue == '%')
-    {
-      charValue = OPER_REMAINDER;
-      exprIndex++;
-    }
-    else if (charValue == '+')
-    {
-      charValue = OPER_PLUS;
-      exprIndex++;
-    }
-    else if (charValue == '-')
-    {
-      charValue = OPER_MINUS;
-      exprIndex++;
-    }
-    else if ((charValue == '<') && (*(expr + exprIndex + 1) == '='))
-    {
-      charValue = OPER_NOT_GREATER;
-      exprIndex += 2;
-    }
-    else if ((charValue == '>') && (*(expr + exprIndex + 1) == '='))
-    {
-      charValue = OPER_NOT_LESS;
-      exprIndex += 2;
-    }
-    else if ((charValue == '!') && (*(expr + exprIndex + 1) == '='))
-    {
-      charValue = OPER_NOT_EQUAL;
-      exprIndex += 2;
-    }
-    else if ((charValue == '=') && (*(expr + exprIndex + 1) == '='))
-    {
-      charValue = OPER_EQUAL;
-      exprIndex += 2;
-    }
-    else if (charValue == '>')
-    {
-      charValue = OPER_GREATER;
-      exprIndex++;
-    }
-    else if (charValue == '<')
-    {
-      charValue = OPER_LESS;
-      exprIndex++;
-    }
-    else if (((charValue & 0xDF) == 'N') && ((*(expr + exprIndex + 1) & 0xDF) == 'O') &&
-      ((*(expr + exprIndex + 2) & 0xDF) == 'T'))
-    {
-      charValue = OPER_NOT;
-      exprIndex += 3;
-    }
-    else if (((charValue & 0xDF) == 'A') && ((*(expr + exprIndex + 1) & 0xDF) == 'N') &&
-      ((*(expr + exprIndex + 2) & 0xDF) == 'D'))
-    {
-      charValue = OPER_AND;
-      exprIndex += 3;
-    }
-    else if (((charValue & 0xDF) == 'O') && ((*(expr + exprIndex + 1) & 0xDF) == 'R'))
-    {
-      charValue = OPER_OR;
-      exprIndex += 2;
-    }
-    else if (((charValue & 0xDF) == 'X') && ((*(expr + exprIndex + 1) & 0xDF) == 'O') &&
-      ((*(expr + exprIndex + 2) & 0xDF) == 'R'))
-    {
-      charValue = OPER_XOR;
-      exprIndex += 3;
-    }
-    else if (((charValue & 0xDF) == 'S') && ((*(expr + exprIndex + 1) & 0xDF) == 'H') &&
-      ((*(expr + exprIndex + 2) & 0xDF) == 'L'))
-    {
-      charValue = OPER_SHL;
-      exprIndex += 3;
-    }
-    else if (((charValue & 0xDF) == 'S') && ((*(expr + exprIndex + 1) & 0xDF) == 'H') &&
-      ((*(expr + exprIndex + 2) & 0xDF) == 'R'))
-    {
-      charValue = OPER_SHR;
-      exprIndex += 3;
-    }
-    else if (charValue == '!')
-    {           // Calculating factorial.
-      if (!leftNumberFlag)
+    case TOKEN_NUMBER:
+      ptrRPNbuffer++;           // Skip token.
+      stackIndex++;
+      len = ((int)(unsigned char)*ptrRPNbuffer * 256) + (unsigned char)*(ptrRPNbuffer + 1);
+      nbrLenBytes = len * sizeof(limb);
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        ptrRPNbuffer += 2 + nbrLenBytes;
+        break;
+      }
+      // Move number to compressed stack.
+      currentOffset = comprStackOffset[stackIndex];
+      if (currentOffset >= (COMPR_STACK_SIZE - sizeof(BigInteger) / sizeof(limb)))
       {
-        return EXPR_SYNTAX_ERROR;
+        return EXPR_OUT_OF_MEMORY;
+      }
+      comprStackValues[currentOffset].x = len;
+      ptrRPNbuffer += 2;   // Skip length.
+      memcpy(&comprStackValues[currentOffset+1], ptrRPNbuffer, nbrLenBytes);
+      ptrRPNbuffer += nbrLenBytes;
+      comprStackOffset[stackIndex+1] = currentOffset + 1 + len;
+      break;
+
+    case TOKEN_GCD:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
       }
       getCurrentStackValue(&curStack);
-      if (curStack.nbrLimbs != 1)
+      BigIntGcd(&curStack, &curStack2, &curStack);
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
       {
-        return EXPR_INTERM_TOO_HIGH;
+        return retcode;
       }
+      break;
+
+    case TOKEN_MODPOW:
+      getCurrentStackValue(&curStack3);
+      stackIndex--;
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = BigIntGeneralModularPower(&curStack, &curStack2, &curStack3, &curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_MODINV:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeModInv();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+#ifdef FACTORIZATION_FUNCTIONS
+    case TOKEN_TOTIENT:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeTotient();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_NUMDIVS:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeNumDivs();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_SUMDIVS:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeSumDivs();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_MINFACT:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeMinFact();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_MAXFACT:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeMaxFact();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_NUMFACT:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeNumFact();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_CONCATFACT:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeConcatFact();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+#endif
+
+    case TOKEN_SUMDIGITS:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeSumDigits();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_NUMDIGITS:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeNumDigits();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_REVDIGITS:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeRevDigits();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_ISPRIME:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+#ifdef FACTORIZATION_APP
+      if (BpswPrimalityTest(&curStack, NULL) == 0)
+#else
+      if (BpswPrimalityTest(&curStack) == 0)
+#endif
+      {    // Argument is a probable prime.
+        intToBigInteger(&curStack, -1);
+      }
+      else
+      {    // Argument is not a probable prime.
+        intToBigInteger(&curStack, 0);
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_F:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeFibLucas(0);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_L:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeFibLucas(2);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_P:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputePartition();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_N:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeNext();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_B:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ComputeBack();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_FACTORIAL:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
 #ifdef FACTORIZATION_APP
       if ((curStack.limbs[0].x < 0) || (curStack.limbs[0].x >= 47177))
 #else
@@ -336,909 +596,347 @@ static enum eExprErr ComputeExpr(char *expr, BigInteger *ExpressionResult)
         return EXPR_INTERM_TOO_HIGH;
       }
       factorial(&curStack, curStack.limbs[0].x);
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      exprIndex++;
-      continue;
-    }
-    else if (charValue == '#')
-    {           // Calculating primorial.
-      if (!leftNumberFlag)
-      {
-        return EXPR_SYNTAX_ERROR;
-      }
-      if (doComputeSubExpression)
-      {
-        getCurrentStackValue(&curStack);
-        if (curStack.nbrLimbs > 2)
-        {
-          return EXPR_INTERM_TOO_HIGH;
-        }
-        if (curStack.nbrLimbs == 2)
-        {
-          largeLen.x = curStack.limbs[0].x +
-            (int)((unsigned int)curStack.limbs[1].x << BITS_PER_GROUP);
-        }
-        else
-        {
-          largeLen.x = curStack.limbs[0].x;
-        }
-        len = largeLen.x;
-#ifdef FACTORIZATION_APP
-        if ((len < 0) || (len > 460490))
-#else
-        if ((len < 0) || (len > 46049))
-#endif
-        {
-          return EXPR_INTERM_TOO_HIGH;
-        }
-        primorial(&curStack, curStack.limbs[0].x);
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      exprIndex++;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "GCD", 2, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        getCurrentStackValue(&curStack);    // Get first argument of GCD.
-        stackIndex++;
-        getCurrentStackValue(&curStack2);   // Get second argument of GCD.
-        stackIndex--;
-        BigIntGcd(&curStack, &curStack2, &curStack);
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "MODPOW", 3, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        getCurrentStackValue(&curStack);    // Get first argument of MODPOW.
-        stackIndex++;
-        getCurrentStackValue(&curStack2);   // Get second argument of MODPOW.
-        stackIndex++;
-        getCurrentStackValue(&curStack3);   // Get third argument of MODPOW.
-        stackIndex -= 2;
-        retcode = BigIntGeneralModularPower(&curStack, &curStack2, &curStack3, &curStack);
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "MODINV", 2, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        retcode = ComputeModInv();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-#ifdef FACTORIZATION_FUNCTIONS
-    else if (func(expr, ExpressionResult, "TOTIENT", 1, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        retcode = ComputeTotient();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "NUMDIVS", 1, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        retcode = ComputeNumDivs();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "SUMDIVS", 1, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        retcode = ComputeSumDivs();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-        leftNumberFlag = true;
-      }
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "MINFACT", 1, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        retcode = ComputeMinFact();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "MAXFACT", 1, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        retcode = ComputeMaxFact();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "NUMFACT", 1, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        retcode = ComputeNumFact();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "CONCATFACT", 2, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        retcode = ComputeConcatFact();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-#endif
-    else if (func(expr, ExpressionResult, "SUMDIGITS", 2, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        retcode = ComputeSumDigits();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "NUMDIGITS", 2, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        retcode = ComputeNumDigits();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "REVDIGITS", 2, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        retcode = ComputeRevDigits();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "ISPRIME", 1, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        getCurrentStackValue(&curStack);    // Get argument.
-#ifdef FACTORIZATION_APP
-        if (BpswPrimalityTest(&curStack, NULL) == 0)
-#else
-        if (BpswPrimalityTest(&curStack) == 0)
-#endif
-        {    // Argument is a probable prime.
-          intToBigInteger(&curStack, -1);
-        }
-        else
-        {    // Argument is not a probable prime.
-          intToBigInteger(&curStack, 0);
-        }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "F", 1, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        getCurrentStackValue(&curStack);    // Get argument.
-        retcode = ComputeFibLucas(0);
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "L", 1, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        getCurrentStackValue(&curStack);    // Get argument.
-        retcode = ComputeFibLucas(2);
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "P", 1, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        getCurrentStackValue(&curStack);    // Get argument.
-        retcode = ComputePartition();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "N", 1, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        getCurrentStackValue(&curStack);    // Get argument.
-        retcode = ComputeNext();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (func(expr, ExpressionResult, "B", 1, leftNumberFlag, &retcode))
-    {
-      if (retcode != EXPR_OK) { return retcode; }
-      if (doComputeSubExpression)
-      {
-        getCurrentStackValue(&curStack);    // Get argument.
-        retcode = ComputeBack();
-        if (retcode != EXPR_OK) { return retcode; }
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
-        {
-          return retcode;
-        }
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if ((charValue & 0xDF) == 'X')
-    {
-      if (leftNumberFlag || (valueX.nbrLimbs == 0))
-      {
-        return EXPR_SYNTAX_ERROR;
-      }
-      valueXused = true;
-      exprIndex++;
-      if (stackIndex > 0)
-      {
-        int currentStackOffset = comprStackOffset[stackIndex - 1];
-        comprStackOffset[stackIndex] = currentStackOffset +
-          numLimbs((int *)&comprStackValues[currentStackOffset]) + 1;
-      }
-      retcode = setStackValue(&valueX);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if ((charValue & 0xDF) == 'C')
-    {
-      if (leftNumberFlag || (valueX.nbrLimbs == 0))
-      {
-        return EXPR_SYNTAX_ERROR;
-      }
-      intToBigInteger(&curStack, counterC);
-      valueXused = true;
-      exprIndex++;
-      if (stackIndex > 0)
-      {
-        int currentStackOffset = comprStackOffset[stackIndex - 1];
-        comprStackOffset[stackIndex] = currentStackOffset +
-          numLimbs((int*)&comprStackValues[currentStackOffset]) + 1;
-      }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      leftNumberFlag = true;
-      continue;
-    }
-    else if (charValue == '(')
-    {
-      if (leftNumberFlag)
-      {
-        return EXPR_SYNTAX_ERROR;
-      }
-      if (stackIndex >= (PAREN_STACK_SIZE-1))
-      {
-        return EXPR_TOO_MANY_PAREN;
-      }
-      comprStackOffset[stackIndex + 1] = comprStackOffset[stackIndex];
-      stackOperators[stackIndex] = charValue;
-      stackIndex++;
-      exprIndex++;
-      continue;
-    }
-    else if ((charValue == ')') || (charValue == ','))
-    {
-      int curStackOperand;
-      if (leftNumberFlag == 0)
-      {       // Previous item should be a number or variable.
-        return EXPR_SYNTAX_ERROR;
-      }
-      while ((stackIndex > startStackIndex) &&
-        (stackOperators[stackIndex - 1] != '('))
-      {
-        SubExprResult = ComputeSubExpr();
-        if (SubExprResult != 0)
-        {
-          return SubExprResult;
-        }
-        if ((stackOperators[stackIndex-1] == OPER_AND) ||
-          (stackOperators[stackIndex-1] == OPER_OR))
-        {
-          if (!doComputeSubExpression &&
-              (stackIndex == computeSubExprStackThreshold))
-          {
-            doComputeSubExpression = true;
-          }
-        }
-      }
-      curStackOperand = comprStackOffset[stackIndex];
-      if (stackIndex == startStackIndex)
-      {
-        comprStackOffset[stackIndex+1] = curStackOperand +
-          numLimbs(&comprStackValues[curStackOperand].x) + 1;
+      break;
+
+    case TOKEN_PRIMORIAL:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
         break;
       }
-      if (charValue == ',')
+      getCurrentStackValue(&curStack);
+      if (curStack.nbrLimbs > 2)
       {
-        return EXPR_PAREN_MISMATCH;
+        return EXPR_INTERM_TOO_HIGH;
       }
-      comprStackOffset[stackIndex - 1] = curStackOperand;
-      comprStackOffset[stackIndex] += numLimbs(&comprStackValues[curStackOperand].x) + 1;
-      stackIndex--;    /* Discard ')' */
-      leftNumberFlag = true;
-      exprIndex++;
-      continue;
-    }
-    else if ((charValue >= '0') && (charValue <= '9'))
-    {
-      int currentStackOffset;
-      exprIndexAux = exprIndex;
-      if ((charValue == '0') && (exprIndexAux < (exprLength - 2)) &&
-          (*(expr+exprIndexAux + 1) == 'x'))
-      {  // hexadecimal
-        int exprIndexFirstHexDigit = -1;
-        exprIndexAux++;
-        while (exprIndexAux < (exprLength - 1))
-        {
-          charValue = *(expr+exprIndexAux + 1);
-          if (((charValue >= '0') && (charValue <= '9')) ||
-              ((charValue >= 'A') && (charValue <= 'F')) ||
-              ((charValue >= 'a') && (charValue <= 'f')))
-          {
-            exprIndexAux++;
-            if ((charValue != '0') && (exprIndexFirstHexDigit < 0))
-            {
-              exprIndexFirstHexDigit = exprIndexAux;
-            }
-          }
-          else
-          {
-            break;
-          }
-        }
-        if (exprIndexFirstHexDigit < 0)
-        {    // Number is zero
-          intToBigInteger(&curStack, 0);
-          exprIndex = exprIndexAux + 1;
-        }
-        else
-        {    // Generate big integer from hexadecimal number from right to left.
-          carry.x = 0;
-          shLeft = 0;
-          offset = exprIndexAux;
-          ptrLimb = &curStack.limbs[0];
-          for (; exprIndexAux >= exprIndexFirstHexDigit; exprIndexAux--)
-          {
-            c = *(expr + exprIndexAux);
-            if ((c >= '0') && (c <= '9'))
-            {
-              c -= '0';
-            }
-            else if ((c >= 'A') && (c <= 'F'))
-            {
-              c -= 'A' - 10;
-            }
-            else
-            {
-              c -= 'a' - 10;
-            }
-            carry.x += (int)((unsigned int)c << shLeft);
-            shLeft += 4;   // 4 bits per hex digit.
-            if (shLeft >= BITS_PER_GROUP)
-            {
-              shLeft -= BITS_PER_GROUP;
-              ptrLimb->x = (int)((unsigned int)carry.x & MAX_VALUE_LIMB);
-              ptrLimb++;
-              carry.x = c >> (4 - shLeft);
-            }
-          }
-          if ((carry.x != 0) || (ptrLimb == &curStack.limbs[0]))
-          {
-            ptrLimb->x = carry.x;
-            ptrLimb++;
-          }
-          exprIndex = offset + 1;
-          curStack.nbrLimbs = (int)(ptrLimb - &curStack.limbs[0]);
-          curStack.sign = SIGN_POSITIVE;
-        }
+      if (curStack.nbrLimbs == 2)
+      {
+        len = curStack.limbs[0].x +
+          (int)((unsigned int)curStack.limbs[1].x << BITS_PER_GROUP);
       }
       else
-      {                   // Decimal number.
-        while (exprIndexAux < (exprLength - 1))
-        {
-          charValue = *(expr+exprIndexAux + 1);
-          if ((charValue >= '0') && (charValue <= '9'))
-          {
-            exprIndexAux++;
-          }
-          else
-          {
-            break;
-          }
-        }
-        // Generate big integer from decimal number
-        pBigInt = &curStack;
-        Dec2Bin(expr + exprIndex, pBigInt->limbs,
-                exprIndexAux + 1 - exprIndex, &pBigInt -> nbrLimbs);
-        pBigInt -> sign = SIGN_POSITIVE;
-        exprIndex = exprIndexAux + 1;
+      {
+        len = curStack.limbs[0].x;
       }
-      retcode = setStackValue(&curStack);   // Push number onto stack.
+#ifdef FACTORIZATION_APP
+      if ((len < 0) || (len > 460490))
+#else
+      if ((len < 0) || (len > 46049))
+#endif
+      {
+        return EXPR_INTERM_TOO_HIGH;
+      }
+      primorial(&curStack, curStack.limbs[0].x);
+      break;
+
+    case OPER_PLUS:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntAdd(&curStack, &curStack2, &curStack);
+      break;
+
+    case OPER_MINUS:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntSubt(&curStack, &curStack2, &curStack);
+      break;
+
+    case OPER_UNARY_MINUS:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntNegate(&curStack, &curStack);
+      break;
+
+    case OPER_DIVIDE:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = BigIntDivide(&curStack, &curStack2, &curStack);
       if (retcode != EXPR_OK)
       {
         return retcode;
       }
-      currentStackOffset = comprStackOffset[stackIndex];
-      comprStackOffset[stackIndex + 1] = currentStackOffset +
-          numLimbs((int*)&comprStackValues[currentStackOffset]) + 1;
-      leftNumberFlag = true;
-      continue;
-    }
-    else
-    {              // Nothing to do.
-    }
-    if (charValue <= MAXIMUM_OPERATOR)
-    {
-      if (((charValue == OPER_PLUS) || (charValue == OPER_MINUS)) && (leftNumberFlag == false))
-      {                    // Unary plus/minus operator
-        if (charValue == OPER_PLUS)
-        {
-          continue;
-        }
-        else
-        {
-          if ((stackIndex > startStackIndex) && (stackOperators[stackIndex - 1] == OPER_UNARY_MINUS))
-          {
-            stackIndex--;
-            continue;
-          }
-          if (stackIndex >= PAREN_STACK_SIZE)
-          {
-            return EXPR_TOO_MANY_PAREN;
-          }
-          stackOperators[stackIndex] = OPER_UNARY_MINUS; /* Unary minus */
-          stackIndex++;
-          continue;
-        }
-      }
-      if ((leftNumberFlag == false) != (charValue == OPER_NOT))
-      {     // Missing left operator if operator is not NOT or
-            // extra left operator if operator is NOT.
-        return EXPR_SYNTAX_ERROR;
-      }
-      if (charValue != OPER_POWER)
-      {  // Power operator has right associativity.
-        while ((stackIndex > startStackIndex) &&
-          (stackOperators[stackIndex - 1] != '(') &&
-          (priority[(int)stackOperators[stackIndex - 1]] <= priority[(int)charValue]))
-        {
-          SubExprResult = ComputeSubExpr();
-          if (SubExprResult != 0)
-          {
-            return SubExprResult;
-          }
-          if ((stackOperators[stackIndex-1] == OPER_AND) ||
-            (stackOperators[stackIndex-1] == OPER_OR))
-          {
-            if (!doComputeSubExpression &&
-              (stackIndex == computeSubExprStackThreshold))
-            {
-              doComputeSubExpression = true;
-            }
-          }
-        }
-        if (stackIndex >= 0)
-        {
-          int currentStackOffset = comprStackOffset[stackIndex];
-          comprStackOffset[stackIndex+1] = currentStackOffset +
-            numLimbs((int*)&comprStackValues[currentStackOffset]) + 1;
-        }
-      }
-      if (charValue == OPER_AND)
-      {
-        getCurrentStackValue(&curStack);
-        if (BigIntIsZero(&curStack))
-        {
-          doComputeSubExpression = false;
-          computeSubExprStackThreshold = stackIndex;
-        }
-      }
-      if (charValue == OPER_OR)
-      {
-        getCurrentStackValue(&curStack);
-        if ((curStack.sign == SIGN_NEGATIVE) && (curStack.nbrLimbs == 1) &&
-          (curStack.limbs[0].x == 1))
-        {       // Number is -1.
-          doComputeSubExpression = false;
-          computeSubExprStackThreshold = stackIndex;
-        }
-      }
-      if (stackIndex >= (int)sizeof(stackOperators))
-      {
-        return EXPR_TOO_MANY_PAREN;
-      }
-      stackOperators[stackIndex] = charValue;
-      stackIndex++;
-      leftNumberFlag = false;
-      continue;
-    }
-    return EXPR_SYNTAX_ERROR;
-  }                              /* end while */
-  if (!leftNumberFlag)
-  {
-    return EXPR_SYNTAX_ERROR;
-  }
-  while ((stackIndex > startStackIndex) && (stackOperators[stackIndex - 1] != '('))
-  {
-    SubExprResult = ComputeSubExpr();
-    if (SubExprResult != 0)
-    {
-      return SubExprResult;
-    }
-  }
-  if (stackIndex != startStackIndex)
-  {
-    return EXPR_PAREN_MISMATCH;
-  }
-  getCurrentStackValue(ExpressionResult);
-  return EXPR_OK;
-}
+      break;
 
-static void SkipSpaces(const char *expr)
-{
-  while (*(expr + exprIndex) != '\0')
-  {
-    if (*(expr + exprIndex) > ' ')
-    {
+    case OPER_MULTIPLY:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = BigIntMultiply(&curStack, &curStack2, &curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case OPER_REMAINDER:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = BigIntRemainder(&curStack, &curStack2, &curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+    case TOKEN_END_EXPON:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = BigIntPower(&curStack, &curStack2, &curStack3);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      CopyBigInt(&curStack, &curStack3);    // Copy result.
+      break;
+
+    case OPER_EQUAL:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntSubt(&curStack, &curStack2, &curStack3);
+      intToBigInteger(&curStack,
+        ((curStack3.nbrLimbs == 1) && ((curStack3.limbs[0].x == 0) ? -1 : 0)));
+      break;
+    case OPER_NOT_EQUAL:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntSubt(&curStack, &curStack2, &curStack3);
+      intToBigInteger(&curStack,
+        ((curStack3.nbrLimbs == 1) && ((curStack3.limbs[0].x == 0) ? 0 : -1)));
+      break;
+
+    case OPER_GREATER:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntSubt(&curStack, &curStack2, &curStack3);
+      intToBigInteger(&curStack, (curStack3.sign == SIGN_NEGATIVE) ? -1 : 0);
+      break;
+
+    case OPER_NOT_GREATER:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntSubt(&curStack, &curStack2, &curStack3);
+      intToBigInteger(&curStack, (curStack3.sign == SIGN_NEGATIVE) ? 0 : -1);
+      break;
+
+    case OPER_LESS:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntSubt(&curStack, &curStack2, &curStack3);
+      intToBigInteger(&curStack, (curStack3.sign == SIGN_NEGATIVE) ? -1 : 0);
+      break;
+
+    case OPER_NOT_LESS:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntSubt(&curStack, &curStack2, &curStack3);
+      intToBigInteger(&curStack, (curStack3.sign == SIGN_NEGATIVE) ? 0 : -1);
+      break;
+
+    case OPER_SHL:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      retcode = ShiftLeft(&curStack, &curStack2, &curStack3);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      CopyBigInt(&curStack, &curStack3);    // Copy result.
+      break;
+
+    case OPER_SHR:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntChSign(&curStack2);
+      retcode = ShiftLeft(&curStack, &curStack2, &curStack3);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      CopyBigInt(&curStack, &curStack3);    // Copy result.
+      break;
+
+    case OPER_NOT:    // Perform binary NOT as result <- -1 - argument.
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      intToBigInteger(&curStack2, -1);
+      BigIntSubt(&curStack2, &curStack, &curStack);
+      break;
+
+    case OPER_INFIX_AND:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      // If value in stack is zero, do not compute second operand.
+      getCurrentStackValue(&curStack);
+      if (BigIntIsZero(&curStack))
+      {
+        stackIndexThreshold = stackIndex;
+      }
+      break;
+
+    case OPER_AND:    // Perform binary AND.
+      if ((stackIndexThreshold+1) == stackIndex)
+      {
+        stackIndexThreshold = DO_NOT_SHORT_CIRCUIT;
+        break;
+      }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntAnd(&curStack, &curStack2, &curStack3);
+      CopyBigInt(&curStack, &curStack3);
+      break;
+
+    case OPER_INFIX_OR:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      // If value in stack is -1, do not compute second operand.
+      getCurrentStackValue(&curStack);
+      if ((curStack.sign == SIGN_NEGATIVE) && (curStack.nbrLimbs == 1) &&
+        (curStack.limbs[0].x == 1))
+      {
+        stackIndexThreshold = stackIndex;
+      }
+      break;
+
+    case OPER_OR:     // Perform binary OR.
+      if ((stackIndexThreshold+1) == stackIndex)
+      {
+        stackIndex--;
+        stackIndexThreshold = DO_NOT_SHORT_CIRCUIT;
+        break;
+      }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntOr(&curStack, &curStack2, &curStack3);
+      CopyBigInt(&curStack, &curStack3);
+      break;
+    case OPER_XOR:    // Perform binary XOR.
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      BigIntXor(&curStack, &curStack2, &curStack3);
+      CopyBigInt(&curStack, &curStack3);
+      break;
+    default:
       break;
     }
-    exprIndex++;
+    if (c != TOKEN_NUMBER)
+    {
+      if ((stackIndexThreshold >= stackIndex) && (c != TOKEN_START_EXPON))
+      {
+        retcode = setStackValue(&curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
+      }
+      ptrRPNbuffer++;            // Skip token.
+    }
   }
-  return;
-}
-
-static enum eExprErr ComputeSubExpr(void)
-{
-  enum eExprErr retcode;
-  stackIndex--;
-  char stackOper = stackOperators[stackIndex];
-  getCurrentStackValue(&curStack);    // Get first argument of GCD.
-  stackIndex++;
-  getCurrentStackValue(&curStack2);   // Get second argument of GCD.
-  stackIndex--;
-  BigInteger *firstArg = &curStack;
-  BigInteger *secondArg = &curStack2;
-  BigInteger *result = &curStack;
-  switch (stackOper)
+  getCurrentStackValue(ExpressionResult);
+#ifdef FACTORIZATION_APP
+  if (ExpressionResult->nbrLimbs > ((332192 / BITS_PER_GROUP) + 1))   // 100000/log_10(2) = 332192
+#else
+  if (ExpressionResult->nbrLimbs > ((33219 / BITS_PER_GROUP) + 1))    // 10000/log_10(2) = 33219
+#endif
   {
-  case OPER_PLUS:
-    BigIntAdd(firstArg, secondArg, result);
-    break;
-  case OPER_MINUS:
-    BigIntSubt(firstArg, secondArg, result);
-    break;
-  case OPER_UNARY_MINUS:
-    BigIntNegate(secondArg, result);
-    break;
-  case OPER_DIVIDE:
-    retcode = BigIntDivide(firstArg, secondArg, result);
-    if (retcode != EXPR_OK)
-    {
-      return retcode;
-    }
-    break;
-  case OPER_MULTIPLY:
-    retcode = BigIntMultiply(firstArg, secondArg, result);
-    if (retcode != EXPR_OK)
-    {
-      return retcode;
-    }
-    break;
-  case OPER_REMAINDER:
-    retcode = BigIntRemainder(firstArg, secondArg, result);
-    if (retcode != EXPR_OK)
-    {
-      return retcode;
-    }
-    break;
-  case OPER_POWER:
-    retcode = BigIntPower(firstArg, secondArg, result);
-    if (retcode != EXPR_OK)
-    {
-      return retcode;
-    }
-    break;
-  case OPER_EQUAL:
-    BigIntSubt(firstArg, secondArg, result);
-    intToBigInteger(result, ((result->nbrLimbs == 1) && ((result->limbs[0].x == 0)? -1: 0)));
-    break;
-  case OPER_NOT_EQUAL:
-    BigIntSubt(firstArg, secondArg, result);
-    intToBigInteger(result, ((result->nbrLimbs == 1) && ((result->limbs[0].x == 0)? 0 : -1)));
-    break;
-  case OPER_GREATER:
-    BigIntSubt(secondArg, firstArg, result);
-    intToBigInteger(result, (result->sign == SIGN_NEGATIVE) ? -1 : 0);
-    break;
-  case OPER_NOT_GREATER:
-    BigIntSubt(secondArg, firstArg, result);
-    intToBigInteger(result, (result->sign == SIGN_NEGATIVE) ? 0 : -1);
-    break;
-  case OPER_LESS:
-    BigIntSubt(firstArg, secondArg, result);
-    intToBigInteger(result, (result->sign == SIGN_NEGATIVE) ? -1 : 0);
-    break;
-  case OPER_NOT_LESS:
-    BigIntSubt(firstArg, secondArg, result);
-    intToBigInteger(result, (result->sign == SIGN_NEGATIVE) ? 0 : -1);
-    break;
-  case OPER_SHL:
-    retcode = ShiftLeft(firstArg, secondArg, result);
-    if (retcode != EXPR_OK)
-    {
-      return retcode;
-    }
-    break;
-  case OPER_SHR:
-    if (secondArg->sign == SIGN_POSITIVE)
-    {
-      secondArg->sign = SIGN_NEGATIVE;
-    }
-    else
-    {
-      secondArg->sign = SIGN_POSITIVE;
-    }
-    retcode = ShiftLeft(firstArg, secondArg, result);
-    if (retcode != EXPR_OK)
-    {
-      return retcode;
-    }
-    break;
-  case OPER_NOT:    // Perform binary NOT as result <- -1 - argument.
-    intToBigInteger(firstArg, -1);
-    BigIntSubt(firstArg, secondArg, result);
-    break;
-  case OPER_AND:    // Perform binary AND.
-    BigIntAnd(firstArg, secondArg, result);
-    break;
-  case OPER_OR:     // Perform binary OR.
-    BigIntOr(firstArg, secondArg, result);
-    break;
-  case OPER_XOR:    // Perform binary XOR.
-    BigIntXor(firstArg, secondArg, result);
-    break;
-  default:
-    break;
+    return EXPR_NUMBER_TOO_HIGH;
   }
-  retcode = setStackValue(&curStack);
-  if (retcode != EXPR_OK)
+  if ((valueX.nbrLimbs > 0) && !valueXused)
   {
-    return retcode;
+    return EXPR_VAR_OR_COUNTER_REQUIRED;
   }
   return EXPR_OK;
-}
-
-static bool func(char* expr, BigInteger* ExpressionResult,
-  const char* funcName, int funcArgs, int leftNumberFlag, enum eExprErr* pRetCode)
-{
-  int funcNameLen = (int)strlen(funcName);
-  const char *ptrExpr;
-  const char *ptrFuncName;
-
-  if ((exprIndex + funcNameLen) > exprLength)
-  {
-    return false;      // Next characters are not a function name.
-  }
-  ptrExpr = expr + exprIndex;
-  ptrFuncName = funcName;
-  while (*ptrFuncName != 0)
-  {
-    if ((*ptrExpr & 0xDF) != *ptrFuncName)
-    {
-      return false;    // Next characters are not a function name.
-    }
-    ptrExpr++;
-    ptrFuncName++;
-  }
-  exprIndex += funcNameLen;
-  if (leftNumberFlag == 1)
-  {
-    *pRetCode = EXPR_SYNTAX_ERROR;
-    return true;
-  }
-  SkipSpaces(expr);
-  if ((exprIndex == exprLength) || (*(expr + exprIndex) != '('))
-  {
-    *pRetCode = EXPR_SYNTAX_ERROR;
-    return true;
-  }
-  exprIndex++;
-  for (int index = 0; index < funcArgs; index++)
-  {
-    enum eExprErr retcode;
-    char compareChar;
-
-    SkipSpaces(expr);
-    if (stackIndex >= PAREN_STACK_SIZE)
-    {
-      *pRetCode = EXPR_TOO_MANY_PAREN;
-      return true;
-    }
-    retcode = ComputeExpr(expr, ExpressionResult);
-    if (retcode != EXPR_OK)
-    {
-      *pRetCode = retcode;
-      return true;
-    }
-    SkipSpaces(expr);
-    compareChar = ((index == (funcArgs - 1))? ')' : ',');
-    if (exprIndex == exprLength)
-    {
-      *pRetCode = EXPR_SYNTAX_ERROR;
-      return true;
-    }
-    if (*(expr + exprIndex) != compareChar)
-    {
-      *pRetCode = EXPR_SYNTAX_ERROR;
-      return true;
-    }
-    exprIndex++;
-    stackIndex++;
-  }
-  stackIndex -= funcArgs;
-  *pRetCode = EXPR_OK;
-  return true;
 }
 
 static void generateSieve(const int* pSmallPrimes, char* sieve,
@@ -1275,7 +973,7 @@ static void generateSieve(const int* pSmallPrimes, char* sieve,
   }
 }
 // Compute previous probable prime
-static int ComputeBack(void)
+static enum eExprErr ComputeBack(void)
 {
   char sieve[COMPUTE_NEXT_PRIME_SIEVE_SIZE];
   const BigInteger *pArgument = &curStack;
@@ -1344,7 +1042,7 @@ static int ComputeBack(void)
 }
 
 // Compute next probable prime
-static int ComputeNext(void)
+static enum eExprErr ComputeNext(void)
 {
   char sieve[COMPUTE_NEXT_PRIME_SIEVE_SIZE];
   const BigInteger *pArgument = &curStack;
@@ -1414,10 +1112,6 @@ static enum eExprErr ComputeModInv(void)
 {
   static BigInteger one;
   const BigInteger* pDiv;
-  getCurrentStackValue(&curStack);    // Get first argument of MODINV.
-  stackIndex++;
-  getCurrentStackValue(&curStack2);   // Get second argument of MODINV.
-  stackIndex--;
   pDiv = &curStack2;
   if ((pDiv->nbrLimbs == 1) && (pDiv->limbs[0].x == 0))
   {
@@ -1556,7 +1250,7 @@ static void PerformFactorization(BigInteger *tofactor)
   factor(tofactor, nbrToFactor, factorsMod, astFactorsMod);
 }
 
-static int ComputeTotient(void)
+static enum eExprErr ComputeTotient(void)
 {
   getCurrentStackValue(&curStack);    // Get argument.
   PerformFactorization(&curStack);
@@ -1564,7 +1258,7 @@ static int ComputeTotient(void)
   return EXPR_OK;
 }
 
-static int ComputeNumDivs(void)
+static enum eExprErr ComputeNumDivs(void)
 {
   getCurrentStackValue(&curStack);    // Get argument.
   PerformFactorization(&curStack);
@@ -1572,7 +1266,7 @@ static int ComputeNumDivs(void)
   return EXPR_OK;
 }
 
-static int ComputeSumDivs(void)
+static enum eExprErr ComputeSumDivs(void)
 {
   getCurrentStackValue(&curStack);    // Get argument.
   PerformFactorization(&curStack);
@@ -1580,7 +1274,7 @@ static int ComputeSumDivs(void)
   return EXPR_OK;
 }
 
-static int ComputeNumFact(void)
+static enum eExprErr ComputeNumFact(void)
 {
   getCurrentStackValue(&curStack);    // Get argument.
   PerformFactorization(&curStack);
@@ -1588,7 +1282,7 @@ static int ComputeNumFact(void)
   return EXPR_OK;
 }
 
-static int ComputeMaxFact(void)
+static enum eExprErr ComputeMaxFact(void)
 {
   getCurrentStackValue(&curStack);    // Get argument.
   PerformFactorization(&curStack);
@@ -1596,7 +1290,7 @@ static int ComputeMaxFact(void)
   return EXPR_OK;
 }
 
-static int ComputeMinFact(void)
+static enum eExprErr ComputeMinFact(void)
 {
   int primeIndex = 0;
   int prime = 2;
@@ -1618,7 +1312,7 @@ static int ComputeMinFact(void)
   return EXPR_OK;
 }
 
-static int ComputeConcatFact(void)
+static enum eExprErr ComputeConcatFact(void)
 {
   getCurrentStackValue(&curStack);    // Get first argument.
   stackIndex++;
@@ -1669,7 +1363,7 @@ static int ComputeConcatFact(void)
 }
 #endif
 
-static int ComputeSumDigits(void)
+static enum eExprErr ComputeSumDigits(void)
 {
   getCurrentStackValue(&curStack);    // Get first argument.
   stackIndex++;
@@ -1690,7 +1384,7 @@ static int ComputeSumDigits(void)
   return EXPR_OK;
 }
 
-static int ComputeNumDigits(void)
+static enum eExprErr ComputeNumDigits(void)
 {
   getCurrentStackValue(&curStack);    // Get first argument.
   stackIndex++;
@@ -1708,7 +1402,7 @@ static int ComputeNumDigits(void)
   return EXPR_OK;
 }
 
-static int ComputeRevDigits(void)
+static enum eExprErr ComputeRevDigits(void)
 {
   getCurrentStackValue(&curStack);    // Get first argument.
   stackIndex++;

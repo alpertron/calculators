@@ -4247,7 +4247,7 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
   copyStr(&ptrOutput, "2<p>");
   for (coeffNbr = 0; coeffNbr < NBR_COEFF; coeffNbr++)
   {
-    rc = ComputeExpression(pstValidateCoeff->expression, 1,
+    rc = ComputeExpression(pstValidateCoeff->expression,
                            pstValidateCoeff->bigint);
     if (rc != EXPR_OK)
     {

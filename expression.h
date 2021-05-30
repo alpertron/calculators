@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 20 de mayo de 2021."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 20 May 2021."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 29 de mayo de 2021."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 29 May 2021."
 
 #include <stdbool.h>
 #ifdef __EMSCRIPTEN__
@@ -32,6 +32,40 @@ int stamp(void);
 #define EXTERNALIZE	
 #endif
 void databack(const char *data);
+
+#define STACK_OPER_SIZE             100
+
+#define ONE_PARM                     (1 * 0x100)
+#define TWO_PARMS                    (2 * 0x100)
+#define THREE_PARMS                  (3 * 0x100)
+#define TOKEN_NUMBER                  1
+#define TOKEN_START_EXPON             2
+#define TOKEN_END_EXPON               3
+#define TOKEN_VAR                     4
+#define TOKEN_COUNTER                 5
+#define OPER_POWER                    6
+#define OPER_MULTIPLY                 7
+#define OPER_DIVIDE                   8
+#define OPER_REMAINDER                9
+#define OPER_UNARY_MINUS             10
+#define OPER_PLUS                    11
+#define OPER_MINUS                   12
+#define OPER_SHR                     13
+#define OPER_SHL                     14
+#define OPER_NOT_GREATER             15
+#define OPER_NOT_LESS                16
+#define OPER_NOT_EQUAL               17
+#define OPER_EQUAL                   18
+#define OPER_GREATER                 19
+#define OPER_LESS                    20
+#define OPER_NOT                     21
+#define OPER_AND                     22
+#define OPER_INFIX_AND               23
+#define OPER_OR                      24
+#define OPER_INFIX_OR                25
+#define OPER_XOR                     26
+#define OPER_PAREN                   27
+
 
 enum eExprErr
 {
@@ -60,9 +94,26 @@ enum eExprErr
   EXPR_MODULUS_MUST_BE_NONNEGATIVE,
   EXPR_VAR_OR_COUNTER_REQUIRED,
   EXPR_MULTIPLE_VARIABLES_NOT_ACCEPTED,
+  EXPR_TOO_MANY_ARGUMENTS,
+  EXPR_TOO_FEW_ARGUMENTS,
   EXPR_OK = 0,
   EXPR_NOT_FOUND,
 };
+
+struct sFuncOperExpr
+{
+  const char* name;
+  short token;
+  char priority;
+};
+
+enum eParseExpr
+{
+  PARSE_EXPR_INTEGER = 0,
+  PARSE_EXPR_GAUSSIAN,
+  PARSE_EXPR_POLYNOMIAL,
+};
+
 #ifndef lang  
   extern bool lang;
 #endif
@@ -71,8 +122,11 @@ extern char output[3000000];
 extern BigInteger valueX;
 extern int counterC;
 extern int expressionNbr;
-enum eExprErr ComputeGaussianExpression(char *expr, BigInteger *ExpressionResult);
-enum eExprErr ComputeExpression(char *expr, int typ, BigInteger *ExpressionResult);
+enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *ExpressionResult);
+enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult);
+int ConvertToReversePolishNotation(const char* input, char** pptrOut,
+  const struct sFuncOperExpr* funcOperExpr, enum eParseExpr eParseExpr,
+  bool* pUsingVariables);
 void partition(int val, BigInteger *pResult);
 void factorial(BigInteger *result, int argument);
 void primorial(BigInteger *result, int argument);

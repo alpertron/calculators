@@ -277,6 +277,10 @@ static bool isSumOfThreeSquares(const struct sFactors* pstFactors, BigInteger* p
     return true;           // Sum of three squares.
   }
   CopyBigInt(pCandidate, &tofactor);                 // Divide by power of 4.
+  if (BigIntIsZero(pCandidate))
+  {
+    return false;    // Do not express zero as sum of three squares.
+  }
   DivideBigNbrByMaxPowerOf4(&shRight, pCandidate->limbs, &pCandidate->nbrLimbs);
   // If candidate divided by power of 4 does not equal 7 (mod 8), then
   // it is a sum of three squares, all of them different from zero.

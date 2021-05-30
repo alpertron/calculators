@@ -209,7 +209,7 @@ int intDoubleModPow(int NbrMod, int Expon, int currentPrime);
 void ModInvBigInt(const int *num, int *inv, const int *mod, int nbrLenBigInt);
 void IntToBigNbr(int value, int *bigNbr, int nbrLength);
 int JacobiSymbol(int upper, int lower);
-int BigIntJacobiSymbol(BigInteger *upper, BigInteger *lower);
+int BigIntJacobiSymbol(const BigInteger *upper, const BigInteger *lower);
 void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs);
 void smallmodmult(int factor1, int factor2, limb *product, int mod);
 void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,

@@ -25,13 +25,7 @@
 #include "highlevel.h"
 #include "polynomial.h"
 #include "showtime.h"
-#define STACK_OPER_SIZE            100
-#define TOKEN_NUMBER               '0'
-#define TOKEN_START_EXPON          '1'
-#define TOKEN_END_EXPON            '2'
-#define TOKEN_UNARY_MINUS          '3'
-#define TOKEN_GCD                  '4'
-#define TOKEN_DER                  '5'
+
 extern char* ptrOutput2;
 static void showPolynomial(char** pptrOutput, const int* ptrPoly, int polyDegree, int groupLength);
 BigInteger primeMod;              // p
