@@ -123,7 +123,7 @@ static void getHexValue(const char** pptrInput)
         carry = (unsigned int)c >> (4 - shLeft);
       }
     }
-    if ((carry != 0) || (ptrLimb == &value.limbs[0]))
+    if ((carry != 0U) || (ptrLimb == &value.limbs[0]))
     {
       ptrLimb->x = carry;
       ptrLimb++;
@@ -238,7 +238,7 @@ static enum eExprErr parseNumberInsidePolyExpr(const char** ppInput, char** ppOu
       }
       value.nbrLimbs--;
     }
-    *ptrOutput = (char)(value.nbrLimbs >> 8);
+    *ptrOutput = (char)((unsigned int)value.nbrLimbs >> 8);
     ptrOutput++;
     *ptrOutput = (char)value.nbrLimbs;
     ptrOutput++;
@@ -360,7 +360,6 @@ static enum eExprErr parsePrevTokenIsNumber(const char** ppInput, char** ppOutpu
   {              // Operator name was found.
     short oper;
     char priority;
-    char s;
     bool isInfix = false;
     if (forceMultiplication)
     {
@@ -379,6 +378,7 @@ static enum eExprErr parsePrevTokenIsNumber(const char** ppInput, char** ppOutpu
     }
     while (stackOperIndex > 0)
     {      // Send operators that have more precedence to output.
+      char s;
       stackOperIndex--;
       if (priority < stackArgumNbrPriority[stackOperIndex])
       {    // Operator on stack has less precedence.

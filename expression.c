@@ -203,8 +203,8 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
     case TOKEN_NUMBER:
       ptrRPNbuffer++;           // Skip token.
       stackIndex++;
-      len = ((int)(unsigned char)*ptrRPNbuffer * 256) + (unsigned char)*(ptrRPNbuffer + 1);
-      nbrLenBytes = len * sizeof(limb);
+      len = ((int)(unsigned char)*ptrRPNbuffer * 256) + (int)(unsigned char)*(ptrRPNbuffer + 1);
+      nbrLenBytes = len * (int)sizeof(limb);
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
         ptrRPNbuffer += 2 + nbrLenBytes;
@@ -1135,6 +1135,7 @@ static enum eExprErr ComputeFibLucas(int origValue)
   limb largeVal;
   int val;
   int len;
+  int lenBytes;
   limb *pFibonPrev;
   limb *pFibonAct;
   if (pArgument->sign == SIGN_NEGATIVE)
@@ -1193,7 +1194,8 @@ static enum eExprErr ComputeFibLucas(int origValue)
   pArgument = &curStack;
   pArgument->sign = SIGN_POSITIVE;
   pArgument->nbrLimbs = len;
-  (void)memcpy(pArgument->limbs, pFibonAct, len * sizeof(limb));
+  lenBytes = len * (int)sizeof(limb);
+  (void)memcpy(pArgument->limbs, pFibonAct, lenBytes);
   return EXPR_OK;
 }
 

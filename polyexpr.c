@@ -630,7 +630,7 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
   }
   SetNumberToOne(&poly2[0]); // Initialize power with polynomial 1.
   degreePower = 0;
-  for (int mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+  for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
   {
     // Square polynomial.
     MultPolynomial(degreePower, degreePower, poly2, poly2);
@@ -643,7 +643,7 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
     {
       (void)memcpy(poly2, polyMultTemp, (degreePower + 1) * nbrLimbs * sizeof(int));
     }
-    if ((expon & mask) != 0)
+    if (((unsigned int)expon & mask) != 0U)
     {
       MultPolynomial(degreeBase, degreePower, poly1, poly2);
       degreePower += degreeBase;
@@ -702,7 +702,7 @@ int ComputePolynomial(char* input, int expo)
   int* ptrValue2;
   int len;
   char* ptrRPNbuffer;
-  int rc;
+  enum eExprErr rc;
   int val;
   int pwr;
   int expon;
@@ -730,15 +730,15 @@ int ComputePolynomial(char* input, int expo)
       len = 1;
       if (!insideExpon)
       {
-        len = ((int)(unsigned char)*ptrRPNbuffer * 256) + (unsigned char)*(ptrRPNbuffer + 1);
+        len = ((int)(unsigned char)*ptrRPNbuffer * 256) + (int)(unsigned char)*(ptrRPNbuffer + 1);
         values[valuesIndex] = 0;   // Degree.
         valuesIndex++;
         values[valuesIndex] = len;
         valuesIndex++;
         ptrRPNbuffer += 2;
       }
-      nbrSizeBytes = len * sizeof(limb);
-      memcpy(&values[valuesIndex], ptrRPNbuffer, nbrSizeBytes);
+      nbrSizeBytes = len * (int)sizeof(limb);
+      (void)memcpy(&values[valuesIndex], ptrRPNbuffer, nbrSizeBytes);
       ptrRPNbuffer += nbrSizeBytes - 1;
       valuesIndex += len;
       break;
@@ -759,7 +759,7 @@ int ComputePolynomial(char* input, int expo)
       break;
     case OPER_UNARY_MINUS:
       ptrValue1 = stackValues[stackIndex - 1];
-      if (insideExpon != 0)
+      if (insideExpon)
       {
         *ptrValue1 = -*ptrValue1;
       }

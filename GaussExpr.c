@@ -177,10 +177,10 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       {
         return EXPR_OUT_OF_MEMORY;
       }
-      len = ((int)(unsigned char)*ptrRPNbuffer * 256) + (unsigned char)*(ptrRPNbuffer + 1);
+      len = ((int)(unsigned char)*ptrRPNbuffer * 256) + (int)(unsigned char)*(ptrRPNbuffer + 1);
       comprStackValues[currentOffset].x = len;
       ptrRPNbuffer += 2;   // Skip length.
-      nbrLenBytes = len * sizeof(limb);
+      nbrLenBytes = len * (int)sizeof(limb);
       (void)memcpy(&comprStackValues[currentOffset + 1], ptrRPNbuffer, nbrLenBytes);
       ptrRPNbuffer += nbrLenBytes;
       currentOffset += 1 + len;
@@ -705,7 +705,8 @@ static int ComputePower(BigInteger *Re1, const BigInteger *Re2,
   BigIntAdd(&ReTmp, &ImTmp, &norm);  // norm <- re1^2 + im1^2.
   if (norm.nbrLimbs > 1)
   {
-    base = log((double)(norm.limbs[norm.nbrLimbs - 2].x + (norm.limbs[norm.nbrLimbs - 1].x << BITS_PER_GROUP)) +
+    base = log((double)(norm.limbs[norm.nbrLimbs - 2].x + 
+      (double)(norm.limbs[norm.nbrLimbs - 1].x << BITS_PER_GROUP)) +
       (double)(norm.nbrLimbs - 2) * LOG_2 * (double)BITS_PER_GROUP);
   }
   else
@@ -724,9 +725,9 @@ static int ComputePower(BigInteger *Re1, const BigInteger *Re2,
   Im.nbrLimbs = 1;
   Re.sign = SIGN_POSITIVE; 
   Im.sign = SIGN_POSITIVE;
-  for (unsigned int mask = 1U << 30; mask != 0; mask >>= 1)
+  for (unsigned int mask = HALF_INT_RANGE_U; mask != 0U; mask >>= 1)
   {
-    if ((expon & mask) != 0)
+    if ((expon & mask) != 0U)
     {
       performPower = true;
     }
@@ -780,7 +781,7 @@ static enum eExprErr ComputeModPow(void)
   }
   if (ReExp.sign == SIGN_NEGATIVE)
   {
-    int retcode;
+    enum eExprErr retcode;
     BigIntNegate(&ReExp, &ReExp);
     retcode = ModInv(&ReBase, &ImBase, &ReMod, &ImMod, Result);
     if (retcode != EXPR_OK)
@@ -809,7 +810,7 @@ static enum eExprErr ComputeModPow(void)
     for (int index = ReExp.nbrLimbs - 1; index >= 0; index--)
     {
       int groupExp = ReExp.limbs[index].x;
-      for (int mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+      for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
       {
         // Let Re + i*Im <- (Re + i*Im)^2
         (void)BigIntMultiply(&Re, &Re, &ReTmp);
@@ -822,7 +823,7 @@ static enum eExprErr ComputeModPow(void)
         // (ReTmp + i*ImTmp) / (ReMod + i*ImMod)
         // ReTmp and ImTmp are used as temporary values.
         GetRemainder(&norm, &Re, &Im, &ReMod, &ImMod, &ReTmp, &ImTmp);
-        if ((groupExp & mask) != 0)
+        if (((unsigned int)groupExp & mask) != 0U)
         {
           // Let Re + i*Im <- (Re + i*Im)*(ReBase + i*ImBase)
           (void)BigIntMultiply(&ReBase, &Re, &ReTmp);
