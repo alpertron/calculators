@@ -2124,11 +2124,11 @@ void SumOfDivisors(BigInteger *result)
       continue;
     }
     (void)BigIntPowerIntExp(&factorValue, pstFactor->multiplicity + 1, &Temp1);   // p^(e+1)
-    addbigint(&Temp1, -1);   // p^(e+1)-1
-    (void)BigIntMultiply(result, &Temp1, &Temp2);
-    intArrayToBigInteger(pstFactor->ptrFactor, &Temp1);
-    addbigint(&Temp1, -1);   // p-1
-    (void)BigIntDivide(&Temp2, &Temp1, result);
+    addbigint(&Temp1, -1);                         // p^(e+1)-1
+    intArrayToBigInteger(pstFactor->ptrFactor, &Temp2);
+    addbigint(&Temp2, -1);                         // p-1
+    (void)BigIntDivide(&Temp1, &Temp2, &Temp3);    // (p^(e+1)-1) / (p-1)
+    (void)BigIntMultiply(result, &Temp3, result);  // Multiply result by this value.
     pstFactor++;
   }
 }

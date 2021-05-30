@@ -723,19 +723,23 @@ static void addToAbsValue(limb *pLimbs, int *pNbrLimbs, int addend)
 static void subtFromAbsValue(limb *pLimbs, int *pNbrLimbs, int subt)
 {
   int nbrLimbs = *pNbrLimbs;
+  limb* ptrLimb = pLimbs;
   pLimbs->x -= subt;
   if (pLimbs->x < 0)
   {
     int ctr = 0;
     do
     {      // Loop that adjust number if there is borrow.
-      (pLimbs + ctr)->x += (int)LIMB_RANGE;
+      unsigned int tempLimb = (unsigned int)ptrLimb->x & MAX_VALUE_LIMB;
+      ptrLimb->x = (int)tempLimb;
       ctr++;
       if (ctr == nbrLimbs)
       {    // All limbs processed. Exit loop.
         break;
       }
-    } while (--((pLimbs + ctr)->x) < 0);   // Continue loop if there is borrow.
+      ptrLimb++;                // Point to next most significant limb.
+      ptrLimb->x--;
+    } while (ptrLimb->x < 0);   // Continue loop if there is borrow.
     if ((nbrLimbs > 1) && ((pLimbs + nbrLimbs - 1)->x == 0))
     {
       nbrLimbs--;
