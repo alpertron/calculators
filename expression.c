@@ -218,7 +218,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       comprStackValues[currentOffset].x = len;
       ptrRPNbuffer += 2;   // Skip length.
-      memcpy(&comprStackValues[currentOffset+1], ptrRPNbuffer, nbrLenBytes);
+      (void)memcpy(&comprStackValues[currentOffset+1], ptrRPNbuffer, nbrLenBytes);
       ptrRPNbuffer += nbrLenBytes;
       comprStackOffset[stackIndex+1] = currentOffset + 1 + len;
       break;

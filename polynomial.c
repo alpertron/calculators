@@ -1913,7 +1913,7 @@ void SubtractIntegerPolynomial(const int* minuend, const int* subtrahend, int* d
     for (; currentDegree <= degreeSubtrahend; currentDegree++)
     {
       *ptrDifference = -*ptrSubtrahend;
-      memcpy(ptrDifference + 1, ptrSubtrahend + 1, numLimbs(ptrSubtrahend));
+      (void)memcpy(ptrDifference + 1, ptrSubtrahend + 1, numLimbs(ptrSubtrahend));
       ptrSubtrahend += 1 + numLimbs(ptrSubtrahend);
       ptrDifference += 1 + numLimbs(ptrDifference);
     }

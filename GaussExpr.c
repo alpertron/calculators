@@ -125,7 +125,7 @@ static void getCurrentStackValue(BigInteger* pValueRe, BigInteger *pValueIm)
   limb* ptrStackValue = &comprStackValues[comprStackOffset[2*stackIndex]];
   NumberLength = numLimbs((int*)ptrStackValue);
   IntArray2BigInteger((int*)ptrStackValue, pValueRe);
-  ptrStackValue = &comprStackValues[comprStackOffset[2 * stackIndex + 1]];
+  ptrStackValue = &comprStackValues[comprStackOffset[(2 * stackIndex) + 1]];
   NumberLength = numLimbs((int*)ptrStackValue);
   IntArray2BigInteger((int*)ptrStackValue, pValueIm);
 }
@@ -140,11 +140,11 @@ static enum eExprErr setStackValue(const BigInteger* pValueRe, const BigInteger 
   NumberLength = pValueRe->nbrLimbs;
   BigInteger2IntArray((int*)&comprStackValues[currentOffset], pValueRe);
   currentOffset += pValueRe->nbrLimbs + 1;
-  comprStackOffset[2 * stackIndex + 1] = currentOffset;
+  comprStackOffset[(2 * stackIndex) + 1] = currentOffset;
   NumberLength = pValueIm->nbrLimbs;
   BigInteger2IntArray((int*)&comprStackValues[currentOffset], pValueIm);
   currentOffset += pValueIm->nbrLimbs + 1;
-  comprStackOffset[2 * stackIndex + 2] = currentOffset;
+  comprStackOffset[(2 * stackIndex) + 2] = currentOffset;
   return EXPR_OK;
 }
 
@@ -181,13 +181,13 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       comprStackValues[currentOffset].x = len;
       ptrRPNbuffer += 2;   // Skip length.
       nbrLenBytes = len * sizeof(limb);
-      memcpy(&comprStackValues[currentOffset + 1], ptrRPNbuffer, nbrLenBytes);
+      (void)memcpy(&comprStackValues[currentOffset + 1], ptrRPNbuffer, nbrLenBytes);
       ptrRPNbuffer += nbrLenBytes;
       currentOffset += 1 + len;
-      comprStackOffset[2 * stackIndex + 1] = currentOffset;
+      comprStackOffset[(2 * stackIndex) + 1] = currentOffset;
       comprStackValues[currentOffset].x = 1;      // Imaginary part is zero.
       comprStackValues[currentOffset + 1].x = 0;
-      comprStackOffset[2 * stackIndex + 2] = currentOffset + 2;
+      comprStackOffset[(2 * stackIndex) + 2] = currentOffset + 2;
       break;
 
     case TOKEN_VAR:    // Push number i.
@@ -197,10 +197,10 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       comprStackValues[currentOffset].x = 1;      // Real part is zero.
       comprStackValues[currentOffset + 1].x = 0;
       currentOffset += 2;
-      comprStackOffset[2 * stackIndex + 1] = currentOffset;
+      comprStackOffset[(2 * stackIndex) + 1] = currentOffset;
       comprStackValues[currentOffset].x = 1;      // Imaginary part is one.
       comprStackValues[currentOffset + 1].x = 1;
-      comprStackOffset[2 * stackIndex + 2] = currentOffset + 2;
+      comprStackOffset[(2 * stackIndex) + 2] = currentOffset + 2;
       break;
 
     case TOKEN_RE:
@@ -216,8 +216,16 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
     case TOKEN_NORM:
       // norm = Re^2 + Im^2
       getCurrentStackValue(&curStackRe, &curStackIm);
-      BigIntMultiply(&curStackRe, &curStackRe, &curStack2Re);
-      BigIntMultiply(&curStackIm, &curStackIm, &curStack2Im);
+      retcode = BigIntMultiply(&curStackRe, &curStackRe, &curStack2Re);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = BigIntMultiply(&curStackIm, &curStackIm, &curStack2Im);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
       BigIntAdd(&curStack2Re, &curStack2Im, &curStackRe);
       intToBigInteger(&curStackIm, 0);
       break;
@@ -235,14 +243,22 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       getCurrentStackValue(&curStack2Re, &curStack2Im);
       stackIndex--;
       getCurrentStackValue(&curStackRe, &curStackIm);
-      ComputeModPow();
+      retcode = ComputeModPow();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
       break;
 
     case TOKEN_MODINV:
       getCurrentStackValue(&curStack2Re, &curStack2Im);
       stackIndex--;
       getCurrentStackValue(&curStackRe, &curStackIm);
-      ComputeModInv();
+      retcode = ComputeModInv();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
       break;
 
     case TOKEN_ISPRIME:
@@ -286,7 +302,7 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       {         // Imaginary part must be zero.
         return EXPR_INVALID_PARAM;
       }
-      if (curStackRe.nbrLimbs > 1 || (curStackRe.limbs[0].x > 5984))
+      if ((curStackRe.nbrLimbs > 1) || (curStackRe.limbs[0].x > 5984))
       {
         return EXPR_INTERM_TOO_HIGH;
       }
@@ -298,7 +314,7 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       {         // Imaginary part must be zero.
         return EXPR_INVALID_PARAM;
       }
-      if (curStackRe.nbrLimbs > 1 || (curStackRe.limbs[0].x > 46049))
+      if ((curStackRe.nbrLimbs > 1) || (curStackRe.limbs[0].x > 46049))
       {
         return EXPR_INTERM_TOO_HIGH;
       }

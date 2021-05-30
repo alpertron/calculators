@@ -605,15 +605,20 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
       }
       else if ((c >= '0') && (c <= '9'))
       {          // Number.
+        enum eExprErr retcode;
 #ifdef POLYEXPR
         if (eParseExpr == PARSE_EXPR_POLYNOMIAL)
         {
-          parseNumberInsidePolyExpr(&pInput, &ptrOutput);
+          retcode = parseNumberInsidePolyExpr(&pInput, &ptrOutput);
         }
         else
 #endif
         {
-          parseNumberInsideExpr(&pInput, &ptrOutput);
+          retcode = parseNumberInsideExpr(&pInput, &ptrOutput);
+        }
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
         }
         prevTokenIsNumber = true;
       }

@@ -241,7 +241,7 @@ int main(int argc, char* argv[])
   copyStr(&ptrText, argv[1]);
   copyStr(&ptrText, "\n");
   ecmFrontText(text, true, NULL);
-  printf("%s\n", output);
+  (void)printf("%s\n", output);
 #if 0
   if (argc == 3)
   {

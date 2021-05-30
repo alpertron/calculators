@@ -947,7 +947,7 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         // If the leading coefficient of the divisor is odd,
         // divide both polynomials mod 32768. If the remainder is
         // not zero, the integer division will not be performed.
-        if ((divisorMod32768[2 * poly5[0] + 1] % 2) != 0)
+        if ((divisorMod32768[(2 * poly5[0]) + 1] % 2) != 0)
         {
           TestNbr0Bak = TestNbr[0].x;
           TestNbr[0].x = 32768;
