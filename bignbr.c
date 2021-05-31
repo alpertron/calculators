@@ -928,19 +928,21 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
     pResultLimb++;
     carry >>= BITS_PER_GROUP;
 #else
-    int low = ((pLimb->x * factor) + carry) & MAX_INT_NBR;
+    int low = ((pLimb->x * intMult) + carry) & MAX_INT_NBR;
+    double dCarry;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     if (low < HALF_INT_RANGE)
     {
-      carry = (int)((((double)(pLimb->x) * dFactor) + (double)carry +
-        (double)FOURTH_INT_RANGE)*dVal);
+      dCarry = (((double)(pLimb->x) * dFactor) + (double)carry +
+        (double)FOURTH_INT_RANGE)*dVal;
     }
     else
     {
-      carry = (int)((((double)(pLimb->x) * dFactor) + (double)carry -
-        (double)FOURTH_INT_RANGE)*dVal);
+      dCarry = (((double)(pLimb->x) * dFactor) + (double)carry -
+        (double)FOURTH_INT_RANGE)*dVal;
     }
+    carry = (int)dCarry;
     pResultLimb->x = low;
     pResultLimb++;
 #endif
@@ -948,7 +950,7 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
   }
   if (carry != 0)
   {
-    pResultLimb->x = (int)carry;
+    pResultLimb->x = carry;
     nbrLimbs++;
   }
   pResult->nbrLimbs = nbrLimbs;

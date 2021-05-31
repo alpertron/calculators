@@ -661,8 +661,8 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
     break;
   }
 #else
-  limb *ptrFactor1;
-  limb *ptrFactor2;
+  const limb *ptrFactor1;
+  const limb *ptrFactor2;
   int prodCol;
   int fact1Col;
   double dRangeLimb = (double)LIMB_RANGE;

@@ -2093,6 +2093,8 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
     (void)memset(Prod, 0, NumberLength*sizeof(limb));
     for (int i = 0; i < NumberLength; i++)
     {
+      unsigned int uiAccum;
+      unsigned int unsignedLimb;
       int Nbr = (factor1 + i)->x;
       double dNbr = (double)Nbr;
       int low = (Nbr * factor2->x) + Prod[0].x;
@@ -2102,10 +2104,12 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
       dAccum += dMontDig * (double)TestNbr[0].x;
       // At this moment dAccum is multiple of LIMB_RANGE.
       dAccum = floor((dAccum*dInvLimbRange) + 0.5);
-      low = ((int)dAccum + (MontDig * TestNbr[1].x) +
+      uiAccum = (unsigned int)dAccum;
+      low = ((int)uiAccum + (MontDig * TestNbr[1].x) +
                    (Nbr * (factor2 + 1)->x) + Prod[1].x) & MAX_VALUE_LIMB;
+      unsignedLimb = (unsigned int)Prod[1].x;
       dAccum += (dMontDig * (double)TestNbr[1].x) + (dNbr * (double)(factor2 + 1)->x) +
-        (double)Prod[1].x;
+        (double)unsignedLimb;
       Prod[0].x = low;
       for (j = 2; j < NumberLength; j++)
       {
@@ -2120,8 +2124,9 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
           dAccum = ((dAccum - (double)FOURTH_INT_RANGE)*dInvLimbRange);
         }
         low = (int)(dAccum - (floor(dAccum * dInvLimbRange) * dLimbRange));
+        unsignedLimb = (unsigned int)Prod[j].x;
         dAccum += (dMontDig * (double)TestNbr[j].x) + (dNbr * (double)(factor2 + j)->x) +
-          (double)Prod[j].x;
+          (double)unsignedLimb;
         low = (low + (MontDig * TestNbr[j].x) +
                (Nbr * (factor2 + j)->x) + Prod[j].x) & MAX_VALUE_LIMB;
         Prod[j - 1].x = low;
