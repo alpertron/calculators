@@ -1447,8 +1447,7 @@ bool checkOne(const limb *value, int nbrLimbs)
 bool checkMinusOne(const limb *value, int nbrLimbs)
 {
   const limb* limbValue = value;
-  unsigned int carry;
-  carry = 0;
+  unsigned int carry = 0U;
   for (int idx = 0; idx < nbrLimbs; idx++)
   {
     carry += (unsigned int)limbValue->x + (unsigned int)MontgomeryMultR1[idx].x;
@@ -1465,16 +1464,16 @@ bool checkMinusOne(const limb *value, int nbrLimbs)
 void BigIntDivideBy2(BigInteger *nbr)
 {
   int nbrLimbs = nbr->nbrLimbs;
-  int *ptrDest = &nbr->limbs[0].x;
-  int curLimb = *ptrDest;
+  limb *ptrDest = &nbr->limbs[0];
+  int curLimb = ptrDest->x;
   for (int ctr = 1; ctr < nbrLimbs; ctr++)
   {  // Process starting from least significant limb.
-    int nextLimb = *(ptrDest + 1);
-    *ptrDest = ((curLimb >> 1) | (nextLimb << (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
+    int nextLimb = (ptrDest + 1)->x;
+    ptrDest->x = ((curLimb >> 1) | (nextLimb << (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
     ptrDest++;
     curLimb = nextLimb;
   }
-  *ptrDest = (curLimb >> 1) & MAX_INT_NBR;
+  ptrDest->x = (curLimb >> 1) & MAX_INT_NBR;
   if ((nbrLimbs > 1) && (nbr->limbs[nbrLimbs - 1].x == 0))
   {
     nbr->nbrLimbs--;
@@ -1682,71 +1681,18 @@ void initializeSmallPrimes(int* pSmallPrimes)
   }
 }
 
-// BPSW primality test:
-// 1) If the input number is 2-SPRP composite, indicate composite and go out.
-// 2) If number is perfect square, indicate it is composite and go out.
-// 3) Find the first D in the sequence 5, -7, 9, -11, 13, -15, ...
-//    for which the Jacobi symbol (D/n) is −1. Set P = 1 and Q = (1 - D) / 4.
-// 4) Perform a strong Lucas probable prime test on n using parameters D, P,
-//    and Q. If n is not a strong Lucas probable prime, then n is composite.
-//    Otherwise, n is almost certainly prime.
-// Output: 0 = probable prime.
-//         1 = composite: not 2-Fermat pseudoprime.
-//         2 = composite: does not pass 2-SPRP test.
-//         3 = composite: does not pass strong Lucas test.
-#if FACTORIZATION_APP
-int BpswPrimalityTest(const BigInteger* pValue, const struct sFactors* pstFactors)
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+static int Perform2SPRPtest(int nbrLimbs, const limb* limbs, const struct sFactors* pstFactors,
+  const BigInteger *pValue)
 #else
-int BpswPrimalityTest(const BigInteger *pValue)
+static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
 #endif
 {
-#if defined(__EMSCRIPTEN__) && !defined(FACTORIZATION_APP)
-  char text[200];
-#endif
-#if !defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
-  (void)pstFactors;    // Parameter is not used.
-#endif
-#ifdef __EMSCRIPTEN__
-  char *ptrText;
-#endif
   int Mult3Len;
   int ctr;
-  int D;
-  int absQ;
-  int mult;
-  unsigned int mask;
-  int nbrLimbsBytes;
-  int index;
-  int signPowQ;
-  bool insidePowering = false;
-  int nbrLimbs = pValue->nbrLimbs;
-  const limb *limbs = pValue->limbs;
-  static BigInteger tmp;
-  if ((nbrLimbs == 1) && (limbs->x <= 2))
-  {
-    return 0;    // Indicate prime.
-  }
-  if ((limbs->x & 1) == 0)
-  {
-    return 1;    // Number is even and different from 2. Indicate composite.
-  }
-  if (nbrLimbs > 1)
-  {              // Check whether it is divisible by small number.
-    initializeSmallPrimes(smallPrimes);
-    for (int primeIndex = 0; primeIndex < 180; primeIndex += 3)
-    {
-      int primeProd = smallPrimes[primeIndex] * smallPrimes[primeIndex+1] * smallPrimes[primeIndex+2];
-      int remainder = getRemainder(pValue, primeProd);
-      if (((remainder % smallPrimes[primeIndex]) == 0) ||
-        ((remainder % smallPrimes[primeIndex + 1]) == 0) ||
-        ((remainder % smallPrimes[primeIndex + 2]) == 0))
-      {
-        return 1;   // Number is divisible by small number. Indicate composite.
-      }
-    }
-  }
 #ifdef __EMSCRIPTEN__
 #ifdef FACTORIZATION_APP
+  char* ptrText;
   StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
   ptrText = ShowFactoredPart(pValue, pstFactors);
   (void)strcpy(ptrText, lang ? "<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
@@ -1769,13 +1715,13 @@ int BpswPrimalityTest(const BigInteger *pValue)
   GetMontgomeryParms(nbrLimbs);
   // Find Mult1 = 2^Mult3.
   (void)memcpy(Mult1, MontgomeryMultR1, (NumberLength + 1) * sizeof(limb));  // power <- 1
-  for (index = Mult3Len - 1; index >= 0; index--)
+  for (int index = Mult3Len - 1; index >= 0; index--)
   {
     int groupExp = Mult3[index].x;
 #ifdef __EMSCRIPTEN__
     percentageBPSW = (Mult3Len - index) * 100 / Mult3Len;
 #endif
-    for (mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
+    for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
     {
       modmult(Mult1, Mult1, Mult1);
       if (((unsigned int)groupExp & mask) != 0U)
@@ -1784,7 +1730,7 @@ int BpswPrimalityTest(const BigInteger *pValue)
       }
     }
   }
-                                            // If Mult1 != 1 and Mult1 = TestNbr-1, perform full test.
+  // If Mult1 != 1 and Mult1 = TestNbr-1, perform full test.
   if (!checkOne(Mult1, nbrLimbs) && !checkMinusOne(Mult1, nbrLimbs))
   {
     int i;
@@ -1820,44 +1766,50 @@ int BpswPrimalityTest(const BigInteger *pValue)
       return 2;         // Composite. Not 2-strong probable prime.
     }
   }
-  // At this point, the number is 2-SPRP, so check whether the number is perfect square.
-  squareRoot(pValue->limbs, tmp.limbs, pValue->nbrLimbs, &tmp.nbrLimbs);
-  tmp.sign = SIGN_POSITIVE;
-  (void)BigIntMultiply(&tmp, &tmp, &tmp);
-  if (BigIntEqual(pValue, &tmp))
-  {                  // Number is perfect square.
+  return 0;
+}
+
+// Perform strong Lucas primality test on n with parameters D, P=1, Q just found.
+// Let d*2^s = n+1 where d is odd.
+// Then U_d = 0 or v_{d*2^r} = 0 for some r < s.
+// Use the following recurrences:
+// U_0 = 0, V_0 = 2.
+// U_{2k} = U_k * V_k
+// V_{2k} = (V_k)^2 - 2*Q^K
+// U_{2k+1} = (U_{2k} + V_{2k})/2
+// V_{2k+1} = (D*U_{2k} + V_{2k})/2
+// Use the following temporary variables:
+// Mult1 for Q^n, Mult3 for U, Mult4 for V, Mult2 for temporary.
+
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
-    StepECM = 0;     // Do not show progress.
+static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int signD,
+  const struct sFactors* pstFactors)
+#else
+static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int signD)
 #endif
-    return 3;        // Indicate number does not pass strong Lucas test.
-  }
-  // At this point, the number is not perfect square, so find value of D.
-  mult = 1;
-  D = 5;
-  for (;;)
-  {
-    int rem = getRemainder(pValue, D);
-    if (JacobiSymbol(rem, D*mult) == -1)
-    {
-      break;
-    }
-    mult = -mult;
-    D += 2;
-  }
-  absQ = (D + 1) >> 2;
+{
+  int nbrLimbsBytes;
+  int index;
+  int signPowQ;
+  bool insidePowering = false;
+  int ctr;
+  int nbrLimbs = pValue->nbrLimbs;
+
 #ifdef __EMSCRIPTEN__
+  char* ptrText;
   int i;
 #ifdef FACTORIZATION_APP
   StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
   ptrText = ShowFactoredPart(pValue, pstFactors);
 #else
+  char text[200];
   ptrText = text;
   *ptrText = '3';
   ptrText++;
 #endif
   copyStr(&ptrText, lang ? "<p>Paso 2 del algoritmo BPSW de primos probables: Lucas fuerte con P=1, D=" :
     "<p>Step 2 of BPSW probable prime algorithm: Strong Lucas with P=1, D=");
-  int2dec(&ptrText, D);
+  int2dec(&ptrText, D*signD);
   copyStr(&ptrText, ", Q=");
   i = -absQ;        // Get value of Q to show it on screen.
   if (i < 0)
@@ -1873,25 +1825,14 @@ int BpswPrimalityTest(const BigInteger *pValue)
   databack(text);
 #endif
 #endif
-  // Perform strong Lucas primality test on n with parameters D, P=1, Q just found.
-  // Let d*2^s = n+1 where d is odd.
-  // Then U_d = 0 or v_{d*2^r} = 0 for some r < s.
-  // Use the following recurrences:
-  // U_0 = 0, V_0 = 2.
-  // U_{2k} = U_k * V_k
-  // V_{2k} = (V_k)^2 - 2*Q^K
-  // U_{2k+1} = (U_{2k} + V_{2k})/2
-  // V_{2k+1} = (D*U_{2k} + V_{2k})/2
-  // Use the following temporary variables:
-  // Mult1 for Q^n, Mult3 for U, Mult4 for V, Mult2 for temporary.
   nbrLimbsBytes = (nbrLimbs + 1) * (int)sizeof(limb);
   (void)memcpy(Mult1, MontgomeryMultR1, nbrLimbsBytes); // Q^0 <- 1.
   signPowQ = 1;
   (void)memset(Mult3, 0, nbrLimbsBytes);                // U_0 <- 0.
   (void)memcpy(Mult4, MontgomeryMultR1, nbrLimbsBytes);
-  AddBigNbrMod(Mult4, Mult4, Mult4);                              // V_0 <- 2.
+  AddBigNbrMod(Mult4, Mult4, Mult4);                    // V_0 <- 2.
   CopyBigInt(&expon, pValue);
-  addbigint(&expon, 1);                            // expon <- n + 1.
+  addbigint(&expon, 1);                                 // expon <- n + 1.
   Temp.limbs[nbrLimbs].x = 0;
   Temp2.limbs[nbrLimbs].x = 0;
   expon.limbs[expon.nbrLimbs].x = 0;
@@ -1902,7 +1843,7 @@ int BpswPrimalityTest(const BigInteger *pValue)
     percentageBPSW = (expon.nbrLimbs - index) * 100 / expon.nbrLimbs;
 #endif
     int groupExp = expon.limbs[index].x;
-    for (mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
+    for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
     {
       if (insidePowering)
       {
@@ -1931,8 +1872,8 @@ int BpswPrimalityTest(const BigInteger *pValue)
         Mult4[NumberLength].x = 0;
         AddBigNbrMod(Mult3, Mult4, Temp.limbs);
         Halve(Temp.limbs);                     // Temp <- (U + V)/2
-        MultBigNbrByIntModN((int *)Mult3, D, (int *)Temp2.limbs, (int *)TestNbr, nbrLimbs);
-        if (mult > 0)
+        MultBigNbrByIntModN((int*)Mult3, D, (int*)Temp2.limbs, (int*)TestNbr, nbrLimbs);
+        if (signD > 0)
         {      // D is positive
           AddBigNbrMod(Mult4, Temp2.limbs, Mult4);
         }
@@ -1943,7 +1884,7 @@ int BpswPrimalityTest(const BigInteger *pValue)
         Halve(Mult4);                       // V <- (V +/- U*D)/2
         (void)memcpy(Mult3, Temp.limbs, NumberLength * sizeof(limb));
         modmultInt(Mult1, absQ, Mult1);     // Multiply power of Q by Q.
-        signPowQ = -mult;                   // Attach correct sign to power.
+        signPowQ = -signD;                   // Attach correct sign to power.
         insidePowering = true;
       }
     }
@@ -1984,6 +1925,98 @@ int BpswPrimalityTest(const BigInteger *pValue)
   StepECM = 0;     // Do not show progress.
 #endif
   return 3;        // Number does not pass strong Lucas test.
+}
+
+// BPSW primality test:
+// 1) If the input number is 2-SPRP composite, indicate composite and go out.
+// 2) If number is perfect square, indicate it is composite and go out.
+// 3) Find the first D in the sequence 5, -7, 9, -11, 13, -15, ...
+//    for which the Jacobi symbol (D/n) is −1. Set P = 1 and Q = (1 - D) / 4.
+// 4) Perform a strong Lucas probable prime test on n using parameters D, P,
+//    and Q. If n is not a strong Lucas probable prime, then n is composite.
+//    Otherwise, n is almost certainly prime.
+// Output: 0 = probable prime.
+//         1 = composite: not 2-Fermat pseudoprime.
+//         2 = composite: does not pass 2-SPRP test.
+//         3 = composite: does not pass strong Lucas test.
+#if FACTORIZATION_APP
+int BpswPrimalityTest(const BigInteger* pValue, const struct sFactors* pstFactors)
+#else
+int BpswPrimalityTest(const BigInteger *pValue)
+#endif
+{
+#if !defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+  (void)pstFactors;    // Parameter is not used.
+#endif
+  int D;
+  int absQ;
+  int signD;
+  int retcode;
+  int nbrLimbs = pValue->nbrLimbs;
+  const limb* limbs = pValue->limbs;
+  static BigInteger tmp;
+  if ((nbrLimbs == 1) && (limbs->x <= 2))
+  {
+    return 0;    // Indicate prime.
+  }
+  if ((limbs->x & 1) == 0)
+  {
+    return 1;    // Number is even and different from 2. Indicate composite.
+  }
+  if (nbrLimbs > 1)
+  {              // Check whether it is divisible by small number.
+    initializeSmallPrimes(smallPrimes);
+    for (int primeIndex = 0; primeIndex < 180; primeIndex += 3)
+    {
+      int primeProd = smallPrimes[primeIndex] * smallPrimes[primeIndex+1] * smallPrimes[primeIndex+2];
+      int remainder = getRemainder(pValue, primeProd);
+      if (((remainder % smallPrimes[primeIndex]) == 0) ||
+        ((remainder % smallPrimes[primeIndex + 1]) == 0) ||
+        ((remainder % smallPrimes[primeIndex + 2]) == 0))
+      {
+        return 1;   // Number is divisible by small number. Indicate composite.
+      }
+    }
+  }
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+  retcode = Perform2SPRPtest(nbrLimbs, limbs, pstFactors, pValue);
+#else
+  retcode = Perform2SPRPtest(nbrLimbs, limbs);
+#endif
+  if (retcode != 0)
+  {
+    return retcode;
+  }
+  // At this point, the number is 2-SPRP, so check whether the number is perfect square.
+  squareRoot(pValue->limbs, tmp.limbs, pValue->nbrLimbs, &tmp.nbrLimbs);
+  tmp.sign = SIGN_POSITIVE;
+  (void)BigIntMultiply(&tmp, &tmp, &tmp);
+  if (BigIntEqual(pValue, &tmp))
+  {                  // Number is perfect square.
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+    StepECM = 0;     // Do not show progress.
+#endif
+    return 3;        // Indicate number does not pass strong Lucas test.
+  }
+  // At this point, the number is not perfect square, so find value of D.
+  signD = 1;
+  D = 5;
+  for (;;)
+  {
+    int rem = getRemainder(pValue, D);
+    if (JacobiSymbol(rem, D*signD) == -1)
+    {
+      break;
+    }
+    signD = -signD;
+    D += 2;
+  }
+  absQ = (D + 1) >> 2;
+#if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
+  return PerformStrongLucasTest(pValue, D, absQ, signD, pstFactors);
+#else
+  return PerformStrongLucasTest(pValue, D, absQ, signD);
+#endif
 }
 
 void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len)

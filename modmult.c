@@ -139,7 +139,7 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
     {
       dAccumulator = floor((dAccumulator * dInvLimbRange) - 0.25);
     }
-    low = (int)((unsigned int)dAccumulator & MAX_VALUE_LIMB);
+    low = (int)((unsigned int)(int)dAccumulator & MAX_VALUE_LIMB);
     ptrFactorBig++;
     ptrTestNbr++;
   }
