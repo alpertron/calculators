@@ -24,8 +24,10 @@
 #include "fft.h"
 
 #define FFT_LIMB_SIZE   18
+#define FFT_LIMB_RANGE  0x00040000     // 2^18
 #define MAX_FFT_LEN     (((MAX_LEN * BITS_PER_GROUP) / FFT_LIMB_SIZE) + 10)
 #define POWERS_2        17
+#define FULL_CIRCLE     0x00020000     // 2^17
 // In the next array, all numbers are represented by two elements,
 // first the least significant limb, then the most significant limb.
 const struct sCosSin cossinPowerOneHalf[] =
@@ -47,7 +49,7 @@ const struct sCosSin cossinPowerOneHalf[] =
   {{1143747429, 2147483645}, {1520490157, 102943}},      // cos(pi/2^16), then sin(pi/2^16)
 };
 
-static struct sCosSin cossin[4 << (POWERS_2 - 2)];
+static struct sCosSin cossin[FULL_CIRCLE];
 static double Cosine[(5 * QUARTER_CIRCLE) + 1];
 static struct sComplex firstFactor[MAX_FFT_LEN];
 static struct sComplex secondFactor[MAX_FFT_LEN];
@@ -170,8 +172,8 @@ static void initCosinesArray(void)
 // length is power of 2.
 static void complexFFT(struct sComplex *x, struct sComplex *y, int length)
 {
-  int halfLength = length >> 1;
-  int step = (1 << POWERS_2) / length;
+  int halfLength = length / 2;
+  int step = FULL_CIRCLE / length;
   bool exponentOdd = false;
   struct sComplex *ptrX = x;
   struct sComplex *ptrY = y;
@@ -252,7 +254,7 @@ static void complexFFT(struct sComplex *x, struct sComplex *y, int length)
 static void ConvertHalfToFullSizeFFT(struct sComplex *halfSizeFFT, 
   struct sComplex *fullSizeFFT, int power2)
 {
-  int step = (1 << (POWERS_2-1)) / power2;
+  int step = HALF_CIRCLE / power2;
   struct sComplex *ptrFullSizeFFT = fullSizeFFT;
   const struct sComplex *ptrHalfSizeFFT = halfSizeFFT;
   struct sComplex *ptrHalfSizeFFTRev = halfSizeFFT + power2;
@@ -290,7 +292,7 @@ static void ConvertHalfToFullSizeFFT(struct sComplex *halfSizeFFT,
 static void ConvertFullToHalfSizeFFT(const struct sComplex *fullSizeFFT,
   struct sComplex *halfSizeFFT, int power2)
 {
-  int step = (1 << (POWERS_2 - 1)) / power2;
+  int step = HALF_CIRCLE / power2;
   const struct sComplex *ptrFullSizeFFT = fullSizeFFT;
   const struct sComplex *ptrFullSizeFFTRev = fullSizeFFT + power2;
   struct sComplex *ptrHalfSizeFFT = halfSizeFFT;

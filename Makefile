@@ -26,9 +26,9 @@ flags_factorization=$(flags_factorization_1) -Os
 flags_squares=$(flags_squares_1) -Os
 flags_other=$(flags_other_1) -Os
 else
-flags_factorization=$(flags_factorization_1) $(flags_coverage)
-flags_squares=$(flags_squares_1) $(flags_coverage)
-flags_other=$(flags_other_1) $(flags_coverage)
+flags_factorization=$(flags_factorization_1) $(flags_coverage) -g -O0
+flags_squares=$(flags_squares_1) $(flags_coverage) -g -O0
+flags_other=$(flags_other_1) $(flags_coverage) -g -O0
 endif
 h_files=batch.h bignbr.h commonstruc.h expression.h factor.h highlevel.h polynomial.h showtime.h skiptest.h
 targets = ecm quad quadmod fsquares fcubes polfact dilog contfrac

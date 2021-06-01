@@ -25,12 +25,14 @@
 #include "fft.h"
 
 #define FFT_LIMB_SIZE   22
-#define MAX_FFT_LEN     2048  //  Power of 2 greater than 2*MAX_DEGREE
+#define FFT_LIMB_RANGE  0x00400000    // 2^22
+#define MAX_FFT_LEN     2048          // Power of 2 greater than 2*MAX_DEGREE
 #define POWERS_2        13
+#define FULL_CIRCLE     0x00002000    // 2^13
 // In the next array, all numbers are represented by two elements,
 // first the least significant limb, then the most significant limb.
 
-static struct sCosSin cossin[4 << (POWERS_2 - 2)];
+static struct sCosSin cossin[FULL_CIRCLE];
 static double Cosine[(5 * QUARTER_CIRCLE) + 1];
 static struct sComplex firstFactor[MAX_FFT_LEN];
 static struct sComplex secondFactor[MAX_FFT_LEN];
@@ -157,7 +159,7 @@ static void initCosinesArray(void)
 static void complexPolyFFT(struct sComplex* x, struct sComplex* y, int length)
 {
   int halfLength = length >> 1;
-  int step = (1 << POWERS_2) / length;
+  int step = FULL_CIRCLE / length;
   int exponentOdd = 0;
   struct sComplex* ptrX = x;
   struct sComplex* ptrY = y;
@@ -238,7 +240,7 @@ static void complexPolyFFT(struct sComplex* x, struct sComplex* y, int length)
 static void ConvertHalfToFullSizeFFT(struct sComplex* halfSizeFFT, 
   struct sComplex* fullSizeFFT, int power2)
 {
-  int step = (1 << (POWERS_2 - 1)) / power2;
+  int step = HALF_CIRCLE / power2;
   struct sComplex* ptrFullSizeFFT = fullSizeFFT;
   const struct sComplex* ptrHalfSizeFFT = halfSizeFFT;
   struct sComplex* ptrHalfSizeFFTRev = halfSizeFFT + power2;
@@ -276,7 +278,7 @@ static void ConvertHalfToFullSizeFFT(struct sComplex* halfSizeFFT,
 static void ConvertFullToHalfSizeFFT(const struct sComplex* fullSizeFFT,
   struct sComplex* halfSizeFFT, int power2)
 {
-  int step = (1 << (POWERS_2 - 1)) / power2;
+  int step = HALF_CIRCLE / power2;
   const struct sComplex* ptrFullSizeFFT = fullSizeFFT;
   const struct sComplex* ptrFullSizeFFTRev = fullSizeFFT + power2;
   struct sComplex* ptrHalfSizeFFT = halfSizeFFT;
