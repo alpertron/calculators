@@ -45,6 +45,7 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
   limb oldLimb;
   limb newLimb;
   int shLeft;
+  int shRight;
   limb *ptrDest;
   unsigned int uiOld;
   unsigned int uiDest;
@@ -59,6 +60,7 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
     }
     shLeft++;
   }
+  shRight = BITS_PER_GROUP - shLeft;
   ptrDest = dest;
   // Multiply number by this power.
   oldLimb.x = 0;
@@ -68,13 +70,13 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
     newLimb.x = ptrDest->x;
     uiNew = (unsigned int)newLimb.x;
     uiOld = (unsigned int)oldLimb.x;
-    uiDest = ((uiNew << shLeft) | (uiOld >> (BITS_PER_GROUP - shLeft))) & MAX_VALUE_LIMB;
+    uiDest = ((uiNew << shLeft) | (uiOld >> shRight)) & MAX_VALUE_LIMB;
     ptrDest->x = (int)uiDest;
     ptrDest++;
     oldLimb.x = newLimb.x;
   }
   uiOld = (unsigned int)oldLimb.x;
-  uiDest = uiOld >> (BITS_PER_GROUP - shLeft);
+  uiDest = uiOld >> shRight;
   ptrDest->x = (int)uiDest;
   *pPower2 = shLeft;
 }
@@ -140,6 +142,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       // Use adjustedArgument to hold the remainder.
 #ifdef _USING64BITS_
     int64_t carry;
+    unsigned int unsignedLimb;
 #else
     int carry;
     double dVal = 1.0 / (double)LIMB_RANGE;
@@ -187,7 +190,8 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       {
 #ifdef _USING64BITS_
         carry += (int64_t)ptrDividend->x - (ptrDivisor->x * (int64_t)TrialQuotient);
-        ptrDividend->x = (int)((unsigned int)carry & MAX_VALUE_LIMB);
+        unsignedLimb = (unsigned int)carry & MAX_VALUE_LIMB;
+        ptrDividend->x = (int)unsignedLimb;
         carry >>= BITS_PER_GROUP;
 #else
         low = (ptrDividend->x - (ptrDivisor->x * TrialQuotient) + carry) & MAX_INT_NBR;
@@ -216,7 +220,8 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       }
 #ifdef _USING64BITS_
       carry += (int64_t)ptrDividend->x;
-      ptrDividend->x = carry & MAX_VALUE_LIMB;
+      unsignedLimb = carry & MAX_VALUE_LIMB;
+      ptrDividend->x = (int)unsignedLimb;
       carry >>= BITS_PER_GROUP;
 #else
       low = (ptrDividend->x + carry) & MAX_INT_NBR;
@@ -297,7 +302,8 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     }
     else
     {
-      (void)memcpy(&adjustedArgument[0], &pDivisor->limbs[nbrLimbsDivisor - nbrLimbs], nbrLimbs*sizeof(limb));
+      lenBytes = nbrLimbs * (int)sizeof(limb);
+      (void)memcpy(&adjustedArgument[0], &pDivisor->limbs[nbrLimbsDivisor - nbrLimbs], lenBytes);
     }
     MultiplyBigNbrByMinPowerOf2(&power2, adjustedArgument, nbrLimbs, adjustedArgument);
     // Initialize approximate inverse.
@@ -351,13 +357,14 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       ptrArrAux = &arrAux[limbLength];
       for (idx = limbLength - 1; idx > 0; idx--)
       {
-        ptrArrAux->x = MAX_VALUE_LIMB - ptrArrAux->x;
+        ptrArrAux->x = MAX_INT_NBR - ptrArrAux->x;
         ptrArrAux++;
       }
       ptrArrAux->x = 1 - ptrArrAux->x;
       // Multiply arrAux by approxInv.
       multiply(&arrAux[limbLength], &approxInv[nbrLimbs - limbLength], approxInv, limbLength, NULL);
-      (void)memmove(&approxInv[nbrLimbs - limbLength], &approxInv[limbLength - 1], limbLength*sizeof(limb));
+      lenBytes = limbLength * (int)sizeof(limb);
+      (void)memmove(&approxInv[nbrLimbs - limbLength], &approxInv[limbLength - 1], lenBytes);
       bitLengthNbrCycles--;
     }
     // Multiply approxInv by argument to obtain the quotient.
@@ -369,7 +376,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     {
       lenBytes = (nbrLimbs - nbrLimbsDividend) * (int)sizeof(limb);
       (void)memset(arrAux, 0, lenBytes);
-      lenBytes = nbrLimbsDividend * sizeof(limb);
+      lenBytes = nbrLimbsDividend * (int)sizeof(limb);
       (void)memcpy(&arrAux[nbrLimbs - nbrLimbsDividend], pDividend->limbs, lenBytes);
       multiply(arrAux, approxInv, approxInv, nbrLimbs, NULL);
     }             // approxInv holds the quotient.
@@ -408,11 +415,12 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       ptrQuotient--;
     }
     ptrQuot = ptrQuotient;
-    if ((ptrQuotient - 1)->x > (7 << (BITS_PER_GROUP - 3)))
+    if ((unsigned int)(ptrQuotient - 1)->x > (LIMB_RANGE / 8U * 7U))
     {                   // Increment quotient.
       for (idx = 0; idx <= nbrLimbsQuotient; idx++)
       {
-        if (((++((ptrQuotient + idx)->x)) & MAX_INT_NBR) != 0)
+        (ptrQuotient + idx)->x ++;
+        if (((unsigned int)(ptrQuotient + idx)->x & MAX_INT_NBR_U) != 0U)
         {
           break;
         }
