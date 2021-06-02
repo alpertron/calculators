@@ -72,6 +72,7 @@ void multiplyWithBothLen(const limb *factor1, const limb *factor2, limb *result,
   int len1, int len2, int *pResultLen)
 {  // Compute the maximum length.
   int length = len1;
+  int lenBytes;
   if (length < len2)
   {
     length = len2;
@@ -90,19 +91,23 @@ void multiplyWithBothLen(const limb *factor1, const limb *factor2, limb *result,
     while (length > KARATSUBA_CUTOFF)
     {
       div *= 2;
-      length = (length + 1) >> 1;
+      length = (length + 1) / 2;
     }
     length *= div;
   }
   karatLength = length;
-  (void)memset(arr, 0, 2 * length*sizeof(limb));
-  (void)memcpy(&arr[0], factor1, len1*sizeof(limb));
-  (void)memcpy(&arr[length], factor2, len2*sizeof(limb));
+  lenBytes = 2 * length * (int)sizeof(limb);
+  (void)memset(arr, 0, lenBytes);
+  lenBytes = len1 * (int)sizeof(limb);
+  (void)memcpy(&arr[0], factor1, lenBytes);
+  lenBytes = len2 * (int)sizeof(limb);
+  (void)memcpy(&arr[length], factor2, lenBytes);
   Karatsuba(0, length);
-  (void)memcpy(result, &arr[2 * (karatLength - length)], 2 * length * sizeof(limb));
+  lenBytes = 2 * length * (int)sizeof(limb);
+  (void)memcpy(result, &arr[2 * (karatLength - length)], lenBytes);
   if (pResultLen != NULL)
   {
-    (void)memcpy(result, &arr[2 * (karatLength - length)], 2 * length * sizeof(limb));
+    (void)memcpy(result, &arr[2 * (karatLength - length)], lenBytes);
     if ((karatLength > length) && (arr[2 * (karatLength - length)-1].x == 0))
     {
       *pResultLen = (length * 2) - 1;
@@ -122,7 +127,7 @@ static int absSubtract(int idxMinuend, int idxSubtrahend,
   int indexMinuend = idxMinuend;
   int indexSubtrahend = idxSubtrahend;
   int sign = 0;
-  limb carry;
+  unsigned int borrow;
   int i;
   limb *ptrArray;
   for (i = nbrLen-1; i>=0; i--)
@@ -140,11 +145,14 @@ static int absSubtract(int idxMinuend, int idxSubtrahend,
     indexSubtrahend = i;
   }
   ptrArray = arr;
-  carry.x = 0;
+  borrow = 0U;
   for (i = nbrLen; i > 0; i--)
   {
-    carry.x = (carry.x >> BITS_PER_GROUP) + (ptrArray+indexMinuend)->x - (ptrArray + indexSubtrahend)->x;
-    (ptrArray + idxResult)->x = carry.x & MAX_VALUE_LIMB;
+    unsigned int tmp;
+    borrow = (unsigned int)(ptrArray+indexMinuend)->x - (unsigned int)(ptrArray + indexSubtrahend)->x -
+      (borrow >> BITS_PER_GROUP);
+    tmp = borrow & MAX_VALUE_LIMB;
+    (ptrArray + idxResult)->x = (int)tmp;
     ptrArray++;
   }
   return sign;
