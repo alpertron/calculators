@@ -140,9 +140,9 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
   {   // It is faster to perform classical division than
       // using Newton algorithm.
       // Use adjustedArgument to hold the remainder.
+    unsigned int unsignedLimb;
 #ifdef _USING64BITS_
     int64_t carry;
-    unsigned int unsignedLimb;
 #else
     int carry;
     double dVal = 1.0 / (double)LIMB_RANGE;
@@ -220,7 +220,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       }
 #ifdef _USING64BITS_
       carry += (int64_t)ptrDividend->x;
-      unsignedLimb = carry & MAX_VALUE_LIMB;
+      unsignedLimb = (unsigned int)carry & MAX_VALUE_LIMB;
       ptrDividend->x = (int)unsignedLimb;
       carry >>= BITS_PER_GROUP;
 #else
@@ -253,7 +253,6 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
         ptrDivisor = pDivisor->limbs;
         for (i = 0; i < nbrLimbsDivisor; i++)
         {
-          unsigned int unsignedLimb;
           cy += (unsigned int)(ptrDividend->x) + (unsigned int)(ptrDivisor->x);
           unsignedLimb = cy & MAX_VALUE_LIMB;
           ptrDividend->x = (int)unsignedLimb;
@@ -385,9 +384,11 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     oldLimb.x = 0;
     for (int index = nbrLimbs; index >= 0; index--)
     {
+      unsigned int unsignedLimb;
       newLimb.x = ptrDest->x;
-      ptrDest->x = ((newLimb.x << power2) |
-        (oldLimb.x >> (BITS_PER_GROUP - power2))) & MAX_VALUE_LIMB;
+      unsignedLimb = (((unsigned int)newLimb.x << power2) |
+        ((unsigned int)oldLimb.x >> (BITS_PER_GROUP - power2))) & MAX_VALUE_LIMB;
+      ptrDest->x = (int)unsignedLimb;
       ptrDest++;
       oldLimb.x = newLimb.x;
     }
