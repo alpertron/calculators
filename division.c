@@ -288,7 +288,9 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     limb *ptrQuotient;
     limb *ptrQuot;
     int lenBytes;
-    
+    unsigned int power2U;
+    unsigned int power2Complement;
+
     nbrLimbs += 3;    // Use this number of limbs for intermediate calculations.
     if (nbrLimbs > nbrLimbsDivisor)
     {
@@ -380,12 +382,14 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     // Shift left quotient power2 bits into result.
     ptrDest = &approxInv[nbrLimbs - 1];
     oldLimb.x = 0;
+    power2U = (unsigned int)power2;
+    power2Complement = (unsigned int)BITS_PER_GROUP - power2U;
     for (int index = nbrLimbs; index >= 0; index--)
     {
       unsigned int unsignedLimb;
       newLimb.x = ptrDest->x;
-      unsignedLimb = (((unsigned int)newLimb.x << power2) |
-        ((unsigned int)oldLimb.x >> (BITS_PER_GROUP - power2))) & MAX_VALUE_LIMB;
+      unsignedLimb = (((unsigned int)newLimb.x << power2U) |
+        ((unsigned int)oldLimb.x >> power2Complement)) & MAX_VALUE_LIMB;
       ptrDest->x = (int)unsignedLimb;
       ptrDest++;
       oldLimb.x = newLimb.x;
