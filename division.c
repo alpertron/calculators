@@ -44,13 +44,13 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
   limb mostSignficLimb;
   limb oldLimb;
   limb newLimb;
-  int shLeft;
-  int shRight;
+  unsigned int shLeft;
+  unsigned int shRight;
   limb *ptrDest;
   unsigned int uiOld;
   unsigned int uiDest;
 
-  shLeft = 0;
+  shLeft = 0U;
   mostSignficLimb.x = (number + len - 1)->x;
   for (unsigned int mask = LIMB_RANGE/2U; mask > 0U; mask >>= 1)
   {
@@ -60,7 +60,7 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
     }
     shLeft++;
   }
-  shRight = BITS_PER_GROUP - shLeft;
+  shRight = (unsigned int)BITS_PER_GROUP - shLeft;
   ptrDest = dest;
   // Multiply number by this power.
   oldLimb.x = 0;
