@@ -445,6 +445,7 @@ void SolveEquation(void)
           }
           else
           {
+            int lenBytes;
             DivideBigNbrByMaxPowerOf2(&bitsCZero, ValCOdd.limbs, &ValCOdd.nbrLimbs);
             if (((ValCOdd.limbs[0].x & 7) != 1) || (bitsCZero & 1))
             {
@@ -461,7 +462,6 @@ void SolveEquation(void)
             nbrLimbs = 1;
             while (correctBits < expon)
             {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
-              int lenBytes;
               correctBits *= 2;
               nbrLimbs = (correctBits / BITS_PER_GROUP) + 1;
               MultBigNbr((int*)sqrRoot.limbs, (int*)sqrRoot.limbs, (int*)tmp2.limbs, nbrLimbs);
@@ -477,7 +477,8 @@ void SolveEquation(void)
             }
             // Get square root of ValCOdd from its inverse by multiplying by ValCOdd.
             MultBigNbr((int*)ValCOdd.limbs, (int*)sqrRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
-            (void)memcpy(sqrRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
+            lenBytes = nbrLimbs * (int)sizeof(limb);
+            (void)memcpy(sqrRoot.limbs, tmp1.limbs, lenBytes);
             setNbrLimbs(&sqrRoot);
             for (ctr = 0; ctr < (bitsCZero / 2); ctr++)
             {
@@ -731,7 +732,8 @@ void SolveEquation(void)
               toConvert = Aux[8].limbs;
             }
             // Convert from Montgomery to standard notation.
-            (void)memset(Aux[4].limbs, 0, NumberLength * sizeof(limb)); // Convert power to standard notation.
+            NumberLengthBytes = NumberLength * (int)sizeof(limb);
+            (void)memset(Aux[4].limbs, 0, NumberLengthBytes); // Convert power to standard notation.
             Aux[4].limbs[0].x = 1;
             modmult(Aux[4].limbs, toConvert, toConvert);
             UncompressLimbsBigInteger(toConvert, &SqrtDisc);
@@ -874,11 +876,13 @@ void SolveEquation(void)
       CopyBigInt(&prime, &K1);
       for (int E = 0; E<T1; E++)
       {
+        int NumberLengthBytes;
         BigIntSubt(&Aux[T1], &Aux[E], &Q);
         IntArray2BigInteger(astFactorsMod[E+1].ptrFactor, &K);
         (void)BigIntPowerIntExp(&K, astFactorsMod[E+1].multiplicity, &L);
         NumberLength = prime.nbrLimbs;
-        (void)memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
+        NumberLengthBytes = NumberLength * (int)sizeof(limb);
+        (void)memcpy(TestNbr, prime.limbs, NumberLengthBytes);
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&Q, &L, &prime, &Aux[T1]);
@@ -946,6 +950,7 @@ void textErrorQuadMod(char **pptrOutput, enum eExprErr rc)
 void quadmodText(const char *quadrText, const char *linearText, const char *constText,
   const char *modText, int groupLength)
 {
+  groupLen = groupLength;
   char *ptrBeginSol;
   enum eExprErr rc;
   ptrOutput = output;
@@ -1026,10 +1031,10 @@ EXTERNALIZE void doWork(void)
   char* ptrLinearCoeff;
   char* ptrConstCoeff;
   char* ptrMod;
-  groupLen = 0;
+  int groupLength = 0;
   while (*ptrData != ',')
   {
-    groupLen = (groupLen * 10) + (*ptrData - '0');
+    groupLength = (groupLength * 10) + (*ptrData - '0');
     ptrData++;
   }
   ptrData++;                    // Skip comma.
@@ -1041,7 +1046,7 @@ EXTERNALIZE void doWork(void)
   ptrLinearCoeff = ptrQuadrCoeff + strlen(ptrQuadrCoeff) + 1;
   ptrConstCoeff = ptrLinearCoeff + strlen(ptrLinearCoeff) + 1;
   ptrMod = ptrConstCoeff + strlen(ptrConstCoeff) + 1;
-  quadmodText(ptrQuadrCoeff, ptrLinearCoeff, ptrConstCoeff, ptrMod, groupLen);
+  quadmodText(ptrQuadrCoeff, ptrLinearCoeff, ptrConstCoeff, ptrMod, groupLength);
   databack(output);
 }
 #endif
