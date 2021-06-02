@@ -472,7 +472,7 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
   }
   invPower2 = 0.125 / (double)power2;
   ptrResult = result;
-  chunkLen = (len1 + len2 + 1) >> 1;
+  chunkLen = (len1 + len2 + 1) / 2;
   for (index = 0; index < chunkLen; index++)
   {
     int coeff = (int)floor((ptrProduct->real * invPower2) + 0.5);
