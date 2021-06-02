@@ -294,6 +294,7 @@ void SolveEquation(void)
   (void)BigIntRemainder(&ValA, &ValN, &Aux[0]);
   if (BigIntIsZero(&Aux[0]))
   {           // Linear equation.
+    int NumberLengthBytes;
     BigIntGcd(&ValB, &ValN, &Aux[0]);
     if ((Aux[0].nbrLimbs != 1) || (Aux[0].limbs[0].x != 1))
     {         // ValB and ValN are not coprime. Go out.
@@ -301,7 +302,8 @@ void SolveEquation(void)
     }
     // Calculate z <- -ValC / ValB (mod ValN)
     NumberLength = ValN.nbrLimbs;
-    (void)memcpy(TestNbr, ValN.limbs, NumberLength * sizeof(limb));
+    NumberLengthBytes = NumberLength * (int)sizeof(limb);
+    (void)memcpy(TestNbr, ValN.limbs, NumberLengthBytes);
     TestNbr[NumberLength].x = 0;
     GetMontgomeryParms(NumberLength);
     BigIntModularDivision(&ValC, &ValB, &ValN, &z);
@@ -357,8 +359,10 @@ void SolveEquation(void)
       }
       else
       {
+        int NumberLengthBytes;
         NumberLength = Q.nbrLimbs;
-        (void)memcpy(TestNbr, Q.limbs, NumberLength * sizeof(limb));
+        NumberLengthBytes = NumberLength * (int)sizeof(limb);
+        (void)memcpy(TestNbr, Q.limbs, NumberLengthBytes);
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&L, &V, &Q, &Solution1[factorIndex]);
@@ -457,16 +461,18 @@ void SolveEquation(void)
             nbrLimbs = 1;
             while (correctBits < expon)
             {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
+              int lenBytes;
               correctBits *= 2;
               nbrLimbs = (correctBits / BITS_PER_GROUP) + 1;
               MultBigNbr((int*)sqrRoot.limbs, (int*)sqrRoot.limbs, (int*)tmp2.limbs, nbrLimbs);
               MultBigNbr((int*)tmp2.limbs, (int*)ValCOdd.limbs, (int*)tmp2.limbs, nbrLimbs);
               ChSignBigNbr((int*)tmp2.limbs, nbrLimbs);
-              (void)memset(tmp1.limbs, 0, nbrLimbs * sizeof(limb));
+              lenBytes = nbrLimbs * (int)sizeof(limb);
+              (void)memset(tmp1.limbs, 0, lenBytes);
               tmp1.limbs[0].x = 3;
               AddBigNbr((int*)tmp1.limbs, (int*)tmp2.limbs, (int*)tmp2.limbs, nbrLimbs);
               MultBigNbr((int*)tmp2.limbs, (int*)sqrRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
-              (void)memcpy(sqrRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
+              (void)memcpy(sqrRoot.limbs, tmp1.limbs, lenBytes);
               DivBigNbrByInt((int*)tmp1.limbs, 2, (int*)sqrRoot.limbs, nbrLimbs);
             }
             // Get square root of ValCOdd from its inverse by multiplying by ValCOdd.
@@ -528,6 +534,7 @@ void SolveEquation(void)
       else
       {                        // Prime is not 2
         int deltaZeros;
+        int NumberLengthBytes;
         // Number of bits of square root of discriminant to compute: expon + bits_a + 1,
         // where bits_a is the number of least significant bits of a set to zero.
         // To compute the square root, compute the inverse of sqrt, so only multiplications are used.
@@ -589,14 +596,16 @@ void SolveEquation(void)
         }
         intToBigInteger(&tmp2, 1);
         NumberLength = tmp1.nbrLimbs;
-        (void)memcpy(TestNbr, tmp1.limbs, NumberLength * sizeof(limb));
+        NumberLengthBytes = NumberLength * (int)sizeof(limb);
+        (void)memcpy(TestNbr, tmp1.limbs, NumberLengthBytes);
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&tmp2, &ValAOdd, &tmp1, &Aux[0]);
         CopyBigInt(&ValAOdd, &Aux[0]);
         if (BigIntIsZero(&discriminant))
         {     // Discriminant is zero.
-          (void)memset(sqrRoot.limbs, 0, nbrLimbs * sizeof(limb));
+          int lenBytes = nbrLimbs * (int)sizeof(limb);
+          (void)memset(sqrRoot.limbs, 0, lenBytes);
         }
         else
         {      // Discriminant is not zero.
@@ -611,7 +620,8 @@ void SolveEquation(void)
           }
           if (nbrLimbs > discriminant.nbrLimbs)
           {
-            (void)memset(&discriminant.limbs[nbrLimbs], 0, (nbrLimbs - discriminant.nbrLimbs) * sizeof(limb));
+            int lenBytes = (nbrLimbs - discriminant.nbrLimbs) * (int)sizeof(limb);
+            (void)memset(&discriminant.limbs[nbrLimbs], 0, lenBytes);
           }
           (void)BigIntRemainder(&discriminant, &prime, &Aux[3]);
           if (Aux[3].sign == SIGN_NEGATIVE)
@@ -624,7 +634,8 @@ void SolveEquation(void)
           }
           // Compute square root of discriminant.
           NumberLength = prime.nbrLimbs;
-          (void)memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
+          NumberLengthBytes = NumberLength * (int)sizeof(limb);
+          (void)memcpy(TestNbr, prime.limbs, NumberLengthBytes);
           TestNbr[NumberLength].x = 0;
           GetMontgomeryParms(NumberLength);
           CopyBigInt(&Q, &prime);
@@ -687,7 +698,8 @@ void SolveEquation(void)
               // Get z <- x^q (mod p) in Montgomery notation.
               modPowBaseInt(x, Q.limbs, Q.nbrLimbs, Aux[4].limbs);  // z
               // Step 4.
-              (void)memcpy(Aux[5].limbs, Aux[4].limbs, NumberLength * sizeof(limb)); // y
+              NumberLengthBytes = NumberLength * (int)sizeof(limb);
+              (void)memcpy(Aux[5].limbs, Aux[4].limbs, NumberLengthBytes); // y
               r = e;
               CopyBigInt(&K1, &Q);
               subtractdivide(&K1, 1, 2);
@@ -695,18 +707,18 @@ void SolveEquation(void)
               modmult(Aux[6].limbs, Aux[7].limbs, Aux[8].limbs);         // v
               modmult(Aux[8].limbs, Aux[7].limbs, Aux[9].limbs);         // w
               // Step 5
-              while (memcmp(Aux[9].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)) != 0)
+              while (memcmp(Aux[9].limbs, MontgomeryMultR1, NumberLengthBytes) != 0)
               {
                 // Step 6
                 int k = 0;
-                (void)memcpy(Aux[10].limbs, Aux[9].limbs, NumberLength * sizeof(limb));
+                (void)memcpy(Aux[10].limbs, Aux[9].limbs, NumberLengthBytes);
                 do
                 {
                   k++;
                   modmult(Aux[10].limbs, Aux[10].limbs, Aux[10].limbs);
-                } while (memcmp(Aux[10].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)) != 0);
+                } while (memcmp(Aux[10].limbs, MontgomeryMultR1, NumberLengthBytes) != 0);
                 // Step 7
-                (void)memcpy(Aux[11].limbs, Aux[5].limbs, NumberLength * sizeof(limb)); // d
+                (void)memcpy(Aux[11].limbs, Aux[5].limbs, NumberLengthBytes); // d
                 for (ctr = 0; ctr < (r - k - 1); ctr++)
                 {
                   modmult(Aux[11].limbs, Aux[11].limbs, Aux[11].limbs);
@@ -829,7 +841,7 @@ void SolveEquation(void)
   // Use Chinese remainder theorem to obtain the solutions.
   do
   {
-    multint(&Aux[0], &Increment[0], Exponents[0] >> 1);
+    multint(&Aux[0], &Increment[0], Exponents[0] / 2);
     if ((Exponents[0] & 1) != 0)
     {
       BigIntAdd(&Aux[0], &Solution2[0], &Aux[0]);
@@ -847,7 +859,7 @@ void SolveEquation(void)
     {
       pstFactor++;
       expon = Exponents[T1];
-      multint(&Aux[T1], &Increment[T1], expon >> 1);
+      multint(&Aux[T1], &Increment[T1], expon / 2);
       if ((expon & 1) != 0)
       {
         BigIntAdd(&Aux[T1], &Solution2[T1], &Aux[T1]);
@@ -931,7 +943,8 @@ void textErrorQuadMod(char **pptrOutput, enum eExprErr rc)
   }
 }
 
-void quadmodText(char *quadrText, char *linearText, char *constText, char *modText, int groupLength)
+void quadmodText(const char *quadrText, const char *linearText, const char *constText,
+  const char *modText, int groupLength)
 {
   char *ptrBeginSol;
   enum eExprErr rc;

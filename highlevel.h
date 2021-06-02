@@ -20,8 +20,7 @@ void fcubesText(char *input, int grpLen);
 void fsquaresText(char *input, int grpLen);
 void contfracText(char *input, int GroupLen);
 void polyFactText(char *modText, char *polyText, int groupLen);
-void quadmodText(char *quadrText, char *linearText, char *constText, char *modText, int groupLength);
+void quadmodText(const char *quadrText, const char *linearText, const char *constText,
+  const char *modText, int groupLength);
 void quadText(char *coefAText, char *coefBText, char *coefCText,
               char *coefDText, char *coefEText, char *coefFText);
-void rootsEqText(char* coefAText, char* coefBText, char* coefCText,
-                 char* coefDText, char* coefEText, char* coefFText);
