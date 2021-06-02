@@ -37,7 +37,6 @@ struct stKaratsubaStack
 };
 
 #define ADJUST_MODULUS(sum, modulus) sum += modulus & (sum >> 31);
-//#define ADJUST_MODULUS(sum, modulus) if (sum < 0) {sum += modulus;}
 static struct stKaratsubaStack astKaratsubaStack[10];
 static BigInteger coeff[2 * KARATSUBA_POLY_CUTOFF];
 int polyInv[COMPRESSED_POLY_MAX_LENGTH];
@@ -62,6 +61,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
 #endif
   for (i = 0; i < (2 * coeffLen) - 1; i++)
   {    // Process each limb of product (least to most significant limb).
+    int lenBytes;
     if (i < coeffLen)
     {   // Processing first half (least significant) of product.
       ptrFactor2 = &polyMultTemp[(idxFactor2 + i) * nbrLimbs];
@@ -74,13 +74,14 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
       ptrFactor1 = &polyMultTemp[(idxFactor1 + i - coeffLen + 1) * nbrLimbs];
       j = 2 * (coeffLen - 1) - i;
     }
-    (void)memset(coeff[i].limbs, 0, nbrLimbs * sizeof(limb));
+    lenBytes = nbrLimbs * (int)sizeof(limb);
+    (void)memset(coeff[i].limbs, 0, lenBytes);
     if (nbrLimbs == 2)
     {    // Optimization for the case when there is only one limb.
       int modulus = TestNbr[0].x;
       int sum = 0;
 #ifdef _USING64BITS_
-      uint64_t dSum;
+      uint64_t ui64Sum;
 #endif
       ptrFactor1++;
       ptrFactor2++;
@@ -107,55 +108,58 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
       else if (modulus <= 32768)
       {         // Product fits in one limb.
 #ifdef _USING64BITS_
-        dSum = 0;
+        ui64Sum = 0;
 #else
         double dSum = 0;
 #endif
         for (; j >= 3; j -= 4)
         {
+          int prod1 = *ptrFactor1 * *ptrFactor2;
+          int prod2 = *(ptrFactor1 + 2) * *(ptrFactor2 - 2);
+          int prod3 = *(ptrFactor1 + 4) * *(ptrFactor2 - 4);
+          int prod4 = *(ptrFactor1 + 6) * *(ptrFactor2 - 6);
 #ifdef _USING64BITS_
-          dSum += (uint64_t)(*ptrFactor1 * *ptrFactor2) +
-            (uint64_t)(*(ptrFactor1 + 2) * *(ptrFactor2 - 2)) +
-            (uint64_t)(*(ptrFactor1 + 4) * *(ptrFactor2 - 4)) +
-            (uint64_t)(*(ptrFactor1 + 6) * *(ptrFactor2 - 6));
+          ui64Sum += (uint64_t)prod1 + (uint64_t)prod2 +
+            (uint64_t)prod3 + (uint64_t)prod4;
 #else
-          dSum += (double)(*ptrFactor1 * *ptrFactor2) +
-            (double)(*(ptrFactor1 + 2) * *(ptrFactor2 - 2)) +
-            (double)(*(ptrFactor1 + 4) * *(ptrFactor2 - 4)) +
-            (double)(*(ptrFactor1 + 6) * *(ptrFactor2 - 6));
+          dSum += (double)prod1 + (double)prod2 +
+            (double)prod3 + (double)prod4;
 #endif
           ptrFactor1 += 8;
           ptrFactor2 -= 8;
         }
         while (j >= 0)
         {
+          int prod1 = *ptrFactor1 * *ptrFactor2;
 #ifdef _USING64BITS_
-          dSum += (uint64_t)(*ptrFactor1 * *ptrFactor2);
+          ui64Sum += (uint64_t)prod1;
 #else
-          dSum += (double)(*ptrFactor1 * *ptrFactor2);
+          dSum += (double)prod1;
 #endif
           ptrFactor1 += 2;
           ptrFactor2 -= 2;
           j--;
         }
 #ifdef _USING64BITS_
-        sum = (int)(dSum % modulus);
+        ui64Sum = ui64Sum % (uint64_t)modulus;
+        sum = (int)ui64Sum;
 #else
-        sum = (int)(dSum - floor(dSum / modulus) * modulus);
+        dSum = dSum - floor(dSum / (double)modulus) * (double)modulus;
+        sum = (int)dSum;
 #endif
       }
       else
       {
 #ifdef _USING64BITS_
-        dSum = 0;
+        ui64Sum = 0;
 #endif
         for (; j >= 0; j--)
         {
 #ifdef _USING64BITS_
-          dSum += (int64_t)*ptrFactor1 * *ptrFactor2;
-          if ((int64_t)dSum < 0)
+          ui64Sum += (int64_t)*ptrFactor1 * *ptrFactor2;
+          if ((int64_t)ui64Sum < 0)
           {
-            dSum %= modulus;
+            ui64Sum %= modulus;
           }
 #else
           smallmodmult(*ptrFactor1, *ptrFactor2, &result, modulus);
@@ -167,7 +171,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
           ptrFactor2 -= 2;
         }
 #ifdef _USING64BITS_
-        sum = (int)(dSum % modulus);
+        sum = (int)(ui64Sum % modulus);
 #endif
       }
       coeff[i].limbs[0].x = sum;
