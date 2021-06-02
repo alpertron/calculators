@@ -158,7 +158,7 @@ static void initCosinesArray(void)
 // length is power of 2.
 static void complexPolyFFT(struct sComplex* x, struct sComplex* y, int length)
 {
-  int halfLength = length >> 1;
+  int halfLength = length / 2;
   int step = FULL_CIRCLE / length;
   int exponentOdd = 0;
   struct sComplex* ptrX = x;
@@ -225,7 +225,8 @@ static void complexPolyFFT(struct sComplex* x, struct sComplex* y, int length)
   }
   if (exponentOdd != 0)
   {     // Move data from x to y.
-    (void)memcpy(y, x, length * sizeof(struct sComplex));
+    int lengthBytes = length * (int)sizeof(struct sComplex);
+    (void)memcpy(y, x, lengthBytes);
   }
 }
 
@@ -365,7 +366,7 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
   { // Degree of first polynomial is greater than degree of second polynomial.
     // Set results to polynomial zero.
     ptrFinalProduct = finalProduct;
-    chunkLen = (len1 + len2 + 1) >> 1;
+    chunkLen = (len1 + len2 + 1) / 2;
     for (int ctr = 0; ctr <= chunkLen; ctr++)
     {
       ptrFinalProduct->real = 0;         // Initialize coefficient to zero.
@@ -450,7 +451,7 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
     }
     if (len1 > len2)
     {
-      ptrFinalProduct = &finalProduct[factor1DegreesProcessed >> 1];
+      ptrFinalProduct = &finalProduct[factor1DegreesProcessed / 2];
       ptrProduct = product;
       for (index = 0; index < chunkLen; index++)
       {

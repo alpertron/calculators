@@ -239,7 +239,8 @@ static void complexFFT(struct sComplex *x, struct sComplex *y, int length)
   }
   if (exponentOdd)
   {     // Move data from x to y.
-    (void)memcpy(y, x, length * sizeof(struct sComplex));
+    int lengthBytes = length * (int)sizeof(struct sComplex);
+    (void)memcpy(y, x, lengthBytes);
   }
 }
 
@@ -407,6 +408,7 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   int power2 = 1;
   int index;
   int sumLen;
+  int sumLenBytes;
   fftLen1 = ReduceLimbs(factor1, firstFactor, len1);
   if ((factor1 != factor2) && !((TestNbrCached == NBR_CACHED) && (factor2 == TestNbr)) &&
     !((MontgomeryMultNCached == NBR_CACHED) && (factor2 == MontgomeryMultN)))
@@ -494,7 +496,8 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   invPower2 = 0.125 / (double)power2;
   dCarry = 0;
   sumLen = len1 + len2;
-  (void)memset(result, 0, sumLen * sizeof(limb));
+  sumLenBytes = sumLen * (int)sizeof(limb);
+  (void)memset(result, 0, sumLenBytes);
   bitExternal = 0;
   ptrResult = result;
   for (index = 0; index < power2; index++)
