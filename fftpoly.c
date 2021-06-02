@@ -352,6 +352,7 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
   const struct sComplex *ptrProduct;
   double invPower2;
   int power2plus1;
+  int power2plus1Bytes;
   int* ptrResult;
   int chunkLen;
   int index;
@@ -382,11 +383,12 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
   // because it has to be computed only once.
   power2 = power2SecondFactor;
   power2plus1 = power2 + 1;
+  power2plus1Bytes = power2plus1 * (int)sizeof(transf[0]);
   if (factor1 != factor2)
   {
     if ((polyInvCached == NBR_CACHED) && (factor2 == polyInv))
     {   // Get transform of inverse of polynomial from cache.
-      (void)memcpy(transf, polyInvTransf, power2plus1 * sizeof(transf[0]));
+      (void)memcpy(transf, polyInvTransf, power2plus1Bytes);
     }
     else
     {   // Second factor is not cached. Compute transform.
@@ -396,7 +398,7 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
     }
     if ((polyInvCached == NBR_READY_TO_BE_CACHED) && (factor2 == polyInv))
     {   // Save transform of inverse of polynomial to cache.
-      (void)memcpy(polyInvTransf, transf, power2plus1 * sizeof(transf[0]));
+      (void)memcpy(polyInvTransf, transf, power2plus1Bytes);
       polyInvCached = NBR_CACHED;
     }
   }
@@ -420,7 +422,7 @@ void fftPolyMult(const int *factor1, const int* factor2, int* result, int len1, 
     // use transform of second factor as the transform of first factor.
     if ((factor1DegreesProcessed == 0) && (factor1 == factor2))
     {
-      (void)memcpy(transf, product, power2plus1 * sizeof(product[0]));   // transf <- DFT(secondFactor)
+      (void)memcpy(transf, product, power2plus1Bytes);   // transf <- DFT(secondFactor)
     }
     // Perform convolution.
     // Overwrite transform of first factor with transform of product.

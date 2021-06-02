@@ -402,6 +402,7 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   int fftLen2 = 0;
   int bitExternal;
   int power2plus1;
+  int power2plus1Bytes;
   limb *ptrResult;
   int power2 = 1;
   int index;
@@ -436,15 +437,16 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   complexFFT(firstFactor, tempFFT, power2);
   ConvertHalfToFullSizeFFT(tempFFT, product, power2);   // product <- DFT(firstFactor)
   power2plus1 = power2 + 1;
+  power2plus1Bytes = power2plus1 * (int)sizeof(transf[0]);
   if (factor1 != factor2)
   {
     if ((TestNbrCached == NBR_CACHED) && (factor2 == TestNbr))
     {
-      (void)memcpy(transf, TestNbrTransf, power2plus1 * sizeof(transf[0]));
+      (void)memcpy(transf, TestNbrTransf, power2plus1Bytes);
     }
     else if ((MontgomeryMultNCached == NBR_CACHED) && (factor2 == MontgomeryMultN))
     {
-      (void)memcpy(transf, MontgomeryMultNTransf, power2plus1 * sizeof(transf[0]));
+      (void)memcpy(transf, MontgomeryMultNTransf, power2plus1Bytes);
     }
     else
     {
@@ -453,12 +455,12 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
     }
     if ((TestNbrCached == NBR_READY_TO_BE_CACHED) && (factor2 == TestNbr))
     {
-      (void)memcpy(TestNbrTransf, transf, power2plus1 * sizeof(transf[0]));
+      (void)memcpy(TestNbrTransf, transf, power2plus1Bytes);
       TestNbrCached = NBR_CACHED;
     }
     else if ((MontgomeryMultNCached == NBR_READY_TO_BE_CACHED) && (factor2 == MontgomeryMultN))
     {
-      (void)memcpy(MontgomeryMultNTransf, transf, power2plus1 * sizeof(transf[0]));
+      (void)memcpy(MontgomeryMultNTransf, transf, power2plus1Bytes);
       MontgomeryMultNCached = NBR_CACHED;
     }
     else
@@ -467,7 +469,7 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   }
   else
   {
-    (void)memcpy(transf, product, power2plus1 * sizeof(product[0]));   // transf <- DFT(secondFactor)
+    (void)memcpy(transf, product, power2plus1Bytes);   // transf <- DFT(secondFactor)
   }
 
     // Perform convolution.
