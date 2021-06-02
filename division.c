@@ -49,7 +49,7 @@ static void MultiplyBigNbrByMinPowerOf2(int *pPower2, const limb *number, int le
 
   shLeft = 0;
   mostSignficLimb.x = (number + len - 1)->x;
-  for (unsigned int mask = LIMB_RANGE/2; mask > 0; mask >>= 1)
+  for (unsigned int mask = LIMB_RANGE/2U; mask > 0U; mask >>= 1)
   {
     if (((unsigned int)mostSignficLimb.x & mask) != 0U)
     {
@@ -149,8 +149,9 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     limb* ptrDividend;
     const limb* ptrDivisor;
     limb* ptrQuotient;
+    int lenBytes = nbrLimbsDividend * (int)sizeof(limb);
 
-    (void)memcpy(adjustedArgument, pDividend->limbs, nbrLimbsDividend * sizeof(limb));
+    (void)memcpy(adjustedArgument, pDividend->limbs, lenBytes);
     adjustedArgument[nbrLimbsDividend].x = 0;
     pQuotient->nbrLimbs = nbrLimbsDividend - nbrLimbsDivisor + 1;
     ptrQuotient = &pQuotient->limbs[nbrLimbsDividend - nbrLimbsDivisor];
@@ -185,7 +186,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
         low = (ptrDividend->x - (ptrDivisor->x * TrialQuotient) + carry) & MAX_INT_NBR;
         // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
         // In that case, there would be an error of +/- 1.
-        dAccumulator = (double)ptrDividend->x - (ptrDivisor->x * dTrialQuotient) +
+        dAccumulator = (double)ptrDividend->x - ((double)ptrDivisor->x * dTrialQuotient) +
           (double)carry + dDelta;
         dDelta = 0.0;
         if (dAccumulator < 0.0)
@@ -208,7 +209,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       }
 #ifdef _USING64BITS_
       carry += (int64_t)ptrDividend->x;
-      ptrDividend->x = (int)carry & MAX_VALUE_LIMB;
+      ptrDividend->x = carry & MAX_VALUE_LIMB;
       carry >>= BITS_PER_GROUP;
 #else
       low = (ptrDividend->x + carry) & MAX_INT_NBR;
@@ -233,15 +234,17 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
 #endif
       ptrDividend++;
       ptrDividend->x = carry & MAX_INT_NBR;
-      if ((adjustedArgument[nbrLimbsDividend].x & MAX_VALUE_LIMB) != 0)
+      if (((unsigned int)adjustedArgument[nbrLimbsDividend].x & MAX_VALUE_LIMB) != 0U)
       {
         unsigned int cy = 0;
         ptrDividend = &adjustedArgument[nbrLimbsDividend - nbrLimbsDivisor];
         ptrDivisor = pDivisor->limbs;
         for (i = 0; i < nbrLimbsDivisor; i++)
         {
+          unsigned int unsignedLimb;
           cy += (unsigned int)(ptrDividend->x) + (unsigned int)(ptrDivisor->x);
-          ptrDividend->x = (int)(cy & MAX_VALUE_LIMB);
+          unsignedLimb = cy & MAX_VALUE_LIMB;
+          ptrDividend->x = (int)unsignedLimb;
           cy >>= BITS_PER_GROUP;
           ptrDivisor++;
           ptrDividend++;
@@ -275,12 +278,15 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     const limb *ptrDividend;
     limb *ptrQuotient;
     limb *ptrQuot;
+    int lenBytes;
     
     nbrLimbs += 3;    // Use this number of limbs for intermediate calculations.
     if (nbrLimbs > nbrLimbsDivisor)
     {
-      (void)memset(&adjustedArgument[0], 0, (nbrLimbs - nbrLimbsDivisor)*sizeof(limb));
-      (void)memcpy(&adjustedArgument[nbrLimbs - nbrLimbsDivisor], &pDivisor->limbs[0], nbrLimbsDivisor*sizeof(limb));
+      lenBytes = (nbrLimbs - nbrLimbsDivisor) * (int)sizeof(limb);
+      (void)memset(&adjustedArgument[0], 0, lenBytes);
+      lenBytes = nbrLimbsDivisor * (int)sizeof(limb);
+      (void)memcpy(&adjustedArgument[nbrLimbs - nbrLimbsDivisor], &pDivisor->limbs[0], lenBytes);
     }
     else
     {
@@ -291,21 +297,21 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     inverse = LIMB_RANGE / ((double)adjustedArgument[nbrLimbs - 1].x + 
           ((double)adjustedArgument[nbrLimbs - 2].x) / LIMB_RANGE);
     approxInv[nbrLimbs-1].x = 1;
-    if (inverse <= 1)
+    if (inverse <= 1.0)
     {
       approxInv[nbrLimbs - 2].x = 0;
     }
-    else if (inverse == 2)
+    else if (inverse == 2.0)
     {
       approxInv[nbrLimbs - 2].x = MAX_VALUE_LIMB;
       approxInv[nbrLimbs - 3].x = MAX_VALUE_LIMB;
     }
     else
     {
-      double t = (inverse - 1) * LIMB_RANGE;
+      double t = (inverse - 1.0) * (double)LIMB_RANGE;
       double floor_t = floor(t);
       approxInv[nbrLimbs - 2].x = (int)floor_t;
-      approxInv[nbrLimbs - 3].x = (int)floor((t - floor_t) * LIMB_RANGE);
+      approxInv[nbrLimbs - 3].x = (int)floor((t - floor_t) * (double)LIMB_RANGE);
     }
     // Perform Newton approximation loop.
     // Get bit length of each cycle.
@@ -315,7 +321,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     {
       bitLengthCycle[bitLengthNbrCycles] = bitLength;
       bitLengthNbrCycles++;
-      bitLength = (bitLength + 1) >> 1;
+      bitLength = (bitLength + 1) / 2;
     }
     // Each loop increments precision.
     // Use Newton iteration: x_{n+1} = x_n * (2 - x_n)
@@ -354,8 +360,10 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     }
     else
     {
-      (void)memset(arrAux, 0, (nbrLimbs - nbrLimbsDividend)*sizeof(limb));
-      (void)memcpy(&arrAux[nbrLimbs - nbrLimbsDividend], pDividend->limbs, nbrLimbsDividend*sizeof(limb));
+      lenBytes = (nbrLimbs - nbrLimbsDividend) * (int)sizeof(limb);
+      (void)memset(arrAux, 0, lenBytes);
+      lenBytes = nbrLimbsDividend * sizeof(limb);
+      (void)memcpy(&arrAux[nbrLimbs - nbrLimbsDividend], pDividend->limbs, lenBytes);
       multiply(arrAux, approxInv, approxInv, nbrLimbs, NULL);
     }             // approxInv holds the quotient.
     // Shift left quotient power2 bits into result.
@@ -423,13 +431,16 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       // It is correct only if multiplied by the divisor, it is <= than the dividend.
       if (nbrLimbsQuotient > nbrLimbsDivisor)
       {
-        (void)memcpy(&approxInv[0], pDivisor->limbs, nbrLimbsDivisor * sizeof(limb));
-        (void)memset(&approxInv[nbrLimbsDivisor], 0, (nbrLimbsQuotient - nbrLimbsDivisor) * sizeof(limb));
+        lenBytes = nbrLimbsDivisor * (int)sizeof(limb);
+        (void)memcpy(&approxInv[0], pDivisor->limbs, lenBytes);
+        lenBytes = (nbrLimbsQuotient - nbrLimbsDivisor) * (int)sizeof(limb);
+        (void)memset(&approxInv[nbrLimbsDivisor], 0, lenBytes);
         multiply(&approxInv[0], ptrQuot, arrAux, nbrLimbsQuotient, NULL);
       }
       else
       {
-        (void)memset(&approxInv[2 * nbrLimbs], 0, (nbrLimbsDivisor - nbrLimbsQuotient) * sizeof(limb));
+        lenBytes = (nbrLimbsDivisor - nbrLimbsQuotient) * (int)sizeof(limb);
+        (void)memset(&approxInv[2 * nbrLimbs], 0, lenBytes);
         multiply(pDivisor->limbs, ptrQuot, arrAux, nbrLimbsDivisor, NULL);
       }
       ptrDividend = &pDividend->limbs[pDividend->nbrLimbs - 1];
@@ -462,7 +473,8 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
         }
       }
     }
-    (void)memcpy(&pQuotient->limbs[0], ptrQuot, nbrLimbsQuotient*sizeof(limb));
+    lenBytes = nbrLimbsQuotient * (int)sizeof(limb);
+    (void)memcpy(&pQuotient->limbs[0], ptrQuot, lenBytes);
     pQuotient->nbrLimbs = nbrLimbsQuotient;
   }
   if ((pDividend->sign == pDivisor->sign) ||
