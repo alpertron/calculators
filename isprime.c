@@ -207,8 +207,8 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   dAccum += dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
   dAccum = floor((dAccum*dInvLimbRange) + 0.5);
-  tmp = ((unsigned int)dAccum + (MontDig * TestNbr1) +
-               (Nbr * factor2_1) + Prod1) & MAX_VALUE_LIMB;
+  tmp = ((unsigned int)dAccum + ((unsigned int)MontDig * (unsigned int)TestNbr1) +
+               ((unsigned int)Nbr * (unsigned int)factor2_1) + Prod1) & MAX_VALUE_LIMB;
   low = (int)tmp;
   dAccum += (dMontDig * (double)TestNbr1) + (dNbr * (double)factor2_1) + (double)Prod1;
   Prod0 = low;
@@ -229,7 +229,7 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
     tmp = carry & MAX_VALUE_LIMB;
     Prod0 = (int)tmp;
     // On subtraction, carry subtracts also.
-    Prod1 = (Prod1 - TestNbr1 - (carry >> BITS_PER_GROUP)) & MAX_VALUE_LIMB;
+    Prod1 = (Prod1 - (unsigned int)TestNbr1 - (carry >> BITS_PER_GROUP)) & MAX_VALUE_LIMB;
   }
 #endif  
   *Product = Prod0;
@@ -249,7 +249,7 @@ void SubtBigNbr(const int *Nbr1, const int *Nbr2, int *Diff)
   unsigned int borrow = (unsigned int)*Nbr1 - (unsigned int)*Nbr2;
   *Diff = borrow & MAX_VALUE_LIMB;
   // On subtraction, borrow subtracts too.
-  borrow = *(Nbr1+1) - *(Nbr2+1) - (borrow >> BITS_PER_GROUP);
+  borrow = (unsigned int)*(Nbr1+1) - (unsigned int)*(Nbr2+1) - (borrow >> BITS_PER_GROUP);
   *(Diff+1) = borrow & MAX_VALUE_LIMB;
 }
 
@@ -269,7 +269,7 @@ static void AddBigNbrModN(const int *Nbr1, const int *Nbr2, int *Sum)
     unsigned int borrow = Sum0 - TestNbr0;
     Sum0 = borrow & MAX_VALUE_LIMB;
     // On subtraction, borrow subtracts too.
-    Sum1 = (Sum1 - TestNbr1 - (borrow >> BITS_PER_GROUP)) & MAX_INT_NBR;
+    Sum1 = (Sum1 - TestNbr1 - (borrow >> BITS_PER_GROUP)) & MAX_VALUE_LIMB;
   }
   *Sum = (int)Sum0;
   *(Sum+1) = (int)Sum1;
@@ -347,6 +347,7 @@ bool isPrime(int *value)
   unsigned int maskMSB;
   unsigned int prevBase = 1;
   unsigned int base;
+  unsigned int tmp;
   int baseInMontRepres[NBR_LIMBS];
   int power[NBR_LIMBS];
   int temp[NBR_LIMBS];
@@ -370,23 +371,24 @@ bool isPrime(int *value)
   {
     return false;              // Even numbers different from 2 are not prime.
   }
-  for (i=1; i<sizeof(primes); i++)
+  for (i=1; i<(int)sizeof(primes); i++)
   {
     base = primes[i];
     if (TestNbr1 == 0)
     {
-      if (TestNbr0 == base)
+      if ((unsigned int)TestNbr0 == base)
       {
         return true;          // Number is prime.
       }
-      if ((TestNbr0 % base) == 0)
+      if (((unsigned int)TestNbr0 % base) == 0U)
       {
         return false;          // Number is multiple of base, so it is composite.
       }
     }
     // Check whether TestNbr is multiple of base. In this case the number would be composite.
     // No overflow possible in next expression.
-    else if ((((TestNbr1 % base) * (LIMB_RANGE % base) + (TestNbr0 % base)) % base) == 0)
+    else if (((((unsigned int)TestNbr1 % base) * (LIMB_RANGE % base) +
+      ((unsigned int)TestNbr0 % base)) % base) == 0U)
     {
       return false;            // Number is multiple of base, so it is composite.
     }
@@ -464,7 +466,8 @@ bool isPrime(int *value)
   {    // Most significant bit is bit 1.
     indexMSB++;
   }
-  maskMSB = (1<<(indexMSB % BITS_PER_GROUP));
+  tmp = 1U;
+  maskMSB = (tmp << ((unsigned int)indexMSB % (unsigned int)BITS_PER_GROUP));
   i = 0;
   j = 0;
   while ((limits[j+1] < TestNbr1) || ((limits[j+1] == TestNbr1) && (limits[j] < TestNbr0)))
@@ -511,7 +514,7 @@ bool isPrime(int *value)
     for (; index>=0; index--)
     {
       mask >>= 1;
-      if (mask == 0)
+      if (mask == 0U)
       {
         mask = HALF_INT_RANGE;
         idxNbr--;
@@ -538,11 +541,13 @@ bool isPrime(int *value)
 
 void multiply(int factor1, int factor2, int *prod)
 {
+  unsigned int tmp = ((unsigned int)factor1 * (unsigned int)factor2) & MAX_VALUE_LIMB;
 #ifdef _USING64BITS_
-  *prod = (factor1 * factor2) & MAX_VALUE_LIMB;
-  *(prod+1) = (int)((long long)factor1 * (long long)factor2 >> BITS_PER_GROUP);
+  uint64_t ui64Tmp = ((uint64_t)factor1 * (uint64_t)factor2) >> BITS_PER_GROUP;
+  *prod = (int)tmp;
+  *(prod + 1) = (int)ui64Tmp;
 #else
-  int low = (factor1 * factor2) & MAX_VALUE_LIMB;
+  int low = (int)tmp;
   double dAccum = (double)factor1 * (double)factor2;
   *prod = low;
   if (low < HALF_INT_RANGE)
