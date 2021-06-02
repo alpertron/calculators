@@ -156,7 +156,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
         for (; j >= 0; j--)
         {
 #ifdef _USING64BITS_
-          ui64Sum += (int64_t)*ptrFactor1 * *ptrFactor2;
+          ui64Sum += (int64_t)*ptrFactor1 * (int64_t)*ptrFactor2;
           if ((int64_t)ui64Sum < 0)
           {
             ui64Sum %= modulus;
@@ -171,7 +171,8 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
           ptrFactor2 -= 2;
         }
 #ifdef _USING64BITS_
-        sum = (int)(ui64Sum % modulus);
+        ui64Sum %= (unsigned int)modulus;
+        sum = ui64Sum;
 #endif
       }
       coeff[i].limbs[0].x = sum;
@@ -304,7 +305,7 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
           else
           {
             i--;
-            while (((--i & 0x80000000) | (*ptrResult - 1) | *(ptrResult + 1)) == 0)
+            while (((i & 0x80000000) | (*ptrResult - 1) | *(ptrResult + 1)) == 0)
             {   // Loop not finished and coefficient is not zero.
               ptrResult += nbrLimbs;
               i--;
@@ -370,7 +371,7 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
       }
       else
       {
-        int sizeCoeffInBytes = nbrLimbs * sizeof(int);
+        int sizeCoeffInBytes = nbrLimbs * (int)sizeof(int);
         for (i = 0; i < halfLength; i++)
         {
           (void)memcpy(coeffic, ptrHighFirstFactor, sizeCoeffInBytes);
@@ -462,7 +463,7 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
       stage = 0;         // Start new Karatsuba multiplication.
       break;
     default:
-      halfLength = nbrLength >> 1;
+      halfLength = nbrLength / 2;
       // Obtain (b+1)(xH*yH*b + xL*yL) = xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
       // The first and last terms are already in correct locations.
       // Add (xL*yL+xH*yH)*b.
@@ -666,6 +667,7 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
   int* ptrValue1;
   int nbrLimbs;
   int karatDegree;
+  int lenBytes;
   if (modulusIsZero)
   {
     MultIntegerPolynomial(degree1, degree2, factor1, factor2);
@@ -756,8 +758,10 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
     *(ptrValue1 + 1) = 0;
     ptrValue1 += nbrLimbs;
   }
-  (void)memcpy(polyMultTemp, factor1, (degree1 + 1) * nbrLimbs * sizeof(limb));
-  (void)memcpy(&polyMultTemp[karatDegree * nbrLimbs], factor2, (degree2 + 1) * nbrLimbs * sizeof(limb));
+  lenBytes = (degree1 + 1) * nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(polyMultTemp, factor1, lenBytes);
+  lenBytes = (degree2 + 1) * nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(&polyMultTemp[karatDegree * nbrLimbs], factor2, lenBytes);
   KaratsubaPoly(0, karatDegree, nbrLimbs);
 }
 
@@ -769,6 +773,7 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
   int nbrDegrees = 0;
   int newtonDegree;
   int nbrLimbs = NumberLength + 1;
+  int lenBytes;
 
   newtonDegree = polyDegree;
   // Compute degrees to use in Newton loop.
@@ -784,7 +789,8 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
   // where K is the coefficient of x^(polyDegree-1) of polyMod.
   SetNumberToOne(&polyInv[nbrLimbs]);
   LenAndLimbs2ArrLimbs(polyMod + (polyDegree - 1) * nbrLimbs, operand1.limbs, nbrLimbs);
-  (void)memset(operand2.limbs, 0, nbrLimbs * sizeof(limb));
+  lenBytes = nbrLimbs * (int)sizeof(limb);
+  (void)memset(operand2.limbs, 0, lenBytes);
   SubtBigNbrMod(operand2.limbs, operand1.limbs, operand1.limbs);
   ArrLimbs2LenAndLimbs(polyInv, operand1.limbs, nbrLimbs);
   newtonDegree = 1;
@@ -802,7 +808,8 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
     int nextDegree = degrees[nbrDegrees];
     // Initialize poly4 with the nextDegree most significant coefficients.
     ptrPolyMod = polyMod + (nbrLimbs * (polyDegree - nextDegree));
-    (void)memcpy(poly4, ptrPolyMod, nextDegree * nbrLimbs * sizeof(limb));
+    lenBytes = nextDegree * nbrLimbs * (int)sizeof(limb);
+    (void)memcpy(poly4, ptrPolyMod, lenBytes);
     SetNumberToOne(&poly4[nextDegree * nbrLimbs]);
     polyInvCached = NBR_READY_TO_BE_CACHED;
     MultPolynomial(nextDegree, newtonDegree, poly4, polyInv);
@@ -819,8 +826,8 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
     }
     SetNumberToOne(ptrCoeff);
     MultPolynomial(nextDegree, newtonDegree, poly5, polyInv);
-    (void)memcpy(polyInv, &polyMultTemp[newtonDegree * nbrLimbs],
-        (nextDegree+1) * nbrLimbs * sizeof(limb));
+    lenBytes = (nextDegree + 1) * nbrLimbs * (int)sizeof(limb);
+    (void)memcpy(polyInv, &polyMultTemp[newtonDegree * nbrLimbs], lenBytes);
     newtonDegree = nextDegree;
     nbrDegrees--;
   }
@@ -839,13 +846,15 @@ void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
   int currentDegree;
   int index;
   int nbrLimbs = NumberLength + 1;
+  int lenBytes;
   // Compute T
   MultPolynomial(polyDegree, polyDegree, polyFact1, polyFact2);
-  (void)memcpy(polyMultT, polyMultTemp, ((2 * polyDegree) + 1) * nbrLimbs * sizeof(limb));
+  lenBytes = ((2 * polyDegree) + 1) * nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(polyMultT, polyMultTemp, lenBytes);
   // Compute m
   MultPolynomial(polyDegree, polyDegree, &polyMultT[polyDegree * nbrLimbs], polyInv);
-  (void)memcpy(polyMultM, &polyMultTemp[polyDegree * nbrLimbs],
-    (polyDegree + 1) * nbrLimbs * sizeof(limb));
+  lenBytes = (polyDegree + 1) * nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(polyMultM, &polyMultTemp[polyDegree * nbrLimbs], lenBytes);
   // Compute m*polyMod
   MultPolynomial(polyDegree, polyDegree, polyMultM, polyMod);
   // Compute T - mN.
@@ -887,6 +896,7 @@ void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
   const int* ptrPoly1;
   const int* ptrPoly2;
   int* ptrPolyTemp;
+  int lenBytes;
   // Initialize polyMultTemp with the most significant half of product.
   ptrPolyTemp = polyMultTemp + (polyDegree - 1) * nbrLimbs;
   for (index1 = polyDegree - 1; index1 >= 0; index1--)
@@ -913,7 +923,8 @@ void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
   {
     int* ptrPoly3 = &polyMultTemp[(polyDegree - 1) * nbrLimbs];
     // Back up leading coefficient.
-    (void)memcpy(ptrPoly3 + nbrLimbs, ptrPoly3, nbrLimbs * sizeof(int));
+    lenBytes = nbrLimbs * (int)sizeof(int);
+    (void)memcpy(ptrPoly3 + nbrLimbs, ptrPoly3, lenBytes);
     IntArray2BigInteger(ptrPoly3, &operand3);
     ptrPoly1 = polyMod + (polyDegree * nbrLimbs);
     for (index2 = polyDegree - 2; index2 >= 0; index2--)
@@ -946,5 +957,6 @@ void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
     SubtBigNbrMod(operand1.limbs, operand2.limbs, operand1.limbs);
     BigInteger2IntArray(polyMultTemp, &operand1);
   }
-  (void)memcpy(polyProduct, polyMultTemp, polyDegree * nbrLimbs * sizeof(int));
+  lenBytes = polyDegree * nbrLimbs * (int)sizeof(int);
+  (void)memcpy(polyProduct, polyMultTemp, lenBytes);
 }
