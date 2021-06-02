@@ -128,7 +128,7 @@ static void smallmodmult(int factor1, int factor2, int *product, int mod)
 static void MontgomeryMult(int *factor1, int *factor2, int *Product)
 {
 #ifndef _USING64BITS_
-  int carry;
+  unsigned int carry;
 #endif
   if (TestNbr[1] == 0)
   {
@@ -166,9 +166,9 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   if (((Pr >> BITS_PER_GROUP) > (uint64_t)TestNbr1) ||
      ((Prod1 == (uint32_t)TestNbr1) && (Prod0 >= (uint32_t)TestNbr0)))
   {
-    int32_t borrow = (int32_t)Prod0 - (int32_t)TestNbr0;
-    Prod0 = (uint32_t)borrow & MAX_VALUE_LIMB;
-    Prod1 = (uint32_t)((borrow >> BITS_PER_GROUP) + (uint32_t)Prod1 - (uint32_t)TestNbr1) & MAX_VALUE_LIMB;
+    uint32_t borrow = Prod0 - (uint32_t)TestNbr0;
+    Prod0 = borrow & MAX_VALUE_LIMB;
+    Prod1 = (Prod1 - (uint32_t)TestNbr1 - (borrow >> BITS_PER_GROUP)) & MAX_VALUE_LIMB;
   }
 #else
   double dInvLimbRange = 1.0 / (double)LIMB_RANGE;
@@ -199,7 +199,7 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   
   Nbr = *(factor1 + 1);
   dNbr = (double)Nbr;
-  low = (Nbr * factor2_0) + Prod0;
+  low = (Nbr * factor2_0) + (int)Prod0;
   dAccum = (dNbr * (double)factor2_0) + (double)Prod0;
   tmp = ((unsigned int)low * MontgomeryMultN) & MAX_VALUE_LIMB;
   MontDig = (int)tmp;
@@ -207,9 +207,10 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   dAccum += dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
   dAccum = floor((dAccum*dInvLimbRange) + 0.5);
-  low = ((unsigned int)dAccum + (MontDig * TestNbr1) +
+  tmp = ((unsigned int)dAccum + (MontDig * TestNbr1) +
                (Nbr * factor2_1) + Prod1) & MAX_VALUE_LIMB;
-  dAccum += (dMontDig * TestNbr1) + (dNbr * factor2_1) + (unsigned int)Prod1;
+  low = (int)tmp;
+  dAccum += (dMontDig * (double)TestNbr1) + (dNbr * (double)factor2_1) + (double)Prod1;
   Prod0 = low;
   if (low < HALF_INT_RANGE)
   {
@@ -221,13 +222,14 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   }
   Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
   
-  if (((unsigned int)Prod1 > (unsigned int)TestNbr1) ||
-       (((unsigned int)Prod1 == (unsigned int)TestNbr1) && ((unsigned int)Prod0 >= (unsigned int)TestNbr0)))
+  if ((Prod1 > (unsigned int)TestNbr1) ||
+       ((Prod1 == (unsigned int)TestNbr1) && (Prod0 >= (unsigned int)TestNbr0)))
   {        // Prod >= TestNbr, so perform Prod <- Prod - TestNbr
-    carry = (int)Prod0 - TestNbr0;
-    tmp = (unsigned int)carry & MAX_VALUE_LIMB;
+    carry = Prod0 - (unsigned int)TestNbr0;
+    tmp = carry & MAX_VALUE_LIMB;
     Prod0 = (int)tmp;
-    Prod1 = ((carry >> BITS_PER_GROUP) + Prod1 - TestNbr1) & MAX_VALUE_LIMB;
+    // On subtraction, carry subtracts also.
+    Prod1 = (Prod1 - TestNbr1 - (carry >> BITS_PER_GROUP)) & MAX_VALUE_LIMB;
   }
 #endif  
   *Product = Prod0;
@@ -236,39 +238,41 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
 
 void AddBigNbr(const int *Nbr1, const int *Nbr2, int *Sum)
 {
-  unsigned int carry = *(Nbr1) + *(Nbr2);
-  *(Sum) = carry & MAX_INT_NBR;
+  unsigned int carry = (unsigned int)*Nbr1 + (unsigned int)*Nbr2;
+  *Sum = carry & MAX_VALUE_LIMB;
   carry = (carry >> BITS_PER_GROUP) + *(Nbr1+1) + *(Nbr2+1);
-  *(Sum+1) = carry & MAX_INT_NBR;
+  *(Sum+1) = carry & MAX_VALUE_LIMB;
 }
 
 void SubtBigNbr(const int *Nbr1, const int *Nbr2, int *Diff)
 {
-  int borrow = *(Nbr1) - *(Nbr2);
-  *(Diff) = borrow & MAX_INT_NBR;
-  borrow = (borrow >> BITS_PER_GROUP) + *(Nbr1+1) - *(Nbr2+1);
-  *(Diff+1) = borrow & MAX_INT_NBR;
+  unsigned int borrow = (unsigned int)*Nbr1 - (unsigned int)*Nbr2;
+  *Diff = borrow & MAX_VALUE_LIMB;
+  // On subtraction, borrow subtracts too.
+  borrow = *(Nbr1+1) - *(Nbr2+1) - (borrow >> BITS_PER_GROUP);
+  *(Diff+1) = borrow & MAX_VALUE_LIMB;
 }
 
-static void AddBigNbrModN(int *Nbr1, int *Nbr2, int *Sum)
+static void AddBigNbrModN(const int *Nbr1, const int *Nbr2, int *Sum)
 {
-  int Sum0;
-  int Sum1;
-  int TestNbr0 = TestNbr[0];
-  int TestNbr1 = TestNbr[1];
-  unsigned int carry = *Nbr1 + *Nbr2;
-  Sum0 = carry & MAX_INT_NBR;
+  unsigned int Sum0;
+  unsigned int Sum1;
+  unsigned int TestNbr0 = (unsigned int)TestNbr[0];
+  unsigned int TestNbr1 = (unsigned int)TestNbr[1];
+  unsigned int carry = (unsigned int)*Nbr1 + (unsigned int)*Nbr2;
+  Sum0 = carry & MAX_VALUE_LIMB;
   carry = (carry >> BITS_PER_GROUP) + *(Nbr1 + 1) + *(Nbr2 + 1);
-  Sum1 = carry & MAX_INT_NBR;
-  if ((carry > (unsigned int)TestNbr1) || 
-     ((carry == (unsigned int)TestNbr1) && (Sum0 >= TestNbr0)))
+  Sum1 = carry & MAX_VALUE_LIMB;
+  if ((carry > TestNbr1) || 
+     ((carry == TestNbr1) && (Sum0 >= TestNbr0)))
   {
-    int borrow = Sum0 - TestNbr0;
-    Sum0 = borrow & MAX_INT_NBR;
-    Sum1 = ((borrow >> BITS_PER_GROUP) + Sum1 - TestNbr1) & MAX_INT_NBR;
+    unsigned int borrow = Sum0 - TestNbr0;
+    Sum0 = borrow & MAX_VALUE_LIMB;
+    // On subtraction, borrow subtracts too.
+    Sum1 = (Sum1 - TestNbr1 - (borrow >> BITS_PER_GROUP)) & MAX_INT_NBR;
   }
-  *Sum = Sum0;
-  *(Sum+1) = Sum1;
+  *Sum = (int)Sum0;
+  *(Sum+1) = (int)Sum1;
 }
 
 static void GetMontgomeryParms(void)
