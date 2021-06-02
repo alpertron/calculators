@@ -228,11 +228,9 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
       // In that case, there would be an error of +/- 1.
       dAccumulator = (double)ptrDividend->x + (double)carry + dDelta;
-      dDelta = 0.0;
       if (dAccumulator < 0.0)
       {
         dAccumulator += dSquareLimb;
-        dDelta = -(double)LIMB_RANGE;
       }
       if (low < HALF_INT_RANGE)
       {
