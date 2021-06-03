@@ -878,7 +878,7 @@ static void Karatsuba(int indexFactor1, int numLen)
       stage = 0;         // Start new Karatsuba multiplication.
       break;
     default:
-      halfLength = nbrLen >> 1;
+      halfLength = nbrLen / 2;
       // Process all carries at the end.
       // Obtain (b+1)(xH*yH*b + xL*yL) = xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
       // The first and last terms are already in correct locations.
@@ -942,7 +942,7 @@ static void Karatsuba(int indexFactor1, int numLen)
         }
         for (i = halfLength; i > 0; i--)
         {
-          borrow = ptrResult->x - borrow;
+          borrow = (unsigned int)ptrResult->x - borrow;
           unsignedLimb = borrow & MAX_VALUE_LIMB;
           ptrResult->x = (int)unsignedLimb;
           ptrResult++;
