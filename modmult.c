@@ -229,7 +229,8 @@ void modPowLimb(const limb* base, const limb* exp, limb* power)
 
 void modPowBaseInt(int base, const limb* exp, int nbrGroupsExp, limb* power)
 {
-  (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1) * sizeof(limb));  // power <- 1
+  int NumberLengthBytes = (NumberLength + 1) * (int)sizeof(limb);
+  (void)memcpy(power, MontgomeryMultR1, NumberLengthBytes);  // power <- 1
   for (int index = nbrGroupsExp - 1; index >= 0; index--)
   {
     int groupExp = (exp + index)->x;
@@ -487,8 +488,11 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
   }
   if (powerOf2Exponent != 0)
   {    // TestNbr is a power of 2.
+    unsigned int unsignedLimb;
+    unsigned int powerExp = (unsigned int)powerOf2Exponent % (unsigned int)BITS_PER_GROUP;
     ComputeInversePower2(num, inv, aux);
-    (inv + (powerOf2Exponent / BITS_PER_GROUP))->x &= (1 << (powerOf2Exponent % BITS_PER_GROUP)) - 1;
+    unsignedLimb = (1U << powerExp) - 1U;
+    (inv + (powerOf2Exponent / BITS_PER_GROUP))->x &= (int)unsignedLimb;
     return;
   }
   //  1. U <- M, V <- X, R <- 0, S <- 1, k <- 0
@@ -561,7 +565,7 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
         //  5.   elsif U >= V  then U <- (U - V) / 2, R <- R + S, S <- 2S
         if (highU > highV)
         {     // U > V. Perform U <- (U - V) / 2
-          lowU = (lowU - lowV) >> 1;
+          lowU = (lowU - lowV) / 2;
           highU -= highV;
           highV += highV;
           // R' <- aR + bS, S' <- cR + dS
@@ -573,7 +577,7 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
         //  6.   elsif V >= U then V <- (V - U) / 2, S <- S + R, R <- 2R
         else
         {    // V >= U. Perform V <- (V - U) / 2
-          lowV = (lowV - lowU) >> 1;
+          lowV = (lowV - lowU) / 2;
           highV -= highU;
           highU += highU;
           // R' <- aR + bS, S' <- cR + dS
@@ -589,17 +593,21 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
       if (steps == (BITS_PER_GROUP - 1))
       {  // compute now U and V and reset e, f, g and h.
          // U' <- eU + fV, V' <- gU + hV
-        int len = (lenU > lenV ? lenU : lenV);
-        (void)memset(&U[lenU].x, 0, (len - lenU + 1) * sizeof(limb));
-        (void)memset(&V[lenV].x, 0, (len - lenV + 1) * sizeof(limb));
-        (void)memcpy(Ubak, U, (len + 1) * sizeof(limb));
-        (void)memcpy(Vbak, V, (len + 1) * sizeof(limb));
+        int lenBytes;
+        int len = ((lenU > lenV)? lenU : lenV);
+        lenBytes = (len - lenU + 1) * (int)sizeof(limb);
+        (void)memset(&U[lenU].x, 0, lenBytes);
+        lenBytes = (len - lenV + 1) * (int)sizeof(limb);
+        (void)memset(&V[lenV].x, 0, lenBytes);
+        lenBytes = (len + 1) * sizeof(limb);
+        (void)memcpy(Ubak, U, lenBytes);
+        (void)memcpy(Vbak, V, lenBytes);
         AddMult(U, a, -b, V, -c, d, len);
-        if ((U[lenU].x | V[lenV].x) & (1 << (BITS_PER_GROUP - 2)))
+        if ((((unsigned int)U[lenU].x | (unsigned int)V[lenV].x) & FOURTH_INT_RANGE_U) != 0U)
         {    // Complete expansion of U and V required for all steps.
             //  2. while V > 0 do
-          (void)memcpy(U, Ubak, (len + 1) * sizeof(limb));
-          (void)memcpy(V, Vbak, (len + 1) * sizeof(limb));
+          (void)memcpy(U, Ubak, lenBytes);
+          (void)memcpy(V, Vbak, lenBytes);
           b = 0;
           c = 0;  // U' = U, V' = V.
           a = 1;
@@ -611,7 +619,10 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
             {     // U is even.
               for (i = 0; i < lenU; i++)
               {  // Loop that divides U by 2.
-                U[i].x = ((U[i].x >> 1) | (U[i + 1].x << (BITS_PER_GROUP - 1))) & MAX_VALUE_LIMB;
+                unsigned int unsignedLimb =
+                  (((unsigned int)U[i].x >> 1) | ((unsigned int)U[i + 1].x << (BITS_PER_GROUP - 1))) &
+                  MAX_VALUE_LIMB;
+                U[i].x = (int)unsignedLimb;
               }
               if (U[lenU - 1].x == 0)
               {
@@ -626,7 +637,10 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
             {    // V is even.
               for (i = 0; i < lenV; i++)
               {  // Loop that divides V by 2.
-                V[i].x = ((V[i].x >> 1) | (V[i + 1].x << (BITS_PER_GROUP - 1))) & MAX_VALUE_LIMB;
+                unsigned int unsignedLimb =
+                  (((unsigned int)V[i].x >> 1) | ((unsigned int)V[i + 1].x << (BITS_PER_GROUP - 1))) &
+                  MAX_VALUE_LIMB;
+                V[i].x = (int)unsignedLimb;
               }
               if (V[lenV - 1].x == 0)
               {
@@ -639,7 +653,7 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
             //  5.   elsif U >= V  then U <- (U - V) / 2, R <- R + S, S <- 2S
             else
             {
-              len = (lenU > lenV ? lenU : lenV);
+              len = ((lenU > lenV)? lenU : lenV);
               for (i = len - 1; i > 0; i--)
               {
                 if (U[i].x != V[i].x)
@@ -684,7 +698,10 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
           k += steps;
           for (i = 0; i < lenU; i++)
           {  // Loop that divides U by 2^(BITS_PER_GROUP - 1).
-            U[i].x = ((U[i].x >> (BITS_PER_GROUP - 1)) | (U[i + 1].x << 1)) & MAX_VALUE_LIMB;
+            unsigned int unsignedLimb = 
+              (((unsigned int)U[i].x >> (BITS_PER_GROUP - 1)) | ((unsigned int)U[i + 1].x << 1)) &
+              MAX_VALUE_LIMB;
+            U[i].x = (int)unsignedLimb;
           }
           U[lenU].x = 0;
           while ((lenU > 0) && (U[lenU - 1].x == 0))
@@ -693,7 +710,10 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
           }
           for (i = 0; i < lenV; i++)
           {  // Loop that divides V by 2^(BITS_PER_GROUP - 1).
-            V[i].x = ((V[i].x >> (BITS_PER_GROUP - 1)) | (V[i + 1].x << 1)) & MAX_VALUE_LIMB;
+            unsigned int unsignedLimb =
+              (((unsigned int)V[i].x >> (BITS_PER_GROUP - 1)) | ((unsigned int)V[i + 1].x << 1)) &
+              MAX_VALUE_LIMB;
+            V[i].x = (int)unsignedLimb;
           }
           V[lenV].x = 0;
           while ((lenV > 0) && (V[lenV - 1].x == 0))
