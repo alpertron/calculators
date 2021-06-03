@@ -632,6 +632,7 @@ static void ClassicalMult16Limbs(int idxFactor1, int idxFactor2)
 #endif
 static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
 {
+  int lenBytes;
 #ifdef _USING64BITS_
   uint64_t product;
   switch (nbrLen)
@@ -741,7 +742,8 @@ static void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen)
   }
   arrayAux[prodCol].x = low;
 #endif
-  (void)memcpy(&arr[idxFactor1], &arrayAux[0], 2 * nbrLen * sizeof(limb));
+  lenBytes = 2 * nbrLen * (int)sizeof(limb);
+  (void)memcpy(&arr[idxFactor1], &arrayAux[0], lenBytes);
   return;
 }
 
@@ -836,7 +838,7 @@ static void Karatsuba(int indexFactor1, int numLen)
 
       // At this moment the order is: xL, xH, yL, yH.
       // Exchange high part of first factor with low part of 2nd factor.
-      halfLength = nbrLen >> 1;
+      halfLength = nbrLen / 2;
       for (i = idxFactor1 + halfLength; i<idxFactor2; i++)
       {
         tmp.x = arr[i].x;
@@ -888,36 +890,37 @@ static void Karatsuba(int indexFactor1, int numLen)
         // so two adds are required. Also carries must be separated in
         // order to avoid overflow:
         // 00000001 + 7FFFFFFF + 7FFFFFFF = FFFFFFFF
-        unsigned int accum1Lo = carry1First + ptrResult->x + (ptrResult + halfLength)->x;
+        unsigned int accum1Lo = carry1First + (unsigned int)ptrResult->x +
+          (unsigned int)(ptrResult + halfLength)->x;
         unsigned int accum2Lo;
         carry1First = accum1Lo >> BITS_PER_GROUP;
         accum2Lo = carry2Second + (accum1Lo & MAX_VALUE_LIMB) +
-          (ptrResult - halfLength)->x;
+          (unsigned int)(ptrResult - halfLength)->x;
         carry2Second = accum2Lo >> BITS_PER_GROUP;
         accum1Lo = carry1Second + (accum1Lo & MAX_VALUE_LIMB) +
-          (ptrResult + nbrLen)->x;
+          (unsigned int)(ptrResult + nbrLen)->x;
         carry1Second = accum1Lo >> BITS_PER_GROUP;
         (ptrResult + halfLength)->x = accum1Lo & MAX_VALUE_LIMB;
         ptrResult->x = accum2Lo & MAX_VALUE_LIMB;
         ptrResult++;
       }
-      (ptrResult + halfLength)->x += carry1First + carry1Second;
-      ptrResult->x += carry1First + carry2Second;
+      (ptrResult + halfLength)->x += (int)carry1First + (int)carry1Second;
+      ptrResult->x += (int)carry1First + (int)carry2Second;
       // Process carries.
       ptrResult = &arr[idxFactor1];
       carry1First = 0;
       for (i = halfLength; i > 0; i--)
       {
-        carry1First = (carry1First >> BITS_PER_GROUP) + ptrResult->x;
+        carry1First = (carry1First >> BITS_PER_GROUP) + (unsigned int)ptrResult->x;
         ptrResult->x = carry1First & MAX_VALUE_LIMB;
         ptrResult++;
-        carry1First = (carry1First >> BITS_PER_GROUP) + ptrResult->x;
+        carry1First = (carry1First >> BITS_PER_GROUP) + (unsigned int)ptrResult->x;
         ptrResult->x = carry1First & MAX_VALUE_LIMB;
         ptrResult++;
-        carry1First = (carry1First >> BITS_PER_GROUP) + ptrResult->x;
+        carry1First = (carry1First >> BITS_PER_GROUP) + (unsigned int)ptrResult->x;
         ptrResult->x = carry1First & MAX_VALUE_LIMB;
         ptrResult++;
-        carry1First = (carry1First >> BITS_PER_GROUP) + ptrResult->x;
+        carry1First = (carry1First >> BITS_PER_GROUP) + (unsigned int)ptrResult->x;
         ptrResult->x = carry1First & MAX_VALUE_LIMB;
         ptrResult++;
       }
@@ -926,19 +929,22 @@ static void Karatsuba(int indexFactor1, int numLen)
       ptrResult = &arr[idxFactor1 + halfLength];
       if (sign != 0)
       {            // (xH-xL) * (yL-yH) is negative.
-        int borrow = 0;
+        unsigned int borrow = 0U;
+        unsigned int unsignedLimb;
         for (i = nbrLen; i > 0; i--)
         {
-          borrow += ptrResult->x - ptrHigh->x;
+          borrow = (unsigned int)ptrResult->x - (unsigned int)ptrHigh->x - borrow;
           ptrHigh++;
-          ptrResult->x = borrow & MAX_VALUE_LIMB;
+          unsignedLimb = borrow & MAX_VALUE_LIMB;
+          ptrResult->x = (int)unsignedLimb;
           ptrResult++;
           borrow >>= BITS_PER_GROUP;
         }
         for (i = halfLength; i > 0; i--)
         {
-          borrow += ptrResult->x;
-          ptrResult->x = borrow & MAX_VALUE_LIMB;
+          borrow = ptrResult->x - borrow;
+          unsignedLimb = borrow & MAX_VALUE_LIMB;
+          ptrResult->x = (int)unsignedLimb;
           ptrResult++;
           borrow >>= BITS_PER_GROUP;
         }
@@ -946,18 +952,21 @@ static void Karatsuba(int indexFactor1, int numLen)
       else
       {            // (xH-xL) * (yL-yH) is positive or zero.
         unsigned int carry = 0;
+        unsigned int unsignedLimb;
         for (i = nbrLen; i > 0; i--)
         {
           carry += (unsigned int)ptrResult->x + (unsigned int)ptrHigh->x;
           ptrHigh++;
-          ptrResult->x = (int)(carry & MAX_VALUE_LIMB);
+          unsignedLimb = carry & MAX_VALUE_LIMB;
+          ptrResult->x = (int)unsignedLimb;
           ptrResult++;
           carry >>= BITS_PER_GROUP;
         }
         for (i = halfLength; i > 0; i--)
         {
           carry += (unsigned int)ptrResult->x;
-          ptrResult->x = (int)(carry & MAX_VALUE_LIMB);
+          unsignedLimb = carry & MAX_VALUE_LIMB;
+          ptrResult->x = (int)unsignedLimb;
           ptrResult++;
           carry >>= BITS_PER_GROUP;
         }
