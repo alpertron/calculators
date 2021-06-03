@@ -124,6 +124,7 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
   dAccumulator = 0;
   for (i = 0; i <= nbrLen; i++)
   {
+    unsigned int unsignedLimb;
     dAccumulator += ((double)ptrFactorBig->x * dFactorInt) -
       (dTrialQuotient * (double)ptrTestNbr->x);
     low += (ptrFactorBig->x * factorInt) - (TrialQuotient * ptrTestNbr->x);
@@ -139,7 +140,9 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
     {
       dAccumulator = floor((dAccumulator * dInvLimbRange) - 0.25);
     }
-    low = (int)((unsigned int)(int)dAccumulator & MAX_VALUE_LIMB);
+    low = (int)dAccumulator;
+    unsignedLimb = (unsigned int)low & MAX_VALUE_LIMB;
+    low = (int)unsignedLimb;
     ptrFactorBig++;
     ptrTestNbr++;
   }
@@ -151,8 +154,10 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
     unsigned int cy = 0;
     for (i = 0; i <= nbrLen; i++)
     {
+      unsigned int unsignedLimb;
       cy += (unsigned int)ptrTestNbr->x + (unsigned int)ptrFactorBig->x;
-      ptrFactorBig->x = (int)(cy & MAX_VALUE_LIMB);
+      unsignedLimb = cy & MAX_VALUE_LIMB;
+      ptrFactorBig->x = (int)unsignedLimb;
       cy >>= BITS_PER_GROUP;
       ptrFactorBig++;
       ptrTestNbr++;
@@ -170,10 +175,12 @@ void modmultInt(limb* factorBig, int factorInt, limb* result)
 // This works only for odd moduli.
 void BigIntModularPower(const BigInteger* base, const BigInteger* exponent, BigInteger* power)
 {
+  int lenBytes;
   CompressLimbsBigInteger(aux5, base);
   modmult(aux5, MontgomeryMultR2, aux6);   // Convert base to Montgomery notation.
   modPow(aux6, exponent->limbs, exponent->nbrLimbs, aux5);
-  (void)memset(aux4, 0, NumberLength * sizeof(limb)); // Convert power to standard notation.
+  lenBytes = NumberLength * (int)sizeof(limb);
+  (void)memset(aux4, 0, lenBytes); // Convert power to standard notation.
   aux4[0].x = 1;
   modmult(aux4, aux5, aux6);
   UncompressLimbsBigInteger(aux6, power);
@@ -185,7 +192,8 @@ void BigIntModularPower(const BigInteger* base, const BigInteger* exponent, BigI
 // Output: power = power in Montgomery notation.
 void modPow(const limb* base, const limb* exp, int nbrGroupsExp, limb* power)
 {
-  (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1) * sizeof(*power));  // power <- 1
+  int lenBytes = (NumberLength + 1) * (int)sizeof(*power);
+  (void)memcpy(power, MontgomeryMultR1, lenBytes);  // power <- 1
   for (int index = nbrGroupsExp - 1; index >= 0; index--)
   {
     int groupExp = (exp + index)->x;
@@ -206,7 +214,8 @@ void modPow(const limb* base, const limb* exp, int nbrGroupsExp, limb* power)
 void modPowLimb(const limb* base, const limb* exp, limb* power)
 {
   int groupExp;
-  (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1) * sizeof(*power));  // power <- 1
+  int lenBytes = (NumberLength + 1) * (int)sizeof(*power);
+  (void)memcpy(power, MontgomeryMultR1, lenBytes);  // power <- 1
   groupExp = exp->x;
   for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
   {
@@ -267,12 +276,15 @@ static void AddMult(limb* firstBig, int e, int f, limb* secondBig, int g, int h,
   double dFactorH = (double)h;
   for (int ctr = 0; ctr <= nbrLen; ctr++)
   {
+    unsigned int unsignedLimb;
     int u = ptrFirstBig->x;
     int v = ptrSecondBig->x;
     int lowU = carryU + (u * e) + (v * f);
     int lowV = carryV + (u * g) + (v * h);
-    lowU = (int)((unsigned int)lowU & MAX_VALUE_LIMB);
-    lowV = (int)((unsigned int)lowV & MAX_VALUE_LIMB);
+    unsignedLimb = (unsigned int)lowU & MAX_VALUE_LIMB;
+    lowU = (int)unsignedLimb;
+    unsignedLimb = (unsigned int)lowV & MAX_VALUE_LIMB;
+    lowV = (int)unsignedLimb;
     // Subtract or add 0.25 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
     double dCarry = ((double)carryU + (double)u * dFactorE +
@@ -307,25 +319,30 @@ static void AddMult(limb* firstBig, int e, int f, limb* secondBig, int g, int h,
 // first must be greater than second.
 static int HalveDifference(limb* first, const limb* second, int length)
 {
+  unsigned int unsignedLimb;
   int len = length;
   int i;
   int borrow;
   int prevLimb;
   // Perform first <- (first - second)/2.
   borrow = first->x - second->x;
-  prevLimb = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
+  unsignedLimb = (unsigned int)borrow & MAX_VALUE_LIMB;
+  prevLimb = (int)unsignedLimb;
   borrow >>= BITS_PER_GROUP;
   for (i = 1; i < len; i++)
   {
     int currLimb;
     borrow += (first + i)->x - (second + i)->x;
-    currLimb = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
+    unsignedLimb = (unsigned int)borrow & MAX_VALUE_LIMB;
+    currLimb = (int)unsignedLimb;
     borrow >>= BITS_PER_GROUP;
-    (first + i - 1)->x = ((prevLimb >> 1) |
-      (currLimb << (BITS_PER_GROUP - 1))) & MAX_VALUE_LIMB;
+    unsignedLimb = (((unsigned int)prevLimb >> 1) |
+      ((unsigned int)currLimb << (BITS_PER_GROUP - 1))) & MAX_VALUE_LIMB;
+    (first + i - 1)->x = (int)unsignedLimb;
     prevLimb = currLimb;
   }
-  (first + i - 1)->x = prevLimb >> 1;
+  unsignedLimb = (unsigned int)prevLimb >> 1;
+  (first + i - 1)->x = (int)unsignedLimb;
   // Get length of result.
   for (len--; len > 0; len--)
   {
@@ -1061,6 +1078,7 @@ void GetMontgomeryParms(int len)
 {
   int j;
   limb Cy;
+  int NumberLengthBytes;
   MontgomeryMultNCached = NBR_NOT_CACHED;
   TestNbrCached = NBR_NOT_CACHED;
   TestNbr[len].x = 0;
@@ -1089,9 +1107,10 @@ void GetMontgomeryParms(int len)
     {
       if (value == 1)
       {
+        int NumberLengthBytes = NumberLength * (int)sizeof(limb);
         powerOf2Exponent = ((NumberLength - 1)*BITS_PER_GROUP) + j;
-        (void)memset(MontgomeryMultR1, 0, NumberLength*sizeof(limb));
-        (void)memset(MontgomeryMultR2, 0, NumberLength * sizeof(limb));
+        (void)memset(MontgomeryMultR1, 0, NumberLengthBytes);
+        (void)memset(MontgomeryMultR2, 0, NumberLengthBytes);
         MontgomeryMultR1[0].x = 1;
         MontgomeryMultR2[0].x = 1;
         return;
@@ -1139,7 +1158,8 @@ void GetMontgomeryParms(int len)
   } while (j > 0);
   AdjustModN(MontgomeryMultR1, TestNbr, len);
   MontgomeryMultR1[NumberLength].x = 0;
-  (void)memcpy(MontgomeryMultR2, MontgomeryMultR1, (NumberLength+1)*sizeof(limb));
+  NumberLengthBytes = (NumberLength + 1) * (int)sizeof(limb);
+  (void)memcpy(MontgomeryMultR2, MontgomeryMultR1, NumberLengthBytes);
   for (NumberLengthR1 = NumberLength; NumberLengthR1 > 0; NumberLengthR1--)
   {
     if (MontgomeryMultR1[NumberLengthR1 - 1].x != 0)
@@ -1150,7 +1170,8 @@ void GetMontgomeryParms(int len)
   // Compute MontgomeryMultR2 as 2^(2*NumberLength*BITS_PER_GROUP) % TestNbr.
   for (j = NumberLength; j > 0; j--)
   {
-    (void)memmove(&MontgomeryMultR2[1], &MontgomeryMultR2[0], NumberLength*sizeof(limb));
+    NumberLengthBytes = NumberLength * (int)sizeof(limb);
+    (void)memmove(&MontgomeryMultR2[1], &MontgomeryMultR2[0], NumberLengthBytes);
     MontgomeryMultR2[0].x = 0;
     AdjustModN(MontgomeryMultR2, TestNbr, len);
   }
@@ -1218,14 +1239,16 @@ void AdjustModN(limb *Nbr, const limb *Modulus, int nbrLen)
     Nbr[i].x = low;
 #endif
   }
-  Nbr[i].x = (int)carry & MAX_INT_NBR;
+  Nbr[i].x = carry & MAX_INT_NBR;
   if (((unsigned int)Nbr[nbrLen].x & MAX_VALUE_LIMB) != 0U)
   {
     unsigned int cy = 0;
     for (i = 0; i < nbrLen; i++)
     {
+      unsigned int unsignedLimb;
       cy += (unsigned int)Nbr[i].x + (unsigned int)Modulus[i].x;
-      Nbr[i].x = (int)(cy & MAX_VALUE_LIMB);
+      unsignedLimb = cy & MAX_VALUE_LIMB;
+      Nbr[i].x = (int)unsignedLimb;
       cy >>= BITS_PER_GROUP;
     }
     Nbr[nbrLen].x = 0;
@@ -1235,31 +1258,37 @@ void AdjustModN(limb *Nbr, const limb *Modulus, int nbrLen)
 void AddBigNbrModN(const limb *Nbr1, const limb *Nbr2, limb *Sum, const limb *mod, int nbrLen)
 {
   unsigned int carry;
-  int borrow;
+  unsigned int borrow;
   int i;
 
-  carry = 0;
+  carry = 0U;
   for (i = 0; i < nbrLen; i++)
   {
+    unsigned int unsignedLimb;
     carry = (carry >> BITS_PER_GROUP) +
       (unsigned int)(Nbr1 + i)->x + (unsigned int)(Nbr2 + i)->x;
-    Sum[i].x = (int)(carry & MAX_VALUE_LIMB);
+    unsignedLimb = carry & MAX_VALUE_LIMB;
+    Sum[i].x = (int)unsignedLimb;
   }
-  borrow = 0;
+  borrow = 0U;
   for (i = 0; i < nbrLen; i++)
   {
-    borrow = (borrow >> BITS_PER_GROUP) + Sum[i].x - (mod + i)->x;
-    Sum[i].x = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
+    unsigned int unsignedLimb;
+    borrow = (unsigned int)Sum[i].x - (unsigned int)(mod + i)->x - (borrow >> BITS_PER_GROUP);
+    unsignedLimb = borrow & MAX_VALUE_LIMB;
+    Sum[i].x = (int)unsignedLimb;
   }
 
-  if ((carry < LIMB_RANGE) && (borrow < 0))
+  if ((carry < LIMB_RANGE) && ((int)borrow < 0))
   {
-    carry = 0;
+    carry = 0U;
     for (i = 0; i < nbrLen; i++)
     {
+      unsigned int unsignedLimb;
       carry = (carry >> BITS_PER_GROUP) +
           (unsigned int)(Sum+i)->x + (unsigned int)(mod+i)->x;
-      Sum[i].x = (int)(carry & MAX_VALUE_LIMB);
+      unsignedLimb = carry & MAX_VALUE_LIMB;
+      Sum[i].x = (int)unsignedLimb;
     }
   }
 }
@@ -1267,20 +1296,24 @@ void AddBigNbrModN(const limb *Nbr1, const limb *Nbr2, limb *Sum, const limb *mo
 void SubtBigNbrModN(const limb *Nbr1, const limb *Nbr2, limb *Diff, const limb *mod, int nbrLen)
 {
   int i;
-  int borrow = 0;
+  unsigned int borrow = 0;
   for (i = 0; i < nbrLen; i++)
   {
-    borrow = (borrow >> BITS_PER_GROUP) + (Nbr1 + i)->x - (Nbr2 + i)->x;
-    Diff[i].x = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
+    unsigned int unsignedLimb;
+    borrow = (unsigned int)(Nbr1 + i)->x - (unsigned int)(Nbr2 + i)->x - (borrow >> BITS_PER_GROUP);
+    unsignedLimb = borrow & MAX_VALUE_LIMB;
+    Diff[i].x = (int)unsignedLimb;
   }
-  if (borrow < 0)
+  if ((int)borrow < 0)
   {
     unsigned int carry = 0;
     for (i = 0; i < nbrLen; i++)
     {
-      carry = (carry >> BITS_PER_GROUP) + 
+      unsigned int unsignedLimb;
+      carry = (carry >> BITS_PER_GROUP) +
           (unsigned int)(Diff + i)->x + (unsigned int)(mod + i)->x;
-      Diff[i].x = (int)(carry & MAX_VALUE_LIMB);
+      unsignedLimb = carry & MAX_VALUE_LIMB;
+      Diff[i].x = (int)unsignedLimb;
     }
   }
 }
