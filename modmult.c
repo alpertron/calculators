@@ -2159,27 +2159,31 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
     (void)memset(Prod, 0, NumberLength * sizeof(limb));
     for (int i = 0; i < NumberLength; i++)
     {
+      unsigned int unsignedLimb;
       int32_t MontDig;
       int32_t Nbr = (factor1 + i)->x;
       int64_t Pr = ((int64_t)Nbr * (int64_t)factor2->x) + (int64_t)Prod[0].x;
-      MontDig = (int32_t)(((uint32_t)Pr * (uint32_t)MontgomeryMultN[0].x) & MAX_VALUE_LIMB);
+      unsignedLimb = ((uint32_t)Pr * (uint32_t)MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
+      MontDig = (int32_t)unsignedLimb;
       Pr = (((int64_t)MontDig * (int64_t)TestNbr[0].x + Pr) >> BITS_PER_GROUP) +
         ((int64_t)MontDig * (int64_t)TestNbr[1].x) + ((int64_t)Nbr * (int64_t)(factor2 + 1)->x) + (int64_t)Prod[1].x;
-      Prod[0].x = (int)((unsigned int)Pr & MAX_VALUE_LIMB);
+      unsignedLimb = (unsigned int)Pr & MAX_VALUE_LIMB;
+      Prod[0].x = (int)unsignedLimb;
       for (j = 2; j < NumberLength; j++)
       {
-        unsigned int unsignedLimb;
         Pr = (Pr >> BITS_PER_GROUP) + ((int64_t)MontDig * (int64_t)TestNbr[j].x) +
           ((int64_t)Nbr * (int64_t)(factor2 + j)->x) + (int64_t)Prod[j].x;
         unsignedLimb = (unsigned int)Pr & MAX_VALUE_LIMB;
         Prod[j - 1].x = (int)unsignedLimb;
       }
-      Prod[j - 1].x = (int32_t)(Pr >> BITS_PER_GROUP);
+      unsignedLimb = (unsigned int)Pr & MAX_VALUE_LIMB;
+      Prod[j - 1].x = (int)unsignedLimb;
     }
 #else
     double dLimbRange = (double)LIMB_RANGE;
     double dInvLimbRange = 1.0 / dLimbRange;
-    (void)memset(Prod, 0, NumberLength*sizeof(limb));
+    NumberLengthBytes = NumberLength * (int)sizeof(limb);
+    (void)memset(Prod, 0, NumberLengthBytes);
     for (int i = 0; i < NumberLength; i++)
     {
       unsigned int uiAccum;      
@@ -2195,8 +2199,10 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
       // At this moment dAccum is multiple of LIMB_RANGE.
       dAccum = floor((dAccum*dInvLimbRange) + 0.5);
       uiAccum = (unsigned int)dAccum;
-      low = ((int)uiAccum + (MontDig * TestNbr[1].x) +
-                   (Nbr * (factor2 + 1)->x) + Prod[1].x) & MAX_VALUE_LIMB;
+      unsignedLimb = (uiAccum + ((unsigned int)MontDig * (unsigned int)TestNbr[1].x) +
+        ((unsigned int)Nbr * (unsigned int)(factor2 + 1)->x) + (unsigned int)Prod[1].x) &
+        MAX_VALUE_LIMB;
+      low = (int)unsignedLimb;
       unsignedLimb = (unsigned int)Prod[1].x;
       dAccum += (dMontDig * (double)TestNbr[1].x) + (dNbr * (double)(factor2 + 1)->x) +
         (double)unsignedLimb;
@@ -2298,9 +2304,9 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
   if ((cy >= LIMB_RANGE) || ((product + count)->x >= TestNbr[count].x))
   {  // The number is greater or equal than TestNbr. Subtract it.
     unsigned int borrow = 0;
-    unsigned int unsignedLimb;
     for (count = 0; count < NumberLength; count++)
     {
+      unsigned int unsignedLimb;
       borrow = (unsigned int)(product + count)->x - (unsigned int)TestNbr[count].x -
         (borrow >> BITS_PER_GROUP);
       unsignedLimb = borrow & MAX_VALUE_LIMB;
