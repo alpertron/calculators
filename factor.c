@@ -555,9 +555,9 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   // Let n = a^b +/- 1 (n = number to factor).
   // If -1<=n<=2 (mod p) does not hold, b cannot be multiple of p-1.
   // If -2<=n<=2 (mod p) does not hold, b cannot be multiple of (p-1)/2.
-  for (i = 2; i < (unsigned int)numPrimes; i++)
+  for (i = 2U; i < (unsigned int)numPrimes; i++)
   {
-    if ((common.ecm.primes[i>>3] & (1U << (i & 7))) != 0U)
+    if ((common.ecm.primes[i>>3] & (1U << (i & 7U))) != 0U)
     {      // i is prime according to sieve.
            // If n+/-1 is multiple of p, then it must be multiple
            // of p^2, otherwise it cannot be a perfect power.
@@ -617,7 +617,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
         {
           for (j = i - 1U; j <= (unsigned int)maxExpon; j += i - 1U)
           {
-            common.ecm.ProcessExpon[j >> 3] &= ~(1U << (j & 7));
+            common.ecm.ProcessExpon[j >> 3] &= ~(1U << (j & 7U));
           }
         }
       }
@@ -650,7 +650,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
     {
       continue;
     }
-    if (!(common.ecm.ProcessExpon[Exponent >> 3] & (1 << (Exponent & 7U))))
+    if (!((unsigned int)common.ecm.ProcessExpon[Exponent >> 3] & (1 << (Exponent & 7U))))
     {
       continue;
     }
@@ -910,9 +910,10 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
     Lehman(numToFactor, EC % 50000000, &potentialFactor);
     if (potentialFactor.nbrLimbs > 1)
     {                // Factor found.
+      int lenBytes;
       (void)memcpy(common.ecm.GD, potentialFactor.limbs, NumberLengthBytes);
-      (void)memset(&common.ecm.GD[potentialFactor.nbrLimbs], 0,
-        (NumberLength - potentialFactor.nbrLimbs) * sizeof(limb));
+      lenBytes = (NumberLength - potentialFactor.nbrLimbs) * (int)sizeof(limb);
+      (void)memset(&common.ecm.GD[potentialFactor.nbrLimbs], 0, lenBytes);
       foundByLehman = true;
       break;
     }
@@ -1086,6 +1087,9 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
           copyStr(&ptrOutput, lang ? "Compuesto" : "Composite");
           copyStr(&ptrOutput, ")</span>");
         }
+        else
+        {          // Nothing to do.
+        }
         if (type < 0)
         {
           copyStr(&ptrOutput, " (Unknown)");
@@ -1151,7 +1155,8 @@ static void SortFactors(struct sFactors *pstFactors)
           ctr = pstFactors->multiplicity - factorNumber2;
           if (ctr > 0)
           {
-            (void)memmove(pstNewFactor, pstNewFactor + 1, ctr * sizeof(struct sFactors));
+            int lenBytes = ctr * (int)sizeof(struct sFactors);
+            (void)memmove(pstNewFactor, pstNewFactor + 1, lenBytes);
           }
           pstFactors->multiplicity--;   // Indicate one less known factor.
           pstNewFactor++;
@@ -1235,8 +1240,8 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   ptrValue = pstFactorDividend->ptrFactor;
   if (pstFactors->multiplicity > factorNumber)
   {
-    (void)memmove(pstCurFactor + 1, pstCurFactor,
-      (pstFactors->multiplicity - factorNumber) * sizeof(struct sFactors));
+    int lenBytes = (pstFactors->multiplicity - factorNumber) * (int)sizeof(struct sFactors);
+    (void)memmove(pstCurFactor + 1, pstCurFactor, lenBytes);
   }
   if ((*ptrValue == 1) && (*(ptrValue + 1) == 1))
   {
@@ -1430,12 +1435,14 @@ static bool getNextInteger(char **ppcFactors, int *result, char delimiter)
 {
   char *pcFactors = *ppcFactors;
   char *ptrCharFound = findChar(pcFactors, delimiter);
+  size_t diffPtrs;
   if (ptrCharFound == NULL)
   {
     return true;
   }
   *ptrCharFound = 0;
-  Dec2Bin(pcFactors, Temp1.limbs, (int)(ptrCharFound - pcFactors), &Temp1.nbrLimbs);
+  diffPtrs = ptrCharFound - pcFactors;
+  Dec2Bin(pcFactors, Temp1.limbs, (int)diffPtrs, &Temp1.nbrLimbs);
   if (Temp1.nbrLimbs != 1)
   {   // Exponent is too large.
     return true;
@@ -1468,21 +1475,27 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   bool sqrtOneFound = false;
   bool sqrtMinusOneFound = false;
   int Aux1Len;
+  int lenBytes;
   limb *pValueLimbs = pValue->limbs;
   (pValueLimbs + nbrLimbs)->x = 0;
-  (void)memcpy(q, pValueLimbs, (nbrLimbs + 1) * sizeof(limb));
+  lenBytes = (nbrLimbs + 1) * (int)sizeof(limb);
+  (void)memcpy(q, pValueLimbs, lenBytes);
   nbrLimbsQ = nbrLimbs;
   q[0]--;                     // q = p - 1 (p is odd, so there is no carry).
-  (void)memcpy(common.ecm.Aux1, q, (nbrLimbsQ + 1) * sizeof(q[0]));
+  lenBytes = (nbrLimbsQ + 1) * (int)sizeof(q[0]);
+  (void)memcpy(common.ecm.Aux1, q, lenBytes);
   Aux1Len = nbrLimbs;
   DivideBigNbrByMaxPowerOf2(&ctr, common.ecm.Aux1, &Aux1Len);
-  (void)memcpy(TestNbr, pValueLimbs, nbrLimbs * sizeof(limb));
+  lenBytes = nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(TestNbr, pValueLimbs, lenBytes);
   TestNbr[nbrLimbs].x = 0;
   GetMontgomeryParms(nbrLimbs);
   for (int countdown = 20; countdown > 0; countdown--)
   {
+    uint64_t ui64Random;
     NumberLength = nbrLimbs;
-    randomBase = (int)((((uint64_t)randomBase * 89547121U) + 1762281733U) & MAX_INT_NBR_U);
+    ui64Random = (((uint64_t)randomBase * 89547121U) + 1762281733U) & MAX_INT_NBR_U;
+    randomBase = (int)ui64Random;
     modPowBaseInt(randomBase, common.ecm.Aux1, Aux1Len, common.ecm.Aux2); // Aux2 = base^Aux1.
                                                  // If Mult1 = 1 or Mult1 = TestNbr-1, then try next base.
     if (checkOne(common.ecm.Aux2, nbrLimbs) || checkMinusOne(common.ecm.Aux2, nbrLimbs))
@@ -1496,7 +1509,8 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
       {            // Non-trivial square root of 1 found.
         if (!sqrtOneFound)
         {          // Save it to perform GCD later.
-          (void)memcpy(common.ecm.Zaux, common.ecm.Aux2, nbrLimbs*sizeof(limb));
+          lenBytes = nbrLimbs * (int)sizeof(limb);
+          (void)memcpy(common.ecm.Zaux, common.ecm.Aux2, lenBytes);
           sqrtOneFound = true;
         }
         else
@@ -1504,9 +1518,10 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
           SubtBigNbrMod(common.ecm.Aux2, common.ecm.Zaux, common.ecm.Aux4);
           UncompressLimbsBigInteger(common.ecm.Aux4, &Temp2);
           BigIntGcd(pValue, &Temp2, &Temp4);
+          lenBytes = NumberLength * (int)sizeof(limb);
           if (((Temp4.nbrLimbs != 1) || (Temp4.limbs[0].x > 1)) &&
             ((Temp4.nbrLimbs != NumberLength) ||
-              memcmp(pValue->limbs, Temp4.limbs, NumberLength * sizeof(limb))))
+              memcmp(pValue->limbs, Temp4.limbs, lenBytes)))
           {          // Non-trivial factor found.
             insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
             factorsFound = true;
@@ -1531,7 +1546,8 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
       {            // Square root of 1 found.
         if (!sqrtMinusOneFound)
         {          // Save it to perform GCD later.
-          (void)memcpy(common.ecm.Xaux, common.ecm.Aux2, nbrLimbs * sizeof(limb));
+          lenBytes = nbrLimbs * (int)sizeof(limb);
+          (void)memcpy(common.ecm.Xaux, common.ecm.Aux2, lenBytes);
           sqrtOneFound = true;
         }
         else
@@ -1550,7 +1566,8 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
         i = ctr;
         continue;  // Find more factors.
       }
-      (void)memcpy(common.ecm.Aux2, common.ecm.Aux3, nbrLimbs * sizeof(limb));
+      lenBytes = nbrLimbs * (int)sizeof(limb);
+      (void)memcpy(common.ecm.Aux2, common.ecm.Aux3, lenBytes);
     }
   }
   return factorsFound;
@@ -1689,7 +1706,8 @@ void factorExt(const BigInteger *toFactor, const int *number,
   pstCurFactor = pstFactors + 1;
   if (ptrKnownFactors == NULL)
   {   // No factors known.
-    (void)memcpy(factors, number, (1 + *number) * sizeof(int));
+    int lenBytes = (1 + *number) * (int)sizeof(int);
+    (void)memcpy(factors, number, lenBytes);
     pstFactors->multiplicity = 1;
     pstFactors->ptrFactor = factors + 1 + *factors;
     pstFactors->upperBound = 0;
@@ -1706,13 +1724,15 @@ void factorExt(const BigInteger *toFactor, const int *number,
     pstFactors->ptrFactor = factors;
     while (*ptrKnownFactors != 0)
     {
+      size_t diffPtrs;
       ptrCharFound = findChar(ptrKnownFactors, '^');
       if (ptrCharFound == NULL)
       {
         break;
       }
       *ptrCharFound = 0;
-      Dec2Bin(ptrKnownFactors, prime.limbs, (int)(ptrCharFound - ptrKnownFactors), &prime.nbrLimbs);
+      diffPtrs = ptrCharFound - ptrKnownFactors;
+      Dec2Bin(ptrKnownFactors, prime.limbs, (int)diffPtrs, &prime.nbrLimbs);
       BigInteger2IntArray(pstFactors->ptrFactor, &prime);
       ptrKnownFactors = ptrCharFound + 1;
       if (getNextInteger(&ptrKnownFactors, &pstCurFactor->multiplicity, '('))
@@ -1878,7 +1898,8 @@ void factorExt(const BigInteger *toFactor, const int *number,
             deltaIndex <<= 1;
             index++;
           }
-          for (index--; index >= 0; index--)
+          index--;
+          for (; index >= 0; index--)
           {
             deltaIndex >>= 1;
             (void)BigIntDivide(&common.trialDiv.cofactor, &common.trialDiv.power[index], &common.trialDiv.quotient);
@@ -2009,6 +2030,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
     if ((ctr != NumberLength) || (common.ecm.GD[0].x != 1))
     {
       int numLimbs;
+      int lenBytes;
       Temp1.sign = SIGN_POSITIVE;
       numLimbs = NumberLength;
       while (numLimbs > 1)
@@ -2019,7 +2041,8 @@ void factorExt(const BigInteger *toFactor, const int *number,
         }
         numLimbs--;
       }
-      (void)memcpy(Temp1.limbs, common.ecm.GD, numLimbs * sizeof(limb));
+      lenBytes = numLimbs * (int)sizeof(limb);
+      (void)memcpy(Temp1.limbs, common.ecm.GD, lenBytes);
       Temp1.nbrLimbs = numLimbs;
       if (foundByLehman)
       {
