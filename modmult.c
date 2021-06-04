@@ -2119,6 +2119,7 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
   if (NumberLength <= 12)
   {     // Small numbers.
     int j;
+    int NumberLengthBytes;
 #ifdef _USING64BITS_
     switch (NumberLength)
     {
@@ -2167,9 +2168,11 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
       Prod[0].x = (int)((unsigned int)Pr & MAX_VALUE_LIMB);
       for (j = 2; j < NumberLength; j++)
       {
+        unsigned int unsignedLimb;
         Pr = (Pr >> BITS_PER_GROUP) + ((int64_t)MontDig * (int64_t)TestNbr[j].x) +
           ((int64_t)Nbr * (int64_t)(factor2 + j)->x) + (int64_t)Prod[j].x;
-        Prod[j - 1].x = (int)((unsigned int)Pr & MAX_VALUE_LIMB);
+        unsignedLimb = (unsigned int)Pr & MAX_VALUE_LIMB;
+        Prod[j - 1].x = (int)unsignedLimb;
       }
       Prod[j - 1].x = (int32_t)(Pr >> BITS_PER_GROUP);
     }
@@ -2179,13 +2182,14 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
     (void)memset(Prod, 0, NumberLength*sizeof(limb));
     for (int i = 0; i < NumberLength; i++)
     {
-      unsigned int uiAccum;
-      unsigned int unsignedLimb;
+      unsigned int uiAccum;      
       int Nbr = (factor1 + i)->x;
       double dNbr = (double)Nbr;
       int low = (Nbr * factor2->x) + Prod[0].x;
       double dAccum = dNbr * (double)factor2->x + (double)Prod[0].x;
-      int MontDig = (low * MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
+      unsigned int unsignedLimb = ((unsigned int)low * (unsigned int)MontgomeryMultN[0].x) &
+        MAX_VALUE_LIMB;
+      int MontDig = (int)unsignedLimb;
       double dMontDig = (double)MontDig;
       dAccum += dMontDig * (double)TestNbr[0].x;
       // At this moment dAccum is multiple of LIMB_RANGE.
@@ -2213,8 +2217,9 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
         unsignedLimb = (unsigned int)Prod[j].x;
         dAccum += (dMontDig * (double)TestNbr[j].x) + (dNbr * (double)(factor2 + j)->x) +
           (double)unsignedLimb;
-        low = (low + (MontDig * TestNbr[j].x) +
-               (Nbr * (factor2 + j)->x) + Prod[j].x) & MAX_VALUE_LIMB;
+        unsignedLimb = ((unsigned int)low + ((unsigned int)MontDig * (unsigned int)TestNbr[j].x) +
+          ((unsigned int)Nbr * (unsigned int)(factor2 + j)->x) + (unsigned int)Prod[j].x) & MAX_VALUE_LIMB;
+        low = (int)unsignedLimb;
         Prod[j - 1].x = low;
       }
       if (low < HALF_INT_RANGE)
@@ -2247,7 +2252,8 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
         carry >>= BITS_PER_GROUP;
       }
     }
-    (void)memcpy(product, Prod, NumberLength*sizeof(limb));
+    NumberLengthBytes = NumberLength * (int)sizeof(limb);
+    (void)memcpy(product, Prod, NumberLengthBytes);
     return;
   }
   // Compute T
@@ -2271,9 +2277,11 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
   index = NumberLength;
   for (count = 0; count < NumberLength; count++)
   {
+    unsigned int unsignedLimb;
     cy = (cy >> BITS_PER_GROUP) +
       (unsigned int)(product + index)->x + (unsigned int)aux2[index].x;
-    (product + count)->x = (int)(cy & MAX_VALUE_LIMB);
+    unsignedLimb = cy & MAX_VALUE_LIMB;
+    (product + count)->x = (int)unsignedLimb;
     index++;
   }
   // Check whether this number is greater than TestNbr.
@@ -2289,12 +2297,14 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
   }
   if ((cy >= LIMB_RANGE) || ((product + count)->x >= TestNbr[count].x))
   {  // The number is greater or equal than TestNbr. Subtract it.
-    int borrow = 0;
+    unsigned int borrow = 0;
+    unsigned int unsignedLimb;
     for (count = 0; count < NumberLength; count++)
     {
-      borrow = (borrow >> BITS_PER_GROUP) +
-        (product + count)->x - TestNbr[count].x;
-      (product + count)->x = (int)((unsigned int)borrow & MAX_VALUE_LIMB);
+      borrow = (unsigned int)(product + count)->x - (unsigned int)TestNbr[count].x -
+        (borrow >> BITS_PER_GROUP);
+      unsignedLimb = borrow & MAX_VALUE_LIMB;
+      (product + count)->x = (int)unsignedLimb;
     }
   }
 }
