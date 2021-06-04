@@ -977,22 +977,24 @@ void BigIntGeneralModularDivision(const BigInteger* Num, const BigInteger* Den,
   const BigInteger* mod, BigInteger* quotient)
 {
   int shRight;
+  int NumberLengthBytes;
   CopyBigInt(&oddValue, mod);
   DivideBigNbrByMaxPowerOf2(&shRight, oddValue.limbs, &oddValue.nbrLimbs);
   // Reduce Num modulo oddValue.
-  BigIntRemainder(Num, &oddValue, &tmpNum);
+  (void)BigIntRemainder(Num, &oddValue, &tmpNum);
   if (tmpNum.sign == SIGN_NEGATIVE)
   {
     BigIntAdd(&tmpNum, &oddValue, &tmpNum);
   }
   // Reduce Den modulo oddValue.
-  BigIntRemainder(Den, &oddValue, &tmpDen);
+  (void)BigIntRemainder(Den, &oddValue, &tmpDen);
   if (tmpDen.sign == SIGN_NEGATIVE)
   {
     BigIntAdd(&tmpDen, &oddValue, &tmpDen);
   }
   NumberLength = oddValue.nbrLimbs;
-  (void)memcpy(TestNbr, oddValue.limbs, NumberLength * sizeof(limb));
+  NumberLengthBytes = NumberLength * (int)sizeof(limb);
+  (void)memcpy(TestNbr, oddValue.limbs, NumberLengthBytes);
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(NumberLength);
   CompressLimbsBigInteger(aux3, &tmpDen);
@@ -1019,6 +1021,7 @@ enum eExprErr BigIntGeneralModularPower(const BigInteger* base, const BigInteger
   const BigInteger* mod, BigInteger* power)
 {
   int shRight;
+  int lenBytes;
   if ((mod->nbrLimbs == 1) && (mod->limbs[0].x == 0))
   {            // Modulus is zero.
     return BigIntPower(base, exponent, power);
@@ -1027,7 +1030,7 @@ enum eExprErr BigIntGeneralModularPower(const BigInteger* base, const BigInteger
   oddValue.sign = SIGN_POSITIVE;
   DivideBigNbrByMaxPowerOf2(&shRight, oddValue.limbs, &oddValue.nbrLimbs);
   // Reduce base modulo oddValue.
-  BigIntRemainder(base, &oddValue, &tmpNum);
+  (void)BigIntRemainder(base, &oddValue, &tmpNum);
   if (tmpNum.sign == SIGN_NEGATIVE)
   {
     BigIntAdd(&tmpNum, &oddValue, &tmpNum);
@@ -1037,7 +1040,8 @@ enum eExprErr BigIntGeneralModularPower(const BigInteger* base, const BigInteger
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(NumberLength);
   BigIntModularPower(&tmpNum, exponent, &tmpDen);
-  (void)memcpy(resultModOdd, tmpDen.limbs, tmpDen.nbrLimbs * sizeof(limb));
+  lenBytes = tmpDen.nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(resultModOdd, tmpDen.limbs, lenBytes);
   if (shRight > 0)
   {
     // Compute power mod power of 2.
@@ -1083,7 +1087,8 @@ void ComputeInversePower2(const limb *value, limb *result, limb *tmp)
   x = x * (2 - (N * x));       // 8 least significant bits of inverse correct.
   x = x * (2 - (N * x));       // 16 least significant bits of inverse correct.
   x = x * (2 - (N * x));       // 32 least significant bits of inverse correct.
-  result->x = (int)((unsigned int)x & MAX_VALUE_LIMB);
+  unsignedLimb = (unsigned int)x & MAX_VALUE_LIMB;
+  result->x = (int)unsignedLimb;
   for (int currLen = 2; currLen < NumberLength; currLen <<= 1)
   {
     multiply(value, result, tmp, currLen, NULL);    // tmp <- N * x
@@ -1120,7 +1125,7 @@ void ComputeInversePower2(const limb *value, limb *result, limb *tmp)
 void GetMontgomeryParms(int len)
 {
   int j;
-  limb Cy;
+  unsigned int Cy;
   int NumberLengthBytes;
   MontgomeryMultNCached = NBR_NOT_CACHED;
   TestNbrCached = NBR_NOT_CACHED;
@@ -1150,7 +1155,7 @@ void GetMontgomeryParms(int len)
     {
       if (value == 1)
       {
-        int NumberLengthBytes = NumberLength * (int)sizeof(limb);
+        NumberLengthBytes = NumberLength * (int)sizeof(limb);
         powerOf2Exponent = ((NumberLength - 1)*BITS_PER_GROUP) + j;
         (void)memset(MontgomeryMultR1, 0, NumberLengthBytes);
         (void)memset(MontgomeryMultR2, 0, NumberLengthBytes);
@@ -1169,26 +1174,28 @@ void GetMontgomeryParms(int len)
     limb *ptrResult;
     ComputeInversePower2(TestNbr, MontgomeryMultN, aux);
     ptrResult = &MontgomeryMultN[0];
-    Cy.x = 0;          // Change sign.
+    Cy = 0U;          // Change sign.
     for (j = 0; j < NumberLength; j++)
     {
-      Cy.x = (Cy.x >> BITS_PER_GROUP) - ptrResult->x;
-      ptrResult->x = (int)((unsigned int)Cy.x & MAX_VALUE_LIMB);
+      unsigned int unsignedLimb;
+      Cy = (unsigned int)(-ptrResult->x) - (Cy >> BITS_PER_GROUP);
+      unsignedLimb = Cy & MAX_VALUE_LIMB;
+      ptrResult->x = (int)unsignedLimb;
       ptrResult++;
     }
     ptrResult->x = 0;
   }
   else
   {
-    int x;
-    int N;
-    N = TestNbr[0].x;            // 2 least significant bits of inverse correct.
-    x = N;
+    unsigned int unsignedLimb;
+    int N = TestNbr[0].x;        // 2 least significant bits of inverse correct.
+    int x = N;
     x = x * (2 - (N * x));       // 4 least significant bits of inverse correct.
     x = x * (2 - (N * x));       // 8 least significant bits of inverse correct.
     x = x * (2 - (N * x));       // 16 least significant bits of inverse correct.
     x = x * (2 - (N * x));       // 32 least significant bits of inverse correct.
-    MontgomeryMultN[0].x = (int)((unsigned int)(-x) & MAX_VALUE_LIMB);    // Change sign
+    unsignedLimb = (unsigned int)(-x) & MAX_VALUE_LIMB;
+    MontgomeryMultN[0].x = (int)unsignedLimb;    // Change sign
   }
   // Compute MontgomeryMultR1 as 1 in Montgomery notation,
   // this is 2^(NumberLength*BITS_PER_GROUP) % TestNbr.
