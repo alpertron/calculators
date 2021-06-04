@@ -430,11 +430,11 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
   int degreeMin = degree2;
   int temp;
   int index;
+  int lenBytes;
   if (degree2 == 0)
   {
     if ((*arg2 == 1) && (*(arg2 + 1) == 0))
     {     // Number is zero. GCD is first argument.
-      int lenBytes;
       *degreeGcd = degree1;
       lenBytes = (degree1 + 1) * nbrLimbs * (int)sizeof(int);
       (void)memcpy(gcd, arg1, lenBytes);
@@ -443,7 +443,8 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
     *degreeGcd = 0;
     return;
   }
-  (void)memcpy(gcd, arg1, (degree1+1)*nbrLimbs*sizeof(int));
+  lenBytes = (degree1 + 1) * nbrLimbs * sizeof(int);
+  (void)memcpy(gcd, arg1, lenBytes);
   if (degreeMax < degreeMin)
   {
     temp = degreeMax;
@@ -532,7 +533,7 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
     {          // Polynomial is zero, so Gcd was found.
       if (ptrArgMin != gcd)
       {        // Move gcd to output buffer.
-        int lenBytes = (degreeMin + 1) * nbrLimbs * (int)sizeof(int);
+        lenBytes = (degreeMin + 1) * nbrLimbs * (int)sizeof(int);
         (void)memcpy(gcd, ptrArgMin, lenBytes);
       }
       *degreeGcd = degreeMin;
@@ -856,7 +857,8 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
     ptrValue2 = poly;
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree += primeInt)
     {
-      (void)memcpy(ptrValue1, ptrValue2, nbrLimbs*sizeof(int));
+      int lenBytes = nbrLimbs * (int)sizeof(int);
+      (void)memcpy(ptrValue1, ptrValue2, lenBytes);
       ptrValue1 += nbrLimbs;
       ptrValue2 += primeInt*nbrLimbs;
     }
@@ -1103,8 +1105,8 @@ static void ComputeF(void)
     NumberLength = powerMod.nbrLimbs;
     if (operand1.nbrLimbs < NumberLength)
     {
-      (void)memset(&operand1.limbs[operand1.nbrLimbs], 0,
-        (NumberLength - operand1.nbrLimbs) * sizeof(limb));
+      int lenBytes = (NumberLength - operand1.nbrLimbs) * (int)sizeof(limb);
+      (void)memset(&operand1.limbs[operand1.nbrLimbs], 0, lenBytes);
     }
     // Multiply by inverse. Result is in Montgomery notation.
     modmult(operand1.limbs, operand2.limbs, operand1.limbs);
@@ -1124,7 +1126,8 @@ static int getAi(int nbrFactor, int degreeA)
   for (int currentDegree = 0; currentDegree <= degreeA; currentDegree++)
   {
     int numLen = *ptrSrc + 1;
-    (void)memcpy(ptrDest, ptrSrc, numLen * sizeof(int));
+    int lenBytes = numLen * (int)sizeof(int);
+    (void)memcpy(ptrDest, ptrSrc, lenBytes);
     ptrDest += nbrLimbs;
     ptrSrc += numLen;
   }
@@ -1341,6 +1344,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
     for (currentDegree = 0; currentDegree <= degree; currentDegree++)
     {                 // Loop that computes (1/m)*(f - f_1 * f_2 * ... * f_n)
       int nbrLen;
+      int lenBytes;
       // Get coefficient of f.
       IntArray2BigInteger(&poly4[currentDegree * nbrLimbs], &operand1);
       // Get coefficient of product of factors.
@@ -1362,7 +1366,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
       ptrDest = &poly3[currentDegree * (oldNumberLength + 1)];
       *ptrDest = operand1.nbrLimbs;
       ptrDest++;
-      (void)memcpy(ptrDest, operand1.limbs, operand1.nbrLimbs * sizeof(int));
+      lenBytes = operand1.nbrLimbs * (int)sizeof(int);
+      (void)memcpy(ptrDest, operand1.limbs, lenBytes);
     }
     computePower(currentExp);
     polyToMontgomeryNotation(poly3, degree+1);
@@ -1530,7 +1535,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
         ptrSrc = &poly1[currentDegree * nbrLimbs];
         operand2.nbrLimbs = *ptrSrc;
         ptrSrc++;
-        (void)memcpy(operand2.limbs, ptrSrc, operand2.nbrLimbs * sizeof(int));
+        lenBytes = operand2.nbrLimbs * (int)sizeof(int);
+        (void)memcpy(operand2.limbs, ptrSrc, lenBytes);
         (void)BigIntMultiply(&operand1, &powerMod, &operand1);  // poly1 <- m*g
         BigIntAdd(&operand1, &operand2, &operand1);       // poly1 <- a_i + m*g
         // Store coefficient of new a_i.
@@ -1554,11 +1560,13 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
       ptrA[nbrFactor] = ptrDest;
       for (currentDegree = 0; currentDegree <= degreeA; currentDegree++)
       {
+        int lenBytes;
         nbrLimbs = *ptrSrc;
         ptrSrc++;
         *ptrDest = nbrLimbs;
         ptrDest++;
-        (void)memcpy(ptrDest, ptrSrc, nbrLimbs * sizeof(int));
+        lenBytes = nbrLimbs * (int)sizeof(int);
+        (void)memcpy(ptrDest, ptrSrc, lenBytes);
         ptrDest += nbrLimbs;
         ptrSrc += nbrLimbs;
       }
@@ -1574,7 +1582,8 @@ void OrigPolyFromMontgomeryToStandard(void)
 {
   const int* ptrValue1;
   int *ptrValue2;
-  (void)memcpy(&TestNbr, powerMod.limbs, powerMod.nbrLimbs*sizeof(limb));
+  int lenBytes = powerMod.nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(&TestNbr, powerMod.limbs, lenBytes);
   NumberLength = powerMod.nbrLimbs;
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(powerMod.nbrLimbs);
@@ -1588,7 +1597,8 @@ void OrigPolyFromMontgomeryToStandard(void)
     operand2.limbs[0].x = 1;
     if (NumberLength > 1)
     {
-      (void)memset(&operand2.limbs[1], 0, (NumberLength - 1)*sizeof(limb));
+      lenBytes = (NumberLength - 1) * (int)sizeof(limb);
+      (void)memset(&operand2.limbs[1], 0, lenBytes);
     }
     modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     BigInteger2IntArray(ptrValue2, &operand1);
