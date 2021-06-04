@@ -1101,6 +1101,9 @@ void SolveQuadModEquation(void)
         {
           BigIntSubt(&tmp1, &ValAOdd, &ValAOdd);
         }
+        else
+        {           // Nothing to do.
+        }
         intToBigInteger(&tmp2, 1);
         NumberLength = tmp1.nbrLimbs;
         lenBytes = NumberLength * (int)sizeof(limb);
@@ -1423,7 +1426,8 @@ void SolveQuadModEquation(void)
     CopyBigInt(&currentSolution, &Aux[T1]);
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);
     (void)BigIntPowerIntExp(&prime, pstFactor->multiplicity, &Mult);
-    for (T1++; T1<nbrFactors; T1++)
+    T1++;
+    for (; T1<nbrFactors; T1++)
     {
       pstFactor++;
       if (pstFactor->multiplicity == 0)
