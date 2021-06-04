@@ -533,7 +533,6 @@ enum eExprErr BigIntPowerIntExp(const BigInteger *pBase, int exponent, BigIntege
 
 enum eExprErr BigIntPower(const BigInteger *pBase, const BigInteger *pExponent, BigInteger *pPower)
 {
-  int exponent;
   if (pExponent->sign == SIGN_NEGATIVE)
   {    // Negative exponent not accepted.
     return EXPR_INVALID_PARAM;
@@ -950,7 +949,7 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
   }
   if (carry != 0)
   {
-    pResultLimb->x = carry;
+    pResultLimb->x = (int)carry;
     nbrLimbs++;
   }
   pResult->nbrLimbs = nbrLimbs;
