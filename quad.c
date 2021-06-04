@@ -379,6 +379,9 @@ static void PrintQuad(const BigInteger *coeffT2, const BigInteger *coeffT, const
       showText(var2);
     }
   }
+  else
+  {           // Nothing to do.
+  }
   if (!BigIntIsZero(coeffInd))
   {
     if (!BigIntIsZero(coeffT) || !BigIntIsZero(coeffT2))
@@ -768,6 +771,7 @@ void SolveQuadModEquation(void)
   (void)BigIntRemainder(&coeffQuadr, &modulus, &Tmp[0]);
   if (BigIntIsZero(&Tmp[0]))
   {           // Linear equation.
+    int lenBytes;
     BigIntGcd(&coeffLinear, &modulus, &Tmp[0]);
     if ((Tmp[0].nbrLimbs != 1) || (Tmp[0].limbs[0].x != 1))
     {         // ValB and ValN are not coprime. Go out.
@@ -775,7 +779,8 @@ void SolveQuadModEquation(void)
     }
     // Calculate z <- -ValC / ValB (mod ValN)
     NumberLength = modulus.nbrLimbs;
-    (void)memcpy(TestNbr, modulus.limbs, NumberLength * sizeof(limb));
+    lenBytes = NumberLength * (int)sizeof(limb);
+    (void)memcpy(TestNbr, modulus.limbs, lenBytes);
     TestNbr[NumberLength].x = 0;
     GetMontgomeryParms(NumberLength);
     BigIntModularDivision(&coeffIndep, &coeffLinear, &modulus, &z);
@@ -848,8 +853,10 @@ void SolveQuadModEquation(void)
       }
       else
       {
+        int lenBytes;
         NumberLength = Q.nbrLimbs;
-        (void)memcpy(TestNbr, Q.limbs, NumberLength * sizeof(limb));
+        lenBytes = NumberLength * (int)sizeof(limb);
+        (void)memcpy(TestNbr, Q.limbs, lenBytes);
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&L, &V, &Q, &common.quad.Solution1[factorIndex]);
@@ -956,16 +963,19 @@ void SolveQuadModEquation(void)
             nbrLimbs = 1;
             while (correctBits < expon)
             {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
+              int lenBytes;
               correctBits *= 2;
               nbrLimbs = (correctBits / BITS_PER_GROUP) + 1;
               MultBigNbr((int*)bigSquareRoot.limbs, (int*)bigSquareRoot.limbs, (int*)tmp2.limbs, nbrLimbs);
               MultBigNbr((int*)tmp2.limbs, (int*)ValCOdd.limbs, (int*)tmp2.limbs, nbrLimbs);
               ChSignBigNbr((int*)tmp2.limbs, nbrLimbs);
-              (void)memset(tmp1.limbs, 0, nbrLimbs * sizeof(limb));
+              lenBytes = nbrLimbs * (int)sizeof(limb);
+              (void)memset(tmp1.limbs, 0, lenBytes);
               tmp1.limbs[0].x = 3;
               AddBigNbr((int*)tmp1.limbs, (int*)tmp2.limbs, (int*)tmp2.limbs, nbrLimbs);
               MultBigNbr((int*)tmp2.limbs, (int*)bigSquareRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
-              (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
+              lenBytes = nbrLimbs * (int)sizeof(limb);
+              (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, lenBytes);
               DivBigNbrByInt((int*)tmp1.limbs, 2, (int*)bigSquareRoot.limbs, nbrLimbs);
             }
             // Get square root of ValCOdd from its inverse by multiplying by ValCOdd.
@@ -1027,6 +1037,7 @@ void SolveQuadModEquation(void)
       else
       {                        // Prime is not 2
         int deltaZeros;
+        int lenBytes;
         // Number of bits of square root of discriminant to compute: expon + bits_a + 1,
         // where bits_a is the number of least significant bits of a set to zero.
         // To compute the square root, compute the inverse of sqrt, so only multiplications are used.
@@ -1085,7 +1096,8 @@ void SolveQuadModEquation(void)
         }
         intToBigInteger(&tmp2, 1);
         NumberLength = tmp1.nbrLimbs;
-        (void)memcpy(TestNbr, tmp1.limbs, NumberLength * sizeof(limb));
+        lenBytes = NumberLength * (int)sizeof(limb);
+        (void)memcpy(TestNbr, tmp1.limbs, lenBytes);
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&tmp2, &ValAOdd, &tmp1, &Tmp[0]);
@@ -1107,7 +1119,8 @@ void SolveQuadModEquation(void)
           }
           if (nbrLimbs > discriminant.nbrLimbs)
           {
-            (void)memset(&discriminant.limbs[nbrLimbs], 0, (nbrLimbs - discriminant.nbrLimbs) * sizeof(limb));
+            lenBytes = (nbrLimbs - discriminant.nbrLimbs) * (int)sizeof(limb);
+            (void)memset(&discriminant.limbs[nbrLimbs], 0, lenBytes);
           }
           (void)BigIntRemainder(&discriminant, &prime, &Tmp[3]);
           if (Tmp[3].sign == SIGN_NEGATIVE)
@@ -1121,7 +1134,8 @@ void SolveQuadModEquation(void)
           }
           // Compute square root of discriminant.
           NumberLength = prime.nbrLimbs;
-          (void)memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
+          lenBytes = NumberLength * (int)sizeof(limb);
+          (void)memcpy(TestNbr, prime.limbs, lenBytes);
           TestNbr[NumberLength].x = 0;
           GetMontgomeryParms(NumberLength);
           CopyBigInt(&Q, &prime);
@@ -1184,7 +1198,8 @@ void SolveQuadModEquation(void)
               // Get z <- x^q (mod p) in Montgomery notation.
               modPowBaseInt(x, Q.limbs, Q.nbrLimbs, Tmp[4].limbs);  // z
               // Step 4.
-              (void)memcpy(Tmp[5].limbs, Tmp[4].limbs, NumberLength * sizeof(limb)); // y
+              lenBytes = NumberLength * (int)sizeof(limb);
+              (void)memcpy(Tmp[5].limbs, Tmp[4].limbs, lenBytes); // y
               r = e;
               CopyBigInt(&K1, &Q);
               subtractdivide(&K1, 1, 2);
@@ -1192,18 +1207,19 @@ void SolveQuadModEquation(void)
               modmult(Tmp[6].limbs, Tmp[7].limbs, Tmp[8].limbs);         // v
               modmult(Tmp[8].limbs, Tmp[7].limbs, Tmp[9].limbs);         // w
               // Step 5
-              while (memcmp(Tmp[9].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)) != 0)
+              lenBytes = NumberLength * (int)sizeof(limb);
+              while (memcmp(Tmp[9].limbs, MontgomeryMultR1, lenBytes) != 0)
               {
                 // Step 6
                 int k = 0;
-                (void)memcpy(Tmp[10].limbs, Tmp[9].limbs, NumberLength * sizeof(limb));
+                (void)memcpy(Tmp[10].limbs, Tmp[9].limbs, lenBytes);
                 do
                 {
                   k++;
                   modmult(Tmp[10].limbs, Tmp[10].limbs, Tmp[10].limbs);
-                } while (memcmp(Tmp[10].limbs, MontgomeryMultR1, NumberLength * sizeof(limb)) != 0);
+                } while (memcmp(Tmp[10].limbs, MontgomeryMultR1, lenBytes) != 0);
                 // Step 7
-                (void)memcpy(Tmp[11].limbs, Tmp[5].limbs, NumberLength * sizeof(limb)); // d
+                (void)memcpy(Tmp[11].limbs, Tmp[5].limbs, lenBytes); // d
                 for (ctr = 0; ctr < (r - k - 1); ctr++)
                 {
                   modmult(Tmp[11].limbs, Tmp[11].limbs, Tmp[11].limbs);
@@ -1216,7 +1232,8 @@ void SolveQuadModEquation(void)
               toConvert = Tmp[8].limbs;
             }
             // Convert from Montgomery to standard notation.
-            (void)memset(Tmp[4].limbs, 0, NumberLength * sizeof(limb)); // Convert power to standard notation.
+            lenBytes = NumberLength * (int)sizeof(limb);
+            (void)memset(Tmp[4].limbs, 0, lenBytes); // Convert power to standard notation.
             Tmp[4].limbs[0].x = 1;
             modmult(Tmp[4].limbs, toConvert, toConvert);
             UncompressLimbsBigInteger(toConvert, &SqrtDisc);
@@ -1387,7 +1404,7 @@ void SolveQuadModEquation(void)
       }
       pstFactor++;
     }
-    multint(&Aux[T1], &common.quad.Increment[T1], Exponents[T1] >> 1);
+    multint(&Aux[T1], &common.quad.Increment[T1], Exponents[T1] / 2);
     if ((Exponents[T1] & 1) != 0)
     {
       BigIntAdd(&Aux[T1], &common.quad.Solution2[T1], &Aux[T1]);
@@ -1407,7 +1424,7 @@ void SolveQuadModEquation(void)
         continue;   // Do not process prime factors for which the multiplicity is zero.
       }
       expon = Exponents[T1];
-      multint(&Aux[T1], &common.quad.Increment[T1], expon >> 1);
+      multint(&Aux[T1], &common.quad.Increment[T1], expon / 2);
       if ((expon & 1) != 0)
       {
         BigIntAdd(&Aux[T1], &common.quad.Solution2[T1], &Aux[T1]);
@@ -4301,11 +4318,11 @@ EXTERNALIZE void doWork(void)
 #endif
   teach = ((flags & 2)? true: false);
   ptrCoeffA = ptrData + 2;  // Skip flags and comma.
-  ptrCoeffB = ptrCoeffA + strlen(ptrCoeffA) + 1;
-  ptrCoeffC = ptrCoeffB + strlen(ptrCoeffB) + 1;
-  ptrCoeffD = ptrCoeffC + strlen(ptrCoeffC) + 1;
-  ptrCoeffE = ptrCoeffD + strlen(ptrCoeffD) + 1;
-  ptrCoeffF = ptrCoeffE + strlen(ptrCoeffE) + 1;
+  ptrCoeffB = ptrCoeffA + (int)strlen(ptrCoeffA) + 1;
+  ptrCoeffC = ptrCoeffB + (int)strlen(ptrCoeffB) + 1;
+  ptrCoeffD = ptrCoeffC + (int)strlen(ptrCoeffC) + 1;
+  ptrCoeffE = ptrCoeffD + (int)strlen(ptrCoeffD) + 1;
+  ptrCoeffF = ptrCoeffE + (int)strlen(ptrCoeffE) + 1;
   quadText(ptrCoeffA, ptrCoeffB, ptrCoeffC, ptrCoeffD, ptrCoeffE, ptrCoeffF);
   databack(output);
 }
