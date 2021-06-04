@@ -399,6 +399,9 @@ static void PrintQuad(const BigInteger *coeffT2, const BigInteger *coeffT, const
     {
       showText(" &minus;");
     }
+    else
+    {           // Nothing to do.
+    }
     if (var2 == NULL)
     {
       Bin2Dec(&ptrOutput, coeffInd->limbs, coeffInd->nbrLimbs, groupLen);
@@ -946,6 +949,7 @@ void SolveQuadModEquation(void)
           }
           else
           {
+            int lenBytes;
             DivideBigNbrByMaxPowerOf2(&bitsCZero, ValCOdd.limbs, &ValCOdd.nbrLimbs);
             if (((ValCOdd.limbs[0].x & 7) != 1) || (bitsCZero & 1))
             {
@@ -963,7 +967,6 @@ void SolveQuadModEquation(void)
             nbrLimbs = 1;
             while (correctBits < expon)
             {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
-              int lenBytes;
               correctBits *= 2;
               nbrLimbs = (correctBits / BITS_PER_GROUP) + 1;
               MultBigNbr((int*)bigSquareRoot.limbs, (int*)bigSquareRoot.limbs, (int*)tmp2.limbs, nbrLimbs);
@@ -980,7 +983,8 @@ void SolveQuadModEquation(void)
             }
             // Get square root of ValCOdd from its inverse by multiplying by ValCOdd.
             MultBigNbr((int*)ValCOdd.limbs, (int*)bigSquareRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
-            (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, nbrLimbs * sizeof(limb));
+            lenBytes = nbrLimbs * (int)sizeof(limb);
+            (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, lenBytes);
             setNbrLimbs(&bigSquareRoot);
             for (ctr = 0; ctr < (bitsCZero / 2); ctr++)
             {
@@ -1439,6 +1443,7 @@ void SolveQuadModEquation(void)
       CopyBigInt(&prime, &K1);
       for (int E = 0; E<T1; E++)
       {
+        int lenBytes;
         if (astFactorsMod[E + 1].multiplicity == 0)
         {
           continue;
@@ -1447,7 +1452,8 @@ void SolveQuadModEquation(void)
         IntArray2BigInteger(astFactorsMod[E+1].ptrFactor, &K);
         (void)BigIntPowerIntExp(&K, astFactorsMod[E+1].multiplicity, &L);
         NumberLength = prime.nbrLimbs;
-        (void)memcpy(TestNbr, prime.limbs, NumberLength * sizeof(limb));
+        lenBytes = NumberLength * (int)sizeof(limb);
+        (void)memcpy(TestNbr, prime.limbs, lenBytes);
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&Q, &L, &prime, &Aux[T1]);
