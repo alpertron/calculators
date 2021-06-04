@@ -2156,22 +2156,23 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
     default:
       break;
     }
-    (void)memset(Prod, 0, NumberLength * sizeof(limb));
+    NumberLengthBytes = NumberLength * (int)sizeof(limb);
+    (void)memset(Prod, 0, NumberLengthBytes);
     for (int i = 0; i < NumberLength; i++)
     {
-      unsigned int unsignedLimb;
-      int32_t MontDig;
       int32_t Nbr = (factor1 + i)->x;
       int64_t Pr = ((int64_t)Nbr * (int64_t)factor2->x) + (int64_t)Prod[0].x;
-      unsignedLimb = ((uint32_t)Pr * (uint32_t)MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
-      MontDig = (int32_t)unsignedLimb;
-      Pr = (((int64_t)MontDig * (int64_t)TestNbr[0].x + Pr) >> BITS_PER_GROUP) +
-        ((int64_t)MontDig * (int64_t)TestNbr[1].x) + ((int64_t)Nbr * (int64_t)(factor2 + 1)->x) + (int64_t)Prod[1].x;
+      unsigned int unsignedLimb = ((uint32_t)Pr * (uint32_t)MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
+      int32_t MontDig = (int32_t)unsignedLimb;
+      uint64_t ui64Limb = ((uint64_t)MontDig * (uint64_t)TestNbr[0].x + (uint64_t)Pr) >> BITS_PER_GROUP;
+      Pr = (int64_t)ui64Limb + ((int64_t)MontDig * (int64_t)TestNbr[1].x) +
+        ((int64_t)Nbr * (int64_t)(factor2 + 1)->x) + (int64_t)Prod[1].x;
       unsignedLimb = (unsigned int)Pr & MAX_VALUE_LIMB;
       Prod[0].x = (int)unsignedLimb;
       for (j = 2; j < NumberLength; j++)
       {
-        Pr = (Pr >> BITS_PER_GROUP) + ((int64_t)MontDig * (int64_t)TestNbr[j].x) +
+        ui64Limb = (uint64_t)Pr >> BITS_PER_GROUP;
+        Pr = (int64_t)ui64Limb + ((int64_t)MontDig * (int64_t)TestNbr[j].x) +
           ((int64_t)Nbr * (int64_t)(factor2 + j)->x) + (int64_t)Prod[j].x;
         unsignedLimb = (unsigned int)Pr & MAX_VALUE_LIMB;
         Prod[j - 1].x = (int)unsignedLimb;
