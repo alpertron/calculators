@@ -55,9 +55,11 @@ void CopyBigInt(BigInteger *pDest, const BigInteger *pSrc)
 {
   if (pDest != pSrc)
   {
+    int lenBytes;
     pDest->sign = pSrc->sign;
     pDest->nbrLimbs = pSrc->nbrLimbs;
-    (void)memcpy(pDest->limbs, pSrc->limbs, (pSrc->nbrLimbs) * sizeof(limb));
+    lenBytes = (pSrc->nbrLimbs) * (int)sizeof(limb);
+    (void)memcpy(pDest->limbs, pSrc->limbs, lenBytes);
   }
 }
 
@@ -83,13 +85,16 @@ void SubtractBigInt(const limb *pMinuend, const limb *pSubtrahend, limb *pDiff, 
   const limb *ptrMinuend = pMinuend;
   const limb *ptrSubtrahend = pSubtrahend;
   limb *ptrDiff = pDiff;
-  int borrow = 0;
+  unsigned int borrow = 0U;
   for (int i = 0; i < nbrLimbs; i++)
   {
-    borrow = (borrow >> BITS_PER_INT_GROUP) + ptrMinuend->x - ptrSubtrahend->x;
+    unsigned int unsignedLimb;
+    borrow = (unsigned int)ptrMinuend->x - (unsigned int)ptrSubtrahend->x - 
+      (borrow >> BITS_PER_INT_GROUP);
     ptrMinuend++;
     ptrSubtrahend++;
-    ptrDiff->x = borrow & MAX_INT_NBR;
+    unsignedLimb = borrow & MAX_VALUE_LIMB;
+    ptrDiff->x = (int)unsignedLimb;
     ptrDiff++;
   }
 }
@@ -221,11 +226,14 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
   }
   else
   {           // Both addends have different sign. Subtract their absolute values.
-    int borrow = 0;
+    unsigned int borrow = 0U;
+    unsigned int unsignedLimb;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
-      borrow = (borrow >> BITS_PER_INT_GROUP) + ptrAddend1->x - ptrAddend2->x;
-      ptrSum->x = borrow & MAX_INT_NBR;
+      borrow = (unsigned int)ptrAddend1->x - (unsigned int)ptrAddend2->x -
+        (borrow >> BITS_PER_INT_GROUP);
+      unsignedLimb = borrow & MAX_VALUE_LIMB;
+      ptrSum->x = (int)unsignedLimb;
       ptrAddend1++;
       ptrAddend2++;
       ptrSum++;
@@ -233,8 +241,9 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
     nbrLimbs = pAddend1->nbrLimbs;
     for (; ctr < nbrLimbs; ctr++)
     {
-      borrow = (borrow >> BITS_PER_INT_GROUP) + ptrAddend1->x;
-      ptrSum->x = borrow & MAX_INT_NBR;
+      borrow = (unsigned int)ptrAddend1->x - (borrow >> BITS_PER_INT_GROUP);
+      unsignedLimb = borrow & MAX_VALUE_LIMB;
+      ptrSum->x = (int)unsignedLimb;
       ptrAddend1++;
       ptrSum++;
     }
@@ -382,26 +391,25 @@ void intToBigInteger(BigInteger *bigint, int value)
 
 void longToBigInteger(BigInteger *bigint, int64_t value)
 {
-  uint64_t ullValue;
+  uint64_t u64Value;
   int nbrLimbs = 0;
-  unsigned int limbValue;
   if (value >= 0)
   {
     bigint->sign = SIGN_POSITIVE;
-    ullValue = (uint64_t)value;
+    u64Value = (uint64_t)value;
   }
   else
   {
     bigint->sign = SIGN_NEGATIVE;
-    ullValue = (uint64_t)(-value);
+    u64Value = (uint64_t)(-value);
   }
   do
   {
-    limbValue = (unsigned int)ullValue & MAX_VALUE_LIMB;
+    unsigned int limbValue = (unsigned int)u64Value & MAX_VALUE_LIMB;
     bigint->limbs[nbrLimbs].x = (int)limbValue;
     nbrLimbs++;
-    ullValue >>= BITS_PER_GROUP;
-  } while (ullValue != 0U);
+    u64Value >>= BITS_PER_GROUP;
+  } while (u64Value != 0U);
   bigint->nbrLimbs = nbrLimbs;
 }
 
@@ -530,7 +538,7 @@ enum eExprErr BigIntPower(const BigInteger *pBase, const BigInteger *pExponent, 
   {    // Negative exponent not accepted.
     return EXPR_INVALID_PARAM;
   }
-  if (pExponent->nbrLimbs > 2)
+  if (pExponent->nbrLimbs > 1)
   {     // Exponent too high.
     if ((pBase->nbrLimbs == 1) && (pBase->limbs[0].x < 2))
     {     // Base = 0 -> power = 0
@@ -541,15 +549,7 @@ enum eExprErr BigIntPower(const BigInteger *pBase, const BigInteger *pExponent, 
     }
     return EXPR_INTERM_TOO_HIGH;
   }
-  if (pExponent->nbrLimbs == 2)
-  {
-    exponent = pExponent->limbs[0].x + (pExponent->limbs[1].x << BITS_PER_GROUP);
-  }
-  else
-  {
-    exponent = pExponent->limbs[0].x;
-  }
-  return BigIntPowerIntExp(pBase, exponent, pPower);
+  return BigIntPowerIntExp(pBase, pExponent->limbs[0].x, pPower);
 }
 
 // GCD of two numbers:
@@ -1188,6 +1188,8 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
   bool expon7 = true;
   bool expon11 = true;
   double dLogBigNbr = logBigNbr(pBigNbr);
+  int lenArray;
+  int lenBytes;
   if (pBigNbr->nbrLimbs > 10)
   {
     for (base = 2; base <= 100; base++)
@@ -1230,7 +1232,8 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
     dMaxExpon = (dLogBigNbr / LOG_2) + 0.5;
   }
   maxExpon = (int)dMaxExpon;
-  for (h = 0; h < sizeof(prime2310x1) / sizeof(prime2310x1[0]); h++)
+  lenArray = (int)sizeof(prime2310x1) / (int)sizeof(prime2310x1[0]);
+  for (h = 0; h < lenArray; h++)
   {
     int testprime = prime2310x1[h];
     int mod = getRemainder(pBigNbr, testprime);
@@ -1426,7 +1429,8 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
     }
   }
   pBase->nbrLimbs = pBigNbr->nbrLimbs;
-  (void)memcpy(pBase->limbs, pBigNbr->limbs, pBase->nbrLimbs*sizeof(limb));
+  lenBytes = pBase->nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(pBase->limbs, pBigNbr->limbs, lenBytes);
   return 1;
 }
 
@@ -1556,7 +1560,8 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
   }
   if (index > 0)
   {   // Move limbs to final position.
-    (void)memmove(number, &number[index], (nbrLimbs - index) * sizeof(limb));
+    int lenBytes = (nbrLimbs - index) * (int)sizeof(limb);
+    (void)memmove(number, &number[index], lenBytes);
   }
   *pShRight = power2;
 }
@@ -1690,6 +1695,7 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
 {
   int Mult3Len;
   int ctr;
+  int lenBytes;
 #ifdef __EMSCRIPTEN__
 #ifdef FACTORIZATION_APP
   char* ptrText;
@@ -1704,17 +1710,21 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
 #endif
 #endif
   // Perform 2-SPRP test
-  (void)memcpy(q, limbs, nbrLimbs * sizeof(limb));
+  lenBytes = nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(q, limbs, lenBytes);
   q[nbrLimbs] = 0;
   q[0]--;                     // q = p - 1 (p is odd, so there is no carry).
-  (void)memcpy(Mult3, q, (nbrLimbs + 1) * sizeof(q[0]));
+  lenBytes = (nbrLimbs + 1) * (int)sizeof(q[0]);
+  (void)memcpy(Mult3, q, lenBytes);
   Mult3Len = nbrLimbs;
   DivideBigNbrByMaxPowerOf2(&ctr, Mult3, &Mult3Len);
-  (void)memcpy(TestNbr, limbs, nbrLimbs * sizeof(limb));
+  lenBytes = nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(TestNbr, limbs, lenBytes);
   TestNbr[nbrLimbs].x = 0;
   GetMontgomeryParms(nbrLimbs);
   // Find Mult1 = 2^Mult3.
-  (void)memcpy(Mult1, MontgomeryMultR1, (NumberLength + 1) * sizeof(limb));  // power <- 1
+  lenBytes = (NumberLength + 1) * (int)sizeof(limb);
+  (void)memcpy(Mult1, MontgomeryMultR1, lenBytes);  // power <- 1
   for (int index = Mult3Len - 1; index >= 0; index--)
   {
     int groupExp = Mult3[index].x;
@@ -1749,7 +1759,8 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
         i = -1;         // Number is strong pseudoprime.
         break;
       }
-      (void)memcpy(Mult1, Mult4, nbrLimbs * sizeof(limb));
+      lenBytes = nbrLimbs * (int)sizeof(limb);
+      (void)memcpy(Mult1, Mult4, lenBytes);
     }
     if (i == ctr)
     {
@@ -1866,6 +1877,7 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
       }
       if (((unsigned int)groupExp & mask) != 0U)
       {        // Bit of exponent is equal to 1.
+        int lenBytes;
         // U_{2k+1} = (U_{2k} + V_{2k})/2
         // V_{2k+1} = (D*U_{2k} + V_{2k})/2
         Mult3[NumberLength].x = 0;
@@ -1882,7 +1894,8 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
           SubtBigNbrMod(Mult4, Temp2.limbs, Mult4);
         }
         Halve(Mult4);                       // V <- (V +/- U*D)/2
-        (void)memcpy(Mult3, Temp.limbs, NumberLength * sizeof(limb));
+        lenBytes = NumberLength * (int)sizeof(limb);
+        (void)memcpy(Mult3, Temp.limbs, lenBytes);
         modmultInt(Mult1, absQ, Mult1);     // Multiply power of Q by Q.
         signPowQ = -signD;                   // Attach correct sign to power.
         insidePowering = true;
@@ -2011,7 +2024,7 @@ int BpswPrimalityTest(const BigInteger *pValue)
     signD = -signD;
     D += 2;
   }
-  absQ = (D + 1) >> 2;
+  absQ = (D + 1) / 4;
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
   return PerformStrongLucasTest(pValue, D, absQ, signD, pstFactors);
 #else
@@ -2171,7 +2184,8 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   }
   if (index != 0)
   {
-    (void)memmove(value, value + index, (numLimbs - index) * sizeof(limb));
+    int lenBytes = (numLimbs - index) * (int)sizeof(limb);
+    (void)memmove(value, value + index, lenBytes);
   }
   if ((value + numLimbs - 1)->x != 0)
   {

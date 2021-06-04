@@ -19,7 +19,6 @@
 
 #include <math.h>
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include "bignbr.h"
@@ -172,7 +171,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
         }
 #ifdef _USING64BITS_
         ui64Sum %= (unsigned int)modulus;
-        sum = ui64Sum;
+        sum = (int)ui64Sum;
 #endif
       }
       coeff[i].limbs[0].x = sum;
