@@ -609,6 +609,9 @@ static void SolutionX(BigInteger *value)
   {
     callbackQuadModHyperbolic(value);
   }
+  else
+  {         // Nothing to do.
+  }
 }
 
 static void NoSolsModPrime(int expon)
