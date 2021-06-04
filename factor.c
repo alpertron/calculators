@@ -383,7 +383,8 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
     }
     else
     {
-      nbrDigits = (int)(ptrEndFactor - ptrFactorsAscii);
+      size_t diffPtrs = ptrEndFactor - ptrFactorsAscii;
+      nbrDigits = (int)diffPtrs;
       ptrEndFactor++;
     }
     Dec2Bin(ptrFactorsAscii, Nbr1.limbs, nbrDigits, &Nbr1.nbrLimbs);
@@ -520,9 +521,9 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
 {
   bool plus1 = false;
   bool minus1 = false;
-  int Exponent = 0;
-  int i;
-  int j;
+  unsigned int Exponent = 0U;
+  unsigned int i;
+  unsigned int j;
   int modulus;
   int mod9 = getRemainder(numToFactor, 9);
   int maxExpon = numToFactor->nbrLimbs * BITS_PER_GROUP;
@@ -541,11 +542,11 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
     (void)memset(common.ecm.ProcessExpon, 0xAA, sizeof(common.ecm.ProcessExpon));
   }
   (void)memset(common.ecm.primes, 0xFF, sizeof(common.ecm.primes));
-  for (i = 2; (i * i) < numPrimes; i++)
+  for (i = 2; (i * i) < (unsigned int)numPrimes; i++)
   {       // Generation of primes using sieve of Eratosthenes.
     if ((common.ecm.primes[i >> 3] & (1U << (i & 7))) != 0U)
     {     // Number i is prime.
-      for (j = i * i; j < numPrimes; j += i)
+      for (j = i * i; j < (unsigned int)numPrimes; j += i)
       {   // Mark multiple of i as composite.
         common.ecm.primes[j >> 3] &= ~(1U << (j & 7));
       }
@@ -554,21 +555,21 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   // Let n = a^b +/- 1 (n = number to factor).
   // If -1<=n<=2 (mod p) does not hold, b cannot be multiple of p-1.
   // If -2<=n<=2 (mod p) does not hold, b cannot be multiple of (p-1)/2.
-  for (i = 2; i < numPrimes; i++)
+  for (i = 2; i < (unsigned int)numPrimes; i++)
   {
     if ((common.ecm.primes[i>>3] & (1U << (i & 7))) != 0U)
     {      // i is prime according to sieve.
            // If n+/-1 is multiple of p, then it must be multiple
            // of p^2, otherwise it cannot be a perfect power.
       uint64_t remainder;
-      int index;
+      unsigned int index;
       int minRemainder;
       int maxRemainder;
       int rem = getRemainder(numToFactor, i);
       longToBigInteger(&Temp1, (uint64_t)i*(uint64_t)i);
       (void)BigIntRemainder(numToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
       remainder = (uint64_t)Temp2.limbs[0].x;
-      if ((rem == 1) || (rem == (i - 1)))
+      if ((rem == 1) || ((unsigned int)rem == (i - 1U)))
       {
         if (Temp2.nbrLimbs > 1)
         {
@@ -577,7 +578,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
         // NumberFactor cannot be a power + 1 if condition holds.
         plus1 = ((rem == 1) && (remainder != 1U));
         // NumberFactor cannot be a power - 1 if condition holds.
-        minus1 = ((rem == (i - 1)) && (remainder != (((uint64_t)i*(uint64_t)i) - 1U)));
+        minus1 = (((unsigned int)rem == (i - 1U)) && (remainder != (((uint64_t)i*(uint64_t)i) - 1U)));
       }
       index = i / 2;
       if ((common.ecm.ProcessExpon[index >> 3] & (1U << (index&7))) == 0U)
@@ -603,16 +604,16 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
       }
       if ((modulus > minRemainder) && (modulus < maxRemainder))
       {
-        for (j = index; j <= maxExpon; j += index)
+        for (j = index; j <= (unsigned int)maxExpon; j += index)
         {
           common.ecm.ProcessExpon[j >> 3] &= ~(1U << (j & 7));
         }
       }
       else
       {
-        if (modulus == (i - 2))
+        if ((unsigned int)modulus == (i - 2))
         {
-          for (j = i - 1; j <= maxExpon; j += i - 1)
+          for (j = i - 1U; j <= (unsigned int)maxExpon; j += i - 1U)
           {
             common.ecm.ProcessExpon[j >> 3] &= ~(1U << (j & 7));
           }
@@ -623,27 +624,27 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   for (j = 2; j < 100; j++)
   {
     double u = logar / log(j) + .000005;
-    Exponent = (int)floor(u);
+    Exponent = (unsigned int)floor(u);
     if ((u - (double)Exponent) > .00001)
     {
       continue;
     }
-    if (((Exponent % 3) == 0) && (mod9 > 2) && (mod9 < 7))
+    if (((Exponent % 3U) == 0U) && (mod9 > 2) && (mod9 < 7))
     {
       continue;
     }
-    if ((common.ecm.ProcessExpon[Exponent >> 3] & (1U << (Exponent & 7))) == 0U)
+    if ((common.ecm.ProcessExpon[Exponent >> 3] & (1U << (Exponent & 7U))) == 0U)
     {
       continue;
     }
-    if (ProcessExponent(pstFactors, numToFactor, Exponent))
+    if (ProcessExponent(pstFactors, numToFactor, (int)Exponent))
     {
       return;
     }
   }
   for (; Exponent >= 2; Exponent--)
   {
-    if (((Exponent % 3) == 0) && (mod9 > 2) && (mod9 < 7))
+    if (((Exponent % 3U) == 0U) && (mod9 > 2) && (mod9 < 7))
     {
       continue;
     }
@@ -651,7 +652,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
     {
       continue;
     }
-    if (ProcessExponent(pstFactors, numToFactor, Exponent))
+    if (ProcessExponent(pstFactors, numToFactor, (int)Exponent))
     {
       return;
     }
