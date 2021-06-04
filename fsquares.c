@@ -282,7 +282,6 @@ int fsquares(void)
       {
         if (sieve[i] >= 0)                        // If prime...
         {
-          int Divid;
           int Rem;
           int LimbModQ;
           int Q;
@@ -293,7 +292,7 @@ int fsquares(void)
           LimbModQ = (int)unsignedLimb;
           for (j = nbrLimbs - 1; j >= 0; j--)
           {
-            Divid = number[j].x + (Rem * LimbModQ);
+            int Divid = number[j].x + (Rem * LimbModQ);
             unsignedLimb = (unsigned int)Divid % (unsigned int)Q;
             Rem = (int)unsignedLimb;
           }
@@ -349,7 +348,8 @@ int fsquares(void)
           for (index = 2; index < nbrLimbs; index++)
           {
             carry.x += number[index].x;
-            p[index].x = (int)((unsigned int)carry.x & MAX_VALUE_LIMB);
+            unsignedLimb = (unsigned int)carry.x & MAX_VALUE_LIMB;
+            p[index].x = (int)unsignedLimb;
             carry.x >>= BITS_PER_GROUP;
           }
         }
@@ -385,7 +385,8 @@ int fsquares(void)
             for (;;)
             {
               // Compute the remainder of p and divisor.
-              int LimbModDivisor = (int)(LIMB_RANGE % (unsigned int)divisor);
+              unsignedLimb = LIMB_RANGE % (unsigned int)divisor;
+              int LimbModDivisor = (int)unsignedLimb;
               carry.x = 0;
               for (index = nbrLimbsP - 1; index >= 0; index--)
               {
@@ -638,15 +639,15 @@ int fsquares(void)
   SquareMult1.limbs[idx].x = 0;
   multiply(Mult2, Mult2, SquareMult2.limbs, Mult2Len, &tmp);
   lenBytes = ((Mult1Len - Mult2Len) * 2) * (int)sizeof(limb);
-  (void)memset(&SquareMult2.limbs[Mult2Len << 1], 0, lenBytes);
+  (void)memset(&SquareMult2.limbs[Mult2Len * 2], 0, lenBytes);
   SquareMult2.limbs[idx].x = 0;
   multiply(Mult3, Mult3, SquareMult3.limbs, Mult3Len, &tmp);
-  lenBytes = ((Mult1Len - Mult3Len) * 2) * sizeof(limb);
-  (void)memset(&SquareMult3.limbs[Mult3Len << 1], 0, lenBytes);
+  lenBytes = ((Mult1Len - Mult3Len) * 2) * (int)sizeof(limb);
+  (void)memset(&SquareMult3.limbs[Mult3Len * 2], 0, lenBytes);
   SquareMult3.limbs[idx].x = 0;
   multiply(Mult4, Mult4, SquareMult4.limbs, Mult4Len, &tmp);
   lenBytes = ((Mult1Len - Mult4Len) * 2) * (int)sizeof(limb);
-  (void)memset(&SquareMult4.limbs[Mult4Len << 1], 0, lenBytes);
+  (void)memset(&SquareMult4.limbs[Mult4Len * 2], 0, lenBytes);
   SquareMult4.limbs[idx].x = 0;
   idx++;
   AddBigInt(SquareMult1.limbs, SquareMult2.limbs, SquareMult1.limbs, idx);
