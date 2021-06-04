@@ -650,7 +650,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
     {
       continue;
     }
-    if (!((unsigned int)common.ecm.ProcessExpon[Exponent >> 3] & (1 << (Exponent & 7U))))
+    if (!((unsigned int)common.ecm.ProcessExpon[Exponent >> 3] & (1U << (Exponent & 7U))))
     {
       continue;
     }
@@ -736,7 +736,7 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
       m = 4;
     }
   }
-  intToBigInteger(&sqr, k<<2);
+  intToBigInteger(&sqr, k * 4);
   (void)BigIntMultiply(&sqr, nbr, &sqr);
   squareRoot(sqr.limbs, sqrRoot.limbs, sqr.nbrLimbs, &sqrRoot.nbrLimbs);
   sqrRoot.sign = SIGN_POSITIVE;
@@ -1532,9 +1532,10 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
         AddBigNbrMod(common.ecm.Aux2, MontgomeryMultR1, common.ecm.Aux4);
         UncompressLimbsBigInteger(common.ecm.Aux4, &Temp2);
         BigIntGcd(pValue, &Temp2, &Temp4);
+        lenBytes = NumberLength * (int)sizeof(limb);
         if (((Temp4.nbrLimbs != 1) || (Temp4.limbs[0].x > 1)) &&
           ((Temp4.nbrLimbs != NumberLength) ||
-            memcmp(pValue->limbs, Temp4.limbs, NumberLength * sizeof(limb))))
+            memcmp(pValue->limbs, Temp4.limbs, lenBytes)))
         {          // Non-trivial factor found.
           insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
           factorsFound = true;
