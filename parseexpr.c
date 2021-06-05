@@ -93,6 +93,7 @@ static void getHexValue(const char** pptrInput)
   }
   else
   {    // Generate big integer from hexadecimal number from right to left.
+    size_t diffPtrs;
     unsigned int unsignedLimb;
     unsigned int carry = 0;
     int shLeft = 0;
@@ -128,8 +129,8 @@ static void getHexValue(const char** pptrInput)
       ptrLimb->x = carry;
       ptrLimb++;
     }
-    unsignedLimb = (unsigned int)(ptrLimb - &value.limbs[0]);
-    value.nbrLimbs = (int)unsignedLimb;
+    diffPtrs = ptrLimb - &value.limbs[0];
+    value.nbrLimbs = (int)diffPtrs;
   }
   *pptrInput = ptrInput;
 }
@@ -146,11 +147,13 @@ static enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput
   }
   else
   {              // Decimal number.
+    size_t diffPtrs;
     while ((*ptrInput >= '0') && (*ptrInput <= '9'))
     {                // Find end of number.
       ptrInput++;
     }
-    Dec2Bin(pInput - 1, value.limbs, (int)(ptrInput + 1 - pInput), &value.nbrLimbs);
+    diffPtrs = ptrInput - pInput;
+    Dec2Bin(pInput - 1, value.limbs, (int)diffPtrs + 1, &value.nbrLimbs);
   }
   pInput = ptrInput;
   value.sign = SIGN_POSITIVE;

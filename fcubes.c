@@ -277,7 +277,7 @@ static int fcubes(const BigInteger *pArgument)
     converted = true;
     BigIntNegate(&value, &value);
   }
-  for (i = (int)(sizeof(sums) / sizeof(sums[0]))-10; i>=0; i -= 10)
+  for (i = ((int)sizeof(sums) / (int)sizeof(sums[0]))-10; i>=0; i -= 10)
   {
     int modulus = sums[i];
     if (((getRemainder(&value, modulus) + modulus)% modulus) == sums[i + 1])

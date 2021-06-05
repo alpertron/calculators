@@ -1246,7 +1246,8 @@ static void vanHoeij(int prime, int numFactors)
   // Compute powerExtraBits as a power of prime with 3 times
   // the number of bits of nbrFactors (the number of polynomial factors).
   // Compute powerBoundA as powerExtraBits * powerMod.
-  exponDifference = (int)(6.0 * (double)nbrFactors * LOG_2 / log(prime));
+  dExponDifference = 6.0 * (double)nbrFactors * LOG_2 / log((double)prime);
+  exponDifference = (int)dExponDifference;
   intToBigInteger(&operand1, prime);
   (void)BigIntPowerIntExp(&operand1, exponDifference, &powerExtraBits);
   CopyBigInt(&powerBoundA, &powerMod);

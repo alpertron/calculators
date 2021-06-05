@@ -325,7 +325,9 @@ void primorial(BigInteger *result, int argument)
   unsigned int unsignedLimb;
   int nbrGroupsAccumulated = 1;
   double factorAccum = 1;
-  double maxFactorAccum = (double)(1 << 30) * (double)(1 << 23);
+  unsigned int firstFactor = 1U << 30;
+  unsigned int secondFactor = 1U << 23;
+  double maxFactorAccum = (double)firstFactor * (double)secondFactor;
   partArray[0] = 20;     // Index of first big integer.
   for (int ctr = 2; ctr <= argument; ctr++)
   {
