@@ -182,19 +182,19 @@ void SubtractBigNbrModN(const int *pNbr1, const int *pNbr2, int *pDiff, const in
   const int* ptrNbr2 = pNbr2;
   int* ptrDiff = pDiff;
   const int* ptrMod = pMod;
-  int borrow = 0;
+  unsigned int borrow = 0U;
   unsigned int tmp;
   int i;
   for (i = 0; i < nbrLen; i++)
   {
-    borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
-    tmp = (unsigned int)borrow & MAX_INT_NBR_U;
+    borrow = (unsigned int)*ptrNbr1 - (unsigned int)*ptrNbr2 - (borrow >> BITS_PER_INT_GROUP);
+    tmp = borrow & MAX_INT_NBR_U;
     *ptrDiff = (int)tmp;
     ptrNbr1++;
     ptrNbr2++;
     ptrDiff++;
   }
-  if (borrow != 0)
+  if (borrow != 0U)
   {
     unsigned int carry = 0U;
     ptrDiff -= nbrLen;
