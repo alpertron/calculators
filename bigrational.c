@@ -377,7 +377,7 @@ void ShowRationalAndSqrParts(const BigRational* RatPart, const BigRational* SqrP
         ptrOutput++;
       }
       showText(ptrTimes);
-      if (pretty == 0)
+      if (pretty == PRETTY_PRINT)
       {
         *ptrOutput = ' ';
         ptrOutput++;

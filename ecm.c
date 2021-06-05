@@ -827,7 +827,7 @@ enum eEcmResult ecmStep2(void)
 static void initSmallPrimeArray(void)
 {
   int potentialPrime = 3;
-  int numPrimes = (int)(sizeof(SmallPrime) / sizeof(SmallPrime[0]));
+  int numPrimes = (int)sizeof(SmallPrime) / (int)sizeof(SmallPrime[0]);
   SmallPrime[0] = 2;
   for (indexM = 1; indexM < numPrimes; indexM++)
   {     // Loop that fills the SmallPrime array.

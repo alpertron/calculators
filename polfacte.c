@@ -57,7 +57,7 @@ EXTERNALIZE void doWork(void)
     break;
   }
   ptrData++;          // Skip comma.
-  polyFactText(ptrData, ptrData + strlen(ptrData) + 1, groupLength);
+  polyFactText(ptrData, ptrData + (int)strlen(ptrData) + 1, groupLength);
   databack(output);
 }
 #endif
