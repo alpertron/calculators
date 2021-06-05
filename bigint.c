@@ -112,7 +112,7 @@ void AddBigNbrB(const int *pNbr1, const int *pNbr2, int *pSum, int nbrLen)
 
 void SubtractBigNbrB(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen)
 {
-  int borrow = 0;
+  unsigned int borrow = 0U;
   const int *ptrNbr1 = pNbr1;
   const int *ptrNbr2 = pNbr2;
   int *ptrDiff;
@@ -120,13 +120,13 @@ void SubtractBigNbrB(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen)
   for (ptrDiff = pDiff; ptrDiff < ptrEndDiff; ptrDiff++)
   {
     unsigned int tmp;
-    borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
-    tmp = (unsigned int)borrow & MAX_INT_NBR_U;
+    borrow = (unsigned int)*ptrNbr1 - (unsigned int)*ptrNbr2 - (borrow >> BITS_PER_INT_GROUP);
+    tmp = borrow & MAX_INT_NBR_U;
     *ptrDiff = (int)tmp;
     ptrNbr1++;
     ptrNbr2++;
   }
-  borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
+  borrow = (unsigned int)*ptrNbr1 - (unsigned int)*ptrNbr2 - (borrow >> BITS_PER_INT_GROUP);
   *ptrDiff = borrow;
 }
 
@@ -334,11 +334,11 @@ int RemDivBigNbrByInt(const int *pDividend, int divisor, int nbrLen)
     double dDividend = ((double)remainder * dLimb) + *ptrDividend;
          // quotient has correct value or 1 more.
     unsigned int quotient = (unsigned int)((dDividend / dDivisor) + 0.5);
-    remainder = dividend - (quotient * divisor);
+    remainder = dividend - (quotient * (unsigned int)divisor);
     if (remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
       quotient--;
-      remainder += divisor;
+      remainder += (unsigned int)divisor;
     }
     ptrDividend--;
   }
