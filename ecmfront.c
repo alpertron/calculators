@@ -228,7 +228,7 @@ static void modPowShowStatus(const limb *base, const limb *exp, int nbrGroupsExp
     for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
     {
       modmult(power, power, power);
-      if (((unsigned int)groupExp & mask) != 0)
+      if (((unsigned int)groupExp & mask) != 0U)
       {
         modmult(power, base, power);
       }
@@ -529,7 +529,7 @@ static void ComputeSumOfTwoSquaresForPrime(void)
   } while (!memcmp(Mult1.limbs, MontgomeryMultR1, lenBytes) ||
     !memcmp(Mult1.limbs, minusOneMont, lenBytes));
   Mult1.sign = SIGN_POSITIVE;
-  lenBytes = p.nbrLimbs * sizeof(limb);
+  lenBytes = p.nbrLimbs * (int)sizeof(limb);
   (void)memset(Mult2.limbs, 0, lenBytes);
   Mult2.limbs[0].x = 1;
   Mult2.nbrLimbs = 1;
