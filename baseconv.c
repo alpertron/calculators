@@ -24,7 +24,7 @@
 
 #define DIGITS_PER_LIMB 9
 #define MAX_LIMB_CONVERSION 1000000000
-#define FIRST_MULT  (1 << (BITS_PER_GROUP/2))
+#define FIRST_MULT  (1U << (BITS_PER_GROUP/2))
 #define SECOND_MULT (LIMB_RANGE / FIRST_MULT)
 
 static limb power10000[MAX_LEN*2];
@@ -39,14 +39,16 @@ void Dec2Bin(const char *decimal, limb *binary, int digits, int *bitGroups)
   limb *ptrDest;
   limb *ptrBinary;
   int digit;
+  int lenBytes;
   int multiplier;
   int nbrGroups = 1;
   while ((nbrGroups * DIGITS_PER_LIMB) < digits)
   {
     nbrGroups *= 2;
   }
-  (void)memset(binary, 0, nbrGroups * sizeof(limb));
-  (void)memset(power10000, 0, nbrGroups * sizeof(limb));
+  lenBytes = nbrGroups * (int)sizeof(limb);
+  (void)memset(binary, 0, lenBytes);
+  (void)memset(power10000, 0, lenBytes);
   power10000[0].x = MAX_LIMB_CONVERSION;
   ptrDest = binary;
   for (ptrSrc = decimal + digits - 1; ptrSrc >= (decimal + DIGITS_PER_LIMB-1); ptrSrc -= DIGITS_PER_LIMB)
@@ -73,13 +75,15 @@ void Dec2Bin(const char *decimal, limb *binary, int digits, int *bitGroups)
     {
       ptrBinary = binary + innerGroup;
       multiply(power10000, ptrBinary + outerGroup, temp, outerGroup, NULL);
-      (void)memset(ptrBinary + outerGroup, 0, outerGroup*sizeof(limb));
+      lenBytes = outerGroup * (int)sizeof(limb);
+      (void)memset(ptrBinary + outerGroup, 0, lenBytes);
       add(temp, ptrBinary, ptrBinary, 2*outerGroup);
     }
     if ((outerGroup * 2) < nbrGroups)
     {    // Square power10000.
       multiply(power10000, power10000, temp, outerGroup, NULL);
-      (void)memcpy(power10000, temp, (outerGroup * 2)*sizeof(limb));
+      lenBytes = (outerGroup * 2) * (int)sizeof(limb);
+      (void)memcpy(power10000, temp, lenBytes);
     }
   }
   // Determine first non-significant group.
@@ -158,7 +162,7 @@ void int2hex(char **pOutput, int nbr)
   unsigned int div = 0x10000000;
   unsigned int value = (unsigned int)nbr;
   copyStr(&ptrOutput, "<span class=\"hex\">");
-  while (div > 0)
+  while (div > 0U)
   {
     int digit;
 
@@ -334,7 +338,7 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
       ptrPower->x = (int)(dCarry - (dQuotient * (double)MAX_LIMB_CONVERSION));
       ptrPower++;
     }
-    if (dQuotient != 0)
+    if (dQuotient != 0.0)
     {
       ptrPower->x = (int)dQuotient;
       ptrPower++;
