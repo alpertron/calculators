@@ -60,8 +60,8 @@ static void stringToHTML(char **pptrOutput, const char *ptrString)
     }
     else
     {            // 3-byte UTF-8 character
-      character = ((c & 0x1F) << 12) +
-        ((*(ptrStr + 1) & 0x3F) << 6) +
+      character = ((c & 0x1F) * 0x1000) +
+        ((*(ptrStr + 1) & 0x3F) * 0x40) +
         (*(ptrStr + 2) & 0x3F);
       ptrStr += 3;
     }
@@ -152,7 +152,8 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     ptrEndBatchFactor = batchText + strlen(batchText);
     firstExprProcessed = false;
   }
-  for (; ptrCurrBatchFactor < ptrEndBatchFactor; ptrCurrBatchFactor += strlen(ptrCurrBatchFactor) + 1)
+  for (; ptrCurrBatchFactor < ptrEndBatchFactor;
+    ptrCurrBatchFactor += (int)strlen(ptrCurrBatchFactor) + 1)
   {  // Get next line.
     char c;
     expressionNbr = 0;
@@ -284,7 +285,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       {
         *pIsBatch = true;    // Indicate batch processing.
       }
-      while (ptrOutput < &output[sizeof(output) - 200000])
+      while (ptrOutput < &output[(int)sizeof(output) - 200000])
       {      // Perform loop.
         bool processExpression = true;
         expressionNbr = 3;
@@ -388,7 +389,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     {
       copyStr(&ptrOutput, "</li>");
     }
-    if (ptrOutput >= &output[sizeof(output) - 200000])
+    if (ptrOutput >= &output[(int)sizeof(output) - 200000])
     {
       output[0] = '6';     // Show Continue button.
       break;
@@ -397,12 +398,12 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     {      // Loop mode.
       if (ptrConditionExpr != NULL)
       {
-        ptrCurrBatchFactor += strlen(ptrConditionExpr) + 1;
+        ptrCurrBatchFactor += (int)strlen(ptrConditionExpr) + 1;
         ptrConditionExpr = NULL;
       }
       else
       {
-        ptrCurrBatchFactor += strlen(ptrExprToProcess) + 1;
+        ptrCurrBatchFactor += (int)strlen(ptrExprToProcess) + 1;
       }
     }
     valueX.nbrLimbs = 0;     // Invalidate variable x and counter c.

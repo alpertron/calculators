@@ -295,7 +295,8 @@ void SameDegreeFactorization(void)
         *ptrValue1 = 1;
         *(ptrValue1 + 1) = 1;
         ptrValue1 += nbrLimbs;
-        for (currentDegree++; currentDegree < polyDegree; currentDegree++)
+        currentDegree++;
+        for (; currentDegree < polyDegree; currentDegree++)
         {
           *ptrValue1 = 1;
           *(ptrValue1 + 1) = 0;

@@ -345,7 +345,8 @@ static int HalveDifference(limb* first, const limb* second, int length)
   unsignedLimb = (unsigned int)prevLimb >> 1;
   (first + i - 1)->x = (int)unsignedLimb;
   // Get length of result.
-  for (len--; len > 0; len--)
+  len--;
+  for (; len > 0; len--)
   {
     if ((first + len)->x != 0)
     {
