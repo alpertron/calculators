@@ -133,7 +133,7 @@ static void getCurrentStackValue(BigInteger* pValueRe, BigInteger *pValueIm)
 static enum eExprErr setStackValue(const BigInteger* pValueRe, const BigInteger *pValueIm)
 {
   int currentOffset = comprStackOffset[2 * stackIndex];
-  if (currentOffset >= (COMPR_STACK_SIZE - sizeof(BigInteger) / sizeof(limb)))
+  if (currentOffset >= (COMPR_STACK_SIZE - ((int)sizeof(BigInteger) / (int)sizeof(limb))))
   {
     return EXPR_OUT_OF_MEMORY;
   }
@@ -680,7 +680,7 @@ static int ComputePower(BigInteger *Re1, const BigInteger *Re2,
   BigInteger *Im1, const BigInteger *Im2)
 {
   unsigned int expon;
-  double base;
+  double logNorm;
   bool performPower = false;
   BigInteger ReTmp;
   BigInteger ImTmp;
@@ -703,18 +703,8 @@ static int ComputePower(BigInteger *Re1, const BigInteger *Re2,
   (void)BigIntMultiply(Re1, Re1, &ReTmp);
   (void)BigIntMultiply(Im1, Im1, &ImTmp);
   BigIntAdd(&ReTmp, &ImTmp, &norm);  // norm <- re1^2 + im1^2.
-  if (norm.nbrLimbs > 1)
-  {
-    base = log((double)(norm.limbs[norm.nbrLimbs - 2].x + 
-      (double)(norm.limbs[norm.nbrLimbs - 1].x << BITS_PER_GROUP)) +
-      (double)(norm.nbrLimbs - 2) * LOG_2 * (double)BITS_PER_GROUP);
-  }
-  else
-  {
-    base = log((double)(norm.limbs[norm.nbrLimbs - 1].x) +
-      (double)(norm.nbrLimbs - 1) * LOG_2 * (double)BITS_PER_GROUP);
-  }
-  if (base*(double)expon > 23026)
+  logNorm = logLimbs(norm.limbs, norm.nbrLimbs);  // Get logarithm of norm.
+  if (logNorm*(double)expon > 23026.0)
   {   // More than 20000 digits. 23026 = log(10^10000) (norm is already squared).
     return EXPR_INTERM_TOO_HIGH;
   }
@@ -739,7 +729,7 @@ static int ComputePower(BigInteger *Re1, const BigInteger *Re2,
       (void)BigIntMultiply(&Re, &Im, &Im);            // Im <- 2*re*im
       BigIntAdd(&Im, &Im, &Im);
       CopyBigInt(&Re, &ReTmp);
-      if ((expon & mask) != 0)
+      if ((expon & mask) != 0U)
       {
         (void)BigIntMultiply(Re1, &Re, &ReTmp);       // Re2 <- re1*re - im1*im.
         (void)BigIntMultiply(Im1, &Im, &ImTmp);
@@ -850,9 +840,7 @@ static enum eExprErr ComputeModPow(void)
 
 static enum eExprErr ComputeModInv(void)
 {
-  int retcode;
-
-  retcode = ModInv(&curStackRe, &curStackIm,
+  enum eExprErr retcode = ModInv(&curStackRe, &curStackIm,
     &curStack2Re, &curStack2Im, Result);
   if (retcode != EXPR_OK)
   {
