@@ -342,7 +342,8 @@ static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
     if ((int)diffPtrs < (len - 1))
     {                   // Do not read outside input buffer.
       unsigned int complementBitExternal = (unsigned int)BITS_PER_GROUP - uBitExternal;
-      real += ((ptrFactor + 1)->x << complementBitExternal);
+      unsignedLimb = (unsigned int)(ptrFactor + 1)->x << complementBitExternal;
+      real += (int)unsignedLimb;
     }
     maxValueFFTLimb = MAX_VALUE_FFT_LIMB;
     real &= (unsigned int)maxValueFFTLimb;
