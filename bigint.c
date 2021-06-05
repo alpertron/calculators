@@ -75,15 +75,15 @@ void AddBigNbr(const int *pNbr1, const int *pNbr2, int *pSum, int nbrLen)
 
 void SubtractBigNbr(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen)
 {
-  int borrow = 0;
+  unsigned int borrow = 0U;
   const int *ptrNbr1 = pNbr1;
   const int *ptrNbr2 = pNbr2;
   const int *ptrEndDiff = pDiff + nbrLen;
   for (int *ptrDiff = pDiff; ptrDiff < ptrEndDiff; ptrDiff++)
   {
     unsigned int tmp;
-    borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrNbr1 - *ptrNbr2;
-    tmp = (unsigned int)borrow & MAX_INT_NBR_U;
+    borrow = (unsigned int)*ptrNbr1 - (unsigned int)*ptrNbr2 - (borrow >> BITS_PER_INT_GROUP);
+    tmp = borrow & MAX_INT_NBR_U;
     *ptrDiff = (int)tmp;
     ptrNbr1++;
     ptrNbr2++;
@@ -136,7 +136,7 @@ void AddBigIntModN(const int *pNbr1, const int *pNbr2, int *pSum, const int *pMo
   const int* ptrNbr2 = pNbr2;
   int* ptrSum = pSum;
   const int* ptrMod = pMod;
-  int borrow = 0;
+  unsigned int borrow = 0U;
   unsigned int carry = 0U;
   unsigned int tmp;
   int i;
@@ -153,14 +153,14 @@ void AddBigIntModN(const int *pNbr1, const int *pNbr2, int *pSum, const int *pMo
   ptrSum -= nbrLen;
   for (i = 0; i < nbrLen; i++)
   {
-    borrow = (borrow >> BITS_PER_INT_GROUP) + *ptrSum - *ptrMod;
-    tmp = (unsigned int)borrow & MAX_INT_NBR_U;
+    borrow = (unsigned int)*ptrSum - (unsigned int)*ptrMod - (borrow >> BITS_PER_INT_GROUP);
+    tmp = borrow & MAX_INT_NBR_U;
     *ptrSum = (int)tmp;
     ptrMod++;
     ptrSum++;
   }
   borrow >>= BITS_PER_INT_GROUP;
-  if ((borrow + (int)carry) != 0)
+  if (borrow != carry)
   {    // Sum is less than zero. Add Mod again.
     ptrSum -= nbrLen;
     ptrMod -= nbrLen;
@@ -298,24 +298,24 @@ void DivBigNbrByInt(const int *pDividend, int divisor, int *pQuotient, int nbrLe
 {
   const int* ptrDividend = pDividend;
   int* ptrQuotient = pQuotient;
-  int remainder = 0;
+  unsigned int remainder = 0U;
   double dDivisor = (double)divisor;
   double dLimb = 0x80000000;
   ptrDividend += nbrLen - 1;
   ptrQuotient += nbrLen - 1;
   for (int ctr = nbrLen - 1; ctr >= 0; ctr--)
   {
-    int dividend = (remainder << BITS_PER_INT_GROUP) + *ptrDividend;
-    double dDividend = ((double)remainder * dLimb) + *ptrDividend;
+    unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + (unsigned int)*ptrDividend;
+    double dDividend = ((double)remainder * dLimb) + (double)*ptrDividend;
     // quotient has correct value or 1 more.
-    int quotient = (unsigned int)((dDividend / dDivisor) + 0.5);
-    remainder = dividend - (quotient * divisor);
-    if ((unsigned int)remainder >= (unsigned int)divisor)
+    unsigned int quotient = (unsigned int)((dDividend / dDivisor) + 0.5);
+    remainder = dividend - (quotient * (unsigned int)divisor);
+    if (remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
       quotient--;
-      remainder += divisor;
+      remainder += (unsigned int)divisor;
     }
-    *ptrQuotient = quotient;
+    *ptrQuotient = (int)quotient;
     ptrQuotient--;
     ptrDividend--;
   }
@@ -324,18 +324,18 @@ void DivBigNbrByInt(const int *pDividend, int divisor, int *pQuotient, int nbrLe
 int RemDivBigNbrByInt(const int *pDividend, int divisor, int nbrLen)
 {
   const int* ptrDividend = pDividend;
-  int remainder = 0;
+  unsigned int remainder = 0U;
   double dDivisor = (double)divisor;
   double dLimb = 0x80000000;
   ptrDividend += nbrLen - 1;
   for (int ctr = nbrLen - 1; ctr >= 0; ctr--)
   {
-    unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + *ptrDividend;
+    unsigned int dividend = (remainder << BITS_PER_INT_GROUP) + (unsigned int)*ptrDividend;
     double dDividend = ((double)remainder * dLimb) + *ptrDividend;
          // quotient has correct value or 1 more.
     unsigned int quotient = (unsigned int)((dDividend / dDivisor) + 0.5);
     remainder = dividend - (quotient * divisor);
-    if ((unsigned int)remainder >= (unsigned int)divisor)
+    if (remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
       quotient--;
       remainder += divisor;
@@ -510,10 +510,12 @@ void BigIntToBigNbr(BigInteger *pBigNbr, const int *pBigInt, int nbrLenBigInt)
 
 void GcdBigNbr(const int *pNbr1, const int *pNbr2, int *pGcd, int nbrLen)
 {
+  int lenBytes;
   BigIntToBigNbr(&BigInt1, pNbr1, nbrLen);
   BigIntToBigNbr(&BigInt2, pNbr2, nbrLen);
   BigIntGcd(&BigInt1, &BigInt2, &BigGcd);
-  (void)memset(pGcd, 0, NumberLength * sizeof(int));
+  lenBytes = NumberLength * (int)sizeof(int);
+  (void)memset(pGcd, 0, lenBytes);
   (void)BigNbrToBigInt(&BigGcd, pGcd);
 }
 
@@ -526,13 +528,15 @@ void MultBigNbrModN(const int *Nbr1, int *Nbr2, int *Prod, int *Mod, int nbrLen)
 {
   int i = nbrLen;
   int arr[MAX_LIMBS_SIQS];
+  int lenBytes;
 
   if ((i >= 2) && (*(Mod + i - 1) == 0))
   {
     i--;
   }
   *(Nbr2+i) = 0;
-  (void)memset(Prod, 0, nbrLen * sizeof(*Prod));
+  lenBytes = nbrLen * (int)sizeof(*Prod);
+  (void)memset(Prod, 0, lenBytes);
   do
   {
     i--;
@@ -585,7 +589,8 @@ void ModInvBigInt(const int *num, int *inv, const int *mod, int nbrLenBigInt)
 {
   int NumberLengthBigInt;
   int NumberLengthBak = NumberLength;
-  (void)memset(inv, 0, nbrLenBigInt*sizeof(int));
+  int lenBytes = nbrLenBigInt * (int)sizeof(int);
+  (void)memset(inv, 0, lenBytes);
   NumberLength = nbrLenBigInt;
   while (NumberLength > 1)
   {
@@ -595,7 +600,8 @@ void ModInvBigInt(const int *num, int *inv, const int *mod, int nbrLenBigInt)
     }
     NumberLength--;
   }
-  (void)memcpy(TestNbr, mod, NumberLength * sizeof(limb));
+  lenBytes = NumberLength * (int)sizeof(limb);
+  (void)memcpy(TestNbr, mod, lenBytes);
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(NumberLength);
   BigIntToBigNbr(&Denominator, num, NumberLength);
@@ -608,6 +614,7 @@ void ModInvBigInt(const int *num, int *inv, const int *mod, int nbrLenBigInt)
   NumberLength = NumberLengthBak;
   if (NumberLengthBigInt < NumberLength)
   {
-    (void)memset(inv + NumberLengthBigInt, 0, (NumberLength - NumberLengthBigInt) * sizeof(int));
+    lenBytes = (NumberLength - NumberLengthBigInt) * (int)sizeof(int);
+    (void)memset(inv + NumberLengthBigInt, 0, lenBytes);
   }
 }
