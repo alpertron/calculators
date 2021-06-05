@@ -148,12 +148,13 @@ static bool ComputeDLogModSubGroupOrder(int indexBase, int indexExp,
   BigInteger *bigExp, const BigInteger *bigSubGroupOrder)
 {
   // Set tmpBase to 1 in Montgomery notation.
-  (void)memcpy(tmpBase.limbs, MontgomeryMultR1, NumberLength * sizeof(limb));
+  int lenBytes = NumberLength * (int)sizeof(limb);
+  (void)memcpy(tmpBase.limbs, MontgomeryMultR1, lenBytes);
   // Set Exponent to zero.
   intToBigInteger(bigExp, 0);
   while (!TestBigNbrEqual(bigExp, bigSubGroupOrder))
   {
-    if (!memcmp(tmpBase.limbs, powerPHMontg, NumberLength * sizeof(limb)))
+    if (!memcmp(tmpBase.limbs, powerPHMontg, lenBytes))
     {    // Logarithm for this subgroup has been found. Go out.
       return true;
     }
@@ -185,6 +186,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   double magnitude;
   long long brentK;
   long long brentR;
+  int lenBytes;
   bool EndPollardBrentRho;
 
   NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
@@ -222,9 +224,11 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   copyStr(&ptr, " elements.");
   showText(textExp);
   NumberLength = mod.nbrLimbs;
-  (void)memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
+  lenBytes = NumberLength * (int)sizeof(limb);
+  (void)memcpy(TestNbr, mod.limbs, lenBytes);
   NumberLengthOther = subGroupOrder.nbrLimbs;
-  (void)memcpy(TestNbrOther, subGroupOrder.limbs, NumberLengthOther * sizeof(limb));
+  lenBytes = NumberLengthOther * (int)sizeof(limb);
+  (void)memcpy(TestNbrOther, subGroupOrder.limbs, lenBytes);
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(NumberLength);
   NumberSizeBytes = NumberLength * (int)sizeof(limb);
@@ -249,7 +253,8 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
     primRoot[0].x = 1;
     if (NumberLength > 1)
     {
-      (void)memset(&primRoot[1], 0, (NumberLength - 1) * sizeof(limb));
+      lenBytes = (NumberLength - 1) * (int)sizeof(limb);
+      (void)memset(&primRoot[1], 0, lenBytes);
     }
     do
     {
@@ -478,7 +483,8 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   }
   CopyBigInt(&nbrV[indexBase], &runningExp);
   NumberLength = powSubGroupOrder.nbrLimbs;
-  (void)memcpy(TestNbr, powSubGroupOrder.limbs, NumberLength * sizeof(limb));
+  lenBytes = NumberLength * (int)sizeof(limb);
+  (void)memcpy(TestNbr, powSubGroupOrder.limbs, lenBytes);
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(NumberLength);
   for (indexExp = 0; indexExp < indexBase; indexExp++)
@@ -507,7 +513,8 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
       ModInvBigNbr(tmp2.limbs, tmp2.limbs, TestNbr, NumberLength);
     }
     tmpBase.limbs[0].x = 1;
-    (void)memset(&tmpBase.limbs[1], 0, (NumberLength - 1) * sizeof(limb));
+    lenBytes = (NumberLength - 1) * (int)sizeof(limb);
+    (void)memset(&tmpBase.limbs[1], 0, lenBytes);
     modmult(tmpBase.limbs, tmp2.limbs, tmp2.limbs);
     UncompressLimbsBigInteger(tmp2.limbs, &tmpBase);
     (void)BigIntMultiply(&tmpBase, &nbrV[indexBase], &nbrV[indexBase]);
@@ -563,9 +570,11 @@ static bool DiscrLogPowerPrimeSubgroup(int multiplicity, const int *ptrPrime)
     // From binomial theorem: m = s / r (mod p)
     // If r = 0 and s != 0 there is no solution.
     // If r = 0 and s = 0 do not change LM.
+    int lenBytes;
     (void)BigIntPowerIntExp(&bigNbrB, expon + 1, &bigNbrA);
     NumberLength = bigNbrA.nbrLimbs;
-    (void)memcpy(TestNbr, bigNbrA.limbs, NumberLength * sizeof(limb));
+    lenBytes = NumberLength * (int)sizeof(limb);
+    (void)memcpy(TestNbr, bigNbrA.limbs, lenBytes);
     GetMontgomeryParms(NumberLength);
     (void)BigIntRemainder(&base, &bigNbrA, &tmpBase);
     CompressLimbsBigInteger(baseMontg, &tmpBase);
@@ -640,6 +649,7 @@ void DiscreteLogarithm(void)
     if (BigIntIsZero(&tmpBase))
     {     // modulus and base are not relatively prime.
       int ctr;
+      int lenBytes;
       multiplicity = astFactorsMod[index].multiplicity;
       CopyBigInt(&bigNbrA, &power);
       for (ctr = multiplicity; ctr > 0; ctr--)
@@ -663,7 +673,8 @@ void DiscreteLogarithm(void)
       ctr = multiplicity - ctr;
       intToBigInteger(&bigNbrB, ctr);   // Convert exponent to big integer.
       NumberLength = tmp2.nbrLimbs;
-      (void)memcpy(TestNbr, tmp2.limbs, (NumberLength + 1) * sizeof(limb));
+      lenBytes = (NumberLength + 1) * (int)sizeof(limb);
+      (void)memcpy(TestNbr, tmp2.limbs, lenBytes);
       GetMontgomeryParms(NumberLength);
       BigIntModularPower(&tmpBase, &bigNbrB, &bigNbrA);
       (void)BigIntRemainder(&power, &tmp2, &bigNbrB);
@@ -844,6 +855,7 @@ static void ExchangeMods(void)
 static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *bigSubGroupOrder)
 {
   unsigned int carry;
+  unsigned int unsignedLimb;
   int nbrLimbs = bigSubGroupOrder->nbrLimbs;
   (nbr + nbrLimbs)->x = 0;
   MultBigNbrByInt((int *)nbr, mult.x, (int *)nbr, nbrLimbs+1);
@@ -851,7 +863,8 @@ static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *bigSubGro
   for (int j = 0; j<=nbrLimbs; j++)
   {
     carry += (unsigned int)nbr[j].x;
-    nbr[j].x = (int)(carry & MAX_VALUE_LIMB);
+    unsignedLimb = carry & MAX_VALUE_LIMB;
+    nbr[j].x = (int)unsignedLimb;
     carry >>= BITS_PER_GROUP;
   }
   AdjustModN(nbr, bigSubGroupOrder->limbs, nbrLimbs);
@@ -959,8 +972,8 @@ EXTERNALIZE void doWork(void)
   lang = ((flags & 1)? true: false);
 #endif
   ptrData += 2;          // Skip flags and comma.
-  ptrPower = ptrData + strlen(ptrData) + 1;
-  ptrMod = ptrPower + strlen(ptrPower) + 1;
+  ptrPower = ptrData + (int)strlen(ptrData) + 1;
+  ptrMod = ptrPower + (int)strlen(ptrPower) + 1;
   dilogText(ptrData, ptrPower, ptrMod, groupLength);
   databack(output);
 }

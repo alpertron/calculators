@@ -698,7 +698,7 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
   int currentDegree;
   int degreeProd;
   int degreeFactor;
-  int rc;
+  enum eExprErr rc;
   struct sFactorInfo* pstFactorInfo;
   const int* ptrSrc;
   int* ptrDest;
@@ -739,20 +739,24 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
           // Reduce coefficients mod powerMod and store them on poly2.
           for (currentDegree = 0; currentDegree < degreeFactor; currentDegree++)
           {
+            int lenBytes;
             nbrLength = numLimbs(ptrCoeffSrc);
             if (nbrVectors == 1)
             {              // Coefficient is already reduced.
               *ptrCoeffDest = nbrLength;
-              (void)memcpy(ptrCoeffDest + 1, ptrCoeffSrc + 1, nbrLength * sizeof(int));
+              lenBytes = nbrLength * (int)sizeof(int);
+              (void)memcpy(ptrCoeffDest + 1, ptrCoeffSrc + 1, lenBytes);
             }
             else
             {              // Reduce the coefficient mod powerMod.
               operand1.nbrLimbs = nbrLength;
               operand1.sign = SIGN_POSITIVE;
-              (void)memcpy(operand1.limbs, ptrCoeffSrc + 1, nbrLength * sizeof(int));
+              lenBytes = nbrLength * (int)sizeof(int);
+              (void)memcpy(operand1.limbs, ptrCoeffSrc + 1, lenBytes);
               (void)BigIntRemainder(&operand1, &powerMod, &operand2);
               *ptrCoeffDest = operand2.nbrLimbs;
-              (void)memcpy(ptrCoeffDest + 1, operand2.limbs, operand2.nbrLimbs * sizeof(int));
+              lenBytes = operand2.nbrLimbs * (int)sizeof(int);
+              (void)memcpy(ptrCoeffDest + 1, operand2.limbs, lenBytes);
             }
             ptrCoeffSrc += 1 + nbrLength;
             ptrCoeffDest += 1 + NumberLength;
@@ -774,8 +778,10 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
           ptrCoeffDest = poly1;                     // Destination
           for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
           {
+            int lenBytes;
             nbrLength = 1 + numLimbs(ptrCoeffSrc);
-            (void)memcpy(ptrCoeffDest, ptrCoeffSrc, nbrLength * sizeof(int));
+            lenBytes = nbrLength * (int)sizeof(int);
+            (void)memcpy(ptrCoeffDest, ptrCoeffSrc, lenBytes);
             ptrCoeffSrc += 1 + NumberLength;
             ptrCoeffDest += 1 + NumberLength;
           }
@@ -1126,8 +1132,9 @@ static void vanHoeij(int prime, int numFactors)
 #ifdef __EMSCRIPTEN__
   int maxAttempts;
 #endif
+  double dExponDifference = 6.0 * (double)nbrFactors * LOG_2 / log((double)prime);
+  exponDifference = (int)dExponDifference;
   numberLLL = 0;
-  exponDifference = (int)(6.0 * (double)nbrFactors * LOG_2 / log(prime));
   b = (int)(b0 + (ceil(LOG_3 * log_rootbound) / logPrime) + 3);
   a0 = b + exponDifference;
   exponentMod = a0;
@@ -2140,7 +2147,8 @@ int FactorPolyOverIntegers(void)
     for (int currentDegree = 0; currentDegree <= polyNonRepeatedFactors[0]; currentDegree++)
     {         // Copy polynomial.
       int numLength = numLimbs(ptrPolySqFreeFact) + 1;
-      (void)memcpy(ptrDest, ptrPolySqFreeFact, numLength * sizeof(int));
+      int lenBytes = numLength * (int)sizeof(int);
+      (void)memcpy(ptrDest, ptrPolySqFreeFact, lenBytes);
       ptrPolySqFreeFact += numLength;
       ptrDest += numLength;
     }
