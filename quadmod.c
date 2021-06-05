@@ -1043,9 +1043,9 @@ EXTERNALIZE void doWork(void)
   lang = ((flags & 1)? true: false);
 #endif
   ptrQuadrCoeff = ptrData + 2;  // Skip flags and comma.
-  ptrLinearCoeff = ptrQuadrCoeff + strlen(ptrQuadrCoeff) + 1;
-  ptrConstCoeff = ptrLinearCoeff + strlen(ptrLinearCoeff) + 1;
-  ptrMod = ptrConstCoeff + strlen(ptrConstCoeff) + 1;
+  ptrLinearCoeff = ptrQuadrCoeff + (int)strlen(ptrQuadrCoeff) + 1;
+  ptrConstCoeff = ptrLinearCoeff + (int)strlen(ptrLinearCoeff) + 1;
+  ptrMod = ptrConstCoeff + (int)strlen(ptrConstCoeff) + 1;
   quadmodText(ptrQuadrCoeff, ptrLinearCoeff, ptrConstCoeff, ptrMod, groupLength);
   databack(output);
 }

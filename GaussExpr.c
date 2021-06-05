@@ -173,7 +173,7 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       stackIndex++;
       // Move number to compressed stack.
       currentOffset = comprStackOffset[2 * stackIndex];
-      if (currentOffset >= (COMPR_STACK_SIZE - sizeof(BigInteger) / sizeof(limb)))
+      if (currentOffset >= (COMPR_STACK_SIZE - ((int)sizeof(BigInteger) / (int)sizeof(limb))))
       {
         return EXPR_OUT_OF_MEMORY;
       }
