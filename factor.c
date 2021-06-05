@@ -775,20 +775,22 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
   {
     for (i = 0; i < 17; i++)
     {
-      int shiftBits = nbrs[i];
+      unsigned int shiftBits = (unsigned int)nbrs[i];
+      unsigned int bitsSqr;
+      unsigned int bitsToShift;
       if (shiftBits < 32)
       {
-        if (((unsigned int)bitsSqrLow[i] & (1U << shiftBits)) == 0U)
-        { // Not a perfect square
-          break;
-        }
-      }
-      else if (((unsigned int)bitsSqrHigh[i] & (1U << (shiftBits-32))) == 0U)
-      { // Not a perfect square
-        break;
+        bitsSqr = (unsigned int)bitsSqrLow[i];
+        bitsToShift = shiftBits;
       }
       else
-      {              // Nothing to do.
+      {
+        bitsSqr = (unsigned int)bitsSqrHigh[i];
+        bitsToShift = shiftBits - 32U;
+      }
+      if (((bitsSqr >> bitsToShift) & 0x01U) == 1U)
+      { // Not a perfect square
+        break;
       }
     }
     if (i == 17)
@@ -1556,9 +1558,10 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
           SubtBigNbrMod(common.ecm.Aux3, common.ecm.Xaux, common.ecm.Aux4);
           UncompressLimbsBigInteger(common.ecm.Aux4, &Temp2);
           BigIntGcd(pValue, &Temp2, &Temp4);
+          lenBytes = NumberLength * (int)sizeof(limb);
           if (((Temp4.nbrLimbs != 1) || (Temp4.limbs[0].x > 1)) &&
             ((Temp4.nbrLimbs != NumberLength) ||
-              memcmp(pValue->limbs, Temp4.limbs, NumberLength * sizeof(limb))))
+              memcmp(pValue->limbs, Temp4.limbs, lenBytes)))
           {          // Non-trivial factor found.
             insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
             factorsFound = true;

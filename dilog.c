@@ -581,7 +581,8 @@ static bool DiscrLogPowerPrimeSubgroup(int multiplicity, const int *ptrPrime)
     modmult(baseMontg, MontgomeryMultR2, baseMontg);
     modPow(baseMontg, logarMult.limbs, logarMult.nbrLimbs, primRootPwr); // B^LM
     tmpBase.limbs[0].x = 1;   // Convert from Montgomery to standard notation.
-    (void)memset(&tmpBase.limbs[1], 0, (NumberLength - 1) * sizeof(limb));
+    lenBytes = (NumberLength - 1) * (int)sizeof(limb);
+    (void)memset(&tmpBase.limbs[1], 0, lenBytes);
     modmult(primRootPwr, tmpBase.limbs, primRootPwr);                    // B^LM
     ModInvBigNbr(baseMontg, tmpBase.limbs, TestNbr, NumberLength);       // B^(-1)
     modPow(tmpBase.limbs, logar.limbs, logar.nbrLimbs, primRoot);        // B^(-L)
@@ -640,6 +641,7 @@ void DiscreteLogarithm(void)
     int NbrFactors;
     const int *ptrPrime;
     int multiplicity;
+    int lenBytes;
     bool rc;
 
     ptrPrime = astFactorsMod[index].ptrFactor;
@@ -649,7 +651,6 @@ void DiscreteLogarithm(void)
     if (BigIntIsZero(&tmpBase))
     {     // modulus and base are not relatively prime.
       int ctr;
-      int lenBytes;
       multiplicity = astFactorsMod[index].multiplicity;
       CopyBigInt(&bigNbrA, &power);
       for (ctr = multiplicity; ctr > 0; ctr--)
@@ -713,7 +714,8 @@ void DiscreteLogarithm(void)
     intToBigInteger(&logar, 0);     // logar <- 0
     intToBigInteger(&logarMult, 1); // logarMult <- 1
     NumberLength = mod.nbrLimbs;
-    (void)memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
+    lenBytes = NumberLength * (int)sizeof(limb);
+    (void)memcpy(TestNbr, mod.limbs, lenBytes);
     TestNbr[NumberLength].x = 0;
     //    yieldFreq = 1000000 / (NumberLength*NumberLength)
     GetMontgomeryParms(NumberLength);
