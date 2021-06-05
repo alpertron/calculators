@@ -138,6 +138,7 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
   int degreePoly = 0;
   int degree1 = *ptrArgument1;
   int degree2 = *ptrArgument2;
+  size_t diffPtrs;
   if (degree1 <= 0)
   {
     if (degree1 == degree2)
@@ -159,7 +160,8 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
       {                     // Sum is zero: set degree to zero.
         *ptrArgument1 = 0;
       }
-      valuesIndex = (int)(ptrArgument1 + 2 + NumberLength - &values[0]);
+      diffPtrs = ptrArgument1 - &values[0];
+      valuesIndex = (int)diffPtrs + 2 + NumberLength;
       return EXPR_OK;
     }
     if (degree2 <= 0)
@@ -192,7 +194,8 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
       }
       BigInteger2IntArray(ptrValue1, &operand1);
       ptrValue1 += 1 + numLimbs(ptrValue1);
-      for (currentDegree++; currentDegree < degreeMax; currentDegree++)
+      currentDegree++;
+      for (; currentDegree < degreeMax; currentDegree++)
       {
         *ptrValue1 = 1;  // Number of limbs
         ptrValue1++;
@@ -201,7 +204,8 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
       }
       NumberLength = operand2.nbrLimbs;
       BigInteger2IntArray(ptrValue1, &operand2);
-      valuesIndex = (int)(ptrValue1 + 1 + numLimbs(ptrValue1) - &values[0]);
+      diffPtrs = ptrValue1 - &values[0];
+      valuesIndex = (int)diffPtrs + 1 + numLimbs(ptrValue1);
       return EXPR_OK;
     }
   }
@@ -246,7 +250,8 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
     }
     for (; currentDegree <= degreeMax; currentDegree++)
     {
-      (void)memcpy(ptrValue1, ptrPolyMax, (1 + numLimbs(ptrPolyMax)) * sizeof(int));
+      int lenBytes = (1 + numLimbs(ptrPolyMax)) * (int)sizeof(int);
+      (void)memcpy(ptrValue1, ptrPolyMax, lenBytes);
       ptrPolyMax += 1 + numLimbs(ptrPolyMax);
       ptrValue1 += 1 + numLimbs(ptrValue1);
     }
@@ -278,7 +283,8 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
       for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
       {
         int numLen = 1 + numLimbs(ptrValue1);
-        (void)memcpy(ptrDest, ptrValue1, numLen * sizeof(int));
+        int lenBytes = numLen * (int)sizeof(int);
+        (void)memcpy(ptrDest, ptrValue1, lenBytes);
         ptrValue1 += numLen;
         ptrDest += numLen;
       }
@@ -296,6 +302,7 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
     {        // Degree of polynomial greater than degree of monomial.
       int differenceOfDegrees;
       int nbrLimbsSum;
+      int lenBytes;
 
       *ptrArgument1 = degreePoly;
       ptrValue1 = ptrArgument1 + 1;
@@ -316,15 +323,19 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
       BigInteger2IntArray(poly1, &operand1);
       nbrLimbsSum = numLimbs(&poly1[0]);
       differenceOfDegrees = nbrLimbsSum - numLimbs(ptrValue1);
+      diffPtrs = ptrArgument2 - ptrValue1;
       if (differenceOfDegrees > 0)
       {    // New coefficient is greater than old coefficient.
-        (void)memmove(ptrValue1 + differenceOfDegrees, ptrValue1, (ptrArgument2 - ptrValue1) * sizeof(int));
+        lenBytes = (int)diffPtrs * (int)sizeof(int);
+        (void)memmove(ptrValue1 + differenceOfDegrees, ptrValue1, lenBytes);
       }
       if (differenceOfDegrees < 0)
       {
-        (void)memmove(ptrValue1, ptrValue1 - differenceOfDegrees, (ptrArgument2 - ptrValue1 - differenceOfDegrees) * sizeof(int));
+        lenBytes = ((int)diffPtrs - differenceOfDegrees) * (int)sizeof(int);
+        (void)memmove(ptrValue1, ptrValue1 - differenceOfDegrees, lenBytes);
       }
-      (void)memcpy(ptrValue1, poly1, (1 + nbrLimbsSum) * sizeof(int));
+      lenBytes = (1 + nbrLimbsSum) * (int)sizeof(int);
+      (void)memcpy(ptrValue1, poly1, lenBytes);
     }
   }
   // Reduce degree if leading coefficient is zero.
@@ -342,7 +353,8 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
     ptrValue1 += 1 + numLimbs(ptrValue1);
   }
   *ptrArgument1 = degreeMax;
-  valuesIndex = (int)(ptrValue2 + 1 + numLimbs(ptrValue2) - &values[0]);
+  diffPtrs = ptrValue2 - &values[0];
+  valuesIndex = (int)diffPtrs + 1 + numLimbs(ptrValue2);
   return EXPR_OK;
 }
 
@@ -353,7 +365,8 @@ int* CopyPolyProduct(const int* ptrSrc, int* ptrDest, int polyDegree)
   for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     int nbrLength = 1 + numLimbs(ptrValueSrc);
-    (void)memcpy(ptrValueDest, ptrValueSrc, nbrLength * sizeof(int));
+    int lenBytes = nbrLength * (int)sizeof(int);
+    (void)memcpy(ptrValueDest, ptrValueSrc, lenBytes);
     ptrValueSrc += nbrLength;
     ptrValueDest += nbrLength;
   }
@@ -373,6 +386,7 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
   const int* ptrValueSrc;
   if ((degree1 <= 0) && (degree2 <= 0))
   {        // Product of two monomials.
+    size_t diffPtrs;
     if ((degree1 + degree2) < -MAX_DEGREE)
     {
       return EXPR_DEGREE_TOO_HIGH;
@@ -390,11 +404,13 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
       modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     }
     BigInteger2IntArray(ptrArgument1 + 1, &operand1);
-    valuesIndex = (int)(ptrArgument1 + 2 + *(ptrArgument1 + 1) - &values[0]);
+    diffPtrs = ptrArgument1 - &values[0];
+    valuesIndex = (int)diffPtrs + 2 + *(ptrArgument1 + 1);
     return EXPR_OK;
   }
   if ((degree1 > 0) && (degree2 > 0))
   {        // Product of two polynomials.
+    size_t diffPtrs;
     if ((degree1 + degree2) > MAX_DEGREE)
     {
       return EXPR_DEGREE_TOO_HIGH;
@@ -412,7 +428,8 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
       ptrValue2 = poly1;
       for (currentDegree = 0; currentDegree <= degree1; currentDegree++)
       {
-        (void)memcpy(ptrValue2, ptrValue1, (1 + *ptrValue1) * sizeof(int));
+        int lenBytes = (1 + *ptrValue1) * (int)sizeof(int);
+        (void)memcpy(ptrValue2, ptrValue1, lenBytes);
         ptrValue1 += 1 + *ptrValue1;
         ptrValue2 += nbrLimbs;
       }
@@ -421,7 +438,8 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
       ptrValue2 = poly2;
       for (currentDegree = 0; currentDegree <= degree2; currentDegree++)
       {
-        (void)memcpy(ptrValue2, ptrValueSrc, (1 + *ptrValueSrc) * sizeof(int));
+        int lenBytes = (1 + *ptrValueSrc) * (int)sizeof(int);
+        (void)memcpy(ptrValue2, ptrValueSrc, lenBytes);
         ptrValueSrc += 1 + *ptrValueSrc;
         ptrValue2 += nbrLimbs;
       }
@@ -439,12 +457,14 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
       ptrValue2 = polyMultTemp;
       for (currentDegree = 0; currentDegree <= (degree1 + degree2); currentDegree++)
       {
-        (void)memcpy(ptrValue1, ptrValue2, (1 + *ptrValue2) * sizeof(int));
+        int lenBytes = (1 + *ptrValue2) * (int)sizeof(int);
+        (void)memcpy(ptrValue1, ptrValue2, lenBytes);
         ptrValue1 += 1 + *ptrValue1;
         ptrValue2 += nbrLimbs;
       }
     }
-    valuesIndex = (int)(ptrValue1 - &values[0]);
+    diffPtrs = ptrValue1 - &values[0];
+    valuesIndex = (int)diffPtrs;
     return EXPR_OK;
   }
   // Product of monomial and polynomial.
@@ -555,7 +575,8 @@ int* CopyPolynomial(int* dest, const int* src, int polyDegree)
   for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     int numLength = numLimbs(ptrSrc) + 1;
-    (void)memcpy(ptrDest, ptrSrc, numLength * sizeof(int));
+    int lenBytes = numLength * (int)sizeof(int);
+    (void)memcpy(ptrDest, ptrSrc, lenBytes);
     ptrSrc += numLength;
     ptrDest += numLength;
   }
@@ -587,6 +608,7 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
   int degreeBase = *ptrArgument1;
   if (degreeBase <= 0)
   {              // Monomial.
+    size_t diffPtrs;
     if ((-degreeBase * expon) > MAX_DEGREE)
     {
       return EXPR_DEGREE_TOO_HIGH;
@@ -608,7 +630,8 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
       modPowLimb(operand1.limbs, &exponLimb, operand2.limbs);
     }
     BigInteger2IntArray(ptrArgument1 + 1, &operand2);
-    valuesIndex = (int)(ptrArgument1 + 2 + numLimbs(ptrArgument1 + 1) - &values[0]);
+    diffPtrs = ptrArgument1 - &values[0];
+    valuesIndex = (int)diffPtrs + 2 + numLimbs(ptrArgument1 + 1);
     return EXPR_OK;
   }
   // Polynomial.
@@ -619,7 +642,8 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
     // Copy base to poly1
     for (currentDegree = 0; currentDegree <= degreeBase; currentDegree++)
     {
-      (void)memcpy(ptrValue2, ptrValue1, (1 + *ptrValue1) * sizeof(int));
+      int lenBytes = (1 + *ptrValue1) * (int)sizeof(int);
+      (void)memcpy(ptrValue2, ptrValue1, lenBytes);
       ptrValue1 += 1 + *ptrValue1;
       ptrValue2 += nbrLimbs;
     }
@@ -641,7 +665,8 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
     }
     else
     {
-      (void)memcpy(poly2, polyMultTemp, (degreePower + 1) * nbrLimbs * sizeof(int));
+      int lenBytes = (degreePower + 1) * nbrLimbs * (int)sizeof(int);
+      (void)memcpy(poly2, polyMultTemp, lenBytes);
     }
     if (((unsigned int)expon & mask) != 0U)
     {
@@ -653,7 +678,8 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
       }
       else
       {
-        (void)memcpy(poly2, polyMultTemp, (degreePower + 1) * nbrLimbs * sizeof(int));
+        int lenBytes = (degreePower + 1) * nbrLimbs * (int)sizeof(int);
+        (void)memcpy(poly2, polyMultTemp, lenBytes);
       }
     }
   }
@@ -790,7 +816,7 @@ int ComputePolynomial(char* input, int expo)
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
-      if (insideExpon != 0)
+      if (insideExpon)
       {
         *ptrValue1 += *ptrValue2;
         if ((unsigned int)*ptrValue1 >= LIMB_RANGE)
@@ -946,6 +972,7 @@ static int GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
 {
   int degreeGcd;
   const int* ptrNextArgument;
+  size_t diffPtrs;
   if (modulusIsZero)
   {    // Integer GCD polynomial.
     int polyDegree;
@@ -966,7 +993,8 @@ static int GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
     ptrNextArgument = CopyPolynomial(ptrArgument1 + 1, poly5, degreeGcd);
     *ptrArgument1 = degreeGcd;
   }
-  valuesIndex = (int)(ptrNextArgument - &values[0]);
+  diffPtrs = ptrNextArgument - &values[0];
+  valuesIndex = (int)diffPtrs;
   return EXPR_OK;
 }
 
