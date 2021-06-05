@@ -326,18 +326,27 @@ static void ConvertFullToHalfSizeFFT(const struct sComplex *fullSizeFFT,
 // At this moment FFT_LIMB_SIZE = 19 and BITS_PER_GROUP = 31.
 static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
 {
+  size_t diffPtrs;
   int bitExternal = 0;  // Least significant bit of current external limb
                         // that corresponds to bit zero of FFT internal limb.
   const limb *ptrFactor = factor;
   struct sComplex *ptrInternalFactor = fftFactor;
   for (;;)
   {
-    int real = ptrFactor->x >> bitExternal;
-    if ((ptrFactor - factor) < (len - 1))
+    unsigned int uBitExternal = (unsigned int)bitExternal;
+    int maxValueFFTLimb;
+    unsigned int unsignedLimb = (unsigned int)ptrFactor->x >> uBitExternal;
+    int real = (int)unsignedLimb;
+    int imaginary;
+    diffPtrs = ptrFactor - factor;
+    if ((int)diffPtrs < (len - 1))
     {                   // Do not read outside input buffer.
-      real += ((ptrFactor + 1)->x << (BITS_PER_GROUP - bitExternal));
+      unsigned int complementBitExternal = (unsigned int)BITS_PER_GROUP - uBitExternal;
+      real += ((ptrFactor + 1)->x << complementBitExternal);
     }
-    ptrInternalFactor->real = (double)(real & MAX_VALUE_FFT_LIMB);
+    maxValueFFTLimb = MAX_VALUE_FFT_LIMB;
+    real &= (unsigned int)maxValueFFTLimb;
+    ptrInternalFactor->real = (double)real;
     bitExternal += FFT_LIMB_SIZE;
     if (bitExternal >= BITS_PER_GROUP)
     {                   // All bits of input limb have been used.
@@ -345,30 +354,38 @@ static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
       ptrFactor++;
       if ((ptrFactor - factor) == len)
       {
-        ptrInternalFactor->imaginary = 0;
+        ptrInternalFactor->imaginary = 0.0;
         ptrInternalFactor++;
         break;
       }
     }
-    int imaginary = ptrFactor->x >> bitExternal;
-    if ((ptrFactor - factor) < (len - 1))
+    uBitExternal = (unsigned int)bitExternal;
+    unsignedLimb = (unsigned int)ptrFactor->x >> uBitExternal;;
+    imaginary = (int)unsignedLimb;
+    diffPtrs = ptrFactor - factor;
+    if ((int)diffPtrs < (len - 1))
     {                   // Do not read outside input buffer.
-      imaginary += (ptrFactor + 1)->x << (BITS_PER_GROUP - bitExternal);
+      unsigned int complementBitExternal = (unsigned int)BITS_PER_GROUP - uBitExternal;
+      unsignedLimb = (unsigned int)(ptrFactor + 1)->x << complementBitExternal;
+      imaginary += (int)unsignedLimb;
     }
-    ptrInternalFactor->imaginary = (double)(imaginary & MAX_VALUE_FFT_LIMB);
+    imaginary &= MAX_VALUE_FFT_LIMB;
+    ptrInternalFactor->imaginary = (double)imaginary;
     ptrInternalFactor++;
     bitExternal += FFT_LIMB_SIZE;
     if (bitExternal >= BITS_PER_GROUP)
     {                   // All bits of input limb have been used.
       bitExternal -= BITS_PER_GROUP;
       ptrFactor++;
-      if ((ptrFactor - factor) == len)
+      diffPtrs = ptrFactor - factor;
+      if ((int)diffPtrs == len)
       {
         break;
       }
     }
   }
-  return (int)(ptrInternalFactor - fftFactor);
+  diffPtrs = ptrInternalFactor - fftFactor;
+  return (int)diffPtrs;
 }
 
 #if 0
