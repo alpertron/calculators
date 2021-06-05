@@ -1234,13 +1234,14 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
   }
 }
 
-static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
+static void QuarticEquation(const int* polynomial, int multiplicity)
 {
   int ctr;
   bool isImaginary;
   int* ptrValues;
   enum eSign sign1;
   enum eSign sign2;
+  const int* ptrPolynomial = polynomial;
   UncompressBigIntegerB(ptrPolynomial, &Independent);
   ptrPolynomial += 1 + numLimbs(ptrPolynomial);
   UncompressBigIntegerB(ptrPolynomial, &Linear);
@@ -1468,7 +1469,13 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
     RatDeprLinear.numerator.sign = SIGN_POSITIVE;
     for (ctr = 0; ctr < 4; ctr++)
     {
-      isImaginary = ((ctr <= 1) == (RatDeprLinear.numerator.sign == SIGN_POSITIVE));
+      bool signS = (ctr <= 1);
+      bool signNumerator = RatDeprLinear.numerator.sign == SIGN_POSITIVE;
+      isImaginary = false;
+      if ((signS && signNumerator) || (!signS && !signNumerator))
+      {
+        isImaginary = true;
+      }
       showX(multiplicity);
       showFirstTermQuarticEq(ctr);
       showText(" <var>S</var> ");
@@ -1516,7 +1523,7 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
       }
       if (!BigIntIsZero(&RatDeprLinear.numerator))
       {
-        if (((ctr == 0) || (ctr == 1)) == (sign1 == SIGN_NEGATIVE))
+        if ((signS && (sign1 == SIGN_NEGATIVE)) || (!signS && (sign1 != SIGN_NEGATIVE)))
         {
           showPlusSignOn(!isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
         }
@@ -1655,7 +1662,8 @@ static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
       }
       if (!BigIntIsZero(&RatDeprLinear.numerator))
       {
-        if (((ctr == 0) || (ctr == 1)) == (sign2 == SIGN_NEGATIVE))
+        bool signS = (ctr <= 1);
+        if ((signS && (sign2 == SIGN_NEGATIVE)) || (!signS && (sign2 != SIGN_NEGATIVE)))
         {
           showPlusSignOn(!isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
         }
@@ -2125,7 +2133,8 @@ static void AdjustComponent(int denominator, char* ptrStart, int toShow,
     *ptrBeginning = 0;          // Add terminator at end of string.
   }
   copyStr(&ptrBeginning, realRoot);
-  lenBeginning = (int)(ptrBeginning - &beginning[0]);
+  diffPtrs = ptrBeginning - &beginning[0];
+  lenBeginning = (int)diffPtrs;
   if ((*realRoot != 0) && (lenBeginning != 0) && (*ptrStart != 0))
   {
     copyStr(&ptrBeginning, ptrTimes);
@@ -2389,7 +2398,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
       ptrBase++;
       ptrCoeff += 2;
     }
-    lenBytes = polyDegree * sizeof(int);
+    lenBytes = polyDegree * (int)sizeof(int);
     (void)memset(prod, 0, lenBytes);
     prod[1] = 1;    // Initialize polynomial to x.
     for (int expon = 1; expon < index; expon++)
@@ -3242,6 +3251,9 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
             }
           }
         }
+      }
+      else
+      {                // Nothing to do.
       }
       pstFactorInfo++;
     }
