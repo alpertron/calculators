@@ -72,7 +72,8 @@ static void FromPoly(int polyDegree, int* polyDest, const int* polySrc)
   for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     int nbrLimbs = *(ptrPolySrc)+1;
-    (void)memcpy(ptrPolyDest, ptrPolySrc, nbrLimbs * sizeof(int));
+    int lenBytes = nbrLimbs * (int)sizeof(int);
+    (void)memcpy(ptrPolyDest, ptrPolySrc, lenBytes);
     ptrPolyDest += NumberLength + 1;
     ptrPolySrc += nbrLimbs;
   }
@@ -206,9 +207,11 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
       // Copy least significant coefficients of dividend into remainder.
       for (degree = degreeDividend - degreeDivisor; degree > 0; degree--)
       {
+        int lenBytes;
         ptrDividend += 1 + numLimbs(ptrDividend);
         int numLength = 1 + numLimbs(ptrDividend);
-        (void)memcpy(ptrRemainder, ptrDividend, numLength * sizeof(int));
+        lenBytes = numLength * (int)sizeof(int);
+        (void)memcpy(ptrRemainder, ptrDividend, lenBytes);
         ptrRemainder += numLength;
       }
       // Copy remainder to dividend.
@@ -421,6 +424,7 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
     const int* ptrProduct;
     int *ptrDest;
     int currDegree;
+    int lenBytes;
     int newDegree = degrees[nbrDegrees];
     // Compute f*g.
     MultPolynomial(newDegree - 1, oldDegree - 1, revDividend, inverseDivisor);
@@ -475,7 +479,8 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
     // Compute g * (2 - f*g).
     MultPolynomial(oldDegree - 1, newDegree - 1, inverseDivisor, polyTmp);
     // Store g * (2 - f*g) into g.
-    (void)memcpy(inverseDivisor, polyMultTemp, newDegree * nbrLimbs * sizeof(limb));
+    lenBytes = newDegree * nbrLimbs * (int)sizeof(limb);
+    (void)memcpy(inverseDivisor, polyMultTemp, lenBytes);
     oldDegree = newDegree;
   }
   ReverseModularPolynomial(pDividend, revDividend, dividendDegree);
