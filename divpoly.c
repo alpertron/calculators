@@ -35,6 +35,7 @@ static int polyTmp[COMPRESSED_POLY_MAX_LENGTH];
 
 static void ToPoly(int polyDegree, const int* polySrc, int* polyDest)
 {
+  int lenBytes;
   int currentDegree;
   int* ptrPolyDest = polyDest;
   const int *ptrPolySrc = polySrc + 1;
@@ -46,14 +47,16 @@ static void ToPoly(int polyDegree, const int* polySrc, int* polyDest)
       *(ptrPolyDest + 1) = 0;
       ptrPolyDest += NumberLength + 1;
     }
-    (void)memcpy(ptrPolyDest, ptrPolySrc, (*(ptrPolySrc)+1) * sizeof(int));
+    lenBytes = (*(ptrPolySrc)+1) * (int)sizeof(int);
+    (void)memcpy(ptrPolyDest, ptrPolySrc, lenBytes);
   }
   else
   {   // Polynomial
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
       int nbrLimbs = *(ptrPolySrc)+1;
-      (void)memcpy(ptrPolyDest, ptrPolySrc, nbrLimbs * sizeof(int));
+      lenBytes = nbrLimbs * (int)sizeof(int);
+      (void)memcpy(ptrPolyDest, ptrPolySrc, lenBytes);
       ptrPolyDest += NumberLength + 1;
       ptrPolySrc += nbrLimbs;
     }
@@ -82,6 +85,7 @@ static void ReversePolynomial(int* ptrDest, const int* ptrSrc)
   int* ptrIndex;
   int index;
   int numLength;
+  int lenBytes;
   int degreePoly = *ptrSrc;
   if (degreePoly < 0)
   {    // Monomial.
@@ -89,7 +93,8 @@ static void ReversePolynomial(int* ptrDest, const int* ptrSrc)
     *pDest = degreePoly;
     pDest++;
     numLength = numLimbs(ptrSrc + 1) + 1;
-    (void)memcpy(pDest, ptrSrc + 1, numLength * sizeof(int));
+    lenBytes = numLength * (int)sizeof(int);
+    (void)memcpy(pDest, ptrSrc + 1, lenBytes);
     pDest += numLength;
     for (degree = 0; degree < degreePoly; degree++)
     {
@@ -116,7 +121,8 @@ static void ReversePolynomial(int* ptrDest, const int* ptrSrc)
   {
     const int* ptrSrcCoeff = ptrSrc + indexes[degree];
     numLength = numLimbs(ptrSrcCoeff) + 1;
-    (void)memcpy(pDest, ptrSrcCoeff, numLength * sizeof(int));
+    lenBytes = numLength * (int)sizeof(int);
+    (void)memcpy(pDest, ptrSrcCoeff, lenBytes);
     pDest += numLength;
   }
 }
@@ -175,9 +181,11 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
 
       for (degree = degreeDividend; degree > 0; degree--)
       {
+        int lenBytes;
         ptrDividend += numLength;
         numLength = 1 + numLimbs(ptrDividend);
-        (void)memcpy(ptrRemainder, ptrDividend, numLength * sizeof(int));
+        lenBytes = numLength * (int)sizeof(int);
+        (void)memcpy(ptrRemainder, ptrDividend, lenBytes);
         ptrRemainder += numLength;
       }
     }
@@ -253,6 +261,7 @@ int DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType 
   }
   if ((degree1 <= 0) && (degree2 <= 0))
   {        // Division of two monomials.
+    size_t diffPtrs;
     if (degree1 > degree2)
     {      // Degree of dividend less than degree of divisor.
       if (type == TYPE_DIVISION)
@@ -290,7 +299,8 @@ int DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType 
       modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     }
     BigInteger2IntArray(ptrArgument1 + 1, &operand1);
-    valuesIndex = (int)(ptrArgument1 + 2 + *(ptrArgument1 + 1) - &values[0]);
+    diffPtrs = ptrArgument1 - &values[0];
+    valuesIndex = (int)diffPtrs + 2 + *(ptrArgument1 + 1);
     return EXPR_OK;
   }
   if (modulusIsZero)
@@ -342,7 +352,8 @@ static void ReverseModularPolynomial(const int* ptrSrc, int* ptrRev, int polyDeg
   pRev += polyDegree * nbrLimbs;
   for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
-    (void)memcpy(pRev, pSrc, nbrLimbs * sizeof(limb));
+    int lenBytes = nbrLimbs * (int)sizeof(limb);
+    (void)memcpy(pRev, pSrc, lenBytes);
     pSrc += nbrLimbs;
     pRev -= nbrLimbs;
   }
@@ -443,13 +454,15 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
     }
     else
     {
+      int lenBytes;
       AddBigIntModN((int*)MontgomeryMultR1, (int*)MontgomeryMultR1,
         (int*)operand1.limbs, (int*)TestNbr, NumberLength);
       // Subtract 2 minus the trailing coefficient of f*g.
       LenAndLimbs2ArrLimbs(polyMultTemp, operand2.limbs, nbrLimbs);
       SubtBigNbrMod(operand1.limbs, operand2.limbs, operand2.limbs);
       ArrLimbs2LenAndLimbs(polyTmp, operand2.limbs, nbrLimbs);
-      (void)memset(operand1.limbs, 0, nbrLimbs * sizeof(limb));
+      lenBytes = nbrLimbs * (int)sizeof(limb);
+      (void)memset(operand1.limbs, 0, lenBytes);
       for (currDegree = 1; currDegree < newDegree; currDegree++)
       {                    // Get the negative of all coefficients of f*g.
         ptrProduct += nbrLimbs;  // Point to next coefficient of f*g.
@@ -474,7 +487,8 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
   ReverseModularPolynomial(polyMultTemp, polyTmp, quotientDegree);
   if (ptrQuotient != NULL)
   {     // Copy polyTmp to ptrQuotient.
-    (void)memcpy(ptrQuotient, polyTmp, (quotientDegree + 1) * nbrLimbs * sizeof(limb));
+    int lenBytes = (quotientDegree + 1) * nbrLimbs * (int)sizeof(limb);
+    (void)memcpy(ptrQuotient, polyTmp, lenBytes);
   }
   // Compute remainder: pDividend <- pDividend - ptrQuotient * pDivisor.
   // Degree of remainder is at most one less than degree of divisor,
@@ -509,6 +523,7 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
   bool divisorIsOne;
   int* ptrDivisor;
   int* ptrDividend;
+  int lenBytes;
   if (divisorDegree > dividendDegree)
   {    // Quotient is zero.
     if (ptrQuotient != NULL)
@@ -519,14 +534,15 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
     return;
   }
   IntArray2BigInteger(pDivisor + (divisorDegree * nbrLimbs), &operand1);
-  (void)memcpy(operand5.limbs, operand1.limbs, NumberLength * sizeof(int));
+  lenBytes = NumberLength * (int)sizeof(int);
+  (void)memcpy(operand5.limbs, operand1.limbs, lenBytes);
   if (NumberLength == 1)
   {
     divisorIsOne = operand1.limbs[0].x == 1;
   }
   else
   {
-    divisorIsOne = !memcmp(operand1.limbs, MontgomeryMultR1, NumberLength * sizeof(int));
+    divisorIsOne = !memcmp(operand1.limbs, MontgomeryMultR1, lenBytes);
   }
   if (!divisorIsOne)
   {        // Leading coefficient is not 1.
