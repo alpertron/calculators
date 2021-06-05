@@ -505,9 +505,10 @@ void showRatConstants(const char* numerator, const char* denominator)
   }
 }
 
-static void CubicEquation(const int* ptrPolynomial, int multiplicity)
+static void CubicEquation(const int* polynomial, int multiplicity)
 {
   int ctr;
+  const int* ptrPolynomial = polynomial;
   UncompressBigIntegerB(ptrPolynomial, &Independent);
   ptrPolynomial += 1 + numLimbs(ptrPolynomial);
   UncompressBigIntegerB(ptrPolynomial, &Linear);
@@ -964,7 +965,7 @@ static void biquadraticEquation(int multiplicity)
     MultiplyRationalBySqrtRational(&Rat1, &Rat2);
     for (ctr = 0; ctr < 4; ctr++)
     {
-      int sign = RatDeprQuadratic.numerator.sign;
+      enum eSign sign = RatDeprQuadratic.numerator.sign;
       RatDeprQuadratic.numerator.sign = SIGN_POSITIVE;
       showX(multiplicity);
       showFirstTermQuarticEq(ctr);
@@ -1236,7 +1237,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
 static void QuarticEquation(const int* ptrPolynomial, int multiplicity)
 {
   int ctr;
-  int isImaginary;
+  bool isImaginary;
   int* ptrValues;
   enum eSign sign1;
   enum eSign sign2;
@@ -2052,6 +2053,7 @@ static void AdjustComponent(int denominator, char* ptrStart, int toShow,
   char* ptrBeginning = beginning;
   int lenBeginning;
   *ptrBeginning = 0;
+  size_t diffPtrs;
   if (denomin == 0)
   {     // Discard all output if result is zero.
     ptrOutput = ptrStart;
@@ -2128,7 +2130,8 @@ static void AdjustComponent(int denominator, char* ptrStart, int toShow,
   {
     copyStr(&ptrBeginning, ptrTimes);
   }
-  lenBeginning = (int)(ptrBeginning - &beginning[0]);
+  diffPtrs = ptrBeginning - &beginning[0];
+  lenBeginning = (int)diffPtrs;
   (void)memmove(ptrStart + lenBeginning, ptrStart, strlen(ptrStart));
   (void)memcpy(ptrStart, beginning, lenBeginning);
   ptrOutput += lenBeginning;
@@ -2377,6 +2380,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
     // Test whether x^degree - 1 divides this polynomial.
     int base[MAX_DEGREE];
     int prod[MAX_DEGREE];
+    int lenBytes;
     int* ptrBase = base;
     ptrCoeff = ptrPolynomial;
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
@@ -2385,7 +2389,8 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
       ptrBase++;
       ptrCoeff += 2;
     }
-    (void)memset(prod, 0, polyDegree * sizeof(int));
+    lenBytes = polyDegree * sizeof(int);
+    (void)memset(prod, 0, lenBytes);
     prod[1] = 1;    // Initialize polynomial to x.
     for (int expon = 1; expon < index; expon++)
     {               // Multiply by x.
@@ -2398,8 +2403,9 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
     }
     // If result is 1, then the polynomial is cyclotomic.
     prod[0]--;
-    (void)memset(base, 0, polyDegree*sizeof(int));
-    if (memcmp(base, prod, polyDegree * sizeof(int)) == 0)
+    lenBytes = polyDegree * (int)sizeof(int);
+    (void)memset(base, 0, lenBytes);
+    if (memcmp(base, prod, lenBytes) == 0)
     {     // The polynomial is cyclotomic.
       bool denIsOdd = ((index % 2) == 1)? true: false;
       int realDen = denIsOdd ? index : (index / 2);
@@ -3112,7 +3118,8 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
   for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {    // Copy coefficient and skip zero coefficients.
     int nbrLen = 1 + numLimbs(ptrCoeff);
-    (void)memcpy(ptrCoeffDest, ptrCoeff, nbrLen * sizeof(int));
+    int lenBytes = nbrLen * (int)sizeof(int);
+    (void)memcpy(ptrCoeffDest, ptrCoeff, lenBytes);
     ptrCoeff += nbrLen + (2*(gcdDegrees-1));
     ptrCoeffDest += nbrLen;
   }
@@ -3192,12 +3199,10 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
             pstFactorInfo = factorInfo;
             for (factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
             {
-              if (pstFactorInfo->degree < currDegree)
+              if ((pstFactorInfo->degree < currDegree) && 
+                (gcd(pstFactorInfo->degree, currDegree) != 1))
               {
-                if (gcd(pstFactorInfo->degree, currDegree) != 1)
-                {
-                  break;
-                }
+                break;
               }
               pstFactorInfo++;
             }
@@ -3207,6 +3212,9 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
               cycleOddGtNOver2Found = currDegree;
             }
           }
+        }
+        else
+        {            // Nothing to do.
         }
       }
       else if ((currDegree > 3) && ((currDegree > degree) / 3))

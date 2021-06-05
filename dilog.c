@@ -855,13 +855,13 @@ static void ExchangeMods(void)
 static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *bigSubGroupOrder)
 {
   unsigned int carry;
-  unsigned int unsignedLimb;
   int nbrLimbs = bigSubGroupOrder->nbrLimbs;
   (nbr + nbrLimbs)->x = 0;
   MultBigNbrByInt((int *)nbr, mult.x, (int *)nbr, nbrLimbs+1);
   carry = add.x;
   for (int j = 0; j<=nbrLimbs; j++)
   {
+    unsigned int unsignedLimb;
     carry += (unsigned int)nbr[j].x;
     unsignedLimb = carry & MAX_VALUE_LIMB;
     nbr[j].x = (int)unsignedLimb;
