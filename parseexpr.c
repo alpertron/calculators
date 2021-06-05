@@ -113,15 +113,17 @@ static void getHexValue(const char** pptrInput)
       {
         c -= 'a' - 10;
       }
-      carry += (unsigned int)c << shLeft;
+      carry += (unsigned int)c << (unsigned int)shLeft;
       shLeft += 4;   // 4 bits per hex digit.
       if (shLeft >= BITS_PER_GROUP)
       {
+        unsigned int shLeftComp;
         shLeft -= BITS_PER_GROUP;
         unsignedLimb = carry & MAX_VALUE_LIMB;
         ptrLimb->x = (int)unsignedLimb;
         ptrLimb++;
-        carry = (unsigned int)c >> (4 - shLeft);
+        shLeftComp = 4U - (unsigned int)shLeft;
+        carry = (unsigned int)c >> shLeftComp;
       }
     }
     if ((carry != 0U) || (ptrLimb == &value.limbs[0]))
@@ -194,11 +196,13 @@ static enum eExprErr parseNumberInsidePolyExpr(const char** ppInput, char** ppOu
   const char* ptrInput = pInput;
   int limb;
   int bitNbr;
+  size_t diffPtrs;
   while ((*ptrInput >= '0') && (*ptrInput <= '9'))
   {        // Find end of number.
     ptrInput++;
   }
-  Dec2Bin(pInput - 1, value.limbs, (int)(ptrInput + 1 - pInput), &value.nbrLimbs);
+  diffPtrs = ptrInput - pInput;
+  Dec2Bin(pInput - 1, value.limbs, (int)diffPtrs + 1, &value.nbrLimbs);
   pInput = ptrInput;
   value.sign = SIGN_POSITIVE;
   if (exponOperatorCounter != 0)
@@ -225,7 +229,8 @@ static enum eExprErr parseNumberInsidePolyExpr(const char** ppInput, char** ppOu
       (void)BigIntRemainder(&value, &powerMod, &value);
       if (value.nbrLimbs < NumberLength)
       {    // Fill with zeros.
-        (void)memset(&value.limbs[value.nbrLimbs], 0, (NumberLength - value.nbrLimbs) * sizeof(int));
+        int lenBytes = (NumberLength - value.nbrLimbs) * (int)sizeof(int);
+        (void)memset(&value.limbs[value.nbrLimbs], 0, lenBytes);
       }
       // Convert to Montgomery notation.
       modmult(value.limbs, MontgomeryMultR2, value.limbs);
@@ -311,7 +316,7 @@ static enum eExprErr processClosingParenOrComma(char **ppOutput, char c,
     // Increment number of arguments given by user.
     stackArgumNbrPriority[stackOperIndex - 1]++;
     // Check whether the user provided extra arguments.
-    if (stackArgumNbrPriority[stackOperIndex - 1] ==
+    if ((unsigned short)stackArgumNbrPriority[stackOperIndex - 1] ==
       ((unsigned short)stackOper[stackOperIndex - 1] >> 8))
     {
       return EXPR_TOO_MANY_ARGUMENTS;
@@ -325,8 +330,8 @@ static enum eExprErr processClosingParenOrComma(char **ppOutput, char c,
     if ((stackOperIndex > 0) &&
       (((unsigned short)stackOper[stackOperIndex - 1] & 0xFF00U) != 0U))
     {           // Previous element in stack is a function token.
-      if ((stackArgumNbrPriority[stackOperIndex - 1] + 1) !=
-        ((unsigned short)stackOper[stackOperIndex - 1] >> 8))
+      unsigned short priority = (unsigned short)stackArgumNbrPriority[stackOperIndex - 1] + 1U;
+      if (priority != ((unsigned short)stackOper[stackOperIndex - 1] >> 8))
       {
         return EXPR_TOO_FEW_ARGUMENTS;
       }
