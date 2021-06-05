@@ -458,7 +458,6 @@ static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
     }
     else
     {
-      int lenBytes;
       AddBigIntModN((int*)MontgomeryMultR1, (int*)MontgomeryMultR1,
         (int*)operand1.limbs, (int*)TestNbr, NumberLength);
       // Subtract 2 minus the trailing coefficient of f*g.
