@@ -1458,9 +1458,9 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
       return EXPR_INTERM_TOO_HIGH;
     }
 #ifdef FACTORIZATION_APP
-    if ((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr > 664380)
+    if (((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 664380)
 #else
-    if ((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr > 66438)
+    if (((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 66438)
 #endif
     {   // Shift too much to the left.
       return EXPR_INTERM_TOO_HIGH;

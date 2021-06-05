@@ -122,22 +122,24 @@ void GaussianFactorization(void)
       }
       if ((prime.limbs[0].x & 2) == 0)
       {                               // Prime is congruent to 1 (mod 4)
+        int NumberLengthBytes;
         CopyBigInt(&q, &prime);
         NumberLength = prime.nbrLimbs;
-        (void)memcpy(&TestNbr, prime.limbs, NumberLength * sizeof(limb));
+        NumberLengthBytes = NumberLength * (int)sizeof(limb);
+        (void)memcpy(&TestNbr, prime.limbs, NumberLengthBytes);
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
         subtractdivide(&q, 1, 4);     // q = (prime-1)/4
-        (void)memset(&K, 0, NumberLength * sizeof(limb));
-        (void)memset(minusOneMont, 0, NumberLength * sizeof(limb));
+        (void)memset(&K, 0, NumberLengthBytes);
+        (void)memset(minusOneMont, 0, NumberLengthBytes);
         SubtBigNbrModN(minusOneMont, MontgomeryMultR1, minusOneMont, TestNbr, NumberLength);
         K[0].x = 1;
         do
         {    // Loop that finds mult1 = sqrt(-1) mod prime in Montgomery notation.
           K[0].x++;
           modPow(K, q.limbs, q.nbrLimbs, mult1.limbs);
-        } while (!memcmp(mult1.limbs, MontgomeryMultR1, NumberLength * sizeof(limb)) ||
-                 !memcmp(mult1.limbs, minusOneMont, NumberLength * sizeof(limb)));
+        } while (!memcmp(mult1.limbs, MontgomeryMultR1, NumberLengthBytes) ||
+                 !memcmp(mult1.limbs, minusOneMont, NumberLengthBytes));
         K[0].x = 1;
         modmult(mult1.limbs, K, mult1.limbs);       // Convert mult1 to standard notation.
         UncompressLimbsBigInteger(mult1.limbs, &mult1);  // Convert to Big Integer.
