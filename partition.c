@@ -299,6 +299,7 @@ static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulat
 // Using partArray as a buffer, accumulate products up to two limbs, then multiply the groups recursively.
 void factorial(BigInteger *result, int argument)
 {
+  unsigned int unsignedLimb;
   int nbrGroupsAccumulated = 1;
   double factorAccum = 1;
   double maxFactorAccum = (double)(1U << 30) * (double)(1U << 23);
@@ -312,7 +313,9 @@ void factorial(BigInteger *result, int argument)
     }
     factorAccum *= ctr;
   }
-  nbrGroupsAccumulated = 1 << numberofBitsSetToOne(nbrGroupsAccumulated - 1);  
+  unsignedLimb = numberofBitsSetToOne(nbrGroupsAccumulated - 1);
+  unsignedLimb = 1U << unsignedLimb;
+  nbrGroupsAccumulated = (int)unsignedLimb;
   ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, result);
 }
 
