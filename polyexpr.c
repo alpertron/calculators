@@ -868,7 +868,7 @@ int ComputePolynomial(const char* input, int expo)
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
-      if (insideExpon != 0)
+      if (insideExpon)
       {
         *ptrValue1 *= *ptrValue2;
         if ((unsigned int)*ptrValue1 >= LIMB_RANGE)
@@ -889,7 +889,7 @@ int ComputePolynomial(const char* input, int expo)
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
-      if (insideExpon != 0)
+      if (insideExpon)
       {
         *ptrValue1 /= *ptrValue2;
       }
@@ -906,7 +906,7 @@ int ComputePolynomial(const char* input, int expo)
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
-      if (insideExpon != 0)
+      if (insideExpon)
       {
         *ptrValue1 %= *ptrValue2;
       }
@@ -926,7 +926,7 @@ int ComputePolynomial(const char* input, int expo)
       {
         return EXPR_EXPONENT_NEGATIVE;
       }
-      if (insideExpon != 0)
+      if (insideExpon)
       {
         val = *stackValues[stackIndex - 1];
         pwr = 1;
