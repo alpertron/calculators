@@ -778,7 +778,7 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
       unsigned int shiftBits = (unsigned int)nbrs[i];
       unsigned int bitsSqr;
       unsigned int bitsToShift;
-      if (shiftBits < 32)
+      if (shiftBits < 32U)
       {
         bitsSqr = (unsigned int)bitsSqrLow[i];
         bitsToShift = shiftBits;

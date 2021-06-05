@@ -168,7 +168,7 @@ static void getCurrentStackValue(BigInteger* pValue)
 static enum eExprErr setStackValue(const BigInteger* pValue)
 {
   int currentOffset = comprStackOffset[stackIndex];
-  if (currentOffset >= (COMPR_STACK_SIZE - sizeof(BigInteger) / sizeof(limb)))
+  if (currentOffset >= (COMPR_STACK_SIZE - (int)sizeof(BigInteger) / (int)sizeof(limb)))
   {
     return EXPR_OUT_OF_MEMORY;
   }
@@ -1187,8 +1187,10 @@ static enum eExprErr ComputeFibLucas(int origValue)
       unsigned int carry = 0;
       for (j = 0; j < len; j++)
       {
+        unsigned int unsignedLimb;
         carry += (unsigned int)(pFibonPrev + j)->x + (unsigned int)(pFibonAct + j)->x;
-        (pFibonPrev + j)->x = (int)(carry & MAX_VALUE_LIMB);
+        unsignedLimb = carry & MAX_VALUE_LIMB;
+        (pFibonPrev + j)->x = (int)unsignedLimb;
         carry >>= BITS_PER_GROUP;
       }
       if (carry != 0U)
@@ -1369,8 +1371,9 @@ static enum eExprErr ComputeConcatFact(void)
   }
   else
   {
-    Dec2Bin(textFactor, curStack.limbs, (int)(ptrTextFactor - &textFactor[0]),
-      &curStack.nbrLimbs);
+    size_t diffPtrs = ptrTextFactor - &textFactor[0];
+    int size = (int)diffPtrs;
+    Dec2Bin(textFactor, curStack.limbs, size, &curStack.nbrLimbs);
   }
   return EXPR_OK;
 }
@@ -1455,9 +1458,9 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
       return EXPR_INTERM_TOO_HIGH;
     }
 #ifdef FACTORIZATION_APP
-    if ((unsigned int)((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 664380U)
+    if ((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr > 664380)
 #else
-    if ((unsigned int)((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 66438U)
+    if ((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr > 66438)
 #endif
     {   // Shift too much to the left.
       return EXPR_INTERM_TOO_HIGH;
@@ -1478,7 +1481,8 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
     *ptrDest = ((curLimb >> (BITS_PER_GROUP - rem)) | (prevLimb << rem)) & MAX_INT_NBR;
     if (delta > 0)
     {
-      (void)memset(first->limbs, 0, delta * sizeof(limb));
+      int lenBytes = delta * (int)sizeof(limb);
+      (void)memset(first->limbs, 0, lenBytes);
     }
     result->nbrLimbs += delta;
     if (result->limbs[result->nbrLimbs].x != 0)

@@ -181,7 +181,8 @@ static void ContFrac(void)
     bool ended;
     int periodIndex;
     int index;
-        // PQa algorithm for (P+G)/Q where G = sqrt(discriminant)
+    size_t diffPtrs;
+    // PQa algorithm for (P+G)/Q where G = sqrt(discriminant)
         // If D - U^2 is not multiple of V then 
         //   U = U*V
         //   V = V*V
@@ -251,7 +252,8 @@ static void ContFrac(void)
           }
         }
       }
-    } while ((ptrOutput - &output[0]) < (sizeof(output) - 30000));
+      diffPtrs = ptrOutput - &output[0];
+    } while ((int)diffPtrs < ((int)sizeof(output) - 30000));
     if (!hexadecimal)
     {        // Show convergent checkbox not checked.
       ptrOutput -= 2;                       // Delete extra comma and space at the end.
