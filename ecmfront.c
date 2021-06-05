@@ -217,17 +217,18 @@ static void GetMobius(char **pptrOutput)
 
 static void modPowShowStatus(const limb *base, const limb *exp, int nbrGroupsExp, limb *power)
 {
-  (void)memcpy(power, MontgomeryMultR1, (NumberLength + 1) * sizeof(*power));  // power <- 1
+  int lenBytes = (NumberLength + 1) * (int)sizeof(*power);
+  (void)memcpy(power, MontgomeryMultR1, lenBytes);  // power <- 1
   for (int index = nbrGroupsExp - 1; index >= 0; index--)
   {
     int groupExp = (exp + index)->x;
 #ifdef __EMSCRIPTEN__
     percentageBPSW = (nbrGroupsExp - index) * 100 / nbrGroupsExp;
 #endif
-    for (int mask = 1 << (BITS_PER_GROUP - 1); mask > 0; mask >>= 1)
+    for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
     {
       modmult(power, power, power);
-      if ((groupExp & mask) != 0)
+      if (((unsigned int)groupExp & mask) != 0)
       {
         modmult(power, base, power);
       }
@@ -299,14 +300,16 @@ static bool TryToFindSqRootMinus1(BigInteger *pTmp1, BigInteger *pTmp2,
   int shRightPower;
   int powerLen;
   int base;
+  int lenBytes;
   int nbrLimbs = pTmp2->nbrLimbs;
   pTmp2->limbs[nbrLimbs].x = 0;
-  (void)memcpy(pTmp3->limbs, pTmp2->limbs, (nbrLimbs + 1) * sizeof(limb));
+  lenBytes = (nbrLimbs + 1) * (int)sizeof(limb);
+  (void)memcpy(pTmp3->limbs, pTmp2->limbs, lenBytes);
   pTmp3->limbs[0].x--;      // q = p - 1 (p is odd, so there is no carry).
   powerLen = nbrLimbs;
   DivideBigNbrByMaxPowerOf2(&shRightPower, pTmp3->limbs, &powerLen);
   base = 1;
-  (void)memcpy(TestNbr, pTmp2->limbs, (nbrLimbs + 1) * sizeof(limb));
+  (void)memcpy(TestNbr, pTmp2->limbs, lenBytes);
   GetMontgomeryParms(nbrLimbs);
   do
   {                 // Compute Mult1 = sqrt(-1) (mod p).
@@ -323,11 +326,13 @@ static bool TryToFindSqRootMinus1(BigInteger *pTmp1, BigInteger *pTmp2,
       {
         return true;  // Mult1^2 = -1 (mod p), so exit loop.
       }
-      (void)memcpy(pTmp1->limbs, pTmp4->limbs, nbrLimbs * sizeof(limb));
+      lenBytes = nbrLimbs * (int)sizeof(limb);
+      (void)memcpy(pTmp1->limbs, pTmp4->limbs, lenBytes);
     }
     // If power (Mult4) is 1, that means that number is at least PRP,
     // so continue loop trying to find square root of -1.
-  } while (memcmp(pTmp4->limbs, MontgomeryMultR1, nbrLimbs * sizeof(limb)) == 0);
+    lenBytes = nbrLimbs * (int)sizeof(limb);
+  } while (memcmp(pTmp4->limbs, MontgomeryMultR1, lenBytes) == 0);
   return false;
 }
 
@@ -351,7 +356,10 @@ static void GenerateSumOfTwoSquaresOfPQ(const int* ptrArrFactors,
     int r;
     for (;;)
     {
-      r = (int)sqrt((double)(prime - (j * j)));
+      double dR;
+      r = prime - (j * j);
+      dR = sqrt((double)r);
+      r = (int)dR;
       if ((r * r) + (j * j) == prime)
       {
         break;
@@ -442,6 +450,7 @@ static void ComputeThreeSquares(BigInteger *pTmp,
     }
     else
     {
+      int lenBytes;
       nbrLimbs = pTmp2->nbrLimbs;
       if (!TryToFindSqRootMinus1(pTmp1, pTmp2, pTmp3, pTmp4))
       {            // Cannot find sqrt(-1) (mod p), go to next candidate.
@@ -449,7 +458,8 @@ static void ComputeThreeSquares(BigInteger *pTmp,
       }
       // Convert pTmp1->limbs from Montgomery notation to standard number
       // by multiplying by 1 in Montgomery notation.
-      (void)memset(pTmp4->limbs, 0, nbrLimbs * sizeof(limb));
+      lenBytes = nbrLimbs * (int)sizeof(limb);
+      (void)memset(pTmp4->limbs, 0, lenBytes);
       pTmp4->limbs[0].x = 1;
       // pTmp1->limbs = sqrt(-1) mod p.
       modmult(pTmp4->limbs, pTmp1->limbs, pTmp1->limbs);
@@ -467,7 +477,8 @@ static void ComputeThreeSquares(BigInteger *pTmp,
       // Initialize real part to square root of (-1).
       intToBigInteger(pTmp2, 1);   // Initialize imaginary part to 1.
       // Initialize real part to prime.
-      (void)memcpy(pTmp3->limbs, TestNbr, NumberLength * sizeof(limb));
+      lenBytes = NumberLength * (int)sizeof(limb);
+      (void)memcpy(pTmp3->limbs, TestNbr, lenBytes);
       pTmp3->sign = SIGN_POSITIVE;
       pTmp3->nbrLimbs = NumberLength;
       intToBigInteger(pTmp4, 0);   // Initialize imaginary part to 0.
@@ -505,7 +516,8 @@ static void ComputeThreeSquares(BigInteger *pTmp,
 static void ComputeSumOfTwoSquaresForPrime(void)
 {
   static limb minusOneMont[MAX_LEN];
-  (void)memset(minusOneMont, 0, NumberLength * sizeof(limb));
+  int lenBytes = NumberLength * (int)sizeof(limb);
+  (void)memset(minusOneMont, 0, lenBytes);
   SubtBigNbrModN(minusOneMont, MontgomeryMultR1, minusOneMont, TestNbr, NumberLength);
   CopyBigInt(&q, &p);
   subtractdivide(&q, 1, 4);     // q = (prime-1)/4
@@ -514,17 +526,18 @@ static void ComputeSumOfTwoSquaresForPrime(void)
   {    // Loop that finds mult1 = sqrt(-1) mod prime in Montgomery notation.
     K.limbs[0].x++;
     modPowShowStatus(K.limbs, q.limbs, q.nbrLimbs, Mult1.limbs);
-  } while (!memcmp(Mult1.limbs, MontgomeryMultR1, NumberLength * sizeof(limb)) ||
-    !memcmp(Mult1.limbs, minusOneMont, NumberLength * sizeof(limb)));
+  } while (!memcmp(Mult1.limbs, MontgomeryMultR1, lenBytes) ||
+    !memcmp(Mult1.limbs, minusOneMont, lenBytes));
   Mult1.sign = SIGN_POSITIVE;
-  (void)memset(Mult2.limbs, 0, p.nbrLimbs * sizeof(limb));
+  lenBytes = p.nbrLimbs * sizeof(limb);
+  (void)memset(Mult2.limbs, 0, lenBytes);
   Mult2.limbs[0].x = 1;
   Mult2.nbrLimbs = 1;
   Mult2.sign = SIGN_POSITIVE;
   // Convert Mult1 to standard notation by multiplying by 1 in
   // Montgomery notation.
   modmult(Mult1.limbs, Mult2.limbs, Mult3.limbs);
-  (void)memcpy(Mult1.limbs, Mult3.limbs, p.nbrLimbs * sizeof(limb));
+  (void)memcpy(Mult1.limbs, Mult3.limbs, lenBytes);
   for (Mult1.nbrLimbs = p.nbrLimbs; Mult1.nbrLimbs > 1; Mult1.nbrLimbs--)
   {  // Adjust number of limbs so the most significant limb is not zero.
     if (Mult1.limbs[Mult1.nbrLimbs - 1].x != 0)
@@ -535,7 +548,7 @@ static void ComputeSumOfTwoSquaresForPrime(void)
   // Initialize real part to square root of (-1).
   intToBigInteger(&Mult2, 1);   // Initialize imaginary part to 1.
   // Initialize real part to prime.
-  (void)memcpy(Mult3.limbs, TestNbr, p.nbrLimbs * sizeof(limb));
+  (void)memcpy(Mult3.limbs, TestNbr, lenBytes);
   Mult3.nbrLimbs = p.nbrLimbs;
   Mult3.sign = SIGN_POSITIVE;
   while ((Mult3.nbrLimbs > 1) && (Mult3.limbs[Mult3.nbrLimbs - 1].x == 0))
@@ -552,6 +565,7 @@ static void ComputeSumOfTwoSquaresForPrime(void)
 // Compute prime p as Mult1^2 + Mult2^2 + Mult3^2 + Mult4^2.
 static void ComputeSumOfFourSquaresForPrime(void)
 {
+  int lenBytes;
   int mult1 = 0;
   // Compute Mult1 and Mult2 so Mult1^2 + Mult2^2 = -1 (mod p)
   intToBigInteger(&Tmp, -1);
@@ -574,7 +588,8 @@ static void ComputeSumOfFourSquaresForPrime(void)
   // Find Mult2 <- square root of Tmp = Tmp^q (mod p) in Montgomery notation.
   modPowShowStatus(Tmp.limbs, q.limbs, p.nbrLimbs, Mult2.limbs);
   // Convert Mult2 from Montgomery notation to standard notation.
-  (void)memset(Tmp.limbs, 0, p.nbrLimbs * sizeof(limb));
+  lenBytes = p.nbrLimbs * (int)sizeof(limb);
+  (void)memset(Tmp.limbs, 0, lenBytes);
   Tmp.limbs[0].x = 1;
   intToBigInteger(&Mult3, 1);
   intToBigInteger(&Mult4, 0);
@@ -746,11 +761,12 @@ static void ComputeFourSquares(const struct sFactors *pstFactors)
     }
     else
     { /* Prime not 2 */
+      int lenBytes = NumberLength * (int)sizeof(limb);
       NumberLength = p.nbrLimbs;
-      (void)memcpy(&TestNbr, p.limbs, NumberLength * sizeof(limb));
+      (void)memcpy(&TestNbr, p.limbs, lenBytes);
       TestNbr[NumberLength].x = 0;
       GetMontgomeryParms(NumberLength);
-      (void)memset(K.limbs, 0, NumberLength * sizeof(limb));
+      (void)memset(K.limbs, 0, lenBytes);
       if ((p.limbs[0].x & 3) == 1)
       { /* if p = 1 (mod 4) */
         ComputeSumOfTwoSquaresForPrime();
@@ -947,6 +963,7 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
     }
     if (nbrSIQS > 0)
     {
+      uint64_t quotient;
       copyStr(&ptrOutput, "<p>SIQS:<ul><li>");
       int2dec(&ptrOutput, polynomialsSieved);
       copyStr(&ptrOutput, lang ? " polinomios utilizados" : " polynomials sieved");
@@ -957,12 +974,14 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
       int2dec(&ptrOutput, smoothsFound);
       copyStr(&ptrOutput, lang ? " congruencias completas (1 de cada " :
         " smooth congruences found (1 out of every ");
-      int2dec(&ptrOutput, (int)(ValuesSieved / smoothsFound));
+      quotient = ValuesSieved / (uint64_t)smoothsFound;
+      int2dec(&ptrOutput, (int)quotient);
       copyStr(&ptrOutput, lang ? " valores)</li><li>" : " values)</li><li>");
       int2dec(&ptrOutput, totalPartials);
       copyStr(&ptrOutput, lang ? " congruencias parciales (1 de cada " :
         " partial congruences found (1 out of every ");
-      int2dec(&ptrOutput, (int)(ValuesSieved / totalPartials));
+      quotient = ValuesSieved / (uint64_t)totalPartials;
+      int2dec(&ptrOutput, (int)quotient);
       copyStr(&ptrOutput, lang ? " valores)</li><li>" : " values)</li><li>");
       int2dec(&ptrOutput, partialsFound);
       copyStr(&ptrOutput, lang ? " congruencias parciales útiles</li><li>Tamaño de la matriz binaria: " :
@@ -1079,9 +1098,9 @@ EXTERNALIZE void doWork(void)
   cunningham = (*(ptrData + 2) == '1');
   hexadecimal = (*(ptrData + 3) == '1');
   ptrData += 4;
-  ptrWebStorage = ptrData + strlen(ptrData) + 1;
+  ptrWebStorage = ptrData + (int)strlen(ptrData) + 1;
   ptrKnownFactors = findChar(ptrWebStorage, '=');
-  if (prettyprint == 0)
+  if (!prettyprint)
   {
     groupLen = -groupLen;  // Do not show number of digts.
   }
