@@ -95,7 +95,7 @@ void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
   /*@out@*/int* polyProduct, int polyDegree, const int* polyMod);
 void MultPolynomial(int degree1, int degree2, /*@in@*/int *factor1, /*@in@*/int *factor2);
 void GetPolyInvParm(int polyDegree, /*@in@*/int *polyMod);
-int ComputePolynomial(char *input, int expo);
+int ComputePolynomial(const char *input, int expo);
 void OrigPolyFromMontgomeryToStandard(void);
 void ConvertToMonic(int *poly, int polyDegree);
 void SquareFreeFactorization(int polyDegree, int *poly, int expon);

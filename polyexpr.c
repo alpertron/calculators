@@ -590,7 +590,8 @@ int* CopyPolynomialFixedCoeffSize(int* dest, const int* src, int polyDegree, int
   for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     int numLength = numLimbs(ptrSrc) + 1;
-    (void)memcpy(ptrDest, ptrSrc, numLength * sizeof(int));
+    int lenBytes = numLength * (int)sizeof(int);
+    (void)memcpy(ptrDest, ptrSrc, lenBytes);
     ptrSrc += coeffSize;
     ptrDest += coeffSize;
   }
@@ -606,9 +607,9 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
   int currentDegree;
   int nbrLimbs = powerMod.nbrLimbs + 1;
   int degreeBase = *ptrArgument1;
+  size_t diffPtrs;
   if (degreeBase <= 0)
   {              // Monomial.
-    size_t diffPtrs;
     if ((-degreeBase * expon) > MAX_DEGREE)
     {
       return EXPR_DEGREE_TOO_HIGH;
@@ -696,19 +697,23 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
     for (currentDegree = 0; currentDegree <= degreePower; currentDegree++)
     {
       int len = 1 + *ptrValue2;
-      (void)memcpy(ptrValue1, ptrValue2, len * sizeof(int));
+      int lenBytes = len * (int)sizeof(int);
+      (void)memcpy(ptrValue1, ptrValue2, lenBytes);
       ptrValue1 += len;
       ptrValue2 += nbrLimbs;
     }
   }
-  valuesIndex = (int)(ptrValue1 - &values[0]);
+  diffPtrs = ptrValue1 - &values[0];
+  valuesIndex = (int)diffPtrs;
   return EXPR_OK;
 }
 
 void computePower(int expo)
 {
+  int lenBytes;
   (void)BigIntPowerIntExp(&primeMod, expo, &powerMod);
-  (void)memcpy(TestNbr, powerMod.limbs, powerMod.nbrLimbs * sizeof(limb));
+  lenBytes = powerMod.nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(TestNbr, powerMod.limbs, lenBytes);
   NumberLength = powerMod.nbrLimbs;
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(powerMod.nbrLimbs);
@@ -719,7 +724,7 @@ void computePower(int expo)
 // Polynomial: degree, coeff deg 0, coeff deg 1, ...
 // where coefficient: nbrlimbs, xxx (limbs)
 // Exponent: exponent (integer)
-int ComputePolynomial(char* input, int expo)
+int ComputePolynomial(const char* input, int expo)
 {
   int* stackValues[STACK_OPER_SIZE];
   int stackIndex = 0;
@@ -837,7 +842,7 @@ int ComputePolynomial(char* input, int expo)
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
-      if (insideExpon != 0)
+      if (insideExpon)
       {
         *ptrValue1 -= *ptrValue2;
         if ((unsigned int)*ptrValue1 >= LIMB_RANGE)
