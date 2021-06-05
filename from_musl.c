@@ -14,7 +14,13 @@ int memcmp(const void *vl, const void *vr, size_t count)
     l++;
     r++;
   }
-  return (n != 0U)? (int)(*l-*r) : 0;
+  if (n != 0U)
+  {
+    char diff = *l - *r;
+    int rc = (int)diff;
+    return rc;
+  }
+  return 0;
 }
 
 void *memcpy(void *dest, const void *src, size_t count)
@@ -280,10 +286,11 @@ void *memmove(void *dest, const void *src, size_t count)
   return dest;
 }
 #endif
-void *memset(void *dest, int c, size_t n)
+void *memset(void *dest, int c, size_t count)
 {
   unsigned char *s = (unsigned char *)dest;
   size_t k;
+  size_t n = count;
 
   /* Fill head and tail with minimal branching. Each
    * conditional ensures that all the subsequently used
@@ -319,10 +326,10 @@ void *memset(void *dest, int c, size_t n)
    * already took care of any head/tail that get cut off
    * by the alignment. */
 
-  k = (~(uintptr_t)s+1) & 3U;
+  k = (0x03U - (uintptr_t)s+1U) & 3U;
   s += k;
   n -= k;
-  n &= -4U;
+  n &= 0xFFFFFFFCU;
 
   typedef uint32_t  u32;
   typedef uint64_t  u64;
