@@ -24,8 +24,6 @@
 
 #define DIGITS_PER_LIMB 9
 #define MAX_LIMB_CONVERSION 1000000000
-#define FIRST_MULT  (1U << (BITS_PER_GROUP/2))
-#define SECOND_MULT (LIMB_RANGE / FIRST_MULT)
 
 static limb power10000[MAX_LEN*2];
 static limb temp[MAX_LEN];
@@ -296,6 +294,11 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
   int digit[DIGITS_PER_LIMB];
   int digits=0;
   bool showDigitsText = true;
+  unsigned int firstMult;
+  unsigned int secondMult;
+  firstMult = (unsigned int)BITS_PER_GROUP / 2U;
+  firstMult = 1U << firstMult;
+  secondMult = LIMB_RANGE / firstMult;
 
   if (grpLen <= 0)
   {
@@ -311,14 +314,14 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
     double dQuotient;
     limb *ptrPower;
 
-    // Multiply by FIRST_MULT and then by SECOND_MULT, so there is never
+    // Multiply by firstMult and then by secondMult, so there is never
     // more than 53 bits in the product.
 
     ptrPower = power10000;
     dQuotient = 0;
     for (index2 = 0; index2 < len; index2++)
     {
-      dCarry = dQuotient + ((double)ptrPower->x * (double)FIRST_MULT);
+      dCarry = dQuotient + ((double)ptrPower->x * (double)firstMult);
       dQuotient = floor(dCarry / (double)MAX_LIMB_CONVERSION);
       ptrPower->x = (int)(dCarry - (dQuotient * (double)MAX_LIMB_CONVERSION));
       ptrPower++;
@@ -333,7 +336,7 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
     dQuotient = ptrSrc->x;
     for (index2 = 0; index2 < len; index2++)
     {
-      dCarry = dQuotient + ((double)ptrPower->x * (double)SECOND_MULT);
+      dCarry = dQuotient + ((double)ptrPower->x * (double)secondMult);
       dQuotient = floor(dCarry / (double)MAX_LIMB_CONVERSION);
       ptrPower->x = (int)(dCarry - (dQuotient * (double)MAX_LIMB_CONVERSION));
       ptrPower++;
