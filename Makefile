@@ -18,7 +18,7 @@
 #
 # Comment out next line for standard compilation.
 flags_coverage=--coverage
-flags_factorization_1=-D_USING64BITS_ -DFACTORIZATION_APP=1 -c
+flags_factorization_1=-D_USING64BITS_ -DFACTORIZATION_APP=1 -DFACTORIZATION_FUNCTIONS=1 -c
 flags_squares_1=-D_USING64BITS_ -DFSQUARES_APP=1 -c
 flags_other_1=-D_USING64BITS_ -c
 ifeq ($(flags_coverage), )
