@@ -42,11 +42,12 @@
 #define TOKEN_NUMDIGITS  45
 #define TOKEN_REVDIGITS  46
 #define TOKEN_ISPRIME    47
-#define TOKEN_F          48
-#define TOKEN_L          49
-#define TOKEN_P          50
-#define TOKEN_N          51
-#define TOKEN_B          52
+#define TOKEN_JACOBI     48
+#define TOKEN_F          49
+#define TOKEN_L          50
+#define TOKEN_P          51
+#define TOKEN_N          52
+#define TOKEN_B          53
 
 #define PAREN_STACK_SIZE           5000
 #define COMPR_STACK_SIZE        1000000
@@ -73,6 +74,7 @@ struct sFuncOperExpr stFuncOperIntExpr[] =
   {"NUMDIGITS", TOKEN_NUMDIGITS + TWO_PARMS, 0},
   {"REVDIGITS", TOKEN_REVDIGITS + TWO_PARMS, 0},
   {"ISPRIME", TOKEN_ISPRIME + ONE_PARM, 0},
+  {"JACOBI", TOKEN_JACOBI + TWO_PARMS, 0},
   {"F", TOKEN_F + ONE_PARM, 0},
   {"L", TOKEN_L + ONE_PARM, 0},
   {"P", TOKEN_P + ONE_PARM, 0},
@@ -198,6 +200,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
     char c = *ptrRPNbuffer;
     int currentOffset;
     int nbrLenBytes;
+    int jacobi;
     switch (c)
     {
     case TOKEN_NUMBER:
@@ -242,6 +245,23 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       getCurrentStackValue(&curStack);
       BigIntGcd(&curStack, &curStack2, &curStack);
+      retcode = setStackValue(&curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_JACOBI:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      jacobi = BigIntJacobiSymbol(&curStack, &curStack2);
+      intToBigInteger(&curStack, jacobi);
       retcode = setStackValue(&curStack);
       if (retcode != EXPR_OK)
       {

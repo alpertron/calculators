@@ -664,45 +664,45 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
 // Perform Lehman algorithm
 static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
 {
-  const int bitsSqrLow[] =
+  const unsigned int bitsSqrLow[] =
   {
-    0x00000003, // 3
-    0x00000013, // 5
-    0x00000017, // 7
-    0x0000023B, // 11
-    0x0000161B, // 13
-    0x0001A317, // 17
-    0x00030AF3, // 19
-    0x0005335F, // 23
-    0x13D122F3, // 29
-    0x121D47B7, // 31
-    0x5E211E9B, // 37
-    0x82B50737, // 41
-    0x83A3EE53, // 43
-    0x1B2753DF, // 47
-    0x3303AED3, // 53
-    0x3E7B92BB, // 59
-    0x0A59F23B, // 61
+    0x00000003U, // 3
+    0x00000013U, // 5
+    0x00000017U, // 7
+    0x0000023BU, // 11
+    0x0000161BU, // 13
+    0x0001A317U, // 17
+    0x00030AF3U, // 19
+    0x0005335FU, // 23
+    0x13D122F3U, // 29
+    0x121D47B7U, // 31
+    0x5E211E9BU, // 37
+    0x82B50737U, // 41
+    0x83A3EE53U, // 43
+    0x1B2753DFU, // 47
+    0x3303AED3U, // 53
+    0x3E7B92BBU, // 59
+    0x0A59F23BU, // 61
   };
-  const int bitsSqrHigh[] =
+  const unsigned int bitsSqrHigh[] =
   {
-    0x00000000, // 3
-    0x00000000, // 5
-    0x00000000, // 7
-    0x00000000, // 11
-    0x00000000, // 13
-    0x00000000, // 17
-    0x00000000, // 19
-    0x00000000, // 23
-    0x00000000, // 29
-    0x00000000, // 31
-    0x00000016, // 37
-    0x000001B3, // 41
-    0x00000358, // 43
-    0x00000435, // 47
-    0x0012DD70, // 53
-    0x022B6218, // 59
-    0x1713E694, // 61
+    0x00000000U, // 3
+    0x00000000U, // 5
+    0x00000000U, // 7
+    0x00000000U, // 11
+    0x00000000U, // 13
+    0x00000000U, // 17
+    0x00000000U, // 19
+    0x00000000U, // 23
+    0x00000000U, // 29
+    0x00000000U, // 31
+    0x00000016U, // 37
+    0x000001B3U, // 41
+    0x00000358U, // 43
+    0x00000435U, // 47
+    0x0012DD70U, // 53
+    0x022B6218U, // 59
+    0x1713E694U, // 61
   };
   const int primes[] = { 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61 };
   int nbrs[17];
@@ -780,15 +780,15 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
       unsigned int bitsToShift;
       if (shiftBits < 32U)
       {
-        bitsSqr = (unsigned int)bitsSqrLow[i];
+        bitsSqr = bitsSqrLow[i];
         bitsToShift = shiftBits;
       }
       else
       {
-        bitsSqr = (unsigned int)bitsSqrHigh[i];
+        bitsSqr = bitsSqrHigh[i];
         bitsToShift = shiftBits - 32U;
       }
-      if (((bitsSqr >> bitsToShift) & 0x01U) == 1U)
+      if (((bitsSqr >> bitsToShift) & 0x01U) == 0U)
       { // Not a perfect square
         break;
       }

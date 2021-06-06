@@ -2,59 +2,72 @@
 rm *.info *.out
 make clean
 make ecm
-./ecm "221313+sumdigits(23,10)+numdigits(232,10)+gcd(8,6)+minfact(143)+totient(226)" > ecm.out
+./ecm "221313+sumdigits(23,10)+numdigits(232,10)+gcd(8,6)+minfact(143)+totient(226)+jacobi(3,7)" > ecm.out
 ./ecm "n(10^30+2)*n(3*10^30+10000)" >> ecm.out
 ./ecm "10**59+213" >> ecm.out
 ./ecm "p(655)" >> ecm.out
 lcov --capture --directory . --output-file ecm.info
 make clean
 make polfact
-./polfact 0 "x^120-1" > polfact.out
-./polfact 7 "x^10+x^5-1" >> polfact.out
+echo "**** POLFACT ****\n" > coverage.out
+./polfact 0 "x^120-1" >> coverage.out
+./polfact 7 "x^10+x^5-1" >> coverage.out
+./polfact 0 "x+23" >> coverage.out
+./polfact 0 "x^2+7*x+23" >> coverage.out
+./polfact 0 "x^3-4*x^2+12*x+23" >> coverage.out
+./polfact 0 "x^4+3*x^2+12*x+23" >> coverage.out
+./polfact 0 "x^5+15*x+12" >> coverage.out
 lcov --capture --directory . --output-file polfact.info
 make clean
 make fsquares
-./fsquares 0 > fsquares.out
-./fsquares 27 >> fsquares.out
-./fsquares "10**200+54154255642" >> fsquares.out
+echo "\n\n**** FSQUARES ****\n" >> coverage.out
+./fsquares 0 >> coverage.out
+./fsquares 27 >> coverage.out
+./fsquares "10**200+54154255642" >> coverage.out
 lcov --capture --directory . --output-file fsquares.info
 make clean
 make fcubes
-./fcubes 0 > fcubes.out
-./fcubes 27 >> fcubes.out
-./fsquares "10**200+54154255642" >> fcubes.out
+echo "\n\n**** FCUBES ****\n" >> coverage.out
+./fcubes 0 >> coverage.out
+./fcubes 27 >> coverage.out
+./fsquares "10**200+54154255642" >> coverage.out
 lcov --capture --directory . --output-file fcubes.info
 make clean
 make dilog
-./dilog 3 7 29 > dilog.out
-./dilog 28 43 "n(120000)" >> dilog.out
-./dilog 667 999 "n(10000000000)" >> dilog.out
+echo "\n\n**** DILOG ****\n" >> coverage.out
+./dilog 3 7 29 >> coverage.out
+./dilog 28 43 "n(120000)" >> coverage.out
+./dilog 667 999 "n(10000000000)" >> coverage.out
 lcov --capture --directory . --output-file dilog.info
 make clean
 make quad
-./quad 1 2 3 4 5 6 > quad.out
-./quad 1 0 "-991" 0 0 "-1" >> quad.out
-./quad 5 3 "-991" 23 42 "-1" >> quad.out
+echo "\n\n**** QUAD ****\n" >> coverage.out
+./quad 1 2 3 4 5 6 >> coverage.out
+./quad 1 0 "-991" 0 0 "-1" >> coverage.out
+./quad 5 3 "-991" 23 42 "-1" >> coverage.out
 lcov --capture --directory . --output-file quad.info
 make clean
 make contfrac
-./contfrac 1 2 3 > contfrac.out
-./contfrac 1 0 991 >> contfrac.out
-./contfrac 5 27 991 >> contfrac.out
+echo "\n\n**** CONTFRAC ****\n" >> coverage.out
+./contfrac 1 2 3 >> coverage.out
+./contfrac 1 0 991 >> coverage.out
+./contfrac 5 27 991 >> coverage.out
 lcov --capture --directory . --output-file contfrac.info
 make clean
 make quadmod
-./quadmod 1 2 3 7 > quadmod.out
-./quadmod 1 0 991 "n(10^5)" >> quadmod.out
-./quadmod 5 27 43 "n(10^20+3)" >> quadmod.out
-./quadmod 5 27 82 "n(10^80+5)" >> quadmod.out
+echo "\n\n**** QUADMOD ****\n" >> coverage.out
+./quadmod 1 2 3 7 >> coverage.out
+./quadmod 1 0 991 "n(10^5)" >> coverage.out
+./quadmod 5 27 43 "n(10^20+3)" >> coverage.out
+./quadmod 5 27 82 "n(10^80+5)" >> coverage.out
 lcov --capture --directory . --output-file quadmod.info
 make clean
 make gaussian
-./gaussian 5 1 > gaussian.out
-./gaussian 1 1 >> gaussian.out
-./gaussian "232435+432i" 1 >> gaussian.out
-./gaussian "10**20+45+(23i)" 1 >> gaussian.out
+echo "\n\n**** GAUSSIAN ****\n" >> coverage.out
+./gaussian 5 1 >> coverage.out
+./gaussian 1 1 >> coverage.out
+./gaussian "232435+432i" 1 >> coverage.out
+./gaussian "10**20+45+(23i)" 1 >> coverage.out
 lcov --capture --directory . --output-file gaussian.info
 
 while true; do
