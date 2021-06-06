@@ -40,6 +40,11 @@ factor.fco ecm.fco siqs.fco ecmfront.fco bignbr.fco showtime.fco from_musl.fco i
 	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco ecmfront.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco test_ecm.fco $(flags_coverage) -lm -o $@
 
+gaussian: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
+factor.fco ecm.fco siqs.fco gaussian.fco GaussExpr.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco gcdrings.fco test_gaussian.fco
+	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
+factor.fco ecm.fco siqs.fco gaussian.fco GaussExpr.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco gcdrings.fco test_gaussian.fco $(flags_coverage) -lm -o $@
+
 quad: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco quad.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quad.fco
 	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
@@ -89,6 +94,9 @@ rootseq.oto quintics.oto bigrational.oto output.oto polynomial.oto polyexpr.oto 
 
 test_ecm.fco: test.c $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=13 -o $@ $<
+	
+test_gaussian.fco: test.c $(h_files)
+	gcc $(flags_factorization) -DDEBUG_CODE=12 -o $@ $<
 	
 test_quadmod.fco: test.c $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=16 -o $@ $<
