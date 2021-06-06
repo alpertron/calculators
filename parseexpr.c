@@ -59,11 +59,17 @@ static bool isFunc(const char** ppcInput, const struct sFuncOperExpr** ppstFuncO
       pcInput++;
       ptrFuncName++;
     }
-    if (*ptrFuncName == '\0')
+    if ((*ptrFuncName == '\0') && (*(pstFuncOperExpr->name) != '\0'))
     {
-      *ppcInput = pcInput;
-      *ppstFuncOperExpr = pstFuncOperExpr;
-      return true;         // Function or operator name was found.
+      char c = *(ptrFuncName - 1);  // Get last character of function name.
+      char d = *pcInput;
+      if ((c < 'A') || (c > 'Z') || // Function name does not end with letter.
+        (((d < 'A') || (d > 'Z')) && ((d < 'a') || (d > 'z'))))
+      {                             // Next character is not a letter.
+        *ppcInput = pcInput;
+        *ppstFuncOperExpr = pstFuncOperExpr;
+        return true;                // Function or operator name was found.
+      }
     }
     pstFuncOperExpr++;
   }

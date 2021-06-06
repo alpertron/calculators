@@ -96,6 +96,8 @@ struct sFuncOperExpr stFuncOperIntExpr[] =
   {"AND", OPER_AND, -8},
   {"==", OPER_EQUAL, 6},
   {"!=", OPER_NOT_EQUAL, 6},
+  {"<<", OPER_SHL, 5},
+  {">>", OPER_SHR, 5},
   {">=", OPER_NOT_LESS, 6},
   {"<=", OPER_NOT_GREATER, 6},
   {"<", OPER_LESS, 6},
