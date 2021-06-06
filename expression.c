@@ -1488,7 +1488,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
     prevLimb = 0;
     ptrSrc = &first->limbs[nbrLimbs - 1].x;
     curLimb = *ptrSrc;
-    ptrDest = &first->limbs[nbrLimbs+delta].x;
+    ptrDest = &result->limbs[nbrLimbs+delta].x;
 
     for (ctr = nbrLimbs; ctr > 0; ctr--)
     {  // Process starting from most significant limb.
@@ -1504,7 +1504,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
       int lenBytes = delta * (int)sizeof(limb);
       (void)memset(first->limbs, 0, lenBytes);
     }
-    result->nbrLimbs += delta;
+    result->nbrLimbs = first->nbrLimbs + delta;
     if (result->limbs[result->nbrLimbs].x != 0)
     {
       result->nbrLimbs++;
@@ -1535,7 +1535,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
     ptrSrc = &first->limbs[delta+1].x;
     prevLimb = *(ptrSrc-1);
     curLimb = *ptrSrc;
-    ptrDest = &first->limbs[0].x;
+    ptrDest = &result->limbs[0].x;
 
     for (ctr = delta; ctr < nbrLimbs; ctr++)
     {  // Process starting from least significant limb.
@@ -1546,7 +1546,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
       curLimb = *ptrSrc;
     }
     *ptrDest = ((prevLimb >> rem) | (curLimb << (BITS_PER_GROUP - rem))) & MAX_INT_NBR;
-    result->nbrLimbs -= delta + 1;
+    result->nbrLimbs = first->nbrLimbs - (delta + 1);
     if ((result->nbrLimbs == 0) || (result->limbs[result->nbrLimbs].x))
     {
       result->nbrLimbs++;
