@@ -43,10 +43,10 @@ make contfrac
 lcov --capture --directory . --output-file contfrac.info
 make clean
 make quadmod
-./quadmod 1 2 3 > quadmod.out
-./quadmod 1 0 991 >> quadmod.out
-./quadmod 5 27 "n(10^20+3)" >> quadmod.out
-./quadmod 5 27 "n(10^80+5)" >> quadmod.out
+./quadmod 1 2 3 7 > quadmod.out
+./quadmod 1 0 991 "n(10^5)" >> quadmod.out
+./quadmod 5 27 43 "n(10^20+3)" >> quadmod.out
+./quadmod 5 27 82 "n(10^80+5)" >> quadmod.out
 lcov --capture --directory . --output-file quadmod.info
 make clean
 make gaussian
