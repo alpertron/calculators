@@ -2,9 +2,10 @@
 rm *.info *.out
 make clean
 make ecm
-./ecm 221313 > ecm.out
+./ecm "221313+sumdigits(23,10)+numdigits(232,10)+gcd(8,6)+minfact(143)+totient(226)" > ecm.out
 ./ecm "n(10^30+2)*n(3*10^30+10000)" >> ecm.out
 ./ecm "10**59+213" >> ecm.out
+./ecm "p(655)" >> ecm.out
 lcov --capture --directory . --output-file ecm.info
 make clean
 make polfact
@@ -70,6 +71,7 @@ bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r fsquares
 bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r fcubes.info
 bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r dilog.info
 bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r quad.info
+bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r quadmod.info
 bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r contfrac.info
 bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r gaussian.info
 bash <(curl -Ls https://coverage.codacy.com/get.sh) final
