@@ -487,7 +487,7 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
 #else
             unsigned int unsignedLimb;
             smallmodmult(*ptrPolynomial, value1, (limb*)&temp, modulus);
-            unsingedLimb = ((unsigned int)*ptrTemp + (unsigned int)temp) %
+            unsignedLimb = ((unsigned int)*ptrTemp + (unsigned int)temp) %
               (unsigned int)modulus;
             *ptrTemp = (int)unsignedLimb;
 #endif

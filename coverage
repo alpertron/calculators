@@ -2,7 +2,7 @@
 rm *.info *.out
 make clean
 make ecm
-./ecm "221313+sumdigits(23,10)+numdigits(232,10)+gcd(8,6)+minfact(143)+totient(226)+jacobi(3,7)" > ecm.out
+./ecm "221313+sumdigits(23,10)+numdigits(232,10)+gcd(8,6)+minfact(143)+totient(226)+jacobi(3,7)+modpow(3,8,29)" > ecm.out
 ./ecm "n(10^30+2)*n(3*10^30+10000)" >> ecm.out
 ./ecm "10**59+213" >> ecm.out
 ./ecm "p(655)" >> ecm.out
@@ -17,6 +17,9 @@ echo "**** POLFACT ****\n" > coverage.out
 ./polfact 0 "x^3-4*x^2+12*x+23" >> coverage.out
 ./polfact 0 "x^4+3*x^2+12*x+23" >> coverage.out
 ./polfact 0 "x^5+15*x+12" >> coverage.out
+./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" >> coverage.out
+./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" >> coverage.out
+./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" >> coverage.out
 lcov --capture --directory . --output-file polfact.info
 make clean
 make fsquares
