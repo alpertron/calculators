@@ -1048,6 +1048,12 @@ enum eExprErr BigIntGeneralModularPower(const BigInteger* base, const BigInteger
   if (shRight > 0)
   {
     // Compute power mod power of 2.
+    MontgomeryMultR1[0].x = 1;
+    if (NumberLength > 1)
+    {
+      lenBytes = (NumberLength - 1) * (int)sizeof(limb);
+      memset(&MontgomeryMultR1[1], 0, lenBytes);
+    }
     NumberLength = (shRight + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
     CompressLimbsBigInteger(aux3, base);
     powerOf2Exponent = shRight;
@@ -2161,24 +2167,24 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
     (void)memset(Prod, 0, NumberLengthBytes);
     for (int i = 0; i < NumberLength; i++)
     {
-      int32_t Nbr = (factor1 + i)->x;
-      int64_t Pr = ((int64_t)Nbr * (int64_t)factor2->x) + (int64_t)Prod[0].x;
-      unsigned int unsignedLimb = ((uint32_t)Pr * (uint32_t)MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
-      int32_t MontDig = (int32_t)unsignedLimb;
-      uint64_t ui64Limb = ((uint64_t)MontDig * (uint64_t)TestNbr[0].x + (uint64_t)Pr) >> BITS_PER_GROUP;
-      Pr = (int64_t)ui64Limb + ((int64_t)MontDig * (int64_t)TestNbr[1].x) +
-        ((int64_t)Nbr * (int64_t)(factor2 + 1)->x) + (int64_t)Prod[1].x;
+      unsigned int unsignedLimb;
+      uint32_t Nbr = (factor1 + i)->x;
+      uint64_t Pr = ((uint64_t)Nbr * (uint64_t)factor2->x) + (uint64_t)Prod[0].x;
+      uint32_t MontDig = ((uint32_t)Pr * (uint32_t)MontgomeryMultN[0].x) & MAX_VALUE_LIMB;
+      uint64_t ui64Limb = ((uint64_t)MontDig * (uint64_t)TestNbr[0].x + Pr) >> BITS_PER_GROUP;
+      Pr = ui64Limb + ((uint64_t)MontDig * (uint64_t)TestNbr[1].x) +
+        ((uint64_t)Nbr * (uint64_t)(factor2 + 1)->x) + (uint64_t)Prod[1].x;
       unsignedLimb = (unsigned int)Pr & MAX_VALUE_LIMB;
       Prod[0].x = (int)unsignedLimb;
       for (j = 2; j < NumberLength; j++)
       {
-        ui64Limb = (uint64_t)Pr >> BITS_PER_GROUP;
-        Pr = (int64_t)ui64Limb + ((int64_t)MontDig * (int64_t)TestNbr[j].x) +
-          ((int64_t)Nbr * (int64_t)(factor2 + j)->x) + (int64_t)Prod[j].x;
+        ui64Limb = Pr >> BITS_PER_GROUP;
+        Pr = ui64Limb + ((uint64_t)MontDig * (uint64_t)TestNbr[j].x) +
+          ((uint64_t)Nbr * (uint64_t)(factor2 + j)->x) + (uint64_t)Prod[j].x;
         unsignedLimb = (unsigned int)Pr & MAX_VALUE_LIMB;
         Prod[j - 1].x = (int)unsignedLimb;
       }
-      unsignedLimb = (unsigned int)Pr & MAX_VALUE_LIMB;
+      unsignedLimb = (unsigned int)(Pr >> BITS_PER_GROUP);
       Prod[j - 1].x = (int)unsignedLimb;
     }
 #else

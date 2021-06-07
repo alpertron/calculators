@@ -14,6 +14,7 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "(7 > 7)*32 + (7 >= 7)*16 + (7 < 7)*8 + (7 <= 7)*4 + (7 == 7)*2 + (7 != 7)" >>coverage.out
 ./ecm "x=3; x=n(x); c<=10; x-1" >> coverage.out
 ./ecm "sqrt(10^10000)-10^5000" >> coverage.out
+./ecm "modpow(10, 2, 10**23) + modpow(10, 2, 2*10**130)" >> coverage.out
 lcov --capture --directory . --output-file ecm.info
 make clean
 make polfact
@@ -41,7 +42,7 @@ make fcubes
 echo -e "\n\n**** FCUBES ****" >> coverage.out
 ./fcubes 0 >> coverage.out
 ./fcubes 27 >> coverage.out
-./fsquares "10**200+54154255642" >> coverage.out
+./fcubes "10**200+54154255642" >> coverage.out
 lcov --capture --directory . --output-file fcubes.info
 make clean
 make dilog
@@ -71,6 +72,8 @@ echo -e "\n\n**** QUADMOD ****" >> coverage.out
 ./quadmod 1 0 991 "n(10^5)" >> coverage.out
 ./quadmod 5 27 43 "n(10^20+3)" >> coverage.out
 ./quadmod 5 27 82 "n(10^80+5)" >> coverage.out
+./quadmod 5 27 82 "2^8" >> coverage.out
+./quadmod 5 27 82 "2^256" >> coverage.out
 lcov --capture --directory . --output-file quadmod.info
 make clean
 make gaussian
@@ -89,13 +92,6 @@ while true; do
         * ) echo "Please answer yes or no.";;
     esac
 done
-bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r ecm.info
-bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r polfact.info
-bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r fsquares.info
-bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r fcubes.info
-bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r dilog.info
-bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r quad.info
-bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r quadmod.info
-bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r contfrac.info
-bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial -r gaussian.info
-bash <(curl -Ls https://coverage.codacy.com/get.sh) final
+bash <(curl -Ls https://coverage.codacy.com/get.sh) report \
+ -r ecm.info -r polfact.info -r fsquares.info -r fcubes.info -r dilog.info \
+ -r quad.info -r quadmod.info -r contfrac.info -r gaussian.info
