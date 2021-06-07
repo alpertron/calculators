@@ -1553,6 +1553,11 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
     {
       result->nbrLimbs++;
     }
+    result->sign = first->sign;
+    if ((result->nbrLimbs == 1) && (result->limbs[0].x == 0))
+    {    // Result is zero.
+      result->sign = SIGN_POSITIVE;
+    }
     if (isNegative)
     {    // Adjust negative number.
       addbigint(result, -1);

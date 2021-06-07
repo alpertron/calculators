@@ -12,6 +12,7 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "(23 shl 5) + (712 shr 6) + (23 OR 556) + (57 AND 21) + (NOT 15) +4434/115 - 28%13" >>coverage.out
 ./ecm "(6 > 5)*32 + (6 >= 5)*16 + (6 < 5)*8 + (6 <= 5)*4 + (6 == 5)*2 + (6 != 5)" >>coverage.out
 ./ecm "(7 > 7)*32 + (7 >= 7)*16 + (7 < 7)*8 + (7 <= 7)*4 + (7 == 7)*2 + (7 != 7)" >>coverage.out
+./ecm "x=3; x=n(x); c<=10; x-1" >> coverage.out
 lcov --capture --directory . --output-file ecm.info
 make clean
 make polfact
