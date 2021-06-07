@@ -43,11 +43,12 @@
 #define TOKEN_REVDIGITS  46
 #define TOKEN_ISPRIME    47
 #define TOKEN_JACOBI     48
-#define TOKEN_F          49
-#define TOKEN_L          50
-#define TOKEN_P          51
-#define TOKEN_N          52
-#define TOKEN_B          53
+#define TOKEN_SQRT       49
+#define TOKEN_F          50
+#define TOKEN_L          51
+#define TOKEN_P          52
+#define TOKEN_N          53
+#define TOKEN_B          54
 
 #define PAREN_STACK_SIZE           5000
 #define COMPR_STACK_SIZE        1000000
@@ -75,6 +76,7 @@ struct sFuncOperExpr stFuncOperIntExpr[] =
   {"REVDIGITS", TOKEN_REVDIGITS + TWO_PARMS, 0},
   {"ISPRIME", TOKEN_ISPRIME + ONE_PARM, 0},
   {"JACOBI", TOKEN_JACOBI + TWO_PARMS, 0},
+  {"SQRT", TOKEN_SQRT + ONE_PARM, 0},
   {"F", TOKEN_F + ONE_PARM, 0},
   {"L", TOKEN_L + ONE_PARM, 0},
   {"P", TOKEN_P + ONE_PARM, 0},
@@ -247,11 +249,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       getCurrentStackValue(&curStack);
       BigIntGcd(&curStack, &curStack2, &curStack);
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
       break;
 
     case TOKEN_JACOBI:
@@ -264,11 +261,21 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       getCurrentStackValue(&curStack);
       jacobi = BigIntJacobiSymbol(&curStack, &curStack2);
       intToBigInteger(&curStack, jacobi);
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
+      break;
+
+    case TOKEN_SQRT:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
       }
+      getCurrentStackValue(&curStack);
+      if (curStack.sign == SIGN_NEGATIVE)
+      {
+        return EXPR_INVALID_PARAM;
+      }
+      squareRoot(curStack.limbs, curStack2.limbs, curStack.nbrLimbs, &curStack2.nbrLimbs);
+      curStack2.sign = SIGN_POSITIVE;
+      CopyBigInt(&curStack, &curStack2);
       break;
 
     case TOKEN_MODPOW:
@@ -282,11 +289,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       getCurrentStackValue(&curStack);
       retcode = BigIntGeneralModularPower(&curStack, &curStack2, &curStack3, &curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = setStackValue(&curStack);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -306,11 +308,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       {
         return retcode;
       }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
       break;
 
 #ifdef FACTORIZATION_FUNCTIONS
@@ -321,11 +318,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       getCurrentStackValue(&curStack);
       retcode = ComputeTotient();
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = setStackValue(&curStack);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -343,11 +335,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       {
         return retcode;
       }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
       break;
 
     case TOKEN_SUMDIVS:
@@ -357,11 +344,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       getCurrentStackValue(&curStack);
       retcode = ComputeSumDivs();
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = setStackValue(&curStack);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -379,11 +361,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       {
         return retcode;
       }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
       break;
 
     case TOKEN_MAXFACT:
@@ -393,11 +370,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       getCurrentStackValue(&curStack);
       retcode = ComputeMaxFact();
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = setStackValue(&curStack);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -415,11 +387,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       {
         return retcode;
       }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
       break;
 
     case TOKEN_CONCATFACT:
@@ -431,11 +398,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       getCurrentStackValue(&curStack);
       retcode = ComputeConcatFact();
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = setStackValue(&curStack);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -456,11 +418,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       {
         return retcode;
       }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
       break;
 
     case TOKEN_NUMDIGITS:
@@ -476,11 +433,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       {
         return retcode;
       }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
       break;
 
     case TOKEN_REVDIGITS:
@@ -492,11 +444,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       getCurrentStackValue(&curStack);
       retcode = ComputeRevDigits();
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = setStackValue(&curStack);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -521,11 +468,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       {    // Argument is not a probable prime.
         intToBigInteger(&curStack, 0);
       }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
       break;
 
     case TOKEN_F:
@@ -535,11 +477,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       getCurrentStackValue(&curStack);
       retcode = ComputeFibLucas(0);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = setStackValue(&curStack);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -557,11 +494,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       {
         return retcode;
       }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
       break;
 
     case TOKEN_P:
@@ -575,11 +507,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       {
         return retcode;
       }
-      retcode = setStackValue(&curStack);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
       break;
 
     case TOKEN_N:
@@ -589,11 +516,6 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       getCurrentStackValue(&curStack);
       retcode = ComputeNext();
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = setStackValue(&curStack);
       if (retcode != EXPR_OK)
       {
         return retcode;

@@ -9,10 +9,11 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "p(655) % 65657578" >> coverage.out
 ./ecm "modinv(6,13)-numdivs(45)+sumdivs(343)+maxfact(765)+numfact(765)+concatfact(0,36)+concatfact(0,36)+concatfact(1,36)+concatfact(2,36)+concatfact(3,36)+isprime(811)" >> coverage.out
 ./ecm "b(223)+n(434)+f(44)-l(56)+23!-18#" >>coverage.out
-./ecm "(23 shl 5) + (712 shr 6) + (23 OR 556) + (57 AND 21) + (NOT 15) +4434/115 - 28%13" >>coverage.out
+./ecm "(23 shl 5) + (712 shr 6) + (23 OR 556) + (57 AND 21) + (NOT 15) + (38 XOR 79) + 4434/115 - 28%13" >>coverage.out
 ./ecm "(6 > 5)*32 + (6 >= 5)*16 + (6 < 5)*8 + (6 <= 5)*4 + (6 == 5)*2 + (6 != 5)" >>coverage.out
 ./ecm "(7 > 7)*32 + (7 >= 7)*16 + (7 < 7)*8 + (7 <= 7)*4 + (7 == 7)*2 + (7 != 7)" >>coverage.out
 ./ecm "x=3; x=n(x); c<=10; x-1" >> coverage.out
+./ecm "sqrt(10^10000)-10^5000" >> coverage.out
 lcov --capture --directory . --output-file ecm.info
 make clean
 make polfact
