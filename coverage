@@ -15,6 +15,7 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "x=3; x=n(x); c<=10; x-1" >> coverage.out
 ./ecm "sqrt(10^10000)-10^5000" >> coverage.out
 ./ecm "modpow(10, 2, 10**23) + modpow(10, 2, 2*10**130)" >> coverage.out
+./ecm "0x43245 + 0x3434" >> coverage.out
 lcov --capture --directory . --output-file ecm.info
 make clean
 make polfact

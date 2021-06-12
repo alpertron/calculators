@@ -148,7 +148,7 @@ static enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput
   (void)exponOperatorCounter;
   const char* pInput = *ppInput;
   char* ptrOutput = *ppOutput;
-  const char* ptrInput = pInput;
+  const char* ptrInput = pInput-1;
   if ((*ptrInput == '0') && ((*(ptrInput + 1) == 'x') || (*(ptrInput + 1) == 'X')))
   {              // Hexadecimal number.
     getHexValue(&ptrInput);

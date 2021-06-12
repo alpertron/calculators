@@ -1052,7 +1052,7 @@ enum eExprErr BigIntGeneralModularPower(const BigInteger* base, const BigInteger
     if (NumberLength > 1)
     {
       lenBytes = (NumberLength - 1) * (int)sizeof(limb);
-      memset(&MontgomeryMultR1[1], 0, lenBytes);
+      (void)memset(&MontgomeryMultR1[1], 0, lenBytes);
     }
     NumberLength = (shRight + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
     CompressLimbsBigInteger(aux3, base);
