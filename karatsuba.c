@@ -153,14 +153,16 @@ static int absSubtract(int idxMinuend, int idxSubtrahend,
   unsigned int borrow;
   int i;
   limb *ptrArray;
+  const limb* ptrMinuend = &arr[indexMinuend];
+  const limb* ptrSubtrahend = &arr[indexSubtrahend];
   for (i = nbrLen-1; i>=0; i--)
   {
-    if (arr[indexMinuend + i].x != arr[indexSubtrahend + i].x)
+    if ((ptrMinuend + i)->x != (ptrSubtrahend + i)->x)
     {
       break;
     }
   }
-  if ((i>=0) && (arr[indexMinuend + i].x < arr[indexSubtrahend + i].x))
+  if ((i>=0) && ((ptrMinuend + i)->x < (ptrSubtrahend + i)->x))
   {
     sign = 1;
     i = indexMinuend;    // Exchange minuend and subtrahend.
@@ -774,6 +776,7 @@ static void Karatsuba(int indexFactor1, int numLen)
   const limb *ptrHigh;
   limb tmp;
   limb* ptrLimb;
+  limb* endPtrLimb;
   int sign = 0;
   int halfLength;
   int doubleLength = 2 * nbrLen;
@@ -847,13 +850,14 @@ static void Karatsuba(int indexFactor1, int numLen)
       // Exchange high part of first factor with low part of 2nd factor.
       halfLength = nbrLen / 2;
       ptrLimb = &arr[idxFactor1 + halfLength];
-      for (i = idxFactor1 + halfLength; i<idxFactor2; i++)
+      endPtrLimb = &arr[idxFactor2];
+      for (; ptrLimb < endPtrLimb; ptrLimb++)
       {
         tmp.x = ptrLimb->x;
         ptrLimb->x = (ptrLimb + halfLength)->x;
         (ptrLimb + halfLength)->x = tmp.x;
-        ptrLimb++;
       }
+      
       // At this moment the order is: xL, yL, xH, yH.
       // Get absolute values of (xH-xL) and (yL-yH) and the signs.
       sign = absSubtract(idxFactor1, idxFactor2, diffIndex, halfLength);
@@ -942,16 +946,22 @@ static void Karatsuba(int indexFactor1, int numLen)
       {            // (xH-xL) * (yL-yH) is negative.
         unsigned int borrow = 0U;
         unsigned int unsignedLimb;
-        for (i = nbrLen; i > 0; i--)
+        for (i = halfLength; i > 0; i--)
         {
           borrow = (unsigned int)ptrResult->x - (unsigned int)ptrHigh->x - borrow;
           ptrHigh++;
           unsignedLimb = borrow & MAX_VALUE_LIMB;
           ptrResult->x = (int)unsignedLimb;
           ptrResult++;
+          borrow = (unsigned int)ptrResult->x - (unsigned int)ptrHigh->x -
+            (borrow >> BITS_PER_GROUP);
+          ptrHigh++;
+          unsignedLimb = borrow & MAX_VALUE_LIMB;
+          ptrResult->x = (int)unsignedLimb;
+          ptrResult++;
           borrow >>= BITS_PER_GROUP;
         }
-        for (i = halfLength; i > 0; i--)
+        for (i = halfLength; (i > 0) && (borrow != 0U); i--)
         {
           borrow = (unsigned int)ptrResult->x - borrow;
           unsignedLimb = borrow & MAX_VALUE_LIMB;
