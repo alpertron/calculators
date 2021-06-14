@@ -335,15 +335,13 @@ static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
   {
     unsigned int uBitExternal = (unsigned int)bitExternal;
     int maxValueFFTLimb;
-    unsigned int unsignedLimb = (unsigned int)ptrFactor->x >> uBitExternal;
-    int real = (int)unsignedLimb;
+    int real = UintToInt((unsigned int)ptrFactor->x >> uBitExternal);
     int imaginary;
     diffPtrs = ptrFactor - factor;
     if ((int)diffPtrs < (len - 1))
     {                   // Do not read outside input buffer.
       unsigned int complementBitExternal = (unsigned int)BITS_PER_GROUP - uBitExternal;
-      unsignedLimb = (unsigned int)(ptrFactor + 1)->x << complementBitExternal;
-      real += (int)unsignedLimb;
+      real += UintToInt((unsigned int)(ptrFactor + 1)->x << complementBitExternal);
     }
     maxValueFFTLimb = MAX_VALUE_FFT_LIMB;
     real &= (unsigned int)maxValueFFTLimb;
@@ -361,14 +359,12 @@ static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
       }
     }
     uBitExternal = (unsigned int)bitExternal;
-    unsignedLimb = (unsigned int)ptrFactor->x >> uBitExternal;;
-    imaginary = (int)unsignedLimb;
+    imaginary = UintToInt((unsigned int)ptrFactor->x >> uBitExternal);
     diffPtrs = ptrFactor - factor;
     if ((int)diffPtrs < (len - 1))
     {                   // Do not read outside input buffer.
       unsigned int complementBitExternal = (unsigned int)BITS_PER_GROUP - uBitExternal;
-      unsignedLimb = (unsigned int)(ptrFactor + 1)->x << complementBitExternal;
-      imaginary += (int)unsignedLimb;
+      imaginary += UintToInt((unsigned int)(ptrFactor + 1)->x << complementBitExternal);
     }
     imaginary &= MAX_VALUE_FFT_LIMB;
     ptrInternalFactor->imaginary = (double)imaginary;

@@ -233,8 +233,7 @@ void SameDegreeFactorization(void)
     { // If prime is not 2,
       // Calculate operand2 <- (prime^degree-1)/2
       // Use operand1 as temporary variable to store the exponent.
-      unsigned int unsignedLimb = (unsigned int)pstFactorInfo->expectedDegree & MAX_VALUE_LIMB;
-      operand1.limbs[0].x = (int)unsignedLimb;
+      operand1.limbs[0].x = UintToInt((unsigned int)pstFactorInfo->expectedDegree & MAX_VALUE_LIMB);
       operand1.nbrLimbs = 1;
     }
     ptrPolyToFactor = pstFactorInfo->ptr;

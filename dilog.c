@@ -863,10 +863,8 @@ static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *bigSubGro
   carry = add.x;
   for (int j = 0; j<=nbrLimbs; j++)
   {
-    unsigned int unsignedLimb;
     carry += (unsigned int)nbr[j].x;
-    unsignedLimb = carry & MAX_VALUE_LIMB;
-    nbr[j].x = (int)unsignedLimb;
+    nbr[j].x = UintToInt(carry & MAX_VALUE_LIMB);
     carry >>= BITS_PER_GROUP;
   }
   AdjustModN(nbr, bigSubGroupOrder->limbs, nbrLimbs);

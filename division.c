@@ -140,7 +140,6 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
   {   // It is faster to perform classical division than
       // using Newton algorithm.
       // Use adjustedArgument to hold the remainder.
-    unsigned int unsignedLimb;
 #ifdef _USING64BITS_
     int64_t carry;
 #else
@@ -190,8 +189,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       {
 #ifdef _USING64BITS_
         carry += (int64_t)ptrDividend->x - (ptrDivisor->x * (int64_t)TrialQuotient);
-        unsignedLimb = (unsigned int)carry & MAX_VALUE_LIMB;
-        ptrDividend->x = (int)unsignedLimb;
+        ptrDividend->x = UintToInt((unsigned int)carry & MAX_VALUE_LIMB);
         carry >>= BITS_PER_GROUP;
 #else
         low = (ptrDividend->x - (ptrDivisor->x * TrialQuotient) + carry) & MAX_INT_NBR;
@@ -220,8 +218,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       }
 #ifdef _USING64BITS_
       carry += (int64_t)ptrDividend->x;
-      unsignedLimb = (unsigned int)carry & MAX_VALUE_LIMB;
-      ptrDividend->x = (int)unsignedLimb;
+      ptrDividend->x = UintToInt((unsigned int)carry & MAX_VALUE_LIMB);
       carry >>= BITS_PER_GROUP;
 #else
       low = (ptrDividend->x + carry) & MAX_INT_NBR;
@@ -252,8 +249,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
         for (i = 0; i < nbrLimbsDivisor; i++)
         {
           cy += (unsigned int)(ptrDividend->x) + (unsigned int)(ptrDivisor->x);
-          unsignedLimb = cy & MAX_VALUE_LIMB;
-          ptrDividend->x = (int)unsignedLimb;
+          ptrDividend->x = UintToInt(cy & MAX_VALUE_LIMB);
           cy >>= BITS_PER_GROUP;
           ptrDivisor++;
           ptrDividend++;
@@ -386,11 +382,9 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
     power2Complement = (unsigned int)BITS_PER_GROUP - power2U;
     for (int index = nbrLimbs; index >= 0; index--)
     {
-      unsigned int unsignedLimb;
       newLimb.x = ptrDest->x;
-      unsignedLimb = (((unsigned int)newLimb.x << power2U) |
-        ((unsigned int)oldLimb.x >> power2Complement)) & MAX_VALUE_LIMB;
-      ptrDest->x = (int)unsignedLimb;
+      ptrDest->x = UintToInt((((unsigned int)newLimb.x << power2U) |
+        ((unsigned int)oldLimb.x >> power2Complement)) & MAX_VALUE_LIMB);
       ptrDest++;
       oldLimb.x = newLimb.x;
     }

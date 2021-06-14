@@ -34,33 +34,20 @@ static void Karatsuba(int idxFactor1, int nbrLen);
   factor2_i = arr[idxFactor2 + i].x;                                    \
   factor2_iPlus1 = arr[idxFactor2 + i + 1].x;                           \
   Pr = prod_iPlus0 + ((uint64_t)factor2_i * factor1_0);                 \
-  {                                                                     \
-    unsigned int tmp = (uint32_t)Pr & MAX_INT_NBR_U;                    \
-    arrayAux[i].x = (int)tmp;                                           \
-  }                                                                     \
+  arrayAux[i].x = UintToInt((uint32_t)Pr & MAX_INT_NBR_U);              \
   Pr = prod_iPlus1 + ((uint64_t)factor2_i * factor1_1) +                \
        ((uint64_t)factor2_iPlus1 * factor1_0) + (Pr >> BITS_PER_GROUP); \
-  {                                                                     \
-    unsigned int tmp = (uint32_t)Pr & MAX_INT_NBR_U;                    \
-    arrayAux[i + 1].x = (int)tmp;                                       \
-  }
+  arrayAux[i + 1].x = UintToInt((uint32_t)Pr & MAX_INT_NBR_U)           \
 
 #define MULT_MACRO_DOUBLE(m, n, p)                                      \
   Pr = prod_iPlus##p + ((uint64_t)factor2_i * factor1_##p) +            \
     (uint64_t)factor2_iPlus1 * factor1_##n + (Pr >> BITS_PER_GROUP);    \
-  {                                                                     \
-    unsigned int tmp = (uint32_t)Pr & MAX_INT_NBR_U;                    \
-    prod_iPlus##m = (int)tmp;                                           \
-  }
+  prod_iPlus##m = UintToInt((uint32_t)Pr & MAX_INT_NBR_U)               \
 
 #define EPILOG_MULTIPLICATION_DOUBLE(m, n)                              \
   Pr = ((uint64_t)factor2_iPlus1 * (uint64_t)factor1_##n) + (Pr >> BITS_PER_GROUP); \
-  {                                                                     \
-    unsigned int tmp = (uint32_t)Pr & MAX_INT_NBR_U;                    \
-    prod_iPlus##m = (int)tmp;                                           \
-    uint64_t ui64Tmp = Pr >> BITS_PER_GROUP;                            \
-    prod_iPlus##n = (int)ui64Tmp;                                       \
-  }
+  prod_iPlus##m = UintToInt((uint32_t)Pr & MAX_INT_NBR_U);              \
+  prod_iPlus##n = Uint64ToInt(Pr >> BITS_PER_GROUP)
  
 #define PROLOG_MULTIPLICATION_SINGLE(m)                                 \
   factor2_i = arr[idxFactor2 + m].x;                                    \
@@ -70,16 +57,10 @@ static void Karatsuba(int idxFactor1, int nbrLen);
 #define MULT_MACRO_SINGLE(m, n)                                         \
   Pr = prod_iPlus##m + ((uint64_t)factor2_i * (uint64_t)factor1_##m) +  \
        (Pr >> BITS_PER_GROUP);                                          \
-  {                                                                     \
-    unsigned int tmp = (uint32_t)Pr & MAX_INT_NBR_U;                    \
-    arrayAux[n].x = (int)tmp;                                           \
-  }
+  arrayAux[n].x = UintToInt((uint32_t)Pr & MAX_INT_NBR_U)
 
 #define EPILOG_MULTIPLICATION_SINGLE(m)                                 \
-  {                                                                     \
-    uint64_t ui64Tmp = Pr >> BITS_PER_GROUP;                            \
-    arrayAux[m].x = (int)ui64Tmp;                                       \
-  }
+  arrayAux[m].x = Uint64ToInt(Pr >> BITS_PER_GROUP)
 
 #define M(n)                                                            \
   uint32_t factor1_##n = arr[idxFactor1 + n].x;                         \
@@ -169,20 +150,19 @@ static int absSubtract(int idxMinuend, int idxSubtrahend,
     indexMinuend = indexSubtrahend;
     indexSubtrahend = i;
   }
-  ptrArray = arr;
+  ptrArray = &arr[idxResult];
+  indexMinuend -= idxResult;
+  indexSubtrahend -= idxResult;
   borrow = 0U;
   for (i = nbrLen; i > 0; i -= 2)
   {
-    unsigned int tmp;
-    borrow = (unsigned int)(ptrArray+indexMinuend)->x - (unsigned int)(ptrArray + indexSubtrahend)->x -
+    borrow = (unsigned int)(ptrArray + indexMinuend)->x - (unsigned int)(ptrArray + indexSubtrahend)->x -
       (borrow >> BITS_PER_GROUP);
-    tmp = borrow & MAX_VALUE_LIMB;
-    (ptrArray + idxResult)->x = (int)tmp;
+    ptrArray->x = UintToInt(borrow & MAX_VALUE_LIMB);
     ptrArray++;
     borrow = (unsigned int)(ptrArray + indexMinuend)->x - (unsigned int)(ptrArray + indexSubtrahend)->x -
       (borrow >> BITS_PER_GROUP);
-    tmp = borrow & MAX_VALUE_LIMB;
-    (ptrArray + idxResult)->x = (int)tmp;
+    ptrArray->x = UintToInt(borrow & MAX_VALUE_LIMB);
     ptrArray++;
   }
   return sign;
@@ -763,23 +743,179 @@ struct stKaratsubaStack
 
 static struct stKaratsubaStack astKaratsubaStack[16];
 
+inline static void computeFinalProduct(int nbrLen, int idxFactor1, int sign, int diffIndex)
+{
+  int i;
+  int halfLength = nbrLen / 2;
+  // Process all carries at the end.
+  // Obtain (b+1)(xH*yH*b + xL*yL) = xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
+  // The first and last terms are already in correct locations.
+  limb* ptrResult = &arr[idxFactor1 + halfLength];
+  unsigned int carry1First = 0U;
+  unsigned int carry1Second = 0U;
+  unsigned int carry2Second = 0U;
+  int doubleLength = 2 * nbrLen;
+  const limb* ptrHigh;
+  limb* ptrLimb;
+
+  for (i = halfLength; i > 0; i--)
+  {
+    // The sum of three ints overflows an unsigned int variable,
+    // so two adds are required. Also carries must be separated in
+    // order to avoid overflow:
+    // 00000001 + 7FFFFFFF + 7FFFFFFF = FFFFFFFF
+    unsigned int accum1Lo = carry1First + (unsigned int)ptrResult->x +
+      (unsigned int)(ptrResult + halfLength)->x;
+    unsigned int accum2Lo;
+    carry1First = accum1Lo >> BITS_PER_GROUP;
+    accum2Lo = carry2Second + (accum1Lo & MAX_VALUE_LIMB) +
+      (unsigned int)(ptrResult - halfLength)->x;
+    carry2Second = accum2Lo >> BITS_PER_GROUP;
+    accum1Lo = carry1Second + (accum1Lo & MAX_VALUE_LIMB) +
+      (unsigned int)(ptrResult + nbrLen)->x;
+    carry1Second = accum1Lo >> BITS_PER_GROUP;
+    (ptrResult + halfLength)->x = accum1Lo & MAX_VALUE_LIMB;
+    ptrResult->x = accum2Lo & MAX_VALUE_LIMB;
+    ptrResult++;
+  }
+  // Process carries.
+  ptrLimb = ptrResult + halfLength;
+  carry1Second += carry1First + (unsigned int)ptrLimb->x;
+  ptrLimb->x = (int)carry1Second & MAX_INT_NBR;
+  for (i = nbrLen + halfLength + 1; i < doubleLength; i++)
+  {
+    if (carry1Second < MAX_VALUE_LIMB)
+    {
+      break;
+    }
+    carry1Second >>= BITS_PER_GROUP;
+    ptrLimb++;
+    carry1Second += (unsigned int)ptrLimb->x;
+    ptrLimb->x = (int)carry1Second & MAX_INT_NBR;
+  }
+  carry2Second += carry1First + (unsigned int)ptrResult->x;
+  ptrResult->x = (int)carry2Second & MAX_INT_NBR;
+  for (i = nbrLen + 1; i < doubleLength; i++)
+  {
+    if (carry2Second < MAX_VALUE_LIMB)
+    {
+      break;
+    }
+    carry2Second >>= BITS_PER_GROUP;
+    ptrResult++;
+    carry2Second += (unsigned int)ptrResult->x;
+    ptrResult->x = (int)carry2Second & MAX_INT_NBR;
+  }
+  // Compute final product.
+  ptrHigh = &arr[diffIndex];
+  ptrResult = &arr[idxFactor1 + halfLength];
+  if (sign != 0)
+  {            // (xH-xL) * (yL-yH) is negative.
+    unsigned int borrow = 0U;
+    for (i = halfLength; i > 0; i--)
+    {
+      borrow = (unsigned int)ptrResult->x - (unsigned int)ptrHigh->x - borrow;
+      ptrHigh++;
+      ptrResult->x = UintToInt(borrow & MAX_VALUE_LIMB);
+      ptrResult++;
+      borrow = (unsigned int)ptrResult->x - (unsigned int)ptrHigh->x -
+        (borrow >> BITS_PER_GROUP);
+      ptrHigh++;
+      ptrResult->x = UintToInt(borrow & MAX_VALUE_LIMB);
+      ptrResult++;
+      borrow >>= BITS_PER_GROUP;
+    }
+    for (i = halfLength; i > 0; i--)
+    {
+      if (borrow == 0U)
+      {
+        break;
+      }
+      borrow = (unsigned int)ptrResult->x - borrow;
+      ptrResult->x = UintToInt(borrow & MAX_VALUE_LIMB);
+      ptrResult++;
+      borrow >>= BITS_PER_GROUP;
+    }
+  }
+  else
+  {            // (xH-xL) * (yL-yH) is positive or zero.
+    unsigned int carry = 0;
+    for (i = halfLength; i > 0; i--)
+    {
+      carry += (unsigned int)ptrResult->x + (unsigned int)ptrHigh->x;
+      ptrHigh++;
+      ptrResult->x = UintToInt(carry & MAX_VALUE_LIMB);
+      ptrResult++;
+      carry = (carry >> BITS_PER_GROUP) +
+        (unsigned int)ptrResult->x + (unsigned int)ptrHigh->x;
+      ptrHigh++;
+      ptrResult->x = UintToInt(carry & MAX_VALUE_LIMB);
+      ptrResult++;
+      carry >>= BITS_PER_GROUP;
+    }
+    for (i = halfLength; i > 0; i--)
+    {
+      if (carry == 0U)
+      {
+        break;
+      }
+      carry += (unsigned int)ptrResult->x;
+      ptrResult->x = UintToInt(carry & MAX_VALUE_LIMB);
+      ptrResult++;
+      carry >>= BITS_PER_GROUP;
+    }
+  }
+}
+
+inline static void belowKaratsubaCutoff(int nbrLen, int idxFactor1, int idxFactor2)
+{
+  const limb* ptrResult;
+  int i;
+  // Check if one of the factors is equal to zero.
+  ptrResult = &arr[idxFactor1];
+  for (i = nbrLen; i > 0; i--)
+  {
+    if (ptrResult->x != 0)
+    {
+      break;
+    }
+    ptrResult++;
+  }
+  if (i > 0)
+  {     // First factor is not zero. Check second.
+    ptrResult = &arr[idxFactor2];
+    for (i = nbrLen; i > 0; i--)
+    {
+      if (ptrResult->x != 0)
+      {
+        break;
+      }
+      ptrResult++;
+    }
+  }
+  if (i == 0)
+  {    // One of the factors is equal to zero.
+    for (i = nbrLen - 1; i >= 0; i--)
+    {
+      arr[idxFactor1 + i].x = 0;
+      arr[idxFactor2 + i].x = 0;
+    }
+  }
+  else
+  {   // Below cutoff: perform standard classical multiplcation.
+    ClassicalMult(idxFactor1, idxFactor2, nbrLen);
+  }
+}
+
 static void Karatsuba(int indexFactor1, int numLen)
 {
   int nbrLen = numLen;
-  int i;
   int idxFactor1 = indexFactor1;
   int idxFactor2;
-  unsigned int carry1First;
-  unsigned int carry1Second;
-  unsigned int carry2Second;
-  limb *ptrResult;
-  const limb *ptrHigh;
-  limb tmp;
   limb* ptrLimb;
-  limb* endPtrLimb;
+  const limb* endPtrLimb;
   int sign = 0;
   int halfLength;
-  int doubleLength = 2 * nbrLen;
   int diffIndex = 2 * nbrLen;
   static struct stKaratsubaStack *pstKaratsubaStack = astKaratsubaStack;
   int stage = 0;
@@ -796,40 +932,7 @@ static void Karatsuba(int indexFactor1, int numLen)
       idxFactor2 = idxFactor1 + nbrLen;
       if (nbrLen <= KARATSUBA_CUTOFF)
       {
-        // Check if one of the factors is equal to zero.
-        ptrResult = &arr[idxFactor1];
-        for (i = nbrLen; i > 0; i--)
-        {
-          if (ptrResult->x != 0)
-          {
-            break;
-          }
-          ptrResult++;
-        }
-        if (i > 0)
-        {     // First factor is not zero. Check second.
-          ptrResult = &arr[idxFactor2];
-          for (i = nbrLen; i > 0; i--)
-          {
-            if (ptrResult->x != 0)
-            {
-              break;
-            }
-            ptrResult++;
-          }
-        }
-        if (i == 0)
-        {    // One of the factors is equal to zero.
-          for (i = nbrLen - 1; i >= 0; i--)
-          {
-            arr[idxFactor1 + i].x = 0;
-            arr[idxFactor2 + i].x = 0;
-          }
-        }
-        else
-        {   // Below cutoff: perform standard classical multiplcation.
-          ClassicalMult(idxFactor1, idxFactor2, nbrLen);
-        }
+        belowKaratsubaCutoff(nbrLen, idxFactor1, idxFactor2);
         pstKaratsubaStack--;
         idxFactor1 = pstKaratsubaStack->idxFactor1;
         nbrLen *= 2;
@@ -853,6 +956,7 @@ static void Karatsuba(int indexFactor1, int numLen)
       endPtrLimb = &arr[idxFactor2];
       for (; ptrLimb < endPtrLimb; ptrLimb++)
       {
+        limb tmp;
         tmp.x = ptrLimb->x;
         ptrLimb->x = (ptrLimb + halfLength)->x;
         (ptrLimb + halfLength)->x = tmp.x;
@@ -891,113 +995,7 @@ static void Karatsuba(int indexFactor1, int numLen)
       stage = 0;         // Start new Karatsuba multiplication.
       break;
     default:
-      halfLength = nbrLen / 2;
-      // Process all carries at the end.
-      // Obtain (b+1)(xH*yH*b + xL*yL) = xH*yH*b^2 + (xL*yL+xH*yH)*b + xL*yL
-      // The first and last terms are already in correct locations.
-      ptrResult = &arr[idxFactor1 + halfLength];
-      carry1First = 0;
-      carry1Second = 0;
-      carry2Second = 0;
-      for (i = halfLength; i > 0; i--)
-      {
-        // The sum of three ints overflows an unsigned int variable,
-        // so two adds are required. Also carries must be separated in
-        // order to avoid overflow:
-        // 00000001 + 7FFFFFFF + 7FFFFFFF = FFFFFFFF
-        unsigned int accum1Lo = carry1First + (unsigned int)ptrResult->x +
-          (unsigned int)(ptrResult + halfLength)->x;
-        unsigned int accum2Lo;
-        carry1First = accum1Lo >> BITS_PER_GROUP;
-        accum2Lo = carry2Second + (accum1Lo & MAX_VALUE_LIMB) +
-          (unsigned int)(ptrResult - halfLength)->x;
-        carry2Second = accum2Lo >> BITS_PER_GROUP;
-        accum1Lo = carry1Second + (accum1Lo & MAX_VALUE_LIMB) +
-          (unsigned int)(ptrResult + nbrLen)->x;
-        carry1Second = accum1Lo >> BITS_PER_GROUP;
-        (ptrResult + halfLength)->x = accum1Lo & MAX_VALUE_LIMB;
-        ptrResult->x = accum2Lo & MAX_VALUE_LIMB;
-        ptrResult++;
-      }
-      // Process carries.
-      ptrLimb = ptrResult + halfLength;
-      carry1Second += carry1First + (unsigned int)ptrLimb->x;
-      ptrLimb->x = (int)carry1Second & MAX_INT_NBR;
-      for (i = nbrLen + halfLength + 1; (i < doubleLength) && (carry1Second >= MAX_VALUE_LIMB); i++)
-      {
-        carry1Second >>= BITS_PER_GROUP;
-        ptrLimb++;
-        carry1Second += (unsigned int)ptrLimb->x;
-        ptrLimb->x = (int)carry1Second & MAX_INT_NBR;
-      }
-      carry2Second += carry1First + (unsigned int)ptrResult->x;
-      ptrResult->x = (int)carry2Second & MAX_INT_NBR;
-      for (i = nbrLen + 1; (i < doubleLength) && (carry2Second >= MAX_VALUE_LIMB); i++)
-      {
-        carry2Second >>= BITS_PER_GROUP;
-        ptrResult++;
-        carry2Second += (unsigned int)ptrResult->x;
-        ptrResult->x = (int)carry2Second & MAX_INT_NBR;
-      }
-      // Compute final product.
-      ptrHigh = &arr[diffIndex];
-      ptrResult = &arr[idxFactor1 + halfLength];
-      if (sign != 0)
-      {            // (xH-xL) * (yL-yH) is negative.
-        unsigned int borrow = 0U;
-        unsigned int unsignedLimb;
-        for (i = halfLength; i > 0; i--)
-        {
-          borrow = (unsigned int)ptrResult->x - (unsigned int)ptrHigh->x - borrow;
-          ptrHigh++;
-          unsignedLimb = borrow & MAX_VALUE_LIMB;
-          ptrResult->x = (int)unsignedLimb;
-          ptrResult++;
-          borrow = (unsigned int)ptrResult->x - (unsigned int)ptrHigh->x -
-            (borrow >> BITS_PER_GROUP);
-          ptrHigh++;
-          unsignedLimb = borrow & MAX_VALUE_LIMB;
-          ptrResult->x = (int)unsignedLimb;
-          ptrResult++;
-          borrow >>= BITS_PER_GROUP;
-        }
-        for (i = halfLength; (i > 0) && (borrow != 0U); i--)
-        {
-          borrow = (unsigned int)ptrResult->x - borrow;
-          unsignedLimb = borrow & MAX_VALUE_LIMB;
-          ptrResult->x = (int)unsignedLimb;
-          ptrResult++;
-          borrow >>= BITS_PER_GROUP;
-        }
-      }
-      else
-      {            // (xH-xL) * (yL-yH) is positive or zero.
-        unsigned int carry = 0;
-        unsigned int unsignedLimb;
-        for (i = halfLength; i > 0; i--)
-        {
-          carry += (unsigned int)ptrResult->x + (unsigned int)ptrHigh->x;
-          ptrHigh++;
-          unsignedLimb = carry & MAX_VALUE_LIMB;
-          ptrResult->x = (int)unsignedLimb;
-          ptrResult++;
-          carry = (carry >> BITS_PER_GROUP) +
-           (unsigned int)ptrResult->x + (unsigned int)ptrHigh->x;
-          ptrHigh++;
-          unsignedLimb = carry & MAX_VALUE_LIMB;
-          ptrResult->x = (int)unsignedLimb;
-          ptrResult++;
-          carry >>= BITS_PER_GROUP;
-        }
-        for (i = halfLength; (i > 0) && (carry != 0U); i--)
-        {
-          carry += (unsigned int)ptrResult->x;
-          unsignedLimb = carry & MAX_VALUE_LIMB;
-          ptrResult->x = (int)unsignedLimb;
-          ptrResult++;
-          carry >>= BITS_PER_GROUP;
-        }
-      }
+      computeFinalProduct(nbrLen, idxFactor1, sign, diffIndex);
       nbrLen *= 2;
       diffIndex -= nbrLen;
       pstKaratsubaStack--;

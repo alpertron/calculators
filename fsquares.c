@@ -285,16 +285,13 @@ int fsquares(void)
           int Rem;
           int LimbModQ;
           int Q;
-          unsigned int unsignedLimb;
           Rem = 0;
           Q = (2 * i) + 3;                        // Prime
-          unsignedLimb = LIMB_RANGE % (unsigned int)Q;
-          LimbModQ = (int)unsignedLimb;
+          LimbModQ = UintToInt(LIMB_RANGE % (unsigned int)Q);
           for (j = nbrLimbs - 1; j >= 0; j--)
           {
             int Divid = number[j].x + (Rem * LimbModQ);
-            unsignedLimb = (unsigned int)Divid % (unsigned int)Q;
-            Rem = (int)unsignedLimb;
+            Rem = UintToInt((unsigned int)Divid % (unsigned int)Q);
           }
           sieve[i] = Rem;
         }
@@ -319,7 +316,6 @@ int fsquares(void)
       // and a (big) prime, try with other squares.
       for (;;)
       {
-        unsigned int unsignedLimb;
         bool multipleOf4kPlus3 = false;
         if (TerminateThread != 0)
         {
@@ -336,20 +332,17 @@ int fsquares(void)
         }
         sum = (iMult3 * iMult3) + (iMult4 * iMult4);
         carry.x = number[0].x - sum;
-        unsignedLimb = (unsigned int)carry.x & MAX_VALUE_LIMB;
-        p[0].x = (int)unsignedLimb;
+        p[0].x = UintToInt((unsigned int)carry.x & MAX_VALUE_LIMB);
         carry.x >>= BITS_PER_GROUP;
         if (nbrLimbs > 1)
         {
           carry.x += number[1].x;
-          unsignedLimb = (unsigned int)carry.x & MAX_VALUE_LIMB;
-          p[1].x = (int)unsignedLimb;
+          p[1].x = UintToInt((unsigned int)carry.x & MAX_VALUE_LIMB);
           carry.x >>= BITS_PER_GROUP;
           for (index = 2; index < nbrLimbs; index++)
           {
             carry.x += number[index].x;
-            unsignedLimb = (unsigned int)carry.x & MAX_VALUE_LIMB;
-            p[index].x = (int)unsignedLimb;
+            p[index].x = UintToInt((unsigned int)carry.x & MAX_VALUE_LIMB);
             carry.x >>= BITS_PER_GROUP;
           }
         }
@@ -385,14 +378,12 @@ int fsquares(void)
             for (;;)
             {
               // Compute the remainder of p and divisor.
-              unsignedLimb = LIMB_RANGE % (unsigned int)divisor;
-              int LimbModDivisor = (int)unsignedLimb;
+              int LimbModDivisor = UintToInt(LIMB_RANGE % (unsigned int)divisor);
               carry.x = 0;
               for (index = nbrLimbsP - 1; index >= 0; index--)
               {
-                unsignedLimb = (((unsigned int)carry.x * (unsigned int)LimbModDivisor) +
-                  (unsigned int)p[index].x) % (unsigned int)divisor;
-                carry.x = (int)unsignedLimb;
+                carry.x = UintToInt((((unsigned int)carry.x * (unsigned int)LimbModDivisor) +
+                  (unsigned int)p[index].x) % (unsigned int)divisor);
               }
               if (carry.x != 0)
               {     // Number is not a multiple of "divisor".

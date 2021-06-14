@@ -88,13 +88,11 @@ void SubtractBigInt(const limb *pMinuend, const limb *pSubtrahend, limb *pDiff, 
   unsigned int borrow = 0U;
   for (int i = 0; i < nbrLimbs; i++)
   {
-    unsigned int unsignedLimb;
     borrow = (unsigned int)ptrMinuend->x - (unsigned int)ptrSubtrahend->x - 
       (borrow >> BITS_PER_INT_GROUP);
     ptrMinuend++;
     ptrSubtrahend++;
-    unsignedLimb = borrow & MAX_VALUE_LIMB;
-    ptrDiff->x = (int)unsignedLimb;
+    ptrDiff->x = UintToInt(borrow & MAX_VALUE_LIMB);
     ptrDiff++;
   }
 }
@@ -227,13 +225,11 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
   else
   {           // Both addends have different sign. Subtract their absolute values.
     unsigned int borrow = 0U;
-    unsigned int unsignedLimb;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
       borrow = (unsigned int)ptrAddend1->x - (unsigned int)ptrAddend2->x -
         (borrow >> BITS_PER_INT_GROUP);
-      unsignedLimb = borrow & MAX_VALUE_LIMB;
-      ptrSum->x = (int)unsignedLimb;
+      ptrSum->x = UintToInt(borrow & MAX_VALUE_LIMB);
       ptrAddend1++;
       ptrAddend2++;
       ptrSum++;
@@ -242,8 +238,7 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
     for (; ctr < nbrLimbs; ctr++)
     {
       borrow = (unsigned int)ptrAddend1->x - (borrow >> BITS_PER_INT_GROUP);
-      unsignedLimb = borrow & MAX_VALUE_LIMB;
-      ptrSum->x = (int)unsignedLimb;
+      ptrSum->x = UintToInt(borrow & MAX_VALUE_LIMB);
       ptrAddend1++;
       ptrSum++;
     }
@@ -598,10 +593,8 @@ static void BigIntMutiplyPower2(BigInteger *pArg, int powerOf2)
     unsigned int carry = 0U;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
-      unsigned int unsignedLimb;
       carry += (unsigned int)(ptrLimbs + ctr)->x << 1;
-      unsignedLimb = carry & MAX_VALUE_LIMB;
-      (ptrLimbs + ctr)->x = (int)unsignedLimb;
+      (ptrLimbs + ctr)->x = UintToInt(carry & MAX_VALUE_LIMB);
       carry >>= BITS_PER_GROUP;
     }
     if (carry != 0U)
@@ -920,10 +913,8 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
   for (int ctr = 0; ctr < nbrLimbs; ctr++)
   {
 #ifdef _USING64BITS_
-    unsigned int unsignedLimb;
     carry += (int64_t)pLimb->x * (int64_t)intMult;
-    unsignedLimb = (unsigned int)carry & MAX_VALUE_LIMB;
-    pResultLimb->x = (int)unsignedLimb;
+    pResultLimb->x = UintToInt(carry & MAX_VALUE_LIMB);
     pResultLimb++;
     carry >>= BITS_PER_GROUP;
 #else
@@ -2037,10 +2028,8 @@ void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len)
   int lenBytes;
   if (uiNbr >= MAX_VALUE_LIMB)
   {
-    unsigned int unsignedLimb = uiNbr % MAX_VALUE_LIMB;
-    limbs->x = (int)unsignedLimb;
-    unsignedLimb = uiNbr / MAX_VALUE_LIMB;
-    (limbs+1)->x = unsignedLimb;
+    limbs->x = UintToInt(uiNbr % MAX_VALUE_LIMB);
+    (limbs+1)->x = UintToInt(uiNbr / MAX_VALUE_LIMB);
     lenBytes = (len - 2) * (int)sizeof(limb);
     (void)memset(limbs + 2, 0, lenBytes);
   }

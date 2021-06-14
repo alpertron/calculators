@@ -1131,10 +1131,8 @@ static enum eExprErr ComputeFibLucas(int origValue)
       unsigned int carry = 0;
       for (j = 0; j < len; j++)
       {
-        unsigned int unsignedLimb;
         carry += (unsigned int)(pFibonPrev + j)->x + (unsigned int)(pFibonAct + j)->x;
-        unsignedLimb = carry & MAX_VALUE_LIMB;
-        (pFibonPrev + j)->x = (int)unsignedLimb;
+        (pFibonPrev + j)->x = UintToInt(carry & MAX_VALUE_LIMB);
         carry >>= BITS_PER_GROUP;
       }
       if (carry != 0U)

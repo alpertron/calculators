@@ -100,7 +100,6 @@ static void getHexValue(const char** pptrInput)
   else
   {    // Generate big integer from hexadecimal number from right to left.
     size_t diffPtrs;
-    unsigned int unsignedLimb;
     unsigned int carry = 0;
     int shLeft = 0;
     limb* ptrLimb = &value.limbs[0];
@@ -125,8 +124,7 @@ static void getHexValue(const char** pptrInput)
       {
         unsigned int shLeftComp;
         shLeft -= BITS_PER_GROUP;
-        unsignedLimb = carry & MAX_VALUE_LIMB;
-        ptrLimb->x = (int)unsignedLimb;
+        ptrLimb->x = UintToInt(carry & MAX_VALUE_LIMB);
         ptrLimb++;
         shLeftComp = 4U - (unsigned int)shLeft;
         carry = (unsigned int)c >> shLeftComp;

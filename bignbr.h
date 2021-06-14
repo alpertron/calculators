@@ -249,4 +249,12 @@ void ShowRationalAndSqrParts(const BigRational* RatPart, const BigRational* SqrP
   int root, const char *ptrTimes);
 void showSquareRootOfRational(const BigRational* rat, int root, const char *ptrTimes);
 void copyStr(char** pptrString, const char* stringToCopy);
+static inline int UintToInt(unsigned int value)
+{
+  return (int)value;
+}
+static inline int Uint64ToInt(uint64_t value)
+{
+  return (int)value;
+}
 #endif

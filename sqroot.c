@@ -86,12 +86,10 @@ static void MultiplyBigNbrByMinPowerOf4(int *pPower4, const limb *number, int le
   prevLimb.x = 0;
   for (int index2 = len; index2 >= 0; index2--)
   {
-    unsigned int unsignedLimb;
     currLimb.x = ptrSrc->x;
     ptrSrc++;
-    unsignedLimb = (((unsigned int)currLimb.x << shLeft) |
-      ((unsigned int)prevLimb.x >> (BITS_PER_GROUP - shLeft))) & MAX_VALUE_LIMB;
-    ptrDest->x = (int)unsignedLimb;
+    ptrDest->x = UintToInt((((unsigned int)currLimb.x << shLeft) |
+      ((unsigned int)prevLimb.x >> (BITS_PER_GROUP - shLeft))) & MAX_VALUE_LIMB);
     ptrDest++;
     prevLimb.x = currLimb.x;
   }
@@ -311,9 +309,8 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   prev.x = 0;
   for (index = length; index > 0; index--)
   {
-    unsigned int unsignedLimb = (((unsigned int)prev.x << (BITS_PER_GROUP - shRight)) |
-      ((unsigned int)ptrSrc->x >> shRight)) & MAX_VALUE_LIMB;
-    ptrDest->x = (int)unsignedLimb;
+    ptrDest->x = UintToInt((((unsigned int)prev.x << (BITS_PER_GROUP - shRight)) |
+      ((unsigned int)ptrSrc->x >> shRight)) & MAX_VALUE_LIMB);
     ptrDest--;
     prev.x = ptrSrc->x;
     ptrSrc--;
