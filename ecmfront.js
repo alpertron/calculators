@@ -254,30 +254,6 @@ function callWorker(param)
   }
 }
 
-function dowork(n)
-{
-  var valueText;
-  fromFile = "0";
-  if (get("getFile").value != "")
-  {
-    var fileReader = new FileReader();
-    fileReader.onload = function(fileLoadedEvent) 
-    {
-      fromFile = "1";
-      valueText = fileLoadedEvent.target.result;
-      performWork(n, valueText);
-      get("getFile").value = "";
-    };
-    fileReader.readAsText(get("getFile").files[0], "UTF-8");
-    get("value").value = "";
-  }
-  else
-  {
-    valueText = get("value").value.replace(/\u2011/g, "-");
-    performWork(n, valueText);
-  }
-}
-
 function performWork(n, valueText)
 {
   var param;
@@ -340,6 +316,30 @@ function performWork(n, valueText)
   else
   {
     callWorker(param + charNull);
+  }
+}
+
+function dowork(n)
+{
+  var valueText;
+  fromFile = "0";
+  if (get("getFile").value !== "")
+  {
+    var fileReader = new FileReader();
+    fileReader.onload = function(fileLoadedEvent) 
+    {
+      fromFile = "1";
+      valueText = fileLoadedEvent.target.result;
+      performWork(n, valueText);
+      get("getFile").value = "";
+    };
+    fileReader.readAsText(get("getFile").files[0], "UTF-8");
+    get("value").value = "";
+  }
+  else
+  {
+    valueText = get("value").value.replace(/\u2011/g, "-");
+    performWork(n, valueText);
   }
 }
 
@@ -591,9 +591,9 @@ function startUp()
   get("tofile").onclick = function ()
   {
     hide("savefile");
-    var blob = new Blob([tofile], { type: 'text/plain' })
+    var blob = new Blob([tofile], { type: "text/plain" });
     var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
+    var a = document.createElement("a");
     a.href = url;
     a.download = fileName;
     var clickHandler = function()
@@ -601,16 +601,16 @@ function startUp()
       setTimeout(function()
       {
         URL.revokeObjectURL(url);
-        this.removeEventListener('click', clickHandler);
+        this.removeEventListener("click", clickHandler);
       },
       150);
     };
-    a.addEventListener('click', clickHandler, false);
+    a.addEventListener("click", clickHandler, false);
     a.click();
   };
   get("getFile").onchange = function ()
   {
-    fileName = get("getFile").value.replace(/^.*[\\\/]/, '');
+    fileName = get("getFile").value.replace(/^.*[\\\/]/, "");
     if (lang)
     {          // Spanish
       get("value").value = "Archivo a procesar: " + fileName +
