@@ -60,8 +60,9 @@ static unsigned int getFactorsOfA(unsigned int seed, int *aindex);
 static void sieveThread(BigInteger *result);
 
 #ifdef __EMSCRIPTEN__
-static void showMatrixSize(char *SIQSInfoText, int rows, int cols)
+static void showMatrixSize(const char *SIQSInformationText, int rows, int cols)
 {
+  (void)SIQSInformationText;
   char *ptrText = ptrLowerText;  // Point after number that is being factored.
   copyStr(&ptrText, lang ? "<p>Resolviendo la matriz de congruencias de " : "<p>Solving ");
   int2dec(&ptrText, rows);   // Show number of rows.
@@ -98,14 +99,15 @@ static void getMultAndFactorBase(int multiplier, int FactorBase)
   ptrSIQSStrings = ptrText;
 }
 
-static void ShowSIQSInfo(int timeSieve, int congruencesFound, int matrixBLength, int elapsedTime)
+static void ShowSIQSInfo(int timeSieve, int nbrCongruencesFound, int matrixBLength,
+  int elapsedTime)
 {
   char SIQSInfo[1000];
-  int percentage = (int)((float)(congruencesFound * 100) / (float)matrixBLength);
-  int u = (int)((double)timeSieve * (double)(matrixBLength - congruencesFound) / (double)congruencesFound);
+  int percentage = (int)((float)(nbrCongruencesFound * 100) / (float)matrixBLength);
+  int u = (int)((double)timeSieve * (double)(matrixBLength - nbrCongruencesFound) / (double)nbrCongruencesFound);
   char *ptrText = SIQSInfo;
   copyStr(&ptrText, "4<p>");
-  int2dec(&ptrText, congruencesFound);  // Show number of congruences found.
+  int2dec(&ptrText, nbrCongruencesFound);  // Show number of congruences found.
   copyStr(&ptrText, lang ? " congruencias halladas (" : " congruences found (");
   int2dec(&ptrText, percentage);  // Show number of congruences found.
   copyStr(&ptrText, lang ? "%) con " : "%) with ");
@@ -122,7 +124,7 @@ static void ShowSIQSInfo(int timeSieve, int congruencesFound, int matrixBLength,
   int2dec(&ptrText, percentage);
   copyStr(&ptrText, "\" max=\"100\"></progress><br>");
   GetDHMS(&ptrText, elapsedTime);
-  if ((timeSieve > 1) && (congruencesFound > 10))
+  if ((timeSieve > 1) && (nbrCongruencesFound > 10))
   {
     copyStr(&ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
     copyStr(&ptrText, lang ? " Fin de la criba en " : " End sieve in ");

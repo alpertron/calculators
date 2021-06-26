@@ -29,12 +29,34 @@ static char *ptrEndBatchFactor;
 static char *ptrCurrBatchFactor;
 static char *ptrNextBatchFactor;
 static bool firstExprProcessed;
+bool fromFile;
+bool lineEndingCRLF;
 int valuesProcessed;
 char outputExpr[200000];
 #ifdef __EMSCRIPTEN__
 char *ptrInputText;
 char emptyInputText;
 #endif
+
+void beginLine(char** pptrOutput)
+{
+  if (!fromFile)
+  {
+    copyStr(pptrOutput, "<p>");
+  }
+}
+
+void finishLine(char** pptrOutput)
+{
+  if (fromFile)
+  {
+    copyStr(pptrOutput, (lineEndingCRLF ? "\r\n\r\n" : "\n\n"));
+  }
+  else
+  {
+    copyStr(pptrOutput, "</p>");
+  }
+}
 
 static void stringToHTML(char **pptrOutput, const char *ptrString)
 {
@@ -128,7 +150,8 @@ static void BatchError(char **pptrOutput, const char *batchText, const char *err
   counterC = 0;
 }
 
-enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pptrOutput, bool *pIsBatch)
+enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pptrOutput,
+  bool *pIsBatch)
 {
   int endValuesProcessed;
   char *ptrOutput = output;
@@ -140,7 +163,14 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
   char *ptrCharFound;
   char *ptrSrcString;
   char *ptrStartExpr;
-  copyStr(&ptrOutput, "2<ul><li>");
+  if (fromFile)
+  {
+    copyStr(&ptrOutput, "B");
+  }
+  else
+  {
+    copyStr(&ptrOutput, "2<ul><li>");
+  }
   endValuesProcessed = valuesProcessed + 1000;
   if (pIsBatch != NULL)
   {
@@ -156,15 +186,27 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     ptrCurrBatchFactor += (int)strlen(ptrCurrBatchFactor) + 1)
   {  // Get next line.
     char c;
+    if ((ptrCurrBatchFactor != batchText) && (pIsBatch != NULL))
+    {         // Not processing first line: Indicate batch processing.
+      *pIsBatch = true;
+    }
     expressionNbr = 0;
     if (firstExprProcessed == false)
     {
       valueX.nbrLimbs = 0;     // Invalidate variable x and counter c.
-      ptrNextBatchFactor = findChar(ptrCurrBatchFactor, '\n');
-      if (ptrNextBatchFactor != NULL)
+      ptrNextBatchFactor = ptrCurrBatchFactor;
+      while ((*ptrNextBatchFactor != '\0') && (*ptrNextBatchFactor != '\r') &&
+            ((*ptrNextBatchFactor != '\n')))
       {
-        *ptrNextBatchFactor = 0;    // Indicate end of line.
+        ptrNextBatchFactor++;
       }
+      if ((*ptrNextBatchFactor == '\r') && (*(ptrNextBatchFactor+1) == '\n'))
+      {
+        lineEndingCRLF = true;
+        *ptrNextBatchFactor = ' ';
+        ptrNextBatchFactor++;
+      }
+      *ptrNextBatchFactor = 0;    // Indicate end of line.
       counterC = 1;
     }
     // Skip leading spaces.
@@ -281,10 +323,6 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           ptrConditionExpr++;
         }
       }
-      if (pIsBatch != NULL)
-      {
-        *pIsBatch = true;    // Indicate batch processing.
-      }
       while (ptrOutput < &output[(int)sizeof(output) - 200000])
       {      // Perform loop.
         bool processExpression = true;
@@ -302,7 +340,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         }
         if (valuesProcessed >= endValuesProcessed)
         {
-          output[0] = '6';  // Show Continue button.
+          output[0] = (fromFile? 'A': '6');  // Show Continue button.
           break;
         }
         if (ptrConditionExpr != NULL)
@@ -351,10 +389,21 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           break;   // Cannot compute next expression, so go out.
         }
         CopyBigInt(&valueX, valueFound);
+        counterC++;
+        if ((counterC == 2) && (pIsBatch != NULL))
+        {         // Not processing first line: Indicate batch processing.
+          *pIsBatch = true;
+        }
         if (processExpression)
         {
-          counterC++;
-          copyStr(&ptrOutput, "</li><li>");
+          if (fromFile)
+          {
+            copyStr(&ptrOutput, (lineEndingCRLF? "\r\n": "\n"));
+          }
+          else
+          {
+            copyStr(&ptrOutput, "</li><li>");
+          }
           valuesProcessed++;
         }
       }
@@ -370,7 +419,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
 #endif
       if (valuesProcessed >= endValuesProcessed)
       {
-        output[0] = '6';  // Show Continue button.
+        output[0] = (fromFile ? 'A' : '6');  // Show Continue button.
       }
       rc = ComputeExpression(ptrSrcString, valueFound);
       if (rc == EXPR_OK)
@@ -382,40 +431,68 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         textError(&ptrOutput, rc);
       }
       counterC = 2;
-      copyStr(&ptrOutput, "</li><li>");
+      if (fromFile)
+      {
+        copyStr(&ptrOutput, (lineEndingCRLF ? "\r\n" : "\n"));
+      }
+      else
+      {
+        copyStr(&ptrOutput, "</li><li>");
+      }
       valuesProcessed++;
     }
     if (counterC == 1)
     {
-      copyStr(&ptrOutput, "</li>");
+      if (fromFile)
+      {
+        copyStr(&ptrOutput, (lineEndingCRLF ? "\r\n" : "\n"));
+      }
+      else
+      {
+        copyStr(&ptrOutput, "</li>");
+      }
     }
     if (ptrOutput >= &output[(int)sizeof(output) - 200000])
     {
-      output[0] = '6';     // Show Continue button.
+      output[0] = (fromFile ? 'A' : '6');  // Show Continue button.
       break;
     }
     if ((*ptrCurrBatchFactor & 0xDF) == 'x')
     {      // Loop mode.
       if (ptrConditionExpr != NULL)
       {
-        ptrCurrBatchFactor += (int)strlen(ptrConditionExpr) + 1;
+        ptrCurrBatchFactor += strlen(ptrConditionExpr);
         ptrConditionExpr = NULL;
       }
       else
       {
-        ptrCurrBatchFactor += (int)strlen(ptrExprToProcess) + 1;
+        ptrCurrBatchFactor += strlen(ptrExprToProcess);
       }
+      ptrCurrBatchFactor++;
     }
     valueX.nbrLimbs = 0;     // Invalidate variable x and counter c.
   }
-  ptrOutput -= 4;            // Erase start tag <li> without contents.
+  if (!fromFile)
+  {
+    ptrOutput -= 4;            // Erase start tag <li> without contents.
+  }
   if (counterC == 1)
   {
-    ptrOutput--;             // Erase extra charaacter of </li>
+    if (!fromFile)
+    {
+      ptrOutput--;             // Erase extra character of </li>.
+    }
     copyStr(&ptrOutput, lang ? "No hay valores para la expresión ingresada.":
                         "There are no values for the requested expression.");
   }
-  copyStr(&ptrOutput, "</ul>");
+  if (fromFile)
+  {
+    copyStr(&ptrOutput, (lineEndingCRLF ? "\r\n" : "\n"));
+  }
+  else
+  {
+    copyStr(&ptrOutput, "</ul>");
+  }
   *pptrOutput = ptrOutput;
   return rc;
 }

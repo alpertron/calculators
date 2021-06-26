@@ -24,11 +24,14 @@
 #include "factor.h"
 #include "showtime.h"
 #include "batch.h"
+#include "output.h"
 
 #ifdef __EMSCRIPTEN__
 extern bool skipPrimality;
 extern int64_t lModularMult;
 #endif
+extern bool fromFile;
+extern bool lineEndingCRLF;
 extern BigInteger tofactor;
 static BigInteger Quad1;
 static BigInteger Quad2;
@@ -97,6 +100,44 @@ void batchCallback(char **pptrOutput)
 }
 #endif
 
+#ifdef __EMSCRIPTEN__
+static void startList(char** pptrOutput)
+{
+  if (!fromFile)
+  {
+    copyStr(pptrOutput, "<ul>");
+  }
+}
+
+static void startListLine(char** pptrOutput)
+{
+  if (!fromFile)
+  {
+    copyStr(pptrOutput, "<li>");
+  }
+}
+
+static void endListLine(char** pptrOutput)
+{
+  if (fromFile)
+  {
+    copyStr(pptrOutput, (lineEndingCRLF ? "\r\n" : "\n"));
+  }
+  else
+  {
+    copyStr(pptrOutput, "</li>");
+  }
+}
+
+static void endList(char** pptrOutput)
+{
+  if (!fromFile)
+  {
+    copyStr(pptrOutput, "</ul>");
+  }
+}
+#endif
+
 static void ExponentToBigInteger(int exponent, BigInteger *bigint)
 {
   if (exponent > (int)MAX_VALUE_LIMB)
@@ -133,7 +174,8 @@ static void GetNumberOfDivisors(char **pptrOutput)
     (void)BigIntMultiply(&factorValue, &result, &result);
     pstFactor++;
   }
-  copyStr(&ptrOutput, lang ? "<p>Cantidad de divisores: " : "<p>Number of divisors: ");
+  beginLine(&ptrOutput);
+  copyStr(&ptrOutput, lang ? "Cantidad de divisores: " : "Number of divisors: ");
   if (hexadecimal)
   {
     BigInteger2Hex(&ptrOutput, &result, groupLen);
@@ -142,7 +184,7 @@ static void GetNumberOfDivisors(char **pptrOutput)
   {
     BigInteger2Dec(&ptrOutput, &result, groupLen);
   }
-  copyStr(&ptrOutput, "</p>");
+  finishLine(&ptrOutput);
   *pptrOutput = ptrOutput;
 }
 
@@ -150,7 +192,8 @@ static void GetSumOfDivisors(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
   SumOfDivisors(&result);
-  copyStr(&ptrOutput, lang ? "<p>Suma de divisores: " : "<p>Sum of divisors: ");
+  beginLine(&ptrOutput);
+  copyStr(&ptrOutput, lang ? "Suma de divisores: " : "Sum of divisors: ");
   if (hexadecimal)
   {
     BigInteger2Hex(&ptrOutput, &result, groupLen);
@@ -159,7 +202,7 @@ static void GetSumOfDivisors(char **pptrOutput)
   {
     BigInteger2Dec(&ptrOutput, &result, groupLen);
   }
-  copyStr(&ptrOutput, "</p>");
+  finishLine(&ptrOutput);
   *pptrOutput = ptrOutput;
 }
 
@@ -167,7 +210,8 @@ static void GetEulerTotient(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
   Totient(&result);
-  copyStr(&ptrOutput, lang ? "<p>Phi de Euler: " : "<p>Euler's totient: ");
+  beginLine(&ptrOutput);
+  copyStr(&ptrOutput, lang ? "Phi de Euler: " : "Euler's totient: ");
   if (hexadecimal)
   {
     BigInteger2Hex(&ptrOutput, &result, groupLen);
@@ -176,7 +220,7 @@ static void GetEulerTotient(char **pptrOutput)
   {
     BigInteger2Dec(&ptrOutput, &result, groupLen);
   }
-  copyStr(&ptrOutput, "</p>");
+  finishLine(&ptrOutput);
   *pptrOutput = ptrOutput;
 }
 
@@ -203,7 +247,8 @@ static void GetMobius(char **pptrOutput)
       pstFactor++;
     }
   }
-  copyStr(&ptrOutput, "<p>Möbius: ");
+  beginLine(&ptrOutput);
+  copyStr(&ptrOutput, "Möbius: ");
   if (mobius < 0)
   {
     mobius = -mobius;
@@ -211,7 +256,7 @@ static void GetMobius(char **pptrOutput)
     ptrOutput++;
   }
   int2dec(&ptrOutput, mobius);
-  copyStr(&ptrOutput, "</p>");
+  finishLine(&ptrOutput);
   *pptrOutput = ptrOutput;
 }
 
@@ -818,7 +863,7 @@ static void varSquared(char **pptrOutput, char letter, char sign)
 static void valueVar(char **pptrOutput, char letter, const BigInteger *value)
 {
   char *ptrOutput = *pptrOutput;
-  copyStr(&ptrOutput, "<p>");
+  beginLine(&ptrOutput);
   *ptrOutput = letter;
   ptrOutput++;
   *ptrOutput = ' ';
@@ -835,14 +880,15 @@ static void valueVar(char **pptrOutput, char letter, const BigInteger *value)
   {
     BigInteger2Dec(&ptrOutput, value, groupLen);
   }
-  copyStr(&ptrOutput, "</p>");
+  finishLine(&ptrOutput);
   *pptrOutput = ptrOutput;
 }
 
 static void ShowFourSquares(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
-  copyStr(&ptrOutput, "<p>n =");
+  beginLine(&ptrOutput);
+  copyStr(&ptrOutput, "n =");
   if (BigIntIsZero(&Quad4))
   {          // Quad4 equals zero.
     if (BigIntIsZero(&Quad3))
@@ -850,14 +896,14 @@ static void ShowFourSquares(char **pptrOutput)
       if (BigIntIsZero(&Quad2))
       {      // Quad2, Quad3 and Quad4 equal zero.
         varSquared(&ptrOutput, 'a', ' ');
-        copyStr(&ptrOutput, "</p>");
+        finishLine(&ptrOutput);
         valueVar(&ptrOutput, 'a', &Quad1);
         *pptrOutput = ptrOutput;
         return;
       }
       varSquared(&ptrOutput, 'a', '+');
       varSquared(&ptrOutput, 'b', ' ');
-      copyStr(&ptrOutput, "</p>");
+      finishLine(&ptrOutput);
       valueVar(&ptrOutput, 'a', &Quad1);
       valueVar(&ptrOutput, 'b', &Quad2);
       *pptrOutput = ptrOutput;
@@ -866,7 +912,7 @@ static void ShowFourSquares(char **pptrOutput)
     varSquared(&ptrOutput, 'a', '+');
     varSquared(&ptrOutput, 'b', '+');
     varSquared(&ptrOutput, 'c', ' ');
-    copyStr(&ptrOutput, "</p>");
+    finishLine(&ptrOutput);
     valueVar(&ptrOutput, 'a', &Quad1);
     valueVar(&ptrOutput, 'b', &Quad2);
     valueVar(&ptrOutput, 'c', &Quad3);
@@ -898,13 +944,12 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
   if (!isBatch && (rc == EXPR_OK) && doFactorization)
   {
 #ifdef __EMSCRIPTEN__
-    int64_t sumSquaresModMult;
+    int64_t sumSquaresModMult = 0;
 #endif
     if (tofactor.sign == SIGN_POSITIVE)
     {        // Number to factor is non-negative.
 #ifdef __EMSCRIPTEN__
       char* ptrText;
-      sumSquaresModMult = 0;           // No sum of squares.
 #endif
       if (!BigIntIsZero(&tofactor))
       {      // Number to factor is not zero.
@@ -916,6 +961,7 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
 #ifdef __EMSCRIPTEN__
       StepECM = 3;   // Show progress (in percentage) of sum of squares.
       ptrText = ShowFactoredPart(&tofactor, astFactorsMod);
+      beginLine(&ptrText);
       copyStr(&ptrText, lang ? "<p>Hallando suma de cuadrados.</p>" :
         "<p>Searching for sum of squares.</p>");
       ShowLowerText();
@@ -928,49 +974,63 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
       StepECM = 0;   // Do not show progress.
 #endif
     }
+    beginLine(&ptrOutput);
     showElapsedTime(&ptrOutput);
+    finishLine(&ptrOutput);
 #ifdef __EMSCRIPTEN__
-    if (lModularMult >= 0)
+    if (lModularMult > 0)
     {
-      copyStr(&ptrOutput, lang ? "<p>Multiplicaciones modulares:</p><ul>" :
-        "<p>Modular multiplications:</p><ul>");
+      beginLine(&ptrOutput);
+      copyStr(&ptrOutput, lang ? "Multiplicaciones modulares:" :
+        "Modular multiplications:");
+      finishLine(&ptrOutput);
+      startList(&ptrOutput);
       if ((lModularMult - primeModMult - SIQSModMult - sumSquaresModMult) > 0)
       {
-        copyStr(&ptrOutput, "<li>ECM: ");
+        startListLine(&ptrOutput);
+        copyStr(&ptrOutput, "ECM: ");
         long2dec(&ptrOutput, lModularMult - primeModMult - SIQSModMult - sumSquaresModMult);
-        copyStr(&ptrOutput, "</li>");
+        endListLine(&ptrOutput);
       }
       if (primeModMult > 0)
       {
-        copyStr(&ptrOutput, lang ? "<li>Verificación de números primos probables: " :
-          "<li>Probable prime checking: ");
+        startListLine(&ptrOutput);
+        copyStr(&ptrOutput, lang ? "Verificación de números primos probables: " :
+          "Probable prime checking: ");
         long2dec(&ptrOutput, primeModMult);
-        copyStr(&ptrOutput, "</li>");
+        endListLine(&ptrOutput);
       }
       if (SIQSModMult > 0)
       {
-        copyStr(&ptrOutput, "<li>SIQS: ");
+        startListLine(&ptrOutput);
+        copyStr(&ptrOutput, "SIQS: ");
         long2dec(&ptrOutput, SIQSModMult);
-        copyStr(&ptrOutput, "</li>");
+        endListLine(&ptrOutput);
       }
       if (sumSquaresModMult > 0)
       {
-        copyStr(&ptrOutput, lang ? "<li>Suma de cuadrados: " : "<li>Sum of squares: ");
+        startListLine(&ptrOutput);
+        copyStr(&ptrOutput, lang ? "Suma de cuadrados: " : "Sum of squares: ");
         long2dec(&ptrOutput, sumSquaresModMult);
-        copyStr(&ptrOutput, "</li>");
+        endListLine(&ptrOutput);
       }
-      copyStr(&ptrOutput, "</ul>");
+      endList(&ptrOutput);
     }
     if (nbrSIQS > 0)
     {
       uint64_t quotient;
-      copyStr(&ptrOutput, "<p>SIQS:<ul><li>");
+      beginLine(&ptrOutput);
+      copyStr(&ptrOutput, "SIQS:");
+      startList(&ptrOutput);
+      startListLine(&ptrOutput);
       int2dec(&ptrOutput, polynomialsSieved);
       copyStr(&ptrOutput, lang ? " polinomios utilizados" : " polynomials sieved");
-      copyStr(&ptrOutput, "</li><li>");
+      endListLine(&ptrOutput);
+      startListLine(&ptrOutput);
       int2dec(&ptrOutput, trialDivisions);
       copyStr(&ptrOutput, lang ? " conjuntos de divisiones de prueba" : " sets of trial divisions");
-      copyStr(&ptrOutput, "</li><li>");
+      endListLine(&ptrOutput);
+      startListLine(&ptrOutput);
       int2dec(&ptrOutput, smoothsFound);
       copyStr(&ptrOutput, lang ? " congruencias completas (1 de cada " :
         " smooth congruences found (1 out of every ");
@@ -982,21 +1042,27 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
         " partial congruences found (1 out of every ");
       quotient = ValuesSieved / (uint64_t)totalPartials;
       int2dec(&ptrOutput, (int)quotient);
-      copyStr(&ptrOutput, lang ? " valores)</li><li>" : " values)</li><li>");
+      copyStr(&ptrOutput, lang ? " valores)" : " values)");
+      endListLine(&ptrOutput);
+      startListLine(&ptrOutput);
       int2dec(&ptrOutput, partialsFound);
       copyStr(&ptrOutput, lang ? " congruencias parciales útiles</li><li>Tamaño de la matriz binaria: " :
         " useful partial congruences</li><li>Size of binary matrix: ");
       int2dec(&ptrOutput, matrixRows);
       copyStr(&ptrOutput, " &times; ");
       int2dec(&ptrOutput, matrixCols);
-      copyStr(&ptrOutput, "</li></ul>");
+      endListLine(&ptrOutput);
+      endList(&ptrOutput);
     }
     if ((nbrSIQS > 0) || (nbrECM > 0) || (nbrPrimalityTests > 0))
     {
-      copyStr(&ptrOutput, lang ? "<p>Tiempos:<ul>" : "<p>Timings:<ul>");
+      beginLine(&ptrOutput);
+      copyStr(&ptrOutput, lang ? "Tiempos:" : "Timings:");
+      startList(&ptrOutput);
       if (nbrPrimalityTests > 0)
       {
-        copyStr(&ptrOutput, lang ? "<li>Test de primo probable de " : "<li>Probable prime test of ");
+        startListLine(&ptrOutput);
+        copyStr(&ptrOutput, lang ? "Test de primo probable de " : "Probable prime test of ");
         int2dec(&ptrOutput, nbrPrimalityTests);
         copyStr(&ptrOutput, lang ? " número" : " number");
         if (nbrPrimalityTests != 1)
@@ -1009,11 +1075,12 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
         *ptrOutput = ' ';
         ptrOutput++;
         GetDHMSt(&ptrOutput, timePrimalityTests);
-        copyStr(&ptrOutput, "</li>");
+        endListLine(&ptrOutput);
       }
       if (nbrECM > 0)
       {
-        copyStr(&ptrOutput, lang ? "<li>Factorización " : "<li>Factoring ");
+        startListLine(&ptrOutput);
+        copyStr(&ptrOutput, lang ? "Factorización " : "Factoring ");
         int2dec(&ptrOutput, nbrECM);
         copyStr(&ptrOutput, lang ? " número" : " number");
         if (nbrECM != 1)
@@ -1025,11 +1092,12 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
         *ptrOutput = ' ';
         ptrOutput++;
         GetDHMSt(&ptrOutput, timeECM - timeSIQS);
-        copyStr(&ptrOutput, "</li>");
+        endListLine(&ptrOutput);
       }
       if (nbrSIQS > 0)
       {
-        copyStr(&ptrOutput, lang ? "<li>Factorización " : "<li>Factoring ");
+        startListLine(&ptrOutput);
+        copyStr(&ptrOutput, lang ? "Factorización " : "Factoring ");
         int2dec(&ptrOutput, nbrSIQS);
         copyStr(&ptrOutput, lang ? " número" : " number");
         if (nbrSIQS != 1)
@@ -1041,14 +1109,15 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
         *ptrOutput = ' ';
         ptrOutput++;
         GetDHMSt(&ptrOutput, timeSIQS);
-        copyStr(&ptrOutput, "</li>");
+        endListLine(&ptrOutput);
       }
-      copyStr(&ptrOutput, "</ul>");
+      endList(&ptrOutput);
     }
 #endif
   }
-  copyStr(&ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
-    "<p>" COPYRIGHT_ENGLISH "</p>");
+  beginLine(&ptrOutput);
+  copyStr(&ptrOutput, lang ? COPYRIGHT_SPANISH : COPYRIGHT_ENGLISH );
+  finishLine(&ptrOutput);
 }
 
 #ifndef _MSC_VER
@@ -1094,7 +1163,13 @@ EXTERNALIZE void doWork(void)
   }
 #endif
   ptrData += 2;          // Skip app number and second comma.
+  fromFile = (*ptrData == '1');
+  ptrData++;
   prettyprint = (*(ptrData + 1) == '1');
+  if (fromFile)
+  {
+    prettyprint = false;
+  }
   cunningham = (*(ptrData + 2) == '1');
   hexadecimal = (*(ptrData + 3) == '1');
   ptrData += 4;

@@ -774,8 +774,8 @@ inline static void computeFinalProduct(int nbrLen, int idxFactor1, int sign, int
     accum1Lo = carry1Second + (accum1Lo & MAX_VALUE_LIMB) +
       (unsigned int)(ptrResult + nbrLen)->x;
     carry1Second = accum1Lo >> BITS_PER_GROUP;
-    (ptrResult + halfLength)->x = accum1Lo & MAX_VALUE_LIMB;
-    ptrResult->x = accum2Lo & MAX_VALUE_LIMB;
+    (ptrResult + halfLength)->x = UintToInt(accum1Lo & MAX_VALUE_LIMB);
+    ptrResult->x = UintToInt(accum2Lo & MAX_VALUE_LIMB);
     ptrResult++;
   }
   // Process carries.

@@ -21,6 +21,7 @@
 #include "bignbr.h"
 
 char* ptrOutput;
+
 void showText(const char* text)
 {
   copyStr(&ptrOutput, text);

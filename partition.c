@@ -296,22 +296,30 @@ static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulat
 void factorial(BigInteger *result, int argument)
 {
   unsigned int shLeft;
+  int power2 = 0;
   int nbrGroupsAccumulated = 1;
   double factorAccum = 1;
   double maxFactorAccum = (double)(1U << 30) * (double)(1U << 23);
   partArray[0] = 20;     // Index of first big integer.
   for (int ctr = 1; ctr <= argument; ctr++)
   {
-    if ((factorAccum * (double)ctr) > maxFactorAccum)
+    unsigned int multiplier = (unsigned int)ctr;
+    if ((factorAccum * (double)multiplier) > maxFactorAccum)
     {
       ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, NULL);
       factorAccum = 1;
     }
-    factorAccum *= ctr;
+    while ((multiplier & 1) == 0)
+    {
+      multiplier >>= 1;
+      power2++;
+    }
+    factorAccum *= multiplier;
   }
   shLeft = numberofBitsSetToOne(nbrGroupsAccumulated - 1);
   nbrGroupsAccumulated = UintToInt(1U << shLeft);
   ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, result);
+  BigIntMultiplyPower2(result, power2);
 }
 
 void primorial(BigInteger *result, int argument)

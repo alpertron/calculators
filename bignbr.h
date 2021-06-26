@@ -128,6 +128,7 @@ enum eExprErr BigIntPower(const BigInteger *pBase, const BigInteger *pExponent, 
 enum eExprErr BigIntPowerIntExp(const BigInteger *pBase, int exponent, BigInteger *pPower);
 void floordiv(const BigInteger *num, const BigInteger *den, BigInteger *result);
 void ceildiv(const BigInteger *num, const BigInteger *den, BigInteger *result);
+void BigIntMultiplyPower2(BigInteger* pArg, int powerOf2);
 void BigIntMultiplyBy2(BigInteger *nbr);
 void BigIntDivideBy2(BigInteger *nbr);
 void BigInteger2Dec(char **ppDecimal, const BigInteger *pBigInt, int groupLength);

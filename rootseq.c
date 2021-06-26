@@ -64,6 +64,8 @@ const char *ptrCos;
 const char *ptrPi;
 const char *ptrI;
 static int totients[(2 * MAX_DEGREE) + 1];
+extern char* ptrOutput;
+
 enum
 {
   SHOW_REAL = 0,

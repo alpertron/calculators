@@ -152,7 +152,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;FSQUARES_FUNCTIONS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;FSQUARES_APP;_USING64BITS_;POLYEXPR=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;FACTORIZATION_FUNCTIONS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;FACTORIZATION_APP;_USING64BITS_;POLYEXPR=1</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/F 3000000 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

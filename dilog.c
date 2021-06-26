@@ -78,7 +78,7 @@ static char textExp[1000];
 struct sFactors astFactorsGO[1000];
 int factorsGO[10000];
 extern int NumberLength;
-static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *subGroupOrder);
+static void AdjustExponent(limb *nbr, limb mult, limb add, const BigInteger *subGroupOrder);
 static void ExchangeMods(void);
 
 enum eLogMachineState
@@ -168,15 +168,9 @@ static bool ComputeDLogModSubGroupOrder(int indexBase, int indexExp,
   return false;
 }
 
-static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
-  double firstLimit, double secondLimit,
-  int leastSignificantDword, int mostSignificantDword)
+static bool PollardRho(int NumberSizeBytes, double firstLimit, double secondLimit,
+  int leastSignificantDword, int mostSignificantDword, int indexBase, int indexExp)
 {
-  char* ptr;
-  int nbrLimbs;
-  int NumberSizeBytes;
-  enum eLogMachineState logMachineState;
-  int indexExp;
   limb addA;
   limb addB;
   limb addA2 = { 0 };
@@ -186,8 +180,121 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   double magnitude;
   long long brentK;
   long long brentR;
-  int lenBytes;
   bool EndPollardBrentRho;
+  (void)memcpy(nbrPower, powerPHMontg, NumberSizeBytes);
+  (void)memcpy(nbrBase, primRootPwr, NumberSizeBytes);
+  (void)memcpy(nbrR2, nbrBase, NumberSizeBytes);
+  (void)memset(nbrA2, 0, NumberSizeBytes);
+  (void)memset(nbrB2, 0, NumberSizeBytes);
+  nbrB2[0].x = 1;
+  addA2.x = 0;
+  addB2.x = 0;
+  mult2.x = 1;
+  brentR = 1;
+  brentK = 0;
+  EndPollardBrentRho = false;
+  do
+  {
+    (void)memcpy(nbrR, nbrR2, NumberSizeBytes);
+    (void)memcpy(nbrA, nbrA2, NumberSizeBytes);
+    (void)memcpy(nbrB, nbrB2, NumberSizeBytes);
+    addA = addA2;
+    addB = addB2;
+    mult1 = mult2;
+    brentR *= 2;
+    do
+    {
+      brentK++;
+      if (NumberLength == 1)
+      {
+        magnitude = (double)nbrR2[leastSignificantDword].x;
+      }
+      else
+      {
+        magnitude = ((double)nbrR2[mostSignificantDword].x * (double)LIMB_RANGE) +
+          nbrR2[leastSignificantDword].x;
+      }
+      if (magnitude < firstLimit)
+      {
+        modmult(nbrR2, nbrPower, nbrROther);
+        addA2.x++;
+      }
+      else if (magnitude < secondLimit)
+      {
+        modmult(nbrR2, nbrR2, nbrROther);
+        mult2.x *= 2;
+        addA2.x *= 2;
+        addB2.x *= 2;
+      }
+      else
+      {
+        modmult(nbrR2, nbrBase, nbrROther);
+        addB2.x++;
+      }
+      // Exchange nbrR2 and nbrROther
+      (void)memcpy(nbrTemp, nbrR2, NumberSizeBytes);
+      (void)memcpy(nbrR2, nbrROther, NumberSizeBytes);
+      (void)memcpy(nbrROther, nbrTemp, NumberSizeBytes);
+      if ((addA2.x >= HALF_INT_RANGE) || (addB2.x >= HALF_INT_RANGE) ||
+        (mult2.x >= HALF_INT_RANGE))
+      {
+        // nbrA2 <- (nbrA2 * mult2 + addA2) % subGroupOrder
+        AdjustExponent(nbrA2, mult2, addA2, &subGroupOrder);
+        // nbrB2 <- (nbrB2 * mult2 + addB2) % subGroupOrder
+        AdjustExponent(nbrB2, mult2, addB2, &subGroupOrder);
+        mult2.x = 1;
+        addA2.x = 0;
+        addB2.x = 0;
+      }
+      if (!memcmp(nbrR, nbrR2, NumberSizeBytes))
+      {
+        EndPollardBrentRho = true;
+        break;
+      }
+    } while (brentK < brentR);
+  } while (!EndPollardBrentRho);
+  ExchangeMods();                  // TestNbr <- subGroupOrder
+  // nbrA <- (nbrA * mult1 + addA) % subGroupOrder
+  AdjustExponent(nbrA, mult1, addA, &subGroupOrder);
+  // nbrB <- (nbrB * mult1 + addB) % subGroupOrder
+  AdjustExponent(nbrB, mult1, addB, &subGroupOrder);
+  // nbrA2 <- (nbrA * mult2 + addA2) % subGroupOrder
+  AdjustExponent(nbrA2, mult2, addA2, &subGroupOrder);
+  // nbrB2 <- (nbrA * mult2 + addB2) % subGroupOrder
+  AdjustExponent(nbrB2, mult2, addB2, &subGroupOrder);
+  // nbrB <- (nbrB2 - nbrB) % subGroupOrder
+  SubtBigNbrMod(nbrB2, nbrB, nbrB);
+  SubtBigNbrMod(nbrA, nbrA2, nbrA);
+  if (BigNbrIsZero(nbrA))
+  {     // Denominator is zero, so rho does not work.
+    ExchangeMods();           // TestNbr <- modulus
+    if (!ComputeDLogModSubGroupOrder(indexBase, indexExp, &Exponent, &subGroupOrder))
+    {
+      return false;   // Cannot compute discrete logarithm.
+    }
+  }
+  else
+  {
+    // Exponent <- (nbrB / nbrA) (mod subGroupOrder)
+    UncompressLimbsBigInteger(nbrA, &bigNbrA);
+    UncompressLimbsBigInteger(nbrB, &bigNbrB);
+    BigIntModularDivisionSaveTestNbr(&bigNbrB, &bigNbrA, &subGroupOrder, &Exponent);
+    Exponent.sign = SIGN_POSITIVE;
+    ExchangeMods();           // TestNbr <- modulus
+  }
+  return true;
+}
+
+static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
+  double firstLimit, double secondLimit,
+  int leastSignificantDword, int mostSignificantDword)
+{
+  char* ptr;
+  int nbrLimbs;
+  int NumberSizeBytes;
+  enum eLogMachineState logMachineState;
+  int indexExp;
+  int lenBytes;
 
   NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
   IntArray2BigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
@@ -302,106 +409,10 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
       }
       else
       {        // Use Pollard's rho method with Brent's modification
-        (void)memcpy(nbrPower, powerPHMontg, NumberSizeBytes);
-        (void)memcpy(nbrBase, primRootPwr, NumberSizeBytes);
-        (void)memcpy(nbrR2, nbrBase, NumberSizeBytes);
-        (void)memset(nbrA2, 0, NumberSizeBytes);
-        (void)memset(nbrB2, 0, NumberSizeBytes);
-        nbrB2[0].x = 1;
-        addA2.x = 0;
-        addB2.x = 0;
-        mult2.x = 1;
-        brentR = 1;
-        brentK = 0;
-        EndPollardBrentRho = false;
-        do
+        if (!PollardRho(NumberSizeBytes, firstLimit, secondLimit,
+          leastSignificantDword, mostSignificantDword, indexBase, indexExp))
         {
-          (void)memcpy(nbrR, nbrR2, NumberSizeBytes);
-          (void)memcpy(nbrA, nbrA2, NumberSizeBytes);
-          (void)memcpy(nbrB, nbrB2, NumberSizeBytes);
-          addA = addA2;
-          addB = addB2;
-          mult1 = mult2;
-          brentR *= 2;
-          do
-          {
-            brentK++;
-            if (NumberLength == 1)
-            {
-              magnitude = (double)nbrR2[leastSignificantDword].x;
-            }
-            else
-            {
-              magnitude = ((double)nbrR2[mostSignificantDword].x * (double)LIMB_RANGE) +
-                nbrR2[leastSignificantDword].x;
-            }
-            if (magnitude < firstLimit)
-            {
-              modmult(nbrR2, nbrPower, nbrROther);
-              addA2.x++;
-            }
-            else if (magnitude < secondLimit)
-            {
-              modmult(nbrR2, nbrR2, nbrROther);
-              mult2.x *= 2;
-              addA2.x *= 2;
-              addB2.x *= 2;
-            }
-            else
-            {
-              modmult(nbrR2, nbrBase, nbrROther);
-              addB2.x++;
-            }
-            // Exchange nbrR2 and nbrROther
-            (void)memcpy(nbrTemp, nbrR2, NumberSizeBytes);
-            (void)memcpy(nbrR2, nbrROther, NumberSizeBytes);
-            (void)memcpy(nbrROther, nbrTemp, NumberSizeBytes);
-            if ((addA2.x >= HALF_INT_RANGE) || (addB2.x >= HALF_INT_RANGE) ||
-              (mult2.x >= HALF_INT_RANGE))
-            {
-              // nbrA2 <- (nbrA2 * mult2 + addA2) % subGroupOrder
-              AdjustExponent(nbrA2, mult2, addA2, &subGroupOrder);
-              // nbrB2 <- (nbrB2 * mult2 + addB2) % subGroupOrder
-              AdjustExponent(nbrB2, mult2, addB2, &subGroupOrder);
-              mult2.x = 1;
-              addA2.x = 0;
-              addB2.x = 0;
-            }
-            if (!memcmp(nbrR, nbrR2, NumberSizeBytes))
-            {
-              EndPollardBrentRho = true;
-              break;
-            }
-          } while (brentK < brentR);
-        } while (!EndPollardBrentRho);
-        ExchangeMods();                  // TestNbr <- subGroupOrder
-        // nbrA <- (nbrA * mult1 + addA) % subGroupOrder
-        AdjustExponent(nbrA, mult1, addA, &subGroupOrder);
-        // nbrB <- (nbrB * mult1 + addB) % subGroupOrder
-        AdjustExponent(nbrB, mult1, addB, &subGroupOrder);
-        // nbrA2 <- (nbrA * mult2 + addA2) % subGroupOrder
-        AdjustExponent(nbrA2, mult2, addA2, &subGroupOrder);
-        // nbrB2 <- (nbrA * mult2 + addB2) % subGroupOrder
-        AdjustExponent(nbrB2, mult2, addB2, &subGroupOrder);
-        // nbrB <- (nbrB2 - nbrB) % subGroupOrder
-        SubtBigNbrMod(nbrB2, nbrB, nbrB);
-        SubtBigNbrMod(nbrA, nbrA2, nbrA);
-        if (BigNbrIsZero(nbrA))
-        {     // Denominator is zero, so rho does not work.
-          ExchangeMods();           // TestNbr <- modulus
-          if (!ComputeDLogModSubGroupOrder(indexBase, indexExp, &Exponent, &subGroupOrder))
-          {
-            return false;   // Cannot compute discrete logarithm.
-          }
-        }
-        else
-        {
-          // Exponent <- (nbrB / nbrA) (mod subGroupOrder)
-          UncompressLimbsBigInteger(nbrA, &bigNbrA);
-          UncompressLimbsBigInteger(nbrB, &bigNbrB);
-          BigIntModularDivisionSaveTestNbr(&bigNbrB, &bigNbrA, &subGroupOrder, &Exponent);
-          Exponent.sign = SIGN_POSITIVE;
-          ExchangeMods();           // TestNbr <- modulus
+          return false;
         }
       }
       modPow(primRoot, Exponent.limbs, Exponent.nbrLimbs, tmpBase.limbs);
@@ -528,9 +539,8 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
 
 static bool DiscrLogPowerPrimeSubgroup(int multiplicity, const int *ptrPrime)
 {
-  int expon;
+  int expon = 1;
   IntArray2BigInteger(ptrPrime, &bigNbrB);
-  expon = 1;
   if ((bigNbrB.nbrLimbs == 1) && (bigNbrB.limbs[0].x == 2))
   {            // Prime factor is 2. Base and power are odd at this moment.
     int lsbBase = base.limbs[0].x;
@@ -764,7 +774,7 @@ void DiscreteLogarithm(void)
     // The modular implementation does not allow operating with even moduli.
     //
     // g <- gcd(LM, DLP)
-    // if (L%g != DL%g) there is no discrete logarithm, so go out.
+    // if L%g != DL%g there is no discrete logarithm, so go out.
     // h <- LM / g
     // if h is odd:
     //   t <- (L - DL) / DLP (mod h)
@@ -854,7 +864,7 @@ static void ExchangeMods(void)
 }
 
 // nbr = (nbr * mult + add) % subGroupOrder
-static void AdjustExponent(limb *nbr, limb mult, limb add, BigInteger *bigSubGroupOrder)
+static void AdjustExponent(limb *nbr, limb mult, limb add, const BigInteger *bigSubGroupOrder)
 {
   unsigned int carry;
   int nbrLimbs = bigSubGroupOrder->nbrLimbs;
@@ -912,38 +922,32 @@ static void generateOutput(enum eExprErr rc, int groupLength)
     "<p>" COPYRIGHT_ENGLISH "</p>");
 }
 
-void dilogText(char* baseText, char* powerText, char* modText, int groupLength)
+void dilogText(const char* baseText, const char* powerText, const char* modText, int groupLength)
 {
   enum eExprErr rc;
   rc = ComputeExpression(baseText, &base);
-  if (rc == EXPR_OK)
+  if ((rc == EXPR_OK) &&
+    ((base.sign == SIGN_NEGATIVE) || BigIntIsZero(&base)))
   {
-    if ((base.sign == SIGN_NEGATIVE) || BigIntIsZero(&base))
-    {
-      rc = EXPR_BASE_MUST_BE_POSITIVE;
-    }
+    rc = EXPR_BASE_MUST_BE_POSITIVE;
   }
   if (rc == EXPR_OK)
   {
     rc = ComputeExpression(powerText, &power);
   }
-  if (rc == EXPR_OK)
+  if ((rc == EXPR_OK) &&
+    ((power.sign == SIGN_NEGATIVE) || BigIntIsZero(&power)))
   {
-    if ((power.sign == SIGN_NEGATIVE) || BigIntIsZero(&power))
-    {
-      rc = EXPR_POWER_MUST_BE_POSITIVE;
-    }
+    rc = EXPR_POWER_MUST_BE_POSITIVE;
   }
   if (rc == EXPR_OK)
   {
     rc = ComputeExpression(modText, &modulus);
   }
-  if (rc == EXPR_OK)
+  if ((rc == EXPR_OK) &&
+    ((modulus.sign == SIGN_NEGATIVE) || ((modulus.nbrLimbs == 1) && (modulus.limbs[0].x < 2))))
   {
-    if ((modulus.sign == SIGN_NEGATIVE) || ((modulus.nbrLimbs == 1) && (modulus.limbs[0].x < 2)))
-    {
-      rc = EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE;
-    }
+    rc = EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE;
   }
   if (rc == EXPR_OK)
   {

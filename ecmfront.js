@@ -28,6 +28,9 @@ var app;
 var blob, blobWasm;
 var digits;
 var config;
+var fromFile;
+var tofile;
+var fileName;
 var workerParam;
 var asmjs = typeof(WebAssembly) === "undefined";
 var indexedDBSupport = ("indexedDB" in window);
@@ -38,9 +41,19 @@ var statusDirty = false;
 var resultDirty = false;
 var calcURLs = ["ecmW0000.js",
                "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-180px.png", "ecm-icon-512px.png", "favicon.ico"];
-function get(x)
+function get(id)
 {
-  return document.getElementById(x);
+  return document.getElementById(id);
+}
+
+function hide(id)
+{
+  get(id).style.display = "none";
+}
+
+function show(id)
+{
+  get(id).style.display = "block";
 }
 
 function oneexpr()
@@ -165,12 +178,14 @@ function callWorker(param)
     worker.onmessage = function(e)
     { // First character of e.data is:
       // "1" for intermediate output
-      // "2" for end calculation
+      // "2" for ending calculation
+      // "3" for sending data to be saved to file and ending calculation.
       // "4" for sending intermediate data
       // "6" for pausing calculation and showing the Continue button
       // "7" for saving curve number into local storage
       // "8" for saving input expression into local storage
       // "9" for sending data to console.
+      // "A" for pausing calculation and showing the Continue button (save file)
       var firstChar = e.data.substring(0, 1);
       if (firstChar === "9")
       {
@@ -194,26 +209,36 @@ function callWorker(param)
       {
         if (e.data.substring(1, 2) === "1")
         {
-          get("skip").style.display = "block";
+          show("skip");
         }
         else
         {
-          get("skip").style.display = "none";
+          hide("skip");
         }
       }
       else
       {
         resultDirty = true;
-        resultText = e.data.substring(1);
-        if (firstChar === "2" || firstChar === "6")
+        if (firstChar === "2" || firstChar === "B" ||
+            firstChar === "6" || firstChar === "A")
         {   // First character passed from web worker is "2".
           statusDirty = true;
           statusText = "";
           styleButtons("inline", "none");  // Enable eval and factor
-          get("modal-more").style.display = "none";
-          if (firstChar === "6")
+          hide("modal-more");
+          if (firstChar === "A" || firstChar === "B")
           {
-            get("cont").style.display = "block";
+            tofile = e.data.substring(1);
+            show("savefile");
+            resultText = "";
+          }
+          else
+          {
+            resultText = e.data.substring(1);
+          }
+          if (firstChar === "6" || firstChar === "A")
+          {
+            show("cont");
           }
         }
       }
@@ -231,25 +256,49 @@ function callWorker(param)
 
 function dowork(n)
 {
+  var valueText;
+  fromFile = "0";
+  if (get("getFile").value != "")
+  {
+    var fileReader = new FileReader();
+    fileReader.onload = function(fileLoadedEvent) 
+    {
+      fromFile = "1";
+      valueText = fileLoadedEvent.target.result;
+      performWork(n, valueText);
+      get("getFile").value = "";
+    };
+    fileReader.readAsText(get("getFile").files[0], "UTF-8");
+    get("value").value = "";
+  }
+  else
+  {
+    valueText = get("value").value.replace(/\u2011/g, "-");
+    performWork(n, valueText);
+  }
+}
+
+function performWork(n, valueText)
+{
   var param;
   app = lang + n;
   var res = get("result");
-  var valueText = get("value").value.replace(/\u2011/g, "-");
   var charNull = String.fromCharCode(0);
   var helphelp = get("helphelp");
-  get("cont").style.display = "none";
-  get("help").style.display = "none";
-  helphelp.style.display = "block";
-  helphelp.innerHTML = (lang ? "<p class=\"pad\">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización. Esta es la versión "+(asmjs? "asm.js": "WebAssembly")+".</p>":
-                               "<p class=\"pad\">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. Keyboard users can press CTRL+ENTER to start factorization. This is the "+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
-  res.style.display = "block";
   if (valueText === "")
   {    // Nothing in input box.
+
     resultDirty = true;
     resultText = (lang ? "<p>Por favor ingrese una expresión.</p>" :
                          "<p>Please type an expression.</p>");
     return;
   }
+  hide("cont");
+  hide("help");
+  helphelp.style.display = "block";
+  helphelp.innerHTML = (lang ? "<p class=\"pad\">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización. Esta es la versión "+(asmjs? "asm.js": "WebAssembly")+".</p>":
+                               "<p class=\"pad\">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. Keyboard users can press CTRL+ENTER to start factorization. This is the "+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
+  res.style.display = "block";
   if (typeof(Worker) === "undefined")
   {    // Web workers not supported on this browser.
     resultDirty = true;
@@ -274,8 +323,8 @@ function dowork(n)
   {
     app += 6;   // Convert to factorization.
   }
-  param = digits + "," + app + "," + config.substring(1) + valueText + charNull +
-          getStorage("ecmFactors");
+  param = digits + "," + app + "," + fromFile + config.substring(1) +
+          valueText + charNull + getStorage("ecmFactors");
   if (n === -1 || n === -2)
   {
     param += "," + get("curve").value;        // Append new curve number typed by user.
@@ -296,7 +345,7 @@ function dowork(n)
 
 function restartFactorization(type)
 {
-  get("modal-more").style.display = "none";
+  hide("modal-more");
   if (worker)
   {
     worker.terminate();
@@ -326,7 +375,7 @@ function wizardNext()
   {
     case 2:
       wizardTextInput += "x="+wzdInput.value;
-      get("mode").style.display = "none";
+      hide("mode");
       wzdDescText.innerHTML = (lang? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
       wzdExamText.innerHTML = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x+1</code>":
                                      "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>");
@@ -360,8 +409,8 @@ function wizardNext()
       wizardStep = 0;
       get("hex").checked = get("hexW").checked;
       saveConfig();
-      get("main").style.display = "block";
-      get("wizard").style.display = "none";
+      show("main");
+      hide("wizard");
       valueInput.focus();
       break;
     default:
@@ -369,8 +418,8 @@ function wizardNext()
       valueInput.value = wzdInput.value;
       get("hex").checked = get("hexW").checked;
       saveConfig();
-      get("main").style.display = "block";
-      get("wizard").style.display = "none";
+      show("main");
+      hide("wizard");
       valueInput.focus();
       break;
   } 
@@ -401,8 +450,8 @@ function updateVerbose(isVerbose)
 
 function endFeedback()
 {
-  get("main").style.display = "block";
-  get("feedback").style.display = "none";
+  show("main");
+  hide("feedback");
   get("value").focus();   
 }
 
@@ -524,7 +573,7 @@ function startUp()
   };
   get("more").onclick = function ()
   {
-    get("modal-more").style.display = "block";
+    show("modal-more");
   };
   get("config").onclick = function ()
   {
@@ -533,13 +582,51 @@ function startUp()
     get("pretty").checked = (config.substr(2,1) === "1");
     get("cunnin").checked = (config.substr(3,1) === "1");  
     get("hex").checked = (config.substr(4,1) === "1");
-    get("modal-config").style.display = "block";
+    show("modal-config");
+  };
+  get("fromfile").onclick = function ()
+  {
+    get("getFile").click();
+  };
+  get("tofile").onclick = function ()
+  {
+    hide("savefile");
+    var blob = new Blob([tofile], { type: 'text/plain' })
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    var clickHandler = function()
+    {
+      setTimeout(function()
+      {
+        URL.revokeObjectURL(url);
+        this.removeEventListener('click', clickHandler);
+      },
+      150);
+    };
+    a.addEventListener('click', clickHandler, false);
+    a.click();
+  };
+  get("getFile").onchange = function ()
+  {
+    fileName = get("getFile").value.replace(/^.*[\\\/]/, '');
+    if (lang)
+    {          // Spanish
+      get("value").value = "Archivo a procesar: " + fileName +
+          "\nApriete el botón \"Solo evaluar\" or \"Factorizar\" para continuar.";
+    }
+    else
+    {          // English
+      get("value").value = "File to process: " + fileName +
+          "\nPress \"Only evaluate\" or \"Factor\" button to continue.";
+    }
   };
   get("openwizard").onclick = function ()
   {
-    get("main").style.display = "none";
-    get("wizard").style.display = "block";
-    get("mode").style.display = "block";
+    hide("main");
+    show("wizard");
+    show("mode");
     get("oneexpr").checked = true;
     get("next").disabled = true;
     get("wzdinput").value = "";
@@ -631,26 +718,26 @@ function startUp()
   };
   get("cancel").onclick = function ()
   {
-    get("main").style.display = "block";
-    get("wizard").style.display = "none";
+    show("main");
+    hide("wizard");
   };
   get("close-config").onclick = function ()
   {
-    get("modal-config").style.display = "none";
+    hide("modal-config");
   };
   get("cancel-config").onclick = function ()
   {
-    get("modal-config").style.display = "none";
+    hide("modal-config");
   };
   get("save-config").onclick = function ()
   {
     saveConfig();
     updateVerbose(get("verbose").checked);
-    get("modal-config").style.display = "none";
+    hide("modal-config");
   };
   get("close-more").onclick = function ()
   {
-    get("modal-more").style.display = "none";
+    hide("modal-more");
   };
   get("ncurve").onclick = function ()
   {
@@ -669,7 +756,7 @@ function startUp()
     worker.terminate();
     worker = 0;
     styleButtons("inline", "none");      // Enable eval and factor
-    get("skip").style.display = "none";  // Hide button if it is present during factorization.
+    hide("skip");    // Hide button if it is present during factorization.
     resultDirty = true;
     resultText += (lang ? "<p>Cálculo detenido por el usuario.</p>" :
                           "<p>Calculation stopped by user</p>");
@@ -706,18 +793,18 @@ function startUp()
   };
   get("skiptest").onclick = function ()
   {
-    get("skip").style.display = "none";
+    hide("skip");
     restartFactorization(4);
   };
   get("continue").onclick = function ()
   {
-    get("cont").style.display = "none";
+    hide("cont");
     callWorker("C");  // Indicate worker that user pressed Continue button.
   };
   get("formlink").onclick = function ()
   {
-    get("main").style.display = "none";
-    get("feedback").style.display = "block";
+    hide("main");
+    show("feedback");
     get("formfeedback").reset();
     get("name").focus();
     return false;   // Do not follow the link.

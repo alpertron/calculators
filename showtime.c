@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include "bignbr.h"
 #include "showtime.h"
+#include "output.h"
 
 #ifdef __EMSCRIPTEN__
 double originalTenthSecond;
@@ -73,11 +74,10 @@ void GetDHMSt(char **pptrText, int tenths)
 void showElapsedTime(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
-  copyStr(&ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
+  copyStr(&ptrOutput, lang ? "Tiempo transcurrido: " : "Time elapsed: ");
 #ifdef __EMSCRIPTEN__
   GetDHMSt(&ptrOutput, (int)(tenths() - originalTenthSecond));
 #endif
-  copyStr(&ptrOutput, "</p>");
   *pptrOutput = ptrOutput;
 }
 

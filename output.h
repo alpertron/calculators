@@ -17,11 +17,12 @@
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include "bignbr.h"
-extern char* ptrOutput;
 
 void showText(const char* text);
 void showMinus(void);
 void shownbr(const BigInteger* value);
 void showInt(int value);
+void beginLine(char** pptrOutput);
+void finishLine(char** pptrOutput);
 
 

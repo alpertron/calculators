@@ -297,7 +297,9 @@ void gaussianText(char *valueText, int doFactorization)
     if (doFactorization != '0')
     {
       GaussianFactorization();
+      copyStr(&ptrOutput, "<p>");
       showElapsedTime(&ptrOutput);
+      copyStr(&ptrOutput, "</p>");
     }
   }
   if (rc != EXPR_OK)

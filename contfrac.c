@@ -33,6 +33,7 @@ static BigInteger V2;
 static BigInteger V3;
 static BigInteger startPeriodNum;
 static BigInteger startPeriodDen;
+static BigInteger intSqrt;
 static char *ptrOutput;
 static void ShowRational(BigInteger *pNum, BigInteger *pDen);
 extern bool hexadecimal;
@@ -106,10 +107,126 @@ static void ShowConvergents(int index, const BigInteger *coeff)
   *ptrOutput = 0;
 }
 
+// PQa algorithm for 
+// (P+G)/Q where G is the square root of discriminant
+// If D - U^2 is not multiple of V then 
+//   U = U*V
+//   V = V*V
+//   G = G*V
+// U1 <- 1, U2 <- 0
+// V1 <- 0, V2 <- 1
+// Perform loop:
+// a = floor((U + G)/V)
+// U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
+// V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
+// U <- a*V - U
+// V <- (D - U^2)/V
+// Inside period when: 0 <= G - U < V
+static void PeriodicContinuedFraction(void)
+{
+  bool ended;
+  int periodIndex;
+  int index;
+  size_t diffPtrs;
+  // Check whether parameters have to be changed.
+  // Initialize variables.
+  intToBigInteger(&startPeriodNum, -1);     // Less than zero means outside period.
+  intToBigInteger(&startPeriodDen, -1);
+  index = 0;
+  periodIndex = 0;
+  ended = false;
+  do
+  {
+    BigIntAdd(&num, &intSqrt, &bigTmp);
+    if (den.sign == SIGN_NEGATIVE)
+    {   // If denominator is negative, round square root upwards.
+      addbigint(&bigTmp, 1);
+    }
+    floordiv(&bigTmp, &den, &Temp);         // Temp = Term of continued fraction.
+    if (!hexadecimal)
+    {      // Show convergent checkbox not checked.
+      BigInteger2Dec(&ptrOutput, &Temp, groupLen);  // Show continued fraction coefficient.
+      copyStr(&ptrOutput, ((index == 0) ? " + //" : ", ")); // Show separator.
+    }
+    if (hexadecimal)
+    {      // Show convergent checkbox is checked.
+      ShowConvergents(index, &Temp);
+    }
+    (void)BigIntMultiply(&Temp, &den, &bigTmp);  // U <- a*V - U
+    BigIntSubt(&bigTmp, &num, &num);
+    (void)BigIntMultiply(&num, &num, &bigTmp);   // V <- (D - U^2)/V
+    BigIntSubt(&delta, &bigTmp, &bigTmp);
+    (void)BigIntDivide(&bigTmp, &den, &Temp);
+    CopyBigInt(&den, &Temp);
+    index++;
+    if (startPeriodNum.sign == SIGN_POSITIVE)
+    {             // Already inside period.
+      periodIndex++;
+      if (BigIntEqual(&num, &startPeriodNum) && BigIntEqual(&den, &startPeriodDen))
+      {           // New period started.
+        ended = true;
+        break;    // Go out in this case.
+      }
+    }
+    else
+    {             // Check if periodic part of continued fraction has started.
+      BigIntSubt(&intSqrt, &num, &bigTmp);  // G - U must be >= 0 and < V.
+      if (bigTmp.sign == SIGN_POSITIVE)
+      {
+        BigIntSubt(&bigTmp, &den, &bigTmp);
+        if (bigTmp.sign == SIGN_NEGATIVE)
+        {                                 // Periodic part of continued fraction started.
+          CopyBigInt(&startPeriodNum, &num);       // Save U and V to check period end.
+          CopyBigInt(&startPeriodDen, &den);
+          showText("<span class=\"offscr\">");
+          showText(lang ? "inicio del período" : "start periodic part");
+          showText("</span><span class=\"bold\">");
+        }
+      }
+    }
+    diffPtrs = ptrOutput - &output[0];
+  } while ((int)diffPtrs < ((int)sizeof(output) - 30000));
+  if (!hexadecimal)
+  {        // Show convergent checkbox not checked.
+    ptrOutput -= 2;                       // Delete extra comma and space at the end.
+  }
+  if (ended)
+  {
+    showText("</span>");
+    if (!hexadecimal)
+    {        // Show convergent checkbox not checked.
+      showText("//");
+    }
+    showText("<br /><span aria-hidden=\"true\">");
+    showText(lang ? "donde la parte periódica está señalada en negrita</span>" :
+      "where the periodic part is marked in bold</span>");
+    if (periodIndex > 1)
+    {
+      showText(lang ? " (el período tiene " : " (the period has ");
+      int2dec(&ptrOutput, periodIndex);
+      showText(lang ? " coeficientes)" : " coefficients)");
+    }
+  }
+  else
+  {  // Too many convergents.
+    if (!hexadecimal)
+    {        // Show convergent checkbox not checked.
+      showText(", ... </span>//");
+    }
+    else
+    {
+      showText("... </span>");
+    }
+    showText(lang ? "<br />donde la parte periódica (truncada a partir de los " :
+      "//<br />where the periodic part (truncated after ");
+    int2dec(&ptrOutput, periodIndex);
+    showText(lang ? " convergentes) está señalada en negrita.</p>" :
+      " convergents) is marked in bold.</p>");
+  }
+}
+
 static void ContFrac(void)
 {
-  static BigInteger intSqrt;
-
   ptrOutput = output;
   // Show formula.
   showText("2<p><var>x</var> = <span class=\"fraction\"><span class=\"offscr\">");
@@ -178,119 +295,7 @@ static void ContFrac(void)
   }
   else
   {     // delta is not a perfect square. Periodic continued fraction.
-    bool ended;
-    int periodIndex;
-    int index;
-    size_t diffPtrs;
-    // PQa algorithm for (P+G)/Q where G = sqrt(discriminant)
-        // If D - U^2 is not multiple of V then 
-        //   U = U*V
-        //   V = V*V
-        //   G = G*V
-        // U1 <- 1, U2 <- 0
-        // V1 <- 0, V2 <- 1
-        // Perform loop:
-        // a = floor((U + G)/V)
-        // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
-        // V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
-        // U <- a*V - U
-        // V <- (D - U^2)/V
-        // Inside period when: 0 <= G - U < V
-        // Check whether parameters have to be changed.
-        // Initialize variables.
-    intToBigInteger(&startPeriodNum, -1);     // Less than zero means outside period.
-    intToBigInteger(&startPeriodDen, -1);
-    index = 0;
-    periodIndex = 0;
-    ended = false;
-    do
-    {
-      BigIntAdd(&num, &intSqrt, &bigTmp);
-      if (den.sign == SIGN_NEGATIVE)
-      {   // If denominator is negative, round square root upwards.
-        addbigint(&bigTmp, 1);
-      }      
-      floordiv(&bigTmp, &den, &Temp);         // Temp = Term of continued fraction.
-      if (!hexadecimal)
-      {      // Show convergent checkbox not checked.
-        BigInteger2Dec(&ptrOutput, &Temp, groupLen);  // Show continued fraction coefficient.
-        copyStr(&ptrOutput, ((index == 0)? " + //" : ", ")); // Show separator.
-      }
-      if (hexadecimal)
-      {      // Show convergent checkbox is checked.
-        ShowConvergents(index, &Temp);
-      }
-      (void)BigIntMultiply(&Temp, &den, &bigTmp);  // U <- a*V - U
-      BigIntSubt(&bigTmp, &num, &num);
-      (void)BigIntMultiply(&num, &num, &bigTmp);   // V <- (D - U^2)/V
-      BigIntSubt(&delta, &bigTmp, &bigTmp);
-      (void)BigIntDivide(&bigTmp, &den, &Temp);
-      CopyBigInt(&den, &Temp);
-      index++;
-      if (startPeriodNum.sign == SIGN_POSITIVE)
-      {             // Already inside period.
-        periodIndex++;
-        if (BigIntEqual(&num, &startPeriodNum) && BigIntEqual(&den, &startPeriodDen))
-        {           // New period started.
-          ended = true;
-          break;    // Go out in this case.
-        }
-      }
-      else
-      {             // Check if periodic part of continued fraction has started.
-        BigIntSubt(&intSqrt, &num, &bigTmp);  // G - U must be >= 0 and < V.
-        if (bigTmp.sign == SIGN_POSITIVE)
-        {
-          BigIntSubt(&bigTmp, &den, &bigTmp);
-          if (bigTmp.sign == SIGN_NEGATIVE)
-          {                                 // Periodic part of continued fraction started.
-            CopyBigInt(&startPeriodNum, &num);       // Save U and V to check period end.
-            CopyBigInt(&startPeriodDen, &den);
-            showText("<span class=\"offscr\">");
-            showText(lang ? "inicio del período" : "start periodic part");
-            showText("</span><span class=\"bold\">");
-          }
-        }
-      }
-      diffPtrs = ptrOutput - &output[0];
-    } while ((int)diffPtrs < ((int)sizeof(output) - 30000));
-    if (!hexadecimal)
-    {        // Show convergent checkbox not checked.
-      ptrOutput -= 2;                       // Delete extra comma and space at the end.
-    }
-    if (ended)
-    {
-      showText("</span>");
-      if (!hexadecimal)
-      {        // Show convergent checkbox not checked.
-        showText("//");
-      }
-      showText("<br /><span aria-hidden=\"true\">");
-      showText(lang? "donde la parte periódica está señalada en negrita</span>" :
-        "where the periodic part is marked in bold</span>");
-      if (periodIndex > 1)
-      {
-        showText(lang? " (el período tiene " : " (the period has ");
-        int2dec(&ptrOutput, periodIndex);
-        showText(lang? " coeficientes)" : " coefficients)");
-      }
-    }
-    else
-    {  // Too many convergents.
-      if (!hexadecimal)
-      {        // Show convergent checkbox not checked.
-        showText(", ... </span>//");
-      }
-      else
-      {
-        showText("... </span>");
-      }
-      showText(lang? "<br />donde la parte periódica (truncada a partir de los " :
-        "//<br />where the periodic part (truncated after ");
-      int2dec(&ptrOutput, periodIndex);
-      showText(lang? " convergentes) está señalada en negrita.</p>" :
-        " convergents) is marked in bold.</p>");
-    }
+    PeriodicContinuedFraction();
   }
   showText(lang? "<p>" COPYRIGHT_SPANISH "</p>" :
                  "<p>" COPYRIGHT_ENGLISH "</p>");

@@ -582,7 +582,7 @@ void BigIntDivide2(BigInteger *pArg)
   }
 }
 
-static void BigIntMutiplyPower2(BigInteger *pArg, int powerOf2)
+void BigIntMultiplyPower2(BigInteger *pArg, int powerOf2)
 {
   int power2 = powerOf2;
   int ctr;
@@ -685,7 +685,7 @@ void BigIntGcd(const BigInteger *pArg1, const BigInteger *pArg2, BigInteger *pRe
     }
   }
   CopyBigInt(pResult, &Base);
-  BigIntMutiplyPower2(pResult, power2);
+  BigIntMultiplyPower2(pResult, power2);
 }
 
 static void addToAbsValue(limb *pLimbs, int *pNbrLimbs, int addend)
@@ -914,7 +914,7 @@ void multint(BigInteger *pResult, const BigInteger *pMult, int factor)
   {
 #ifdef _USING64BITS_
     carry += (int64_t)pLimb->x * (int64_t)intMult;
-    pResultLimb->x = UintToInt(carry & MAX_VALUE_LIMB);
+    pResultLimb->x = UintToInt((unsigned int)carry & MAX_VALUE_LIMB);
     pResultLimb++;
     carry >>= BITS_PER_GROUP;
 #else

@@ -89,6 +89,7 @@ static BigRational RatR;
 static BigRational RatR2;
 static BigRational RatS2;
 static bool firstNumberShown;
+extern char* ptrOutput;
 
 // Coefficients taken from Dummit's Solving Solvable Quintics article.
 static struct stQuinticF20 astQuinticF20[] =

@@ -214,7 +214,8 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       nbrLenBytes = len * (int)sizeof(limb);
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
-        ptrRPNbuffer += 2 + nbrLenBytes;
+        ptrRPNbuffer += nbrLenBytes;
+        ptrRPNbuffer += 2;
         break;
       }
       // Move number to compressed stack.

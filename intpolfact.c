@@ -37,6 +37,7 @@ static int z;
 
 #ifdef __EMSCRIPTEN__
 #define LF "<br>"
+extern char* ptrOutput;
 #else
 #define LF "\r\n"
 #endif

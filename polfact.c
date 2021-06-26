@@ -798,7 +798,9 @@ void polyFactText(char *modText, char *polyText, int groupLength)
       }
       copyStr(&ptrOut, "</ul>");
       // Show time only when factoring, not when just evaluating polynomial.
+      copyStr(&ptrOut, "<p>");
       showElapsedTime(&ptrOut);
+      copyStr(&ptrOut, "</p>");
     }
   }
   copyStr(&ptrOut, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
