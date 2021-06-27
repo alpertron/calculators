@@ -348,8 +348,9 @@ void fcubesText(char *input, int grpLen)
     groupLength = grpLen;
   }
   (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL);
-  copyStr(&ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
-    "</p><p>" COPYRIGHT_ENGLISH "</p>"));
+  copyStr(&ptrOutput, "</p><p>");
+  copyStr(&ptrOutput, (lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH));
+  copyStr(&ptrOutput, "</p>");
 }
 
 // Show cube number. Use parentheses for negative numbers.

@@ -1018,8 +1018,9 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
       }
     }
   }
-  copyStr(&ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
-    "<p>" COPYRIGHT_ENGLISH "</p>");
+  copyStr(&ptrOutput, "<p>");
+  copyStr(&ptrOutput, lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH);
+  copyStr(&ptrOutput, "</p>");
 }
 
 #if defined __EMSCRIPTEN__ && !defined _MSC_VER

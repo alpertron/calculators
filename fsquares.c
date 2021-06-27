@@ -678,8 +678,9 @@ void fsquaresText(char *input, int grpLen)
   elapsedTime = (int)(tenths() - originalTenthSecond);
   GetDHMSt(&ptrOutput, elapsedTime);
 #endif
-  copyStr(&ptrOutput, (lang ? "</p><p>" COPYRIGHT_SPANISH "</p>" :
-    "</p><p>" COPYRIGHT_ENGLISH "</p>"));
+  copyStr(&ptrOutput, "</p><p>");
+  copyStr(&ptrOutput, (lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH));
+  copyStr(&ptrOutput, "</p>");
 }
 
 #ifdef FSQUARES_APP

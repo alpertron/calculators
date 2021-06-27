@@ -4303,8 +4303,9 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
         "<p>The equation does not have integer solutions.</p>");
     }
   }
-  showText(lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
-    "<p>" COPYRIGHT_ENGLISH "</p>");
+  showText("<p>");
+  showText(lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH);
+  showText("</p>");
 }
 
 #if defined __EMSCRIPTEN__ && !defined _MSC_VER

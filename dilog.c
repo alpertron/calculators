@@ -918,8 +918,9 @@ static void generateOutput(enum eExprErr rc, int groupLength)
       copyStr(&ptrOutput, "</p>");
     }
   }
-  copyStr(&ptrOutput, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
-    "<p>" COPYRIGHT_ENGLISH "</p>");
+  copyStr(&ptrOutput, "<p>");
+  copyStr(&ptrOutput, lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH);
+  copyStr(&ptrOutput, "</p>");
 }
 
 void dilogText(const char* baseText, const char* powerText, const char* modText, int groupLength)

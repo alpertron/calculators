@@ -297,8 +297,9 @@ static void ContFrac(void)
   {     // delta is not a perfect square. Periodic continued fraction.
     PeriodicContinuedFraction();
   }
-  showText(lang? "<p>" COPYRIGHT_SPANISH "</p>" :
-                 "<p>" COPYRIGHT_ENGLISH "</p>");
+  showText("<p>");
+  showText(lang? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH);
+  showText("</p>");
 }
 
 static void ShowRational(BigInteger *pNum, BigInteger *pDen)

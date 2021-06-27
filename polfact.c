@@ -803,6 +803,7 @@ void polyFactText(char *modText, char *polyText, int groupLength)
       copyStr(&ptrOut, "</p>");
     }
   }
-  copyStr(&ptrOut, lang ? "<p>" COPYRIGHT_SPANISH "</p>" :
-                          "<p>" COPYRIGHT_ENGLISH "</p>");
+  copyStr(&ptrOut, "<p>");
+  copyStr(&ptrOut, lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH);
+  copyStr(&ptrOut, "</p>");
 }
