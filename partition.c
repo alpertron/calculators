@@ -345,8 +345,9 @@ enum eExprErr factorial(BigInteger *result, int argument, int multifact)
   return BigIntMultiplyPower2(result, power2);
 }
 
-void primorial(BigInteger *result, int argument)
+enum eExprErr primorial(BigInteger *result, int argument)
 {
+  enum eExprErr rc;
   int j;
   int nbrGroupsAccumulated = 1;
   double factorAccum = 1;
@@ -369,7 +370,11 @@ void primorial(BigInteger *result, int argument)
       if ((factorAccum * (double)ctr) > maxFactorAccum)
       {
         nbrGroupsAccumulated++;
-        ProcessFactorsFactorial(factorAccum, nbrGroupsAccumulated, NULL);
+        rc = ProcessFactorsFactorial(factorAccum, nbrGroupsAccumulated, NULL);
+        if (rc != EXPR_OK)
+        {
+          return rc;
+        }
         factorAccum = 1;
       }
       factorAccum *= ctr;
@@ -378,5 +383,5 @@ void primorial(BigInteger *result, int argument)
   shLeft = numberofBitsSetToOne(nbrGroupsAccumulated - 1);
   nbrGroupsAccumulated = UintToInt(1U << shLeft);
   nbrGroupsAccumulated++;
-  ProcessFactorsFactorial(factorAccum, nbrGroupsAccumulated, result);
+  return ProcessFactorsFactorial(factorAccum, nbrGroupsAccumulated, result);
 }

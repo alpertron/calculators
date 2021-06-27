@@ -559,28 +559,19 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
         break;
       }
       getCurrentStackValue(&curStack);
-      if (curStack.nbrLimbs > 2)
+      if (curStack.sign == SIGN_NEGATIVE)
+      {
+        return EXPR_INVALID_PARAM;
+      }
+      if (curStack.nbrLimbs > 1)
       {
         return EXPR_INTERM_TOO_HIGH;
       }
-      if (curStack.nbrLimbs == 2)
+      retcode = primorial(&curStack, curStack.limbs[0].x);
+      if (retcode != EXPR_OK)
       {
-        len = curStack.limbs[0].x +
-          (int)((unsigned int)curStack.limbs[1].x << BITS_PER_GROUP);
+        return retcode;
       }
-      else
-      {
-        len = curStack.limbs[0].x;
-      }
-#ifdef FACTORIZATION_APP
-      if ((len < 0) || (len > 460490))
-#else
-      if ((len < 0) || (len > 46049))
-#endif
-      {
-        return EXPR_INTERM_TOO_HIGH;
-      }
-      primorial(&curStack, curStack.limbs[0].x);
       break;
 
     case OPER_PLUS:

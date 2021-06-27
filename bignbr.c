@@ -613,9 +613,9 @@ enum eExprErr BigIntMultiplyPower2(BigInteger *pArg, int powerOf2)
   if (limbsToShiftLeft > 0)
   {
     int bytesToMove = (nbrLimbs - limbsToShiftLeft) * (int)sizeof(limb);
-    memmove(&pArg->limbs[limbsToShiftLeft], pArg->limbs, bytesToMove);
+    (void)memmove(&pArg->limbs[limbsToShiftLeft], pArg->limbs, bytesToMove);
     bytesToMove = limbsToShiftLeft * (int)sizeof(limb);
-    memset(pArg->limbs, 0, bytesToMove);
+    (void)memset(pArg->limbs, 0, bytesToMove);
   }
   pArg->nbrLimbs = nbrLimbs;
   return EXPR_OK;

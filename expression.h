@@ -130,7 +130,7 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
   bool* pUsingVariables);
 void partition(int val, BigInteger *pResult);
 enum eExprErr factorial(BigInteger *result, int argument, int multifact);
-void primorial(BigInteger *result, int argument);
+enum eExprErr primorial(BigInteger *result, int argument);
 void textError(char **pptrOutput, enum eExprErr rc);
 void initializeSmallPrimes(int* pSmallPrimes);
 #else

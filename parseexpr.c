@@ -460,7 +460,7 @@ static enum eExprErr parsePrevTokenIsNumber(const char** ppInput, char** ppOutpu
   else if (c == '!')
   {   // Count the number of exclamation marks.
     int exclamationMarks = 0;
-    while (*pInput == ' ' || *pInput == '!')
+    while ((*pInput == ' ') || (*pInput == '!'))
     {
       if (*pInput == '!')
       {
