@@ -80,6 +80,7 @@ function styleButtons(style1, style2)
   get("eval").style.display = style1;
   get("factor").style.display = style1;
   get("config").style.display = style1;
+  get("fromfile").style.display = style1;
   get("openwizard").style.display = style1;
   get("stop").style.display = style2;
   get("more").style.display = style2;
@@ -179,13 +180,13 @@ function callWorker(param)
     { // First character of e.data is:
       // "1" for intermediate output
       // "2" for ending calculation
-      // "3" for sending data to be saved to file and ending calculation.
       // "4" for sending intermediate data
       // "6" for pausing calculation and showing the Continue button
       // "7" for saving curve number into local storage
       // "8" for saving input expression into local storage
       // "9" for sending data to console.
       // "A" for pausing calculation and showing the Continue button (save file)
+      // "B" for sending data to be saved to file and ending calculation.
       var firstChar = e.data.substring(0, 1);
       if (firstChar === "9")
       {
@@ -240,6 +241,10 @@ function callWorker(param)
           {
             show("cont");
           }
+        }
+        else
+        {
+          resultText = e.data.substring(1);
         }
       }
     };

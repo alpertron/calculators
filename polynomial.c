@@ -443,7 +443,7 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
     *degreeGcd = 0;
     return;
   }
-  lenBytes = (degree1 + 1) * nbrLimbs * sizeof(int);
+  lenBytes = (degree1 + 1) * nbrLimbs * (int)sizeof(int);
   (void)memcpy(gcd, arg1, lenBytes);
   if (degreeMax < degreeMin)
   {

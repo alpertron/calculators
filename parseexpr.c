@@ -141,6 +141,37 @@ static void getHexValue(const char** pptrInput)
   *pptrInput = ptrInput;
 }
 
+static void BigNbrToOutput(char** pptrOutput, const BigInteger* pValue)
+{
+  char* ptrOutput = *pptrOutput;
+  int nbrLimbs = pValue->nbrLimbs;
+  *ptrOutput = TOKEN_NUMBER;
+  ptrOutput++;
+  while (nbrLimbs > 1)
+  {
+    if (pValue->limbs[nbrLimbs - 1].x != 0)
+    {
+      break;
+    }
+    nbrLimbs--;
+  }
+  *ptrOutput = (char)((unsigned int)nbrLimbs >> 8);
+  ptrOutput++;
+  *ptrOutput = (char)nbrLimbs;
+  ptrOutput++;
+  for (int index = 0; index < nbrLimbs; index++)
+  {
+    unsigned int limbValue = (unsigned int)pValue->limbs[index].x;
+    for (int bitNbr = BITS_PER_GROUP; bitNbr > 0; bitNbr -= 8)
+    {
+      *ptrOutput = (char)limbValue;
+      ptrOutput++;
+      limbValue >>= 8;
+    }
+  }
+  *pptrOutput = ptrOutput;
+}
+
 static enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput)
 {
   (void)exponOperatorCounter;
@@ -163,30 +194,7 @@ static enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput
   }
   pInput = ptrInput;
   value.sign = SIGN_POSITIVE;
-  *ptrOutput = TOKEN_NUMBER;
-  ptrOutput++;
-  while (value.nbrLimbs > 1)
-  {
-    if (value.limbs[value.nbrLimbs - 1].x != 0)
-    {
-      break;
-    }
-    value.nbrLimbs--;
-  }
-  *ptrOutput = (char)((unsigned int)value.nbrLimbs >> 8);
-  ptrOutput++;
-  *ptrOutput = (char)value.nbrLimbs;
-  ptrOutput++;
-  for (int index = 0; index < value.nbrLimbs; index++)
-  {
-    unsigned int limbValue = (unsigned int)value.limbs[index].x;
-    for (int bitNbr = BITS_PER_GROUP; bitNbr > 0; bitNbr -= 8)
-    {
-      *ptrOutput = (char)limbValue;
-      ptrOutput++;
-      limbValue >>= 8;
-    }
-  }
+  BigNbrToOutput(&ptrOutput, &value);
   *ppInput = pInput;
   *ppOutput = ptrOutput;
   return EXPR_OK;
@@ -448,6 +456,23 @@ static enum eExprErr parsePrevTokenIsNumber(const char** ppInput, char** ppOutpu
     *ptrOutput = (char)(pstOperatorExpr->token);
     ptrOutput++;
     prevTokenIsNumber = true;
+  }
+  else if (c == '!')
+  {   // Count the number of exclamation marks.
+    int exclamationMarks = 0;
+    while (*pInput == ' ' || *pInput == '!')
+    {
+      if (*pInput == '!')
+      {
+        exclamationMarks++;
+      }
+      pInput++;
+    }
+    prevTokenIsNumber = true;
+    intToBigInteger(&value, exclamationMarks);
+    BigNbrToOutput(&ptrOutput, &value);
+    *ptrOutput = TOKEN_FACTORIAL;
+    ptrOutput++;
   }
   else if ((c == ')') || (c == ','))
   {

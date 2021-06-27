@@ -582,13 +582,18 @@ void BigIntDivide2(BigInteger *pArg)
   }
 }
 
-void BigIntMultiplyPower2(BigInteger *pArg, int powerOf2)
+enum eExprErr BigIntMultiplyPower2(BigInteger *pArg, int powerOf2)
 {
-  int power2 = powerOf2;
   int ctr;
   int nbrLimbs = pArg->nbrLimbs;
   limb *ptrLimbs = pArg->limbs;
-  for (; power2 > 0; power2--)
+  int limbsToShiftLeft = powerOf2 / BITS_PER_GROUP;
+  int bitsToShiftLeft = powerOf2 % BITS_PER_GROUP;
+  if ((nbrLimbs + limbsToShiftLeft) >= MAX_LEN)
+  {
+    return EXPR_INTERM_TOO_HIGH;
+  }
+  for (; bitsToShiftLeft > 0; bitsToShiftLeft--)
   {
     unsigned int carry = 0U;
     for (ctr = 0; ctr < nbrLimbs; ctr++)
@@ -603,7 +608,17 @@ void BigIntMultiplyPower2(BigInteger *pArg, int powerOf2)
       nbrLimbs++;
     }
   }
+  nbrLimbs += limbsToShiftLeft;
+  // Shift left entire limbs.
+  if (limbsToShiftLeft > 0)
+  {
+    int bytesToMove = (nbrLimbs - limbsToShiftLeft) * (int)sizeof(limb);
+    memmove(&pArg->limbs[limbsToShiftLeft], pArg->limbs, bytesToMove);
+    bytesToMove = limbsToShiftLeft * (int)sizeof(limb);
+    memset(pArg->limbs, 0, bytesToMove);
+  }
   pArg->nbrLimbs = nbrLimbs;
+  return EXPR_OK;
 }
 
 bool TestBigNbrEqual(const BigInteger *pNbr1, const BigInteger *pNbr2)
@@ -685,7 +700,7 @@ void BigIntGcd(const BigInteger *pArg1, const BigInteger *pArg2, BigInteger *pRe
     }
   }
   CopyBigInt(pResult, &Base);
-  BigIntMultiplyPower2(pResult, power2);
+  (void)BigIntMultiplyPower2(pResult, power2);
 }
 
 static void addToAbsValue(limb *pLimbs, int *pNbrLimbs, int addend)

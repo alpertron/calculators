@@ -250,12 +250,12 @@ static int numberofBitsSetToOne(int value)
   return bitsSet;
 }
 
-static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulated, BigInteger *result)
+static enum eExprErr ProcessFactorsFactorial(double factorAccum, 
+  int nbrGroupsAccumulated, BigInteger *result)
 {
+  enum eExprErr rc;
   int index;
   int offset;
-  int nbrGroupsAccumulated = *pNbrGroupsAccumulated;
-  *pNbrGroupsAccumulated = nbrGroupsAccumulated + 1;
   prod.limbs[1].x = (int)(factorAccum / (double)LIMB_RANGE);
   prod.limbs[0].x = (int)(factorAccum - ((double)LIMB_RANGE * (double)prod.limbs[1].x));
   prod.nbrLimbs = ((prod.limbs[1].x == 0) ? 1 : 2);
@@ -268,7 +268,11 @@ static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulat
     {
       index--;
       IntArray2BigInteger(&partArray[partArray[index]], &factor);
-      (void)BigIntMultiply(&prod, &factor, &prod);
+      rc = BigIntMultiply(&prod, &factor, &prod);
+      if (rc != EXPR_OK)
+      {
+        return rc;
+      }
       nbrGroupsAccumulated >>= 1;
     }
     offset = partArray[index];
@@ -290,36 +294,55 @@ static void ProcessFactorsFactorial(double factorAccum, int *pNbrGroupsAccumulat
     BigInteger2IntArray(&partArray[offset], &prod);
   }
   partArray[index + 1] = offset + partArray[offset] + 1;
+  return EXPR_OK;
 }
 
 // Using partArray as a buffer, accumulate products up to two limbs, then multiply the groups recursively.
-void factorial(BigInteger *result, int argument)
+enum eExprErr factorial(BigInteger *result, int argument, int multifact)
 {
+  enum eExprErr rc;
   unsigned int shLeft;
   int power2 = 0;
   int nbrGroupsAccumulated = 1;
   double factorAccum = 1;
   double maxFactorAccum = (double)(1U << 30) * (double)(1U << 23);
   partArray[0] = 20;     // Index of first big integer.
-  for (int ctr = 1; ctr <= argument; ctr++)
+  if (argument == 0)
+  {
+    intToBigInteger(result, 1);
+    return EXPR_OK;
+  }
+  for (int ctr = argument; ctr > 0; ctr -= multifact)
   {
     unsigned int multiplier = (unsigned int)ctr;
-    if ((factorAccum * (double)multiplier) > maxFactorAccum)
-    {
-      ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, NULL);
-      factorAccum = 1;
-    }
     while ((multiplier & 1) == 0)
     {
       multiplier >>= 1;
       power2++;
     }
-    factorAccum *= multiplier;
+    if ((factorAccum * (double)multiplier) > maxFactorAccum)
+    {
+      rc = ProcessFactorsFactorial(factorAccum, nbrGroupsAccumulated, NULL);
+      nbrGroupsAccumulated++;
+      if (rc != EXPR_OK)
+      {
+        return rc;
+      }
+      factorAccum = multiplier;
+    }
+    else
+    {
+      factorAccum *= multiplier;
+    }
   }
   shLeft = numberofBitsSetToOne(nbrGroupsAccumulated - 1);
   nbrGroupsAccumulated = UintToInt(1U << shLeft);
-  ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, result);
-  BigIntMultiplyPower2(result, power2);
+  rc = ProcessFactorsFactorial(factorAccum, nbrGroupsAccumulated, result);
+  if (rc != EXPR_OK)
+  {
+    return rc;
+  }
+  return BigIntMultiplyPower2(result, power2);
 }
 
 void primorial(BigInteger *result, int argument)
@@ -345,7 +368,8 @@ void primorial(BigInteger *result, int argument)
     {     // Number is prime, perform multiplication.
       if ((factorAccum * (double)ctr) > maxFactorAccum)
       {
-        ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, NULL);
+        nbrGroupsAccumulated++;
+        ProcessFactorsFactorial(factorAccum, nbrGroupsAccumulated, NULL);
         factorAccum = 1;
       }
       factorAccum *= ctr;
@@ -353,5 +377,6 @@ void primorial(BigInteger *result, int argument)
   }
   shLeft = numberofBitsSetToOne(nbrGroupsAccumulated - 1);
   nbrGroupsAccumulated = UintToInt(1U << shLeft);
-  ProcessFactorsFactorial(factorAccum, &nbrGroupsAccumulated, result);
+  nbrGroupsAccumulated++;
+  ProcessFactorsFactorial(factorAccum, nbrGroupsAccumulated, result);
 }

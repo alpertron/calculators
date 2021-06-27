@@ -33,22 +33,21 @@
 #define TOKEN_NUMFACT    37
 #define TOKEN_CONCATFACT 38
 #endif
-#define TOKEN_FACTORIAL  39
-#define TOKEN_PRIMORIAL  40
-#define TOKEN_GCD        41
-#define TOKEN_MODPOW     42
-#define TOKEN_MODINV     43
-#define TOKEN_SUMDIGITS  44
-#define TOKEN_NUMDIGITS  45
-#define TOKEN_REVDIGITS  46
-#define TOKEN_ISPRIME    47
-#define TOKEN_JACOBI     48
-#define TOKEN_SQRT       49
-#define TOKEN_F          50
-#define TOKEN_L          51
-#define TOKEN_P          52
-#define TOKEN_N          53
-#define TOKEN_B          54
+#define TOKEN_PRIMORIAL  39
+#define TOKEN_GCD        40
+#define TOKEN_MODPOW     41
+#define TOKEN_MODINV     42
+#define TOKEN_SUMDIGITS  43
+#define TOKEN_NUMDIGITS  44
+#define TOKEN_REVDIGITS  45
+#define TOKEN_ISPRIME    46
+#define TOKEN_JACOBI     47
+#define TOKEN_SQRT       48
+#define TOKEN_F          49
+#define TOKEN_L          50
+#define TOKEN_P          51
+#define TOKEN_N          52
+#define TOKEN_B          53
 
 #define PAREN_STACK_SIZE           5000
 #define COMPR_STACK_SIZE        1000000
@@ -85,7 +84,6 @@ struct sFuncOperExpr stFuncOperIntExpr[] =
   {NULL, 0, 0},
   // Second section: functions written at right of argument.
   {"#", TOKEN_PRIMORIAL, 0},
-  {"!", TOKEN_FACTORIAL, 0},
   {NULL, 0, 0},
   // Third section: unary operators.
   {"-", OPER_UNARY_MINUS, 3},
@@ -537,20 +535,22 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case TOKEN_FACTORIAL:
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
         break;
       }
       getCurrentStackValue(&curStack);
-#ifdef FACTORIZATION_APP
-      if ((curStack.limbs[0].x < 0) || (curStack.limbs[0].x >= 47177))
-#else
-      if ((curStack.limbs[0].x < 0) || (curStack.limbs[0].x >= 5984))
-#endif
+      if (curStack.sign == SIGN_NEGATIVE)
       {
-        return EXPR_INTERM_TOO_HIGH;
+        return EXPR_INVALID_PARAM;
       }
-      factorial(&curStack, curStack.limbs[0].x);
+      retcode = factorial(&curStack, curStack.limbs[0].x, curStack2.limbs[0].x);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
       break;
 
     case TOKEN_PRIMORIAL:

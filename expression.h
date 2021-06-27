@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 25 de junio de 2021."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 25 June 2021."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 26 de junio de 2021."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 26 June 2021."
 
 #include <stdbool.h>
 #ifdef __EMSCRIPTEN__
@@ -43,28 +43,29 @@ void databack(const char *data);
 #define TOKEN_END_EXPON               3
 #define TOKEN_VAR                     4
 #define TOKEN_COUNTER                 5
-#define OPER_POWER                    6
-#define OPER_MULTIPLY                 7
-#define OPER_DIVIDE                   8
-#define OPER_REMAINDER                9
-#define OPER_UNARY_MINUS             10
-#define OPER_PLUS                    11
-#define OPER_MINUS                   12
-#define OPER_SHR                     13
-#define OPER_SHL                     14
-#define OPER_NOT_GREATER             15
-#define OPER_NOT_LESS                16
-#define OPER_NOT_EQUAL               17
-#define OPER_EQUAL                   18
-#define OPER_GREATER                 19
-#define OPER_LESS                    20
-#define OPER_NOT                     21
-#define OPER_AND                     22
-#define OPER_INFIX_AND               23
-#define OPER_OR                      24
-#define OPER_INFIX_OR                25
-#define OPER_XOR                     26
-#define OPER_PAREN                   27
+#define TOKEN_FACTORIAL               6
+#define OPER_POWER                    7
+#define OPER_MULTIPLY                 8
+#define OPER_DIVIDE                   9
+#define OPER_REMAINDER               10
+#define OPER_UNARY_MINUS             11
+#define OPER_PLUS                    12
+#define OPER_MINUS                   13
+#define OPER_SHR                     14
+#define OPER_SHL                     15
+#define OPER_NOT_GREATER             16
+#define OPER_NOT_LESS                17
+#define OPER_NOT_EQUAL               18
+#define OPER_EQUAL                   19
+#define OPER_GREATER                 20
+#define OPER_LESS                    21
+#define OPER_NOT                     22
+#define OPER_AND                     23
+#define OPER_INFIX_AND               24
+#define OPER_OR                      25
+#define OPER_INFIX_OR                26
+#define OPER_XOR                     27
+#define OPER_PAREN                   28
 
 
 enum eExprErr
@@ -128,7 +129,7 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
   const struct sFuncOperExpr* funcOperExpr, enum eParseExpr eParseExpr,
   bool* pUsingVariables);
 void partition(int val, BigInteger *pResult);
-void factorial(BigInteger *result, int argument);
+enum eExprErr factorial(BigInteger *result, int argument, int multifact);
 void primorial(BigInteger *result, int argument);
 void textError(char **pptrOutput, enum eExprErr rc);
 void initializeSmallPrimes(int* pSmallPrimes);

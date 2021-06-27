@@ -26,20 +26,19 @@
 #define PAREN_STACK_SIZE           5000
 #define COMPR_STACK_SIZE        1000000
 
-#define TOKEN_FACTORIAL  39
-#define TOKEN_PRIMORIAL  40
-#define TOKEN_GCD        41
-#define TOKEN_MODPOW     42
-#define TOKEN_MODINV     43
-#define TOKEN_NORM       44
-#define TOKEN_RE         45
-#define TOKEN_IM         46
-#define TOKEN_ISPRIME    47
-#define TOKEN_F          48
-#define TOKEN_L          49
-#define TOKEN_P          50
-#define TOKEN_N          51
-#define TOKEN_B          52
+#define TOKEN_PRIMORIAL  39
+#define TOKEN_GCD        40
+#define TOKEN_MODPOW     41
+#define TOKEN_MODINV     42
+#define TOKEN_NORM       43
+#define TOKEN_RE         44
+#define TOKEN_IM         45
+#define TOKEN_ISPRIME    46
+#define TOKEN_F          47
+#define TOKEN_L          48
+#define TOKEN_P          49
+#define TOKEN_N          50
+#define TOKEN_B          51
 
 struct sFuncOperExpr stFuncOperGaussianExpr[] =
 {
@@ -59,7 +58,6 @@ struct sFuncOperExpr stFuncOperGaussianExpr[] =
   {NULL, 0, 0},
   // Second section: functions written at right of argument.
   {"#", TOKEN_PRIMORIAL, 0},
-  {"!", TOKEN_FACTORIAL, 0},
   {NULL, 0, 0},
   // Third section: unary operators.
   {"-", OPER_UNARY_MINUS, 3},
@@ -298,15 +296,18 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_FACTORIAL:
+      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      stackIndex--;
+      getCurrentStackValue(&curStackRe, &curStackIm);
       if (!BigIntIsZero(&curStackIm) || (curStackRe.sign == SIGN_NEGATIVE))
       {         // Imaginary part must be zero.
         return EXPR_INVALID_PARAM;
       }
-      if ((curStackRe.nbrLimbs > 1) || (curStackRe.limbs[0].x > 5984))
+      retcode = factorial(&curStackRe, curStackRe.limbs[0].x, curStack2Re.limbs[0].x);
+      if (retcode != EXPR_OK)
       {
-        return EXPR_INTERM_TOO_HIGH;
+        return retcode;
       }
-      factorial(&curStackRe, curStackRe.limbs[0].x);
       break;
 
     case TOKEN_PRIMORIAL:
