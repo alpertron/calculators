@@ -165,19 +165,20 @@ function moveSpiral(deltaX, deltaY)
 
 function updateSpiral(input, nbr)
 {
+  var startOffset = 11000000|0;
   var idx;
   var value = input.value;
   if (input !== 0)
   {
     for (idx=0; idx<value.length; idx++)  
     {
-      HEAP8[(11000000+idx) >> 0] = value.charCodeAt(idx);
+      HEAP8[(startOffset+idx) >> 0] = value.charCodeAt(idx);
     }
-    HEAP8[(11000000+idx) >> 0] = 0;
+    HEAP8[(startOffset+idx) >> 0] = 0;
   }
   var width = getWidth();
   var height = getHeight();
-  asmNbrChanged(11000000, nbr, width, height);
+  asmNbrChanged(startOffset, nbr, width, height);
   drawSpiral(canvas.getContext("2d"), 0, 0, width, height);
 }
 
@@ -260,18 +261,20 @@ function startLowLevelCode()
   var info;
   var getPixels;
   var asmJSbuffer;
+  var bufSize = 33554432;
+  var minusOne = 0xffffffff;
   imgData = canvas.getContext("2d").createImageData(2048, 4096);  // 32 MB;
   buffer = imgData.data.buffer;
   bitsCanvas = new Uint8Array(buffer);
   if (asmjs)
   {                                      // Asm.js initialization.
-    asmJSbuffer = new ArrayBuffer(33554432);
+    asmJSbuffer = new ArrayBuffer(bufSize);
     HEAP8 = new Uint8Array(asmJSbuffer);    // Reserve 32 MB for asm.js variables and buffers.
     env = {"a": {"buffer": asmJSbuffer},
       "abort": function(q) {},
     };
     // check for imul support, and also for correctness ( https://bugs.webkit.org/show_bug.cgi?id=126345 )
-    if (!Math["imul"] || Math["imul"](0xffffffff, 5) !== -5)
+    if (!Math["imul"] || Math["imul"](minusOne, 5) !== -5)
     {
       Math["imul"] = function imul(a, b)
       {

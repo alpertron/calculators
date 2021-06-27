@@ -167,25 +167,26 @@ function moveGraphic(deltaX, deltaY)
 function updateGraphic(nbr)
 {
   var idx, value, ctr;
+  var startOffset = 11000000|0;
   if (nbr === 1)
   {
     ctr = 0;
     value = centerX.value;
     for (idx=0; idx<value.length; idx++, ctr++)
     {
-      HEAP8[11000000+ctr] = value.charCodeAt(idx);
+      HEAP8[startOffset+ctr] = value.charCodeAt(idx);
     }
-    HEAP8[11000000+ctr++] = 0;
+    HEAP8[startOffset+ctr++] = 0;
     value = centerY.value;
     for (idx=0; idx<value.length; idx++, ctr++)
     {
-      HEAP8[11000000+ctr] = value.charCodeAt(idx);
+      HEAP8[startOffset+ctr] = value.charCodeAt(idx);
     }
-    HEAP8[11000000+ctr] = 0;
+    HEAP8[startOffset+ctr] = 0;
   }
   var width = getWidth();
   var height = getHeight();
-  asmNbrChanged(11000000, nbr, width, height);
+  asmNbrChanged(startOffset, nbr, width, height);
   drawGraphic(canvas.getContext("2d"), 0, 0, width, height);
 }
 
@@ -277,13 +278,15 @@ function startLowLevelCode()
   bitsCanvas = new Uint8Array(buffer);
   if (asmjs)
   {                                      // Asm.js initialization.
-    asmJSbuffer = new ArrayBuffer(33554432);
+    var bufSize = 33554432;
+    var minusOne = 0xffffffff;
+    asmJSbuffer = new ArrayBuffer(bufSize);
     HEAP8 = new Uint8Array(asmJSbuffer);    // Reserve 32 MB for asm.js variables and buffers.
     env = {"a": {"buffer": asmJSbuffer},
       "abort": function(q) {},
     };
     // check for imul support, and also for correctness ( https://bugs.webkit.org/show_bug.cgi?id=126345 )
-    if (!Math["imul"] || Math["imul"](0xffffffff, 5) !== -5)
+    if (!Math["imul"] || Math["imul"](minusOne, 5) !== -5)
     {
       Math["imul"] = function imul(a, b)
       {
