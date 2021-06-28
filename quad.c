@@ -475,6 +475,7 @@ void ShowXY(BigInteger *X, BigInteger *Y)
 
 static int Show(const BigInteger *num, const char *str, enum eLinearSolution t)
 {
+  enum eLinearSolution tOut = t;
   if (!BigIntIsZero(num))
   {     // num is not zero.
     if ((t == NO_SOLUTIONS) && (num->sign == SIGN_POSITIVE))
@@ -505,10 +506,10 @@ static int Show(const BigInteger *num, const char *str, enum eLinearSolution t)
     showText(str);
     if (t == SOLUTION_FOUND)
     {
-      t = NO_SOLUTIONS;
+      tOut = NO_SOLUTIONS;
     }
   }
-  return t;
+  return tOut;
 }
 
 static void Show1(const BigInteger *num, enum eLinearSolution t)

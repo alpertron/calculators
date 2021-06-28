@@ -350,7 +350,8 @@ static void LinearEquation(const int *polynomial, int multiplicity)
   const int* ptrPolynomial = polynomial;
   showX(multiplicity);
   UncompressBigIntegerB(ptrPolynomial, &Independent);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Linear);
   CopyBigInt(&Rat1.numerator, &Independent);
   CopyBigInt(&Rat1.denominator, &Linear);
@@ -409,9 +410,11 @@ static void QuadraticEquation(const int* polynomial, int multiplicity)
   int ctr;
   enum eSign signDiscr;
   UncompressBigIntegerB(ptrPolynomial, &Independent);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Linear);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Quadratic);
   if (ProcessQuadraticEquation(&signDiscr) == 0)
   {           // Discriminant is perfect square. Roots are rational numbers.
@@ -512,11 +515,14 @@ static void CubicEquation(const int* polynomial, int multiplicity)
   int ctr;
   const int* ptrPolynomial = polynomial;
   UncompressBigIntegerB(ptrPolynomial, &Independent);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Linear);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Quadratic);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Cubic);
   // Get rational coefficients of monic equation.
   CopyBigInt(&RatQuadratic.numerator, &Quadratic);
@@ -1097,7 +1103,8 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
 {
   const int* ptrValues = factorInfoInteger[0].ptrPolyLifted;
   UncompressBigIntegerB(ptrValues, &RatS.numerator);
-  ptrValues += 1 + numLimbs(ptrValues);
+  ptrValues += numLimbs(ptrValues);
+  ptrValues++;
   UncompressBigIntegerB(ptrValues, &RatS.denominator);   // RatS <- -root
   BigRationalDivideByInt(&RatS, -2, &RatS);              // RatS <- S^2 (as on Wikipedia article).
   ForceDenominatorPositive(&RatS);
@@ -1245,13 +1252,17 @@ static void QuarticEquation(const int* polynomial, int multiplicity)
   enum eSign sign2;
   const int* ptrPolynomial = polynomial;
   UncompressBigIntegerB(ptrPolynomial, &Independent);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Linear);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Quadratic);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Cubic);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Quartic);
   // Get rational coefficients of monic equation.
   CopyBigInt(&RatCubic.numerator, &Cubic);
@@ -1367,13 +1378,16 @@ static void QuarticEquation(const int* polynomial, int multiplicity)
   ptrValues = &values[1];
   NumberLength = tmp0.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp0);
-  ptrValues += 1 + numLimbs(ptrValues);
+  ptrValues += numLimbs(ptrValues);
+  ptrValues++;
   NumberLength = tmp1.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp1);
-  ptrValues += 1 + numLimbs(ptrValues);
+  ptrValues += numLimbs(ptrValues);
+  ptrValues++;
   NumberLength = tmp2.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp2);
-  ptrValues += 1 + numLimbs(ptrValues);
+  ptrValues += numLimbs(ptrValues);
+  ptrValues++;
   NumberLength = tmp3.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp3);
   (void)FactorPolyOverIntegers();
@@ -2456,7 +2470,8 @@ static bool isPalindromic(int* ptrPolynomial, int polyDegree)
   for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     ptrs[currentDegree] = ptrCoeff;
-    ptrCoeff += 1 + numLimbs(ptrCoeff);
+    ptrCoeff += numLimbs(ptrCoeff);
+    ptrCoeff++;
   }
   for (currentDegree = 0; currentDegree <= (polyDegree / 2); currentDegree++)
   {
@@ -2576,28 +2591,33 @@ static void ShowRootsOfRationalNumbers(int polyDegree, int multiplicity)
 // If polynomial has the form ax^n + b, show its roots.
 static bool isLinearExponential(const int* ptrPolynomial, int polyDegree, int multiplicity)
 {
+  const int* ptrPoly = ptrPolynomial;
   // Get constant term.
-  NumberLength = *ptrPolynomial;
-  IntArray2BigInteger(ptrPolynomial, &Rat1.numerator);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  NumberLength = *ptrPoly;
+  IntArray2BigInteger(ptrPoly, &Rat1.numerator);
+  ptrPoly += numLimbs(ptrPoly);
+  ptrPoly++;
   for (int currentDegree=1; currentDegree < polyDegree; currentDegree++)
   {
-    if ((*ptrPolynomial != 1) || (*(ptrPolynomial + 1) != 0))
+    if ((*ptrPoly != 1) || (*(ptrPoly + 1) != 0))
     {
       return false;    // Polynomial does not have format ax^n + b.
     }
-    ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+    ptrPoly += numLimbs(ptrPoly);
+    ptrPoly++;
   }
   // Get leading coefficient.
-  NumberLength = *ptrPolynomial;
-  IntArray2BigInteger(ptrPolynomial, &Rat1.denominator);
+  NumberLength = *ptrPoly;
+  IntArray2BigInteger(ptrPoly, &Rat1.denominator);
   ShowRootsOfRationalNumbers(polyDegree, multiplicity);
   return true;
 }
 
 // If polynomial has the form ax^(2n) + bx^n+c, show its roots.
-static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int multiplicity)
+static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree,
+  int multiplicity)
 {
+  const int* ptrPoly = ptrPolynomial;
   char rootQuadr[30000];
   char* ptrOutputBak;
   enum eSign signDiscr;
@@ -2611,32 +2631,36 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree, int
     return false;
   }
   // Get constant term.
-  NumberLength = *ptrPolynomial;
-  IntArray2BigInteger(ptrPolynomial, &Independent);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  NumberLength = *ptrPoly;
+  IntArray2BigInteger(ptrPoly, &Independent);
+  ptrPoly += numLimbs(ptrPoly);
+  ptrPoly++;
   for (currentDegree = 1; currentDegree < halfDegree; currentDegree++)
   {
-    if ((*ptrPolynomial != 1) || (*(ptrPolynomial + 1) != 0))
+    if ((*ptrPoly != 1) || (*(ptrPoly + 1) != 0))
     {
       return false;    // Polynomial does not have format ax^n + b.
     }
-    ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+    ptrPoly += numLimbs(ptrPoly);
+    ptrPoly++;
   }
   // Get linear coefficient.
-  NumberLength = *ptrPolynomial;
-  IntArray2BigInteger(ptrPolynomial, &Linear);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  NumberLength = *ptrPoly;
+  IntArray2BigInteger(ptrPoly, &Linear);
+  ptrPoly += numLimbs(ptrPoly);
+  ptrPoly++;
   for (currentDegree = 1; currentDegree < halfDegree; currentDegree++)
   {
-    if ((*ptrPolynomial != 1) || (*(ptrPolynomial + 1) != 0))
+    if ((*ptrPoly != 1) || (*(ptrPoly + 1) != 0))
     {
       return false;    // Polynomial does not have format ax^n + b.
     }
-    ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+    ptrPoly += numLimbs(ptrPoly);
+    ptrPoly++;
   }
   // Get leading coefficient.
-  NumberLength = *ptrPolynomial;
-  IntArray2BigInteger(ptrPolynomial, &Quadratic);
+  NumberLength = *ptrPoly;
+  IntArray2BigInteger(ptrPoly, &Quadratic);
   if (ProcessQuadraticEquation(&signDiscr) == 0)
   {           // Discriminant is perfect square. Roots are rational numbers.
     for (ctr = 0; ctr < 2; ctr++)
@@ -3077,7 +3101,8 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
         break;
       }
     }
-    ptrCoeff += 1 + numLimbs(ptrCoeff);
+    ptrCoeff += numLimbs(ptrCoeff);
+    ptrCoeff++;
   }
   polyDegree /= gcdDegrees;
   if (polyDegree < 5)
@@ -3130,8 +3155,9 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
   {    // Copy coefficient and skip zero coefficients.
     int nbrLen = 1 + numLimbs(ptrCoeff);
     int lenBytes = nbrLen * (int)sizeof(int);
+    int offset = nbrLen + (2 * (gcdDegrees - 1));
     (void)memcpy(ptrCoeffDest, ptrCoeff, lenBytes);
-    ptrCoeff += nbrLen + (2*(gcdDegrees-1));
+    ptrCoeff += offset;
     ptrCoeffDest += nbrLen;
   }
   do
