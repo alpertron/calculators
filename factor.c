@@ -1195,23 +1195,23 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   struct sFactors *pstCurFactor;
   int multiplicity;
   int factorNumber;
-  int *ptrFactor = pstFactorDividend->ptrFactor;
-  int nbrLimbs = *ptrFactor;
+  limb *ptrFactor = (limb *)pstFactorDividend->ptrFactor;
+  int nbrLimbs = ptrFactor->x;
   int *ptrValue;
   pstFactorDividend->upperBound = divisor;
   // Divide number by factor just found.
   if (cofactor == NULL)
   {        // Find cofactor.
     DivBigNbrByInt(ptrFactor + 1, divisor, ptrFactor + 1, nbrLimbs);
-    if (*(ptrFactor + nbrLimbs) == 0)
+    if ((ptrFactor + nbrLimbs)->x == 0)
     {
-      (*ptrFactor)--;
+      ptrFactor->x--;
     }
   }
   else
   {        // Cofactor given as a parameter.
     NumberLength = cofactor->nbrLimbs;
-    BigInteger2IntArray(ptrFactor, cofactor);
+    BigInteger2IntArray((int *)ptrFactor, cofactor);
   }
   // Check whether prime is already in factor list.
   pstCurFactor = pstFactors+1;
@@ -1765,7 +1765,8 @@ void factorExt(const BigInteger *toFactor, const int *number,
       }
       pstFactors->multiplicity++;
       pstCurFactor->ptrFactor = pstFactors->ptrFactor;
-      pstFactors->ptrFactor += 1 + *pstFactors->ptrFactor;
+      pstFactors->ptrFactor += *pstFactors->ptrFactor;
+      pstFactors->ptrFactor++;
       pstCurFactor++;
       if (*ptrKnownFactors == '*')
       {
@@ -1876,7 +1877,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
           int index;
           int deltaIndex;
           ptrFactor = pstCurFactor->ptrFactor;
-          remainder = RemDivBigNbrByInt(ptrFactor + 1, upperBound, nbrLimbs);
+          remainder = RemDivBigNbrByInt((const limb *)(ptrFactor + 1), upperBound, nbrLimbs);
           if (remainder != 0)
           {    // Factor not found. Use new divisor.
             break;

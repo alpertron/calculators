@@ -869,7 +869,7 @@ static void AdjustExponent(limb *nbr, limb mult, limb add, const BigInteger *big
   unsigned int carry;
   int nbrLimbs = bigSubGroupOrder->nbrLimbs;
   (nbr + nbrLimbs)->x = 0;
-  MultBigNbrByInt((int *)nbr, mult.x, (int *)nbr, nbrLimbs+1);
+  MultBigNbrByInt(nbr, mult.x, nbr, nbrLimbs+1);
   carry = add.x;
   for (int j = 0; j<=nbrLimbs; j++)
   {

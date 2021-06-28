@@ -972,20 +972,20 @@ void SolveQuadModEquation(void)
             {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
               correctBits *= 2;
               nbrLimbs = (correctBits / BITS_PER_GROUP) + 1;
-              MultBigNbr((int*)bigSquareRoot.limbs, (int*)bigSquareRoot.limbs, (int*)tmp2.limbs, nbrLimbs);
-              MultBigNbr((int*)tmp2.limbs, (int*)ValCOdd.limbs, (int*)tmp2.limbs, nbrLimbs);
-              ChSignBigNbr((int*)tmp2.limbs, nbrLimbs);
+              MultBigNbr(bigSquareRoot.limbs, bigSquareRoot.limbs, tmp2.limbs, nbrLimbs);
+              MultBigNbr(tmp2.limbs, ValCOdd.limbs, tmp2.limbs, nbrLimbs);
+              ChSignBigNbr(tmp2.limbs, nbrLimbs);
               lenBytes = nbrLimbs * (int)sizeof(limb);
               (void)memset(tmp1.limbs, 0, lenBytes);
               tmp1.limbs[0].x = 3;
-              AddBigNbr((int*)tmp1.limbs, (int*)tmp2.limbs, (int*)tmp2.limbs, nbrLimbs);
-              MultBigNbr((int*)tmp2.limbs, (int*)bigSquareRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
+              AddBigNbr(tmp1.limbs, tmp2.limbs, tmp2.limbs, nbrLimbs);
+              MultBigNbr(tmp2.limbs, bigSquareRoot.limbs, tmp1.limbs, nbrLimbs);
               lenBytes = nbrLimbs * (int)sizeof(limb);
               (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, lenBytes);
-              DivBigNbrByInt((int*)tmp1.limbs, 2, (int*)bigSquareRoot.limbs, nbrLimbs);
+              DivBigNbrByInt(tmp1.limbs, 2, bigSquareRoot.limbs, nbrLimbs);
             }
             // Get square root of ValCOdd from its inverse by multiplying by ValCOdd.
-            MultBigNbr((int*)ValCOdd.limbs, (int*)bigSquareRoot.limbs, (int*)tmp1.limbs, nbrLimbs);
+            MultBigNbr(ValCOdd.limbs, bigSquareRoot.limbs, tmp1.limbs, nbrLimbs);
             lenBytes = nbrLimbs * (int)sizeof(limb);
             (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, lenBytes);
             setNbrLimbs(&bigSquareRoot);

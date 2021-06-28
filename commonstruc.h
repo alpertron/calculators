@@ -54,10 +54,10 @@ struct stSiqs
   int multiplier;
   int nbrFactorsA;
   int afact[MAX_NBR_FACTORS];
-  int Modulus[MAX_LIMBS_SIQS];
-  int TestNbr2[MAX_LIMBS_SIQS];
-  int biQuadrCoeff[MAX_LIMBS_SIQS];
-  int biLinearDelta[MAX_LIMBS_SIQS][MAX_LIMBS_SIQS];
+  limb Modulus[MAX_LIMBS_SIQS];
+  limb TestNbr2[MAX_LIMBS_SIQS];
+  limb biQuadrCoeff[MAX_LIMBS_SIQS];
+  limb biLinearDelta[MAX_LIMBS_SIQS][MAX_LIMBS_SIQS];
   long largePrimeUpperBound;
   int aindex[MAX_NBR_FACTORS];
   PrimeSieveData primeSieveData[MAX_PRIMES+3];
@@ -71,7 +71,7 @@ struct stSiqs
   int NbrPolynomials;
   int SieveLimit;
   int matrixPartial[MAX_PRIMES * 8][(MAX_LIMBS_SIQS/2) + 4];
-  int vectLeftHandSide[MAX_PRIMES+50][MAX_LIMBS_SIQS + 4];
+  limb vectLeftHandSide[MAX_PRIMES+50][MAX_LIMBS_SIQS + 4];
   int matrixPartialHashIndex[2048];
   int matrixB[MAX_PRIMES + 50][MAX_FACTORS_RELATION];
   int amodq[MAX_NBR_FACTORS];

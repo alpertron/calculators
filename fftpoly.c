@@ -53,10 +53,10 @@ static void initCosinesArray(void)
   double invLimb = 1.0 / (double)LIMB_RANGE;
   double invSqLimb = invLimb * invLimb;
   int index;
-  cossin[0].Cos[0] = MAX_VALUE_LIMB;                       // cos(0) = 1
-  cossin[0].Cos[1] = MAX_VALUE_LIMB;
-  cossin[0].Sin[0] = 0;                                    // sin(0) = 0
-  cossin[0].Sin[1] = 0;
+  cossin[0].Cos[0].x = MAX_VALUE_LIMB;                       // cos(0) = 1
+  cossin[0].Cos[1].x = MAX_VALUE_LIMB;
+  cossin[0].Sin[0].x = 0;                                    // sin(0) = 0
+  cossin[0].Sin[1].x = 0;
   ptrCosSin = &cossin[1];
   index = 1;
   for (;;)
@@ -87,21 +87,21 @@ static void initCosinesArray(void)
     }
     else
     {
-      int firstProd[6];
-      int secondProd[6];
+      limb firstProd[6];
+      limb secondProd[6];
       // Compute cos(A+B) = cos A cos B - sin A sin B.
       ptrOldCosSin = ptrCosSin - mask;   // Pointer to cos/sin A.
       MultBigNbrComplete(ptrOldCosSin->Cos, ptrCosSinDelta->Cos, firstProd, 2);
       MultBigNbrComplete(ptrOldCosSin->Sin, ptrCosSinDelta->Sin, secondProd, 2);
       SubtractBigNbr(firstProd, secondProd, firstProd, 4);
-      ptrCosSin->Cos[0] = *(firstProd + 2);
-      ptrCosSin->Cos[1] = *(firstProd + 3);
+      ptrCosSin->Cos[0].x = firstProd[2].x;
+      ptrCosSin->Cos[1].x = firstProd[3].x;
       // Compute sin(A+B) = sin A cos B + cos A sin B.
       MultBigNbrComplete(ptrOldCosSin->Sin, ptrCosSinDelta->Cos, firstProd, 2);
       MultBigNbrComplete(ptrOldCosSin->Cos, ptrCosSinDelta->Sin, secondProd, 2);
       AddBigNbr(firstProd, secondProd, firstProd, 4);
-      ptrCosSin->Sin[0] = *(firstProd + 2);
-      ptrCosSin->Sin[1] = *(firstProd + 3);
+      ptrCosSin->Sin[0].x = firstProd[2].x;
+      ptrCosSin->Sin[1].x = firstProd[3].x;
     }
     ptrCosSin++;
     index++;
@@ -110,7 +110,8 @@ static void initCosinesArray(void)
   ptrCosSin = cossin;
   for (index = 0; index < QUARTER_CIRCLE; index++)
   {
-    double cosine = ((double)ptrCosSin->Cos[0] * invSqLimb) + ((double)ptrCosSin->Cos[1] * invLimb);
+    double cosine = ((double)ptrCosSin->Cos[0].x * invSqLimb) +
+      ((double)ptrCosSin->Cos[1].x * invLimb);
     Cosine[index] = cosine;
     Cosine[HALF_CIRCLE - index] = -cosine;
     Cosine[HALF_CIRCLE + index] = -cosine;

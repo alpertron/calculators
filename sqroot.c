@@ -154,7 +154,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
     }
     else
     {
-      int square[3];   // MultBigNbr routine uses an extra limb for result.
+      limb square[3];   // MultBigNbr routine uses an extra limb for result.
       double dArg = argument->x + (double)(argument + 1)->x*(double)LIMB_RANGE;
       dArg = floor(sqrt(dArg + 0.5));
       if (dArg == (double)LIMB_RANGE)
@@ -162,9 +162,9 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
         dArg = (double)MAX_VALUE_LIMB;
       }
       sqRoot->x = (int)dArg;
-      MultBigNbr(&sqRoot->x, &sqRoot->x, square, 1);
-      if ((square[1] > (argument + 1)->x) ||
-        ((square[1] == (argument + 1)->x) && (square[0] > argument->x)))
+      MultBigNbr(sqRoot, sqRoot, square, 1);
+      if ((square[1].x > (argument + 1)->x) ||
+        ((square[1].x == (argument + 1)->x) && (square[0].x > argument->x)))
       {
         sqRoot->x--;
       }

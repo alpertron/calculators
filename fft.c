@@ -31,22 +31,22 @@
 // In the next array, all numbers are represented by two elements,
 // first the least significant limb, then the most significant limb.
 const struct sCosSin cossinPowerOneHalf[] =
-{
-  {{2121767201, 1518500249}, {2121767201, 1518500249}},  // cos(pi/2^2), then sin(pi/2^2)
-  {{1696238673, 1984016188}, {782852818, 821806413}},    // cos(pi/2^3), then sin(pi/2^3)
-  {{1857642581, 2106220351}, {886244699, 418953276}},    // cos(pi/2^4), then sin(pi/2^4)
-  {{575294268, 2137142927}, {174918392, 210490206}},     // cos(pi/2^5), then sin(pi/2^5)
-  {{1926953927, 2144896909}, {565903997, 105372028}},    // cos(pi/2^6), then sin(pi/2^6)
-  {{161094006, 2146836866}, {2050385888, 52701886}},     // cos(pi/2^7), then sin(pi/2^7)
-  {{925218479, 2147321946}, {1727413283, 26352927}},     // cos(pi/2^8), then sin(pi/2^8)
-  {{487924891, 2147443222}, {2040267204, 13176711}},     // cos(pi/2^9), then sin(pi/2^9)
-  {{1144652709, 2147473541}, {2107197813, 6588386}},     // cos(pi/2^10), then sin(pi/2^10)
-  {{819842189, 2147481121}, {786843438, 3294197}},       // cos(pi/2^11), then sin(pi/2^11)
-  {{741631966, 2147483016}, {360077744, 1647099}},       // cos(pi/2^12), then sin(pi/2^12)
-  {{185395523, 2147483490}, {1383830442, 823549}},       // cos(pi/2^13), then sin(pi/2^13)
-  {{1120089925, 2147483608}, {1781913263, 411774}},      // cos(pi/2^14), then sin(pi/2^14)
-  {{280022433, 2147483638}, {892988659, 205887}},        // cos(pi/2^15), then sin(pi/2^15)
-  {{1143747429, 2147483645}, {1520490157, 102943}},      // cos(pi/2^16), then sin(pi/2^16)
+{  // cos(pi/2^n), then sin(pi/2^n)
+  {{{2121767201}, {1518500249}}, {{2121767201}, {1518500249}}},  // n = 2
+  {{{1696238673}, {1984016188}}, {{782852818}, {821806413}}},    // n = 3
+  {{{1857642581}, {2106220351}}, {{886244699}, {418953276}}},    // n = 4
+  {{{575294268}, {2137142927}}, {{174918392}, {210490206}}},     // n = 5
+  {{{1926953927}, {2144896909}}, {{565903997}, {105372028}}},    // n = 6
+  {{{161094006}, {2146836866}}, {{2050385888}, {52701886}}},     // n = 7
+  {{{925218479}, {2147321946}}, {{1727413283}, {26352927}}},     // n = 8
+  {{{487924891}, {2147443222}}, {{2040267204}, {13176711}}},     // n = 9
+  {{{1144652709}, {2147473541}}, {{2107197813}, {6588386}}},     // n = 10
+  {{{819842189}, {2147481121}}, {{786843438}, {3294197}}},       // n = 11
+  {{{741631966}, {2147483016}}, {{360077744}, {1647099}}},       // n = 12
+  {{{185395523}, {2147483490}}, {{1383830442}, {823549}}},       // n = 13
+  {{{1120089925}, {2147483608}}, {{1781913263}, {411774}}},      // n = 14
+  {{{280022433}, {2147483638}}, {{892988659}, {205887}}},        // n = 15
+  {{{1143747429}, {2147483645}}, {{1520490157}, {102943}}},      // n = 16
 };
 
 static struct sCosSin cossin[FULL_CIRCLE];
@@ -68,10 +68,10 @@ static void initCosinesArray(void)
   double invLimb = 1.0 / (double)LIMB_RANGE;
   double invSqLimb = invLimb * invLimb;
   int index = 1;
-  cossin[0].Cos[0] = (int)MAX_VALUE_LIMB;                  // cos(0) = 1
-  cossin[0].Cos[1] = (int)MAX_VALUE_LIMB;
-  cossin[0].Sin[0] = 0;                                    // sin(0) = 0
-  cossin[0].Sin[1] = 0;
+  cossin[0].Cos[0].x = (int)MAX_VALUE_LIMB;                  // cos(0) = 1
+  cossin[0].Cos[1].x = (int)MAX_VALUE_LIMB;
+  cossin[0].Sin[0].x = 0;                                    // sin(0) = 0
+  cossin[0].Sin[1].x = 0;
   ptrCosSin = &cossin[1];
   for (;;)
   {
@@ -101,21 +101,21 @@ static void initCosinesArray(void)
     }
     else
     {
-      int firstProd[6];
-      int secondProd[6];
+      limb firstProd[6];
+      limb secondProd[6];
       // Compute cos(A+B) = cos A cos B - sin A sin B.
       ptrOldCosSin = ptrCosSin - mask;   // Pointer to cos/sin A.
       MultBigNbrComplete(ptrOldCosSin->Cos, ptrCosSinDelta->Cos, firstProd, 2);
       MultBigNbrComplete(ptrOldCosSin->Sin, ptrCosSinDelta->Sin, secondProd, 2);
       SubtractBigNbr(firstProd, secondProd, firstProd, 4);
-      ptrCosSin->Cos[0] = *(firstProd + 2);
-      ptrCosSin->Cos[1] = *(firstProd + 3);
+      ptrCosSin->Cos[0].x = firstProd[2].x;
+      ptrCosSin->Cos[1].x = firstProd[3].x;
       // Compute sin(A+B) = sin A cos B + cos A sin B.
       MultBigNbrComplete(ptrOldCosSin->Sin, ptrCosSinDelta->Cos, firstProd, 2);
       MultBigNbrComplete(ptrOldCosSin->Cos, ptrCosSinDelta->Sin, secondProd, 2);
       AddBigNbr(firstProd, secondProd, firstProd, 4);
-      ptrCosSin->Sin[0] = *(firstProd + 2);
-      ptrCosSin->Sin[1] = *(firstProd + 3);
+      ptrCosSin->Sin[0].x = firstProd[2].x;
+      ptrCosSin->Sin[1].x = firstProd[3].x;
     }
     ptrCosSin++;
     index++;
@@ -124,8 +124,8 @@ static void initCosinesArray(void)
   ptrCosSin = cossin;
   for (index = 0; index < QUARTER_CIRCLE; index++)
   {
-    double cosine = ((double)ptrCosSin->Cos[0] * invSqLimb) +
-      ((double)ptrCosSin->Cos[1] * invLimb);
+    double cosine = ((double)ptrCosSin->Cos[0].x * invSqLimb) +
+      ((double)ptrCosSin->Cos[1].x * invLimb);
     Cosine[index] = cosine;
     Cosine[HALF_CIRCLE - index] = -cosine;
     Cosine[HALF_CIRCLE + index] = -cosine;

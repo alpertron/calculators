@@ -1652,12 +1652,12 @@ static void Halve(limb *pValue)
 {
   if ((pValue[0].x & 1) == 0)
   {    // Number to halve is even. Divide by 2.
-    DivBigNbrByInt((int *)pValue, 2, (int *)pValue, NumberLength);
+    DivBigNbrByInt(pValue, 2, pValue, NumberLength);
   }
   else
   {    // Number to halve is odd. Add modulus and then divide by 2.
-    AddBigNbr((int *)pValue, (int *)TestNbr, (int *)pValue, NumberLength + 1);
-    DivBigNbrByInt((int *)pValue, 2, (int *)pValue, NumberLength + 1);
+    AddBigNbr(pValue, TestNbr, pValue, NumberLength + 1);
+    DivBigNbrByInt(pValue, 2, pValue, NumberLength + 1);
   }
 }
 
@@ -1889,7 +1889,7 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
         Mult4[NumberLength].x = 0;
         AddBigNbrMod(Mult3, Mult4, Temp.limbs);
         Halve(Temp.limbs);                     // Temp <- (U + V)/2
-        MultBigNbrByIntModN((int*)Mult3, D, (int*)Temp2.limbs, (int*)TestNbr, nbrLimbs);
+        MultBigNbrByIntModN(Mult3, D, Temp2.limbs, TestNbr, nbrLimbs);
         if (signD > 0)
         {      // D is positive
           AddBigNbrMod(Mult4, Temp2.limbs, Mult4);

@@ -927,7 +927,7 @@ static void ChineseRemainderTheorem(int shRight, BigInteger* result)
     int lenBytes = (NumberLength - oddValue.nbrLimbs) * (int)sizeof(limb);
     (void)memset(&oddValue.limbs[oddValue.nbrLimbs], 0, lenBytes);
   }
-  SubtractBigNbr((int*)resultModPower2, (int*)resultModOdd, (int*)aux3, NumberLength);
+  SubtractBigNbr(resultModPower2, resultModOdd, aux3, NumberLength);
   ComputeInversePower2(oddValue.limbs, aux4, aux);
   modmult(aux4, aux3, aux5);
   (aux5 + (shRight / BITS_PER_GROUP))->x &= (1 << (shRight % BITS_PER_GROUP)) - 1;

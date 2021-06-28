@@ -186,30 +186,33 @@ void BigIntModularPower(const BigInteger *base, const BigInteger *exponent, BigI
 enum eExprErr BigIntGeneralModularPower(const BigInteger* base, const BigInteger* exponent,
   const BigInteger* mod, BigInteger* power);
 
-void ChSignBigNbr(int *nbr, int length);
-void ChSignBigNbrB(int *nbr, int length);
-void AddBigNbr(const int *pNbr1, const int *pNbr2, int *pSum, int nbrLen);
-void SubtractBigNbr(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen);
-void AddBigNbrB(const int *pNbr1, const int *pNbr2, int *pSum, int nbrLen);
-void SubtractBigNbrB(const int *pNbr1, const int *pNbr2, int *pDiff, int nbrLen);
-void AddBigIntModN(const int *pNbr1, const int *pNbr2, int *pSum, const int *pMod, int nbrLen);
-void SubtractBigNbrModN(const int *pNbr1, const int *pNbr2, int *pDiff, const int *pMod, int nbrLen);
-void MultBigNbrByInt(const int *bigFactor, int factor, int *bigProd, int nbrLen);
-void MultBigNbrByIntB(const int *bigFactor, int factor, int *bigProd, int nbrLen);
-void DivBigNbrByInt(const int *pDividend, int divisor, int *pQuotient, int nbrLen);
-int RemDivBigNbrByInt(const int *pDividend, int divisor, int nbrLen);
-void MultBigNbr(const int *pFactor1, const int *pFactor2, int *pProd, int nbrLen);
-void MultBigNbrComplete(const int *pFactor1, const int *pFactor2, int *pProd, int nbrLen);
-void IntToBigNbr(int value, int *bigNbr, int nbrLength);
-int BigNbrToBigInt(const BigInteger *pBigNbr, int *pBigInt);
-void BigIntToBigNbr(BigInteger *pBigNbr, const int *pBigInt, int nbrLenBigInt);
-void GcdBigNbr(const int *pNbr1, const int *pNbr2, int *pGcd, int nbrLen);
-void AdjustBigIntModN(int *Nbr, int *Mod, int nbrLen);
-void MultBigNbrModN(const int *Nbr1, int *Nbr2, int *Prod, int *Mod, int nbrLen);
-void MultBigNbrByIntModN(int *Nbr1, int Nbr2, int *Prod, int *Mod, int nbrLen);
+void ChSignBigNbr(limb *nbr, int length);
+void ChSignBigNbrB(limb *nbr, int length);
+void AddBigNbr(const limb *pNbr1, const limb *pNbr2, limb *pSum, int nbrLen);
+void SubtractBigNbr(const limb *pNbr1, const limb *pNbr2, limb *pDiff, int nbrLen);
+void AddBigNbrB(const limb *pNbr1, const limb *pNbr2, limb *pSum, int nbrLen);
+void SubtractBigNbrB(const limb *pNbr1, const limb *pNbr2, limb *pDiff, int nbrLen);
+void AddBigIntModN(const limb *pNbr1, const limb *pNbr2, limb *pSum, const limb *pMod,
+  int nbrLen);
+void SubtractBigNbrModN(const limb *pNbr1, const limb *pNbr2, limb *pDiff,
+  const limb *pMod, int nbrLen);
+void MultBigNbrByInt(const limb *bigFactor, int factor, limb *bigProd, int nbrLen);
+void MultBigNbrByIntB(const limb *bigFactor, int factor, limb *bigProd, int nbrLen);
+void DivBigNbrByInt(const limb *pDividend, int divisor, limb *pQuotient, int nbrLen);
+int RemDivBigNbrByInt(const limb *pDividend, int divisor, int nbrLen);
+void MultBigNbr(const limb *pFactor1, const limb *pFactor2, limb *pProd, int nbrLen);
+void MultBigNbrComplete(const limb *pFactor1, const limb *pFactor2, limb *pProd,
+  int nbrLen);
+void IntToBigNbr(int value, limb *bigNbr, int nbrLength);
+int BigNbrToBigInt(const BigInteger *pBigNbr, limb *pBigInt);
+void BigIntToBigNbr(BigInteger *pBigNbr, const limb *pBigInt, int nbrLenBigInt);
+void GcdBigNbr(const limb *pNbr1, const limb *pNbr2, limb *pGcd, int nbrLen);
+void AdjustBigIntModN(limb *Nbr, const limb *Mod, int nbrLen);
+void MultBigNbrModN(const limb *Nbr1, limb *Nbr2, limb *Prod, limb *Mod, int nbrLen);
+void MultBigNbrByIntModN(limb *Nbr1, int Nbr2, limb *Prod, const limb *Mod, int nbrLen);
 int intDoubleModPow(int NbrMod, int Expon, int currentPrime);
-void ModInvBigInt(const int *num, int *inv, const int *mod, int nbrLenBigInt);
-void IntToBigNbr(int value, int *bigNbr, int nbrLength);
+void ModInvBigInt(const limb *num, limb *inv, const limb *mod, int nbrLenBigInt);
+void IntToBigNbr(int value, limb *bigNbr, int nbrLength);
 int JacobiSymbol(int upper, int lower);
 int BigIntJacobiSymbol(const BigInteger *upper, const BigInteger *lower);
 void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs);

@@ -391,7 +391,7 @@ int fsquares(void)
               }
               carry.x = 0;
               // Divide by divisor.
-              DivBigNbrByInt((const int *)p, divisor, (int *)p, nbrLimbsP);
+              DivBigNbrByInt(p, divisor, p, nbrLimbsP);
               if (p[nbrLimbsP - 1].x == 0)
               {
                 nbrLimbsP--;
@@ -514,8 +514,8 @@ int fsquares(void)
           divisor = primediv[i];
           for (index = primeexp[i]-1; index > 0; index -= 2)
           {
-            MultBigNbrByInt((const int*)Mult1, divisor, (int*)Mult1, nbrLimbs + 1);
-            MultBigNbrByInt((const int*)Mult2, divisor, (int*)Mult2, nbrLimbs + 1);
+            MultBigNbrByInt(Mult1, divisor, Mult1, nbrLimbs + 1);
+            MultBigNbrByInt(Mult2, divisor, Mult2, nbrLimbs + 1);
             if ((Mult1[nbrLimbs].x != 0) || (Mult2[nbrLimbs].x != 0))
             {
               nbrLimbs++;
@@ -544,18 +544,18 @@ int fsquares(void)
             // Compute Mult1 <- Previous Mult1 * j + Previous Mult2 * r
             // Compute Mult2 <- Previous Mult1 * r - Previous Mult2 * j
             // Use SquareMult1, SquareMult2, SquareMult3, SquareMult4 as temporary storage.
-            MultBigNbrByInt((const int*)Mult1, j, (int*)SquareMult1.limbs, nbrLimbs + 1);
-            MultBigNbrByInt((const int*)Mult2, r, (int*)SquareMult2.limbs, nbrLimbs + 1);
-            MultBigNbrByInt((const int*)Mult1, r, (int*)SquareMult3.limbs, nbrLimbs + 1);
-            MultBigNbrByInt((const int*)Mult2, j, (int*)SquareMult4.limbs, nbrLimbs + 1);
-            AddBigNbr((const int *)SquareMult1.limbs, (const int *)SquareMult2.limbs,
-              (int *)Mult1, nbrLimbs + 1);
-            SubtractBigNbrB((const int *)SquareMult3.limbs, (const int *)SquareMult4.limbs,
-              (int *)Mult2, nbrLimbs + 1);
+            MultBigNbrByInt(Mult1, j, SquareMult1.limbs, nbrLimbs + 1);
+            MultBigNbrByInt(Mult2, r, SquareMult2.limbs, nbrLimbs + 1);
+            MultBigNbrByInt(Mult1, r, SquareMult3.limbs, nbrLimbs + 1);
+            MultBigNbrByInt(Mult2, j, SquareMult4.limbs, nbrLimbs + 1);
+            AddBigNbr(SquareMult1.limbs, SquareMult2.limbs,
+              Mult1, nbrLimbs + 1);
+            SubtractBigNbrB(SquareMult3.limbs, SquareMult4.limbs,
+              Mult2, nbrLimbs + 1);
             if ((unsigned int)Mult2[nbrLimbs].x >= LIMB_RANGE)
             {   // Since Mult2 is a difference of products, it can be
                 // negative. In this case replace it by its absolute value.
-              ChSignBigNbr((int *)Mult2, nbrLimbs+1);
+              ChSignBigNbr(Mult2, nbrLimbs+1);
             }
             if ((Mult1[nbrLimbs].x != 0) || (Mult2[nbrLimbs].x != 0))
             {
@@ -571,8 +571,8 @@ int fsquares(void)
     // Shift left the number of bits that the original number was divided by 4.
     for (count = 0; count < power4; count++)
     {
-      MultBigNbrByInt((const int*)Mult1, 2, (int*)Mult1, nbrLimbs + 1);
-      MultBigNbrByInt((const int*)Mult2, 2, (int*)Mult2, nbrLimbs + 1);
+      MultBigNbrByInt(Mult1, 2, Mult1, nbrLimbs + 1);
+      MultBigNbrByInt(Mult2, 2, Mult2, nbrLimbs + 1);
       if ((Mult1[nbrLimbs].x != 0) || (Mult2[nbrLimbs].x != 0))
       {
         nbrLimbs++;
@@ -587,8 +587,8 @@ int fsquares(void)
     Mult4[1].x = 0;
     for (count = 0; count < power4; count++)
     {
-      MultBigNbrByInt((const int*)Mult3, 2, (int*)Mult3, nbrLimbsP + 1);
-      MultBigNbrByInt((const int*)Mult4, 2, (int*)Mult4, nbrLimbsP + 1);
+      MultBigNbrByInt(Mult3, 2, Mult3, nbrLimbsP + 1);
+      MultBigNbrByInt(Mult4, 2, Mult4, nbrLimbsP + 1);
       if ((Mult3[nbrLimbsP].x != 0) || (Mult4[nbrLimbsP].x != 0))
       {
         nbrLimbsP++;

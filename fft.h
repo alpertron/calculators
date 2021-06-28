@@ -27,8 +27,8 @@ struct sComplex
 
 struct sCosSin
 {
-  int Cos[2];
-  int Sin[2];
+  limb Cos[2];
+  limb Sin[2];
 };
 
 #define MAX_VALUE_FFT_LIMB (FFT_LIMB_RANGE - 1)
