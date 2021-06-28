@@ -39,7 +39,8 @@ int bitLengthCycle[20];
 // Find power of 4 that divides the number.
 // output: pNbrLimbs = pointer to number of limbs
 //         pPower4 = pointer to power of 4.
-static void MultiplyBigNbrByMinPowerOf4(int *pPower4, const limb *number, int len, limb *dest)
+static void MultiplyBigNbrByMinPowerOf4(int *pPower4, const limb *number,
+  int len, limb *dest)
 {
   int power4;
   int power2 = 0;
@@ -70,7 +71,7 @@ static void MultiplyBigNbrByMinPowerOf4(int *pPower4, const limb *number, int le
     shLeft++;
   }
   power2 = (power2 + shLeft) & (-2);
-  power4 = power2 >> 1;
+  power4 = power2 / 2;
   ptrDest = dest;
   if (power2 > BITS_PER_GROUP)
   {

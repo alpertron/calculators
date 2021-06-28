@@ -265,8 +265,9 @@ static enum eExprErr ProcessFactorsFactorial(double factorAccum,
   if (((nbrGroupsAccumulated & 1) == 0) || (result != NULL))
   {     // Even means that k multiplications have to be done, where k is the number of 
         // bits set to zero at the right.
+    int nbrGroupsAccum = nbrGroupsAccumulated;
     index = numberofBitsSetToOne(nbrGroupsAccumulated - 1);
-    while ((nbrGroupsAccumulated & 1) == 0)
+    while ((nbrGroupsAccum & 1) == 0)
     {
       index--;
       IntArray2BigInteger(&partArray[partArray[index].x].x, &factor);
@@ -275,7 +276,7 @@ static enum eExprErr ProcessFactorsFactorial(double factorAccum,
       {
         return rc;
       }
-      nbrGroupsAccumulated >>= 1;
+      nbrGroupsAccum >>= 1;
     }
     offset = partArray[index].x;
     if (result == NULL)
@@ -317,7 +318,7 @@ enum eExprErr factorial(BigInteger *result, int argument, int multifact)
   for (int ctr = argument; ctr > 0; ctr -= multifact)
   {
     unsigned int multiplier = (unsigned int)ctr;
-    while ((multiplier & 1) == 0)
+    while ((multiplier & 1U) == 0U)
     {
       multiplier >>= 1;
       power2++;

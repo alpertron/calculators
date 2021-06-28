@@ -477,7 +477,7 @@ static int Show(const BigInteger *num, const char *str, enum eLinearSolution t)
 {
   if (!BigIntIsZero(num))
   {     // num is not zero.
-    if (((t & 1) != 0) && (num->sign == SIGN_POSITIVE))
+    if ((t == NO_SOLUTIONS) && (num->sign == SIGN_POSITIVE))
     {
       *ptrOutput = ' ';
       ptrOutput++;
@@ -503,7 +503,10 @@ static int Show(const BigInteger *num, const char *str, enum eLinearSolution t)
       copyStr(&ptrOutput, "&nbsp;");
     }
     showText(str);
-    return t | 1;
+    if (t == SOLUTION_FOUND)
+    {
+      t = NO_SOLUTIONS;
+    }
   }
   return t;
 }
@@ -651,7 +654,7 @@ static void findQuadraticSolution(BigInteger* pSolution, int expon)
 {
   int exponent = expon;
   int bitMask = 1;
-  int* ptrSolution = (int*)pSolution->limbs;
+  limb* ptrSolution = pSolution->limbs;
   BigIntPowerOf2(&Q, exponent);
   (void)memset(pSolution->limbs, 0, Q.nbrLimbs);
   while (exponent > 0)
@@ -661,7 +664,7 @@ static void findQuadraticSolution(BigInteger* pSolution, int expon)
     addbigint(&K1, -1);
     if ((Const.limbs[0].x & 1) != 0)
     {        // Const is odd.
-      *ptrSolution |= bitMask;
+      ptrSolution->x |= bitMask;
       // Const <- Quadr/2 + floor(Linear/2) + floor(Const/2) + 1
       BigIntDivideBy2(&Const);          // floor(Const/2)
       addbigint(&Const, 1);             // floor(Const/2) + 1
@@ -1335,6 +1338,9 @@ void SolveQuadModEquation(void)
       else if (sol2Invalid)
       {     // common.quad.Solution2 is invalid. Overwrite it with common.quad.Solution1.
         CopyBigInt(&common.quad.Solution2[factorIndex], &common.quad.Solution1[factorIndex]);
+      }
+      else
+      {     // Nothing to do.
       }
       BigIntSubt(&common.quad.Solution2[factorIndex], &common.quad.Solution1[factorIndex], &Tmp[0]);
       if (Tmp[0].sign == SIGN_NEGATIVE)
