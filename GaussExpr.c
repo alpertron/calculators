@@ -73,7 +73,7 @@ struct sFuncOperExpr stFuncOperGaussianExpr[] =
   {NULL, 0, 0},
 };
 
-static limb comprStackValues[COMPR_STACK_SIZE];
+static int comprStackValues[COMPR_STACK_SIZE];
 static int comprStackOffset[PAREN_STACK_SIZE];
 static int stackIndex;
 #ifndef lang  
@@ -120,12 +120,12 @@ static int numLimbs(const int* pLen)
 
 static void getCurrentStackValue(BigInteger* pValueRe, BigInteger *pValueIm)
 {
-  limb* ptrStackValue = &comprStackValues[comprStackOffset[2*stackIndex]];
-  NumberLength = numLimbs((int*)ptrStackValue);
-  IntArray2BigInteger((int*)ptrStackValue, pValueRe);
+  int* ptrStackValue = &comprStackValues[comprStackOffset[2*stackIndex]];
+  NumberLength = numLimbs(ptrStackValue);
+  IntArray2BigInteger(ptrStackValue, pValueRe);
   ptrStackValue = &comprStackValues[comprStackOffset[(2 * stackIndex) + 1]];
-  NumberLength = numLimbs((int*)ptrStackValue);
-  IntArray2BigInteger((int*)ptrStackValue, pValueIm);
+  NumberLength = numLimbs(ptrStackValue);
+  IntArray2BigInteger(ptrStackValue, pValueIm);
 }
 
 static enum eExprErr setStackValue(const BigInteger* pValueRe, const BigInteger *pValueIm)
@@ -136,11 +136,11 @@ static enum eExprErr setStackValue(const BigInteger* pValueRe, const BigInteger 
     return EXPR_OUT_OF_MEMORY;
   }
   NumberLength = pValueRe->nbrLimbs;
-  BigInteger2IntArray((int*)&comprStackValues[currentOffset], pValueRe);
+  BigInteger2IntArray(&comprStackValues[currentOffset], pValueRe);
   currentOffset += pValueRe->nbrLimbs + 1;
   comprStackOffset[(2 * stackIndex) + 1] = currentOffset;
   NumberLength = pValueIm->nbrLimbs;
-  BigInteger2IntArray((int*)&comprStackValues[currentOffset], pValueIm);
+  BigInteger2IntArray(&comprStackValues[currentOffset], pValueIm);
   currentOffset += pValueIm->nbrLimbs + 1;
   comprStackOffset[(2 * stackIndex) + 2] = currentOffset;
   return EXPR_OK;
@@ -176,15 +176,15 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
         return EXPR_OUT_OF_MEMORY;
       }
       len = ((int)(unsigned char)*ptrRPNbuffer * 256) + (int)(unsigned char)*(ptrRPNbuffer + 1);
-      comprStackValues[currentOffset].x = len;
+      comprStackValues[currentOffset] = len;
       ptrRPNbuffer += 2;   // Skip length.
       nbrLenBytes = len * (int)sizeof(limb);
       (void)memcpy(&comprStackValues[currentOffset + 1], ptrRPNbuffer, nbrLenBytes);
       ptrRPNbuffer += nbrLenBytes;
       currentOffset += 1 + len;
       comprStackOffset[(2 * stackIndex) + 1] = currentOffset;
-      comprStackValues[currentOffset].x = 1;      // Imaginary part is zero.
-      comprStackValues[currentOffset + 1].x = 0;
+      comprStackValues[currentOffset] = 1;      // Imaginary part is zero.
+      comprStackValues[currentOffset + 1] = 0;
       comprStackOffset[(2 * stackIndex) + 2] = currentOffset + 2;
       break;
 
@@ -192,12 +192,12 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       ptrRPNbuffer++;                             // Skip token.
       stackIndex++;
       currentOffset = comprStackOffset[2 * stackIndex];
-      comprStackValues[currentOffset].x = 1;      // Real part is zero.
-      comprStackValues[currentOffset + 1].x = 0;
+      comprStackValues[currentOffset] = 1;      // Real part is zero.
+      comprStackValues[currentOffset + 1] = 0;
       currentOffset += 2;
       comprStackOffset[(2 * stackIndex) + 1] = currentOffset;
-      comprStackValues[currentOffset].x = 1;      // Imaginary part is one.
-      comprStackValues[currentOffset + 1].x = 1;
+      comprStackValues[currentOffset] = 1;      // Imaginary part is one.
+      comprStackValues[currentOffset + 1] = 1;
       comprStackOffset[(2 * stackIndex) + 2] = currentOffset + 2;
       break;
 

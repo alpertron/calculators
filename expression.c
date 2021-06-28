@@ -113,7 +113,7 @@ struct sFuncOperExpr stFuncOperIntExpr[] =
   {NULL, 0, 0},
 };
 
-static limb comprStackValues[COMPR_STACK_SIZE];
+static int comprStackValues[COMPR_STACK_SIZE];
 static int comprStackOffset[PAREN_STACK_SIZE];
 static limb fibon2[MAX_LEN];
 extern limb MontgomeryR1[MAX_LEN];
@@ -164,9 +164,9 @@ static int numLimbs(const int* pLen)
 
 static void getCurrentStackValue(BigInteger* pValue)
 {
-  limb* ptrStackValue = &comprStackValues[comprStackOffset[stackIndex]];
-  NumberLength = numLimbs((int*)ptrStackValue);
-  IntArray2BigInteger((int*)ptrStackValue, pValue);
+  int* ptrStackValue = &comprStackValues[comprStackOffset[stackIndex]];
+  NumberLength = numLimbs(ptrStackValue);
+  IntArray2BigInteger(ptrStackValue, pValue);
 }
 
 static enum eExprErr setStackValue(const BigInteger* pValue)
@@ -177,7 +177,7 @@ static enum eExprErr setStackValue(const BigInteger* pValue)
     return EXPR_OUT_OF_MEMORY;
   }
   NumberLength = pValue->nbrLimbs;
-  BigInteger2IntArray((int*)&comprStackValues[currentOffset], pValue);
+  BigInteger2IntArray(&comprStackValues[currentOffset], pValue);
   comprStackOffset[stackIndex + 1] = currentOffset + pValue->nbrLimbs + 1;
   return EXPR_OK;
 }
@@ -222,7 +222,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       {
         return EXPR_OUT_OF_MEMORY;
       }
-      comprStackValues[currentOffset].x = len;
+      comprStackValues[currentOffset] = len;
       ptrRPNbuffer += 2;   // Skip length.
       (void)memcpy(&comprStackValues[currentOffset+1], ptrRPNbuffer, nbrLenBytes);
       ptrRPNbuffer += nbrLenBytes;
