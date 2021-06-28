@@ -348,7 +348,7 @@ int RemDivBigNbrByInt(const limb *pDividend, int divisor, int nbrLen)
   {
     unsigned int dividend = (remainder << BITS_PER_INT_GROUP) +
       (unsigned int)ptrDividend->x;
-    double dDividend = ((double)remainder * dLimb) + ptrDividend->x;
+    double dDividend = ((double)remainder * dLimb) + (double)ptrDividend->x;
          // quotient has correct value or 1 more.
     unsigned int quotient = (unsigned int)((dDividend / dDivisor) + 0.5);
     remainder = dividend - (quotient * (unsigned int)divisor);
@@ -490,7 +490,7 @@ int BigNbrToBigInt(const BigInteger *pBigNbr, limb *pBigInt)
 {
   int nbrLenBigNbr = pBigNbr->nbrLimbs;
   int lenBigNbrBytes = nbrLenBigNbr * (int)sizeof(limb);
-  memcpy(pBigInt, pBigNbr->limbs, lenBigNbrBytes);
+  (void)memcpy(pBigInt, pBigNbr->limbs, lenBigNbrBytes);
   return nbrLenBigNbr;
 }
 
@@ -498,7 +498,7 @@ void BigIntToBigNbr(BigInteger *pBigNbr, const limb *pBigInt, int nbrLenBigInt)
 {
   int nbrLimbs;
   int lenBigIntBytes = nbrLenBigInt * (int)sizeof(limb);
-  memcpy(pBigNbr->limbs, pBigInt, lenBigIntBytes);
+  (void)memcpy(pBigNbr->limbs, pBigInt, lenBigIntBytes);
   const limb *ptrLimb = pBigNbr->limbs + nbrLenBigInt;
   nbrLimbs = nbrLenBigInt;
   do
