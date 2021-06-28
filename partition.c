@@ -24,7 +24,7 @@
 #include "expression.h"
 
 #define SQRT_MAX_VALUE_LIMB 46341
-static int partArray[100000 + 1000];
+static limb partArray[100000 + 1000];
 static limb prodModulus[MAX_LEN];
 static int prodModulusLimbs;
 static BigInteger prod;
@@ -96,17 +96,17 @@ void partition(int val, BigInteger *pResult)
         break; /* Prime found */
       }
     }
-    partArray[index] = currentPrime;
+    partArray[index].x = currentPrime;
   }
   // Perform modular arithmetic.
   for (index = val; index < (val + limbs); index++)
   {
-    currentPrime = partArray[index];
+    currentPrime = partArray[index].x;
     sum = 1;                          // Initialize p(0) mod currentPrime.
     for (k = 1; k <= val; k++)        // Generate all partition numbers
     {                                 // up to the one wanted.
       idx = k;
-      partArray[k - 1] = sum;         // Store p(k-1) mod currentPrime.
+      partArray[k - 1].x = sum;         // Store p(k-1) mod currentPrime.
       sum = 0;
       n = 1;
       for (;;)                        // Loop for n.
@@ -116,14 +116,14 @@ void partition(int val, BigInteger *pResult)
         {
           break;                      // Negative index, so go out.
         }
-        sum -= currentPrime - partArray[idx];
+        sum -= currentPrime - partArray[idx].x;
         sum += currentPrime & (sum >> 31);
         idx -= n;
         if (idx < 0)
         {
           break;                      // Negative index, so go out.
         }
-        sum -= currentPrime - partArray[idx];
+        sum -= currentPrime - partArray[idx].x;
         sum += currentPrime & (sum >> BITS_PER_GROUP);
         n++;
         idx -= n + n - 1;
@@ -131,19 +131,19 @@ void partition(int val, BigInteger *pResult)
         {
           break;                      // Negative index, so go out.
         }
-        sum -= partArray[idx];
+        sum -= partArray[idx].x;
         sum += currentPrime & (sum >> 31);
         idx -= n;
         if (idx < 0)
         {
           break;                      // Negative index, so go out.
         }
-        sum -= partArray[idx];
+        sum -= partArray[idx].x;
         sum += currentPrime & (sum >> 31);
         n++;
       }
     }
-    partArray[index + limbs] = sum;
+    partArray[index + limbs].x = sum;
   }
   // Reconstruct the result from p(val) mod all primes.
   // v_1 <- u_1 mod m_1
@@ -154,35 +154,37 @@ void partition(int val, BigInteger *pResult)
   //        (m_1 m_2 ... m_(r-1))^(-1) mod m_r
   //
   // u = v_r m_(r-1) ..m_2 m_1 + v_3 m_2 m_1 + v_2 m_1 + v_1
-  partArray[0] = partArray[val + limbs];
+  partArray[0].x = partArray[val + limbs].x;
   for (index = 1; index<limbs; index++)
   {
-    long numerator;
-    long prodmod;
-    currentPrime = partArray[val + index];
-    prodmod = 1;
+    limb numerator;
+    limb prodmod;
+    currentPrime = partArray[val + index].x;
+    prodmod.x = 1;
     for (k = index - 1; k >= 0; k--)
     {
-      smallmodmult(prodmod, partArray[val + k], (limb *)&prodmod, currentPrime);
+      smallmodmult(prodmod.x, partArray[val + k].x, &prodmod,
+        currentPrime);
     }
-    prodmod = modInv((int)prodmod, currentPrime);
-    numerator = partArray[index - 1];
+    prodmod.x = modInv(prodmod.x, currentPrime);
+    numerator.x = partArray[index - 1].x;
     for (k = index - 2; k >= 0; k--)
     {
-      smallmodmult(numerator, partArray[val + k], (limb *)&numerator, currentPrime);
-      numerator -= currentPrime - partArray[k];
-      numerator += currentPrime & (numerator >> 31);
+      smallmodmult(numerator.x, partArray[val + k].x, &numerator,
+        currentPrime);
+      numerator.x -= currentPrime - partArray[k].x;
+      numerator.x += currentPrime & (numerator.x >> 31);
     }
-    sum = partArray[val + limbs + index] - (int)numerator;
-    if (sum<0)
+    sum = partArray[val + limbs + index].x - numerator.x;
+    if (sum < 0)
     {
       sum += currentPrime;
     }
-    smallmodmult(sum, prodmod, (limb *)&partArray[index], currentPrime);
+    smallmodmult(sum, prodmod.x, &partArray[index], currentPrime);
   }
   // Use Chinese Remainder Theorem to find the partition number from
   // the partition number mod different primes.
-  pResult->limbs[0].x = partArray[0];
+  pResult->limbs[0].x = partArray[0].x;
   pResult->nbrLimbs = 1;
   pResult->sign = SIGN_POSITIVE;
   prodModulus[0].x = 1;
@@ -194,7 +196,7 @@ void partition(int val, BigInteger *pResult)
     unsigned int carry1 = 0;
     unsigned int carry2 = 0;
     // Update product of modulus by multiplying by next prime.
-    mult = partArray[val + index - 1];
+    mult = partArray[val + index - 1].x;
     for (idx = 0; idx < prodModulusLimbs; idx++)
     {
       smallMultiply(mult, prodModulus[idx].x, product);
@@ -210,7 +212,7 @@ void partition(int val, BigInteger *pResult)
     }
     // Update result.
     carry1 = 0;
-    mult = partArray[index];
+    mult = partArray[index].x;
     for (idx = 0; idx < prodModulusLimbs; idx++)
     {
       smallMultiply(mult, prodModulus[idx].x, product);
@@ -267,7 +269,7 @@ static enum eExprErr ProcessFactorsFactorial(double factorAccum,
     while ((nbrGroupsAccumulated & 1) == 0)
     {
       index--;
-      IntArray2BigInteger(&partArray[partArray[index]], &factor);
+      IntArray2BigInteger(&partArray[partArray[index].x].x, &factor);
       rc = BigIntMultiply(&prod, &factor, &prod);
       if (rc != EXPR_OK)
       {
@@ -275,11 +277,11 @@ static enum eExprErr ProcessFactorsFactorial(double factorAccum,
       }
       nbrGroupsAccumulated >>= 1;
     }
-    offset = partArray[index];
+    offset = partArray[index].x;
     if (result == NULL)
     {
       NumberLength = prod.nbrLimbs;
-      BigInteger2IntArray(&partArray[offset], &prod);
+      BigInteger2IntArray(&partArray[offset].x, &prod);
     }
     else
     {
@@ -289,11 +291,11 @@ static enum eExprErr ProcessFactorsFactorial(double factorAccum,
   else
   {     // Odd means that the Big Integer has to be stored into the buffer.
     index = numberofBitsSetToOne(nbrGroupsAccumulated) - 1;
-    offset = partArray[index];
+    offset = partArray[index].x;
     NumberLength = prod.nbrLimbs;
-    BigInteger2IntArray(&partArray[offset], &prod);
+    BigInteger2IntArray((int *)&partArray[offset], &prod);
   }
-  partArray[index + 1] = offset + partArray[offset] + 1;
+  partArray[index + 1].x = offset + partArray[offset].x + 1;
   return EXPR_OK;
 }
 
@@ -306,7 +308,7 @@ enum eExprErr factorial(BigInteger *result, int argument, int multifact)
   int nbrGroupsAccumulated = 1;
   double factorAccum = 1;
   double maxFactorAccum = (double)(1U << 30) * (double)(1U << 23);
-  partArray[0] = 20;     // Index of first big integer.
+  partArray[0].x = 20;     // Index of first big integer.
   if (argument == 0)
   {
     intToBigInteger(result, 1);
@@ -355,7 +357,7 @@ enum eExprErr primorial(BigInteger *result, int argument)
   unsigned int firstFactor = 1U << 30;
   unsigned int secondFactor = 1U << 23;
   double maxFactorAccum = (double)firstFactor * (double)secondFactor;
-  partArray[0] = 20;     // Index of first big integer.
+  partArray[0].x = 20;     // Index of first big integer.
   for (int ctr = 2; ctr <= argument; ctr++)
   {
     for (j = 2; (j*j) <= ctr; j++)
