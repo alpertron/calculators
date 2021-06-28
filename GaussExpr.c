@@ -319,7 +319,11 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       {
         return EXPR_INTERM_TOO_HIGH;
       }
-      primorial(&curStackRe, curStackRe.limbs[0].x);
+      retcode = primorial(&curStackRe, curStackRe.limbs[0].x);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
       break;
 
     case OPER_PLUS:
