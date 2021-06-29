@@ -415,7 +415,7 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   int fftLen;
   int fftLen1;
   int fftLen2 = 0;
-  int bitExternal;
+  unsigned int bitExternal;
   int power2plus1;
   int power2plus1Bytes;
   limb *ptrResult;
@@ -512,7 +512,7 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   sumLen = len1 + len2;
   sumLenBytes = sumLen * (int)sizeof(limb);
   (void)memset(result, 0, sumLenBytes);
-  bitExternal = 0;
+  bitExternal = 0U;
   ptrResult = result;
   for (index = 0; index < power2; index++)
   {
@@ -523,10 +523,11 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
     dCarry += floor((ptrProduct->real * invPower2) + 0.5);
     dQuot = floor(dCarry / (double)FFT_LIMB_RANGE);
     fftResult = (int)(dCarry - (dQuot * (double)FFT_LIMB_RANGE));
-    ptrResult->x |= (fftResult << bitExternal) & MAX_INT_NBR;
+    ptrResult->x |= UintToInt(((unsigned int)fftResult << bitExternal) & MAX_VALUE_LIMB);
     if (bitExternal > (BITS_PER_GROUP - FFT_LIMB_SIZE))
     {
-      (ptrResult+1)->x |= (fftResult >> (BITS_PER_GROUP - bitExternal)) & MAX_INT_NBR;
+      unsigned int shiftRight = (unsigned int)BITS_PER_GROUP - bitExternal;
+      (ptrResult+1)->x |= UintToInt(((unsigned int)fftResult >> shiftRight) & MAX_VALUE_LIMB);
     }
     bitExternal += FFT_LIMB_SIZE;
     if (bitExternal >= BITS_PER_GROUP)

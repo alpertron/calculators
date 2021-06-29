@@ -28,6 +28,7 @@
 #define TOKEN_GCD    32
 #define TOKEN_DER    33
 static int GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2);
+static int* stackValues[STACK_OPER_SIZE];
 
 struct sFuncOperExpr stFuncOperPolyExpr[] =
 {
@@ -726,7 +727,6 @@ void computePower(int expo)
 // Exponent: exponent (integer)
 int ComputePolynomial(const char* input, int expo)
 {
-  int* stackValues[STACK_OPER_SIZE];
   int stackIndex = 0;
   bool insideExpon = false;
   int* ptrValue1;
