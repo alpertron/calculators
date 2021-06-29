@@ -88,20 +88,11 @@ void textError(char **pptrOutput, enum eExprErr rc)
     copyStr(&ptrOut, lang ? "Detenido por el usuario" : "Stopped by user");
     break;
   case EXPR_VAR_OR_COUNTER_REQUIRED:
-    if (lang)
-    {
-      copyStr(&ptrOut, "La expresión ");
-      *ptrOut = (char)(expressionNbr + '0');
-      ptrOut++;
-      copyStr(&ptrOut, " debe incluir la variable <var>x</var> y/o el contador <var>c</var>");
-    }
-    else
-    {
-      copyStr(&ptrOut, "Expression #");
-      *ptrOut = (char)(expressionNbr + '0');
-      ptrOut++;
-      copyStr(&ptrOut, " must include the variable <var>x</var> and/or the counter <var>c</var>");
-    }
+    copyStr(&ptrOut, lang ? "La expresión ": "Expression #");
+    *ptrOut = (char)(expressionNbr + '0');
+    ptrOut++;
+    copyStr(&ptrOut, lang? " debe incluir la variable <var>x</var> y/o el contador <var>c</var>":
+      " must include the variable <var>x</var> and/or the counter <var>c</var>");
     break;
   default:
     break;

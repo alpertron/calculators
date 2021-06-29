@@ -127,7 +127,7 @@ static void findQuadraticSolution(BigInteger* pSolution, int exponent)
 {
   int expon = exponent;
   int bitMask = 1;
-  int *ptrSolution = (int *)pSolution->limbs;
+  limb *ptrSolution = pSolution->limbs;
   BigIntPowerOf2(&Q, expon);
   (void)memset(pSolution->limbs, 0, Q.nbrLimbs);
   while (expon > 0)
@@ -137,7 +137,7 @@ static void findQuadraticSolution(BigInteger* pSolution, int exponent)
     addbigint(&K1, -1);
     if ((Const.limbs[0].x & 1) != 0)
     {        // Const is odd.
-      *ptrSolution |= bitMask;
+      ptrSolution->x |= bitMask;
   // Const <- Quadr/2 + floor(Linear/2) + floor(Const/2) + 1
       BigIntDivideBy2(&Const);          // floor(Const/2)
       addbigint(&Const, 1);             // floor(Const/2) + 1

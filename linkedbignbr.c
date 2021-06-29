@@ -47,7 +47,7 @@ void getBigIntegerFromLinked(struct linkedBigInt* pstLinkedBigInt, BigInteger* p
 {
   int lenBytes;
   struct linkedBigInt* pstCurrentBigInt;
-  int* pLimb = (int *)&pBigInt->limbs[LIMBS_PER_LINKED_NODE-2];
+  limb* pLimb = &pBigInt->limbs[LIMBS_PER_LINKED_NODE-2];
   pBigInt->nbrLimbs = pstLinkedBigInt->node[0];
   pBigInt->sign = pstLinkedBigInt->node[1];
   lenBytes = (LIMBS_PER_LINKED_NODE - 2) * (int)sizeof(int);
