@@ -524,15 +524,15 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
     dQuot = floor(dCarry / (double)FFT_LIMB_RANGE);
     fftResult = (int)(dCarry - (dQuot * (double)FFT_LIMB_RANGE));
     ptrResult->x |= UintToInt(((unsigned int)fftResult << bitExternal) & MAX_VALUE_LIMB);
-    if (bitExternal > (BITS_PER_GROUP - FFT_LIMB_SIZE))
+    if ((int)bitExternal > (BITS_PER_GROUP - FFT_LIMB_SIZE))
     {
       unsigned int shiftRight = (unsigned int)BITS_PER_GROUP - bitExternal;
       (ptrResult+1)->x |= UintToInt(((unsigned int)fftResult >> shiftRight) & MAX_VALUE_LIMB);
     }
-    bitExternal += FFT_LIMB_SIZE;
-    if (bitExternal >= BITS_PER_GROUP)
+    bitExternal += (unsigned int)FFT_LIMB_SIZE;
+    if (bitExternal >= (unsigned int)BITS_PER_GROUP)
     {
-      bitExternal -= BITS_PER_GROUP;
+      bitExternal -= (unsigned int)BITS_PER_GROUP;
       ptrResult++;
       if ((ptrResult - result) == sumLen)
       {
@@ -546,15 +546,16 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
     ptrProduct++;
     dQuot = floor(dCarry / (double)FFT_LIMB_RANGE);
     fftResult = (int)(dCarry - (dQuot * (double)FFT_LIMB_RANGE));
-    ptrResult->x |= (fftResult << bitExternal) & MAX_INT_NBR;
-    if (bitExternal > (BITS_PER_GROUP - FFT_LIMB_SIZE))
+    ptrResult->x |= UintToInt(((unsigned int)fftResult << bitExternal) & MAX_VALUE_LIMB);
+    if ((int)bitExternal > (BITS_PER_GROUP - FFT_LIMB_SIZE))
     {
-      (ptrResult + 1)->x |= (fftResult >> (BITS_PER_GROUP - bitExternal)) & MAX_INT_NBR;
+      unsigned int shRight = (unsigned int)BITS_PER_GROUP - bitExternal;
+      (ptrResult + 1)->x |= UintToInt(((unsigned int)fftResult >> shRight) & MAX_VALUE_LIMB);
     }
-    bitExternal += FFT_LIMB_SIZE;
-    if (bitExternal >= BITS_PER_GROUP)
+    bitExternal += (unsigned int)FFT_LIMB_SIZE;
+    if (bitExternal >= (unsigned int)BITS_PER_GROUP)
     {
-      bitExternal -= BITS_PER_GROUP;
+      bitExternal -= (unsigned int)BITS_PER_GROUP;
       ptrResult++;
       if ((ptrResult - result) == sumLen)
       {
