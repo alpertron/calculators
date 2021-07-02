@@ -72,7 +72,7 @@ static void MultiplyBigNbrByMinPowerOf4(int *pPower4, const limb *number,
     shLeft++;
   }
   power2 = (power2 + shLeft) & 0xFFFFFFFE;
-  power4 = power2 / 2;
+  power4 = (int)power2 / 2;
   ptrDest = dest;
   if (power2 > (unsigned int)BITS_PER_GROUP)
   {
@@ -110,7 +110,6 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   int idx;
   limb prev;
   const limb *ptrApproxInvSqrt;
-  limb *ptrArrAux;
   unsigned int shRight;
   unsigned int shLeft;
   limb *ptrDest;
@@ -215,6 +214,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   {
     int limbLength;
     unsigned int prevLimb;
+    limb* ptrArrAux;
     bitLength = bitLengthCycle[bitLengthNbrCycles];
     limbLength = (bitLength + (3*BITS_PER_GROUP)-1) / BITS_PER_GROUP;
     if (limbLength > lenInvSqrt)
@@ -241,7 +241,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
     for (idx = limbLength; idx > 0; idx--)
     {
       currLimb = (unsigned int)ptrArrAux->x;
-      ptrArrAux->x = ((currLimb >> 1) | (prevLimb << shRight)) & (int)MAX_VALUE_LIMB;
+      ptrArrAux->x = UintToInt(((currLimb >> 1) | (prevLimb << shRight)) & MAX_VALUE_LIMB);
       ptrArrAux--;
       prevLimb = currLimb;
     }
