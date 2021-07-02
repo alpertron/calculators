@@ -788,15 +788,16 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   if (divisor == 2)
   {      // Use shifts for divisions by 2.
     limb* ptrDest = pBigInt->limbs;
-    int curLimb = ptrDest->x;
+    unsigned int curLimb = (unsigned int)ptrDest->x;
+    unsigned int shLeft = (unsigned int)BITS_PER_GROUP - 1U;
     for (int ctr = 1; ctr < nbrLimbs; ctr++)
     {  // Process starting from least significant limb.
-      int nextLimb = (ptrDest + 1)->x;
-      ptrDest->x = ((curLimb >> 1) | (nextLimb << (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
+      unsigned int nextLimb = (unsigned int)(ptrDest + 1)->x;
+      ptrDest->x = UintToInt(((curLimb >> 1) | (nextLimb << shLeft)) & MAX_VALUE_LIMB);
       ptrDest++;
       curLimb = nextLimb;
     }
-    ptrDest->x = (curLimb >> 1) & MAX_INT_NBR;
+    ptrDest->x = UintToInt((curLimb >> 1) & MAX_VALUE_LIMB);
   }
   else
   {
@@ -810,7 +811,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
       double dDividend = ((double)remainder * dLimb) + (double)pLimbs->x;
       double dQuotient = (dDividend * dInvDivisor) + 0.5;
       unsigned int quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
-      remainder = dividend - (quotient * divisor);
+      remainder = UintToInt(dividend - (quotient * (unsigned int)divisor));
       if (remainder < 0)
       {     // remainder not in range 0 <= remainder < divisor. Adjust.
         quotient--;
@@ -836,7 +837,8 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
   const limb *pLimb = &pBigInt->limbs[nbrLimbs - 1];
   for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
-    int dividend = (remainder << BITS_PER_INT_GROUP) + pLimb->x;
+    int dividend = UintToInt(((unsigned int)remainder << BITS_PER_INT_GROUP) +
+      (unsigned int)pLimb->x);
     double dDividend = ((double)remainder * dLimb) + (double)pLimb->x;
     double dQuotient = floor((dDividend / dDivisor) + 0.5);
     int quotient = (int)(unsigned int)dQuotient;   // quotient has correct value or 1 more.
@@ -1492,14 +1494,15 @@ void BigIntDivideBy2(BigInteger *nbr)
 void BigIntMultiplyBy2(BigInteger *nbr)
 {
   int nbrLimbs;
-  int prevLimb;
+  unsigned int prevLimb;
+  unsigned int shRight = (unsigned int)BITS_PER_GROUP - 1U;
   limb *ptrDest = &nbr->limbs[0];
   nbrLimbs = nbr->nbrLimbs;
-  prevLimb = 0;
+  prevLimb = 0U;
   for (int ctr = 0; ctr < nbrLimbs; ctr++)
   {  // Process starting from least significant limb.
-    int curLimb = ptrDest->x;
-    ptrDest->x = ((curLimb << 1) | (prevLimb >> (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
+    unsigned int curLimb = (unsigned int)ptrDest->x;
+    ptrDest->x = UintToInt(((curLimb << 1) | (prevLimb >> shRight)) & MAX_VALUE_LIMB);
     ptrDest++;
     prevLimb = curLimb;
   }
