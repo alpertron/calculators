@@ -1476,15 +1476,16 @@ void BigIntDivideBy2(BigInteger *nbr)
 {
   int nbrLimbs = nbr->nbrLimbs;
   limb *ptrDest = &nbr->limbs[0];
-  int curLimb = ptrDest->x;
+  unsigned int curLimb = (unsigned int)ptrDest->x;
+  unsigned int shLeft = (unsigned int)BITS_PER_GROUP - 1U;
   for (int ctr = 1; ctr < nbrLimbs; ctr++)
   {  // Process starting from least significant limb.
-    int nextLimb = (ptrDest + 1)->x;
-    ptrDest->x = ((curLimb >> 1) | (nextLimb << (BITS_PER_GROUP - 1))) & MAX_INT_NBR;
+    unsigned int nextLimb = (unsigned int)(ptrDest + 1)->x;
+    ptrDest->x = UintToInt(((curLimb >> 1) | (nextLimb << shLeft)) & MAX_VALUE_LIMB);
     ptrDest++;
     curLimb = nextLimb;
   }
-  ptrDest->x = (curLimb >> 1) & MAX_INT_NBR;
+  ptrDest->x = UintToInt((curLimb >> 1) & MAX_VALUE_LIMB);
   if ((nbrLimbs > 1) && (nbr->limbs[nbrLimbs - 1].x == 0))
   {
     nbr->nbrLimbs--;
@@ -1506,7 +1507,7 @@ void BigIntMultiplyBy2(BigInteger *nbr)
     ptrDest++;
     prevLimb = curLimb;
   }
-  if ((prevLimb & HALF_INT_RANGE) != 0)
+  if ((prevLimb & HALF_INT_RANGE_U) != 0U)
   {
     ptrDest->x = 1;
     nbr->nbrLimbs++;
@@ -1521,7 +1522,8 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
   int power2 = 0;
   int index;
   int index2;
-  int shRg;
+  unsigned int shRight;
+  unsigned int shLeft;
   int nbrLimbs = *pNbrLimbs;
   // Start from least significant limb (number zero).
   for (index = 0; index < nbrLimbs; index++)
@@ -1546,8 +1548,8 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
     power2++;
   }
   // Divide number by this power.
-  shRg = power2 % BITS_PER_GROUP; // Shift right bit counter
-  if ((number[nbrLimbs - 1].x & (-(1 << shRg))) != 0)
+  shRight = (unsigned int)power2 % (unsigned int)BITS_PER_GROUP; // Shift right bit counter
+  if (((unsigned int)number[nbrLimbs - 1].x & (0U - (1U << shRight))) != 0U)
   {   // Most significant bits set.
     *pNbrLimbs = nbrLimbs - index;
   }
@@ -1556,15 +1558,17 @@ void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs)
     *pNbrLimbs = nbrLimbs - index - 1;
   }
       // Move number shRg bits to the right.
+  shLeft = (unsigned int)BITS_PER_GROUP - shRight;
   for (index2 = index; index2 < (nbrLimbs-1); index2++)
   {
-    number[index2].x = ((number[index2].x >> shRg) |
-                        (number[index2+1].x << (BITS_PER_GROUP - shRg))) &
-                        MAX_VALUE_LIMB;
+    number[index2].x = UintToInt((((unsigned int)number[index2].x >> shRight) |
+                        ((unsigned int)number[index2+1].x << shLeft)) &
+                        MAX_VALUE_LIMB);
   }
   if (index2 < nbrLimbs)
   {
-    number[index2].x = (number[index2].x >> shRg) & MAX_VALUE_LIMB;
+    number[index2].x = UintToInt(((unsigned int)number[index2].x >> shRight) 
+      & MAX_VALUE_LIMB);
   }
   if (index > 0)
   {   // Move limbs to final position.
