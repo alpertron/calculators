@@ -2067,7 +2067,7 @@ void modmult(const limb *factor1, const limb *factor2, limb *product)
     smallmodmult(factor1->x, factor2->x, product, TestNbr[0].x);
     return;
   }
-  if (NumberLength <= 12)
+  if (NumberLength <= 11)
   {     // Small numbers.
     int j;
     int NumberLengthBytes;
