@@ -43,9 +43,10 @@ static void MultiplyBigNbrByMinPowerOf4(int *pPower4, const limb *number,
   int len, limb *dest)
 {
   int power4;
-  int power2 = 0;
+  unsigned int power2 = 0;
   limb mostSignficLimb;
-  int shLeft;
+  unsigned int shLeft;
+  unsigned int shRight;
   limb prevLimb;
   limb currLimb;
   limb *ptrDest;
@@ -54,13 +55,13 @@ static void MultiplyBigNbrByMinPowerOf4(int *pPower4, const limb *number,
   ptrSrc = number;
   if ((len & 1) != 0)
   {
-    power2 = BITS_PER_GROUP;
+    power2 = (unsigned int)BITS_PER_GROUP;
   }
   else
   {
-    power2 = 0;
+    power2 = 0U;
   }
-  shLeft = 0;
+  shLeft = 0U;
   mostSignficLimb.x = (number + len - 1)->x;
   for (unsigned int mask = LIMB_RANGE/2U; mask > 0U; mask >>= 1)
   {
@@ -70,12 +71,12 @@ static void MultiplyBigNbrByMinPowerOf4(int *pPower4, const limb *number,
     }
     shLeft++;
   }
-  power2 = (power2 + shLeft) & (-2);
+  power2 = (power2 + shLeft) & 0xFFFFFFFE;
   power4 = power2 / 2;
   ptrDest = dest;
-  if (power2 > BITS_PER_GROUP)
+  if (power2 > (unsigned int)BITS_PER_GROUP)
   {
-    shLeft = power2 - BITS_PER_GROUP;
+    shLeft = power2 - (unsigned int)BITS_PER_GROUP;
     ptrDest->x = 0;
     ptrDest++;
   }
@@ -85,12 +86,13 @@ static void MultiplyBigNbrByMinPowerOf4(int *pPower4, const limb *number,
   }
   // Multiply number by this power.
   prevLimb.x = 0;
+  shRight = (unsigned int)BITS_PER_GROUP - shLeft;
   for (int index2 = len; index2 >= 0; index2--)
   {
     currLimb.x = ptrSrc->x;
     ptrSrc++;
     ptrDest->x = UintToInt((((unsigned int)currLimb.x << shLeft) |
-      ((unsigned int)prevLimb.x >> (BITS_PER_GROUP - shLeft))) & MAX_VALUE_LIMB);
+      ((unsigned int)prevLimb.x >> shRight)) & MAX_VALUE_LIMB);
     ptrDest++;
     prevLimb.x = currLimb.x;
   }
@@ -109,12 +111,14 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   limb prev;
   const limb *ptrApproxInvSqrt;
   limb *ptrArrAux;
-  int shRight;
+  unsigned int shRight;
+  unsigned int shLeft;
   limb *ptrDest;
   const limb *ptrSrc;
   double invSqrt;
-  int currLimb;
+  unsigned int currLimb;
   int lenBytes;
+  int shRightBits;
 
   // If the number of limbs is even and the upper half of the number has all
   // limbs set to MAX_VALUE_LIMB, there could be overflow. Set the square root directly.
@@ -174,7 +178,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
     return;
   }
   // Adjust argument.
-  MultiplyBigNbrByMinPowerOf4(&shRight, argument, length, adjustedArgument);
+  MultiplyBigNbrByMinPowerOf4(&shRightBits, argument, length, adjustedArgument);
   if ((length % 2) != 0)
   {
     length++;   // Make number of limbs even.
@@ -210,7 +214,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   while (bitLengthNbrCycles >= 0)
   {
     int limbLength;
-    int prevLimb;
+    unsigned int prevLimb;
     bitLength = bitLengthCycle[bitLengthNbrCycles];
     limbLength = (bitLength + (3*BITS_PER_GROUP)-1) / BITS_PER_GROUP;
     if (limbLength > lenInvSqrt)
@@ -232,11 +236,12 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
     }
     ptrArrAux->x = 2 - ptrArrAux->x;
     // Divide arrAux by 2.
-    prevLimb = 0;
+    prevLimb = 0U;
+    shRight = (unsigned int)BITS_PER_GROUP - 1U;
     for (idx = limbLength; idx > 0; idx--)
     {
-      currLimb = ptrArrAux->x;
-      ptrArrAux->x = ((currLimb >> 1) | (prevLimb << (BITS_PER_GROUP - 1))) & (int)MAX_VALUE_LIMB;
+      currLimb = (unsigned int)ptrArrAux->x;
+      ptrArrAux->x = ((currLimb >> 1) | (prevLimb << shRight)) & (int)MAX_VALUE_LIMB;
       ptrArrAux--;
       prevLimb = currLimb;
     }
@@ -256,7 +261,8 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
     multiply(approxInvSqrt, adjustedArgument, approxInv, length, NULL);
   }             // approxInv holds the square root.
   lenInvSqrt2 = (length+1) / 2;
-  if (approxInv[(2 * lenInvSqrt) - lenInvSqrt2-2].x > (7 << (BITS_PER_GROUP-3)))
+  shLeft = (unsigned int)BITS_PER_GROUP - 3U;
+  if ((unsigned int)approxInv[(2 * lenInvSqrt) - lenInvSqrt2-2].x > (7U << shLeft))
   {                   // Increment square root.
     for (idx = (2 * lenInvSqrt) - lenInvSqrt2-1; idx < (2*lenInvSqrt)-1; idx++)
     {
@@ -305,12 +311,14 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   length = (length + 1) / 2;
   *pLenSqRoot = length;
   // Shift right shRight bits into result.
+  shRight = (unsigned int)shRightBits;
   ptrSrc = &approxInv[(2 * lenInvSqrt) - *pLenSqRoot - 1 + length - 1];
   ptrDest = sqRoot + length - 1;
   prev.x = 0;
+  shLeft = (unsigned int)BITS_PER_GROUP - shRight;
   for (index = length; index > 0; index--)
   {
-    ptrDest->x = UintToInt((((unsigned int)prev.x << (BITS_PER_GROUP - shRight)) |
+    ptrDest->x = UintToInt((((unsigned int)prev.x << shLeft) |
       ((unsigned int)ptrSrc->x >> shRight)) & MAX_VALUE_LIMB);
     ptrDest--;
     prev.x = ptrSrc->x;

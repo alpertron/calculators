@@ -1,5 +1,7 @@
 # Use PHP5.4 as default
 #AddHandler application/x-httpd-php54 .php
+AddHandler cgi-script .pl
+Options +ExecCGI
 
 <IfModule mod_mime.c>
 AddType image/x-icon .ico
