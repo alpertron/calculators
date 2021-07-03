@@ -2136,13 +2136,14 @@ double getMantissa(const limb *ptrLimb, int nbrLimbs)
 
 void BigIntPowerOf2(BigInteger *pResult, int exponent)
 {
+  unsigned int power2 = (unsigned int)exponent % (unsigned int)BITS_PER_GROUP;
   int nbrLimbs = exponent / BITS_PER_GROUP;
   if (nbrLimbs > 0)
   {
     int nbrLimbsBytes = nbrLimbs * (int)sizeof(limb);
     (void)memset(pResult->limbs, 0, nbrLimbsBytes);
   }
-  pResult->limbs[nbrLimbs].x = 1 << (exponent % BITS_PER_GROUP);
+  pResult->limbs[nbrLimbs].x = UintToInt(1U << power2);
   pResult->nbrLimbs = nbrLimbs + 1;
   pResult->sign = SIGN_POSITIVE;
 }
@@ -2157,9 +2158,10 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   int numLimbs = *pNbrLimbs;
   int index;
   int power2gr;
-  int shRg;
-  limb prevLimb;
-  limb currLimb;
+  unsigned int shRight;
+  unsigned int shLeft;
+  unsigned int prevLimb;
+  unsigned int currLimb;
   // Start from least significant limb (number zero).
   for (index = 0; index < numLimbs; index++)
   {
@@ -2177,20 +2179,21 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
     }
     powerOf2++;
   }
-  powerOf4 = powerOf2 >> 1;
+  powerOf4 = powerOf2 / 2;
   // Divide value by this power.
   power2gr = powerOf2 % (2 * BITS_PER_GROUP);
-  shRg = (power2gr & (-2)) % BITS_PER_GROUP; // Shift right bit counter
+  shRight = UintToInt((power2gr & (-2)) % BITS_PER_GROUP); // Shift right bit counter
   if (power2gr == BITS_PER_GROUP)
   {
     index--;
   }
-  prevLimb.x = 0;
+  prevLimb = 0U;
+  shLeft = (unsigned int)BITS_PER_GROUP - shRight;
   for (int index2 = numLimbs - 1; index2 >= index; index2--)
   {
-    currLimb.x = (value + index2)->x;
-    (value + index2)->x = ((currLimb.x >> shRg) | (prevLimb.x << (BITS_PER_GROUP - shRg))) & MAX_VALUE_LIMB;
-    prevLimb.x = currLimb.x;
+    currLimb = (unsigned int)(value + index2)->x;
+    (value + index2)->x = ((currLimb >> shRight) | (prevLimb << shLeft)) & MAX_VALUE_LIMB;
+    prevLimb = currLimb;
   }
   if (index != 0)
   {
@@ -2208,20 +2211,25 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   *pPower4 = powerOf4;
 }
 
-static void InternalBigIntLogical(const BigInteger *firstArg,
-  const BigInteger *secondArg, BigInteger *result, enum eOper operation)
+static void InternalBigIntLogical(const BigInteger *firstArgum,
+  const BigInteger *secondArgum, BigInteger *result, enum eOper operation)
 {
+  const BigInteger* firstArg;
+  const BigInteger* secondArg;
   int idx;
   int carryFirst = 0;
   int carrySecond = 0;
   int limbFirst;
   int limbSecond;
-  const BigInteger *tmpptr;
-  if (firstArg->nbrLimbs < secondArg->nbrLimbs)
+  if (firstArgum->nbrLimbs < secondArgum->nbrLimbs)
   {    // After the exchange, firstArg has not fewer limbs than secondArg.
-    tmpptr = firstArg;
-    firstArg = secondArg;
-    secondArg = tmpptr;
+    firstArg = secondArgum;
+    secondArg = firstArgum;
+  }
+  else
+  {
+    firstArg = firstArgum;
+    secondArg = secondArgum;
   }
   for (idx = 0; idx < secondArg->nbrLimbs; idx++)
   {
@@ -2360,12 +2368,12 @@ void ConvertToTwosComplement(BigInteger *value)
   }
   if (idx < nbrLimbs)
   {
-    ptrLimb->x = 0x80000000 - ptrLimb->x;
+    ptrLimb->x = UintToInt(LIMB_RANGE - (unsigned int)ptrLimb->x);
     ptrLimb++;
   }
   for (; idx < nbrLimbs; idx++)
   {
-    ptrLimb->x = 0x7FFFFFFF - ptrLimb->x;
+    ptrLimb->x = MAX_INT_NBR - ptrLimb->x;
     ptrLimb++;
   }
 }
