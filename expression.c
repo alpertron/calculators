@@ -1451,19 +1451,20 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
     // Shift right the absolute value.
     first->limbs[nbrLimbs].x = 0;
     ptrSrc = &first->limbs[delta+1].x;
-    prevLimb = *(ptrSrc-1);
-    curLimb = *ptrSrc;
+    prevLimb = (unsigned int)*(ptrSrc-1);
+    curLimb = (unsigned int)*ptrSrc;
     ptrDest = &result->limbs[0].x;
-
+    shLeft = (unsigned int)rem;
+    shRight = (unsigned int)BITS_PER_GROUP - shLeft;
     for (ctr = delta; ctr < nbrLimbs; ctr++)
     {  // Process starting from least significant limb.
-      *ptrDest = ((prevLimb >> rem) | (curLimb << (BITS_PER_GROUP - rem))) & MAX_INT_NBR;
+      *ptrDest = ((prevLimb >> shLeft) | (curLimb << shRight)) & MAX_INT_NBR;
       ptrDest++;
       prevLimb = curLimb;
       ptrSrc++;
-      curLimb = *ptrSrc;
+      curLimb = (unsigned int)*ptrSrc;
     }
-    *ptrDest = ((prevLimb >> rem) | (curLimb << (BITS_PER_GROUP - rem))) & MAX_INT_NBR;
+    *ptrDest = ((prevLimb >> shLeft) | (curLimb << shRight)) & MAX_INT_NBR;
     result->nbrLimbs = first->nbrLimbs - (delta + 1);
     if ((result->nbrLimbs == 0) || (result->limbs[result->nbrLimbs].x))
     {
