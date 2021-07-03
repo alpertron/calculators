@@ -1378,8 +1378,10 @@ static enum eExprErr ComputeRevDigits(void)
 static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigInteger *result)
 {
   int ctr;
-  int prevLimb;
-  int curLimb;
+  unsigned int prevLimb;
+  unsigned int curLimb;
+  unsigned int shRight;
+  unsigned int shLeft;
   int *ptrDest;
   const int *ptrSrc;
   int shiftCtr = second->limbs[0].x;
@@ -1400,20 +1402,21 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
     {   // Shift too much to the left.
       return EXPR_INTERM_TOO_HIGH;
     }
-    prevLimb = 0;
+    prevLimb = 0U;
     ptrSrc = &first->limbs[nbrLimbs - 1].x;
-    curLimb = *ptrSrc;
+    curLimb = (unsigned int)*ptrSrc;
     ptrDest = &result->limbs[nbrLimbs+delta].x;
-
+    shLeft = (unsigned int)rem;
+    shRight = (unsigned int)BITS_PER_GROUP - shLeft;
     for (ctr = nbrLimbs; ctr > 0; ctr--)
     {  // Process starting from most significant limb.
-      *ptrDest = ((curLimb >> (BITS_PER_GROUP - rem)) | (prevLimb << rem)) & MAX_INT_NBR;
+      *ptrDest = UintToInt(((curLimb >> shRight) | (prevLimb << shLeft)) & MAX_VALUE_LIMB);
       ptrDest--;
       prevLimb = curLimb;
       ptrSrc--;
-      curLimb = *ptrSrc;
+      curLimb = (unsigned int)*ptrSrc;
     }
-    *ptrDest = ((curLimb >> (BITS_PER_GROUP - rem)) | (prevLimb << rem)) & MAX_INT_NBR;
+    *ptrDest = UintToInt(((curLimb >> shRight) | (prevLimb << shLeft)) & MAX_VALUE_LIMB);
     if (delta > 0)
     {
       int lenBytes = delta * (int)sizeof(limb);
