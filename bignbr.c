@@ -2161,7 +2161,6 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   unsigned int shRight;
   unsigned int shLeft;
   unsigned int prevLimb;
-  unsigned int currLimb;
   // Start from least significant limb (number zero).
   for (index = 0; index < numLimbs; index++)
   {
@@ -2191,7 +2190,7 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   shLeft = (unsigned int)BITS_PER_GROUP - shRight;
   for (int index2 = numLimbs - 1; index2 >= index; index2--)
   {
-    currLimb = (unsigned int)(value + index2)->x;
+    unsigned int currLimb = (unsigned int)(value + index2)->x;
     (value + index2)->x = ((currLimb >> shRight) | (prevLimb << shLeft)) & MAX_VALUE_LIMB;
     prevLimb = currLimb;
   }
