@@ -1458,13 +1458,13 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
     shRight = (unsigned int)BITS_PER_GROUP - shLeft;
     for (ctr = delta; ctr < nbrLimbs; ctr++)
     {  // Process starting from least significant limb.
-      *ptrDest = ((prevLimb >> shLeft) | (curLimb << shRight)) & MAX_INT_NBR;
+      *ptrDest = UintToInt(((prevLimb >> shLeft) | (curLimb << shRight)) & MAX_VALUE_LIMB);
       ptrDest++;
       prevLimb = curLimb;
       ptrSrc++;
       curLimb = (unsigned int)*ptrSrc;
     }
-    *ptrDest = ((prevLimb >> shLeft) | (curLimb << shRight)) & MAX_INT_NBR;
+    *ptrDest = UintToInt(((prevLimb >> shLeft) | (curLimb << shRight)) & MAX_VALUE_LIMB);
     result->nbrLimbs = first->nbrLimbs - (delta + 1);
     if ((result->nbrLimbs == 0) || (result->limbs[result->nbrLimbs].x))
     {
