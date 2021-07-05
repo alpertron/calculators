@@ -328,7 +328,7 @@ static int HalveDifference(limb* first, const limb* second, int length)
     currLimb = UintToInt((unsigned int)borrow & MAX_VALUE_LIMB);
     borrow >>= BITS_PER_GROUP;
     (first + i - 1)->x = UintToInt((((unsigned int)prevLimb >> 1) |
-      ((unsigned int)currLimb << (BITS_PER_GROUP - 1))) & MAX_VALUE_LIMB);
+      ((unsigned int)currLimb << BITS_PER_GROUP_MINUS_1)) & MAX_VALUE_LIMB);
     prevLimb = currLimb;
   }
   (first + i - 1)->x = UintToInt((unsigned int)prevLimb >> 1);
@@ -577,7 +577,7 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
       //  7.   k <- k + 1
       // Adjust variables.
       steps++;
-      if (steps == (BITS_PER_GROUP - 1))
+      if (steps == BITS_PER_GROUP_MINUS_1)
       {  // compute now U and V and reset e, f, g and h.
          // U' <- eU + fV, V' <- gU + hV
         int lenBytes;
@@ -606,7 +606,8 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
             {     // U is even.
               for (i = 0; i < lenU; i++)
               {  // Loop that divides U by 2.
-                U[i].x = UintToInt((((unsigned int)U[i].x >> 1) | ((unsigned int)U[i + 1].x << (BITS_PER_GROUP - 1))) &
+                U[i].x = UintToInt((((unsigned int)U[i].x >> 1) |
+                  ((unsigned int)U[i + 1].x << BITS_PER_GROUP_MINUS_1)) &
                   MAX_VALUE_LIMB);
               }
               if (U[lenU - 1].x == 0)
@@ -622,7 +623,8 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
             {    // V is even.
               for (i = 0; i < lenV; i++)
               {  // Loop that divides V by 2.
-                V[i].x = UintToInt((((unsigned int)V[i].x >> 1) | ((unsigned int)V[i + 1].x << (BITS_PER_GROUP - 1))) &
+                V[i].x = UintToInt((((unsigned int)V[i].x >> 1) |
+                  ((unsigned int)V[i + 1].x << BITS_PER_GROUP_MINUS_1)) &
                   MAX_VALUE_LIMB);
               }
               if (V[lenV - 1].x == 0)
@@ -666,7 +668,7 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
             }
             //  7.   k <- k + 1
             k++;
-            if (k % (BITS_PER_GROUP - 1) == 0)
+            if (k % BITS_PER_GROUP_MINUS_1 == 0)
             {
               break;
             }
@@ -680,8 +682,9 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
         {
           k += steps;
           for (i = 0; i < lenU; i++)
-          {  // Loop that divides U by 2^(BITS_PER_GROUP - 1).
-            U[i].x = UintToInt((((unsigned int)U[i].x >> (BITS_PER_GROUP - 1)) | ((unsigned int)U[i + 1].x << 1)) &
+          {  // Loop that divides U by 2^BITS_PER_GROUP_MINUS_1.
+            U[i].x = UintToInt((((unsigned int)U[i].x >> BITS_PER_GROUP_MINUS_1) |
+              ((unsigned int)U[i + 1].x << 1)) &
               MAX_VALUE_LIMB);
           }
           U[lenU].x = 0;
@@ -690,8 +693,9 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
             lenU--;
           }
           for (i = 0; i < lenV; i++)
-          {  // Loop that divides V by 2^(BITS_PER_GROUP - 1).
-            V[i].x = UintToInt((((unsigned int)V[i].x >> (BITS_PER_GROUP - 1)) | ((unsigned int)V[i + 1].x << 1)) &
+          {  // Loop that divides V by 2^BITS_PER_GROUP_MINUS_1.
+            V[i].x = UintToInt((((unsigned int)V[i].x >> BITS_PER_GROUP_MINUS_1) |
+              ((unsigned int)V[i + 1].x << 1)) &
               MAX_VALUE_LIMB);
           }
           V[lenV].x = 0;
@@ -763,7 +767,7 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
       }
       //  7.   k <- k + 1
       steps++;
-      if (steps == (BITS_PER_GROUP - 1))
+      if (steps == BITS_PER_GROUP_MINUS_1)
       {  // compute now R and S and reset a, b, c and d.
          // R' <- aR + bS, S' <- cR + dS
         AddMult(R, a, b, S, c, d, nbrLen + 1);
@@ -973,7 +977,7 @@ void BigIntGeneralModularDivision(const BigInteger* Num, const BigInteger* Den,
   modmult(aux3, aux4, resultModOdd);          // resultModOdd <- Num / Dev in standard notation.
 
   // Compute inverse mod power of 2.
-  NumberLength = (shRight + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
+  NumberLength = (shRight + BITS_PER_GROUP_MINUS_1) / BITS_PER_GROUP;
   CompressLimbsBigInteger(aux3, Den);
   ComputeInversePower2(aux3, aux4, aux);
   powerOf2Exponent = shRight;
@@ -1022,7 +1026,7 @@ enum eExprErr BigIntGeneralModularPower(const BigInteger* base, const BigInteger
       lenBytes = (NumberLength - 1) * (int)sizeof(limb);
       (void)memset(&MontgomeryMultR1[1], 0, lenBytes);
     }
-    NumberLength = (shRight + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
+    NumberLength = (shRight + BITS_PER_GROUP_MINUS_1) / BITS_PER_GROUP;
     CompressLimbsBigInteger(aux3, base);
     powerOf2Exponent = shRight;
     modPowLimb(aux3, exponent->limbs, resultModPower2);

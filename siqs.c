@@ -1158,7 +1158,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
         }
         dRem = 0;
         // Perform division
-        dLimbMult = (double)(1U << BITS_PER_INT_GROUP);
+        dLimbMult = (double)(1U << BITS_PER_GROUP);
         dCurrentPrime = (double)divis;
         switch (NumberLengthDividend)
         {
@@ -1218,7 +1218,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
           mostSignificantLimbZero = (biR2 == 0);
           break;
         case 2:    // Criteria is to fit in a double (52 bits).
-          mostSignificantLimbZero = (biR1 < (1 << (52 - BITS_PER_INT_GROUP)));
+          mostSignificantLimbZero = (biR1 < (1 << (52 - BITS_PER_GROUP)));
           break;
         default:
           break;
@@ -1226,9 +1226,9 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
         if (mostSignificantLimbZero)
         {
           NumberLengthDividend--;
-          if ((NumberLengthDividend <= 2) && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
+          if ((NumberLengthDividend <= 2) && (biR1 < (1 << (52 - BITS_PER_GROUP))))
           {       // Number fits in a double.
-            double dDividend = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
+            double dDividend = (double)biR1 * (double)(1U << BITS_PER_GROUP) + (double)biR0;
             int sqrtDivid = (int)(floor(sqrt((double)dDividend)));
             rowPrimeSieveData = primeSieveData + index;
             for (; index < common.siqs.nbrFactorBasePrimes; index++)
@@ -1442,7 +1442,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
         }
         dRem = 0;
         // Perform division
-        dLimbMult = (double)(1U << BITS_PER_INT_GROUP);
+        dLimbMult = (double)(1U << BITS_PER_GROUP);
         dCurrentPrime = (double)divis;
         switch (NumberLengthDividend)
         {
@@ -1503,7 +1503,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
           mostSignificantLimbZero = (biR2 == 0);
           break;
         case 2:    // Criteria is to fit in a double (52 bits).
-          mostSignificantLimbZero = (biR1 < (1 << (52 - BITS_PER_INT_GROUP)));
+          mostSignificantLimbZero = (biR1 < (1 << (52 - BITS_PER_GROUP)));
           break;
         default:
           break;
@@ -1511,9 +1511,9 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
         if (mostSignificantLimbZero)
         {
           NumberLengthDividend--;
-          if ((NumberLengthDividend <= 2) && (biR1 < (1 << (52 - BITS_PER_INT_GROUP))))
+          if ((NumberLengthDividend <= 2) && (biR1 < (1 << (52 - BITS_PER_GROUP))))
           {        // Number fits in a double.
-            double dDividend = (double)biR1 * (double)(1U << BITS_PER_INT_GROUP) + (double)biR0;
+            double dDividend = (double)biR1 * (double)(1U << BITS_PER_GROUP) + (double)biR0;
             int sqrtDivid = (int)floor(sqrt(dDividend));
             for (; index < common.siqs.nbrFactorBasePrimes; index++)
             {
@@ -1548,7 +1548,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
               }
               if (Divisor > sqrtDivid)
               {                     // End of trial division.
-                if (dDividend >= (double)(1U << BITS_PER_INT_GROUP))
+                if (dDividend >= (double)(1U << BITS_PER_GROUP))
                 {                   // Dividend is too large.
                   return 0;
                 }
@@ -1591,7 +1591,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
               }
               rowPrimeSieveData++;
             }
-            if (dDividend >= (double)(1U << BITS_PER_INT_GROUP))
+            if (dDividend >= (double)(1U << BITS_PER_GROUP))
             {                   // Dividend is too large.
               return 0;
             }
@@ -2282,7 +2282,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
     rowPrimeTrialDivisionData->value = common.siqs.multiplier;
     rowPrimeSieveData->modsqrt = 0;
     // The following works because multiplier has less than 16 significant bits.
-    E = (int)((1U << BITS_PER_INT_GROUP) % common.siqs.multiplier);
+    E = (int)((1U << BITS_PER_GROUP) % common.siqs.multiplier);
     rowPrimeTrialDivisionData->exp1 = E;  // (2^31) mod multiplier
     D = E * E % common.siqs.multiplier;
     rowPrimeTrialDivisionData->exp2 = D;  // (2^31)^2 mod multiplier
@@ -2317,7 +2317,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
       rowPrimeSieveData->value = currentPrime;
       rowPrimeTrialDivisionData->value = currentPrime;
       // The following works because multiplier has less than 26 significant bits.
-      dBase = (double)((1U << BITS_PER_INT_GROUP) % currentPrime);
+      dBase = (double)((1U << BITS_PER_GROUP) % currentPrime);
       rowPrimeTrialDivisionData->exp1 = (int)dBase;  // (2^31) mod currentPrime
       dCurrentPrime = (double)currentPrime;
       dPower = dBase * dBase;

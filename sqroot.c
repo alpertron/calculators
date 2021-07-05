@@ -237,11 +237,11 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
     ptrArrAux->x = 2 - ptrArrAux->x;
     // Divide arrAux by 2.
     prevLimb = 0U;
-    shRight = (unsigned int)BITS_PER_GROUP - 1U;
     for (idx = limbLength; idx > 0; idx--)
     {
       currLimb = (unsigned int)ptrArrAux->x;
-      ptrArrAux->x = UintToInt(((currLimb >> 1) | (prevLimb << shRight)) & MAX_VALUE_LIMB);
+      ptrArrAux->x = UintToInt(((currLimb >> 1) | (prevLimb << BITS_PER_GROUP_MINUS_1)) &
+        MAX_VALUE_LIMB);
       ptrArrAux--;
       prevLimb = currLimb;
     }

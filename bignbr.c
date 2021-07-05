@@ -89,7 +89,7 @@ void SubtractBigInt(const limb *pMinuend, const limb *pSubtrahend, limb *pDiff, 
   for (int i = 0; i < nbrLimbs; i++)
   {
     borrow = (unsigned int)ptrMinuend->x - (unsigned int)ptrSubtrahend->x - 
-      (borrow >> BITS_PER_INT_GROUP);
+      (borrow >> BITS_PER_GROUP);
     ptrMinuend++;
     ptrSubtrahend++;
     ptrDiff->x = UintToInt(borrow & MAX_VALUE_LIMB);
@@ -228,7 +228,7 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
     for (ctr = 0; ctr < nbrLimbs; ctr++)
     {
       borrow = (unsigned int)ptrAddend1->x - (unsigned int)ptrAddend2->x -
-        (borrow >> BITS_PER_INT_GROUP);
+        (borrow >> BITS_PER_GROUP);
       ptrSum->x = UintToInt(borrow & MAX_VALUE_LIMB);
       ptrAddend1++;
       ptrAddend2++;
@@ -237,7 +237,7 @@ static void InternalBigIntAdd(const BigInteger *pAdd1, const BigInteger *pAdd2,
     nbrLimbs = pAddend1->nbrLimbs;
     for (; ctr < nbrLimbs; ctr++)
     {
-      borrow = (unsigned int)ptrAddend1->x - (borrow >> BITS_PER_INT_GROUP);
+      borrow = (unsigned int)ptrAddend1->x - (borrow >> BITS_PER_GROUP);
       ptrSum->x = UintToInt(borrow & MAX_VALUE_LIMB);
       ptrAddend1++;
       ptrSum++;
@@ -789,11 +789,11 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   {      // Use shifts for divisions by 2.
     limb* ptrDest = pBigInt->limbs;
     unsigned int curLimb = (unsigned int)ptrDest->x;
-    unsigned int shLeft = (unsigned int)BITS_PER_GROUP - 1U;
     for (int ctr = 1; ctr < nbrLimbs; ctr++)
     {  // Process starting from least significant limb.
       unsigned int nextLimb = (unsigned int)(ptrDest + 1)->x;
-      ptrDest->x = UintToInt(((curLimb >> 1) | (nextLimb << shLeft)) & MAX_VALUE_LIMB);
+      ptrDest->x = UintToInt(((curLimb >> 1) | (nextLimb << BITS_PER_GROUP_MINUS_1)) & 
+        MAX_VALUE_LIMB);
       ptrDest++;
       curLimb = nextLimb;
     }
@@ -806,7 +806,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
     // Divide number by divisor.
     for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
     {
-      unsigned int dividend = ((unsigned int)remainder << BITS_PER_INT_GROUP) + 
+      unsigned int dividend = ((unsigned int)remainder << BITS_PER_GROUP) + 
         (unsigned int)pLimbs->x;
       double dDividend = ((double)remainder * dLimb) + (double)pLimbs->x;
       double dQuotient = (dDividend * dInvDivisor) + 0.5;
@@ -837,7 +837,7 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
   const limb *pLimb = &pBigInt->limbs[nbrLimbs - 1];
   for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
-    int dividend = UintToInt(((unsigned int)remainder << BITS_PER_INT_GROUP) +
+    int dividend = UintToInt(((unsigned int)remainder << BITS_PER_GROUP) +
       (unsigned int)pLimb->x);
     double dDividend = ((double)remainder * dLimb) + (double)pLimb->x;
     double dQuotient = floor((dDividend / dDivisor) + 0.5);
@@ -1477,11 +1477,11 @@ void BigIntDivideBy2(BigInteger *nbr)
   int nbrLimbs = nbr->nbrLimbs;
   limb *ptrDest = &nbr->limbs[0];
   unsigned int curLimb = (unsigned int)ptrDest->x;
-  unsigned int shLeft = (unsigned int)BITS_PER_GROUP - 1U;
   for (int ctr = 1; ctr < nbrLimbs; ctr++)
   {  // Process starting from least significant limb.
     unsigned int nextLimb = (unsigned int)(ptrDest + 1)->x;
-    ptrDest->x = UintToInt(((curLimb >> 1) | (nextLimb << shLeft)) & MAX_VALUE_LIMB);
+    ptrDest->x = UintToInt(((curLimb >> 1) | (nextLimb << BITS_PER_GROUP_MINUS_1)) &
+      MAX_VALUE_LIMB);
     ptrDest++;
     curLimb = nextLimb;
   }
@@ -1496,14 +1496,14 @@ void BigIntMultiplyBy2(BigInteger *nbr)
 {
   int nbrLimbs;
   unsigned int prevLimb;
-  unsigned int shRight = (unsigned int)BITS_PER_GROUP - 1U;
   limb *ptrDest = &nbr->limbs[0];
   nbrLimbs = nbr->nbrLimbs;
   prevLimb = 0U;
   for (int ctr = 0; ctr < nbrLimbs; ctr++)
   {  // Process starting from least significant limb.
     unsigned int curLimb = (unsigned int)ptrDest->x;
-    ptrDest->x = UintToInt(((curLimb << 1) | (prevLimb >> shRight)) & MAX_VALUE_LIMB);
+    ptrDest->x = UintToInt(((curLimb << 1) | (prevLimb >> BITS_PER_GROUP_MINUS_1)) &
+      MAX_VALUE_LIMB);
     ptrDest++;
     prevLimb = curLimb;
   }

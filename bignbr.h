@@ -24,8 +24,8 @@
 #else
 #define MAX_LEN 2500         // 20000 digits
 #endif
-#define BITS_PER_GROUP        31
-#define BITS_PER_INT_GROUP    31
+#define BITS_PER_GROUP         31
+#define BITS_PER_GROUP_MINUS_1 30
 #define HALF_INT_RANGE        0x40000000
 #define HALF_INT_RANGE_U      0x40000000U
 #define FOURTH_INT_RANGE      0x20000000
