@@ -668,7 +668,7 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
             }
             //  7.   k <- k + 1
             k++;
-            if (k % BITS_PER_GROUP_MINUS_1 == 0)
+            if ((k % BITS_PER_GROUP_MINUS_1) == 0)
             {
               break;
             }

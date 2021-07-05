@@ -466,7 +466,7 @@ double log(double x)
   hx += 0x3ff00000 - 0x3fe6a09e;
   k += (int)(hx>>20) - 0x3ff;
   hx = (hx&0x000fffff) + 0x3fe6a09e;
-  u.i = (uint64_t)hx<<32 | (u.i&0xffffffff);
+  u.i = ((uint64_t)hx<<32) | (u.i&0xffffffff);
   x = u.f;
 
   f = x - 1.0;
@@ -474,11 +474,11 @@ double log(double x)
   s = f/(2.0+f);
   z = s*s;
   w = z*z;
-  t1 = w*(Lg2+w*(Lg4+w*Lg6));
-  t2 = z*(Lg1+w*(Lg3+w*(Lg5+w*Lg7)));
+  t1 = w*(Lg2+w*(Lg4+(w*Lg6)));
+  t2 = z*(Lg1+w*(Lg3+w*(Lg5+(w*Lg7))));
   R = t2 + t1;
   dk = k;
-  return s*(hfsq+R) + dk*ln2_lo - hfsq + f + dk*ln2_hi;
+  return (s*(hfsq+R)) + (dk*ln2_lo) - hfsq + f + (dk*ln2_hi);
 }
 
 static const double half[2] = {0.5,-0.5};
@@ -512,13 +512,13 @@ double exp(double x)
   {  /* if |x| > 0.5 ln2 */
     if (hx >= 0x3ff0a2b2)
     {/* if |x| >= 1.5 ln2 */
-      k = (int)(invln2 * x + half[sign]);
+      k = (int)((invln2 * x) + half[sign]);
     }
     else
     {
       k = 1 - sign - sign;
     }
-    hi = x - k*ln2hi;  /* k*ln2hi is exact here */
+    hi = x - (k*ln2hi);  /* k*ln2hi is exact here */
     lo = k*ln2lo;
     x = hi - lo;
   }
@@ -536,7 +536,7 @@ double exp(double x)
 
   /* x is now in primary range */
   xx = x*x;
-  c = x - xx*(P1+xx*(P2+xx*(P3+xx*(P4+xx*P5))));
+  c = x - xx*(P1+xx*(P2+xx*(P3+xx*(P4+(xx*P5)))));
   y = 1 + (x*c/(2-c) - lo + hi);
   if (k == 0)
   {
