@@ -155,7 +155,7 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
         for (; j >= 0; j--)
         {
 #ifdef _USING64BITS_
-          ui64Sum += (int64_t)*ptrFactor1 * (int64_t)*ptrFactor2;
+          ui64Sum += (uint64_t)*ptrFactor1 * (uint64_t)*ptrFactor2;
           if ((int64_t)ui64Sum < 0)
           {
             ui64Sum %= modulus;

@@ -463,9 +463,9 @@ double log(double x)
   k = 0;
 
   /* reduce x into [sqrt(2)/2, sqrt(2)] */
-  hx += 0x3ff00000 - 0x3fe6a09e;
+  hx += 0x3ff00000U - 0x3fe6a09eU;
   k += (int)(hx>>20) - 0x3ff;
-  hx = (hx&0x000fffff) + 0x3fe6a09e;
+  hx = (hx&0x000fffffU) + 0x3fe6a09eU;
   u.i = ((uint64_t)hx<<32) | (u.i&0xffffffff);
   x = u.f;
 
@@ -491,8 +491,9 @@ static const double P3   =  6.61375632143793436117e-05; /* 0x3F11566A, 0xAF25DE2
 static const double P4   = -1.65339022054652515390e-06; /* 0xBEBBBD41, 0xC5D26BF1 */
 static const double P5   =  4.13813679705723846039e-08; /* 0x3E663769, 0x72BEA4D0 */
 
-double exp(double x)
+double exp(double argum)
 {
+  double x = argum;
   double hi;
   double lo;
   double c;
@@ -508,9 +509,9 @@ double exp(double x)
   hx &= 0x7fffffff;  /* high word of |x| */
 
   /* argument reduction */
-  if (hx > 0x3fd62e42)
+  if (hx > 0x3fd62e42U)
   {  /* if |x| > 0.5 ln2 */
-    if (hx >= 0x3ff0a2b2)
+    if (hx >= 0x3ff0a2b2U)
     {/* if |x| >= 1.5 ln2 */
       k = (int)((invln2 * x) + half[sign]);
     }
@@ -519,10 +520,10 @@ double exp(double x)
       k = 1 - sign - sign;
     }
     hi = x - (k*ln2hi);  /* k*ln2hi is exact here */
-    lo = k*ln2lo;
+    lo = (double)k*ln2lo;
     x = hi - lo;
   }
-  else if (hx > 0x3e300000)
+  else if (hx > 0x3e300000U)
   {  /* if |x| > 2**-28 */
     k = 0;
     hi = x;
@@ -531,13 +532,13 @@ double exp(double x)
   else
   {
     /* inexact if x!=0 */
-    return 1 + x;
+    return 1.0 + x;
   }
 
   /* x is now in primary range */
   xx = x*x;
   c = x - xx*(P1+xx*(P2+xx*(P3+xx*(P4+(xx*P5)))));
-  y = 1 + (x*c/(2-c) - lo + hi);
+  y = 1.0 + (x*c/(2.0-c) - lo + hi);
   if (k == 0)
   {
     return y;
