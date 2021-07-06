@@ -289,8 +289,8 @@ void *memmove(void *dest, const void *src, size_t count)
 void *memset(void *dest, int c, size_t count)
 {
   unsigned char *s = (unsigned char *)dest;
-  size_t k;
-  size_t n = count;
+  int k;
+  int n = (int)count;
 
   /* Fill head and tail with minimal branching. Each
    * conditional ensures that all the subsequently used
@@ -326,7 +326,7 @@ void *memset(void *dest, int c, size_t count)
    * already took care of any head/tail that get cut off
    * by the alignment. */
 
-  k = (0x03U - (uintptr_t)s+1U) & 3U;
+  k = (0x03 - (int)(uintptr_t)s+1) & 3;
   s += k;
   n -= k;
   n &= 0xFFFFFFFCU;
@@ -369,7 +369,7 @@ void *memset(void *dest, int c, size_t count)
    * and avoid writing the same bytes twice as much as is
    * practical without introducing additional branching. */
 
-  k = 24 + ((uintptr_t)s & 4);
+  k = 24U + ((uintptr_t)s & 4U);
   s += k;
   n -= k;
 
