@@ -416,10 +416,10 @@ double scalbn(double x, int n)
 {
   union fi u;
   double y = x;
+  int value = 0x3ff + n;
 
-  u.i = (uint64_t)(0x3ff + n) << 52;
-  x = y * u.f;
-  return x;
+  u.i = (uint64_t)value << 52;
+  return y * u.f;
 }
 
 /*
