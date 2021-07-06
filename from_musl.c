@@ -391,14 +391,15 @@ void *memset(void *dest, int c, size_t count)
 
 char *strcpy(char *dest, const char *src)
 {
-  char *dst = dest;
-  while (*src != '\0')
+  char *ptrDest = dest;
+  const char* ptrSrc = src;
+  while (*ptrSrc != '\0')
   {
-    *dst = *src;
-    dst++;
-    src++;
+    *ptrDest = *ptrSrc;
+    ptrDest++;
+    ptrSrc++;
   }
-  *dst = '\0';
+  *ptrDest = '\0';
   return dest;
 }
 
@@ -538,7 +539,7 @@ double exp(double argum)
 
   /* x is now in primary range */
   xx = x*x;
-  c = x - xx*(P1+(xx*(P2+(xx*(P3+(xx*(P4+(xx*P5))))))));
+  c = x - (xx * (P1 + (xx * (P2 + (xx * (P3 + (xx * (P4 + (xx * P5)))))))));
   y = 1.0 + (x*c/(2.0-c)) - lo + hi;
   if (k == 0)
   {
