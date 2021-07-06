@@ -443,8 +443,9 @@ static const double Lg5 = 1.818357216161805012e-01;  /* 3FC74664 96CB03DE */
 static const double Lg6 = 1.531383769920937332e-01;  /* 3FC39A09 D078C69F */
 static const double Lg7 = 1.479819860511658591e-01;  /* 3FC2F112 DF3E5244 */
 
-double log(double x)
+double log(double argum)
 {
+  double x = argum;
   union fi u;
   u.f = x;
   double hfsq;
@@ -474,8 +475,8 @@ double log(double x)
   s = f/(2.0+f);
   z = s*s;
   w = z*z;
-  t1 = w*(Lg2+w*(Lg4+(w*Lg6)));
-  t2 = z*(Lg1+w*(Lg3+w*(Lg5+(w*Lg7))));
+  t1 = w*(Lg2+(w*(Lg4+(w*Lg6))));
+  t2 = z*(Lg1+(w*(Lg3+(w*(Lg5+(w*Lg7))))));
   R = t2 + t1;
   dk = k;
   return (s*(hfsq+R)) + (dk*ln2_lo) - hfsq + f + (dk*ln2_hi);
@@ -519,7 +520,7 @@ double exp(double argum)
     {
       k = 1 - sign - sign;
     }
-    hi = x - (k*ln2hi);  /* k*ln2hi is exact here */
+    hi = x - ((double)k*ln2hi);  /* k*ln2hi is exact here */
     lo = (double)k*ln2lo;
     x = hi - lo;
   }
@@ -537,8 +538,8 @@ double exp(double argum)
 
   /* x is now in primary range */
   xx = x*x;
-  c = x - xx*(P1+xx*(P2+xx*(P3+xx*(P4+(xx*P5)))));
-  y = 1.0 + (x*c/(2.0-c) - lo + hi);
+  c = x - xx*(P1+(xx*(P2+(xx*(P3+(xx*(P4+(xx*P5))))))));
+  y = 1.0 + (x*c/(2.0-c)) - lo + hi;
   if (k == 0)
   {
     return y;
