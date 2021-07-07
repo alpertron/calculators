@@ -24,10 +24,13 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "x^120-1" >> coverage.out
 ./polfact 7 "x^10+x^5-1" >> coverage.out
 ./polfact 0 "x+23" >> coverage.out
+./polfact 0 "(2*x+23)*(3x+5)" >> coverage.out
 ./polfact 0 "x^2+7*x+23" >> coverage.out
 ./polfact 0 "x^3-4*x^2+12*x+23" >> coverage.out
 ./polfact 0 "x^4+3*x^2+12*x+23" >> coverage.out
 ./polfact 0 "x^5+15*x+12" >> coverage.out
+./polfact 0 "x^10+2*x^5+23" >> coverage.out
+./polfact 0 "x^10+2*x^5-23" >> coverage.out
 ./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" >> coverage.out
 ./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" >> coverage.out
 ./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" >> coverage.out

@@ -2559,7 +2559,17 @@ static void GenerateRoots(int multiplicity, const char* rationalRoot, bool isNeg
     realNum = numer / gcdNumDen;
     realDen = polyDegree / gcdNumDen;
     StartRadicand(polyDegree);
+    if (pretty == PARI_GP)
+    {
+      *ptrOutput = '(';
+      ptrOutput++;
+    }
     copyStr(&ptrOutput, rationalRoot);
+    if (pretty == PARI_GP)
+    {
+      *ptrOutput = ')';
+      ptrOutput++;
+    }
     EndRadicand(polyDegree);
     ptrOutput = ptrOutputBak;
     showX(multiplicity);
@@ -2756,7 +2766,7 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree,
   BigRationalDivide(&Rat2, &Rat1, &Rat5);
   Rat5.numerator.sign = SIGN_POSITIVE;
   Rat5.denominator.sign = SIGN_POSITIVE;
-  MultiplyRationalBySqrtRational(&Rat2, &Rat3);
+  MultiplyRationalBySqrtRational(&Rat2, &Rat3); // Argument of arc tangent.
   ptrDegreeStr = degreeStr;
   int2dec(&ptrDegreeStr, halfDegree);
   *ptrDegreeStr = 0;
@@ -2821,7 +2831,10 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree,
           if (multiplicand != 1)
           {
             int2dec(&ptrOutput, multiplicand);
-            copyStr(&ptrOutput, (pretty != PARI_GP)? "&#8290; " : "*");
+            if (pretty != TEX)
+            {
+              copyStr(&ptrOutput, (pretty != PARI_GP) ? "&#8290; " : "*");
+            }
           }
           copyStr(&ptrOutput, ptrPi);
           *ptrOutput = ' ';
@@ -2848,14 +2861,9 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree,
         }
         else
         {
-          copyStr(&ptrOutput, "atan{");
+          copyStr(&ptrOutput, "atan(");
         }
-        ShowRationalAndSqrParts(&Rat5, &Rat3, 2, ptrTimes);
-        if (pretty == PARI_GP)
-        {
-          *ptrOutput = ')';  // Close arc tangent.
-          ptrOutput++;
-        }
+        ShowRationalAndSqrParts(&Rat2, &Rat3, 2, ptrTimes);
         if (pretty == TEX)
         {
           *ptrOutput = '}';  // Close arc tangent.
@@ -3495,7 +3503,7 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
   {
     ptrMinus = "-";
     ptrTimes = "*";
-    ptrPi = "pi";
+    ptrPi = "Pi";
     ptrI = "I";
   }
   switch (pstFactorInfo->degree)
