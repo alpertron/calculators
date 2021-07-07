@@ -370,7 +370,7 @@ static void showCube(char** pptrOutput, const BigInteger* pBase)
   {
     BigInteger2Dec(&ptrOutput, pBase, groupLength);
   }
-  if (Base1.sign == SIGN_NEGATIVE)
+  if (pBase->sign == SIGN_NEGATIVE)
   {
     *ptrOutput = ')';
     ptrOutput++;
