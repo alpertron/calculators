@@ -334,7 +334,10 @@ void *memset(void *dest, int c, size_t count)
   typedef uint32_t  u32;
   typedef uint64_t  u64;
 
-  u32 c32 = ((u32)-1)/255 * (unsigned char)c;
+  u32 c32 = 0x01010101U * (unsigned char)c;
+  int words = n / 4;
+  u32* ptrStart = (u32 *)s;
+  u32* ptrEnd = ptrStart + words;
 
   /* In preparation to copy 32 bytes at a time, aligned on
    * an 8-byte bounary, fill head/tail up to 28 bytes each.
@@ -342,34 +345,34 @@ void *memset(void *dest, int c, size_t count)
    * conditional below ensures that the subsequent offsets
    * are valid (e.g. !(n<=24) implies n>=28). */
 
-  *(u32 *)(s+0) = c32;
-  *(u32 *)(s+n-4) = c32;
+  *ptrStart = c32;
+  *(ptrEnd - 1) = c32;
   if (n <= 8)
   {
     return dest;
   }
-  *(u32 *)(s+4) = c32;
-  *(u32 *)(s+8) = c32;
-  *(u32 *)(s+n-12) = c32;
-  *(u32 *)(s+n-8) = c32;
+  *(ptrStart + 1) = c32;
+  *(ptrStart + 2) = c32;
+  *(ptrEnd - 3) = c32;
+  *(ptrEnd - 2) = c32;
   if (n <= 24)
   {
     return dest;
   }
-  *(u32 *)(s+12) = c32;
-  *(u32 *)(s+16) = c32;
-  *(u32 *)(s+20) = c32;
-  *(u32 *)(s+24) = c32;
-  *(u32 *)(s+n-28) = c32;
-  *(u32 *)(s+n-24) = c32;
-  *(u32 *)(s+n-20) = c32;
-  *(u32 *)(s+n-16) = c32;
+  *(ptrStart + 3) = c32;
+  *(ptrStart + 4) = c32;
+  *(ptrStart + 5) = c32;
+  *(ptrStart + 6) = c32;
+  *(ptrEnd - 7) = c32;
+  *(ptrEnd - 6) = c32;
+  *(ptrEnd - 5) = c32;
+  *(ptrEnd - 4) = c32;
 
   /* Align to a multiple of 8 so we can fill 64 bits at a time,
    * and avoid writing the same bytes twice as much as is
    * practical without introducing additional branching. */
 
-  k = 24U + ((uintptr_t)s & 4U);
+  k = 24 + ((int)(uintptr_t)s & 4);
   s += k;
   n -= k;
 
@@ -378,12 +381,13 @@ void *memset(void *dest, int c, size_t count)
    * safely ignored. */
 
   u64 c64 = c32 | ((u64)c32 << 32);
-  for (; n >= 32U; n-=32U)
+  for (; n >= 32; n-=32)
   {
-    *(u64 *)(s+0) = c64;
-    *(u64 *)(s+8) = c64;
-    *(u64 *)(s+16) = c64;
-    *(u64 *)(s+24) = c64;
+    u64* ptrStart64 = (u64*)s;
+    *ptrStart64 = c64;
+    *(ptrStart64 + 1) = c64;
+    *(ptrStart64 + 2) = c64;
+    *(ptrStart64 + 3) = c64;
     s += 32;
   }
   return dest;
