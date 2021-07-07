@@ -98,14 +98,16 @@ void *memcpy(void *dest, const void *src, size_t count)
         n -= 3U;
         for (; n>=17U; n-=16U)
         {
-          x = *(const u32 *)(s+1);
-          *(u32 *)(d+0) = (w LS 24) | (x RS 8);
-          w = *(const u32 *)(s+5);
-          *(u32 *)(d+4) = (x LS 24) | (w RS 8);
-          x = *(const u32 *)(s+9);
-          *(u32 *)(d+8) = (w LS 24) | (x RS 8);
-          w = *(const u32 *)(s+13);
-          *(u32 *)(d+12) = (x LS 24) | (w RS 8);
+          const u32* ptrSrc = (const u32*)(s + 1);
+          u32* ptrDest = (u32*)d;
+          x = *ptrSrc;
+          *ptrDest = (w LS 24) | (x RS 8);
+          w = *(ptrSrc + 1);
+          *(ptrDest + 1) = (x LS 24) | (w RS 8);
+          x = *(ptrSrc + 2);
+          *(ptrDest + 2) = (w LS 24) | (x RS 8);
+          w = *(ptrSrc + 3);
+          *(ptrDest + 3) = (x LS 24) | (w RS 8);
           s += 16;
           d += 16;
         }
@@ -119,14 +121,16 @@ void *memcpy(void *dest, const void *src, size_t count)
         n -= 2U;
         for (; n>=18U; n-=16U)
         {
-          x = *(const u32 *)(s+2);
-          *(u32 *)(d+0) = (w LS 16) | (x RS 16);
-          w = *(const u32 *)(s+6);
-          *(u32 *)(d+4) = (x LS 16) | (w RS 16);
-          x = *(const u32 *)(s+10);
-          *(u32 *)(d+8) = (w LS 16) | (x RS 16);
-          w = *(const u32 *)(s+14);
-          *(u32 *)(d+12) = (x LS 16) | (w RS 16);
+          const u32* ptrSrc = (const u32*)(s + 2);
+          u32* ptrDest = (u32*)d;
+          x = *ptrSrc;
+          *ptrDest = (w LS 16) | (x RS 16);
+          w = *(ptrSrc + 1);
+          *(ptrDest + 1) = (x LS 16) | (w RS 16);
+          x = *(ptrSrc + 2);
+          *(ptrDest + 2) = (w LS 16) | (x RS 16);
+          w = *(ptrSrc + 3);
+          *(ptrDest + 3) = (x LS 16) | (w RS 16);
           s += 16;
           d += 16;
         }
@@ -139,14 +143,16 @@ void *memcpy(void *dest, const void *src, size_t count)
         n -= 1U;
         for (; n>=19U; n-=16U)
         {
-          x = *(const u32 *)(s+3);
-          *(u32 *)(d+0) = (w LS 8) | (x RS 24);
-          w = *(const u32 *)(s+7);
-          *(u32 *)(d+4) = (x LS 8) | (w RS 24);
-          x = *(const u32 *)(s+11);
-          *(u32 *)(d+8) = (w LS 8) | (x RS 24);
-          w = *(const u32 *)(s+15);
-          *(u32 *)(d+12) = (x LS 8) | (w RS 24);
+          const u32* ptrSrc = (const u32*)(s + 3);
+          u32* ptrDest = (u32*)d;
+          x = *ptrSrc;
+          *ptrDest = (w LS 8) | (x RS 24);
+          w = *(ptrSrc + 1);
+          *(ptrDest + 1) = (x LS 8) | (w RS 24);
+          x = *(ptrSrc + 2);
+          *(ptrDest + 2) = (w LS 8) | (x RS 24);
+          w = *(ptrSrc + 3);
+          *(ptrDest + 3) = (x LS 8) | (w RS 24);
           s += 16;
           d += 16;
         }
