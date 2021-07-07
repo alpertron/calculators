@@ -296,27 +296,27 @@ void *memset(void *dest, int c, size_t count)
    * conditional ensures that all the subsequently used
    * offsets are well-defined and in the dest region. */
 
-  if (n == 0U)
+  if (n == 0)
   {
     return dest;
   }
   s[0] = (unsigned char)c; 
-  s[n-1U] = (unsigned char)c;
-  if (n <= 2U)
+  s[n-1] = (unsigned char)c;
+  if (n <= 2)
   {
     return dest;
   }
   s[1] = (unsigned char)c; 
-  s[n-2U] = (unsigned char)c;
+  s[n-2] = (unsigned char)c;
   s[2] = (unsigned char)c; 
-  s[n-3U] = (unsigned char)c;
-  if (n <= 6U)
+  s[n-3] = (unsigned char)c;
+  if (n <= 6)
   { 
     return dest; 
   }
   s[3] = (unsigned char)c;
-  s[n-4U] = (unsigned char)c;
-  if (n <= 8U)
+  s[n-4] = (unsigned char)c;
+  if (n <= 8)
   {
     return dest;
   }
