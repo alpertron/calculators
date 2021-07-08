@@ -562,16 +562,17 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
            // If n+/-1 is multiple of p, then it must be multiple
            // of p^2, otherwise it cannot be a perfect power.
       uint64_t remainder;
-      uint64_t u64Limb;
       unsigned int index;
       int minRemainder;
       int maxRemainder;
       int rem = getRemainder(numToFactor, i);
-      longToBigInteger(&Temp1, (uint64_t)i*(uint64_t)i);
-      (void)BigIntRemainder(numToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
-      remainder = (uint64_t)Temp2.limbs[0].x;
       if ((rem == 1) || ((unsigned int)rem == (i - 1U)))
-      {
+      {    // Either n+1 or n-1 is multiple of p.
+           // Test whether it is multiple of p^2.
+        uint64_t i2 = (uint64_t)i * (uint64_t)i;
+        longToBigInteger(&Temp1, i2);
+        (void)BigIntRemainder(numToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
+        remainder = (uint64_t)Temp2.limbs[0].x;
         if (Temp2.nbrLimbs > 1)
         {
           remainder += (uint64_t)Temp2.limbs[1].x << BITS_PER_GROUP;
@@ -579,15 +580,13 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
         // NumberFactor cannot be a power + 1 if condition holds.
         plus1 = ((rem == 1) && (remainder != 1U));
         // NumberFactor cannot be a power - 1 if condition holds.
-        minus1 = (((unsigned int)rem == (i - 1U)) && (remainder != (((uint64_t)i*(uint64_t)i) - 1U)));
+        minus1 = (((unsigned int)rem == (i - 1U)) && (remainder != (i2 - 1U)));
       }
       index = i / 2U;
       if ((common.ecm.ProcessExpon[index >> 3] & (1U << (index & 7U))) == 0U)
       {
         continue;
       }
-      u64Limb = remainder % (uint64_t)i;
-      modulus = (int)u64Limb;
       if (plus1)
       {
         minRemainder = 1;
@@ -604,7 +603,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
       {
         maxRemainder = (int)i - 2;
       }
-      if ((modulus > minRemainder) && (modulus < maxRemainder))
+      if ((rem > minRemainder) && (rem < maxRemainder))
       {
         for (j = index; j <= (unsigned int)maxExpon; j += index)
         {
