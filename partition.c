@@ -372,12 +372,12 @@ enum eExprErr primorial(BigInteger *result, int argument)
     {     // Number is prime, perform multiplication.
       if ((factorAccum * (double)ctr) > maxFactorAccum)
       {
-        nbrGroupsAccumulated++;
         rc = ProcessFactorsFactorial(factorAccum, nbrGroupsAccumulated, NULL);
         if (rc != EXPR_OK)
         {
           return rc;
         }
+        nbrGroupsAccumulated++;
         factorAccum = 1;
       }
       factorAccum *= ctr;
@@ -385,6 +385,5 @@ enum eExprErr primorial(BigInteger *result, int argument)
   }
   shLeft = numberofBitsSetToOne(nbrGroupsAccumulated - 1);
   nbrGroupsAccumulated = UintToInt(1U << shLeft);
-  nbrGroupsAccumulated++;
   return ProcessFactorsFactorial(factorAccum, nbrGroupsAccumulated, result);
 }

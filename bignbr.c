@@ -411,21 +411,34 @@ void longToBigInteger(BigInteger *bigint, int64_t value)
 void expBigNbr(BigInteger *bignbr, double logar)
 {
   unsigned int mostSignificantLimb;
-  int nbrBits;
-  int sizeBytes;
+  double dShLeft = floor(logar / LOG_2);
+  double dMant = logar - dShLeft * LOG_2;
+  double argExp;
+  unsigned int shLeft = (unsigned int)dShLeft;
   bignbr->sign = SIGN_POSITIVE;
-  bignbr->nbrLimbs = (int)floor(logar / (double)BITS_PER_GROUP);
-  nbrBits = BITS_PER_GROUP * bignbr->nbrLimbs;
-  mostSignificantLimb = (unsigned int)floor(exp(logar - ((double)nbrBits * LOG_2)) + 0.5);
+  if (shLeft < BITS_PER_GROUP)
+  {
+    argExp = logar;
+    shLeft = 0;
+  }
+  else
+  {
+    argExp = dMant + ((double)BITS_PER_GROUP_MINUS_1 * LOG_2);
+    shLeft -= BITS_PER_GROUP_MINUS_1;
+  }
+  mostSignificantLimb = (unsigned int)floor(exp(argExp) + 0.5);
   if (mostSignificantLimb == LIMB_RANGE)
   {
-    mostSignificantLimb = 1;
-    bignbr->nbrLimbs++;
+    bignbr->limbs[0].x = 0;
+    bignbr->limbs[1].x = 1;
+    bignbr->nbrLimbs = 2;
   }
-  bignbr->nbrLimbs++;
-  sizeBytes = bignbr->nbrLimbs * (int)sizeof(limb);
-  (void)memset(bignbr->limbs, 0, sizeBytes);
-  bignbr->limbs[bignbr->nbrLimbs-1].x = mostSignificantLimb;
+  else
+  {
+    bignbr->limbs[0].x = (int)mostSignificantLimb;
+    bignbr->nbrLimbs = 1;
+  }
+  (void)BigIntMultiplyPower2(bignbr, shLeft);
 }
 
 double logBigNbr(const BigInteger *pBigNbr)

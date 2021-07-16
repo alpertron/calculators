@@ -88,13 +88,19 @@ var info =
   },
   "getCunn": function(data)
   {
-    var req = new XMLHttpRequest();
-    // Web worker protocol is blob:, so we need to change that to https: as appropriate.
-    req.open("GET", "https://www.alpertron.com.ar/"+ptrToString(data), false);
-    req.send(null);
-    if (req.status === 200)
+    try
     {
-      convertToString(exports["getFactorsAsciiPtr"](), req.responseText);
+      var req = new XMLHttpRequest();
+      // Web worker protocol is blob:, so we need to change that to https: as appropriate.
+      req.open("GET", "https://www.alpertron.com.ar/"+ptrToString(data), false);
+      req.send(null);
+      if (req.status === 200)
+      {
+        convertToString(exports["getFactorsAsciiPtr"](), req.responseText);
+      }
+    }
+    catch (ex)
+    {    // Nothing to do if the factors could not be retrieved.
     }
   }
 }

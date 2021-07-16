@@ -432,21 +432,42 @@ static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, i
   }
 }
 
-static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numToFactor, int Exponent)
+static void setNewNbrLimbs(BigInteger *pBigInt, int newNbrLimbs)
+{
+  int oldNbrLimbs = pBigInt->nbrLimbs;
+  int newNbrBytes = newNbrLimbs * (int)sizeof(limb);
+  if (oldNbrLimbs > newNbrLimbs)
+  {     // Discard non-significant limbs.
+    memmove(&pBigInt->limbs[0], &pBigInt->limbs[oldNbrLimbs - newNbrLimbs], newNbrBytes);
+    pBigInt->nbrLimbs = newNbrLimbs;
+  }
+  else
+  {     // Add requested number of limbs.
+    int bytesToClear = (newNbrLimbs - oldNbrLimbs) * (int)sizeof(limb);
+    memmove(&pBigInt->limbs[newNbrLimbs - oldNbrLimbs], &pBigInt->limbs[0], newNbrBytes);
+    memset(&pBigInt->limbs[0], 0, bytesToClear);
+    pBigInt->nbrLimbs = newNbrLimbs;
+  }
+}
+
+static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numToFactor,
+  int Exponent)
 {
 #ifdef __EMSCRIPTEN__
   char status[200];
   char *ptrStatus;
 #endif
   static BigInteger NFp1;
-  static BigInteger NFm1;
   static BigInteger nthRoot;
+  static BigInteger nthRootSignificantLimbs;
   static BigInteger rootN1;
   static BigInteger rootN;
-  static BigInteger rootbak;
   static BigInteger nextroot;
   static BigInteger dif;
-  double log2N;
+  double logN;
+  int base;
+  int pwr;
+  bool smallBase;
 #ifdef __EMSCRIPTEN__
   int elapsedTime = (int)(tenths() - originalTenthSecond);
   if ((elapsedTime / 10) != (oldTimeElapsed / 10))
@@ -462,57 +483,102 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
     databack(status);
 }
 #endif
-  CopyBigInt(&NFp1, numToFactor);
-  addbigint(&NFp1, 1);                    // NFp1 <- NumberToFactor + 1
-  CopyBigInt(&NFm1, numToFactor);
-  addbigint(&NFm1, -1);                   // NFm1 <- NumberToFactor - 1
-  log2N = logBigNbr(&NFp1) / Exponent;    // Find nth root of number to factor.
-  expBigNbr(&nthRoot, log2N);
-  rootbak = nthRoot;
-  for (;;)
-  {
-    (void)BigIntPowerIntExp(&nthRoot, Exponent - 1, &rootN1); // rootN1 <- nthRoot ^ (Exponent-1)
-    (void)BigIntMultiply(&nthRoot, &rootN1, &rootN);  // rootN <- nthRoot ^ Exponent
-    BigIntSubt(&NFp1, &rootN, &dif);            // dif <- NFp1 - rootN
-    if (BigIntIsZero(&dif))
-    { // Perfect power
-      Cunningham(pstFactors, &nthRoot, Exponent, -1, numToFactor);
-      return true;
+  logN = logBigNbr(numToFactor) / Exponent;  // Find nth root of number to factor.
+  expBigNbr(&nthRoot, logN);
+  smallBase = (nthRoot.nbrLimbs == 1) && (nthRoot.limbs[0].x < 1000000000);
+  if (!smallBase)
+  {   // Compute correct value of nthRoot using Newton's method.
+      // Let x be an approximation to nth root of y.
+      // The next approximation is: x <- (1/n) * ((n-1)*x + y/x^(n-1))
+      // Use up to nthRoot.nbrLimbs + 2 limbs. Discard lowest significant
+      // limbs at each step.
+    int nbrBytes;
+    int maxNbrLimbs = nthRoot.nbrLimbs + 2;
+    CopyBigInt(&nthRootSignificantLimbs, &nthRoot);
+    for (int limbsOK = 1; limbsOK < maxNbrLimbs; limbsOK *= 2)
+    {   // Compute rootN1 = x^(n-1)
+      int expon = Exponent - 1;
+      int significantExponBit = false;
+      intToBigInteger(&rootN1, 1);
+      setNewNbrLimbs(&nthRootSignificantLimbs, maxNbrLimbs);
+      for (int mask = 0x100000; mask > 0; mask /= 2)
+      {
+        if (significantExponBit)
+        {
+          (void)BigIntMultiply(&rootN1, &rootN1, &rootN1);
+          setNewNbrLimbs(&rootN1, maxNbrLimbs);
+        }
+        if ((expon & mask) != 0)
+        {
+          (void)BigIntMultiply(&rootN1, &nthRootSignificantLimbs, &rootN1);
+          setNewNbrLimbs(&rootN1, maxNbrLimbs);
+          significantExponBit = true;
+        }
+      }
+      // Compute y / x^(n-1)
+      CopyBigInt(&NFp1, numToFactor);
+      setNewNbrLimbs(&NFp1, 2*maxNbrLimbs);
+      (void)BigIntDivide(&NFp1, &rootN1, &NFp1);
+      setNewNbrLimbs(&NFp1, maxNbrLimbs);
+
+      // Compute (n-1)*x
+      multint(&nthRootSignificantLimbs, &nthRootSignificantLimbs, expon);
+
+      // Compute (n-1)*x + y/x^(n-1)
+      BigIntAdd(&nthRootSignificantLimbs, &NFp1, &nthRootSignificantLimbs);
+      // Compute (1/n) * ((n-1)*x + y/x^(n-1))
+      subtractdivide(&nthRootSignificantLimbs, 0, expon + 1);
     }
-    addbigint(&dif, 1);                         // dif <- dif + 1
-    (void)BigIntDivide(&dif, &rootN1, &Temp1);  // Temp1 <- dif / rootN1
-    subtractdivide(&Temp1, 0, Exponent);        // Temp1 <- Temp1 / Exponent
-    BigIntAdd(&Temp1, &nthRoot, &nextroot);     // nextroot <- Temp1 + nthRoot
-    addbigint(&nextroot, -1);                   // nextroot <- nextroot - 1
-    BigIntSubt(&nextroot, &nthRoot, &nthRoot);  // nthRoot <- nextroot - nthRoot
-    if (nthRoot.sign == SIGN_POSITIVE)
+    // Round nthRootSignificantLimbs and copy it to nthRoot.
+    nbrBytes = nthRoot.nbrLimbs * (int)sizeof(limb);
+    memcpy(nthRoot.limbs, nthRootSignificantLimbs.limbs, nbrBytes);
+    if (nthRootSignificantLimbs.limbs[maxNbrLimbs - nthRoot.nbrLimbs - 1].x >=
+      HALF_INT_RANGE)
     {
-      break; // Not a perfect power
+      addbigint(&nthRoot, 1);
     }
-    CopyBigInt(&nthRoot, &nextroot);
   }
-  nthRoot = rootbak;
-  for (;;)
+  // Test whether (nthroot ^ Exponent = NFp1) (mod 2^BITS_PER_GROUP)
+  base = nthRoot.limbs[0].x;
+  pwr = 1;
+  for (int mask = 0x100000; mask > 0; mask /= 2)
   {
-    (void)BigIntPowerIntExp(&nthRoot, Exponent - 1, &rootN1); // rootN1 <- nthRoot ^ (Exponent-1)
-    (void)BigIntMultiply(&nthRoot, &rootN1, &rootN);     // rootN <- nthRoot ^ Exponent
-    BigIntSubt(&NFm1, &rootN, &dif);            // dif <- NFm1 - rootN
-    if (BigIntIsZero(&dif))
-    { // Perfect power
-      Cunningham(pstFactors, &nthRoot, Exponent, 1, numToFactor);
-      return true;
-    }
-    addbigint(&dif, 1);                         // dif <- dif + 1
-    (void)BigIntDivide(&dif, &rootN1, &Temp1);  // Temp1 <- dif / rootN1
-    subtractdivide(&Temp1, 0, Exponent);        // Temp1 <- Temp1 / Exponent
-    BigIntAdd(&Temp1, &nthRoot, &nextroot);     // nextroot <- Temp1 + nthRoot
-    addbigint(&nextroot, -1);                   // nextroot <- nextroot - 1
-    BigIntSubt(&nextroot, &nthRoot, &nthRoot);  // nthRoot <- nextroot - nthRoot
-    if (nthRoot.sign == SIGN_POSITIVE)
+    pwr *= pwr;
+    if ((Exponent & mask) != 0)
     {
-      break;                                    // Not a perfect power
+      pwr *= base;
     }
-    CopyBigInt(&nthRoot, &nextroot);
+  }
+  for (int step = 0; step < 2; step++)
+  {
+    int delta = ((step == 1) ? 1 : -1);  
+    if (((pwr - numToFactor->limbs[0].x + delta) & MAX_INT_NBR) == 0)
+    {
+      CopyBigInt(&NFp1, numToFactor);
+      addbigint(&NFp1, -delta);   // NFp1 <- NumberToFactor +/- 1
+      for (;;)
+      {
+        (void)BigIntPowerIntExp(&nthRoot, Exponent - 1, &rootN1); // rootN1 <- nthRoot ^ (Exponent-1)
+        (void)BigIntMultiply(&nthRoot, &rootN1, &rootN);  // rootN <- nthRoot ^ Exponent
+        BigIntSubt(&NFp1, &rootN, &dif);            // dif <- NFp1 - rootN
+        if (BigIntIsZero(&dif))
+        { // Perfect power
+          Cunningham(pstFactors, &nthRoot, Exponent, delta, numToFactor);
+          return true;
+        }
+        addbigint(&dif, 1);                         // dif <- dif + 1
+        (void)BigIntDivide(&dif, &rootN1, &Temp1);  // Temp1 <- dif / rootN1
+        subtractdivide(&Temp1, 0, Exponent);        // Temp1 <- Temp1 / Exponent
+        BigIntAdd(&Temp1, &nthRoot, &nextroot);     // nextroot <- Temp1 + nthRoot
+        addbigint(&nextroot, -1);                   // nextroot <- nextroot - 1
+        BigIntSubt(&nextroot, &nthRoot, &nthRoot);  // nthRoot <- nextroot - nthRoot
+        if (nthRoot.sign == SIGN_POSITIVE)
+        {
+          break; // Not a perfect power
+        }
+        CopyBigInt(&nthRoot, &nextroot);
+      }
+    }
   }
   return false;
 }
@@ -529,7 +595,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   int maxExpon = numToFactor->nbrLimbs * BITS_PER_GROUP;
   int numPrimes = (2 * maxExpon) + 3;
   double logar = logBigNbr(numToFactor);
-  // 33219 = logarithm base 2 of max number supported = 10^10000.
+  // 332199 = logarithm base 2 of max number supported = 10^100000.
   // Let n = a^b +/- 1 (n = number to factor).
   // If n!=1 or n!=0 or n!=7 (mod 8), then b cannot be even.
   modulus = numToFactor->limbs[0].x & 7;
@@ -577,10 +643,14 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
         {
           remainder += (uint64_t)Temp2.limbs[1].x << BITS_PER_GROUP;
         }
-        // NumberFactor cannot be a power + 1 if condition holds.
-        plus1 = ((rem == 1) && (remainder != 1U));
-        // NumberFactor cannot be a power - 1 if condition holds.
-        minus1 = (((unsigned int)rem == (i - 1U)) && (remainder != (i2 - 1U)));
+        if (rem == 1)
+        {
+          plus1 = (remainder == 1U);
+        }
+        if ((unsigned int)rem == (i - 1U))
+        {
+          minus1 = (remainder == (i2 - 1U));
+        }
       }
       index = i / 2U;
       if ((common.ecm.ProcessExpon[index >> 3] & (1U << (index & 7U))) == 0U)
@@ -589,19 +659,19 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
       }
       if (plus1)
       {
-        minRemainder = 1;
+        minRemainder = 2;
       }
       else
       {
-        minRemainder = 2;
+        minRemainder = 1;
       }
       if (minus1)
       {
-        maxRemainder = (int)i - 1;
+        maxRemainder = (int)i - 2;
       }
       else
       {
-        maxRemainder = (int)i - 2;
+        maxRemainder = (int)i - 1;
       }
       if ((rem > minRemainder) && (rem < maxRemainder))
       {
@@ -612,7 +682,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
       }
       else
       {
-        if ((unsigned int)modulus == (i - 2U))
+        if (((unsigned int)modulus == (i - 2U)) && (i > 3))
         {
           for (j = i - 1U; j <= (unsigned int)maxExpon; j += i - 1U)
           {
