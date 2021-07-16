@@ -412,11 +412,11 @@ void expBigNbr(BigInteger *bignbr, double logar)
 {
   unsigned int mostSignificantLimb;
   double dShLeft = floor(logar / LOG_2);
-  double dMant = logar - dShLeft * LOG_2;
+  double dMant = logar - (dShLeft * LOG_2);
   double argExp;
   unsigned int shLeft = (unsigned int)dShLeft;
   bignbr->sign = SIGN_POSITIVE;
-  if (shLeft < BITS_PER_GROUP)
+  if (shLeft < (unsigned int)BITS_PER_GROUP)
   {
     argExp = logar;
     shLeft = 0;
@@ -424,7 +424,7 @@ void expBigNbr(BigInteger *bignbr, double logar)
   else
   {
     argExp = dMant + ((double)BITS_PER_GROUP_MINUS_1 * LOG_2);
-    shLeft -= BITS_PER_GROUP_MINUS_1;
+    shLeft -= (unsigned int)BITS_PER_GROUP_MINUS_1;
   }
   mostSignificantLimb = (unsigned int)floor(exp(argExp) + 0.5);
   if (mostSignificantLimb == LIMB_RANGE)

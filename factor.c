@@ -438,14 +438,14 @@ static void setNewNbrLimbs(BigInteger *pBigInt, int newNbrLimbs)
   int newNbrBytes = newNbrLimbs * (int)sizeof(limb);
   if (oldNbrLimbs > newNbrLimbs)
   {     // Discard non-significant limbs.
-    memmove(&pBigInt->limbs[0], &pBigInt->limbs[oldNbrLimbs - newNbrLimbs], newNbrBytes);
+    (void)memmove(&pBigInt->limbs[0], &pBigInt->limbs[oldNbrLimbs - newNbrLimbs], newNbrBytes);
     pBigInt->nbrLimbs = newNbrLimbs;
   }
   else
   {     // Add requested number of limbs.
     int bytesToClear = (newNbrLimbs - oldNbrLimbs) * (int)sizeof(limb);
-    memmove(&pBigInt->limbs[newNbrLimbs - oldNbrLimbs], &pBigInt->limbs[0], newNbrBytes);
-    memset(&pBigInt->limbs[0], 0, bytesToClear);
+    (void)memmove(&pBigInt->limbs[newNbrLimbs - oldNbrLimbs], &pBigInt->limbs[0], newNbrBytes);
+    (void)memset(&pBigInt->limbs[0], 0, bytesToClear);
     pBigInt->nbrLimbs = newNbrLimbs;
   }
 }
@@ -498,7 +498,7 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
     for (int limbsOK = 1; limbsOK < maxNbrLimbs; limbsOK *= 2)
     {   // Compute rootN1 = x^(n-1)
       int expon = Exponent - 1;
-      int significantExponBit = false;
+      bool significantExponBit = false;
       intToBigInteger(&rootN1, 1);
       setNewNbrLimbs(&nthRootSignificantLimbs, maxNbrLimbs);
       for (int mask = 0x100000; mask > 0; mask /= 2)
@@ -531,7 +531,7 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
     }
     // Round nthRootSignificantLimbs and copy it to nthRoot.
     nbrBytes = nthRoot.nbrLimbs * (int)sizeof(limb);
-    memcpy(nthRoot.limbs, nthRootSignificantLimbs.limbs, nbrBytes);
+    (void)memcpy(nthRoot.limbs, nthRootSignificantLimbs.limbs, nbrBytes);
     if (nthRootSignificantLimbs.limbs[maxNbrLimbs - nthRoot.nbrLimbs - 1].x >=
       HALF_INT_RANGE)
     {
@@ -682,7 +682,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
       }
       else
       {
-        if (((unsigned int)modulus == (i - 2U)) && (i > 3))
+        if (((unsigned int)modulus == (i - 2U)) && (i > 3U))
         {
           for (j = i - 1U; j <= (unsigned int)maxExpon; j += i - 1U)
           {
