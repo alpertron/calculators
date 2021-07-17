@@ -66,17 +66,11 @@ static int Show(const BigInteger *num, const char *str, int t)
   {     // num is not zero.
     if (((t & 1) != 0) && (num->sign == SIGN_POSITIVE))
     {
-      *ptrOutput = ' ';
-      ptrOutput++;
-      *ptrOutput = '+';
-      ptrOutput++;
+      copyStr(&ptrOutput, " +");
     }
     if (num->sign == SIGN_NEGATIVE)
     {
-      *ptrOutput = ' ';
-      ptrOutput++;
-      *ptrOutput = '-';
-      ptrOutput++;
+      copyStr(&ptrOutput, " &minus;");
     }
     if ((num->nbrLimbs != 1) || (num->limbs[0].x != 1))
     {    // num is not 1 or -1.
@@ -95,7 +89,11 @@ void Show1(const BigInteger *num, int t)
   int u = Show(num, "", t);
   if (((u & 1) == 0) || ((num->nbrLimbs == 1) && (num->limbs[0].x == 1)))
   {
-    BigInteger2Dec(&ptrOutput, num, groupLen);
+    *ptrOutput = ' ';
+    ptrOutput++;
+    CopyBigInt(&z, num);
+    z.sign = SIGN_POSITIVE;
+    BigInteger2Dec(&ptrOutput, &z, groupLen);
   }
 }
 
@@ -171,7 +169,7 @@ static void findQuadraticSolution(BigInteger* pSolution, int exponent)
   setNbrLimbs(pSolution);
 }
 
-void SolveEquation(void)
+static void SolveEquation(void)
 {
   int expon;
   int T1;
@@ -307,10 +305,9 @@ void SolveEquation(void)
     TestNbr[NumberLength].x = 0;
     GetMontgomeryParms(NumberLength);
     BigIntModularDivision(&ValC, &ValB, &ValN, &z);
-    BigIntNegate(&z, &z);
-    if (z.sign == SIGN_NEGATIVE)
+    if (!BigIntIsZero(&z))
     {
-      BigIntAdd(&z, &ValN, &z);
+      BigIntSubt(&ValN, &z, &z);
     }
     (void)BigIntMultiply(&ValNn, &GcdAll, &Aux[0]);
     do
@@ -546,6 +543,10 @@ void SolveEquation(void)
         for (;;)
         {
           (void)BigIntRemainder(&ValAOdd, &prime, &tmp1);
+          if (ValAOdd.sign == SIGN_NEGATIVE)
+          {
+            BigIntAdd(&ValAOdd, &prime, &ValAOdd);
+          }
           if (!BigIntIsZero(&tmp1))
           {
             break;

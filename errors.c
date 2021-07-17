@@ -32,12 +32,22 @@ void textError(char **pptrOutput, enum eExprErr rc)
     copyStr(&ptrOut, lang ? "Número muy pequeño" : "Number too low");
     break;
   case EXPR_NUMBER_TOO_HIGH:
+#ifdef FACTORIZATION_APP
+    copyStr(&ptrOut, lang ? "Número muy grande (más de 100000 dígitos)" :
+      "Number too high (more than 100000 digits)");
+#else
     copyStr(&ptrOut, lang ? "Número muy grande (más de 10000 dígitos)" :
       "Number too high (more than 10000 digits)");
+#endif
     break;
   case EXPR_INTERM_TOO_HIGH:
+#ifdef FACTORIZATION_APP
+    copyStr(&ptrOut, lang ? "Número intermedio muy grande (más de 200000 dígitos" :
+      "Intermediate number too high (more than 200000 digits)");
+#else
     copyStr(&ptrOut, lang ? "Número intermedio muy grande (más de 20000 dígitos" :
       "Intermediate number too high (more than 20000 digits)");
+#endif
     break;
   case EXPR_DIVIDE_BY_ZERO:
     copyStr(&ptrOut, lang ? "División por cero" : "Division by zero");

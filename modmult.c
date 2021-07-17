@@ -853,10 +853,11 @@ void BigIntModularDivision(const BigInteger* Num, const BigInteger* Den,
     BigIntAdd(&tmpDen, mod, &tmpDen);
   }
   CompressLimbsBigInteger(aux3, &tmpDen);
-  modmult(aux3, MontgomeryMultR2, aux3);  // aux3 <- Den in Montgomery notation
-  ModInvBigNbr(aux3, aux3, TestNbr, NumberLength); // aux3 <- 1 / Den in Montg notation.
+  modmult(aux3, MontgomeryMultR2, aux3);      // aux3 <- Den in Montgomery notation
+                                              // tmpDen.limbs <- 1 / Den in Montg notation.
+  ModInvBigNbr(aux3, tmpDen.limbs, TestNbr, NumberLength);
   CompressLimbsBigInteger(aux4, &tmpNum);
-  modmult(aux3, aux4, aux3);              // aux3 <- Num / Dev in standard notation.
+  modmult(tmpDen.limbs, aux4, aux3);          // aux3 <- Num / Den in standard notation.
   UncompressLimbsBigInteger(aux3, quotient);  // Get Num/Den
 }
 

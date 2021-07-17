@@ -85,7 +85,19 @@ echo -e "\n\n**** QUADMOD ****" >> coverage.out
 ./quadmod 5 27 43 "n(10^20+3)" >> coverage.out
 ./quadmod 5 27 82 "n(10^80+5)" >> coverage.out
 ./quadmod 5 27 82 "2^8" >> coverage.out
+./quadmod 125 27 82 25 >> coverage.out
 ./quadmod 5 27 82 "2^256" >> coverage.out
+./quadmod 0 27 82 "2^256" >> coverage.out
+./quadmod 73 27 83 "2^16" >> coverage.out
+./quadmod 73 270 83 "2^16" >> coverage.out
+./quadmod -1 1 1 19 >> coverage.out
+./quadmod 1 2 3 97 >> coverage.out
+./quadmod 0 0 0 0 >> coverage.out
+./quadmod 0 0 7 0 >> coverage.out
+./quadmod 0 3 7 0 >> coverage.out
+./quadmod 0 3 9 0 >> coverage.out
+./quadmod 1 3 7 0 >> coverage.out
+./quadmod 1 3 2 0 >> coverage.out
 lcov --capture --directory . --output-file quadmod.info
 make clean
 make gaussian
