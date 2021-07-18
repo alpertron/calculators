@@ -649,10 +649,10 @@ static void CubicEquation(const int* polynomial, int multiplicity)
         ptrOutput++;
         *ptrOutput = ' ';
         ptrOutput++;
-        startCbrt();
+        // Pari-GP requires the argument of the cube root to be positive.
         if ((Rat2.numerator.nbrLimbs == 1) && (Rat2.numerator.limbs[0].x == 1) &&
           (Rat2.denominator.nbrLimbs == 1) && (Rat2.denominator.limbs[0].x == 1))
-        {
+        {             // Cube root of rational number.
           if (ctr == 0)
           {
             BigRationalAdd(&Rat3, &Rat1, &Rat4);
@@ -662,16 +662,49 @@ static void CubicEquation(const int* polynomial, int multiplicity)
             BigRationalSubt(&Rat3, &Rat1, &Rat4);
           }
           ForceDenominatorPositive(&Rat4);
+          if (Rat4.numerator.sign == SIGN_NEGATIVE)
+          {
+            showText(ptrMinus);
+            Rat4.numerator.sign = SIGN_POSITIVE;
+          }
+          startCbrt();
           showRationalNoParen(&Rat4);
+          endCbrt();
         }
         else
-        {
+        {           // Cube root of rational plus/minus a square root.
+          bool isCbrtNegative;
           ForceDenominatorPositive(&Rat3);
+          double dLogRat = logBigNbr(&Rat3.numerator) - logBigNbr(&Rat3.denominator);
+          double dLogSqrt = 
+            (logBigNbr(&Rat1.numerator) - logBigNbr(&Rat1.denominator)) +
+            (logBigNbr(&Rat2.numerator) - logBigNbr(&Rat2.denominator)) / 2.0;
+          if (ctr == 0)
+          {          // Square root positive
+            isCbrtNegative = ((Rat3.numerator.sign == SIGN_NEGATIVE) &&
+              (dLogRat > dLogSqrt));
+          }
+          else
+          {
+            isCbrtNegative = ((Rat3.numerator.sign == SIGN_NEGATIVE) ||
+              (dLogRat < dLogSqrt));
+          }
+          if (isCbrtNegative)
+          {
+            showText(ptrMinus);
+            BigIntChSign(&Rat3.numerator);
+          }
+          startCbrt();
           showRationalNoParen(&Rat3);
-          showPlusSignOn(ctr == 0, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+          if (isCbrtNegative)
+          {
+            BigIntChSign(&Rat3.numerator);
+          }
+          showPlusSignOn(ctr == (isCbrtNegative? 1: 0),
+            TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
           ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
+          endCbrt();
         }
-        endCbrt();
         endLine();
       }
       for (ctr = 0; ctr < 3; ctr++)
@@ -825,7 +858,7 @@ static void CubicEquation(const int* polynomial, int multiplicity)
           }
           else
           {
-            showText("2 * pi / 3");
+            showText("2 * Pi / 3");
           }
         }
         if (ctr == 4)
@@ -844,7 +877,7 @@ static void CubicEquation(const int* polynomial, int multiplicity)
           }
           else
           {
-            showText("4 * pi / 3");
+            showText("4 * Pi / 3");
           }
         }
         endParen();
