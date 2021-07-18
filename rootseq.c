@@ -946,9 +946,9 @@ static void biquadraticEquation(int multiplicity)
 
   // Solutions are x = +/- sqrt((sqrt(r)-p/2)/2) +/- sqrt((-sqrt(r)-p/2)/2)
   // Test whether e is a perfect square.
-  BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
   if (BigRationalSquareRoot(&RatDeprIndependent, &Rat3))
   {           // e is a perfect square. Rat3 = sqrt(r).
+    BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
     for (ctr = 0; ctr < 4; ctr++)
     {
       bool isSquareRoot1;
@@ -1035,7 +1035,14 @@ static void biquadraticEquation(int multiplicity)
     CopyBigInt(&Rat2.numerator, &RatDeprIndependent.numerator);
     CopyBigInt(&Rat2.denominator, &RatDeprIndependent.denominator);
     MultiplyRationalBySqrtRational(&Rat1, &Rat2);
-    BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
+    if (RatDiscr.numerator.sign == SIGN_NEGATIVE)
+    {
+      BigRationalDivideByInt(&RatDeprQuadratic, 4, &RatDeprQuadratic);
+    }
+    else
+    {
+      BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
+    }
     for (ctr = 0; ctr < 4; ctr++)
     {
       enum eSign sign = RatDeprQuadratic.numerator.sign;
@@ -1408,7 +1415,7 @@ static void QuarticEquation(const int* polynomial, int multiplicity)
   BigRationalMultiplyByInt(&Rat1, 16, &Rat1);                         // 16c^2
   BigRationalSubt(&RatD, &Rat1, &RatD);                               // 64e - 16c^2
 
-  BigRationalDivideByInt(&RatCubic, -4, &RatCubic);             // -b/4
+  BigRationalDivideByInt(&RatCubic, -4, &RatCubic);                   // -b/4
   ForceDenominatorPositive(&RatCubic);
   if (BigIntIsZero(&RatDeprLinear.numerator))
   {             // Biquadratic equation. No cube root needed in this case.

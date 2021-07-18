@@ -52,6 +52,9 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "x^3-2" 0 >> coverage.out
 ./polfact 0 "x^3-2" 1 >> coverage.out
 ./polfact 0 "x^3-2" 2 >> coverage.out
+./polfact 0 "x^3+6*x^2+18" 0 >> coverage.out
+./polfact 0 "x^3+6*x^2+18" 0 >> coverage.out
+./polfact 0 "x^3+6*x^2+18" 0 >> coverage.out
 ./polfact 0 "x^3-12x^2+12x+23" 0 >> coverage.out
 ./polfact 0 "x^3-12x^2+12x+23" 1 >> coverage.out
 ./polfact 0 "x^3-12x^2+12x+23" 2 >> coverage.out
@@ -61,6 +64,9 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "x^4+4*x^2+23" 0 >> coverage.out
 ./polfact 0 "x^4+4*x^2+23" 1 >> coverage.out
 ./polfact 0 "x^4+4*x^2+23" 2 >> coverage.out
+./polfact 0 "x^4+4*x^2-23" 0 >> coverage.out
+./polfact 0 "x^4+4*x^2-23" 1 >> coverage.out
+./polfact 0 "x^4+4*x^2-23" 2 >> coverage.out
 ./polfact 0 "x^5+15*x+12" 0 >> coverage.out
 ./polfact 0 "x^5+15*x+12" 1 >> coverage.out
 ./polfact 0 "x^5+15*x+12" 2 >> coverage.out
