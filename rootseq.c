@@ -559,15 +559,36 @@ static void CubicEquation(const int* polynomial, int multiplicity)
       // x1 = q ^ (1/3)
       // x2 = (-1/2) * q ^ (1/3) + i * (3 ^ (1/2) * q ^ (1/3)) / 2
       // x3 = (-1/2) * q ^ (1/3) - i * (3 ^ (1/2) * q ^ (1/3)) / 2
+      bool isCbrtNegative;
       BigRationalNegate(&RatDeprIndependent, &RatDeprIndependent);
       ForceDenominatorPositive(&RatDeprIndependent);
+      isCbrtNegative = (RatDeprIndependent.numerator.sign == SIGN_NEGATIVE);
+      RatDeprIndependent.numerator.sign = SIGN_POSITIVE;
       for (ctr = 0; ctr < 3; ctr++)
       {
         showX(multiplicity);
-        if (!BigIntIsZero(&Quadratic))
+        if (BigIntIsZero(&Quadratic))
+        {
+          if ((ctr == 0) && isCbrtNegative)
+          {
+            showText(ptrMinus);
+          }
+        }
+        else
         {
           showRationalNoParen(&RatQuadratic);
-          showText(" + ");
+          if ((ctr == 0) && isCbrtNegative)
+          {
+            *ptrOutput = ' ';
+            ptrOutput++;
+            showText(ptrMinus);
+            *ptrOutput = ' ';
+            ptrOutput++;
+          }
+          else
+          {
+            showText(" + ");
+          }
         }
         if (ctr == 0)
         {
@@ -577,7 +598,10 @@ static void CubicEquation(const int* polynomial, int multiplicity)
         {
           if (pretty != PARI_GP)
           {
-            showText(ptrMinus);
+            if (!isCbrtNegative)
+            {
+              showText(ptrMinus);
+            }
             *ptrOutput = ' ';
             ptrOutput++;
             showRatConstants("1", "2");
@@ -587,7 +611,14 @@ static void CubicEquation(const int* polynomial, int multiplicity)
           }
           else
           {
-            showText("(-1/2) *");
+            if (isCbrtNegative)
+            {
+              showText("(1/2) *");
+            }
+            else
+            {
+              showText("(-1/2) *");
+            }
           }
           CbrtIndep();     // q^(1/3)
           showPlusSignOn(ctr == 1, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);

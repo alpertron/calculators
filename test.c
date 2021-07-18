@@ -26,7 +26,7 @@
 #include "batch.h"
 #include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 16
+#define DEBUG_CODE 9
 #endif
 void dilogText(const char *baseText, const char *powerText, const char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -204,13 +204,23 @@ int main(int argc, char* argv[])
   }
   printf("%s", output);
 #elif DEBUG_CODE == 9
-  if (argc != 3)
+  if (argc != 4)
   {
-    (void)printf("modulus polynomial\n");
+    (void)printf("modulus polynomial pretty (0: pretty, 1: TEX, 2: Pari-GP)\n");
     return 0;
   }
-  pretty = PRETTY_PRINT;
-  for (int ctr = 0; ctr < 1; ctr++)
+  switch (argv[3][0] - '0')
+  {
+  case 0:
+    pretty = PRETTY_PRINT;
+    break;
+  case 1:
+    pretty = TEX;
+    break;
+  default:
+    pretty = PARI_GP;
+    break;
+  }  for (int ctr = 0; ctr < 1; ctr++)
   {
     polyFactText(argv[1], argv[2], 7);
   }

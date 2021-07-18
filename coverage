@@ -25,21 +25,51 @@ lcov --capture --directory . --output-file ecm.info
 make clean
 make polfact
 echo -e "\n\n**** POLFACT ****" >> coverage.out
-./polfact 0 "x^120-1" >> coverage.out
-./polfact 7 "x^10+x^5-1" >> coverage.out
-./polfact 0 "x+23" >> coverage.out
-./polfact 0 "(2*x+23)*(3x+5)" >> coverage.out
-./polfact 0 "x^2+7*x+23" >> coverage.out
-./polfact 0 "x^3-4*x^2+12*x+23" >> coverage.out
-./polfact 0 "x^3-x^2+2x+5" >> coverage.out
-./polfact 0 "x^3-12x^2+12x+23" >> coverage.out
-./polfact 0 "x^4+3*x^2+12*x+23" >> coverage.out
-./polfact 0 "x^5+15*x+12" >> coverage.out
-./polfact 0 "x^10+2*x^5+23" >> coverage.out
-./polfact 0 "x^10+2*x^5-23" >> coverage.out
-./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" >> coverage.out
-./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" >> coverage.out
-./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" >> coverage.out
+./polfact 0 "x^120-1" 0 >> coverage.out
+./polfact 0 "x^120-1" 1 >> coverage.out
+./polfact 0 "x^120-1" 2 >> coverage.out
+./polfact 7 "x^10+x^5-1" 0 >> coverage.out
+./polfact 7 "x^10+x^5-1" 1 >> coverage.out
+./polfact 7 "x^10+x^5-1" 2 >> coverage.out
+./polfact 0 "x+23" 0 >> coverage.out
+./polfact 0 "x+23" 1 >> coverage.out
+./polfact 0 "x+23" 2 >> coverage.out
+./polfact 0 "(2*x+23)*(3x+5)" 0 >> coverage.out
+./polfact 0 "(2*x+23)*(3x+5)" 1 >> coverage.out
+./polfact 0 "(2*x+23)*(3x+5)" 2 >> coverage.out
+./polfact 0 "x^2+7*x+23" 0 >> coverage.out
+./polfact 0 "x^2+7*x+23" 1 >> coverage.out
+./polfact 0 "x^2+7*x+23" 2 >> coverage.out
+./polfact 0 "x^3-4*x^2+12*x+23" 0 >> coverage.out
+./polfact 0 "x^3-4*x^2+12*x+23" 1 >> coverage.out
+./polfact 0 "x^3-4*x^2+12*x+23" 2 >> coverage.out
+./polfact 0 "x^3-x^2+2x+5" 0 >> coverage.out
+./polfact 0 "x^3-x^2+2x+5" 1 >> coverage.out
+./polfact 0 "x^3-x^2+2x+5" 2 >> coverage.out
+./polfact 0 "x^3-12x^2+12x+23" 0 >> coverage.out
+./polfact 0 "x^3-12x^2+12x+23" 1 >> coverage.out
+./polfact 0 "x^3-12x^2+12x+23" 2 >> coverage.out
+./polfact 0 "x^4+3*x^2+12*x+23" 0 >> coverage.out
+./polfact 0 "x^4+3*x^2+12*x+23" 1 >> coverage.out
+./polfact 0 "x^4+3*x^2+12*x+23" 2 >> coverage.out
+./polfact 0 "x^5+15*x+12" 0 >> coverage.out
+./polfact 0 "x^5+15*x+12" 1 >> coverage.out
+./polfact 0 "x^5+15*x+12" 2 >> coverage.out
+./polfact 0 "x^10+2*x^5+23" 0 >> coverage.out
+./polfact 0 "x^10+2*x^5+23" 1 >> coverage.out
+./polfact 0 "x^10+2*x^5+23" 2 >> coverage.out
+./polfact 0 "x^10+2*x^5-23" 0 >> coverage.out
+./polfact 0 "x^10+2*x^5-23" 1 >> coverage.out
+./polfact 0 "x^10+2*x^5-23" 2 >> coverage.out
+./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" 0 >> coverage.out
+./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" 1 >> coverage.out
+./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" 2 >> coverage.out
+./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 >> coverage.out
+./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 1 >> coverage.out
+./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 2 >> coverage.out
+./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 >> coverage.out
+./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 1 >> coverage.out
+./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 2 >> coverage.out
 lcov --capture --directory . --output-file polfact.info
 make clean
 make fsquares
