@@ -1035,6 +1035,7 @@ static void biquadraticEquation(int multiplicity)
     CopyBigInt(&Rat2.numerator, &RatDeprIndependent.numerator);
     CopyBigInt(&Rat2.denominator, &RatDeprIndependent.denominator);
     MultiplyRationalBySqrtRational(&Rat1, &Rat2);
+    BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
     for (ctr = 0; ctr < 4; ctr++)
     {
       enum eSign sign = RatDeprQuadratic.numerator.sign;
