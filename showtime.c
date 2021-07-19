@@ -81,13 +81,13 @@ void showElapsedTime(char **pptrOutput)
   *pptrOutput = ptrOutput;
 }
 
+#ifdef __EMSCRIPTEN__
 void showElapsedTimeSec(char **pptrOutput)
 {
   char *ptrOutput = *pptrOutput;
   copyStr(&ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
-#ifdef __EMSCRIPTEN__
   GetDHMS(&ptrOutput, (int)(tenths() - originalTenthSecond) / 10);
-#endif
   copyStr(&ptrOutput, "</p>");
   *pptrOutput = ptrOutput;
 }
+#endif

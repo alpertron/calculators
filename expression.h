@@ -131,6 +131,9 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
 void partition(int val, BigInteger *pResult);
 enum eExprErr factorial(BigInteger *result, int argument, int multifact);
 enum eExprErr primorial(BigInteger *result, int argument);
+enum eExprErr ComputeFibLucas(int origValue, BigInteger* pArgument);
+enum eExprErr ComputeBack(BigInteger* pArgument);
+enum eExprErr ComputeNext(BigInteger* pArgument);
 void textError(char **pptrOutput, enum eExprErr rc);
 void initializeSmallPrimes(int* pSmallPrimes);
 #else

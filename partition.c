@@ -22,13 +22,17 @@
 #include <math.h>
 #include "bignbr.h"
 #include "expression.h"
+#ifdef FACTORIZATION_APP
+#include "factor.h"
+#endif
 
+#define COMPUTE_NEXT_PRIME_SIEVE_SIZE 2000
 #define SQRT_MAX_VALUE_LIMB 46341
 static limb partArray[100000 + 1000];
 static limb prodModulus[MAX_LEN];
 static int prodModulusLimbs;
 static BigInteger prod;
-static BigInteger factor;
+static BigInteger theFactor;
 
 static void smallMultiply(int factor1, int factor2, int *product)
 {
@@ -270,8 +274,8 @@ static enum eExprErr ProcessFactorsFactorial(double factorAccum,
     while ((nbrGroupsAccum & 1) == 0)
     {
       index--;
-      IntArray2BigInteger(&partArray[partArray[index].x].x, &factor);
-      rc = BigIntMultiply(&prod, &factor, &prod);
+      IntArray2BigInteger(&partArray[partArray[index].x].x, &theFactor);
+      rc = BigIntMultiply(&prod, &theFactor, &prod);
       if (rc != EXPR_OK)
       {
         return rc;
@@ -387,3 +391,240 @@ enum eExprErr primorial(BigInteger *result, int argument)
   nbrGroupsAccumulated = UintToInt(1U << shLeft);
   return ProcessFactorsFactorial(factorAccum, nbrGroupsAccumulated, result);
 }
+
+enum eExprErr ComputeFibLucas(int origValue, BigInteger* pArgument)
+{
+  limb largeVal;
+  int val;
+  int len;
+  int lenBytes;
+  limb* pFibonPrev;
+  limb* pFibonAct;
+  if (pArgument->sign == SIGN_NEGATIVE)
+  {
+    return EXPR_INVALID_PARAM;
+  }
+  if (pArgument->nbrLimbs > 1)
+  {
+    return EXPR_INTERM_TOO_HIGH;
+  }
+  largeVal.x = pArgument->limbs[0].x;
+#ifdef FACTORIZATION_APP
+  if (largeVal.x > 956620)
+#else
+  if (largeVal.x > 95662)
+#endif
+  {
+    return EXPR_INTERM_TOO_HIGH;
+  }
+  val = largeVal.x;
+  pFibonPrev = prod.limbs;
+  pFibonAct = theFactor.limbs;
+  len = 1;
+  if (val == 0)
+  {        // F(0) = 0, L(0) = 2
+    pFibonAct->x = origValue;
+  }
+  else
+  {
+    int j;
+    // For Lucas sequences: FibonPrev = 2, FibonAct = 1
+    // For Fibonacci sequences: FibonPrev = 0, FibonAct = 1
+    pFibonPrev->x = origValue;
+    pFibonAct->x = 1;
+    for (int i = 1; i < val; i++)
+    {
+      limb* pTemp;
+      unsigned int carry = 0;
+      for (j = 0; j < len; j++)
+      {
+        carry += (unsigned int)(pFibonPrev + j)->x + (unsigned int)(pFibonAct + j)->x;
+        (pFibonPrev + j)->x = UintToInt(carry & MAX_VALUE_LIMB);
+        carry >>= BITS_PER_GROUP;
+      }
+      if (carry != 0U)
+      {
+        (pFibonPrev + j)->x = carry;
+        (pFibonAct + j)->x = 0;
+        len++;
+      }
+      pTemp = pFibonAct;
+      pFibonAct = pFibonPrev;
+      pFibonPrev = pTemp;
+    }
+  }
+  pArgument->sign = SIGN_POSITIVE;
+  pArgument->nbrLimbs = len;
+  lenBytes = len * (int)sizeof(limb);
+  (void)memcpy(pArgument->limbs, pFibonAct, lenBytes);
+  return EXPR_OK;
+}
+
+static void generateSieve(const int* pSmallPrimes, char* sieve,
+  const BigInteger* pArgument, bool isNext)
+{
+  const int* ptrSmallPrimes = pSmallPrimes;
+  // Indicate numbers not divisible by small primes in advance.
+  (void)memset(sieve, 0, COMPUTE_NEXT_PRIME_SIEVE_SIZE);
+  for (int ctr = 0; ctr < 1229; ctr++)
+  {     // For each prime less than 10000...
+    int prime = *ptrSmallPrimes;
+    ptrSmallPrimes++;
+    int remainder = getRemainder(pArgument, prime);
+    // Compute first element of sieve to indicate multiple of prime.
+    if (isNext)
+    {
+      if (remainder > 0)
+      {
+        remainder = prime - remainder;
+      }
+    }
+    else
+    {
+      remainder = (COMPUTE_NEXT_PRIME_SIEVE_SIZE - remainder) % prime;
+    }
+    if (remainder < 0)
+    {
+      remainder += prime;
+    }
+    for (; remainder < COMPUTE_NEXT_PRIME_SIEVE_SIZE; remainder += prime)
+    {        // Indicate numbers are divisible by this prime.
+      sieve[remainder] = 1;
+    }
+  }
+}
+
+// Compute previous probable prime
+enum eExprErr ComputeBack(BigInteger* pArgument)
+{
+  char sieve[COMPUTE_NEXT_PRIME_SIEVE_SIZE];
+  BigInteger* pResult = pArgument;
+  limb* pResultLimbs = pResult->limbs;
+  const limb* pArgumentLimbs = pArgument->limbs;
+  pResult->sign = SIGN_POSITIVE;
+  if (pArgument->sign == SIGN_NEGATIVE)
+  {
+    return EXPR_INVALID_PARAM;
+  }
+  if (pArgument->nbrLimbs == 1)
+  {
+    if (pArgumentLimbs->x < 3)
+    {
+      return EXPR_INVALID_PARAM;
+    }
+    if (pArgumentLimbs->x == 3)
+    {
+      pResult->nbrLimbs = 1;
+      pResultLimbs->x = 2;
+      return EXPR_OK;
+    }
+  }
+  initializeSmallPrimes(smallPrimes);
+  CopyBigInt(pResult, pArgument);
+  pResultLimbs->x |= 1;  // If number is even, use next odd number.
+  if (pResult->nbrLimbs == 1)
+  {
+    int rc;
+    do
+    {        // Loop that searches for previous probable prime.
+      addbigint(pResult, -2);
+#ifdef FACTORIZATION_APP
+      rc = BpswPrimalityTest(pResult, NULL);  // Continue loop if not probable prime.
+#else
+      rc = BpswPrimalityTest(pResult);        // Continue loop if not probable prime.
+#endif
+    } while (rc != 0);
+  }
+  else
+  {          // Big number: use sieve.
+    for (;;)
+    {        // Loop that searches for previous probable prime.
+      addbigint(pResult, -COMPUTE_NEXT_PRIME_SIEVE_SIZE);
+      generateSieve(smallPrimes, sieve, pResult, true);
+      for (int ctr = COMPUTE_NEXT_PRIME_SIEVE_SIZE - 1; ctr >= 0; ctr--)
+      {
+        if (sieve[ctr] == 0)
+        {   // Number is not divisible by primes less than 1000.
+          addbigint(pResult, ctr);
+#ifdef FACTORIZATION_APP
+          if (BpswPrimalityTest(pResult, NULL) == 0)  // End loop if probable prime.
+#else
+          if (BpswPrimalityTest(pResult) == 0)        // End loop if probable prime.
+#endif
+          {
+            return EXPR_OK;
+          }
+          addbigint(pResult, -ctr);
+        }
+      }
+    }
+  }
+  return EXPR_OK;
+}
+
+// Compute next probable prime
+enum eExprErr ComputeNext(BigInteger* pArgument)
+{
+  char sieve[COMPUTE_NEXT_PRIME_SIEVE_SIZE];
+  BigInteger* pResult = pArgument;
+  limb* pResultLimbs = pResult->limbs;
+  const limb* pArgumentLimbs = pArgument->limbs;
+  pResult->sign = SIGN_POSITIVE;
+  if ((pArgument->sign == SIGN_NEGATIVE) ||
+    ((pArgument->nbrLimbs == 1) && (pArgumentLimbs->x < 2)))
+  {
+    pResult->nbrLimbs = 1;
+    pResultLimbs->x = 2;
+    return EXPR_OK;
+  }
+  initializeSmallPrimes(smallPrimes);
+  CopyBigInt(pResult, pArgument);
+  if ((pResult->limbs[0].x & 1) == 0)
+  {   // Number is even.
+    addbigint(pResult, 1);
+  }
+  else
+  {   // Number is odd.
+    addbigint(pResult, 2);
+  }
+  if (pResult->nbrLimbs == 1)
+  {
+    for (;;)
+    {        // Loop that searches for next probable prime.
+#ifdef FACTORIZATION_APP
+      if (BpswPrimalityTest(pResult, NULL) == 0)  // Continue loop if not probable prime.
+#else
+      if (BpswPrimalityTest(pResult) == 0)        // Continue loop if not probable prime.
+#endif
+      {
+        return EXPR_OK;
+      }
+      addbigint(pResult, 2);
+    }
+  }
+  else
+  {          // Big number: use sieve.
+    for (;;)
+    {        // Loop that searches for next probable prime.
+      generateSieve(smallPrimes, sieve, pResult, true);
+      for (int ctr = 0; ctr < COMPUTE_NEXT_PRIME_SIEVE_SIZE; ctr++)
+      {
+        if (sieve[ctr] == 0)
+        {   // Number is not divisible by primes less than 1000.
+          addbigint(pResult, ctr);
+#ifdef FACTORIZATION_APP
+          if (BpswPrimalityTest(pResult, NULL) == 0)  // End loop if probable prime.
+#else
+          if (BpswPrimalityTest(pResult) == 0)        // End loop if probable prime.
+#endif
+          {
+            return EXPR_OK;
+          }
+          addbigint(pResult, -ctr);
+        }
+      }
+      addbigint(pResult, COMPUTE_NEXT_PRIME_SIEVE_SIZE);
+    }
+  }
+}
+

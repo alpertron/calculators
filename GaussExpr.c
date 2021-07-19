@@ -88,7 +88,6 @@ static void ComputeGCD(void);
 static int Modulo(BigInteger* ReNum, BigInteger* ImNum,
   const BigInteger* ReDen, const BigInteger* ImDen,
   BigInteger* Result);
-static int ComputeFibonacci(int prev, int actual);
 static enum eExprErr isPrime(void);
 static enum eExprErr ComputeModPow(void);
 static enum eExprErr ComputeModInv(void);
@@ -270,7 +269,11 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
 
     case TOKEN_F:
       getCurrentStackValue(&curStackRe, &curStackIm);
-      retcode = ComputeFibonacci(1, 0);
+      if (!BigIntIsZero(&curStackIm))
+      {     // Imaginary part of argument must be zero.
+        return EXPR_INVALID_PARAM;
+      }
+      retcode = ComputeFibLucas(0, &curStackRe);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -279,7 +282,37 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
 
     case TOKEN_L:
       getCurrentStackValue(&curStackRe, &curStackIm);
-      retcode = ComputeFibonacci(-1, 2);
+      if (!BigIntIsZero(&curStackIm))
+      {     // Imaginary part of argument must be zero.
+        return EXPR_INVALID_PARAM;
+      }
+      retcode = ComputeFibLucas(2, &curStackRe);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_N:
+      getCurrentStackValue(&curStackRe, &curStackIm);
+      if (!BigIntIsZero(&curStackIm))
+      {     // Imaginary part of argument must be zero.
+        return EXPR_INVALID_PARAM;
+      }
+      retcode = ComputeNext(&curStackRe);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_B:
+      getCurrentStackValue(&curStackRe, &curStackIm);
+      if (!BigIntIsZero(&curStackIm))
+      {     // Imaginary part of argument must be zero.
+        return EXPR_INVALID_PARAM;
+      }
+      retcode = ComputeBack(&curStackRe);
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -311,6 +344,7 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_PRIMORIAL:
+      getCurrentStackValue(&curStackRe, &curStackIm);
       if (!BigIntIsZero(&curStackIm) || (curStackRe.sign == SIGN_NEGATIVE))
       {         // Imaginary part must be zero.
         return EXPR_INVALID_PARAM;
@@ -431,6 +465,9 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case OPER_REMAINDER:
+      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      stackIndex--;
+      getCurrentStackValue(&curStackRe, &curStackIm);
       retcode = Modulo(&curStackRe, &curStackIm, &curStack2Re, &curStack2Im, Result);
       if (retcode != EXPR_OK)
       {
@@ -474,49 +511,6 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
     return EXPR_NUMBER_TOO_HIGH;
   }
   return EXPR_OK;
-}
-
-static int ComputeFibonacci(int prev, int actual)
-{
-  BigInteger FibonPrev;
-  BigInteger FibonAct;
-  BigInteger FibonNext;
-  BigInteger Re = curStackRe;
-  int arg;
-  if (!BigIntIsZero(&curStackIm))
-  {     // Imaginary part of argument must be zero.
-    return EXPR_INVALID_PARAM;
-  }
-  if (Re.nbrLimbs > 1)
-  {
-    return EXPR_INTERM_TOO_HIGH;
-  }
-  arg = Re.limbs[0].x;
-  if (arg > 9571)
-  {
-    return EXPR_INTERM_TOO_HIGH;
-  }
-  if (arg < 0)
-  {
-    return EXPR_INVALID_PARAM;
-  }
-  intToBigInteger(&FibonPrev, prev);
-  intToBigInteger(&FibonAct, actual);
-  FibonPrev.limbs[0].x = 1;
-  FibonAct.limbs[0].x = 0;
-  FibonPrev.nbrLimbs = 1;
-  FibonAct.nbrLimbs = 1;
-  FibonPrev.sign = SIGN_POSITIVE; 
-  FibonAct.sign = SIGN_POSITIVE;
-  for (int i=1; i<=arg; i++)
-  {
-    BigIntAdd(&FibonPrev, &FibonAct, &FibonNext);
-    CopyBigInt(&FibonPrev, &FibonAct);
-    CopyBigInt(&FibonAct, &FibonNext);
-  }
-  CopyBigInt(&curStackRe, &FibonAct);
-  intToBigInteger(&curStackIm, 0);   // Initialize imaginary part to zero.
-  return 0;
 }
 
 static enum eExprErr isPrime(void)
@@ -594,7 +588,6 @@ static enum eExprErr ComputePartition(void)
     return EXPR_INTERM_TOO_HIGH;
   }
   partition(val, &curStackRe);
-  intToBigInteger(&curStackIm, 0);
   return EXPR_OK;
 }
 

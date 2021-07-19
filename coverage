@@ -155,6 +155,9 @@ echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 ./gaussian 1 1 >> coverage.out
 ./gaussian "232435+432i" 1 >> coverage.out
 ./gaussian "10**20+45+(23i)" 1 >> coverage.out
+./gaussian "6!! + Re(12+4i) - Im(2 - 3i) * Norm(2 + 4i)" 1 >> coverage.out
+./gaussian "200! / 199! + 7# + 300 % 28 + F(24) + L(12) + N(24) + B(32)" 1 >> coverage.out
+./gaussian "gcd(8 + 4i, 6+3i)" 1 >> coverage.out
 lcov --capture --directory . --output-file gaussian.info
 
 while true; do
