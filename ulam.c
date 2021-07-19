@@ -568,7 +568,7 @@ void ShowLabel(char **pptrText, char *text, int linear, int *indep)
           b /= 4;
           // Divide by temp[1]: temp[0] by 4.
           tmp = (((unsigned int)temp[0] >> 2) |
-            ((unsigned int)temp[1] << (BITS_PER_GROUP - 2))) & MAX_VALUE_LIMB;
+            ((unsigned int)temp[1] << BITS_PER_GROUP_MINUS_2)) & MAX_VALUE_LIMB;
           temp[0] = (int)tmp;
           tmp = (unsigned int)temp[1] >> 2;
           temp[1] = (int)tmp;
@@ -579,7 +579,7 @@ void ShowLabel(char **pptrText, char *text, int linear, int *indep)
           b /= 2;
           // Divide by temp[1]: temp[0] by 2.
           tmp = (((unsigned int)temp[0] >> 1) |
-            ((unsigned int)temp[1] << (BITS_PER_GROUP-1))) & MAX_VALUE_LIMB;
+            ((unsigned int)temp[1] << BITS_PER_GROUP_MINUS_1)) & MAX_VALUE_LIMB;
           temp[0] = (int)tmp;
           tmp = (unsigned int)temp[1] >> 1;
           temp[1] = (int)tmp;

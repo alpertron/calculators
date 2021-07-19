@@ -21,6 +21,8 @@
 
 #define NBR_LIMBS        2
 #define BITS_PER_GROUP   31
+#define BITS_PER_GROUP_MINUS_1   30
+#define BITS_PER_GROUP_MINUS_2   29
 #define LIMB_RANGE       0x80000000U
 #define MAX_INT_NBR      0x7FFFFFFF
 #define HALF_INT_RANGE   0x40000000

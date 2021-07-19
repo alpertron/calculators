@@ -627,7 +627,6 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
     {      // i is prime according to sieve.
            // If n+/-1 is multiple of p, then it must be multiple
            // of p^2, otherwise it cannot be a perfect power.
-      uint64_t remainder;
       unsigned int index;
       int minRemainder;
       int maxRemainder;
@@ -635,6 +634,7 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
       if ((rem == 1) || ((unsigned int)rem == (i - 1U)))
       {    // Either n+1 or n-1 is multiple of p.
            // Test whether it is multiple of p^2.
+        uint64_t remainder;
         uint64_t i2 = (uint64_t)i * (uint64_t)i;
         longToBigInteger(&Temp1, i2);
         (void)BigIntRemainder(numToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
