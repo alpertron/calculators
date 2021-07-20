@@ -23,7 +23,9 @@
 
 char inputString[1000000];
 
+#ifdef __EMSCRIPTEN__
 EXTERNALIZE char *getInputStringPtr(void)
 {
   return inputString;
 }
+#endif

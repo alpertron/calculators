@@ -27,17 +27,7 @@ void showText(const char* text)
   copyStr(&ptrOutput, text);
 }
 
-void showMinus(void)
-{
-  showText("&minus;");
-}
-
 void shownbr(const BigInteger* value)
 {
   BigInteger2Dec(&ptrOutput, value, groupLen);
-}
-
-void showInt(int value)
-{
-  int2dec(&ptrOutput, value);
 }

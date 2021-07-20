@@ -124,6 +124,7 @@ void int2dec(char **pOutput, int nbr)
   *pOutput = ptrOutput;
 }
 
+#ifdef __EMSCRIPTEN__
 void long2dec(char **pOutput, uint64_t nbr)
 {
   char *ptrOutput = *pOutput;
@@ -152,6 +153,7 @@ void long2dec(char **pOutput, uint64_t nbr)
   }
   *pOutput = ptrOutput;
 }
+#endif
 
 void int2hex(char **pOutput, int nbr)
 {

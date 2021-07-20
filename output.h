@@ -19,9 +19,7 @@
 #include "bignbr.h"
 
 void showText(const char* text);
-void showMinus(void);
 void shownbr(const BigInteger* value);
-void showInt(int value);
 void beginLine(char** pptrOutput);
 void finishLine(char** pptrOutput);
 
