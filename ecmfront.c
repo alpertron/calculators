@@ -941,7 +941,7 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
     doFactorization = performFactorization;
   }
   enum eExprErr rc = BatchProcessing(tofactorText, &tofactor, &ptrOutput, &isBatch);
-  if (!isBatch && (rc == EXPR_OK) && doFactorization)
+  if (!isBatch && (rc == EXPR_OK) && (counterC == -1) && doFactorization)
   {
 #ifdef __EMSCRIPTEN__
     int64_t sumSquaresModMult = 0;

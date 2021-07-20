@@ -430,7 +430,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       {
         textError(&ptrOutput, rc);
       }
-      counterC = 2;
+      counterC = -1;
       if (fromFile)
       {
         copyStr(&ptrOutput, (lineEndingCRLF ? "\r\n" : "\n"));

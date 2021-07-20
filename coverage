@@ -22,6 +22,13 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "7**(7*23)+1" >> coverage.out
 ./ecm "2**360-1" >> coverage.out
 ./ecm "10^1000/10^700" >> coverage.out
+./ecm "x" >> coverage.out
+./ecm "x=" >> coverage.out
+./ecm "x=23" >> coverage.out
+./ecm "x=23;13" >> coverage.out
+./ecm "x=23;x=x+1" >> coverage.out
+./ecm "x=23;x=x+1;x-10;u" >> coverage.out
+./ecm "x=23;x=x+1;x-10;x+2" >> coverage.out
 lcov --capture --directory . --output-file ecm.info
 make clean
 make polfact

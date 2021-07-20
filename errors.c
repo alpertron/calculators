@@ -64,6 +64,10 @@ void textError(char **pptrOutput, enum eExprErr rc)
         copyStr(&ptrOut, " en la expresión ");
         *ptrOut = (char)(expressionNbr + '0');
         ptrOut++;
+        *ptrOut = ':';
+        ptrOut++;
+        *ptrOut = ' ';
+        ptrOut++;
         *ptrOut = 0;
       }
     }
@@ -74,6 +78,10 @@ void textError(char **pptrOutput, enum eExprErr rc)
       {
         copyStr(&ptrOut, " in expression #");
         *ptrOut = (char)(expressionNbr + '0');
+        ptrOut++;
+        *ptrOut = ':';
+        ptrOut++;
+        *ptrOut = ' ';
         ptrOut++;
         *ptrOut = 0;
       }
