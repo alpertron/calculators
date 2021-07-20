@@ -99,7 +99,7 @@ static BigInteger Xlin;
 static BigInteger Ylin;
 static int nbrFactors;
 static bool solFound;
-static bool teach = true;
+bool teach = true;
 static char also;
 static bool ExchXY;
 static char *ptrOutput;

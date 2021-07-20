@@ -26,7 +26,10 @@
 #include "batch.h"
 #include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 13
+#define DEBUG_CODE 17
+#endif
+#if DEBUG_CODE == 17
+extern bool teach;
 #endif
 void dilogText(const char *baseText, const char *powerText, const char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -315,10 +318,19 @@ int main(int argc, char* argv[])
   quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
   printf("%s\n", output);
 #elif DEBUG_CODE == 17
-  if (argc != 7)
+  if (argc != 8)
   {
-    printf("Enter 6 coefficients: x^2, xy, y^2, x, y, const.\n");
+    printf("Enter 6 coefficients and teach flag (0 or 1):\n"
+      "   x^2, xy, y^2, x, y, const teach.\n");
     return 1;
+  }
+  if (argv[7][0] == '1')
+  {
+    teach = true;
+  }
+  else
+  {
+    teach = false;
   }
   quadText(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
   printf("%s\n", output);
