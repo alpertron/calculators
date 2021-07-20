@@ -87,9 +87,6 @@ void textError(char **pptrOutput, enum eExprErr rc)
       }
     }
     break;
-  case EXPR_TOO_MANY_PAREN:
-    copyStr(&ptrOut, lang ? "Demasiados paréntesis" : "Too many parenthesis");
-    break;
   case EXPR_INVALID_PARAM:
     copyStr(&ptrOut, lang ? "Parámetro inválido" : "Invalid parameter");
     break;
@@ -101,9 +98,6 @@ void textError(char **pptrOutput, enum eExprErr rc)
     break;
   case EXPR_ARGUMENTS_NOT_RELATIVELY_PRIME:
     copyStr(&ptrOut, lang ? "MCD de los argumentos no es 1" : "GCD of arguments is not 1");
-    break;
-  case EXPR_BREAK:
-    copyStr(&ptrOut, lang ? "Detenido por el usuario" : "Stopped by user");
     break;
   case EXPR_VAR_OR_COUNTER_REQUIRED:
     copyStr(&ptrOut, lang ? "La expresión ": "Expression #");

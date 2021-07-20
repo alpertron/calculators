@@ -96,7 +96,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
   // Check whether the divisor is zero.
   if (BigIntIsZero(pDivisor))
   {  // Indicate overflow if divisor is zero.
-    return EXPR_NUMBER_TOO_HIGH;
+    return EXPR_DIVIDE_BY_ZERO;
   }
   // Get number of limbs of quotient.
   nbrLimbsDividend = pDividend->nbrLimbs;
