@@ -133,8 +133,12 @@ lcov --capture --directory . --output-file dilog.info
 make clean
 make quad
 echo -e "\n\n**** QUAD ****" >> coverage.out
+./quad 0 0 0 0 5 6 0 >> coverage.out
+./quad 0 0 0 0 5 6 1 >> coverage.out
 ./quad 1 2 3 4 5 6 0 >> coverage.out
 ./quad 1 2 3 4 5 6 1 >> coverage.out
+./quad 1 0 0 0 7 -12 0 >> coverage.out
+./quad 1 0 0 0 7 -12 1 >> coverage.out
 ./quad 1 0 -991 0 0 -1 0 >> coverage.out
 ./quad 1 0 -991 0 0 -1 1 >> coverage.out
 ./quad 5 3 -991 23 42 -1 0 >> coverage.out
