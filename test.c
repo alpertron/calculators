@@ -64,11 +64,11 @@ int main(int argc, char* argv[])
 #if DEBUG_CODE == 1
 //  fsquaresText("n(10^32)", 6);
   fsquaresText(argv[1], 6);
-  printf("%s\n", output);
+  (void)printf("%s\n", output);
 #elif DEBUG_CODE == 2
   app = 1;
   fcubesText(argv[1], 6);
-  printf("%s\n", output);
+  (void)printf("%s\n", output);
 #elif DEBUG_CODE == 3
   int i, len;
   for (i = 0; i < 20; i++)
@@ -80,9 +80,9 @@ int main(int argc, char* argv[])
   multiply(Factor5, Factor6, Product, 4, NULL);
   for (i = 0; i < 32; i++)
   {
-    printf("%04X ", Product[i]);
+    (void)printf("%04X ", Product[i]);
   }
-  printf("\n");
+  (void)printf("\n");
   Factor1[0] = 0;
   Factor1[1] = 0;
   Factor1[2] = 0;
@@ -123,11 +123,11 @@ int main(int argc, char* argv[])
   Bin2Dec(&ptrOutput, quotient.limbs, quotient.nbrLimbs, 0);
   if (quotient.sign == SIGN_POSITIVE)
   {
-    printf("Quotient = %s\n", output);
+    (void)printf("Quotient = %s\n", output);
   }
   else
   {
-    printf("Quotient = -%s\n", output);
+    (void)printf("Quotient = -%s\n", output);
   }
 #elif DEBUG_CODE == 5
   int i;
@@ -135,13 +135,13 @@ int main(int argc, char* argv[])
   {
     expr[i] = 0;
     fcubesText(expr, 6);
-    printf("%s\n\n", output);
+    (void)printf("%s\n\n", output);
   }
 #elif DEBUG_CODE == 6
   char* ptrInput;
   if (argc != 4)
   {
-    printf("num delta den\n");
+    (void)printf("num delta den\n");
     return 0;
   }
   ptrInput = input;
@@ -152,18 +152,18 @@ int main(int argc, char* argv[])
   copyStr(&ptrInput, argv[3]);
   ptrInput++;
   contfracText(input, 20000);
-  printf("%s\n", output);
+  (void)printf("%s\n", output);
 #elif DEBUG_CODE == 7
   char* ptrInput;
   if (argc != 2)
   {
-    printf("num\n");
+    (void)printf("num\n");
     return 0;
   }
   ptrInput = input;
   (void)strcpy(ptrInput, argv[1]);
   fsquaresText(input, 6);
-  printf("%s\n", output);
+  (void)printf("%s\n", output);
 #elif DEBUG_CODE == 8
   char* ptrInput;
   char* ptrOutput;
@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
 
   if (argc != 3)
   {
-    printf("num mod\n");
+    (void)printf("num mod\n");
     return 0;
   }
   rc = ComputeExpression(argv[1], &num);
@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
       Bin2Dec(&ptrOutput, inv.limbs, NumberLength, 200);
     }
   }
-  printf("%s", output);
+  (void)printf("%s", output);
 #elif DEBUG_CODE == 9
   if (argc != 4)
   {
@@ -231,20 +231,20 @@ int main(int argc, char* argv[])
 #elif DEBUG_CODE == 11
   if (argc != 4)
   {
-    printf("base power modulus\n");
+    (void)printf("base power modulus\n");
     return 0;
   }
   dilogText(argv[1], argv[2], argv[3], 6);
   dilogText(argv[1], argv[2], argv[3], 6);
-  printf("%s\n", output);
+  (void)printf("%s\n", output);
 #elif DEBUG_CODE == 12
   if (argc != 3)
   {
-    printf("value factorize\n");
+    (void)printf("value factorize\n");
     return 0;
   }
   gaussianText(argv[1], argv[2][0]);
-  printf("%s\n", output);
+  (void)printf("%s\n", output);
 #elif DEBUG_CODE == 13
   skipPrimality = false;
   lang = false;
@@ -259,7 +259,7 @@ int main(int argc, char* argv[])
   if (argc == 3)
   {
     ecmFrontText(argv[1], true, argv[2]);
-    printf("%s\n", output);
+    (void)printf("%s\n", output);
   }
   else if (argc == 2)
   {
@@ -267,15 +267,15 @@ int main(int argc, char* argv[])
 #if 0
     (void)strcpy(text, "x=10**45+572;x=x+1;c<1000;x");
     ecmFrontText(text, true, ptrKnownFactors);
-    printf("%s\n", output);
+    (void)printf("%s\n", output);
     ecmFrontText(NULL, false, NULL);
-    printf("%s\n", output);
+    (void)printf("%s\n", output);
     valuesProcessed = 0;
     (void)strcpy(text, "10**45+573");
     ecmFrontText(text, true, NULL);
-    printf("%s\n", output);
+    (void)printf("%s\n", output);
     ecmFrontText(NULL, false, NULL);
-    printf("%s\n", output);
+    (void)printf("%s\n", output);
     return 0;
 #endif
     if (ptrKnownFactors != NULL)
@@ -285,11 +285,11 @@ int main(int argc, char* argv[])
     }
     (void)sprintf(text, "%s\n", argv[1]);
     ecmFrontText(text, true, ptrKnownFactors);
-    printf("%s\n", output);
+    (void)printf("%s\n", output);
   }
   else
   {
-    printf("value [known factors]\n");
+    (void)printf("value [known factors]\n");
     return 0;
   }
 #endif
@@ -312,15 +312,15 @@ int main(int argc, char* argv[])
 #elif DEBUG_CODE == 16
   if (argc != 5)
   {
-    printf("Enter: quadr linear const modulus\n");
+    (void)printf("Enter: quadr linear const modulus\n");
     return 1;
   }
   quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
-  printf("%s\n", output);
+  (void)printf("%s\n", output);
 #elif DEBUG_CODE == 17
   if (argc != 8)
   {
-    printf("Enter 6 coefficients and teach flag (0 or 1):\n"
+    (void)printf("Enter 6 coefficients and teach flag (0 or 1):\n"
       "   x^2, xy, y^2, x, y, const teach.\n");
     return 1;
   }
@@ -333,7 +333,7 @@ int main(int argc, char* argv[])
     teach = false;
   }
   quadText(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
-  printf("%s\n", output);
+  (void)printf("%s\n", output);
 #elif DEBUG_CODE == 18
   int resultLen, k;
   (void)memset(factors, 0xEE, 1000 * sizeof(limb));
@@ -360,17 +360,17 @@ int main(int argc, char* argv[])
   tempVal[3].x = 0;
   ptrOutput = output;
   Bin2Dec(&ptrOutput, tempVal, 3, 0);
-  printf("Value = %s\n", output);
+  (void)printf("Value = %s\n", output);
   ptrOutput = output;
   Bin2Dec(&ptrOutput, MontgomeryMultR1, NumberLength, 0);
-  printf("MontgomeryMultR1 = %s\n", output);
+  (void)printf("MontgomeryMultR1 = %s\n", output);
   ptrOutput = output;
   Bin2Dec(&ptrOutput, TestNbr, NumberLength, 0);
-  printf("TestNbr = %s\n", output);
+  (void)printf("TestNbr = %s\n", output);
   ModInvBigNbr(tempVal, tempRes, TestNbr, 3);
   ptrOutput = output;
   Bin2Dec(&ptrOutput, tempRes, 3, 0);
-  printf("Inverse = %s", output);
+  (void)printf("Inverse = %s", output);
 #elif DEBUG_CODE == 20
   int ctr;
   for (ctr = 0; ctr < 901; ctr++)
