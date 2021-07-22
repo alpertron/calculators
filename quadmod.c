@@ -434,12 +434,12 @@ static void SolveEquation(void)
           if (NumberLength > ValAOdd.nbrLimbs)
           {
             int lenBytes = (NumberLength - ValAOdd.nbrLimbs) * (int)sizeof(int);
-            memset(&ValAOdd.limbs[ValAOdd.nbrLimbs], 0, lenBytes);
+            (void)memset(&ValAOdd.limbs[ValAOdd.nbrLimbs], 0, lenBytes);
           }
           if (NumberLength > tmp2.nbrLimbs)
           {
             int lenBytes = (NumberLength - tmp2.nbrLimbs) * (int)sizeof(int);
-            memset(&tmp2.limbs[tmp2.nbrLimbs], 0, lenBytes);
+            (void)memset(&tmp2.limbs[tmp2.nbrLimbs], 0, lenBytes);
           }
           ComputeInversePower2(ValAOdd.limbs, tmp2.limbs, tmp1.limbs);
           (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
