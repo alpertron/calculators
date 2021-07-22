@@ -653,11 +653,13 @@ static void setNbrLimbs(BigInteger* pBigNbr)
 // when Quadr is even and Linear is odd. In this case there is unique solution.
 static void findQuadraticSolution(BigInteger* pSolution, int expon)
 {
+  int bytesLen;
   int exponent = expon;
   int bitMask = 1;
   limb* ptrSolution = pSolution->limbs;
   BigIntPowerOf2(&Q, exponent);
-  (void)memset(pSolution->limbs, 0, Q.nbrLimbs);
+  bytesLen = Q.nbrLimbs * (int)sizeof(limb);
+  (void)memset(pSolution->limbs, 0, bytesLen);
   while (exponent > 0)
   {
     exponent--;
@@ -794,10 +796,9 @@ void SolveQuadModEquation(void)
     TestNbr[NumberLength].x = 0;
     GetMontgomeryParms(NumberLength);
     BigIntModularDivision(&coeffIndep, &coeffLinear, &modulus, &z);
-    BigIntNegate(&z, &z);
-    if (z.sign == SIGN_NEGATIVE)
+    if (!BigIntIsZero(&z))
     {
-      BigIntAdd(&z, &modulus, &z);
+      BigIntSubt(&ValN, &z, &z);
     }
     (void)BigIntMultiply(&ValNn, &GcdAll, &Tmp[0]);
     if (teach)
@@ -944,7 +945,6 @@ void SolveQuadModEquation(void)
           BigIntAnd(&tmp1, &K1, &ValCOdd);      // (b/2) - a*c mod 2^n
           NumberLength = K1.nbrLimbs;
           ComputeInversePower2(ValAOdd.limbs, tmp2.limbs, tmp1.limbs);
-          setNbrLimbs(&tmp2);
           (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
           BigIntAnd(&ValCOdd, &K1, &ValCOdd);      // ((b/2) - a*c)/a mod 2^n
           (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
@@ -1058,7 +1058,11 @@ void SolveQuadModEquation(void)
         for (;;)
         {
           (void)BigIntRemainder(&ValAOdd, &prime, &tmp1);
-          if ((tmp1.nbrLimbs > 1) || (tmp1.limbs[0].x != 0))
+          if (ValAOdd.sign == SIGN_NEGATIVE)
+          {
+            BigIntAdd(&ValAOdd, &prime, &ValAOdd);
+          }
+          if (!BigIntIsZero(&tmp1))
           {
             break;
           }

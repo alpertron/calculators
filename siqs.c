@@ -2148,11 +2148,11 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   double bestadjust;
   int i;
   int j;
-  const int arrmult[] = { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43,
-    47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };
+  int arrmult[70];
   double adjustment[sizeof(arrmult)/sizeof(arrmult[0])];
   double dNumberToFactor;
   double dlogNumberToFactor;
+  int bytesLength;
   origNumberLength = NumberLength;
   common.siqs.nbrThreadFinishedPolySet = 0;
   trialDivisions = 0;
@@ -2186,7 +2186,8 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   common.siqs.Modulus[NumberLength].x = 0;
   NumberLength++;
   common.siqs.Modulus[NumberLength].x = 0;
-  (void)memcpy(common.siqs.TestNbr2, common.siqs.Modulus, (NumberLength+1)*sizeof(int));
+  bytesLength = (NumberLength + 1) * (int)sizeof(int);
+  (void)memcpy(common.siqs.TestNbr2, common.siqs.Modulus, bytesLength);
   (void)memset(common.siqs.matrixPartialHashIndex, 0xFF, sizeof(common.siqs.matrixPartialHashIndex));
 #ifdef __EMSCRIPTEN__
   InitSIQSStrings(common.siqs.SieveLimit);
@@ -2196,8 +2197,8 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   /* Compute startup data */
   /************************/
 
-  /* search for best Knuth-Schroeppel multiplier */
-  bestadjust = -10.0e0;
+  // Search for best Knuth-Schroeppel multiplier.
+  bestadjust = -10.0;
   common.siqs.primeSieveData[0].value = 1;
   common.siqs.primeTrialDivisionData[0].value = 1;
   rowPrimeSieveData = &common.siqs.primeSieveData[1];
@@ -2210,15 +2211,28 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
     rowPrimeTrialDivisionData->exp5 = rowPrimeTrialDivisionData->exp6 = 0;
 
   NbrMod = pNbrToFactor->x & 7;
-  for (j = 0; j<sizeof(arrmult)/sizeof(arrmult[0]); j++)
+  i = 1;
+  j = 0;
+  while (j < (int)sizeof(arrmult)/(int)sizeof(arrmult[0]))
   {
-    int mod = (NbrMod * arrmult[j]) & 7;
-    adjustment[j] = 0.34657359; /*  (ln 2)/2  */
-    if (mod == 1)
-      adjustment[j] *= (4.0e0);
-    if (mod == 5)
-      adjustment[j] *= (2.0e0);
-    adjustment[j] -= log((double)arrmult[j]) / (2.0e0);
+    if (((i % 4) != 0) && ((i % 9) != 0) && ((i % 25) != 0) && ((i % 49) != 0))
+    {             // Number is squarefree.
+      int mod;
+      arrmult[j] = i;
+      mod = (NbrMod * arrmult[j]) & 7;
+      adjustment[j] = 0.34657359; /*  (ln 2)/2  */
+      if (mod == 1)
+      {
+        adjustment[j] *= 4.0;
+      }
+      if (mod == 5)
+      {
+        adjustment[j] *= 2.0;
+      }
+      adjustment[j] -= log((double)arrmult[j]) / 2.0;
+      j++;
+    }
+    i++;
   }
   currentPrime = 3;
   while (currentPrime < 10000)

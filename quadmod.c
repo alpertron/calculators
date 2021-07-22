@@ -123,11 +123,13 @@ static void setNbrLimbs(BigInteger* pBigNbr)
 // when Quadr is even and Linear is odd. In this case there is unique solution.
 static void findQuadraticSolution(BigInteger* pSolution, int exponent)
 {
+  int bytesLen;
   int expon = exponent;
   int bitMask = 1;
   limb *ptrSolution = pSolution->limbs;
   BigIntPowerOf2(&Q, expon);
-  (void)memset(pSolution->limbs, 0, Q.nbrLimbs);
+  bytesLen = Q.nbrLimbs * (int)sizeof(limb);
+  (void)memset(pSolution->limbs, 0, bytesLen);
   while (expon > 0)
   {
     expon--;
@@ -429,8 +431,17 @@ static void SolveEquation(void)
           addbigint(&K1, -1);
           BigIntAnd(&tmp1, &K1, &ValCOdd);      // (b/2) - a*c mod 2^n
           NumberLength = K1.nbrLimbs;
+          if (NumberLength > ValAOdd.nbrLimbs)
+          {
+            int lenBytes = (NumberLength - ValAOdd.nbrLimbs) * (int)sizeof(int);
+            memset(&ValAOdd.limbs[ValAOdd.nbrLimbs], 0, lenBytes);
+          }
+          if (NumberLength > tmp2.nbrLimbs)
+          {
+            int lenBytes = (NumberLength - tmp2.nbrLimbs) * (int)sizeof(int);
+            memset(&tmp2.limbs[tmp2.nbrLimbs], 0, lenBytes);
+          }
           ComputeInversePower2(ValAOdd.limbs, tmp2.limbs, tmp1.limbs);
-          setNbrLimbs(&tmp2);
           (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
           BigIntAnd(&ValCOdd, &K1, &ValCOdd);      // ((b/2) - a*c)/a mod 2^n
           (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);

@@ -2366,6 +2366,14 @@ void ConvertToTwosComplement(BigInteger *value)
   limb *ptrLimb;
   if (value->sign == SIGN_POSITIVE)
   {    // If number is positive, no conversion is needed.
+    while (value->nbrLimbs > 1)
+    {
+      if (value->limbs[value->nbrLimbs - 1].x != 0)
+      {
+        break;
+      }
+      value->nbrLimbs--;
+    }
     return;
   }
   nbrLimbs = value->nbrLimbs;

@@ -26,7 +26,7 @@
 #include "batch.h"
 #include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 17
+#define DEBUG_CODE 16
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -315,6 +315,7 @@ int main(int argc, char* argv[])
     (void)printf("Enter: quadr linear const modulus\n");
     return 1;
   }
+  quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
   quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
   (void)printf("%s\n", output);
 #elif DEBUG_CODE == 17
