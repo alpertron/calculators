@@ -31,14 +31,11 @@ setPointFunc setPoint = setPointGaussian;
 #ifndef __EMSCRIPTEN__
   #define EXTERNALIZE	
   #include <SDL.h>
-  SDL_Surface* screen;
   SDL_Surface* doubleBuffer;
   int oldXCenter;
   int oldYCenter;
   int oldXFraction;
   int oldYFraction;
-  int timer;
-  int quit;
 #else        // Emscripten
   #define MAX_WIDTH 2048
   unsigned int pixelArray[2048 * MAX_WIDTH];
@@ -343,10 +340,3 @@ int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
   }
   return 0;
 }
-
-#ifdef __EMSCRIPTEN__
-unsigned int *getPixels(void)
-{
-  return pixelArray;
-}
-#endif

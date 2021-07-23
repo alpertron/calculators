@@ -32,10 +32,10 @@ int oldYCenter;
 int oldXFraction;
 int oldYFraction;
 int timer;
-int quit;
+bool quit;
 #else     // Emscripten
 #define EXTERNALIZE  __attribute__((visibility("default")))
-extern unsigned int pixelArray;
+extern unsigned int pixelArray[];
 #endif
 
 extern setPointFunc setPoint;
@@ -77,7 +77,12 @@ EXTERNALIZE void moveGraphic(int deltaX, int deltaY)
   yFraction &= thickness - 1;
 }
 
-#ifndef __EMSCRIPTEN__
+#ifdef __EMSCRIPTEN__
+unsigned int* getPixels(void)
+{
+  return pixelArray;
+}
+#else
 void drawGraphic(void)
 {
   if (SDL_MUSTLOCK(doubleBuffer) != 0)

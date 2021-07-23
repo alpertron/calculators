@@ -31,14 +31,11 @@ setPointFunc setPoint = setPointUlamSpiral;
 #ifndef __EMSCRIPTEN__
   #define EXTERNALIZE	
   #include <SDL.h>
-  SDL_Surface* screen;
   SDL_Surface* doubleBuffer;
   int oldXCenter;
   int oldYCenter;
   int oldXFraction;
   int oldYFraction;
-  int timer;
-  int quit;
 #else     // Emscripten
   #define EXTERNALIZE  __attribute__((visibility("default")))
   #define MAX_WIDTH 2048
@@ -393,10 +390,6 @@ void copyStr(char** pptrString, const char* stringToCopy)
   *pptrString = ptrString;
 }
 
-unsigned int *getPixels(void)
-{
-  return pixelArray;
-}
 #endif
 
 // Convert the number from binary to string.

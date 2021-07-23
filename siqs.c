@@ -1019,7 +1019,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
         expParity = 1 - expParity;
         if (expParity == 0)
         {
-          rowSquares[nbrSquares++] = (int)Divisor;
+          rowSquares[nbrSquares++] = Divisor;
         }
       }
       if (expParity != 0)
@@ -1154,7 +1154,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
         expParity = 1 - expParity;
         if (expParity == 0)
         {
-          rowSquares[nbrSquares++] = (int)Divisor;
+          rowSquares[nbrSquares++] = Divisor;
         }
         dRem = 0;
         // Perform division
@@ -1164,7 +1164,8 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
         {
         case 7:     // {biR6 - biR0} <- {biR6 - biR0} / divis
           Dividend = biR6;
-          dRem = (double)(Dividend - (biR6 = Dividend / Divisor) * Divisor);
+          biR6 = Dividend / Divisor;
+          dRem = (double)Dividend - ((double)biR6 * Divisor);
           /* no break */
         case 6:     // {biR5 - biR0} <- {biR5 - biR0} / divis
           dDivid = (double)biR5 + dRem*dLimbMult;
@@ -1229,7 +1230,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
           if ((NumberLengthDividend <= 2) && (biR1 < (1 << (52 - BITS_PER_GROUP))))
           {       // Number fits in a double.
             double dDividend = (double)biR1 * (double)(1U << BITS_PER_GROUP) + (double)biR0;
-            int sqrtDivid = (int)(floor(sqrt((double)dDividend)));
+            int sqrtDivid = (int)(floor(sqrt(dDividend)));
             rowPrimeSieveData = primeSieveData + index;
             for (; index < common.siqs.nbrFactorBasePrimes; index++)
             {
@@ -1248,11 +1249,11 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
               while (dDividend == floor(dDividend / Divisor) * Divisor)
               {        // dDivid is multiple of Divisor.
                 dDividend /= Divisor;
-                sqrtDivid = (int)(floor(sqrt((double)dDividend))) + 1;
+                sqrtDivid = (int)(floor(sqrt(dDividend))) + 1;
                 expParity = 1 - expParity;
                 if (expParity == 0)
                 {
-                  rowSquares[nbrSquares++] = (int)Divisor;
+                  rowSquares[nbrSquares++] = Divisor;
                 }
               }
               if (expParity != 0)
@@ -1438,7 +1439,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
         expParity = 1 - expParity;
         if (expParity == 0)
         {
-          rowSquares[nbrSquares++] = (int)Divisor;
+          rowSquares[nbrSquares++] = Divisor;
         }
         dRem = 0;
         // Perform division
@@ -1448,7 +1449,8 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
         {
         case 7:     // {biR6 - biR0} <- {biR6 - biR0} / divis
           Dividend = biR6;
-          dRem = (double)(Dividend - (biR6 = Dividend / Divisor) * Divisor);
+          biR6 = Dividend / Divisor;
+          dRem = (double)Dividend - ((double)biR6 * Divisor);
           /* no break */
         case 6:     // {biR5 - biR0} <- {biR5 - biR0} / divis
           dDivid = (double)biR5 + dRem * dLimbMult;
@@ -1869,7 +1871,7 @@ static void PartialRelationFound(
           biT6 = biT[6].x;
           if (expParity == 0)
           {
-            rowSquares[rowSquares[0]++] = (int)Divisor;
+            rowSquares[rowSquares[0]++] = Divisor;
           }
           if (NumberLengthDivid <= 2)
           {
@@ -2148,10 +2150,14 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   double bestadjust;
   int i;
   int j;
-  int arrmult[70];
+  const int arrmult[] = { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43,
+    47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };
   double adjustment[sizeof(arrmult)/sizeof(arrmult[0])];
   double dNumberToFactor;
   double dlogNumberToFactor;
+  double dNbrFactorsA;
+  double dNbrFactorBasePrimes;
+  double dSieveLimit;
   int bytesLength;
   origNumberLength = NumberLength;
   common.siqs.nbrThreadFinishedPolySet = 0;
@@ -2167,17 +2173,20 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   common.siqs.nbrPrimesUsed = 0;
   (void)memset(common.siqs.primesUsed, 0, sizeof(common.siqs.primesUsed));
   Temp = logLimbs(pNbrToFactor, origNumberLength);
-  common.siqs.nbrFactorBasePrimes = (int)exp(sqrt(Temp * log(Temp)) * 0.363 - 1);
+  dNbrFactorBasePrimes = exp(sqrt(Temp * log(Temp)) * 0.363 - 1.0);
+  common.siqs.nbrFactorBasePrimes = (int)dNbrFactorBasePrimes;
   if (common.siqs.nbrFactorBasePrimes > MAX_PRIMES)
   {
     common.siqs.nbrFactorBasePrimes = MAX_PRIMES;
   }
-  common.siqs.SieveLimit = (int)exp(8.5 + 0.015 * Temp) & 0xFFFFFFF8;
+  dSieveLimit = exp(8.5 + 0.015 * Temp);
+  common.siqs.SieveLimit = (int)dSieveLimit & 0xFFFFFFF8;
   if (common.siqs.SieveLimit > MAX_SIEVE_LIMIT)
   {
     common.siqs.SieveLimit = MAX_SIEVE_LIMIT;
   }
-  common.siqs.nbrFactorsA = (int)(Temp*0.051 + 1);
+  dNbrFactorsA = Temp * 0.051 + 1.0;
+  common.siqs.nbrFactorsA = (int)dNbrFactorsA;
   common.siqs.NbrPolynomials = (1 << (common.siqs.nbrFactorsA - 1)) - 1;
   common.siqs.factorSiqs.nbrLimbs = NumberLength;
   common.siqs.factorSiqs.sign = SIGN_POSITIVE;
@@ -2211,28 +2220,19 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
     rowPrimeTrialDivisionData->exp5 = rowPrimeTrialDivisionData->exp6 = 0;
 
   NbrMod = pNbrToFactor->x & 7;
-  i = 1;
-  j = 0;
-  while (j < (int)sizeof(arrmult)/(int)sizeof(arrmult[0]))
+  for (j = 0; j<sizeof(arrmult)/sizeof(arrmult[0]); j++)
   {
-    if (((i % 4) != 0) && ((i % 9) != 0) && ((i % 25) != 0) && ((i % 49) != 0))
-    {             // Number is squarefree.
-      int mod;
-      arrmult[j] = i;
-      mod = (NbrMod * arrmult[j]) & 7;
-      adjustment[j] = 0.34657359; /*  (ln 2)/2  */
-      if (mod == 1)
-      {
-        adjustment[j] *= 4.0;
-      }
-      if (mod == 5)
-      {
-        adjustment[j] *= 2.0;
-      }
-      adjustment[j] -= log((double)arrmult[j]) / 2.0;
-      j++;
+    int mod = (NbrMod * arrmult[j]) & 7;
+    adjustment[j] = 0.34657359; /*  (ln 2)/2  */
+    if (mod == 1)
+    {
+      adjustment[j] *= 4.0;
     }
-    i++;
+    if (mod == 5)
+    {
+      adjustment[j] *= 2.0;
+    }
+    adjustment[j] -= log((double)arrmult[j]) / 2.0;
   }
   currentPrime = 3;
   while (currentPrime < 10000)
