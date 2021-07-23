@@ -7,18 +7,18 @@ rem del *.wasm
 rem del *00*js
 
 rem ==================== GENERATION OF ASM.JS ===============================
-cmd /c emcc ulam.c isprime.c -s EXPORTED_FUNCTIONS="['_moveSpiral', '_drawPartialUlamSpiral', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 %commonOptions% -o ulamW.js
+cmd /c emcc ulam.c isprime.c graphics.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 %commonOptions% -o ulamW.js
 if errorlevel 1 goto end
-cmd /c emcc gausspr.c isprime.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 %commonOptions% -o gaussprW.js
+cmd /c emcc gausspr.c isprime.c graphics.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 %commonOptions% -o gaussprW.js
 if errorlevel 1 goto end
 
 rem ===================== GENERATION OF WASM ================================
-cmd /c emcc %wasmCommon% ulam.c isprime.c -s EXPORTED_FUNCTIONS="['_moveSpiral', '_drawPartialUlamSpiral', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o ulam.wasm
+cmd /c emcc %wasmCommon% ulam.c isprime.c graphics.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o ulam.wasm
 if errorlevel 1 goto end
-cmd /c emcc %wasmCommon% gausspr.c isprime.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o gausspr.wasm
+cmd /c emcc %wasmCommon% gausspr.c isprime.c graphics.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o gausspr.wasm
 if errorlevel 1 goto end
 
-perl generateTempJS.pl ulam.js ulamW.js ulamT.js moveSpiral drawPartialUlamSpiral nbrChanged getInformation getPixels
+perl generateTempJS.pl ulam.js ulamW.js ulamT.js moveGraphic drawPartialGraphic nbrChanged getInformation getPixels
 java -jar %compilerName% %compilerOptions2% --js ulamT.js --js_output_file ulamU.js
 copy ulamU.js ulamV.js
 perl replaceEmbeddedJS.pl 0000 ULAM.HTM ulamV.js ulam.wasm

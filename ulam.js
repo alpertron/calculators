@@ -33,8 +33,8 @@ var asmjs = typeof(WebAssembly) === "undefined";
 var prevX1stTouch, prevY1stTouch;
 var prevX2ndTouch, prevY2ndTouch;
 var asmGetInformation;
-var asmDrawPartialUlamSpiral;
-var asmMoveSpiral;
+var asmDrawPartialGraphic;
+var asmMoveGraphic;
 var asmNbrChanged;
 var bitsCanvas;
 var information;
@@ -83,14 +83,14 @@ function getWidth()
   return Math.min(canvas.scrollWidth, canvas.width);
 }
 
-function drawSpiral(ctx, left, top, width, height)
+function drawGraphic(ctx, left, top, width, height)
 {
   if (width !== 0 && height !== 0)
   {
     var rowNbr, leftPixelSrc, leftPixelDest;
     var startX = left - (getWidth() >> 1);
     var startY = top - (getHeight() >> 1);
-    asmDrawPartialUlamSpiral(startX, startX+width, -(startY+height), -startY);
+    asmDrawPartialGraphic(startX, startX+width, -(startY+height), -startY);
              // Copy from WebAssembly/asm.js buffer to Canvas double buffer.
     leftPixelSrc = top*8192+left*4;
     leftPixelDest = (top+32)*8192+left*4;
@@ -104,12 +104,12 @@ function drawSpiral(ctx, left, top, width, height)
   }
 }
 
-function moveSpiral(deltaX, deltaY)
+function moveGraphic(deltaX, deltaY)
 {      
   var ctx = canvas.getContext("2d");
   var width = getWidth();
   var height = getHeight();
-  asmMoveSpiral(deltaX, deltaY);
+  asmMoveGraphic(deltaX, deltaY);
   if (deltaX >= 0)
   {
     if (deltaY >= 0)
@@ -120,8 +120,8 @@ function moveSpiral(deltaX, deltaY)
                       width-deltaX, height-deltaY,               // Width and height of source.
                       deltaX, deltaY,                            // Topmost pixel of destination.
                       width-deltaX, height-deltaY);              // Width and height of destination.
-        drawSpiral(ctx, 0, 0, width, deltaY);                    // Draw new points at top of graphic.
-        drawSpiral(ctx, 0, deltaY, deltaX, height-deltaY);       // Draw new points at left of graphic.
+        drawGraphic(ctx, 0, 0, width, deltaY);                   // Draw new points at top of graphic.
+        drawGraphic(ctx, 0, deltaY, deltaX, height-deltaY);      // Draw new points at left of graphic.
       }
     }
     else
@@ -132,8 +132,8 @@ function moveSpiral(deltaX, deltaY)
                       width-deltaX, height+deltaY,               // Width and height of source.
                       deltaX, 0,                                 // Topmost pixel of destination.
                       width-deltaX, height+deltaY);              // Width and height of destination.
-        drawSpiral(ctx, 0, height+deltaY, width, -deltaY);       // Draw new points at bottom of graphic.
-        drawSpiral(ctx, 0, 0, deltaX, height+deltaY);            // Draw new points at left of graphic.
+        drawGraphic(ctx, 0, height+deltaY, width, -deltaY);      // Draw new points at bottom of graphic.
+        drawGraphic(ctx, 0, 0, deltaX, height+deltaY);           // Draw new points at left of graphic.
       }
     }
   }
@@ -145,8 +145,8 @@ function moveSpiral(deltaX, deltaY)
                     width+deltaX, height-deltaY,                 // Width and height of source.
                     0, deltaY,                                   // Topmost pixel of destination.
                     width+deltaX, height-deltaY);                // Width and height of destination.
-      drawSpiral(ctx, 0, 0, width, deltaY);                      // Draw new points at top of graphic.
-      drawSpiral(ctx, width+deltaX, deltaY, -deltaX, height-deltaY); // Draw new points at right of graphic.
+      drawGraphic(ctx, 0, 0, width, deltaY);                     // Draw new points at top of graphic.
+      drawGraphic(ctx, width+deltaX, deltaY, -deltaX, height-deltaY); // Draw new points at right of graphic.
     }
   }
   else
@@ -157,13 +157,13 @@ function moveSpiral(deltaX, deltaY)
                     width+deltaX, height+deltaY,                 // Width and height of source.
                     0, 0,                                        // Topmost pixel of destination.
                     width+deltaX, height+deltaY);                // Width and height of destination.
-      drawSpiral(ctx, 0, height+deltaY, width, -deltaY);         // Draw new points at bottom of graphic.
-      drawSpiral(ctx, width+deltaX, 0, -deltaX, height+deltaY);  // Draw new points at right of graphic.
+      drawGraphic(ctx, 0, height+deltaY, width, -deltaY);        // Draw new points at bottom of graphic.
+      drawGraphic(ctx, width+deltaX, 0, -deltaX, height+deltaY); // Draw new points at right of graphic.
     }
   }
 }
 
-function updateSpiral(input, nbr)
+function updateGraphic(input, nbr)
 {
   var startOffset = 11000000|0;
   var idx;
@@ -179,7 +179,7 @@ function updateSpiral(input, nbr)
   var width = getWidth();
   var height = getHeight();
   asmNbrChanged(startOffset, nbr, width, height);
-  drawSpiral(canvas.getContext("2d"), 0, 0, width, height);
+  drawGraphic(canvas.getContext("2d"), 0, 0, width, height);
 }
 
 function b64decode(str,out)
@@ -288,12 +288,12 @@ function startLowLevelCode()
     Math.imul = Math["imul"];
     asm = instantiate(env);  // Link asm.js module.
     asmGetInformation = asm.e;
-    asmDrawPartialUlamSpiral = asm.c;
-    asmMoveSpiral = asm.f;
+    asmDrawPartialGraphic = asm.c;
+    asmMoveGraphic = asm.f;
     asmNbrChanged = asm.g;
     getPixels = asm.d;
     pixels = HEAP8.subarray(getPixels());
-    updateSpiral(center, 1);
+    updateGraphic(center, 1);
   }
   else
   {                                      // WebAssembly initialization.
@@ -323,13 +323,13 @@ function startLowLevelCode()
     {
       asm = results["instance"]["exports"];
       asmGetInformation = asm["getInformation"];
-      asmDrawPartialUlamSpiral = asm["drawPartialUlamSpiral"];
-      asmMoveSpiral = asm["moveSpiral"];
+      asmDrawPartialGraphic = asm["drawPartialGraphic"];
+      asmMoveGraphic = asm["moveGraphic"];
       asmNbrChanged = asm["nbrChanged"];
       
       HEAP8 = new Uint8Array(asm["memory"]["buffer"]);
       pixels = HEAP8.subarray(asm["getPixels"]());
-      updateSpiral(center, 1);
+      updateGraphic(center, 1);
       return;
     });
   }
@@ -351,7 +351,7 @@ function zoomIn()
       zoomin.disabled = true;
     }
     zoomout.disabled = false;
-    updateSpiral(0, 3);
+    updateGraphic(0, 3);
   }
 }
 
@@ -365,7 +365,7 @@ function zoomOut()
       zoomout.disabled = true;
     }
     zoomin.disabled = false;
-    updateSpiral(0, 4);
+    updateGraphic(0, 4);
   }
 }
 
@@ -403,22 +403,22 @@ function startUp()
     switch (key)
     {
       case 37: // Left arrow:
-        moveSpiral(4, 0);
+        moveGraphic(4, 0);
         showInfo(asmGetInformation(-1, -1));
         evt.preventDefault();          // Do not propagate this key.
         break; 
       case 38: // Up arrow:
-        moveSpiral(0, 4);
+        moveGraphic(0, 4);
         showInfo(asmGetInformation(-1, -1));
         evt.preventDefault();          // Do not propagate this key.
         break; 
       case 39: // Right arrow:
-        moveSpiral(-4, 0);
+        moveGraphic(-4, 0);
         showInfo(asmGetInformation(-1, -1));
         evt.preventDefault();          // Do not propagate this key.
         break; 
       case 40: // Down arrow:
-        moveSpiral(0, -4);
+        moveGraphic(0, -4);
         showInfo(asmGetInformation(-1, -1));
         evt.preventDefault();          // Do not propagate this key.
         break; 
@@ -440,7 +440,7 @@ function startUp()
     {
       if (newX !== currentX || newY !== currentY)
       {
-        moveSpiral(newX - currentX, newY - currentY);
+        moveGraphic(newX - currentX, newY - currentY);
         currentX = newX;
         currentY = newY;
       }
@@ -494,7 +494,7 @@ function startUp()
     {      // Drag gesture.
       if (newX !== prevX1stTouch || newY !== prevY1stTouch)
       {
-        moveSpiral(newX - prevX1stTouch, newY - prevY1stTouch);
+        moveGraphic(newX - prevX1stTouch, newY - prevY1stTouch);
         prevX1stTouch = newX;
         prevY1stTouch = newY;
         showInfo(asmGetInformation(-1, -1));
@@ -556,7 +556,7 @@ function startUp()
     else
     {
       information.innerHTML = "";
-      updateSpiral(center, 1);
+      updateGraphic(center, 1);
     }
   };
   start.onkeydown = function(e)
@@ -581,14 +581,14 @@ function startUp()
   start.oninput = function()
   {
     showInfo(asmGetInformation(-1, -1));
-    updateSpiral(start, 2);
+    updateGraphic(start, 2);
   };
   window.onresize = function()
   {
     var domRect = canvas.getBoundingClientRect();
     canvas.width = domRect.width;
     canvas.height = domRect.height;
-    updateSpiral(center, 1);
+    updateGraphic(center, 1);
   };
 }
 

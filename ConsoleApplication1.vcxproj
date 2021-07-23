@@ -213,6 +213,7 @@
   <ItemGroup>
     <ClInclude Include="batch.h" />
     <ClInclude Include="fft.h" />
+    <ClInclude Include="graphics.h" />
     <ClInclude Include="linkedbignbr.h" />
     <ClInclude Include="output.h" />
     <ClInclude Include="polynomial.h" />
