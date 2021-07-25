@@ -85,7 +85,8 @@ void ConvertToMonic(int *poly, int polyDegree)
   int currentDegree;
   if (NumberLength == 1)
   {         // Modulus size is one limb.
-    int inverse = modInv(*(poly + (polyDegree * 2) + 1), TestNbr[0].x);
+    int lenLimbs = (polyDegree * 2) + 1;
+    int inverse = modInv(*(poly + lenLimbs), TestNbr[0].x);
     int* ptrPoly = poly + 1;
     intToBigInteger(&operand1, inverse);
     if (TestNbr[0].x <= 32768)
@@ -112,13 +113,16 @@ void ConvertToMonic(int *poly, int polyDegree)
   }
   else
   {         // General case.
-    IntArray2BigInteger(poly + (polyDegree * nbrLimbs), &operand1);
+    int lenLimbs = polyDegree * nbrLimbs;
+    IntArray2BigInteger(poly + lenLimbs, &operand1);
     ModInvBigNbr(operand1.limbs, operand1.limbs, TestNbr, NumberLength);
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
-      IntArray2BigInteger(poly + (currentDegree * nbrLimbs), &operand2);
+      lenLimbs = currentDegree * nbrLimbs;
+      IntArray2BigInteger(poly + lenLimbs, &operand2);
       modmult(operand1.limbs, operand2.limbs, operand2.limbs);
-      BigInteger2IntArray(poly + (currentDegree * nbrLimbs), &operand2);
+      lenLimbs = currentDegree * nbrLimbs;
+      BigInteger2IntArray(poly + lenLimbs, &operand2);
     }
   }
 }
@@ -136,7 +140,8 @@ int *getContent(int *poly, BigInteger *content)
   UncompressBigIntegerB(ptrPoly, content);
   for (; currentDegree > 0; currentDegree--)
   {
-    ptrPoly += 1 + numLimbs(ptrPoly);
+    int lenLimbs = 1 + numLimbs(ptrPoly);
+    ptrPoly += lenLimbs;
     UncompressBigIntegerB(ptrPoly, &operand1);
     BigIntGcd(content, &operand1, &operand2);
     CopyBigInt(content, &operand2);
@@ -176,6 +181,7 @@ int getModPolynomial(int *polyMod, const int *poly, const BigInteger *content)
   }
   for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
   {
+    int lenLimbs;
     NumberLength = numLimbs(ptrPoly);
     UncompressBigIntegerB(ptrPoly, &operand1);  // Get coefficient.
     (void)BigIntDivide(&operand1, content, &operand2);
@@ -186,8 +192,10 @@ int getModPolynomial(int *polyMod, const int *poly, const BigInteger *content)
     }
     NumberLength = operand1.nbrLimbs;
     BigInteger2IntArray(ptrPolyMod, &operand1);
-    ptrPoly += 1 + numLimbs(ptrPoly);
-    ptrPolyMod += 1 + numLimbs(ptrPolyMod);
+    lenLimbs = 1 + numLimbs(ptrPoly);
+    ptrPoly += lenLimbs;
+    lenLimbs = 1 + numLimbs(ptrPolyMod);
+    ptrPolyMod += lenLimbs;
   }
   return degreePoly;
 }
@@ -292,13 +300,16 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
       ptrDest = &polyS[1];
       for (degree = 0; degree <= potentialDegreeGcd; degree++)
       {
+        int lenLimbs;
         UncompressBigIntegerB(ptrSrc, &operand1);
         (void)BigIntMultiply(&operand1, &gcdLeadingCoeff, &operand1);
         intToBigInteger(&operand1, getRemainder(&operand1, prime));
         NumberLength = operand1.nbrLimbs;
         BigInteger2IntArray(ptrDest, &operand1);
-        ptrSrc += 1 + numLimbs(ptrSrc);
-        ptrDest += 1 + numLimbs(ptrDest);
+        lenLimbs = 1 + numLimbs(ptrSrc);
+        ptrSrc += lenLimbs;
+        lenLimbs = 1 + numLimbs(ptrDest);
+        ptrDest += lenLimbs;
       }
     }
     else
@@ -313,6 +324,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
       gcdLCModPrime = getRemainder(&gcdLeadingCoeff, prime);
       for (degree = 0; degree <= potentialDegreeGcd; degree++)
       {
+        int lenLimbs;
         int valueR;
         int invModPrime;
         int coeffModPrime = *(ptrSrc + 1);
@@ -330,8 +342,10 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
         NumberLength = operand2.nbrLimbs;
         BigInteger2IntArray(ptrDest, &operand2);
         ptrSrc += 2;
-        ptrPrev += 1 + numLimbs(ptrPrev);
-        ptrDest += 1 + numLimbs(ptrDest);
+        lenLimbs = 1 + numLimbs(ptrPrev);
+        ptrPrev += lenLimbs;
+        lenLimbs = 1 + numLimbs(ptrDest);
+        ptrDest += lenLimbs;
       }
       (void)CopyPolynomial(&polyS[1], &polyT[1], potentialDegreeGcd);
     }
@@ -345,6 +359,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
     ptrDest = &polyT[1];
     for (degree = 0; degree <= potentialDegreeGcd; degree++)
     {
+      int lenLimbs;
       UncompressBigIntegerB(ptrSrc, &operand1);
       // If coefficient is greater than modulus/2, 
       // let coefficient <- coefficient - modulus.
@@ -355,8 +370,10 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
       }
       NumberLength = operand1.nbrLimbs;
       BigInteger2IntArray(ptrDest, &operand1);
-      ptrSrc += 1 + numLimbs(ptrSrc);
-      ptrDest += 1 + numLimbs(ptrDest);
+      lenLimbs = 1 + numLimbs(ptrSrc);
+      ptrSrc += lenLimbs;
+      lenLimbs = 1 + numLimbs(ptrDest);
+      ptrDest += lenLimbs;
     }
     (void)CopyPolynomial(&polyS[1], &polyT[1], potentialDegreeGcd);
     (void)getContent(polyS, &contentH);
@@ -364,12 +381,15 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
     ptrDest = &polyT[1];
     for (degree = 0; degree <= potentialDegreeGcd; degree++)
     {
+      int lenLimbs;
       UncompressBigIntegerB(ptrSrc, &operand1);
       (void)BigIntDivide(&operand1, &contentH, &operand2);
       NumberLength = operand2.nbrLimbs;
       BigInteger2IntArray(ptrDest, &operand2);
-      ptrSrc += 1 + numLimbs(ptrSrc);
-      ptrDest += 1 + numLimbs(ptrDest);
+      lenLimbs = 1 + numLimbs(ptrSrc);
+      ptrSrc += lenLimbs;
+      lenLimbs = 1 + numLimbs(ptrDest);
+      ptrDest += lenLimbs;
     }
     // if h divides f and h divides g, then return h.
     if (argF[0] < 0)
@@ -405,12 +425,15 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
         ptrDest = gcd + 1;
         for (degree = 0; degree <= potentialDegreeGcd; degree++)
         {
+          int lenLimbs;
           UncompressBigIntegerB(ptrSrc, &operand2);
           (void)BigIntMultiply(&operand1, &operand2, &operand3);
           NumberLength = operand3.nbrLimbs;
           BigInteger2IntArray(ptrDest, &operand3);
-          ptrSrc += 1 + numLimbs(ptrSrc);
-          ptrDest += 1 + numLimbs(ptrDest);
+          lenLimbs = 1 + numLimbs(ptrSrc);
+          ptrSrc += lenLimbs;
+          lenLimbs = 1 + numLimbs(ptrDest);
+          ptrDest += lenLimbs;
         }
         return;
       }
@@ -460,11 +483,13 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
     for (int currentDegree = degreeMax; currentDegree >= degreeMin; currentDegree--)
     {          // Replace ptrArgMax by remainder of long
                // division of ptrArgMax / ptrArgMin.
-      ptrTemp = ptrArgMax + (currentDegree - degreeMin)*nbrLimbs;
+      index = (currentDegree - degreeMin) * nbrLimbs;
+      ptrTemp = ptrArgMax + index;
       if (nbrLimbs == 2)
       {        // Modulus size is one limb.
         int modulus = TestNbr[0].x;
-        int value1 = modulus - *(ptrArgMax + (currentDegree * 2) + 1);
+        index = (currentDegree * 2) + 1;
+        int value1 = modulus - *(ptrArgMax + index);
         const int *ptrPolynomial = ptrArgMin + 1;
         ptrTemp++;
         if (modulus < 32767)
@@ -496,10 +521,12 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
       }
       else
       {        // General case.
-        IntArray2BigInteger(ptrArgMax + (currentDegree * nbrLimbs), &operand1);
+        int lenLimbs = currentDegree * nbrLimbs;
+        IntArray2BigInteger(ptrArgMax + lenLimbs, &operand1);
         for (index = 0; index <= degreeMin; index++)
         {
-          IntArray2BigInteger(ptrArgMin + (index * nbrLimbs), &operand2);
+          lenLimbs = index * nbrLimbs;
+          IntArray2BigInteger(ptrArgMin + lenLimbs, &operand2);
           modmult(operand1.limbs, operand2.limbs, operand2.limbs);
           IntArray2BigInteger(ptrTemp, &operand3);
           SubtBigNbrMod(operand3.limbs, operand2.limbs, operand3.limbs);
@@ -512,7 +539,8 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
                // Discard any leading zero coefficient.
     while (degreeMax >= 0)
     {
-      ptrTemp = ptrArgMax + (degreeMax*nbrLimbs);
+      int lenLimbs = degreeMax * nbrLimbs;
+      ptrTemp = ptrArgMax + lenLimbs;
       for (index = *ptrTemp; index > 0; index--)
       {
         ptrTemp++;
@@ -587,7 +615,8 @@ void DerPolynomial(int *ptrArgument)
   ptrDest = &poly1[1];
   for (degree = 1; degree <= degreePoly; degree++)
   {
-    ptrSrc += 1 + numLimbs(ptrSrc);
+    int lenLimbs = 1 + numLimbs(ptrSrc);
+    ptrSrc += lenLimbs;
     if (modulusIsZero)
     {
       UncompressBigIntegerB(ptrSrc, &operand1);
@@ -607,7 +636,8 @@ void DerPolynomial(int *ptrArgument)
         derivDegreePoly = degree-1;
       }
     }
-    ptrDest += 1 + numLimbs(ptrDest);
+    lenLimbs = 1 + numLimbs(ptrDest);
+    ptrDest += lenLimbs;
   }
   (void)CopyPolynomial(ptrArgument + 1, &poly1[1], derivDegreePoly);
   *ptrArgument = derivDegreePoly;
@@ -627,10 +657,12 @@ void polyToStandardNotation(int *nbr, int qtyNbrs)
   }
   for (int currentNbr = 0; currentNbr < qtyNbrs; currentNbr++)
   {
+    int lenLimbs;
     IntArray2BigInteger(ptrNbr, &operand1);
     modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     BigInteger2IntArray(ptrNbr, &operand1);
-    ptrNbr += NumberLength + 1;
+    lenLimbs = NumberLength + 1;
+    ptrNbr += lenLimbs;
   }
 }
 
@@ -639,10 +671,12 @@ void polyToMontgomeryNotation(int *nbr, int qtyNbrs)
   int* ptrNbr = nbr;
   for (int currentNbr = qtyNbrs - 1; currentNbr >= 0; currentNbr--)
   {
+    int lenLimbs;
     IntArray2BigInteger(ptrNbr, &operand1);
     modmult(operand1.limbs, MontgomeryMultR2, operand1.limbs);
     BigInteger2IntArray(ptrNbr, &operand1);
-    ptrNbr += NumberLength + 1;
+    lenLimbs = NumberLength + 1;
+    ptrNbr += lenLimbs;
   }
 }
 
@@ -650,13 +684,16 @@ void polyToMontgomeryNotation(int *nbr, int qtyNbrs)
 void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, const BigInteger *expon,
                      int *polyPower, powerCback callback, int curMultip, int nbrMultip)
 {
+  int lenLimbs;
   int nbrLimbs = NumberLength + 1;
   bool powerIsOne = true;
   int nbrBits = 0;
   int index = expon->nbrLimbs - 1;
   int bitCounter = 0;
-  *(polyBase + (polyDegree * nbrLimbs)) = 1;
-  *(polyBase + (polyDegree * nbrLimbs) + 1) = 0;
+  lenLimbs = polyDegree * nbrLimbs;
+  *(polyBase + lenLimbs) = 1;
+  lenLimbs = polyDegree * nbrLimbs;
+  *(polyBase + lenLimbs + 1) = 0;
   for (; index >= 0; index--)
   {
     int groupExp = expon->limbs[index].x;
@@ -699,7 +736,8 @@ int getDegreePoly(const int *poly, int polyDegree)
   currentDegree = polyDegree;
   while (currentDegree > 0)
   {
-    const int *ptrTemp = poly + (currentDegree*(NumberLength + 1));
+    int lenLimbs = (currentDegree * (NumberLength + 1));
+    const int *ptrTemp = poly + lenLimbs;
     int len = *ptrTemp;
     for (int index = len; index > 0; index--)
     {
@@ -802,6 +840,7 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
       if (degreeW != degreeY)
       {
         int degreeZ;
+        int lenLimbs;
         struct sFactorInfo *pstFactorInfo;
 
         DividePolynomial(poly4, degreeW, poly3, degreeY, poly1);     // poly1 = z
@@ -822,7 +861,8 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
         pstFactorInfo -> expectedDegree = 0;    // Unknown at this moment.
         lenBytes = degreeZ * nbrLimbs * (int)sizeof(int);
         (void)memcpy(ptrOrigPoly, poly1, lenBytes);
-        ptrOrigPoly += (degreeZ+1)*nbrLimbs;
+        lenLimbs = (degreeZ + 1) * nbrLimbs;
+        ptrOrigPoly += lenLimbs;
         lenBytes = (degreeOrigPoly + 1) * nbrLimbs * (int)sizeof(int);
         (void)memcpy(ptrOrigPoly, poly4, lenBytes);
       }
@@ -837,30 +877,36 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
     }
     if (degreeC != 0)
     {      // C is a perfect power.
-      ptrValue1 = ptrOrigPoly + (degreeOrigPoly + 1)*nbrLimbs;
+      int lenLimbs = (degreeOrigPoly + 1) * nbrLimbs;
+      ptrValue1 = ptrOrigPoly + lenLimbs;
       ptrValue2 = poly2;
       for (currentDegree = 0; currentDegree <= degreeC; currentDegree += primeInt)
       {
         lenBytes = nbrLimbs * (int)sizeof(int);
         (void)memcpy(ptrValue1, ptrValue2, lenBytes);
         ptrValue1 += nbrLimbs;
-        ptrValue2 += primeInt*nbrLimbs;
+        lenLimbs = primeInt * nbrLimbs;
+        ptrValue2 += lenLimbs;
       }
-      SquareFreeFactorization(degreeC / primeInt, ptrOrigPoly + (degreeOrigPoly + 1)*nbrLimbs, expon * primeInt);
+      lenLimbs = (degreeOrigPoly + 1) * nbrLimbs;
+      SquareFreeFactorization(degreeC / primeInt, ptrOrigPoly + lenLimbs, expon * primeInt);
     }
   }
   else
   {           // Derivative is zero.
-    ptrValue1 = ptrOrigPoly + (degreeOrigPoly + 1)*nbrLimbs;
+    int lenLimbs = (degreeOrigPoly + 1) * nbrLimbs;
+    ptrValue1 = ptrOrigPoly + lenLimbs;
     ptrValue2 = poly;
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree += primeInt)
     {
       int lenBytes = nbrLimbs * (int)sizeof(int);
       (void)memcpy(ptrValue1, ptrValue2, lenBytes);
       ptrValue1 += nbrLimbs;
-      ptrValue2 += primeInt*nbrLimbs;
+      lenLimbs = primeInt * nbrLimbs;
+      ptrValue2 += lenLimbs;
     }
-    SquareFreeFactorization(polyDegree / primeInt, ptrOrigPoly + (degreeOrigPoly + 1)*nbrLimbs, expon * primeInt);
+    lenLimbs = (degreeOrigPoly + 1) * nbrLimbs;
+    SquareFreeFactorization(polyDegree / primeInt, ptrOrigPoly + lenLimbs, expon * primeInt);
   }
 }
 
@@ -1080,7 +1126,8 @@ static void ComputeF(void)
   ptrValue1 = &values[1];                          // Point to constant coefficient.
   for (currentDegree = 0; currentDegree < polyDegree; currentDegree++)
   {
-    ptrValue1 += 1 + numLimbs(ptrValue1);
+    int lenLimbs = 1 + numLimbs(ptrValue1);
+    ptrValue1 += lenLimbs;
   }
   NumberLength = numLimbs(ptrValue1);
   IntArray2BigInteger(ptrValue1, &operand1);
@@ -1097,6 +1144,7 @@ static void ComputeF(void)
   ptrValue1 = &values[1];                          // Point to constant coefficient.
   for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
+    int lenLimbs;
     NumberLength = numLimbs(ptrValue1);
     IntArray2BigInteger(ptrValue1, &operand1);
     (void)BigIntRemainder(&operand1, &powerMod, &operand1);
@@ -1109,7 +1157,8 @@ static void ComputeF(void)
     // Multiply by inverse. Result is in Montgomery notation.
     modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     BigInteger2IntArray(&poly4[currentDegree * (NumberLength + 1)], &operand1);
-    ptrValue1 += 1 + numLimbs(ptrValue1);           // Point to next coefficient.
+    lenLimbs = 1 + numLimbs(ptrValue1);
+    ptrValue1 += lenLimbs;               // Point to next coefficient.
   }
 }
 
@@ -1176,7 +1225,8 @@ static void MoveFactorsAndFixPointers(struct sFactorInfo* ptrFactorInfo, bool co
       }
       else
       {
-        ptrDest += NumberLength+1;
+        int lenLimbs = NumberLength + 1;
+        ptrDest += lenLimbs;
       }
     }
     pstFactorInfo++;
@@ -1590,6 +1640,7 @@ void OrigPolyFromMontgomeryToStandard(void)
   ptrValue2 = &poly4[0];
   for (int currentDegree = 0; currentDegree <= degree; currentDegree++)
   {
+    int lenLimbs;
     IntArray2BigInteger(ptrValue1, &operand1);
     // Convert operand1 from Montgomery to standard notation.
     operand2.limbs[0].x = 1;
@@ -1600,8 +1651,10 @@ void OrigPolyFromMontgomeryToStandard(void)
     }
     modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     BigInteger2IntArray(ptrValue2, &operand1);
-    ptrValue1 += 1 + *ptrValue1;
-    ptrValue2 += 1 + *ptrValue2;
+    lenLimbs = 1 + *ptrValue1;
+    ptrValue1 += lenLimbs;
+    lenLimbs = 1 + *ptrValue2;
+    ptrValue2 += lenLimbs;
   }
   (void)memcpy(&values[1], &poly4[0], (ptrValue2 - &poly4[0])*sizeof(int));
 }
@@ -1776,9 +1829,10 @@ void outputOriginalPolynomial(char** pptrOutput, int groupLength)
     ptrValue2 = &poly4[0];
     for (currentDegree = 0; currentDegree <= degree; currentDegree++)
     {
-      int lenBytes = (1 + *ptrValue1) * (int)sizeof(int);
+      int lenLimbs = 1 + *ptrValue1;
+      int lenBytes = lenLimbs * (int)sizeof(int);
       (void)memcpy(ptrValue2, ptrValue1, lenBytes);
-      ptrValue1 += 1 + *ptrValue1;
+      ptrValue1 += lenLimbs;
       ptrValue2 += nbrLimbs;
     }
     // Get leading coefficient.
@@ -1788,7 +1842,8 @@ void outputOriginalPolynomial(char** pptrOutput, int groupLength)
   { // Find leading coefficient.
     for (currentDegree = 0; currentDegree < degree; currentDegree++)
     {
-      ptrValue1 += 1 + numLimbs(ptrValue1);
+      int lenLimbs = 1 + numLimbs(ptrValue1);
+      ptrValue1 += lenLimbs;
     }
     NumberLength = numLimbs(ptrValue1);
     IntArray2BigInteger(ptrValue1, &operand1);
@@ -1839,7 +1894,8 @@ void outputPolynomialFactor(char **pptrOutput, int groupLength, const struct sFa
     const int *ptrSrc = pstFactorInfo->ptrPolyLifted;
     for (int currentDegree = 0; currentDegree < polyDegree; currentDegree++)
     {
-      ptrSrc += 1 + numLimbs(ptrSrc);
+      int lenLimbs = 1 + numLimbs(ptrSrc);
+      ptrSrc += lenLimbs;
     }
     UncompressBigIntegerB(ptrSrc, &operand1);
     if (operand1.sign == SIGN_NEGATIVE)
@@ -1946,14 +2002,18 @@ void SubtractIntegerPolynomial(const int* minuend, const int* subtrahend, int* d
   }
   for (currentDegree = 0; currentDegree <= minDegree; currentDegree++)
   {
+    int lenLimbs;
     UncompressBigIntegerB(ptrMinuend, &operand1);
     UncompressBigIntegerB(ptrSubtrahend, &operand2);
     BigIntSubt(&operand1, &operand2, &operand3);
     NumberLength = operand3.nbrLimbs;
     BigInteger2IntArray(ptrDifference, &operand3);
-    ptrMinuend += 1 + numLimbs(ptrMinuend);
-    ptrSubtrahend += 1 + numLimbs(ptrSubtrahend);
-    ptrDifference += 1 + numLimbs(ptrDifference);
+    lenLimbs = 1 + numLimbs(ptrMinuend);
+    ptrMinuend += lenLimbs;
+    lenLimbs = 1 + numLimbs(ptrSubtrahend);
+    ptrSubtrahend += lenLimbs;
+    lenLimbs = 1 + numLimbs(ptrDifference);
+    ptrDifference += lenLimbs;
   }
   if (degreeMinuend > minDegree)
   {
@@ -1964,10 +2024,13 @@ void SubtractIntegerPolynomial(const int* minuend, const int* subtrahend, int* d
   {
     for (; currentDegree <= degreeSubtrahend; currentDegree++)
     {
+      int lenLimbs;
       *ptrDifference = -*ptrSubtrahend;
       (void)memcpy(ptrDifference + 1, ptrSubtrahend + 1, numLimbs(ptrSubtrahend));
-      ptrSubtrahend += 1 + numLimbs(ptrSubtrahend);
-      ptrDifference += 1 + numLimbs(ptrDifference);
+      lenLimbs = 1 + numLimbs(ptrSubtrahend);
+      ptrSubtrahend += lenLimbs;
+      lenLimbs = 1 + numLimbs(ptrDifference);
+      ptrDifference += lenLimbs;
     }
   }
   else
@@ -1977,11 +2040,13 @@ void SubtractIntegerPolynomial(const int* minuend, const int* subtrahend, int* d
     ptrDifference = difference + 1;
     for (currentDegree = 0; currentDegree <= degreeMinuend; currentDegree++)
     {
+      int lenLimbs;
       if ((*ptrDifference != 1) || (*(ptrDifference + 1) != 0))
       {
         degreeDifference = currentDegree;
       }
-      ptrDifference += numLimbs(ptrDifference) + 1;
+      lenLimbs = numLimbs(ptrDifference) + 1;
+      ptrDifference += lenLimbs;
     }
     *difference = degreeDifference;
   }

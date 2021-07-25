@@ -12,7 +12,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>2747704293321813777962661496458931</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>115792089237316195423570985008687907853269984665640564039457584007908834671663 "(x ** 4) + 46053039294249536264906323430314446165357582393031263666485575031625227108 (x ** 3) + 115792089237316195423570985008687907853269984665640564039457584007908834671607 * x + 322371275059746753854344264012201123157503076751218845665399025221376589756" 2</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory>
