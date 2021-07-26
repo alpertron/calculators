@@ -55,6 +55,10 @@ struct sFuncOperExpr stFuncOperPolyExpr[] =
 static int NegatePolynomialExpr(int* ptrArgument)
 {
   int* ptrValue1 = ptrArgument;
+  if (!modulusIsZero)
+  {
+    NumberLength = powerMod.nbrLimbs;
+  }
   int val = *ptrValue1;
   if (val <= 0)
   {          // Monomial
@@ -140,6 +144,10 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
   int degree1 = *ptrArgument1;
   int degree2 = *ptrArgument2;
   size_t diffPtrs;
+  if (!modulusIsZero)
+  {
+    NumberLength = powerMod.nbrLimbs;
+  }
   if (degree1 <= 0)
   {
     if (degree1 == degree2)
@@ -385,6 +393,11 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
   int degree1 = *ptrArgument1;
   int degree2 = *ptrArgument2;
   const int* ptrValueSrc;
+
+  if (!modulusIsZero)
+  {
+    NumberLength = powerMod.nbrLimbs;
+  }
   if ((degree1 <= 0) && (degree2 <= 0))
   {        // Product of two monomials.
     size_t diffPtrs;
@@ -398,7 +411,6 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
     if (modulusIsZero)
     {
       (void)BigIntMultiply(&operand1, &operand2, &operand1);
-      NumberLength = operand1.nbrLimbs;
     }
     else
     {
@@ -429,9 +441,10 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
       ptrValue2 = poly1;
       for (currentDegree = 0; currentDegree <= degree1; currentDegree++)
       {
-        int lenBytes = (1 + *ptrValue1) * (int)sizeof(int);
+        int lenLimbs = 1 + *ptrValue1;
+        int lenBytes = lenLimbs * (int)sizeof(int);
         (void)memcpy(ptrValue2, ptrValue1, lenBytes);
-        ptrValue1 += 1 + *ptrValue1;
+        ptrValue1 += lenLimbs;
         ptrValue2 += nbrLimbs;
       }
       // Copy second factor to poly2
@@ -439,9 +452,10 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
       ptrValue2 = poly2;
       for (currentDegree = 0; currentDegree <= degree2; currentDegree++)
       {
-        int lenBytes = (1 + *ptrValueSrc) * (int)sizeof(int);
+        int lenLimbs = 1 + *ptrValueSrc;
+        int lenBytes = lenLimbs * (int)sizeof(int);
         (void)memcpy(ptrValue2, ptrValueSrc, lenBytes);
-        ptrValueSrc += 1 + *ptrValueSrc;
+        ptrValueSrc += lenLimbs;
         ptrValue2 += nbrLimbs;
       }
     }
@@ -458,9 +472,10 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
       ptrValue2 = polyMultTemp;
       for (currentDegree = 0; currentDegree <= (degree1 + degree2); currentDegree++)
       {
-        int lenBytes = (1 + *ptrValue2) * (int)sizeof(int);
+        int lenLimbs = 1 + *ptrValue2;
+        int lenBytes = lenLimbs * (int)sizeof(int);
         (void)memcpy(ptrValue1, ptrValue2, lenBytes);
-        ptrValue1 += 1 + *ptrValue1;
+        ptrValue1 += lenLimbs;
         ptrValue2 += nbrLimbs;
       }
     }
@@ -609,6 +624,10 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
   int nbrLimbs = powerMod.nbrLimbs + 1;
   int degreeBase = *ptrArgument1;
   size_t diffPtrs;
+  if (!modulusIsZero)
+  {
+    NumberLength = powerMod.nbrLimbs;
+  }
   if (degreeBase <= 0)
   {              // Monomial.
     if ((-degreeBase * expon) > MAX_DEGREE)

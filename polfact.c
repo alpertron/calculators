@@ -482,6 +482,8 @@ int FactorModularPolynomial(bool inputMontgomery)
   {
     NumberLength = numLimbs(ptrValue1);
     IntArray2BigInteger(ptrValue1, &operand1);
+    lenBytes = (powerMod.nbrLimbs - NumberLength) * (int)sizeof(limb);
+    (void)memset(&operand1.limbs[NumberLength], 0, lenBytes);
     NumberLength = powerMod.nbrLimbs;
     if (inputMontgomery)
     {
@@ -549,7 +551,7 @@ int FactorModularPolynomial(bool inputMontgomery)
   return rc;
 }
 
-static int FactorPolynomial(char *input, int expo)
+static int FactorPolynomial(const char *input, int expo)
 {
   int rc = ComputePolynomial(input, expo);
   if (rc != 0)

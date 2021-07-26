@@ -454,6 +454,7 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
   int temp;
   int index;
   int lenBytes;
+  NumberLength = powerMod.nbrLimbs;
   if (degree2 == 0)
   {
     if ((*arg2 == 1) && (*(arg2 + 1) == 0))
@@ -1788,6 +1789,7 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
       {            // Absolute value of coefficient is not one.
         NumberLength = numLimbs(ptrValue1);
         IntArray2BigInteger(ptrValue1, &operand1);
+        NumberLength = powerMod.nbrLimbs;
         operand1.sign = SIGN_POSITIVE;
         Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
         if (currentDegree > 0)
