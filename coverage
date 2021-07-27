@@ -38,6 +38,7 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "x=23;x=x+1;x-10;u" >> coverage.out
 ./ecm "x=23;x=x+1;x-10;x+2" >> coverage.out
 ./ecm "x=23;x=x+1;23;x+2" >> coverage.out
+./ecm "x=1;x=x+1;x<10000;x;sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)" >> coverage.out
 lcov --capture --directory . --output-file ecm.info
 make clean
 make polfact

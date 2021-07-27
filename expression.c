@@ -226,12 +226,18 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
 
     case TOKEN_VAR:
       stackIndex++;
-      CopyBigInt(&curStack, &valueX);
+      if (stackIndexThreshold >= stackIndex)
+      {     // Part of second operand of binary AND/OR not short-circuited.
+        CopyBigInt(&curStack, &valueX);
+      }
       break;
 
     case TOKEN_COUNTER:
       stackIndex++;
-      intToBigInteger(&curStack, counterC);
+      if (stackIndexThreshold >= stackIndex)
+      {     // Part of second operand of binary AND/OR not short-circuited.
+        intToBigInteger(&curStack, counterC);
+      }
       break;
 
     case TOKEN_GCD:
@@ -668,9 +674,8 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
         break;
       }
       getCurrentStackValue(&curStack);
-      BigIntSubt(&curStack, &curStack2, &curStack3);
       intToBigInteger(&curStack,
-        ((curStack3.nbrLimbs == 1) && ((curStack3.limbs[0].x == 0) ? -1 : 0)));
+        (BigIntEqual(&curStack, &curStack2) ? -1 : 0));
       break;
     case OPER_NOT_EQUAL:
       getCurrentStackValue(&curStack2);
@@ -680,9 +685,8 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
         break;
       }
       getCurrentStackValue(&curStack);
-      BigIntSubt(&curStack, &curStack2, &curStack3);
       intToBigInteger(&curStack,
-        ((curStack3.nbrLimbs == 1) && ((curStack3.limbs[0].x == 0) ? 0 : -1)));
+        (BigIntEqual(&curStack, &curStack2) ? 0: -1));
       break;
 
     case OPER_GREATER:
