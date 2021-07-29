@@ -159,9 +159,12 @@ lcov --capture --directory . --output-file quad.info
 make clean
 make contfrac
 echo -e "\n\n**** CONTFRAC ****" >> coverage.out
-./contfrac 1 2 3 >> coverage.out
-./contfrac 1 0 991 >> coverage.out
-./contfrac 5 27 991 >> coverage.out
+./contfrac 1 2 3 0 >> coverage.out
+./contfrac 1 0 991 0 >> coverage.out
+./contfrac 5 27 991 0 >> coverage.out
+./contfrac 1 2 3 1 >> coverage.out
+./contfrac 1 0 991 1 >> coverage.out
+./contfrac 5 27 991 1 >> coverage.out
 lcov --capture --directory . --output-file contfrac.info
 make clean
 make quadmod

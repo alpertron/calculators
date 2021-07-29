@@ -26,7 +26,7 @@
 #include "batch.h"
 #include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 13
+#define DEBUG_CODE 6
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -139,9 +139,9 @@ int main(int argc, char* argv[])
   }
 #elif DEBUG_CODE == 6
   char* ptrInput;
-  if (argc != 4)
+  if (argc != 5)
   {
-    (void)printf("num delta den\n");
+    (void)printf("num delta den show_convergents\n");
     return 0;
   }
   ptrInput = input;
@@ -151,6 +151,7 @@ int main(int argc, char* argv[])
   ptrInput++;
   copyStr(&ptrInput, argv[3]);
   ptrInput++;
+  hexadecimal = (argv[4][0] != '0');
   contfracText(input, 20000);
   (void)printf("%s\n", output);
 #elif DEBUG_CODE == 7
