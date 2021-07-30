@@ -731,11 +731,11 @@ static int ComputePower(BigInteger *Re1, const BigInteger *Re2,
       {
         (void)BigIntMultiply(Re1, &Re, &ReTmp);       // Re2 <- re1*re - im1*im.
         (void)BigIntMultiply(Im1, &Im, &ImTmp);
-        BigIntSubt(&ReTmp, &ImTmp, Re1);
+        BigIntSubt(&ReTmp, &ImTmp, &curTmp);
         (void)BigIntMultiply(Re1, &Im, &ReTmp);       // Im <- re1*im + im1*re.
         (void)BigIntMultiply(Im1, &Re, &ImTmp);
         BigIntAdd(&ReTmp, &ImTmp, &Im);
-        CopyBigInt(&Re, Re1);
+        CopyBigInt(&Re, &curTmp);
       }
     }
   }
@@ -789,6 +789,8 @@ static enum eExprErr ComputeModPow(void)
   if (BigIntIsZero(&ReMod) && BigIntIsZero(&ImMod))
   {   /* Modulus is zero */
     (void)ComputePower(&ReBase, &ReExp, &ImBase, &ImExp);
+    CopyBigInt(&curStackRe, &ReBase);
+    CopyBigInt(&curStackIm, &ImBase);
   }
   else
   {                            /* Modulus is not zero */

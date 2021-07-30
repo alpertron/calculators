@@ -26,7 +26,7 @@
 #include "batch.h"
 #include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 6
+#define DEBUG_CODE 12
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
