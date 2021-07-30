@@ -1,4 +1,4 @@
-Results of static analysis of this software using [Codacy](https://app.codacy.com/gh/alpertron/calculators/dashboard).
+Results of static analysis and code coverage of this software using [Codacy](https://app.codacy.com/gh/alpertron/calculators/dashboard).
 
 If you like these calculators and you want to support free software, you can donate by clicking in the button below.
 

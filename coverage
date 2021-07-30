@@ -100,6 +100,10 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 >> coverage.out
 ./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 1 >> coverage.out
 ./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 2 >> coverage.out
+./polfact 0 "(x^8-1)/(x^4+1)" 2 >> coverage.out
+./polfact 7 "(x^8-1)/(x^4+1)" 2 >> coverage.out
+./polfact 0 "(x^8-1)%(x^4+1)" 2 >> coverage.out
+./polfact 7 "(x^8-1)%(x^4+1)" 2 >> coverage.out
 ./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 >> coverage.out
 ./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 1 >> coverage.out
 ./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 2 >> coverage.out
