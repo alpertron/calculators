@@ -416,6 +416,7 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
     {
       modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     }
+    NumberLength = operand1.nbrLimbs;
     BigInteger2IntArray(ptrArgument1 + 1, &operand1);
     diffPtrs = ptrArgument1 - &values[0];
     valuesIndex = (int)diffPtrs + 2 + *(ptrArgument1 + 1);
@@ -1012,6 +1013,7 @@ static int GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
   {    // Modular GCD polynomial.
     int degree1 = *ptrArgument1;
     int degree2 = *ptrArgument2;
+    NumberLength = powerMod.nbrLimbs;
     PolyModularGcd(ptrArgument1 + 1, degree1, ptrArgument2 + 1, degree2,
       poly5, &degreeGcd);
     ptrNextArgument = CopyPolynomial(ptrArgument1 + 1, poly5, degreeGcd);

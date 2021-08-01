@@ -114,15 +114,15 @@ void ConvertToMonic(int *poly, int polyDegree)
   else
   {         // General case.
     int lenLimbs = polyDegree * nbrLimbs;
+    int* ptrPoly = poly;
     IntArray2BigInteger(poly + lenLimbs, &operand1);
     ModInvBigNbr(operand1.limbs, operand1.limbs, TestNbr, NumberLength);
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
-      lenLimbs = currentDegree * nbrLimbs;
-      IntArray2BigInteger(poly + lenLimbs, &operand2);
+      IntArray2BigInteger(ptrPoly, &operand2);
       modmult(operand1.limbs, operand2.limbs, operand2.limbs);
-      lenLimbs = currentDegree * nbrLimbs;
-      BigInteger2IntArray(poly + lenLimbs, &operand2);
+      BigInteger2IntArray(ptrPoly, &operand2);
+      ptrPoly += nbrLimbs;
     }
   }
 }
@@ -454,7 +454,6 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
   int temp;
   int index;
   int lenBytes;
-  NumberLength = powerMod.nbrLimbs;
   if (degree2 == 0)
   {
     if ((*arg2 == 1) && (*(arg2 + 1) == 0))
@@ -1262,6 +1261,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
   // Copy polynomials f_i(x) to polyLifted.
   int* ptrDest = ptrPolyLifted;
   pstFactorInfo = ptrFactorInfo;
+  NumberLength = primeMod.nbrLimbs;
   for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
     pstFactorInfo->ptrPolyLifted = ptrDest;
