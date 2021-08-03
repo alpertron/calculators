@@ -102,6 +102,7 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 2 >> coverage.out
 ./polfact 0 "(68987*x^2+47773*x+4983)*(61415*x^2+4334*x+343)" 2 >> coverage.out
 ./polfact 0 "(3789678961*x^2+545543121*x+432143141)*(678585781*x^2+43213515*x+342143153)" 2 >> coverage.out
+./polfact 0 "(678967896891*x^2+431545543121*x+43432143141)*(67567856785781*x^2+43213515*x+342143153)" 1 >> coverage.out
 ./polfact 0 "(x^8-1)/(x^4+1)" 2 >> coverage.out
 ./polfact 7 "(x^8-1)/(x^4+1)" 2 >> coverage.out
 ./polfact 0 "(x^8-1)%(x^4+1)" 2 >> coverage.out
@@ -139,6 +140,8 @@ echo -e "\n\n**** DILOG ****" >> coverage.out
 ./dilog 3 7 29 >> coverage.out
 ./dilog 28 43 "n(120000)" >> coverage.out
 ./dilog 667 999 "n(10000000000)" >> coverage.out
+./dilog 2 173 226 >> coverage.out
+./dilog 2 64 226 >> coverage.out
 lcov --capture --directory . --output-file dilog.info
 make clean
 make quad

@@ -694,7 +694,7 @@ void DiscreteLogarithm(void)
       {
         intToBigInteger(&DiscreteLog, ctr);     // DiscreteLog <- exponent
         intToBigInteger(&DiscreteLogPeriod, 0); // DiscreteLogPeriod <- 0
-        break;
+        continue;
       }
       showText("There is no discrete logarithm");
       DiscreteLogPeriod.sign = SIGN_NEGATIVE;

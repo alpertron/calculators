@@ -704,8 +704,6 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
   const int* ptrSrc;
   int* ptrDest;
   int nbrTmp[1000];
-  int nbrTmp2[1000];
-  int nbrTmp3[1000];
   int TestNbr0Bak;
   int dividendMod32768[(2 * MAX_DEGREE) + 1];
   int divisorMod32768[(2 * MAX_DEGREE) + 1];
@@ -799,12 +797,18 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
       // and store them in poly2.
       ptrSrc = poly1;
       ptrDest = poly2;
+      CopyBigInt(&operand3, &leadingCoeff);
+      if (operand3.nbrLimbs < NumberLength)
+      {
+        int lenBytes = (NumberLength - operand3.nbrLimbs) * (int)sizeof(limb);
+        memset(&operand3.limbs[operand3.nbrLimbs], 0, lenBytes);
+      }
       CompressLimbsBigInteger((limb*)nbrTmp, &leadingCoeff);
       for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
       {
-        LenAndLimbs2ArrLimbs(ptrSrc, (limb*)nbrTmp2, NumberLength);
-        modmult((limb*)nbrTmp, (limb*)nbrTmp2, (limb*)nbrTmp3);
-        ArrLimbs2LenAndLimbs(ptrDest, (limb*)nbrTmp3, NumberLength + 1);
+        LenAndLimbs2ArrLimbs(ptrSrc, operand2.limbs, NumberLength);
+        modmult(operand3.limbs, operand2.limbs, operand1.limbs);
+        ArrLimbs2LenAndLimbs(ptrDest, operand1.limbs, NumberLength + 1);
         ptrSrc += 1 + NumberLength;
         ptrDest += 1 + numLimbs(ptrDest);
       }
@@ -1117,8 +1121,9 @@ static void vanHoeij(int prime, int numFactors)
   int delta;
   // Store into polyLifted the polynomial values / lc(values) (mod powerMod).
   double logPrime = log(prime);
-  double b0 = log(2 * values[0]) / logPrime;
+  double b0 = log(2.0 * (double)values[0]) / logPrime;
   double log_rootbound = logBigNbr(&bound) / logPrime;
+  double log_leadingcoeff = logBigNbr(&leadingCoeff) / logPrime;
   int a0;
   int b;
   int C;
@@ -1137,9 +1142,16 @@ static void vanHoeij(int prime, int numFactors)
   double dExponDifference = 6.0 * (double)nbrFactors * LOG_2 / log((double)prime);
   exponDifference = (int)dExponDifference;
   numberLLL = 0;
-  b = (int)(b0 + (ceil(LOG_3 * log_rootbound) / logPrime) + 3);
+  b = (int)(b0 + (ceil(LOG_3 * log_rootbound) / logPrime) + 3.0);
   a0 = b + exponDifference;
-  exponentMod = a0;
+  if (a0 <= (int)log_leadingcoeff + 2)
+  {
+    exponentMod = (int)log_leadingcoeff + 2;
+  }
+  else
+  {
+    exponentMod = a0;
+  }
 #if DEBUG_VANHOEIJ
   copyStr(&ptrDebugOutput, LF "====================================================="
     LF "prime = ");
