@@ -25,6 +25,7 @@
 #include "highlevel.h"
 #include "showtime.h"
 #include "batch.h"
+#if defined(FACTORIZATION_APP) || defined(FSQUARES_APP)
 #define MAX_SIEVE 65536
 #define SUBT 12
 static int primediv[256];
@@ -886,3 +887,4 @@ EXTERNALIZE void doWork(void)
   databack(output);
 }
 #endif
+#endif    // FACTORIZATION_APP || FSQUARES_APP

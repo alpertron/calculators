@@ -411,12 +411,12 @@ static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
     if (modulusIsZero)
     {
       (void)BigIntMultiply(&operand1, &operand2, &operand1);
+      NumberLength = operand1.nbrLimbs;
     }
     else
     {
       modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     }
-    NumberLength = operand1.nbrLimbs;
     BigInteger2IntArray(ptrArgument1 + 1, &operand1);
     diffPtrs = ptrArgument1 - &values[0];
     valuesIndex = (int)diffPtrs + 2 + *(ptrArgument1 + 1);
@@ -650,6 +650,7 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
     {
       exponLimb.x = expon;
       modPowLimb(operand1.limbs, &exponLimb, operand2.limbs);
+      operand2.sign = SIGN_POSITIVE;
     }
     BigInteger2IntArray(ptrArgument1 + 1, &operand2);
     diffPtrs = ptrArgument1 - &values[0];

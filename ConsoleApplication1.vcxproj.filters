@@ -18,9 +18,6 @@
     <ClCompile Include="karatsuba.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
-    <ClCompile Include="fsquares.c">
-      <Filter>Archivos de código fuente</Filter>
-    </ClCompile>
     <ClCompile Include="sqroot.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
@@ -37,9 +34,6 @@
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
     <ClCompile Include="division.c">
-      <Filter>Archivos de código fuente</Filter>
-    </ClCompile>
-    <ClCompile Include="fcubes.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
     <ClCompile Include="contfrac.c">
@@ -78,9 +72,6 @@
     <ClCompile Include="bigint.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
-    <ClCompile Include="ecmfront.c">
-      <Filter>Archivos de código fuente</Filter>
-    </ClCompile>
     <ClCompile Include="showtime.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
@@ -88,9 +79,6 @@
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
     <ClCompile Include="inputstr.c">
-      <Filter>Archivos de código fuente</Filter>
-    </ClCompile>
-    <ClCompile Include="batch.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
     <ClCompile Include="quad.c">
@@ -139,6 +127,18 @@
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
     <ClCompile Include="parseexpr.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="ecmfront.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="fsquares.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="fcubes.c">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="batch.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
   </ItemGroup>

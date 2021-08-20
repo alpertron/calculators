@@ -25,8 +25,11 @@
 #include <stdint.h>
 
 #define KARATSUBA_CUTOFF 16
-static limb arr[3*MAX_LEN];
-static limb arrayAux[3*MAX_LEN];
+#define FFT_THRESHOLD 100
+static limb arr[MAX_LEN/*3* FFT_THRESHOLD*/];
+static limb arrayAux[MAX_LEN/*3* FFT_THRESHOLD*/];
+static limb accumulatedProd[MAX_LEN_MULT];
+static limb partialProd[MAX_LEN_MULT];
 static int karatLength;
 static void Karatsuba(int idxFactor1, int nbrLen);
 
@@ -72,22 +75,21 @@ void multiply(const limb* factor1, const limb* factor2, limb* result,
   multiplyWithBothLen(factor1, factor2, result, len, len, pResultLen);
 }
 
-void multiplyWithBothLen(const limb *factor1, const limb *factor2, limb *result,
-  int len1, int len2, int *pResultLen)
-{  // Compute the maximum length.
+static inline void multiplyWithBothLenLL(const limb *factor1, const limb *factor2,
+  limb *result, int len1, int len2, int *pResultLen)
+{
   int length = len1;
   int lenBytes;
+  // Compute the maximum length.
   if (length < len2)
   {
     length = len2;
   }
-#if defined(FACTORIZATION_APP) || defined(BIGCALC_APP)
-  if (length > 100)
+  if (length > FFT_THRESHOLD)
   {
     fftMultiplication(factor1, factor2, result, len1, len2, pResultLen);
     return;
   }
-#endif
     // Compute length of numbers for each recursion.
   if (length > KARATSUBA_CUTOFF)
   {
@@ -120,6 +122,74 @@ void multiplyWithBothLen(const limb *factor1, const limb *factor2, limb *result,
     {
       *pResultLen = length * 2;
     }
+  }
+}
+
+void multiplyWithBothLen(const limb* factor1, const limb* factor2, limb* result,
+  int len1, int len2, int* pResultLen)
+{
+  const limb* minFact;
+  const limb* maxFact;
+  int minLen;
+  int maxLen;
+  int lenProd = len1 + len2;
+  int lenBytes;
+  int offset;
+  if (len1 < len2)
+  {
+    minFact = factor1;
+    maxFact = factor2;
+    minLen = len1;
+    maxLen = len2;
+  }
+  else
+  {
+    minFact = factor2;
+    maxFact = factor1;
+    minLen = len2;
+    maxLen = len1;
+  }
+  if ((minLen == 1) && (minFact->x == 0))
+  {     // Multiply by zero. Set product to zero.
+    lenBytes = lenProd * (int)sizeof(int);
+    memset(result, 0, lenBytes);
+    if (pResultLen != NULL)
+    {
+      *pResultLen = 1;
+    }
+    return;
+  }
+  if (minLen == maxLen)
+  {
+    multiplyWithBothLenLL(minFact, maxFact, result, minLen, maxLen, pResultLen);
+    return;
+  }
+  // Perform several multiplications and add all products.
+  lenBytes = lenProd * (int)sizeof(int);
+  memset(accumulatedProd, 0, lenBytes);
+  for (offset = 0; offset < (maxLen - minLen); offset += minLen)
+  {
+    multiplyWithBothLenLL(minFact, maxFact + offset, partialProd,
+      minLen, minLen, NULL);
+    // Add partial product to accumulated product.
+    AddBigNbr(accumulatedProd + offset, partialProd,
+      accumulatedProd + offset, 2 * minLen);
+  }
+  multiplyWithBothLenLL(minFact, maxFact + offset, partialProd,
+    minLen, maxLen - offset, NULL);
+  // Add partial product to accumulated product.
+  AddBigNbr(accumulatedProd + offset, partialProd,
+    accumulatedProd + offset, lenProd - offset);
+  lenBytes = lenProd * (int)sizeof(int);
+  memcpy(result, accumulatedProd, lenBytes);
+  // Copy accumulatedProd to result.
+  while ((lenProd > 1) && (accumulatedProd[lenProd - 1].x == 0))
+  {
+    lenProd--;
+  }
+  if (pResultLen != NULL)
+  {
+    *pResultLen = lenProd;
   }
 }
 

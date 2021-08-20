@@ -618,12 +618,12 @@ enum eEcmResult ecmStep2(void)
     }
   }
   (void)memcpy(&common.ecm.sieve2310[HALF_SIEVE_SIZE], &common.ecm.sieve2310[0], HALF_SIEVE_SIZE);
-  (void)memcpy(common.ecm.Xaux, common.ecm.X, NumberSizeBytes);  // (X:Z) -> Q (output
-  (void)memcpy(common.ecm.Zaux, common.ecm.Z, NumberSizeBytes);  //         from step 1)
   for (int pass = 0; pass < 2; pass++)
   {
     int Qaux;
     int J;
+    (void)memcpy(common.ecm.Xaux, common.ecm.X, NumberSizeBytes);  // (X:Z) -> Q (output
+    (void)memcpy(common.ecm.Zaux, common.ecm.Z, NumberSizeBytes);  //         from step 1)
     (void)memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, NumberSizeBytes);
     (void)memcpy(common.ecm.UX, common.ecm.X, NumberSizeBytes);
     (void)memcpy(common.ecm.UZ, common.ecm.Z, NumberSizeBytes);  // (UX:UZ) -> Q 
@@ -729,8 +729,8 @@ enum eEcmResult ecmStep2(void)
     SubtBigNbrModN(common.ecm.W1, common.ecm.W2, common.ecm.Aux1, TestNbr, NumberLength);
     modmult(common.ecm.Aux1, common.ecm.Aux1, common.ecm.Aux2);
     modmult(common.ecm.Aux2, common.ecm.UX, common.ecm.Z); // (X:Z) -> 3*SIEVE_SIZE*Q
-    Qaux = (int)(boundStep1 / (2 * SIEVE_SIZE));
-    maxIndexM = (int)(boundStep2 / (2 * SIEVE_SIZE));
+    Qaux = boundStep1 / (2 * SIEVE_SIZE);
+    maxIndexM = boundStep2 / (2 * SIEVE_SIZE);
     for (indexM = 0; indexM <= maxIndexM; indexM++)
     {
       if (indexM >= Qaux)
@@ -768,7 +768,7 @@ enum eEcmResult ecmStep2(void)
         {
           if (BigNbrIsZero(common.ecm.GcdAccumulated))
           {           // This curve cannot factor the number.
-            break;
+            return FACTOR_NOT_FOUND_GCD;
           }
           if (gcdIsOne(common.ecm.GcdAccumulated) > 1)
           {
@@ -892,8 +892,8 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
       databack(text);
 #endif
       nbrDigits = NumberLength * 9;          // Get number of digits.
-      if ((NextEC == 0) && (nbrDigits <= 110)) // Force switch to SIQS and number not too large.
-      {
+      if ((NextEC == 0) && (nbrDigits >= 30) && (nbrDigits <= 110))
+      {          // Force switch to SIQS and number not too large.
         EC += TYP_SIQS;
         *pEC = EC;
         *pNextEC = NextEC;
@@ -1017,6 +1017,12 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
     *pEC = EC;
     *pNextEC = NextEC;
     return result;
+  }
+  if (result == FACTOR_NOT_FOUND_GCD)
+  {
+    *pEC = EC + 1;
+    *pNextEC = NextEC + 1;
+    return FACTOR_NOT_FOUND_GCD;
   }
   *pEC = EC;
   *pNextEC = NextEC;

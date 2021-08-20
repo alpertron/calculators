@@ -681,7 +681,7 @@ void polyToMontgomeryNotation(int *nbr, int qtyNbrs)
 }
 
   // Perform polyPower <- polyBase ^ expon (mod polyMod)
-void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, const BigInteger *expon,
+void powerPolynomial(int *polyBase, const int *polyMod, int polyDegree, const BigInteger *expon,
                      int *polyPower, powerCback callback, int curMultip, int nbrMultip)
 {
   int lenLimbs;
@@ -692,7 +692,6 @@ void powerPolynomial(int *polyBase, int *polyMod, int polyDegree, const BigInteg
   int bitCounter = 0;
   lenLimbs = polyDegree * nbrLimbs;
   *(polyBase + lenLimbs) = 1;
-  lenLimbs = polyDegree * nbrLimbs;
   *(polyBase + lenLimbs + 1) = 0;
   for (; index >= 0; index--)
   {
@@ -1364,17 +1363,17 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
 #endif
     // Compute u(x) <- (1/m) * (f - f_1 * f_2 *...* f_n)
     oldNumberLength = NumberLength;
-    newExponent = currentExp * 2;      // We can double the exponent in each step.
-    if (newExponent > exponentMod)     // Do not exceed exponentMod.
+    newExponent = currentExp * 2;    // We can double the exponent in each step.
+    if (newExponent > exponentMod)   // Do not exceed exponentMod.
     {
       newExponent = exponentMod;
     }
     (void)BigIntPowerIntExp(&primeMod, currentExp, &operand5);
-    computePower(newExponent);         // Compute powerMod and init Montgomery parms.
+    computePower(newExponent);       // Compute powerMod and init Montgomery parms.
     newNumberLength = NumberLength;
     nbrLimbs = NumberLength + 1;
-    ComputeF();                        // poly4 <- f mod m^2 (Montgomery notation).
-    SetNumberToOne(poly1);             // Initialize product of factors.
+    ComputeF();                      // poly4 <- f mod m^newExponent (Montgomery notation).
+    SetNumberToOne(poly1);           // Initialize product of factors.
     pstFactorInfo = ptrFactorInfo;
     degree = 0;
     for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
@@ -1385,11 +1384,11 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
       MultPolynomial(degree, degreeFactor, poly1, poly2);
       degree += degreeFactor;
       lenBytes = (degree + 1) * nbrLimbs * (int)sizeof(int);
-      (void)memcpy(poly1, polyMultTemp, lenBytes);
+      (void)memcpy(poly1, polyMultTemp, lenBytes);              // poly1 <- product.
       pstFactorInfo++;
     }
-    polyToStandardNotation(poly1, degree + 1);
-    polyToStandardNotation(poly4, degree + 1);
+    polyToStandardNotation(poly1, degree + 1);   // f_1 * f_2 *...* f_n
+    polyToStandardNotation(poly4, degree + 1);   // f
     for (currentDegree = 0; currentDegree <= degree; currentDegree++)
     {                 // Loop that computes (1/m)*(f - f_1 * f_2 * ... * f_n)
       int nbrLen;
@@ -1399,6 +1398,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
       // Get coefficient of product of factors.
       IntArray2BigInteger(&poly1[currentDegree * nbrLimbs], &operand2);
       SubtBigNbrMod(operand1.limbs, operand2.limbs, operand1.limbs);
+      // At this moment: operand1.limbs = coeff(f - f_1 * f_2 * ... * f_n)
       // Get number of significant limbs before performing division.
       nbrLen = NumberLength;
       while (nbrLen > 1)
@@ -1419,7 +1419,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
       (void)memcpy(ptrDest, operand1.limbs, lenBytes);
     }
     computePower(currentExp);
-    polyToMontgomeryNotation(poly3, degree+1);
+    polyToMontgomeryNotation(poly3, degree + 1);
     nbrLimbs = NumberLength + 1;
     pstFactorInfo = ptrFactorInfo;
     ptrDest = polyLiftedNew;
@@ -1428,7 +1428,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
     {
       int lenBytes;
       degreeFactor = pstFactorInfo->degree;
-      // g(x) <- u(x) * a_i(x) mod f_i(x) (all computations done mod m).
+      // g(x) <- u(x) * a_i(x) mod f_i(x) (all computations done mod p^currentExp).
       degreeA = getAi(nbrFactor, degreeFactor - 1); // poly1 <- a_i.
       MultPolynomial(degree, degreeA, poly3, poly1);
       lenBytes = (degree + degreeA + 1) * nbrLimbs * (int)sizeof(int);

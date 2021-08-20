@@ -25,6 +25,7 @@
 #include "highlevel.h"
 #include "polynomial.h"
 #include "showtime.h"
+#include "fft.h"
 
 #define KARATSUBA_POLY_CUTOFF      16
 #define SQRT_KARATSUBA_POLY_CUTOFF 4
@@ -44,6 +45,8 @@ static int polyMultM[COMPRESSED_POLY_MAX_LENGTH];
 static int polyMultT[COMPRESSED_POLY_MAX_LENGTH];
 extern int poly4[COMPRESSED_POLY_MAX_LENGTH];
 extern int poly5[COMPRESSED_POLY_MAX_LENGTH];
+limb subst1Limbs[MAX_LEN_MULT];
+limb subst2Limbs[MAX_LEN_MULT];
 
 // Multiply two groups of nbrLen coefficients. The first one starts at
 // idxFactor1 and the second one at idxFactor2. The 2*nbrLen coefficient
@@ -575,28 +578,33 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
 
 // Multiply factor1 by factor2.The result will be stored in polyMultTemp.
 static void MultIntegerPolynomial(int deg1, int deg2,
-  /*@in@*/int* fact1, /*@in@*/int* fact2)
+  const int* fact1, const int* fact2)
 {
-  int degree1 = deg1;
-  int degree2 = deg2;
-  int* factor1 = fact1;
-  int* factor2 = fact2;
+  int degree1;
+  int degree2;
+  const int* factor1;
+  const int* factor2;
   int indexes[2][MAX_DEGREE + 1];
   int* ptrIndex;
-  int* piTemp;
   int* piDest;
   int currentDegree;
   int index;
   int degreeF2;
 
-  if (degree1 < degree2)
-  {       // Force degree1 >= degree2.
-    int tmp = degree1;
-    degree1 = degree2;
-    degree2 = tmp;
-    piTemp = factor1;
-    factor1 = factor2;
-    factor2 = piTemp;
+  // Force degree1 >= degree2.
+  if (deg1 < deg2)
+  {
+    degree1 = deg2;
+    degree2 = deg1;
+    factor1 = fact2;
+    factor2 = fact1;
+  }
+  else
+  {
+    degree1 = deg1;
+    degree2 = deg2;
+    factor1 = fact1;
+    factor2 = fact2;
   }
   // Fill indexes to start of each coefficient.
   ptrIndex = &indexes[0][0];
@@ -660,8 +668,182 @@ static void MultIntegerPolynomial(int deg1, int deg2,
   }
 }
 
+// Compact polynomial poly so each coefficient has bit size lenBitsDest
+// in BigInteger substed.
+static void KroneckerSubstitution(const int* poly, int polyDegree,
+  int bitsDegree, int bitsModulus, limb* substedLimbs, int *substedNbrLimbs)
+{
+  const int* ptrSrc = poly;
+  int nbrLimbs = NumberLength + 1;
+  int lenBitsDest = (2 * bitsModulus) + bitsDegree;
+  int currentBitOffset = 0;
+  for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+  {
+    unsigned int shLeft = (unsigned int)currentBitOffset % 
+      (unsigned int)BITS_PER_GROUP;
+    unsigned int shRight = (unsigned int)BITS_PER_GROUP - shLeft;
+    limb *ptrDest = substedLimbs + (currentBitOffset / BITS_PER_GROUP);
+    currentBitOffset += lenBitsDest;
+    const limb* ptrDestNew = substedLimbs + (currentBitOffset / BITS_PER_GROUP);
+    unsigned int carry;
+    const int* ptrSrcBak;
+    if (currentBitOffset == lenBitsDest)
+    {
+      carry = 0U;
+    }
+    else
+    {
+      carry = (unsigned int)ptrDest->x;
+    }    
+    ptrSrcBak = ptrSrc;
+    ptrSrc++;
+    for (int lenLimbsSrc = *(ptrSrc-1); lenLimbsSrc > 0; lenLimbsSrc--)
+    {     // Shift left currentBitOffset bits.
+      ptrDest->x = UintToInt((((unsigned int)*ptrSrc << shLeft) + carry) & MAX_VALUE_LIMB);
+      carry = UintToInt((unsigned int)*ptrSrc >> shRight);
+      ptrDest++;
+      ptrSrc++;      
+    }
+    ptrDest->x = carry;
+    while (ptrDest < ptrDestNew)
+    {
+      ptrDest++;
+      ptrDest->x = 0;
+    }
+    ptrSrc = ptrSrcBak + nbrLimbs;
+  }
+  nbrLimbs = (currentBitOffset+BITS_PER_GROUP_MINUS_1) / BITS_PER_GROUP;
+  while (nbrLimbs > 1)
+  {
+    if ((substedLimbs + nbrLimbs - 1)->x != 0)
+    {
+      break;
+    }
+    nbrLimbs--;
+  }
+  *substedNbrLimbs = nbrLimbs;
+}
+
+// Kronecker substitution replaces polynomial multiplication by
+// big integer multiplication by inserting zeros between coefficients
+// so there is no overflow when performing the multiplication.
+// Then the product is converted back to a polynomial.
+static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
+  const int* factor1, const int* factor2)
+{
+  int degreeProd = degree1 + degree2;
+  int* ptrDest;
+  int lenBitsCoeff;
+  int currentBitOffset = 0;
+  int lenNumberLength = NumberLength * (int)sizeof(int);
+  int nbrLimbs = NumberLength + 1;
+  int nbrLimbsProduct;
+  int nbrBitsProduct;
+  unsigned int bitsDegree;
+  unsigned int bitsModulus;
+  int mostSignificantLimb;
+  int len1Limbs;
+  int len2Limbs;
+  int lenProdLimbs;
+
+  // Get number of bits of degree.
+  for (bitsDegree = 0U; bitsDegree < 16; bitsDegree++)
+  {
+    if ((1U << bitsDegree) > (unsigned int)degreeProd)
+    {
+      break;
+    }
+  }
+  // Get number of bits of modulus.
+  bitsModulus = NumberLength * BITS_PER_GROUP;
+  mostSignificantLimb = TestNbr[NumberLength-1].x;
+  for (int mask = HALF_INT_RANGE; mask > 0; mask /= 2)
+  {
+    if (mask & mostSignificantLimb)
+    {
+      break;
+    }
+    bitsModulus--;
+  }
+  // With this choice of bit size, there will be no overflow
+  // of coefficients when performing the multiplication.
+  lenBitsCoeff = (2 * bitsModulus) + bitsDegree;
+  nbrBitsProduct = lenBitsCoeff * (degreeProd + 1);
+  nbrLimbsProduct = (nbrBitsProduct + BITS_PER_GROUP_MINUS_1) / BITS_PER_GROUP;
+  if (nbrLimbsProduct >= MAX_LEN_MULT)
+  {       // Number would be very large. Cannot perform substitution.
+    return false;
+  }
+  // Compact each polynomial factor so each coefficient has bit size lenBitsDest.
+  KroneckerSubstitution(factor1, degree1, bitsDegree, bitsModulus,
+    subst1Limbs, &len1Limbs);
+  KroneckerSubstitution(factor2, degree2, bitsDegree, bitsModulus,
+    subst2Limbs, &len2Limbs);
+  multiplyWithBothLen(subst1Limbs, subst2Limbs, subst2Limbs,
+    len1Limbs, len2Limbs, &lenProdLimbs);
+  while (lenProdLimbs < nbrLimbsProduct)
+  {  // Loop that generates most significant zeros.
+    (subst2Limbs + lenProdLimbs)->x = 0;
+    lenProdLimbs++;
+  }
+  // At this moment subst2Limbs has the product of the two polynomials
+  // where each coefficient has bit size lenBitsDest.
+  // Get each coefficient and get their remainders modulo TestNbr.
+  // These numbers will be the coefficients of the polynomial multiplication.
+  operand2.nbrLimbs = NumberLength;
+  ptrDest = polyMultTemp;
+  unsigned int mostSignificantLimbMask = lenBitsCoeff % BITS_PER_GROUP;
+  if (mostSignificantLimbMask == 0U)
+  {
+    mostSignificantLimbMask = (unsigned int)BITS_PER_GROUP;
+  }
+  mostSignificantLimbMask = (1U << mostSignificantLimbMask) - 1U;
+  for (int currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
+  {
+    limb* ptrDividend = operand1.limbs;
+    // Shift right coefficient to generate dividend in operand1.
+    const limb* ptrSrc = subst2Limbs + (currentBitOffset / BITS_PER_GROUP);
+    unsigned int shRight = (unsigned int)currentBitOffset %
+      (unsigned int)BITS_PER_GROUP;
+    unsigned int shLeft = (unsigned int)BITS_PER_GROUP - shRight;
+    currentBitOffset += lenBitsCoeff;
+    for (int currentBitNbr = 0; currentBitNbr < lenBitsCoeff; 
+      currentBitNbr += BITS_PER_GROUP)
+    {
+      ptrDividend->x = UintToInt((((unsigned int)ptrSrc->x >> shRight) |
+        ((unsigned int)(ptrSrc + 1)->x << shLeft)) & MAX_VALUE_LIMB);
+      ptrSrc++;
+      ptrDividend++;
+    }
+    (ptrDividend - 1)->x &= mostSignificantLimbMask;
+    operand1.nbrLimbs = (int)(ptrDividend - &operand1.limbs[0]);
+    while (operand1.nbrLimbs > 1)
+    {
+      if (operand1.limbs[operand1.nbrLimbs - 1].x != 0)
+      {
+        break;
+      }
+      operand1.nbrLimbs--;
+    }
+    memcpy(operand2.limbs, TestNbr, lenNumberLength);
+    BigIntRemainder(&operand1, &operand2, &operand1);
+    while (operand1.nbrLimbs < NumberLength)
+    {
+      operand1.limbs[operand1.nbrLimbs].x = 0;
+      operand1.nbrLimbs++;
+    }
+    memset(operand2.limbs, 0, lenNumberLength);
+    operand2.limbs[0].x = 1;
+    modmult(operand2.limbs, operand1.limbs, operand2.limbs);
+    BigInteger2IntArray(ptrDest, &operand2);
+    ptrDest += nbrLimbs;
+  }
+  return true;
+}
+
 // Multiply factor1 by factor2. The result will be stored in polyMultTemp.
-void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int* factor2)
+void MultPolynomial(int degree1, int degree2,
+  const int* factor1, const int* factor2)
 {
   int* ptrValue1;
   int nbrLimbs;
@@ -738,6 +920,11 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
     fftPolyMult(factor1, factor2, polyMultTemp, degree1+1, degree2+1);
     return;
   }
+  if ((NumberLength > 1) && (degree1 > 5) && (degree2 > 5) &&
+    MultiplyUsingKroneckerSubst(degree1, degree2, factor1, factor2))
+  {             // Multiply polynomials using Kronecker substitution.
+    return;
+  }
   // Compute length of numbers for each recursion.
   if (karatDegree > KARATSUBA_POLY_CUTOFF)
   {
@@ -766,7 +953,7 @@ void MultPolynomial(int degree1, int degree2, /*@in@*/int* factor1, /*@in@*/int*
 
 // Compute the polynomial polyInv as:
 // polyInv = x^(2*polyDegree) / polymod
-void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
+void GetPolyInvParm(int polyDegree, const int* polyMod)
 {
   int degrees[15];
   int nbrDegrees = 0;
@@ -835,11 +1022,12 @@ void GetPolyInvParm(int polyDegree, /*@in@*/int* polyMod)
 
 // Multiply two polynomials mod polyMod using inverse polynomial polyInv.
 // The algorithm is:
+// T <- polyFact1 * polyFact2
 // m <- (T*polyInv)/x^polyDegree
 // return T - m*polyMod
-void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
+void multUsingInvPolynomial(const int* polyFact1, const int* polyFact2,
   /*@out@*/int* polyProd,
-  int polyDegree, /*@in@*/int* polyMod)
+  int polyDegree, const int* polyMod)
 {
   int* polyProduct = polyProd;
   int currentDegree;

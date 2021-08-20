@@ -37,6 +37,7 @@ enum eEcmResult
 {
   FACTOR_NOT_FOUND = 0,
   FACTOR_FOUND,
+  FACTOR_NOT_FOUND_GCD,
   CHANGE_TO_SIQS,
 };
 

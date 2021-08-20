@@ -86,15 +86,16 @@ extern int polyNonRepeatedFactors[1000000];
 typedef void (*powerCback)(int percentage);
 void SetNumberToOne(/*@out@*/int *ptrValue1);
 void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *gcd, int *degreeGcd);
-void powerPolynomial(int* polyBase, int* polyMod, int polyDegree, const BigInteger* expon,
+void powerPolynomial(int* polyBase, const int* polyMod, int polyDegree, const BigInteger* expon,
   int* polyPower, powerCback callback, int curMultip, int nbrMultip);
 int getDegreePoly(const int *poly, int polyDegree);
 void DividePolynomial(/*@in@*/int *pDividend, int dividendDegree, /*@in@*/int *pDivisor,
                       int divisorDegree, /*@out@*/int *ptrQuotient);
 void multPolynomialModPoly(const int* polyFact1, const int* polyFact2,
   /*@out@*/int* polyProduct, int polyDegree, const int* polyMod);
-void MultPolynomial(int degree1, int degree2, /*@in@*/int *factor1, /*@in@*/int *factor2);
-void GetPolyInvParm(int polyDegree, /*@in@*/int *polyMod);
+void MultPolynomial(int degree1, int degree2,
+  const int *factor1, const int *factor2);
+void GetPolyInvParm(int polyDegree, const int *polyMod);
 int ComputePolynomial(const char *input, int expo);
 void OrigPolyFromMontgomeryToStandard(void);
 void ConvertToMonic(int *poly, int polyDegree);
@@ -103,7 +104,8 @@ int HenselLifting(struct sFactorInfo* factorInfo, bool compressPoly);
 void polyToStandardNotation(int *nbr, int qtyNbrs);
 void textErrorPol(char **pptrOutput, enum eExprErr rc);
 void outputOriginalPolynomial(char **pptrOutput, int groupLen);
-void outputPolynomialFactor(char** pptrOutput, int groupLength, const struct sFactorInfo* pstFactorInfo);
+void outputPolynomialFactor(char** pptrOutput, int groupLength,
+  const struct sFactorInfo* pstFactorInfo);
 void DerPolynomial(int *ptrArgument);
 void SubtractIntegerPolynomial(const int* minuend, const int* subtrahend, int* difference);
 void PolynomialGcd(int *argF, int *argG, int *gcd);
@@ -125,9 +127,9 @@ int FactorModularPolynomial(bool inputMontgomery);
 int getNextPrimeNoDuplicatedFactors(int prime);
 void FactorPolynomialModPrime(int prime);
 void fftPolyMult(const int* factor1, const int* factor2, int* result, int len, int maxLen);
-void multUsingInvPolynomial(/*@in@*/int* polyFact1, /*@in@*/int* polyFact2,
+void multUsingInvPolynomial(const int* polyFact1, const int* polyFact2,
   /*@out@*/int* polyProduct,
-  int polyDegree, /*@in@*/int* polyMod);
+  int polyDegree, const int* polyMod);
 void SameDegreeFactorization(void);
 int DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType type);
 #endif

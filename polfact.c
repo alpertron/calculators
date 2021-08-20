@@ -114,7 +114,7 @@ static void DistinctDegreeFactorization(int polyDeg)
       // Copy polynomial to factor to poly3 and set leading coefficient to 1.
       ptrValue1 = &poly3[polyDegree*nbrLimbs];
       (void)memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0])*sizeof(int));
-      SetNumberToOne(ptrValue1);  // Set leading coefficient to 1.
+      SetNumberToOne(ptrValue1);     // Set leading coefficient to 1.
       powerPolynomial(poly1, poly3,  // Base and polynomial modulus.
         polyDegree, &primeMod,       // Degree of polynomials and exponent.
         poly2, NULL,                 // Power and pointer to callback.
@@ -219,7 +219,7 @@ void SameDegreeFactorization(void)
   int primeInt = primeMod.limbs[0].x;
   int nbrLimbs = primeMod.nbrLimbs + 1;
   int polyNbr = 1;
-  int isCharacteristic2 = ((primeMod.nbrLimbs == 1) && (primeMod.limbs[0].x == 2));
+  bool isCharacteristic2 = ((primeMod.nbrLimbs == 1) && (primeMod.limbs[0].x == 2));
   for (int nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
     int polyDegree = pstFactorInfo->degree;
@@ -229,7 +229,7 @@ void SameDegreeFactorization(void)
       pstFactorInfo++;
       continue;
     }
-    if (isCharacteristic2 == 0)
+    if (!isCharacteristic2)
     { // If prime is not 2,
       // Calculate operand2 <- (prime^degree-1)/2
       // Use operand1 as temporary variable to store the exponent.
@@ -308,7 +308,7 @@ void SameDegreeFactorization(void)
           ptrValue1 += nbrLimbs;
         }
       }
-      if (isCharacteristic2 == 0)
+      if (!isCharacteristic2)
       { // If prime is not 2: compute base^((p^d-1)/2).
         int degreeFactor = pstFactorInfo->expectedDegree;
         CopyBigInt(&operand4, &primeMod);

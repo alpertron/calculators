@@ -20,6 +20,7 @@
 #include "bignbr.h"
 #include "highlevel.h"
 #include "batch.h"
+#if defined(FACTORIZATION_APP) || defined(FSQUARES_APP)
 static BigInteger value;
 static BigInteger Base1;
 static BigInteger Base2;
@@ -434,3 +435,4 @@ void batchCubesCallback(char **pptrOutput)
   }
   *pptrOutput = ptrOutput;
 }
+#endif      // FACTORIZATION_APP || FSQUARES_APP

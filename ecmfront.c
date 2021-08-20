@@ -26,6 +26,7 @@
 #include "batch.h"
 #include "output.h"
 
+#ifdef FACTORIZATION_APP
 #ifdef __EMSCRIPTEN__
 extern bool skipPrimality;
 extern int64_t lModularMult;
@@ -1199,4 +1200,5 @@ EXTERNALIZE void doWork(void)
   databack(output);
 #endif
 }
+#endif
 #endif

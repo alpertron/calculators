@@ -152,7 +152,7 @@
       <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;FACTORIZATION_FUNCTIONS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;FACTORIZATION_APP;_USING64BITS_;ENABLE_VERBOSE;POLYEXPR=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;FACTORIZATION_APP;_LIB;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USING64BITS_;ENABLE_VERBOSE;POLYEXPR=1</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/F 3000000 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -172,7 +172,10 @@
     <ClCompile Include="bigrational.c" />
     <ClCompile Include="divpoly.c" />
     <ClCompile Include="ecm.c" />
+    <ClCompile Include="ecmfront.c" />
+    <ClCompile Include="fcubes.c" />
     <ClCompile Include="fftpoly.c" />
+    <ClCompile Include="fsquares.c" />
     <ClCompile Include="intpolfact.c" />
     <ClCompile Include="linkedbignbr.c" />
     <ClCompile Include="multpoly.c" />
@@ -182,13 +185,10 @@
     <ClCompile Include="contfrac.c" />
     <ClCompile Include="dilog.c" />
     <ClCompile Include="division.c" />
-    <ClCompile Include="ecmfront.c" />
     <ClCompile Include="errors.c" />
     <ClCompile Include="expression.c" />
     <ClCompile Include="factor.c" />
-    <ClCompile Include="fcubes.c" />
     <ClCompile Include="fft.c" />
-    <ClCompile Include="fsquares.c" />
     <ClCompile Include="GaussExpr.c" />
     <ClCompile Include="gaussian.c" />
     <ClCompile Include="gcdrings.c" />

@@ -25,6 +25,8 @@
 #include "showtime.h"
 #include "batch.h"
 
+#if defined(FACTORIZATION_APP) || defined(FSQUARES_APP)
+
 static char *ptrEndBatchFactor;
 static char *ptrCurrBatchFactor;
 static char *ptrNextBatchFactor;
@@ -510,3 +512,5 @@ char *findChar(char *str, char c)
   }
   return NULL;
 }
+
+#endif     // FACTORIZATION_APP || FSQUARES_APP

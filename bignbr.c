@@ -313,12 +313,6 @@ enum eExprErr BigIntMultiply(const BigInteger *pFact1, const BigInteger *pFact2,
   {
     return EXPR_INTERM_TOO_HIGH;
   }
-  if (((nbrLimbsFactor1 * nbrLimbsFactor1) < nbrLimbsFactor2) ||
-    ((nbrLimbsFactor2 * nbrLimbsFactor2) < nbrLimbsFactor1))
-  {    // One of the factors is a lot smaller than the other.
-       // Use classical multiplication.
-   // return EXPR_OK
-  }
   multiplyWithBothLen(&pFactor1->limbs[0], &pFactor2->limbs[0], &pProduct->limbs[0],
     nbrLimbsFactor1, nbrLimbsFactor2, &nbrLimbs);
   nbrLimbs = nbrLimbsFactor1 + nbrLimbsFactor2;

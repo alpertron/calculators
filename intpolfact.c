@@ -1654,8 +1654,8 @@ static void vanHoeij(int prime, int numFactors)
     }
 #endif
 #endif
-    // Step 7: BL <- BL / C. Now BL has dimension 
-    // nbrFactors rows by r'
+    // Step 7: BL <- BL / C. Now matrix BL has dimension 
+    // nbrFactors rows by r' columns.
     for (nbrRow = 0; nbrRow < nbrFactors; nbrRow++)
     {
       struct linkedBigInt** ptrLBIDest = &matrixBL[nbrRow][0];

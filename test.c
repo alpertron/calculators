@@ -26,7 +26,7 @@
 #include "batch.h"
 #include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 11
+#define DEBUG_CODE 9
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -224,7 +224,8 @@ int main(int argc, char* argv[])
   default:
     pretty = PARI_GP;
     break;
-  }  for (int ctr = 0; ctr < 1; ctr++)
+  }
+  for (int ctr = 0; ctr < 1; ctr++)
   {
     polyFactText(argv[1], argv[2], 7);
   }

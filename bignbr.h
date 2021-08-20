@@ -19,10 +19,11 @@
 #ifndef _BIGNBR_H
 #define _BIGNBR_H
 #include <stdint.h>
+#define MAX_LEN_MULT  25000  // 200000 digits
 #ifdef FACTORIZATION_APP
-#define MAX_LEN 25000        // 200000 digits
+#define MAX_LEN       25000  // 200000 digits
 #else
-#define MAX_LEN 2500         // 20000 digits
+#define MAX_LEN        2500  // 20000 digits
 #endif
 #define BITS_PER_GROUP         31
 #define BITS_PER_GROUP_MINUS_1 30

@@ -25,7 +25,7 @@
 
 #define FFT_LIMB_SIZE   18
 #define FFT_LIMB_RANGE  0x00040000     // 2^18
-#define MAX_FFT_LEN     (((MAX_LEN * BITS_PER_GROUP) / FFT_LIMB_SIZE) + 10)
+#define MAX_FFT_LEN     (((MAX_LEN_MULT * BITS_PER_GROUP) / FFT_LIMB_SIZE) + 10)
 #define POWERS_2        17
 #define FULL_CIRCLE     0x00020000     // 2^17
 // In the next array, all numbers are represented by two elements,
