@@ -106,6 +106,7 @@ void SubtBigNbrModN(const limb *Nbr1, const limb *Nbr2, limb *Sum, const limb *T
 void modmult(const limb *factor1, const limb *factor2, limb *product);
 void modmultInt(limb *factorBig, int factorInt, limb *result);
 void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb* pTestNbr, int nbrLen);
+void endBigModmult(const limb* prodNotAdjusted, limb* product);
 #define AddBigNbrMod(Nbr1, Nbr2, Sum) AddBigNbrModN(Nbr1, Nbr2, Sum, TestNbr, NumberLength) 
 void modPowBaseInt(int base, const limb *exp, int nbrGroupsExp, limb *power);
 void modPow(const limb *base, const limb *exp, int nbrGroupsExp, limb *power);

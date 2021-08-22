@@ -45,8 +45,10 @@ static int polyMultM[COMPRESSED_POLY_MAX_LENGTH];
 static int polyMultT[COMPRESSED_POLY_MAX_LENGTH];
 extern int poly4[COMPRESSED_POLY_MAX_LENGTH];
 extern int poly5[COMPRESSED_POLY_MAX_LENGTH];
+extern int powerOf2Exponent;
 limb subst1Limbs[MAX_LEN_MULT];
 limb subst2Limbs[MAX_LEN_MULT];
+static limb tmp1[MAX_LEN];
 
 // Multiply two groups of nbrLen coefficients. The first one starts at
 // idxFactor1 and the second one at idxFactor2. The 2*nbrLen coefficient
@@ -734,9 +736,10 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
   int degreeProd = degree1 + degree2;
   int* ptrDest;
   int lenBitsCoeff;
+  int lenBitsCoeffToProcess;
+  unsigned int mostSignificantLimbMask;
   int currentBitOffset = 0;
-  int lenNumberLength = NumberLength * (int)sizeof(int);
-  int nbrLimbs = NumberLength + 1;
+  int nbrLimbs;
   int nbrLimbsProduct;
   int nbrBitsProduct;
   unsigned int bitsDegree;
@@ -745,6 +748,7 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
   int len1Limbs;
   int len2Limbs;
   int lenProdLimbs;
+  limb* prod;
 
   // Get number of bits of degree.
   for (bitsDegree = 0U; bitsDegree < 16; bitsDegree++)
@@ -792,7 +796,15 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
   // These numbers will be the coefficients of the polynomial multiplication.
   operand2.nbrLimbs = NumberLength;
   ptrDest = polyMultTemp;
-  unsigned int mostSignificantLimbMask = lenBitsCoeff % BITS_PER_GROUP;
+  if (powerOf2Exponent != 0)
+  {          // TestNbr is even.
+    lenBitsCoeffToProcess = powerOf2Exponent;
+  }
+  else
+  {
+    lenBitsCoeffToProcess = lenBitsCoeff;
+  }
+  mostSignificantLimbMask = lenBitsCoeffToProcess % BITS_PER_GROUP;
   if (mostSignificantLimbMask == 0U)
   {
     mostSignificantLimbMask = (unsigned int)BITS_PER_GROUP;
@@ -800,14 +812,15 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
   mostSignificantLimbMask = (1U << mostSignificantLimbMask) - 1U;
   for (int currentDegree = 0; currentDegree <= degreeProd; currentDegree++)
   {
-    limb* ptrDividend = operand1.limbs;
-    // Shift right coefficient to generate dividend in operand1.
+    prod = (limb *)ptrDest + 1;
+    limb *ptrDividend = prod;
+    // Shift right coefficient to generate coefficient in prod.
     const limb* ptrSrc = subst2Limbs + (currentBitOffset / BITS_PER_GROUP);
     unsigned int shRight = (unsigned int)currentBitOffset %
       (unsigned int)BITS_PER_GROUP;
     unsigned int shLeft = (unsigned int)BITS_PER_GROUP - shRight;
     currentBitOffset += lenBitsCoeff;
-    for (int currentBitNbr = 0; currentBitNbr < lenBitsCoeff; 
+    for (int currentBitNbr = 0; currentBitNbr < lenBitsCoeffToProcess;
       currentBitNbr += BITS_PER_GROUP)
     {
       ptrDividend->x = UintToInt((((unsigned int)ptrSrc->x >> shRight) |
@@ -816,26 +829,64 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
       ptrDividend++;
     }
     (ptrDividend - 1)->x &= mostSignificantLimbMask;
-    operand1.nbrLimbs = (int)(ptrDividend - &operand1.limbs[0]);
-    while (operand1.nbrLimbs > 1)
+    nbrLimbs = (int)(ptrDividend - prod);
+    if (powerOf2Exponent == 0)
     {
-      if (operand1.limbs[operand1.nbrLimbs - 1].x != 0)
+      ptrDividend->x = 0;
+      (ptrDividend + 1)->x = 0;
+      // Montgomery reduction works if the number has up to
+      // bitsModulus + NumberLength * BITS_PER_GROUP bits,
+      // but the length is 2*bitsModulus + bitsDegree.
+      // So we have to execute AdjustModN before the Montgomery reduction.
+      if (lenBitsCoeff >= ((int)bitsModulus + (NumberLength * BITS_PER_GROUP)))
+      {
+        AdjustModN(&prod[NumberLength], TestNbr, NumberLength);
+      }
+      if (NumberLength == 1)
+      {
+        if (TestNbr[0].x <= 32768)
+        {
+          prod->x = prod->x % TestNbr[0].x;
+        }
+        else
+        {
+#ifdef _USING64BITS_
+          prod->x = (prod->x +
+            ((int64_t)(prod+1)->x << BITS_PER_GROUP)) % TestNbr[0].x;
+#else
+          // Round up quotient.
+          int quotient = (int)floor(((double)prod->x +
+            ((double)(prod+1)->x * (double)MAX_VALUE_LIMB)) / (double)TestNbr[0].x + 0.5);
+          int remainder = (prod->x +
+            ((prod+1)->x << BITS_PER_GROUP)) - (quotient * TestNbr[0].x);
+          if (remainder < 0)
+          {    // Quotient was 1 more than expected. Adjust remainder.
+            remainder += TestNbr[0].x;
+          }
+          prod->x = remainder;
+#endif
+        }
+      }
+      else
+      {
+        // Perform Montgomery reduction.
+        // Compute m
+        multiply(prod, MontgomeryMultN, tmp1, NumberLength, NULL);
+        // Compute mN
+        multiply(tmp1, TestNbr, tmp1, NumberLength, NULL);
+        endBigModmult(tmp1, prod);
+      }
+    }
+    // Find number of limbs of coefficients.
+    for (nbrLimbs = NumberLength; nbrLimbs > 1; nbrLimbs--)
+    {
+      if ((prod + nbrLimbs - 1)->x != 0)
       {
         break;
       }
-      operand1.nbrLimbs--;
     }
-    memcpy(operand2.limbs, TestNbr, lenNumberLength);
-    BigIntRemainder(&operand1, &operand2, &operand1);
-    while (operand1.nbrLimbs < NumberLength)
-    {
-      operand1.limbs[operand1.nbrLimbs].x = 0;
-      operand1.nbrLimbs++;
-    }
-    memset(operand2.limbs, 0, lenNumberLength);
-    operand2.limbs[0].x = 1;
-    modmult(operand2.limbs, operand1.limbs, operand2.limbs);
-    BigInteger2IntArray(ptrDest, &operand2);
+    *ptrDest = nbrLimbs;
+    nbrLimbs = NumberLength + 1;
     ptrDest += nbrLimbs;
   }
   return true;
