@@ -977,15 +977,23 @@ function startUp()
       updateVerbose(config.substr(1,1) === "1");
     }
   }
-  ecmFactor = getStorage("ecmFactors");
-  if (ecmFactor)
-  {          // Continue factoring.
-    get("value").value = ecmFactor.slice(0,ecmFactor.indexOf("="));
-    get("curve").value = getStorage("ecmCurve");
+  var search = window.location.search;
+  if (search.substring(0,3) == "?q=")
+  {
+    get("value").value = unescape(search.substring(3));
     dowork(-2);
-    get("curve").value = "";
   }
-  
+  else
+  {
+    ecmFactor = getStorage("ecmFactors");
+    if (ecmFactor)
+    {          // Continue factoring.
+      get("value").value = ecmFactor.slice(0,ecmFactor.indexOf("="));
+      get("curve").value = getStorage("ecmCurve");
+      dowork(-2);
+      get("curve").value = "";
+    }
+  }
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.

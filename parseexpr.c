@@ -181,6 +181,10 @@ static enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput
   if ((*ptrInput == '0') && ((*(ptrInput + 1) == 'x') || (*(ptrInput + 1) == 'X')))
   {              // Hexadecimal number.
     getHexValue(&ptrInput);
+    if (*ptrInput == '.')
+    {
+      return EXPR_LITERAL_NOT_INTEGER;
+    }
   }
   else
   {              // Decimal number.
@@ -188,6 +192,10 @@ static enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput
     while ((*ptrInput >= '0') && (*ptrInput <= '9'))
     {                // Find end of number.
       ptrInput++;
+    }
+    if (*ptrInput == '.')
+    {
+      return EXPR_LITERAL_NOT_INTEGER;
     }
     diffPtrs = ptrInput - pInput;
     Dec2Bin(pInput - 1, value.limbs, (int)diffPtrs + 1, &value.nbrLimbs);
@@ -212,6 +220,10 @@ static enum eExprErr parseNumberInsidePolyExpr(const char** ppInput, char** ppOu
   while ((*ptrInput >= '0') && (*ptrInput <= '9'))
   {        // Find end of number.
     ptrInput++;
+  }
+  if (*ptrInput == '.')
+  {
+    return EXPR_LITERAL_NOT_INTEGER;
   }
   diffPtrs = ptrInput - pInput;
   Dec2Bin(pInput - 1, value.limbs, (int)diffPtrs + 1, &value.nbrLimbs);
@@ -646,6 +658,10 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
         }
         ptrOutput++;
         prevTokenIsNumber = true;
+      }
+      else if (c == '.')
+      {
+        return EXPR_LITERAL_NOT_INTEGER;
       }
       else if ((c >= '0') && (c <= '9'))
       {          // Number.

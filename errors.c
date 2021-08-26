@@ -55,6 +55,9 @@ void textError(char **pptrOutput, enum eExprErr rc)
   case EXPR_PAREN_MISMATCH:
     copyStr(&ptrOut, lang ? "Error de paréntesis" : "Parenthesis mismatch");
     break;
+  case EXPR_LITERAL_NOT_INTEGER:
+    copyStr(&ptrOut, lang ? "Solo se aceptan números enteros" : "Only integer numbers are accepted");
+    break;
   case EXPR_SYNTAX_ERROR:
     if (lang)
     {
