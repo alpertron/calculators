@@ -37,6 +37,7 @@ static char outputText[20000];
 #endif
 extern int poly4[1000000];
 
+int pepe;
 // Perform distinct degree factorization
 static void DistinctDegreeFactorization(int polyDeg)
 {
@@ -56,6 +57,7 @@ static void DistinctDegreeFactorization(int polyDeg)
   {
     poly1[currentDegree*nbrLimbs] = 1;
   }
+  NumberLengthR1 = NumberLength;
   SetNumberToOne(&poly1[nbrLimbs]);
   pstFactorInfo = factorInfo;
   for (int nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
@@ -115,6 +117,10 @@ static void DistinctDegreeFactorization(int polyDeg)
       ptrValue1 = &poly3[polyDegree*nbrLimbs];
       (void)memcpy(poly3, ptrPolyToFactor, (ptrValue1 - &poly3[0])*sizeof(int));
       SetNumberToOne(ptrValue1);     // Set leading coefficient to 1.
+      if (++pepe == 67)
+      {
+        pepe++;
+      }
       powerPolynomial(poly1, poly3,  // Base and polynomial modulus.
         polyDegree, &primeMod,       // Degree of polynomials and exponent.
         poly2, NULL,                 // Power and pointer to callback.
