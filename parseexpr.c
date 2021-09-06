@@ -627,6 +627,7 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
       {          // Unary operator name was found.
                  // Push operator onto stack.
         stackOper[stackOperIndex] = pstFuncOperExpr->token;
+        stackArgumNbrPriority[stackOperIndex] = pstFuncOperExpr->priority;
         stackOperIndex++;
         prevTokenIsNumber = false;
         continue;

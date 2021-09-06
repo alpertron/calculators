@@ -192,7 +192,7 @@ function callWorker(param)
       {
         console.log(e.data.substring(1));
       }
-      if (firstChar === "8")
+      else if (firstChar === "8")
       {
         setStorage("ecmFactors", e.data.substring(1));
         setStorage("ecmCurve", "");

@@ -995,6 +995,18 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
       double originalTenths = tenths();
       int64_t oldModularMult = lModularMult;
 #endif
+      // If number is a perfect power, SIQS does not work.
+      // So the next code detects whether the number is a perfect power.
+      int expon = PowerCheck(numToFactor, &potentialFactor);
+      if (expon > 1)
+      {
+        int lenBytes;
+        (void)memcpy(common.ecm.GD, potentialFactor.limbs, NumberLengthBytes);
+        lenBytes = (NumberLength - potentialFactor.nbrLimbs) * (int)sizeof(limb);
+        (void)memset(&common.ecm.GD[potentialFactor.nbrLimbs], 0, lenBytes);
+        foundByLehman = false;
+        break;
+      }
       FactoringSIQS(TestNbr, common.ecm.GD);
 #ifdef __EMSCRIPTEN__
       SIQSModMult += lModularMult - oldModularMult;
@@ -1751,6 +1763,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
   int dividend;
   char *ptrCharFound;
   int result;
+
   initializeSmallPrimes(smallPrimes);
   if (toFactor->nbrLimbs == 1)
   {
@@ -2071,6 +2084,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
 #else
     result = BpswPrimalityTest(&prime);
 #endif
+
     if (result == 0)
     {   // Number is prime power.
       pstCurFactor->upperBound = 0;   // Indicate that number is prime.

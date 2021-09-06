@@ -1412,7 +1412,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
     else
     {
       double dLimbRange = (double)LIMB_RANGE;
-      dN += 1.0 / dLimbRange;
+      dN += .0001;   // Force the approximation to be bigger than actual number.
       ptrLimb->x = (int)trunc(dN);
       dN -= trunc(dN);
       (ptrLimb - 1)->x = (int)trunc(dN * dLimbRange);

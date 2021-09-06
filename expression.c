@@ -241,23 +241,25 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case TOKEN_GCD:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       BigIntGcd(&curStack, &curStack2, &curStack);
       break;
 
     case TOKEN_JACOBI:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       jacobi = BigIntJacobiSymbol(&curStack, &curStack2);
       intToBigInteger(&curStack, jacobi);
@@ -279,14 +281,15 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case TOKEN_MODPOW:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex -= 2;
+        break;
+      }
       getCurrentStackValue(&curStack3);
       stackIndex--;
       getCurrentStackValue(&curStack2);
       stackIndex--;
-      if (stackIndexThreshold < stackIndex)
-      {     // Part of second operand of binary AND/OR short-circuited.
-        break;
-      }
       getCurrentStackValue(&curStack);
       retcode = BigIntGeneralModularPower(&curStack, &curStack2, &curStack3, &curStack);
       if (retcode != EXPR_OK)
@@ -296,12 +299,13 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case TOKEN_MODINV:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       retcode = ComputeModInv();
       if (retcode != EXPR_OK)
@@ -390,12 +394,13 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case TOKEN_CONCATFACT:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       retcode = ComputeConcatFact();
       if (retcode != EXPR_OK)
@@ -406,12 +411,13 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
 #endif
 
     case TOKEN_SUMDIGITS:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       retcode = ComputeSumDigits();
       if (retcode != EXPR_OK)
@@ -421,12 +427,13 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case TOKEN_NUMDIGITS:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       retcode = ComputeNumDigits();
       if (retcode != EXPR_OK)
@@ -436,12 +443,13 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case TOKEN_REVDIGITS:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       retcode = ComputeRevDigits();
       if (retcode != EXPR_OK)
@@ -536,12 +544,13 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case TOKEN_FACTORIAL:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       if (curStack.sign == SIGN_NEGATIVE)
       {
@@ -576,23 +585,25 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case OPER_PLUS:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       BigIntAdd(&curStack, &curStack2, &curStack);
       break;
 
     case OPER_MINUS:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       BigIntSubt(&curStack, &curStack2, &curStack);
       break;
@@ -607,12 +618,13 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case OPER_DIVIDE:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       retcode = BigIntDivide(&curStack, &curStack2, &curStack);
       if (retcode != EXPR_OK)
@@ -622,12 +634,13 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case OPER_MULTIPLY:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       retcode = BigIntMultiply(&curStack, &curStack2, &curStack);
       if (retcode != EXPR_OK)
@@ -637,12 +650,13 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case OPER_REMAINDER:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       retcode = BigIntRemainder(&curStack, &curStack2, &curStack);
       if (retcode != EXPR_OK)
@@ -651,12 +665,13 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       break;
     case TOKEN_END_EXPON:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       retcode = BigIntPower(&curStack, &curStack2, &curStack3);
       if (retcode != EXPR_OK)
@@ -667,83 +682,90 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case OPER_EQUAL:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       intToBigInteger(&curStack,
         (BigIntEqual(&curStack, &curStack2) ? -1 : 0));
       break;
     case OPER_NOT_EQUAL:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       intToBigInteger(&curStack,
         (BigIntEqual(&curStack, &curStack2) ? 0: -1));
       break;
 
     case OPER_GREATER:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       BigIntSubt(&curStack2, &curStack, &curStack3);
       intToBigInteger(&curStack, (curStack3.sign == SIGN_NEGATIVE) ? -1 : 0);
       break;
 
     case OPER_NOT_GREATER:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       BigIntSubt(&curStack2, &curStack, &curStack3);
       intToBigInteger(&curStack, (curStack3.sign == SIGN_NEGATIVE) ? 0 : -1);
       break;
 
     case OPER_LESS:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       BigIntSubt(&curStack, &curStack2, &curStack3);
       intToBigInteger(&curStack, (curStack3.sign == SIGN_NEGATIVE) ? -1 : 0);
       break;
 
     case OPER_NOT_LESS:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       BigIntSubt(&curStack, &curStack2, &curStack3);
       intToBigInteger(&curStack, (curStack3.sign == SIGN_NEGATIVE) ? 0 : -1);
       break;
 
     case OPER_SHL:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       retcode = ShiftLeft(&curStack, &curStack2, &curStack3);
       if (retcode != EXPR_OK)
@@ -754,12 +776,13 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case OPER_SHR:
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       BigIntChSign(&curStack2);
       retcode = ShiftLeft(&curStack, &curStack2, &curStack3);
@@ -788,14 +811,15 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       // If value in stack is zero, do not compute second operand.
       getCurrentStackValue(&curStack);
       if (BigIntIsZero(&curStack))
-      {
+      {   // Result of AND is zero. Ignore all component of second operand.
         stackIndexThreshold = stackIndex;
       }
       break;
 
     case OPER_AND:    // Perform binary AND.
-      if ((stackIndexThreshold+1) == stackIndex)
+    if ((stackIndexThreshold+1) == stackIndex)
       {
+        stackIndex--;
         stackIndexThreshold = DO_NOT_SHORT_CIRCUIT;
         break;
       }
@@ -819,7 +843,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       getCurrentStackValue(&curStack);
       if ((curStack.sign == SIGN_NEGATIVE) && (curStack.nbrLimbs == 1) &&
         (curStack.limbs[0].x == 1))
-      {
+      {     // Result of OR is -1. Ignore all component of second operand.
         stackIndexThreshold = stackIndex;
       }
       break;
@@ -842,12 +866,13 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       CopyBigInt(&curStack, &curStack3);
       break;
     case OPER_XOR:    // Perform binary XOR.
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
         break;
       }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
       getCurrentStackValue(&curStack);
       BigIntXor(&curStack, &curStack2, &curStack3);
       CopyBigInt(&curStack, &curStack3);

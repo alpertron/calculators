@@ -1013,21 +1013,24 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
     for (index = 1; index < common.siqs.nbrFactorBasePrimes; index++)
     {
       Divisor = rowPrimeTrialDivisionData->value;
-      while (biR0 % Divisor == 0)
+      if (biR0 != 0)
       {
-        biR0 /= Divisor;
-        expParity = 1 - expParity;
-        if (expParity == 0)
+        while (biR0 % Divisor == 0)
         {
-          rowSquares[nbrSquares++] = Divisor;
+          biR0 /= Divisor;
+          expParity = 1 - expParity;
+          if (expParity == 0)
+          {
+            rowSquares[nbrSquares++] = Divisor;
+          }
         }
+        if (expParity != 0)
+        {
+          rowMatrixBbeforeMerge[nbrColumns++] = index;
+          expParity = 0;
+        }
+        rowPrimeTrialDivisionData++;
       }
-      if (expParity != 0)
-      {
-        rowMatrixBbeforeMerge[nbrColumns++] = index;
-        expParity = 0;
-      }
-      rowPrimeTrialDivisionData++;
     }
   }
   else

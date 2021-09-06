@@ -456,14 +456,14 @@ static void GenerateSieve(int initial)
 /*******************************/
 enum eEcmResult ecmStep1(void)
 {
-  int bufSize;
   int I;
   int P;
   int i;
   int u;
-  (void)memcpy(common.ecm.Xaux, common.ecm.X, NumberSizeBytes);
-  (void)memcpy(common.ecm.Zaux, common.ecm.Z, NumberSizeBytes);
-  bufSize = (NumberLength + 1) * (int)sizeof(limb);
+  int retcode;
+  int bufSize = (NumberLength + 1) * (int)sizeof(limb);
+  (void)memcpy(common.ecm.Xaux, common.ecm.X, bufSize);
+  (void)memcpy(common.ecm.Zaux, common.ecm.Z, bufSize);
   (void)memcpy(common.ecm.GcdAccumulated, MontgomeryMultR1, bufSize);
   for (int pass = 0; pass < 2; pass++)
   {
@@ -472,26 +472,45 @@ enum eEcmResult ecmStep1(void)
     indexPrimes = 0;
 #endif
     StepECM = 1;
-    for (I = 1; I <= boundStep1; I <<= 1)
+    for (I = 1; I <= boundStep1; I *= 2)
     {
       duplicate(common.ecm.X, common.ecm.Z, common.ecm.X, common.ecm.Z);
+      if (pass == 0)
+      {
+        modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.GcdAccumulated);
+      }
+      else
+      {
+        retcode = gcdIsOne(common.ecm.Z);
+        if (retcode == 0)
+        {
+          return FACTOR_NOT_FOUND_GCD;
+        }
+        if (retcode > 1)
+        {
+          return FACTOR_FOUND;
+        }
+      }
     }
     for (I = 3; I <= boundStep1; I *= 3)
     {
       duplicate(common.ecm.W1, common.ecm.W2, common.ecm.X, common.ecm.Z);
       add3(common.ecm.X, common.ecm.Z, common.ecm.X, common.ecm.Z, common.ecm.W1, common.ecm.W2, common.ecm.X, common.ecm.Z);
-    }
-
-    if (pass == 0)
-    {
-      modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.Aux1);
-      (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux1, NumberSizeBytes);
-    }
-    else
-    {
-      if (gcdIsOne(common.ecm.Z) > 1)
+      if (pass == 0)
       {
-        return FACTOR_FOUND;
+        modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.GcdAccumulated);
+      }
+      else
+      {
+        retcode = gcdIsOne(common.ecm.Z);
+        if (retcode == 0)
+        {
+          return FACTOR_NOT_FOUND_GCD;
+        }
+        if (retcode > 1)
+        {
+          return FACTOR_FOUND;
+        }
       }
     }
 
@@ -511,12 +530,16 @@ enum eEcmResult ecmStep1(void)
       indexM++;
       if (pass == 0)
       {
-        modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.Aux1);
-        (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux1, NumberSizeBytes);
+        modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.GcdAccumulated);
       }
       else
       {
-        if (gcdIsOne(common.ecm.Z) > 1)
+        retcode = gcdIsOne(common.ecm.Z);
+        if (retcode == 0)
+        {
+          return FACTOR_NOT_FOUND_GCD;
+        }
+        if (retcode > 1)
         {
           return FACTOR_FOUND;
         }
@@ -561,12 +584,16 @@ enum eEcmResult ecmStep1(void)
         prac(P + (2 * i), common.ecm.X, common.ecm.Z);
         if (pass == 0)
         {
-          modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.Aux1);
-          (void)memcpy(common.ecm.GcdAccumulated, common.ecm.Aux1, NumberSizeBytes);
+          modmult(common.ecm.GcdAccumulated, common.ecm.Z, common.ecm.GcdAccumulated);
         }
         else
         {
-          if (gcdIsOne(common.ecm.Z) > 1)
+          retcode = gcdIsOne(common.ecm.Z);
+          if (retcode == 0)
+          {
+            return FACTOR_NOT_FOUND_GCD;
+          }
+          if (retcode > 1)
           {
             return FACTOR_FOUND;
           }
@@ -576,17 +603,19 @@ enum eEcmResult ecmStep1(void)
     } while (P < boundStep1);
     if (pass == 0)
     {
-      if (BigNbrIsZero(common.ecm.GcdAccumulated))
-      { // If GcdAccumulated is
-        (void)memcpy(common.ecm.X, common.ecm.Xaux, NumberSizeBytes);
-        (void)memcpy(common.ecm.Z, common.ecm.Zaux, NumberSizeBytes);
-        continue; // multiple of TestNbr, continue.
-      }
-      if (gcdIsOne(common.ecm.GcdAccumulated) > 1)
+      int result = gcdIsOne(common.ecm.GcdAccumulated);
+      if (result == 1)
       {
+        break;         // GCD is 1 so factor is not found.
+      }
+      if (result == 2)
+      {                // GCD greater than zero. Factor found.
         return FACTOR_FOUND;
       }
-      break;
+      // Factor could not be found because GCD is zero.
+      // Repeat this curve but performing GCD on every step.
+      (void)memcpy(common.ecm.X, common.ecm.Xaux, bufSize);
+      (void)memcpy(common.ecm.Z, common.ecm.Zaux, bufSize);
     }
   } /* end for Pass */
   return FACTOR_NOT_FOUND;
@@ -1011,7 +1040,10 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
     *pNextEC = NextEC;
     return result;
   }
-  result = ecmStep2();
+  if (result != FACTOR_NOT_FOUND_GCD)
+  {
+    result = ecmStep2();
+  }
   if (result == FACTOR_FOUND)
   {
     *pEC = EC;
@@ -1021,7 +1053,7 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
   if (result == FACTOR_NOT_FOUND_GCD)
   {
     *pEC = EC + 1;
-    *pNextEC = NextEC + 1;
+    *pNextEC = NextEC;
     return FACTOR_NOT_FOUND_GCD;
   }
   *pEC = EC;

@@ -326,7 +326,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
         }
       }
       while (ptrOutput < &output[(int)sizeof(output) - 200000])
-      {      // Perform loop.
+      {      // Perform loop while there is space in output buffer.
         bool processExpression = true;
         expressionNbr = 3;
         rc = evalExpression(EndExpr, valueFound);
@@ -336,7 +336,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           break;   // Cannot compute end expression, so go out.
         }
         if (BigIntIsZero(valueFound))
-        {    // result is zero: end of loop
+        {          // End expression result is zero: end of loop
           firstExprProcessed = false;
           break;
         }

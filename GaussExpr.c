@@ -119,7 +119,7 @@ static int numLimbs(const int* pLen)
 
 static void getCurrentStackValue(BigInteger* pValueRe, BigInteger *pValueIm)
 {
-  int* ptrStackValue = &comprStackValues[comprStackOffset[2*stackIndex]];
+  const int* ptrStackValue = &comprStackValues[comprStackOffset[2*stackIndex]];
   NumberLength = numLimbs(ptrStackValue);
   IntArray2BigInteger(ptrStackValue, pValueRe);
   ptrStackValue = &comprStackValues[comprStackOffset[(2 * stackIndex) + 1]];
