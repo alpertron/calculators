@@ -253,7 +253,9 @@ static void SolveEquation(void)
   (void)BigIntRemainder(&ValB, &ValN, &ValB);
   (void)BigIntRemainder(&ValC, &ValN, &ValC);
   BigIntGcd(&ValA, &ValB, &Aux[0]);
+  Aux[0].sign = SIGN_POSITIVE;
   BigIntGcd(&ValC, &Aux[0], &GcdAll);
+  GcdAll.sign = SIGN_POSITIVE;
   (void)BigIntRemainder(&ValC, &GcdAll, &Aux[0]);
   if (!BigIntIsZero(&Aux[0]))
   {  // ValC must be multiple of gcd(ValA, ValB).
@@ -263,14 +265,10 @@ static void SolveEquation(void)
   BigIntGcd(&ValN, &GcdAll, &Aux[0]);
   CopyBigInt(&GcdAll, &Aux[0]);
   // Divide all coefficients by gcd(ValA, ValB).
-  (void)BigIntDivide(&ValA, &GcdAll, &Aux[0]);
-  CopyBigInt(&ValA, &Aux[0]);
-  (void)BigIntDivide(&ValB, &GcdAll, &Aux[0]);
-  CopyBigInt(&ValB, &Aux[0]);
-  (void)BigIntDivide(&ValC, &GcdAll, &Aux[0]);
-  CopyBigInt(&ValC, &Aux[0]);
-  (void)BigIntDivide(&ValN, &GcdAll, &Aux[0]);
-  CopyBigInt(&ValN, &Aux[0]);
+  (void)BigIntDivide(&ValA, &GcdAll, &ValA);
+  (void)BigIntDivide(&ValB, &GcdAll, &ValB);
+  (void)BigIntDivide(&ValC, &GcdAll, &ValC);
+  (void)BigIntDivide(&ValN, &GcdAll, &ValN);
   CopyBigInt(&ValNn, &ValN);
   if ((ValNn.nbrLimbs == 1) && (ValNn.limbs[0].x == 1))
   {     // All values from 0 to GcdAll - 1 are solutions.
@@ -320,8 +318,7 @@ static void SolveEquation(void)
     } while (Aux[1].sign == SIGN_NEGATIVE);
     return;
   }
-  BigIntSubt(&LastModulus, &ValN, &Aux[0]);
-  if (!BigIntIsZero(&Aux[0]))
+  if (!BigIntEqual(&LastModulus, &ValN))
   {     // Last modulus is different from ValN.
     char* ptrFactorDec;
     CopyBigInt(&LastModulus, &ValN);
@@ -592,17 +589,17 @@ static void SolveEquation(void)
         }
         deltaZeros >>= 1;
         // Compute inverse of -2*A (mod prime^(expon - deltaZeros)).
-        BigIntAdd(&ValAOdd, &ValAOdd, &ValAOdd);
+        BigIntAdd(&ValA, &ValA, &ValAOdd);
         (void)BigIntPowerIntExp(&prime, expon - deltaZeros, &tmp1);
         (void)BigIntRemainder(&ValAOdd, &tmp1, &ValAOdd);
         nbrLimbs = tmp1.nbrLimbs;
         if (ValAOdd.sign == SIGN_NEGATIVE)
         {
-          BigIntAdd(&tmp1, &ValAOdd, &ValAOdd);
+          ValAOdd.sign = SIGN_POSITIVE;           // Negate 2*A
         }
         else if (!BigIntIsZero(&ValAOdd))
         {
-          BigIntSubt(&tmp1, &ValAOdd, &ValAOdd);
+          BigIntSubt(&tmp1, &ValAOdd, &ValAOdd);  // Negate 2*A
         }
         else
         {            // Nothing to do.

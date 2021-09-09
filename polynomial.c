@@ -1972,6 +1972,14 @@ void textErrorPol(char **pptrOutput, enum eExprErr rc)
     copyStr(&ptrOutput, lang ? "No se aceptan múltiples variables" :
       "Multiple variables are not accepted");
     break;
+  case EXPR_MORE_THAN_ONE_EQUAL_SIGN:
+    copyStr(&ptrOutput, lang ? "No se acepta más de un signo igual" :
+      "More than one equal sign is not accepted");
+    break;
+  case EXPR_EQUAL_SIGN_INSIDE_PAREN:
+    copyStr(&ptrOutput, lang ? "Hay un signo igual dentro de paréntesis" :
+      "Equal sign inside parentheses");
+    break;
   default:
     textError(&ptrOutput, rc);
     break;

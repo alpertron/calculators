@@ -744,14 +744,10 @@ void SolveQuadModEquation(void)
   BigIntGcd(&modulus, &GcdAll, &Tmp[0]);
   CopyBigInt(&GcdAll, &Tmp[0]);
   // Divide all coefficients by gcd(ValA, ValB).
-  (void)BigIntDivide(&coeffQuadr, &GcdAll, &Tmp[0]);
-  CopyBigInt(&coeffQuadr, &Tmp[0]);
-  (void)BigIntDivide(&coeffLinear, &GcdAll, &Tmp[0]);
-  CopyBigInt(&coeffLinear, &Tmp[0]);
-  (void)BigIntDivide(&coeffIndep, &GcdAll, &Tmp[0]);
-  CopyBigInt(&coeffIndep, &Tmp[0]);
-  (void)BigIntDivide(&modulus, &GcdAll, &Tmp[0]);
-  CopyBigInt(&modulus, &Tmp[0]);
+  (void)BigIntDivide(&coeffQuadr, &GcdAll, &coeffQuadr);
+  (void)BigIntDivide(&coeffLinear, &GcdAll, &coeffLinear);
+  (void)BigIntDivide(&coeffIndep, &GcdAll, &coeffIndep);
+  (void)BigIntDivide(&modulus, &GcdAll, &modulus);
   CopyBigInt(&ValNn, &modulus);
   if ((ValNn.nbrLimbs == 1) && (ValNn.limbs[0].x == 1))
   {     // All values from 0 to GcdAll - 1 are solutions.
@@ -1097,17 +1093,17 @@ void SolveQuadModEquation(void)
         }
         deltaZeros >>= 1;
         // Compute inverse of -2*A (mod prime^(expon - deltaZeros)).
-        BigIntAdd(&ValAOdd, &ValAOdd, &ValAOdd);
+        BigIntAdd(&coeffQuadr, &coeffQuadr, &ValAOdd);
         (void)BigIntPowerIntExp(&prime, expon - deltaZeros, &tmp1);
         (void)BigIntRemainder(&ValAOdd, &tmp1, &ValAOdd);
         nbrLimbs = tmp1.nbrLimbs;
         if (ValAOdd.sign == SIGN_NEGATIVE)
         {
-          BigIntAdd(&tmp1, &ValAOdd, &ValAOdd);
+          ValAOdd.sign = SIGN_POSITIVE;          // Negate 2*A
         }
-        else if ((ValAOdd.nbrLimbs > 1) || (ValAOdd.limbs[0].x != 0))
+        else if (!BigIntIsZero(&ValAOdd))
         {
-          BigIntSubt(&tmp1, &ValAOdd, &ValAOdd);
+          BigIntSubt(&tmp1, &ValAOdd, &ValAOdd); // Negate 2*A
         }
         else
         {           // Nothing to do.

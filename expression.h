@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 5 de septiembre de 2021."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 5 September 2021."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 8 de septiembre de 2021."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 8 September 2021."
 
 #include <stdbool.h>
 #ifdef __EMSCRIPTEN__
@@ -96,6 +96,8 @@ enum eExprErr
   EXPR_MULTIPLE_VARIABLES_NOT_ACCEPTED,
   EXPR_TOO_MANY_ARGUMENTS,
   EXPR_TOO_FEW_ARGUMENTS,
+  EXPR_MORE_THAN_ONE_EQUAL_SIGN,
+  EXPR_EQUAL_SIGN_INSIDE_PAREN,
   EXPR_OK = 0,
   EXPR_NOT_FOUND,
 };

@@ -49,6 +49,7 @@ struct sFuncOperExpr stFuncOperPolyExpr[] =
   {"%", OPER_REMAINDER, 2},
   {"/", OPER_DIVIDE, 2},
   {"^", OPER_POWER, 1},
+  {"=", OPER_EQUAL, 4},
   {NULL, 0},
 };
 
@@ -758,6 +759,7 @@ int ComputePolynomial(const char* input, int expo)
   int val;
   int pwr;
   int expon;
+  int nbrEqualSigns = 0;
   degree = 1;
   exponentMod = expo;
   // Use operand1 as temporary variable to store the exponent.
@@ -857,6 +859,30 @@ int ComputePolynomial(const char* input, int expo)
         {
           return rc;
         }
+      }
+      break;
+    case OPER_EQUAL:
+      stackIndex--;
+      if (nbrEqualSigns > 0)
+      {
+        return EXPR_MORE_THAN_ONE_EQUAL_SIGN;
+      }
+      if ((stackIndex != 1) || insideExpon)
+      {
+        return EXPR_EQUAL_SIGN_INSIDE_PAREN;
+      }
+      nbrEqualSigns++;
+      ptrValue2 = stackValues[stackIndex];
+      ptrValue1 = stackValues[stackIndex - 1];
+      rc = NegatePolynomialExpr(ptrValue2);
+      if (rc != EXPR_OK)
+      {
+        return rc;
+      }
+      rc = AddPolynomialExpr(ptrValue1, ptrValue2);
+      if (rc != EXPR_OK)
+      {
+        return rc;
       }
       break;
     case OPER_MINUS:

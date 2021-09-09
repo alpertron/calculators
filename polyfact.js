@@ -421,17 +421,8 @@ window.onload = function ()
   if (search.substring(0,3) == "?q=")
   {
     var polyTextArea = get("poly");
-    search = unescape(search.substring(3));
-    if (search.substring(search.length-2) == "=0")
-    {        // Solving equation.
-      polyTextArea.value = search.substring(0,search.length-2);
-      dowork(0);
-    }
-    else
-    {        // Evaluating polynomial.
-      polyTextArea.value = search;
-      dowork(2);
-    }
+    polyTextArea.value = unescape(search.substring(3));
+    dowork(0);    // Factor polynomial.
   }
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
