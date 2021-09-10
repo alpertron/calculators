@@ -266,7 +266,7 @@ static enum eExprErr parseNumberInsidePolyExpr(const char** ppInput, char** ppOu
     {
       if (value.limbs[value.nbrLimbs - 1].x != 0)
       {
-        break;
+break;
       }
       value.nbrLimbs--;
     }
@@ -290,7 +290,7 @@ static enum eExprErr parseNumberInsidePolyExpr(const char** ppInput, char** ppOu
   return EXPR_OK;
 }
 #endif
-static enum eExprErr processClosingParenOrComma(char **ppOutput, char c,
+static enum eExprErr processClosingParenOrComma(char** ppOutput, char c,
   enum eParseExpr eParseExpr)
 {
   char* ptrOutput = *ppOutput;
@@ -340,10 +340,20 @@ static enum eExprErr processClosingParenOrComma(char **ppOutput, char c,
     // Increment number of arguments given by user.
     stackArgumNbrPriority[stackOperIndex - 1]++;
     // Check whether the user provided extra arguments.
-    if ((unsigned short)stackArgumNbrPriority[stackOperIndex - 1] ==
-      ((unsigned short)stackOper[stackOperIndex - 1] >> 8))
-    {
-      return EXPR_TOO_MANY_ARGUMENTS;
+    if (((unsigned short)stackOper[stackOperIndex - 1] >> 8) == MANY_PARMS)
+    {       // Function with variable number of parameters.
+      if ((unsigned short)stackArgumNbrPriority[stackOperIndex - 1] == 256)
+      {
+        return EXPR_TOO_MANY_ARGUMENTS;
+      }
+    }
+    else
+    {       // Function with fixed number of parameters.
+      if ((unsigned short)stackArgumNbrPriority[stackOperIndex - 1] ==
+        ((unsigned short)stackOper[stackOperIndex - 1] >> 8))
+      {
+        return EXPR_TOO_MANY_ARGUMENTS;
+      }
     }
     stackOper[stackOperIndex] = s;  // Push back paren.
     stackOperIndex++;
@@ -354,14 +364,29 @@ static enum eExprErr processClosingParenOrComma(char **ppOutput, char c,
     if ((stackOperIndex > 0) &&
       (((unsigned short)stackOper[stackOperIndex - 1] & 0xFF00U) != 0U))
     {           // Previous element in stack is a function token.
-      unsigned short priority = (unsigned short)stackArgumNbrPriority[stackOperIndex - 1] + 1U;
-      if (priority != ((unsigned short)stackOper[stackOperIndex - 1] >> 8))
-      {
-        return EXPR_TOO_FEW_ARGUMENTS;
+      unsigned short nbrParameters = (unsigned short)stackArgumNbrPriority[stackOperIndex - 1] + 1U;
+      if (((unsigned short)stackOper[stackOperIndex - 1] & 0xFF00U) == MANY_PARMS)
+      {         // Function has a variable number of parameters.
+        if (nbrParameters == 0U)
+        {       // At least one parameter is required.
+          return EXPR_TOO_FEW_ARGUMENTS;
+        }
+      }
+      else
+      {         // Function has a fixed number of parameters.
+        if (nbrParameters != ((unsigned short)stackOper[stackOperIndex - 1] >> 8))
+        {
+          return EXPR_TOO_FEW_ARGUMENTS;
+        }
       }
       stackOperIndex--;
       *ptrOutput = (char)stackOper[stackOperIndex];
       ptrOutput++;
+      if (((unsigned short)stackOper[stackOperIndex] & 0xFF00U) == MANY_PARMS)
+      {
+        *ptrOutput = (char)nbrParameters;
+        ptrOutput++;
+      }
     }
     prevTokenIsNumber = true;
   }

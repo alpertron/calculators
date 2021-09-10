@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 8 de septiembre de 2021."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 8 September 2021."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 9 de septiembre de 2021."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 9 September 2021."
 
 #include <stdbool.h>
 #ifdef __EMSCRIPTEN__
@@ -38,6 +38,7 @@ void databack(const char *data);
 #define ONE_PARM                     (1 * 0x100)
 #define TWO_PARMS                    (2 * 0x100)
 #define THREE_PARMS                  (3 * 0x100)
+#define MANY_PARMS                   (8 * 0x100)
 #define TOKEN_NUMBER                  1
 #define TOKEN_START_EXPON             2
 #define TOKEN_END_EXPON               3

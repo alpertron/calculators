@@ -9,6 +9,9 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "((3-2)" >> coverage.out
 ./ecm "gcd(20)" >> coverage.out
 ./ecm "gcd(20, 30, 50)" >> coverage.out
+./ecm "gcd(20, 0, 50)" >> coverage.out
+./ecm "lcm(20)" >> coverage.out
+./ecm "lcm(20, 0, 50)" >> coverage.out
 ./ecm "sqrt(-2)" >> coverage.out
 ./ecm "2/0" >> coverage.out
 ./ecm "23.8" >> coverage.out

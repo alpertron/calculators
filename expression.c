@@ -35,19 +35,20 @@
 #endif
 #define TOKEN_PRIMORIAL  39
 #define TOKEN_GCD        40
-#define TOKEN_MODPOW     41
-#define TOKEN_MODINV     42
-#define TOKEN_SUMDIGITS  43
-#define TOKEN_NUMDIGITS  44
-#define TOKEN_REVDIGITS  45
-#define TOKEN_ISPRIME    46
-#define TOKEN_JACOBI     47
-#define TOKEN_SQRT       48
-#define TOKEN_F          49
-#define TOKEN_L          50
-#define TOKEN_P          51
-#define TOKEN_N          52
-#define TOKEN_B          53
+#define TOKEN_LCM        41
+#define TOKEN_MODPOW     42
+#define TOKEN_MODINV     43
+#define TOKEN_SUMDIGITS  44
+#define TOKEN_NUMDIGITS  45
+#define TOKEN_REVDIGITS  46
+#define TOKEN_ISPRIME    47
+#define TOKEN_JACOBI     48
+#define TOKEN_SQRT       49
+#define TOKEN_F          50
+#define TOKEN_L          51
+#define TOKEN_P          52
+#define TOKEN_N          53
+#define TOKEN_B          54
 
 #define PAREN_STACK_SIZE           5000
 #define COMPR_STACK_SIZE        1000000
@@ -66,7 +67,8 @@ struct sFuncOperExpr stFuncOperIntExpr[] =
   {"NUMFACT", TOKEN_NUMFACT + ONE_PARM, 0},
   {"CONCATFACT", TOKEN_CONCATFACT + TWO_PARMS, 0},
 #endif
-  {"GCD", TOKEN_GCD + TWO_PARMS, 0},
+  {"GCD", TOKEN_GCD + MANY_PARMS, 0},
+  {"LCM", TOKEN_LCM + MANY_PARMS, 0},
   {"MODPOW", TOKEN_MODPOW + THREE_PARMS, 0},
   {"MODINV", TOKEN_MODINV + TWO_PARMS, 0},
   {"SUMDIGITS", TOKEN_SUMDIGITS + TWO_PARMS, 0},
@@ -197,6 +199,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
     int currentOffset;
     int nbrLenBytes;
     int jacobi;
+    int nbrParameters;
     switch (c)
     {
     case TOKEN_NUMBER:
@@ -241,15 +244,37 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case TOKEN_GCD:
+      ptrRPNbuffer++;
+      nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
       if (stackIndexThreshold < stackIndex)
-      {     // Part of second operand of binary AND/OR short-circuited.
-        stackIndex--;
+      {     // Delete from operand stack when binary AND/OR short-circuited.
+        stackIndex -= nbrParameters - 1;
         break;
       }
-      getCurrentStackValue(&curStack2);
-      stackIndex--;
       getCurrentStackValue(&curStack);
-      BigIntGcd(&curStack, &curStack2, &curStack);
+      for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
+      {
+        stackIndex--;
+        getCurrentStackValue(&curStack2);
+        BigIntGcd(&curStack, &curStack2, &curStack);
+      }
+      break;
+
+    case TOKEN_LCM:
+      ptrRPNbuffer++;
+      nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
+      if (stackIndexThreshold < stackIndex)
+      {     // Delete from operand stack when binary AND/OR short-circuited.
+        stackIndex -= nbrParameters - 1;
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
+      {
+        stackIndex--;
+        getCurrentStackValue(&curStack2);
+        BigIntLcm(&curStack, &curStack2, &curStack);
+      }
       break;
 
     case TOKEN_JACOBI:

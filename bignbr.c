@@ -33,6 +33,7 @@ enum eOper
 static BigInteger Temp;
 static BigInteger Temp2;
 static BigInteger Temp3;
+static BigInteger Temp4;
 static BigInteger Base;
 static BigInteger Power;
 static BigInteger expon;
@@ -708,6 +709,19 @@ void BigIntGcd(const BigInteger *pArg1, const BigInteger *pArg2, BigInteger *pRe
   }
   CopyBigInt(pResult, &Base);
   (void)BigIntMultiplyPower2(pResult, power2);
+  pResult->sign = SIGN_POSITIVE;
+}
+
+void BigIntLcm(const BigInteger* pArg1, const BigInteger* pArg2, BigInteger* pResult)
+{
+  if (BigIntIsZero(pArg1) || BigIntIsZero(pArg2))
+  {    // If any of the arguments is zero, the LCM is zero.
+    intToBigInteger(pResult, 0);
+  }
+  BigIntGcd(pArg1, pArg2, &Temp4);
+  BigIntDivide(pArg1, &Temp4, &Temp4);
+  BigIntMultiply(&Temp4, pArg2, pResult);
+  pResult->sign = SIGN_POSITIVE;
 }
 
 static void addToAbsValue(limb *pLimbs, int *pNbrLimbs, int addend)
