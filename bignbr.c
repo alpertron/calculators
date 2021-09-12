@@ -712,17 +712,24 @@ void BigIntGcd(const BigInteger *pArg1, const BigInteger *pArg2, BigInteger *pRe
   pResult->sign = SIGN_POSITIVE;
 }
 
-void BigIntLcm(const BigInteger* pArg1, const BigInteger* pArg2, BigInteger* pResult)
+enum eExprErr BigIntLcm(const BigInteger* pArg1, const BigInteger* pArg2,
+  BigInteger* pResult)
 {
+  enum eExprErr retcode;
   if (BigIntIsZero(pArg1) || BigIntIsZero(pArg2))
   {    // If any of the arguments is zero, the LCM is zero.
     intToBigInteger(pResult, 0);
-    return;
+    return EXPR_OK;
   }
   BigIntGcd(pArg1, pArg2, &Temp4);
-  BigIntDivide(pArg1, &Temp4, &Temp4);
-  BigIntMultiply(&Temp4, pArg2, pResult);
+  retcode = BigIntDivide(pArg1, &Temp4, &Temp4);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  retcode = BigIntMultiply(&Temp4, pArg2, pResult);
   pResult->sign = SIGN_POSITIVE;
+  return retcode;
 }
 
 static void addToAbsValue(limb *pLimbs, int *pNbrLimbs, int addend)

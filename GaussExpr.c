@@ -87,7 +87,7 @@ limb Mult3[MAX_LEN];
 limb Mult4[MAX_LEN];
 int q[MAX_LEN];
 static void ComputeGCD(void);
-static void ComputeLCM(void);
+static enum eExprErr ComputeLCM(void);
 static enum eExprErr GaussianDivide(void);
 static enum eExprErr GaussianMultiply(void);
 static int Modulo(BigInteger* ReNum, BigInteger* ImNum,
@@ -257,7 +257,11 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       {
         stackIndex--;
         getCurrentStackValue(&curStack2Re, &curStack2Im);
-        ComputeLCM();
+        retcode = ComputeLCM();
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       break;
 
@@ -414,6 +418,10 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       stackIndex--;
       getCurrentStackValue(&curStackRe, &curStackIm);
       retcode = GaussianMultiply();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
       break;
 
     case OPER_DIVIDE:
@@ -421,6 +429,10 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       stackIndex--;
       getCurrentStackValue(&curStackRe, &curStackIm);
       retcode = GaussianDivide();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
       break;
 
     case OPER_REMAINDER:
@@ -633,14 +645,15 @@ static void ComputeGCD(void)
   }
 }
 
-static void ComputeLCM(void)
+static enum eExprErr ComputeLCM(void)
 {
+  enum eExprErr retcode;
   if ((BigIntIsZero(&curStackRe) && BigIntIsZero(&curStackIm)) ||
     (BigIntIsZero(&curStack2Re) && BigIntIsZero(&curStack2Im)))
   {    // If any of the arguments is zero, the LCM is zero.
     intToBigInteger(&curStackRe, 0);
     intToBigInteger(&curStackIm, 0);
-    return;
+    return EXPR_OK;
   }
   // Save both parameters because ComputeGCD will overwrite them.
   CopyBigInt(&curStackReBak, &curStackRe);
@@ -653,11 +666,15 @@ static void ComputeLCM(void)
   CopyBigInt(&curStack2Im, &curStackIm);
   CopyBigInt(&curStackRe, &curStackReBak);  // Dividend
   CopyBigInt(&curStackIm, &curStackImBak);
-  GaussianDivide();
+  retcode = GaussianDivide();
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
   // Multiply the quotient by the second parameter.
   CopyBigInt(&curStack2Re, &curStack2ReBak);
   CopyBigInt(&curStack2Im, &curStack2ImBak);
-  GaussianMultiply();
+  return GaussianMultiply();
 }
 
 static int ComputePower(BigInteger *Re1, const BigInteger *Re2,

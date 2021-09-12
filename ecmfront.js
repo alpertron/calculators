@@ -978,7 +978,7 @@ function startUp()
     }
   }
   var search = window.location.search;
-  if (search.substring(0,3) == "?q=")
+  if (search.substring(0,3) === "?q=")
   {
     get("value").value = unescape(search.substring(3));
     dowork(-2);

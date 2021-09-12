@@ -418,7 +418,7 @@ window.onload = function ()
     });
   }
   var search = window.location.search;
-  if (search.substring(0,3) == "?q=")
+  if (search.substring(0,3) === "?q=")
   {
     var polyTextArea = get("poly");
     polyTextArea.value = unescape(search.substring(3));

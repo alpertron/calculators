@@ -480,7 +480,7 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
     *degreeGcd = 0;
     return;
   }
-  if (degree1 < 0 && degree2 < 0)
+  if ((degree1 < 0) && (degree2 < 0))
   {  // Both arguments are monomials. gcd is x^{min(|degree1|, |degree2|)}
     *degreeGcd = degree1;
     if (degree1 < degree2)
@@ -491,7 +491,7 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
     *(gcd + 1) = 1;
     return;
   }
-  if (degree1 < 0 || degree2 < 0)
+  if ((degree1 < 0) || (degree2 < 0))
   {  // One of the arguments is a monomial.
     int monomialDegree;
     int polynomialDegree;

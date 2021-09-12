@@ -1112,9 +1112,9 @@ static enum eExprErr LcmPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
   }
   // Save polynomials before they are overwritten by PolynomialGcd.
   polyA[0] = *ptrArgument1;
-  CopyPolynomial(&polyA[1], ptrArgument1 + 1, *ptrArgument1);
+  (void)CopyPolynomial(&polyA[1], ptrArgument1 + 1, *ptrArgument1);
   polyB[0] = *ptrArgument2;
-  CopyPolynomial(&polyB[1], ptrArgument2 + 1, *ptrArgument2);
+  (void)CopyPolynomial(&polyB[1], ptrArgument2 + 1, *ptrArgument2);
   retcode = GcdPolynomialExpr(ptrArgument1, ptrArgument2);
   if (retcode != EXPR_OK)
   {
@@ -1125,7 +1125,11 @@ static enum eExprErr LcmPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
   {
     return retcode;
   }
-  MultPolynomialExpr(polyA, polyB);
+  retcode = MultPolynomialExpr(polyA, polyB);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
   *ptrArgument2 = polyA[0];
   ptrNextArgument = CopyPolynomial(ptrArgument2 + 1, &polyA[1], polyA[0]);
   diffPtrs = ptrNextArgument - ptrArgument2;

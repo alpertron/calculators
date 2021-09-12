@@ -136,7 +136,8 @@ void BigIntDivideBy2(BigInteger *nbr);
 void BigInteger2Dec(char **ppDecimal, const BigInteger *pBigInt, int groupLength);
 void BigInteger2Hex(char** ppDecimal, const BigInteger *pBigInt, int groupLength);
 void BigIntGcd(const BigInteger *pArg1, const BigInteger *pArg2, BigInteger *pResult);
-void BigIntLcm(const BigInteger* pArg1, const BigInteger* pArg2, BigInteger* pResult);
+enum eExprErr BigIntLcm(const BigInteger* pArg1, const BigInteger* pArg2,
+  BigInteger* pResult);
 void BigIntGeneralModularDivision(const BigInteger *Num, const BigInteger *Den,
   const BigInteger *mod, BigInteger *quotient);
 void BigIntModularDivision(const BigInteger* Num, const BigInteger* Den,

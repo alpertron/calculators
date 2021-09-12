@@ -340,9 +340,10 @@ static enum eExprErr processClosingParenOrComma(char** ppOutput, char c,
     // Increment number of arguments given by user.
     stackArgumNbrPriority[stackOperIndex - 1]++;
     // Check whether the user provided extra arguments.
-    if (((unsigned short)stackOper[stackOperIndex - 1] >> 8) == MANY_PARMS)
+    if (((unsigned short)stackOper[stackOperIndex - 1] >> 8) ==
+      (unsigned short)MANY_PARMS)
     {       // Function with variable number of parameters.
-      if ((unsigned short)stackArgumNbrPriority[stackOperIndex - 1] == 256)
+      if ((unsigned short)stackArgumNbrPriority[stackOperIndex - 1] == 256U)
       {
         return EXPR_TOO_MANY_ARGUMENTS;
       }
@@ -365,7 +366,8 @@ static enum eExprErr processClosingParenOrComma(char** ppOutput, char c,
       (((unsigned short)stackOper[stackOperIndex - 1] & 0xFF00U) != 0U))
     {           // Previous element in stack is a function token.
       unsigned short nbrParameters = (unsigned short)stackArgumNbrPriority[stackOperIndex - 1] + 1U;
-      if (((unsigned short)stackOper[stackOperIndex - 1] & 0xFF00U) == MANY_PARMS)
+      if (((unsigned short)stackOper[stackOperIndex - 1] & 0xFF00U) ==
+        (unsigned short)MANY_PARMS)
       {         // Function has a variable number of parameters.
         if (nbrParameters == 0U)
         {       // At least one parameter is required.
@@ -382,7 +384,8 @@ static enum eExprErr processClosingParenOrComma(char** ppOutput, char c,
       stackOperIndex--;
       *ptrOutput = (char)stackOper[stackOperIndex];
       ptrOutput++;
-      if (((unsigned short)stackOper[stackOperIndex] & 0xFF00U) == MANY_PARMS)
+      if (((unsigned short)stackOper[stackOperIndex] & 0xFF00U) == 
+        (unsigned short)MANY_PARMS)
       {
         *ptrOutput = (char)nbrParameters;
         ptrOutput++;
