@@ -249,7 +249,7 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
 // ptrArgument1 is the dividend and ptrArgument2 is the divisor.
 // If type equals TYPE_DIVISION, ptrArgument1 is overwritten with the quotient.
 // If type equals TYPE_MODULUS, ptrArgument1 is overwritten with the remainder.
-int DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType type)
+enum eExprErr DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType type)
 {
   int currentDegree;
   int degree1 = *ptrArgument1;

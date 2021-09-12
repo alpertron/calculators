@@ -130,11 +130,13 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
   else if (nbrLimbsDivisor == 1)
   {   // Divisor is small: use divide by int.
       // Sign of quotient is determined later.
+      // pDivisor may be overwritten by dividend in next copy.
+    int divisor = pDivisor->limbs[0].x;
     if (pQuotient != pDividend)
     {
       CopyBigInt(pQuotient, pDividend);
     }
-    subtractdivide(pQuotient, 0, pDivisor->limbs[0].x);
+    subtractdivide(pQuotient, 0, divisor);
   }
   else if (nbrLimbsDivisor < 64)
   {   // It is faster to perform classical division than

@@ -105,6 +105,22 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 >> coverage.out
 ./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 1 >> coverage.out
 ./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 2 >> coverage.out
+./polfact 0 "gcd(x+1,x)+3" 2 >> coverage.out
+./polfact 0 "lcm(x+1,x)+3" 2 >> coverage.out
+./polfact 0 "gcd(x+1,x**2-1)+2" 2 >> coverage.out
+./polfact 0 "lcm(x+1,x**2-1)+2" 2 >> coverage.out
+./polfact 0 "gcd(x+1,x*(x**2-1), x**3-1)" 2 >> coverage.out
+./polfact 0 "lcm(x+1,x**2-1, x**3-1)" 2 >> coverage.out
+./polfact 0 "gcd(x^4, x^7+x^3, x^6)" 2 >> coverage.out
+./polfact 0 "lcm(x^4, x^7+x^3, x^6)" 2 >> coverage.out
+./polfact 3 "gcd(x+1,x)+3" 2 >> coverage.out
+./polfact 3 "lcm(x+1,x)+3" 2 >> coverage.out
+./polfact 3 "gcd(x+1,x**2-1)+2" 2 >> coverage.out
+./polfact 3 "lcm(x+1,x**2-1)+2" 2 >> coverage.out
+./polfact 3 "gcd(x+1,x*(x**2-1), x**3-1)" 2 >> coverage.out
+./polfact 3 "lcm(x+1,x**2-1, x**3-1)" 2 >> coverage.out
+./polfact 3 "gcd(x^4, x^7+x^3, x^6)" 2 >> coverage.out
+./polfact 3 "lcm(x^4, x^7+x^3, x^6)" 2 >> coverage.out
 ./polfact 0 "(68987*x^2+47773*x+4983)*(61415*x^2+4334*x+343)" 2 >> coverage.out
 ./polfact 0 "(3789678961*x^2+545543121*x+432143141)*(678585781*x^2+43213515*x+342143153)" 2 >> coverage.out
 ./polfact 0 "(678967896891*x^2+431545543121*x+43432143141)*(67567856785781*x^2+43213515*x+342143153)" 1 >> coverage.out
@@ -223,6 +239,8 @@ echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 ./gaussian "isprime(23) + 2*isprime(5) + 4*isprime(1+i)" 0 >> coverage.out
 ./gaussian "modpow(7,6,0) + modpow(7,6,23)" 0 >> coverage.out
 ./gaussian "modinv(13,71)" 0 >> coverage.out
+./gaussian "gcd(1+i,2,4)" 0 >> coverage.out
+./gaussian "lcm(1+i,2,4)" 0 >> coverage.out
 
 lcov --capture --directory . --output-file gaussian.info
 

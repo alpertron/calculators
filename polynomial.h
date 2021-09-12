@@ -131,5 +131,5 @@ void multUsingInvPolynomial(const int* polyFact1, const int* polyFact2,
   /*@out@*/int* polyProduct,
   int polyDegree, const int* polyMod);
 void SameDegreeFactorization(void);
-int DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType type);
+enum eExprErr DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType type);
 #endif

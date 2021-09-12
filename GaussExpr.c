@@ -28,22 +28,24 @@
 
 #define TOKEN_PRIMORIAL  39
 #define TOKEN_GCD        40
-#define TOKEN_MODPOW     41
-#define TOKEN_MODINV     42
-#define TOKEN_NORM       43
-#define TOKEN_RE         44
-#define TOKEN_IM         45
-#define TOKEN_ISPRIME    46
-#define TOKEN_F          47
-#define TOKEN_L          48
-#define TOKEN_P          49
-#define TOKEN_N          50
-#define TOKEN_B          51
+#define TOKEN_LCM        41
+#define TOKEN_MODPOW     42
+#define TOKEN_MODINV     43
+#define TOKEN_NORM       44
+#define TOKEN_RE         45
+#define TOKEN_IM         46
+#define TOKEN_ISPRIME    47
+#define TOKEN_F          48
+#define TOKEN_L          49
+#define TOKEN_P          50
+#define TOKEN_N          51
+#define TOKEN_B          52
 
 struct sFuncOperExpr stFuncOperGaussianExpr[] =
 {
   // First section: functions
-  {"GCD", TOKEN_GCD + TWO_PARMS, 0},
+  {"GCD", TOKEN_GCD + MANY_PARMS, 0},
+  {"LCM", TOKEN_LCM + MANY_PARMS, 0},
   {"MODPOW", TOKEN_MODPOW + THREE_PARMS, 0},
   {"MODINV", TOKEN_MODINV + TWO_PARMS, 0},
   {"NORM", TOKEN_NORM + ONE_PARM, 0},
@@ -85,6 +87,9 @@ limb Mult3[MAX_LEN];
 limb Mult4[MAX_LEN];
 int q[MAX_LEN];
 static void ComputeGCD(void);
+static void ComputeLCM(void);
+static enum eExprErr GaussianDivide(void);
+static enum eExprErr GaussianMultiply(void);
 static int Modulo(BigInteger* ReNum, BigInteger* ImNum,
   const BigInteger* ReDen, const BigInteger* ImDen,
   BigInteger* Result);
@@ -103,6 +108,10 @@ static BigInteger curStack2Re;
 static BigInteger curStack2Im;
 static BigInteger curStack3Re;
 static BigInteger curStack3Im;
+static BigInteger curStackReBak;
+static BigInteger curStackImBak;
+static BigInteger curStack2ReBak;
+static BigInteger curStack2ImBak;
 static BigInteger curTmp;
 static BigInteger norm;
 static BigInteger Result[2];
@@ -163,6 +172,7 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
     int currentOffset;
     int nbrLenBytes;
     int len;
+    int nbrParameters;
     switch (c)
     {
     case TOKEN_NUMBER:
@@ -228,10 +238,27 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_GCD:
-      getCurrentStackValue(&curStack2Re, &curStack2Im);
-      stackIndex--;
+      ptrRPNbuffer++;
+      nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
       getCurrentStackValue(&curStackRe, &curStackIm);
-      ComputeGCD();
+      for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
+      {
+        stackIndex--;
+        getCurrentStackValue(&curStack2Re, &curStack2Im);
+        ComputeGCD();
+      }
+      break;
+
+    case TOKEN_LCM:
+      ptrRPNbuffer++;
+      nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
+      getCurrentStackValue(&curStackRe, &curStackIm);
+      for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
+      {
+        stackIndex--;
+        getCurrentStackValue(&curStack2Re, &curStack2Im);
+        ComputeLCM();
+      }
       break;
 
     case TOKEN_MODPOW:
@@ -386,82 +413,14 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       getCurrentStackValue(&curStack2Re, &curStack2Im);
       stackIndex--;
       getCurrentStackValue(&curStackRe, &curStackIm);
-      retcode = BigIntMultiply(&curStackRe, &curStack2Re, &curStack3Re);  // Re <- re1*re2 - im1*im2.
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = BigIntMultiply(&curStackIm, &curStack2Im, &curStack3Im);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      BigIntSubt(&curStack3Re, &curStack3Im, &curTmp);   // Save real part of product in temp var.
-      retcode = BigIntMultiply(&curStackIm, &curStack2Re, &curStack3Re); // Im <- im1*re2 + re1*im2.
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = BigIntMultiply(&curStackRe, &curStack2Im, &curStack3Im);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      BigIntAdd(&curStack3Re, &curStack3Im, &curStackIm);
-      CopyBigInt(&curStackRe, &curTmp);
+      retcode = GaussianMultiply();
       break;
 
     case OPER_DIVIDE:
       getCurrentStackValue(&curStack2Re, &curStack2Im);
       stackIndex--;
       getCurrentStackValue(&curStackRe, &curStackIm);
-      retcode = BigIntMultiply(&curStack2Re, &curStack2Re, &curStack3Re);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = BigIntMultiply(&curStack2Im, &curStack2Im, &curStack3Im);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      BigIntAdd(&curStack3Re, &curStack3Im, &norm);       // norm <- re2^2 + im2^2.
-      if (BigIntIsZero(&norm))
-      {              // norm is zero.
-        return EXPR_INTERM_TOO_HIGH;
-      }
-      retcode = BigIntMultiply(&curStackRe, &curStack2Re, &curStack3Re);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = BigIntMultiply(&curStackIm, &curStack2Im, &curStack3Im);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      BigIntAdd(&curStack3Re, &curStack3Im, &curTmp);    // Re <- re1*re2 + im1*im2.
-      retcode = BigIntMultiply(&curStackIm, &curStack2Re, &curStack3Re);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = BigIntMultiply(&curStackRe, &curStack2Im, &curStack3Im);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      BigIntSubt(&curStack3Re, &curStack3Im, &curStack3Im);   // Im <- im1*re2 - re1*im2.
-      retcode = BigIntDivide(&curTmp, &norm, &curStackRe);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
-      retcode = BigIntDivide(&curStack3Im, &norm, &curStackIm);
-      if (retcode != EXPR_OK)
-      {
-        return retcode;
-      }
+      retcode = GaussianDivide();
       break;
 
     case OPER_REMAINDER:
@@ -672,6 +631,33 @@ static void ComputeGCD(void)
     BigIntNegate(&curStackIm, &curStackRe);
     CopyBigInt(&curStackIm, &curStack3Re);
   }
+}
+
+static void ComputeLCM(void)
+{
+  if ((BigIntIsZero(&curStackRe) && BigIntIsZero(&curStackIm)) ||
+    (BigIntIsZero(&curStack2Re) && BigIntIsZero(&curStack2Im)))
+  {    // If any of the arguments is zero, the LCM is zero.
+    intToBigInteger(&curStackRe, 0);
+    intToBigInteger(&curStackIm, 0);
+    return;
+  }
+  // Save both parameters because ComputeGCD will overwrite them.
+  CopyBigInt(&curStackReBak, &curStackRe);
+  CopyBigInt(&curStackImBak, &curStackIm);
+  CopyBigInt(&curStack2ReBak, &curStack2Re);
+  CopyBigInt(&curStack2ImBak, &curStack2Im);
+  ComputeGCD();   // curStackRe + i*curStackIm = GCD.
+  // Divide first parameter by GCD.
+  CopyBigInt(&curStack2Re, &curStackRe);    // Divisor
+  CopyBigInt(&curStack2Im, &curStackIm);
+  CopyBigInt(&curStackRe, &curStackReBak);  // Dividend
+  CopyBigInt(&curStackIm, &curStackImBak);
+  GaussianDivide();
+  // Multiply the quotient by the second parameter.
+  CopyBigInt(&curStack2Re, &curStack2ReBak);
+  CopyBigInt(&curStack2Im, &curStack2ImBak);
+  GaussianMultiply();
 }
 
 static int ComputePower(BigInteger *Re1, const BigInteger *Re2,
@@ -1042,4 +1028,87 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
   CopyBigInt(&result[0], &ReMin);
   CopyBigInt(&result[1], &ImMin);
   return 0;
+}
+
+// (curStackRe + i*curStackIm) <- (curStackRe + i*curStackIm) / (curStack2Re + i*curStack2Im)
+static enum eExprErr GaussianDivide(void)
+{
+  enum eExprErr retcode = BigIntMultiply(&curStack2Re, &curStack2Re, &curStack3Re);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  retcode = BigIntMultiply(&curStack2Im, &curStack2Im, &curStack3Im);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  BigIntAdd(&curStack3Re, &curStack3Im, &norm);       // norm <- re2^2 + im2^2.
+  if (BigIntIsZero(&norm))
+  {              // norm is zero.
+    return EXPR_INTERM_TOO_HIGH;
+  }
+  retcode = BigIntMultiply(&curStackRe, &curStack2Re, &curStack3Re);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  retcode = BigIntMultiply(&curStackIm, &curStack2Im, &curStack3Im);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  BigIntAdd(&curStack3Re, &curStack3Im, &curTmp);    // Re <- re1*re2 + im1*im2.
+  retcode = BigIntMultiply(&curStackIm, &curStack2Re, &curStack3Re);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  retcode = BigIntMultiply(&curStackRe, &curStack2Im, &curStack3Im);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  BigIntSubt(&curStack3Re, &curStack3Im, &curStack3Im);   // Im <- im1*re2 - re1*im2.
+  retcode = BigIntDivide(&curTmp, &norm, &curStackRe);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  retcode = BigIntDivide(&curStack3Im, &norm, &curStackIm);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  return EXPR_OK;
+}
+
+// (curStackRe + i*curStackIm) <- (curStack2Re + i*curStack2Im) * (curStackRe + i*curStackIm)
+static enum eExprErr GaussianMultiply(void)
+{
+  // Re <- re1*re2 - im1*im2.
+  enum eExprErr retcode = BigIntMultiply(&curStackRe, &curStack2Re, &curStack3Re);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  retcode = BigIntMultiply(&curStackIm, &curStack2Im, &curStack3Im);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  BigIntSubt(&curStack3Re, &curStack3Im, &curTmp);   // Save real part of product in temp var.
+  retcode = BigIntMultiply(&curStackIm, &curStack2Re, &curStack3Re); // Im <- im1*re2 + re1*im2.
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  retcode = BigIntMultiply(&curStackRe, &curStack2Im, &curStack3Im);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  BigIntAdd(&curStack3Re, &curStack3Im, &curStackIm);
+  CopyBigInt(&curStackRe, &curTmp);
+  return EXPR_OK;
 }

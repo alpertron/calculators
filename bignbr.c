@@ -717,6 +717,7 @@ void BigIntLcm(const BigInteger* pArg1, const BigInteger* pArg2, BigInteger* pRe
   if (BigIntIsZero(pArg1) || BigIntIsZero(pArg2))
   {    // If any of the arguments is zero, the LCM is zero.
     intToBigInteger(pResult, 0);
+    return;
   }
   BigIntGcd(pArg1, pArg2, &Temp4);
   BigIntDivide(pArg1, &Temp4, &Temp4);

@@ -443,7 +443,8 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
 
 // arg1 must not be changed by this routine.
 // arg2 can be changed by this routine.
-void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *gcd, int *degreeGcd)
+void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
+  int *gcd, int *degreeGcd)
 {
   int nbrLimbs = NumberLength + 1;
   int *ptrArgMax = gcd;
@@ -454,10 +455,23 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
   int temp;
   int index;
   int lenBytes;
+  int currCoeff;
+  if (degree1 == 0)
+  {
+    if ((*arg1 == 1) && (*(arg1 + 1) == 0))
+    {     // First polynomial is zero. GCD is second argument.
+      *degreeGcd = degree2;
+      lenBytes = (degree2 + 1) * nbrLimbs * (int)sizeof(int);
+      (void)memcpy(gcd, arg2, lenBytes);
+      return;
+    }
+    *degreeGcd = 0;
+    return;
+  }
   if (degree2 == 0)
   {
     if ((*arg2 == 1) && (*(arg2 + 1) == 0))
-    {     // Number is zero. GCD is first argument.
+    {     // Second polynomial is zero. GCD is first argument.
       *degreeGcd = degree1;
       lenBytes = (degree1 + 1) * nbrLimbs * (int)sizeof(int);
       (void)memcpy(gcd, arg1, lenBytes);
@@ -466,6 +480,52 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *g
     *degreeGcd = 0;
     return;
   }
+  if (degree1 < 0 && degree2 < 0)
+  {  // Both arguments are monomials. gcd is x^{min(|degree1|, |degree2|)}
+    *degreeGcd = degree1;
+    if (degree1 < degree2)
+    {
+      *degreeGcd = degree2;
+    }
+    *gcd = 1;         // Set coefficient to 1.
+    *(gcd + 1) = 1;
+    return;
+  }
+  if (degree1 < 0 || degree2 < 0)
+  {  // One of the arguments is a monomial.
+    int monomialDegree;
+    int polynomialDegree;
+    const int* polynomialCoeffs;
+    if (degree1 < 0)
+    {
+      monomialDegree = -degree1;
+      polynomialDegree = degree2;
+      polynomialCoeffs = arg2;
+    }
+    else
+    {
+      monomialDegree = -degree2;
+      polynomialDegree = degree1;
+      polynomialCoeffs = arg1;
+    }
+    for (currCoeff = 0;
+      (currCoeff < polynomialDegree) && (currCoeff < monomialDegree);
+      currCoeff++)
+    {
+      int coeffLength;
+      if ((*polynomialCoeffs != 1) || (*(polynomialCoeffs+1) != 0))
+      {
+        break;    // Coefficient is not zero. Exit loop.
+      }
+      coeffLength = 1 + *polynomialCoeffs;
+      polynomialCoeffs += coeffLength;
+    }
+    *degreeGcd = -currCoeff;
+    *gcd = 1;         // Set coefficient to 1.
+    *(gcd + 1) = 1;
+    return;
+  }
+  // gcd of two polynomials.
   lenBytes = (degree1 + 1) * nbrLimbs * (int)sizeof(int);
   (void)memcpy(gcd, arg1, lenBytes);
   if (degreeMax < degreeMin)

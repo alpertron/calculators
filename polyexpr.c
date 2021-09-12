@@ -26,14 +26,21 @@
 #include "expression.h"
 
 #define TOKEN_GCD    32
-#define TOKEN_DER    33
-static int GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2);
+#define TOKEN_LCM    33
+#define TOKEN_DER    34
+static enum eExprErr GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2);
+static enum eExprErr LcmPolynomialExpr(int* ptrArgument1, int* ptrArgument2);
 static int* stackValues[STACK_OPER_SIZE];
+extern int polyA[1000000];
+extern int polyB[1000000];
+extern int polyC[1000000];
+extern int polyD[1000000];
 
 struct sFuncOperExpr stFuncOperPolyExpr[] =
 {
   // First section: functions
-  {"GCD", TOKEN_GCD + TWO_PARMS, 0},
+  {"GCD", TOKEN_GCD + MANY_PARMS, 0},
+  {"LCM", TOKEN_LCM + MANY_PARMS, 0},
   {"DER", TOKEN_DER + ONE_PARM, 0},
   {NULL, 0},
   // Second section: functions written at right of argument.
@@ -383,7 +390,7 @@ int* CopyPolyProduct(const int* ptrSrc, int* ptrDest, int polyDegree)
   return ptrValueDest;
 }
 
-static int MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
+static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
 {
   int degreeMono;
   int degreePoly;
@@ -590,7 +597,16 @@ int* CopyPolynomial(int* dest, const int* src, int polyDegree)
 {
   int* ptrDest = dest;
   const int* ptrSrc = src;
-  for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+  int currentDegree;
+  if (polyDegree >= 0)
+  {          // Polynomial
+    currentDegree = 0;
+  }
+  else
+  {          // Monomial
+    currentDegree = polyDegree;
+  }
+  for (; currentDegree <= polyDegree; currentDegree++)
   {
     int numLength = numLimbs(ptrSrc) + 1;
     int lenBytes = numLength * (int)sizeof(int);
@@ -775,6 +791,7 @@ int ComputePolynomial(const char* input, int expo)
   while (*ptrRPNbuffer != '\0')
   {
     int nbrSizeBytes;
+    int nbrParameters;
     switch (*ptrRPNbuffer)
     {
     case TOKEN_NUMBER:
@@ -827,13 +844,35 @@ int ComputePolynomial(const char* input, int expo)
       }
       break;
     case TOKEN_GCD:
-      stackIndex--;
-      ptrValue2 = stackValues[stackIndex];
+      ptrRPNbuffer++;
+      nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
       ptrValue1 = stackValues[stackIndex - 1];
-      rc = GcdPolynomialExpr(ptrValue1, ptrValue2);
-      if (rc != EXPR_OK)
+      for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
       {
-        return rc;
+        stackIndex--;
+        ptrValue2 = stackValues[stackIndex - 1];
+        rc = GcdPolynomialExpr(ptrValue2, ptrValue1);
+        if (rc != EXPR_OK)
+        {
+          return rc;
+        }
+        ptrValue1 = ptrValue2;
+      }
+      break;
+    case TOKEN_LCM:
+      ptrRPNbuffer++;
+      nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
+      ptrValue1 = stackValues[stackIndex - 1];
+      for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
+      {
+        stackIndex--;
+        ptrValue2 = stackValues[stackIndex - 1];
+        rc = LcmPolynomialExpr(ptrValue1, ptrValue2);
+        if (rc != EXPR_OK)
+        {
+          return rc;
+        }
+        ptrValue1 = ptrValue2;
       }
       break;
     case TOKEN_DER:
@@ -1020,7 +1059,7 @@ int ComputePolynomial(const char* input, int expo)
   return EXPR_OK;
 }
 
-static int GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
+static enum eExprErr GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
 {
   int degreeGcd;
   const int* ptrNextArgument;
@@ -1033,7 +1072,8 @@ static int GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
     ptrNextArgument = ptrArgument1 + 1;
     for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
-      ptrNextArgument += 1 + numLimbs(ptrNextArgument);
+      int numLen = 1 + numLimbs(ptrNextArgument);
+      ptrNextArgument += numLen;
     }
   }
   else
@@ -1051,3 +1091,44 @@ static int GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
   return EXPR_OK;
 }
 
+static enum eExprErr LcmPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
+{
+  enum eExprErr retcode;
+  const int* ptrNextArgument;
+  size_t diffPtrs;
+      // Integer LCM polynomial.
+  if ((*ptrArgument1 == 0) && (*(ptrArgument1 + 1) == 1) && (*(ptrArgument1 + 2) == 0))
+  {         // argument1 equals zero, so the LCM is also zero.
+    valuesIndex = 3;
+    return EXPR_OK;
+  }
+  if ((*ptrArgument2 == 0) && (*(ptrArgument2 + 1) == 1) && (*(ptrArgument2 + 2) == 0))
+  {         // argument2 equals zero, so the LCM is also zero.
+    *ptrArgument1 = 0;
+    *(ptrArgument1 + 1) = 1;
+    *(ptrArgument1 + 2) = 0;
+    valuesIndex = 3;
+    return EXPR_OK;
+  }
+  // Save polynomials before they are overwritten by PolynomialGcd.
+  polyA[0] = *ptrArgument1;
+  CopyPolynomial(&polyA[1], ptrArgument1 + 1, *ptrArgument1);
+  polyB[0] = *ptrArgument2;
+  CopyPolynomial(&polyB[1], ptrArgument2 + 1, *ptrArgument2);
+  retcode = GcdPolynomialExpr(ptrArgument1, ptrArgument2);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  retcode = DivPolynomialExpr(polyA, ptrArgument1, TYPE_DIVISION);
+  if (retcode != EXPR_OK)
+  {
+    return retcode;
+  }
+  MultPolynomialExpr(polyA, polyB);
+  *ptrArgument2 = polyA[0];
+  ptrNextArgument = CopyPolynomial(ptrArgument2 + 1, &polyA[1], polyA[0]);
+  diffPtrs = ptrNextArgument - ptrArgument2;
+  valuesIndex = (int)diffPtrs;
+  return EXPR_OK;
+}
