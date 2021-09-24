@@ -993,7 +993,7 @@ static enum eExprErr ComputePartition(void)
 }
 
 #ifdef FACTORIZATION_FUNCTIONS
-static void PerformFactorization(BigInteger *tofactor)
+static void PerformFactorization(const BigInteger *tofactor)
 {
   char* ptrFactorDec = tofactorDec;
   NumberLength = tofactor->nbrLimbs;
@@ -1204,9 +1204,9 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
       return EXPR_INTERM_TOO_HIGH;
     }
 #ifdef FACTORIZATION_APP
-    if (((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 664380)
+    if (((nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 664380)
 #else
-    if (((first->nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 66438)
+    if (((nbrLimbs * BITS_PER_GROUP) + shiftCtr) > 66438)
 #endif
     {   // Shift too much to the left.
       return EXPR_INTERM_TOO_HIGH;
@@ -1214,7 +1214,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second, BigI
     prevLimb = 0U;
     ptrSrc = &first->limbs[nbrLimbs - 1].x;
     curLimb = (unsigned int)*ptrSrc;
-    ptrDest = &result->limbs[nbrLimbs+delta].x;
+    ptrDest = &result->limbs[nbrLimbs + delta].x;
     shLeft = (unsigned int)rem;
     shRight = (unsigned int)BITS_PER_GROUP - shLeft;
     for (ctr = nbrLimbs; ctr > 0; ctr--)

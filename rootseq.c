@@ -477,7 +477,7 @@ static void QuadraticEquation(const int* polynomial, int multiplicity)
 
 static void CbrtIndep(void)
 {
-  if (pretty != PARI_GP)
+  if ((pretty != PARI_GP) || !BigIntIsOne(&RatDeprIndependent.denominator))
   {
     startCbrt();
     showRationalNoParen(&RatDeprIndependent);
@@ -1464,7 +1464,7 @@ static void QuarticEquation(const int* polynomial, int multiplicity)
   BigInteger2IntArray(ptrValues, &tmp3);
   (void)FactorPolyOverIntegers();
   if (factorInfoInteger[0].degree == 1)
-  {   // Rational root find. Get root.
+  {   // Rational root found. Get root.
     FerrariResolventHasRationalRoot(multiplicity);
   }
   else if (RatDiscr.numerator.sign == SIGN_POSITIVE)
@@ -1542,7 +1542,7 @@ static void QuarticEquation(const int* polynomial, int multiplicity)
     }
     else
     {
-      showText("<var>Q</var> / 3 ");
+      showText("Q / 3 ");
     }
     BigRationalDivideByInt(&RatDelta0, 3, &Rat1);
     ForceDenominatorPositive(&Rat1);
@@ -1566,7 +1566,7 @@ static void QuarticEquation(const int* polynomial, int multiplicity)
       }
       showX(multiplicity);
       showFirstTermQuarticEq(ctr);
-      showText(" <var>S</var> ");
+      showText((pretty == PRETTY_PRINT)?" <var>S</var> ": " S ");
       showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_AFTER);
       if (pretty != PARI_GP)
       {
@@ -1586,14 +1586,13 @@ static void QuarticEquation(const int* polynomial, int multiplicity)
       }
       showText("4 ");
       showText(ptrTimes);
-      showText("<var>S</var>");
       if (pretty == PRETTY_PRINT)
       {
-        showText("&sup2; ");
+        showText("<var>S</var>&sup2; ");
       }
       else
       {
-        showText("^2 ");
+        showText("S^2 ");
       }
       if (!BigIntIsZero(&RatDeprQuadratic.numerator))
       {

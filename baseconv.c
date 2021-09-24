@@ -155,6 +155,7 @@ void long2dec(char **pOutput, uint64_t nbr)
 }
 #endif
 
+#ifdef __EMSCRIPTEN__
 void int2hex(char **pOutput, int nbr)
 {
   char *ptrOutput = *pOutput;
@@ -184,6 +185,7 @@ void int2hex(char **pOutput, int nbr)
   copyStr(&ptrOutput, "</span>");
   *pOutput = ptrOutput;
 }
+#endif
 
 // Convert little-endian number to a string with space every groupLen digits.
 void Bin2Hex(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength)

@@ -26,7 +26,7 @@
 #include "batch.h"
 #include "polynomial.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 13
+#define DEBUG_CODE 9
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -253,6 +253,10 @@ int main(int argc, char* argv[])
   hexadecimal = false;
   char text[40000];
   char* ptrText = text;
+  if ((argc == 3) && (argv[2][0] == '1'))
+  {
+    hexadecimal = true;
+  }
   copyStr(&ptrText, argv[1]);
   copyStr(&ptrText, "\n");
   ecmFrontText(text, true, NULL);
