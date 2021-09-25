@@ -3028,10 +3028,10 @@ static void ShowNoSolvableSpanish(const int* firstArray, const int* secondArray,
     {
       showX(numberDifferentX);
       *(ptrOutput - 2) = ':';  // Replace equal sign by colon.
-      showText("Las raíces del polinomio ");
+      showText("Las raíces del polinomio");
       if (nbrFactor >= 0)
       {
-        showText("número ");
+        showText(" número ");
         int2dec(&ptrOutput, nbrFactor + 1);
       }
       showText(" no se pueden expresar mediante expresiones radicales");
@@ -3063,10 +3063,10 @@ static void ShowNoSolvableEnglish(const int* firstArray, const int* secondArray,
     {
       showX(numberDifferentX);
       *(ptrOutput - 2) = ':';  // Replace equal sign by colon.
-      showText("The roots of the polynomial ");
+      showText("The roots of the polynomial");
       if (nbrFactor >= 0)
       {
-        showText("number ");
+        showText(" number ");
         int2dec(&ptrOutput, nbrFactor + 1);
       }
       showText(" cannot be expressed by radicals");
@@ -3190,10 +3190,10 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
     *(ptrOutput - 2) = ':';  // Replace equal sign by colon.
     if (lang)
     {
-      showText("Las raíces del polinomio ");
+      showText("Las raíces del polinomio");
       if (nbrFactor >= 0)
       {
-        showText("número ");
+        showText(" número ");
         int2dec(&ptrOutput, nbrFactor + 1);
       }
       showText(" se pueden expresar mediante expresiones radicales");
@@ -3208,10 +3208,10 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
     }
     else
     {
-      showText("The roots of the polynomial ");
+      showText("The roots of the polynomial");
       if (nbrFactor >= 0)
       {
-        showText("number ");
+        showText(" number ");
         int2dec(&ptrOutput, nbrFactor + 1);
       }
       showText(" can be expressed by radicals");
@@ -3393,7 +3393,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
   } while (prime < 100);
   int numberDifferentX = multiplicity * polyDegree * gcdDegrees;
   if (cyclePrGtNOver2ToLess2Found != 0)
-  {     // Group is very transitive.
+  {      // Group is very transitive.
     if (lang)
     {    // Spanish
       ShowNoSolvableSpanish(factorDegreesCycleP, NULL, numberDifferentX,

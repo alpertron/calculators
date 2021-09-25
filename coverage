@@ -98,15 +98,23 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "x^5+15*x+12" 0 >> coverage.out
 ./polfact 0 "x^5+15*x+12" 1 >> coverage.out
 ./polfact 0 "x^5+15*x+12" 2 >> coverage.out
+./polfact 0 "x**6+x**5+3*x**4+x**3+3*x**2+x+1" 2 >> coverage.out
 ./polfact 0 "x^7+x+12" 0 >> coverage.out
 ./polfact 0 "x^7+x+12" 1 >> coverage.out
 ./polfact 0 "x^7+x+12" 2 >> coverage.out
+./polfact 0 "x**9+6*x**3+5" 2 >> coverage.out
 ./polfact 0 "x^10+2*x^5+23" 0 >> coverage.out
 ./polfact 0 "x^10+2*x^5+23" 1 >> coverage.out
 ./polfact 0 "x^10+2*x^5+23" 2 >> coverage.out
 ./polfact 0 "x^10+2*x^5-23" 0 >> coverage.out
 ./polfact 0 "x^10+2*x^5-23" 1 >> coverage.out
 ./polfact 0 "x^10+2*x^5-23" 2 >> coverage.out
+./polfact 0 "x**12+x+5" 2 >> coverage.out
+./polfact 0 "x**13+3*x+5" 2 >> coverage.out
+./polfact 0 "x^17-1" 0 >> coverage.out
+./polfact 0 "x^17-1" 1 >> coverage.out
+./polfact 0 "x^17-1" 2 >> coverage.out
+./polfact 0 "x**129+6*x**4+5" 2 >> coverage.out
 ./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" 0 >> coverage.out
 ./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" 1 >> coverage.out
 ./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" 2 >> coverage.out
@@ -171,7 +179,12 @@ lcov --capture --directory . --output-file fcubes.info
 make clean
 make dilog
 echo -e "\n\n**** DILOG ****" >> coverage.out
+./dilog -1 4 5 >> coverage.out
+./dilog 3 -1 5 >> coverage.out
+./dilog 2 4 -1 >> coverage.out
+./dilog 3 22 23 >> coverage.out
 ./dilog 3 7 29 >> coverage.out
+./dilog 7 23 8 >> coverage.out
 ./dilog 28 43 "n(120000)" >> coverage.out
 ./dilog 667 999 "n(10000000000)" >> coverage.out
 ./dilog 2 173 226 >> coverage.out
