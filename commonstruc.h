@@ -102,6 +102,15 @@ struct stSiqs
   char threshold;
 };
 
+struct stDivisors
+{
+  int currentExp[50];
+  int currentExpGray[50];
+  BigInteger divisor;
+  int foundDivisors[1000000];
+  int *ptrFoundDivisors[1000];
+};
+
 #define MAX_PRIME_SIEVE 7  // Only numbers 7 or 11 are accepted here.
 #if MAX_PRIME_SIEVE == 11
 #define SIEVE_SIZE (2*3*5*7*11)
@@ -184,4 +193,5 @@ extern union uCommon
   struct stTrialDivision trialDiv;
   struct stQuad quad;
   struct stSaveFactors saveFactors;
+  struct stDivisors divisors;
 } common;

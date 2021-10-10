@@ -1088,6 +1088,36 @@ void IntArray2BigInteger(const int *ptrValues, BigInteger *bigint)
   }
 }
 
+int IntArrayCompare(const int* ptrFirst, const int* ptrSecond)
+{
+  const int* pFirst;
+  const int* pSecond;
+  if (*ptrFirst < *ptrSecond)
+  {
+    return -1;         // First number less than second.
+  }
+  if (*ptrFirst > *ptrSecond)
+  {
+    return 1;          // First number greater than second.
+  }
+  pFirst = ptrFirst + *ptrFirst;
+  pSecond = ptrSecond + *ptrSecond;
+  while (pFirst > ptrFirst)
+  {
+    if (*pFirst < *pSecond)
+    {
+      return -1;       // First number less than second.
+    }
+    if (*pFirst > *pSecond)
+    {
+      return 1;        // First number greater than second.
+    }
+    pFirst--;
+    pSecond--;
+  }
+  return 0;            // Both numbers are equal.
+}
+
 void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint)
 {
   int* pValues = ptrValues;

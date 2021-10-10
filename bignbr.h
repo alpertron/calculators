@@ -170,6 +170,7 @@ int BpswPrimalityTest(const BigInteger *pValue);
 #endif
 void IntArray2BigInteger(const int *ptrValues, /*@out@*/BigInteger *bigint);
 void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint);
+int IntArrayCompare(const int* ptrFirst, const int* ptrSecond);
 void UncompressLimbsBigInteger(const limb *ptrValues, /*@out@*/BigInteger *bigint);
 void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, const BigInteger *bigint);
 void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len);

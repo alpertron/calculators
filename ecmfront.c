@@ -25,6 +25,7 @@
 #include "showtime.h"
 #include "batch.h"
 #include "output.h"
+#include "commonstruc.h"
 
 #ifdef FACTORIZATION_APP
 #ifdef __EMSCRIPTEN__
@@ -69,6 +70,7 @@ static void ShowFourSquares(char **pptrOutput);
 static bool doFactorization;
 static char *knownFactors;
 
+void showDivisors(void);    // DEBUG BORRAR
 #ifdef FACTORIZATION_APP
 void batchCallback(char **pptrOutput)
 {
@@ -975,6 +977,11 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
       StepECM = 0;   // Do not show progress.
 #endif
     }
+#ifdef __EMSCRIPTEN__
+    copyStr(&ptrOutput, "<div id=\"divisors\"><p><button type=\"button\" id=\"showdiv\">");
+    copyStr(&ptrOutput, lang ? "Mostrar divisores": "Show divisors");
+    copyStr(&ptrOutput, "</button></p>");
+#endif
     beginLine(&ptrOutput);
     showElapsedTime(&ptrOutput);
     finishLine(&ptrOutput);
@@ -1114,11 +1121,191 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
       }
       endList(&ptrOutput);
     }
+    copyStr(&ptrOutput, "</div>");
 #endif
   }
   beginLine(&ptrOutput);
   copyStr(&ptrOutput, lang ? COPYRIGHT_SPANISH : COPYRIGHT_ENGLISH );
   finishLine(&ptrOutput);
+  // Initialize all exponents to zero.
+  memset(common.divisors.currentExp, 0, sizeof(common.divisors.currentExp));
+  memset(common.divisors.currentExpGray, 0, sizeof(common.divisors.currentExpGray));
+  intToBigInteger(&common.divisors.divisor, 1);   // First divisor will be 1.
+}
+
+// Implementation of Heapsort as in Wikipedia.
+static void siftDown(int start, int end)
+{
+  int root = start;
+  while ((2 * root + 1) <= end)
+  {
+    int child = 2 * root + 1;
+    int swap = root;
+    // Compare a[swap] vs. a[child]
+    if (IntArrayCompare(common.divisors.ptrFoundDivisors[swap],
+      common.divisors.ptrFoundDivisors[child]) < 0)
+    {        // a[swap] < a[child]
+      swap = child;
+    }
+    if (((child + 1) <= end) &&
+      (IntArrayCompare(common.divisors.ptrFoundDivisors[swap],
+      common.divisors.ptrFoundDivisors[child + 1]) < 0))
+    {             // a[swap] < a[child + 1]
+      swap = child + 1;
+    }
+    if (swap == root)
+    {
+      return;
+    }
+    int* ptrTemp = common.divisors.ptrFoundDivisors[root];
+    common.divisors.ptrFoundDivisors[root] = common.divisors.ptrFoundDivisors[swap];
+    common.divisors.ptrFoundDivisors[swap] = ptrTemp;
+    root = swap;
+  }
+}
+
+static void heapify(int count)
+{
+  int start = (count - 2) / 2;
+  while (start >= 0)
+  {
+    siftDown(start, count - 1);
+    start--;
+  }
+}
+
+static void heapsort(int count)
+{
+  int end = count - 1;
+  heapify(count);
+  while (end > 0)
+  {
+    int* ptrTemp = common.divisors.ptrFoundDivisors[end];
+    common.divisors.ptrFoundDivisors[end] = common.divisors.ptrFoundDivisors[0];
+    common.divisors.ptrFoundDivisors[0] = ptrTemp;
+    end--;
+    siftDown(0, end);
+  }
+}
+
+// In order to minimize multiplications of big numbers, Gray code is used.
+void showDivisors(void)
+{
+  bool showMoreDivisors = true;
+  int nbrDivisors;
+  int divisorNbr;
+  int nbrExponents = astFactorsMod[0].multiplicity;
+  int* ptrFoundDivisors = common.divisors.foundDivisors;
+  char *ptrOutput = output;
+  *ptrOutput = 'D';      // Indicate this output is the list of divisors.
+  ptrOutput++;
+  copyStr(&ptrOutput, lang ? "<p>Lista de divisores:</p><ul>" :
+    "<p>List of divisors:</p><ul>");
+  if ((tofactor.nbrLimbs == 1) && (tofactor.limbs[0].x <= 1))
+  {
+    if (tofactor.limbs[0].x == 0)
+    {
+      copyStr(&ptrOutput, lang? "<li>Cualquier número natural</li></ul>":
+        "<li>Any natural number</li></ul>");
+    }
+    else
+    {
+      copyStr(&ptrOutput, "<li>1</li></ul>");
+    }
+    return;
+  }
+  if (nbrExponents > 50)
+  {                      // Process only the first 50 exponents.
+    nbrExponents = 50;
+  }
+  for (divisorNbr = 0; divisorNbr < 1000; divisorNbr++)
+  {
+    int exponentNbr;
+    int arrLen;
+    const struct sFactors* pstFactors;
+    if (ptrFoundDivisors - &common.divisors.foundDivisors[0] > 900000)
+    {
+      break;             // Divisors are very large.
+    }
+    common.divisors.ptrFoundDivisors[divisorNbr] = ptrFoundDivisors;
+    NumberLength = common.divisors.divisor.nbrLimbs;
+    BigInteger2IntArray(ptrFoundDivisors, &common.divisors.divisor);
+    arrLen = 1 + common.divisors.divisor.nbrLimbs;
+    ptrFoundDivisors += arrLen;
+
+    pstFactors = &astFactorsMod[1];
+    // Find next divisor.
+    for (exponentNbr = 0; exponentNbr < nbrExponents; exponentNbr++)
+    {
+      if (common.divisors.currentExpGray[exponentNbr] == 0)
+      {  // Ascending exponents.
+        if (common.divisors.currentExp[exponentNbr] <
+          pstFactors->multiplicity)
+        {
+          common.divisors.currentExp[exponentNbr]++;
+          NumberLength = *pstFactors->ptrFactor;
+          IntArray2BigInteger(pstFactors->ptrFactor, &Tmp);
+          BigIntMultiply(&common.divisors.divisor, &Tmp,
+            &common.divisors.divisor);
+          NumberLength = common.divisors.divisor.nbrLimbs;
+          BigInteger2IntArray(ptrFoundDivisors, &common.divisors.divisor);
+          break;
+        }
+      }
+      else
+      {  // Descending exponents.
+        if (common.divisors.currentExp[exponentNbr] > 0)
+        {
+          common.divisors.currentExp[exponentNbr]--;
+          NumberLength = *pstFactors->ptrFactor;
+          IntArray2BigInteger(pstFactors->ptrFactor, &Tmp);
+          BigIntDivide(&common.divisors.divisor, &Tmp,
+            &common.divisors.divisor);
+          NumberLength = common.divisors.divisor.nbrLimbs;
+          BigInteger2IntArray(ptrFoundDivisors, &common.divisors.divisor);
+          break;
+        }
+      }
+      common.divisors.currentExpGray[exponentNbr] ^= 1;
+      pstFactors++;
+    }
+    if (exponentNbr == nbrExponents)
+    {           // All exponents processed.
+      showMoreDivisors = false;
+      divisorNbr++;
+      break;
+    }
+  }
+  // Sort factors.
+  nbrDivisors = divisorNbr;
+  heapsort(nbrDivisors);
+  // Generate output from sorted divisors.
+  for (divisorNbr = 0; divisorNbr < nbrDivisors; divisorNbr++)
+  {
+    const int* ptrIntArray = common.divisors.ptrFoundDivisors[divisorNbr];
+    int arrLen;
+    NumberLength = *common.divisors.ptrFoundDivisors[divisorNbr];
+    IntArray2BigInteger(common.divisors.ptrFoundDivisors[divisorNbr], &Tmp);
+    copyStr(&ptrOutput, "<li>");
+    arrLen = *ptrIntArray;
+    if (hexadecimal)
+    {
+      Bin2Hex(&ptrOutput, (const limb *)ptrIntArray + 1, arrLen, groupLen);
+    }
+    else
+    {
+      Bin2Dec(&ptrOutput, (const limb*)ptrIntArray + 1, arrLen, groupLen);
+    }
+    copyStr(&ptrOutput, "</li>");
+  }
+  copyStr(&ptrOutput, "</ul>");
+  if (showMoreDivisors)
+  {
+    copyStr(&ptrOutput, "<p><button type=\"button\" id=\"showdiv\">");
+    copyStr(&ptrOutput, lang ? "Mostrar más divisores" : "Show more divisors");
+    copyStr(&ptrOutput, "</button></p>");
+    output[0] = 'E';    // Indicate button present.
+  }
 }
 
 #ifndef _MSC_VER
@@ -1134,6 +1321,14 @@ EXTERNALIZE void doWork(void)
   if (*ptrData == 'C')
   {    // User pressed Continue button.
     ecmFrontText(NULL, false, NULL); // The 3rd parameter includes known factors.
+#ifdef __EMSCRIPTEN__
+    databack(output);
+#endif
+    return;
+  }
+  if (*ptrData == 'D')
+  {    // User pressed SHow Divisors button.
+    showDivisors();
 #ifdef __EMSCRIPTEN__
     databack(output);
 #endif

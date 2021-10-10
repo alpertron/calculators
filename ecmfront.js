@@ -37,6 +37,7 @@ var indexedDBSupport = ("indexedDB" in window);
 var db;
 var statusText = "";
 var resultText = "";
+var divisorsDirty = false;
 var statusDirty = false;
 var resultDirty = false;
 var calcURLs = ["ecmW0000.js",
@@ -187,6 +188,8 @@ function callWorker(param)
       // "9" for sending data to console.
       // "A" for pausing calculation and showing the Continue button (save file)
       // "B" for sending data to be saved to file and ending calculation.
+      // "D" for sending data to div named divisors.
+      // "E" for sending data to div named divisors. It includes button More divisors.
       var firstChar = e.data.substring(0, 1);
       if (firstChar === "9")
       {
@@ -200,6 +203,18 @@ function callWorker(param)
       else if (firstChar === "7")
       {
         setStorage("ecmCurve", e.data.substring(1));
+      }
+      else if (firstChar === "D")
+      {
+        get("divisors").innerHTML = e.data.substring(1);
+      }
+      else if (firstChar === "E")
+      {
+        get("divisors").innerHTML = e.data.substring(1);
+        get("showdiv").onclick = function ()
+        {
+          callWorker("D");  // Indicate worker that user pressed Divisors button.
+        };
       }
       else if (firstChar === "4")
       {
@@ -240,6 +255,10 @@ function callWorker(param)
           if (firstChar === "6" || firstChar === "A")
           {
             show("cont");
+          }
+          if (firstChar === "2")
+          {
+            divisorsDirty = true;
           }
         }
         else
@@ -889,6 +908,18 @@ function startUp()
     {
       get("status").innerHTML = statusText;
       statusDirty = false;
+    }
+    if (divisorsDirty)
+    {
+      var showdiv = get("showdiv");
+      if (showdiv != null)
+      {
+        showdiv.onclick = function ()
+        {
+          callWorker("D");  // Indicate worker that user pressed Divisors button.
+        };
+      }
+      divisorsDirty = false;
     }
   }, 100);
   // Generate accordion.
