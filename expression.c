@@ -160,7 +160,7 @@ static int numLimbs(const int* pLen)
 
 static void getCurrentStackValue(BigInteger* pValue)
 {
-  int* ptrStackValue = &comprStackValues[comprStackOffset[stackIndex]];
+  const int* ptrStackValue = &comprStackValues[comprStackOffset[stackIndex]];
   NumberLength = numLimbs(ptrStackValue);
   IntArray2BigInteger(ptrStackValue, pValue);
 }
@@ -993,20 +993,20 @@ static enum eExprErr ComputePartition(void)
 }
 
 #ifdef FACTORIZATION_FUNCTIONS
-static void PerformFactorization(const BigInteger *tofactor)
+static void PerformFactorization(const BigInteger* numToFactor)
 {
   char* ptrFactorDec = tofactorDec;
-  NumberLength = tofactor->nbrLimbs;
-  BigInteger2IntArray(nbrToFactor, tofactor);
+  NumberLength = numToFactor->nbrLimbs;
+  BigInteger2IntArray(nbrToFactor, numToFactor);
   if (hexadecimal)
   {
-    Bin2Hex(&ptrFactorDec, tofactor->limbs, tofactor->nbrLimbs, groupLen);
+    Bin2Hex(&ptrFactorDec, numToFactor->limbs, numToFactor->nbrLimbs, groupLen);
   }
   else
   {
-    Bin2Dec(&ptrFactorDec, tofactor->limbs, tofactor->nbrLimbs, groupLen);
+    Bin2Dec(&ptrFactorDec, numToFactor->limbs, numToFactor->nbrLimbs, groupLen);
   }
-  factor(tofactor, nbrToFactor, factorsMod, astFactorsMod);
+  factor(numToFactor, nbrToFactor, factorsMod, astFactorsMod);
 }
 
 static enum eExprErr ComputeTotient(void)

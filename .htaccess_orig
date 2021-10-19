@@ -46,10 +46,6 @@ Header set Content-Security-Policy "frame-ancestors 'self'; object-src 'none'"
 </FilesMatch>
 
 #Cache timings
-<FilesMatch "\.(HTM|js|webmanifest|ico|png)$">
-Header always set strict-transport-security "max-age=31536000; includeSubDomains; preload"
-</FilesMatch>
-
 <FilesMatch "\.(js|wasm|ico|png|jpeg|webmanifest)$">
 Header set Cache-Control "public, max-age=31536000, immutable"
 </FilesMatch>
@@ -70,15 +66,23 @@ Header set Cache-Control "public, max-age=180"
 
 ErrorDocument 404 /404.shtml
 
-#RewriteEngine On
-#RewriteCond %{HTTP:X-Forwarded-Proto} =http
-#RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-
 RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+RewriteCond %{HTTP_HOST} !^www\.
+RewriteRule ^(.*)$ https://www.%{HTTP_HOST}/$1 [R=301,L,E=HTTPS:1]
+
+Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" env=HTTPS
+RewriteCond %{HTTP_HOST} ^alpertron\.com\.ar$ [NC]
+RewriteRule ^.*$ https://www.alpertron.com.ar%{REQUEST_URI} [R=301,L] 
+
 RewriteCond %{HTTP_HOST} ^alpertron\.com$ [NC]
 RewriteRule ^.*$ https://www.alpertron.com.ar%{REQUEST_URI} [R=301,L] 
+
 RewriteCond %{HTTP_HOST} ^alpern\.com\.ar$ [NC]
 RewriteRule ^.*$ https://www.alpertron.com.ar%{REQUEST_URI} [R=301,L] 
+
 RewriteCond %{HTTP_HOST} ^www\.alpern\.com\.ar$ [NC]
 RewriteRule ^.*$ https://www.alpertron.com.ar%{REQUEST_URI} [R=301,L] 
 

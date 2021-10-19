@@ -1764,6 +1764,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
   char *ptrCharFound;
   int result;
 
+  CopyBigInt(&tofactor, toFactor);
   initializeSmallPrimes(smallPrimes);
   if (toFactor->nbrLimbs == 1)
   {
@@ -1889,7 +1890,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
       }
     }
   }
-  if (tofactor.nbrLimbs > 1)
+  if (toFactor->nbrLimbs > 1)
   {
     PowerPM1Check(pstFactors, toFactor);
   }
