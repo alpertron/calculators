@@ -979,8 +979,10 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
     }
 #ifdef __EMSCRIPTEN__
     copyStr(&ptrOutput, "<div id=\"divisors\"><p><button type=\"button\" id=\"showdiv\">");
-    copyStr(&ptrOutput, lang ? "Mostrar divisores": "Show divisors");
-    copyStr(&ptrOutput, "</button></p>");
+    copyStr(&ptrOutput, lang? "Mostrar divisores": "Show divisors");
+    copyStr(&ptrOutput, "</button> <span class=\"red\">");
+    copyStr(&ptrOutput, lang? "¡Nuevo!": "New!");
+    copyStr(&ptrOutput, "</p>");
 #endif
     beginLine(&ptrOutput);
     showElapsedTime(&ptrOutput);

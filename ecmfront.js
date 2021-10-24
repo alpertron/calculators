@@ -259,6 +259,10 @@ function callWorker(param)
           if (firstChar === "2")
           {
             divisorsDirty = true;
+            if (navigator.share !== undefined)
+            {
+              show("sharediv");
+            }
           }
         }
         else
@@ -285,6 +289,7 @@ function performWork(n, valueText)
   var res = get("result");
   var charNull = String.fromCharCode(0);
   var helphelp = get("helphelp");
+  hide("sharediv");
   if (valueText === "")
   {    // Nothing in input box.
 
@@ -797,6 +802,38 @@ function startUp()
     }
     return true;
   };
+  get("share").onclick = function()
+  {
+    var shareData =
+    {
+      title: "Integer Factorization Calculator",
+      text: "",
+      url: ""
+    }
+    var tmpHTML = get("result").innerHTML;
+    // Convert <sup> and </sup> to exponentiation character.
+    tmpHTML = tmpHTML.replace(/\<sup\>/g, '\^');
+    tmpHTML = tmpHTML.replace(/\<\/sup\>/g, '');
+    tmpHTML = tmpHTML.replace(/\<p\>/g, '');
+    tmpHTML = tmpHTML.replace(/\<\/p\>/g, '\n');
+    tmpHTML = tmpHTML.replace(/\<li\>/g, '');
+    tmpHTML = tmpHTML.replace(/\<\/li\>/g, '\n');
+    tmpHTML = tmpHTML.replace(/Show divisors/g, '');
+    tmpHTML = tmpHTML.replace(/New!/g, '');
+    tmpHTML = tmpHTML.replace(/Mostrar divisores/g, '');
+    tmpHTML = tmpHTML.replace(/¡Nuevo!/g, '');
+    
+    // Create a new div element
+    var tempDivElement = document.createElement("div");
+
+    // Set the HTML content with the given value
+    tempDivElement.innerHTML = tmpHTML;
+
+    // Retrieve the text property of the element 
+    shareData.text = tempDivElement.textContent || tempDivElement.innerText || "";
+    shareData.url = window.location.href + "?q=" + get("value").value;
+    navigator.share(shareData);
+  }
   get("helpbtn").onclick = function ()
   {
     var help = get("help");
@@ -811,6 +848,7 @@ function startUp()
     }
     else
     {
+      hide("sharediv");
       helpStyle.display = "block";
       helphelpStyle.display = resultStyle.display = "none";
     }
