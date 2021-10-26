@@ -1130,8 +1130,8 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
   copyStr(&ptrOutput, lang ? COPYRIGHT_SPANISH : COPYRIGHT_ENGLISH );
   finishLine(&ptrOutput);
   // Initialize all exponents to zero.
-  memset(common.divisors.currentExp, 0, sizeof(common.divisors.currentExp));
-  memset(common.divisors.currentExpGray, 0, sizeof(common.divisors.currentExpGray));
+  (void)memset(common.divisors.currentExp, 0, sizeof(common.divisors.currentExp));
+  (void)memset(common.divisors.currentExpGray, 0, sizeof(common.divisors.currentExpGray));
   intToBigInteger(&common.divisors.divisor, 1);   // First divisor will be 1.
 }
 
@@ -1139,9 +1139,9 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
 static void siftDown(int start, int end)
 {
   int root = start;
-  while ((2 * root + 1) <= end)
+  while (((2 * root) + 1) <= end)
   {
-    int child = 2 * root + 1;
+    int child = (2 * root) + 1;
     int swap = root;
     // Compare a[swap] vs. a[child]
     if (IntArrayCompare(common.divisors.ptrFoundDivisors[swap],
@@ -1225,7 +1225,7 @@ void showDivisors(void)
     int exponentNbr;
     int arrLen;
     const struct sFactors* pstFactors;
-    if (ptrFoundDivisors - &common.divisors.foundDivisors[0] > 900000)
+    if (ptrFoundDivisors > &common.divisors.foundDivisors[900000])
     {
       break;             // Divisors are very large.
     }
@@ -1247,7 +1247,7 @@ void showDivisors(void)
           common.divisors.currentExp[exponentNbr]++;
           NumberLength = *pstFactors->ptrFactor;
           IntArray2BigInteger(pstFactors->ptrFactor, &Tmp);
-          BigIntMultiply(&common.divisors.divisor, &Tmp,
+          (void)BigIntMultiply(&common.divisors.divisor, &Tmp,
             &common.divisors.divisor);
           NumberLength = common.divisors.divisor.nbrLimbs;
           BigInteger2IntArray(ptrFoundDivisors, &common.divisors.divisor);
@@ -1261,7 +1261,7 @@ void showDivisors(void)
           common.divisors.currentExp[exponentNbr]--;
           NumberLength = *pstFactors->ptrFactor;
           IntArray2BigInteger(pstFactors->ptrFactor, &Tmp);
-          BigIntDivide(&common.divisors.divisor, &Tmp,
+          (void)BigIntDivide(&common.divisors.divisor, &Tmp,
             &common.divisors.divisor);
           NumberLength = common.divisors.divisor.nbrLimbs;
           BigInteger2IntArray(ptrFoundDivisors, &common.divisors.divisor);

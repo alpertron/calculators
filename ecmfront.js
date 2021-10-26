@@ -259,7 +259,7 @@ function callWorker(param)
           if (firstChar === "2")
           {
             divisorsDirty = true;
-            if (navigator.share !== undefined)
+            if (navigator.share)
             {
               show("sharediv");
             }
@@ -809,19 +809,19 @@ function startUp()
       title: "Integer Factorization Calculator",
       text: "",
       url: ""
-    }
+    };
     var tmpHTML = get("result").innerHTML;
     // Convert <sup> and </sup> to exponentiation character.
-    tmpHTML = tmpHTML.replace(/\<sup\>/g, '\^');
-    tmpHTML = tmpHTML.replace(/\<\/sup\>/g, '');
-    tmpHTML = tmpHTML.replace(/\<p\>/g, '');
-    tmpHTML = tmpHTML.replace(/\<\/p\>/g, '\n');
-    tmpHTML = tmpHTML.replace(/\<li\>/g, '');
-    tmpHTML = tmpHTML.replace(/\<\/li\>/g, '\n');
-    tmpHTML = tmpHTML.replace(/Show divisors/g, '');
-    tmpHTML = tmpHTML.replace(/New!/g, '');
-    tmpHTML = tmpHTML.replace(/Mostrar divisores/g, '');
-    tmpHTML = tmpHTML.replace(/¡Nuevo!/g, '');
+    tmpHTML = tmpHTML.replace(/\<sup\>/g, "\^");
+    tmpHTML = tmpHTML.replace(/\<\/sup\>/g, "");
+    tmpHTML = tmpHTML.replace(/\<p\>/g, "");
+    tmpHTML = tmpHTML.replace(/\<\/p\>/g, "\n");
+    tmpHTML = tmpHTML.replace(/\<li\>/g, "");
+    tmpHTML = tmpHTML.replace(/\<\/li\>/g, "\n");
+    tmpHTML = tmpHTML.replace(/Show divisors/g, "");
+    tmpHTML = tmpHTML.replace(/New!/g, "");
+    tmpHTML = tmpHTML.replace(/Mostrar divisores/g, "");
+    tmpHTML = tmpHTML.replace(/¡Nuevo!/g, "");
     
     // Create a new div element
     var tempDivElement = document.createElement("div");
@@ -831,7 +831,7 @@ function startUp()
 
     // Retrieve the text property of the element 
     shareData.text = tempDivElement.textContent || tempDivElement.innerText || "";
-    shareData.url = window.location.href + "?q=" + get("value").value;
+    shareData.url = window.location.href + "?q=" + encodeURI(get("value").value);
     navigator.share(shareData);
   }
   get("helpbtn").onclick = function ()
