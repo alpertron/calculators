@@ -831,7 +831,8 @@ function startUp()
 
     // Retrieve the text property of the element 
     shareData.text = tempDivElement.textContent || tempDivElement.innerText || "";
-    shareData.url = window.location.href + "?q=" + encodeURI(get("value").value);
+    shareData.url = (window.location.href.split('?')[0]) + "?q=" +
+                    encodeURIComponent(get("value").value);
     navigator.share(shareData);
   }
   get("helpbtn").onclick = function ()
@@ -1049,7 +1050,7 @@ function startUp()
   var search = window.location.search;
   if (search.substring(0,3) === "?q=")
   {
-    get("value").value = unescape(search.substring(3));
+    get("value").value = decodeURIComponent(search.substring(3));
     dowork(-2);
   }
   else

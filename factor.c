@@ -1202,14 +1202,15 @@ static void SortFactors(struct sFactors *pstFactors)
 {
   int factorNumber;
   int ctr;
+  int nbrFactors = pstFactors->multiplicity;
   struct sFactors *pstCurFactor = pstFactors + 1;
   struct sFactors stTempFactor;
   int *ptrNewFactor;
   struct sFactors *pstNewFactor;
-  for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++)
+  for (factorNumber = 1; factorNumber < nbrFactors; factorNumber++)
   {
     pstNewFactor = pstCurFactor + 1;
-    for (int factorNumber2 = factorNumber + 1; factorNumber2 <= pstFactors->multiplicity; factorNumber2++)
+    for (int factorNumber2 = factorNumber + 1; factorNumber2 <= nbrFactors; factorNumber2++)
     {
       const int *ptrFactor = pstCurFactor->ptrFactor;
       const int *ptrFactor2 = pstNewFactor->ptrFactor;
@@ -1242,6 +1243,7 @@ static void SortFactors(struct sFactors *pstFactors)
             (void)memmove(pstNewFactor, pstNewFactor + 1, lenBytes);
           }
           pstFactors->multiplicity--;   // Indicate one less known factor.
+          nbrFactors--;
           pstNewFactor++;
           continue;
         }
@@ -1945,7 +1947,10 @@ void factorExt(const BigInteger *toFactor, const int *number,
         NumberLength = prime.nbrLimbs;
         BigInteger2IntArray(pstCurFactor->ptrFactor, &prime);
         pstCurFactor->multiplicity *= expon;
-        nbrLimbs = *pstCurFactor->ptrFactor;
+        SortFactors(pstFactors);
+        factorNbr = 0;             // Factor order has been changed. Restart factorization.
+        pstCurFactor = pstFactors;
+        continue;
       }
 #ifdef __EMSCRIPTEN__
       copyStr(&ptrText, lang ? "<p>División por primos menores que 100000.</p>" :
@@ -2004,8 +2009,6 @@ void factorExt(const BigInteger *toFactor, const int *number,
         }
         if (restartFactoring)
         {
-          factorNbr = 0;
-          pstCurFactor = pstFactors;
           break;
         }
         upperBoundIndex++;
@@ -2013,6 +2016,8 @@ void factorExt(const BigInteger *toFactor, const int *number,
       }
       if (restartFactoring)
       {
+        factorNbr = 0;
+        pstCurFactor = pstFactors;
         continue;
       }
       if (nbrLimbs == 1)
