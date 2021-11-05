@@ -322,14 +322,17 @@ window.onload = function ()
   get("poly").oninput = function ()
   {
     var input = get("poly");
-    var loc = input.value.length - input.selectionStart;
-    input.value = input.value.replace(".", "x^");
-    setTimeout(function()
+    var loc = input.selectionStart;
+    if (input.value.substring(loc-1, loc) === ".")
     {
-      loc = input.value.length - loc;
-      input.selectionStart = loc;
-      input.selectionEnd = loc;
-    }, 30);   
+      input.value = input.value.replace(".", "x^");
+      setTimeout(function()
+      {    // Workaround for Firefox on Android. Delete extra space.
+        input.value = input.value.replace("x ^", "x^");
+        input.selectionStart = loc + 2;
+        input.selectionEnd = loc + 2;
+      }, 30);   
+    }
   };
   get("formlink").onclick = function ()
   {
