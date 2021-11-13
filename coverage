@@ -17,6 +17,7 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "23.8" >> coverage.out
 ./ecm "10**38-1040759" >> coverage.out
 ./ecm "187072209578355573530071658587684226515959365494067" >> coverage.out
+./ecm "10000000000000000000000000000000000000000000000013892731" >> coverage.out
 ./ecm "221313+sumdigits(23,10)+numdigits(232,10)+revdigits(765,10)+gcd(8,6)+minfact(143)+totient(226)+jacobi(3,7)+modpow(3,8,29)" >> coverage.out
 ./ecm "n(10^30+2)*n(3*10^30+10000)" >> coverage.out
 ./ecm "10**59+213" 1 >> coverage.out

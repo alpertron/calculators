@@ -50,7 +50,7 @@ static bool InsertNewRelation(
   const int *rowMatrixB,
   limb *biT, limb *biU, limb *biR,
   int NumberLength);
-static void BlockLanczos(void);
+static bool BlockLanczos(int seed);
 #if 0
 static unsigned char isProbablePrime(double value);
 static int SQUFOF(double N, int queue[]);
@@ -2607,6 +2607,9 @@ static int EraseSingletons(int nbrFactorBasePrimes)
     {
       if (common.siqs.vectExpParity[column] > 1)
       {                // Useful column found with at least 2 primes.
+#if DEBUG_SIQS
+        common.siqs.primeSieveData[row] = common.siqs.primeSieveData[column];
+#endif
         common.siqs.newColumns[column] = row;
         common.siqs.primeTrialDivisionData[row++].value =
           common.siqs.primeTrialDivisionData[column].value;
@@ -2656,37 +2659,56 @@ static int EraseSingletons(int nbrFactorBasePrimes)
 /************************/
 static bool LinearAlgebraPhase(limb *biT, limb *biR, limb *biU, int nbrLength)
 {
+  int seed = 123456789;
   int mask;
   const int *rowMatrixB;
   int primeIndex;
-#if DEBUG_SIQS
-  {
-    printf("*******\n");
-    for (int j = 0; j < common.siqs.matrixBLength; j++)
-    {
-      char *ptrOutput = output;
-      static BigInteger k1;
-      (void)memcpy(k1.limbs, common.siqs.vectLeftHandSide[j], NumberLength * sizeof(limb));
-      k1.nbrLimbs = NumberLength;
-      k1.sign = SIGN_POSITIVE;
-      BigInteger2Dec(&ptrOutput, &k1, 0);
-      for (int i = 1; i < common.siqs.matrixB[j][0]; i++)
-      {
-        *ptrOutput++ = '*';
-        int2dec(&ptrOutput, common.siqs.primeSieveData[common.siqs.matrixB[j][i]].value);
-      }
-      *ptrOutput = 0;
-      printf("%s\n", output);
-    }
-  }
-#endif
   // Get new number of rows after erasing singletons.
   int matrixBlength = EraseSingletons(common.siqs.nbrFactorBasePrimes);
   common.siqs.matrixBLength = matrixBlength;
   matrixRows = matrixBlength;
   matrixCols = common.siqs.primeTrialDivisionData[0].exp2;
   common.siqs.primeTrialDivisionData[0].exp2 = 0;         // Restore correct value.
-  BlockLanczos();
+#if DEBUG_SIQS
+  {
+    printf("******* START LINEAR ALGEBRA *******\n");
+    for (int j = 0; j < common.siqs.matrixBLength; j++)
+    {
+      char* ptrOutput = output;
+      copyStr(&ptrOutput, "Mod(");      
+      for (int i = 1; i < common.siqs.matrixB[j][LENGTH_OFFSET]; i++)
+      {
+        if (i != 1)
+        {
+          *ptrOutput++ = '*';
+        }
+        if (common.siqs.matrixB[j][i] == 0)
+        {
+          copyStr(&ptrOutput, "(-1)");
+        }
+        else
+        {
+          int2dec(&ptrOutput, common.siqs.primeSieveData[common.siqs.matrixB[j][i]].value);
+        }
+      }
+      *ptrOutput = 0;
+      printf("%s - ", output);
+      ptrOutput = output;
+      static BigInteger k1;
+      (void)memcpy(k1.limbs, common.siqs.vectLeftHandSide[j],
+        NumberLength * sizeof(limb));
+      k1.nbrLimbs = NumberLength;
+      k1.sign = SIGN_POSITIVE;
+      BigInteger2Dec(&ptrOutput, &k1, 0);
+      *ptrOutput = 0;
+      printf("%s^2, p)\n", output);
+    }
+  }
+#endif
+  while (BlockLanczos(seed) == false)
+  {   // Block Lanczos does not work with this seed. Try another one.
+    seed++;
+  }
   // The rows of matrixV indicate which rows must be multiplied so no
   // primes are multiplied an odd number of times.
   mask = 1;
@@ -2776,14 +2798,6 @@ static bool InsertNewRelation(
 #if DEBUG_SIQS
   {
     char *ptrOutput = output;
-    /*
-    static BigInteger k1;
-    (void)memcpy(k1.limbs, squareLeftHandSide, NumberLength * sizeof(limb));
-    k1.nbrLimbs = NumberLength;
-    k1.sign = SIGN_POSITIVE;
-    BigInteger2Dec(&ptrOutput, &k1, 0);
-    *ptrOutput++ = ',';
-    */
     copyStr(&ptrOutput, "Mod(");
     for (int i = 1; i < *rowMatrixB; i++)
     {
@@ -3130,7 +3144,7 @@ static void coladd(int *XmY, int *V, int *V1, int *V2,
   }
 }
 
-static void BlockLanczos(void)
+static bool BlockLanczos(int seed)
 {
   int i;
   int j;
@@ -3183,7 +3197,7 @@ static void BlockLanczos(void)
   (void)memset(matrixVt1AV1, 0, sizeof(matrixVt1AV1));
 
   /* Initialize matrix X-Y and matrix V_0 with pseudorandom data */
-  dSeed = (double)123456789;
+  dSeed = (double)seed;
   dMult = (double)62089911;
   dAdd = (double)54325442;
   dDivisor = (double)0x7FFFFFFF;
@@ -3220,6 +3234,10 @@ static void BlockLanczos(void)
   {
     int indexC;
     int oldDiagonalSSt;
+    if ((stepNbr * 3200 / matrixRows) > 105)
+    {
+      return false;
+    }
 #ifdef __EMSCRIPTEN__
     int elapsedTime = (int)(tenths() - originalTenthSecond);
     if ((elapsedTime / 10) != (oldTimeElapsed / 10))
@@ -3610,6 +3628,7 @@ static void BlockLanczos(void)
       leftCol++;
     }
   }
+  return true;
 }
 
 /****************/
