@@ -2694,7 +2694,7 @@ static bool isLinearExponential(const int* ptrPolynomial, int polyDegree, int mu
   return true;
 }
 
-// If polynomial has the form ax^(2n) + bx^n+c, show its roots.
+// If polynomial has the form ax^(2n) + bx^n + c, show its roots.
 static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree,
   int multiplicity)
 {

@@ -1767,9 +1767,17 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
   if (teach)
   {
     showText(lang? "<p>Sustituyendo ": "<p>By making the substitution ");
-    showText("t = ");
+    showText("<var>t'</var> = ");
     shownbr(&U1);
-    showText(" + t' ");
+    if ((Xlin.sign == SIGN_NEGATIVE) && (Ylin.sign == SIGN_NEGATIVE))
+    {    // If both coefficients are negative, change sign of transformation.
+      showText(" &minus;");
+    }
+    else
+    {
+      showText(" +");
+    }
+    showText(" <var>t</var> ");
     showText(lang?"finalmente obtenemos:</p>": "we finally obtain:</p>");
   }
   (void)BigIntMultiply(&U1, coeffY, &q);
