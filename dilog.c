@@ -416,7 +416,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
         }
       }
       modPow(primRoot, Exponent.limbs, Exponent.nbrLimbs, tmpBase.limbs);
-      ModInvBigNbr(tmpBase.limbs, tmpBase.limbs, TestNbr, NumberLength);
+      (void)ModInvBigNbr(tmpBase.limbs, tmpBase.limbs, TestNbr, NumberLength);
       modmult(tmpBase.limbs, currPowerMontg, currPowerMontg);
       (void)BigIntMultiply(&Exponent, &powSubGroupOrder, &tmpBase);
       BigIntAdd(&runningExp, &tmpBase, &runningExp);
@@ -521,7 +521,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
     modmult(tmp2.limbs, MontgomeryMultR2, tmp2.limbs);
     if ((NumberLength > 1) || (TestNbr[0].x != 1))
     {           // If TestNbr != 1 ...
-      ModInvBigNbr(tmp2.limbs, tmp2.limbs, TestNbr, NumberLength);
+      (void)ModInvBigNbr(tmp2.limbs, tmp2.limbs, TestNbr, NumberLength);
     }
     tmpBase.limbs[0].x = 1;
     lenBytes = (NumberLength - 1) * (int)sizeof(limb);
@@ -594,7 +594,7 @@ static bool DiscrLogPowerPrimeSubgroup(int multiplicity, const int *ptrPrime)
     lenBytes = (NumberLength - 1) * (int)sizeof(limb);
     (void)memset(&tmpBase.limbs[1], 0, lenBytes);
     modmult(primRootPwr, tmpBase.limbs, primRootPwr);                    // B^LM
-    ModInvBigNbr(baseMontg, tmpBase.limbs, TestNbr, NumberLength);       // B^(-1)
+    (void)ModInvBigNbr(baseMontg, tmpBase.limbs, TestNbr, NumberLength);       // B^(-1)
     modPow(tmpBase.limbs, logar.limbs, logar.nbrLimbs, primRoot);        // B^(-L)
     (void)BigIntRemainder(&power, &bigNbrA, &tmpBase);
     CompressLimbsBigInteger(tmp2.limbs, &tmpBase);

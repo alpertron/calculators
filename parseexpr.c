@@ -172,7 +172,7 @@ static void BigNbrToOutput(char** pptrOutput, const BigInteger* pValue)
   *pptrOutput = ptrOutput;
 }
 
-static enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput)
+enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput)
 {
   (void)exponOperatorCounter;
   const char* pInput = *ppInput;
@@ -266,7 +266,7 @@ static enum eExprErr parseNumberInsidePolyExpr(const char** ppInput, char** ppOu
     {
       if (value.limbs[value.nbrLimbs - 1].x != 0)
       {
-break;
+        break;
       }
       value.nbrLimbs--;
     }

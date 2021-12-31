@@ -156,7 +156,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor);
 void addbigint(BigInteger *pResult, int addend);
 bool TestBigNbrEqual(const BigInteger *pNbr1, const BigInteger *pNbr2);
 void CopyBigInt(BigInteger *pDest, const BigInteger *pSrc);
-void ModInvBigNbr(limb *num, limb *inv, limb *mod, int NumberLength);
+bool ModInvBigNbr(limb *num, limb *inv, limb *mod, int NumberLength);
 int modInv(int NbrMod, int currentPrime);
 int getNbrLimbs(const limb *bigNbr);
 void BigIntDivide2(BigInteger *pArg);

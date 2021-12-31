@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 26 de noviembre de 2021."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 26 November 2021."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 30 de diciembre de 2021."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 30 December 2021."
 
 #include <stdbool.h>
 #ifdef __EMSCRIPTEN__
@@ -67,6 +67,8 @@ void databack(const char *data);
 #define OPER_INFIX_OR                26
 #define OPER_XOR                     27
 #define OPER_PAREN                   28
+#define TOKEN_RANDOM                 29
+#define TOKEN_ABS                    30
 
 
 enum eExprErr
@@ -138,5 +140,6 @@ enum eExprErr ComputeBack(BigInteger* pArgument);
 enum eExprErr ComputeNext(BigInteger* pArgument);
 void textError(char **pptrOutput, enum eExprErr rc);
 void initializeSmallPrimes(int* pSmallPrimes);
+enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput);
 #else
 #endif

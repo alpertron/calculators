@@ -453,7 +453,7 @@ static void InitHighUandV(int lenU, int lenV, double* pHighU, double* pHighV)
 /* R' <- aR + bS, S' <-  cR + dS                                       */
 /* U' <- aU - bV, V' <- -cU + dV                                       */
 /***********************************************************************/
-void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
+bool ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
 {
   int k;
   int steps;
@@ -473,14 +473,14 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
   if (nbrLen == 1)
   {
     inv->x = modInv(num->x, mod->x);
-    return;
+    return true;
   }
   if (powerOf2Exponent != 0)
   {    // TestNbr is a power of 2.
     unsigned int powerExp = (unsigned int)powerOf2Exponent % (unsigned int)BITS_PER_GROUP;
     ComputeInversePower2(num, inv, aux);
     (inv + (powerOf2Exponent / BITS_PER_GROUP))->x &= UintToInt((1U << powerExp) - 1U);
-    return;
+    return true;
   }
   //  1. U <- M, V <- X, R <- 0, S <- 1, k <- 0
   size = (nbrLen + 1) * (int)sizeof(limb);
@@ -767,7 +767,7 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
       }
       //  7.   k <- k + 1
       steps++;
-      if (steps == BITS_PER_GROUP_MINUS_1)
+      if (steps >= BITS_PER_GROUP_MINUS_1)
       {  // compute now R and S and reset a, b, c and d.
          // R' <- aR + bS, S' <- cR + dS
         AddMult(R, a, b, S, c, d, nbrLen + 1);
@@ -776,6 +776,10 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
         a = 1;
         d = 1;
         k += steps;
+        if (k > nbrLen * 64)
+        {
+          return false;  // Could not compute inverse.
+        }
         steps = 0;
       }
     }
@@ -833,6 +837,7 @@ void ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
     modmult(R, S, inv);
     modmult(inv, MontgomeryMultR2, inv);
   }
+  return true;  // Inverse computed.
 }
 
 // Compute modular division for odd moduli.
@@ -855,7 +860,7 @@ void BigIntModularDivision(const BigInteger* Num, const BigInteger* Den,
   CompressLimbsBigInteger(aux3, &tmpDen);
   modmult(aux3, MontgomeryMultR2, aux3);      // aux3 <- Den in Montgomery notation
                                               // tmpDen.limbs <- 1 / Den in Montg notation.
-  ModInvBigNbr(aux3, tmpDen.limbs, TestNbr, NumberLength);
+  (void)ModInvBigNbr(aux3, tmpDen.limbs, TestNbr, NumberLength);
   CompressLimbsBigInteger(aux4, &tmpNum);
   modmult(tmpDen.limbs, aux4, aux3);          // aux3 <- Num / Den in standard notation.
   UncompressLimbsBigInteger(aux3, quotient);  // Get Num/Den
@@ -973,7 +978,7 @@ void BigIntGeneralModularDivision(const BigInteger* Num, const BigInteger* Den,
   GetMontgomeryParms(NumberLength);
   CompressLimbsBigInteger(aux3, &tmpDen);
   modmult(aux3, MontgomeryMultR2, aux3);      // aux3 <- Den in Montgomery notation
-  ModInvBigNbr(aux3, aux3, TestNbr, NumberLength); // aux3 <- 1 / Den in Montg notation.
+  (void)ModInvBigNbr(aux3, aux3, TestNbr, NumberLength); // aux3 <- 1 / Den in Montg notation.
   CompressLimbsBigInteger(aux4, &tmpNum);
   modmult(aux3, aux4, resultModOdd);          // resultModOdd <- Num / Dev in standard notation.
 

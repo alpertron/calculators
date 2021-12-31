@@ -33,7 +33,7 @@ set gaussianOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s 
 cmd /c emcc %jsCommon% %gaussianFiles% %gaussianOptions% -o gaussianW%1.js
 if errorlevel 1 goto end
 
-set ecmFiles=batch.c fft.c expression.c parseexpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c ecmfront.c gcdrings.c bignbr.c showtime.c inputstr.c
+set ecmFiles=batch.c fft.c expression.c parseexpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c ecmfront.c gcdrings.c bignbr.c showtime.c inputstr.c fromBlockly.c
 set ecmOptions=-DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DENABLE_VERBOSE=1 -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr','_getFactorsAsciiPtr']" -s TOTAL_MEMORY=268435456
 cmd /c emcc %jsCommon% %ecmFiles% %ecmOptions% -o ecmW%1.js
 if errorlevel 1 goto end
@@ -147,10 +147,10 @@ java -jar %compilerName% -D lang=1 %compilerOptions% --js gauss.js --js_output_f
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 GAUSIANO.HTM gaussianS.js gaussianS.wasm
 
-java -jar %compilerName% -D lang=0 %compilerOptions% --js ecmfront.js --js_output_file ecmE.js
+java -jar %compilerName% -D lang=0 %compilerOptions% --js blocklyextern.js --js ecmfront.js --js_output_file ecmE.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 ECM.HTM ecmE.js ecmE.wasm
-java -jar %compilerName% -D lang=1 %compilerOptions% --js ecmfront.js --js_output_file ecmS.js
+java -jar %compilerName% -D lang=1 %compilerOptions% --js blocklyextern.js --js ecmfront.js --js_output_file ecmS.js
 if errorlevel 1 goto end
 set emcc_DEBUG=
 java -jar %compilerName% %compilerOptions% --js ecmfwebw.js --js_output_file ecmWW.js

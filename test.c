@@ -25,11 +25,15 @@
 #include "factor.h"
 #include "batch.h"
 #include "polynomial.h"
+#include "fromBlockly.h"
 #ifndef DEBUG_CODE
 #define DEBUG_CODE 13
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
+#endif
+#if DEBUG_CODE == 22
+static char bufferXML[1000000];
 #endif
 void dilogText(const char *baseText, const char *powerText, const char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -201,7 +205,7 @@ int main(int argc, char* argv[])
       (void)memcpy(TestNbr, mod.limbs, NumberLength * sizeof(limb));
       TestNbr[NumberLength].x = 0;
       GetMontgomeryParms(NumberLength);
-      ModInvBigNbr(num.limbs, inv.limbs, mod.limbs, NumberLength);
+      (void)ModInvBigNbr(num.limbs, inv.limbs, mod.limbs, NumberLength);
       ptrOutput = output;
       Bin2Dec(&ptrOutput, inv.limbs, NumberLength, 200);
     }
@@ -269,21 +273,7 @@ int main(int argc, char* argv[])
   }
   else if (argc == 2)
   {
-    char *ptrKnownFactors = strchr(argv[1], '=');
-#if 0
-    (void)strcpy(text, "x=10**45+572;x=x+1;c<1000;x");
-    ecmFrontText(text, true, ptrKnownFactors);
-    (void)printf("%s\n", output);
-    ecmFrontText(NULL, false, NULL);
-    (void)printf("%s\n", output);
-    valuesProcessed = 0;
-    (void)strcpy(text, "10**45+573");
-    ecmFrontText(text, true, NULL);
-    (void)printf("%s\n", output);
-    ecmFrontText(NULL, false, NULL);
-    (void)printf("%s\n", output);
-    return 0;
-#endif
+    char* ptrKnownFactors = strchr(argv[1], '=');
     if (ptrKnownFactors != NULL)
     {                          // There is equal sign.
       *ptrKnownFactors = 0;    // Replace equal sign by string terminator.
@@ -349,7 +339,7 @@ int main(int argc, char* argv[])
     factor7[k] = 0x7FFFFFFF;
   }
   (void)memset(factors, 0x00, 2000 * sizeof(limb));
-  fftMultiplication((limb *)factor7, (limb *)factor7, (limb *)factors, 4, &resultLen);
+  fftMultiplication((limb*)factor7, (limb*)factor7, (limb*)factors, 4, &resultLen);
 #elif DEBUG_CODE == 19
   limb tempVal[4];
   limb tempRes[4];
@@ -374,7 +364,7 @@ int main(int argc, char* argv[])
   ptrOutput = output;
   Bin2Dec(&ptrOutput, TestNbr, NumberLength, 0);
   (void)printf("TestNbr = %s\n", output);
-  ModInvBigNbr(tempVal, tempRes, TestNbr, 3);
+  (void)ModInvBigNbr(tempVal, tempRes, TestNbr, 3);
   ptrOutput = output;
   Bin2Dec(&ptrOutput, tempRes, 3, 0);
   (void)printf("Inverse = %s", output);
@@ -407,6 +397,23 @@ int main(int argc, char* argv[])
   TestNbr[0].x = 23;
   GetMontgomeryParms(1);
   DividePolynomial(dividendPoly, dividendDegree, divisorPoly, divisorDegree, quotientPoly);
+#elif DEBUG_CODE == 22
+  if (argc == 2)
+  {
+    FILE* fpFile = fopen(argv[1],"r");
+    if (fpFile == NULL)
+    {
+      printf("Cannot open file.");
+      return 1;
+    }
+    fread(bufferXML, 1, sizeof(bufferXML), fpFile);
+    fclose(fpFile);
+    fromBlockly(bufferXML);
+  }
+  else
+  {
+    printf("Enter name of file containing Blockly XML.");
+  }
 #endif
   return 0;
 }

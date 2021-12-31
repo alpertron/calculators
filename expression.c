@@ -23,39 +23,15 @@
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
-
-#ifdef FACTORIZATION_FUNCTIONS
-#define TOKEN_TOTIENT    32
-#define TOKEN_SUMDIVS    33
-#define TOKEN_NUMDIVS    34
-#define TOKEN_MINFACT    35
-#define TOKEN_MAXFACT    36
-#define TOKEN_NUMFACT    37
-#define TOKEN_CONCATFACT 38
-#endif
-#define TOKEN_PRIMORIAL  39
-#define TOKEN_GCD        40
-#define TOKEN_LCM        41
-#define TOKEN_MODPOW     42
-#define TOKEN_MODINV     43
-#define TOKEN_SUMDIGITS  44
-#define TOKEN_NUMDIGITS  45
-#define TOKEN_REVDIGITS  46
-#define TOKEN_ISPRIME    47
-#define TOKEN_JACOBI     48
-#define TOKEN_SQRT       49
-#define TOKEN_F          50
-#define TOKEN_L          51
-#define TOKEN_P          52
-#define TOKEN_N          53
-#define TOKEN_B          54
+#include "exprfact.h"
+#include "showtime.h"
 
 #define PAREN_STACK_SIZE           5000
 #define COMPR_STACK_SIZE        1000000
 
 #define DO_NOT_SHORT_CIRCUIT  (COMPR_STACK_SIZE + 100)  // Larger than stack size.
 
-struct sFuncOperExpr stFuncOperIntExpr[] =
+const struct sFuncOperExpr stFuncOperIntExpr[] =
 {
   // First section: functions
 #ifdef FACTORIZATION_FUNCTIONS
@@ -76,7 +52,9 @@ struct sFuncOperExpr stFuncOperIntExpr[] =
   {"REVDIGITS", TOKEN_REVDIGITS + TWO_PARMS, 0},
   {"ISPRIME", TOKEN_ISPRIME + ONE_PARM, 0},
   {"JACOBI", TOKEN_JACOBI + TWO_PARMS, 0},
+  {"RANDOM", TOKEN_RANDOM + TWO_PARMS, 0},
   {"SQRT", TOKEN_SQRT + ONE_PARM, 0},
+  {"ABS", TOKEN_ABS + ONE_PARM, 0},
   {"F", TOKEN_F + ONE_PARM, 0},
   {"L", TOKEN_L + ONE_PARM, 0},
   {"P", TOKEN_P + ONE_PARM, 0},
@@ -141,12 +119,49 @@ static char textFactor[MAX_LEN*12];
 static int ComputeSumDigits(void);
 static int ComputeRevDigits(void);
 static int ComputeNumDigits(void);
+static int ComputeRandom(void);
 static enum eExprErr ComputeModInv(void);
 static enum eExprErr ComputePartition(void);
 static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger* second, BigInteger* result);
 static BigInteger curStack;
 static BigInteger curStack2;
 static BigInteger curStack3;
+static struct
+{
+  unsigned int seed[4];
+} randomSeed;
+
+// Use xorshift128 algorithm
+static unsigned int nextRandom(void)
+{
+  uint32_t s;
+  uint32_t t;
+  if ((randomSeed.seed[0] == 0) && (randomSeed.seed[1] == 0) &&
+    (randomSeed.seed[2] == 0) && (randomSeed.seed[3] == 0))
+  {
+#ifdef __EMSCRIPTEN__
+    double tenth = tenths();
+    randomSeed.seed[0] = (uint32_t)(tenth - 738264237 * floor(tenth / 738264237));
+    randomSeed.seed[1] = (uint32_t)(tenth - 965457348 * floor(tenth / 965457348));
+    randomSeed.seed[2] = (uint32_t)(tenth - 432155666 * floor(tenth / 432155666));
+    randomSeed.seed[3] = (uint32_t)(tenth - 957884955 * floor(tenth / 957884955));
+#else
+    randomSeed.seed[0] = 0x6547774U;
+    randomSeed.seed[1] = 0x54367771U;
+    randomSeed.seed[2] = 0xAF23B148U;
+    randomSeed.seed[3] = 0x1234A55FU;
+#endif
+  }
+  t = randomSeed.seed[3];
+  s = randomSeed.seed[0];
+  randomSeed.seed[3] = randomSeed.seed[2];
+  randomSeed.seed[2] = randomSeed.seed[1];
+  randomSeed.seed[1] = s;
+
+  t ^= t << 11;
+  t ^= t >> 8;
+  return randomSeed.seed[0] = t ^ s ^ (s >> 19);
+}
 
 static int numLimbs(const int* pLen)
 {
@@ -288,6 +303,15 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       getCurrentStackValue(&curStack);
       jacobi = BigIntJacobiSymbol(&curStack, &curStack2);
       intToBigInteger(&curStack, jacobi);
+      break;
+
+    case TOKEN_ABS:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      curStack.sign = SIGN_POSITIVE;
       break;
 
     case TOKEN_SQRT:
@@ -445,6 +469,22 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       stackIndex--;
       getCurrentStackValue(&curStack);
       retcode = ComputeSumDigits();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_RANDOM:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        stackIndex--;
+        break;
+      }
+      getCurrentStackValue(&curStack2);
+      stackIndex--;
+      getCurrentStackValue(&curStack);
+      retcode = ComputeRandom();
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -1141,6 +1181,58 @@ static enum eExprErr ComputeSumDigits(void)
     BigIntAdd(result, &Temp, result);
     (void)BigIntDivide(&argum, radix, &argum);
   }
+  return EXPR_OK;
+}
+
+static enum eExprErr ComputeRandom(void)
+{
+  static BigInteger difference;
+  static BigInteger Temp;
+  int nbrLen;
+  int ctr;
+  getCurrentStackValue(&curStack);     // Get first argument.
+  stackIndex++;
+  getCurrentStackValue(&curStack2);    // Get second argument.
+  stackIndex--;
+  BigIntSubt(&curStack, &curStack2, &difference);
+  if (difference.sign == SIGN_NEGATIVE)
+  {
+    difference.sign = SIGN_POSITIVE;
+    CopyBigInt(&Temp, &curStack);      // Force first argument to
+    CopyBigInt(&curStack, &curStack2); // be greater than second.
+    CopyBigInt(&curStack2, &Temp);
+  }
+  // Generate random number between 0 and difference.
+  Temp.sign = SIGN_POSITIVE;
+  nbrLen = difference.nbrLimbs - 1;
+  for (ctr = 0; ctr < nbrLen; ctr++)
+  {
+    Temp.limbs[ctr].x = (int)(nextRandom() & 0x7FFFFFFFU);
+  }
+  do
+  {
+    Temp.limbs[nbrLen].x = (int)(((uint64_t)nextRandom() *
+        ((uint64_t)difference.limbs[nbrLen].x + 1)) >> 33);
+    // Check whether Temp is grater than difference.
+    // Subtract cannot be done because there could be
+    // some most significant limb equal to zero.
+    for (ctr = nbrLen; ctr >= 0; ctr--)
+    {
+      if (Temp.limbs[ctr].x != difference.limbs[ctr].x)
+      {
+        break;
+      }
+    }
+  } while ((ctr >= 0) && (Temp.limbs[ctr].x > difference.limbs[ctr].x));
+  while (nbrLen > 1)
+  {
+    if (Temp.limbs[ctr].x != 0)
+    {
+      break;
+    }
+  }
+  Temp.nbrLimbs = nbrLen + 1;
+  BigIntAdd(&curStack2, &Temp, &curStack);
   return EXPR_OK;
 }
 

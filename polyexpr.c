@@ -25,9 +25,9 @@
 #include "polynomial.h"
 #include "expression.h"
 
-#define TOKEN_GCD    32
-#define TOKEN_LCM    33
-#define TOKEN_DER    34
+#define TOKEN_GCD    34
+#define TOKEN_LCM    35
+#define TOKEN_DER    36
 static enum eExprErr GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2);
 static enum eExprErr LcmPolynomialExpr(int* ptrArgument1, int* ptrArgument2);
 static int* stackValues[STACK_OPER_SIZE];

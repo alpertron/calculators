@@ -26,6 +26,7 @@
 #include "batch.h"
 #include "output.h"
 #include "commonstruc.h"
+#include "fromBlockly.h"
 
 #ifdef FACTORIZATION_APP
 #ifdef __EMSCRIPTEN__
@@ -69,6 +70,7 @@ static void GetSumOfDivisors(char **pptrOutput);
 static void ShowFourSquares(char **pptrOutput);
 static bool doFactorization;
 static char *knownFactors;
+bool useBlockly;
 
 void showDivisors(void);    // DEBUG BORRAR
 #ifdef FACTORIZATION_APP
@@ -1354,7 +1356,12 @@ EXTERNALIZE void doWork(void)
   lang = ((flags & 1)? true: false);
 #endif
 #ifdef __EMSCRIPTEN__
-  if ((flags & (-2)) == '4')
+  useBlockly = false;
+  if ((flags & (-2)) == '8')
+  {
+    useBlockly = true;
+  }
+  else if ((flags & (-2)) == '4')
   {
     skipPrimality = true;
     flags = 2;           // Do factorization.
@@ -1372,7 +1379,14 @@ EXTERNALIZE void doWork(void)
   hexadecimal = (*(ptrData + 3) == '1');
   ptrData += 4;
   ptrWebStorage = ptrData + (int)strlen(ptrData) + 1;
-  ptrKnownFactors = findChar(ptrWebStorage, '=');
+  if (useBlockly)
+  {
+    ptrKnownFactors = NULL;
+  }
+  else
+  {
+    ptrKnownFactors = findChar(ptrWebStorage, '=');
+  }
   if (!prettyprint)
   {
     groupLen = -groupLen;  // Do not show number of digts.
@@ -1385,7 +1399,11 @@ EXTERNALIZE void doWork(void)
   {
     flags = 2;  // Do factorization.
   }
-  if ((flags & 2) != 0)
+  if (useBlockly)
+  {
+    fromBlockly(ptrData);
+  }
+  else if ((flags & 2) != 0)
   {               // Do factorization.
     ecmFrontText(ptrData, true, ptrKnownFactors); // The 3rd parameter includes known factors.
   }

@@ -298,7 +298,7 @@ enum eExprErr DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum
     }
     else
     {
-      ModInvBigNbr(operand2.limbs, operand2.limbs, TestNbr, NumberLength);
+      (void)ModInvBigNbr(operand2.limbs, operand2.limbs, TestNbr, NumberLength);
       modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     }
     BigInteger2IntArray(ptrArgument1 + 1, &operand1);

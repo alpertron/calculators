@@ -116,7 +116,7 @@ void ConvertToMonic(int *poly, int polyDegree)
     int lenLimbs = polyDegree * nbrLimbs;
     int* ptrPoly = poly;
     IntArray2BigInteger(poly + lenLimbs, &operand1);
-    ModInvBigNbr(operand1.limbs, operand1.limbs, TestNbr, NumberLength);
+    (void)ModInvBigNbr(operand1.limbs, operand1.limbs, TestNbr, NumberLength);
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
       IntArray2BigInteger(ptrPoly, &operand2);
@@ -1078,7 +1078,7 @@ static void ExtendedGcdPolynomial(/*@in@*/int *pointrA, int degA, /*@in@*/int * 
   *(ptrP1 + 1) = 0;
   // P2 <- modular inverse of gcd (stored in operand5).
   nbrLimbs = NumberLength;
-  ModInvBigNbr(operand5.limbs, (limb*)(ptrP2 + 1), powerMod.limbs, powerMod.nbrLimbs);
+  (void)ModInvBigNbr(operand5.limbs, (limb*)(ptrP2 + 1), powerMod.limbs, powerMod.nbrLimbs);
   while ((nbrLimbs > 1) && (*(ptrP2 + nbrLimbs) == 0))
   {
     nbrLimbs--;
@@ -1198,7 +1198,7 @@ static void ComputeF(void)
     (void)memset(&operand1.limbs[operand1.nbrLimbs], 0, lenBytes);
   }
   // Compute the inverse of leading coefficient.
-  ModInvBigNbr(operand1.limbs, operand2.limbs, TestNbr, NumberLength);
+  (void)ModInvBigNbr(operand1.limbs, operand2.limbs, TestNbr, NumberLength);
   // Convert operand1 from standard to Montgomery notation.
   ptrValue1 = &values[1];                          // Point to constant coefficient.
   for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)

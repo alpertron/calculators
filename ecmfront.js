@@ -35,6 +35,7 @@ var workerParam;
 var asmjs = typeof(WebAssembly) === "undefined";
 var indexedDBSupport = ("indexedDB" in window);
 var db;
+var bmodeLoaded = 0;
 var statusText = "";
 var resultText = "";
 var divisorsDirty = false;
@@ -42,6 +43,12 @@ var statusDirty = false;
 var resultDirty = false;
 var calcURLs = ["ecmW0000.js",
                "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-180px.png", "ecm-icon-512px.png", "favicon.ico"];
+var blocklyLoaded = 0;
+var scriptsLoaded = 0;
+var script1;
+var script2;
+var script3;
+
 function get(id)
 {
   return document.getElementById(id);
@@ -82,6 +89,7 @@ function styleButtons(style1, style2)
   get("factor").style.display = style1;
   get("config").style.display = style1;
   get("fromfile").style.display = style1;
+  get("bmode").style.display = style1;
   get("openwizard").style.display = style1;
   get("stop").style.display = style2;
   get("more").style.display = style2;
@@ -651,6 +659,21 @@ function startUp()
           "\nPress \"Only evaluate\" or \"Factor\" button to continue.";
     }
   };
+  get("bmode").onclick = function ()
+  {
+    hide("main");
+    get("blockmode").style.display = "flex";
+    if (bmodeLoaded == 0)
+    {
+      initBlockly();
+      bmodeLoaded = 1;
+    }
+  };
+  get("exitBlockly").onclick = function ()
+  {
+    show("main");
+    hide("blockmode");   
+  };
   get("openwizard").onclick = function ()
   {
     hide("main");
@@ -982,8 +1005,8 @@ function startUp()
       }
     });
   }
-  document.getElementById("exprcopy").innerHTML = document.getElementById("exprorig").innerHTML;
-  var c = document.getElementById("ellCurve");
+  get("exprcopy").innerHTML = get("exprorig").innerHTML;
+  var c = get("ellCurve");
   var ctx = c.getContext("2d");
   ctx.fillStyle="#FFFFFF";      // White.
   ctx.fillRect(0,0,313,313);    // Clear canvas.
@@ -1091,7 +1114,7 @@ if (asmjs)
 }
 else
 {
-  var wasm = document.getElementById("wasmb64").text;
+  var wasm = get("wasmb64").text;
   while (wasm.charCodeAt(0) < 32)
   {
     wasm = wasm.substring(1);
@@ -1112,6 +1135,46 @@ else
   fileContents=new Int8Array(length);
   b64decode(wasm, fileContents);
   calcURLs.shift();  // Do not fetch Javascript file that will not be used.
+}
+
+function initBlockly()
+{
+  if (blocklyLoaded != 0)
+  {
+    useBlockly(null);  // Resize workspace.
+    return;
+  }
+  blocklyLoaded = 1;
+  script1 = loadScript("blockly0001.js");
+  script2 = loadScript("en0001.js");
+}
+
+function loadScript(scriptUrl)
+{
+  var myScript = document.createElement("script");
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", scriptUrl);
+  xmlhttp.onreadystatechange = function()
+  {
+    if ((xmlhttp.status == 200) && (xmlhttp.readyState == 4))
+    {
+      scriptsLoaded++;
+      myScript.innerHTML = xmlhttp.responseText;
+      if (scriptsLoaded == 2)
+      {
+        document.body.appendChild(script1);
+        document.body.appendChild(script2);
+        useBlockly(fromBlocklyRun);  // Init Blockly workspace.
+      }
+    }
+  };
+  xmlhttp.send();
+  return myScript;
+}
+
+function fromBlocklyRun(xml)
+{
+  performWork(8 + lang, xml);
 }
 window.addEventListener("load", startUp);
 })(this);

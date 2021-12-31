@@ -175,6 +175,7 @@
     <ClCompile Include="ecmfront.c" />
     <ClCompile Include="fcubes.c" />
     <ClCompile Include="fftpoly.c" />
+    <ClCompile Include="fromBlockly.c" />
     <ClCompile Include="fsquares.c" />
     <ClCompile Include="intpolfact.c" />
     <ClCompile Include="linkedbignbr.c" />
@@ -212,7 +213,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="batch.h" />
+    <ClInclude Include="exprfact.h" />
     <ClInclude Include="fft.h" />
+    <ClInclude Include="fromBlockly.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="linkedbignbr.h" />
     <ClInclude Include="output.h" />
