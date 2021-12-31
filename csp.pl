@@ -13,6 +13,17 @@ while (readdir $dir)
   {
     next;
   }
+# Do not use CSP for factorization calculator because Blockly does not support it.
+  $firstIndex = index($dirEntry, "ECM.HTM");
+  if ($firstIndex != -1)
+  {
+    next;
+  }
+  $firstIndex = index($dirEntry, "ECMC.HTM");
+  if ($firstIndex != -1)
+  {
+    next;
+  }
   open(my $filehandle, '<', $dirEntry);
   my $data = do { local $/; <$filehandle> };
   my $extra = " 'self' blob:";
@@ -26,8 +37,24 @@ while (readdir $dir)
   print $htaccess  "<Files ${dirEntry}>\n${start}";
   getHashes($data, "style", $hash, "");
   print $htaccess  $hash;
-  getHashes($data, "script", $hash, $extra);  
-  print $htaccess  "${hash} report-uri https://alpertron23.report-uri.com/r/d/csp/enforce\"\n";
+  if ($hash ne "")
+  {
+    print $htaccess ";";
+  }
+  getHashes($data, "script", $hash, $extra);
+  print $htaccess  $hash;
+#  if (index($dirEntry, "ECM.HTM") != -1 || index($dirEntry, "ECMC.HTM") != -1)
+#  {
+#    getFileHash("blockly.js", $hash);
+#    print $htaccess  $hash;
+#    getFileHash("en.js", $hash);
+#    print $htaccess  $hash;
+#  }
+  if ($hash ne "")
+  {
+    print $htaccess ";";
+  }
+  print $htaccess  " report-uri https://alpertron23.report-uri.com/r/d/csp/enforce\"\n";
   print $htaccess  "</Files>\n\n";
   close($filehandle);
 }
@@ -61,9 +88,19 @@ sub getHashes
     $_[2] .= " 'sha256-${hash}'";
     $data = substr($data, $lastIndex);
   }
-  if ($_[2] ne "")
-  {
-    $_[2] .= ";";
-  }
   close $fh;
+}
+
+sub getFileHash
+{
+  my $filename = $_[0];
+  open my $filehandle, '<', $filename or die $!; 
+  my $string = do { local $/; <$filehandle> };
+  close $filehandle;
+  my $hash = sha256_base64($string);
+  while (length($hash) % 4)
+  {
+    $hash .= '=';
+  }
+  $_[1] = " 'sha256-${hash}'";
 }
