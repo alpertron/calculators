@@ -593,6 +593,46 @@ function fillCache()
   });
 }
 
+function fromBlocklyRun(xml)
+{
+  performWork(8 + lang, xml);
+}
+
+function loadScript(scriptUrl)
+{
+  var myScript = document.createElement("script");
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", scriptUrl);
+  xmlhttp.onreadystatechange = function()
+  {
+    if ((xmlhttp.status === 200) && (xmlhttp.readyState === 4))
+    {
+      scriptsLoaded++;
+      myScript.innerHTML = xmlhttp.responseText;
+      if (scriptsLoaded === 2)
+      {
+        document.body.appendChild(script1);
+        document.body.appendChild(script2);
+        useBlockly(fromBlocklyRun);  // Init Blockly workspace.
+      }
+    }
+  };
+  xmlhttp.send();
+  return myScript;
+}
+
+function initBlockly()
+{
+  if (blocklyLoaded !== 0)
+  {
+    useBlockly(null);  // Resize workspace.
+    return;
+  }
+  blocklyLoaded = 1;
+  script1 = loadScript("blockly0002.js");
+  script2 = loadScript("en0002.js");
+}
+
 function startUp()
 {
   var param, index, ecmFactor;
@@ -1137,44 +1177,5 @@ else
   calcURLs.shift();  // Do not fetch Javascript file that will not be used.
 }
 
-function initBlockly()
-{
-  if (blocklyLoaded !== 0)
-  {
-    useBlockly(null);  // Resize workspace.
-    return;
-  }
-  blocklyLoaded = 1;
-  script1 = loadScript("blockly0002.js");
-  script2 = loadScript("en0002.js");
-}
-
-function loadScript(scriptUrl)
-{
-  var myScript = document.createElement("script");
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.open("GET", scriptUrl);
-  xmlhttp.onreadystatechange = function()
-  {
-    if ((xmlhttp.status === 200) && (xmlhttp.readyState === 4))
-    {
-      scriptsLoaded++;
-      myScript.innerHTML = xmlhttp.responseText;
-      if (scriptsLoaded === 2)
-      {
-        document.body.appendChild(script1);
-        document.body.appendChild(script2);
-        useBlockly(fromBlocklyRun);  // Init Blockly workspace.
-      }
-    }
-  };
-  xmlhttp.send();
-  return myScript;
-}
-
-function fromBlocklyRun(xml)
-{
-  performWork(8 + lang, xml);
-}
 window.addEventListener("load", startUp);
 })(this);

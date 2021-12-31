@@ -204,7 +204,7 @@ function useBlockly(callback)
     var message = oneBlock[1];
     if (nbr >= 4000)
     {
-      ecmToolbar += "</category><category name=\"" + message + "\" colour=\"" + (nbr - 4000) + '">';
+      ecmToolbar += "</category><category name=\"" + message + "\" colour=\"" + (nbr - 4000) + "\">";
       groupNbr++;
       itemNbr = 65;
       continue;
@@ -271,7 +271,7 @@ function useBlockly(callback)
   var blocklyArea = get("blocklyArea");
   var blocklyDiv = get("blocklyDiv");
   var myToolbar = ecmToolbar.replace(/\{(\w+)([\[\]\w]*)}/g, "<block type=\"$1\">$2</block>");
-  myToolbar = myToolbar.replace(/\[(\w+)]/g, '<value name="$1"><shadow type="M"><field name="1">5</field></shadow></value>');
+  myToolbar = myToolbar.replace(/\[(\w+)]/g, "<value name=\"$1\"><shadow type=\"M\"><field name=\"1\">5</field></shadow></value>");
   Blockly.Blocks["M"] =
   {
     "init": function()
@@ -298,20 +298,20 @@ function useBlockly(callback)
       element = element.offsetParent;
     } while (element);
     // Position blocklyDiv over blocklyArea.
-    blocklyDiv.style.left = x + 'px';
-    blocklyDiv.style.top = y + 'px';
-    blocklyDiv.style.width = blocklyArea.offsetWidth + 'px';
-    blocklyDiv.style.height = (window.innerHeight - y) + 'px';
+    blocklyDiv.style.left = x + "px";
+    blocklyDiv.style.top = y + "px";
+    blocklyDiv.style.width = blocklyArea.offsetWidth + "px";
+    blocklyDiv.style.height = (window.innerHeight - y) + "px";
     Blockly.svgResize(workspace);
   };
-  window.addEventListener('resize', blocklyResize, false);
+  window.addEventListener("resize", blocklyResize, false);
   get("deleteBlocks").onclick = function()
   {
     var count = workspace.getAllBlocks().length;
-    if (count < 2 || window.confirm('Delete all ' + count + ' blocks?'))
+    if (count < 2 || window.confirm("Delete all " + count + " blocks?"))
     {
       workspace.clear();
-    };
+    }
   };
   get("bload").onclick = function()
   {
