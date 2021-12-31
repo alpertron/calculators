@@ -1,83 +1,29 @@
-'use strict';
+"use strict";
 var goog;
 var fromBlocklyRun;
 goog.provide("BigIntField");
-goog.require('Blockly');
-
-// If block comments aren't required, then Blockly.inject's "comments"
-// configuration must be false, and no blocks may be loaded from XML which
-// define comments.
-goog.require('Blockly.Comment');
-// One of these two will almost certainly be needed (usually VerticalFlyout).
-//goog.require('Blockly.HorizontalFlyout');
-goog.require('Blockly.VerticalFlyout');
-// Flyout buttons are needed by the variable category,
-// and by any custom toolbox that has a button or a label.
-goog.require('Blockly.FlyoutButton');
-// If there is code generation into any language, then the generator is needed.
-// Should not be required when using advanced compilation since
-// individual generator files should already have this require.
-//goog.require('Blockly.Generator');
-// If the toolbox does not have categories and only has a simple flyout, then
-// 'Blockly.Toolbox' is not needed.
-goog.require('Blockly.Toolbox');
-// If a trashcan on the workspace isn't required, then Blockly.inject's
-// "trashcan" configuration must be false.
-goog.require('Blockly.Trashcan');
-// Only needed if one is using the 'VARIABLE_DYNAMIC' typed variables category.
-goog.require('Blockly.VariablesDynamic');
-// Only need to require these two if you're using workspace comments.
-// goog.require('Blockly.WorkspaceCommentSvg');
-// goog.require('Blockly.WorkspaceCommentSvg.render');
-// If zoom controls aren't required, then Blockly.inject's
-// "zoom"/"controls" configuration must be false.
-goog.require('Blockly.ZoomControls');
-// This registers default keyboard shortcuts.
-goog.require('Blockly.ShortcutItems');
-// This registers default contextmenu options.
-goog.require('Blockly.ContextMenuItems');
-
-
-// Block dependencies.
-// None of these should be required when using advanced compilation since
-// individual block files should include the requirements they depend on.
-goog.require('Blockly.Mutator');
-goog.require('Blockly.Warning');
-//goog.require('Blockly.FieldAngle');
-//goog.require('Blockly.FieldCheckbox');
-//goog.require('Blockly.FieldColour');
-goog.require('Blockly.FieldDropdown');
-goog.require('Blockly.FieldLabelSerializable');
-//goog.require('Blockly.FieldImage');
-goog.require('Blockly.FieldTextInput');
-//goog.require('Blockly.FieldMultilineInput');
-//goog.require('Blockly.FieldNumber');
-goog.require('Blockly.FieldVariable');
-
-
-// Blockly Renderers.
-// At least one renderer is mandatory.  Geras is the default one.
-// Others may be chosen using Blockly.inject's "renderer" configuration.
-goog.require('Blockly.geras.Renderer');
-//goog.require('Blockly.thrasos.Renderer');
-//goog.require('Blockly.zelos.Renderer');
-// The debug renderer, which shows simplified versions of the blocks for
-// developer use.
-// goog.require('Blockly.blockRendering.Debug');
-
-// Blockly Themes.
-// Classic is the default theme.
-goog.require('Blockly.Themes.Classic');
-//goog.require('Blockly.Themes.Dark');
-//goog.require('Blockly.Themes.Deuteranopia');
-//goog.require('Blockly.Themes.HighContrast');
-//goog.require('Blockly.Themes.Tritanopia');
-// goog.require('Blockly.Themes.Modern');
-// Blocks
-goog.require('Blockly.Constants.Logic');
-goog.require('Blockly.Constants.Loops');
-goog.require('Blockly.Constants.Variables');
-goog.require('Blockly.Constants.VariablesDynamic');
+goog.require("Blockly");
+goog.require("Blockly.Comment");
+goog.require("Blockly.VerticalFlyout");
+goog.require("Blockly.FlyoutButton");
+goog.require("Blockly.Toolbox");
+goog.require("Blockly.Trashcan");
+goog.require("Blockly.VariablesDynamic");
+goog.require("Blockly.ZoomControls");
+goog.require("Blockly.ShortcutItems");
+goog.require("Blockly.ContextMenuItems");
+goog.require("Blockly.Mutator");
+goog.require("Blockly.Warning");
+goog.require("Blockly.FieldDropdown");
+goog.require("Blockly.FieldLabelSerializable");
+goog.require("Blockly.FieldTextInput");
+goog.require("Blockly.FieldVariable");
+goog.require("Blockly.geras.Renderer");
+goog.require("Blockly.Themes.Classic");
+goog.require("Blockly.Constants.Logic");
+goog.require("Blockly.Constants.Loops");
+goog.require("Blockly.Constants.Variables");
+goog.require("Blockly.Constants.VariablesDynamic");
 goog.require("Blockly.Blocks.procedures");
 
 var blocklyResize;
@@ -108,7 +54,7 @@ function BigIntValidator(newValue)
   for (count=0; count<newValue.length; count++)
   {
     var c = newValue.charAt(count);
-    if (c == ' ')
+    if (c === " ")
     {
       continue;
     }
@@ -136,7 +82,7 @@ function BigIntValidator(newValue)
         {
           output = "-";
         }
-        if (c == '0' && (newValue.charAt(count+1) == 'X' || newValue.charAt(count+1) == 'x'))
+        if (c === "0" && (newValue.charAt(count+1) === "X" || newValue.charAt(count+1) === "x"))
         {
           insideHex = true;
           count++;    // Discard hex prefix.
@@ -145,10 +91,11 @@ function BigIntValidator(newValue)
         insideDigits = true;
         output += c;
       }
-      else if (c == "+")
+      else if (c === "+")
       {
+        continue;
       }
-      else if (c == "-")
+      else if (c === "-")
       {
         isMinus = !isMinus;
       }
@@ -180,15 +127,15 @@ function useBlockly(callback)
   var uncompressedIndex = 0;
   var groupNbr = 65;
   var itemNbr = 65;
-  var ecmToolbar = '<xml>' +
-    '<category name="Flow Control" colour="230">' + 
-      '{controls_repeat_ext[TIMES]}' +
-      '{controls_if}' +
-      '{controls_for[FROM][TO][BY]}' +
-      '{controls_whileUntil}' +
-    '</category>' +
-    '<category name="Basic Math" colour="355">' +
-      '<block type="M"><field name="1">5</field></block>';
+  var ecmToolbar = "<xml>" +
+    "<category name=\"Flow Control\" colour=\"230\">" + 
+      "{controls_repeat_ext[TIMES]}" +
+      "{controls_if}" +
+      "{controls_for[FROM][TO][BY]}" +
+      "{controls_whileUntil}" +
+    "</category>" +
+    "<category name=\"Basic Math\" colour=\"355\">" +
+      "<block type=\"M\"><field name=\"1\">5</field></block>";
  
   var defineBlocks =
   [
@@ -257,12 +204,12 @@ function useBlockly(callback)
     var message = oneBlock[1];
     if (nbr >= 4000)
     {
-      ecmToolbar += '</category><category name="' + message + '" colour="' + (nbr - 4000) + '">';
+      ecmToolbar += "</category><category name=\"" + message + "\" colour=\"" + (nbr - 4000) + '">';
       groupNbr++;
       itemNbr = 65;
       continue;
     }
-    ecmToolbar += '{' + String.fromCharCode(groupNbr, itemNbr);
+    ecmToolbar += "{" + String.fromCharCode(groupNbr, itemNbr);
     /** @suppress {checkTypes} */
     destArray["type"] = String.fromCharCode(groupNbr, itemNbr);
     if (message.indexOf("%concat") >= 0)
@@ -317,13 +264,13 @@ function useBlockly(callback)
     itemNbr++;
   }
   Blockly.defineBlocksWithJsonArray(blocksUncompressed);
-  ecmToolbar += '</category>' +
-    '<category name="Variables" custom="VARIABLE"></category>' +
-    '<category name="Functions" custom="PROCEDURE"></category>' +
-    '</xml>';
+  ecmToolbar += "</category>" +
+    "<category name=\"Variables\" custom=\"VARIABLE\"></category>" +
+    "<category name=\"Functions\" custom=\"PROCEDURE\"></category>" +
+    "</xml>";
   var blocklyArea = get("blocklyArea");
   var blocklyDiv = get("blocklyDiv");
-  var myToolbar = ecmToolbar.replace(/\{(\w+)([\[\]\w]*)}/g, '<block type="$1">$2</block>');
+  var myToolbar = ecmToolbar.replace(/\{(\w+)([\[\]\w]*)}/g, "<block type=\"$1\">$2</block>");
   myToolbar = myToolbar.replace(/\[(\w+)]/g, '<value name="$1"><shadow type="M"><field name="1">5</field></shadow></value>');
   Blockly.Blocks["M"] =
   {

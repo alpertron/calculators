@@ -769,7 +769,7 @@ enum eEcmResult ecmStep2(void)
           bool rc = ModInvBigNbr(common.ecm.UZ, common.ecm.Aux3, TestNbr, NumberLength);
           if (rc == false)
           {
-            memcpy(common.ecm.GD, common.ecm.UZ, NumberSizeBytes);
+            (void)memcpy(common.ecm.GD, common.ecm.UZ, NumberSizeBytes);
             return FACTOR_FOUND;
           }
           modmult(common.ecm.UX, common.ecm.Aux3, common.ecm.Aux1); // Aux1 <- X/Z (SIEVE_SIZE*Q)
@@ -779,7 +779,7 @@ enum eEcmResult ecmStep2(void)
           bool rc = ModInvBigNbr(common.ecm.Z, common.ecm.Aux3, TestNbr, NumberLength);
           if (rc == false)
           {
-            memcpy(common.ecm.GD, common.ecm.Z, NumberSizeBytes);
+            (void)memcpy(common.ecm.GD, common.ecm.Z, NumberSizeBytes);
             return FACTOR_FOUND;
           }
           modmult(common.ecm.X, common.ecm.Aux3, common.ecm.Aux1); // Aux1 <- X/Z (3,5,*

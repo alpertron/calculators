@@ -663,7 +663,7 @@ function startUp()
   {
     hide("main");
     get("blockmode").style.display = "flex";
-    if (bmodeLoaded == 0)
+    if (bmodeLoaded === 0)
     {
       initBlockly();
       bmodeLoaded = 1;
@@ -1139,14 +1139,14 @@ else
 
 function initBlockly()
 {
-  if (blocklyLoaded != 0)
+  if (blocklyLoaded !== 0)
   {
     useBlockly(null);  // Resize workspace.
     return;
   }
   blocklyLoaded = 1;
-  script1 = loadScript("blockly0001.js");
-  script2 = loadScript("en0001.js");
+  script1 = loadScript("blockly0002.js");
+  script2 = loadScript("en0002.js");
 }
 
 function loadScript(scriptUrl)
@@ -1156,11 +1156,11 @@ function loadScript(scriptUrl)
   xmlhttp.open("GET", scriptUrl);
   xmlhttp.onreadystatechange = function()
   {
-    if ((xmlhttp.status == 200) && (xmlhttp.readyState == 4))
+    if ((xmlhttp.status === 200) && (xmlhttp.readyState === 4))
     {
       scriptsLoaded++;
       myScript.innerHTML = xmlhttp.responseText;
-      if (scriptsLoaded == 2)
+      if (scriptsLoaded === 2)
       {
         document.body.appendChild(script1);
         document.body.appendChild(script2);
