@@ -1,6 +1,9 @@
 "use strict";
 var goog;
+/** @type {function(string)} */
 var fromBlocklyRun;
+/** @type {number} */
+var language;
 goog.provide("BigIntField");
 goog.require("Blockly");
 goog.require("Blockly.Comment");
@@ -24,14 +27,25 @@ goog.require("Blockly.Constants.Logic");
 goog.require("Blockly.Constants.Loops");
 goog.require("Blockly.Constants.Variables");
 goog.require("Blockly.Constants.VariablesDynamic");
-goog.require("Blockly.Blocks.procedures");
+goog.require("Blockly.Xml");
 
+/** @type {Function} */
 var blocklyResize;
 var workspace;
 var BigIntField;
 function get(id)
 {
   return document.getElementById(id);
+}
+
+function hide(id)
+{
+  get(id).style.display = "none";
+}
+
+function show(id)
+{
+  get(id).style.display = "block";
 }
 
 function setStorage(name, data)
@@ -46,13 +60,19 @@ function getStorage(name)
 
 function BigIntValidator(newValue)
 {
+  /** @type {number} */
   var count;
+  /** @type {boolean} */
   var insideDigits = false;
+  /** @type {boolean} */
   var insideHex = false;
+  /** @type {boolean} */
   var isMinus = false;
+  /** @type {string} */
   var output = "";
   for (count=0; count<newValue.length; count++)
   {
+    /** @type {string} */
     var c = newValue.charAt(count);
     if (c === " ")
     {
@@ -112,7 +132,9 @@ function BigIntValidator(newValue)
   return output;
 }
 
-function useBlockly(callback)
+/** @param {function(string)} callback */
+/** @param {number} lang */
+function useBlockly(callback, lang)
 {
   if (callback == null)
   {
@@ -120,24 +142,39 @@ function useBlockly(callback)
     Blockly.svgResize(workspace);
     return;
   }
+  language = lang;
   fromBlocklyRun = callback;
+  /** @type {!Array<!Object>} */
   var blocksUncompressed = new Array();
+  /** @type {number} */
   var index;
+  /** @type {Array} */
   var destArray;
+  /** @type {Array<string>} */
+  var defineBlocks;
+  /** @type {number} */
   var uncompressedIndex = 0;
+  /** @type {number} */
   var groupNbr = 65;
+  /** @type {number} */
   var itemNbr = 65;
+  /** @type {string} */
   var ecmToolbar = "<xml>" +
-    "<category name=\"Flow Control\" colour=\"230\">" + 
+    "<category name=\"" +
+    (lang? "Control de flujo": "Flow Control") +
+    "\" colour=\"230\">" + 
       "{controls_repeat_ext[TIMES]}" +
       "{controls_if}" +
       "{controls_for[FROM][TO][BY]}" +
       "{controls_whileUntil}" +
     "</category>" +
-    "<category name=\"Basic Math\" colour=\"355\">" +
+    "<category name=\"" +
+    (lang? "Matemática básica": "Basic Math") +
+    "\" colour=\"355\">" +
       "<block type=\"M\"><field name=\"1\">5</field></block>";
  
-  var defineBlocks =
+  /** @type {Array<string>} */
+  var defineBlocksEn =
   [
     "355;%1 + %2",
     "355;%1 - %2",
@@ -146,8 +183,9 @@ function useBlockly(callback)
     "355;remainder of %1 ÷ %2",
     "355;%1 to the %2",
     "355;square root of %1",
-    "355;absolute value of %1",
     "355;random integer from %1 to %2",
+    "355;absolute value of %1",
+    "355;sign of %1",
     "4263;Comparisons",
     "263;%1 = %2",
     "263;%1 ≠ %2",
@@ -160,8 +198,8 @@ function useBlockly(callback)
     "203;%1 OR %2",
     "203;%1 XOR %2",
     "203;NOT %1",
-    "203;shift left %1 by %2 bits",
-    "203;shift right %1 by %2 bits",
+    "203;%1 shifted left by %2 bits",
+    "203;%1 shifted right by %2 bits",
     "4143;Divisibility",
     "143;gcd of %1 and %2",
     "143;lcm of %1 and %2",
@@ -177,7 +215,7 @@ function useBlockly(callback)
     "26;number of digits of %1 in base %2",
     "26;sum of digits of %1 in base %2",
     "26;reverse digits of %1 in base %2",
-    "26;concatenate prime factors of %1 using mode %2",
+    "26;concatenate prime factors of %1 %2",
     "4077;Number Theory",
     "77;inverse of %1 modulo %2",
     "77;%1 to the %2 modulo %3",
@@ -187,20 +225,98 @@ function useBlockly(callback)
     "55;factorial of %1",
     "55;factorial of order %1 of %2",
     "55;primorial of %1",
-    "55;Element %1 of Fibonacci sequence",
-    "55;Element %1 of Lucas sequence",
+    "55;element %1 of Fibonacci sequence",
+    "55;element %1 of Lucas sequence",
     "55;partition of %1",
     "4170;Output",
     "1170;print %1",
     "1170;print %1 in hex",
     "1170;print prime factors of %1",
     "1170;print prime factors of %1 in hex",
+    "1170;print is %1 prime",
+    "1170;print is %1 prime in hex",
   ];
+  
+  /** @type {Array<string>} */
+  var defineBlocksEs =
+  [
+    "355;%1 + %2",
+    "355;%1 - %2",
+    "355;%1 × %2",
+    "355;%1 ÷ %2",
+    "355;resto de %1 ÷ %2",
+    "355;%1 a la %2",
+    "355;entero aleatorio entre %1 y %2",
+    "355;raíz cuadrada de %1",
+    "355;valor absoluto de %1",
+    "355;signo de %1",
+    "4263;Comparaciones",
+    "263;%1 = %2",
+    "263;%1 ≠ %2",
+    "263;%1 \x3E %2",
+    "263;%1 ≤ %2",
+    "263;%1 \x3C %2",
+    "263;%1 ≥ %2",
+    "4203;Lógica",
+    "203;%1 AND %2",
+    "203;%1 OR %2",
+    "203;%1 XOR %2",
+    "203;NOT %1",
+    "203;%1 desplazado a la izquierda %2 bits",
+    "203;%1 desplazado a la derecha %2 bits",
+    "4143;Divisibilidad",
+    "143;mcd de %1 y %2",
+    "143;mcm de %1 y %2",
+    "143;es %1 primo",
+    "143;cantidad de factores primos de %1",
+    "143;menor factor primo de %1",
+    "143;mayor factor primo de %1",
+    "143;cantidad de divisores de %1",
+    "143;suma de los divisores de %1",
+    "4026;Matemática recreativa",
+    "26;siguiente primo después de %1",
+    "26;último primo antes de %1",
+    "26;cantidad de dígitos de %1 en base %2",
+    "26;suma de dígitos de %1 en base %2",
+    "26;inversión de dígitos de %1 en base %2",
+    "26;concatenación de factores primos de %1 %2",
+    "4077;Teoría de números",
+    "77;inverso de %1 módulo %2",
+    "77;%1 a la %2 módulo %3",
+    "77;indicador de Euler de %1",
+    "77;símbolo de Jacobi de %1 sobre %2",
+    "4055;Otros",
+    "55;factorial de %1",
+    "55;factorial de orden %1 de %2",
+    "55;primorial de %1",
+    "55;elemento %1 de la secuencia de Fibonacci",
+    "55;elemento %1 de la secuencia de Lucas",
+    "55;particiones of %1",
+    "4170;Salida",
+    "1170;mostrar %1",
+    "1170;mostrar %1 en hexa",
+    "1170;mostrar factores primos de %1",
+    "1170;mostrar factores primos de %1 en hexa",
+    "1170;mostrar si %1 es primo",
+    "1170;mostrar si %1 es primo en hexa",
+  ];
+
+  if (lang)
+  {
+    defineBlocks = defineBlocksEs;
+  }
+  else
+  {
+    defineBlocks = defineBlocksEn;
+  }
   for (index=0; index<defineBlocks.length; index++)
   {
     destArray = new Array();
+    /** @type {Array<string>} */
     var oneBlock = defineBlocks[index].split(";");
+    /** @type {number} */
     var nbr = +oneBlock[0];
+    /** @type {string} */
     var message = oneBlock[1];
     if (nbr >= 4000)
     {
@@ -212,13 +328,28 @@ function useBlockly(callback)
     ecmToolbar += "{" + String.fromCharCode(groupNbr, itemNbr);
     /** @suppress {checkTypes} */
     destArray["type"] = String.fromCharCode(groupNbr, itemNbr);
-    if (message.indexOf("%concat") >= 0)
+    if (message.indexOf("concat") == 0)
     {
+      var options;
+      if (lang)
+      {
+        options = [["no repetidos en orden ascendente", "0"],
+                   ["no repetidos en orden descendente", "1"],
+                   ["repetidos en orden ascendente", "2"],
+                   ["repetidos en orden descendente", "3"]];
+      }
+      else
+      {
+        options = [["not repeated in ascending order", "0"],
+                   ["not repeated in descending order", "1"],
+                   ["repeated in ascending order", "2"],
+                   ["repeated in descending order", "3"]]
+      }  
       /** @suppress {checkTypes} */
       destArray["args0"] = [{"type": "input_value", "name": "1"},
-                            {"type": "dropdown", "name": "2",
-                             "options": [["0", "0"], ["1", "1"], ["2", "2"], ["3", "3"]]}];
-      ecmToolbar += "[1]}";
+                            {"type": "field_dropdown", "name": "2",
+                             "options": options}];
+      ecmToolbar += "[1][2]}";
     }
     else if (message.indexOf("%3") >= 0)
     {
@@ -265,19 +396,23 @@ function useBlockly(callback)
   }
   Blockly.defineBlocksWithJsonArray(blocksUncompressed);
   ecmToolbar += "</category>" +
-    "<category name=\"Variables\" custom=\"VARIABLE\"></category>" +
-    "<category name=\"Functions\" custom=\"PROCEDURE\"></category>" +
+    "<category name=\"Variables\" custom=\"VARIABLE\" colour=\"330\"></category>" +
     "</xml>";
   var blocklyArea = get("blocklyArea");
   var blocklyDiv = get("blocklyDiv");
+  /** @type {string} */
   var myToolbar = ecmToolbar.replace(/\{(\w+)([\[\]\w]*)}/g, "<block type=\"$1\">$2</block>");
   myToolbar = myToolbar.replace(/\[(\w+)]/g, "<value name=\"$1\"><shadow type=\"M\"><field name=\"1\">5</field></shadow></value>");
   Blockly.Blocks["M"] =
   {
-    "init": function()
+    init:
+    /** @this {Blockly.Block} */
+    function()
     {
+      /** @type {Blockly.FieldTextInput} */
       var field = new Blockly.FieldTextInput("5", BigIntValidator);
-      field.setTooltip("Enter an integer. Precede it by 0x to enter a hex number.");
+      field.setTooltip(lang?"Ingrese un número entero. Los números hexadecimales deben tener el prefijo 0x":
+        "Enter an integer. Precede it by 0x to enter a hex number.");
       this.appendDummyInput().appendField(field, "1");
       this.setOutput(true, null);
       this.setColour(355);
@@ -285,12 +420,14 @@ function useBlockly(callback)
   };
   workspace = Blockly.inject(blocklyDiv,
       {"toolbox": myToolbar,
-      "zoom": {"controls": true, "wheel": true,}});
+      "zoom": {"controls": true, "wheel": true}});
       
   blocklyResize = function(e) {
     // Compute the absolute coordinates and dimensions of blocklyArea.
     var element = blocklyArea;
+    /** @type {number} */
     var x = 0;
+    /** @type {number} */
     var y = 0;
     do {
       x += element.offsetLeft;
@@ -307,6 +444,7 @@ function useBlockly(callback)
   window.addEventListener("resize", blocklyResize, false);
   get("deleteBlocks").onclick = function()
   {
+    /** @type {number} */
     var count = workspace.getAllBlocks().length;
     if (count < 2 || window.confirm("Delete all " + count + " blocks?"))
     {
@@ -315,7 +453,9 @@ function useBlockly(callback)
   };
   get("bload").onclick = function()
   {
+    /** @type {string} */
     var filename = get("bfilename").value.trim();
+    /** @type {string|null} */
     var contents = getStorage("blockly"+filename);
     if (contents == null)
     {
@@ -328,6 +468,7 @@ function useBlockly(callback)
   };
   get("bsave").onclick = function()
   {
+    /** @type {string} */
     var filename = get("bfilename").value.trim();
     var xml = Blockly.Xml.workspaceToDom(workspace);
     var contents = Blockly.Xml.domToText(xml);
@@ -336,10 +477,15 @@ function useBlockly(callback)
   get("runBlockly").onclick = function()
   {
     var xml = Blockly.Xml.workspaceToDom(workspace);
+    /** @type {string} */
     var contents = Blockly.Xml.domToText(xml);
-    alert("Shortly this application will support running Blockly!!!");
-//    console.log(contents);
+    console.log(contents);
     fromBlocklyRun(contents);
+  };
+  get("berrcont").onclick = function()
+  {
+    hide("BlocklyErrors");
+    show("BlocklyButtons");
   };
   blocklyResize(null);
   Blockly.svgResize(workspace);

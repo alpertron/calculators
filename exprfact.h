@@ -49,14 +49,18 @@
 #define TOKEN_PRINT_HEX      59
 #define TOKEN_PRINTFACT      60
 #define TOKEN_PRINTFACT_HEX  61
-#define TOKEN_BLOCKLY_VAR    62
-#define TOKEN_IF             63
-#define TOKEN_JMP            64
-#define START_WHILE         122
-#define START_UNTIL         123
-#define START_IF            124
-#define START_ELSE          125
-#define START_STATEMENT     126
-#define NUMBER_FIELD        127
+#define TOKEN_PRINTPRIME     62
+#define TOKEN_PRINTPRIME_HEX 63
+#define TOKEN_GET_VAR        64
+#define TOKEN_SET_VAR        65
+#define TOKEN_IF             66
+#define TOKEN_JMP            67
+#define START_FOR           121
+#define START_REPEAT        122
+#define START_WHILE         123
+#define START_UNTIL         124
+#define START_IF            125
+#define START_ELSE          126
+#define START_STATEMENT     127
 
 #endif

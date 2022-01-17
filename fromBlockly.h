@@ -22,8 +22,22 @@
 #define BLOCKLY_INSTR_BUFFER_SIZE    10000000
 #define BLOCKLY_INSTR_BUFFER_PTR_SIZE 1000000
 #define BLOCKLY_INSTR_STACK_SIZE         5000
-#define BLOCKLY_NBR_VARIABLES             100
-#define BLOCKLY_VARIABLE_NAME_LEN          30
+#define BLOCKLY_NBR_VARIABLES             200   // It cannot be greater than 255.
+#define BLOCKLY_VARIABLE_NAME_LEN          50
+
+enum
+{
+  BLOCKLY_NO_ERROR = 0,
+  BLOCKLY_TOO_MANY_VARIABLES,
+  BLOCKLY_VARIABLE_NAME_TOO_LONG,
+  BLOCKLY_ONE_TOP_BLOCK,
+  BLOCKLY_INVALID_BLOCK_TYPE,
+  BLOCKLY_INVALID_NAME_FOR_SHADOW,
+  BLOCKLY_TOO_MANY_CLOSING_BLOCK_TAGS,
+  BLOCKLY_NO_OUTPUT_EXPECTED
+  };
 
 void fromBlockly(const char* ptrXMLFromBlockly);
+void setBlocklyVar(int index, BigInteger* value);
+void getBlocklyVar(int index, BigInteger* value);
 #endif

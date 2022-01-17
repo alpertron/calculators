@@ -68,7 +68,8 @@ static void GetMobius(char **pptrOutput);
 static void GetNumberOfDivisors(char **pptrOutput);
 static void GetSumOfDivisors(char **pptrOutput);
 static void ShowFourSquares(char **pptrOutput);
-static bool doFactorization;
+bool doFactorization;
+bool doShowPrime;
 static char *knownFactors;
 bool useBlockly;
 
@@ -100,6 +101,17 @@ void batchCallback(char **pptrOutput)
   {
     factorExt(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactors);
     knownFactors = NULL;
+  }
+  if (doShowPrime)
+  {
+    if (BpswPrimalityTest(&tofactor, NULL) == 0)
+    {    // Argument is a probable prime.
+      copyStr(&ptrFactorDec, lang ? " es primo" : " is prime");
+    }
+    else
+    {
+      copyStr(&ptrFactorDec, lang ? " no es primo" : " is not prime");
+    }
   }
   SendFactorizationToOutput(astFactorsMod, pptrOutput, doFactorization);
 }
@@ -1331,7 +1343,7 @@ EXTERNALIZE void doWork(void)
     return;
   }
   if (*ptrData == 'D')
-  {    // User pressed SHow Divisors button.
+  {    // User pressed Show Divisors button.
     showDivisors();
 #ifdef __EMSCRIPTEN__
     databack(output);
@@ -1357,6 +1369,7 @@ EXTERNALIZE void doWork(void)
 #endif
 #ifdef __EMSCRIPTEN__
   useBlockly = false;
+  doShowPrime = false;
   if ((flags & (-2)) == '8')
   {
     useBlockly = true;
@@ -1365,6 +1378,11 @@ EXTERNALIZE void doWork(void)
   {
     skipPrimality = true;
     flags = 2;           // Do factorization.
+  }
+  else if ((flags & (-2)) == '6')
+  {
+    doShowPrime = true;
+    flags = 0;  // Do not perform factorization.
   }
 #endif
   ptrData += 2;          // Skip app number and second comma.

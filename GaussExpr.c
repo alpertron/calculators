@@ -66,8 +66,8 @@ struct sFuncOperExpr stFuncOperGaussianExpr[] =
   {NULL, 0, 0},
   // Fourth section: binary operators.
   {"**", OPER_POWER, 1}, // This must be located before multiplication operator.
-  {"+", OPER_PLUS, 4},
-  {"-", OPER_MINUS, 4},
+  {"+", OPER_ADD, 4},
+  {"-", OPER_SUBT, 4},
   {"*", OPER_MULTIPLY, 2},
   {"%", OPER_REMAINDER, 2},
   {"/", OPER_DIVIDE, 2},
@@ -391,7 +391,7 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       }
       break;
 
-    case OPER_PLUS:
+    case OPER_ADD:
       getCurrentStackValue(&curStack2Re, &curStack2Im);
       stackIndex--;
       getCurrentStackValue(&curStackRe, &curStackIm);
@@ -399,7 +399,7 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       BigIntAdd(&curStackIm, &curStack2Im, &curStackIm);
       break;
 
-    case OPER_MINUS:
+    case OPER_SUBT:
       getCurrentStackValue(&curStack2Re, &curStack2Im);
       stackIndex--;
       getCurrentStackValue(&curStackRe, &curStackIm);

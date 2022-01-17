@@ -232,6 +232,7 @@ echo -e "\n\n**** QUADMOD ****" >> coverage.out
 ./quadmod 5 27 82 "n(10^80+5)" >> coverage.out
 ./quadmod 5 27 82 "2^8" >> coverage.out
 ./quadmod 125 27 82 25 >> coverage.out
+./quadmod 3 8 5 9 >> coverage.out
 ./quadmod 5 27 82 "2^256" >> coverage.out
 ./quadmod 0 27 82 "2^256" >> coverage.out
 ./quadmod 73 27 83 "2^16" >> coverage.out

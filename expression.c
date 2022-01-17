@@ -25,6 +25,15 @@
 #include "factor.h"
 #include "exprfact.h"
 #include "showtime.h"
+#ifdef USING_BLOCKLY
+#include "batch.h"
+#include "fromBlockly.h"
+extern bool doFactorization;
+extern char* ptrBlocklyOutput;
+extern BigInteger tofactor;
+extern int nbrBlocklyOutputLines;
+extern bool doShowPrime;
+#endif
 
 #define PAREN_STACK_SIZE           5000
 #define COMPR_STACK_SIZE        1000000
@@ -55,6 +64,7 @@ const struct sFuncOperExpr stFuncOperIntExpr[] =
   {"RANDOM", TOKEN_RANDOM + TWO_PARMS, 0},
   {"SQRT", TOKEN_SQRT + ONE_PARM, 0},
   {"ABS", TOKEN_ABS + ONE_PARM, 0},
+  {"SGN", TOKEN_SGN + ONE_PARM, 0},
   {"F", TOKEN_F + ONE_PARM, 0},
   {"L", TOKEN_L + ONE_PARM, 0},
   {"P", TOKEN_P + ONE_PARM, 0},
@@ -83,8 +93,8 @@ const struct sFuncOperExpr stFuncOperIntExpr[] =
   {">", OPER_GREATER, 6},
   {"SHL", OPER_SHL, 5},
   {"SHR", OPER_SHR, 5},
-  {"+", OPER_PLUS, 4},
-  {"-", OPER_MINUS, 4},
+  {"+", OPER_ADD, 4},
+  {"-", OPER_SUBT, 4},
   {"*", OPER_MULTIPLY, 2},
   {"%", OPER_REMAINDER, 2},
   {"/", OPER_DIVIDE, 2},
@@ -146,10 +156,10 @@ static unsigned int nextRandom(void)
     randomSeed.seed[2] = (uint32_t)(tenth - 432155666 * floor(tenth / 432155666));
     randomSeed.seed[3] = (uint32_t)(tenth - 957884955 * floor(tenth / 957884955));
 #else
-    randomSeed.seed[0] = 0x6547774U;
-    randomSeed.seed[1] = 0x54367771U;
-    randomSeed.seed[2] = 0xAF23B148U;
-    randomSeed.seed[3] = 0x1234A55FU;
+    randomSeed.seed[0] = 178546887U;
+    randomSeed.seed[1] = 7585185U;
+    randomSeed.seed[2] = 430600459U;
+    randomSeed.seed[3] = 136315866U;
 #endif
   }
   t = randomSeed.seed[3];
@@ -197,15 +207,36 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
 {
   bool valueXused;
   enum eExprErr retcode;
-  char* ptrRPNbuffer;
+  char* pointerRPNbuffer;
+  const char* ptrRPNbuffer;
+  const char* ptrRPNstartBuffer;
   int len;
+#ifdef USING_BLOCKLY
+  bool hexBak;
+  bool doFactBak;
+  int offset;
+#endif
   int stackIndexThreshold = DO_NOT_SHORT_CIRCUIT;
-  retcode = ConvertToReversePolishNotation(expr, &ptrRPNbuffer, stFuncOperIntExpr,
-    PARSE_EXPR_INTEGER, &valueXused);
-  if (retcode != EXPR_OK)
+#ifdef USING_BLOCKLY
+  if (ExpressionResult != NULL)
   {
-    return retcode;
+#endif
+    retcode = ConvertToReversePolishNotation(expr, &pointerRPNbuffer, stFuncOperIntExpr,
+      PARSE_EXPR_INTEGER, &valueXused);
+    if (retcode != EXPR_OK)
+    {
+      return retcode;
+    }
+    ptrRPNbuffer = pointerRPNbuffer;
+#ifdef USING_BLOCKLY
   }
+  else
+  {
+    ptrRPNbuffer = expr;
+    valueXused = false;
+  }
+#endif
+  ptrRPNstartBuffer = ptrRPNbuffer;
   stackIndex = -1;
   comprStackOffset[0] = 0;
   while (*ptrRPNbuffer != '\0')
@@ -230,16 +261,16 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       // Move number to compressed stack.
       currentOffset = comprStackOffset[stackIndex];
-      if (currentOffset >= (COMPR_STACK_SIZE - 
+      if (currentOffset >= (COMPR_STACK_SIZE -
         ((int)sizeof(BigInteger) / (int)sizeof(limb))))
       {
         return EXPR_OUT_OF_MEMORY;
       }
       comprStackValues[currentOffset] = len;
       ptrRPNbuffer += 2;   // Skip length.
-      (void)memcpy(&comprStackValues[currentOffset+1], ptrRPNbuffer, nbrLenBytes);
+      (void)memcpy(&comprStackValues[currentOffset + 1], ptrRPNbuffer, nbrLenBytes);
       ptrRPNbuffer += nbrLenBytes;
-      comprStackOffset[stackIndex+1] = currentOffset + 1 + len;
+      comprStackOffset[stackIndex + 1] = currentOffset + 1 + len;
       break;
 
     case TOKEN_VAR:
@@ -312,6 +343,19 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       getCurrentStackValue(&curStack);
       curStack.sign = SIGN_POSITIVE;
+      break;
+
+    case TOKEN_SGN:
+      if (stackIndexThreshold < stackIndex)
+      {     // Part of second operand of binary AND/OR short-circuited.
+        break;
+      }
+      getCurrentStackValue(&curStack);
+      if (!BigIntIsZero(&curStack))
+      {     // If less than zero, return -1. If greater than zero, return 1.
+        curStack.nbrLimbs = 1;
+        curStack.limbs[0].x = 1;
+      }
       break;
 
     case TOKEN_SQRT:
@@ -649,7 +693,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       }
       break;
 
-    case OPER_PLUS:
+    case OPER_ADD:
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
         stackIndex--;
@@ -661,7 +705,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       BigIntAdd(&curStack, &curStack2, &curStack);
       break;
 
-    case OPER_MINUS:
+    case OPER_SUBT:
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
         stackIndex--;
@@ -768,7 +812,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       stackIndex--;
       getCurrentStackValue(&curStack);
       intToBigInteger(&curStack,
-        (BigIntEqual(&curStack, &curStack2) ? 0: -1));
+        (BigIntEqual(&curStack, &curStack2) ? 0 : -1));
       break;
 
     case OPER_GREATER:
@@ -882,7 +926,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case OPER_AND:    // Perform binary AND.
-    if ((stackIndexThreshold+1) == stackIndex)
+      if ((stackIndexThreshold + 1) == stackIndex)
       {
         stackIndex--;
         stackIndexThreshold = DO_NOT_SHORT_CIRCUIT;
@@ -914,7 +958,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       break;
 
     case OPER_OR:     // Perform binary OR.
-      if ((stackIndexThreshold+1) == stackIndex)
+      if ((stackIndexThreshold + 1) == stackIndex)
       {
         stackIndex--;
         stackIndexThreshold = DO_NOT_SHORT_CIRCUIT;
@@ -943,34 +987,110 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
       CopyBigInt(&curStack, &curStack3);
       break;
 
+#ifdef USING_BLOCKLY
+    case TOKEN_GET_VAR:
+      ptrRPNbuffer++;
+      stackIndex++;
+      getBlocklyVar((unsigned char)*ptrRPNbuffer, &curStack);
+      break;
+
+    case TOKEN_SET_VAR:
+      getCurrentStackValue(&curStack);
+      ptrRPNbuffer++;
+      setBlocklyVar((unsigned char)*ptrRPNbuffer, &curStack);
+      stackIndex--;
+      break;
+
+    case TOKEN_JMP:
+      offset = ((int)(unsigned char)*(ptrRPNbuffer + 1)) +
+        ((int)(unsigned char)*(ptrRPNbuffer + 2)) * 0x100 +
+        ((int)(unsigned char)*(ptrRPNbuffer + 3)) * 0x10000 +
+        ((int)(unsigned char)*(ptrRPNbuffer + 4)) * 0x1000000;
+      ptrRPNbuffer = ptrRPNstartBuffer + offset - 1;
+      break;
+
+    case TOKEN_IF:
+      getCurrentStackValue(&curStack);
+      if (BigIntIsZero(&curStack))
+      {
+        offset = ((int)(unsigned char)*(ptrRPNbuffer + 1)) +
+          ((int)(unsigned char)*(ptrRPNbuffer + 2)) * 0x100 +
+          ((int)(unsigned char)*(ptrRPNbuffer + 3)) * 0x10000 +
+          ((int)(unsigned char)*(ptrRPNbuffer + 4)) * 0x1000000;
+        ptrRPNbuffer = ptrRPNstartBuffer + offset - 1;
+      }
+      else
+      {      // Skip jump.
+        ptrRPNbuffer += 4;
+      }
+      stackIndex--;
+      break;
+
+    case TOKEN_PRINT:
+    case TOKEN_PRINT_HEX:
+    case TOKEN_PRINTFACT:
+    case TOKEN_PRINTFACT_HEX:
+    case TOKEN_PRINTPRIME:
+    case TOKEN_PRINTPRIME_HEX:
+      hexBak = hexadecimal;
+      doFactBak = doFactorization;
+      hexadecimal = ((c == TOKEN_PRINT_HEX) || (c == TOKEN_PRINTFACT_HEX) || (c == TOKEN_PRINTPRIME_HEX));
+      doFactorization = ((c == TOKEN_PRINTFACT) || (c == TOKEN_PRINTFACT_HEX));
+      doShowPrime = ((c == TOKEN_PRINTPRIME) || (c == TOKEN_PRINTPRIME_HEX));
+      getCurrentStackValue(&tofactor);
+      stackIndex--;
+      copyStr(&ptrBlocklyOutput, "<li>");
+      batchCallback(&ptrBlocklyOutput);
+      copyStr(&ptrBlocklyOutput, "</li>");
+      nbrBlocklyOutputLines++;
+      if (nbrBlocklyOutputLines == 1000)
+      {
+        copyStr(&ptrBlocklyOutput, "</ul>");
+        output[0] = '6';  // Show Continue button.
+        databack(output);
+      }
+      hexadecimal = hexBak;
+      doFactorization = doFactBak;
+      break;
+#endif
     default:
       break;
     }
     if (c != TOKEN_NUMBER)
     {
-      if ((stackIndexThreshold >= stackIndex) && (c != TOKEN_START_EXPON))
+#ifdef USING_BLOCKLY
+      if ((c != TOKEN_SET_VAR) && (c != TOKEN_JMP) && (c != TOKEN_IF) &&
+        (c != TOKEN_PRINT) && (c != TOKEN_PRINTFACT) &&
+        (c != TOKEN_PRINT_HEX) && (c != TOKEN_PRINTFACT_HEX))
+#endif
       {
-        retcode = setStackValue(&curStack);
-        if (retcode != EXPR_OK)
+        if ((stackIndexThreshold >= stackIndex) && (c != TOKEN_START_EXPON))
         {
-          return retcode;
+          retcode = setStackValue(&curStack);
+          if (retcode != EXPR_OK)
+          {
+            return retcode;
+          }
         }
       }
       ptrRPNbuffer++;            // Skip token.
     }
   }
-  getCurrentStackValue(ExpressionResult);
+  if (ExpressionResult != NULL)
+  {
+    getCurrentStackValue(ExpressionResult);
 #ifdef FACTORIZATION_APP
-  if (ExpressionResult->nbrLimbs > ((332192 / BITS_PER_GROUP) + 1))   // 100000/log_10(2) = 332192
+    if (ExpressionResult->nbrLimbs > ((332192 / BITS_PER_GROUP) + 1))   // 100000/log_10(2) = 332192
 #else
-  if (ExpressionResult->nbrLimbs > ((33219 / BITS_PER_GROUP) + 1))    // 10000/log_10(2) = 33219
+    if (ExpressionResult->nbrLimbs > ((33219 / BITS_PER_GROUP) + 1))    // 10000/log_10(2) = 33219
 #endif
-  {
-    return EXPR_NUMBER_TOO_HIGH;
-  }
-  if ((valueX.nbrLimbs > 0) && !valueXused)
-  {
-    return EXPR_VAR_OR_COUNTER_REQUIRED;
+    {
+      return EXPR_NUMBER_TOO_HIGH;
+    }
+    if ((valueX.nbrLimbs > 0) && !valueXused)
+    {
+      return EXPR_VAR_OR_COUNTER_REQUIRED;
+    }
   }
   return EXPR_OK;
 }
@@ -1212,8 +1332,8 @@ static enum eExprErr ComputeRandom(void)
   do
   {
     Temp.limbs[nbrLen].x = (int)(((uint64_t)nextRandom() *
-        ((uint64_t)difference.limbs[nbrLen].x + 1)) >> 33);
-    // Check whether Temp is grater than difference.
+        ((uint64_t)difference.limbs[nbrLen].x + 1)) >> 32);
+    // Check whether Temp is greater than difference.
     // Subtract cannot be done because there could be
     // some most significant limb equal to zero.
     for (ctr = nbrLen; ctr >= 0; ctr--)
@@ -1224,12 +1344,13 @@ static enum eExprErr ComputeRandom(void)
       }
     }
   } while ((ctr >= 0) && (Temp.limbs[ctr].x > difference.limbs[ctr].x));
-  while (nbrLen > 1)
+  while (nbrLen > 0)
   {
-    if (Temp.limbs[ctr].x != 0)
+    if (Temp.limbs[nbrLen].x != 0)
     {
       break;
     }
+    nbrLen--;
   }
   Temp.nbrLimbs = nbrLen + 1;
   BigIntAdd(&curStack2, &Temp, &curStack);

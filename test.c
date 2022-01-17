@@ -27,7 +27,7 @@
 #include "polynomial.h"
 #include "fromBlockly.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 13
+#define DEBUG_CODE 16
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -400,7 +400,8 @@ int main(int argc, char* argv[])
 #elif DEBUG_CODE == 22
   if (argc == 2)
   {
-    FILE* fpFile = fopen(argv[1],"r");
+//    FILE* fpFile = fopen(argv[1],"r");
+    FILE* fpFile = fopen("c:\\Users\\IBM_ADMIN\\Documents\\Visual Studio 2015\\projects\\ConsoleApplication1\\ConsoleApplication1\\x64\\Release\\xml.txt", "r");
     if (fpFile == NULL)
     {
       printf("Cannot open file.");

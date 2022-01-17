@@ -86,6 +86,7 @@ function getStorage(name)
 function styleButtons(style1, style2)
 {
   get("eval").style.display = style1;
+  get("prime").style.display = style1;
   get("factor").style.display = style1;
   get("config").style.display = style1;
   get("fromfile").style.display = style1;
@@ -198,6 +199,8 @@ function callWorker(param)
       // "B" for sending data to be saved to file and ending calculation.
       // "D" for sending data to div named divisors.
       // "E" for sending data to div named divisors. It includes button More divisors.
+      // "K" for showing Blockly errors.
+      // "L" for exiting Blockly mode.
       var firstChar = e.data.substring(0, 1);
       if (firstChar === "9")
       {
@@ -223,6 +226,17 @@ function callWorker(param)
         {
           callWorker("D");  // Indicate worker that user pressed Divisors button.
         };
+      }
+      else if (firstChar === "K")
+      {
+        get("berror").innerHTML = e.data.substring(1);
+        show("BlocklyErrors");
+        hide("BlocklyButtons");
+      }
+      else if (firstChar === "L")
+      {
+        show("main");
+        hide("blockmode");
       }
       else if (firstChar === "4")
       {
@@ -595,7 +609,7 @@ function fillCache()
 
 function fromBlocklyRun(xml)
 {
-  performWork(8 + lang, xml);
+  performWork(8, xml);
 }
 
 function loadScript(scriptUrl)
@@ -613,7 +627,7 @@ function loadScript(scriptUrl)
       {
         document.body.appendChild(script1);
         document.body.appendChild(script2);
-        useBlockly(fromBlocklyRun);  // Init Blockly workspace.
+        useBlockly(fromBlocklyRun, lang);  // Init Blockly workspace.
       }
     }
   };
@@ -625,12 +639,12 @@ function initBlockly()
 {
   if (blocklyLoaded !== 0)
   {
-    useBlockly(null);  // Resize workspace.
+    useBlockly(null, lang);  // Resize workspace.
     return;
   }
   blocklyLoaded = 1;
   script1 = loadScript("blockly0002.js");
-  script2 = loadScript("en0002.js");
+  script2 = loadScript(lang? "es0002.js": "en0002.js");
 }
 
 function startUp()
@@ -642,6 +656,11 @@ function startUp()
   {
     setStorage("ecmFactors","");
     dowork(0);
+  };
+  get("prime").onclick = function ()
+  {
+    setStorage("ecmFactors","");
+    dowork(6);
   };
   get("factor").onclick = function ()
   {
@@ -712,7 +731,7 @@ function startUp()
   get("exitBlockly").onclick = function ()
   {
     show("main");
-    hide("blockmode");   
+    hide("blockmode");
   };
   get("openwizard").onclick = function ()
   {
@@ -894,10 +913,10 @@ function startUp()
 
     // Retrieve the text property of the element 
     shareData.text = tempDivElement.textContent || tempDivElement.innerText || "";
-    shareData.url = (window.location.href.split('?')[0]) + "?q=" +
+    shareData.url = (window.location.href.split("?")[0]) + "?q=" +
                     encodeURIComponent(get("value").value);
     navigator.share(shareData);
-  }
+  };
   get("helpbtn").onclick = function ()
   {
     var help = get("help");

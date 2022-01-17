@@ -18,30 +18,41 @@
 //
 // Input: XML exported from Blockly.
 #include <string.h>
-#include "fromBlockly.h"
 #include "bignbr.h"
+#include "fromBlockly.h"
 #include "expression.h"
 #include "exprfact.h"
+#include "linkedbignbr.h"
+#include "output.h"
 
+char* ptrBlocklyOutput;
+int nbrBlocklyOutputLines;
 static char bufferInstr[BLOCKLY_INSTR_BUFFER_SIZE];
 static char variableNames[BLOCKLY_NBR_VARIABLES][BLOCKLY_VARIABLE_NAME_LEN];
 static char blockStack[BLOCKLY_INSTR_STACK_SIZE];
 static int stackIf[BLOCKLY_INSTR_STACK_SIZE];
 static int nbrVariables;
+static int nbrNamedVariables;
 static char* ptrInstr;
+struct linkedBigInt* pstVariables[BLOCKLY_NBR_VARIABLES];
+static char startRepeatCode[] =
+{
+  TOKEN_NUMBER, 0, 1, 1, 0, 0, 0, TOKEN_SET_VAR
+};
 
 // Conversion from block number to operator/function
 static const char blockBasicMath[] =
 {
-  OPER_PLUS,
-  OPER_MINUS,
+  OPER_ADD,
+  OPER_SUBT,
   OPER_MULTIPLY,
   OPER_DIVIDE,
   OPER_REMAINDER,
   OPER_POWER,
   TOKEN_SQRT,
-  TOKEN_ABS,
   TOKEN_RANDOM,
+  TOKEN_ABS,
+  TOKEN_SGN,
 };
 
 static const char blockComparisons[] =
@@ -110,6 +121,8 @@ static const char blockOutput[] =
   TOKEN_PRINT_HEX,
   TOKEN_PRINTFACT,
   TOKEN_PRINTFACT_HEX,
+  TOKEN_PRINTPRIME,
+  TOKEN_PRINTPRIME_HEX,
 };
 
 static const char *blockToToken[] =
@@ -197,7 +210,71 @@ static void setJmpOffset(int offsetJmp, int offsetTarget)
   bufferInstr[offsetJmp+3] = (char)(offsetTarget >> 24);
 }
 
-void fromBlockly(const char* ptrXMLFromBlockly)
+static int getVariableNbr(const char** ppXML)
+{
+  int varNameSize;
+  const char* ptrXML = strchr(*ppXML, '>') + 1;
+  ptrXML = strchr(ptrXML, '>') + 1;  // Point to variable.
+  varNameSize = (int)(strchr(ptrXML, '<') - ptrXML);
+  for (int varNbr = 0; varNbr < nbrNamedVariables; varNbr++)
+  {
+    int index;
+    int curVarNameSize = (int)strlen(variableNames[varNbr]);
+    if (curVarNameSize != varNameSize)
+    {
+      continue;
+    }
+    for (index = 0; index < curVarNameSize; index++)
+    {
+      if (variableNames[varNbr][index] != *(ptrXML + index))
+      {
+        break;
+      }
+    }
+    if (index == curVarNameSize)
+    {        // Variable name found.
+      *ppXML = ptrXML;
+      return varNbr;
+    }
+  }
+  return -1;
+}
+
+static void showBlocklyError(int rc)
+{
+#ifdef __EMSCRIPTEN__
+  switch (rc)
+  {
+  case BLOCKLY_TOO_MANY_VARIABLES:
+    databack(lang? "KDemasiadas variables definidas": "KToo many variables defined");
+    return;
+  case BLOCKLY_VARIABLE_NAME_TOO_LONG:
+    databack(lang?"KEl nombre de la variable es muy largo": "KVariable name is too long");
+    return;
+  case BLOCKLY_ONE_TOP_BLOCK:
+    databack(lang? "KDebe haber un solo conjunto de bloques unidos": 
+      "KThere must be only one set of joined blocks");
+    return;
+  case BLOCKLY_INVALID_BLOCK_TYPE:
+    databack(lang? "KTipo de bloque inválido": "KInvalid block type.");
+    return;
+  case BLOCKLY_INVALID_NAME_FOR_SHADOW:
+    databack(lang ? "KNombre inválido para el tag shadow en XML" : "KInvalid name for shadow tag in XML");
+    return;
+  case BLOCKLY_TOO_MANY_CLOSING_BLOCK_TAGS:
+    databack(lang? "KDemasiados tags /block": "KToo many /block tags");
+    return;
+  case BLOCKLY_NO_OUTPUT_EXPECTED:
+    databack(lang? "KEl bloque suelto debe estar dentro de otro bloque":
+      "KThe detached block must be inside another block");
+    return;
+}
+#else
+  (void)rc;
+#endif
+}
+
+static int parseBlocklyXml(const char* ptrXMLFromBlockly)
 {
   const char* ptrXML;
   int nbrTopBlocks = 0;
@@ -211,12 +288,12 @@ void fromBlockly(const char* ptrXMLFromBlockly)
   ptrXML = strchr(ptrXMLFromBlockly + 1, '<');
   if (xmlcmp(ptrXML, "<variables") == 0)
   {   // Blockly XML has variables.
+    ptrXML = strchr(ptrXML + 1, '<');  // Point to first variable
     for (;;)
     {
       // Point to next variable.
       const char* startVariable;
       const char* endVariable;
-      ptrXML = strchr(ptrXML + 1, '<');
       if (xmlcmp(ptrXML, "</") == 0)
       {
         ptrXML = strchr(ptrXML, '>');
@@ -225,49 +302,51 @@ void fromBlockly(const char* ptrXMLFromBlockly)
       }
       if (nbrVariables == BLOCKLY_NBR_VARIABLES)
       {    // Too many variables.
-#ifdef __EMSCRIPTEN__
-        databack("KToo many variables defined");
-#endif
-        return;
+        return BLOCKLY_TOO_MANY_VARIABLES;
       }
-      startVariable = strchr(ptrXML, '>');
-      startVariable++;
+      startVariable = strchr(ptrXML, '>') + 1;
       endVariable = strchr(startVariable, '<');
+      if (endVariable - startVariable >= BLOCKLY_VARIABLE_NAME_LEN)
+      {
+        return BLOCKLY_VARIABLE_NAME_TOO_LONG;
+      }
       memcpy(variableNames[nbrVariables], startVariable, endVariable - startVariable);
-      ptrXML = strchr(endVariable, '>');
-      ptrXML++;
+      nbrVariables++;
+      ptrXML = strchr(endVariable, '>') + 1;
     }
   }
+  nbrNamedVariables = nbrVariables;
   // Convert blocks expressed in XML to operators and operands in prefix format.
   while (*ptrXML != 0)
   {
     if (xmlcmp(ptrXML, "<block") == 0)
     {                 // Block XML found.
+      bool isTopBlock = false;
       const char* ptrXMLbak = ptrXML;
       skipID(&ptrXMLbak);
       if (*ptrXMLbak == 'x')
       {
+        isTopBlock = true;
         nbrTopBlocks++;
-        if (nbrTopBlocks > 1)
+        if (nbrTopBlocks != 1)
         {
-#ifdef __EMSCRIPTEN__
-          databack("KOnly one top block expected.");
-#endif
-          return;
+          return BLOCKLY_ONE_TOP_BLOCK;
         }
       }
       ptrXML += 13;   // Point to block type.
       if (*(ptrXML + 2) == '\"')
       {     // Custom Blockly type
         const char* ptrBlockTranslation;
+        size_t nbrGroups;
         int groupNbr = *ptrXML - 'A';
-        size_t nbrGroups = sizeof(blockToToken) / sizeof(blockToToken[0]);
+        if (isTopBlock && (groupNbr != 7))
+        {
+          return BLOCKLY_NO_OUTPUT_EXPECTED;
+        }
+        nbrGroups = sizeof(blockToToken) / sizeof(blockToToken[0]);
         if ((groupNbr < 0) || (groupNbr >= (int)nbrGroups))
         {
-#ifdef __EMSCRIPTEN__
-          databack("KInvalid block type.");
-#endif
-          return;
+          return BLOCKLY_INVALID_BLOCK_TYPE;
         }
         ptrBlockTranslation = blockToToken[groupNbr];
         *ptrBlockStack = *(ptrBlockTranslation + *(ptrXML + 1) - 'A');
@@ -275,13 +354,23 @@ void fromBlockly(const char* ptrXMLFromBlockly)
       }
       else if (xmlcmp(ptrXML, "M") == 0)
       {
+        if (isTopBlock)
+        {
+          return BLOCKLY_NO_OUTPUT_EXPECTED;
+        }
         ptrXML = strchr(ptrXML, '>') + 1;
         ptrXML = strchr(ptrXML, '>') + 2; // Point to byte after start of number.
-        *ptrInstr = TOKEN_NUMBER;
-        ptrInstr++;
-        (void)parseNumberInsideExpr(&ptrXML, &ptrInstr);
-        *ptrBlockStack = NUMBER_FIELD;
-        ptrBlockStack++;
+        if (*(ptrXML - 1) == '-')
+        {
+          ptrXML++;     // Skip minus sign.
+          (void)parseNumberInsideExpr(&ptrXML, &ptrInstr);
+          *ptrInstr = OPER_UNARY_MINUS;
+          ptrInstr++;
+        }
+        else
+        {
+          (void)parseNumberInsideExpr(&ptrXML, &ptrInstr);
+        }
       }
       else if (xmlcmp(ptrXML, "controls_if") == 0)
       {            // IF block.
@@ -290,7 +379,7 @@ void fromBlockly(const char* ptrXMLFromBlockly)
         ptrStackControl += 2;
       }
       else if (xmlcmp(ptrXML, "controls_whileUntil") == 0)
-      {
+      {      // While or Until block.
         size_t offsetStartWhile = ptrInstr - &bufferInstr[0];
         *ptrStackControl = -1;
         *(ptrStackControl + 1) = (int)offsetStartWhile;
@@ -308,24 +397,90 @@ void fromBlockly(const char* ptrXMLFromBlockly)
         ptrBlockStack++;
         ptrXML = strchr(ptrXML, '>') + 1;   // Skip value.
       }
-      else
+      else if (xmlcmp(ptrXML, "controls_repeat_ext") == 0)
+      {      // Repeat block.
+        if (nbrVariables >= BLOCKLY_NBR_VARIABLES)
+        {    // Too many variables.
+          return BLOCKLY_TOO_MANY_VARIABLES;
+        }
+        // Store data needed for statements processing in block stack
+        *ptrBlockStack = (char)nbrVariables;
+        ptrBlockStack++;
+        *ptrBlockStack = START_REPEAT;
+        ptrBlockStack++;
+        // Store instructions to set the variable to zero.
+        memcpy(ptrInstr, startRepeatCode, sizeof(startRepeatCode));
+        ptrInstr += sizeof(startRepeatCode);
+        *ptrInstr = (char)nbrVariables;
+        ptrInstr++;
+        // Store this address to go back at the end of the loop.
+        size_t offsetRepeat = ptrInstr - &bufferInstr[0];
+        *(ptrStackControl + 1) = (int)offsetRepeat;
+        ptrStackControl += 2;
+        // Get count variable.
+        *ptrInstr = (char)TOKEN_GET_VAR;
+        ptrInstr++;
+        *ptrInstr = (char)nbrVariables;
+        ptrInstr++;
+        nbrVariables++;
+      }
+      else if (xmlcmp(ptrXML, "controls_for") == 0)
+      {      // For block.
+        *ptrBlockStack = (char)getVariableNbr(&ptrXML);
+        ptrXML = strchr(ptrXML, '>') + 1;
+        ptrBlockStack++;
+        *ptrBlockStack = (char)nbrVariables;
+        ptrBlockStack++;
+        *ptrBlockStack = START_FOR;
+        ptrBlockStack++;
+
+      }
+      else if (xmlcmp(ptrXML, "variables_set") == 0)
       {
+        *ptrBlockStack = (char)getVariableNbr(&ptrXML);
+        ptrXML = strchr(ptrXML, '>') + 1;
+        ptrBlockStack++;
+        *ptrBlockStack = TOKEN_SET_VAR;
+        ptrBlockStack++;
+      }
+      else if (xmlcmp(ptrXML, "variables_get") == 0)
+      {
+        if (isTopBlock)
+        {
+          return BLOCKLY_NO_OUTPUT_EXPECTED;
+        }
+        *ptrBlockStack = (char)getVariableNbr(&ptrXML);
+        ptrXML = strchr(ptrXML, '>') + 1;
+        ptrBlockStack++;
+        *ptrBlockStack = TOKEN_GET_VAR;
+        ptrBlockStack++;
       }
     }
     else if (xmlcmp(ptrXML, "<value") == 0)
     {
       ptrXML += 13;  // Point to value name.
-      if (xmlcmp(ptrXML, "IF") == 0)
+      if (xmlcmp(ptrXML, "TIMES") == 0)
+      {
+        // Nothing to do.
+      }
+      else if (xmlcmp(ptrXML, "TO") == 0)
+      {     // Set counter variable in FOR. 
+        *ptrInstr = TOKEN_SET_VAR;
+        ptrInstr++;
+        *ptrInstr = *(ptrBlockStack - 3);
+        ptrInstr++;
+      }
+      else if (xmlcmp(ptrXML, "BY") == 0)
+      {     // Set limit variable in FOR.
+        *ptrInstr = TOKEN_SET_VAR;
+        ptrInstr++;
+        *ptrInstr = *(ptrBlockStack - 2);
+        ptrInstr++;
+      }
+      else if (xmlcmp(ptrXML, "IF") == 0)
       {
         *ptrBlockStack = START_IF;
         ptrBlockStack++;
-      }
-      else if (*ptrXML < '1' || *ptrXML > '3')
-      {              // Values outside custom block.
-#ifdef __EMSCRIPTEN__
-        databack("KInvalid name for value in XML");
-#endif
-        return;
       }
     }
     else if (xmlcmp(ptrXML, "<statement") == 0)
@@ -336,10 +491,87 @@ void fromBlockly(const char* ptrXMLFromBlockly)
         while (ptrBlockStack > blockStack)
         {
           ptrBlockStack--;
+          if (*ptrBlockStack == START_FOR)
+          {     // Set increment variable in FOR.
+                // abs(increment) * sgn(to - counter)
+            *ptrInstr = TOKEN_ABS;
+            ptrInstr++;
+            *ptrInstr = TOKEN_GET_VAR;
+            ptrInstr++;
+            *ptrInstr = *(ptrBlockStack - 1);          // to
+            ptrInstr++;
+            *ptrInstr = TOKEN_GET_VAR;
+            ptrInstr++;
+            *ptrInstr = *(ptrBlockStack - 2);          // counter
+            ptrInstr++;
+            *ptrInstr = OPER_SUBT;
+            ptrInstr++;
+            *ptrInstr = TOKEN_SGN;
+            ptrInstr++;
+            *ptrInstr = OPER_MULTIPLY;
+            ptrInstr++;
+            *ptrInstr = TOKEN_SET_VAR;
+            ptrInstr++;
+            *ptrInstr = *(ptrBlockStack - 1) + 1;      // increment
+            ptrInstr++;
+            ptrStackControl += 2;
+            offsetIf = ptrInstr - &bufferInstr[0];
+            *(ptrStackControl - 1) = (int)offsetIf;
+            // Test limit. If sgn(counter - to) == sgn(increment)
+            *ptrInstr = TOKEN_GET_VAR;
+            ptrInstr++;
+            *ptrInstr = *(ptrBlockStack - 2);          // counter
+            ptrInstr++;
+            *ptrInstr = TOKEN_GET_VAR;
+            ptrInstr++;
+            *ptrInstr = *(ptrBlockStack - 1);          // to
+            ptrInstr++;
+            *ptrInstr = OPER_EQUAL;
+            ptrInstr++;
+            *ptrInstr = TOKEN_GET_VAR;
+            ptrInstr++;
+            *ptrInstr = *(ptrBlockStack - 1);          // to
+            ptrInstr++;
+            *ptrInstr = TOKEN_GET_VAR;
+            ptrInstr++;
+            *ptrInstr = *(ptrBlockStack - 2);          // counter
+            ptrInstr++;
+            *ptrInstr = OPER_SUBT;
+            ptrInstr++;
+            *ptrInstr = TOKEN_SGN;
+            ptrInstr++;
+            *ptrInstr = TOKEN_GET_VAR;
+            ptrInstr++;
+            *ptrInstr = *(ptrBlockStack - 1) + 1;      // increment
+            ptrInstr++;
+            *ptrInstr = TOKEN_SGN;
+            ptrInstr++;
+            *ptrInstr = OPER_EQUAL;
+            ptrInstr++;
+            *ptrInstr = OPER_OR;
+            ptrInstr++;
+            *ptrInstr = TOKEN_IF;
+            ptrInstr++;
+            offsetIf = ptrInstr - &bufferInstr[0];
+            *(ptrStackControl - 2) = (int)offsetIf;
+            ptrInstr += 4;
+            break;
+          }
           if (*ptrBlockStack == START_UNTIL)
           {
             *ptrInstr = OPER_NOT;
             ptrInstr++;
+          }
+          if (*ptrBlockStack == START_REPEAT)
+          {
+            *ptrInstr = OPER_NOT_GREATER;
+            ptrInstr++;
+            *ptrInstr = TOKEN_IF;
+            ptrInstr++;
+            offsetIf = ptrInstr - &bufferInstr[0];
+            *(ptrStackControl - 2) = (int)offsetIf;
+            ptrInstr += 4;
+            break;
           }
           if ((*ptrBlockStack == START_UNTIL) ||
              (*ptrBlockStack == START_WHILE) ||
@@ -352,11 +584,14 @@ void fromBlockly(const char* ptrXMLFromBlockly)
             ptrInstr += 4;
             break;
           }
-          if (*ptrBlockStack != NUMBER_FIELD)
+          if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
           {
             *ptrInstr = *ptrBlockStack;
             ptrInstr++;
+            ptrBlockStack--;
           }
+          *ptrInstr = *ptrBlockStack;
+          ptrInstr++;
         }
       }
       else if (xmlcmp(ptrXML + 17, "ELSE") == 0)
@@ -369,11 +604,14 @@ void fromBlockly(const char* ptrXMLFromBlockly)
           {
             break;
           }
-          if (*ptrBlockStack != NUMBER_FIELD)
+          if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
           {
             *ptrInstr = *ptrBlockStack;
             ptrInstr++;
+            ptrBlockStack--;
           }
+          *ptrInstr = *ptrBlockStack;
+          ptrInstr++;
         }
         *ptrInstr = TOKEN_IF;
         ptrInstr++;
@@ -396,9 +634,17 @@ void fromBlockly(const char* ptrXMLFromBlockly)
       {
         ptrXML = strchr(ptrXML, '>') + 1;
         ptrXML = strchr(ptrXML, '>') + 2; // Point to byte after start of number.
-        *ptrInstr = TOKEN_NUMBER;
-        ptrInstr++;
-        (void)parseNumberInsideExpr(&ptrXML, &ptrInstr);
+        if (*(ptrXML - 1) == '-')
+        {
+          ptrXML++;     // Skip minus sign.
+          (void)parseNumberInsideExpr(&ptrXML, &ptrInstr);
+          *ptrInstr = OPER_UNARY_MINUS;
+          ptrInstr++;
+        }
+        else
+        {
+          (void)parseNumberInsideExpr(&ptrXML, &ptrInstr);
+        }
         ptrXML += 17;    // Discard "</field></shadow> tags.
         if (*ptrXML == '<' && xmlcmp(ptrXML, "<block") == 0)
         {   // Discard number just parsed (block has priority over shadow).
@@ -408,10 +654,7 @@ void fromBlockly(const char* ptrXMLFromBlockly)
       }
       else
       {
-#ifdef __EMSCRIPTEN__
-        databack("KInvalid name for shadow in XML");
-#endif
-        return;
+        return BLOCKLY_INVALID_NAME_FOR_SHADOW;
       }
     }
     else if (xmlcmp(ptrXML, "<next") == 0)
@@ -419,20 +662,20 @@ void fromBlockly(const char* ptrXMLFromBlockly)
       ptrBlockStack--;
       if (ptrBlockStack < blockStack)
       {
-#ifdef __EMSCRIPTEN__
-        databack("KToo many /block tags");
-#endif
-        return;
+        return BLOCKLY_TOO_MANY_CLOSING_BLOCK_TAGS;
       }
       if ((*ptrBlockStack == START_IF) || (*ptrBlockStack == START_ELSE))
       {     // Ignore these entries in stack of blocks.
         ptrBlockStack++;
       }
-      if (*ptrBlockStack != NUMBER_FIELD)
+      if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
       {
         *ptrInstr = *ptrBlockStack;
         ptrInstr++;
+        ptrBlockStack--;
       }
+      *ptrInstr = *ptrBlockStack;
+      ptrInstr++;
     }
     else if (xmlcmp(ptrXML, "</statement") == 0)
     {
@@ -441,6 +684,76 @@ void fromBlockly(const char* ptrXMLFromBlockly)
         ptrBlockStack--;
         if (*ptrBlockStack == START_STATEMENT)
         {
+          break;
+        }
+        if (*ptrBlockStack == START_FOR)
+        {
+          size_t offsetJmpStartFor;
+          size_t offsetAfterForExpression;
+          *ptrInstr = TOKEN_GET_VAR;
+          ptrInstr++;
+          *ptrInstr = *(ptrBlockStack - 2);          // counter
+          ptrInstr++;
+          *ptrInstr = TOKEN_GET_VAR;
+          ptrInstr++;
+          *ptrInstr = *(ptrBlockStack - 1) + 1;      // increment
+          ptrInstr++;
+          *ptrInstr = OPER_ADD;
+          ptrInstr++;
+          *ptrInstr = TOKEN_SET_VAR;
+          ptrInstr++;
+          *ptrInstr = *(ptrBlockStack - 2);          // counter
+          ptrInstr++;
+          ptrBlockStack -= 2;
+          // Jump to beginning of loop.
+          *ptrInstr = TOKEN_JMP;
+          ptrInstr++;
+          offsetJmpStartFor = ptrInstr - &bufferInstr[0];
+          setJmpOffset((int)offsetJmpStartFor, *(ptrStackControl - 1));
+          ptrInstr += 4;
+          offsetAfterForExpression = ptrInstr - &bufferInstr[0];
+          setJmpOffset(*(ptrStackControl - 2), (int)offsetAfterForExpression);
+          ptrStackControl -= 2;
+        }
+        if (*ptrBlockStack == START_REPEAT)
+        {
+          size_t offsetJmpStartRepeat;
+          size_t offsetAfterRepeatExpression;
+          // Increment repeat variable.
+          *ptrInstr = TOKEN_GET_VAR;
+          ptrInstr++;
+          *ptrInstr = *(ptrBlockStack-1);
+          ptrInstr++;
+          *ptrInstr = 1;
+          ptrInstr++;
+          *ptrInstr = 0;
+          ptrInstr++;
+          *ptrInstr = 1;
+          ptrInstr++;
+          *ptrInstr = 1;
+          ptrInstr++;
+          *ptrInstr = 0;
+          ptrInstr++;
+          *ptrInstr = 0;
+          ptrInstr++;
+          *ptrInstr = 0;
+          ptrInstr++;
+          *ptrInstr = OPER_ADD;
+          ptrInstr++;
+          *ptrInstr = TOKEN_SET_VAR;
+          ptrInstr++;
+          *ptrInstr = *(ptrBlockStack - 1);
+          ptrInstr++;
+          // Jump to beginning of loop.
+          *ptrInstr = TOKEN_JMP;
+          ptrInstr++;
+          offsetJmpStartRepeat = ptrInstr - &bufferInstr[0];
+          setJmpOffset((int)offsetJmpStartRepeat, *(ptrStackControl - 1));
+          ptrInstr += 4;
+          offsetAfterRepeatExpression = ptrInstr - &bufferInstr[0];
+          setJmpOffset(*(ptrStackControl - 2), (int)offsetAfterRepeatExpression);
+          ptrStackControl -= 2;
+          ptrBlockStack--;
           break;
         }
         if ((*ptrBlockStack == START_WHILE) ||
@@ -458,7 +771,7 @@ void fromBlockly(const char* ptrXMLFromBlockly)
           ptrStackControl -= 2;
           break;
         }
-        else if (*ptrBlockStack == START_IF)
+        if (*ptrBlockStack == START_IF)
         {
           // *(ptrStackIf-1) = Point to JMP just after DO statement.
           // *(ptrStackIf-2) = Point to next ELSE IF.
@@ -490,11 +803,14 @@ void fromBlockly(const char* ptrXMLFromBlockly)
           ptrStackControl -= 2;     // End of IF block.
           break;
         }
-        if (*ptrBlockStack != NUMBER_FIELD)
+        if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
         {
           *ptrInstr = *ptrBlockStack;
           ptrInstr++;
+          ptrBlockStack--;
         }
+        *ptrInstr = *ptrBlockStack;
+        ptrInstr++;
       }
     }
     ptrXML = strchr(ptrXML + 1, '>') + 1;  // Point to next XML entry.
@@ -502,11 +818,60 @@ void fromBlockly(const char* ptrXMLFromBlockly)
   while (ptrBlockStack > blockStack)
   {
     ptrBlockStack--;
-    if (*ptrBlockStack != NUMBER_FIELD)
+    if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
     {
       *ptrInstr = *ptrBlockStack;
       ptrInstr++;
+      ptrBlockStack--;
     }
+    *ptrInstr = *ptrBlockStack;
+    ptrInstr++;
   }
+  if (nbrTopBlocks != 1)
+  {
+    return BLOCKLY_ONE_TOP_BLOCK;
+  }
+  *ptrInstr = '\0';    // Add program terminator.
+  return BLOCKLY_NO_ERROR;
 }
 
+void fromBlockly(const char* ptrXMLFromBlockly)
+{
+  int index;
+  int rc = parseBlocklyXml(ptrXMLFromBlockly);
+  if (rc != BLOCKLY_NO_ERROR)
+  {
+    showBlocklyError(rc);
+    return;
+  }
+  ptrBlocklyOutput = output;
+  copyStr(&ptrBlocklyOutput, "2<ul>");
+  nbrBlocklyOutputLines = 0;
+  // Use linked big integers for Blockly variables.
+  initLinkedBigInt();
+  for (index = 0; index < BLOCKLY_NBR_VARIABLES; index++)
+  {   // Initialize all variables to zero.
+    intToLinkedBigInt(&pstVariables[index], 0);
+  }
+#ifdef __EMSCRIPTEN__
+  databack("L");  // Exit Blockly mode.
+#endif
+  (void)ComputeExpression(bufferInstr, NULL);
+  copyStr(&ptrBlocklyOutput, "</ul>");
+  beginLine(&ptrBlocklyOutput);
+  copyStr(&ptrBlocklyOutput, lang ? COPYRIGHT_SPANISH : COPYRIGHT_ENGLISH );
+  finishLine(&ptrBlocklyOutput);
+#ifdef __EMSCRIPTEN__
+  databack(output);
+#endif
+}
+
+void setBlocklyVar(int index, BigInteger* value)
+{
+  setLinkedBigInteger(&pstVariables[index], value);
+}
+
+void getBlocklyVar(int index, BigInteger* value)
+{
+  getBigIntegerFromLinked(pstVariables[index], value);
+}

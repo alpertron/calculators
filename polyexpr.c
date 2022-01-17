@@ -50,8 +50,8 @@ struct sFuncOperExpr stFuncOperPolyExpr[] =
   {NULL, 0},
   // Fourth section: binary operators.
   {"**", OPER_POWER, 1}, // This must be located before multiplication operator.
-  {"+", OPER_PLUS, 3},
-  {"-", OPER_MINUS, 3},
+  {"+", OPER_ADD, 3},
+  {"-", OPER_SUBT, 3},
   {"*", OPER_MULTIPLY, 2},
   {"%", OPER_REMAINDER, 2},
   {"/", OPER_DIVIDE, 2},
@@ -879,7 +879,7 @@ int ComputePolynomial(const char* input, int expo)
       ptrValue1 = stackValues[stackIndex - 1];
       DerPolynomial(ptrValue1);
       break;
-    case OPER_PLUS:
+    case OPER_ADD:
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
@@ -924,7 +924,7 @@ int ComputePolynomial(const char* input, int expo)
         return rc;
       }
       break;
-    case OPER_MINUS:
+    case OPER_SUBT:
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];

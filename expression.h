@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 31 de diciembre de 2021."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 31 December 2021."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 16 de enero de 2022."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 16 January 2022."
 
 #include <stdbool.h>
 #ifdef __EMSCRIPTEN__
@@ -50,8 +50,8 @@ void databack(const char *data);
 #define OPER_DIVIDE                   9
 #define OPER_REMAINDER               10
 #define OPER_UNARY_MINUS             11
-#define OPER_PLUS                    12
-#define OPER_MINUS                   13
+#define OPER_ADD                     12
+#define OPER_SUBT                    13
 #define OPER_SHR                     14
 #define OPER_SHL                     15
 #define OPER_NOT_GREATER             16
@@ -69,6 +69,7 @@ void databack(const char *data);
 #define OPER_PAREN                   28
 #define TOKEN_RANDOM                 29
 #define TOKEN_ABS                    30
+#define TOKEN_SGN                    31
 
 
 enum eExprErr
