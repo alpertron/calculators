@@ -643,8 +643,8 @@ function initBlockly()
     return;
   }
   blocklyLoaded = 1;
-  script1 = loadScript("blockly0002.js");
-  script2 = loadScript(lang? "es0002.js": "en0002.js");
+  script1 = loadScript("blockly0003.js");
+  script2 = loadScript(lang? "es0003.js": "en0003.js");
 }
 
 function startUp()

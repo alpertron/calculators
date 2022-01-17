@@ -3,7 +3,7 @@
  * @externs
  */
 
-var useBlockly = function(callback)
+var useBlockly = function(callback, lang)
 {
 };
 
