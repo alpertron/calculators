@@ -2039,9 +2039,13 @@ int BpswPrimalityTest(const BigInteger *pValue)
   int nbrLimbs = pValue->nbrLimbs;
   const limb* limbs = pValue->limbs;
   static BigInteger tmp;
-  if ((nbrLimbs == 1) && (limbs->x <= 2))
+  if ((nbrLimbs == 1) && (limbs->x <= 1))
   {
-    return 0;    // Indicate prime.
+    return 1;    // Indicate not prime if 0, -1, or 1.
+  }
+  if ((nbrLimbs == 1) && (limbs->x <= 3))
+  {
+    return 0;    // Indicate prime if 2, -2, 3 or -3.
   }
   if ((limbs->x & 1) == 0)
   {
