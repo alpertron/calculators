@@ -37,7 +37,6 @@ static BigInteger ValNn;
 static BigInteger z;
 static BigInteger Mult;
 static BigInteger currentSolution;
-static BigInteger U;
 static BigInteger SqrtDisc;
 static BigInteger prime;
 static BigInteger K1;
@@ -337,32 +336,56 @@ static void SolveEquation(void)
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);
     expon = pstFactor->multiplicity;
     (void)BigIntPowerIntExp(&prime, expon, &V);
-    (void)BigIntRemainder(&ValA, &V, &L);
-    if (BigIntIsZero(&L))
-    {     // ValA multiple of prime, means linear equation mod prime.
+    (void)BigIntRemainder(&ValA, &prime, &L);
+    if (BigIntIsZero(&L) && !((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2)))
+    {     // ValA multiple of prime, means linear equation mod prime. Also prime is not 2.
       if ((BigIntIsZero(&ValB)) && !(BigIntIsZero(&ValC)))
       {
         return;  // There are no solutions: ValB=0 and ValC!=0
       }
-      BigIntGcd(&ValB, &V, &U);
-      (void)BigIntDivide(&V, &U, &Q);
-      (void)BigIntDivide(&ValB, &U, &V);
-      (void)BigIntDivide(&ValC, &U, &L);
-      BigIntNegate(&V, &V);
-      if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
-      {      // If prime is 2.
-        BigIntModularDivisionPower2(&L, &V, &Q, &Solution1[factorIndex]);
-      }
-      else
+      // Perform Newton approximation:
+      // x_{n+1} = x_n - (a*x_n^2 + b*x_n + c) / (2*a_x + b)      
+      BigInteger* ptrSolution = &Solution1[factorIndex];
+      int NumberLengthBytes;
+      NumberLength = prime.nbrLimbs;
+      NumberLengthBytes = NumberLength * (int)sizeof(limb);
+      (void)memcpy(TestNbr, prime.limbs, NumberLengthBytes);
+      TestNbr[NumberLength].x = 0;
+      GetMontgomeryParms(NumberLength);
+      BigIntModularDivision(&ValC, &ValB, &prime, ptrSolution);
+      BigIntNegate(ptrSolution, ptrSolution);
+      if (ptrSolution->sign == SIGN_NEGATIVE)
       {
-        int NumberLengthBytes;
-        NumberLength = Q.nbrLimbs;
+        BigIntAdd(ptrSolution, &prime, ptrSolution);
+      }
+      for (int currentExpon = 2; currentExpon < 2 * expon; currentExpon *= 2)
+      {
+        (void)BigIntPowerIntExp(&prime, currentExpon, &V);
+        BigIntMultiply(&ValA, ptrSolution, &Q);  // a*x_n
+        CopyBigInt(&L, &Q);
+        BigIntAdd(&Q, &ValB, &Q);                // a*x_n + b
+        BigIntRemainder(&Q, &V, &Q);
+        BigIntMultiply(&Q, ptrSolution, &Q);     // a*x_n^2 + b*x_n
+        BigIntAdd(&Q, &ValC, &Q);                // a*x_n^2 + b*x_n + c
+        BigIntRemainder(&Q, &V, &Q);             // Numerator. 
+        multint(&L, &L, 2);                      // 2*a*x_n
+        BigIntAdd(&L, &ValB, &L);                // 2*a*x_n + b
+        BigIntRemainder(&L, &V, &L);             // Denominator
+        NumberLength = V.nbrLimbs;
         NumberLengthBytes = NumberLength * (int)sizeof(limb);
-        (void)memcpy(TestNbr, Q.limbs, NumberLengthBytes);
+        (void)memcpy(TestNbr, V.limbs, NumberLengthBytes);
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
-        BigIntModularDivision(&L, &V, &Q, &Solution1[factorIndex]);
+        BigIntModularDivision(&Q, &L, &V, &z);
+        BigIntSubt(ptrSolution, &z, ptrSolution);
+        BigIntRemainder(ptrSolution, &V, ptrSolution);
+        if (ptrSolution->sign == SIGN_NEGATIVE)
+        {
+          BigIntAdd(ptrSolution, &V, ptrSolution);
+        }
       }
+      (void)BigIntPowerIntExp(&prime, expon, &Q);
+      BigIntRemainder(ptrSolution, &Q, ptrSolution);      
       CopyBigInt(&Solution2[factorIndex], &Solution1[factorIndex]);
     }
     else

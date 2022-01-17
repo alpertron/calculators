@@ -711,7 +711,6 @@ void SolveQuadModEquation(void)
   static BigInteger z;
   static BigInteger Mult;
   static BigInteger currentSolution;
-  static BigInteger U;
   static BigInteger SqrtDisc;
   static BigInteger discriminant;
   static BigInteger V;
@@ -842,33 +841,57 @@ void SolveQuadModEquation(void)
     NumberLength = *pstFactor->ptrFactor;
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);   // Get value of prime factor.
     (void)BigIntPowerIntExp(&prime, expon, &V);       // Get value of prime power.
-    (void)BigIntRemainder(&coeffQuadr, &V, &L);       // Check whether quadratic coefficient is multiple of prime power.
-    if (BigIntIsZero(&L))
-    {     // ValA multiple of prime, means linear equation mod prime.
-      if (BigIntIsZero(&coeffLinear) && !BigIntIsZero(&coeffIndep))
+    (void)BigIntRemainder(&coeffQuadr, &prime, &L);
+    if (BigIntIsZero(&L) && !((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2)))
+    {     // coeffQuadr multiple of prime, means linear equation mod prime. Also prime is not 2.
+      if ((BigIntIsZero(&coeffLinear)) && !(BigIntIsZero(&coeffIndep)))
       {
-        return;  // There are no solutions: ValB is equal to zero and ValC is different from zero.
+        return;  // There are no solutions: coeffLinear = 0 and coeffIndep != 0
       }
-      BigIntGcd(&coeffLinear, &V, &U);
-      (void)BigIntDivide(&V, &U, &Q);
-      (void)BigIntDivide(&coeffLinear, &U, &V);
-      (void)BigIntDivide(&coeffIndep, &U, &L);
-      BigIntNegate(&V, &V);
-      if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
-      {      // If prime is 2.
-        BigIntModularDivisionPower2(&L, &V, &Q, &common.quad.Solution1[factorIndex]);
-      }
-      else
+      // Perform Newton approximation:
+      // x_{n+1} = x_n - (a*x_n^2 + b*x_n + c) / (2*a_x + b)      
+      BigInteger* ptrSolution = &common.quad.Solution1[factorIndex];
+      int NumberLengthBytes;
+      NumberLength = prime.nbrLimbs;
+      NumberLengthBytes = NumberLength * (int)sizeof(limb);
+      (void)memcpy(TestNbr, prime.limbs, NumberLengthBytes);
+      TestNbr[NumberLength].x = 0;
+      GetMontgomeryParms(NumberLength);
+      BigIntModularDivision(&coeffIndep, &coeffLinear, &prime, ptrSolution);
+      BigIntNegate(ptrSolution, ptrSolution);
+      if (ptrSolution->sign == SIGN_NEGATIVE)
       {
-        int lenBytes;
-        NumberLength = Q.nbrLimbs;
-        lenBytes = NumberLength * (int)sizeof(limb);
-        (void)memcpy(TestNbr, Q.limbs, lenBytes);
+        BigIntAdd(ptrSolution, &prime, ptrSolution);
+      }
+      for (int currentExpon = 2; currentExpon < 2 * expon; currentExpon *= 2)
+      {
+        (void)BigIntPowerIntExp(&prime, currentExpon, &V);
+        BigIntMultiply(&coeffQuadr, ptrSolution, &Q);  // a*x_n
+        CopyBigInt(&L, &Q);
+        BigIntAdd(&Q, &coeffLinear, &Q);         // a*x_n + b
+        BigIntRemainder(&Q, &V, &Q);
+        BigIntMultiply(&Q, ptrSolution, &Q);     // a*x_n^2 + b*x_n
+        BigIntAdd(&Q, &coeffIndep, &Q);          // a*x_n^2 + b*x_n + c
+        BigIntRemainder(&Q, &V, &Q);             // Numerator. 
+        multint(&L, &L, 2);                      // 2*a*x_n
+        BigIntAdd(&L, &coeffLinear, &L);         // 2*a*x_n + b
+        BigIntRemainder(&L, &V, &L);             // Denominator
+        NumberLength = V.nbrLimbs;
+        NumberLengthBytes = NumberLength * (int)sizeof(limb);
+        (void)memcpy(TestNbr, V.limbs, NumberLengthBytes);
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
-        BigIntModularDivision(&L, &V, &Q, &common.quad.Solution1[factorIndex]);
+        BigIntModularDivision(&Q, &L, &V, &z);
+        BigIntSubt(ptrSolution, &z, ptrSolution);
+        BigIntRemainder(ptrSolution, &V, ptrSolution);
+        if (ptrSolution->sign == SIGN_NEGATIVE)
+        {
+          BigIntAdd(ptrSolution, &V, ptrSolution);
+        }
       }
-      CopyBigInt(&common.quad.Solution2[factorIndex], &common.quad.Solution1[factorIndex]);
+      (void)BigIntPowerIntExp(&prime, expon, &Q);
+      BigIntRemainder(ptrSolution, &Q, ptrSolution);
+      CopyBigInt(&common.quad.Solution2[factorIndex], ptrSolution);
     }
     else
     {                   // Quadratic equation mod prime
