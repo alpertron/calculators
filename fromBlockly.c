@@ -306,7 +306,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
       }
       startVariable = strchr(ptrXML, '>') + 1;
       endVariable = strchr(startVariable, '<');
-      if (endVariable - startVariable >= BLOCKLY_VARIABLE_NAME_LEN)
+      if ((endVariable - startVariable) >= BLOCKLY_VARIABLE_NAME_LEN)
       {
         return BLOCKLY_VARIABLE_NAME_TOO_LONG;
       }

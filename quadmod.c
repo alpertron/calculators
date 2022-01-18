@@ -358,19 +358,19 @@ static void SolveEquation(void)
       {
         BigIntAdd(ptrSolution, &prime, ptrSolution);
       }
-      for (int currentExpon = 2; currentExpon < 2 * expon; currentExpon *= 2)
+      for (int currentExpon = 2; currentExpon < (2 * expon); currentExpon *= 2)
       {
         (void)BigIntPowerIntExp(&prime, currentExpon, &V);
-        BigIntMultiply(&ValA, ptrSolution, &Q);  // a*x_n
+        (void)BigIntMultiply(&ValA, ptrSolution, &Q);// a*x_n
         CopyBigInt(&L, &Q);
-        BigIntAdd(&Q, &ValB, &Q);                // a*x_n + b
-        BigIntRemainder(&Q, &V, &Q);
-        BigIntMultiply(&Q, ptrSolution, &Q);     // a*x_n^2 + b*x_n
-        BigIntAdd(&Q, &ValC, &Q);                // a*x_n^2 + b*x_n + c
-        BigIntRemainder(&Q, &V, &Q);             // Numerator. 
-        multint(&L, &L, 2);                      // 2*a*x_n
-        BigIntAdd(&L, &ValB, &L);                // 2*a*x_n + b
-        BigIntRemainder(&L, &V, &L);             // Denominator
+        BigIntAdd(&Q, &ValB, &Q);                    // a*x_n + b
+        (void)BigIntRemainder(&Q, &V, &Q);
+        (void)BigIntMultiply(&Q, ptrSolution, &Q);   // a*x_n^2 + b*x_n
+        BigIntAdd(&Q, &ValC, &Q);                    // a*x_n^2 + b*x_n + c
+        (void)BigIntRemainder(&Q, &V, &Q);           // Numerator. 
+        multint(&L, &L, 2);                          // 2*a*x_n
+        BigIntAdd(&L, &ValB, &L);                    // 2*a*x_n + b
+        (void)BigIntRemainder(&L, &V, &L);           // Denominator
         NumberLength = V.nbrLimbs;
         NumberLengthBytes = NumberLength * (int)sizeof(limb);
         (void)memcpy(TestNbr, V.limbs, NumberLengthBytes);
@@ -378,14 +378,14 @@ static void SolveEquation(void)
         GetMontgomeryParms(NumberLength);
         BigIntModularDivision(&Q, &L, &V, &z);
         BigIntSubt(ptrSolution, &z, ptrSolution);
-        BigIntRemainder(ptrSolution, &V, ptrSolution);
+        (void)BigIntRemainder(ptrSolution, &V, ptrSolution);
         if (ptrSolution->sign == SIGN_NEGATIVE)
         {
           BigIntAdd(ptrSolution, &V, ptrSolution);
         }
       }
       (void)BigIntPowerIntExp(&prime, expon, &Q);
-      BigIntRemainder(ptrSolution, &Q, ptrSolution);      
+      (void)BigIntRemainder(ptrSolution, &Q, ptrSolution);      
       CopyBigInt(&Solution2[factorIndex], &Solution1[factorIndex]);
     }
     else

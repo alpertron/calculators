@@ -328,7 +328,7 @@ function useBlockly(callback, lang)
     ecmToolbar += "{" + String.fromCharCode(groupNbr, itemNbr);
     /** @suppress {checkTypes} */
     destArray["type"] = String.fromCharCode(groupNbr, itemNbr);
-    if (message.indexOf("concat") == 0)
+    if (message.indexOf("concat") === 0)
     {
       var options;
       if (lang)
@@ -343,7 +343,7 @@ function useBlockly(callback, lang)
         options = [["not repeated in ascending order", "0"],
                    ["not repeated in descending order", "1"],
                    ["repeated in ascending order", "2"],
-                   ["repeated in descending order", "3"]]
+                   ["repeated in descending order", "3"]];
       }  
       /** @suppress {checkTypes} */
       destArray["args0"] = [{"type": "input_value", "name": "1"},
