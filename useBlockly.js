@@ -314,7 +314,7 @@ function useBlockly(callback, lang)
   {
     destArray = new Array();
     /** @type {Array<string>} */
-    var oneBlock = defineBlocks[index].split(";");
+    var oneBlock = defineBlocks[+index].split(";");
     /** @type {number} */
     var nbr = +oneBlock[0];
     /** @type {string} */
@@ -391,7 +391,7 @@ function useBlockly(callback, lang)
     destArray["inputsInline"] = true;
     /** @suppress {checkTypes} */
     destArray["colour"] = oneBlock[0] % 1000;
-    blocksUncompressed[uncompressedIndex] = destArray;
+    blocksUncompressed[+uncompressedIndex] = destArray;
     uncompressedIndex++;
     itemNbr++;
   }
