@@ -146,15 +146,19 @@ static unsigned int nextRandom(void)
 {
   uint32_t s;
   uint32_t t;
-  if ((randomSeed.seed[0] == 0) && (randomSeed.seed[1] == 0) &&
-    (randomSeed.seed[2] == 0) && (randomSeed.seed[3] == 0))
+  if ((randomSeed.seed[0] == 0U) && (randomSeed.seed[1] == 0U) &&
+    (randomSeed.seed[2] == 0U) && (randomSeed.seed[3] == 0U))
   {
 #ifdef __EMSCRIPTEN__
     double tenth = tenths();
-    randomSeed.seed[0] = (uint32_t)(tenth - 738264237.0 * floor(tenth / 738264237.0));
-    randomSeed.seed[1] = (uint32_t)(tenth - 965457348.0 * floor(tenth / 965457348.0));
-    randomSeed.seed[2] = (uint32_t)(tenth - 432155666.0 * floor(tenth / 432155666.0));
-    randomSeed.seed[3] = (uint32_t)(tenth - 957884955.0 * floor(tenth / 957884955.0));
+    double dSeed = tenth - 738264237.0 * floor(tenth / 738264237.0);
+    randomSeed.seed[0] = (uint32_t)dSeed;
+    dSeed = tenth - 965457348.0 * floor(tenth / 965457348.0);
+    randomSeed.seed[1] = (uint32_t)dSeed;
+    dSeed = tenth - 432155666.0 * floor(tenth / 432155666.0);
+    randomSeed.seed[2] = (uint32_t)dSeed;
+    dSeed = tenth - 957884955.0 * floor(tenth / 957884955.0);
+    randomSeed.seed[3] = (uint32_t)dSeed;
 #else
     randomSeed.seed[0] = 178546887U;
     randomSeed.seed[1] = 7585185U;

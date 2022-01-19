@@ -3376,6 +3376,9 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
         cycle3Found = 1;
         SaveFactorDegrees(prime, factorDegreesCycle2Or3, nbrFactors);
       }
+      else
+      {   // No more cases.
+      }
     }
     if (cyclePrGtNOver2ToLess2Found != 0)
     {           // Group is very transitive.

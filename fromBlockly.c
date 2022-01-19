@@ -828,6 +828,9 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
         ptrInstr++;
       }
     }
+    else
+    {   // No more cases.
+    }
     ptrXML = strchr(ptrXML + 1, '>') + 1;  // Point to next XML entry.
   }
   while (ptrBlockStack > blockStack)

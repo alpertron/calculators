@@ -801,7 +801,7 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
       if (operand3.nbrLimbs < NumberLength)
       {
         int lenBytes = (NumberLength - operand3.nbrLimbs) * (int)sizeof(limb);
-        memset(&operand3.limbs[operand3.nbrLimbs], 0, lenBytes);
+        (void)memset(&operand3.limbs[operand3.nbrLimbs], 0, lenBytes);
       }
       CompressLimbsBigInteger((limb*)nbrTmp, &leadingCoeff);
       for (currentDegree = 0; currentDegree <= degreeProd; currentDegree++)

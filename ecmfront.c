@@ -1384,6 +1384,9 @@ EXTERNALIZE void doWork(void)
     doShowPrime = true;
     flags = 0;  // Do not perform factorization.
   }
+  else
+  {   // No more cases.
+  }
 #endif
   ptrData += 2;          // Skip app number and second comma.
   fromFile = (*ptrData == '1');

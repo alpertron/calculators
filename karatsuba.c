@@ -152,7 +152,7 @@ void multiplyWithBothLen(const limb* factor1, const limb* factor2, limb* result,
   if ((minLen == 1) && (minFact->x == 0))
   {     // Multiply by zero. Set product to zero.
     lenBytes = lenProd * (int)sizeof(int);
-    memset(result, 0, lenBytes);
+    (void)memset(result, 0, lenBytes);
     if (pResultLen != NULL)
     {
       *pResultLen = 1;
@@ -166,7 +166,7 @@ void multiplyWithBothLen(const limb* factor1, const limb* factor2, limb* result,
   }
   // Perform several multiplications and add all products.
   lenBytes = lenProd * (int)sizeof(int);
-  memset(accumulatedProd, 0, lenBytes);
+  (void)memset(accumulatedProd, 0, lenBytes);
   for (offset = 0; offset < (maxLen - minLen); offset += minLen)
   {
     multiplyWithBothLenLL(minFact, maxFact + offset, partialProd,
@@ -181,7 +181,7 @@ void multiplyWithBothLen(const limb* factor1, const limb* factor2, limb* result,
   AddBigNbr(accumulatedProd + offset, partialProd,
     accumulatedProd + offset, lenProd - offset);
   lenBytes = lenProd * (int)sizeof(int);
-  memcpy(result, accumulatedProd, lenBytes);
+  (void)memcpy(result, accumulatedProd, lenBytes);
   // Copy accumulatedProd to result.
   while ((lenProd > 1) && (accumulatedProd[lenProd - 1].x == 0))
   {
