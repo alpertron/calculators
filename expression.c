@@ -151,10 +151,10 @@ static unsigned int nextRandom(void)
   {
 #ifdef __EMSCRIPTEN__
     double tenth = tenths();
-    randomSeed.seed[0] = (uint32_t)(tenth - 738264237 * floor(tenth / 738264237));
-    randomSeed.seed[1] = (uint32_t)(tenth - 965457348 * floor(tenth / 965457348));
-    randomSeed.seed[2] = (uint32_t)(tenth - 432155666 * floor(tenth / 432155666));
-    randomSeed.seed[3] = (uint32_t)(tenth - 957884955 * floor(tenth / 957884955));
+    randomSeed.seed[0] = (uint32_t)(tenth - 738264237.0 * floor(tenth / 738264237.0));
+    randomSeed.seed[1] = (uint32_t)(tenth - 965457348.0 * floor(tenth / 965457348.0));
+    randomSeed.seed[2] = (uint32_t)(tenth - 432155666.0 * floor(tenth / 432155666.0));
+    randomSeed.seed[3] = (uint32_t)(tenth - 957884955.0 * floor(tenth / 957884955.0));
 #else
     randomSeed.seed[0] = 178546887U;
     randomSeed.seed[1] = 7585185U;
