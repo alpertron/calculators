@@ -204,18 +204,25 @@ static void skipID(const char** pptrXML)
 
 static void setJmpOffset(int offsetJmp, int offsetTarget)
 {
+  unsigned int shiftedTarget;
   bufferInstr[offsetJmp] = (char)offsetTarget;
-  bufferInstr[offsetJmp+1] = (char)(offsetTarget >> 8);
-  bufferInstr[offsetJmp+2] = (char)(offsetTarget >> 16);
-  bufferInstr[offsetJmp+3] = (char)(offsetTarget >> 24);
+  shiftedTarget = (unsigned int)offsetTarget >> 8;
+  bufferInstr[offsetJmp+1] = (char)shiftedTarget;
+  shiftedTarget = (unsigned int)offsetTarget >> 16;
+  bufferInstr[offsetJmp+2] = (char)shiftedTarget;
+  shiftedTarget = (unsigned int)offsetTarget >> 24;
+  bufferInstr[offsetJmp+3] = (char)shiftedTarget;
 }
 
 static int getVariableNbr(const char** ppXML)
 {
   int varNameSize;
+  size_t varNameSize_t;
   const char* ptrXML = strchr(*ppXML, '>') + 1;
-  ptrXML = strchr(ptrXML, '>') + 1;  // Point to variable.
-  varNameSize = (int)(strchr(ptrXML, '<') - ptrXML);
+  ptrXML = strchr(ptrXML, '>');  // Point to end of tag.
+  ptrXML++;                      // Point to variable.
+  varNameSize_t = strchr(ptrXML, '<') - ptrXML;
+  varNameSize = (int)varNameSize_t;
   for (int varNbr = 0; varNbr < nbrNamedVariables; varNbr++)
   {
     int index;
@@ -268,6 +275,8 @@ static void showBlocklyError(int rc)
     databack(lang? "KEl bloque suelto debe estar dentro de otro bloque":
       "KThe detached block must be inside another block");
     return;
+  default:
+    return;
 }
 #else
   (void)rc;
@@ -310,7 +319,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
       {
         return BLOCKLY_VARIABLE_NAME_TOO_LONG;
       }
-      memcpy(variableNames[nbrVariables], startVariable, endVariable - startVariable);
+      (void)memcpy(variableNames[nbrVariables], startVariable, endVariable - startVariable);
       nbrVariables++;
       ptrXML = strchr(endVariable, '>') + 1;
     }
@@ -409,7 +418,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
         *ptrBlockStack = START_REPEAT;
         ptrBlockStack++;
         // Store instructions to set the variable to zero.
-        memcpy(ptrInstr, startRepeatCode, sizeof(startRepeatCode));
+        (void)memcpy(ptrInstr, startRepeatCode, sizeof(startRepeatCode));
         ptrInstr += sizeof(startRepeatCode);
         *ptrInstr = (char)nbrVariables;
         ptrInstr++;
@@ -454,6 +463,9 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
         ptrBlockStack++;
         *ptrBlockStack = TOKEN_GET_VAR;
         ptrBlockStack++;
+      }
+      else
+      { // No more cases.
       }
     }
     else if (xmlcmp(ptrXML, "<value") == 0)
@@ -646,7 +658,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
           (void)parseNumberInsideExpr(&ptrXML, &ptrInstr);
         }
         ptrXML += 17;    // Discard "</field></shadow> tags.
-        if (*ptrXML == '<' && xmlcmp(ptrXML, "<block") == 0)
+        if ((*ptrXML == '<') && xmlcmp(ptrXML, "<block") == 0)
         {   // Discard number just parsed (block has priority over shadow).
           ptrInstr = ptrStartShadow;
           continue;
