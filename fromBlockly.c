@@ -494,6 +494,9 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
         *ptrBlockStack = START_IF;
         ptrBlockStack++;
       }
+      else
+      {   // No more cases.
+      }
     }
     else if (xmlcmp(ptrXML, "<statement") == 0)
     {

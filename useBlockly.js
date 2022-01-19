@@ -1,5 +1,6 @@
 "use strict";
 var goog;
+/* global Blockly */
 /** @type {function(string)} */
 var fromBlocklyRun;
 /** @type {number} */
