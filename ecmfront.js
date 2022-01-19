@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global useBlockly */
 /** @define {number} */ var lang = 1;   // Use with Closure compiler.
 (function(global)
 {   // This method separates the name space from the Google Analytics code.
