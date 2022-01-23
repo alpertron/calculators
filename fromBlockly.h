@@ -38,6 +38,6 @@ enum
   };
 
 void fromBlockly(const char* ptrXMLFromBlockly);
-void setBlocklyVar(int index, BigInteger* value);
+void setBlocklyVar(int index, const BigInteger* value);
 void getBlocklyVar(int index, BigInteger* value);
 #endif

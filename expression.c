@@ -213,9 +213,9 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
   enum eExprErr retcode;
   char* pointerRPNbuffer;
   const char* ptrRPNbuffer;
-  const char* ptrRPNstartBuffer;
   int len;
 #ifdef USING_BLOCKLY
+  const char* ptrRPNstartBuffer;
   bool hexBak;
   bool doFactBak;
   int offset;
@@ -239,8 +239,8 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
     ptrRPNbuffer = expr;
     valueXused = false;
   }
-#endif
   ptrRPNstartBuffer = ptrRPNbuffer;
+#endif
   stackIndex = -1;
   comprStackOffset[0] = 0;
   while (*ptrRPNbuffer != '\0')

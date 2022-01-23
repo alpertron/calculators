@@ -610,6 +610,7 @@ function fillCache()
 
 function fromBlocklyRun(xml)
 {
+  fromFile = "0";
   performWork(8, xml);
 }
 

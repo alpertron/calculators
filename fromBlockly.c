@@ -24,11 +24,17 @@
 #include "exprfact.h"
 #include "linkedbignbr.h"
 #include "output.h"
+#include <stdio.h>
 
+#ifdef __EMSCRIPTEN__
+#define SEND_DATA_TO_OUTPUT(n)   databack(n)
+#else
+#define SEND_DATA_TO_OUTPUT(n)   printf("%s\n",n)
+#endif
 char* ptrBlocklyOutput;
 int nbrBlocklyOutputLines;
 static char bufferInstr[BLOCKLY_INSTR_BUFFER_SIZE];
-static char variableNames[BLOCKLY_NBR_VARIABLES][BLOCKLY_VARIABLE_NAME_LEN];
+static char variableNames[BLOCKLY_NBR_VARIABLES * BLOCKLY_VARIABLE_NAME_LEN];
 static char blockStack[BLOCKLY_INSTR_STACK_SIZE];
 static int stackIf[BLOCKLY_INSTR_STACK_SIZE];
 static int nbrVariables;
@@ -205,35 +211,46 @@ static void skipID(const char** pptrXML)
 static void setJmpOffset(int offsetJmp, int offsetTarget)
 {
   unsigned int shiftedTarget;
-  bufferInstr[offsetJmp] = (char)offsetTarget;
-  shiftedTarget = (unsigned int)offsetTarget >> 8;
-  bufferInstr[offsetJmp+1] = (char)shiftedTarget;
-  shiftedTarget = (unsigned int)offsetTarget >> 16;
-  bufferInstr[offsetJmp+2] = (char)shiftedTarget;
-  shiftedTarget = (unsigned int)offsetTarget >> 24;
-  bufferInstr[offsetJmp+3] = (char)shiftedTarget;
+  if (offsetJmp >= 0)
+  {
+    bufferInstr[offsetJmp] = (char)offsetTarget;
+    shiftedTarget = (unsigned int)offsetTarget >> 8;
+    bufferInstr[offsetJmp + 1] = (char)shiftedTarget;
+    shiftedTarget = (unsigned int)offsetTarget >> 16;
+    bufferInstr[offsetJmp + 2] = (char)shiftedTarget;
+    shiftedTarget = (unsigned int)offsetTarget >> 24;
+    bufferInstr[offsetJmp + 3] = (char)shiftedTarget;
+  }
 }
 
 static int getVariableNbr(const char** ppXML)
 {
   int varNameSize;
+  const char* ptrVariableNames = variableNames;
   size_t varNameSize_t;
-  const char* ptrXML = strchr(*ppXML, '>') + 1;
-  ptrXML = strchr(ptrXML, '>');  // Point to end of tag.
-  ptrXML++;                      // Point to variable.
+  // Point to end of block tag.
+  const char* ptrXML = strchr(*ppXML, '>');
+  // Point to start of value tag.
+  ptrXML++;
+  // Point to end of value tag.
+  ptrXML = strchr(ptrXML, '>');
+  // Point to start of name of variable.
+  ptrXML++;
+  // Get length of name of variable.
   varNameSize_t = strchr(ptrXML, '<') - ptrXML;
   varNameSize = (int)varNameSize_t;
   for (int varNbr = 0; varNbr < nbrNamedVariables; varNbr++)
   {
     int index;
-    int curVarNameSize = (int)strlen(variableNames[varNbr]);
+    int curVarNameSize = *ptrVariableNames;
     if (curVarNameSize != varNameSize)
     {
       continue;
     }
+    ptrVariableNames++;
     for (index = 0; index < curVarNameSize; index++)
     {
-      if (variableNames[varNbr][index] != *(ptrXML + index))
+      if (*(ptrVariableNames + index) != *(ptrXML + index))
       {
         break;
       }
@@ -243,50 +260,67 @@ static int getVariableNbr(const char** ppXML)
       *ppXML = ptrXML;
       return varNbr;
     }
+    ptrVariableNames += curVarNameSize; // Point to next name.
   }
   return -1;
 }
 
 static void showBlocklyError(int rc)
 {
-#ifdef __EMSCRIPTEN__
   switch (rc)
   {
   case BLOCKLY_TOO_MANY_VARIABLES:
-    databack(lang? "KDemasiadas variables definidas": "KToo many variables defined");
+    SEND_DATA_TO_OUTPUT(lang ? "KDemasiadas variables definidas" :
+      "KToo many variables defined");
     return;
   case BLOCKLY_VARIABLE_NAME_TOO_LONG:
-    databack(lang?"KEl nombre de la variable es muy largo": "KVariable name is too long");
+    SEND_DATA_TO_OUTPUT(lang ? "KEl nombre de la variable es muy largo" :
+      "KVariable name is too long");
     return;
   case BLOCKLY_ONE_TOP_BLOCK:
-    databack(lang? "KDebe haber un solo conjunto de bloques unidos": 
+    SEND_DATA_TO_OUTPUT(lang ? "KDebe haber un solo conjunto de bloques unidos" :
       "KThere must be only one set of joined blocks");
     return;
   case BLOCKLY_INVALID_BLOCK_TYPE:
-    databack(lang? "KTipo de bloque inválido": "KInvalid block type.");
+    SEND_DATA_TO_OUTPUT(lang ? "KTipo de bloque inválido" :
+      "KInvalid block type.");
     return;
   case BLOCKLY_INVALID_NAME_FOR_SHADOW:
-    databack(lang ? "KNombre inválido para el tag shadow en XML" : "KInvalid name for shadow tag in XML");
+    SEND_DATA_TO_OUTPUT(lang ? "KNombre inválido para el tag shadow en XML" :
+      "KInvalid name for shadow tag in XML");
     return;
   case BLOCKLY_TOO_MANY_CLOSING_BLOCK_TAGS:
-    databack(lang? "KDemasiados tags /block": "KToo many /block tags");
+    SEND_DATA_TO_OUTPUT(lang ? "KDemasiados tags /block" :
+      "KToo many /block tags");
     return;
   case BLOCKLY_NO_OUTPUT_EXPECTED:
-    databack(lang? "KEl bloque suelto debe estar dentro de otro bloque":
+    SEND_DATA_TO_OUTPUT(lang ? "KEl bloque suelto debe estar dentro de otro bloque" :
       "KThe detached block must be inside another block");
     return;
   default:
     return;
+  }
 }
-#else
-  (void)rc;
-#endif
+
+static void EncodeElse(int *ptrStackControl)
+{
+  // Encode JMP after DO statement.
+  size_t offsetEndIf = ptrInstr - &bufferInstr[0];
+  *ptrInstr = TOKEN_JMP;
+  *(ptrStackControl - 1) = (int)offsetEndIf + 1;
+  ptrInstr++;              // Skip token.
+  ptrInstr += sizeof(int); // Skip jump offset.
+  // Next ELSE IF.
+  offsetEndIf = ptrInstr - &bufferInstr[0];
+  setJmpOffset(*(ptrStackControl - 2), (int)offsetEndIf);
+  *(ptrStackControl - 2) = -1;
 }
 
 static int parseBlocklyXml(const char* ptrXMLFromBlockly)
 {
   const char* ptrXML;
   int nbrTopBlocks = 0;
+  char* ptrLastVariableName;
   char* ptrBlockStack = blockStack;
   char* ptrStartShadow = NULL;
   int* ptrStackControl = stackIf;
@@ -298,8 +332,10 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
   if (xmlcmp(ptrXML, "<variables") == 0)
   {   // Blockly XML has variables.
     ptrXML = strchr(ptrXML + 1, '<');  // Point to first variable
+    ptrLastVariableName = variableNames;
     for (;;)
     {
+      size_t variableNameSize;
       // Point to next variable.
       const char* startVariable;
       const char* endVariable;
@@ -315,11 +351,20 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
       }
       startVariable = strchr(ptrXML, '>') + 1;
       endVariable = strchr(startVariable, '<');
-      if ((endVariable - startVariable) >= BLOCKLY_VARIABLE_NAME_LEN)
+      variableNameSize = endVariable - startVariable;
+      if ((endVariable - startVariable) > 127)
       {
         return BLOCKLY_VARIABLE_NAME_TOO_LONG;
       }
-      (void)memcpy(variableNames[nbrVariables], startVariable, endVariable - startVariable);
+      if (ptrLastVariableName + variableNameSize >=
+          &variableNames[sizeof(variableNames)])
+      {    // Too many variables.
+        return BLOCKLY_TOO_MANY_VARIABLES;
+      }
+      *ptrLastVariableName = (char)variableNameSize;
+      ptrLastVariableName++;
+      (void)memcpy(ptrLastVariableName, startVariable, variableNameSize);
+      ptrLastVariableName += variableNameSize;
       nbrVariables++;
       ptrXML = strchr(endVariable, '>') + 1;
     }
@@ -441,8 +486,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
         *ptrBlockStack = (char)nbrVariables;
         ptrBlockStack++;
         *ptrBlockStack = START_FOR;
-        ptrBlockStack++;
-
+        ptrBlockStack++;     
       }
       else if (xmlcmp(ptrXML, "variables_set") == 0)
       {
@@ -493,6 +537,10 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
       {
         *ptrBlockStack = START_IF;
         ptrBlockStack++;
+        if (*(ptrXML + 2) != '0')
+        { // Not first IF in IF - ELSE IF - ELSE chain.
+          EncodeElse(ptrStackControl);
+        }
       }
       else
       {   // No more cases.
@@ -611,7 +659,6 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
       }
       else if (xmlcmp(ptrXML + 17, "ELSE") == 0)
       {
-        size_t offsetIf;
         while (ptrBlockStack > blockStack)
         {
           ptrBlockStack--;
@@ -619,20 +666,26 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
           {
             break;
           }
-          if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
+          else if (*ptrBlockStack >= START_FLOW_CONTROL)
+          {
+            ptrBlockStack++;
+            break;
+          }
+          else if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
           {
             *ptrInstr = *ptrBlockStack;
             ptrInstr++;
             ptrBlockStack--;
+            *ptrInstr = *ptrBlockStack;
+            ptrInstr++;
           }
-          *ptrInstr = *ptrBlockStack;
-          ptrInstr++;
+          else
+          {
+            *ptrInstr = *ptrBlockStack;
+            ptrInstr++;
+          }
         }
-        *ptrInstr = TOKEN_IF;
-        ptrInstr++;
-        offsetIf = ptrInstr - &bufferInstr[0];
-        *(ptrStackControl - 2) = (int)offsetIf;
-        ptrInstr += 4;
+        EncodeElse(ptrStackControl);
         *ptrBlockStack = START_ELSE;
       }
       else
@@ -674,23 +727,27 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
     }
     else if (xmlcmp(ptrXML, "<next") == 0)
     {
-      ptrBlockStack--;
-      if (ptrBlockStack < blockStack)
+      if (ptrBlockStack > blockStack)
       {
-        return BLOCKLY_TOO_MANY_CLOSING_BLOCK_TAGS;
-      }
-      if ((*ptrBlockStack == START_IF) || (*ptrBlockStack == START_ELSE))
-      {     // Ignore these entries in stack of blocks.
-        ptrBlockStack++;
-      }
-      if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
-      {
-        *ptrInstr = *ptrBlockStack;
-        ptrInstr++;
         ptrBlockStack--;
+        if (*ptrBlockStack >= START_FLOW_CONTROL)
+        {     // Ignore these entries in stack of blocks.
+          ptrBlockStack++;
+        }
+        else if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
+        {
+          *ptrInstr = *ptrBlockStack;
+          ptrInstr++;
+          ptrBlockStack--;
+          *ptrInstr = *ptrBlockStack;
+          ptrInstr++;
+        }
+        else
+        {
+          *ptrInstr = *ptrBlockStack;
+          ptrInstr++;
+        }
       }
-      *ptrInstr = *ptrBlockStack;
-      ptrInstr++;
     }
     else if (xmlcmp(ptrXML, "</statement") == 0)
     {
@@ -729,6 +786,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
           offsetAfterForExpression = ptrInstr - &bufferInstr[0];
           setJmpOffset(*(ptrStackControl - 2), (int)offsetAfterForExpression);
           ptrStackControl -= 2;
+          break;
         }
         if (*ptrBlockStack == START_REPEAT)
         {
@@ -792,16 +850,10 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
           // *(ptrStackIf-2) = Point to next ELSE IF.
           size_t offsetEndIf = ptrInstr - &bufferInstr[0];
           setJmpOffset(*(ptrStackControl - 1), (int)offsetEndIf);
-          // Encode JMP after DO statement.
-          *ptrInstr = TOKEN_JMP;
-          *(ptrStackControl - 1) = (int)offsetEndIf + 1;
-          ptrInstr++;              // Skip token.
-          ptrInstr += sizeof(int); // Skip jump offset.
-          // Next ELSE IF.
-          offsetEndIf = ptrInstr - &bufferInstr[0];
-          if (*(ptrStackControl - 2) >= 0)
-          {
+          if ((xmlcmp(ptrXML+12, "</block>") == 0))
+          {    // End of block IF.
             setJmpOffset(*(ptrStackControl - 2), (int)offsetEndIf);
+            ptrStackControl -= 2;
           }
           break;
         }
@@ -811,10 +863,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
           // *(ptrStackIf-2) = Point to next ELSE IF.
           size_t offsetEndIf = ptrInstr - &bufferInstr[0];
           setJmpOffset(*(ptrStackControl - 1), (int)offsetEndIf);
-          if (*(ptrStackControl - 2) >= 0)
-          {
-            setJmpOffset(*(ptrStackControl - 2), (int)offsetEndIf);
-          }
+          setJmpOffset(*(ptrStackControl - 2), (int)offsetEndIf);
           ptrStackControl -= 2;     // End of IF block.
           break;
         }
@@ -855,7 +904,6 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
 
 void fromBlockly(const char* ptrXMLFromBlockly)
 {
-  int index;
   int rc = parseBlocklyXml(ptrXMLFromBlockly);
   if (rc != BLOCKLY_NO_ERROR)
   {
@@ -867,7 +915,7 @@ void fromBlockly(const char* ptrXMLFromBlockly)
   nbrBlocklyOutputLines = 0;
   // Use linked big integers for Blockly variables.
   initLinkedBigInt();
-  for (index = 0; index < BLOCKLY_NBR_VARIABLES; index++)
+  for (int index = 0; index < BLOCKLY_NBR_VARIABLES; index++)
   {   // Initialize all variables to zero.
     intToLinkedBigInt(&pstVariables[index], 0);
   }
@@ -875,16 +923,19 @@ void fromBlockly(const char* ptrXMLFromBlockly)
   databack("L");  // Exit Blockly mode.
 #endif
   (void)ComputeExpression(bufferInstr, NULL);
+  if (nbrBlocklyOutputLines == 0)
+  {
+    copyStr(&ptrBlocklyOutput, lang? "<li>No hay nada para mostrar</li>":
+      "<li>There is nothing to print</li>");
+  }
   copyStr(&ptrBlocklyOutput, "</ul>");
   beginLine(&ptrBlocklyOutput);
   copyStr(&ptrBlocklyOutput, lang ? COPYRIGHT_SPANISH : COPYRIGHT_ENGLISH );
   finishLine(&ptrBlocklyOutput);
-#ifdef __EMSCRIPTEN__
-  databack(output);
-#endif
+  SEND_DATA_TO_OUTPUT(output);
 }
 
-void setBlocklyVar(int index, BigInteger* value)
+void setBlocklyVar(int index, const BigInteger* value)
 {
   setLinkedBigInteger(&pstVariables[index], value);
 }

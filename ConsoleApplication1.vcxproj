@@ -152,7 +152,7 @@
       <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;FACTORIZATION_APP=1;FACTORIZATION_FUNCTIONS=1;_LIB;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USING64BITS_;ENABLE_VERBOSE;POLYEXPR=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;FACTORIZATION_APP=1;FACTORIZATION_FUNCTIONS=1;_LIB;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_USING64BITS_;USING_BLOCKLY=1ENABLE_VERBOSE;POLYEXPR=1</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/F 3000000 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
