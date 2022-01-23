@@ -29,7 +29,7 @@
 #ifdef __EMSCRIPTEN__
 #define SEND_DATA_TO_OUTPUT(n)   databack(n)
 #else
-#define SEND_DATA_TO_OUTPUT(n)   printf("%s\n",n)
+#define SEND_DATA_TO_OUTPUT(n)   (void)printf("%s\n",n)
 #endif
 char* ptrBlocklyOutput;
 int nbrBlocklyOutputLines;
@@ -320,7 +320,6 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
 {
   const char* ptrXML;
   int nbrTopBlocks = 0;
-  char* ptrLastVariableName;
   char* ptrBlockStack = blockStack;
   char* ptrStartShadow = NULL;
   int* ptrStackControl = stackIf;
@@ -331,8 +330,8 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
   ptrXML = strchr(ptrXMLFromBlockly + 1, '<');
   if (xmlcmp(ptrXML, "<variables") == 0)
   {   // Blockly XML has variables.
+    char* ptrLastVariableName = variableNames;
     ptrXML = strchr(ptrXML + 1, '<');  // Point to first variable
-    ptrLastVariableName = variableNames;
     for (;;)
     {
       size_t variableNameSize;
@@ -356,7 +355,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
       {
         return BLOCKLY_VARIABLE_NAME_TOO_LONG;
       }
-      if (ptrLastVariableName + variableNameSize >=
+      if ((ptrLastVariableName + variableNameSize) >=
           &variableNames[sizeof(variableNames)])
       {    // Too many variables.
         return BLOCKLY_TOO_MANY_VARIABLES;
