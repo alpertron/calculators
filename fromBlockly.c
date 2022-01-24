@@ -726,12 +726,13 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
     }
     else if (xmlcmp(ptrXML, "<next") == 0)
     {
-      if (ptrBlockStack > blockStack)
+      while (ptrBlockStack > blockStack)
       {
         ptrBlockStack--;
         if (*ptrBlockStack >= START_FLOW_CONTROL)
         {     // Ignore these entries in stack of blocks.
           ptrBlockStack++;
+          break;
         }
         else if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
         {
@@ -849,7 +850,8 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
           // *(ptrStackIf-2) = Point to next ELSE IF.
           size_t offsetEndIf = ptrInstr - &bufferInstr[0];
           setJmpOffset(*(ptrStackControl - 1), (int)offsetEndIf);
-          if ((xmlcmp(ptrXML+12, "</block>") == 0))
+          if ((xmlcmp(ptrXML + 12, "</block>") == 0) ||
+            (xmlcmp(ptrXML + 12, "<next>") == 0))
           {    // End of block IF.
             setJmpOffset(*(ptrStackControl - 2), (int)offsetEndIf);
             ptrStackControl -= 2;
