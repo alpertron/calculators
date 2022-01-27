@@ -49,6 +49,17 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "x=1;x=x+1;x<10000;x;sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)" >> coverage.out
 lcov --capture --directory . --output-file ecm.info
 make clean
+make blockly
+./blockly xml.txt 0 >> coverage.out
+./blockly xml.txt 1 >> coverage.out
+./blockly xml.txt 2 >> coverage.out
+./blockly xml.txt 3 >> coverage.out
+./blockly xml.txt 4 >> coverage.out
+./blockly xml.txt 5 >> coverage.out
+./blockly xml.txt 6 >> coverage.out
+./blockly xml.txt 7 >> coverage.out
+lcov --capture --directory . --output-file blockly.info
+make clean
 make polfact
 echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "x^120-1" 0 >> coverage.out
@@ -281,4 +292,4 @@ curl -Ls -o codacy-coverage-reporter "https://artifacts.codacy.com/bin/codacy-co
 chmod +x codacy-coverage-reporter
 ./codacy-coverage-reporter report \
  -r ecm.info -r polfact.info -r fsquares.info -r fcubes.info -r dilog.info \
- -r quad.info -r quadmod.info -r contfrac.info -r gaussian.info
+ -r quad.info -r quadmod.info -r contfrac.info -r gaussian.info -r blockly.info

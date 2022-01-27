@@ -31,7 +31,7 @@ flags_squares=$(flags_squares_1) $(flags_coverage) -g -O0
 flags_other=$(flags_other_1) $(flags_coverage) -g -O0
 endif
 h_files=batch.h bignbr.h commonstruc.h expression.h factor.h highlevel.h polynomial.h showtime.h skiptest.h
-targets = ecm quad quadmod fsquares fcubes polfact dilog contfrac
+targets = ecm quad quadmod fsquares fcubes polfact dilog contfrac blockly
 .PHONY : all
 all: $(targets)
 
@@ -39,6 +39,11 @@ ecm: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.f
 factor.fco ecm.fco siqs.fco ecmfront.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco fromBlockly.fco linkedbignbr.fco test_ecm.fco
 	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco ecmfront.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco fromBlockly.fco linkedbignbr.fco test_ecm.fco $(flags_coverage) -lm -o $@
+
+blockly: expression.fbo parseexpr.fbo partition.fbo errors.fbo bigint.fbo division.fbo baseconv.fbo karatsuba.fbo modmult.fbo sqroot.fbo \
+factor.fbo ecm.fbo siqs.fbo ecmfront.fbo bignbr.fbo showtime.fbo from_musl.fbo inputstr.fbo batch.fbo fft.fbo gcdrings.fbo fromBlockly.fbo linkedbignbr.fbo test_blockly.fbo
+	gcc expression.fbo parseexpr.fbo partition.fbo errors.fbo bigint.fbo division.fbo baseconv.fbo karatsuba.fbo modmult.fbo sqroot.fbo \
+factor.fbo ecm.fbo siqs.fbo ecmfront.fbo bignbr.fbo showtime.fbo from_musl.fbo inputstr.fbo batch.fbo fft.fbo gcdrings.fbo fromBlockly.fbo linkedbignbr.fbo test_blockly.fbo $(flags_coverage) -lm -o $@
 
 gaussian: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco gaussian.fco GaussExpr.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco gcdrings.fco test_gaussian.fco
@@ -83,6 +88,9 @@ rootseq.oto quintics.oto bigrational.oto output.oto polynomial.oto polyexpr.oto 
 %.fco : %.c $(h_files)
 	gcc $(flags_factorization) -o $@ $<
 
+%.fbo : %.c $(h_files)
+	gcc $(flags_factorization) -DUSING_BLOCKLY=1 -o $@ $<
+
 %.oto : %.c $(h_files)
 	gcc $(flags_other) -o $@ $<
 
@@ -94,6 +102,9 @@ rootseq.oto quintics.oto bigrational.oto output.oto polynomial.oto polyexpr.oto 
 
 test_ecm.fco: test.c $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=13 -o $@ $<
+	
+test_blockly.fbo: test.c $(h_files)
+	gcc $(flags_factorization) -DDEBUG_CODE=22 -DUSING_BLOCKLY=1 -o $@ $<
 	
 test_gaussian.fco: test.c $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=12 -o $@ $<
@@ -120,5 +131,5 @@ test_polfact.oto: test.c $(h_files)
 	gcc $(flags_other) -DDEBUG_CODE=9 -o $@ $<
 
 clean:
-	rm -f *.oto *.fco *.sqo *.plo *.gcda *.gcno *.gcov $(targets)
+	rm -f *.oto *.fco *.fbo *.sqo *.plo *.gcda *.gcno *.gcov $(targets)
 

@@ -398,21 +398,47 @@ int main(int argc, char* argv[])
   GetMontgomeryParms(1);
   DividePolynomial(dividendPoly, dividendDegree, divisorPoly, divisorDegree, quotientPoly);
 #elif DEBUG_CODE == 22
-  if (argc == 2)
+  if (argc == 3)
   {
-    FILE* fpFile = fopen("xml.txt", "r");
+    int lineNbr;
+    FILE* fpFile = fopen(argv[1], "rb");
     if (fpFile == NULL)
     {
-      printf("Cannot open file.");
+      printf("Cannot open file.\n");
       return 1;
     }
-    fread(bufferXML, 1, sizeof(bufferXML), fpFile);
+    if (sscanf(argv[2], "%d", &lineNbr) != 1)
+    {
+      printf("Second parameter must be an integer.\n");
+      fclose(fpFile);
+      return 1;
+    }
+    for (int ctr = 0; ctr <= lineNbr; ctr++)
+    {
+      const char* rc = fgets(bufferXML, sizeof(bufferXML), fpFile);
+      if (rc == NULL)
+      {
+        printf("Line not found in XML file.\n");
+        fclose(fpFile);
+        return 1;
+      }
+    }
+    for (;;)
+    {
+      int len = (int)strlen(bufferXML) - 1;
+      if ((bufferXML[len] == 0) || (bufferXML[len] & 0xE0))
+      {
+        break;
+      }
+      bufferXML[len] = 0;     // Delete line feed.
+      len--;
+    }
     fclose(fpFile);
     fromBlockly(bufferXML);
   }
   else
   {
-    printf("Enter name of file containing Blockly XML.");
+    printf("Command line: calculator <XML file> <line number>.\n");
   }
 #endif
   return 0;
