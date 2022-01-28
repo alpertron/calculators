@@ -619,7 +619,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
             ptrInstr += 4;
             break;
           }
-          if (*ptrBlockStack == START_UNTIL)
+          if (*ptrBlockStack == START_WHILE)
           {
             *ptrInstr = OPER_NOT;
             ptrInstr++;
