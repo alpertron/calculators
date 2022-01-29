@@ -501,11 +501,11 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
         {
           return BLOCKLY_NO_OUTPUT_EXPECTED;
         }
-        *ptrBlockStack = (char)getVariableNbr(&ptrXML);
+        *ptrInstr = TOKEN_GET_VAR;
+        ptrInstr++;
+        *ptrInstr = (char)getVariableNbr(&ptrXML);
+        ptrInstr++;
         ptrXML = strchr(ptrXML, '>') + 1;
-        ptrBlockStack++;
-        *ptrBlockStack = TOKEN_GET_VAR;
-        ptrBlockStack++;
       }
       else
       { // No more cases.
@@ -619,7 +619,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
             ptrInstr += 4;
             break;
           }
-          if (*ptrBlockStack == START_WHILE)
+          if (*ptrBlockStack == START_UNTIL)
           {
             *ptrInstr = OPER_NOT;
             ptrInstr++;
@@ -646,7 +646,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
             ptrInstr += 4;
             break;
           }
-          if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
+          if (*ptrBlockStack == TOKEN_SET_VAR)
           {
             *ptrInstr = *ptrBlockStack;
             ptrInstr++;
@@ -670,7 +670,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
             ptrBlockStack++;
             break;
           }
-          else if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
+          else if (*ptrBlockStack == TOKEN_SET_VAR)
           {
             *ptrInstr = *ptrBlockStack;
             ptrInstr++;
@@ -734,7 +734,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
           ptrBlockStack++;
           break;
         }
-        else if ((*ptrBlockStack == TOKEN_GET_VAR) || (*ptrBlockStack == TOKEN_SET_VAR))
+        else if (*ptrBlockStack == TOKEN_SET_VAR)
         {
           *ptrInstr = *ptrBlockStack;
           ptrInstr++;
