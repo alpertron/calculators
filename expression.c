@@ -1251,6 +1251,11 @@ static enum eExprErr ComputeConcatFact(void)
   {      // The valid modes are 0, 1, 2 and 3.
     return EXPR_INVALID_PARAM;
   }
+  if ((curStack2.nbrLimbs == 1) && (curStack2.limbs[0].x <= 1))
+  {   // If number is zero or one, they have no prime factors, so result is zero.
+    curStack.limbs[0].x = 0;
+    return EXPR_OK;
+  }
   PerformFactorization(&curStack2);   // Factor second argument.
   nbrFactors = astFactorsMod[0].multiplicity;
   for (int factorNumber = 1; factorNumber <= nbrFactors; factorNumber++)
