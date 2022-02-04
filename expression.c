@@ -1353,7 +1353,7 @@ static enum eExprErr ComputeRandom(void)
       }
     }
   } while ((ctr >= 0) && (Temp.limbs[ctr].x > difference.limbs[ctr].x));
-  while ((nbrLen > 0) && (Temp.limbs[nbrLen].x != 0))
+  while ((nbrLen > 0) && (Temp.limbs[nbrLen].x == 0))
   { // Discard most significant limbs set to zero.
     nbrLen--;
   }
