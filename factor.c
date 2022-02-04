@@ -1337,6 +1337,7 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
     ptrValue = pstFactors->ptrFactor;
     pstCurFactor->ptrFactor = ptrValue;
     pstCurFactor->multiplicity = multiplicity * expon;
+    pstCurFactor->type = 0;
     pstFactors->ptrFactor += 2;  // Next free memory.
   }
   pstCurFactor->upperBound = 0;

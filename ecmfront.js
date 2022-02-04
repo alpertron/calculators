@@ -712,12 +712,12 @@ function startUp()
     if (lang)
     {          // Spanish
       get("value").value = "Archivo a procesar: " + fileName +
-          "\nApriete el botón \"Solo evaluar\" or \"Factorizar\" para continuar.";
+          "\nApriete el botón \"Solo evaluar\", \"Primo\" or \"Factorizar\" para continuar.";
     }
     else
     {          // English
       get("value").value = "File to process: " + fileName +
-          "\nPress \"Only evaluate\" or \"Factor\" button to continue.";
+          "\nPress \"Only evaluate\", \"Prime\" or \"Factor\" button to continue.";
     }
   };
   get("bmode").onclick = function ()

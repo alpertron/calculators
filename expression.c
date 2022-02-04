@@ -1335,11 +1335,11 @@ static enum eExprErr ComputeRandom(void)
   Temp.sign = SIGN_POSITIVE;
   nbrLen = difference.nbrLimbs - 1;
   for (ctr = 0; ctr < nbrLen; ctr++)
-  {
+  { // Set all limbs except the most significant to random values. 
     Temp.limbs[ctr].x = (int)(nextRandom() & 0x7FFFFFFFU);
   }
   do
-  {
+  { // Loop that sets the most significant limb.
     Temp.limbs[nbrLen].x = (int)(((uint64_t)nextRandom() *
         ((uint64_t)difference.limbs[nbrLen].x + 1)) >> 32);
     // Check whether Temp is greater than difference.
@@ -1353,12 +1353,8 @@ static enum eExprErr ComputeRandom(void)
       }
     }
   } while ((ctr >= 0) && (Temp.limbs[ctr].x > difference.limbs[ctr].x));
-  while (nbrLen > 0)
-  {
-    if (Temp.limbs[nbrLen].x != 0)
-    {
-      break;
-    }
+  while ((nbrLen > 0) && (Temp.limbs[nbrLen].x != 0))
+  { // Discard most significant limbs set to zero.
     nbrLen--;
   }
   Temp.nbrLimbs = nbrLen + 1;
