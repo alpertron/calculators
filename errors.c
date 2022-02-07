@@ -109,6 +109,10 @@ void textError(char **pptrOutput, enum eExprErr rc)
     copyStr(&ptrOut, lang? " debe incluir la variable <var>x</var> y/o el contador <var>c</var>":
       " must include the variable <var>x</var> and/or the counter <var>c</var>");
     break;
+  case EXPR_VAR_IN_EXPRESSION:
+    copyStr(&ptrOut, lang ? "La expresión no debe incluir variables" :
+      "The expression must not include variables");
+    break;
   default:
     break;
   }

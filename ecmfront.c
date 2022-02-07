@@ -957,7 +957,20 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
   {
     doFactorization = performFactorization;
   }
+  if (((*tofactorText & 0xDF) == 'X') &&
+     (findChar(tofactorText + 1, ';') == NULL))
+  {
+#ifdef __EMSCRIPTEN__
+    databack("M");  // Factor number using integer factorization calculator.
+#endif
+  }
   enum eExprErr rc = BatchProcessing(tofactorText, &tofactor, &ptrOutput, &isBatch);
+  if (rc == EXPR_VAR_IN_EXPRESSION)
+  {
+#ifdef __EMSCRIPTEN__
+    databack("M");  // Factor number using integer factorization calculator.
+#endif
+  }
   if (!isBatch && (rc == EXPR_OK) && (counterC == -1) && doFactorization)
   {
 #ifdef __EMSCRIPTEN__

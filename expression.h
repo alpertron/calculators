@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 3 de febrero de 2022."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 3 February 2022."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 6 de febrero de 2022."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 6 February 2022."
 
 #include <stdbool.h>
 #ifdef __EMSCRIPTEN__
@@ -102,6 +102,7 @@ enum eExprErr
   EXPR_TOO_FEW_ARGUMENTS,
   EXPR_MORE_THAN_ONE_EQUAL_SIGN,
   EXPR_EQUAL_SIGN_INSIDE_PAREN,
+  EXPR_VAR_IN_EXPRESSION,
   EXPR_OK = 0,
   EXPR_NOT_FOUND,
 };
@@ -129,7 +130,8 @@ extern BigInteger valueX;
 extern int counterC;
 extern int expressionNbr;
 enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *ExpressionResult);
-enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult);
+enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
+  bool varsExpected);
 int ConvertToReversePolishNotation(const char* input, char** pptrOut,
   const struct sFuncOperExpr* funcOperExpr, enum eParseExpr eParseExpr,
   bool* pUsingVariables);

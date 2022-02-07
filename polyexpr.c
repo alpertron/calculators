@@ -776,15 +776,23 @@ int ComputePolynomial(const char* input, int expo)
   int pwr;
   int expon;
   int nbrEqualSigns = 0;
+  bool usingVariables;
   degree = 1;
   exponentMod = expo;
   // Use operand1 as temporary variable to store the exponent.
   computePower(expo);
   rc = ConvertToReversePolishNotation(input, &ptrRPNbuffer, stFuncOperPolyExpr,
-    PARSE_EXPR_POLYNOMIAL, NULL);
+    PARSE_EXPR_POLYNOMIAL, &usingVariables);
   if (rc != EXPR_OK)
   {
     return rc;
+  }
+  if (!usingVariables)
+  {   // Input string has no variables.
+#ifdef __EMSCRIPTEN__
+    databack("M");  // Factor number using integer factorization calculator.
+#endif
+    return EXPR_OK;
   }
   stackIndex = 0;
   valuesIndex = 0;

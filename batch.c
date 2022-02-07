@@ -126,7 +126,7 @@ static enum eExprErr evalExpression(const char *expr, BigInteger *ptrResult)
     ptrInputExpr++;
   }
   *ptrOutputExpr = 0;   // Append string terminator.
-  return ComputeExpression(outputExpr, ptrResult);
+  return ComputeExpression(outputExpr, ptrResult, true);
 }
 
 static void SkipSpaces(char **pptrText)
@@ -165,6 +165,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
   char *ptrCharFound;
   char *ptrSrcString;
   char *ptrStartExpr;
+  bool errorDisplayed = false;
   if (fromFile)
   {
     copyStr(&ptrOutput, "B");
@@ -378,8 +379,10 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
           {
             textError(&ptrOutput, rc);
           }
-          if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED))
+          if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED) ||
+            (rc == EXPR_VAR_IN_EXPRESSION))
           {   // Do not show multiple errors.
+            errorDisplayed = true;
             break;
           }
         }
@@ -423,13 +426,17 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       {
         output[0] = (fromFile ? 'A' : '6');  // Show Continue button.
       }
-      rc = ComputeExpression(ptrSrcString, valueFound);
+      rc = ComputeExpression(ptrSrcString, valueFound, false);
       if (rc == EXPR_OK)
       {
         batchCallback(&ptrOutput);
       }
       else
       {
+        if (rc == EXPR_VAR_IN_EXPRESSION)
+        {
+          return rc;
+        }
         textError(&ptrOutput, rc);
       }
       counterC = -1;
@@ -484,8 +491,11 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     {
       ptrOutput--;             // Erase extra character of </li>.
     }
-    copyStr(&ptrOutput, lang ? "No hay valores para la expresión ingresada.":
-                        "There are no values for the requested expression.");
+    if (!errorDisplayed)
+    {
+      copyStr(&ptrOutput, lang ? "No hay valores para la expresión ingresada." :
+        "There are no values for the requested expression.");
+    }
   }
   if (fromFile)
   {

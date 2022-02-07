@@ -207,7 +207,8 @@ static enum eExprErr setStackValue(const BigInteger* pValue)
   return EXPR_OK;
 }
 
-enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
+enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
+  bool varsExpected)
 {
   bool valueXused;
   enum eExprErr retcode;
@@ -230,6 +231,10 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult)
     if (retcode != EXPR_OK)
     {
       return retcode;
+    }
+    if (!varsExpected && valueXused)
+    {
+      return EXPR_VAR_IN_EXPRESSION;
     }
     ptrRPNbuffer = pointerRPNbuffer;
 #ifdef USING_BLOCKLY

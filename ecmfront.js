@@ -202,6 +202,7 @@ function callWorker(param)
       // "E" for sending data to div named divisors. It includes button More divisors.
       // "K" for showing Blockly errors.
       // "L" for exiting Blockly mode.
+      // "M" for loading polynomial factorization application.
       var firstChar = e.data.substring(0, 1);
       if (firstChar === "9")
       {
@@ -238,6 +239,11 @@ function callWorker(param)
       {
         show("main");
         hide("blockmode");
+      }
+      else if (firstChar === "M")
+      {    // User entered a polynomial. Load calculator to process it.
+        window.sessionStorage.setItem("z", get("value").value);
+        window.location.replace(lang? "FACTPOL.HTM": "POLFACT.HTM");
       }
       else if (firstChar === "4")
       {
@@ -1131,21 +1137,31 @@ function startUp()
       updateVerbose(config.substr(1,1) === "1");
     }
   }
-  var search = window.location.search;
-  if (search.substring(0,3) === "?q=")
-  {
-    get("value").value = decodeURIComponent(search.substring(3));
-    dowork(-2);
+  var fromPolfact = window.sessionStorage.getItem("z");
+  if (fromPolfact != null)
+  {    // Number to factor coming from polynomial factorization calculator.
+    window.sessionStorage.removeItem("z");
+    get("value").value = fromPolfact;
+    dowork(-2);    
   }
   else
   {
-    ecmFactor = getStorage("ecmFactors");
-    if (ecmFactor)
-    {          // Continue factoring.
-      get("value").value = ecmFactor.slice(0,ecmFactor.indexOf("="));
-      get("curve").value = getStorage("ecmCurve");
+    var search = window.location.search;
+    if (search.substring(0,3) === "?q=")
+    {
+      get("value").value = decodeURIComponent(search.substring(3));
       dowork(-2);
-      get("curve").value = "";
+    }
+    else
+    {
+      ecmFactor = getStorage("ecmFactors");
+      if (ecmFactor)
+      {          // Continue factoring.
+        get("value").value = ecmFactor.slice(0,ecmFactor.indexOf("="));
+        get("curve").value = getStorage("ecmCurve");
+        dowork(-2);
+        get("curve").value = "";
+      }
     }
   }
   if ("serviceWorker" in navigator)

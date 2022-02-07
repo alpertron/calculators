@@ -4316,7 +4316,7 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
   for (coeffNbr = 0; coeffNbr < NBR_COEFF; coeffNbr++)
   {
     rc = ComputeExpression(pstValidateCoeff->expression,
-                           pstValidateCoeff->bigint);
+                           pstValidateCoeff->bigint, false);
     if (rc != EXPR_OK)
     {
       copyStr(&ptrOutput, lang ? pstValidateCoeff->textSpanish : pstValidateCoeff->textEnglish);

@@ -923,7 +923,7 @@ void fromBlockly(const char* ptrXMLFromBlockly)
 #ifdef __EMSCRIPTEN__
   databack("L");  // Exit Blockly mode.
 #endif
-  (void)ComputeExpression(bufferInstr, NULL);
+  (void)ComputeExpression(bufferInstr, NULL, false);
   if (nbrBlocklyOutputLines == 0)
   {
     copyStr(&ptrBlocklyOutput, lang? "<li>No hay nada para mostrar</li>":

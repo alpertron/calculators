@@ -49,6 +49,13 @@ function callWorker(param)
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
+      var firstChar = e.data.substring(0, 1);
+      if (firstChar == "M")
+      {    // User entered a number. Load calculator to process it.
+        window.sessionStorage.setItem("z", get("poly").value);
+        window.location.replace(lang? "ECMC.HTM": "ECM.HTM");
+        return;
+      }
       var result = get("result");
       result.innerHTML = e.data.substring(1);
       if (e.data.substring(0, 1) === "2")
@@ -420,10 +427,17 @@ window.onload = function ()
       }
     });
   }
+  var fromEcm = window.sessionStorage.getItem("z");
+  var polyTextArea = get("poly");
+  if (fromEcm != null)
+  {    // Polynomial to factor coming from integer factorization calculator.
+    window.sessionStorage.removeItem("z");
+    polyTextArea.value = fromEcm;
+    dowork(0);    // Factor polynomial.
+  }
   var search = window.location.search;
   if (search.substring(0,3) === "?q=")
   {
-    var polyTextArea = get("poly");
     polyTextArea.value = unescape(search.substring(3));
     dowork(0);    // Factor polynomial.
   }

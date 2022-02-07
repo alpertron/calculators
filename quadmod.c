@@ -987,7 +987,7 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
   enum eExprErr rc;
   ptrOutput = output;
   copyStr(&ptrOutput, "2<p>");
-  rc = ComputeExpression(quadrText, &ValA);
+  rc = ComputeExpression(quadrText, &ValA, false);
   if (rc != EXPR_OK)
   {
     copyStr(&ptrOutput, lang ? "Coeficiente cuadrático: ": "Quadratic coefficient: ");
@@ -996,7 +996,7 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
   }
   else
   {
-    rc = ComputeExpression(linearText, &ValB);
+    rc = ComputeExpression(linearText, &ValB, false);
     if (rc != EXPR_OK)
     {
       copyStr(&ptrOutput, lang ? "Coeficiente lineal: " : "Linear coefficient: ");
@@ -1005,7 +1005,7 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
     }
     else
     {
-      rc = ComputeExpression(constText, &ValC);
+      rc = ComputeExpression(constText, &ValC, false);
       if (rc != EXPR_OK)
       {
         copyStr(&ptrOutput, lang ? "Término independiente: " : "Constant coefficient: ");
@@ -1014,7 +1014,7 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
       }
       else
       {
-        rc = ComputeExpression(modText, &ValN);
+        rc = ComputeExpression(modText, &ValN, false);
         if ((rc == EXPR_OK) && (ValN.sign == SIGN_NEGATIVE))
         {
           rc = EXPR_MODULUS_MUST_BE_NONNEGATIVE;

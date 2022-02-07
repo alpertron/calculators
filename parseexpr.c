@@ -630,6 +630,10 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
         }
         variableLetter = cUppercase;    // Convert to uppercase.
       }
+      else if ((eParseExpr == PARSE_EXPR_GAUSSIAN) || (eParseExpr == PARSE_EXPR_INTEGER))
+      {
+        return EXPR_VAR_IN_EXPRESSION;
+      }
     }
     if (prevTokenIsNumber)
     {

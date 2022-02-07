@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
     (void)printf("num mod\n");
     return 0;
   }
-  rc = ComputeExpression(argv[1], &num);
+  rc = ComputeExpression(argv[1], &num, false);
   if (rc != EXPR_OK)
   {
     ptrOutput = output;
@@ -189,7 +189,7 @@ int main(int argc, char* argv[])
   }
   else
   {
-    rc = ComputeExpression(argv[2], &mod);
+    rc = ComputeExpression(argv[2], &mod, false);
     if (rc != EXPR_OK)
     {
       ptrOutput = output;

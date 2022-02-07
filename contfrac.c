@@ -355,7 +355,7 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
 static int getNumber(BigInteger *pNumber, const char *title, char **pptrInput)
 {
   enum eExprErr rc;
-  rc = ComputeExpression(*pptrInput, pNumber);
+  rc = ComputeExpression(*pptrInput, pNumber, false);
   if (rc != EXPR_OK)
   {
     showText(title);
