@@ -121,7 +121,7 @@ void polyToMontgomeryNotation(int *nbr, int qtyNbrs);
 int *getContent(int *poly, BigInteger *content);
 int *CopyPolyProduct(const int *ptrSrc, int *ptrDest, int polyDegree);
 int FactorPolyOverIntegers(void);
-void polyFactText(char* modText, char* polyText, int groupLength);
+void polyFactText(const char* modText, const char* polyText, int groupLength);
 void showPowerX(char** pptrOutput, int polyDegree);
 int FactorModularPolynomial(bool inputMontgomery);
 int getNextPrimeNoDuplicatedFactors(int prime);

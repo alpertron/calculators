@@ -579,7 +579,7 @@ static int FactorPolynomial(const char *input, int expo)
   return FactorModularPolynomial(true);   // Input is in Montgomery notation.
 }
 
-void polyFactText(char *modText, char *polyText, int groupLength)
+void polyFactText(const char *modText, const char *polyText, int groupLength)
 {
   char *ptrOut;
   enum eExprErr rc;

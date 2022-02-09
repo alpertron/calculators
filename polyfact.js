@@ -50,9 +50,10 @@ function callWorker(param)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
       var firstChar = e.data.substring(0, 1);
-      if (firstChar == "M")
+      if ((firstChar === "M") || (firstChar === "N"))
       {    // User entered a number. Load calculator to process it.
-        window.sessionStorage.setItem("z", get("poly").value);
+        window.sessionStorage.setItem((firstChar === "M"? "F": "E"),
+          get("poly").value);
         window.location.replace(lang? "ECMC.HTM": "ECM.HTM");
         return;
       }
@@ -427,13 +428,20 @@ window.onload = function ()
       }
     });
   }
-  var fromEcm = window.sessionStorage.getItem("z");
+  var fromEcm = window.sessionStorage.getItem("F");
   var polyTextArea = get("poly");
   if (fromEcm != null)
   {    // Polynomial to factor coming from integer factorization calculator.
-    window.sessionStorage.removeItem("z");
+    window.sessionStorage.removeItem("F");
     polyTextArea.value = fromEcm;
     dowork(0);    // Factor polynomial.
+  }
+  fromEcm = window.sessionStorage.getItem("E");
+  if (fromEcm != null)
+  {    // Polynomial to factor coming from integer factorization calculator.
+    window.sessionStorage.removeItem("E");
+    polyTextArea.value = fromEcm;
+    dowork(2);    // Evaluate polynomial.
   }
   var search = window.location.search;
   if (search.substring(0,3) === "?q=")

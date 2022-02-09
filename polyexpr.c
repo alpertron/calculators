@@ -35,6 +35,7 @@ extern int polyA[1000000];
 extern int polyB[1000000];
 extern int polyC[1000000];
 extern int polyD[1000000];
+extern bool onlyEvaluate;
 
 struct sFuncOperExpr stFuncOperPolyExpr[] =
 {
@@ -790,7 +791,7 @@ int ComputePolynomial(const char* input, int expo)
   if (!usingVariables)
   {   // Input string has no variables.
 #ifdef __EMSCRIPTEN__
-    databack("M");  // Factor number using integer factorization calculator.
+    databack(onlyEvaluate ? "N" : "M");  // Use integer factorization calculator.
 #endif
     return EXPR_OK;
   }

@@ -202,7 +202,8 @@ function callWorker(param)
       // "E" for sending data to div named divisors. It includes button More divisors.
       // "K" for showing Blockly errors.
       // "L" for exiting Blockly mode.
-      // "M" for loading polynomial factorization application.
+      // "M" for loading polynomial factorization application for factorization.
+      // "N" for loading polynomial factorization application for evaluation.
       var firstChar = e.data.substring(0, 1);
       if (firstChar === "9")
       {
@@ -240,9 +241,10 @@ function callWorker(param)
         show("main");
         hide("blockmode");
       }
-      else if (firstChar === "M")
+      else if ((firstChar === "M") || (firstChar === "N"))
       {    // User entered a polynomial. Load calculator to process it.
-        window.sessionStorage.setItem("z", get("value").value);
+        window.sessionStorage.setItem((firstChar === "M"? "F": "E"),
+          get("value").value);
         window.location.replace(lang? "FACTPOL.HTM": "POLFACT.HTM");
       }
       else if (firstChar === "4")
@@ -1137,12 +1139,19 @@ function startUp()
       updateVerbose(config.substr(1,1) === "1");
     }
   }
-  var fromPolfact = window.sessionStorage.getItem("z");
+  var fromPolfact = window.sessionStorage.getItem("F");
   if (fromPolfact != null)
   {    // Number to factor coming from polynomial factorization calculator.
-    window.sessionStorage.removeItem("z");
+    window.sessionStorage.removeItem("F");
     get("value").value = fromPolfact;
-    dowork(-2);    
+    dowork(-2);    // Perform factorization.
+  }
+  fromPolfact = window.sessionStorage.getItem("E");
+  if (fromPolfact != null)
+  {    // Number to factor coming from polynomial factorization calculator.
+    window.sessionStorage.removeItem("E");
+    get("value").value = fromPolfact;
+    dowork(0);     // Perform evaluation.
   }
   else
   {
