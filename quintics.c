@@ -154,7 +154,7 @@ static struct stQuinticF20 astQuinticF20[] =
 // Dummit's Solving Solvable Quintics article.
 static void FactorPolynomialF20(void)
 {
-  int ctr;
+  unsigned int ctr;
   int* ptrValues;
   const struct stQuinticF20* pstQuinticF20;
   values[0] = 6;          // Degree of polynomial to factor.
@@ -176,21 +176,21 @@ static void FactorPolynomialF20(void)
     {
       BigIntGcd(&commonDenom, &Rat1.denominator, &tmp7);
       (void)BigIntMultiply(&tmp1, &Rat1.denominator, &tmp0);
-      BigIntDivide(&tmp0, &tmp7, &tmp0);
+      (void)BigIntDivide(&tmp0, &tmp7, &tmp0);
       (void)BigIntMultiply(&tmp2, &Rat1.denominator, &tmp1);
-      BigIntDivide(&tmp1, &tmp7, &tmp1);
+      (void)BigIntDivide(&tmp1, &tmp7, &tmp1);
       (void)BigIntMultiply(&tmp3, &Rat1.denominator, &tmp2);
-      BigIntDivide(&tmp2, &tmp7, &tmp2);
+      (void)BigIntDivide(&tmp2, &tmp7, &tmp2);
       (void)BigIntMultiply(&tmp4, &Rat1.denominator, &tmp3);
-      BigIntDivide(&tmp3, &tmp7, &tmp3);
+      (void)BigIntDivide(&tmp3, &tmp7, &tmp3);
       (void)BigIntMultiply(&tmp5, &Rat1.denominator, &tmp4);
-      BigIntDivide(&tmp4, &tmp7, &tmp4);
+      (void)BigIntDivide(&tmp4, &tmp7, &tmp4);
       (void)BigIntMultiply(&tmp6, &Rat1.denominator, &tmp5);
-      BigIntDivide(&tmp5, &tmp7, &tmp5);
+      (void)BigIntDivide(&tmp5, &tmp7, &tmp5);
       (void)BigIntMultiply(&Rat1.numerator, &commonDenom, &tmp6);
-      BigIntDivide(&tmp6, &tmp7, &tmp6);
+      (void)BigIntDivide(&tmp6, &tmp7, &tmp6);
       (void)BigIntMultiply(&commonDenom, &Rat1.denominator, &commonDenom);
-      BigIntDivide(&commonDenom, &tmp7, &commonDenom);
+      (void)BigIntDivide(&commonDenom, &tmp7, &commonDenom);
       intToBigInteger(&Rat1.numerator, 0);
       intToBigInteger(&Rat1.denominator, 1);
       if (pstQuinticF20->coeff < 0)
@@ -203,22 +203,22 @@ static void FactorPolynomialF20(void)
       intToBigInteger(&Rat2.numerator, pstQuinticF20->coeff);
       intToBigInteger(&Rat2.denominator, 1);
       // Multiply by power of p.
-      for (ctr = pstQuinticF20->pqrs & 0xF000; ctr > 0; ctr -= 0x1000)
+      for (ctr = pstQuinticF20->pqrs & 0xF000U; ctr > 0U; ctr -= 0x1000U)
       {
         BigRationalMultiply(&Rat2, &RatDeprCubic, &Rat2);
       }
       // Multiply by power of q.
-      for (ctr = pstQuinticF20->pqrs & 0x0F00; ctr > 0; ctr -= 0x0100)
+      for (ctr = pstQuinticF20->pqrs & 0x0F00U; ctr > 0U; ctr -= 0x0100U)
       {
         BigRationalMultiply(&Rat2, &RatDeprQuadratic, &Rat2);
       }
       // Multiply by power of r.
-      for (ctr = pstQuinticF20->pqrs & 0x00F0; ctr > 0; ctr -= 0x0010)
+      for (ctr = pstQuinticF20->pqrs & 0x00F0U; ctr > 0U; ctr -= 0x0010U)
       {
         BigRationalMultiply(&Rat2, &RatDeprLinear, &Rat2);
       }
       // Multiply by power of s.
-      for (ctr = pstQuinticF20->pqrs & 0x000F; ctr > 0; ctr--)
+      for (ctr = pstQuinticF20->pqrs & 0x000FU; ctr > 0U; ctr--)
       {
         BigRationalMultiply(&Rat2, &RatDeprIndependent, &Rat2);
       }
@@ -263,7 +263,7 @@ static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
   intToBigInteger(&rat->denominator, 1);
   while (pstMonomial->coefficient != 0)
   {
-    int exponents = pstMonomial->exponents;
+    unsigned int exponents = (unsigned int)pstMonomial->exponents;
     intToBigInteger(&Rat1.numerator, 1);
     intToBigInteger(&Rat1.denominator, 1);
     for (int ctr = 4; ctr >= 0; ctr--)

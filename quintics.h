@@ -19,13 +19,13 @@
 #ifndef _QUINTICS_H
 #define _QUINTICS_H
 
-#define FIVEexp (1 << 20)
-#define Pexp (1 << 15)
-#define Qexp (1 << 10)
-#define Rexp (1 << 5)
-#define Sexp (1 << 0)
-#define END_COEFF 0xFFFF
-#define END_ARRAY 0
+#define FIVEexp (1U << 20)
+#define Pexp (1U << 15)
+#define Qexp (1U << 10)
+#define Rexp (1U << 5)
+#define Sexp (1U << 0)
+#define END_COEFF 0xFFFFU
+#define END_ARRAY 0U
 
 #define P0 0x0000
 #define P1 0x1000
