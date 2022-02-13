@@ -758,8 +758,8 @@ static void showRn(int groupOrder)
   for (int ctr = 1; ctr <= 4; ctr++)
   {
     firstNumberShown = false;
-    BigRational* ptrRatR = ((groupOrder == 10) || (ctr == 1) || (ctr == 4 ? &RatR : &RatR2));
-    BigRational* ptrRatS = ((groupOrder == 10) || (ctr == 1) || (ctr == 4 ? &RatS : &RatS2));
+    BigRational* ptrRatR = (((groupOrder == 10) || (ctr == 1) || (ctr == 4)) ? &RatR : &RatR2);
+    BigRational* ptrRatS = (((groupOrder == 10) || (ctr == 1) || (ctr == 4)) ? &RatS : &RatS2);
     enum eSign firstSign;
     enum eSign secondSign;
     startLine();
@@ -1019,27 +1019,32 @@ static void GaloisGroupHasOrder20(int multiplicity)
       }
       CopyBigInt(&Rat1.numerator, &RatValues[index_T2].numerator);
       CopyBigInt(&Rat1.denominator, &RatValues[index_T2].denominator);
-      showPlusSignOn((ctr == 2 || ctr == 3) == (Rat1.numerator.sign == SIGN_POSITIVE), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      showPlusSignOn(((ctr == 2) || (ctr == 3)) == (Rat1.numerator.sign == SIGN_POSITIVE),
+          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       Rat1.numerator.sign = SIGN_POSITIVE;
       BigRationalDivideByInt(&Rat1, 2, &Rat2);
       BigRationalMultiplyByInt(&RatDiscr, 5, &Rat2);
       ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
       if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
       {   // O > 0.
-        showPlusSignOn(ctr == 3 || ctr == 4, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+        showPlusSignOn((ctr == 3) || (ctr == 4),
+          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       }
       else
       {   // O < 0.
-        showPlusSignOn(ctr == 2 || ctr == 4, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+        showPlusSignOn((ctr == 2) || (ctr == 4),
+          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       }
       showSqRoot2(SIGN_POSITIVE);
       if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
       {   // O > 0.
-        showPlusSignOn(ctr == 1 || ctr == 3, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+        showPlusSignOn((ctr == 1) || (ctr == 3),
+          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       }
       else
       {   // O < 0.
-        showPlusSignOn(ctr == 1 || ctr == 2, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+        showPlusSignOn((ctr == 1) || (ctr == 2), 
+          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       }
       showSqRoot2(SIGN_NEGATIVE);
       showText(")^(1/5)");
@@ -1138,7 +1143,8 @@ static void GaloisGroupHasOrder5(int multiplicity)
     }
     start5thRoot();
     showRationalNoParen(&Rat1);
-    showPlusSignOn((signRat2 == SIGN_POSITIVE) == (ctr == 1 || ctr == 4), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+    showPlusSignOn((signRat2 == SIGN_POSITIVE) == ((ctr == 1) || (ctr == 4)),
+      TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
     showRational(&Rat2);
     if (pretty == PARI_GP)
     {
@@ -1163,7 +1169,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
       *ptrOutput = '+';
       ptrOutput++;
     }
-    showText(pretty == PARI_GP? " I ": " i ");
+    showText((pretty == PARI_GP)? " I ": " i ");
     showText(ptrTimes);
     showText("&nbsp;");
     startParen();
@@ -1220,15 +1226,20 @@ void QuinticEquation(const int* ptrPolynomial, int multiplicity)
   struct monomial* pstMonomial;
   const int* ptr;
   UncompressBigIntegerB(ptrPolynomial, &Independent);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Linear);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Quadratic);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Cubic);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Quartic);
-  ptrPolynomial += 1 + numLimbs(ptrPolynomial);
+  ptrPolynomial += numLimbs(ptrPolynomial);
+  ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Quintic);
   // Get rational coefficients of monic equation.
   CopyBigInt(&RatQuartic.numerator, &Quartic);
@@ -1289,7 +1300,8 @@ void QuinticEquation(const int* ptrPolynomial, int multiplicity)
   }
   ptr = factorInfoInteger[0].ptrPolyLifted;
   UncompressBigIntegerB(ptr, &RatRoot.numerator);          // Independent term.
-  ptr += 1 + numLimbs(ptr);
+  ptr += numLimbs(ptr);
+  ptr++;
   UncompressBigIntegerB(ptr, &RatRoot.denominator);        // Linear coefficient.
   BigIntChSign(&RatRoot.numerator);                        // root = -independent / linear.
   // Compute discriminant
