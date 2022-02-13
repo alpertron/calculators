@@ -269,23 +269,23 @@ static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
     for (int ctr = 4; ctr >= 0; ctr--)
     {
       BigRationalMultiply(&Rat1, &Rat1, &Rat1);
-      if (exponents & (FIVEexp << ctr))
+      if ((exponents & (FIVEexp << ctr)) != 0U)
       {
         BigRationalMultiplyByInt(&Rat1, 5, &Rat1);
       }
-      if (exponents & (Pexp << ctr))
+      if ((exponents & (Pexp << ctr)) != 0U)
       {
         BigRationalMultiply(&Rat1, &RatDeprCubic, &Rat1);
       }
-      if (exponents & (Qexp << ctr))
+      if ((exponents & (Qexp << ctr)) != 0U)
       {
         BigRationalMultiply(&Rat1, &RatDeprQuadratic, &Rat1);
       }
-      if (exponents & (Rexp << ctr))
+      if ((exponents & (Rexp << ctr)) != 0U)
       {
         BigRationalMultiply(&Rat1, &RatDeprLinear, &Rat1);
       }
-      if (exponents & (Sexp << ctr))
+      if ((exponents & (Sexp << ctr)) != 0U)
       {
         BigRationalMultiply(&Rat1, &RatDeprIndependent, &Rat1);
       }
@@ -313,7 +313,7 @@ static void computeArrayValues(void)
 
   computeFormula(&pstMonomial, &Rat5);    // Compute F.
   pstMonomial = arrayB;
-  for (int index = 0; index < sizeof(RatValues)/sizeof(RatValues[0]); index++)
+  for (int index = 0; index < (int)(sizeof(RatValues)/sizeof(RatValues[0])); index++)
   {
     computeFormula(&pstMonomial, pRatValues);
     intToBigInteger(&Rat3.numerator, 1);
@@ -912,13 +912,13 @@ static void showRn(int groupOrder)
         {   // Number is perfect square.
           CopyBigInt(&Rat2.numerator, &tmp4);
           CopyBigInt(&Rat2.denominator, &tmp1);
-          if (firstSign)
+          if (firstSign == SIGN_POSITIVE)
           {
-            BigRationalAdd(&Rat3, &Rat2, &Rat2);
+            BigRationalSubt(&Rat3, &Rat2, &Rat2);
           }
           else
           {
-            BigRationalSubt(&Rat3, &Rat2, &Rat2);
+            BigRationalAdd(&Rat3, &Rat2, &Rat2);
           }
           if (BigIntIsZero(&Rat2.numerator))
           {
@@ -1020,7 +1020,7 @@ static void GaloisGroupHasOrder20(int multiplicity)
       CopyBigInt(&Rat1.numerator, &RatValues[index_T2].numerator);
       CopyBigInt(&Rat1.denominator, &RatValues[index_T2].denominator);
       showPlusSignOn(((ctr == 2) || (ctr == 3)) == (Rat1.numerator.sign == SIGN_POSITIVE),
-          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+          TYPE_PM_SPACE_BEFORE + TYPE_PM_SPACE_AFTER);
       Rat1.numerator.sign = SIGN_POSITIVE;
       BigRationalDivideByInt(&Rat1, 2, &Rat2);
       BigRationalMultiplyByInt(&RatDiscr, 5, &Rat2);
@@ -1144,7 +1144,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
     start5thRoot();
     showRationalNoParen(&Rat1);
     showPlusSignOn((signRat2 == SIGN_POSITIVE) == ((ctr == 1) || (ctr == 4)),
-      TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      TYPE_PM_SPACE_BEFORE + TYPE_PM_SPACE_AFTER);
     showRational(&Rat2);
     if (pretty == PARI_GP)
     {
@@ -1221,10 +1221,11 @@ static void GaloisGroupHasOrder5(int multiplicity)
   }
 }
 
-void QuinticEquation(const int* ptrPolynomial, int multiplicity)
+void QuinticEquation(const int* ptrPoly, int multiplicity)
 {
   struct monomial* pstMonomial;
   const int* ptr;
+  const int* ptrPolynomial = ptrPoly;
   UncompressBigIntegerB(ptrPolynomial, &Independent);
   ptrPolynomial += numLimbs(ptrPolynomial);
   ptrPolynomial++;
@@ -1355,7 +1356,7 @@ void QuinticEquation(const int* ptrPolynomial, int multiplicity)
   BigRationalMultiply(&Rat4, &RatN, &Rat1);
   BigRationalAdd(&Rat1, &RatM, &Rat1);
   ForceDenominatorPositive(&Rat1);         // M + N*d
-  if (BigIntIsZero(&Rat1.numerator) || Rat1.numerator.sign == SIGN_POSITIVE)
+  if (BigIntIsZero(&Rat1.numerator) || (Rat1.numerator.sign == SIGN_POSITIVE))
   {
     squareRoot(Rat1.numerator.limbs, tmp4.limbs, Rat1.numerator.nbrLimbs, &tmp4.nbrLimbs);
     tmp4.sign = SIGN_POSITIVE;
