@@ -4309,7 +4309,7 @@ static void ShowQuinticsRootsRealR(int multiplicity)
   showText(ptrTimes);
   if (pretty == TEX)
   {
-    showText("(R_3 - R2)");
+    showText("(R_3 - R_2)");
     endLine();
     startLine();
     showText("T_2 = ");
@@ -4505,7 +4505,8 @@ static void showRn(int groupOrder)
     firstNumberShown = false;
     BigRational* ptrRatR = (groupOrder == 10 || ctr == 1 || ctr == 4 ? &RatR : &RatR2);
     BigRational* ptrRatS = (groupOrder == 10 || ctr == 1 || ctr == 4 ? &RatS : &RatS2);
-    enum eSign firstSign, secondSign;
+    enum eSign firstSign;
+    enum eSign secondSign;
     startLine();
     if (pretty == TEX)
     {
@@ -4525,7 +4526,7 @@ static void showRn(int groupOrder)
     {         // Group order is 20.
       BigRationalMultiplyByInt(&RatValues[index_T2], 5, &Rat2);
       BigRationalDivideByInt(&Rat2, 2, &Rat2);
-      if (ctr == 2 || ctr == 3)
+      if ((ctr == 2) || (ctr == 3))
       {
         BigRationalAdd(&Rat3, &Rat2, &Rat3);
       }
@@ -4549,7 +4550,8 @@ static void showRn(int groupOrder)
         {
           showRational(&Rat3);
         }
-        showPlusSignOn(ctr == 2 || ctr == 3, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+        showPlusSignOn((ctr == 2) || (ctr == 3),
+          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
         showRational(&Rat2);
         if (pretty == PARI_GP)
         {
@@ -4562,11 +4564,11 @@ static void showRn(int groupOrder)
     }
     if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
     {   // O > 0.
-      firstSign = ((ctr == 3 || ctr == 4) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+      firstSign = (((ctr == 3) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
     }
     else
     {   // O < 0.
-      firstSign = ((ctr == 2 || ctr == 4) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+      firstSign = (((ctr == 2) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
     }
     if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
     {   // O > 0.
