@@ -268,7 +268,7 @@ static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
     unsigned int ctr = 4U;
     intToBigInteger(&Rat1.numerator, 1);
     intToBigInteger(&Rat1.denominator, 1);
-    do
+    for (;;)
     {
       BigRationalMultiply(&Rat1, &Rat1, &Rat1);
       if ((exponents & (FIVEexp << ctr)) != 0U)
@@ -291,8 +291,12 @@ static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
       {
         BigRationalMultiply(&Rat1, &RatDeprIndependent, &Rat1);
       }
+      if (ctr == 0U)
+      {
+        break;
+      }
       ctr--;
-    } while (ctr != 0U);
+    }
     BigRationalMultiplyByInt(&Rat1, pstMonomial->coefficient, &Rat1);
     BigRationalAdd(rat, &Rat1, rat);
     pstMonomial++;
@@ -760,11 +764,21 @@ static void showRn(int groupOrder)
   //             if O < 0: plus for R_1 and R_2, minus for R_3 and R_4.
   for (int ctr = 1; ctr <= 4; ctr++)
   {
-    firstNumberShown = false;
-    BigRational* ptrRatR = (((groupOrder == 10) || (ctr == 1) || (ctr == 4)) ? &RatR : &RatR2);
-    BigRational* ptrRatS = (((groupOrder == 10) || (ctr == 1) || (ctr == 4)) ? &RatS : &RatS2);
     enum eSign firstSign;
     enum eSign secondSign;
+    BigRational* ptrRatR;
+    BigRational* ptrRatS;
+    if ((groupOrder == 10) || (ctr == 1) || (ctr == 4))
+    {
+      ptrRatR = &RatR;
+      ptrRatS = &RatS;
+    }
+    else
+    {
+      ptrRatR = &RatR2;
+      ptrRatS = &RatS2;
+    }
+    firstNumberShown = false;
     startLine();
     if (pretty == TEX)
     {
@@ -1023,7 +1037,7 @@ static void GaloisGroupHasOrder20(int multiplicity)
       CopyBigInt(&Rat1.numerator, &RatValues[index_T2].numerator);
       CopyBigInt(&Rat1.denominator, &RatValues[index_T2].denominator);
       showPlusSignOn(((ctr == 2) || (ctr == 3)) == (Rat1.numerator.sign == SIGN_POSITIVE),
-          TYPE_PM_SPACE_BEFORE + TYPE_PM_SPACE_AFTER);
+          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
       Rat1.numerator.sign = SIGN_POSITIVE;
       BigRationalDivideByInt(&Rat1, 2, &Rat2);
       BigRationalMultiplyByInt(&RatDiscr, 5, &Rat2);
@@ -1147,7 +1161,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
     start5thRoot();
     showRationalNoParen(&Rat1);
     showPlusSignOn((signRat2 == SIGN_POSITIVE) == ((ctr == 1) || (ctr == 4)),
-      TYPE_PM_SPACE_BEFORE + TYPE_PM_SPACE_AFTER);
+      TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
     showRational(&Rat2);
     if (pretty == PARI_GP)
     {
