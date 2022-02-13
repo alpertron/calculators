@@ -264,9 +264,10 @@ static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
   while (pstMonomial->coefficient != 0)
   {
     unsigned int exponents = (unsigned int)pstMonomial->exponents;
+    unsigned int ctr = 4U;
     intToBigInteger(&Rat1.numerator, 1);
     intToBigInteger(&Rat1.denominator, 1);
-    for (int ctr = 4; ctr >= 0; ctr--)
+    do
     {
       BigRationalMultiply(&Rat1, &Rat1, &Rat1);
       if ((exponents & (FIVEexp << ctr)) != 0U)
@@ -289,7 +290,8 @@ static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
       {
         BigRationalMultiply(&Rat1, &RatDeprIndependent, &Rat1);
       }
-    }
+      ctr--;
+    } while (ctr != 0U);
     BigRationalMultiplyByInt(&Rat1, pstMonomial->coefficient, &Rat1);
     BigRationalAdd(rat, &Rat1, rat);
     pstMonomial++;
@@ -310,10 +312,10 @@ static void computeArrayValues(void)
 {
   struct BigRational* pRatValues = &RatValues[0];
   struct monomial* pstMonomial = arrayF;
-
+  size_t RatValuesSize = sizeof(RatValues) / sizeof(RatValues[0]);
   computeFormula(&pstMonomial, &Rat5);    // Compute F.
   pstMonomial = arrayB;
-  for (int index = 0; index < (int)(sizeof(RatValues)/sizeof(RatValues[0])); index++)
+  for (int index = 0; index < (int)RatValuesSize; index++)
   {
     computeFormula(&pstMonomial, pRatValues);
     intToBigInteger(&Rat3.numerator, 1);
