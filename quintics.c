@@ -175,21 +175,21 @@ static void FactorPolynomialF20(void)
     if (pstQuinticF20->pqrs == END_COEFF)
     {
       BigIntGcd(&commonDenom, &Rat1.denominator, &tmp7);
-      BigIntMultiply(&tmp1, &Rat1.denominator, &tmp0);
+      (void)BigIntMultiply(&tmp1, &Rat1.denominator, &tmp0);
       BigIntDivide(&tmp0, &tmp7, &tmp0);
-      BigIntMultiply(&tmp2, &Rat1.denominator, &tmp1);
+      (void)BigIntMultiply(&tmp2, &Rat1.denominator, &tmp1);
       BigIntDivide(&tmp1, &tmp7, &tmp1);
-      BigIntMultiply(&tmp3, &Rat1.denominator, &tmp2);
+      (void)BigIntMultiply(&tmp3, &Rat1.denominator, &tmp2);
       BigIntDivide(&tmp2, &tmp7, &tmp2);
-      BigIntMultiply(&tmp4, &Rat1.denominator, &tmp3);
+      (void)BigIntMultiply(&tmp4, &Rat1.denominator, &tmp3);
       BigIntDivide(&tmp3, &tmp7, &tmp3);
-      BigIntMultiply(&tmp5, &Rat1.denominator, &tmp4);
+      (void)BigIntMultiply(&tmp5, &Rat1.denominator, &tmp4);
       BigIntDivide(&tmp4, &tmp7, &tmp4);
-      BigIntMultiply(&tmp6, &Rat1.denominator, &tmp5);
+      (void)BigIntMultiply(&tmp6, &Rat1.denominator, &tmp5);
       BigIntDivide(&tmp5, &tmp7, &tmp5);
-      BigIntMultiply(&Rat1.numerator, &commonDenom, &tmp6);
+      (void)BigIntMultiply(&Rat1.numerator, &commonDenom, &tmp6);
       BigIntDivide(&tmp6, &tmp7, &tmp6);
-      BigIntMultiply(&commonDenom, &Rat1.denominator, &commonDenom);
+      (void)BigIntMultiply(&commonDenom, &Rat1.denominator, &commonDenom);
       BigIntDivide(&commonDenom, &tmp7, &commonDenom);
       intToBigInteger(&Rat1.numerator, 0);
       intToBigInteger(&Rat1.denominator, 1);
@@ -228,25 +228,31 @@ static void FactorPolynomialF20(void)
   }
   NumberLength = tmp0.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp0);
-  ptrValues += 1 + numLimbs(ptrValues);
+  ptrValues += numLimbs(ptrValues);
+  ptrValues++;
   NumberLength = tmp1.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp1);
-  ptrValues += 1 + numLimbs(ptrValues);
+  ptrValues += numLimbs(ptrValues);
+  ptrValues++;
   NumberLength = tmp2.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp2);
-  ptrValues += 1 + numLimbs(ptrValues);
+  ptrValues += numLimbs(ptrValues);
+  ptrValues++;
   NumberLength = tmp3.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp3);
-  ptrValues += 1 + numLimbs(ptrValues);
+  ptrValues += numLimbs(ptrValues);
+  ptrValues++;
   NumberLength = tmp4.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp4);
-  ptrValues += 1 + numLimbs(ptrValues);
+  ptrValues += numLimbs(ptrValues);
+  ptrValues++;
   NumberLength = tmp5.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp5);
-  ptrValues += 1 + numLimbs(ptrValues);
+  ptrValues += numLimbs(ptrValues);
+  ptrValues++;
   NumberLength = tmp6.nbrLimbs;
   BigInteger2IntArray(ptrValues, &tmp6);
-  FactorPolyOverIntegers();
+  (void)FactorPolyOverIntegers();
 }
 
 // Compute rational value from array of monomials.
@@ -372,7 +378,8 @@ static void showSqrt5(void)
   if (pretty == PRETTY_PRINT)
   {
     startSqrt();
-    *ptrOutput++ = '5';
+    *ptrOutput = '5';
+    ptrOutput++;
     endSqrt();
   }
   else if (pretty == TEX)
@@ -387,12 +394,15 @@ static void showSqrt5(void)
 
 static void showMinusOnePlusMinusSqrt5(const char *sign)
 {
-  *ptrOutput++ = '(';
+  *ptrOutput = '(';
+  ptrOutput++;
   showText(ptrMinus);
-  *ptrOutput++ = '1';
+  *ptrOutput = '1';
+  ptrOutput++;
   showText(sign);
   showSqrt5();
-  *ptrOutput++ = ')';
+  *ptrOutput = ')';
+  ptrOutput++;
 }
 
 static void showSqrtTenPlusMinusTwoTimesSqrt5(const char *sign)
@@ -400,16 +410,19 @@ static void showSqrtTenPlusMinusTwoTimesSqrt5(const char *sign)
   startSqrt();
   showText("10 ");
   showText(sign);
-  *ptrOutput++ = ' ';
+  *ptrOutput = ' ';
+  ptrOutput++;
   showText(" 2");
   if (pretty == PARI_GP)
   {
-    *ptrOutput++ = ' ';
+    *ptrOutput = ' ';
+    ptrOutput++;
   }
   showText(ptrTimes);
   if (pretty == PARI_GP)
   {
-    *ptrOutput++ = ' ';
+    *ptrOutput = ' ';
+    ptrOutput++;
   }
   showSqrt5();
   endSqrt();
@@ -438,14 +451,18 @@ static void showSqRoot2(enum eSign sign)
 {
   enum eSign signBak = RatS.numerator.sign;
   startSqrt();
-  *ptrOutput++ = '(';
+  *ptrOutput = '(';
+  ptrOutput++;
   showText(ptrMinus);
-  *ptrOutput++ = '1';
+  *ptrOutput = '1';
+  ptrOutput++;
   showPlusSignOn(sign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
   showSqrt5();
-  *ptrOutput++ = ')';
+  *ptrOutput = ')';
+  ptrOutput++;
   showText(ptrTimes);
-  *ptrOutput++ = ' ';
+  *ptrOutput = ' ';
+  ptrOutput++;
   if (!BigIntIsZero(&RatM.numerator))
   {
     RatS.numerator.sign = SIGN_POSITIVE;
@@ -538,7 +555,8 @@ static void ShowQuinticsRootsRealR(int multiplicity)
   }
   if (pretty == PARI_GP)
   {
-    *ptrOutput++ = ' ';
+    *ptrOutput = ' ';
+    ptrOutput++;
   }
   showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
   showText(ptrTimes);
@@ -572,7 +590,8 @@ static void ShowQuinticsRootsRealR(int multiplicity)
   }
   if (pretty == PARI_GP)
   {
-    *ptrOutput++ = ' ';
+    *ptrOutput = ' ';
+    ptrOutput++;
   }
   showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
   showText(ptrTimes);
@@ -711,7 +730,8 @@ static void NumberIsNotRational(enum eSign sign)
       if (sign == SIGN_NEGATIVE)
       {
         showText(ptrMinus);
-        *ptrOutput++ = ' ';
+        *ptrOutput = ' ';
+        ptrOutput++;
       }
     }
     else
@@ -738,21 +758,23 @@ static void showRn(int groupOrder)
   for (int ctr = 1; ctr <= 4; ctr++)
   {
     firstNumberShown = false;
-    BigRational* ptrRatR = (groupOrder == 10 || ctr == 1 || ctr == 4 ? &RatR : &RatR2);
-    BigRational* ptrRatS = (groupOrder == 10 || ctr == 1 || ctr == 4 ? &RatS : &RatS2);
+    BigRational* ptrRatR = ((groupOrder == 10) || (ctr == 1) || (ctr == 4 ? &RatR : &RatR2));
+    BigRational* ptrRatS = ((groupOrder == 10) || (ctr == 1) || (ctr == 4 ? &RatS : &RatS2));
     enum eSign firstSign;
     enum eSign secondSign;
     startLine();
     if (pretty == TEX)
     {
       showText("R_");
-      *ptrOutput++ = (char)(ctr + '0');
+      *ptrOutput = (char)(ctr + '0');
+      ptrOutput++;
       showText(" = ");
     }
     else
     {
       showText("<var>R</var><sub>");
-      *ptrOutput++ = (char)(ctr + '0');
+      *ptrOutput = (char)(ctr + '0');
+      ptrOutput++;
       showText("</sub> = ");
     }
     BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat3);
@@ -790,10 +812,12 @@ static void showRn(int groupOrder)
         showRational(&Rat2);
         if (pretty == PARI_GP)
         {
-          *ptrOutput++ = ' ';
+          *ptrOutput = ' ';
+          ptrOutput++;
         }
         showText(ptrTimes);
-        *ptrOutput++ = ' ';
+        *ptrOutput = ' ';
+        ptrOutput++;
         showSqrt5();
       }
     }
@@ -807,11 +831,11 @@ static void showRn(int groupOrder)
     }
     if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
     {   // O > 0.
-      secondSign = ((ctr == 1 || ctr == 3) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+      secondSign = (((ctr == 1) || (ctr == 3)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
     }
     else
     {   // O < 0.
-      secondSign = ((ctr == 1 || ctr == 2) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+      secondSign = (((ctr == 1) || (ctr == 2)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
     }
     if (BigIntIsZero(&ptrRatS->numerator))
     {
@@ -847,13 +871,13 @@ static void showRn(int groupOrder)
       {
         squareRoot(Rat1.numerator.limbs, tmp4.limbs, Rat1.numerator.nbrLimbs, &tmp4.nbrLimbs);
         tmp4.sign = SIGN_POSITIVE;
-        BigIntMultiply(&tmp4, &tmp4, &tmp5);
+        (void)BigIntMultiply(&tmp4, &tmp4, &tmp5);
         BigIntSubt(&tmp5, &Rat1.numerator, &tmp5);
         if (BigIntIsZero(&tmp5))
         {   // Numerator is perfect square.
           squareRoot(Rat1.denominator.limbs, tmp1.limbs, Rat1.denominator.nbrLimbs, &tmp1.nbrLimbs);
           tmp1.sign = SIGN_POSITIVE;
-          BigIntMultiply(&tmp1, &tmp1, &tmp5);
+          (void)BigIntMultiply(&tmp1, &tmp1, &tmp5);
           BigIntSubt(&tmp5, &Rat1.denominator, &tmp5);
         }
       }
@@ -875,13 +899,13 @@ static void showRn(int groupOrder)
           // If this number is a perfect square, it can be reduced.
         squareRoot(Rat1.numerator.limbs, tmp4.limbs, Rat1.numerator.nbrLimbs, &tmp4.nbrLimbs);
         tmp4.sign = SIGN_POSITIVE;
-        BigIntMultiply(&tmp4, &tmp4, &tmp5);
+        (void)BigIntMultiply(&tmp4, &tmp4, &tmp5);
         BigIntSubt(&tmp5, &Rat1.numerator, &tmp5);
         if (BigIntIsZero(&tmp5))
         {   // Numerator is perfect square.
           squareRoot(Rat1.denominator.limbs, tmp1.limbs, Rat1.denominator.nbrLimbs, &tmp1.nbrLimbs);
           tmp1.sign = SIGN_POSITIVE;
-          BigIntMultiply(&tmp1, &tmp1, &tmp5);
+          (void)BigIntMultiply(&tmp1, &tmp1, &tmp5);
           BigIntSubt(&tmp5, &Rat1.denominator, &tmp5);
         }
         if (BigIntIsZero(&tmp5))
@@ -936,8 +960,8 @@ static void GaloisGroupHasOrder20(int multiplicity)
   CopyBigInt(&Rat1.denominator, &RatDiscr.denominator);
   MultiplyRationalBySqrtRational(&RatN, &Rat1);
   MultiplyRationalBySqrtRational(&RatValues[index_T2], &RatDiscr);
-  if (RatDiscr.denominator.nbrLimbs == 1 && RatDiscr.denominator.limbs[0].x == 1 &&
-    getRemainder(&RatDiscr.numerator, 5) == 0 && getRemainder(&RatDiscr.numerator, 25) != 0)
+  if ((RatDiscr.denominator.nbrLimbs == 1) && (RatDiscr.denominator.limbs[0].x == 1) &&
+    (getRemainder(&RatDiscr.numerator, 5) == 0) && (getRemainder(&RatDiscr.numerator, 25) != 0))
   {      // The discriminant has the form 5*n^2.
          // Compute r = 5(m+n)/8, s = (m+5n)/8.
     BigRationalAdd(&RatM, &RatN, &RatR);         // R <- m + n
@@ -975,13 +999,15 @@ static void GaloisGroupHasOrder20(int multiplicity)
       if (pretty == TEX)
       {
         showText("R_");
-        *ptrOutput++ = (char)(ctr + '0');
+        *ptrOutput = (char)(ctr + '0');
+        ptrOutput++;
         showText(" = (");
       }
       else
       {
         showText("<var>R</var><sub>");
-        *ptrOutput++ = (char)(ctr + '0');
+        *ptrOutput = (char)(ctr + '0');
+        ptrOutput++;
         showText("</sub></var> = (");
       }
       BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat2);
@@ -1099,13 +1125,15 @@ static void GaloisGroupHasOrder5(int multiplicity)
     if (pretty == TEX)
     {
       showText("R_");
-      *ptrOutput++ = (char)(ctr + '0');
+      *ptrOutput = (char)(ctr + '0');
+      ptrOutput++;
       showText(" = ");
     }
     else
     {
       showText("<var>R</var><sub>");
-      *ptrOutput++ = (char)(ctr + '0');
+      *ptrOutput = (char)(ctr + '0');
+      ptrOutput++;
       showText("</sub> = ");
     }
     start5thRoot();
@@ -1114,22 +1142,26 @@ static void GaloisGroupHasOrder5(int multiplicity)
     showRational(&Rat2);
     if (pretty == PARI_GP)
     {
-      *ptrOutput++ = ' ';
+      *ptrOutput = ' ';
+      ptrOutput++;
     }
     showText(ptrTimes);
     if (pretty == PARI_GP)
     {
-      *ptrOutput++ = ' ';
+      *ptrOutput = ' ';
+      ptrOutput++;
     }
     showSqrt5();
-    *ptrOutput++ = ' ';
+    *ptrOutput = ' ';
+    ptrOutput++;
     if (ctr >= 3)
     {
       showText(ptrMinus);
     }
     else
     {
-      *ptrOutput++ = '+';
+      *ptrOutput = '+';
+      ptrOutput++;
     }
     showText(pretty == PARI_GP? " I ": " i ");
     showText(ptrTimes);
@@ -1141,7 +1173,8 @@ static void GaloisGroupHasOrder5(int multiplicity)
     showRational(&Rat3);
     if (pretty == PARI_GP)
     {
-      *ptrOutput++ = ' ';
+      *ptrOutput = ' ';
+      ptrOutput++;
     }
     showText(ptrTimes);
     if ((ctr == 1) || (ctr == 3))
@@ -1165,7 +1198,8 @@ static void GaloisGroupHasOrder5(int multiplicity)
     showPlusSignOn(Rat3.numerator.sign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
     Rat3.numerator.sign = SIGN_POSITIVE;
     showRational(&Rat3);
-    *ptrOutput++ = ' ';
+    *ptrOutput = ' ';
+    ptrOutput++;
     showText(ptrTimes);
     if ((ctr == 2) || (ctr == 4))
     {
@@ -1265,13 +1299,13 @@ void QuinticEquation(const int* ptrPolynomial, int multiplicity)
   // Test whether the discriminant is a perfect square.
   squareRoot(RatDiscr.numerator.limbs, tmp4.limbs, RatDiscr.numerator.nbrLimbs, &tmp4.nbrLimbs);
   tmp4.sign = SIGN_POSITIVE;
-  BigIntMultiply(&tmp4, &tmp4, &tmp5);
+  (void)BigIntMultiply(&tmp4, &tmp4, &tmp5);
   BigIntSubt(&tmp5, &RatDiscr.numerator, &tmp5);
   if (BigIntIsZero(&tmp5))
   {   // Numerator of discriminant is perfect square.
     squareRoot(RatDiscr.denominator.limbs, tmp1.limbs, RatDiscr.denominator.nbrLimbs, &tmp1.nbrLimbs);
     tmp1.sign = SIGN_POSITIVE;
-    BigIntMultiply(&tmp1, &tmp1, &tmp5);
+    (void)BigIntMultiply(&tmp1, &tmp1, &tmp5);
     BigIntSubt(&tmp5, &RatDiscr.denominator, &tmp5);
   }
   // Let M = T1^2 + T2^2*D - 4*T3, N = 2*T1*T2 - 4*T4
@@ -1313,13 +1347,13 @@ void QuinticEquation(const int* ptrPolynomial, int multiplicity)
   {
     squareRoot(Rat1.numerator.limbs, tmp4.limbs, Rat1.numerator.nbrLimbs, &tmp4.nbrLimbs);
     tmp4.sign = SIGN_POSITIVE;
-    BigIntMultiply(&tmp4, &tmp4, &tmp5);
+    (void)BigIntMultiply(&tmp4, &tmp4, &tmp5);
     BigIntSubt(&tmp5, &Rat1.numerator, &tmp5);
     if (BigIntIsZero(&tmp5))
     {     // Numerator is perfect square.
       squareRoot(Rat1.denominator.limbs, tmp1.limbs, Rat1.denominator.nbrLimbs, &tmp1.nbrLimbs);
       tmp1.sign = SIGN_POSITIVE;
-      BigIntMultiply(&tmp1, &tmp1, &tmp5);
+      (void)BigIntMultiply(&tmp1, &tmp1, &tmp5);
       BigIntSubt(&tmp5, &Rat1.denominator, &tmp5);
       if (BigIntIsZero(&tmp5))
       {   // Quadratic has rational solutions.
