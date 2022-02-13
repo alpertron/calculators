@@ -20,6 +20,7 @@
 // David Dummit's coefficients for solvable quintics
 // See http://www.emba.uvm.edu/~ddummit/quintics/quintics.html
 
+#include <string.h>
 #include "rootseq.h"
 #include "quintics.h"
 
