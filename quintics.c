@@ -266,28 +266,30 @@ static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
   {
     unsigned int exponents = (unsigned int)pstMonomial->exponents;
     unsigned int ctr = 4U;
+    // Find Rat1 = 5^exp5 * cubic^expP * quadr^expQ * linear^expR * const^expS
+    // cubic, quadr, etc. are depressed coefficients and they are rational.
     intToBigInteger(&Rat1.numerator, 1);
     intToBigInteger(&Rat1.denominator, 1);
     for (;;)
     {
       BigRationalMultiply(&Rat1, &Rat1, &Rat1);
-      if ((exponents & (FIVEexp << ctr)) != 0U)
+      if ((exponents & (FIVEexp << 4)) != 0U)
       {
         BigRationalMultiplyByInt(&Rat1, 5, &Rat1);
       }
-      if ((exponents & (Pexp << ctr)) != 0U)
+      if ((exponents & (Pexp << 4)) != 0U)
       {
         BigRationalMultiply(&Rat1, &RatDeprCubic, &Rat1);
       }
-      if ((exponents & (Qexp << ctr)) != 0U)
+      if ((exponents & (Qexp << 4)) != 0U)
       {
         BigRationalMultiply(&Rat1, &RatDeprQuadratic, &Rat1);
       }
-      if ((exponents & (Rexp << ctr)) != 0U)
+      if ((exponents & (Rexp << 4)) != 0U)
       {
         BigRationalMultiply(&Rat1, &RatDeprLinear, &Rat1);
       }
-      if ((exponents & (Sexp << ctr)) != 0U)
+      if ((exponents & (Sexp << 4)) != 0U)
       {
         BigRationalMultiply(&Rat1, &RatDeprIndependent, &Rat1);
       }
@@ -295,6 +297,7 @@ static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
       {
         break;
       }
+      exponents <<= 1;
       ctr--;
     }
     BigRationalMultiplyByInt(&Rat1, pstMonomial->coefficient, &Rat1);
@@ -604,13 +607,13 @@ static void ShowQuinticsRootsRealR(int multiplicity)
   showText(ptrTimes);
   if (pretty == TEX)
   {
-    showText("(R_4 - R_1)");
+    showText("(R_1 - R_4)");
   }
   else
   {
-    showText("(<var>R</var><sub>4</sub> ");
+    showText("(<var>R</var><sub>1</sub> ");
     showText(ptrMinus);
-    showText(" <var>R</var><sub>1</sub>)");
+    showText(" <var>R</var><sub>4</sub>)");
   }
   endLine();
   for (int ctr = 1; ctr <= 5; ctr++)
@@ -801,7 +804,7 @@ static void showRn(int groupOrder)
       BigRationalMultiplyByInt(&RatValues[index_T2], 5, &Rat2);
       BigRationalDivideByInt(&Rat2, 2, &Rat2);
       if ((ctr == 2) || (ctr == 3))
-      {
+      {       // R2 or R3.
         BigRationalAdd(&Rat3, &Rat2, &Rat3);
       }
       else
@@ -811,7 +814,7 @@ static void showRn(int groupOrder)
       ForceDenominatorPositive(&Rat3);
     }
     else
-    {        // Group order is 10.
+    {         // Group order is 10.
       BigRationalMultiply(&RatValues[index_T2], &Rat4, &Rat2);
       BigRationalDivideByInt(&Rat2, 2, &Rat2);
       ForceDenominatorPositive(&Rat3);

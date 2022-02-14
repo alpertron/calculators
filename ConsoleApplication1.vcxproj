@@ -203,6 +203,7 @@
     <ClCompile Include="polynomial.c" />
     <ClCompile Include="quad.c" />
     <ClCompile Include="quadmod.c" />
+    <ClCompile Include="quinticsData.c" />
     <ClCompile Include="rootseq.c" />
     <ClCompile Include="siqs.c" />
     <ClCompile Include="sqroot.c">
@@ -220,6 +221,7 @@
     <ClInclude Include="linkedbignbr.h" />
     <ClInclude Include="output.h" />
     <ClInclude Include="polynomial.h" />
+    <ClInclude Include="quintics.h" />
     <ClInclude Include="rootseq.h" />
     <ClInclude Include="showtime.h" />
   </ItemGroup>
