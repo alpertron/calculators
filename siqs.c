@@ -51,7 +51,7 @@ static bool InsertNewRelation(
   const int *rowMatrixB,
   limb *biT, limb *biU, limb *biR,
   int NumberLength);
-bool BlockLanczos(int seed);
+bool LinearAlgebraPhase(limb* biT, limb* biR, limb* biU, int nbrLength);
 #if 0
 static unsigned char isProbablePrime(double value);
 static int SQUFOF(double N, int queue[]);
@@ -600,7 +600,9 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       index++;
       currentPrime = rowPrimeSieveData->value;
       F2 = rowPrimeSieveData->soln1 - rowPrimeSieveData->Bainv2[indexFactorA];
-      if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
+      F2 += currentPrime & (F2 >> 31);
+      rowPrimeSieveData->soln1 = F2;
+      if (F2 < X1)
       {
         *(SieveArray + F2) += logPrimeEvenPoly;
       }
@@ -1024,7 +1026,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
   int index2,
   const limb *biDividend, int rowSquares[],
   int NumberLengthDividend,
-  unsigned char oddPolynomial)
+  bool oddPolynomial)
 {
   int biR0 = 0;
   int biR1 = 0;  
@@ -1866,8 +1868,7 @@ static void PartialRelationFound(
   while (hashIndex >= 0)
   {
     int oldDivid;
-    int nbrBytes;
-
+    
     rowPartial = common.siqs.matrixPartial[hashIndex];
     oldDivid = rowPartial[0];
     if ((newDivid == oldDivid) || (newDivid == -oldDivid))
@@ -2029,8 +2030,10 @@ static void PartialRelationFound(
       mergeArrays(common.siqs.aindex, common.siqs.nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
       nbrColumns = rowMatrixB[LENGTH_OFFSET];
       rowMatrixBbeforeMerge[0] = nbrColumns;
-      nbrBytes = nbrColumns * (int)sizeof(int);
-      (void)memcpy(&rowMatrixBbeforeMerge[1], &rowMatrixB[1], nbrBytes);
+      {
+        int nbrBytes = nbrColumns * (int)sizeof(int);
+        (void)memcpy(&rowMatrixBbeforeMerge[1], &rowMatrixB[1], nbrBytes);
+      }
       mergeArrays(rowPartials, nbrFactorsPartial, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
       nbrSquares = rowSquares[0];
       for (index = 1; index < nbrSquares; index++)
@@ -2194,8 +2197,9 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   return;
 }
 
-static unsigned int getFactorsOfA(unsigned int seed, int *indexA)
+static unsigned int getFactorsOfA(unsigned int oldSeed, int *indexA)
 {
+  unsigned int seed = oldSeed;
   int index;
   int index2;
   int i;
@@ -2376,7 +2380,10 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
       }
       else if (jacobi == JacobiSymbol(arrmult[j], currentPrime))
       {
-        adjustment[j] += 2 * logp;
+        adjustment[j] += 2.0 * logp;
+      }
+      else
+      {        // Nothing to do.
       }
     }
     do
@@ -2702,221 +2709,6 @@ void ShowSIQSStatus(void)
 #endif
 }
 
-static int EraseSingletons(int nbrFactorBasePrimes)
-{
-  int row;
-  int column;
-  int delta;
-  int *rowMatrixB;
-  int matrixBlength = common.siqs.matrixBLength;
-
-  {
-    int nbrBytes = matrixBlength * (int)sizeof(int);
-    (void)memset(common.siqs.newColumns, 0, nbrBytes);
-  }
-  // Find singletons in matrixB storing in array vectExpParity the number
-  // of primes in each column.
-  do
-  {   // The singleton removal phase must run until there are no more
-      // singletons to erase.
-    {
-      int nbrBytes = common.siqs.matrixBLength * (int)sizeof(limb);
-      (void)memset(common.siqs.vectExpParity, 0, nbrBytes);
-    }
-    for (row = matrixBlength - 1; row >= 0; row--)
-    {                  // Traverse all rows of the matrix.
-      rowMatrixB = common.siqs.matrixB[row];
-      for (column = rowMatrixB[LENGTH_OFFSET]-1; column >= 1; column--)
-      {                // A prime appeared in that column.
-        common.siqs.vectExpParity[rowMatrixB[column]]++;
-      }
-    }
-    row = 0;
-    for (column = 0; column<nbrFactorBasePrimes; column++)
-    {
-      if (common.siqs.vectExpParity[column] > 1)
-      {                // Useful column found with at least 2 primes.
-#if DEBUG_SIQS
-        common.siqs.primeSieveData[row] = common.siqs.primeSieveData[column];
-#endif
-        common.siqs.newColumns[column] = row;
-        common.siqs.primeTrialDivisionData[row].value =
-          common.siqs.primeTrialDivisionData[column].value;
-        row++;
-      }
-    }
-    nbrFactorBasePrimes = row;
-    delta = 0;
-    // Erase singletons from matrixB. The rows to be erased are those where the
-    // the corresponding element of the array vectExpParity equals 1.
-    for (row = 0; row < matrixBlength; row++)
-    {                  // Traverse all rows of the matrix.
-      rowMatrixB = common.siqs.matrixB[row];
-      for (column = rowMatrixB[LENGTH_OFFSET]-1; column >= 1; column--)
-      {                // Traverse all columns.
-        if (common.siqs.vectExpParity[rowMatrixB[column]] == 1)
-        {              // Singleton found: erase this row.
-          delta++;
-          break;
-        }
-      }
-      if ((column == 0) && (delta != 0))
-      {                // Singleton not found: move row upwards.
-        (void)memcpy(common.siqs.matrixB[row - delta],
-            common.siqs.matrixB[row], sizeof(common.siqs.matrixB[0]));
-        (void)memcpy(common.siqs.vectLeftHandSide[row - delta],
-            common.siqs.vectLeftHandSide[row], sizeof(common.siqs.vectLeftHandSide[0]));
-      }
-    }
-    matrixBlength -= delta;      // Update number of rows of the matrix.
-    for (row = 0; row < matrixBlength; row++)
-    {                  // Traverse all rows of the matrix.
-      rowMatrixB = common.siqs.matrixB[row];
-      for (column = rowMatrixB[LENGTH_OFFSET]; column >= 1; column--)
-      {                // Change all column indexes in this row.
-        rowMatrixB[column] = common.siqs.newColumns[rowMatrixB[column]];
-      }
-    }
-  } while (delta > 0);           // End loop if number of rows did not
-                                 // change.
-  common.siqs.primeTrialDivisionData[0].exp2 = nbrFactorBasePrimes;
-  return matrixBlength;
-}
-
-/************************/
-/* Linear algebra phase */
-/************************/
-static bool LinearAlgebraPhase(limb *biT, limb *biR, limb *biU, int nbrLength)
-{
-  int seed = 123456789;
-  int mask;
-  const int *rowMatrixB;
-  int primeIndex;
-  // Get new number of rows after erasing singletons.
-  int matrixBlength = EraseSingletons(common.siqs.nbrFactorBasePrimes);
-  common.siqs.matrixBLength = matrixBlength;
-  matrixRows = matrixBlength;
-  matrixCols = common.siqs.primeTrialDivisionData[0].exp2;
-  common.siqs.primeTrialDivisionData[0].exp2 = 0;         // Restore correct value.
-#if DEBUG_SIQS
-  {
-    printf("******* START LINEAR ALGEBRA *******\n");
-    for (int j = 0; j < common.siqs.matrixBLength; j++)
-    {
-      char* ptrOutput = output;
-      copyStr(&ptrOutput, "Mod(");      
-      for (int i = 1; i < common.siqs.matrixB[j][LENGTH_OFFSET]; i++)
-      {
-        if (i != 1)
-        {
-          *ptrOutput++ = '*';
-        }
-        if (common.siqs.matrixB[j][i] == 0)
-        {
-          copyStr(&ptrOutput, "(-1)");
-        }
-        else
-        {
-          int2dec(&ptrOutput, common.siqs.primeSieveData[common.siqs.matrixB[j][i]].value);
-        }
-      }
-      *ptrOutput = 0;
-      printf("%s - ", output);
-      ptrOutput = output;
-      static BigInteger k1;
-      (void)memcpy(k1.limbs, common.siqs.vectLeftHandSide[j],
-        NumberLength * sizeof(limb));
-      k1.nbrLimbs = NumberLength;
-      k1.sign = SIGN_POSITIVE;
-      BigInteger2Dec(&ptrOutput, &k1, 0);
-      *ptrOutput = 0;
-      printf("%s^2, p)\n", output);
-    }
-  }
-#endif
-  while (BlockLanczos(seed) == false)
-  {   // Block Lanczos does not work with this seed. Try another one.
-    seed++;
-  }
-  // The rows of matrixV indicate which rows must be multiplied so no
-  // primes are multiplied an odd number of times.
-  mask = 1;
-  for (int col = 31; col >= 0; col--)
-  {
-    int NumberLengthBak;
-    int index;
-
-    IntToBigNbr(1, biT, nbrLength+1);
-    IntToBigNbr(1, biR, nbrLength+1);
-    {
-      int nbrBytes = matrixBlength * (int)sizeof(common.siqs.vectExpParity[0]);
-      (void)memset(common.siqs.vectExpParity, 0, nbrBytes);
-    }
-    NumberLengthBak = nbrLength;
-    if (common.siqs.Modulus[nbrLength - 1].x == 0)
-    {
-      nbrLength--;
-    }
-    for (int row = matrixBlength - 1; row >= 0; row--)
-    {
-      if ((common.siqs.matrixV[row] & mask) != 0)
-      {
-        MultBigNbrModN(common.siqs.vectLeftHandSide[row], biR, biU, common.siqs.Modulus,
-          nbrLength);
-        {
-          int nbrBytes = (nbrLength + 1) * (int)sizeof(biR[0]);
-          (void)memcpy(biR, biU, nbrBytes);
-        }
-        rowMatrixB = common.siqs.matrixB[row];
-        for (int j = rowMatrixB[LENGTH_OFFSET]-1; j >= 1; j--)
-        {
-          primeIndex = rowMatrixB[j];
-          common.siqs.vectExpParity[primeIndex] ^= 1;
-          if (common.siqs.vectExpParity[primeIndex] == 0)
-          {
-            if (primeIndex == 0)
-            {
-              SubtractBigNbr(common.siqs.Modulus, biT, biT, nbrLength); // Multiply biT by -1.
-            }
-            else
-            {
-              MultBigNbrByIntModN(biT,
-                common.siqs.primeTrialDivisionData[primeIndex].value, biT,
-                common.siqs.Modulus, nbrLength);
-            }
-          }
-        }
-      }
-    }
-    nbrLength = NumberLengthBak;
-    SubtractBigNbrModN(biR, biT, biR, common.siqs.Modulus, nbrLength);
-    GcdBigNbr(biR, common.siqs.TestNbr2, biT, nbrLength);
-    for (index = 1; index < nbrLength; index++)
-    {
-      if (biT[index].x != 0)
-      {
-        break;
-      }
-    }
-    if ((index < nbrLength) || (biT[0].x > 1))
-    {   // GCD is not zero or 1.
-      for (index = 0; index < nbrLength; index++)
-      {
-        if (biT[index].x != common.siqs.TestNbr2[index].x)
-        {
-          break;
-        }
-      }
-      if (index < nbrLength)
-      { /* GCD is not 1 */
-        return true;
-      }
-    }
-    mask *= 2;
-  }
-  return false;
-}
-
 static bool InsertNewRelation(
   const int* rowMatrixB,
   limb* biT, limb* squareRightHandSide, limb* squareLeftHandSide,
@@ -3156,7 +2948,9 @@ static void sieveThread(BigInteger *result)
           }
           if (1/*common.siqs.factorSiqs == null*/)
           {
-            while (!LinearAlgebraPhase(biT, biR, biU, NumberLength));
+            while (!LinearAlgebraPhase(biT, biR, biU, NumberLength))
+            {    // Nothing to do.
+            }
             BigIntToBigNbr(result, biT, NumberLength);  // Factor found.
 #if 0
             synchronized(matrixB)
