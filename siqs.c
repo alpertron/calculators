@@ -277,10 +277,9 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
     }
     if (currentPrime != common.siqs.multiplier)
     {
-      for (F1 = index2 = (rowPrimeSieveData->soln1 + currentPrime -
+      F1 = (rowPrimeSieveData->soln1 + currentPrime -
         rowPrimeSieveData->difsoln) % currentPrime;
-        index2 < F3;
-        index2 += currentPrime)
+      for (index2 = F1; index2 < F3; index2 += currentPrime)
       {
         *(SieveArray + index2) += logPrimeEvenPoly;
       }
@@ -313,8 +312,9 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
     for (; index < common.siqs.smallPrimeUpperLimit; index++)
     {
       currentPrime = rowPrimeSieveData->value;
-      if ((S1 = rowPrimeSieveData->soln1 -
-        rowPrimeSieveData->Bainv2[indexFactorA]) < 0)
+      S1 = rowPrimeSieveData->soln1 -
+        rowPrimeSieveData->Bainv2[indexFactorA];
+      if (S1 < 0)
       {
         S1 += currentPrime;
       }
@@ -543,11 +543,14 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       index++;
       currentPrime = rowPrimeSieveData->value;
       F2 = rowPrimeSieveData->soln1 - rowPrimeSieveData->Bainv2[indexFactorA];
-      if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
+      F2 += currentPrime & (F2 >> 31);
+      rowPrimeSieveData->soln1 = F2;
+      if (F2 < X1)
       {
         *(SieveArray + F2) += logPrimeEvenPoly;
       }
-      F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
+      F3 = rowPrimeSieveData->Bainv2_0;
+      F1 = F2 - F3;
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
         *(SieveArray + F1) += logPrimeOddPoly;
@@ -807,12 +810,15 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       }
       F2 = rowPrimeSieveData->soln1 +
         rowPrimeSieveData->Bainv2[indexFactorA] - currentPrime;
-      index2 = (rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31)));
+      F2 += currentPrime & (F2 >> 31);
+      rowPrimeSieveData->soln1 = F2;
+      index2 = F2;
       do
       {
         *(SieveArray + index2) += logPrimeEvenPoly;
       } while ((index2 += currentPrime) <= X1);
-      F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
+      F3 = rowPrimeSieveData->Bainv2_0;
+      F1 = F2 - F3;
       F1 += currentPrime & (F1 >> 31);
       do
       {
@@ -1641,7 +1647,8 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
                   (Divisor > 1))
                 {          // Perform binary search to find the index.
                   left = -1;
-                  median = right = common.siqs.nbrFactorBasePrimes;
+                  right = common.siqs.nbrFactorBasePrimes;;
+                  median = right;
                   while (left != right)
                   {
                     median = ((right - left) >> 1) + left;
@@ -2000,7 +2007,8 @@ static void PartialRelationFound(
       // Add all elements of aindex array to the rowMatrixB array discarding
       // duplicates.
       mergeArrays(common.siqs.aindex, common.siqs.nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
-      rowMatrixBbeforeMerge[0] = nbrColumns = rowMatrixB[LENGTH_OFFSET];
+      nbrColumns = rowMatrixB[LENGTH_OFFSET];
+      rowMatrixBbeforeMerge[0] = nbrColumns;
       (void)memcpy(&rowMatrixBbeforeMerge[1], &rowMatrixB[1], nbrColumns*sizeof(int));
       mergeArrays(rowPartials, nbrFactorsPartial, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
       nbrSquares = rowSquares[0];
@@ -2306,9 +2314,12 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   rowPrimeSieveData->value = 2;
   rowPrimeTrialDivisionData->value = 2;
   // (2^31)^(j+1) mod 2
-  rowPrimeTrialDivisionData->exp1 = rowPrimeTrialDivisionData->exp2 =
-    rowPrimeTrialDivisionData->exp3 = rowPrimeTrialDivisionData->exp4 =
-    rowPrimeTrialDivisionData->exp5 = rowPrimeTrialDivisionData->exp6 = 0;
+  rowPrimeTrialDivisionData->exp1 = 0;
+  rowPrimeTrialDivisionData->exp2 = 0;
+  rowPrimeTrialDivisionData->exp3 = 0;
+  rowPrimeTrialDivisionData->exp4 = 0;
+  rowPrimeTrialDivisionData->exp5 = 0;
+  rowPrimeTrialDivisionData->exp6 = 0;
 
   NbrMod = pNbrToFactor->x & 7;
   for (j = 0; j<sizeof(arrmult)/sizeof(arrmult[0]); j++)
