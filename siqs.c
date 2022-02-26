@@ -44,7 +44,6 @@ uint64_t ValuesSieved;
 int congruencesFound;
 int polynomialsSieved;
 int nbrPartials;
-unsigned char SIQSInfoText[300];
 int numberThreads = 1;
 extern int NumberLength;
 static bool InsertNewRelation(
@@ -61,19 +60,6 @@ static unsigned int getFactorsOfA(unsigned int seed, int *aindex);
 static void sieveThread(BigInteger *result);
 
 #ifdef __EMSCRIPTEN__
-static void showMatrixSize(const char *SIQSInformationText, int rows, int cols)
-{
-  (void)SIQSInformationText;
-  char *ptrText = ptrLowerText;  // Point after number that is being factored.
-  copyStr(&ptrText, lang ? "<p>Resolviendo la matriz de congruencias de " : "<p>Solving ");
-  int2dec(&ptrText, rows);   // Show number of rows.
-  copyStr(&ptrText, " &times; ");
-  int2dec(&ptrText, cols);   // Show number of columns.
-  copyStr(&ptrText, lang ? " usando el algoritmo de Lanczos en bloques.</p>":
-                         " congruence matrix using Block Lanczos algorithm.</p>");
-  databack(lowerText);
-}
-
 static void InitSIQSStrings(int SieveLimit)
 {
   char *ptrText = ptrLowerText;  // Point after number that is being factored.
@@ -104,7 +90,7 @@ static void ShowSIQSInfo(int timeSieve, int nbrCongruencesFound, int matrixBLeng
   int elapsedTime)
 {
   char SIQSInfo[1000];
-  float fPercentage = (float)nbrCongruencesFound * 100f / (float)matrixBLength;
+  float fPercentage = (float)nbrCongruencesFound * 100.0f / (float)matrixBLength;
   int percentage = (int)fPercentage;
   int temp = matrixBLength - nbrCongruencesFound;
   double dU = (double)timeSieve * (double)temp / 

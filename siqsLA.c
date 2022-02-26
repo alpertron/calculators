@@ -25,6 +25,26 @@
 #include "commonstruc.h"
 
 #define processCol(col) (*(RightMatr + col) & ((leftMatr << col) >> 31))
+#ifdef __EMSCRIPTEN__
+extern char lowerText[MAX_LEN * 16];
+extern char* ptrLowerText;
+unsigned char SIQSInfoText[300];
+#endif
+
+#ifdef __EMSCRIPTEN__
+static void showMatrixSize(const char* SIQSInformationText, int rows, int cols)
+{
+  (void)SIQSInformationText;
+  char* ptrText = ptrLowerText;  // Point after number that is being factored.
+  copyStr(&ptrText, lang ? "<p>Resolviendo la matriz de congruencias de " : "<p>Solving ");
+  int2dec(&ptrText, rows);   // Show number of rows.
+  copyStr(&ptrText, " &times; ");
+  int2dec(&ptrText, cols);   // Show number of columns.
+  copyStr(&ptrText, lang ? " usando el algoritmo de Lanczos en bloques.</p>" :
+    " congruence matrix using Block Lanczos algorithm.</p>");
+  databack(lowerText);
+}
+#endif
 /* Multiply binary matrices of length m x 32 by 32 x 32 */
 /* The product matrix has size m x 32. Then add it to a m x 32 matrix. */
 static void MatrixMultAdd(const int *LeftMatr, const int *RightMatr, int *ProdMatr)
@@ -334,7 +354,7 @@ static bool BlockLanczos(int seed)
       copyStr(&ptrText, "4<p>");
       GetDHMS(&ptrText, elapsedTime/10);
       copyStr(&ptrText, "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-      copyStr(&ptrText, lang? "Progreso del álgebra lineal: ": "Linear algebra progress: ");
+      copyStr(&ptrText, lang? "Progreso del Ã¡lgebra lineal: ": "Linear algebra progress: ");
       int2dec(&ptrText, stepNbr * 3200 / matrixRows);
       copyStr(&ptrText, "%</p>");
       databack(SIQSInfo);
