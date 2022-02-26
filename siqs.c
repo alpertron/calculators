@@ -25,7 +25,8 @@
 #include "commonstruc.h"
 
 #ifdef __EMSCRIPTEN__
-extern char lowerText[], *ptrLowerText;
+extern char lowerText[MAX_LEN * 16];
+extern char *ptrLowerText;
 char *ptrSIQSStrings;
 int startSieveTenths;
 int64_t SIQSModMult;
@@ -573,7 +574,9 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       index++;
       currentPrime = rowPrimeSieveData->value;
       F2 = rowPrimeSieveData->soln1 - rowPrimeSieveData->Bainv2[indexFactorA];
-      if ((rowPrimeSieveData->soln1 = (F2 += currentPrime & (F2 >> 31))) < X1)
+      F2 += currentPrime & (F2 >> 31);
+      rowPrimeSieveData->soln1 = F2;
+      if (F2 < X1)
       {
         *(SieveArray + F2) += logPrimeEvenPoly;
       }
@@ -601,7 +604,8 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeEvenPoly;
       }
-      F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
+      F3 = rowPrimeSieveData->Bainv2_0;
+      F1 = F2 - F3;
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
         *(SieveArray + F1) += logPrimeOddPoly;
@@ -1768,7 +1772,7 @@ static void SmoothRelationFound(
   int index2,
   int *rowSquares, const limb *biLinearCoeff,
   int nbrLength, limb *biT, limb *biU,
-  limb *biR, unsigned char oddPolynomial)
+  limb *biR, bool oddPolynomial)
 {
   int nbrSquares;
   if (congruencesFound == common.siqs.matrixBLength)
@@ -1879,7 +1883,7 @@ static void PartialRelationFound(
         biV[index].x = 0;
       }
       seed = rowPartial[squareRootSize + 2];
-      getFactorsOfA(seed, indexFactorsA);
+      (void)getFactorsOfA(seed, indexFactorsA);
       IntToBigNbr(newDivid, biR, nbrLength);
       nbrFactorsPartial = 0;
       // biT = old (Ax+B)^2.
@@ -1995,6 +1999,9 @@ static void PartialRelationFound(
           else if (biT[NumberLengthDivid - 1].x == 0)
           {
             NumberLengthDivid--;
+          }
+          else
+          {        // Nothing to do.
           }
         }
         if (expParity != 0)
@@ -2616,8 +2623,14 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   /*********************************************/
   sieveThread(&common.siqs.TempResult);
   NumberLength = origNumberLength;
-  (void)memcpy(pFactor, common.siqs.TempResult.limbs, common.siqs.TempResult.nbrLimbs * sizeof(limb));
-  (void)memset(pFactor + common.siqs.TempResult.nbrLimbs, 0, (NumberLength - common.siqs.TempResult.nbrLimbs) * sizeof(limb));
+  {
+    int nbrBytes = common.siqs.TempResult.nbrLimbs * (int)sizeof(limb);
+    (void)memcpy(pFactor, common.siqs.TempResult.limbs, nbrBytes);
+  }
+  {
+    int nbrBytes = (NumberLength - common.siqs.TempResult.nbrLimbs) * (int)sizeof(limb);
+    (void)memset(pFactor + common.siqs.TempResult.nbrLimbs, 0, nbrBytes);
+  }
 
 #if 0
   for (threadNumber = 0; threadNumber<numberThreads; threadNumber++)
@@ -2697,13 +2710,19 @@ static int EraseSingletons(int nbrFactorBasePrimes)
   int *rowMatrixB;
   int matrixBlength = common.siqs.matrixBLength;
 
-  (void)memset(common.siqs.newColumns, 0, matrixBlength*sizeof(int));
+  {
+    int nbrBytes = matrixBlength * (int)sizeof(int);
+    (void)memset(common.siqs.newColumns, 0, nbrBytes);
+  }
   // Find singletons in matrixB storing in array vectExpParity the number
   // of primes in each column.
   do
   {   // The singleton removal phase must run until there are no more
       // singletons to erase.
-    (void)memset(common.siqs.vectExpParity, 0, common.siqs.matrixBLength * sizeof(limb));
+    {
+      int nbrBytes = common.siqs.matrixBLength * (int)sizeof(limb);
+      (void)memset(common.siqs.vectExpParity, 0, nbrBytes);
+    }
     for (row = matrixBlength - 1; row >= 0; row--)
     {                  // Traverse all rows of the matrix.
       rowMatrixB = common.siqs.matrixB[row];
@@ -2829,7 +2848,10 @@ static bool LinearAlgebraPhase(limb *biT, limb *biR, limb *biU, int nbrLength)
 
     IntToBigNbr(1, biT, nbrLength+1);
     IntToBigNbr(1, biR, nbrLength+1);
-    (void)memset(common.siqs.vectExpParity, 0, matrixBlength * sizeof(common.siqs.vectExpParity[0]));
+    {
+      int nbrBytes = matrixBlength * (int)sizeof(common.siqs.vectExpParity[0]);
+      (void)memset(common.siqs.vectExpParity, 0, nbrBytes);
+    }
     NumberLengthBak = nbrLength;
     if (common.siqs.Modulus[nbrLength - 1].x == 0)
     {
@@ -2841,7 +2863,10 @@ static bool LinearAlgebraPhase(limb *biT, limb *biR, limb *biU, int nbrLength)
       {
         MultBigNbrModN(common.siqs.vectLeftHandSide[row], biR, biU, common.siqs.Modulus,
           nbrLength);
-        (void)memcpy(biR, biU, (nbrLength + 1) * sizeof(biR[0]));
+        {
+          int nbrBytes = (nbrLength + 1) * (int)sizeof(biR[0]);
+          (void)memcpy(biR, biU, nbrBytes);
+        }
         rowMatrixB = common.siqs.matrixB[row];
         for (int j = rowMatrixB[LENGTH_OFFSET]-1; j >= 1; j--)
         {
@@ -2907,7 +2932,7 @@ static bool InsertNewRelation(
   }
 #if DEBUG_SIQS
   {
-    char *ptrOutput = output;
+    char* ptrOutput = output;
     copyStr(&ptrOutput, "Mod(");
     for (int i = 1; i < *rowMatrixB; i++)
     {
@@ -2930,7 +2955,7 @@ static bool InsertNewRelation(
   }
 #endif
   // Check whether this relation is already in the matrix.
-  const int *curRowMatrixB = common.siqs.matrixB[0];
+  const int* curRowMatrixB = common.siqs.matrixB[0];
   for (int i = 0; i < congruencesFound; i++)
   {
     if (nbrColumns == *(curRowMatrixB + LENGTH_OFFSET))
@@ -2986,8 +3011,14 @@ static bool InsertNewRelation(
   MultBigNbrModN(squareRightHandSide, biT, squareLeftHandSide, common.siqs.Modulus, lenDivisor);
 
   // Add relation to matrix B.
-  (void)memcpy(common.siqs.matrixB[congruencesFound], &rowMatrixB[0], nbrColumns * sizeof(int));
-  (void)memcpy(common.siqs.vectLeftHandSide[congruencesFound], squareLeftHandSide, NumberLengthMod * sizeof(int));
+  {
+    int nbrBytes = nbrColumns * (int)sizeof(int);
+    (void)memcpy(common.siqs.matrixB[congruencesFound], &rowMatrixB[0], nbrBytes);
+  }
+  {
+    int nbrBytes = NumberLengthMod * (int)sizeof(int);
+    (void)memcpy(common.siqs.vectLeftHandSide[congruencesFound], squareLeftHandSide, nbrBytes);
+  }
   congruencesFound++;
   nbrColumns = *(rowMatrixB + LENGTH_OFFSET);
   for (k = 1; k < nbrColumns; k++)
@@ -3434,7 +3465,10 @@ static void sieveThread(BigInteger *result)
       if ((uint32_t)biLinearCoeff[NumberLength - 1].x >= LIMB_RANGE)
       {                               // Number is negative.
         positive = false;
-        (void)memcpy(biT, biLinearCoeff, NumberLength * sizeof(biT[0]));
+        {
+          int nbrBytes = NumberLength * (int)sizeof(biT[0]);
+          (void)memcpy(biT, biLinearCoeff, nbrBytes);
+        }        
         ChSignBigNbr(biT, NumberLength);   // Make it positive.
         (void)memcpy(biAbsLinearCoeff, biT, sizeof(biT));
       }
@@ -3453,7 +3487,8 @@ static void sieveThread(BigInteger *result)
       }
       for (i = common.siqs.nbrFactorBasePrimes - 1; i>0; i--)
       {
-        double dRem, dCurrentPrime;
+        double dRem;
+        double dCurrentPrime;
         rowPrimeSieveData = &common.siqs.primeSieveData[i];
         rowPrimeSieveData0 = common.siqs.firstPrimeSieveData+i;
         rowPrimeSieveData->difsoln = rowPrimeSieveData0->difsoln;
@@ -3555,7 +3590,7 @@ static void sieveThread(BigInteger *result)
       {                       // For each polynomial...
         if (congruencesFound >= common.siqs.matrixBLength /*|| common.siqs.factorSiqs != null*/)
         {
-          if (common.siqs.nbrThreadFinishedPolySet > numberThreads*polySet)
+          if (common.siqs.nbrThreadFinishedPolySet > (numberThreads*polySet))
           {
             break;
           }
