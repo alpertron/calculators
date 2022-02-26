@@ -171,8 +171,8 @@ static void colexchange(int *XmY, int *V, int *V1, int *V2,
   }          // Exchange columns col1 and col2 of V1:V2
   mask1 = 0x80000000 >> (col1 & 31);
   mask2 = 0x80000000 >> (col2 & 31);
-  matr1 = (col1 >= 32 ? V1 : V2);
-  matr2 = (col2 >= 32 ? V1 : V2);
+  matr1 = ((col1 >= 32) ? V1 : V2);
+  matr2 = ((col2 >= 32) ? V1 : V2);
   for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {             // If both bits are different toggle them.
     if (((matr1[row] & mask1) == 0) != ((matr2[row] & mask2) == 0))
@@ -182,8 +182,8 @@ static void colexchange(int *XmY, int *V, int *V1, int *V2,
     }
   }
   // Exchange columns col1 and col2 of XmY:V
-  matr1 = (col1 >= 32 ? XmY : V);
-  matr2 = (col2 >= 32 ? XmY : V);
+  matr1 = ((col1 >= 32) ? XmY : V);
+  matr2 = ((col2 >= 32) ? XmY : V);
   for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {             // If both bits are different toggle them.
     if (((matr1[row] & mask1) == 0) != ((matr2[row] & mask2) == 0))
@@ -291,15 +291,15 @@ bool BlockLanczos(int seed)
   for (int *ptrMatrixV = &common.siqs.matrixV[common.siqs.matrixBLength - 1];
     ptrMatrixV >= common.siqs.matrixV; ptrMatrixV--)
   {
-    double dSeed2 = (dSeed * dMult + dAdd);
+    double dSeed2 = (dSeed * dMult) + dAdd;
     dSeed2 -= floor(dSeed2 / dDivisor) * dDivisor;
     *ptrMatrixXmY-- = (int)dSeed + (int)dSeed2;
-    dSeed = (dSeed2 * dMult + dAdd);
+    dSeed = (dSeed2 * dMult) + dAdd;
     dSeed -= floor(dSeed / dDivisor) * dDivisor;
-    dSeed2 = (dSeed * dMult + dAdd);
+    dSeed2 = (dSeed * dMult) + dAdd;
     dSeed2 -= floor(dSeed2 / dDivisor) * dDivisor;
     *ptrMatrixV = (int)dSeed + (int)dSeed2;
-    dSeed = (dSeed2 * dMult + dAdd);
+    dSeed = (dSeed2 * dMult) + dAdd;
     dSeed -= floor(dSeed / dDivisor) * dDivisor;
   }
   // Compute matrix Vt(0) * V(0)
@@ -579,7 +579,7 @@ bool BlockLanczos(int seed)
     for (col = leftCol; col < rightCol; col++)
     {       // For each column find the first row which has a '1'.
             // Columns outside this range must have '0' in all rows.
-      matr = (col >= 32 ? common.siqs.matrixV1 : common.siqs.matrixV2);
+      matr = ((col >= 32) ? common.siqs.matrixV1 : common.siqs.matrixV2);
       mask = 0x80000000 >> (col & 31);
       vectorIndex[col] = -1;    // indicate all rows in zero in advance.
       for (row = 0; row < common.siqs.matrixBLength; row++)
