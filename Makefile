@@ -36,34 +36,34 @@ targets = ecm quad quadmod fsquares fcubes polfact dilog contfrac blockly
 all: $(targets)
 
 ecm: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
-factor.fco ecm.fco siqs.fco ecmfront.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco fromBlockly.fco linkedbignbr.fco test_ecm.fco
+factor.fco ecm.fco siqs.fco siqsLA.fco ecmfront.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco fromBlockly.fco linkedbignbr.fco test_ecm.fco
 	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
-factor.fco ecm.fco siqs.fco ecmfront.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco fromBlockly.fco linkedbignbr.fco test_ecm.fco $(flags_coverage) -lm -o $@
+factor.fco ecm.fco siqs.fco siqsLA.fco ecmfront.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco fromBlockly.fco linkedbignbr.fco test_ecm.fco $(flags_coverage) -lm -o $@
 
 blockly: expression.fbo parseexpr.fbo partition.fbo errors.fbo bigint.fbo division.fbo baseconv.fbo karatsuba.fbo modmult.fbo sqroot.fbo \
-factor.fbo ecm.fbo siqs.fbo ecmfront.fbo bignbr.fbo showtime.fbo from_musl.fbo inputstr.fbo batch.fbo fft.fbo gcdrings.fbo fromBlockly.fbo linkedbignbr.fbo test_blockly.fbo
+factor.fbo ecm.fbo siqs.fbo siqsLA.fbo ecmfront.fbo bignbr.fbo showtime.fbo from_musl.fbo inputstr.fbo batch.fbo fft.fbo gcdrings.fbo fromBlockly.fbo linkedbignbr.fbo test_blockly.fbo
 	gcc expression.fbo parseexpr.fbo partition.fbo errors.fbo bigint.fbo division.fbo baseconv.fbo karatsuba.fbo modmult.fbo sqroot.fbo \
-factor.fbo ecm.fbo siqs.fbo ecmfront.fbo bignbr.fbo showtime.fbo from_musl.fbo inputstr.fbo batch.fbo fft.fbo gcdrings.fbo fromBlockly.fbo linkedbignbr.fbo test_blockly.fbo $(flags_coverage) -lm -o $@
+factor.fbo ecm.fbo siqs.fbo siqsLA.fbo ecmfront.fbo bignbr.fbo showtime.fbo from_musl.fbo inputstr.fbo batch.fbo fft.fbo gcdrings.fbo fromBlockly.fbo linkedbignbr.fbo test_blockly.fbo $(flags_coverage) -lm -o $@
 
 gaussian: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
-factor.fco ecm.fco siqs.fco gaussian.fco GaussExpr.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco gcdrings.fco test_gaussian.fco
+factor.fco ecm.fco siqs.fco siqsLA.fco gaussian.fco GaussExpr.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco gcdrings.fco test_gaussian.fco
 	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
-factor.fco ecm.fco siqs.fco gaussian.fco GaussExpr.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco gcdrings.fco test_gaussian.fco $(flags_coverage) -lm -o $@
+factor.fco ecm.fco siqs.fco siqsLA.fco gaussian.fco GaussExpr.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco gcdrings.fco test_gaussian.fco $(flags_coverage) -lm -o $@
 
 quad: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
-factor.fco ecm.fco siqs.fco quad.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quad.fco
+factor.fco ecm.fco siqs.fco siqsLA.fco quad.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quad.fco
 	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
-factor.fco ecm.fco siqs.fco quad.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quad.fco $(flags_coverage) -lm -o $@
+factor.fco ecm.fco siqs.fco siqsLA.fco quad.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quad.fco $(flags_coverage) -lm -o $@
 
 dilog: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
-factor.fco ecm.fco siqs.fco dilog.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_dilog.fco
+factor.fco ecm.fco siqs.fco siqsLA.fco dilog.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_dilog.fco
 	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
-factor.fco ecm.fco siqs.fco dilog.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_dilog.fco $(flags_coverage) -lm -o $@
+factor.fco ecm.fco siqs.fco siqsLA.fco dilog.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_dilog.fco $(flags_coverage) -lm -o $@
 
 quadmod: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
-factor.fco ecm.fco siqs.fco quadmod.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quadmod.fco
+factor.fco ecm.fco siqs.fco siqsLA.fco quadmod.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quadmod.fco
 	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
-factor.fco ecm.fco siqs.fco quadmod.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quadmod.fco $(flags_coverage) -lm -o $@
+factor.fco ecm.fco siqs.fco siqsLA.fco quadmod.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quadmod.fco $(flags_coverage) -lm -o $@
 
 fsquares: expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
 fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fsquares.sqo

@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include "bignbr.h"
 
+#define MONTGOMERY_MULT_THRESHOLD 13
 #define MONTMULT_LIMB_START   \
     uint32_t MontDig;  \
     uint32_t Nbr;      \
@@ -2083,7 +2084,9 @@ void endBigModmult(const limb *prodNotAdjusted, limb *product)
 void modmult(const limb* factor1, const limb* factor2, limb* product)
 {
   unsigned int carry;
-  limb Prod[13];
+  limb Prod[MONTGOMERY_MULT_THRESHOLD];
+  int j;
+  int NumberLengthBytes;
 #ifdef __EMSCRIPTEN__
   if (modmultCallback != NULL)
   {
@@ -2110,46 +2113,54 @@ void modmult(const limb* factor1, const limb* factor2, limb* product)
     smallmodmult(factor1->x, factor2->x, product, TestNbr[0].x);
     return;
   }
-  if (NumberLength <= 11)
-  {     // Small numbers.
-    int j;
-    int NumberLengthBytes;
+  if (NumberLength > MONTGOMERY_MULT_THRESHOLD)
+  {
+    // Compute T
+    multiply(factor1, factor2, product, NumberLength, NULL);
+    // Compute m
+    multiply(product, MontgomeryMultN, aux, NumberLength, NULL);
+    // Compute mN
+    multiply(aux, TestNbr, aux2, NumberLength, NULL);
+    endBigModmult(aux2, product);
+    return;
+  }
+       // Small numbers.
 #ifdef _USING64BITS_
-    switch (NumberLength)
-    {
-    case 2:
-      MontgomeryMult2(factor1, factor2, product);
-      return;
-    case 3:
-      MontgomeryMult3(factor1, factor2, product);
-      return;
-    case 4:
-      MontgomeryMult4(factor1, factor2, product);
-      return;
-    case 5:
-      MontgomeryMult5(factor1, factor2, product);
-      return;
-    case 6:
-      MontgomeryMult6(factor1, factor2, product);
-      return;
-    case 7:
-      MontgomeryMult7(factor1, factor2, product);
-      return;
-    case 8:
-      MontgomeryMult8(factor1, factor2, product);
-      return;
-    case 9:
-      MontgomeryMult9(factor1, factor2, product);
-      return;
-    case 10:
-      MontgomeryMult10(factor1, factor2, product);
-      return;
-    case 11:
-      MontgomeryMult11(factor1, factor2, product);
-      return;
-    default:
-      break;
-    }
+  switch (NumberLength)
+#endif  
+  {
+#ifdef _USING64BITS_
+  case 2:
+    MontgomeryMult2(factor1, factor2, product);
+    return;
+  case 3:
+    MontgomeryMult3(factor1, factor2, product);
+    return;
+  case 4:
+    MontgomeryMult4(factor1, factor2, product);
+    return;
+  case 5:
+    MontgomeryMult5(factor1, factor2, product);
+    return;
+  case 6:
+    MontgomeryMult6(factor1, factor2, product);
+    return;
+  case 7:
+    MontgomeryMult7(factor1, factor2, product);
+    return;
+  case 8:
+    MontgomeryMult8(factor1, factor2, product);
+    return;
+  case 9:
+    MontgomeryMult9(factor1, factor2, product);
+    return;
+  case 10:
+    MontgomeryMult10(factor1, factor2, product);
+    return;
+  case 11:
+    MontgomeryMult11(factor1, factor2, product);
+    return;
+  default:
     NumberLengthBytes = NumberLength * (int)sizeof(limb);
     (void)memset(Prod, 0, NumberLengthBytes);
     for (int i = 0; i < NumberLength; i++)
@@ -2246,12 +2257,5 @@ void modmult(const limb* factor1, const limb* factor2, limb* product)
     (void)memcpy(product, Prod, NumberLengthBytes);
     return;
   }
-  // Compute T
-  multiply(factor1, factor2, product, NumberLength, NULL);
-  // Compute m
-  multiply(product, MontgomeryMultN, aux, NumberLength, NULL);
-  // Compute mN
-  multiply(aux, TestNbr, aux2, NumberLength, NULL);
-  endBigModmult(aux2, product);
 }
 
