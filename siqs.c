@@ -103,9 +103,10 @@ static void ShowSIQSInfo(int timeSieve, int nbrCongruencesFound, int matrixBLeng
   int elapsedTime)
 {
   char SIQSInfo[1000];
-  float dPercentage = (float)(nbrCongruencesFound * 100) / (float)matrixBLength;
-  int percentage = (int)dPercentage;
-  double dU = (double)timeSieve * (double)(matrixBLength - nbrCongruencesFound) / 
+  float fPercentage = (float)nbrCongruencesFound * 100f / (float)matrixBLength;
+  int percentage = (int)fPercentage;
+  int temp = matrixBLength - nbrCongruencesFound;
+  double dU = (double)timeSieve * (double)temp / 
     (double)nbrCongruencesFound;
   int u = (int)dU;
   char *ptrText = SIQSInfo;
@@ -263,7 +264,8 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
     F1 = (polyadd ? -rowPrimeSieveData->Bainv2[indexFactorA] :
       rowPrimeSieveData->Bainv2[indexFactorA]);
     index2 = (rowPrimeSieveData->soln1 + F1) % currentPrime;
-    rowPrimeSieveData->soln1 = index2 += currentPrime & (index2 >> 31);
+    index2 += currentPrime & (index2 >> 31);
+    rowPrimeSieveData->soln1 = index2;
     for (; index2 < F3; index2 += currentPrime)
     {
       *(SieveArray + index2) += logPrimeEvenPoly;
@@ -335,7 +337,8 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       F4 = F3 + currentPrime;
       S1 = rowPrimeSieveData->soln1 -
         rowPrimeSieveData->Bainv2[indexFactorA];
-      rowPrimeSieveData->soln1 = S1 += (S1 >> 31) & currentPrime;
+      S1 += (S1 >> 31) & currentPrime;
+      rowPrimeSieveData->soln1 = S1;
       index2 = ((X1 / F4) * F4) + S1;
       G0 = -rowPrimeSieveData->difsoln;
       if ((S1 + G0) < 0)
@@ -556,11 +559,13 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
         *(SieveArray + F1) += logPrimeOddPoly;
       }
       F2 -= rowPrimeSieveData->difsoln;
-      if ((F2 += currentPrime & (F2 >> 31)) < X1)
+      F2 += currentPrime & (F2 >> 31);
+      if (F2 < X1)
       {
         *(SieveArray + F2) += logPrimeEvenPoly;
       }
-      if ((F2 += (currentPrime & ((F2 - F3) >> 31)) - F3) < X1)
+      F2 += (currentPrime & ((F2 - F3) >> 31)) - F3;
+      if (F2 < X1)
       {
         *(SieveArray + F2) += logPrimeOddPoly;
       }
@@ -572,7 +577,8 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       {
         *(SieveArray + F2) += logPrimeEvenPoly;
       }
-      F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
+      F3 = rowPrimeSieveData->Bainv2_0;
+      F1 = F2 - F3;
       if ((F1 += currentPrime & (F1 >> 31)) < X1)
       {
         *(SieveArray + F1) += logPrimeOddPoly;
@@ -982,12 +988,13 @@ static int getIndexFromDivisor(double dDivid)
   int left = -1;
   int right = common.siqs.nbrFactorBasePrimes;
   int median = right;
+  int divid = (int)dDivid;
   while (left != right)
   {
     int nbr;
     median = ((right - left) >> 1) + left;
     nbr = common.siqs.primeTrialDivisionData[median].value;
-    if (nbr < dDivid)
+    if (nbr < divid)
     {
       if ((median == left) &&
         (congruencesFound >= common.siqs.matrixBLength))
@@ -996,7 +1003,7 @@ static int getIndexFromDivisor(double dDivid)
       }
       left = median;
     }
-    else if (nbr > dDivid)
+    else if (nbr > divid)
     {
       right = median;
     }
@@ -1124,6 +1131,9 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
         {
           newFactorAIndex = common.siqs.aindex[indexFactorA];
         }
+      }
+      else
+      {     // Nothing to do.
       }
       for (;;)
       {
@@ -1320,7 +1330,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
                 newFactorAIndex = common.siqs.aindex[indexFactorA];
               }
             }
-            while (dDividend == floor(dDividend / Divisor) * Divisor)
+            while (dDividend == floor(dDividend / (double)Divisor) * (double)Divisor)
             {        // dDivid is multiple of Divisor.
               dDividend /= Divisor;
               sqrtDivid = (int)(floor(sqrt(dDividend))) + 1;
@@ -1404,10 +1414,16 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
 #endif
             if (Divisor > sqrtDivid)
             {                     // End of trial division.
+              int dividend;
+              if (dDividend > (double)MAX_INT_NBR)
+              {
+                return 0;  // Discard this congruence because of large cofactor.
+              }
+              dividend = (int)dDividend;
               rowSquares[0] = nbrSquares;
               index = common.siqs.nbrFactorBasePrimes - 1;
-              if ((dDividend <= common.siqs.primeTrialDivisionData[index].value) &&
-                (dDividend > 1))
+              if ((dividend <= common.siqs.primeTrialDivisionData[index].value) &&
+                (dividend > 1))
               {          // Perform binary search to find the index.
                 index = getIndexFromDivisor(dDividend);
                 rowMatrixBbeforeMerge[nbrColumns] = index;
@@ -1416,10 +1432,6 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
                 return 1;
               }
               rowMatrixBbeforeMerge[0] = nbrColumns;
-              if (dDividend > MAX_INT_NBR)
-              {
-                return 0;  // Discard this congruence because of large cofactor.
-              }
               return (int)dDividend;
             }
             rowPrimeSieveData++;
@@ -1533,38 +1545,38 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
         case 7:     // {biR6 - biR0} <- {biR6 - biR0} / divis
           Dividend = biR6;
           biR6 = Dividend / Divisor;
-          dRem = (double)Dividend - ((double)biR6 * Divisor);
+          dRem = (double)Dividend - ((double)biR6 * (double)Divisor);
           /* no break */
         case 6:     // {biR5 - biR0} <- {biR5 - biR0} / divis
-          dDivid = (double)biR5 + dRem * dLimbMult;
+          dDivid = (double)biR5 + (dRem * dLimbMult);
           dQuot = floor(dDivid / dCurrentPrime);
-          dRem = dDivid - dQuot * dCurrentPrime;
+          dRem = dDivid - (dQuot * dCurrentPrime);
           biR5 = (int)dQuot;
           /* no break */
         case 5:     // {biR4 - biR0} <- {biR4 - biR0} / divis
-          dDivid = (double)biR4 + dRem * dLimbMult;
+          dDivid = (double)biR4 + (dRem * dLimbMult);
           dQuot = floor(dDivid / dCurrentPrime);
-          dRem = dDivid - dQuot * dCurrentPrime;
+          dRem = dDivid - (dQuot * dCurrentPrime);
           biR4 = (int)dQuot;
           /* no break */
         case 4:     // {biR3 - biR0} <- {biR3 - biR0} / divis
-          dDivid = (double)biR3 + dRem * dLimbMult;
+          dDivid = (double)biR3 + (dRem * dLimbMult);
           dQuot = floor(dDivid / dCurrentPrime);
-          dRem = dDivid - dQuot * dCurrentPrime;
+          dRem = dDivid - (dQuot * dCurrentPrime);
           biR3 = (int)dQuot;
           /* no break */
         case 3:     // {biR2 - biR0} <- {biR2 - biR0} / divis
-          dDivid = (double)biR2 + dRem * dLimbMult;
+          dDivid = (double)biR2 + (dRem * dLimbMult);
           dQuot = floor(dDivid / dCurrentPrime);
-          dRem = dDivid - dQuot * dCurrentPrime;
+          dRem = dDivid - (dQuot * dCurrentPrime);
           biR2 = (int)dQuot;
           /* no break */
         case 2:     // {biR1 - biR0} <- {biR1 - biR0} / divis
-          dDivid = (double)biR1 + dRem * dLimbMult;
+          dDivid = (double)biR1 + (dRem * dLimbMult);
           dQuot = floor(dDivid / dCurrentPrime);
-          dRem = dDivid - dQuot * dCurrentPrime;
+          dRem = dDivid - (dQuot * dCurrentPrime);
           biR1 = (int)dQuot;
-          dDivid = (double)biR0 + dRem * dLimbMult;
+          dDivid = (double)biR0 + (dRem * dLimbMult);
           biR0 = (int)floor(dDivid / dCurrentPrime);
           break;
         default:
@@ -1647,7 +1659,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
                   (Divisor > 1))
                 {          // Perform binary search to find the index.
                   left = -1;
-                  right = common.siqs.nbrFactorBasePrimes;;
+                  right = common.siqs.nbrFactorBasePrimes;
                   median = right;
                   while (left != right)
                   {
@@ -1850,6 +1862,7 @@ static void PartialRelationFound(
   while (hashIndex >= 0)
   {
     int oldDivid;
+    int nbrBytes;
 
     rowPartial = common.siqs.matrixPartial[hashIndex];
     oldDivid = rowPartial[0];
@@ -1948,13 +1961,13 @@ static void PartialRelationFound(
             dRem = (double)biT2*(double)rowPrimeTrialDivisionData->exp2;
             break;
           default:
-            dRem = 0;
+            dRem = 0.0;
             break;
           }
           dRem += (double)biT1*(double)rowPrimeTrialDivisionData->exp1 + biT0;
           dDivisor = (double)Divisor;
           dRem -= floor(dRem / dDivisor)*dDivisor;
-          if (dRem != 0)
+          if (dRem != 0.0)
           {
             break;
           }
@@ -2009,7 +2022,8 @@ static void PartialRelationFound(
       mergeArrays(common.siqs.aindex, common.siqs.nbrFactorsA, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
       nbrColumns = rowMatrixB[LENGTH_OFFSET];
       rowMatrixBbeforeMerge[0] = nbrColumns;
-      (void)memcpy(&rowMatrixBbeforeMerge[1], &rowMatrixB[1], nbrColumns*sizeof(int));
+      nbrBytes = nbrColumns * (int)sizeof(int);
+      (void)memcpy(&rowMatrixBbeforeMerge[1], &rowMatrixB[1], nbrBytes);
       mergeArrays(rowPartials, nbrFactorsPartial, rowMatrixB, rowMatrixBbeforeMerge, rowSquares);
       nbrSquares = rowSquares[0];
       for (index = 1; index < nbrSquares; index++)
@@ -2183,7 +2197,7 @@ static unsigned int getFactorsOfA(unsigned int seed, int *indexA)
   {
     do
     {
-      seed = (1141592621 * seed) + 321435;
+      seed = (1141592621U * seed) + 321435U;
       i = (int)(((double)seed * (double)common.siqs.span)/(double)0x100000000LL + common.siqs.indexMinFactorA);
       for (index2 = 0; index2 < index; index2++)
       {
@@ -2257,7 +2271,6 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   double dNbrFactorsA;
   double dNbrFactorBasePrimes;
   double dSieveLimit;
-  int bytesLength;
   origNumberLength = NumberLength;
   common.siqs.nbrThreadFinishedPolySet = 0;
   trialDivisions = 0;
@@ -2272,7 +2285,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   common.siqs.nbrPrimesUsed = 0;
   (void)memset(common.siqs.primesUsed, 0, sizeof(common.siqs.primesUsed));
   Temp = logLimbs(pNbrToFactor, origNumberLength);
-  dNbrFactorBasePrimes = exp(sqrt((Temp * log(Temp)) * 0.363) - 1.0);
+  dNbrFactorBasePrimes = exp((sqrt(Temp * log(Temp)) * 0.363) - 1.0);
   common.siqs.nbrFactorBasePrimes = (int)dNbrFactorBasePrimes;
   if (common.siqs.nbrFactorBasePrimes > MAX_PRIMES)
   {
@@ -2289,13 +2302,18 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   common.siqs.NbrPolynomials = (1 << (common.siqs.nbrFactorsA - 1)) - 1;
   common.siqs.factorSiqs.nbrLimbs = NumberLength;
   common.siqs.factorSiqs.sign = SIGN_POSITIVE;
-  (void)memcpy(common.siqs.factorSiqs.limbs, pNbrToFactor, NumberLength * sizeof(limb));
+  {
+    int nbrBytes = NumberLength * (int)sizeof(limb);
+    (void)memcpy(common.siqs.factorSiqs.limbs, pNbrToFactor, nbrBytes);
+  }
   NumberLength = BigNbrToBigInt(&common.siqs.factorSiqs, common.siqs.Modulus);
   common.siqs.Modulus[NumberLength].x = 0;
   NumberLength++;
   common.siqs.Modulus[NumberLength].x = 0;
-  bytesLength = (NumberLength + 1) * (int)sizeof(int);
-  (void)memcpy(common.siqs.TestNbr2, common.siqs.Modulus, bytesLength);
+  {
+    int nbrBytes = (NumberLength + 1) * (int)sizeof(int);
+    (void)memcpy(common.siqs.TestNbr2, common.siqs.Modulus, nbrBytes);
+  }
   (void)memset(common.siqs.matrixPartialHashIndex, 0xFF, sizeof(common.siqs.matrixPartialHashIndex));
 #ifdef __EMSCRIPTEN__
   InitSIQSStrings(common.siqs.SieveLimit);
@@ -2522,14 +2540,14 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
     do
     {
       currentPrime += 2;
-      for (Q = 3; Q * Q <= currentPrime; Q += 2)
+      for (Q = 3; (Q * Q) <= currentPrime; Q += 2)
       { /* Check if currentPrime is prime */
-        if (currentPrime % Q == 0)
+        if ((currentPrime % Q) == 0)
         {
           break;  /* Composite */
         }
       }
-    } while (Q * Q <= currentPrime);
+    } while ((Q * Q) <= currentPrime);
   } /* End while */
 
   FactorBase = currentPrime;
@@ -2553,7 +2571,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   dNumberToFactor *= common.siqs.multiplier;
   common.siqs.smallPrimeUpperLimit = j + 1;
   common.siqs.threshold =
-    (unsigned char)((log(
+    (unsigned char)(log((
       sqrt(dNumberToFactor) * common.siqs.SieveLimit /
       (FactorBase * 64) /
       common.siqs.primeSieveData[j + 1].value)
