@@ -2571,7 +2571,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   dNumberToFactor *= common.siqs.multiplier;
   common.siqs.smallPrimeUpperLimit = j + 1;
   common.siqs.threshold =
-    (unsigned char)(log((
+    (unsigned char)((log(
       sqrt(dNumberToFactor) * common.siqs.SieveLimit /
       (FactorBase * 64) /
       common.siqs.primeSieveData[j + 1].value)
