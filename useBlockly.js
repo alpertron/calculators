@@ -421,7 +421,9 @@ function useBlockly(callback, lang)
   };
   workspace = Blockly.inject(blocklyDiv,
       {"toolbox": myToolbar,
-      "zoom": {"controls": true, "wheel": true}});
+      "zoom": {"controls": true, "wheel": true},
+      "media": "/",
+      "css": false});
       
   blocklyResize = function(e) {
     // Compute the absolute coordinates and dimensions of blocklyArea.

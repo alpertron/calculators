@@ -10,4 +10,3 @@ java -jar closure-compiler.jar ^
     --jscomp_off visibility ^
     --js_output_file blockly.js
 
-rem    --compilation_level SIMPLE_OPTIMIZATIONS ^

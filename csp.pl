@@ -13,17 +13,6 @@ while (readdir $dir)
   {
     next;
   }
-# Do not use CSP for factorization calculator because Blockly does not support it.
-  $firstIndex = index($dirEntry, "ECM.HTM");
-  if ($firstIndex != -1)
-  {
-    next;
-  }
-  $firstIndex = index($dirEntry, "ECMC.HTM");
-  if ($firstIndex != -1)
-  {
-    next;
-  }
   open(my $filehandle, '<', $dirEntry);
   my $data = do { local $/; <$filehandle> };
   my $extra = " 'self' blob:";
@@ -35,6 +24,10 @@ while (readdir $dir)
     }
   }
   print $htaccess  "<Files ${dirEntry}>\n${start}";
+  if (index($dirEntry, "ECM.HTM") != -1 || index($dirEntry, "ECMC.HTM") != -1)
+  {
+    print $htaccess " media-src 'self';"
+  }
   getHashes($data, "style", $hash, "");
   print $htaccess  $hash;
   if ($hash ne "")
@@ -43,13 +36,20 @@ while (readdir $dir)
   }
   getHashes($data, "script", $hash, $extra);
   print $htaccess  $hash;
-#  if (index($dirEntry, "ECM.HTM") != -1 || index($dirEntry, "ECMC.HTM") != -1)
-#  {
-#    getFileHash("blockly.js", $hash);
-#    print $htaccess  $hash;
-#    getFileHash("en.js", $hash);
-#    print $htaccess  $hash;
-#  }
+  if (index($dirEntry, "ECM.HTM") != -1)
+  {
+    getFileHash("blockly.js", $hash);
+    print $htaccess  $hash;
+    getFileHash("en.js", $hash);
+    print $htaccess  $hash;
+  }
+  if (index($dirEntry, "ECMC.HTM") != -1)
+  {
+    getFileHash("blockly.js", $hash);
+    print $htaccess  $hash;
+    getFileHash("es.js", $hash);
+    print $htaccess  $hash;
+  }
   if ($hash ne "")
   {
     print $htaccess ";";

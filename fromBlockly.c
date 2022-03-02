@@ -894,6 +894,11 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
     }
     *ptrInstr = *ptrBlockStack;
     ptrInstr++;
+    if ((*ptrBlockStack == TOKEN_GCD) || (*ptrBlockStack == TOKEN_LCM))
+    {
+      *ptrInstr = 2; // These tokens require the number of arguments after it.
+      ptrInstr++;
+    }
   }
   if (nbrTopBlocks != 1)
   {
