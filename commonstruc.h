@@ -18,6 +18,7 @@
 //
 
 // These defines are valid for factoring up to 10^110.
+#define BITS_SIQS_HASH          14
 #define MAX_NBR_FACTORS         13
 #define MAX_PRIMES          150000
 #define MAX_LIMBS_SIQS          15
@@ -72,7 +73,7 @@ struct stSiqs
   int SieveLimit;
   int matrixPartial[MAX_PRIMES * 8][(MAX_LIMBS_SIQS/2) + 4];
   limb vectLeftHandSide[MAX_PRIMES+50][MAX_LIMBS_SIQS + 4];
-  int matrixPartialHashIndex[2048];
+  int matrixPartialHashIndex[1 << BITS_SIQS_HASH];
   int matrixB[MAX_PRIMES + 50][MAX_FACTORS_RELATION];
   int amodq[MAX_NBR_FACTORS];
   int tmodqq[MAX_NBR_FACTORS];
