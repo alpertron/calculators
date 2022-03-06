@@ -49,7 +49,33 @@ var scriptsLoaded = 0;
 var script1;
 var script2;
 var script3;
-
+var funcnames;
+if (lang)
+{
+  funcnames =
+  [
+    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Raíz cuadrada entera,sqrt(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(",
+    "Igual,=,Distinto,!=,Mayor,>,Menor o igual,<=,Menor,<,Mayor o igual,>=",
+    "Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT ,Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ",
+    "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD(,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM(,¿El valor es primo?,IsPrime(,Cantidad de factores primos,NumFact(,menor divisor primo,MinFact(,mayor divisor primo,MaxFact(,Cantidad de divisores,NumDivs(,Suma de divisores,SumDivs(",
+    "Primo siguiente,N(,Primo anterior,B(,Cantidad de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,NumDigits(,Suma de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,SumDigits(,Invertir dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,RevDigits(,Concatenar factores primos,ConcatFact(",
+    "Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv(,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow(,Indicador de Euler,Totient(,Símbolo de Jacobi\n\nPrimer argumento: valor superior\nSeguindo argumento: valor inferior,Jacobi(",
+    "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partición,P("
+  ]; 
+}
+else
+{
+  funcnames =
+  [
+    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Integer square root,sqrt(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(",
+    "Equal,=,Not equal,!=,Greater,>,Not greater,<=,Less,<,Not less,>=",
+    "Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ,Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ",
+    "Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(,Number of prime factors,NumFact(,smallest prime divisor,MinFact(,greatest prime divisor,MaxFact(,Number of divisors,NumDivs(,Sum of divisors,SumDivs(",
+    "Next prime after,N(,Last prime before,B(,Number of digits\n\nFirst argument: value\nSecond argument: base,NumDigits(,Sum of digits\n\nFirst argument: value\nSecond argument: base,SumDigits(,Reverse digits\n\nFirst argument: value\nSecond argument: base,RevDigits(,Concatenate prime factors,ConcatFact(",
+    "Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv(,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow(,Totient,Totient(,Jacobi symbol\n\nFirst argument: upper value\nSecond argument: lower value,Jacobi(",
+    "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
+  ];
+}
 function get(id)
 {
   return document.getElementById(id);
@@ -93,6 +119,8 @@ function styleButtons(style1, style2)
   get("fromfile").style.display = style1;
   get("bmode").style.display = style1;
   get("openwizard").style.display = style1;
+  get("funccatblock").style.display = ((style1 == "inline")? "block": "none");
+  get("funcbtns").style.display = ((style1 == "inline")? "block": "none");
   get("stop").style.display = style2;
   get("more").style.display = style2;
 }
@@ -657,6 +685,34 @@ function initBlockly()
   script2 = loadScript(lang? "es0005.js": "en0005.js");
 }
 
+function generateFuncButtons(optionCategory, funcButtons, inputId)
+{
+  var button;
+  var catIndex;
+  var funcbtns = get(funcButtons);
+  var catnbr = get(optionCategory).selectedIndex;
+  var funcname = funcnames[catnbr].split(",");
+  while (funcbtns.firstChild)
+  {
+    funcbtns.removeChild(funcbtns.lastChild);
+  }
+  for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
+  {
+    button = document.createElement("button");
+    button.setAttribute("type", "button");        // Indicate this is a button, not submit.
+    button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
+    button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
+    button.classList.add("funcbtn");
+    button.onclick = function()
+    {
+      var input = get(inputId);
+      input.focus();
+      input["setRangeText"](this.innerHTML, input.selectionStart, input.selectionEnd, "end");
+    };
+    funcbtns.appendChild(button);
+  }
+}
+
 function startUp()
 {
   var param, index, ecmFactor;
@@ -968,6 +1024,10 @@ function startUp()
   {
     endFeedback();
   };
+  get("funccat").onchange = function()
+  {
+    generateFuncButtons("funccat", "funcbtns", "value");
+  };
   get("formsend").onclick = function()
   {
     var userdata = get("userdata");
@@ -1053,6 +1113,8 @@ function startUp()
       divisorsDirty = false;
     }
   }, 100);
+  generateFuncButtons("funccat", "funcbtns", "value");
+
   // Generate accordion.
   var acc = document.querySelectorAll("h2");
   var idx, x, y;

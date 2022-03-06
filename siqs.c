@@ -571,7 +571,8 @@ static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
       F2 += currentPrime & (F2 >> 31);
       rowPrimeSieveData->soln1 = F2;
       *(SieveArray + (((F2 - X1) >> 31) & F2)) += logPrimeEvenPoly;
-      F1 = F2 - (F3 = rowPrimeSieveData->Bainv2_0);
+      F3 = rowPrimeSieveData->Bainv2_0;
+      F1 = F2 - F3;
       F1 += currentPrime & (F1 >> 31);
       *(SieveArray + (((F1 - X1) >> 31) & F1)) += logPrimeOddPoly;
       F2 -= rowPrimeSieveData->difsoln;
@@ -1686,7 +1687,7 @@ static void SmoothRelationFound(
     SubtractBigNbrB(biU, common.siqs.biLinearDelta[0], biU, nbrLength); // Ax+B (odd)
     SubtractBigNbrB(biU, common.siqs.biLinearDelta[0], biU, nbrLength); // Ax+B (odd)
   }
-  if ((uint32_t)biU[nbrLength - 1].x >= (LIMB_RANGE/2))
+  if ((uint32_t)biU[nbrLength - 1].x >= (LIMB_RANGE/2U))
   {                                     // If number is negative,
     ChSignBigNbr(biU, nbrLength);       // make it positive.
   }
@@ -1719,7 +1720,7 @@ static void PartialRelationFound(
   int *rowSquares,
   const limb *biLinearCoeff, int nbrLength, limb *biT,
   limb *biR, limb *biU, limb *biV,
-  int *indexFactorsA, unsigned char oddPolynomial)
+  int *indexFactorsA, bool oddPolynomial)
 {
   int index;
   int expParity;
