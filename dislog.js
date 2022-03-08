@@ -385,15 +385,15 @@ window.onload = function()
   base.onfocus = function()
   {
     currentInputBox = base;
-  }
+  };
   pow.onfocus = function()
   {
     currentInputBox = pow;
-  }
+  };
   mod.onfocus = function()
   {
     currentInputBox = mod;
-  }
+  };
   get("funccat").onchange = function()
   {
     generateFuncButtons("funccat", "funcbtns");

@@ -568,7 +568,7 @@ function startUp()
   };
   if (app < 4)
   {    // Continued fraction applet does not use wizard.
-    get("openwizard").onclick = function ()
+    get("openwizard").onclick = function()
     {
       get("main").style.display = "none";
       get("wizard").style.display = "block";
@@ -628,19 +628,19 @@ function startUp()
       }
       return true;
     };
-    get("oneexpr").onclick = function ()
+    get("oneexpr").onclick = function()
     {
       oneexpr();
     };
-    get("loop").onclick = function ()
+    get("loop").onclick = function()
     {
       selectLoop();
     };
-    get("next").onclick = function ()
+    get("next").onclick = function()
     {
       wizardNext();
     };
-    get("wzdinput").oninput = function ()
+    get("wzdinput").oninput = function()
     {
       var inputValue = get("wzdinput").value;
       var nextBtn = get("next");
@@ -665,7 +665,7 @@ function startUp()
         nextBtn.disabled = true;
       }
     };
-    get("cancel").onclick = function ()
+    get("cancel").onclick = function()
     {
       get("main").style.display = "block";
       get("wizard").style.display = "none";
@@ -673,7 +673,7 @@ function startUp()
   }
   if (get("stop") !== null)
   {
-    get("stop").onclick = function ()
+    get("stop").onclick = function()
     {
       worker.terminate();
       worker = 0;
@@ -686,7 +686,7 @@ function startUp()
   }
   if (get("continue") !== null)
   {
-    get("continue").onclick = function ()
+    get("continue").onclick = function()
     {
       get("cont").style.display = "none";
       callWorker("C");  // Indicate worker that user pressed Continue button.
@@ -719,7 +719,7 @@ function startUp()
       helphelpStyle.display = resultStyle.display = "none";
     }
   };
-  get("formlink").onclick = function ()
+  get("formlink").onclick = function()
   {
     get("main").style.display = "none";
     get("feedback").style.display = "block";
@@ -727,7 +727,7 @@ function startUp()
     get("name").focus();
     return false;   // Do not follow the link.
   };
-  get("formcancel").onclick = function ()
+  get("formcancel").onclick = function()
   {
     endFeedback();
   };
@@ -751,18 +751,18 @@ function startUp()
     get("wzdinput").onfocus = function()
     {
       currentInputBox = get("wzdinput");
-    }
+    };
   }
   else
   {
     get("delta").onfocus = function()
     {
       currentInputBox = get("delta");
-    }
+    };
     get("den").onfocus = function()
     {
       currentInputBox = get("den");
-    }
+    };
   }
   get("formsend").onclick = function()
   {

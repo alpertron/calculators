@@ -347,15 +347,15 @@ function fillCache()
     }
   }
 
-  window.onload = function ()
+  window.onload = function()
   {
     var param;
     get("stop").disabled = true;
-    get("solve").onclick = function ()
+    get("solve").onclick = function()
     {
       dowork(0);
     };
-    get("stop").onclick = function ()
+    get("stop").onclick = function()
     {
       worker.terminate();
       worker = 0;
@@ -365,7 +365,7 @@ function fillCache()
         (lang? "<p>Cálculo detenido por el usuario.</p>" :
                    "<p>Calculation stopped by user</p>");
     };
-    get("helpbtn").onclick = function ()
+    get("helpbtn").onclick = function()
     {
       get("help").style.display = "block";
       get("result").style.display = "none";
@@ -373,24 +373,24 @@ function fillCache()
     get("quad").onfocus = function()
     {
       currentInputBox = get("quad");
-    }
+    };
     get("lin").onfocus = function()
     {
       currentInputBox = get("lin");
-    }
+    };
     get("const").onfocus = function()
     {
       currentInputBox = get("const");
-    }
+    };
     get("mod").onfocus = function()
     {
       currentInputBox = get("mod");
-    }
+    };
     get("funccat").onchange = function()
     {
       generateFuncButtons("funccat", "funcbtns");
     };
-    get("formlink").onclick = function ()
+    get("formlink").onclick = function()
     {
       get("main").style.display = "none";
       get("feedback").style.display = "block";
@@ -398,7 +398,7 @@ function fillCache()
       get("name").focus();
       return false;   // Do not follow the link.
     };
-    get("formcancel").onclick = function ()
+    get("formcancel").onclick = function()
     {
       endFeedback();
     };

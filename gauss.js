@@ -359,18 +359,18 @@ function generateFuncButtons(optionCategory, funcButtons, inputId)
   }
 }
 
-window.onload = function ()
+window.onload = function()
 {
   var param;
-  get("eval").onclick = function ()
+  get("eval").onclick = function()
   {
     dowork(0);
   };
-  get("factor").onclick = function ()
+  get("factor").onclick = function()
   {
     dowork(2);
   };
-  get("stop").onclick = function ()
+  get("stop").onclick = function()
   {
     worker.terminate();
     worker = 0;
@@ -380,11 +380,11 @@ window.onload = function ()
              "<p>Calculation stopped by user</p>");
     get("status").innerHTML = "";
   };
-  get("more").onclick = function ()
+  get("more").onclick = function()
   {
     get("modal-more").style.display = "block";
   };
-  get("config").onclick = function ()
+  get("config").onclick = function()
   {
     get("digits").value = digits;
     get("batch").checked = (config.substr(0,1) === "1");
@@ -393,15 +393,15 @@ window.onload = function ()
     get("cunnin").checked = (config.substr(3,1) === "1");  
     get("modal-config").style.display = "block";
   };
-  get("close-config").onclick = function ()
+  get("close-config").onclick = function()
   {
     get("modal-config").style.display = "none";
   };
-  get("cancel-config").onclick = function ()
+  get("cancel-config").onclick = function()
   {
     get("modal-config").style.display = "none";
   };
-  get("save-config").onclick = function ()
+  get("save-config").onclick = function()
   {
     var oldconfig = config;
     config = (get("batch").checked? "1" :"0") +
@@ -412,11 +412,11 @@ window.onload = function ()
     setStorage("ecmConfig", digits+","+config);
     get("modal-config").style.display = "none";
   };
-  get("close-more").onclick = function ()
+  get("close-more").onclick = function()
   {
     get("modal-more").style.display = "none";
   };
-  get("helpbtn").onclick = function ()
+  get("helpbtn").onclick = function()
   {
     var help = get("help");
     var helpStyle = help.style;
@@ -446,7 +446,7 @@ window.onload = function ()
   {
     generateFuncButtons("funccat", "funcbtns", "value");
   };
-  get("formlink").onclick = function ()
+  get("formlink").onclick = function()
   {
     get("main").style.display = "none";
     get("feedback").style.display = "block";
@@ -454,7 +454,7 @@ window.onload = function ()
     get("name").focus();
     return false;   // Do not follow the link.
   };
-  get("formcancel").onclick = function ()
+  get("formcancel").onclick = function()
   {
     endFeedback();
   };

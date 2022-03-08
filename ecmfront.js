@@ -256,7 +256,7 @@ function callWorker(param)
       else if (firstChar === "E")
       {
         get("divisors").innerHTML = e.data.substring(1);
-        get("showdiv").onclick = function ()
+        get("showdiv").onclick = function()
         {
           callWorker("D");  // Indicate worker that user pressed Divisors button.
         };
@@ -721,26 +721,26 @@ function startUp()
   var param, index, ecmFactor;
   app = lang;
   get("value").wrap="off";
-  get("eval").onclick = function ()
+  get("eval").onclick = function()
   {
     setStorage("ecmFactors","");
     dowork(0);
   };
-  get("prime").onclick = function ()
+  get("prime").onclick = function()
   {
     setStorage("ecmFactors","");
     dowork(6);
   };
-  get("factor").onclick = function ()
+  get("factor").onclick = function()
   {
     setStorage("ecmFactors","");
     dowork(2);
   };
-  get("more").onclick = function ()
+  get("more").onclick = function()
   {
     show("modal-more");
   };
-  get("config").onclick = function ()
+  get("config").onclick = function()
   {
     get("digits").value = digits;
     get("verbose").checked = (config.substr(1,1) === "1");
@@ -749,11 +749,11 @@ function startUp()
     get("hex").checked = (config.substr(4,1) === "1");
     show("modal-config");
   };
-  get("fromfile").onclick = function ()
+  get("fromfile").onclick = function()
   {
     get("getFile").click();
   };
-  get("tofile").onclick = function ()
+  get("tofile").onclick = function()
   {
     hide("savefile");
     var blob = new Blob([tofile], { type: "text/plain" });
@@ -773,7 +773,7 @@ function startUp()
     a.addEventListener("click", clickHandler, false);
     a.click();
   };
-  get("getFile").onchange = function ()
+  get("getFile").onchange = function()
   {
     fileName = get("getFile").value.replace(/^.*[\\\/]/, "");
     if (lang)
@@ -787,7 +787,7 @@ function startUp()
           "\nPress \"Only evaluate\", \"Prime\" or \"Factor\" button to continue.";
     }
   };
-  get("bmode").onclick = function ()
+  get("bmode").onclick = function()
   {
     hide("main");
     get("blockmode").style.display = "flex";
@@ -797,12 +797,12 @@ function startUp()
       bmodeLoaded = 1;
     }
   };
-  get("exitBlockly").onclick = function ()
+  get("exitBlockly").onclick = function()
   {
     show("main");
     hide("blockmode");
   };
-  get("openwizard").onclick = function ()
+  get("openwizard").onclick = function()
   {
     hide("main");
     show("wizard");
@@ -858,19 +858,19 @@ function startUp()
     }
     return true;
   };
-  get("oneexpr").onclick = function ()
+  get("oneexpr").onclick = function()
   {
     oneexpr();
   };
-  get("loop").onclick = function ()
+  get("loop").onclick = function()
   {
     selectLoop();
   };
-  get("next").onclick = function ()
+  get("next").onclick = function()
   {
     wizardNext();
   };
-  get("wzdinput").oninput = function ()
+  get("wzdinput").oninput = function()
   {
     var inputValue = get("wzdinput").value;
     var nextBtn = get("next");
@@ -896,34 +896,34 @@ function startUp()
       nextBtn.disabled = true;
     }
   };
-  get("cancel").onclick = function ()
+  get("cancel").onclick = function()
   {
     show("main");
     hide("wizard");
   };
-  get("close-config").onclick = function ()
+  get("close-config").onclick = function()
   {
     hide("modal-config");
   };
-  get("cancel-config").onclick = function ()
+  get("cancel-config").onclick = function()
   {
     hide("modal-config");
   };
-  get("save-config").onclick = function ()
+  get("save-config").onclick = function()
   {
     saveConfig();
     updateVerbose(get("verbose").checked);
     hide("modal-config");
   };
-  get("close-more").onclick = function ()
+  get("close-more").onclick = function()
   {
     hide("modal-more");
   };
-  get("ncurve").onclick = function ()
+  get("ncurve").onclick = function()
   {
     restartFactorization(-2);
   };
-  get("nfactor").onclick = function ()
+  get("nfactor").onclick = function()
   {
     restartFactorization(-4);
   };
@@ -931,7 +931,7 @@ function startUp()
   {
     return (event.charCode === 8 || event.charCode === 0) ? null : event.charCode >= 48 && event.charCode <= 57;
   };
-  get("stop").onclick = function ()
+  get("stop").onclick = function()
   {
     worker.terminate();
     worker = 0;
@@ -986,7 +986,7 @@ function startUp()
                     encodeURIComponent(get("value").value);
     navigator.share(shareData);
   };
-  get("helpbtn").onclick = function ()
+  get("helpbtn").onclick = function()
   {
     var help = get("help");
     var helpStyle = help.style;
@@ -1005,17 +1005,17 @@ function startUp()
       helphelpStyle.display = resultStyle.display = "none";
     }
   };
-  get("skiptest").onclick = function ()
+  get("skiptest").onclick = function()
   {
     hide("skip");
     restartFactorization(4);
   };
-  get("continue").onclick = function ()
+  get("continue").onclick = function()
   {
     hide("cont");
     callWorker("C");  // Indicate worker that user pressed Continue button.
   };
-  get("formlink").onclick = function ()
+  get("formlink").onclick = function()
   {
     hide("main");
     show("feedback");
@@ -1023,7 +1023,7 @@ function startUp()
     get("name").focus();
     return false;   // Do not follow the link.
   };
-  get("formcancel").onclick = function ()
+  get("formcancel").onclick = function()
   {
     endFeedback();
   };
@@ -1112,7 +1112,7 @@ function startUp()
       var showdiv = get("showdiv");
       if (showdiv != null)
       {
-        showdiv.onclick = function ()
+        showdiv.onclick = function()
         {
           callWorker("D");  // Indicate worker that user pressed Divisors button.
         };

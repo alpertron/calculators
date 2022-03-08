@@ -372,19 +372,19 @@ function generateFuncButtons(optionCategory, funcButtons)
   }
 }
 
-window.onload = function ()
+window.onload = function()
 {
   var param;
   get("stop").disabled = true;
-  get("solve").onclick = function ()
+  get("solve").onclick = function()
   {
     dowork(0);
   };
-  get("steps").onclick = function ()
+  get("steps").onclick = function()
   {
     dowork(2);
   };
-  get("stop").onclick = function ()
+  get("stop").onclick = function()
   {
     worker.terminate();
     worker = 0;
@@ -395,7 +395,7 @@ window.onload = function ()
       (lang? "<p>Cálculo detenido por el usuario.</p>" :
                  "<p>Calculation stopped by user</p>");
   };
-  get("helpbtn").onclick = function ()
+  get("helpbtn").onclick = function()
   {
     get("help").style.display = "block";
     get("result").style.display = "none";
@@ -432,32 +432,32 @@ window.onload = function ()
   get("coefA").onfocus = function()
   {
     currentInputBox = get("coefA");
-  }
+  };
   get("coefB").onfocus = function()
   {
     currentInputBox = get("coefB");
-  }
+  };
   get("coefC").onfocus = function()
   {
     currentInputBox = get("coefC");
-  }
+  };
   get("coefD").onfocus = function()
   {
     currentInputBox = get("coefD");
-  }
+  };
   get("coefE").onfocus = function()
   {
     currentInputBox = get("coefE");
-  }
+  };
   get("coefF").onfocus = function()
   {
     currentInputBox = get("coefF");
-  }
+  };
   get("funccat").onchange = function()
   {
     generateFuncButtons("funccat", "funcbtns");
   };
-  get("formlink").onclick = function ()
+  get("formlink").onclick = function()
   {
     get("main").style.display = "none";
     get("feedback").style.display = "block";
@@ -465,7 +465,7 @@ window.onload = function ()
     get("name").focus();
     return false;   // Do not follow the link.
   };
-  get("formcancel").onclick = function ()
+  get("formcancel").onclick = function()
   {
     endFeedback();
   };
