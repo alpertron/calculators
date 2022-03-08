@@ -25,6 +25,38 @@ var blob;
 var workerParam;
 var fileContents = 0;
 var asmjs = typeof(WebAssembly) === "undefined";
+var currentInputBox;
+var funcnames;
+var parens;
+if (lang)
+{
+  funcnames =
+  [
+    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Raíz cuadrada entera,sqrt(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(",
+    "Igual,=,Distinto,!=,Mayor,>,Menor o igual,<=,Menor,<,Mayor o igual,>=",
+    "Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT ,Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ",
+    "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD(,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM(,¿El valor es primo?,IsPrime(,Cantidad de factores primos,NumFact(,menor divisor primo,MinFact(,mayor divisor primo,MaxFact(,Cantidad de divisores,NumDivs(,Suma de divisores,SumDivs(",
+    "Primo siguiente,N(,Primo anterior,B(,Cantidad de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,NumDigits(,Suma de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,SumDigits(,Invertir dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,RevDigits(,Concatenar factores primos\n\nPrimer argumento: modo\n0: Primos no repetidos en forma ascendente\n1: Primos no repetidos en forma descendente\n2: Primos repetidos en forma ascendente\n3: Primos repetidos en forma descendente\nSegundo argumento: valor a factorizar,ConcatFact(",
+    "Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv(,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow(,Indicador de Euler,Totient(,Símbolo de Jacobi\n\nPrimer argumento: valor superior\nSegundo argumento: valor inferior,Jacobi(",
+    "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partición,P("
+  ];
+  parens = "Paréntesis izquierdo,(,Paréntesis derecho,),";
+}
+else
+{
+  funcnames =
+  [
+    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Integer square root,sqrt(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(",
+    "Equal,=,Not equal,!=,Greater,>,Not greater,<=,Less,<,Not less,>=",
+    "Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ,Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ",
+    "Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(,Number of prime factors,NumFact(,smallest prime divisor,MinFact(,greatest prime divisor,MaxFact(,Number of divisors,NumDivs(,Sum of divisors,SumDivs(",
+    "Next prime after,N(,Last prime before,B(,Number of digits\n\nFirst argument: value\nSecond argument: base,NumDigits(,Sum of digits\n\nFirst argument: value\nSecond argument: base,SumDigits(,Reverse digits\n\nFirst argument: value\nSecond argument: base,RevDigits(,Concatenate prime factors\n\nFirst argument: Mode\n0: No repeated primes in ascending order\n1: No repeated primes in descending order\n2: Repeated primes in ascending order\n3: Repeated primes in descending order\nSecond argument: Value to factor,ConcatFact(",
+    "Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv(,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow(,Totient,Totient(,Jacobi symbol\n\nFirst argument: upper value\nSecond argument: lower value,Jacobi(",
+    "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
+  ];
+  parens = "Left parenthesis,(,Right parenthesis,),";
+}
+
 function get(x)
 {
   return document.getElementById(x);
@@ -312,6 +344,34 @@ function fillCache()
   });
 }
 
+function generateFuncButtons(optionCategory, funcButtons)
+{
+  var button;
+  var catIndex;
+  var funcbtns = get(funcButtons);
+  var catnbr = get(optionCategory).selectedIndex;
+  var funcname = (parens + funcnames[catnbr]).split(",");
+  while (funcbtns.firstChild)
+  {
+    funcbtns.removeChild(funcbtns.lastChild);
+  }
+  for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
+  {
+    button = document.createElement("button");
+    button.setAttribute("type", "button");        // Indicate this is a button, not submit.
+    button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
+    button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
+    button.classList.add("funcbtn");
+    button.onclick = function()
+    {
+      currentInputBox.focus();
+      currentInputBox["setRangeText"](this.innerText, currentInputBox.selectionStart,
+                                      currentInputBox.selectionEnd, "end");
+    };
+    funcbtns.appendChild(button);
+  }
+}
+
 window.onload = function ()
 {
   var param;
@@ -368,6 +428,34 @@ window.onload = function ()
       get("coefA").focus();
       dowork(0);
     }
+  };
+  get("coefA").onfocus = function()
+  {
+    currentInputBox = get("coefA");
+  }
+  get("coefB").onfocus = function()
+  {
+    currentInputBox = get("coefB");
+  }
+  get("coefC").onfocus = function()
+  {
+    currentInputBox = get("coefC");
+  }
+  get("coefD").onfocus = function()
+  {
+    currentInputBox = get("coefD");
+  }
+  get("coefE").onfocus = function()
+  {
+    currentInputBox = get("coefE");
+  }
+  get("coefF").onfocus = function()
+  {
+    currentInputBox = get("coefF");
+  }
+  get("funccat").onchange = function()
+  {
+    generateFuncButtons("funccat", "funcbtns");
   };
   get("formlink").onclick = function ()
   {
@@ -436,6 +524,8 @@ window.onload = function ()
     xhr.send(contents);
     return false;   // Send form only through JavaScript.
   };
+  currentInputBox = get("coefA");
+  generateFuncButtons("funccat", "funcbtns");
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.

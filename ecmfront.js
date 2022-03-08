@@ -50,6 +50,7 @@ var script1;
 var script2;
 var script3;
 var funcnames;
+var parens;
 if (lang)
 {
   funcnames =
@@ -58,10 +59,11 @@ if (lang)
     "Igual,=,Distinto,!=,Mayor,>,Menor o igual,<=,Menor,<,Mayor o igual,>=",
     "Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT ,Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ",
     "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD(,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM(,¿El valor es primo?,IsPrime(,Cantidad de factores primos,NumFact(,menor divisor primo,MinFact(,mayor divisor primo,MaxFact(,Cantidad de divisores,NumDivs(,Suma de divisores,SumDivs(",
-    "Primo siguiente,N(,Primo anterior,B(,Cantidad de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,NumDigits(,Suma de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,SumDigits(,Invertir dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,RevDigits(,Concatenar factores primos,ConcatFact(",
-    "Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv(,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow(,Indicador de Euler,Totient(,Símbolo de Jacobi\n\nPrimer argumento: valor superior\nSeguindo argumento: valor inferior,Jacobi(",
+    "Primo siguiente,N(,Primo anterior,B(,Cantidad de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,NumDigits(,Suma de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,SumDigits(,Invertir dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,RevDigits(,Concatenar factores primos\n\nPrimer argumento: modo\n0: Primos no repetidos en forma ascendente\n1: Primos no repetidos en forma descendente\n2: Primos repetidos en forma ascendente\n3: Primos repetidos en forma descendente\nSegundo argumento: valor a factorizar,ConcatFact(",
+    "Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv(,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow(,Indicador de Euler,Totient(,Símbolo de Jacobi\n\nPrimer argumento: valor superior\nSegundo argumento: valor inferior,Jacobi(",
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partición,P("
-  ]; 
+  ];
+  parens = "Paréntesis izquierdo,(,Paréntesis derecho,),";
 }
 else
 {
@@ -71,10 +73,11 @@ else
     "Equal,=,Not equal,!=,Greater,>,Not greater,<=,Less,<,Not less,>=",
     "Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ,Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ",
     "Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(,Number of prime factors,NumFact(,smallest prime divisor,MinFact(,greatest prime divisor,MaxFact(,Number of divisors,NumDivs(,Sum of divisors,SumDivs(",
-    "Next prime after,N(,Last prime before,B(,Number of digits\n\nFirst argument: value\nSecond argument: base,NumDigits(,Sum of digits\n\nFirst argument: value\nSecond argument: base,SumDigits(,Reverse digits\n\nFirst argument: value\nSecond argument: base,RevDigits(,Concatenate prime factors,ConcatFact(",
+    "Next prime after,N(,Last prime before,B(,Number of digits\n\nFirst argument: value\nSecond argument: base,NumDigits(,Sum of digits\n\nFirst argument: value\nSecond argument: base,SumDigits(,Reverse digits\n\nFirst argument: value\nSecond argument: base,RevDigits(,Concatenate prime factors\n\nFirst argument: Mode\n0: No repeated primes in ascending order\n1: No repeated primes in descending order\n2: Repeated primes in ascending order\n3: Repeated primes in descending order\nSecond argument: Value to factor,ConcatFact(",
     "Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv(,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow(,Totient,Totient(,Jacobi symbol\n\nFirst argument: upper value\nSecond argument: lower value,Jacobi(",
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
   ];
+  parens = "Left parenthesis,(,Right parenthesis,),";
 }
 function get(id)
 {
@@ -119,8 +122,8 @@ function styleButtons(style1, style2)
   get("fromfile").style.display = style1;
   get("bmode").style.display = style1;
   get("openwizard").style.display = style1;
-  get("funccatblock").style.display = ((style1 == "inline")? "block": "none");
-  get("funcbtns").style.display = ((style1 == "inline")? "block": "none");
+  get("funccatblock").style.display = ((style1 === "inline")? "block": "none");
+  get("funcbtns").style.display = ((style1 === "inline")? "block": "none");
   get("stop").style.display = style2;
   get("more").style.display = style2;
 }
@@ -691,7 +694,7 @@ function generateFuncButtons(optionCategory, funcButtons, inputId)
   var catIndex;
   var funcbtns = get(funcButtons);
   var catnbr = get(optionCategory).selectedIndex;
-  var funcname = funcnames[catnbr].split(",");
+  var funcname = (parens + funcnames[catnbr]).split(",");
   while (funcbtns.firstChild)
   {
     funcbtns.removeChild(funcbtns.lastChild);
@@ -707,7 +710,7 @@ function generateFuncButtons(optionCategory, funcButtons, inputId)
     {
       var input = get(inputId);
       input.focus();
-      input["setRangeText"](this.innerHTML, input.selectionStart, input.selectionEnd, "end");
+      input["setRangeText"](this.innerText, input.selectionStart, input.selectionEnd, "end");
     };
     funcbtns.appendChild(button);
   }
@@ -1028,6 +1031,10 @@ function startUp()
   {
     generateFuncButtons("funccat", "funcbtns", "value");
   };
+  get("wzdfunccat").onchange = function()
+  {
+    generateFuncButtons("wzdfunccat", "wzdfuncbtns", "wzdinput");
+  };
   get("formsend").onclick = function()
   {
     var userdata = get("userdata");
@@ -1114,6 +1121,7 @@ function startUp()
     }
   }, 100);
   generateFuncButtons("funccat", "funcbtns", "value");
+  generateFuncButtons("wzdfunccat", "wzdfuncbtns", "wzdinput");
 
   // Generate accordion.
   var acc = document.querySelectorAll("h2");

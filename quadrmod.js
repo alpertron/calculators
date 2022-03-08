@@ -24,6 +24,38 @@
   var workerParam;
   var fileContents = 0;
   var asmjs = typeof(WebAssembly) === "undefined";
+  var currentInputBox;
+  var funcnames;
+  var parens;
+  if (lang)
+  {
+    funcnames =
+    [
+      "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Raíz cuadrada entera,sqrt(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(",
+      "Igual,=,Distinto,!=,Mayor,>,Menor o igual,<=,Menor,<,Mayor o igual,>=",
+      "Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT ,Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ",
+      "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD(,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM(,¿El valor es primo?,IsPrime(",
+      "Primo siguiente,N(,Primo anterior,B(,Cantidad de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,NumDigits(,Suma de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,SumDigits(,Invertir dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,RevDigits(",
+      "Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv(,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow(,Indicador de Euler,Totient(,Símbolo de Jacobi\n\nPrimer argumento: valor superior\nSegundo argumento: valor inferior,Jacobi(",
+      "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partición,P("
+    ];
+    parens = "Paréntesis izquierdo,(,Paréntesis derecho,),";
+  }
+  else
+  {
+    funcnames =
+    [
+      "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Integer square root,sqrt(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(",
+      "Equal,=,Not equal,!=,Greater,>,Not greater,<=,Less,<,Not less,>=",
+      "Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ,Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ",
+      "Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(",
+      "Next prime after,N(,Last prime before,B(,Number of digits\n\nFirst argument: value\nSecond argument: base,NumDigits(,Sum of digits\n\nFirst argument: value\nSecond argument: base,SumDigits(,Reverse digits\n\nFirst argument: value\nSecond argument: base,RevDigits(",
+      "Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv(,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow(,Totient,Totient(,Jacobi symbol\n\nFirst argument: upper value\nSecond argument: lower value,Jacobi(",
+      "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
+    ];
+    parens = "Left parenthesis,(,Right parenthesis,),";
+  }
+
   function get(x)
   {
     return document.getElementById(x);
@@ -287,6 +319,34 @@ function fillCache()
 }
 
 
+  function generateFuncButtons(optionCategory, funcButtons)
+  {
+    var button;
+    var catIndex;
+    var funcbtns = get(funcButtons);
+    var catnbr = get(optionCategory).selectedIndex;
+    var funcname = (parens + funcnames[catnbr]).split(",");
+    while (funcbtns.firstChild)
+    {
+      funcbtns.removeChild(funcbtns.lastChild);
+    }
+    for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
+    {
+      button = document.createElement("button");
+      button.setAttribute("type", "button");        // Indicate this is a button, not submit.
+      button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
+      button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
+      button.classList.add("funcbtn");
+      button.onclick = function()
+      {
+        currentInputBox.focus();
+        currentInputBox["setRangeText"](this.innerText, currentInputBox.selectionStart,
+                                        currentInputBox.selectionEnd, "end");
+      };
+      funcbtns.appendChild(button);
+    }
+  }
+
   window.onload = function ()
   {
     var param;
@@ -309,6 +369,26 @@ function fillCache()
     {
       get("help").style.display = "block";
       get("result").style.display = "none";
+    };
+    get("quad").onfocus = function()
+    {
+      currentInputBox = get("quad");
+    }
+    get("lin").onfocus = function()
+    {
+      currentInputBox = get("lin");
+    }
+    get("const").onfocus = function()
+    {
+      currentInputBox = get("const");
+    }
+    get("mod").onfocus = function()
+    {
+      currentInputBox = get("mod");
+    }
+    get("funccat").onchange = function()
+    {
+      generateFuncButtons("funccat", "funcbtns");
     };
     get("formlink").onclick = function ()
     {
@@ -376,6 +456,8 @@ function fillCache()
       xhr.send(contents);
       return false;   // Send form only through JavaScript.
     };
+    currentInputBox = get("quad");
+    generateFuncButtons("funccat", "funcbtns");
     if ("serviceWorker" in navigator)
     { // Attempt to register service worker.
       // There is no need to do anything on registration success or failure in this JavaScript module.

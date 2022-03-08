@@ -27,6 +27,32 @@ var config;
 var workerParam;
 var fileContents = 0;
 var asmjs = typeof(WebAssembly) === "undefined";
+var funcnames;
+var parens;
+if (lang)
+{
+  funcnames =
+  [
+    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Parte real,Re(,Parte imaginaria,Im(,Norma\n\nRe(z)^2 + Im(z)^2,Norm(",
+    "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD(,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM(,¿El valor es primo?,IsPrime(",
+    "Primo siguiente,N(,Primo anterior,B(",
+    "Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv(,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow(",
+    "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partición,P("
+  ];
+  parens = "Paréntesis izquierdo,(,Paréntesis derecho,),Unidad imaginaria,i,";
+}
+else
+{
+  funcnames =
+  [
+    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Real part,Re(,Imaginary part,Im(,Norm\n\nRe(z)^2 + Im(z)^2,Norm(",
+    "Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(",
+    "Next prime after,N(,Last prime before,B(",
+    "Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv(,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow(",
+    "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
+  ];
+  parens = "Left parenthesis,(,Right parenthesis,),Imaginary unit,i,";
+}
 function get(x)
 {
   return document.getElementById(x);
@@ -305,6 +331,34 @@ function b64decode(str,out)
   }
 }
 
+function generateFuncButtons(optionCategory, funcButtons, inputId)
+{
+  var button;
+  var catIndex;
+  var funcbtns = get(funcButtons);
+  var catnbr = get(optionCategory).selectedIndex;
+  var funcname = (parens + funcnames[catnbr]).split(",");
+  while (funcbtns.firstChild)
+  {
+    funcbtns.removeChild(funcbtns.lastChild);
+  }
+  for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
+  {
+    button = document.createElement("button");
+    button.setAttribute("type", "button");        // Indicate this is a button, not submit.
+    button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
+    button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
+    button.classList.add("funcbtn");
+    button.onclick = function()
+    {
+      var input = get(inputId);
+      input.focus();
+      input["setRangeText"](this.innerText, input.selectionStart, input.selectionEnd, "end");
+    };
+    funcbtns.appendChild(button);
+  }
+}
+
 window.onload = function ()
 {
   var param;
@@ -387,6 +441,10 @@ window.onload = function ()
       dowork(2);
       evt.stopPropagation();
     }
+  };
+  get("funccat").onchange = function()
+  {
+    generateFuncButtons("funccat", "funcbtns", "value");
   };
   get("formlink").onclick = function ()
   {
@@ -482,6 +540,7 @@ window.onload = function ()
       digits = digits.substr(0,index);
     }
   }
+  generateFuncButtons("funccat", "funcbtns", "value");
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
