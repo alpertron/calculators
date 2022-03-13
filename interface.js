@@ -507,9 +507,15 @@ function generateFuncButtons(optionCategory, funcButtons)
     button.classList.add("funcbtn");
     button.onclick = function()
     {
-      currentInputBox.focus();
-      currentInputBox["setRangeText"](this.innerText, currentInputBox.selectionStart,
-                                      currentInputBox.selectionEnd, "end");
+      var input = currentInputBox;
+      input.focus();
+      var start = input.selectionStart;
+      input.value = input.value.substring(0, start) +
+                    this.innerText +
+                    input.value.substring(input.selectionEnd, input.value.length);
+        // Place the caret at the end of the appended text.
+      input.selectionStart = start + this.innerText.length;
+      input.selectionEnd = input.selectionStart;
     };
     funcbtns.appendChild(button);
   }

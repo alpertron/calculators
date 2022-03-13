@@ -353,7 +353,13 @@ function generateFuncButtons(optionCategory, funcButtons, inputId)
     {
       var input = get(inputId);
       input.focus();
-      input["setRangeText"](this.innerText, input.selectionStart, input.selectionEnd, "end");
+      var start = input.selectionStart;
+      input.value = input.value.substring(0, start) +
+                    this.innerText +
+                    input.value.substring(input.selectionEnd, input.value.length);
+        // Place the caret at the end of the appended text.
+      input.selectionStart = start + this.innerText.length;
+      input.selectionEnd = input.selectionStart;
     };
     funcbtns.appendChild(button);
   }
