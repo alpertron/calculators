@@ -375,7 +375,7 @@ function performWork(n, valueText)
 {
   var param;
   app = lang + n;
-  var res = divResult
+  var res = divResult;
   var charNull = String.fromCharCode(0);
   var helphelp = get("helphelp");
   hide("sharediv");
@@ -1154,11 +1154,11 @@ function startUp()
             "block": "center",
             "inline": "center"
         };
-    if (document.activeElement == value)
+    if (document.activeElement === value)
     {  // Center input.
       value.scrollIntoView(options);
     }
-    if (document.activeElement == wzdInput)
+    if (document.activeElement === wzdInput)
     {  // Center input.
       wzdInput.scrollIntoView(options);
     }
