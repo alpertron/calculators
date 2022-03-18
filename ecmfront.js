@@ -51,6 +51,33 @@ var script2;
 var script3;
 var funcnames;
 var parens;
+
+// DOM resources
+var value;
+var btnNext;
+var btnEval;
+var btnPrime;
+var btnFactor;
+var btnConfig;
+var btnFromFile;
+var btnBlocklyMode;
+var btnOpenWizard;
+var btnMore;
+var btnToFile;
+var btnStop;
+var chkCunningham;
+var chkDecW;
+var chkHex;
+var chkHexW;
+var chkPretty;
+var chkVerbose;
+var divResult;
+var getFile;
+var newCurveOrFactor;
+var wzdDescText;
+var wzdExamText;
+var wzdInput;
+
 if (lang)
 {
   funcnames =
@@ -96,9 +123,9 @@ function show(id)
 
 function oneexpr()
 {
-  get("next").value = (lang? "Hecho": "Done");
-  get("wzddesc").innerHTML = (lang? "Paso 1 de 1: Expresión a factorizar": "Step 1 of 1: Expression to factor");
-  get("wzdexam").innerHTML = "&nbsp;";
+  btnNext.value = (lang? "Hecho": "Done");
+  wzdDescText.innerHTML = (lang? "Paso 1 de 1: Expresión a factorizar": "Step 1 of 1: Expression to factor");
+  wzdExamText.innerHTML = "&nbsp;";
   wizardTextInput = "";
   wizardStep = 9;
 }
@@ -115,26 +142,26 @@ function getStorage(name)
 
 function styleButtons(style1, style2)
 {
-  get("eval").style.display = style1;
-  get("prime").style.display = style1;
-  get("factor").style.display = style1;
-  get("config").style.display = style1;
-  get("fromfile").style.display = style1;
-  get("bmode").style.display = style1;
-  get("openwizard").style.display = style1;
-  get("funccatblock").style.display = ((style1 === "inline")? "block": "none");
-  get("funcbtns").style.display = ((style1 === "inline")? "block": "none");
-  get("stop").style.display = style2;
-  get("more").style.display = style2;
+  btnEval.style.display = style1;
+  btnPrime.style.display = style1;
+  btnFactor.style.display = style1;
+  btnConfig.style.display = style1;
+  btnFromFile.style.display = style1;
+  btnBlocklyMode.style.display = style1;
+  btnOpenWizard.style.display = style1;
+  get("functions").style.display = style1;
+  get("funcbtns").style.display = style1;
+  btnStop.style.display = style2;
+  btnMore.style.display = style2;
 }
 
 function saveConfig()
 {    
   config = "1" +   // Batch mode
-           (get("verbose").checked? "1" : "0") +
-           (get("pretty").checked? "1" : "0") +
-           (get("cunnin").checked? "1" : "0") +
-           (get("hex").checked? "1" : "0");
+           (chkVerbose.checked? "1" : "0") +
+           (chkPretty.checked? "1" : "0") +
+           (chkCunningham.checked? "1" : "0") +
+           (chkHex.checked? "1" : "0");
   digits = get("digits").value;
   setStorage("ecmConfig", digits+","+config);
 }
@@ -145,8 +172,8 @@ function b64decode(str,out)
   var idxDest,idxSrc;
   var blocks, leftOver;
   var byte0, byte1, byte2, byte3;
-  var conv=new Int8Array(128);
-  var len=str.length;
+  var conv = new Int8Array(128);
+  var len = str.length;
   if (str.charAt(len-1) === "=")
   {
     len--;
@@ -275,7 +302,7 @@ function callWorker(param)
       else if ((firstChar === "M") || (firstChar === "N"))
       {    // User entered a polynomial. Load calculator to process it.
         window.sessionStorage.setItem((firstChar === "M"? "F": "E"),
-          get("value").value);
+          value.value);
         window.location.replace(lang? "FACTPOL.HTM": "POLFACT.HTM");
       }
       else if (firstChar === "4")
@@ -348,7 +375,7 @@ function performWork(n, valueText)
 {
   var param;
   app = lang + n;
-  var res = get("result");
+  var res = divResult
   var charNull = String.fromCharCode(0);
   var helphelp = get("helphelp");
   hide("sharediv");
@@ -394,11 +421,11 @@ function performWork(n, valueText)
           valueText + charNull + getStorage("ecmFactors");
   if (n === -1 || n === -2)
   {
-    param += "," + get("curve").value;        // Append new curve number typed by user.
+    param += "," + newCurveOrFactor.value;        // Append new curve number typed by user.
   }
   if (n === -3 || n === -4)
   {
-    param += ";" + get("curve").value;        // Append new factor typed by user.
+    param += ";" + newCurveOrFactor.value;        // Append new factor typed by user.
   }
   if (!fileContents)
   {
@@ -414,7 +441,7 @@ function dowork(n)
 {
   var valueText;
   fromFile = "0";
-  if (get("getFile").value !== "")
+  if (getFile.value !== "")
   {
     var fileReader = new FileReader();
     fileReader.onload = function(fileLoadedEvent) 
@@ -422,14 +449,14 @@ function dowork(n)
       fromFile = "1";
       valueText = fileLoadedEvent.target.result;
       performWork(n, valueText);
-      get("getFile").value = "";
+      getFile.value = "";
     };
-    fileReader.readAsText(get("getFile").files[0], "UTF-8");
-    get("value").value = "";
+    fileReader.readAsText(getFile.files[0], "UTF-8");
+    value.value = "";
   }
   else
   {
-    valueText = get("value").value.replace(/\u2011/g, "-");
+    valueText = value.value.replace(/\u2011/g, "-");
     performWork(n, valueText);
   }
 }
@@ -447,21 +474,17 @@ function restartFactorization(type)
 
 function selectLoop()
 {   
-  get("next").value = (lang ? "Siguiente": "Next");
-  get("wzddesc").innerHTML = (lang ? "Paso 1 de 5: Valor inicial de x": "Step 1 of 5: Initial value of x");
-  get("wzdexam").innerHTML = (lang? "No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code>": 
+  btnNext.value = (lang ? "Siguiente": "Next");
+  wzdDescText.innerHTML = (lang ? "Paso 1 de 5: Valor inicial de x": "Step 1 of 5: Initial value of x");
+  wzdExamText.innerHTML = (lang? "No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code>": 
                                     "Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>");
   wizardStep = 1;
 }
   
 function wizardNext()
 {
-  var nextBtn = get("next");
-  var wzdDescText = get("wzddesc");
-  var wzdExamText = get("wzdexam");
-  var wzdInput = get("wzdinput");
-  var valueInput = get("value");
-  nextBtn.disabled = true;
+  var valueInput = value;
+  btnNext.disabled = true;
   switch (++wizardStep)
   {
     case 2:
@@ -485,8 +508,8 @@ function wizardNext()
       break;
     case 5:
       wizardTextInput += ";"+wzdInput.value;
-      nextBtn.value = (lang? "Hecho": "Done");
-      nextBtn.disabled = false;
+      btnNext.value = (lang? "Hecho": "Done");
+      btnNext.disabled = false;
       wzdDescText.innerHTML = (lang? "Paso 5 de 5: Condición para procesar la expresión": "Step 5 of 5: Process expression condition");
       wzdExamText.innerHTML = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>":
                                      "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>");
@@ -498,7 +521,7 @@ function wizardNext()
       }
       valueInput.value = wizardTextInput;
       wizardStep = 0;
-      get("hex").checked = get("hexW").checked;
+      chkHex.checked = chkHexW.checked;
       saveConfig();
       show("main");
       hide("wizard");
@@ -507,7 +530,7 @@ function wizardNext()
     default:
       wizardStep = 0;
       valueInput.value = wzdInput.value;
-      get("hex").checked = get("hexW").checked;
+      chkHex.checked = chkHexW.checked;
       saveConfig();
       show("main");
       hide("wizard");
@@ -543,7 +566,7 @@ function endFeedback()
 {
   show("main");
   hide("feedback");
-  get("value").focus();   
+  value.focus();   
 }
 
 var url = window.location.pathname;
@@ -725,41 +748,66 @@ function generateFuncButtons(optionCategory, funcButtons, inputId)
 function startUp()
 {
   var param, index, ecmFactor;
+  value = get("value");
+  btnNext = get("next");
+  btnEval = get("eval");
+  btnPrime = get("prime");
+  btnFactor = get("factor");
+  btnConfig = get("config");
+  btnFromFile = get("fromfile");
+  btnBlocklyMode = get("bmode");
+  btnMore = get("more");
+  btnOpenWizard = get("openwizard");
+  btnToFile = get("tofile");
+  btnStop = get("stop");
+  chkCunningham = get("cunnin");
+  chkDecW = get("decW");
+  chkHex = get("hex");
+  chkHexW = get("hexW");
+  chkPretty = get("pretty");
+  chkVerbose = get("verbose");
+  divResult = get("result");
+  getFile = get("getFile");
+  newCurveOrFactor = get("curve");
+  wzdDescText = get("wzddesc");
+  wzdExamText = get("wzdexam");
+  wzdInput = get("wzdinput");
+
   app = lang;
-  get("value").wrap="off";
-  get("eval").onclick = function()
+  value.wrap="off";
+  btnEval.onclick = function()
   {
     setStorage("ecmFactors","");
     dowork(0);
   };
-  get("prime").onclick = function()
+  btnPrime.onclick = function()
   {
     setStorage("ecmFactors","");
     dowork(6);
   };
-  get("factor").onclick = function()
+  btnFactor.onclick = function()
   {
     setStorage("ecmFactors","");
     dowork(2);
   };
-  get("more").onclick = function()
+  btnMore.onclick = function()
   {
     show("modal-more");
   };
-  get("config").onclick = function()
+  btnConfig.onclick = function()
   {
     get("digits").value = digits;
-    get("verbose").checked = (config.substr(1,1) === "1");
-    get("pretty").checked = (config.substr(2,1) === "1");
-    get("cunnin").checked = (config.substr(3,1) === "1");  
-    get("hex").checked = (config.substr(4,1) === "1");
+    chkVerbose.checked = (config.substr(1,1) === "1");
+    chkPretty.checked = (config.substr(2,1) === "1");
+    chkCunningham.checked = (config.substr(3,1) === "1");  
+    chkHex.checked = (config.substr(4,1) === "1");
     show("modal-config");
   };
-  get("fromfile").onclick = function()
+  btnFromFile.onclick = function()
   {
-    get("getFile").click();
+    getFile.click();
   };
-  get("tofile").onclick = function()
+  btnToFile.onclick = function()
   {
     hide("savefile");
     var blob = new Blob([tofile], { type: "text/plain" });
@@ -779,21 +827,21 @@ function startUp()
     a.addEventListener("click", clickHandler, false);
     a.click();
   };
-  get("getFile").onchange = function()
+  getFile.onchange = function()
   {
-    fileName = get("getFile").value.replace(/^.*[\\\/]/, "");
+    fileName = getFile.value.replace(/^.*[\\\/]/, "");
     if (lang)
     {          // Spanish
-      get("value").value = "Archivo a procesar: " + fileName +
+      value.value = "Archivo a procesar: " + fileName +
           "\nApriete el botón \"Solo evaluar\", \"Primo\" or \"Factorizar\" para continuar.";
     }
     else
     {          // English
-      get("value").value = "File to process: " + fileName +
+      value.value = "File to process: " + fileName +
           "\nPress \"Only evaluate\", \"Prime\" or \"Factor\" button to continue.";
     }
   };
-  get("bmode").onclick = function()
+  btnBlocklyMode.onclick = function()
   {
     hide("main");
     get("blockmode").style.display = "flex";
@@ -808,25 +856,25 @@ function startUp()
     show("main");
     hide("blockmode");
   };
-  get("openwizard").onclick = function()
+  btnOpenWizard.onclick = function()
   {
     hide("main");
     show("wizard");
     show("mode");
     get("oneexpr").checked = true;
-    get("next").disabled = true;
-    get("wzdinput").value = "";
-    get("wzdinput").focus();
-    get("hexW").checked = (config.substr(4,1) === "1");
-    get("decW").checked = (config.substr(4,1) !== "1");
+    btnNext.disabled = true;
+    wzdInput.value = "";
+    wzdInput.focus();
+    chkHexW.checked = (config.substr(4,1) === "1");
+    chkDecW.checked = (config.substr(4,1) !== "1");
     oneexpr();
   };
-  get("wzdinput").onkeydown = function (event)
+  wzdInput.onkeydown = function (event)
   {
     if (event.keyCode === 10 || event.keyCode === 13)
     {
       event.preventDefault();          // Do not propagate Enter key.
-      if (!get("next").disabled)
+      if (!btnNext.disabled)
       {                                // Next button is not disabled.
         wizardNext();                  // Perform same operation as if the user had pressed Next button.
       }
@@ -852,14 +900,14 @@ function startUp()
       else if (event.keyCode === 68)
       {                                // User pressed ALT-D.
         event.preventDefault();        // Do not propagate key.
-        get("decW").checked = true;
-        get("hexW").checked = false;
+        chkDecW.checked = true;
+        chkHexW.checked = false;
       }
       else if (event.keyCode === 72)
       {                                // User pressed ALT-H.
         event.preventDefault();        // Do not propagate key.
-        get("decW").checked = false;
-        get("hexW").checked = true;
+        chkDecW.checked = false;
+        chkHexW.checked = true;
       }
     }
     return true;
@@ -872,34 +920,33 @@ function startUp()
   {
     selectLoop();
   };
-  get("next").onclick = function()
+  btnNext.onclick = function()
   {
     wizardNext();
   };
-  get("wzdinput").oninput = function()
+  wzdInput.oninput = function()
   {
-    var inputValue = get("wzdinput").value;
-    var nextBtn = get("next");
+    var inputValue = wzdInput.value;
     if (inputValue !== "")
     {         // User typed something on input box.
       if (wizardStep === 1 || wizardStep === 9 ||
           (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
           inputValue.lastIndexOf("X") >= 0 || inputValue.lastIndexOf("C") >= 0))
       {       // At least one x or c. Indicate valid.
-        nextBtn.disabled = false;
+        btnNext.disabled = false;
       }
       else
       {
-        nextBtn.disabled = true;
+        btnNext.disabled = true;
       }
     }
     else if (wizardStep === 5)
     {         // Last step is optional, so empty input is valid.
-      nextBtn.disabled = false;
+      btnNext.disabled = false;
     }
     else
     {         // For required input, empty input is invalid.
-      nextBtn.disabled = true;
+      btnNext.disabled = true;
     }
   };
   get("cancel").onclick = function()
@@ -918,7 +965,7 @@ function startUp()
   get("save-config").onclick = function()
   {
     saveConfig();
-    updateVerbose(get("verbose").checked);
+    updateVerbose(chkVerbose.checked);
     hide("modal-config");
   };
   get("close-more").onclick = function()
@@ -933,11 +980,11 @@ function startUp()
   {
     restartFactorization(-4);
   };
-  get("curve").onkeypress = function(event)
+  newCurveOrFactor.onkeypress = function(event)
   {
     return (event.charCode === 8 || event.charCode === 0) ? null : event.charCode >= 48 && event.charCode <= 57;
   };
-  get("stop").onclick = function()
+  btnStop.onclick = function()
   {
     worker.terminate();
     worker = 0;
@@ -949,7 +996,7 @@ function startUp()
     statusDirty = true;
     statusText = "";
   };
-  get("value").onkeydown = function (event)
+  value.onkeydown = function (event)
   {
     if ((event.keyCode === 10 || event.keyCode === 13) && event.ctrlKey)
     {
@@ -967,7 +1014,7 @@ function startUp()
       text: "",
       url: ""
     };
-    var tmpHTML = get("result").innerHTML;
+    var tmpHTML = divResult.innerHTML;
     // Convert <sup> and </sup> to exponentiation character.
     tmpHTML = tmpHTML.replace(/\<sup\>/g, "\^");
     tmpHTML = tmpHTML.replace(/\<\/sup\>/g, "");
@@ -989,7 +1036,7 @@ function startUp()
     // Retrieve the text property of the element 
     shareData.text = tempDivElement.textContent || tempDivElement.innerText || "";
     shareData.url = (window.location.href.split("?")[0]) + "?q=" +
-                    encodeURIComponent(get("value").value);
+                    encodeURIComponent(value.value);
     navigator.share(shareData);
   };
   get("helpbtn").onclick = function()
@@ -997,9 +1044,8 @@ function startUp()
     var help = get("help");
     var helpStyle = help.style;
     var helphelpStyle = get("helphelp").style;
-    var result = get("result");
-    var resultStyle = result.style;
-    if (helpStyle.display === "block" && result.innerHTML !== "")     
+    var resultStyle = divResult.style;
+    if (helpStyle.display === "block" && divResult.innerHTML !== "")     
     {
       helpStyle.display = "none";
       helphelpStyle.display = resultStyle.display = "block";
@@ -1046,7 +1092,7 @@ function startUp()
     var userdata = get("userdata");
     if (get("adduserdata").checked)
     {
-      userdata.value = "\n" + get("value").value + "\n" + get("result").innerHTML + "\n" + get("status").innerHTML;
+      userdata.value = "\n" + value.value + "\n" + divResult.innerHTML + "\n" + get("status").innerHTML;
     }
     else
     {
@@ -1101,11 +1147,27 @@ function startUp()
       modal.style.display = "none";
     }
   };
+  window.onresize = function(event)
+  {
+    var options = {
+            "behavior": "auto",
+            "block": "center",
+            "inline": "center"
+        };
+    if (document.activeElement == value)
+    {  // Center input.
+      value.scrollIntoView(options);
+    }
+    if (document.activeElement == wzdInput)
+    {  // Center input.
+      wzdInput.scrollIntoView(options);
+    }
+  };
   setInterval(function()
   {
     if (resultDirty)
     {
-      get("result").innerHTML = resultText;
+      divResult.innerHTML = resultText;
       resultDirty = false;
     }
     if (statusDirty)
@@ -1115,10 +1177,9 @@ function startUp()
     }
     if (divisorsDirty)
     {
-      var showdiv = get("showdiv");
-      if (showdiv != null)
+      if (get("showdiv") != null)
       {
-        showdiv.onclick = function()
+        get("showdiv").onclick = function()
         {
           callWorker("D");  // Indicate worker that user pressed Divisors button.
         };
@@ -1126,9 +1187,6 @@ function startUp()
       divisorsDirty = false;
     }
   }, 100);
-  generateFuncButtons("funccat", "funcbtns", "value");
-  generateFuncButtons("wzdfunccat", "wzdfuncbtns", "wzdinput");
-
   // Generate accordion.
   var acc = document.querySelectorAll("h2");
   var idx, x, y;
@@ -1219,14 +1277,14 @@ function startUp()
   if (fromPolfact != null)
   {    // Number to factor coming from polynomial factorization calculator.
     window.sessionStorage.removeItem("F");
-    get("value").value = fromPolfact;
+    value.value = fromPolfact;
     dowork(-2);    // Perform factorization.
   }
   fromPolfact = window.sessionStorage.getItem("E");
   if (fromPolfact != null)
   {    // Number to factor coming from polynomial factorization calculator.
     window.sessionStorage.removeItem("E");
-    get("value").value = fromPolfact;
+    value.value = fromPolfact;
     dowork(0);     // Perform evaluation.
   }
   else
@@ -1234,7 +1292,7 @@ function startUp()
     var search = window.location.search;
     if (search.substring(0,3) === "?q=")
     {
-      get("value").value = decodeURIComponent(search.substring(3));
+      value.value = decodeURIComponent(search.substring(3));
       dowork(-2);
     }
     else
@@ -1242,10 +1300,10 @@ function startUp()
       ecmFactor = getStorage("ecmFactors");
       if (ecmFactor)
       {          // Continue factoring.
-        get("value").value = ecmFactor.slice(0,ecmFactor.indexOf("="));
-        get("curve").value = getStorage("ecmCurve");
+        value.value = ecmFactor.slice(0,ecmFactor.indexOf("="));
+        newCurveOrFactor.value = getStorage("ecmCurve");
         dowork(-2);
-        get("curve").value = "";
+        newCurveOrFactor.value = "";
       }
     }
   }
@@ -1256,6 +1314,9 @@ function startUp()
     fillCache();
   }
 }
+generateFuncButtons("funccat", "funcbtns", "value");
+generateFuncButtons("wzdfunccat", "wzdfuncbtns", "wzdinput");
+
 if (asmjs)
 {
   var req = new XMLHttpRequest();
