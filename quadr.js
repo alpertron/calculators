@@ -351,10 +351,9 @@ function generateFuncButtons(optionCategory, funcButtons)
   var funcbtns = get(funcButtons);
   var catnbr = get(optionCategory).selectedIndex;
   var funcname = (parens + funcnames[catnbr]).split(",");
-  while (funcbtns.firstChild)
-  {
-    funcbtns.removeChild(funcbtns.lastChild);
-  }
+  // Append all buttons to document fragment instead of funcbtns
+  // and finally append the fragment to funcbtns to minimize redraws.
+  var fragment = document.createDocumentFragment();
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
     button = document.createElement("button");
@@ -374,8 +373,10 @@ function generateFuncButtons(optionCategory, funcButtons)
       input.selectionStart = start + this.innerText.length;
       input.selectionEnd = input.selectionStart;
     };
-    funcbtns.appendChild(button);
+    fragment.appendChild(button);
   }
+  funcbtns.innerHTML = "";
+  funcbtns.appendChild(fragment);
 }
 
 window.onload = function()

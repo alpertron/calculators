@@ -718,17 +718,15 @@ function generateFuncButtons(optionCategory, funcButtons, inputId)
   var funcbtns = get(funcButtons);
   var catnbr = get(optionCategory).selectedIndex;
   var funcname = (parens + funcnames[catnbr]).split(",");
-  while (funcbtns.firstChild)
-  {
-    funcbtns.removeChild(funcbtns.lastChild);
-  }
+  // Append all buttons to document fragment instead of funcbtns
+  // and finally append the fragment to funcbtns to minimize redraws.
+  var fragment = document.createDocumentFragment();
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
     button = document.createElement("button");
     button.setAttribute("type", "button");        // Indicate this is a button, not submit.
     button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
     button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
-    button.classList.add("funcbtn");
     button.onclick = function()
     {
       var input = get(inputId);
@@ -741,8 +739,35 @@ function generateFuncButtons(optionCategory, funcButtons, inputId)
       input.selectionStart = start + this.innerText.length;
       input.selectionEnd = input.selectionStart;
     };
-    funcbtns.appendChild(button);
+    fragment.appendChild(button);
   }
+  funcbtns.innerHTML = "";
+  funcbtns.appendChild(fragment);
+}
+
+function completeFuncButtons(funcButtons, inputId)
+{
+  var button;
+  var catIndex;
+  var funcname = (parens + funcnames[0]).split(",");
+  var funcbtns = get(funcButtons);
+  for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
+  {
+    button = funcbtns.children[catIndex];
+    button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
+    button.onclick = function()
+    {
+      var input = get(inputId);
+      input.focus();
+      var start = input.selectionStart;
+      input.value = input.value.substring(0, start) +
+                    this.innerText +
+                    input.value.substring(input.selectionEnd, input.value.length);
+        // Place the caret at the end of the appended text.
+      input.selectionStart = start + this.innerText.length;
+      input.selectionEnd = input.selectionStart;
+    };
+  } 
 }
 
 function startUp()
@@ -1314,7 +1339,7 @@ function startUp()
     fillCache();
   }
 }
-generateFuncButtons("funccat", "funcbtns", "value");
+completeFuncButtons("funcbtns", "value");
 generateFuncButtons("wzdfunccat", "wzdfuncbtns", "wzdinput");
 
 if (asmjs)
