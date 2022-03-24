@@ -136,46 +136,6 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger* second, BigI
 static BigInteger curStack;
 static BigInteger curStack2;
 static BigInteger curStack3;
-static struct
-{
-  unsigned int seed[4];
-} randomSeed;
-
-// Use xorshift128 algorithm
-static unsigned int nextRandom(void)
-{
-  uint32_t s;
-  uint32_t t;
-  if ((randomSeed.seed[0] == 0U) && (randomSeed.seed[1] == 0U) &&
-    (randomSeed.seed[2] == 0U) && (randomSeed.seed[3] == 0U))
-  {
-#ifdef __EMSCRIPTEN__
-    double tenth = tenths();
-    double dSeed = tenth - (738264237.0 * floor(tenth / 738264237.0));
-    randomSeed.seed[0] = (uint32_t)dSeed;
-    dSeed = tenth - (965457348.0 * floor(tenth / 965457348.0));
-    randomSeed.seed[1] = (uint32_t)dSeed;
-    dSeed = tenth - (432155666.0 * floor(tenth / 432155666.0));
-    randomSeed.seed[2] = (uint32_t)dSeed;
-    dSeed = tenth - (957884955.0 * floor(tenth / 957884955.0));
-    randomSeed.seed[3] = (uint32_t)dSeed;
-#else
-    randomSeed.seed[0] = 178546887U;
-    randomSeed.seed[1] = 7585185U;
-    randomSeed.seed[2] = 430600459U;
-    randomSeed.seed[3] = 136315866U;
-#endif
-  }
-  t = randomSeed.seed[3];
-  s = randomSeed.seed[0];
-  randomSeed.seed[3] = randomSeed.seed[2];
-  randomSeed.seed[2] = randomSeed.seed[1];
-  randomSeed.seed[1] = s;
-
-  t ^= t << 11;
-  t ^= t >> 8;
-  return randomSeed.seed[0] = t ^ s ^ (s >> 19);
-}
 
 static int numLimbs(const int* pLen)
 {
@@ -1320,50 +1280,11 @@ static enum eExprErr ComputeSumDigits(void)
 
 static enum eExprErr ComputeRandom(void)
 {
-  static BigInteger difference;
-  static BigInteger Temp;
-  int nbrLen;
-  int ctr;
   getCurrentStackValue(&curStack);     // Get first argument.
   stackIndex++;
   getCurrentStackValue(&curStack2);    // Get second argument.
   stackIndex--;
-  BigIntSubt(&curStack, &curStack2, &difference);
-  if (difference.sign == SIGN_NEGATIVE)
-  {
-    difference.sign = SIGN_POSITIVE;
-    CopyBigInt(&Temp, &curStack);      // Force first argument to
-    CopyBigInt(&curStack, &curStack2); // be greater than second.
-    CopyBigInt(&curStack2, &Temp);
-  }
-  // Generate random number between 0 and difference.
-  Temp.sign = SIGN_POSITIVE;
-  nbrLen = difference.nbrLimbs - 1;
-  for (ctr = 0; ctr < nbrLen; ctr++)
-  { // Set all limbs except the most significant to random values. 
-    Temp.limbs[ctr].x = (int)(nextRandom() & 0x7FFFFFFFU);
-  }
-  do
-  { // Loop that sets the most significant limb.
-    Temp.limbs[nbrLen].x = (int)(((uint64_t)nextRandom() *
-        ((uint64_t)difference.limbs[nbrLen].x + 1)) >> 32);
-    // Check whether Temp is greater than difference.
-    // Subtract cannot be done because there could be
-    // some most significant limb equal to zero.
-    for (ctr = nbrLen; ctr >= 0; ctr--)
-    {
-      if (Temp.limbs[ctr].x != difference.limbs[ctr].x)
-      {
-        break;
-      }
-    }
-  } while ((ctr >= 0) && (Temp.limbs[ctr].x > difference.limbs[ctr].x));
-  while ((nbrLen > 0) && (Temp.limbs[nbrLen].x == 0))
-  { // Discard most significant limbs set to zero.
-    nbrLen--;
-  }
-  Temp.nbrLimbs = nbrLen + 1;
-  BigIntAdd(&curStack2, &Temp, &curStack);
+  BigIntRandom(&curStack, &curStack2, &curStack);
   return EXPR_OK;
 }
 

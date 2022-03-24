@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 18 de marzo de 2022."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 18 March 2022."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 23 de marzo de 2022."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 23 March 2022."
 
 #include <stdbool.h>
 #ifdef __EMSCRIPTEN__
@@ -38,6 +38,7 @@ void databack(const char *data);
 #define ONE_PARM                     (1 * 0x100)
 #define TWO_PARMS                    (2 * 0x100)
 #define THREE_PARMS                  (3 * 0x100)
+#define FOUR_PARMS                   (4 * 0x100)
 #define MANY_PARMS                   (8 * 0x100)
 #define TOKEN_NUMBER                  1
 #define TOKEN_START_EXPON             2
@@ -103,6 +104,7 @@ enum eExprErr
   EXPR_MORE_THAN_ONE_EQUAL_SIGN,
   EXPR_EQUAL_SIGN_INSIDE_PAREN,
   EXPR_VAR_IN_EXPRESSION,
+  EXPR_ARGUMENT_MUST_BE_CONSTANT,
   EXPR_OK = 0,
   EXPR_NOT_FOUND,
 };

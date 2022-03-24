@@ -30,6 +30,11 @@ enum eOper
   OPERATION_XOR,
 };
 
+static struct
+{
+  unsigned int seed[4];
+} randomSeed;
+
 static BigInteger Temp;
 static BigInteger Temp2;
 static BigInteger Temp3;
@@ -2448,3 +2453,99 @@ void ConvertToTwosComplement(BigInteger *value)
   }
 }
 
+// Use xorshift128 algorithm
+static unsigned int nextRandom(void)
+{
+  uint32_t s;
+  uint32_t t;
+  if ((randomSeed.seed[0] == 0U) && (randomSeed.seed[1] == 0U) &&
+    (randomSeed.seed[2] == 0U) && (randomSeed.seed[3] == 0U))
+  {
+#ifdef __EMSCRIPTEN__
+    double tenth = tenths();
+    double dSeed = tenth - (738264237.0 * floor(tenth / 738264237.0));
+    randomSeed.seed[0] = (uint32_t)dSeed;
+    dSeed = tenth - (965457348.0 * floor(tenth / 965457348.0));
+    randomSeed.seed[1] = (uint32_t)dSeed;
+    dSeed = tenth - (432155666.0 * floor(tenth / 432155666.0));
+    randomSeed.seed[2] = (uint32_t)dSeed;
+    dSeed = tenth - (957884955.0 * floor(tenth / 957884955.0));
+    randomSeed.seed[3] = (uint32_t)dSeed;
+#else
+    randomSeed.seed[0] = 178546887U;
+    randomSeed.seed[1] = 7585185U;
+    randomSeed.seed[2] = 430600459U;
+    randomSeed.seed[3] = 136315866U;
+#endif
+  }
+  t = randomSeed.seed[3];
+  s = randomSeed.seed[0];
+  randomSeed.seed[3] = randomSeed.seed[2];
+  randomSeed.seed[2] = randomSeed.seed[1];
+  randomSeed.seed[1] = s;
+
+  t ^= t << 11;
+  t ^= t >> 8;
+  return randomSeed.seed[0] = t ^ s ^ (s >> 19);
+}
+
+void BigIntRandom(BigInteger* pUpperLimit, BigInteger* pLowerLimit, BigInteger* pRandom)
+{
+  int nbrLen;
+  int ctr;
+  BigIntSubt(pUpperLimit, pLowerLimit, &Temp2);  // Temp2 = difference.
+  if (Temp2.sign == SIGN_NEGATIVE)
+  {                                       // Lower limit < Upper limit
+    Temp2.sign = SIGN_POSITIVE;
+    CopyBigInt(&Temp, pLowerLimit);       // Force first argument to
+    CopyBigInt(pLowerLimit, pUpperLimit); // be greater than second.
+    CopyBigInt(pUpperLimit, &Temp);
+  }
+  // Generate random number between 0 and difference.
+  Temp.sign = SIGN_POSITIVE;
+  nbrLen = Temp2.nbrLimbs - 1;
+  for (ctr = 0; ctr < nbrLen; ctr++)
+  { // Set all limbs to random values except the most significant.
+    Temp.limbs[ctr].x = (int)(nextRandom() & 0x7FFFFFFFU);
+  }
+  do
+  { // Loop that sets the most significant limb.
+    Temp.limbs[nbrLen].x = (int)(((uint64_t)nextRandom() *
+      ((uint64_t)Temp2.limbs[nbrLen].x + 1)) >> 32);
+    // Check whether Temp is greater than difference.
+    // Subtract cannot be done because there could be
+    // some most significant limb equal to zero.
+    for (ctr = nbrLen; ctr >= 0; ctr--)
+    {
+      if (Temp.limbs[ctr].x != Temp2.limbs[ctr].x)
+      {
+        break;
+      }
+    }
+  } while ((ctr >= 0) && (Temp.limbs[ctr].x > Temp2.limbs[ctr].x));
+  while ((nbrLen > 0) && (Temp.limbs[nbrLen].x == 0))
+  { // Discard most significant limbs set to zero.
+    nbrLen--;
+  }
+  Temp.nbrLimbs = nbrLen + 1;
+  BigIntAdd(pLowerLimit, &Temp, pRandom);
+}
+
+int intRandom(int firstLimit, int secondLimit)
+{
+  int lowerLimit;
+  int upperLimit;
+  int difference;
+  if (firstLimit < secondLimit)
+  {
+    lowerLimit = firstLimit;
+    upperLimit = secondLimit;
+  }
+  else
+  {
+    lowerLimit = secondLimit;
+    upperLimit = firstLimit;
+  }
+  difference = upperLimit - lowerLimit + 1;
+  return lowerLimit + (int)(((uint64_t)nextRandom() * (uint64_t)difference) >> 32);
+}

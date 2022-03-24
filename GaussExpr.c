@@ -57,6 +57,7 @@ struct sFuncOperExpr stFuncOperGaussianExpr[] =
   {"P", TOKEN_P + ONE_PARM, 0},
   {"N", TOKEN_N + ONE_PARM, 0},
   {"B", TOKEN_B + ONE_PARM, 0},
+  {"RANDOM", TOKEN_RANDOM + TWO_PARMS, 0},
   {NULL, 0, 0},
   // Second section: functions written at right of argument.
   {"#", TOKEN_PRIMORIAL, 0},
@@ -357,6 +358,14 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       {
         return retcode;
       }
+      break;
+
+    case TOKEN_RANDOM:
+      getCurrentStackValue(&curStack2Re, &curStack2Im);
+      stackIndex--;
+      getCurrentStackValue(&curStackRe, &curStackIm);
+      BigIntRandom(&curStackRe, &curStack2Re, &curStackRe);
+      BigIntRandom(&curStackIm, &curStack2Im, &curStackIm);
       break;
 
     case TOKEN_FACTORIAL:

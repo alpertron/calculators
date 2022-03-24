@@ -600,6 +600,13 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
       {
         pInput = inputTemp;
         stackOper[stackOperIndex] = pstFuncOperExpr->token;  // Push token onto stack.
+        if ((pstFuncOperExpr->token & 0xFF) == TOKEN_RANDOM)
+        {
+          if (pUsingVariables != NULL)
+          {
+            *pUsingVariables = true;
+          }
+        }
         stackArgumNbrPriority[stackOperIndex] = 0;    // Indicate no arguments found yet.
         stackOperIndex++;
         continue;

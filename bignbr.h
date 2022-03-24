@@ -128,6 +128,8 @@ enum eExprErr BigIntRemainder(const BigInteger* pDividend,
   const BigInteger* pDivisor, BigInteger* pRemainder);
 enum eExprErr BigIntPower(const BigInteger *pBase, const BigInteger *pExponent, BigInteger *pPower);
 enum eExprErr BigIntPowerIntExp(const BigInteger *pBase, int exponent, BigInteger *pPower);
+void BigIntRandom(BigInteger* pLowerLimit, BigInteger* pUpperLimit, BigInteger* pRandom);
+int intRandom(int firstLimit, int secondLimit);
 void floordiv(const BigInteger *num, const BigInteger *den, BigInteger *result);
 void ceildiv(const BigInteger *num, const BigInteger *den, BigInteger *result);
 enum eExprErr BigIntMultiplyPower2(BigInteger* pArg, int powerOf2);

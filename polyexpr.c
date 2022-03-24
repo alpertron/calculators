@@ -30,6 +30,8 @@
 #define TOKEN_DER    36
 static enum eExprErr GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2);
 static enum eExprErr LcmPolynomialExpr(int* ptrArgument1, int* ptrArgument2);
+static enum eExprErr RandomPolynomialExpr(const int* pMinDegree, const int* pMaxDegree,
+  const int* pMinCoeff, const int* pMaxCoeff, int* randomPoly);
 static int* stackValues[STACK_OPER_SIZE];
 extern int polyA[1000000];
 extern int polyB[1000000];
@@ -43,6 +45,7 @@ struct sFuncOperExpr stFuncOperPolyExpr[] =
   {"GCD", TOKEN_GCD + MANY_PARMS, 0},
   {"LCM", TOKEN_LCM + MANY_PARMS, 0},
   {"DER", TOKEN_DER + ONE_PARM, 0},
+  {"RANDOM", TOKEN_RANDOM + FOUR_PARMS, 0},
   {NULL, 0},
   // Second section: functions written at right of argument.
   {NULL, 0},
@@ -888,6 +891,15 @@ int ComputePolynomial(const char* input, int expo)
       ptrValue1 = stackValues[stackIndex - 1];
       DerPolynomial(ptrValue1);
       break;
+    case TOKEN_RANDOM:
+      rc = RandomPolynomialExpr(stackValues[stackIndex - 4], stackValues[stackIndex - 3],
+        stackValues[stackIndex - 2], stackValues[stackIndex - 1], stackValues[stackIndex - 4]);
+      stackIndex -= 3;
+      if (rc != EXPR_OK)
+      {
+        return rc;
+      }
+      break;
     case OPER_ADD:
       stackIndex--;
       ptrValue2 = stackValues[stackIndex];
@@ -1143,5 +1155,65 @@ static enum eExprErr LcmPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
   ptrNextArgument = CopyPolynomial(ptrArgument2 + 1, &polyA[1], polyA[0]);
   diffPtrs = ptrNextArgument - ptrArgument2;
   valuesIndex = (int)diffPtrs;
+  return EXPR_OK;
+}
+
+static enum eExprErr RandomPolynomialExpr(const int* pMinDegree, const int* pMaxDegree,
+  const int* pMinCoeff, const int* pMaxCoeff, int *randomPoly)
+{
+  int minDegree;
+  int maxDegree;
+  int polyDegree;
+  static BigInteger bigMinCoeff;
+  static BigInteger bigMaxCoeff;
+  static BigInteger bigCurrentCoeff;
+  int* ptrRandomPoly = randomPoly;
+  if ((*pMinDegree != 0) || (*pMaxDegree != 0) ||
+    (*pMinCoeff != 0) || (*pMaxCoeff != 0))
+  {
+    return EXPR_ARGUMENT_MUST_BE_CONSTANT;
+  }
+  if ((*(pMinDegree + 1) != 1) || (*(pMaxDegree + 1) != 1))
+  {
+    return EXPR_DEGREE_TOO_HIGH;
+  }
+  minDegree = *(pMinDegree + 2);
+  maxDegree = *(pMaxDegree + 2);
+  if (minDegree > maxDegree)
+  {       // Incorrect order. Exchange them.
+    int temp = minDegree;
+    minDegree = maxDegree;
+    maxDegree = temp;
+  }
+  if (minDegree > MAX_DEGREE)
+  {
+    return EXPR_DEGREE_TOO_HIGH;
+  }
+  polyDegree = intRandom(minDegree, maxDegree);
+  if (modulusIsZero)
+  {
+    UncompressBigIntegerB(pMinCoeff + 1, &bigMinCoeff);
+    UncompressBigIntegerB(pMaxCoeff + 1, &bigMaxCoeff);
+  }
+  else
+  {
+    UncompressLimbsBigInteger(pMinCoeff + 1, &bigMinCoeff);
+    UncompressLimbsBigInteger(pMaxCoeff + 1, &bigMaxCoeff);
+  }
+  // Generate polynomial of degree "degree" with coefficients
+  // between "bigMinCoeff" and "bigMaxCoeff".
+  *ptrRandomPoly = polyDegree;
+  ptrRandomPoly++;
+  for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+  {
+    BigIntRandom(&bigMinCoeff, &bigMaxCoeff, &bigCurrentCoeff);
+    if (modulusIsZero)
+    {
+      NumberLength = bigCurrentCoeff.nbrLimbs;
+      BigInteger2IntArray(ptrRandomPoly, &bigCurrentCoeff);
+      ptrRandomPoly += NumberLength;
+      ptrRandomPoly++;
+    }
+  }
   return EXPR_OK;
 }
