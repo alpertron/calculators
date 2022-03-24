@@ -1197,8 +1197,8 @@ static enum eExprErr RandomPolynomialExpr(const int* pMinDegree, const int* pMax
   }
   else
   {
-    UncompressLimbsBigInteger(pMinCoeff + 1, &bigMinCoeff);
-    UncompressLimbsBigInteger(pMaxCoeff + 1, &bigMaxCoeff);
+    UncompressLimbsBigInteger((const limb *)pMinCoeff + 1, &bigMinCoeff);
+    UncompressLimbsBigInteger((const limb *)pMaxCoeff + 1, &bigMaxCoeff);
   }
   // Generate polynomial of degree "degree" with coefficients
   // between "bigMinCoeff" and "bigMaxCoeff".
