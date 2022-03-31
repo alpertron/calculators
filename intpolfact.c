@@ -78,9 +78,15 @@ int polyC[1000000];
 int polyD[1000000];
 int polySqFreeFact[1000000];
 int polyInteger[1000000];
+int primeEisenstein;
 static void GenerateIntegerPolynomial(const int* polyMod, int* polyInt, int degreePoly);
 static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly);
+static bool EisensteinCriterion(const int* poly);
+static bool checkEisenstein(const BigInteger* gcdAll,
+  const int* ptrLeading, const int* ptrTrailing);
 static int numberLLL;
+static unsigned int validDegrees[(MAX_DEGREE / sizeof(int)) / 8 + 2];
+static unsigned int validDegreesRecord[(MAX_DEGREE / sizeof(int)) / 8 + 2];
 
 // Generate row echelon form from matrixBL.
 // The output will be located in matrix lambda.
@@ -1940,7 +1946,9 @@ int getNextPrimeNoDuplicatedFactors(int primeIndex)
   {
     ptrSrc += 1 + numLimbs(ptrSrc);
   }
+  modulusIsZero = true;
   UncompressBigIntegerB(ptrSrc, &leadingCoeff);
+  modulusIsZero = false;
   do
   {   // Loop that finds a prime modulus such that the factorization
       // has no repeated factors. That means gcd(F, F') = 1 (mod prime).
@@ -2138,13 +2146,26 @@ int FactorPolyOverIntegers(void)
     ptrDest += 1 + numLimbs(ptrDest);
   }
   if (polyToFactor[0] == 0)
-  {
+  { // Degree of polynomial is zero.
     nbrSquareFreeFactors = 0;
   }
   else
   {
+    // Use Eisenstein criterion to detect some irreducible polynomials.
+    if ((polyToFactor[0] > 1) && EisensteinCriterion(polyToFactor))
+    { // Polynomial of degree > 1 is irreducible. Do not attempt to factor it.
+      nbrFactorsFound = 1;
+      (void)CopyPolynomial(ptrFactorInteger, &polyToFactor[1],
+        polyToFactor[0]);
+      pstFactorInfoInteger->degree = polyToFactor[0];
+      pstFactorInfoInteger->expectedDegree = polyToFactor[0];
+      pstFactorInfoInteger->multiplicity = 1;
+      pstFactorInfoInteger->ptrPolyLifted = ptrFactorInteger;
+      return EXPR_OK;
+    }
     nbrSquareFreeFactors = IntegerSquarefreeFactorization();
   }
+  memset(validDegreesRecord, 0xFF, sizeof(validDegreesRecord));
   for (int squareFreeFactor = 0; squareFreeFactor < nbrSquareFreeFactors; squareFreeFactor++)
   {    // At least degree 1.
        // The trailing coefficient of factors must divide the product of the trailing and leading
@@ -2189,6 +2210,7 @@ int FactorPolyOverIntegers(void)
     for (int attemptNbr = 1; attemptNbr < 5; attemptNbr++)
     {
       int nbrFactors;
+      bool isIrreducible;
       primeIndex = getNextPrimeNoDuplicatedFactors(primeIndex);
       prime = smallPrimes[primeIndex];
       // Find expon such that prime^expon >= 2 * bound
@@ -2210,59 +2232,131 @@ int FactorPolyOverIntegers(void)
           // Get number of factors found.
       pstFactorInfoOrig = factorInfo;
       nbrFactors = 0;
+      memset(validDegrees, 0x00, sizeof(validDegrees));
+      validDegrees[0] = 1;
+      int curDegree = 0;
       for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
       {
         if (pstFactorInfoOrig->ptr == NULL)
         {    // No more factors.
           break;
         }
-        nbrFactors += pstFactorInfoOrig->degree / pstFactorInfoOrig->expectedDegree;        
+        // Compute D <- D OR (D << d) where D is validDegrees and
+        // d is the degree of the factor found.
+        int nbrFactorsSameDegree = pstFactorInfoOrig->degree / pstFactorInfoOrig->expectedDegree;
+        int shiftLeftCtr = pstFactorInfoOrig->expectedDegree;
+        int shiftLeftLimbs = shiftLeftCtr / 32;
+        int shiftLeftRem = shiftLeftCtr & 0x1F;
+        if ((shiftLeftCtr & 0x1F) == 0U)
+        {
+          for (int curFactor = 0; curFactor < nbrFactorsSameDegree; curFactor++)
+          {
+            for (int limbIndex = curDegree / 32; limbIndex >= 0; limbIndex--)
+            {
+              validDegrees[limbIndex + shiftLeftLimbs] |= validDegrees[limbIndex];
+            }
+            curDegree += shiftLeftCtr;
+          }
+        }
+        else
+        {
+          for (int curFactor = 0; curFactor < nbrFactorsSameDegree; curFactor++)
+          {
+            int limbIndex = curDegree / 32;
+            validDegrees[limbIndex + shiftLeftLimbs + 1] |=
+              (validDegrees[limbIndex] >> (32 - shiftLeftRem));
+            for (; limbIndex > 0; limbIndex--)
+            {
+              validDegrees[limbIndex + shiftLeftLimbs] |=
+                 ((validDegrees[limbIndex] << shiftLeftRem) |
+                  (validDegrees[limbIndex-1] >> (32-shiftLeftRem)));
+            }
+            validDegrees[shiftLeftLimbs] |= (validDegrees[0] << shiftLeftRem);
+            curDegree += shiftLeftCtr;
+          }
+        }
+        nbrFactors += nbrFactorsSameDegree;
         pstFactorInfoOrig++;
+      }
+      // Update valid degrees record by performing a logic AND with valid degrees.
+      for (int limbIndex = curDegree / 32; limbIndex >= 0; limbIndex--)
+      {
+        validDegreesRecord[limbIndex] &= validDegrees[limbIndex];
+      }
+      // Test whether the polynomial is irreducible.
+      isIrreducible = true;
+      if (curDegree < 32)
+      {
+        if (validDegreesRecord[0] != 1U + (1U << curDegree))
+        {
+          isIrreducible = false;
+        }
+      }
+      else
+      {
+        if (validDegreesRecord[0] != 1U ||
+          validDegreesRecord[curDegree >> 5] != (1U << (curDegree & 0x1F)))
+        {
+          isIrreducible = false;
+        }
+      }
+      if (isIrreducible)
+      {
+        for (int limbIndex = curDegree / 32 - 1; limbIndex > 0; limbIndex--)
+        {
+          if (validDegreesRecord[limbIndex] != 0)
+          {
+            isIrreducible = false;
+            break;
+          }
+        }
+      }
+      if (isIrreducible)
+      {
+        nbrFactorsRecord = 1;
+        break;
       }
       if (nbrFactors < nbrFactorsRecord)
       {    // Copy factors found to records arrays.
         primeRecord = prime;
         nbrFactorsRecord = nbrFactors;
         CopyFactorsFoundToRecord();
-        if (nbrFactors < 10)
-        {
-          break;    // Small enough number of factors. Go out of loop.
-        }
       }
     }
     // Modulus that generate the lowest number of polynomials factors found.
     // Perform same degree factorization.
     // Copy back the record factorization to the work area.
-    pstFactorInfoOrig = factorInfo;
-    pstFactorInfoRecord = factorInfoRecord;
-    ptrPolyLiftedOrig = polyLifted;
-    for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
-    {
-      if (pstFactorInfoRecord->ptr == NULL)
-      {    // No more factors.
-        break;
-      }
-      *pstFactorInfoOrig = *pstFactorInfoRecord;
-      pstFactorInfoOrig->ptr = ptrPolyLiftedOrig;
-      ptrPolyLiftedOrig = CopyPolynomialFixedCoeffSize(ptrPolyLiftedOrig,
-        pstFactorInfoRecord->ptr,
-        pstFactorInfoRecord->degree - 1, primeMod.nbrLimbs + 1);
-      pstFactorInfoOrig++;
-      pstFactorInfoRecord++;
-    }
-    prime = primeRecord;
-    nbrFactorsFound = factorNbr;
-    PerformSameDegreeFactorization(prime);
-    nbrFactorsRecord = nbrFactorsFound;
-    CopyFactorsFoundToRecord();
     if (nbrFactorsRecord > 1)
     {
+      pstFactorInfoOrig = factorInfo;
+      pstFactorInfoRecord = factorInfoRecord;
+      ptrPolyLiftedOrig = polyLifted;
+      for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
+      {
+        if (pstFactorInfoRecord->ptr == NULL)
+        {    // No more factors.
+          break;
+        }
+        *pstFactorInfoOrig = *pstFactorInfoRecord;
+        pstFactorInfoOrig->ptr = ptrPolyLiftedOrig;
+        ptrPolyLiftedOrig = CopyPolynomialFixedCoeffSize(ptrPolyLiftedOrig,
+          pstFactorInfoRecord->ptr,
+          pstFactorInfoRecord->degree - 1, primeMod.nbrLimbs + 1);
+        pstFactorInfoOrig++;
+        pstFactorInfoRecord++;
+      }
+      prime = primeRecord;
+      nbrFactorsFound = factorNbr;
+      PerformSameDegreeFactorization(prime);
+      nbrFactorsRecord = nbrFactorsFound;
+      CopyFactorsFoundToRecord();
       vanHoeij(prime, nbrFactorsRecord);
     }
     // Polynomial is irreducible.
     if (polyNonRepeatedFactors[0] > 0)
     {    // Degree is greater than zero. Copy it to integer polynomial factor array.
-      ptrFactorIntegerBak = CopyPolynomial(ptrFactorInteger, &polyNonRepeatedFactors[1], polyNonRepeatedFactors[0]);
+      ptrFactorIntegerBak = CopyPolynomial(ptrFactorInteger, &polyNonRepeatedFactors[1],
+        polyNonRepeatedFactors[0]);
       InsertIntegerPolynomialFactor(ptrFactorInteger, polyNonRepeatedFactors[0]);
       ptrFactorInteger = ptrFactorIntegerBak;
       pstFactorInfoInteger++;
@@ -2281,4 +2375,112 @@ int FactorPolyOverIntegers(void)
     }
   }
   return EXPR_OK;
+}
+
+// Use Eisenstein criterion to determine whether the polynomial poly
+// is irreducible or not. It returns true if it is irreducible.
+// If this function returns false, it could be irreducible or not.
+// Let f the leading coefficient of the polynomial.
+// Let t the trailing coefficient of the polynomial.
+// Let a = gcd of all coefficients except the leading and trailing.
+// Let c = gcd(a, t)
+// Let b = c / gcd(c, f)
+// For each prime factor of b (name it b_i): if t mod b_i^2 != 0,
+// the polynomial is irreducible, so go out.
+// Let c = gcd(a, f)
+// Let b = c / gcd(c, t)
+// For each prime factor of b (name it b_i): if f mod b_i^2 != 0,
+// the polynomial is irreducible, so go out.
+// Do not process B if it does not fit in a limb.
+static bool EisensteinCriterion(const int* poly)
+{
+  int polyDegree = *poly;
+  const int *ptrPoly = poly + 1;
+  const int* ptrLeading;
+  const int* ptrTrailing = ptrPoly;
+  primeEisenstein = 0;
+  ptrPoly += numLimbs(ptrPoly);
+  ptrPoly++;
+  intToBigInteger(&operand1, 0);  // Intialize a.
+  for (int currentDegree = 1; currentDegree < polyDegree; currentDegree++)
+  {                               // Loop that computes a.
+    UncompressBigIntegerB(ptrPoly, &operand2);
+    BigIntGcd(&operand1, &operand2, &operand3);
+    CopyBigInt(&operand1, &operand3);
+    ptrPoly += numLimbs(ptrPoly);
+    ptrPoly++;
+  }
+  ptrLeading = ptrPoly;
+  if (checkEisenstein(&operand1, ptrLeading, ptrTrailing))
+  {
+    return true;
+  }
+  return checkEisenstein(&operand1, ptrTrailing, ptrLeading);
+}
+
+static bool checkEisenstein(const BigInteger *gcdAll, 
+  const int *ptrLeading, const int *ptrTrailing)
+{
+  int B;
+  int prime;
+  UncompressBigIntegerB(ptrTrailing, &operand4);
+  BigIntGcd(gcdAll, &operand4, &operand2);        // c <- operand2
+  UncompressBigIntegerB(ptrLeading, &operand4);
+  BigIntGcd(&operand2, &operand4, &operand3);
+  BigIntDivide(&operand2, &operand3, &operand4);  // b <- operand4
+  if (operand4.nbrLimbs > 1)
+  {
+    return false;    // Cannot process. Number too big.
+  }
+  UncompressBigIntegerB(ptrLeading, &operand3);
+  B = operand4.limbs[0].x;
+  // Find prime factors of B.
+  if ((B % 2) == 0)
+  {
+    if (((*(ptrLeading + 1) % 4) != 0) && ((*(ptrTrailing + 1) % 4) != 0))
+    {
+      primeEisenstein = 2;
+      return true;   // Polynomial is irreducible.
+    }
+    while ((B % 2) == 0)
+    {
+      B /= 2;
+    }
+  }
+  prime = 3;
+  while (prime * prime <= B)
+  {
+    if ((B % prime) == 0)
+    {
+      if (getRemainder(&operand3, prime) != 0)
+      {
+        UncompressBigIntegerB(ptrTrailing, &operand2);
+        subtractdivide(&operand2, 0, prime);
+        if (getRemainder(&operand2, prime) != 0)
+        {
+          primeEisenstein = prime;
+          return true;   // Polynomial is irreducible.
+        }
+      }
+      while ((B % prime) == 0)
+      {
+        B /= prime;
+      }
+    }
+    prime += 2;
+  }
+  if (B > 1)
+  {                   // At this moment B is prime.
+    if (getRemainder(&operand3, B) != 0)
+    {
+      UncompressBigIntegerB(ptrTrailing, &operand2);
+      subtractdivide(&operand2, 0, B);
+      if (getRemainder(&operand2, B) != 0)
+      {
+        primeEisenstein = B;
+        return true;   // Polynomial is irreducible.
+      }
+    }
+  }
+  return false;
 }

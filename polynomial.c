@@ -91,10 +91,18 @@ void ConvertToMonic(int *poly, int polyDegree)
     intToBigInteger(&operand1, inverse);
     if (TestNbr[0].x <= 32768)
     {
-      for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+      currentDegree = polyDegree;
+      if ((currentDegree & 0x01) == 0x00)
       {
         *ptrPoly = *ptrPoly * inverse % TestNbr[0].x;
         ptrPoly += 2;
+        currentDegree--;
+      }
+      for (; currentDegree >= 0; currentDegree -= 2)
+      {
+        *ptrPoly = *ptrPoly * inverse % TestNbr[0].x;
+        *(ptrPoly + 2) = *(ptrPoly + 2) * inverse % TestNbr[0].x;
+        ptrPoly += 4;
       }
     }
     else
@@ -456,6 +464,7 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
   int index;
   int lenBytes;
   int currCoeff;
+  unsigned char reduceModulus[10000];
   if (degree1 == 0)
   {
     if ((*arg1 == 1) && (*(arg1 + 1) == 0))
@@ -525,6 +534,18 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
     *(gcd + 1) = 1;
     return;
   }
+  if ((NumberLength == 1) && (TestNbr[0].x < 100))
+  {
+    unsigned char* ptrReduce = reduceModulus;
+    for (int row = 0; row < TestNbr[0].x; row++)
+    {
+      for (int col = 0; col < TestNbr[0].x; col++)
+      {
+        *ptrReduce = (unsigned char)col;
+        ptrReduce++;
+      }
+    }
+  }
   // gcd of two polynomials.
   lenBytes = (degree1 + 1) * nbrLimbs * (int)sizeof(int);
   (void)memcpy(gcd, arg1, lenBytes);
@@ -539,7 +560,38 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
   }
   for (;;)
   {
-    ConvertToMonic(ptrArgMin, degreeMin);
+    if ((NumberLength == 1) && (TestNbr[0].x < 100))
+    {
+      int lenLimbs = (degreeMin * 2) + 1;
+      int inverse = modInv(*(ptrArgMin + lenLimbs), TestNbr[0].x);
+      if (inverse != 1)
+      {
+        int* ptrPoly = ptrArgMin + 1;
+        intToBigInteger(&operand1, inverse);
+        for (index = degreeMin; index >= 3; index -= 4)
+        {
+          *ptrPoly = (int)reduceModulus[*ptrPoly * inverse];
+          *(ptrPoly + 2) = (int)reduceModulus[*(ptrPoly + 2) * inverse];
+          *(ptrPoly + 4) = (int)reduceModulus[*(ptrPoly + 4) * inverse];
+          *(ptrPoly + 6) = (int)reduceModulus[*(ptrPoly + 6) * inverse];
+          ptrPoly += 8;
+        }
+        for (; index >= 1; index -= 2)
+        {
+          *ptrPoly = (int)reduceModulus[*ptrPoly * inverse];
+          *(ptrPoly + 2) = (int)reduceModulus[*(ptrPoly + 2) * inverse];
+          ptrPoly += 4;
+        }
+        if (index == 0)
+        {
+          *ptrPoly = (int)reduceModulus[*ptrPoly * inverse];
+        }
+      }
+    }
+    else
+    {
+      ConvertToMonic(ptrArgMin, degreeMin);
+    }
     for (int currentDegree = degreeMax; currentDegree >= degreeMin; currentDegree--)
     {          // Replace ptrArgMax by remainder of long
                // division of ptrArgMax / ptrArgMin.
@@ -552,7 +604,36 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
         int value1 = modulus - *(ptrArgMax + index);
         const int *ptrPolynomial = ptrArgMin + 1;
         ptrTemp++;
-        if (modulus < 32767)
+        if (value1 == 0)
+        {   // Nothing to do.
+        }
+        if (modulus < 100)
+        {          
+          for (index = degreeMin; index >= 3; index -= 4)
+          {
+            *ptrTemp = (int)reduceModulus[*ptrTemp + (*ptrPolynomial * value1)];
+            *(ptrTemp + 2) = (int)reduceModulus[*(ptrTemp + 2) + 
+                      (*(ptrPolynomial + 2) * value1)];
+            *(ptrTemp + 4) = (int)reduceModulus[*(ptrTemp + 4) +
+                      (*(ptrPolynomial + 4) * value1)];
+            *(ptrTemp + 6) = (int)reduceModulus[*(ptrTemp + 6) +
+                      (*(ptrPolynomial + 6) * value1)];
+            ptrTemp += 8;
+            ptrPolynomial += 8;
+          }
+          for (; index >= 1; index -= 2)
+          {
+            *ptrTemp = reduceModulus[*ptrTemp + (*ptrPolynomial * value1)];
+            *(ptrTemp + 2) = reduceModulus[*(ptrTemp + 2) + (*(ptrPolynomial + 2) * value1)];
+            ptrTemp += 4;
+            ptrPolynomial += 4;
+          }
+          if (index == 0)
+          {
+            *ptrTemp = reduceModulus[*ptrTemp + (*ptrPolynomial * value1)];
+          }
+        }
+        else if (modulus < 32767)
         {
           for (index = 0; index <= degreeMin; index++)
           {

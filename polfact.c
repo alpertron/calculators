@@ -36,6 +36,7 @@ char *ptrPercentageOutput;
 static char outputText[20000];
 #endif
 extern int poly4[1000000];
+extern int primeEisenstein;
 
 // Perform distinct degree factorization
 static void DistinctDegreeFactorization(int polyDeg)
@@ -87,7 +88,9 @@ static void DistinctDegreeFactorization(int polyDeg)
         oldTimeElapsed = elapsedTime;
         if (lang)
         {
-          copyStr(&ptrOut, "1<p>Factorización de distintos grados: buscando factores de grado ");
+          copyStr(&ptrOut, "1<p>Factorización de distintos grados módulo ");
+          BigInteger2Dec(&ptrOut, &primeMod, 0);
+          copyStr(&ptrOut, ": buscando factores de grado ");
           int2dec(&ptrOut, currentDegree);
           copyStr(&ptrOut, " (máx.  ");
           int2dec(&ptrOut, (polyDegree + 1) / 2);
@@ -97,7 +100,9 @@ static void DistinctDegreeFactorization(int polyDeg)
         }
         else
         {
-          copyStr(&ptrOut, "1<p>Distinct degree factorization: searching for factors of degree ");
+          copyStr(&ptrOut, "1<p>Distinct degree factorization mod ");
+          BigInteger2Dec(&ptrOut, &primeMod, 0);
+          copyStr(&ptrOut, ": searching for factors of degree ");
           int2dec(&ptrOut, currentDegree);
           copyStr(&ptrOut, " (max.  ");
           int2dec(&ptrOut, (polyDegree + 1) / 2);
@@ -655,7 +660,16 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
       copyStr(&ptrOut, lang? "<h2>Factores irreducibles del polinomio</h2>": "<h2>Irreducible polynomial factors</h2>");
       if ((nbrFactorsFound == 0) || ((nbrFactorsFound == 1) && (pstFactorInfo->multiplicity == 1)))
       {
-        copyStr(&ptrOut, lang ? "<p>El polinomio es irreducible</p>" : "<p>The polynomial is irreducible</p>");
+        copyStr(&ptrOut, lang ? "<p>El polinomio es irreducible" : "<p>The polynomial is irreducible");
+        if (modulusIsZero && (primeEisenstein != 0))
+        {
+          copyStr(&ptrOut, lang ? "debido al criterio de Eisenstein (primo = " :
+            " because of Eisenstein's criterion (prime = ");
+          int2dec(&ptrOut, primeEisenstein);
+          *ptrOut = ')';
+          ptrOut++;
+        }
+        copyStr(&ptrOut, "</p>");
       }
       else
       {   // Get number of factors including multiplicity.
