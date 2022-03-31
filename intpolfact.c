@@ -85,8 +85,8 @@ static bool EisensteinCriterion(const int* poly);
 static bool checkEisenstein(const BigInteger* gcdAll,
   const int* ptrLeading, const int* ptrTrailing);
 static int numberLLL;
-static unsigned int validDegrees[(MAX_DEGREE / sizeof(int)) / 8 + 2];
-static unsigned int validDegreesRecord[(MAX_DEGREE / sizeof(int)) / 8 + 2];
+static unsigned int validDegrees[((MAX_DEGREE / (int)sizeof(int)) / 8) + 2];
+static unsigned int validDegreesRecord[((MAX_DEGREE / (int)sizeof(int)) / 8) + 2];
 
 // Generate row echelon form from matrixBL.
 // The output will be located in matrix lambda.
@@ -2165,7 +2165,7 @@ int FactorPolyOverIntegers(void)
     }
     nbrSquareFreeFactors = IntegerSquarefreeFactorization();
   }
-  memset(validDegreesRecord, 0xFF, sizeof(validDegreesRecord));
+  (void)memset(validDegreesRecord, 0xFF, sizeof(validDegreesRecord));
   for (int squareFreeFactor = 0; squareFreeFactor < nbrSquareFreeFactors; squareFreeFactor++)
   {    // At least degree 1.
        // The trailing coefficient of factors must divide the product of the trailing and leading
@@ -2232,7 +2232,7 @@ int FactorPolyOverIntegers(void)
           // Get number of factors found.
       pstFactorInfoOrig = factorInfo;
       nbrFactors = 0;
-      memset(validDegrees, 0x00, sizeof(validDegrees));
+      (void)memset(validDegrees, 0x00, sizeof(validDegrees));
       validDegrees[0] = 1;
       int curDegree = 0;
       for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
@@ -2246,8 +2246,8 @@ int FactorPolyOverIntegers(void)
         int nbrFactorsSameDegree = pstFactorInfoOrig->degree / pstFactorInfoOrig->expectedDegree;
         int shiftLeftCtr = pstFactorInfoOrig->expectedDegree;
         int shiftLeftLimbs = shiftLeftCtr / 32;
-        int shiftLeftRem = shiftLeftCtr & 0x1F;
-        if ((shiftLeftCtr & 0x1F) == 0U)
+        unsigned int shiftLeftRem = (unsigned int)shiftLeftCtr & 0x1FU;
+        if ((shiftLeftCtr & 0x1F) == 0)
         {
           for (int curFactor = 0; curFactor < nbrFactorsSameDegree; curFactor++)
           {
@@ -2263,13 +2263,14 @@ int FactorPolyOverIntegers(void)
           for (int curFactor = 0; curFactor < nbrFactorsSameDegree; curFactor++)
           {
             int limbIndex = curDegree / 32;
+            unsigned int shiftRightRem = 32U - shiftLeftRem;
             validDegrees[limbIndex + shiftLeftLimbs + 1] |=
-              (validDegrees[limbIndex] >> (32 - shiftLeftRem));
+              (validDegrees[limbIndex] >> shiftRightRem);
             for (; limbIndex > 0; limbIndex--)
             {
               validDegrees[limbIndex + shiftLeftLimbs] |=
                  ((validDegrees[limbIndex] << shiftLeftRem) |
-                  (validDegrees[limbIndex-1] >> (32-shiftLeftRem)));
+                  (validDegrees[limbIndex-1] >> shiftRightRem));
             }
             validDegrees[shiftLeftLimbs] |= (validDegrees[0] << shiftLeftRem);
             curDegree += shiftLeftCtr;
@@ -2287,14 +2288,14 @@ int FactorPolyOverIntegers(void)
       isIrreducible = true;
       if (curDegree < 32)
       {
-        if (validDegreesRecord[0] != 1U + (1U << curDegree))
+        if (validDegreesRecord[0] != (1U + (1U << (unsigned int)curDegree)))
         {
           isIrreducible = false;
         }
       }
       else
       {
-        if (validDegreesRecord[0] != 1U ||
+        if ((validDegreesRecord[0] != 1U) ||
           validDegreesRecord[curDegree >> 5] != (1U << (curDegree & 0x1F)))
         {
           isIrreducible = false;
@@ -2302,9 +2303,9 @@ int FactorPolyOverIntegers(void)
       }
       if (isIrreducible)
       {
-        for (int limbIndex = curDegree / 32 - 1; limbIndex > 0; limbIndex--)
+        for (int limbIndex = (curDegree / 32) - 1; limbIndex > 0; limbIndex--)
         {
-          if (validDegreesRecord[limbIndex] != 0)
+          if (validDegreesRecord[limbIndex] != 0U)
           {
             isIrreducible = false;
             break;
@@ -2427,7 +2428,7 @@ static bool checkEisenstein(const BigInteger *gcdAll,
   BigIntGcd(gcdAll, &operand4, &operand2);        // c <- operand2
   UncompressBigIntegerB(ptrLeading, &operand4);
   BigIntGcd(&operand2, &operand4, &operand3);
-  BigIntDivide(&operand2, &operand3, &operand4);  // b <- operand4
+  (void)BigIntDivide(&operand2, &operand3, &operand4);  // b <- operand4
   if (operand4.nbrLimbs > 1)
   {
     return false;    // Cannot process. Number too big.
@@ -2448,7 +2449,7 @@ static bool checkEisenstein(const BigInteger *gcdAll,
     }
   }
   prime = 3;
-  while (prime * prime <= B)
+  while ((prime * prime) <= B)
   {
     if ((B % prime) == 0)
     {
