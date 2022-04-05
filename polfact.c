@@ -509,7 +509,8 @@ int FactorModularPolynomial(bool inputMontgomery)
     }
     NumberLength = primeMod.nbrLimbs;
     BigInteger2IntArray(&valuesPrime[currentDegree*nbrLimbsPrime], &operand1);
-    ptrValue1 += 1 + numLimbs(ptrValue1);
+    ptrValue1 += numLimbs(ptrValue1);
+    ptrValue1++;
   }
   if (BigIntIsZero(&operand1))
   {

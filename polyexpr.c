@@ -214,7 +214,8 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
         ptrValue1++;
       }
       BigInteger2IntArray(ptrValue1, &operand1);
-      ptrValue1 += 1 + numLimbs(ptrValue1);
+      ptrValue1 += numLimbs(ptrValue1);
+      ptrValue1++;
       currentDegree++;
       for (; currentDegree < degreeMax; currentDegree++)
       {
@@ -265,16 +266,21 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
         AddBigNbrModN(operand1.limbs, operand2.limbs, operand1.limbs, powerMod.limbs, powerMod.nbrLimbs);
       }
       BigInteger2IntArray(ptrValue1, &operand1);
-      ptrPolyMin += 1 + numLimbs(ptrPolyMin);
-      ptrPolyMax += 1 + numLimbs(ptrPolyMax);
-      ptrValue1 += 1 + numLimbs(ptrValue1);
+      ptrPolyMin += numLimbs(ptrPolyMin);
+      ptrPolyMin++;
+      ptrPolyMax += numLimbs(ptrPolyMax);
+      ptrPolyMax++;
+      ptrValue1 += numLimbs(ptrValue1);
+      ptrValue1++;
     }
     for (; currentDegree <= degreeMax; currentDegree++)
     {
       int lenBytes = (1 + numLimbs(ptrPolyMax)) * (int)sizeof(int);
       (void)memcpy(ptrValue1, ptrPolyMax, lenBytes);
-      ptrPolyMax += 1 + numLimbs(ptrPolyMax);
-      ptrValue1 += 1 + numLimbs(ptrValue1);
+      ptrPolyMax += numLimbs(ptrPolyMax);
+      ptrPolyMax++;
+      ptrValue1 += numLimbs(ptrValue1);
+      ptrValue1++;
     }
     (void)memcpy(ptrArgument1, poly1, (ptrValue1 - &poly1[0]) * sizeof(int));
     degreePoly = degreeMax;   // New degree of polynomial.
@@ -329,7 +335,8 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
       ptrValue1 = ptrArgument1 + 1;
       for (currentDegree = 0; currentDegree < degreeMono; currentDegree++)
       {
-        ptrValue1 += 1 + numLimbs(ptrValue1);
+        ptrValue1 += numLimbs(ptrValue1);
+        ptrValue1++;
       }
       UncompressBigIntegerB(ptrValue1, &operand2);
       if (modulusIsZero)
@@ -371,7 +378,8 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
       // Store point to coefficient not zero of maximum degree.
       ptrValue2 = ptrValue1;
     }
-    ptrValue1 += 1 + numLimbs(ptrValue1);
+    ptrValue1 += numLimbs(ptrValue1);
+    ptrValue1++;
   }
   *ptrArgument1 = degreeMax;
   diffPtrs = ptrValue2 - &values[0];
@@ -522,7 +530,8 @@ static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgumen
     for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
     {
       UncompressBigIntegerB(ptrValueSrc, &operand2);
-      ptrValueSrc += 1 + numLimbs(ptrValueSrc);
+      ptrValueSrc += numLimbs(ptrValueSrc);
+      ptrValueSrc++;
       if (modulusIsZero)
       {
         (void)BigIntMultiply(&operand1, &operand2, &operand3);
@@ -533,7 +542,8 @@ static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgumen
         modmult(operand1.limbs, operand2.limbs, operand3.limbs);
       }
       BigInteger2IntArray(ptrValue2, &operand3);
-      ptrValue2 += 1 + numLimbs(ptrValue2);
+      ptrValue2 += numLimbs(ptrValue2);
+      ptrValue2++;
     }
   }
   else
@@ -561,7 +571,8 @@ static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgumen
     for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
     {
       UncompressBigIntegerB(ptrValue1, &operand2);
-      ptrValue1 += 1 + numLimbs(ptrValue1);
+      ptrValue1 += numLimbs(ptrValue1);
+      ptrValue1++;
       if (modulusIsZero)
       {
         (void)BigIntMultiply(&operand1, &operand2, &operand3);
@@ -572,7 +583,8 @@ static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgumen
         modmult(operand1.limbs, operand2.limbs, operand3.limbs);
       }
       BigInteger2IntArray(ptrValue2, &operand3);
-      ptrValue2 += 1 + numLimbs(ptrValue2);
+      ptrValue2 += numLimbs(ptrValue2);
+      ptrValue2++;
     }
   }
   *ptrArgument1 = degreeMono + degreePoly;
@@ -688,7 +700,8 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
     {
       int lenBytes = (1 + *ptrValue1) * (int)sizeof(int);
       (void)memcpy(ptrValue2, ptrValue1, lenBytes);
-      ptrValue1 += 1 + *ptrValue1;
+      ptrValue1 += *ptrValue1;
+      ptrValue1++;
       ptrValue2 += nbrLimbs;
     }
   }

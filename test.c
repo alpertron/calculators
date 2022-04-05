@@ -27,7 +27,7 @@
 #include "polynomial.h"
 #include "fromBlockly.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 9
+#define DEBUG_CODE 13
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -257,13 +257,21 @@ int main(int argc, char* argv[])
   hexadecimal = false;
   char text[40000];
   char* ptrText = text;
-  if ((argc == 3) && (argv[2][0] == '1'))
+  char* ptrCurveNbr = NULL;
+  if (argc == 3)
   {
-    hexadecimal = true;
+    if ((argv[2][0] == '1') || (argv[2][0] == '3'))
+    {
+      hexadecimal = true;
+    }
+    if ((argv[2][0] == '2') || (argv[2][0] == '3'))
+    {
+      ptrCurveNbr = "!";    // Use SIQS.
+    }
   }
   copyStr(&ptrText, argv[1]);
   copyStr(&ptrText, "\n");
-  ecmFrontText(text, true, NULL);
+  ecmFrontText(text, true, ptrCurveNbr);
   (void)printf("%s\n", output);
 #if 0
   if (argc == 3)

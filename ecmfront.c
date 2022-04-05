@@ -1423,7 +1423,7 @@ EXTERNALIZE void doWork(void)
   }
   if (!prettyprint)
   {
-    groupLen = -groupLen;  // Do not show number of digts.
+    groupLen = -groupLen;  // Do not show number of digits.
   }
   if (ptrKnownFactors != NULL)
   {

@@ -638,7 +638,8 @@ static void MultIntegerPolynomial(int deg1, int deg2,
       NumberLength = operand4.nbrLimbs;
     }
     BigInteger2IntArray(piDest, &operand4);
-    piDest += 1 + numLimbs(piDest);
+    piDest += numLimbs(piDest);
+    piDest++;
   }
   for (; currentDegree <= degree1; currentDegree++)
   {
@@ -652,7 +653,8 @@ static void MultIntegerPolynomial(int deg1, int deg2,
       NumberLength = operand4.nbrLimbs;
     }
     BigInteger2IntArray(piDest, &operand4);
-    piDest += 1 + numLimbs(piDest);
+    piDest += numLimbs(piDest);
+    piDest++;
   }
   for (; currentDegree <= (degree1 + degree2); currentDegree++)
   {
@@ -666,7 +668,8 @@ static void MultIntegerPolynomial(int deg1, int deg2,
       NumberLength = operand4.nbrLimbs;
     }
     BigInteger2IntArray(piDest, &operand4);
-    piDest += 1 + numLimbs(piDest);
+    piDest += numLimbs(piDest);
+    piDest++;
   }
 }
 

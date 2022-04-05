@@ -1808,6 +1808,21 @@ void factorExt(const BigInteger *toFactor, const int *number,
     SaveFactors(pstFactors);
 #endif
   }
+  else if (*ptrKnownFactors == '!')
+  {   // Force going to SIQS.
+    NextEC = 0;
+    int lenBytes = (1 + *number) * (int)sizeof(int);
+    (void)memcpy(factors, number, lenBytes);
+    pstFactors->multiplicity = 1;
+    pstFactors->ptrFactor = factors + 1 + *factors;
+    pstFactors->upperBound = 0;
+    pstCurFactor->multiplicity = 1;
+    pstCurFactor->ptrFactor = factors;
+    pstCurFactor->upperBound = 2;
+#ifdef __EMSCRIPTEN__
+    SaveFactors(pstFactors);
+#endif
+  }
   else
   {   // Insert factors saved on Web Storage.
     pstFactors->multiplicity = 0;
@@ -1815,19 +1830,19 @@ void factorExt(const BigInteger *toFactor, const int *number,
     while (*ptrKnownFactors != 0)
     {
       size_t diffPtrs;
-      ptrCharFound = findChar(ptrKnownFactors, '^');
-      if (ptrCharFound == NULL)
-      {
-        break;
-      }
-      *ptrCharFound = 0;
-      diffPtrs = ptrCharFound - ptrKnownFactors;
-      Dec2Bin(ptrKnownFactors, prime.limbs, (int)diffPtrs, &prime.nbrLimbs);
-      BigInteger2IntArray(pstFactors->ptrFactor, &prime);
-      ptrKnownFactors = ptrCharFound + 1;
-      if (getNextInteger(&ptrKnownFactors, &pstCurFactor->multiplicity, '('))
-      {     // Error on processing exponent.
-        break;
+        ptrCharFound = findChar(ptrKnownFactors, '^');
+        if (ptrCharFound == NULL)
+        {
+          break;
+        }
+        *ptrCharFound = 0;
+        diffPtrs = ptrCharFound - ptrKnownFactors;
+        Dec2Bin(ptrKnownFactors, prime.limbs, (int)diffPtrs, &prime.nbrLimbs);
+        BigInteger2IntArray(pstFactors->ptrFactor, &prime);
+        ptrKnownFactors = ptrCharFound + 1;
+        if (getNextInteger(&ptrKnownFactors, &pstCurFactor->multiplicity, '('))
+        {     // Error on processing exponent.
+          break;
       }
       ptrCharFound = findChar(ptrKnownFactors, ',');
       if (ptrCharFound != NULL)

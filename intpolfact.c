@@ -627,7 +627,8 @@ static void ComputeTraces(int nbrTraces, int nbrCol)
     (void)memcpy(operand4.limbs, ptrCoeff+1, *ptrCoeff *sizeof(int));
     (void)BigIntRemainder(&operand4, &powerMod, &operand3);
     setLinkedBigInteger(&ptrCoeffs[traceNbr], &operand3);
-    ptrCoeff += 1 + numLimbs(ptrCoeff);
+    ptrCoeff += numLimbs(ptrCoeff);
+    ptrCoeff++;
   }
   // Compute coefficients of P.
   intToBigInteger(&operand1, 1);
@@ -763,8 +764,10 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
               lenBytes = operand2.nbrLimbs * (int)sizeof(int);
               (void)memcpy(ptrCoeffDest + 1, operand2.limbs, lenBytes);
             }
-            ptrCoeffSrc += 1 + nbrLength;
-            ptrCoeffDest += 1 + NumberLength;
+            ptrCoeffSrc += nbrLength;
+            ptrCoeffSrc++;
+            ptrCoeffDest += NumberLength;
+            ptrCoeffDest++;
           }
           *ptrCoeffDest = 1;            // Store 1 as the leading coefficient.
           *(ptrCoeffDest + 1) = 1;
@@ -787,8 +790,10 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
             nbrLength = 1 + numLimbs(ptrCoeffSrc);
             lenBytes = nbrLength * (int)sizeof(int);
             (void)memcpy(ptrCoeffDest, ptrCoeffSrc, lenBytes);
-            ptrCoeffSrc += 1 + NumberLength;
-            ptrCoeffDest += 1 + NumberLength;
+            ptrCoeffSrc += NumberLength;
+            ptrCoeffSrc++;
+            ptrCoeffDest += NumberLength;
+            ptrCoeffDest++;
           }
           if (stepNbr == 2)
           {
@@ -815,8 +820,10 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         LenAndLimbs2ArrLimbs(ptrSrc, operand2.limbs, NumberLength);
         modmult(operand3.limbs, operand2.limbs, operand1.limbs);
         ArrLimbs2LenAndLimbs(ptrDest, operand1.limbs, NumberLength + 1);
-        ptrSrc += 1 + NumberLength;
-        ptrDest += 1 + numLimbs(ptrDest);
+        ptrSrc += NumberLength;
+        ptrSrc++;
+        ptrDest += numLimbs(ptrDest);
+        ptrDest++;
       }
       GenerateIntegerPolynomial(poly2, poly5, degreeProd);
       // Ensure that the absolute value of the coefficients 
@@ -849,7 +856,8 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
           *ptrMod32768 = (-*(ptrSrc + 1)) & 32767;
         }
         ptrMod32768++;
-        ptrSrc += 1 + numLimbs(ptrSrc);
+        ptrSrc += numLimbs(ptrSrc);
+        ptrSrc++;
       }
       modulusIsZero = true;   // Perform integer division.
       // Multiply all coefficients by leadingCoeff and store in polyS.
@@ -875,8 +883,10 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         (void)BigIntMultiply(&operand1, &leadingCoeff, &operand2);
         NumberLength = operand2.nbrLimbs;
         BigInteger2IntArray(ptrDest, &operand2);
-        ptrSrc += 1 + numLimbs(ptrSrc);
-        ptrDest += 1 + numLimbs(ptrDest);
+        ptrSrc += numLimbs(ptrSrc);
+        ptrSrc++;
+        ptrDest += numLimbs(ptrDest);
+        ptrDest++;
       }
       if (stepNbr == 1)
       {   // Test whether the product divides the original polynomial.
@@ -900,7 +910,8 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         for (currentDegree = 0; currentDegree <= polyS[0]; currentDegree++)
         {
           UncompressBigIntegerB(ptrDest, &tmp1);
-          ptrDest += 1 + numLimbs(ptrDest);
+          ptrDest += numLimbs(ptrDest);
+          ptrDest++;
           if ((currentDegree & 1) != 0)
           {
             BigIntAdd(&operand2, &tmp1, &operand2);
@@ -916,7 +927,8 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
         for (currentDegree = 0; currentDegree <= poly5[0]; currentDegree++)
         {
           UncompressBigIntegerB(ptrDest, &tmp1);
-          ptrDest += 1 + numLimbs(ptrDest);
+          ptrDest += numLimbs(ptrDest);
+          ptrDest++;
           if ((currentDegree & 1) != 0)
           {
             BigIntAdd(&operand4, &tmp1, &operand4);
@@ -1008,8 +1020,10 @@ static bool AttemptToFactor(int nbrVectors, int nbrFactors, int *pNbrFactors)
           (void)BigIntDivide(&operand2, &operand4, &operand3);
           NumberLength = operand3.nbrLimbs;
           BigInteger2IntArray(ptrDest, &operand3);
-          ptrSrc += 1 + numLimbs(ptrSrc);
-          ptrDest += 1 + numLimbs(ptrDest);
+          ptrSrc += numLimbs(ptrSrc);
+          ptrSrc++;
+          ptrDest += numLimbs(ptrDest);
+          ptrDest++;
         }
         // Copy this principal part to poly5.
         (void)CopyPolynomial(&poly5[1], &poly2[1], poly5[0]);
@@ -1056,7 +1070,8 @@ static void ComputeCoeffBounds(void)
     (void)BigIntMultiply(&operand1, &operand1, &operand1);
     for (degree1 = 1; degree1 <= degreePolyToFactor; degree1++)
     {
-      ptrSrc += 1 + numLimbs(ptrSrc);
+      ptrSrc += numLimbs(ptrSrc);
+      ptrSrc++;
       UncompressBigIntegerB(ptrSrc, &operand3);   // The last loop sets operand3 to the leading coefficient.
       (void)BigIntMultiply(&operand3, &operand3, &operand2);
       BigIntAdd(&operand1, &operand2, &operand1);
@@ -1172,7 +1187,8 @@ static void vanHoeij(int prime, int numFactors)
   ptrSrc = &polyNonRepeatedFactors[1];
   for (int degree1 = 0; degree1 < degreePolyToFactor; degree1++)
   {
-    ptrSrc += 1 + numLimbs(ptrSrc);
+    ptrSrc += numLimbs(ptrSrc);
+    ptrSrc++;
   }
   computePower(exponentMod);
   modulusIsZero = false;    // Use modular arithmetic for polynomials.
@@ -1831,7 +1847,8 @@ static void GenerateIntegerPolynomial(const int* polyMod, int* polyInt, int degr
   {
     NumberLength = powerMod.nbrLimbs;
     IntArray2BigInteger(ptrSrc, &operand1);
-    ptrSrc += 1 + *ptrSrc;
+    ptrSrc += *ptrSrc;
+    ptrSrc++;
     // If operand1 >= halfPowerMod, subtract powerMod.
     BigIntSubt(&operand1, &halfPowerMod, &operand2);
     if (operand2.sign == SIGN_POSITIVE)
@@ -1839,7 +1856,8 @@ static void GenerateIntegerPolynomial(const int* polyMod, int* polyInt, int degr
       BigIntSubt(&operand1, &powerMod, &operand1);
     }
     BigInteger2IntArray(ptrDest, &operand1);
-    ptrDest += 1 + numLimbs(ptrDest);
+    ptrDest += numLimbs(ptrDest);
+    ptrDest++;
   }
 }
 
@@ -1944,7 +1962,8 @@ int getNextPrimeNoDuplicatedFactors(int primeIndex)
   ptrSrc = &polyNonRepeatedFactors[1];
   for (int currentDegree = 0; currentDegree < polyDegree; currentDegree++)
   {
-    ptrSrc += 1 + numLimbs(ptrSrc);
+    ptrSrc += numLimbs(ptrSrc);
+    ptrSrc++;
   }
   modulusIsZero = true;
   UncompressBigIntegerB(ptrSrc, &leadingCoeff);
@@ -2124,7 +2143,8 @@ int FactorPolyOverIntegers(void)
     {
       if (BigIntIsZero(&operand1))
       {
-        ptrSrc += 1 + numLimbs(ptrSrc);
+        ptrSrc += numLimbs(ptrSrc);
+        ptrSrc++;
         continue;
       }
       // x^currentDegree divides the original polynomial.
@@ -2142,8 +2162,10 @@ int FactorPolyOverIntegers(void)
     (void)BigIntDivide(&operand1, &contentPolyToFactor, &operand2);
     NumberLength = operand2.nbrLimbs;
     BigInteger2IntArray(ptrDest, &operand2);
-    ptrSrc += 1 + numLimbs(ptrSrc);
-    ptrDest += 1 + numLimbs(ptrDest);
+    ptrSrc += numLimbs(ptrSrc);
+    ptrSrc++;
+    ptrDest += numLimbs(ptrDest);
+    ptrDest++;
   }
   if (polyToFactor[0] == 0)
   { // Degree of polynomial is zero.
@@ -2194,7 +2216,8 @@ int FactorPolyOverIntegers(void)
     // Get leading coefficient.
     for (int degree1 = 0; degree1 < polyNonRepeatedFactors[0]; degree1++)
     {
-      ptrSrc += 1 + numLimbs(ptrSrc);
+      ptrSrc += numLimbs(ptrSrc);
+      ptrSrc++;
     }
     UncompressBigIntegerB(ptrSrc, &operand2);
     (void)BigIntMultiply(&operand1, &operand2, &trailingCoeff);

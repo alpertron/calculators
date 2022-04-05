@@ -173,7 +173,8 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
     (void)BigIntDivide(&operand1, &operand2, &operand3);
     NumberLength = operand3.nbrLimbs;
     BigInteger2IntArray(ptrQuotient, &operand3);
-    ptrQuotient += 1 + NumberLength;
+    ptrQuotient += NumberLength;
+    ptrQuotient++;
     // Calculate remainder.
     if (degreeDivisor == 0)
     {     // Strip leading coefficient of dividend.
@@ -202,13 +203,15 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
         BigIntSubt(&operand1, &operand2, &operand2);
         NumberLength = operand2.nbrLimbs;
         BigInteger2IntArray(ptrRemainder, &operand2);
-        ptrRemainder += 1 + NumberLength;
+        ptrRemainder += NumberLength;
+        ptrRemainder++;
       }
       // Copy least significant coefficients of dividend into remainder.
       for (degree = degreeDividend - degreeDivisor; degree > 0; degree--)
       {
         int lenBytes;
-        ptrDividend += 1 + numLimbs(ptrDividend);
+        ptrDividend += numLimbs(ptrDividend);
+        ptrDividend++;
         int numLength = 1 + numLimbs(ptrDividend);
         lenBytes = numLength * (int)sizeof(int);
         (void)memcpy(ptrRemainder, ptrDividend, lenBytes);
