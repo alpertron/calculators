@@ -1109,6 +1109,7 @@ void ComputeInversePower2(const limb *value, limb *result, limb *tmp)
 // Compute R1 = MontgomeryR1 and N = MontgomeryN using the formulas:
 // R1 = R mod M
 // N = -M^(-1) mod R
+// This routine is only valid for odd or power of 2 moduli.
 
 void GetMontgomeryParms(int len)
 {
@@ -2087,6 +2088,7 @@ void endBigModmult(const limb *prodNotAdjusted, limb *product)
   }
 }
 
+// This routine is only valid for odd or power of 2 moduli.
 void modmult(const limb* factor1, const limb* factor2, limb* product)
 {
   unsigned int carry;
