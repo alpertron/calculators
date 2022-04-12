@@ -141,9 +141,17 @@ static void findQuadraticSolution(BigInteger* pSolution, int exponent)
     {        // Const is odd.
       ptrSolution->x |= bitMask;
   // Const <- Quadr/2 + floor(Linear/2) + floor(Const/2) + 1
+      if (Const.sign == SIGN_NEGATIVE)
+      {
+        addbigint(&Const, -1);
+      }
       BigIntDivideBy2(&Const);          // floor(Const/2)
       addbigint(&Const, 1);             // floor(Const/2) + 1
       CopyBigInt(&tmp1, &Linear);
+      if (tmp1.sign == SIGN_NEGATIVE)
+      {
+        addbigint(&tmp1, -1);
+      }
       BigIntDivideBy2(&tmp1);           // floor(Linear/2)
       BigIntAdd(&Const, &tmp1, &Const);
       CopyBigInt(&tmp1, &Quadr);
@@ -249,9 +257,9 @@ static void PerformChineseRemainderTheorem(void)
 {
   int T1;
   int expon;
-  const struct sFactors* pstFactor;
   do
   {
+    const struct sFactors* pstFactor;
     multint(&Aux[0], &Increment[0], Exponents[0] / 2);
     if ((Exponents[0] & 1) != 0)
     {
@@ -403,11 +411,11 @@ static void SolveModularLinearEquation(void)
     ComputeInversePower2(ValB.limbs, ptrSolution1->limbs, ValA.limbs);
     // ptrSolution1 <- |ValC| / |ValB|
     modmult(ptrSolution1->limbs, ValC.limbs, ptrSolution1->limbs);
-    NumberLengthBytes = NumberLength * sizeof(int);
+    NumberLengthBytes = NumberLength * (int)sizeof(int);
     // ptrSolution1 <- -ValC / ValB
     if (ValB.sign == ValC.sign)
     {
-      memset(&ValA.limbs, 0, NumberLengthBytes);
+      (void)memset(&ValA.limbs, 0, NumberLengthBytes);
       SubtractBigNbr(ValA.limbs, ptrSolution1->limbs, ptrSolution1->limbs, NumberLength);
     }
     // Discard bits outside number in most significant limb.
@@ -415,8 +423,6 @@ static void SolveModularLinearEquation(void)
     ptrSolution1->nbrLimbs = NumberLength;
     ptrSolution1->sign = SIGN_POSITIVE;
     CopyBigInt(ptrSolution2, ptrSolution1);
-    ptrSolution1++;
-    ptrSolution2++;
     solutionNbr++;
   }
   astFactorsMod[0].multiplicity = solutionNbr;
@@ -462,8 +468,9 @@ static void ComputeSquareRootModPowerOf2(int expon, int bitsCZero)
 }
 
 // Solve Ax^2 + Bx + C = 0 (mod 2^expon).
-static bool SolveQuadraticEqModPowerOf2(int expon, int factorIndex)
+static bool SolveQuadraticEqModPowerOf2(int exponent, int factorIndex)
 {
+  int expon = exponent;
   int bitsAZero;
   int bitsBZero;
   int bitsCZero;
@@ -985,7 +992,6 @@ static bool QuadraticTermNotMultipleOfP(int expon, int factorIndex)
 // Solve Ax^2 + Bx + C = 0 (mod N).
 static void SolveEquation(void)
 {
-  int expon;
   const struct sFactors *pstFactor;
 
   if (BigIntIsZero(&ValN))
@@ -1056,9 +1062,9 @@ static void SolveEquation(void)
   pstFactor = &astFactorsMod[1];
   for (int factorIndex = 0; factorIndex<nbrFactors; factorIndex++)
   {
+    int expon = pstFactor->multiplicity;
     NumberLength = *pstFactor->ptrFactor;
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);
-    expon = pstFactor->multiplicity;
     (void)BigIntPowerIntExp(&prime, expon, &V);
     (void)BigIntRemainder(&ValA, &prime, &L);
     if (BigIntIsZero(&L) && !((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2)))
