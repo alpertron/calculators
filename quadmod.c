@@ -60,6 +60,7 @@ static int nbrFactors;
 char *ptrOutput;
 static bool sol1Invalid;
 static bool sol2Invalid;
+extern int factorsMod[20000];
 
 static int Show(const BigInteger *num, const char *str, int t)
 {
@@ -243,34 +244,6 @@ static void SolveIntegerEquation(void)
   SolNbr = 1;
 }
 
-static void SolveModularLinearEquation(void)
-{
-  int NumberLengthBytes;
-  BigIntGcd(&ValB, &ValN, &Aux[0]);
-  if ((Aux[0].nbrLimbs != 1) || (Aux[0].limbs[0].x != 1))
-  {         // ValB and ValN are not coprime. Go out.
-    return;
-  }
-  // Calculate z <- -ValC / ValB (mod ValN)
-  NumberLength = ValN.nbrLimbs;
-  NumberLengthBytes = NumberLength * (int)sizeof(limb);
-  (void)memcpy(TestNbr, ValN.limbs, NumberLengthBytes);
-  TestNbr[NumberLength].x = 0;
-  GetMontgomeryParms(NumberLength);
-  BigIntModularDivision(&ValC, &ValB, &ValN, &z);
-  if (!BigIntIsZero(&z))
-  {
-    BigIntSubt(&ValN, &z, &z);
-  }
-  (void)BigIntMultiply(&ValNn, &GcdAll, &Aux[0]);
-  do
-  {
-    Solution(&z);
-    BigIntAdd(&z, &ValN, &z);
-    BigIntSubt(&z, &Aux[0], &Aux[1]);
-  } while (Aux[1].sign == SIGN_NEGATIVE);
-}
-
 // Use Chinese remainder theorem to obtain the solutions.
 static void PerformChineseRemainderTheorem(void)
 {
@@ -331,19 +304,16 @@ static void PerformChineseRemainderTheorem(void)
       (void)BigIntMultiply(&K1, &Mult, &Mult);
     }   /* end for */
     intToBigInteger(&V, 0);
-    for (;;)
-    {
-      // if V >= GcdAll, exit loop.
-      BigIntSubt(&V, &GcdAll, &K1);
-      if (K1.sign == SIGN_POSITIVE)
-      {
-        break;
-      }
+    BigIntSubt(&V, &GcdAll, &K1);
+    // Perform loop while V < GcdAll.
+    while (K1.sign == SIGN_NEGATIVE)
+    {      
       // The solution is V*ValNn + currentSolution
       (void)BigIntMultiply(&V, &ValNn, &K1);
       BigIntAdd(&K1, &currentSolution, &K1);
       Solution(&K1);
       addbigint(&V, 1);  // V <- V + 1
+      BigIntSubt(&V, &GcdAll, &K1);
     }
     for (T1 = nbrFactors - 1; T1 >= 0; T1--)
     {
@@ -368,6 +338,89 @@ static void PerformChineseRemainderTheorem(void)
       Exponents[T1] = 0;
     }   /* end for */
   } while (T1 >= 0);
+}
+
+// Solve Bx + C = 0 (mod N).
+static void SolveModularLinearEquation(void)
+{
+  int NumberLengthBytes;
+  int powerOf2;
+  int solutionNbr = 0;
+  int* ptrFactorsMod = factorsMod;
+  struct sFactors* pstFactor = &astFactorsMod[1];
+  BigInteger* ptrSolution1 = Solution1;
+  BigInteger* ptrSolution2 = Solution2;
+  BigIntGcd(&ValB, &ValN, &Aux[0]);
+  if ((Aux[0].nbrLimbs != 1) || (Aux[0].limbs[0].x != 1))
+  {         // ValB and ValN are not coprime. Go out.
+    return;
+  }
+  // Calculate z <- -ValC / ValB (mod ValN)
+  // Modular division routines used work for power of 2 or odd numbers.
+  // This requires to compute the quotient in two steps.
+  // N = r*2^k (r = odd)
+  DivideBigNbrByMaxPowerOf2(&powerOf2, ValN.limbs, &ValN.nbrLimbs);
+  NumberLength = ValN.nbrLimbs;
+  NumberLengthBytes = NumberLength * (int)sizeof(limb);
+  if ((ValN.nbrLimbs != 1) || (ValN.limbs[0].x != 1))
+  {       // ValN is not 1.
+    CopyBigInt(&Increment[solutionNbr], &ValN);
+    Exponents[solutionNbr] = 1;
+    (void)memcpy(TestNbr, ValN.limbs, NumberLengthBytes);
+    TestNbr[NumberLength].x = 0;
+    // Perform division using odd modulus r.
+    GetMontgomeryParms(NumberLength);
+    // ptrSolution1 <- ValC / |ValB|
+    BigIntModularDivision(&ValC, &ValB, &ValN, ptrSolution1);
+    // ptrSolution1 <- -ValC / ValB
+    if (!BigIntIsZero(ptrSolution1))
+    {
+      BigIntSubt(&ValN, ptrSolution1, ptrSolution1);
+    }
+    CopyBigInt(ptrSolution2, ptrSolution1);
+    BigInteger2IntArray(ptrFactorsMod, &ValN);
+    pstFactor->ptrFactor = ptrFactorsMod;
+    pstFactor->multiplicity = 1;
+    pstFactor++;
+    ptrFactorsMod += *ptrFactorsMod;
+    ptrFactorsMod++;
+    ptrSolution1++;
+    ptrSolution2++;
+    solutionNbr++;
+  }
+  // Perform division using power of 2.
+  if (powerOf2 > 0)
+  {
+    BigIntPowerOf2(ptrSolution1, powerOf2);
+    CopyBigInt(&Increment[solutionNbr], ptrSolution1);
+    Exponents[solutionNbr] = 1;
+    BigInteger2IntArray(ptrFactorsMod, ptrSolution1);
+    pstFactor->ptrFactor = ptrFactorsMod;
+    pstFactor->multiplicity = 1;
+    GetMontgomeryParmsPowerOf2(powerOf2);
+    // Use ValA (which is zero for linear equations) as a temporary area.
+    // ptrSolution1 <- 1 / |ValB|
+    ComputeInversePower2(ValB.limbs, ptrSolution1->limbs, ValA.limbs);
+    // ptrSolution1 <- |ValC| / |ValB|
+    modmult(ptrSolution1->limbs, ValC.limbs, ptrSolution1->limbs);
+    NumberLengthBytes = NumberLength * sizeof(int);
+    // ptrSolution1 <- -ValC / ValB
+    if (ValB.sign == ValC.sign)
+    {
+      memset(&ValA.limbs, 0, NumberLengthBytes);
+      SubtractBigNbr(ValA.limbs, ptrSolution1->limbs, ptrSolution1->limbs, NumberLength);
+    }
+    // Discard bits outside number in most significant limb.
+    ptrSolution1->limbs[NumberLength - 1].x &= (1 << (powerOf2 % BITS_PER_GROUP)) - 1;
+    ptrSolution1->nbrLimbs = NumberLength;
+    ptrSolution1->sign = SIGN_POSITIVE;
+    CopyBigInt(ptrSolution2, ptrSolution1);
+    ptrSolution1++;
+    ptrSolution2++;
+    solutionNbr++;
+  }
+  astFactorsMod[0].multiplicity = solutionNbr;
+  PerformChineseRemainderTheorem();
 }
 
 // To compute the square root, compute the inverse of sqrt,

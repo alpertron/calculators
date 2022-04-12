@@ -54,7 +54,6 @@ static int DegreeAurif;
 static int NextEC;
 static BigInteger power;
 static BigInteger prime;
-int *factorArr[FACTOR_ARRSIZE];
 static bool foundByLehman;
 static int EC;
 static BigInteger Temp1;
@@ -1830,19 +1829,19 @@ void factorExt(const BigInteger *toFactor, const int *number,
     while (*ptrKnownFactors != 0)
     {
       size_t diffPtrs;
-        ptrCharFound = findChar(ptrKnownFactors, '^');
-        if (ptrCharFound == NULL)
-        {
-          break;
-        }
-        *ptrCharFound = 0;
-        diffPtrs = ptrCharFound - ptrKnownFactors;
-        Dec2Bin(ptrKnownFactors, prime.limbs, (int)diffPtrs, &prime.nbrLimbs);
-        BigInteger2IntArray(pstFactors->ptrFactor, &prime);
-        ptrKnownFactors = ptrCharFound + 1;
-        if (getNextInteger(&ptrKnownFactors, &pstCurFactor->multiplicity, '('))
-        {     // Error on processing exponent.
-          break;
+      ptrCharFound = findChar(ptrKnownFactors, '^');
+      if (ptrCharFound == NULL)
+      {
+        break;
+      }
+      *ptrCharFound = 0;
+      diffPtrs = ptrCharFound - ptrKnownFactors;
+      Dec2Bin(ptrKnownFactors, prime.limbs, (int)diffPtrs, &prime.nbrLimbs);
+      BigInteger2IntArray(pstFactors->ptrFactor, &prime);
+      ptrKnownFactors = ptrCharFound + 1;
+      if (getNextInteger(&ptrKnownFactors, &pstCurFactor->multiplicity, '('))
+      {     // Error on processing exponent.
+        break;
       }
       ptrCharFound = findChar(ptrKnownFactors, ',');
       if (ptrCharFound != NULL)

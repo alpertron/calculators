@@ -100,6 +100,7 @@ void long2dec(char **pOutput, uint64_t nbr);
 void int2dec(char **pOutput, int nbr);
 void int2hex(char **pOutput, int nbr);
 void GetMontgomeryParms(int len);
+void GetMontgomeryParmsPowerOf2(int powerOf2);
 void AddBigNbrModN(const limb *Nbr1, const limb *Nbr2, limb *Sum, const limb *TestNbr, int NumberLength);
 void SubtBigNbrModN(const limb *Nbr1, const limb *Nbr2, limb *Sum, const limb *TestNbr, int NumberLength);
 #define SubtBigNbrMod(Nbr1, Nbr2, Sum) SubtBigNbrModN(Nbr1, Nbr2, Sum, TestNbr, NumberLength) 

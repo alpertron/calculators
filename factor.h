@@ -19,7 +19,6 @@
 #ifndef _FACTOR_H
 #define _FACTOR_H
 #define MAX_FACTORS 5000
-#define FACTOR_ARRSIZE (2*MAX_FACTORS)
 #include "showtime.h"
 #ifdef __EMSCRIPTEN__
 void getCunn(const char *url, char *factorsFromServer);
@@ -77,7 +76,6 @@ extern bool prettyprint;
 extern bool cunningham;
 extern bool hexadecimal;
 extern struct sFactors stFactors[MAX_FACTORS];
-extern int *factorArr[FACTOR_ARRSIZE];
 void factor(const BigInteger *toFactor, const int *number, int *factors, struct sFactors *pstFactors);
 void factorExt(const BigInteger* toFactor, const int* number,
   int* factors, struct sFactors* pstFactors, char* pcKnownFactors);

@@ -1105,6 +1105,17 @@ void ComputeInversePower2(const limb *value, limb *result, limb *tmp)
   multiply(result, tmp, result, NumberLength, NULL);   // tmp <- x * (2 - N * x)
 }
 
+void GetMontgomeryParmsPowerOf2(int powerOf2)
+{
+  NumberLength = (powerOf2 + BITS_PER_GROUP - 1) / BITS_PER_GROUP;
+  int NumberLengthBytes = NumberLength * (int)sizeof(limb);
+  powerOf2Exponent = powerOf2;
+  (void)memset(MontgomeryMultR1, 0, NumberLengthBytes);
+  (void)memset(MontgomeryMultR2, 0, NumberLengthBytes);
+  MontgomeryMultR1[0].x = 1;
+  MontgomeryMultR2[0].x = 1;
+}
+
 // Let R be a power of 2 of at least len limbs.
 // Compute R1 = MontgomeryR1 and N = MontgomeryN using the formulas:
 // R1 = R mod M
