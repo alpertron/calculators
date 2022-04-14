@@ -507,7 +507,8 @@ static bool SolveQuadraticEqModPowerOf2(int exponent, int factorIndex)
   }
   if ((bitsAZero == 0) && (bitsBZero > 0))
   {           // The solution in this case requires square root.
-    // compute s = ((b/2)^2 - a*c)/a^2; r = p_2(s), q = o_2(s).
+    // compute s = ((b/2)^2 - a*c)/a^2, q = odd part of s,
+    // r = maximum exponent of power of 2 that divides s.
     CopyBigInt(&tmp1, &ValB);
     BigIntDivideBy2(&tmp1);
     (void)BigIntMultiply(&tmp1, &tmp1, &tmp1);  // (b/2)^2
@@ -531,25 +532,30 @@ static bool SolveQuadraticEqModPowerOf2(int exponent, int factorIndex)
     (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
     BigIntAnd(&ValCOdd, &K1, &ValCOdd);      // ((b/2) - a*c)/a mod 2^n
     (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
-    BigIntAnd(&ValCOdd, &K1, &ValCOdd);      // ((b/2) - a*c)/a^2 mod 2^n
+    BigIntAnd(&ValCOdd, &K1, &ValCOdd);      // s = ((b/2) - a*c)/a^2 mod 2^n
     if (BigIntIsZero(&ValCOdd))
-    {
+    {         // s = 0, so its square root is also zero.
       intToBigInteger(&sqrRoot, 0);
       expon -= expon / 2;
     }
     else
     {
       DivideBigNbrByMaxPowerOf2(&bitsCZero, ValCOdd.limbs, &ValCOdd.nbrLimbs);
+      // At this moment, bitsCZero = r and ValCOdd = q.
       if (((ValCOdd.limbs[0].x & 7) != 1) || (bitsCZero & 1))
       {
-        return false;                        // q != 1 or p2(r) == 0, so go out.
+        return false;          // q != 1 or p2(r) == 0, so go out.
       }
-      if (expon > 1)
+      if (expon == 0)
+      {                        // Modulus is 2.
+        intToBigInteger(&sqrRoot, (bitsCZero > 0) ? 0 : 1);
+      }
+      else
       {
-        expon -= (bitsCZero / 2) + 1;
+        // Find square root of ValCOdd.
+        ComputeSquareRootModPowerOf2(expon - (bitsCZero / 2) - 1, bitsCZero);
+        expon--;
       }
-      // Find square root of ValCOdd.
-      ComputeSquareRootModPowerOf2(expon, bitsCZero);
     }
     // x = sqrRoot - b/2a.
     BigIntPowerOf2(&K1, expon);

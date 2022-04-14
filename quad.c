@@ -982,39 +982,44 @@ void SolveQuadModEquation(void)
               NoSolsModPrime(origExpon);
               return;                             // q != 1 or p2(r) == 0, so go out.
             }
-            if (expon > 1)
+            if (expon == 0)
+            {                        // Modulus is 2.
+              intToBigInteger(&bigSquareRoot, (bitsCZero > 0) ? 0 : 1);
+            }
+            else
             {
               expon -= (bitsCZero / 2) + 1;
-            }
-            // Find square root of ValCOdd.
-            // First approximation to inverse of square root.
-            bigSquareRoot.limbs[0].x = (((ValCOdd.limbs[0].x & 15) == 1) ? 1 : 3);
-            correctBits = 2;
-            nbrLimbs = 1;
-            while (correctBits < expon)
-            {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
-              correctBits *= 2;
-              nbrLimbs = (correctBits / BITS_PER_GROUP) + 1;
-              MultBigNbr(bigSquareRoot.limbs, bigSquareRoot.limbs, tmp2.limbs, nbrLimbs);
-              MultBigNbr(tmp2.limbs, ValCOdd.limbs, tmp2.limbs, nbrLimbs);
-              ChSignBigNbr(tmp2.limbs, nbrLimbs);
-              lenBytes = nbrLimbs * (int)sizeof(limb);
-              (void)memset(tmp1.limbs, 0, lenBytes);
-              tmp1.limbs[0].x = 3;
-              AddBigNbr(tmp1.limbs, tmp2.limbs, tmp2.limbs, nbrLimbs);
-              MultBigNbr(tmp2.limbs, bigSquareRoot.limbs, tmp1.limbs, nbrLimbs);
+              // Find square root of ValCOdd.
+              // First approximation to inverse of square root.
+              bigSquareRoot.limbs[0].x = (((ValCOdd.limbs[0].x & 15) == 1) ? 1 : 3);
+              correctBits = 2;
+              nbrLimbs = 1;
+              while (correctBits < expon)
+              {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
+                correctBits *= 2;
+                nbrLimbs = (correctBits / BITS_PER_GROUP) + 1;
+                MultBigNbr(bigSquareRoot.limbs, bigSquareRoot.limbs, tmp2.limbs, nbrLimbs);
+                MultBigNbr(tmp2.limbs, ValCOdd.limbs, tmp2.limbs, nbrLimbs);
+                ChSignBigNbr(tmp2.limbs, nbrLimbs);
+                lenBytes = nbrLimbs * (int)sizeof(limb);
+                (void)memset(tmp1.limbs, 0, lenBytes);
+                tmp1.limbs[0].x = 3;
+                AddBigNbr(tmp1.limbs, tmp2.limbs, tmp2.limbs, nbrLimbs);
+                MultBigNbr(tmp2.limbs, bigSquareRoot.limbs, tmp1.limbs, nbrLimbs);
+                lenBytes = nbrLimbs * (int)sizeof(limb);
+                (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, lenBytes);
+                DivBigNbrByInt(tmp1.limbs, 2, bigSquareRoot.limbs, nbrLimbs);
+              }
+              // Get square root of ValCOdd from its inverse by multiplying by ValCOdd.
+              MultBigNbr(ValCOdd.limbs, bigSquareRoot.limbs, tmp1.limbs, nbrLimbs);
               lenBytes = nbrLimbs * (int)sizeof(limb);
               (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, lenBytes);
-              DivBigNbrByInt(tmp1.limbs, 2, bigSquareRoot.limbs, nbrLimbs);
-            }
-            // Get square root of ValCOdd from its inverse by multiplying by ValCOdd.
-            MultBigNbr(ValCOdd.limbs, bigSquareRoot.limbs, tmp1.limbs, nbrLimbs);
-            lenBytes = nbrLimbs * (int)sizeof(limb);
-            (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, lenBytes);
-            setNbrLimbs(&bigSquareRoot);
-            for (ctr = 0; ctr < (bitsCZero / 2); ctr++)
-            {
-              BigIntMultiplyBy2(&bigSquareRoot);
+              setNbrLimbs(&bigSquareRoot);
+              for (ctr = 0; ctr < (bitsCZero / 2); ctr++)
+              {
+                BigIntMultiplyBy2(&bigSquareRoot);
+              }
+              expon += bitsCZero / 2;
             }
           }
           // x = sqrRoot - b/2a.
