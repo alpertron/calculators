@@ -352,22 +352,27 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
   }
 }
 
-static int getNumber(BigInteger *pNumber, const char *title, char **pptrInput)
+static void getNumber(BigInteger *pNumber, const char *title, char** pptrInput)
 {
   enum eExprErr rc;
   rc = ComputeExpression(*pptrInput, pNumber, false);
   if (rc != EXPR_OK)
   {
+    if (ptrOutput == output)
+    {
+      *ptrOutput = '2';
+      ptrOutput++;
+    }
+    showText("<p>");
     showText(title);
     *ptrOutput = ':';
     ptrOutput++;
     *ptrOutput = ' ';
     ptrOutput++;
     textError(&ptrOutput, rc);
-    return 1;
+    showText("</p>");
   }
   *pptrInput += strlen(*pptrInput) + 1U;  // Skip terminator.
-  return 0;
 }
 
 // input contains three expressions separated by 00h (null character).
@@ -375,16 +380,11 @@ void contfracText(char *input, int GroupLen)
 {
   char *ptrInput = input;
   ptrOutput = output;
-  if (getNumber(&num, lang? "Numerador": "Numerator", &ptrInput) != 0)
-  {
-    return;
-  }
-  if (getNumber(&delta, lang?"Argumento de la raíz cuadrada": "Square root argument", &ptrInput) != 0)
-  {
-    return;
-  }
-  if (getNumber(&den, lang?"Denominador": "Denominator", &ptrInput) != 0)
-  {
+  getNumber(&num, lang? "Numerador": "Numerator", &ptrInput);
+  getNumber(&delta, lang? "Argumento de la raíz cuadrada": "Square root argument", &ptrInput);
+  getNumber(&den, lang? "Denominador": "Denominator", &ptrInput);
+  if (ptrOutput != output)
+  {       // Error written to output. Do not compute continued fraction.
     return;
   }
   groupLen = GroupLen;

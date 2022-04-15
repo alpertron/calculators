@@ -73,6 +73,7 @@ function styleButtons(style1, style2)
   get("eval").style.display = style1;
   get("factor").style.display = style1;
   get("config").style.display = style1;
+  get("functions").style.display = style1;
   get("stop").style.display = style2;
   get("more").style.display = style2;
 }
