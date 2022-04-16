@@ -546,7 +546,7 @@ static bool SolveQuadraticEqModPowerOf2(int exponent, int factorIndex)
       {
         return false;          // q != 1 or p2(r) == 0, so go out.
       }
-      if (expon == 0)
+      if (expon < 2)
       {                        // Modulus is 2.
         intToBigInteger(&sqrRoot, (bitsCZero > 0) ? 0 : 1);
       }
