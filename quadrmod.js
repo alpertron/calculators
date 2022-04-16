@@ -318,200 +318,227 @@ function fillCache()
   });
 }
 
-
-  function generateFuncButtons(optionCategory, funcButtons)
+function completeFuncButtons(funcButtons, inputId)
+{
+  var button;
+  var catIndex;
+  var funcname = (parens + funcnames[0]).split(",");
+  var funcbtns = get(funcButtons);
+  for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
-    var button;
-    var catIndex;
-    var funcbtns = get(funcButtons);
-    var catnbr = get(optionCategory).selectedIndex;
-    var funcname = (parens + funcnames[catnbr]).split(",");
-    // Append all buttons to document fragment instead of funcbtns
-    // and finally append the fragment to funcbtns to minimize redraws.
-    var fragment = document.createDocumentFragment();
-    for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
+    button = funcbtns.children[catIndex];
+    button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
+    button.onclick = function()
     {
-      button = document.createElement("button");
-      button.setAttribute("type", "button");        // Indicate this is a button, not submit.
-      button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
-      button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
-      button.classList.add("funcbtn");
-      button.onclick = function()
-      {
-        var input = currentInputBox;
-        input.focus();
-        var start = input.selectionStart;
-        input.value = input.value.substring(0, start) +
-                      this.innerText +
-                      input.value.substring(input.selectionEnd, input.value.length);
-          // Place the caret at the end of the appended text.
-        input.selectionStart = start + this.innerText.length;
-        input.selectionEnd = input.selectionStart;
-      };
-      fragment.appendChild(button);
-    }
-    funcbtns.innerHTML = "";
-    funcbtns.appendChild(fragment);
+      var input = get(inputId);
+      input.focus();
+      var start = input.selectionStart;
+      input.value = input.value.substring(0, start) +
+                    this.innerText +
+                    input.value.substring(input.selectionEnd, input.value.length);
+        // Place the caret at the end of the appended text.
+      input.selectionStart = start + this.innerText.length;
+      input.selectionEnd = input.selectionStart;
+    };
+  } 
+}
+
+
+
+function generateFuncButtons(optionCategory, funcButtons)
+{
+  var button;
+  var catIndex;
+  var funcbtns = get(funcButtons);
+  var catnbr = get(optionCategory).selectedIndex;
+  var funcname = (parens + funcnames[catnbr]).split(",");
+  // Append all buttons to document fragment instead of funcbtns
+  // and finally append the fragment to funcbtns to minimize redraws.
+  var fragment = document.createDocumentFragment();
+  for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
+  {
+    button = document.createElement("button");
+    button.setAttribute("type", "button");        // Indicate this is a button, not submit.
+    button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
+    button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
+    button.classList.add("funcbtn");
+    button.onclick = function()
+    {
+      var input = currentInputBox;
+      input.focus();
+      var start = input.selectionStart;
+      input.value = input.value.substring(0, start) +
+                    this.innerText +
+                    input.value.substring(input.selectionEnd, input.value.length);
+        // Place the caret at the end of the appended text.
+      input.selectionStart = start + this.innerText.length;
+      input.selectionEnd = input.selectionStart;
+    };
+    fragment.appendChild(button);
   }
+  funcbtns.innerHTML = "";
+  funcbtns.appendChild(fragment);
+}
 
-  window.onload = function()
+window.onload = function()
+{
+  var param;
+  get("stop").disabled = true;
+  get("solve").onclick = function()
   {
-    var param;
+    dowork(0);
+  };
+  get("stop").onclick = function()
+  {
+    worker.terminate();
+    worker = 0;
+    get("solve").disabled = false;
     get("stop").disabled = true;
-    get("solve").onclick = function()
-    {
-      dowork(0);
-    };
-    get("stop").onclick = function()
-    {
-      worker.terminate();
-      worker = 0;
-      get("solve").disabled = false;
-      get("stop").disabled = true;
-      get("result").innerHTML = 
-        (lang? "<p>Cálculo detenido por el usuario.</p>" :
-                   "<p>Calculation stopped by user</p>");
-    };
-    get("helpbtn").onclick = function()
-    {
-      get("help").style.display = "block";
-      get("result").style.display = "none";
-    };
-    get("quad").onfocus = function()
-    {
-      currentInputBox = get("quad");
-    };
-    get("lin").onfocus = function()
-    {
-      currentInputBox = get("lin");
-    };
-    get("const").onfocus = function()
-    {
-      currentInputBox = get("const");
-    };
-    get("mod").onfocus = function()
-    {
-      currentInputBox = get("mod");
-    };
-    get("funccat").onchange = function()
-    {
-      generateFuncButtons("funccat", "funcbtns");
-    };
-    get("formlink").onclick = function()
-    {
-      get("main").style.display = "none";
-      get("feedback").style.display = "block";
-      get("formfeedback").reset();
-      get("name").focus();
-      return false;   // Do not follow the link.
-    };
-    get("formcancel").onclick = function()
-    {
-      endFeedback();
-    };
-    get("formsend").onclick = function()
-    {
-      var userdata = get("userdata");
-      if (get("adduserdata").checked)
-      {
-        userdata.value = "ax^2 + bx + c = 0 (mod n)" + 
-                         "\na = " + get("quad").value + "\nb = " + get("lin").value +
-                         "\nc = " + get("const").value + "\nn = " + get("mod").value;
-      }
-      else
-      {
-        userdata.value = "";      
-      }
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function (event)
-      {
-        if (xhr.readyState === 4) 
-        {             // XHR finished.
-          if (xhr.status === 200)
-          {           // PHP page loaded.
-            alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
-          }
-          else
-          {           // PHP page not loaded.
-            alert(lang?"No se pudieron enviar los comentarios.": "Feedback could not be sent.");
-          }
-          endFeedback();
-        }
-      };
-      xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
-      xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-      var elements = get("formfeedback").elements;
-      var contents = "";
-      var useAmp = 0;
-      for (var i = 0; i < elements.length; i++)
-      {
-        var element = elements[i >> 0];
-        if (element.type === "radio" && !element.checked)
-        {
-          continue;
-        }
-        if (element.name)
-        {
-          if (useAmp)
-          {
-            contents += "&";
-          }
-          contents += element.name + "=" + encodeURIComponent(element.value);
-          useAmp++;
-        }
-      }
-      xhr.send(contents);
-      return false;   // Send form only through JavaScript.
-    };
+    get("result").innerHTML = 
+      (lang? "<p>Cálculo detenido por el usuario.</p>" :
+                 "<p>Calculation stopped by user</p>");
+  };
+  get("helpbtn").onclick = function()
+  {
+    get("help").style.display = "block";
+    get("result").style.display = "none";
+  };
+  get("quad").onfocus = function()
+  {
     currentInputBox = get("quad");
+  };
+  get("lin").onfocus = function()
+  {
+    currentInputBox = get("lin");
+  };
+  get("const").onfocus = function()
+  {
+    currentInputBox = get("const");
+  };
+  get("mod").onfocus = function()
+  {
+    currentInputBox = get("mod");
+  };
+  get("funccat").onchange = function()
+  {
     generateFuncButtons("funccat", "funcbtns");
-    if ("serviceWorker" in navigator)
-    { // Attempt to register service worker.
-      // There is no need to do anything on registration success or failure in this JavaScript module.
-      navigator["serviceWorker"].register("calcSW.js").then(function() {}, function() {});
-      fillCache();
+  };
+  get("formlink").onclick = function()
+  {
+    get("main").style.display = "none";
+    get("feedback").style.display = "block";
+    get("formfeedback").reset();
+    get("name").focus();
+    return false;   // Do not follow the link.
+  };
+  get("formcancel").onclick = function()
+  {
+    endFeedback();
+  };
+  get("formsend").onclick = function()
+  {
+    var userdata = get("userdata");
+    if (get("adduserdata").checked)
+    {
+      userdata.value = "ax^2 + bx + c = 0 (mod n)" + 
+                       "\na = " + get("quad").value + "\nb = " + get("lin").value +
+                       "\nc = " + get("const").value + "\nn = " + get("mod").value;
+    }
+    else
+    {
+      userdata.value = "";      
+    }
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function (event)
+    {
+      if (xhr.readyState === 4) 
+      {             // XHR finished.
+        if (xhr.status === 200)
+        {           // PHP page loaded.
+          alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
+        }
+        else
+        {           // PHP page not loaded.
+          alert(lang?"No se pudieron enviar los comentarios.": "Feedback could not be sent.");
+        }
+        endFeedback();
+      }
+    };
+    xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    var elements = get("formfeedback").elements;
+    var contents = "";
+    var useAmp = 0;
+    for (var i = 0; i < elements.length; i++)
+    {
+      var element = elements[i >> 0];
+      if (element.type === "radio" && !element.checked)
+      {
+        continue;
+      }
+      if (element.name)
+      {
+        if (useAmp)
+        {
+          contents += "&";
+        }
+        contents += element.name + "=" + encodeURIComponent(element.value);
+        useAmp++;
+      }
+    }
+    xhr.send(contents);
+    return false;   // Send form only through JavaScript.
+  };
+  currentInputBox = get("quad");
+  if ("serviceWorker" in navigator)
+  { // Attempt to register service worker.
+    // There is no need to do anything on registration success or failure in this JavaScript module.
+    navigator["serviceWorker"].register("calcSW.js").then(function() {}, function() {});
+    fillCache();
+  }
+};
+completeFuncButtons("funcbtns", "quad");
+
+if (asmjs)
+{
+  var req = new XMLHttpRequest();
+  req.open("GET", "quadmodW0000.js", true);
+  req.responseType = "arraybuffer";
+  req.onreadystatechange = function (aEvt)
+  {
+    if (req.readyState === 4 && req.status === 200)
+    {
+      fileContents = /** @type {ArrayBuffer} */ (req.response);
+      if (workerParam)
+      {
+        callWorker(workerParam);
+      }
     }
   };
-  if (asmjs)
+  req.send(null);
+}
+else
+{
+  var wasm = document.getElementById("wasmb64").text;
+  while (wasm.charCodeAt(0) < 32)
   {
-    var req = new XMLHttpRequest();
-    req.open("GET", "quadmodW0000.js", true);
-    req.responseType = "arraybuffer";
-    req.onreadystatechange = function (aEvt)
-    {
-      if (req.readyState === 4 && req.status === 200)
-      {
-        fileContents = /** @type {ArrayBuffer} */ (req.response);
-        if (workerParam)
-        {
-          callWorker(workerParam);
-        }
-      }
-    };
-    req.send(null);
-  }
-  else
+    wasm = wasm.substring(1);
+  }    
+  while (wasm.charCodeAt(wasm.length-1) < 32)
   {
-    var wasm = document.getElementById("wasmb64").text;
-    while (wasm.charCodeAt(0) < 32)
-    {
-      wasm = wasm.substring(1);
-    }    
-    while (wasm.charCodeAt(wasm.length-1) < 32)
-    {
-      wasm = wasm.substring(0, wasm.length-1);
-    }    
-    var length = wasm.length*3/4;
-    if (wasm.charCodeAt(wasm.length-1) === 61)
-    {
-      length--;
-    }
-    if (wasm.charCodeAt(wasm.length-2) === 61)
-    {
-     length--;
-    }
-    fileContents=new Int8Array(length);
-    b64decode(wasm, fileContents); 
+    wasm = wasm.substring(0, wasm.length-1);
+  }    
+  var length = wasm.length*3/4;
+  if (wasm.charCodeAt(wasm.length-1) === 61)
+  {
+    length--;
   }
+  if (wasm.charCodeAt(wasm.length-2) === 61)
+  {
+   length--;
+  }
+  fileContents=new Int8Array(length);
+  b64decode(wasm, fileContents); 
+}
 })(this);
 
