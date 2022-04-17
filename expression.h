@@ -136,7 +136,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
   bool varsExpected);
 int ConvertToReversePolishNotation(const char* input, char** pptrOut,
   const struct sFuncOperExpr* funcOperExpr, enum eParseExpr eParseExpr,
-  bool* pUsingVariables);
+  bool* pUsingVariables, bool *pUsingRandom);
 void partition(int val, BigInteger *pResult);
 enum eExprErr factorial(BigInteger *result, int argument, int multifact);
 enum eExprErr primorial(BigInteger *result, int argument);

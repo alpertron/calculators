@@ -160,7 +160,7 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
   char* ptrRPNbuffer;
   enum eExprErr retcode;
   retcode = ConvertToReversePolishNotation(expr, &ptrRPNbuffer, stFuncOperGaussianExpr,
-    PARSE_EXPR_GAUSSIAN, NULL);
+    PARSE_EXPR_GAUSSIAN, NULL, NULL);
   if (retcode != EXPR_OK)
   {
     return retcode;

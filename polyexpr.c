@@ -799,7 +799,7 @@ int ComputePolynomial(const char* input, int expo)
   // Use operand1 as temporary variable to store the exponent.
   computePower(expo);
   rc = ConvertToReversePolishNotation(input, &ptrRPNbuffer, stFuncOperPolyExpr,
-    PARSE_EXPR_POLYNOMIAL, &usingVariables);
+    PARSE_EXPR_POLYNOMIAL, &usingVariables, NULL);
   if (rc != EXPR_OK)
   {
     return rc;

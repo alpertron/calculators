@@ -171,6 +171,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
   bool varsExpected)
 {
   bool valueXused;
+  bool randomUsed;
   enum eExprErr retcode;
   char* pointerRPNbuffer;
   const char* ptrRPNbuffer;
@@ -187,14 +188,24 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
   {
 #endif
     retcode = ConvertToReversePolishNotation(expr, &pointerRPNbuffer, stFuncOperIntExpr,
-      PARSE_EXPR_INTEGER, &valueXused);
+      PARSE_EXPR_INTEGER, &valueXused, &randomUsed);
     if (retcode != EXPR_OK)
     {
       return retcode;
     }
-    if (!varsExpected && valueXused)
+    if (varsExpected)
+    {      // Variable or random function expected.
+      if (randomUsed)
+      {
+        valueXused = true;
+      }
+    }
+    else
     {
-      return EXPR_VAR_IN_EXPRESSION;
+      if (valueXused)
+      {    // Variable present is an error here.
+        return EXPR_VAR_IN_EXPRESSION;
+      }
     }
     ptrRPNbuffer = pointerRPNbuffer;
 #ifdef USING_BLOCKLY

@@ -538,7 +538,7 @@ static enum eExprErr parsePrevTokenIsNumber(const char** ppInput, char** ppOutpu
 // be power = p^k.
 int ConvertToReversePolishNotation(const char* input, char** pptrOut,
   const struct sFuncOperExpr* funcOperExpr, enum eParseExpr eParseExpr,
-  bool *pUsingVariables)
+  bool *pUsingVariables, bool *pUsingRandom)
 {
   const struct sFuncOperExpr* leftFuncExpr;
   const struct sFuncOperExpr* rightFuncExpr;
@@ -602,9 +602,9 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
         stackOper[stackOperIndex] = pstFuncOperExpr->token;  // Push token onto stack.
         if ((pstFuncOperExpr->token & 0xFF) == TOKEN_RANDOM)
         {
-          if (pUsingVariables != NULL)
+          if (pUsingRandom != NULL)
           {
-            *pUsingVariables = true;
+            *pUsingRandom = true;
           }
         }
         stackArgumNbrPriority[stackOperIndex] = 0;    // Indicate no arguments found yet.
