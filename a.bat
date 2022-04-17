@@ -168,4 +168,13 @@ java -jar %compilerName% --compilation_level WHITESPACE_ONLY --js dist.js --js_o
 
 call w.bat
 perl csp.pl
+perl csp2.pl
+echo ***** gzip *****
+for %%a in (*.HTM) do gzip -9 -c %%a > %%a.gz
+echo **** brotli ****
+for %%a in (*.HTM) do brotli -f -Z %%a
+del /q toweb\*.*
+copy *.HTM toweb
+copy *%1* toweb
+copy .htaccess toweb
 :end

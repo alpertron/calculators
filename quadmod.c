@@ -553,8 +553,13 @@ static bool SolveQuadraticEqModPowerOf2(int exponent, int factorIndex)
       else
       {
         // Find square root of ValCOdd.
-        ComputeSquareRootModPowerOf2(expon - (bitsCZero / 2) - 1, bitsCZero);
+        expon -= bitsCZero / 2;
+        ComputeSquareRootModPowerOf2(expon, bitsCZero);
         expon--;
+        if (expon == (bitsCZero / 2))
+        {
+          expon++;
+        }
       }
     }
     // x = sqrRoot - b/2a.

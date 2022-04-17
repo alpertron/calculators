@@ -236,6 +236,7 @@ echo -e "\n\n**** QUAD ****" >> coverage.out
 ./quad 2 -33 7 0 0 -12 1 >> coverage.out
 ./quad 1 0 0 0 -6 3 0 >> coverage.out
 ./quad 1 0 0 0 -6 3 1 >> coverage.out
+
 lcov --capture --directory . --output-file quad.info
 make clean
 make contfrac
@@ -282,6 +283,8 @@ echo -e "\n\n**** QUADMOD ****" >> coverage.out
 ./quadmod 1 0 1 2 >> coverage.out
 ./quadmod 1 1 0 2 >> coverage.out
 ./quadmod 1 1 1 2 >> coverage.out
+./quadmod 1 0 112 128 >> coverage.out
+./quadmod 1 0 112 243 >> coverage.out
 ./quadmod T Q R M >> coverage.out
 lcov --capture --directory . --output-file quadmod.info
 make clean

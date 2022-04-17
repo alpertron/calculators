@@ -988,7 +988,7 @@ void SolveQuadModEquation(void)
             }
             else
             {
-              expon -= (bitsCZero / 2) + 1;
+              expon -= bitsCZero / 2;
               // Find square root of ValCOdd.
               // First approximation to inverse of square root.
               bigSquareRoot.limbs[0].x = (((ValCOdd.limbs[0].x & 15) == 1) ? 1 : 3);
@@ -1019,7 +1019,11 @@ void SolveQuadModEquation(void)
               {
                 BigIntMultiplyBy2(&bigSquareRoot);
               }
-              expon += bitsCZero / 2;
+              expon--;
+              if (expon == (bitsCZero / 2))
+              {
+                expon++;
+              }
             }
           }
           // x = sqrRoot - b/2a.
