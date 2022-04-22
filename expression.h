@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 17 de abril de 2022."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 17 April 2022."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 21 de abril de 2022."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 21 April 2022."
 
 #include <stdbool.h>
 #ifdef __EMSCRIPTEN__
@@ -40,6 +40,7 @@ void databack(const char *data);
 #define THREE_PARMS                  (3 * 0x100)
 #define FOUR_PARMS                   (4 * 0x100)
 #define MANY_PARMS                   (8 * 0x100)
+#define NO_PARMS                     (9 * 0x100)
 #define TOKEN_NUMBER                  1
 #define TOKEN_START_EXPON             2
 #define TOKEN_END_EXPON               3
@@ -71,6 +72,7 @@ void databack(const char *data);
 #define TOKEN_RANDOM                 29
 #define TOKEN_ABS                    30
 #define TOKEN_SGN                    31
+#define TOKEN_ANS                    32
 
 
 enum eExprErr

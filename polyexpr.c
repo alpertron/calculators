@@ -37,11 +37,13 @@ extern int polyA[1000000];
 extern int polyB[1000000];
 extern int polyC[1000000];
 extern int polyD[1000000];
+static int LastAnswerPoly[1000000];
 extern bool onlyEvaluate;
 
 struct sFuncOperExpr stFuncOperPolyExpr[] =
 {
   // First section: functions
+  {"ANS", TOKEN_ANS + NO_PARMS, 0},
   {"GCD", TOKEN_GCD + MANY_PARMS, 0},
   {"LCM", TOKEN_LCM + MANY_PARMS, 0},
   {"DER", TOKEN_DER + ONE_PARM, 0},
@@ -794,17 +796,18 @@ int ComputePolynomial(const char* input, int expo)
   int expon;
   int nbrEqualSigns = 0;
   bool usingVariables;
+  bool randomUsed;
   degree = 1;
   exponentMod = expo;
   // Use operand1 as temporary variable to store the exponent.
   computePower(expo);
   rc = ConvertToReversePolishNotation(input, &ptrRPNbuffer, stFuncOperPolyExpr,
-    PARSE_EXPR_POLYNOMIAL, &usingVariables, NULL);
+    PARSE_EXPR_POLYNOMIAL, &usingVariables, &randomUsed);
   if (rc != EXPR_OK)
   {
     return rc;
   }
-  if (!usingVariables)
+  if (!usingVariables && !randomUsed)
   {   // Input string has no variables.
 #ifdef __EMSCRIPTEN__
     databack(onlyEvaluate ? "N" : "M");  // Use integer factorization calculator.
@@ -866,6 +869,24 @@ int ComputePolynomial(const char* input, int expo)
         {
           return rc;
         }
+      }
+      break;
+    case TOKEN_ANS:
+      stackValues[stackIndex] = &values[valuesIndex];
+      ptrValue1 = stackValues[stackIndex];
+      stackIndex++;
+      *ptrValue1 = LastAnswerPoly[0];   // Copy degree.
+      if (LastAnswerPoly[1] == 0)
+      {
+        *(ptrValue1 + 1) = 1;
+        *(ptrValue1 + 2) = 0;
+        valuesIndex += 3;   // This polynomial requires 3 limbs.
+      }
+      else
+      {
+        ptrValue2 = CopyPolynomial(ptrValue1+1, &LastAnswerPoly[1],
+                                   LastAnswerPoly[0]);
+        valuesIndex = (int)(ptrValue2 - &values[0]);
       }
       break;
     case TOKEN_GCD:
@@ -1090,6 +1111,8 @@ int ComputePolynomial(const char* input, int expo)
     }
     BigInteger2IntArray(ptrValue1, &operand1);
   }
+  LastAnswerPoly[0] = values[0];   // Copy degree.
+  (void)CopyPolynomial(&LastAnswerPoly[1], &values[1], values[0]);
   return EXPR_OK;
 }
 

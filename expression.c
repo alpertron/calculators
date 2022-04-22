@@ -40,6 +40,7 @@ extern bool doShowPrime;
 
 #define DO_NOT_SHORT_CIRCUIT  (COMPR_STACK_SIZE + 100)  // Larger than stack size.
 
+BigInteger LastAnswer;
 const struct sFuncOperExpr stFuncOperIntExpr[] =
 {
   // First section: functions
@@ -52,6 +53,7 @@ const struct sFuncOperExpr stFuncOperIntExpr[] =
   {"NUMFACT", TOKEN_NUMFACT + ONE_PARM, 0},
   {"CONCATFACT", TOKEN_CONCATFACT + TWO_PARMS, 0},
 #endif
+  {"ANS", TOKEN_ANS + NO_PARMS, 0},
   {"GCD", TOKEN_GCD + MANY_PARMS, 0},
   {"LCM", TOKEN_LCM + MANY_PARMS, 0},
   {"MODPOW", TOKEN_MODPOW + THREE_PARMS, 0},
@@ -267,6 +269,22 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
       {     // Part of second operand of binary AND/OR not short-circuited.
         intToBigInteger(&curStack, counterC);
       }
+      break;
+
+    case TOKEN_ANS:
+      stackIndex++;
+      if (stackIndexThreshold >= stackIndex)
+      {     // Part of second operand of binary AND/OR not short-circuited.
+        if (LastAnswer.nbrLimbs == 0)
+        {
+          intToBigInteger(&curStack, 0);
+        }
+        else
+        {
+          CopyBigInt(&curStack, &LastAnswer);
+        }
+      }
+
       break;
 
     case TOKEN_GCD:
@@ -1071,6 +1089,11 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
     {
       return EXPR_VAR_OR_COUNTER_REQUIRED;
     }
+    CopyBigInt(&LastAnswer, ExpressionResult);
+  }
+  else
+  {
+    getCurrentStackValue(&LastAnswer);
   }
   return EXPR_OK;
 }

@@ -348,6 +348,14 @@ static enum eExprErr processClosingParenOrComma(char** ppOutput, char c,
         return EXPR_TOO_MANY_ARGUMENTS;
       }
     }
+    else if (((unsigned short)stackOper[stackOperIndex - 1] >> 8) ==
+      (unsigned short)NO_PARMS)
+    {       // Function with no parameters.
+      if ((unsigned short)stackArgumNbrPriority[stackOperIndex - 1] == 1U)
+      {
+        return EXPR_TOO_MANY_ARGUMENTS;
+      }
+    }
     else
     {       // Function with fixed number of parameters.
       if ((unsigned short)stackArgumNbrPriority[stackOperIndex - 1] ==
@@ -598,17 +606,28 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
     {              // Function name was found.
       if (prevTokenIsNumber == false)
       {
+        int token = pstFuncOperExpr->token;
         pInput = inputTemp;
-        stackOper[stackOperIndex] = pstFuncOperExpr->token;  // Push token onto stack.
-        if ((pstFuncOperExpr->token & 0xFF) == TOKEN_RANDOM)
+        if (((token & 0xFF) == TOKEN_RANDOM) ||
+             ((token & 0xFF) == TOKEN_ANS))
         {
           if (pUsingRandom != NULL)
           {
             *pUsingRandom = true;
           }
         }
-        stackArgumNbrPriority[stackOperIndex] = 0;    // Indicate no arguments found yet.
-        stackOperIndex++;
+        if (((unsigned short)token & 0xFF00) == (unsigned short)NO_PARMS)
+        {
+          *ptrOutput = (char)token;
+          ptrOutput++;
+          prevTokenIsNumber = true;
+        }
+        else
+        {
+          stackOper[stackOperIndex] = (unsigned short)token;   // Push token onto stack.
+          stackArgumNbrPriority[stackOperIndex] = 0;    // Indicate no arguments found yet.
+          stackOperIndex++;
+        }
         continue;
       }
       // No operand between number and function. Force multiplication.

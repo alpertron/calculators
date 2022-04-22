@@ -44,6 +44,7 @@
 struct sFuncOperExpr stFuncOperGaussianExpr[] =
 {
   // First section: functions
+  {"ANS", TOKEN_ANS + NO_PARMS, 0},
   {"GCD", TOKEN_GCD + MANY_PARMS, 0},
   {"LCM", TOKEN_LCM + MANY_PARMS, 0},
   {"MODPOW", TOKEN_MODPOW + THREE_PARMS, 0},
@@ -116,6 +117,9 @@ static BigInteger curStack2ImBak;
 static BigInteger curTmp;
 static BigInteger norm;
 static BigInteger Result[2];
+static BigInteger LastAnswerRe;
+static BigInteger LastAnswerIm;
+
 
 static int numLimbs(const int* pLen)
 {
@@ -209,6 +213,26 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       comprStackValues[currentOffset] = 1;      // Imaginary part is one.
       comprStackValues[currentOffset + 1] = 1;
       comprStackOffset[(2 * stackIndex) + 2] = currentOffset + 2;
+      break;
+
+    case TOKEN_ANS:    // Get last answer.
+      if (LastAnswerRe.nbrLimbs == 0)
+      {
+        intToBigInteger(&curStackRe, 0);
+      }
+      else
+      {
+        CopyBigInt(&curStackRe, &LastAnswerRe);
+      }
+      if (LastAnswerIm.nbrLimbs == 0)
+      {
+        intToBigInteger(&curStackIm, 0);
+      }
+      else
+      {
+        CopyBigInt(&curStackIm, &LastAnswerIm);
+      }
+      stackIndex++;
       break;
 
     case TOKEN_RE:
@@ -490,6 +514,8 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
   {
     return EXPR_NUMBER_TOO_HIGH;
   }
+  CopyBigInt(&LastAnswerRe, ExpressionResult);
+  CopyBigInt(&LastAnswerIm, ExpressionResult + 1);
   return EXPR_OK;
 }
 
