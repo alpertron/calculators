@@ -236,6 +236,7 @@ echo -e "\n\n**** QUAD ****" >> coverage.out
 ./quad 2 -33 7 0 0 -12 1 >> coverage.out
 ./quad 1 0 0 0 -6 3 0 >> coverage.out
 ./quad 1 0 0 0 -6 3 1 >> coverage.out
+./quad A B C D E F 1 >> coverage.out
 
 lcov --capture --directory . --output-file quad.info
 make clean

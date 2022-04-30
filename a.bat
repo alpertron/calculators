@@ -23,7 +23,7 @@ set dilogOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOT
 cmd /c emcc %jsCommon% %dilogFiles% %dilogOptions% -o dilogW%1.js
 if errorlevel 1 goto end
 
-set quadmodFiles=expression.c parseexpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quadmod.c bignbr.c showtime.c inputstr.c fft.c
+set quadmodFiles=expression.c parseexpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quadmod.c quadmodLL.c bignbr.c showtime.c inputstr.c fft.c
 set quadmodOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
 cmd /c emcc %jsCommon% %quadmodFiles% %quadmodOptions% -o quadmodW%1.js
 if errorlevel 1 goto end
@@ -38,7 +38,7 @@ set ecmOptions=-DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY
 cmd /c emcc %jsCommon% %ecmFiles% %ecmOptions% -o ecmW%1.js
 if errorlevel 1 goto end
 
-set quadFiles=batch.c fft.c expression.c parseexpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quad.c output.c bignbr.c showtime.c inputstr.c
+set quadFiles=batch.c fft.c expression.c parseexpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quad.c quadmodLL.c output.c bignbr.c showtime.c inputstr.c
 set quadOptions=-DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=268435456
 cmd /c emcc %jsCommon% %quadFiles% %quadOptions% -o quadW%1.js
 if errorlevel 1 goto end

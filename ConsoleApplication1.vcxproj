@@ -182,6 +182,7 @@
     <ClCompile Include="multpoly.c" />
     <ClCompile Include="parseexpr.c" />
     <ClCompile Include="polyexpr.c" />
+    <ClCompile Include="quadmodLL.c" />
     <ClCompile Include="quintics.c" />
     <ClCompile Include="contfrac.c" />
     <ClCompile Include="dilog.c" />
@@ -222,6 +223,7 @@
     <ClInclude Include="linkedbignbr.h" />
     <ClInclude Include="output.h" />
     <ClInclude Include="polynomial.h" />
+    <ClInclude Include="quadmodLL.h" />
     <ClInclude Include="quintics.h" />
     <ClInclude Include="rootseq.h" />
     <ClInclude Include="showtime.h" />

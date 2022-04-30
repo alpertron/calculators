@@ -23,6 +23,7 @@
 #include "expression.h"
 #include "factor.h"
 #include "commonstruc.h"
+#include "quadmodLL.h"
 
 enum eLinearSolution
 {
@@ -51,11 +52,6 @@ static enum eCallbackQuadModType callbackQuadModType;
 static int counters[400];
 static char isDescending[400];
 static int originalMultiplicities[400];
-static int Exponents[400];
-static BigInteger Q;
-static BigInteger K1;
-static BigInteger tmp1;
-static BigInteger tmp2;
 static BigInteger Aux[400];
 static BigInteger ValA;
 static BigInteger ValB;
@@ -106,9 +102,6 @@ static char *ptrOutput;
 static char *divgcd;
 static const char *varT = "t";
 static const char *squareText = "&sup2;";
-static BigInteger Quadr;
-static BigInteger Linear;
-static BigInteger Const;
 static BigInteger discr;
 static BigInteger U1;
 static BigInteger U2;
@@ -124,7 +117,6 @@ static BigInteger coeffLinear;
 static BigInteger coeffIndep;
 static BigInteger modulus;
 static BigInteger currentFactor;
-static BigInteger prime;
 static BigInteger Xplus;
 static BigInteger Xminus;
 static BigInteger Yplus;
@@ -149,8 +141,9 @@ static const char *varX;
 static const char *varY;
 static const char *varXnoTrans;
 static const char *varYnoTrans;
-static BigInteger K;
-static BigInteger L;
+static bool firstSolutionX;
+extern BigInteger LastModulus;
+extern BigInteger prime;
 #define NBR_COEFF 6
 struct stValidateCoeff
 {
@@ -597,6 +590,11 @@ static void SolutionX(BigInteger *value)
   SolNbr++;
   if (teach)
   {
+    if (firstSolutionX)
+    {
+      showText("<ol>");
+      firstSolutionX = false;
+    }
     showText("<li><var>T</var> = ");
     BigInteger2Dec(&ptrOutput, value, groupLen);
     showText("</li>");
@@ -635,87 +633,70 @@ static void NoSolsModPrime(int expon)
   }
 }
 
-static void setNbrLimbs(BigInteger* pBigNbr)
+static void ShowSolutionsModPrime(int factorIndex, int expon, const BigInteger *pIncrement)
 {
-  pBigNbr->nbrLimbs = NumberLength;
-  pBigNbr->sign = SIGN_POSITIVE;
-  while (pBigNbr->nbrLimbs > 1)
+  bool last;
+  static BigInteger primePower;
+  if (!teach)
   {
-    if (pBigNbr->limbs[pBigNbr->nbrLimbs - 1].x != 0)
-    {
-      break;
-    }
-    pBigNbr->nbrLimbs--;
+    return;
   }
-}
-
-// Find quadratic solution of Quadr*x^2 + Linear*x + Const = 0 (mod 2^expon)
-// when Quadr is even and Linear is odd. In this case there is unique solution.
-static void findQuadraticSolution(BigInteger* pSolution, int expon)
-{
-  int bytesLen;
-  int exponent = expon;
-  int bitMask = 1;
-  limb* ptrSolution = pSolution->limbs;
-  BigIntPowerOf2(&Q, exponent);
-  bytesLen = Q.nbrLimbs * (int)sizeof(limb);
-  (void)memset(pSolution->limbs, 0, bytesLen);
-  while (exponent > 0)
+  (void)BigIntPowerIntExp(&prime, expon, &primePower);       // Get value of prime power.
+  intToBigInteger(&ValH, 0);
+  showText(lang ? "<p>Soluciones módulo " : "<p>Solutions modulo ");
+  shownbr(&prime);
+  if (expon != 1)
   {
-    exponent--;
-    BigIntPowerOf2(&K1, exponent);
-    addbigint(&K1, -1);
-    if ((Const.limbs[0].x & 1) != 0)
-    {        // Const is odd.
-      ptrSolution->x |= bitMask;
-      // Const <- Quadr/2 + floor(Linear/2) + floor(Const/2) + 1
-      BigIntDivideBy2(&Const);          // floor(Const/2)
-      addbigint(&Const, 1);             // floor(Const/2) + 1
-      CopyBigInt(&tmp1, &Linear);
-      BigIntDivideBy2(&tmp1);           // floor(Linear/2)
-      BigIntAdd(&Const, &tmp1, &Const);
-      CopyBigInt(&tmp1, &Quadr);
-      BigIntDivideBy2(&tmp1);           // Quadr/2
-      BigIntAdd(&Const, &tmp1, &Const);
-
-      // Linear <- 2*Quadr + Linear  and Quadr <- 2*Quadr.
-      BigIntMultiplyBy2(&Quadr);          // Quadr*2
-      BigIntAdd(&Linear, &Quadr, &Linear);
-      BigIntAnd(&Linear, &K1, &Linear);   // Reduce mod 2^expon
-    }
-    else
-    {        // Const is even.
-      BigIntDivideBy2(&Const);          // Const/2
-      BigIntMultiplyBy2(&Quadr);        // Quadr*2
-    }
-    BigIntAnd(&Const, &K1, &Const);     // Reduce mod 2^expon
-    BigIntAnd(&Quadr, &K1, &Quadr);     // Reduce mod 2^expon
-    bitMask *= 2;
-    if (bitMask < 0)
-    {
-      bitMask = 1;
-      ptrSolution++;
-    }
+    showText("<sup>");
+    int2dec(&ptrOutput, expon);
+    showText("</sup>");
   }
-  NumberLength = Q.nbrLimbs;
-  setNbrLimbs(pSolution);
+  showText(": ");
+  do
+  {
+    bool oneSolution = BigIntEqual(&common.quad.Solution1[factorIndex],
+      &common.quad.Solution2[factorIndex]);
+    BigIntAdd(&ValH, pIncrement, &ValI);   // Next value.
+    last = BigIntEqual(&primePower, &ValI);
+    if (!BigIntIsZero(&ValH))
+    {
+      if (last && oneSolution)
+      {
+        showText(lang ? " y " : " and ");
+      }
+      else
+      {
+        showText(", ");
+      }
+    }
+    BigIntAdd(&ValH, &common.quad.Solution1[factorIndex], &ValJ);
+    shownbr(&ValJ);
+    if (!oneSolution)
+    {
+      if (last)
+      {
+        showText(lang ? " y " : " and ");
+      }
+      else
+      {
+        showText(", ");
+      }
+      BigIntAdd(&ValH, &common.quad.Solution2[factorIndex], &ValJ);
+      shownbr(&ValJ);
+    }
+    CopyBigInt(&ValH, &ValI);
+  } while (!last);
+  showText("</p>");
 }
 
 // Solve congruence an^2 + bn + c = 0 (mod n) where n is different from zero.
 void SolveQuadModEquation(void)
 {
-  int expon;
-  int T1;
   static BigInteger GcdAll;
   static BigInteger ValNn;
   static BigInteger z;
-  static BigInteger Mult;
-  static BigInteger currentSolution;
-  static BigInteger SqrtDisc;
-  static BigInteger discriminant;
-  static BigInteger V;
-  const struct sFactors *pstFactor;
 
+  firstSolutionX = true;
   modulus.sign = SIGN_POSITIVE;
   (void)BigIntRemainder(&coeffQuadr, &modulus, &coeffQuadr);
   if (coeffQuadr.sign == SIGN_NEGATIVE)
@@ -759,16 +740,12 @@ void SolveQuadModEquation(void)
     }
     else
     {
-      if (teach)
-      {
-        showText("<ol>");
-      }
       for (int ctr = 0; ctr < GcdAll.limbs[0].x; ctr++)
       {
         intToBigInteger(&Tmp[0], ctr);
         SolutionX(&Tmp[0]);
       }
-      if (teach)
+      if (teach && !firstSolutionX)
       {
         showText("</ol>");
       }
@@ -796,17 +773,13 @@ void SolveQuadModEquation(void)
       BigIntSubt(&ValN, &z, &z);
     }
     (void)BigIntMultiply(&ValNn, &GcdAll, &Tmp[0]);
-    if (teach)
-    {
-      showText("<ol>");
-    }
     do
     {
       SolutionX(&z);
       BigIntAdd(&z, &modulus, &z);
       BigIntSubt(&z, &Tmp[0], &Tmp[1]);
     } while (Tmp[1].sign == SIGN_NEGATIVE);
-    if (teach)
+    if (teach && !firstSolutionX)
     {
       showText("</ol>");
     }
@@ -820,6 +793,7 @@ void SolveQuadModEquation(void)
     ptrFactorDec = tofactorDec;
     Bin2Dec(&ptrFactorDec, modulus.limbs, modulus.nbrLimbs, groupLen);
     factor(&modulus, nbrToFactor, factorsMod, astFactorsMod);
+    CopyBigInt(&LastModulus, &modulus);           // Do not factor again same modulus.
     if (teach)
     {
       showText(lang ? "<p>Para resolver esta ecuación cuadrática modular debemos factorizar el módulo y hallar las soluciones módulo las potencias de los factores primos. Luego debemos combinar estas soluciones usando el teorema chino del resto.</p>" :
@@ -827,732 +801,10 @@ void SolveQuadModEquation(void)
       showFactors(&modulus);
     }
   }
-  intToBigInteger(&Q, 0);
-  nbrFactors = astFactorsMod[0].multiplicity;   // Get number of different prime factors.
-  pstFactor = &astFactorsMod[1];                // Point to first prime factor information.
-  for (int factorIndex = 0; factorIndex<nbrFactors; factorIndex++)
-  {
-    expon = pstFactor->multiplicity;            // Get exponent multiplicity.
-    if (expon == 0)
-    {
-      pstFactor++;                              // Do not process prime if the exponent is zero.
-      continue;
-    }
-    NumberLength = *pstFactor->ptrFactor;
-    IntArray2BigInteger(pstFactor->ptrFactor, &prime);   // Get value of prime factor.
-    (void)BigIntPowerIntExp(&prime, expon, &V);       // Get value of prime power.
-    (void)BigIntRemainder(&coeffQuadr, &prime, &L);
-    if (BigIntIsZero(&L) && !((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2)))
-    {     // coeffQuadr multiple of prime, means linear equation mod prime. Also prime is not 2.
-      if ((BigIntIsZero(&coeffLinear)) && !(BigIntIsZero(&coeffIndep)))
-      {
-        return;  // There are no solutions: coeffLinear = 0 and coeffIndep != 0
-      }
-      // Perform Newton approximation:
-      // x_{n+1} = x_n - (a*x_n^2 + b*x_n + c) / (2*a_x + b)      
-      BigInteger* ptrSolution = &common.quad.Solution1[factorIndex];
-      int NumberLengthBytes;
-      NumberLength = prime.nbrLimbs;
-      NumberLengthBytes = NumberLength * (int)sizeof(limb);
-      (void)memcpy(TestNbr, prime.limbs, NumberLengthBytes);
-      TestNbr[NumberLength].x = 0;
-      GetMontgomeryParms(NumberLength);
-      BigIntModularDivision(&coeffIndep, &coeffLinear, &prime, ptrSolution);
-      BigIntNegate(ptrSolution, ptrSolution);
-      if (ptrSolution->sign == SIGN_NEGATIVE)
-      {
-        BigIntAdd(ptrSolution, &prime, ptrSolution);
-      }
-      for (int currentExpon = 2; currentExpon < (2 * expon); currentExpon *= 2)
-      {
-        (void)BigIntPowerIntExp(&prime, currentExpon, &V);
-        (void)BigIntMultiply(&coeffQuadr, ptrSolution, &Q);  // a*x_n
-        CopyBigInt(&L, &Q);
-        BigIntAdd(&Q, &coeffLinear, &Q);           // a*x_n + b
-        (void)BigIntRemainder(&Q, &V, &Q);
-        (void)BigIntMultiply(&Q, ptrSolution, &Q); // a*x_n^2 + b*x_n
-        BigIntAdd(&Q, &coeffIndep, &Q);            // a*x_n^2 + b*x_n + c
-        (void)BigIntRemainder(&Q, &V, &Q);         // Numerator. 
-        multint(&L, &L, 2);                        // 2*a*x_n
-        BigIntAdd(&L, &coeffLinear, &L);           // 2*a*x_n + b
-        (void)BigIntRemainder(&L, &V, &L);         // Denominator
-        NumberLength = V.nbrLimbs;
-        NumberLengthBytes = NumberLength * (int)sizeof(limb);
-        (void)memcpy(TestNbr, V.limbs, NumberLengthBytes);
-        TestNbr[NumberLength].x = 0;
-        GetMontgomeryParms(NumberLength);
-        BigIntModularDivision(&Q, &L, &V, &z);
-        BigIntSubt(ptrSolution, &z, ptrSolution);
-        (void)BigIntRemainder(ptrSolution, &V, ptrSolution);
-        if (ptrSolution->sign == SIGN_NEGATIVE)
-        {
-          BigIntAdd(ptrSolution, &V, ptrSolution);
-        }
-      }
-      (void)BigIntPowerIntExp(&prime, expon, &Q);
-      (void)BigIntRemainder(ptrSolution, &Q, ptrSolution);
-      CopyBigInt(&common.quad.Solution2[factorIndex], ptrSolution);
-    }
-    else
-    {                   // Quadratic equation mod prime
-      bool sol1Invalid = false;
-      bool sol2Invalid = false;
-      static BigInteger ValAOdd;
-      static BigInteger ValBOdd;
-      static BigInteger ValCOdd;
-      static BigInteger bigSquareRoot;
-      int correctBits;
-      int nbrLimbs;
-      int ctr;
-      int bitsAZero;
-      // Compute discriminant = ValB^2 - 4*ValA*ValC.
-      (void)BigIntMultiply(&coeffLinear, &coeffLinear, &Tmp[0]);
-      (void)BigIntMultiply(&coeffQuadr, &coeffIndep, &discriminant);
-      multint(&discriminant, &discriminant, 4);
-      BigIntSubt(&Tmp[0], &discriminant, &discriminant);
-      CopyBigInt(&ValAOdd, &coeffQuadr);
-      if ((prime.nbrLimbs == 1) && (prime.limbs[0].x == 2))
-      {         /* Prime p is 2 */
-        int bitsBZero;
-        int bitsCZero;
-        int origExpon = expon;
-        // ax^2 + bx + c = 0 (mod 2^expon)
-        // This follows the paper Complete solving the quadratic equation mod 2^n
-        // of Dehnavi, Shamsabad and Rishakani.
-        // To compute the square root, compute the inverse of sqrt,
-        // so only multiplications are used.
-        // f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
-        // Get odd part of A, B and C and number of bits to zero.
-        CopyBigInt(&ValAOdd, &coeffQuadr);
-        DivideBigNbrByMaxPowerOf2(&bitsAZero, ValAOdd.limbs, &ValAOdd.nbrLimbs);
-        CopyBigInt(&ValBOdd, &coeffLinear);
-        DivideBigNbrByMaxPowerOf2(&bitsBZero, ValBOdd.limbs, &ValBOdd.nbrLimbs);
-        CopyBigInt(&ValCOdd, &coeffIndep);
-        DivideBigNbrByMaxPowerOf2(&bitsCZero, ValCOdd.limbs, &ValCOdd.nbrLimbs);
-        if ((bitsAZero > 0) && (bitsBZero > 0) && (bitsCZero > 0))
-        {
-          int minExpon = bitsAZero;
-          if (minExpon < bitsBZero)
-          {
-            minExpon = bitsBZero;
-          }
-          if (minExpon < bitsCZero)
-          {
-            minExpon = bitsCZero;
-          }
-          bitsAZero -= minExpon;
-          bitsBZero -= minExpon;
-          bitsCZero -= minExpon;
-          expon -= minExpon;
-        }
-        if (((bitsAZero == 0) && (bitsBZero == 0) && (bitsCZero == 0)) ||
-          ((bitsAZero > 0) && (bitsBZero > 0) && (bitsCZero == 0)))
-        {
-          NoSolsModPrime(origExpon);
-          return;   // No solutions, so go out.
-        }
-        if ((bitsAZero == 0) && (bitsBZero > 0))
-        {           // The solution in this case requires square root.
-          // compute s = ((b/2)^2 - a*c)/a^2; r = p_2(s), q = o_2(s).
-          CopyBigInt(&tmp1, &coeffLinear);
-          BigIntDivideBy2(&tmp1);
-          (void)BigIntMultiply(&tmp1, &tmp1, &tmp1);  // (b/2)^2
-          (void)BigIntMultiply(&coeffQuadr, &coeffIndep, &tmp2);  // a*c
-          BigIntSubt(&tmp1, &tmp2, &tmp1);      // (b/2)^2 - a*c
-          BigIntPowerOf2(&K1, expon);
-          addbigint(&K1, -1);
-          BigIntAnd(&tmp1, &K1, &ValCOdd);      // (b/2) - a*c mod 2^n
-          NumberLength = K1.nbrLimbs;
-          ComputeInversePower2(ValAOdd.limbs, tmp2.limbs, tmp1.limbs);
-          (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
-          BigIntAnd(&ValCOdd, &K1, &ValCOdd);      // ((b/2) - a*c)/a mod 2^n
-          (void)BigIntMultiply(&ValCOdd, &tmp2, &ValCOdd);
-          BigIntAnd(&ValCOdd, &K1, &ValCOdd);      // ((b/2) - a*c)/a^2 mod 2^n
-          if (BigIntIsZero(&ValCOdd))
-          {
-            intToBigInteger(&bigSquareRoot, 0);
-            expon -= expon / 2;
-          }
-          else
-          {
-            int lenBytes;
-            DivideBigNbrByMaxPowerOf2(&bitsCZero, ValCOdd.limbs, &ValCOdd.nbrLimbs);
-            if (((ValCOdd.limbs[0].x & 7) != 1) || (bitsCZero & 1))
-            {
-              NoSolsModPrime(origExpon);
-              return;                             // q != 1 or p2(r) == 0, so go out.
-            }
-            if (expon < 2)
-            {                        // Modulus is 2.
-              intToBigInteger(&bigSquareRoot, (bitsCZero > 0) ? 0 : 1);
-            }
-            else
-            {
-              expon -= bitsCZero / 2;
-              // Find square root of ValCOdd.
-              // First approximation to inverse of square root.
-              bigSquareRoot.limbs[0].x = (((ValCOdd.limbs[0].x & 15) == 1) ? 1 : 3);
-              correctBits = 2;
-              nbrLimbs = 1;
-              while (correctBits < expon)
-              {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
-                correctBits *= 2;
-                nbrLimbs = (correctBits / BITS_PER_GROUP) + 1;
-                MultBigNbr(bigSquareRoot.limbs, bigSquareRoot.limbs, tmp2.limbs, nbrLimbs);
-                MultBigNbr(tmp2.limbs, ValCOdd.limbs, tmp2.limbs, nbrLimbs);
-                ChSignBigNbr(tmp2.limbs, nbrLimbs);
-                lenBytes = nbrLimbs * (int)sizeof(limb);
-                (void)memset(tmp1.limbs, 0, lenBytes);
-                tmp1.limbs[0].x = 3;
-                AddBigNbr(tmp1.limbs, tmp2.limbs, tmp2.limbs, nbrLimbs);
-                MultBigNbr(tmp2.limbs, bigSquareRoot.limbs, tmp1.limbs, nbrLimbs);
-                lenBytes = nbrLimbs * (int)sizeof(limb);
-                (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, lenBytes);
-                DivBigNbrByInt(tmp1.limbs, 2, bigSquareRoot.limbs, nbrLimbs);
-              }
-              // Get square root of ValCOdd from its inverse by multiplying by ValCOdd.
-              MultBigNbr(ValCOdd.limbs, bigSquareRoot.limbs, tmp1.limbs, nbrLimbs);
-              lenBytes = nbrLimbs * (int)sizeof(limb);
-              (void)memcpy(bigSquareRoot.limbs, tmp1.limbs, lenBytes);
-              setNbrLimbs(&bigSquareRoot);
-              for (ctr = 0; ctr < (bitsCZero / 2); ctr++)
-              {
-                BigIntMultiplyBy2(&bigSquareRoot);
-              }
-              expon--;
-              if (expon == (bitsCZero / 2))
-              {
-                expon++;
-              }
-            }
-          }
-          // x = sqrRoot - b/2a.
-          BigIntPowerOf2(&K1, expon);
-          addbigint(&K1, -1);
-          NumberLength = K1.nbrLimbs;
-          ComputeInversePower2(ValAOdd.limbs, tmp2.limbs, tmp1.limbs);
-          setNbrLimbs(&tmp2);
-          CopyBigInt(&tmp1, &coeffLinear);
-          BigIntDivideBy2(&tmp1);               // b/2
-          (void)BigIntMultiply(&tmp1, &tmp2, &tmp1);  // b/2a
-          BigIntChSign(&tmp1);                  // -b/2a
-          BigIntAnd(&tmp1, &K1, &tmp1);         // -b/2a mod 2^expon
-          BigIntAdd(&tmp1, &bigSquareRoot, &tmp2);
-          BigIntAnd(&tmp2, &K1, &common.quad.Solution1[factorIndex]);
-          BigIntSubt(&tmp1, &bigSquareRoot, &tmp2);
-          BigIntAnd(&tmp2, &K1, &common.quad.Solution2[factorIndex]);
-        }
-        else if ((bitsAZero == 0) && (bitsBZero == 0))
-        {
-          CopyBigInt(&Quadr, &coeffQuadr);
-          BigIntMultiplyBy2(&Quadr);          // 2a
-          CopyBigInt(&Linear, &coeffLinear);  // b
-          CopyBigInt(&Const, &coeffIndep);
-          BigIntDivideBy2(&Const);           // c/2
-          findQuadraticSolution(&common.quad.Solution1[factorIndex], expon - 1);
-          BigIntMultiplyBy2(&common.quad.Solution1[factorIndex]);
-
-          CopyBigInt(&Quadr, &coeffQuadr);
-          BigIntMultiplyBy2(&Quadr);         // 2a
-          BigIntAdd(&Quadr, &coeffLinear, &Linear); // 2a+b
-          CopyBigInt(&Const, &coeffQuadr);
-          BigIntAdd(&Const, &coeffLinear, &Const);
-          BigIntAdd(&Const, &coeffIndep, &Const);
-          BigIntDivideBy2(&Const);           // (a+b+c)/2
-          findQuadraticSolution(&common.quad.Solution2[factorIndex], expon - 1);
-          BigIntMultiplyBy2(&common.quad.Solution2[factorIndex]);
-          addbigint(&common.quad.Solution2[factorIndex], 1);
-        }
-        else
-        {
-          CopyBigInt(&Quadr, &coeffQuadr);
-          CopyBigInt(&Linear, &coeffLinear);
-          CopyBigInt(&Const, &coeffIndep);
-          findQuadraticSolution(&common.quad.Solution1[factorIndex], expon);
-          sol2Invalid = true;
-        }
-        BigIntPowerOf2(&Q, expon);         // Store increment.
-      }
-      else
-      {                        // Prime is not 2
-        int deltaZeros;
-        int lenBytes;
-        // Number of bits of square root of discriminant to compute: expon + bits_a + 1,
-        // where bits_a is the number of least significant bits of a set to zero.
-        // To compute the square root, compute the inverse of sqrt, so only multiplications are used.
-        // f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
-        // Get maximum power of prime which divide ValA.
-        bitsAZero = 0;
-        for (;;)
-        {
-          (void)BigIntRemainder(&ValAOdd, &prime, &tmp1);
-          if (ValAOdd.sign == SIGN_NEGATIVE)
-          {
-            BigIntAdd(&ValAOdd, &prime, &ValAOdd);
-          }
-          if (!BigIntIsZero(&tmp1))
-          {
-            break;
-          }
-          (void)BigIntDivide(&ValAOdd, &prime, &ValAOdd);
-          bitsAZero++;
-        }
-        (void)BigIntRemainder(&discriminant, &V, &discriminant);
-        // Get maximum power of prime which divide discriminant.
-        if (BigIntIsZero(&discriminant))
-        {      // Discriminant is zero.
-          deltaZeros = expon;
-        }
-        else
-        {      // Discriminant is not zero.
-          deltaZeros = 0;
-          for (;;)
-          {
-            (void)BigIntRemainder(&discriminant, &prime, &tmp1);
-            if ((tmp1.nbrLimbs > 1) || (tmp1.limbs[0].x != 0))
-            {
-              break;
-            }
-            (void)BigIntDivide(&discriminant, &prime, &discriminant);
-            deltaZeros++;
-          }
-        }
-        if ((deltaZeros & 1) && (deltaZeros < expon))
-        {          // If delta is of type m*prime^n where m is not multiple of prime
-                   // and n is odd, there is no solution, so go out.
-          NoSolsModPrime(expon);
-          return;
-        }
-        deltaZeros >>= 1;
-        // Compute inverse of -2*A (mod prime^(expon - deltaZeros)).
-        BigIntAdd(&coeffQuadr, &coeffQuadr, &ValAOdd);
-        (void)BigIntPowerIntExp(&prime, expon - deltaZeros, &tmp1);
-        (void)BigIntRemainder(&ValAOdd, &tmp1, &ValAOdd);
-        nbrLimbs = tmp1.nbrLimbs;
-        if (ValAOdd.sign == SIGN_NEGATIVE)
-        {
-          ValAOdd.sign = SIGN_POSITIVE;          // Negate 2*A
-        }
-        else if (!BigIntIsZero(&ValAOdd))
-        {
-          BigIntSubt(&tmp1, &ValAOdd, &ValAOdd); // Negate 2*A
-        }
-        else
-        {           // Nothing to do.
-        }
-        intToBigInteger(&tmp2, 1);
-        NumberLength = tmp1.nbrLimbs;
-        lenBytes = NumberLength * (int)sizeof(limb);
-        (void)memcpy(TestNbr, tmp1.limbs, lenBytes);
-        TestNbr[NumberLength].x = 0;
-        GetMontgomeryParms(NumberLength);
-        BigIntModularDivision(&tmp2, &ValAOdd, &tmp1, &Tmp[0]);
-        CopyBigInt(&ValAOdd, &Tmp[0]);
-        if (BigIntIsZero(&discriminant))
-        {     // Discriminant is zero.
-          intToBigInteger(&bigSquareRoot, 0);
-        }
-        else
-        {      // Discriminant is not zero.
-          // Find number of digits of square root to compute.
-          int nbrBitsSquareRoot = expon + bitsAZero - deltaZeros;
-          (void)BigIntPowerIntExp(&prime, nbrBitsSquareRoot, &tmp1);
-          nbrLimbs = tmp1.nbrLimbs;
-          (void)BigIntRemainder(&discriminant, &tmp1, &discriminant);
-          if (discriminant.sign == SIGN_NEGATIVE)
-          {
-            BigIntAdd(&discriminant, &tmp1, &discriminant);
-          }
-          if (nbrLimbs > discriminant.nbrLimbs)
-          {
-            lenBytes = (nbrLimbs - discriminant.nbrLimbs) * (int)sizeof(limb);
-            (void)memset(&discriminant.limbs[nbrLimbs], 0, lenBytes);
-          }
-          (void)BigIntRemainder(&discriminant, &prime, &Tmp[3]);
-          if (Tmp[3].sign == SIGN_NEGATIVE)
-          {
-            BigIntAdd(&Tmp[3], &prime, &Tmp[3]);
-          }
-          if (BigIntJacobiSymbol(&Tmp[3], &prime) != 1)
-          {
-            NoSolsModPrime(expon);
-            return;         // Not a quadratic residue, so go out.
-          }
-          // Compute square root of discriminant.
-          NumberLength = prime.nbrLimbs;
-          lenBytes = NumberLength * (int)sizeof(limb);
-          (void)memcpy(TestNbr, prime.limbs, lenBytes);
-          TestNbr[NumberLength].x = 0;
-          GetMontgomeryParms(NumberLength);
-          CopyBigInt(&Q, &prime);
-          if ((prime.limbs[0].x & 3) == 3)
-          {                 // prime mod 4 = 3
-            subtractdivide(&Q, -1, 4);   // Q <- (prime+1)/4.
-            BigIntModularPower(&Tmp[3], &Q, &SqrtDisc);
-          }
-          else
-          {
-            limb *toConvert;
-            // Convert discriminant to Montgomery notation.
-            CompressLimbsBigInteger(Tmp[5].limbs, &Tmp[3]);
-            modmult(Tmp[5].limbs, MontgomeryMultR2, Tmp[6].limbs);  // u
-            if ((prime.limbs[0].x & 7) == 5)
-            {              // prime mod 8 = 5: use Atkin's method for modular square roots.
-               // Step 1. v <- (2u)^((p-5)/8) mod p
-               // Step 2. i <- (2uv^2) mod p
-               // Step 3. square root of u <- uv (i-1)
-              // Step 1.
-              subtractdivide(&Q, 5, 8);   // Q <- (prime-5)/8.
-              AddBigNbrMod(Tmp[6].limbs, Tmp[6].limbs, Tmp[7].limbs); // 2u
-              modPow(Tmp[7].limbs, Q.limbs, Q.nbrLimbs, Tmp[8].limbs);
-              // At this moment Aux[7].limbs is v in Montgomery notation.
-
-              // Step 2.
-              modmult(Tmp[8].limbs, Tmp[8].limbs, Tmp[9].limbs);  // v^2
-              modmult(Tmp[7].limbs, Tmp[9].limbs, Tmp[9].limbs);  // i
-
-              // Step 3.
-              SubtBigNbrMod(Tmp[9].limbs, MontgomeryMultR1, Tmp[9].limbs); // i-1
-              modmult(Tmp[8].limbs, Tmp[9].limbs, Tmp[9].limbs);           // v*(i-1)
-              modmult(Tmp[6].limbs, Tmp[9].limbs, Tmp[9].limbs);           // u*v*(i-1)
-              toConvert = Tmp[9].limbs;
-            }
-            else
-            {          // prime = 1 (mod 8). Use Shanks' method for modular square roots.
-              // Step 1. Select e >= 3, q odd such that p = 2^e * q + 1.
-              // Step 2. Choose x at random in the range 1 < x < p such that jacobi (x, p) = -1.
-              // Step 3. Set z <- x^q (mod p).
-              // Step 4. Set y <- z, r <- e, x <- a^((q-1)/2) mod p, v <- ax mod p, w <- vx mod p.
-              // Step 5. If w = 1, the computation ends with +/-v as the square root.
-              // Step 6. Find the smallest value of k such that w^(2^k) = 1 (mod p)
-              // Step 7. Set d <- y^(2^(r-k-1)) mod p, y <- d^2 mod p, r <- k, v <- dv mod p, w <- wy mod p.
-              // Step 8. Go to step 5.
-              int x;
-              int e;
-              int r;
-              // Step 1.
-              subtractdivide(&Q, 1, 1);   // Q <- (prime-1).
-              DivideBigNbrByMaxPowerOf2(&e, Q.limbs, &Q.nbrLimbs);
-              // Step 2.
-              x = 1;
-              do
-              {
-                x++;
-                intToBigInteger(&Tmp[3], x);
-              } while (BigIntJacobiSymbol(&Tmp[3], &prime) >= 0);
-              // Step 3.
-              // Get z <- x^q (mod p) in Montgomery notation.
-              modPowBaseInt(x, Q.limbs, Q.nbrLimbs, Tmp[4].limbs);  // z
-              // Step 4.
-              lenBytes = NumberLength * (int)sizeof(limb);
-              (void)memcpy(Tmp[5].limbs, Tmp[4].limbs, lenBytes); // y
-              r = e;
-              CopyBigInt(&K1, &Q);
-              subtractdivide(&K1, 1, 2);
-              modPow(Tmp[6].limbs, K1.limbs, K1.nbrLimbs, Tmp[7].limbs); // x
-              modmult(Tmp[6].limbs, Tmp[7].limbs, Tmp[8].limbs);         // v
-              modmult(Tmp[8].limbs, Tmp[7].limbs, Tmp[9].limbs);         // w
-              // Step 5
-              lenBytes = NumberLength * (int)sizeof(limb);
-              while (memcmp(Tmp[9].limbs, MontgomeryMultR1, lenBytes) != 0)
-              {
-                // Step 6
-                int k = 0;
-                (void)memcpy(Tmp[10].limbs, Tmp[9].limbs, lenBytes);
-                do
-                {
-                  k++;
-                  modmult(Tmp[10].limbs, Tmp[10].limbs, Tmp[10].limbs);
-                } while (memcmp(Tmp[10].limbs, MontgomeryMultR1, lenBytes) != 0);
-                // Step 7
-                (void)memcpy(Tmp[11].limbs, Tmp[5].limbs, lenBytes); // d
-                for (ctr = 0; ctr < (r - k - 1); ctr++)
-                {
-                  modmult(Tmp[11].limbs, Tmp[11].limbs, Tmp[11].limbs);
-                }
-                modmult(Tmp[11].limbs, Tmp[11].limbs, Tmp[5].limbs);   // y
-                r = k;
-                modmult(Tmp[8].limbs, Tmp[11].limbs, Tmp[8].limbs);    // v
-                modmult(Tmp[9].limbs, Tmp[5].limbs, Tmp[9].limbs);     // w
-              }
-              toConvert = Tmp[8].limbs;
-            }
-            // Convert from Montgomery to standard notation.
-            lenBytes = NumberLength * (int)sizeof(limb);
-            (void)memset(Tmp[4].limbs, 0, lenBytes); // Convert power to standard notation.
-            Tmp[4].limbs[0].x = 1;
-            modmult(Tmp[4].limbs, toConvert, toConvert);
-            UncompressLimbsBigInteger(toConvert, &SqrtDisc);
-          }
-          // Obtain inverse of square root stored in SqrtDisc (mod prime).
-          intToBigInteger(&tmp2, 1);
-          BigIntModularDivision(&tmp2, &SqrtDisc, &prime, &bigSquareRoot);
-          correctBits = 1;
-          CopyBigInt(&Q, &prime);
-          // Obtain nbrBitsSquareRoot correct digits of inverse square root.
-          while (correctBits < nbrBitsSquareRoot)
-          {   // Compute f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
-            correctBits *= 2;
-            (void)BigIntMultiply(&Q, &Q, &Q);           // Square Q.
-            (void)BigIntMultiply(&bigSquareRoot, &bigSquareRoot, &tmp1);
-            (void)BigIntRemainder(&tmp1, &Q, &tmp2);
-            (void)BigIntMultiply(&tmp2, &discriminant, &tmp1);
-            (void)BigIntRemainder(&tmp1, &Q, &tmp2);
-            intToBigInteger(&tmp1, 3);
-            BigIntSubt(&tmp1, &tmp2, &tmp2);
-            (void)BigIntMultiply(&tmp2, &bigSquareRoot, &tmp1);
-            if ((tmp1.limbs[0].x & 1) != 0)
-            {
-              BigIntAdd(&tmp1, &Q, &tmp1);
-            }
-            BigIntDivide2(&tmp1);
-            (void)BigIntRemainder(&tmp1, &Q, &bigSquareRoot);
-          }
-          // Get square root of discriminant from its inverse by multiplying by discriminant.
-          if (bigSquareRoot.sign == SIGN_NEGATIVE)
-          {
-            BigIntAdd(&bigSquareRoot, &Q, &bigSquareRoot);
-          }
-          (void)BigIntMultiply(&bigSquareRoot, &discriminant, &bigSquareRoot);
-          (void)BigIntRemainder(&bigSquareRoot, &Q, &bigSquareRoot);
-          // Multiply by square root of discriminant by prime^deltaZeros.
-          for (ctr = 0; ctr < deltaZeros; ctr++)
-          {
-            (void)BigIntMultiply(&bigSquareRoot, &prime, &bigSquareRoot);
-          }
-        }
-        correctBits = expon - deltaZeros;
-        (void)BigIntPowerIntExp(&prime, correctBits, &Q);      // Store increment.
-        // Compute x = (b + sqrt(discriminant)) / (-2a) and x = (b - sqrt(discriminant)) / (-2a)
-        BigIntAdd(&coeffLinear, &bigSquareRoot, &tmp1);
-        for (ctr = 0; ctr < bitsAZero; ctr++)
-        {
-          (void)BigIntRemainder(&tmp1, &prime, &tmp2);
-          if ((tmp2.nbrLimbs > 1) || (tmp2.limbs[0].x != 0))
-          {   // Cannot divide by prime, so go out.
-            sol1Invalid = true;
-            break;
-          }
-          (void)BigIntDivide(&tmp1, &prime, &tmp1);
-        }
-        (void)BigIntMultiply(&tmp1, &ValAOdd, &tmp1);
-        (void)BigIntRemainder(&tmp1, &Q, &common.quad.Solution1[factorIndex]);
-        if (common.quad.Solution1[factorIndex].sign == SIGN_NEGATIVE)
-        {
-          BigIntAdd(&common.quad.Solution1[factorIndex], &Q, &common.quad.Solution1[factorIndex]);
-        }
-        BigIntSubt(&coeffLinear, &bigSquareRoot, &tmp1);
-        for (ctr = 0; ctr < bitsAZero; ctr++)
-        {
-          (void)BigIntRemainder(&tmp1, &prime, &tmp2);
-          if ((tmp2.nbrLimbs > 1) || (tmp2.limbs[0].x != 0))
-          {   // Cannot divide by prime, so go out.
-            sol2Invalid = true;
-            break;
-          }
-          (void)BigIntDivide(&tmp1, &prime, &tmp1);
-        }
-        (void)BigIntMultiply(&tmp1, &ValAOdd, &tmp1);
-        (void)BigIntRemainder(&tmp1, &Q, &common.quad.Solution2[factorIndex]);
-        if (common.quad.Solution2[factorIndex].sign == SIGN_NEGATIVE)
-        {
-          BigIntAdd(&common.quad.Solution2[factorIndex], &Q, &common.quad.Solution2[factorIndex]);
-        }
-      }
-      if (sol1Invalid && sol2Invalid)
-      {     // Both solutions are invalid. Go out.
-        NoSolsModPrime(expon);
-        return;
-      }
-      if (sol1Invalid)
-      {     // common.quad.Solution1 is invalid. Overwrite it with common.quad.Solution2.
-        CopyBigInt(&common.quad.Solution1[factorIndex], &common.quad.Solution2[factorIndex]);
-      }
-      else if (sol2Invalid)
-      {     // common.quad.Solution2 is invalid. Overwrite it with common.quad.Solution1.
-        CopyBigInt(&common.quad.Solution2[factorIndex], &common.quad.Solution1[factorIndex]);
-      }
-      else
-      {     // Nothing to do.
-      }
-      BigIntSubt(&common.quad.Solution2[factorIndex], &common.quad.Solution1[factorIndex], &Tmp[0]);
-      if (Tmp[0].sign == SIGN_NEGATIVE)
-      {     // common.quad.Solution2 is less than common.quad.Solution1, so exchange them.
-        CopyBigInt(&Tmp[0], &common.quad.Solution1[factorIndex]);
-        CopyBigInt(&common.quad.Solution1[factorIndex], &common.quad.Solution2[factorIndex]);
-        CopyBigInt(&common.quad.Solution2[factorIndex], &Tmp[0]);
-      }
-      if (teach)
-      {
-        bool last;
-        (void)BigIntPowerIntExp(&prime, expon, &V);       // Get value of prime power.
-        intToBigInteger(&ValH, 0);
-        showText(lang ? "<p>Soluciones módulo " : "<p>Solutions modulo ");
-        shownbr(&prime);
-        if (expon != 1)
-        {
-          showText("<sup>");
-          int2dec(&ptrOutput, expon);
-          showText("</sup>");
-        }
-        showText(": ");
-        do
-        {
-          int oneSolution = BigIntEqual(&common.quad.Solution1[factorIndex], &common.quad.Solution2[factorIndex]);
-          BigIntAdd(&ValH, &Q, &ValI);   // Next value.
-          last = BigIntEqual(&V, &ValI);
-          if (!BigIntIsZero(&ValH))
-          {
-            if (last && oneSolution)
-            {
-              showText(lang ? " y " : " and ");
-            }
-            else
-            {
-              showText(", ");
-            }
-          }
-          BigIntAdd(&ValH, &common.quad.Solution1[factorIndex], &ValJ);
-          shownbr(&ValJ);
-          if (!oneSolution)
-          {
-            if (last)
-            {
-              showText(lang ? " y " : " and ");
-            }
-            else
-            {
-              showText(", ");
-            }
-            BigIntAdd(&ValH, &common.quad.Solution2[factorIndex], &ValJ);
-            shownbr(&ValJ);
-          }
-          CopyBigInt(&ValH, &ValI);
-        } while (!last);
-        showText("</p>");
-      }
-    }
-    CopyBigInt(&common.quad.Increment[factorIndex], &Q);
-    Exponents[factorIndex] = 0;
-    pstFactor++;
-  }   // end for
-  // Use Chinese remainder theorem to obtain the solutions.
-  if (teach)
-  {
-    showText("<ol>");
-  }
-  do
-  {
-    nbrFactors = astFactorsMod[0].multiplicity;
-    pstFactor = &astFactorsMod[1];
-    for (T1 = 0; T1 < nbrFactors; T1++)
-    {
-      if (pstFactor->multiplicity != 0)
-      {
-        break;   // Do not process prime factors for which the multiplicity is zero.
-      }
-      pstFactor++;
-    }
-    multint(&Aux[T1], &common.quad.Increment[T1], Exponents[T1] / 2);
-    if ((Exponents[T1] & 1) != 0)
-    {
-      BigIntAdd(&Aux[T1], &common.quad.Solution2[T1], &Aux[T1]);
-    }
-    else
-    {
-      BigIntAdd(&Aux[T1], &common.quad.Solution1[T1], &Aux[T1]);
-    }
-    CopyBigInt(&currentSolution, &Aux[T1]);
-    IntArray2BigInteger(pstFactor->ptrFactor, &prime);
-    (void)BigIntPowerIntExp(&prime, pstFactor->multiplicity, &Mult);
-    T1++;
-    for (; T1<nbrFactors; T1++)
-    {
-      pstFactor++;
-      if (pstFactor->multiplicity == 0)
-      {
-        continue;   // Do not process prime factors for which the multiplicity is zero.
-      }
-      expon = Exponents[T1];
-      multint(&Aux[T1], &common.quad.Increment[T1], expon / 2);
-      if ((expon & 1) != 0)
-      {
-        BigIntAdd(&Aux[T1], &common.quad.Solution2[T1], &Aux[T1]);
-      }
-      else
-      {
-        BigIntAdd(&Aux[T1], &common.quad.Solution1[T1], &Aux[T1]);
-      }
-      NumberLength = *pstFactor->ptrFactor;
-      IntArray2BigInteger(pstFactor->ptrFactor, &prime);
-      (void)BigIntPowerIntExp(&prime, pstFactor->multiplicity, &K1);
-      CopyBigInt(&prime, &K1);
-      for (int E = 0; E<T1; E++)
-      {
-        int lenBytes;
-        if (astFactorsMod[E + 1].multiplicity == 0)
-        {
-          continue;
-        }
-        BigIntSubt(&Aux[T1], &Aux[E], &Q);
-        IntArray2BigInteger(astFactorsMod[E+1].ptrFactor, &K);
-        (void)BigIntPowerIntExp(&K, astFactorsMod[E+1].multiplicity, &L);
-        NumberLength = prime.nbrLimbs;
-        lenBytes = NumberLength * (int)sizeof(limb);
-        (void)memcpy(TestNbr, prime.limbs, lenBytes);
-        TestNbr[NumberLength].x = 0;
-        GetMontgomeryParms(NumberLength);
-        BigIntModularDivision(&Q, &L, &prime, &Aux[T1]);
-      }
-      (void)BigIntRemainder(&Aux[T1], &prime, &L);
-      CopyBigInt(&Aux[T1], &L);
-      // currentSolution <- Aux[T1] * Mult + currentSolution
-      (void)BigIntMultiply(&Aux[T1], &Mult, &L);
-      BigIntAdd(&currentSolution, &L, &currentSolution);
-      (void)BigIntMultiply(&K1, &Mult, &Mult);
-    }   /* end for */
-    intToBigInteger(&V, 0);
-    for (;;)
-    {
-      // if V >= GcdAll, exit loop.
-      BigIntSubt(&V, &GcdAll, &K1);
-      if (K1.sign == SIGN_POSITIVE)
-      {
-        break;
-      }
-      // The solution is V*ValNn + currentSolution
-      (void)BigIntMultiply(&V, &ValNn, &K1);
-      BigIntAdd(&K1, &currentSolution, &K1);
-      SolutionX(&K1);
-      addbigint(&V, 1);  // V <- V + 1
-    }
-    for (T1 = nbrFactors - 1; T1 >= 0; T1--)
-    {
-      if (astFactorsMod[T1 + 1].multiplicity == 0)
-      {
-        continue;     // Do not process prime factors for which the multiplicity is zero.
-      }
-      IntArray2BigInteger(astFactorsMod[T1+1].ptrFactor, &K);         // Get prime factor.
-      (void)BigIntPowerIntExp(&K, astFactorsMod[T1+1].multiplicity, &prime); // Get prime power.
-      if (BigIntEqual(&common.quad.Solution1[T1], &common.quad.Solution2[T1]))
-      {     // common.quad.Solution1[T1] == common.quad.Solution2[T1]
-        Exponents[T1] += 2;
-      }
-      else
-      {     // common.quad.Solution1[T1] != common.quad.Solution2[T1]
-        Exponents[T1]++;
-      }
-      multadd(&L, Exponents[T1], &common.quad.Increment[T1], 0);   // L <- Exponents[T1] * common.quad.Increment[T1]
-      multadd(&K1, 2, &prime, 0);                      // K1 <- 2 * prime power
-      BigIntSubt(&L, &K1, &L);                         // L <- Exponents[T1] * common.quad.Increment[T1] - 2 * prime power.
-      if (L.sign == SIGN_NEGATIVE)
-      {
-        break;
-      }
-      Exponents[T1] = 0;
-    }   /* end for */
-  } while (T1 >= 0);
-  if (teach)
+  SetCallbacksForSolveEquation(SolutionX, ShowSolutionsModPrime, NoSolsModPrime);
+  SolveEquation(&coeffQuadr, &coeffLinear, &coeffIndep, &modulus,
+    &GcdAll, &ValNn);
+  if (teach && !firstSolutionX)
   {
     showText("</ol>");
   }
@@ -2393,6 +1645,7 @@ static void NonSquareDiscriminant(void)
   ptrFactorDec = tofactorDec;
   Bin2Dec(&ptrFactorDec, ValK.limbs, ValK.nbrLimbs, groupLen);
   factor(&ValK, nbrToFactor, factorsMod, astFactorsMod);
+  CopyBigInt(&LastModulus, &ValK);           // Do not factor again same modulus.
   ValK.sign = ValKSignBak;
   // Find all indexes of prime factors with even multiplicity.
   nbrPrimesEvenMultiplicity = 0;
@@ -2685,6 +1938,7 @@ static void NonSquareDiscriminant(void)
         }
       }
     }
+    CopyBigInt(&LastModulus, &ValK);                   // Do not try to factor the number again.
     if (index == nbrPrimesEvenMultiplicity)
     {               // All factors have been found. Exit loop.
       break;
@@ -3420,6 +2674,7 @@ static void PerfectSquareDiscriminant(void)
   ptrFactorDec = tofactorDec;
   Bin2Dec(&ptrFactorDec, ValZ.limbs, ValZ.nbrLimbs, groupLen);
   factor(&ValZ, nbrToFactor, factorsMod, astFactorsMod);
+  CopyBigInt(&LastModulus, &ValZ);           // Do not factor again same modulus.
   ValZ.sign = signTemp;       // Restore sign of Z = 4ak/RS.
   // x = (NI - JM) / D(IL - MH) and y = (JL - NH) / D(IL - MH)
   // The denominator cannot be zero here.
