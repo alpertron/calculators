@@ -20,9 +20,9 @@
 // In order to reduce the number of files to read from Web server, this 
 // Javascript file includes both the Javascript in the main thread and the 
 // Javascript that drives WebAssembly on its own Web Worker.
-(function(global)
+(function()
 {   // This method separates the name space from the Google Analytics code.
-var buffer, globals, env, asm;
+var buffer, env, asm;
 var zoom, zoomDone, imgData;
 var canvas, zoomin, zoomout, center, start;
 var isMouseDown;
@@ -593,4 +593,4 @@ function startUp()
 }
 
 window.addEventListener("load", startUp);
-})(this);
+})();

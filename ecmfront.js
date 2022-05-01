@@ -819,10 +819,10 @@ function startUp()
   btnConfig.onclick = function()
   {
     get("digits").value = digits;
-    chkVerbose.checked = (config.substr(1,1) === "1");
-    chkPretty.checked = (config.substr(2,1) === "1");
-    chkCunningham.checked = (config.substr(3,1) === "1");  
-    chkHex.checked = (config.substr(4,1) === "1");
+    chkVerbose.checked = (config.substring(1,2) === "1");
+    chkPretty.checked = (config.substring(2,3) === "1");
+    chkCunningham.checked = (config.substring(3,4) === "1");  
+    chkHex.checked = (config.substring(4,5) === "1");
     show("modal-config");
   };
   btnFromFile.onclick = function()
@@ -887,8 +887,8 @@ function startUp()
     btnNext.disabled = true;
     wzdInput.value = "";
     wzdInput.focus();
-    chkHexW.checked = (config.substr(4,1) === "1");
-    chkDecW.checked = (config.substr(4,1) !== "1");
+    chkHexW.checked = (config.substring(4,5) === "1");
+    chkDecW.checked = (config.substring(4,5) !== "1");
     oneexpr();
   };
   wzdInput.onkeydown = function (event)
@@ -1286,13 +1286,13 @@ function startUp()
     }
     else
     {
-      config = digits.substr(index+1);
+      config = digits.substring(index+1);
       while (config.length < 5)
       {  // Convert legacy configuration.
         config += "0";
       }
-      digits = digits.substr(0,index);
-      updateVerbose(config.substr(1,1) === "1");
+      digits = digits.substring(0,index);
+      updateVerbose(config.substring(1,2) === "1");
     }
   }
   var fromPolfact = window.sessionStorage.getItem("F");

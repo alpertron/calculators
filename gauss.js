@@ -394,10 +394,10 @@ window.onload = function()
   get("config").onclick = function()
   {
     get("digits").value = digits;
-    get("batch").checked = (config.substr(0,1) === "1");
-    get("verbose").checked = (config.substr(1,1) === "1");
-    get("pretty").checked = (config.substr(2,1) === "1");
-    get("cunnin").checked = (config.substr(3,1) === "1");  
+    get("batch").checked = (config.substring(1,2) === "1");
+    get("verbose").checked = (config.substring(1,2) === "1");
+    get("pretty").checked = (config.substring(2,3) === "1");
+    get("cunnin").checked = (config.substring(3,4) === "1");  
     get("modal-config").style.display = "block";
   };
   get("close-config").onclick = function()
@@ -542,8 +542,8 @@ window.onload = function()
     }
     else
     {
-      config = digits.substr(index+1);
-      digits = digits.substr(0,index);
+      config = digits.substring(index+1);
+      digits = digits.substring(0,index);
     }
   }
   generateFuncButtons("funccat", "funcbtns", "value");
