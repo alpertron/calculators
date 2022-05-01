@@ -1002,7 +1002,7 @@ function startUp()
   {
     restartFactorization(-4);
   };
-  newCurveOrFactor.onkeypress = function(event)
+  newCurveOrFactor.onkeydown = function(event)
   {
     return (event.charCode === 8 || event.charCode === 0) ? null : event.charCode >= 48 && event.charCode <= 57;
   };

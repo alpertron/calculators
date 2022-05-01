@@ -439,7 +439,7 @@ static void showSqrtTenPlusMinusTwoTimesSqrt5(const char *sign)
 }
 
 // Show (R +/- S*d)^(1/2). At this moment S is not zero.
-static void showSqRoot1(enum eSign sign, BigRational *ptrRatR, BigRational *ptrRatS)
+static void showSqRoot1(enum eSign sign, const BigRational *ptrRatR, BigRational *ptrRatS)
 {
   enum eSign signBak = ptrRatS->numerator.sign;
   startSqrt();
@@ -769,7 +769,7 @@ static void showRn(int groupOrder)
   {
     enum eSign firstSign;
     enum eSign secondSign;
-    BigRational* ptrRatR;
+    const BigRational* ptrRatR;
     BigRational* ptrRatS;
     if ((groupOrder == 10) || (ctr == 1) || (ctr == 4))
     {

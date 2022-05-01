@@ -17,10 +17,9 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** @define {number} */ var lang = 1;   // Use with Closure compiler.
-(function(global)
+(function()
 {   // This method separates the name space from the Google Analytics code.
 var worker = 0;
-var app;
 var blob;
 var workerParam;
 var fileContents = 0;
@@ -175,7 +174,7 @@ function endFeedback()
 
 function b64decode(str,out)
 {
-  var ch, idx;
+  var ch;
   var idxDest,idxSrc;
   var blocks, leftOver;
   var byte0, byte1, byte2, byte3;
@@ -381,7 +380,6 @@ function generateFuncButtons(optionCategory, funcButtons)
 
 window.onload = function()
 {
-  var param;
   get("stop").disabled = true;
   get("solve").onclick = function()
   {
@@ -407,27 +405,27 @@ window.onload = function()
     get("help").style.display = "block";
     get("result").style.display = "none";
   };
-  get("coefA").onkeypress = function(e)
+  get("coefA").onkeydown = function(e)
   {
     moveNext(e, this, "coefB");
   };
-  get("coefB").onkeypress = function(e)
+  get("coefB").onkeydown = function(e)
   {
     moveNext(e, this, "coefC");
   };
-  get("coefC").onkeypress = function(e)
+  get("coefC").onkeydown = function(e)
   {
     moveNext(e, this, "coefD");
   };
-  get("coefD").onkeypress = function(e)
+  get("coefD").onkeydown = function(e)
   {
     moveNext(e, this, "coefE");
   };
-  get("coefE").onkeypress = function(e)
+  get("coefE").onkeydown = function(e)
   {
     moveNext(e, this, "coefF");
   };
-  get("coefF").onkeypress = function(e)
+  get("coefF").onkeydown = function(e)
   {
     if ((e.which === 10 || e.which === 13) && this.value.trim().length > 0)
     {
@@ -581,4 +579,4 @@ else
   fileContents=new Int8Array(length);
   b64decode(wasm, fileContents); 
 }
-})(this);
+})();

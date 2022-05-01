@@ -527,7 +527,7 @@ function startUp()
   var param;
   if (app<4)
   {
-    get("num").onkeypress = function(e)
+    get("num").onkeydown = function(e)
     {
       var output, res;
       var digitGroup = get("digits").value;
