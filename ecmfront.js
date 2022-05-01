@@ -631,7 +631,7 @@ function fillCache()
                   {        // There is an old version of this resource on cache to be erased.
                     cache.keys().then(function(keys)
                     {
-                      keys.forEach(function(requestCache, _index, _array)
+                      keys.forEach(function(requestCache, _idx, _arr)
                       {    // Traverse cache.
                         if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
                             requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
@@ -1383,4 +1383,4 @@ else
 }
 
 window.addEventListener("load", startUp);
-})(this);
+})();

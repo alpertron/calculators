@@ -731,5 +731,5 @@ function startUp()
 
 addEventListener("load", startUp);
 
-})(this);
+})();
 
