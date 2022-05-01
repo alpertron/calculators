@@ -190,7 +190,7 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
       for (i = 0; i < nbrLimbsDivisor; i++)
       {
 #ifdef _USING64BITS_
-        carry += (int64_t)ptrDividend->x - ((ptrDivisor->x * (int64_t)TrialQuotient));
+        carry += (int64_t)ptrDividend->x - (ptrDivisor->x * (int64_t)TrialQuotient);
         ptrDividend->x = UintToInt((unsigned int)carry & MAX_VALUE_LIMB);
         carry >>= BITS_PER_GROUP;
 #else

@@ -22,7 +22,7 @@
 // Javascript that drives WebAssembly on its own Web Worker.
 (function(global)
 {   // This method separates the name space from the Google Analytics code.
-var testNbr, questionNbr, score, withCountries;
+var questionNbr, score, withCountries;
 var parcInterp, finalInterp;
 var kmText, degreeText, currentText, finalText, pointText;
 var direction = [];
@@ -71,9 +71,9 @@ function setTextToClass(text, className)
   }
 }
 
-function getCityName(cityIndex, withCountries)
+function getCityName(cityIndex, includeCountries)
 {
-  if (withCountries)
+  if (includeCountries)
   {
     return cityName[cityIndex >> 0]+" ("+countryName[cityIndex >> 0]+")";
   }
@@ -135,7 +135,7 @@ function getDirection(Lat1, Lon1, Lat2, Lon2)
   return Angle + " " + degreeText + (Angle===1?"":"s") + " (" + direction[parseInt(Math.floor(AngAux/22.5), 10)] + ")";
 }
 
-function getDaytime(Lat, Lon)
+function getDaytime(Lat)
 {
   var q;
   var minutesDaytime;
@@ -224,10 +224,10 @@ function test1(complete)
     setTextToClass(cityNameTo, "city_to");
     get("dirdeg1").textContent = getDirection(LatFrom, LongFrom, LatTo, LongTo);
     get("dirdeg2").textContent = getDirection(LatTo, LongTo, LatFrom, LongFrom);
-    get("sun_from_0621").textContent = getDaytime(-LatFrom, LongFrom);
-    get("sun_from_1221").textContent = getDaytime(LatFrom, LongFrom);
-    get("sun_to_0621").textContent = getDaytime(-LatTo, LongFrom);
-    get("sun_to_1221").textContent = getDaytime(LatTo, LongFrom);
+    get("sun_from_0621").textContent = getDaytime(-LatFrom);
+    get("sun_from_1221").textContent = getDaytime(LatFrom);
+    get("sun_to_0621").textContent = getDaytime(-LatTo);
+    get("sun_to_1221").textContent = getDaytime(LatTo);
     if (questionNbr !== 0)
     {
       partialScore = Math.round(100 - 100 * Math.abs(Math.log(trueDist/playerDist)));
@@ -459,7 +459,6 @@ function showResultsTest2(playerInput)
 function startTestType1()
 {
   clearScreen();
-  testNbr = 1;
   questionNbr = 1;
   score = 0;
   test1(false);
@@ -468,7 +467,6 @@ function startTestType1()
 function startTestType2()
 {
   clearScreen();
-  testNbr = 2;
   questionNbr = 1;
   score = 0;
   test2();
@@ -516,11 +514,13 @@ function listCities(onlyList)
 
 function grayFindDistButton()
 {
-  var cityFrom = get("cityFrom").value;
-  var cityTo = get("cityTo").value;
+  var strCityFrom = get("cityFrom").value;
+  var strCityTo = get("cityTo").value;
   var findDist = get("findDist");
-  if (cityFrom.length > 0 && parseInt(cityFrom,10) >= 1 && parseInt(cityFrom,10) <= cityData.length &&
-      cityTo.length > 0 && parseInt(cityTo,10) >= 1 && parseInt(cityTo,10) <= cityData.length)
+  if (strCityFrom.length > 0 && parseInt(strCityFrom, 10) >= 1 &&
+      parseInt(strCityFrom, 10) <= cityData.length &&
+      strCityTo.length > 0 && parseInt(strCityTo, 10) >= 1 &&
+      parseInt(strCityTo, 10) <= cityData.length)
   {
     findDist.disabled = false;
   }

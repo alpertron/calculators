@@ -20,7 +20,6 @@
 (function(global)
 {   // This method separates the name space from the Google Analytics code.
 var worker = 0;
-var app;
 var blob;
 var workerParam;
 var fileContents = 0;
