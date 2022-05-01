@@ -20,9 +20,9 @@
 // In order to reduce the number of files to read from Web server, this 
 // Javascript file includes both the Javascript in the main thread and the 
 // Javascript that drives WebAssembly on its own Web Worker.
-(function(global)
+(function()
 {   // This method separates the name space from the Google Analytics code.
-var buffer, globals, env, asm;
+var buffer, env, asm;
 var zoom, zoomDone, imgData;
 var canvas, zoomin, zoomout, centerX, centerY;
 var isMouseDown;
@@ -192,7 +192,7 @@ function updateGraphic(nbr)
 
 function b64decode(str,out)
 {
-  var ch, idx;
+  var ch;
   var idxDest,idxSrc;
   var blocks, leftOver;
   var byte0, byte1, byte2, byte3;
@@ -283,7 +283,7 @@ function startLowLevelCode()
     asmJSbuffer = new ArrayBuffer(bufSize);
     HEAP8 = new Uint8Array(asmJSbuffer);    // Reserve 32 MB for asm.js variables and buffers.
     env = {"a": {"buffer": asmJSbuffer},
-      "abort": function(q) {},
+      "abort": function(_q) {/* Not used*/},
     };
     // check for imul support, and also for correctness ( https://bugs.webkit.org/show_bug.cgi?id=126345 )
     if (!Math["imul"] || Math["imul"](minusOne, 5) !== -5)
@@ -342,7 +342,6 @@ function startLowLevelCode()
       HEAP8 = new Uint8Array(asm["memory"]["buffer"]);
       pixels = HEAP8.subarray(asm["getPixels"]());
       updateGraphic(1);
-      return;
     });
   }
 }
@@ -586,12 +585,12 @@ function startUp()
   };
   window.onresize = function()
   {
-    var domRect = canvas.getBoundingClientRect();
-    canvas.width = domRect.width;
-    canvas.height = domRect.height;
+    var newDomRect = canvas.getBoundingClientRect();
+    canvas.width = newDomRect.width;
+    canvas.height = newDomRect.height;
     updateGraphic(1);
   };
 }
 
 window.addEventListener("load", startUp);
-})(this);
+})();

@@ -17,7 +17,7 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** @define {number} */ var lang = 1;   // Use with Closure compiler.
-(function(global)
+(function()
 {   // This method separates the name space from the Google Analytics code.
 var worker = 0;
 var app;
@@ -177,7 +177,7 @@ function updateCache(cache)
     {     // Copy cached resources to main cache and delete this one.
       tempCache.matchAll().then(function(responseArr)
       {   // All responses in array responseArr.
-        responseArr.forEach(function(responseTempCache, index, array)
+        responseArr.forEach(function(responseTempCache, _index, _array)
         {
           cache.put(responseTempCache.url, responseTempCache);
         });
@@ -225,7 +225,7 @@ function fillCache()
             {              // Copy cached resources to main cache and delete this one.
               tempCache.matchAll().then(function(responseArr)
               {            // All responses in array responseArr.
-                responseArr.forEach(function(responseTempCache, index, array)
+                responseArr.forEach(function(responseTempCache, _index, _array)
                 {
                   var urlTemp = responseTempCache.url;
                   var indexZero = url.indexOf("00");
@@ -233,7 +233,7 @@ function fillCache()
                   {        // There is an old version of this resource on cache to be erased.
                     cache.keys().then(function(keys)
                     {
-                      keys.forEach(function(requestCache, index, array)
+                      keys.forEach(function(requestCache, _idx, _arr)
                       {    // Traverse cache.
                         if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
                             requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
@@ -271,7 +271,7 @@ function fillCache()
 
 function b64decode(str,out)
 {
-  var ch, idx;
+  var ch;
   var idxDest,idxSrc;
   var blocks, leftOver;
   var byte0, byte1, byte2, byte3;
@@ -369,7 +369,6 @@ function generateFuncButtons(optionCategory, funcButtons, inputId)
 
 window.onload = function()
 {
-  var param;
   get("eval").onclick = function()
   {
     dowork(0);
@@ -411,7 +410,6 @@ window.onload = function()
   };
   get("save-config").onclick = function()
   {
-    var oldconfig = config;
     config = (get("batch").checked? "1" :"0") +
              (get("verbose").checked? "1" :"0") +
              (get("pretty").checked? "1" :"0") +
@@ -478,7 +476,7 @@ window.onload = function()
       userdata.value = "";      
     }
     var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function (event)
+    xhr.onreadystatechange = function (_event)
     {
       if (xhr.readyState === 4)
       {             // XHR finished.
@@ -552,7 +550,8 @@ window.onload = function()
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"].register("calcSW.js").then(function() {}, function() {});
+    navigator["serviceWorker"]["register"]("calcSW.js").then(
+              function() {/* Nothing to do */}, function() {/* Nothing to do */});
     fillCache();
   }
 };
@@ -561,7 +560,7 @@ if (asmjs)
   var req = new XMLHttpRequest();
   req.open("GET", "gaussianW0000.js", true);
   req.responseType = "arraybuffer";
-  req.onreadystatechange = function (aEvt)
+  req.onreadystatechange = function(_aEvt)
   {
     if (req.readyState === 4 && req.status === 200)
     {
@@ -597,4 +596,4 @@ else
   fileContents=new Int8Array(length);
   b64decode(wasm, fileContents); 
 }
-})(this);
+})();

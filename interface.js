@@ -17,7 +17,7 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** @define {number} */ var app = 0;   // Use with Closure compiler.
-(function(global)
+(function()
 {   // This method separates the name space from the Google Analytics code.
 var wizardStep = 0;
 var wizardTextInput;
@@ -80,7 +80,7 @@ function styleButtons(style1, style2)
 
 function b64decode(str,out)
 {
-  var ch, idx;
+  var ch;
   var idxDest,idxSrc;
   var blocks, leftOver;
   var byte0, byte1, byte2, byte3;
@@ -172,7 +172,7 @@ function updateCache(cache)
     {     // Copy cached resources to main cache and delete this one.
       tempCache.matchAll().then(function(responseArr)
       {   // All responses in array responseArr.
-        responseArr.forEach(function(responseTempCache, index, array)
+        responseArr.forEach(function(responseTempCache, _index, _array)
         {
           cache.put(responseTempCache.url, responseTempCache);
         });
@@ -220,7 +220,7 @@ function fillCache()
             {              // Copy cached resources to main cache and delete this one.
               tempCache.matchAll().then(function(responseArr)
               {            // All responses in array responseArr.
-                responseArr.forEach(function(responseTempCache, index, array)
+                responseArr.forEach(function(responseTempCache, _index, _array)
                 {
                   var urlTemp = responseTempCache.url;
                   var indexZero = url.indexOf("00");
@@ -228,7 +228,7 @@ function fillCache()
                   {        // There is an old version of this resource on cache to be erased.
                     cache.keys().then(function(keys)
                     {
-                      keys.forEach(function(requestCache, index, array)
+                      keys.forEach(function(requestCache, _idx, _arr)
                       {    // Traverse cache.
                         if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
                             requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
@@ -790,7 +790,7 @@ function startUp()
       userdata.value = "";      
     }
     var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function (event)
+    xhr.onreadystatechange = function (_event)
     {
       if (xhr.readyState === 4) 
       {             // XHR finished.
@@ -839,7 +839,8 @@ function startUp()
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"].register("calcSW.js").then(function() {}, function() {});
+    navigator["serviceWorker"]["register"]("calcSW.js").then(
+              function() {/* Nothing to do */}, function() {/* Nothing to do */});
     fillCache();
   }
 }
@@ -848,7 +849,7 @@ if (asmjs)
   var req = new XMLHttpRequest();
   req.open("GET", "fsquaresW0000.js", true);
   req.responseType = "arraybuffer";
-  req.onreadystatechange = function (aEvt)
+  req.onreadystatechange = function (_aEvt)
   {
     if (req.readyState === 4 && req.status === 200)
     {
@@ -886,5 +887,4 @@ else
 }
 
 window.addEventListener("load", startUp);
-})(this);
-
+})();

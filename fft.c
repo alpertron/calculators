@@ -91,7 +91,7 @@ static void initCosinesArray(void)
     {
       break;
     }
-    ptrCosSinDelta = &cossinPowerOneHalf[(POWERS_2 - 3 - bitNbr)];  // Pointer to cos/sin B.
+    ptrCosSinDelta = &cossinPowerOneHalf[POWERS_2 - 3 - bitNbr];  // Pointer to cos/sin B.
     if (index == mask)
     {
       ptrCosSin->Cos[0] = ptrCosSinDelta->Cos[0];

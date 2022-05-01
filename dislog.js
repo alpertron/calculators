@@ -473,7 +473,7 @@ window.onload = function()
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"].register("calcSW.js").then(
+    navigator["serviceWorker"]["register"]("calcSW.js").then(
               function() {/* Nothing to do */}, function() {/* Nothing to do */});
     fillCache();
   }
