@@ -187,6 +187,58 @@ void int2hex(char **pOutput, int nbr)
 }
 #endif
 
+static int Bin2HexLoop(char** ppDecimal, const limb* binary, 
+  int currentGroupDigit, int nbrBits, int nbrLimbs, int mask, int grpLen)
+{
+  int nbrHexDigits = (nbrBits + 3) / 4;
+  char* ptrDecimal = *ppDecimal;
+  int numBits = nbrBits;
+  int numLimbs = nbrLimbs;
+  int digits = 0;
+  int value = (binary + numLimbs - 1)->x;
+  do
+  {  // Get 4 bits.
+    int digit = 0;
+    do
+    {
+      digit *= 2;
+      if ((value & mask) != 0)
+      {
+        digit++;
+      }
+      mask >>= 1;
+      if (mask == 0)
+      {
+        numLimbs--;
+        value = (binary + numLimbs - 1)->x;
+        mask = HALF_INT_RANGE;
+      }
+      numBits--;
+    } while ((numBits & 3) != 0);
+    if (digit < 10)
+    {        // Convert 0 - 9 to '0' - '9'.
+      *ptrDecimal = (char)(digit + '0');
+      ptrDecimal++;
+    }
+    else
+    {        // Convert 10 - 15 to 'A' - 'F'.
+      *ptrDecimal = (char)(digit + 'A' - 10);
+      ptrDecimal++;
+    }
+    digits++;
+    currentGroupDigit--;
+    if ((currentGroupDigit == 0) && (nbrHexDigits != 1))
+    {
+      *ptrDecimal = ' ';
+      ptrDecimal++;
+      currentGroupDigit = grpLen;
+    }
+    nbrHexDigits--;
+  } while (nbrHexDigits > 0);
+  *ppDecimal = ptrDecimal;
+  return digits;
+}
+
 // Convert little-endian number to a string with space every groupLen digits.
 void Bin2Hex(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength)
 {
@@ -231,45 +283,8 @@ void Bin2Hex(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
         currentGroupDigit = grpLen;
       }
     }
-    do
-    {  // Get 4 bits.
-      int digit = 0;
-      do
-      {
-        digit *= 2;
-        if ((value & mask) != 0)
-        {
-          digit++;
-        }
-        mask >>= 1;
-        if (mask == 0)
-        {
-          numLimbs--;
-          value = (binary + numLimbs - 1)->x;
-          mask = HALF_INT_RANGE;
-        }
-        nbrBits--;
-      } while ((nbrBits & 3) != 0);
-      if (digit < 10)
-      {        // Convert 0 - 9 to '0' - '9'.
-        *ptrDecimal = (char)(digit + '0');
-        ptrDecimal++;
-      }
-      else
-      {        // Convert 10 - 15 to 'A' - 'F'.
-        *ptrDecimal = (char)(digit + 'A' - 10);
-        ptrDecimal++;
-      }
-      digits++;
-      currentGroupDigit--;
-      if ((currentGroupDigit == 0) && (nbrHexDigits != 1))
-      {
-        *ptrDecimal = ' ';
-        ptrDecimal++;
-        currentGroupDigit = grpLen;
-      }
-      nbrHexDigits--;
-    } while (nbrHexDigits > 0);
+    digits = Bin2HexLoop(&ptrDecimal, binary, currentGroupDigit,
+      nbrBits, numLimbs, mask, grpLen);
   }
   if ((digits > 30) && showDigitsText)
   {
@@ -282,7 +297,47 @@ void Bin2Hex(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
   *ppDecimal = ptrDecimal;
 }
 
-  // Convert little-endian number to a string with space every groupLen digits.
+static void Bin2DecLoop(char** ppDest, int digit[], bool *pSignificantZero,
+  int valueGrp, int grpLen, int *pGroupCtr, int *pDigits)
+{
+  int digits = *pDigits;
+  int count;
+  int value = valueGrp;
+  char* ptrDest = *ppDest;
+  int groupCtr = *pGroupCtr;
+  bool significantZero = *pSignificantZero;
+  for (count = 0; count < DIGITS_PER_LIMB; count++)
+  {
+    digit[count] = value % 10;
+    value /= 10;
+  }
+  for (count = DIGITS_PER_LIMB - 1; count >= 0; count--)
+  {
+    if ((digit[count] != 0) || significantZero)
+    {
+      digits++;
+      *ptrDest = (char)(digit[count] + '0');
+      ptrDest++;
+      if (groupCtr == 1)
+      {
+        *ptrDest = ' ';
+        ptrDest++;
+      }
+      significantZero = true;
+    }
+    groupCtr--;
+    if (groupCtr == 0)
+    {
+      groupCtr = grpLen;
+    }
+  }
+  *ppDest = ptrDest;
+  *pGroupCtr = groupCtr;
+  *pSignificantZero = significantZero;
+  *pDigits = digits;
+}
+
+// Convert little-endian number to a string with space every groupLen digits.
   // In order to perform a faster conversion, use groups of DIGITS_PER_LIMB digits.
 void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength)
 {
@@ -290,7 +345,6 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
   int len;
   int index;
   int index2;
-  int count;
   const limb *ptrSrc = binary + nbrLimbs - 1;
   char *ptrDest;
   bool significantZero = false;
@@ -370,31 +424,7 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
   {
     int value = ptrSrc->x;
     ptrSrc--;
-    for (count = 0; count < DIGITS_PER_LIMB; count++)
-    {
-      digit[count] = value % 10;
-      value /= 10;
-    }
-    for (count = DIGITS_PER_LIMB-1; count >= 0; count--)
-    {
-      if ((digit[count] != 0) || significantZero)
-      {
-        digits++;
-        *ptrDest = (char)(digit[count] + '0');
-        ptrDest++;
-        if (groupCtr == 1)
-        {
-          *ptrDest = ' ';
-          ptrDest++;
-        }
-        significantZero = true;
-      }
-      groupCtr--;
-      if (groupCtr == 0)
-      {
-        groupCtr = grpLen;
-      }
-    }
+    Bin2DecLoop(&ptrDest, digit, &significantZero, value, grpLen, &groupCtr, &digits);
   }
   if (!significantZero)
   {     // Number is zero.
