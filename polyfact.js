@@ -17,11 +17,10 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** @define {number} */ var lang = 1;   // Use with Closure compiler.
-(function(global)
+(function()
 {   // This method separates the name space from the Google Analytics code.
 var worker = 0;
 var busy = 0;
-var app;
 var blob;
 var workerParam;
 var fileContents = 0;
@@ -301,7 +300,6 @@ function fillCache()
 
 window.onload = function ()
 {
-  var param;
   get("stop").disabled = true;
   get("eval").onclick = function ()
   {
@@ -409,7 +407,7 @@ window.onload = function ()
 
   // Generate accordion.
   var acc = document.querySelectorAll("h2");
-  var idx, x, y;
+  var idx;
 
   for (idx = 0; idx < acc.length; idx++)
   {
@@ -446,7 +444,7 @@ window.onload = function ()
   var search = window.location.search;
   if (search.substring(0,3) === "?q=")
   {
-    polyTextArea.value = unescape(search.substring(3));
+    polyTextArea.value = decodeURIComponent(search.substring(3));
     dowork(0);    // Factor polynomial.
   }
   if ("serviceWorker" in navigator)
@@ -497,4 +495,4 @@ else
   fileContents=new Int8Array(length);
   b64decode(wasm, fileContents); 
 }
-})(this);
+})();
