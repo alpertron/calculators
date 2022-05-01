@@ -529,7 +529,7 @@ void AdjustBigIntModN(limb *Nbr, const limb *Mod, int nbrLen)
   AdjustModN(Nbr, Mod, nbrLen);
 }
 
-void MultBigNbrModN(const limb *Nbr1, limb *Nbr2, limb *Prod, limb *Mod, int nbrLen)
+void MultBigNbrModN(const limb *Nbr1, limb *Nbr2, limb *Prod, const limb *Mod, int nbrLen)
 {
   int i = nbrLen;
   limb arr[MAX_LIMBS_SIQS];

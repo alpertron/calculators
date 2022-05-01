@@ -199,7 +199,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       valueX.nbrLimbs = 0;     // Invalidate variable x and counter c.
       ptrNextBatchFactor = ptrCurrBatchFactor;
       while ((*ptrNextBatchFactor != '\0') && (*ptrNextBatchFactor != '\r') &&
-            ((*ptrNextBatchFactor != '\n')))
+            (*ptrNextBatchFactor != '\n'))
       {
         ptrNextBatchFactor++;
       }

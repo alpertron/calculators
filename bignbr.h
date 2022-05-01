@@ -216,7 +216,7 @@ int BigNbrToBigInt(const BigInteger *pBigNbr, limb *pBigInt);
 void BigIntToBigNbr(BigInteger *pBigNbr, const limb *pBigInt, int nbrLenBigInt);
 void GcdBigNbr(const limb *pNbr1, const limb *pNbr2, limb *pGcd, int nbrLen);
 void AdjustBigIntModN(limb *Nbr, const limb *Mod, int nbrLen);
-void MultBigNbrModN(const limb *Nbr1, limb *Nbr2, limb *Prod, limb *Mod, int nbrLen);
+void MultBigNbrModN(const limb *Nbr1, limb *Nbr2, limb *Prod, const limb *Mod, int nbrLen);
 void MultBigNbrByIntModN(limb *Nbr1, int Nbr2, limb *Prod, const limb *Mod, int nbrLen);
 int intDoubleModPow(int NbrMod, int Expon, int currentPrime);
 void ModInvBigInt(const limb *num, limb *inv, const limb *mod, int nbrLenBigInt);

@@ -47,14 +47,14 @@ static void ToPoly(int polyDegree, const int* polySrc, int* polyDest)
       *(ptrPolyDest + 1) = 0;
       ptrPolyDest += NumberLength + 1;
     }
-    lenBytes = (*(ptrPolySrc)+1) * (int)sizeof(int);
+    lenBytes = (*ptrPolySrc+1) * (int)sizeof(int);
     (void)memcpy(ptrPolyDest, ptrPolySrc, lenBytes);
   }
   else
   {   // Polynomial
     for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
     {
-      int nbrLimbs = *(ptrPolySrc)+1;
+      int nbrLimbs = *ptrPolySrc+1;
       lenBytes = nbrLimbs * (int)sizeof(int);
       (void)memcpy(ptrPolyDest, ptrPolySrc, lenBytes);
       ptrPolyDest += NumberLength + 1;
@@ -367,7 +367,7 @@ static void ReverseModularPolynomial(const int* ptrSrc, int* ptrRev, int polyDeg
 
 // Perform modular division of polynomials pDividend/pDivisor (pDivisor is monic).
 static void PolynomialNewtonDivision(/*@in@*/int* pDividend, int dividendDegree,
-  /*@in@*/int* pDivisor, int divisorDegree, /*@out@*/int* ptrQuotient)
+  const int* pDivisor, int divisorDegree, /*@out@*/int* ptrQuotient)
 {
   int quotientDegree = dividendDegree - divisorDegree;
   int oldDegree = 1;
@@ -564,7 +564,6 @@ void DividePolynomial(/*@in@*/int* pDividend, int dividendDegree,
     }
   }
   if ((divisorDegree > 16) && (dividendDegree < (4*divisorDegree)))
-//  if (0)
   {         // Newton division is faster.
     PolynomialNewtonDivision(pDividend, dividendDegree,
       pDivisor, divisorDegree, ptrQuotient);

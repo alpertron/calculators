@@ -18,7 +18,7 @@
 */
 /* global useBlockly */
 /** @define {number} */ var lang = 1;   // Use with Closure compiler.
-(function(global)
+(function()
 {   // This method separates the name space from the Google Analytics code.
 var points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 20,5, 22,10, 23,12, 24,6, 27,7];
 var wizardStep = 0;
@@ -26,7 +26,7 @@ var wizardTextInput;
 var worker = 0;
 var fileContents = null;
 var app;
-var blob, blobWasm;
+var blob;
 var digits;
 var config;
 var fromFile;
@@ -34,8 +34,6 @@ var tofile;
 var fileName;
 var workerParam;
 var asmjs = typeof(WebAssembly) === "undefined";
-var indexedDBSupport = ("indexedDB" in window);
-var db;
 var bmodeLoaded = 0;
 var statusText = "";
 var resultText = "";
@@ -48,7 +46,6 @@ var blocklyLoaded = 0;
 var scriptsLoaded = 0;
 var script1;
 var script2;
-var script3;
 var funcnames;
 var parens;
 
@@ -168,7 +165,7 @@ function saveConfig()
 
 function b64decode(str,out)
 {
-  var ch, idx;
+  var ch;
   var idxDest,idxSrc;
   var blocks, leftOver;
   var byte0, byte1, byte2, byte3;
@@ -578,7 +575,7 @@ function updateCache(cache)
     {     // Copy cached resources to main cache and delete this one.
       tempCache.matchAll().then(function(responseArr)
       {   // All responses in array responseArr.
-        responseArr.forEach(function(responseTempCache, index, array)
+        responseArr.forEach(function(responseTempCache, _index, _array)
         {
           cache.put(responseTempCache.url, responseTempCache);
         });
@@ -626,7 +623,7 @@ function fillCache()
             {              // Copy cached resources to main cache and delete this one.
               tempCache.matchAll().then(function(responseArr)
               {            // All responses in array responseArr.
-                responseArr.forEach(function(responseTempCache, index, array)
+                responseArr.forEach(function(responseTempCache, _index, _array)
                 {
                   var urlTemp = responseTempCache.url;
                   var indexZero = url.indexOf("00");
@@ -634,7 +631,7 @@ function fillCache()
                   {        // There is an old version of this resource on cache to be erased.
                     cache.keys().then(function(keys)
                     {
-                      keys.forEach(function(requestCache, index, array)
+                      keys.forEach(function(requestCache, _index, _array)
                       {    // Traverse cache.
                         if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
                             requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
@@ -772,7 +769,7 @@ function completeFuncButtons(funcButtons, inputId)
 
 function startUp()
 {
-  var param, index, ecmFactor;
+  var index, ecmFactor;
   value = get("value");
   btnNext = get("next");
   btnEval = get("eval");
@@ -835,16 +832,16 @@ function startUp()
   btnToFile.onclick = function()
   {
     hide("savefile");
-    var blob = new Blob([tofile], { type: "text/plain" });
-    var url = URL.createObjectURL(blob);
+    var fileBlob = new Blob([tofile], { type: "text/plain" });
+    var fileUrl = URL.createObjectURL(fileBlob);
     var a = document.createElement("a");
-    a.href = url;
+    a.href = fileUrl;
     a.download = fileName;
     var clickHandler = function()
     {
       setTimeout(function()
       {
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(fileUrl);
         this.removeEventListener("click", clickHandler);
       },
       150);
@@ -1124,7 +1121,7 @@ function startUp()
       userdata.value = "";      
     }
     var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function (event)
+    xhr.onreadystatechange = function(_event)
     {
       if (xhr.readyState === 4) 
       {             // XHR finished.
@@ -1172,7 +1169,7 @@ function startUp()
       modal.style.display = "none";
     }
   };
-  window.onresize = function(event)
+  window.onresize = function(_event)
   {
     var options = {
             "behavior": "auto",
@@ -1347,7 +1344,7 @@ if (asmjs)
   var req = new XMLHttpRequest();
   req.open("GET", "ecmW0000.js", true);
   req.responseType = "arraybuffer";
-  req.onreadystatechange = function (aEvt)
+  req.onreadystatechange = function (_aEvt)
   {
     if (req.readyState === 4 && req.status === 200)
     {

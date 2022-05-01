@@ -19,7 +19,7 @@
 var cacheName = "newCache";
 
 // Do not cache anything in advance.
-self.addEventListener("install", function(event)
+self.addEventListener("install", function(_event)
 {
   self.skipWaiting();
 });

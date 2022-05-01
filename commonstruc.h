@@ -187,7 +187,7 @@ struct stSaveFactors
   char text[MAX_LEN * 36];
 };
 
-extern union uCommon
+union uCommon
 {
   struct stSiqs siqs;
   struct stEcm ecm;
@@ -195,4 +195,6 @@ extern union uCommon
   struct stQuad quad;
   struct stSaveFactors saveFactors;
   struct stDivisors divisors;
-} common;
+};
+
+extern union uCommon common;
