@@ -85,12 +85,10 @@ var info =
 
 self.onmessage = function (e)
 {
-  var request;
   if (wasmLoaded)
   {
     convertToString(exports["getInputStringPtr"](), e.data[0]);
     exports["doWork"]();
-    return;  
   }
   WebAssembly["instantiate"](e.data[1], info).then(function(results)
   {

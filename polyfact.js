@@ -130,7 +130,7 @@ function endFeedback()
 
 function b64decode(str,out)
 {
-  var ch, idx;
+  var ch;
   var idxDest,idxSrc;
   var blocks, leftOver;
   var byte0, byte1, byte2, byte3;

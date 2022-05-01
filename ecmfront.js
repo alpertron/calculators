@@ -543,7 +543,7 @@ function wizardNext()
 
 function updateVerbose(isVerbose)    
 {
-  var cssRules = (document.all) ? document.styleSheets[0]["rules"]: document.styleSheets[0]["cssRules"];
+  var cssRules = document.styleSheets[0]["cssRules"];
   var index;
   var len = cssRules.length;
   for (index=0; index<len; index++)
