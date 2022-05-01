@@ -374,9 +374,8 @@ function zoomOut()
   }
 }
 
-function keydown(e) 
+function keydown(evt)
 {
-  var evt = e || window.event;
   var target = evt.target || evt.srcElement;
   var key = evt.keyCode;
   if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
@@ -433,9 +432,8 @@ function startUp()
   {
     zoomOut();
   };
-  canvas.onkeydown = function (e)
+  canvas.onkeydown = function (evt)
   {
-    var evt = e || window.event;
     var key = evt.keyCode;
     switch (key)
     {
@@ -461,9 +459,8 @@ function startUp()
         break; 
     }      
   };
-  canvas.onmousemove = function(e)
+  canvas.onmousemove = function(evt)
   {
-    var evt = e || window.event;
     var newX = evt.clientX;
     var newY = evt.clientY;      // Coordinates relative to window.
     var rect = canvas.getBoundingClientRect();
@@ -486,9 +483,8 @@ function startUp()
       }
     }
   };  
-  canvas.onmousedown = function(e)
+  canvas.onmousedown = function(evt)
   {
-    var evt = e || window.event;
     currentX = evt.clientX;
     currentY = evt.clientY;      // Coordinates relative to window. 
     var rect = canvas.getBoundingClientRect();
@@ -500,9 +496,8 @@ function startUp()
   {
     isMouseDown = false;
   };
-  canvas.addEventListener("touchstart", function(e)
+  canvas.addEventListener("touchstart", function(evt)
   {
-    var evt = e || window.event;
     var touches = evt.targetTouches;
     var touch = touches[0];
     prevX1stTouch = Math.round(touch.pageX);
@@ -515,10 +510,9 @@ function startUp()
       zoomDone = 0;
     }    
   }, false);  
-  canvas.addEventListener("touchmove", function(e)
+  canvas.addEventListener("touchmove", function(evt)
   {
     var touch2, oldDist, newDist, diffX, diffY;
-    var evt = e || window.event;
     var touches = evt.targetTouches;
     var touch1 = touches[0];
     var newX = Math.round(touch1.pageX);

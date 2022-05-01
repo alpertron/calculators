@@ -184,7 +184,7 @@ function updateGraphic(input, nbr)
 
 function b64decode(str,out)
 {
-  var ch, idx;
+  var ch;
   var idxDest,idxSrc;
   var blocks, leftOver;
   var byte0, byte1, byte2, byte3;
@@ -271,7 +271,7 @@ function startLowLevelCode()
     asmJSbuffer = new ArrayBuffer(bufSize);
     HEAP8 = new Uint8Array(asmJSbuffer);    // Reserve 32 MB for asm.js variables and buffers.
     env = {"a": {"buffer": asmJSbuffer},
-      "abort": function(q) {},
+      "abort": function(_q) {/* Not used*/},
     };
     // check for imul support, and also for correctness ( https://bugs.webkit.org/show_bug.cgi?id=126345 )
     if (!Math["imul"] || Math["imul"](minusOne, 5) !== -5)
@@ -330,7 +330,6 @@ function startLowLevelCode()
       HEAP8 = new Uint8Array(asm["memory"]["buffer"]);
       pixels = HEAP8.subarray(asm["getPixels"]());
       updateGraphic(center, 1);
-      return;
     });
   }
 }
@@ -392,13 +391,12 @@ function startUp()
   {
     zoomOut();
   };
-  canvas.onkeydown = function (e)
+  canvas.onkeydown = function (evt)
   {
     if (checkStart())
     {    // Cannot show spiral when center is less than start value.
       return;
     }
-    var evt = e || window.event;
     var key = evt.keyCode;
     switch (key)
     {
@@ -424,13 +422,12 @@ function startUp()
         break; 
     }      
   };
-  canvas.onmousemove = function(e)
+  canvas.onmousemove = function(evt)
   {
     if (checkStart())
     {    // Cannot show spiral when center is less than start value.
       return;
     }
-    var evt = e || window.event;
     var newX = evt.clientX;
     var newY = evt.clientY;      // Coordinates relative to window.
     var rect = canvas.getBoundingClientRect();
@@ -453,9 +450,8 @@ function startUp()
       }
     }
   };  
-  canvas.onmousedown = function(e)
+  canvas.onmousedown = function(evt)
   {
-    var evt = e || window.event;
     currentX = evt.clientX;
     currentY = evt.clientY;      // Coordinates relative to window. 
     var rect = canvas.getBoundingClientRect();
@@ -467,9 +463,8 @@ function startUp()
   {
     isMouseDown = false;
   };
-  canvas.addEventListener("touchstart", function(e)
+  canvas.addEventListener("touchstart", function(evt)
   {
-    var evt = e || window.event;
     var touches = evt.targetTouches;
     var touch = touches[0];
     prevX1stTouch = Math.round(touch.pageX);
@@ -482,10 +477,9 @@ function startUp()
       zoomDone = 0;
     }    
   }, false);  
-  canvas.addEventListener("touchmove", function(e)
+  canvas.addEventListener("touchmove", function(evt)
   {
     var touch2, oldDist, newDist, diffX, diffY;
-    var evt = e || window.event;
     var touches = evt.targetTouches;
     var touch1 = touches[0];
     var newX = Math.round(touch1.pageX);
@@ -522,9 +516,8 @@ function startUp()
       }
     }
   }, false);
-  center.onkeydown = function(e)
+  center.onkeydown = function(evt)
   {
-    var evt = e || window.event;
     var key = evt.keyCode;
     if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
     {                                    // No modifier key pressed.
@@ -559,9 +552,8 @@ function startUp()
       updateGraphic(center, 1);
     }
   };
-  start.onkeydown = function(e)
+  start.onkeydown = function(evt)
   {
-    var evt = e || window.event;
     var key = evt.keyCode;
     if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
     {                                    // No modifier key pressed.
@@ -585,9 +577,9 @@ function startUp()
   };
   window.onresize = function()
   {
-    var domRect = canvas.getBoundingClientRect();
-    canvas.width = domRect.width;
-    canvas.height = domRect.height;
+    var newDomRect = canvas.getBoundingClientRect();
+    canvas.width = newDomRect.width;
+    canvas.height = newDomRect.height;
     updateGraphic(center, 1);
   };
 }

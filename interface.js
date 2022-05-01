@@ -534,10 +534,6 @@ function startUp()
       res = get("result");
       res.style.display = "block";
       var input = get("num").value;
-      if (!e)
-      {
-        e = window.event;
-      }
       var keyCode = e.keyCode || e.which;
       if (keyCode === 13)
       {  // Used pressed Enter key
