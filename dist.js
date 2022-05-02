@@ -530,6 +530,12 @@ function grayFindDistButton()
   }
 }
 
+function isNotSpecialKey(key)
+{
+  return key !== "Backspace" && key !== "Tab" && key !== "Right" && key !== "ArrowRight" &&
+         key !== "Left" && key != "ArrowLeft" && key !== "Insert" && key !== "Delete";
+}
+
 function startUp()
 {
   var index, degmin, s;
@@ -601,8 +607,8 @@ function startUp()
   };
   get("dist1").onkeydown = function (event)
   {
-    var key = event.keyCode;
-    if (key === 10 || key === 13)
+    var key = event.key;
+    if (key === "Enter")
     {
       event.preventDefault();          // Do not propagate Enter key.
       if (get("dist1").value.length > 0)
@@ -610,13 +616,9 @@ function startUp()
         test1(true);                   // Second part of test 1.
       }
     }
-    if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45)
+    if (isNotSpecialKey())
     {                                  // Not backspace, tab, right or left arrow or insert key.
-      if (key >= 0x60 && key <= 0x69)
-      {
-        key -= 0x30;                   // Convert numpad key to standard digit key.
-      }
-      if (key < 0x30 || key > 0x39 || get("dist1").value.length === 6)
+      if (key < "0" || key > "9" || get("dist1").value.length === 6)
       {                                // Key is not a digit or number is too large.
         event.preventDefault();        // Do not propagate this key.
       }
@@ -624,20 +626,16 @@ function startUp()
   };
   get("order").onkeydown = function (event)
   {
-    var key = event.keyCode;
+    var key = event.key;
     var value = get("order").value;
-    if ((key === 10 || key === 13) && value.length === 4)
+    if ((key === "Enter") && value.length === 4)
     {
       event.preventDefault();          // Do not propagate Enter key.
       showResultsTest2(value);         // Second part of test 2.
     }
-    if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45)
+    if (isNotSpecialKey())
     {                                  // Not backspace, tab, right or left arrow or insert key.
-      if (key >= 0x60 && key <= 0x69)
-      {
-        key -= 0x30;                   // Convert numpad key to standard digit key.
-      }
-      if (key < 0x31 || key > 0x34 || value.indexOf(String.fromCharCode(key)) >= 0)
+      if (key < "1" || key > "4" || value.indexOf(key) >= 0)
       {                                // Key is not a digit 1 to 4 or digit is already used.
         event.preventDefault();        // Do not propagate this key.
       }
@@ -679,20 +677,16 @@ function startUp()
   };
   get("cityFrom").onkeydown = function (event)
   {
-    var key = event.keyCode;
+    var key = event.key;
     var value = get("cityFrom").value;
-    if ((key === 10 || key === 13) && parseInt(value,10) >= 1 && parseInt(value,10) <= cityData.length)
+    if (key === "Enter" && parseInt(value,10) >= 1 && parseInt(value,10) <= cityData.length)
     {
       event.preventDefault();          // Do not propagate Enter key.
       get("cityTo").focus();           // Enter second city.
     }
-    if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45)
+    if (isNotSpecialKey())
     {                                  // Not backspace, tab, right or left arrow or insert key.
-      if (key >= 0x60 && key <= 0x69)
-      {
-        key -= 0x30;                   // Convert numpad key to standard digit key.
-      }
-      if (key < 0x30 || key > 0x39 || value.length === 3)
+      if (key < "0" || key > "9" || value.length === 3)
       {                                // Key is not a digit or 3 digits is already used.
         event.preventDefault();        // Do not propagate this key.
       }
@@ -701,21 +695,17 @@ function startUp()
   get("cityFrom").oninput = grayFindDistButton;
   get("cityTo").onkeydown = function (event)
   {
-    var key = event.keyCode;
+    var key = event.key;
     var value = get("cityTo").value;
-    if ((key === 10 || key === 13) && parseInt(value,10) >= 1 && parseInt(value,10) <= cityData.length)
+    if (key === "Enter" && parseInt(value,10) >= 1 && parseInt(value,10) <= cityData.length)
     {
       event.preventDefault();          // Do not propagate Enter key.
       questionNbr = 0;
       test1(true);                     // Show distance between cities.
     }
-    if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45)
+    if (isNotSpecialKey())
     {                                  // Not backspace, right or left arrow or insert key.
-      if (key >= 0x60 && key <= 0x69)
-      {
-        key -= 0x30;                   // Convert numpad key to standard digit key.
-      }
-      if (key < 0x30 || key > 0x39 || value.length === 3)
+      if (key < "0" || key > "9" || value.length === 3)
       {                                // Key is not a digit or 3 digits is already used.
         event.preventDefault();        // Do not propagate this key.
       }

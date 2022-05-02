@@ -377,21 +377,17 @@ function zoomOut()
 function keydown(evt)
 {
   var target = evt.target || evt.srcElement;
-  var key = evt.keyCode;
+  var key = evt.key;
   if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
   {                                  // No modifier key pressed.
-    if (key >= 0x60 && key <= 0x69)
-    {
-      key -= 0x30;                   // Convert numpad key to standard digit key.
-    }
-    if (key >= 0x30 && key <= 0x39)
+    if (key >= "0" && key <= "9")
     {                                // Digit key has been pressed.
       if (target.value.length >= 10 || (target.value.charAt(0) !== "-" && target.value.length >= 9))
       {                              // Number is too large.
         evt.preventDefault();        // Do not propagate this key.
       }
     }
-    else if (key === 109 || key === 189)
+    else if (key === "-")
     {                                // Key minus has been pressed.
       if (target.value.indexOf("-") >= 0)
       {                              // There is already a minus sign.
@@ -402,7 +398,8 @@ function keydown(evt)
         beforeMinus = target.value;
       }
     }
-    else if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45 && key !== 46)
+    else if (key !== "Backspace" && key !== "Tab" && key !== "Right" && key !== "ArrowRight" &&
+             key !== "Left" && key != "ArrowLeft" && key !== "Insert" && key !== "Delete")
     {                                // Not backspace, tab, right or left arrow, insert or delete key.
       evt.preventDefault();          // Do not propagate this key.  
     }
@@ -434,25 +431,28 @@ function startUp()
   };
   canvas.onkeydown = function (evt)
   {
-    var key = evt.keyCode;
-    switch (key)
+    switch (evt.key)
     {
-      case 37: // Left arrow:
+      case "Left":        // Left arrow:
+      case "ArrowLeft":   // Left arrow:
         moveGraphic(4, 0);
         showInfo(asmGetInformation(-1, -1));
         evt.preventDefault();          // Do not propagate this key.
         break; 
-      case 38: // Up arrow:
+      case "Up":         // Up arrow:
+      case "ArrowUp":    // Up arrow:
         moveGraphic(0, 4);
         showInfo(asmGetInformation(-1, -1));
         evt.preventDefault();          // Do not propagate this key.
         break; 
-      case 39: // Right arrow:
+      case "Right":      // Right arrow:
+      case "ArrowRight": // Right arrow:
         moveGraphic(-4, 0);
         showInfo(asmGetInformation(-1, -1));
         evt.preventDefault();          // Do not propagate this key.
         break; 
-      case 40: // Down arrow:
+      case "Down":       // Down arrow:
+      case "ArrowDown":  // Down arrow:
         moveGraphic(0, -4);
         showInfo(asmGetInformation(-1, -1));
         evt.preventDefault();          // Do not propagate this key.

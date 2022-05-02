@@ -442,7 +442,7 @@ window.onload = function()
   };
   get("value").onkeydown = function(evt)
   {
-    if (evt.ctrlKey && evt.keyCode === 13)
+    if (evt.ctrlKey && evt.key === "Enter")
     {
       dowork(2);
       evt.stopPropagation();

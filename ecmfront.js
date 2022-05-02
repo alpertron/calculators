@@ -887,7 +887,8 @@ function startUp()
   };
   wzdInput.onkeydown = function (event)
   {
-    if (event.keyCode === 10 || event.keyCode === 13)
+    var keyCode = event.key;
+    if (keyCode === "Enter")
     {
       event.preventDefault();          // Do not propagate Enter key.
       if (!btnNext.disabled)
@@ -897,7 +898,7 @@ function startUp()
     }
     if (event.altKey)
     {                                  // User pressed ALT key.
-      if (event.keyCode === 80)
+      if (keyCode === 80)
       {                                // User pressed ALT-P.
         event.preventDefault();        // Do not propagate key.
         if (get("oneexpr").checked)
@@ -913,13 +914,13 @@ function startUp()
           oneexpr();
         }
       }
-      else if (event.keyCode === 68)
+      else if (keyCode === 68)
       {                                // User pressed ALT-D.
         event.preventDefault();        // Do not propagate key.
         chkDecW.checked = true;
         chkHexW.checked = false;
       }
-      else if (event.keyCode === 72)
+      else if (keyCode === 72)
       {                                // User pressed ALT-H.
         event.preventDefault();        // Do not propagate key.
         chkDecW.checked = false;
@@ -998,7 +999,13 @@ function startUp()
   };
   newCurveOrFactor.onkeydown = function(event)
   {
-    return (event.charCode === 8 || event.charCode === 0) ? null : event.charCode >= 48 && event.charCode <= 57;
+    var key = event.key;
+    if (key !== "Backspace" && key !== "Tab" && key !== "Right" && key !== "ArrowRight" &&
+        key !== "Left" && key != "ArrowLeft" && key !== "Insert" && key !== "Delete" &&
+        (key < "0" || key > "9"))
+    {
+      event.preventDefault();          // Do not propagate this key.  
+    }
   };
   btnStop.onclick = function()
   {
@@ -1014,7 +1021,8 @@ function startUp()
   };
   value.onkeydown = function (event)
   {
-    if ((event.keyCode === 10 || event.keyCode === 13) && event.ctrlKey)
+    var keyCode = event.key;
+    if (keyCode === "Enter" && event.ctrlKey)
     {
       event.preventDefault();          // Do not propagate Enter key.
       setStorage("ecmFactors","");     // Perform factorization.

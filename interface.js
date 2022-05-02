@@ -534,8 +534,8 @@ function startUp()
       res = get("result");
       res.style.display = "block";
       var input = get("num").value;
-      var keyCode = e.keyCode || e.which;
-      if (keyCode === 13)
+      var keyCode = e.key;
+      if (keyCode === "Enter")
       {  // Used pressed Enter key
         output = get("result");
         if (input === "")
@@ -586,7 +586,8 @@ function startUp()
     };
     get("wzdinput").onkeydown = function (event)
     {
-      if (event.keyCode === 10 || event.keyCode === 13)
+      var keyCode = event.key;
+      if (keyCode === "Enter")
       {
         if (!get("next").disabled)
         {                                // Next button is not disabled.
@@ -597,7 +598,7 @@ function startUp()
       }
       if (event.altKey)
       {                                  // User pressed ALT key.
-        if (event.keyCode === 80)
+        if (keyCode === "P")
         {                                // User pressed ALT-P.
           event.stopPropagation();       // Do not propagate key.
           event.preventDefault();
@@ -614,14 +615,14 @@ function startUp()
             oneexpr();
           }
         }
-        else if (event.keyCode === 68)
+        else if (keyCode === "D")
         {                                // User pressed ALT-D.
           event.stopPropagation();       // Do not propagate key.
           event.preventDefault();
           get("decW").checked = true;
           get("hexW").checked = false;
         }
-        else if (event.keyCode === 72)
+        else if (keyCode === "H")
         {                                // User pressed ALT-H.
           event.stopPropagation();       // Do not propagate key.
           event.preventDefault();
@@ -697,7 +698,8 @@ function startUp()
   }
   get("num").onkeydown = function (event)
   {
-    if ((event.keyCode === 10 || event.keyCode === 13) && event.ctrlKey)
+    var keyCode = event.key;
+    if (keyCode === "Enter" && event.ctrlKey)
     {
       event.preventDefault();          // Do not propagate Enter key.
       performCalc();                   // Perform calculation.
