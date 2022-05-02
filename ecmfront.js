@@ -722,7 +722,7 @@ function updateInputFromButton(button, inputId)
     input.selectionStart = start + this.innerText.length;
     input.selectionEnd = input.selectionStart;
   };
-};
+}
     
 function generateFuncButtons(optionCategory, funcButtons, inputId)
 {
