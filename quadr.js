@@ -157,7 +157,7 @@ function dowork(n)
 function moveNext(e, curr, next)
 {    
   var nextInput = get(next);
-  if ((e.which === 10 || e.which === 13) && curr.value.trim().length > 0)
+  if (e.key === "Enter" && curr.value.trim().length > 0)
   {
     e.preventDefault();
     nextInput.focus();
@@ -427,7 +427,7 @@ window.onload = function()
   };
   get("coefF").onkeydown = function(e)
   {
-    if ((e.which === 10 || e.which === 13) && this.value.trim().length > 0)
+    if (e.key === "Enter" && this.value.trim().length > 0)
     {
       e.preventDefault();
       get("coefA").focus();

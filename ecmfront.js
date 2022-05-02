@@ -898,7 +898,7 @@ function startUp()
     }
     if (event.altKey)
     {                                  // User pressed ALT key.
-      if (keyCode === 80)
+      if (keyCode === "P")
       {                                // User pressed ALT-P.
         event.preventDefault();        // Do not propagate key.
         if (get("oneexpr").checked)
@@ -914,13 +914,13 @@ function startUp()
           oneexpr();
         }
       }
-      else if (keyCode === 68)
+      else if (keyCode === "D")
       {                                // User pressed ALT-D.
         event.preventDefault();        // Do not propagate key.
         chkDecW.checked = true;
         chkHexW.checked = false;
       }
-      else if (keyCode === 72)
+      else if (keyCode === "H")
       {                                // User pressed ALT-H.
         event.preventDefault();        // Do not propagate key.
         chkDecW.checked = false;

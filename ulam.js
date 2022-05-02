@@ -557,13 +557,10 @@ function startUp()
     var key = evt.key;
     if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
     {                                    // No modifier key pressed.
-      if (key !== 8 && key !== 9 && key !== 37 && key !== 39 && key !== 45 && key !== 46)
+      if (key !== "Backspace" && key !== "Tab" && key !== "Right" && key !== "ArrowRight" &&
+          key !== "Left" && key != "ArrowLeft" && key !== "Insert" && key !== "Delete")
       {                                  // Not backspace, tab, right or left arrow, insert or delete key.
-        if (key >= 0x60 && key <= 0x69)
-        {
-          key -= 0x30;                   // Convert numpad key to standard digit key.
-        }
-        if (key < 0x30 || key > 0x39 || start.value.length >= 18)
+        if (key < "0" || key > "9" || start.value.length >= 18)
         {                                // Key is not a digit or number is too large.
           evt.preventDefault();          // Do not propagate this key.
         }
