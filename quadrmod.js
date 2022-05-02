@@ -31,7 +31,7 @@
   {
     funcnames =
     [
-      "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Raíz cuadrada entera,sqrt(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(",
+      "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(",
       "Igual,=,Distinto,!=,Mayor,>,Menor o igual,<=,Menor,<,Mayor o igual,>=",
       "Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT ,Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ",
       "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD(,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM(,¿El valor es primo?,IsPrime(",
@@ -45,7 +45,7 @@
   {
     funcnames =
     [
-      "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Integer square root,sqrt(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(",
+      "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(",
       "Equal,=,Not equal,!=,Greater,>,Not greater,<=,Less,<,Not less,>=",
       "Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ,Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ",
       "Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(",
@@ -318,33 +318,34 @@ function fillCache()
   });
 }
 
-function updateInputFromButton(button, inputId)
+function updateInputFromButton(button)
 {
   button.onclick = function()
   {
-    var input = get(inputId);
+    var input = currentInputBox;
     input.focus();
     var start = input.selectionStart;
     input.value = input.value.substring(0, start) +
                   this.innerText +
-                  input.value.substring(input.selectionEnd, input.value.length);
+                  input.value.substring(input.selectionEnd);
       // Place the caret at the end of the appended text.
     input.selectionStart = start + this.innerText.length;
     input.selectionEnd = input.selectionStart;
   };
 }
 
-function completeFuncButtons(funcButtons, inputId)
+function completeFuncButtons()
 {
   var button;
   var catIndex;
   var funcname = (parens + funcnames[0]).split(",");
-  var funcbtns = get(funcButtons);
+  var funcbtns = get("funcbtns");
+  currentInputBox = get("quad");
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
     button = funcbtns.children[catIndex];
     button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
-    updateInputFromButton(button, inputId);
+    updateInputFromButton(button);
   } 
 }
 
@@ -365,7 +366,7 @@ function generateFuncButtons(optionCategory, funcButtons)
     button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
     button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
     button.classList.add("funcbtn");
-    updateInputFromButton(button, inputId);
+    updateInputFromButton(button);
     fragment.appendChild(button);
   }
   funcbtns.innerHTML = "";
@@ -484,11 +485,12 @@ window.onload = function()
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"].register("calcSW.js").then(function() {}, function() {});
+    navigator["serviceWorker"]["register"]("calcSW.js").then(
+              function() {/* Nothing to do */}, function() {/* Nothing to do */});
     fillCache();
   }
+  completeFuncButtons();
 };
-completeFuncButtons("funcbtns", "quad");
 
 if (asmjs)
 {
@@ -526,7 +528,7 @@ else
   }
   if (wasm.charCodeAt(wasm.length-2) === 61)
   {
-   length--;
+    length--;
   }
   fileContents=new Int8Array(length);
   b64decode(wasm, fileContents); 

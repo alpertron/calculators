@@ -336,7 +336,7 @@ function generateFuncButtons(optionCategory, funcButtons)
       var start = input.selectionStart;
       input.value = input.value.substring(0, start) +
                     this.innerText +
-                    input.value.substring(input.selectionEnd, input.value.length);
+                    input.value.substring(input.selectionEnd);
         // Place the caret at the end of the appended text.
       input.selectionStart = start + this.innerText.length;
       input.selectionEnd = input.selectionStart;

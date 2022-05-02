@@ -367,7 +367,7 @@ function generateFuncButtons(optionCategory, funcButtons)
       var start = input.selectionStart;
       input.value = input.value.substring(0, start) +
                     this.innerText +
-                    input.value.substring(input.selectionEnd, input.value.length);
+                    input.value.substring(input.selectionEnd);
         // Place the caret at the end of the appended text.
       input.selectionStart = start + this.innerText.length;
       input.selectionEnd = input.selectionStart;
@@ -534,7 +534,8 @@ window.onload = function()
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"].register("calcSW.js").then(function() {}, function() {});
+    navigator["serviceWorker"]["register"]("calcSW.js").then(
+              function() {/* Nothing to do */}, function() {/* Nothing to do */});
     fillCache();
   }
 };
