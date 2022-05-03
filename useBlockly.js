@@ -425,7 +425,7 @@ function useBlockly(callback, lang)
       "media": "/",
       "css": false});
       
-  blocklyResize = function(e) {
+  blocklyResize = function(_e) {
     // Compute the absolute coordinates and dimensions of blocklyArea.
     var element = blocklyArea;
     /** @type {number} */
