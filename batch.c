@@ -39,6 +39,13 @@ char outputExpr[200000];
 char *ptrInputText;
 char emptyInputText;
 #endif
+static char* ptrExprToProcess;
+static char* ptrOutput;
+static char* ptrSrcString;
+static const char* ptrConditionExpr;
+static bool errorDisplayed;
+static int endValuesProcessed;
+
 
 void beginLine(char** pptrOutput)
 {
@@ -64,7 +71,7 @@ static void stringToHTML(char **pptrOutput, const char *ptrString)
 {
   const char* ptrStr = ptrString;
   int character;
-  char *ptrOutput = *pptrOutput;
+  char *ptrOut = *pptrOutput;
   for (;;)
   {
     char c = *ptrStr;
@@ -92,21 +99,21 @@ static void stringToHTML(char **pptrOutput, const char *ptrString)
     if ((character >= ' ') && (character < 127) && (character != '<') &&
       (character != '>') && (character != '&'))
     {  // Safe to copy character.
-      *ptrOutput = (char)character;
-      ptrOutput++;
+      *ptrOut = (char)character;
+      ptrOut++;
     }
     else
     {  // Insert HTML entity.
-      *ptrOutput = '&';
-      ptrOutput++;
-      *ptrOutput = '#';
-      ptrOutput++;
-      int2dec(&ptrOutput, character);
-      *ptrOutput = ';';
-      ptrOutput++;
+      *ptrOut = '&';
+      ptrOut++;
+      *ptrOut = '#';
+      ptrOut++;
+      int2dec(&ptrOut, character);
+      *ptrOut = ';';
+      ptrOut++;
     }
   }
-  *pptrOutput = ptrOutput;
+  *pptrOutput = ptrOut;
 }
 
 static enum eExprErr evalExpression(const char *expr, BigInteger *ptrResult)
@@ -141,31 +148,220 @@ static void SkipSpaces(char **pptrText)
 
 static void BatchError(char **pptrOutput, const char *batchText, const char *errorText)
 {
-  char *ptrOutput = *pptrOutput;
-  stringToHTML(&ptrOutput, batchText);
-  *ptrOutput = ':';
-  ptrOutput++;
-  *ptrOutput = ' ';
-  ptrOutput++;
-  copyStr(&ptrOutput, errorText);
-  *pptrOutput = ptrOutput;
+  char *ptrOut = *pptrOutput;
+  stringToHTML(&ptrOut, batchText);
+  *ptrOut = ':';
+  ptrOut++;
+  *ptrOut = ' ';
+  ptrOut++;
+  copyStr(&ptrOut, errorText);
+  *pptrOutput = ptrOut;
   counterC = 0;
+}
+
+static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* valueFound)
+{
+  char* ptrCharFound;
+  char* NextExpr;
+  char* EndExpr;
+  char* ptrStartExpr;
+#ifdef __EMSCRIPTEN__
+  ptrInputText = &emptyInputText;
+#endif
+  if (!firstExprProcessed)
+  {
+    enum eExprErr rc;
+    ptrCharFound = findChar(ptrSrcString + 1, ';');
+    if (ptrCharFound == NULL)
+    {
+      BatchError(&ptrOutput, batchText,
+        lang ? "se esperaban tres o cuatro puntos y comas pero no hay ninguno" :
+        "three or four semicolons expected but none found");
+      ptrOutput += 4;
+      return false;
+    }
+    ptrStartExpr = ptrSrcString + 1;
+    SkipSpaces(&ptrStartExpr);
+    if (*ptrStartExpr != '=')
+    {
+      BatchError(&ptrOutput, batchText,
+        lang ? "falta signo igual en la primera expresión" :
+        "equal sign missing in first expression");
+      ptrOutput += 4;
+      return false;
+    }
+    ptrCharFound = findChar(ptrSrcString + 1, ';');
+    expressionNbr = 1;
+    rc = evalExpression(ptrStartExpr + 1, valueFound);
+    CopyBigInt(&valueX, valueFound);
+    if (rc != EXPR_OK)
+    {
+      textError(&ptrOutput, rc);
+      ptrOutput += 4;
+      return false;
+    }
+    ptrStartExpr = ptrCharFound + 1;
+    SkipSpaces(&ptrStartExpr);
+    if ((*ptrStartExpr != 'x') && (*ptrStartExpr != 'X'))
+    {
+      BatchError(&ptrOutput, batchText,
+        lang ? "falta variable x en la segunda expresión" :
+        "variable x missing in second expression");
+      ptrOutput += 4;
+      return false;
+    }
+    ptrStartExpr++;               // Skip variable 'x'.
+    SkipSpaces(&ptrStartExpr);
+    if (*ptrStartExpr != '=')
+    {
+      BatchError(&ptrOutput, batchText,
+        lang ? "falta signo igual en la segunda expresión" :
+        "equal sign missing in second expression");
+      ptrOutput += 4;
+      return false;
+    }
+    NextExpr = ptrStartExpr + 1;  // Skip equal sign.
+    ptrCharFound = findChar(ptrStartExpr, ';');  // Find second semicolon.
+    if (ptrCharFound == NULL)
+    {      // Third semicolon not found.
+      BatchError(&ptrOutput, batchText,
+        lang ? "se esperaban tres o cuatro puntos y comas pero solo hay uno" :
+        "three or four semicolons expected but there are only one");
+      ptrOutput += 4;
+      return false;
+    }
+    EndExpr = ptrCharFound + 1;  // Point to end expression.
+    ptrCharFound = findChar(EndExpr, ';');  // Find third semicolon.
+    if (ptrCharFound == NULL)
+    {      // Third semicolon not found.
+      BatchError(&ptrOutput, batchText,
+        lang ? "se esperaban tres o cuatro puntos y comas pero solo hay dos" :
+        "three or four semicolons expected but there are only two");
+      ptrOutput += 4;
+      return false;
+    }
+    ptrExprToProcess = ptrCharFound + 1;
+    ptrConditionExpr = findChar(ptrExprToProcess, ';');  // Find optional fourth semicolon. 
+    if (ptrConditionExpr != NULL)
+    {
+      ptrConditionExpr++;
+    }
+    firstExprProcessed = true;
+  }
+  else
+  {
+    NextExpr = findChar(ptrCurrBatchFactor, ';') + 1;  // Point to "x="
+    SkipSpaces(&NextExpr);   // Now point to "x"
+    NextExpr++;
+    SkipSpaces(&NextExpr);   // Now point to "="
+    NextExpr++;
+    SkipSpaces(&NextExpr);   // Now point to next expression.
+    EndExpr = findChar(NextExpr, ';') + 1;
+    ptrExprToProcess = findChar(EndExpr, ';') + 1;
+    ptrConditionExpr = findChar(ptrExprToProcess, ';');
+    if (ptrConditionExpr != NULL)
+    {
+      ptrConditionExpr++;
+    }
+  }
+  while (ptrOutput < &output[(int)sizeof(output) - 200000])
+  {      // Perform loop while there is space in output buffer.
+    bool processExpression = true;
+    static enum eExprErr rc;
+    expressionNbr = 3;
+    rc = evalExpression(EndExpr, valueFound);
+    if (rc != EXPR_OK)
+    {
+      textError(&ptrOutput, rc);
+      break;   // Cannot compute end expression, so go out.
+    }
+    if (BigIntIsZero(valueFound))
+    {          // End expression result is zero: end of loop
+      firstExprProcessed = false;
+      break;
+    }
+    if (valuesProcessed >= endValuesProcessed)
+    {
+      output[0] = (fromFile ? 'A' : '6');  // Show Continue button.
+      break;
+    }
+    if (ptrConditionExpr != NULL)
+    {
+      expressionNbr = 5;
+      rc = evalExpression(ptrConditionExpr, valueFound);
+      if (rc == EXPR_OK)
+      {
+        if (BigIntIsZero(valueFound))
+        {   // Do not compute factor expression if condition is false.
+          processExpression = false;
+        }
+      }
+      else
+      {
+        textError(&ptrOutput, rc);
+        if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED))
+        {   // Do not show multiple errors.
+          break;
+        }
+        processExpression = false;
+      }
+    }
+    if (processExpression)
+    {
+      expressionNbr = 4;
+      rc = evalExpression(ptrExprToProcess, valueFound);
+      if (rc == EXPR_OK)
+      {
+        batchCallback(&ptrOutput);
+      }
+      else
+      {
+        textError(&ptrOutput, rc);
+      }
+      if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED) ||
+        (rc == EXPR_VAR_IN_EXPRESSION))
+      {   // Do not show multiple errors.
+        errorDisplayed = true;
+        break;
+      }
+    }
+    expressionNbr = 2;
+    rc = evalExpression(NextExpr, valueFound);
+    if (rc != EXPR_OK)
+    {
+      textError(&ptrOutput, rc);
+      break;   // Cannot compute next expression, so go out.
+    }
+    CopyBigInt(&valueX, valueFound);
+    counterC++;
+    if ((counterC == 2) && (pIsBatch != NULL))
+    {         // Not processing first line: Indicate batch processing.
+      *pIsBatch = true;
+    }
+    if (processExpression)
+    {
+      if (fromFile)
+      {
+        copyStr(&ptrOutput, (lineEndingCRLF ? "\r\n" : "\n"));
+      }
+      else
+      {
+        copyStr(&ptrOutput, "</li><li>");
+      }
+      valuesProcessed++;
+    }
+  }
+  return true;
 }
 
 enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pptrOutput,
   bool *pIsBatch)
 {
-  int endValuesProcessed;
-  char *ptrOutput = output;
-  char *NextExpr;
-  char *EndExpr;
-  char *ptrExprToProcess = NULL;
-  const char *ptrConditionExpr = NULL;
   enum eExprErr rc = EXPR_OK;
-  char *ptrCharFound;
-  char *ptrSrcString;
-  char *ptrStartExpr;
-  bool errorDisplayed = false;
+  errorDisplayed = false;
+  ptrExprToProcess = NULL;
+  ptrOutput = output;
+  ptrConditionExpr = NULL;
   if (fromFile)
   {
     copyStr(&ptrOutput, "B");
@@ -228,189 +424,9 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
     }
     else if ((c == 'x') || (c == 'X'))
     {   // Loop format: x=<orig expr>; x=<next expr>; <end expr>; <expr to factor>[; <factor cond>]
-#ifdef __EMSCRIPTEN__
-      ptrInputText = &emptyInputText;
-#endif
-      if (!firstExprProcessed)
+      if (!ProcessLoop(pIsBatch, batchText, valueFound))
       {
-        ptrCharFound = findChar(ptrSrcString + 1, ';');
-        if (ptrCharFound == NULL)
-        {
-          BatchError(&ptrOutput, batchText,
-            lang ? "se esperaban tres o cuatro puntos y comas pero no hay ninguno" :
-            "three or four semicolons expected but none found");
-          ptrOutput += 4;
-          continue;
-        }
-        ptrStartExpr = ptrSrcString + 1;
-        SkipSpaces(&ptrStartExpr);
-        if (*ptrStartExpr != '=')
-        {
-          BatchError(&ptrOutput, batchText,
-            lang ? "falta signo igual en la primera expresión" :
-            "equal sign missing in first expression");
-          ptrOutput += 4;
-          continue;
-        }
-        ptrCharFound = findChar(ptrSrcString + 1, ';');
-        expressionNbr = 1;
-        rc = evalExpression(ptrStartExpr + 1, valueFound);
-        CopyBigInt(&valueX, valueFound);
-        if (rc != EXPR_OK)
-        {
-          textError(&ptrOutput, rc);
-          ptrOutput += 4;
-          continue;
-        }
-        ptrStartExpr = ptrCharFound + 1;
-        SkipSpaces(&ptrStartExpr);
-        if ((*ptrStartExpr != 'x') && (*ptrStartExpr != 'X'))
-        {
-          BatchError(&ptrOutput, batchText,
-            lang ? "falta variable x en la segunda expresión" :
-            "variable x missing in second expression");
-          ptrOutput += 4;
-          continue;
-        }
-        ptrStartExpr++;               // Skip variable 'x'.
-        SkipSpaces(&ptrStartExpr);
-        if (*ptrStartExpr != '=')
-        {
-          BatchError(&ptrOutput, batchText,
-            lang ? "falta signo igual en la segunda expresión" :
-            "equal sign missing in second expression");
-          ptrOutput += 4;
-          continue;
-        }
-        NextExpr = ptrStartExpr + 1;  // Skip equal sign.
-        ptrCharFound = findChar(ptrStartExpr, ';');  // Find second semicolon.
-        if (ptrCharFound == NULL)
-        {      // Third semicolon not found.
-          BatchError(&ptrOutput, batchText,
-            lang ? "se esperaban tres o cuatro puntos y comas pero solo hay uno" :
-            "three or four semicolons expected but there are only one");
-          ptrOutput += 4;
-          continue;
-        }
-        EndExpr = ptrCharFound + 1;  // Point to end expression.
-        ptrCharFound = findChar(EndExpr, ';');  // Find third semicolon.
-        if (ptrCharFound == NULL)
-        {      // Third semicolon not found.
-          BatchError(&ptrOutput, batchText,
-            lang ? "se esperaban tres o cuatro puntos y comas pero solo hay dos" :
-            "three or four semicolons expected but there are only two");
-          ptrOutput += 4;
-          continue;
-        }
-        ptrExprToProcess = ptrCharFound + 1;
-        ptrConditionExpr = findChar(ptrExprToProcess, ';');  // Find optional fourth semicolon. 
-        if (ptrConditionExpr != NULL)
-        {
-          ptrConditionExpr++;
-        }
-        firstExprProcessed = true;
-      }
-      else
-      {
-        NextExpr = findChar(ptrCurrBatchFactor, ';') + 1;  // Point to "x="
-        SkipSpaces(&NextExpr);   // Now point to "x"
-        NextExpr++;
-        SkipSpaces(&NextExpr);   // Now point to "="
-        NextExpr++;
-        SkipSpaces(&NextExpr);   // Now point to next expression.
-        EndExpr = findChar(NextExpr, ';') + 1;
-        ptrExprToProcess = findChar(EndExpr, ';') + 1;
-        ptrConditionExpr = findChar(ptrExprToProcess, ';');
-        if (ptrConditionExpr != NULL)
-        {
-          ptrConditionExpr++;
-        }
-      }
-      while (ptrOutput < &output[(int)sizeof(output) - 200000])
-      {      // Perform loop while there is space in output buffer.
-        bool processExpression = true;
-        expressionNbr = 3;
-        rc = evalExpression(EndExpr, valueFound);
-        if (rc != EXPR_OK)
-        {
-          textError(&ptrOutput, rc);
-          break;   // Cannot compute end expression, so go out.
-        }
-        if (BigIntIsZero(valueFound))
-        {          // End expression result is zero: end of loop
-          firstExprProcessed = false;
-          break;
-        }
-        if (valuesProcessed >= endValuesProcessed)
-        {
-          output[0] = (fromFile? 'A': '6');  // Show Continue button.
-          break;
-        }
-        if (ptrConditionExpr != NULL)
-        {
-          expressionNbr = 5;
-          rc = evalExpression(ptrConditionExpr, valueFound);
-          if (rc == EXPR_OK)
-          {
-            if (BigIntIsZero(valueFound))
-            {   // Do not compute factor expression if condition is false.
-              processExpression = false;
-            }
-          }
-          else
-          {
-            textError(&ptrOutput, rc);
-            if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED))
-            {   // Do not show multiple errors.
-              break;
-            }
-            processExpression = false;
-          }
-        }
-        if (processExpression)
-        {
-          expressionNbr = 4;
-          rc = evalExpression(ptrExprToProcess, valueFound);
-          if (rc == EXPR_OK)
-          {
-            batchCallback(&ptrOutput);
-          }
-          else
-          {
-            textError(&ptrOutput, rc);
-          }
-          if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED) ||
-            (rc == EXPR_VAR_IN_EXPRESSION))
-          {   // Do not show multiple errors.
-            errorDisplayed = true;
-            break;
-          }
-        }
-        expressionNbr = 2;
-        rc = evalExpression(NextExpr, valueFound);
-        if (rc != EXPR_OK)
-        {
-          textError(&ptrOutput, rc);
-          break;   // Cannot compute next expression, so go out.
-        }
-        CopyBigInt(&valueX, valueFound);
-        counterC++;
-        if ((counterC == 2) && (pIsBatch != NULL))
-        {         // Not processing first line: Indicate batch processing.
-          *pIsBatch = true;
-        }
-        if (processExpression)
-        {
-          if (fromFile)
-          {
-            copyStr(&ptrOutput, (lineEndingCRLF? "\r\n": "\n"));
-          }
-          else
-          {
-            copyStr(&ptrOutput, "</li><li>");
-          }
-          valuesProcessed++;
-        }
+        continue;
       }
       if (valuesProcessed >= endValuesProcessed)
       {
@@ -479,7 +495,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       }
       ptrCurrBatchFactor++;
     }
-    valueX.nbrLimbs = 0;     // Invalidate variable x and counter c.
+    valueX.nbrLimbs = 0;       // Invalidate variable x and counter c.
   }
   if (!fromFile)
   {
