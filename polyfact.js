@@ -206,7 +206,7 @@ function updateCache(cache)
     {     // Copy cached resources to main cache and delete this one.
       tempCache.matchAll().then(function(responseArr)
       {   // All responses in array responseArr.
-        responseArr.forEach(function(responseTempCache, index, array)
+        responseArr.forEach(function(responseTempCache, _index, _array)
         {
           cache.put(responseTempCache.url, responseTempCache);
         });
@@ -254,7 +254,7 @@ function fillCache()
             {              // Copy cached resources to main cache and delete this one.
               tempCache.matchAll().then(function(responseArr)
               {            // All responses in array responseArr.
-                responseArr.forEach(function(responseTempCache, index, array)
+                responseArr.forEach(function(responseTempCache, _index, _array)
                 {
                   var urlTemp = responseTempCache.url;
                   var indexZero = url.indexOf("00");
@@ -262,7 +262,7 @@ function fillCache()
                   {        // There is an old version of this resource on cache to be erased.
                     cache.keys().then(function(keys)
                     {
-                      keys.forEach(function(requestCache, index, array)
+                      keys.forEach(function(requestCache, _ind, _arr)
                       {    // Traverse cache.
                         if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
                             requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
@@ -364,7 +364,7 @@ window.onload = function ()
       userdata.value = "";      
     }
     var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function (event)
+    xhr.onreadystatechange = function (_event)
     {
       if (xhr.readyState === 4) 
       {             // XHR finished.
@@ -460,7 +460,7 @@ if (asmjs)
   var req = new XMLHttpRequest();
   req.open("GET", "polfactW0000.js", true);
   req.responseType = "arraybuffer";
-  req.onreadystatechange = function (aEvt)
+  req.onreadystatechange = function (_aEvt)
   {
     if (req.readyState === 4 && req.status === 200)
     {

@@ -71,7 +71,7 @@ static void FromPoly(int polyDegree, int* polyDest, const int* polySrc)
   ptrPolyDest++;
   for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
-    int nbrLimbs = *(ptrPolySrc)+1;
+    int nbrLimbs = *ptrPolySrc+1;
     int lenBytes = nbrLimbs * (int)sizeof(int);
     (void)memcpy(ptrPolyDest, ptrPolySrc, lenBytes);
     ptrPolyDest += NumberLength + 1;
