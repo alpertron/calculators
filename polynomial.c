@@ -26,6 +26,8 @@
 #include "polynomial.h"
 #include "showtime.h"
 
+#define MAX_MODULUS 100
+
 extern char* ptrOutput2;
 static void showPolynomial(char** pptrOutput, const int* ptrPoly, int polyDegree, int groupLength);
 BigInteger primeMod;              // p
@@ -449,7 +451,104 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
   }
 }
 
-// arg1 must not be changed by this routine.
+static void GcdModSizeOneLimb(int currentDegree, int degreeMin,
+  const unsigned char * reduceModulus, const int* ptrArgMin, const int* ptrArgMax)
+{
+  int mod = TestNbr[0].x;
+  int index = (currentDegree * 2) + 1;
+  int* ptrTemp = ptrArgMax + (currentDegree - degreeMin) * 2;
+  int value1 = mod - *(ptrArgMax + index);
+  const int* ptrPolynomial = ptrArgMin + 1;
+  ptrTemp++;
+  if (value1 == 0)
+  {   // Nothing to do.
+  }
+  if ((NumberLength == 1) && (mod < 100))
+  {
+    for (index = degreeMin; index >= 3; index -= 4)
+    {
+      *ptrTemp = (int)reduceModulus[*ptrTemp + (*ptrPolynomial * value1)];
+      *(ptrTemp + 2) = (int)reduceModulus[*(ptrTemp + 2) +
+        (*(ptrPolynomial + 2) * value1)];
+      *(ptrTemp + 4) = (int)reduceModulus[*(ptrTemp + 4) +
+        (*(ptrPolynomial + 4) * value1)];
+      *(ptrTemp + 6) = (int)reduceModulus[*(ptrTemp + 6) +
+        (*(ptrPolynomial + 6) * value1)];
+      ptrTemp += 8;
+      ptrPolynomial += 8;
+    }
+    for (; index >= 1; index -= 2)
+    {
+      *ptrTemp = reduceModulus[*ptrTemp + (*ptrPolynomial * value1)];
+      *(ptrTemp + 2) = reduceModulus[*(ptrTemp + 2) + (*(ptrPolynomial + 2) * value1)];
+      ptrTemp += 4;
+      ptrPolynomial += 4;
+    }
+    if (index == 0)
+    {
+      *ptrTemp = reduceModulus[*ptrTemp + (*ptrPolynomial * value1)];
+    }
+  }
+  else if (mod < 32767)
+  {
+    for (index = 0; index <= degreeMin; index++)
+    {
+      *ptrTemp = (*ptrTemp + (*ptrPolynomial * value1)) % mod;
+      ptrTemp += 2;
+      ptrPolynomial += 2;
+    }
+  }
+  else
+  {
+    for (index = 0; index <= degreeMin; index++)
+    {
+#ifdef _USING64BITS_
+      uint64_t u64Limb = ((uint64_t)*ptrTemp + (uint64_t)*ptrPolynomial * (uint64_t)value1) %
+        (uint64_t)mod;
+      *ptrTemp = (int)u64Limb;
+#else
+      smallmodmult(*ptrPolynomial, value1, (limb*)&temp, mod);
+      *ptrTemp = UintToInt(((unsigned int)*ptrTemp + (unsigned int)temp) %
+        (unsigned int)mod);
+#endif
+      ptrTemp += 2;
+      ptrPolynomial += 2;
+    }
+  }
+}
+
+static void ConvertToMonicSmallMod(int degreeMin, int* ptrArgMin, int modulus,
+  const unsigned char* reduceModulus)
+{
+  int index;
+  int lenLimbs = (degreeMin * 2) + 1;
+  int inverse = modInv(*(ptrArgMin + lenLimbs), modulus);
+  if (inverse != 1)
+  {
+    int* ptrPoly = ptrArgMin + 1;
+    intToBigInteger(&operand1, inverse);
+    for (index = degreeMin; index >= 3; index -= 4)
+    {
+      *ptrPoly = (int)reduceModulus[*ptrPoly * inverse];
+      *(ptrPoly + 2) = (int)reduceModulus[*(ptrPoly + 2) * inverse];
+      *(ptrPoly + 4) = (int)reduceModulus[*(ptrPoly + 4) * inverse];
+      *(ptrPoly + 6) = (int)reduceModulus[*(ptrPoly + 6) * inverse];
+      ptrPoly += 8;
+    }
+    for (; index >= 1; index -= 2)
+    {
+      *ptrPoly = (int)reduceModulus[*ptrPoly * inverse];
+      *(ptrPoly + 2) = (int)reduceModulus[*(ptrPoly + 2) * inverse];
+      ptrPoly += 4;
+    }
+    if (index == 0)
+    {
+      *ptrPoly = (int)reduceModulus[*ptrPoly * inverse];
+    }
+  }
+}
+
+        // arg1 must not be changed by this routine.
 // arg2 can be changed by this routine.
 void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
   int *gcd, int *degreeGcd)
@@ -464,7 +563,12 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
   int index;
   int lenBytes;
   int currCoeff;
-  unsigned char reduceModulus[10000];
+  unsigned char reduceModulus[MAX_MODULUS * MAX_MODULUS];
+  int modulus = TestNbr[0].x;
+  if (NumberLength > 1)
+  {
+    modulus = MAX_MODULUS;
+  }
   if (degree1 == 0)
   {
     if ((*arg1 == 1) && (*(arg1 + 1) == 0))
@@ -534,12 +638,12 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
     *(gcd + 1) = 1;
     return;
   }
-  if ((NumberLength == 1) && (TestNbr[0].x < 100))
-  {
+  if (modulus < MAX_MODULUS)
+  {  // Initialize array reduceModulus when modulus is less than 100.
     unsigned char* ptrReduce = reduceModulus;
-    for (int row = 0; row < TestNbr[0].x; row++)
+    for (int row = 0; row < modulus; row++)
     {
-      for (int col = 0; col < TestNbr[0].x; col++)
+      for (int col = 0; col < modulus; col++)
       {
         *ptrReduce = (unsigned char)col;
         ptrReduce++;
@@ -560,33 +664,9 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
   }
   for (;;)
   {
-    if ((NumberLength == 1) && (TestNbr[0].x < 100))
-    {
-      int lenLimbs = (degreeMin * 2) + 1;
-      int inverse = modInv(*(ptrArgMin + lenLimbs), TestNbr[0].x);
-      if (inverse != 1)
-      {
-        int* ptrPoly = ptrArgMin + 1;
-        intToBigInteger(&operand1, inverse);
-        for (index = degreeMin; index >= 3; index -= 4)
-        {
-          *ptrPoly = (int)reduceModulus[*ptrPoly * inverse];
-          *(ptrPoly + 2) = (int)reduceModulus[*(ptrPoly + 2) * inverse];
-          *(ptrPoly + 4) = (int)reduceModulus[*(ptrPoly + 4) * inverse];
-          *(ptrPoly + 6) = (int)reduceModulus[*(ptrPoly + 6) * inverse];
-          ptrPoly += 8;
-        }
-        for (; index >= 1; index -= 2)
-        {
-          *ptrPoly = (int)reduceModulus[*ptrPoly * inverse];
-          *(ptrPoly + 2) = (int)reduceModulus[*(ptrPoly + 2) * inverse];
-          ptrPoly += 4;
-        }
-        if (index == 0)
-        {
-          *ptrPoly = (int)reduceModulus[*ptrPoly * inverse];
-        }
-      }
+    if (modulus < 100)
+    {           // Modulus is less than 100.
+      ConvertToMonicSmallMod(degreeMin, ptrArgMin, modulus, reduceModulus);
     }
     else
     {
@@ -596,73 +676,15 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
     {          // Replace ptrArgMax by remainder of long
                // division of ptrArgMax / ptrArgMin.
       index = (currentDegree - degreeMin) * nbrLimbs;
-      ptrTemp = ptrArgMax + index;
       if (nbrLimbs == 2)
       {        // Modulus size is one limb.
-        int modulus = TestNbr[0].x;
-        index = (currentDegree * 2) + 1;
-        int value1 = modulus - *(ptrArgMax + index);
-        const int *ptrPolynomial = ptrArgMin + 1;
-        ptrTemp++;
-        if (value1 == 0)
-        {   // Nothing to do.
-        }
-        if (modulus < 100)
-        {          
-          for (index = degreeMin; index >= 3; index -= 4)
-          {
-            *ptrTemp = (int)reduceModulus[*ptrTemp + (*ptrPolynomial * value1)];
-            *(ptrTemp + 2) = (int)reduceModulus[*(ptrTemp + 2) + 
-                      (*(ptrPolynomial + 2) * value1)];
-            *(ptrTemp + 4) = (int)reduceModulus[*(ptrTemp + 4) +
-                      (*(ptrPolynomial + 4) * value1)];
-            *(ptrTemp + 6) = (int)reduceModulus[*(ptrTemp + 6) +
-                      (*(ptrPolynomial + 6) * value1)];
-            ptrTemp += 8;
-            ptrPolynomial += 8;
-          }
-          for (; index >= 1; index -= 2)
-          {
-            *ptrTemp = reduceModulus[*ptrTemp + (*ptrPolynomial * value1)];
-            *(ptrTemp + 2) = reduceModulus[*(ptrTemp + 2) + (*(ptrPolynomial + 2) * value1)];
-            ptrTemp += 4;
-            ptrPolynomial += 4;
-          }
-          if (index == 0)
-          {
-            *ptrTemp = reduceModulus[*ptrTemp + (*ptrPolynomial * value1)];
-          }
-        }
-        else if (modulus < 32767)
-        {
-          for (index = 0; index <= degreeMin; index++)
-          {
-            *ptrTemp = (*ptrTemp + (*ptrPolynomial * value1)) % modulus;
-            ptrTemp += 2;
-            ptrPolynomial += 2;
-          }
-        }
-        else
-        {
-          for (index = 0; index <= degreeMin; index++)
-          {
-#ifdef _USING64BITS_
-            uint64_t u64Limb = ((uint64_t)*ptrTemp + (uint64_t)*ptrPolynomial * (uint64_t)value1) %
-              (uint64_t)modulus;
-            *ptrTemp = (int)u64Limb;
-#else
-            smallmodmult(*ptrPolynomial, value1, (limb*)&temp, modulus);
-            *ptrTemp = UintToInt(((unsigned int)*ptrTemp + (unsigned int)temp) %
-              (unsigned int)modulus);
-#endif
-            ptrTemp += 2;
-            ptrPolynomial += 2;
-          }
-        }
+        GcdModSizeOneLimb(currentDegree, degreeMin, reduceModulus,
+          ptrArgMin, ptrArgMax);
       }
       else
       {        // General case.
         int lenLimbs = currentDegree * nbrLimbs;
+        ptrTemp = ptrArgMax + index;
         IntArray2BigInteger(ptrArgMax + lenLimbs, &operand1);
         for (index = 0; index <= degreeMin; index++)
         {

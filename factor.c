@@ -1974,53 +1974,51 @@ void factorExt(const BigInteger *toFactor, const int *number,
 #endif
       while ((upperBound < 100000) && (nbrLimbs > 1))
       {        // Number has at least 2 limbs: Trial division by small numbers.
-        while (pstCurFactor->upperBound != 0)
+        if (pstCurFactor->upperBound != 0)
         {            // Factor found.
           int exponent;
           int index;
           int deltaIndex;
           ptrFactor = pstCurFactor->ptrFactor;
           remainder = RemDivBigNbrByInt((const limb *)(ptrFactor + 1), upperBound, nbrLimbs);
-          if (remainder != 0)
-          {    // Factor not found. Use new divisor.
-            break;
-          }
-          // Small factor found. Find the exponent.
-          exponent = 1;
-          index = 0;
-          deltaIndex = 1;
-          CopyBigInt(&common.trialDiv.cofactor, &prime);
-          subtractdivide(&common.trialDiv.cofactor, 0, upperBound);
-          intToBigInteger(&common.trialDiv.power[0], upperBound);
-          for (;;)
-          {      // Test whether the cofactor is multiple of power.
-            (void)BigIntDivide(&common.trialDiv.cofactor, &common.trialDiv.power[index], &common.trialDiv.quotient);
-            (void)BigIntMultiply(&common.trialDiv.quotient, &common.trialDiv.power[index], &common.trialDiv.temp);
-            if (!BigIntEqual(&common.trialDiv.temp, &common.trialDiv.cofactor))
-            {    // Not a multiple, so exit loop.
-              break;
-            }
-            CopyBigInt(&common.trialDiv.cofactor, &common.trialDiv.quotient);
-            (void)BigIntMultiply(&common.trialDiv.power[index], &common.trialDiv.power[index], &common.trialDiv.power[index+1]);
-            exponent += deltaIndex;
-            deltaIndex <<= 1;
-            index++;
-          }
-          index--;
-          for (; index >= 0; index--)
+          if (remainder == 0)
           {
-            deltaIndex >>= 1;
-            (void)BigIntDivide(&common.trialDiv.cofactor, &common.trialDiv.power[index], &common.trialDiv.quotient);
-            (void)BigIntMultiply(&common.trialDiv.quotient, &common.trialDiv.power[index], &common.trialDiv.temp);
-            if (BigIntEqual(&common.trialDiv.temp, &common.trialDiv.cofactor))
-            {    // It is a multiple.
+            // Small factor found. Find the exponent.
+            exponent = 1;
+            index = 0;
+            deltaIndex = 1;
+            CopyBigInt(&common.trialDiv.cofactor, &prime);
+            subtractdivide(&common.trialDiv.cofactor, 0, upperBound);
+            intToBigInteger(&common.trialDiv.power[0], upperBound);
+            for (;;)
+            {      // Test whether the cofactor is multiple of power.
+              (void)BigIntDivide(&common.trialDiv.cofactor, &common.trialDiv.power[index], &common.trialDiv.quotient);
+              (void)BigIntMultiply(&common.trialDiv.quotient, &common.trialDiv.power[index], &common.trialDiv.temp);
+              if (!BigIntEqual(&common.trialDiv.temp, &common.trialDiv.cofactor))
+              {    // Not a multiple, so exit loop.
+                break;
+              }
               CopyBigInt(&common.trialDiv.cofactor, &common.trialDiv.quotient);
+              (void)BigIntMultiply(&common.trialDiv.power[index], &common.trialDiv.power[index], &common.trialDiv.power[index + 1]);
               exponent += deltaIndex;
+              deltaIndex <<= 1;
+              index++;
             }
+            index--;
+            for (; index >= 0; index--)
+            {
+              deltaIndex >>= 1;
+              (void)BigIntDivide(&common.trialDiv.cofactor, &common.trialDiv.power[index], &common.trialDiv.quotient);
+              (void)BigIntMultiply(&common.trialDiv.quotient, &common.trialDiv.power[index], &common.trialDiv.temp);
+              if (BigIntEqual(&common.trialDiv.temp, &common.trialDiv.cofactor))
+              {    // It is a multiple.
+                CopyBigInt(&common.trialDiv.cofactor, &common.trialDiv.quotient);
+                exponent += deltaIndex;
+              }
+            }
+            insertIntFactor(pstFactors, pstCurFactor, upperBound, exponent, &common.trialDiv.cofactor);
+            restartFactoring = true;
           }
-          insertIntFactor(pstFactors, pstCurFactor, upperBound, exponent, &common.trialDiv.cofactor);
-          restartFactoring = true;
-          break;
         }
         if (restartFactoring)
         {
