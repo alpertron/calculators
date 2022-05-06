@@ -39,7 +39,7 @@ setPointFunc setPoint = setPointUlamSpiral;
 #else     // Emscripten
   #define EXTERNALIZE  __attribute__((visibility("default")))
   #define MAX_WIDTH 2048
-  unsigned int pixelArray[2048 * MAX_WIDTH];
+  unsigned int pixelArray[PIXEL_ARRAY_SIZE];
 #endif
 
 #define MAX_LINES  1000

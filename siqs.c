@@ -1164,6 +1164,7 @@ static int PerformTrialDivision(const PrimeSieveData *primeSieveData,
           biR1 = (int)dQuot;
           dDivid = (double)biR0 + (dRem*dLimbMult);
           biR0 = (int)floor(dDivid / dCurrentPrime);
+          break;
         default:
           break;
         }

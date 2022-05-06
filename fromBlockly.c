@@ -210,9 +210,9 @@ static void skipID(const char** pptrXML)
 
 static void setJmpOffset(int offsetJmp, int offsetTarget)
 {
-  unsigned int shiftedTarget;
   if (offsetJmp >= 0)
   {
+    unsigned int shiftedTarget;
     bufferInstr[offsetJmp] = (char)offsetTarget;
     shiftedTarget = (unsigned int)offsetTarget >> 8;
     bufferInstr[offsetJmp + 1] = (char)shiftedTarget;

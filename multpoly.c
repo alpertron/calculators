@@ -754,7 +754,7 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
   limb* prod;
 
   // Get number of bits of degree.
-  for (bitsDegree = 0U; bitsDegree < 16; bitsDegree++)
+  for (bitsDegree = 0U; bitsDegree < 16U; bitsDegree++)
   {
     if ((1U << bitsDegree) > (unsigned int)degreeProd)
     {
@@ -774,7 +774,7 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
   }
   // With this choice of bit size, there will be no overflow
   // of coefficients when performing the multiplication.
-  lenBitsCoeff = (2 * bitsModulus) + bitsDegree;
+  lenBitsCoeff = (int)((2U * bitsModulus) + bitsDegree);
   nbrBitsProduct = lenBitsCoeff * (degreeProd + 1);
   nbrLimbsProduct = (nbrBitsProduct + BITS_PER_GROUP_MINUS_1) / BITS_PER_GROUP;
   if (nbrLimbsProduct >= MAX_LEN_MULT)
@@ -1055,7 +1055,8 @@ void GetPolyInvParm(int polyDegree, const int* polyMod)
     MultPolynomial(nextDegree, newtonDegree, poly4, polyInv);
     ptrCoeff = poly5;   // Destination of 2-D(x)*F_n(x).
     ptrCoeff2 = &polyMultTemp[newtonDegree * nbrLimbs];  // Source of D(x)*F_n(x).
-    (void)memset(operand2.limbs, 0, nbrLimbs * sizeof(limb));
+    int nbrLimbsBytes = nbrLimbs * sizeof(limb);
+    (void)memset(operand2.limbs, 0, nbrLimbsBytes);
     for (int deg = 0; deg < nextDegree; deg++)
     {
       LenAndLimbs2ArrLimbs(ptrCoeff2, operand3.limbs, nbrLimbs);

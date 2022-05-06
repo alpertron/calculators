@@ -452,7 +452,7 @@ void PolynomialGcd(int *argF, int *argG, int *gcd)
 }
 
 static void GcdModSizeOneLimb(int currentDegree, int degreeMin,
-  const unsigned char * reduceModulus, const int* ptrArgMin, const int* ptrArgMax)
+  const unsigned char * reduceModulus, const int* ptrArgMin, int* ptrArgMax)
 {
   int mod = TestNbr[0].x;
   int index = (currentDegree * 2) + 1;
@@ -520,11 +520,11 @@ static void GcdModSizeOneLimb(int currentDegree, int degreeMin,
 static void ConvertToMonicSmallMod(int degreeMin, int* ptrArgMin, int modulus,
   const unsigned char* reduceModulus)
 {
-  int index;
   int lenLimbs = (degreeMin * 2) + 1;
   int inverse = modInv(*(ptrArgMin + lenLimbs), modulus);
   if (inverse != 1)
   {
+    int index;
     int* ptrPoly = ptrArgMin + 1;
     intToBigInteger(&operand1, inverse);
     for (index = degreeMin; index >= 3; index -= 4)

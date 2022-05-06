@@ -1155,6 +1155,9 @@ static void DiscriminantIsZero(void)
     {
       showText(" + ");
     }
+    else
+    {   // Nothing to do.
+    }
     ShowLin(&ValH, &ValI, &ValJ, "<var>x</var>", "<var>y</var>");
     showText(" = 0</p><p>");
     showText(lang ? "Sea" : "Let");

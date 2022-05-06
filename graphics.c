@@ -35,7 +35,7 @@ int timer;
 bool quit;
 #else     // Emscripten
 #define EXTERNALIZE  __attribute__((visibility("default")))
-extern unsigned int pixelArray[];
+extern unsigned int pixelArray[PIXEL_ARRAY_SIZE];
 #endif
 
 extern setPointFunc setPoint;

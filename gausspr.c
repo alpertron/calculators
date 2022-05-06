@@ -38,7 +38,7 @@ setPointFunc setPoint = setPointGaussian;
   int oldYFraction;
 #else        // Emscripten
   #define MAX_WIDTH 2048
-  unsigned int pixelArray[2048 * MAX_WIDTH];
+  unsigned int pixelArray[PIXEL_ARRAY_SIZE];
 #endif
 
 #define MAX_LINES  1000

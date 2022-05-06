@@ -2319,7 +2319,7 @@ int FactorPolyOverIntegers(void)
       else
       {
         if ((validDegreesRecord[0] != 1U) ||
-          validDegreesRecord[curDegree >> 5] != (1U << (curDegree & 0x1F)))
+          (validDegreesRecord[curDegree >> 5] != (1U << (curDegree & 0x1F))))
         {
           isIrreducible = false;
         }

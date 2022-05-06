@@ -27,7 +27,7 @@
 #include "polynomial.h"
 #include "fromBlockly.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 13
+#define DEBUG_CODE 9
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
   Factor1[6] = 32767;
   squareRoot(&Factor1[2], Factor2, 4, &len);
   //squareRoot(Factor1, Factor2, 7, &len);
-  while (1);
+  return 0;
 #elif DEBUG_CODE == 4
   char* ptrOutput;
   if (argv[1][0] == '-')
