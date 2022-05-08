@@ -507,6 +507,7 @@ static void GcdModSizeOneLimb(int currentDegree, int degreeMin,
         (uint64_t)mod;
       *ptrTemp = (int)u64Limb;
 #else
+      int temp;
       smallmodmult(*ptrPolynomial, value1, (limb*)&temp, mod);
       *ptrTemp = UintToInt(((unsigned int)*ptrTemp + (unsigned int)temp) %
         (unsigned int)mod);

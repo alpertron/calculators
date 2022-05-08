@@ -21,6 +21,7 @@
 #define BITS_SIQS_HASH          14
 #define MAX_NBR_FACTORS         13
 #define MAX_PRIMES          150000
+#define PRIME_SIEVE_DATA_LEN (MAX_PRIMES + 3)
 #define MAX_LIMBS_SIQS          15
 #define MAX_FACTORS_RELATION    80
 #define LENGTH_OFFSET            0
@@ -31,7 +32,6 @@ typedef struct
 {
   int value;
   int modsqrt;
-  int Bainv2[MAX_NBR_FACTORS];
   int Bainv2_0;
   int soln1;
   int difsoln;
@@ -59,9 +59,10 @@ struct stSiqs
   limb TestNbr2[MAX_LIMBS_SIQS];
   limb biQuadrCoeff[MAX_LIMBS_SIQS];
   limb biLinearDelta[MAX_LIMBS_SIQS][MAX_LIMBS_SIQS];
+  int Bainv2[MAX_NBR_FACTORS][PRIME_SIEVE_DATA_LEN];
   long largePrimeUpperBound;
   int aindex[MAX_NBR_FACTORS];
-  PrimeSieveData primeSieveData[MAX_PRIMES+3];
+  PrimeSieveData primeSieveData[PRIME_SIEVE_DATA_LEN];
   PrimeTrialDivisionData primeTrialDivisionData[MAX_PRIMES];
   int span;
   int indexMinFactorA;

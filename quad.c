@@ -1812,10 +1812,13 @@ static void NonSquareDiscriminant(void)
   }
   if (teach)
   {
+    enum eSign signK = ValK.sign;
     showText(lang ? "<p>A continuación hay que resolver varias ecuaciones cuadráticas modulares. Para ello debemos factorizar el módulo y hallar las soluciones módulo las potencias de los factores primos. Luego debemos combinar estas soluciones usando el teorema chino del resto.</p><p>Los diferentes módulos son divisores del término independiente, por lo que basta con factorizar dicho valor.</p>" :
       "<p>We will have to solve several quadratic modular equations. To do this we have to factor the modulus and find the solution modulo the powers of the prime factors. Then we combine them by using the Chinese Remainder Theorem.</p><p>The different moduli are divisors of the right hand side, so we only have to factor it once.</p>");
     showText("<p>");
+    ValK.sign = SIGN_POSITIVE;   // Make the number to factor positive.
     showFactors(&ValK);
+    ValK.sign = signK;
   }
   for (;;)
   {
@@ -1888,6 +1891,8 @@ static void NonSquareDiscriminant(void)
     CopyBigInt(&coeffLinear, &ValB);
     CopyBigInt(&coeffIndep, &ValC);
     CopyBigInt(&modulus, &ValK);
+    modulus.sign = SIGN_POSITIVE;
+    CopyBigInt(&LastModulus, &modulus);
     if (teach)
     {
       showText(lang ? "<p>Debemos resolver " : "<p>We have to solve:");

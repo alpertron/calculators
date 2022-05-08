@@ -778,7 +778,7 @@ bool ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
         a = 1;
         d = 1;
         k += steps;
-        if (k > nbrLen * 64)
+        if (k > (nbrLen * 64))
         {
           return false;  // Could not compute inverse.
         }
