@@ -616,7 +616,7 @@ function startUp()
         test1(true);                   // Second part of test 1.
       }
     }
-    if (isNotSpecialKey())
+    if (isNotSpecialKey(key))
     {                                  // Not backspace, tab, right or left arrow or insert key.
       if (key < "0" || key > "9" || get("dist1").value.length === 6)
       {                                // Key is not a digit or number is too large.
@@ -633,7 +633,7 @@ function startUp()
       event.preventDefault();          // Do not propagate Enter key.
       showResultsTest2(value);         // Second part of test 2.
     }
-    if (isNotSpecialKey())
+    if (isNotSpecialKey(key))
     {                                  // Not backspace, tab, right or left arrow or insert key.
       if (key < "1" || key > "4" || value.indexOf(key) >= 0)
       {                                // Key is not a digit 1 to 4 or digit is already used.
@@ -684,7 +684,7 @@ function startUp()
       event.preventDefault();          // Do not propagate Enter key.
       get("cityTo").focus();           // Enter second city.
     }
-    if (isNotSpecialKey())
+    if (isNotSpecialKey(key))
     {                                  // Not backspace, tab, right or left arrow or insert key.
       if (key < "0" || key > "9" || value.length === 3)
       {                                // Key is not a digit or 3 digits is already used.
@@ -703,7 +703,7 @@ function startUp()
       questionNbr = 0;
       test1(true);                     // Show distance between cities.
     }
-    if (isNotSpecialKey())
+    if (isNotSpecialKey(key))
     {                                  // Not backspace, right or left arrow or insert key.
       if (key < "0" || key > "9" || value.length === 3)
       {                                // Key is not a digit or 3 digits is already used.
@@ -719,7 +719,7 @@ function startUp()
   };
 }
 
-addEventListener("load", startUp);
+window.addEventListener("load", startUp);
 
 })();
 

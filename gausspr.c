@@ -37,7 +37,6 @@ setPointFunc setPoint = setPointGaussian;
   int oldXFraction;
   int oldYFraction;
 #else        // Emscripten
-  #define MAX_WIDTH 2048
   unsigned int pixelArray[PIXEL_ARRAY_SIZE];
 #endif
 

@@ -38,7 +38,6 @@ setPointFunc setPoint = setPointUlamSpiral;
   int oldYFraction;
 #else     // Emscripten
   #define EXTERNALIZE  __attribute__((visibility("default")))
-  #define MAX_WIDTH 2048
   unsigned int pixelArray[PIXEL_ARRAY_SIZE];
 #endif
 

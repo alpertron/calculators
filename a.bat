@@ -164,7 +164,10 @@ java -jar %compilerName% -D lang=1 %compilerOptions% --js quadr.js --js_output_f
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 CUAD.HTM quadS.js quadS.wasm
 
-java -jar %compilerName% --compilation_level WHITESPACE_ONLY --js dist.js --js_output_file dist%1.js
+java -jar %compilerName% --compilation_level ADVANCED_OPTIMIZATIONS --js dist.js --js_output_file distE.js
+copy distE.js distS.js
+perl replaceEmbeddedJS.pl 0000 DIST.HTM distS.js
+perl replaceEmbeddedJS.pl 0000 DISTANCE.HTM distE.js
 
 call w.bat
 perl csp.pl
