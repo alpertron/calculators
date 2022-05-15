@@ -1132,11 +1132,11 @@ void GetMontgomeryParms(int len)
   NumberLength = len;
   NumberLength2 = len + len;
   powerOf2Exponent = 0;    // Indicate not power of 2 in advance.
+  NumberLengthR1 = 1;
   if ((NumberLength == 1) && ((TestNbr[0].x & 1) != 0))
   {
     MontgomeryMultR1[0].x = 1;
     MontgomeryMultR2[0].x = 1;
-    NumberLengthR1 = 1;
     return;
   }
   // Check whether TestNbr is a power of 2.

@@ -6,7 +6,6 @@ Options +ExecCGI
 <IfModule mod_mime.c>
 AddType image/x-icon .ico
 AddType text/html .HTM
-AddType text/cache-manifest .appcache
 AddType application/wasm .wasm
 AddType application/json .json
 AddType application/manifest+json .webmanifest
@@ -14,21 +13,60 @@ AddCharset utf-8 .js
 AddCharset utf-8 .webmanifest
 </IfModule>
 
-<IfModule mod_deflate.c>
-AddOutputFilterByType DEFLATE text/plain
-AddOutputFilterByType DEFLATE text/html
-AddOutputFilterByType DEFLATE text/xml
-AddOutputFilterByType DEFLATE text/css
-AddOutputFilterByType DEFLATE application/xml
-AddOutputFilterByType DEFLATE application/xhtml+xml
-AddOutputFilterByType DEFLATE application/rss+xml
-AddOutputFilterByType DEFLATE application/javascript
-AddOutputFilterByType DEFLATE application/x-javascript
-AddOutputFilterByType DEFLATE application/wasm
-AddOutputFilterByType DEFLATE application/json
-AddOutputFilterByType DEFLATE application/manifest+json
-</IfModule>
+# Rules to correctly serve gzip compressed CSS and JS files.
+# Requires both mod_rewrite and mod_headers to be enabled.
+<IfModule mod_headers.c>
+  # Serve brotli compressed HTML files if they exist and the client accepts brotli.
+  RewriteCond %{HTTP:Accept-encoding} br
+  RewriteCond %{REQUEST_FILENAME}\.br -s
+  RewriteRule ^(.*)\.HTM $1\.HTM\.br [QSA]
 
+  # Serve gzip compressed HTML files if they exist and the client accepts gzip.
+  RewriteCond %{HTTP:Accept-encoding} gzip
+  RewriteCond %{REQUEST_FILENAME}\.gz -s
+  RewriteRule ^(.*)\.HTM $1\.HTM\.gz [QSA]
+
+  # Serve brotli compressed JS files if they exist and the client accepts brotli.
+  RewriteCond %{HTTP:Accept-encoding} br
+  RewriteCond %{REQUEST_FILENAME}\.br -s
+  RewriteRule ^(.*)\.js $1\.js\.br [QSA]
+
+  # Serve gzip compressed JS files if they exist and the client accepts gzip.
+  RewriteCond %{HTTP:Accept-encoding} gzip
+  RewriteCond %{REQUEST_FILENAME}\.gz -s
+  RewriteRule ^(.*)\.js $1\.js\.gz [QSA]
+
+  # Serve brotli compressed webmanifest files if they exist and the client accepts brotli.
+  RewriteCond %{HTTP:Accept-encoding} br
+  RewriteCond %{REQUEST_FILENAME}\.br -s
+  RewriteRule ^(.*)\.webmanifest $1\.webmanifest\.br [QSA]
+
+  # Serve gzip compressed webmanifest files if they exist and the client accepts gzip.
+  RewriteCond %{HTTP:Accept-encoding} gzip
+  RewriteCond %{REQUEST_FILENAME}\.gz -s
+  RewriteRule ^(.*)\.webmanifest $1\.webmanifest\.gz [QSA]
+
+  # Serve correct content types, and prevent mod_deflate double gzip.
+  RewriteRule \.HTM\.gz$ - [T=text/html,E=no-gzip:1]
+  RewriteRule \.js\.gz$ - [T=text/javascript,E=no-gzip:1]
+  RewriteRule \.webmanifest\.gz$ - [T=application/manifest+json,E=no-gzip:1]
+  RewriteRule \.HTM\.br$ - [T=text/html,E=no-gzip:1]
+  RewriteRule \.js\.br$ - [T=text/javascript,E=no-gzip:1]
+  RewriteRule \.webmanifest\.br$ - [T=application/manifest+json,E=no-gzip:1]
+
+  <FilesMatch "(\.js\.gz|\.HTM\.gz|\.webmanifest\.gz)$">
+    # Serve correct encoding type.
+    Header set Content-Encoding gzip
+    # Force proxies to cache gzipped & non-gzipped html/js files separately.
+    Header append Vary Accept-Encoding
+  </FilesMatch>
+  <FilesMatch "(\.js\.br|\.HTM\.br|\.webmanifest\.br)$">
+    # Serve correct encoding type.
+    Header set Content-Encoding br
+    # Force proxies to cache gzipped & non-gzipped html/js files separately.
+    Header append Vary Accept-Encoding
+  </FilesMatch>
+</IfModule>
 <IfModule mod_headers.c>
 
 <FilesMatch "\.(htm|HTM)$">

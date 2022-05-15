@@ -170,6 +170,7 @@ static void FactorPolynomialF20(void)
   intToBigInteger(&tmp3, 0);
   intToBigInteger(&tmp4, 0);
   intToBigInteger(&tmp5, 0);
+  intToBigInteger(&tmp6, 0);
   pstQuinticF20 = astQuinticF20;
   for (;;)
   {
