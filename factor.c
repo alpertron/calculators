@@ -730,51 +730,57 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
 }
 
 // Perform Lehman algorithm
-static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
+#define NBR_PRIMES_QUADR_SIEVE  17
+static void Lehman(const BigInteger *nbr, int multiplier, BigInteger *factor)
 {
-  const unsigned int bitsSqrLow[] =
+  // In the following arrays, the bit n is set if n is a square mod p.
+  // Bits 31-0
+  const unsigned int bitsSqrLow[NBR_PRIMES_QUADR_SIEVE] =
   {
-    0x00000003U, // 3
-    0x00000013U, // 5
-    0x00000017U, // 7
-    0x0000023BU, // 11
-    0x0000161BU, // 13
-    0x0001A317U, // 17
-    0x00030AF3U, // 19
-    0x0005335FU, // 23
-    0x13D122F3U, // 29
-    0x121D47B7U, // 31
-    0x5E211E9BU, // 37
-    0x82B50737U, // 41
-    0x83A3EE53U, // 43
-    0x1B2753DFU, // 47
-    0x3303AED3U, // 53
-    0x3E7B92BBU, // 59
-    0x0A59F23BU, // 61
+    0x00000003U, // squares mod 3
+    0x00000013U, // squares mod 5
+    0x00000017U, // squares mod 7
+    0x0000023BU, // squares mod 11
+    0x0000161BU, // squares mod 13
+    0x0001A317U, // squares mod 17
+    0x00030AF3U, // squares mod 19
+    0x0005335FU, // squares mod 23
+    0x13D122F3U, // squares mod 29
+    0x121D47B7U, // squares mod 31
+    0x5E211E9BU, // squares mod 37
+    0x82B50737U, // squares mod 41
+    0x83A3EE53U, // squares mod 43
+    0x1B2753DFU, // squares mod 47
+    0x3303AED3U, // squares mod 53
+    0x3E7B92BBU, // squares mod 59
+    0x0A59F23BU, // squares mod 61
   };
-  const unsigned int bitsSqrHigh[] =
+  // Bits 63-32
+  const unsigned int bitsSqrHigh[NBR_PRIMES_QUADR_SIEVE] =
   {
-    0x00000000U, // 3
-    0x00000000U, // 5
-    0x00000000U, // 7
-    0x00000000U, // 11
-    0x00000000U, // 13
-    0x00000000U, // 17
-    0x00000000U, // 19
-    0x00000000U, // 23
-    0x00000000U, // 29
-    0x00000000U, // 31
-    0x00000016U, // 37
-    0x000001B3U, // 41
-    0x00000358U, // 43
-    0x00000435U, // 47
-    0x0012DD70U, // 53
-    0x022B6218U, // 59
-    0x1713E694U, // 61
+    0x00000000U, // squares mod 3
+    0x00000000U, // squares mod 5
+    0x00000000U, // squares mod 7
+    0x00000000U, // squares mod 11
+    0x00000000U, // squares mod 13
+    0x00000000U, // squares mod 17
+    0x00000000U, // squares mod 19
+    0x00000000U, // squares mod 23
+    0x00000000U, // squares mod 29
+    0x00000000U, // squares mod 31
+    0x00000016U, // squares mod 37
+    0x000001B3U, // squares mod 41
+    0x00000358U, // squares mod 43
+    0x00000435U, // squares mod 47
+    0x0012DD70U, // squares mod 53
+    0x022B6218U, // squares mod 59
+    0x1713E694U, // squares mod 61
   };
-  const int primes[] = { 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61 };
-  int nbrs[17];
-  int diffs[17];
+  const int primes[NBR_PRIMES_QUADR_SIEVE] =
+      { 3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
+        37, 41, 43, 47, 53, 59, 61 };
+  int nbrs[NBR_PRIMES_QUADR_SIEVE];
+  int diffs[NBR_PRIMES_QUADR_SIEVE];
   int i;
   int m;
   int r;
@@ -787,24 +793,24 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
   static BigInteger sqr;
   static BigInteger val;
   if ((nbr->limbs[0].x & 1) == 0)
-  { // nbr Even
+  { // nbr is even
     r = 0;
     m = 1;
   }
   else
   {
-    if ((k % 2) == 0)
-    { // k Even
+    if ((multiplier % 2) == 0)
+    { // multiplier is even
       r = 1;
       m = 2;
     }
     else
-    { // k Odd
-      r = (k + nbr->limbs[0].x) & 3;
+    { // multiplier is odd
+      r = (multiplier + nbr->limbs[0].x) & 3;
       m = 4;
     }
   }
-  intToBigInteger(&sqr, k * 4);
+  intToBigInteger(&sqr, multiplier * 4);
   (void)BigIntMultiply(&sqr, nbr, &sqr);
   squareRoot(sqr.limbs, sqrRoot.limbs, sqr.nbrLimbs, &sqrRoot.nbrLimbs);
   sqrRoot.sign = SIGN_POSITIVE;
@@ -824,7 +830,7 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
   }
   (void)BigIntMultiply(&a, &a, &nextroot);
   BigIntSubt(&nextroot, &sqr, &c);
-  for (i = 0; i < 17; i++)
+  for (i = 0; i < NBR_PRIMES_QUADR_SIEVE; i++)
   {
     int pr = primes[i];
     nbrs[i] = getRemainder(&c, pr);    // nbrs[i] <- c % primes[i]
@@ -839,9 +845,9 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
   {
     nbrIterations = 1000 * factor->nbrLimbs;
   }
-  for (int j = 0; j < nbrIterations; j++)
+  for (int iterNbr = 0; iterNbr < nbrIterations; iterNbr++)
   {
-    for (i = 0; i < 17; i++)
+    for (i = 0; i < NBR_PRIMES_QUADR_SIEVE; i++)
     {
       unsigned int shiftBits = (unsigned int)nbrs[i];
       unsigned int bitsSqr;
@@ -861,11 +867,11 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
         break;
       }
     }
-    if (i == 17)
+    if (i == NBR_PRIMES_QUADR_SIEVE)
     { // Test for perfect square
-      intToBigInteger(&c, m * j);           // c <- m * j
+      intToBigInteger(&c, m * iterNbr);           // c <- m * j
       BigIntAdd(&a, &c, &val);
-      (void)BigIntMultiply(&val, &val, &c);       // c <- val * val
+      (void)BigIntMultiply(&val, &val, &c); // c <- val * val
       BigIntSubt(&c, &sqr, &c);             // c <- val * val - sqr
       squareRoot(c.limbs, sqrRoot.limbs, c.nbrLimbs, &sqrRoot.nbrLimbs);
       sqrRoot.sign = SIGN_POSITIVE;         // sqrRoot <- sqrt(c)
@@ -877,7 +883,7 @@ static void Lehman(const BigInteger *nbr, int k, BigInteger *factor)
         return;
       }
     }
-    for (i = 0; i < 17; i++)
+    for (i = 0; i < NBR_PRIMES_QUADR_SIEVE; i++)
     {
       nbrs[i] = (nbrs[i] + diffs[i]) % primes[i];
       diffs[i] = (diffs[i] + (2 * m * m)) % primes[i];

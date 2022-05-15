@@ -1038,7 +1038,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
       getCurrentStackValue(&tofactor);
       stackIndex--;
       copyStr(&ptrBlocklyOutput, "<li>");
-      batchCallback(&ptrBlocklyOutput);
+      batchEcmCallback(&ptrBlocklyOutput);
       copyStr(&ptrBlocklyOutput, "</li>");
       nbrBlocklyOutputLines++;
       if (nbrBlocklyOutputLines == 1000)

@@ -18,10 +18,11 @@
 //
 #ifndef _BATCH_H
 #define _BATCH_H
+typedef void (*pBatchCallback)(char** pptrOutput);
 extern int valuesProcessed;
 
-enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pptrOutput, bool *pIsBatch);
-void batchCallback(char **pptrOutput);
+enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound,
+  char **pptrOutput, bool *pIsBatch, pBatchCallback callback);
 char *findChar(char *str, char c);
 #ifdef __EMSCRIPTEN__
 extern char *ptrInputText;

@@ -75,7 +75,7 @@ bool useBlockly;
 
 void showDivisors(void);    // DEBUG BORRAR
 #ifdef FACTORIZATION_APP
-void batchCallback(char **pptrOutput)
+void batchEcmCallback(char **pptrOutput)
 {
   char *ptrFactorDec = tofactorDec;
   NumberLength = tofactor.nbrLimbs;
@@ -964,7 +964,8 @@ void ecmFrontText(char *tofactorText, bool performFactorization, char *factors)
     databack(doFactorization? "M": "N");    // Use polynomial factorization calculator.
 #endif
   }
-  enum eExprErr rc = BatchProcessing(tofactorText, &tofactor, &ptrOutput, &isBatch);
+  enum eExprErr rc = BatchProcessing(tofactorText, &tofactor, &ptrOutput,
+       &isBatch, batchEcmCallback);
   if (rc == EXPR_VAR_IN_EXPRESSION)
   {
 #ifdef __EMSCRIPTEN__

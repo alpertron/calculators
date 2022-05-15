@@ -98,5 +98,6 @@ enum eEcmResult ecmCurve(int* pEC, int* pNextEC);
 char* ShowFactoredPart(const BigInteger* pNbr, const struct sFactors* pstFactors);
 void ShowLowerText(void);
 int BpswPrimalityTest(const BigInteger* pValue, const struct sFactors* pstFactors);
+void batchEcmCallback(char** pptrOutput);
 #endif
 #endif

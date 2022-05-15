@@ -19,8 +19,8 @@
 #include <string.h>
 #include "bignbr.h"
 #include "highlevel.h"
+#include "showtime.h"
 #include "batch.h"
-#if defined(FACTORIZATION_APP) || defined(FSQUARES_APP)
 static BigInteger value;
 static BigInteger Base1;
 static BigInteger Base2;
@@ -43,7 +43,8 @@ static BigInteger tmpS1;
 static BigInteger toProcess;
 static int groupLength;
 static const char *cube = "<span class=\"bigger\">³</span>";
-extern bool hexadecimal;
+static bool hexadecimal;
+static void batchCubesCallback(char** pptrOutput);
 static int sums[] =
 {
   6, 0, 1, -1, -1, 0, -1, 0, 1, 1,
@@ -348,7 +349,12 @@ void fcubesText(char *input, int grpLen)
   {
     groupLength = grpLen;
   }
-  (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL);
+  (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL, batchCubesCallback);
+#ifdef __EMSCRIPTEN__
+  copyStr(&ptrOutput, lang ? "<p>Transcurrió " : "<p>Time elapsed: ");
+  int elapsedTime = (int)(tenths() - originalTenthSecond);
+  GetDHMSt(&ptrOutput, elapsedTime);
+#endif
   copyStr(&ptrOutput, "</p><p>");
   copyStr(&ptrOutput, (lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH));
   copyStr(&ptrOutput, "</p>");
@@ -380,7 +386,7 @@ static void showCube(char** pptrOutput, const BigInteger* pBase)
   *pptrOutput = ptrOutput;
 }
 
-void batchCubesCallback(char **pptrOutput)
+static void batchCubesCallback(char **pptrOutput)
 {
   int result;
   char *ptrOutput = *pptrOutput;
@@ -435,4 +441,47 @@ void batchCubesCallback(char **pptrOutput)
   }
   *pptrOutput = ptrOutput;
 }
-#endif      // FACTORIZATION_APP || FSQUARES_APP
+
+#if defined __EMSCRIPTEN__ && !defined _MSC_VER
+EXTERNALIZE void doWork(void)
+{
+  int app;
+  int grpLen = 0;
+  char* ptrData = inputString;
+  originalTenthSecond = tenths();
+  if (*ptrData == 'C')
+  {    // User pressed Continue button.
+    fcubesText(NULL, 0); // Routine does not use parameters in this case.
+    databack(output);
+    return;
+  }
+  valuesProcessed = 0;
+  while (*ptrData != ',')
+  {
+    grpLen = (grpLen * 10) + (*ptrData - '0');
+    ptrData++;
+  }
+  ptrData++;             // Skip comma.
+  app = *ptrData - '0';
+  if (*(ptrData + 1) != ',')
+  {
+    ptrData++;
+    app = (app * 10) + *ptrData - '0';
+  }
+#ifndef lang  
+  lang = ((app & 1) ? true : false);
+#endif
+  app >>= 1;
+  if ((app & 0x20) != 0)
+  {
+    app &= 0x1F;
+    hexadecimal = true;
+  }
+  else
+  {
+    hexadecimal = false;
+  }
+  fcubesText(ptrData + 2, grpLen);
+  databack(output);
+}
+#endif

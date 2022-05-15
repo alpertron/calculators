@@ -25,8 +25,6 @@
 #include "showtime.h"
 #include "batch.h"
 
-#if defined(FACTORIZATION_APP) || defined(FSQUARES_APP)
-
 static char *ptrEndBatchFactor;
 static char *ptrCurrBatchFactor;
 static char *ptrNextBatchFactor;
@@ -45,7 +43,7 @@ static char* ptrSrcString;
 static const char* ptrConditionExpr;
 static bool errorDisplayed;
 static int endValuesProcessed;
-
+static pBatchCallback callback;
 
 void beginLine(char** pptrOutput)
 {
@@ -312,7 +310,7 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
       rc = evalExpression(ptrExprToProcess, valueFound);
       if (rc == EXPR_OK)
       {
-        batchCallback(&ptrOutput);
+        callback(&ptrOutput);
       }
       else
       {
@@ -355,13 +353,14 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
 }
 
 enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pptrOutput,
-  bool *pIsBatch)
+  bool *pIsBatch, pBatchCallback batchCallback)
 {
   enum eExprErr rc = EXPR_OK;
   errorDisplayed = false;
   ptrExprToProcess = NULL;
   ptrOutput = output;
   ptrConditionExpr = NULL;
+  callback = batchCallback;
   if (fromFile)
   {
     copyStr(&ptrOutput, "B");
@@ -445,7 +444,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       rc = ComputeExpression(ptrSrcString, valueFound, false);
       if (rc == EXPR_OK)
       {
-        batchCallback(&ptrOutput);
+        callback(&ptrOutput);
       }
       else
       {
@@ -538,5 +537,3 @@ char *findChar(char *str, char c)
   }
   return NULL;
 }
-
-#endif     // FACTORIZATION_APP || FSQUARES_APP

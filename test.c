@@ -27,7 +27,7 @@
 #include "polynomial.h"
 #include "fromBlockly.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 9
+#define DEBUG_CODE 1
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -57,7 +57,6 @@ char expr[] = "123456789012345";
 int Product[32];
 char input[MAX_LEN*4];
 extern char tofactorDec[MAX_LEN*12];
-extern int app;
 extern bool skipPrimality;
 BigInteger dividend;
 BigInteger divisor;
@@ -66,11 +65,9 @@ int main(int argc, char* argv[])
 {
   (void)argc;  // Parameter is not used. 
 #if DEBUG_CODE == 1
-//  fsquaresText("n(10^32)", 6);
   fsquaresText(argv[1], 6);
   (void)printf("%s\n", output);
 #elif DEBUG_CODE == 2
-  app = 1;
   fcubesText(argv[1], 6);
   (void)printf("%s\n", output);
 #elif DEBUG_CODE == 3
@@ -155,8 +152,8 @@ int main(int argc, char* argv[])
   ptrInput++;
   copyStr(&ptrInput, argv[3]);
   ptrInput++;
-  hexadecimal = (argv[4][0] != '0');
-  contfracText(input, 20000);
+  bool hex = (argv[4][0] != '0');
+  contfracText(input, 20000, hex);
   (void)printf("%s\n", output);
 #elif DEBUG_CODE == 7
   char* ptrInput;

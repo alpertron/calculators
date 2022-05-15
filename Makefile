@@ -19,7 +19,7 @@
 # Comment out next line for standard compilation.
 flags_coverage=--coverage
 flags_factorization_1=-D_USING64BITS_ -DFACTORIZATION_APP=1 -DFACTORIZATION_FUNCTIONS=1 -c
-flags_squares_1=-D_USING64BITS_ -DFSQUARES_APP=1 -c
+flags_squares_1=-D_USING64BITS_ -c
 flags_other_1=-D_USING64BITS_ -c
 ifeq ($(flags_coverage), )
 flags_factorization=$(flags_factorization_1) -Os
@@ -66,19 +66,19 @@ factor.fco ecm.fco siqs.fco siqsLA.fco quadmod.fco quadmodLL.fco bignbr.fco show
 factor.fco ecm.fco siqs.fco siqsLA.fco quadmod.fco quadmodLL.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quadmod.fco $(flags_coverage) -lm -o $@
 
 fsquares: expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
-fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fsquares.sqo
+fsquares.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fsquares.sqo
 	gcc expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
-fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fsquares.sqo $(flags_coverage) -lm -o $@
+fsquares.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fsquares.sqo $(flags_coverage) -lm -o $@
 
 fcubes: expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
-fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fcubes.sqo
+fcubes.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fcubes.sqo
 	gcc expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
-fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fcubes.sqo $(flags_coverage) -lm -o $@
+fcubes.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fcubes.sqo $(flags_coverage) -lm -o $@
 
 contfrac: expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
-fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_contfrac.sqo
+contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_contfrac.sqo
 	gcc expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
-fsquares.sqo fcubes.sqo contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_contfrac.sqo $(flags_coverage) -lm -o $@
+contfrac.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_contfrac.sqo $(flags_coverage) -lm -o $@
 
 polfact: expression.oto parseexpr.plo partition.oto errors.oto bigint.oto linkedbignbr.oto division.oto baseconv.oto karatsuba.oto modmult.oto sqroot.oto \
 rootseq.oto quintics.oto quinticsData.oto bigrational.oto output.oto polynomial.oto polyexpr.oto multpoly.oto divpoly.oto fftpoly.oto polfact.oto bignbr.oto showtime.oto from_musl.oto inputstr.oto fft.oto test_polfact.oto intpolfact.oto

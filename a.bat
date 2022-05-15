@@ -8,9 +8,15 @@ del *.wasm
 del *00*js
 
 rem ==================== GENERATION OF ASM.JS ===============================
-set fsquaresFiles=expression.c parseexpr.c partition.c errors.c bigint.c division.c fsquares.c fcubes.c baseconv.c karatsuba.c modmult.c sqroot.c contfrac.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c
-set fsquaresOptions=-DFSQUARES_APP=1 -s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432
-cmd /c emcc %jsCommon% %fsquaresFiles% %fsquaresOptions% -o fsquaresW%1.js
+set fsquaresFiles=expression.c parseexpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c
+set fsquaresOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432
+cmd /c emcc %jsCommon% %fsquaresFiles% fsquares.c %fsquaresOptions% -o fsquaresW%1.js
+if errorlevel 1 goto end
+
+cmd /c emcc %jsCommon% %fsquaresFiles% fcubes.c %fsquaresOptions% -o fcubesW%1.js
+if errorlevel 1 goto end
+
+cmd /c emcc %jsCommon% %fsquaresFiles% contfrac.c %fsquaresOptions% -o contfracW%1.js
 if errorlevel 1 goto end
 
 set polfactFiles=expression.c parseexpr.c partition.c errors.c bigint.c linkedbignbr.c division.c baseconv.c karatsuba.c modmult.c sqroot.c rootseq.c quintics.c quinticsData.c bigrational.c output.c polynomial.c polyexpr.c multpoly.c divpoly.c fftpoly.c intpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c
@@ -44,22 +50,22 @@ cmd /c emcc %jsCommon% %quadFiles% %quadOptions% -o quadW%1.js
 if errorlevel 1 goto end
 
 rem ===================== GENERATION OF WASM ================================
-cmd /c emcc %wasmCommon% -Dlang=0 -Dapplic=0 %fsquaresFiles% %fsquaresOptions% -o fsquaresE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 %fsquaresFiles% fsquares.c %fsquaresOptions% -o fsquaresE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 -Dapplic=0 %fsquaresFiles% %fsquaresOptions% -o fsquaresS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 %fsquaresFiles% fsquares.c %fsquaresOptions% -o fsquaresS.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=0 -Dapplic=1 %fsquaresFiles% %fsquaresOptions% -o fcubesE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 %fsquaresFiles% fcubes.c %fsquaresOptions% -o fcubesE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 -Dapplic=1 %fsquaresFiles% %fsquaresOptions% -o fcubesS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 %fsquaresFiles% fcubes.c %fsquaresOptions% -o fcubesS.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=0 -Dapplic=2 %fsquaresFiles% %fsquaresOptions% -o contfracE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 %fsquaresFiles% contfrac.c %fsquaresOptions% -o contfracE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 -Dapplic=2 %fsquaresFiles% %fsquaresOptions% -o contfracS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 %fsquaresFiles% contfrac.c %fsquaresOptions% -o contfracS.wasm
 if errorlevel 1 goto end
 
 cmd /c emcc %wasmCommon% -Dlang=0 %polfactFiles% %polfactOptions% -o polfactE.wasm
@@ -172,12 +178,20 @@ perl replaceEmbeddedJS.pl 0000 DISTANCE.HTM distE.js
 call w.bat
 perl csp.pl
 perl csp2.pl
+del *.gz
+del *.br
 echo ***** gzip *****
 for %%a in (*.HTM) do gzip -9 -c %%a > %%a.gz
+for %%a in (*00*js) do gzip -9 -c %%a > %%a.gz
+for %%a in (*.webmanifest) do gzip -9 -c %%a > %%a.gz
 echo **** brotli ****
 for %%a in (*.HTM) do brotli -f -Z %%a
+for %%a in (*00*js) do brotli -f -Z %%a
+for %%a in (*.webmanifest) do brotli -f -Z %%a
 del /q toweb\*.*
 copy *.HTM toweb
 copy *%1* toweb
 copy .htaccess toweb
+copy *.br toweb
+copy *.gz toweb
 :end

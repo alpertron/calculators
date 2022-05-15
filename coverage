@@ -185,6 +185,8 @@ echo -e "\n\n**** FSQUARES ****" >> coverage.out
 ./fsquares "-2" >> coverage.out
 ./fsquares "10**15000" >> coverage.out
 ./fsquares "10**30000" >> coverage.out
+./fsquares "3**100+3**76" >> coverage.out
+./fsquares "2**60+500000**2" >> coverage.out
 ./fsquares 0 >> coverage.out
 ./fsquares 27 >> coverage.out
 ./fsquares "10**200+54154255642" >> coverage.out

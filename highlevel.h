@@ -18,7 +18,7 @@
 //
 void fcubesText(char *input, int grpLen);
 void fsquaresText(char *input, int grpLen);
-void contfracText(char *input, int GroupLen);
+void contfracText(char *input, int GroupLen, bool hex);
 void polyFactText(const char *modText, const char *polyText, int groupLen);
 void quadmodText(const char *quadrText, const char *linearText, const char *constText,
   const char *modText, int groupLength);

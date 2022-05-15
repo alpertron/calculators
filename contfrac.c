@@ -20,6 +20,7 @@
 #include "bignbr.h"
 #include "expression.h"
 #include "highlevel.h"
+#include "showtime.h"
 static BigInteger num;
 static BigInteger den;
 static BigInteger delta;
@@ -36,7 +37,7 @@ static BigInteger startPeriodDen;
 static BigInteger intSqrt;
 static char *ptrOutput;
 static void ShowRational(BigInteger *pNum, BigInteger *pDen);
-extern bool hexadecimal;
+static bool hexadecimal;
 static void showText(const char *text)
 {
   copyStr(&ptrOutput, text);
@@ -297,6 +298,11 @@ static void ContFrac(void)
   {     // delta is not a perfect square. Periodic continued fraction.
     PeriodicContinuedFraction();
   }
+#ifdef __EMSCRIPTEN__
+  copyStr(&ptrOutput, lang ? "<p>Transcurrió " : "<p>Time elapsed: ");
+  int elapsedTime = (int)(tenths() - originalTenthSecond);
+  GetDHMSt(&ptrOutput, elapsedTime);
+#endif
   showText("<p>");
   showText(lang? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH);
   showText("</p>");
@@ -376,10 +382,11 @@ static void getNumber(BigInteger *pNumber, const char *title, char** pptrInput)
 }
 
 // input contains three expressions separated by 00h (null character).
-void contfracText(char *input, int GroupLen)
+void contfracText(char *input, int GroupLen, bool hex)
 {
   char *ptrInput = input;
   ptrOutput = output;
+  hexadecimal = hex;
   getNumber(&num, lang? "Numerador": "Numerator", &ptrInput);
   getNumber(&delta, lang? "Argumento de la raíz cuadrada": "Square root argument", &ptrInput);
   getNumber(&den, lang? "Denominador": "Denominator", &ptrInput);
@@ -390,3 +397,41 @@ void contfracText(char *input, int GroupLen)
   groupLen = GroupLen;
   ContFrac();
 }
+
+#if defined __EMSCRIPTEN__ && !defined _MSC_VER
+EXTERNALIZE void doWork(void)
+{
+  int app;
+  bool hex;
+  int grpLen = 0;
+  char* ptrData = inputString;
+  originalTenthSecond = tenths();
+  while (*ptrData != ',')
+  {
+    grpLen = (grpLen * 10) + (*ptrData - '0');
+    ptrData++;
+  }
+  ptrData++;             // Skip comma.
+  app = *ptrData - '0';
+  if (*(ptrData + 1) != ',')
+  {
+    ptrData++;
+    app = (app * 10) + *ptrData - '0';
+  }
+#ifndef lang  
+  lang = ((app & 1) ? true : false);
+#endif
+  app >>= 1;
+  if ((app & 0x20) != 0)
+  {
+    app &= 0x1F;
+    hex = true;
+  }
+  else
+  {
+    hex = false;
+  }
+  contfracText(ptrData + 2, grpLen, hex);
+  databack(output);
+}
+#endif
