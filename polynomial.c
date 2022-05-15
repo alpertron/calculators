@@ -984,13 +984,13 @@ void SquareFreeFactorization(int polyDegree, int *poly, int expon)
     PolyModularGcd(poly, polyDegree, poly1, currentDegree, poly2, &degreeC); // poly2 = c
     lenBytes = (polyDegree + 1) * nbrLimbs * (int)sizeof(int);
     (void)memcpy(poly4, poly, lenBytes);             // Backup poly
+    SetNumberToOne(&poly2[degreeC * nbrLimbs]);
     if (degreeC == 0)
     {
       (void)memcpy(poly1, poly, lenBytes);           // poly1 = w
     }
     else
     {
-      SetNumberToOne(&poly2[degreeC*nbrLimbs]);
       DividePolynomial(poly4, polyDegree, poly2, degreeC, poly1);    // poly1 = w
     }
     degreeW = polyDegree - degreeC;
