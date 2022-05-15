@@ -421,10 +421,8 @@ EXTERNALIZE void doWork(void)
 #ifndef lang  
   lang = ((app & 1) ? true : false);
 #endif
-  app >>= 1;
-  if ((app & 0x20) != 0)
+  if ((app & 0x40) != 0)
   {
-    app &= 0x1F;
     hex = true;
   }
   else

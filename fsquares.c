@@ -288,12 +288,12 @@ static bool FindTwoSquaresNoNumTheory(void)
         intToBigInteger(&c, iterNbr);       // c <- m * iterNbr
         BigIntSubt(&biMult1, &c, &biMult1);
         int nbrBytes = (nbrLimbs + 1) * (int)sizeof(limb);
-        memset(Mult1, 0, nbrBytes);
-        memset(Mult2, 0, nbrBytes);
+        (void)memset(Mult1, 0, nbrBytes);
+        (void)memset(Mult2, 0, nbrBytes);
         nbrBytes = biMult1.nbrLimbs * (int)sizeof(limb);
-        memcpy(Mult1, biMult1.limbs, nbrBytes);
+        (void)memcpy(Mult1, biMult1.limbs, nbrBytes);
         nbrBytes = biMult2.nbrLimbs * (int)sizeof(limb);
-        memcpy(Mult2, biMult2.limbs, nbrBytes);
+        (void)memcpy(Mult2, biMult2.limbs, nbrBytes);
         return true;          // Decomposition in two squares was found.
       }
     }
@@ -494,9 +494,7 @@ static void FillSieveArray(void)
 
 static void SumOfSquaresNumberGreaterThan3(void)
 {
-  int nbrDivisors;
   int shRight;
-  int divisor;
   limb carry;
   FillSieveArray();
   if ((number[0].x & 7) != 7)
@@ -518,6 +516,8 @@ static void SumOfSquaresNumberGreaterThan3(void)
   // and a (big) prime, try with other squares.
   for (;;)
   {
+    int nbrDivisors;
+    int divisor;
     bool multipleOf4kPlus3 = false;
     if (!Computing3Squares && (iMult3 >= iMult4))
     {
@@ -974,10 +974,8 @@ EXTERNALIZE void doWork(void)
 #ifndef lang  
   lang = ((app & 1) ? true : false);
 #endif
-  app >>= 1;
-  if ((app & 0x20) != 0)
+  if ((app & 0x40) != 0)
   {
-    app &= 0x1F;
     hexadecimal = true;
   }
   else
