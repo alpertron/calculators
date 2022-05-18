@@ -368,6 +368,29 @@ function zoomOut()
   }
 }
 
+function isNotSpecialKey(event)
+{
+  var key = event.key;
+  var acceptedKeys = ",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut," +
+                     "Control,Meta,Shift,Insert,Delete,Copy,Paste,Home,End,";
+  if (event.ctrlKey || event.metaKey)
+  {
+    if (key === "c")
+    {    // User pressed CTRL-C. Map it to "Copy".
+      key = "Copy";
+    }
+    if (key === "v")
+    {    // User pressed CTRL-V. Map it to "Paste".
+      key = "Paste";
+    }
+    if (key === "x")
+    {    // User pressed CTRL-X. Map it to "Cut".
+      key = "Cut";
+    }
+  }
+  return acceptedKeys.indexOf(","+key+",") < 0;
+}
+
 function startUp()
 {  
   canvas = get("canvas");
@@ -522,14 +545,13 @@ function startUp()
   center.onkeydown = function(evt)
   {
     var key = evt.key;
-    if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
-    {                                    // No modifier key pressed.
-      if (key !== "Backspace" && key !== "Tab" && key !== "Right" && key !== "ArrowRight" &&
-          key !== "Left" && key != "ArrowLeft" && key !== "Insert" && key !== "Delete")
-      {                                  // Not backspace, tab, right or left arrow, insert or delete key.
+    if (isNotSpecialKey(evt))
+    {
+      if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
+      {                         // No modifier key pressed.
         if (key < "0" || key > "9" || center.value.length >= 18)
-        {                                // Key is not a digit or number is too large.
-          evt.preventDefault();          // Do not propagate this key.
+        {                       // Key is not a digit or number is too large.
+          evt.preventDefault(); // Do not propagate this key.
         }
       }
     }
@@ -555,14 +577,13 @@ function startUp()
   start.onkeydown = function(evt)
   {
     var key = evt.key;
-    if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
-    {                                    // No modifier key pressed.
-      if (key !== "Backspace" && key !== "Tab" && key !== "Right" && key !== "ArrowRight" &&
-          key !== "Left" && key != "ArrowLeft" && key !== "Insert" && key !== "Delete")
-      {                                  // Not backspace, tab, right or left arrow, insert or delete key.
+    if (isNotSpecialKey(evt))
+    {
+      if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
+      {                         // No modifier key pressed.
         if (key < "0" || key > "9" || start.value.length >= 18)
-        {                                // Key is not a digit or number is too large.
-          evt.preventDefault();          // Do not propagate this key.
+        {                       // Key is not a digit or number is too large.
+          evt.preventDefault(); // Do not propagate this key.
         }
       }
     }

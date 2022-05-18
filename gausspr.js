@@ -374,34 +374,60 @@ function zoomOut()
   }
 }
 
+function isNotSpecialKey(event)
+{
+  var key = event.key;
+  var acceptedKeys = ",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut," +
+                     "Control,Meta,Shift,Insert,Delete,Copy,Paste,Home,End,";
+  if (event.ctrlKey || event.metaKey)
+  {
+    if (key === "c")
+    {    // User pressed CTRL-C. Map it to "Copy".
+      key = "Copy";
+    }
+    if (key === "v")
+    {    // User pressed CTRL-V. Map it to "Paste".
+      key = "Paste";
+    }
+    if (key === "x")
+    {    // User pressed CTRL-X. Map it to "Cut".
+      key = "Cut";
+    }
+  }
+  return acceptedKeys.indexOf(","+key+",") < 0;
+}
+
 function keydown(evt)
 {
   var target = evt.target || evt.srcElement;
   var key = evt.key;
-  if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
-  {                                  // No modifier key pressed.
-    if (key >= "0" && key <= "9")
-    {                                // Digit key has been pressed.
-      if (target.value.length >= 10 || (target.value.charAt(0) !== "-" && target.value.length >= 9))
-      {                              // Number is too large.
-        evt.preventDefault();        // Do not propagate this key.
+  if (isNotSpecialKey(evt))
+  {
+    if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
+    {                                  // No modifier key pressed.
+      if (key >= "0" && key <= "9")
+      {                                // Digit key has been pressed.
+        if (target.value.length >= 10 ||
+            (target.value.charAt(0) !== "-" && target.value.length >= 9))
+        {                              // Number is too large.
+          evt.preventDefault();        // Do not propagate this key.
+        }
       }
-    }
-    else if (key === "-")
-    {                                // Key minus has been pressed.
-      if (target.value.indexOf("-") >= 0)
-      {                              // There is already a minus sign.
-        evt.preventDefault();        // Do not propagate this key.
+      else if (key === "-")
+      {                                // Key minus has been pressed.
+        if (target.value.indexOf("-") >= 0)
+        {                              // There is already a minus sign.
+          evt.preventDefault();        // Do not propagate this key.
+        }
+        else
+        {
+          beforeMinus = target.value;
+        }
       }
-      else
-      {
-        beforeMinus = target.value;
+      else 
+      {                                // Not backspace, tab, right or left arrow, insert or delete key.
+        evt.preventDefault();          // Do not propagate this key.  
       }
-    }
-    else if (key !== "Backspace" && key !== "Tab" && key !== "Right" && key !== "ArrowRight" &&
-             key !== "Left" && key != "ArrowLeft" && key !== "Insert" && key !== "Delete")
-    {                                // Not backspace, tab, right or left arrow, insert or delete key.
-      evt.preventDefault();          // Do not propagate this key.  
     }
   }
 }

@@ -596,6 +596,11 @@ function startUp()
         event.stopPropagation();         // Do not propagate key.
         event.preventDefault();
       }
+      if (keyCode === "Escape" || keyCode === "Esc")
+      {
+        get("main").style.display = "block";
+        get("wizard").style.display = "none";
+      }
       if (event.altKey)
       {                                  // User pressed ALT key.
         if (keyCode === "P")

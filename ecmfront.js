@@ -896,6 +896,11 @@ function startUp()
         wizardNext();                  // Perform same operation as if the user had pressed Next button.
       }
     }
+    if (keyCode === "Escape" || keyCode === "Esc")
+    {
+      show("main");
+      hide("wizard");
+    }
     if (event.altKey)
     {                                  // User pressed ALT key.
       if (keyCode === "P")
@@ -1000,10 +1005,31 @@ function startUp()
   newCurveOrFactor.onkeydown = function(event)
   {
     var key = event.key;
-    if (key !== "Backspace" && key !== "Tab" && key !== "Right" && key !== "ArrowRight" &&
-        key !== "Left" && key != "ArrowLeft" && key !== "Insert" && key !== "Delete" &&
-        (key < "0" || key > "9"))
+    var acceptedKeys = ",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut," +
+                       "Control,Meta,Shift,Insert,Delete,Copy,Paste,Home,End," +
+                       "0,1,2,3,4,5,6,7,8,9,"
+    if (event.ctrlKey || event.metaKey)
     {
+      if (key === "c")
+      {    // User pressed CTRL-C. Map it to "Copy".
+        key = "Copy";
+      }
+      if (key === "v")
+      {    // User pressed CTRL-V. Map it to "Paste".
+        key = "Paste";
+      }
+      if (key === "x")
+      {    // User pressed CTRL-X. Map it to "Cut".
+        key = "Cut";
+      }
+    }
+    else if (key === "Esc" || key === "Escape")
+    {
+      hide("modal-more");
+      return;
+    }
+    if (acceptedKeys.indexOf(","+key+",") < 0)
+    {                                  // Key not accepted.
       event.preventDefault();          // Do not propagate this key.  
     }
   };
