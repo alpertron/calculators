@@ -1127,6 +1127,26 @@ static void GaloisGroupHasOrder5(int multiplicity)
     BigRationalAdd(&Rat2, &Rat5, &RatValues[index_T3]);       // l3
     BigRationalSubt(&Rat2, &Rat5, &RatValues[index_T2]);      // l2
   }
+  startLine();
+  showText("l0 = ");
+  showRationalNoParen(&RatValues[index_l0]);
+  endLine();
+  startLine();
+  showText("l1 = ");
+  showRationalNoParen(&RatValues[index_T1]);
+  endLine();
+  startLine();
+  showText("l2 = ");
+  showRationalNoParen(&RatValues[index_T2]);
+  endLine();
+  startLine();
+  showText("l3 = ");
+  showRationalNoParen(&RatValues[index_T3]);
+  endLine();
+  startLine();
+  showText("l4 = ");
+  showRationalNoParen(&RatValues[index_T4]);
+  endLine();
   // l = l0 - (l1 + l2 + l3 + l4)/4
   // m = (l1 - l2 - l3 + l4) / 4
   // U = sqrt(10+2*sqrt(5)) / 4
@@ -1145,6 +1165,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
   BigRationalSubt(&RatValues[index_l0], &Rat1, &Rat1);  // l
   enum eSign signRat2 = Rat2.numerator.sign;
   Rat2.numerator.sign = SIGN_POSITIVE;
+
   for (int ctr = 1; ctr <= 4; ctr++)
   {
     startLine();
@@ -1204,14 +1225,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
       ptrOutput++;
     }
     showText(ptrTimes);
-    if ((ctr == 1) || (ctr == 3))
-    {
-      showSqrtTenPlusMinusTwoTimesSqrt5("+");
-    }
-    else
-    {
-      showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
-    }
+    showSqrtTenPlusMinusTwoTimesSqrt5("+");
     BigRationalSubt(&RatValues[index_T3], &RatValues[index_T2], &Rat3);  // l3 - l2
     if ((ctr == 2) || (ctr == 3))
     {
@@ -1228,14 +1242,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
     *ptrOutput = ' ';
     ptrOutput++;
     showText(ptrTimes);
-    if ((ctr == 2) || (ctr == 4))
-    {
-      showSqrtTenPlusMinusTwoTimesSqrt5("+");
-    }
-    else
-    {
-      showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
-    }
+    showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
     endParen();
     end5thRoot();
     endLine();

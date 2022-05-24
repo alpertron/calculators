@@ -86,6 +86,7 @@ void PerformChineseRemainderTheorem(void)
       pstFactor++;
       if (pstFactor->multiplicity == 0)
       {
+        intToBigInteger(&Aux[T1], 0);
         continue;
       }
       expon = Exponents[T1];
