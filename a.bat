@@ -190,6 +190,7 @@ for %%a in (*00*js) do brotli -f -Z %%a
 for %%a in (*.webmanifest) do brotli -f -Z %%a
 del /q toweb\*.*
 copy *.HTM toweb
+copy *.webmanifest toweb
 copy *%1* toweb
 copy .htaccess toweb
 copy *.br toweb

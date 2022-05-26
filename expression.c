@@ -772,6 +772,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
       }
       break;
     case TOKEN_END_EXPON:
+    case OPER_POWER:       // Coming here from Blockly.
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
         stackIndex--;
