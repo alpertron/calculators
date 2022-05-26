@@ -26,5 +26,10 @@
   "theme_color": "#db5945",
   "background_color": "#ffffff",
   "display": "standalone",
+  "lang": "es",
+  "categories": ["education", "math", "calculators"],
+  "scope": "https://www.alpertron.com.ar/",
+  "orientation": "any",
+  "description": "Aplicación Web que factoriza enteros gaussianos de la forma (a+b*i).",
   "start_url": "GAUSIANO.HTM?launcher=true"
 }

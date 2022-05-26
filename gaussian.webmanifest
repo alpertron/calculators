@@ -26,5 +26,10 @@
   "theme_color": "#db5945",
   "background_color": "#ffffff",
   "display": "standalone",
+  "lang": "en",
+  "categories": ["education", "math", "calculators"],
+  "scope": "https://www.alpertron.com.ar/",
+  "orientation": "any",
+  "description": "Javascript application that factors Gaussian integers of the form (a+bi).",
   "start_url": "GAUSSIAN.HTM?launcher=true"
 }

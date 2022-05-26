@@ -26,5 +26,10 @@
   "theme_color": "#db5945",
   "background_color": "#ffffff",
   "display": "standalone",
+  "lang": "en",
+  "scope": "https://www.alpertron.com.ar/",
+  "categories": ["education", "math", "calculator"],
+  "orientation": "any",
+  "description": "Javascript application that finds solutions to quadratic modular equations.",
   "start_url": "QUADMOD.HTM?launcher=true"
 }

@@ -26,5 +26,10 @@
   "theme_color": "#db5945",
   "background_color": "#ffffff",
   "display": "standalone",
+  "lang": "es",
+  "categories": ["education", "math", "calculators"],
+  "scope": "https://www.alpertron.com.ar/",
+  "orientation": "any",
+  "description": "Aplicación Javascript que muestra la fracción continua de números racionales e irracionalidades cuadráticas.",
   "start_url": "FRACCONT.HTM?launcher=true"
 }
