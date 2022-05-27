@@ -724,7 +724,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
         return BLOCKLY_INVALID_NAME_FOR_SHADOW;
       }
     }
-    else if (xmlcmp(ptrXML, "<next") == 0)
+    else if ((xmlcmp(ptrXML, "<next") == 0) || (xmlcmp(ptrXML, "</block") == 0))
     {
       while (ptrBlockStack > blockStack)
       {
@@ -746,6 +746,10 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
         {
           *ptrInstr = *ptrBlockStack;
           ptrInstr++;
+        }
+        if (xmlcmp(ptrXML, "</block") == 0)
+        {
+          break;
         }
       }
     }

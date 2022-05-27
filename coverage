@@ -70,6 +70,7 @@ make blockly
 ./blockly xml.txt 13 >> coverage.out
 ./blockly xml.txt 14 >> coverage.out
 ./blockly xml.txt 15 >> coverage.out
+./blockly xml.txt 16 >> coverage.out
 lcov --capture --directory . --output-file blockly.info
 make clean
 make polfact
