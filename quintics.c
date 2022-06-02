@@ -1113,10 +1113,10 @@ static int getCircleNbr(int circleNbrLeft)
     // Compute root = RatQuartic + Rat1 * sqrt(Rat2) *
     //     (cos((1/5)(2*circleNbrLeft*Pi + acos(Rat3 * sqrt(Rat4) + RatM * sqrt(RatN)))) +
     //      cos((1/5)(2*circleNbrRight*Pi + acos(Rat3 * sqrt(Rat4) - RatM * sqrt(RatN)))))
-    double argFirstCos = (6.2831853071795864769252 * (double)circleNbrLeft + firstAcos)/5;
-    double argSecondCos = (6.2831853071795864769252 * (double)circleNbrRight + secondAcos)/5;
-    double root = BigRational2double(&RatQuartic) + firstProd *
-      (cos(argFirstCos) + cos(argSecondCos));
+    double argFirstCos = (6.2831853071795864769252 * (double)circleNbrLeft + firstAcos)/5.0;
+    double argSecondCos = (6.2831853071795864769252 * (double)circleNbrRight + secondAcos)/5.0;
+    double root = BigRational2double(&RatQuartic) + (firstProd *
+      (cos(argFirstCos) + cos(argSecondCos)));
     // Compute A*root^5 + B*root^4 + C*root^3 + D*root^2 + E*root + F.
     RHS = ((((((((((BigInt2double(&Quintic) * root) + 
       BigInt2double(&Quartic)) * root) +
@@ -1277,7 +1277,8 @@ static void GaloisGroupHasOrder5(int multiplicity)
   multint(&RatN.numerator, &RatN.numerator, 5);
   intToBigInteger(&RatN.denominator, 1);
   MultiplyRationalBySqrtRational(&RatM, &RatN);
-  BigRationalDivideByInt(&RatQuartic, -5, &RatQuartic);
+  BigIntChSign(&RatQuartic.numerator);
+  BigRationalDivideByInt(&RatQuartic, 5, &RatQuartic);
   for (circleNbr[0] = 0; circleNbr[0] < 5; circleNbr[0]++)
   {
     showX(multiplicity);
@@ -1324,6 +1325,10 @@ static void GaloisGroupHasOrder5(int multiplicity)
         endParen();
       }
       endParen();   // End paren for cos.
+      if (pretty == TEX)
+      {
+        showText("}");
+      }
       if (cosNbr == 1)
       {
         showText(" + ");

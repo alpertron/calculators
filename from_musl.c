@@ -61,37 +61,26 @@ static inline void fp_force_evall(long double x)
 } while(0)
 
 #define EPS 2.2204460492503131e-16
-static const double
-toint = 1.5 / EPS,
-pio4 = 0x1.921fb54442d18p-1,
-invpio2 = 6.36619772367581382433e-01, /* 0x3FE45F30, 0x6DC9C883 */
-pio2_1 = 1.57079632673412561417e+00, /* 0x3FF921FB, 0x54400000 */
-pio2_1t = 6.07710050650619224932e-11, /* 0x3DD0B461, 0x1A626331 */
-pio2_2 = 6.07710050630396597660e-11, /* 0x3DD0B461, 0x1A600000 */
-pio2_2t = 2.02226624879595063154e-21, /* 0x3BA3198A, 0x2E037073 */
-pio2_3 = 2.02226624871116645580e-21, /* 0x3BA3198A, 0x2E000000 */
-pio2_3t = 8.47842766036889956997e-32; /* 0x397B839A, 0x252049C1 */
+static const double toint = 1.5 / EPS;
+static const double pio4 = 0x1.921fb54442d18p-1;
+static const double invpio2 = 6.36619772367581382433e-01; /* 0x3FE45F30, 0x6DC9C883 */
+static const double pio2_1 = 1.57079632673412561417e+00; /* 0x3FF921FB, 0x54400000 */
+static const double pio2_1t = 6.07710050650619224932e-11; /* 0x3DD0B461, 0x1A626331 */
+static const double pio2_2 = 6.07710050630396597660e-11; /* 0x3DD0B461, 0x1A600000 */
+static const double pio2_2t = 2.02226624879595063154e-21; /* 0x3BA3198A, 0x2E037073 */
+static const double pio2_3 = 2.02226624871116645580e-21; /* 0x3BA3198A, 0x2E000000 */
+static const double pio2_3t = 8.47842766036889956997e-32; /* 0x397B839A, 0x252049C1 */
 
 /* caller must handle the case when reduction is not needed: |x| ~<= pi/4 */
 int __rem_pio2(double x, double* y)
 {
   union { double f; uint64_t i; } u = { x };
   double z;
-  double w;
-  double t;
-  double r;
-  double fn;
-  double tx[3];
-  double ty[2];
   uint32_t ix;
   int sign;
-  int n;
-  int ex;
-  int ey;
-  int i;
 
   sign = u.i >> 63;
-  ix = u.i >> 32 & 0x7fffffff;
+  ix = (u.i >> 32) & 0x7fffffff;
   if ((x <= 3.926990816987241548078) && (x >= -3.926990816987241548078))
   {  /* |x| ~<= 5pi/4 */
     if ((x <= 2.356194490192344928846) && (x >= -2.356194490192344928846))
