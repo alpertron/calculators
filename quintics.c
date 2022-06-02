@@ -1124,7 +1124,7 @@ static int getCircleNbr(int circleNbrLeft)
       BigInt2double(&Quadratic))* root) +
       BigInt2double(&Linear)) * root) +
       BigInt2double(&Independent));
-    if (RHS < 0)
+    if (RHS < 0.0)
     {   // Compute absolute value of RHS.
       RHS = -RHS;
     }
@@ -1261,18 +1261,18 @@ static void GaloisGroupHasOrder5(int multiplicity)
 
   // Compute L/sqrt(R): result in Rat3, Rat4.
   CopyBigInt(&Rat3.numerator, &ptrL->numerator);
-  BigIntMultiply(&ptrL->denominator, &RatR.numerator,
+  (void)BigIntMultiply(&ptrL->denominator, &RatR.numerator,
     &Rat3.denominator);
-  BigIntMultiply(&RatR.numerator, &RatR.denominator,
+  (void)BigIntMultiply(&RatR.numerator, &RatR.denominator,
     &Rat4.numerator);
   intToBigInteger(&Rat4.denominator, 1);
   MultiplyRationalBySqrtRational(&Rat3, &Rat4);
 
   // Compute M*sqrt(5)/sqrt(R): result in RatM, RatN.
   CopyBigInt(&RatM.numerator, &ptrM->numerator);
-  BigIntMultiply(&ptrM->denominator, &RatR.numerator,
+  (void)BigIntMultiply(&ptrM->denominator, &RatR.numerator,
     &RatM.denominator);
-  BigIntMultiply(&RatR.numerator, &RatR.denominator,
+  (void)BigIntMultiply(&RatR.numerator, &RatR.denominator,
     &RatN.numerator);
   multint(&RatN.numerator, &RatN.numerator, 5);
   intToBigInteger(&RatN.denominator, 1);
@@ -1336,6 +1336,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
       }
     }
     endParen();
+    endLine();
   }
 }
 
