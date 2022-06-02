@@ -61,6 +61,7 @@ const char *ptrMinus;
 const char *ptrTimes;
 const char *ptrSin;
 const char *ptrCos;
+const char* ptrACos;
 const char *ptrPi;
 const char *ptrI;
 static int totients[(2 * MAX_DEGREE) + 1];
@@ -500,13 +501,21 @@ void showRatConstants(const char* numerator, const char* denominator)
     showText(denominator);
     showText("</span></span>");
   }
-  else
+  else if (pretty == TEX)
   {
     showText("\\frac{");
     showText(numerator);
     showText("}{");
     showText(denominator);
     showText("}");
+  }
+  else
+  {
+    showText("(");
+    showText(numerator);
+    showText("/");
+    showText(denominator);
+    showText(")");
   }
 }
 
@@ -809,19 +818,13 @@ static void CubicEquation(const int* polynomial, int multiplicity)
     if (pretty != PARI_GP)
     {
       showRatConstants("1", "3");
-      if (pretty == PRETTY_PRINT)
-      {
-        showText(" arccos");
-      }
-      else
-      {
-        showText("\\arccos");
-      }
+      showText(ptrTimes);
     }
     else
     {
-      showText("(1/3) * acos");
+      showText("(1/3) * ");
     }
+    showText(ptrACos);
     startParen();
     BigRationalDivide(&RatDeprIndependent, &RatDeprLinear, &Rat1); // q/p
     BigRationalMultiplyByInt(&Rat1, 3, &Rat1);                     // 3q/p
@@ -3520,16 +3523,19 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
     {
       ptrSin = "<span aria-hidden=\"true\">sen</span><span class=\"hide\"> seno de </span>";
       ptrCos = "<span aria-hidden=\"true\">cos</span><span class=\"hide\"> coseno de </span>";
+      ptrACos = "<span aria-hidden=\"true\">arc cos</span><span class=\"hide\"> arco coseno de </span>";
     }
     else if (pretty == TEX)
     {
       ptrSin = "\\sin{";
       ptrCos = "\\cos{";
+      ptrACos = "\\arccos";
     }
     else
     {
       ptrSin = "sen";
       ptrCos = "cos";
+      ptrACos = "acos";
     }
   }
   else
@@ -3538,16 +3544,19 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
     {
       ptrSin = "<span aria-hidden=\"true\">sin</span><span class=\"hide\"> sine of </span>";
       ptrCos = "<span aria-hidden=\"true\">cos</span><span class=\"hide\"> cosine of </span>";
+      ptrACos = "<span aria-hidden=\"true\">arccos</span><span class=\"hide\"> arc cosine of </span>";
     }
     else if (pretty == TEX)
     {
       ptrSin = "\\sin{";
       ptrCos = "\\cos{";
+      ptrACos = "\\arccos";
     }
     else
     {
       ptrSin = "sin";
       ptrCos = "cos";
+      ptrACos = "acos";
     }
   }
   groupLen = groupLength;

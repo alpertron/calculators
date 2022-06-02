@@ -438,3 +438,8 @@ void showSquareRootOfRational(const BigRational* rat, int root, const char *ptrT
   MultiplyRationalBySqrtRational(&Rat1, &Rat2);
   ShowRationalAndSqrParts(&Rat1, &Rat2, root, ptrTimes);
 }
+
+double BigRational2double(const BigRational* value)
+{
+  return BigInt2double(&value->numerator) / BigInt2double(&value->denominator);
+}

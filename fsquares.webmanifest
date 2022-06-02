@@ -1,35 +1,117 @@
 {
   "short_name": "4 Squares",
   "name": "Sum of four squares",
-  "icons": [
-    {
-      "src": "fsquares-icon-1x.png",
-      "type": "image/png",
-      "sizes": "48x48"
-    },
-    {
-      "src": "fsquares-icon-2x.png",
-      "type": "image/png",
-      "sizes": "96x96"
-    },
-    {
-      "src": "fsquares-icon-4x.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "fsquares-icon-512px.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
-  ],
   "theme_color": "#db5945",
   "background_color": "#ffffff",
   "display": "standalone",
   "lang": "en",
   "categories": ["education", "math", "calculators"],
-  "scope": "https://www.alpertron.com.ar/",
+  "scope": "/",
   "orientation": "any",
-  "description": "Javascript application that finds the decomposition of a number into squares.",
-  "start_url": "FSQUARES.HTM?launcher=true"
+  "description": "Web application that finds the decomposition of a number into squares.",
+  "start_url": "FSQUARES.HTM?launcher=true",
+  "icons": [
+    {"src":"fsquares-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+    {"src":"fsquares-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+    {"src":"fsquares-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+    {"src":"fsquares-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+  ],
+  "shortcuts": [
+    {
+      "short_name": "Discrete logarithm",
+      "name": "Discrete logarithm calculator",
+      "url": "DILOG.HTM?launcher=true",
+      "description": "Web application that finds discrete logarithms.",
+      "icons": [
+        {"src":"dilog-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"dilog-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"dilog-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"dilog-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "Get Factors",
+      "name": "Integer factorization",
+      "url": "ECM.HTM?launcher=true",
+      "description": "Web application that factors integers using ECM and SIQS algorithms.",
+      "icons": [
+        {"src":"ecm-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"ecm-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"ecm-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"ecm-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "4 Cubes",
+      "name": "Sum of four cubes",
+      "url": "FCUBES.HTM?launcher=true",
+      "description": "Web application that finds the decomposition of a number into cubes.",
+      "icons": [
+        {"src":"fcubes-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"fcubes-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"fcubes-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"fcubes-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "Factor Gaussian",
+      "name": "Gaussian integer factorization",
+      "url": "GAUSSIAN.HTM?launcher=true",
+      "description": "Web application that factors Gaussian integers of the form (a+bi).",
+      "icons": [
+        {"src":"gaussian-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"gaussian-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"gaussian-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"gaussian-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "Factor poly",
+      "name": "Polynomial factorization",
+      "url": "POLFACT.HTM?launcher=true",
+      "description": "Web application that factors and finds exact roots of integer polynomials and factors polynomials modulo a power of a prime number.",
+      "icons": [
+        {"src":"polfact-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"polfact-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"polfact-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"polfact-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "Quadr int eq",
+      "name": "Quadratic integer equations",
+      "url": "QUAD.HTM?launcher=true",
+      "description": "Web application that finds solutions to integer quadratic equations in two variables.",
+      "icons": [
+        {"src":"quad-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"quad-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"quad-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"quad-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "Quadratic mod",
+      "name": "Quadratic modular equations",
+      "url": "QUADMOD.HTM?launcher=true",
+      "description": "Web application that finds solutions to quadratic modular equations.",
+      "icons": [
+        {"src":"quadmod-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"quadmod-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"quadmod-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"quadmod-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "Continued fractions",
+      "name": "Continued fractions",
+      "url": "CONTFRAC.HTM?launcher=true",
+      "description": "Web application that finds the continued fraction representation of rational numbers and quadratic irrationalities.",
+      "icons": [
+        {"src":"contfrac-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"contfrac-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"contfrac-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"contfrac-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    }
+  ]
 }

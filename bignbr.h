@@ -185,6 +185,7 @@ void expBigNbr(BigInteger *bignbr, double logar);
 double logBigNbr(const BigInteger *pBigNbr);
 double logLimbs(const limb *pBigNbr, int nbrLimbs);
 double getMantissa(const limb *ptrLimb, int nbrLimbs);
+double BigInt2double(const BigInteger* value);
 void LenAndLimbs2ArrLimbs(const int *ptrValues, /*@out@*/limb *bigint, int nbrLen);
 void ArrLimbs2LenAndLimbs(/*@out@*/int *ptrValues, const limb *bigint, int nbrLen);
 bool checkOne(const limb *value, int nbrLimbs);
@@ -238,6 +239,7 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
 void MultiplyQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
 void DivideQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
 
+double BigRational2double(const BigRational* value);
 void BigRationalAdd(const BigRational* pAddend1,
   const BigRational* pAddend2, BigRational* pSum);
 void BigRationalSubt(const BigRational* pAddend1,
@@ -261,6 +263,8 @@ void ShowRationalAndSqrParts(const BigRational* RatPart, const BigRational* SqrP
   int root, const char *ptrTimes);
 void showSquareRootOfRational(const BigRational* rat, int root, const char *ptrTimes);
 void copyStr(char** pptrString, const char* stringToCopy);
+void computeRoot(const BigInteger* argument, BigInteger* nthRoot, int Exponent);
+
 static inline int UintToInt(unsigned int value)
 {
   return (int)value;

@@ -489,6 +489,16 @@ double logLimbs(const limb *pBigNbr, int nbrLimbs)
   return logar;
 }
 
+double BigInt2double(const BigInteger* value)
+{
+  double result = exp(logBigNbr(value));
+  if (value->sign == SIGN_NEGATIVE)
+  {
+    result = -result;
+  }
+  return result;
+}
+
 enum eExprErr BigIntPowerIntExp(const BigInteger *pBase, int exponent, BigInteger *pPower)
 {
   double base;
@@ -2549,3 +2559,87 @@ int intRandom(int firstLimit, int secondLimit)
   difference = upperLimit - lowerLimit + 1;
   return lowerLimit + (int)(((uint64_t)nextRandom() * (uint64_t)difference) >> 32);
 }
+
+static void setNewNbrLimbs(BigInteger* pBigInt, int newNbrLimbs)
+{
+  int oldNbrLimbs = pBigInt->nbrLimbs;
+  int newNbrBytes = newNbrLimbs * (int)sizeof(limb);
+  if (oldNbrLimbs > newNbrLimbs)
+  {     // Discard non-significant limbs.
+    (void)memmove(&pBigInt->limbs[0], &pBigInt->limbs[oldNbrLimbs - newNbrLimbs], newNbrBytes);
+    pBigInt->nbrLimbs = newNbrLimbs;
+  }
+  else
+  {     // Add requested number of limbs.
+    int bytesToClear = (newNbrLimbs - oldNbrLimbs) * (int)sizeof(limb);
+    (void)memmove(&pBigInt->limbs[newNbrLimbs - oldNbrLimbs], &pBigInt->limbs[0], newNbrBytes);
+    (void)memset(&pBigInt->limbs[0], 0, bytesToClear);
+    pBigInt->nbrLimbs = newNbrLimbs;
+  }
+}
+
+void computeRoot(const BigInteger* argument, BigInteger *nthRoot, int Exponent)
+{
+  static BigInteger NFp1;
+  static BigInteger nthRootSignificantLimbs;
+  static BigInteger rootN1;
+  bool smallBase;
+  double logN = logBigNbr(argument) / Exponent;  // Find nth root of number to factor.
+  expBigNbr(nthRoot, logN);
+  smallBase = (nthRoot->nbrLimbs == 1) && (nthRoot->limbs[0].x < 1000000000);
+  if (smallBase)
+  {
+    return;
+  }
+    // Compute correct value of nthRoot using Newton's method.
+    // Let x be an approximation to nth root of y.
+    // The next approximation is: x <- (1/n) * ((n-1)*x + y/x^(n-1))
+    // Use up to nthRoot.nbrLimbs + 2 limbs. Discard lowest significant
+    // limbs at each step.
+  int nbrBytes;
+  int maxNbrLimbs = nthRoot->nbrLimbs + 2;
+  CopyBigInt(&nthRootSignificantLimbs, nthRoot);
+  for (int limbsOK = 1; limbsOK < maxNbrLimbs; limbsOK *= 2)
+  {   // Compute rootN1 = x^(n-1)
+    int exponMinus1 = Exponent - 1;
+    bool significantExponBit = false;
+    intToBigInteger(&rootN1, 1);
+    setNewNbrLimbs(&nthRootSignificantLimbs, maxNbrLimbs);
+    for (int mask = 0x100000; mask > 0; mask /= 2)
+    {
+      if (significantExponBit)
+      {
+        (void)BigIntMultiply(&rootN1, &rootN1, &rootN1);
+        setNewNbrLimbs(&rootN1, maxNbrLimbs);
+      }
+      if ((exponMinus1 & mask) != 0)
+      {
+        (void)BigIntMultiply(&rootN1, &nthRootSignificantLimbs, &rootN1);
+        setNewNbrLimbs(&rootN1, maxNbrLimbs);
+        significantExponBit = true;
+      }
+    }
+    // Compute y / x^(n-1)
+    CopyBigInt(&NFp1, argument);
+    setNewNbrLimbs(&NFp1, 2 * maxNbrLimbs);
+    (void)BigIntDivide(&NFp1, &rootN1, &NFp1);
+    setNewNbrLimbs(&NFp1, maxNbrLimbs);
+
+    // Compute (n-1)*x
+    multint(&nthRootSignificantLimbs, &nthRootSignificantLimbs, exponMinus1);
+
+    // Compute (n-1)*x + y/x^(n-1)
+    BigIntAdd(&nthRootSignificantLimbs, &NFp1, &nthRootSignificantLimbs);
+    // Compute (1/n) * ((n-1)*x + y/x^(n-1))
+    subtractdivide(&nthRootSignificantLimbs, 0, exponMinus1 + 1);
+  }
+  // Round nthRootSignificantLimbs and copy it to nthRoot.
+  nbrBytes = nthRoot->nbrLimbs * (int)sizeof(limb);
+  (void)memcpy(nthRoot->limbs, nthRootSignificantLimbs.limbs, nbrBytes);
+  if (nthRootSignificantLimbs.limbs[maxNbrLimbs - nthRoot->nbrLimbs - 1].x >=
+    HALF_INT_RANGE)
+  {
+    addbigint(nthRoot, 1);
+  }
+}
+

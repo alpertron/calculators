@@ -1,35 +1,117 @@
 {
   "short_name": "Cuadr enteras",
   "name": "Ecuaciones cuadráticas enteras",
-  "icons": [
-    {
-      "src": "quad-icon-1x.png",
-      "type": "image/png",
-      "sizes": "48x48"
-    },
-    {
-      "src": "quad-icon-2x.png",
-      "type": "image/png",
-      "sizes": "96x96"
-    },
-    {
-      "src": "quad-icon-4x.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "quad-icon-512px.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
-  ],
   "theme_color": "#db5945",
   "background_color": "#ffffff",
   "display": "standalone",
   "lang": "es",
   "categories": ["education", "math", "calculators"],
-  "scope": "https://www.alpertron.com.ar/",
+  "scope": "/",
   "orientation": "any",
-  "description": "Aplicación Javascript que halla soluciones a ecuaciones cuadráticas enteras en dos variables.",
-  "start_url": "CUAD.HTM?launcher=true"
+  "description": "Aplicación Web que halla soluciones a ecuaciones cuadráticas enteras en dos variables.",
+  "start_url": "CUAD.HTM?launcher=true",
+  "icons": [
+    {"src":"quad-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+    {"src":"quad-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+    {"src":"quad-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+    {"src":"quad-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+  ],
+  "shortcuts": [
+    {
+      "short_name": "Log discretos",
+      "name": "Calculadora de logaritmos discretos",
+      "url": "LOGDI.HTM?launcher=true",
+      "description": "Aplicación Web que halla logaritmos discretos.",
+      "icons": [
+        {"src":"dilog-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"dilog-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"dilog-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"dilog-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "Hallar factores",
+      "name": "Factorización de enteros",
+      "url": "ECMC.HTM?launcher=true",
+      "description": "Aplicación Web que factoriza números enteros utilizando los algoritmos ECM y SIQS.",
+      "icons": [
+        {"src":"ecm-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"ecm-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"ecm-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"ecm-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "4 cubos",
+      "name": "Suma de cuatro cubos",
+      "url": "SUMCUBOS.HTM?launcher=true",
+      "description": "Aplicación Web que descompone un número en una suma de cuatro cubos.",
+      "icons": [
+        {"src":"fcubes-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"fcubes-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"fcubes-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"fcubes-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "4 cuadrados",
+      "name": "Suma de cuatro cuadrados",
+      "url": "SUMCUAD.HTM?launcher=true",
+      "description": "Aplicación Web que descompone un número en una suma de hasta cuatro cuadrados.",
+      "icons": [
+        {"src":"fsquares-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"fsquares-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"fsquares-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"fsquares-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "Factorizar gausianos",
+      "name": "Factorización de enteros gausianos",
+      "url": "GAUSIANO.HTM?launcher=true",
+      "description": "Aplicación Web que factoriza enteros gaussianos de la forma (a+b*i).",
+      "icons": [
+        {"src":"gaussian-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"gaussian-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"gaussian-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"gaussian-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "Factorizar polinomio",
+      "name": "Factorización de polinomios",
+      "url": "FACTPOL.HTM?launcher=true",
+      "description": "Aplicación Web que factoriza y halla raíces exactas de polinomios enteros y factoriza polinomios módulo una potencia de número primo.",
+      "icons": [
+        {"src":"polfact-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"polfact-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"polfact-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"polfact-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "Mod cuadr",
+      "name": "Ecuaciones cuadráticas modulares",
+      "url": "CUADMOD.HTM?launcher=true",
+      "description": "Aplicación Web que halla soluciones a ecuaciones cuadráticas modulares.",
+      "icons": [
+        {"src":"quadmod-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"quadmod-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"quadmod-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"quadmod-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    },
+    {
+      "short_name": "Frac continuas",
+      "name": "Fracciones continuas",
+      "url": "FRACCONT.HTM?launcher=true",
+      "description": "Aplicación Web que muestra la fracción continua de números racionales e irracionalidades cuadráticas.",
+      "icons": [
+        {"src":"contfrac-icon-1x.png", "type":"image/png", "sizes":"48x48"},
+        {"src":"contfrac-icon-2x.png", "type":"image/png", "sizes":"96x96"},
+        {"src":"contfrac-icon-4x.png", "type":"image/png", "sizes":"192x192"},
+        {"src":"contfrac-icon-512px.png", "type":"image/png", "sizes":"512x512"}
+      ]
+    }
+  ]
 }

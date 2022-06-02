@@ -23,6 +23,7 @@
 #include <string.h>
 #include "rootseq.h"
 #include "quintics.h"
+#include "musl.h"
 
 extern struct monomial arrayB[];
 extern struct monomial arrayD[];
@@ -54,6 +55,16 @@ static BigRational RatR2;
 static BigRational RatS2;
 static bool firstNumberShown;
 extern char* ptrOutput;
+extern const char* ptrCos;
+extern const char* ptrACos;
+extern const char* ptrPi;
+extern BigInteger Quintic;
+extern BigInteger Quartic;
+extern BigInteger Cubic;
+extern BigInteger Quadratic;
+extern BigInteger Linear;
+extern BigInteger Independent;
+
 
 // Coefficients taken from Dummit's Solving Solvable Quintics article.
 static struct stQuinticF20 astQuinticF20[] =
@@ -1087,9 +1098,58 @@ static void GaloisGroupHasOrder10(int multiplicity)
   showRn(10);    // Show all four values of R.
 }
 
+static int getCircleNbr(int circleNbrLeft)
+{
+  int recordCircleNbrRight = 0;
+  double rootRecord = 0.0;
+  double firstProd = BigRational2double(&Rat1) * sqrt(BigRational2double(&Rat2));
+  double firstTerm = BigRational2double(&Rat3) * sqrt(BigRational2double(&Rat4));
+  double secondTerm = BigRational2double(&RatM) * sqrt(BigRational2double(&RatN));
+  double firstAcos = acos(firstTerm + secondTerm);
+  double secondAcos = acos(firstTerm - secondTerm);
+  for (int circleNbrRight = 0; circleNbrRight < 5; circleNbrRight++)
+  {
+    double RHS;
+    // Compute root = RatQuartic + Rat1 * sqrt(Rat2) *
+    //     (cos((1/5)(2*circleNbrLeft*Pi + acos(Rat3 * sqrt(Rat4) + RatM * sqrt(RatN)))) +
+    //      cos((1/5)(2*circleNbrRight*Pi + acos(Rat3 * sqrt(Rat4) - RatM * sqrt(RatN)))))
+    double argFirstCos = (6.2831853071795864769252 * (double)circleNbrLeft + firstAcos)/5;
+    double argSecondCos = (6.2831853071795864769252 * (double)circleNbrRight + secondAcos)/5;
+    double root = BigRational2double(&RatQuartic) + firstProd *
+      (cos(argFirstCos) + cos(argSecondCos));
+    // Compute A*root^5 + B*root^4 + C*root^3 + D*root^2 + E*root + F.
+    RHS = ((((((((((BigInt2double(&Quintic) * root) + 
+      BigInt2double(&Quartic)) * root) +
+      BigInt2double(&Cubic)) * root) +
+      BigInt2double(&Quadratic))* root) +
+      BigInt2double(&Linear)) * root) +
+      BigInt2double(&Independent));
+    if (RHS < 0)
+    {   // Compute absolute value of RHS.
+      RHS = -RHS;
+    }
+    if (circleNbrRight == 0)
+    {
+      rootRecord = RHS;
+    }
+    else
+    {
+      if (RHS < rootRecord)
+      {
+        rootRecord = RHS;
+        recordCircleNbrRight = circleNbrRight;
+      }
+    }
+  }
+  return recordCircleNbrRight;
+}
+
 static void GaloisGroupHasOrder5(int multiplicity)
 {
   (void)multiplicity;
+  int circleNbr[2] = { 0, 0 };
+  BigRational* ptrL;
+  BigRational* ptrM;
   // Compute the roots l1, l2, l3 and l4 of the pair of quadratic equations.
   // l1, l4 = (-(T1 + T2*d) +/- sqrt(M + N*d)) / 2
   // l2, l3 = (-(T1 - T2*d) +/- sqrt(M - N*d)) / 2
@@ -1127,125 +1187,150 @@ static void GaloisGroupHasOrder5(int multiplicity)
     BigRationalAdd(&Rat2, &Rat5, &RatValues[index_T3]);       // l3
     BigRationalSubt(&Rat2, &Rat5, &RatValues[index_T2]);      // l2
   }
-  startLine();
-  showText("l0 = ");
-  showRationalNoParen(&RatValues[index_l0]);
-  endLine();
-  startLine();
-  showText("l1 = ");
-  showRationalNoParen(&RatValues[index_T1]);
-  endLine();
-  startLine();
-  showText("l2 = ");
-  showRationalNoParen(&RatValues[index_T2]);
-  endLine();
-  startLine();
-  showText("l3 = ");
-  showRationalNoParen(&RatValues[index_T3]);
-  endLine();
-  startLine();
-  showText("l4 = ");
-  showRationalNoParen(&RatValues[index_T4]);
-  endLine();
   // l = l0 - (l1 + l2 + l3 + l4)/4
   // m = (l1 - l2 - l3 + l4) / 4
   // U = sqrt(10+2*sqrt(5)) / 4
   // V = sqrt(10-2*sqrt(5)) / 4
-  // K = (l1 - l4)*U + (l2 - l3)*V
+  // 
+  // Roots of resolvent:
   // R1 = l + m * sqrt(5) + i((l1 - l4)*U + (l2 - l3)*V)
   // R2 = l - m * sqrt(5) + i((l3 - l2)*U + (l1 - l4)*V)
   // R3 = l - m * sqrt(5) + i((l2 - l3)*U + (l4 - l1)*V)
   // R4 = l + m * sqrt(5) + i((l4 - l1)*U + (l3 - l2)*V)
+  // Do not compute these roots.
+  //
+  // Re(R1) = sqrt(r) * ((l + m) * sqrt(5))/K
+  // r = l4*(2*l4-l3-l2-l1-l0)/2 + l3*(2*l3-l2-l1-l0)/2 +
+  //     l2*(2*l2-l1-l0)/2 + l1*(2*l1-l0)/2 + l0^2
+  // r is a fifth power. Let s = r^(1/5)
+  // If Q is the quartic coefficient of the original polynomial:
+  // x_n = (1/5)(-Q + 2*sqrt(s)*(cos((1/5)*(2*n*Pi+acos((l+m*sqrt(5)/sqrt(r)) +
+  //                             cos((1/5)*(2*k_n*Pi+acos((l-m*sqrt(5)/sqrt(r))
+  // Compute k_n by inspection minimizing the RHS for the computed value of x.
+  // Compute gcd of l, m and sqrt(x) to minimize the numerator and denominator
+  // of the argument of acos.
+  //
+  // Compute ptrL <- l and ptrM <- m.
+  ptrL = &RatValues[index_v];
+  ptrM = &RatValues[index_O];
   BigRationalAdd(&RatValues[index_T1], &RatValues[index_T4], &Rat2);
   BigRationalAdd(&RatValues[index_T2], &RatValues[index_T3], &Rat3);
   BigRationalAdd(&Rat2, &Rat3, &Rat1);     // l1 + l2 + l3 + l4
   BigRationalSubt(&Rat2, &Rat3, &Rat2);    // l1 - l2 - l3 + l4
   BigRationalDivideByInt(&Rat1, 4, &Rat1); // (l1 + l2 + l3 + l4)/4
-  BigRationalDivideByInt(&Rat2, 4, &Rat2); // (l1 - l2 - l3 + l4)/4
-  BigRationalSubt(&RatValues[index_l0], &Rat1, &Rat1);  // l
-  enum eSign signRat2 = Rat2.numerator.sign;
-  Rat2.numerator.sign = SIGN_POSITIVE;
+  BigRationalDivideByInt(&Rat2, 4, ptrM);  // (l1 - l2 - l3 + l4)/4
+  BigRationalSubt(&RatValues[index_l0], &Rat1, ptrL);  // l
+  ptrM->numerator.sign = SIGN_POSITIVE;
 
-  for (int ctr = 1; ctr <= 4; ctr++)
+  // Compute RatR <- r.
+  BigRationalAdd(&RatValues[index_T4], &RatValues[index_T4], &Rat2);
+  BigRationalSubt(&Rat2, &RatValues[index_T3], &Rat2);
+  BigRationalSubt(&Rat2, &RatValues[index_T2], &Rat2);
+  BigRationalSubt(&Rat2, &RatValues[index_T1], &Rat2);
+  BigRationalSubt(&Rat2, &RatValues[index_l0], &Rat2);
+  BigRationalMultiply(&Rat2, &RatValues[index_T4], &RatR);
+
+  BigRationalAdd(&RatValues[index_T3], &RatValues[index_T3], &Rat2);
+  BigRationalSubt(&Rat2, &RatValues[index_T2], &Rat2);
+  BigRationalSubt(&Rat2, &RatValues[index_T1], &Rat2);
+  BigRationalSubt(&Rat2, &RatValues[index_l0], &Rat2);
+  BigRationalMultiply(&Rat2, &RatValues[index_T3], &Rat2);
+  BigRationalAdd(&RatR, &Rat2, &RatR);
+
+  BigRationalAdd(&RatValues[index_T2], &RatValues[index_T2], &Rat2);
+  BigRationalSubt(&Rat2, &RatValues[index_T1], &Rat2);
+  BigRationalSubt(&Rat2, &RatValues[index_l0], &Rat2);
+  BigRationalMultiply(&Rat2, &RatValues[index_T2], &Rat2);
+  BigRationalAdd(&RatR, &Rat2, &RatR);
+
+  BigRationalAdd(&RatValues[index_T1], &RatValues[index_T1], &Rat2);
+  BigRationalSubt(&Rat2, &RatValues[index_l0], &Rat2);
+  BigRationalMultiply(&Rat2, &RatValues[index_T1], &Rat2);
+  BigRationalAdd(&RatR, &Rat2, &RatR);
+  BigRationalDivideByInt(&RatR, 2, &RatR);
+
+  BigRationalMultiply(&RatValues[index_l0], &RatValues[index_l0], &Rat2);
+  BigRationalAdd(&RatR, &Rat2, &RatR);
+
+  // Compute s <- (2/5)r^(1/5).
+  computeRoot(&RatR.numerator, &Rat2.numerator, 5);
+  computeRoot(&RatR.denominator, &Rat2.denominator, 5);
+  intToBigInteger(&Rat1.numerator, 2);
+  intToBigInteger(&Rat1.denominator, 5);
+  MultiplyRationalBySqrtRational(&Rat1, &Rat2);
+
+  // Compute L/sqrt(R): result in Rat3, Rat4.
+  CopyBigInt(&Rat3.numerator, &ptrL->numerator);
+  BigIntMultiply(&ptrL->denominator, &RatR.numerator,
+    &Rat3.denominator);
+  BigIntMultiply(&RatR.numerator, &RatR.denominator,
+    &Rat4.numerator);
+  intToBigInteger(&Rat4.denominator, 1);
+  MultiplyRationalBySqrtRational(&Rat3, &Rat4);
+
+  // Compute M*sqrt(5)/sqrt(R): result in RatM, RatN.
+  CopyBigInt(&RatM.numerator, &ptrM->numerator);
+  BigIntMultiply(&ptrM->denominator, &RatR.numerator,
+    &RatM.denominator);
+  BigIntMultiply(&RatR.numerator, &RatR.denominator,
+    &RatN.numerator);
+  multint(&RatN.numerator, &RatN.numerator, 5);
+  intToBigInteger(&RatN.denominator, 1);
+  MultiplyRationalBySqrtRational(&RatM, &RatN);
+  BigRationalDivideByInt(&RatQuartic, -5, &RatQuartic);
+  for (circleNbr[0] = 0; circleNbr[0] < 5; circleNbr[0]++)
   {
-    startLine();
-    if (pretty == TEX)
+    showX(multiplicity);
+    if (!BigIntIsZero(&RatQuartic.numerator))
     {
-      showText("R_");
-      *ptrOutput = (char)(ctr + '0');
-      ptrOutput++;
-      showText(" = ");
+      showRationalNoParen(&RatQuartic);
+      showText(" + ");
     }
-    else
-    {
-      showText("<var>R</var><sub>");
-      *ptrOutput = (char)(ctr + '0');
-      ptrOutput++;
-      showText("</sub> = ");
-    }
-    start5thRoot();
-    showRationalNoParen(&Rat1);
-    showPlusSignOn((signRat2 == SIGN_POSITIVE) == ((ctr == 1) || (ctr == 4)),
-      TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-    showRational(&Rat2);
-    if (pretty == PARI_GP)
-    {
-      *ptrOutput = ' ';
-      ptrOutput++;
-    }
+    ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
     showText(ptrTimes);
-    if (pretty == PARI_GP)
-    {
-      *ptrOutput = ' ';
-      ptrOutput++;
-    }
-    showSqrt5();
-    *ptrOutput = ' ';
-    ptrOutput++;
-    if (ctr >= 3)
-    {
-      showText(ptrMinus);
-    }
-    else
-    {
-      *ptrOutput = '+';
-      ptrOutput++;
-    }
-    showText((pretty == PARI_GP)? " I ": " i ");
-    showText(ptrTimes);
-    showText("&nbsp;");
     startParen();
-    BigRationalSubt(&RatValues[index_T1], &RatValues[index_T4], &Rat3);  // l1 - l4
-    BigRationalDivideByInt(&Rat3, 4, &Rat3);
-    ForceDenominatorPositive(&Rat3);
-    showRational(&Rat3);
-    if (pretty == PARI_GP)
+    for (int cosNbr = 1; cosNbr <= 2; cosNbr++)
     {
-      *ptrOutput = ' ';
-      ptrOutput++;
+      int circleNumber = circleNbr[cosNbr - 1];
+      showText(ptrCos);
+      startParen();
+      showRatConstants("1", "5");
+      showText(ptrTimes);
+      if (circleNumber > 0)
+      {
+        startParen();
+        int2dec(&ptrOutput, 2 * circleNumber);
+        showText(ptrTimes);
+        showText(ptrPi);
+        showText(" + ");
+      }
+      showText(ptrACos);
+      startParen();
+      ShowRationalAndSqrParts(&Rat3, &Rat4, 2, ptrTimes);
+      if (cosNbr == 1)
+      {
+        showText(" + ");
+      }
+      else
+      {
+        showText(" ");
+        showText(ptrMinus);
+        showText(" ");
+      }
+      ShowRationalAndSqrParts(&RatM, &RatN, 2, ptrTimes);
+      endParen();   // End paren for arc cos.
+      if (circleNumber > 0)
+      {
+        endParen();
+      }
+      endParen();   // End paren for cos.
+      if (cosNbr == 1)
+      {
+        showText(" + ");
+        circleNbr[1] = getCircleNbr(circleNbr[0]);
+      }
     }
-    showText(ptrTimes);
-    showSqrtTenPlusMinusTwoTimesSqrt5("+");
-    BigRationalSubt(&RatValues[index_T3], &RatValues[index_T2], &Rat3);  // l3 - l2
-    if ((ctr == 2) || (ctr == 3))
-    {
-      BigRationalDivideByInt(&Rat3, 4, &Rat3);
-    }
-    else
-    {
-      BigRationalDivideByInt(&Rat3, -4, &Rat3);
-    }
-    ForceDenominatorPositive(&Rat3);
-    showPlusSignOn(Rat3.numerator.sign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-    Rat3.numerator.sign = SIGN_POSITIVE;
-    showRational(&Rat3);
-    *ptrOutput = ' ';
-    ptrOutput++;
-    showText(ptrTimes);
-    showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
     endParen();
-    end5thRoot();
-    endLine();
   }
 }
 
