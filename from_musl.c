@@ -23,32 +23,23 @@ do {                                              \
 #define SET_LOW_WORD(d,lo)                        \
   INSERT_WORDS(d, asuint64(d)>>32, lo)
 
-#ifndef fp_force_evalf
-#define fp_force_evalf fp_force_evalf
 static inline void fp_force_evalf(float x)
 {
   volatile float y;
   y = x;
 }
-#endif
 
-#ifndef fp_force_eval
-#define fp_force_eval fp_force_eval
 static inline void fp_force_eval(double x)
 {
   volatile double y;
   y = x;
 }
-#endif
 
-#ifndef fp_force_evall
-#define fp_force_evall fp_force_evall
 static inline void fp_force_evall(long double x)
 {
   volatile long double y;
   y = x;
 }
-#endif
 
 #define FORCE_EVAL(x) do {                        \
 	if (sizeof(x) == sizeof(float)) {         \
@@ -100,15 +91,15 @@ int __rem_pio2(double x, double* y)
     }
     else {
       if (!sign) {
-        z = x - 2 * pio2_1;
-        y[0] = z - 2 * pio2_1t;
-        y[1] = (z - y[0]) - 2 * pio2_1t;
+        z = x - (2.0 * pio2_1);
+        y[0] = z - (2.0 * pio2_1t);
+        y[1] = (z - y[0]) - (2.0 * pio2_1t);
         return 2;
       }
       else {
-        z = x + 2 * pio2_1;
-        y[0] = z + 2 * pio2_1t;
-        y[1] = (z - y[0]) + 2 * pio2_1t;
+        z = x + (2.0 * pio2_1);
+        y[0] = z + (2.0 * pio2_1t);
+        y[1] = (z - y[0]) + (2.0 * pio2_1t);
         return -2;
       }
     }
@@ -119,16 +110,16 @@ int __rem_pio2(double x, double* y)
     {  /* |x| ~<= 7pi/4 */
       if (!sign)
       {
-        z = x - 3 * pio2_1;
-        y[0] = z - 3 * pio2_1t;
-        y[1] = (z - y[0]) - 3 * pio2_1t;
+        z = x - (3.0 * pio2_1);
+        y[0] = z - (3.0 * pio2_1t);
+        y[1] = (z - y[0]) - (3.0 * pio2_1t);
         return 3;
       }
       else
       {
-        z = x + 3 * pio2_1;
-        y[0] = z + 3 * pio2_1t;
-        y[1] = (z - y[0]) + 3 * pio2_1t;
+        z = x + (3.0 * pio2_1);
+        y[0] = z + (3.0 * pio2_1t);
+        y[1] = (z - y[0]) + (3.0 * pio2_1t);
         return -3;
       }
     }
@@ -136,16 +127,16 @@ int __rem_pio2(double x, double* y)
     {
       if (!sign)
       {
-        z = x - 4 * pio2_1;
-        y[0] = z - 4 * pio2_1t;
-        y[1] = (z - y[0]) - 4 * pio2_1t;
+        z = x - (4.0 * pio2_1);
+        y[0] = z - (4.0 * pio2_1t);
+        y[1] = (z - y[0]) - (4.0 * pio2_1t);
         return 4;
       }
       else
       {
-        z = x + 4 * pio2_1;
-        y[0] = z + 4 * pio2_1t;
-        y[1] = (z - y[0]) + 4 * pio2_1t;
+        z = x + (4.0 * pio2_1);
+        y[0] = z + (4.0 * pio2_1t);
+        y[1] = (z - y[0]) + (4.0 * pio2_1t);
         return -4;
       }
     }
@@ -713,29 +704,30 @@ double pow(double x, double y)
 }
 
 // Square root.
-static const uint16_t __rsqrt_tab[128] = {
-0xb451,0xb2f0,0xb196,0xb044,0xaef9,0xadb6,0xac79,0xab43,
-0xaa14,0xa8eb,0xa7c8,0xa6aa,0xa592,0xa480,0xa373,0xa26b,
-0xa168,0xa06a,0x9f70,0x9e7b,0x9d8a,0x9c9d,0x9bb5,0x9ad1,
-0x99f0,0x9913,0x983a,0x9765,0x9693,0x95c4,0x94f8,0x9430,
-0x936b,0x92a9,0x91ea,0x912e,0x9075,0x8fbe,0x8f0a,0x8e59,
-0x8daa,0x8cfe,0x8c54,0x8bac,0x8b07,0x8a64,0x89c4,0x8925,
-0x8889,0x87ee,0x8756,0x86c0,0x862b,0x8599,0x8508,0x8479,
-0x83ec,0x8361,0x82d8,0x8250,0x81c9,0x8145,0x80c2,0x8040,
-0xff02,0xfd0e,0xfb25,0xf947,0xf773,0xf5aa,0xf3ea,0xf234,
-0xf087,0xeee3,0xed47,0xebb3,0xea27,0xe8a3,0xe727,0xe5b2,
-0xe443,0xe2dc,0xe17a,0xe020,0xdecb,0xdd7d,0xdc34,0xdaf1,
-0xd9b3,0xd87b,0xd748,0xd61a,0xd4f1,0xd3cd,0xd2ad,0xd192,
-0xd07b,0xcf69,0xce5b,0xcd51,0xcc4a,0xcb48,0xca4a,0xc94f,
-0xc858,0xc764,0xc674,0xc587,0xc49d,0xc3b7,0xc2d4,0xc1f4,
-0xc116,0xc03c,0xbf65,0xbe90,0xbdbe,0xbcef,0xbc23,0xbb59,
-0xba91,0xb9cc,0xb90a,0xb84a,0xb78c,0xb6d0,0xb617,0xb560,
+static const uint16_t __rsqrt_tab[128] = 
+{
+  0xb451,0xb2f0,0xb196,0xb044,0xaef9,0xadb6,0xac79,0xab43,
+  0xaa14,0xa8eb,0xa7c8,0xa6aa,0xa592,0xa480,0xa373,0xa26b,
+  0xa168,0xa06a,0x9f70,0x9e7b,0x9d8a,0x9c9d,0x9bb5,0x9ad1,
+  0x99f0,0x9913,0x983a,0x9765,0x9693,0x95c4,0x94f8,0x9430,
+  0x936b,0x92a9,0x91ea,0x912e,0x9075,0x8fbe,0x8f0a,0x8e59,
+  0x8daa,0x8cfe,0x8c54,0x8bac,0x8b07,0x8a64,0x89c4,0x8925,
+  0x8889,0x87ee,0x8756,0x86c0,0x862b,0x8599,0x8508,0x8479,
+  0x83ec,0x8361,0x82d8,0x8250,0x81c9,0x8145,0x80c2,0x8040,
+  0xff02,0xfd0e,0xfb25,0xf947,0xf773,0xf5aa,0xf3ea,0xf234,
+  0xf087,0xeee3,0xed47,0xebb3,0xea27,0xe8a3,0xe727,0xe5b2,
+  0xe443,0xe2dc,0xe17a,0xe020,0xdecb,0xdd7d,0xdc34,0xdaf1,
+  0xd9b3,0xd87b,0xd748,0xd61a,0xd4f1,0xd3cd,0xd2ad,0xd192,
+  0xd07b,0xcf69,0xce5b,0xcd51,0xcc4a,0xcb48,0xca4a,0xc94f,
+  0xc858,0xc764,0xc674,0xc587,0xc49d,0xc3b7,0xc2d4,0xc1f4,
+  0xc116,0xc03c,0xbf65,0xbe90,0xbdbe,0xbcef,0xbc23,0xbb59,
+  0xba91,0xb9cc,0xb90a,0xb84a,0xb78c,0xb6d0,0xb617,0xb560,
 };
 
 /* returns a*b*2^-32 - e, with error 0 <= e < 1.  */
 static inline uint32_t mul32(uint32_t a, uint32_t b)
 {
-  return (uint64_t)a * b >> 32;
+  return ((uint64_t)a * b) >> 32;
 }
 
 /* returns a*b*2^-64 - e, with error 0 <= e < 3.  */
@@ -745,7 +737,7 @@ static inline uint64_t mul64(uint64_t a, uint64_t b)
   uint64_t alo = a & 0xffffffff;
   uint64_t bhi = b >> 32;
   uint64_t blo = b & 0xffffffff;
-  return ahi * bhi + (ahi * blo >> 32) + (alo * bhi >> 32);
+  return (ahi * bhi) + ((ahi * blo) >> 32) + ((alo * bhi) >> 32);
 }
 
 double sqrt(double x)
@@ -763,11 +755,14 @@ double sqrt(double x)
   }
 
   int even = top & 1;
-  m = (ix << 11) | 0x8000000000000000;
-  if (even) m >>= 1;
+  m = (ix << 11) | 0x8000000000000000ULL;
+  if (even != 0)
+  {
+    m >>= 1;
+  }
   top = (top + 0x3ff) >> 1;
 
-  static const uint64_t three = 0xc0000000;
+  static const uint64_t three = 0xc0000000ULL;
   uint64_t r;
   uint64_t s;
   uint64_t d;
@@ -802,9 +797,11 @@ double sqrt(double x)
      compute nearest rounded result:
      the nearest result to 52 bits is either s or s+0x1p-52,
      we can decide by comparing (2^52 s + 0.5)^2 to 2^104 m.  */
-  uint64_t d0, d1, d2;
+  uint64_t d0;
+  uint64_t d1;
+  uint64_t d2;
   double y, t;
-  d0 = (m << 42) - s * s;
+  d0 = (m << 42) - (s * s);
   d1 = s - d0;
   d2 = d1 + s + 1;
   s += d1 >> 63;
@@ -816,13 +813,12 @@ double sqrt(double x)
 
 // Trigonometric functions
 
-static const double
-S1 = -1.66666666666666324348e-01, /* 0xBFC55555, 0x55555549 */
-S2 = 8.33333333332248946124e-03, /* 0x3F811111, 0x1110F8A6 */
-S3 = -1.98412698298579493134e-04, /* 0xBF2A01A0, 0x19C161D5 */
-S4 = 2.75573137070700676789e-06, /* 0x3EC71DE3, 0x57B1FE7D */
-S5 = -2.50507602534068634195e-08, /* 0xBE5AE5E6, 0x8A2B9CEB */
-S6 = 1.58969099521155010221e-10; /* 0x3DE5D93A, 0x5ACFD57C */
+static const double S1 = -1.66666666666666324348e-01; /* 0xBFC55555, 0x55555549 */
+static const double S2 = 8.33333333332248946124e-03; /* 0x3F811111, 0x1110F8A6 */
+static const double S3 = -1.98412698298579493134e-04; /* 0xBF2A01A0, 0x19C161D5 */
+static const double S4 = 2.75573137070700676789e-06; /* 0x3EC71DE3, 0x57B1FE7D */
+static const double S5 = -2.50507602534068634195e-08; /* 0xBE5AE5E6, 0x8A2B9CEB */
+static const double S6 = 1.58969099521155010221e-10; /* 0x3DE5D93A, 0x5ACFD57C */
 
 double __sin(double x, double y, int iy)
 {
@@ -833,22 +829,21 @@ double __sin(double x, double y, int iy)
 
   z = x * x;
   w = z * z;
-  r = S2 + z * (S3 + z * S4) + z * w * (S5 + z * S6);
+  r = S2 + (z * (S3 + (z * S4))) + (z * w * (S5 + (z * S6)));
   v = z * x;
   if (iy == 0)
-    return x + v * (S1 + z * r);
+    return x + (v * (S1 + (z * r)));
   else
-    return x - ((z * (0.5 * y - v * r) - y) - v * S1);
+    return x - ((z * ((0.5 * y) - (v * r)) - y) - (v * S1));
 }
 
 
-static const double
-C1 = 4.16666666666666019037e-02, /* 0x3FA55555, 0x5555554C */
-C2 = -1.38888888888741095749e-03, /* 0xBF56C16C, 0x16C15177 */
-C3 = 2.48015872894767294178e-05, /* 0x3EFA01A0, 0x19CB1590 */
-C4 = -2.75573143513906633035e-07, /* 0xBE927E4F, 0x809C52AD */
-C5 = 2.08757232129817482790e-09, /* 0x3E21EE9E, 0xBDB4B1C4 */
-C6 = -1.13596475577881948265e-11; /* 0xBDA8FAE9, 0xBE8838D4 */
+static const double C1 = 4.16666666666666019037e-02; /* 0x3FA55555, 0x5555554C */
+static const double C2 = -1.38888888888741095749e-03; /* 0xBF56C16C, 0x16C15177 */
+static const double C3 = 2.48015872894767294178e-05; /* 0x3EFA01A0, 0x19CB1590 */
+static const double C4 = -2.75573143513906633035e-07; /* 0xBE927E4F, 0x809C52AD */
+static const double C5 = 2.08757232129817482790e-09; /* 0x3E21EE9E, 0xBDB4B1C4 */
+static const double C6 = -1.13596475577881948265e-11; /* 0xBDA8FAE9, 0xBE8838D4 */
 
 double __cos(double x, double y)
 {
@@ -859,10 +854,10 @@ double __cos(double x, double y)
 
   z = x * x;
   w = z * z;
-  r = z * (C1 + z * (C2 + z * C3)) + w * w * (C4 + z * (C5 + z * C6));
+  r = z * (C1 + (z * (C2 + (z * C3)))) + (w * w * (C4 + z * (C5 + (z * C6))));
   hz = 0.5 * z;
   w = 1.0 - hz;
-  return w + (((1.0 - w) - hz) + (z * r - x * y));
+  return w + (((1.0 - w) - hz) + ((z * r) - (x * y)));
 }
 
 double cos(double x)
@@ -899,26 +894,25 @@ double cos(double x)
   }
 }
 
-static const double
-pio2_hi = 1.57079632679489655800e+00, /* 0x3FF921FB, 0x54442D18 */
-pio2_lo = 6.12323399573676603587e-17, /* 0x3C91A626, 0x33145C07 */
-pS0 = 1.66666666666666657415e-01, /* 0x3FC55555, 0x55555555 */
-pS1 = -3.25565818622400915405e-01, /* 0xBFD4D612, 0x03EB6F7D */
-pS2 = 2.01212532134862925881e-01, /* 0x3FC9C155, 0x0E884455 */
-pS3 = -4.00555345006794114027e-02, /* 0xBFA48228, 0xB5688F3B */
-pS4 = 7.91534994289814532176e-04, /* 0x3F49EFE0, 0x7501B288 */
-pS5 = 3.47933107596021167570e-05, /* 0x3F023DE1, 0x0DFDF709 */
-qS1 = -2.40339491173441421878e+00, /* 0xC0033A27, 0x1C8A2D4B */
-qS2 = 2.02094576023350569471e+00, /* 0x40002AE5, 0x9C598AC8 */
-qS3 = -6.88283971605453293030e-01, /* 0xBFE6066C, 0x1B8D0159 */
-qS4 = 7.70381505559019352791e-02; /* 0x3FB3B8C5, 0xB12E9282 */
+static const double pio2_hi = 1.57079632679489655800e+00; /* 0x3FF921FB, 0x54442D18 */
+static const double pio2_lo = 6.12323399573676603587e-17; /* 0x3C91A626, 0x33145C07 */
+static const double pS0 = 1.66666666666666657415e-01; /* 0x3FC55555, 0x55555555 */
+static const double pS1 = -3.25565818622400915405e-01; /* 0xBFD4D612, 0x03EB6F7D */
+static const double pS2 = 2.01212532134862925881e-01; /* 0x3FC9C155, 0x0E884455 */
+static const double pS3 = -4.00555345006794114027e-02; /* 0xBFA48228, 0xB5688F3B */
+static const double pS4 = 7.91534994289814532176e-04; /* 0x3F49EFE0, 0x7501B288 */
+static const double pS5 = 3.47933107596021167570e-05; /* 0x3F023DE1, 0x0DFDF709 */
+static const double qS1 = -2.40339491173441421878e+00; /* 0xC0033A27, 0x1C8A2D4B */
+static const double qS2 = 2.02094576023350569471e+00; /* 0x40002AE5, 0x9C598AC8 */
+static const double qS3 = -6.88283971605453293030e-01; /* 0xBFE6066C, 0x1B8D0159 */
+static const double qS4 = 7.70381505559019352791e-02; /* 0x3FB3B8C5, 0xB12E9282 */
 
 static double R(double z)
 {
   double p;
   double q;
-  p = z * (pS0 + z * (pS1 + z * (pS2 + z * (pS3 + z * (pS4 + z * pS5)))));
-  q = 1.0 + z * (qS1 + z * (qS2 + z * (qS3 + z * qS4)));
+  p = z * (pS0 + (z * (pS1 + (z * (pS2 + (z * (pS3 + (z * (pS4 + (z * pS5))))))))));
+  q = 1.0 + (z * (qS1 + (z * (qS2 + (z * (qS3 + (z * qS4)))))));
   return p / q;
 }
 
@@ -950,13 +944,13 @@ double acos(double x)
   if (ix < 0x3fe00000) {
     if (ix <= 0x3c600000)  /* |x| < 2**-57 */
       return pio2_hi + 0x1p-120f;
-    return pio2_hi - (x - (pio2_lo - x * R(x * x)));
+    return pio2_hi - (x - (pio2_lo - (x * R(x * x))));
   }
   /* x < -0.5 */
   if (hx >> 31) {
     z = (1.0 + x) * 0.5;
     s = sqrt(z);
-    w = R(z) * s - pio2_lo;
+    w = (R(z) * s) - pio2_lo;
     return 2 * (pio2_hi - (s + w));
   }
   /* x > 0.5 */
@@ -964,8 +958,8 @@ double acos(double x)
   s = sqrt(z);
   df = s;
   SET_LOW_WORD(df, 0);
-  c = (z - df * df) / (s + df);
-  w = R(z) * s + c;
+  c = (z - (df * df)) / (s + df);
+  w = (R(z) * s) + c;
   return 2 * (df + w);
 }
 
