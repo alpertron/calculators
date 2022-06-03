@@ -67,11 +67,9 @@ int __rem_pio2(double x, double* y)
 {
   union { double f; uint64_t i; } u = { x };
   double z;
-  uint32_t ix;
   int sign;
 
   sign = u.i >> 63;
-  ix = (u.i >> 32) & 0x7fffffff;
   if ((x <= 3.926990816987241548078) && (x >= -3.926990816987241548078))
   {  /* |x| ~<= 5pi/4 */
     if ((x <= 2.356194490192344928846) && (x >= -2.356194490192344928846))
@@ -603,7 +601,6 @@ double log(double argum)
   double f;
   double s;
   double z;
-  double R;
   double w;
   double t1;
   double t2;
@@ -628,9 +625,8 @@ double log(double argum)
   w = z*z;
   t1 = w*(Lg2+(w*(Lg4+(w*Lg6))));
   t2 = z*(Lg1+(w*(Lg3+(w*(Lg5+(w*Lg7))))));
-  R = t2 + t1;
   dk = k;
-  return (s*(hfsq+R)) + (dk*ln2_lo) - hfsq + f + (dk*ln2_hi);
+  return (s*(hfsq+ t2 + t1)) + (dk*ln2_lo) - hfsq + f + (dk*ln2_hi);
 }
 
 static const double half[2] = {0.5,-0.5};
@@ -749,18 +745,18 @@ double sqrt(double x)
   /* special case handling.  */
   ix = asuint64(x);
   top = ix >> 52;
-  if (x == 0)
+  if (x == 0.0)
   {
     return 0;
   }
 
-  int even = top & 1;
+  int even = (int)top & 1;
   m = (ix << 11) | 0x8000000000000000ULL;
   if (even != 0)
   {
     m >>= 1;
   }
-  top = (top + 0x3ff) >> 1;
+  top = (top + 0x3ffULL) >> 1;
 
   static const uint64_t three = 0xc0000000ULL;
   uint64_t r;
@@ -799,11 +795,9 @@ double sqrt(double x)
      we can decide by comparing (2^52 s + 0.5)^2 to 2^104 m.  */
   uint64_t d0;
   uint64_t d1;
-  uint64_t d2;
-  double y, t;
+  double y;
   d0 = (m << 42) - (s * s);
   d1 = s - d0;
-  d2 = d1 + s + 1;
   s += d1 >> 63;
   s &= 0x000fffffffffffff;
   s |= top << 52;
@@ -832,9 +826,10 @@ double __sin(double x, double y, int iy)
   r = S2 + (z * (S3 + (z * S4))) + (z * w * (S5 + (z * S6)));
   v = z * x;
   if (iy == 0)
+  {
     return x + (v * (S1 + (z * r)));
-  else
-    return x - ((z * ((0.5 * y) - (v * r)) - y) - (v * S1));
+  }
+  return x - ((z * ((0.5 * y) - (v * r)) - y) - (v * S1));
 }
 
 
@@ -870,8 +865,10 @@ double cos(double x)
   ix &= 0x7fffffff;
 
   /* |x| ~< pi/4 */
-  if (ix <= 0x3fe921fb) {
-    if (ix < 0x3e46a09e) {  /* |x| < 2**-27 * sqrt(2) */
+  if (ix <= 0x3fe921fb)
+  {
+    if (ix < 0x3e46a09e)
+    {  /* |x| < 2**-27 * sqrt(2) */
       /* raise inexact if x!=0 */
       FORCE_EVAL(x + 0x1p120f);
       return 1.0;
@@ -880,12 +877,13 @@ double cos(double x)
   }
 
   /* cos(Inf or NaN) is NaN */
-  if (ix >= 0x7ff00000)
+  if (ix >= 0x7ff00000U)
+  {
     return x - x;
-
+  }
   /* argument reduction */
   n = __rem_pio2(x, y);
-  switch (n & 3) {
+  switch (n & 3U) {
   case 0: return  __cos(y[0], y[1]);
   case 1: return -__sin(y[0], y[1], 1);
   case 2: return -__cos(y[0], y[1]);
@@ -923,35 +921,43 @@ double acos(double x)
   double s;
   double c;
   double df;
-  uint32_t hx, ix;
+  uint32_t hx;
+  uint32_t ix;
 
   GET_HIGH_WORD(hx, x);
-  ix = hx & 0x7fffffff;
+  ix = hx & 0x7fffffffU;
   /* |x| >= 1 or nan */
-  if (ix >= 0x3ff00000) {
+  if (ix >= 0x3ff00000U)
+  {
     uint32_t lx;
 
     GET_LOW_WORD(lx, x);
     if ((ix - 0x3ff00000 | lx) == 0) {
       /* acos(1)=0, acos(-1)=pi */
       if (hx >> 31)
-        return 2 * pio2_hi + 0x1p-120f;
-      return 0;
+      {
+        return (2.0 * pio2_hi) + 0x1p-120f;
+      }
+      return 0.0;
     }
-    return 0 / (x - x);
+    return 0.0 / (x - x);
   }
   /* |x| < 0.5 */
-  if (ix < 0x3fe00000) {
-    if (ix <= 0x3c600000)  /* |x| < 2**-57 */
+  if (ix < 0x3fe00000U)
+  {
+    if (ix <= 0x3c600000U)
+    {  /* |x| < 2**-57 */
       return pio2_hi + 0x1p-120f;
+    }
     return pio2_hi - (x - (pio2_lo - (x * R(x * x))));
   }
   /* x < -0.5 */
-  if (hx >> 31) {
+  if (hx >> 31)
+  {
     z = (1.0 + x) * 0.5;
     s = sqrt(z);
     w = (R(z) * s) - pio2_lo;
-    return 2 * (pio2_hi - (s + w));
+    return 2.0 * (pio2_hi - (s + w));
   }
   /* x > 0.5 */
   z = (1.0 - x) * 0.5;
@@ -960,6 +966,6 @@ double acos(double x)
   SET_LOW_WORD(df, 0);
   c = (z - (df * df)) / (s + df);
   w = (R(z) * s) + c;
-  return 2 * (df + w);
+  return 2.0 * (df + w);
 }
 
