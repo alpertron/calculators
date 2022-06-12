@@ -65,7 +65,6 @@ extern BigInteger Quadratic;
 extern BigInteger Linear;
 extern BigInteger Independent;
 
-
 // Coefficients taken from Dummit's Solving Solvable Quintics article.
 static struct stQuinticF20 astQuinticF20[] =
 {
@@ -161,6 +160,22 @@ static struct stQuinticF20 astQuinticF20[] =
 {P0 + Q0 + R0 + S0, 1},      // 1
 {END_COEFF, -1},
 };
+
+// If pretty == TEX, show text as is.
+// If pretty == PARI_GP, show all characters except underscores.
+static void showExpr(const char *expr)
+{
+  const char* ptrExpr = expr;
+  while (*ptrExpr != '\0')
+  {
+    if ((pretty == TEX) || (*ptrExpr != '_'))
+    {
+      *ptrOutput = *ptrExpr;
+      ptrOutput++;
+    }
+    ptrExpr++;
+  }
+}
 
 // Generate sixth degree polynomial F20 as indicated in
 // Dummit's Solving Solvable Quintics article.
@@ -468,112 +483,104 @@ static void showSqRoot1(enum eSign sign, const BigRational *ptrRatR, BigRational
   ptrRatS->numerator.sign = signBak;
 }
 
-// Show ((-1 +/- sqrt(5))(M +/- N*d))^(1/2)
-static void showSqRoot2(enum eSign sign)
+// Show ((sqrt(5) +/- 1) * (M +/- N*d))^(1/2)
+static void showSqRoot2(enum eSign sign, const BigRational *ptrRatR, 
+  BigRational* ptrRatS)
 {
-  enum eSign signBak = RatS.numerator.sign;
+  enum eSign signBak = ptrRatS->numerator.sign;
   startSqrt();
-  *ptrOutput = '(';
-  ptrOutput++;
-  showText(ptrMinus);
-  *ptrOutput = '1';
-  ptrOutput++;
-  showPlusSignOn(sign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-  showSqrt5();
-  *ptrOutput = ')';
-  ptrOutput++;
-  showText(ptrTimes);
-  *ptrOutput = ' ';
-  ptrOutput++;
-  if (!BigIntIsZero(&RatM.numerator))
+  if (!BigIntIsZero(&RatR.numerator))
   {
-    RatS.numerator.sign = SIGN_POSITIVE;
-    showRationalNoParen(&RatM);
+    ptrRatS->numerator.sign = SIGN_POSITIVE;
+    showRationalNoParen(ptrRatR);
     showPlusSignOn(sign == signBak, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
   }
   CopyBigInt(&Rat4.numerator, &RatDiscr.numerator);
   CopyBigInt(&Rat4.denominator, &RatDiscr.denominator);
-  ShowRationalAndSqrParts(&RatN, &Rat4, 2, ptrTimes);
+  ShowRationalAndSqrParts(ptrRatS, &Rat4, 2, ptrTimes);
+
   endSqrt();
-  RatS.numerator.sign = signBak;
+  ptrRatS->numerator.sign = signBak;
 }
 
 static void ShowQuinticsRootsRealR(int multiplicity)
 {
+  const char* ptrDenominator;
+  ptrDenominator = "4";
   BigRationalDivideByInt(&RatQuartic, -5, &RatQuartic);
   ForceDenominatorPositive(&RatQuartic);
   startLine();
-  if (pretty == TEX)
-  {
-    showText("S_1 = ");
-  }
-  else
+  if (pretty == PRETTY_PRINT)
   {
     showText("<var>S</var><sub>1</sub> = ");
   }
+  else
+  {
+    showExpr("S_1 = ");
+  }
   showMinusOnePlusMinusSqrt5("+");
   showText(ptrTimes);
-  if (pretty == TEX)
-  {
-    showText("(R_1 + R_4)");
-  }
-  else
+  if (pretty == PRETTY_PRINT)
   {
     showText("(<var>R</var><sub>1</sub> + <var>R</var><sub>4</sub>) + ");
   }
+  else
+  {
+    showExpr("(R_1 + R_4) + ");
+  }
   showMinusOnePlusMinusSqrt5(ptrMinus);
   showText(ptrTimes);
-  if (pretty == TEX)
-  {
-    showText("(R_2 + R_3)");
-    endLine();
-    startLine();
-    showText("S_2 = ");
-  }
-  else
+  if (pretty == PRETTY_PRINT)
   {
     showText("(<var>R</var><sub>2</sub> + <var>R</var><sub>3</sub>)");
     endLine();
     startLine();
     showText("<var>S</var><sub>2</sub> = ");
   }
+  else
+  {
+    showExpr("(R_2 + R_3)");
+    endLine();
+    startLine();
+    showExpr("S_2 = ");
+  }
   showMinusOnePlusMinusSqrt5("+");
   showText(ptrTimes);
-  if (pretty == TEX)
-  {
-    showText("(R_2 + R_3) + ");
-  }
-  else
+  if (pretty == PRETTY_PRINT)
   {
     showText("(<var>R</var><sub>2</sub> + <var>R</var><sub>3</sub>) + ");
   }
+  else
+  {
+    showExpr("(R_2 + R_3) + ");
+  }
   showMinusOnePlusMinusSqrt5(ptrMinus);
   showText(ptrTimes);
-  if (pretty == TEX)
-  {
-    showText("(R_1 + R_4)");
-    endLine();
-    startLine();
-    showText("T_1 = ");
-  }
-  else
+  if (pretty == PRETTY_PRINT)
   {
     showText("(<var>R</var><sub>1</sub> + <var>R</var><sub>4</sub>)");
     endLine();
     startLine();
     showText("<var>T</var><sub>1</sub> = ");
   }
+  else
+  {
+    showExpr("(R_1 + R_4)");
+    endLine();
+    startLine();
+    showExpr("T_1 = ");
+  }
   showSqrtTenPlusMinusTwoTimesSqrt5("+");
   showText(ptrTimes);
-  if (pretty == TEX)
-  {
-    showText("(R_4 - R_1) +");
-  }
-  else
+  if (pretty == PRETTY_PRINT)
   {
     showText("(<var>R</var><sub>4</sub> ");
     showText(ptrMinus);
     showText(" <var>R</var><sub>1</sub>) +");
+  }
+  else
+  {
+    showExpr("(R4 - R1) +");
   }
   if (pretty == PARI_GP)
   {
@@ -582,14 +589,7 @@ static void ShowQuinticsRootsRealR(int multiplicity)
   }
   showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
   showText(ptrTimes);
-  if (pretty == TEX)
-  {
-    showText("(R_3 - R_2)");
-    endLine();
-    startLine();
-    showText("T_2 = ");
-  }
-  else
+  if (pretty == PRETTY_PRINT)
   {
     showText("(<var>R</var><sub>3</sub> ");
     showText(ptrMinus);
@@ -598,17 +598,24 @@ static void ShowQuinticsRootsRealR(int multiplicity)
     startLine();
     showText("<var>T</var><sub>2</sub> = ");
   }
+  else
+  {
+    showExpr("(R_3 - R_2)");
+    endLine();
+    startLine();
+    showExpr("T_2 = ");
+  }
   showSqrtTenPlusMinusTwoTimesSqrt5("+");
   showText(ptrTimes);
-  if (pretty == TEX)
-  {
-    showText("(R_3 - R_2) +");
-  }
-  else
+  if (pretty == PRETTY_PRINT)
   {
     showText("(<var>R</var><sub>3</sub> ");
     showText(ptrMinus);
     showText(" <var>R</var><sub>2</sub>) +");
+  }
+  else
+  {
+    showExpr("(R_3 - R_2) +");
   }
   if (pretty == PARI_GP)
   {
@@ -617,15 +624,15 @@ static void ShowQuinticsRootsRealR(int multiplicity)
   }
   showSqrtTenPlusMinusTwoTimesSqrt5(ptrMinus);
   showText(ptrTimes);
-  if (pretty == TEX)
-  {
-    showText("(R_1 - R_4)");
-  }
-  else
+  if (pretty == PRETTY_PRINT)
   {
     showText("(<var>R</var><sub>1</sub> ");
     showText(ptrMinus);
     showText(" <var>R</var><sub>4</sub>)");
+  }
+  else
+  {
+    showExpr("(R_1 - R_4)");
   }
   endLine();
   for (int ctr = 1; ctr <= 5; ctr++)
@@ -641,94 +648,101 @@ static void ShowQuinticsRootsRealR(int multiplicity)
     case 1:
       if (pretty == PRETTY_PRINT)
       {
-        showRatConstants("<var>R</var><sub>1</sub> + <var>R</var><sub>2</sub> + <var>R</var><sub>3</sub> + <var>R</var><sub>4</sub>", "5");
+        const char* ptrNumerator = "<var>R</var><sub>1</sub> + <var>R</var><sub>2</sub> + <var>R</var><sub>3</sub> + <var>R</var><sub>4</sub>";
+        showText(ptrNumerator);
       }
       else if (pretty == TEX)
       {
-        showRatConstants("R_1 + R_2 + R_3 + R_4", "5");
+        const char* ptrNumerator = "R_1 + R_2 + R_3 + R_4";
+        showText(ptrNumerator);
       }
       else
       {
-        showText("(<var>R</var><sub>1</sub> + <var>R</var><sub>2</sub> + <var>R</var><sub>3</sub> + <var>R</var><sub>4</sub>) / 5");
+        const char* ptrNumerator = "R1 + R2 + R3 + R4";
+        showText(ptrNumerator);
       }
       break;
     case 2:
       if (pretty == PRETTY_PRINT)
       {
-        showRatConstants("<var>S</var><sub>1</sub>", "20");
+        showRatConstants("<var>S</var><sub>1</sub>", ptrDenominator);
         showText("+ i ");
         showText(ptrTimes);
-        showRatConstants("<var>T</var><sub>1</sub>", "20");
+        showRatConstants("<var>T</var><sub>1</sub>", ptrDenominator);
       }
       else if (pretty == TEX)
       {
-        showRatConstants("S_1", "20");
+        showRatConstants("S_1", ptrDenominator);
         showText("+ i ");
-        showRatConstants("T_1", "20");
+        showRatConstants("T_1", ptrDenominator);
       }
       else
       {
-        showText("(<var>S</var><sub>1</sub> + I * <var>T</var><sub>1</sub>) / 20");
+        showText("(S1 + I * T1) / ");
+        showText(ptrDenominator);
       }
       break;
     case 3:
       if (pretty == PRETTY_PRINT)
       {
-        showRatConstants("<var>S</var><sub>1</sub>", "20");
+        showRatConstants("<var>S</var><sub>1</sub>", ptrDenominator);
         showText(ptrMinus);
         showText(" i ");
         showText(ptrTimes);
-        showRatConstants("<var>T</var><sub>1</sub>", "20");
+        showRatConstants("<var>T</var><sub>1</sub>", ptrDenominator);
       }
       else if (pretty == TEX)
       {
-        showRatConstants("S_1", "20");
+        showRatConstants("S_1", ptrDenominator);
         showText("- i ");
-        showRatConstants("T_1", "20");
+        showRatConstants("T_1", ptrDenominator);
       }
       else
       {
-        showText("(<var>S</var><sub>1</sub> - I * <var>T</var><sub>1</sub>) / 20");
+        showText("(S1 - I * T1) / ");
+        showText(ptrDenominator);
       }
       break;
     case 4:
       if (pretty == PRETTY_PRINT)
       {
-        showRatConstants("<var>S</var><sub>2</sub>", "20");
+        showRatConstants("<var>S</var><sub>2</sub>", ptrDenominator);
         showText("+ i ");
         showText(ptrTimes);
-        showRatConstants("<var>T</var><sub>2</sub>", "20");
+        showRatConstants("<var>T</var><sub>2</sub>", ptrDenominator);
       }
       else if (pretty == TEX)
       {
-        showRatConstants("S_2", "20");
+        showRatConstants("S_2", ptrDenominator);
         showText("+ i ");
-        showRatConstants("T_2", "20");
+        showRatConstants("T_2", ptrDenominator);
       }
       else
       {
-        showText("(<var>S</var><sub>2</sub> + I * <var>T</var><sub>2</sub>) / 20");
+        showText("(S2 + I * T2) / ");
+        showText(ptrDenominator);
       }
       break;
     case 5:
       if (pretty == PRETTY_PRINT)
       {
-        showRatConstants("<var>S</var><sub>2</sub>", "20");
+        showRatConstants("<var>S</var><sub>2</sub>", ptrDenominator);
         showText(ptrMinus);
         showText(" i ");
         showText(ptrTimes);
-        showRatConstants("<var>T</var><sub>2</sub>", "20");
+        showRatConstants("<var>T</var><sub>2</sub>", ptrDenominator);
       }
       else if (pretty == TEX)
       {
-        showRatConstants("S_2", "20");
+        showRatConstants("S_2", ptrDenominator);
         showText("- i ");
         showText(ptrTimes);
-        showRatConstants("T_2", "20");
+        showRatConstants("T_2", ptrDenominator);
       }
       else
       {
-        showText("(<var>S</var><sub>2</sub> - I * <var>T</var><sub>2</sub>) / 20");
+        showText("(S2 - I * T2) / ");
+        showText(ptrDenominator);
       }
       break;
     default:
@@ -766,8 +780,7 @@ static void NumberIsNotRational(enum eSign sign)
   }
 }
 
-static void showRn(int groupOrder)
-{
+// Compute Rn so the argument of the fifth root shown is always positive.
   // If group order is 20:
   // R_i = l0 - T1 +/- 5*T2 +/- sqrt(r+s*d) +/- sqrt(r-s*d)
   // Otherwise:
@@ -777,325 +790,619 @@ static void showRn(int groupOrder)
   //             if O < 0: plus for R_2 and R_4, minus for R_1 and R_3.
   // Third  +/-: if O > 0: plus for R_1 and R_3, minus for R_2 and R_4.
   //             if O < 0: plus for R_1 and R_2, minus for R_3 and R_4.
-  for (int ctr = 1; ctr <= 4; ctr++)
+static double computeRn(int groupOrder, int ctr)
+{
+  enum eSign firstSign;
+  enum eSign secondSign;
+  const BigRational* ptrRatR;
+  const BigRational* ptrRatS;
+  double dRn = 0.0;
+  double dTerm;
+  if ((groupOrder == 10) || (ctr == 1) || (ctr == 4))
   {
-    enum eSign firstSign;
-    enum eSign secondSign;
-    const BigRational* ptrRatR;
-    BigRational* ptrRatS;
-    if ((groupOrder == 10) || (ctr == 1) || (ctr == 4))
-    {
-      ptrRatR = &RatR;
-      ptrRatS = &RatS;
+    ptrRatR = &RatR;
+    ptrRatS = &RatS;
+  }
+  else
+  {
+    ptrRatR = &RatR2;
+    ptrRatS = &RatS2;
+  }
+  BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat3);
+  BigRationalAdd(&RatValues[index_l0], &Rat3, &Rat3);
+  if (groupOrder == 20)
+  {         // Group order is 20.
+    BigRationalMultiplyByInt(&RatValues[index_T2], 5, &Rat2);
+    BigRationalDivideByInt(&Rat2, 2, &Rat2);
+    if ((ctr == 2) || (ctr == 3))
+    {       // R2 or R3.
+      BigRationalAdd(&Rat3, &Rat2, &Rat3);
     }
     else
     {
-      ptrRatR = &RatR2;
-      ptrRatS = &RatS2;
+      BigRationalSubt(&Rat3, &Rat2, &Rat3);
     }
-    firstNumberShown = false;
-    startLine();
-    if (pretty == TEX)
+    ForceDenominatorPositive(&Rat3);
+    dRn = BigRational2double(&Rat3);
+  }
+  else
+  {         // Group order is 10.
+    BigRationalMultiply(&RatValues[index_T2], &Rat4, &Rat2);
+    BigRationalDivideByInt(&Rat2, 2, &Rat2);
+    ForceDenominatorPositive(&Rat3);
+    ForceDenominatorPositive(&Rat2);
+    if (!BigIntIsZero(&Rat2.numerator))
     {
-      showText("R_");
-      *ptrOutput = (char)(ctr + '0');
-      ptrOutput++;
-      showText(" = ");
-    }
-    else
-    {
-      showText("<var>R</var><sub>");
-      *ptrOutput = (char)(ctr + '0');
-      ptrOutput++;
-      showText("</sub> = ");
-    }
-    BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat3);
-    BigRationalAdd(&RatValues[index_l0], &Rat3, &Rat3);
-    if (groupOrder == 20)
-    {         // Group order is 20.
-      BigRationalMultiplyByInt(&RatValues[index_T2], 5, &Rat2);
-      BigRationalDivideByInt(&Rat2, 2, &Rat2);
+      firstNumberShown = true;
       if ((ctr == 2) || (ctr == 3))
-      {       // R2 or R3.
-        BigRationalAdd(&Rat3, &Rat2, &Rat3);
+      {
+        dRn = BigRational2double(&Rat3) +
+          (BigRational2double(&Rat2) * sqrt(5.0));
       }
       else
       {
-        BigRationalSubt(&Rat3, &Rat2, &Rat3);
+        dRn = BigRational2double(&Rat3) -
+          (BigRational2double(&Rat2) * sqrt(5.0));
       }
-      ForceDenominatorPositive(&Rat3);
+    }
+  }
+  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
+  {   // O > 0.
+    firstSign = (((ctr == 3) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+  }
+  else
+  {   // O < 0.
+    firstSign = (((ctr == 2) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+  }
+  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
+  {   // O > 0.
+    secondSign = (((ctr == 1) || (ctr == 3)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+  }
+  else
+  {   // O < 0.
+    secondSign = (((ctr == 1) || (ctr == 2)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+  }
+  double d1 = BigRational2double(ptrRatR);
+  double d2 = BigRational2double(ptrRatS) * sqrt(BigRational2double(&RatDiscr));
+  dTerm = sqrt(d1 + d2);
+  if (firstSign == SIGN_POSITIVE)
+  {
+    dRn += dTerm;
+  }
+  else
+  {
+    dRn -= dTerm;
+  }
+  dTerm = sqrt(d1 - d2);
+  if (secondSign == SIGN_POSITIVE)
+  {
+    dRn += dTerm;
+  }
+  else
+  {
+    dRn -= dTerm;
+  }
+  return dRn;
+}
+
+// Change signs if the value of R_n computed is negative, so 
+// the argument of the fifth root is always positive.
+static void showRn(int groupOrder, int ctr, double dRn)
+{
+  enum eSign firstSign;
+  enum eSign secondSign;
+  const BigRational* ptrRatR;
+  BigRational* ptrRatS;
+  if ((groupOrder == 10) || (ctr == 1) || (ctr == 4))
+  {
+    ptrRatR = &RatR;
+    ptrRatS = &RatS;
+  }
+  else
+  {
+    ptrRatR = &RatR2;
+    ptrRatS = &RatS2;
+  }
+  firstNumberShown = false;
+  startLine();
+  if (pretty == PRETTY_PRINT)
+  {
+    showText("<var>R</var><sub>");
+    *ptrOutput = (char)(ctr + '0');
+    ptrOutput++;
+    showText("</sub> = ");
+  }
+  else
+  {
+    showExpr("R_");
+    *ptrOutput = (char)(ctr + '0');
+    ptrOutput++;
+    showExpr(" = ");
+  }
+  if (dRn < 0.0)
+  {
+    showText(ptrMinus);
+  }
+  BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat3);
+  BigRationalAdd(&RatValues[index_l0], &Rat3, &Rat3);
+  if (groupOrder == 20)
+  {         // Group order is 20.
+    BigRationalMultiplyByInt(&RatValues[index_T2], 5, &Rat2);
+    BigRationalDivideByInt(&Rat2, 2, &Rat2);
+    if ((ctr == 2) || (ctr == 3))
+    {       // R2 or R3.
+      BigRationalAdd(&Rat3, &Rat2, &Rat3);
     }
     else
-    {         // Group order is 10.
-      BigRationalMultiply(&RatValues[index_T2], &Rat4, &Rat2);
-      BigRationalDivideByInt(&Rat2, 2, &Rat2);
-      ForceDenominatorPositive(&Rat3);
-      ForceDenominatorPositive(&Rat2);
-      if (!BigIntIsZero(&Rat2.numerator))
+    {
+      BigRationalSubt(&Rat3, &Rat2, &Rat3);
+    }
+    ForceDenominatorPositive(&Rat3);
+    if (dRn < 0.0)
+    {
+      BigIntChSign(&Rat3.numerator);
+    }
+  }
+  else
+  {         // Group order is 10.
+    BigRationalMultiply(&RatValues[index_T2], &Rat4, &Rat2);
+    BigRationalDivideByInt(&Rat2, 2, &Rat2);
+    ForceDenominatorPositive(&Rat3);
+    if (dRn < 0.0)
+    {
+      BigIntChSign(&Rat3.numerator);
+    }
+    ForceDenominatorPositive(&Rat2);
+    if (!BigIntIsZero(&Rat2.numerator))
+    {
+      bool isAddition;
+      firstNumberShown = true;
+      start5thRoot();
+      if (!BigIntIsZero(&Rat1.numerator))
       {
-        firstNumberShown = true;
-        start5thRoot();
-        if (!BigIntIsZero(&Rat1.numerator))
-        {
-          showRational(&Rat3);
-        }
-        showPlusSignOn((ctr == 2) || (ctr == 3),
-          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-        showRational(&Rat2);
-        if (pretty == PARI_GP)
-        {
-          *ptrOutput = ' ';
-          ptrOutput++;
-        }
-        showText(ptrTimes);
+        showRational(&Rat3);
+      }
+      isAddition = (ctr == 2) || (ctr == 3);
+      if (dRn < 0.0)
+      {
+        isAddition = !isAddition;
+      }
+      showPlusSignOn(isAddition,
+        TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      showRational(&Rat2);
+      if (pretty == PARI_GP)
+      {
         *ptrOutput = ' ';
         ptrOutput++;
-        showSqrt5();
+      }
+      showText(ptrTimes);
+      *ptrOutput = ' ';
+      ptrOutput++;
+      showSqrt5();
+    }
+  }
+  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
+  {   // O > 0.
+    firstSign = (((ctr == 3) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+  }
+  else
+  {   // O < 0.
+    firstSign = (((ctr == 2) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+  }
+  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
+  {   // O > 0.
+    secondSign = (((ctr == 1) || (ctr == 3)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+  }
+  else
+  {   // O < 0.
+    secondSign = (((ctr == 1) || (ctr == 2)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+  }
+  if (dRn < 0.0)
+  {
+    if (firstSign == SIGN_POSITIVE)
+    {
+      firstSign = SIGN_NEGATIVE;
+    }
+    else
+    {
+      firstSign = SIGN_POSITIVE;
+    }
+    if (secondSign == SIGN_POSITIVE)
+    {
+      secondSign = SIGN_NEGATIVE;
+    }
+    else
+    {
+      secondSign = SIGN_POSITIVE;
+    }
+  }
+  if (BigIntIsZero(&ptrRatS->numerator))
+  {
+    if (firstSign == secondSign)
+    {
+      NumberIsNotRational(firstSign);
+      BigRationalMultiplyByInt(ptrRatR, 4, &Rat2);
+      showSquareRootOfRational(&Rat2, 2, ptrTimes);
+    }
+    else
+    {
+      showText("0");
+    }
+  }
+  else
+  {
+    // Test whether the sum of two square roots can be expressed with
+    // only one square root.
+    // (p+q)^2 = p^2 + 2pq + q^2
+    // (p^(1/2) + q^(1/2))^2 = (p+q) + 2p^(1/2)*q^(1/2)
+    // p^(1/2) + q^(1/2) = ((p+q) + 2(pq)^(1/2))^(1/2)
+    // p^(1/2) - q^(1/2) = ((p+q) - 2(pq)^(1/2))^(1/2)
+    // (r+s*d)^(1/2) + (r-s*d)^(1/2) = (2*r + 2(r^2 - 5s^2)^(1/2))^(1/2)
+    // (r+s*d)^(1/2) - (r-s*d)^(1/2) = (2*r - 2(r^2 - 5s^2)^(1/2))^(1/2)
+    // So we have to check whether (r^2 - 5s^2) is a perfect square or not.
+    BigRationalMultiply(ptrRatR, ptrRatR, &Rat1);
+    BigRationalMultiply(ptrRatS, ptrRatS, &Rat2);
+    BigRationalMultiplyByInt(&Rat2, 5, &Rat2);
+    BigRationalSubt(&Rat1, &Rat2, &Rat1);
+    ForceDenominatorPositive(&Rat1);
+    intToBigInteger(&tmp5, 1);    // Indicate not perfect square.
+    if (Rat1.numerator.sign == SIGN_POSITIVE)
+    {
+      squareRoot(Rat1.numerator.limbs, tmp4.limbs, Rat1.numerator.nbrLimbs, &tmp4.nbrLimbs);
+      tmp4.sign = SIGN_POSITIVE;
+      (void)BigIntMultiply(&tmp4, &tmp4, &tmp5);
+      BigIntSubt(&tmp5, &Rat1.numerator, &tmp5);
+      if (BigIntIsZero(&tmp5))
+      {   // Numerator is perfect square.
+        squareRoot(Rat1.denominator.limbs, tmp1.limbs, Rat1.denominator.nbrLimbs, &tmp1.nbrLimbs);
+        tmp1.sign = SIGN_POSITIVE;
+        (void)BigIntMultiply(&tmp1, &tmp1, &tmp5);
+        BigIntSubt(&tmp5, &Rat1.denominator, &tmp5);
       }
     }
-    if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
-    {   // O > 0.
-      firstSign = (((ctr == 3) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
-    }
-    else
-    {   // O < 0.
-      firstSign = (((ctr == 2) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
-    }
-    if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
-    {   // O > 0.
-      secondSign = (((ctr == 1) || (ctr == 3)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
-    }
-    else
-    {   // O < 0.
-      secondSign = (((ctr == 1) || (ctr == 2)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
-    }
-    if (BigIntIsZero(&ptrRatS->numerator))
-    {
+    if (BigIntIsZero(&tmp5))
+    {   // Number is perfect square.
+      CopyBigInt(&Rat2.numerator, &tmp4);
+      CopyBigInt(&Rat2.denominator, &tmp1);
+      // At this moment Rat2 = (r^2 - 5s^2)^(1/2)
       if (firstSign == secondSign)
       {
-        NumberIsNotRational(firstSign);
-        BigRationalMultiplyByInt(ptrRatR, 4, &Rat2);
-        showSquareRootOfRational(&Rat2, 2, ptrTimes);
+        BigRationalAdd(ptrRatR, &Rat2, &Rat1);
       }
       else
       {
-        showText("0");
+      BigRationalSubt(ptrRatR, &Rat2, &Rat1);
       }
-    }
-    else
-    {
-      // Test whether the sum of two square roots can be expressed with
-      // only one square root.
-      // (p+q)^2 = p^2 + 2pq + q^2
-      // (p^(1/2) + q^(1/2))^2 = (p+q) + 2p^(1/2)*q^(1/2)
-      // p^(1/2) + q^(1/2) = ((p+q) + 2(pq)^(1/2))^(1/2)
-      // p^(1/2) - q^(1/2) = ((p+q) - 2(pq)^(1/2))^(1/2)
-      // (r+s*d)^(1/2) + (r-s*d)^(1/2) = (2*r + 2(r^2 - 5s^2)^(1/2))^(1/2)
-      // (r+s*d)^(1/2) - (r-s*d)^(1/2) = (2*r - 2(r^2 - 5s^2)^(1/2))^(1/2)
-      // So we have to check whether (r^2 - 5s^2) is a perfect square or not.
-      BigRationalMultiply(ptrRatR, ptrRatR, &Rat1);
-      BigRationalMultiply(ptrRatS, ptrRatS, &Rat2);
-      BigRationalMultiplyByInt(&Rat2, 5, &Rat2);
-      BigRationalSubt(&Rat1, &Rat2, &Rat1);
-      ForceDenominatorPositive(&Rat1);
-      intToBigInteger(&tmp5, 1);    // Indicate not perfect square.
-      if (Rat1.numerator.sign == SIGN_POSITIVE)
-      {
-        squareRoot(Rat1.numerator.limbs, tmp4.limbs, Rat1.numerator.nbrLimbs, &tmp4.nbrLimbs);
-        tmp4.sign = SIGN_POSITIVE;
-        (void)BigIntMultiply(&tmp4, &tmp4, &tmp5);
-        BigIntSubt(&tmp5, &Rat1.numerator, &tmp5);
-        if (BigIntIsZero(&tmp5))
-        {   // Numerator is perfect square.
-          squareRoot(Rat1.denominator.limbs, tmp1.limbs, Rat1.denominator.nbrLimbs, &tmp1.nbrLimbs);
-          tmp1.sign = SIGN_POSITIVE;
-          (void)BigIntMultiply(&tmp1, &tmp1, &tmp5);
-          BigIntSubt(&tmp5, &Rat1.denominator, &tmp5);
-        }
+      BigRationalMultiplyByInt(&Rat1, 2, &Rat1);
+      // At this moment Rat1 = 2*r - 2(r^2 - 5s^2)^(1/2)
+      // If this number is a perfect square, it can be reduced.
+      squareRoot(Rat1.numerator.limbs, tmp4.limbs, Rat1.numerator.nbrLimbs, &tmp4.nbrLimbs);
+      tmp4.sign = SIGN_POSITIVE;
+      (void)BigIntMultiply(&tmp4, &tmp4, &tmp5);
+      BigIntSubt(&tmp5, &Rat1.numerator, &tmp5);
+      if (BigIntIsZero(&tmp5))
+      {   // Numerator is perfect square.
+        squareRoot(Rat1.denominator.limbs, tmp1.limbs, Rat1.denominator.nbrLimbs, &tmp1.nbrLimbs);
+        tmp1.sign = SIGN_POSITIVE;
+        (void)BigIntMultiply(&tmp1, &tmp1, &tmp5);
+        BigIntSubt(&tmp5, &Rat1.denominator, &tmp5);
       }
       if (BigIntIsZero(&tmp5))
       {   // Number is perfect square.
         CopyBigInt(&Rat2.numerator, &tmp4);
         CopyBigInt(&Rat2.denominator, &tmp1);
-          // At this moment Rat2 = (r^2 - 5s^2)^(1/2)
-        if (firstSign == secondSign)
+        if (firstSign == SIGN_POSITIVE)
         {
-          BigRationalAdd(ptrRatR, &Rat2, &Rat1);
+          BigRationalSubt(&Rat3, &Rat2, &Rat2);
         }
         else
         {
-          BigRationalSubt(ptrRatR, &Rat2, &Rat1);
+          BigRationalAdd(&Rat3, &Rat2, &Rat2);
         }
-        BigRationalMultiplyByInt(&Rat1, 2, &Rat1);
-          // At this moment Rat1 = 2*r - 2(r^2 - 5s^2)^(1/2)
-          // If this number is a perfect square, it can be reduced.
-        squareRoot(Rat1.numerator.limbs, tmp4.limbs, Rat1.numerator.nbrLimbs, &tmp4.nbrLimbs);
-        tmp4.sign = SIGN_POSITIVE;
-        (void)BigIntMultiply(&tmp4, &tmp4, &tmp5);
-        BigIntSubt(&tmp5, &Rat1.numerator, &tmp5);
-        if (BigIntIsZero(&tmp5))
-        {   // Numerator is perfect square.
-          squareRoot(Rat1.denominator.limbs, tmp1.limbs, Rat1.denominator.nbrLimbs, &tmp1.nbrLimbs);
-          tmp1.sign = SIGN_POSITIVE;
-          (void)BigIntMultiply(&tmp1, &tmp1, &tmp5);
-          BigIntSubt(&tmp5, &Rat1.denominator, &tmp5);
-        }
-        if (BigIntIsZero(&tmp5))
-        {   // Number is perfect square.
-          CopyBigInt(&Rat2.numerator, &tmp4);
-          CopyBigInt(&Rat2.denominator, &tmp1);
-          if (firstSign == SIGN_POSITIVE)
-          {
-            BigRationalSubt(&Rat3, &Rat2, &Rat2);
-          }
-          else
-          {
-            BigRationalAdd(&Rat3, &Rat2, &Rat2);
-          }
-          if (BigIntIsZero(&Rat2.numerator))
-          {
-            showText("0");
-          }
-          else
-          {
-            start5thRoot();
-            firstNumberShown = true;
-            showRational(&Rat2);
-          }
+        if (BigIntIsZero(&Rat2.numerator))
+        {
+          showText("0");
         }
         else
         {
-          NumberIsNotRational(firstSign);
-          showSquareRootOfRational(&Rat1, 2, ptrTimes);
+          start5thRoot();
+          firstNumberShown = true;
+          showRational(&Rat2);
         }
       }
       else
       {
         NumberIsNotRational(firstSign);
-        showSqRoot1(SIGN_POSITIVE, ptrRatR, ptrRatS);
-        showPlusSignOn(secondSign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-        showSqRoot1(SIGN_NEGATIVE, ptrRatR, ptrRatS);
+        showSquareRootOfRational(&Rat1, 2, ptrTimes);
       }
     }
-    if (firstNumberShown)
+    else
     {
-      end5thRoot();
+    NumberIsNotRational(firstSign);
+    showSqRoot1(SIGN_POSITIVE, ptrRatR, ptrRatS);
+    showPlusSignOn(secondSign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+    showSqRoot1(SIGN_NEGATIVE, ptrRatR, ptrRatS);
     }
-    endLine();
+  }
+  if (firstNumberShown)
+  {
+    end5thRoot();
+  }
+  endLine();
+}
+
+static void showAllR(int groupOrder)
+{
+  BigRationalDivideByInt(&RatValues[index_l0], 3125, &RatValues[index_l0]);
+  BigRationalDivideByInt(&RatValues[index_T1], 3125, &RatValues[index_T1]);
+  BigRationalDivideByInt(&RatValues[index_T2], 3125, &RatValues[index_T2]);
+  BigRationalDivideByInt(&RatR, 3125 * 3125, &RatR);
+  BigRationalDivideByInt(&RatR2, 3125 * 3125, &RatR2);
+  BigRationalDivideByInt(&RatS, 3125 * 3125, &RatS);
+  BigRationalDivideByInt(&RatS2, 3125 * 3125, &RatS2);
+  for (int ctr = 1; ctr <= 4; ctr++)
+  {
+    double dRn = computeRn(groupOrder, ctr);
+    showRn(groupOrder, ctr, dRn);
   }
 }
 
-static void GaloisGroupHasOrder20(int multiplicity)
+// Compute Rn so the argument of the fifth root shown is always positive.
+  // R_i = l0 - T1 +/- T2*sqrt(5*d) +/- (1/4)*(sqrt(5)+1)*sqrt(M+N*d)
+  //                                +/- (1/4)*(sqrt(5)-1)*sqrt(M-N*d)
+  // First  +/-: plus for R_2 and R_3, minus for R_1 and R_4.
+  // Second +/-: if O > 0: plus for R_3 and R_4, minus for R_1 and R_2.
+  //             if O < 0: plus for R_2 and R_4, minus for R_1 and R_3.
+  // Third  +/-: if O > 0: plus for R_1 and R_3, minus for R_2 and R_4.
+  //             if O < 0: plus for R_1 and R_2, minus for R_3 and R_4.
+static double computeRnGroup20(int ctr)
 {
-  (void)multiplicity;
+  double dRn;
+  double dTemp;
+  double dTemp2;
+  double dInsideSqrt;
+  bool signPlus;
+  const BigRational* ptrRatR;
+  const BigRational* ptrRatS;
+  if ((ctr == 1) || (ctr == 4))
+  {
+    ptrRatR = &RatR;
+    ptrRatS = &RatS;
+  }
+  else
+  {
+    ptrRatR = &RatR2;
+    ptrRatS = &RatS2;
+  }
+  BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat2);
+  BigRationalAdd(&RatValues[index_l0], &Rat2, &Rat1);
+  dRn = BigRational2double(&Rat1);
+  CopyBigInt(&Rat1.numerator, &RatValues[index_T2].numerator);
+  CopyBigInt(&Rat1.denominator, &RatValues[index_T2].denominator);
+  BigRationalDivideByInt(&Rat1, 2, &Rat1);
+  BigRationalMultiplyByInt(&RatDiscr, 5, &Rat2);
+  dTemp = BigRational2double(&Rat1) * sqrt(BigRational2double(&Rat2));
+  if ((ctr == 2) || (ctr == 3))
+  {
+    dRn += dTemp;
+  }
+  else
+  {
+    dRn -= dTemp;
+  }
+  dTemp2 = BigRational2double(ptrRatR);
+  dTemp = BigRational2double(ptrRatS) * sqrt(BigRational2double(&RatDiscr));
+  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
+  {   // O > 0.
+    signPlus = (ctr == 3) || (ctr == 4);
+  }
+  else
+  {   // O < 0.
+    signPlus = (ctr == 2) || (ctr == 4);
+  }
+  dInsideSqrt = sqrt(dTemp2 + dTemp);
+  if (signPlus)
+  {
+    dRn += dInsideSqrt;
+  }
+  else
+  {
+    dRn -= dInsideSqrt;
+  }
+  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
+  {   // O > 0.
+    signPlus = (ctr == 1) || (ctr == 3);
+  }
+  else
+  {   // O < 0.
+    signPlus = (ctr == 1) || (ctr == 2);
+  }
+  dInsideSqrt = sqrt(dTemp2 - dTemp);
+  if (signPlus)
+  {
+    dRn += dInsideSqrt;
+  }
+  else
+  {
+    dRn -= dInsideSqrt;
+  }
+  return dRn;
+}
+
+// Change signs if the value of R_n computed is negative, so 
+// the argument of the fifth root is always positive.
+static void showRnGroup20(int ctr, double dRn)
+{
+  bool signPlus;
+  const BigRational* ptrRatR;
+  BigRational* ptrRatS;
+  if ((ctr == 1) || (ctr == 4))
+  {
+    ptrRatR = &RatR;
+    ptrRatS = &RatS;
+  }
+  else
+  {
+    ptrRatR = &RatR2;
+    ptrRatS = &RatS2;
+  }
+  startLine();
+  if (pretty == PRETTY_PRINT)
+  {
+    showText("<var>R</var><sub>");
+    *ptrOutput = (char)(ctr + '0');
+    ptrOutput++;
+    showText("</sub></var>");
+  }
+  else
+  {
+    showExpr("R_");
+    *ptrOutput = (char)(ctr + '0');
+    ptrOutput++;
+  }
+  showText(" = ");
+  if (dRn < 0.0)
+  {
+    showText(ptrMinus);
+  }
+  start5thRoot();
+  BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat2);
+  BigRationalAdd(&RatValues[index_l0], &Rat2, &Rat1);
+  ForceDenominatorPositive(&Rat1);
+  CopyBigInt(&Rat3.numerator, &RatValues[index_T2].numerator);
+  CopyBigInt(&Rat3.denominator, &RatValues[index_T2].denominator);
+  signPlus = ((ctr == 2) || (ctr == 3));
+  if (dRn < 0.0)
+  {
+    BigIntChSign(&Rat1.numerator);
+    signPlus = !signPlus;
+  }
+  if (Rat3.numerator.sign == SIGN_NEGATIVE)
+  {
+    signPlus = !signPlus;
+    Rat3.numerator.sign = SIGN_POSITIVE;
+  }
+  BigRationalDivideByInt(&Rat3, 2, &Rat3);
+  BigRationalMultiplyByInt(&RatDiscr, 5, &Rat4);
+  MultiplyRationalBySqrtRational(&Rat3, &Rat4);
+  if (BigIntIsOne(&Rat4.numerator) && BigIntIsOne(&Rat4.denominator))
+  {    // Argument of square root is 1.
+       // The rational part of this term can be added to or subtracted from 
+       // the previous term.
+    if (signPlus)
+    {
+      BigRationalAdd(&Rat1, &Rat3, &Rat1);
+    }
+    else
+    {
+      BigRationalSubt(&Rat1, &Rat3, &Rat1);
+    }
+    if (!BigIntIsZero(&Rat1.numerator))
+    {
+      showRational(&Rat1);
+    }
+  }
+  else
+  {
+    if (!BigIntIsZero(&Rat1.numerator))
+    {
+      showRational(&Rat1);
+    }
+    showPlusSignOn(signPlus, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+    ShowRationalAndSqrParts(&Rat3, &Rat4, 2, ptrTimes);
+  }
+  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
+  {   // O > 0.
+    signPlus = (ctr == 3) || (ctr == 4);
+  }
+  else
+  {   // O < 0.
+    signPlus = (ctr == 2) || (ctr == 4);
+  }
+  if (dRn < 0.0)
+  {
+    signPlus = !signPlus;
+  }
+  showPlusSignOn(signPlus,
+    TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+  showSqRoot2(SIGN_POSITIVE, ptrRatR, ptrRatS);
+  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
+  {   // O > 0.
+    signPlus = (ctr == 1) || (ctr == 3);
+  }
+  else
+  {   // O < 0.
+    signPlus = (ctr == 1) || (ctr == 2);
+  }
+  if (dRn < 0.0)
+  {
+    signPlus = !signPlus;
+  }
+  showPlusSignOn(signPlus,
+    TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+  showSqRoot2(SIGN_NEGATIVE, ptrRatR, ptrRatS);
+  end5thRoot();
+}
+
+static void GaloisGroupHasOrder20(void)
+{
+  // Change signs of M and N.
+  BigIntChSign(&RatM.numerator);
+  BigIntChSign(&RatN.numerator);
   CopyBigInt(&Rat1.numerator, &RatDiscr.numerator);
   CopyBigInt(&Rat1.denominator, &RatDiscr.denominator);
   MultiplyRationalBySqrtRational(&RatN, &Rat1);
   MultiplyRationalBySqrtRational(&RatValues[index_T2], &RatDiscr);
-  if ((RatDiscr.denominator.nbrLimbs == 1) && (RatDiscr.denominator.limbs[0].x == 1) &&
-    (getRemainder(&RatDiscr.numerator, 5) == 0) && (getRemainder(&RatDiscr.numerator, 25) != 0))
-  {      // The discriminant has the form 5*n^2.
-         // Compute r = 5(m+n)/8, s = (m+5n)/8.
-    BigRationalAdd(&RatM, &RatN, &RatR);         // R <- m + n
-    BigRationalMultiplyByInt(&RatR, 5, &RatR);   // R <- 5(m + n)
-    BigRationalDivideByInt(&RatR, 8, &RatR);     // R <- 5(m + n)/8
-    BigRationalMultiplyByInt(&RatN, 5, &RatS);   // S <- 5n
-    BigRationalAdd(&RatS, &RatM, &RatS);         // S <- m + 5n
-    BigRationalDivideByInt(&RatS, 8, &RatS);     // S <- 5(m + 5n)/8
-    BigIntChSign(&RatR.numerator);
-    BigIntChSign(&RatS.numerator);
-    // Compute r2 = 5(m-n)/8, s2 = (m-5n)/8.
-    BigRationalSubt(&RatM, &RatN, &RatR2);       // R2 <- m - n
-    BigRationalMultiplyByInt(&RatR2, 5, &RatR2); // R2 <- 5(m - n)
-    BigRationalDivideByInt(&RatR2, 8, &RatR2);   // R2 <- 5(m - n)/8
-    BigRationalMultiplyByInt(&RatN, 5, &RatS2);  // S2 <- 5n
-    BigRationalSubt(&RatS2, &RatM, &RatS2);      // S2 <- m - 5n
-    BigRationalDivideByInt(&RatS2, 8, &RatS2);   // S2 <- 5(m - 5n)/8
-    BigIntChSign(&RatR2.numerator);
-    BigIntChSign(&RatS2.numerator);
-    showRn(20);
+  // Compute r = 5(m+n)/8, s = (m+5n)/8.
+  BigRationalAdd(&RatM, &RatN, &RatR);         // R <- m + n
+  BigRationalMultiplyByInt(&RatR, 5, &RatR);   // R <- 5(m + n)
+  BigRationalDivideByInt(&RatR, 8, &RatR);     // R <- 5(m + n)/8
+  BigRationalMultiplyByInt(&RatN, 5, &RatS);   // S <- 5n
+  BigRationalAdd(&RatS, &RatM, &RatS);         // S <- m + 5n
+  BigRationalDivideByInt(&RatS, 8, &RatS);     // S <- 5(m + 5n)/8
+  // Compute r2 = 5(m-n)/8, s2 = (m-5n)/8.
+  BigRationalSubt(&RatM, &RatN, &RatR2);       // R2 <- m - n
+  BigRationalMultiplyByInt(&RatR2, 5, &RatR2); // R2 <- 5(m - n)
+  BigRationalDivideByInt(&RatR2, 8, &RatR2);   // R2 <- 5(m - n)/8
+  BigRationalMultiplyByInt(&RatN, 5, &RatS2);  // S2 <- 5n
+  BigRationalSubt(&RatS2, &RatM, &RatS2);      // S2 <- m - 5n
+  BigRationalDivideByInt(&RatS2, 8, &RatS2);   // S2 <- 5(m - 5n)/8
+  // Test whether the discriminant has the form 5*n^2 or not.
+  BigRationalDivideByInt(&RatDiscr, 5, &Rat1);
+  if (BigRationalSquareRoot(&Rat1, &Rat2))
+  {      // The discriminant has the form 5*n^2. Square root in Rat2 not used.
+    showAllR(20);
   }
   else
   {
-    // R_i = l0 - T1 +/- T2*sqrt(5*d) +/- (1/4)*(sqrt(5)+1)*sqrt(M+N*d)
-    //                                +/- (1/4)*(sqrt(5)-1)*sqrt(M-N*d)
-    // First  +/-: plus for R_2 and R_3, minus for R_1 and R_4.
-    // Second +/-: if O > 0: plus for R_3 and R_4, minus for R_1 and R_2.
-    //             if O < 0: plus for R_2 and R_4, minus for R_1 and R_3.
-    // Third  +/-: if O > 0: plus for R_1 and R_3, minus for R_2 and R_4.
-    //             if O < 0: plus for R_1 and R_2, minus for R_3 and R_4.
-
+    BigRationalDivideByInt(&RatValues[index_l0], 3125, &RatValues[index_l0]);
+    BigRationalDivideByInt(&RatValues[index_T1], 3125, &RatValues[index_T1]);
+    BigRationalDivideByInt(&RatValues[index_T2], 3125, &RatValues[index_T2]);
+    BigRationalDivideByInt(&RatR, 3125 * 3125, &RatR);
+    BigRationalDivideByInt(&RatS, 3125 * 3125, &RatS);
+    BigRationalDivideByInt(&RatR2, 3125 * 3125, &RatR2);
+    BigRationalDivideByInt(&RatS2, 3125 * 3125, &RatS2);
     for (int ctr = 1; ctr <= 4; ctr++)
     {
-      startLine();
-      if (pretty == TEX)
-      {
-        showText("R_");
-        *ptrOutput = (char)(ctr + '0');
-        ptrOutput++;
-        showText(" = (");
-      }
-      else
-      {
-        showText("<var>R</var><sub>");
-        *ptrOutput = (char)(ctr + '0');
-        ptrOutput++;
-        showText("</sub></var> = (");
-      }
-      BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat2);
-      BigRationalAdd(&RatValues[index_l0], &Rat2, &Rat1);
-      ForceDenominatorPositive(&Rat1);
-      if (!BigIntIsZero(&Rat1.numerator))
-      {
-        showRational(&Rat1);
-      }
-      CopyBigInt(&Rat1.numerator, &RatValues[index_T2].numerator);
-      CopyBigInt(&Rat1.denominator, &RatValues[index_T2].denominator);
-      showPlusSignOn(((ctr == 2) || (ctr == 3)) == (Rat1.numerator.sign == SIGN_POSITIVE),
-          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-      Rat1.numerator.sign = SIGN_POSITIVE;
-      BigRationalDivideByInt(&Rat1, 2, &Rat2);
-      BigRationalMultiplyByInt(&RatDiscr, 5, &Rat2);
-      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
-      if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
-      {   // O > 0.
-        showPlusSignOn((ctr == 3) || (ctr == 4),
-          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-      }
-      else
-      {   // O < 0.
-        showPlusSignOn((ctr == 2) || (ctr == 4),
-          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-      }
-      showSqRoot2(SIGN_POSITIVE);
-      if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
-      {   // O > 0.
-        showPlusSignOn((ctr == 1) || (ctr == 3),
-          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-      }
-      else
-      {   // O < 0.
-        showPlusSignOn((ctr == 1) || (ctr == 2), 
-          TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-      }
-      showSqRoot2(SIGN_NEGATIVE);
-      showText(")^(1/5)");
+      double dRn = computeRnGroup20(ctr);
+      showRnGroup20(ctr, dRn);
     }
   }
 }
 
-static void GaloisGroupHasOrder10(int multiplicity)
+static void GaloisGroupHasOrder10(void)
 {
-  (void)multiplicity;
   // Set Y <- M + N*d. This value is already in Rat1.
-  // Compute r = 5m/4, s = m/4.
-  BigRationalDivideByInt(&Rat1, -4, &RatS);
+  // Compute r = 5Y/8, s = Y/8.
+  BigRationalDivideByInt(&Rat1, -8, &RatS);
   BigRationalMultiplyByInt(&RatS, 5, &RatR);
   RatR.numerator.sign = SIGN_POSITIVE;
   RatR.denominator.sign = SIGN_POSITIVE;
+  RatS.numerator.sign = SIGN_POSITIVE;
+  RatS.denominator.sign = SIGN_POSITIVE;
   intToBigInteger(&RatDiscr.numerator, 5);
   intToBigInteger(&RatDiscr.denominator, 1);
-  showRn(10);    // Show all four values of R.
+  showAllR(10);    // Show all four values of R.
 }
 
 static int getCircleNbr(int circleNbrLeft)
@@ -1428,18 +1735,6 @@ void QuinticEquation(const int* ptrPoly, int multiplicity)
   pstMonomial = arrayD;
   computeFormula(&pstMonomial, &RatDiscr);
   computeArrayValues();
-  // Test whether the discriminant is a perfect square.
-  squareRoot(RatDiscr.numerator.limbs, tmp4.limbs, RatDiscr.numerator.nbrLimbs, &tmp4.nbrLimbs);
-  tmp4.sign = SIGN_POSITIVE;
-  (void)BigIntMultiply(&tmp4, &tmp4, &tmp5);
-  BigIntSubt(&tmp5, &RatDiscr.numerator, &tmp5);
-  if (BigIntIsZero(&tmp5))
-  {   // Numerator of discriminant is perfect square.
-    squareRoot(RatDiscr.denominator.limbs, tmp1.limbs, RatDiscr.denominator.nbrLimbs, &tmp1.nbrLimbs);
-    tmp1.sign = SIGN_POSITIVE;
-    (void)BigIntMultiply(&tmp1, &tmp1, &tmp5);
-    BigIntSubt(&tmp5, &RatDiscr.denominator, &tmp5);
-  }
   // Let M = T1^2 + T2^2*D - 4*T3, N = 2*T1*T2 - 4*T4
   // and d = sqrt(D), then:
   // l1, l4 = (-(T1 + T2*d) +/- sqrt(M + N*d)) / 2
@@ -1461,42 +1756,24 @@ void QuinticEquation(const int* ptrPoly, int multiplicity)
   BigRationalSubt(&RatN, &Rat1, &RatN);
   // The real part of the primitive fifth root of 1 is Re5 = (-1+sqrt(5))/4
   // The real part of its square is: Re5_2 = (-1-sqrt(5))/4
-  if (!BigIntIsZero(&tmp5))
+  if (!BigRationalSquareRoot(&RatDiscr, &Rat4))
   {   // Discriminant is not a perfect square.
       // Then the Galois group of f(x) is the Frobenius group of order 20.
-    GaloisGroupHasOrder20(multiplicity);
+    GaloisGroupHasOrder20();
     ShowQuinticsRootsRealR(multiplicity);
     return;
   }
   // Test whether M+N*d is a perfect square. In this case the quadratic is
   // reducible. d = Rat4 at this moment.
-  CopyBigInt(&Rat4.numerator, &tmp4);
-  CopyBigInt(&Rat4.denominator, &tmp1);    // Rat4 = square root of discriminant.
   BigRationalMultiply(&Rat4, &RatN, &Rat1);
   BigRationalAdd(&Rat1, &RatM, &Rat1);
   ForceDenominatorPositive(&Rat1);         // M + N*d
-  if (BigIntIsZero(&Rat1.numerator) || (Rat1.numerator.sign == SIGN_POSITIVE))
-  {
-    squareRoot(Rat1.numerator.limbs, tmp4.limbs, Rat1.numerator.nbrLimbs, &tmp4.nbrLimbs);
-    tmp4.sign = SIGN_POSITIVE;
-    (void)BigIntMultiply(&tmp4, &tmp4, &tmp5);
-    BigIntSubt(&tmp5, &Rat1.numerator, &tmp5);
-    if (BigIntIsZero(&tmp5))
-    {     // Numerator is perfect square.
-      squareRoot(Rat1.denominator.limbs, tmp1.limbs, Rat1.denominator.nbrLimbs, &tmp1.nbrLimbs);
-      tmp1.sign = SIGN_POSITIVE;
-      (void)BigIntMultiply(&tmp1, &tmp1, &tmp5);
-      BigIntSubt(&tmp5, &Rat1.denominator, &tmp5);
-      if (BigIntIsZero(&tmp5))
-      {   // Quadratic has rational solutions.
-        CopyBigInt(&Rat3.numerator, &tmp4);    // Rat3 = square root of discriminant
-        CopyBigInt(&Rat3.denominator, &tmp1);  // of quadratic equation.
-        GaloisGroupHasOrder5(multiplicity);
-        return;
-      }
-    }
+  if (BigRationalSquareRoot(&Rat1, &Rat3))
+  {  // M + N*d is perfect square. its square root is stored in Rat3.
+    GaloisGroupHasOrder5(multiplicity);
+    return;
   }
-  GaloisGroupHasOrder10(multiplicity);
+  GaloisGroupHasOrder10();
   ShowQuinticsRootsRealR(multiplicity);
   return;
 }

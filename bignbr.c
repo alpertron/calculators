@@ -491,7 +491,28 @@ double logLimbs(const limb *pBigNbr, int nbrLimbs)
 
 double BigInt2double(const BigInteger* value)
 {
-  double result = exp(logBigNbr(value));
+  double result;
+  int nbrLimbs = value->nbrLimbs;
+  if (nbrLimbs == 1)
+  {
+    result = (double)(value->limbs[0].x);
+  }
+  else if (nbrLimbs == 2)
+  {
+    result = ((double)(value->limbs[0].x) / (double)LIMB_RANGE) +
+      (double)(value->limbs[1].x);
+  }
+  else
+  {
+    result = ((((double)(value->limbs[nbrLimbs-3].x) / (double)LIMB_RANGE) +
+      (double)(value->limbs[nbrLimbs - 2].x)) / (double)LIMB_RANGE) +
+      (double)(value->limbs[nbrLimbs - 1].x);
+  }
+  while (nbrLimbs > 1)
+  {
+    result *= (double)LIMB_RANGE;
+    nbrLimbs--;
+  }
   if (value->sign == SIGN_NEGATIVE)
   {
     result = -result;
