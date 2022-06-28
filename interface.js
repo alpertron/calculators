@@ -396,6 +396,7 @@ function performCalc()
   {
     styleButtons("none", "inline");  // Enable "stop" button
   }
+  get("cont").style.display = "none";
   callWorker(param);
 }
 
@@ -693,14 +694,11 @@ function startUp()
       get("status").innerHTML = "";
     };
   }
-  if (get("continue") !== null)
+  get("continue").onclick = function()
   {
-    get("continue").onclick = function()
-    {
-      get("cont").style.display = "none";
-      callWorker("C");  // Indicate worker that user pressed Continue button.
-    };
-  }
+    get("cont").style.display = "none";
+    callWorker("C");  // Indicate worker that user pressed Continue button.
+  };
   get("num").onkeydown = function (event)
   {
     var keyCode = event.key;

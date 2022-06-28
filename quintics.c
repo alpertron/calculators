@@ -483,24 +483,34 @@ static void showSqRoot1(enum eSign sign, const BigRational *ptrRatR, BigRational
   ptrRatS->numerator.sign = signBak;
 }
 
-// Show ((sqrt(5) +/- 1) * (M +/- N*d))^(1/2)
-static void showSqRoot2(enum eSign sign, const BigRational *ptrRatR, 
-  BigRational* ptrRatS)
+// Show ((5 +/- sqrt(5)) * (M +/- N*d))^(1/2)
+static void showSqRoot2(enum eSign signSqrt5, enum eSign signMN)
 {
-  enum eSign signBak = ptrRatS->numerator.sign;
+  enum eSign signBak = RatN.numerator.sign;
   startSqrt();
-  if (!BigIntIsZero(&RatR.numerator))
+  showText("(5");
+  if (pretty == PRETTY_PRINT)
   {
-    ptrRatS->numerator.sign = SIGN_POSITIVE;
-    showRationalNoParen(ptrRatR);
-    showPlusSignOn(sign == signBak, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+    *ptrOutput = ' ';
+    ptrOutput++;
+  }
+  showText((signSqrt5 == SIGN_POSITIVE)? "+" : ptrMinus);
+  showSqrt5();
+  showText(")");
+  showText(ptrTimes);
+  startParen();
+  if (!BigIntIsZero(&RatM.numerator))
+  {
+    RatN.numerator.sign = SIGN_POSITIVE;
+    showRationalNoParen(&RatM);
+    showPlusSignOn(signMN == signBak, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
   }
   CopyBigInt(&Rat4.numerator, &RatDiscr.numerator);
   CopyBigInt(&Rat4.denominator, &RatDiscr.denominator);
-  ShowRationalAndSqrParts(ptrRatS, &Rat4, 2, ptrTimes);
-
+  ShowRationalAndSqrParts(&RatN, &Rat4, 2, ptrTimes);
+  endParen();
   endSqrt();
-  ptrRatS->numerator.sign = signBak;
+  RatN.numerator.sign = signBak;
 }
 
 static void ShowQuinticsRootsRealR(int multiplicity)
@@ -780,6 +790,30 @@ static void NumberIsNotRational(enum eSign sign)
   }
 }
 
+static void getSignsSqrt(int groupOrder, int ctr,
+  enum eSign *pFirstSign, enum eSign *pSecondSign)
+{
+  int ctrOrder;
+  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
+  {   // O > 0.
+    ctrOrder = 3;
+  }
+  else
+  {   // O < 0.
+    ctrOrder = 2;
+  }
+  if (groupOrder == 10)
+  {
+    *pFirstSign = (((ctr == ctrOrder) || (ctr == 4)) ? SIGN_NEGATIVE : SIGN_POSITIVE);
+    *pSecondSign = (((ctr == ctrOrder) || (ctr == 1)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+  }
+  else
+  {
+    *pFirstSign = (((ctr == ctrOrder) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+    *pSecondSign = (((ctr == ctrOrder) || (ctr == 1)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
+  }
+}
+
 // Compute Rn so the argument of the fifth root shown is always positive.
   // If group order is 20:
   // R_i = l0 - T1 +/- 5*T2 +/- sqrt(r+s*d) +/- sqrt(r-s*d)
@@ -798,7 +832,7 @@ static double computeRn(int groupOrder, int ctr)
   const BigRational* ptrRatS;
   double dRn = 0.0;
   double dTerm;
-  if ((groupOrder == 10) || (ctr == 1) || (ctr == 4))
+  if ((ctr == 1) || (ctr == 4))
   {
     ptrRatR = &RatR;
     ptrRatS = &RatS;
@@ -846,22 +880,7 @@ static double computeRn(int groupOrder, int ctr)
       }
     }
   }
-  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
-  {   // O > 0.
-    firstSign = (((ctr == 3) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
-  }
-  else
-  {   // O < 0.
-    firstSign = (((ctr == 2) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
-  }
-  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
-  {   // O > 0.
-    secondSign = (((ctr == 1) || (ctr == 3)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
-  }
-  else
-  {   // O < 0.
-    secondSign = (((ctr == 1) || (ctr == 2)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
-  }
+  getSignsSqrt(groupOrder, ctr, &firstSign, &secondSign);
   double d1 = BigRational2double(ptrRatR);
   double d2 = BigRational2double(ptrRatS) * sqrt(BigRational2double(&RatDiscr));
   dTerm = sqrt(d1 + d2);
@@ -872,6 +891,21 @@ static double computeRn(int groupOrder, int ctr)
   else
   {
     dRn -= dTerm;
+  }
+  if (groupOrder == 10)
+  {
+    if ((ctr == 1) || (ctr == 4))
+    {
+      ptrRatR = &RatR2;
+      ptrRatS = &RatS2;
+    }
+    else
+    {
+      ptrRatR = &RatR;
+      ptrRatS = &RatS;
+    }
+    d1 = BigRational2double(ptrRatR);
+    d2 = BigRational2double(ptrRatS) * sqrt(BigRational2double(&RatDiscr));
   }
   dTerm = sqrt(d1 - d2);
   if (secondSign == SIGN_POSITIVE)
@@ -893,7 +927,7 @@ static void showRn(int groupOrder, int ctr, double dRn)
   enum eSign secondSign;
   const BigRational* ptrRatR;
   BigRational* ptrRatS;
-  if ((groupOrder == 10) || (ctr == 1) || (ctr == 4))
+  if ((ctr == 1) || (ctr == 4))
   {
     ptrRatR = &RatR;
     ptrRatS = &RatS;
@@ -960,7 +994,7 @@ static void showRn(int groupOrder, int ctr, double dRn)
       start5thRoot();
       if (!BigIntIsZero(&Rat1.numerator))
       {
-        showRational(&Rat3);
+        showRationalNoParen(&Rat3);
       }
       isAddition = (ctr == 2) || (ctr == 3);
       if (dRn < 0.0)
@@ -981,22 +1015,7 @@ static void showRn(int groupOrder, int ctr, double dRn)
       showSqrt5();
     }
   }
-  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
-  {   // O > 0.
-    firstSign = (((ctr == 3) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
-  }
-  else
-  {   // O < 0.
-    firstSign = (((ctr == 2) || (ctr == 4)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
-  }
-  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
-  {   // O > 0.
-    secondSign = (((ctr == 1) || (ctr == 3)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
-  }
-  else
-  {   // O < 0.
-    secondSign = (((ctr == 1) || (ctr == 2)) ? SIGN_POSITIVE : SIGN_NEGATIVE);
-  }
+  getSignsSqrt(groupOrder, ctr, &firstSign, &secondSign);
   if (dRn < 0.0)
   {
     if (firstSign == SIGN_POSITIVE)
@@ -1071,7 +1090,7 @@ static void showRn(int groupOrder, int ctr, double dRn)
       }
       else
       {
-      BigRationalSubt(ptrRatR, &Rat2, &Rat1);
+        BigRationalSubt(ptrRatR, &Rat2, &Rat1);
       }
       BigRationalMultiplyByInt(&Rat1, 2, &Rat1);
       // At this moment Rat1 = 2*r - 2(r^2 - 5s^2)^(1/2)
@@ -1118,10 +1137,24 @@ static void showRn(int groupOrder, int ctr, double dRn)
     }
     else
     {
-    NumberIsNotRational(firstSign);
-    showSqRoot1(SIGN_POSITIVE, ptrRatR, ptrRatS);
-    showPlusSignOn(secondSign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-    showSqRoot1(SIGN_NEGATIVE, ptrRatR, ptrRatS);
+      NumberIsNotRational(firstSign);
+      showSqRoot1(SIGN_POSITIVE, ptrRatR, ptrRatS);
+      if (groupOrder == 10)
+      {
+        if ((ctr == 1) || (ctr == 4))
+        {
+          ptrRatR = &RatR2;
+          ptrRatS = &RatS2;
+        }
+        else
+        {
+          ptrRatR = &RatR;
+          ptrRatS = &RatS;
+        }
+      }
+      showPlusSignOn(secondSign == SIGN_POSITIVE,
+        TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      showSqRoot1(SIGN_NEGATIVE, ptrRatR, ptrRatS);
     }
   }
   if (firstNumberShown)
@@ -1148,8 +1181,8 @@ static void showAllR(int groupOrder)
 }
 
 // Compute Rn so the argument of the fifth root shown is always positive.
-  // R_i = l0 - T1 +/- T2*sqrt(5*d) +/- (1/4)*(sqrt(5)+1)*sqrt(M+N*d)
-  //                                +/- (1/4)*(sqrt(5)-1)*sqrt(M-N*d)
+  // R_i = l0 - T1*sqrt(5) +/- T2*sqrt(d) +/- (1/4)*(sqrt(5)+1)*sqrt(M+N*d)
+  //                                      +/- (1/4)*(sqrt(5)-1)*sqrt(M-N*d)
   // First  +/-: plus for R_2 and R_3, minus for R_1 and R_4.
   // Second +/-: if O > 0: plus for R_3 and R_4, minus for R_1 and R_2.
   //             if O < 0: plus for R_2 and R_4, minus for R_1 and R_3.
@@ -1157,95 +1190,59 @@ static void showAllR(int groupOrder)
   //             if O < 0: plus for R_1 and R_2, minus for R_3 and R_4.
 static double computeRnGroup20(int ctr)
 {
-  double dRn;
   double dTemp;
   double dTemp2;
   double dInsideSqrt;
-  bool signPlus;
-  const BigRational* ptrRatR;
-  const BigRational* ptrRatS;
-  if ((ctr == 1) || (ctr == 4))
-  {
-    ptrRatR = &RatR;
-    ptrRatS = &RatS;
-  }
-  else
-  {
-    ptrRatR = &RatR2;
-    ptrRatS = &RatS2;
-  }
-  BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat2);
-  BigRationalAdd(&RatValues[index_l0], &Rat2, &Rat1);
-  dRn = BigRational2double(&Rat1);
-  CopyBigInt(&Rat1.numerator, &RatValues[index_T2].numerator);
-  CopyBigInt(&Rat1.denominator, &RatValues[index_T2].denominator);
-  BigRationalDivideByInt(&Rat1, 2, &Rat1);
-  BigRationalMultiplyByInt(&RatDiscr, 5, &Rat2);
-  dTemp = BigRational2double(&Rat1) * sqrt(BigRational2double(&Rat2));
+  enum eSign firstSign;
+  enum eSign secondSign;
+  double dFifthRootArgument = BigRational2double(&RatValues[index_l0]) -
+    BigRational2double(&RatValues[index_T1]) * sqrt(1.25);
+  dTemp = BigRational2double(&RatValues[index_T2]) *
+    sqrt(BigRational2double(&RatDiscr)) * 0.5;
   if ((ctr == 2) || (ctr == 3))
   {
-    dRn += dTemp;
+    dFifthRootArgument += dTemp;
   }
   else
   {
-    dRn -= dTemp;
+    dFifthRootArgument -= dTemp;
   }
-  dTemp2 = BigRational2double(ptrRatR);
-  dTemp = BigRational2double(ptrRatS) * sqrt(BigRational2double(&RatDiscr));
-  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
-  {   // O > 0.
-    signPlus = (ctr == 3) || (ctr == 4);
-  }
-  else
-  {   // O < 0.
-    signPlus = (ctr == 2) || (ctr == 4);
-  }
-  dInsideSqrt = sqrt(dTemp2 + dTemp);
-  if (signPlus)
+  getSignsSqrt(20, ctr, &firstSign, &secondSign);
+  dTemp2 = BigRational2double(&RatM);
+  dTemp = BigRational2double(&RatN) * sqrt(BigRational2double(&RatDiscr));
+  if ((ctr == 2) || (ctr == 3))
   {
-    dRn += dInsideSqrt;
+    dTemp = -dTemp;
+  }
+  dInsideSqrt = sqrt((5.0+sqrt(5.0))*(dTemp2 + dTemp));
+  if (firstSign == SIGN_POSITIVE)
+  {
+    dFifthRootArgument += dInsideSqrt;
   }
   else
   {
-    dRn -= dInsideSqrt;
+    dFifthRootArgument -= dInsideSqrt;
   }
-  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
-  {   // O > 0.
-    signPlus = (ctr == 1) || (ctr == 3);
-  }
-  else
-  {   // O < 0.
-    signPlus = (ctr == 1) || (ctr == 2);
-  }
-  dInsideSqrt = sqrt(dTemp2 - dTemp);
-  if (signPlus)
+  dTemp = -dTemp;
+  dInsideSqrt = sqrt((5.0 - sqrt(5.0)) * (dTemp2 + dTemp));
+  if (secondSign == SIGN_POSITIVE)
   {
-    dRn += dInsideSqrt;
+    dFifthRootArgument += dInsideSqrt;
   }
   else
   {
-    dRn -= dInsideSqrt;
+    dFifthRootArgument -= dInsideSqrt;
   }
-  return dRn;
+  return dFifthRootArgument;
 }
 
 // Change signs if the value of R_n computed is negative, so 
 // the argument of the fifth root is always positive.
-static void showRnGroup20(int ctr, double dRn)
+static void showRnGroup20(int ctr, double dFifthRootArgument)
 {
   bool signPlus;
-  const BigRational* ptrRatR;
-  BigRational* ptrRatS;
-  if ((ctr == 1) || (ctr == 4))
-  {
-    ptrRatR = &RatR;
-    ptrRatS = &RatS;
-  }
-  else
-  {
-    ptrRatR = &RatR2;
-    ptrRatS = &RatS2;
-  }
+  enum eSign firstSign;
+  enum eSign secondSign;
   startLine();
   if (pretty == PRETTY_PRINT)
   {
@@ -1261,34 +1258,27 @@ static void showRnGroup20(int ctr, double dRn)
     ptrOutput++;
   }
   showText(" = ");
-  if (dRn < 0.0)
-  {
-    showText(ptrMinus);
-  }
-  start5thRoot();
-  BigRationalDivideByInt(&RatValues[index_T1], 2, &Rat2);
-  BigRationalAdd(&RatValues[index_l0], &Rat2, &Rat1);
-  ForceDenominatorPositive(&Rat1);
-  CopyBigInt(&Rat3.numerator, &RatValues[index_T2].numerator);
-  CopyBigInt(&Rat3.denominator, &RatValues[index_T2].denominator);
+  BigRationalDivideByInt(&RatValues[index_T2], 2, &Rat3);
+  ForceDenominatorPositive(&Rat3);
   signPlus = ((ctr == 2) || (ctr == 3));
-  if (dRn < 0.0)
-  {
+  BigRationalMultiplyByInt(&RatValues[index_l0], 1, &Rat1);
+  if (dFifthRootArgument < 0.0)
+  {                      // Fifth root is negative.
+    showText(ptrMinus);  // Prepend minus sign to fifth root.
     BigIntChSign(&Rat1.numerator);
-    signPlus = !signPlus;
+    BigIntChSign(&Rat3.numerator);
   }
   if (Rat3.numerator.sign == SIGN_NEGATIVE)
   {
     signPlus = !signPlus;
     Rat3.numerator.sign = SIGN_POSITIVE;
   }
-  BigRationalDivideByInt(&Rat3, 2, &Rat3);
-  BigRationalMultiplyByInt(&RatDiscr, 5, &Rat4);
+  BigRationalMultiplyByInt(&RatDiscr, 1, &Rat4);
   MultiplyRationalBySqrtRational(&Rat3, &Rat4);
+  start5thRoot();
   if (BigIntIsOne(&Rat4.numerator) && BigIntIsOne(&Rat4.denominator))
   {    // Argument of square root is 1.
-       // The rational part of this term can be added to or subtracted from 
-       // the previous term.
+       // The rational part of this term can be added to or subtracted from l0.
     if (signPlus)
     {
       BigRationalAdd(&Rat1, &Rat3, &Rat1);
@@ -1299,78 +1289,70 @@ static void showRnGroup20(int ctr, double dRn)
     }
     if (!BigIntIsZero(&Rat1.numerator))
     {
-      showRational(&Rat1);
+      showRationalNoParen(&Rat1);        // Show l0 +/- T2*sqrt(discr)
     }
   }
   else
   {
     if (!BigIntIsZero(&Rat1.numerator))
     {
-      showRational(&Rat1);
+      showRationalNoParen(&Rat1);        // Show l0.
     }
     showPlusSignOn(signPlus, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-    ShowRationalAndSqrParts(&Rat3, &Rat4, 2, ptrTimes);
+    ShowRationalAndSqrParts(&Rat3, &Rat4, 2, ptrTimes);  // Show +/- T2*sqrt(discr)
   }
-  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
-  {   // O > 0.
-    signPlus = (ctr == 3) || (ctr == 4);
-  }
-  else
-  {   // O < 0.
-    signPlus = (ctr == 2) || (ctr == 4);
-  }
-  if (dRn < 0.0)
+  // Subtract T1 * sqrt(5)/2
+  BigRationalDivideByInt(&RatValues[index_T1], -2, &Rat3);
+  ForceDenominatorPositive(&Rat3);
+  signPlus = (dFifthRootArgument >= 0.0);
+  if (Rat3.numerator.sign == SIGN_NEGATIVE)
   {
     signPlus = !signPlus;
+    Rat3.numerator.sign = SIGN_POSITIVE; // Force rational part to be positive.
   }
-  showPlusSignOn(signPlus,
+  intToBigInteger(&Rat4.numerator, 5);
+  intToBigInteger(&Rat4.denominator, 1);
+  showPlusSignOn(signPlus, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+  ShowRationalAndSqrParts(&Rat3, &Rat4, 2, ptrTimes);  // Show -T1*sqrt(5)/2
+  getSignsSqrt(20, ctr, &firstSign, &secondSign);
+  showPlusSignOn(firstSign == (dFifthRootArgument > 0.0? SIGN_POSITIVE: SIGN_NEGATIVE),
     TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-  showSqRoot2(SIGN_POSITIVE, ptrRatR, ptrRatS);
-  if (RatValues[index_O].numerator.sign == SIGN_POSITIVE)
-  {   // O > 0.
-    signPlus = (ctr == 1) || (ctr == 3);
-  }
-  else
-  {   // O < 0.
-    signPlus = (ctr == 1) || (ctr == 2);
-  }
-  if (dRn < 0.0)
-  {
-    signPlus = !signPlus;
-  }
-  showPlusSignOn(signPlus,
+  showSqRoot2(SIGN_POSITIVE,
+    ((ctr == 2) || (ctr == 3) ? SIGN_NEGATIVE : SIGN_POSITIVE));
+  showPlusSignOn(secondSign == (dFifthRootArgument > 0.0 ? SIGN_POSITIVE : SIGN_NEGATIVE),
     TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-  showSqRoot2(SIGN_NEGATIVE, ptrRatR, ptrRatS);
+  showSqRoot2(SIGN_NEGATIVE,
+    ((ctr == 2) || (ctr == 3) ? SIGN_POSITIVE : SIGN_NEGATIVE));
   end5thRoot();
 }
 
 static void GaloisGroupHasOrder20(void)
 {
-  // Change signs of M and N.
+  // Change signs of M and N, so M + Nd and M - Nd are positive.
   BigIntChSign(&RatM.numerator);
   BigIntChSign(&RatN.numerator);
   CopyBigInt(&Rat1.numerator, &RatDiscr.numerator);
   CopyBigInt(&Rat1.denominator, &RatDiscr.denominator);
   MultiplyRationalBySqrtRational(&RatN, &Rat1);
   MultiplyRationalBySqrtRational(&RatValues[index_T2], &RatDiscr);
-  // Compute r = 5(m+n)/8, s = (m+5n)/8.
-  BigRationalAdd(&RatM, &RatN, &RatR);         // R <- m + n
-  BigRationalMultiplyByInt(&RatR, 5, &RatR);   // R <- 5(m + n)
-  BigRationalDivideByInt(&RatR, 8, &RatR);     // R <- 5(m + n)/8
-  BigRationalMultiplyByInt(&RatN, 5, &RatS);   // S <- 5n
-  BigRationalAdd(&RatS, &RatM, &RatS);         // S <- m + 5n
-  BigRationalDivideByInt(&RatS, 8, &RatS);     // S <- 5(m + 5n)/8
-  // Compute r2 = 5(m-n)/8, s2 = (m-5n)/8.
-  BigRationalSubt(&RatM, &RatN, &RatR2);       // R2 <- m - n
-  BigRationalMultiplyByInt(&RatR2, 5, &RatR2); // R2 <- 5(m - n)
-  BigRationalDivideByInt(&RatR2, 8, &RatR2);   // R2 <- 5(m - n)/8
-  BigRationalMultiplyByInt(&RatN, 5, &RatS2);  // S2 <- 5n
-  BigRationalSubt(&RatS2, &RatM, &RatS2);      // S2 <- m - 5n
-  BigRationalDivideByInt(&RatS2, 8, &RatS2);   // S2 <- 5(m - 5n)/8
   // Test whether the discriminant has the form 5*n^2 or not.
   BigRationalDivideByInt(&RatDiscr, 5, &Rat1);
   if (BigRationalSquareRoot(&Rat1, &Rat2))
-  {      // The discriminant has the form 5*n^2. Square root in Rat2 not used.
+  {      // The discriminant has the form 5*n^2. Square root found in Rat2 not used.
+    // Compute r = 5(m+n)/8, s = (m+5n)/8.
+    BigRationalAdd(&RatM, &RatN, &RatR);         // R <- m + n
+    BigRationalMultiplyByInt(&RatR, 5, &RatR);   // R <- 5(m + n)
+    BigRationalDivideByInt(&RatR, 8, &RatR);     // R <- 5(m + n)/8
+    BigRationalMultiplyByInt(&RatN, 5, &RatS);   // S <- 5n
+    BigRationalAdd(&RatS, &RatM, &RatS);         // S <- m + 5n
+    BigRationalDivideByInt(&RatS, 8, &RatS);     // S <- 5(m + 5n)/8
+    // Compute r2 = 5(m-n)/8, s2 = (m-5n)/8.
+    BigRationalSubt(&RatM, &RatN, &RatR2);       // R2 <- m - n
+    BigRationalMultiplyByInt(&RatR2, 5, &RatR2); // R2 <- 5(m - n)
+    BigRationalDivideByInt(&RatR2, 8, &RatR2);   // R2 <- 5(m - n)/8
+    BigRationalMultiplyByInt(&RatN, 5, &RatS2);  // S2 <- 5n
+    BigRationalSubt(&RatS2, &RatM, &RatS2);      // S2 <- m - 5n
+    BigRationalDivideByInt(&RatS2, 8, &RatS2);   // S2 <- 5(m - 5n)/8
     showAllR(20);
   }
   else
@@ -1378,10 +1360,8 @@ static void GaloisGroupHasOrder20(void)
     BigRationalDivideByInt(&RatValues[index_l0], 3125, &RatValues[index_l0]);
     BigRationalDivideByInt(&RatValues[index_T1], 3125, &RatValues[index_T1]);
     BigRationalDivideByInt(&RatValues[index_T2], 3125, &RatValues[index_T2]);
-    BigRationalDivideByInt(&RatR, 3125 * 3125, &RatR);
-    BigRationalDivideByInt(&RatS, 3125 * 3125, &RatS);
-    BigRationalDivideByInt(&RatR2, 3125 * 3125, &RatR2);
-    BigRationalDivideByInt(&RatS2, 3125 * 3125, &RatS2);
+    BigRationalDivideByInt(&RatM, 3125 * 3125 * 8, &RatM);
+    BigRationalDivideByInt(&RatN, 3125 * 3125 * 8, &RatN);
     for (int ctr = 1; ctr <= 4; ctr++)
     {
       double dRn = computeRnGroup20(ctr);
@@ -1394,12 +1374,20 @@ static void GaloisGroupHasOrder10(void)
 {
   // Set Y <- M + N*d. This value is already in Rat1.
   // Compute r = 5Y/8, s = Y/8.
+  // Set Z <- M - N*d. This value is already in Rat3.
+  // Compute r2 = 5Z/8, s2 = Z/8.
   BigRationalDivideByInt(&Rat1, -8, &RatS);
   BigRationalMultiplyByInt(&RatS, 5, &RatR);
   RatR.numerator.sign = SIGN_POSITIVE;
   RatR.denominator.sign = SIGN_POSITIVE;
   RatS.numerator.sign = SIGN_POSITIVE;
   RatS.denominator.sign = SIGN_POSITIVE;
+  BigRationalDivideByInt(&Rat3, -8, &RatS2);
+  BigRationalMultiplyByInt(&RatS2, 5, &RatR2);
+  RatR2.numerator.sign = SIGN_POSITIVE;
+  RatR2.denominator.sign = SIGN_POSITIVE;
+  RatS2.numerator.sign = SIGN_POSITIVE;
+  RatS2.denominator.sign = SIGN_POSITIVE;
   intToBigInteger(&RatDiscr.numerator, 5);
   intToBigInteger(&RatDiscr.denominator, 1);
   showAllR(10);    // Show all four values of R.
@@ -1773,6 +1761,9 @@ void QuinticEquation(const int* ptrPoly, int multiplicity)
     GaloisGroupHasOrder5(multiplicity);
     return;
   }
+  BigRationalMultiply(&Rat4, &RatN, &Rat3);
+  BigRationalSubt(&RatM, &Rat3, &Rat3);
+  ForceDenominatorPositive(&Rat3);         // M - N*d
   GaloisGroupHasOrder10();
   ShowQuinticsRootsRealR(multiplicity);
   return;

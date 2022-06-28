@@ -734,6 +734,11 @@ function startUp()
     questionNbr = 0;
     test1(true);                     // Show distance between cities.
   };
+  get("formlink").onclick = function ()
+  {
+    window.sessionStorage.setItem("pageFrom", document.title);
+    return true;
+  };
 }
 
 window.addEventListener("load", startUp);

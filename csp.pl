@@ -8,11 +8,9 @@ opendir($dir, ".");
 while (readdir $dir)
 {
   my $dirEntry = $_;
-  my $firstIndex = index($dirEntry, ".HTM");
-  if ($firstIndex == -1)
-  {
-    next;
-  }
+  next if (index($dirEntry, ".HTM") < 0);
+  next if (index($dirEntry, ".br") >= 0);
+  next if (index($dirEntry, ".gz") >= 0);
   open(my $filehandle, '<', $dirEntry);
   my $data = do { local $/; <$filehandle> };
   my $extra = " 'self' blob:";

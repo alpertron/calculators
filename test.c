@@ -27,7 +27,7 @@
 #include "polynomial.h"
 #include "fromBlockly.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 9
+#define DEBUG_CODE 6
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
   copyStr(&ptrInput, argv[3]);
   ptrInput++;
   bool hex = (argv[4][0] != '0');
-  contfracText(input, 20000, hex);
+  contfracText(input, 6, hex);
   (void)printf("%s\n", output);
 #elif DEBUG_CODE == 7
   char* ptrInput;
