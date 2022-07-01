@@ -29,7 +29,6 @@
 #define MAX_MODULUS 100
 
 extern char* ptrOutput2;
-static void showPolynomial(char** pptrOutput, const int* ptrPoly, int polyDegree, int groupLength);
 BigInteger primeMod;              // p
 int exponentMod;                  // k
 BigInteger powerMod;              // p^k
@@ -2021,6 +2020,11 @@ void outputOriginalPolynomial(char** pptrOutput, int groupLength)
   if ((operand1.nbrLimbs != 1) || (operand1.limbs[0].x != 1) || (degree == 0))
   {     // Leading coefficient is not 1 or degree is zero.
     Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
+    if ((pretty == PARI_GP) && (degree > 0))
+    {
+      *ptrOutput = '*';
+      ptrOutput++;
+    }
   }
   if (degree > 0)
   {
