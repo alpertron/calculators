@@ -16,20 +16,20 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/** @define {number} */ var lang = 1;   // Use with Closure compiler.
+/** @define {number} */ const lang = 1;   // Use with Closure compiler.
 (function()
 {   // This method separates the name space from the Google Analytics code.
-var worker = 0;
-var blob;
-var fileContents = 0;
-var exprTextEs = "Por favor ingrese un número o expresión para ";
-var exprTextEn = "Please type a number or expression for the ";
-var result, dlog, stop, base, pow, mod, digits, main, help, helpbtn, formlink;
-var feedback, formfeedback, name, formcancel, formsend, userdata, adduserdata;
-var asmjs = typeof(WebAssembly) === "undefined";
-var currentInputBox;
-var funcnames;
-var parens;
+let worker = 0;
+let blob;
+let fileContents = 0;
+const exprTextEs = "Por favor ingrese un número o expresión para ";
+const exprTextEn = "Please type a number or expression for the ";
+let result, dlog, stop, base, pow, mod, digits, main, help, helpbtn, formlink;
+let feedback, formfeedback, name, formcancel, formsend, userdata, adduserdata;
+let asmjs = typeof(WebAssembly) === "undefined";
+let currentInputBox;
+let funcnames;
+let parens;
 if (lang)
 {
   funcnames =
@@ -106,11 +106,11 @@ function callWorker(param)
 
 function dowork(n)
 {
-  var app = lang + n;
-  var baseText = base.value;
-  var powText = pow.value;
-  var modText = mod.value;
-  var digitGroup = digits.value;
+  const app = lang + n;
+  const baseText = base.value;
+  const powText = pow.value;
+  const modText = mod.value;
+  const digitGroup = digits.value;
   help.style.display = "none";
   result.style.display = "block";
   if (baseText === "")
@@ -132,7 +132,7 @@ function dowork(n)
   stop.disabled = false;
   result.innerHTML = (lang? "Calculando el logaritmo discreto..." :
                          "Computing discrete logarithm...");
-  var param = digitGroup + "," + app + "," + baseText + String.fromCharCode(0) + powText +
+  const param = digitGroup + "," + app + "," + baseText + String.fromCharCode(0) + powText +
   String.fromCharCode(0) + modText + String.fromCharCode(0);
   callWorker(param);
 }
@@ -144,10 +144,10 @@ function endFeedback()
   base.focus();   
 }
 
-var calcURLs = ["dilogW0000.js",
+const calcURLs = ["dilogW0000.js",
                 "dilog.webmanifest", "logdi.webmanifest", "dilog-icon-1x.png", "dilog-icon-2x.png", "dilog-icon-4x.png", "dilog-icon-180px.png", "dilog-icon-512px.png", "favicon.ico"];
 
-var url = window.location.pathname;
+const url = window.location.pathname;
 function updateCache(cache)
 {
   caches.open("cacheECM").then(function(tempCache)
@@ -182,7 +182,7 @@ function fillCache()
       }
       else
       {     // Response is the HTML contents.
-        var date = response.headers.get("last-modified");
+        const date = response.headers.get("last-modified");
             // Request the HTML from the Web server.
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
         fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
@@ -206,8 +206,8 @@ function fillCache()
               {            // All responses in array responseArr.
                 responseArr.forEach(function(responseTempCache, _index, _array)
                 {
-                  var urlTemp = responseTempCache.url;
-                  var indexZero = url.indexOf("00");
+                  const urlTemp = responseTempCache.url;
+                  const indexZero = url.indexOf("00");
                   if (indexZero > 0)
                   {        // There is an old version of this resource on cache to be erased.
                     cache.keys().then(function(keys)
@@ -250,12 +250,12 @@ function fillCache()
 
 function b64decode(str,out)
 {
-  var ch;
-  var idxDest,idxSrc;
-  var blocks, leftOver;
-  var byte0, byte1, byte2, byte3;
-  var conv=new Int8Array(128);
-  var len=str.length;
+  let ch;
+  let idxDest,idxSrc;
+  let blocks, leftOver;
+  let byte0, byte1, byte2, byte3;
+  let conv = new Int8Array(128);
+  let len = str.length;
   if (str.charAt(len-1) === "=")
   {
     len--;
@@ -313,9 +313,9 @@ function b64decode(str,out)
 
 function buttonClick()
 {
-  var input = currentInputBox;
+  const input = currentInputBox;
   input.focus();
-  var start = input.selectionStart;
+  const start = input.selectionStart;
   input.value = input.value.substring(0, start) +
                 this.innerText +
                 input.value.substring(input.selectionEnd);
@@ -326,14 +326,14 @@ function buttonClick()
     
 function generateFuncButtons(optionCategory, funcButtons)
 {
-  var button;
-  var catIndex;
-  var funcbtns = get(funcButtons);
-  var catnbr = get(optionCategory).selectedIndex;
-  var funcname = (parens + funcnames[+catnbr]).split(",");
+  let button;
+  let catIndex;
+  let funcbtns = get(funcButtons);
+  let catnbr = get(optionCategory).selectedIndex;
+  let funcname = (parens + funcnames[+catnbr]).split(",");
   // Append all buttons to document fragment instead of funcbtns
   // and finally append the fragment to funcbtns to minimize redraws.
-  var fragment = document.createDocumentFragment();
+  let fragment = document.createDocumentFragment();
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
     button = document.createElement("button");
@@ -428,7 +428,7 @@ window.onload = function()
     {
       userdata.value = "";      
     }
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function (_event)
     {
       if (xhr.readyState === 4) 
@@ -446,12 +446,12 @@ window.onload = function()
     };
     xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    var elements = formfeedback.elements;
-    var contents = "";
-    var useAmp = 0;
-    for (var i = 0; i < elements.length; i++)
+    let elements = formfeedback.elements;
+    let contents = "";
+    let useAmp = 0;
+    for (let i = 0; i < elements.length; i++)
     {
-      var element = elements[i >> 0];
+      let element = elements[i >> 0];
       if (element.type === "radio" && !element.checked)
       {
         continue;
@@ -481,7 +481,7 @@ window.onload = function()
 };
 if (asmjs)
 {
-  var req = new XMLHttpRequest();
+  let req = new XMLHttpRequest();
   req.open("GET", "dilogW0000.js", true);
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (_aEvt)
@@ -495,7 +495,7 @@ if (asmjs)
 }
 else
 {
-  var wasm = document.getElementById("wasmb64").text;
+  let wasm = document.getElementById("wasmb64").text;
   while (wasm.charCodeAt(0) < 32)
   {
     wasm = wasm.substring(1);
@@ -504,7 +504,7 @@ else
   {
     wasm = wasm.substring(0, wasm.length-1);
   }    
-  var length = wasm.length*3/4;
+  let length = wasm.length*3/4;
   if (wasm.charCodeAt(wasm.length-1) === 61)
   {
     length--;

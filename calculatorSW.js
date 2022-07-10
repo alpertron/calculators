@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-var cacheName = "newCache";
-
 // Do not cache anything in advance.
 self.addEventListener("install", function(_event)
 {
@@ -43,17 +41,17 @@ function unableToResolve()
 // Function that is called when browser needs a request.
 self.addEventListener("fetch", function(event)
 {
-  var url = event.request.url;
+  const url = event.request.url;
       // Check if special header indicating not to read from cache has arrived.
-  var nocache = event.request.headers.get("x-calc");
-  var noQueryString;
+  const nocache = event.request.headers.get("x-calc");
+  const noQueryString;
   if (url.toString().replace(/^(.*\/\/[^\/?#]*).*$/,"$1") !== self.location.origin ||
       event.request.method !== "GET" || url.endsWith(".pl") || url.endsWith(".php"))
   {  // Cache GET requests from this Web server only.
     return;
   }
   // Erase any query information.
-  var QmarkOffset = url.indexOf("?");
+  const QmarkOffset = url.indexOf("?");
   if (QmarkOffset < 0)
   {
     noQueryString = url;
