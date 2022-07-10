@@ -29,7 +29,7 @@
 #ifdef __EMSCRIPTEN__
 #define SEND_DATA_TO_OUTPUT(n)   databack(n)
 #else
-#define SEND_DATA_TO_OUTPUT(n)   (void)printf("%s\n",n)
+#define SEND_DATA_TO_OUTPUT(n)   ((void)printf("%s\n",n))
 #endif
 char* ptrBlocklyOutput;
 int nbrBlocklyOutputLines;

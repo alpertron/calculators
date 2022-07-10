@@ -2195,7 +2195,6 @@ int FactorPolyOverIntegers(void)
     int nbrFactorsRecord;
     int prime;
     int primeIndex;
-    const struct sFactorInfo* pstFactorInfoRecord;
     modulusIsZero = true;
     intPolyMultiplicity = *ptrPolySqFreeFact;
     ptrPolySqFreeFact++;
@@ -2352,8 +2351,8 @@ int FactorPolyOverIntegers(void)
     // Copy back the record factorization to the work area.
     if (nbrFactorsRecord > 1)
     {
+      const struct sFactorInfo* pstFactorInfoRecord = factorInfoRecord;
       pstFactorInfoOrig = factorInfo;
-      pstFactorInfoRecord = factorInfoRecord;
       ptrPolyLiftedOrig = polyLifted;
       for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
       {

@@ -2517,7 +2517,8 @@ static unsigned int nextRandom(void)
 
   t ^= t << 11;
   t ^= t >> 8;
-  return randomSeed.seed[0] = t ^ s ^ (s >> 19);
+  randomSeed.seed[0] = t ^ s ^ (s >> 19);
+  return randomSeed.seed[0];
 }
 
 void BigIntRandom(BigInteger* pUpperLimit, BigInteger* pLowerLimit, BigInteger* pRandom)

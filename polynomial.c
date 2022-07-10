@@ -562,7 +562,6 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
   int temp;
   int index;
   int lenBytes;
-  int currCoeff;
   unsigned char reduceModulus[MAX_MODULUS * MAX_MODULUS];
   int modulus = TestNbr[0].x;
   if (NumberLength > 1)
@@ -608,6 +607,7 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
   {  // One of the arguments is a monomial.
     int monomialDegree;
     int polynomialDegree;
+    int currCoeff;
     const int* polynomialCoeffs;
     if (degree1 < 0)
     {

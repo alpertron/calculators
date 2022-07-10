@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <string.h>
 union fi { double f; uint64_t i; };
-#define asuint64(f) ((union{double _f; uint64_t _i;}){f})._i
-#define asdouble(i) ((union{uint64_t _i; double _f;}){i})._f
+#define asuint64(f) (((union{double _f; uint64_t _i;}){f})._i)
+#define asdouble(i) (((union{uint64_t _i; double _f;}){i})._f)
 #define GET_HIGH_WORD(hi,d)                       \
 do {                                              \
   (hi) = asuint64(d) >> 32;                       \

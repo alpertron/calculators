@@ -487,6 +487,19 @@ function endFeedback()
   get("num").focus();
 }
 
+function buttonClick()
+{
+  var input = currentInputBox;
+  input.focus();
+  var start = input.selectionStart;
+  input.value = input.value.substring(0, start) +
+                this.innerText +
+                input.value.substring(input.selectionEnd);
+    // Place the caret at the end of the appended text.
+  input.selectionStart = start + this.innerText.length;
+  input.selectionEnd = input.selectionStart;
+}
+
 function generateFuncButtons(optionCategory, funcButtons)
 {
   var button;
@@ -504,18 +517,7 @@ function generateFuncButtons(optionCategory, funcButtons)
     button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
     button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
     button.classList.add("funcbtn");
-    button.onclick = function()
-    {
-      var input = currentInputBox;
-      input.focus();
-      var start = input.selectionStart;
-      input.value = input.value.substring(0, start) +
-                    this.innerText +
-                    input.value.substring(input.selectionEnd);
-        // Place the caret at the end of the appended text.
-      input.selectionStart = start + this.innerText.length;
-      input.selectionEnd = input.selectionStart;
-    };
+    button.onclick = buttonClick;
     fragment.appendChild(button);
   }
   funcbtns.innerHTML = "";
