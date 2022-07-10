@@ -360,7 +360,7 @@ function generateFuncButtons(optionCategory, funcButtons)
   var button;
   var catIndex;
   var funcbtns = get(funcButtons);
-  var catnbr = get(optionCategory).selectedIndex;
+  var catnbr = parseInt(get(optionCategory).selectedIndex, 10);
   var funcname = (parens + funcnames[catnbr]).split(",");
   // Append all buttons to document fragment instead of funcbtns
   // and finally append the fragment to funcbtns to minimize redraws.
