@@ -815,7 +815,7 @@ static double computeRnGroup10Or20(int groupOrder, int ctr,
     dTemp = -dTemp;
   }
   dInsideSqrt = sqrt(dTemp2 + dTemp);
-  if (changeSignFirstSqrt && (firstSign != secondSign) && (dTemp < 0))
+  if (changeSignFirstSqrt && (firstSign != secondSign) && (dTemp < 0.0))
   {
     if (firstSign == SIGN_NEGATIVE)
     {
@@ -850,7 +850,6 @@ static void showRnGroup10Or20(int groupOrder, int ctr, double dFifthRootArgument
   enum eSign secondSign;
   enum eSign currentSign;
   enum eSign signInsideFirstSquareRoot;
-  enum eSign signInsideSecondSquareRoot;
   startLine();
   if (pretty == PRETTY_PRINT)
   {
@@ -925,12 +924,10 @@ static void showRnGroup10Or20(int groupOrder, int ctr, double dFifthRootArgument
     ((groupOrder == 10) && ((ctr == 1) || (ctr == 4))))
   {
     signInsideFirstSquareRoot = SIGN_NEGATIVE;
-    signInsideSecondSquareRoot = SIGN_POSITIVE;
   }
   else
   {
     signInsideFirstSquareRoot = SIGN_POSITIVE;
-    signInsideSecondSquareRoot = SIGN_NEGATIVE;
   }
   if (changeSignFirstSqrt && (firstSign != secondSign) &&
     (signInsideFirstSquareRoot != RatN.numerator.sign))

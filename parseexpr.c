@@ -616,7 +616,7 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
             *pUsingRandom = true;
           }
         }
-        if (((unsigned short)token & 0xFF00) == (unsigned short)NO_PARMS)
+        if (((unsigned short)token & 0xFF00U) == (unsigned short)NO_PARMS)
         {
           *ptrOutput = (char)token;
           ptrOutput++;

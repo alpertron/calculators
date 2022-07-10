@@ -1907,17 +1907,14 @@ void factorExt(const BigInteger *toFactor, const int *number,
       {        // Number has at least 2 limbs: Trial division by small numbers.
         if (pstCurFactor->upperBound != 0)
         {            // Factor found.
-          int exponent;
-          int index;
-          int deltaIndex;
           ptrFactor = pstCurFactor->ptrFactor;
           remainder = RemDivBigNbrByInt((const limb *)(ptrFactor + 1), upperBound, nbrLimbs);
           if (remainder == 0)
           {
             // Small factor found. Find the exponent.
-            exponent = 1;
-            index = 0;
-            deltaIndex = 1;
+            int deltaIndex = 1;
+            int exponent = 1;
+            int index = 0;
             CopyBigInt(&common.trialDiv.cofactor, &prime);
             subtractdivide(&common.trialDiv.cofactor, 0, upperBound);
             intToBigInteger(&common.trialDiv.power[0], upperBound);

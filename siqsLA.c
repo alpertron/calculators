@@ -229,8 +229,8 @@ static void coladd(int *XmY, int *V, int *V1, int *V2,
   }               // Add column col1 to column col2 of V1:V2
   mask1 = 0x80000000 >> (col1 & 31);
   mask2 = 0x80000000 >> (col2 & 31);
-  matr1 = (col1 >= 32 ? V1 : V2);
-  matr2 = (col2 >= 32 ? V1 : V2);
+  matr1 = ((col1 >= 32) ? V1 : V2);
+  matr2 = ((col2 >= 32) ? V1 : V2);
   for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {              // If bit to add is '1'...
     if ((matr1[row] & mask1) != 0)
@@ -313,7 +313,8 @@ static bool BlockLanczos(int seed)
   {
     double dSeed2 = (dSeed * dMult) + dAdd;
     dSeed2 -= floor(dSeed2 / dDivisor) * dDivisor;
-    *ptrMatrixXmY-- = (int)dSeed + (int)dSeed2;
+    *ptrMatrixXmY = (int)dSeed + (int)dSeed2;
+    ptrMatrixXmY--;
     dSeed = (dSeed2 * dMult) + dAdd;
     dSeed -= floor(dSeed / dDivisor) * dDivisor;
     dSeed2 = (dSeed * dMult) + dAdd;
@@ -574,7 +575,8 @@ static bool BlockLanczos(int seed)
     /* Find matrix V1:V2 = B * (X-Y:V) */
   for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {
-    common.siqs.matrixV1[row] = common.siqs.matrixV2[row] = 0;
+    common.siqs.matrixV1[row] = 0;
+    common.siqs.matrixV2[row] = 0;
   }
   for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {
@@ -669,7 +671,7 @@ static bool BlockLanczos(int seed)
   {
     for (col = leftCol; col < rightCol; col++)
     {         // For each column find the first row which has a '1'.
-      matr = (col >= 32 ? common.siqs.matrixXmY : common.siqs.matrixV);
+      matr = ((col >= 32) ? common.siqs.matrixXmY : common.siqs.matrixV);
       mask = 0x80000000 >> (col & 31);
       vectorIndex[col] = -1;    // indicate all rows in zero in advance.
       for (row = 0; row < common.siqs.matrixBLength; row++)
