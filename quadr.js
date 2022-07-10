@@ -360,8 +360,8 @@ function generateFuncButtons(optionCategory, funcButtons)
   var button;
   var catIndex;
   var funcbtns = get(funcButtons);
-  var catnbr = parseInt(get(optionCategory).selectedIndex, 10);
-  var funcname = (parens + funcnames[catnbr]).split(",");
+  var catnbr = get(optionCategory).selectedIndex;
+  var funcname = (parens + funcnames[+catnbr]).split(",");
   // Append all buttons to document fragment instead of funcbtns
   // and finally append the fragment to funcbtns to minimize redraws.
   var fragment = document.createDocumentFragment();
@@ -369,8 +369,8 @@ function generateFuncButtons(optionCategory, funcButtons)
   {
     button = document.createElement("button");
     button.setAttribute("type", "button");        // Indicate this is a button, not submit.
-    button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
-    button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
+    button.setAttribute("title", funcname[+catIndex*2]);  // Text of tooltip.
+    button.innerHTML = funcname[+catIndex*2 + 1];         // Text of button.
     button.classList.add("funcbtn");
     button.onclick = buttonClick;
     fragment.appendChild(button);
