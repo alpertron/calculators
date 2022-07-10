@@ -833,7 +833,6 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
       ptrDividend++;
     }
     (ptrDividend - 1)->x &= mostSignificantLimbMask;
-    nbrLimbs = (int)(ptrDividend - prod);
     if (powerOf2Exponent == 0)
     {
       ptrDividend->x = 0;
