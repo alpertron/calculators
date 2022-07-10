@@ -16,20 +16,20 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/** @define {number} */ var app = 0;   // Use with Closure compiler.
+/** @define {number} */ const app = 0;   // Use with Closure compiler.
 (function()
 {   // This method separates the name space from the Google Analytics code.
-var wizardStep = 0;
-var wizardTextInput;
-var worker = 0;
-var fileContents = 0;
-var hex = 0;
-var blob;
-var lang = app % 2;
-var asmjs = typeof(WebAssembly) === "undefined";
-var currentInputBox;
-var funcnames;
-var parens;
+let wizardStep = 0;
+let wizardTextInput;
+let worker = 0;
+let fileContents = 0;
+let hex = 0;
+let blob;
+let lang = app % 2;
+let asmjs = typeof(WebAssembly) === "undefined";
+let currentInputBox;
+let funcnames;
+let parens;
 if (lang)
 {
   funcnames =
@@ -79,12 +79,12 @@ function styleButtons(style1, style2)
 
 function b64decode(str,out)
 {
-  var ch;
-  var idxDest,idxSrc;
-  var blocks, leftOver;
-  var byte0, byte1, byte2, byte3;
-  var conv=new Int8Array(128);
-  var len=str.length;
+  let ch;
+  let idxDest,idxSrc;
+  let blocks, leftOver;
+  let byte0, byte1, byte2, byte3;
+  let conv=new Int8Array(128);
+  let len=str.length;
   if (str.charAt(len-1) === "=")
   {
     len--;
@@ -140,7 +140,7 @@ function b64decode(str,out)
   }
 }
 
-var calcURLs;
+let calcURLs;
 
 if (app < 2)
 {
@@ -162,7 +162,7 @@ if (!asmjs)
   calcURLs.shift();  // Do not fetch Javascript file that will not be used.
 }
 
-var url = window.location.pathname;
+let url = window.location.pathname;
 function updateCache(cache)
 {
   caches.open("cacheTEMP").then(function(tempCache)
@@ -197,7 +197,7 @@ function fillCache()
       }
       else
       {     // Response is the HTML contents.
-        var date = response.headers.get("last-modified");
+        let date = response.headers.get("last-modified");
             // Request the HTML from the Web server.
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
         fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
@@ -221,8 +221,8 @@ function fillCache()
               {            // All responses in array responseArr.
                 responseArr.forEach(function(responseTempCache, _index, _array)
                 {
-                  var urlTemp = responseTempCache.url;
-                  var indexZero = url.indexOf("00");
+                  let urlTemp = responseTempCache.url;
+                  let indexZero = url.indexOf("00");
                   if (indexZero > 0)
                   {        // There is an old version of this resource on cache to be erased.
                     cache.keys().then(function(keys)
@@ -265,7 +265,7 @@ function fillCache()
 
 function callWorker(param)
 {
-  var helphelp = get("helphelp");
+  let helphelp = get("helphelp");
   if (!worker)
   {
     if (!blob)
@@ -286,7 +286,7 @@ function callWorker(param)
       // "2" for end calculation
       // "4" for sending data to status line
       // "6" for pausing calculation and showing the Continue button
-      var firstChar = e.data.substring(0, 1);
+      let firstChar = e.data.substring(0, 1);
       if (firstChar === "4")
       {
         get("status").innerHTML = e.data.substring(1);
@@ -321,7 +321,7 @@ function callWorker(param)
 
 function performCalc()
 {
-  var res, valueA, valueB, valueC, digitGroup;
+  let res, valueA, valueB, valueC, digitGroup;
   res = get("result");
   res.style.display = "block";
   valueA = get("num").value;
@@ -386,7 +386,7 @@ function performCalc()
   {
     hex = (get("converg").checked? 1: 0);
   }
-  var param = digitGroup + "," + (app+hex*64) + "," + valueA + String.fromCharCode(0);
+  let param = digitGroup + "," + (app+hex*64) + "," + valueA + String.fromCharCode(0);
   if (app >= 4)
   {
     param += valueB + String.fromCharCode(0) + valueC + String.fromCharCode(0);
@@ -419,12 +419,12 @@ function selectLoop()
   
 function wizardNext()
 {
-  var nextBtn = get("next");
-  var wzdDescText = get("wzddesc");
-  var wzdExamText = get("wzdexam");
-  var wzdInput = get("wzdinput");
-  var valueInput = get("num");
-  var textExample = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>":
+  let nextBtn = get("next");
+  let wzdDescText = get("wzddesc");
+  let wzdExamText = get("wzdexam");
+  let wzdInput = get("wzdinput");
+  let valueInput = get("num");
+  let textExample = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>":
                            "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>");
   nextBtn.disabled = true;
   switch (++wizardStep)
@@ -489,9 +489,9 @@ function endFeedback()
 
 function buttonClick()
 {
-  var input = currentInputBox;
+  let input = currentInputBox;
   input.focus();
-  var start = input.selectionStart;
+  let start = input.selectionStart;
   input.value = input.value.substring(0, start) +
                 this.innerText +
                 input.value.substring(input.selectionEnd);
@@ -502,14 +502,14 @@ function buttonClick()
 
 function generateFuncButtons(optionCategory, funcButtons)
 {
-  var button;
-  var catIndex;
-  var funcbtns = get(funcButtons);
-  var catnbr = get(optionCategory).selectedIndex;
-  var funcname = (parens + funcnames[+catnbr]).split(",");
+  let button;
+  let catIndex;
+  let funcbtns = get(funcButtons);
+  let catnbr = get(optionCategory).selectedIndex;
+  let funcname = (parens + funcnames[+catnbr]).split(",");
   // Append all buttons to document fragment instead of funcbtns
   // and finally append the fragment to funcbtns to minimize redraws.
-  var fragment = document.createDocumentFragment();
+  let fragment = document.createDocumentFragment();
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
     button = document.createElement("button");
@@ -526,17 +526,17 @@ function generateFuncButtons(optionCategory, funcButtons)
 
 function startUp()
 {
-  var param;
+  let param;
   if (app<4)
   {
     get("num").onkeydown = function(e)
     {
-      var res;
-      var digitGroup = get("digits").value;
+      let res;
+      let digitGroup = get("digits").value;
       res = get("result");
       res.style.display = "block";
-      var input = get("num").value;
-      var keyCode = e.key;
+      let input = get("num").value;
+      let keyCode = e.key;
       if (keyCode === "Enter")
       {  // Used pressed Enter key
         if (input === "")
@@ -587,7 +587,7 @@ function startUp()
     };
     get("wzdinput").onkeydown = function (event)
     {
-      var keyCode = event.key;
+      let keyCode = event.key;
       if (keyCode === "Enter")
       {
         if (!get("next").disabled)
@@ -652,8 +652,8 @@ function startUp()
     };
     get("wzdinput").oninput = function()
     {
-      var inputValue = get("wzdinput").value;
-      var nextBtn = get("next");
+      let inputValue = get("wzdinput").value;
+      let nextBtn = get("next");
       if (inputValue !== "")
       {         // User typed something on input box.
         if (wizardStep === 1 || wizardStep === 9 || (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
@@ -701,7 +701,7 @@ function startUp()
   };
   get("num").onkeydown = function (event)
   {
-    var keyCode = event.key;
+    let keyCode = event.key;
     if (keyCode === "Enter" && event.ctrlKey)
     {
       event.preventDefault();          // Do not propagate Enter key.
@@ -711,11 +711,11 @@ function startUp()
   };
   get("helpbtn").onclick = function()
   {
-    var help = get("help");
-    var helpStyle = help.style;
-    var helphelpStyle = get("helphelp").style;
-    var result = get("result");
-    var resultStyle = result.style;
+    let help = get("help");
+    let helpStyle = help.style;
+    let helphelpStyle = get("helphelp").style;
+    let result = get("result");
+    let resultStyle = result.style;
     if (helpStyle.display === "block" && result.innerHTML !== "")     
     {
       helpStyle.display = "none";
@@ -774,7 +774,7 @@ function startUp()
   }
   get("formsend").onclick = function()
   {
-    var userdata = get("userdata");
+    let userdata = get("userdata");
     if (get("adduserdata").checked)
     {
       if(app < 4)
@@ -790,7 +790,7 @@ function startUp()
     {
       userdata.value = "";      
     }
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function (_event)
     {
       if (xhr.readyState === 4) 
@@ -808,12 +808,12 @@ function startUp()
     };
     xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    var elements = get("formfeedback").elements;
-    var contents = "";
-    var useAmp = 0;
-    for (var i = 0; i < elements.length; i++)
+    let elements = get("formfeedback").elements;
+    let contents = "";
+    let useAmp = 0;
+    for (let i = 0; i < elements.length; i++)
     {
-      var element = elements[i >> 0];
+      let element = elements[i >> 0];
       if (element.type === "radio" && !element.checked)
       {
         continue;
@@ -847,7 +847,7 @@ function startUp()
 }
 if (asmjs)
 {
-  var req = new XMLHttpRequest();
+  let req = new XMLHttpRequest();
   req.open("GET", "fsquaresW0000.js", true);
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (_aEvt)
@@ -861,7 +861,7 @@ if (asmjs)
 }
 else
 {
-  var wasm = document.getElementById("wasmb64").text;
+  let wasm = document.getElementById("wasmb64").text;
   while (wasm.charCodeAt(0) < 32)
   {
     wasm = wasm.substring(1);
@@ -870,7 +870,7 @@ else
   {
     wasm = wasm.substring(0, wasm.length-1);
   }    
-  var length = wasm.length*3/4;
+  let length = wasm.length*3/4;
   if (wasm.charCodeAt(wasm.length-1) === 61)
   {
     length--;

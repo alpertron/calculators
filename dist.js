@@ -22,21 +22,21 @@
 // Javascript that drives WebAssembly on its own Web Worker.
 (function()
 {   // This method separates the name space from the Google Analytics code.
-var questionNbr, score, withCountries;
-var parcInterp, finalInterp;
-var kmText, degreeText, currentText, finalText, pointText;
-var direction = [];
-var ordinal = [];
-var cityData = [];
-var cityName = [];
-var countryName = [];
-var Latitude = [];
-var Longitude = [];
-var cityIdx = [];
-var Rad = Math.PI/(180 * 60); // Minutes to radians
-var cityFrom, cityTo;
-var southText, westText;
-var northText, eastText;
+let questionNbr, score, withCountries;
+let parcInterp, finalInterp;
+let kmText, degreeText, currentText, finalText, pointText;
+let direction = [];
+let ordinal = [];
+let cityData = [];
+let cityName = [];
+let countryName = [];
+let Latitude = [];
+let Longitude = [];
+let cityIdx = [];
+let Rad = Math.PI/(180 * 60); // Minutes to radians
+let cityFrom, cityTo;
+let southText, westText;
+let northText, eastText;
 function get(x)
 {
   return document.getElementById(x);
@@ -44,8 +44,8 @@ function get(x)
 
 function clearScreen()
 {
-  var donotshow = document.getElementsByClassName("donotshow");
-  var index;
+  let donotshow = document.getElementsByClassName("donotshow");
+  let index;
   for (index=0; index<donotshow.length; index++)
   {
     donotshow[index >> 0].style.display = "none";
@@ -63,8 +63,8 @@ function showMainMenu()
 
 function setTextToClass(text, className)
 {
-  var elems = document.getElementsByClassName(className);
-  var index;
+  let elems = document.getElementsByClassName(className);
+  let index;
   for (index=0; index<elems.length; index++)
   {
     elems[index >> 0].innerHTML = text;
@@ -85,7 +85,7 @@ function getCityName(cityIndex, includeCountries)
 
 function getDistance(Lat1, Lon1, Lat2, Lon2)
 {
-  var q = Math.cos(Lat1*Rad)*Math.cos(Lat2*Rad)*Math.cos((Lon1-Lon2)*Rad)+Math.sin(Lat1*Rad)*Math.sin(Lat2*Rad);
+  let q = Math.cos(Lat1*Rad)*Math.cos(Lat2*Rad)*Math.cos((Lon1-Lon2)*Rad)+Math.sin(Lat1*Rad)*Math.sin(Lat2*Rad);
   if (q >= 1)
   {
     return 0;
@@ -99,9 +99,9 @@ function getDistance(Lat1, Lon1, Lat2, Lon2)
 
 function getDirection(Lat1, Lon1, Lat2, Lon2)
 {
-  var Angle;
-  var AngAux;
-  var Difference;
+  let Angle;
+  let AngAux;
+  let Difference;
 
   if (Lon1 === Lon2)
   {
@@ -137,8 +137,8 @@ function getDirection(Lat1, Lon1, Lat2, Lon2)
 
 function getDaytime(Lat)
 {
-  var q;
-  var minutesDaytime;
+  let q;
+  let minutesDaytime;
 
   if (Math.abs(Lat) === 90*60)
   {
@@ -166,15 +166,15 @@ function getDaytime(Lat)
 
 function test1(complete)
 {
-  var cityNameFrom, cityNameTo;
-  var LatFrom, LatTo;
-  var LongFrom, LongTo;
-  var playerDist, trueDist;
-  var partialScore;
-  var test11, test12;
-  var dist1;
-  var show, index;
-  var interpretation;
+  let cityNameFrom, cityNameTo;
+  let LatFrom, LatTo;
+  let LongFrom, LongTo;
+  let playerDist, trueDist;
+  let partialScore;
+  let test11, test12;
+  let dist1;
+  let show, index;
+  let interpretation;
   clearScreen();
   if (questionNbr !== 0)
   {      // Inside test 1.
@@ -353,7 +353,7 @@ function test1(complete)
 
 function test2()
 {
-  var idx, innerIdx, randomValue;
+  let idx, innerIdx, randomValue;
   
   clearScreen();
   get("ord2").textContent = ordinal[(questionNbr - 1) >> 0];
@@ -380,13 +380,13 @@ function test2()
 
 function showResultsTest2(playerInput)
 {
-  var combination, position, parcScore;
-  var arrayDist = new Array(25);
-  var arrayDistComb = new Array(24);
-  var arrayComb = new Array(24);
-  var i = 0;
-  var j, k, u, v, temp;
-  var text = "<ol>";
+  let combination, position, parcScore;
+  let arrayDist = new Array(25);
+  let arrayDistComb = new Array(24);
+  let arrayComb = new Array(24);
+  let i = 0;
+  let j, k, u, v, temp;
+  let text = "<ol>";
   for (j=0; j<5; j++)
   {
     for (k=1; k<=5; k++)
@@ -474,10 +474,10 @@ function startTestType2()
 
 function listCities(onlyList)
 {
-  var listCitiesHTML = "<ol>";
-  var idx;
-  var degminLat, signLat;
-  var degminLon, signLon;
+  let listCitiesHTML = "<ol>";
+  let idx;
+  let degminLat, signLat;
+  let degminLon, signLon;
   clearScreen();
   for (idx=0; idx<cityData.length; idx++)
   {
@@ -514,9 +514,9 @@ function listCities(onlyList)
 
 function grayFindDistButton()
 {
-  var strCityFrom = get("cityFrom").value;
-  var strCityTo = get("cityTo").value;
-  var findDist = get("findDist");
+  let strCityFrom = get("cityFrom").value;
+  let strCityTo = get("cityTo").value;
+  let findDist = get("findDist");
   if (strCityFrom.length > 0 && parseInt(strCityFrom, 10) >= 1 &&
       parseInt(strCityFrom, 10) <= cityData.length &&
       strCityTo.length > 0 && parseInt(strCityTo, 10) >= 1 &&
@@ -532,8 +532,8 @@ function grayFindDistButton()
 
 function isNotSpecialKey(event)
 {
-  var key = event.key;
-  var acceptedKeys = ",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut," +
+  let key = event.key;
+  let acceptedKeys = ",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut," +
                      "Control,Meta,Shift,Insert,Delete,Copy,Paste,Home,End,";
   if (event.ctrlKey || event.metaKey)
   {
@@ -555,10 +555,10 @@ function isNotSpecialKey(event)
 
 function startUp()
 {
-  var index, degmin, s;
-  var degLat, minLat;
-  var degLon, minLon;
-  var data = get("cities").innerHTML;
+  let index, degmin, s;
+  let degLat, minLat;
+  let degLon, minLon;
+  let data = get("cities").innerHTML;
   cityData = data.split("\n");
   data = get("direction").innerHTML;
   direction = data.split(",");
@@ -624,7 +624,7 @@ function startUp()
   };
   get("dist1").onkeydown = function (event)
   {
-    var key = event.key;
+    let key = event.key;
     if (key === "Enter")
     {
       event.preventDefault();          // Do not propagate Enter key.
@@ -643,8 +643,8 @@ function startUp()
   };
   get("order").onkeydown = function (event)
   {
-    var key = event.key;
-    var value = get("order").value;
+    let key = event.key;
+    let value = get("order").value;
     if ((key === "Enter") && value.length === 4)
     {
       event.preventDefault();          // Do not propagate Enter key.
@@ -694,8 +694,8 @@ function startUp()
   };
   get("cityFrom").onkeydown = function (event)
   {
-    var key = event.key;
-    var value = get("cityFrom").value;
+    let key = event.key;
+    let value = get("cityFrom").value;
     if (key === "Enter" && parseInt(value,10) >= 1 && parseInt(value,10) <= cityData.length)
     {
       event.preventDefault();          // Do not propagate Enter key.
@@ -712,8 +712,8 @@ function startUp()
   get("cityFrom").oninput = grayFindDistButton;
   get("cityTo").onkeydown = function (event)
   {
-    var key = event.key;
-    var value = get("cityTo").value;
+    let key = event.key;
+    let value = get("cityTo").value;
     if (key === "Enter" && parseInt(value,10) >= 1 && parseInt(value,10) <= cityData.length)
     {
       event.preventDefault();          // Do not propagate Enter key.

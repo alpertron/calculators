@@ -16,16 +16,16 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/** @define {number} */ var lang = 0;   // Use with Closure compiler.
+/** @define {number} */ const lang = 0;   // Use with Closure compiler.
 (function()
 {   // This method separates the name space from the Google Analytics code.
-  var worker = 0;
-  var blob;
-  var fileContents = 0;
-  var asmjs = typeof(WebAssembly) === "undefined";
-  var currentInputBox;
-  var funcnames;
-  var parens;
+  let worker = 0;
+  let blob;
+  let fileContents = 0;
+  let asmjs = typeof(WebAssembly) === "undefined";
+  let currentInputBox;
+  let funcnames;
+  let parens;
   if (lang)
   {
     funcnames =
@@ -98,16 +98,16 @@
 
   function dowork()
   {
-    var param;
-    var res = get("result");
-    var quadrText = get("quad").value.trim();
-    var linText = get("lin").value.trim();
-    var constText = get("const").value.trim();
-    var modText = get("mod").value.trim();
-    var digitGroup = get("digits").value.trim();
+    let param;
+    let res = get("result");
+    let quadrText = get("quad").value.trim();
+    let linText = get("lin").value.trim();
+    let constText = get("const").value.trim();
+    let modText = get("mod").value.trim();
+    let digitGroup = get("digits").value.trim();
     get("help").style.display = "none";
     res.style.display = "block";
-    var missing = "";
+    let missing = "";
     if (quadrText === "")
     {
       missing = (lang? "coeficiente cuadrático." : "quadratic coefficient.");
@@ -148,12 +148,12 @@
 
 function b64decode(str,out)
 {
-  var ch;
-  var idxDest,idxSrc;
-  var blocks, leftOver;
-  var byte0, byte1, byte2, byte3;
-  var conv=new Int8Array(128);
-  var len=str.length;
+  let ch;
+  let idxDest,idxSrc;
+  let blocks, leftOver;
+  let byte0, byte1, byte2, byte3;
+  let conv=new Int8Array(128);
+  let len=str.length;
   if (str.charAt(len-1) === "=")
   {
     len--;
@@ -209,14 +209,14 @@ function b64decode(str,out)
   }
 }
 
-var calcURLs = ["quadmodW0000.js",
+let calcURLs = ["quadmodW0000.js",
                "quadmod.webmanifest", "cuadmod.webmanifest", "quadmod-icon-1x.png", "quadmod-icon-2x.png", "quadmod-icon-4x.png", "quadmod-icon-180px.png", "quadmod-icon-512px.png", "favicon.ico"];
 if (!asmjs)
 {
   calcURLs.shift();  // Do not fetch Javascript file that will not be used.
 }
 
-var url = window.location.pathname;
+let url = window.location.pathname;
 function updateCache(cache)
 {
   caches.open("cacheECM").then(function(tempCache)
@@ -251,7 +251,7 @@ function fillCache()
       }
       else
       {     // Response is the HTML contents.
-        var date = response.headers.get("last-modified");
+        let date = response.headers.get("last-modified");
             // Request the HTML from the Web server.
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
         fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
@@ -275,8 +275,8 @@ function fillCache()
               {            // All responses in array responseArr.
                 responseArr.forEach(function(responseTempCache, _index, _array)
                 {
-                  var urlTemp = responseTempCache.url;
-                  var indexZero = url.indexOf("00");
+                  let urlTemp = responseTempCache.url;
+                  let indexZero = url.indexOf("00");
                   if (indexZero > 0)
                   {        // There is an old version of this resource on cache to be erased.
                     cache.keys().then(function(keys)
@@ -321,9 +321,9 @@ function updateInputFromButton(button)
 {
   button.onclick = function()
   {
-    var input = currentInputBox;
+    let input = currentInputBox;
     input.focus();
-    var start = input.selectionStart;
+    let start = input.selectionStart;
     input.value = input.value.substring(0, start) +
                   this.innerText +
                   input.value.substring(input.selectionEnd);
@@ -335,10 +335,10 @@ function updateInputFromButton(button)
 
 function completeFuncButtons()
 {
-  var button;
-  var catIndex;
-  var funcname = (parens + funcnames[0]).split(",");
-  var funcbtns = get("funcbtns");
+  let button;
+  let catIndex;
+  let funcname = (parens + funcnames[0]).split(",");
+  let funcbtns = get("funcbtns");
   currentInputBox = get("quad");
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
@@ -350,14 +350,14 @@ function completeFuncButtons()
 
 function generateFuncButtons(optionCategory, funcButtons)
 {
-  var button;
-  var catIndex;
-  var funcbtns = get(funcButtons);
-  var catnbr = get(optionCategory).selectedIndex;
-  var funcname = (parens + funcnames[+catnbr]).split(",");
+  let button;
+  let catIndex;
+  let funcbtns = get(funcButtons);
+  let catnbr = get(optionCategory).selectedIndex;
+  let funcname = (parens + funcnames[+catnbr]).split(",");
   // Append all buttons to document fragment instead of funcbtns
   // and finally append the fragment to funcbtns to minimize redraws.
-  var fragment = document.createDocumentFragment();
+  let fragment = document.createDocumentFragment();
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
     button = document.createElement("button");
@@ -428,7 +428,7 @@ window.onload = function()
   };
   get("formsend").onclick = function()
   {
-    var userdata = get("userdata");
+    let userdata = get("userdata");
     if (get("adduserdata").checked)
     {
       userdata.value = "ax^2 + bx + c = 0 (mod n)" + 
@@ -439,7 +439,7 @@ window.onload = function()
     {
       userdata.value = "";      
     }
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function (_event)
     {
       if (xhr.readyState === 4) 
@@ -457,12 +457,12 @@ window.onload = function()
     };
     xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    var elements = get("formfeedback").elements;
-    var contents = "";
-    var useAmp = 0;
-    for (var i = 0; i < elements.length; i++)
+    let elements = get("formfeedback").elements;
+    let contents = "";
+    let useAmp = 0;
+    for (let i = 0; i < elements.length; i++)
     {
-      var element = elements[i >> 0];
+      let element = elements[i >> 0];
       if (element.type === "radio" && !element.checked)
       {
         continue;
@@ -493,7 +493,7 @@ window.onload = function()
 
 if (asmjs)
 {
-  var req = new XMLHttpRequest();
+  let req = new XMLHttpRequest();
   req.open("GET", "quadmodW0000.js", true);
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (_aEvt)
@@ -507,7 +507,7 @@ if (asmjs)
 }
 else
 {
-  var wasm = document.getElementById("wasmb64").text;
+  let wasm = document.getElementById("wasmb64").text;
   while (wasm.charCodeAt(0) < 32)
   {
     wasm = wasm.substring(1);
@@ -516,7 +516,7 @@ else
   {
     wasm = wasm.substring(0, wasm.length-1);
   }    
-  var length = wasm.length*3/4;
+  let length = wasm.length*3/4;
   if (wasm.charCodeAt(wasm.length-1) === 61)
   {
     length--;

@@ -22,22 +22,22 @@
 // Javascript that drives WebAssembly on its own Web Worker.
 (function()
 {   // This method separates the name space from the Google Analytics code.
-var buffer, env, asm;
-var zoom, zoomDone, imgData;
-var canvas, zoomin, zoomout, center, start;
-var isMouseDown;
-var currentX, currentY, pixels;
-var wasm;
-var HEAP8;
-var asmjs = typeof(WebAssembly) === "undefined";
-var prevX1stTouch, prevY1stTouch;
-var prevX2ndTouch, prevY2ndTouch;
-var asmGetInformation;
-var asmDrawPartialGraphic;
-var asmMoveGraphic;
-var asmNbrChanged;
-var bitsCanvas;
-var information;
+let buffer, env, asm;
+let zoom, zoomDone, imgData;
+let canvas, zoomin, zoomout, center, start;
+let isMouseDown;
+let currentX, currentY, pixels;
+let wasm;
+let HEAP8;
+let asmjs = typeof(WebAssembly) === "undefined";
+let prevX1stTouch, prevY1stTouch;
+let prevX2ndTouch, prevY2ndTouch;
+let asmGetInformation;
+let asmDrawPartialGraphic;
+let asmMoveGraphic;
+let asmNbrChanged;
+let bitsCanvas;
+let information;
 
 //##  asmJS goes here (do not change symbols at the left).
 
@@ -48,9 +48,9 @@ function get(x)
 
 function ptrToString(ptr)
 {
-  var t=-1;
-  var i = 0;
-  var str="", outString="";
+  let t=-1;
+  let i = 0;
+  let str="", outString="";
   do
   {
     for (i=0; i<1024; i++)
@@ -87,9 +87,9 @@ function drawGraphic(ctx, left, top, width, height)
 {
   if (width !== 0 && height !== 0)
   {
-    var rowNbr, leftPixelSrc, leftPixelDest;
-    var startX = left - (getWidth() >> 1);
-    var startY = top - (getHeight() >> 1);
+    let rowNbr, leftPixelSrc, leftPixelDest;
+    let startX = left - (getWidth() >> 1);
+    let startY = top - (getHeight() >> 1);
     asmDrawPartialGraphic(startX, startX+width, -(startY+height), -startY);
              // Copy from WebAssembly/asm.js buffer to Canvas double buffer.
     leftPixelSrc = top*8192+left*4;
@@ -106,9 +106,9 @@ function drawGraphic(ctx, left, top, width, height)
 
 function moveGraphic(deltaX, deltaY)
 {      
-  var ctx = canvas.getContext("2d");
-  var width = getWidth();
-  var height = getHeight();
+  let ctx = canvas.getContext("2d");
+  let width = getWidth();
+  let height = getHeight();
   asmMoveGraphic(deltaX, deltaY);
   if (deltaX >= 0)
   {
@@ -165,9 +165,9 @@ function moveGraphic(deltaX, deltaY)
 
 function updateGraphic(input, nbr)
 {
-  var startOffset = 11000000|0;
-  var idx;
-  var value = input.value;
+  let startOffset = 11000000|0;
+  let idx;
+  let value = input.value;
   if (input !== 0)
   {
     for (idx=0; idx<value.length; idx++)  
@@ -176,20 +176,20 @@ function updateGraphic(input, nbr)
     }
     HEAP8[(startOffset+idx) >> 0] = 0;
   }
-  var width = getWidth();
-  var height = getHeight();
+  let width = getWidth();
+  let height = getHeight();
   asmNbrChanged(startOffset, nbr, width, height);
   drawGraphic(canvas.getContext("2d"), 0, 0, width, height);
 }
 
 function b64decode(str,out)
 {
-  var ch;
-  var idxDest,idxSrc;
-  var blocks, leftOver;
-  var byte0, byte1, byte2, byte3;
-  var conv=new Int8Array(128);
-  var len=str.length;
+  let ch;
+  let idxDest,idxSrc;
+  let blocks, leftOver;
+  let byte0, byte1, byte2, byte3;
+  let conv=new Int8Array(128);
+  let len=str.length;
   if (str.charAt(len-1) === "=")
   {
     len--;
@@ -247,7 +247,7 @@ function b64decode(str,out)
 
 function showInfo(ptrInfo)
 {
-  var infoText = ptrToString(ptrInfo).split("^");
+  let infoText = ptrToString(ptrInfo).split("^");
   if (infoText[1] !== center.value)
   {
     center.value = infoText[1];
@@ -257,12 +257,12 @@ function showInfo(ptrInfo)
 
 function startLowLevelCode()
 {
-  var length, bytes;
-  var info;
-  var getPixels;
-  var asmJSbuffer;
-  var bufSize = 33554432;
-  var minusOne = 0xffffffff;
+  let length, bytes;
+  let info;
+  let getPixels;
+  let asmJSbuffer;
+  let bufSize = 33554432;
+  let minusOne = 0xffffffff;
   imgData = canvas.getContext("2d").createImageData(2048, 4096);  // 32 MB;
   buffer = imgData.data.buffer;
   bitsCanvas = new Uint8Array(buffer);
@@ -278,10 +278,10 @@ function startLowLevelCode()
     {
       Math["imul"] = function imul(a, b)
       {
-        var ah  = a >>> 16;
-        var al = a & 0xffff;
-        var bh  = b >>> 16;
-        var bl = b & 0xffff;
+        let ah  = a >>> 16;
+        let al = a & 0xffff;
+        let bh  = b >>> 16;
+        let bl = b & 0xffff;
         return (al*bl + ((ah*bl + al*bh) << 16))|0;
       };
     }
@@ -370,8 +370,8 @@ function zoomOut()
 
 function isNotSpecialKey(event)
 {
-  var key = event.key;
-  var acceptedKeys = ",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut," +
+  let key = event.key;
+  let acceptedKeys = ",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut," +
                      "Control,Meta,Shift,Insert,Delete,Copy,Paste,Home,End,";
   if (event.ctrlKey || event.metaKey)
   {
@@ -402,7 +402,7 @@ function startUp()
   zoom = 8;
   zoomDone = 0;
   isMouseDown = false;
-  var domRect = canvas.getBoundingClientRect();
+  let domRect = canvas.getBoundingClientRect();
   canvas.width = domRect.width;
   canvas.height = domRect.height;
   startLowLevelCode();
@@ -454,9 +454,9 @@ function startUp()
     {    // Cannot show spiral when center is less than start value.
       return;
     }
-    var newX = evt.clientX;
-    var newY = evt.clientY;      // Coordinates relative to window.
-    var rect = canvas.getBoundingClientRect();
+    let newX = evt.clientX;
+    let newY = evt.clientY;      // Coordinates relative to window.
+    let rect = canvas.getBoundingClientRect();
     newX -= rect.left;
     newY -= rect.top;            // Now coordinates are relative to canvas.
     if (isMouseDown)
@@ -480,7 +480,7 @@ function startUp()
   {
     currentX = evt.clientX;
     currentY = evt.clientY;      // Coordinates relative to window. 
-    var rect = canvas.getBoundingClientRect();
+    let rect = canvas.getBoundingClientRect();
     currentX -= rect.left;
     currentY -= rect.top;        // Now coordinates are relative to canvas.
     isMouseDown = true;
@@ -491,8 +491,8 @@ function startUp()
   };
   canvas.addEventListener("touchstart", function(evt)
   {
-    var touches = evt.targetTouches;
-    var touch = touches[0];
+    let touches = evt.targetTouches;
+    let touch = touches[0];
     prevX1stTouch = Math.round(touch.pageX);
     prevY1stTouch = Math.round(touch.pageY);
     if (touches.length === 2)
@@ -505,11 +505,11 @@ function startUp()
   }, false);  
   canvas.addEventListener("touchmove", function(evt)
   {
-    var touch2, oldDist, newDist, diffX, diffY;
-    var touches = evt.targetTouches;
-    var touch1 = touches[0];
-    var newX = Math.round(touch1.pageX);
-    var newY = Math.round(touch1.pageY);
+    let touch2, oldDist, newDist, diffX, diffY;
+    let touches = evt.targetTouches;
+    let touch1 = touches[0];
+    let newX = Math.round(touch1.pageX);
+    let newY = Math.round(touch1.pageY);
     if (touches.length === 1)
     {      // Drag gesture.
       if (newX !== prevX1stTouch || newY !== prevY1stTouch)
@@ -544,7 +544,7 @@ function startUp()
   }, false);
   center.onkeydown = function(evt)
   {
-    var key = evt.key;
+    let key = evt.key;
     if (isNotSpecialKey(evt))
     {
       if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
@@ -558,7 +558,7 @@ function startUp()
   };
   center.oninput = function()
   {
-    var ctx;
+    let ctx;
     if (checkStart())
     {
       information.innerHTML = get("cannotShow").innerHTML;
@@ -576,7 +576,7 @@ function startUp()
   };
   start.onkeydown = function(evt)
   {
-    var key = evt.key;
+    let key = evt.key;
     if (isNotSpecialKey(evt))
     {
       if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
@@ -595,7 +595,7 @@ function startUp()
   };
   window.onresize = function()
   {
-    var newDomRect = canvas.getBoundingClientRect();
+    let newDomRect = canvas.getBoundingClientRect();
     canvas.width = newDomRect.width;
     canvas.height = newDomRect.height;
     updateGraphic(center, 1);

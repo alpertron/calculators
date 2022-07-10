@@ -16,15 +16,15 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/** @define {number} */ var lang = 1;   // Use with Closure compiler.
+/** @define {number} */ const lang = 1;   // Use with Closure compiler.
 (function()
 {   // This method separates the name space from the Google Analytics code.
-var worker = 0;
-var busy = 0;
-var blob;
-var workerParam;
-var fileContents = 0;
-var asmjs = typeof(WebAssembly) === "undefined";
+let worker = 0;
+let busy = 0;
+let blob;
+let workerParam;
+let fileContents = 0;
+let asmjs = typeof(WebAssembly) === "undefined";
 function get(x)
 {
   return document.getElementById(x);
@@ -48,7 +48,7 @@ function callWorker(param)
     worker.onmessage = function(e)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
-      var firstChar = e.data.substring(0, 1);
+      let firstChar = e.data.substring(0, 1);
       if ((firstChar === "M") || (firstChar === "N"))
       {    // User entered a number. Load calculator to process it.
         window.sessionStorage.setItem((firstChar === "M"? "F": "E"),
@@ -56,7 +56,7 @@ function callWorker(param)
         window.location.replace(lang? "ECMC.HTM": "ECM.HTM");
         return;
       }
-      var result = get("result");
+      let result = get("result");
       result.innerHTML = e.data.substring(1);
       if (e.data.substring(0, 1) === "2")
       {   // First character passed from web worker is "2".
@@ -85,11 +85,11 @@ function callWorker(param)
 
 function dowork(n)
 {
-  var app = lang + n + (get("out").value.charCodeAt(0)-48)*4;
-  var res = get("result");
-  var polyText = get("poly").value;
-  var modText = get("mod").value;
-  var digitGroup = get("digits").value;
+  let app = lang + n + (get("out").value.charCodeAt(0)-48)*4;
+  let res = get("result");
+  let polyText = get("poly").value;
+  let modText = get("mod").value;
+  let digitGroup = get("digits").value;
   get("help").style.display = "none";
   res.style.display = "block";
   if (polyText === "")
@@ -109,7 +109,7 @@ function dowork(n)
   get("stop").disabled = false;
   res.innerHTML = (lang? "Factorizando el polinomio..." :
                          "Factoring polynomial...");
-  var param = digitGroup + "," + app + "," + modText + String.fromCharCode(0) + polyText +
+  let param = digitGroup + "," + app + "," + modText + String.fromCharCode(0) + polyText +
   String.fromCharCode(0);
   if (!fileContents)
   {
@@ -130,12 +130,12 @@ function endFeedback()
 
 function b64decode(str,out)
 {
-  var ch;
-  var idxDest,idxSrc;
-  var blocks, leftOver;
-  var byte0, byte1, byte2, byte3;
-  var conv=new Int8Array(128);
-  var len=str.length;
+  let ch;
+  let idxDest,idxSrc;
+  let blocks, leftOver;
+  let byte0, byte1, byte2, byte3;
+  let conv=new Int8Array(128);
+  let len=str.length;
   if (str.charAt(len-1) === "=")
   {
     len--;
@@ -191,13 +191,13 @@ function b64decode(str,out)
   }
 }
 
-var calcURLs = ["polfactW0000.js",
+let calcURLs = ["polfactW0000.js",
                "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png", "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-180px.png", "polfact-icon-512px.png", "favicon.ico"];
 if (!asmjs)
 {
   calcURLs.shift();  // Do not fetch Javascript file that will not be used.
 }
-var url = window.location.pathname;
+let url = window.location.pathname;
 function updateCache(cache)
 {
   caches.open("cachePOLY").then(function(tempCache)
@@ -232,7 +232,7 @@ function fillCache()
       }
       else
       {     // Response is the HTML contents.
-        var date = response.headers.get("last-modified");
+        let date = response.headers.get("last-modified");
             // Request the HTML from the Web server.
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
         fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
@@ -256,8 +256,8 @@ function fillCache()
               {            // All responses in array responseArr.
                 responseArr.forEach(function(responseTempCache, _index, _array)
                 {
-                  var urlTemp = responseTempCache.url;
-                  var indexZero = url.indexOf("00");
+                  let urlTemp = responseTempCache.url;
+                  let indexZero = url.indexOf("00");
                   if (indexZero > 0)
                   {        // There is an old version of this resource on cache to be erased.
                     cache.keys().then(function(keys)
@@ -327,8 +327,8 @@ window.onload = function ()
   };
   get("poly").oninput = function ()
   {
-    var input = get("poly");
-    var loc = input.selectionStart;
+    let input = get("poly");
+    let loc = input.selectionStart;
     if (input.value.substring(loc-1, loc) === ".")
     {
       input.value = input.value.replace(".", "x^");
@@ -354,7 +354,7 @@ window.onload = function ()
   };
   get("formsend").onclick = function()
   {
-    var userdata = get("userdata");
+    let userdata = get("userdata");
     if (get("adduserdata").checked)
     {
       userdata.value = get("poly").value + " (mod " + get("mod").value + ")";
@@ -363,7 +363,7 @@ window.onload = function ()
     {
       userdata.value = "";      
     }
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function (_event)
     {
       if (xhr.readyState === 4) 
@@ -381,12 +381,12 @@ window.onload = function ()
     };
     xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    var elements = get("formfeedback").elements;
-    var contents = "";
-    var useAmp = 0;
-    for (var i = 0; i < elements.length; i++)
+    let elements = get("formfeedback").elements;
+    let contents = "";
+    let useAmp = 0;
+    for (let i = 0; i < elements.length; i++)
     {
-      var element = elements[i >> 0];
+      let element = elements[i >> 0];
       if (element.type === "radio" && !element.checked)
       {
         continue;
@@ -406,8 +406,8 @@ window.onload = function ()
   };
 
   // Generate accordion.
-  var acc = document.querySelectorAll("h2");
-  var idx;
+  let acc = document.querySelectorAll("h2");
+  let idx;
 
   for (idx = 0; idx < acc.length; idx++)
   {
@@ -415,7 +415,7 @@ window.onload = function ()
     {
     // "active" means that panel is being displayed.
       this.children[0].classList.toggle("active");
-      var panel = this.nextElementSibling;
+      let panel = this.nextElementSibling;
       if (panel.style.display === "block")
       {
         panel.style.display = "none";
@@ -426,8 +426,8 @@ window.onload = function ()
       }
     });
   }
-  var fromEcm = window.sessionStorage.getItem("F");
-  var polyTextArea = get("poly");
+  let fromEcm = window.sessionStorage.getItem("F");
+  let polyTextArea = get("poly");
   if (fromEcm != null)
   {    // Polynomial to factor coming from integer factorization calculator.
     window.sessionStorage.removeItem("F");
@@ -441,7 +441,7 @@ window.onload = function ()
     polyTextArea.value = fromEcm;
     dowork(2);    // Evaluate polynomial.
   }
-  var search = window.location.search;
+  let search = window.location.search;
   if (search.substring(0,3) === "?q=")
   {
     polyTextArea.value = decodeURIComponent(search.substring(3));
@@ -457,7 +457,7 @@ window.onload = function ()
 };
 if (asmjs)
 {
-  var req = new XMLHttpRequest();
+  let req = new XMLHttpRequest();
   req.open("GET", "polfactW0000.js", true);
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (_aEvt)
@@ -475,7 +475,7 @@ if (asmjs)
 }
 else
 {
-  var wasm = document.getElementById("wasmb64").text;
+  let wasm = document.getElementById("wasmb64").text;
   while (wasm.charCodeAt(0) < 32)
   {
     wasm = wasm.substring(1);
@@ -484,7 +484,7 @@ else
   {
     wasm = wasm.substring(0, wasm.length-1);
   }    
-  var length = wasm.length*3/4;
+  let length = wasm.length*3/4;
   if (wasm.charCodeAt(wasm.length-1) === 61)
   {
     length--;

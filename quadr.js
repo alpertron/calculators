@@ -16,16 +16,16 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/** @define {number} */ var lang = 1;   // Use with Closure compiler.
+/** @define {number} */ const lang = 1;   // Use with Closure compiler.
 (function()
 {   // This method separates the name space from the Google Analytics code.
-var worker = 0;
-var blob;
-var fileContents = 0;
-var asmjs = typeof(WebAssembly) === "undefined";
-var currentInputBox;
-var funcnames;
-var parens;
+let worker = 0;
+let blob;
+let fileContents = 0;
+let asmjs = typeof(WebAssembly) === "undefined";
+let currentInputBox;
+let funcnames;
+let parens;
 if (lang)
 {
   funcnames =
@@ -99,20 +99,20 @@ function callWorker(param)
 
 function dowork(n)
 {
-  var param;
-  var app = lang + n;
-  var res = get("result");
-  var coefAText = get("coefA").value.trim();
-  var coefBText = get("coefB").value.trim();
-  var coefCText = get("coefC").value.trim();
-  var coefDText = get("coefD").value.trim();
-  var coefEText = get("coefE").value.trim();
-  var coefFText = get("coefF").value.trim();
-  var digitGroup = get("digits").value.trim();
+  let param;
+  let app = lang + n;
+  let res = get("result");
+  let coefAText = get("coefA").value.trim();
+  let coefBText = get("coefB").value.trim();
+  let coefCText = get("coefC").value.trim();
+  let coefDText = get("coefD").value.trim();
+  let coefEText = get("coefE").value.trim();
+  let coefFText = get("coefF").value.trim();
+  let digitGroup = get("digits").value.trim();
   get("help").style.display = "none";
   res.style.display = "block";
-  var missing = "";
-  var zero = String.fromCharCode(0);
+  let missing = "";
+  let zero = String.fromCharCode(0);
   if (coefAText === "")
   {
     missing = (lang? "coeficiente <var>a</var>." : "coefficient <var>a</var>.");
@@ -155,7 +155,7 @@ function dowork(n)
 
 function moveNext(e, curr, next)
 {    
-  var nextInput = get(next);
+  let nextInput = get(next);
   if (e.key === "Enter" && curr.value.trim().length > 0)
   {
     e.preventDefault();
@@ -173,12 +173,12 @@ function endFeedback()
 
 function b64decode(str,out)
 {
-  var ch;
-  var idxDest,idxSrc;
-  var blocks, leftOver;
-  var byte0, byte1, byte2, byte3;
-  var conv=new Int8Array(128);
-  var len=str.length;
+  let ch;
+  let idxDest,idxSrc;
+  let blocks, leftOver;
+  let byte0, byte1, byte2, byte3;
+  let conv=new Int8Array(128);
+  let len=str.length;
   if(str.charAt(len-1) === "=")
   {
     len--;
@@ -234,14 +234,14 @@ function b64decode(str,out)
   }
 }
 
-var calcURLs = ["quadW0000.js",
+let calcURLs = ["quadW0000.js",
                "quad.webmanifest", "cuad.webmanifest", "quad-icon-1x.png", "quad-icon-2x.png", "quad-icon-4x.png", "quad-icon-180px.png", "quad-icon-512px.png", "favicon.ico"];
 
 if (!asmjs)
 {
   calcURLs.shift();  // Do not fetch Javascript file that will not be used.
 }
-var url = window.location.pathname;
+let url = window.location.pathname;
 function updateCache(cache)
 {
   caches.open("cacheECM").then(function(tempCache)
@@ -276,7 +276,7 @@ function fillCache()
       }
       else
       {     // Response is the HTML contents.
-        var date = response.headers.get("last-modified");
+        let date = response.headers.get("last-modified");
             // Request the HTML from the Web server.
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
         fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
@@ -300,8 +300,8 @@ function fillCache()
               {            // All responses in array responseArr.
                 responseArr.forEach(function(responseTempCache, _index, _array)
                 {
-                  var urlTemp = responseTempCache.url;
-                  var indexZero = url.indexOf("00");
+                  let urlTemp = responseTempCache.url;
+                  let indexZero = url.indexOf("00");
                   if (indexZero > 0)
                   {        // There is an old version of this resource on cache to be erased.
                     cache.keys().then(function(keys)
@@ -344,9 +344,9 @@ function fillCache()
 
 function buttonClick()
 {
-  var input = currentInputBox;
+  let input = currentInputBox;
   input.focus();
-  var start = input.selectionStart;
+  let start = input.selectionStart;
   input.value = input.value.substring(0, start) +
                 this.innerText +
                 input.value.substring(input.selectionEnd);
@@ -357,14 +357,14 @@ function buttonClick()
 
 function generateFuncButtons(optionCategory, funcButtons)
 {
-  var button;
-  var catIndex;
-  var funcbtns = get(funcButtons);
-  var catnbr = get(optionCategory).selectedIndex;
-  var funcname = (parens + funcnames[+catnbr]).split(",");
+  let button;
+  let catIndex;
+  let funcbtns = get(funcButtons);
+  let catnbr = get(optionCategory).selectedIndex;
+  let funcname = (parens + funcnames[+catnbr]).split(",");
   // Append all buttons to document fragment instead of funcbtns
   // and finally append the fragment to funcbtns to minimize redraws.
-  var fragment = document.createDocumentFragment();
+  let fragment = document.createDocumentFragment();
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
     button = document.createElement("button");
@@ -477,7 +477,7 @@ window.onload = function()
   };
   get("formsend").onclick = function()
   {
-    var userdata = get("userdata");
+    let userdata = get("userdata");
     if (get("adduserdata").checked)
     {
       userdata.value = "ax^2 + bxy + cy^2 + dx + ey + f = 0" +
@@ -489,7 +489,7 @@ window.onload = function()
     {
       userdata.value = "";      
     }
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function (_event)
     {
       if (xhr.readyState === 4) 
@@ -507,12 +507,12 @@ window.onload = function()
     };
     xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    var elements = get("formfeedback").elements;
-    var contents = "";
-    var useAmp = 0;
-    for (var i = 0; i < elements.length; i++)
+    let elements = get("formfeedback").elements;
+    let contents = "";
+    let useAmp = 0;
+    for (let i = 0; i < elements.length; i++)
     {
-      var element = elements[i >> 0];
+      let element = elements[i >> 0];
       if (element.type === "radio" && !element.checked)
       {
         continue;
@@ -542,7 +542,7 @@ window.onload = function()
 };
 if (asmjs)
 {
-  var req = new XMLHttpRequest();
+  let req = new XMLHttpRequest();
   req.open("GET", "quadW0000.js", true);
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (_aEvt)
@@ -556,7 +556,7 @@ if (asmjs)
 }
 else
 {
-  var wasm = document.getElementById("wasmb64").text;
+  let wasm = document.getElementById("wasmb64").text;
   while (wasm.charCodeAt(0) < 32)
   {
     wasm = wasm.substring(1);
@@ -565,7 +565,7 @@ else
   {
     wasm = wasm.substring(0, wasm.length-1);
   }    
-  var length = wasm.length*3/4;
+  let length = wasm.length*3/4;
   if (wasm.charCodeAt(wasm.length-1) === 61)
   {
     length--;

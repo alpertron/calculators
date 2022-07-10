@@ -17,63 +17,63 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global useBlockly */
-/** @define {number} */ var lang = 1;   // Use with Closure compiler.
+/** @define {number} */ const lang = 1;   // Use with Closure compiler.
 (function()
 {   // This method separates the name space from the Google Analytics code.
-var points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 20,5, 22,10, 23,12, 24,6, 27,7];
-var wizardStep = 0;
-var wizardTextInput;
-var worker = 0;
-var fileContents = null;
-var app;
-var blob;
-var digits;
-var config;
-var fromFile;
-var tofile;
-var fileName;
-var workerParam;
-var asmjs = typeof(WebAssembly) === "undefined";
-var bmodeLoaded = 0;
-var statusText = "";
-var resultText = "";
-var divisorsDirty = false;
-var statusDirty = false;
-var resultDirty = false;
-var calcURLs = ["ecmW0000.js",
+const points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 20,5, 22,10, 23,12, 24,6, 27,7];
+let wizardStep = 0;
+let wizardTextInput;
+let worker = 0;
+let fileContents = null;
+let app;
+let blob;
+let digits;
+let config;
+let fromFile;
+let tofile;
+let fileName;
+let workerParam;
+let asmjs = typeof(WebAssembly) === "undefined";
+let bmodeLoaded = 0;
+let statusText = "";
+let resultText = "";
+let divisorsDirty = false;
+let statusDirty = false;
+let resultDirty = false;
+let calcURLs = ["ecmW0000.js",
                "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-180px.png", "ecm-icon-512px.png", "favicon.ico"];
-var blocklyLoaded = 0;
-var scriptsLoaded = 0;
-var script1;
-var script2;
-var funcnames;
-var parens;
+let blocklyLoaded = 0;
+let scriptsLoaded = 0;
+let script1;
+let script2;
+let funcnames;
+let parens;
 
 // DOM resources
-var value;
-var btnNext;
-var btnEval;
-var btnPrime;
-var btnFactor;
-var btnConfig;
-var btnFromFile;
-var btnBlocklyMode;
-var btnOpenWizard;
-var btnMore;
-var btnToFile;
-var btnStop;
-var chkCunningham;
-var chkDecW;
-var chkHex;
-var chkHexW;
-var chkPretty;
-var chkVerbose;
-var divResult;
-var getFile;
-var newCurveOrFactor;
-var wzdDescText;
-var wzdExamText;
-var wzdInput;
+let value;
+let btnNext;
+let btnEval;
+let btnPrime;
+let btnFactor;
+let btnConfig;
+let btnFromFile;
+let btnBlocklyMode;
+let btnOpenWizard;
+let btnMore;
+let btnToFile;
+let btnStop;
+let chkCunningham;
+let chkDecW;
+let chkHex;
+let chkHexW;
+let chkPretty;
+let chkVerbose;
+let divResult;
+let getFile;
+let newCurveOrFactor;
+let wzdDescText;
+let wzdExamText;
+let wzdInput;
 
 if (lang)
 {
@@ -165,12 +165,12 @@ function saveConfig()
 
 function b64decode(str,out)
 {
-  var ch;
-  var idxDest,idxSrc;
-  var blocks, leftOver;
-  var byte0, byte1, byte2, byte3;
-  var conv = new Int8Array(128);
-  var len = str.length;
+  let ch;
+  let idxDest,idxSrc;
+  let blocks, leftOver;
+  let byte0, byte1, byte2, byte3;
+  let conv = new Int8Array(128);
+  let len = str.length;
   if (str.charAt(len-1) === "=")
   {
     len--;
@@ -259,7 +259,7 @@ function callWorker(param)
       // "L" for exiting Blockly mode.
       // "M" for loading polynomial factorization application for factorization.
       // "N" for loading polynomial factorization application for evaluation.
-      var firstChar = e.data.substring(0, 1);
+      let firstChar = e.data.substring(0, 1);
       if (firstChar === "9")
       {
         console.log(e.data.substring(1));
@@ -370,11 +370,11 @@ function callWorker(param)
 
 function performWork(n, valueText)
 {
-  var param;
+  let param;
   app = lang + n;
-  var res = divResult;
-  var charNull = String.fromCharCode(0);
-  var helphelp = get("helphelp");
+  let res = divResult;
+  let charNull = String.fromCharCode(0);
+  let helphelp = get("helphelp");
   hide("sharediv");
   if (valueText === "")
   {    // Nothing in input box.
@@ -436,11 +436,11 @@ function performWork(n, valueText)
 
 function dowork(n)
 {
-  var valueText;
+  let valueText;
   fromFile = "0";
   if (getFile.value !== "")
   {
-    var fileReader = new FileReader();
+    let fileReader = new FileReader();
     fileReader.onload = function(fileLoadedEvent) 
     {
       fromFile = "1";
@@ -480,7 +480,7 @@ function selectLoop()
   
 function wizardNext()
 {
-  var valueInput = value;
+  let valueInput = value;
   btnNext.disabled = true;
   switch (++wizardStep)
   {
@@ -543,9 +543,9 @@ function wizardNext()
 
 function updateVerbose(isVerbose)    
 {
-  var cssRules = document.styleSheets[0]["cssRules"];
-  var index;
-  var len = cssRules.length;
+  let cssRules = document.styleSheets[0]["cssRules"];
+  let index;
+  let len = cssRules.length;
   for (index=0; index<len; index++)
   {
     if (cssRules[index >> 0].selectorText === ".verbose")
@@ -566,7 +566,7 @@ function endFeedback()
   value.focus();   
 }
 
-var url = window.location.pathname;
+let url = window.location.pathname;
 function updateCache(cache)
 {
   caches.open("cacheECM").then(function(tempCache)
@@ -601,7 +601,7 @@ function fillCache()
       }
       else
       {     // Response is the HTML contents.
-        var date = response.headers.get("last-modified");
+        let date = response.headers.get("last-modified");
             // Request the HTML from the Web server.
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
         fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
@@ -625,8 +625,8 @@ function fillCache()
               {            // All responses in array responseArr.
                 responseArr.forEach(function(responseTempCache, _index, _array)
                 {
-                  var urlTemp = responseTempCache.url;
-                  var indexZero = url.indexOf("00");
+                  let urlTemp = responseTempCache.url;
+                  let indexZero = url.indexOf("00");
                   if (indexZero > 0)
                   {        // There is an old version of this resource on cache to be erased.
                     cache.keys().then(function(keys)
@@ -675,8 +675,8 @@ function fromBlocklyRun(xml)
 
 function loadScript(scriptUrl)
 {
-  var myScript = document.createElement("script");
-  var xmlhttp = new XMLHttpRequest();
+  let myScript = document.createElement("script");
+  let xmlhttp = new XMLHttpRequest();
   xmlhttp.open("GET", scriptUrl);
   xmlhttp.onreadystatechange = function()
   {
@@ -712,9 +712,9 @@ function updateInputFromButton(button, inputId)
 {
   button.onclick = function()
   {
-    var input = get(inputId);
+    let input = get(inputId);
     input.focus();
-    var start = input.selectionStart;
+    let start = input.selectionStart;
     input.value = input.value.substring(0, start) +
                   this.innerText +
                   input.value.substring(input.selectionEnd);
@@ -726,14 +726,14 @@ function updateInputFromButton(button, inputId)
     
 function generateFuncButtons(optionCategory, funcButtons, inputId)
 {
-  var button;
-  var catIndex;
-  var funcbtns = get(funcButtons);
-  var catnbr = get(optionCategory).selectedIndex;
-  var funcname = (parens + funcnames[+catnbr]).split(",");
+  let button;
+  let catIndex;
+  let funcbtns = get(funcButtons);
+  let catnbr = get(optionCategory).selectedIndex;
+  let funcname = (parens + funcnames[+catnbr]).split(",");
   // Append all buttons to document fragment instead of funcbtns
   // and finally append the fragment to funcbtns to minimize redraws.
-  var fragment = document.createDocumentFragment();
+  let fragment = document.createDocumentFragment();
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
     button = document.createElement("button");
@@ -749,10 +749,10 @@ function generateFuncButtons(optionCategory, funcButtons, inputId)
 
 function completeFuncButtons(funcButtons, inputId)
 {
-  var button;
-  var catIndex;
-  var funcname = (parens + funcnames[0]).split(",");
-  var funcbtns = get(funcButtons);
+  let button;
+  let catIndex;
+  let funcname = (parens + funcnames[0]).split(",");
+  let funcbtns = get(funcButtons);
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
     button = funcbtns.children[+catIndex];
@@ -763,7 +763,7 @@ function completeFuncButtons(funcButtons, inputId)
 
 function startUp()
 {
-  var index, ecmFactor;
+  let index, ecmFactor;
   value = get("value");
   btnNext = get("next");
   btnEval = get("eval");
@@ -826,12 +826,12 @@ function startUp()
   btnToFile.onclick = function()
   {
     hide("savefile");
-    var fileBlob = new Blob([tofile], { type: "text/plain" });
-    var fileUrl = URL.createObjectURL(fileBlob);
-    var a = document.createElement("a");
+    let fileBlob = new Blob([tofile], { type: "text/plain" });
+    let fileUrl = URL.createObjectURL(fileBlob);
+    let a = document.createElement("a");
     a.href = fileUrl;
     a.download = fileName;
-    var clickHandler = function()
+    let clickHandler = function()
     {
       setTimeout(function()
       {
@@ -887,7 +887,7 @@ function startUp()
   };
   wzdInput.onkeydown = function (event)
   {
-    var keyCode = event.key;
+    let keyCode = event.key;
     if (keyCode === "Enter")
     {
       event.preventDefault();          // Do not propagate Enter key.
@@ -948,7 +948,7 @@ function startUp()
   };
   wzdInput.oninput = function()
   {
-    var inputValue = wzdInput.value;
+    let inputValue = wzdInput.value;
     if (inputValue !== "")
     {         // User typed something on input box.
       if (wizardStep === 1 || wizardStep === 9 ||
@@ -1004,8 +1004,8 @@ function startUp()
   };
   newCurveOrFactor.onkeydown = function(event)
   {
-    var key = event.key;
-    var acceptedKeys = ",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut," +
+    let key = event.key;
+    let acceptedKeys = ",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut," +
                        "Control,Meta,Shift,Insert,Delete,Copy,Paste,Home,End," +
                        "0,1,2,3,4,5,6,7,8,9,";
     if (event.ctrlKey || event.metaKey)
@@ -1047,7 +1047,7 @@ function startUp()
   };
   value.onkeydown = function (event)
   {
-    var keyCode = event.key;
+    let keyCode = event.key;
     if (keyCode === "Enter" && event.ctrlKey)
     {
       event.preventDefault();          // Do not propagate Enter key.
@@ -1058,13 +1058,13 @@ function startUp()
   };
   get("share").onclick = function()
   {
-    var shareData =
+    let shareData =
     {
       title: "Integer Factorization Calculator",
       text: "",
       url: ""
     };
-    var tmpHTML = divResult.innerHTML;
+    let tmpHTML = divResult.innerHTML;
     // Convert <sup> and </sup> to exponentiation character.
     tmpHTML = tmpHTML.replace(/\<sup\>/g, "\^");
     tmpHTML = tmpHTML.replace(/\<\/sup\>/g, "");
@@ -1078,7 +1078,7 @@ function startUp()
     tmpHTML = tmpHTML.replace(/¡Nuevo!/g, "");
     
     // Create a new div element
-    var tempDivElement = document.createElement("div");
+    let tempDivElement = document.createElement("div");
 
     // Set the HTML content with the given value
     tempDivElement.innerHTML = tmpHTML;
@@ -1091,10 +1091,10 @@ function startUp()
   };
   get("helpbtn").onclick = function()
   {
-    var help = get("help");
-    var helpStyle = help.style;
-    var helphelpStyle = get("helphelp").style;
-    var resultStyle = divResult.style;
+    let help = get("help");
+    let helpStyle = help.style;
+    let helphelpStyle = get("helphelp").style;
+    let resultStyle = divResult.style;
     if (helpStyle.display === "block" && divResult.innerHTML !== "")     
     {
       helpStyle.display = "none";
@@ -1139,7 +1139,7 @@ function startUp()
   };
   get("formsend").onclick = function()
   {
-    var userdata = get("userdata");
+    let userdata = get("userdata");
     if (get("adduserdata").checked)
     {
       userdata.value = "\n" + value.value + "\n" + divResult.innerHTML + "\n" + get("status").innerHTML;
@@ -1148,7 +1148,7 @@ function startUp()
     {
       userdata.value = "";      
     }
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function(_event)
     {
       if (xhr.readyState === 4) 
@@ -1166,12 +1166,12 @@ function startUp()
     };
     xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    var elements = get("formfeedback").elements;
-    var contents = "";
-    var useAmp = 0;
-    for (var i = 0; i < elements.length; i++)
+    let elements = get("formfeedback").elements;
+    let contents = "";
+    let useAmp = 0;
+    for (let i = 0; i < elements.length; i++)
     {
-      var element = elements[i >> 0];
+      let element = elements[i >> 0];
       if (element.type === "radio" && !element.checked)
       {
         continue;
@@ -1191,7 +1191,7 @@ function startUp()
   };
   window.onclick = function(event)
   {
-    var modal = get("modal");
+    let modal = get("modal");
     if (event.target === modal)
     {
       modal.style.display = "none";
@@ -1199,7 +1199,7 @@ function startUp()
   };
   window.onresize = function(_event)
   {
-    var options = {
+    let options = {
             "behavior": "auto",
             "block": "center",
             "inline": "center"
@@ -1238,8 +1238,8 @@ function startUp()
     }
   }, 100);
   // Generate accordion.
-  var acc = document.querySelectorAll("h2");
-  var idx, x, y;
+  let acc = document.querySelectorAll("h2");
+  let idx, x, y;
 
   for (idx = 0; idx < acc.length; idx++)
   {
@@ -1247,7 +1247,7 @@ function startUp()
     {
     // "active" means that panel is being displayed.
       this.children[0].classList.toggle("active");
-      var panel = this.nextElementSibling;
+      let panel = this.nextElementSibling;
       if (panel.style.display === "block")
       {
         panel.style.display = "none";
@@ -1259,8 +1259,8 @@ function startUp()
     });
   }
   get("exprcopy").innerHTML = get("exprorig").innerHTML;
-  var c = get("ellCurve");
-  var ctx = c.getContext("2d");
+  let c = get("ellCurve");
+  let ctx = c.getContext("2d");
   ctx.fillStyle="#FFFFFF";      // White.
   ctx.fillRect(0,0,313,313);    // Clear canvas.
   ctx.fillStyle="#000000";      // Black.
@@ -1276,7 +1276,7 @@ function startUp()
     ctx.stroke();     
   }
   ctx.fillStyle="#00C000";      // Green.
-  var ctr;
+  let ctr;
   for (ctr=0; ctr<points.length; ctr+=2)
   {
     x = points[ctr >> 0];
@@ -1323,7 +1323,7 @@ function startUp()
       updateVerbose(config.substring(1,2) === "1");
     }
   }
-  var fromPolfact = window.sessionStorage.getItem("F");
+  let fromPolfact = window.sessionStorage.getItem("F");
   if (fromPolfact != null)
   {    // Number to factor coming from polynomial factorization calculator.
     window.sessionStorage.removeItem("F");
@@ -1339,7 +1339,7 @@ function startUp()
   }
   else
   {
-    var search = window.location.search;
+    let search = window.location.search;
     if (search.substring(0,3) === "?q=")
     {
       value.value = decodeURIComponent(search.substring(3));
@@ -1370,7 +1370,7 @@ generateFuncButtons("wzdfunccat", "wzdfuncbtns", "wzdinput");
 
 if (asmjs)
 {
-  var req = new XMLHttpRequest();
+  let req = new XMLHttpRequest();
   req.open("GET", "ecmW0000.js", true);
   req.responseType = "arraybuffer";
   req.onreadystatechange = function (_aEvt)
@@ -1388,7 +1388,7 @@ if (asmjs)
 }
 else
 {
-  var wasm = get("wasmb64").text;
+  let wasm = get("wasmb64").text;
   while (wasm.charCodeAt(0) < 32)
   {
     wasm = wasm.substring(1);
@@ -1397,7 +1397,7 @@ else
   {
     wasm = wasm.substring(0, wasm.length-1);
   }    
-  var length = wasm.length*3/4;
+  let length = wasm.length*3/4;
   if (wasm.charCodeAt(wasm.length-1) === 61)
   {
     length--;

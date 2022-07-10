@@ -44,7 +44,7 @@ self.addEventListener("fetch", function(event)
   const url = event.request.url;
       // Check if special header indicating not to read from cache has arrived.
   const nocache = event.request.headers.get("x-calc");
-  const noQueryString;
+  let noQueryString;
   if (url.toString().replace(/^(.*\/\/[^\/?#]*).*$/,"$1") !== self.location.origin ||
       event.request.method !== "GET" || url.endsWith(".pl") || url.endsWith(".php"))
   {  // Cache GET requests from this Web server only.

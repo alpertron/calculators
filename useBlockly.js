@@ -1,10 +1,10 @@
 "use strict";
-var goog;
+let goog;
 /* global Blockly */
 /** @type {function(string)} */
-var fromBlocklyRun;
+let fromBlocklyRun;
 /** @type {number} */
-var language;
+let language;
 goog.provide("BigIntField");
 goog.require("Blockly");
 goog.require("Blockly.Comment");
@@ -31,9 +31,9 @@ goog.require("Blockly.Constants.VariablesDynamic");
 goog.require("Blockly.Xml");
 
 /** @type {Function} */
-var blocklyResize;
-var workspace;
-var BigIntField;
+let blocklyResize;
+let workspace;
+let BigIntField;
 function get(id)
 {
   return document.getElementById(id);
@@ -62,19 +62,19 @@ function getStorage(name)
 function BigIntValidator(newValue)
 {
   /** @type {number} */
-  var count;
+  let count;
   /** @type {boolean} */
-  var insideDigits = false;
+  let insideDigits = false;
   /** @type {boolean} */
-  var insideHex = false;
+  let insideHex = false;
   /** @type {boolean} */
-  var isMinus = false;
+  let isMinus = false;
   /** @type {string} */
-  var output = "";
+  let output = "";
   for (count=0; count<newValue.length; count++)
   {
     /** @type {string} */
-    var c = newValue.charAt(count);
+    let c = newValue.charAt(count);
     if (c === " ")
     {
       continue;
@@ -146,21 +146,21 @@ function useBlockly(callback, lang)
   language = lang;
   fromBlocklyRun = callback;
   /** @type {!Array<!Object>} */
-  var blocksUncompressed = new Array();
+  let blocksUncompressed = new Array();
   /** @type {number} */
-  var index;
+  let index;
   /** @type {Array} */
-  var destArray;
+  let destArray;
   /** @type {Array<string>} */
-  var defineBlocks;
+  let defineBlocks;
   /** @type {number} */
-  var uncompressedIndex = 0;
+  let uncompressedIndex = 0;
   /** @type {number} */
-  var groupNbr = 65;
+  let groupNbr = 65;
   /** @type {number} */
-  var itemNbr = 65;
+  let itemNbr = 65;
   /** @type {string} */
-  var ecmToolbar = "<xml>" +
+  let ecmToolbar = "<xml>" +
     "<category name=\"" +
     (lang? "Control de flujo": "Flow Control") +
     "\" colour=\"230\">" + 
@@ -175,7 +175,7 @@ function useBlockly(callback, lang)
       "<block type=\"M\"><field name=\"1\">5</field></block>";
  
   /** @type {Array<string>} */
-  var defineBlocksEn =
+  let defineBlocksEn =
   [
     "355;%1 + %2",
     "355;%1 - %2",
@@ -239,7 +239,7 @@ function useBlockly(callback, lang)
   ];
   
   /** @type {Array<string>} */
-  var defineBlocksEs =
+  let defineBlocksEs =
   [
     "355;%1 + %2",
     "355;%1 - %2",
@@ -314,11 +314,11 @@ function useBlockly(callback, lang)
   {
     destArray = new Array();
     /** @type {Array<string>} */
-    var oneBlock = defineBlocks[+index].split(";");
+    let oneBlock = defineBlocks[+index].split(";");
     /** @type {number} */
-    var nbr = +oneBlock[0];
+    let nbr = +oneBlock[0];
     /** @type {string} */
-    var message = oneBlock[1];
+    let message = oneBlock[1];
     if (nbr >= 4000)
     {
       ecmToolbar += "</category><category name=\"" + message + "\" colour=\"" + (nbr - 4000) + "\">";
@@ -331,7 +331,7 @@ function useBlockly(callback, lang)
     destArray["type"] = String.fromCharCode(groupNbr, itemNbr);
     if (message.indexOf("concat") === 0)
     {
-      var options;
+      let options;
       if (lang)
       {
         options = [["no repetidos en orden ascendente", "0"],
@@ -399,10 +399,10 @@ function useBlockly(callback, lang)
   ecmToolbar += "</category>" +
     "<category name=\"Variables\" custom=\"VARIABLE\" colour=\"330\"></category>" +
     "</xml>";
-  var blocklyArea = get("blocklyArea");
-  var blocklyDiv = get("blocklyDiv");
+  let blocklyArea = get("blocklyArea");
+  let blocklyDiv = get("blocklyDiv");
   /** @type {string} */
-  var myToolbar = ecmToolbar.replace(/\{(\w+)([\[\]\w]*)}/g, "<block type=\"$1\">$2</block>");
+  let myToolbar = ecmToolbar.replace(/\{(\w+)([\[\]\w]*)}/g, "<block type=\"$1\">$2</block>");
   myToolbar = myToolbar.replace(/\[(\w+)]/g, "<value name=\"$1\"><shadow type=\"M\"><field name=\"1\">5</field></shadow></value>");
   Blockly.Blocks["M"] =
   {
@@ -411,7 +411,7 @@ function useBlockly(callback, lang)
     function()
     {
       /** @type {Blockly.FieldTextInput} */
-      var field = new Blockly.FieldTextInput("5", BigIntValidator);
+      let field = new Blockly.FieldTextInput("5", BigIntValidator);
       field.setTooltip(lang?"Ingrese un número entero. Los números hexadecimales deben tener el prefijo 0x":
         "Enter an integer. Precede it by 0x to enter a hex number.");
       this.appendDummyInput().appendField(field, "1");
@@ -427,11 +427,11 @@ function useBlockly(callback, lang)
       
   blocklyResize = function(_e) {
     // Compute the absolute coordinates and dimensions of blocklyArea.
-    var element = blocklyArea;
+    let element = blocklyArea;
     /** @type {number} */
-    var x = 0;
+    let x = 0;
     /** @type {number} */
-    var y = 0;
+    let y = 0;
     do {
       x += element.offsetLeft;
       y += element.offsetTop;
@@ -448,7 +448,7 @@ function useBlockly(callback, lang)
   get("deleteBlocks").onclick = function()
   {
     /** @type {number} */
-    var count = workspace.getAllBlocks().length;
+    let count = workspace.getAllBlocks().length;
     if (count < 2 || window.confirm("Delete all " + count + " blocks?"))
     {
       workspace.clear();
@@ -457,31 +457,31 @@ function useBlockly(callback, lang)
   get("bload").onclick = function()
   {
     /** @type {string} */
-    var filename = get("bfilename").value.trim();
+    let filename = get("bfilename").value.trim();
     /** @type {string|null} */
-    var contents = getStorage("blockly"+filename);
+    let contents = getStorage("blockly"+filename);
     if (contents == null)
     {
       alert("File "+ filename +" not found");
       return;
     }
     workspace.clear();
-    var xml = Blockly.Xml.textToDom(contents);
+    let xml = Blockly.Xml.textToDom(contents);
     Blockly.Xml.domToWorkspace(xml, workspace);
   };
   get("bsave").onclick = function()
   {
     /** @type {string} */
-    var filename = get("bfilename").value.trim();
-    var xml = Blockly.Xml.workspaceToDom(workspace);
-    var contents = Blockly.Xml.domToText(xml);
+    let filename = get("bfilename").value.trim();
+    let xml = Blockly.Xml.workspaceToDom(workspace);
+    let contents = Blockly.Xml.domToText(xml);
     setStorage("blockly"+filename, contents);
   };
   get("runBlockly").onclick = function()
   {
-    var xml = Blockly.Xml.workspaceToDom(workspace);
+    let xml = Blockly.Xml.workspaceToDom(workspace);
     /** @type {string} */
-    var contents = Blockly.Xml.domToText(xml);
+    let contents = Blockly.Xml.domToText(xml);
     console.log(contents);
     fromBlocklyRun(contents);
   };

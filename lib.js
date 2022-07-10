@@ -5,11 +5,11 @@ mergeInto(LibraryManager.library,
   {
     function pointerStringify(offset)
     {
-      var charCache = new Array(128);  // Preallocate the cache for the common single byte chars
-      var charFromCodePt = String.fromCodePoint || String.fromCharCode;
-      var result = [];
+      let charCache = new Array(128);  // Preallocate the cache for the common single byte chars
+      let charFromCodePt = String.fromCodePoint || String.fromCharCode;
+      let result = [];
 
-      var codePt, byte1;
+      let codePt, byte1;
 
       result.length = 0;
 
@@ -50,11 +50,11 @@ mergeInto(LibraryManager.library,
   {
     function pointerStringify(offset)
     {
-      var charCache = new Array(128);  // Preallocate the cache for the common single byte chars
-      var charFromCodePt = String.fromCodePoint || String.fromCharCode;
-      var result = [];
+      let charCache = new Array(128);  // Preallocate the cache for the common single byte chars
+      let charFromCodePt = String.fromCodePoint || String.fromCharCode;
+      let result = [];
 
-      var codePt, byte1;
+      let codePt, byte1;
  
       result.length = 0;
 
@@ -73,8 +73,8 @@ mergeInto(LibraryManager.library,
       }
       return result.join("");
     }
-    var copyString = Module.cwrap("copyString", "number", ["string"]);
-    var req = new XMLHttpRequest();
+    let copyString = Module.cwrap("copyString", "number", ["string"]);
+    let req = new XMLHttpRequest();
     req.open("GET", pointerStringify(data), false);
     req.send(null);
     if (req.status === 200)

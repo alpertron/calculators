@@ -1,9 +1,9 @@
 /*global HEAPU8, Module, _getInputStringPtr, _doWork*/
 function convertToString(ptr, str)
 {
-  var dest = ptr;
-  var length = str.length;
-  var i, t;
+  let dest = ptr;
+  let length = str.length;
+  let i, t;
   for (i=0; i<length; i++)
   {
     t = str.charCodeAt(i);
