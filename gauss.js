@@ -24,7 +24,6 @@ var app;
 var blob;
 var digits;
 var config;
-var workerParam;
 var fileContents = 0;
 var asmjs = typeof(WebAssembly) === "undefined";
 var funcnames;
@@ -565,10 +564,6 @@ if (asmjs)
     if (req.readyState === 4 && req.status === 200)
     {
       fileContents = /** @type {ArrayBuffer} */ (req.response);
-      if (workerParam)
-      {
-        callWorker(workerParam);
-      }
     }
   };
   req.send(null);

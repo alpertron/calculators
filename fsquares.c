@@ -32,7 +32,7 @@ static int primeexp[256];
 static bool hexadecimal;
 static limb number[MAX_LEN];
 static limb origNbr[MAX_LEN];
-static limb p[MAX_LEN];
+static limb valueP[MAX_LEN];
 extern limb q[MAX_LEN];
 extern limb Mult1[MAX_LEN];
 static limb Mult2[MAX_LEN];
@@ -226,7 +226,7 @@ static bool FindTwoSquaresNoNumTheory(void)
     return false;
   }
   int lenBytes = nbrLimbsP * (int)sizeof(limb);
-  (void)memcpy(biMult3.limbs, p, lenBytes);  // Mult3 <- number to find
+  (void)memcpy(biMult3.limbs, valueP, lenBytes);  // Mult3 <- number to find
   biMult3.sign = SIGN_POSITIVE;         // the decomposition into
   biMult3.nbrLimbs = nbrLimbsP;         // two squares.
   squareRoot(biMult3.limbs, biMult1.limbs, biMult3.nbrLimbs, &biMult1.nbrLimbs);
@@ -315,9 +315,9 @@ static bool FindSumTwoSquaresNoSmallDivisors(void)
   int lenBytes;
   int base;
   // At this moment p should be prime, otherwise we must try another number.
-  p[nbrLimbsP].x = 0;
-  lenBytes = (nbrLimbsP + 1) * (int)sizeof(p[0]);
-  (void)memcpy(q, p, lenBytes);
+  valueP[nbrLimbsP].x = 0;
+  lenBytes = (nbrLimbsP + 1) * (int)sizeof(valueP[0]);
+  (void)memcpy(q, valueP, lenBytes);
   nbrLimbsQ = nbrLimbsP;
   q[0].x--;                     // q = p - 1 (p is odd, so there is no carry).
   lenBytes = (nbrLimbsQ + 1) * (int)sizeof(q[0]);
@@ -329,8 +329,8 @@ static bool FindSumTwoSquaresNoSmallDivisors(void)
   {                  // Two squares have been found.
     return true;
   }
-  lenBytes = (nbrLimbsP + 1) * (int)sizeof(p[0]);
-  (void)memcpy(TestNbr, p, lenBytes);
+  lenBytes = (nbrLimbsP + 1) * (int)sizeof(valueP[0]);
+  (void)memcpy(TestNbr, valueP, lenBytes);
   GetMontgomeryParms(nbrLimbsP);
   sqrtFound = false;
   do
@@ -530,17 +530,17 @@ static void SumOfSquaresNumberGreaterThan3(void)
     }
     sum = (iMult3 * iMult3) + (iMult4 * iMult4);
     carry.x = number[0].x - sum;
-    p[0].x = UintToInt((unsigned int)carry.x & MAX_VALUE_LIMB);
+    valueP[0].x = UintToInt((unsigned int)carry.x & MAX_VALUE_LIMB);
     carry.x >>= BITS_PER_GROUP;
     if (nbrLimbs > 1)
     {
       carry.x += number[1].x;
-      p[1].x = UintToInt((unsigned int)carry.x & MAX_VALUE_LIMB);
+      valueP[1].x = UintToInt((unsigned int)carry.x & MAX_VALUE_LIMB);
       carry.x >>= BITS_PER_GROUP;
       for (int index = 2; index < nbrLimbs; index++)
       {
         carry.x += number[index].x;
-        p[index].x = UintToInt((unsigned int)carry.x & MAX_VALUE_LIMB);
+        valueP[index].x = UintToInt((unsigned int)carry.x & MAX_VALUE_LIMB);
         carry.x >>= BITS_PER_GROUP;
       }
     }
@@ -570,7 +570,7 @@ static void SumOfSquaresNumberGreaterThan3(void)
           for (int index = nbrLimbsP - 1; index >= 0; index--)
           {
             carry.x = UintToInt((((unsigned int)carry.x * (unsigned int)LimbModDivisor) +
-              (unsigned int)p[index].x) % (unsigned int)divisor);
+              (unsigned int)valueP[index].x) % (unsigned int)divisor);
           }
           if (carry.x != 0)
           {     // Number is not a multiple of "divisor".
@@ -578,8 +578,8 @@ static void SumOfSquaresNumberGreaterThan3(void)
           }
           carry.x = 0;
           // Divide by divisor.
-          DivBigNbrByInt(p, divisor, p, nbrLimbsP);
-          if ((nbrLimbsP > 1) && (p[nbrLimbsP - 1].x == 0))
+          DivBigNbrByInt(valueP, divisor, valueP, nbrLimbsP);
+          if ((nbrLimbsP > 1) && (valueP[nbrLimbsP - 1].x == 0))
           {
             nbrLimbsP--;
           }
@@ -603,8 +603,8 @@ static void SumOfSquaresNumberGreaterThan3(void)
     {         // Number cannot be expressed as sum of two squares.
       continue;
     }
-    DivideBigNbrByMaxPowerOf2(&shRight, p, &nbrLimbsP);
-    if ((p[0].x & 0x03) != 0x01)
+    DivideBigNbrByMaxPowerOf2(&shRight, valueP, &nbrLimbsP);
+    if ((valueP[0].x & 0x03) != 0x01)
     {                   // p is not congruent to 1 mod 4
       continue;         // so it cannot be a sum of two squares.
     }
@@ -614,7 +614,7 @@ static void SumOfSquaresNumberGreaterThan3(void)
       primeexp[nbrDivisors] = shRight;    // Store exponent.
       nbrDivisors++;
     }
-    if ((p[0].x == 1) && (nbrLimbsP == 1))
+    if ((valueP[0].x == 1) && (nbrLimbsP == 1))
     {         // Number is the product of only small primes 4k+1 and
               // squares of primes 4k+3.
       Mult1[0].x = 1;

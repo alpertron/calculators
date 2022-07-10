@@ -340,7 +340,7 @@ static enum eExprErr processClosingParenOrComma(char** ppOutput, char c,
     // Increment number of arguments given by user.
     stackArgumNbrPriority[stackOperIndex - 1]++;
     // Check whether the user provided extra arguments.
-    if (((unsigned short)stackOper[stackOperIndex - 1] >> 8) ==
+    if (((unsigned short)stackOper[stackOperIndex - 1] & 0xFF00U) ==
       (unsigned short)MANY_PARMS)
     {       // Function with variable number of parameters.
       if ((unsigned short)stackArgumNbrPriority[stackOperIndex - 1] == 256U)
@@ -348,7 +348,7 @@ static enum eExprErr processClosingParenOrComma(char** ppOutput, char c,
         return EXPR_TOO_MANY_ARGUMENTS;
       }
     }
-    else if (((unsigned short)stackOper[stackOperIndex - 1] >> 8) ==
+    else if (((unsigned short)stackOper[stackOperIndex - 1] & 0xFF00U) ==
       (unsigned short)NO_PARMS)
     {       // Function with no parameters.
       if ((unsigned short)stackArgumNbrPriority[stackOperIndex - 1] == 1U)

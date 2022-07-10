@@ -21,7 +21,6 @@
 {   // This method separates the name space from the Google Analytics code.
   var worker = 0;
   var blob;
-  var workerParam;
   var fileContents = 0;
   var asmjs = typeof(WebAssembly) === "undefined";
   var currentInputBox;
@@ -502,10 +501,6 @@ if (asmjs)
     if (req.readyState === 4 && req.status === 200)
     {
       fileContents = /** @type {ArrayBuffer} */ (req.response);
-      if (workerParam)
-      {
-        callWorker(workerParam);
-      }
     }
   };
   req.send(null);

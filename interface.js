@@ -26,7 +26,6 @@ var fileContents = 0;
 var hex = 0;
 var blob;
 var lang = app % 2;
-var workerParam;
 var asmjs = typeof(WebAssembly) === "undefined";
 var currentInputBox;
 var funcnames;
@@ -530,7 +529,7 @@ function startUp()
   {
     get("num").onkeydown = function(e)
     {
-      var output, res;
+      var res;
       var digitGroup = get("digits").value;
       res = get("result");
       res.style.display = "block";
@@ -538,7 +537,6 @@ function startUp()
       var keyCode = e.key;
       if (keyCode === "Enter")
       {  // Used pressed Enter key
-        output = get("result");
         if (input === "")
         {
           res.innerHTML = (lang ? "Por favor ingrese un número o expresión." : "Please type a number or expression.");
@@ -753,7 +751,7 @@ function startUp()
   get("num").onfocus = function()
   {
     currentInputBox = get("num");
-  }
+  };
   if (get("wzdinput"))
   {
     get("wzdinput").onfocus = function()
@@ -855,10 +853,6 @@ if (asmjs)
     if (req.readyState === 4 && req.status === 200)
     {
       fileContents = /** @type {ArrayBuffer} */ (req.response);
-      if (workerParam)
-      {
-        callWorker(workerParam);
-      }
     }
   };
   req.send(null);

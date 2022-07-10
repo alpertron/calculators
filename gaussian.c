@@ -32,7 +32,7 @@ static char *ptrOutput;
 static struct sFactors astFactorsNorm[1000];
 static int factorsNorm[10000];
 static int NbrFactorsNorm;
-static limb K[MAX_LEN];
+static limb bigBase[MAX_LEN];
 static BigInteger mult1;
 static BigInteger mult2;
 static limb minusOneMont[MAX_LEN];
@@ -130,18 +130,18 @@ void GaussianFactorization(void)
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
         subtractdivide(&q, 1, 4);     // q = (prime-1)/4
-        (void)memset(&K, 0, NumberLengthBytes);
+        (void)memset(&bigBase, 0, NumberLengthBytes);
         (void)memset(minusOneMont, 0, NumberLengthBytes);
         SubtBigNbrModN(minusOneMont, MontgomeryMultR1, minusOneMont, TestNbr, NumberLength);
-        K[0].x = 1;
+        bigBase[0].x = 1;
         do
         {    // Loop that finds mult1 = sqrt(-1) mod prime in Montgomery notation.
-          K[0].x++;
-          modPow(K, q.limbs, q.nbrLimbs, mult1.limbs);
+          bigBase[0].x++;
+          modPow(bigBase, q.limbs, q.nbrLimbs, mult1.limbs);
         } while (!memcmp(mult1.limbs, MontgomeryMultR1, NumberLengthBytes) ||
                  !memcmp(mult1.limbs, minusOneMont, NumberLengthBytes));
-        K[0].x = 1;
-        modmult(mult1.limbs, K, mult1.limbs);       // Convert mult1 to standard notation.
+        bigBase[0].x = 1;
+        modmult(mult1.limbs, bigBase, mult1.limbs);       // Convert mult1 to standard notation.
         UncompressLimbsBigInteger(mult1.limbs, &mult1);  // Convert to Big Integer.
         mult2.nbrLimbs = 1;                // mult2 <- 1
         mult2.limbs[0].x = 1;

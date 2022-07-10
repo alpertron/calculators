@@ -37,7 +37,7 @@ static BigInteger currentSolution;
 static BigInteger discriminant;
 static BigInteger SqrtDisc;
 BigInteger prime;
-static BigInteger K;
+static BigInteger bigBase;
 static BigInteger K1;
 static BigInteger L;
 static BigInteger Q;
@@ -107,8 +107,8 @@ void PerformChineseRemainderTheorem(void)
       {
         int NumberLengthBytes;
         BigIntSubt(&Aux[T1], &Aux[E], &Q);
-        IntArray2BigInteger(astFactorsMod[E + 1].ptrFactor, &K);
-        (void)BigIntPowerIntExp(&K, astFactorsMod[E + 1].multiplicity, &L);
+        IntArray2BigInteger(astFactorsMod[E + 1].ptrFactor, &bigBase);
+        (void)BigIntPowerIntExp(&bigBase, astFactorsMod[E + 1].multiplicity, &L);
         NumberLength = prime.nbrLimbs;
         NumberLengthBytes = NumberLength * (int)sizeof(limb);
         (void)memcpy(TestNbr, prime.limbs, NumberLengthBytes);
@@ -137,8 +137,8 @@ void PerformChineseRemainderTheorem(void)
     }
     for (T1 = nbrFactors - 1; T1 >= 0; T1--)
     {
-      IntArray2BigInteger(astFactorsMod[T1 + 1].ptrFactor, &K);
-      (void)BigIntPowerIntExp(&K, astFactorsMod[T1 + 1].multiplicity, &prime);
+      IntArray2BigInteger(astFactorsMod[T1 + 1].ptrFactor, &bigBase);
+      (void)BigIntPowerIntExp(&bigBase, astFactorsMod[T1 + 1].multiplicity, &prime);
       BigIntSubt(&common.quad.Solution1[T1], &common.quad.Solution2[T1], &K1);
       if ((K1.nbrLimbs == 1) && (K1.limbs[0].x == 0))
       {     // common.quad.Solution1[T1] == common.quad.Solution2[T1]

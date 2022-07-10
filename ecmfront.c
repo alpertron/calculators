@@ -42,9 +42,9 @@ static BigInteger Quad3;
 static BigInteger Quad4;
 extern BigInteger factorValue;
 static BigInteger result;
-static BigInteger p;
-static BigInteger q;
-static BigInteger K;
+static BigInteger valueP;
+static BigInteger bigExpon;
+static BigInteger bigBase;
 static BigInteger Mult1;
 static BigInteger Mult2;
 static BigInteger Mult3;
@@ -157,7 +157,7 @@ static void endList(char** pptrOutput)
 
 static void ExponentToBigInteger(int exponent, BigInteger *bigint)
 {
-  if (exponent > (int)MAX_VALUE_LIMB)
+  if ((unsigned int)exponent > MAX_VALUE_LIMB)
   {
     bigint->limbs[0].x = exponent - (int)MAX_VALUE_LIMB;
     bigint->limbs[1].x = 1;
@@ -581,17 +581,17 @@ static void ComputeSumOfTwoSquaresForPrime(void)
   int lenBytes = NumberLength * (int)sizeof(limb);
   (void)memset(minusOneMont, 0, lenBytes);
   SubtBigNbrModN(minusOneMont, MontgomeryMultR1, minusOneMont, TestNbr, NumberLength);
-  CopyBigInt(&q, &p);
-  subtractdivide(&q, 1, 4);     // q = (prime-1)/4
-  K.limbs[0].x = 1;
+  CopyBigInt(&bigExpon, &valueP);
+  subtractdivide(&bigExpon, 1, 4);     // q = (prime-1)/4
+  bigBase.limbs[0].x = 1;
   do
   {    // Loop that finds mult1 = sqrt(-1) mod prime in Montgomery notation.
-    K.limbs[0].x++;
-    modPowShowStatus(K.limbs, q.limbs, q.nbrLimbs, Mult1.limbs);
+    bigBase.limbs[0].x++;
+    modPowShowStatus(bigBase.limbs, bigExpon.limbs, bigExpon.nbrLimbs, Mult1.limbs);
   } while (!memcmp(Mult1.limbs, MontgomeryMultR1, lenBytes) ||
     !memcmp(Mult1.limbs, minusOneMont, lenBytes));
   Mult1.sign = SIGN_POSITIVE;
-  lenBytes = p.nbrLimbs * (int)sizeof(limb);
+  lenBytes = valueP.nbrLimbs * (int)sizeof(limb);
   (void)memset(Mult2.limbs, 0, lenBytes);
   Mult2.limbs[0].x = 1;
   Mult2.nbrLimbs = 1;
@@ -600,7 +600,7 @@ static void ComputeSumOfTwoSquaresForPrime(void)
   // Montgomery notation.
   modmult(Mult1.limbs, Mult2.limbs, Mult3.limbs);
   (void)memcpy(Mult1.limbs, Mult3.limbs, lenBytes);
-  for (Mult1.nbrLimbs = p.nbrLimbs; Mult1.nbrLimbs > 1; Mult1.nbrLimbs--)
+  for (Mult1.nbrLimbs = valueP.nbrLimbs; Mult1.nbrLimbs > 1; Mult1.nbrLimbs--)
   {  // Adjust number of limbs so the most significant limb is not zero.
     if (Mult1.limbs[Mult1.nbrLimbs - 1].x != 0)
     {
@@ -611,7 +611,7 @@ static void ComputeSumOfTwoSquaresForPrime(void)
   intToBigInteger(&Mult2, 1);   // Initialize imaginary part to 1.
   // Initialize real part to prime.
   (void)memcpy(Mult3.limbs, TestNbr, lenBytes);
-  Mult3.nbrLimbs = p.nbrLimbs;
+  Mult3.nbrLimbs = valueP.nbrLimbs;
   Mult3.sign = SIGN_POSITIVE;
   while ((Mult3.nbrLimbs > 1) && (Mult3.limbs[Mult3.nbrLimbs - 1].x == 0))
   {
@@ -632,7 +632,7 @@ static void ComputeSumOfFourSquaresForPrime(void)
   // Compute Mult1 and Mult2 so Mult1^2 + Mult2^2 = -1 (mod p)
   intToBigInteger(&Tmp, -1);
   intToBigInteger(&Mult2, -1);
-  while (BigIntJacobiSymbol(&Tmp, &p) <= 0)
+  while (BigIntJacobiSymbol(&Tmp, &valueP) <= 0)
   {     // Not a quadratic residue. Compute next value of -1 - Mult1^2 in variable Tmp.
     BigIntAdd(&Tmp, &Mult2, &Tmp);
     Mult2.limbs[0].x += 2;
@@ -640,17 +640,17 @@ static void ComputeSumOfFourSquaresForPrime(void)
   }
   // After the loop finishes, Tmp = (-1 - Mult1^2) is a quadratic residue mod p.
   // Convert base to Montgomery notation.
-  BigIntAdd(&Tmp, &p, &Tmp);
+  BigIntAdd(&Tmp, &valueP, &Tmp);
   Tmp.limbs[NumberLength].x = 0;
   modmult(Tmp.limbs, MontgomeryMultR2, Tmp.limbs);
 
   intToBigInteger(&Mult1, mult1);
-  CopyBigInt(&q, &p);
-  subtractdivide(&q, -1, 4);  // q <- (p+1)/4.
+  CopyBigInt(&bigExpon, &valueP);
+  subtractdivide(&bigExpon, -1, 4);  // q <- (p+1)/4.
   // Find Mult2 <- square root of Tmp = Tmp^q (mod p) in Montgomery notation.
-  modPowShowStatus(Tmp.limbs, q.limbs, p.nbrLimbs, Mult2.limbs);
+  modPowShowStatus(Tmp.limbs, bigExpon.limbs, valueP.nbrLimbs, Mult2.limbs);
   // Convert Mult2 from Montgomery notation to standard notation.
-  lenBytes = p.nbrLimbs * (int)sizeof(limb);
+  lenBytes = valueP.nbrLimbs * (int)sizeof(limb);
   (void)memset(Tmp.limbs, 0, lenBytes);
   Tmp.limbs[0].x = 1;
   intToBigInteger(&Mult3, 1);
@@ -658,7 +658,7 @@ static void ComputeSumOfFourSquaresForPrime(void)
   // Convert Mult2 to standard notation by multiplying by 1 in
   // Montgomery notation.
   modmult(Mult2.limbs, Tmp.limbs, Mult2.limbs);
-  for (Mult2.nbrLimbs = p.nbrLimbs; Mult2.nbrLimbs > 1; Mult2.nbrLimbs--)
+  for (Mult2.nbrLimbs = valueP.nbrLimbs; Mult2.nbrLimbs > 1; Mult2.nbrLimbs--)
   {  // Adjust number of limbs so the most significant limb is not zero.
     if (Mult2.limbs[Mult2.nbrLimbs - 1].x != 0)
     {
@@ -667,7 +667,7 @@ static void ComputeSumOfFourSquaresForPrime(void)
   }
   Mult2.sign = SIGN_POSITIVE;
   MultiplyQuaternionBy2(&Mult1, &Mult2, &Mult3, &Mult4);
-  CopyBigInt(&M1, &p);
+  CopyBigInt(&M1, &valueP);
   BigIntMultiplyBy2(&M1);
   intToBigInteger(&M2, 0);
   intToBigInteger(&M3, 0);
@@ -811,10 +811,8 @@ static void ComputeFourSquares(const struct sFactors *pstFactors)
       continue;
     }
     NumberLength = *pstFactor->ptrFactor;
-    IntArray2BigInteger(pstFactor->ptrFactor, &p);
-    CopyBigInt(&q, &p);
-    addbigint(&q, -1);             // q <- p-1
-    if ((p.nbrLimbs == 1) && (p.limbs[0].x == 2))
+    IntArray2BigInteger(pstFactor->ptrFactor, &valueP);
+    if ((valueP.nbrLimbs == 1) && (valueP.limbs[0].x == 2))
     {
       intToBigInteger(&Mult1, 1);  // 2 = 1^2 + 1^2 + 0^2 + 0^2
       intToBigInteger(&Mult2, 1);
@@ -824,12 +822,12 @@ static void ComputeFourSquares(const struct sFactors *pstFactors)
     else
     { /* Prime not 2 */
       int lenBytes = NumberLength * (int)sizeof(limb);
-      NumberLength = p.nbrLimbs;
-      (void)memcpy(&TestNbr, p.limbs, lenBytes);
+      NumberLength = valueP.nbrLimbs;
+      (void)memcpy(&TestNbr, valueP.limbs, lenBytes);
       TestNbr[NumberLength].x = 0;
       GetMontgomeryParms(NumberLength);
-      (void)memset(K.limbs, 0, lenBytes);
-      if ((p.limbs[0].x & 3) == 1)
+      (void)memset(bigBase.limbs, 0, lenBytes);
+      if ((valueP.limbs[0].x & 3) == 1)
       { /* if p = 1 (mod 4) */
         ComputeSumOfTwoSquaresForPrime();
         intToBigInteger(&Mult3, 0);
@@ -847,12 +845,12 @@ static void ComputeFourSquares(const struct sFactors *pstFactors)
   for (indexPrimes = pstFactors->multiplicity - 1; indexPrimes >= 0; indexPrimes--)
   {
     NumberLength = *pstFactor->ptrFactor;
-    IntArray2BigInteger(pstFactor->ptrFactor, &p);
-    (void)BigIntPowerIntExp(&p, pstFactor->multiplicity / 2, &K);
-    (void)BigIntMultiply(&Quad1, &K, &Quad1);
-    (void)BigIntMultiply(&Quad2, &K, &Quad2);
-    (void)BigIntMultiply(&Quad3, &K, &Quad3);
-    (void)BigIntMultiply(&Quad4, &K, &Quad4);
+    IntArray2BigInteger(pstFactor->ptrFactor, &valueP);
+    (void)BigIntPowerIntExp(&valueP, pstFactor->multiplicity / 2, &Tmp1);
+    (void)BigIntMultiply(&Quad1, &Tmp1, &Quad1);
+    (void)BigIntMultiply(&Quad2, &Tmp1, &Quad2);
+    (void)BigIntMultiply(&Quad3, &Tmp1, &Quad3);
+    (void)BigIntMultiply(&Quad4, &Tmp1, &Quad4);
     pstFactor++;
   }
   Quad1.sign = SIGN_POSITIVE;
