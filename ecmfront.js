@@ -730,7 +730,7 @@ function generateFuncButtons(optionCategory, funcButtons, inputId)
   var catIndex;
   var funcbtns = get(funcButtons);
   var catnbr = get(optionCategory).selectedIndex;
-  var funcname = (parens + funcnames[catnbr]).split(",");
+  var funcname = (parens + funcnames[+catnbr]).split(",");
   // Append all buttons to document fragment instead of funcbtns
   // and finally append the fragment to funcbtns to minimize redraws.
   var fragment = document.createDocumentFragment();
@@ -755,7 +755,7 @@ function completeFuncButtons(funcButtons, inputId)
   var funcbtns = get(funcButtons);
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
-    button = funcbtns.children[catIndex];
+    button = funcbtns.children[+catIndex];
     button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
     updateInputFromButton(button, inputId);
   } 
