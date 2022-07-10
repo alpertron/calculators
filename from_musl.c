@@ -934,7 +934,7 @@ double acos(double x)
     GET_LOW_WORD(lx, x);
     if ((ix - 0x3ff00000 | lx) == 0) {
       /* acos(1)=0, acos(-1)=pi */
-      if (hx >> 31)
+      if ((hx >> 31) != 0U)
       {
         return (2.0 * pio2_hi) + 0x1p-120f;
       }

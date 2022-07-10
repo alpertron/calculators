@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "bignbr.h"
+#include "expression.h"
 #include "highlevel.h"
 #include "polynomial.h"
 #include "showtime.h"
@@ -766,7 +767,7 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
   mostSignificantLimb = TestNbr[NumberLength-1].x;
   for (int mask = HALF_INT_RANGE; mask > 0; mask /= 2)
   {
-    if (mask & mostSignificantLimb)
+    if ((mask & mostSignificantLimb) != 0)
     {
       break;
     }

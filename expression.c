@@ -317,7 +317,11 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
       {
         stackIndex--;
         getCurrentStackValue(&curStack2);
-        BigIntLcm(&curStack, &curStack2, &curStack);
+        retcode = BigIntLcm(&curStack, &curStack2, &curStack);
+        if (retcode != EXPR_OK)
+        {
+          return retcode;
+        }
       }
       break;
 

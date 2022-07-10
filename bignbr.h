@@ -19,6 +19,7 @@
 #ifndef _BIGNBR_H
 #define _BIGNBR_H
 #include <stdint.h>
+#include <stdbool.h>
 #define MAX_LEN_MULT  25000  // 200000 digits
 #ifdef FACTORIZATION_APP
 #define MAX_LEN       25000  // 200000 digits
@@ -38,6 +39,7 @@
 #define SMALL_PRIMES_ARRLEN    9592  // Number of primes less than 100000.
 #define LOG_2            0.69314718055994531
 #define LOG_3            1.09861228866810969
+//#include "expression.h"
 
 struct mylimb
 {
@@ -85,8 +87,6 @@ extern int smallPrimes[SMALL_PRIMES_ARRLEN+1];
 #ifdef __EMSCRIPTEN__
 extern int percentageBPSW;
 #endif
-
-#include "expression.h"
 
 void multiply(const limb* factor1, const limb* factor2, limb* result,
   int len, int* pResultLen);

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "bignbr.h"
+#include "expression.h"
 #include "polynomial.h"
 
 static char RPNbuffer[1000000];

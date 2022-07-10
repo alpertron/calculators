@@ -20,6 +20,7 @@
 #include <string.h>
 #include <math.h>
 #include "bignbr.h"
+#include "expression.h"
 #include "factor.h"
 #include "quadmodLL.h"
 #include "commonstruc.h"

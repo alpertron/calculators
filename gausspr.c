@@ -23,14 +23,15 @@
 #include <stdbool.h>
 #include "isprime.h"
 #include "graphics.h"
-
+#ifndef __EMSCRIPTEN__
+  #define EXTERNALIZE	
+  #include <SDL.h>
+#endif
 static void setPointGaussian(int x, int y);
 setPointFunc setPoint = setPointGaussian;
 
 #define SMALL_NUMBER_BOUND 32768
 #ifndef __EMSCRIPTEN__
-  #define EXTERNALIZE	
-  #include <SDL.h>
   SDL_Surface* doubleBuffer;
   int oldXCenter;
   int oldYCenter;

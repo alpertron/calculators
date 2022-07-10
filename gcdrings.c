@@ -17,6 +17,7 @@
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include "bignbr.h"
+#include "expression.h"
 
 struct approx
 {

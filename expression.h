@@ -22,7 +22,7 @@
 #define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 1 de julio de 2022."
 #define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 1 July 2022."
 
-#include <stdbool.h>
+#include "bignbr.h"
 #ifdef __EMSCRIPTEN__
 int stamp(void);
 #endif
@@ -148,5 +148,4 @@ enum eExprErr ComputeNext(BigInteger* pArgument);
 void textError(char **pptrOutput, enum eExprErr rc);
 void initializeSmallPrimes(int* pSmallPrimes);
 enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput);
-#else
 #endif

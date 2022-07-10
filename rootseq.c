@@ -19,6 +19,8 @@
 #include <string.h>
 #include <math.h>
 #include "rootseq.h"
+#include "expression.h"
+
 #define NBR_COEFF 6
 
 BigInteger Quintic;

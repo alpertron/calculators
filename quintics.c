@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include "rootseq.h"
+#include "expression.h"
 #include "quintics.h"
 #include "musl.h"
 

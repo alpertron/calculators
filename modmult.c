@@ -22,6 +22,7 @@
 #include <math.h>
 #include <stdint.h>
 #include "bignbr.h"
+#include "expression.h"
 
 #define MONTGOMERY_MULT_THRESHOLD 13
 #define MONTMULT_LIMB_START   \

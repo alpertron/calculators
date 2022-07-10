@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "bignbr.h"
+#include "expression.h"
 #include "highlevel.h"
 #include "polynomial.h"
 #include "showtime.h"

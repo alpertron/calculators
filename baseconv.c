@@ -18,9 +18,10 @@
 //
 
 #include <string.h>
-#include "bignbr.h"
 #include <math.h>
 #include <stdint.h>
+#include "bignbr.h"
+#include "expression.h"
 
 #define DIGITS_PER_LIMB 9
 #define MAX_LIMB_CONVERSION 1000000000

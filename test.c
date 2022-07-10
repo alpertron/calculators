@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bignbr.h"
+#include "expression.h"
 #include "highlevel.h"
 #include "factor.h"
 #include "batch.h"
