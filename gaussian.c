@@ -67,7 +67,7 @@ static void showNumber(const BigInteger *real, const BigInteger *imag)
 void GaussianFactorization(void)
 {
   BigInteger prime;
-  BigInteger q;
+  BigInteger bigExpon;
   BigInteger r;
   BigInteger M1;
   BigInteger M2;
@@ -123,13 +123,13 @@ void GaussianFactorization(void)
       if ((prime.limbs[0].x & 2) == 0)
       {                               // Prime is congruent to 1 (mod 4)
         int NumberLengthBytes;
-        CopyBigInt(&q, &prime);
+        CopyBigInt(&bigExpon, &prime);
         NumberLength = prime.nbrLimbs;
         NumberLengthBytes = NumberLength * (int)sizeof(limb);
         (void)memcpy(&TestNbr, prime.limbs, NumberLengthBytes);
         TestNbr[NumberLength].x = 0;
         GetMontgomeryParms(NumberLength);
-        subtractdivide(&q, 1, 4);     // q = (prime-1)/4
+        subtractdivide(&bigExpon, 1, 4);     // q = (prime-1)/4
         (void)memset(&bigBase, 0, NumberLengthBytes);
         (void)memset(minusOneMont, 0, NumberLengthBytes);
         SubtBigNbrModN(minusOneMont, MontgomeryMultR1, minusOneMont, TestNbr, NumberLength);
@@ -137,7 +137,7 @@ void GaussianFactorization(void)
         do
         {    // Loop that finds mult1 = sqrt(-1) mod prime in Montgomery notation.
           bigBase[0].x++;
-          modPow(bigBase, q.limbs, q.nbrLimbs, mult1.limbs);
+          modPow(bigBase, bigExpon.limbs, bigExpon.nbrLimbs, mult1.limbs);
         } while (!memcmp(mult1.limbs, MontgomeryMultR1, NumberLengthBytes) ||
                  !memcmp(mult1.limbs, minusOneMont, NumberLengthBytes));
         bigBase[0].x = 1;
@@ -172,16 +172,16 @@ void GaussianFactorization(void)
             BigIntSubt(&M2, &tofactor, &M2);
           }
           // Compute q <- (mult1*M1 + mult2*M2) / norm
-          (void)BigIntMultiply(&mult1, &M1, &q);
+          (void)BigIntMultiply(&mult1, &M1, &bigExpon);
           (void)BigIntMultiply(&mult2, &M2, &Tmp);
-          BigIntAdd(&q, &Tmp, &Tmp);
-          (void)BigIntDivide(&Tmp, &tofactor, &q);
+          BigIntAdd(&bigExpon, &Tmp, &Tmp);
+          (void)BigIntDivide(&Tmp, &tofactor, &bigExpon);
           // Compute Mult2 <- (mult1*M2 - mult2*M1) / tofactor
           (void)BigIntMultiply(&mult1, &M2, &r);
           (void)BigIntMultiply(&mult2, &M1, &Tmp);
           BigIntSubt(&r, &Tmp, &Tmp);
           (void)BigIntDivide(&Tmp, &tofactor, &mult2);
-          CopyBigInt(&mult1, &q);
+          CopyBigInt(&mult1, &bigExpon);
           mult1.sign = SIGN_POSITIVE;    // mult1 <- abs(mult1)
           mult2.sign = SIGN_POSITIVE;    // mult2 <- abs(mult2)
         }            /* end while */
@@ -203,12 +203,12 @@ void GaussianFactorization(void)
       }              // end p = 1 (mod 4)
       else
       {              // if p = 3 (mod 4)
-        q.nbrLimbs = 1;    // q <- 0
-        q.limbs[0].x = 0;
-        q.sign = SIGN_POSITIVE;
+        bigExpon.nbrLimbs = 1;    // q <- 0
+        bigExpon.limbs[0].x = 0;
+        bigExpon.sign = SIGN_POSITIVE;
         for (index2 = 0; index2 < pstFactor->multiplicity; index2++)
         {
-          DivideGaussian(&prime, &q);
+          DivideGaussian(&prime, &bigExpon);
         }            // end p = 3 (mod 4)
       }
       pstFactor++;

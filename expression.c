@@ -115,7 +115,7 @@ char output[3000000];
 limb Mult1[MAX_LEN];
 limb Mult3[MAX_LEN];
 limb Mult4[MAX_LEN];
-int q[MAX_LEN];
+int valueQ[MAX_LEN];
 BigInteger valueX;
 int counterC;
 #ifdef FACTORIZATION_FUNCTIONS

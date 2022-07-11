@@ -69,7 +69,7 @@ long long Gamma[386];
 long long Delta[386];
 long long AurifQ[386];
 char tofactorDec[MAX_LEN*12];
-extern int q[MAX_LEN];
+extern int valueQ[MAX_LEN];
 int nbrToFactor[MAX_LEN];
 struct sFactors astFactorsMod[5000];
 int factorsMod[20000];
@@ -1495,11 +1495,11 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
   limb *pValueLimbs = pValue->limbs;
   (pValueLimbs + nbrLimbs)->x = 0;
   lenBytes = (nbrLimbs + 1) * (int)sizeof(limb);
-  (void)memcpy(q, pValueLimbs, lenBytes);
+  (void)memcpy(valueQ, pValueLimbs, lenBytes);
   nbrLimbsQ = nbrLimbs;
-  q[0]--;                     // q = p - 1 (p is odd, so there is no carry).
-  lenBytes = (nbrLimbsQ + 1) * (int)sizeof(q[0]);
-  (void)memcpy(common.ecm.Aux1, q, lenBytes);
+  valueQ[0]--;                     // q = p - 1 (p is odd, so there is no carry).
+  lenBytes = (nbrLimbsQ + 1) * (int)sizeof(valueQ[0]);
+  (void)memcpy(common.ecm.Aux1, valueQ, lenBytes);
   Aux1Len = nbrLimbs;
   DivideBigNbrByMaxPowerOf2(&ctr, common.ecm.Aux1, &Aux1Len);
   lenBytes = nbrLimbs * (int)sizeof(limb);

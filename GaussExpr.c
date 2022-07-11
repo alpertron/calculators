@@ -87,7 +87,7 @@ char output[3000000];
 limb Mult1[MAX_LEN];
 limb Mult3[MAX_LEN];
 limb Mult4[MAX_LEN];
-int q[MAX_LEN];
+int valueQ[MAX_LEN];
 static void ComputeGCD(void);
 static enum eExprErr ComputeLCM(void);
 static enum eExprErr GaussianDivide(void);

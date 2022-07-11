@@ -48,7 +48,7 @@ extern limb Mult1[MAX_LEN];
 extern limb Mult2[MAX_LEN];
 extern limb Mult3[MAX_LEN];
 extern limb Mult4[MAX_LEN];
-extern int q[MAX_LEN];
+extern int valueQ[MAX_LEN];
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 int groupLen = 6;
@@ -1818,11 +1818,11 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
 #endif
   // Perform 2-SPRP test
   lenBytes = nbrLimbs * (int)sizeof(limb);
-  (void)memcpy(q, limbs, lenBytes);
-  q[nbrLimbs] = 0;
-  q[0]--;                     // q = p - 1 (p is odd, so there is no carry).
-  lenBytes = (nbrLimbs + 1) * (int)sizeof(q[0]);
-  (void)memcpy(Mult3, q, lenBytes);
+  (void)memcpy(valueQ, limbs, lenBytes);
+  valueQ[nbrLimbs] = 0;
+  valueQ[0]--;                     // q = p - 1 (p is odd, so there is no carry).
+  lenBytes = (nbrLimbs + 1) * (int)sizeof(valueQ[0]);
+  (void)memcpy(Mult3, valueQ, lenBytes);
   Mult3Len = nbrLimbs;
   DivideBigNbrByMaxPowerOf2(&ctr, Mult3, &Mult3Len);
   lenBytes = nbrLimbs * (int)sizeof(limb);

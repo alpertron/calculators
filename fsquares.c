@@ -33,7 +33,7 @@ static bool hexadecimal;
 static limb number[MAX_LEN];
 static limb origNbr[MAX_LEN];
 static limb valueP[MAX_LEN];
-extern limb q[MAX_LEN];
+extern limb valueQ[MAX_LEN];
 extern limb Mult1[MAX_LEN];
 static limb Mult2[MAX_LEN];
 extern limb Mult3[MAX_LEN];
@@ -317,11 +317,11 @@ static bool FindSumTwoSquaresNoSmallDivisors(void)
   // At this moment p should be prime, otherwise we must try another number.
   valueP[nbrLimbsP].x = 0;
   lenBytes = (nbrLimbsP + 1) * (int)sizeof(valueP[0]);
-  (void)memcpy(q, valueP, lenBytes);
+  (void)memcpy(valueQ, valueP, lenBytes);
   nbrLimbsQ = nbrLimbsP;
-  q[0].x--;                     // q = p - 1 (p is odd, so there is no carry).
-  lenBytes = (nbrLimbsQ + 1) * (int)sizeof(q[0]);
-  (void)memcpy(Mult3, q, lenBytes);
+  valueQ[0].x--;                     // q = p - 1 (p is odd, so there is no carry).
+  lenBytes = (nbrLimbsQ + 1) * (int)sizeof(valueQ[0]);
+  (void)memcpy(Mult3, valueQ, lenBytes);
   Mult3Len = nbrLimbsP;
   DivideBigNbrByMaxPowerOf2(&shRightMult3, Mult3, &Mult3Len);
   base = 1;
