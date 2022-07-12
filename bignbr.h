@@ -39,7 +39,6 @@
 #define SMALL_PRIMES_ARRLEN    9592  // Number of primes less than 100000.
 #define LOG_2            0.69314718055994531
 #define LOG_3            1.09861228866810969
-//#include "expression.h"
 
 struct mylimb
 {

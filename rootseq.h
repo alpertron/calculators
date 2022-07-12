@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
+#ifndef _ROOTSEQ_H
+#define _ROOTSEQ_H
 #include "output.h"
 #include "polynomial.h"
 
@@ -73,3 +75,4 @@ extern int indexRoot;
 extern const char *ptrMinus;
 extern const char *ptrTimes;
 extern int polyInteger[1000000];
+#endif

@@ -452,7 +452,8 @@ static bool DivideCandidateBySmallPrimes(BigInteger* pCandidate, int **pptrArrFa
       subtractdivide(pCandidate, 0, prime);
       expon++;
     }
-    if ((((expon % 2) == 1) && ((prime % 4) == 3)) || ((pCandidate->limbs[0].x % 4) == 3))
+    if ((((expon & 0x01) == 0x01) && ((prime % 4) == 3)) ||
+      ((pCandidate->limbs[0].x % 4) == 3))
     {  // Number cannot be expressed as a sum of three squares.
       return false;
     }

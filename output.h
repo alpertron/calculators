@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
+#ifndef _OUTPUT_H
+#define _OUTPUT_H
 #include "bignbr.h"
 
 void showText(const char* text);
@@ -23,4 +25,4 @@ void shownbr(const BigInteger* value);
 void beginLine(char** pptrOutput);
 void finishLine(char** pptrOutput);
 
-
+#endif

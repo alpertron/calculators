@@ -3319,7 +3319,7 @@ static void sieveThread(BigInteger *result)
         do
         {
           index2 -= 16;
-          const long *ptr = (long *)&SieveArray[index2 + 1];
+          const int32_t *ptr = (int32_t *)&SieveArray[index2 + 1];
           if (((*ptr | *(ptr + 1) | *(ptr + 2) | *(ptr+3) |
             *(ptr + 4) | *(ptr + 5) | *(ptr + 6) | *(ptr + 7)) & 0x80808080) != 0)
           {

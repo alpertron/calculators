@@ -460,9 +460,6 @@ static void GcdModSizeOneLimb(int currentDegree, int degreeMin,
   int value1 = mod - *(ptrArgMax + index);
   const int* ptrPolynomial = ptrArgMin + 1;
   ptrTemp++;
-  if (value1 == 0)
-  {   // Nothing to do.
-  }
   if ((NumberLength == 1) && (mod < 100))
   {
     for (index = degreeMin; index >= 3; index -= 4)

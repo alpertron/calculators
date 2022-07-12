@@ -2279,12 +2279,12 @@ static void showComponent(int num, int den, int multipl, int power2, int toShow,
         // Show sin(A).
     ptrStartRadicals = ptrOutput;
     *ptrOutput = 0;
-    if ((denom % 2) == 1)
-    {
+    if ((denom & 0x01) == 0x01)
+    {           // denom is odd.
       denominCos = showRadicals(denom - (numeratorDen * 2), denom * 2, multiple, 1, ptrTimes);
     }
     else
-    {
+    {           // denom is even.
       denominCos = showRadicals((denom / 2) - numeratorDen, denom, multiple, power2, ptrTimes);
     }
     if (denominCos != 0)
@@ -2420,7 +2420,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
   int currentDegree;
   // Polynomial must be palindromic of even degree
   // and the absolute value must be less than 10.
-  if ((polyDegree % 2) == 1)
+  if ((polyDegree & 0x01) == 0x01)
   {      // Polynomial has odd degree so it cannot be cyclotomic.
     return false;
   }
@@ -2508,7 +2508,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
     (void)memset(base, 0, lenBytes);
     if (memcmp(base, prod, lenBytes) == 0)
     {     // The polynomial is cyclotomic.
-      bool denIsOdd = ((index % 2) == 1)? true: false;
+      bool denIsOdd = ((index & 0x01) == 0x01)? true: false;
       int realDen = denIsOdd ? index : (index / 2);
       for (int numerator = 1; numerator < index; numerator++)
       {
@@ -3311,7 +3311,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
           {              // Nothing to do.
           }
         }
-        else if (((currDegree % 2) == 1) && (currDegree < degree))
+        else if (((currDegree & 0x01) == 0x01) && (currDegree < degree))
         {      // Current degree > n/2, it is odd and less than the polynomial degree.
           if (cycleOddGtNOver2Found == 0)
           {    // If first condition holds, the polynomial is not solvable.
@@ -3357,7 +3357,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
           {           // Only one multiple of currentDegree expected.
             SaveFactorDegrees(prime, factorDegreesCycleOther, nbrFactors);
             cyclePrGtNOver3Found = currDegree;
-            if ((degree % 2) == 1)
+            if ((degree & 0x01) == 0x01)
             {         // If degree is odd, the group is very transitive.
               break;
             }
@@ -3390,7 +3390,8 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
       break;
     }
     if ((cyclePrGtNOver3Found != 0) && 
-       (((degree % 2) == 1) || (cycleOddGtNOver2Found != 0) || (cyclePrGtNOver2Found != 0)))
+       (((degree & 0x01) == 0x01) || (cycleOddGtNOver2Found != 0) ||
+         (cyclePrGtNOver2Found != 0)))
     {           // Group is very transitive.
       break;
     }
@@ -3422,7 +3423,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
     *ptrOutput = ')';
     ptrOutput++;
   }
-  else if ((cyclePrGtNOver3Found != 0) && ((degree % 2) == 1))
+  else if ((cyclePrGtNOver3Found != 0) && ((degree & 0x01) == 0x01))
   {     // Group is very transitive.
     if (lang)
     {    // Spanish

@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
+#ifndef _HIGHLEVEL_H
+#define _HIGHLEVEL_H
 void fcubesText(char *input, int grpLen);
 void fsquaresText(char *input, int grpLen);
 void contfracText(char *input, int GroupLen, bool hex);
@@ -24,3 +26,4 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
   const char *modText, int groupLength);
 void quadText(char *coefAText, char *coefBText, char *coefCText,
               char *coefDText, char *coefEText, char *coefFText);
+#endif
