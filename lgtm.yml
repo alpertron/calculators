@@ -124,7 +124,7 @@ extraction:
     # then uses to build the codebase.
     configure:
       command:
-        - ./prepare_deps
+        - echo configure
     # Optional step. You should add a `before_index` step if you need to run commands
     # before the `index` step.
     before_index:
