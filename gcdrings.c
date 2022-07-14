@@ -54,7 +54,7 @@ static void MultiplyComplexBy1PlusI(BigInteger *real, BigInteger *imag, BigInteg
   CopyBigInt(real, temp);
 }
 
-// Use algorithm "Variants of an algorithm of J. Stein" of Sándor Szabó.
+// Use algorithm "Variants of an algorithm of J. Stein" of SÃ¡ndor SzabÃ³.
 void GaussianGCD(BigInteger *realA, BigInteger *imagA, BigInteger *realB, BigInteger *imagB,
   BigInteger *realGcd, BigInteger *imagGcd, BigInteger *temp1, BigInteger *temp2)
 {
@@ -466,7 +466,7 @@ static void getApproxHeight(const BigInteger *scalar, const BigInteger *vecI,
   }
 }
 
-// Use algorithm "Variants of an algorithm of J. Stein" of Sándor Szabó.
+// Use algorithm "Variants of an algorithm of J. Stein" of SÃ¡ndor SzabÃ³.
 // Since integer quaternions can have coefficients that are half of an integer, all
 // cofficients in this routine are multiplied by 2.
 void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, BigInteger *vecKA,
