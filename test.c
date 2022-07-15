@@ -93,7 +93,6 @@ int main(int argc, char* argv[])
   Factor1[5] = 32767;
   Factor1[6] = 32767;
   squareRoot(&Factor1[2], Factor2, 4, &len);
-  //squareRoot(Factor1, Factor2, 7, &len);
   return 0;
 #elif DEBUG_CODE == 4
   char* ptrOutput;

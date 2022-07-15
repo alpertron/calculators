@@ -2621,7 +2621,8 @@ static void EndRadicand(int polyDegree)
   *ptrOutput = 0;
 }
 
-static void GenerateRoots(int multiplicity, const char* rationalRoot, bool isNegative, int polyDegree)
+static void GenerateRoots(int multiplicity, const char* rationalRoot,
+  bool isNegative, int polyDegree)
 {
   for (int currentDegree = 0; currentDegree < polyDegree; currentDegree++)
   {
@@ -3317,8 +3318,9 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
           {    // If first condition holds, the polynomial is not solvable.
                // Test that this degree is coprime to all other degrees of
                // factors of this polynomial.
+            int factNbr;
             pstFactorInfo = factorInfo;
-            for (factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
+            for (factNbr = 0; factNbr < nbrFactors; factNbr++)
             {
               if ((pstFactorInfo->degree < currDegree) && 
                 (gcd(pstFactorInfo->degree, currDegree) != 1))
@@ -3327,7 +3329,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
               }
               pstFactorInfo++;
             }
-            if (factorNbr == nbrFactors)
+            if (factNbr == nbrFactors)
             {      // All degrees are coprime to current degree.
               SaveFactorDegrees(prime, factorDegreesCycleP, nbrFactors);
               cycleOddGtNOver2Found = currDegree;
@@ -3345,7 +3347,7 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
                // Ensure that only this degree is multiple of itself.
           int nbrMultiples = 0;
           pstFactorInfo = factorInfo;
-          for (factorNbr = 0; factorNbr < nbrFactors; factorNbr++)
+          for (int factNbr = 0; factNbr < nbrFactors; factNbr++)
           {
             if ((pstFactorInfo->degree % currDegree) == 0)
             {

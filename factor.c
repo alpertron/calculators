@@ -1556,8 +1556,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
           insertBigFactor(pstFactors, &Temp4, TYP_RABIN);
           factorsFound = true;
         }
-        i = ctr;
-        continue;  // Find more factors.
+        break;  // Find more factors.
       }
       if (checkMinusOne(common.ecm.Aux3, nbrLimbs) != 0)
       {            // Square root of 1 found.
@@ -1581,8 +1580,7 @@ static int factorCarmichael(BigInteger *pValue, struct sFactors *pstFactors)
             factorsFound = true;
           }
         }
-        i = ctr;
-        continue;  // Find more factors.
+        break;  // Find more factors.
       }
       lenBytes = nbrLimbs * (int)sizeof(limb);
       (void)memcpy(common.ecm.Aux2, common.ecm.Aux3, lenBytes);
@@ -1696,6 +1694,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
   int dividend;
   char *ptrCharFound;
   int result;
+  int factorNbr;
 
   CopyBigInt(&tofactor, toFactor);
   initializeSmallPrimes(smallPrimes);
@@ -1843,8 +1842,10 @@ void factorExt(const BigInteger *toFactor, const int *number,
     PowerPM1Check(pstFactors, toFactor);
   }
   pstCurFactor = pstFactors;
-  for (int factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++)
+  factorNbr = 0;
+  while (factorNbr < pstFactors->multiplicity)
   {
+    factorNbr++;
     int upperBoundIndex;
     int upperBound;
     bool restartFactoring = false;
