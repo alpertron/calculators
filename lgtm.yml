@@ -183,13 +183,15 @@ extraction:
       - export PATH=$LGTM_WORKSPACE/tools:$PATH
     # The `index` step extracts information from the files in the codebase.
     index:
+      build_command:
+        - echo .
       # Specify a list of files and folders to extract.
       # Default: The project root directory.
-      include:
-        - src/js
+      #include:
+      #  - src/js
       # Specify a list of files and folders to exclude from extraction.
       exclude:
-        - thirdparty/lib
+      #  - thirdparty/lib
       # You can add additional file types for LGTM to extract, by mapping file 
       # extensions (including the leading dot) to file types. The usual 
       # include/exclude patterns apply, so, for example, `.jsm` files under
@@ -203,11 +205,11 @@ extraction:
       # Default: include all files with known extensions (such as .js, .ts and .html),
       # but exclude files ending in `-min.js` or `.min.js` and folders named `node_modules`
       # or `bower_components`
-      filters:
-        # exclude any *.ts files anywhere.
-        - exclude: "**/*.ts"
-        # but include *.ts files under src/js/typescript.
-        - include: "src/js/typescript/**/*.ts"
+      #filters:
+      #  # exclude any *.ts files anywhere.
+      #  - exclude: "**/*.ts"
+      #  # but include *.ts files under src/js/typescript.
+      #  - include: "src/js/typescript/**/*.ts"
       # Specify how TypeScript files should be extracted:
       #   none = exclude all TypeScript files.
       #   basic = extract syntactic information from TypeScript files.
