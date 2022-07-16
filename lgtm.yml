@@ -183,8 +183,6 @@ extraction:
       - export PATH=$LGTM_WORKSPACE/tools:$PATH
     # The `index` step extracts information from the files in the codebase.
     index:
-      build_command:
-        - echo .
       # Specify a list of files and folders to extract.
       # Default: The project root directory.
       #include:
