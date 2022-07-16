@@ -857,6 +857,10 @@ int ComputePolynomial(const char* input, int expo)
       insideExpon = false;
       break;
     case OPER_UNARY_MINUS:
+      if (stackIndex < 1)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
       ptrValue1 = stackValues[stackIndex - 1];
       if (insideExpon)
       {
@@ -890,12 +894,20 @@ int ComputePolynomial(const char* input, int expo)
       }
       break;
     case TOKEN_GCD:
+      if (stackIndex < 1)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
       ptrRPNbuffer++;
       nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
       ptrValue1 = stackValues[stackIndex - 1];
       for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
       {
         stackIndex--;
+        if (stackIndex < 1)
+        {
+          return EXPR_CANNOT_PARSE_EXPRESSION;
+        }
         ptrValue2 = stackValues[stackIndex - 1];
         rc = GcdPolynomialExpr(ptrValue2, ptrValue1);
         if (rc != EXPR_OK)
@@ -908,10 +920,18 @@ int ComputePolynomial(const char* input, int expo)
     case TOKEN_LCM:
       ptrRPNbuffer++;
       nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
+      if (stackIndex < 1)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
       ptrValue1 = stackValues[stackIndex - 1];
       for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
       {
         stackIndex--;
+        if (stackIndex < 1)
+        {
+          return EXPR_CANNOT_PARSE_EXPRESSION;
+        }
         ptrValue2 = stackValues[stackIndex - 1];
         rc = LcmPolynomialExpr(ptrValue1, ptrValue2);
         if (rc != EXPR_OK)
@@ -926,6 +946,10 @@ int ComputePolynomial(const char* input, int expo)
       DerPolynomial(ptrValue1);
       break;
     case TOKEN_RANDOM:
+      if (stackIndex < 4)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
       rc = RandomPolynomialExpr(stackValues[stackIndex - 4], stackValues[stackIndex - 3],
         stackValues[stackIndex - 2], stackValues[stackIndex - 1], stackValues[stackIndex - 4]);
       stackIndex -= 3;
@@ -936,6 +960,10 @@ int ComputePolynomial(const char* input, int expo)
       break;
     case OPER_ADD:
       stackIndex--;
+      if (stackIndex < 1)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
       if (insideExpon)
@@ -957,6 +985,10 @@ int ComputePolynomial(const char* input, int expo)
       break;
     case OPER_EQUAL:
       stackIndex--;
+      if (stackIndex < 1)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
       if (nbrEqualSigns > 0)
       {
         return EXPR_MORE_THAN_ONE_EQUAL_SIGN;
@@ -981,6 +1013,10 @@ int ComputePolynomial(const char* input, int expo)
       break;
     case OPER_SUBT:
       stackIndex--;
+      if (stackIndex < 1)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
       if (insideExpon)
@@ -1007,6 +1043,10 @@ int ComputePolynomial(const char* input, int expo)
       break;
     case OPER_MULTIPLY:
       stackIndex--;
+      if (stackIndex < 1)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
       if (insideExpon)
@@ -1028,6 +1068,10 @@ int ComputePolynomial(const char* input, int expo)
       break;
     case OPER_DIVIDE:
       stackIndex--;
+      if (stackIndex < 1)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
       if (insideExpon)
@@ -1045,6 +1089,10 @@ int ComputePolynomial(const char* input, int expo)
       break;
     case OPER_REMAINDER:
       stackIndex--;
+      if (stackIndex < 1)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
       if (insideExpon)
@@ -1062,6 +1110,10 @@ int ComputePolynomial(const char* input, int expo)
       break;
     case OPER_POWER:
       stackIndex--;
+      if (stackIndex < 1)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
       expon = *stackValues[stackIndex];
       if (expon < 0)
       {

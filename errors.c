@@ -113,6 +113,10 @@ void textError(char **pptrOutput, enum eExprErr rc)
     copyStr(&ptrOut, lang ? "La expresión no debe incluir variables" :
       "The expression must not include variables");
     break;
+  case EXPR_CANNOT_PARSE_EXPRESSION:
+    copyStr(&ptrOut, lang ? "Error interno: no se puede analizar la expresión" :
+      "Internal error: cannot parse expression");
+    break;
   default:
     break;
   }
