@@ -439,12 +439,12 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
     int2dec(&ptrDest, digits);
     copyStr(&ptrDest, (lang?" dígitos)": " digits)"));
   }
-  else if (ptrDest > *ppDecimal)
-  {
-    ptrDest--;
-  }
   else
-  {                            // Nothing to do.
+  {
+    if (ptrDest > *ppDecimal)
+    {
+      ptrDest--;
+    }
   }
   *ptrDest = '\0';             // Add terminator.
   *ppDecimal = ptrDest;

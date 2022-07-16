@@ -3189,6 +3189,10 @@ static bool isSymmetricOrAlternating(int nbrFactor, const int* ptrPolynomial,
     ptrCoeff += numLimbs(ptrCoeff);
     ptrCoeff++;
   }
+  if (gcdDegrees == 0)
+  {    // No gcd computed. Go out.
+    return false;
+  }
   polyDegree /= gcdDegrees;
   if (polyDegree < 5)
   {     // Polynomial is solvable with radical expressions.
