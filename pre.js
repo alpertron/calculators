@@ -26,6 +26,7 @@ Module =
   {
     self.onmessage = function(e)
     {
+      console.log("onmessage ecmfwebw 111: " + e.origin);
       convertToString(_getInputStringPtr(), e.data);
       _doWork();
     };

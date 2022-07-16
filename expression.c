@@ -233,7 +233,8 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
     case TOKEN_NUMBER:
       ptrRPNbuffer++;           // Skip token.
       stackIndex++;
-      len = ((int)(unsigned char)*ptrRPNbuffer * 256) + (int)(unsigned char)*(ptrRPNbuffer + 1);
+      len = ((int)(unsigned char)*ptrRPNbuffer * 256) +
+        (int)(unsigned char)*(ptrRPNbuffer + 1);
       nbrLenBytes = len * (int)sizeof(limb);
       if (stackIndexThreshold < stackIndex)
       {     // Part of second operand of binary AND/OR short-circuited.
