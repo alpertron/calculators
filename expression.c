@@ -201,14 +201,11 @@ static enum eExprErr PerformGCDorLCM(char token, int stackIndexThreshold,
     {
       return EXPR_CANNOT_PARSE_EXPRESSION;
     }
-    if (token == TOKEN_GCD)
+    if (token == TOKEN_LCM)
     {
-      BigIntGcd(&curStack, &curStack2, &curStack);
+      return BigIntLcm(&curStack, &curStack2, &curStack);
     }
-    else
-    {
-      BigIntLcm(&curStack, &curStack2, &curStack);
-    }
+    BigIntGcd(&curStack, &curStack2, &curStack);
   }
   return EXPR_OK;
 }

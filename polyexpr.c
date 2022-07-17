@@ -942,6 +942,10 @@ int ComputePolynomial(const char* input, int expo)
       }
       break;
     case TOKEN_DER:
+      if (stackIndex < 1)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
       ptrValue1 = stackValues[stackIndex - 1];
       DerPolynomial(ptrValue1);
       break;

@@ -550,6 +550,10 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
         ptrBlockStack++;
         if (*(ptrXML + 2) != '0')
         { // Not first IF in IF - ELSE IF - ELSE chain.
+          if (ptrStackControl < &stackIf[2])
+          {
+            return BLOCKLY_CANNOT_PARSE_XML;
+          }
           EncodeElse(ptrStackControl);
         }
       }
@@ -647,6 +651,10 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
             *ptrInstr = TOKEN_IF;
             ptrInstr++;
             offsetIf = ptrInstr - &bufferInstr[0];
+            if (ptrStackControl < &stackIf[2])
+            {
+              return BLOCKLY_CANNOT_PARSE_XML;
+            }
             *(ptrStackControl - 2) = (int)offsetIf;
             ptrInstr += 4;
             break;
@@ -658,6 +666,10 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
             *ptrInstr = TOKEN_IF;
             ptrInstr++;
             offsetIf = ptrInstr - &bufferInstr[0];
+            if (ptrStackControl < &stackIf[2])
+            {
+              return BLOCKLY_CANNOT_PARSE_XML;
+            }
             *(ptrStackControl - 2) = (int)offsetIf;
             ptrInstr += 4;
             break;
