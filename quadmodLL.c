@@ -257,6 +257,7 @@ static void SolveModularLinearEquation(BigInteger *pValA, const BigInteger *pVal
   PerformChineseRemainderTheorem();
 }
 
+// Compute sqrRoot <- sqrt(ValCOdd) mod 2^expon.
 // To compute the square root, compute the inverse of sqrt,
 // so only multiplications are used.
 // f(x) = invsqrt(x), f_{n+1}(x) = f_n * (3 - x*f_n^2)/2
@@ -266,6 +267,8 @@ static void ComputeSquareRootModPowerOf2(int expon, int bitsCZero)
   int correctBits;
   int nbrLimbs;
   // First approximation to inverse of square root.
+  // If value is ...0001b, the inverse of square root is ...01b.
+  // If value is ...1001b, the inverse of square root is ...11b.
   sqrRoot.limbs[0].x = (((ValCOdd.limbs[0].x & 15) == 1) ? 1 : 3);
   correctBits = 2;
   nbrLimbs = 1;
@@ -274,15 +277,16 @@ static void ComputeSquareRootModPowerOf2(int expon, int bitsCZero)
     correctBits *= 2;
     nbrLimbs = (correctBits / BITS_PER_GROUP) + 1;
     MultBigNbr(sqrRoot.limbs, sqrRoot.limbs, tmp2.limbs, nbrLimbs);
-    MultBigNbr(tmp2.limbs, ValCOdd.limbs, tmp2.limbs, nbrLimbs);
-    ChSignBigNbr(tmp2.limbs, nbrLimbs);
+    MultBigNbr(tmp2.limbs, ValCOdd.limbs, tmp1.limbs, nbrLimbs);
+    ChSignBigNbr(tmp1.limbs, nbrLimbs);
     lenBytes = nbrLimbs * (int)sizeof(limb);
-    (void)memset(tmp1.limbs, 0, lenBytes);
-    tmp1.limbs[0].x = 3;
-    AddBigNbr(tmp1.limbs, tmp2.limbs, tmp2.limbs, nbrLimbs);
+    (void)memset(tmp2.limbs, 0, lenBytes);
+    tmp2.limbs[0].x = 3;
+    AddBigNbr(tmp2.limbs, tmp1.limbs, tmp2.limbs, nbrLimbs);
     MultBigNbr(tmp2.limbs, sqrRoot.limbs, tmp1.limbs, nbrLimbs);
     (void)memcpy(sqrRoot.limbs, tmp1.limbs, lenBytes);
     DivBigNbrByInt(tmp1.limbs, 2, sqrRoot.limbs, nbrLimbs);
+    correctBits--;
   }
   // Get square root of ValCOdd from its inverse by multiplying by ValCOdd.
   MultBigNbr(ValCOdd.limbs, sqrRoot.limbs, tmp1.limbs, nbrLimbs);
@@ -441,7 +445,7 @@ static bool SolveQuadraticEqModPowerOf2(int exponent, int factorIndex,
       }
       else
       {
-        // Find square root of ValCOdd.
+        // Compute sqrRoot as the square root of ValCOdd.
         expon -= bitsCZero / 2;
         ComputeSquareRootModPowerOf2(expon, bitsCZero);
         expon--;

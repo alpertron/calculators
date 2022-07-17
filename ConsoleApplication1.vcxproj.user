@@ -8,7 +8,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>"x=1;x=x+1;x&lt;10000;x;sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>1 0 195722369727 1099511627776</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

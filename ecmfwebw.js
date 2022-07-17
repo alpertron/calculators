@@ -108,7 +108,6 @@ var info =
 
 self.onmessage = function (e)
 {
-  console.log("onmessage ecmfwebw 111: " + e.origin);
   if (typeof(WebAssembly) === "undefined")
   {
     return;

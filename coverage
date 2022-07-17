@@ -307,6 +307,7 @@ echo -e "\n\n**** QUADMOD ****" >> coverage.out
 ./quadmod 1 1 1 2 >> coverage.out
 ./quadmod 1 0 112 128 >> coverage.out
 ./quadmod 1 0 112 243 >> coverage.out
+./quadmod 1 0 195722369727 1099511627776 >> coverage.out
 ./quadmod T Q R M >> coverage.out
 lcov --capture --directory . --output-file quadmod.info
 make clean

@@ -85,7 +85,6 @@ let info =
 
 self.onmessage = function (e)
 {
-  console.log("onmessage ecmfwebw 111: " + e.origin);
   if (wasmLoaded)
   {
     convertToString(exports["getInputStringPtr"](), e.data[0]);

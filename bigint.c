@@ -313,7 +313,7 @@ void DivBigNbrByInt(const limb *pDividend, int divisor, limb *pQuotient, int nbr
   limb* ptrQuotient = pQuotient;
   unsigned int remainder = 0U;
   double dDivisor = (double)divisor;
-  double dLimb = 0x80000000;
+  double dLimb = 2147483648.0;
   int nbrLenMinus1 = nbrLen - 1;
   ptrDividend += nbrLenMinus1;
   ptrQuotient += nbrLenMinus1;
@@ -370,7 +370,7 @@ void MultBigNbr(const limb *pFactor1, const limb *pFactor2, limb *pProd, int nbr
   int low = 0;
   int factor1;
   int factor2;
-  double dAccumulator = 0;
+  double dAccumulator = 0.0;
   for (int i = 0; i < nbrLen; i++)
   {
     for (int j = 0; j <= i; j++)
@@ -412,7 +412,7 @@ void MultBigNbrComplete(const limb *pFactor1, const limb *pFactor2, limb *pProd,
   int j;
   int factor1;
   int factor2;
-  double dAccumulator = 0;
+  double dAccumulator = 0.0;
   for (i = 0; i < nbrLen; i++)
   {
     for (j = 0; j <= i; j++)
