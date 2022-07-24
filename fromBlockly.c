@@ -720,6 +720,10 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
             ptrInstr++;
           }
         }
+        if (ptrStackControl < &stackIf[1])
+        {
+          return BLOCKLY_CANNOT_PARSE_XML;
+        }
         EncodeElse(ptrStackControl);
         *ptrBlockStack = START_ELSE;
       }

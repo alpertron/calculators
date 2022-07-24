@@ -291,6 +291,7 @@ KVariable name is too long
 2<p> x&sup2; + x + 1 &equiv; 0 (mod 2)</p><p>There are no solutions.</p><p>Written by Dario Alpern. Last updated on 17 July 2022.</p>
 2<p> x&sup2; + 112 &equiv; 0 (mod 128)</p><ol><li>x = 4</li><li>x = 12</li><li>x = 20</li><li>x = 28</li><li>x = 36</li><li>x = 44</li><li>x = 52</li><li>x = 60</li><li>x = 68</li><li>x = 76</li><li>x = 84</li><li>x = 92</li><li>x = 100</li><li>x = 108</li><li>x = 116</li><li>x = 124</li></ol><p>Written by Dario Alpern. Last updated on 17 July 2022.</p>
 2<p> x&sup2; + 112 &equiv; 0 (mod 243)</p><p>There are no solutions.</p><p>Written by Dario Alpern. Last updated on 17 July 2022.</p>
+2<p> x&sup2; + 195722 369727 &equiv; 0 (mod 1 099511 627776)</p><ol><li>x = 140133 834913</li><li>x = 409621 978975</li><li>x = 689889 648801</li><li>x = 959377 792863</li></ol><p>Written by Dario Alpern. Last updated on 17 July 2022.</p>
 2<p>Quadratic coefficient: The expression must not include variables</p><p>Linear coefficient: The expression must not include variables</p><p>Constant coefficient: The expression must not include variables</p>Modulus: The expression must not include variables</p><p>Written by Dario Alpern. Last updated on 17 July 2022.</p>
 
 

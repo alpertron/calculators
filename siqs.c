@@ -1815,7 +1815,7 @@ static void PartialRelationFound(
       for (index = 0; index < common.siqs.nbrFactorsA; index++)
       {
         DivBigNbrByInt(biT,
-          common.siqs.primeTrialDivisionData[indexFactorsA[index]].value, biT,
+          common.siqs.primeTrialDivisionData[*(indexFactorsA+index)].value, biT,
           NumberLengthDivid);
         if (biT[NumberLengthDivid - 1].x == 0)
         {
@@ -1834,7 +1834,7 @@ static void PartialRelationFound(
         expParity = 0;
         if ((index >= common.siqs.indexMinFactorA) &&
             (indexFactorA < common.siqs.nbrFactorsA) && 
-            (index == indexFactorsA[indexFactorA]))
+            (index == *(indexFactorsA+indexFactorA)))
         {
           expParity = 1;
           indexFactorA++;

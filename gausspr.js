@@ -285,19 +285,6 @@ function startLowLevelCode()
     env = {"a": {"buffer": asmJSbuffer},
       "abort": function(_q) {/* Not used*/},
     };
-    // check for imul support, and also for correctness ( https://bugs.webkit.org/show_bug.cgi?id=126345 )
-    if (!Math["imul"] || Math["imul"](minusOne, 5) !== -5)
-    {
-      Math["imul"] = function imul(a, b)
-      {
-        let ah  = a >>> 16;
-        let al = a & 0xffff;
-        let bh  = b >>> 16;
-        let bl = b & 0xffff;
-        return (al*bl + ((ah*bl + al*bh) << 16))|0;
-      };
-    }
-    Math.imul = Math["imul"];
     asm = instantiate(env);  // Link asm.js module.
     asmGetInformation = asm.a;
     asmDrawPartialGraphic = asm.a;
