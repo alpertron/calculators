@@ -1962,7 +1962,7 @@ static int showRadicals(int numerator, int denominator, int multipl,
     }
     else
     {
-      ptrExpr = "S2";       // cos (Pi/4)
+      ptrExpr = "S2";       // cos(Pi/4)
     }
     exprDen = 2;
   }
@@ -2418,7 +2418,7 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
   int index;
   const int* ptrCoeff;
   int currentDegree;
-  if (polyDegree == 0)
+  if (polyDegree <= 0)
   {
     return false;   // Constant polynomials are not cyclotomic.
   }
