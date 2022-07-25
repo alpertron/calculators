@@ -2553,7 +2553,7 @@ static bool isPalindromic(int* ptrPolynomial, int polyDegree)
     ptrCoeff += numLimbs(ptrCoeff);
     ptrCoeff++;
   }
-  for (currentDegree = 0; currentDegree <= (polyDegree / 2); currentDegree++)
+  for (currentDegree = 0; (currentDegree * 2) < polyDegree; currentDegree++)
   {
     if (*ptrs[currentDegree] != *ptrs[polyDegree - currentDegree])
     {
