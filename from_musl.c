@@ -139,6 +139,8 @@ int __rem_pio2(double x, double* y)
       }
     }
   }
+  y[0] = 0;
+  y[1] = 0;
   return 0;   // It should never come here.
 }
 
