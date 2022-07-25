@@ -1941,7 +1941,7 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   {
     pstFactorInfo++;
   }
-  if ((pstFactorInfo - pstFactorInfoInteger) > 0)
+  if (pstFactorInfo > pstFactorInfoInteger)
   {
     (void)memmove(pstFactorInfoInteger + 1, pstFactorInfoInteger,
       (pstFactorInfo - pstFactorInfoInteger) * sizeof(*pstFactorInfo));

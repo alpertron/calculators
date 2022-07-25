@@ -2418,6 +2418,10 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
   int index;
   const int* ptrCoeff;
   int currentDegree;
+  if (polyDegree == 0)
+  {
+    return false;   // Constant polynomials are not cyclotomic.
+  }
   // Polynomial must be palindromic of even degree
   // and the absolute value must be less than 10.
   if ((polyDegree & 0x01) == 0x01)
