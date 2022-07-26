@@ -881,7 +881,7 @@ double cos(double x)
   /* cos(Inf or NaN) is NaN */
   if (ix >= 0x7ff00000U)
   {
-    return x - x;
+    return asdouble(0x7FF8000000000000LL);
   }
   /* argument reduction */
   n = __rem_pio2(x, y);
@@ -942,7 +942,7 @@ double acos(double x)
       }
       return 0.0;
     }
-    return 0.0 / (x - x);
+    return asdouble(0x7FF0000000000000LL);
   }
   /* |x| < 0.5 */
   if (ix < 0x3fe00000U)

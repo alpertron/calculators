@@ -1301,7 +1301,6 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
   int maxExpon;
   int h;
   int j;
-  int modulus;
   int intLog2root;
   int primesLength;
   int Exponent;
