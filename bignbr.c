@@ -1261,6 +1261,34 @@ void ArrLimbs2LenAndLimbs(/*@out@*/int *ptrValues, const limb *bigint, int nbrLe
   *ptrValues = nbrLimbs;
 }
 
+static void checkProcessExpon(const BigInteger *pBigNbr, int currExpon,
+  int primesLength, int maxExpon)
+{
+  int processed = 0;
+  int j = (2 * currExpon) + 1;
+  for (;;)
+  {
+    if ((j >= primesLength) || (processed > 10))
+    {
+      return;
+    }
+    if (primes[j])
+    {
+      int modulus = getRemainder(pBigNbr, j);
+      if (intModPow(modulus, j / currExpon, j) > 1)
+      {
+        break;
+      }
+    }
+    processed++;
+    j += 2 * currExpon;
+  }
+  for (j = currExpon; j <= maxExpon; j += currExpon)
+  {
+    ProcessExpon[j] = false;
+  }
+}
+
 // This routine checks whether the number pointed by pNbr is
 // a perfect power. If it is not, it returns one.
 // If it is a perfect power, it returns the exponent and 
@@ -1327,7 +1355,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
       (void)memcpy(pBase->limbs, pBigNbr->limbs, nbrLimbsBytes);
       return 1;
     }
-    dMaxExpon = (dLogBigNbr / log(101)) + 0.5;
+    dMaxExpon = (dLogBigNbr / log(101.0)) + 0.5;
   }
   else
   {
@@ -1380,27 +1408,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
   {
     if (primes[h])
     {
-      int processed = 0;
-      for (j = (2 * h) + 1; j < primesLength; j += 2 * h)
-      {
-        if (primes[j])
-        {
-          modulus = getRemainder(pBigNbr, j);
-          if (intModPow(modulus, j / h, j) > 1)
-          {
-            for (j = h; j <= maxExpon; j += h)
-            {
-              ProcessExpon[j] = false;
-            }
-            break;
-          }
-        }
-        processed++;
-        if (processed > 10)
-        {
-          break;
-        }
-      }
+      checkProcessExpon(pBigNbr, h, primesLength, maxExpon);
     }
   }
   log2N = dLogBigNbr / LOG_2;
@@ -1863,8 +1871,7 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
       }
       if (checkMinusOne(Mult4, nbrLimbs) != 0)
       {
-        i = -1;         // Number is strong pseudoprime.
-        break;
+        return 0;         // Number is strong pseudoprime.
       }
       lenBytes = nbrLimbs * (int)sizeof(limb);
       (void)memcpy(Mult1, Mult4, lenBytes);
@@ -1876,13 +1883,10 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
 #endif
       return 1;         // Not 2-Fermat probable prime.
     }
-    if (i != -1)
-    {
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
-      StepECM = 0;      // Do not show progress.
+    StepECM = 0;      // Do not show progress.
 #endif
-      return 2;         // Composite. Not 2-strong probable prime.
-    }
+    return 2;         // Composite. Not 2-strong probable prime.
   }
   return 0;
 }
@@ -2075,6 +2079,10 @@ int BpswPrimalityTest(const BigInteger *pValue)
   int nbrLimbs = pValue->nbrLimbs;
   const limb* limbs = pValue->limbs;
   static BigInteger tmp;
+  if (nbrLimbs < 1)
+  {      // It should never come here.
+    return 1;      // Indicate prime.
+  }
   if (nbrLimbs == 1)
   {
     if (limbs->x <= 1)
