@@ -1869,13 +1869,17 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
 {
   struct sFactorInfo* pstFactorInfoInteger;
   const struct sFactorInfo* pstFactorInfo;
-  int indexNewFactor[MAX_DEGREE];
-  int indexOldFactor[MAX_DEGREE];
+  int indexNewFactor[MAX_DEGREE+2];
+  int indexOldFactor[MAX_DEGREE+2];
   int currentDegree;
   int index;
   int* ptrIndex;
   const int* ptrOldFactor;
 
+  if (degreePoly < 0)
+  {         // This should not be executed.
+    return;
+  }
   // Fill indexes to start of each coefficient.
   ptrIndex = &indexNewFactor[0];
   index = 0;
