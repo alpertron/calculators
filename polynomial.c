@@ -1904,6 +1904,10 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
   int indexes[MAX_DEGREE+1];
   int NumberLengthBak = NumberLength;
 
+  if (polyDegree < 0)
+  {      // It should not come here.
+    return;
+  }
   ptrIndex = &indexes[0];
   if (modulusIsZero)
   {
