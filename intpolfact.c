@@ -1877,7 +1877,7 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   const int* ptrOldFactor;
 
   if (degreePoly < 0)
-  {         // This should not be executed.
+  {
     return;
   }
   // Fill indexes to start of each coefficient.

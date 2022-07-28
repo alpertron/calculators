@@ -443,7 +443,7 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
   {
     if (ptrDest > *ppDecimal)
     {
-      ptrDest--;
+      ptrDest--;               // Delete trailing space.
     }
   }
   *ptrDest = '\0';             // Add terminator.

@@ -2123,7 +2123,7 @@ void modmult(const limb* factor1, const limb* factor2, limb* product)
     (product + (powerOf2Exponent / BITS_PER_GROUP))->x &= (1 << (powerOf2Exponent % BITS_PER_GROUP)) - 1;
     return;
   }
-  if (NumberLength == 1)
+  if (NumberLength <= 1)
   {
     if (TestNbr[0].x <= 32768)
     {
