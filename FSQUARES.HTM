@@ -44,7 +44,7 @@ nav::after {clear:both;}
 .bread li+li:before {content:"›"}
 body {font-family: arial; margin: 0; padding: 0;}
 main {padding:10px;}
-h1 {text-align:center;}
+h1, .h2title {text-align:center}
 fieldset {display:inline}
 #functions {max-width:50%}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
@@ -257,7 +257,7 @@ You can download the source of the current program and the old sum of four squar
 </article>
 </main>
 <aside id="wizard">
-<h1>Sum of squares wizard</h1>
+<h2 class="h2title">Sum of squares wizard</h2>
 <form class="applet">
 <fieldset id="output" class="atright">
 <legend>Output</legend>
@@ -324,7 +324,7 @@ You can download the source of the current program and the old sum of four squar
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 </aside>
 <aside id="feedback">
-<h1>Feedback form</h1>
+<h2 class="h2title">Feedback form</h2>
 <form class="applet" id="formfeedback">
 <input type="hidden" name="subject" value="Sum of squares calculator feedback" />
 <div id="formleft">
@@ -395,7 +395,7 @@ break;case 3:A+=";x="+h.value;d.innerHTML="Step 3 of 5: End loop condition";e.in
 e.innerHTML="Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";break;case 6:""!==h.value&&(A+=";"+h.value);m.value=A;t=0;N=a("hexW").checked?1:0;a("main").style.display="block";a("wizard").style.display="none";m.focus();break;default:t=0,m.value=h.value,N=a("hexW").checked?1:0,a("main").style.display="block",a("wizard").style.display="none",m.focus()}t&&(h.value="",h.focus())}
 function v(){a("main").style.display="block";a("feedback").style.display="none";a("num").focus()}function J(){var f=I;f.focus();var d=f.selectionStart;f.value=f.value.substring(0,d)+this.innerText+f.value.substring(f.selectionEnd);f.selectionStart=d+this.innerText.length;f.selectionEnd=f.selectionStart}function w(f,d){var e;d=a(d);f=a(f).selectedIndex;var h=(X+Y[+f]).split(","),m=document.createDocumentFragment();for(e=0;e<h.length/2;e++)f=document.createElement("button"),f.setAttribute("type","button"),
 f.setAttribute("title",h[2*e]),f.innerHTML=h[2*e+1],f.classList.add("funcbtn"),f.onclick=J,m.appendChild(f);d.innerHTML="";d.appendChild(m)}var t=0,A,B=0,M=0,N=0,Q,L="undefined"===typeof WebAssembly,I;var Y="Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(;Equal,=,Not equal,!=,Greater,>,Not greater,<=,Less,<,Not less,>=;Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ,Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ;Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(;Next prime after,N(,Last prime before,B(,Number of digits\n\nFirst argument: value\nSecond argument: base,NumDigits(,Sum of digits\n\nFirst argument: value\nSecond argument: base,SumDigits(,Reverse digits\n\nFirst argument: value\nSecond argument: base,RevDigits(;Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv(,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow(,Totient,Totient(,Jacobi symbol\n\nFirst argument: upper value\nSecond argument: lower value,Jacobi(;Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P(".split(";");
-var X="Left parenthesis,(,Right parenthesis,),";var P="fsquaresW00DJ.js fsquares.webmanifest sumcuad.webmanifest fsquares-icon-1x.png fsquares-icon-2x.png fsquares-icon-4x.png fsquares-icon-180px.png fsquares-icon-512px.png favicon.ico".split(" ");L||P.shift();var K=window.location.pathname;if(L){var F=new XMLHttpRequest;F.open("GET","fsquaresW00DJ.js",!0);F.responseType="arraybuffer";F.onreadystatechange=function(){4===F.readyState&&200===F.status&&(M=F.response)};F.send(null)}else{for(var y=document.getElementById("wasmb64").text;32>
+var X="Left parenthesis,(,Right parenthesis,),";var P="fsquaresW00DK.js fsquares.webmanifest sumcuad.webmanifest fsquares-icon-1x.png fsquares-icon-2x.png fsquares-icon-4x.png fsquares-icon-180px.png fsquares-icon-512px.png favicon.ico".split(" ");L||P.shift();var K=window.location.pathname;if(L){var F=new XMLHttpRequest;F.open("GET","fsquaresW00DK.js",!0);F.responseType="arraybuffer";F.onreadystatechange=function(){4===F.readyState&&200===F.status&&(M=F.response)};F.send(null)}else{for(var y=document.getElementById("wasmb64").text;32>
 y.charCodeAt(0);)y=y.substring(1);for(;32>y.charCodeAt(y.length-1);)y=y.substring(0,y.length-1);var R=3*y.length/4;61===y.charCodeAt(y.length-1)&&R--;61===y.charCodeAt(y.length-2)&&R--;M=new Int8Array(R);k(y,M)}window.addEventListener("load",function(){var f;a("num").onkeydown=function(d){var e=a("digits").value;var h=a("result");h.style.display="block";var m=a("num").value;"Enter"===d.key&&(""===m?h.innerHTML="Please type a number or expression.":(h.innerHTML="Computing sum of squares...",f=e+",0,"+
 m+String.fromCharCode(0),c("none","inline"),u(f)))};a("calc").onclick=function(){b()};a("openwizard").onclick=function(){a("main").style.display="none";a("wizard").style.display="block";a("mode").style.display="block";a("oneexpr").checked=!0;a("next").disabled=!0;a("hexW").checked=N?!0:!1;a("decW").checked=N?!1:!0;a("wzdinput").value="";a("wzdinput").focus();g()};a("wzdinput").onkeydown=function(d){var e=d.key;"Enter"===e&&(a("next").disabled||p(),d.stopPropagation(),d.preventDefault());if("Escape"===
 e||"Esc"===e)a("main").style.display="block",a("wizard").style.display="none";d.altKey&&("P"===e?(d.stopPropagation(),d.preventDefault(),a("oneexpr").checked?(a("oneexpr").checked=!1,a("loop").checked=!0,l()):(a("oneexpr").checked=!0,a("loop").checked=!1,g())):"D"===e?(d.stopPropagation(),d.preventDefault(),a("decW").checked=!0,a("hexW").checked=!1):"H"===e&&(d.stopPropagation(),d.preventDefault(),a("decW").checked=!1,a("hexW").checked=!0));return!0};a("oneexpr").onclick=function(){g()};a("loop").onclick=
