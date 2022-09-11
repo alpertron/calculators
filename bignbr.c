@@ -2616,8 +2616,10 @@ void computeRoot(const BigInteger* argument, BigInteger *nthRoot, int Exponent)
   static BigInteger nthRootSignificantLimbs;
   static BigInteger rootN1;
   bool smallBase;
+  int offset;
   double logN = logBigNbr(argument) / Exponent;  // Find nth root of number to factor.
   expBigNbr(nthRoot, logN);
+  nthRoot->sign = argument->sign;
   smallBase = (nthRoot->nbrLimbs == 1) && (nthRoot->limbs[0].x < 1000000000);
   if (smallBase)
   {
@@ -2667,11 +2669,35 @@ void computeRoot(const BigInteger* argument, BigInteger *nthRoot, int Exponent)
   }
   // Round nthRootSignificantLimbs and copy it to nthRoot.
   nbrBytes = nthRoot->nbrLimbs * (int)sizeof(limb);
-  (void)memcpy(nthRoot->limbs, nthRootSignificantLimbs.limbs, nbrBytes);
-  if (nthRootSignificantLimbs.limbs[maxNbrLimbs - nthRoot->nbrLimbs - 1].x >=
+  offset = nthRootSignificantLimbs.nbrLimbs - nthRoot->nbrLimbs;
+  (void)memcpy(nthRoot->limbs,
+    &nthRootSignificantLimbs.limbs[offset], nbrBytes);
+  if (nthRootSignificantLimbs.limbs[offset - 1].x >=
     HALF_INT_RANGE)
   {
     addbigint(nthRoot, 1);
   }
 }
 
+enum eExprErr BigIntRoot(const BigInteger* argument, BigInteger* nthRoot, int Exponent)
+{
+  enum eExprErr rc;
+  if ((argument->sign == SIGN_NEGATIVE) && ((Exponent % 2) == 0))
+  {
+    return EXPR_BASE_MUST_BE_POSITIVE;
+  }
+  computeRoot(argument, nthRoot, Exponent);
+  // At this moment nthRoot is rounded to the root of argument.
+  // Make it floor of root.
+  rc = BigIntPowerIntExp(nthRoot, Exponent, &Temp);
+  if (rc != EXPR_OK)
+  {
+    return rc;
+  }
+  BigIntSubt(argument, &Temp, &Temp);
+  if (Temp.sign == SIGN_NEGATIVE)
+  {
+    addbigint(nthRoot, -1);
+  }
+  return EXPR_OK;
+}

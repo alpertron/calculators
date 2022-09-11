@@ -28,7 +28,7 @@
 #include "polynomial.h"
 #include "fromBlockly.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 13
+#define DEBUG_CODE 23
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -36,6 +36,7 @@ extern bool teach;
 #if DEBUG_CODE == 22
 static char bufferXML[1000000];
 #endif
+void assignExponent(char c);
 void dilogText(const char *baseText, const char *powerText, const char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, bool doFactorization, char *knownFactors);
@@ -444,6 +445,17 @@ int main(int argc, char* argv[])
   else
   {
     printf("Command line: calculator <XML file> <line number>.\n");
+  }
+#elif DEBUG_CODE == 23
+  if (argc != 3)
+  {
+    printf("Command line: calculator number expon (use 0 for 3, 1 for 5, 2 for 7");
+  }
+  else
+  {
+    assignExponent(argv[2][0]);
+    tsqcubesText(argv[1], 6);
+    (void)printf("%s\n", output);
   }
 #endif
   return 0;

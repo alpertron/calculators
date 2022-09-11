@@ -119,6 +119,12 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   int lenBytes;
   int shRightBits;
 
+  if ((len == 1) && (argument->x == 0))
+  {    // Input number is zero. Its square root is also zero.
+    *pLenSqRoot = 1;
+    sqRoot->x = 0;
+    return;
+  }
   // If the number of limbs is even and the upper half of the number has all
   // limbs set to MAX_VALUE_LIMB, there could be overflow. Set the square root directly.
   if ((length % 2) == 0)

@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 3 de agosto de 2022."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 3 August 2022."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 10 de septiembre de 2022."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 10 September 2022."
 
 #include "bignbr.h"
 #ifdef __EMSCRIPTEN__
@@ -73,6 +73,7 @@ void databack(const char *data);
 #define TOKEN_ABS                    30
 #define TOKEN_SGN                    31
 #define TOKEN_ANS                    32
+#define TOKEN_IROOT                  33
 
 
 enum eExprErr

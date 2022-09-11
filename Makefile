@@ -66,9 +66,14 @@ factor.fco ecm.fco siqs.fco siqsLA.fco quadmod.fco quadmodLL.fco bignbr.fco show
 factor.fco ecm.fco siqs.fco siqsLA.fco quadmod.fco quadmodLL.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco test_quadmod.fco $(flags_coverage) -lm -o $@
 
 fsquares: expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
-fsquares.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fsquares.sqo
+fsquares.sqo tsquares.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fsquares.sqo
 	gcc expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
-fsquares.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fsquares.sqo $(flags_coverage) -lm -o $@
+fsquares.sqo tsquares.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fsquares.sqo $(flags_coverage) -lm -o $@
+
+tsqcubes: expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
+tsqcubes.sqo tsquares.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_tsqcubes.sqo
+	gcc expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
+tsqcubes.sqo tsquares.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_tsqcubes.sqo $(flags_coverage) -lm -o $@
 
 fcubes: expression.sqo parseexpr.sqo partition.sqo errors.sqo bigint.sqo division.sqo baseconv.sqo karatsuba.sqo modmult.sqo sqroot.sqo \
 fcubes.sqo bignbr.sqo showtime.sqo from_musl.sqo inputstr.sqo batch.sqo fft.sqo gcdrings.sqo test_fcubes.sqo
@@ -120,6 +125,9 @@ test_dilog.fco: test.c $(h_files)
 	
 test_fsquares.sqo: test.c $(h_files)
 	gcc $(flags_squares) -DDEBUG_CODE=1 -o $@ $<
+	
+test_tsqcubes.sqo: test.c $(h_files)
+	gcc $(flags_squares) -DDEBUG_CODE=23 -o $@ $<
 	
 test_fcubes.sqo: test.c $(h_files)
 	gcc $(flags_squares) -DDEBUG_CODE=2 -o $@ $<

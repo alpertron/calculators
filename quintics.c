@@ -958,7 +958,6 @@ static void GaloisGroupHasOrder10Or20(int groupOrder)
   CopyBigInt(&Rat1.denominator, &RatDiscr.denominator);
   MultiplyRationalBySqrtRational(&RatN, &Rat1);
   MultiplyRationalBySqrtRational(&RatValues[index_T2], &RatDiscr);
-  // Test whether M^2/d^2 - N^2 is a perfect square.
   BigRationalMultiply(&RatM, &RatM, &RatR);   // RatR <- M^2
   BigRationalDivide(&RatR, &RatDiscr, &RatR); // RatR <- M^2/d^2
   BigRationalMultiply(&RatN, &RatN, &RatS);   // RatS <- N^2
@@ -969,7 +968,7 @@ static void GaloisGroupHasOrder10Or20(int groupOrder)
   // Compare sqrt(5)*M versus 5*N*d
   // Compare 5*M^2 versus 25*N^2*d^2
   // Compare M^2/(5*N^2*d^2) versus 1 (numerator vs. denominator).
-  BigRationalDivide(&RatR, &RatS, &Rat2);     // Rat2 <- M^2/(d^2*N^2)
+  BigRationalDivide(&RatR, &RatS, &Rat2);    // Rat2 <- M^2/(d^2*N^2)
   BigRationalDivideByInt(&Rat2, 5, &Rat2);    // Rat2 <- M^2/(5*d^2*N^2)
   // Compare numerator vs. denominator.
   BigIntSubt(&Rat2.numerator, &Rat2.denominator, &tmp1);

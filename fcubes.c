@@ -411,7 +411,7 @@ static void batchCubesCallback(char **pptrOutput)
     *pptrOutput = ptrOutput;
     return;
   case 1:
-    copyStr(&ptrOutput, (lang?": ¡Error interno!Por favor envíe este número al autor del applet.</p>":
+    copyStr(&ptrOutput, (lang?": ¡Error interno! Por favor envíe este número al autor del applet.</p>":
       ": Internal error! Please send the number to the author of the applet.</p>"));
     *pptrOutput = ptrOutput;
     return;

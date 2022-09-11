@@ -166,6 +166,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="tsqcubes.c" />
     <ClCompile Include="baseconv.c" />
     <ClCompile Include="batch.c" />
     <ClCompile Include="bigint.c" />
@@ -214,6 +215,7 @@
     </ClCompile>
     <ClCompile Include="test.c" />
     <ClCompile Include="showtime.c" />
+    <ClCompile Include="tsquares.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="batch.h" />
@@ -228,6 +230,7 @@
     <ClInclude Include="quintics.h" />
     <ClInclude Include="rootseq.h" />
     <ClInclude Include="showtime.h" />
+    <ClInclude Include="tsquares.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

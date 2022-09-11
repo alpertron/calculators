@@ -34,7 +34,7 @@ if (lang)
 {
   funcnames =
   [
-    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(",
+    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt(,Raíz entera\n\nPrimer argumento: radicando\nSegundo argumento: orden de la raíz,iroot(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(",
     "Igual,=,Distinto,!=,Mayor,>,Menor o igual,<=,Menor,<,Mayor o igual,>=",
     "Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT ,Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ",
     "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD(,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM(,¿El valor es primo?,IsPrime(",
@@ -48,7 +48,7 @@ else
 {
   funcnames =
   [
-    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(",
+    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt(,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(",
     "Equal,=,Not equal,!=,Greater,>,Not greater,<=,Less,<,Not less,>=",
     "Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ,Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ",
     "Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(",
@@ -67,7 +67,15 @@ function get(x)
 function styleButtons(style1, style2)
 {
   get("calc").style.display = style1;
-  if (app < 4)
+  if (get("calc5") !== null)
+  {
+    get("calc5").style.display = style1;
+  }
+  if (get("calc7") !== null)
+  {
+    get("calc7").style.display = style1;
+  }
+  if ((app !== 4) && (app !== 5))
   {    // Continued fraction applet does not use wizard.
     get("openwizard").style.display = style1;
   }
@@ -152,10 +160,15 @@ else if (app < 4)
   calcURLs = ["fsquaresW0000.js",
                "fcubes.webmanifest", "sumcubos.webmanifest", "fcubes-icon-1x.png", "fcubes-icon-2x.png", "fcubes-icon-4x.png", "fcubes-icon-180px.png", "fcubes-icon-512px.png", "favicon.ico"];
 }
-else
+else if (app < 6)
 {
   calcURLs = ["fsquaresW0000.js",
                "contfrac.webmanifest", "fraccont.webmanifest", "contfrac-icon-1x.png", "contfrac-icon-2x.png", "contfrac-icon-4x.png", "contfrac-icon-180px.png", "contfrac-icon-512px.png", "favicon.ico"];
+}
+else
+{
+  calcURLs = ["fsquaresW0000.js",
+               "tsqcubes.webmanifest", "tcuadcub.webmanifest", "tsqcubes-icon-1x.png", "tsqcubes-icon-2x.png", "tsqcubes-icon-4x.png", "tsqcubes-icon-180px.png", "tsqcubes-icon-512px.png", "favicon.ico"];
 }
 if (!asmjs)
 {
@@ -319,7 +332,7 @@ function callWorker(param)
   }
 }
 
-function performCalc()
+function performCalc(from)
 {
   let res, valueA, valueB, valueC, digitGroup;
   res = get("result");
@@ -327,7 +340,7 @@ function performCalc()
   valueA = get("num").value;
   if (valueA === "")
   {
-    if (app >= 4)
+    if ((app === 4) || (app === 5))
     {
       res.innerHTML = (lang ? "Por favor ingrese un número o expresión para el numerador." :
                               "Please type a number or expression for numerator.");
@@ -339,7 +352,7 @@ function performCalc()
     }
     return;
   }
-  if (app >= 4)
+  if ((app === 4) || (app === 5))
   {
     valueB = get("delta").value;
     if (valueB === "")
@@ -366,29 +379,26 @@ function performCalc()
   {
     res.innerHTML = "Calculando suma de cuadrados...";
   }
-  else if (app === 2)
-  {
-    res.innerHTML = "Computing sum of cubes...";
-  }
-  else if (app === 3)
-  {
-    res.innerHTML = "Calculando suma de cubos...";
-  }
   else if (app === 4)
   {
     res.innerHTML = "Computing continued fraction expansion...";
   }
-  else
+  else if (app === 5)
   {
     res.innerHTML = "Calculando desarrollo en fracciones continuas...";
   }
-  if (app >= 4)
+  if ((app === 4) || (app === 5))
   {
     hex = (get("converg").checked? 1: 0);
   }
-  let param = digitGroup + "," + (app+hex*64) + "," + valueA + String.fromCharCode(0);
-  if (app >= 4)
-  {
+  let param = "";
+  if ((app === 6) || (app === 7))
+  {         // Sum of two squares and a power.
+    param = from + ',';
+  }
+  param += digitGroup + "," + (app+hex*64) + "," + valueA + String.fromCharCode(0);
+  if ((app === 4) || (app === 5))
+  {         // Continued fractions.
     param += valueB + String.fromCharCode(0) + valueC + String.fromCharCode(0);
   }
   else
@@ -527,8 +537,8 @@ function generateFuncButtons(optionCategory, funcButtons)
 function startUp()
 {
   let param;
-  if (app<4)
-  {
+  if ((app !== 4) && (app !== 5))
+  {    // Not continued fraction.
     get("num").onkeydown = function(e)
     {
       let res;
@@ -552,14 +562,6 @@ function startUp()
         {
           res.innerHTML = "Calculando suma de cuadrados...";
         }
-        else if (app === 2)
-        {
-          res.innerHTML = "Computing sum of cubes...";
-        }
-        else
-        {
-          res.innerHTML = "Calculando suma de cubos...";
-        }
         param = digitGroup + "," + app + "," + input + String.fromCharCode(0);
         styleButtons("none", "inline");  // Enable "stop" button
         callWorker(param);
@@ -568,9 +570,23 @@ function startUp()
   }
   get("calc").onclick = function()
   {
-    performCalc();
+    performCalc(0);
   };
-  if (app < 4)
+  if (get("calc5") !== null)
+  {
+    get("calc5").onclick = function()
+    {
+      performCalc(1);
+    };
+  }
+  if (get("calc7") !== null)
+  {
+    get("calc7").onclick = function()
+    {
+      performCalc(2);
+    };
+  }
+  if ((app !== 4) && (app !== 5))
   {    // Continued fraction applet does not use wizard.
     get("openwizard").onclick = function()
     {
@@ -705,7 +721,7 @@ function startUp()
     if (keyCode === "Enter" && event.ctrlKey)
     {
       event.preventDefault();          // Do not propagate Enter key.
-      performCalc();                   // Perform calculation.
+      performCalc(0);                  // Perform calculation.
     }
     return true;
   };
@@ -777,12 +793,12 @@ function startUp()
     let userdata = get("userdata");
     if (get("adduserdata").checked)
     {
-      if(app < 4)
-      {   
+      if ((app !== 4) && (app !== 5))
+      {     // Not continued fraction application.
         userdata.value = "\n" + get("num").value + "\n" + get("result").innerHTML + "\n" + get("status").innerHTML;
       }
       else
-      {
+      {     // Continued fraction application.
         userdata.value = "\nnum = " + get("num").value + "\ndelta = " + get("delta").value + "\nden = " + get("den").value;         
       }
     }

@@ -58,6 +58,7 @@ const struct sFuncOperExpr stFuncOperIntExpr[] =
   {"LCM", TOKEN_LCM + MANY_PARMS, 0},
   {"MODPOW", TOKEN_MODPOW + THREE_PARMS, 0},
   {"MODINV", TOKEN_MODINV + TWO_PARMS, 0},
+  {"IROOT", TOKEN_IROOT + TWO_PARMS, 0},
   {"SUMDIGITS", TOKEN_SUMDIGITS + TWO_PARMS, 0},
   {"NUMDIGITS", TOKEN_NUMDIGITS + TWO_PARMS, 0},
   {"REVDIGITS", TOKEN_REVDIGITS + TWO_PARMS, 0},
@@ -314,6 +315,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
     int currentOffset;
     int nbrLenBytes;
     int jacobi;
+    int Exponent;
     switch (c)
     {
     case TOKEN_NUMBER:
@@ -389,6 +391,54 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
       }
       jacobi = BigIntJacobiSymbol(&curStack, &curStack2);
       intToBigInteger(&curStack, jacobi);
+      break;
+
+    case TOKEN_IROOT:
+      retcode = getParms(2, stackIndexThreshold);
+      if (retcode == EXPR_SHORT_CIRCUIT)
+      {
+        break;
+      }
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      if ((curStack2.sign == SIGN_NEGATIVE) || BigIntIsZero(&curStack2))
+      {
+        return EXPR_INVALID_PARAM;
+      }
+      if (!BigIntIsZero(&curStack))
+      {
+        Exponent = curStack2.limbs[0].x;
+        if (curStack2.nbrLimbs > 1)
+        {
+          if (curStack.sign == SIGN_POSITIVE)
+          {
+            intToBigInteger(&curStack, 1);
+          }
+          else if ((Exponent % 2) == 0)
+          {
+            return EXPR_BASE_MUST_BE_POSITIVE;
+          }
+          else if ((curStack.nbrLimbs == 1) && (curStack.limbs[0].x == 1))
+          {       // First parameters is -1.
+            intToBigInteger(&curStack, -1);
+          }
+          else
+          {
+            intToBigInteger(&curStack, -2);
+          }
+        }
+        else
+        {
+          retcode = BigIntRoot(&curStack, &curStack2, Exponent);
+          if (retcode != EXPR_OK)
+          {
+            return retcode;
+          }
+          CopyBigInt(&curStack, &curStack2);
+        }
+      }
       break;
 
     case TOKEN_ABS:

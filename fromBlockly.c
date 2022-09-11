@@ -56,6 +56,7 @@ static const char blockBasicMath[] =
   OPER_REMAINDER,
   OPER_POWER,
   TOKEN_SQRT,
+  TOKEN_IROOT,
   TOKEN_RANDOM,
   TOKEN_ABS,
   TOKEN_SGN,

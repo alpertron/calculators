@@ -10,10 +10,13 @@ del *00*js
 rem ==================== GENERATION OF ASM.JS ===============================
 set fsquaresFiles=expression.c parseexpr.c partition.c errors.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c
 set fsquaresOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432
-cmd /c emcc %jsCommon% %fsquaresFiles% fsquares.c %fsquaresOptions% -o fsquaresW%1.js
+cmd /c emcc %jsCommon% %fsquaresFiles% fsquares.c tsquares.c %fsquaresOptions% -o fsquaresW%1.js
 if errorlevel 1 goto end
 
 cmd /c emcc %jsCommon% %fsquaresFiles% fcubes.c %fsquaresOptions% -o fcubesW%1.js
+if errorlevel 1 goto end
+
+cmd /c emcc %jsCommon% %fsquaresFiles% tsqcubes.c tsquares.c %fsquaresOptions% -o tsqcubesW%1.js
 if errorlevel 1 goto end
 
 cmd /c emcc %jsCommon% %fsquaresFiles% contfrac.c %fsquaresOptions% -o contfracW%1.js
@@ -50,16 +53,22 @@ cmd /c emcc %jsCommon% %quadFiles% %quadOptions% -o quadW%1.js
 if errorlevel 1 goto end
 
 rem ===================== GENERATION OF WASM ================================
-cmd /c emcc %wasmCommon% -Dlang=0 %fsquaresFiles% fsquares.c %fsquaresOptions% -o fsquaresE.wasm
+cmd /c emcc %wasmCommon% -Dlang=0 %fsquaresFiles% fsquares.c tsquares.c %fsquaresOptions% -o fsquaresE.wasm
 if errorlevel 1 goto end
 
-cmd /c emcc %wasmCommon% -Dlang=1 %fsquaresFiles% fsquares.c %fsquaresOptions% -o fsquaresS.wasm
+cmd /c emcc %wasmCommon% -Dlang=1 %fsquaresFiles% fsquares.c tsquares.c %fsquaresOptions% -o fsquaresS.wasm
 if errorlevel 1 goto end
 
 cmd /c emcc %wasmCommon% -Dlang=0 %fsquaresFiles% fcubes.c %fsquaresOptions% -o fcubesE.wasm
 if errorlevel 1 goto end
 
 cmd /c emcc %wasmCommon% -Dlang=1 %fsquaresFiles% fcubes.c %fsquaresOptions% -o fcubesS.wasm
+if errorlevel 1 goto end
+
+cmd /c emcc %wasmCommon% -Dlang=0 %fsquaresFiles% tsqcubes.c tsquares.c %fsquaresOptions% -o tsqcubesE.wasm
+if errorlevel 1 goto end
+
+cmd /c emcc %wasmCommon% -Dlang=1 %fsquaresFiles% tsqcubes.c tsquares.c %fsquaresOptions% -o tsqcubesS.wasm
 if errorlevel 1 goto end
 
 cmd /c emcc %wasmCommon% -Dlang=0 %fsquaresFiles% contfrac.c %fsquaresOptions% -o contfracE.wasm
@@ -122,6 +131,12 @@ perl replaceEmbeddedJS.pl %1 CONTFRAC.HTM fsquares.js contfracE.wasm
 java -jar %compilerName% -D app=5 %compilerOptions% --js interface.js --js_output_file fsquares.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 FRACCONT.HTM fsquares.js contfracS.wasm
+java -jar %compilerName% -D app=6 %compilerOptions% --js interface.js --js_output_file fsquares.js
+if errorlevel 1 goto end
+perl replaceEmbeddedJS.pl %1 TSQCUBES.HTM fsquares.js tsqcubesE.wasm
+java -jar %compilerName% -D app=7 %compilerOptions% --js interface.js --js_output_file fsquares.js
+if errorlevel 1 goto end
+perl replaceEmbeddedJS.pl %1 TCUADCUB.HTM fsquares.js tsqcubesS.wasm
 
 java -jar %compilerName% %compilerOptions% --js intfwebw.js --js_output_file intWW.js
 
