@@ -59,8 +59,9 @@ static bool checkSumOfTwoSquares(const BigInteger *pArgument, int expon)
     return true;
   }
   DivideBigNbrByMaxPowerOf4(&power4, powerN.limbs, &powerN.nbrLimbs);
-  if ((powerN.limbs[0].x & 3) == 3)
-  {     // If number mod 4 is 3, it cannot be expressed as sum of two squares.
+  if ((powerN.limbs[0].x & 7) > 2)
+  {     // If number mod 8 is greater than 2,
+        // it cannot be expressed as sum of two squares.
     return false;
   }
   if ((powerN.nbrLimbs == 1) && (powerN.limbs[0].x == 2))
@@ -71,7 +72,7 @@ static bool checkSumOfTwoSquares(const BigInteger *pArgument, int expon)
   }
   nbrLimbsP = powerN.nbrLimbs;
   nbrLimbs = nbrLimbsP;
-  memcpy(valueP, powerN.limbs, nbrLimbsP * sizeof(int));
+  (void)memcpy(valueP, powerN.limbs, nbrLimbsP * sizeof(int));
   sum = 0;
   FillSieveArray(valueP);
   if (!isSumOfTwoSquares())
@@ -100,13 +101,13 @@ static int tsqcubes(const BigInteger *pArgument, int expon)
   }
   Base1.sign = SIGN_POSITIVE;
   Base2.sign = SIGN_POSITIVE;
-  BigIntMultiplyPower2(&Base1, power4);
-  BigIntMultiplyPower2(&Base2, power4);
+  (void)BigIntMultiplyPower2(&Base1, power4);
+  (void)BigIntMultiplyPower2(&Base2, power4);
 
   // Validate
 
-  BigIntMultiply(&Base1, &Base1, &valueN);
-  BigIntMultiply(&Base2, &Base2, &powerN);
+  (void)BigIntMultiply(&Base1, &Base1, &valueN);
+  (void)BigIntMultiply(&Base2, &Base2, &powerN);
   BigIntAdd(&powerN, &valueN, &valueN);
   (void)BigIntPowerIntExp(&Base3, expon, &powerN);
   BigIntAdd(&powerN, &valueN, &valueN);
