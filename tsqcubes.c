@@ -42,6 +42,7 @@ static bool checkSumOfTwoSquares(const BigInteger *pArgument, int expon)
 {
   int lenBytes;
   int numLimbs;
+  int mod8;
   power4 = 0;
   (void)BigIntPowerIntExp(&Base3, expon, &powerN);
   BigIntSubt(pArgument, &powerN, &powerN);
@@ -59,8 +60,9 @@ static bool checkSumOfTwoSquares(const BigInteger *pArgument, int expon)
     return true;
   }
   DivideBigNbrByMaxPowerOf4(&power4, powerN.limbs, &powerN.nbrLimbs);
-  if ((powerN.limbs[0].x & 7) > 2)
-  {     // If number mod 8 is greater than 2,
+  mod8 = powerN.limbs[0].x & 7;
+  if ((mod8 > 2) && (mod8 != 5))
+  {     // If number mod 8 is not 1, 2 or 5,
         // it cannot be expressed as sum of two squares.
     return false;
   }
