@@ -1383,9 +1383,9 @@ static enum eExprErr ComputeModDiv(void)
   // Divide all three arguments by their GCD.
   BigIntGcd(&curStack, &curStack2, &tmp1);
   BigIntGcd(&tmp1, &curStack3, &tmp2);
-  BigIntDivide(&curStack, &tmp2, &curStack);
-  BigIntDivide(&curStack2, &tmp2, &curStack2);
-  BigIntDivide(&curStack3, &tmp2, &curStack3);
+  (void)BigIntDivide(&curStack, &tmp2, &curStack);
+  (void)BigIntDivide(&curStack2, &tmp2, &curStack2);
+  (void)BigIntDivide(&curStack3, &tmp2, &curStack3);
   // Check that the second and third arguments are relatively prime.
   BigIntGcd(&curStack2, &curStack3, &tmp1);
   if ((tmp1.nbrLimbs != 1) || (tmp1.limbs[0].x != 1))
