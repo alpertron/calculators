@@ -107,6 +107,7 @@ static const char blockRecreationalMath[] =
 static const char blockNumberTheory[] =
 {
   TOKEN_MODINV,
+  TOKEN_MODDIV,
   TOKEN_MODPOW,
   TOKEN_TOTIENT,
   TOKEN_JACOBI,

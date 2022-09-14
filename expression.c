@@ -58,7 +58,7 @@ const struct sFuncOperExpr stFuncOperIntExpr[] =
   {"LCM", TOKEN_LCM + MANY_PARMS, 0},
   {"MODPOW", TOKEN_MODPOW + THREE_PARMS, 0},
   {"MODINV", TOKEN_MODINV + TWO_PARMS, 0},
-  {"IROOT", TOKEN_IROOT + TWO_PARMS, 0},
+  {"MODDIV", TOKEN_MODDIV + THREE_PARMS, 0},
   {"SUMDIGITS", TOKEN_SUMDIGITS + TWO_PARMS, 0},
   {"NUMDIGITS", TOKEN_NUMDIGITS + TWO_PARMS, 0},
   {"REVDIGITS", TOKEN_REVDIGITS + TWO_PARMS, 0},
@@ -66,6 +66,7 @@ const struct sFuncOperExpr stFuncOperIntExpr[] =
   {"JACOBI", TOKEN_JACOBI + TWO_PARMS, 0},
   {"RANDOM", TOKEN_RANDOM + TWO_PARMS, 0},
   {"SQRT", TOKEN_SQRT + ONE_PARM, 0},
+  {"IROOT", TOKEN_IROOT + TWO_PARMS, 0},
   {"ABS", TOKEN_ABS + ONE_PARM, 0},
   {"SGN", TOKEN_SGN + ONE_PARM, 0},
   {"F", TOKEN_F + ONE_PARM, 0},
@@ -134,6 +135,7 @@ static int ComputeRevDigits(void);
 static int ComputeNumDigits(void);
 static int ComputeRandom(void);
 static enum eExprErr ComputeModInv(void);
+static enum eExprErr ComputeModDiv(void);
 static enum eExprErr ComputePartition(void);
 static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger* second, BigInteger* result);
 static BigInteger curStack;
@@ -518,6 +520,23 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
         return retcode;
       }
       retcode = ComputeModInv();
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      break;
+
+    case TOKEN_MODDIV:
+      retcode = getParms(3, stackIndexThreshold);
+      if (retcode == EXPR_SHORT_CIRCUIT)
+      {
+        break;
+      }
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = ComputeModDiv();
       if (retcode != EXPR_OK)
       {
         return retcode;
@@ -1350,6 +1369,32 @@ static enum eExprErr ComputeModInv(void)
   intToBigInteger(&one, 1);
   BigIntGeneralModularDivision(&one, &curStack, pDiv, &curStack2);
   CopyBigInt(&curStack, pDiv);
+  return EXPR_OK;
+}
+
+static enum eExprErr ComputeModDiv(void)
+{
+  static BigInteger tmp1;
+  static BigInteger tmp2;
+  if ((curStack3.nbrLimbs == 1) && (curStack3.limbs[0].x == 0))
+  {
+    return EXPR_DIVIDE_BY_ZERO;
+  }
+  // Divide all three arguments by their GCD.
+  BigIntGcd(&curStack, &curStack2, &tmp1);
+  BigIntGcd(&tmp1, &curStack3, &tmp2);
+  BigIntDivide(&curStack, &tmp2, &curStack);
+  BigIntDivide(&curStack2, &tmp2, &curStack2);
+  BigIntDivide(&curStack3, &tmp2, &curStack3);
+  // Check that the second and third arguments are relatively prime.
+  BigIntGcd(&curStack2, &curStack3, &tmp1);
+  if ((tmp1.nbrLimbs != 1) || (tmp1.limbs[0].x != 1))
+  {
+    return EXPR_ARGUMENTS_NOT_RELATIVELY_PRIME;
+  }
+  intToBigInteger(&tmp1, 1);
+  BigIntGeneralModularDivision(&curStack, &curStack2, &curStack3, &tmp1);
+  CopyBigInt(&curStack, &tmp1);
   return EXPR_OK;
 }
 
