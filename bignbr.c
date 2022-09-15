@@ -1918,7 +1918,6 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
 
 #ifdef __EMSCRIPTEN__
   char* ptrText;
-  int i;
 #ifdef FACTORIZATION_APP
   StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
   ptrText = ShowFactoredPart(pValue, pstFactors);
@@ -1930,15 +1929,17 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
 #endif
   copyStr(&ptrText, lang ? "<p>Paso 2 del algoritmo BPSW de primos probables: Lucas fuerte con P=1, D=" :
     "<p>Step 2 of BPSW probable prime algorithm: Strong Lucas with P=1, D=");
-  int2dec(&ptrText, D*signD);
-  copyStr(&ptrText, ", Q=");
-  i = -absQ;        // Get value of Q to show it on screen.
-  if (i < 0)
+  if (signD < 0)
   {
     copyStr(&ptrText, "&minus;");
-    i = -i;
   }
-  int2dec(&ptrText, i);
+  int2dec(&ptrText, D);
+  copyStr(&ptrText, ", Q=");
+  if (signD > 0)
+  {
+    copyStr(&ptrText, "&minus;");
+  }
+  int2dec(&ptrText, absQ);
   copyStr(&ptrText, "</p>");
 #ifdef FACTORIZATION_APP
   ShowLowerText();
@@ -2006,7 +2007,7 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
         Halve(Mult4);                       // V <- (V +/- U*D)/2
         lenBytes = NumberLength * (int)sizeof(limb);
         (void)memcpy(Mult3, Temp.limbs, lenBytes);
-        modmultInt(Mult1, absQ, Mult1);     // Multiply power of Q by Q.
+        modmultInt(Mult1, absQ, Mult1); // Multiply power of Q by Q.
         signPowQ = -signD;                   // Attach correct sign to power.
         insidePowering = true;
       }
@@ -2133,8 +2134,8 @@ int BpswPrimalityTest(const BigInteger *pValue)
     return 3;        // Indicate number does not pass strong Lucas test.
   }
   // At this point, the number is not perfect square, so find value of D.
-  signD = 1;
-  D = 5;
+  signD = -1;
+  D = 7;
   for (;;)
   {
     int rem = getRemainder(pValue, D);
@@ -2145,7 +2146,11 @@ int BpswPrimalityTest(const BigInteger *pValue)
     signD = -signD;
     D += 2;
   }
-  absQ = (D + 1) / 4;
+  absQ = (1 - D*signD) / 4;   // Compute Q <- (1 - D)/4
+  if (absQ < 0)
+  {
+    absQ = -absQ;
+  }
 #if defined(__EMSCRIPTEN__) && defined(FACTORIZATION_APP)
   return PerformStrongLucasTest(pValue, D, absQ, signD, pstFactors);
 #else
