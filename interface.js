@@ -590,6 +590,7 @@ function startUp()
   {    // Continued fraction applet does not use wizard.
     get("openwizard").onclick = function()
     {
+      get("exprwiz").innerHTML = get("expr").innerHTML;
       get("main").style.display = "none";
       get("wizard").style.display = "block";
       get("mode").style.display = "block";
