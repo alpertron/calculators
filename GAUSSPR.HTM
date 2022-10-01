@@ -1,11 +1,21 @@
 ﻿<!doctype html>
-<html lang="en">
+<html lang="en" prefix="og: http://ogp.me/ns#">
 <head>
-<meta charset="utf-8" />
-<meta name="Author" content="Dario Alejandro Alpern" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="keywords" content="gauss, gaussian, prime, imaginary, number, quadratic" />
-<meta name="description" content="Web application that shows a graphical view of gaussian prime numbers by Dario Alpern." />
+<meta charset="utf-8">
+<meta name="Author" content="Dario Alejandro Alpern">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="keywords" content="gauss, gaussian, prime, imaginary, number, quadratic">
+<meta name="description" content="Web application that shows a graphical view of gaussian prime numbers by Dario Alpern.">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:title" content="Gaussian primes">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.alpertron.com.ar/GAUSSPR.HTM">
+<meta property="og:image" content="https://www.alpertron.com.ar/gausspr.png">
+<meta property="og:image:width" content="819">
+<meta property="og:image:height" content="430">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:description" content="This shows a graphical view of gaussian prime numbers a + bi.">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/PRGAUSS.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/GAUSSPR.HTM">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
@@ -130,12 +140,12 @@ Contact
 <div id="bottom" class="pad">
 <div id="inputboxes">
 <form>
-<input type="button" id="zoomin" value="Zoom In"/>
+<input type="button" id="zoomin" value="Zoom In">
 <label for="centerX">Center graphic in number</label>
-<br />
-<input type="button" id="zoomout" value="Zoom Out"/>
-<input type="number" value="0" min="-999999999" max="999999999" id="centerX" tabindex="1" /> +
-<input type="number" value="0" min="-999999999" max="999999999" id="centerY" />&nbsp;<var>i</var>
+<br>
+<input type="button" id="zoomout" value="Zoom Out">
+<input type="number" value="0" min="-999999999" max="999999999" id="centerX" tabindex="1"> +
+<input type="number" value="0" min="-999999999" max="999999999" id="centerY">&nbsp;<var>i</var>
 </form>
 </div>
 <div id="info">
@@ -173,7 +183,7 @@ For example: 79 + 43<var>i</var> = (1+<var>i</var>) (2-<var>i</var>) (28+5<var>i
 <p>You can also see the position <var>a</var> + <var>b</var><var>i</var> in the complex plane of any point of the graph by moving the cursor to that point.</p>
 <p>Move the center by typing a new complex number in both input boxes (up to 9 digits each) and press the return key.</p>
 <p>There is an unsolved mathematical problem named <em>Gaussian moat</em> regarding the graphical representation of Gaussian primes. It asks whether there is a path from zero to infinity with steps of bounded size. Nobuyuki Tsuchimura shown in 2004 that it is not possible to reach the distance 80015782 from the origin if the steps have length 6 or smaller.</p>
-<p>Written by Dario Alpern. Last updated 17 September 2022.</p>
+<p>Written by Dario Alpern. Last updated 30 September 2022.</p>
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old Ulam spiral visualization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
@@ -221,6 +231,9 @@ N&&(P.value="-"+N);N="";document.getElementById("info").innerHTML="";U(1)};Q.onk
   "browserRequirements": "Requires HTML5. Requires Javascript.",
   "name": "Gaussian primes",
   "description": "Web application that shows a graphical view of gaussian prime numbers.",
+  "image": ["https://www.alpertron.com.ar/gausspr.png"],
+  "datePublished": "2022-09-30",
+  "dateModified": "2022-09-30",
   "operatingSystem": "Any",
   "applicationCategory": "https://schema.org/EducationalApplication",
   "author": {

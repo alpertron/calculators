@@ -13,6 +13,15 @@ AddCharset utf-8 .js
 AddCharset utf-8 .webmanifest
 </IfModule>
 
+RewriteEngine  on
+RewriteRule    "^(glpx10|glpxm1|glpxm10|googol|googolm|googolm1)\.html$"        "$1.pl"             [NC,PT]
+RewriteEngine  on
+RewriteRule    "^(glpx10|glpxm1|glpxm10|googol|googolm|googolm1)_(\d+)\.html$"  "$1.pl?digits=$2"   [NC,PT]
+RewriteEngine  on
+RewriteRule    "^(glpx10e|glpxm1e|glpxm10e|gugol|gugolm|gugolm1)\.html$"        "$1.pl"             [NC,PT]
+RewriteEngine  on
+RewriteRule    "^(glpx10e|glpxm1e|glpxm10e|gugol|gugolm|gugolm1)_(\d+)\.html$"  "$1.pl?digitos=$2"  [NC,PT]
+
 # Rules to correctly serve gzip compressed CSS and JS files.
 # Requires both mod_rewrite and mod_headers to be enabled.
 <IfModule mod_headers.c>

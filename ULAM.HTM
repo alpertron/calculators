@@ -1,11 +1,21 @@
 ﻿<!doctype html>
-<html lang="en-us">
+<html lang="en-us" prefix="og: http://ogp.me/ns#">
 <head>
 <meta charset="utf-8">
 <meta name="Author" content="Dario Alejandro Alpern">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="keywords" content="ulam, spiral, number, prime">
 <meta name="description" content="Web application that shows a graphical representation of prime numbers. Written by Dario Alpern.">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:title" content="Ulam Spiral">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.alpertron.com.ar/ULAM.HTM">
+<meta property="og:image" content="https://www.alpertron.com.ar/ulam.png">
+<meta property="og:image:width" content="817">
+<meta property="og:image:height" content="428">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:description" content="This shows a graphical representation of prime numbers.">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/EULAM.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/ULAM.HTM">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
@@ -129,13 +139,13 @@ Contact
 <div id="bottom">
 <div id="inputboxes">
 <form>
-<input id="zoomin" type="button" value="Zoom In" />
+<input id="zoomin" type="button" value="Zoom In">
 <label for="center">Center spiral in number</label>
-<input type="number" value="1" min="1" id="center" tabindex="1" />
-<br />
-<input id="zoomout" type="button" value="Zoom Out" />
+<input type="number" value="1" min="1" id="center" tabindex="1">
+<br>
+<input id="zoomout" type="button" value="Zoom Out">
 <label for="start">Start spiral in number</label>
-<input type="number" value="1" min="1" id="start" />
+<input type="number" value="1" min="1" id="start">
 </form>
 </div>
 <div id="info"></div>
@@ -190,7 +200,7 @@ This is because the values that take the polynomial 4t<sup>2</sup>&nbsp;+&nbsp;2
 Any number in the diagonal line less than 41<sup>2</sup> = 1681 must be prime, because it is not multiple of any prime less than its square root.</p>
 <p>The numbers shown at the right of the polynomial are the primes less than 100 that cannot divide any value of the polynomial.
 The diagonals whose numbers cannot be divided by small prime numbers have more prime numbers in them, because most composite numbers are multiples of small prime numbers.</p>
-<p>Written by Dario Alpern. Last updated 17 September 2022.</p>
+<p>Written by Dario Alpern. Last updated 30 September 2022.</p>
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old Ulam spiral visualization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
@@ -252,6 +262,9 @@ da(M,1)}})})();
   "browserRequirements": "Requires HTML5. Requires Javascript.",
   "name": "Ulam Spiral",
   "description": "Web application that shows a graphical representation of prime numbers.",
+  "image": ["https://www.alpertron.com.ar/ulam.png"],
+  "datePublished": "2022-09-30",
+  "dateModified": "2022-09-30",
   "operatingSystem": "Any",
   "applicationCategory": "https://schema.org/EducationalApplication",
   "author": {

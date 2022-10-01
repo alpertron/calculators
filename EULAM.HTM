@@ -1,11 +1,21 @@
 ﻿<!doctype html>
-<html lang="es">
+<html lang="es" prefix="og: http://ogp.me/ns#">
 <head>
 <meta charset="utf-8">
 <meta name="Author" content="Dario Alejandro Alpern">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="keywords" content="ulam, espiral, numero, primo">
 <meta name="description" content="Aplicación Web que muestra una representación gráfica de los números primos. Hecho por Dario Alpern.">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:title" content="Espiral de Ulam">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.alpertron.com.ar/EULAM.HTM">
+<meta property="og:image" content="https://www.alpertron.com.ar/eulam.png">
+<meta property="og:image:width" content="817">
+<meta property="og:image:height" content="431">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:description" content="muestra una representación gráfica de los números primos.">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/EULAM.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/ULAM.HTM">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
@@ -187,7 +197,7 @@ Cualquier número en la línea diagonal menor que 41<sup>2</sup> = 1681 debe ser
 Las diagonales cuyos números no se pueden dividir por primos pequeños tienen mayor cantidad de números primos, porque la mayoría de los números compuestos son divisibles por primos pequeños.</p>
 <h2>Código fuente</h2>
 <p>Puede bajar el código fuente de esta aplicación y del viejo applet de visualización de la espiral de Ulam desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 17 de septiembre de 2022.</p>
+<p>Escrito por Dario Alpern. Actualizado el 30 de septiembre de 2022.</p>
 </div>
 </article></main>
 <div id="cannotShow"><p>No se puede mostrar la espiral cuando el valor del centro es menor que el valor inicial.</p></div>
@@ -246,6 +256,9 @@ da(M,1)}})})();
   "browserRequirements": "Requires HTML5. Requires Javascript.",
   "name": "Espiral de Ulam",
   "description": "Aplicación Web que muestra una representación gráfica de los números primos.",
+  "image": ["https://www.alpertron.com.ar/eulam.png"],
+  "datePublished": "2022-09-30",
+  "dateModified": "2022-09-30",
   "operatingSystem": "Any",
   "applicationCategory": "https://schema.org/EducationalApplication",
   "author": {

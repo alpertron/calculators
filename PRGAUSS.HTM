@@ -1,11 +1,21 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" prefix="og: http://ogp.me/ns#">
 <head>
-<meta charset="utf-8" />
-<meta name="Author" content="Dario Alejandro Alpern" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="keywords" content="gauss, gaussiano, primo, imaginario, numero, cuadratico" />
-<meta name="description" content="Aplicación Web que muestra gráficamente los primos gaussianos. Hecho por Dario Alpern." />
+<meta charset="utf-8">
+<meta name="Author" content="Dario Alejandro Alpern">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="keywords" content="gauss, gaussiano, primo, imaginario, numero, cuadratico">
+<meta name="description" content="Aplicación Web que muestra gráficamente los primos gaussianos. Hecho por Dario Alpern.">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:title" content="Primos gaussianos">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.alpertron.com.ar/PRGAUSS.HTM">
+<meta property="og:image" content="https://www.alpertron.com.ar/prgauss.png">
+<meta property="og:image:width" content="820">
+<meta property="og:image:height" content="433">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:description" content="Muestra gráficamente los primos gaussianos a + bi.">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/PRGAUSS.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/GAUSSPR.HTM">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
@@ -129,12 +139,12 @@ Contacto
 <div id="bottom" class="pad">
 <div id="inputboxes">
 <form>
-<input type="button" id="zoomin" value="Acercar" />
+<input type="button" id="zoomin" value="Acercar">
 <label for="centerX">Centrar gráfico en el número</label>
-<br />
-<input type="button" id="zoomout" value="Alejar" />
-<input type="number" value="0" min="-999999999" max="999999999" id="centerX" tabindex="1" /> +
-<input type="number" value="0" min="-999999999" max="999999999" id="centerY" />&nbsp;<var>i</var>
+<br>
+<input type="button" id="zoomout" value="Alejar">
+<input type="number" value="0" min="-999999999" max="999999999" id="centerX" tabindex="1"> +
+<input type="number" value="0" min="-999999999" max="999999999" id="centerY">&nbsp;<var>i</var>
 </form>
 </div>
 <div id="info">
@@ -172,7 +182,7 @@ Por ejemplo: 79 + 43<var>i</var> = (1+<var>i</var>) (2-<var>i</var>) (28+5<var>i
 <p>También puede ver la posición <var>a</var> + <var>b</var><var>i</var> en el plano complejo de cualquier punto en el gráfico moviendo el cursor hasta ese punto.</p>
 <p>Cambie el centro escribiendo un nuevo número complejo en ambas cajas de entrada (hasta 9 dígitos cada uno) y presione la tecla Enter.</p>
 <p>Existe un problema matemático sin resolver llamado <em>foso gaussiano</em> referido a esta representación gráfica de los primos gaussianos. Suponiendo que los números compuestos son agua y los primos, piedras que sobresalen, se pretende saber si es posible unir el origen 0+0i con el infinito por cualquier camino si la longitud del salto entre las piedras está limitada. Nobuyuki Tsuchimura demostró en el año 2004 que no es posible alcanzar la distancia 80015782 desde el origen si los pasos tienen longitud 6 o menor.</p>
-<p>Escrito por Dario Alpern. Modificado el 17 de septiembre de 2022.</p>
+<p>Escrito por Dario Alpern. Modificado el 30 de septiembre de 2022.</p>
 <h2>Código fuente</h2>
 <p>Puede bajar el código fuente de esta aplicación y del viejo applet de visualización de primos gaussianos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
@@ -219,6 +229,9 @@ N&&(P.value="-"+N);N="";document.getElementById("info").innerHTML="";U(1)};Q.onk
   "browserRequirements": "Requires HTML5. Requires Javascript.",
   "name": "Primos gaussianos",
   "description": "Aplicación Web que muestra gráficamente los primos gaussianos.",
+  "image": ["https://www.alpertron.com.ar/prgauss.png"],
+  "datePublished": "2022-09-30",
+  "dateModified": "2022-09-30",
   "operatingSystem": "Any",
   "applicationCategory": "https://schema.org/EducationalApplication",
   "author": {
