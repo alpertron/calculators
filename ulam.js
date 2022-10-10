@@ -53,7 +53,6 @@ let delay;
 let doanimate;
 let cancelanim;
 let interval;
-let beforeMinus = "";
 const none = "none";
 const block = "block";
 const inline = "inline";
@@ -431,7 +430,7 @@ function keydown(evt)
   {
     if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
     {                                  // No modifier key pressed.
-      if (key >= "0" && key <= "9")
+      if ((key >= "0" && key <= "9") || key == '-')
       {                                // Digit key has been pressed.
         if (target.value.length >= 18 ||
             (target.value.charAt(0) !== "-" && target.value.length >= 19))
@@ -439,22 +438,36 @@ function keydown(evt)
           evt.preventDefault();        // Do not propagate this key.
         }
       }
-      else if (key === "-")
-      {                                // Key minus has been pressed.
-        if (target.value.indexOf("-") >= 0)
-        {                              // There is already a minus sign.
-          evt.preventDefault();        // Do not propagate this key.
-        }
-        else
-        {
-          beforeMinus = target.value;
-        }
-      }
       else 
       {                                // Not backspace, tab, right or left arrow, insert or delete key.
         evt.preventDefault();          // Do not propagate this key.  
       }
     }
+  }
+}
+
+function updateInput(input)
+{
+  let currString = input.value;
+  let countSrc;
+  let newString = "";
+  let c;
+  if (currString.indexOf("-") >= 0)
+  {
+    newString = "-";
+  }
+  // Delete any character that is not 0 to 9.
+  for (countSrc = 0; countSrc < currString.length; countSrc++)
+  {
+    c = currString.substring(countSrc, countSrc + 1);
+    if (c >= "0" && c <= "9")
+    {
+      newString += c;
+    }
+  }
+  if (input.value !== newString)
+  {
+    input.value = newString;
   }
 }
 
@@ -476,6 +489,8 @@ function startUp()
   doanimate = get("doanimate");
   cancelanim = get("cancelanim");
   applet = get("applet");
+  start.value = "1";
+  center.value = "1";
   zoom = 8;
   zoomDone = 0;
   isMouseDown = false;
@@ -623,11 +638,7 @@ function startUp()
   center.oninput = function()
   {
     let ctx;
-    if (beforeMinus !== "" && center.value !== "-" + beforeMinus)
-    {     // Minus sign is not in the first character. Move it to first character.
-      center.value = "-" + beforeMinus;
-    }
-    beforeMinus = "";
+    updateInput(center);
     if (checkStart())
     {
       information.innerHTML = get("cannotShow").innerHTML;
@@ -646,12 +657,7 @@ function startUp()
   start.onkeydown = keydown;
   start.oninput = function()
   {
-    if (beforeMinus !== "" && start.value !== "-" + beforeMinus)
-    {     // Minus sign is not in the first character. Move it to first character.
-      start.value = "-" + beforeMinus;
-    }
-    beforeMinus = "";
-
+    updateInput(start);
     showInfo(asmGetInformation(-1, -1));
     updateGraphic(start, 2);
   };
