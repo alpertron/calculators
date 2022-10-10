@@ -430,7 +430,7 @@ function keydown(evt)
   {
     if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
     {                                  // No modifier key pressed.
-      if ((key >= "0" && key <= "9") || key == '-')
+      if ((key >= "0" && key <= "9") || key === "-")
       {                                // Digit key has been pressed.
         if (target.value.length >= 18 ||
             (target.value.charAt(0) !== "-" && target.value.length >= 19))
