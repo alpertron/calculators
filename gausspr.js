@@ -39,6 +39,23 @@ let asmMoveGraphic;
 let asmNbrChanged;
 let bitsCanvas;
 let information;
+let animform;
+let animate;
+let stop;
+let xincr;
+let yincr;
+let sincr;
+let incrX;
+let incrY;
+let oldX, oldY;
+let delay;
+let doanimate;
+let cancelanim;
+let applet;
+let interval;
+const none = "none";
+const block = "block";
+const inline = "inline";
 
 //##  asmJS goes here (do not change symbols at the left).
 
@@ -419,6 +436,21 @@ function keydown(evt)
   }
 }
     
+function animation()
+{
+  let currX = oldX - incrX * zoom;
+  let currY = oldY + incrY * zoom;
+  let diffX = Math.floor(currX) - Math.floor(oldX);
+  let diffY = Math.floor(currY) - Math.floor(oldY);
+  if (diffX !== 0 || diffY !== 0)
+  {
+    moveGraphic(diffX, diffY);
+    showInfo(asmGetInformation(-1, -1));
+  }
+  oldX = currX;
+  oldY = currY;
+}
+
 function startUp()
 {  
   canvas = get("canvas");
@@ -427,6 +459,15 @@ function startUp()
   centerX = get("centerX");
   centerY = get("centerY");
   information = get("info");
+  animate = get("animate");
+  animform = get("animform");
+  stop = get("stop");
+  xincr = get("xincr");
+  yincr = get("yincr");
+  delay = get("delay");
+  doanimate = get("doanimate");
+  cancelanim = get("cancelanim");
+  applet = get("applet");
   zoom = 8;
   zoomDone = 0;
   isMouseDown = false;
@@ -596,6 +637,37 @@ function startUp()
     canvas.width = newDomRect.width;
     canvas.height = newDomRect.height;
     updateGraphic(1);
+  };
+  animate.onclick = function()
+  {
+    xincr.value = "0";
+    yincr.value = "0";
+    delay.value = "1";
+    applet.style.display = none;
+    animform.style.display = block;
+  };
+  doanimate.onclick = function()
+  {
+    animform.style.display = none;
+    applet.style.display = inline;
+    animate.style.display = none;
+    stop.style.display = inline;
+    incrX = parseFloat(xincr.value);
+    incrY = parseFloat(yincr.value);
+    oldX = 0;
+    oldY = 0;
+    interval = setInterval(animation, parseFloat(delay.value) * 1000);    
+  };
+  cancelanim.onclick = function()
+  {
+    animform.style.display = none;
+    applet.style.display = block;
+  };
+  stop.onclick = function()
+  {
+    stop.style.display = none;
+    animate.style.display = inline;
+    clearInterval(interval);
   };
 }
 

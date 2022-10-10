@@ -1,7 +1,7 @@
 use Digest::SHA qw(sha256_base64);
 use File::Copy;
 
-my $start = "Header set Content-Security-Policy \"default-src 'none'; base-uri 'none'; img-src 'self' www.google-analytics.com; connect-src 'self' www.google-analytics.com; frame-ancestors 'self'; manifest-src 'self';";
+my $start = "Header set Content-Security-Policy \"default-src 'none'; base-uri 'none'; img-src 'self' *.google-analytics.com *.analytics.google.com; connect-src 'self' *.google-analytics.com *.analytics.google.com; frame-ancestors 'self'; manifest-src 'self';";
 open(my $htaccess, '>>', '.htaccess');
 opendir($dir, "C:/pages");
 while (readdir $dir)
@@ -78,6 +78,10 @@ sub getHashes
     }
     $_[2] .= " 'sha256-${hash}'";
     $data = substr($data, $lastIndex);
+  }
+  if ($tagname eq "script")
+  {
+    $_[2] .= " www.googletagmanager.com";
   }
   if ($_[2] ne "")
   {

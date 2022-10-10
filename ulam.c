@@ -395,11 +395,24 @@ void copyStr(char** pptrString, const char* stringToCopy)
 // Convert the number from binary to string.
 char *appendInt64(char *text, const int *value)
 {
+  bool valueIsNegative = false;
   int index;
   int index2;
   int nbrLo = *value;
   int nbrHi = *(value+1);
-  
+  if (nbrHi >= HALF_INT_RANGE)
+  {       // Number is negative.
+    if (nbrLo == 0)
+    {
+      nbrHi = -nbrHi & (int)MAX_VALUE_LIMB;
+    }
+    else
+    {
+      nbrLo = -nbrLo & (int)MAX_VALUE_LIMB;
+      nbrHi = (-1 - nbrHi) & (int)MAX_VALUE_LIMB;
+    }
+    valueIsNegative = true;
+  }
   // Convert digits from right to left.
   char* ptrText = text + 19;
   for (index = 0; index < 19; index++)
@@ -426,6 +439,18 @@ char *appendInt64(char *text, const int *value)
   }
   ptrText += index2-index;
   *ptrText = 0;    // Set string terminator.
+  if (valueIsNegative)
+  {
+    char* ptrText2;
+    ptrText++;     // Point to new string terminator.
+    ptrText2 = ptrText;
+    do
+    {
+      *ptrText2 = *(ptrText2-1);
+      ptrText2--;
+    } while (ptrText2 > text);
+    *text = '-';
+  }
   return ptrText;
 }
 
@@ -755,8 +780,9 @@ EXTERNALIZE char *getInformation(int x, int y)
 
 // inputBoxNbr = 1 -> changing center
 // inputBoxNbr = 2 -> changing start value
-EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
+EXTERNALIZE char* nbrChanged(char* value, int inputBoxNbr, int newWidth, int newHeight)
 {
+  bool valueIsNegative = false;
   char* ptrValue = value;
   int temp[2];
   int nbrLo = 0;
@@ -765,7 +791,12 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
   unsigned int tmp;
   width = newWidth;
   height = newHeight;
-  for (index=0; index<19; index++)
+  if (*ptrValue == '-')
+  {
+    valueIsNegative = true;
+    ptrValue++;
+  }
+  for (index = 0; index < 19; index++)
   {
     int charConverted;
     double dProd;
@@ -780,6 +811,18 @@ EXTERNALIZE char *nbrChanged(char *value, int inputBoxNbr, int newWidth, int new
     tmp = (unsigned int)nbrLo & MAX_VALUE_LIMB;
     nbrLo = (int)tmp;
     nbrHi = (nbrHi * 10) + (int)(dProd / (double)LIMB_RANGE);
+  }
+  if (valueIsNegative)
+  {
+    if (nbrLo == 0)
+    {
+      nbrHi = -nbrHi & (int)MAX_VALUE_LIMB;
+    }
+    else
+    {
+      nbrLo = -nbrLo & (int)MAX_VALUE_LIMB;
+      nbrHi = (-1-nbrHi) & (int)MAX_VALUE_LIMB;
+    }
   }
   if (inputBoxNbr == 1)
   {           // Changing center

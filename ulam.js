@@ -38,6 +38,25 @@ let asmMoveGraphic;
 let asmNbrChanged;
 let bitsCanvas;
 let information;
+let applet;
+let animform;
+let animate;
+let stop;
+let xincr;
+let yincr;
+let sincr;
+let incrX;
+let incrY;
+let incrStart;
+let oldX, oldY, oldStart;
+let delay;
+let doanimate;
+let cancelanim;
+let interval;
+let beforeMinus = "";
+const none = "none";
+const block = "block";
+const inline = "inline";
 
 //##  asmJS goes here (do not change symbols at the left).
 
@@ -378,6 +397,67 @@ function isNotSpecialKey(event)
   return acceptedKeys.indexOf(","+key+",") < 0;
 }
 
+function animation()
+{
+  let currX = oldX - incrX * zoom;
+  let currY = oldY + incrY * zoom;
+  let currStart = oldStart + incrStart;
+  let diffX = Math.floor(currX) - Math.floor(oldX);
+  let diffY = Math.floor(currY) - Math.floor(oldY);
+  let diffStart = Math.floor(currStart) - Math.floor(oldStart);
+  if (diffX !== 0 || diffY !== 0)
+  {
+    moveGraphic(diffX, diffY);
+  }
+  if (diffStart !== 0)
+  {
+    start.value = (parseInt(start.value, 10) + diffStart).toString();
+    updateGraphic(start, 2);
+  }
+  if (diffX !== 0 || diffY !== 0 || diffStart !== 0)
+  {
+    showInfo(asmGetInformation(-1, -1));
+  }
+  oldX = currX;
+  oldY = currY;
+  oldStart = currStart;
+}
+
+function keydown(evt)
+{
+  let target = evt.target || evt.srcElement;
+  let key = evt.key;
+  if (isNotSpecialKey(evt))
+  {
+    if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
+    {                                  // No modifier key pressed.
+      if (key >= "0" && key <= "9")
+      {                                // Digit key has been pressed.
+        if (target.value.length >= 18 ||
+            (target.value.charAt(0) !== "-" && target.value.length >= 19))
+        {                              // Number is too large.
+          evt.preventDefault();        // Do not propagate this key.
+        }
+      }
+      else if (key === "-")
+      {                                // Key minus has been pressed.
+        if (target.value.indexOf("-") >= 0)
+        {                              // There is already a minus sign.
+          evt.preventDefault();        // Do not propagate this key.
+        }
+        else
+        {
+          beforeMinus = target.value;
+        }
+      }
+      else 
+      {                                // Not backspace, tab, right or left arrow, insert or delete key.
+        evt.preventDefault();          // Do not propagate this key.  
+      }
+    }
+  }
+}
+
 function startUp()
 {  
   canvas = get("canvas");
@@ -386,6 +466,16 @@ function startUp()
   center = get("center");
   start = get("start");
   information = get("info");
+  animate = get("animate");
+  animform = get("animform");
+  stop = get("stop");
+  xincr = get("xincr");
+  yincr = get("yincr");
+  sincr = get("sincr");
+  delay = get("delay");
+  doanimate = get("doanimate");
+  cancelanim = get("cancelanim");
+  applet = get("applet");
   zoom = 8;
   zoomDone = 0;
   isMouseDown = false;
@@ -529,23 +619,15 @@ function startUp()
       }
     }
   }, false);
-  center.onkeydown = function(evt)
-  {
-    let key = evt.key;
-    if (isNotSpecialKey(evt))
-    {
-      if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
-      {                         // No modifier key pressed.
-        if (key < "0" || key > "9" || center.value.length >= 18)
-        {                       // Key is not a digit or number is too large.
-          evt.preventDefault(); // Do not propagate this key.
-        }
-      }
-    }
-  };
+  center.onkeydown = keydown;
   center.oninput = function()
   {
     let ctx;
+    if (beforeMinus !== "" && center.value !== "-" + beforeMinus)
+    {     // Minus sign is not in the first character. Move it to first character.
+      center.value = "-" + beforeMinus;
+    }
+    beforeMinus = "";
     if (checkStart())
     {
       information.innerHTML = get("cannotShow").innerHTML;
@@ -561,22 +643,15 @@ function startUp()
       updateGraphic(center, 1);
     }
   };
-  start.onkeydown = function(evt)
-  {
-    let key = evt.key;
-    if (isNotSpecialKey(evt))
-    {
-      if (!evt.ctrlKey && !evt.altKey && !evt.metaKey)
-      {                         // No modifier key pressed.
-        if (key < "0" || key > "9" || start.value.length >= 18)
-        {                       // Key is not a digit or number is too large.
-          evt.preventDefault(); // Do not propagate this key.
-        }
-      }
-    }
-  };
+  start.onkeydown = keydown;
   start.oninput = function()
   {
+    if (beforeMinus !== "" && start.value !== "-" + beforeMinus)
+    {     // Minus sign is not in the first character. Move it to first character.
+      start.value = "-" + beforeMinus;
+    }
+    beforeMinus = "";
+
     showInfo(asmGetInformation(-1, -1));
     updateGraphic(start, 2);
   };
@@ -586,6 +661,40 @@ function startUp()
     canvas.width = newDomRect.width;
     canvas.height = newDomRect.height;
     updateGraphic(center, 1);
+  };
+  animate.onclick = function()
+  {
+    sincr.value = "0";
+    xincr.value = "0";
+    yincr.value = "0";
+    delay.value = "1";
+    applet.style.display = none;
+    animform.style.display = block;
+  };
+  doanimate.onclick = function()
+  {
+    animform.style.display = none;
+    applet.style.display = inline;
+    animate.style.display = none;
+    stop.style.display = inline;
+    incrX = parseFloat(xincr.value);
+    incrY = parseFloat(yincr.value);
+    incrStart = parseFloat(sincr.value);
+    oldX = 0;
+    oldY = 0;
+    oldStart = 0;
+    interval = setInterval(animation, parseFloat(delay.value) * 1000);    
+  };
+  cancelanim.onclick = function()
+  {
+    animform.style.display = none;
+    applet.style.display = block;
+  };
+  stop.onclick = function()
+  {
+    stop.style.display = none;
+    animate.style.display = inline;
+    clearInterval(interval);
   };
 }
 

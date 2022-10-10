@@ -353,14 +353,26 @@ bool isPrime(int *value)
   int temp[NBR_LIMBS];
     // Convert parameter to big number (2 limbs of 31 bits each).
   int TestNbr0 = value[0];
-  TestNbr[0] = value[0];
   int TestNbr1 = value[1];
-  TestNbr[1] = value[1];
+  if (TestNbr1 >= HALF_INT_RANGE)
+  {    // Number is negative. Change sign.
+    if (TestNbr0 == 0)
+    {
+      TestNbr1 = -TestNbr1 & (int)MAX_VALUE_LIMB;
+    }
+    else
+    {
+      TestNbr0 = -TestNbr0 & (int)MAX_VALUE_LIMB;
+      TestNbr1 = (-1 - TestNbr1) & (int)MAX_VALUE_LIMB;
+    }
+  }
+  TestNbr[0] = TestNbr0;
+  TestNbr[1] = TestNbr1;
   if (TestNbr1 == 0)
   {
     if (TestNbr0 == 1)
     {
-      return false;            // 1 is not prime.
+      return false;           // 1 is not prime.
     }
     if (TestNbr0 == 2)
     {
@@ -369,7 +381,7 @@ bool isPrime(int *value)
   }
   if ((TestNbr0 & 1) == 0)
   {
-    return false;              // Even numbers different from 2 are not prime.
+    return false;             // Even numbers different from 2 are not prime.
   }
   for (i=1; i<(int)sizeof(primes); i++)
   {
@@ -382,7 +394,7 @@ bool isPrime(int *value)
       }
       if (((unsigned int)TestNbr0 % base) == 0U)
       {
-        return false;          // Number is multiple of base, so it is composite.
+        return false;         // Number is multiple of base, so it is composite.
       }
     }
     // Check whether TestNbr is multiple of base. In this case the number would be composite.
@@ -390,10 +402,10 @@ bool isPrime(int *value)
     else if (((((unsigned int)TestNbr1 % base) * (LIMB_RANGE % base) +
       ((unsigned int)TestNbr0 % base)) % base) == 0U)
     {
-      return false;            // Number is multiple of base, so it is composite.
+      return false;           // Number is multiple of base, so it is composite.
     }
     else
-    {                          // Nothing to do.
+    {                         // Nothing to do.
     }
   }
   GetMontgomeryParms();
