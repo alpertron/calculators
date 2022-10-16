@@ -12,7 +12,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>18523#+1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>2 2417127491429477899985762879392273445920140573547300334342743900999888057458790592924089419742390925513922941510205867199016331428593320505481033311208857985114740620125834497392020402954225388709381025496219197170126546718142841212893378397885326167327263857609817366317978224215162857904581446145152142 0xf6c6d4d9e03b8d02e7a525366e6a811d8558fbde1368904742a82e376b2511b48108be0dddb3fbb8fefb22cd66e158ac684a98e09d122ce37cda9574f2fc62f6fb1b99d6663a8db8380391b35653b87991279b3a296a774d18ec18d42169ee67d4f21ba9b3f39cdced3a0584177aa6639a70f48622b719a4952ddb4decf3</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\x64\release</LocalDebuggerWorkingDirectory>

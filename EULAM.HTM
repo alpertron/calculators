@@ -18,7 +18,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:description" content="muestra una representación gráfica de los números primos.">
-<meta property="article:published_time" content="2022-10-09">
+<meta property="article:published_time" content="2022-10-16">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/EULAM.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/ULAM.HTM">
@@ -164,8 +164,8 @@ Contacto
 <input id="sincr" type="number" value="0" min="-10" max="10"></p>
 <p><label for="delay">Demora en segundos:</label>
 <input id="delay" type="number" value="1" min="0.1" max="10"></p>
-<input id="doanimate" type="button" value="Animate">
-<input id="cancelanim" type="button" value="Cancel">
+<input id="doanimate" type="button" value="Animar">
+<input id="cancelanim" type="button" value="Cancelar">
 </fieldset>
 </form>
 <div class="pad">
@@ -214,7 +214,7 @@ Cualquier número en la línea diagonal menor que 41<sup>2</sup> = 1681 debe ser
 Las diagonales cuyos números no se pueden dividir por primos pequeños tienen mayor cantidad de números primos, porque la mayoría de los números compuestos son divisibles por primos pequeños.</p>
 <h2>Código fuente</h2>
 <p>Puede bajar el código fuente de esta aplicación y del viejo applet de visualización de la espiral de Ulam desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 9 de octubre de 2022.</p>
+<p>Escrito por Dario Alpern. Actualizado el 16 de octubre de 2022.</p>
 </div>
 </article></main>
 <div id="cannotShow"><p>No se puede mostrar la espiral cuando el valor del centro es menor que el valor inicial.</p></div>
@@ -263,7 +263,7 @@ k&&0<r-g&&(l.drawImage(l.canvas,-k,0,q+k,r-g,0,g,q+k,r-g),L(l,0,0,q,g),L(l,q+k,g
 2>>0]=N<<6)}function ka(k){var g=-1,l,q="",r="";do{for(l=0;1024>l;l++){g=ja[k++>>0];if(0===g)break;128<=g&&(g=(g-192<<6)+ja[k++>>0]-128);q+=String.fromCharCode(g)}r+=q;q=""}while(0!==g);k=(r+q).split("^");k[1]!==Q.value&&(Q.value=k[1]);wa.innerHTML=k[0]}function pb(){Ma=G.getContext("2d").createImageData(2048,4096);Wa=Ma.data.buffer;Va=new Uint8Array(Wa);if(qb){var k=new ArrayBuffer(33554432);ja=new Uint8Array(k);Xa={a:{buffer:k},abort:function(){}};R=C(Xa);Z=R.j;Ka=R.l;Na=R.m;Oa=R.d;k=R.o;La=ja.subarray(k());
 ia(Q,1)}else{for(P=w("wasmb64").text;32>P.charCodeAt(0);)P=P.substring(1);for(;32>P.charCodeAt(P.length-1);)P=P.substring(0,P.length-1);k=3*P.length/4;61===P.charCodeAt(P.length-1)&&k--;61===P.charCodeAt(P.length-2)&&k--;k=new Int8Array(k);ob(P,k);var g={};WebAssembly.instantiate(k,g).then(function(l){R=l.instance.exports;Z=R.getInformation;Ka=R.drawPartialGraphic;Na=R.moveGraphic;Oa=R.nbrChanged;ja=new Uint8Array(R.memory.buffer);La=ja.subarray(R.getPixels());ia(Q,1)})}}function Pa(){return Q.value.length<
 W.value.length||Q.value.length===W.value.length&&Q.value<W.value}function Ya(){32>ea&&(ea<<=1,32===ea&&(xa.disabled=!0),ya.disabled=!1,ia(0,3))}function Za(){1<ea&&(ea>>=1,1===ea&&(ya.disabled=!0),xa.disabled=!1,ia(0,4))}function rb(){var k=za-$a*ea,g=Aa+ab*ea,l=Ba+bb,q=Math.floor(k)-Math.floor(za),r=Math.floor(g)-Math.floor(Aa),D=Math.floor(l)-Math.floor(Ba);0===q&&0===r||na(q,r);0!==D&&(W.value=(parseInt(W.value,10)+D).toString(),ia(W,2));0===q&&0===r&&0===D||ka(Z(-1,-1));za=k;Aa=g;Ba=l}function cb(k){var g=
-k.target||k.srcElement,l=k.key,q=k.key;if(k.ctrlKey||k.metaKey)"c"===q&&(q="Copy"),"v"===q&&(q="Paste"),"x"===q&&(q="Cut");0>",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut,Control,Meta,Shift,Insert,Delete,Copy,Paste,Home,End,".indexOf(","+q+",")&&(k.ctrlKey||k.altKey||k.metaKey||("0"<=l&&"9">=l||"-"==l?(18<=g.value.length||"-"!==g.value.charAt(0)&&19<=g.value.length)&&k.preventDefault():k.preventDefault()))}function db(k){var g=k.value,l,q="";0<=g.indexOf("-")&&(q="-");for(l=0;l<g.length;l++){var r=
+k.target||k.srcElement,l=k.key,q=k.key;if(k.ctrlKey||k.metaKey)"c"===q&&(q="Copy"),"v"===q&&(q="Paste"),"x"===q&&(q="Cut");0>",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut,Control,Meta,Shift,Insert,Delete,Copy,Paste,Home,End,".indexOf(","+q+",")&&(k.ctrlKey||k.altKey||k.metaKey||("0"<=l&&"9">=l||"-"===l?(18<=g.value.length||"-"!==g.value.charAt(0)&&19<=g.value.length)&&k.preventDefault():k.preventDefault()))}function db(k){var g=k.value,l,q="";0<=g.indexOf("-")&&(q="-");for(l=0;l<g.length;l++){var r=
 g.substring(l,l+1);"0"<=r&&"9">=r&&(q+=r)}k.value!==q&&(k.value=q)}var Wa,Xa,R,ea,ra,Ma,G,xa,ya,Q,W,Ca,sa,ta,La,P,ja,qb="undefined"===typeof WebAssembly,ua,va,eb,fb,Z,Ka,Na,Oa,Va,wa,Da,Ea,Fa,Ga,Qa,Ra,Sa,$a,ab,bb,za,Aa,Ba,Ta,gb,hb,ib;window.addEventListener("load",function(){G=w("canvas");xa=w("zoomin");ya=w("zoomout");Q=w("center");W=w("start");wa=w("info");Fa=w("animate");Ea=w("animform");Ga=w("stop");Qa=w("xincr");Ra=w("yincr");Sa=w("sincr");Ta=w("delay");gb=w("doanimate");hb=w("cancelanim");Da=
 w("applet");W.value="1";Q.value="1";ea=8;ra=0;Ca=!1;var k=G.getBoundingClientRect();G.width=k.width;G.height=k.height;pb();xa.onclick=function(){Ya()};ya.onclick=function(){Za()};G.onkeydown=function(g){if(!Pa())switch(g.key){case "Left":case "ArrowLeft":na(4,0);ka(Z(-1,-1));g.preventDefault();break;case "Up":case "ArrowUp":na(0,4);ka(Z(-1,-1));g.preventDefault();break;case "Right":case "ArrowRight":na(-4,0);ka(Z(-1,-1));g.preventDefault();break;case "Down":case "ArrowDown":na(0,-4),ka(Z(-1,-1)),
 g.preventDefault()}};G.onmousemove=function(g){if(!Pa()){var l=g.clientX;g=g.clientY;var q=G.getBoundingClientRect();l-=q.left;g-=q.top;if(Ca){if(l!==sa||g!==ta)na(l-sa,g-ta),sa=l,ta=g}else l<G.width&&g<G.height&&ka(Z(l,g))}};G.onmousedown=function(g){sa=g.clientX;ta=g.clientY;g=G.getBoundingClientRect();sa-=g.left;ta-=g.top;Ca=!0};document.onmouseup=function(){Ca=!1};G.addEventListener("touchstart",function(g){g=g.targetTouches;var l=g[0];ua=Math.round(l.pageX);va=Math.round(l.pageY);2===g.length&&
@@ -280,8 +280,8 @@ var g=G.getContext("2d");g.beginPath();g.rect(0,0,G.width,G.height);g.fillStyle=
   "name": "Espiral de Ulam",
   "description": "Aplicación Web que muestra una representación gráfica de los números primos.",
   "image": ["https://www.alpertron.com.ar/eulam.png"],
-  "datePublished": "2022-10-09",
-  "dateModified": "2022-10-09",
+  "datePublished": "2022-10-16",
+  "dateModified": "2022-10-16",
   "operatingSystem": "Any",
   "applicationCategory": "https://schema.org/EducationalApplication",
   "author": {

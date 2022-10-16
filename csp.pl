@@ -1,7 +1,7 @@
 use Digest::SHA qw(sha256_base64);
 use File::Copy;
 
-my $start = "Header set Content-Security-Policy \"default-src 'none'; base-uri 'none'; form-action 'self'; child-src 'self' blob:;worker-src 'self' blob:; img-src 'self' *.google-analytics.com *.analytics.google.com; connect-src 'self' *.google-analytics.com *.analytics.google.com; frame-ancestors 'self'; manifest-src 'self';";
+my $start = "Header set Content-Security-Policy \"default-src 'none'; base-uri 'none'; form-action 'self'; child-src 'self' blob:;worker-src 'self' blob:; img-src 'self' *.google-analytics.com *.analytics.google.com *.googletagmanager.com; connect-src 'self' *.google-analytics.com *.analytics.google.com; frame-ancestors 'self'; manifest-src 'self';";
 copy(".htaccess_orig", ".htaccess");
 open(my $htaccess, '>>', '.htaccess');
 opendir($dir, ".");

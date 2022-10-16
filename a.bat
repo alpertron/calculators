@@ -1,9 +1,10 @@
+if "%2" == "end" goto compress
 set compilerName=%userprofile%\emsdk\emsdk\upstream\emscripten\node_modules\google-closure-compiler-java\compiler.jar
 set compilerOptions=--compilation_level ADVANCED_OPTIMIZATIONS --externs=custom-externs.js
 set commonFlags=--no-entry -Wall -s DYNAMIC_EXECUTION=0 -s SUPPORT_ERRNO=0 -s ASSERTIONS=0 -s NO_FILESYSTEM=1 --js-library lib.js --pre-js pre.js -finline-functions
 set jsCommon=%commonFlags% -Os -s WASM=0 -s SINGLE_FILE=1 -s TEXTDECODER=0 -s INCOMING_MODULE_JS_API=['preRun','noInitialRun'] -s LEGACY_VM_SUPPORT=1 -s WASM_ASYNC_COMPILATION=0 -s ENVIRONMENT='worker' --closure 1 --memory-init-file 0
 set wasmCommon=%commonFlags% -Os -s WASM=1 %commonFlags% -D_USING64BITS_ 
-if "%1" == "" goto :end
+if "%1" == "" goto end
 del *.wasm
 del *00*js
 
@@ -191,6 +192,7 @@ perl replaceEmbeddedJS.pl 0000 DIST.HTM distS.js
 perl replaceEmbeddedJS.pl 0000 DISTANCE.HTM distE.js
 
 call w.bat
+:compress
 perl csp.pl
 perl csp2.pl
 del *.gz
