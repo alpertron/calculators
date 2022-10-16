@@ -2146,7 +2146,7 @@ int BpswPrimalityTest(const BigInteger *pValue)
     signD = -signD;
     D += 2;
   }
-  absQ = (1 - D*signD) / 4;   // Compute Q <- (1 - D)/4
+  absQ = (1 - (D*signD)) / 4;   // Compute Q <- (1 - D)/4
   if (absQ < 0)
   {
     absQ = -absQ;
