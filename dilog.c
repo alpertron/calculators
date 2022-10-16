@@ -815,8 +815,8 @@ void DiscreteLogarithm(void)
       (void)BigIntDivide(&DiscreteLogPeriod, &tmpBase, &bigNbrB);
       BigIntSubt(&DiscreteLog, &logar, &tmpBase);
       BigIntGcd(&tmpBase, &logarMult, &tmp3);
-      BigIntDivide(&tmpBase, &tmp3, &tmpBase);
-      BigIntDivide(&logarMult, &tmp3, &logarMult);
+      (void)BigIntDivide(&tmpBase, &tmp3, &tmpBase);
+      (void)BigIntDivide(&logarMult, &tmp3, &logarMult);
       BigIntModularDivisionSaveTestNbr(&tmpBase, &logarMult, &bigNbrB, &bigNbrA);
       (void)BigIntMultiply(&logarMult, &tmp3, &logarMult);
       (void)BigIntMultiply(&logarMult, &bigNbrA, &tmpBase);
