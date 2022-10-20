@@ -625,7 +625,6 @@ static bool DiscrLogPowerPrimeSubgroup(int multiplicity, const int *ptrPrime)
   return true;
 }
 
-int pepe;
 void DiscreteLogarithm(void)
 {
   double firstLimit;
@@ -659,10 +658,6 @@ void DiscreteLogarithm(void)
     ptrPrime = astFactorsMod[index].ptrFactor;
     NumberLength = *ptrPrime;
     IntArray2BigInteger(ptrPrime, &groupOrder);
-    if (groupOrder.limbs[0].x == 97)
-    {
-      pepe = 1;
-    }
     (void)BigIntRemainder(&base, &groupOrder, &tmpBase);
     if (BigIntIsZero(&tmpBase))
     {     // modulus and base are not relatively prime.
@@ -806,7 +801,11 @@ void DiscreteLogarithm(void)
     if ((tmp2.limbs[0].x & 1) != 0)
     {     // h is odd.
       BigIntSubt(&logar, &DiscreteLog, &tmpBase);
+      BigIntGcd(&tmpBase, &DiscreteLogPeriod, &tmp3);
+      (void)BigIntDivide(&tmpBase, &tmp3, &tmpBase);
+      (void)BigIntDivide(&DiscreteLogPeriod, &tmp3, &DiscreteLogPeriod);
       BigIntModularDivisionSaveTestNbr(&tmpBase, &DiscreteLogPeriod, &tmp2, &bigNbrA);
+      (void)BigIntMultiply(&DiscreteLogPeriod, &tmp3, &DiscreteLogPeriod);
       (void)BigIntMultiply(&DiscreteLogPeriod, &bigNbrA, &tmpBase);
       BigIntAdd(&tmpBase, &DiscreteLog, &tmpBase);
     }
