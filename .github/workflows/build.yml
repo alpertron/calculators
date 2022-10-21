@@ -26,6 +26,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+      - name: install lcov
+        run: |
+          pip install lcov
       - name: install gcovr 5.0
         run: |
           pip install gcovr==5.0 # 5.1 is not supported
