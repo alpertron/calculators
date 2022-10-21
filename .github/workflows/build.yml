@@ -51,9 +51,6 @@ jobs:
         run: |
           chmod 755 coverage
           ./coverage
-      - name: Collect coverage into one XML report
-        run: |
-          gcovr --sonarqube > coverage.xml
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
