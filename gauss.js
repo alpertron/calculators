@@ -270,12 +270,12 @@ function fillCache()
 
 function b64decode(str,out)
 {
-  var ch;
-  var idxDest,idxSrc;
-  var blocks, leftOver;
-  var byte0, byte1, byte2, byte3;
-  var conv=new Int8Array(128);
-  var len=str.length;
+  let ch;
+  let idxDest,idxSrc;
+  let blocks, leftOver;
+  let byte0, byte1, byte2, byte3;
+  let conv=new Int8Array(128);
+  let len=str.length;
   if (str.charAt(len-1) === "=")
   {
     len--;
@@ -333,14 +333,14 @@ function b64decode(str,out)
 
 function generateFuncButtons(optionCategory, funcButtons, inputId)
 {
-  var button;
-  var catIndex;
-  var funcbtns = get(funcButtons);
-  var catnbr = get(optionCategory).selectedIndex;
-  var funcname = (parens + funcnames[+catnbr]).split(",");
+  let button;
+  let catIndex;
+  let funcbtns = get(funcButtons);
+  let catnbr = get(optionCategory).selectedIndex;
+  let funcname = (parens + funcnames[+catnbr]).split(",");
   // Append all buttons to document fragment instead of funcbtns
   // and finally append the fragment to funcbtns to minimize redraws.
-  var fragment = document.createDocumentFragment();
+  let fragment = document.createDocumentFragment();
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
     button = document.createElement("button");
@@ -350,9 +350,9 @@ function generateFuncButtons(optionCategory, funcButtons, inputId)
     button.classList.add("funcbtn");
     button.onclick = function()
     {
-      var input = get(inputId);
+      let input = get(inputId);
       input.focus();
-      var start = input.selectionStart;
+      let start = input.selectionStart;
       input.value = input.value.substring(0, start) +
                     this.innerText +
                     input.value.substring(input.selectionEnd);
@@ -423,11 +423,11 @@ window.onload = function()
   };
   get("helpbtn").onclick = function()
   {
-    var help = get("help");
-    var helpStyle = help.style;
-    var helphelpStyle = get("helphelp").style;
-    var result = get("result");
-    var resultStyle = result.style;
+    let help = get("help");
+    let helpStyle = help.style;
+    let helphelpStyle = get("helphelp").style;
+    let result = get("result");
+    let resultStyle = result.style;
     if (helpStyle.display === "block" && result.innerHTML !== "")
     {
       helpStyle.display = "none";
@@ -465,7 +465,7 @@ window.onload = function()
   };
   get("formsend").onclick = function()
   {
-    var userdata = get("userdata");
+    let userdata = get("userdata");
     if (get("adduserdata").checked)
     {
       userdata.value = "\n" + get("value").value + "\n" + get("result").innerHTML + "\n" + get("status").innerHTML;
@@ -474,7 +474,7 @@ window.onload = function()
     {
       userdata.value = "";      
     }
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function (_event)
     {
       if (xhr.readyState === 4)
@@ -492,12 +492,12 @@ window.onload = function()
     };
     xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    var elements = get("formfeedback").elements;
-    var contents = "";
-    var useAmp = 0;
-    for (var i = 0; i < elements.length; i++)
+    let elements = get("formfeedback").elements;
+    let contents = "";
+    let useAmp = 0;
+    for (let i = 0; i < elements.length; i++)
     {
-      var element = elements[i >> 0];
+      let element = elements[i >> 0];
       if (element.type === "radio" && !element.checked)
       {
         continue;
@@ -517,7 +517,7 @@ window.onload = function()
   };
   window.onclick = function(event)
   {
-    var modal = get("modal");
+    let modal = get("modal");
     if (event.target === modal)
     {
       modal.style.display = "none";
@@ -532,7 +532,7 @@ window.onload = function()
   }
   else
   {
-    var index = digits.indexOf(",");
+    let index = digits.indexOf(",");
     if (index<0)
     {
       digits = 6;
@@ -556,7 +556,7 @@ window.onload = function()
 };
 if (asmjs)
 {
-  var req = new XMLHttpRequest();
+  let req = new XMLHttpRequest();
   req.open("GET", "gaussianW0000.js", true);
   req.responseType = "arraybuffer";
   req.onreadystatechange = function(_aEvt)
@@ -570,7 +570,7 @@ if (asmjs)
 }
 else
 {
-  var wasm = document.getElementById("wasmb64").text;
+  let wasm = document.getElementById("wasmb64").text;
   while (wasm.charCodeAt(0) < 32)
   {
     wasm = wasm.substring(1);
@@ -579,7 +579,7 @@ else
   {
     wasm = wasm.substring(0, wasm.length-1);
   }    
-  var length = wasm.length*3/4;
+  let length = wasm.length*3/4;
   if (wasm.charCodeAt(wasm.length-1) === 61)
   {
     length--;
