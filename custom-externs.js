@@ -1,2 +1,2 @@
-var caches;
-var localStorage;
+let caches;
+let localStorage;

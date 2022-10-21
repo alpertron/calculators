@@ -21,6 +21,7 @@
 (function()
 {   // This method separates the name space from the Google Analytics code.
 const points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 20,5, 22,10, 23,12, 24,6, 27,7];
+const asmjs = typeof(WebAssembly) === "undefined";
 let wizardStep = 0;
 let wizardTextInput;
 let worker = 0;
@@ -33,7 +34,6 @@ let fromFile;
 let tofile;
 let fileName;
 let workerParam;
-let asmjs = typeof(WebAssembly) === "undefined";
 let bmodeLoaded = 0;
 let statusText = "";
 let resultText = "";

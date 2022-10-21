@@ -16,13 +16,13 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-var exports, HEAPU8, wasmLoaded;
+let exports, HEAPU8, wasmLoaded;
 
 function ptrToString(ptr)
 {
-  var t=-1;
-  var i = 0;
-  var str="", outString="";
+  let t=-1;
+  let i = 0;
+  let str="", outString="";
   do
   {
     for (i=0; i<1024; i++)
@@ -47,9 +47,9 @@ function ptrToString(ptr)
 
 function convertToString(ptr, str)
 {
-  var dest = ptr;
-  var length = str.length;
-  var i, t;
+  let dest = ptr;
+  let length = str.length;
+  let i, t;
   for (i=0; i<length; i++)
   {
     t = str.charCodeAt(i);
@@ -66,7 +66,7 @@ function convertToString(ptr, str)
   HEAPU8[dest >> 0] = 0;
 }
 
-var info =
+let info =
 {
   "env":
 {
@@ -90,7 +90,7 @@ var info =
   {
     try
     {
-      var req = new XMLHttpRequest();
+      let req = new XMLHttpRequest();
       // Web worker protocol is blob:, so we need to change that to https: as appropriate.
       req.open("GET", "https://www.alpertron.com.ar/"+ptrToString(data), false);
       req.send(null);

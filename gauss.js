@@ -16,18 +16,18 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/** @define {number} */ var lang = 1;   // Use with Closure compiler.
+/** @define {number} */ const lang = 1;   // Use with Closure compiler.
 (function()
 {   // This method separates the name space from the Google Analytics code.
-var worker = 0;
-var app;
-var blob;
-var digits;
-var config;
-var fileContents = 0;
-var asmjs = typeof(WebAssembly) === "undefined";
-var funcnames;
-var parens;
+let worker = 0;
+let app;
+let blob;
+let digits;
+let config;
+let fileContents = 0;
+const asmjs = typeof(WebAssembly) === "undefined";
+let funcnames;
+let parens;
 if (lang)
 {
   funcnames =
@@ -97,7 +97,7 @@ function callWorker(param)
     { // First character of e.data is "1" for intermediate text
       // and it is "2" for end of calculation.
       // It is "9" for saving expression to factor into Web Storage.
-      var firstChar = e.data.substring(0, 1);
+      let firstChar = e.data.substring(0, 1);
       if (firstChar === "8")
       {
 //        setStorage("ecmFactors", e.data.substring(1));
@@ -136,9 +136,9 @@ function callWorker(param)
 function dowork(n)
 {
   app = lang + n;
-  var res = get("result");
-  var valueText = get("value").value;
-  var helphelp = get("helphelp");
+  let res = get("result");
+  let valueText = get("value").value;
+  let helphelp = get("helphelp");
   get("help").style.display = "none";
   helphelp.style.display = "block";
   helphelp.innerHTML = (lang? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización.</p>":
@@ -153,7 +153,7 @@ function dowork(n)
   styleButtons("none", "inline");  // Enable "more" and "stop" buttons
   res.innerHTML = (lang? "Factorizando la expresión..." :
                          "Factoring expression...");
-  var param = digits + "," + app + "," + valueText + String.fromCharCode(0);
+  let param = digits + "," + app + "," + valueText + String.fromCharCode(0);
   callWorker(param);
 }
 
@@ -164,10 +164,10 @@ function endFeedback()
   get("value").focus();   
 }
 
-var calcURLs = ["gaussianW0000.js",
+let calcURLs = ["gaussianW0000.js",
                "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png", "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-180px.png", "gaussian-icon-512px.png", "favicon.ico"];
 
-var url = window.location.pathname;
+let url = window.location.pathname;
 function updateCache(cache)
 {
   caches.open("cacheECM").then(function(tempCache)
@@ -202,7 +202,7 @@ function fillCache()
       }
       else
       {     // Response is the HTML contents.
-        var date = response.headers.get("last-modified");
+        let date = response.headers.get("last-modified");
             // Request the HTML from the Web server.
             // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
         fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
@@ -226,8 +226,8 @@ function fillCache()
               {            // All responses in array responseArr.
                 responseArr.forEach(function(responseTempCache, _index, _array)
                 {
-                  var urlTemp = responseTempCache.url;
-                  var indexZero = url.indexOf("00");
+                  let urlTemp = responseTempCache.url;
+                  let indexZero = url.indexOf("00");
                   if (indexZero > 0)
                   {        // There is an old version of this resource on cache to be erased.
                     cache.keys().then(function(keys)

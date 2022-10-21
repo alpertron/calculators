@@ -19,14 +19,14 @@
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 (function()
 {   // This method separates the name space from the Google Analytics code.
+const exprTextEs = "Por favor ingrese un número o expresión para ";
+const exprTextEn = "Please type a number or expression for the ";
+const asmjs = typeof(WebAssembly) === "undefined";
 let worker = 0;
 let blob;
 let fileContents = 0;
-const exprTextEs = "Por favor ingrese un número o expresión para ";
-const exprTextEn = "Please type a number or expression for the ";
 let result, dlog, stop, base, pow, mod, digits, main, help, helpbtn, formlink;
 let feedback, formfeedback, name, formcancel, formsend, userdata, adduserdata;
-let asmjs = typeof(WebAssembly) === "undefined";
 let currentInputBox;
 let funcnames;
 let parens;

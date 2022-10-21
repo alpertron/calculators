@@ -19,14 +19,14 @@
 /** @define {number} */ const app = 0;   // Use with Closure compiler.
 (function()
 {   // This method separates the name space from the Google Analytics code.
+const lang = app % 2;
+const asmjs = typeof(WebAssembly) === "undefined";
 let wizardStep = 0;
 let wizardTextInput;
 let worker = 0;
 let fileContents = 0;
 let hex = 0;
 let blob;
-let lang = app % 2;
-let asmjs = typeof(WebAssembly) === "undefined";
 let currentInputBox;
 let funcnames;
 let parens;

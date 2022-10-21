@@ -22,6 +22,10 @@
 // Javascript that drives WebAssembly on its own Web Worker.
 (function()
 {   // This method separates the name space from the Google Analytics code.
+const none = "none";
+const block = "block";
+const inline = "inline";
+const asmjs = typeof(WebAssembly) === "undefined";
 let buffer, env, asm;
 let zoom, zoomDone, imgData;
 let canvas, zoomin, zoomout, center, start;
@@ -29,7 +33,6 @@ let isMouseDown;
 let currentX, currentY, pixels;
 let wasm;
 let HEAP8;
-let asmjs = typeof(WebAssembly) === "undefined";
 let prevX1stTouch, prevY1stTouch;
 let prevX2ndTouch, prevY2ndTouch;
 let asmGetInformation;
@@ -53,9 +56,6 @@ let delay;
 let doanimate;
 let cancelanim;
 let interval;
-const none = "none";
-const block = "block";
-const inline = "inline";
 
 //##  asmJS goes here (do not change symbols at the left).
 
@@ -280,7 +280,6 @@ function startLowLevelCode()
   let getPixels;
   let asmJSbuffer;
   let bufSize = 33554432;
-  let minusOne = 0xffffffff;
   imgData = canvas.getContext("2d").createImageData(2048, 4096);  // 32 MB;
   buffer = imgData.data.buffer;
   bitsCanvas = new Uint8Array(buffer);
