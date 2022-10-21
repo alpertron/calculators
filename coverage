@@ -1,4 +1,5 @@
 #!/bin/bash
+mkdir tmp
 rm *.info *.out
 make clean
 make ecm
@@ -51,8 +52,8 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "Modpow(32,1,9410917470681307814700409503841379824884398201229727104530371249321432053727869645683211883124351361922770493757)" >> coverage.out
 ./ecm "ModPow(-1,2,2^372-177)" >> coverage.out
 ./ecm "Modpow(32,1,12345678922)" >> coverage.out
-
-lcov --capture --directory . --output-file ecm.info
+cp *.gcda tmp
+cp *.gcno tmp
 make clean
 make blockly
 ./blockly xml.txt 0 >> coverage.out
@@ -72,7 +73,7 @@ make blockly
 ./blockly xml.txt 14 >> coverage.out
 ./blockly xml.txt 15 >> coverage.out
 ./blockly xml.txt 16 >> coverage.out
-lcov --capture --directory . --output-file blockly.info
+gcov-tool merge . tmp -o tmp
 make clean
 make polfact
 echo -e "\n\n**** POLFACT ****" >> coverage.out
@@ -195,7 +196,7 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "2.3" 2 >> coverage.out
 ./polfact ".8" "2" 2 >> coverage.out
 ./polfact "3.8" "6.2" 2 >> coverage.out
-lcov --capture --directory . --output-file polfact.info
+gcov-tool merge . tmp -o tmp
 make clean
 make fsquares
 echo -e "\n\n**** FSQUARES ****" >> coverage.out
@@ -207,7 +208,7 @@ echo -e "\n\n**** FSQUARES ****" >> coverage.out
 ./fsquares 0 >> coverage.out
 ./fsquares 27 >> coverage.out
 ./fsquares "10**200+54154255642" >> coverage.out
-lcov --capture --directory . --output-file fsquares.info
+gcov-tool merge . tmp -o tmp
 make clean
 make tsqcubes
 echo -e "\n\n**** TSQCUBES ****" >> coverage.out
@@ -221,7 +222,7 @@ echo -e "\n\n**** TSQCUBES ****" >> coverage.out
 ./tsqcubes 0 0 >> coverage.out
 ./tsqcubes 27 0 >> coverage.out
 ./tsqcubes "10**200+54154255642" 0 >> coverage.out
-lcov --capture --directory . --output-file fsquares.info
+gcov-tool merge . tmp -o tmp
 make clean
 make fcubes
 echo -e "\n\n**** FCUBES ****" >> coverage.out
@@ -231,7 +232,7 @@ echo -e "\n\n**** FCUBES ****" >> coverage.out
 ./fcubes 2414 >> coverage.out
 ./fcubes 1892 >> coverage.out
 ./fcubes "10**200+54154255642" >> coverage.out
-lcov --capture --directory . --output-file fcubes.info
+gcov-tool merge . tmp -o tmp
 make clean
 make dilog
 echo -e "\n\n**** DILOG ****" >> coverage.out
@@ -247,7 +248,7 @@ echo -e "\n\n**** DILOG ****" >> coverage.out
 ./dilog 2 64 226 >> coverage.out
 ./dilog 2 2417127491429477899985762879392273445920140573547300334342743900999888057458790592924089419742390925513922941510205867199016331428593320505481033311208857985114740620125834497392020402954225388709381025496219197170126546718142841212893378397885326167327263857609817366317978224215162857904581446145152142 2644233424050979919959472773551014160896585325892159594283808864074283164412198242430622504046152302216251426005808485472118356499482789461488463475451971721075109470831515836398170407749289340517906396427118712097084818355186185714843140217934670470297724600474648108502799503321625512090834701793488115 >> coverage.out
 ./dilog 2 2423072052501243993264420946146827775567704445631403974795865782059910895997138868504591041477045161686721589514120156854407528872534293238191243915370929191316393817347290803799772484045384031796250034137988702168947236501340945874745815103090057214238941603068924321095043916203234507326087230094326178 2644233424050979919959472773551014160896585325892159594283808864074283164412198242430622504046152302216251426005808485472118356499482789461488463475451971721075109470831515836398170407749289340517906396427118712097084818355186185714843140217934670470297724600474648108502799503321625512090834701793488115 >> coverage.out
-lcov --capture --directory . --output-file dilog.info
+gcov-tool merge . tmp -o tmp
 make clean
 make quad
 echo -e "\n\n**** QUAD ****" >> coverage.out
@@ -275,8 +276,7 @@ echo -e "\n\n**** QUAD ****" >> coverage.out
 ./quad 1 0 0 0 -6 3 0 >> coverage.out
 ./quad 1 0 0 0 -6 3 1 >> coverage.out
 ./quad A B C D E F 1 >> coverage.out
-
-lcov --capture --directory . --output-file quad.info
+gcov-tool merge . tmp -o tmp
 make clean
 make contfrac
 echo -e "\n\n**** CONTFRAC ****" >> coverage.out
@@ -286,7 +286,7 @@ echo -e "\n\n**** CONTFRAC ****" >> coverage.out
 ./contfrac 1 2 3 1 >> coverage.out
 ./contfrac 1 0 991 1 >> coverage.out
 ./contfrac 5 27 991 1 >> coverage.out
-lcov --capture --directory . --output-file contfrac.info
+gcov-tool merge . tmp -o tmp
 make clean
 make quadmod
 echo -e "\n\n**** QUADMOD ****" >> coverage.out
@@ -326,7 +326,7 @@ echo -e "\n\n**** QUADMOD ****" >> coverage.out
 ./quadmod 1 0 112 243 >> coverage.out
 ./quadmod 1 0 195722369727 1099511627776 >> coverage.out
 ./quadmod T Q R M >> coverage.out
-lcov --capture --directory . --output-file quadmod.info
+gcov-tool merge . tmp -o tmp
 make clean
 make gaussian
 echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
@@ -342,4 +342,5 @@ echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 ./gaussian "modinv(13,71)" 0 >> coverage.out
 ./gaussian "gcd(1+i,2,4)" 0 >> coverage.out
 ./gaussian "lcm(1+i,2,4)" 0 >> coverage.out
+gcov-tool merge . tmp -o .
 

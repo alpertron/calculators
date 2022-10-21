@@ -1,9 +1,7 @@
 #!/bin/bash
-lcov --capture --directory . --output-file gaussian.info
+lcov --capture --directory . --output-file coverage.info
 
 LATEST_VERSION="$(curl -Ls https://artifacts.codacy.com/bin/codacy-coverage-reporter/latest)"
 curl -Ls -o codacy-coverage-reporter "https://artifacts.codacy.com/bin/codacy-coverage-reporter/${LATEST_VERSION}/codacy-coverage-reporter-linux"
 chmod +x codacy-coverage-reporter
-./codacy-coverage-reporter report \
- -r ecm.info -r polfact.info -r fsquares.info -r fcubes.info -r dilog.info \
- -r quad.info -r quadmod.info -r contfrac.info -r gaussian.info -r blockly.info
+./codacy-coverage-reporter report -r coverage.info
