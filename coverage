@@ -345,14 +345,16 @@ echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 
 lcov --capture --directory . --output-file gaussian.info
 
-while true; do
-    read -p "Output OK? (Y/N) " yn
-    case $yn in
-        [Yy]* ) break;;
-        [Nn]* ) exit;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
+if [$1 != "batch"]
+    while true; do
+        read -p "Output OK? (Y/N) " yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) exit;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+fi
 LATEST_VERSION="$(curl -Ls https://artifacts.codacy.com/bin/codacy-coverage-reporter/latest)"
 curl -Ls -o codacy-coverage-reporter "https://artifacts.codacy.com/bin/codacy-coverage-reporter/${LATEST_VERSION}/codacy-coverage-reporter-linux"
 chmod +x codacy-coverage-reporter
