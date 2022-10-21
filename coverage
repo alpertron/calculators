@@ -343,21 +343,3 @@ echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 ./gaussian "gcd(1+i,2,4)" 0 >> coverage.out
 ./gaussian "lcm(1+i,2,4)" 0 >> coverage.out
 
-lcov --capture --directory . --output-file gaussian.info
-
-if [$1 != "batch"]
-    while true; do
-        read -p "Output OK? (Y/N) " yn
-        case $yn in
-            [Yy]* ) break;;
-            [Nn]* ) exit;;
-            * ) echo "Please answer yes or no.";;
-        esac
-    done
-fi
-LATEST_VERSION="$(curl -Ls https://artifacts.codacy.com/bin/codacy-coverage-reporter/latest)"
-curl -Ls -o codacy-coverage-reporter "https://artifacts.codacy.com/bin/codacy-coverage-reporter/${LATEST_VERSION}/codacy-coverage-reporter-linux"
-chmod +x codacy-coverage-reporter
-./codacy-coverage-reporter report \
- -r ecm.info -r polfact.info -r fsquares.info -r fcubes.info -r dilog.info \
- -r quad.info -r quadmod.info -r contfrac.info -r gaussian.info -r blockly.info
