@@ -355,3 +355,6 @@ echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 lcov --capture --directory . --output-file gaussian.info
 gcovr --json run-11.json
 gcovr --add-tracefile "run-*.json" --sonarqube > coverage.xml
+rm run*json
+rm *.gcda
+rm *.gcno
