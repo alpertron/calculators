@@ -298,9 +298,10 @@ void Bin2Hex(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
   *ppDecimal = ptrDecimal;
 }
 
-static void Bin2DecLoop(char** ppDest, int digit[], bool *pSignificantZero,
-  int valueGrp, int grpLen, int *pGroupCtr, int *pDigits)
+static void Bin2DecLoop(char** ppDest, bool *pSignificantZero,
+  int valueGrp, int grpLen, int *pGroupCtr, int *pDigits, bool last)
 {
+  int digit[DIGITS_PER_LIMB];
   int digits = *pDigits;
   int count;
   int value = valueGrp;
@@ -319,8 +320,8 @@ static void Bin2DecLoop(char** ppDest, int digit[], bool *pSignificantZero,
       digits++;
       *ptrDest = (char)(digit[count] + '0');
       ptrDest++;
-      if (groupCtr == 1)
-      {
+      if ((groupCtr == 1) && (!last || (count != 0)))
+      {    // Do not insert space at the end of number.
         *ptrDest = ' ';
         ptrDest++;
       }
@@ -350,7 +351,6 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
   char *ptrDest;
   bool significantZero = false;
   int groupCtr;
-  int digit[DIGITS_PER_LIMB];
   int digits=0;
   bool showDigitsText = true;
   unsigned int firstMult;
@@ -425,25 +425,24 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
   {
     int value = ptrSrc->x;
     ptrSrc--;
-    Bin2DecLoop(&ptrDest, digit, &significantZero, value, grpLen, &groupCtr, &digits);
+    Bin2DecLoop(&ptrDest, &significantZero, value, grpLen,
+      &groupCtr, &digits, index == 1);
   }
   if (!significantZero)
   {     // Number is zero.
     *ptrDest = '0';
     ptrDest++;
   }
-  else if ((digits > 30) && showDigitsText)
-  {
-    *ptrDest = '(';
-    ptrDest++;
-    int2dec(&ptrDest, digits);
-    copyStr(&ptrDest, (lang?" dígitos)": " digits)"));
-  }
   else
   {
-    if (ptrDest > *ppDecimal)
+    if ((digits > 30) && showDigitsText)
     {
-      ptrDest--;               // Delete trailing space.
+      *ptrDest = ' ';
+      ptrDest++;
+      *ptrDest = '(';
+      ptrDest++;
+      int2dec(&ptrDest, digits);
+      copyStr(&ptrDest, (lang ? " dígitos)" : " digits)"));
     }
   }
   *ptrDest = '\0';             // Add terminator.

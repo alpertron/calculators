@@ -467,6 +467,7 @@ static void showSqrtTenPlusMinusTwoTimesSqrt5(const char *sign)
 static bool showSqRoot2(enum eSign signSqrt5, enum eSign signMN)
 {
   enum eSign signBak = RatN.numerator.sign;
+  (void)signSqrt5;
   RatN.numerator.sign = SIGN_POSITIVE;
   CopyBigInt(&Rat3.numerator, &RatN.numerator);
   CopyBigInt(&Rat3.denominator, &RatN.denominator);

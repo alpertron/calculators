@@ -249,12 +249,12 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
   while (ptrOutput < &output[(int)sizeof(output) - 200000])
   {      // Perform loop while there is space in output buffer.
     bool processExpression = true;
-    static enum eExprErr rc;
+    static enum eExprErr rcode;
     expressionNbr = 3;
-    rc = evalExpression(EndExpr, valueFound);
-    if (rc != EXPR_OK)
+    rcode = evalExpression(EndExpr, valueFound);
+    if (rcode != EXPR_OK)
     {
-      textError(&ptrOutput, rc);
+      textError(&ptrOutput, rcode);
       break;   // Cannot compute end expression, so go out.
     }
     if (BigIntIsZero(valueFound))
@@ -270,8 +270,8 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     if (ptrConditionExpr != NULL)
     {
       expressionNbr = 5;
-      rc = evalExpression(ptrConditionExpr, valueFound);
-      if (rc == EXPR_OK)
+      rcode = evalExpression(ptrConditionExpr, valueFound);
+      if (rcode == EXPR_OK)
       {
         if (BigIntIsZero(valueFound))
         {   // Do not compute factor expression if condition is false.
@@ -280,8 +280,8 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
       }
       else
       {
-        textError(&ptrOutput, rc);
-        if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED))
+        textError(&ptrOutput, rcode);
+        if ((rcode == EXPR_SYNTAX_ERROR) || (rcode == EXPR_VAR_OR_COUNTER_REQUIRED))
         {   // Do not show multiple errors.
           break;
         }
@@ -291,27 +291,27 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     if (processExpression)
     {
       expressionNbr = 4;
-      rc = evalExpression(ptrExprToProcess, valueFound);
-      if (rc == EXPR_OK)
+      rcode = evalExpression(ptrExprToProcess, valueFound);
+      if (rcode == EXPR_OK)
       {
         callback(&ptrOutput);
       }
       else
       {
-        textError(&ptrOutput, rc);
+        textError(&ptrOutput, rcode);
       }
-      if ((rc == EXPR_SYNTAX_ERROR) || (rc == EXPR_VAR_OR_COUNTER_REQUIRED) ||
-        (rc == EXPR_VAR_IN_EXPRESSION))
+      if ((rcode == EXPR_SYNTAX_ERROR) || (rcode == EXPR_VAR_OR_COUNTER_REQUIRED) ||
+        (rcode == EXPR_VAR_IN_EXPRESSION))
       {   // Do not show multiple errors.
         errorDisplayed = true;
         break;
       }
     }
     expressionNbr = 2;
-    rc = evalExpression(NextExpr, valueFound);
-    if (rc != EXPR_OK)
+    rcode = evalExpression(NextExpr, valueFound);
+    if (rcode != EXPR_OK)
     {
-      textError(&ptrOutput, rc);
+      textError(&ptrOutput, rcode);
       break;   // Cannot compute next expression, so go out.
     }
     CopyBigInt(&valueX, valueFound);
