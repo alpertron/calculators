@@ -93,7 +93,8 @@ static unsigned int validDegreesRecord[((MAX_DEGREE / (int)sizeof(int)) / 8) + 2
 // The output will be located in matrix lambda.
 static int gauss(int nbrCols, int nbrRows)
 {
-  int l;
+  int k = 0;
+  int l = 0;
   int row;
   int col;
 
@@ -105,9 +106,7 @@ static int gauss(int nbrCols, int nbrRows)
       setLinkedBigInteger(&lambda[row][col], &tmp5);
     }
   }
-
-  l = 0;
-  for (int k = 0; (k < nbrCols) && (l < nbrRows); k++)
+  while ((k < nbrCols) && (l < nbrRows))
   {
     int pos = -1;
     /* Look for a pivot under the diagonal. */
@@ -137,11 +136,12 @@ static int gauss(int nbrCols, int nbrRows)
           return -1;
         }
       }
+      k++;
       continue;
     }
 
     // We have found a non-zero element on the k-th column
-    for (; (row < nbrRows) && (pos == -1); row++)
+    while ((row < nbrRows) && (pos == -1))
     {
       if (linkedBigIntIsMinusOne(lambda[row][k]))   // Value is -1.
       {   // invert all elements on i-th row
@@ -155,6 +155,7 @@ static int gauss(int nbrCols, int nbrRows)
       {
         pos = row;
       }
+      row++;
     }
 
     if (pos != -1)
@@ -185,6 +186,7 @@ static int gauss(int nbrCols, int nbrRows)
         }
       }
       l++;
+      k++;
     }
     else
     {
@@ -1889,18 +1891,15 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
     ptrIndex++;
     index += numLimbs(ptrFactor + index) + 1;
   }
-  for (pstFactorInfoInteger = factorInfoInteger;
-    pstFactorInfoInteger->ptrPolyLifted != NULL;
-    pstFactorInfoInteger++)
+  pstFactorInfoInteger = factorInfoInteger;
+  while ((pstFactorInfoInteger->ptrPolyLifted != NULL) &&
+         (degreePoly >= pstFactorInfoInteger->degree))
   {      // Polynomial factors are sorted by degree and then
          // by coefficients.
     if (degreePoly > pstFactorInfoInteger->degree)
     {    // New factor degree is greater than stored factor degree.
+      pstFactorInfoInteger++;
       continue;  // Check next stored factor.
-    }
-    if (degreePoly < pstFactorInfoInteger->degree)
-    {    // New factor degree is less than stored factor degree.
-      break;     // Exit loop.
     }
     // Degree of the new factor is the same as the one already stored.
     ptrOldFactor = pstFactorInfoInteger->ptrPolyLifted;
@@ -1938,6 +1937,7 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
         // coefficient of stored factor. Exit loop.
       break;
     }
+    pstFactorInfoInteger++;
   }
   // Move elements of array factorInfoInteger to make room for new factor.
   pstFactorInfo = pstFactorInfoInteger;
@@ -2497,17 +2497,15 @@ static bool checkEisenstein(const BigInteger *gcdAll,
     }
     prime += 2;
   }
-  if (B > 1)
-  {                   // At this moment B is prime.
-    if (getRemainder(&operand3, B) != 0)
+  if ((B > 1) &&    // At this moment B is prime.
+     getRemainder(&operand3, B) != 0)
+  {
+    UncompressBigIntegerB(ptrTrailing, &operand2);
+    subtractdivide(&operand2, 0, B);
+    if (getRemainder(&operand2, B) != 0)
     {
-      UncompressBigIntegerB(ptrTrailing, &operand2);
-      subtractdivide(&operand2, 0, B);
-      if (getRemainder(&operand2, B) != 0)
-      {
-        primeEisenstein = B;
-        return true;   // Polynomial is irreducible.
-      }
+      primeEisenstein = B;
+      return true;   // Polynomial is irreducible.
     }
   }
   return false;
