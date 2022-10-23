@@ -862,14 +862,13 @@ static void forEachCurrentFactor(int stepNbr, int* pNbrFactors,
   struct sFactorInfo* pstFactorInfo)
 {
   int degreeProd = *pDegreeProd;
-  int degreeFactor;
-  int currentDegree;
   if (!linkedBigIntIsZero(lambda[nbrVector][currentFactor]))
   {                 // Multiply this polynomial.
     const int* ptrCoeffSrc = pstFactorInfo->ptrPolyLifted;    // Source
     int* ptrCoeffDest = poly2;                          // Destination
     int nbrLength;
-    degreeFactor = pstFactorInfo->degree;
+    int degreeFactor = pstFactorInfo->degree;
+    int currentDegree;
     // Reduce coefficients mod powerMod and store them on poly2.
     for (currentDegree = 0; currentDegree < degreeFactor; currentDegree++)
     {
