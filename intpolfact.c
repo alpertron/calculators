@@ -2152,7 +2152,6 @@ static int IntegerSquarefreeFactorization(void)
 // no more modular factorizations are attempted.
 static void factorDifferentModuli(int *pNbrFactorsRecord, int *pPrimeRecord)
 {
-  int expon;
   int primeRecord = 0;
   const struct sFactorInfo* pstFactorInfoOrig;
   // The big number ensures that the first copy is done.
@@ -2160,6 +2159,7 @@ static void factorDifferentModuli(int *pNbrFactorsRecord, int *pPrimeRecord)
   int primeIndex = 0;
   for (int attemptNbr = 1; attemptNbr < 5; attemptNbr++)
   {
+    int expon = 1;
     int prime;
     int nbrFactors;
     bool isIrreducible;
@@ -2168,7 +2168,6 @@ static void factorDifferentModuli(int *pNbrFactorsRecord, int *pPrimeRecord)
     // Find expon such that prime^expon >= 2 * bound
     BigIntMultiplyBy2(&bound);
     intToBigInteger(&operand1, prime);
-    expon = 1;
     for (;;)
     {
       // Compare operand1 = prime^expon against 2 * bound.
@@ -2366,7 +2365,6 @@ int FactorPolyOverIntegers(void)
        // The trailing coefficient of factors must divide the product of the trailing and leading
        // coefficients of the original polynomial.
     int nbrFactorsRecord;
-    int prime;
     modulusIsZero = true;
     intPolyMultiplicity = *ptrPolySqFreeFact;
     ptrPolySqFreeFact++;
@@ -2399,6 +2397,7 @@ int FactorPolyOverIntegers(void)
     // Copy back the record factorization to the work area.
     if (nbrFactorsRecord > 1)
     {
+      int prime;
       const struct sFactorInfo* pstFactorInfoRecord = factorInfoRecord;
       pstFactorInfoOrig = factorInfo;
       ptrPolyLiftedOrig = polyLifted;
