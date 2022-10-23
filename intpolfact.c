@@ -2146,6 +2146,140 @@ static int IntegerSquarefreeFactorization(void)
   return nbrFactors;
 }
 
+// Up to 5 different prime moduli are tested to minimize the number
+// of factors because the Van Hoeij algorithm speed depends on
+// this number. If the number of factors is less than 10,
+// no more modular factorizations are attempted.
+static void factorDifferentModuli(int *pNbrFactorsRecord, int *pPrimeRecord)
+{
+  int expon;
+  int primeRecord = 0;
+  const struct sFactorInfo* pstFactorInfoOrig;
+  // The big number ensures that the first copy is done.
+  int nbrFactorsRecord = 100000;
+  int primeIndex = 0;
+  for (int attemptNbr = 1; attemptNbr < 5; attemptNbr++)
+  {
+    int prime;
+    int nbrFactors;
+    bool isIrreducible;
+    primeIndex = getNextPrimeNoDuplicatedFactors(primeIndex);
+    prime = smallPrimes[primeIndex];
+    // Find expon such that prime^expon >= 2 * bound
+    BigIntMultiplyBy2(&bound);
+    intToBigInteger(&operand1, prime);
+    expon = 1;
+    for (;;)
+    {
+      // Compare operand1 = prime^expon against 2 * bound.
+      BigIntSubt(&operand1, &bound, &operand4);
+      if (operand4.sign == SIGN_POSITIVE)
+      {
+        break;     // prime^expon >= 2 * bound -> go out.
+      }
+      multint(&operand1, &operand1, prime);
+      expon++;
+    }
+    FactorPolynomialModPrime(prime);
+    // Get number of factors found.
+    pstFactorInfoOrig = factorInfo;
+    nbrFactors = 0;
+    (void)memset(validDegrees, 0x00, sizeof(validDegrees));
+    validDegrees[0] = 1;
+    int curDegree = 0;
+    for (int factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
+    {
+      if (pstFactorInfoOrig->ptr == NULL)
+      {    // No more factors.
+        break;
+      }
+      // Compute D <- D OR (D << d) where D is validDegrees and
+      // d is the degree of the factor found.
+      int nbrFactorsSameDegree = pstFactorInfoOrig->degree / pstFactorInfoOrig->expectedDegree;
+      int shiftLeftCtr = pstFactorInfoOrig->expectedDegree;
+      int shiftLeftLimbs = shiftLeftCtr / 32;
+      unsigned int shiftLeftRem = (unsigned int)shiftLeftCtr & 0x1FU;
+      if ((shiftLeftCtr & 0x1F) == 0)
+      {
+        for (int curFactor = 0; curFactor < nbrFactorsSameDegree; curFactor++)
+        {
+          for (int limbIndex = curDegree / 32; limbIndex >= 0; limbIndex--)
+          {
+            validDegrees[limbIndex + shiftLeftLimbs] |= validDegrees[limbIndex];
+          }
+          curDegree += shiftLeftCtr;
+        }
+      }
+      else
+      {
+        for (int curFactor = 0; curFactor < nbrFactorsSameDegree; curFactor++)
+        {
+          int limbIndex = curDegree / 32;
+          unsigned int shiftRightRem = 32U - shiftLeftRem;
+          validDegrees[limbIndex + shiftLeftLimbs + 1] |=
+            (validDegrees[limbIndex] >> shiftRightRem);
+          for (; limbIndex > 0; limbIndex--)
+          {
+            validDegrees[limbIndex + shiftLeftLimbs] |=
+              ((validDegrees[limbIndex] << shiftLeftRem) |
+                (validDegrees[limbIndex - 1] >> shiftRightRem));
+          }
+          validDegrees[shiftLeftLimbs] |= (validDegrees[0] << shiftLeftRem);
+          curDegree += shiftLeftCtr;
+        }
+      }
+      nbrFactors += nbrFactorsSameDegree;
+      pstFactorInfoOrig++;
+    }
+    // Update valid degrees record by performing a logic AND with valid degrees.
+    for (int limbIndex = curDegree / 32; limbIndex >= 0; limbIndex--)
+    {
+      validDegreesRecord[limbIndex] &= validDegrees[limbIndex];
+    }
+    // Test whether the polynomial is irreducible.
+    isIrreducible = true;
+    if (curDegree < 32)
+    {
+      if (validDegreesRecord[0] != (1U + (1U << (unsigned int)curDegree)))
+      {
+        isIrreducible = false;
+      }
+    }
+    else
+    {
+      if ((validDegreesRecord[0] != 1U) ||
+        (validDegreesRecord[curDegree >> 5] != (1U << (curDegree & 0x1F))))
+      {
+        isIrreducible = false;
+      }
+    }
+    if (isIrreducible)
+    {
+      for (int limbIndex = (curDegree / 32) - 1; limbIndex > 0; limbIndex--)
+      {
+        if (validDegreesRecord[limbIndex] != 0U)
+        {
+          isIrreducible = false;
+          break;
+        }
+      }
+    }
+    if (isIrreducible)
+    {
+      nbrFactorsRecord = 1;
+      break;
+    }
+    if (nbrFactors < nbrFactorsRecord)
+    {    // Copy factors found to records arrays.
+      primeRecord = prime;
+      nbrFactorsRecord = nbrFactors;
+      CopyFactorsFoundToRecord();
+    }
+  }
+  *pNbrFactorsRecord = nbrFactorsRecord;
+  *pPrimeRecord = primeRecord;
+}
+
 // Input: values = degree, coefficient degree 0, coefficient degree 1, etc.
 // Output: factorInfo = structure that holds the factors.
 int FactorPolyOverIntegers(void)
@@ -2153,7 +2287,6 @@ int FactorPolyOverIntegers(void)
   const int* ptrPolySqFreeFact = polySqFreeFact;
   int degreePolyToFactor = values[0];
   int primeRecord = 0;
-  int expon;
   const int* ptrSrc;
   int* ptrDest;
   int factorNbr;
@@ -2234,7 +2367,6 @@ int FactorPolyOverIntegers(void)
        // coefficients of the original polynomial.
     int nbrFactorsRecord;
     int prime;
-    int primeIndex;
     modulusIsZero = true;
     intPolyMultiplicity = *ptrPolySqFreeFact;
     ptrPolySqFreeFact++;
@@ -2260,132 +2392,8 @@ int FactorPolyOverIntegers(void)
     }
     UncompressBigIntegerB(ptrSrc, &operand2);
     (void)BigIntMultiply(&operand1, &operand2, &trailingCoeff);
-    primeIndex = 0;
     ComputeCoeffBounds();   // bound = Bound of coefficient of factors.
-    // Up to 5 different prime moduli are tested to minimize the number
-    // of factors because the Van Hoeij algorithm speed depends on
-    // this number. If the number of factors is less than 10,
-    // no more modular factorizations are attempted.
-
-    // The big number ensures that the first copy is done.
-    nbrFactorsRecord = 100000;
-    for (int attemptNbr = 1; attemptNbr < 5; attemptNbr++)
-    {
-      int nbrFactors;
-      bool isIrreducible;
-      primeIndex = getNextPrimeNoDuplicatedFactors(primeIndex);
-      prime = smallPrimes[primeIndex];
-      // Find expon such that prime^expon >= 2 * bound
-      BigIntMultiplyBy2(&bound);
-      intToBigInteger(&operand1, prime);
-      expon = 1;
-      for (;;)
-      {
-        // Compare operand1 = prime^expon against 2 * bound.
-        BigIntSubt(&operand1, &bound, &operand4);
-        if (operand4.sign == SIGN_POSITIVE)
-        {
-          break;     // prime^expon >= 2 * bound -> go out.
-        }
-        multint(&operand1, &operand1, prime);
-        expon++;
-      }
-      FactorPolynomialModPrime(prime);
-          // Get number of factors found.
-      pstFactorInfoOrig = factorInfo;
-      nbrFactors = 0;
-      (void)memset(validDegrees, 0x00, sizeof(validDegrees));
-      validDegrees[0] = 1;
-      int curDegree = 0;
-      for (factorNbr = 0; factorNbr < MAX_DEGREE; factorNbr++)
-      {
-        if (pstFactorInfoOrig->ptr == NULL)
-        {    // No more factors.
-          break;
-        }
-        // Compute D <- D OR (D << d) where D is validDegrees and
-        // d is the degree of the factor found.
-        int nbrFactorsSameDegree = pstFactorInfoOrig->degree / pstFactorInfoOrig->expectedDegree;
-        int shiftLeftCtr = pstFactorInfoOrig->expectedDegree;
-        int shiftLeftLimbs = shiftLeftCtr / 32;
-        unsigned int shiftLeftRem = (unsigned int)shiftLeftCtr & 0x1FU;
-        if ((shiftLeftCtr & 0x1F) == 0)
-        {
-          for (int curFactor = 0; curFactor < nbrFactorsSameDegree; curFactor++)
-          {
-            for (int limbIndex = curDegree / 32; limbIndex >= 0; limbIndex--)
-            {
-              validDegrees[limbIndex + shiftLeftLimbs] |= validDegrees[limbIndex];
-            }
-            curDegree += shiftLeftCtr;
-          }
-        }
-        else
-        {
-          for (int curFactor = 0; curFactor < nbrFactorsSameDegree; curFactor++)
-          {
-            int limbIndex = curDegree / 32;
-            unsigned int shiftRightRem = 32U - shiftLeftRem;
-            validDegrees[limbIndex + shiftLeftLimbs + 1] |=
-              (validDegrees[limbIndex] >> shiftRightRem);
-            for (; limbIndex > 0; limbIndex--)
-            {
-              validDegrees[limbIndex + shiftLeftLimbs] |=
-                 ((validDegrees[limbIndex] << shiftLeftRem) |
-                  (validDegrees[limbIndex-1] >> shiftRightRem));
-            }
-            validDegrees[shiftLeftLimbs] |= (validDegrees[0] << shiftLeftRem);
-            curDegree += shiftLeftCtr;
-          }
-        }
-        nbrFactors += nbrFactorsSameDegree;
-        pstFactorInfoOrig++;
-      }
-      // Update valid degrees record by performing a logic AND with valid degrees.
-      for (int limbIndex = curDegree / 32; limbIndex >= 0; limbIndex--)
-      {
-        validDegreesRecord[limbIndex] &= validDegrees[limbIndex];
-      }
-      // Test whether the polynomial is irreducible.
-      isIrreducible = true;
-      if (curDegree < 32)
-      {
-        if (validDegreesRecord[0] != (1U + (1U << (unsigned int)curDegree)))
-        {
-          isIrreducible = false;
-        }
-      }
-      else
-      {
-        if ((validDegreesRecord[0] != 1U) ||
-          (validDegreesRecord[curDegree >> 5] != (1U << (curDegree & 0x1F))))
-        {
-          isIrreducible = false;
-        }
-      }
-      if (isIrreducible)
-      {
-        for (int limbIndex = (curDegree / 32) - 1; limbIndex > 0; limbIndex--)
-        {
-          if (validDegreesRecord[limbIndex] != 0U)
-          {
-            isIrreducible = false;
-            break;
-          }
-        }
-      }
-      if (isIrreducible)
-      {
-        nbrFactorsRecord = 1;
-        break;
-      }
-      if (nbrFactors < nbrFactorsRecord)
-      {    // Copy factors found to records arrays.
-        primeRecord = prime;
-        nbrFactorsRecord = nbrFactors;
-        CopyFactorsFoundToRecord();
-      }
-    }
+    factorDifferentModuli(&nbrFactorsRecord, &primeRecord);
     // Modulus that generate the lowest number of polynomials factors found.
     // Perform same degree factorization.
     // Copy back the record factorization to the work area.
