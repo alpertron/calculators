@@ -3638,14 +3638,13 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
     (void)memcpy(factorInfoInteger, factorInfoIntegerBak, sizeof(factorInfoInteger));
     break;
   default:
-    if (isPalindromic(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree))
-    {          // Cyclotomic polynomials are palindromic.
-      if (TestCyclotomic(pstFactorInfo->ptrPolyLifted, multiplicity,
+    if (isPalindromic(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree) &&
+        TestCyclotomic(pstFactorInfo->ptrPolyLifted, multiplicity,
         pstFactorInfo->degree))
-      {
-        break;
-      }
+    {
+      break;
     }
+    
     if (isLinearExponential(pstFactorInfo->ptrPolyLifted, pstFactorInfo->degree,
       multiplicity))
     {          // If polynomial is ax^n+b = 0, show roots.
