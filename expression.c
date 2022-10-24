@@ -199,6 +199,7 @@ static enum eExprErr PerformGCDorLCM(char token, int stackIndexThreshold,
   }
   for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
   {
+    enum eExprErr rc;
     stackIndex--;
     if (getCurrentStackValue(&curStack2) != EXPR_OK)
     {
@@ -206,9 +207,16 @@ static enum eExprErr PerformGCDorLCM(char token, int stackIndexThreshold,
     }
     if (token == TOKEN_LCM)
     {
-      return BigIntLcm(&curStack, &curStack2, &curStack);
+      rc = BigIntLcm(&curStack, &curStack2, &curStack);
+      if (rc != EXPR_OK)
+      {
+        return rc;
+      }
     }
-    BigIntGcd(&curStack, &curStack2, &curStack);
+    else
+    {
+      BigIntGcd(&curStack, &curStack2, &curStack);
+    }
   }
   return EXPR_OK;
 }

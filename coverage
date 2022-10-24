@@ -22,6 +22,7 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "221313+sumdigits(23,10)+numdigits(232,10)+revdigits(765,10)+gcd(8,6)+minfact(143)+totient(226)+jacobi(3,7)+modpow(3,8,29)" >> coverage.out
 ./ecm "n(10^30+2)*n(3*10^30+10000)" >> coverage.out
 ./ecm "10**59+213" 1 >> coverage.out
+./ecm "lcm(1,2,3,4,5,6,7,8,9,10)" >> coverage.out
 ./ecm "p(655) % 65657578" >> coverage.out
 ./ecm "moddiv(90,12,101)" >> coverage.out
 ./ecm "modinv(6,13)-numdivs(45)+sumdivs(343)+maxfact(765)+numfact(765)+concatfact(0,36)+concatfact(0,36)+concatfact(1,36)+concatfact(2,36)+concatfact(3,36)+isprime(811)+concatfact(2,1)" >> coverage.out
