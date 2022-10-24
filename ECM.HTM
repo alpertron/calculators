@@ -80,7 +80,7 @@ fieldset {display:inline; padding-inline-start:0.3em; padding-inline-end:0.3em}
 #firstRow {width:100%}
 #firstRow > h2 {float:left; margin-block-start:inherit; margin-block-end:inherit;}
 #blocklyArea {flex-grow:1; height:99%}
-#blocklyDiv {position:absolute; color:initial; background-color:initial; background:initial}
+#blocklyDiv {position:absolute; color:initial; background-color:initial}
 #bfilename {width: 10em}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px}
 #savefile,#getFile,#cont,#wizard,#feedback,#more,#stop,#skip,#sharediv,#BlocklyErrors {display:none}
@@ -1013,7 +1013,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p><input type="button" id="save-config" value="Save" title="Save configuration"><input type="button" id="cancel-config" value="Cancel" title="Discard changes to configuration"></p>
 </div>
 </div></div></div>
-<aside id="blockmode" class="pad">
+<aside id="blockmode" class="pad" aria-label="Blockly mode">
 <div id="firstRow">
 <h2>Blockly mode</h2>
 <form class="bmodebuttons" id="BlocklyButtons">
@@ -1032,7 +1032,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <div id="blocklyArea"></div>
 <div id="blocklyDiv"></div>
 </aside>
-<aside id="wizard" class="pad">
+<aside id="wizard" class="pad" aria-label="Wizard">
 <h2 class="h2title">Factorization wizard</h2>
 <form class="applet">
 <fieldset id="output" class="atright">
@@ -1075,7 +1075,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <li id="X">Variable <var>X</var>: variable changed on each iteration of the loop.</li>
 </ul>
 </aside>
-<aside id="feedback">
+<aside id="feedback" aria-label="Feedback form">
 <h2 class="h2title">Feedback form</h2>
 <form class="applet" id="formfeedback">
 <input type="hidden" name="subject" value="Integer factorization calculator feedback">

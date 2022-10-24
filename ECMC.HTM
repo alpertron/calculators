@@ -80,7 +80,7 @@ fieldset {display:inline; padding-inline-start:0.3em; padding-inline-end:0.3em}
 #firstRow {width:100%}
 #firstRow > h2 {float:left; margin-block-start:inherit; margin-block-end:inherit;}
 #blocklyArea {flex-grow:1; height:99%}
-#blocklyDiv {position:absolute; color:initial; background-color:initial; background:initial}
+#blocklyDiv {position:absolute; color:initial; background-color:initial}
 #bfilename {width: 10em}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px}
 #savefile,#getFile,#cont,#wizard,#feedback,#more,#stop,#skip,#sharediv,#BlocklyErrors {display:none}
@@ -1001,7 +1001,7 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <p><input type="button" id="save-config" value="Aceptar" title="Almacenar la nueva configuración"><input type="button" id="cancel-config" value="Cancelar" title="Descartar los cambios hechos a la configuración"></p>
 </div>
 </div></div></div>
-<aside id="blockmode" class="pad">
+<aside id="blockmode" class="pad" aria-label="Modo Blockly">
 <div id="firstRow">
 <h2>Modo Blockly</h2>
 <form class="bmodebuttons" id="BlocklyButtons">
@@ -1020,7 +1020,7 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <div id="blocklyArea"></div>
 <div id="blocklyDiv"></div>
 </aside>
-<aside id="wizard" class="pad">
+<aside id="wizard" class="pad" aria-label="Asistente">
 <h2 class="h2title">Asistente de factorización</h2>
 <form class="applet">
 <fieldset id="output" class="atright">
@@ -1063,7 +1063,7 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <li id="X">Variable <var>X</var>: variable que cambia en cada iteración del ciclo.</li>
 </ul>
 </aside>
-<aside id="feedback">
+<aside id="feedback" aria-label="Formulario de comentarios">
 <h2 class="h2title">Formulario de comentarios</h2>
 <form class="applet" id="formfeedback">
 <input type="hidden" name="subject" value="Comentario de calculadora de factorizacion de enteros">
