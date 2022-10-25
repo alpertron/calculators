@@ -43,19 +43,14 @@ static bool isFunc(const char** ppcInput, const struct sFuncOperExpr** ppstFuncO
     const char* ptrFuncName = pstFuncOperExpr->name;
     while (*ptrFuncName != '\0')
     {
-      if ((*ptrFuncName >= 'A') && (*ptrFuncName < 'Z'))
+      char incomingChar = *pcInput;
+      if ((*ptrFuncName >= 'A') && (*ptrFuncName <= 'Z'))
       {           // Function name character is a letter.
-        if ((*pcInput != *ptrFuncName) && ((*pcInput - 0x20) != *ptrFuncName))
-        {         // Insensitive case comparison.
-          break;
-        }
+        incomingChar &= 0xDF;    // Convert character to uppercase.
       }
-      else if (*pcInput != *ptrFuncName)
-      {           // Not a letter. Perform exact comparison.
-        break;    // Function name not found.
-      }
-      else
-      {           // Nothing to do.
+      if (incomingChar != *ptrFuncName)
+      {
+        break;
       }
       pcInput++;
       ptrFuncName++;
@@ -178,7 +173,7 @@ enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput)
   (void)exponOperatorCounter;
   const char* pInput = *ppInput;
   char* ptrOutput = *ppOutput;
-  const char* ptrInput = pInput-1;
+  const char* ptrInput = pInput;
   if ((*ptrInput == '0') && ((*(ptrInput + 1) == 'x') || (*(ptrInput + 1) == 'X')))
   {              // Hexadecimal number.
     getHexValue(&ptrInput);
@@ -199,7 +194,7 @@ enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput)
       return EXPR_LITERAL_NOT_INTEGER;
     }
     diffPtrs = ptrInput - pInput;
-    Dec2Bin(pInput - 1, value.limbs, (int)diffPtrs + 1, &value.nbrLimbs);
+    Dec2Bin(pInput, value.limbs, (int)diffPtrs, &value.nbrLimbs);
   }
   pInput = ptrInput;
   value.sign = SIGN_POSITIVE;
@@ -734,6 +729,7 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
         else
 #endif
         {
+          pInput--;
           retcode = parseNumberInsideExpr(&pInput, &ptrOutput);
         }
         if (retcode != EXPR_OK)

@@ -421,13 +421,13 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
         ptrXML = strchr(ptrXML, '>') + 2; // Point to byte after start of number.
         if (*(ptrXML - 1) == '-')
         {
-          ptrXML++;     // Skip minus sign.
           (void)parseNumberInsideExpr(&ptrXML, &ptrInstr);
           *ptrInstr = OPER_UNARY_MINUS;
           ptrInstr++;
         }
         else
         {
+          ptrXML--;        // Point to start of number.
           (void)parseNumberInsideExpr(&ptrXML, &ptrInstr);
         }
       }
@@ -745,13 +745,13 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
         ptrXML = strchr(ptrXML, '>') + 2; // Point to byte after start of number.
         if (*(ptrXML - 1) == '-')
         {
-          ptrXML++;     // Skip minus sign.
           (void)parseNumberInsideExpr(&ptrXML, &ptrInstr);
           *ptrInstr = OPER_UNARY_MINUS;
           ptrInstr++;
         }
         else
         {
+          ptrXML--;      // Point to start of number.
           (void)parseNumberInsideExpr(&ptrXML, &ptrInstr);
         }
         ptrXML += 17;    // Discard "</field></shadow> tags.
