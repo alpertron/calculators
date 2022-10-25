@@ -2028,13 +2028,12 @@ static void SieveLocationHit(int rowMatrixB[], int rowMatrixBbeforeMerge[],
   int rowSquares[], limb biDividend[],
   int nbrLength, limb biT[], const limb *biLinearCoeff,
   limb biR[], limb biU[], limb biV[],
-  int indexFactorsA[], bool oddPolynomial)
+  int *indexFactorsA, bool oddPolynomial)
 {
   bool positive;
   int NumberLengthDivid;
   int Divid;
   int nbrColumns;
-
   trialDivisions++;
   MultBigNbrByInt(common.siqs.biQuadrCoeff, index2 - common.siqs.SieveLimit, biT,
     nbrLength);                                      // Ax
@@ -2820,6 +2819,7 @@ static void sieveThread(BigInteger *result)
   int NumberLengthA;
   int NumberLengthB;
 
+  (void)memset(indexFactorsA, 0, sizeof(indexFactorsA));
   (void)memset(biLinearCoeff, 0, sizeof(biLinearCoeff));
 //  synchronized(amodq)
   {

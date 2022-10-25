@@ -1913,8 +1913,8 @@ static void InsertIntegerPolynomialFactor(int* ptrFactor, int degreePoly)
   int* ptrIndex;
   const int* ptrOldFactor;
 
-  if (degreePoly < 0)
-  {
+  if ((degreePoly < 0) || (degreePoly > MAX_DEGREE))
+  {    // Invalid values of degreePoly.
     return;
   }
   // Fill indexes to start of each coefficient.
