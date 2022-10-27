@@ -2012,7 +2012,7 @@ static int showRadicals(int numerator, int denominator, int multipl,
   mult = 1;
   for (indexSigns = power2 - 1; indexSigns >= 0; indexSigns--)
   {
-    if (indexSigns * sizeof(arraySigns[0]) >= sizeof(arraySigns))
+    if (indexSigns >= ((int)sizeof(arraySigns) / (int)sizeof(arraySigns[0])))
     {    // This cannot occur.
       return 0;
     }

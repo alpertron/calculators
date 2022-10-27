@@ -1,5 +1,4 @@
 "use strict";
-let goog;
 /* global Blockly */
 /** @type {function(string)} */
 let fromBlocklyRun;
