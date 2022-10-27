@@ -1,6 +1,6 @@
 Results of static analysis and code coverage of this software using [Codacy](https://app.codacy.com/gh/alpertron/calculators/dashboard).
 
-Badges from SonarCloud:
+Badges from [SonarCloud](https://sonarcloud.io/summary/overall?id=alpertron_calculators):
 
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=alpertron_calculators&metric=bugs)](https://sonarcloud.io/dashboard?id=alpertron_calculators)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=alpertron_calculators&metric=code_smells)](https://sonarcloud.io/dashboard?id=alpertron_calculators)
