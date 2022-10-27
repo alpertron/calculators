@@ -1903,7 +1903,7 @@ static int showRadicals(int numerator, int denominator, int multipl,
   int power2 = powerOf2;
   int num = numerator;
   int den = denominator;
-  int arraySigns[10];
+  int arraySigns[20];
   int indexSigns = 0;
   int exprDen;
   int den2 = 2 * den;
@@ -2012,6 +2012,10 @@ static int showRadicals(int numerator, int denominator, int multipl,
   mult = 1;
   for (indexSigns = power2 - 1; indexSigns >= 0; indexSigns--)
   {
+    if (indexSigns * sizeof(arraySigns[0]) >= sizeof(arraySigns))
+    {    // This cannot occur.
+      return 0;
+    }
     arraySigns[indexSigns] = sign;
     angle = num * 15 / multiple % (60*mult);
     if ((angle < (15*mult)) || (angle > (45*mult)))

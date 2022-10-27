@@ -250,12 +250,10 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
       if (nbrLength <= KARATSUBA_POLY_CUTOFF)
       {
         // Check if one of the factors is equal to zero.
-        ptrResult = &polyMultTemp[idxFactor1 * nbrLimbs];
-        i = nbrLength;
+        ptrResult = &polyMultTemp[(idxFactor1 * nbrLimbs) + 1];
+        i = nbrLength - 1;
         if (nbrLimbs == 2)
         {
-          ptrResult++;
-          i--;
           while (((i & 0x80000000) | *ptrResult) == 0)
           {   // Loop not finished and coefficient is not zero.
             ptrResult += nbrLimbs;
@@ -264,19 +262,17 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
         }
         else
         {
-          i--;
-          while (((i & 0x80000000) | (*ptrResult - 1) | *(ptrResult + 1)) == 0)
+          while (((i & 0x80000000) | (*(ptrResult - 1) - 1) | *ptrResult) == 0)
           {   // Loop not finished and coefficient is not zero.
             ptrResult += nbrLimbs;
             i--;
           }
         }
+        ptrResult = &polyMultTemp[(idxFactor2 * nbrLimbs) + 1];
         if (i < 0)
         {      // First factor is zero. Initialize second to zero.
-          ptrResult = &polyMultTemp[idxFactor2 * nbrLimbs];
           if (nbrLimbs == 2)
           {
-            ptrResult++;
             for (i = nbrLength; i > 0; i--)
             {
               *ptrResult = 0;
@@ -287,20 +283,17 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
           {
             for (i = nbrLength; i > 0; i--)
             {
-              *ptrResult = 1;
-              *(ptrResult + 1) = 0;
+              *(ptrResult - 1) = 1;
+              *ptrResult = 0;
               ptrResult += nbrLimbs;
             }
           }
         }
         else
         {     // First factor is not zero. Check second.
-          ptrResult = &polyMultTemp[idxFactor2 * nbrLimbs];
-          i = nbrLength;
+          i = nbrLength - 1;
           if (nbrLimbs == 2)
           {
-            ptrResult++;
-            i--;
             while (((i & 0x80000000) | *ptrResult) == 0)
             {   // Loop not finished and coefficient is not zero.
               ptrResult += nbrLimbs;
@@ -309,8 +302,7 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
           }
           else
           {
-            i--;
-            while (((i & 0x80000000) | (*ptrResult - 1) | *(ptrResult + 1)) == 0)
+            while (((i & 0x80000000) | (*(ptrResult - 1) - 1) | *ptrResult) == 0)
             {   // Loop not finished and coefficient is not zero.
               ptrResult += nbrLimbs;
               i--;
@@ -318,10 +310,9 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
           }
           if (i < 0)
           {    // Second factor is zero. Initialize first to zero.
-            ptrResult = &polyMultTemp[idxFactor1 * nbrLimbs];
+            ptrResult = &polyMultTemp[(idxFactor1 * nbrLimbs) + 1];
             if (nbrLimbs == 2)
             {
-              ptrResult++;
               for (i = nbrLength; i > 0; i--)
               {
                 *ptrResult = 0;
@@ -332,8 +323,8 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
             {
               for (i = nbrLength; i > 0; i--)
               {
-                *ptrResult = 1;
-                *(ptrResult + 1) = 0;
+                *(ptrResult - 1) = 1;
+                *ptrResult = 0;
                 ptrResult += nbrLimbs;
               }
             }
