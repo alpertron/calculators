@@ -86,7 +86,7 @@ function BigIntValidator(newValue)
       }
       output += c;
     }
-    if (insideDigits)
+    else if (insideDigits)
     {
       if (c < "0" || c > "9")
       {              // Not a digit.
@@ -105,21 +105,19 @@ function BigIntValidator(newValue)
         if (c === "0" && (newValue.charAt(count+1) === "X" || newValue.charAt(count+1) === "x"))
         {
           insideHex = true;
-          count++;    // Discard hex prefix.
-          continue;
+          count++;      // Discard hex prefix.
         }
-        insideDigits = true;
-        output += c;
-      }
-      else if (c === "+")
-      {
-        continue;
+        else
+        {
+          insideDigits = true;
+          output += c;  // Append first digit.
+        }
       }
       else if (c === "-")
       {
         isMinus = !isMinus;
       }
-      else
+      else if (c !== "+")
       {
         return null;
       }

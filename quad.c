@@ -2994,12 +2994,11 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
     if (startPeriodU.sign == SIGN_POSITIVE)
     {               // Already inside period.
       periodIndex++;
-      if (BigIntEqual(&ValU, &startPeriodU) && BigIntEqual(&ValV, &startPeriodV))
-      {             // New period started.
-        if ((periodIndex & 1) == 0)
-        {           // Two periods of period length is odd, one period if even.
-          break;  // Go out in this case.
-        }
+      if ((BigIntEqual(&ValU, &startPeriodU) && BigIntEqual(&ValV, &startPeriodV)) &&
+                   // New period started.
+         ((periodIndex & 1) == 0))
+      {           // Two periods of period length is odd, one period if even.
+        break;  // Go out in this case.
       }
     }
     else if (!isIntegerPart)

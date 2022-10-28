@@ -604,13 +604,11 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
       {
         int token = pstFuncOperExpr->token;
         pInput = inputTemp;
-        if (((token & 0xFF) == TOKEN_RANDOM) ||
-             ((token & 0xFF) == TOKEN_ANS))
+        if ((((token & 0xFF) == TOKEN_RANDOM) ||
+             ((token & 0xFF) == TOKEN_ANS)) &&
+          (pUsingRandom != NULL))
         {
-          if (pUsingRandom != NULL)
-          {
-            *pUsingRandom = true;
-          }
+          *pUsingRandom = true;
         }
         if (((unsigned short)token & 0xFF00U) == (unsigned short)NO_PARMS)
         {

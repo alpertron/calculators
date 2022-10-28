@@ -279,6 +279,7 @@ function fillCache()
 function callWorker(param)
 {
   let helphelp = get("helphelp");
+  let langName = asmjs? "asm.js": "WebAssembly";
   if (!worker)
   {
     if (!blob)
@@ -320,8 +321,8 @@ function callWorker(param)
     };
   }
   helphelp.style.display = "block";
-  helphelp.innerHTML = (lang ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión "+(asmjs? "asm.js": "WebAssembly")+".</p>":
-                               "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the "+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
+  helphelp.innerHTML = (lang ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión "+langName+".</p>":
+                               "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the "+langName+" version.</p>");
   if (asmjs)
   {      // Asm.js
     worker.postMessage(param);

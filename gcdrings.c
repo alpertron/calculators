@@ -579,14 +579,12 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
       else
       {          // If the absolute value of one coefficient is 2 and all other coefficients
                  // equal zero, B is a unit.
-        if (magnitude == 2)
-        {
-          if ((scalarB->limbs[0].x + vecIB->limbs[0].x +
-            vecJB->limbs[0].x + vecKB->limbs[0].x) == 2)
-          {        // B is a unit. GCD already found in d.
-            ConvertQuaternionToEvenType(scalarGcd, vecIGcd, vecJGcd, vecKGcd, temp1, temp2, temp3);
-            return;
-          }
+        if ((magnitude == 2) &&
+            ((scalarB->limbs[0].x + vecIB->limbs[0].x +
+            vecJB->limbs[0].x + vecKB->limbs[0].x) == 2))
+        {        // B is a unit. GCD already found in d.
+          ConvertQuaternionToEvenType(scalarGcd, vecIGcd, vecJGcd, vecKGcd, temp1, temp2, temp3);
+          return;
         }
       }
     }

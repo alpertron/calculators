@@ -375,6 +375,7 @@ function performWork(n, valueText)
   let res = divResult;
   let charNull = String.fromCharCode(0);
   let helphelp = get("helphelp");
+  let langName = asmjs? "asm.js": "WebAssembly";
   hide("sharediv");
   if (valueText === "")
   {    // Nothing in input box.
@@ -387,8 +388,8 @@ function performWork(n, valueText)
   hide("cont");
   hide("help");
   helphelp.style.display = "block";
-  helphelp.innerHTML = (lang ? "<p class=\"pad\">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. También puedes ver <a href=\"/videos/videosEcmc.htm\" target=\"_blank\">videos</a>. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización. Esta es la versión "+(asmjs? "asm.js": "WebAssembly")+".</p>":
-                               "<p class=\"pad\">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. You can also watch <a href=\"/videos/videosEcm.htm\" target=\"_blank\">videos</a>. Keyboard users can press CTRL+ENTER to start factorization. This is the "+(asmjs? "asm.js": "WebAssembly")+" version.</p>");
+  helphelp.innerHTML = (lang ? "<p class=\"pad\">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. También puedes ver <a href=\"/videos/videosEcmc.htm\" target=\"_blank\">videos</a>. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización. Esta es la versión "+langName+".</p>":
+                               "<p class=\"pad\">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. You can also watch <a href=\"/videos/videosEcm.htm\" target=\"_blank\">videos</a>. Keyboard users can press CTRL+ENTER to start factorization. This is the "+langName+" version.</p>");
   res.style.display = "block";
   if (typeof(Worker) === "undefined")
   {    // Web workers not supported on this browser.

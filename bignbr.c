@@ -1486,12 +1486,11 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
       }
       k++;
     }
-    if (base != prime)
-    {     // Prime just generated is different from the number to check primality.
-      if (intModPow(getRemainder(pBigNbr, prime), k, prime) != 1)
-      {   // Number is not a power of the type a^Exponent.
-        continue;
-      }
+    if ((base != prime) &&
+        // Prime just generated is different from the number to check primality.
+      (intModPow(getRemainder(pBigNbr, prime), k, prime) != 1))
+    {   // Number is not a power of the type a^Exponent.
+      continue;
     }
     // All approximations must be >= than true answer.
     if (nbrLimbs == 1)

@@ -2038,14 +2038,13 @@ void factorExt(const BigInteger *toFactor, const int *number,
       pstCurFactor->upperBound = 0;   // Indicate that number is prime.
       continue;                       // Check next factor.
     }
-    if (result > 1)
-    {    // Number is 2-Fermat probable prime. Try to factor it.
-      if (factorCarmichael(&prime, pstFactors) != 0)
-      {                               // Factors found.
-        factorNbr--;                  // Test whether factor found is prime.
-        pstCurFactor--;
-        continue;
-      }
+    if ((result > 1) &&
+        // Number is 2-Fermat probable prime. Try to factor it.
+       (factorCarmichael(&prime, pstFactors) != 0))
+    {                               // Factors found.
+      factorNbr--;                  // Test whether factor found is prime.
+      pstCurFactor--;
+      continue;
     }
 #ifdef __EMSCRIPTEN__
     double originalTenths = tenths();
