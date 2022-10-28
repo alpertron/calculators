@@ -683,7 +683,8 @@ static bool BlockLanczos(int seed)
         }
       }
     }
-    for (col = leftCol; col < rightCol; col++)
+    col = leftCol;
+    while (col < rightCol)
     {  // If all zeros in col 'col', exchange it with last column with
        // data different from zero (rightCol).
       if (vectorIndex[col] < 0)
@@ -693,6 +694,7 @@ static bool BlockLanczos(int seed)
         vectorIndex[col] = vectorIndex[rightCol];
         vectorIndex[rightCol] = -1; // This column now has zeros.
       }
+      col++;
     }
     if (leftCol == rightCol)
     {

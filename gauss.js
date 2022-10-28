@@ -19,13 +19,14 @@
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 (function()
 {   // This method separates the name space from the Google Analytics code.
+const debugEcm = false;
+const asmjs = typeof(WebAssembly) === "undefined";
 let worker = 0;
 let app;
 let blob;
 let digits;
 let config;
 let fileContents = 0;
-const asmjs = typeof(WebAssembly) === "undefined";
 let funcnames;
 let parens;
 if (lang)
@@ -98,14 +99,14 @@ function callWorker(param)
       // and it is "2" for end of calculation.
       // It is "9" for saving expression to factor into Web Storage.
       let firstChar = e.data.substring(0, 1);
-      if (firstChar === "8")
+      if (firstChar === "8" && debugEcm)
       {
-//        setStorage("ecmFactors", e.data.substring(1));
-//        setStorage("ecmCurve", "");
+        setStorage("ecmFactors", e.data.substring(1));
+        setStorage("ecmCurve", "");
       }
-      else if (firstChar === "7")
+      else if (firstChar === "7" && debugEcm)
       {
-//        setStorage("ecmCurve", e.data.substring(1));
+        setStorage("ecmCurve", e.data.substring(1));
       }
       else if (firstChar === "4")
       {
