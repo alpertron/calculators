@@ -28,7 +28,7 @@
 #include "polynomial.h"
 #include "fromBlockly.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 13
+#define DEBUG_CODE 24
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -457,6 +457,34 @@ int main(int argc, char* argv[])
     tsqcubesText(argv[1], 6);
     (void)printf("%s\n", output);
   }
+#elif DEBUG_CODE == 24
+  limb firstFactor[20];
+  limb secondFactor[20];
+  limb product[20];
+  int groups;
+  Dec2Bin("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001", TestNbr, 115, &groups);
+  GetMontgomeryParms(groups);
+  memset(secondFactor, 0, groups * 4);
+  secondFactor[0].x = 32;
+  memcpy(firstFactor, MontgomeryMultR1, groups * 4);
+  char* ptrOutput = output;
+  copyStr(&ptrOutput, "TestNbr =          ");
+  Bin2Dec(&ptrOutput, TestNbr, groups, 0);
+  copyStr(&ptrOutput, "\nMontgomeryMultR1 = ");
+  Bin2Dec(&ptrOutput, MontgomeryMultR1, groups, 0);
+  copyStr(&ptrOutput, "\nMontgomeryMultR2 = ");
+  Bin2Dec(&ptrOutput, MontgomeryMultR2, groups, 0);
+  copyStr(&ptrOutput, "\nMontgomeryMultN =  ");
+  Bin2Dec(&ptrOutput, MontgomeryMultN, groups, 0);
+  copyStr(&ptrOutput, "\nFirstFactor =      ");
+  Bin2Dec(&ptrOutput, firstFactor, groups, 0);
+  copyStr(&ptrOutput, "\nSecondFactor =     ");
+  Bin2Dec(&ptrOutput, secondFactor, groups, 0);
+  modmult(firstFactor, secondFactor, product);
+  copyStr(&ptrOutput, "\nProduct =          ");
+  Bin2Dec(&ptrOutput, product, groups, 0);
+  copyStr(&ptrOutput, "\n");
+  (void)printf("%s\n", output);
 #endif
   return 0;
 }
