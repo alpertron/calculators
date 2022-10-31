@@ -127,9 +127,6 @@ static void smallmodmult(int factor1, int factor2, int *product, int mod)
 
 static void MontgomeryMult(int *factor1, int *factor2, int *Product)
 {
-#ifndef _USING64BITS_
-  unsigned int carry;
-#endif
   if (TestNbr[1] == 0)
   {
     smallmodmult(*factor1, *factor2, Product, TestNbr[0]);
@@ -138,100 +135,96 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   }
   int TestNbr0 = TestNbr[0];
   int TestNbr1 = TestNbr[1];
-  uint32_t Prod0;
-  uint32_t Prod1;
+  int32_t Prod0;
+  int32_t Prod1;
   int factor2_0 = *factor2;
   int factor2_1 = *(factor2+1);
 #ifdef _USING64BITS_
-  uint64_t Pr;
-  unsigned int Nbr;
-  unsigned int MontDig;
+  int64_t Pr;
+  int Nbr;
+  int MontDig;
   
   Nbr = *factor1;
-  Pr = Nbr * (uint64_t)factor2_0;
-  MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_VALUE_LIMB;
-  Pr = ((((uint64_t)MontDig * (uint64_t)TestNbr0) + Pr) >> BITS_PER_GROUP) +
-    ((uint64_t)MontDig * (uint64_t)TestNbr1) + ((uint64_t)Nbr * (uint64_t)factor2_1);
-  Prod0 = (uint32_t)(Pr & MAX_VALUE_LIMB);
-  Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
+  Pr = Nbr * (int64_t)factor2_0;
+  MontDig = ((int32_t)Pr * MontgomeryMultN) & MAX_VALUE_LIMB;
+  Pr = ((Pr - ((int64_t)MontDig * (int64_t)TestNbr0)) >> BITS_PER_GROUP) -
+    ((int64_t)MontDig * (int64_t)TestNbr1) +
+    ((int64_t)Nbr * (int64_t)factor2_1);
+  Prod0 = (int32_t)(Pr & MAX_VALUE_LIMB);
+  Prod1 = (int32_t)(Pr >> BITS_PER_GROUP);
     
   Nbr = *(factor1 + 1);
-  Pr = Nbr * (uint64_t)factor2_0 + (uint32_t)Prod0;
-  MontDig = ((uint32_t)Pr * MontgomeryMultN) & MAX_VALUE_LIMB;
-  Pr = ((((uint64_t)MontDig * (uint64_t)TestNbr0) + Pr) >> BITS_PER_GROUP) +
-    ((uint64_t)MontDig * (uint64_t)TestNbr1) + ((uint64_t)Nbr * (uint64_t)factor2_1) + (uint32_t)Prod1;
-  Prod0 = (uint32_t)(Pr & MAX_VALUE_LIMB);
-  Prod1 = (uint32_t)(Pr >> BITS_PER_GROUP);
+  Pr = Nbr * (int64_t)factor2_0 + (int32_t)Prod0;
+  MontDig = ((int32_t)Pr * MontgomeryMultN) & MAX_VALUE_LIMB;
+  Pr = ((Pr - ((int64_t)MontDig * (int64_t)TestNbr0)) >> BITS_PER_GROUP) -
+    ((int64_t)MontDig * (int64_t)TestNbr1) +
+    ((int64_t)Nbr * (int64_t)factor2_1) + Prod1;
+  Prod0 = (int32_t)(Pr & MAX_VALUE_LIMB);
+  Prod1 = (int32_t)(Pr >> BITS_PER_GROUP);
     
-  if (((Pr >> BITS_PER_GROUP) > (uint64_t)TestNbr1) ||
-     ((Prod1 == (uint32_t)TestNbr1) && (Prod0 >= (uint32_t)TestNbr0)))
-  {
-    uint32_t borrow = Prod0 - (uint32_t)TestNbr0;
-    Prod0 = borrow & MAX_VALUE_LIMB;
-    Prod1 = (Prod1 - (uint32_t)TestNbr1 - (borrow >> BITS_PER_GROUP)) & MAX_VALUE_LIMB;
-  }
 #else
   double dInvLimbRange = 1.0 / (double)LIMB_RANGE;
   int Nbr = *(factor1);
   double dNbr = (double)Nbr;
   int low = Nbr * factor2_0;
   double dAccum = dNbr * (double)factor2_0;
-  unsigned int tmp = ((unsigned int)low * MontgomeryMultN) & MAX_VALUE_LIMB;
+  int tmp = (low * MontgomeryMultN) & MAX_INT_NBR;
   int MontDig = (int)tmp;
   double dMontDig = (double)MontDig;
-  dAccum += dMontDig * (double)TestNbr0;
+  dAccum -= dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
   dAccum = floor((dAccum*dInvLimbRange) + 0.5);
-  tmp = ((unsigned int)dAccum + ((unsigned int)MontDig * (unsigned int)TestNbr1) +
-               ((unsigned int)Nbr * (unsigned int)factor2_1)) & MAX_VALUE_LIMB;
+  tmp = ((int)dAccum - (MontDig * TestNbr1) + (Nbr * factor2_1)) &
+        MAX_INT_NBR;
   low = (int)tmp;
-  dAccum += (dMontDig * (double)TestNbr1) + (dNbr * (double)factor2_1);
+  dAccum += (dNbr * (double)factor2_1) - (dMontDig * (double)TestNbr1);
   Prod0 = low;
+  // Casting from double to int truncates to nearest to zero,
+  // so the conversion is done on non-negative numbers.
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + (double)FOURTH_INT_RANGE)*dInvLimbRange);
+    dAccum = (dAccum * dInvLimbRange) + 2147483648.25;
   }
   else
   {
-    dAccum = ((dAccum - (double)FOURTH_INT_RANGE)*dInvLimbRange);
+    dAccum = (dAccum * dInvLimbRange) + 2147483647.75;
   }
-  Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
+  Prod1 = (unsigned int)dAccum ^ LIMB_RANGE;
   
   Nbr = *(factor1 + 1);
   dNbr = (double)Nbr;
   low = (Nbr * factor2_0) + (int)Prod0;
   dAccum = (dNbr * (double)factor2_0) + (double)Prod0;
-  tmp = ((unsigned int)low * MontgomeryMultN) & MAX_VALUE_LIMB;
+  tmp = (low * MontgomeryMultN) & MAX_VALUE_LIMB;
   MontDig = (int)tmp;
   dMontDig = (double)MontDig;
-  dAccum += dMontDig * (double)TestNbr0;
+  dAccum -= dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
   dAccum = floor((dAccum*dInvLimbRange) + 0.5);
-  tmp = ((unsigned int)dAccum + ((unsigned int)MontDig * (unsigned int)TestNbr1) +
-               ((unsigned int)Nbr * (unsigned int)factor2_1) + Prod1) & MAX_VALUE_LIMB;
+  tmp = ((int)dAccum - (MontDig * TestNbr1) + (Nbr * factor2_1) + Prod1) &
+        MAX_INT_NBR;
   low = (int)tmp;
-  dAccum += (dMontDig * (double)TestNbr1) + (dNbr * (double)factor2_1) + (double)Prod1;
+  dAccum += (dMontDig * (double)TestNbr1) + (dNbr * (double)factor2_1) +
+            (double)Prod1;
   Prod0 = low;
+  // Casting from double to int truncates to nearest to zero,
+  // so the conversion is done on non-negative numbers.
   if (low < HALF_INT_RANGE)
   {
-    dAccum = ((dAccum + (double)FOURTH_INT_RANGE)*dInvLimbRange);
+    dAccum = (dAccum * dInvLimbRange) + 2147483648.25;
   }
   else
   {
-    dAccum = ((dAccum - (double)FOURTH_INT_RANGE)*dInvLimbRange);
+    dAccum = (dAccum * dInvLimbRange) + 2147483647.75;
   }
-  Prod1 = (unsigned int)dAccum;  // Most significant limb can be greater than LIMB_RANGE
-  
-  if ((Prod1 > (unsigned int)TestNbr1) ||
-       ((Prod1 == (unsigned int)TestNbr1) && (Prod0 >= (unsigned int)TestNbr0)))
-  {        // Prod >= TestNbr, so perform Prod <- Prod - TestNbr
-    carry = Prod0 - (unsigned int)TestNbr0;
-    tmp = carry & MAX_VALUE_LIMB;
-    Prod0 = (int)tmp;
-    // On subtraction, carry subtracts also.
-    Prod1 = (Prod1 - (unsigned int)TestNbr1 - (carry >> BITS_PER_GROUP)) & MAX_VALUE_LIMB;
-  }
+  Prod1 = (unsigned int)dAccum ^ LIMB_RANGE;
 #endif  
+  if (Prod1 < 0)
+  {
+    uint32_t carry = Prod0 + TestNbr0;
+    Prod0 = carry & MAX_VALUE_LIMB;
+    Prod1 += TestNbr1 + (carry >> BITS_PER_GROUP);
+  }
   *Product = Prod0;
   *(Product+1) = Prod1;
 }
@@ -261,15 +254,14 @@ static void AddBigNbrModN(const int *Nbr1, const int *Nbr2, int *Sum)
   unsigned int TestNbr1 = (unsigned int)TestNbr[1];
   unsigned int carry = (unsigned int)*Nbr1 + (unsigned int)*Nbr2;
   Sum0 = carry & MAX_VALUE_LIMB;
-  carry = (carry >> BITS_PER_GROUP) + *(Nbr1 + 1) + *(Nbr2 + 1);
-  Sum1 = carry & MAX_VALUE_LIMB;
-  if ((carry > TestNbr1) || 
-     ((carry == TestNbr1) && (Sum0 >= TestNbr0)))
+  Sum1 = (carry >> BITS_PER_GROUP) + *(Nbr1 + 1) + *(Nbr2 + 1);
+  if ((Sum1 > TestNbr1) || 
+     ((Sum1 == TestNbr1) && (Sum0 >= TestNbr0)))
   {
     unsigned int borrow = Sum0 - TestNbr0;
     Sum0 = borrow & MAX_VALUE_LIMB;
     // On subtraction, borrow subtracts too.
-    Sum1 = (Sum1 - TestNbr1 - (borrow >> BITS_PER_GROUP)) & MAX_VALUE_LIMB;
+    Sum1 = Sum1 - TestNbr1 - (borrow >> BITS_PER_GROUP);
   }
   *Sum = (int)Sum0;
   *(Sum+1) = (int)Sum1;
@@ -292,7 +284,7 @@ static void GetMontgomeryParms(void)
   x = x * (2 - (N * x)); // 8 least significant bits of inverse correct.
   x = x * (2 - (N * x)); // 16 least significant bits of inverse correct.
   x = x * (2 - (N * x)); // 32 least significant bits of inverse correct.
-  MontgomeryMultN = (-x) & MAX_INT_NBR;
+  MontgomeryMultN = x & MAX_INT_NBR;
   MontgomeryMultR1[2] = 1;
   MontgomeryMultR1[0] = 0;
   AdjustModN(MontgomeryMultR1);
@@ -400,7 +392,7 @@ bool isPrime(int *value)
     // Check whether TestNbr is multiple of base. In this case the number would be composite.
     // No overflow possible in next expression.
     else if (((((unsigned int)TestNbr1 % base) * (LIMB_RANGE % base) +
-      ((unsigned int)TestNbr0 % base)) % base) == 0U)
+      (unsigned int)TestNbr0) % base) == 0U)
     {
       return false;           // Number is multiple of base, so it is composite.
     }
@@ -482,7 +474,8 @@ bool isPrime(int *value)
   maskMSB = (tmp << ((unsigned int)indexMSB % (unsigned int)BITS_PER_GROUP));
   i = 0;
   j = 0;
-  while ((limits[j+1] < TestNbr1) || ((limits[j+1] == TestNbr1) && (limits[j] < TestNbr0)))
+  while ((limits[j+1] < TestNbr1) || 
+         ((limits[j+1] == TestNbr1) && (limits[j] < TestNbr0)))
   {
     int idxNbr;
     base = bases[i];

@@ -28,7 +28,7 @@
 #include "polynomial.h"
 #include "fromBlockly.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 24
+#define DEBUG_CODE 16
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;

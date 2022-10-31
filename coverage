@@ -315,6 +315,7 @@ echo -e "\n\n**** QUADMOD ****" >> coverage.out
 ./quadmod -1 2 3 105 >> coverage.out
 ./quadmod 1 0 -505 361 >> coverage.out
 ./quadmod -1 0 505 361 >> coverage.out
+./quadmod -1 0 324 384 >> coverage.out
 ./quadmod 1 2 3 97 >> coverage.out
 ./quadmod 0 0 0 0 >> coverage.out
 ./quadmod 0 0 7 0 >> coverage.out

@@ -729,6 +729,8 @@ static bool SolveQuadraticEqModPowerOfP(int expon, int factorIndex,
   {     // Discriminant is zero.
     int lenBytes = nbrLimbs * (int)sizeof(limb);
     (void)memset(sqrRoot.limbs, 0, lenBytes);
+    sqrRoot.nbrLimbs = 1;
+    sqrRoot.sign = SIGN_POSITIVE;
   }
   else
   {      // Discriminant is not zero.
