@@ -665,7 +665,7 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
         copyStr(&ptrOut, lang ? "<p>El polinomio es irreducible" : "<p>The polynomial is irreducible");
         if (modulusIsZero && (primeEisenstein != 0))
         {
-          copyStr(&ptrOut, lang ? "debido al criterio de Eisenstein (primo = " :
+          copyStr(&ptrOut, lang ? " debido al criterio de Eisenstein (primo = " :
             " because of Eisenstein's criterion (prime = ");
           int2dec(&ptrOut, primeEisenstein);
           *ptrOut = ')';

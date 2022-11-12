@@ -219,6 +219,86 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
   return;
 }
 
+#define checkLimbForNbrLimbs2(nbr)  \
+   case nbr:             \
+   if (*ptrResult != 0)  \
+   {                     \
+     return false;       \
+   }                     \
+   ptrResult += nbrLimbs;
+
+#define checkLimbForNbrLimbsNot2(nbr)  \
+   case nbr:             \
+   if (((*(ptrResult - 1) - 1) | *ptrResult) != 0)  \
+   {                     \
+     return false;       \
+   }                     \
+   ptrResult += nbrLimbs;
+
+static inline bool isFactorEqualToZero(const int* pResult, int nbrLimbs, int nbrLength)
+{
+  const int* ptrResult = pResult;
+  if (nbrLimbs == 2)
+  {
+    switch (nbrLength)
+    {
+      checkLimbForNbrLimbs2(16)
+      checkLimbForNbrLimbs2(15)
+      checkLimbForNbrLimbs2(14)
+      checkLimbForNbrLimbs2(13)
+      checkLimbForNbrLimbs2(12)
+      checkLimbForNbrLimbs2(11)
+      checkLimbForNbrLimbs2(10)
+      checkLimbForNbrLimbs2(9)
+      checkLimbForNbrLimbs2(8)
+      checkLimbForNbrLimbs2(7)
+      checkLimbForNbrLimbs2(6)
+      checkLimbForNbrLimbs2(5)
+      checkLimbForNbrLimbs2(4)
+      checkLimbForNbrLimbs2(3)
+      checkLimbForNbrLimbs2(2)
+    case 1:
+      if (*ptrResult != 0)
+      {
+        return false;
+      }
+      break;
+    default:
+      break;
+    }
+  }
+  else
+  {
+    switch (nbrLength)
+    {
+      checkLimbForNbrLimbsNot2(16)
+      checkLimbForNbrLimbsNot2(15)
+      checkLimbForNbrLimbsNot2(14)
+      checkLimbForNbrLimbsNot2(13)
+      checkLimbForNbrLimbsNot2(12)
+      checkLimbForNbrLimbsNot2(11)
+      checkLimbForNbrLimbsNot2(10)
+      checkLimbForNbrLimbsNot2(9)
+      checkLimbForNbrLimbsNot2(8)
+      checkLimbForNbrLimbsNot2(7)
+      checkLimbForNbrLimbsNot2(6)
+      checkLimbForNbrLimbsNot2(5)
+      checkLimbForNbrLimbsNot2(4)
+      checkLimbForNbrLimbsNot2(3)
+      checkLimbForNbrLimbsNot2(2)
+    case 1:
+      if (((*(ptrResult - 1) - 1) | *ptrResult) != 0)
+      {
+        return false;
+      }
+      break;
+    default:
+      break;
+    }
+  }
+  return true;
+}
+
 // Recursive Karatsuba function.
 static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
 {
@@ -251,26 +331,9 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
       {
         // Check if one of the factors is equal to zero.
         ptrResult = &polyMultTemp[(idxFactor1 * nbrLimbs) + 1];
-        i = nbrLength - 1;
-        if (nbrLimbs == 2)
-        {
-          while (((i & 0x80000000) | *ptrResult) == 0)
-          {   // Loop not finished and coefficient is not zero.
-            ptrResult += nbrLimbs;
-            i--;
-          }
-        }
-        else
-        {
-          while (((i & 0x80000000) | (*(ptrResult - 1) - 1) | *ptrResult) == 0)
-          {   // Loop not finished and coefficient is not zero.
-            ptrResult += nbrLimbs;
-            i--;
-          }
-        }
-        ptrResult = &polyMultTemp[(idxFactor2 * nbrLimbs) + 1];
-        if (i < 0)
+        if (isFactorEqualToZero(ptrResult, nbrLimbs, nbrLength))
         {      // First factor is zero. Initialize second to zero.
+          ptrResult = &polyMultTemp[(idxFactor2 * nbrLimbs) + 1];
           if (nbrLimbs == 2)
           {
             for (i = nbrLength; i > 0; i--)
@@ -291,24 +354,8 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
         }
         else
         {     // First factor is not zero. Check second.
-          i = nbrLength - 1;
-          if (nbrLimbs == 2)
-          {
-            while (((i & 0x80000000) | *ptrResult) == 0)
-            {   // Loop not finished and coefficient is not zero.
-              ptrResult += nbrLimbs;
-              i--;
-            }
-          }
-          else
-          {
-            while (((i & 0x80000000) | (*(ptrResult - 1) - 1) | *ptrResult) == 0)
-            {   // Loop not finished and coefficient is not zero.
-              ptrResult += nbrLimbs;
-              i--;
-            }
-          }
-          if (i < 0)
+          ptrResult = &polyMultTemp[(idxFactor2 * nbrLimbs) + 1];
+          if (isFactorEqualToZero(ptrResult, nbrLimbs, nbrLength))
           {    // Second factor is zero. Initialize first to zero.
             ptrResult = &polyMultTemp[(idxFactor1 * nbrLimbs) + 1];
             if (nbrLimbs == 2)
