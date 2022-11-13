@@ -62,6 +62,9 @@ static void ClassicalPolyMult(int idxFactor1, int idxFactor2, int coeffLen, int 
   int j;
   int* ptrFactor1;
   const int* ptrFactor2;
+  assert(idxFactor1 >= 0);
+  assert(idxFactor2 >= 0);
+  assert(nbrLimbs >= 1);
 #ifndef _USING64BITS_
   limb result;
 #endif
@@ -258,13 +261,12 @@ static inline bool isFactorEqualToZero(const int* pResult, int nbrLimbs, int nbr
       checkLimbForNbrLimbs2(4)
       checkLimbForNbrLimbs2(3)
       checkLimbForNbrLimbs2(2)
-    case 1:
+        /* No break */
+    default:     // length equals to 1.
       if (*ptrResult != 0)
       {
         return false;
       }
-      break;
-    default:
       break;
     }
   }
@@ -287,13 +289,12 @@ static inline bool isFactorEqualToZero(const int* pResult, int nbrLimbs, int nbr
       checkLimbForNbrLimbsNot2(4)
       checkLimbForNbrLimbsNot2(3)
       checkLimbForNbrLimbsNot2(2)
-    case 1:
+        /* No break */
+    default:     // length equals to 1.
       if (((*(ptrResult - 1) - 1) | *ptrResult) != 0)
       {
         return false;
       }
-      break;
-    default:
       break;
     }
   }
@@ -320,6 +321,7 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
   int stage = 0;
   assert(nbrLimbs >= 1);
   assert(idxFact1 >= 0);
+  assert(nbrLen >= 1);
   // Save current parameters in stack.
   pstKaratsubaStack->idxFactor1 = idxFactor1;
   pstKaratsubaStack->stage = -1;
@@ -634,7 +636,8 @@ static void MultIntegerPolynomial(int deg1, int deg2,
   int currentDegree;
   int index;
   int degreeF2;
-
+  assert(deg1 >= 0);
+  assert(deg2 >= 0);
   // Force degree1 >= degree2.
   if (deg1 < deg2)
   {
