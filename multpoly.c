@@ -21,6 +21,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <assert.h>
 #include "bignbr.h"
 #include "expression.h"
 #include "highlevel.h"
@@ -317,6 +318,8 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
   static struct stKaratsubaStack* pstKaratsubaStack = astKaratsubaStack;
   static int coeffic[MAX_LEN];
   int stage = 0;
+  assert(nbrLimbs >= 1);
+  assert(idxFact1 >= 0);
   // Save current parameters in stack.
   pstKaratsubaStack->idxFactor1 = idxFactor1;
   pstKaratsubaStack->stage = -1;

@@ -23,6 +23,7 @@
 #include "bignbr.h"
 #include <math.h>
 #include <stdint.h>
+#include <assert.h>
 
 #define KARATSUBA_CUTOFF 16
 #define FFT_THRESHOLD 100
@@ -135,6 +136,8 @@ void multiplyWithBothLen(const limb* factor1, const limb* factor2, limb* result,
   int lenProd = len1 + len2;
   int lenBytes;
   int offset;
+  assert(len1 >= 1);
+  assert(len2 >= 1);
   if (len1 < len2)
   {
     minFact = factor1;

@@ -929,7 +929,7 @@ void SolveEquation(BigInteger* pValA, const BigInteger* pValB,
     SolveModularLinearEquation(pValA, pValB, pValC, pValN);
     return;
   }
-  if (!BigIntEqual(&LastModulus, pValN))
+  if ((LastModulus.nbrLimbs == 0) || !BigIntEqual(&LastModulus, pValN))
   {     // Last modulus is different from ValN.
     char* ptrFactorDec;
     CopyBigInt(&LastModulus, pValN);

@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "bignbr.h"
 #include "expression.h"
 #include <math.h>
@@ -93,6 +94,8 @@ enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivis
   int nbrLimbsDividend;
   int nbrLimbsDivisor;
 
+  assert(pDividend->nbrLimbs >= 1);
+  assert(pDivisor->nbrLimbs >= 1);
   // Check whether the divisor is zero.
   if (BigIntIsZero(pDivisor))
   {  // Indicate overflow if divisor is zero.

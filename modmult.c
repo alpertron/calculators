@@ -21,6 +21,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdint.h>
+#include <assert.h>
 #include "bignbr.h"
 #include "expression.h"
 
@@ -481,6 +482,7 @@ bool ModInvBigNbr(limb* num, limb* inv, limb* mod, int nbrLen)
   int lowU;
   int lowV;
   unsigned int borrow;
+  assert(nbrLen >= 1);
   if (nbrLen == 1)
   {
     inv->x = modInv(num->x, mod->x);
@@ -883,6 +885,7 @@ void BigIntModularDivisionPower2(const BigInteger* Num, const BigInteger* Den,
 {
   int NumberLengthBak = NumberLength;
   NumberLength = mod->nbrLimbs;
+  assert(NumberLength >= 1);
   // Compute aux3 as inverse of Den mod mod.
   ComputeInversePower2(Den->limbs, aux3, aux4);
   if (Num->sign != Den->sign)
@@ -895,7 +898,8 @@ void BigIntModularDivisionPower2(const BigInteger* Num, const BigInteger* Den,
       Cy >>= BITS_PER_GROUP;
     }
   }
-  multiply(aux3, Num->limbs, quotient->limbs, NumberLength, NULL);    // quotient <- Den * aux3
+  multiply(aux3, Num->limbs, quotient->limbs, 
+    NumberLength, NULL);    // quotient <- Den * aux3
   quotient->limbs[NumberLength - 1].x &= mod->limbs[NumberLength - 1].x - 1;
   // Adjust number of length of quotient so the most significant limb is not zero.
   while (NumberLength > 1)
@@ -999,6 +1003,12 @@ void BigIntGeneralModularDivision(const BigInteger* Num, const BigInteger* Den,
   modmult(aux3, aux4, resultModOdd);          // resultModOdd <- Num / Dev in standard notation.
 
   // Compute inverse mod power of 2.
+  if (shRight == 0)
+  {    // Modulus is odd. Quotient already computed.
+    NumberLength = oddValue.nbrLimbs;
+    UncompressLimbsBigInteger(resultModOdd, quotient);
+    return;
+  }
   NumberLength = (shRight + BITS_PER_GROUP_MINUS_1) / BITS_PER_GROUP;
   CompressLimbsBigInteger(aux3, Den);
   ComputeInversePower2(aux3, aux4, aux);

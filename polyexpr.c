@@ -21,6 +21,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <assert.h>
 #include "bignbr.h"
 #include "polynomial.h"
 #include "expression.h"
@@ -142,6 +143,7 @@ void UncompressBigIntegerB(const int* ptrValues, BigInteger* bigint)
   {
     NumberLength = numLimbs(ptrValues);
   }
+  assert(NumberLength >= 1);
   IntArray2BigInteger(ptrValues, bigint);
 }
 
@@ -799,6 +801,10 @@ int ComputePolynomial(const char* input, int expo)
   bool randomUsed;
   degree = 1;
   exponentMod = expo;
+  if (modulusIsZero)
+  {
+    intToBigInteger(&primeMod, 1);
+  }
   // Use operand1 as temporary variable to store the exponent.
   computePower(expo);
   rc = ConvertToReversePolishNotation(input, &ptrRPNbuffer, stFuncOperPolyExpr,

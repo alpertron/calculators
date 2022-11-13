@@ -634,7 +634,7 @@ void DiscreteLogarithm(void)
   lModularMult = 0;
 #endif
   NumberLength = modulus.nbrLimbs;
-  if (!TestBigNbrEqual(&LastModulus, &modulus))
+  if ((LastModulus.nbrLimbs == 0) || !TestBigNbrEqual(&LastModulus, &modulus))
   {
     char* ptrToFactorDec;
     BigInteger2IntArray(nbrToFactor, &modulus);
