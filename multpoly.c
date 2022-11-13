@@ -332,6 +332,7 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
     {
     case 0:
       idxFactor2 = idxFactor1 + nbrLength;
+      assert(idxFactor2 >= 0);
       if (nbrLength <= KARATSUBA_POLY_CUTOFF)
       {
         // Check if one of the factors is equal to zero.
@@ -360,6 +361,7 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
         else
         {     // First factor is not zero. Check second.
           ptrResult = &polyMultTemp[(idxFactor2 * nbrLimbs) + 1];
+          assert(idxFactor2 >= 0);
           if (isFactorEqualToZero(ptrResult, nbrLimbs, nbrLength))
           {    // Second factor is zero. Initialize first to zero.
             ptrResult = &polyMultTemp[(idxFactor1 * nbrLimbs) + 1];
@@ -573,6 +575,7 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
       }
       // Compute final product by adding (xH - xL)*(yL - yH)*b.
       ptrHigh = &polyMultTemp[diffIndex * nbrLimbs];
+      assert(diffIndex >= 0);
       ptrResult = &polyMultTemp[(idxFactor1 + halfLength) * nbrLimbs];
       if (nbrLimbs == 2)
       {        // Optimization for small numbers.
