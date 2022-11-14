@@ -181,9 +181,18 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 3 "lcm(x^4, x^7+x^3, x^6)" 2 >> coverage.out
 ./polfact 2 "x^60-1" 2 >> coverage.out
 ./polfact 11 "(x^5+x^3+1)+(2x^4+2)" 2 >> coverage.out
+./polfact 11 "(2x^4+2)+(x^5+x^3+1)" 2 >> coverage.out
 ./polfact 11 "-(x^5+x^3+1)" 2 >> coverage.out
 ./polfact 11 "x^5^2" 2 >> coverage.out
+./polfact 11 "x^(5*3)+x^(9/3)+x^(8%3)+lcm(0,x)+lcm(x,0)" 2 >> coverage.out
+./polfact 11 "-x^3+(x^5+x^3+1)" 2 >> coverage.out
+./polfact 11 "-x^9+(x^5+x^3+1)" 2 >> coverage.out
 ./polfact 11 "random(1,4,3,6)" 2 >> coverage.out
+./polfact 11 "x^2+x^7" 2 >> coverage.out
+./polfact 11 "(2x^4+2)^2" 2 >> coverage.out
+./polfact 11 "ans+x" 2 >> coverage.out
+./polfact 11 "2+x = 3-x^2" 2 >> coverage.out
+./polfact 0 "-x^5" 2 >> coverage.out
 ./polfact 0 "x**5+x**4-4x**3-3x**2+3x+1" 2 >> coverage.out
 ./polfact 0 "(68987*x^2+47773*x+4983)*(61415*x^2+4334*x+343)" 2 >> coverage.out
 ./polfact 0 "(3789678961*x^2+545543121*x+432143141)*(678585781*x^2+43213515*x+342143153)" 2 >> coverage.out

@@ -295,17 +295,15 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
     if (degree1 < 0)
     {
       UncompressBigIntegerB(ptrArgument1 + 1, &operand1);
-      (void)memmove(ptrArgument1 + 1, ptrArgument1 + 3 + numLimbs(ptrArgument1 + 1), (&values[valuesIndex] - ptrArgument2) * sizeof(int));
+      (void)memmove(ptrArgument1 + 1, ptrArgument2 + 1, (&values[valuesIndex] - ptrArgument2) * sizeof(int));
       degreeMono = -degree1;
       degreePoly = degree2;
-      ptrValue1 = ptrArgument2 + 1;
     }
     else
     {
       UncompressBigIntegerB(ptrArgument2 + 1, &operand1);
       degreeMono = -degree2;
       degreePoly = degree1;
-      ptrValue1 = ptrArgument1 + 1;
     }
     if (degreeMono > degreePoly)
     {
@@ -313,10 +311,7 @@ static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
       *ptrArgument1 = degreeMono;
       for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
       {
-        int numLen = 1 + numLimbs(ptrValue1);
-        int lenBytes = numLen * (int)sizeof(int);
-        (void)memcpy(ptrDest, ptrValue1, lenBytes);
-        ptrValue1 += numLen;
+        int numLen = 1 + numLimbs(ptrDest);
         ptrDest += numLen;
       }
       for (; currentDegree < degreeMono; currentDegree++)
@@ -826,6 +821,7 @@ int ComputePolynomial(const char* input, int expo)
   {
     int nbrSizeBytes;
     int nbrParameters;
+    char token;
     switch (*ptrRPNbuffer)
     {
     case TOKEN_NUMBER:
@@ -900,36 +896,14 @@ int ComputePolynomial(const char* input, int expo)
       }
       break;
     case TOKEN_GCD:
-      if (stackIndex < 1)
-      {
-        return EXPR_CANNOT_PARSE_EXPRESSION;
-      }
-      ptrRPNbuffer++;
-      nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
-      ptrValue1 = stackValues[stackIndex - 1];
-      for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
-      {
-        stackIndex--;
-        if (stackIndex < 1)
-        {
-          return EXPR_CANNOT_PARSE_EXPRESSION;
-        }
-        ptrValue2 = stackValues[stackIndex - 1];
-        rc = GcdPolynomialExpr(ptrValue2, ptrValue1);
-        if (rc != EXPR_OK)
-        {
-          return rc;
-        }
-        ptrValue1 = ptrValue2;
-      }
-      break;
     case TOKEN_LCM:
-      ptrRPNbuffer++;
-      nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
+      token = *ptrRPNbuffer;
       if (stackIndex < 1)
       {
         return EXPR_CANNOT_PARSE_EXPRESSION;
       }
+      ptrRPNbuffer++;
+      nbrParameters = (int)(unsigned char)*ptrRPNbuffer;
       ptrValue1 = stackValues[stackIndex - 1];
       for (int parmNbr = 1; parmNbr < nbrParameters; parmNbr++)
       {
@@ -939,7 +913,14 @@ int ComputePolynomial(const char* input, int expo)
           return EXPR_CANNOT_PARSE_EXPRESSION;
         }
         ptrValue2 = stackValues[stackIndex - 1];
-        rc = LcmPolynomialExpr(ptrValue1, ptrValue2);
+        if (token == TOKEN_GCD)
+        {      // Token is GCD.
+          rc = GcdPolynomialExpr(ptrValue2, ptrValue1);
+        }
+        else
+        {      // Token is LCM.
+          rc = LcmPolynomialExpr(ptrValue2, ptrValue1);
+        }
         if (rc != EXPR_OK)
         {
           return rc;
@@ -1249,9 +1230,9 @@ static enum eExprErr LcmPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
   {
     return retcode;
   }
-  *ptrArgument2 = polyA[0];
-  ptrNextArgument = CopyPolynomial(ptrArgument2 + 1, &polyA[1], polyA[0]);
-  diffPtrs = ptrNextArgument - ptrArgument2;
+  *ptrArgument1 = polyA[0];
+  ptrNextArgument = CopyPolynomial(ptrArgument1 + 1, &polyA[1], polyA[0]);
+  diffPtrs = ptrNextArgument - ptrArgument1;
   valuesIndex = (int)diffPtrs;
   return EXPR_OK;
 }
