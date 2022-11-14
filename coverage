@@ -188,6 +188,7 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 11 "-x^3+(x^5+x^3+1)" 2 >> coverage.out
 ./polfact 11 "-x^9+(x^5+x^3+1)" 2 >> coverage.out
 ./polfact 11 "random(1,4,3,6)" 2 >> coverage.out
+./polfact 0 "random(1,4,3,6)" 2 >> coverage.out
 ./polfact 11 "x^2+x^7" 2 >> coverage.out
 ./polfact 11 "(2x^4+2)^2" 2 >> coverage.out
 ./polfact 11 "ans+x" 2 >> coverage.out
