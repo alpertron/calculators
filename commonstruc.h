@@ -202,3 +202,5 @@ union uCommon
 
 extern union uCommon common;
 #endif
+
+void ShowSquareModP(char* pOutput);

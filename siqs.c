@@ -23,7 +23,12 @@
 #include "expression.h"
 #include "factor.h"
 #include "commonstruc.h"
-
+#if DEBUG_SIQS
+#ifndef __EMSCRIPTEN__
+#include <stdio.h>
+#endif
+static int checksum;
+#endif
 #ifdef __EMSCRIPTEN__
 extern char lowerText[MAX_LEN * 16];
 extern char *ptrLowerText;
@@ -125,6 +130,30 @@ static void ShowSIQSInfo(int timeSieve, int nbrCongruencesFound, int matrixBLeng
   databack(SIQSInfo);
 }
 
+#endif
+
+#if DEBUG_SIQS
+void ShowSquareModP(char* pOutput)
+{
+  char* ptrOutput = pOutput;
+  copyStr(&ptrOutput, "^2, p) checksum = ");
+  int2dec(&ptrOutput, checksum);
+  *ptrOutput = 0;
+  ptrOutput = output;
+#ifdef __EMSCRIPTEN__
+  ptrOutput++;    // Skip character '9' (command to send data to console).
+#endif
+  while (*ptrOutput != '\0')
+  {
+    checksum += (unsigned char)*ptrOutput;
+    ptrOutput++;
+  }
+#ifdef __EMSCRIPTEN__
+  databack(output);
+#else
+  printf("%s\n", output);
+#endif
+}
 #endif
 
 static void PerformSiqsSieveStage(PrimeSieveData *primeSieveData,
@@ -2627,29 +2656,35 @@ static bool InsertNewRelation(
   {                   // Discard excess congruences.
     return true;
   }
-#if DEBUG_SIQS
+#if DEBUG_SIQS == 1
+  char* ptrOutput = output;
+#ifdef __EMSCRIPTEN__
+  *ptrOutput = '9';
+  ptrOutput++;
+#endif
+  copyStr(&ptrOutput, "Mod(");
+  for (int i = 1; i < *rowMatrixB; i++)
   {
-    char* ptrOutput = output;
-    copyStr(&ptrOutput, "Mod(");
-    for (int i = 1; i < *rowMatrixB; i++)
+    if (i != 1)
     {
-      if (i != 1)
-      {
-        *ptrOutput = '*';
-        ptrOutput++;
-      }
-      if (*(rowMatrixB + i) == 0)
-      {
-        copyStr(&ptrOutput, "(-1)");
-      }
-      else
-      {
-        int2dec(&ptrOutput, common.siqs.primeSieveData[*(rowMatrixB + i)].value);
-      }
+      *ptrOutput = '*';
+      ptrOutput++;
     }
-    *ptrOutput = 0;
-    printf("%s - ", output);
+    if (*(rowMatrixB + i) == 0)
+    {
+      copyStr(&ptrOutput, "(-1)");
+    }
+    else
+    {
+      int2dec(&ptrOutput, common.siqs.primeSieveData[*(rowMatrixB + i)].value);
+    }
   }
+  *ptrOutput = ' ';
+  ptrOutput++;
+  *ptrOutput = '-';
+  ptrOutput++;
+  *ptrOutput = ' ';
+  ptrOutput++;
 #endif
   // Check whether this relation is already in the matrix.
   const int* curRowMatrixB = common.siqs.matrixB[0];
@@ -2726,17 +2761,13 @@ static bool InsertNewRelation(
       common.siqs.nbrPrimesUsed++;
     }
   }
-#if DEBUG_SIQS
-  {
-    char *ptrOutput = output;
-    static BigInteger k1;
-    (void)memcpy(k1.limbs, squareLeftHandSide, NumberLength * sizeof(limb));
-    k1.nbrLimbs = NumberLength;
-    k1.sign = SIGN_POSITIVE;
-    BigInteger2Dec(&ptrOutput, &k1, 0);
-    *ptrOutput = 0;
-    printf("%s^2, p)\n", output);
-  }
+#if DEBUG_SIQS == 1
+  static BigInteger k1;
+  (void)memcpy(k1.limbs, squareLeftHandSide, NumberLength * sizeof(limb));
+  k1.nbrLimbs = NumberLength;
+  k1.sign = SIGN_POSITIVE;
+  BigInteger2Dec(&ptrOutput, &k1, 0);
+  ShowSquareModP(ptrOutput);
 #endif
   return true;
 }

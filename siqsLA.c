@@ -23,6 +23,9 @@
 #include "expression.h"
 #include "factor.h"
 #include "commonstruc.h"
+#if (DEBUG_SIQS == 2) && !defined(__EMSCRIPTEN__)
+#include <stdio.h>
+#endif
 
 #define processCol(col) (*(RightMatr + col) & ((leftMatr << col) >> 31))
 #ifdef __EMSCRIPTEN__
@@ -176,77 +179,111 @@ static void MultiplyAByMatrix(const int *Matr, int *TempMatr, int *ProdMatr)
   }
 }
 
-static void colexchange(int *XmY, int *V, int *V1, int *V2,
+static void colexchange(int* XmY, int* V, int* V1, int* V2,
   int col1, int col2)
 {
-  int row;
-  int mask1;
-  int mask2;
   int* matr1;
-  int *matr2;
+  int* matr2;
+  int* matr3;
+  int* matr4;
 
   if (col1 == col2)
   {          // Cannot exchange the same column.
     return;
-  }          // Exchange columns col1 and col2 of V1:V2
-  mask1 = 0x80000000 >> (col1 & 31);
-  mask2 = 0x80000000 >> (col2 & 31);
-  matr1 = ((col1 >= 32) ? V1 : V2);
-  matr2 = ((col2 >= 32) ? V1 : V2);
-  for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
-  {             // If both bits are different toggle them.
-    if (((matr1[row] & mask1) == 0) != ((matr2[row] & mask2) == 0))
-    {           // If both bits are different toggle them.
-      matr1[row] ^= mask1;
-      matr2[row] ^= mask2;
-    }
   }
-  // Exchange columns col1 and col2 of XmY:V
-  matr1 = ((col1 >= 32) ? XmY : V);
-  matr2 = ((col2 >= 32) ? XmY : V);
-  for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
-  {             // If both bits are different toggle them.
-    if (((matr1[row] & mask1) == 0) != ((matr2[row] & mask2) == 0))
-    {
-      matr1[row] ^= mask1;
-      matr2[row] ^= mask2;
-    }
+  unsigned int c1 = col1 & 31;
+  unsigned int c2 = col2 & 31;
+  unsigned int mask1 = (int)(0x80000000U >> c1);
+  unsigned int mask2 = (int)(0x80000000U >> c2);
+  unsigned int notMask1 = ~mask1;
+  unsigned int notMask2 = ~mask2;
+  if (col1 >= 32)
+  {
+    matr1 = V1;
+    matr3 = XmY;
+  }
+  else
+  {
+    matr1 = V2;
+    matr3 = V;
+  }
+  if (col2 >= 32)
+  {
+    matr2 = V1;
+    matr4 = XmY;
+  }
+  else
+  {
+    matr2 = V2;
+    matr4 = V;
+  }
+  for (int row = common.siqs.matrixBLength - 1; row >= 0; row--)
+  {
+    // Exchange columns col1 and col2 of V1:V2
+    unsigned int m1 = *matr1;
+    unsigned int m2 = *matr2;
+    *matr1 = (int)((m1 & notMask1) | (((m2 << c2) & 0x80000000U) >> c1));
+    *matr2 = (int)((m2 & notMask2) | (((m1 << c1) & 0x80000000U) >> c2));
+    matr1++;
+    matr2++;
+    // Exchange columns col1 and col2 of XmY:V
+    unsigned int m3 = *matr3;
+    unsigned int m4 = *matr4;
+    *matr3 = (int)((m3 & notMask1) | (((m4 << c2) & 0x80000000U) >> c1));
+    *matr4 = (int)((m4 & notMask2) | (((m3 << c1) & 0x80000000U) >> c2));
+    matr3++;
+    matr4++;
   }
 }
 
 static void coladd(int *XmY, int *V, int *V1, int *V2,
   int col1, int col2)
 {
-  int row;
-  int mask1;
-  int mask2;
   const int* matr1;
-  int *matr2;
+  int* matr2;
+  const int* matr3;
+  int* matr4;
 
   if (col1 == col2)
-  {
+  {          // Nothing to do: go out.
     return;
-  }               // Add column col1 to column col2 of V1:V2
-  mask1 = 0x80000000 >> (col1 & 31);
-  mask2 = 0x80000000 >> (col2 & 31);
-  matr1 = ((col1 >= 32) ? V1 : V2);
-  matr2 = ((col2 >= 32) ? V1 : V2);
-  for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
-  {              // If bit to add is '1'...
-    if ((matr1[row] & mask1) != 0)
-    {            // Toggle bit in destination.
-      matr2[row] ^= mask2;
-    }
   }
-  // Add column col1 to column col2 of XmY:V
-  matr1 = (col1 >= 32 ? XmY : V);
-  matr2 = (col2 >= 32 ? XmY : V);
-  for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
-  {              // If bit to add is '1'...
-    if ((matr1[row] & mask1) != 0)
-    {            // Toggle bit in destination.
-      matr2[row] ^= mask2;
-    }
+  unsigned int c1 = col1 & 31;
+  unsigned int c2 = col2 & 31;
+  if (col1 >= 32)
+  {
+    matr1 = V1;
+    matr3 = XmY;
+  }
+  else
+  {
+    matr1 = V2;
+    matr3 = V;
+  }
+  if (col2 >= 32)
+  {
+    matr2 = V1;
+    matr4 = XmY;
+  }
+  else
+  {
+    matr2 = V2;
+    matr4 = V;
+  }
+  for (int row = common.siqs.matrixBLength - 1; row >= 0; row--)
+  {
+    // Add column col1 to column col2 of V1:V2
+    unsigned int m1 = *matr1;
+    unsigned int m2 = *matr2;
+    *matr2 = (int)(m2 ^ (((m1 << c1) & 0x80000000U) >> c2));
+    matr1++;
+    matr2++;
+    // Add column col1 to column col2 of XmY:V
+    unsigned int m3 = *matr3;
+    unsigned int m4 = *matr4;
+    *matr4 = (int)(m4 ^ (((m3 << c1) & 0x80000000U) >> c2));
+    matr3++;
+    matr4++;
   }
 }
 
@@ -328,14 +365,24 @@ static bool BlockLanczos(int seed)
 #ifdef __EMSCRIPTEN__
   showMatrixSize((char *)SIQSInfoText, matrixRows, matrixCols);
 #endif
-#if DEBUG_SIQS
-  {
-    char *ptrOutput = output;
-    copyStr(&ptrOutput, "MatrixBLength = ");
-    int2dec(&ptrOutput, common.siqs.matrixBLength);
-    *ptrOutput = 0;
-    printf("%s\n", output);
-  }
+#if DEBUG_SIQS == 2
+  char *ptrOutput = output;
+#ifdef __EMSCRIPTEN__
+  *ptrOutput = '9';
+  ptrOutput++;
+#endif
+  copyStr(&ptrOutput, "MatrixBLength = ");
+  int2dec(&ptrOutput, common.siqs.matrixBLength);
+  copyStr(&ptrOutput, ", matrix = ");
+  int2dec(&ptrOutput, matrixRows);
+  copyStr(&ptrOutput, " * ");
+  int2dec(&ptrOutput, matrixCols);
+  *ptrOutput = 0;
+#ifdef __EMSCRIPTEN__
+  databack(output);
+#else
+  printf("%s\n", output);
+#endif
 #endif
   for (;;)
   {
@@ -373,7 +420,6 @@ static bool BlockLanczos(int seed)
     MultiplyAByMatrix(common.siqs.matrixV, common.siqs.matrixCalc3, common.siqs.matrixAV);
     // Compute matrix Vt(i) * A * V(i)
     MatrTranspMult(common.siqs.matrixBLength, common.siqs.matrixV, common.siqs.matrixAV, matrixVtAV);
-
     /* If Vt(i) * A * V(i) = 0, end of loop */
     for (i = sizeof(matrixVtAV)/sizeof(matrixVtAV[0]) - 1; i >= 0; i--)
     {
@@ -397,8 +443,8 @@ static bool BlockLanczos(int seed)
     mask = 1;
     for (j = 31; j >= 0; j--)
     {
-      matrixD[j] = matrixVtAV[j]; /*  D = VtAV    */
-      matrixWinv[j] = mask; /*  Winv = I    */
+      matrixD[j] = matrixVtAV[j]; /*  D <- VtAV    */
+      matrixWinv[j] = mask;       /*  Winv <- I    */
       mask *= 2;
     }
 
@@ -483,18 +529,7 @@ static bool BlockLanczos(int seed)
       } /* end if */
     } /* end for j */
       /* Compute D(i), E(i) and F(i) */
-#if DEBUG_SIQS
-    char *ptrOutput = output;
-    if (stepNbr < 200)
-    {
-      copyStr(&ptrOutput, "Step #");
-      int2dec(&ptrOutput, stepNbr);
-      copyStr(&ptrOutput, ": matrixWinv1[0] = ");
-      int2dec(&ptrOutput, matrixWinv1[0]);
-      *ptrOutput = 0;
-      printf("%s\n", output);
-    }
-#endif
+
     if (stepNbr >= 3)
     {
       // F = -Winv(i-2) * (I - Vt(i-1)*A*V(i-1)*Winv(i-1)) * ParenD * S*St
@@ -503,7 +538,7 @@ static bool BlockLanczos(int seed)
       for (index = 31; index >= 0; index--)
       {
         matrixCalc2[index] ^= mask;
-        mask*=2;
+        mask *= 2;
       }
       MatrixMultiplication(matrixWinv2, matrixCalc2, matrixCalc1);
       MatrixMultiplication(matrixCalc1, matrixCalcParenD, matrixF);
@@ -536,6 +571,44 @@ static bool BlockLanczos(int seed)
     // V(i+1) = A * V(i) * S * St + V(i) * D + V(i-1) * E + V(i-2) * F
     MatrMultBySSt(common.siqs.matrixBLength, common.siqs.matrixAV, newDiagonalSSt, common.siqs.matrixCalc3);
     MatrixMultAdd(common.siqs.matrixV, matrixD, common.siqs.matrixCalc3);
+#if DEBUG_SIQS == 2
+    ptrOutput = output;
+    if (stepNbr < 200)
+    {
+      int sum;
+      int ctr;
+#ifdef __EMSCRIPTEN__
+      * ptrOutput = '9';
+      ptrOutput++;
+#endif
+      copyStr(&ptrOutput, "Step #");
+      int2dec(&ptrOutput, stepNbr);
+      copyStr(&ptrOutput, ": matrixWinv1[0] = ");
+      int2dec(&ptrOutput, matrixWinv1[0]);
+      sum = 0;
+      for (ctr = 0; ctr < common.siqs.matrixBLength; ctr++)
+      {
+        sum += common.siqs.matrixV[ctr];
+      }
+      copyStr(&ptrOutput, ", sum matrixV = ");
+      int2dec(&ptrOutput, sum);
+      sum = 0;
+      for (ctr = 0; ctr < 32; ctr++)
+      {
+        sum += matrixD[ctr];
+      }
+      copyStr(&ptrOutput, ", sum matrixD = ");
+      int2dec(&ptrOutput, sum);
+      copyStr(&ptrOutput, ", newDiagonalSSt = ");
+      int2dec(&ptrOutput, newDiagonalSSt);
+      *ptrOutput = 0;
+#ifdef __EMSCRIPTEN__
+      databack(output);
+#else
+      printf("%s\n", output);
+#endif
+    }
+#endif
     if (stepNbr >= 2)
     {
       MatrixMultAdd(common.siqs.matrixV1, matrixE, common.siqs.matrixCalc3);
@@ -602,7 +675,7 @@ static bool BlockLanczos(int seed)
     {       // For each column find the first row which has a '1'.
             // Columns outside this range must have '0' in all rows.
       matr = ((col >= 32) ? common.siqs.matrixV1 : common.siqs.matrixV2);
-      mask = 0x80000000 >> (col & 31);
+      mask = 0x80000000U >> (col & 31);
       vectorIndex[col] = -1;    // indicate all rows in zero in advance.
       for (row = 0; row < common.siqs.matrixBLength; row++)
       {
@@ -672,7 +745,7 @@ static bool BlockLanczos(int seed)
     for (col = leftCol; col < rightCol; col++)
     {         // For each column find the first row which has a '1'.
       matr = ((col >= 32) ? common.siqs.matrixXmY : common.siqs.matrixV);
-      mask = 0x80000000 >> (col & 31);
+      mask = 0x80000000U >> (col & 31);
       vectorIndex[col] = -1;    // indicate all rows in zero in advance.
       for (row = 0; row < common.siqs.matrixBLength; row++)
       {
@@ -775,7 +848,7 @@ static int EraseSingletons(int nbrFactorBasePrimes)
     {
       if (common.siqs.vectExpParity[column] > 1)
       {                // Useful column found with at least 2 primes.
-#if DEBUG_SIQS
+#if DEBUG_SIQS == 2
         common.siqs.primeSieveData[row] = common.siqs.primeSieveData[column];
 #endif
         common.siqs.newColumns[column] = row;
@@ -822,6 +895,49 @@ static int EraseSingletons(int nbrFactorBasePrimes)
   return matrixBlength;
 }
 
+#if DEBUG_SIQS == 2
+static void showRelations(void)
+{
+#ifdef __EMSCRIPTEN__
+  databack("9******* START LINEAR ALGEBRA *******\n");
+#else
+  printf("******* START LINEAR ALGEBRA *******\n");
+#endif
+  for (int j = 0; j < common.siqs.matrixBLength; j++)
+  {
+    char* ptrOutput = output;
+#ifdef __EMSCRIPTEN__
+    * ptrOutput = '9';
+    ptrOutput++;
+#endif
+    copyStr(&ptrOutput, "Mod(");
+    for (int i = 1; i < common.siqs.matrixB[j][LENGTH_OFFSET]; i++)
+    {
+      if (i != 1)
+      {
+        *ptrOutput++ = '*';
+      }
+      if (common.siqs.matrixB[j][i] == 0)
+      {
+        copyStr(&ptrOutput, "(-1)");
+      }
+      else
+      {
+        int2dec(&ptrOutput, common.siqs.primeSieveData[common.siqs.matrixB[j][i]].value);
+      }
+    }
+    copyStr(&ptrOutput, " - ");
+    static BigInteger k1;
+    (void)memcpy(k1.limbs, common.siqs.vectLeftHandSide[j],
+      NumberLength * sizeof(limb));
+    k1.nbrLimbs = NumberLength;
+    k1.sign = SIGN_POSITIVE;
+    BigInteger2Dec(&ptrOutput, &k1, 0);
+    ShowSquareModP(ptrOutput);
+  }
+}
+#endif
+
 /************************/
 /* Linear algebra phase */
 /************************/
@@ -837,41 +953,8 @@ bool LinearAlgebraPhase(limb* biT, limb* biR, limb* biU, int nbrLength)
   matrixRows = matrixBlength;
   matrixCols = common.siqs.primeTrialDivisionData[0].exp2;
   common.siqs.primeTrialDivisionData[0].exp2 = 0;         // Restore correct value.
-#if DEBUG_SIQS
-  {
-    printf("******* START LINEAR ALGEBRA *******\n");
-    for (int j = 0; j < common.siqs.matrixBLength; j++)
-    {
-      char* ptrOutput = output;
-      copyStr(&ptrOutput, "Mod(");
-      for (int i = 1; i < common.siqs.matrixB[j][LENGTH_OFFSET]; i++)
-      {
-        if (i != 1)
-        {
-          *ptrOutput++ = '*';
-        }
-        if (common.siqs.matrixB[j][i] == 0)
-        {
-          copyStr(&ptrOutput, "(-1)");
-        }
-        else
-        {
-          int2dec(&ptrOutput, common.siqs.primeSieveData[common.siqs.matrixB[j][i]].value);
-        }
-      }
-      *ptrOutput = 0;
-      printf("%s - ", output);
-      ptrOutput = output;
-      static BigInteger k1;
-      (void)memcpy(k1.limbs, common.siqs.vectLeftHandSide[j],
-        NumberLength * sizeof(limb));
-      k1.nbrLimbs = NumberLength;
-      k1.sign = SIGN_POSITIVE;
-      BigInteger2Dec(&ptrOutput, &k1, 0);
-      *ptrOutput = 0;
-      printf("%s^2, p)\n", output);
-    }
-  }
+#if DEBUG_SIQS == 2
+  showRelations();
 #endif
   while (BlockLanczos(seed) == false)
   {   // Block Lanczos does not work with this seed. Try another one.

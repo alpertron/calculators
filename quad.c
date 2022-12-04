@@ -128,7 +128,7 @@ static void Show1(const BigInteger *num, enum eLinearSolution t);
 static void callbackQuadModParabolic(const BigInteger *value);
 static void callbackQuadModElliptic(BigInteger *value);
 static void callbackQuadModHyperbolic(BigInteger *value);
-static void ContFracPell(void);
+static void recursiveSolution(void);
 static BigInteger Tmp[13];
 static int indexEvenMultiplicity[400];
 static int nbrPrimesEvenMultiplicity;
@@ -585,9 +585,16 @@ static void showFactors(const BigInteger *value)
   }
 }
 
-static void SolutionX(BigInteger *value)
+static void showValue(BigInteger* value)
 {
   SolNbr++;
+  // If 2*value is greater than modulus, subtract modulus.
+  multint(&Tmp1, value, 2);
+  BigIntSubt(&modulus, &Tmp1, &Tmp1);
+  if (Tmp1.sign == SIGN_NEGATIVE)
+  {
+    BigIntSubt(value, &modulus, value);
+  }
   if (teach)
   {
     if (firstSolutionX)
@@ -599,6 +606,11 @@ static void SolutionX(BigInteger *value)
     BigInteger2Dec(&ptrOutput, value, groupLen);
     showText("</li>");
   }
+}
+
+static void SolutionX(BigInteger *value)
+{
+  showValue(value);
   if (callbackQuadModType == CBACK_QMOD_PARABOLIC)
   {
     callbackQuadModParabolic(value);
@@ -743,7 +755,8 @@ void SolveQuadModEquation(void)
       for (int ctr = 0; ctr < GcdAll.limbs[0].x; ctr++)
       {
         intToBigInteger(&Tmp[0], ctr);
-        SolutionX(&Tmp[0]);
+        showValue(&Tmp[0]);
+        callbackQuadModHyperbolic(&Tmp[0]);
       }
       if (teach && !firstSolutionX)
       {
@@ -1547,7 +1560,7 @@ static void ShowPoint(const BigInteger *X, const BigInteger *Y)
   // Check first that (X+alpha) and (Y+beta) are multiple of D.
   BigIntAdd(X, &ValAlpha, &Tmp1);
   BigIntAdd(Y, &ValBeta, &Tmp2);
-  if (teach)
+  if (teach && !(BigIntIsZero(&ValAlpha) && BigIntIsZero(&ValBeta)))
   {
     showText("<p><var>X</var> + <var>&alpha;</var> = ");
     shownbr(&Tmp1);
@@ -1561,7 +1574,7 @@ static void ShowPoint(const BigInteger *X, const BigInteger *Y)
     (void)BigIntRemainder(&Tmp2, &ValDiv, &bigTmp);
     if (BigIntIsZero(&bigTmp))
     {
-      if (teach)
+      if (teach && !BigIntIsOne(&ValDiv))
       {
         showText(lang ? "<p>Dividiendo estos números por" : "<p>Dividing these numbers by");
         showText(" <var>D</var> = ");
@@ -1954,7 +1967,7 @@ static void NonSquareDiscriminant(void)
   }
   if (showRecursiveSolution && (callbackQuadModType == CBACK_QMOD_HYPERBOLIC))
   {   // Show recursive solution.
-    ContFracPell();
+    recursiveSolution();
   }
 }
 
@@ -2129,9 +2142,9 @@ static void showOtherSolution(const char *ordinal)
 }
 
 // Output:
-// 0 = There are no solutions because gcd(P, Q, R) > 1
-// 1 = gcd(P, Q, R) = 1.
-static int PerformTransformation(const BigInteger *value)
+// false = There are no solutions because gcd(P, Q, R) > 1
+// true = gcd(P, Q, R) = 1.
+static bool PerformTransformation(const BigInteger *value)
 {
   // Compute P <- (at^2+bt+c)/K
   (void)BigIntMultiply(&ValA, value, &ValQ);
@@ -2201,7 +2214,7 @@ static int PerformTransformation(const BigInteger *value)
 
 static void callbackQuadModElliptic(BigInteger *value)
 {
-  if (PerformTransformation(value) == 0)
+  if (!PerformTransformation(value))
   {      // No solutions because gcd(P, Q, R) > 1.
     return;
   }
@@ -3149,7 +3162,85 @@ static void ShowAllRecSols(void)
   *ptrOutput = '>';
   ptrOutput++;
 }
+
+static bool solutionFoundFromContFraction(bool isBeven, int limbValue)
+{
+  if (isBeven)
+  {
+    CopyBigInt(&ValQ, &ValB);
+    BigIntDivideBy2(&ValQ);
+    (void)BigIntMultiply(&ValQ, &V1, &bigTmp);
+    BigIntSubt(&U1, &bigTmp, &ValP);   // P <- r - (b/2)s
+    BigIntAdd(&U1, &bigTmp, &ValS);            // S <- r + (b/2)s
+  }
+  else
+  {
+    (void)BigIntMultiply(&ValB, &V1, &bigTmp);
+    BigIntSubt(&U1, &bigTmp, &ValP);   // P <- r - bs
+    BigIntAdd(&U1, &bigTmp, &ValS);            // S <- r + bs
+    if (limbValue == 4)
+    {
+      BigIntDivideBy2(&ValP);               // P <- (r - bs)/2
+      BigIntDivideBy2(&ValS);               // S <- (r + bs)/2
+    }
+  }
+  (void)BigIntMultiply(&ValC, &V1, &ValQ);
+  BigIntChSign(&ValQ);                      // Q <- -cs
+  (void)BigIntMultiply(&ValA, &V1, &ValR);        // R <- as
+  if (!isBeven && (limbValue == 1))
+  {
+    BigIntAdd(&ValQ, &ValQ, &ValQ);         // Q <- -2cs
+    BigIntAdd(&ValR, &ValR, &ValR);         // R <- 2as
+  }
+  (void)BigIntMultiply(&ValAlpha, &ValP, &ValK);
+  (void)BigIntMultiply(&ValBeta, &ValQ, &bigTmp);
+  BigIntAdd(&ValK, &bigTmp, &ValK);
+  (void)BigIntMultiply(&ValAlpha, &ValR, &ValL);
+  (void)BigIntMultiply(&ValBeta, &ValS, &bigTmp);
+  BigIntAdd(&ValL, &bigTmp, &ValL);
+  // Check whether alpha - K and beta - L are multiple of discriminant.
+  BigIntSubt(&ValAlpha, &ValK, &bigTmp);
+  (void)BigIntRemainder(&bigTmp, &discr, &bigTmp);
+  if (BigIntIsZero(&bigTmp))
+  {
+    BigIntSubt(&ValBeta, &ValL, &bigTmp);
+    (void)BigIntRemainder(&bigTmp, &discr, &bigTmp);
+    if (BigIntIsZero(&bigTmp))
+    {    // Solution found.
+      BigIntSubt(&ValAlpha, &ValK, &ValK);
+      (void)BigIntDivide(&ValK, &discr, &ValK);
+      BigIntSubt(&ValBeta, &ValL, &ValL);
+      (void)BigIntDivide(&ValL, &discr, &ValL);
+      ShowAllRecSols();
+      return true;
+    }
+  }
+  // Check whether alpha + K and beta + L are multiple of discriminant.
+  BigIntAdd(&ValAlpha, &ValK, &bigTmp);
+  (void)BigIntRemainder(&bigTmp, &discr, &bigTmp);
+  if (BigIntIsZero(&bigTmp))
+  {
+    BigIntAdd(&ValBeta, &ValL, &bigTmp);
+    (void)BigIntRemainder(&bigTmp, &discr, &bigTmp);
+    if (BigIntIsZero(&bigTmp))
+    {    // Solution found.
+      BigIntAdd(&ValAlpha, &ValK, &ValK);
+      (void)BigIntDivide(&ValK, &discr, &ValK);
+      BigIntAdd(&ValBeta, &ValL, &ValL);
+      (void)BigIntDivide(&ValL, &discr, &ValL);
+      BigIntChSign(&ValP);
+      BigIntChSign(&ValQ);
+      BigIntChSign(&ValR);
+      BigIntChSign(&ValS);
+      ShowAllRecSols();
+      return true;
+    }
+  }
+  return false;
+}
+
 // Use continued fraction of sqrt(B^2-4AC)
+// If the discriminant is 5, the method does not work: use 3, 1 and 7, 3.
 // If the convergent is r/s we get:
 // x(n+1) = Px(n) + Qy(n) + K
 // y(n+1) = Rx(n) + Sy(n) + L
@@ -3159,7 +3250,7 @@ static void ShowAllRecSols(void)
 //        P = r - (b/2)s, Q = -cs, R = as, S = r + (b/2)s,
 // in any case:
 //        K = (alpha*(1-P) - beta*Q) / D, L = (-alpha*R + beta*(1-S)) / D.
-static void ContFracPell(void)
+static void recursiveSolution(void)
 {
   enum eSign sign = SIGN_POSITIVE;
   bool isBeven = ((ValB.limbs[0].x & 1) == 0);
@@ -3173,10 +3264,24 @@ static void ContFracPell(void)
   {
     subtractdivide(&ValH, 0, 4);
   }
-  squareRoot(ValH.limbs, ValG.limbs, ValH.nbrLimbs, &ValG.nbrLimbs);
-  ValG.sign = SIGN_POSITIVE;          // g <- sqrt(discr).
   (void)BigIntMultiply(&discr, &ValGcdHomog, &discr);
   (void)BigIntMultiply(&discr, &ValGcdHomog, &discr);  // Obtain original discriminant.
+  if ((discr.nbrLimbs == 1) && (discr.limbs[0].x == 5))
+  {     // Discriminant is 5.
+        // Do not use continued fraction because it does not work.
+    intToBigInteger(&U1, 3);  // First solution to U1^2 - 5*V1^2 = 4
+    intToBigInteger(&V1, 1);
+    if (solutionFoundFromContFraction(isBeven, 4))
+    {
+      return;
+    }
+    intToBigInteger(&U1, 9);  // First solution to U1^2 - 5*V1^2 = 1
+    intToBigInteger(&V1, 4);
+    solutionFoundFromContFraction(isBeven, 1);
+    return;
+  }
+  squareRoot(ValH.limbs, ValG.limbs, ValH.nbrLimbs, &ValG.nbrLimbs);
+  ValG.sign = SIGN_POSITIVE;          // g <- sqrt(discr).
   intToBigInteger(&U1, 1);
   intToBigInteger(&U2, 0);
   intToBigInteger(&V1, 0);
@@ -3259,77 +3364,10 @@ static void ContFracPell(void)
     {
       continue;
     }
-    // Found solution.
-    if (isBeven)
+    // Found solution from continued fraction.
+    if (solutionFoundFromContFraction(isBeven, limbValue))
     {
-      CopyBigInt(&ValQ, &ValB);
-      BigIntDivideBy2(&ValQ);
-      (void)BigIntMultiply(&ValQ, &V1, &bigTmp);
-      BigIntSubt(&U1, &bigTmp, &ValP);        // P <- r - (b/2)s
-      BigIntAdd(&U1, &bigTmp, &ValS);         // S <- r + (b/2)s
-    }
-    else
-    {
-      (void)BigIntMultiply(&ValB, &V1, &bigTmp);
-      BigIntSubt(&U1, &bigTmp, &ValP);        // P <- r - bs
-      BigIntAdd(&U1, &bigTmp, &ValS);         // S <- r + bs
-      if (limbValue == 4)
-      {
-        BigIntDivideBy2(&ValP);               // P <- (r - bs)/2
-        BigIntDivideBy2(&ValS);               // S <- (r + bs)/2
-      }
-    }
-    (void)BigIntMultiply(&ValC, &V1, &ValQ);
-    BigIntChSign(&ValQ);                      // Q <- -cs
-    (void)BigIntMultiply(&ValA, &V1, &ValR);        // R <- as
-    if (!isBeven && (limbValue == 1))
-    {
-      BigIntAdd(&ValQ, &ValQ, &ValQ);         // Q <- -2cs
-      BigIntAdd(&ValR, &ValR, &ValR);         // R <- 2as
-    }
-    (void)BigIntMultiply(&ValAlpha, &ValP, &ValK);
-    (void)BigIntMultiply(&ValBeta, &ValQ, &bigTmp);
-    BigIntAdd(&ValK, &bigTmp, &ValK);
-    (void)BigIntMultiply(&ValAlpha, &ValR, &ValL);
-    (void)BigIntMultiply(&ValBeta, &ValS, &bigTmp);
-    BigIntAdd(&ValL, &bigTmp, &ValL);
-    // Check whether alpha - K and beta - L are multiple of discriminant.
-    BigIntSubt(&ValAlpha, &ValK, &bigTmp);
-    (void)BigIntRemainder(&bigTmp, &discr, &bigTmp);
-    if (BigIntIsZero(&bigTmp))
-    {
-      BigIntSubt(&ValBeta, &ValL, &bigTmp);
-      (void)BigIntRemainder(&bigTmp, &discr, &bigTmp);
-      if (BigIntIsZero(&bigTmp))
-      {    // Solution found.
-        BigIntSubt(&ValAlpha, &ValK, &ValK);
-        (void)BigIntDivide(&ValK, &discr, &ValK);
-        BigIntSubt(&ValBeta, &ValL, &ValL);
-        (void)BigIntDivide(&ValL, &discr, &ValL);
-        ShowAllRecSols();
-        return;
-      }
-    }
-    // Check whether alpha + K and beta + L are multiple of discriminant.
-    BigIntAdd(&ValAlpha, &ValK, &bigTmp);
-    (void)BigIntRemainder(&bigTmp, &discr, &bigTmp);
-    if (BigIntIsZero(&bigTmp))
-    {
-      BigIntAdd(&ValBeta, &ValL, &bigTmp);
-      (void)BigIntRemainder(&bigTmp, &discr, &bigTmp);
-      if (BigIntIsZero(&bigTmp))
-      {    // Solution found.
-        BigIntAdd(&ValAlpha, &ValK, &ValK);
-        (void)BigIntDivide(&ValK, &discr, &ValK);
-        BigIntAdd(&ValBeta, &ValL, &ValL);
-        (void)BigIntDivide(&ValL, &discr, &ValL);
-        BigIntChSign(&ValP);
-        BigIntChSign(&ValQ);
-        BigIntChSign(&ValR);
-        BigIntChSign(&ValS);
-        ShowAllRecSols();
-        return;
-      }
+      return;
     }
   }
 }
@@ -3338,7 +3376,7 @@ static void callbackQuadModHyperbolic(BigInteger *value)
 {
   bool isBeven = ((ValB.limbs[0].x & 1) == 0);
   positiveDenominator = 1;
-  if (PerformTransformation(value) == 0)
+  if (!PerformTransformation(value))
   {      // No solutions because gcd(P, Q, R) > 1.
     return;
   }
@@ -3429,6 +3467,20 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   equationNbr += 4;
 }
 
+static void PrintQuadEqConst(bool showEquationNbr)
+{
+  showText("<p>");
+  PrintQuad(&ValA, &ValB, &ValC, "<var>X</var>", "<var>Y</var>");
+  showText(" = ");
+  shownbr(&ValK);
+  showText(" ");
+  if (showEquationNbr && (ValK.sign == SIGN_POSITIVE))
+  {
+    showEqNbr(1);
+  }
+  showText("</p>");
+}
+
 void SolveQuadEquation(void)
 {
   also = 0;
@@ -3492,58 +3544,88 @@ void SolveQuadEquation(void)
     DiscriminantIsZero();
     return;
   }
-  // Discriminant is not zero. Translate the origin (x, y) by (alpha, beta).
-  // Compute alpha = 2cd - be
-  (void)BigIntMultiply(&ValC, &ValD, &ValAlpha);
-  BigIntAdd(&ValAlpha, &ValAlpha, &ValAlpha);
-  (void)BigIntMultiply(&ValB, &ValE, &bigTmp);
-  BigIntSubt(&ValAlpha, &bigTmp, &ValAlpha);
-  // Compute beta = 2ae - bd
-  (void)BigIntMultiply(&ValA, &ValE, &ValBeta);
-  BigIntAdd(&ValBeta, &ValBeta, &ValBeta);
-  (void)BigIntMultiply(&ValB, &ValD, &bigTmp);
-  BigIntSubt(&ValBeta, &bigTmp, &ValBeta);
-  // We get the equation ax^2 + bxy + cy^2 = k
-  // where k = -D (ae^2 - bed + cd^2 + fD)
-  (void)BigIntMultiply(&ValA, &ValE, &ValK);     // ae
-  (void)BigIntMultiply(&ValK, &ValE, &ValK);     // ae^2
-  (void)BigIntMultiply(&ValB, &ValE, &bigTmp);   // be
-  (void)BigIntMultiply(&bigTmp, &ValD, &bigTmp); // bed
-  BigIntSubt(&ValK, &bigTmp, &ValK);             // ae^2 - bed
-  (void)BigIntMultiply(&ValC, &ValD, &bigTmp);   // cd
-  (void)BigIntMultiply(&bigTmp, &ValD, &bigTmp); // cd^2
-  BigIntAdd(&ValK, &bigTmp, &ValK);              // ae^2 - bed + cd^2
-  (void)BigIntMultiply(&ValF, &discr, &bigTmp);  // fD
-  BigIntAdd(&ValK, &bigTmp, &ValK);              // ae^2 - bed + cd^2 + fD
-  (void)BigIntMultiply(&ValK, &discr, &ValK);    // D (ae^2 - bed + cd^2 + fD)
-  BigIntChSign(&ValK);                           // k
-                     // Let t=gcd(a,b,c). If k is not multiple of t, there are no solutions.
-  if (teach)
-  {
-    showText(lang ? "<p>Sea <var>D</var> el discriminante. Aplicamos la transformación de Legendre " :
-      "<p>Let <var>D</var> be the discriminant. We apply the transformation of Legendre ");
-    showText("<var>D</var><var>x</var> = <var>X</var> + <var>&alpha;</var>,  <var>D</var><var>y</var> = <var>Y</var> + <var>&beta;</var>, ");
-    showText(lang ? "y obtenemos" : "and we obtain");
-    showText(":</p><p><var>&alpha;</var> = 2&#8290;<var>c</var>&#8290;<var>d</var> - <var>b</var>&#8290;<var>e</var> = ");
-    shownbr(&ValAlpha);
-    showText("</p><p><var>&beta;</var> = 2&#8290;<var>a</var>&#8290;<var>e</var> - <var>b</var>&#8290;<var>d</var> = ");
-    shownbr(&ValBeta);
-    showText("</p><p>");
-    PrintQuad(&ValA, &ValB, &ValC, "<var>X</var>", "<var>Y</var>");
-    showText(" = ");
-    shownbr(&ValK);
-    showText(" ");
-    showEqNbr(1);
-    showText("</p><p>");
-    showText(lang ? "donde el término derecho es igual a " : "where the right hand side equals ");
-    showText("&minus;<var>D</var> (<var>a</var>&#8290;<var>e</var>");
-    showSquare();
-    showText(" &minus; <var>b</var>&#8290;<var>e</var>&#8290;<var>d</var> + <var>c</var>&#8290;<var>d</var>");
-    showSquare();
-    showText(" + <var>f</var>&#8290;<var>D</var>)</p>");
-  }
+  // Compute gcd(a,b,c).
   BigIntGcd(&ValA, &ValB, &bigTmp);
   BigIntGcd(&bigTmp, &ValC, &U1);
+  // Discriminant is not zero.
+  if (BigIntIsZero(&ValD) && BigIntIsZero(&ValE))
+  {   // Do not translate origin.
+    intToBigInteger(&ValDiv, 1);
+    CopyBigInt(&ValK, &ValF);
+    BigIntChSign(&ValK);
+    intToBigInteger(&ValAlpha, 0);
+    intToBigInteger(&ValBeta, 0);
+    if (teach)
+    {
+      PrintQuadEqConst(true);
+    }
+  }
+  else
+  {
+    CopyBigInt(&ValDiv, &discr);
+    // Translate the origin (x, y) by (alpha, beta).
+    // Compute alpha = 2cd - be
+    (void)BigIntMultiply(&ValC, &ValD, &ValAlpha);
+    BigIntAdd(&ValAlpha, &ValAlpha, &ValAlpha);
+    (void)BigIntMultiply(&ValB, &ValE, &bigTmp);
+    BigIntSubt(&ValAlpha, &bigTmp, &ValAlpha);
+    // Compute beta = 2ae - bd
+    (void)BigIntMultiply(&ValA, &ValE, &ValBeta);
+    BigIntAdd(&ValBeta, &ValBeta, &ValBeta);
+    (void)BigIntMultiply(&ValB, &ValD, &bigTmp);
+    BigIntSubt(&ValBeta, &bigTmp, &ValBeta);
+    // We get the equation ax^2 + bxy + cy^2 = k
+    // where k = -D (ae^2 - bed + cd^2 + fD)
+    (void)BigIntMultiply(&ValA, &ValE, &ValK);     // ae
+    (void)BigIntMultiply(&ValK, &ValE, &ValK);     // ae^2
+    (void)BigIntMultiply(&ValB, &ValE, &bigTmp);   // be
+    (void)BigIntMultiply(&bigTmp, &ValD, &bigTmp); // bed
+    BigIntSubt(&ValK, &bigTmp, &ValK);             // ae^2 - bed
+    (void)BigIntMultiply(&ValC, &ValD, &bigTmp);   // cd
+    (void)BigIntMultiply(&bigTmp, &ValD, &bigTmp); // cd^2
+    BigIntAdd(&ValK, &bigTmp, &ValK);              // ae^2 - bed + cd^2
+    (void)BigIntMultiply(&ValF, &discr, &bigTmp);  // fD
+    BigIntAdd(&ValK, &bigTmp, &ValK);              // ae^2 - bed + cd^2 + fD
+    (void)BigIntMultiply(&ValK, &discr, &ValK);    // D (ae^2 - bed + cd^2 + fD)
+    BigIntChSign(&ValK);                           // k
+    if (teach)
+    {
+      showText(lang ? "<p>Sea <var>D</var> el discriminante. Aplicamos la transformación de Legendre " :
+        "<p>Let <var>D</var> be the discriminant. We apply the transformation of Legendre ");
+      showText("<var>D</var><var>x</var> = <var>X</var> + <var>&alpha;</var>,  <var>D</var><var>y</var> = <var>Y</var> + <var>&beta;</var>, ");
+      showText(lang ? "y obtenemos" : "and we obtain");
+      showText(":</p><p><var>&alpha;</var> = 2&#8290;<var>c</var>&#8290;<var>d</var> - <var>b</var>&#8290;<var>e</var> = ");
+      shownbr(&ValAlpha);
+      showText("</p><p><var>&beta;</var> = 2&#8290;<var>a</var>&#8290;<var>e</var> - <var>b</var>&#8290;<var>d</var> = ");
+      shownbr(&ValBeta);
+      showText("</p>");
+      PrintQuadEqConst(BigIntIsOne(&U1));
+      showText("<p>");
+      showText(lang ? "donde el término derecho es igual a " : "where the right hand side equals ");
+      showText("&minus;<var>D</var> (<var>a</var>&#8290;<var>e</var>");
+      showSquare();
+      showText(" &minus; <var>b</var>&#8290;<var>e</var>&#8290;<var>d</var> + <var>c</var>&#8290;<var>d</var>");
+      showSquare();
+      showText(" + <var>f</var>&#8290;<var>D</var>)</p>");
+      CopyBigInt(&ValABak, &ValA);
+      CopyBigInt(&ValBBak, &ValB);
+      CopyBigInt(&ValCBak, &ValC);
+      CopyBigInt(&V1, &ValK);
+      BigIntDivide(&ValA, &U1, &ValA);
+      BigIntDivide(&ValB, &U1, &ValB);
+      BigIntDivide(&ValC, &U1, &ValC);
+      BigIntDivide(&ValK, &U1, &ValK);
+      showText(lang ? "<p>Dividiendo ambos miembros por " : "<p>Dividing both sides by ");
+      Bin2Dec(&ptrOutput, U1.limbs, U1.nbrLimbs, groupLen);
+      showText(":</p>");
+      PrintQuadEqConst(true);
+      CopyBigInt(&ValA, &ValABak);
+      CopyBigInt(&ValB, &ValBBak);
+      CopyBigInt(&ValC, &ValCBak);
+      CopyBigInt(&ValK, &V1);
+    }
+  }
+  // If k is not multiple of gcd(A, B, C), there are no solutions.
   (void)BigIntRemainder(&ValK, &U1, &bigTmp);
   if (!BigIntIsZero(&bigTmp))
   {
@@ -3556,7 +3638,19 @@ void SolveQuadEquation(void)
     }
     return;     // There are no solutions.
   }
-  CopyBigInt(&ValDiv, &discr);
+  if (ValK.sign == SIGN_NEGATIVE)
+  {
+    BigIntChSign(&ValA);
+    BigIntChSign(&ValB);
+    BigIntChSign(&ValC);
+    BigIntChSign(&ValK);
+    if (teach)
+    {
+      showText(lang ? "<p>El algoritmo requiere que el término independiente no sea negativo, así que multiplicamos ambos miembros por &minus;1.</p>":
+        "<p>The algorithm requires the constant coefficient to be positive, so we multiply both RHS and LHS by &minus;1.</p>");
+      PrintQuadEqConst(true);
+    }
+  }
   if (discr.sign == SIGN_NEGATIVE)
   {
     NegativeDiscriminant();
