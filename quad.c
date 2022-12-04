@@ -3607,22 +3607,25 @@ void SolveQuadEquation(void)
       showText(" &minus; <var>b</var>&#8290;<var>e</var>&#8290;<var>d</var> + <var>c</var>&#8290;<var>d</var>");
       showSquare();
       showText(" + <var>f</var>&#8290;<var>D</var>)</p>");
-      CopyBigInt(&ValABak, &ValA);
-      CopyBigInt(&ValBBak, &ValB);
-      CopyBigInt(&ValCBak, &ValC);
-      CopyBigInt(&V1, &ValK);
-      BigIntDivide(&ValA, &U1, &ValA);
-      BigIntDivide(&ValB, &U1, &ValB);
-      BigIntDivide(&ValC, &U1, &ValC);
-      BigIntDivide(&ValK, &U1, &ValK);
-      showText(lang ? "<p>Dividiendo ambos miembros por " : "<p>Dividing both sides by ");
-      Bin2Dec(&ptrOutput, U1.limbs, U1.nbrLimbs, groupLen);
-      showText(":</p>");
-      PrintQuadEqConst(true);
-      CopyBigInt(&ValA, &ValABak);
-      CopyBigInt(&ValB, &ValBBak);
-      CopyBigInt(&ValC, &ValCBak);
-      CopyBigInt(&ValK, &V1);
+      if (!BigIntIsOne(&U1))
+      {
+        CopyBigInt(&ValABak, &ValA);
+        CopyBigInt(&ValBBak, &ValB);
+        CopyBigInt(&ValCBak, &ValC);
+        CopyBigInt(&V1, &ValK);
+        BigIntDivide(&ValA, &U1, &ValA);
+        BigIntDivide(&ValB, &U1, &ValB);
+        BigIntDivide(&ValC, &U1, &ValC);
+        BigIntDivide(&ValK, &U1, &ValK);
+        showText(lang ? "<p>Dividiendo ambos miembros por " : "<p>Dividing both sides by ");
+        Bin2Dec(&ptrOutput, U1.limbs, U1.nbrLimbs, groupLen);
+        showText(":</p>");
+        PrintQuadEqConst(true);
+        CopyBigInt(&ValA, &ValABak);
+        CopyBigInt(&ValB, &ValBBak);
+        CopyBigInt(&ValC, &ValCBak);
+        CopyBigInt(&ValK, &V1);
+      }
     }
   }
   // If k is not multiple of gcd(A, B, C), there are no solutions.
