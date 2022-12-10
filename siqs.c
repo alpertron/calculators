@@ -136,8 +136,11 @@ static void ShowSIQSInfo(int timeSieve, int nbrCongruencesFound, int matrixBLeng
 void ShowSquareModP(char* pOutput)
 {
   char* ptrOutput = pOutput;
-  copyStr(&ptrOutput, "^2, p) checksum = ");
+  copyStr(&ptrOutput, "^2, p)");
+#if DEBUG_SIQS == 3
+  copyStr(&ptrOutput, " checksum = ");
   int2dec(&ptrOutput, checksum);
+#endif
   *ptrOutput = 0;
   ptrOutput = output;
 #ifdef __EMSCRIPTEN__

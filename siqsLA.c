@@ -956,85 +956,88 @@ bool LinearAlgebraPhase(limb* biT, limb* biR, limb* biU, int nbrLength)
 #if DEBUG_SIQS == 2
   showRelations();
 #endif
-  while (BlockLanczos(seed) == false)
-  {   // Block Lanczos does not work with this seed. Try another one.
-    seed++;
-  }
-  // The rows of matrixV indicate which rows must be multiplied so no
-  // primes are multiplied an odd number of times.
-  mask = 1;
-  for (int col = 31; col >= 0; col--)
+  for (int ctr = 0; ctr < 10; ctr++)
   {
-    int NumberLengthBak;
-    int index;
+    while (BlockLanczos(seed + 1) == false)
+    {   // Block Lanczos does not work with this seed. Try another one.
+      seed++;
+    }
+    // The rows of matrixV indicate which rows must be multiplied so no
+    // primes are multiplied an odd number of times.
+    mask = 1;
+    for (int col = 31; col >= 0; col--)
+    {
+      int NumberLengthBak;
+      int index;
 
-    IntToBigNbr(1, biT, nbrLength + 1);
-    IntToBigNbr(1, biR, nbrLength + 1);
-    {
-      int nbrBytes = matrixBlength * (int)sizeof(common.siqs.vectExpParity[0]);
-      (void)memset(common.siqs.vectExpParity, 0, nbrBytes);
-    }
-    NumberLengthBak = nbrLength;
-    if (common.siqs.Modulus[nbrLength - 1].x == 0)
-    {
-      nbrLength--;
-    }
-    for (int row = matrixBlength - 1; row >= 0; row--)
-    {
-      if ((common.siqs.matrixV[row] & mask) != 0)
+      IntToBigNbr(1, biT, nbrLength + 1);
+      IntToBigNbr(1, biR, nbrLength + 1);
       {
-        MultBigNbrModN(common.siqs.vectLeftHandSide[row], biR, biU, common.siqs.Modulus,
-          nbrLength);
+        int nbrBytes = matrixBlength * (int)sizeof(common.siqs.vectExpParity[0]);
+        (void)memset(common.siqs.vectExpParity, 0, nbrBytes);
+      }
+      NumberLengthBak = nbrLength;
+      if (common.siqs.Modulus[nbrLength - 1].x == 0)
+      {
+        nbrLength--;
+      }
+      for (int row = matrixBlength - 1; row >= 0; row--)
+      {
+        if ((common.siqs.matrixV[row] & mask) != 0)
         {
-          int nbrBytes = (nbrLength + 1) * (int)sizeof(biR[0]);
-          (void)memcpy(biR, biU, nbrBytes);
-        }
-        rowMatrixB = common.siqs.matrixB[row];
-        for (int j = rowMatrixB[LENGTH_OFFSET] - 1; j >= 1; j--)
-        {
-          primeIndex = rowMatrixB[j];
-          common.siqs.vectExpParity[primeIndex] ^= 1;
-          if (common.siqs.vectExpParity[primeIndex] == 0)
+          MultBigNbrModN(common.siqs.vectLeftHandSide[row], biR, biU, common.siqs.Modulus,
+            nbrLength);
           {
-            if (primeIndex == 0)
+            int nbrBytes = (nbrLength + 1) * (int)sizeof(biR[0]);
+            (void)memcpy(biR, biU, nbrBytes);
+          }
+          rowMatrixB = common.siqs.matrixB[row];
+          for (int j = rowMatrixB[LENGTH_OFFSET] - 1; j >= 1; j--)
+          {
+            primeIndex = rowMatrixB[j];
+            common.siqs.vectExpParity[primeIndex] ^= 1;
+            if (common.siqs.vectExpParity[primeIndex] == 0)
             {
-              SubtractBigNbr(common.siqs.Modulus, biT, biT, nbrLength); // Multiply biT by -1.
-            }
-            else
-            {
-              MultBigNbrByIntModN(biT,
-                common.siqs.primeTrialDivisionData[primeIndex].value, biT,
-                common.siqs.Modulus, nbrLength);
+              if (primeIndex == 0)
+              {
+                SubtractBigNbr(common.siqs.Modulus, biT, biT, nbrLength); // Multiply biT by -1.
+              }
+              else
+              {
+                MultBigNbrByIntModN(biT,
+                  common.siqs.primeTrialDivisionData[primeIndex].value, biT,
+                  common.siqs.Modulus, nbrLength);
+              }
             }
           }
         }
       }
-    }
-    nbrLength = NumberLengthBak;
-    SubtractBigNbrModN(biR, biT, biR, common.siqs.Modulus, nbrLength);
-    GcdBigNbr(biR, common.siqs.TestNbr2, biT, nbrLength);
-    for (index = 1; index < nbrLength; index++)
-    {
-      if (biT[index].x != 0)
+      nbrLength = NumberLengthBak;
+      SubtractBigNbrModN(biR, biT, biR, common.siqs.Modulus, nbrLength);
+      GcdBigNbr(biR, common.siqs.TestNbr2, biT, nbrLength);
+      for (index = 1; index < nbrLength; index++)
       {
-        break;
-      }
-    }
-    if ((index < nbrLength) || (biT[0].x > 1))
-    {   // GCD is not zero or 1.
-      for (index = 0; index < nbrLength; index++)
-      {
-        if (biT[index].x != common.siqs.TestNbr2[index].x)
+        if (biT[index].x != 0)
         {
           break;
         }
       }
-      if (index < nbrLength)
-      { /* GCD is not 1 */
-        return true;
+      if ((index < nbrLength) || (biT[0].x > 1))
+      {   // GCD is not zero or 1.
+        for (index = 0; index < nbrLength; index++)
+        {
+          if (biT[index].x != common.siqs.TestNbr2[index].x)
+          {
+            break;
+          }
+        }
+        if (index < nbrLength)
+        { /* GCD is not 1 */
+          return true;
+        }
       }
+      mask *= 2;
     }
-    mask *= 2;
   }
   return false;
 }
