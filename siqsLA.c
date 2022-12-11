@@ -958,7 +958,7 @@ bool LinearAlgebraPhase(limb* biT, limb* biR, limb* biU, int nbrLength)
 #endif
   for (int ctr = 0; ctr < 10; ctr++)
   {
-    while (BlockLanczos(seed + 1) == false)
+    while (BlockLanczos(seed + ctr) == false)
     {   // Block Lanczos does not work with this seed. Try another one.
       seed++;
     }
