@@ -1986,8 +1986,7 @@ static void PartialRelationFound(
           DivBigNbrByInt(biU, common.siqs.multiplier, biU, nbrLength);
         }
       }
-      if ((rowMatrixB[0] > 1) &&
-        InsertNewRelation(rowMatrixB, biT, biU, biR, nbrLength))
+      if (InsertNewRelation(rowMatrixB, biT, biU, biR, nbrLength))
       {
         partialsFound++;
         ShowSIQSStatus();
@@ -2345,7 +2344,11 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
     }
   } /* end while */
   MultBigNbrByInt(common.siqs.TestNbr2, common.siqs.multiplier, common.siqs.Modulus, NumberLength);
-  common.siqs.matrixBLength = common.siqs.nbrFactorBasePrimes + 50;
+  common.siqs.matrixBLength = common.siqs.nbrFactorBasePrimes * 33 / 32;
+  if (common.siqs.matrixBLength < common.siqs.nbrFactorBasePrimes + 50)
+  {
+    common.siqs.matrixBLength = common.siqs.nbrFactorBasePrimes + 50;
+  }
   rowPrimeSieveData->modsqrt = (pNbrToFactor->x & 1) ? 1 : 0;
   switch (common.siqs.Modulus[0].x & 0x07)
   {
@@ -2655,9 +2658,13 @@ static bool InsertNewRelation(
   int lenDivisor;
   int nbrColumns = rowMatrixB[LENGTH_OFFSET];
   // Insert it only if it is different from previous relations.
+  if (rowMatrixB[0] <= 1)
+  {
+    return false;
+  }
   if (congruencesFound >= common.siqs.matrixBLength)
   {                   // Discard excess congruences.
-    return true;
+    return false;
   }
 #if DEBUG_SIQS == 1
   char* ptrOutput = output;
@@ -2921,10 +2928,28 @@ static void sieveThread(BigInteger *result)
           common.siqs.firstPrimeSieveData = common.siqs.primeSieveData;
           common.siqs.oldSeed = common.siqs.newSeed;
           common.siqs.newSeed = getFactorsOfA(common.siqs.oldSeed, common.siqs.aindex);
+#if DEBUG_SIQS == 5
+          char out[1000];
+          char* ptrOutput = out;
+          copyStr(&ptrOutput, "A = ");
+#endif
           for (index = 0; index<common.siqs.nbrFactorsA; index++)
           {                        // Get the values of the factors of A.
             common.siqs.afact[index] = common.siqs.primeSieveData[common.siqs.aindex[index]].value;
+#if DEBUG_SIQS == 5
+            int2dec(&ptrOutput, common.siqs.afact[index]);
+            copyStr(&ptrOutput, " * ");
+#endif
           }
+#if DEBUG_SIQS == 5
+          ptrOutput -= 3;
+          *ptrOutput = 0;
+#ifdef __EMSCRIPTEN__
+          databack(output);
+#else
+          printf("%s\n", out);
+#endif
+#endif
           // Compute the leading coefficient in biQuadrCoeff.
 
           IntToBigNbr(common.siqs.afact[0], common.siqs.biQuadrCoeff, NumberLength);

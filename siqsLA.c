@@ -26,6 +26,9 @@
 #if (DEBUG_SIQS == 2) && !defined(__EMSCRIPTEN__)
 #include <stdio.h>
 #endif
+#ifndef __EMSCRIPTEN__
+#include <stdio.h>
+#endif
 
 #define processCol(col) (*(RightMatr + col) & ((leftMatr << col) >> 31))
 #ifdef __EMSCRIPTEN__
@@ -813,7 +816,6 @@ static bool BlockLanczos(int seed)
   }
   return true;
 }
-
 static int EraseSingletons(int nbrFactorBasePrimes)
 {
   int row;
@@ -821,16 +823,25 @@ static int EraseSingletons(int nbrFactorBasePrimes)
   int delta;
   int* rowMatrixB;
   int matrixBlength = common.siqs.matrixBLength;
-
   {
     int nbrBytes = matrixBlength * (int)sizeof(int);
     (void)memset(common.siqs.newColumns, 0, nbrBytes);
   }
+#if DEBUG_SIQS == 5
+  char out[1000];
+  char *ptrOutput = out;
+  copyStr(&ptrOutput, "Matrix = ");
+  int2dec(&ptrOutput, matrixBlength);
+  copyStr(&ptrOutput, " * ");
+  int2dec(&ptrOutput, nbrFactorBasePrimes);
+  copyStr(&ptrOutput, "\n");
+#endif
   // Find singletons in matrixB storing in array vectExpParity the number
   // of primes in each column.
   do
   {   // The singleton removal phase must run until there are no more
       // singletons to erase.
+    int newCol;
     {
       int nbrBytes = common.siqs.matrixBLength * (int)sizeof(limb);
       (void)memset(common.siqs.vectExpParity, 0, nbrBytes);
@@ -843,21 +854,23 @@ static int EraseSingletons(int nbrFactorBasePrimes)
         common.siqs.vectExpParity[rowMatrixB[column]]++;
       }
     }
-    row = 0;
-    for (column = 0; column < nbrFactorBasePrimes; column++)
+    // Loop that deletes primes for which singletons occur.
+    // Variable newCol does not increment for the prime where the singleton occur.
+    newCol = 0;
+    for (int oldCol = 0; oldCol < nbrFactorBasePrimes; oldCol++)
     {
-      if (common.siqs.vectExpParity[column] > 1)
+      if (common.siqs.vectExpParity[oldCol] > 1)
       {                // Useful column found with at least 2 primes.
 #if DEBUG_SIQS == 2
-        common.siqs.primeSieveData[row] = common.siqs.primeSieveData[column];
+        common.siqs.primeSieveData[row] = common.siqs.primeSieveData[oldRow];
 #endif
-        common.siqs.newColumns[column] = row;
-        common.siqs.primeTrialDivisionData[row].value =
-          common.siqs.primeTrialDivisionData[column].value;
-        row++;
+        common.siqs.newColumns[oldCol] = newCol;
+        common.siqs.primeTrialDivisionData[newCol].value =
+          common.siqs.primeTrialDivisionData[oldCol].value;
+        newCol++;
       }
     }
-    nbrFactorBasePrimes = row;
+    nbrFactorBasePrimes = newCol;
     delta = 0;
     // Erase singletons from matrixB. The rows to be erased are those where the
     // the corresponding element of the array vectExpParity equals 1.
@@ -884,13 +897,27 @@ static int EraseSingletons(int nbrFactorBasePrimes)
     for (row = 0; row < matrixBlength; row++)
     {                  // Traverse all rows of the matrix.
       rowMatrixB = common.siqs.matrixB[row];
-      for (column = rowMatrixB[LENGTH_OFFSET]; column >= 1; column--)
+      for (column = rowMatrixB[LENGTH_OFFSET] - 1; column >= 1; column--)
       {                // Change all column indexes in this row.
         rowMatrixB[column] = common.siqs.newColumns[rowMatrixB[column]];
       }
     }
+#if DEBUG_SIQS == 5
+    copyStr(&ptrOutput, "Matrix = ");
+    int2dec(&ptrOutput, matrixBlength);
+    copyStr(&ptrOutput, " * ");
+    int2dec(&ptrOutput, nbrFactorBasePrimes);
+    copyStr(&ptrOutput, "\n");
+#endif
   } while (delta > 0);           // End loop if number of rows did not
                                  // change.
+#if DEBUG_SIQS == 5
+#ifdef __EMSCRIPTEN__
+  databack(output);
+#else
+  printf("%s\n", out);
+#endif
+#endif
   common.siqs.primeTrialDivisionData[0].exp2 = nbrFactorBasePrimes;
   return matrixBlength;
 }
