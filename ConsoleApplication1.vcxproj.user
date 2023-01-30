@@ -8,11 +8,11 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>64647730210947180498727202053776210210411477620203303597654049</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>1 "-1" 1 "-1" "-1" 0 1</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>0 "x**120-1" 2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>1 "-1" 1 "-1" "-1" 0 1</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\x64\release</LocalDebuggerWorkingDirectory>

@@ -19,6 +19,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdint.h>
+#include <assert.h>
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
@@ -363,7 +364,7 @@ static bool BlockLanczos(int seed)
     dSeed = (dSeed2 * dMult) + dAdd;
     dSeed -= floor(dSeed / dDivisor) * dDivisor;
   }
-  // Compute matrix Vt(0) * V(0)
+  // Compute the matrix Vt(0) * V(0)
   MatrTranspMult(common.siqs.matrixBLength, common.siqs.matrixV, common.siqs.matrixV, matrixVtV0);
 #ifdef __EMSCRIPTEN__
   showMatrixSize((char *)SIQSInfoText, matrixRows, matrixCols);
@@ -547,14 +548,14 @@ static bool BlockLanczos(int seed)
       MatrixMultiplication(matrixCalc1, matrixCalcParenD, matrixF);
       MatrMultBySSt(32, matrixF, newDiagonalSSt, matrixF);
     }
-    // E = -Winv(i-1) * Vt(i)*A*V(i) * S*St
+    // E <- -Winv(i-1) * Vt(i)*A*V(i) * S*St
     if (stepNbr >= 2)
     {
       MatrixMultiplication(matrixWinv1, matrixVtAV, matrixE);
       MatrMultBySSt(32, matrixE, newDiagonalSSt, matrixE);
     }
-    // ParenD = Vt(i)*A*A*V(i) * S*St + Vt(i)*A*V(i)
-    // D = I - Winv(i) * ParenD
+    // ParenD <- Vt(i)*A*A*V(i) * S*St + Vt(i)*A*V(i)
+    // D <- I - Winv(i) * ParenD
     MatrTranspMult(common.siqs.matrixBLength, common.siqs.matrixAV, common.siqs.matrixAV, matrixCalc1); // Vt(i)*A*A*V(i)
     MatrMultBySSt(32, matrixCalc1, newDiagonalSSt, matrixCalc1);
     MatrixAddition(matrixCalc1, matrixVtAV, matrixCalcParenD);
@@ -823,6 +824,7 @@ static int EraseSingletons(int nbrFactorBasePrimes)
   int delta;
   int* rowMatrixB;
   int matrixBlength = common.siqs.matrixBLength;
+  assert(matrixBlength > 1);
   {
     int nbrBytes = matrixBlength * (int)sizeof(int);
     (void)memset(common.siqs.newColumns, 0, nbrBytes);
@@ -854,7 +856,7 @@ static int EraseSingletons(int nbrFactorBasePrimes)
         common.siqs.vectExpParity[rowMatrixB[column]]++;
       }
     }
-    // Loop that deletes primes for which singletons occur.
+    // Loop that deletes primes (columns in the matrix) for which singletons occur.
     // Variable newCol does not increment for the prime where the singleton occur.
     newCol = 0;
     for (int oldCol = 0; oldCol < nbrFactorBasePrimes; oldCol++)
@@ -862,7 +864,7 @@ static int EraseSingletons(int nbrFactorBasePrimes)
       if (common.siqs.vectExpParity[oldCol] > 1)
       {                // Useful column found with at least 2 primes.
 #if DEBUG_SIQS == 2
-        common.siqs.primeSieveData[row] = common.siqs.primeSieveData[oldRow];
+        common.siqs.primeSieveData[newCol] = common.siqs.primeSieveData[oldCol];
 #endif
         common.siqs.newColumns[oldCol] = newCol;
         common.siqs.primeTrialDivisionData[newCol].value =

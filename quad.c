@@ -755,8 +755,7 @@ void SolveQuadModEquation(void)
       for (int ctr = 0; ctr < GcdAll.limbs[0].x; ctr++)
       {
         intToBigInteger(&Tmp[0], ctr);
-        showValue(&Tmp[0]);
-        callbackQuadModHyperbolic(&Tmp[0]);
+        SolutionX(&Tmp[0]);
       }
       if (teach && !firstSolutionX)
       {
@@ -3566,12 +3565,12 @@ void SolveQuadEquation(void)
     // Translate the origin (x, y) by (alpha, beta).
     // Compute alpha = 2cd - be
     (void)BigIntMultiply(&ValC, &ValD, &ValAlpha);
-    BigIntAdd(&ValAlpha, &ValAlpha, &ValAlpha);
+    BigIntMultiplyBy2(&ValAlpha);
     (void)BigIntMultiply(&ValB, &ValE, &bigTmp);
     BigIntSubt(&ValAlpha, &bigTmp, &ValAlpha);
     // Compute beta = 2ae - bd
     (void)BigIntMultiply(&ValA, &ValE, &ValBeta);
-    BigIntAdd(&ValBeta, &ValBeta, &ValBeta);
+    BigIntMultiplyBy2(&ValBeta);
     (void)BigIntMultiply(&ValB, &ValD, &bigTmp);
     BigIntSubt(&ValBeta, &bigTmp, &ValBeta);
     // We get the equation ax^2 + bxy + cy^2 = k
@@ -3580,7 +3579,7 @@ void SolveQuadEquation(void)
     (void)BigIntMultiply(&ValK, &ValE, &ValK);     // ae^2
     (void)BigIntMultiply(&ValB, &ValE, &bigTmp);   // be
     (void)BigIntMultiply(&bigTmp, &ValD, &bigTmp); // bed
-    BigIntSubt(&ValK, &bigTmp, &ValK);             // ae^2 - bed
+    BigIntSubt(&ValK, &bigTmp, &ValK);        // ae^2 - bed
     (void)BigIntMultiply(&ValC, &ValD, &bigTmp);   // cd
     (void)BigIntMultiply(&bigTmp, &ValD, &bigTmp); // cd^2
     BigIntAdd(&ValK, &bigTmp, &ValK);              // ae^2 - bed + cd^2
