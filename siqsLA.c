@@ -263,8 +263,8 @@ static void coladd(int* pFirstHi, int* pFirstLo,
   {          // Nothing to do: go out.
     return;
   }
-  unsigned int c1 = col1 & 31;
-  unsigned int c2 = col2 & 31;
+  unsigned int c1 = (unsigned int)col1 & 31U;
+  unsigned int c2 = (unsigned int)col2 & 31U;
   if (col1 >= 32)
   {      // Select high part for column 1.
     pBlockA1 = pSecondHi;
