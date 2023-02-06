@@ -199,8 +199,8 @@ static void colexchange(int* pFirstHi, int* pFirstLo,
   {          // Exchange the same column means to do nothing.
     return;
   }
-  unsigned int c1 = (unsigned int)(col1 & 31);
-  unsigned int c2 = (unsigned int)(col2 & 31);
+  unsigned int c1 = (unsigned int)col1 & 31U;
+  unsigned int c2 = (unsigned int)col2 & 31U;
   unsigned int mask1 = 0x80000000U >> c1;
   unsigned int mask2 = 0x80000000U >> c2;
   if (col1 >= 32)

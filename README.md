@@ -14,8 +14,7 @@ Badges from [SonarCloud](https://sonarcloud.io/summary/overall?id=alpertron_calc
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=alpertron_calculators&metric=sqale_index)](https://sonarcloud.io/dashboard?id=alpertron_calculators)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=alpertron_calculators&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=alpertron_calculators)
 
-If you like these calculators and you want to support free software, you can donate by clicking in one of the buttons below:
+If you like these calculators and you want to support free software, you can donate via Paypal by clicking in the button below:
 
-Paypal: [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MR65QPWZM5JT6)
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MR65QPWZM5JT6)
 
-Liberapay: [<img src="https://liberapay.com/assets/widgets/donate.svg"/>](https://liberapay.com/alpertron/donate)
