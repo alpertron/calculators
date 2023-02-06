@@ -18,7 +18,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:description" content="muestra una representación gráfica de los números primos.">
-<meta property="article:published_time" content="2023-01-30">
+<meta property="article:published_time" content="2023-02-06">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/EULAM.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/ULAM.HTM">
@@ -140,7 +140,7 @@ Contacto
 <div class="applet">
 <canvas id="canvas" aria-label="Espiral de Ulam" role="img" tabindex="0"></canvas>
 <div id="bottom">
-<form id="inputboxes">
+<div id="inputboxes">
 <input id="animate" type="button" value="Animar">
 <input id="stop" type="button" value="Detener">
 <input id="zoomin" type="button" value="Acercar">
@@ -150,11 +150,11 @@ Contacto
 <input id="zoomout" type="button" value="Alejar">
 <label for="start">Comenzar la espiral desde</label>
 <input type="number" value="1" min="1" id="start">
-</form>
+</div>
 <div id="info"></div>
 </div>
 </div>
-<form id="animform">
+<div id="animform">
 <fieldset><legend>Parámetros de animación</legend>
 <p><label for="xincr">Incremento de <var>x</var>:</label>
 <input id="xincr" type="number" value="0" min="-10" max="10"></p>
@@ -167,7 +167,7 @@ Contacto
 <input id="doanimate" type="button" value="Animar">
 <input id="cancelanim" type="button" value="Cancelar">
 </fieldset>
-</form>
+</div>
 <div class="pad">
 <h1 id="espiralulam">Espiral de Ulam</h1>
 <ol class="bread" vocab="https://schema.org/" typeof="BreadcrumbList">
@@ -214,7 +214,7 @@ Cualquier número en la línea diagonal menor que 41<sup>2</sup> = 1681 debe ser
 Las diagonales cuyos números no se pueden dividir por primos pequeños tienen mayor cantidad de números primos, porque la mayoría de los números compuestos son divisibles por primos pequeños.</p>
 <h2>Código fuente</h2>
 <p>Puede bajar el código fuente de esta aplicación y del viejo applet de visualización de la espiral de Ulam desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 30 de enero de 2023.</p>
+<p>Escrito por Dario Alpern. Actualizado el 6 de febrero de 2023.</p>
 </div>
 </article></main>
 <div id="cannotShow"><p>No se puede mostrar la espiral cuando el valor del centro es menor que el valor inicial.</p></div>
@@ -280,8 +280,8 @@ G.getContext("2d");g.beginPath();g.rect(0,0,G.width,G.height);g.fillStyle="black
   "name": "Espiral de Ulam",
   "description": "Aplicación Web que muestra una representación gráfica de los números primos.",
   "image": ["https://www.alpertron.com.ar/eulam.png"],
-  "datePublished": "2023-01-30",
-  "dateModified": "2023-01-30",
+  "datePublished": "2023-02-06",
+  "dateModified": "2023-02-06",
   "operatingSystem": "Any",
   "applicationCategory": "https://schema.org/EducationalApplication",
   "author": {

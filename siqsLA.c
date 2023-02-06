@@ -183,70 +183,81 @@ static void MultiplyAByMatrix(const int *Matr, int *TempMatr, int *ProdMatr)
   }
 }
 
-static void colexchange(int* XmY, int* V, int* V1, int* V2,
-  int col1, int col2)
+// Exchange columns col1 and col2 of firstHi:firstLo and
+// the same columns of secondHi:secondLo
+// col1 and col2 ranges from 0 to 63.
+// Bit zero is the most significant bit.
+static void colexchange(int* pFirstHi, int* pFirstLo, 
+  int* pSecondHi, int* pSecondLo, int col1, int col2)
 {
-  int* matr1;
-  int* matr2;
-  int* matr3;
-  int* matr4;
+  int* pBlockA1;
+  int* pBlockA2;
+  int* pBlockB1;
+  int* pBlockB2;
 
   if (col1 == col2)
-  {          // Cannot exchange the same column.
+  {          // Exchange the same column means to do nothing.
     return;
   }
-  unsigned int c1 = col1 & 31;
-  unsigned int c2 = col2 & 31;
-  unsigned int mask1 = (int)(0x80000000U >> c1);
-  unsigned int mask2 = (int)(0x80000000U >> c2);
-  unsigned int notMask1 = ~mask1;
-  unsigned int notMask2 = ~mask2;
+  unsigned int c1 = (unsigned int)(col1 & 31);
+  unsigned int c2 = (unsigned int)(col2 & 31);
+  unsigned int mask1 = 0x80000000U >> c1;
+  unsigned int mask2 = 0x80000000U >> c2;
   if (col1 >= 32)
-  {
-    matr1 = V1;
-    matr3 = XmY;
+  {      // Select high part for column 1.
+    pBlockA1 = pSecondHi;
+    pBlockB1 = pFirstHi;
   }
   else
-  {
-    matr1 = V2;
-    matr3 = V;
+  {      // Select low part for column 1.
+    pBlockA1 = pSecondLo;
+    pBlockB1 = pFirstLo;
   }
   if (col2 >= 32)
-  {
-    matr2 = V1;
-    matr4 = XmY;
+  {      // Select high part for column 2.
+    pBlockA2 = pSecondHi;
+    pBlockB2 = pFirstHi;
   }
   else
-  {
-    matr2 = V2;
-    matr4 = V;
+  {      // Select low part for column 2.
+    pBlockA2 = pSecondLo;
+    pBlockB2 = pFirstLo;
   }
   for (int row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {
-    // Exchange columns col1 and col2 of V1:V2
-    unsigned int m1 = *matr1;
-    unsigned int m2 = *matr2;
-    *matr1 = (int)((m1 & notMask1) | (((m2 << c2) & 0x80000000U) >> c1));
-    *matr2 = (int)((m2 & notMask2) | (((m1 << c1) & 0x80000000U) >> c2));
-    matr1++;
-    matr2++;
-    // Exchange columns col1 and col2 of XmY:V
-    unsigned int m3 = *matr3;
-    unsigned int m4 = *matr4;
-    *matr3 = (int)((m3 & notMask1) | (((m4 << c2) & 0x80000000U) >> c1));
-    *matr4 = (int)((m4 & notMask2) | (((m3 << c1) & 0x80000000U) >> c2));
-    matr3++;
-    matr4++;
+    // Exchange columns col1 and col2 of secondHi:secondLo
+    // (bit c1 of *pBlockA1 and bit c2 of *pBlockA2).
+    if (((*pBlockA1 & mask1) == 0) != ((*pBlockA2 & mask2) == 0))
+    {           // If both bits are different toggle them.
+      *pBlockA1 ^= mask1;
+      *pBlockA2 ^= mask2;
+    }
+    pBlockA1++;
+    pBlockA2++;
+    // Exchange columns col1 and col2 of firstHi:firstLo
+    // (bit c1 of *pBlockB1 and bit c2 of *pBlockB2).
+    if (((*pBlockB1 & mask1) == 0) != ((*pBlockB2 & mask2) == 0))
+    {           // If both bits are different toggle them.
+      *pBlockB1 ^= mask1;
+      *pBlockB2 ^= mask2;
+    }
+    pBlockB1++;
+    pBlockB2++;
   }
 }
 
-static void coladd(int *XmY, int *V, int *V1, int *V2,
-  int col1, int col2)
+// Add column col1 to col2 of firstHi:firstLo and
+// the same columns of secondHi:secondLo
+// Adding bits are done by performing XOR in them.
+// col1 and col2 ranges from 0 to 63.
+// Bit zero is the most significant bit.
+static void coladd(int* pFirstHi, int* pFirstLo,
+  int* pSecondHi, int* pSecondLo, int col1, int col2)
 {
-  const int* matr1;
-  int* matr2;
-  const int* matr3;
-  int* matr4;
+  const int* pBlockA1;
+  int* pBlockA2;
+  const int* pBlockB1;
+  int* pBlockB2;
 
   if (col1 == col2)
   {          // Nothing to do: go out.
@@ -255,39 +266,45 @@ static void coladd(int *XmY, int *V, int *V1, int *V2,
   unsigned int c1 = col1 & 31;
   unsigned int c2 = col2 & 31;
   if (col1 >= 32)
-  {
-    matr1 = V1;
-    matr3 = XmY;
+  {      // Select high part for column 1.
+    pBlockA1 = pSecondHi;
+    pBlockB1 = pFirstHi;
   }
   else
-  {
-    matr1 = V2;
-    matr3 = V;
+  {      // Select low part for column 1.
+    pBlockA1 = pSecondLo;
+    pBlockB1 = pFirstLo;
   }
   if (col2 >= 32)
-  {
-    matr2 = V1;
-    matr4 = XmY;
+  {      // Select high part for column 2.
+    pBlockA2 = pSecondHi;
+    pBlockB2 = pFirstHi;
   }
   else
-  {
-    matr2 = V2;
-    matr4 = V;
+  {      // Select low part for column 2.
+    pBlockA2 = pSecondLo;
+    pBlockB2 = pFirstLo;
   }
   for (int row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {
-    // Add column col1 to column col2 of V1:V2
-    unsigned int m1 = *matr1;
-    unsigned int m2 = *matr2;
-    *matr2 = (int)(m2 ^ (((m1 << c1) & 0x80000000U) >> c2));
-    matr1++;
-    matr2++;
-    // Add column col1 to column col2 of XmY:V
-    unsigned int m3 = *matr3;
-    unsigned int m4 = *matr4;
-    *matr4 = (int)(m4 ^ (((m3 << c1) & 0x80000000U) >> c2));
-    matr3++;
-    matr4++;
+    // Add column col1 to column col2 of secondHi:secondLo
+    // (c1 of *pBlockA1 to c2 of *pBlockA2)
+    unsigned int bA1 = (unsigned int)*pBlockA1;
+    unsigned int bA2 = (unsigned int)*pBlockA2;
+    // Right operand of XOR:
+    // First move bit from location c1 to location zero.
+    // Then isolate that bit performing a mask.
+    // Finally move bit from location zero to location c2.
+    *pBlockA2 = (int)(bA2 ^ (((bA1 << c1) & 0x80000000U) >> c2));
+    pBlockA1++;
+    pBlockA2++;
+    // Add column col1 to column col2 of firstHi:firstLo.
+    // (c1 of *pBlockB1 to c2 of *pBlockB2)
+    unsigned int bB1 = (unsigned int)*pBlockB1;
+    unsigned int bB2 = (unsigned int)*pBlockB2;
+    *pBlockB2 = (int)(bB2 ^ (((bB1 << c1) & 0x80000000U) >> c2));
+    pBlockB1++;
+    pBlockB2++;
   }
 }
 
@@ -679,7 +696,7 @@ static bool BlockLanczos(int seed)
     {       // For each column find the first row which has a '1'.
             // Columns outside this range must have '0' in all rows.
       matr = ((col >= 32) ? common.siqs.matrixV1 : common.siqs.matrixV2);
-      mask = 0x80000000U >> (col & 31);
+      mask = (int)(0x80000000U >> (col & 31));
       vectorIndex[col] = -1;    // indicate all rows in zero in advance.
       for (row = 0; row < common.siqs.matrixBLength; row++)
       {
@@ -695,7 +712,8 @@ static bool BlockLanczos(int seed)
       if (vectorIndex[col] < 0)
       {  // If all zeros in col 'col', exchange it with first column with
          // data different from zero (leftCol).
-        colexchange(common.siqs.matrixXmY, common.siqs.matrixV, common.siqs.matrixV1, common.siqs.matrixV2, leftCol, col);
+        colexchange(common.siqs.matrixXmY, common.siqs.matrixV,
+          common.siqs.matrixV1, common.siqs.matrixV2, leftCol, col);
         vectorIndex[col] = vectorIndex[leftCol];
         vectorIndex[leftCol] = -1;  // This column now has zeros.
         leftCol++;                  // Update leftCol to exclude that column.
@@ -740,7 +758,8 @@ static bool BlockLanczos(int seed)
     else
     {
       rightCol--;
-      colexchange(common.siqs.matrixXmY, common.siqs.matrixV, common.siqs.matrixV1, common.siqs.matrixV2, minind, rightCol);
+      colexchange(common.siqs.matrixXmY, common.siqs.matrixV,
+        common.siqs.matrixV1, common.siqs.matrixV2, minind, rightCol);
     }
   }
   leftCol = 0; /* find linear independent solutions */
@@ -749,7 +768,7 @@ static bool BlockLanczos(int seed)
     for (col = leftCol; col < rightCol; col++)
     {         // For each column find the first row which has a '1'.
       matr = ((col >= 32) ? common.siqs.matrixXmY : common.siqs.matrixV);
-      mask = 0x80000000U >> (col & 31);
+      mask = (int)(0x80000000U >> (col & 31));
       vectorIndex[col] = -1;    // indicate all rows in zero in advance.
       for (row = 0; row < common.siqs.matrixBLength; row++)
       {
@@ -767,7 +786,8 @@ static bool BlockLanczos(int seed)
       if (vectorIndex[col] < 0)
       {
         rightCol--;                 // Update rightCol to exclude that column.
-        colexchange(common.siqs.matrixXmY, common.siqs.matrixV, common.siqs.matrixV1, common.siqs.matrixV2, rightCol, col);
+        colexchange(common.siqs.matrixXmY, common.siqs.matrixV,
+          common.siqs.matrixV1, common.siqs.matrixV2, rightCol, col);
         vectorIndex[col] = vectorIndex[rightCol];
         vectorIndex[rightCol] = -1; // This column now has zeros.
       }
@@ -805,13 +825,15 @@ static bool BlockLanczos(int seed)
         {        // Add first column which has '1' in the same row to
                  // the other columns so they have '0' in this row after
                  // this operation.
-          coladd(common.siqs.matrixXmY, common.siqs.matrixV, common.siqs.matrixV1, common.siqs.matrixV2, minind, col);
+          coladd(common.siqs.matrixXmY, common.siqs.matrixV,
+            common.siqs.matrixV1, common.siqs.matrixV2, minind, col);
         }
       }
     }
     else
     {
-      colexchange(common.siqs.matrixXmY, common.siqs.matrixV, common.siqs.matrixV1, common.siqs.matrixV2, minind, leftCol);
+      colexchange(common.siqs.matrixXmY, common.siqs.matrixV,
+        common.siqs.matrixV1, common.siqs.matrixV2, minind, leftCol);
       leftCol++;
     }
   }

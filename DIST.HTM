@@ -18,7 +18,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:description" content="Dos tests de conocimiento de distancia entre ciudades.">
-<meta property="article:published_time" content="2023-01-30">
+<meta property="article:published_time" content="2023-02-06">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/DIST.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/DISTANCE.HTM">
@@ -155,7 +155,7 @@ Contacto
 </ol>
 <noscript><p><strong>El juego no funciona con Javascript deshabilitado. Por favor revise la configuración de su navegador.</strong></p></noscript>
 <div id="mainmenu">
-<form>
+<div>
 <fieldset>
 <legend>Menú principal</legend>
 <div id="configleft">
@@ -169,7 +169,7 @@ Contacto
 <p><input type="button" id="finddist" value="Hallar la distancia entre ciudades"></p>
 </div>
 </fieldset>
-</form>
+</div>
 </div>
 <div id="help">
 <p>Este programa le permite practicar geografía al presentar dos tests relacionados con la distancia entre ciudades.</p>
@@ -185,9 +185,9 @@ Contacto
 <p class="notFindDist"><span id="ord1"></span> pregunta: ¿Cuál es la distancia entre las siguientes ciudades?</p>
 <p class="findDist">Las ciudades seleccionadas son:</p>
 <p><span class="cityctry_from"></span> y <span class="cityctry_to"></span></p>
-<form class="test1_1 notFindDist">
+<div class="test1_1 notFindDist">
 <p><label for="dist1">Distancia en kilómetros:</label> <input type="number" id="dist1"></p>
-</form>
+</div>
 <div class="test1_2">
 <p class="red notFindDist">Según ud. la distancia es de <span id="dist12_1"></span> pero en realidad es de <span id="dist12_2"></span>.</p>
 <p class="findDist">La distancia entre ambos lugares es de <span id="dist12_3"></span>.</p>
@@ -226,9 +226,9 @@ Contacto
 <li><span id="city4"></span></li> 
 <li><span id="city5"></span></li> 
 </ol>
-<form>
+<div>
 <p><label for="order">Ej.: si cree que el orden es 1, 2, 3, 4, digite 1234.</label> <input type="text" maxlength="4" id="order"></p>
-</form>
+</div>
 </div>
 <div id="test2_2" class="donotshow">
 <p>Ud. eligió la opción <span id="option"></span> por lo que le corresponden <span id="score5"></span></p>
@@ -238,13 +238,13 @@ Contacto
 </div>
 <div id="listCities" class="donotshow">
 <p id="lc">La lista de ciudades que contiene este programa es:</p>
-<form id="fc">
+<div id="fc">
 <p><label for="cityFrom">Número de ciudad origen:</label> <input type="number" id="cityFrom" min="1" max="105"></p>
 <p><label for="cityTo">Número de ciudad destino:</label> <input type="number" id="cityTo" min="1" max="105"></p>
 <input type="button" id="findDist" value="Calcular distancia">
-</form>
+</div>
 <div id="allCities"></div>
-<form><input type="button" id="exitt3" value="Volver"></form>
+<div><input type="button" id="exitt3" value="Volver"></div>
 </div>
 </article>
 </main>
@@ -411,8 +411,8 @@ function(){window.sessionStorage.setItem("pageFrom",document.title);return!0}})}
   "name": "Distancia entre ciudades",
   "description": "Aplicación Web que incluye dos tests de conocimiento de distancia entre ciudades.",
   "image": ["https://www.alpertron.com.ar/dist.png"],
-  "datePublished": "2023-01-30",
-  "dateModified": "2023-01-30",
+  "datePublished": "2023-02-06",
+  "dateModified": "2023-02-06",
   "operatingSystem": "Any",
   "applicationCategory": "https://schema.org/EducationalApplication",
   "author": {

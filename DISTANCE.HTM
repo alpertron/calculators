@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
 <meta property="og:description" content="Two tests about distance between cities.">
-<meta property="article:published_time" content="2023-01-30">
+<meta property="article:published_time" content="2023-02-06">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/DIST.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/DISTANCE.HTM">
@@ -143,7 +143,7 @@ Contact
 </ol>
 <noscript><p><strong>The game does not work with Javascript disabled. Please check your browser settings.</strong></p></noscript>
 <div id="mainmenu">
-<form>
+<div>
 <fieldset>
 <legend>Main menu</legend>
 <div id="configleft">
@@ -157,7 +157,7 @@ Contact
 <p><input type="button" id="finddist" value="Find distance betweeen cities"></p>
 </div>
 </fieldset>
-</form>
+</div>
 </div>
 <div id="help">
 <p>This program lets you practice geography by featuring two tests related to distance between cities.</p>
@@ -173,9 +173,9 @@ Contact
 <p class="notFindDist"><span id="ord1"></span> question: What is the distance between the following cities?</p>
 <p class="findDist">The selected cities are:</p>
 <p><span class="cityctry_from"></span> and <span class="cityctry_to"></span></p>
-<form class="test1_1 notFindDist">
+<div class="test1_1 notFindDist">
 <p><label for="dist1">Distance in kilometers:</label> <input type="number" id="dist1"></p>
-</form>
+</div>
 <div class="test1_2">
 <p class="red notFindDist">You think that the distance is <span id="dist12_1"></span> but the exact value is <span id="dist12_2"></span>.</p>
 <p class="findDist">The distance between both places are <span id="dist12_3"></span>.</p>
@@ -214,9 +214,9 @@ Contact
 <li><span id="city4"></span></li> 
 <li><span id="city5"></span></li> 
 </ol>
-<form>
+<div>
 <p><label for="order">If you think the order is 1, 2, 3, 4, please type 1234.</label> <input type="text" maxlength="4" id="order"></p>
-</form>
+</div>
 </div>
 <div id="test2_2" class="donotshow">
 <p>You have chosen the option <span id="option"></span> so you deserve <span id="score5"></span></p>
@@ -226,13 +226,13 @@ Contact
 </div>
 <div id="listCities" class="donotshow">
 <p id="lc">The list of cities in this program is:</p>
-<form id="fc">
+<div id="fc">
 <p><label for="cityFrom">Number of origin city:</label> <input type="number" id="cityFrom" min="1" max="105"></p>
 <p><label for="cityTo">Number of destination city:</label> <input type="number" id="cityTo" min="1" max="105"></p>
 <input type="button" id="findDist" value="Find distance">
-</form>
+</div>
 <div id="allCities"></div>
-<form><input type="button" id="exitt3" value="Back"></form>
+<div><input type="button" id="exitt3" value="Back"></div>
 </div>
 </article>
 </main>
@@ -399,8 +399,8 @@ function(){window.sessionStorage.setItem("pageFrom",document.title);return!0}})}
   "name": "Distance between cities",
   "description": "Web application which includes two tests about distance between cities.",
   "image": ["https://www.alpertron.com.ar/distance.png"],
-  "datePublished": "2023-01-30",
-  "dateModified": "2023-01-30",
+  "datePublished": "2023-02-06",
+  "dateModified": "2023-02-06",
   "operatingSystem": "Any",
   "applicationCategory": "https://schema.org/EducationalApplication",
   "author": {
