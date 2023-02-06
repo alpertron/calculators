@@ -395,7 +395,7 @@ function performCalc(from)
   let param = "";
   if ((app === 6) || (app === 7))
   {         // Sum of two squares and a power.
-    param = from + ',';
+    param = from + ",";
   }
   param += digitGroup + "," + (app+hex*64) + "," + valueA + String.fromCharCode(0);
   if ((app === 4) || (app === 5))
