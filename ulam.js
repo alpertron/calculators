@@ -288,7 +288,10 @@ function startLowLevelCode()
     asmJSbuffer = new ArrayBuffer(bufSize);
     HEAP8 = new Uint8Array(asmJSbuffer);    // Reserve 32 MB for asm.js variables and buffers.
     env = {"a": {"buffer": asmJSbuffer},
-      "abort": function(_q) {/* Not used*/},
+      "abort": function(_q)
+               {
+                 /* Not used*/
+               },
     };
     asm = instantiate(env);  // Link asm.js module.
     asmGetInformation = asm.e;

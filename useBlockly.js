@@ -427,14 +427,16 @@ function useBlockly(callback, lang)
       "media": "/",
       "css": false});
       
-  blocklyResize = function(_e) {
+  blocklyResize = function(_e)
+  {
     // Compute the absolute coordinates and dimensions of blocklyArea.
     let element = blocklyArea;
     /** @type {number} */
     let x = 0;
     /** @type {number} */
     let y = 0;
-    do {
+    do
+    {
       x += element.offsetLeft;
       y += element.offsetTop;
       element = element.offsetParent;
