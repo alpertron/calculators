@@ -386,8 +386,8 @@ void FindSumOfTwoSquaresUsingCrt(int nbrDivisors)
     }
   }
   nbrBytes = nbrLimbs * (int)sizeof(int);
-  memcpy(biMult1.limbs, Mult1, nbrBytes);
-  memcpy(biMult2.limbs, Mult2, nbrBytes);
+  (void)memcpy(biMult1.limbs, Mult1, nbrBytes);
+  (void)memcpy(biMult2.limbs, Mult2, nbrBytes);
   biMult1.sign = SIGN_POSITIVE;
   biMult2.sign = SIGN_POSITIVE;
   biMult1.nbrLimbs = nbrLimbs;
@@ -438,7 +438,6 @@ bool isSumOfTwoSquares(void)
         {     // Number is not a multiple of "divisor".
           break;
         }
-        carry.x = 0;
         // Divide by divisor.
         DivBigNbrByInt(valueP, divisor, valueP, nbrLimbsP);
         if ((nbrLimbsP > 1) && (valueP[nbrLimbsP - 1].x == 0))
@@ -501,7 +500,6 @@ bool isSumOfTwoSquares(void)
 void InitSieveArray(void)
 {
   int i;
-  int j;
 
   for (i = 0; i < (MAX_SIEVE / 2); i++)
   {
@@ -509,7 +507,7 @@ void InitSieveArray(void)
   }
   for (i = 3; (i * i) < (MAX_SIEVE / 2); i += 2)
   {
-    j = (i * i) - 3;
+    int j = (i * i) - 3;
     if ((j % 2) == 0)
     {
       j = j / 2;

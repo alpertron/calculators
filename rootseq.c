@@ -18,6 +18,7 @@
 //
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 #include "rootseq.h"
 #include "expression.h"
 
@@ -2095,6 +2096,7 @@ static int showRadicals17(int numerator34)
   {
     angle += 68;
   }
+  assert((angle != 17) && (angle != 51)); // It cannot be 90 deg or 270 deg.
   if ((angle % 2) == 0)
   {
     int sign;

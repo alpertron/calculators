@@ -3276,7 +3276,7 @@ static void recursiveSolution(void)
     }
     intToBigInteger(&U1, 9);  // First solution to U1^2 - 5*V1^2 = 1
     intToBigInteger(&V1, 4);
-    solutionFoundFromContFraction(isBeven, 1);
+    (void)solutionFoundFromContFraction(isBeven, 1);
     return;
   }
   squareRoot(ValH.limbs, ValG.limbs, ValH.nbrLimbs, &ValG.nbrLimbs);
@@ -3612,10 +3612,10 @@ void SolveQuadEquation(void)
         CopyBigInt(&ValBBak, &ValB);
         CopyBigInt(&ValCBak, &ValC);
         CopyBigInt(&V1, &ValK);
-        BigIntDivide(&ValA, &U1, &ValA);
-        BigIntDivide(&ValB, &U1, &ValB);
-        BigIntDivide(&ValC, &U1, &ValC);
-        BigIntDivide(&ValK, &U1, &ValK);
+        (void)BigIntDivide(&ValA, &U1, &ValA);
+        (void)BigIntDivide(&ValB, &U1, &ValB);
+        (void)BigIntDivide(&ValC, &U1, &ValC);
+        (void)BigIntDivide(&ValK, &U1, &ValK);
         showText(lang ? "<p>Dividiendo ambos miembros por " : "<p>Dividing both sides by ");
         Bin2Dec(&ptrOutput, U1.limbs, U1.nbrLimbs, groupLen);
         showText(":</p>");

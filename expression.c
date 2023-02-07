@@ -1607,9 +1607,17 @@ static enum eExprErr ComputeNumDigits(void)
 
 static enum eExprErr ComputeRevDigits(void)
 {
-  getCurrentStackValue(&curStack);    // Get first argument.
+  // Get first argument.
+  if (getCurrentStackValue(&curStack) != EXPR_OK)
+  {
+    return EXPR_CANNOT_PARSE_EXPRESSION;
+  }
   stackIndex++;
-  getCurrentStackValue(&curStack2);   // Get second argument.
+  // Get second argument.
+  if (getCurrentStackValue(&curStack2) != EXPR_OK)
+  {
+    return EXPR_CANNOT_PARSE_EXPRESSION;
+  }
   stackIndex--;
   static BigInteger argum;
   static BigInteger Temp;
