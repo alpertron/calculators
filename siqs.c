@@ -2345,7 +2345,7 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor)
   } /* end while */
   MultBigNbrByInt(common.siqs.TestNbr2, common.siqs.multiplier, common.siqs.Modulus, NumberLength);
   common.siqs.matrixBLength = common.siqs.nbrFactorBasePrimes * 33 / 32;
-  if (common.siqs.matrixBLength < common.siqs.nbrFactorBasePrimes + 50)
+  if (common.siqs.matrixBLength < (common.siqs.nbrFactorBasePrimes + 50))
   {
     common.siqs.matrixBLength = common.siqs.nbrFactorBasePrimes + 50;
   }

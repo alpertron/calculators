@@ -309,7 +309,7 @@ static void findQuadraticSolution(BigInteger* pSolution, int exponent)
   limb* ptrSolution = pSolution->limbs;
   BigIntPowerOf2(&Aux0, expon);
   bytesLen = Aux0.nbrLimbs * (int)sizeof(limb);
-  (void)memset(pSolution->limbs, 0, bytesLen);
+  (void)memset(ptrSolution, 0, bytesLen);
   while (expon > 0)
   {
     expon--;

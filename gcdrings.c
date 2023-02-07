@@ -220,7 +220,7 @@ static int DivideQuaternionByPowerOf1PlusI(BigInteger *scalar, BigInteger *vecI,
   return expon;
 }
 
-#define Mod4(bignbr) (((bignbr->limbs[0].x + (bignbr->sign == SIGN_POSITIVE? 0: 2)) & 3))
+#define Mod4(bignbr) (((bignbr->limbs[0].x + ((bignbr->sign == SIGN_POSITIVE)? 0: 2)) & 3))
 // If type of quaternion is odd, if the number of '1' is even, multiply it by (1/2)(1+i+j+k).
 // If the number of '3' is odd, multiply it by (1/2)(-1+i+j+k).
 static void ConvertQuaternionToEvenType(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK,

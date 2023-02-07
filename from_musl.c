@@ -851,7 +851,7 @@ double __cos(double x, double y)
 
   z = x * x;
   w = z * z;
-  r = z * (C1 + (z * (C2 + (z * C3)))) + (w * w * (C4 + z * (C5 + (z * C6))));
+  r = (z * (C1 + (z * (C2 + (z * C3))))) + (w * w * (C4 + z * (C5 + (z * C6))));
   hz = 0.5 * z;
   w = 1.0 - hz;
   return w + (((1.0 - w) - hz) + ((z * r) - (x * y)));
@@ -934,7 +934,7 @@ double acos(double x)
     uint32_t lx;
 
     GET_LOW_WORD(lx, x);
-    if ((ix - 0x3ff00000 | lx) == 0) {
+    if (((ix - 0x3ff00000) | lx) == 0) {
       /* acos(1)=0, acos(-1)=pi */
       if ((hx >> 31) != 0U)
       {
