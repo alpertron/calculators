@@ -99,7 +99,8 @@ self.onmessage = function (e)
     try
     {
       exports["doWork"]();
-    } catch (err)
+    }
+    catch (err)
     {
       self.postMessage("2<p>"+err.message+"</p>");
     }

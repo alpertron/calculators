@@ -479,7 +479,8 @@ window.onload = function()
               {
                 /* Nothing to do */
               },
-              function() {
+              function()
+              {
                 /* Nothing to do */
               });
     fillCache();
