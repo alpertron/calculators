@@ -704,12 +704,12 @@ function startUp()
     animate.style.display = inline;
     clearInterval(interval);
   };
-  let menuItems = document.querySelectorAll('li.has-submenu');
+  let menuItems = document.querySelectorAll("li.has-submenu");
   Array.prototype.forEach.call(menuItems, function(el, i)
   {
     el.querySelector(".submenu").addEventListener("click", function(event)
     {
-      if (this.parentNode.className == "has-submenu")
+      if (this.parentNode.className === "has-submenu")
       {
         this.parentNode.className = "has-submenu open";
         this.setAttribute("aria-expanded", "true");
@@ -748,7 +748,7 @@ function startUp()
       let popup = document.querySelector(".open");
       if (popup != null)
       {
-        let submenu = popup.querySelector(".submenu")
+        let submenu = popup.querySelector(".submenu");
         popup.className = "has-submenu";
         submenu.setAttribute("aria-expanded", "false");
       }
