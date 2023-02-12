@@ -41,8 +41,8 @@ nav ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
 nav li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
 nav li:hover {background-color:#004000; color:#FFFFFF;}
 nav li ul { display:none; position:absolute; }
-nav li:hover ul.alignleft{ display:block; height:auto;}
-nav li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+nav li:hover ul.alignleft, nav li.open ul.alignleft {display:block; height:auto}
+nav li:hover ul.alignright, nav li.open ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
 nav li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
 nav a:link{color:#FFFFFF; text-decoration: none;}
 nav a:visited{color:#FFFFFF; text-decoration: none;}
@@ -128,42 +128,42 @@ input:disabled {color: #808080; background-color: #606060}
 </noscript>
 </head>
 <body>
-<nav>
-<div class="atright"><a href="GAUSSIAN.HTM" hreflang="en" title="This Web page in English">ENG</a></div>
-<ul>
-<li>
-Electrónica
-<ul class="alignleft">
-<li><a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a></li>
+<nav aria-label="Navegación principal">
+<ul role="menubar">
+<li class="has-submenu">
+<span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0" class="submenu">Electrónica</span>
+<ul role="menu" class="alignleft popup">
+<li><a role="menuitem" href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a></li>
 </ul>
 </li>
-<li>
-Matemáticas
-<ul class="alignleft">
-<li><a href="CALDORAS.HTM" title="Aplicaciones HTML5 que implementan calculadoras">Calculadoras</a></li>
-<li><a href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a></li>
-<li><a href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a></li>
+<li class="has-submenu">
+<span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0" class="submenu">Matemáticas</span>
+<ul role="menu" class="alignleft popup">
+<li><a role="menuitem" href="CALDORAS.HTM" title="Aplicaciones HTML5 que implementan calculadoras">Calculadoras</a></li>
+<li><a role="menuitem" href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a></li>
+<li><a role="menuitem" href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a></li>
 </ul>
 </li>
-<li>
-Programas
-<ul class="alignright">
-<li><a href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a></li>
-<li><a href="PROGJAVA.HTM" title="Aplicaciones HTML5 con JavaScript y WebAssembly">Aplicaciones HTML5</a></li>
-<li><a href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a></li>
+<li class="has-submenu">
+<span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0" class="submenu">Programas</span>
+<ul role="menu" class="alignright popup">
+<li><a role="menuitem" href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a></li>
+<li><a role="menuitem" href="PROGJAVA.HTM" title="Aplicaciones HTML5 con JavaScript y WebAssembly">Aplicaciones HTML5</a></li>
+<li><a role="menuitem" href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a></li>
 </ul>
 </li>
-<li class="alignright">
-Contacto
-<ul class="alignright">
-<li><a href="PERSONAL.HTM" title="Información personal">Personal</a></li>
-<li><a href="FORMULAR.HTM" title="Formulario para enviar comentarios">Comentarios</a></li>
-<li><a href="GBOOK.HTM" title="Viejo y nuevo libro de visitas">Libro de invitados</a></li>
-<li><a href="PRIVACIDAD.HTM" title="Política de privacidad">Privacidad</a></li>
-<li><a href="DONACIONES.HTM" title="Donaciones al autor de este sitio Web">Donaciones</a></li>
-</ul>
+<li class="alignright has-submenu">
+<span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0" class="submenu">Contacto</span>
+<ul role="menu" class="alignright popup">
+<li><a role="menuitem" href="PERSONAL.HTM" title="Información personal">Personal</a></li>
+<li><a role="menuitem" href="FORMULAR.HTM" title="Formulario para enviar comentarios">Comentarios</a></li>
+<li><a role="menuitem" href="GBOOK.HTM" title="Viejo y nuevo libro de visitas">Libro de invitados</a></li>
+<li><a role="menuitem" href="PRIVACIDAD.HTM" title="Política de privacidad">Privacidad</a></li>
+<li><a role="menuitem" href="DONACIONES.HTM" title="Donaciones al autor de este sitio Web">Donaciones</a></li>
+</ul> 
 </li>
 </ul>
+<ul class="atright"><li><a href="GAUSSIAN.HTM" hreflang="en" title="This Web page in English">ENG</a></li></ul>
 </nav>
 <main id="main">
 <article>
@@ -399,13 +399,13 @@ v+2)===z.substring(0,v+2)&&I.url.substring(v+2,v+4)!==z.substring(v+2,v+4)&&I.ur
 l+=4){var z=m[d.charCodeAt(l)];var v=m[d.charCodeAt(l+1)];var E=m[d.charCodeAt(l+2)];var I=m[d.charCodeAt(l+3)];g[f>>0]=(z<<2)+(v>>4);g[f+1>>0]=(v<<4)+(E>>2);g[f+2>>0]=(E<<6)+I}p=x&3;2===p?(z=m[d.charCodeAt(l)],v=m[d.charCodeAt(l+1)],g[f>>0]=(z<<2)+(v>>4),g[f+1>>0]=v<<4):3===p&&(z=m[d.charCodeAt(l)],v=m[d.charCodeAt(l+1)],E=m[d.charCodeAt(l+2)],g[f>>0]=(z<<2)+(v>>4),g[f+1>>0]=(v<<4)+(E>>2),g[f+2>>0]=E<<6)}function k(d,g,f){var l;g=a(g);d=a(d).selectedIndex;var m=(S+T[+d]).split(","),x=document.createDocumentFragment();
 for(l=0;l<m.length/2;l++)d=document.createElement("button"),d.setAttribute("type","button"),d.setAttribute("title",m[2*l]),d.innerHTML=m[2*l+1],d.classList.add("funcbtn"),d.onclick=function(){var p=a(f);p.focus();var z=p.selectionStart;p.value=p.value.substring(0,z)+this.innerText+p.value.substring(p.selectionEnd);p.selectionStart=z+this.innerText.length;p.selectionEnd=p.selectionStart},x.appendChild(d);g.innerHTML="";g.appendChild(x)}var q="undefined"===typeof WebAssembly,u=0,H,B,r,w,C=0;var T=["Suma,+,Resta,-,Multiplicaci\u00f3n,*,Divisi\u00f3n,/,Resto,%,Potencia,^,Resultado anterior,ans,Parte real,Re(,Parte imaginaria,Im(,Norma\n\nRe(z)^2 + Im(z)^2,Norm(,N\u00famero aleatorio\n\nPrimer argumento: m\u00ednimo valor del n\u00famero aleatorio\nSegundo argumento: m\u00e1ximo valor del n\u00famero aleatorio,Random(",
 "M\u00e1ximo com\u00fan divisor\n\nSe pueden usar uno o m\u00e1s argumentos,GCD(,M\u00ednimo com\u00fan m\u00faltiplo\n\nSe pueden usar uno o m\u00e1s argumentos,LCM(,\u00bfEl valor es primo?,IsPrime(","Primo siguiente,N(,Primo anterior,B(","Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: m\u00f3dulo,ModInv(,Exponenciaci\u00f3n modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: m\u00f3dulo,ModPow(","Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partici\u00f3n,P("];
-var S="Par\u00e9ntesis izquierdo,(,Par\u00e9ntesis derecho,),Unidad imaginaria,i,";var O="gaussianW00ER.js gaussian.webmanifest gausiano.webmanifest gaussian-icon-1x.png gaussian-icon-2x.png gaussian-icon-4x.png gaussian-icon-180px.png gaussian-icon-512px.png favicon.ico".split(" "),J=window.location.pathname;window.onload=function(){a("eval").onclick=function(){n(0)};a("factor").onclick=function(){n(2)};a("stop").onclick=function(){u.terminate();u=0;c("inline","none");a("result").innerHTML="<p>C\u00e1lculo detenido por el usuario.</p>";
+var S="Par\u00e9ntesis izquierdo,(,Par\u00e9ntesis derecho,),Unidad imaginaria,i,";var O="gaussianW00EU.js gaussian.webmanifest gausiano.webmanifest gaussian-icon-1x.png gaussian-icon-2x.png gaussian-icon-4x.png gaussian-icon-180px.png gaussian-icon-512px.png favicon.ico".split(" "),J=window.location.pathname;window.onload=function(){a("eval").onclick=function(){n(0)};a("factor").onclick=function(){n(2)};a("stop").onclick=function(){u.terminate();u=0;c("inline","none");a("result").innerHTML="<p>C\u00e1lculo detenido por el usuario.</p>";
 a("status").innerHTML=""};a("more").onclick=function(){a("modal-more").style.display="block"};a("config").onclick=function(){a("digits").value=r;a("batch").checked="1"===w.substring(1,2);a("verbose").checked="1"===w.substring(1,2);a("pretty").checked="1"===w.substring(2,3);a("cunnin").checked="1"===w.substring(3,4);a("modal-config").style.display="block"};a("close-config").onclick=function(){a("modal-config").style.display="none"};a("cancel-config").onclick=function(){a("modal-config").style.display=
 "none"};a("save-config").onclick=function(){w=(a("batch").checked?"1":"0")+(a("verbose").checked?"1":"0")+(a("pretty").checked?"1":"0")+(a("cunnin").checked?"1":"0");r=a("digits").value;localStorage.setItem("ecmConfig",r+","+w);a("modal-config").style.display="none"};a("close-more").onclick=function(){a("modal-more").style.display="none"};a("helpbtn").onclick=function(){var g=a("help").style,f=a("helphelp").style,l=a("result"),m=l.style;"block"===g.display&&""!==l.innerHTML?(g.display="none",f.display=
 m.display="block"):(g.display="block",f.display=m.display="none")};a("value").onkeydown=function(g){g.ctrlKey&&"Enter"===g.key&&(n(2),g.stopPropagation())};a("funccat").onchange=function(){k("funccat","funcbtns","value")};a("formlink").onclick=function(){a("main").style.display="none";a("feedback").style.display="block";a("formfeedback").reset();a("name").focus();return!1};a("formcancel").onclick=function(){t()};a("formsend").onclick=function(){var g=a("userdata");a("adduserdata").checked?g.value=
 "\n"+a("value").value+"\n"+a("result").innerHTML+"\n"+a("status").innerHTML:g.value="";var f=new XMLHttpRequest;f.onreadystatechange=function(){4===f.readyState&&(200===f.status?alert("Comentarios enviados satisfactoriamente."):alert("No se pudieron enviar los comentarios."),t())};f.open("POST","/enviomail.php",!0);f.setRequestHeader("Content-type","application/x-www-form-urlencoded");g=a("formfeedback").elements;for(var l="",m=0,x=0;x<g.length;x++){var p=g[x>>0];("radio"!==p.type||p.checked)&&p.name&&
 (m&&(l+="&"),l+=p.name+"="+encodeURIComponent(p.value),m++)}f.send(l);return!1};window.onclick=function(g){var f=a("modal");g.target===f&&(f.style.display="none")};r=localStorage.getItem("ecmConfig");if(null===r||""===r)r=6,w="0010",localStorage.setItem("ecmConfig",r+","+w);else{var d=r.indexOf(",");0>d?(r=6,w="0010",localStorage.setItem("ecmConfig",r+","+w)):(w=r.substring(d+1),r=r.substring(0,d))}k("funccat","funcbtns","value");"serviceWorker"in navigator&&(navigator.serviceWorker.register("calcSW.js").then(function(){},
-function(){}),b())};if(q){var F=new XMLHttpRequest;F.open("GET","gaussianW00ER.js",!0);F.responseType="arraybuffer";F.onreadystatechange=function(){4===F.readyState&&200===F.status&&(C=F.response)};F.send(null)}else{for(var A=document.getElementById("wasmb64").text;32>A.charCodeAt(0);)A=A.substring(1);for(;32>A.charCodeAt(A.length-1);)A=A.substring(0,A.length-1);var L=3*A.length/4;61===A.charCodeAt(A.length-1)&&L--;61===A.charCodeAt(A.length-2)&&L--;C=new Int8Array(L);e(A,C)}})();
+function(){}),b())};if(q){var F=new XMLHttpRequest;F.open("GET","gaussianW00EU.js",!0);F.responseType="arraybuffer";F.onreadystatechange=function(){4===F.readyState&&200===F.status&&(C=F.response)};F.send(null)}else{for(var A=document.getElementById("wasmb64").text;32>A.charCodeAt(0);)A=A.substring(1);for(;32>A.charCodeAt(A.length-1);)A=A.substring(0,A.length-1);var L=3*A.length/4;61===A.charCodeAt(A.length-1)&&L--;61===A.charCodeAt(A.length-2)&&L--;C=new Int8Array(L);e(A,C)}})();
 //-->
 </script>
 <script type="application/ld+json">

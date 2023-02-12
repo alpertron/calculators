@@ -40,8 +40,8 @@ nav ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
 nav li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
 nav li:hover {background-color:#004000; color:#FFFFFF;}
 nav li ul { display:none; position:absolute; }
-nav li:hover ul.alignleft{ display:block; height:auto;}
-nav li:hover ul.alignright{ display:block; height:auto; right:0px; background-color:#004000;}
+nav li:hover ul.alignleft, nav li.open ul.alignleft {display:block; height:auto}
+nav li:hover ul.alignright, nav li.open ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
 nav li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
 nav a:link{color:#FFFFFF; text-decoration: none;}
 nav a:visited{color:#FFFFFF; text-decoration: none;}
@@ -87,54 +87,42 @@ input:disabled {color: #808080; background-color: #606060}
 </noscript>
 </head>
 <body>
-<nav>
-<div class="atright"><a href="DISTANCE.HTM" hreflang="en" title="This Web page in English">ENG</a></div>
-<ul>
-<li>
-Electrónica
-<ul class="alignleft">
-<li><a href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a></li>
+<nav aria-label="Navegación principal">
+<ul role="menubar">
+<li class="has-submenu">
+<span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0" class="submenu">Electrónica</span>
+<ul role="menu" class="alignleft popup">
+<li><a role="menuitem" href="INTEL.HTM" title="Todos los microprocesadores de Intel desde el 4004 al Pentium">Microprocesadores Intel</a></li>
 </ul>
 </li>
-<li>
-Matemáticas
-<ul class="alignleft">
-<li>
-<a href="CALDORAS.HTM" title="Aplicaciones HTML5 que implementan calculadoras">Calculadoras</a>
-</li>
-<li>
-<a href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a>
-</li>
-<li>
-<a href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a>
-</li>
+<li class="has-submenu">
+<span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0" class="submenu">Matemáticas</span>
+<ul role="menu" class="alignleft popup">
+<li><a role="menuitem" href="CALDORAS.HTM" title="Aplicaciones HTML5 que implementan calculadoras">Calculadoras</a></li>
+<li><a role="menuitem" href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a></li>
+<li><a role="menuitem" href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a></li>
 </ul>
 </li>
-<li>
-Programas
-<ul class="alignright">
-<li>
-<a href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a>
-</li>
-<li>
-<a href="PROGJAVA.HTM" title="Aplicaciones HTML5 con JavaScript y WebAssembly">Aplicaciones HTML5</a>
-</li>
-<li>
-<a href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a>
-</li>
+<li class="has-submenu">
+<span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0" class="submenu">Programas</span>
+<ul role="menu" class="alignright popup">
+<li><a role="menuitem" href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a></li>
+<li><a role="menuitem" href="PROGJAVA.HTM" title="Aplicaciones HTML5 con JavaScript y WebAssembly">Aplicaciones HTML5</a></li>
+<li><a role="menuitem" href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a></li>
 </ul>
 </li>
-<li class="alignright">
-Contacto
-<ul class="alignright">
-<li><a href="PERSONAL.HTM" title="Información personal">Personal</a></li>
-<li><a href="FORMULAR.HTM" title="Formulario para enviar comentarios">Comentarios</a></li>
-<li><a href="GBOOK.HTM" title="Viejo y nuevo libro de visitas">Libro de invitados</a></li>
-<li><a href="PRIVACIDAD.HTM" title="Política de privacidad">Privacidad</a></li>
-<li><a href="DONACIONES.HTM" title="Donaciones al autor de este sitio Web">Donaciones</a></li>
-</ul>
+<li class="alignright has-submenu">
+<span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0" class="submenu">Contacto</span>
+<ul role="menu" class="alignright popup">
+<li><a role="menuitem" href="PERSONAL.HTM" title="Información personal">Personal</a></li>
+<li><a role="menuitem" href="FORMULAR.HTM" title="Formulario para enviar comentarios">Comentarios</a></li>
+<li><a role="menuitem" href="GBOOK.HTM" title="Viejo y nuevo libro de visitas">Libro de invitados</a></li>
+<li><a role="menuitem" href="PRIVACIDAD.HTM" title="Política de privacidad">Privacidad</a></li>
+<li><a role="menuitem" href="DONACIONES.HTM" title="Donaciones al autor de este sitio Web">Donaciones</a></li>
+</ul> 
 </li>
 </ul>
+<ul class="atright"><li><a href="DISTANCE.HTM" hreflang="en" title="This Web page in English">ENG</a></li></ul>
 </nav>
 <main id="main">
 <article>

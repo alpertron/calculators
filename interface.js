@@ -869,6 +869,56 @@ function startUp()
               });
     fillCache();
   }
+  let menuItems = document.querySelectorAll('li.has-submenu');
+  Array.prototype.forEach.call(menuItems, function(el, i)
+  {
+    el.querySelector(".submenu").addEventListener("click", function(event)
+    {
+      if (this.parentNode.className == "has-submenu")
+      {
+        this.parentNode.className = "has-submenu open";
+        this.setAttribute("aria-expanded", "true");
+      }
+      else
+      {
+        this.parentNode.className = "has-submenu";
+        this.setAttribute("aria-expanded", "false");
+      }
+      event.preventDefault();
+      return false;
+    });
+    
+    el.querySelector(".submenu").addEventListener("keypress", function(event)
+    {
+      if (event.key === "Enter")
+      {
+        this.click(event);
+      }
+    });
+    
+    el.addEventListener("mouseover", function(event)
+    {
+      el.addEventListener("mouseover", function(event)
+      {
+        this.className = "has-submenu open";
+      });
+      el.addEventListener("mouseout", function(event)
+      {
+        document.querySelector(".has-submenu.open").className = "has-submenu";
+      });
+    });
+    
+    el.querySelector(".submenu").addEventListener("focus", function(event)
+    {
+      let popup = document.querySelector(".open");
+      if (popup != null)
+      {
+        let submenu = popup.querySelector(".submenu")
+        popup.className = "has-submenu";
+        submenu.setAttribute("aria-expanded", "false");
+      }
+    });
+  });
 }
 if (asmjs)
 {
