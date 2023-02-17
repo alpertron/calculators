@@ -764,7 +764,6 @@ function startUp()
         this.setAttribute("aria-expanded", "true");
         this.firstElementChild.firstElementChild.firstElementChild.focus();
         event.preventDefault();
-        return;
       }
     });
     
@@ -865,7 +864,6 @@ function startUp()
           }
           event.stopImmediatePropagation();
           event.preventDefault();
-          return;
         }
       });
     });

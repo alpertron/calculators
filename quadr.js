@@ -606,7 +606,6 @@ window.onload = function()
         this.setAttribute("aria-expanded", "true");
         this.firstElementChild.firstElementChild.firstElementChild.focus();
         event.preventDefault();
-        return;
       }
     });
     
@@ -707,7 +706,6 @@ window.onload = function()
           }
           event.stopImmediatePropagation();
           event.preventDefault();
-          return;
         }
       });
     });
