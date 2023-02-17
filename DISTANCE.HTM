@@ -35,23 +35,23 @@
 <style>
 @media print {nav {display:none;}}
 @media screen {
-nav {background-color:#000080; color:#FFFFFF; width:100%; margin:0px; text-align:center;}
-nav ul { padding:0; margin:0 auto; list-style:none; display:inline-block;}
-nav li { float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; font-family:"Arial", sans-serif; cursor: pointer; text-align:left;}
-nav li:hover {background-color:#004000; color:#FFFFFF;}
-nav li ul { display:none; position:absolute; }
-nav li:hover ul.alignleft, nav li.open ul.alignleft {display:block; height:auto}
-nav li:hover ul.alignright, nav li.open ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
-nav li ul li{ clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
-nav a:link{color:#FFFFFF; text-decoration: none;}
-nav a:visited{color:#FFFFFF; text-decoration: none;}
-nav a:hover{background-color:#004000; color:#FFFFFF; text-decoration: none;}
-nav a:active{background-color:#004000; color:#FFFFFF; text-decoration: none;}
-nav li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%;}
-nav li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%;}
-nav li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-nav li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%;}
-nav::after {clear:both;}
+nav {background-color:#000080; width:100%; margin:0px; text-align:center}
+nav ul {padding:0; margin:0 auto; list-style:none; display:inline-block} 
+nav li {float:left; position:relative; display:block; margin-top:0px; margin-bottom:0px; margin-left:5px; margin-right:5px; background-color:#000080; color:#FFFFFF; cursor: pointer; text-align:left}
+nav li[aria-expanded="true"] {background-color:#004000; color:#FFFFFF}
+nav li ul {display:none; position:absolute}
+nav li[aria-expanded="true"] ul.alignleft {display:block; height:auto}
+nav li[aria-expanded="true"] ul.alignright {display:block; height:auto; right:0px; background-color:#004000}
+nav li ul li {clear:both; white-space: nowrap; border:0px; background-color:#004000; width:100%; padding-top:1em; padding-bottom:0.5em}
+nav a:link{color:#FFFFFF; text-decoration:none}
+nav a:visited{color:#FFFFFF; text-decoration:none}
+nav a:hover{background-color:#004000; color:#FFFFFF; text-decoration:none}
+nav a:active{background-color:#004000; color:#FFFFFF; text-decoration:none}
+nav li ul li a:link{background-color:#004000; color:#FFFFFF; display:block; width:100%}
+nav li ul li a:visited{background-color:#004000;color:#FFFFFF; display:block; width:100%}
+nav li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; width:100%}
+nav li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%}
+nav::after {clear:both}
 .atright {float:right;}
 @media (max-width: 400px) {nav {font-size:0.7em;}}
 @media (min-width: 400px) {nav {font-size:1em;}}
@@ -89,36 +89,32 @@ input:disabled {color: #808080; background-color: #606060}
 <body>
 <nav aria-label="Main navigation">
 <ul role="menubar">
-<li class="has-submenu">
-<span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0" class="submenu">Electronics</span>
+<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electronics
 <ul role="menu" class="alignleft popup">
-<li><a role="menuitem" href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a></li>
+<li role="menuitem"><a href="INTEL.HTM" hreflang="es" title="All Intel microprocessors from the 4004 up to Pentium (Spanish only)">Intel Microprocessors</a></li>
 </ul>
 </li>
-<li class="has-submenu">
-<span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0" class="submenu">Mathematics</span>
+<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Mathematics
 <ul role="menu" class="alignleft popup">
-<li><a role="menuitem" href="CALTORS.HTM" title="HTML5 applications with JavaScript and WebAssembly implementing calculators">Calculators</a></li>
-<li><a role="menuitem" href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a></li>
-<li><a role="menuitem" href="PROBLEMS.HTM" title="Interesting math problems">Problems</a></li>
+<li role="menuitem"><a href="CALTORS.HTM" title="HTML5 applications with JavaScript and WebAssembly implementing calculators">Calculators</a></li>
+<li role="menuitem"><a href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a></li>
+<li role="menuitem"><a href="PROBLEMS.HTM" title="Interesting math problems">Problems</a></li>
 </ul>
 </li>
-<li class="has-submenu">
-<span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0" class="submenu">Programs</span>
+<li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programs
 <ul role="menu" class="alignright popup">
-<li><a role="menuitem" href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a></li>
-<li><a role="menuitem" href="JAVAPROG.HTM" title="HTML5 applications with JavaScript and WebAssembly">HTML5 applications</a></li>
-<li><a role="menuitem" href="GAMES.HTM" title="Computer games">Games</a></li>
+<li role="menuitem"><a href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a></li>
+<li role="menuitem"><a href="JAVAPROG.HTM" title="HTML5 applications with JavaScript and WebAssembly">HTML5 applications</a></li>
+<li role="menuitem"><a href="GAMES.HTM" title="Computer games">Games</a></li>
 </ul>
 </li>
-<li class="has-submenu alignright">
-<span role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0" class="submenu">Contact</span>
+<li class="alignright" role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Contact
 <ul role="menu" class="alignright popup">
-<li><a role="menuitem" href="EPERS.HTM" title="Personal information">Personal</a></li>
-<li><a role="menuitem" href="FORM.HTM" title="Form to send comments">Comments</a></li>
-<li><a role="menuitem" href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a></li>
-<li><a role="menuitem" href="PRIVACY.HTM" title="Privacy Policy">Privacy</a></li>
-<li><a role="menuitem" href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a></li>
+<li role="menuitem"><a href="EPERS.HTM" title="Personal information">Personal</a></li>
+<li role="menuitem"><a href="FORM.HTM" title="Form to send comments">Comments</a></li>
+<li role="menuitem"><a href="EGBOOK.HTM" title="Old and new guestbook">Guestbook</a></li>
+<li role="menuitem"><a href="PRIVACY.HTM" title="Privacy Policy">Privacy</a></li>
+<li role="menuitem"><a href="DONATION.HTM" title="Donations to the author of this Web site">Donations</a></li>
 </ul>
 </li>
 </ul>
@@ -372,23 +368,28 @@ You will perform better playing a role player video game.</div>
 </div>
 <script>
 <!--
-(function(){function a(c){return document.getElementById(c)}function u(){var c=document.getElementsByClassName("donotshow"),b;for(b=0;b<c.length;b++)c[b>>0].style.display="none";a("mainmenu").style.display="none";a("help").style.display="none"}function J(){u();a("mainmenu").style.display="block";a("help").style.display="block"}function L(c,b){b=document.getElementsByClassName(b);var e;for(e=0;e<b.length;e++)b[e>>0].innerHTML=c}function y(c,b){return b?O[c>>0]+" ("+S[c>>0]+")":O[c>>0]}function T(c,
-b,e,d){c=Math.cos(c*p)*Math.cos(e*p)*Math.cos((b-d)*p)+Math.sin(c*p)*Math.sin(e*p);return 1<=c?0:-1>c?20012:Math.round(6370*Math.acos(c))}function U(c,b,e,d){b===d?c=c>e?180:0:5400===c||-5400===e?c=180:-5400===c||5400===e?c=0:(b=d-b,c=90-Math.round(180/Math.PI*Math.atan((Math.tan(e*p)*Math.cos(c*p)-Math.sin(c*p)*Math.cos(b*p))/Math.sin(b*p))),10800<(b+21600)%21600&&(c=(c+180)%360));return c+" "+V+(1===c?"":"s")+" ("+W[parseInt(Math.floor((c+348)%360/22.5),10)]+")"}function M(c){var b;5400===Math.abs(c)?
-b=c:b=(-.01449+.39774*Math.sin(c*p))/(.9175*Math.cos(c*p));c=1<=b?0:-1>=b?1440:Math.round(458.3662*Math.acos(b));return Math.floor(c/60)+"h "+c%60+"m"}function G(c){u();if(0!==l){if(!c){B=Math.floor(Math.random()*q.length);do C=Math.floor(Math.random()*q.length);while(B===C)}a("ord1").textContent=P[l-1>>0];a("score1").textContent=m+" "+K+(1===m?"":"s")}else B=parseInt(a("cityFrom").value,10)-1,C=parseInt(a("cityTo").value,10)-1;var b=y(B,v||0===l);var e=y(C,v||0===l);var d=H[B>>0];var r=I[B>>0];var g=
-H[C>>0];var h=I[C>>0];L(b,"cityctry_from");L(e,"cityctry_to");e=document.getElementsByClassName(0===l?"findDist":"notFindDist");for(b=0;b<e.length;b++)e[b>>0].style.display="block";e=document.getElementsByClassName(0===l?"notFindDist":"findDist");for(b=0;b<e.length;b++)e[b>>0].style.display="none";if(c){var n=parseInt(a("dist1").value,10);var f=T(d,r,g,h);a("dist12_1").textContent=n+" "+Q+(1===n?"":"s");a("dist12_2").textContent=a("dist12_3").textContent=f+" "+Q+(1===f?"":"s");b=y(B,!1);e=y(C,!1);
-L(b,"city_from");L(e,"city_to");a("dirdeg1").textContent=U(d,r,g,h);a("dirdeg2").textContent=U(g,h,d,r);a("sun_from_0621").textContent=M(-d);a("sun_from_1221").textContent=M(d);a("sun_to_0621").textContent=M(-g);a("sun_to_1221").textContent=M(g);if(0!==l){d=Math.round(100-100*Math.abs(Math.log(f/n)));0>d&&(d=0);g=100===d?w[0]:94<d?w[1]:89<d?w[2]:79<d?w[3]:69<d?w[4]:59<d?w[5]:39<d?w[6]:19<d?w[7]:w[8];a("score2").textContent=d;m+=d;a("parcInter").textContent=g;a("score3").textContent=m;10===l?(g=949<
-m?A[0]:899<m?A[1]:799<m?A[2]:699<m?A[3]:599<m?A[4]:399<m?A[5]:A[6],a("finalInter").textContent=g,a("finalInter").style.display="block",a("scoreType").textContent=X):(a("finalInter").style.display="none",a("scoreType").textContent=Y);l++;d=document.getElementsByClassName("test1_1");for(b=0;b<d.length;b++)d[b>>0].style.display="none";d=document.getElementsByClassName("test1_2");for(b=0;b<d.length;b++)d[b>>0].style.display="block";a("nextq").style.display=10<l?"none":"inline"}}else{d=document.getElementsByClassName("test1_1");
-for(b=0;b<d.length;b++)d[b>>0].style.display="block";d=document.getElementsByClassName("test1_2");for(b=0;b<d.length;b++)d[b>>0].style.display="none"}a("test1").style.display="block";c||0===l||(c=a("dist1"),c.focus(),c.scrollIntoView(),c.value="")}function R(){var c,b;u();a("ord2").textContent=P[l-1>>0];for(c=0;6>c;c++){do{var e=Math.floor(Math.random()*q.length);for(b=0;b<c&&z[b>>0]!==e;b++);}while(c!==b);z[c>>0]=e;a("city"+(c+1)).textContent=y(e,v)}a("score4").textContent=m+" "+K+(1===m?"":"s");
-a("order").value="";a("test2").style.display="block"}function Z(c){var b="<ol>",e;u();for(e=0;e<q.length;e++){var d=0;var r=H[e>>0];0>r&&(r=-r,d=-1);var g=0;var h=I[e>>0];0>h&&(h=-h,g=-1);b+="<li>"+y(e,!0)+": "+Math.floor(r/60)+"&deg; "+r%60+"' "+(d?aa:ba)+", "+Math.floor(h/60)+"&deg; "+h%60+"' "+(g?ca:da)+"</li>"}b+="</ol>";a("allCities").innerHTML=b;a("lc").style.display=c?"block":"none";a("fc").style.display=c?"none":"block";a("cityFrom").value="";a("cityTo").value="";a("listCities").style.display=
-"block";c||a("cityFrom").focus()}function ea(){var c=a("cityFrom").value,b=a("cityTo").value;a("findDist").disabled=0<c.length&&1<=parseInt(c,10)&&parseInt(c,10)<=q.length&&0<b.length&&1<=parseInt(b,10)&&parseInt(b,10)<=q.length?!1:!0}function N(c){var b=c.key;if(c.ctrlKey||c.metaKey)"c"===b&&(b="Copy"),"v"===b&&(b="Paste"),"x"===b&&(b="Cut");return 0>",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut,Control,Meta,Shift,Insert,Delete,Copy,Paste,Home,End,".indexOf(","+b+",")}var l,m,v,w,A,Q,V,Y,X,
-K,W=[],P=[],q=[],O=[],S=[],H=[],I=[],z=[],p=Math.PI/10800,B,C,aa,ca,ba,da;window.addEventListener("load",function(){var c=a("cities").innerHTML;q=c.split("\n");c=a("direction").innerHTML;W=c.split(",");c=a("ordinal").innerHTML;P=c.split(",");c=a("parcInterp").innerHTML;w=c.split("\n");c=a("finalInterp").innerHTML;A=c.split("\n");Q=a("km").innerHTML;V=a("degree").innerHTML;Y=a("current").innerHTML;X=a("final").innerHTML;K=a("point").innerHTML;ba=a("North").innerHTML;aa=a("South").innerHTML;da=a("East").innerHTML;
-ca=a("West").innerHTML;for(c=0;c<q.length;c++){var b=q[c>>0];O[c>>0]=b.substring(0,b.indexOf(","));S[c>>0]=b.substring(b.indexOf(",")+1,b.indexOf(":"));var e=parseInt(b.substring(b.indexOf(":")+1,b.indexOf(";")),10);var d=Math.floor(Math.abs(e)/100);var r=Math.abs(e)%100;H[c>>0]=(60*d+r)*(0<e?1:-1);e=parseInt(b.substring(b.indexOf(";")+1,b.length),10);b=Math.floor(Math.abs(e)/100);d=Math.abs(e)%100;I[c>>0]=(60*b+d)*(0<e?1:-1)}a("1with").onclick=function(){v=!0;u();l=1;m=0;G(!1)};a("1without").onclick=
-function(){v=!1;u();l=1;m=0;G(!1)};a("2with").onclick=function(){v=!0;u();l=1;m=0;R()};a("2without").onclick=function(){v=!1;u();l=1;m=0;R()};a("listcity").onclick=function(){u();Z(!0)};a("finddist").onclick=function(){u();a("findDist").disabled=!0;Z(!1)};a("dist1").onkeydown=function(g){var h=g.key;"Enter"===h&&(g.preventDefault(),0<a("dist1").value.length&&G(!0));N(g)&&("0">h||"9"<h||6===a("dist1").value.length)&&g.preventDefault()};a("order").onkeydown=function(g){var h=g.key,n=a("order").value;
-if("Enter"===h&&4===n.length){g.preventDefault();var f;var D=Array(25);var x=Array(24),E=Array(24);var t=0;var k,F="<ol>";for(k=0;5>k;k++)for(f=1;5>=f;f++)D[t++>>0]=T(H[z[k>>0]>>0],I[z[k>>0]>>0],H[z[f>>0]>>0],I[z[f>>0]>>0]);for(k=0;24>k;k++){E[k>>0]="123412431324134214231432213421432314234124132431312431423214324134123421412341324213423143124321".substring(4*k,4*k+4);t="0"+E[k>>0]+"5";for(f=x[k>>0]=0;5>f;f++){var fa=parseInt(t.substring(f,f+1),10);var ha=parseInt(t.substring(f+1,f+2),10);x[k>>0]+=
-D[5*fa+ha-1>>0]}for(f=k;0<f&&!(x[f>>0]>x[f-1>>0]);f--)t=x[f>>0],x[f>>0]=x[f-1>>0],x[f-1>>0]=t,t=E[f>>0],E[f>>0]=E[f-1>>0],E[f-1>>0]=t}D=-1;for(k=0;24>k;k++){t=E[k>>0];t===n?(D=k,F+='<li class="red">'):F+="<li>";F+=y(z[0],v)+" &rarr; ";for(f=0;4>f;f++)F+=y(z[parseInt(t.substring(f,f+1),10)],v)+" &rarr; ";f=Math.round((1-k/23)*(1-k/23)*100);F+=y(z[5],v)+": "+x[parseInt(k,10)]+" km ("+f+" "+K+(1===f?"":"s")+")"}F+="</ol>";a("list").innerHTML=F;f=Math.round((1-D/23)*(1-D/23)*100);m+=f;l++;a("option").textContent=
-D+1;a("score5").textContent=f+" "+K+(1===f?"":"s");a("score6").textContent=m;a("nextq2").style.display=10<l?"none":"inline";a("test2").style.display="none";a("test2_2").style.display="block"}N(g)&&("1">h||"4"<h||0<=n.indexOf(h))&&g.preventDefault()};a("nextq").onclick=function(){0<l&&11>l?G(!1):J()};a("exitt").onclick=function(){J()};a("nextq2").onclick=function(){11>l?R():J()};a("exitt2").onclick=function(){J()};a("exitt3").onclick=function(){J()};a("cityFrom").onkeydown=function(g){var h=g.key,
-n=a("cityFrom").value;"Enter"===h&&1<=parseInt(n,10)&&parseInt(n,10)<=q.length&&(g.preventDefault(),a("cityTo").focus());N(g)&&("0">h||"9"<h||3===n.length)&&g.preventDefault()};a("cityFrom").oninput=ea;a("cityTo").onkeydown=function(g){var h=g.key,n=a("cityTo").value;"Enter"===h&&1<=parseInt(n,10)&&parseInt(n,10)<=q.length&&(g.preventDefault(),l=0,G(!0));N(g)&&("0">h||"9"<h||3===n.length)&&g.preventDefault()};a("cityTo").oninput=ea;a("findDist").onclick=function(){l=0;G(!0)};a("formlink").onclick=
-function(){window.sessionStorage.setItem("pageFrom",document.title);return!0}})})();
+(function(){function a(c){return document.getElementById(c)}function v(){var c=document.getElementsByClassName("donotshow"),b;for(b=0;b<c.length;b++)c[b>>0].style.display="none";a("mainmenu").style.display="none";a("help").style.display="none"}function J(){v();a("mainmenu").style.display="block";a("help").style.display="block"}function L(c,b){b=document.getElementsByClassName(b);var h;for(h=0;h<b.length;h++)b[h>>0].innerHTML=c}function z(c,b){return b?O[c>>0]+" ("+S[c>>0]+")":O[c>>0]}function T(c,
+b,h,g){c=Math.cos(c*q)*Math.cos(h*q)*Math.cos((b-g)*q)+Math.sin(c*q)*Math.sin(h*q);return 1<=c?0:-1>c?20012:Math.round(6370*Math.acos(c))}function U(c,b,h,g){b===g?c=c>h?180:0:5400===c||-5400===h?c=180:-5400===c||5400===h?c=0:(b=g-b,c=90-Math.round(180/Math.PI*Math.atan((Math.tan(h*q)*Math.cos(c*q)-Math.sin(c*q)*Math.cos(b*q))/Math.sin(b*q))),10800<(b+21600)%21600&&(c=(c+180)%360));return c+" "+V+(1===c?"":"s")+" ("+W[parseInt(Math.floor((c+348)%360/22.5),10)]+")"}function M(c){var b;5400===Math.abs(c)?
+b=c:b=(-.01449+.39774*Math.sin(c*q))/(.9175*Math.cos(c*q));c=1<=b?0:-1>=b?1440:Math.round(458.3662*Math.acos(b));return Math.floor(c/60)+"h "+c%60+"m"}function G(c){v();if(0!==m){if(!c){C=Math.floor(Math.random()*r.length);do D=Math.floor(Math.random()*r.length);while(C===D)}a("ord1").textContent=P[m-1>>0];a("score1").textContent=p+" "+K+(1===p?"":"s")}else C=parseInt(a("cityFrom").value,10)-1,D=parseInt(a("cityTo").value,10)-1;var b=z(C,w||0===m);var h=z(D,w||0===m);var g=H[C>>0];var t=I[C>>0];var k=
+H[D>>0];var f=I[D>>0];L(b,"cityctry_from");L(h,"cityctry_to");h=document.getElementsByClassName(0===m?"findDist":"notFindDist");for(b=0;b<h.length;b++)h[b>>0].style.display="block";h=document.getElementsByClassName(0===m?"notFindDist":"findDist");for(b=0;b<h.length;b++)h[b>>0].style.display="none";if(c){var e=parseInt(a("dist1").value,10);var d=T(g,t,k,f);a("dist12_1").textContent=e+" "+Q+(1===e?"":"s");a("dist12_2").textContent=a("dist12_3").textContent=d+" "+Q+(1===d?"":"s");b=z(C,!1);h=z(D,!1);
+L(b,"city_from");L(h,"city_to");a("dirdeg1").textContent=U(g,t,k,f);a("dirdeg2").textContent=U(k,f,g,t);a("sun_from_0621").textContent=M(-g);a("sun_from_1221").textContent=M(g);a("sun_to_0621").textContent=M(-k);a("sun_to_1221").textContent=M(k);if(0!==m){g=Math.round(100-100*Math.abs(Math.log(d/e)));0>g&&(g=0);k=100===g?x[0]:94<g?x[1]:89<g?x[2]:79<g?x[3]:69<g?x[4]:59<g?x[5]:39<g?x[6]:19<g?x[7]:x[8];a("score2").textContent=g;p+=g;a("parcInter").textContent=k;a("score3").textContent=p;10===m?(k=949<
+p?B[0]:899<p?B[1]:799<p?B[2]:699<p?B[3]:599<p?B[4]:399<p?B[5]:B[6],a("finalInter").textContent=k,a("finalInter").style.display="block",a("scoreType").textContent=X):(a("finalInter").style.display="none",a("scoreType").textContent=Y);m++;g=document.getElementsByClassName("test1_1");for(b=0;b<g.length;b++)g[b>>0].style.display="none";g=document.getElementsByClassName("test1_2");for(b=0;b<g.length;b++)g[b>>0].style.display="block";a("nextq").style.display=10<m?"none":"inline"}}else{g=document.getElementsByClassName("test1_1");
+for(b=0;b<g.length;b++)g[b>>0].style.display="block";g=document.getElementsByClassName("test1_2");for(b=0;b<g.length;b++)g[b>>0].style.display="none"}a("test1").style.display="block";c||0===m||(c=a("dist1"),c.focus(),c.scrollIntoView(),c.value="")}function R(){var c,b;v();a("ord2").textContent=P[m-1>>0];for(c=0;6>c;c++){do{var h=Math.floor(Math.random()*r.length);for(b=0;b<c&&A[b>>0]!==h;b++);}while(c!==b);A[c>>0]=h;a("city"+(c+1)).textContent=z(h,w)}a("score4").textContent=p+" "+K+(1===p?"":"s");
+a("order").value="";a("test2").style.display="block"}function Z(c){var b="<ol>",h;v();for(h=0;h<r.length;h++){var g=0;var t=H[h>>0];0>t&&(t=-t,g=-1);var k=0;var f=I[h>>0];0>f&&(f=-f,k=-1);b+="<li>"+z(h,!0)+": "+Math.floor(t/60)+"&deg; "+t%60+"' "+(g?aa:ba)+", "+Math.floor(f/60)+"&deg; "+f%60+"' "+(k?ca:da)+"</li>"}b+="</ol>";a("allCities").innerHTML=b;a("lc").style.display=c?"block":"none";a("fc").style.display=c?"none":"block";a("cityFrom").value="";a("cityTo").value="";a("listCities").style.display=
+"block";c||a("cityFrom").focus()}function ea(){var c=a("cityFrom").value,b=a("cityTo").value;a("findDist").disabled=0<c.length&&1<=parseInt(c,10)&&parseInt(c,10)<=r.length&&0<b.length&&1<=parseInt(b,10)&&parseInt(b,10)<=r.length?!1:!0}function N(c){var b=c.key;if(c.ctrlKey||c.metaKey)"c"===b&&(b="Copy"),"v"===b&&(b="Paste"),"x"===b&&(b="Cut");return 0>",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut,Control,Meta,Shift,Insert,Delete,Copy,Paste,Home,End,".indexOf(","+b+",")}var m,p,w,x,B,Q,V,Y,X,
+K,W=[],P=[],r=[],O=[],S=[],H=[],I=[],A=[],q=Math.PI/10800,C,D,aa,ca,ba,da;window.addEventListener("load",function(){var c=a("cities").innerHTML;r=c.split("\n");c=a("direction").innerHTML;W=c.split(",");c=a("ordinal").innerHTML;P=c.split(",");c=a("parcInterp").innerHTML;x=c.split("\n");c=a("finalInterp").innerHTML;B=c.split("\n");Q=a("km").innerHTML;V=a("degree").innerHTML;Y=a("current").innerHTML;X=a("final").innerHTML;K=a("point").innerHTML;ba=a("North").innerHTML;aa=a("South").innerHTML;da=a("East").innerHTML;
+ca=a("West").innerHTML;for(c=0;c<r.length;c++){var b=r[c>>0];O[c>>0]=b.substring(0,b.indexOf(","));S[c>>0]=b.substring(b.indexOf(",")+1,b.indexOf(":"));var h=parseInt(b.substring(b.indexOf(":")+1,b.indexOf(";")),10);var g=Math.floor(Math.abs(h)/100);var t=Math.abs(h)%100;H[c>>0]=(60*g+t)*(0<h?1:-1);h=parseInt(b.substring(b.indexOf(";")+1,b.length),10);b=Math.floor(Math.abs(h)/100);g=Math.abs(h)%100;I[c>>0]=(60*b+g)*(0<h?1:-1)}a("1with").onclick=function(){w=!0;v();m=1;p=0;G(!1)};a("1without").onclick=
+function(){w=!1;v();m=1;p=0;G(!1)};a("2with").onclick=function(){w=!0;v();m=1;p=0;R()};a("2without").onclick=function(){w=!1;v();m=1;p=0;R()};a("listcity").onclick=function(){v();Z(!0)};a("finddist").onclick=function(){v();a("findDist").disabled=!0;Z(!1)};a("dist1").onkeydown=function(k){var f=k.key;"Enter"===f&&(k.preventDefault(),0<a("dist1").value.length&&G(!0));N(k)&&("0">f||"9"<f||6===a("dist1").value.length)&&k.preventDefault()};a("order").onkeydown=function(k){var f=k.key,e=a("order").value;
+if("Enter"===f&&4===e.length){k.preventDefault();var d;var n=Array(25);var y=Array(24),E=Array(24);var u=0;var l,F="<ol>";for(l=0;5>l;l++)for(d=1;5>=d;d++)n[u++>>0]=T(H[A[l>>0]>>0],I[A[l>>0]>>0],H[A[d>>0]>>0],I[A[d>>0]>>0]);for(l=0;24>l;l++){E[l>>0]="123412431324134214231432213421432314234124132431312431423214324134123421412341324213423143124321".substring(4*l,4*l+4);u="0"+E[l>>0]+"5";for(d=y[l>>0]=0;5>d;d++){var fa=parseInt(u.substring(d,d+1),10);var ha=parseInt(u.substring(d+1,d+2),10);y[l>>0]+=
+n[5*fa+ha-1>>0]}for(d=l;0<d&&!(y[d>>0]>y[d-1>>0]);d--)u=y[d>>0],y[d>>0]=y[d-1>>0],y[d-1>>0]=u,u=E[d>>0],E[d>>0]=E[d-1>>0],E[d-1>>0]=u}n=-1;for(l=0;24>l;l++){u=E[l>>0];u===e?(n=l,F+='<li class="red">'):F+="<li>";F+=z(A[0],w)+" &rarr; ";for(d=0;4>d;d++)F+=z(A[parseInt(u.substring(d,d+1),10)],w)+" &rarr; ";d=Math.round((1-l/23)*(1-l/23)*100);F+=z(A[5],w)+": "+y[parseInt(l,10)]+" km ("+d+" "+K+(1===d?"":"s")+")"}F+="</ol>";a("list").innerHTML=F;d=Math.round((1-n/23)*(1-n/23)*100);p+=d;m++;a("option").textContent=
+n+1;a("score5").textContent=d+" "+K+(1===d?"":"s");a("score6").textContent=p;a("nextq2").style.display=10<m?"none":"inline";a("test2").style.display="none";a("test2_2").style.display="block"}N(k)&&("1">f||"4"<f||0<=e.indexOf(f))&&k.preventDefault()};a("nextq").onclick=function(){0<m&&11>m?G(!1):J()};a("exitt").onclick=function(){J()};a("nextq2").onclick=function(){11>m?R():J()};a("exitt2").onclick=function(){J()};a("exitt3").onclick=function(){J()};a("cityFrom").onkeydown=function(k){var f=k.key,
+e=a("cityFrom").value;"Enter"===f&&1<=parseInt(e,10)&&parseInt(e,10)<=r.length&&(k.preventDefault(),a("cityTo").focus());N(k)&&("0">f||"9"<f||3===e.length)&&k.preventDefault()};a("cityFrom").oninput=ea;a("cityTo").onkeydown=function(k){var f=k.key,e=a("cityTo").value;"Enter"===f&&1<=parseInt(e,10)&&parseInt(e,10)<=r.length&&(k.preventDefault(),m=0,G(!0));N(k)&&("0">f||"9"<f||3===e.length)&&k.preventDefault()};a("cityTo").oninput=ea;a("findDist").onclick=function(){m=0;G(!0)};a("formlink").onclick=
+function(){window.sessionStorage.setItem("pageFrom",document.title);return!0};Array.prototype.forEach.call(document.querySelectorAll('[role="menubar"] > li'),function(k){k.addEventListener("click",function(f){"false"===this.getAttribute("aria-expanded")?this.setAttribute("aria-expanded","true"):this.setAttribute("aria-expanded","false");f.preventDefault();return!1});k.addEventListener("keydown",function(f){if("Enter"===f.key)this.click(f);else if("ArrowRight"===f.key){var e=this.nextElementSibling;
+null===e&&(e=this.parentNode.firstElementChild);e.focus();f.preventDefault()}else"ArrowLeft"===f.key?(e=this.previousElementSibling,null===e&&(e=this.parentNode.lastElementChild),e.focus(),f.preventDefault()):"ArrowUp"===f.key?(this.setAttribute("aria-expanded","true"),this.firstElementChild.lastElementChild.firstElementChild.focus(),f.preventDefault()):"ArrowDown"===f.key&&(this.setAttribute("aria-expanded","true"),this.firstElementChild.firstElementChild.firstElementChild.focus(),f.preventDefault())});
+k.addEventListener("mouseover",function(){k.addEventListener("mouseover",function(){this.setAttribute("aria-expanded","true")});k.addEventListener("mouseout",function(){this.setAttribute("aria-expanded","false")})});Array.prototype.forEach.call(k.querySelectorAll("a"),function(f){f.tabIndex=-1;f.addEventListener("click",function(e){this.parentNode.parentNode.parentNode.setAttribute("aria-expanded","false");window.location=this.getAttribute("href");e.stopImmediatePropagation();e.preventDefault()});
+f.addEventListener("keydown",function(e){var d=this.parentNode.parentNode.parentNode;if("Tab"===e.key)d.setAttribute("aria-expanded","false");else if("Escape"===e.key)d.setAttribute("aria-expanded","false"),d.focus(),e.preventDefault();else if("Enter"===e.key)d.setAttribute("aria-expanded","false"),window.location=this.getAttribute("href"),e.stopImmediatePropagation(),e.preventDefault();else if("ArrowRight"===e.key){d.setAttribute("aria-expanded","false");var n=d.nextElementSibling;null===n&&(n=d.parentNode.firstElementChild);
+n.setAttribute("aria-expanded","true");n.firstElementChild.firstElementChild.firstElementChild.focus();e.stopImmediatePropagation();e.preventDefault()}else if("ArrowLeft"===e.key)d.setAttribute("aria-expanded","false"),n=d.previousElementSibling,null===n&&(n=d.parentNode.lastElementChild),n.setAttribute("aria-expanded","true"),n.firstElementChild.firstElementChild.firstElementChild.focus(),e.stopImmediatePropagation(),e.preventDefault();else if("ArrowUp"===e.key||"ArrowDown"==e.key)n="ArrowUp"===
+e.key?this.parentNode.previousElementSibling:this.parentNode.nextElementSibling,null===n?(d.setAttribute("aria-expanded","false"),d.focus()):n.firstElementChild.focus(),e.stopImmediatePropagation(),e.preventDefault()})})})})})();
 //-->
 </script>
 <script type="application/ld+json">
