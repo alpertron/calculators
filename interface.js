@@ -882,6 +882,7 @@ function startUp()
       {
         this.setAttribute("aria-expanded", "false");
       }
+      this.firstElementChild.firstElementChild.firstElementChild.focus();
       event.preventDefault();
       return false;
     });
@@ -944,7 +945,7 @@ function startUp()
       });
     });
     
-    let submenuItems = el.querySelectorAll('a');
+    let submenuItems = el.querySelectorAll("a");
     Array.prototype.forEach.call(submenuItems, function(el, i)
     {
       el.tabIndex = -1;
@@ -1008,7 +1009,7 @@ function startUp()
           event.preventDefault();
           return;
         }
-        if (event.key === "ArrowUp" || event.key == "ArrowDown")
+        if (event.key === "ArrowUp" || event.key === "ArrowDown")
         {
           if (event.key === "ArrowUp")
           {

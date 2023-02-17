@@ -498,6 +498,7 @@ window.onload = function()
       {
         this.setAttribute("aria-expanded", "false");
       }
+      this.firstElementChild.firstElementChild.firstElementChild.focus();
       event.preventDefault();
       return false;
     });
@@ -560,7 +561,7 @@ window.onload = function()
       });
     });
     
-    let submenuItems = el.querySelectorAll('a');
+    let submenuItems = el.querySelectorAll("a");
     Array.prototype.forEach.call(submenuItems, function(el, i)
     {
       el.tabIndex = -1;
@@ -624,7 +625,7 @@ window.onload = function()
           event.preventDefault();
           return;
         }
-        if (event.key === "ArrowUp" || event.key == "ArrowDown")
+        if (event.key === "ArrowUp" || event.key === "ArrowDown")
         {
           if (event.key === "ArrowUp")
           {
