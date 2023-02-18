@@ -16,6 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global fillCache */
+/* global formSend */
+/* global initMenubarEvents */
 /** @define {number} */ const lang = 0;   // Use with Closure compiler.
   const asmjs = typeof(WebAssembly) === "undefined";
   let worker = 0;

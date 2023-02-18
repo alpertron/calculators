@@ -15,8 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-/*global instantiate*/
+/* global b64decode */
+/* global initMenubarEvents */
+/* global instantiate */
 // In order to reduce the number of files to read from Web server, this 
 // Javascript file includes both the Javascript in the main thread and the 
 // Javascript that drives WebAssembly on its own Web Worker.

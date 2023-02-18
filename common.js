@@ -16,6 +16,10 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global get */
+/* global getFormSendValue */
+/* global lang */
+
 function initMenubarEvents()
 {  
   let menuItems = document.querySelectorAll("[role=\"menubar\"] > li");
@@ -449,4 +453,4 @@ function formSend()
   }
   xhr.send(contents);
   return false;   // Send form only through JavaScript.
-};
+}

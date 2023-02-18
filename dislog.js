@@ -16,6 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global fillCache */
+/* global formSend */
+/* global initMenubarEvents */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const exprTextEs = "Por favor ingrese un número o expresión para ";
 const exprTextEn = "Please type a number or expression for the ";

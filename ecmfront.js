@@ -16,6 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global fillCache */
+/* global formSend */
+/* global initMenubarEvents */
 /* global useBlockly */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 20,5, 22,10, 23,12, 24,6, 27,7];
