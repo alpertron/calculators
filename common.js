@@ -398,3 +398,55 @@ function getCalculatorCode(jsFileName, workerParameter)
     calcURLs.shift();  // Do not fetch Javascript file that will not be used.
   }
 }
+
+function formSend()
+{
+  if (get("adduserdata").checked)
+  {
+    getFormSendValue();
+  }
+  else
+  {
+    get("userdata").value = "";
+  }
+  let xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function(_event)
+  {
+    if (xhr.readyState === 4) 
+    {             // XHR finished.
+      if (xhr.status === 200)
+      {           // PHP page loaded.
+        alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
+      }
+      else
+      {           // PHP page not loaded.
+        alert(lang?"No se pudieron enviar los comentarios.": "Feedback could not be sent.");
+      }
+      endFeedback();
+    }
+  };
+  xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
+  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  let elements = get("formfeedback").elements;
+  let contents = "";
+  let useAmp = 0;
+  for (let i = 0; i < elements.length; i++)
+  {
+    let element = elements[i >> 0];
+    if (element.type === "radio" && !element.checked)
+    {
+      continue;
+    }
+    if (element.name)
+    {
+      if (useAmp)
+      {
+        contents += "&";
+      }
+      contents += element.name + "=" + encodeURIComponent(element.value);
+      useAmp++;
+    }
+  }
+  xhr.send(contents);
+  return false;   // Send form only through JavaScript.
+};

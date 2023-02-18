@@ -24,7 +24,7 @@ let worker = 0;
 let blob;
 let fileContents = 0;
 let result, dlog, stop, base, pow, mod, digits, main, help, helpbtn, formlink;
-let feedback, formfeedback, name, formcancel, formsend, userdata, adduserdata;
+let feedback, formfeedback, name, formcancel, formsend, userdata;
 let currentInputBox;
 let funcnames;
 let parens;
@@ -182,6 +182,13 @@ function generateFuncButtons(optionCategory, funcButtons)
   funcbtns.appendChild(fragment);
 }
 
+function getFormSendValue()
+{
+  userdata.value = "\nBase = " + base.value + 
+        (lang? "\nPotencia = ":"\npower = ") + pow.value +
+        (lang? "\nMódulo = ": "\nModulus = ") + mod.value;
+}
+
 window.onload = function()
 {
   result = get("result");
@@ -201,7 +208,6 @@ window.onload = function()
   formcancel = get("formcancel");
   formsend = get("formsend");
   userdata = get("userdata");
-  adduserdata = get("adduserdata");
   stop.disabled = true;
   dlog.onclick = function()
   {
@@ -250,59 +256,7 @@ window.onload = function()
   {
     endFeedback();
   };
-  formsend.onclick = function()
-  {
-    if (adduserdata.checked)
-    {
-      userdata.value = "\nBase = " + base.value + 
-          (lang? "\nPotencia = ":"\npower = ") + pow.value +
-          (lang? "\nMódulo = ": "\nModulus = ") + mod.value;
-    }
-    else
-    {
-      userdata.value = "";      
-    }
-    let xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function (_event)
-    {
-      if (xhr.readyState === 4) 
-      {             // XHR finished.
-        if (xhr.status === 200)
-        {           // PHP page loaded.
-          alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
-        }
-        else
-        {           // PHP page not loaded.
-          alert(lang?"No se pudieron enviar los comentarios.": "Feedback could not be sent.");
-        }
-        endFeedback();
-      }
-    };
-    xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    let elements = formfeedback.elements;
-    let contents = "";
-    let useAmp = 0;
-    for (let i = 0; i < elements.length; i++)
-    {
-      let element = elements[i >> 0];
-      if (element.type === "radio" && !element.checked)
-      {
-        continue;
-      }
-      if (element.name)
-      {
-        if (useAmp)
-        {
-          contents += "&";
-        }
-        contents += element.name + "=" + encodeURIComponent(element.value);
-        useAmp++;
-      }
-    }
-    xhr.send(contents);
-    return false;   // Send form only through JavaScript.
-  };
+  formsend.onclick = formSend;
   currentInputBox = base;
   generateFuncButtons("funccat", "funcbtns");
   if ("serviceWorker" in navigator)

@@ -129,6 +129,11 @@ function endFeedback()
 let calcURLs = ["polfactW0000.js",
                "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png", "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-180px.png", "polfact-icon-512px.png", "favicon.ico"];
 
+function getFormSendValue()
+{
+  get("userdata").value = get("poly").value + " (mod " + get("mod").value + ")";
+}
+
 window.onload = function ()
 {
   get("stop").disabled = true;
@@ -183,58 +188,7 @@ window.onload = function ()
   {
     endFeedback();
   };
-  get("formsend").onclick = function()
-  {
-    let userdata = get("userdata");
-    if (get("adduserdata").checked)
-    {
-      userdata.value = get("poly").value + " (mod " + get("mod").value + ")";
-    }
-    else
-    {
-      userdata.value = "";      
-    }
-    let xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function (_event)
-    {
-      if (xhr.readyState === 4) 
-      {             // XHR finished.
-        if (xhr.status === 200)
-        {           // PHP page loaded.
-          alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
-        }
-        else
-        {           // PHP page not loaded.
-          alert(lang?"No se pudieron enviar los comentarios.": "Feedback could not be sent.");
-        }
-        endFeedback();
-      }
-    };
-    xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    let elements = get("formfeedback").elements;
-    let contents = "";
-    let useAmp = 0;
-    for (let i = 0; i < elements.length; i++)
-    {
-      let element = elements[i >> 0];
-      if (element.type === "radio" && !element.checked)
-      {
-        continue;
-      }
-      if (element.name)
-      {
-        if (useAmp)
-        {
-          contents += "&";
-        }
-        contents += element.name + "=" + encodeURIComponent(element.value);
-        useAmp++;
-      }
-    }
-    xhr.send(contents);
-    return false;   // Send form only through JavaScript.
-  };
+  get("formsend").onclick = formSend;
 
   // Generate accordion.
   let acc = document.querySelectorAll("h2");

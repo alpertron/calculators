@@ -202,6 +202,13 @@ function generateFuncButtons(optionCategory, funcButtons)
   funcbtns.appendChild(fragment);
 }
 
+function getFormSendValue()
+{
+  get("userdata").value = "ax^2 + bx + c = 0 (mod n)" + 
+                     "\na = " + get("quad").value + "\nb = " + get("lin").value +
+                     "\nc = " + get("const").value + "\nn = " + get("mod").value;
+}
+
 window.onload = function()
 {
   get("stop").disabled = true;
@@ -256,60 +263,7 @@ window.onload = function()
   {
     endFeedback();
   };
-  get("formsend").onclick = function()
-  {
-    let userdata = get("userdata");
-    if (get("adduserdata").checked)
-    {
-      userdata.value = "ax^2 + bx + c = 0 (mod n)" + 
-                       "\na = " + get("quad").value + "\nb = " + get("lin").value +
-                       "\nc = " + get("const").value + "\nn = " + get("mod").value;
-    }
-    else
-    {
-      userdata.value = "";      
-    }
-    let xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function (_event)
-    {
-      if (xhr.readyState === 4) 
-      {             // XHR finished.
-        if (xhr.status === 200)
-        {           // PHP page loaded.
-          alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
-        }
-        else
-        {           // PHP page not loaded.
-          alert(lang?"No se pudieron enviar los comentarios.": "Feedback could not be sent.");
-        }
-        endFeedback();
-      }
-    };
-    xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    let elements = get("formfeedback").elements;
-    let contents = "";
-    let useAmp = 0;
-    for (let i = 0; i < elements.length; i++)
-    {
-      let element = elements[i >> 0];
-      if (element.type === "radio" && !element.checked)
-      {
-        continue;
-      }
-      if (element.name)
-      {
-        if (useAmp)
-        {
-          contents += "&";
-        }
-        contents += element.name + "=" + encodeURIComponent(element.value);
-        useAmp++;
-      }
-    }
-    xhr.send(contents);
-    return false;   // Send form only through JavaScript.
-  };
+  get("formsend").onclick = formSend;
   currentInputBox = get("quad");
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.

@@ -365,6 +365,19 @@ function generateFuncButtons(optionCategory, funcButtons)
   funcbtns.appendChild(fragment);
 }
 
+function getFormSendValue()
+{
+  let userdata = get("userdata");
+  if ((app !== 4) && (app !== 5))
+  {     // Not continued fraction application.
+    userdata.value = "\n" + get("num").value + "\n" + get("result").innerHTML + "\n" + get("status").innerHTML;
+  }
+  else
+  {     // Continued fraction application.
+    userdata.value = "\nnum = " + get("num").value + "\ndelta = " + get("delta").value + "\nden = " + get("den").value;         
+  }
+}
+
 function startUp()
 {
   let param;
@@ -620,65 +633,7 @@ function startUp()
       currentInputBox = get("den");
     };
   }
-  get("formsend").onclick = function()
-  {
-    let userdata = get("userdata");
-    if (get("adduserdata").checked)
-    {
-      if ((app !== 4) && (app !== 5))
-      {     // Not continued fraction application.
-        userdata.value = "\n" + get("num").value + "\n" + get("result").innerHTML + "\n" + get("status").innerHTML;
-      }
-      else
-      {     // Continued fraction application.
-        userdata.value = "\nnum = " + get("num").value + "\ndelta = " + get("delta").value + "\nden = " + get("den").value;         
-      }
-    }
-    else
-    {
-      userdata.value = "";      
-    }
-    let xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function (_event)
-    {
-      if (xhr.readyState === 4) 
-      {             // XHR finished.
-        if (xhr.status === 200)
-        {           // PHP page loaded.
-          alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
-        }
-        else
-        {           // PHP page not loaded.
-          alert(lang?"No se pudieron enviar los comentarios.": "Feedback could not be sent.");
-        }
-        endFeedback();
-      }
-    };
-    xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
-    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    let elements = get("formfeedback").elements;
-    let contents = "";
-    let useAmp = 0;
-    for (let i = 0; i < elements.length; i++)
-    {
-      let element = elements[i >> 0];
-      if (element.type === "radio" && !element.checked)
-      {
-        continue;
-      }
-      if (element.name)
-      {
-        if (useAmp)
-        {
-          contents += "&";
-        }
-        contents += element.name + "=" + encodeURIComponent(element.value);
-        useAmp++;
-      }
-    }
-    xhr.send(contents);
-    return false;   // Send form only through JavaScript.
-  };
+  get("formsend").onclick = formSend;
   currentInputBox = get("num");
   generateFuncButtons("funccat", "funcbtns");
   if (get("wzdfunccat"))
