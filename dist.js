@@ -76,10 +76,7 @@ function getCityName(cityIndex, includeCountries)
   {
     return cityName[cityIndex >> 0]+" ("+countryName[cityIndex >> 0]+")";
   }
-  else
-  {
-    return cityName[cityIndex >> 0];
-  }
+  return cityName[cityIndex >> 0];
 }
 
 function getDistance(Lat1, Lon1, Lat2, Lon2)

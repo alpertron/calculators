@@ -18,6 +18,7 @@
 */
 /* global fillCache */
 /* global formSend */
+/* global getCalculatorCode */
 /* global initMenubarEvents */
 /** @define {number} */ const app = 0;   // Use with Closure compiler.
 const lang = app % 2;

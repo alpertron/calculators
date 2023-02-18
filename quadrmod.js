@@ -18,6 +18,7 @@
 */
 /* global fillCache */
 /* global formSend */
+/* global getCalculatorCode */
 /* global initMenubarEvents */
 /** @define {number} */ const lang = 0;   // Use with Closure compiler.
   const asmjs = typeof(WebAssembly) === "undefined";

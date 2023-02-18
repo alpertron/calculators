@@ -18,6 +18,7 @@
 */
 /* global fillCache */
 /* global formSend */
+/* global getCalculatorCode */
 /* global initMenubarEvents */
 /* global useBlockly */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
