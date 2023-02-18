@@ -1574,6 +1574,14 @@ static enum eExprErr ComputeSumDigits(void)
   static BigInteger Temp;
   BigInteger *result = &curStack;
   const BigInteger *radix = &curStack2;
+  if (curStack2.sign == SIGN_NEGATIVE)
+  {      // Cannot compute function if radix is negative.
+    return EXPR_INVALID_PARAM;
+  }
+  if ((curStack2.nbrLimbs == 1) && (curStack2.limbs[0].x < 2))
+  {      // Cannot compute function if radix is less than 2.
+    return EXPR_INVALID_PARAM;
+  }
   CopyBigInt(&argum, &curStack);
   intToBigInteger(result, 0);
   while (!BigIntIsZero(&argum))
@@ -1596,6 +1604,14 @@ static enum eExprErr ComputeNumDigits(void)
   BigInteger *result = &curStack;
   const BigInteger *radix = &curStack2;
   int digits = 0;
+  if (curStack2.sign == SIGN_NEGATIVE)
+  {      // Cannot compute function if radix is negative.
+    return EXPR_INVALID_PARAM;
+  }
+  if ((curStack2.nbrLimbs == 1) && (curStack2.limbs[0].x < 2))
+  {      // Cannot compute function if radix is less than 2.
+    return EXPR_INVALID_PARAM;
+  }
   while (!BigIntIsZero(result))
   {
     (void)BigIntDivide(result, radix, result);
@@ -1623,6 +1639,14 @@ static enum eExprErr ComputeRevDigits(void)
   static BigInteger Temp;
   BigInteger *result = &curStack;
   const BigInteger *radix = &curStack2;
+  if (curStack2.sign == SIGN_NEGATIVE)
+  {      // Cannot compute function if radix is negative.
+    return EXPR_INVALID_PARAM;
+  }
+  if ((curStack2.nbrLimbs == 1) && (curStack2.limbs[0].x < 2))
+  {      // Cannot compute function if radix is less than 2.
+    return EXPR_INVALID_PARAM;
+  }
   CopyBigInt(&argum, &curStack);
   intToBigInteger(result, 0);
   while (!BigIntIsZero(&argum))
