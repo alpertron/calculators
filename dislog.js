@@ -18,8 +18,11 @@
 */
 /* global fillCache */
 /* global formSend */
+/* global get */
 /* global getCalculatorCode */
+/* global hide */
 /* global initMenubarEvents */
+/* global show */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const exprTextEs = "Por favor ingrese un número o expresión para ";
 const exprTextEn = "Please type a number or expression for the ";
@@ -27,8 +30,8 @@ const asmjs = typeof(WebAssembly) === "undefined";
 let worker = 0;
 let blob;
 let fileContents = 0;
-let result, dlog, stop, base, pow, mod, digits, main, help, helpbtn, formlink;
-let feedback, formfeedback, name, formcancel, formsend, userdata;
+let result, dlog, stop, base, pow, mod, digits, helpbtn, formlink;
+let formfeedback, name, formcancel, formsend, userdata;
 let currentInputBox;
 let funcnames;
 let parens;
@@ -61,10 +64,6 @@ else
   parens = "Left parenthesis,(,Right parenthesis,),";
 }
 
-function get(x)
-{
-  return document.getElementById(x);
-}
 function exprText(es, en)
 {
   return lang? exprTextEs + es: exprTextEn + en;
@@ -113,8 +112,8 @@ function dowork(n)
   const powText = pow.value;
   const modText = mod.value;
   const digitGroup = digits.value;
-  help.style.display = "none";
-  result.style.display = "block";
+  hide("help");
+  show("result");
   if (baseText === "")
   {
     result.innerHTML = exprText("la base.", "base.");
@@ -141,24 +140,24 @@ function dowork(n)
 
 function endFeedback()
 {
-  main.style.display = "block";
-  feedback.style.display = "none";
+  show("main");
+  hide("feedback");
   base.focus();   
 }
 
 const calcURLs = ["dilogW0000.js",
                 "dilog.webmanifest", "logdi.webmanifest", "dilog-icon-1x.png", "dilog-icon-2x.png", "dilog-icon-4x.png", "dilog-icon-180px.png", "dilog-icon-512px.png", "favicon.ico"];
 
-function buttonClick()
+function buttonClick(event)
 {
   const input = currentInputBox;
   input.focus();
   const start = input.selectionStart;
   input.value = input.value.substring(0, start) +
-                this.innerText +
+                event.target.innerText +
                 input.value.substring(input.selectionEnd);
     // Place the caret at the end of the appended text.
-  input.selectionStart = start + this.innerText.length;
+  input.selectionStart = start + event.target.innerText.length;
   input.selectionEnd = input.selectionStart;
 }
     
@@ -202,11 +201,8 @@ window.onload = function()
   pow = get("pow");
   mod = get("mod");
   digits = get("digits");
-  help = get("help");
-  main = get("main");
   helpbtn = get("helpbtn");
   formlink = get("formlink");
-  feedback = get("feedback");
   formfeedback = get("formfeedback");
   name = get("name");
   formcancel = get("formcancel");
@@ -229,8 +225,8 @@ window.onload = function()
   };
   helpbtn.onclick = function()
   {
-    help.style.display = "block";
-    result.style.display = "none";
+    show("help");
+    hide("result");
   };
   base.onfocus = function()
   {
@@ -250,8 +246,8 @@ window.onload = function()
   };
   formlink.onclick = function()
   {
-    main.style.display = "none";
-    feedback.style.display = "block";
+    hide("main");
+    show("feedback");
     formfeedback.reset();
     name.focus();
     return false;   // Do not follow the link.

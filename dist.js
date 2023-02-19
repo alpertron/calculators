@@ -16,8 +16,10 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+/* global get */
+/* global hide */
 /* global initMenubarEvents */
+/* global show */
 // In order to reduce the number of files to read from Web server, this 
 // Javascript file includes both the Javascript in the main thread and the 
 // Javascript that drives WebAssembly on its own Web Worker.
@@ -36,10 +38,6 @@ let Rad = Math.PI/(180 * 60); // Minutes to radians
 let cityFrom, cityTo;
 let southText, westText;
 let northText, eastText;
-function get(x)
-{
-  return document.getElementById(x);
-}
 
 function clearScreen()
 {
@@ -49,15 +47,15 @@ function clearScreen()
   {
     donotshow[index >> 0].style.display = "none";
   }
-  get("mainmenu").style.display = "none";
-  get("help").style.display = "none";
+  hide("mainmenu");
+  hide("help");
 }
 
 function showMainMenu()
 {
   clearScreen();
-  get("mainmenu").style.display = "block";
-  get("help").style.display = "block";
+  show("mainmenu");
+  show("help");
 }
 
 function setTextToClass(text, className)
@@ -302,12 +300,12 @@ function test1(complete)
           interpretation = finalInterp[6];
         }
         get("finalInter").textContent = interpretation;
-        get("finalInter").style.display = "block";
+        show("finalInter");
         get("scoreType").textContent = finalText;
       }
       else
       {
-        get("finalInter").style.display = "none";
+        hide("finalInter");
         get("scoreType").textContent = currentText;
       }
       questionNbr++;
@@ -337,7 +335,7 @@ function test1(complete)
       test12[index >> 0].style.display="none";
     }
   }
-  get("test1").style.display="block";
+  show("test1");
   if (!complete && questionNbr !== 0)
   {
     dist1 = get("dist1");
@@ -371,7 +369,7 @@ function test2()
   }
   get("score4").textContent = score + " " + pointText + (score === 1?"":"s");
   get("order").value = "";
-  get("test2").style.display="block";
+  show("test2");
 }
 
 function showResultsTest2(playerInput)
@@ -448,8 +446,8 @@ function showResultsTest2(playerInput)
   get("score5").textContent = parcScore + " " + pointText + (parcScore === 1?"":"s");
   get("score6").textContent = score;
   get("nextq2").style.display = (questionNbr>10? "none": "inline");
-  get("test2").style.display = "none";
-  get("test2_2").style.display = "block";
+  hide("test2");
+  show("test2_2");
 }
 
 function startTestType1()
@@ -497,11 +495,19 @@ function listCities(onlyList)
   }
   listCitiesHTML += "</ol>";
   get("allCities").innerHTML = listCitiesHTML;
-  get("lc").style.display = (onlyList?"block": "none");
-  get("fc").style.display = (onlyList?"none": "block");
+  if (onlyList)
+  {
+    show("lc");
+    hide("fc");
+  }
+  else
+  {
+    hide("lc");
+    show("fc");
+  }
   get("cityFrom").value = "";
   get("cityTo").value = "";
-  get("listCities").style.display = "block";
+  show("listCities");
   if (!onlyList)
   {
     get("cityFrom").focus();            // Enter first city.

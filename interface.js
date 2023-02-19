@@ -16,10 +16,17 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global get */
 /* global fillCache */
 /* global formSend */
 /* global getCalculatorCode */
+/* global hide */
 /* global initMenubarEvents */
+/* global keyDownOnWizard */
+/* global selectLoop */
+/* global show */
+/* global typedOnWizard */
+/* global wizardNext */
 /** @define {number} */ const app = 0;   // Use with Closure compiler.
 const lang = app % 2;
 const asmjs = typeof(WebAssembly) === "undefined";
@@ -27,11 +34,11 @@ let wizardStep = 0;
 let wizardTextInput;
 let worker = 0;
 let fileContents = 0;
-let hex = 0;
 let blob;
 let currentInputBox;
 let funcnames;
 let parens;
+let value;
 if (lang)
 {
   funcnames =
@@ -59,11 +66,6 @@ else
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
   ];
   parens = "Left parenthesis,(,Right parenthesis,),";
-}
-
-function get(x)
-{
-  return document.getElementById(x);
 }
 
 function styleButtons(style1, style2)
@@ -148,13 +150,13 @@ function callWorker(param)
           styleButtons("inline", "none");  // Enable buttons that must be enabled when applet is not running
           if (firstChar === "6")
           {
-            get("cont").style.display = "block";
+            show("cont");
           }
         }
       }
     };
   }
-  helphelp.style.display = "block";
+  show("helphelp");
   helphelp.innerHTML = (lang ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión "+langName+".</p>":
                                "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the "+langName+" version.</p>");
   if (asmjs)
@@ -167,11 +169,15 @@ function callWorker(param)
   }
 }
 
+function saveConfig(fromWizard)
+{
+}
+
 function performCalc(from)
 {
-  let res, valueA, valueB, valueC, digitGroup;
-  res = get("result");
-  res.style.display = "block";
+  let valueA, valueB, valueC, digitGroup;
+  let res = get("result");
+  show("result");
   valueA = get("num").value;
   if (valueA === "")
   {
@@ -205,7 +211,7 @@ function performCalc(from)
     }
   }
   digitGroup = get("digits").value;
-  get("help").style.display = "none";
+  hide("help");
   if (app === 0)    // Closure compiler cannot optimize switch, so a series of "if" instructions is used.
   {
     res.innerHTML = "Computing sum of squares...";
@@ -224,14 +230,14 @@ function performCalc(from)
   }
   if ((app === 4) || (app === 5))
   {
-    hex = (get("converg").checked? 1: 0);
+    get("hexW").checked = get("converg").checked;
   }
   let param = "";
   if ((app === 6) || (app === 7))
   {         // Sum of two squares and a power.
     param = from + ",";
   }
-  param += digitGroup + "," + (app+hex*64) + "," + valueA + String.fromCharCode(0);
+  param += digitGroup + "," + (app+(get("hexW").checked? 64: 0)) + "," + valueA + String.fromCharCode(0);
   if ((app === 4) || (app === 5))
   {         // Continued fractions.
     param += valueB + String.fromCharCode(0) + valueC + String.fromCharCode(0);
@@ -240,7 +246,7 @@ function performCalc(from)
   {
     styleButtons("none", "inline");  // Enable "stop" button
   }
-  get("cont").style.display = "none";
+  hide("cont");
   callWorker(param);
 }
 
@@ -253,95 +259,23 @@ function oneexpr()
   wizardStep = 9;
 }
 
-function selectLoop()
-{   
-  get("next").value = (lang ? "Siguiente": "Next");
-  get("wzddesc").innerHTML = (lang ? "Paso 1 de 5: Valor inicial de x": "Step 1 of 5: Initial value of x");
-  get("wzdexam").innerHTML = (lang? "No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code>": 
-                                       "Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>");
-  wizardStep = 1;
-}
-  
-function wizardNext()
-{
-  let nextBtn = get("next");
-  let wzdDescText = get("wzddesc");
-  let wzdExamText = get("wzdexam");
-  let wzdInput = get("wzdinput");
-  let valueInput = get("num");
-  let textExample = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>":
-                           "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>");
-  nextBtn.disabled = true;
-  switch (++wizardStep)
-  {
-    case 2:
-      wizardTextInput += "x="+wzdInput.value;
-      get("mode").style.display = "none";
-      wzdDescText.innerHTML = (lang? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
-      wzdExamText.innerHTML = textExample + "x+1</code>";
-      break;
-    case 3:
-      wizardTextInput += ";x="+wzdInput.value;
-      wzdDescText.innerHTML = (lang? "Paso 3 de 5: Condición para finalizar el ciclo": "Step 3 of 5: End loop condition");
-      wzdExamText.innerHTML = textExample + "x&lt;10000</code>";
-      break;
-    case 4:
-      wizardTextInput += ";"+wzdInput.value;
-      wzdDescText.innerHTML = (lang? "Paso 4 de 5: Expresión a factorizar": "Step 4 of 5: Expression to factor");
-      wzdExamText.innerHTML = textExample + "x</code>";
-      break;
-    case 5:
-      wizardTextInput += ";"+wzdInput.value;
-      nextBtn.value = (lang? "Hecho": "Done");
-      nextBtn.disabled = false;
-      wzdDescText.innerHTML = (lang? "Paso 5 de 5: Condición para procesar la expresión": "Step 5 of 5: Process expression condition");
-      wzdExamText.innerHTML = textExample + "sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>";
-      break;
-    case 6:
-      if (wzdInput.value !== "")
-      {
-        wizardTextInput += ";"+wzdInput.value;
-      }
-      valueInput.value = wizardTextInput;
-      wizardStep = 0;
-      hex = (get("hexW").checked? 1: 0);
-      get("main").style.display = "block";
-      get("wizard").style.display = "none";
-      valueInput.focus();
-      break;
-    default:
-      wizardStep = 0;
-      valueInput.value = wzdInput.value;
-      hex = (get("hexW").checked? 1: 0);
-      get("main").style.display = "block";
-      get("wizard").style.display = "none";
-      valueInput.focus();
-      break;
-  } 
-  if (wizardStep)
-  {
-    wzdInput.value = "";
-    wzdInput.focus();
-  }
-}
-
 function endFeedback()
 {
-  get("main").style.display = "block";
-  get("feedback").style.display = "none";
+  show("main");
+  hide("feedback");
   get("num").focus();
 }
 
-function buttonClick()
+function buttonClick(event)
 {
   let input = currentInputBox;
   input.focus();
   let start = input.selectionStart;
   input.value = input.value.substring(0, start) +
-                this.innerText +
+                event.target.innerText +
                 input.value.substring(input.selectionEnd);
     // Place the caret at the end of the appended text.
-  input.selectionStart = start + this.innerText.length;
+  input.selectionStart = start + event.target.innerText.length;
   input.selectionEnd = input.selectionStart;
 }
 
@@ -385,14 +319,14 @@ function getFormSendValue()
 function startUp()
 {
   let param;
+  value = get("num");
   if ((app !== 4) && (app !== 5))
   {    // Not continued fraction.
     get("num").onkeydown = function(e)
     {
-      let res;
       let digitGroup = get("digits").value;
-      res = get("result");
-      res.style.display = "block";
+      let res = get("result");
+      show("result");
       let input = get("num").value;
       let keyCode = e.key;
       if (keyCode === "Enter")
@@ -439,70 +373,17 @@ function startUp()
     get("openwizard").onclick = function()
     {
       get("exprwiz").innerHTML = get("expr").innerHTML;
-      get("main").style.display = "none";
-      get("wizard").style.display = "block";
-      get("mode").style.display = "block";
+      hide("main");
+      show("wizard");
+      show("mode");
       get("oneexpr").checked = true;
       get("next").disabled = true;
-      get("hexW").checked = (hex? true: false);
-      get("decW").checked = (hex? false: true);
+      get("decW").checked = !get("hexW").checked;
       get("wzdinput").value = "";
       get("wzdinput").focus();
       oneexpr();
     };
-    get("wzdinput").onkeydown = function (event)
-    {
-      let keyCode = event.key;
-      if (keyCode === "Enter")
-      {
-        if (!get("next").disabled)
-        {                                // Next button is not disabled.
-          wizardNext();                  // Perform same operation as if the user had pressed Next button.
-        }
-        event.stopPropagation();         // Do not propagate key.
-        event.preventDefault();
-      }
-      if (keyCode === "Escape" || keyCode === "Esc")
-      {
-        get("main").style.display = "block";
-        get("wizard").style.display = "none";
-      }
-      if (event.altKey)
-      {                                  // User pressed ALT key.
-        if (keyCode === "P")
-        {                                // User pressed ALT-P.
-          event.stopPropagation();       // Do not propagate key.
-          event.preventDefault();
-          if (get("oneexpr").checked)
-          {
-            get("oneexpr").checked = false;
-            get("loop").checked = true;
-            selectLoop();
-          }
-          else
-          {
-            get("oneexpr").checked = true;
-            get("loop").checked = false;
-            oneexpr();
-          }
-        }
-        else if (keyCode === "D")
-        {                                // User pressed ALT-D.
-          event.stopPropagation();       // Do not propagate key.
-          event.preventDefault();
-          get("decW").checked = true;
-          get("hexW").checked = false;
-        }
-        else if (keyCode === "H")
-        {                                // User pressed ALT-H.
-          event.stopPropagation();       // Do not propagate key.
-          event.preventDefault();
-          get("decW").checked = false;
-          get("hexW").checked = true;
-        }
-      }
-      return true;
-    };
+    get("wzdinput").onkeydown = keyDownOnWizard;
     get("oneexpr").onclick = function()
     {
       oneexpr();
@@ -511,39 +392,12 @@ function startUp()
     {
       selectLoop();
     };
-    get("next").onclick = function()
-    {
-      wizardNext();
-    };
-    get("wzdinput").oninput = function()
-    {
-      let inputValue = get("wzdinput").value;
-      let nextBtn = get("next");
-      if (inputValue !== "")
-      {         // User typed something on input box.
-        if (wizardStep === 1 || wizardStep === 9 || (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
-            inputValue.lastIndexOf("X") >= 0 || inputValue.lastIndexOf("C") >= 0))
-        {       // At least one x or c. Indicate valid.
-          nextBtn.disabled = false;
-        }
-        else
-        {
-          nextBtn.disabled = true;
-        }
-      }
-      else if (wizardStep === 5)
-      {         // Last step is optional, so empty input is valid.
-        nextBtn.disabled = false;
-      }
-      else
-      {         // For required input, empty input is invalid.
-        nextBtn.disabled = true;
-      }
-    };
+    get("next").onclick = wizardNext;
+    get("wzdinput").oninput = typedOnWizard;
     get("cancel").onclick = function()
     {
-      get("main").style.display = "block";
-      get("wizard").style.display = "none";
+      show("main");
+      hide("wizard");
     };
   }
   if (get("stop") !== null)
@@ -561,7 +415,7 @@ function startUp()
   }
   get("continue").onclick = function()
   {
-    get("cont").style.display = "none";
+    hide("cont");
     callWorker("C");  // Indicate worker that user pressed Continue button.
   };
   get("num").onkeydown = function (event)
@@ -576,26 +430,23 @@ function startUp()
   };
   get("helpbtn").onclick = function()
   {
-    let help = get("help");
-    let helpStyle = help.style;
-    let helphelpStyle = get("helphelp").style;
-    let result = get("result");
-    let resultStyle = result.style;
-    if (helpStyle.display === "block" && result.innerHTML !== "")     
+    if (get("help").style.display === "block" && get("result").innerHTML !== "")
     {
-      helpStyle.display = "none";
-      helphelpStyle.display = resultStyle.display = "block";
+      hide("help");
+      show("helphelp");
+      show("result");
     }
     else
     {
-      helpStyle.display = "block";
-      helphelpStyle.display = resultStyle.display = "none";
+      show("help");
+      hide("helphelp");
+      hide("result");
     }
   };
   get("formlink").onclick = function()
   {
-    get("main").style.display = "none";
-    get("feedback").style.display = "block";
+    hide("main");
+    show("feedback");
     get("formfeedback").reset();
     get("name").focus();
     return false;   // Do not follow the link.

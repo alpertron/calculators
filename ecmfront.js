@@ -18,9 +18,16 @@
 */
 /* global fillCache */
 /* global formSend */
+/* global get */
 /* global getCalculatorCode */
+/* global hide */
 /* global initMenubarEvents */
+/* global keyDownOnWizard */
+/* global selectLoop */
+/* global show */
+/* global typedOnWizard */
 /* global useBlockly */
+/* global wizardNext */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 20,5, 22,10, 23,12, 24,6, 27,7];
 const asmjs = typeof(WebAssembly) === "undefined";
@@ -105,20 +112,6 @@ else
   ];
   parens = "Left parenthesis,(,Right parenthesis,),";
 }
-function get(id)
-{
-  return document.getElementById(id);
-}
-
-function hide(id)
-{
-  get(id).style.display = "none";
-}
-
-function show(id)
-{
-  get(id).style.display = "block";
-}
 
 function oneexpr()
 {
@@ -154,8 +147,12 @@ function styleButtons(style1, style2)
   btnMore.style.display = style2;
 }
 
-function saveConfig()
-{    
+function saveConfig(fromWizard)
+{
+  if (fromWizard)
+  {
+    chkHex.checked = chkHexW.checked;
+  }
   config = "1" +   // Batch mode
            (chkVerbose.checked? "1" : "0") +
            (chkPretty.checked? "1" : "0") +
@@ -409,78 +406,6 @@ function restartFactorization(type)
   dowork(type);
 }
 
-function selectLoop()
-{   
-  btnNext.value = (lang ? "Siguiente": "Next");
-  wzdDescText.innerHTML = (lang ? "Paso 1 de 5: Valor inicial de x": "Step 1 of 5: Initial value of x");
-  wzdExamText.innerHTML = (lang? "No usar variables <var>x</var> o <var>c</var>. Ejemplo para números de Smith menores que 10000: <code>1</code>": 
-                                    "Do not use variables <var>x</var> or <var>c</var>. Example for Smith numbers less than 10000: <code>1</code>");
-  wizardStep = 1;
-}
-  
-function wizardNext()
-{
-  let valueInput = value;
-  btnNext.disabled = true;
-  switch (++wizardStep)
-  {
-    case 2:
-      wizardTextInput += "x="+wzdInput.value;
-      hide("mode");
-      wzdDescText.innerHTML = (lang? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
-      wzdExamText.innerHTML = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x+1</code>":
-                                     "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x+1</code>");
-      break;
-    case 3:
-      wizardTextInput += ";x="+wzdInput.value;
-      wzdDescText.innerHTML = (lang? "Paso 3 de 5: Condición para finalizar el ciclo": "Step 3 of 5: End loop condition");
-      wzdExamText.innerHTML = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x&lt;10000</code>":
-                                     "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x&lt;10000</code>");
-      break;
-    case 4:
-      wizardTextInput += ";"+wzdInput.value;
-      wzdDescText.innerHTML = (lang? "Paso 4 de 5: Expresión a factorizar": "Step 4 of 5: Expression to factor");
-      wzdExamText.innerHTML = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>x</code>":
-                                     "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>x</code>");
-      break;
-    case 5:
-      wizardTextInput += ";"+wzdInput.value;
-      btnNext.value = (lang? "Hecho": "Done");
-      btnNext.disabled = false;
-      wzdDescText.innerHTML = (lang? "Paso 5 de 5: Condición para procesar la expresión": "Step 5 of 5: Process expression condition");
-      wzdExamText.innerHTML = (lang? "Variables <var>x</var> y/o <var>c</var> requeridas. Ejemplo para números de Smith menores que 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>":
-                                     "Variables <var>x</var> and/or <var>c</var> required. Example for Smith numbers less than 10000: <code>sumdigits(x,10) == sumdigits(concatfact(2,x),10) and not isprime(x)</code>");
-      break;
-    case 6:
-      if (wzdInput.value !== "")
-      {
-        wizardTextInput += ";"+wzdInput.value;
-      }
-      valueInput.value = wizardTextInput;
-      wizardStep = 0;
-      chkHex.checked = chkHexW.checked;
-      saveConfig();
-      show("main");
-      hide("wizard");
-      valueInput.focus();
-      break;
-    default:
-      wizardStep = 0;
-      valueInput.value = wzdInput.value;
-      chkHex.checked = chkHexW.checked;
-      saveConfig();
-      show("main");
-      hide("wizard");
-      valueInput.focus();
-      break;
-  } 
-  if (wizardStep)
-  {
-    wzdInput.value = "";
-    wzdInput.focus();
-  }
-}
-
 function updateVerbose(isVerbose)    
 {
   let cssRules = document.styleSheets[0]["cssRules"];
@@ -549,16 +474,16 @@ function initBlockly()
 
 function updateInputFromButton(button, inputId)
 {
-  button.onclick = function()
+  button.onclick = function(event)
   {
     let input = get(inputId);
     input.focus();
     let start = input.selectionStart;
     input.value = input.value.substring(0, start) +
-                  this.innerText +
+                  event.target.innerText +
                   input.value.substring(input.selectionEnd);
       // Place the caret at the end of the appended text.
-    input.selectionStart = start + this.innerText.length;
+    input.selectionStart = start + event.target.innerText.length;
     input.selectionEnd = input.selectionStart;
   };
 }
@@ -729,55 +654,7 @@ function startUp()
     chkDecW.checked = (config.substring(4,5) !== "1");
     oneexpr();
   };
-  wzdInput.onkeydown = function (event)
-  {
-    let keyCode = event.key;
-    if (keyCode === "Enter")
-    {
-      event.preventDefault();          // Do not propagate Enter key.
-      if (!btnNext.disabled)
-      {                                // Next button is not disabled.
-        wizardNext();                  // Perform same operation as if the user had pressed Next button.
-      }
-    }
-    if (keyCode === "Escape" || keyCode === "Esc")
-    {
-      show("main");
-      hide("wizard");
-    }
-    if (event.altKey)
-    {                                  // User pressed ALT key.
-      if (keyCode === "P")
-      {                                // User pressed ALT-P.
-        event.preventDefault();        // Do not propagate key.
-        if (get("oneexpr").checked)
-        {
-          get("oneexpr").checked = false;
-          get("loop").checked = true;
-          selectLoop();
-        }
-        else
-        {
-          get("oneexpr").checked = true;
-          get("loop").checked = false;
-          oneexpr();
-        }
-      }
-      else if (keyCode === "D")
-      {                                // User pressed ALT-D.
-        event.preventDefault();        // Do not propagate key.
-        chkDecW.checked = true;
-        chkHexW.checked = false;
-      }
-      else if (keyCode === "H")
-      {                                // User pressed ALT-H.
-        event.preventDefault();        // Do not propagate key.
-        chkDecW.checked = false;
-        chkHexW.checked = true;
-      }
-    }
-    return true;
-  };
+  wzdInput.onkeydown = keyDownOnWizard;
   get("oneexpr").onclick = function()
   {
     oneexpr();
@@ -786,35 +663,8 @@ function startUp()
   {
     selectLoop();
   };
-  btnNext.onclick = function()
-  {
-    wizardNext();
-  };
-  wzdInput.oninput = function()
-  {
-    let inputValue = wzdInput.value;
-    if (inputValue !== "")
-    {         // User typed something on input box.
-      if (wizardStep === 1 || wizardStep === 9 ||
-          (inputValue.lastIndexOf("x") >= 0 || inputValue.lastIndexOf("c") >= 0 ||
-          inputValue.lastIndexOf("X") >= 0 || inputValue.lastIndexOf("C") >= 0))
-      {       // At least one x or c. Indicate valid.
-        btnNext.disabled = false;
-      }
-      else
-      {
-        btnNext.disabled = true;
-      }
-    }
-    else if (wizardStep === 5)
-    {         // Last step is optional, so empty input is valid.
-      btnNext.disabled = false;
-    }
-    else
-    {         // For required input, empty input is invalid.
-      btnNext.disabled = true;
-    }
-  };
+  btnNext.onclick = wizardNext;
+  wzdInput.oninput = typedOnWizard;
   get("cancel").onclick = function()
   {
     show("main");
@@ -830,7 +680,7 @@ function startUp()
   };
   get("save-config").onclick = function()
   {
-    saveConfig();
+    saveConfig(false);
     updateVerbose(chkVerbose.checked);
     hide("modal-config");
   };

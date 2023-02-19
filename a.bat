@@ -114,75 +114,75 @@ if errorlevel 1 goto end
 cmd /c emcc %wasmCommon% -Dlang=1 %gaussianFiles% %gaussianOptions% -o gaussianS.wasm
 if errorlevel 1 goto end
 
-java -jar %compilerName% -D app=0 %compilerOptions% --js interface.js --js common.js --js_output_file fsquares.js
+java -jar %compilerName% -D app=0 %compilerOptions% --js interface.js --js common.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js_output_file fsquares.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 FSQUARES.HTM fsquares.js fsquaresE.wasm
-java -jar %compilerName% -D app=1 %compilerOptions% --js interface.js --js common.js --js_output_file fsquares.js
+java -jar %compilerName% -D app=1 %compilerOptions% --js interface.js --js common.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js_output_file fsquares.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 SUMCUAD.HTM fsquares.js fsquaresS.wasm
-java -jar %compilerName% -D app=2 %compilerOptions% --js interface.js --js common.js --js_output_file fsquares.js
+java -jar %compilerName% -D app=2 %compilerOptions% --js interface.js --js common.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js_output_file fsquares.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 FCUBES.HTM fsquares.js fcubesE.wasm
-java -jar %compilerName% -D app=3 %compilerOptions% --js interface.js --js common.js --js_output_file fsquares.js
+java -jar %compilerName% -D app=3 %compilerOptions% --js interface.js --js common.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js_output_file fsquares.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 SUMCUBOS.HTM fsquares.js fcubesS.wasm
-java -jar %compilerName% -D app=4 %compilerOptions% --js interface.js --js common.js --js_output_file fsquares.js
+java -jar %compilerName% -D app=4 %compilerOptions% --js interface.js --js common.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js_output_file fsquares.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 CONTFRAC.HTM fsquares.js contfracE.wasm
-java -jar %compilerName% -D app=5 %compilerOptions% --js interface.js --js common.js --js_output_file fsquares.js
+java -jar %compilerName% -D app=5 %compilerOptions% --js interface.js --js common.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js_output_file fsquares.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 FRACCONT.HTM fsquares.js contfracS.wasm
-java -jar %compilerName% -D app=6 %compilerOptions% --js interface.js --js common.js --js_output_file fsquares.js
+java -jar %compilerName% -D app=6 %compilerOptions% --js interface.js --js common.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js_output_file fsquares.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 TSQCUBES.HTM fsquares.js tsqcubesE.wasm
-java -jar %compilerName% -D app=7 %compilerOptions% --js interface.js --js common.js --js_output_file fsquares.js
+java -jar %compilerName% -D app=7 %compilerOptions% --js interface.js --js common.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js_output_file fsquares.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 TCUADCUB.HTM fsquares.js tsqcubesS.wasm
 
-java -jar %compilerName% %compilerOptions% --js intfwebw.js --js_output_file intWW.js
+java -jar %compilerName% %compilerOptions% --js intfwebw.js --js commonwebw.js --js_output_file intWW.js
 
-java -jar %compilerName% -D lang=0 %compilerOptions% --js polyfact.js --js common.js --js_output_file polfactE.js
+java -jar %compilerName% -D lang=0 %compilerOptions% --js polyfact.js --js common.js --js cache.js --js calccode.js --js feedback.js --js_output_file polfactE.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 POLFACT.HTM polfactE.js polfactE.wasm
-java -jar %compilerName% -D lang=1 %compilerOptions% --js polyfact.js --js common.js --js_output_file polfactS.js
+java -jar %compilerName% -D lang=1 %compilerOptions% --js polyfact.js --js common.js --js cache.js --js calccode.js --js feedback.js --js_output_file polfactS.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 FACTPOL.HTM polfactS.js polfactS.wasm
 
-java -jar %compilerName% -D lang=0 %compilerOptions% --js dislog.js --js common.js --js_output_file dilogE.js
+java -jar %compilerName% -D lang=0 %compilerOptions% --js dislog.js --js common.js --js cache.js --js calccode.js --js feedback.js --js_output_file dilogE.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 DILOG.HTM dilogE.js dilogE.wasm
-java -jar %compilerName% -D lang=1 %compilerOptions% --js dislog.js --js common.js --js_output_file dilogS.js
+java -jar %compilerName% -D lang=1 %compilerOptions% --js dislog.js --js common.js --js cache.js --js calccode.js --js feedback.js --js_output_file dilogS.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 LOGDI.HTM dilogS.js dilogS.wasm
 
-java -jar %compilerName% -D lang=0 %compilerOptions% --js quadrmod.js --js common.js --js_output_file quadmodE.js
+java -jar %compilerName% -D lang=0 %compilerOptions% --js quadrmod.js --js common.js --js cache.js --js calccode.js --js feedback.js --js_output_file quadmodE.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 QUADMOD.HTM quadmodE.js quadmodE.wasm
-java -jar %compilerName% -D lang=1 %compilerOptions% --js quadrmod.js --js common.js --js_output_file quadmodS.js
+java -jar %compilerName% -D lang=1 %compilerOptions% --js quadrmod.js --js common.js --js cache.js --js calccode.js --js feedback.js --js_output_file quadmodS.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 CUADMOD.HTM quadmodS.js quadmodS.wasm
 
-java -jar %compilerName% -D lang=0 %compilerOptions% --js gauss.js --js common.js --js_output_file gaussianE.js
+java -jar %compilerName% -D lang=0 %compilerOptions% --js gauss.js --js common.js --js cache.js --js calccode.js --js feedback.js --js_output_file gaussianE.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 GAUSSIAN.HTM gaussianE.js gaussianE.wasm
-java -jar %compilerName% -D lang=1 %compilerOptions% --js gauss.js --js common.js --js_output_file gaussianS.js
+java -jar %compilerName% -D lang=1 %compilerOptions% --js gauss.js --js common.js --js cache.js --js calccode.js --js feedback.js --js_output_file gaussianS.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 GAUSIANO.HTM gaussianS.js gaussianS.wasm
 
-java -jar %compilerName% -D lang=0 %compilerOptions% --js blocklyextern.js --js ecmfront.js --js common.js --js_output_file ecmE.js
+java -jar %compilerName% -D lang=0 %compilerOptions% --js blocklyextern.js --js ecmfront.js --js common.js --js calccode.js --js cache.js --js feedback.js --js wizard.js --js_output_file ecmE.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 ECM.HTM ecmE.js ecmE.wasm
-java -jar %compilerName% -D lang=1 %compilerOptions% --js blocklyextern.js --js ecmfront.js --js common.js --js_output_file ecmS.js
+java -jar %compilerName% -D lang=1 %compilerOptions% --js blocklyextern.js --js ecmfront.js --js common.js --js calccode.js --js cache.js --js feedback.js --js wizard.js --js_output_file ecmS.js
 if errorlevel 1 goto end
 set emcc_DEBUG=
-java -jar %compilerName% %compilerOptions% --js ecmfwebw.js --js_output_file ecmWW.js
+java -jar %compilerName% %compilerOptions% --js ecmfwebw.js --js commonwebw.js --js_output_file ecmWW.js
 perl replaceEmbeddedJS.pl %1 ECMC.HTM ecmS.js ecmS.wasm
 copy calculatorSW.js calcSW.js
 
-java -jar %compilerName% -D lang=0 %compilerOptions% --js quadr.js --js common.js --js_output_file quadE.js
+java -jar %compilerName% -D lang=0 %compilerOptions% --js quadr.js --js common.js --js cache.js --js calccode.js --js feedback.js --js_output_file quadE.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 QUAD.HTM quadE.js quadE.wasm
-java -jar %compilerName% -D lang=1 %compilerOptions% --js quadr.js --js common.js --js_output_file quadS.js
+java -jar %compilerName% -D lang=1 %compilerOptions% --js quadr.js --js common.js --js cache.js --js calccode.js --js feedback.js --js_output_file quadS.js
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 CUAD.HTM quadS.js quadS.wasm
 

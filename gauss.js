@@ -18,8 +18,11 @@
 */
 /* global fillCache */
 /* global formSend */
+/* global get */
 /* global getCalculatorCode */
+/* global hide */
 /* global initMenubarEvents */
+/* global show */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const debugEcm = false;
 const asmjs = typeof(WebAssembly) === "undefined";
@@ -54,10 +57,6 @@ else
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
   ];
   parens = "Left parenthesis,(,Right parenthesis,),Imaginary unit,i,";
-}
-function get(x)
-{
-  return document.getElementById(x);
 }
 
 function setStorage(name, data)
@@ -121,7 +120,7 @@ function callWorker(param)
         {   // First character passed from web worker is "2".
           get("status").innerHTML = "";
           styleButtons("inline", "none");  // Enable eval and factor
-          get("modal-more").style.display = "none";
+          hide("modal-more");
         }
       }
     };
@@ -142,11 +141,11 @@ function dowork(n)
   let res = get("result");
   let valueText = get("value").value;
   let helphelp = get("helphelp");
-  get("help").style.display = "none";
-  helphelp.style.display = "block";
+  hide("help");
+  show("helphelp");
   helphelp.innerHTML = (lang? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización.</p>":
                               "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization.</p>");
-  res.style.display = "block";
+  show("result");
   if (valueText === "")
   {
     res.innerHTML = (lang? "Por favor ingrese una expresión." :
@@ -162,8 +161,8 @@ function dowork(n)
 
 function endFeedback()
 {
-  get("main").style.display = "block";
-  get("feedback").style.display = "none";
+  show("main");
+  hide("feedback");
   get("value").focus();   
 }
 
@@ -187,16 +186,16 @@ function generateFuncButtons(optionCategory, funcButtons, inputId)
     button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
     button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
     button.classList.add("funcbtn");
-    button.onclick = function()
+    button.onclick = function(event)
     {
       let input = get(inputId);
       input.focus();
       let start = input.selectionStart;
       input.value = input.value.substring(0, start) +
-                    this.innerText +
+                    event.target.innerText +
                     input.value.substring(input.selectionEnd);
         // Place the caret at the end of the appended text.
-      input.selectionStart = start + this.innerText.length;
+      input.selectionStart = start + event.target.innerText.length;
       input.selectionEnd = input.selectionStart;
     };
     fragment.appendChild(button);
@@ -232,7 +231,7 @@ window.onload = function()
   };
   get("more").onclick = function()
   {
-    get("modal-more").style.display = "block";
+    show("modal-more");
   };
   get("config").onclick = function()
   {
@@ -241,15 +240,15 @@ window.onload = function()
     get("verbose").checked = (config.substring(1,2) === "1");
     get("pretty").checked = (config.substring(2,3) === "1");
     get("cunnin").checked = (config.substring(3,4) === "1");  
-    get("modal-config").style.display = "block";
+    show("modal-config");
   };
   get("close-config").onclick = function()
   {
-    get("modal-config").style.display = "none";
+    hide("modal-config");
   };
   get("cancel-config").onclick = function()
   {
-    get("modal-config").style.display = "none";
+    hide("modal-config");
   };
   get("save-config").onclick = function()
   {
@@ -259,28 +258,25 @@ window.onload = function()
              (get("cunnin").checked? "1" :"0");
     digits = get("digits").value;
     setStorage("ecmConfig", digits+","+config);
-    get("modal-config").style.display = "none";
+    hide("modal-config");
   };
   get("close-more").onclick = function()
   {
-    get("modal-more").style.display = "none";
+    hide("modal-more");
   };
   get("helpbtn").onclick = function()
   {
-    let help = get("help");
-    let helpStyle = help.style;
-    let helphelpStyle = get("helphelp").style;
-    let result = get("result");
-    let resultStyle = result.style;
-    if (helpStyle.display === "block" && result.innerHTML !== "")
+    if (get("help").style.display === "block" && get("result").innerHTML !== "")
     {
-      helpStyle.display = "none";
-      helphelpStyle.display = resultStyle.display = "block";
+      hide("help");
+      show("helphelp");
+      show("result");
     }
     else
     {
-      helpStyle.display = "block";
-      helphelpStyle.display = resultStyle.display = "none";
+      show("help");
+      hide("helphelp");
+      hide("result");
     }
   };
   get("value").onkeydown = function(evt)
@@ -297,8 +293,8 @@ window.onload = function()
   };
   get("formlink").onclick = function()
   {
-    get("main").style.display = "none";
-    get("feedback").style.display = "block";
+    hide("main");
+    show("feedback");
     get("formfeedback").reset();
     get("name").focus();
     return false;   // Do not follow the link.
@@ -310,10 +306,9 @@ window.onload = function()
   get("formsend").onclick = formSend;
   window.onclick = function(event)
   {
-    let modal = get("modal");
-    if (event.target === modal)
+    if (event.target === get("modal"))
     {
-      modal.style.display = "none";
+      hide("modal");
     }
   };
   digits = getStorage("ecmConfig");

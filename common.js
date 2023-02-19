@@ -17,13 +17,26 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global asmjs */
-/* global calcURLs */
 /* global callWorker */
 /* global endFeedback */
 /* global fileContents */
 /* global get */
-/* global getFormSendValue */
 /* global lang */
+
+function get(id)
+{
+  return document.getElementById(id);
+}
+
+function hide(id)
+{
+  get(id).style.display = "none";
+}
+
+function show(id)
+{
+  get(id).style.display = "block";
+}
 
 function initMenubarEvents()
 {  
@@ -32,15 +45,15 @@ function initMenubarEvents()
   {
     el.addEventListener("click", function(event)
     {
-      if (this.getAttribute("aria-expanded") === "false")
+      if (event.target.getAttribute("aria-expanded") === "false")
       {
-        this.setAttribute("aria-expanded", "true");
+        event.target.setAttribute("aria-expanded", "true");
       }
       else
       {
-        this.setAttribute("aria-expanded", "false");
+        event.target.setAttribute("aria-expanded", "false");
       }
-      this.firstElementChild.firstElementChild.firstElementChild.focus();
+      event.target.firstElementChild.firstElementChild.firstElementChild.focus();
       event.preventDefault();
       return false;
     });
@@ -50,15 +63,15 @@ function initMenubarEvents()
       let nextNode;
       if (event.key === "Enter")
       {
-        this.click(event);
+        event.target.click(event);
         return;
       }
       if (event.key === "ArrowRight")
       {
-        nextNode = this.nextElementSibling;
+        nextNode = event.target.nextElementSibling;
         if (nextNode === null)
         {
-          nextNode = this.parentNode.firstElementChild;
+          nextNode = event.target.parentNode.firstElementChild;
         }
         nextNode.focus();
         event.preventDefault();
@@ -66,10 +79,10 @@ function initMenubarEvents()
       }
       if (event.key === "ArrowLeft")
       {
-        nextNode = this.previousElementSibling;
+        nextNode = event.target.previousElementSibling;
         if (nextNode === null)
         {
-          nextNode = this.parentNode.lastElementChild;
+          nextNode = event.target.parentNode.lastElementChild;
         }
         nextNode.focus();
         event.preventDefault();
@@ -77,29 +90,27 @@ function initMenubarEvents()
       }
       if (event.key === "ArrowUp")
       {
-        this.setAttribute("aria-expanded", "true");
-        this.firstElementChild.lastElementChild.firstElementChild.focus();
+        event.target.setAttribute("aria-expanded", "true");
+        event.target.firstElementChild.lastElementChild.firstElementChild.focus();
         event.preventDefault();
         return;
       }
       if (event.key === "ArrowDown")
       { 
-        this.setAttribute("aria-expanded", "true");
-        this.firstElementChild.firstElementChild.firstElementChild.focus();
+        event.target.setAttribute("aria-expanded", "true");
+        event.target.firstElementChild.firstElementChild.firstElementChild.focus();
         event.preventDefault();
       }
     });
     
-    el.addEventListener("mouseover", function(event)
+    el.addEventListener("mouseenter", function(event)
     {
-      el.addEventListener("mouseover", function(event)
-      {
-        this.setAttribute("aria-expanded", "true");
-      });
-      el.addEventListener("mouseout", function(event)
-      {
-        this.setAttribute("aria-expanded", "false");
-      });
+      event.target.setAttribute("aria-expanded", "true");
+    });
+   
+    el.addEventListener("mouseleave", function(event)
+    {
+      event.target.setAttribute("aria-expanded", "false");
     });
     
     let submenuItems = el.querySelectorAll("a");
@@ -108,16 +119,16 @@ function initMenubarEvents()
       el.tabIndex = -1;
       el.addEventListener("click", function(event)
       {
-        let parent = this.parentNode.parentNode.parentNode;
+        let parent = event.target.parentNode.parentNode.parentNode;
         parent.setAttribute("aria-expanded", "false");
-        window.location = this.getAttribute("href");
+        window.location = event.target.getAttribute("href");
         event.stopImmediatePropagation();
         event.preventDefault();
       });
       el.addEventListener("keydown", function(event)
       {
         let next;
-        let parent = this.parentNode.parentNode.parentNode;
+        let parent = event.target.parentNode.parentNode.parentNode;
         if (event.key === "Tab")
         {
           parent.setAttribute("aria-expanded", "false");
@@ -133,7 +144,7 @@ function initMenubarEvents()
         if (event.key === "Enter")
         {
           parent.setAttribute("aria-expanded", "false");
-          window.location = this.getAttribute("href");
+          window.location = event.target.getAttribute("href");
           event.stopImmediatePropagation();
           event.preventDefault();
           return;
@@ -170,11 +181,11 @@ function initMenubarEvents()
         {
           if (event.key === "ArrowUp")
           {
-            next = this.parentNode.previousElementSibling;
+            next = event.target.parentNode.previousElementSibling;
           }
           else
           {
-            next = this.parentNode.nextElementSibling;
+            next = event.target.parentNode.nextElementSibling;
           }
           if (next === null)
           {
@@ -189,110 +200,6 @@ function initMenubarEvents()
           event.preventDefault();
         }
       });
-    });
-  });
-}
-
-let url = window.location.pathname;
-let cacheName;
-
-function updateCache(cache)
-{
-  caches.open(cacheName).then(function(tempCache)
-  {
-    tempCache.addAll([url].concat(calcURLs)).then(function()
-    {     // Copy cached resources to main cache and delete this one.
-      tempCache.matchAll().then(function(responseArr)
-      {   // All responses in array responseArr.
-        responseArr.forEach(function(responseTempCache, _index, _array)
-        {
-          cache.put(responseTempCache.url, responseTempCache);
-        });
-      })
-      .finally(function()
-      {
-        caches.delete(cacheName);
-      });
-    });  
-  });
-}
-
-function fillCache(cacheAppName)
-{
-  cacheName = cacheAppName;
-  // Test whether the HTML is already on the cache.
-  caches.open("newCache").then(function(cache)
-  {
-    cache.match(url).then(function (response)
-    {
-      if (typeof response === "undefined")
-      {     // HTML is not in cache.
-        updateCache(cache);
-      }
-      else
-      {     // Response is the HTML contents.
-        let date = response.headers.get("last-modified");
-            // Request the HTML from the Web server.
-            // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
-        fetch(url,{headers:{"If-Modified-Since": date, "x-calc": "1"}, cache: "no-store"}).then(function(responseHTML)
-        {
-          if (responseHTML.status !== 200)
-          {
-            return;        // HTML could not be retrieved, so go out.
-          }
-          if (date === responseHTML.headers.get("last-modified"))
-          {
-            return;        // HTML has not changed, so other files have not been changed. Go out.
-          }
-          // Read files to new cache.
-          // Use temporary cache so if there is any network error, original cache is not changed.
-        
-          caches.open(cacheName).then(function(tempCache)
-          {                // Do not fetch HTML because it is already fetched.
-            tempCache.addAll(calcURLs).then(function()
-            {              // Copy cached resources to main cache and delete this one.
-              tempCache.matchAll().then(function(responseArr)
-              {            // All responses in array responseArr.
-                responseArr.forEach(function(responseTempCache, _index, _array)
-                {
-                  let urlTemp = responseTempCache.url;
-                  let indexZero = url.indexOf("00");
-                  if (indexZero > 0)
-                  {        // There is an old version of this resource on cache to be erased.
-                    cache.keys().then(function(keys)
-                    {
-                      keys.forEach(function(requestCache, _idx, _arr)
-                      {    // Traverse cache.
-                        if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
-                            requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
-                            requestCache.url.substring(indexZero+4) === urlTemp.substring(indexZero+4))
-                        {  // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
-                          cache.delete(requestCache);
-                        }  
-                      });
-                      // Put resource into cache after old resource has been erased.
-                      cache.put(urlTemp, responseTempCache);
-                    });
-                  }
-                  else
-                  {   // Put resource into cache (no old resource into cache). 
-                    cache.put(urlTemp, responseTempCache);
-                  }
-                });
-                cache.put(url, responseHTML);
-              });
-            })
-            .finally(function()
-            {
-              caches.delete(cacheName);
-            });
-          })
-          .catch (function()     // Cannot fetch HTML.
-          {
-            updateCache(cache);
-          });
-        });
-      }
     });
   });
 }
@@ -358,104 +265,4 @@ function b64decode(str,out)
     out[(idxDest+1) >> 0] = (byte1<<4) + (byte2>>2);
     out[(idxDest+2) >> 0] = byte2<<6;
   }
-}
-
-let workPar;
-function getCalculatorCode(jsFileName, workerParameter)
-{
-  workPar = workerParameter;
-  if (asmjs)
-  {
-    let req = new XMLHttpRequest();
-    req.open("GET", jsFileName, true);
-    req.responseType = "arraybuffer";
-    req.onreadystatechange = function (_aEvt)
-    {
-      if (req.readyState === 4 && req.status === 200)
-      {
-        fileContents = /** @type {ArrayBuffer} */ (req.response);
-        if (workPar)
-        {
-          callWorker(workPar);
-        }
-      }
-    };
-    req.send(null);
-  }
-  else
-  {
-    let wasm = get("wasmb64").text;
-    while (wasm.charCodeAt(0) < 32)
-    {
-      wasm = wasm.substring(1);
-    }    
-    while (wasm.charCodeAt(wasm.length-1) < 32)
-    {
-      wasm = wasm.substring(0, wasm.length-1);
-    }    
-    let length = wasm.length*3/4;
-    if (wasm.charCodeAt(wasm.length-1) === 61)
-    {
-      length--;
-    }
-    if (wasm.charCodeAt(wasm.length-2) === 61)
-    {
-      length--;
-    }
-    fileContents=new Int8Array(length);
-    b64decode(wasm, fileContents);
-    calcURLs.shift();  // Do not fetch Javascript file that will not be used.
-  }
-}
-
-function formSend()
-{
-  if (get("adduserdata").checked)
-  {
-    getFormSendValue();
-  }
-  else
-  {
-    get("userdata").value = "";
-  }
-  let xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function(_event)
-  {
-    if (xhr.readyState === 4) 
-    {             // XHR finished.
-      if (xhr.status === 200)
-      {           // PHP page loaded.
-        alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
-      }
-      else
-      {           // PHP page not loaded.
-        alert(lang?"No se pudieron enviar los comentarios.": "Feedback could not be sent.");
-      }
-      endFeedback();
-    }
-  };
-  xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
-  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  let elements = get("formfeedback").elements;
-  let contents = "";
-  let useAmp = 0;
-  for (let i = 0; i < elements.length; i++)
-  {
-    let element = elements[i >> 0];
-    if (element.type === "radio" && !element.checked)
-    {
-      continue;
-    }
-    if (element.name)
-    {
-      if (useAmp)
-      {
-        contents += "&";
-      }
-      contents += element.name + "=" + encodeURIComponent(element.value);
-      useAmp++;
-    }
-  }
-  xhr.send(contents);
-  return false;   // Send form only through JavaScript.
 }

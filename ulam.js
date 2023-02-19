@@ -59,11 +59,6 @@ let interval;
 
 //##  asmJS goes here (do not change symbols at the left).
 
-function get(x)
-{
-  return document.getElementById(x);
-}
-
 function ptrToString(ptr)
 {
   let t=-1;

@@ -18,8 +18,11 @@
 */
 /* global fillCache */
 /* global formSend */
+/* global get */
 /* global getCalculatorCode */
+/* global hide */
 /* global initMenubarEvents */
+/* global show */
 /** @define {number} */ const lang = 0;   // Use with Closure compiler.
   const asmjs = typeof(WebAssembly) === "undefined";
   let worker = 0;
@@ -57,10 +60,6 @@
     parens = "Left parenthesis,(,Right parenthesis,),";
   }
 
-  function get(x)
-  {
-    return document.getElementById(x);
-  }
   function callWorker(param)
   {
     if (!worker)
@@ -107,8 +106,8 @@
     let constText = get("const").value.trim();
     let modText = get("mod").value.trim();
     let digitGroup = get("digits").value.trim();
-    get("help").style.display = "none";
-    res.style.display = "block";
+    hide("help");
+    show("result");
     let missing = "";
     if (quadrText === "")
     {
@@ -143,8 +142,8 @@
 
   function endFeedback()
   {
-    get("main").style.display = "block";
-    get("feedback").style.display = "none";
+    show("main");
+    hide("feedback");
     get("quad").focus();   
   }
 
@@ -153,16 +152,16 @@ let calcURLs = ["quadmodW0000.js",
 
 function updateInputFromButton(button)
 {
-  button.onclick = function()
+  button.onclick = function(event)
   {
     let input = currentInputBox;
     input.focus();
     let start = input.selectionStart;
     input.value = input.value.substring(0, start) +
-                  this.innerText +
+                  event.target.innerText +
                   input.value.substring(input.selectionEnd);
       // Place the caret at the end of the appended text.
-    input.selectionStart = start + this.innerText.length;
+    input.selectionStart = start + event.target.innerText.length;
     input.selectionEnd = input.selectionStart;
   };
 }
@@ -232,8 +231,8 @@ window.onload = function()
   };
   get("helpbtn").onclick = function()
   {
-    get("help").style.display = "block";
-    get("result").style.display = "none";
+    show("help");
+    hide("result");
   };
   get("quad").onfocus = function()
   {
@@ -257,8 +256,8 @@ window.onload = function()
   };
   get("formlink").onclick = function()
   {
-    get("main").style.display = "none";
-    get("feedback").style.display = "block";
+    hide("main");
+    show("feedback");
     get("formfeedback").reset();
     get("name").focus();
     return false;   // Do not follow the link.

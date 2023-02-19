@@ -18,8 +18,11 @@
 */
 /* global fillCache */
 /* global formSend */
+/* global get */
 /* global getCalculatorCode */
+/* global hide */
 /* global initMenubarEvents */
+/* global show */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const asmjs = typeof(WebAssembly) === "undefined";
 let worker = 0;
@@ -57,10 +60,6 @@ else
   parens = "Left parenthesis,(,Right parenthesis,),";
 }
 
-function get(x)
-{
-  return document.getElementById(x);
-}
 function callWorker(param)
 {
   if (!worker)
@@ -111,8 +110,8 @@ function dowork(n)
   let coefEText = get("coefE").value.trim();
   let coefFText = get("coefF").value.trim();
   let digitGroup = get("digits").value.trim();
-  get("help").style.display = "none";
-  res.style.display = "block";
+  hide("help");
+  show("result");
   let missing = "";
   let zero = String.fromCharCode(0);
   if (coefAText === "")
@@ -168,24 +167,24 @@ function moveNext(e, curr, next)
 
 function endFeedback()
 {
-  get("main").style.display = "block";
-  get("feedback").style.display = "none";
+  show("main");
+  hide("feedback");
   get("coefA").focus();   
 }
 
 let calcURLs = ["quadW0000.js",
                "quad.webmanifest", "cuad.webmanifest", "quad-icon-1x.png", "quad-icon-2x.png", "quad-icon-4x.png", "quad-icon-180px.png", "quad-icon-512px.png", "favicon.ico"];
 
-function buttonClick()
+function buttonClick(event)
 {
   let input = currentInputBox;
   input.focus();
   let start = input.selectionStart;
   input.value = input.value.substring(0, start) +
-                this.innerText +
+                event.target.innerText +
                 input.value.substring(input.selectionEnd);
     // Place the caret at the end of the appended text.
-  input.selectionStart = start + this.innerText.length;
+  input.selectionStart = start + event.target.innerText.length;
   input.selectionEnd = input.selectionStart;
 }
 
@@ -245,8 +244,8 @@ window.onload = function()
   };
   get("helpbtn").onclick = function()
   {
-    get("help").style.display = "block";
-    get("result").style.display = "none";
+    show("help");
+    hide("result");
   };
   get("coefA").onkeydown = function(e)
   {
@@ -270,7 +269,7 @@ window.onload = function()
   };
   get("coefF").onkeydown = function(e)
   {
-    if (e.key === "Enter" && this.value.trim().length > 0)
+    if (e.key === "Enter" && e.target.value.trim().length > 0)
     {
       e.preventDefault();
       get("coefA").focus();
@@ -307,8 +306,8 @@ window.onload = function()
   };
   get("formlink").onclick = function()
   {
-    get("main").style.display = "none";
-    get("feedback").style.display = "block";
+    hide("main");
+    show("feedback");
     get("formfeedback").reset();
     get("name").focus();
     return false;   // Do not follow the link.

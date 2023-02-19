@@ -18,8 +18,11 @@
 */
 /* global fillCache */
 /* global formSend */
+/* global get */
 /* global getCalculatorCode */
+/* global hide */
 /* global initMenubarEvents */
+/* global show */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const asmjs = typeof(WebAssembly) === "undefined";
 let worker = 0;
@@ -27,10 +30,7 @@ let busy = 0;
 let blob;
 let workerParam;
 let fileContents = 0;
-function get(x)
-{
-  return document.getElementById(x);
-}
+
 function callWorker(param)
 {
   if (!worker)
@@ -92,8 +92,8 @@ function dowork(n)
   let polyText = get("poly").value;
   let modText = get("mod").value;
   let digitGroup = get("digits").value;
-  get("help").style.display = "none";
-  res.style.display = "block";
+  hide("help");
+  show("result");
   if (polyText === "")
   {
     res.innerHTML = (lang? "Por favor ingrese una expresión para el polinomio a evaluar." :
@@ -125,8 +125,8 @@ function dowork(n)
 
 function endFeedback()
 {
-  get("main").style.display = "block";
-  get("feedback").style.display = "none";
+  show("main");
+  hide("feedback");
   get("poly").focus();   
 }
 
@@ -162,8 +162,8 @@ window.onload = function ()
   };
   get("helpbtn").onclick = function ()
   {
-    get("help").style.display = "block";
-    get("result").style.display = "none";
+    show("help");
+    hide("result");
   };
   get("poly").oninput = function ()
   {
@@ -182,8 +182,8 @@ window.onload = function ()
   };
   get("formlink").onclick = function ()
   {
-    get("main").style.display = "none";
-    get("feedback").style.display = "block";
+    hide("main");
+    show("feedback");
     get("formfeedback").reset();
     get("name").focus();
     return false;   // Do not follow the link.
