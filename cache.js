@@ -17,6 +17,7 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global calcURLs */
+/* global initMenubarEvents */
 let url = window.location.pathname;
 
 function updateCache(cache)
@@ -119,3 +120,21 @@ function fillCache()
   });
 }
 
+function registerServiceWorker()
+{
+  if ("serviceWorker" in navigator)
+  { // Attempt to register service worker.
+    // There is no need to do anything on registration success or failure in this JavaScript module.
+    navigator["serviceWorker"]["register"]("calcSW.js").then(
+              function()
+              {
+                /* Nothing to do */
+              },
+              function()
+              {
+                /* Nothing to do */
+              });
+    fillCache();
+  }
+  initMenubarEvents();
+}

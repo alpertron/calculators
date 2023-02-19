@@ -16,12 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/* global fillCache */
+/* global clickFormLink */
 /* global formSend */
 /* global get */
 /* global getCalculatorCode */
 /* global hide */
-/* global initMenubarEvents */
+/* global registerServiceWorker */
 /* global show */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const exprTextEs = "Por favor ingrese un número o expresión para ";
@@ -244,14 +244,7 @@ window.onload = function()
   {
     generateFuncButtons("funccat", "funcbtns");
   };
-  formlink.onclick = function()
-  {
-    hide("main");
-    show("feedback");
-    formfeedback.reset();
-    name.focus();
-    return false;   // Do not follow the link.
-  };
+  formlink.onclick = clickFormLink;
   formcancel.onclick = function()
   {
     endFeedback();
@@ -259,20 +252,6 @@ window.onload = function()
   formsend.onclick = formSend;
   currentInputBox = base;
   generateFuncButtons("funccat", "funcbtns");
-  if ("serviceWorker" in navigator)
-  { // Attempt to register service worker.
-    // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"]["register"]("calcSW.js").then(
-              function()
-              {
-                /* Nothing to do */
-              },
-              function()
-              {
-                /* Nothing to do */
-              });
-    fillCache();
-  }
-  initMenubarEvents();
+  registerServiceWorker();
 };
 getCalculatorCode("dilogW0000.js", false);

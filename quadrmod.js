@@ -16,12 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/* global fillCache */
+/* global clickFormLink */
 /* global formSend */
 /* global get */
 /* global getCalculatorCode */
 /* global hide */
-/* global initMenubarEvents */
+/* global registerServiceWorker */
 /* global show */
 /** @define {number} */ const lang = 0;   // Use with Closure compiler.
   const asmjs = typeof(WebAssembly) === "undefined";
@@ -254,36 +254,15 @@ window.onload = function()
   {
     generateFuncButtons("funccat", "funcbtns");
   };
-  get("formlink").onclick = function()
-  {
-    hide("main");
-    show("feedback");
-    get("formfeedback").reset();
-    get("name").focus();
-    return false;   // Do not follow the link.
-  };
+  get("formlink").onclick = clickFormLink;
   get("formcancel").onclick = function()
   {
     endFeedback();
   };
   get("formsend").onclick = formSend;
   currentInputBox = get("quad");
-  if ("serviceWorker" in navigator)
-  { // Attempt to register service worker.
-    // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"]["register"]("calcSW.js").then(
-              function()
-              {
-                /* Nothing to do */
-              },
-              function()
-              {
-                /* Nothing to do */
-              });
-    fillCache();
-  }
+  registerServiceWorker();
   completeFuncButtons();
-  initMenubarEvents();
 };
 
 getCalculatorCode("quadmodW0000.js", false);

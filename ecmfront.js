@@ -16,13 +16,13 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/* global fillCache */
+/* global clickFormLink */
 /* global formSend */
 /* global get */
 /* global getCalculatorCode */
 /* global hide */
-/* global initMenubarEvents */
 /* global keyDownOnWizard */
+/* global registerServiceWorker */
 /* global selectLoop */
 /* global show */
 /* global typedOnWizard */
@@ -809,14 +809,7 @@ function startUp()
     hide("cont");
     callWorker("C");  // Indicate worker that user pressed Continue button.
   };
-  get("formlink").onclick = function()
-  {
-    hide("main");
-    show("feedback");
-    get("formfeedback").reset();
-    get("name").focus();
-    return false;   // Do not follow the link.
-  };
+  get("formlink").onclick = clickFormLink;
   get("formcancel").onclick = function()
   {
     endFeedback();
@@ -998,21 +991,7 @@ function startUp()
       }
     }
   }
-  if ("serviceWorker" in navigator)
-  { // Attempt to register service worker.
-    // There is no need to do anything on registration success or failure in this JavaScript module.
-    navigator["serviceWorker"]["register"]("calcSW.js").then(
-              function()
-              {
-                /* Nothing to do */
-              },
-              function()
-              {
-                /* Nothing to do */
-              });
-    fillCache();
-  }
-  initMenubarEvents();
+  registerServiceWorker();
 }
 completeFuncButtons("funcbtns", "value");
 generateFuncButtons("wzdfunccat", "wzdfuncbtns", "wzdinput");

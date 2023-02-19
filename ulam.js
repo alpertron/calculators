@@ -17,6 +17,7 @@
 */
 
 /* global b64decode */
+/* global get */
 /* global initMenubarEvents */
 /* global instantiate */
 // In order to reduce the number of files to read from Web server, this 

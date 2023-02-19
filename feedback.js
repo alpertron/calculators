@@ -71,3 +71,12 @@ function formSend()
   xhr.send(contents);
   return false;   // Send form only through JavaScript.
 }
+
+function clickFormLink()
+{    
+  hide("main");
+  show("feedback");
+  get("formfeedback").reset();
+  get("name").focus();
+  return false;   // Do not follow the link.
+}

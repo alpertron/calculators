@@ -16,6 +16,7 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global b64decode */
+/* global get */
 /* global initMenubarEvents */
 /* global instantiate */
 // In order to reduce the number of files to read from Web server, this 
