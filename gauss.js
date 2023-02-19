@@ -347,7 +347,7 @@ window.onload = function()
               {
                 /* Nothing to do */
               });
-    fillCache("cacheGAUSS");
+    fillCache();
   }
 };
 getCalculatorCode("gaussianW0000.js", false);

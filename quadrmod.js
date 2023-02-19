@@ -280,7 +280,7 @@ window.onload = function()
               {
                 /* Nothing to do */
               });
-    fillCache("cacheQUADMOD");
+    fillCache();
   }
   completeFuncButtons();
   initMenubarEvents();

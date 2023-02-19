@@ -16,7 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global asmjs */
+/* global b64decode */
 /* global calcURLs */
+/* global callWorker */
+/* global get */
 /* global fileContents */
 let workPar;
 function getCalculatorCode(jsFileName, workerParameter)

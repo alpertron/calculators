@@ -18,11 +18,10 @@
 */
 /* global calcURLs */
 let url = window.location.pathname;
-let cacheName;
 
 function updateCache(cache)
 {
-  caches.open(cacheName).then(function(tempCache)
+  caches.open("cacheTEMP").then(function(tempCache)
   {
     tempCache.addAll([url].concat(calcURLs)).then(function()
     {     // Copy cached resources to main cache and delete this one.
@@ -35,15 +34,14 @@ function updateCache(cache)
       })
       .finally(function()
       {
-        caches.delete(cacheName);
+        caches.delete("cacheTEMP");
       });
     });  
   });
 }
 
-function fillCache(cacheAppName)
+function fillCache()
 {
-  cacheName = cacheAppName;
   // Test whether the HTML is already on the cache.
   caches.open("newCache").then(function(cache)
   {
@@ -71,7 +69,7 @@ function fillCache(cacheAppName)
           // Read files to new cache.
           // Use temporary cache so if there is any network error, original cache is not changed.
         
-          caches.open(cacheName).then(function(tempCache)
+          caches.open("cacheTEMP").then(function(tempCache)
           {                // Do not fetch HTML because it is already fetched.
             tempCache.addAll(calcURLs).then(function()
             {              // Copy cached resources to main cache and delete this one.
@@ -108,7 +106,7 @@ function fillCache(cacheAppName)
             })
             .finally(function()
             {
-              caches.delete(cacheName);
+              caches.delete("cacheTEMP");
             });
           })
           .catch (function()     // Cannot fetch HTML.

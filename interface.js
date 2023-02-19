@@ -507,7 +507,7 @@ function startUp()
               {
                 /* Nothing to do */
               });
-    fillCache("cacheINTERF");
+    fillCache();
   }
   initMenubarEvents();
 }

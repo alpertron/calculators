@@ -331,7 +331,7 @@ window.onload = function()
               {
                 /* Nothing to do */
               });
-    fillCache("cacheQUAD");
+    fillCache();
   }
   initMenubarEvents();
 };

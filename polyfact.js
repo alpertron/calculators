@@ -248,7 +248,7 @@ window.onload = function ()
               {
                 /* Nothing to do */
               });
-    fillCache("cachePOLY");
+    fillCache();
   }
   initMenubarEvents();
 };

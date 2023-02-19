@@ -18,9 +18,13 @@
 */
 /* global get */
 /* global hide */
+/* global lang */
+/* global oneexpr */
 /* global saveConfig */
 /* global show */
 /* global value */
+/* global wizardStep */
+/* global wizardTextInput */
 function selectLoop()
 {   
   get("next").value = (lang ? "Siguiente": "Next");

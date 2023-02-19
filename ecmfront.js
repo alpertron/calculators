@@ -1010,7 +1010,7 @@ function startUp()
               {
                 /* Nothing to do */
               });
-    fillCache("cacheECM");
+    fillCache();
   }
   initMenubarEvents();
 }
