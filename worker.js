@@ -17,7 +17,9 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global asmjs */
+/* global comingFromWorker */
 /* global fileContents */
+/* global get */
 /* global worker */
 let blob;
 function callWorker(param)

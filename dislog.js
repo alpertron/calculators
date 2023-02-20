@@ -71,14 +71,13 @@ function exprText(es, en)
 
 function comingFromWorker(e)
 {
-  { // First character of e.data is "1" for intermediate text
-    // and it is "2" for end of calculation.
-    result.innerHTML = e.data.substring(1);
-    if (e.data.substring(0, 1) === "2")
-    {   // First character passed from web worker is "2".
-      dlog.disabled = false;
-      stop.disabled = true;
-    }
+  // First character of e.data is "1" for intermediate text
+  // and it is "2" for end of calculation.
+  result.innerHTML = e.data.substring(1);
+  if (e.data.substring(0, 1) === "2")
+  {   // First character passed from web worker is "2".
+    dlog.disabled = false;
+    stop.disabled = true;
   }
 }
 
