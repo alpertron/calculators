@@ -177,6 +177,7 @@ function performCalc(from)
 {
   let valueA, valueB, valueC, digitGroup;
   let res = get("result");
+  let id;
   show("result");
   valueA = get("num").value;
   if (valueA === "")
@@ -228,16 +229,20 @@ function performCalc(from)
   {
     res.innerHTML = "Calculando desarrollo en fracciones continuas...";
   }
-  if ((app === 4) || (app === 5))
-  {
-    get("hexW").checked = get("converg").checked;
-  }
   let param = "";
   if ((app === 6) || (app === 7))
   {         // Sum of two squares and a power.
     param = from + ",";
   }
-  param += digitGroup + "," + (app+(get("hexW").checked? 64: 0)) + "," + valueA + String.fromCharCode(0);
+  if ((app === 4) || (app === 5))
+  {         // Continued fractions.
+    id = "converg";
+  }
+  else
+  {
+    id = "hexW";
+  }
+  param += digitGroup + "," + (app+(get(id).checked? 64: 0)) + "," + valueA + String.fromCharCode(0);
   if ((app === 4) || (app === 5))
   {         // Continued fractions.
     param += valueB + String.fromCharCode(0) + valueC + String.fromCharCode(0);

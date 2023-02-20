@@ -19,7 +19,9 @@
 /* global endfeedback */
 /* global get */
 /* global getFormSendValue */
+/* global hide */
 /* global lang */
+/* global show */
 function formSend()
 {
   if (get("adduserdata").checked)
