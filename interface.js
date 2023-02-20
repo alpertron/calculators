@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global callWorker */
 /* global clickFormLink */
 /* global get */
 /* global formSend */
@@ -34,7 +35,6 @@ let wizardStep = 0;
 let wizardTextInput;
 let worker = 0;
 let fileContents = 0;
-let blob;
 let currentInputBox;
 let funcnames;
 let parens;
@@ -112,60 +112,30 @@ else
                "tsqcubes.webmanifest", "tcuadcub.webmanifest", "tsqcubes-icon-1x.png", "tsqcubes-icon-2x.png", "tsqcubes-icon-4x.png", "tsqcubes-icon-180px.png", "tsqcubes-icon-512px.png", "favicon.ico"];
 }
 
-function callWorker(param)
+function comingFromWorker(e)
 {
-  let helphelp = get("helphelp");
-  let langName = asmjs? "asm.js": "WebAssembly";
-  if (!worker)
+  // First character of e.data is:
+  // "1" for intermediate output
+  // "2" for end calculation
+  // "4" for sending data to status line
+  // "6" for pausing calculation and showing the Continue button
+  let firstChar = e.data.substring(0, 1);
+  if (firstChar === "4")
   {
-    if (!blob)
-    {
-      if (asmjs)
-      {    // Asm.js
-        blob = new Blob([fileContents],{type: "text/javascript"});
-      }
-      else
-      {    // WebAssembly
-        blob = new Blob([get("worker").textContent],{type: "text/javascript"});
-      }
-    }   
-    worker = new Worker(window.URL.createObjectURL(blob));
-    worker.onmessage = function(e)
-    { // First character of e.data is:
-      // "1" for intermediate output
-      // "2" for end calculation
-      // "4" for sending data to status line
-      // "6" for pausing calculation and showing the Continue button
-      let firstChar = e.data.substring(0, 1);
-      if (firstChar === "4")
-      {
-        get("status").innerHTML = e.data.substring(1);
-      }
-      else
-      {
-        get("result").innerHTML = e.data.substring(1);
-        if (firstChar === "2" || firstChar === "6")
-        {   // First character passed from web worker is "2".
-          get("status").innerHTML = "";
-          styleButtons("inline", "none");  // Enable buttons that must be enabled when applet is not running
-          if (firstChar === "6")
-          {
-            show("cont");
-          }
-        }
-      }
-    };
-  }
-  show("helphelp");
-  helphelp.innerHTML = (lang ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión "+langName+".</p>":
-                               "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the "+langName+" version.</p>");
-  if (asmjs)
-  {      // Asm.js
-    worker.postMessage(param);
+    get("status").innerHTML = e.data.substring(1);
   }
   else
-  {      // WebAssembly.
-    worker.postMessage([param, fileContents]);
+  {
+    get("result").innerHTML = e.data.substring(1);
+    if (firstChar === "2" || firstChar === "6")
+    {   // First character passed from web worker is "2".
+      get("status").innerHTML = "";
+      styleButtons("inline", "none");  // Enable buttons that must be enabled when applet is not running
+      if (firstChar === "6")
+      {
+        show("cont");
+      }
+    }
   }
 }
 
@@ -253,6 +223,11 @@ function performCalc(from)
   }
   hide("cont");
   callWorker(param);
+  let helphelp = get("helphelp");
+  let langName = asmjs? "asm.js": "WebAssembly";
+  show("helphelp");
+  helphelp.innerHTML = (lang ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión "+langName+".</p>":
+                               "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the "+langName+" version.</p>");
 }
 
 function oneexpr()

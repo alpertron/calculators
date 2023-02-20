@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global callWorker */
 /* global clickFormLink */
 /* global formSend */
 /* global get */
@@ -28,7 +29,6 @@ const debugEcm = false;
 const asmjs = typeof(WebAssembly) === "undefined";
 let worker = 0;
 let app;
-let blob;
 let digits;
 let config;
 let fileContents = 0;
@@ -79,59 +79,34 @@ function styleButtons(style1, style2)
   get("more").style.display = style2;
 }
 
-function callWorker(param)
+function comingFromWorker(e)
 {
-  if (!worker)
+  // First character of e.data is "1" for intermediate text
+  // and it is "2" for end of calculation.
+  // It is "9" for saving expression to factor into Web Storage.
+  let firstChar = e.data.substring(0, 1);
+  if (firstChar === "8" && debugEcm)
   {
-    if (!blob)
-    {
-      if (asmjs)
-      {    // Asm.js
-        blob = new Blob([fileContents],{type: "text/javascript"});
-      }
-      else
-      {    // WebAssembly
-        blob = new Blob([get("worker").textContent],{type: "text/javascript"});
-      }
-    }   
-    worker = new Worker(window.URL.createObjectURL(blob));
-    worker.onmessage = function(e)
-    { // First character of e.data is "1" for intermediate text
-      // and it is "2" for end of calculation.
-      // It is "9" for saving expression to factor into Web Storage.
-      let firstChar = e.data.substring(0, 1);
-      if (firstChar === "8" && debugEcm)
-      {
-        setStorage("ecmFactors", e.data.substring(1));
-        setStorage("ecmCurve", "");
-      }
-      else if (firstChar === "7" && debugEcm)
-      {
-        setStorage("ecmCurve", e.data.substring(1));
-      }
-      else if (firstChar === "4")
-      {
-        get("status").innerHTML = e.data.substring(1);
-      }
-      else
-      {
-        get("result").innerHTML = e.data.substring(1);
-        if (e.data.substring(0, 1) === "2")
-        {   // First character passed from web worker is "2".
-          get("status").innerHTML = "";
-          styleButtons("inline", "none");  // Enable eval and factor
-          hide("modal-more");
-        }
-      }
-    };
+    setStorage("ecmFactors", e.data.substring(1));
+    setStorage("ecmCurve", "");
   }
-  if (asmjs)
-  {      // Asm.js
-    worker.postMessage(param);
+  else if (firstChar === "7" && debugEcm)
+  {
+    setStorage("ecmCurve", e.data.substring(1));
+  }
+  else if (firstChar === "4")
+  {
+    get("status").innerHTML = e.data.substring(1);
   }
   else
-  {      // WebAssembly.
-    worker.postMessage([param, fileContents]);
+  {
+    get("result").innerHTML = e.data.substring(1);
+    if (e.data.substring(0, 1) === "2")
+    {   // First character passed from web worker is "2".
+      get("status").innerHTML = "";
+      styleButtons("inline", "none");  // Enable eval and factor
+      hide("modal-more");
+    }
   }
 }
 

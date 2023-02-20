@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global callWorker */
 /* global clickFormLink */
 /* global formSend */
 /* global get */
@@ -28,7 +29,6 @@ const exprTextEs = "Por favor ingrese un número o expresión para ";
 const exprTextEn = "Please type a number or expression for the ";
 const asmjs = typeof(WebAssembly) === "undefined";
 let worker = 0;
-let blob;
 let fileContents = 0;
 let result, dlog, stop, base, pow, mod, digits, helpbtn, formlink;
 let formfeedback, name, formcancel, formsend, userdata;
@@ -68,40 +68,17 @@ function exprText(es, en)
 {
   return lang? exprTextEs + es: exprTextEn + en;
 }
-function callWorker(param)
+
+function comingFromWorker(e)
 {
-  if (!worker)
-  {
-    if (!blob)
-    {
-      if (asmjs)
-      {    // Asm.js
-        blob = new Blob([fileContents]);
-      }
-      else
-      {    // WebAssembly
-        blob = new Blob([get("worker").textContent],{type: "text/javascript"});
-      }
-    }   
-    worker = new Worker(window.URL.createObjectURL(blob));
-    worker.onmessage = function(e)
-    { // First character of e.data is "1" for intermediate text
-      // and it is "2" for end of calculation.
-      result.innerHTML = e.data.substring(1);
-      if (e.data.substring(0, 1) === "2")
-      {   // First character passed from web worker is "2".
-        dlog.disabled = false;
-        stop.disabled = true;
-      }
-    };
-  }
-  if (asmjs)
-  {      // Asm.js
-    worker.postMessage(param);
-  }
-  else
-  {      // WebAssembly.
-    worker.postMessage([param, fileContents]);
+  { // First character of e.data is "1" for intermediate text
+    // and it is "2" for end of calculation.
+    result.innerHTML = e.data.substring(1);
+    if (e.data.substring(0, 1) === "2")
+    {   // First character passed from web worker is "2".
+      dlog.disabled = false;
+      stop.disabled = true;
+    }
   }
 }
 

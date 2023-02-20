@@ -17,7 +17,6 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global asmjs */
-/* global callWorker */
 /* global endFeedback */
 /* global fileContents */
 /* global get */

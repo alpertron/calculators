@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global callWorker */
 /* global clickFormLink */
 /* global formSend */
 /* global get */
@@ -26,7 +27,6 @@
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const asmjs = typeof(WebAssembly) === "undefined";
 let worker = 0;
-let blob;
 let fileContents = 0;
 let currentInputBox;
 let funcnames;
@@ -60,41 +60,16 @@ else
   parens = "Left parenthesis,(,Right parenthesis,),";
 }
 
-function callWorker(param)
+function comingFromWorker(e)
 {
-  if (!worker)
-  {
-    if (!blob)
-    {
-      if (asmjs)
-      {    // Asm.js
-        blob = new Blob([fileContents],{type: "text/javascript"});
-      }
-      else
-      {    // WebAssembly
-        blob = new Blob([get("worker").textContent],{type: "text/javascript"});
-      }
-    }   
-    worker = new Worker(window.URL.createObjectURL(blob));
-    worker.onmessage = function(e)
-    { // First character of e.data is "1" for intermediate text
-      // and it is "2" for end of calculation.
-      get("result").innerHTML = e.data.substring(1);
-      if (e.data.substring(0, 1) === "2")
-      {   // First character passed from web worker is "2".
-        get("solve").disabled = false;
-        get("steps").disabled = false;
-        get("stop").disabled = true;
-      }
-    };
-  }
-  if (asmjs)
-  {      // Asm.js
-    worker.postMessage(param);
-  }
-  else
-  {      // WebAssembly.
-    worker.postMessage([param, fileContents]);
+  // First character of e.data is "1" for intermediate text
+  // and it is "2" for end of calculation.
+  get("result").innerHTML = e.data.substring(1);
+  if (e.data.substring(0, 1) === "2")
+  {   // First character passed from web worker is "2".
+    get("solve").disabled = false;
+    get("steps").disabled = false;
+    get("stop").disabled = true;
   }
 }
 

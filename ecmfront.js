@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global callWorker */
 /* global clickFormLink */
 /* global formSend */
 /* global get */
@@ -36,7 +37,6 @@ let wizardTextInput;
 let worker = 0;
 let fileContents = null;
 let app;
-let blob;
 let digits;
 let config;
 let fromFile;
@@ -162,145 +162,120 @@ function saveConfig(fromWizard)
   setStorage("ecmConfig", digits+","+config);
 }
 
-function callWorker(param)
+function comingFromWorker(e)
 {
-  if (!worker)
+  // First character of e.data is:
+  // "1" for intermediate output
+  // "2" for ending calculation
+  // "4" for sending intermediate data
+  // "6" for pausing calculation and showing the Continue button
+  // "7" for saving curve number into local storage
+  // "8" for saving input expression into local storage
+  // "9" for sending data to console.
+  // "A" for pausing calculation and showing the Continue button (save file)
+  // "B" for sending data to be saved to file and ending calculation.
+  // "D" for sending data to div named divisors.
+  // "E" for sending data to div named divisors. It includes button More divisors.
+  // "K" for showing Blockly errors.
+  // "L" for exiting Blockly mode.
+  // "M" for loading polynomial factorization application for factorization.
+  // "N" for loading polynomial factorization application for evaluation.
+  let firstChar = e.data.substring(0, 1);
+  if (firstChar === "9")
   {
-    if (!blob)
+    console.log(e.data.substring(1));
+  }
+  else if (firstChar === "8")
+  {
+    setStorage("ecmFactors", e.data.substring(1));
+    setStorage("ecmCurve", "");
+  }
+  else if (firstChar === "7")
+  {
+    setStorage("ecmCurve", e.data.substring(1));
+  }
+  else if (firstChar === "D")
+  {
+    get("divisors").innerHTML = e.data.substring(1);
+  }
+  else if (firstChar === "E")
+  {
+    get("divisors").innerHTML = e.data.substring(1);
+    get("showdiv").onclick = function()
     {
-      if (asmjs)
-      {    // Asm.js
-        blob = new Blob([fileContents],{type: "text/javascript"});
-      }
-      else
-      {    // WebAssembly
-        blob = new Blob([get("worker").textContent],{type: "text/javascript"});
-      }
-    }   
-    worker = new Worker(window.URL.createObjectURL(blob));
-    worker.onmessage = function(e)
-    { // First character of e.data is:
-      // "1" for intermediate output
-      // "2" for ending calculation
-      // "4" for sending intermediate data
-      // "6" for pausing calculation and showing the Continue button
-      // "7" for saving curve number into local storage
-      // "8" for saving input expression into local storage
-      // "9" for sending data to console.
-      // "A" for pausing calculation and showing the Continue button (save file)
-      // "B" for sending data to be saved to file and ending calculation.
-      // "D" for sending data to div named divisors.
-      // "E" for sending data to div named divisors. It includes button More divisors.
-      // "K" for showing Blockly errors.
-      // "L" for exiting Blockly mode.
-      // "M" for loading polynomial factorization application for factorization.
-      // "N" for loading polynomial factorization application for evaluation.
-      let firstChar = e.data.substring(0, 1);
-      if (firstChar === "9")
-      {
-        console.log(e.data.substring(1));
-      }
-      else if (firstChar === "8")
-      {
-        setStorage("ecmFactors", e.data.substring(1));
-        setStorage("ecmCurve", "");
-      }
-      else if (firstChar === "7")
-      {
-        setStorage("ecmCurve", e.data.substring(1));
-      }
-      else if (firstChar === "D")
-      {
-        get("divisors").innerHTML = e.data.substring(1);
-      }
-      else if (firstChar === "E")
-      {
-        get("divisors").innerHTML = e.data.substring(1);
-        get("showdiv").onclick = function()
-        {
-          callWorker("D");  // Indicate worker that user pressed Divisors button.
-        };
-      }
-      else if (firstChar === "K")
-      {
-        get("berror").innerHTML = e.data.substring(1);
-        show("BlocklyErrors");
-        hide("BlocklyButtons");
-      }
-      else if (firstChar === "L")
-      {
-        show("main");
-        hide("blockmode");
-      }
-      else if ((firstChar === "M") || (firstChar === "N"))
-      {    // User entered a polynomial. Load calculator to process it.
-        window.sessionStorage.setItem((firstChar === "M"? "F": "E"),
-          value.value);
-        window.location.replace(lang? "FACTPOL.HTM": "POLFACT.HTM");
-      }
-      else if (firstChar === "4")
-      {
-        statusDirty = true;
-        statusText = e.data.substring(1);
-      }
-      else if (firstChar === "5")
-      {
-        if (e.data.substring(1, 2) === "1")
-        {
-          show("skip");
-        }
-        else
-        {
-          hide("skip");
-        }
-      }
-      else
-      {
-        resultDirty = true;
-        if (firstChar === "2" || firstChar === "B" ||
-            firstChar === "6" || firstChar === "A")
-        {   // First character passed from web worker is "2".
-          statusDirty = true;
-          statusText = "";
-          styleButtons("inline", "none");  // Enable eval and factor
-          hide("modal-more");
-          if (firstChar === "A" || firstChar === "B")
-          {
-            tofile = e.data.substring(1);
-            show("savefile");
-            resultText = "";
-          }
-          else
-          {
-            resultText = e.data.substring(1);
-          }
-          if (firstChar === "6" || firstChar === "A")
-          {
-            show("cont");
-          }
-          if (firstChar === "2")
-          {
-            divisorsDirty = true;
-            if (navigator.share)
-            {
-              show("sharediv");
-            }
-          }
-        }
-        else
-        {
-          resultText = e.data.substring(1);
-        }
-      }
+      callWorker("D");  // Indicate worker that user pressed Divisors button.
     };
   }
-  if (asmjs)
-  {      // Asm.js
-    worker.postMessage(param);
+  else if (firstChar === "K")
+  {
+    get("berror").innerHTML = e.data.substring(1);
+    show("BlocklyErrors");
+    hide("BlocklyButtons");
+  }
+  else if (firstChar === "L")
+  {
+    show("main");
+    hide("blockmode");
+  }
+  else if ((firstChar === "M") || (firstChar === "N"))
+  {    // User entered a polynomial. Load calculator to process it.
+    window.sessionStorage.setItem((firstChar === "M"? "F": "E"),
+      value.value);
+    window.location.replace(lang? "FACTPOL.HTM": "POLFACT.HTM");
+  }
+  else if (firstChar === "4")
+  {
+    statusDirty = true;
+    statusText = e.data.substring(1);
+  }
+  else if (firstChar === "5")
+  {
+    if (e.data.substring(1, 2) === "1")
+    {
+      show("skip");
+    }
+    else
+    {
+      hide("skip");
+    }
   }
   else
-  {      // WebAssembly.
-    worker.postMessage([param, fileContents]);
+  {
+    resultDirty = true;
+    if (firstChar === "2" || firstChar === "B" ||
+        firstChar === "6" || firstChar === "A")
+    {   // First character passed from web worker is "2".
+      statusDirty = true;
+      statusText = "";
+      styleButtons("inline", "none");  // Enable eval and factor
+      hide("modal-more");
+      if (firstChar === "A" || firstChar === "B")
+      {
+        tofile = e.data.substring(1);
+        show("savefile");
+        resultText = "";
+      }
+      else
+      {
+        resultText = e.data.substring(1);
+      }
+      if (firstChar === "6" || firstChar === "A")
+      {
+        show("cont");
+      }
+      if (firstChar === "2")
+      {
+        divisorsDirty = true;
+        if (navigator.share)
+        {
+          show("sharediv");
+        }
+      }
+    }
+    else
+    {
+      resultText = e.data.substring(1);
+    }
   }
 }
 
@@ -315,7 +290,6 @@ function performWork(n, valueText)
   hide("sharediv");
   if (valueText === "")
   {    // Nothing in input box.
-
     resultDirty = true;
     resultText = (lang ? "<p>Por favor ingrese una expresión.</p>" :
                          "<p>Please type an expression.</p>");
@@ -323,10 +297,10 @@ function performWork(n, valueText)
   }
   hide("cont");
   hide("help");
-  helphelp.style.display = "block";
+  show("helphelp");
   helphelp.innerHTML = (lang ? "<p class=\"pad\">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. También puedes ver <a href=\"/videos/videosEcmc.htm\" target=\"_blank\">videos</a>. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización. Esta es la versión "+langName+".</p>":
                                "<p class=\"pad\">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. You can also watch <a href=\"/videos/videosEcm.htm\" target=\"_blank\">videos</a>. Keyboard users can press CTRL+ENTER to start factorization. This is the "+langName+" version.</p>");
-  res.style.display = "block";
+  show("result");
   if (typeof(Worker) === "undefined")
   {    // Web workers not supported on this browser.
     resultDirty = true;
