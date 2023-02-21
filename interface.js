@@ -20,6 +20,7 @@
 /* global clickFormLink */
 /* global get */
 /* global formSend */
+/* global generateFuncButtons */
 /* global getCalculatorCode */
 /* global hide */
 /* global keyDownOnWizard */

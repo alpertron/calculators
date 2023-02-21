@@ -19,6 +19,7 @@
 /* global callWorker */
 /* global clickFormLink */
 /* global formSend */
+/* global generateFuncButtons */
 /* global get */
 /* global getCalculatorCode */
 /* global hide */

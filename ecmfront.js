@@ -18,6 +18,7 @@
 */
 /* global callWorker */
 /* global clickFormLink */
+/* global completeFuncButtons */
 /* global formSend */
 /* global generateFuncButtons */
 /* global get */
