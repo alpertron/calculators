@@ -17,6 +17,8 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global currentInputBox */
+/* global funcnames */
+/* global get */
 /* global parens */
 function buttonClick(event)
 {
