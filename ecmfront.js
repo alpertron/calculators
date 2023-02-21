@@ -57,6 +57,7 @@ let script1;
 let script2;
 let funcnames;
 let parens;
+let currentInputBox;
 
 // DOM resources
 let value;
@@ -446,59 +447,6 @@ function initBlockly()
   script2 = loadScript(lang? "es0006.js": "en0006.js");
 }
 
-function updateInputFromButton(button, inputId)
-{
-  button.onclick = function(event)
-  {
-    let input = get(inputId);
-    input.focus();
-    let start = input.selectionStart;
-    input.value = input.value.substring(0, start) +
-                  event.target.innerText +
-                  input.value.substring(input.selectionEnd);
-      // Place the caret at the end of the appended text.
-    input.selectionStart = start + event.target.innerText.length;
-    input.selectionEnd = input.selectionStart;
-  };
-}
-    
-function generateFuncButtons(optionCategory, funcButtons, inputId)
-{
-  let button;
-  let catIndex;
-  let funcbtns = get(funcButtons);
-  let catnbr = get(optionCategory).selectedIndex;
-  let funcname = (parens + funcnames[+catnbr]).split(",");
-  // Append all buttons to document fragment instead of funcbtns
-  // and finally append the fragment to funcbtns to minimize redraws.
-  let fragment = document.createDocumentFragment();
-  for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
-  {
-    button = document.createElement("button");
-    button.setAttribute("type", "button");        // Indicate this is a button, not submit.
-    button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
-    button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
-    updateInputFromButton(button, inputId);
-    fragment.appendChild(button);
-  }
-  funcbtns.innerHTML = "";
-  funcbtns.appendChild(fragment);
-}
-
-function completeFuncButtons(funcButtons, inputId)
-{
-  let button;
-  let catIndex;
-  let funcname = (parens + funcnames[0]).split(",");
-  let funcbtns = get(funcButtons);
-  for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
-  {
-    button = funcbtns.children[+catIndex];
-    button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
-    updateInputFromButton(button, inputId);
-  } 
-}
-
 function getFormSendValue()
 {
   get("userdata").value = "\n" + value.value + "\n" + divResult.innerHTML + "\n" + get("status").innerHTML;
@@ -643,6 +591,7 @@ function startUp()
   {
     show("main");
     hide("wizard");
+    get("value").focus();
   };
   get("close-config").onclick = function()
   {
@@ -790,11 +739,19 @@ function startUp()
   };
   get("funccat").onchange = function()
   {
-    generateFuncButtons("funccat", "funcbtns", "value");
+    generateFuncButtons("funccat", "funcbtns");
   };
   get("wzdfunccat").onchange = function()
   {
-    generateFuncButtons("wzdfunccat", "wzdfuncbtns", "wzdinput");
+    generateFuncButtons("wzdfunccat", "wzdfuncbtns");
+  };
+  get("value").onfocus = function()
+  {
+    currentInputBox = get("value");
+  };
+  get("wzdinput").onfocus = function()
+  {
+    currentInputBox = get("wzdinput");
   };
   get("formsend").onclick = formSend;
   window.onclick = function(event)
@@ -966,8 +923,10 @@ function startUp()
     }
   }
   registerServiceWorker();
+  currentInputBox = get("value");
+  generateFuncButtons("funccat", "funcbtns");
+  generateFuncButtons("wzdfunccat", "wzdfuncbtns");
+  completeFuncButtons("funcbtns");
 }
-completeFuncButtons("funcbtns", "value");
-generateFuncButtons("wzdfunccat", "wzdfuncbtns", "wzdinput");
 getCalculatorCode("ecmW0000.js", workerParam);
 window.addEventListener("load", startUp);

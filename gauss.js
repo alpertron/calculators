@@ -34,6 +34,7 @@ let config;
 let fileContents = 0;
 let funcnames;
 let parens;
+let currentInputBox;
 if (lang)
 {
   funcnames =
@@ -144,41 +145,6 @@ function endFeedback()
 let calcURLs = ["gaussianW0000.js",
                "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png", "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-180px.png", "gaussian-icon-512px.png", "favicon.ico"];
 
-function generateFuncButtons(optionCategory, funcButtons, inputId)
-{
-  let button;
-  let catIndex;
-  let funcbtns = get(funcButtons);
-  let catnbr = get(optionCategory).selectedIndex;
-  let funcname = (parens + funcnames[+catnbr]).split(",");
-  // Append all buttons to document fragment instead of funcbtns
-  // and finally append the fragment to funcbtns to minimize redraws.
-  let fragment = document.createDocumentFragment();
-  for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
-  {
-    button = document.createElement("button");
-    button.setAttribute("type", "button");        // Indicate this is a button, not submit.
-    button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
-    button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
-    button.classList.add("funcbtn");
-    button.onclick = function(event)
-    {
-      let input = get(inputId);
-      input.focus();
-      let start = input.selectionStart;
-      input.value = input.value.substring(0, start) +
-                    event.target.innerText +
-                    input.value.substring(input.selectionEnd);
-        // Place the caret at the end of the appended text.
-      input.selectionStart = start + event.target.innerText.length;
-      input.selectionEnd = input.selectionStart;
-    };
-    fragment.appendChild(button);
-  }
-  funcbtns.innerHTML = "";
-  funcbtns.appendChild(fragment);
-}
-
 function getFormSendValue()
 {
   get("userdata").value = "\n" + get("value").value + "\n" + get("result").innerHTML + "\n" + get("status").innerHTML;
@@ -264,7 +230,7 @@ window.onload = function()
   };
   get("funccat").onchange = function()
   {
-    generateFuncButtons("funccat", "funcbtns", "value");
+    generateFuncButtons("funccat", "funcbtns");
   };
   get("formlink").onclick = clickFormLink;
   get("formcancel").onclick = function()
@@ -301,7 +267,8 @@ window.onload = function()
       digits = digits.substring(0,index);
     }
   }
-  generateFuncButtons("funccat", "funcbtns", "value");
+  generateFuncButtons("funccat", "funcbtns");
   registerServiceWorker();
+  currentInputBox = get("value");
 };
 getCalculatorCode("gaussianW0000.js", false);
