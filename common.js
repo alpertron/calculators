@@ -265,3 +265,26 @@ function b64decode(str,out)
     out[(idxDest+2) >> 0] = byte2<<6;
   }
 }
+
+function isNotSpecialKey(event)
+{
+  let key = event.key;
+  let acceptedKeys = ",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut," +
+                     "Control,Meta,Shift,Insert,Delete,Copy,Paste,Home,End,";
+  if (event.ctrlKey || event.metaKey)
+  {
+    if (key === "c")
+    {    // User pressed CTRL-C. Map it to "Copy".
+      key = "Copy";
+    }
+    if (key === "v")
+    {    // User pressed CTRL-V. Map it to "Paste".
+      key = "Paste";
+    }
+    if (key === "x")
+    {    // User pressed CTRL-X. Map it to "Cut".
+      key = "Cut";
+    }
+  }
+  return acceptedKeys.indexOf(","+key+",") < 0;
+}

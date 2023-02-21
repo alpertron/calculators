@@ -19,6 +19,7 @@
 /* global get */
 /* global hide */
 /* global initMenubarEvents */
+/* global isNotSpecialKey */
 /* global show */
 // In order to reduce the number of files to read from Web server, this 
 // Javascript file includes both the Javascript in the main thread and the 
@@ -530,29 +531,6 @@ function grayFindDistButton()
   {
     findDist.disabled = true;
   }
-}
-
-function isNotSpecialKey(event)
-{
-  let key = event.key;
-  let acceptedKeys = ",Backspace,Tab,Right,ArrowRight,Left,ArrowLeft,Cut," +
-                     "Control,Meta,Shift,Insert,Delete,Copy,Paste,Home,End,";
-  if (event.ctrlKey || event.metaKey)
-  {
-    if (key === "c")
-    {    // User pressed CTRL-C. Map it to "Copy".
-      key = "Copy";
-    }
-    if (key === "v")
-    {    // User pressed CTRL-V. Map it to "Paste".
-      key = "Paste";
-    }
-    if (key === "x")
-    {    // User pressed CTRL-X. Map it to "Cut".
-      key = "Cut";
-    }
-  }
-  return acceptedKeys.indexOf(","+key+",") < 0;
 }
 
 function startUp()
