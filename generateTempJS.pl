@@ -10,7 +10,7 @@ my $idxJSasm;
 my $idxJSasmEnd;
 my $idxStartAsmjsLoading;
 
-open my $jsFile, '<', $ARGV[0] or die "couldn't open js file".$ARGV[1];
+open my $jsFile, '<', $ARGV[0] or die "couldn't open js file ".$ARGV[0];
 while (1)
 {
   my $success = read $jsFile, $jsContents, 512, length($jsContents);
@@ -19,7 +19,7 @@ while (1)
 }
 close $jsFile;
 
-open my $asmJSFile, '<', $ARGV[1] or die "couldn't open asmJS file ".$ARGV[2];
+open my $asmJSFile, '<', $ARGV[1] or die "couldn't open asmJS file ".$ARGV[1];
 while (1)
 {
   my $success = read $asmJSFile, $asmJSContents, 512, length($asmJSContents);
@@ -30,7 +30,7 @@ close $asmJSFile;
 
 open(tempFile, '>', $ARGV[2]) or die "couldn't open temp file";
 
-$idxStartAsmjsLoading = index($jsContents, "asmJSbuffer");
+$idxStartAsmjsLoading = index($jsContents, "startLowLevelCodeCallback");
 # Change fields of asm object according to asmJS file.
 for (my $i=3; $i<=$#ARGV; $i++)
 {

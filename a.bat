@@ -139,7 +139,7 @@ java -jar %compilerName% -D app=7 %compilerOptions% --js interface.js --js commo
 if errorlevel 1 goto end
 perl replaceEmbeddedJS.pl %1 TCUADCUB.HTM fsquares.js tsqcubesS.wasm
 
-java -jar %compilerName% %compilerOptions% --js intfwebw.js --js commonwebw.js --js_output_file intWW.js
+java -jar %compilerName% %compilerOptions% --js intfwebw.js --js strings.js --js_output_file intWW.js
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js polyfact.js --js common.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file polfactE.js
 if errorlevel 1 goto end
@@ -175,7 +175,7 @@ perl replaceEmbeddedJS.pl %1 ECM.HTM ecmE.js ecmE.wasm
 java -jar %compilerName% -D lang=1 %compilerOptions% --js blocklyextern.js --js buttons.js --js ecmfront.js --js common.js --js calccode.js --js cache.js --js feedback.js --js wizard.js --js worker.js --js_output_file ecmS.js
 if errorlevel 1 goto end
 set emcc_DEBUG=
-java -jar %compilerName% %compilerOptions% --js ecmfwebw.js --js commonwebw.js --js_output_file ecmWW.js
+java -jar %compilerName% %compilerOptions% --js ecmfwebw.js --js strings.js --js_output_file ecmWW.js
 perl replaceEmbeddedJS.pl %1 ECMC.HTM ecmS.js ecmS.wasm
 copy calculatorSW.js calcSW.js
 
