@@ -97,7 +97,6 @@ static void getSumOfCubes(void)
 static void SortBigIntegers(BigInteger *pValue1, BigInteger *pValue2)
 {
   enum eSign tmpSign;
-  limb tmp;
   int index;
   limb *ptr1;
   limb *ptr2;
@@ -137,7 +136,7 @@ static void SortBigIntegers(BigInteger *pValue1, BigInteger *pValue2)
   ptr2 = pValue2->limbs;
   for (index = 0; index < nbrLimbs2; index++)
   {
-    tmp = *ptr1;
+    limb tmp = *ptr1;
     *ptr1 = *ptr2;
     *ptr2 = tmp;
     ptr1++;

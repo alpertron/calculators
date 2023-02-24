@@ -166,7 +166,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
 #ifdef __EMSCRIPTEN__
   ptrInputText = &emptyInputText;
 #endif
-  enum eExprErr rc;
   ptrCharFound = findChar(ptrSrcString + 1, ';');
   if (ptrCharFound == NULL)
   {
@@ -190,7 +189,7 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
   expressionNbr = 1;
   if (!firstExprProcessed)
   {
-    rc = evalExpression(ptrStartExpr + 1, valueFound);
+    enum eExprErr rc = evalExpression(ptrStartExpr + 1, valueFound);
     CopyBigInt(&valueX, valueFound);
     if (rc != EXPR_OK)
     {

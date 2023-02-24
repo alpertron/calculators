@@ -712,7 +712,6 @@ static bool doStep1(int dividendMod32768[], int divisorMod32768[])
 {
   int currentDegree;
   const int* ptrDest;
-  enum eExprErr rc;
 
   UncompressBigIntegerB(&polyS[1], &operand1);
   UncompressBigIntegerB(&poly5[1], &operand2);
@@ -799,6 +798,7 @@ static bool doStep1(int dividendMod32768[], int divisorMod32768[])
   // not zero, the integer division will not be performed.
   if ((divisorMod32768[(2 * poly5[0]) + 1] % 2) != 0)
   {
+    enum eExprErr rc;
     const int* ptrMod32768;
     int TestNbr0Bak = TestNbr[0].x;
     TestNbr[0].x = 32768;
