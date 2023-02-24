@@ -221,7 +221,7 @@ function startUp()
   {
     let ctx;
     updateInput(center);
-    if (canShowCanvas())
+    if (cantShowCanvas())
     {
       information.innerHTML = get("cannotShow").innerHTML;
       ctx = canvas.getContext("2d");
