@@ -318,10 +318,10 @@ enum eExprErr BigIntMultiply(const BigInteger *pFact1, const BigInteger *pFact2,
     return EXPR_OK;
   }
 #ifdef FACTORIZATION_APP
-  // 2^664380 ~ 10^200000
+  // The maximum number that can be represented is 2^664380 ~ 10^200000
   if ((pFactor1->nbrLimbs + pFactor2->nbrLimbs) > ((664380 / BITS_PER_GROUP) + 1))
 #else
-  // 2^66438 ~ 10^20000
+  // The maximum number that can be represented is 2^66438 ~ 10^20000
   if ((pFactor1->nbrLimbs + pFactor2->nbrLimbs) > ((66438 / BITS_PER_GROUP) + 1))
 #endif
   {
@@ -2706,12 +2706,12 @@ void computeRoot(const BigInteger* argument, BigInteger *nthRoot, int Exponent)
     (void)BigIntDivide(&NFp1, &rootN1, &NFp1);
     setNewNbrLimbs(&NFp1, maxNbrLimbs);
 
-    // Compute (n-1)*x
+    // From Newton's method for nth root, compute (n-1)*x
     multint(&nthRootSignificantLimbs, &nthRootSignificantLimbs, exponMinus1);
 
-    // Compute (n-1)*x + y/x^(n-1)
+    // From Newton's method for nth root, compute (n-1)*x + y/x^(n-1)
     BigIntAdd(&nthRootSignificantLimbs, &NFp1, &nthRootSignificantLimbs);
-    // Compute (1/n) * ((n-1)*x + y/x^(n-1))
+    // From Newton's method for nth root, compute (1/n) * ((n-1)*x + y/x^(n-1))
     subtractdivide(&nthRootSignificantLimbs, 0, exponMinus1 + 1);
   }
   // Round nthRootSignificantLimbs and copy it to nthRoot.
