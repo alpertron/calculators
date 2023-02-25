@@ -2003,8 +2003,9 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
     {
       if (insidePowering)
       {
-        // U_{2k} = U_k * V_k
-        // V_{2k} = (V_k)^2 - 2*Q^K
+        // Use the following formulas for duplicating Lucas numbers:
+        // For sequence U: U_{2k} = U_k * V_k
+        // For sequence V: V_{2k} = (V_k)^2 - 2*Q^K
         modmult(Mult3, Mult4, Mult3);          // U <- U * V
         modmult(Mult4, Mult4, Mult4);          // V <- V * V
         if (signPowQ > 0)

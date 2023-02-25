@@ -782,8 +782,9 @@ enum eEcmResult ecmStep2(void)
             (void)memcpy(common.ecm.GD, common.ecm.Z, NumberSizeBytes);
             return FACTOR_FOUND;
           }
-          modmult(common.ecm.X, common.ecm.Aux3, common.ecm.Aux1); // Aux1 <- X/Z (3,5,*
-        }                         //         SIEVE_SIZE*Q)
+          // Compute Aux as X/Z for 3, 5, SIEVE_SIZE * Q)
+          modmult(common.ecm.X, common.ecm.Aux3, common.ecm.Aux1);
+        }
 
           /* Generate sieve */
         if (((indexM % 10) == 0) || (indexM == Qaux))
@@ -853,7 +854,7 @@ enum eEcmResult ecmStep2(void)
       {
         continue;
       }
-      // GD <- GCD(GcdAccumulated, TestNbr)
+      // Compute GD as GCD(GcdAccumulated, TestNbr)
       if (memcmp(common.ecm.GD, TestNbr, NumberSizeBytes) != 0)
       {           // GCD is not 1 or TestNbr
         return FACTOR_FOUND;
@@ -1006,14 +1007,19 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
     //  Compute A0 <- 2 * (EC+1)*modinv(3 * (EC+1) ^ 2 - 1, N) mod N
                                                // Aux2 <- 1 in Montgomery notation.
     (void)memcpy(common.ecm.Aux2, MontgomeryMultR1, NumberSizeBytes);
-    modmultInt(common.ecm.Aux2, EC + 1, common.ecm.Aux2);            // Aux2 <- EC + 1.
-    modmultInt(common.ecm.Aux2, 2, common.ecm.Aux1);                 // Aux1 <- 2*(EC+1)
-    modmultInt(common.ecm.Aux2, EC + 1, common.ecm.Aux3);            // Aux3 <- (EC + 1)^2
-    modmultInt(common.ecm.Aux3, 3, common.ecm.Aux3);                 // Aux3 <- 3*(EC + 1)^2
-                                               // Aux2 <- 3*(EC + 1)^2 - 1 
+    // Compute Aux2 as EC + 1.
+    modmultInt(common.ecm.Aux2, EC + 1, common.ecm.Aux2);
+    // Compute Aux1 as 2*(EC+1).
+    modmultInt(common.ecm.Aux2, 2, common.ecm.Aux1);
+    // Compute Aux3 as (EC + 1)^2.
+    modmultInt(common.ecm.Aux2, EC + 1, common.ecm.Aux3);
+    // Compute Aux3 as 3*(EC + 1)^2.
+    modmultInt(common.ecm.Aux3, 3, common.ecm.Aux3);
+    // Compute Aux2 as 3*(EC + 1)^2 - 1.
     SubtBigNbrModN(common.ecm.Aux3, MontgomeryMultR1, common.ecm.Aux2, TestNbr, NumberLength);
     (void)ModInvBigNbr(common.ecm.Aux2, common.ecm.Aux2, TestNbr, NumberLength);
-    modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.A0);                   // A0 <- 2*(EC+1)/(3*(EC+1)^2 - 1)
+    // Compute A0 as 2*(EC+1)/(3*(EC+1)^2 - 1)
+    modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.A0);
 
     //  if A0*(A0 ^ 2 - 1)*(9 * A0 ^ 2 - 1) mod N=0 then select another curve.
     modmult(common.ecm.A0, common.ecm.A0, common.ecm.A02);          // A02 <- A0^2
@@ -1023,9 +1029,9 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
     SubtBigNbrModN(common.ecm.Aux2, MontgomeryMultR1, common.ecm.Aux2, TestNbr, NumberLength); // Aux2 <- 9*A0^2-1
     modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.Aux3);
   } while (BigNbrIsZero(common.ecm.Aux3));
-  //   Z <- 4 * A0 mod N
+  //   Compute Z as 4 * A0 mod N
   modmultInt(common.ecm.A0, 4, common.ecm.Z);
-  //   A = (-3 * A0 ^ 4 - 6 * A0 ^ 2 + 1)*modinv(4 * A0 ^ 3, N) mod N
+  //   Compute A as(-3 * A0 ^ 4 - 6 * A0 ^ 2 + 1)*modinv(4 * A0 ^ 3, N) mod N
   modmultInt(common.ecm.A02, 6, common.ecm.Aux1);      // Aux1 <- 6*A0^2
   SubtBigNbrModN(MontgomeryMultR1, common.ecm.Aux1, common.ecm.Aux1, TestNbr, NumberLength);
   modmult(common.ecm.A02, common.ecm.A02, common.ecm.Aux2);       // Aux2 <- A0^4
@@ -1034,13 +1040,13 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
   modmultInt(common.ecm.A03, 4, common.ecm.Aux2);      // Aux2 <- 4*A0^3
   (void)ModInvBigNbr(common.ecm.Aux2, common.ecm.Aux3, TestNbr, NumberLength);
   modmult(common.ecm.Aux1, common.ecm.Aux3, common.ecm.A0);
-  //   AA <- (A + 2)*modinv(4, N) mod N
+  //   Compute AA as (A + 2)*modinv(4, N) mod N
   modmultInt(MontgomeryMultR1, 2, common.ecm.Aux2);  // Aux2 <- 2
   AddBigNbrModN(common.ecm.A0, common.ecm.Aux2, common.ecm.Aux1, TestNbr, NumberLength); // Aux1 <- A0+2
   modmultInt(MontgomeryMultR1, 4, common.ecm.Aux2);  // Aux2 <- 4
   (void)ModInvBigNbr(common.ecm.Aux2, common.ecm.Aux2, TestNbr, NumberLength);
   modmult(common.ecm.Aux1, common.ecm.Aux2, common.ecm.AA);
-  //   X <- (3 * A0 ^ 2 + 1) mod N
+  //   Compute X as (3 * A0 ^ 2 + 1) mod N
   modmultInt(common.ecm.A02, 3, common.ecm.Aux1);    // Aux1 <- 3*A0^2
   AddBigNbrModN(common.ecm.Aux1, MontgomeryMultR1, common.ecm.X, TestNbr, NumberLength);
   result = ecmStep1();
@@ -1070,4 +1076,3 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
   *pNextEC = NextEC;
   return FACTOR_NOT_FOUND;
 }
-

@@ -239,9 +239,9 @@ static bool PollardRho(int NumberSizeBytes, double firstLimit, double secondLimi
       if ((addA2.x >= HALF_INT_RANGE) || (addB2.x >= HALF_INT_RANGE) ||
         (mult2.x >= HALF_INT_RANGE))
       {
-        // nbrA2 <- (nbrA2 * mult2 + addA2) % subGroupOrder
+        // Get next value of A2 as nbrA2 <- (nbrA2 * mult2 + addA2) % subGroupOrder
         AdjustExponent(nbrA2, mult2, addA2, &subGroupOrder);
-        // nbrB2 <- (nbrB2 * mult2 + addB2) % subGroupOrder
+        // Get next value of B2 as nbrB2 <- (nbrB2 * mult2 + addB2) % subGroupOrder
         AdjustExponent(nbrB2, mult2, addB2, &subGroupOrder);
         mult2.x = 1;
         addA2.x = 0;
@@ -255,15 +255,15 @@ static bool PollardRho(int NumberSizeBytes, double firstLimit, double secondLimi
     } while (brentK < brentR);
   } while (!EndPollardBrentRho);
   ExchangeMods();                  // TestNbr <- subGroupOrder
-  // nbrA <- (nbrA * mult1 + addA) % subGroupOrder
+  // Get next value of A as nbrA <- (nbrA * mult1 + addA) % subGroupOrder
   AdjustExponent(nbrA, mult1, addA, &subGroupOrder);
-  // nbrB <- (nbrB * mult1 + addB) % subGroupOrder
+  // Get next value of B as nbrB <- (nbrB * mult1 + addB) % subGroupOrder
   AdjustExponent(nbrB, mult1, addB, &subGroupOrder);
-  // nbrA2 <- (nbrA * mult2 + addA2) % subGroupOrder
+  // Get next value of A2 as nbrA2 <- (nbrA * mult2 + addA2) % subGroupOrder
   AdjustExponent(nbrA2, mult2, addA2, &subGroupOrder);
-  // nbrB2 <- (nbrA * mult2 + addB2) % subGroupOrder
+  // Get next value of B2 as nbrB2 <- (nbrA * mult2 + addB2) % subGroupOrder
   AdjustExponent(nbrB2, mult2, addB2, &subGroupOrder);
-  // nbrB <- (nbrB2 - nbrB) % subGroupOrder
+  // Get next value of B as nbrB <- (nbrB2 - nbrB) % subGroupOrder
   SubtBigNbrMod(nbrB2, nbrB, nbrB);
   SubtBigNbrMod(nbrA, nbrA2, nbrA);
   if (BigNbrIsZero(nbrA))
