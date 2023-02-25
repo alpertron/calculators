@@ -769,29 +769,29 @@ double sqrt(double x)
 
   i = (ix >> 46) % 128;
   r = (uint32_t)__rsqrt_tab[i] << 16;
-  /* |r sqrt(m) - 1| < 0x1.fdp-9 */
+  /* Error is |r sqrt(m) - 1| < 0x1.fdp-9 */
   s = mul32(m >> 32, r);
-  /* |s/sqrt(m) - 1| < 0x1.fdp-9 */
+  /* Error is |s/sqrt(m) - 1| < 0x1.fdp-9 */
   d = mul32(s, r);
   u = three - d;
   r = mul32(r, u) << 1;
-  /* |r sqrt(m) - 1| < 0x1.7bp-16 */
+  /* Error is |r sqrt(m) - 1| < 0x1.7bp-16 */
   s = mul32(s, u) << 1;
-  /* |s/sqrt(m) - 1| < 0x1.7bp-16 */
+  /* Error is |s/sqrt(m) - 1| < 0x1.7bp-16 */
   d = mul32(s, r);
   u = three - d;
   r = mul32(r, u) << 1;
-  /* |r sqrt(m) - 1| < 0x1.3704p-29 (measured worst-case) */
+  /* Error is |r sqrt(m) - 1| < 0x1.3704p-29 (measured worst-case) */
   r = r << 32;
   s = mul64(m, r);
   d = mul64(s, r);
   u = (three << 32) - d;
   s = mul64(s, u);  /* repr: 3.61 */
-  /* -0x1p-57 < s - sqrt(m) < 0x1.8001p-61 */
+  /* Error is -0x1p-57 < s - sqrt(m) < 0x1.8001p-61 */
   s = (s - 2) >> 9; /* repr: 12.52 */
-  /* -0x1.09p-52 < s - sqrt(m) < -0x1.fffcp-63 */
+  /* Error is -0x1.09p-52 < s - sqrt(m) < -0x1.fffcp-63 */
 
-  /* s < sqrt(m) < s + 0x1.09p-52,
+  /* Error is s < sqrt(m) < s + 0x1.09p-52,
      compute nearest rounded result:
      the nearest result to 52 bits is either s or s+0x1p-52,
      we can decide by comparing (2^52 s + 0.5)^2 to 2^104 m.  */
@@ -866,11 +866,11 @@ double cos(double x)
   GET_HIGH_WORD(ix, x);
   ix &= 0x7fffffff;
 
-  /* |x| ~< pi/4 */
+  /* Value of |x| ~< pi/4 */
   if (ix <= 0x3fe921fbU)
   {
     if (ix < 0x3e46a09eU)
-    {  /* |x| < 2**-27 * sqrt(2) */
+    {  /* Value of |x| < 2**-27 * sqrt(2) */
       /* raise inexact if x!=0 */
       FORCE_EVAL(x + 0x1p120f);
       return 1.0;
@@ -944,11 +944,11 @@ double acos(double x)
     }
     return asdouble(0x7FF0000000000000LL);
   }
-  /* |x| < 0.5 */
+  /* Value of |x| < 0.5 */
   if (ix < 0x3fe00000U)
   {
     if (ix <= 0x3c600000U)
-    {  /* |x| < 2**-57 */
+    {  /* Value of |x| < 2**-57 */
       return pio2_hi + 0x1p-120f;
     }
     return pio2_hi - (x - (pio2_lo - (x * R(x * x))));

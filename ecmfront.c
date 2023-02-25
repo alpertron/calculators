@@ -688,7 +688,7 @@ static void ComputeSumOfFourSquaresForPrime(void)
 // pq = Quad1^2 + Quad2^2 + Quad3^2 + Quad4^2.
 static void GenerateSumOfFourSquaresOfPQ(void)
 {
-  // Compute Tmp1 <- Mult1*Quad1 + Mult2*Quad2 + Mult3*Quad3 + Mult4*Quad4
+  // Compute Tmp1 as Mult1*Quad1 + Mult2*Quad2 + Mult3*Quad3 + Mult4*Quad4
   (void)BigIntMultiply(&Mult1, &Quad1, &Tmp);
   (void)BigIntMultiply(&Mult2, &Quad2, &Tmp4);
   BigIntAdd(&Tmp, &Tmp4, &Tmp);
@@ -697,7 +697,7 @@ static void GenerateSumOfFourSquaresOfPQ(void)
   (void)BigIntMultiply(&Mult4, &Quad4, &Tmp4);
   BigIntAdd(&Tmp, &Tmp4, &Tmp1);
 
-  // Compute Tmp2 <- Mult1*Quad2 - Mult2*Quad1 + Mult3*Quad4 - Mult4*Quad3
+  // Compute Tmp2 as Mult1*Quad2 - Mult2*Quad1 + Mult3*Quad4 - Mult4*Quad3
   (void)BigIntMultiply(&Mult1, &Quad2, &Tmp);
   (void)BigIntMultiply(&Mult2, &Quad1, &Tmp4);
   BigIntSubt(&Tmp, &Tmp4, &Tmp);
@@ -706,7 +706,7 @@ static void GenerateSumOfFourSquaresOfPQ(void)
   (void)BigIntMultiply(&Mult4, &Quad3, &Tmp4);
   BigIntSubt(&Tmp, &Tmp4, &Tmp2);
 
-  // Compute Tmp3 <- Mult1*Quad3 - Mult3*Quad1 - Mult2*Quad4 + Mult4*Quad2
+  // Compute Tmp3 as Mult1*Quad3 - Mult3*Quad1 - Mult2*Quad4 + Mult4*Quad2
   (void)BigIntMultiply(&Mult1, &Quad3, &Tmp);
   (void)BigIntMultiply(&Mult3, &Quad1, &Tmp4);
   BigIntSubt(&Tmp, &Tmp4, &Tmp);
@@ -715,7 +715,7 @@ static void GenerateSumOfFourSquaresOfPQ(void)
   (void)BigIntMultiply(&Mult4, &Quad2, &Tmp4);
   BigIntAdd(&Tmp, &Tmp4, &Tmp3);
 
-  // Compute Quad4 <- Mult1*Quad4 - Mult4*Quad1 + Mult2*Quad3 - Mult3*Quad2
+  // Compute Quad4 as Mult1*Quad4 - Mult4*Quad1 + Mult2*Quad3 - Mult3*Quad2
   (void)BigIntMultiply(&Mult1, &Quad4, &Tmp);
   (void)BigIntMultiply(&Mult4, &Quad1, &Tmp4);
   BigIntSubt(&Tmp, &Tmp4, &Tmp);
@@ -795,7 +795,7 @@ static void ComputeFourSquares(const struct sFactors *pstFactors)
   if ((pstFactors->multiplicity == 1) && (*pstFactor->ptrFactor == 1))
   {
     if (*(pstFactor->ptrFactor + 1) == 1)
-    {                            // Number to factor is 1.
+    {                              // Number to factor is 1.
       return;
     }
     if (*(pstFactor->ptrFactor + 1) == 0)

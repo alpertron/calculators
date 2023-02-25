@@ -201,14 +201,14 @@ static void Demjanenko(void)
   mask = 32;
   while (mask > 0)
   {
-    // tmpP1 <- P1*P1 + Q1*R1
-    // tmpQ1 <- (P1+S1) * Q1
-    // tmpR1 <- (P1+S1) * R1
-    // tmpS1 <- S1*S1 + Q1*R1
-    // P1 <- tmpP1
-    // Q1 <- tmpQ1
-    // R1 <- tmpR1
-    // S1 <- tmpS1
+    // Compute tmpP1 as P1*P1 + Q1*R1
+    // Compute tmpQ1 as (P1+S1) * Q1
+    // Compute tmpR1 as (P1+S1) * R1
+    // Compute tmpS1 as S1*S1 + Q1*R1
+    // Compute P1 as tmpP1
+    // Compute Q1 as tmpQ1
+    // Compute R1 as tmpR1
+    // Compute S1 as tmpS1
     (void)BigIntMultiply(&P1, &P1, &tmpP1);
     (void)BigIntMultiply(&Q1, &R1, &tmpQ1);
     (void)BigIntMultiply(&S1, &S1, &tmpS1);
@@ -219,14 +219,14 @@ static void Demjanenko(void)
     (void)BigIntMultiply(&tmpR1, &R1, &R1);
     if ((exp & mask) != 0)
     {
-      // tmpP1 <- P*P1 + Q*R1
-      // tmpQ1 <- P*Q1 + Q*S1
-      // tmpR1 <- R*P1 + S*R1
-      // tmpS1 <- R*Q1 + S*S1
-      // P1 <- tmpP1
-      // Q1 <- tmpQ1
-      // R1 <- tmpR1
-      // S1 <- tmpS1
+      // Compute tmpP1 as P*P1 + Q*R1
+      // Compute tmpQ1 as P*Q1 + Q*S1
+      // Compute tmpR1 as R*P1 + S*R1
+      // Compute tmpS1 as R*Q1 + S*S1
+      // Compute P1 as tmpP1
+      // Compute Q1 as tmpQ1
+      // Compute R1 as tmpR1
+      // Compute S1 as tmpS1
       (void)BigIntMultiply(&P, &P1, &tmpP1);
       (void)BigIntMultiply(&Q, &R1, &tmpQ1);
       (void)BigIntMultiply(&R, &P1, &tmpR1);
