@@ -23,6 +23,18 @@
 /* global get */
 /* global fileContents */
 let workPar;
+function newState(_aEvt)
+{
+  if (req.readyState === 4 && req.status === 200)
+  {
+    fileContents = /** @type {ArrayBuffer} */ (req.response);
+    if (workPar)
+    {
+      callWorker(workPar);
+    }
+  }
+}
+
 function getCalculatorCode(jsFileName, workerParameter)
 {
   workPar = workerParameter;
@@ -31,17 +43,7 @@ function getCalculatorCode(jsFileName, workerParameter)
     let req = new XMLHttpRequest();
     req.open("GET", jsFileName, true);
     req.responseType = "arraybuffer";
-    req.onreadystatechange = function (_aEvt)
-    {
-      if (req.readyState === 4 && req.status === 200)
-      {
-        fileContents = /** @type {ArrayBuffer} */ (req.response);
-        if (workPar)
-        {
-          callWorker(workPar);
-        }
-      }
-    };
+    req.onreadystatechange = newState;
     req.send(null);
   }
   else

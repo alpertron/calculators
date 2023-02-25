@@ -37,168 +37,177 @@ function show(id)
   get(id).style.display = "block";
 }
 
+function topMenuClick(event)
+{
+  if (event.target.getAttribute("aria-expanded") === "false")
+  {
+    event.target.setAttribute("aria-expanded", "true");
+  }
+  else
+  {
+    event.target.setAttribute("aria-expanded", "false");
+  }
+  event.target.firstElementChild.firstElementChild.firstElementChild.focus();
+  event.preventDefault();
+  return false;
+}
+
+function topMenuKeyDown(event)
+{
+  let nextNode;
+  if (event.key === "Enter")
+  {
+    event.target.click(event);
+    return;
+  }
+  if (event.key === "ArrowRight")
+  {
+    nextNode = event.target.nextElementSibling;
+    if (nextNode === null)
+    {
+      nextNode = event.target.parentNode.firstElementChild;
+    }
+    nextNode.focus();
+    event.preventDefault();
+    return;
+  }
+  if (event.key === "ArrowLeft")
+  {
+    nextNode = event.target.previousElementSibling;
+    if (nextNode === null)
+    {
+      nextNode = event.target.parentNode.lastElementChild;
+    }
+    nextNode.focus();
+    event.preventDefault();
+    return;
+  }
+  if (event.key === "ArrowUp")
+  {
+    event.target.setAttribute("aria-expanded", "true");
+    event.target.firstElementChild.lastElementChild.firstElementChild.focus();
+    event.preventDefault();
+    return;
+  }
+  if (event.key === "ArrowDown")
+  { 
+    event.target.setAttribute("aria-expanded", "true");
+    event.target.firstElementChild.firstElementChild.firstElementChild.focus();
+    event.preventDefault();
+  }
+}
+
+function topMenuMouseEnter(event)
+{
+  event.target.setAttribute("aria-expanded", "true");
+}
+
+function topMenuMouseLeave(event)
+{
+  event.target.setAttribute("aria-expanded", "false");
+}
+
+function subMenuClick(event)
+{
+  let parent = event.target.parentNode.parentNode.parentNode;
+  parent.setAttribute("aria-expanded", "false");
+  window.location = event.target.getAttribute("href");
+  event.stopImmediatePropagation();
+  event.preventDefault();
+}
+
+function subMenuKeyDown(event)
+{
+  let next;
+  let parent = event.target.parentNode.parentNode.parentNode;
+  if (event.key === "Tab")
+  {
+    parent.setAttribute("aria-expanded", "false");
+    return;
+  }
+  if (event.key === "Escape")
+  {
+    parent.setAttribute("aria-expanded", "false");
+    parent.focus();
+    event.preventDefault();          
+    return;
+  }
+  if (event.key === "Enter")
+  {
+    parent.setAttribute("aria-expanded", "false");
+    window.location = event.target.getAttribute("href");
+    event.stopImmediatePropagation();
+    event.preventDefault();
+    return;
+  }
+  if (event.key === "ArrowRight")
+  {
+    parent.setAttribute("aria-expanded", "false");
+    next = parent.nextElementSibling;
+    if (next === null)
+    {
+      next = parent.parentNode.firstElementChild;
+    }
+    next.setAttribute("aria-expanded", "true");
+    next.firstElementChild.firstElementChild.firstElementChild.focus();
+    event.stopImmediatePropagation();
+    event.preventDefault();
+    return;
+  }
+  if (event.key === "ArrowLeft")
+  {
+    parent.setAttribute("aria-expanded", "false");
+    next = parent.previousElementSibling;
+    if (next === null)
+    {
+      next = parent.parentNode.lastElementChild;
+    }
+    next.setAttribute("aria-expanded", "true");
+    next.firstElementChild.firstElementChild.firstElementChild.focus();
+    event.stopImmediatePropagation();
+    event.preventDefault();
+    return;
+  }
+  if (event.key === "ArrowUp" || event.key === "ArrowDown")
+  {
+    if (event.key === "ArrowUp")
+    {
+      next = event.target.parentNode.previousElementSibling;
+    }
+    else
+    {
+      next = event.target.parentNode.nextElementSibling;
+    }
+    if (next === null)
+    {
+      parent.setAttribute("aria-expanded", "false");
+      parent.focus();
+    }
+    else
+    {
+      next.firstElementChild.focus();
+    }
+    event.stopImmediatePropagation();
+    event.preventDefault();
+  }
+}
+
 function initMenubarEvents()
 {  
   let menuItems = document.querySelectorAll("[role=\"menubar\"] > li");
   Array.prototype.forEach.call(menuItems, function(el, i)
   {
-    el.addEventListener("click", function(event)
-    {
-      if (event.target.getAttribute("aria-expanded") === "false")
-      {
-        event.target.setAttribute("aria-expanded", "true");
-      }
-      else
-      {
-        event.target.setAttribute("aria-expanded", "false");
-      }
-      event.target.firstElementChild.firstElementChild.firstElementChild.focus();
-      event.preventDefault();
-      return false;
-    });
-    
-    el.addEventListener("keydown", function(event)
-    {
-      let nextNode;
-      if (event.key === "Enter")
-      {
-        event.target.click(event);
-        return;
-      }
-      if (event.key === "ArrowRight")
-      {
-        nextNode = event.target.nextElementSibling;
-        if (nextNode === null)
-        {
-          nextNode = event.target.parentNode.firstElementChild;
-        }
-        nextNode.focus();
-        event.preventDefault();
-        return;
-      }
-      if (event.key === "ArrowLeft")
-      {
-        nextNode = event.target.previousElementSibling;
-        if (nextNode === null)
-        {
-          nextNode = event.target.parentNode.lastElementChild;
-        }
-        nextNode.focus();
-        event.preventDefault();
-        return;
-      }
-      if (event.key === "ArrowUp")
-      {
-        event.target.setAttribute("aria-expanded", "true");
-        event.target.firstElementChild.lastElementChild.firstElementChild.focus();
-        event.preventDefault();
-        return;
-      }
-      if (event.key === "ArrowDown")
-      { 
-        event.target.setAttribute("aria-expanded", "true");
-        event.target.firstElementChild.firstElementChild.firstElementChild.focus();
-        event.preventDefault();
-      }
-    });
-    
-    el.addEventListener("mouseenter", function(event)
-    {
-      event.target.setAttribute("aria-expanded", "true");
-    });
-   
-    el.addEventListener("mouseleave", function(event)
-    {
-      event.target.setAttribute("aria-expanded", "false");
-    });
+    el.addEventListener("click", topMenuClick);
+    el.addEventListener("keydown", topMenuKeyDown);
+    el.addEventListener("mouseenter", topMenuMouseEnter);
+    el.addEventListener("mouseleave", topMenuMouseLeave);
     
     let submenuItems = el.querySelectorAll("a");
     Array.prototype.forEach.call(submenuItems, function(el, i)
     {
       el.tabIndex = -1;
-      el.addEventListener("click", function(event)
-      {
-        let parent = event.target.parentNode.parentNode.parentNode;
-        parent.setAttribute("aria-expanded", "false");
-        window.location = event.target.getAttribute("href");
-        event.stopImmediatePropagation();
-        event.preventDefault();
-      });
-      el.addEventListener("keydown", function(event)
-      {
-        let next;
-        let parent = event.target.parentNode.parentNode.parentNode;
-        if (event.key === "Tab")
-        {
-          parent.setAttribute("aria-expanded", "false");
-          return;
-        }
-        if (event.key === "Escape")
-        {
-          parent.setAttribute("aria-expanded", "false");
-          parent.focus();
-          event.preventDefault();          
-          return;
-        }
-        if (event.key === "Enter")
-        {
-          parent.setAttribute("aria-expanded", "false");
-          window.location = event.target.getAttribute("href");
-          event.stopImmediatePropagation();
-          event.preventDefault();
-          return;
-        }
-        if (event.key === "ArrowRight")
-        {
-          parent.setAttribute("aria-expanded", "false");
-          next = parent.nextElementSibling;
-          if (next === null)
-          {
-            next = parent.parentNode.firstElementChild;
-          }
-          next.setAttribute("aria-expanded", "true");
-          next.firstElementChild.firstElementChild.firstElementChild.focus();
-          event.stopImmediatePropagation();
-          event.preventDefault();
-          return;
-        }
-        if (event.key === "ArrowLeft")
-        {
-          parent.setAttribute("aria-expanded", "false");
-          next = parent.previousElementSibling;
-          if (next === null)
-          {
-            next = parent.parentNode.lastElementChild;
-          }
-          next.setAttribute("aria-expanded", "true");
-          next.firstElementChild.firstElementChild.firstElementChild.focus();
-          event.stopImmediatePropagation();
-          event.preventDefault();
-          return;
-        }
-        if (event.key === "ArrowUp" || event.key === "ArrowDown")
-        {
-          if (event.key === "ArrowUp")
-          {
-            next = event.target.parentNode.previousElementSibling;
-          }
-          else
-          {
-            next = event.target.parentNode.nextElementSibling;
-          }
-          if (next === null)
-          {
-            parent.setAttribute("aria-expanded", "false");
-            parent.focus();
-          }
-          else
-          {
-            next.firstElementChild.focus();
-          }
-          event.stopImmediatePropagation();
-          event.preventDefault();
-        }
-      });
+      el.addEventListener("click", subMenuClick);
+      el.addEventListener("keydown", subMenuKeyDown);
     });
   });
 }
