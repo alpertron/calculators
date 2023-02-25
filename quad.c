@@ -425,10 +425,10 @@ static void showSolutionXY(const BigInteger *X, const BigInteger *Y)
 
 void ShowXY(BigInteger *X, BigInteger *Y)
 {
-  enum eSign signX;
-  enum eSign signY;
   if (showSolution == TWO_SOLUTIONS)
   {
+    enum eSign signX;
+    enum eSign signY;
     solFound = true;
     if (Xbak->nbrLimbs == 0)
     {
@@ -2532,7 +2532,6 @@ static void CheckSolutionSquareDiscr(void)
 
 static void PerfectSquareDiscriminant(void)
 {
-  enum eLinearSolution ret;
   int index;
   enum eSign signTemp;
   char* ptrFactorDec;
@@ -2614,6 +2613,7 @@ static void PerfectSquareDiscriminant(void)
   }
   if (BigIntIsZero(&ValK))
   {      // k equals zero.
+    enum eLinearSolution ret;
     if (BigIntIsZero(&ValA))
     {    // Coefficient a does equals zero.
       // Solve Dy + beta = 0
@@ -3685,7 +3685,6 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
               char *coefDText, char *coefEText, char *coefFText)
 {
   int coeffNbr;
-  enum eExprErr rc;
   struct stValidateCoeff *pstValidateCoeff = astValidateCoeff;
   astValidateCoeff[0].expression = coefAText;
   astValidateCoeff[1].expression = coefBText;
@@ -3697,7 +3696,7 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
   copyStr(&ptrOutput, "2<p>");
   for (coeffNbr = 0; coeffNbr < NBR_COEFF; coeffNbr++)
   {
-    rc = ComputeExpression(pstValidateCoeff->expression,
+    enum eExprErr rc = ComputeExpression(pstValidateCoeff->expression,
                            pstValidateCoeff->bigint, false);
     if (rc != EXPR_OK)
     {

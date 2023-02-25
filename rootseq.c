@@ -2783,9 +2783,9 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree,
   }
   if (signDiscr == SIGN_POSITIVE)
   {           // Roots of quadratic equation are real.
-    enum eSign Rat2SignBak;
     for (ctr = 0; ctr < 2; ctr++)
     {         // Show (Rat1 +/- Rat2*sqrt(Rat3))
+      enum eSign Rat2SignBak;
       bool isNegative = false;
       if (Rat1.numerator.sign == Rat2.numerator.sign)
       {
