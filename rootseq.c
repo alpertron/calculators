@@ -389,7 +389,8 @@ static int ProcessQuadraticEquation(enum eSign* pSignDescr)
   }
   *pSignDescr = discr.sign;
   discr.sign = SIGN_POSITIVE;
-  // Let Rat1 = -linear/(2*quadratic), Rat2 = abs(1/(2*quadratic)) and Rat3 = abs(delta)
+  // Compute Rat1 as -linear/(2*quadratic), Rat2 as abs(1/(2*quadratic))
+  // and Rat3 as abs(delta).
   CopyBigInt(&Rat1.numerator, &Linear);
   CopyBigInt(&Rat1.denominator, &Quadratic);
   intToBigInteger(&Rat2.numerator, 1);
@@ -567,10 +568,9 @@ static void CubicEquation(const int* polynomial, int multiplicity)
   {   // Discriminant is negative. Use Cardan's formula.
     if (BigIntIsZero(&RatDeprLinear.numerator))
     {
-      // The roots are:
-      // x1 = q ^ (1/3)
-      // x2 = (-1/2) * q ^ (1/3) + i * (3 ^ (1/2) * q ^ (1/3)) / 2
-      // x3 = (-1/2) * q ^ (1/3) - i * (3 ^ (1/2) * q ^ (1/3)) / 2
+      // The first root x1 is q ^ (1/3)
+      // The second root x2 is (-1/2) * x1 + i * (3 ^ (1/2) * x1) / 2
+      // The third root x3 is (-1/2) * x1 - i * (3 ^ (1/2) * x1) / 2
       bool isCbrtNegative;
       BigRationalNegate(&RatDeprIndependent, &RatDeprIndependent);
       ForceDenominatorPositive(&RatDeprIndependent);
@@ -1225,7 +1225,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
       }
       else
       {
-        // Compute Rat5 = Rat1^2*Rat2 - Rat3^2
+        // Compute Rat5 as Rat1^2*Rat2 - Rat3^2
         BigRationalMultiply(&Rat1, &Rat1, &Rat5);
         BigRationalMultiply(&Rat5, &Rat2, &Rat5);
         BigRationalMultiply(&Rat3, &Rat3, &Rat4);
@@ -1297,9 +1297,12 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
       *(pszMinus + 1) = 0;
 
       BigRationalMultiply(&RatDeprLinear, &RatDeprLinear, &Rat4);
-      BigRationalDivide(&Rat4, &RatS, &Rat4);            // q^2 / S^2 (S^2 negative)
-      BigRationalMultiply(&Rat3, &Rat3, &Rat5);          // u^2
-      BigRationalSubt(&Rat5, &Rat4, &Rat4);              // k^2 = u^2 + q^2 / |S^2|
+      // Compute q^2 / S^2 (S^2 negative)
+      BigRationalDivide(&Rat4, &RatS, &Rat4);
+      // Compute u^2
+      BigRationalMultiply(&Rat3, &Rat3, &Rat5);
+      // Compute k^2 as u^2 + q^2 / |S^2|
+      BigRationalSubt(&Rat5, &Rat4, &Rat4);
       showSquareRootOfComplex(" + ", szMinus);
       showText(" + ");
       showText(ptrI);
@@ -2351,8 +2354,8 @@ static void outputRadicandsForCosSin(int num, int den, const char *realRoot)
   }
 }
 
-// Show multiplicand * cos(realNum*pi/realDen) + 
-//      i * multiplicand * sin(realNum*pi/realDen)
+// Show multiplicand * cos(M) + i * multiplicand * sin(M)
+// where M equals realNum*pi/realDen
 static void showTrig(int numerator, int denominator, const char* multiplicand)
 {
   char num[300];
@@ -2536,7 +2539,8 @@ static bool TestCyclotomic(const int* ptrPolynomial, int multiplicity, int polyD
         {
           realNum = numerator;
         }
-        // Show cos(realNum*pi/realDen) + i sin(realNum*pi/realDen)
+        // Show cos(M) + i sin(M)
+        // where M equals realNum*pi/realDen
         showTrig(realNum, realDen, "");
         outputRadicandsForCosSin(realNum, realDen, "");
         endLine();

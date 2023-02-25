@@ -453,7 +453,7 @@ void ShowXY(BigInteger *X, BigInteger *Y)
     X->sign = signX;
     Y->sign = signY;
     if (bigTmp.sign == SIGN_POSITIVE)
-    {       // |x| + |y| <= |xbak| + |ybak|
+    {       // At this moment |x| + |y| <= |xbak| + |ybak|
       CopyBigInt(Xbak, X);
       CopyBigInt(Ybak, Y);
     }
@@ -980,14 +980,15 @@ enum eLinearSolution LinearEq(BigInteger *coeffX, BigInteger *coeffY, BigInteger
     stepNbr++;
   }
   (void)BigIntDivide(coeffInd, &U3, &q);
-  BigIntChSign(&q);                         // q <- -coeffInd / U3
-  // Xind <- -U1 * coeffInd / U3
+  // Compute q as -coeffInd / U3
+  BigIntChSign(&q);
+  // Compute Xind as -U1 * coeffInd / U3
   (void)BigIntMultiply(&U1, &q, &Xind);
-  // Xlin <- coeffY
+  // Set Xlin to coeffY
   CopyBigInt(&Xlin, coeffY);
-  // Yind <- -U2 * coeffInd / U3
+  // Compute Yind as -U2 * coeffInd / U3
   (void)BigIntMultiply(&U2, &q, &Yind);
-  // Ylin <- -coeffX
+  // Set Ylin to -coeffX
   CopyBigInt(&Ylin, coeffX);
   BigIntChSign(&Ylin);
   if (teach)
@@ -1355,7 +1356,7 @@ static void ComputeXDiscrZero(void)
   BigIntAdd(&bigTmp, &bigTmp, &bigTmp);
   BigIntAdd(&V2, &bigTmp, &V2);
   (void)BigIntMultiply(&V2, &ValZ, &V2);
-  // Compute V3 <- m*z^2
+  // Compute V3 as m*z^2
   (void)BigIntMultiply(&U3, &ValZ, &V3);
   (void)BigIntMultiply(&V3, &ValZ, &V3);
 }
@@ -1410,7 +1411,7 @@ static void callbackQuadModParabolic(const BigInteger *value)
   (void)BigIntMultiply(value, value, &bigTmp);
   BigIntSubt(&bigTmp, &ValV, &bigTmp);
   (void)BigIntDivide(&bigTmp, &ValU, &ValR);
-   // Compute ValS <- 2*T
+   // Compute ValS as 2*T
   BigIntAdd(value, value, &ValS);
   if (teach)
   {
@@ -2078,7 +2079,8 @@ static void getNextConvergent(void)
   BigIntSubt(&ValU, &U3, &U3);
   CopyBigInt(&ValU, &ValV);
   CopyBigInt(&ValV, &U3);
-  // Compute new convergents: h_n = a_n*h_{n-1} + h_{n-2}, k_n = k_n*k_{n-1} + k_{n-2}
+  // Compute new convergents: h_n = a_n*h_{n-1} + h_{n-2}
+  // and also k_n = k_n*k_{n-1} + k_{n-2}
   (void)BigIntMultiply(&bigTmp, &U1, &V3);
   BigIntAdd(&V3, &U2, &V3);
   CopyBigInt(&U3, &U2);
@@ -2145,7 +2147,7 @@ static void showOtherSolution(const char *ordinal)
 // true = gcd(P, Q, R) = 1.
 static bool PerformTransformation(const BigInteger *value)
 {
-  // Compute P <- (at^2+bt+c)/K
+  // Compute P as (at^2+bt+c)/K
   (void)BigIntMultiply(&ValA, value, &ValQ);
   BigIntAdd(&ValQ, &ValB, &ValP);
   (void)BigIntMultiply(&ValP, value, &ValP);
@@ -2195,11 +2197,11 @@ static bool PerformTransformation(const BigInteger *value)
     shownbr(&ValR);
     showText("</p>");
   }
-  // Compute gcd(P, Q, R)
+  // Compute gcd of P, Q and R.
   BigIntGcd(&ValP, &ValQ, &ValH);   // Use ValH and ValI as temporary variables.
   BigIntGcd(&ValH, &ValR, &ValI);
   if ((ValI.nbrLimbs == 1) && (ValI.limbs[0].x == 1))
-  {         // Gcd equals 1.
+  { // Gcd equals 1.
     return 1;
   }
   if (teach)
@@ -2644,7 +2646,7 @@ static void PerfectSquareDiscriminant(void)
       startResultBox(ret);
       PrintLinear(ret, "t");
       endResultBox(ret);
-      // Solve 2aD x + (b-g)D y = 2a*alpha + (b-g)*beta
+      // Solve the equation 2aD x + (b-g)D y = 2a*alpha + (b-g)*beta
       (void)BigIntMultiply(&ValA, &discr, &Aux[0]);
       BigIntAdd(&Aux[0], &Aux[0], &Aux[0]);
       BigIntSubt(&ValB, &ValG, &Aux[1]);
@@ -2801,31 +2803,41 @@ static void PositiveDiscriminant(void)
 static void CheckStartOfContinuedFractionPeriod(void)
 {
   CopyBigInt(&bigTmp, &ValU);
-  bigTmp.sign = SIGN_POSITIVE;                  // bigTmp <- |u|
-  BigIntSubt(&ValG, &bigTmp, &bigTmp);          // bigTmp <- floor(g) - |u|
+  // Set bigTmp to |u|
+  bigTmp.sign = SIGN_POSITIVE;
+  // Compute bigTmp as floor(g) - |u|
+  BigIntSubt(&ValG, &bigTmp, &bigTmp);
   if (bigTmp.sign == SIGN_POSITIVE)
-  {             // First check |u| < g passed.
+  { // First check |u| < g passed.
     CopyBigInt(&Tmp1, &ValV);
-    Tmp1.sign = SIGN_POSITIVE;                  // Tmp1 <- |v|
-    BigIntAdd(&ValU, &ValG, &Tmp2);             // Tmp2 <- u + floor(g) = floor(u+g)
+    // Set Tmp1 to |v|
+    Tmp1.sign = SIGN_POSITIVE;
+    // Compute Tmp2 as u + floor(g) which equals floor(u+g)
+    BigIntAdd(&ValU, &ValG, &Tmp2);
     if (Tmp2.sign == SIGN_NEGATIVE)
-    {           // Round to number nearer to zero.
+    { // Round to number nearer to zero.
       addbigint(&Tmp2, 1);
     }
-    Tmp2.sign = SIGN_POSITIVE;                  // Tmp2 <- floor(|u+g|)
-    BigIntSubt(&Tmp2, &Tmp1, &bigTmp);          // bigTmp <- floor(|u+g|) - |v|
+    // Compute Tmp2 as floor(|u+g|)
+    Tmp2.sign = SIGN_POSITIVE;
+    // Compute bigTmp as floor(|u+g|) - |v|
+    BigIntSubt(&Tmp2, &Tmp1, &bigTmp);
     if (bigTmp.sign == SIGN_POSITIVE)
-    {           // Second check |u+g| > |v| passed.
-      BigIntSubt(&ValU, &ValG, &Tmp2);          // Tmp2 <- u - floor(g)
+    { // Second check |u+g| > |v| passed.
+      // Conpute Tmp2 as u - floor(g)
+      BigIntSubt(&ValU, &ValG, &Tmp2);
       if ((Tmp2.sign == SIGN_NEGATIVE) || (BigIntIsZero(&Tmp2)))
-      {         // Round down number to integer.
+      { // Round down number to integer.
         addbigint(&Tmp2, -1);
       }
-      Tmp2.sign = SIGN_POSITIVE;                // Tmp2 <- floor(|u-g|)
-      BigIntSubt(&Tmp1, &Tmp2, &bigTmp);        // Tmp2 <- |v| - floor(|u-g|)
+      // Compute Tmp2 as floor(|u-g|)
+      Tmp2.sign = SIGN_POSITIVE;
+      // Compute Tmp2 as |v| - floor(|u-g|)
+      BigIntSubt(&Tmp1, &Tmp2, &bigTmp);
       if (bigTmp.sign == SIGN_POSITIVE)
-      {         // Third check |u-g| < |v| passed.
-        CopyBigInt(&startPeriodU, &ValU);       // Save U and V to check period end.
+      { // Third check |u-g| < |v| passed.
+        // Save U and V to check period end.
+        CopyBigInt(&startPeriodU, &ValU);
         CopyBigInt(&startPeriodV, &ValV);
       }
     }
@@ -3379,7 +3391,7 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   {      // No solutions because gcd(P, Q, R) > 1.
     return;
   }
-  // Compute P = floor((2*a*theta + b)/2)
+  // Compute P as floor((2*a*theta + b)/2)
   BigIntAdd(&ValA, &ValA, &ValP);
   (void)BigIntMultiply(&ValP, value, &ValP);
   BigIntAdd(&ValP, &ValB, &ValP);
@@ -3428,7 +3440,7 @@ static void callbackQuadModHyperbolic(BigInteger *value)
     equationNbr += 2;
     return;
   }
-  // Set G <- floor(sqrt(L))
+  // Set G to floor(sqrt(L))
   squareRoot(ValL.limbs, ValG.limbs, ValL.nbrLimbs, &ValG.nbrLimbs);
   ValG.sign = SIGN_POSITIVE;          // g <- sqrt(discr).
   Xplus.nbrLimbs = 0;                 // Invalidate solutions.

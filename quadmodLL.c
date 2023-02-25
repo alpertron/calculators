@@ -119,7 +119,7 @@ void PerformChineseRemainderTheorem(void)
       }
       (void)BigIntRemainder(&Aux[T1], &prime, &L);
       CopyBigInt(&Aux[T1], &L);
-      // currentSolution <- Aux[T1] * Mult + currentSolution
+      // Compute currentSolution as Aux[T1] * Mult + currentSolution
       (void)BigIntMultiply(&Aux[T1], &Mult, &L);
       BigIntAdd(&currentSolution, &L, &currentSolution);
       (void)BigIntMultiply(&K1, &Mult, &Mult);
@@ -206,9 +206,9 @@ static void SolveModularLinearEquation(BigInteger *pValA, const BigInteger *pVal
     TestNbr[NumberLength].x = 0;
     // Perform division using odd modulus r.
     GetMontgomeryParms(NumberLength);
-    // ptrSolution1 <- ValC / |ValB|
+    // Compute ptrSolution1 as ValC / |ValB|
     BigIntModularDivision(pValC, pValB, pValN, ptrSolution1);
-    // ptrSolution1 <- -ValC / ValB
+    // Compute ptrSolution1 as -ValC / ValB
     if (!BigIntIsZero(ptrSolution1))
     {
       BigIntSubt(pValN, ptrSolution1, ptrSolution1);
@@ -237,10 +237,10 @@ static void SolveModularLinearEquation(BigInteger *pValA, const BigInteger *pVal
     // Use ValA (which is zero for linear equations) as a temporary area.
     // ptrSolution1 <- 1 / |ValB|
     ComputeInversePower2(pValB->limbs, ptrSolution1->limbs, pValA->limbs);
-    // ptrSolution1 <- |ValC| / |ValB|
+    // Compute ptrSolution1 as |ValC| / |ValB|
     modmult(ptrSolution1->limbs, pValC->limbs, ptrSolution1->limbs);
     NumberLengthBytes = NumberLength * (int)sizeof(int);
-    // ptrSolution1 <- -ValC / ValB
+    // Compute ptrSolution1 as -ValC / ValB
     if (pValB->sign == pValC->sign)
     {
       (void)memset(pValA->limbs, 0, NumberLengthBytes);
@@ -316,9 +316,9 @@ static void findQuadraticSolution(BigInteger* pSolution, int exponent)
     BigIntPowerOf2(&Aux2, expon);
     addbigint(&Aux2, -1);              // Aux2 <- 2^expon -1
     if ((Const.limbs[0].x & 1) != 0)
-    {        // Const is odd.
+    { // Const is odd.
       ptrSolution->x |= bitMask;
-      // Const <- Quadr/2 + floor(Linear/2) + floor(Const/2) + 1
+      // Compute Const as Quadr/2 + floor(Linear/2) + floor(Const/2) + 1
       if (Const.sign == SIGN_NEGATIVE)
       {
         addbigint(&Const, -1);
@@ -808,8 +808,8 @@ static bool SolveQuadraticEqModPowerOfP(int expon, int factorIndex,
 static void QuadraticTermMultipleOfP(int expon, int factorIndex,
   const BigInteger *pValA, const BigInteger *pValB, const BigInteger *pValC)
 {
-  // Perform Newton approximation:
-  // x_{n+1} = x_n - (a*x_n^2 + b*x_n + c) / (2*a_x + b)      
+  // Perform Newton approximation.
+  // The next value of x in sequence x_{n+1} is x_n - (a*x_n^2 + b*x_n + c) / (2*a_x + b).
   BigInteger* ptrSolution = &common.quad.Solution1[factorIndex];
   int NumberLengthBytes;
   NumberLength = prime.nbrLimbs;

@@ -344,7 +344,8 @@ void SameDegreeFactorization(void)
             polyDegree, &operand4,        // Degree of polynomials and exponent.
             poly2, percentageCallback,    // Power and pointer to callback.
             currentDegree, degreeFactor);
-          // Multiply base^(p^(q-1)*(p-1)/2) * base^(p^(q-2)*(p-1)/2)
+          // Compute poly4 as the multiplication of base^(p^(q-1)*(p-1)/2)
+          // times base^(p^(q-2)*(p-1)/2).
           multUsingInvPolynomial(poly2, poly4, // Multiplicands.
             poly4, polyDegree,                 // Product and degree of poly.
             poly3);                            // Polynomial modulus.

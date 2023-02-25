@@ -169,14 +169,14 @@ static int gauss(int nbrCols, int nbrRows)
       }
       for (row = 0; row < nbrRows; row++)
       {
-        // M[i] = M[i] - M[l]
+        // Compute new value of M[i] as M[i] - M[l]
         getBigIntegerFromLinked(lambda[row][k], &tmp1);
         if ((row != l) && !BigIntIsZero(&tmp1))
         {
           intToLinkedBigInt(&lambda[row][k], 0);
           for (col = k + 1; col < nbrCols; col++)
           {
-            // *x = *x + (*y)*t1
+            // Compute new value of *x as *x + (*y)*t1
             getBigIntegerFromLinked(lambda[l][col], &tmp5);
             (void)BigIntMultiply(&tmp5, &tmp1, &tmp0);
             getBigIntegerFromLinked(lambda[row][col], &tmp5);
@@ -207,39 +207,39 @@ static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
   for (int colI = 0; colI < nbrCols; colI++)
   {
     if (colI == 0)
-    {             // U_0 <- 1
+    {             // Set U_0 to 1
       intToLinkedBigInt(&detProdB[0], 1);
     }
     else
-    {             // U_i <- lambda_{i-1, i-1}
+    {             // Set U_i to lambda_{i-1, i-1}
       getBigIntegerFromLinked(lambda[colI - 1][colI - 1], &tmp5);
       setLinkedBigInteger(&detProdB[colI], &tmp5);
 
-                  // U_{i-1} <- -lambda_{i, i-1}
+                  // Set U_{i-1} to -lambda_{i, i-1}
       getBigIntegerFromLinked(lambda[colI][colI - 1], &tmp5);
       BigIntChSign(&tmp5);
       setLinkedBigInteger(&detProdB[colI - 1], &tmp5);
     }
     for (colJ = colI - 2; colJ >= 0; colJ--)
-    {             // U_j <- 0
+    {             // Set U_j to 0
       intToBigInteger(&tmp1, 0);
       for (k = colJ + 1; k <= colI; k++)
-      {           // U_j <- U_j + lambda_{k,j} * U_k
+      {           // Set U_j to U_j + lambda_{k,j} * U_k
         getBigIntegerFromLinked(lambda[k][colJ], &tmp4);
         getBigIntegerFromLinked(detProdB[k], &tmp5);
         (void)BigIntMultiply(&tmp4, &tmp5, &tmp2);
         BigIntSubt(&tmp1, &tmp2, &tmp1);
       }
-      // U_j <- U_j / lambda_{j,j}
+      // Set U_j to U_j / lambda_{j,j}
       getBigIntegerFromLinked(lambda[colJ][colJ], &tmp4);
       (void)BigIntDivide(&tmp1, &tmp4, &tmp5);
       setLinkedBigInteger(&detProdB[colJ], &tmp5);
     }
     for (colJ = colI; colJ < nbrCols; colJ++)
-    {           // lambda_{j,i} <- 0. Use tmp1 for lambda_{j,i}
+    {           // Set lambda_{j,i} to 0. Use tmp1 for lambda_{j,i}
       intToBigInteger(&tmp1, 0);
       for (k = 0; k <= colI; k++)
-      {         // tmp2 <- scalar product b_j * b_k 
+      {         // Set tmp2 to scalar product b_j * b_k 
         intToBigInteger(&tmp2, 0);
         for (int row = 0; row < nbrRows; row++)
         {
@@ -248,7 +248,7 @@ static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
           (void)BigIntMultiply(&tmp4, &tmp5, &tmp3);
           BigIntAdd(&tmp2, &tmp3, &tmp2);
         }
-        // lambda_{j,i} <- lambda_{j,i} + tmp2 * U_k
+        // Set lambda_{j,i} to lambda_{j,i} + tmp2 * U_k
         getBigIntegerFromLinked(detProdB[k], &tmp5);
         (void)BigIntMultiply(&tmp2, &tmp5, &tmp2);
         BigIntAdd(&tmp1, &tmp2, &tmp1);
@@ -262,8 +262,10 @@ static void PerformREDI(int k, int l, int size)
 {
   // If |2 lambda_{k, l}| <= d_l, go out.
   getBigIntegerFromLinked(lambda[k][l], &tmp4);
-  multint(&tmp0, &tmp4, 2);          // tmp0 <- 2 lambda_{k, l}
-  tmp0.sign = SIGN_POSITIVE;         // tmp0 <- |2 lambda_{k, l}|
+  // Set tmp0 to 2 lambda_{k, l}
+  multint(&tmp0, &tmp4, 2);
+  // Set tmp0 to |2 lambda_{k, l}|
+  tmp0.sign = SIGN_POSITIVE;
   getBigIntegerFromLinked(detProdB[l], &tmp5);
   BigIntSubt(&tmp5, &tmp0, &tmp1);   // tmp1 <- d_l - |2 lambda_{k, l}|
   if (tmp1.sign == SIGN_POSITIVE)
@@ -294,14 +296,14 @@ static void PerformREDI(int k, int l, int size)
     BigIntSubt(&tmp5, &tmp0, &tmp5);
     setLinkedBigInteger(&basis[row][k], &tmp5);
   }
-    // lambda_{k, l} <- lambda_{k, l} - q*d_l
+    // Set lambda_{k, l} to lambda_{k, l} - q*d_l
   getBigIntegerFromLinked(detProdB[l], &tmp5);
   (void)BigIntMultiply(&tmp2, &tmp5, &tmp0);    // tmp0 <- q*d_l
   getBigIntegerFromLinked(lambda[k][l], &tmp5);
   BigIntSubt(&tmp5, &tmp0, &tmp5);
   setLinkedBigInteger(&lambda[k][l], &tmp5);
   for (int i = 0; i < l; i++)
-  { // lambda_{k, i} <- lambda_{k, i} - q*lambda_{l, i}
+  { // Set lambda_{k, i} to lambda_{k, i} - q*lambda_{l, i}
     getBigIntegerFromLinked(lambda[l][i], &tmp5);
     (void)BigIntMultiply(&tmp2, &tmp5, &tmp0);   // tmp0 <- q*lambda_{l, i}
     getBigIntegerFromLinked(lambda[k][i], &tmp5);
@@ -326,9 +328,9 @@ static void PerformSWAPI(int k, int kMax, int size)
     lambda[k][j] = lambda[k - 1][j];
     lambda[k - 1][j] = pstLinkedBigInt;
   }
-    // Set lambda <- lambda_{k, k-1}
+    // Set lambda to lambda_{k, k-1}
   getBigIntegerFromLinked(lambda[k][k - 1], &tmp0);    // tmp0 <- lambda.
-    // Set B <- (d_{k-2}*d_k + lambda^2)/d_{k-1}
+    // Set B to (d_{k-2}*d_k + lambda^2)/d_{k-1}
     // d_{k-2}*d_k + lambda^2 is already in tmp3.
   getBigIntegerFromLinked(detProdB[k - 1], &tmp5);
   (void)BigIntDivide(&tmp3, &tmp5, &tmp1);                   // tmp1 <- B
@@ -367,9 +369,10 @@ static void PerformSWAPI(int k, int kMax, int size)
 #endif
   for (int i = k+1; i <= kMax; i++)
   {
-    // t <- lambda_{i, k}
-    getBigIntegerFromLinked(lambda[i][k], &tmp2);     // tmp2 <- t
-    // lambda_{i, k} <- (d_k*lambda_{i, k-1} - lambda * t)/d_{k-1}
+    // Set t to lambda_{i, k}
+    // Set tmp2 to t
+    getBigIntegerFromLinked(lambda[i][k], &tmp2);
+    // Set lambda_{i, k} to (d_k*lambda_{i, k-1} - lambda * t)/d_{k-1}
     getBigIntegerFromLinked(detProdB[k], &tmp4);
     getBigIntegerFromLinked(lambda[i][k - 1], &tmp5);
     (void)BigIntMultiply(&tmp4, &tmp5, &tmp3);
@@ -378,7 +381,7 @@ static void PerformSWAPI(int k, int kMax, int size)
     getBigIntegerFromLinked(detProdB[k - 1], &tmp5);
     (void)BigIntDivide(&tmp3, &tmp5, &tmp4);
     setLinkedBigInteger(&lambda[i][k], &tmp4);
-    // lambda_{i, k-1} <- (B*t + lambda * lambda_{i, k})/d_k
+    // Set lambda_{i, k-1} to (B*t + lambda * lambda_{i, k})/d_k
     (void)BigIntMultiply(&tmp1, &tmp2, &tmp3);       // tmp3 <- B * t
     (void)BigIntMultiply(&tmp0, &tmp4, &tmp4);
     BigIntAdd(&tmp3, &tmp4, &tmp3);
@@ -454,12 +457,13 @@ void integralLLL(int size)
           BigIntAdd(&tmp2, &tmp0, &tmp2);
         }
         for (int colI = 0; colI < colJ; colI++)
-        {    // Set u <- (d_i * u - lambda_{k, i} * lambda_{j, i}) / d_{i-1}
+        { // On each loop, set u to (d_i * u - lambda_{k, i} * lambda_{j, i}) / d_{i-1}
           getBigIntegerFromLinked(detProdB[colI], &tmp5);
           (void)BigIntMultiply(&tmp5, &tmp2, &tmp0);  // d_i * u
           getBigIntegerFromLinked(lambda[colK][colI], &tmp4);
           getBigIntegerFromLinked(lambda[colJ][colI], &tmp5);
-          (void)BigIntMultiply(&tmp4, &tmp5, &tmp1);  // lambda_{k, i} * lambda_{j, i}
+          // Compute lambda_{k, i} * lambda_{j, i}
+          (void)BigIntMultiply(&tmp4, &tmp5, &tmp1);
           if (colI == 0)
           {
             BigIntSubt(&tmp0, &tmp1, &tmp2);           // d_{i-1} = 0
@@ -531,12 +535,12 @@ void integralLLL(int size)
         getBigIntegerFromLinked(detProdB[colK - 2], &tmp5);
         (void)BigIntMultiply(&tmp0, &tmp5, &tmp0);
       }
-                       // Compute lambda_{k, k-1})^2
+                       // Compute lambda_{k, k-1}^2
       getBigIntegerFromLinked(lambda[colK][colK - 1], &tmp5);
       (void)BigIntMultiply(&tmp5, &tmp5, &tmp1);
-                       // Compute d_k * d_{k-2} + lambda_{k, k-1})^2
+                       // Compute d_k * d_{k-2} + lambda_{k, k-1}^2
       BigIntAdd(&tmp0, &tmp1, &tmp3);
-      multint(&tmp0, &tmp3, 4);           // tmp0 = Left Hand Side.
+      multint(&tmp0, &tmp3, 4);           // tmp0 is the left Hand Side.
                        // Compute (d_{k-1})^2 
       getBigIntegerFromLinked(detProdB[colK - 1], &tmp5);
       (void)BigIntMultiply(&tmp5, &tmp5, &tmp1);
@@ -1124,13 +1128,14 @@ static void ComputeCoeffBounds(void)
   operand2.sign = SIGN_POSITIVE;
   BigIntSubt(&operand3, &operand2, &operand4);
   if (operand4.sign == SIGN_POSITIVE)
-  {      // |Am| >= |A0|
+  {      // At this moment, |Am| >= |A0|
     CopyBigInt(&operand3, &operand2);
   }
 
   // Loop that finds the maximum value of bound for |Bj|.
   intToBigInteger(&operand2, 1);  // binomial(n-1, 0)
-  UncompressBigIntegerB(&polyNonRepeatedFactors[1], &bound);  // bound <- |A0|
+  // Set bound to |A0|
+  UncompressBigIntegerB(&polyNonRepeatedFactors[1], &bound);
   bound.sign = SIGN_POSITIVE;
   for (degree1 = 1; degree1 <= maxDegreeFactor; degree1++)
   {

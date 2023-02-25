@@ -437,11 +437,11 @@ static bool BlockLanczos(int seed)
 #endif
     oldDiagonalSSt = newDiagonalSSt;
     stepNbr++;
-    // Compute matrix A * V(i)
+    // Compute the matrix A * V(i)
     MultiplyAByMatrix(common.siqs.matrixV, common.siqs.matrixCalc3, common.siqs.matrixAV);
-    // Compute matrix Vt(i) * A * V(i)
+    // Compute the matrix Vt(i) * A * V(i)
     MatrTranspMult(common.siqs.matrixBLength, common.siqs.matrixV, common.siqs.matrixAV, matrixVtAV);
-    /* If Vt(i) * A * V(i) = 0, end of loop */
+    // If Vt(i) * A * V(i) = 0, end of loop
     for (i = sizeof(matrixVtAV)/sizeof(matrixVtAV[0]) - 1; i >= 0; i--)
     {
       if (matrixVtAV[i] != 0)
@@ -549,11 +549,11 @@ static bool BlockLanczos(int seed)
         } /* end for k */
       } /* end if */
     } /* end for j */
-      /* Compute D(i), E(i) and F(i) */
+      /* Compute the three values D(i), E(i) and F(i) */
 
     if (stepNbr >= 3)
     {
-      // F = -Winv(i-2) * (I - Vt(i-1)*A*V(i-1)*Winv(i-1)) * ParenD * S*St
+      // Compute F as -Winv(i-2) * (I - Vt(i-1)*A*V(i-1)*Winv(i-1)) * ParenD * S*St
       MatrixMultiplication(matrixVt1AV1, matrixWinv1, matrixCalc2);
       mask = 1; /* Add identity matrix */
       for (index = 31; index >= 0; index--)
@@ -565,14 +565,14 @@ static bool BlockLanczos(int seed)
       MatrixMultiplication(matrixCalc1, matrixCalcParenD, matrixF);
       MatrMultBySSt(32, matrixF, newDiagonalSSt, matrixF);
     }
-    // E <- -Winv(i-1) * Vt(i)*A*V(i) * S*St
+    // Compute E as -Winv(i-1) * Vt(i)*A*V(i) * S*St
     if (stepNbr >= 2)
     {
       MatrixMultiplication(matrixWinv1, matrixVtAV, matrixE);
       MatrMultBySSt(32, matrixE, newDiagonalSSt, matrixE);
     }
-    // ParenD <- Vt(i)*A*A*V(i) * S*St + Vt(i)*A*V(i)
-    // D <- I - Winv(i) * ParenD
+    // Compute ParenD as Vt(i)*A*A*V(i) * S*St + Vt(i)*A*V(i)
+    // Compute D as I - Winv(i) * ParenD
     MatrTranspMult(common.siqs.matrixBLength, common.siqs.matrixAV, common.siqs.matrixAV, matrixCalc1); // Vt(i)*A*A*V(i)
     MatrMultBySSt(32, matrixCalc1, newDiagonalSSt, matrixCalc1);
     MatrixAddition(matrixCalc1, matrixVtAV, matrixCalcParenD);
@@ -589,7 +589,7 @@ static bool BlockLanczos(int seed)
     MatrixMultAdd(common.siqs.matrixV, matrixCalc1, common.siqs.matrixXmY);
 
     /* Compute value of new matrix V(i) */
-    // V(i+1) = A * V(i) * S * St + V(i) * D + V(i-1) * E + V(i-2) * F
+    // Compute V(i+1) as A * V(i) * S * St + V(i) * D + V(i-1) * E + V(i-2) * F
     MatrMultBySSt(common.siqs.matrixBLength, common.siqs.matrixAV, newDiagonalSSt, common.siqs.matrixCalc3);
     MatrixMultAdd(common.siqs.matrixV, matrixD, common.siqs.matrixCalc3);
 #if DEBUG_SIQS == 2
@@ -639,7 +639,7 @@ static bool BlockLanczos(int seed)
       }
     }
     /* Compute value of new matrix Vt(i)V0 */
-    // Vt(i+1)V(0) = Dt * Vt(i)V(0) + Et * Vt(i-1)V(0) + Ft * Vt(i-2)V(0)
+    // Compute Vt(i+1)V(0) as Dt * Vt(i)V(0) + Et * Vt(i-1)V(0) + Ft * Vt(i-2)V(0)
     MatrTranspMult(32, matrixD, matrixVtV0, matrixCalc2);
     if (stepNbr >= 2)
     {

@@ -333,13 +333,13 @@ static void computeFormula(struct monomial** ppstMonomial, BigRational *rat)
 }
 
 // Compute T1, T2, T3, T4, l0, v and O as follows:
-// T1 = (b10 + b11*t + b12*t^2 + b13*t^3 + b14*t^4 + b15*t^5)/(2F)
-// T2 = (b20 + b21*t + b22*t^2 + b23*t^3 + b24*t^4 + b25*t^5)/(2DF)
-// T3 = (b30 + b31*t + b32*t^2 + b33*t^3 + b34*t^4 + b35*t^5)/(2F)
-// T4 = (b40 + b41*t + b42*t^2 + b43*t^3 + b44*t^4 + b45*t^5)/(2DF)
-// l0 = (a0 + a1*t + a2*t^2 + a3*t^3 + a4*t^4 + a5*t^5)/F
-// v = (c0 + c1*t + c2*t^2 + c3*t^3 + c4*t^4 + c5*t^5)/(2DF)
-// O = (o0 + o1*t + o2*t^2 + o3*t^3 + o4*t^4 + o5*t^5)/(DF)
+// Compute T1 as (b10 + b11*t + b12*t^2 + b13*t^3 + b14*t^4 + b15*t^5)/(2F)
+// Compute T2 as (b20 + b21*t + b22*t^2 + b23*t^3 + b24*t^4 + b25*t^5)/(2DF)
+// Compute T3 as (b30 + b31*t + b32*t^2 + b33*t^3 + b34*t^4 + b35*t^5)/(2F)
+// Compute T4 as (b40 + b41*t + b42*t^2 + b43*t^3 + b44*t^4 + b45*t^5)/(2DF)
+// Compute l0 as (a0 + a1*t + a2*t^2 + a3*t^3 + a4*t^4 + a5*t^5)/F
+// Compute v as (c0 + c1*t + c2*t^2 + c3*t^3 + c4*t^4 + c5*t^5)/(2DF)
+// Compute O as (o0 + o1*t + o2*t^2 + o3*t^3 + o4*t^4 + o5*t^5)/(DF)
 // where t is the rational root of polynomial F20.
 static void computeArrayValues(void)
 {
@@ -463,7 +463,7 @@ static void showSqrtTenPlusMinusTwoTimesSqrt5(const char *sign)
   endSqrt();
 }
 
-// Show (M +/- N*d)^(1/2)
+// Show the quadratic irrationality (M +/- N*d)^(1/2)
 static bool showSqRoot2(enum eSign signSqrt5, enum eSign signMN)
 {
   enum eSign signBak = RatN.numerator.sign;
@@ -1009,9 +1009,13 @@ static int getCircleNbr(int circleNbrLeft)
   for (int circleNbrRight = 0; circleNbrRight < 5; circleNbrRight++)
   {
     double RHS;
-    // Compute root = RatQuartic + Rat1 * sqrt(Rat2) *
-    //     (cos((1/5)(2*circleNbrLeft*Pi + acos(Rat3 * sqrt(Rat4) + RatM * sqrt(RatN)))) +
-    //      cos((1/5)(2*circleNbrRight*Pi + acos(Rat3 * sqrt(Rat4) - RatM * sqrt(RatN)))))
+    // Compute root of equation as RatQuartic + Rat1 * sqrt(Rat2) * (firstCos + secondCos)
+    //
+    // where firstCos equals cos((1/5)(2*circleNbrLeft*Pi + firstACos)
+    // and secondCos equals cos((1/5)(2*circleNbrRight*Pi + secondACos)    
+    // also firstACos equals acos(M + N)
+    // and secondACos equals acos(M - N)
+    // where M equals Rat3 * sqrt(Rat4) and N equals RatM * sqrt(RatN)
     double argFirstCos = (6.2831853071795864769252 * (double)circleNbrLeft + firstAcos)/5.0;
     double argSecondCos = (6.2831853071795864769252 * (double)circleNbrRight + secondAcos)/5.0;
     double root = BigRational2double(&RatQuartic) + (firstProd *

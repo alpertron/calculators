@@ -3185,7 +3185,7 @@ static void sieveThread(BigInteger *result)
         }
       }
 #endif
-      if (/*common.siqs.factorSiqs != null ||*/ congruencesFound >= common.siqs.matrixBLength)
+      if (congruencesFound >= common.siqs.matrixBLength)
       {
         if (common.siqs.nbrThreadFinishedPolySet > (numberThreads*polySet))
         {

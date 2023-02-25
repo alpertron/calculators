@@ -115,7 +115,7 @@ void modmultIntExtended(limb* factorBig, int factorInt, limb* result, const limb
   {   // Maximum value for limb.
     TrialQuotient = MAX_VALUE_LIMB;
   }
-  // Compute result <- factorBig * factorInt - TrialQuotient * TestNbr
+  // Compute result as factorBig * factorInt - TrialQuotient * TestNbr
   ptrFactorBig = factorBig;
   ptrTestNbr = pTestNbr;
 #ifdef _USING64BITS_
@@ -447,17 +447,17 @@ static void InitHighUandV(int lenU, int lenV, double* pHighU, double* pHighV)
 /*                                                                     */
 /* This routine uses Kaliski Montgomery inverse algorithm              */
 /* with changes by E. Savas and C. K. Koc.                             */
-/*  1. U <- M, V <- X, R <- 0, S <- 1, k <- 0                          */
-/*  2. while V > 0 do                                                  */
-/*  3.   if U even then U <- U / 2, S <- 2S                            */
-/*  4.   elsif V even then V <- V / 2, R <- 2R                         */
-/*  5.   elsif U > V  then U <- (U - V) / 2, R <- R + S, S <- 2S       */
-/*  6.   else V <- (V - U) / 2, S <- S + R, R <- 2R                    */
-/*  7.   k <- k + 1                                                    */
-/*  8. if R >= M then R <- R - M                                       */
-/*  9. R <- M - R                                                      */
-/* 10. R <- MonPro(R, R2)                                              */
-/* 11. return MonPro(R, 2^(m-k))                                       */
+/* Step  #1: U <- M, V <- X, R <- 0, S <- 1, k <- 0                    */
+/* Step  #2: while V > 0 do                                            */
+/* Step  #3:   if U even then U <- U / 2, S <- 2S                      */
+/* Step  #4:   elsif V even then V <- V / 2, R <- 2R                   */
+/* Step  #5:   elsif U > V  then U <- (U - V) / 2, R <- R + S, S <- 2S */
+/* Step  #6:   else V <- (V - U) / 2, S <- S + R, R <- 2R              */
+/* Step  #7:   k <- k + 1                                              */
+/* Step  #8. if R >= M then R <- R - M                                 */
+/* Step  #9. R <- M - R                                                */
+/* Step #10. R <- MonPro(R, R2)                                        */
+/* Step #11. compute MonPro(R, 2^(m-k)) and return this value.         */
 /*                                                                     */
 /*  In order to reduce the calculations, several single precision      */
 /*  variables are added:                                               */
