@@ -77,21 +77,21 @@ static void stringToHTML(char **pptrOutput, const char *ptrString)
     {
       break;    // End of string, so go out.
     }
-    if ((c & 0x80) == 0)
+    if (((int)c & 0x80) == 0)
     {           // 1-byte UTF-8 character
       character = c;
       ptrStr++;
     }
-    else if ((c & 0x60) == 0x40)
+    else if (((int)c & 0x60) == 0x40)
     {            // 2-byte UTF-8 character
-      character = ((c & 0x1F) * 64) + (*(ptrStr + 1) & 0x3F);
+      character = (((int)c & 0x1F) * 64) + (*(ptrStr + 1) & 0x3F);
       ptrStr += 2;
     }
     else
     {            // 3-byte UTF-8 character
-      character = ((c & 0x1F) * 0x1000) +
-        ((*(ptrStr + 1) & 0x3F) * 0x40) +
-        (*(ptrStr + 2) & 0x3F);
+      character = (((int)c & 0x1F) * 0x1000) +
+        (((int)*(ptrStr + 1) & 0x3F) * 0x40) +
+        ((int)*(ptrStr + 2) & 0x3F);
       ptrStr += 3;
     }
     if ((character >= ' ') && (character < 127) && (character != '<') &&
