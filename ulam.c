@@ -454,7 +454,7 @@ char *appendInt64(char *text, const int *value)
   return ptrText;
 }
 
-void ShowLabel(char **pptrText, char *text, int linear, int *indep)
+static void ShowLabel(char **pptrText, const char *text, int linear, int *indep)
 {
   int b = linear;
   int temp[2];
