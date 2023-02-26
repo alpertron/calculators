@@ -70,7 +70,7 @@ const char *ptrI;
 static int totients[(2 * MAX_DEGREE) + 1];
 extern char* ptrOutput;
 
-enum
+enum toShow
 {
   SHOW_REAL = 0,
   SHOW_IMAG,
@@ -2154,7 +2154,7 @@ static int showRadicals17(int numerator34)
   return -8;
 }
 
-static void AdjustComponent(int denominator, char* ptrStart, int toShow,
+static void AdjustComponent(int denominator, char* ptrStart, enum toShow toShow,
   int isFirst, const char *realRoot)
 {
   int denomin = denominator;
@@ -2251,7 +2251,8 @@ static void AdjustComponent(int denominator, char* ptrStart, int toShow,
 // If den is multiple of 17, compute the extended GCD of 17 and den/17.
 // Let the results be A and B respectively. so num*pi/den = num*A*pi/17 +
 // num*B*pi/(den/17). Use the formula cos(a+b) = cos a * cos b - sin a * sin b.
-static void showComponent(int num, int den, int multipl, int power2, int toShow, const char *realRoot)
+static void showComponent(int num, int den, int multipl, int power2,
+  enum toShow toShow, const char *realRoot)
 {
   int numer = num;
   int denom = den;

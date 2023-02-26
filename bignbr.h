@@ -53,7 +53,7 @@ enum eSign
   SIGN_NEGATIVE,
 };
 
-enum
+enum eNbrCached
 {
   NBR_NOT_CACHED = 0,
   NBR_READY_TO_BE_CACHED,
@@ -79,8 +79,8 @@ extern limb MontgomeryMultR1[MAX_LEN];
 extern int NumberLength;
 extern int NumberLengthR1;
 extern int groupLen;
-extern char MontgomeryMultNCached;
-extern char TestNbrCached;
+extern enum eNbrCached MontgomeryMultNCached;
+extern enum eNbrCached TestNbrCached;
 extern limb MontgomeryMultN[MAX_LEN];
 extern int smallPrimes[SMALL_PRIMES_ARRLEN+1];
 #ifdef __EMSCRIPTEN__

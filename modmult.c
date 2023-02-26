@@ -49,8 +49,8 @@
 #define MONTMULT_LIMB_END(curr)   \
     Prod##curr = (int32_t)(Pr >> BITS_PER_GROUP)
 
-char MontgomeryMultNCached;
-char TestNbrCached;
+enum eNbrCached MontgomeryMultNCached;
+enum eNbrCached TestNbrCached;
 limb MontgomeryR1[MAX_LEN];
 limb TestNbr[MAX_LEN];
 limb MontgomeryMultN[MAX_LEN];
