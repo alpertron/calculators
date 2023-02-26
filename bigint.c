@@ -354,7 +354,6 @@ int RemDivBigNbrByInt(const limb *pDividend, int divisor, int nbrLen)
     remainder = dividend - (quotient * (unsigned int)divisor);
     if (remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
-      quotient--;
       remainder += (unsigned int)divisor;
     }
     ptrDividend--;

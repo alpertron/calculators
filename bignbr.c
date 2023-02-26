@@ -932,7 +932,6 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
     remainder = dividend - (quotient * divisor);
     if ((unsigned int)remainder >= (unsigned int)divisor)
     {     // remainder not in range 0 <= remainder < divisor. Adjust.
-      quotient--;
       remainder += divisor;
     }
     pLimb--;
