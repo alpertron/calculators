@@ -18,7 +18,6 @@
 */
 /* global asmjs */
 /* global endFeedback */
-/* global fileContents */
 /* global get */
 /* global lang */
 

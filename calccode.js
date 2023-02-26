@@ -22,6 +22,7 @@
 /* global callWorker */
 /* global get */
 /* global fileContents */
+/* global req */
 let workPar;
 function newState(_aEvt)
 {
