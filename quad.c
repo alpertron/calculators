@@ -2891,18 +2891,16 @@ static void ShowArgumentContinuedFraction(void)
   }
 }
 
-#if 0
-  PQa algorithm for (P+G)/Q where G = sqrt(discriminant):
-  U1 <- 1, U2 <- 0
-  V1 <- 0, V2 <- 1
-  Perform loop:
-  a = floor((U + G)/V)
-  U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
-  V3 <- V2, V2 <- V1, V1 <- a*V2 + V3
-  U <- a*V - U
-  V <- (D - U^2)/V
-  Inside period when: 0 <= G - U < V
-#endif
+//  PQa algorithm for (P+G)/Q where G = sqrt(discriminant):
+//  Set U1 to 1 and U2 to 0.
+//  Set V1 to 0 and V2 to 1.
+//  Perform loop:
+//  Compute a as floor((U + G)/V)
+//  Set U3 to U2, U2 to U1 and U1 to a*U2 + U3
+//  Set V3 to V2, V2 to V1 and V1 <- a*V2 + V3
+//  Set U to a*V - U
+//  Set V to (D - U^2)/V
+//  Inside period when: 0 <= G - U < V
 
 static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
 {
