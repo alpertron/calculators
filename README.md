@@ -1,3 +1,9 @@
+I have written 14 calculators in my free time. Their source code is open source, so you can use the code for your own projects.
+
+I started writing these calculators as Java applets in 1997. In 2015 I ported them to C language. The code is compiled to WebAssembly or asm.js using Emscripten so it can run inside Web browsers.
+
+The complete source code size is about 70 000 lines of code.
+
 Results of static analysis and code coverage of this software using [Codacy](https://app.codacy.com/gh/alpertron/calculators/dashboard).
 
 Badges from [SonarCloud](https://sonarcloud.io/summary/overall?id=alpertron_calculators):
