@@ -33,9 +33,9 @@ All calculators can process expressions.
 
 If you run the calculator without command line parameters, the program will show the expected arguments.
 
-### Static analysis of the code
+### Static code analysis
 
-Quality assurance of the code is realized with the coverage test explained in the previous section and static analysis. The latter is done by tools that scan the source code. The programs do not run in this case.
+Software quality assurance is realized with the coverage test explained in the previous section and static analysis. The latter is done by tools that scan the source code. The programs do not run in this case.
 
 Results of static analysis and code coverage of this software using [Codacy](https://app.codacy.com/gh/alpertron/calculators/dashboard).
 
