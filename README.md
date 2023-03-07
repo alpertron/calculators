@@ -6,7 +6,7 @@ The complete source code size is about 70 000 lines of code.
 
 ### Running the programs as standalone executables
 
-The main purpose of compiling the code is to run coverage tests. There is a file ``coverage.out.old`` with the results of running all calculators with different inputs.
+The main purpose of compiling the code is to run coverage tests. The file ``coverage.out.old`` holds the results of running all calculators with different inputs.
 After making a change in the code, I run this test again and the output should not be changed. When adding a new feature to the calculators, I add the new case to the coverage, and change the results file if the results are correct.
 These tests use the files ``Makefile`` and ``coverage``.
 
