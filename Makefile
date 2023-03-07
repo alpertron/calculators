@@ -16,8 +16,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 #
-# Comment out next line for standard compilation.
-flags_coverage=--coverage
+#    Use flags_coverage=--coverage in make command line to compile
+#    with coverage support.
 flags_factorization_1=-D_USING64BITS_ -DFACTORIZATION_APP=1 -DFACTORIZATION_FUNCTIONS=1 -c
 flags_squares_1=-D_USING64BITS_ -c
 flags_other_1=-D_USING64BITS_ -c

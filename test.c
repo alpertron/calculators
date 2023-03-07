@@ -256,6 +256,15 @@ int main(int argc, char* argv[])
   char text[40000];
   char* ptrText = text;
   char* ptrCurveNbr = NULL;
+  if ((argc != 2) && (argc != 3))
+  {
+    (void)printf("nbr_to_factor [flags]\n"
+      "flags = 1: hexadecimal output, do not use SIQS\n"
+      "flags = 2: decimal output, use SIQS\n"
+      "flags = 3: hexadecimal output, use SIQS\n"
+      "flags = 4: decimal output, do not use SIQS\n");
+    return 0;
+  }
   if (argc == 3)
   {
     if ((argv[2][0] == '1') || (argv[2][0] == '3'))

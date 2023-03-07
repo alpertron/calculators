@@ -4,6 +4,39 @@ I started writing these calculators as Java applets in 1997. In 2015 I ported th
 
 The complete source code size is about 70 000 lines of code.
 
+### Running the programs as standalone executables
+
+The main purpose of compiling the code is to run coverage tests. There is a file with the results of running all calculators with different inputs.
+After making a change in the code, I run this test again and the output should not be changed. When adding a new feature to the calculators, I add the new case to the coverage, and change the results file if the results are correct.
+These tests use the files ``Makefile`` and ``coverage``.
+
+You can use ``Makefile`` to generate standalone executables. Just run ``make clean`` and then ``make``.
+If you want to build only one of the calculators, you can run ``make`` *calculator*, where *calculator* is one the following words:
+
+- ``ecm`` (integer factorization)
+- ``gaussian`` (Gaussian integer factorization)
+- ``quad`` (two-variable quadratic integer solver)
+- ``dilog`` (discrete logarithm solver)
+- ``quadmod`` (quadratic modular equation solver)
+- ``fsquares`` (decompose number in sum of squares)
+- ``fcubes`` (decompose number in sum of cubes)
+- ``tsqcubes`` (decompose number in sum of two squares and a cube, fifth or seventh power)
+- ``contfrac`` (continued fraction calculator)
+- ``polfact`` (polynomial equation solver and factorization)
+
+After building the calculators, you can run them. For example:
+
+``./polfact 0 "x^2+x+3" 2``
+
+The output is in HTML and it starts with a digit (this is used by the JavaScript code).
+All calculators can process expressions.
+
+If you run the calculator without command line parameters, the program will show the expected arguments.
+
+### Static analysis of the code
+
+Quality assurance of the code is realized with the coverage test explained in the previous section and static analysis. The latter is done by tools that scan the source code. The programs do not run in this case.
+
 Results of static analysis and code coverage of this software using [Codacy](https://app.codacy.com/gh/alpertron/calculators/dashboard).
 
 Badges from [SonarCloud](https://sonarcloud.io/summary/overall?id=alpertron_calculators):
