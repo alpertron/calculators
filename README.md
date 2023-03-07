@@ -13,16 +13,16 @@ These tests use the files ``Makefile`` and ``coverage``.
 You can use ``Makefile`` to generate standalone executables. Just run ``make clean`` and then ``make``.
 If you want to build only one of the calculators, you can run ``make calculator``, where ``calculator`` is one of the following words:
 
-- ``ecm`` (integer factorization)
-- ``gaussian`` (Gaussian integer factorization)
-- ``quad`` (two-variable quadratic integer solver)
-- ``dilog`` (discrete logarithm solver)
-- ``quadmod`` (quadratic modular equation solver)
-- ``fsquares`` (decompose number in sum of squares)
-- ``fcubes`` (decompose number in sum of cubes)
-- ``tsqcubes`` (decompose number in sum of two squares and a cube, fifth or seventh power)
-- ``contfrac`` (continued fraction calculator)
-- ``polfact`` (polynomial equation solver and factorization)
+-   ``ecm`` (integer factorization)
+-   ``gaussian`` (Gaussian integer factorization)
+-   ``quad`` (two-variable quadratic integer solver)
+-   ``dilog`` (discrete logarithm solver)
+-   ``quadmod`` (quadratic modular equation solver)
+-   ``fsquares`` (decompose number in sum of squares)
+-   ``fcubes`` (decompose number in sum of cubes)
+-   ``tsqcubes`` (decompose number in sum of two squares and a cube, fifth or seventh power)
+-   ``contfrac`` (continued fraction calculator)
+-   ``polfact`` (polynomial equation solver and factorization)
 
 After building the calculators, you can run them. For example:
 
