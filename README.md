@@ -11,7 +11,7 @@ After making a change in the code, I run this test again and the output should n
 These tests use the files ``Makefile`` and ``coverage``.
 
 You can use ``Makefile`` to generate standalone executables. Just run ``make clean`` and then ``make``.
-If you want to build only one of the calculators, you can run ``make calculator``, where ``calculator`` is one the following words:
+If you want to build only one of the calculators, you can run ``make calculator``, where ``calculator`` is one of the following words:
 
 - ``ecm`` (integer factorization)
 - ``gaussian`` (Gaussian integer factorization)
