@@ -57,6 +57,7 @@ lcov --capture --directory . --output-file ecm.info
 gcovr --json run-1.json
 make clean
 make blockly flags_coverage=--coverage
+echo -e "**** BLOCKLY ****" >> coverage.out
 ./blockly xml.txt 0 >> coverage.out
 ./blockly xml.txt 1 >> coverage.out
 ./blockly xml.txt 2 >> coverage.out
@@ -74,6 +75,9 @@ make blockly flags_coverage=--coverage
 ./blockly xml.txt 14 >> coverage.out
 ./blockly xml.txt 15 >> coverage.out
 ./blockly xml.txt 16 >> coverage.out
+./blockly xml.txt 17 >> coverage.out
+./blockly xml.txt 18 >> coverage.out
+./blockly xml.txt 19 >> coverage.out
 lcov --capture --directory . --output-file blockly.info
 gcovr --json run-2.json
 make clean

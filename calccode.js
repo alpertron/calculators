@@ -24,6 +24,7 @@
 /* global fileContents */
 /* global req */
 let workPar;
+let req;
 function newState(_aEvt)
 {
   if (req.readyState === 4 && req.status === 200)
@@ -41,7 +42,7 @@ function getCalculatorCode(jsFileName, workerParameter)
   workPar = workerParameter;
   if (asmjs)
   {
-    let req = new XMLHttpRequest();
+    req = new XMLHttpRequest();
     req.open("GET", jsFileName, true);
     req.responseType = "arraybuffer";
     req.onreadystatechange = newState;

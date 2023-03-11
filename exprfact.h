@@ -57,6 +57,7 @@
 #define TOKEN_SET_VAR        67
 #define TOKEN_IF             68
 #define TOKEN_JMP            69
+#define TOKEN_SGN1           70
 #define START_FLOW_CONTROL  121
 #define START_FOR           121
 #define START_REPEAT        122

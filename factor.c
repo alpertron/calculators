@@ -918,6 +918,18 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
       foundByLehman = true;
       break;
     }
+    Lehman(&tofactor, EC % 50000000, &potentialFactor);
+    BigIntGcd(numToFactor, &potentialFactor, &potentialFactor);
+    if ((potentialFactor.nbrLimbs > 1) &&
+      !BigIntEqual(&potentialFactor, numToFactor))
+    {                // Factor found.
+      int lenBytes;
+      (void)memcpy(common.ecm.GD, potentialFactor.limbs, NumberLengthBytes);
+      lenBytes = (NumberLength - potentialFactor.nbrLimbs) * (int)sizeof(limb);
+      (void)memset(&common.ecm.GD[potentialFactor.nbrLimbs], 0, lenBytes);
+      foundByLehman = true;
+      break;
+    }
     ecmResp = ecmCurve(&EC, &NextEC);
     if (ecmResp == CHANGE_TO_SIQS)
     {    // Perform SIQS

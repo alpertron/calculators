@@ -562,6 +562,7 @@ function startUp()
   };
   get("exitBlockly").onclick = function()
   {
+    document.activeElement.blur();
     show("main");
     hide("blockmode");
   };

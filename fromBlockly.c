@@ -245,11 +245,12 @@ static int getVariableNbr(const char** ppXML)
   {
     int index;
     int curVarNameSize = *ptrVariableNames;
+    ptrVariableNames++;
     if (curVarNameSize != varNameSize)
     {
+      ptrVariableNames += curVarNameSize;
       continue;
     }
-    ptrVariableNames++;
     for (index = 0; index < curVarNameSize; index++)
     {
       if (*(ptrVariableNames + index) != *(ptrXML + index))
@@ -590,7 +591,7 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
             ptrInstr++;
             *ptrInstr = OPER_SUBT;
             ptrInstr++;
-            *ptrInstr = TOKEN_SGN;
+            *ptrInstr = TOKEN_SGN1;
             ptrInstr++;
             *ptrInstr = OPER_MULTIPLY;
             ptrInstr++;
@@ -1007,11 +1008,19 @@ void fromBlockly(const char* ptrXMLFromBlockly)
 #ifdef __EMSCRIPTEN__
   databack("L");  // Exit Blockly mode.
 #endif
-  (void)ComputeExpression(bufferInstr, NULL, false);
-  if (nbrBlocklyOutputLines == 0)
+  if (ComputeExpression(bufferInstr, NULL, false) ==
+    EXPR_SYNTAX_ERROR)
   {
-    copyStr(&ptrBlocklyOutput, lang? "<li>No hay nada para mostrar</li>":
-      "<li>There is nothing to print</li>");
+    copyStr(&ptrBlocklyOutput, lang ? "<li>Internal error</li>" :
+      "<li>Internal error</li>");
+  }
+  else
+  {
+    if (nbrBlocklyOutputLines == 0)
+    {
+      copyStr(&ptrBlocklyOutput, lang ? "<li>No hay nada para mostrar</li>" :
+        "<li>There is nothing to print</li>");
+    }
   }
   copyStr(&ptrBlocklyOutput, "</ul>");
   beginLine(&ptrBlocklyOutput);

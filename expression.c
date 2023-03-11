@@ -465,6 +465,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
       break;
 
     case TOKEN_SGN:
+    case TOKEN_SGN1:
       retcode = getParms(1, stackIndexThreshold);
       if (retcode == EXPR_SHORT_CIRCUIT)
       {
@@ -474,7 +475,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
       {
         return retcode;
       }
-      if (!BigIntIsZero(&curStack))
+      if (!BigIntIsZero(&curStack) || (c == TOKEN_SGN1))
       {     // If less than zero, return -1. If greater than zero, return 1.
         curStack.nbrLimbs = 1;
         curStack.limbs[0].x = 1;
