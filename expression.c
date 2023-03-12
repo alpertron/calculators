@@ -475,7 +475,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
       {
         return retcode;
       }
-      if (!BigIntIsZero(&curStack) || (c == TOKEN_SGN1))
+      if (!BigIntIsZero(&curStack) || (c == (char)TOKEN_SGN1))
       {     // If less than zero, return -1. If greater than zero, return 1.
         curStack.nbrLimbs = 1;
         curStack.limbs[0].x = 1;

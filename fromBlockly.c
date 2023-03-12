@@ -1011,7 +1011,7 @@ void fromBlockly(const char* ptrXMLFromBlockly)
   if (ComputeExpression(bufferInstr, NULL, false) ==
     EXPR_SYNTAX_ERROR)
   {
-    copyStr(&ptrBlocklyOutput, lang ? "<li>Internal error</li>" :
+    copyStr(&ptrBlocklyOutput, lang ? "<li>Error interno</li>" :
       "<li>Internal error</li>");
   }
   else
