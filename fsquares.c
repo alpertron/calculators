@@ -32,7 +32,7 @@ static int power4;
 static limb result[MAX_LEN];
 static int origNbrLimbs;
 static int groupLength;
-static void batchSquaresCallback(char** pptrOutput);
+static void batchSquaresCallback(char** pptrOutput, int type);
 #ifdef __EMSCRIPTEN__
   static char tmpOutput[MAX_LEN*12];
 #endif
@@ -334,7 +334,7 @@ void fsquaresText(char *input, int grpLen)
   copyStr(&ptrOutput, "</p>");
 }
 
-static void batchSquaresCallback(char **pptrOutput)
+static void batchSquaresCallback(char **pptrOutput, int type)
 {
   int rc;
   char *ptrOutput;
@@ -345,25 +345,47 @@ static void batchSquaresCallback(char **pptrOutput)
   origNbrLimbs = toProcess.nbrLimbs;
   lenBytes = origNbrLimbs * (int)sizeof(limb);
   (void)memcpy(origNbr, toProcess.limbs, lenBytes);
+  if ((type == BATCH_NO_PROCESS_DEC) || (type == BATCH_NO_PROCESS_HEX))
+  {         // Do not compute sum of squares.
+    if (hexadecimal)
+    {
+      BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+    }
+    else
+    {
+      BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+    }
+    *pptrOutput = ptrOutput;
+    return;
+  }
   rc = fsquares();
   // Show the number to be decomposed into sum of squares.
-  copyStr(&ptrOutput, "<p>");
-  if (hexadecimal)
+  if (type == BATCH_NO_QUOTE)
   {
-    BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
-  }
-  else
-  {
-    BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+    copyStr(&ptrOutput, "<p>");
+    if (hexadecimal)
+    {
+      BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+    }
+    else
+    {
+      BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+    }
   }
   if (toProcess.sign == SIGN_NEGATIVE)
   {
-    *ptrOutput = ':';
-    ptrOutput++;
-    *ptrOutput = ' ';
-    ptrOutput++;
+    if (type == BATCH_NO_QUOTE)
+    {
+      *ptrOutput = ':';
+      ptrOutput++;
+      *ptrOutput = ' ';
+      ptrOutput++;
+    }
     textError(&ptrOutput, EXPR_NUMBER_TOO_LOW);
-    copyStr(&ptrOutput, "</p>");
+    if (type == BATCH_NO_QUOTE)
+    {
+      copyStr(&ptrOutput, "</p>");
+    }
     *pptrOutput = ptrOutput;
     return;
   }
@@ -382,7 +404,10 @@ static void batchSquaresCallback(char **pptrOutput)
     break;
   }
   // Show the decomposition.
-  copyStr(&ptrOutput, " = ");
+  if (type == BATCH_NO_QUOTE)
+  {
+    copyStr(&ptrOutput, " = ");
+  }
   if (hexadecimal)
   {
     Bin2Hex(&ptrOutput, Mult1, Mult1Len, groupLength);
@@ -431,7 +456,10 @@ static void batchSquaresCallback(char **pptrOutput)
     }
     copyStr(&ptrOutput, square);
   }
-  copyStr(&ptrOutput, "</p>");
+  if (type == BATCH_NO_QUOTE)
+  {
+    copyStr(&ptrOutput, "</p>");
+  }
   *pptrOutput = ptrOutput;
 }
 

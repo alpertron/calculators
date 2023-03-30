@@ -45,7 +45,7 @@ static BigInteger toProcess;
 static int groupLength;
 static const char *cube = "<span class=\"bigger\">³</span>";
 static bool hexadecimal;
-static void batchCubesCallback(char** pptrOutput);
+static void batchCubesCallback(char** pptrOutput, int type);
 static int sums[] =
 {
   6, 0, 1, -1, -1, 0, -1, 0, 1, 1,
@@ -386,43 +386,75 @@ static void showCube(char** pptrOutput, const BigInteger* pBase)
   *pptrOutput = ptrOutput;
 }
 
-static void batchCubesCallback(char **pptrOutput)
+static void batchCubesCallback(char **pptrOutput, int type)
 {
   int result;
   char *ptrOutput = *pptrOutput;
   NumberLength = toProcess.nbrLimbs;
+  if ((type == BATCH_NO_PROCESS_DEC) || (type == BATCH_NO_PROCESS_HEX))
+  {         // Do not compute sum of squares.
+    if (hexadecimal)
+    {
+      BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+    }
+    else
+    {
+      BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+    }
+    *pptrOutput = ptrOutput;
+    return;
+  }
   result = fcubes(&toProcess);
   // Show the number to be decomposed into sum of cubes.
-  copyStr(&ptrOutput, "<p>");
-  if (hexadecimal)
+  if (type == BATCH_NO_QUOTE)
   {
-    BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+    copyStr(&ptrOutput, "<p>");
+    if (hexadecimal)
+    {
+      BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+    }
+    else
+    {
+      BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+    }
   }
-  else
+  if ((type == BATCH_NO_QUOTE) && (result != 0))
   {
-    BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+    *ptrOutput = ':';
+    ptrOutput++;
+    *ptrOutput = ' ';
+    ptrOutput++;
   }
   switch (result)
   {
   case -1:
-    copyStr(&ptrOutput, (lang?": El applet no funciona si el número es congruente a 4 o 5 (mod 9)</p>":
-      ": This applet does not work if the number is congruent to 4 or 5 (mod 9)</p>"));
-    *pptrOutput = ptrOutput;
-    return;
+    copyStr(&ptrOutput, (lang?"El applet no funciona si el número es congruente a 4 o 5 (mod 9)":
+      "This applet does not work if the number is congruent to 4 or 5 (mod 9)"));
+    break;
   case 1:
-    copyStr(&ptrOutput, (lang?": ¡Error interno! Por favor envíe este número al autor del applet.</p>":
-      ": Internal error! Please send the number to the author of the applet.</p>"));
-    *pptrOutput = ptrOutput;
-    return;
+    copyStr(&ptrOutput, (lang?"¡Error interno! Por favor envíe este número al autor del applet.":
+      "Internal error! Please send the number to the author of the applet."));
+    break;
   case 2:
-    copyStr(&ptrOutput, (lang?": El usuario detuvo el cálculo</p>": ": User stopped the calculation</p>"));
-    *pptrOutput = ptrOutput;
-    return;
+    copyStr(&ptrOutput, (lang?"El usuario detuvo el cálculo": "User stopped the calculation"));
+    break;
   default:
     break;
   }
+  if (result != 0)
+  {
+    if (type == BATCH_NO_QUOTE)
+    {
+      copyStr(&ptrOutput, "</p>");
+    }
+    *pptrOutput = ptrOutput;
+    return;
+  }
   // Show decomposition in sum of 1, 2, 3 or 4 cubes.
-  copyStr(&ptrOutput, " = ");
+  if (type == BATCH_NO_QUOTE)
+  {
+    copyStr(&ptrOutput, " = ");
+  }
   showCube(&ptrOutput, &Base1);
   if (!BigIntIsZero(&Base2))
   {
@@ -438,6 +470,10 @@ static void batchCubesCallback(char **pptrOutput)
   {
     copyStr(&ptrOutput, " + ");
     showCube(&ptrOutput, &Base4);
+  }
+  if (type == BATCH_NO_QUOTE)
+  {
+    copyStr(&ptrOutput, "</p>");
   }
   *pptrOutput = ptrOutput;
 }

@@ -52,6 +52,7 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "Modpow(32,1,9410917470681307814700409503841379824884398201229727104530371249321432053727869645683211883124351361922770493757)" >> coverage.out
 ./ecm "ModPow(-1,2,2^372-177)" >> coverage.out
 ./ecm "Modpow(32,1,12345678922)" >> coverage.out
+./ecm "x=-10; x=x+1; x<10; \"%d is prime: %l, %Fd\":x:isprime(x):x" >> coverage.out
 
 lcov --capture --directory . --output-file ecm.info
 gcovr --json run-1.json

@@ -584,7 +584,7 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
   pstFuncOperExpr++;
   binaryOperExpr = pstFuncOperExpr;
 
-  while ((*pInput != '\0') && (*pInput != ';'))
+  while ((*pInput != '\0') && (*pInput != ';') && (*pInput != ':'))
   {
     const char* inputTemp;
     char c = *pInput;

@@ -75,45 +75,92 @@ bool useBlockly;
 
 void showDivisors(void);    // DEBUG BORRAR
 #ifdef FACTORIZATION_APP
-void batchEcmCallback(char **pptrOutput)
+void batchEcmCallback(char **pptrOutput, int type)
 {
+  bool doFactBak = doFactorization;
+  bool doShowPrimeBak = doShowPrime;
+  if (type >= 0)
+  {
+    doShowPrime = false;
+    if ((type & BATCH_MASK_PROCESS) != 0)
+    {
+      doFactorization = true;
+    }
+    else
+    {
+      doFactorization = false;
+    }
+  }
   char *ptrFactorDec = tofactorDec;
   NumberLength = tofactor.nbrLimbs;
-  if (tofactor.sign == SIGN_NEGATIVE)
-  {
-    *ptrFactorDec = '-';
-    ptrFactorDec++;
-  }
   BigInteger2IntArray(nbrToFactor, &tofactor);
   if (*nbrToFactor < 0)
   {    // If number is negative, make it positive.
     *nbrToFactor = -*nbrToFactor;
   }
-  if (hexadecimal)
+  if (type == BATCH_NO_QUOTE)
   {
-    Bin2Hex(&ptrFactorDec, tofactor.limbs, tofactor.nbrLimbs, groupLen);
-  }
-  else
-  {
-    Bin2Dec(&ptrFactorDec, tofactor.limbs, tofactor.nbrLimbs, groupLen);
+    if (tofactor.sign == SIGN_NEGATIVE)
+    {
+      *ptrFactorDec = '-';
+      ptrFactorDec++;
+    }
+    if (hexadecimal)
+    {
+      Bin2Hex(&ptrFactorDec, tofactor.limbs, tofactor.nbrLimbs, groupLen);
+    }
+    else
+    {
+      Bin2Dec(&ptrFactorDec, tofactor.limbs, tofactor.nbrLimbs, groupLen);
+    }
   }
   if (doFactorization)
   {
     factorExt(&tofactor, nbrToFactor, factorsMod, astFactorsMod, knownFactors);
     knownFactors = NULL;
   }
-  if (doShowPrime)
+  else if (doShowPrime)
   {
-    if (BpswPrimalityTest(&tofactor, NULL) == 0)
-    {    // Argument is a probable prime.
-      copyStr(&ptrFactorDec, lang ? " es primo" : " is prime");
+    if (tofactor.sign == SIGN_NEGATIVE)
+    {
+      copyStr(pptrOutput, "-");
+    }
+    if (hexadecimal)
+    {
+      Bin2Hex(pptrOutput, tofactor.limbs, tofactor.nbrLimbs, groupLen);
     }
     else
     {
-      copyStr(&ptrFactorDec, lang ? " no es primo" : " is not prime");
+      Bin2Dec(pptrOutput, tofactor.limbs, tofactor.nbrLimbs, groupLen);
+    }
+    if (BpswPrimalityTest(&tofactor, NULL) == 0)
+    {    // Argument is a probable prime.
+      copyStr(pptrOutput, lang ? " es primo" : " is prime");
+    }
+    else
+    {
+      copyStr(pptrOutput, lang ? " no es primo" : " is not prime");
     }
   }
-  SendFactorizationToOutput(astFactorsMod, pptrOutput, doFactorization);
+  else
+  {
+    if (tofactor.sign == SIGN_NEGATIVE)
+    {
+      copyStr(pptrOutput, "-");
+    }
+    if (hexadecimal)
+    {
+      Bin2Hex(pptrOutput, tofactor.limbs, tofactor.nbrLimbs, groupLen);
+    }
+    else
+    {
+      Bin2Dec(pptrOutput, tofactor.limbs, tofactor.nbrLimbs, groupLen);
+    }
+  }
+  SendFactorizationToOutput(astFactorsMod, pptrOutput, doFactorization,
+    (type != BATCH_NO_QUOTE));
+  doFactorization = doFactBak;
+  doShowPrime = doShowPrimeBak;
 }
 #endif
 

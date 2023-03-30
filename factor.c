@@ -827,7 +827,7 @@ char *ShowFactoredPart(const BigInteger *pNbr, const struct sFactors* pstFactors
   {    // Some factorization known.
     int NumberLengthBak = NumberLength;
     copyStr(&ptrLowerText, "<p class=\"blue\">");
-    SendFactorizationToOutput(pstFactors, &ptrLowerText, true);
+    SendFactorizationToOutput(pstFactors, &ptrLowerText, true, false);
     copyStr(&ptrLowerText, "</p>");
     NumberLength = NumberLengthBak;
   }
@@ -967,175 +967,180 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
   StepECM = 0; /* do not show pass number on screen */
 }
 
-void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOutput, bool doFactorization)
+void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOutput,
+  bool doFactorization, bool onlyFactor)
 {
   char *ptrOutput = *pptrOutput;
   copyStr(&ptrOutput, tofactorDec);
-  if (doFactorization)
+  if (!doFactorization)
   {
-    const struct sFactors *pstFactor;
-    pstFactor = pstFactors+1;
-    if ((tofactor.sign == SIGN_POSITIVE) && (pstFactors->multiplicity == 1) && (pstFactor->multiplicity == 1) &&
-      ((*pstFactor->ptrFactor > 1) || (*(pstFactor->ptrFactor + 1) > 1)))
-    {    // Do not show zero or one as prime.
-      copyStr(&ptrOutput, lang ? " es primo" : " is prime");
+    return;
+  }
+  const struct sFactors *pstFactor;
+  pstFactor = pstFactors+1;
+  if (!onlyFactor && (tofactor.sign == SIGN_POSITIVE) && (pstFactors->multiplicity == 1) &&
+    (pstFactor->multiplicity == 1) &&
+    ((*pstFactor->ptrFactor > 1) || (*(pstFactor->ptrFactor + 1) > 1)))
+  {    // Do not show zero or one as prime.
+    copyStr(&ptrOutput, lang ? " es primo" : " is prime");
+    *pptrOutput = ptrOutput;
+    return;
+  }
+  int i = 0;
+  if (!onlyFactor)
+  {
+    copyStr(&ptrOutput, " = ");
+  }
+  if (tofactor.sign == SIGN_NEGATIVE)
+  {
+    *ptrOutput = '-';
+    ptrOutput++;
+    if ((tofactor.nbrLimbs > 1) || (tofactor.limbs[0].x > 1))
+    {
+      if (prettyprint)
+      {
+        copyStr(&ptrOutput, "1 &times; ");
+      }
+      else
+      {
+        copyStr(&ptrOutput, "1 * ");
+      }
+    }
+  }
+  for (;;)
+  {
+    NumberLength = *pstFactor->ptrFactor;
+    IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
+    if (hexadecimal)
+    {
+      Bin2Hex(&ptrOutput, factorValue.limbs, factorValue.nbrLimbs, groupLen);
     }
     else
     {
-      int i = 0;
-      copyStr(&ptrOutput, " = ");
-      if (tofactor.sign == SIGN_NEGATIVE)
+      Bin2Dec(&ptrOutput, factorValue.limbs, factorValue.nbrLimbs, groupLen);
+    }
+    if (pstFactor->multiplicity > 1)
+    {
+      if (prettyprint)
       {
-        *ptrOutput = '-';
-        ptrOutput++;
-        if ((tofactor.nbrLimbs > 1) || (tofactor.limbs[0].x > 1))
-        {
-          if (prettyprint)
-          {
-            copyStr(&ptrOutput, "1 &times; ");
-          }
-          else
-          {
-            copyStr(&ptrOutput, "1 * ");
-          }
-        }
+        copyStr(&ptrOutput, "<sup>");
+        int2dec(&ptrOutput, pstFactor->multiplicity);
+        copyStr(&ptrOutput, "</sup>");
       }
-      for (;;)
+      else
       {
-        NumberLength = *pstFactor->ptrFactor;
-        IntArray2BigInteger(pstFactor->ptrFactor, &factorValue);
-        if (hexadecimal)
-        {
-          Bin2Hex(&ptrOutput, factorValue.limbs, factorValue.nbrLimbs, groupLen);
-        }
-        else
-        {
-          Bin2Dec(&ptrOutput, factorValue.limbs, factorValue.nbrLimbs, groupLen);
-        }
-        if (pstFactor->multiplicity > 1)
-        {
-          if (prettyprint)
-          {
-            copyStr(&ptrOutput, "<sup>");
-            int2dec(&ptrOutput, pstFactor->multiplicity);
-            copyStr(&ptrOutput, "</sup>");
-          }
-          else
-          {
-            *ptrOutput = '^';
-            ptrOutput++;
-            int2dec(&ptrOutput, pstFactor->multiplicity);
-          }
-        }
-#ifdef ENABLE_VERBOSE
-        int type = pstFactor->type;
-        bool isPrime = (pstFactor->upperBound == 0)? true: false;
-        if (type > 0)
-        {
-          int compositeType = type / 50000000 * 50000000;
-          copyStr(&ptrOutput, " <span class=\"verbose\">(");
-          if (compositeType == TYP_AURIF)
-          {
-            copyStr(&ptrOutput, "Aurifeuille");
-            if (!isPrime)
-            {
-              copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
-            }
-          }
-          else if (compositeType == TYP_TABLE)
-          {
-            copyStr(&ptrOutput, lang ? "Tabla" : "Table");
-            if (!isPrime)
-            {
-              copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
-            }
-          }
-          else if (compositeType == TYP_SIQS)
-          {
-            copyStr(&ptrOutput, lang? "<abbr title=\"Criba cuadrática autoinicializada\">SIQS</abbr>":
-                                "<abbr title=\"Self-Initializing Quadratic Sieve\">SIQS</abbr>");
-            if (!isPrime)
-            {
-              copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
-            }
-          }
-          else if (compositeType == TYP_LEHMAN)
-          {
-            copyStr(&ptrOutput, "Lehman");
-            if (!isPrime)
-            {
-              copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
-            }
-          }
-          else if (compositeType == TYP_RABIN)
-          {
-            copyStr(&ptrOutput, lang ? "Miller y Rabin" : "Miller &amp; Rabin");
-            if (!isPrime)
-            {
-              copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
-            }
-          }
-          else if (compositeType == TYP_DIVISION)
-          {
-            copyStr(&ptrOutput, lang ? "División" : "Division");
-            if (!isPrime)
-            {
-              copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
-            }
-          }
-          else if (type > TYP_EC)
-          {
-            if (isPrime)
-            {
-              copyStr(&ptrOutput, lang ? "<abbr title=\"Método de curvas elípticas\">ECM</abbr>, curva " :
-                "<abbr title=\"Elliptic curve method\">ECM</abbr>, curve ");
-              int2dec(&ptrOutput, type - TYP_EC);
-              *ptrOutput = 0;     // Add string terminator.
-            }
-            else
-            {
-              copyStr(&ptrOutput, lang ? "Compuesto" : "Composite");
-            }
-          }
-          else if (!isPrime)
-          {
-            copyStr(&ptrOutput, lang ? "Compuesto": "Composite");
-          }
-          else
-          {            // Nothing to do.
-          }
-          copyStr(&ptrOutput, ")</span>");
-        }
-        else if (!isPrime)
-        {
-          copyStr(&ptrOutput, "<span class=\"terse\"> (");
-          copyStr(&ptrOutput, lang ? "Compuesto" : "Composite");
-          copyStr(&ptrOutput, ")</span>");
-        }
-        else
-        {          // Nothing to do.
-        }
-        if (type < 0)
-        {
-          copyStr(&ptrOutput, " (Unknown)");
-        }
-#endif
-        i++;
-        if (i == pstFactors->multiplicity)
-        {
-          break;
-        }
-        if (prettyprint)
-        {
-          copyStr(&ptrOutput, " &times; ");
-        }
-        else
-        {
-          copyStr(&ptrOutput, " * ");
-        }
-        pstFactor++;
+        *ptrOutput = '^';
+        ptrOutput++;
+        int2dec(&ptrOutput, pstFactor->multiplicity);
       }
     }
+#ifdef ENABLE_VERBOSE
+    int type = pstFactor->type;
+    bool isPrime = (pstFactor->upperBound == 0) ? true : false;
+    if (type > 0)
+    {
+      int compositeType = type / 50000000 * 50000000;
+      copyStr(&ptrOutput, " <span class=\"verbose\">(");
+      if (compositeType == TYP_AURIF)
+      {
+        copyStr(&ptrOutput, "Aurifeuille");
+        if (!isPrime)
+        {
+          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+        }
+      }
+      else if (compositeType == TYP_TABLE)
+      {
+        copyStr(&ptrOutput, lang ? "Tabla" : "Table");
+        if (!isPrime)
+        {
+          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+        }
+      }
+      else if (compositeType == TYP_SIQS)
+      {
+        copyStr(&ptrOutput, lang ? "<abbr title=\"Criba cuadrática autoinicializada\">SIQS</abbr>" :
+          "<abbr title=\"Self-Initializing Quadratic Sieve\">SIQS</abbr>");
+        if (!isPrime)
+        {
+          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+        }
+      }
+      else if (compositeType == TYP_LEHMAN)
+      {
+        copyStr(&ptrOutput, "Lehman");
+        if (!isPrime)
+        {
+          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+        }
+      }
+      else if (compositeType == TYP_RABIN)
+      {
+        copyStr(&ptrOutput, lang ? "Miller y Rabin" : "Miller &amp; Rabin");
+        if (!isPrime)
+        {
+          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+        }
+      }
+      else if (compositeType == TYP_DIVISION)
+      {
+        copyStr(&ptrOutput, lang ? "División" : "Division");
+        if (!isPrime)
+        {
+          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+        }
+      }
+      else if (type > TYP_EC)
+      {
+        if (isPrime)
+        {
+          copyStr(&ptrOutput, lang ? "<abbr title=\"Método de curvas elípticas\">ECM</abbr>, curva " :
+            "<abbr title=\"Elliptic curve method\">ECM</abbr>, curve ");
+          int2dec(&ptrOutput, type - TYP_EC);
+          *ptrOutput = 0;     // Add string terminator.
+        }
+        else
+        {
+          copyStr(&ptrOutput, lang ? "Compuesto" : "Composite");
+        }
+      }
+      else if (!isPrime)
+      {
+        copyStr(&ptrOutput, lang ? "Compuesto" : "Composite");
+      }
+      else
+      {            // Nothing to do.
+      }
+      copyStr(&ptrOutput, ")</span>");
+    }
+    else if (!isPrime)
+    {
+      copyStr(&ptrOutput, "<span class=\"terse\"> (");
+      copyStr(&ptrOutput, lang ? "Compuesto" : "Composite");
+      copyStr(&ptrOutput, ")</span>");
+    }
+    else
+    {          // Nothing to do.
+    }
+    if (type < 0)
+    {
+      copyStr(&ptrOutput, " (Unknown)");
+    }
+#endif
+    i++;
+    if (i == pstFactors->multiplicity)
+    {
+      break;
+    }
+    if (prettyprint)
+    {
+      copyStr(&ptrOutput, " &times; ");
+    }
+    else
+    {
+      copyStr(&ptrOutput, " * ");
+    }
+    pstFactor++;
   }
   *pptrOutput = ptrOutput;
 }

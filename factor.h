@@ -86,7 +86,8 @@ void FactoringSIQS(const limb *pNbrToFactor, limb *pFactor);
 extern int nbrToFactor[MAX_LEN];
 extern struct sFactors astFactorsMod[MAX_FACTORS];
 extern int factorsMod[20000];
-void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOutput, bool doFactorization);
+void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOutput,
+  bool doFactorization, bool onlyFactor);
 void Totient(BigInteger *result);
 void NumFactors(BigInteger* result);
 void MinFactor(BigInteger* result);
@@ -98,6 +99,6 @@ enum eEcmResult ecmCurve(int* pEC, int* pNextEC);
 char* ShowFactoredPart(const BigInteger* pNbr, const struct sFactors* pstFactors);
 void ShowLowerText(void);
 int BpswPrimalityTest(const BigInteger* pValue, const struct sFactors* pstFactors);
-void batchEcmCallback(char** pptrOutput);
+void batchEcmCallback(char** pptrOutput, int type);
 #endif
 #endif

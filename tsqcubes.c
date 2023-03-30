@@ -34,7 +34,7 @@ static const char* cube = "<span class=\"bigger\">³</span>";
 static const char* fifth = "<sup>5</sup>";
 static const char* seventh = "<sup>7</sup>";
 static const char* powerStr;
-static void batchSqCubesCallback(char** pptrOutput);
+static void batchSqCubesCallback(char** pptrOutput, int type);
 static int power4;
 static int Exponent = 3;
 
@@ -164,21 +164,37 @@ static void showTerm(char** pptrOutput, const BigInteger* pBase, const char *exp
   *pptrOutput = ptrOutput;
 }
 
-static void batchSqCubesCallback(char **pptrOutput)
+static void batchSqCubesCallback(char **pptrOutput, int type)
 {
   int result;
   char *ptrOutput = *pptrOutput;
+  if ((type == BATCH_NO_PROCESS_DEC) || (type == BATCH_NO_PROCESS_HEX))
+  {         // Do not compute sum of squares.
+    if (hexadecimal)
+    {
+      BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+    }
+    else
+    {
+      BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+    }
+    *pptrOutput = ptrOutput;
+    return;
+  }
   NumberLength = toProcess.nbrLimbs;
   result = tsqcubes(&toProcess, Exponent);
   // Show the number to be decomposed into sum of cubes.
-  copyStr(&ptrOutput, "<p>");
-  if (hexadecimal)
+  if (type == BATCH_NO_QUOTE)
   {
-    BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
-  }
-  else
-  {
-    BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+    copyStr(&ptrOutput, "<p>");
+    if (hexadecimal)
+    {
+      BigInteger2Hex(&ptrOutput, &toProcess, groupLength);
+    }
+    else
+    {
+      BigInteger2Dec(&ptrOutput, &toProcess, groupLength);
+    }
   }
   if (result == 1)
   {
@@ -196,7 +212,10 @@ static void batchSqCubesCallback(char **pptrOutput)
     CopyBigInt(&Base2, &powerN);
   }
   // Show decomposition in sum of up to two squares and a cube.
-  copyStr(&ptrOutput, " = ");
+  if (type == BATCH_NO_QUOTE)
+  {
+    copyStr(&ptrOutput, " = ");
+  }
   if (BigIntIsZero(&Base2) && BigIntIsZero(&Base1))
   {
     showTerm(&ptrOutput, &Base3, powerStr);

@@ -18,13 +18,21 @@
 //
 #ifndef _BATCH_H
 #define _BATCH_H
-typedef void (*pBatchCallback)(char** pptrOutput);
+typedef void (*pBatchCallback)(char** pptrOutput, int type);
 extern int valuesProcessed;
 
+#define MAX_EXPRESSIONS    10
 enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound,
   char **pptrOutput, bool *pIsBatch, pBatchCallback callback);
-char *findChar(char *str, char c);
+char *findChar(const char *str, char c);
 #ifdef __EMSCRIPTEN__
 extern char *ptrInputText;
 #endif
+#define BATCH_MASK_HEX        1
+#define BATCH_MASK_PROCESS    2
+#define BATCH_NO_QUOTE        -1
+#define BATCH_NO_PROCESS_DEC  0
+#define BATCH_NO_PROCESS_HEX  BATCH_MASK_HEX
+#define BATCH_PROCESS_DEC     BATCH_MASK_PROCESS
+#define BATCH_PROCESS_HEX     (BATCH_MASK_PROCESS + BATCH_MASK_HEX)
 #endif

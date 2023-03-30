@@ -44,6 +44,8 @@ static const char* ptrConditionExpr;
 static bool errorDisplayed;
 static int endValuesProcessed;
 static pBatchCallback callback;
+static const char* ptrStartExprs[MAX_EXPRESSIONS];
+static int nbrExpressions;
 
 void beginLine(char** pptrOutput)
 {
@@ -121,8 +123,8 @@ static enum eExprErr evalExpression(const char *expr, BigInteger *ptrResult)
   while (*ptrInputExpr != 0)
   {
     char c = *ptrInputExpr;
-    if (c == ';')
-    {
+    if ((c == ';') || (c == ':'))
+    { // End of expression characters for batch mode.
       break;
     }
     // Copy character to output expression.
@@ -157,12 +159,38 @@ static void BatchError(char **pptrOutput, const char *batchText, const char *err
   counterC = 0;
 }
 
+static bool doCallback(const char * ptrExpr, BigInteger *valueFound, int type)
+{
+  enum eExprErr rcode = evalExpression(ptrExpr, valueFound);
+  if (rcode == EXPR_OK)
+  {
+    bool hexBak = hexadecimal;
+    if ((type & BATCH_MASK_HEX) != 0)
+    {
+      hexadecimal = true;
+    }
+    else
+    {
+      hexadecimal = false;
+    }
+    callback(&ptrOutput, type);
+    hexadecimal = hexBak;
+  }
+  else
+  {
+    textError(&ptrOutput, rcode);
+    return true;
+  }
+  return false;
+}
 static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* valueFound)
 {
   char* ptrCharFound;
   const char* NextExpr;
   char* EndExpr;
   char* ptrStartExpr;
+  const char* ptrStartQuote;
+  const char* ptrEndQuote;
 #ifdef __EMSCRIPTEN__
   ptrInputText = &emptyInputText;
 #endif
@@ -238,13 +266,121 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     ptrOutput += 4;
     return false;
   }
-  ptrExprToProcess = ptrCharFound + 1;
-  ptrConditionExpr = findChar(ptrExprToProcess, ';');  // Find optional fourth semicolon. 
+  ptrCharFound++;
+  // Skip spaces.
+  while ((*ptrCharFound != 0) && (*ptrCharFound <= ' '))
+  {
+    ptrCharFound++;
+  }
+  ptrExprToProcess = ptrCharFound;
+  ptrStartQuote = NULL;
+  ptrEndQuote = NULL;
+  if (*ptrCharFound == '\"')
+  {
+    const char* ptrColon;
+    nbrExpressions = 0;
+    ptrStartQuote = ptrCharFound + 1;
+    ptrEndQuote = ptrStartQuote;
+    // Find closing quote.
+    do
+    {
+      ptrEndQuote = findChar(ptrEndQuote + 1, '\"');
+    } while ((ptrEndQuote != NULL) && (*(ptrEndQuote - 1) == '%'));
+    if (ptrEndQuote == NULL)
+    {
+      BatchError(&ptrOutput, batchText,
+        lang ? "falta comilla de cierre" :
+        "missing closing quote");
+      ptrOutput += 4;
+      return false;
+    }
+    // Find number of conversion clauses.
+    while (ptrCharFound < ptrEndQuote)
+    {
+      if (*ptrCharFound == '%')
+      {
+        char upper = *(ptrCharFound + 1) & 0xDF;
+        char upper2 = *(ptrCharFound + 2) & 0xDF;
+        if ((upper == 'D') || (upper == 'X') || (upper == 'L'))
+        {    // Decimal, hexadecimal or logic.
+          ptrCharFound += 2;
+          if (nbrExpressions == MAX_EXPRESSIONS)
+          {
+            BatchError(&ptrOutput, batchText,
+              lang ? "demasiadas cláusulas de conversion" :
+              "too many conversion clauses");
+            ptrOutput += 4;
+            return false;
+          }
+          nbrExpressions++;
+        }
+        else if ((*(ptrCharFound + 1) == '\"') || (*(ptrCharFound + 1) == '%'))
+        {    // Quote or percent.
+          ptrCharFound += 2;
+        }
+        else if ((upper == 'F') && ((upper2 == 'D') || (upper2 == 'X')))
+        {    // Factoring with decimal or hexadecimal output.
+          ptrCharFound += 3;
+          if (nbrExpressions == MAX_EXPRESSIONS)
+          {
+            BatchError(&ptrOutput, batchText,
+              lang ? "demasiadas cláusulas de conversion" :
+              "too many conversion clauses");
+            ptrOutput += 4;
+            return false;
+          }
+          nbrExpressions++;
+        }
+        else
+        {
+          BatchError(&ptrOutput, batchText,
+            lang ? "carácter extraño después de %" :
+            "strange character after %");
+          ptrOutput += 4;
+          return false;
+        }
+      }
+      else
+      {
+        ptrCharFound++;
+      }
+    }
+    // Find start of expressions separated by colons.
+    ptrColon = ptrEndQuote + 1;
+    for (int nbrColons = 0; nbrColons < nbrExpressions; nbrColons++)
+    {
+      ptrColon = findChar(ptrColon, ':');
+      if (ptrColon == NULL)
+      {
+        BatchError(&ptrOutput, batchText,
+          lang ? "la cantidad de clásulas de conversión es mayor que la cantidad de dos puntos" :
+          "the number of conversion clauses is greater than the number of colons");
+        ptrOutput += 4;
+        return false;
+      }
+      ptrColon++;
+      ptrStartExprs[nbrColons] = ptrColon;
+    }
+    ptrConditionExpr = findChar(ptrColon, ';');  // Find optional fourth semicolon. 
+    ptrColon = findChar(ptrColon, ':');
+    if (ptrColon != NULL)
+    {
+      BatchError(&ptrOutput, batchText,
+        lang ? "la cantidad de clásulas de conversión es menor que la cantidad de dos puntos" :
+        "the number of conversion clauses is less than the number of colons");
+      ptrOutput += 4;
+      return false;
+    }
+  }
+  else
+  {      // No quotes.
+    ptrConditionExpr = findChar(ptrExprToProcess, ';');  // Find optional fourth semicolon. 
+  }
+  firstExprProcessed = true;
   if (ptrConditionExpr != NULL)
   {
     ptrConditionExpr++;
   }
-  firstExprProcessed = true;
   while (ptrOutput < &output[(int)sizeof(output) - 200000])
   {      // Perform loop while there is space in output buffer.
     bool processExpression = true;
@@ -290,14 +426,103 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     if (processExpression)
     {
       expressionNbr = 4;
-      rcode = evalExpression(ptrExprToProcess, valueFound);
-      if (rcode == EXPR_OK)
+      if (ptrStartQuote == NULL)
       {
-        callback(&ptrOutput);
+        rcode = evalExpression(ptrExprToProcess, valueFound);
+        if (rcode == EXPR_OK)
+        {
+          callback(&ptrOutput, BATCH_NO_QUOTE);
+        }
+        else
+        {
+          textError(&ptrOutput, rcode);
+        }
       }
       else
       {
-        textError(&ptrOutput, rcode);
+        int colonNbr = 0;
+        const char* ptrInsideQuotes = ptrStartQuote;
+        while (ptrInsideQuotes < ptrEndQuote)
+        {
+          if (*ptrInsideQuotes == '%')
+          {
+            switch (*(ptrInsideQuotes + 1))
+            {
+            case '%':
+            case '\"':
+              *ptrOutput = *(ptrInsideQuotes + 1);
+              ptrOutput += 2;
+              ptrInsideQuotes++;
+              break;
+            case 'd':
+            case 'D':
+              if (doCallback(ptrStartExprs[colonNbr], valueFound, BATCH_NO_PROCESS_DEC))
+              {
+                return false;
+              }
+              colonNbr++;
+              ptrInsideQuotes += 2;
+              break;
+            case 'x':
+            case 'X':
+              if (doCallback(ptrStartExprs[colonNbr], valueFound, BATCH_NO_PROCESS_HEX))
+              {
+                return false;
+              }
+              colonNbr++;
+              ptrInsideQuotes += 2;
+              break;
+            case 'L':
+            case 'l':
+              rcode = evalExpression(ptrStartExprs[colonNbr], valueFound);
+              if (rcode == EXPR_OK)
+              {
+                if (BigIntIsZero(valueFound))
+                {
+                  copyStr(&ptrOutput, "no");
+                }
+                else
+                {
+                  copyStr(&ptrOutput, lang ? "sí": "yes");
+                }
+                colonNbr++;
+                ptrInsideQuotes += 2;
+              }
+              else
+              {
+                textError(&ptrOutput, rcode);
+              }
+              break;
+            default:
+              switch (*(ptrInsideQuotes + 2))
+              {
+              case 'd':
+              case 'D':
+                if (doCallback(ptrStartExprs[colonNbr], valueFound, BATCH_PROCESS_DEC))
+                {
+                  return false;
+                }
+                colonNbr++;
+                ptrInsideQuotes += 3;
+                break;
+              default:
+                if (doCallback(ptrStartExprs[colonNbr], valueFound, BATCH_PROCESS_HEX))
+                {
+                  return false;
+                }
+                colonNbr++;
+                ptrInsideQuotes += 3;
+                break;
+              }
+            }
+          }
+          else
+          {       // Not %. Copy character to output.
+            *ptrOutput = *ptrInsideQuotes;
+            ptrOutput++;
+            ptrInsideQuotes++;
+          }
+        }
       }
       if ((rcode == EXPR_SYNTAX_ERROR) || (rcode == EXPR_VAR_OR_COUNTER_REQUIRED) ||
         (rcode == EXPR_VAR_IN_EXPRESSION))
@@ -427,7 +652,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       rc = ComputeExpression(ptrSrcString, valueFound, false);
       if (rc == EXPR_OK)
       {
-        callback(&ptrOutput);
+        callback(&ptrOutput, BATCH_NO_QUOTE);
       }
       else
       {
@@ -507,14 +732,14 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
   return rc;
 }
 
-char *findChar(char *str, char c)
+char *findChar(const char *str, char c)
 {
-  char* ptrStr = str;
+  const char* ptrStr = str;
   while (*ptrStr != '\0')
   {
     if (*ptrStr == c)
     {
-      return ptrStr;
+      return (char *)ptrStr;
     }
     ptrStr++;
   }
