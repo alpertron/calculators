@@ -25,6 +25,7 @@
 #include "expression.h"
 #include "polynomial.h"
 
+bool hexadecimal;
 static char RPNbuffer[1000000];
 static bool forceMultiplication;
 static short stackOper[STACK_OPER_SIZE];

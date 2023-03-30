@@ -31,7 +31,6 @@
 
 const char* square = "<span class=\"bigger\">²</span>";
 bool Computing3Squares;
-bool hexadecimal;
 int iMult3;
 int iMult4;
 int sieve[MAX_SIEVE];

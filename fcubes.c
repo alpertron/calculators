@@ -22,6 +22,7 @@
 #include "highlevel.h"
 #include "showtime.h"
 #include "batch.h"
+extern bool hexadecimal;
 static BigInteger value;
 static BigInteger Base1;
 static BigInteger Base2;
@@ -44,7 +45,6 @@ static BigInteger tmpS1;
 static BigInteger toProcess;
 static int groupLength;
 static const char *cube = "<span class=\"bigger\">³</span>";
-static bool hexadecimal;
 static void batchCubesCallback(char** pptrOutput, int type);
 static int sums[] =
 {
@@ -355,7 +355,7 @@ void fcubesText(char *input, int grpLen)
   int elapsedTime = (int)(tenths() - originalTenthSecond);
   GetDHMSt(&ptrOutput, elapsedTime);
 #endif
-  copyStr(&ptrOutput, "</p><p>");
+  copyStr(&ptrOutput, "<p>");
   copyStr(&ptrOutput, (lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH));
   copyStr(&ptrOutput, "</p>");
 }

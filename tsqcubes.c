@@ -133,7 +133,7 @@ void tsqcubesText(char *input, int grpLen)
   int elapsedTime = (int)(tenths() - originalTenthSecond);
   GetDHMSt(&ptrOutput, elapsedTime);
 #endif
-  copyStr(&ptrOutput, "</p><p>");
+  copyStr(&ptrOutput, "<p>");
   copyStr(&ptrOutput, (lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH));
   copyStr(&ptrOutput, "</p>");
 }
@@ -233,6 +233,10 @@ static void batchSqCubesCallback(char **pptrOutput, int type)
       copyStr(&ptrOutput, " + ");
       showTerm(&ptrOutput, &Base3, powerStr);
     }
+  }
+  if (type == BATCH_NO_QUOTE)
+  {
+    copyStr(&ptrOutput, "</p>");
   }
   *pptrOutput = ptrOutput;
 }

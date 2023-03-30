@@ -329,7 +329,7 @@ void fsquaresText(char *input, int grpLen)
   elapsedTime = (int)(tenths() - originalTenthSecond);
   GetDHMSt(&ptrOutput, elapsedTime);
 #endif
-  copyStr(&ptrOutput, "</p><p>");
+  copyStr(&ptrOutput, "<p>");
   copyStr(&ptrOutput, (lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH));
   copyStr(&ptrOutput, "</p>");
 }

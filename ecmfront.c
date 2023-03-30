@@ -79,7 +79,7 @@ void batchEcmCallback(char **pptrOutput, int type)
 {
   bool doFactBak = doFactorization;
   bool doShowPrimeBak = doShowPrime;
-  if (type >= 0)
+  if (type != BATCH_NO_QUOTE)
   {
     doShowPrime = false;
     if ((type & BATCH_MASK_PROCESS) != 0)
@@ -92,6 +92,7 @@ void batchEcmCallback(char **pptrOutput, int type)
     }
   }
   char *ptrFactorDec = tofactorDec;
+  *ptrFactorDec = 0;
   NumberLength = tofactor.nbrLimbs;
   BigInteger2IntArray(nbrToFactor, &tofactor);
   if (*nbrToFactor < 0)

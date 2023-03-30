@@ -64,7 +64,6 @@ BigInteger factorValue;
 BigInteger tofactor;
 bool prettyprint;
 bool cunningham;
-bool hexadecimal;
 long long Gamma[386];
 long long Delta[386];
 long long AurifQ[386];
