@@ -286,7 +286,6 @@ function performWork(n, valueText)
 {
   let param;
   app = lang + n;
-  let res = divResult;
   let charNull = String.fromCharCode(0);
   let helphelp = get("helphelp");
   let langName = asmjs? "asm.js": "WebAssembly";
@@ -686,12 +685,12 @@ function startUp()
     };
     let tmpHTML = divResult.innerHTML;
     // Convert <sup> and </sup> to exponentiation character.
-    tmpHTML = tmpHTML.replace(/\<sup\>/g, "\^");
-    tmpHTML = tmpHTML.replace(/\<\/sup\>/g, "");
-    tmpHTML = tmpHTML.replace(/\<p\>/g, "");
-    tmpHTML = tmpHTML.replace(/\<\/p\>/g, "\n");
-    tmpHTML = tmpHTML.replace(/\<li\>/g, "");
-    tmpHTML = tmpHTML.replace(/\<\/li\>/g, "\n");
+    tmpHTML = tmpHTML.replace(/<sup>/g, "\^");
+    tmpHTML = tmpHTML.replace(/<\/sup>/g, "");
+    tmpHTML = tmpHTML.replace(/<p>/g, "");
+    tmpHTML = tmpHTML.replace(/<\/p>/g, "\n");
+    tmpHTML = tmpHTML.replace(/<li>/g, "");
+    tmpHTML = tmpHTML.replace(/<\/li>/g, "\n");
     tmpHTML = tmpHTML.replace(/Show divisors/g, "");
     tmpHTML = tmpHTML.replace(/Mostrar divisores/g, "");
     

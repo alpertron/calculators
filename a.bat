@@ -215,6 +215,7 @@ copy DISTANCE.HTM toweb
 perl replaceEmbeddedJS.pl 0000 toweb\DISTANCE.HTM distE.js
 
 call w.bat
+del *.wasm
 :compress
 call a1.bat %1
 :end

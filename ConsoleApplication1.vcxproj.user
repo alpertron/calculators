@@ -8,7 +8,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>"x=1; x=x+1; x!=100; \"%25d is prime: %25l, %25Fx\":x:isprime(x):x"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>0 0</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
