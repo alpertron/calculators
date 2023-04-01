@@ -405,7 +405,7 @@ function useBlockly(callback, lang)
   let blocklyDiv = get("blocklyDiv");
   /** @type {string} */
   let myToolbar = ecmToolbar.replace(/\{(\w+)([\[\]\w]*)}/g, "<block type=\"$1\">$2</block>");
-  myToolbar = myToolbar.replace(/[(\w+)]/g, "<value name=\"$1\"><shadow type=\"M\"><field name=\"1\">5</field></shadow></value>");
+  myToolbar = myToolbar.replace(/\[(\w+)]/g, "<value name=\"$1\"><shadow type=\"M\"><field name=\"1\">5</field></shadow></value>");
   Blockly.Blocks["M"] =
   {
     init:

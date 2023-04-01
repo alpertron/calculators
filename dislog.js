@@ -32,7 +32,7 @@ const asmjs = typeof(WebAssembly) === "undefined";
 let worker = 0;
 let fileContents = 0;
 let result, dlog, stop, base, pow, mod, digits, helpbtn, formlink;
-let formfeedback, name, formcancel, formsend, userdata;
+let formfeedback, formcancel, formsend, userdata;
 let currentInputBox;
 let funcnames;
 let parens;
@@ -144,7 +144,6 @@ window.onload = function()
   helpbtn = get("helpbtn");
   formlink = get("formlink");
   formfeedback = get("formfeedback");
-  name = get("name");
   formcancel = get("formcancel");
   formsend = get("formsend");
   userdata = get("userdata");
