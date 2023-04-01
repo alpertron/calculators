@@ -6,23 +6,41 @@ use MIME::Base64;
 my $commandLine = $ARGV[0];
 my $htmlFile = $ARGV[1];
 my $jsFile = $ARGV[2];
+my $workerContents = "";
 my $wasmContents = "";
 my $wasmb64 = "";
-if ($#ARGV == 3)
+# Argument 3 or 4 can be optionally, WebAssembly file (file name ends with .wasm)
+# and worker file (file name ends with .js).
+for (my $cmdLineArgNbr = 3; $cmdLineArgNbr <= $#ARGV; $cmdLineArgNbr++)
 {
-  open my $wasmFile, '<', $ARGV[3] or die "couldn't open wasm file ".$ARGV[3];
-  binmode $wasmFile;
-  while (1)
-  {
-    my $success = read $wasmFile, $wasmContents, 512, length($wasmContents);
-    die $! if not defined $success;
-    last if not $success;
+  if ($ARGV[$cmdLineArgNbr] =~ /wasm$/)
+  {          # WebAssembly file
+    open my $wasmFile, '<', $ARGV[$cmdLineArgNbr] or die "couldn't open wasm file ".$ARGV[$cmdLineArgNbr];
+    binmode $wasmFile;
+    while (1)
+    {
+      my $success = read $wasmFile, $wasmContents, 512, length($wasmContents);
+      die $! if not defined $success;
+      last if not $success;
+    }
+    close $wasmFile;
+    $wasmb64 = encode_base64($wasmContents);
+    $wasmb64 =~ s/\//!/g;
+    $wasmb64 =~ s/[\n\r]//g;
+    $wasmb64 .= "\n";
   }
-  close $wasmFile;
-  $wasmb64 = encode_base64($wasmContents);
-  $wasmb64 =~ s/\//!/g;
-  $wasmb64 =~ s/[\n\r]//g;
-  $wasmb64 .= "\n";
+  else
+  {             # Worker file
+    open my $workerFile, '<', $ARGV[$cmdLineArgNbr] or die "couldn't open worker file ".$ARGV[$cmdLineArgNbr];
+    binmode $workerFile;
+    while (1)
+    {
+      my $success = read $workerFile, $workerContents, 512, length($workerContents);
+      die $! if not defined $success;
+      last if not $success;
+    }
+    close $workerFile;
+  }
 }
 my $oldJS = "0000\.js";
 my $newJS = $commandLine."\.js";
@@ -38,6 +56,12 @@ while (<htmlFile>)
   {
     print tempFile;
     print tempFile $wasmb64;
+    $step = 4;
+  }
+  elsif (/id=\"worker\"/)
+  {
+    print tempFile;
+    print tempFile $workerContents;
     $step = 4;
   }
   elsif (/^\<script\>/)

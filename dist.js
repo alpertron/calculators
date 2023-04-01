@@ -21,9 +21,6 @@
 /* global initMenubarEvents */
 /* global isNotSpecialKey */
 /* global show */
-// In order to reduce the number of files to read from Web server, this 
-// Javascript file includes both the Javascript in the main thread and the 
-// Javascript that drives WebAssembly on its own Web Worker.
 let questionNbr, score, withCountries;
 let parcInterp, finalInterp;
 let kmText, degreeText, currentText, finalText, pointText;
@@ -168,7 +165,8 @@ function test1(complete)
   let partialScore;
   let test11, test12;
   let dist1;
-  let show, index;
+  let toShow;
+  let index;
   let interpretation;
   clearScreen();
   if (questionNbr !== 0)
@@ -197,15 +195,15 @@ function test1(complete)
   LongTo = Longitude[cityTo >> 0];
   setTextToClass(cityNameFrom, "cityctry_from");
   setTextToClass(cityNameTo, "cityctry_to");
-  show = document.getElementsByClassName(questionNbr === 0?"findDist": "notFindDist");
-  for (index=0; index<show.length; index++)
+  toShow = document.getElementsByClassName(questionNbr === 0?"findDist": "notFindDist");
+  for (index=0; index<toShow.length; index++)
   {
-    show[index >> 0].style.display = "block";
+    toShow[index >> 0].style.display = "block";
   }
-  show = document.getElementsByClassName(questionNbr === 0?"notFindDist": "findDist");
-  for (index=0; index<show.length; index++)
+  toShow = document.getElementsByClassName(questionNbr === 0?"notFindDist": "findDist");
+  for (index=0; index<toShow.length; index++)
   {
-    show[index >> 0].style.display = "none";
+    toShow[index >> 0].style.display = "none";
   }
   if (complete)
   {

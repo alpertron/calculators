@@ -22,15 +22,19 @@ perl generateTempJS.pl ulamA.js ulamW.js ulamT.js moveGraphic drawPartialGraphic
 del ulamA.js
 java -jar %compilerName% %compilerOptions2% --js ulamT.js --js_output_file ulamU.js
 copy ulamU.js ulamV.js
-perl replaceEmbeddedJS.pl 0000 ULAM.HTM ulamV.js ulam.wasm
-perl replaceEmbeddedJS.pl 0000 EULAM.HTM ulamU.js ulam.wasm
+copy ULAM.HTM toweb
+perl replaceEmbeddedJS.pl 0000 toweb\ULAM.HTM ulamV.js ulam.wasm
+copy EULAM.HTM toweb
+perl replaceEmbeddedJS.pl 0000 toweb\EULAM.HTM ulamU.js ulam.wasm
 
 copy /b gausspr.js + common.js + strings.js + commonGraphics.js gaussprA.js
 perl generateTempJS.pl gaussprA.js gaussprW.js gaussprT.js moveGraphic drawPartialGraphic nbrChanged getInformation getPixels
 del gaussprA.js
 java -jar %compilerName% %compilerOptions2% --js gaussprT.js --js_output_file gaussprU.js
 copy gaussprU.js gaussprV.js
-perl replaceEmbeddedJS.pl 0000 GAUSSPR.HTM gaussprV.js gausspr.wasm
-perl replaceEmbeddedJS.pl 0000 PRGAUSS.HTM gaussprU.js gausspr.wasm
+copy GAUSSPR.HTM toweb
+perl replaceEmbeddedJS.pl 0000 toweb\GAUSSPR.HTM gaussprV.js gausspr.wasm
+copy PRGAUSS.HTM toweb
+perl replaceEmbeddedJS.pl 0000 toweb\PRGAUSS.HTM gaussprU.js gausspr.wasm
 
 :end

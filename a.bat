@@ -1,3 +1,4 @@
+del /q toweb\*.*
 if "%2" == "end" goto compress
 set compilerName=%userprofile%\emsdk\emsdk\upstream\emscripten\node_modules\google-closure-compiler-java\compiler.jar
 set compilerOptions=--compilation_level ADVANCED_OPTIMIZATIONS --isolation_mode IIFE --externs=custom-externs.js
@@ -114,82 +115,104 @@ if errorlevel 1 goto end
 cmd /c emcc %wasmCommon% -Dlang=1 %gaussianFiles% %gaussianOptions% -o gaussianS.wasm
 if errorlevel 1 goto end
 
+java -jar %compilerName% %compilerOptions% --js intfwebw.js --js strings.js --js_output_file intWW.js
+java -jar %compilerName% %compilerOptions% --js ecmfwebw.js --js strings.js --js_output_file ecmWW.js
+
 java -jar %compilerName% -D app=0 %compilerOptions% --js interface.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js worker.js --js_output_file fsquares.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 FSQUARES.HTM fsquares.js fsquaresE.wasm
+copy FSQUARES.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\FSQUARES.HTM fsquares.js fsquaresE.wasm intWW.js
 java -jar %compilerName% -D app=1 %compilerOptions% --js interface.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js worker.js --js_output_file fsquares.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 SUMCUAD.HTM fsquares.js fsquaresS.wasm
+copy SUMCUAD.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\SUMCUAD.HTM fsquares.js fsquaresS.wasm intWW.js
 java -jar %compilerName% -D app=2 %compilerOptions% --js interface.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js worker.js --js_output_file fsquares.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 FCUBES.HTM fsquares.js fcubesE.wasm
+copy FCUBES.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\FCUBES.HTM fsquares.js fcubesE.wasm intWW.js
 java -jar %compilerName% -D app=3 %compilerOptions% --js interface.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js worker.js --js_output_file fsquares.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 SUMCUBOS.HTM fsquares.js fcubesS.wasm
+copy SUMCUBOS.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\SUMCUBOS.HTM fsquares.js fcubesS.wasm intWW.js
 java -jar %compilerName% -D app=4 %compilerOptions% --js interface.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js worker.js --js_output_file fsquares.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 CONTFRAC.HTM fsquares.js contfracE.wasm
+copy CONTFRAC.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\CONTFRAC.HTM fsquares.js contfracE.wasm intWW.js
 java -jar %compilerName% -D app=5 %compilerOptions% --js interface.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js worker.js --js_output_file fsquares.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 FRACCONT.HTM fsquares.js contfracS.wasm
+copy FRACCONT.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\FRACCONT.HTM fsquares.js contfracS.wasm intWW.js
 java -jar %compilerName% -D app=6 %compilerOptions% --js interface.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js worker.js --js_output_file fsquares.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 TSQCUBES.HTM fsquares.js tsqcubesE.wasm
+copy TSQCUBES.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\TSQCUBES.HTM fsquares.js tsqcubesE.wasm intWW.js
 java -jar %compilerName% -D app=7 %compilerOptions% --js interface.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js wizard.js --js worker.js --js_output_file fsquares.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 TCUADCUB.HTM fsquares.js tsqcubesS.wasm
-
-java -jar %compilerName% %compilerOptions% --js intfwebw.js --js strings.js --js_output_file intWW.js
+copy TCUADCUB.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\TCUADCUB.HTM fsquares.js tsqcubesS.wasm intWW.js
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js polyfact.js --js common.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file polfactE.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 POLFACT.HTM polfactE.js polfactE.wasm
+copy POLFACT.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\POLFACT.HTM polfactE.js polfactE.wasm intWW.js
 java -jar %compilerName% -D lang=1 %compilerOptions% --js polyfact.js --js common.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file polfactS.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 FACTPOL.HTM polfactS.js polfactS.wasm
+copy FACTPOL.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\FACTPOL.HTM polfactS.js polfactS.wasm intWW.js
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js dislog.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file dilogE.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 DILOG.HTM dilogE.js dilogE.wasm
+copy DILOG.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\DILOG.HTM dilogE.js dilogE.wasm ecmWW.js
 java -jar %compilerName% -D lang=1 %compilerOptions% --js dislog.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file dilogS.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 LOGDI.HTM dilogS.js dilogS.wasm
+copy LOGDI.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\LOGDI.HTM dilogS.js dilogS.wasm ecmWW.js
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js quadrmod.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file quadmodE.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 QUADMOD.HTM quadmodE.js quadmodE.wasm
+copy QUADMOD.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\QUADMOD.HTM quadmodE.js quadmodE.wasm ecmWW.js
 java -jar %compilerName% -D lang=1 %compilerOptions% --js quadrmod.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file quadmodS.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 CUADMOD.HTM quadmodS.js quadmodS.wasm
+copy CUADMOD.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\CUADMOD.HTM quadmodS.js quadmodS.wasm ecmWW.js
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js gauss.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file gaussianE.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 GAUSSIAN.HTM gaussianE.js gaussianE.wasm
+copy GAUSSIAN.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\GAUSSIAN.HTM gaussianE.js gaussianE.wasm ecmWW.js
 java -jar %compilerName% -D lang=1 %compilerOptions% --js gauss.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file gaussianS.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 GAUSIANO.HTM gaussianS.js gaussianS.wasm
+copy GAUSIANO.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\GAUSIANO.HTM gaussianS.js gaussianS.wasm ecmWW.js
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js blocklyextern.js --js buttons.js --js ecmfront.js --js common.js --js calccode.js --js cache.js --js feedback.js --js wizard.js --js worker.js --js_output_file ecmE.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 ECM.HTM ecmE.js ecmE.wasm
+copy ECM.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\ECM.HTM ecmE.js ecmE.wasm ecmWW.js
 java -jar %compilerName% -D lang=1 %compilerOptions% --js blocklyextern.js --js buttons.js --js ecmfront.js --js common.js --js calccode.js --js cache.js --js feedback.js --js wizard.js --js worker.js --js_output_file ecmS.js
 if errorlevel 1 goto end
 set emcc_DEBUG=
-java -jar %compilerName% %compilerOptions% --js ecmfwebw.js --js strings.js --js_output_file ecmWW.js
-perl replaceEmbeddedJS.pl %1 ECMC.HTM ecmS.js ecmS.wasm
+copy ECMC.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\ECMC.HTM ecmS.js ecmS.wasm ecmWW.js
 copy calculatorSW.js calcSW.js
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js quadr.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file quadE.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 QUAD.HTM quadE.js quadE.wasm
+copy QUAD.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\QUAD.HTM quadE.js quadE.wasm ecmWW.js
 java -jar %compilerName% -D lang=1 %compilerOptions% --js quadr.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file quadS.js
 if errorlevel 1 goto end
-perl replaceEmbeddedJS.pl %1 CUAD.HTM quadS.js quadS.wasm
+copy CUAD.HTM toweb
+perl replaceEmbeddedJS.pl %1 toweb\CUAD.HTM quadS.js quadS.wasm ecmWW.js
 
-java -jar %compilerName% --compilation_level ADVANCED_OPTIMIZATIONS --js dist.js --js common.js --js_output_file distE.js
+java -jar %compilerName% %compilerOptions% --js dist.js --js common.js --js_output_file distE.js
 copy distE.js distS.js
-perl replaceEmbeddedJS.pl 0000 DIST.HTM distS.js
-perl replaceEmbeddedJS.pl 0000 DISTANCE.HTM distE.js
+copy DIST.HTM toweb
+perl replaceEmbeddedJS.pl 0000 toweb\DIST.HTM distS.js
+copy DISTANCE.HTM toweb
+perl replaceEmbeddedJS.pl 0000 toweb\DISTANCE.HTM distE.js
 
 call w.bat
 :compress
