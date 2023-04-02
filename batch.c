@@ -187,7 +187,7 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
 {
   char* ptrCharFound;
   const char* NextExpr;
-  char* EndExpr;
+  const char* EndExpr;
   char* ptrStartExpr;
   const char* ptrStartQuote;
   const char* ptrEndQuote;
@@ -282,11 +282,15 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     ptrStartQuote = ptrCharFound + 1;
     ptrEndQuote = ptrStartQuote;
     // Find closing quote.
-    do
+    while ((*ptrEndQuote != 0) && (*ptrEndQuote != '\"'))
     {
-      ptrEndQuote = findChar(ptrEndQuote + 1, '\"');
-    } while ((ptrEndQuote != NULL) && (*(ptrEndQuote - 1) == '%'));
-    if (ptrEndQuote == NULL)
+      if (*ptrEndQuote == '%')
+      {
+        ptrEndQuote++;  // Discard character after percent sign.
+      }
+      ptrEndQuote++;
+    }
+    if (*ptrEndQuote == 0)
     {
       BatchError(&ptrOutput, batchText,
         lang ? "falta comilla de cierre" :
