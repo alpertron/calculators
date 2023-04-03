@@ -17,6 +17,7 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global callWorker */
+/* global clearWizardTextInput */
 /* global clickFormLink */
 /* global completeFuncButtons */
 /* global endWorker */
@@ -28,14 +29,13 @@
 /* global keyDownOnWizard */
 /* global registerServiceWorker */
 /* global selectLoop */
+/* global setWizardStep */
 /* global show */
 /* global typedOnWizard */
 /* global useBlockly */
 /* global wizardNext */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 20,5, 22,10, 23,12, 24,6, 27,7];
-let wizardStep = 0;
-let wizardTextInput;
 let fileContents = null;
 let app;
 let digits;
@@ -134,8 +134,8 @@ function oneexpr()
   btnNext.value = (lang? "Hecho": "Done");
   wzdDescText.innerHTML = (lang? "Paso 1 de 1: Expresión a factorizar": "Step 1 of 1: Expression to factor");
   wzdExamText.innerHTML = "&nbsp;";
-  wizardTextInput = "";
-  wizardStep = 9;
+  clearWizardTextInput();
+  setWizardStep(9);
 }
 
 function setStorage(name, data)

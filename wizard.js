@@ -23,8 +23,19 @@
 /* global saveConfig */
 /* global show */
 /* global value */
-/* global wizardStep */
-/* global wizardTextInput */
+let wizardStep = 0;
+let wizardTextInput;
+
+function setWizardStep(stepNbr)
+{
+  wizardStep = stepNbr;
+}
+
+function clearWizardTextInput()
+{
+  wizardTextInput = "";
+}
+
 function selectLoop()
 {   
   get("next").value = (lang ? "Siguiente": "Next");

@@ -17,6 +17,7 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global callWorker */
+/* global clearWizardTextInput */
 /* global clickFormLink */
 /* global endWorker */
 /* global get */
@@ -27,13 +28,12 @@
 /* global keyDownOnWizard */
 /* global registerServiceWorker */
 /* global selectLoop */
+/* global setWizardStep */
 /* global show */
 /* global typedOnWizard */
 /* global wizardNext */
 /** @define {number} */ const app = 0;   // Use with Closure compiler.
 const lang = app % 2;
-let wizardStep = 0;
-let wizardTextInput;
 let fileContents = 0;
 let currentInputBox;
 let funcnames;
@@ -250,8 +250,8 @@ function oneexpr()
   get("next").value = (lang? "Hecho": "Done");
   get("wzddesc").innerHTML = (lang? "Paso 1 de 1: Expresión a factorizar": "Step 1 of 1: Expression to factor");
   get("wzdexam").innerHTML = "&nbsp;";
-  wizardTextInput = "";
-  wizardStep = 9;
+  clearWizardTextInput();
+  setWizardStep(9);
 }
 
 function endFeedback()
