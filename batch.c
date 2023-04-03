@@ -287,6 +287,10 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
       if (*ptrEndQuote == '%')
       {
         ptrEndQuote++;  // Discard character after percent sign.
+        if (*ptrEndQuote != 0)
+        {
+          break;        // Go out of loop if sequence % NULL is found.
+        }
       }
       ptrEndQuote++;
     }

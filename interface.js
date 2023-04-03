@@ -18,6 +18,7 @@
 */
 /* global callWorker */
 /* global clickFormLink */
+/* global endWorker */
 /* global get */
 /* global formSend */
 /* global generateFuncButtons */
@@ -34,7 +35,6 @@ const lang = app % 2;
 const asmjs = typeof(WebAssembly) === "undefined";
 let wizardStep = 0;
 let wizardTextInput;
-let worker = 0;
 let fileContents = 0;
 let currentInputBox;
 let funcnames;
@@ -67,6 +67,16 @@ else
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
   ];
   parens = "Left parenthesis,(,Right parenthesis,),";
+}
+
+function getFuncNames()
+{
+  return funcnames;
+}
+
+function getParens()
+{
+  return parens;
 }
 
 function styleButtons(style1, style2)
@@ -349,8 +359,7 @@ function startUp()
   {
     get("stop").onclick = function()
     {
-      worker.terminate();
-      worker = 0;
+      endWorker();
       styleButtons("inline", "none");  // Enable buttons that have to be enabled when applet is not running.
       get("result").innerHTML =
         (lang ? "<p>Cálculo detenido por el usuario.</p>" :

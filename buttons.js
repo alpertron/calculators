@@ -17,9 +17,9 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global currentInputBox */
-/* global funcnames */
+/* global getFuncNames */
 /* global get */
-/* global parens */
+/* global getParens */
 function buttonClick(event)
 {
   let input = currentInputBox;
@@ -39,7 +39,7 @@ function generateFuncButtons(optionCategory, funcButtons)
   let catIndex;
   let funcbtns = get(funcButtons);
   let catnbr = get(optionCategory).selectedIndex;
-  let funcname = (parens + funcnames[+catnbr]).split(",");
+  let funcname = (getParens() + getFuncNames()[+catnbr]).split(",");
   // Append all buttons to document fragment instead of funcbtns
   // and finally append the fragment to funcbtns to minimize redraws.
   let fragment = document.createDocumentFragment();
@@ -61,7 +61,7 @@ function completeFuncButtons(funcButtons)
 {
   let button;
   let catIndex;
-  let funcname = (parens + funcnames[0]).split(",");
+  let funcname = (getParens() + getFuncNames()[0]).split(",");
   let funcbtns = get(funcButtons);
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {

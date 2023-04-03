@@ -18,6 +18,7 @@
 */
 /* global callWorker */
 /* global clickFormLink */
+/* global endWorker */
 /* global formSend */
 /* global generateFuncButtons */
 /* global get */
@@ -28,7 +29,6 @@
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const debugEcm = false;
 const asmjs = typeof(WebAssembly) === "undefined";
-let worker = 0;
 let app;
 let digits;
 let config;
@@ -59,6 +59,16 @@ else
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
   ];
   parens = "Left parenthesis,(,Right parenthesis,),Imaginary unit,i,";
+}
+
+function getFuncNames()
+{
+  return funcnames;
+}
+
+function getParens()
+{
+  return parens;
 }
 
 function setStorage(name, data)
@@ -163,8 +173,7 @@ window.onload = function()
   };
   get("stop").onclick = function()
   {
-    worker.terminate();
-    worker = 0;
+    endWorker();
     styleButtons("inline", "none");  // Enable eval and factor
     get("result").innerHTML =
       (lang? "<p>Cálculo detenido por el usuario.</p>" :

@@ -18,6 +18,7 @@
 */
 /* global callWorker */
 /* global clickFormLink */
+/* global endWorker */
 /* global formSend */
 /* global generateFuncButtons */
 /* global get */
@@ -29,7 +30,6 @@
 const exprTextEs = "Por favor ingrese un número o expresión para ";
 const exprTextEn = "Please type a number or expression for the ";
 const asmjs = typeof(WebAssembly) === "undefined";
-let worker = 0;
 let fileContents = 0;
 let result, dlog, stop, base, pow, mod, digits, helpbtn, formlink;
 let formfeedback, formcancel, formsend, userdata;
@@ -63,6 +63,16 @@ else
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
   ];
   parens = "Left parenthesis,(,Right parenthesis,),";
+}
+
+function getFuncNames()
+{
+  return funcnames;
+}
+
+function getParens()
+{
+  return parens;
 }
 
 function exprText(es, en)
@@ -154,8 +164,7 @@ window.onload = function()
   };
   stop.onclick = function()
   {
-    worker.terminate();
-    worker = 0;
+    endWorker();
     dlog.disabled = false;
     stop.disabled = true;
     result.innerHTML = 

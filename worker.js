@@ -20,11 +20,20 @@
 /* global comingFromWorker */
 /* global fileContents */
 /* global get */
-/* global worker */
 let blob;
+let worker = null;
+function endWorker()
+{
+  if (worker != null)
+  {
+    worker.terminate();
+    worker = null;
+  }
+}
+
 function callWorker(param)
 {
-  if (!worker)
+  if (worker == null)
   {
     if (!blob)
     {

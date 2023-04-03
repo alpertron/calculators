@@ -18,6 +18,7 @@
 */
 /* global callWorker */
 /* global clickFormLink */
+/* global endWorker */
 /* global formSend */
 /* global get */
 /* global getCalculatorCode */
@@ -26,7 +27,6 @@
 /* global show */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const asmjs = typeof(WebAssembly) === "undefined";
-let worker = 0;
 let busy = false;
 let workerParam;
 let fileContents = 0;
@@ -126,8 +126,7 @@ window.onload = function ()
   };
   get("stop").onclick = function ()
   {
-    worker.terminate();
-    worker = 0;
+    endWorker();
     get("eval").disabled = false;
     get("factor").disabled = false;
     get("stop").disabled = true;

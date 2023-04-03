@@ -18,6 +18,7 @@
 */
 /* global callWorker */
 /* global clickFormLink */
+/* global endWorker */
 /* global formSend */
 /* global generateFuncButtons */
 /* global get */
@@ -27,7 +28,6 @@
 /* global show */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const asmjs = typeof(WebAssembly) === "undefined";
-let worker = 0;
 let fileContents = 0;
 let currentInputBox;
 let funcnames;
@@ -59,6 +59,16 @@ else
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
   ];
   parens = "Left parenthesis,(,Right parenthesis,),";
+}
+
+function getFuncNames()
+{
+  return funcnames;
+}
+
+function getParens()
+{
+  return parens;
 }
 
 function comingFromWorker(e)
@@ -172,8 +182,7 @@ window.onload = function()
   };
   get("stop").onclick = function()
   {
-    worker.terminate();
-    worker = 0;
+    endWorker();
     get("solve").disabled = false;
     get("steps").disabled = false;
     get("stop").disabled = true;

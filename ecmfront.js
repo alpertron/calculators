@@ -19,6 +19,7 @@
 /* global callWorker */
 /* global clickFormLink */
 /* global completeFuncButtons */
+/* global endWorker */
 /* global formSend */
 /* global generateFuncButtons */
 /* global get */
@@ -36,7 +37,6 @@ const points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13,
 const asmjs = typeof(WebAssembly) === "undefined";
 let wizardStep = 0;
 let wizardTextInput;
-let worker = 0;
 let fileContents = null;
 let app;
 let digits;
@@ -114,6 +114,16 @@ else
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
   ];
   parens = "Left parenthesis,(,Right parenthesis,),";
+}
+
+function getFuncNames()
+{
+  return funcnames;
+}
+
+function getParens()
+{
+  return parens;
 }
 
 function oneexpr()
@@ -374,11 +384,7 @@ function dowork(n)
 function restartFactorization(type)
 {
   hide("modal-more");
-  if (worker)
-  {
-    worker.terminate();
-  }
-  worker = 0;
+  endWorker();
   dowork(type);
 }
 
@@ -654,8 +660,7 @@ function startUp()
   };
   btnStop.onclick = function()
   {
-    worker.terminate();
-    worker = 0;
+    endWorker();
     styleButtons("inline", "none");      // Enable eval and factor
     hide("skip");    // Hide button if it is present during factorization.
     resultDirty = true;
