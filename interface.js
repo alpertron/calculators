@@ -32,7 +32,6 @@
 /* global wizardNext */
 /** @define {number} */ const app = 0;   // Use with Closure compiler.
 const lang = app % 2;
-const asmjs = typeof(WebAssembly) === "undefined";
 let wizardStep = 0;
 let wizardTextInput;
 let fileContents = 0;
@@ -121,6 +120,11 @@ else
 {
   calcURLs = ["fsquaresW0000.js",
                "tsqcubes.webmanifest", "tcuadcub.webmanifest", "tsqcubes-icon-1x.png", "tsqcubes-icon-2x.png", "tsqcubes-icon-4x.png", "tsqcubes-icon-180px.png", "tsqcubes-icon-512px.png", "favicon.ico"];
+}
+
+function getCalcURLs()
+{
+  return calcURLs;
 }
 
 function comingFromWorker(e)
@@ -235,7 +239,7 @@ function performCalc(from)
   hide("cont");
   callWorker(param);
   let helphelp = get("helphelp");
-  let langName = asmjs? "asm.js": "WebAssembly";
+  let langName = (typeof(WebAssembly) === "undefined")? "asm.js": "WebAssembly";
   show("helphelp");
   helphelp.innerHTML = (lang ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión "+langName+".</p>":
                                "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the "+langName+" version.</p>");

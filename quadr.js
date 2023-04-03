@@ -27,7 +27,6 @@
 /* global registerServiceWorker */
 /* global show */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
-const asmjs = typeof(WebAssembly) === "undefined";
 let fileContents = 0;
 let currentInputBox;
 let funcnames;
@@ -158,8 +157,11 @@ function endFeedback()
   get("coefA").focus();   
 }
 
-let calcURLs = ["quadW0000.js",
-               "quad.webmanifest", "cuad.webmanifest", "quad-icon-1x.png", "quad-icon-2x.png", "quad-icon-4x.png", "quad-icon-180px.png", "quad-icon-512px.png", "favicon.ico"];
+function getCalcURLs()
+{
+  return ["quadW0000.js",
+          "quad.webmanifest", "cuad.webmanifest", "quad-icon-1x.png", "quad-icon-2x.png", "quad-icon-4x.png", "quad-icon-180px.png", "quad-icon-512px.png", "favicon.ico"];
+}
 
 function getFormSendValue()
 {

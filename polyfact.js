@@ -26,7 +26,6 @@
 /* global registerServiceWorker */
 /* global show */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
-const asmjs = typeof(WebAssembly) === "undefined";
 let busy = false;
 let workerParam;
 let fileContents = 0;
@@ -105,8 +104,11 @@ function endFeedback()
   get("poly").focus();   
 }
 
-let calcURLs = ["polfactW0000.js",
-               "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png", "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-180px.png", "polfact-icon-512px.png", "favicon.ico"];
+function getCalcURLs()
+{
+  return ["polfactW0000.js",
+          "polfact.webmanifest", "factpol.webmanifest", "polfact-icon-1x.png", "polfact-icon-2x.png", "polfact-icon-4x.png", "polfact-icon-180px.png", "polfact-icon-512px.png", "favicon.ico"];
+}
 
 function getFormSendValue()
 {

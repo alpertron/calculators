@@ -28,7 +28,6 @@
 /* global show */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const debugEcm = false;
-const asmjs = typeof(WebAssembly) === "undefined";
 let app;
 let digits;
 let config;
@@ -153,8 +152,11 @@ function endFeedback()
   get("value").focus();   
 }
 
-let calcURLs = ["gaussianW0000.js",
-               "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png", "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-180px.png", "gaussian-icon-512px.png", "favicon.ico"];
+function getCalcURLs()
+{
+  return ["gaussianW0000.js",
+          "gaussian.webmanifest", "gausiano.webmanifest", "gaussian-icon-1x.png", "gaussian-icon-2x.png", "gaussian-icon-4x.png", "gaussian-icon-180px.png", "gaussian-icon-512px.png", "favicon.ico"];
+}
 
 function getFormSendValue()
 {

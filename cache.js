@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/* global calcURLs */
+/* global getCalcURLs */
 /* global initMenubarEvents */
 let url = window.location.pathname;
 
@@ -24,7 +24,8 @@ function updateCache(cache)
 {
   caches.open("cacheTEMP").then(function(tempCache)
   {
-    tempCache.addAll([url].concat(calcURLs)).then(function()
+    tempCache.addAll([url].concat((typeof(WebAssembly) === "undefined")?
+               getCalcURLs():getCalcURLs().shift)).then(function()
     {     // Copy cached resources to main cache and delete this one.
       tempCache.matchAll().then(function(responseArr)
       {   // All responses in array responseArr.
@@ -72,7 +73,8 @@ function fillCache()
         
           caches.open("cacheTEMP").then(function(tempCache)
           {                // Do not fetch HTML because it is already fetched.
-            tempCache.addAll(calcURLs).then(function()
+            tempCache.addAll((typeof(WebAssembly) === "undefined")?
+               getCalcURLs():getCalcURLs().shift).then(function()
             {              // Copy cached resources to main cache and delete this one.
               tempCache.matchAll().then(function(responseArr)
               {            // All responses in array responseArr.

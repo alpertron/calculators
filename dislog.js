@@ -29,7 +29,6 @@
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const exprTextEs = "Por favor ingrese un número o expresión para ";
 const exprTextEn = "Please type a number or expression for the ";
-const asmjs = typeof(WebAssembly) === "undefined";
 let fileContents = 0;
 let result, dlog, stop, base, pow, mod, digits, helpbtn, formlink;
 let formfeedback, formcancel, formsend, userdata;
@@ -132,8 +131,11 @@ function endFeedback()
   base.focus();   
 }
 
-const calcURLs = ["dilogW0000.js",
-                "dilog.webmanifest", "logdi.webmanifest", "dilog-icon-1x.png", "dilog-icon-2x.png", "dilog-icon-4x.png", "dilog-icon-180px.png", "dilog-icon-512px.png", "favicon.ico"];
+function getCalcURLs()
+{
+  return ["dilogW0000.js",
+          "dilog.webmanifest", "logdi.webmanifest", "dilog-icon-1x.png", "dilog-icon-2x.png", "dilog-icon-4x.png", "dilog-icon-180px.png", "dilog-icon-512px.png", "favicon.ico"];
+}
 
 function getFormSendValue()
 {

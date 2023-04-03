@@ -34,7 +34,6 @@
 const none = "none";
 const block = "block";
 const inline = "inline";
-const asmjs = typeof(WebAssembly) === "undefined";
 let buffer, env, asm;
 let zoom, zoomDone, imgData;
 let canvas, zoomin, zoomout, center, start;

@@ -28,7 +28,6 @@
 /* global registerServiceWorker */
 /* global show */
 /** @define {number} */ const lang = 0;   // Use with Closure compiler.
-  const asmjs = typeof(WebAssembly) === "undefined";
   let fileContents = 0;
   let currentInputBox;
   let funcnames;
@@ -134,8 +133,11 @@
     get("quad").focus();   
   }
 
-let calcURLs = ["quadmodW0000.js",
-               "quadmod.webmanifest", "cuadmod.webmanifest", "quadmod-icon-1x.png", "quadmod-icon-2x.png", "quadmod-icon-4x.png", "quadmod-icon-180px.png", "quadmod-icon-512px.png", "favicon.ico"];
+function getCalcURLs()
+{
+  return ["quadmodW0000.js",
+          "quadmod.webmanifest", "cuadmod.webmanifest", "quadmod-icon-1x.png", "quadmod-icon-2x.png", "quadmod-icon-4x.png", "quadmod-icon-180px.png", "quadmod-icon-512px.png", "favicon.ico"];
+}
 
 function getFormSendValue()
 {

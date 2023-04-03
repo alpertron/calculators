@@ -34,7 +34,6 @@
 /* global wizardNext */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 20,5, 22,10, 23,12, 24,6, 27,7];
-const asmjs = typeof(WebAssembly) === "undefined";
 let wizardStep = 0;
 let wizardTextInput;
 let fileContents = null;
@@ -51,8 +50,6 @@ let resultText = "";
 let divisorsDirty = false;
 let statusDirty = false;
 let resultDirty = false;
-let calcURLs = ["ecmW0000.js",
-               "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-180px.png", "ecm-icon-512px.png", "favicon.ico"];
 let blocklyLoaded = 0;
 let scriptsLoaded = 0;
 let script1;
@@ -124,6 +121,12 @@ function getFuncNames()
 function getParens()
 {
   return parens;
+}
+
+function getCalcURLs()
+{
+  return ["ecmW0000.js",
+          "ecm.webmanifest", "ecmc.webmanifest", "ecm-icon-1x.png", "ecm-icon-2x.png", "ecm-icon-4x.png", "ecm-icon-180px.png", "ecm-icon-512px.png", "favicon.ico"];
 }
 
 function oneexpr()
@@ -298,7 +301,7 @@ function performWork(n, valueText)
   app = lang + n;
   let charNull = String.fromCharCode(0);
   let helphelp = get("helphelp");
-  let langName = asmjs? "asm.js": "WebAssembly";
+  let langName = (typeof(WebAssembly) === "undefined")? "asm.js": "WebAssembly";
   hide("sharediv");
   if (valueText === "")
   {    // Nothing in input box.

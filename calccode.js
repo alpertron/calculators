@@ -16,9 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/* global asmjs */
 /* global b64decode */
-/* global calcURLs */
 /* global callWorker */
 /* global get */
 /* global fileContents */
@@ -40,7 +38,7 @@ function newState(_aEvt)
 function getCalculatorCode(jsFileName, workerParameter)
 {
   workPar = workerParameter;
-  if (asmjs)
+  if (typeof(WebAssembly) === "undefined")
   {
     req = new XMLHttpRequest();
     req.open("GET", jsFileName, true);
@@ -70,6 +68,5 @@ function getCalculatorCode(jsFileName, workerParameter)
     }
     fileContents=new Int8Array(length);
     b64decode(wasm, fileContents);
-    calcURLs.shift();  // Do not fetch Javascript file that will not be used.
   }
 }

@@ -16,7 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/* global asmjs */
 /* global comingFromWorker */
 /* global fileContents */
 /* global get */
@@ -37,7 +36,7 @@ function callWorker(param)
   {
     if (!blob)
     {
-      if (asmjs)
+      if (typeof(WebAssembly) === "undefined")
       {    // Asm.js
         blob = new Blob([fileContents],{type: "text/javascript"});
       }
@@ -49,7 +48,7 @@ function callWorker(param)
     worker = new Worker(window.URL.createObjectURL(blob));
     worker.onmessage = comingFromWorker;
   }
-  if (asmjs)
+  if (typeof(WebAssembly) === "undefined")
   {      // Asm.js
     worker.postMessage(param);
   }
