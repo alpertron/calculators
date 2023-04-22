@@ -178,6 +178,11 @@ function saveConfig(fromWizard)
   setStorage("ecmConfig", digits+","+config);
 }
 
+function showSumSquares()
+{
+  callWorker("S");  // Indicate worker that user pressed Sum of squares button.
+}
+
 function comingFromWorker(e)
 {
   // First character of e.data is:
@@ -303,11 +308,6 @@ function comingFromWorker(e)
       resultText = e.data.substring(1);
     }
   }
-}
-
-function showSumSquares()
-{
-  callWorker("S");  // Indicate worker that user pressed Sum of squares button.
 }
 
 function performWork(n, valueText)

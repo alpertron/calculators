@@ -597,7 +597,7 @@ void ComputeFourSquares(const struct sFactors* pstFactors)
       intToBigInteger(&Mult2, 1);
       intToBigInteger(&Mult3, 0);
       intToBigInteger(&Mult4, 0);
-      BigIntMultiplyPower2(&common.k.sumSquares.productOtherDivisors,
+      (void)BigIntMultiplyPower2(&common.k.sumSquares.productOtherDivisors,
         pstFactor->multiplicity / 2);
       if ((pstFactor->multiplicity & 1) != 0)
       {
@@ -630,15 +630,15 @@ void ComputeFourSquares(const struct sFactors* pstFactors)
         }
         else
         {
-          BigIntPowerIntExp(&valueP, pstFactor->multiplicity, &Mult1);
-          BigIntMultiply(&common.k.sumSquares.productOtherDivisors,
+          (void)BigIntPowerIntExp(&valueP, pstFactor->multiplicity, &Mult1);
+          (void)BigIntMultiply(&common.k.sumSquares.productOtherDivisors,
             &Mult1, &common.k.sumSquares.productOtherDivisors);
         }
       } /* end p = 1 (mod 4) */
       else
       { /* if p = 3 (mod 4) */
-        BigIntPowerIntExp(&valueP, pstFactor->multiplicity / 2, &Mult1);
-        BigIntMultiply(&common.k.sumSquares.productOtherDivisors,
+        (void)BigIntPowerIntExp(&valueP, pstFactor->multiplicity / 2, &Mult1);
+        (void)BigIntMultiply(&common.k.sumSquares.productOtherDivisors,
           &Mult1, &common.k.sumSquares.productOtherDivisors);
         ComputeSumOfFourSquaresForPrime();
       } /* end if p = 3 (mod 4) */
@@ -715,9 +715,9 @@ static void valueVar(char** pptrOutput, char letter, const BigInteger* value)
 static void complexMultiply(struct stBigComplex* pstComp1,
   const struct stBigComplex* pstComp2, bool signIsPositive)
 {
-  BigIntMultiply(&pstComp1->real, &pstComp2->real,
+  (void)BigIntMultiply(&pstComp1->real, &pstComp2->real,
     &common.k.sumSquares.temp1);
-  BigIntMultiply(&pstComp1->imag, &pstComp2->imag,
+  (void)BigIntMultiply(&pstComp1->imag, &pstComp2->imag,
     &common.k.sumSquares.temp2);
   if (signIsPositive)
   {
@@ -729,9 +729,9 @@ static void complexMultiply(struct stBigComplex* pstComp1,
     BigIntAdd(&common.k.sumSquares.temp1, &common.k.sumSquares.temp2,
       &common.k.sumSquares.temp1);
   }
-  BigIntMultiply(&pstComp1->real, &pstComp2->imag,
+  (void)BigIntMultiply(&pstComp1->real, &pstComp2->imag,
     &common.k.sumSquares.temp2);
-  BigIntMultiply(&pstComp1->imag, &pstComp2->real,
+  (void)BigIntMultiply(&pstComp1->imag, &pstComp2->real,
     &common.k.sumSquares.temp3);
   CopyBigInt(&pstComp1->real, &common.k.sumSquares.temp1);
   if (signIsPositive)
@@ -756,23 +756,21 @@ static void complexDivide(struct stBigComplex* pstComp1,
   // Compute dividends.
   complexMultiply(pstComp1, pstComp2, !signIsPositive);
   // Compute norm (divisor).
-  BigIntMultiply(&pstComp2->real, &pstComp2->real,
+  (void)BigIntMultiply(&pstComp2->real, &pstComp2->real,
     &common.k.sumSquares.temp1);
-  BigIntMultiply(&pstComp2->imag, &pstComp2->imag,
+  (void)BigIntMultiply(&pstComp2->imag, &pstComp2->imag,
     &common.k.sumSquares.temp2);
   BigIntAdd(&common.k.sumSquares.temp1, &common.k.sumSquares.temp2,
     &common.k.sumSquares.temp1);
   // Perform divisions.
-  BigIntDivide(&pstComp1->real, &common.k.sumSquares.temp1,
+  (void)BigIntDivide(&pstComp1->real, &common.k.sumSquares.temp1,
     &pstComp1->real);
-  BigIntDivide(&pstComp1->imag, &common.k.sumSquares.temp1,
+  (void)BigIntDivide(&pstComp1->imag, &common.k.sumSquares.temp1,
     &pstComp1->imag);
 }
 
 static void initializeSumOfTwoSquares(void)
 {
-  bool significantBits;
-  int expon;
   int nbrIndexes2 = 0;
   int nbrExponents = common.k.sumSquares.nbrIndexes;
   // Compute sum of squares using divisor = 1.
@@ -789,6 +787,8 @@ static void initializeSumOfTwoSquares(void)
   }
   for (int exponentNbr = 0; exponentNbr < nbrExponents; exponentNbr++)
   {     // Multiply by power of M + Ni where M^2 + N^2 = 4k+1.
+    bool significantBits;
+    int expon;
     int index = common.k.sumSquares.indexes[exponentNbr];
     const struct sFactors* pstFactors = &astFactorsMod[index];
     struct stBigComplex* ptrDivisor = &common.k.sumSquares.divisors[exponentNbr];
@@ -915,9 +915,9 @@ void showSumTwoSquares(void)
   char* ptrOutput = output;
   if (common.k.sumSquares.initPending)
   {
-    memset(&common.k.sumSquares.currentExp, 0,
+    (void)memset(&common.k.sumSquares.currentExp, 0,
       sizeof(common.k.sumSquares.currentExp));
-    memset(&common.k.sumSquares.currentExpGray, 0,
+    (void)memset(&common.k.sumSquares.currentExpGray, 0,
       sizeof(common.k.sumSquares.currentExpGray));
     common.k.sumSquares.initPending = false;
     initializeSumOfTwoSquares();
@@ -929,9 +929,7 @@ void showSumTwoSquares(void)
   for (sumSquaresNbr = 0; sumSquaresNbr < 1000; sumSquaresNbr++)
   {
     int exponentNbr;
-    int arrLen;
     int mask;
-    const struct sFactors* pstFactors;
     if (ptrFoundSumSquares > &common.k.sumSquares.foundSumSquares[900000])
     {
       break;             // No more space for holding sum of squares.
@@ -947,8 +945,9 @@ void showSumTwoSquares(void)
     common.k.sumSquares.ptrFoundSumSquares[sumSquaresNbr] = ptrFoundSumSquares;
     for (int coeffNbr = 0; coeffNbr < 2; coeffNbr++)
     {  // 0: select maximum coefficient, 1: select minimum coefficient
+      int arrLen;
       const BigInteger* ptrCurrentCoeff;
-      if (coeffNbr == (Tmp2.sign == SIGN_POSITIVE ? 0 : 1))
+      if (coeffNbr == ((Tmp2.sign == SIGN_POSITIVE) ? 0 : 1))
       {   // Select real coefficient
         ptrCurrentCoeff = &Tmp;
       }
@@ -972,7 +971,7 @@ void showSumTwoSquares(void)
       }
       mask *= 2;
     }
-    if (exponentNbr < common.k.sumSquares.nbrIndexes2 - 1)
+    if (exponentNbr < (common.k.sumSquares.nbrIndexes2 - 1))
     {   // Test whether bit changes from 0 to 1 or from 1 to 0.
       int index;
       int leastSignificantBit = common.k.sumSquares.GrayCode &
@@ -1000,7 +999,7 @@ void showSumTwoSquares(void)
     for (exponentNbr = 0; exponentNbr < nbrExponents; exponentNbr++)
     {
       int index = common.k.sumSquares.indexes[exponentNbr];
-      pstFactors = &astFactorsMod[index];
+      const struct sFactors* pstFactors = &astFactorsMod[index];
       if (pstFactors->multiplicity < 2)
       {
         continue;
