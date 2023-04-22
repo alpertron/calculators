@@ -139,6 +139,7 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "17x^5-20*x+21" 0 >> coverage.out
 ./polfact 0 "17x^5-20*x+21" 1 >> coverage.out
 ./polfact 0 "17x^5-20*x+21" 2 >> coverage.out
+./polfact 0 "x^4+4=x^8" 0 >> coverage.out
 ./polfact 0 "x^5+20*x^3+20*x^2+30x+10" 0 >> coverage.out
 ./polfact 0 "x^5+20*x^3+20*x^2+30x+10" 1 >> coverage.out
 ./polfact 0 "x^5+20*x^3+20*x^2+30x+10" 2 >> coverage.out
@@ -380,6 +381,16 @@ echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 ./gaussian "lcm(1+i,2,4)" 0 >> coverage.out
 lcov --capture --directory . --output-file gaussian.info
 gcovr --json run-11.json
+make clean
+make sumquad flags_coverage=--coverage
+echo -e "\n\n**** SUMQUAD ****" >> coverage.out
+./sumquad 100 >> coverage.out
+./sumquad 200 >> coverage.out
+./sumquad 5525 >> coverage.out
+./sumquad 422500 >> coverage.out
+./sumquad "422500*289" >> coverage.out
+lcov --capture --directory . --output-file sumquad.info
+gcovr --json run-12.json
 gcovr --add-tracefile "run-*.json" --sonarqube > coverage.xml
 rm run*json
 rm *.gcda

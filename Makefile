@@ -36,14 +36,19 @@ targets = ecm quad quadmod fsquares fcubes polfact dilog contfrac blockly
 all: $(targets)
 
 ecm: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
-factor.fco ecm.fco siqs.fco siqsLA.fco ecmfront.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco fromBlockly.fco linkedbignbr.fco test_ecm.fco
+factor.fco ecm.fco siqs.fco siqsLA.fco ecmfront.fco sumSquares.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco fromBlockly.fco linkedbignbr.fco test_ecm.fco
 	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
-factor.fco ecm.fco siqs.fco siqsLA.fco ecmfront.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco fromBlockly.fco linkedbignbr.fco test_ecm.fco $(flags_coverage) -lm -o $@
+factor.fco ecm.fco siqs.fco siqsLA.fco ecmfront.fco sumSquares.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco fromBlockly.fco linkedbignbr.fco test_ecm.fco $(flags_coverage) -lm -o $@
 
 blockly: expression.fbo parseexpr.fbo partition.fbo errors.fbo bigint.fbo division.fbo baseconv.fbo karatsuba.fbo modmult.fbo sqroot.fbo \
-factor.fbo ecm.fbo siqs.fbo siqsLA.fbo ecmfront.fbo bignbr.fbo showtime.fbo from_musl.fbo inputstr.fbo batch.fbo fft.fbo gcdrings.fbo fromBlockly.fbo linkedbignbr.fbo test_blockly.fbo
+factor.fbo ecm.fbo siqs.fbo siqsLA.fbo ecmfront.fbo sumSquares.fco bignbr.fbo showtime.fbo from_musl.fbo inputstr.fbo batch.fbo fft.fbo gcdrings.fbo fromBlockly.fbo linkedbignbr.fbo test_blockly.fbo
 	gcc expression.fbo parseexpr.fbo partition.fbo errors.fbo bigint.fbo division.fbo baseconv.fbo karatsuba.fbo modmult.fbo sqroot.fbo \
-factor.fbo ecm.fbo siqs.fbo siqsLA.fbo ecmfront.fbo bignbr.fbo showtime.fbo from_musl.fbo inputstr.fbo batch.fbo fft.fbo gcdrings.fbo fromBlockly.fbo linkedbignbr.fbo test_blockly.fbo $(flags_coverage) -lm -o $@
+factor.fbo ecm.fbo siqs.fbo siqsLA.fbo ecmfront.fbo sumSquares.fco bignbr.fbo showtime.fbo from_musl.fbo inputstr.fbo batch.fbo fft.fbo gcdrings.fbo fromBlockly.fbo linkedbignbr.fbo test_blockly.fbo $(flags_coverage) -lm -o $@
+
+sumquad: expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
+factor.fco ecm.fco siqs.fco siqsLA.fco ecmfront.fco sumSquares.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco fromBlockly.fco linkedbignbr.fco test_sumquad.fco
+	gcc expression.fco parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
+factor.fco ecm.fco siqs.fco siqsLA.fco ecmfront.fco sumSquares.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco batch.fco fft.fco gcdrings.fco fromBlockly.fco linkedbignbr.fco test_sumquad.fco $(flags_coverage) -lm -o $@
 
 gaussian: parseexpr.fco partition.fco errors.fco bigint.fco division.fco baseconv.fco karatsuba.fco modmult.fco sqroot.fco \
 factor.fco ecm.fco siqs.fco siqsLA.fco gaussian.fco GaussExpr.fco bignbr.fco showtime.fco from_musl.fco inputstr.fco fft.fco gcdrings.fco test_gaussian.fco
@@ -111,6 +116,9 @@ test_ecm.fco: test.c $(h_files)
 test_blockly.fbo: test.c $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=22 -DUSING_BLOCKLY=1 -o $@ $<
 	
+test_sumquad.fco: test.c $(h_files)
+	gcc $(flags_factorization) -DDEBUG_CODE=25 -o $@ $<
+  
 test_gaussian.fco: test.c $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=12 -o $@ $<
 	

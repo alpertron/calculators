@@ -28,7 +28,7 @@
 #include "polynomial.h"
 #include "fromBlockly.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 23
+#define DEBUG_CODE 25
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -36,6 +36,7 @@ extern bool teach;
 #if DEBUG_CODE == 22
 static char bufferXML[1000000];
 #endif
+void showSumTwoSquares(void);
 void assignExponent(char c);
 void dilogText(const char *baseText, const char *powerText, const char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -402,8 +403,8 @@ int main(int argc, char* argv[])
   }
   fftPolyMult(factor7, factor8, polyMultTemp, 501, 501);
 #elif DEBUG_CODE == 21
-//  int dividendPoly[] = {1, 15, 1, 14, 1, 13, 1, 12, 1, 11, 1, 10, 1, 9, 1, 8,
-//    1, 7, 1, 6, 1, 5, 1, 4, 1, 3, 1, 2, 1, 1};
+  //  int dividendPoly[] = {1, 15, 1, 14, 1, 13, 1, 12, 1, 11, 1, 10, 1, 9, 1, 8,
+  //    1, 7, 1, 6, 1, 5, 1, 4, 1, 3, 1, 2, 1, 1};
   int dividendPoly[] = { 1, 7, 1, 6, 1, 5, 1, 4, 1, 3, 1, 2, 1, 1 };
   int divisorPoly[] = { 1, 11, 1, 9, 1, 7, 1, 5, 1, 3 };
   int dividendDegree = 6;
@@ -493,6 +494,19 @@ int main(int argc, char* argv[])
   copyStr(&ptrOutput, "\nProduct =          ");
   Bin2Dec(&ptrOutput, product, groups, 0);
   copyStr(&ptrOutput, "\n");
+  (void)printf("%s\n", output);
+#elif DEBUG_CODE == 25
+  ecmFrontText(argv[1], true, NULL);
+  showSumTwoSquares();
+  (void)printf("%s\n", output);
+#elif DEBUG_CODE == 26
+  char buffer[100];
+  strcpy(buffer, "422500");
+  ecmFrontText(buffer, true, NULL);
+  showSumTwoSquares();
+  strcpy(buffer, "422500*17^2");
+  ecmFrontText(buffer, true, NULL);
+  showSumTwoSquares();
   (void)printf("%s\n", output);
 #endif
   return 0;

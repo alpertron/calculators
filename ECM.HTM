@@ -93,6 +93,7 @@ fieldset {display:inline; padding-inline-start:0.3em; padding-inline-end:0.3em}
 .und {text-decoration: underline}
 .verbose {display:none}
 .terse {display:inline}
+.tnr {font-family: "Cambria Math", "Times New Roman", Times, serif}
 fieldset button, fieldset input {margin:3px}
 #explan,#wzdexam {margin-block-start:0; margin-block-end:0}
 #tableCurves {max-width:700px; margin-left:auto; margin-right:auto}
@@ -788,11 +789,11 @@ input:disabled {color: #808080; background-color: #606060}
 <p id="explan">Type one numerical expression or loop per line. Example: x=3;x=n(x);c&lt;=100;x&#8209;1</p>
 </div>
 <div id="help" aria-live="polite">
-<p>This Web application factors numbers or numeric expressions using two fast algorithms: the Elliptic Curve Method (ECM) and the Self-Initializing Quadratic Sieve (SIQS).</p>
-<p>The program uses local storage to remember the progress of the factorization, so you can complete the factorization of a large number in several sessions. Your computer will remember the state of the factorization. You only have to reload this page.</p>
-<p>Since all calculations are performed in your computer, you can disconnect it from the Internet while the factorization is in progress. You can even start this application without Internet connection after the first run.</p>
-<p>The source code is written in C programming language and compiled to asm.js and WebAssembly, which are the languages used by Web navigators. The latter is faster, but it is not supported in all Web browsers. You can see the version while a number is being factored.</p>
-<p>There is a <a href="/videos/videosEcm.htm">list of videos</a> related to this calculator.</p>
+<p>This web application factors numbers or numeric expressions using two fast algorithms: the Elliptic Curve Method (ECM) and the Self-Initializing Quadratic Sieve (SIQS).</p>
+<p>The program uses local storage to remember the progress of factorization, so you can complete the factorization of a large number in several sessions. Your computer will remember the state of the factorization, so you only have to reload this page.</p>
+<p>Since all calculations are performed in your computer, you can disconnect it from the internet while the factorization is in progress. You can even start this application without an internet connection after the first run.</p>
+<p>The source code is written in the C programming language and compiled to asm.js and WebAssembly, which are the languages used by web browsers. The latter is faster, but it is not supported in all web browsers. You can see the version while a number is being factored.</p>
+<p>There is a <a href="/videos/videosEcm.htm">list of videos</a> related to this calculator available.</p>
 <p>See <a href="ECMREC.HTM" title="ECM Factorization records">factorization records</a> for this application.</p>
 <h2><button type="button">Expressions</button></h2>
 <div class="panel" id="exprorig">
@@ -851,23 +852,23 @@ input:disabled {color: #808080; background-color: #606060}
 <div class="panel">
 <p>The notation <var>k</var> &equiv; <var>m</var> (mod <var>n</var>) means that the remainder of the division of <var>k</var> by <var>n</var> equals the remainder of the division of <var>m</var> by <var>n</var>. The number <var>n</var> is called modulus.</p>
 <p>This method computes points in elliptic curves, which are represented by formulas such as <var>y</var>&sup2; &equiv; <var>x</var>&sup3; + <var>a</var><var>x</var> + <var>b</var> (mod <var>n</var>) where <var>n</var> is the number to factor.</p>
-<p>In the next graphic you can see the points (<var>x</var>, <var>y</var>) for which <var>y</var>&sup2; &equiv; <var>x</var>&sup3; + 4<var>x</var> + 7 (mod <var>29</var>) holds.
-Since the computation use modular arithmetic (in this case using the remainder of the division by 29), the points that belong to the elliptic curve cannot be represented as a continuous line. That would be the case if the operations were performed in real numbers.</p>
+<p>In the following graphic, you can see the points (<var>x</var>, <var>y</var>) for which <var>y</var>&sup2; &equiv; <var>x</var>&sup3; + 4<var>x</var> + 7 (mod <var>29</var>) holds.
+Since the computation uses modular arithmetic (in this case using the remainder of the division by 29), the points that belong to the elliptic curve cannot be represented as a continuous line. That would be the case if the operations were performed using real numbers.</p>
 <div class="lf"></div>
 <canvas id="ellCurve" width="313" height="313"></canvas>
-<p>Apart from the points shown above, we use another point, named O, or point at infinity.</p>
+<p>Apart from the points shown above, we use another point named O, or the point at infinity.</p>
 <p>Using complex formulas, we can define a sum of points. In this way a point (<var>x</var><sub>3</sub>, <var>y</var><sub>3</sub>) that belongs to the mentioned curve can be the sum of other points (x<sub>1</sub>, y<sub>1</sub>) and (x<sub>2</sub>, y<sub>2</sub>) that also belong to the curve.</p>
 <p>We can add a point (<var>x</var>, <var>y</var>) to itself several times, obtaining a new point (<var>x<sub>4</sub></var>, <var>y</var><sub>4</sub>) that is a multiple of (<var>x</var>, <var>y</var>).</p>
-<p>When the modulus is a prime number, and 4<var>a</var>&sup3; + 27<var>b</var>&sup2; &equiv; 0 (mod <var>p</var>) is not true, the points that belong to the elliptic curve (including the point O) form a mathematical structure called group. The group order is the number of points. In the graphic we can see 31 points, so the group order is 32.
-Since O + O = O, if we multiply any point by a multiple of the group order we obtain the point O.</p>
+<p>When the modulus is a prime number, and 4<var>a</var>&sup3; + 27<var>b</var>&sup2; <span class="tnr">&#8802;</span> 0 (mod <var>p</var>), the points that belong to the elliptic curve (including the point O) form a mathematical structure called group. The group order is the number of points. In the graphic, we can see 31 points, so the group order is 32.
+Since O + O = O, if we multiply any point by a multiple of the group order, we obtain the point O.</p>
 <p>Even though the value of the group order is difficult to find, it can be shown that it is near the prime number used as the modulus. By changing the curve, we obtain a different group, and its order also changes.</p>
 <p>To factor a number <var>n</var>, we have to find a multiple of the group order corresponding to any of the prime factors of <var>n</var>.</p>
 <p>For each elliptic curve to process we try to find the point at infinity starting from a random point (<var>x</var>, <var>y</var>) belonging to a random elliptic curve <var>y</var>&sup2; &equiv; <var>x</var>&sup3; + <var>a</var><var>x</var> + <var>b</var> (mod <var>n</var>). Since it is very difficult to solve quadratic or cubic equations modulo a composite number, it is better to select random values for <var>x</var>, <var>y</var>, and <var>a</var>. Then we can easily compute <var>b</var>  &equiv; <var>y</var>&sup2; &minus; <var>x</var>&sup3; &minus; <var>a</var><var>x</var> (mod <var>n</var>)</p>
-<p>In the first step, the algorithm multiplies points by powers of different prime numbers less than a bound named B1. When computing the greatest common divisor between the coordinate <var>x</var> of the computed point and the number to factor we can obtain the prime number we are searching if all prime factors of the group order are less than B1.</p>
-<p>Using the result of the first step, the second step obtains multiples of that point up to the upper bound B2, and we multiply the coordinates x of all points found in this step. Finally, we compute the greatest common divisor between the product and the number to factor. In this case we can obtain the prime number we are searching if all prime factors (except one) of the group order are less than B1 and the greatest prime factor of the group order is less than B2.</p>
-<p>If the greatest common divisor equals 1, we must try with a different curve by changing the initial point (<var>x</var>, <var>y</var>) and the parameter <var>a</var>, computing the new parameter <var>b</var> from the formula.</p>
-<p>The program uses many optimizations that are outside the scope of this help to explain them here.</p>
-<p>The execution time depends on the magnitude of the second largest prime factor and on your computer speed.</p>
+<p>In the first step of the algorithm, we multiply points by powers of different prime numbers less than a bound named B1. By computing the greatest common divisor between the coordinate <var>x</var> of the computed point and the number to factor, we can obtain the prime factor of <var>n</var>, provided that all prime factors of the group order are less than B1.</p>
+<p>Using the result of the first step, the second step obtains multiples of that point up to the upper bound B2. We then multiply the <var>x</var>-coordinates of all the points found in this step. Finally, we compute the greatest common divisor between the product and the number to factor. In this case, we can obtain the prime number we are searching for if all prime factors (except one) of the group order are less than B1, and the greatest prime factor of the group order is less than B2.</p>
+<p>If the greatest common divisor equals 1, we must try a different curve by changing the initial point (<var>x</var>, <var>y</var>) and the parameter <var>a</var>, and computing the new parameter <var>b</var> from the formula.</p>
+<p>The program uses many optimizations that are outside the scope of this help to explain here.</p>
+<p>The execution time depends on the magnitude of the second-largest prime factor and on your computer's speed.</p>
 <div class="tableCurves"><table>
 <caption>Optimal values of B1 and expected curves</caption>
 <tr><th scope="col">Digits</th><th scope="col">Values of B1</th><th scope="col">Expected curves</th></tr>
@@ -976,7 +977,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the
 <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 30 March 2023.</p>
+<p>Written by Dario Alpern. Last updated 22 April 2023.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -1182,7 +1183,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
      "@type": "SolveMathAction",
      "target": "https://www.alpertron.com.ar/ECM.HTM?q={math_expression_string}",
      "mathExpression-input": "required name=math_expression_string",
-     "eduQuestionType": "Arithmetic"
+     "eduQuestionType": ["Arithmetic"]
    }],
   "learningResourceType": "Math solver"
 }

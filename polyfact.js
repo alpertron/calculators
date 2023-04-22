@@ -202,7 +202,7 @@ window.onload = function ()
   let search = window.location.search;
   if (search.substring(0,3) === "?q=")
   {
-    polyTextArea.value = decodeURIComponent(search.substring(3));
+    polyTextArea.value = decodeURIComponent(search.substring(3)).replace(/\{/g, "(").replace(/\}/g, ")");
     dowork(0);    // Factor polynomial.
   }
   registerServiceWorker();

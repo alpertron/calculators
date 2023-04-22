@@ -287,7 +287,7 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
       if (*ptrEndQuote == '%')
       {
         ptrEndQuote++;  // Discard character after percent sign.
-        if (*ptrEndQuote != 0)
+        if (*ptrEndQuote == 0)
         {
           break;        // Go out of loop if sequence % NULL is found.
         }
@@ -747,9 +747,9 @@ char *findChar(const char *str, char c)
   {
     if (*ptrStr == c)
     {
-      return (char *)ptrStr;
+      return (char *)ptrStr;  // Pointer to character found.
     }
     ptrStr++;
   }
-  return NULL;
+  return NULL;                // Character not found.
 }

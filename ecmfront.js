@@ -196,6 +196,7 @@ function comingFromWorker(e)
   // "L" for exiting Blockly mode.
   // "M" for loading polynomial factorization application for factorization.
   // "N" for loading polynomial factorization application for evaluation.
+  // "S" for sending data to div named sumSquares.
   let firstChar = e.data.substring(0, 1);
   if (firstChar === "9")
   {
@@ -211,7 +212,7 @@ function comingFromWorker(e)
     setStorage("ecmCurve", e.data.substring(1));
   }
   else if (firstChar === "D")
-  {
+  {    // Show divisors.
     get("divisors").innerHTML = e.data.substring(1);
   }
   else if (firstChar === "E")
@@ -239,7 +240,16 @@ function comingFromWorker(e)
       value.value);
     window.location.replace(lang? "FACTPOL.HTM": "POLFACT.HTM");
   }
-  else if (firstChar === "4")
+  else if (firstChar === "S")
+  {    // Show sum of squares.
+    get("sumSquares").innerHTML = e.data.substring(1);
+    get("showSumSq").onclick = showSumSquares;
+  }
+  else if (firstChar === "T")
+  {    // Show sum of squares without button.
+    get("sumSquares").innerHTML = e.data.substring(1);
+  }
+   else if (firstChar === "4")
   {
     statusDirty = true;
     statusText = e.data.substring(1);
@@ -293,6 +303,11 @@ function comingFromWorker(e)
       resultText = e.data.substring(1);
     }
   }
+}
+
+function showSumSquares()
+{
+  callWorker("S");  // Indicate worker that user pressed Sum of squares button.
 }
 
 function performWork(n, valueText)
@@ -802,6 +817,11 @@ function startUp()
     }
     if (divisorsDirty)
     {
+      let sumSqButton = get("showSumSq");
+      if (sumSqButton != null)
+      {
+        sumSqButton.onclick = showSumSquares;
+      }
       if (get("showdiv") != null)
       {
         get("showdiv").onclick = function()
@@ -917,7 +937,7 @@ function startUp()
     let search = window.location.search;
     if (search.substring(0,3) === "?q=")
     {
-      value.value = decodeURIComponent(search.substring(3));
+      value.value = decodeURIComponent(search.substring(3)).replace(/\{/g, "(").replace(/\}/g, ")");
       dowork(-2);
     }
     else

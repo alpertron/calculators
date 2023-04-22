@@ -106,15 +106,6 @@ struct stSiqs
   char threshold;
 };
 
-struct stDivisors
-{
-  int currentExp[50];
-  int currentExpGray[50];
-  BigInteger divisor;
-  int foundDivisors[1000000];
-  int *ptrFoundDivisors[1000];
-};
-
 #define MAX_PRIME_SIEVE 7  // Only numbers 7 or 11 are accepted here.
 #if MAX_PRIME_SIEVE == 11
 #define SIEVE_SIZE (2*3*5*7*11)
@@ -170,6 +161,46 @@ struct stEcm
   BigInteger Temp3;
 };
 
+struct stBigComplex
+{
+  BigInteger real;
+  BigInteger imag;
+};
+
+#define MAX_NBR_PRIMES_4K1 31
+struct stSumSquares
+{
+  struct stBigComplex primeDivisors[MAX_NBR_PRIMES_4K1];
+  struct stBigComplex divisors[MAX_NBR_PRIMES_4K1];
+  struct stBigComplex currentValue;
+  int GrayCode;
+  int indexes[MAX_NBR_PRIMES_4K1];
+  int indexes2[MAX_NBR_PRIMES_4K1];
+  int indexes2toIndexes[MAX_NBR_PRIMES_4K1];
+  int currentExp[MAX_NBR_PRIMES_4K1];
+  int currentExpGray[MAX_NBR_PRIMES_4K1];
+  int foundSumSquares[1000000];
+  int* ptrFoundSumSquares[1000];
+  int nbrIndexes;
+  int nbrIndexes2;
+  struct BigInteger productOtherDivisors;
+  struct BigInteger temp1;
+  struct BigInteger temp2;
+  struct BigInteger temp3;
+  bool initPending;
+  bool manyDecompositions;
+  bool twoOddMultiplicity;
+};
+
+struct stDivisors
+{
+  int currentExp[50];
+  int currentExpGray[50];
+  BigInteger divisor;
+  int foundDivisors[1000000];
+  int* ptrFoundDivisors[1000];
+};
+
 struct stTrialDivision
 {
   BigInteger power[20];
@@ -190,6 +221,13 @@ struct stSaveFactors
   char text[MAX_LEN * 36];
 };
 
+// Sum of squares and divisors are used at the same time.
+struct stK
+{
+  struct stSumSquares sumSquares;
+  struct stDivisors divisors;
+};
+
 union uCommon
 {
   struct stSiqs siqs;
@@ -197,7 +235,7 @@ union uCommon
   struct stTrialDivision trialDiv;
   struct stQuad quad;
   struct stSaveFactors saveFactors;
-  struct stDivisors divisors;
+  struct stK k;
 };
 
 extern union uCommon common;

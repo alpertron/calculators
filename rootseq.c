@@ -2158,7 +2158,7 @@ static void AdjustComponent(int denominator, char* ptrStart, enum toShow toShow,
   int isFirst, const char *realRoot)
 {
   int denomin = denominator;
-  char beginning[500];
+  char beginning[1000];
   char* ptrBeginning = beginning;
   int lenBeginning;
   *ptrBeginning = 0;
@@ -2663,6 +2663,7 @@ static void GenerateRoots(int multiplicity, const char* rationalRoot,
       ptrOutput++;
     }
     EndRadicand(polyDegree);
+    *ptrOutput = 0;    // Mark end of string.
     ptrOutput = ptrOutputBak;
     showX(multiplicity);
     showTrig(realNum, realDen, realRoot);
@@ -2837,6 +2838,7 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree,
       ptrOutput++;
       MultiplyRationalBySqrtRational(&Rat2, &Rat3);
       ShowRationalAndSqrParts(&Rat2, &Rat3, 2, ptrTimes);
+      *ptrOutput = 0;   // Mark end of string
       Rat2.numerator.sign = Rat2SignBak;
       ptrOutput = ptrOutputBak;
       GenerateRoots(multiplicity, rootQuadr, isNegative, halfDegree);

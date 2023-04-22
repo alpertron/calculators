@@ -23,6 +23,7 @@ If you want to build only one of the calculators, you can run ``make calculator`
 -   ``tsqcubes`` (decompose number in sum of two squares and a cube, fifth or seventh power)
 -   ``contfrac`` (continued fraction calculator)
 -   ``polfact`` (polynomial equation solver and factorization)
+-   ``sumquad`` (all sums of two squares)
 
 After building the calculators, you can run them. For example:
 

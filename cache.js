@@ -25,7 +25,7 @@ function updateCache(cache)
   caches.open("cacheTEMP").then(function(tempCache)
   {
     tempCache.addAll([url].concat((typeof(WebAssembly) === "undefined")?
-               getCalcURLs():getCalcURLs().shift)).then(function()
+               getCalcURLs():getCalcURLs().slice(1))).then(function()
     {     // Copy cached resources to main cache and delete this one.
       tempCache.matchAll().then(function(responseArr)
       {   // All responses in array responseArr.
