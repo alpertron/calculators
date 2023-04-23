@@ -623,8 +623,8 @@ void ComputeFourSquares(const struct sFactors* pstFactors)
           CopyBigInt(&common.k.sumSquares.primeDivisors[index4k1].imag, &Mult2);
           common.k.sumSquares.indexes[index4k1] = indexPrimes + 1;
           index4k1++;
-          if (pstFactor->multiplicity > 1)
-          {
+          if ((pstFactor->multiplicity > 1) || (index4k1 > 1))
+          {  // Not only one prime of the form 4k+1 with multiplicity 1.
             common.k.sumSquares.manyDecompositions = true;
           }
         }
