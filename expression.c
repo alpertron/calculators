@@ -431,7 +431,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
             return EXPR_BASE_MUST_BE_POSITIVE;
           }
           else if ((curStack.nbrLimbs == 1) && (curStack.limbs[0].x == 1))
-          {       // First parameters is -1.
+          {       // First parameter is -1.
             intToBigInteger(&curStack, -1);
           }
           else
