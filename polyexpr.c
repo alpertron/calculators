@@ -149,7 +149,7 @@ void UncompressBigIntegerB(const int* ptrValues, BigInteger* bigint)
 
 // Add two polynomials starting on buffers pointed by ptrArgument1
 // and ptrArgument2. Use poly1 as a temporary buffer to hold the sum.
-static int AddPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
+static int AddPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
 {
   int* ptrValue1;
   const int* ptrValue2;

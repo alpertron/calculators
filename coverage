@@ -392,6 +392,17 @@ echo -e "\n\n**** SUMQUAD ****" >> coverage.out
 lcov --capture --directory . --output-file sumquad.info
 gcovr --json run-12.json
 gcovr --add-tracefile "run-*.json" --sonarqube > coverage.xml
+make clean
+make divisors flags_coverage=--coverage
+echo -e "\n\n**** DIVISORS ****" >> coverage.out
+./divisors 0 >> coverage.out
+./divisors 2 >> coverage.out
+./divisors 5525 >> coverage.out
+./divisors 422500 >> coverage.out
+./divisors "422500*289*7" >> coverage.out
+lcov --capture --directory . --output-file divisors.info
+gcovr --json run-13.json
+gcovr --add-tracefile "run-*.json" --sonarqube > coverage.xml
 rm run*json
 rm *.gcda
 rm *.gcno

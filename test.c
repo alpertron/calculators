@@ -28,7 +28,7 @@
 #include "polynomial.h"
 #include "fromBlockly.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 25
+#define DEBUG_CODE 27
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -37,6 +37,7 @@ extern bool teach;
 static char bufferXML[1000000];
 #endif
 void showSumTwoSquares(void);
+void showDivisors(void);
 void assignExponent(char c);
 void dilogText(const char *baseText, const char *powerText, const char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
@@ -496,6 +497,11 @@ int main(int argc, char* argv[])
   copyStr(&ptrOutput, "\n");
   (void)printf("%s\n", output);
 #elif DEBUG_CODE == 25
+  if (argc != 2)
+  {
+    printf("sumSquares {number}\n");
+    return 1;
+  }
   ecmFrontText(argv[1], true, NULL);
   showSumTwoSquares();
   (void)printf("%s\n", output);
@@ -508,6 +514,15 @@ int main(int argc, char* argv[])
   ecmFrontText(buffer, true, NULL);
   showSumTwoSquares();
   (void)printf("%s\n", output);
+#elif DEBUG_CODE == 27
+if (argc != 2)
+{
+  printf("divisors {number}\n");
+  return 1;
+}
+ecmFrontText(argv[1], true, NULL);
+showDivisors();
+(void)printf("%s\n", output);
 #endif
   return 0;
 }

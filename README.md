@@ -24,6 +24,7 @@ If you want to build only one of the calculators, you can run ``make calculator`
 -   ``contfrac`` (continued fraction calculator)
 -   ``polfact`` (polynomial equation solver and factorization)
 -   ``sumquad`` (all sums of two squares)
+-   ``divisors`` (all divisors of the number given by the user)
 
 After building the calculators, you can run them. For example:
 

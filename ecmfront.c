@@ -698,7 +698,7 @@ EXTERNALIZE void doWork(void)
 {
   int flags;
   char *ptrData = inputString;
-  char *ptrWebStorage;
+  const char *ptrWebStorage;
   char *ptrKnownFactors;
 #ifdef __EMSCRIPTEN__
   originalTenthSecond = tenths();
