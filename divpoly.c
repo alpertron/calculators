@@ -34,6 +34,7 @@ static int revDividend[COMPRESSED_POLY_MAX_LENGTH];
 static int inverseDivisor[COMPRESSED_POLY_MAX_LENGTH];
 static int polyTmp[COMPRESSED_POLY_MAX_LENGTH];
 
+// Decompress polynomial.
 static void ToPoly(int polyDegree, const int* polySrc, int* polyDest)
 {
   int lenBytes;
@@ -64,6 +65,7 @@ static void ToPoly(int polyDegree, const int* polySrc, int* polyDest)
   }
 }
 
+// Compress polynomial.
 static void FromPoly(int polyDegree, int* polyDest, const int* polySrc)
 {
   const int* ptrPolySrc = polySrc;
@@ -75,12 +77,12 @@ static void FromPoly(int polyDegree, int* polyDest, const int* polySrc)
     int nbrLimbs = *ptrPolySrc+1;
     int lenBytes = nbrLimbs * (int)sizeof(int);
     (void)memcpy(ptrPolyDest, ptrPolySrc, lenBytes);
-    ptrPolyDest += NumberLength + 1;
-    ptrPolySrc += nbrLimbs;
+    ptrPolySrc += NumberLength + 1;
+    ptrPolyDest += nbrLimbs;
   }
 }
 
-static void ReversePolynomial(int* ptrDest, const int* ptrSrc)
+static void ReversePolynomial(int* ptrDest, const int* ptrSrc, const int *ptrDenom)
 {
   int* pDest = ptrDest;
   int indexes[(2 * MAX_DEGREE) + 1];
@@ -98,12 +100,28 @@ static void ReversePolynomial(int* ptrDest, const int* ptrSrc)
     lenBytes = numLength * (int)sizeof(int);
     (void)memcpy(pDest, ptrSrc + 1, lenBytes);
     pDest += numLength;
+    if (ptrDenom != NULL)
+    {             // Append denominator to coefficient.
+      numLength = numLimbs(ptrDenom);
+      *pDest = *ptrDenom;
+      pDest++;
+      lenBytes = numLength * (int)sizeof(int);
+      (void)memcpy(pDest, ptrDenom + 1, lenBytes);
+      pDest += numLength;
+    }
     for (degree = 0; degree < degreePoly; degree++)
     {
       *pDest = 1;   // Set coefficient to zero.
       pDest++;
       *pDest = 0;
       pDest++;
+      if (ptrDenom != NULL)
+      {             // Append denominator to coefficient.
+        *pDest = 1;   // Set denominator to one.
+        pDest++;
+        *pDest = 1;
+        pDest++;
+      }
     }
     return;
   }
@@ -126,6 +144,13 @@ static void ReversePolynomial(int* ptrDest, const int* ptrSrc)
     lenBytes = numLength * (int)sizeof(int);
     (void)memcpy(pDest, ptrSrcCoeff, lenBytes);
     pDest += numLength;
+    if (ptrDenom != NULL)
+    {     // Copy denominator to polynomial with rational coefficients.
+      numLength = numLimbs(ptrDenom) + 1;
+      lenBytes = numLength * (int)sizeof(int);
+      (void)memcpy(pDest, ptrDenom, lenBytes);
+      pDest += numLength;
+    }
   }
 }
 
@@ -137,8 +162,8 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
   int* ptrQuotient;
   // Move arguments to temporary storage with most significant coefficient
   // first.
-  ReversePolynomial(poly1, pDividend);
-  ReversePolynomial(poly2, pDivisor);
+  ReversePolynomial(poly1, pDividend, NULL);
+  ReversePolynomial(poly2, pDivisor, NULL);
   degreeDividend = poly1[0];
   degreeDivisor = poly2[0];
   if (degreeDividend < degreeDivisor)
@@ -193,12 +218,13 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
       }
     }
     else
-    {
+    {     // Degree of divisor is greater than zero.
       for (degree = degreeDivisor; degree > 0; degree--)
       {
         ptrDividend += numLimbs(ptrDividend) + 1;
         ptrDivisor += numLimbs(ptrDivisor) + 1;
         UncompressBigIntegerB(ptrDivisor, &operand2);
+        // Multiply by quotient (operand3).
         (void)BigIntMultiply(&operand2, &operand3, &operand2);
         UncompressBigIntegerB(ptrDividend, &operand1);
         BigIntSubt(&operand1, &operand2, &operand2);
@@ -245,15 +271,332 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
   }
   *ptrResult = degree;
   // Copy result to first parameter.
-  ReversePolynomial(pDividend, ptrResult);
+  ReversePolynomial(pDividend, ptrResult, NULL);
   // Discard most significant 
   return EXPR_OK;
+}
+
+static enum eExprErr divideNumAndDenByGcd(BigInteger* num, BigInteger* den,
+  BigInteger* tmp)
+{
+  BigIntGcd(num, den, tmp);
+  enum eExprErr err = BigIntDivide(num, tmp, num);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  return BigIntDivide(den, tmp, den);
+}
+
+// Divide (ptrDividend/ptrDividendDen) / (ptrDivisor/ptrDivisorDen)
+// Place the result in operand1/operand2.
+static enum eExprErr RationalDivide(const int *ptrDividend, const int *ptrDividendDen,
+  const int *ptrDivisor, const int *ptrDivisorDen)
+{
+  enum eExprErr err;
+  // Get numerator of division.
+  UncompressBigIntegerB(ptrDividend, &operand1);
+  UncompressBigIntegerB(ptrDivisorDen, &operand2);
+  err = BigIntMultiply(&operand1, &operand2, &operand1);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  // Get denominator of division.
+  UncompressBigIntegerB(ptrDivisor, &operand2);
+  UncompressBigIntegerB(ptrDividendDen, &operand3);
+  err = BigIntMultiply(&operand2, &operand3, &operand2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  return divideNumAndDenByGcd(&operand1, &operand2, &operand3);
+}
+
+// Compute minNum/minDen - subt1Num/subt1Den * subt2Num/subt2Den
+// Place the result in operand5/operand4.
+static enum eExprErr RationalSubtractProduct(const int *minNum, const int *minDen,
+  const int *subt1Num, const int *subt1Den, const int* subt2Num, const int* subt2Den)
+{
+  enum eExprErr err;
+  // Multiply numerators.
+  UncompressBigIntegerB(subt1Num, &operand1);
+  UncompressBigIntegerB(subt2Num, &operand2);
+  err = BigIntMultiply(&operand1, &operand2, &operand3);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  // Multiply denominators.
+  UncompressBigIntegerB(subt1Den, &operand1);
+  UncompressBigIntegerB(subt2Den, &operand2);
+  err = BigIntMultiply(&operand1, &operand2, &operand4);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  // Divide them by their GCD.
+  err = divideNumAndDenByGcd(&operand3, &operand4, &operand1);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  // At this moment subtrahend is operand3/operand4.
+  // Compute numerator of subtraction.
+  UncompressBigIntegerB(minNum, &operand1);
+  err = BigIntMultiply(&operand1, &operand4, &operand2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  UncompressBigIntegerB(minDen, &operand1);
+  err = BigIntMultiply(&operand1, &operand3, &operand5);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  BigIntSubt(&operand2, &operand5, &operand5);
+  // Compute denominator of subtraction.
+  err = BigIntMultiply(&operand1, &operand4, &operand4);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  // Divide them by their GCD.
+  return divideNumAndDenByGcd(&operand5, &operand4, &operand3);
+}
+
+// polyDest must be different from polySrc.
+static enum eExprErr ConvertPolynomialRatCoeffToRatPoly(const int* polySrc, int* polyDest,
+  bool reverse, int polyDegree)
+{
+  int currentDegree;
+  const int* indexes[(2 * MAX_DEGREE) + 1];
+  const int* ptrSrc = polySrc;
+  int* ptrDest;
+  // Set operand1 to the LCM of the dividends of all coefficients.
+  intToBigInteger(&operand1, 1);
+  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+  {  // Point to denominator.
+    if (reverse)
+    {
+      indexes[polyDegree - currentDegree] = ptrSrc;
+    }
+    else
+    {
+      indexes[currentDegree] = ptrSrc;
+    }
+    // Point to denominator.
+    ptrSrc += numLimbs(ptrSrc) + 1;
+    UncompressBigIntegerB(ptrSrc, &operand2);
+    // Compute LCM of denominators.
+    enum eExprErr err = BigIntLcm(&operand1, &operand2, &operand1);
+    if (err != EXPR_OK)
+    {
+      return err;
+    }
+    // point to next numerator.
+    ptrSrc += numLimbs(ptrSrc) + 1;
+  }
+  // Generate result.
+  *polyDest = degree;
+  ptrDest = polyDest + 1;
+  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+  {  // Point to denominator.
+    ptrSrc = indexes[currentDegree];
+    UncompressBigIntegerB(ptrSrc, &operand2);
+    enum eExprErr err = BigIntMultiply(&operand1, &operand2,
+      &operand2);
+    if (err != EXPR_OK)
+    {
+      return err;
+    }
+    ptrSrc += numLimbs(ptrSrc) + 1;
+    UncompressBigIntegerB(ptrSrc, &operand3);
+    err = BigIntDivide(&operand2, &operand3, &operand2);
+    if (err != EXPR_OK)
+    {
+      return err;
+    }
+    NumberLength = operand2.nbrLimbs;
+    BigInteger2IntArray(ptrDest, &operand2);
+    ptrDest += NumberLength;
+    ptrDest++;
+  }
+  // Copy denominator.
+  *ptrDest = 0;   // Initialize degree of denominator
+  ptrDest++;
+  BigInteger2IntArray(ptrDest, &operand1);
+  return EXPR_OK;
+}
+
+int DivideRationalPolynomial(int* pDividend, const int* pDivisor, enum eDivType type)
+{
+  enum eExprErr err;
+  const int* ptrResult;
+  int degreeDividend;
+  int degreeDivisor;
+  int* ptrQuotient;
+  int* denomin1 = getNextElement(pDividend);
+  int* denomin2 = getNextElement(pDivisor);
+  if ((*denomin1 != 0) || (*denomin2 != 0))
+  {   // Degree of denominator is not zero.
+    return EXPR_DENOMINATOR_MUST_BE_CONSTANT;
+  }
+  if (type == TYPE_MODULUS)
+  {
+    if (*pDivisor == 0)
+    {     // Degree of divisor is zero.
+      if ((*(pDivisor + 1) == 1) && (*(pDivisor + 2) == 0))
+      {   // Divisor is zero. Return dividend.
+        return EXPR_OK;
+      }
+      else
+      {   // Divisor is constant. Return zero.
+        *pDividend = 0;       // Degree of numerator.
+        *(pDividend + 1) = 1; // Numerator is zero.
+        *(pDividend + 2) = 0;
+        *(pDividend + 3) = 0; // Degree of denominator.
+        *(pDividend + 4) = 1; // Denominator is one.
+        *(pDividend + 5) = 1;
+        return EXPR_OK;
+      }
+    }
+  }
+  // Move arguments to temporary storage with most significant coefficient
+  // first. Append the divisor for each coefficient.
+  ReversePolynomial(poly1, pDividend, denomin1 + 1);
+  ReversePolynomial(poly2, pDivisor, denomin2 + 1);
+  degreeDividend = poly1[0];
+  degreeDivisor = poly2[0];
+  if (degreeDividend < degreeDivisor)
+  {      // Degree of dividend is less than degree of divisor.
+    if (type == TYPE_DIVISION)
+    {    // Get pointer to quotient.
+      poly3[0] = 0;     // Degree of quotient is zero.
+      poly3[1] = 1;     // Coefficient is zero.
+      poly3[2] = 0;
+    }
+    else
+    {                   // Remainder is equal to dividend.
+      (void)CopyPolynomial(poly1, pDividend, *pDividend);
+    }
+    return EXPR_OK;
+  }
+  ptrQuotient = poly3;
+  *ptrQuotient = degreeDividend - degreeDivisor;
+  ptrQuotient++;
+  for (int degreeQuotient = degreeDividend - degreeDivisor;
+    degreeQuotient >= 0; degreeQuotient--)
+  {
+    const int* ptrDividend = &poly1[1];
+    const int* ptrDivisor = &poly2[1];
+    int* ptrRemainder;
+    const int* ptrDividendDen = ptrDividend + numLimbs(ptrDividend) + 1;
+    const int* ptrDivisorDen = ptrDivisor + numLimbs(ptrDivisor) + 1;
+    err = RationalDivide(ptrDividend, ptrDividendDen,
+      ptrDivisor, ptrDivisorDen);
+    if (err != EXPR_OK)
+    {
+      return err;
+    }
+    // Save numerator of quotient (operand1).
+    NumberLength = operand1.nbrLimbs;
+    BigInteger2IntArray(ptrQuotient, &operand1);
+    int* ptrQuotientDen = ptrQuotient + numLimbs(ptrQuotient) + 1;
+    // Save denominator of quotient (operand2).
+    NumberLength = operand2.nbrLimbs;
+    BigInteger2IntArray(ptrQuotientDen, &operand2);
+    // Calculate remainder.
+    if (degreeDivisor == 0)
+    {     // Strip leading coefficient of dividend.
+      int numLength = 1 + numLimbs(ptrDividend);
+      ptrRemainder = &poly1[1];
+
+      for (degree = degreeDividend*2; degree > 0; degree--)
+      {   // Degree is multiplied by 2 to move both numerator and denominator.
+        int lenBytes;
+        ptrDividend += numLength;
+        numLength = 1 + numLimbs(ptrDividend);
+        lenBytes = numLength * (int)sizeof(int);
+        (void)memcpy(ptrRemainder, ptrDividend, lenBytes);
+        ptrRemainder += numLength;
+      }
+    }
+    else
+    {     // Degree of divisor is greater than zero.
+      ptrRemainder = &poly4[1];
+          // Skip most significant coefficients of dividend and divisor.
+      ptrDividendDen = ptrDividend + numLimbs(ptrDividend) + 1;
+      ptrDivisorDen = ptrDivisor + numLimbs(ptrDivisor) + 1;
+      ptrDividend = ptrDividendDen + numLimbs(ptrDividendDen) + 1;
+      ptrDivisor = ptrDivisorDen + numLimbs(ptrDivisorDen) + 1;
+      for (degree = degreeDivisor; degree > 0; degree--)
+      {
+        ptrDividendDen = ptrDividend + numLimbs(ptrDividend) + 1;
+        ptrDivisorDen = ptrDivisor + numLimbs(ptrDivisor) + 1;
+        err = RationalSubtractProduct(ptrDividend, ptrDividendDen,
+          ptrDivisor, ptrDivisorDen, ptrQuotient, ptrQuotientDen);
+        if (err != EXPR_OK)
+        {
+          return err;
+        }
+        // Remainder is located in operand5/operand4.
+        NumberLength = operand5.nbrLimbs;
+        BigInteger2IntArray(ptrRemainder, &operand5);
+        ptrRemainder += NumberLength;
+        ptrRemainder++;
+        NumberLength = operand4.nbrLimbs;
+        BigInteger2IntArray(ptrRemainder, &operand4);
+        ptrRemainder += NumberLength;
+        ptrRemainder++;
+        ptrDividend = ptrDividendDen + numLimbs(ptrDividendDen) + 1;
+        ptrDivisor = ptrDivisorDen + numLimbs(ptrDivisorDen) + 1;
+      }
+      // Copy least significant coefficients of dividend into remainder.
+      for (degree = (degreeDividend - degreeDivisor)*2; degree > 0; degree--)
+      {
+        int numLength = 1 + numLimbs(ptrDividend);
+        int lenBytes = numLength * (int)sizeof(int);
+        (void)memcpy(ptrRemainder, ptrDividend, lenBytes);
+        ptrRemainder += numLength;
+        ptrDividend += numLength;
+      }
+      // Copy remainder to dividend.
+      (void)memcpy(&poly1[1], &poly4[1], (char*)ptrRemainder - (char*)&poly4[1]);
+    }
+    ptrQuotient = ptrQuotientDen + numLimbs(ptrQuotientDen) + 1;
+    degreeDividend--;
+  }
+  if (type == TYPE_DIVISION)
+  {    // Get pointer to quotient.
+    degree = poly1[0] - degreeDivisor;
+    return ConvertPolynomialRatCoeffToRatPoly(&poly3[1], pDividend,
+      true, degree);
+  }
+  // Get pointer to remainder.
+  ptrResult = &poly1[1];
+  degree = degreeDivisor - 1;
+  // Compute degree discarding leading coefficients set to zero.
+  while (degree > 0)
+  {
+    if ((*ptrResult != 1) || (*(ptrResult + 1) != 0))
+    {            // Coefficient is not zero.
+      break;
+    }
+    ptrResult += 2;
+    ptrResult += numLimbs(ptrResult) + 1; // Skip divisor.
+    degree--;
+  }
+  return ConvertPolynomialRatCoeffToRatPoly(ptrResult, pDividend,
+    false, degree);
 }
 
 // ptrArgument1 is the dividend and ptrArgument2 is the divisor.
 // If type equals TYPE_DIVISION, ptrArgument1 is overwritten with the quotient.
 // If type equals TYPE_MODULUS, ptrArgument1 is overwritten with the remainder.
-enum eExprErr DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType type)
+enum eExprErr DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2,
+  enum eDivType type)
 {
   int currentDegree;
   int degree1 = *ptrArgument1;

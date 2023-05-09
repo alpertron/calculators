@@ -37,6 +37,7 @@ char *ptrPercentageOutput;
 static char outputText[20000];
 #endif
 extern int poly4[1000000];
+extern int denom[1000000];
 extern int primeEisenstein;
 
 // Perform distinct degree factorization
@@ -636,7 +637,19 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
   }
   else
   {
-    copyStr(&ptrOut, lang ? "<h2>Polinomio ingresado</h2>" : "<h2>Your polynomial</h2>");
+    bool isFraction = true;
+    if ((denom[0] == 0) && (((denom[1] == 1) && (denom[2] == 1)) || !modulusIsZero))
+    {    // If modulus is zero: denominator is one.
+         // If modulus is not zero: degree is zero.
+      isFraction = false;
+      copyStr(&ptrOut, lang ? "<h2>Polinomio ingresado</h2>" :
+        "<h2>Your polynomial</h2>");
+    }
+    else
+    {
+      copyStr(&ptrOut, lang ? "<h2>Fracción de polinomios</h2>" :
+        "<h2>Your polynomial fraction</h2>");
+    }
     if (onlyEvaluate)
     {
       copyStr(&ptrOut, "<p>");
@@ -647,6 +660,7 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
     }
     outputOriginalPolynomial(&ptrOut, groupLength);
     copyStr(&ptrOut, "</p>");
+    degree = values[0];
     if (!onlyEvaluate)
     {
       int nbrFactor;
@@ -660,7 +674,16 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
       {
         pstFactorInfo = factorInfo;
       }
-      copyStr(&ptrOut, lang? "<h2>Factores irreducibles del polinomio</h2>": "<h2>Irreducible polynomial factors</h2>");
+      if (isFraction)
+      {
+        copyStr(&ptrOut, lang ? "<h2>Factores irreducibles del polinomio numerador</h2>" :
+          "<h2>Irreducible numerator factors</h2>");
+      }
+      else
+      {
+        copyStr(&ptrOut, lang ? "<h2>Factores irreducibles del polinomio</h2>" :
+          "<h2>Irreducible polynomial factors</h2>");
+      }
       if ((nbrFactorsFound == 0) || ((nbrFactorsFound == 1) && (pstFactorInfo->multiplicity == 1)))
       {
         copyStr(&ptrOut, lang ? "<p>El polinomio es irreducible" : "<p>The polynomial is irreducible");

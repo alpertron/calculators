@@ -26,6 +26,7 @@
 #include "highlevel.h"
 #include "polynomial.h"
 #include "showtime.h"
+#include "output.h"
 
 #define MAX_MODULUS 100
 
@@ -48,6 +49,7 @@ extern int NumberLengthR1;
 static int prime;
 static int primeIndex;
 int values[COMPRESSED_POLY_MAX_LENGTH];
+int denom[COMPRESSED_POLY_MAX_LENGTH];
 int valuesPrime[COMPRESSED_POLY_MAX_LENGTH];
 int poly1[COMPRESSED_POLY_MAX_LENGTH];
 int poly2[COMPRESSED_POLY_MAX_LENGTH];
@@ -546,7 +548,7 @@ static void ConvertToMonicSmallMod(int degreeMin, int* ptrArgMin, int modulus,
   }
 }
 
-        // arg1 must not be changed by this routine.
+// arg1 must not be changed by this routine.
 // arg2 can be changed by this routine.
 void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
   int *gcd, int *degreeGcd)
@@ -576,6 +578,7 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
       return;
     }
     *degreeGcd = 0;
+    SetNumberToOne(poly5);
     return;
   }
   if (degree2 == 0)
@@ -588,6 +591,7 @@ void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2,
       return;
     }
     *degreeGcd = 0;
+    SetNumberToOne(poly5);
     return;
   }
   if ((degree1 < 0) && (degree2 < 0))
@@ -1981,14 +1985,14 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
   NumberLength = NumberLengthBak;
 }
 
-void outputOriginalPolynomial(char** pptrOutput, int groupLength)
+static void outputOriginalPolynomialElem(char** pptrOutput, const int *ptrPoly, int groupLength)
 {
   int currentDegree;
   const int* ptrValue1;
   int nbrLimbs = powerMod.nbrLimbs + 1;
   char* ptrOutput = *pptrOutput;
-  degree = values[0];
-  ptrValue1 = &values[1];
+  degree = *ptrPoly;
+  ptrValue1 = ptrPoly + 1;
   if (!modulusIsZero)
   {
     int* ptrValue2;
@@ -2028,11 +2032,19 @@ void outputOriginalPolynomial(char** pptrOutput, int groupLength)
       ptrOutput++;
     }
   }
-  if (degree > 0)
+  if (degree < 0)
   {
-    showPowerX(&ptrOutput, degree);
+    showPowerX(&ptrOutput, -degree);
   }
-  showPolynomial(&ptrOutput, (modulusIsZero ? &values[1] : poly4), degree, groupLength);
+  else
+  {
+    if (degree > 0)
+    {
+      showPowerX(&ptrOutput, degree);
+    }
+    showPolynomial(&ptrOutput, (modulusIsZero ? (ptrPoly + 1) : poly4),
+      degree, groupLength);
+  }
   if (!modulusIsZero)
   {
     copyStr(&ptrOutput, " (mod ");
@@ -2046,6 +2058,59 @@ void outputOriginalPolynomial(char** pptrOutput, int groupLength)
   }
   *ptrOutput = 0;    // Append string terminator.
   *pptrOutput = ptrOutput;
+}
+
+void outputOriginalPolynomial(char** pptrOutput, int groupLength)
+{
+  bool isFraction = false;
+  if ((modulusIsZero && ((denom[0] != 0) || (denom[1] != 1) || (denom[2] != 1))) ||
+    (!modulusIsZero && (denom[0] != 0)))
+  {    // If modulus is zero: denominator is not one.
+       // If modulus is not zero: degree is not zero.
+    isFraction = true;
+    if (pretty == PRETTY_PRINT)
+    {
+      copyStr(pptrOutput, "<span class=\"fraction\"><span class=\"numerator\">");
+    }
+    else if (pretty == PARI_GP)
+    {
+      copyStr(pptrOutput, "(");
+    }
+    else
+    {
+      copyStr(pptrOutput, "\\frac{");
+    }
+  }
+  outputOriginalPolynomialElem(pptrOutput, values, groupLength);
+  if (!isFraction)
+  {
+    return;
+  }
+  if (pretty == PRETTY_PRINT)
+  {
+    copyStr(pptrOutput, "</span><span class=\"denominator\">");
+  }
+  else if (pretty == PARI_GP)
+  {
+    copyStr(pptrOutput, ") / (");
+  }
+  else
+  {
+    copyStr(pptrOutput, "}{");
+  }
+  outputOriginalPolynomialElem(pptrOutput, denom, groupLength);
+  if (pretty == PRETTY_PRINT)
+  {
+    copyStr(pptrOutput, "</span></span>");
+  }
+  else if (pretty == PARI_GP)
+  {
+    copyStr(pptrOutput, ")");
+  }
+  else
+  {
+    copyStr(pptrOutput, "}");
+  }
 }
 
 void outputPolynomialFactor(char **pptrOutput, int groupLength, const struct sFactorInfo* pstFactorInfo)
@@ -2112,6 +2177,10 @@ void textErrorPol(char **pptrOutput, enum eExprErr rc)
   case EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER:
     copyStr(&ptrOutput, lang ? "La división de polinomios no es entera" :
       "Polynomial division is not integer");
+    break;
+  case EXPR_DENOMINATOR_MUST_BE_CONSTANT:
+    copyStr(&ptrOutput, lang ? "El denominador debe ser constante" :
+      "Denominator must be constant");
     break;
   case EXPR_DEGREE_TOO_HIGH:
     copyStr(&ptrOutput, lang ? "El grado del polinomio es muy elevado" :

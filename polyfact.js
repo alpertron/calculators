@@ -201,8 +201,45 @@ window.onload = function ()
   }
   let search = window.location.search;
   if (search.substring(0,3) === "?q=")
-  {
-    polyTextArea.value = decodeURIComponent(search.substring(3)).replace(/\{/g, "(").replace(/\}/g, ")");
+  {    // Process query string converting Tex to ASCII math.
+    search = decodeURIComponent(search.substring(3));
+    let fracNesting = new Array(300);
+    let outBuffer = "";
+    let nestingIndex = 0;
+    let queryLength = search.length;
+    let index = 0;
+    while (index < queryLength)
+    {
+      let character = search.substring(index, index+1);
+      if (character == "{")
+      {        // Open paren in Tex.
+        outBuffer += "(";
+        nestingIndex++;
+        index++;
+      }
+      else if (character == "}")
+      {        // Close paren in Tex.
+        outBuffer += ")";
+        nestingIndex--;
+        if (fracNesting[nestingIndex] != null)
+        {      // End of numerator. Insert slash.
+          outBuffer += "/";
+          fracNesting[nestingIndex] = null;
+        }
+        index++;
+      }
+      else if (search.substring(index, index+5) == "\\frac")
+      {        // Start of fraction. Indicate nesting index.
+        fracNesting[nestingIndex] = 1;
+        index += 5;
+      }
+      else
+      {        // Other character. Copy it as is.
+        outBuffer += character;
+        index++;
+      }
+    }
+    polyTextArea.value = outBuffer;
     dowork(0);    // Factor polynomial.
   }
   registerServiceWorker();

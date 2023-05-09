@@ -26,9 +26,10 @@
 #include "polynomial.h"
 #include "expression.h"
 
-#define TOKEN_GCD    34
-#define TOKEN_LCM    35
-#define TOKEN_DER    36
+#define TOKEN_GCD     34
+#define TOKEN_LCM     35
+#define TOKEN_DER     36
+#define TOKEN_LONGDIV 37
 static enum eExprErr GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2);
 static enum eExprErr LcmPolynomialExpr(int* ptrArgument1, int* ptrArgument2);
 static enum eExprErr RandomPolynomialExpr(const int* pMinDegree, const int* pMaxDegree,
@@ -38,8 +39,10 @@ extern int polyA[1000000];
 extern int polyB[1000000];
 extern int polyC[1000000];
 extern int polyD[1000000];
+extern int denom[1000000];
 static int LastAnswerPoly[1000000];
 extern bool onlyEvaluate;
+static int* CopyCompletePolynomial(int* dest, const int* src);
 
 struct sFuncOperExpr stFuncOperPolyExpr[] =
 {
@@ -48,6 +51,7 @@ struct sFuncOperExpr stFuncOperPolyExpr[] =
   {"GCD", TOKEN_GCD + MANY_PARMS, 0},
   {"LCM", TOKEN_LCM + MANY_PARMS, 0},
   {"DER", TOKEN_DER + ONE_PARM, 0},
+  {"LONGDIV", TOKEN_LONGDIV + TWO_PARMS, 0},
   {"RANDOM", TOKEN_RANDOM + FOUR_PARMS, 0},
   {NULL, 0},
   // Second section: functions written at right of argument.
@@ -67,7 +71,7 @@ struct sFuncOperExpr stFuncOperPolyExpr[] =
   {NULL, 0},
 };
 
-static int NegatePolynomialExpr(int* ptrArgument)
+static enum eExprErr NegatePolynomialExpr(int* ptrArgument)
 {
   int* ptrValue1 = ptrArgument;
   if (!modulusIsZero)
@@ -149,10 +153,10 @@ void UncompressBigIntegerB(const int* ptrValues, BigInteger* bigint)
 
 // Add two polynomials starting on buffers pointed by ptrArgument1
 // and ptrArgument2. Use poly1 as a temporary buffer to hold the sum.
+// Sum will be stored in ptrArgument1.
 static int AddPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
 {
   int* ptrValue1;
-  const int* ptrValue2;
   int currentDegree;
   int degreeMin;
   int degreeMax;
@@ -185,8 +189,6 @@ static int AddPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
       {                     // Sum is zero: set degree to zero.
         *ptrArgument1 = 0;
       }
-      diffPtrs = ptrArgument1 - &values[0];
-      valuesIndex = (int)diffPtrs + 2 + NumberLength;
       return EXPR_OK;
     }
     if (degree2 <= 0)
@@ -230,8 +232,6 @@ static int AddPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
       }
       NumberLength = operand2.nbrLimbs;
       BigInteger2IntArray(ptrValue1, &operand2);
-      diffPtrs = ptrValue1 - &values[0];
-      valuesIndex = (int)diffPtrs + 1 + numLimbs(ptrValue1);
       return EXPR_OK;
     }
   }
@@ -292,10 +292,10 @@ static int AddPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
   else
   {                 // Sum of polynomial and monomial.
     int degreeMono;
-    if (degree1 < 0)
+    if (degree1 <= 0)
     {
       UncompressBigIntegerB(ptrArgument1 + 1, &operand1);
-      (void)memmove(ptrArgument1 + 1, ptrArgument2 + 1, (&values[valuesIndex] - ptrArgument2) * sizeof(int));
+      CopyCompletePolynomial(ptrArgument1, ptrArgument2);
       degreeMono = -degree1;
       degreePoly = degree2;
     }
@@ -368,21 +368,17 @@ static int AddPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
   // Reduce degree if leading coefficient is zero.
   degreeMax = 0;
   ptrValue1 = ptrArgument1 + 1;
-  ptrValue2 = ptrValue1;
   for (currentDegree = 0; currentDegree <= degreePoly; currentDegree++)
   {
     if ((*ptrValue1 != 1) || (*(ptrValue1 + 1) != 0))
     {                    // Coefficient is not zero
       degreeMax = currentDegree;
       // Store point to coefficient not zero of maximum degree.
-      ptrValue2 = ptrValue1;
     }
     ptrValue1 += numLimbs(ptrValue1);
     ptrValue1++;
   }
   *ptrArgument1 = degreeMax;
-  diffPtrs = ptrValue2 - &values[0];
-  valuesIndex = (int)diffPtrs + 1 + numLimbs(ptrValue2);
   return EXPR_OK;
 }
 
@@ -401,6 +397,9 @@ int* CopyPolyProduct(const int* ptrSrc, int* ptrDest, int polyDegree)
   return ptrValueDest;
 }
 
+// Multiply two polynomials starting on buffers pointed by ptrArgument1
+// and ptrArgument2. Use poly1 and poly2 as a temporary buffers.
+// Product will be stored in ptrArgument1.
 static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
 {
   int degreeMono;
@@ -419,7 +418,6 @@ static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgumen
   }
   if ((degree1 <= 0) && (degree2 <= 0))
   {        // Product of two monomials.
-    size_t diffPtrs;
     if ((degree1 + degree2) < -MAX_DEGREE)
     {
       return EXPR_DEGREE_TOO_HIGH;
@@ -437,13 +435,14 @@ static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgumen
       modmult(operand1.limbs, operand2.limbs, operand1.limbs);
     }
     BigInteger2IntArray(ptrArgument1 + 1, &operand1);
-    diffPtrs = ptrArgument1 - &values[0];
-    valuesIndex = (int)diffPtrs + 2 + *(ptrArgument1 + 1);
+    if (BigIntIsZero(&operand1))
+    {
+      *ptrArgument1 = 0;   // Indicate degree zero for number zero.
+    }
     return EXPR_OK;
   }
   if ((degree1 > 0) && (degree2 > 0))
   {        // Product of two polynomials.
-    size_t diffPtrs;
     if ((degree1 + degree2) > MAX_DEGREE)
     {
       return EXPR_DEGREE_TOO_HIGH;
@@ -451,8 +450,10 @@ static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgumen
     *ptrArgument1 = degree1 + degree2;
     if (modulusIsZero)
     {
-      (void)CopyPolyProduct(ptrArgument1 + 1, poly1, degree1);  // Copy first factor to poly1
-      (void)CopyPolyProduct(ptrArgument2 + 1, poly2, degree2);  // Copy second factor to poly2
+      // Copy first factor to poly1
+      (void)CopyPolyProduct(ptrArgument1 + 1, poly1, degree1);
+      // Copy second factor to poly2
+      (void)CopyPolyProduct(ptrArgument2 + 1, poly2, degree2);
     }
     else
     {
@@ -499,8 +500,6 @@ static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgumen
         ptrValue2 += nbrLimbs;
       }
     }
-    diffPtrs = ptrValue1 - &values[0];
-    valuesIndex = (int)diffPtrs;
     return EXPR_OK;
   }
   // Product of monomial and polynomial.
@@ -589,8 +588,274 @@ static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgumen
   *ptrArgument1 = degreeMono + degreePoly;
   ptrValue1 = ptrArgument1 + 1;
   (void)memcpy(ptrValue1, poly1, (ptrValue2 - &poly1[0]) * sizeof(int));
-  valuesIndex = (int)(ptrValue1 - &values[0] + (ptrValue2 - &poly1[0]));
   return EXPR_OK;
+}
+
+int* getNextElement(const int* ptrPoly)
+{
+  const int* ptrSrc = ptrPoly;
+  int currentDegree;
+  int polyDegree = *ptrPoly;
+  if (polyDegree >= 0)
+  {            // Polynomial
+    currentDegree = 0;
+  }
+  else
+  {            // Monomial
+    currentDegree = polyDegree;
+  }
+  ptrSrc++;    // Point to first coefficient.
+  for (; currentDegree <= polyDegree; currentDegree++)
+  {
+    int numLength = numLimbs(ptrSrc) + 1;
+    ptrSrc += numLength;
+  }
+  return (int *)ptrSrc;
+}
+
+// Divide numerator and denominator by their GCD and copy result to ptrArgument1.
+static enum eExprErr AdjustNumDenom(int *ptrArgument1, const int *ptrNumerator, 
+  const int *ptrDenom)
+{
+  enum eExprErr err;
+  int* ptrGCD1 = getNextElement(ptrDenom);
+  int* ptrGCD2 = CopyCompletePolynomial(ptrGCD1, ptrNumerator);
+  (void)CopyCompletePolynomial(ptrGCD2, ptrDenom);
+  err = GcdPolynomialExpr(ptrGCD1, ptrGCD2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  int* ptrAdjustedNum = getNextElement(ptrGCD1);
+  int *ptrAdjustedGcd = CopyCompletePolynomial(ptrAdjustedNum, ptrNumerator);
+  (void)CopyCompletePolynomial(ptrAdjustedGcd, ptrGCD1);
+  err = DivPolynomialExpr(ptrAdjustedNum, ptrAdjustedGcd,
+    TYPE_DIVISION);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  int* ptrAdjustedDen = getNextElement(ptrAdjustedNum);
+  ptrAdjustedGcd = CopyCompletePolynomial(ptrAdjustedDen, ptrDenom);
+  (void)CopyCompletePolynomial(ptrAdjustedGcd, ptrGCD1);
+  err = DivPolynomialExpr(ptrAdjustedDen, ptrAdjustedGcd,
+    TYPE_DIVISION);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  int* ptrDestDen = CopyCompletePolynomial(ptrArgument1, ptrAdjustedNum);
+  int *endPtr = CopyCompletePolynomial(ptrDestDen, ptrAdjustedDen);
+  valuesIndex = (int)(endPtr - &values[0]);
+  return EXPR_OK;
+}
+
+// If modulus is not zero, the numerator can change its length,
+// so backup it in poly2.
+static enum eExprErr NegateRatPolynomialExpr(int* ptrArgument)
+{
+  enum eExprErr err;
+  if (!modulusIsZero)
+  {
+    int* denomin = getNextElement(ptrArgument);
+    CopyCompletePolynomial(poly2, denomin);
+  }
+  err = NegatePolynomialExpr(ptrArgument);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  if (!modulusIsZero)
+  {
+    int* denomin = getNextElement(ptrArgument);
+    CopyCompletePolynomial(denomin, poly2);
+  }
+  return EXPR_OK;
+}
+
+// Compute rational polynomial sum f/g = (f1*g2 + f2*g1)/(g1*g2).
+// After computing the sum, reduce f and g by dividing by their GCD.
+static enum eExprErr AddRatPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
+{
+  enum eExprErr err;
+  const int* ptrDenom1 = getNextElement(ptrArgument1);
+  const int* ptrDenom2 = getNextElement(ptrArgument2);
+  int* ptrFirstSum1 = getNextElement(ptrDenom2);
+  int* ptrFirstSum2 = CopyCompletePolynomial(ptrFirstSum1, ptrArgument1);
+  (void)CopyCompletePolynomial(ptrFirstSum2, ptrDenom2);
+  err = MultPolynomialExpr(ptrFirstSum1, ptrFirstSum2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  int* ptrSecondSum1 = getNextElement(ptrFirstSum1);
+  int* ptrSecondSum2 = CopyCompletePolynomial(ptrSecondSum1, ptrArgument2);
+  (void)CopyCompletePolynomial(ptrSecondSum2, ptrDenom1);
+  err = MultPolynomialExpr(ptrSecondSum1, ptrSecondSum2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  err = AddPolynomialExpr(ptrFirstSum1, ptrSecondSum1);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  int* ptrDivisor1 = getNextElement(ptrFirstSum1);
+  int* ptrDivisor2 = CopyCompletePolynomial(ptrDivisor1, ptrDenom1);
+  (void)CopyCompletePolynomial(ptrDivisor2, ptrDenom2);
+  err = MultPolynomialExpr(ptrDivisor1, ptrDivisor2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  return AdjustNumDenom(ptrArgument1, ptrFirstSum1, ptrDivisor1);
+}
+
+// Compute rational polynomial product f/g = (f1*f2)/(g1*g2).
+// After computing the multiplication, reduce f and g by dividing by their GCD.
+static enum eExprErr MultRatPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
+{
+  enum eExprErr err;
+  const int* ptrDenom1 = getNextElement(ptrArgument1);
+  const int* ptrDenom2 = getNextElement(ptrArgument2);
+  int* ptrNumer1 = getNextElement(ptrDenom2);
+  int* ptrNumer2 = CopyCompletePolynomial(ptrNumer1, ptrArgument1);
+  (void)CopyCompletePolynomial(ptrNumer2, ptrArgument2);
+  err = MultPolynomialExpr(ptrNumer1, ptrNumer2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  int* ptrDenomin1 = getNextElement(ptrNumer1);
+  int* ptrDenomin2 = CopyCompletePolynomial(ptrDenomin1, ptrDenom1);
+  (void)CopyCompletePolynomial(ptrDenomin2, ptrDenom2);
+  err = MultPolynomialExpr(ptrDenomin1, ptrDenomin2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  return AdjustNumDenom(ptrArgument1, ptrNumer1, ptrDenomin1);
+}
+
+// Compute rational polynomial division f/g = (f1*g2)/(g1*f2).
+// After computing the division, reduce f and g by dividing by their GCD.
+static enum eExprErr DivRatPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
+{
+  enum eExprErr err;
+  const int* ptrDenom1 = getNextElement(ptrArgument1);
+  const int* ptrDenom2 = getNextElement(ptrArgument2);
+  int* ptrNumer1 = getNextElement(ptrDenom2);
+  int* ptrNumer2 = CopyCompletePolynomial(ptrNumer1, ptrArgument1);
+  (void)CopyCompletePolynomial(ptrNumer2, ptrDenom2);
+  err = MultPolynomialExpr(ptrNumer1, ptrNumer2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  int* ptrDenomin1 = getNextElement(ptrNumer1);
+  int* ptrDenomin2 = CopyCompletePolynomial(ptrDenomin1, ptrDenom1);
+  (void)CopyCompletePolynomial(ptrDenomin2, ptrArgument2);
+  err = MultPolynomialExpr(ptrDenomin1, ptrDenomin2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  return AdjustNumDenom(ptrArgument1, ptrNumer1, ptrDenomin1);
+}
+
+// Compute rational polynomial gcd f/g = gcd(f1*g2, g1*f2)/(g1*g2).
+// After computing the division, reduce f and g by dividing by their GCD.
+// Third parameter is true for GCD, false for LCM.
+static enum eExprErr GcdRatPolynomialExpr(int* ptrArgument1, const int* ptrArgument2,
+  bool isGcd)
+{
+  enum eExprErr err;
+  const int* ptrDenom1 = getNextElement(ptrArgument1);
+  const int* ptrDenom2 = getNextElement(ptrArgument2);
+  int* ptrGcdLeft1 = getNextElement(ptrDenom2);
+  int* ptrGcdLeft2 = CopyCompletePolynomial(ptrGcdLeft1, ptrArgument1);
+  (void)CopyCompletePolynomial(ptrGcdLeft2, ptrDenom2);
+  err = MultPolynomialExpr(ptrGcdLeft1, ptrGcdLeft2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  int* ptrGcdRight1 = getNextElement(ptrGcdLeft1);
+  int* ptrGcdRight2 = CopyCompletePolynomial(ptrGcdRight1, ptrDenom1);
+  (void)CopyCompletePolynomial(ptrGcdRight2, ptrArgument2);
+  err = MultPolynomialExpr(ptrGcdRight1, ptrGcdRight2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  if (isGcd)
+  {
+    err = GcdPolynomialExpr(ptrGcdLeft1, ptrGcdRight1);
+  }
+  else
+  {
+    err = LcmPolynomialExpr(ptrGcdLeft1, ptrGcdRight1);
+  }
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  int* ptrDenomin1 = getNextElement(ptrGcdLeft1);
+  int* ptrDenomin2 = CopyCompletePolynomial(ptrDenomin1, ptrDenom1);
+  (void)CopyCompletePolynomial(ptrDenomin2, ptrDenom2);
+  err = MultPolynomialExpr(ptrDenomin1, ptrDenomin2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  return AdjustNumDenom(ptrArgument1, ptrGcdLeft1, ptrDenomin1);
+}
+
+// Compute rational polynomial derivative f/g = (f1'*f1 - f1*g1')/g1^2.
+// After computing the derivative, reduce f and g by dividing by their GCD.
+static enum eExprErr DerRatPolynomialExpr(int* ptrArgument1)
+{
+  enum eExprErr err;
+  const int* ptrDenom1 = getNextElement(ptrArgument1);
+  int* ptrFirstSum1 = getNextElement(ptrDenom1);
+  (void)CopyCompletePolynomial(ptrFirstSum1, ptrArgument1);
+  DerPolynomial(ptrFirstSum1);
+  int* ptrFirstSum2 = getNextElement(ptrFirstSum1);
+  (void)CopyCompletePolynomial(ptrFirstSum2, ptrDenom1);
+  err = MultPolynomialExpr(ptrFirstSum1, ptrFirstSum2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  int* ptrSecondSum1 = getNextElement(ptrFirstSum1);
+  int* ptrSecondSum2 = CopyCompletePolynomial(ptrSecondSum1, ptrArgument1);
+  (void)CopyCompletePolynomial(ptrSecondSum2, ptrDenom1);
+  DerPolynomial(ptrSecondSum2);
+  err = MultPolynomialExpr(ptrSecondSum1, ptrSecondSum2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  err = NegatePolynomialExpr(ptrSecondSum1);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  err = AddPolynomialExpr(ptrFirstSum1, ptrSecondSum1);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  int* ptrDivisor1 = getNextElement(ptrFirstSum1);
+  int* ptrDivisor2 = CopyCompletePolynomial(ptrDivisor1, ptrDenom1);
+  (void)CopyCompletePolynomial(ptrDivisor2, ptrDenom1);
+  err = MultPolynomialExpr(ptrDivisor1, ptrDivisor2);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  return AdjustNumDenom(ptrArgument1, ptrFirstSum1, ptrDivisor1);
 }
 
 void SetNumberToOne(/*@out@*/int* ptrValue1)
@@ -608,6 +873,11 @@ void SetNumberToOne(/*@out@*/int* ptrValue1)
   }
 }
 
+// Copy Polynomial. On entry:
+// dest: Pointer to destination polynomial
+// src: Pointer to source polynomial
+// polyDegree: Degree of polynomial being copied.
+// On exit: Pointer to next limb after destination polynomial.
 int* CopyPolynomial(int* dest, const int* src, int polyDegree)
 {
   int* ptrDest = dest;
@@ -630,6 +900,17 @@ int* CopyPolynomial(int* dest, const int* src, int polyDegree)
     ptrDest += numLength;
   }
   return ptrDest;
+}
+
+static int* CopyCompletePolynomial(int* dest, const int* src)
+{
+  int polyDegree = *src;
+  const int* ptrSrc = src;
+  int* ptrDest = dest;
+  ptrSrc++;
+  *ptrDest = polyDegree;
+  ptrDest++;
+  return CopyPolynomial(ptrDest, ptrSrc, polyDegree);
 }
 
 int* CopyPolynomialFixedCoeffSize(int* dest, const int* src, int polyDegree, int coeffSize)
@@ -656,7 +937,6 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
   int currentDegree;
   int nbrLimbs = powerMod.nbrLimbs + 1;
   int degreeBase = *ptrArgument1;
-  size_t diffPtrs;
   if (!modulusIsZero)
   {
     NumberLength = powerMod.nbrLimbs;
@@ -685,8 +965,6 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
       operand2.sign = SIGN_POSITIVE;
     }
     BigInteger2IntArray(ptrArgument1 + 1, &operand2);
-    diffPtrs = ptrArgument1 - &values[0];
-    valuesIndex = (int)diffPtrs + 2 + numLimbs(ptrArgument1 + 1);
     return EXPR_OK;
   }
   // Polynomial.
@@ -758,9 +1036,28 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
       ptrValue2 += nbrLimbs;
     }
   }
-  diffPtrs = ptrValue1 - &values[0];
-  valuesIndex = (int)diffPtrs;
   return EXPR_OK;
+}
+
+static int PowerRatPolynomialExpr(int* ptrArgument1, int expon)
+{
+  enum eExprErr err;
+  const int* ptrDenom = getNextElement(ptrArgument1);
+  int* ptrNumer1 = getNextElement(ptrDenom);
+  (void)CopyCompletePolynomial(ptrNumer1, ptrArgument1);
+  err = PowerPolynomialExpr(ptrNumer1, expon);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  int* ptrDenom1 = getNextElement(ptrNumer1);
+  (void)CopyCompletePolynomial(ptrDenom1, ptrDenom);
+  err = PowerPolynomialExpr(ptrDenom1, expon);
+  if (err != EXPR_OK)
+  {
+    return err;
+  }
+  return AdjustNumDenom(ptrArgument1, ptrNumer1, ptrDenom1);
 }
 
 void computePower(int expo)
@@ -773,6 +1070,23 @@ void computePower(int expo)
   TestNbr[NumberLength].x = 0;
   GetMontgomeryParms(powerMod.nbrLimbs);
 }
+
+static void DecompressMonomial(int* ptrElem)
+{
+  int* ptrValue1 = ptrElem + 1;
+  UncompressBigIntegerB(ptrValue1, &operand1);
+  degree = -*ptrElem;
+  *ptrElem = degree;
+  for (int currentDegree = 0; currentDegree < degree; currentDegree++)
+  {
+    *ptrValue1 = 1;   // Initialize coefficient to zero.
+    ptrValue1++;
+    *ptrValue1 = 0;
+    ptrValue1++;
+  }
+  BigInteger2IntArray(ptrValue1, &operand1);
+}
+
 // Compute polynomial using value array as stack.
 // Inside stack:
 // Monomial: -degree, nbrLimbs, xxx (limbs)
@@ -831,10 +1145,11 @@ int ComputePolynomial(const char* input, int expo)
       len = 1;
       if (!insideExpon)
       {
-        len = ((int)(unsigned char)*ptrRPNbuffer * 256) + (int)(unsigned char)*(ptrRPNbuffer + 1);
+        len = ((int)(unsigned char)*ptrRPNbuffer * 256) +
+          (int)(unsigned char)*(ptrRPNbuffer + 1);
         values[valuesIndex] = 0;   // Degree.
         valuesIndex++;
-        values[valuesIndex] = len;
+        values[valuesIndex] = len; // Length of constant coefficient.
         valuesIndex++;
         ptrRPNbuffer += 2;
       }
@@ -842,6 +1157,13 @@ int ComputePolynomial(const char* input, int expo)
       (void)memcpy(&values[valuesIndex], ptrRPNbuffer, nbrSizeBytes);
       ptrRPNbuffer += nbrSizeBytes - 1;
       valuesIndex += len;
+      if (!insideExpon)
+      {    // Initialize denominator to 1.
+        values[valuesIndex] = 0;   // Degree.
+        valuesIndex++;
+        SetNumberToOne(&values[valuesIndex]);
+        valuesIndex += 1 + values[valuesIndex];
+      }
       break;
     case TOKEN_VAR:
       stackValues[stackIndex] = &values[valuesIndex];
@@ -849,6 +1171,11 @@ int ComputePolynomial(const char* input, int expo)
       values[valuesIndex] = -1;   // Degree of monomial
       valuesIndex++;
          // Set coefficient to 1 in Montgomery notation.
+      SetNumberToOne(&values[valuesIndex]);
+      valuesIndex += 1 + values[valuesIndex];
+         // Initialize denominator to 1.
+      values[valuesIndex] = 0;   // Degree.
+      valuesIndex++;
       SetNumberToOne(&values[valuesIndex]);
       valuesIndex += 1 + values[valuesIndex];
       break;
@@ -883,16 +1210,20 @@ int ComputePolynomial(const char* input, int expo)
       stackIndex++;
       *ptrValue1 = LastAnswerPoly[0];   // Copy degree.
       if (LastAnswerPoly[1] == 0)
-      {
+      {                     // Nothing stored in ans.
+        *ptrValue1 = 0;        // Degree of numerator.
         *(ptrValue1 + 1) = 1;
-        *(ptrValue1 + 2) = 0;
-        valuesIndex += 3;   // This polynomial requires 3 limbs.
+        *(ptrValue1 + 2) = 0;  // Numerator = 0.
+        *(ptrValue1 + 3) = 0;  // Degree of denominator.
+        SetNumberToOne(ptrValue1 + 4);
+        valuesIndex += 5 + *(ptrValue1+4);
       }
       else
       {
-        ptrValue2 = CopyPolynomial(ptrValue1+1, &LastAnswerPoly[1],
-                                   LastAnswerPoly[0]);
-        valuesIndex = (int)(ptrValue2 - &values[0]);
+        int* ptrDenom1 = getNextElement(LastAnswerPoly);
+        int* ptrDenom = CopyCompletePolynomial(ptrValue1, LastAnswerPoly);
+        ptrValue1 = CopyCompletePolynomial(ptrDenom, ptrDenom1);
+        valuesIndex = (int)(ptrValue1 - &values[0]);
       }
       break;
     case TOKEN_GCD:
@@ -913,14 +1244,8 @@ int ComputePolynomial(const char* input, int expo)
           return EXPR_CANNOT_PARSE_EXPRESSION;
         }
         ptrValue2 = stackValues[stackIndex - 1];
-        if (token == TOKEN_GCD)
-        {      // Token is GCD.
-          rc = GcdPolynomialExpr(ptrValue2, ptrValue1);
-        }
-        else
-        {      // Token is LCM.
-          rc = LcmPolynomialExpr(ptrValue2, ptrValue1);
-        }
+        rc = GcdRatPolynomialExpr(ptrValue2, ptrValue1,
+            (token == TOKEN_GCD));
         if (rc != EXPR_OK)
         {
           return rc;
@@ -934,7 +1259,11 @@ int ComputePolynomial(const char* input, int expo)
         return EXPR_CANNOT_PARSE_EXPRESSION;
       }
       ptrValue1 = stackValues[stackIndex - 1];
-      DerPolynomial(ptrValue1);
+      rc = DerRatPolynomialExpr(ptrValue1);
+      if (rc != EXPR_OK)
+      {
+        return rc;
+      }
       break;
     case TOKEN_RANDOM:
       if (stackIndex < 4)
@@ -967,7 +1296,7 @@ int ComputePolynomial(const char* input, int expo)
       }
       else
       {
-        rc = AddPolynomialExpr(ptrValue1, ptrValue2);
+        rc = AddRatPolynomialExpr(ptrValue1, ptrValue2);
         if (rc != EXPR_OK)
         {
           return rc;
@@ -996,7 +1325,7 @@ int ComputePolynomial(const char* input, int expo)
       {
         return rc;
       }
-      rc = AddPolynomialExpr(ptrValue1, ptrValue2);
+      rc = AddRatPolynomialExpr(ptrValue1, ptrValue2);
       if (rc != EXPR_OK)
       {
         return rc;
@@ -1020,12 +1349,12 @@ int ComputePolynomial(const char* input, int expo)
       }
       else
       {
-        rc = NegatePolynomialExpr(ptrValue2);
+        rc = NegateRatPolynomialExpr(ptrValue2);
         if (rc != EXPR_OK)
         {
           return rc;
         }
-        rc = AddPolynomialExpr(ptrValue1, ptrValue2);
+        rc = AddRatPolynomialExpr(ptrValue1, ptrValue2);
         if (rc != EXPR_OK)
         {
           return rc;
@@ -1050,7 +1379,7 @@ int ComputePolynomial(const char* input, int expo)
       }
       else
       {
-        rc = MultPolynomialExpr(ptrValue1, ptrValue2);
+        rc = MultRatPolynomialExpr(ptrValue1, ptrValue2);
         if (rc != EXPR_OK)
         {
           return rc;
@@ -1071,11 +1400,25 @@ int ComputePolynomial(const char* input, int expo)
       }
       else
       {
-        rc = DivPolynomialExpr(ptrValue1, ptrValue2, TYPE_DIVISION);
+        rc = DivRatPolynomialExpr(ptrValue1, ptrValue2);
         if (rc != EXPR_OK)
         {
           return rc;
         }
+      }
+      break;
+    case TOKEN_LONGDIV:
+      stackIndex--;
+      if (stackIndex < 1)
+      {
+        return EXPR_CANNOT_PARSE_EXPRESSION;
+      }
+      ptrValue2 = stackValues[stackIndex];
+      ptrValue1 = stackValues[stackIndex - 1];
+      rc = DivideRationalPolynomial(ptrValue1, ptrValue2, TYPE_DIVISION);
+      if (rc != EXPR_OK)
+      {
+        return rc;
       }
       break;
     case OPER_REMAINDER:
@@ -1092,7 +1435,7 @@ int ComputePolynomial(const char* input, int expo)
       }
       else
       {
-        rc = DivPolynomialExpr(ptrValue1, ptrValue2, TYPE_MODULUS);
+        rc = DivideRationalPolynomial(ptrValue1, ptrValue2, TYPE_MODULUS);
         if (rc != EXPR_OK)
         {
           return rc;
@@ -1126,7 +1469,7 @@ int ComputePolynomial(const char* input, int expo)
       }
       else
       {
-        rc = PowerPolynomialExpr(stackValues[stackIndex - 1], expon);
+        rc = PowerRatPolynomialExpr(stackValues[stackIndex - 1], expon);
         if (rc != EXPR_OK)
         {
           return rc;
@@ -1138,24 +1481,25 @@ int ComputePolynomial(const char* input, int expo)
     }
     ptrRPNbuffer++;
   }
+  int* ptrDenom = getNextElement(values);
+  int* ptrLastAnsDenom = CopyCompletePolynomial(LastAnswerPoly, values);
+  (void)CopyCompletePolynomial(ptrLastAnsDenom, ptrDenom);
+  if (*ptrDenom < 0)
+  {  // Monomial in denominator.
+    denom[0] = *ptrDenom;
+    denom[1] = *(ptrDenom + 1);
+    denom[2] = *(ptrDenom + 2);
+    DecompressMonomial(denom);
+  }
+  else
+  {  // Polynomial in denominator.
+    CopyCompletePolynomial(denom, ptrDenom);
+  }
   // Adjust degree so the leading coefficient is not zero.
   if (values[0] < 0)
   {  // Monomial
-    UncompressBigIntegerB(&values[1], &operand1);
-    degree = -values[0];
-    values[0] = degree;
-    ptrValue1 = &values[1];
-    for (int currentDegree = 0; currentDegree < degree; currentDegree++)
-    {
-      *ptrValue1 = 1;   // Initialize coefficient to zero.
-      ptrValue1++;
-      *ptrValue1 = 0;
-      ptrValue1++;
-    }
-    BigInteger2IntArray(ptrValue1, &operand1);
+    DecompressMonomial(values);
   }
-  LastAnswerPoly[0] = values[0];   // Copy degree.
-  (void)CopyPolynomial(&LastAnswerPoly[1], &values[1], values[0]);
   return EXPR_OK;
 }
 
@@ -1296,5 +1640,10 @@ static enum eExprErr RandomPolynomialExpr(const int* pMinDegree, const int* pMax
     ptrRandomPoly += NumberLength;
     ptrRandomPoly++;
   }
+  *ptrRandomPoly = 0;    // Degree of denominator.
+  ptrRandomPoly++;
+  SetNumberToOne(ptrRandomPoly);  // Coefficient of denominator.
+  ptrRandomPoly += 1 + *ptrRandomPoly;
+  valuesIndex = (int)(ptrRandomPoly - &values[0]);
   return EXPR_OK;
 }

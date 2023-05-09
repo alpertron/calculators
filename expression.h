@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 22 de abril de 2023."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 22 April 2023."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 8 de mayo de 2023."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 8 May 2023."
 
 #include "bignbr.h"
 #ifdef __EMSCRIPTEN__
@@ -89,6 +89,7 @@ enum eExprErr
   EXPR_OUT_OF_MEMORY,
   EXPR_CANNOT_USE_X_IN_EXPONENT,
   EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER,
+  EXPR_DENOMINATOR_MUST_BE_CONSTANT,
   EXPR_DEGREE_TOO_HIGH,
   EXPR_EXPONENT_TOO_LARGE,
   EXPR_EXPONENT_NEGATIVE,
