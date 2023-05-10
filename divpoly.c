@@ -432,7 +432,6 @@ static enum eExprErr ConvertPolynomialRatCoeffToRatPoly(const int* polySrc, int*
 
 int DivideRationalPolynomial(int* pDividend, const int* pDivisor, enum eDivType type)
 {
-  enum eExprErr err;
   const int* ptrResult;
   int degreeDividend;
   int degreeDivisor;
@@ -494,7 +493,7 @@ int DivideRationalPolynomial(int* pDividend, const int* pDivisor, enum eDivType 
     int* ptrRemainder;
     const int* ptrDividendDen = ptrDividend + numLimbs(ptrDividend) + 1;
     const int* ptrDivisorDen = ptrDivisor + numLimbs(ptrDivisor) + 1;
-    err = RationalDivide(ptrDividend, ptrDividendDen,
+    enum eExprErr err = RationalDivide(ptrDividend, ptrDividendDen,
       ptrDivisor, ptrDivisorDen);
     if (err != EXPR_OK)
     {

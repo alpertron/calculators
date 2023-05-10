@@ -163,7 +163,6 @@ static int AddPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
   int degreePoly = 0;
   int degree1 = *ptrArgument1;
   int degree2 = *ptrArgument2;
-  size_t diffPtrs;
   if (!modulusIsZero)
   {
     NumberLength = powerMod.nbrLimbs;
@@ -295,7 +294,7 @@ static int AddPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
     if (degree1 <= 0)
     {
       UncompressBigIntegerB(ptrArgument1 + 1, &operand1);
-      CopyCompletePolynomial(ptrArgument1, ptrArgument2);
+      (void)CopyCompletePolynomial(ptrArgument1, ptrArgument2);
       degreeMono = -degree1;
       degreePoly = degree2;
     }
@@ -329,6 +328,7 @@ static int AddPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
       int differenceOfDegrees;
       int nbrLimbsSum;
       int lenBytes;
+      size_t diffPtrs;
 
       *ptrArgument1 = degreePoly;
       ptrValue1 = ptrArgument1 + 1;
@@ -485,7 +485,7 @@ static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgumen
     // Move product back to values stack.
     if (modulusIsZero)
     {
-      ptrValue1 = CopyPolyProduct(polyMultTemp, ptrArgument1 + 1, degree1 + degree2);
+      (void)CopyPolyProduct(polyMultTemp, ptrArgument1 + 1, degree1 + degree2);
     }
     else
     {
@@ -658,7 +658,7 @@ static enum eExprErr NegateRatPolynomialExpr(int* ptrArgument)
   if (!modulusIsZero)
   {
     int* denomin = getNextElement(ptrArgument);
-    CopyCompletePolynomial(poly2, denomin);
+    (void)CopyCompletePolynomial(poly2, denomin);
   }
   err = NegatePolynomialExpr(ptrArgument);
   if (err != EXPR_OK)
@@ -668,7 +668,7 @@ static enum eExprErr NegateRatPolynomialExpr(int* ptrArgument)
   if (!modulusIsZero)
   {
     int* denomin = getNextElement(ptrArgument);
-    CopyCompletePolynomial(denomin, poly2);
+    (void)CopyCompletePolynomial(denomin, poly2);
   }
   return EXPR_OK;
 }
@@ -1023,7 +1023,7 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
   // Move power back to values stack.
   if (modulusIsZero)
   {
-    ptrValue1 = CopyPolynomial(ptrValue1, polyMultTemp, degreePower);
+    (void)CopyPolynomial(ptrValue1, polyMultTemp, degreePower);
   }
   else
   {
@@ -1245,7 +1245,7 @@ int ComputePolynomial(const char* input, int expo)
         }
         ptrValue2 = stackValues[stackIndex - 1];
         rc = GcdRatPolynomialExpr(ptrValue2, ptrValue1,
-            (token == TOKEN_GCD));
+            (token == (char)TOKEN_GCD));
         if (rc != EXPR_OK)
         {
           return rc;

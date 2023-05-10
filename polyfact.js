@@ -211,26 +211,26 @@ window.onload = function ()
     while (index < queryLength)
     {
       let character = search.substring(index, index+1);
-      if (character == "{")
+      if (character === "{")
       {        // Open paren in Tex.
         outBuffer += "(";
         nestingIndex++;
         index++;
       }
-      else if (character == "}")
+      else if (character === "}")
       {        // Close paren in Tex.
         outBuffer += ")";
         nestingIndex--;
-        if (fracNesting[nestingIndex] != null)
+        if (fracNesting[+nestingIndex] != null)
         {      // End of numerator. Insert slash.
           outBuffer += "/";
-          fracNesting[nestingIndex] = null;
+          fracNesting[+nestingIndex] = null;
         }
         index++;
       }
-      else if (search.substring(index, index+5) == "\\frac")
+      else if (search.substring(index, index+5) === "\\frac")
       {        // Start of fraction. Indicate nesting index.
-        fracNesting[nestingIndex] = 1;
+        fracNesting[+nestingIndex] = 1;
         index += 5;
       }
       else
