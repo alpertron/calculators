@@ -430,7 +430,7 @@ static enum eExprErr ConvertPolynomialRatCoeffToRatPoly(const int* polySrc, int*
   return EXPR_OK;
 }
 
-int DivideRationalPolynomial(int* pDividend, const int* pDivisor, enum eDivType type)
+enum eExprErr DivideRationalPolynomial(int* pDividend, const int* pDivisor, enum eDivType type)
 {
   const int* ptrResult;
   int degreeDividend;
@@ -461,6 +461,20 @@ int DivideRationalPolynomial(int* pDividend, const int* pDivisor, enum eDivType 
         return EXPR_OK;
       }
     }
+  }
+  if (!modulusIsZero)
+  {     // Modular arithmetic.
+    enum eExprErr err = DivPolynomialExpr(pDividend, pDivisor,
+      type);
+    if (err != EXPR_OK)
+    {
+      return err;
+    }
+    int* ptrValue1 = getNextElement(pDividend);
+    *ptrValue1 = 0;          // Degree of denominator.
+    *(ptrValue1+1) = 1;      // Coefficient of denominator = 1.
+    *(ptrValue1+2) = 1;
+    return EXPR_OK;
   }
   // Move arguments to temporary storage with most significant coefficient
   // first. Append the divisor for each coefficient.

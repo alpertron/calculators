@@ -223,6 +223,7 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "1/x+1/(x-1)+1/(x+1)=1" 2 >> coverage.out
 ./polfact 7 "1/x+1/(x-1)+1/(x+1)=1" 2 >> coverage.out
 ./polfact 0 "LongDiv(x^8-1, x^4-1)" 2 >> coverage.out
+./polfact 7 "LongDiv(x^8-1, x^4-1)" 2 >> coverage.out
 
 lcov --capture --directory . --output-file polfact.info
 gcovr --json run-3.json
