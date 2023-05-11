@@ -196,7 +196,7 @@ if errorlevel 1 goto end
 set emcc_DEBUG=
 copy ECMC.HTM toweb
 perl replaceEmbeddedJS.pl %1 toweb\ECMC.HTM ecmS.js ecmS.wasm ecmWW.js
-copy calculatorSW.js calcSW.js
+copy calculatorSW.js toweb\calcSW.js
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js quadr.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file quadE.js
 if errorlevel 1 goto end

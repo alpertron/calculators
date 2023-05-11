@@ -921,7 +921,7 @@ static void CompressPolynomial(int* dest, const int* src, int polyDegree)
   {
     int limbsToCopy = numLimbs(ptrSrc) + 1;
     int bytesToCopy = limbsToCopy * (int)sizeof(int);
-    memcpy(ptrDest, ptrSrc, bytesToCopy);
+    (void)memcpy(ptrDest, ptrSrc, bytesToCopy);
     ptrSrc += limbsToCopy;
     ptrDest += NumberLength;
     ptrDest++;

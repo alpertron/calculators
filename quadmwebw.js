@@ -51,5 +51,5 @@ self.onmessage = function (e)
     HEAPU8 = new Uint8Array(exports["memory"]["buffer"]);
     convertToString(exports["getInputStringPtr"](), e.data[0]);
     exports["doWork"]();
-  });
+  }, function() {});
 };
