@@ -170,14 +170,12 @@ int DivideIntegerPolynomial(int* pDividend, const int* pDivisor, enum eDivType t
   {      // Degree of dividend is less than degree of divisor.
     if (type == TYPE_DIVISION)
     {    // Get pointer to quotient.
-      poly3[0] = 0;     // Degree of quotient is zero.
-      poly3[1] = 1;     // Coefficient is zero.
-      poly3[2] = 0;
+      *pDividend = 0;     // Degree of quotient is zero.
+      *(pDividend + 1) = 1;     // Coefficient is zero.
+      *(pDividend + 2) = 0;
     }
-    else
-    {                   // Remainder is equal to dividend.
-      (void)CopyPolynomial(poly1, pDividend, *pDividend);
-    }
+    // If remainder, there is nothing to copy. The remainder
+    // is already in the dividend location.
     return EXPR_OK;
   }
   ptrQuotient = poly3;
@@ -430,7 +428,7 @@ static enum eExprErr ConvertPolynomialRatCoeffToRatPoly(const int* polySrc, int*
   return EXPR_OK;
 }
 
-enum eExprErr DivideRationalPolynomial(int* pDividend, const int* pDivisor, enum eDivType type)
+enum eExprErr DivideRatCoeffPolynomial(int* pDividend, const int* pDivisor, enum eDivType type)
 {
   const int* ptrResult;
   int degreeDividend;
@@ -486,14 +484,15 @@ enum eExprErr DivideRationalPolynomial(int* pDividend, const int* pDivisor, enum
   {      // Degree of dividend is less than degree of divisor.
     if (type == TYPE_DIVISION)
     {    // Get pointer to quotient.
-      poly3[0] = 0;     // Degree of quotient is zero.
-      poly3[1] = 1;     // Coefficient is zero.
-      poly3[2] = 0;
+      *pDividend = 0;         // Degree of quotient is zero.
+      *(pDividend + 1) = 1;   // Coefficient is zero.
+      *(pDividend + 2) = 0;
+      *(pDividend + 3) = 0;   // Degree of denominator.
+      *(pDividend + 4) = 1;   // Coefficient of denominator is 1.
+      *(pDividend + 5) = 1;
     }
-    else
-    {                   // Remainder is equal to dividend.
-      (void)CopyPolynomial(poly1, pDividend, *pDividend);
-    }
+    // If remainder, there is nothing to copy. The remainder
+    // is already in the dividend location.
     return EXPR_OK;
   }
   ptrQuotient = poly3;

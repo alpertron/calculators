@@ -913,6 +913,50 @@ static int* CopyCompletePolynomial(int* dest, const int* src)
   return CopyPolynomial(ptrDest, ptrSrc, polyDegree);
 }
 
+static void CompressPolynomial(int* dest, const int* src, int polyDegree)
+{
+  int* ptrDest = dest;
+  const int* ptrSrc = src;
+  for (int currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+  {
+    int limbsToCopy = numLimbs(ptrSrc) + 1;
+    int bytesToCopy = limbsToCopy * (int)sizeof(int);
+    memcpy(ptrDest, ptrSrc, bytesToCopy);
+    ptrSrc += limbsToCopy;
+    ptrDest += NumberLength;
+    ptrDest++;
+  }
+}
+
+static void DecompressPolynomial(int* dest, const int* src, int polyDegree)
+{
+  int* ptrDest = dest;
+  const int* ptrSrc = src;
+  int currentDegree = 0;
+  if (polyDegree < 0)
+  {    // Input polynomial is a monomial.
+    for (currentDegree = 0; currentDegree < -polyDegree; currentDegree++)
+    {
+      *ptrDest = 1;
+      *(ptrDest + 1) = 0;
+      ptrDest += NumberLength;
+      ptrDest++;
+    }
+    int limbsToCopy = numLimbs(ptrSrc) + 1;
+    int bytesToCopy = limbsToCopy * (int)sizeof(int);
+    memcpy(ptrDest, ptrSrc, bytesToCopy);
+  }
+  for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
+  {
+    int limbsToCopy = numLimbs(ptrSrc) + 1;
+    int bytesToCopy = limbsToCopy * (int)sizeof(int);
+    memcpy(ptrDest, ptrSrc, bytesToCopy);
+    ptrSrc += limbsToCopy;
+    ptrDest += NumberLength;
+    ptrDest++;
+  }
+}
+
 int* CopyPolynomialFixedCoeffSize(int* dest, const int* src, int polyDegree, int coeffSize)
 {
   int* ptrDest = dest;
@@ -1415,7 +1459,7 @@ int ComputePolynomial(const char* input, int expo)
       }
       ptrValue2 = stackValues[stackIndex];
       ptrValue1 = stackValues[stackIndex - 1];
-      rc = DivideRationalPolynomial(ptrValue1, ptrValue2, TYPE_DIVISION);
+      rc = DivideRatCoeffPolynomial(ptrValue1, ptrValue2, TYPE_DIVISION);
       if (rc != EXPR_OK)
       {
         return rc;
@@ -1435,7 +1479,7 @@ int ComputePolynomial(const char* input, int expo)
       }
       else
       {
-        rc = DivideRationalPolynomial(ptrValue1, ptrValue2, TYPE_MODULUS);
+        rc = DivideRatCoeffPolynomial(ptrValue1, ptrValue2, TYPE_MODULUS);
         if (rc != EXPR_OK)
         {
           return rc;
@@ -1525,10 +1569,23 @@ static enum eExprErr GcdPolynomialExpr(int* ptrArgument1, int* ptrArgument2)
     int degree1 = *ptrArgument1;
     int degree2 = *ptrArgument2;
     NumberLength = powerMod.nbrLimbs;
-    PolyModularGcd(ptrArgument1 + 1, degree1, ptrArgument2 + 1, degree2,
+    // Move first argument to poly2 decompressing coefficients.
+    DecompressPolynomial(poly2, ptrArgument1 + 1, degree1);
+    // Move second argument to poly3 decompressing coefficients.
+    DecompressPolynomial(poly3, ptrArgument2 + 1, degree2);
+    if (degree1 < 0)
+    {
+      degree1 = -degree1;
+    }
+    if (degree2 < 0)
+    {
+      degree2 = -degree2;
+    }
+    PolyModularGcd(poly2, degree1, poly3, degree2,
       poly5, &degreeGcd);
-    ptrNextArgument = CopyPolynomial(ptrArgument1 + 1, poly5, degreeGcd);
+    CompressPolynomial(ptrArgument1 + 1, poly5, degreeGcd);
     *ptrArgument1 = degreeGcd;
+    ptrNextArgument = getNextElement(ptrArgument1);
   }
   diffPtrs = ptrNextArgument - &values[0];
   valuesIndex = (int)diffPtrs;

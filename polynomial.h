@@ -133,5 +133,5 @@ void multUsingInvPolynomial(const int* polyFact1, const int* polyFact2,
 void SameDegreeFactorization(void);
 enum eExprErr DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType type);
 int* getNextElement(const int* ptrPoly);
-int DivideRationalPolynomial(int* pDividend, const int* pDivisor, enum eDivType type);
+int DivideRatCoeffPolynomial(int* pDividend, const int* pDivisor, enum eDivType type);
 #endif

@@ -213,6 +213,9 @@ KVariable name is too long
 2<h2>Your polynomial fraction</h2><p id="pol">(6*x^3 + 3*x^2 + x + 6 (mod 7)) / (x^3 + 6*x (mod 7))</p><h2>Irreducible numerator factors</h2><p>The polynomial is irreducible</p></ul><p>Time elapsed: </p><p>Written by Dario Alpern. Last updated on 8 May 2023.</p>
 2<h2>Your polynomial</h2><p id="pol">x^4 + 1</p><h2>Irreducible polynomial factors</h2><p>The polynomial is irreducible</p><h2>Roots</h2>The 4 roots are:</p><ul><li>x1 = (1 / 2)^(1/2) + (1 / 2)^(1/2)*I</li><li>x2 = (1 / 2)^(1/2) - (1 / 2)^(1/2)*I</li><li>x3 = -(1 / 2)^(1/2) + (1 / 2)^(1/2)*I</li><li>x4 = -(1 / 2)^(1/2) - (1 / 2)^(1/2)*I</li></ul><p>Time elapsed: </p><p>Written by Dario Alpern. Last updated on 8 May 2023.</p>
 2<h2>Your polynomial</h2><p id="pol">x^4 + 1 (mod 7)</p><h2>Irreducible polynomial factors</h2>The 2 factors are:</p><ul><li>x^2 + 3*x + 1</li><li>x^2 + 4*x + 1</li></ul></ul><p>Time elapsed: </p><p>Written by Dario Alpern. Last updated on 8 May 2023.</p>
+2<h2>Your polynomial fraction</h2><p id="pol">(4*x - 48) / (3)</p><h2>Irreducible numerator factors</h2><p>The polynomial is irreducible</p><h2>Roots</h2><ul><li>x1 = 12</li></ul><p>Time elapsed: </p><p>Written by Dario Alpern. Last updated on 8 May 2023.</p>
+2<h2>Your polynomial</h2><p id="pol">0</p><h2>Irreducible polynomial factors</h2><p>The polynomial is irreducible</p><h2>Roots</h2><ul></ul><p>Time elapsed: </p><p>Written by Dario Alpern. Last updated on 8 May 2023.</p>
+2<h2>Your polynomial</h2><p id="pol">x^3 + 100000 0000000 0000050*x^2 + 100000 0000000 0000050*x + 1 (mod 100000 0000000 0000051)</p><h2>Irreducible polynomial factors</h2>The 3 factors are:</p><ul><li>x + 1</li><li>(x + 100000 0000000 0000050)^2</li></ul></ul><p>Time elapsed: </p><p>Written by Dario Alpern. Last updated on 8 May 2023.</p>
 
 
 **** FSQUARES ****
