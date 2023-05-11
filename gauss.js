@@ -280,7 +280,7 @@ window.onload = function()
     }
   }
   generateFuncButtons("funccat", "funcbtns");
-  registerServiceWorker(function(){}, function(){});
+  registerServiceWorker().then(function(){}, function(){});
   currentInputBox = get("value");
 };
 getCalculatorCode("gaussianW0000.js", false);
