@@ -952,7 +952,7 @@ function startUp()
       }
     }
   }
-  registerServiceWorker();
+  registerServiceWorker(function(){}, function(){});
   currentInputBox = get("value");
   generateFuncButtons("funccat", "funcbtns");
   generateFuncButtons("wzdfunccat", "wzdfuncbtns");

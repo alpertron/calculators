@@ -262,6 +262,6 @@ window.onload = function()
   get("formsend").onclick = formSend;
   currentInputBox = get("coefA");
   generateFuncButtons("funccat", "funcbtns");
-  registerServiceWorker();
+  registerServiceWorker(function(){}, function(){});
 };
 getCalculatorCode("quadW0000.js", false);

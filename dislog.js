@@ -202,6 +202,6 @@ window.onload = function()
   formsend.onclick = formSend;
   currentInputBox = base;
   generateFuncButtons("funccat", "funcbtns");
-  registerServiceWorker();
+  registerServiceWorker(function(){}, function(){});
 };
 getCalculatorCode("dilogW0000.js", false);

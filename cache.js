@@ -106,7 +106,7 @@ async function fillCache()
         await cache.put(url, responseHTML);
       } catch (e)    // Cannot fetch HTML.
       {
-        updateCache(cache);
+        await updateCache(cache);
       }
     }
   } finally
