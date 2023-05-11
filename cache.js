@@ -28,9 +28,10 @@ async function updateCache(cache)
     await tempCache.addAll([url].concat((typeof(WebAssembly) === "undefined")?
                getCalcURLs():getCalcURLs().slice(1)));
     const responseArr = await tempCache.matchAll();
-    responseArr.forEach(async function(responseTempCache, _index, _array)
+    responseArr.forEach(function(responseTempCache, _index, _array)
     {
-      await cache.put(responseTempCache.url, responseTempCache);
+      cache.put(responseTempCache.url, responseTempCache).
+            then(function(){}, function(){});
     });
   } catch (e)
   {
@@ -86,16 +87,16 @@ async function fillCache()
           if (indexZero > 0)
           {        // There is an old version of this resource on cache to be erased.
             let keys = await cache.keys();
-            keys.forEach(async function(requestCache, _idx, _arr)
+            keys.forEach(function(requestCache, _idx, _arr)
             {    // Traverse cache.
               if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
                   requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
                   requestCache.url.substring(indexZero+4) === urlTemp.substring(indexZero+4))
               {  // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
-                await cache.delete(requestCache);
+                cache.delete(requestCache).then(function(){}, function(){});
               }  
               // Put resource into cache after old resource has been erased.
-              await cache.put(urlTemp, responseTempCache);
+              cache.put(urlTemp, responseTempCache).then(function(){}, function(){});
             });
           }
           else
