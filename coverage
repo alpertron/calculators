@@ -53,6 +53,7 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "ModPow(-1,2,2^372-177)" >> coverage.out
 ./ecm "Modpow(32,1,12345678922)" >> coverage.out
 ./ecm "x=-10; x=x+1; x<10; \"%d is prime: %l, %Fd\":x:isprime(x):x" >> coverage.out
+./ecm "x=-10; x=x+1; x<10; \"%d is prime: %l, %Fd\":x" >> coverage.out
 ./ecm "iroot(54265656536,3)" >> coverage.out
 
 lcov --capture --directory . --output-file ecm.info
@@ -336,6 +337,9 @@ echo -e "\n\n**** CONTFRAC ****" >> coverage.out
 ./contfrac A 9 3 1 >> coverage.out
 ./contfrac 1 A 3 1 >> coverage.out
 ./contfrac 1 9 A 1 >> coverage.out
+./contfrac "sqrt(2,4)" 9 A 1 >> coverage.out
+./contfrac "sqrt()" 9 A 1 >> coverage.out
+./contfrac "random(6)" 9 A 1 >> coverage.out
 lcov --capture --directory . --output-file contfrac.info
 gcovr --json run-9.json
 make clean
