@@ -1,4 +1,6 @@
 java -jar closure-compiler.jar ^
+    --js='goog.js' ^
+    --js='blocklyextern2.js' ^
     --js='useBlockly.js' ^
     --js='.\Blockly\blocks\**.js' ^
     --js='.\Blockly\core\**.js' ^

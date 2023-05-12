@@ -34,6 +34,7 @@ goog.require("Blockly.Xml");
 let blocklyResize;
 let workspace;
 let BigIntField;
+
 function get(id)
 {
   return document.getElementById(id);
@@ -147,7 +148,7 @@ function useBlockly(callback, lang)
   let blocksUncompressed = new Array();
   /** @type {number} */
   let index;
-  /** @type {Array} */
+  /** @type {BlockInfo} */
   let destArray;
   /** @type {Array<string>} */
   let defineBlocks;
@@ -314,7 +315,7 @@ function useBlockly(callback, lang)
   }
   for (index=0; index<defineBlocks.length; index++)
   {
-    destArray = new Array();
+    destArray = {};
     /** @type {Array<string>} */
     let oneBlock = defineBlocks[+index].split(";");
     /** @type {number} */
@@ -329,9 +330,8 @@ function useBlockly(callback, lang)
       continue;
     }
     ecmToolbar += "{" + String.fromCharCode(groupNbr, itemNbr);
-    /** @suppress {checkTypes} */
-    destArray["type"] = String.fromCharCode(groupNbr, itemNbr);
-    if (message.indexOf("concat") === 0)
+    destArray.type = String.fromCharCode(groupNbr, itemNbr);
+    if (message.startsWith("concat"))
     {
       let options;
       if (lang)
@@ -348,51 +348,44 @@ function useBlockly(callback, lang)
                    ["repeated in ascending order", "2"],
                    ["repeated in descending order", "3"]];
       }  
-      /** @suppress {checkTypes} */
-      destArray["args0"] = [{"type": "input_value", "name": "1"},
-                            {"type": "field_dropdown", "name": "2",
-                             "options": options}];
+      destArray.args0 = [{"type": "input_value", "name": "1"},
+                         {"type": "field_dropdown", "name": "2",
+                          "options": options}];
       ecmToolbar += "[1][2]}";
     }
     else if (message.indexOf("%3") >= 0)
     {
-      /** @suppress {checkTypes} */
-      destArray["args0"] = [{"type": "input_value", "name": "1"},
-                            {"type": "input_value", "name": "2"},
-                            {"type": "input_value", "name": "3"}];
+      destArray.args0 = [{"type": "input_value", "name": "1"},
+                         {"type": "input_value", "name": "2"},
+                         {"type": "input_value", "name": "3"}];
       ecmToolbar += "[1][2][3]}";
     }
     else if (message.indexOf("%2") >= 0)
     {
-      /** @suppress {checkTypes} */
-      destArray["args0"] = [{"type": "input_value", "name": "1"},
-                            {"type": "input_value", "name": "2"}];
+      destArray.args0 = [{"type": "input_value", "name": "1"},
+                         {"type": "input_value", "name": "2"}];
       ecmToolbar += "[1][2]}";
     }
     else
     {
-      /** @suppress {checkTypes} */
-      destArray["args0"] = [{"type": "input_value", "name": "1"}];
+      destArray.args0 = [{"type": "input_value", "name": "1"}];
       ecmToolbar += "[1]}";
     }
-    /** @suppress {checkTypes} */
-    destArray["message0"] = message;
+    destArray.message0 = message;
     if (oneBlock[0] >= 1000)
     {       // Statement.
-      /** @suppress {checkTypes} */
-      destArray["previousStatement"] = null;
-      /** @suppress {checkTypes} */
-      destArray["nextStatement"] = null;
+      destArray.previousStatement = null;
+      destArray.nextStatement = null;
+      destArray.output = undefined;
     }
     else
     {
-      /** @suppress {checkTypes} */
-      destArray["output"] = null;
+      destArray.previousStatement = undefined;
+      destArray.nextStatement = undefined;
+      destArray.output = null;
     }
-    /** @suppress {checkTypes} */
-    destArray["inputsInline"] = true;
-    /** @suppress {checkTypes} */
-    destArray["colour"] = oneBlock[0] % 1000;
+    destArray.inputsInline = true;
+    destArray.colour = oneBlock[0] % 1000;
     blocksUncompressed[+uncompressedIndex] = destArray;
     uncompressedIndex++;
     itemNbr++;
@@ -404,7 +397,7 @@ function useBlockly(callback, lang)
   let blocklyArea = get("blocklyArea");
   let blocklyDiv = get("blocklyDiv");
   /** @type {string} */
-  let myToolbar = ecmToolbar.replace(/\{(\w+)([\[\]\w]*)}/g, "<block type=\"$1\">$2</block>");
+  let myToolbar = ecmToolbar.replace(/\{(\w+)([[\]\w]*)}/g, "<block type=\"$1\">$2</block>");
   myToolbar = myToolbar.replace(/\[(\w+)]/g, "<value name=\"$1\"><shadow type=\"M\"><field name=\"1\">5</field></shadow></value>");
   Blockly.Blocks["M"] =
   {

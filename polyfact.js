@@ -200,7 +200,7 @@ window.onload = function ()
     dowork(2);    // Evaluate polynomial.
   }
   let search = window.location.search;
-  if (search.substring(0,3) === "?q=")
+  if (search.startsWith("?q="))
   {    // Process query string converting Tex to ASCII math.
     search = decodeURIComponent(search.substring(3));
     let fracNesting = new Array(300);

@@ -89,9 +89,9 @@ async function fillCache()
             let keys = await cache.keys();
             keys.forEach(function(requestCache, _idx, _arr)
             {    // Traverse cache.
-              if (requestCache.url.substring(0, indexZero+2) === urlTemp.substring(0, indexZero+2) &&
+              if (requestCache.url.startsWith(urlTemp.substring(0, indexZero+2)) &&
                   requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
-                  requestCache.url.substring(indexZero+4) === urlTemp.substring(indexZero+4))
+                  requestCache.url.endsWith(urlTemp.substring(indexZero+4)))
               {  // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
                 cache.delete(requestCache).then(function(){}, function(){});
               }  

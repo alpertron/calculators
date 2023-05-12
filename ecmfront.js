@@ -468,8 +468,8 @@ function initBlockly()
     return;
   }
   blocklyLoaded = 1;
-  script1 = loadScript("blockly0006.js");
-  script2 = loadScript(lang? "es0006.js": "en0006.js");
+  script1 = loadScript("blockly0007.js");
+  script2 = loadScript(lang? "es0007.js": "en0007.js");
 }
 
 function getFormSendValue()
@@ -561,7 +561,7 @@ function startUp()
   };
   getFile.onchange = function()
   {
-    fileName = getFile.value.replace(/^.*[\\\/]/, "");
+    fileName = getFile.value.replace(/^.*[\\/]/, "");
     if (lang)
     {          // Spanish
       value.value = "Archivo a procesar: " + fileName +
@@ -708,7 +708,7 @@ function startUp()
     };
     let tmpHTML = divResult.innerHTML;
     // Convert <sup> and </sup> to exponentiation character.
-    tmpHTML = tmpHTML.replace(/<sup>/g, "\^");
+    tmpHTML = tmpHTML.replace(/<sup>/g, "^");
     tmpHTML = tmpHTML.replace(/<\/sup>/g, "");
     tmpHTML = tmpHTML.replace(/<p>/g, "");
     tmpHTML = tmpHTML.replace(/<\/p>/g, "\n");
@@ -935,7 +935,7 @@ function startUp()
   else
   {
     let search = window.location.search;
-    if (search.substring(0,3) === "?q=")
+    if (search.startsWith("?q="))
     {
       value.value = decodeURIComponent(search.substring(3)).replace(/\{/g, "(").replace(/\}/g, ")");
       dowork(-2);
