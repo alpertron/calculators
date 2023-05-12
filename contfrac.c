@@ -210,7 +210,7 @@ static void PeriodicContinuedFraction(bool isContinuation)
     {        // Show convergent checkbox not checked.
       showText("//");
     }
-    showText("<br /><span aria-hidden=\"true\">");
+    showText("<br><span aria-hidden=\"true\">");
     showText(lang ? "donde la parte periódica está señalada en negrita</span>" :
       "where the periodic part is marked in bold</span>");
     if (periodIndex > 1)
@@ -230,8 +230,8 @@ static void PeriodicContinuedFraction(bool isContinuation)
     {
       showText("... </span>");
     }
-    showText(lang ? "<br />donde la parte periódica (truncada a partir de los " :
-      "<br />where the periodic part (truncated after ");
+    showText(lang ? "<br>donde la parte periódica (truncada a partir de los " :
+      "<br>where the periodic part (truncated after ");
     int2dec(&ptrOutput, periodIndex);
     showText(lang ? " coeficientes) está señalada en negrita.</p>" :
       " coefficients) is marked in bold.</p>");
