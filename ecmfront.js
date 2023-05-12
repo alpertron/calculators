@@ -727,7 +727,12 @@ function startUp()
     shareData.text = tempDivElement.textContent || tempDivElement.innerText || "";
     shareData.url = (window.location.href.split("?")[0]) + "?q=" +
                     encodeURIComponent(value.value);
-    navigator.share(shareData).then(function(){}, function(){});
+    navigator.share(shareData).then(function()
+    {
+    },
+    function()
+    {
+    });
   };
   get("helpbtn").onclick = function()
   {

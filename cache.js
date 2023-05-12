@@ -31,11 +31,18 @@ async function updateCache(cache)
     responseArr.forEach(function(responseTempCache, _index, _array)
     {
       cache.put(responseTempCache.url, responseTempCache).
-            then(function(){}, function(){});
+            then(function()
+            {              
+            },
+            function()
+            {              
+            });
     });
-  } catch (e)
-  {
-  } finally
+  }
+  catch (e)
+  {  // Nothing to do on error.
+  }
+  finally
   {
     await caches.delete("cacheTEMP");
   }
@@ -93,10 +100,20 @@ async function fillCache()
                   requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
                   requestCache.url.endsWith(urlTemp.substring(indexZero+4)))
               {  // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
-                cache.delete(requestCache).then(function(){}, function(){});
+                cache.delete(requestCache).then(function()
+                {
+                },
+                function()
+                {
+                });
               }  
               // Put resource into cache after old resource has been erased.
-              cache.put(urlTemp, responseTempCache).then(function(){}, function(){});
+              cache.put(urlTemp, responseTempCache).then(function()
+              {
+              },
+              function()
+              {
+              });
             });
           }
           else
@@ -105,12 +122,14 @@ async function fillCache()
           }
         });
         await cache.put(url, responseHTML);
-      } catch (e)    // Cannot fetch HTML.
+      }
+      catch (e)    // Cannot fetch HTML.
       {
         await updateCache(cache);
       }
     }
-  } finally
+  }
+  finally
   {
     await caches.delete("cacheTEMP");
   }

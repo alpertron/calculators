@@ -58,5 +58,8 @@ self.onmessage = function (e)
     {
       self.postMessage("2<p>"+err.message+"</p>");
     }
-  }, function(){});
+  },
+  function()
+  {
+  });
 };
