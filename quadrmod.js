@@ -194,7 +194,7 @@ window.onload = function()
   };
   get("formsend").onclick = formSend;
   currentInputBox = get("quad");
-  registerServiceWorker().then(function(){}, function(){});
+  registerServiceWorker();
   completeFuncButtons("funcbtns");
 };
 

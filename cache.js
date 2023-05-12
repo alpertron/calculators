@@ -116,13 +116,15 @@ async function fillCache()
   }
 }
 
-async function registerServiceWorker()
+function registerServiceWorker()
 {
+  initMenubarEvents();
   if ("serviceWorker" in navigator)
   { // Attempt to register service worker.
     // There is no need to do anything on registration success or failure in this JavaScript module.
-    await navigator["serviceWorker"]["register"]("calcSW.js");
-    await fillCache();
+    navigator["serviceWorker"]["register"]("calcSW.js").
+      then(fillCache, function()
+    {        
+    });
   }
-  initMenubarEvents();
 }

@@ -242,6 +242,6 @@ window.onload = function ()
     polyTextArea.value = outBuffer;
     dowork(0);    // Factor polynomial.
   }
-  registerServiceWorker().then(function(){}, function(){});
+  registerServiceWorker();
 };
 getCalculatorCode("polfactW0000.js", workerParam);

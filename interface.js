@@ -446,7 +446,7 @@ function startUp()
   {
     generateFuncButtons("wzdfunccat", "wzdfuncbtns");
   }
-  registerServiceWorker().then(function(){}, function(){});
+  registerServiceWorker();
 }
 getCalculatorCode("fsquaresW0000.js", false);
 window.addEventListener("load", startUp);
