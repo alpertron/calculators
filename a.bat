@@ -154,11 +154,11 @@ perl replaceEmbeddedJS.pl %1 toweb\TCUADCUB.HTM fsquares.js tsqcubesS.wasm intWW
 java -jar %compilerName% -D lang=0 %compilerOptions% --js polyfact.js --js common.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file polfactE.js
 if errorlevel 1 goto end
 copy POLFACT.HTM toweb
-perl replaceEmbeddedJS.pl %1 toweb\POLFACT.HTM polfactE.js polfactE.wasm intWW.js
+perl replaceEmbeddedJS.pl %1 toweb\POLFACT.HTM polfactE.js polfactE.wasm ecmWW.js
 java -jar %compilerName% -D lang=1 %compilerOptions% --js polyfact.js --js common.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file polfactS.js
 if errorlevel 1 goto end
 copy FACTPOL.HTM toweb
-perl replaceEmbeddedJS.pl %1 toweb\FACTPOL.HTM polfactS.js polfactS.wasm intWW.js
+perl replaceEmbeddedJS.pl %1 toweb\FACTPOL.HTM polfactS.js polfactS.wasm ecmWW.js
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js dislog.js --js common.js --js buttons.js --js cache.js --js calccode.js --js feedback.js --js worker.js --js_output_file dilogE.js
 if errorlevel 1 goto end
