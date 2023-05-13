@@ -81,6 +81,7 @@ echo -e "**** BLOCKLY ****" >> coverage.out
 ./blockly xml.txt 17 >> coverage.out
 ./blockly xml.txt 18 >> coverage.out
 ./blockly xml.txt 19 >> coverage.out
+./blockly xml.txt 20 >> coverage.out
 lcov --capture --directory . --output-file blockly.info
 gcovr --json run-2.json
 make clean
