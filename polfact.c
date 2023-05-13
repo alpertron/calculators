@@ -684,7 +684,12 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
         copyStr(&ptrOut, lang ? "<h2>Factores irreducibles del polinomio</h2>" :
           "<h2>Irreducible polynomial factors</h2>");
       }
-      if ((nbrFactorsFound == 0) || ((nbrFactorsFound == 1) && (pstFactorInfo->multiplicity == 1)))
+      if (!modulusIsZero)
+      {      // Get leading coefficient if using modular arithmetic.
+        IntArray2BigInteger(&poly4[degree * nbrLimbs], &operand5);
+      }
+      if ((nbrFactorsFound == 0) || ((nbrFactorsFound == 1) &&
+        (pstFactorInfo->multiplicity == 1) && BigIntIsOne(&operand5)))
       {
         copyStr(&ptrOut, lang ? "<p>El polinomio es irreducible" : "<p>The polynomial is irreducible");
         if (modulusIsZero && (primeEisenstein != 0))
@@ -704,6 +709,10 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
         {
           totalFactors += pstFactorInfo->multiplicity;
           pstFactorInfo++;
+        }
+        if (!BigIntIsOne(&operand5))
+        {    // Add factor of degree zero if it is not one.
+          totalFactors++;
         }
         copyStr(&ptrOut, lang ? "Los " : "The ");
         int2dec(&ptrOut, totalFactors);
@@ -729,12 +738,7 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
         {
           copyStr(&ptrOut, "<li>\\begin{array}{l}</li>");
         }
-        if (!modulusIsZero)
-        {
-          IntArray2BigInteger(&poly4[degree * nbrLimbs], &operand5);
-        }
-        if ((operand5.nbrLimbs != 1) || (operand5.limbs[0].x != 1) ||
-          (operand5.sign == SIGN_NEGATIVE) || (nbrFactorsFound == 0))
+        if (!BigIntIsOne(&operand5) || (nbrFactorsFound == 0))
         {     // Leading coefficient is not 1 or degree is zero.
           *ptrOut = '<';
           ptrOut++;

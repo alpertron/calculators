@@ -2300,6 +2300,7 @@ int FactorPolyOverIntegers(void)
   int nbrSquareFreeFactors;
   struct sFactorInfo* pstFactorInfoOrig;
   struct sFactorInfo* pstFactorInfoInteger = factorInfoInteger;
+  nbrFactorsFound = 0;
   initLinkedBigInt();
   ptrFactorInteger = polyInteger;
   modulusIsZero = true;
@@ -2332,6 +2333,7 @@ int FactorPolyOverIntegers(void)
         pstFactorInfoInteger->multiplicity = currentDegree;
         pstFactorInfoInteger->ptrPolyLifted = factorX;
         pstFactorInfoInteger++;
+        nbrFactorsFound = 1;
         polyToFactor[0] = degreePolyToFactor - currentDegree;
       }
       polXprocessed = true;
@@ -2344,6 +2346,7 @@ int FactorPolyOverIntegers(void)
     ptrDest += numLimbs(ptrDest);
     ptrDest++;
   }
+  CopyBigInt(&operand5, &contentPolyToFactor);
   if (polyToFactor[0] == 0)
   { // Degree of polynomial is zero.
     nbrSquareFreeFactors = 0;
@@ -2353,13 +2356,18 @@ int FactorPolyOverIntegers(void)
     // Use Eisenstein criterion to detect some irreducible polynomials.
     if ((polyToFactor[0] > 1) && EisensteinCriterion(polyToFactor))
     { // Polynomial of degree > 1 is irreducible. Do not attempt to factor it.
-      nbrFactorsFound = 1;
+      nbrFactorsFound++;
       (void)CopyPolynomial(ptrFactorInteger, &polyToFactor[1],
         polyToFactor[0]);
       pstFactorInfoInteger->degree = polyToFactor[0];
       pstFactorInfoInteger->expectedDegree = polyToFactor[0];
       pstFactorInfoInteger->multiplicity = 1;
       pstFactorInfoInteger->ptrPolyLifted = ptrFactorInteger;
+      if ((pstFactorInfoInteger != &factorInfoInteger[0]) ||
+        !BigIntIsOne(&contentPolyToFactor))
+      {
+        primeEisenstein = 0;   // Do not show irreducible polynomial.
+      }
       return EXPR_OK;
     }
     nbrSquareFreeFactors = IntegerSquarefreeFactorization();
@@ -2476,7 +2484,7 @@ static bool EisensteinCriterion(const int* poly)
   primeEisenstein = 0;
   ptrPoly += numLimbs(ptrPoly);
   ptrPoly++;
-  intToBigInteger(&operand1, 0);  // Intialize a.
+  intToBigInteger(&operand1, 0);  // Initialize a.
   for (int currentDegree = 1; currentDegree < polyDegree; currentDegree++)
   {                               // Loop that computes a.
     UncompressBigIntegerB(ptrPoly, &operand2);
