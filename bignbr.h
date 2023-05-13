@@ -114,7 +114,6 @@ void modPowLimb(const limb *base, const limb *exp, limb *power);
 void AdjustModN(limb *Nbr, const limb *TestNbr, int NumberLength);
 int fsquares(void);
 void AddBigInt(const limb *pAddend1, const limb *pAddend2, limb *pSum, int nbrLimbs);
-void SubtractBigInt(const limb* pMinuend, const limb* pSubtrahend, limb *pDiff, int nbrLimbs);
 bool BigIntIsZero(const BigInteger *value);
 bool BigIntIsOne(const BigInteger* value);
 bool BigIntEqual(const BigInteger *value1, const BigInteger *value2);
@@ -132,7 +131,6 @@ enum eExprErr BigIntRoot(const BigInteger* argument, BigInteger* nthRoot, int Ex
 void BigIntRandom(BigInteger* pLowerLimit, BigInteger* pUpperLimit, BigInteger* pRandom);
 int intRandom(int firstLimit, int secondLimit);
 void floordiv(const BigInteger *num, const BigInteger *den, BigInteger *result);
-void ceildiv(const BigInteger *num, const BigInteger *den, BigInteger *result);
 enum eExprErr BigIntMultiplyPower2(BigInteger* pArg, int powerOf2);
 void BigIntMultiplyBy2(BigInteger *nbr);
 void BigIntDivideBy2(BigInteger *nbr);

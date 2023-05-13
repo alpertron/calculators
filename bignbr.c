@@ -89,24 +89,6 @@ void AddBigInt(const limb *pAddend1, const limb *pAddend2, limb *pSum, int nbrLi
   }
 }
 
-void SubtractBigInt(const limb *pMinuend, const limb *pSubtrahend, limb *pDiff, int nbrLimbs)
-{
-  const limb *ptrMinuend = pMinuend;
-  const limb *ptrSubtrahend = pSubtrahend;
-  limb *ptrDiff = pDiff;
-  unsigned int borrow = 0U;
-  assert(nbrLimbs >= 1);
-  for (int i = 0; i < nbrLimbs; i++)
-  {
-    borrow = (unsigned int)ptrMinuend->x - (unsigned int)ptrSubtrahend->x - 
-      (borrow >> BITS_PER_GROUP);
-    ptrMinuend++;
-    ptrSubtrahend++;
-    ptrDiff->x = UintToInt(borrow & MAX_VALUE_LIMB);
-    ptrDiff++;
-  }
-}
-
 // If address of num and result match, BigIntDivide will overwrite num, so it must be executed after processing num.
 void floordiv(const BigInteger *num, const BigInteger *den, BigInteger *result)
 {
@@ -121,18 +103,6 @@ void floordiv(const BigInteger *num, const BigInteger *den, BigInteger *result)
   else
   {
     (void)BigIntDivide(num, den, result);
-  }
-}
-
-void ceildiv(const BigInteger*num, const BigInteger *den, BigInteger *result)
-{
-  static BigInteger rem;
-  (void)BigIntDivide(num, den, result);
-  (void)BigIntRemainder(num, den, &rem);
-  if ((((num->sign == SIGN_POSITIVE) && !BigIntIsZero(num) && (den->sign == SIGN_POSITIVE)) ||
-    ((num->sign == SIGN_NEGATIVE) && (den->sign == SIGN_NEGATIVE))) && !BigIntIsZero(&rem))
-  {
-    addbigint(result, 1);
   }
 }
 
@@ -1070,27 +1040,6 @@ void addmult(BigInteger *pResult, const BigInteger *pMult1, int iMult1,
   multint(pResult, pMult1, iMult1);
   multint(&Temp, pMult2, iMult2);
   BigIntAdd(pResult, &Temp, pResult);
-}
-
-// Get number of bits of given big integer.
-int bitLength(const BigInteger *pBigNbr)
-{
-  unsigned int mask;
-  int bitCount;
-  int lastLimb = pBigNbr->nbrLimbs-1;
-  assert(lastLimb >= 0);
-  int bitLen = lastLimb*BITS_PER_GROUP;
-  unsigned int limb = (unsigned int)(pBigNbr->limbs[lastLimb].x);
-  mask = 1;
-  for (bitCount = 0; bitCount < BITS_PER_GROUP; bitCount++)
-  {
-    if (limb < mask)
-    {
-      break;
-    }
-    mask *= 2;
-  }
-  return bitLen + bitCount;
 }
 
 int intModPow(int NbrMod, int Expon, int currentPrime)
@@ -2190,25 +2139,6 @@ int BpswPrimalityTest(const BigInteger *pValue)
 #else
   return PerformStrongLucasTest(pValue, D, absQ, signD);
 #endif
-}
-
-void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len)
-{
-  unsigned int uiNbr = (unsigned int)nbr;
-  int lenBytes;
-  if (uiNbr >= MAX_VALUE_LIMB)
-  {
-    limbs->x = UintToInt(uiNbr % MAX_VALUE_LIMB);
-    (limbs+1)->x = UintToInt(uiNbr / MAX_VALUE_LIMB);
-    lenBytes = (len - 2) * (int)sizeof(limb);
-    (void)memset(limbs + 2, 0, lenBytes);
-  }
-  else
-  {
-    limbs->x = nbr;
-    lenBytes = (len - 1) * (int)sizeof(limb);
-    (void)memset(limbs + 1, 0, lenBytes);
-  }
 }
 
 bool BigNbrIsZero(const limb *value)
