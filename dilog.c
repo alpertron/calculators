@@ -94,6 +94,12 @@ static void showText(const char *text)
   (void)strcpy(output, text);
 }
 
+static void noDiscreteLog(void)
+{
+  showText(lang? "No existe el logaritmo discreto": "There is no discrete logarithm");
+  DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+}
+
 void textErrorDilog(char **pptrOutput, enum eExprErr rc)
 {
   char* pOutput = *pptrOutput;
@@ -301,7 +307,8 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   IntArray2BigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
   subGroupOrder.limbs[subGroupOrder.nbrLimbs].x = 0;
   ptr = textExp;
-  copyStr(&ptr, "Computing discrete logarithm in subgroup of ");
+  copyStr(&ptr, lang? "Calculando el logaritmo discreto en subgrupo de ":
+    "Computing discrete logarithm in subgroup of ");
   Bin2Dec(&ptr, subGroupOrder.limbs, subGroupOrder.nbrLimbs, groupLen);
   if (astFactorsGO[indexBase + 1].multiplicity > 1)
   {
@@ -329,7 +336,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
     *ptr = '>';
     ptr++;
   }
-  copyStr(&ptr, " elements.");
+  copyStr(&ptr, lang? " elementos.": " elements.");
   showText(textExp);
   NumberLength = mod.nbrLimbs;
   lenBytes = NumberLength * (int)sizeof(limb);
@@ -456,8 +463,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
         (void)BigIntRemainder(&runningExp, &subGroupOrder, &tmpBase);
         if (!BigIntIsZero(&tmpBase))
         {    // runningExpBase is not multiple of subGroupOrder
-          showText("There is no discrete logarithm");
-          DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+          noDiscreteLog();
           return false;
         }
         (void)BigIntDivide(&runningExp, &subGroupOrder, &tmpBase);
@@ -562,8 +568,7 @@ static bool DiscrLogPowerPrimeSubgroup(int multiplicity, const int *ptrPrime)
       }
       else
       {
-        showText("There is no discrete logarithm");
-        DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+        noDiscreteLog();
         return false;
       }
     }
@@ -609,8 +614,7 @@ static bool DiscrLogPowerPrimeSubgroup(int multiplicity, const int *ptrPrime)
     {            // r equals zero.
       if (!BigIntIsZero(&tmp2))
       {          // s does not equal zero.
-        showText("There is no discrete logarithm");
-        DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+        noDiscreteLog();
         return false;
       }
     }
@@ -697,8 +701,7 @@ void DiscreteLogarithm(void)
         intToBigInteger(&DiscreteLogPeriod, 0); // DiscreteLogPeriod <- 0
         continue;
       }
-      showText("There is no discrete logarithm");
-      DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+      noDiscreteLog();
       return;
     }
     else
@@ -706,8 +709,7 @@ void DiscreteLogarithm(void)
       (void)BigIntRemainder(&power, &groupOrder, &bigNbrB);
       if (BigIntIsZero(&bigNbrB))
       {   // power is multiple of prime. Error.
-        showText("There is no discrete logarithm");
-        DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+        noDiscreteLog();
         return;
       }
     }
@@ -716,7 +718,8 @@ void DiscreteLogarithm(void)
     CompressLimbsBigInteger(powerMontg, &tmpBase);
     // Compute group order as the prime minus 1.
     groupOrder.limbs[0].x--;
-    showText("Computing discrete logarithm...");
+    showText(lang? "Calculando el logaritmo discreto...":
+      "Computing discrete logarithm...");
     BigInteger2IntArray(nbrToFactor, &groupOrder);
     factor(&groupOrder, nbrToFactor, factorsGO, astFactorsGO);  // factor groupOrder.
     NbrFactors = astFactorsGO[0].multiplicity;
@@ -793,8 +796,7 @@ void DiscreteLogarithm(void)
     (void)BigIntRemainder(&DiscreteLog, &tmpBase, &bigNbrB);
     if (!TestBigNbrEqual(&bigNbrA, &bigNbrB))
     {
-      showText("There is no discrete logarithm");
-      DiscreteLogPeriod.sign = SIGN_NEGATIVE;
+      noDiscreteLog();
       return;
     }
     (void)BigIntDivide(&logarMult, &tmpBase, &tmp2);
@@ -824,14 +826,6 @@ void DiscreteLogarithm(void)
     (void)BigIntMultiply(&DiscreteLogPeriod, &tmp2, &DiscreteLogPeriod);
     (void)BigIntRemainder(&tmpBase, &DiscreteLogPeriod, &DiscreteLog);
   }
-#if 0
-  textExp.setText(DiscreteLog.toString());
-  textPeriod.setText(DiscreteLogPeriod.toString());
-  long t = OldTimeElapsed / 1000;
-  labelStatus.setText("Time elapsed: " +
-    t / 86400 + "d " + (t % 86400) / 3600 + "h " + ((t % 3600) / 60) + "m " + (t % 60) +
-    "s    mod mult: " + lModularMult);
-#endif
 }
 
 // Exchange TestMod and TestModOther.
@@ -928,6 +922,8 @@ static void generateOutput(enum eExprErr rc, int groupLength)
     }
   }
   copyStr(&ptrOutput, "<p>");
+  showElapsedTime(&ptrOutput);
+  copyStr(&ptrOutput, "</p><p>");
   copyStr(&ptrOutput, lang ? COPYRIGHT_SPANISH: COPYRIGHT_ENGLISH);
   copyStr(&ptrOutput, "</p>");
 }
@@ -975,6 +971,9 @@ EXTERNALIZE void doWork(void)
   char *ptrPower;
   char *ptrMod;
   groupLength = 0;
+#ifdef __EMSCRIPTEN__
+  originalTenthSecond = tenths();
+#endif
   while (*ptrData != ',')
   {
     groupLength = (groupLength * 10) + (*ptrData - '0');
