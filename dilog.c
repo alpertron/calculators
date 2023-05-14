@@ -509,9 +509,9 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   {
     const struct sFactors* pstFactors;
 
-    // nbrV[indexBase] <- (nbrV[indexBase] - nbrV[indexExp])*
-    //                     modinv(PrimesGO[indexExp]^(ExponentsGO[indexExp]),
-    //                     powSubGroupOrder)
+    // Compute nbrV[indexBase] as (nbrV[indexBase] - nbrV[indexExp]) times
+    // the modular inverse of PrimesGO[indexExp] raised to ExponentsGO[indexExp]
+    // mod powSubGroupOrder.
     NumberLength = mod.nbrLimbs;
     BigIntSubt(&nbrV[indexBase], &nbrV[indexExp], &nbrV[indexBase]);
     (void)BigIntRemainder(&nbrV[indexBase], &powSubGroupOrder, &nbrV[indexBase]);
@@ -731,7 +731,6 @@ void DiscreteLogarithm(void)
     lenBytes = NumberLength * (int)sizeof(limb);
     (void)memcpy(TestNbr, mod.limbs, lenBytes);
     TestNbr[NumberLength].x = 0;
-    //    yieldFreq = 1000000 / (NumberLength*NumberLength)
     GetMontgomeryParms(NumberLength);
 #if 0
     char *ptrText = textExp;

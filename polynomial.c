@@ -1732,7 +1732,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
       polyToStandardNotation(poly1, degreeA+1); // Convert a_i to standard notation.
                                                 // Convert g to standard notation.
       polyToStandardNotation(poly4, degree + degreeA - degreeFactor + 1);
-      // Compute a_i(x) as a_i(x) - m*g(x)
+      // Subtract m*g(x) from a_i(x).
       for (currentDegree = 0; currentDegree <= degreeA; currentDegree++)
       {                 // Loop that computes a_i - m*g
         // Get coefficient of g.

@@ -666,7 +666,7 @@ static bool BlockLanczos(int seed)
     (void)memcpy(matrixVtAV, matrixTemp, sizeof(matrixVtAV));
   } /* end while */
 
-    /* Find matrix V1:V2 = B * (X-Y:V) */
+    /* Find matrix V1:V2 as B * (X-Y:V) */
   for (row = common.siqs.matrixBLength - 1; row >= 0; row--)
   {
     common.siqs.matrixV1[row] = 0;

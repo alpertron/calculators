@@ -769,27 +769,27 @@ double sqrt(double x)
 
   i = (ix >> 46) % 128;
   r = (uint32_t)__rsqrt_tab[i] << 16;
-  /* Error is |r sqrt(m) - 1| < 0x1.fdp-9 */
+  /* Error is |r sqrt(m) - 1| which is less than 0x1.fdp-9 */
   s = mul32(m >> 32, r);
-  /* Error is |s/sqrt(m) - 1| < 0x1.fdp-9 */
+  /* Error is |s/sqrt(m) - 1| which is less than 0x1.fdp-9 */
   d = mul32(s, r);
   u = three - d;
   r = mul32(r, u) << 1;
-  /* Error is |r sqrt(m) - 1| < 0x1.7bp-16 */
+  /* Error is |r sqrt(m) - 1| which is less than 0x1.7bp-16 */
   s = mul32(s, u) << 1;
-  /* Error is |s/sqrt(m) - 1| < 0x1.7bp-16 */
+  /* Error is |s/sqrt(m) - 1| which is less than 0x1.7bp-16 */
   d = mul32(s, r);
   u = three - d;
   r = mul32(r, u) << 1;
-  /* Error is |r sqrt(m) - 1| < 0x1.3704p-29 (measured worst-case) */
+  /* Error is |r sqrt(m) - 1| which is less than 0x1.3704p-29 (measured worst-case) */
   r = r << 32;
   s = mul64(m, r);
   d = mul64(s, r);
   u = (three << 32) - d;
   s = mul64(s, u);  /* repr: 3.61 */
-  /* Error is -0x1p-57 < s - sqrt(m) < 0x1.8001p-61 */
+  /* Error is -0x1p-57 < s - sqrt(m) which is less than 0x1.8001p-61 */
   s = (s - 2) >> 9; /* repr: 12.52 */
-  /* Error is -0x1.09p-52 < s - sqrt(m) < -0x1.fffcp-63 */
+  /* Error is -0x1.09p-52 < s - sqrt(m) which is less than -0x1.fffcp-63 */
 
   /* Error is s < sqrt(m) < s + 0x1.09p-52,
      compute nearest rounded result:

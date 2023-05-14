@@ -2355,7 +2355,7 @@ static void outputRadicandsForCosSin(int num, int den, const char *realRoot)
   }
 }
 
-// Show multiplicand * cos(M) + i * multiplicand * sin(M)
+// Show multiplicand * cos(M) plus i * multiplicand * sin(M)
 // where M equals realNum*pi/realDen
 static void showTrig(int numerator, int denominator, const char* multiplicand)
 {

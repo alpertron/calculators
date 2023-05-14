@@ -207,15 +207,15 @@ static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
   for (int colI = 0; colI < nbrCols; colI++)
   {
     if (colI == 0)
-    {             // Set U_0 to 1
+    {             // Set element U_0 to 1
       intToLinkedBigInt(&detProdB[0], 1);
     }
     else
-    {             // Set U_i to lambda_{i-1, i-1}
+    {             // Set element U_i to lambda_{i-1, i-1}
       getBigIntegerFromLinked(lambda[colI - 1][colI - 1], &tmp5);
       setLinkedBigInteger(&detProdB[colI], &tmp5);
 
-                  // Set U_{i-1} to -lambda_{i, i-1}
+                  // Set element U_{i-1} to -lambda_{i, i-1}
       getBigIntegerFromLinked(lambda[colI][colI - 1], &tmp5);
       BigIntChSign(&tmp5);
       setLinkedBigInteger(&detProdB[colI - 1], &tmp5);
@@ -248,7 +248,7 @@ static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)
           (void)BigIntMultiply(&tmp4, &tmp5, &tmp3);
           BigIntAdd(&tmp2, &tmp3, &tmp2);
         }
-        // Set lambda_{j,i} to lambda_{j,i} + tmp2 * U_k
+        // Set matrix cell lambda_{j,i} to lambda_{j,i} + tmp2 * U_k
         getBigIntegerFromLinked(detProdB[k], &tmp5);
         (void)BigIntMultiply(&tmp2, &tmp5, &tmp2);
         BigIntAdd(&tmp1, &tmp2, &tmp1);
@@ -267,7 +267,8 @@ static void PerformREDI(int k, int l, int size)
   // Set tmp0 to |2 lambda_{k, l}|
   tmp0.sign = SIGN_POSITIVE;
   getBigIntegerFromLinked(detProdB[l], &tmp5);
-  BigIntSubt(&tmp5, &tmp0, &tmp1);   // tmp1 <- d_l - |2 lambda_{k, l}|
+  // Compute tmp1 as d_l - |2 lambda_{k, l}|
+  BigIntSubt(&tmp5, &tmp0, &tmp1);
   if (tmp1.sign == SIGN_POSITIVE)
   {
     return;                          // Go out if d_l >= |2 lambda_{k, l}|
@@ -296,16 +297,17 @@ static void PerformREDI(int k, int l, int size)
     BigIntSubt(&tmp5, &tmp0, &tmp5);
     setLinkedBigInteger(&basis[row][k], &tmp5);
   }
-    // Set lambda_{k, l} to lambda_{k, l} - q*d_l
+    // Subtract q*d_l from lambda_{k, l}.
   getBigIntegerFromLinked(detProdB[l], &tmp5);
   (void)BigIntMultiply(&tmp2, &tmp5, &tmp0);    // tmp0 <- q*d_l
   getBigIntegerFromLinked(lambda[k][l], &tmp5);
   BigIntSubt(&tmp5, &tmp0, &tmp5);
   setLinkedBigInteger(&lambda[k][l], &tmp5);
   for (int i = 0; i < l; i++)
-  { // Set lambda_{k, i} to lambda_{k, i} - q*lambda_{l, i}
+  { // Subtract q*lambda_{l, i} from lambda_{k, i}.
     getBigIntegerFromLinked(lambda[l][i], &tmp5);
-    (void)BigIntMultiply(&tmp2, &tmp5, &tmp0);   // tmp0 <- q*lambda_{l, i}
+    // Set tmp0 to q*lambda_{l, i}
+    (void)BigIntMultiply(&tmp2, &tmp5, &tmp0);
     getBigIntegerFromLinked(lambda[k][i], &tmp5);
     BigIntSubt(&tmp5, &tmp0, &tmp5);
     setLinkedBigInteger(&lambda[k][i], &tmp5);
@@ -372,17 +374,17 @@ static void PerformSWAPI(int k, int kMax, int size)
     // Set t to lambda_{i, k}
     // Set tmp2 to t
     getBigIntegerFromLinked(lambda[i][k], &tmp2);
-    // Set lambda_{i, k} to (d_k*lambda_{i, k-1} - lambda * t)/d_{k-1}
+    // Set matrix cell lambda_{i, k} to (d_k*lambda_{i, k-1} minus lambda * t)/d_{k-1}
     getBigIntegerFromLinked(detProdB[k], &tmp4);
     getBigIntegerFromLinked(lambda[i][k - 1], &tmp5);
     (void)BigIntMultiply(&tmp4, &tmp5, &tmp3);
-    (void)BigIntMultiply(&tmp0, &tmp2, &tmp4);       // tmp4 <- lambda * t
+    (void)BigIntMultiply(&tmp0, &tmp2, &tmp4);  // tmp4 <- lambda * t
     BigIntSubt(&tmp3, &tmp4, &tmp3);
     getBigIntegerFromLinked(detProdB[k - 1], &tmp5);
     (void)BigIntDivide(&tmp3, &tmp5, &tmp4);
     setLinkedBigInteger(&lambda[i][k], &tmp4);
-    // Set lambda_{i, k-1} to (B*t + lambda * lambda_{i, k})/d_k
-    (void)BigIntMultiply(&tmp1, &tmp2, &tmp3);       // tmp3 <- B * t
+    // Set matrix cell lambda_{i, k-1} to (B*t + lambda * lambda_{i, k})/d_k
+    (void)BigIntMultiply(&tmp1, &tmp2, &tmp3);  // tmp3 <- B * t
     (void)BigIntMultiply(&tmp0, &tmp4, &tmp4);
     BigIntAdd(&tmp3, &tmp4, &tmp3);
     getBigIntegerFromLinked(detProdB[k], &tmp4);
@@ -462,7 +464,7 @@ void integralLLL(int size)
           (void)BigIntMultiply(&tmp5, &tmp2, &tmp0);  // d_i * u
           getBigIntegerFromLinked(lambda[colK][colI], &tmp4);
           getBigIntegerFromLinked(lambda[colJ][colI], &tmp5);
-          // Compute lambda_{k, i} * lambda_{j, i}
+          // Compute lambda_{k, i} times lambda_{j, i}.
           (void)BigIntMultiply(&tmp4, &tmp5, &tmp1);
           if (colI == 0)
           {
@@ -526,8 +528,10 @@ void integralLLL(int size)
     for (;;)
     {
       PerformREDI(colK, colK - 1, size);
-      // Check whether 4 * d_k * d_{k-2} < 3 (d_{k-1})^2 - 4*(lambda_{k, k-1})^2
-      // that means 4 (d_k * d_{k-2} + lambda_{k, k-1})^2) < 3 (d_{k-1})^2 
+      // Check whether 4 * d_k * d_{k-2}
+      // is less than 3 (d_{k-1})^2 minus 4*(lambda_{k, k-1})^2.
+      // That means 4 (d_k * d_{k-2} + lambda_{k, k-1})^2)
+      // is less than 3 (d_{k-1})^2.
                        // Get d_k
       getBigIntegerFromLinked(detProdB[colK], &tmp0);
       if (colK > 1)
@@ -535,12 +539,12 @@ void integralLLL(int size)
         getBigIntegerFromLinked(detProdB[colK - 2], &tmp5);
         (void)BigIntMultiply(&tmp0, &tmp5, &tmp0);
       }
-                       // Compute lambda_{k, k-1}^2
+                       // Compute the square of matrix cell lambda_{k, k-1}.
       getBigIntegerFromLinked(lambda[colK][colK - 1], &tmp5);
       (void)BigIntMultiply(&tmp5, &tmp5, &tmp1);
-                       // Compute d_k * d_{k-2} + lambda_{k, k-1}^2
+                       // Compute d_k * d_{k-2} plus the square of lambda_{k, k-1}.
       BigIntAdd(&tmp0, &tmp1, &tmp3);
-      multint(&tmp0, &tmp3, 4);           // tmp0 is the left Hand Side.
+      multint(&tmp0, &tmp3, 4);           // tmp0 is the Left Hand Side.
                        // Compute (d_{k-1})^2 
       getBigIntegerFromLinked(detProdB[colK - 1], &tmp5);
       (void)BigIntMultiply(&tmp5, &tmp5, &tmp1);
