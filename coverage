@@ -54,6 +54,19 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "Modpow(32,1,12345678922)" >> coverage.out
 ./ecm "x=-10; x=x+1; x<10; \"%d is prime: %l, %Fd\":x:isprime(x):x" >> coverage.out
 ./ecm "x=-10; x=x+1; x<10; \"%d is prime: %l, %Fd\":x" >> coverage.out
+./ecm "x=30; x=x+1; x<10; \"%d is prime: %l, %Fd\":x:isprime(x):x" >> coverage.out
+./ecm "x=-10; x=x+1; x<10; \"%d=%x is prime: %l, %Fd\":x:x:isprime(x):x:x" >> coverage.out
+./ecm "x=-10; x=x+1; x<10; \"%d=%x is prime: %l, %Fd\":x" >> coverage.out
+./ecm "x=-10; x=x+1; x<10; \"%\"%d=%x%\" is prime: %l, %Fd\":x:x:isprime(x):x" >> coverage.out
+./ecm "x+" >> coverage.out
+./ecm "x=;" >> coverage.out
+./ecm "x=3" >> coverage.out
+./ecm "x=3; x+1" >> coverage.out
+./ecm "x=3; x=x+1" >> coverage.out
+./ecm "x=3; x=x+1; x<10" >> coverage.out
+./ecm "x=3; x=x+1; x<10; \"23" >> coverage.out
+./ecm "x=3; x=x+1; x<10; \"23%y\"" >> coverage.out
+./ecm "# This is a comment" >> coverage.out
 ./ecm "iroot(54265656536,3)" >> coverage.out
 
 lcov --capture --directory . --output-file ecm.info

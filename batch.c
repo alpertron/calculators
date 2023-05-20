@@ -459,8 +459,8 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
             case '%':
             case '\"':
               *ptrOutput = *(ptrInsideQuotes + 1);
-              ptrOutput += 2;
-              ptrInsideQuotes++;
+              ptrOutput++;
+              ptrInsideQuotes += 2;
               break;
             case 'd':
             case 'D':
@@ -636,6 +636,14 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       *ptrOutput = '#';
       ptrOutput++;
       stringToHTML(&ptrOutput, ptrCurrBatchFactor + 1);
+      if (fromFile)
+      {
+        copyStr(&ptrOutput, (lineEndingCRLF ? "\r\n" : "\n"));
+      }
+      else
+      {
+        copyStr(&ptrOutput, "<li>");
+      }
     }
     else if ((c == 'x') || (c == 'X'))
     {   // Loop format: x=<orig expr>; x=<next expr>; <end expr>; <expr to factor>[; <factor cond>]
