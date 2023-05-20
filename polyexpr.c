@@ -743,6 +743,10 @@ static enum eExprErr MultRatPolynomialExpr(int* ptrArgument1, const int* ptrArgu
 static enum eExprErr DivRatPolynomialExpr(int* ptrArgument1, const int* ptrArgument2)
 {
   enum eExprErr err;
+  if ((*ptrArgument2 == 0) && (*(ptrArgument2 + 1) == 1) && (*(ptrArgument2 + 2) == 0))
+  {   // Divisor is zero.
+    return EXPR_DIVIDE_BY_ZERO;
+  }
   const int* ptrDenom1 = getNextElement(ptrArgument1);
   const int* ptrDenom2 = getNextElement(ptrArgument2);
   int* ptrNumer1 = getNextElement(ptrDenom2);

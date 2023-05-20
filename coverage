@@ -243,6 +243,13 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "LongDiv(x^7/3, x^6/4+3*x^5)" 2 >> coverage.out
 ./polfact 0 "LongDiv(x^4, x^8)" 2 >> coverage.out
 ./polfact 0 "(x+1)^3+(x-1)^3" 2 >> coverage.out
+./polfact 0 "longdiv((x+1)^3,(x-1)^6)" 2 >> coverage.out
+./polfact 0 "longdiv((x+1)^6,4*(x-1)^3)" 2 >> coverage.out
+./polfact 0 "(x+1)^6 % 26" 2 >> coverage.out
+./polfact 0 "longdiv((x+1)^6, 0)" 2 >> coverage.out
+./polfact 0 "(x+1)^6 / 0" 2 >> coverage.out
+./polfact 0 "(x+1)^6 % (26x)" 2 >> coverage.out
+./polfact 0 "(x-1)^3/(x-1)^6" 2 >> coverage.out
 ./polfact "n(10**19)" "(x**2-1)*(x-1)" 2 >> coverage.out
 
 lcov --capture --directory . --output-file polfact.info
