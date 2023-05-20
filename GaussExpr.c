@@ -606,7 +606,7 @@ static void GetRemainder(const BigInteger *Norm, BigInteger *ReDividend, BigInte
   BigInteger ReTmp;
   BigInteger ImTmp;
   int signBak;
-  // Re <- ((Re1*Re2+Im1*Im2)*2/norm+1)/2
+  // Compute Re as ((Re1*Re2+Im1*Im2)*2/norm+1)/2
   (void)BigIntMultiply(ReDividend, ReDivisor, &ReTmp);
   (void)BigIntMultiply(ImDividend, ImDivisor, &ImTmp);
   BigIntAdd(&ReTmp, &ImTmp, &ReTmp);
@@ -619,7 +619,7 @@ static void GetRemainder(const BigInteger *Norm, BigInteger *ReDividend, BigInte
   {
     Re->sign = signBak;
   }
-  // Im <- ((Im1*Re2-Re1*Im2)*2/norm+1)/2
+  // Compute Im as ((Im1*Re2-Re1*Im2)*2/norm+1)/2
   (void)BigIntMultiply(ImDividend, ReDivisor, &ReTmp);
   (void)BigIntMultiply(ReDividend, ImDivisor, &ImTmp);
   BigIntSubt(&ReTmp, &ImTmp, &ImTmp);
@@ -632,48 +632,29 @@ static void GetRemainder(const BigInteger *Norm, BigInteger *ReDividend, BigInte
   {
     Im->sign = signBak;
   }
-  // Re1 <- Re1 - Re*Re2 + Im*Im2
+  // Compute Re1 as Re1 - Re*Re2 + Im*Im2.
   (void)BigIntMultiply(Re, ReDivisor, &ReTmp);
   BigIntSubt(ReDividend, &ReTmp, ReDividend);
   (void)BigIntMultiply(Im, ImDivisor, &ReTmp);
   BigIntAdd(ReDividend, &ReTmp, ReDividend);
-  // Im1 <- Im1 - Im*Re2 - Re*Im2
+  // Compute Im1 as Im1 - Im*Re2 - Re*Im2.
   (void)BigIntMultiply(Im, ReDivisor, &ReTmp);
   BigIntSubt(ImDividend, &ReTmp, ImDividend);
   (void)BigIntMultiply(Re, ImDivisor, &ReTmp);
   BigIntSubt(ImDividend, &ReTmp, ImDividend);
 }
 
-// Compute curStack = gcd(curStack, curStack2)
+// Compute curStack as gcd(curStack, curStack2)
 static void ComputeGCD(void)
 {
-  BigInteger Tmp;
-  while (!BigIntIsZero(&curStack2Re) || !BigIntIsZero(&curStack2Im))
-  {   // Second argument is not zero.
-    (void)BigIntMultiply(&curStack2Re, &curStack2Re, &curStack3Re);
-    (void)BigIntMultiply(&curStack2Im, &curStack2Im, &curStack3Im);
-    BigIntAdd(&curStack3Re, &curStack3Im, &Tmp);
-    // Get remainder of (Re1+i*Im1)/(Re2*i*Im2)
-    // Overwrite Re1 and Im1 with that remainder.
-    // Re and Im are used as temporary values.
-    GetRemainder(&Tmp, &curStackRe, &curStackIm, &curStack2Re, &curStack2Im,
-      &curStack3Re, &curStack3Im);
-    // Exchange Re1 and Re2.
-    CopyBigInt(&Tmp, &curStackRe);
-    CopyBigInt(&curStackRe, &curStack2Re);
-    CopyBigInt(&curStack2Re, &Tmp);
-    // Exchange Im1 and Im2.
-    CopyBigInt(&Tmp, &curStackIm);
-    CopyBigInt(&curStackIm, &curStack2Im);
-    CopyBigInt(&curStack2Im, &Tmp);
-    curStack2Re.sign = SIGN_POSITIVE;  // Re2 <- abs(Re2)
-    curStack2Im.sign = SIGN_POSITIVE;  // Im2 <- abs(Im2)
-  }
-  CopyBigInt(&Tmp, &curStackIm);
-  Tmp.sign = SIGN_POSITIVE;  // Tmp <- abs(Tmp)
-  BigIntSubt(&curStackRe, &Tmp, &Tmp);
-  while (Tmp.sign == SIGN_NEGATIVE)
-  {    // Multiply by i.
+  BigInteger ReTmp;
+  BigInteger ImTmp;
+  GaussianGCD(&curStackRe, &curStackIm, &curStack2Re, &curStack2Im,
+    &curStack3Re, &curStack3Im, &ReTmp, &ImTmp);
+  CopyBigInt(&curStackRe, &curStack3Re);
+  CopyBigInt(&curStackIm, &curStack3Im);
+  while ((curStack3Re.sign == SIGN_NEGATIVE) || (curStack3Im.sign == SIGN_NEGATIVE))
+  {    // Multiply by i until number is in first quadrant.
     CopyBigInt(&curStack3Re, &curStackRe);
     BigIntNegate(&curStackIm, &curStackRe);
     CopyBigInt(&curStackIm, &curStack3Re);
