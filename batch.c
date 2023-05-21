@@ -179,6 +179,8 @@ static bool doCallback(const char * ptrExpr, BigInteger *valueFound, int type)
   else
   {
     textError(&ptrOutput, rcode);
+    counterC = 0;
+    ptrOutput += 4;
     return true;
   }
   return false;
@@ -222,6 +224,7 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     if (rc != EXPR_OK)
     {
       textError(&ptrOutput, rc);
+      counterC = 0;
       ptrOutput += 4;
       return false;
     }
@@ -398,6 +401,8 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     if (rcode != EXPR_OK)
     {
       textError(&ptrOutput, rcode);
+      counterC = 0;
+      ptrOutput += 4;
       break;   // Cannot compute end expression, so go out.
     }
     if (BigIntIsZero(valueFound))
@@ -424,6 +429,8 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
       else
       {
         textError(&ptrOutput, rcode);
+        counterC = 0;
+        ptrOutput += 4;
         if ((rcode == EXPR_SYNTAX_ERROR) || (rcode == EXPR_VAR_OR_COUNTER_REQUIRED))
         {   // Do not show multiple errors.
           break;
@@ -444,6 +451,8 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
         else
         {
           textError(&ptrOutput, rcode);
+          counterC = 0;
+          ptrOutput += 4;
         }
       }
       else
@@ -499,6 +508,8 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
               else
               {
                 textError(&ptrOutput, rcode);
+                counterC = 0;
+                ptrOutput += 4;
               }
               break;
             default:
@@ -544,6 +555,8 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     if (rcode != EXPR_OK)
     {
       textError(&ptrOutput, rcode);
+      counterC = 0;
+      ptrOutput += 4;
       break;   // Cannot compute next expression, so go out.
     }
     CopyBigInt(&valueX, valueFound);
