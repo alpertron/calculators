@@ -159,6 +159,17 @@ static void BatchError(char **pptrOutput, const char *batchText, const char *err
   counterC = 0;
 }
 
+static void showErrorInExpr(char** pptrOutput, int rcode)
+{
+  copyStr(pptrOutput, lang ? "Error en la expresión " :
+    "Error in expression #");
+  int2dec(pptrOutput, expressionNbr);
+  copyStr(pptrOutput, ": ");
+  textError(pptrOutput, rcode);
+  counterC = 0;
+  ptrOutput += 4;
+}
+
 static bool doCallback(const char * ptrExpr, BigInteger *valueFound, int type)
 {
   enum eExprErr rcode = evalExpression(ptrExpr, valueFound);
@@ -178,13 +189,12 @@ static bool doCallback(const char * ptrExpr, BigInteger *valueFound, int type)
   }
   else
   {
-    textError(&ptrOutput, rcode);
-    counterC = 0;
-    ptrOutput += 4;
+    showErrorInExpr(&ptrOutput, rcode);
     return true;
   }
   return false;
 }
+
 static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* valueFound)
 {
   char* ptrCharFound;
@@ -222,9 +232,7 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     enum eExprErr rc = evalExpression(ptrStartExpr + 1, valueFound);
     if (rc != EXPR_OK)
     {
-      textError(&ptrOutput, rc);
-      counterC = 0;
-      ptrOutput += 4;
+      showErrorInExpr(&ptrOutput, rc);
       return false;
     }
     CopyBigInt(&valueX, valueFound);
@@ -400,9 +408,7 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     rcode = evalExpression(EndExpr, valueFound);
     if (rcode != EXPR_OK)
     {
-      textError(&ptrOutput, rcode);
-      counterC = 0;
-      ptrOutput += 4;
+      showErrorInExpr(&ptrOutput, rcode);
       break;   // Cannot compute end expression, so go out.
     }
     if (BigIntIsZero(valueFound))
@@ -428,9 +434,7 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
       }
       else
       {
-        textError(&ptrOutput, rcode);
-        counterC = 0;
-        ptrOutput += 4;
+        showErrorInExpr(&ptrOutput, rcode);
         if ((rcode == EXPR_SYNTAX_ERROR) || (rcode == EXPR_VAR_OR_COUNTER_REQUIRED))
         {   // Do not show multiple errors.
           break;
@@ -450,9 +454,8 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
         }
         else
         {
-          textError(&ptrOutput, rcode);
-          counterC = 0;
-          ptrOutput += 4;
+          showErrorInExpr(&ptrOutput, rcode);
+          break;
         }
       }
       else
@@ -507,9 +510,7 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
               }
               else
               {
-                textError(&ptrOutput, rcode);
-                counterC = 0;
-                ptrOutput += 4;
+                showErrorInExpr(&ptrOutput, rcode);
               }
               break;
             default:
@@ -554,9 +555,7 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     rcode = evalExpression(NextExpr, valueFound);
     if (rcode != EXPR_OK)
     {
-      textError(&ptrOutput, rcode);
-      counterC = 0;
-      ptrOutput += 4;
+      showErrorInExpr(&ptrOutput, rcode);
       break;   // Cannot compute next expression, so go out.
     }
     CopyBigInt(&valueX, valueFound);
