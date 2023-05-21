@@ -368,25 +368,16 @@ static void LinearEquation(const int *polynomial, int multiplicity)
 // From variables named Quadratic, Linear and Independent, compute the
 // discriminant and find the rational roots if there are. Otherwise find
 // the real or imaginary roots.
-// The output is zero if the roots are rational, 1 otherwise.
-static int ProcessQuadraticEquation(enum eSign* pSignDescr)
+// The calculator factors the polynomial before finding the factors, so
+// the roots cannot be rational now because in this case it would
+// found the linear factors.
+void ProcessQuadraticEquation(enum eSign* pSignDescr)
 {
   // Compute discriminant (delta = linear^2 - 4*quadratic*independent).
   (void)BigIntMultiply(&Linear, &Linear, &tmp1);
   (void)BigIntMultiply(&Quadratic, &Independent, &tmp2);
   multint(&tmp2, &tmp2, 4);
   BigIntSubt(&tmp1, &tmp2, &discr);
-  if (discr.sign == SIGN_POSITIVE)
-  {
-    squareRoot(discr.limbs, tmp4.limbs, discr.nbrLimbs, &tmp4.nbrLimbs);
-    tmp4.sign = SIGN_POSITIVE;
-    (void)BigIntMultiply(&tmp4, &tmp4, &tmp5);
-    BigIntSubt(&tmp5, &discr, &tmp5);
-    if (BigIntIsZero(&tmp5))
-    {           // Discriminant is perfect square. Roots are rational numbers.
-      return 0;
-    }
-  }
   *pSignDescr = discr.sign;
   discr.sign = SIGN_POSITIVE;
   // Compute Rat1 as -linear/(2*quadratic), Rat2 as abs(1/(2*quadratic))
@@ -402,17 +393,15 @@ static int ProcessQuadraticEquation(enum eSign* pSignDescr)
   ForceDenominatorPositive(&Rat1);
   ForceDenominatorPositive(&Rat2);
   Rat2.numerator.sign = SIGN_POSITIVE;
-  return 1;
 }
 
 // Compute delta = c_1^2 - 4c_0 * c_2
 // If delta > 0 -> x = (-c_1 +/- sqrt(delta))/(2*c_2)
 // If delta < 0 -> x = (-c_1 +/- i*sqrt(-delta))/(2*c_2)
-// Delta cannot be zero because the roots are different.
+// Delta cannot be a perfect square because the polynomial is already factored.
 static void QuadraticEquation(const int* polynomial, int multiplicity)
 {
   const int* ptrPolynomial = polynomial;
-  int ctr;
   enum eSign signDiscr;
   UncompressBigIntegerB(ptrPolynomial, &Independent);
   ptrPolynomial += numLimbs(ptrPolynomial);
@@ -421,29 +410,9 @@ static void QuadraticEquation(const int* polynomial, int multiplicity)
   ptrPolynomial += numLimbs(ptrPolynomial);
   ptrPolynomial++;
   UncompressBigIntegerB(ptrPolynomial, &Quadratic);
-  if (ProcessQuadraticEquation(&signDiscr) == 0)
-  {           // Discriminant is perfect square. Roots are rational numbers.
-    for (ctr = 0; ctr < 2; ctr++)
-    {         // Compute (-linear +/- sqrt(discr))/(2*quadratic)
-      showX(multiplicity);
-      if (ctr == 0)
-      {
-        BigIntAdd(&Linear, &tmp4, &tmp1);
-      }
-      else
-      {
-        BigIntSubt(&Linear, &tmp4, &tmp1);
-      }
-      CopyBigInt(&Rat1.numerator, &tmp1);        
-      CopyBigInt(&Rat1.denominator, &Quadratic);
-      BigRationalDivideByInt(&Rat1, -2, &Rat1);
-      ForceDenominatorPositive(&Rat1);
-      showRationalNoParen(&Rat1);        
-      endLine();
-    }
-    return;
-  }
-  for (ctr = 0; ctr < 2; ctr++)
+  ProcessQuadraticEquation(&signDiscr);
+  // Show irrational / complex roots.
+  for (int ctr = 0; ctr < 2; ctr++)
   {
     showX(multiplicity);
     if (!BigIntIsZero(&Linear))
@@ -2764,25 +2733,8 @@ static bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree,
   // Get leading coefficient.
   NumberLength = *ptrPoly;
   IntArray2BigInteger(ptrPoly, &Quadratic);
-  if (ProcessQuadraticEquation(&signDiscr) == 0)
-  {           // Discriminant is perfect square. Roots are rational numbers.
-    for (ctr = 0; ctr < 2; ctr++)
-    {         // Compute (-linear +/- sqrt(discr))/(2*quadratic)
-      if (ctr == 0)
-      {
-        BigIntAdd(&Linear, &tmp4, &tmp1);
-      }
-      else
-      {
-        BigIntSubt(&Linear, &tmp4, &tmp1);
-      }
-      CopyBigInt(&Rat1.numerator, &tmp1);
-      CopyBigInt(&Rat1.denominator, &Quadratic);
-      BigRationalDivideByInt(&Rat1, -2, &Rat1);
-      ShowRootsOfRationalNumbers(halfDegree, multiplicity);
-    }
-    return true;
-  }
+  // Discriminant cannot be a perfect square.
+  ProcessQuadraticEquation(&signDiscr);
   if (signDiscr == SIGN_POSITIVE)
   {           // Roots of quadratic equation are real.
     for (ctr = 0; ctr < 2; ctr++)
