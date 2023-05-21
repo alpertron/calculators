@@ -220,7 +220,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
   if (!firstExprProcessed)
   {
     enum eExprErr rc = evalExpression(ptrStartExpr + 1, valueFound);
-    CopyBigInt(&valueX, valueFound);
     if (rc != EXPR_OK)
     {
       textError(&ptrOutput, rc);
@@ -228,6 +227,7 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
       ptrOutput += 4;
       return false;
     }
+    CopyBigInt(&valueX, valueFound);
   }
   ptrStartExpr = ptrCharFound + 1;
   SkipSpaces(&ptrStartExpr);
