@@ -591,7 +591,7 @@ static enum eExprErr ComputePartition(void)
   val = curStackRe.limbs[0].x;
   if (val > 100000)
   {
-    return EXPR_INTERM_TOO_HIGH;
+    return EXPR_INVALID_PARAM;
   }
   partition(val, &curStackRe);
   return EXPR_OK;

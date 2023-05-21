@@ -426,7 +426,21 @@ echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 ./gaussian "modpow(7,6,0) + modpow(7,6,23)" 0 >> coverage.out
 ./gaussian "modinv(13,71)" 0 >> coverage.out
 ./gaussian "gcd(1+i,2,4)" 0 >> coverage.out
-./gaussian "lcm(1+i,2,4)" 0 >> coverage.out
+./gaussian "lcm(1+i,2,4) + ans" 0 >> coverage.out
+./gaussian "isprime(3)" 0 >> coverage.out
+./gaussian "isprime(5)" 0 >> coverage.out
+./gaussian "isprime(3*i)" 0 >> coverage.out
+./gaussian "isprime(5*i)" 0 >> coverage.out
+./gaussian "P(3+5*i)" 0 >> coverage.out
+./gaussian "P(-3)" 0 >> coverage.out
+./gaussian "P(3000000000)" 0 >> coverage.out
+./gaussian "P(100001)" 0 >> coverage.out
+./gaussian "gcd(0, 0)" 0 >> coverage.out
+./gaussian "gcd(3, 0)" 0 >> coverage.out
+./gaussian "gcd(0, 3)" 0 >> coverage.out
+./gaussian "lcm(0, 0)" 0 >> coverage.out
+./gaussian "lcm(3, 0)" 0 >> coverage.out
+./gaussian "lcm(0, 3)" 0 >> coverage.out
 lcov --capture --directory . --output-file gaussian.info
 gcovr --json run-11.json
 make clean

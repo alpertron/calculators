@@ -58,6 +58,18 @@ static void MultiplyComplexBy1PlusI(BigInteger *real, BigInteger *imag, BigInteg
 void GaussianGCD(BigInteger *realA, BigInteger *imagA, BigInteger *realB, BigInteger *imagB,
   BigInteger *realGcd, BigInteger *imagGcd, BigInteger *temp1, BigInteger *temp2)
 {
+  if (BigIntIsZero(realA) && BigIntIsZero(imagA))
+  {   // GCD(0, b) = b
+    CopyBigInt(realGcd, realB);
+    CopyBigInt(imagGcd, imagB);
+    return;
+  }
+  if (BigIntIsZero(realB) && BigIntIsZero(imagB))
+  {   // GCD(a, 0) = a
+    CopyBigInt(realGcd, realA);
+    CopyBigInt(imagGcd, imagA);
+    return;
+  }
   intToBigInteger(realGcd, 1);     // Initialize d to 1.
   intToBigInteger(imagGcd, 0);
   for (;;)
