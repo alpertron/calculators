@@ -155,6 +155,7 @@ static void BatchError(char **pptrOutput, const char *batchText, const char *err
   *ptrOut = ' ';
   ptrOut++;
   copyStr(&ptrOut, errorText);
+  ptrOut += 4;
   *pptrOutput = ptrOut;
   counterC = 0;
 }
@@ -212,7 +213,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     BatchError(&ptrOutput, batchText,
       lang ? "se esperaban tres o cuatro puntos y comas pero no hay ninguno" :
       "three or four semicolons expected but none found");
-    ptrOutput += 4;
     return false;
   }
   ptrStartExpr = ptrSrcString + 1;
@@ -222,7 +222,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     BatchError(&ptrOutput, batchText,
       lang ? "falta signo igual en la primera expresión" :
       "equal sign missing in first expression");
-    ptrOutput += 4;
     return false;
   }
   ptrCharFound = findChar(ptrSrcString + 1, ';');
@@ -244,7 +243,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     BatchError(&ptrOutput, batchText,
       lang ? "falta variable x en la segunda expresión" :
       "variable x missing in second expression");
-    ptrOutput += 4;
     return false;
   }
   ptrStartExpr++;               // Skip variable 'x'.
@@ -254,7 +252,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     BatchError(&ptrOutput, batchText,
       lang ? "falta signo igual en la segunda expresión" :
       "equal sign missing in second expression");
-    ptrOutput += 4;
     return false;
   }
   NextExpr = ptrStartExpr + 1;  // Skip equal sign.
@@ -264,7 +261,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     BatchError(&ptrOutput, batchText,
       lang ? "se esperaban tres o cuatro puntos y comas pero solo hay uno" :
       "three or four semicolons expected but there are only one");
-    ptrOutput += 4;
     return false;
   }
   EndExpr = ptrCharFound + 1;  // Point to end expression.
@@ -274,7 +270,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
     BatchError(&ptrOutput, batchText,
       lang ? "se esperaban tres o cuatro puntos y comas pero solo hay dos" :
       "three or four semicolons expected but there are only two");
-    ptrOutput += 4;
     return false;
   }
   ptrCharFound++;
@@ -310,7 +305,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
       BatchError(&ptrOutput, batchText,
         lang ? "falta comilla de cierre" :
         "missing closing quote");
-      ptrOutput += 4;
       return false;
     }
     // Find number of conversion clauses.
@@ -328,7 +322,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
             BatchError(&ptrOutput, batchText,
               lang ? "demasiadas cláusulas de conversion" :
               "too many conversion clauses");
-            ptrOutput += 4;
             return false;
           }
           nbrExpressions++;
@@ -345,7 +338,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
             BatchError(&ptrOutput, batchText,
               lang ? "demasiadas cláusulas de conversion" :
               "too many conversion clauses");
-            ptrOutput += 4;
             return false;
           }
           nbrExpressions++;
@@ -355,7 +347,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
           BatchError(&ptrOutput, batchText,
             lang ? "carácter extraño después de %" :
             "strange character after %");
-          ptrOutput += 4;
           return false;
         }
       }
@@ -374,7 +365,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
         BatchError(&ptrOutput, batchText,
           lang ? "la cantidad de clásulas de conversión es mayor que la cantidad de dos puntos" :
           "the number of conversion clauses is greater than the number of colons");
-        ptrOutput += 4;
         return false;
       }
       ptrColon++;
@@ -387,7 +377,6 @@ static bool ProcessLoop(bool* pIsBatch, const char* batchText, BigInteger* value
       BatchError(&ptrOutput, batchText,
         lang ? "la cantidad de clásulas de conversión es menor que la cantidad de dos puntos" :
         "the number of conversion clauses is less than the number of colons");
-      ptrOutput += 4;
       return false;
     }
   }

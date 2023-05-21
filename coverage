@@ -64,6 +64,10 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "x=-10; x=x+1; x<10; \"%d=%x is prime: %l, %Fd\":x:x:isprime(x):x:x" >> coverage.out
 ./ecm "x=-10; x=x+1; x<10; \"%d=%x is prime: %l, %Fd\":x" >> coverage.out
 ./ecm "x=-10; x=x+1; x<10; \"%\"%d=%x%\" is prime: %l, %Fd, %Fx\":x:x:isprime(x):x:x" >> coverage.out
+./ecm "x=-10; x=x+1; x<10; \"Factors are: %Fx\":x+sqrt(-2)" >> coverage.out
+./ecm "x=-10; x=x+1; x<10; \"Factors are: %Fd\":x+sqrt(-2)" >> coverage.out
+./ecm "x=-10; x=x+1; x<10; \"Factors are: %x\":x+sqrt(-2)" >> coverage.out
+./ecm "x=-10; x=x+1; x<10; \"Factors are: %d\":x+sqrt(-2)" >> coverage.out
 ./ecm "x-10; x=x+1; x<10; x" >> coverage.out
 ./ecm "x=;" >> coverage.out
 ./ecm "x=3" >> coverage.out
