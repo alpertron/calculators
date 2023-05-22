@@ -24,6 +24,7 @@
 #define TYPE_PM_SPACE_BEFORE 1
 #define TYPE_PM_SPACE_AFTER  2
 
+void QuarticEquation(const int* polynomial, int multiplicity);
 void QuinticEquation(const int* ptrPolynomial, int multiplicity);
 void startLine(void);
 void endLine(void);
@@ -33,6 +34,8 @@ void startParen(void);
 void endParen(void);
 void startSqrt(void);
 void endSqrt(void);
+void startCbrt(void);
+void endCbrt(void);
 void showRatConstants(const char* numerator, const char* denominator);
 void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* pstFactorInfo, int groupLength);
 

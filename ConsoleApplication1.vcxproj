@@ -166,6 +166,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="quartics.c" />
     <ClCompile Include="sumSquares.c" />
     <ClCompile Include="tsqcubes.c" />
     <ClCompile Include="baseconv.c" />
