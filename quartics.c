@@ -813,6 +813,7 @@ void QuarticEquation(const int* polynomial, int multiplicity)
     Rat2.numerator.sign = SIGN_POSITIVE;
     isImaginary = (RatDeprQuadratic.numerator.sign == SIGN_POSITIVE) ||
       (RatD.numerator.sign == SIGN_POSITIVE);
+    RatDeprLinear.numerator.sign = SIGN_POSITIVE;
     for (ctr = 0; ctr < 4; ctr++)
     {
       showX(multiplicity);
