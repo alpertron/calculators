@@ -42,207 +42,219 @@ static void showFirstTermQuarticEq(int ctr)
   }
 }
 
+// Solve equation x^4 + cx^2 + e = 0 where e is a perfect square.
+// c and e are rational numbers.
+static void biquadraticConstantSquare(int multiplicity)
+{
+  BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
+  for (int ctr = 0; ctr < 4; ctr++)
+  {
+    bool isSquareRoot1;
+    bool isSquareRoot2;
+    showX(multiplicity);
+    BigRationalSubt(&Rat3, &RatDeprQuadratic, &Rat1);
+    BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat2);
+    BigIntChSign(&Rat2.numerator);
+    BigRationalDivideByInt(&Rat1, 2, &Rat1);
+    BigRationalDivideByInt(&Rat2, 2, &Rat2);
+    ForceDenominatorPositive(&Rat1);
+    ForceDenominatorPositive(&Rat2);
+    // Rat1 must be greater than Rat2. Exchange them if needed.
+    BigRationalSubt(&Rat1, &Rat2, &Rat4);
+    if (Rat4.numerator.sign != Rat4.denominator.sign)
+    {            // Rat1 < Rat2 -> exchange them.
+      CopyBigInt(&tmp1, &Rat1.numerator);
+      CopyBigInt(&Rat1.numerator, &Rat2.numerator);
+      CopyBigInt(&Rat2.numerator, &tmp1);
+      CopyBigInt(&tmp1, &Rat1.denominator);
+      CopyBigInt(&Rat1.denominator, &Rat2.denominator);
+      CopyBigInt(&Rat2.denominator, &tmp1);
+    }
+    isSquareRoot1 = BigRationalSquareRoot(&Rat1, &Rat4);
+    isSquareRoot2 = BigRationalSquareRoot(&Rat2, &Rat5);
+    // They cannot be both perfect squares because in that case the polynomial is reducible.
+    showFirstTermQuarticEq(ctr);
+    if (Rat1.numerator.sign == SIGN_NEGATIVE)
+    {
+      showText(ptrI);
+      showText(" ");
+      showText(ptrTimes);
+      showText(" (");
+    }
+    if (isSquareRoot1)
+    {
+      showRational(&Rat4);
+    }
+    else
+    {
+      enum eSign sign = Rat1.numerator.sign;  // Back up sign.
+      Rat1.numerator.sign = SIGN_POSITIVE;
+      showSquareRootOfRational(&Rat1, 2, ptrTimes);
+      Rat1.numerator.sign = sign;             // Restore sign.
+    }
+    showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+    if (isSquareRoot2)
+    {
+      showRational(&Rat5);
+    }
+    else
+    {
+      enum eSign sign = Rat2.numerator.sign;  // Back up sign.
+      Rat2.numerator.sign = SIGN_POSITIVE;
+      showSquareRootOfRational(&Rat2, 2, ptrTimes);
+      Rat2.numerator.sign = sign;             // Restore sign.
+    }
+    if (Rat1.numerator.sign == SIGN_NEGATIVE)
+    {
+      showText(")");
+    }
+    else
+    {
+      if (Rat2.numerator.sign == SIGN_NEGATIVE)
+      {
+        showText(ptrTimes);
+        showText(ptrI);
+      }
+    }
+    endLine();
+  }
+}
+
+// Solve equation x^4 + cx^2 + e = 0 where e is not a perfect square.
+// c and e are rational numbers.
+static void biquadraticConstantNotSquare(int multiplicity)
+{
+  // Compute discriminant as c^2-4e
+  BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &RatDiscr);
+  BigRationalMultiplyByInt(&RatDeprIndependent, 4, &Rat1);
+  BigRationalSubt(&RatDiscr, &Rat1, &RatDiscr);
+  ForceDenominatorPositive(&RatDiscr);
+  intToBigInteger(&Rat1.numerator, 1);
+  intToBigInteger(&Rat1.denominator, 2);
+  CopyBigInt(&Rat2.numerator, &RatDeprIndependent.numerator);
+  CopyBigInt(&Rat2.denominator, &RatDeprIndependent.denominator);
+  MultiplyRationalBySqrtRational(&Rat1, &Rat2);
+  if (RatDiscr.numerator.sign == SIGN_NEGATIVE)
+  {
+    BigRationalDivideByInt(&RatDeprQuadratic, 4, &RatDeprQuadratic);
+  }
+  else
+  {
+    BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
+  }
+  enum eSign signQuadr = RatDeprQuadratic.numerator.sign;
+  RatDeprQuadratic.numerator.sign = SIGN_POSITIVE;
+  for (int ctr = 0; ctr < 4; ctr++)
+  {
+    showX(multiplicity);
+    showFirstTermQuarticEq(ctr);
+    if (RatDiscr.numerator.sign == SIGN_NEGATIVE)
+    {  // x = +/- sqrt((sqrt(e) - c) / 2) +/- i * sqrt((sqrt(e) + c) / 2)
+      for (int ctr2 = 0; ctr2 < 2; ctr2++)
+      {   // ctr2 = 0: real part, ctr2 = 1: imaginary part.
+        if (ctr2 == 1)
+        { // Start of imaginary part.
+          showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+          showText(ptrI);
+          showText(ptrTimes);
+          *ptrOutput = ' ';
+          ptrOutput++;
+        }
+        if (BigIntIsZero(&RatDeprQuadratic.numerator))
+        {
+          ShowRationalAndSqrParts(&Rat1, &Rat2, 4, ptrTimes);
+        }
+        else
+        {
+          startSqrt();
+          ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
+          if (signQuadr == SIGN_POSITIVE)
+          {
+            showPlusSignOn(ctr2 != 0, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+          }
+          else
+          {
+            showPlusSignOn(ctr2 == 0, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+          }
+          showRational(&RatDeprQuadratic);
+          endSqrt();
+        }
+      }
+    }
+    else
+    {  // x = sqrt(-c/2 +/- sqrt(c^2 - 4e)/2)
+      bool isXSquaredPositive;
+      ForceDenominatorPositive(&RatDeprIndependent);
+      // If c >= 0 and positive sqrt => c^2 < c^2 - 4e => e < 0.
+      // If c > 0 and negative sqrt => x^2 is always negative.
+      // If c < 0 and positive sqrt => x^2 is always positive.
+      // If c <= 0 and negative sqrt => c^2 > c^2 - 4e => e > 0
+      if ((ctr == 0) || (ctr == 2))
+      {    // Positive sqrt
+        isXSquaredPositive = ((signQuadr == SIGN_NEGATIVE) ||
+          (RatDeprIndependent.numerator.sign == SIGN_NEGATIVE));
+      }
+      else
+      {    // Negative sqrt
+        isXSquaredPositive = (((signQuadr == SIGN_NEGATIVE) ||
+          BigIntIsZero(&RatDeprQuadratic.numerator)) &&
+          (RatDeprIndependent.numerator.sign == SIGN_POSITIVE));
+      }
+      if (!isXSquaredPositive)
+      {    // Root is an imaginary number.
+        showText(ptrI);
+        showText(" ");
+        showText(ptrTimes);
+      }
+      if (BigIntIsZero(&RatDeprQuadratic.numerator))
+      {
+        BigIntChSign(&RatDeprIndependent.numerator);
+        showSquareRootOfRational(&RatDeprIndependent, 4, ptrTimes);
+        BigIntChSign(&RatDeprIndependent.numerator);
+        endLine();
+      }
+      else
+      {
+        startSqrt();
+        CopyBigInt(&Rat1.numerator, &RatDeprQuadratic.numerator);
+        CopyBigInt(&Rat1.denominator, &RatDeprQuadratic.denominator);
+        if (isXSquaredPositive != signQuadr)
+        {
+          BigIntChSign(&Rat1.numerator);
+        }
+        showRational(&Rat1);
+        if ((ctr == 0) || (ctr == 2))
+        {    // Positive sqrt
+          showPlusSignOn(isXSquaredPositive, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+        }
+        else
+        {    // Negative sqrt
+          showPlusSignOn(!isXSquaredPositive, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+        }
+        BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &Rat1);
+        BigRationalSubt(&Rat1, &RatDeprIndependent, &Rat1);
+        showSquareRootOfRational(&Rat1, 2, ptrTimes);
+        endSqrt();
+        endLine();
+      }
+    }
+  }
+}
+
+// Solve equation x^4 + cx^2 + e = 0 where c and e are rational numbers.
 static void biquadraticEquation(int multiplicity)
 {
-  int ctr;
   // For biquadratic equation, the depressed independent term equals the independent term (r = e).
 
   // Solutions are x = +/- sqrt((sqrt(r)-p/2)/2) +/- sqrt((-sqrt(r)-p/2)/2)
   // Test whether e is a perfect square.
   if (BigRationalSquareRoot(&RatDeprIndependent, &Rat3))
-  {           // e is a perfect square. Rat3 = sqrt(r).
-    BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
-    for (ctr = 0; ctr < 4; ctr++)
-    {
-      bool isSquareRoot1;
-      bool isSquareRoot2;
-      showX(multiplicity);
-      BigRationalSubt(&Rat3, &RatDeprQuadratic, &Rat1);
-      BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat2);
-      BigIntChSign(&Rat2.numerator);
-      BigRationalDivideByInt(&Rat1, 2, &Rat1);
-      BigRationalDivideByInt(&Rat2, 2, &Rat2);
-      ForceDenominatorPositive(&Rat1);
-      ForceDenominatorPositive(&Rat2);
-      // Rat1 must be greater than Rat2. Exchange them if needed.
-      BigRationalSubt(&Rat1, &Rat2, &Rat4);
-      if (Rat4.numerator.sign != Rat4.denominator.sign)
-      {            // Rat1 < Rat2 -> exchange them.
-        CopyBigInt(&tmp1, &Rat1.numerator);
-        CopyBigInt(&Rat1.numerator, &Rat2.numerator);
-        CopyBigInt(&Rat2.numerator, &tmp1);
-        CopyBigInt(&tmp1, &Rat1.denominator);
-        CopyBigInt(&Rat1.denominator, &Rat2.denominator);
-        CopyBigInt(&Rat2.denominator, &tmp1);
-      }
-      isSquareRoot1 = BigRationalSquareRoot(&Rat1, &Rat4);
-      isSquareRoot2 = BigRationalSquareRoot(&Rat2, &Rat5);
-      // They cannot be both perfect squares because in that case the polynomial is reducible.
-      showFirstTermQuarticEq(ctr);
-      if (Rat1.numerator.sign == SIGN_NEGATIVE)
-      {
-        showText(ptrI);
-        showText(" ");
-        showText(ptrTimes);
-        showText(" (");
-      }
-      if (isSquareRoot1)
-      {
-        showRational(&Rat4);
-      }
-      else
-      {
-        Rat1.numerator.sign = SIGN_POSITIVE;
-        showSquareRootOfRational(&Rat1, 2, ptrTimes);
-      }
-      showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-      if (isSquareRoot2)
-      {
-        showRational(&Rat5);
-      }
-      else
-      {
-        enum eSign sign = Rat2.numerator.sign;  // Back up sign.
-        Rat2.numerator.sign = SIGN_POSITIVE;
-        showSquareRootOfRational(&Rat2, 2, ptrTimes);
-        Rat2.numerator.sign = sign;             // Restore sign.
-      }
-      if (Rat2.numerator.sign == SIGN_NEGATIVE)
-      {
-        if (Rat1.numerator.sign == SIGN_NEGATIVE)
-        {
-          showText(")");
-        }
-        else
-        {
-          showText(ptrTimes);
-          showText(ptrI);
-        }
-      }
-      if (Rat1.numerator.sign == SIGN_NEGATIVE)
-      {
-        showText(")");
-      }
-      endLine();
-    }
+  {      // e is a perfect square. Rat3 = sqrt(r).
+    biquadraticConstantSquare(multiplicity);
   }
   else
   {      // e is not a perfect square.
-         // Compute discriminant as c^2-4e
-    BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &RatDiscr);
-    BigRationalMultiplyByInt(&RatDeprIndependent, 4, &Rat1);
-    BigRationalSubt(&RatDiscr, &Rat1, &RatDiscr);
-    ForceDenominatorPositive(&RatDiscr);
-    intToBigInteger(&Rat1.numerator, 1);
-    intToBigInteger(&Rat1.denominator, 2);
-    CopyBigInt(&Rat2.numerator, &RatDeprIndependent.numerator);
-    CopyBigInt(&Rat2.denominator, &RatDeprIndependent.denominator);
-    MultiplyRationalBySqrtRational(&Rat1, &Rat2);
-    if (RatDiscr.numerator.sign == SIGN_NEGATIVE)
-    {
-      BigRationalDivideByInt(&RatDeprQuadratic, 4, &RatDeprQuadratic);
-    }
-    else
-    {
-      BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
-    }
-    for (ctr = 0; ctr < 4; ctr++)
-    {
-      enum eSign sign = RatDeprQuadratic.numerator.sign;
-      RatDeprQuadratic.numerator.sign = SIGN_POSITIVE;
-      showX(multiplicity);
-      showFirstTermQuarticEq(ctr);
-      if (RatDiscr.numerator.sign == SIGN_NEGATIVE)
-      {  // x = +/- sqrt((sqrt(e) - c) / 2) +/- i * sqrt((sqrt(e) + c) / 2)
-        for (int ctr2 = 0; ctr2 < 2; ctr2++)
-        {
-          if (ctr2 == 1)
-          {
-            showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-            showText(ptrI);
-            showText(ptrTimes);
-            *ptrOutput = ' ';
-            ptrOutput++;
-          }
-          if (BigIntIsZero(&RatDeprQuadratic.numerator))
-          {
-            ShowRationalAndSqrParts(&Rat1, &Rat2, 4, ptrTimes);
-          }
-          else
-          {
-            startSqrt();
-            ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
-            if (sign == SIGN_POSITIVE)
-            {
-              showPlusSignOn(ctr2 != 0, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-            }
-            else
-            {
-              showPlusSignOn(ctr2 == 0, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-            }
-            showRational(&RatDeprQuadratic);
-            endSqrt();
-          }
-        }
-      }
-      else
-      {  // x = sqrt(-c/2 +/- sqrt(c^2 - 4e)/2)
-        bool isX2Positive;
-        // If c >= 0 and positive sqrt => c^2 < c^2 - 4e => e < 0.
-        // If c > 0 and negative sqrt = > x^2 is always negative.
-        // If c < 0 and positive sqrt = > x^2 is always positive.
-        // If c <= 0 and negative sqrt = > c^2 > c^2 - 4e => e > 0
-        if ((ctr == 0) || (ctr == 2))
-        {    // Positive sqrt
-          isX2Positive = ((RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE) ||
-            (RatDeprIndependent.numerator.sign == SIGN_NEGATIVE));
-        }
-        else
-        {    // Negative sqrt
-          isX2Positive = (((RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE) ||
-            BigIntIsZero(&RatDeprQuadratic.numerator)) &&
-            (RatDeprIndependent.numerator.sign == SIGN_POSITIVE));
-        }
-        if (!isX2Positive)
-        {
-          showText(ptrI);
-          showText(" ");
-          showText(ptrTimes);
-        }
-        ForceDenominatorPositive(&RatDeprIndependent);
-        if (BigIntIsZero(&RatDeprQuadratic.numerator))
-        {
-          BigIntChSign(&RatDeprIndependent.numerator);
-          showSquareRootOfRational(&RatDeprIndependent, 4, ptrTimes);
-          BigIntChSign(&RatDeprIndependent.numerator);
-          endLine();
-        }
-        else
-        {
-          startSqrt();
-          CopyBigInt(&Rat1.numerator, &RatDeprQuadratic.numerator);
-          CopyBigInt(&Rat1.denominator, &RatDeprQuadratic.denominator);
-          if (isX2Positive)
-          {
-            BigIntChSign(&Rat1.numerator);
-          }
-          showRational(&Rat1);
-          if ((ctr == 0) || (ctr == 2))
-          {    // Positive sqrt
-            showPlusSignOn(isX2Positive, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-          }
-          else
-          {    // Negative sqrt
-            showPlusSignOn(!isX2Positive, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-          }
-          BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &Rat1);
-          BigRationalSubt(&Rat1, &RatDeprIndependent, &Rat1);
-          showSquareRootOfRational(&Rat1, 2, ptrTimes);
-          endSqrt();
-          endLine();
-        }
-      }
-    }
+    biquadraticConstantNotSquare(multiplicity);
   }
 }
 
