@@ -330,10 +330,12 @@ void InsertAurifFactors(struct sFactors *pstFactors, const BigInteger *BigBase,
   }
 }
 
+#ifdef __EMSCRIPTEN__
 void copyString(const char *textFromServer)
 {
   (void)strcpy(common.saveFactors.text, textFromServer);
 }
+#endif
 
 static void Cunningham(struct sFactors *pstFactors, const BigInteger *BigBase, int Expon,
                 int increment, const BigInteger *BigOriginal)
@@ -506,20 +508,62 @@ static bool ProcessExponent(struct sFactors *pstFactors, const BigInteger *numTo
   return false;
 }
 
-static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFactor)
+// Test whether rem2 is a perfect currentPrime(th) power mod currentPrime^2
+static bool isPerfectPower(int rem, int currentPrime, const BigInteger *pRem2)
 {
-  bool plus1 = false;
-  bool minus1 = false;
-  unsigned int Exponent = 0U;
-  unsigned int i;
+  unsigned int expon = (unsigned int)currentPrime;
+  unsigned int mask = 0x100000U;
+  bool powerStarted = false;
+  if (currentPrime < 65536)
+  {   // Use unsigned integers for all values because it is a lot faster.
+    unsigned int currPrime = (unsigned int)currentPrime;
+    unsigned int rem2 = (unsigned int)pRem2->limbs[0].x;
+    unsigned int base = (unsigned int)rem;
+    unsigned int iSq = currPrime * currPrime;
+    unsigned int currentPower = 1;
+    while (mask > 0U)
+    {
+      if (powerStarted)
+      {
+        currentPower = (currentPower * currentPower) % iSq;
+      }
+      if ((mask & expon) != 0U)
+      {
+        currentPower = (currentPower * base) % iSq;
+        powerStarted = true;
+      }
+      mask >>= 1;
+    }
+    return currentPower == rem2;
+  }
+  uint64_t iSquared = (uint64_t)currentPrime * (uint64_t)currentPrime;
+  longToBigInteger(&Temp4, iSquared);
+  // Initialize current power.
+  intToBigInteger(&Temp3, 1);
+  while (mask > 0U)
+  {
+    if (powerStarted)
+    {
+      (void)BigIntMultiply(&Temp3, &Temp3, &Temp3);
+      (void)BigIntRemainder(&Temp3, &Temp4, &Temp3);
+    }
+    if ((mask & expon) != 0U)
+    {
+      multint(&Temp3, &Temp3, rem);
+      (void)BigIntRemainder(&Temp3, &Temp4, &Temp3);
+      powerStarted = true;
+    }
+    mask >>= 1;
+  }
+  return BigIntEqual(&Temp3, pRem2);
+}
+
+static void initProcessExponVector(const BigInteger* numToFactor, int numPrimes,
+  int maxExpon)
+{
+  unsigned int currentPrime;
   unsigned int j;
   int modulus;
-  int mod9 = getRemainder(numToFactor, 9);
-  int maxExpon = numToFactor->nbrLimbs * BITS_PER_GROUP;
-  int numPrimes = (2 * maxExpon) + 3;
-  double logar = logBigNbr(numToFactor);
-  // 332199 = logarithm base 2 of max number supported = 10^100000.
-  // Let n = a^b +/- 1 (n = number to factor).
   // If n!=1 or n!=0 or n!=7 (mod 8), then b cannot be even.
   modulus = numToFactor->limbs[0].x & 7;
   if ((modulus == 0) || (modulus == 1) || (modulus == 7))
@@ -531,11 +575,11 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
     (void)memset(common.ecm.ProcessExpon, 0xAA, sizeof(common.ecm.ProcessExpon));
   }
   (void)memset(common.ecm.primes, 0xFF, sizeof(common.ecm.primes));
-  for (i = 2; (i * i) < (unsigned int)numPrimes; i++)
+  for (currentPrime = 2; (currentPrime * currentPrime) < (unsigned int)numPrimes; currentPrime++)
   {       // Generation of primes using sieve of Eratosthenes.
-    if ((common.ecm.primes[i >> 3] & (1U << (i & 7U))) != 0U)
+    if ((common.ecm.primes[currentPrime >> 3] & (1U << (currentPrime & 7U))) != 0U)
     {     // Number i is prime.
-      for (j = i * i; j < (unsigned int)numPrimes; j += i)
+      for (j = currentPrime * currentPrime; j < (unsigned int)numPrimes; j += currentPrime)
       {   // Mark multiple of i as composite.
         common.ecm.primes[j >> 3] &= ~(1U << (j & 7U));
       }
@@ -544,78 +588,70 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   // Let n = a^b +/- 1 (n = number to factor).
   // If -1<=n<=2 (mod p) does not hold, b cannot be multiple of p-1.
   // If -2<=n<=2 (mod p) does not hold, b cannot be multiple of (p-1)/2.
-  for (i = 2U; i < (unsigned int)numPrimes; i++)
+  for (currentPrime = 2U; currentPrime < (unsigned int)numPrimes; currentPrime++)
   {
-    if ((common.ecm.primes[i>>3] & (1U << (i & 7U))) != 0U)
-    {      // i is prime according to sieve.
-           // If n+/-1 is multiple of p, then it must be multiple
-           // of p^2, otherwise it cannot be a perfect power.
-      unsigned int index;
-      int minRemainder;
-      int maxRemainder;
-      int rem = getRemainder(numToFactor, i);
-      if ((rem == 1) || ((unsigned int)rem == (i - 1U)))
-      {    // Either n+1 or n-1 is multiple of p.
-           // Test whether it is multiple of p^2.
-        uint64_t remainder;
-        uint64_t i2 = (uint64_t)i * (uint64_t)i;
-        longToBigInteger(&Temp1, i2);
-        (void)BigIntRemainder(numToFactor, &Temp1, &Temp2);     // Temp2 <- nbrToFactor % (i*i)
-        remainder = (uint64_t)Temp2.limbs[0].x;
-        if (Temp2.nbrLimbs > 1)
-        {
-          remainder += (uint64_t)Temp2.limbs[1].x << BITS_PER_GROUP;
-        }
-        if (rem == 1)
-        {
-          plus1 = (remainder == 1U);
-        }
-        if ((unsigned int)rem == (i - 1U))
-        {
-          minus1 = (remainder == (i2 - 1U));
-        }
-      }
-      index = i / 2U;
-      if ((common.ecm.ProcessExpon[index >> 3] & (1U << (index & 7U))) == 0U)
+    if ((common.ecm.primes[currentPrime >> 3] & (1U << (currentPrime & 7U))) == 0U)
+    {    // currentPrime is not prime according to sieve.
+      continue;
+    }
+         // If n+/-1 is multiple of p, then it must be multiple
+         // of p^2, otherwise it cannot be a perfect power.
+    bool isPower;
+    int rem = getRemainder(numToFactor, currentPrime);
+    uint64_t iSquared = (uint64_t)currentPrime * (uint64_t)currentPrime;
+    longToBigInteger(&Temp1, iSquared);
+    // Compute Temp2 as the remainder of nbrToFactor divided by (i*i).
+    (void)BigIntRemainder(numToFactor, &Temp1, &Temp2);
+    isPower = isPerfectPower(rem, currentPrime, &Temp2);
+    if (!isPower)
+    {
+      rem++;
+      if (rem == currentPrime)
       {
-        continue;
+        rem = 0;
       }
-      if (plus1)
+      addbigint(&Temp2, 1);
+      if (BigIntEqual(&Temp1, &Temp2))
       {
-        minRemainder = 2;
+        intToBigInteger(&Temp2, 0);
       }
-      else
+      isPower = isPerfectPower(rem, currentPrime, &Temp2);
+    }
+    if (!isPower)
+    {
+      rem -= 2;
+      if (rem < 0)
       {
-        minRemainder = 1;
+        rem += currentPrime;
       }
-      if (minus1)
+      addbigint(&Temp2, -2);
+      if (Temp2.sign == SIGN_NEGATIVE)
       {
-        maxRemainder = (int)i - 2;
+        BigIntAdd(&Temp2, &Temp1, &Temp2);
       }
-      else
+      isPower = isPerfectPower(rem, currentPrime, &Temp2);
+    }
+    if (!isPower)
+    {  // If it is not a p-th power, the number is not a k*p-th power.
+      for (j = currentPrime; j <= (unsigned int)maxExpon; j += currentPrime)
       {
-        maxRemainder = (int)i - 1;
-      }
-      if ((rem > minRemainder) && (rem < maxRemainder))
-      {
-        for (j = index; j <= (unsigned int)maxExpon; j += index)
-        {
-          common.ecm.ProcessExpon[j >> 3] &= ~(1U << (j & 7U));
-        }
-      }
-      else
-      {
-        if (((unsigned int)modulus == (i - 2U)) && (i > 3U))
-        {
-          for (j = i - 1U; j <= (unsigned int)maxExpon; j += i - 1U)
-          {
-            common.ecm.ProcessExpon[j >> 3] &= ~(1U << (j & 7U));
-          }
-        }
+        common.ecm.ProcessExpon[j >> 3] &= ~(1U << (j & 7U));
       }
     }
   }
-  for (j = 2U; j < 100U; j++)
+}
+
+static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFactor)
+{
+  unsigned int Exponent = 0U;
+  int mod9 = getRemainder(numToFactor, 9);
+  int maxExpon = numToFactor->nbrLimbs * BITS_PER_GROUP;
+  int numPrimes = (2 * maxExpon) + 3;
+  double logar = logBigNbr(numToFactor);
+  // 332199 = logarithm base 2 of max number supported = 10^100000.
+  // Let n = a^b +/- 1 (n = number to factor).
+  initProcessExponVector(numToFactor, numPrimes, maxExpon);
+  for (unsigned int j = 2U; j < 100U; j++)
   {
     double u = logar / log(j) + .000005;
     Exponent = (unsigned int)floor(u);
