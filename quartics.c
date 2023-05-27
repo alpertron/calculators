@@ -45,12 +45,11 @@ static void showFirstTermQuarticEq(int ctr)
 // Solve equation x^4 + cx^2 + e = 0 where e is a perfect square.
 // c and e are rational numbers.
 static void biquadraticConstantSquare(int multiplicity)
-{
+{  // At this moment Rat3 = sqrt(e).
   BigRationalDivideByInt(&RatDeprQuadratic, 2, &RatDeprQuadratic);
   for (int ctr = 0; ctr < 4; ctr++)
   {
-    bool isSquareRoot1;
-    bool isSquareRoot2;
+    enum eSign sign;
     showX(multiplicity);
     BigRationalSubt(&Rat3, &RatDeprQuadratic, &Rat1);
     BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat2);
@@ -59,20 +58,11 @@ static void biquadraticConstantSquare(int multiplicity)
     BigRationalDivideByInt(&Rat2, 2, &Rat2);
     ForceDenominatorPositive(&Rat1);
     ForceDenominatorPositive(&Rat2);
-    // Rat1 must be greater than Rat2. Exchange them if needed.
-    BigRationalSubt(&Rat1, &Rat2, &Rat4);
-    if (Rat4.numerator.sign != Rat4.denominator.sign)
-    {            // Rat1 < Rat2 -> exchange them.
-      CopyBigInt(&tmp1, &Rat1.numerator);
-      CopyBigInt(&Rat1.numerator, &Rat2.numerator);
-      CopyBigInt(&Rat2.numerator, &tmp1);
-      CopyBigInt(&tmp1, &Rat1.denominator);
-      CopyBigInt(&Rat1.denominator, &Rat2.denominator);
-      CopyBigInt(&Rat2.denominator, &tmp1);
-    }
-    isSquareRoot1 = BigRationalSquareRoot(&Rat1, &Rat4);
-    isSquareRoot2 = BigRationalSquareRoot(&Rat2, &Rat5);
-    // They cannot be both perfect squares because in that case the polynomial is reducible.
+    // Rat3 is positive, so Rat1 is greater than Rat2.
+    // If one of Rat1 or Rat2 were square, the root would have the form
+    // a + b sqrt(c), so the quartic polynomial would be reducible.
+    // If both Rat1 and Rat2 were squares, the root would be a rational
+    // number, so it would be reducible.
     showFirstTermQuarticEq(ctr);
     if (Rat1.numerator.sign == SIGN_NEGATIVE)
     {
@@ -81,29 +71,15 @@ static void biquadraticConstantSquare(int multiplicity)
       showText(ptrTimes);
       showText(" (");
     }
-    if (isSquareRoot1)
-    {
-      showRational(&Rat4);
-    }
-    else
-    {
-      enum eSign sign = Rat1.numerator.sign;  // Back up sign.
-      Rat1.numerator.sign = SIGN_POSITIVE;
-      showSquareRootOfRational(&Rat1, 2, ptrTimes);
-      Rat1.numerator.sign = sign;             // Restore sign.
-    }
+    sign = Rat1.numerator.sign;             // Back up sign.
+    Rat1.numerator.sign = SIGN_POSITIVE;
+    showSquareRootOfRational(&Rat1, 2, ptrTimes);
+    Rat1.numerator.sign = sign;             // Restore sign.
     showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-    if (isSquareRoot2)
-    {
-      showRational(&Rat5);
-    }
-    else
-    {
-      enum eSign sign = Rat2.numerator.sign;  // Back up sign.
-      Rat2.numerator.sign = SIGN_POSITIVE;
-      showSquareRootOfRational(&Rat2, 2, ptrTimes);
-      Rat2.numerator.sign = sign;             // Restore sign.
-    }
+    sign = Rat2.numerator.sign;             // Back up sign.
+    Rat2.numerator.sign = SIGN_POSITIVE;
+    showSquareRootOfRational(&Rat2, 2, ptrTimes);
+    Rat2.numerator.sign = sign;             // Restore sign.
     if (Rat1.numerator.sign == SIGN_NEGATIVE)
     {
       showText(")");
