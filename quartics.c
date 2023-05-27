@@ -586,7 +586,7 @@ void QuarticEquation(const int* polynomial, int multiplicity)
       showText("Q = ");
     }
     startCbrt();
-    if ((Rat2.numerator.nbrLimbs == 1) && (Rat2.numerator.limbs[0].x == 1))
+    if (BigIntIsOne(&Rat2.numerator))
     {
       BigRationalAdd(&RatDelta1, &Rat2, &Rat1);
       BigRationalDivideByInt(&Rat1, 2, &Rat1);
