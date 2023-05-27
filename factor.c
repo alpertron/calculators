@@ -606,7 +606,7 @@ static void initProcessExponVector(const BigInteger* numToFactor, int numPrimes,
     if (!isPower)
     {
       rem++;
-      if (rem == currentPrime)
+      if (rem == (int)currentPrime)
       {
         rem = 0;
       }
@@ -622,7 +622,7 @@ static void initProcessExponVector(const BigInteger* numToFactor, int numPrimes,
       rem -= 2;
       if (rem < 0)
       {
-        rem += currentPrime;
+        rem += (int)currentPrime;
       }
       addbigint(&Temp2, -2);
       if (Temp2.sign == SIGN_NEGATIVE)
