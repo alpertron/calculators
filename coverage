@@ -143,6 +143,7 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "3x**3+3x**2+x-5" 2 >> coverage.out
 ./polfact 0 "x^4+7" 0 >> coverage.out
 ./polfact 0 "x^4-7" 0 >> coverage.out
+./polfact 0 "x^4+x^2-2*x+1" 2 >> coverage.out
 ./polfact 0 "x^3-12x^2+12x+23" 0 >> coverage.out
 ./polfact 0 "x^3-12x^2+12x+23" 1 >> coverage.out
 ./polfact 0 "x^3-12x^2+12x+23" 2 >> coverage.out
