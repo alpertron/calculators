@@ -516,11 +516,10 @@ static bool isPerfectPower(int rem, int currentPrime, const BigInteger *pRem2)
   bool powerStarted = false;
   if (currentPrime < 65536)
   {   // Use unsigned integers for all values because it is a lot faster.
-    unsigned int currPrime = (unsigned int)currentPrime;
-    unsigned int rem2 = (unsigned int)pRem2->limbs[0].x;
-    unsigned int base = (unsigned int)rem;
-    unsigned int iSq = currPrime * currPrime;
-    unsigned int currentPower = 1;
+    uint64_t rem2 = (uint64_t)pRem2->limbs[0].x;
+    uint64_t base = (uint64_t)rem;
+    uint64_t iSq = (uint64_t)currentPrime * (uint64_t)currentPrime;
+    uint64_t currentPower = 1U;
     while (mask > 0U)
     {
       if (powerStarted)
@@ -558,6 +557,7 @@ static bool isPerfectPower(int rem, int currentPrime, const BigInteger *pRem2)
   return BigIntEqual(&Temp3, pRem2);
 }
 
+int kk;
 static void initProcessExponVector(const BigInteger* numToFactor, int numPrimes,
   int maxExpon)
 {
