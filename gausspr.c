@@ -23,15 +23,12 @@
 #include <stdbool.h>
 #include "isprime.h"
 #include "graphics.h"
-#ifndef __EMSCRIPTEN__
-  #define EXTERNALIZE	
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
   #include <SDL.h>
 #endif
-static void setPointGaussian(int x, int y);
-setPointFunc setPoint = setPointGaussian;
 
 #define SMALL_NUMBER_BOUND 32768
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
   SDL_Surface* doubleBuffer;
   int oldXCenter;
   int oldYCenter;
@@ -44,19 +41,19 @@ setPointFunc setPoint = setPointGaussian;
 #define MAX_LINES  1000
 #define MAX_COLUMNS 2000
 static char infoText[500];
-int thickness = 8;              // Number of bits to shift.
-int xCenter;
-int xFraction;                  // Range of fraction: 0 to thickness - 1
-int yCenter;
-int yFraction;
-int width;
-int height;
+extern int thickness;                 // Number of bits to shift.
+extern int xCenter;
+extern int xFraction;                 // Range of fraction: 0 to thickness - 1
+extern int yCenter;
+extern int yFraction;
+extern int width;
+extern int height;
 
  // A Gaussian number x+iy is prime if one of these 3 conditions is true:
  // 1) x is not zero and y is not zero and x^2+y^2 is prime
  // 2) x=0, y is prime and y=3 (mod 4)
  // 3) y=0, x is prime and x=3 (mod 4)
-static void setPointGaussian(int x, int y)
+void setPointGaussian(int x, int y)
 {
   int xPhysical;
   int yPhysical;
@@ -75,14 +72,14 @@ static void setPointGaussian(int x, int y)
   int check[NBR_LIMBS];
   unsigned int *ptrPixel;
   unsigned int color;
-#ifdef __EMSCRIPTEN__  
-  unsigned int colorBlack = 0xFF000000U;
-  unsigned int colorGreen = 0xFF00C000U;
-  unsigned int colorWhite = 0xFFC0C0C0U;
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
   Uint32 colorBlack = SDL_MapRGBA(doubleBuffer->format, 0, 0, 0, 255);
   Uint32 colorGreen = SDL_MapRGBA(doubleBuffer->format, 0, 192, 0, 255);
   Uint32 colorWhite = SDL_MapRGBA(doubleBuffer->format, 192, 192, 192, 255);
+#else
+  unsigned int colorBlack = 0xFF000000U;
+  unsigned int colorGreen = 0xFF00C000U;
+  unsigned int colorWhite = 0xFFC0C0C0U;
 #endif
   xPhysical = (width / 2) + ((x - xCenter) * thickness) - xFraction;
   yPhysical = (height / 2) - ((y - yCenter) * thickness) + yFraction;
@@ -107,9 +104,9 @@ static void setPointGaussian(int x, int y)
   }
   else
   {   // Number is not real or imaginary.
-    multiply(x, x, xSquared);
-    multiply(y, y, ySquared);
-    AddBigNbr(xSquared, ySquared, check);   // Check x^2 + y^2.
+    multiplyBigNbrs(x, x, xSquared);
+    multiplyBigNbrs(y, y, ySquared);
+    AddBigNbrs(xSquared, ySquared, check);   // Check x^2 + y^2.
     if (isPrime(check))
     {                          // Number is gaussian prime.
       color = colorGreen;
@@ -129,10 +126,10 @@ static void setPointGaussian(int x, int y)
   }
   for (row = firstRow; row < lastRow; row++)
   {
-#ifdef EMSCRIPTEN
-    ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol];
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
     ptrPixel = (Uint32*)doubleBuffer->pixels + (row * width) + firstCol;
+#else
+    ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol];
 #endif
     for (col = firstCol; col < lastCol; col++)
     {
@@ -148,18 +145,18 @@ static void setPointGaussian(int x, int y)
       col = xPhysical + (thickness / 2);
       if ((col >= 0) && (col < width))
       {
-#ifdef EMSCRIPTEN
-        ptrPixel = &pixelArray[(firstRow * MAX_WIDTH) + col];
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
         ptrPixel = (Uint32*)doubleBuffer->pixels + (firstRow * width) + col;
+#else
+        ptrPixel = &pixelArray[(firstRow * MAX_WIDTH) + col];
 #endif
         for (row = firstRow; row < lastRow; row++)
         {
           *ptrPixel = color;
-#ifdef __EMSCRIPTEN__
-          ptrPixel += MAX_WIDTH;
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
           ptrPixel += width;
+#else
+          ptrPixel += MAX_WIDTH;
 #endif    
         }
       }
@@ -176,18 +173,18 @@ static void setPointGaussian(int x, int y)
         {
           lastRow2 = height;
         }
-#ifdef EMSCRIPTEN
-        ptrPixel = &pixelArray[(firstRow2 * MAX_WIDTH) + col];
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
         ptrPixel = (Uint32*)doubleBuffer->pixels + (firstRow2 * width) + col;
+#else
+        ptrPixel = &pixelArray[(firstRow2 * MAX_WIDTH) + col];
 #endif
         for (row = firstRow2; row < lastRow2; row++)
         {
           *ptrPixel = color;
-#ifdef __EMSCRIPTEN__
-          ptrPixel += MAX_WIDTH;
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
           ptrPixel += width;
+#else
+          ptrPixel += MAX_WIDTH;
 #endif    
         }
       }
@@ -200,10 +197,10 @@ static void setPointGaussian(int x, int y)
       row = yPhysical + (thickness / 2);
       if ((row >= 0) && (row < height))
       {
-#ifdef EMSCRIPTEN
-        ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol];
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
         ptrPixel = (Uint32*)doubleBuffer->pixels + (row * width) + firstCol;
+#else
+        ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol];
 #endif
         for (col = firstCol; col < lastCol; col++)
         {
@@ -224,10 +221,10 @@ static void setPointGaussian(int x, int y)
         {
           lastCol2 = width;
         }
-#ifdef EMSCRIPTEN
-        ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol2];
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
         ptrPixel = (Uint32*)doubleBuffer->pixels + (row * width) + firstCol2;
+#else
+        ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol2];
 #endif
         for (col = firstCol2; col < lastCol2; col++)
         {
@@ -242,7 +239,7 @@ static void setPointGaussian(int x, int y)
   }
 }     /* end method setPoint */
 
-char *getInformation(int x, int y)
+char *gaussianGetInformation(int x, int y)
 {
   char *ptrText = infoText;
   
@@ -286,9 +283,9 @@ char *getInformation(int x, int y)
   return infoText;
 }
 
-static int getValue(char **ppValue)
+static int getValue(const char **ppValue)
 {
-  char *ptrValue = *ppValue;
+  const char *ptrValue = *ppValue;
   int nbr = 0;
   int sign = 0;
   if (*ptrValue == '-')
@@ -305,9 +302,9 @@ static int getValue(char **ppValue)
   return sign? -nbr: nbr;
 }
 
-int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
+char *gaussianNbrChanged(const char *value, int inputBoxNbr, int newWidth, int newHeight)
 {
-  char* ptrValue = value;
+  const char* ptrValue = value;
   width = newWidth;
   height = newHeight;
   if (inputBoxNbr == 1)
@@ -322,7 +319,7 @@ int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
   {           // Zoom in
     if (thickness == 32)
     {
-      return 0;
+      return NULL;
     }
     thickness *= 2;
     xFraction <<= 1;
@@ -332,11 +329,17 @@ int nbrChanged(char *value, int inputBoxNbr, int newWidth, int newHeight)
   {           // Zoom out
     if (thickness == 1)
     {
-      return 0;
+      return NULL;
     }
     thickness /= 2;
     xFraction >>= 1;
     yFraction >>= 1;
   }
-  return 0;
+  return NULL;
 }
+
+#ifdef __EMSCRIPTEN__
+  setPointFunc setPoint = setPointGaussian;
+  getInfoFunc getInfo = gaussianGetInformation;
+  nbrChangedFunc nbrChgd = gaussianNbrChanged;
+#endif

@@ -27,8 +27,9 @@
 #include "batch.h"
 #include "polynomial.h"
 #include "fromBlockly.h"
+#include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 13
+#define DEBUG_CODE 28
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -52,6 +53,7 @@ int factor7[2002];
 int factor8[2002];
 int factors[5000];
 int quotientPoly[20];
+char results[1000];
 struct sFactors astFactors[1000];
 extern int number[MAX_LEN];
 extern int nbrLimbs;
@@ -515,14 +517,24 @@ int main(int argc, char* argv[])
   showSumTwoSquares();
   (void)printf("%s\n", output);
 #elif DEBUG_CODE == 27
-if (argc != 2)
-{
-  printf("divisors {number}\n");
-  return 1;
-}
-ecmFrontText(argv[1], true, NULL);
-showDivisors();
-(void)printf("%s\n", output);
+  if (argc != 2)
+  {
+    printf("divisors {number}\n");
+    return 1;
+  }
+  ecmFrontText(argv[1], true, NULL);
+  showDivisors();
+  (void)printf("%s\n", output);
+#elif DEBUG_CODE == 28
+  char* ptrResults = results;
+  for (int cont = 1; cont < argc; cont++)
+  {
+    int value[2];
+    getValue64(argv[cont], &value[0], &value[1]);
+    ptrResults = appendInt(ptrResults, (isPrime(value)? 1: 0));
+  }
+  *ptrResults = 0;
+  (void)printf("%s\n", results);
 #endif
   return 0;
 }

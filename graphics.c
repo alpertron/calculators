@@ -24,9 +24,12 @@
 
 #ifndef __EMSCRIPTEN__
 #define EXTERNALIZE	
+#if TEST_GRAPHICS
 #include <SDL.h>
+extern setPointFunc setPoint;
 SDL_Surface* screen;
 SDL_Surface* doubleBuffer;
+#endif
 int oldXCenter;
 int oldYCenter;
 int oldXFraction;
@@ -34,32 +37,33 @@ int oldYFraction;
 int timer;
 bool quit;
 #else     // Emscripten
+extern setPointFunc setPoint;
+extern getInfoFunc getInfo;
+extern nbrChangedFunc nbrChgd;
 #define EXTERNALIZE  __attribute__((visibility("default")))
 extern unsigned int pixelArray[PIXEL_ARRAY_SIZE];
 #endif
 
-extern setPointFunc setPoint;
-extern int thickness;                  // Number of bits to shift.
-extern int xCenter;
-extern int xFraction;                  // Range of fraction: 0 to thickness - 1
-extern int yCenter;
-extern int yFraction;
-extern int width;
-extern int height;
+int thickness = 8;              // Number of bits to shift.
+int xCenter;
+int xFraction;                  // Range of fraction: 0 to thickness - 1
+int yCenter;
+int yFraction;
+int width;
+int height;
 
+#if defined(__EMSCRIPTEN__) || TEST_GRAPHICS
 EXTERNALIZE void drawPartialGraphic(int xminDisp, int xmaxDisp, int yminDisp, int ymaxDisp)
 {
-  int x;
-  int y;
   int adjust = 16384 / thickness;
   int xmin = xCenter + ((xFraction + xminDisp + 16384) / thickness) - adjust;
   int xmax = xCenter + ((xFraction + xmaxDisp + 16384) / thickness) - adjust;
   int ymin = yCenter - ((-yFraction - yminDisp + 16384) / thickness) + adjust;
   int ymax = yCenter - ((-yFraction - ymaxDisp + 16384) / thickness) + adjust;
 
-  for (x = xmin; x <= xmax; x++)
+  for (int x = xmin; x <= xmax; x++)
   {
-    for (y = ymin; y <= ymax; y++)
+    for (int y = ymin; y <= ymax; y++)
     {
       setPoint(x, y);
     }  /* end for y */
@@ -75,6 +79,16 @@ EXTERNALIZE void moveGraphic(int deltaX, int deltaY)
   yFraction += deltaY;
   yCenter += ((yFraction + 16384) / thickness) - adjust;
   yFraction &= thickness - 1;
+}
+
+EXTERNALIZE char* getInformation(int x, int y)
+{
+  return getInfo(x, y);
+}
+
+EXTERNALIZE char* nbrChanged(char* value, int inputBoxNbr, int newWidth, int newHeight)
+{
+  return nbrChgd(value, inputBoxNbr, newWidth, newHeight);
 }
 
 #ifdef __EMSCRIPTEN__
@@ -298,4 +312,5 @@ int main(int argc, char* argv[])
   SDL_Quit();
   return 0;
 }
+#endif
 #endif

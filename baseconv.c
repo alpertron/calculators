@@ -500,17 +500,3 @@ void BigInteger2Hex(char** ppDecimal, const BigInteger* pBigInt, int groupLength
   Bin2Hex(&ptrDecimal, pBigInt->limbs, pBigInt->nbrLimbs, groupLength);
   *ppDecimal = ptrDecimal;
 }
-
-void copyStr(char** pptrString, const char* stringToCopy)
-{
-  char* ptrString = *pptrString;
-  const char* ptrStringToCopy = stringToCopy;
-  while (*ptrStringToCopy != '\0')
-  {
-    *ptrString = *ptrStringToCopy;
-    ptrString++;
-    ptrStringToCopy++;
-  }
-  *ptrString = '\0';
-  *pptrString = ptrString;
-}

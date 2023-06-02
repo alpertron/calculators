@@ -494,6 +494,12 @@ echo -e "\n\n**** DIVISORS ****" >> coverage.out
 ./divisors "422500*289*7" >> coverage.out
 lcov --capture --directory . --output-file divisors.info
 gcovr --json run-13.json
+make clean
+make isprime flags_coverage=--coverage
+echo -e "\n\n**** ISPRIME ****" >> coverage.out
+./isprime -3 -5 -7 -9 4759 81463477561 25326001 341550071728321 >> coverage.out
+lcov --capture --directory . --output-file isprime.info
+gcovr --json run-14.json
 gcovr --add-tracefile "run-*.json" --sonarqube > coverage.xml
 rm run*json
 rm *.gcda

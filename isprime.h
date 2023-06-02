@@ -31,10 +31,11 @@
 #define FOURTH_INT_RANGE_U 0x20000000U
 #define MAX_VALUE_LIMB   0x7FFFFFFFU
 
-bool isPrime(int *value);
-void multiply(int factor1, int factor2, int *prod);
-void AddBigNbr(const int *Nbr1, const int *Nbr2, int *Sum);
-void SubtBigNbr(const int *Nbr1, const int *Nbr2, int *Diff);
+bool isPrime(const int *value);
+void multiplyBigNbrs(int factor1, int factor2, int *prod);
+void AddBigNbrs(const int *Nbr1, const int *Nbr2, int *Sum);
+void SubtBigNbrs(const int *Nbr1, const int *Nbr2, int *Diff);
 int getPrime(int index);
 char* appendInt(char* text, int intValue);
+void getValue64(const char* value, int* pNbrLo, int* pNbrHi);
 #endif

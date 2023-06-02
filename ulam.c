@@ -23,22 +23,19 @@
 #include <stdint.h>
 #include "isprime.h"
 #include "graphics.h"
-#ifndef __EMSCRIPTEN__
-  #define EXTERNALIZE	
+#include "copyStr.h"
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
   #include <SDL.h>
 #endif
-static void setPointUlamSpiral(int x, int y);
-setPointFunc setPoint = setPointUlamSpiral;
 
 #define NBR_SMALL_PRIMES   25
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
   SDL_Surface* doubleBuffer;
   int oldXCenter;
   int oldYCenter;
   int oldXFraction;
   int oldYFraction;
 #else     // Emscripten
-  #define EXTERNALIZE  __attribute__((visibility("default")))
   unsigned int pixelArray[PIXEL_ARRAY_SIZE];
 #endif
 
@@ -49,13 +46,13 @@ static bool showAlgebraic;
 static int startNumber[2] = {1, 0};
 static int multiple[NBR_SMALL_PRIMES][97];
 static bool initMultipleArrayCalled;
-int thickness = 8;         // Number of pixels for each square.
-int xCenter;
-int xFraction;             // Range of fraction: 0 to thickness - 1
-int yCenter;
-int yFraction;
-int width;
-int height;
+extern int thickness;             // Number of pixels for each square.
+extern int xCenter;
+extern int xFraction;             // Range of fraction: 0 to thickness - 1
+extern int yCenter;
+extern int yFraction;
+extern int width;
+extern int height;
 
 static void initMultipleArray(void)
 {
@@ -114,16 +111,16 @@ bool algebraicFactor(int linear, int *indep)
   t1 = (int)(((double)(-linear) + iSqDelta) / 4);    // t1 and t2 are less than 2^31 so
   t2 = (int)(((double)(-linear) - iSqDelta) / 4);    // they fit into a double.
 
-  multiply((2*t1) + linear, t1, temp);
-  AddBigNbr(temp, indep, temp);
-  AddBigNbr(temp, indep, temp);
+  multiplyBigNbrs((2*t1) + linear, t1, temp);
+  AddBigNbrs(temp, indep, temp);
+  AddBigNbrs(temp, indep, temp);
   if ((temp[0] != 0) || (temp[1] != 0))
   {
     return false;
   }
-  multiply((2*t2) + linear, t2, temp);
-  AddBigNbr(temp, indep, temp);
-  AddBigNbr(temp, indep, temp);
+  multiplyBigNbrs((2*t2) + linear, t2, temp);
+  AddBigNbrs(temp, indep, temp);
+  AddBigNbrs(temp, indep, temp);
   if ((temp[0] != 0) || (temp[1] != 0))
   {
     return false;
@@ -139,14 +136,14 @@ static void getN(int valX, int valY, int *value)
   unsigned int tmp;
   if ((x >= 0) && (x >= y) && (x >= -y))
   {                     // Right quadrant.
-    multiply((4 * x) + 3, x, value);
+    multiplyBigNbrs((4 * x) + 3, x, value);
     tmp = (unsigned int)y & MAX_VALUE_LIMB;
     addend[0] = (int)tmp;
     addend[1] = ((y >= 0)? 0: MAX_INT_NBR);
   }
   else if ((y >= 0) && (y > x) && (y > -x))
   {                     // Top quadrant.
-    multiply((4 * y) - 3, y, value);
+    multiplyBigNbrs((4 * y) - 3, y, value);
     x = -x;
     tmp = (unsigned int)x & MAX_VALUE_LIMB;
     addend[0] = (int)tmp;
@@ -154,7 +151,7 @@ static void getN(int valX, int valY, int *value)
   }
   else if ((x <= 0) && (x <= y) && (x <= -y))
   {                     // Left quadrant.
-    multiply((4 * x) + 1, x, value);
+    multiplyBigNbrs((4 * x) + 1, x, value);
     y = -y;
     tmp = (unsigned int)y & MAX_VALUE_LIMB;
     addend[0] = (int)tmp;
@@ -162,13 +159,13 @@ static void getN(int valX, int valY, int *value)
   }
   else
   {                     // Bottom quadrant.
-    multiply((4 * y) - 1, y, value);
+    multiplyBigNbrs((4 * y) - 1, y, value);
     tmp = (unsigned int)x & MAX_VALUE_LIMB;
     addend[0] = (int)tmp;
     addend[1] = ((x >= 0) ? 0 : MAX_INT_NBR);
   }
-  AddBigNbr(value, addend, value);
-  AddBigNbr(value, startNumber, value);
+  AddBigNbrs(value, addend, value);
+  AddBigNbrs(value, startNumber, value);
 }
 
 void AddTwoLimbsPlusOneLimb(const int *addend1, int addend2, int *sum)
@@ -178,12 +175,12 @@ void AddTwoLimbsPlusOneLimb(const int *addend1, int addend2, int *sum)
   if (addend2 >= 0)
   {
     temp[0] = addend2;
-    AddBigNbr(addend1, temp, sum);
+    AddBigNbrs(addend1, temp, sum);
   }
   else
   {
     temp[0] = -addend2;
-    SubtBigNbr(addend1, temp, sum);
+    SubtBigNbrs(addend1, temp, sum);
   }
 }
 
@@ -209,16 +206,16 @@ void setPointUlamSpiral(int x, int y)
   int Nminustt[2];
   unsigned int algebraicColor;
   unsigned int color;
-#ifdef __EMSCRIPTEN__  
-  unsigned int colorBlack = 0xFF000000U;
-  unsigned int colorBlue = 0xFFFF0000U;
-  unsigned int colorGreen = 0xFF00C000U;
-  unsigned int colorWhite = 0xFFC0C0C0U;
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
   Uint32 colorBlack = SDL_MapRGBA(doubleBuffer->format, 0, 0, 0, 255);
   Uint32 colorBlue = SDL_MapRGBA(doubleBuffer->format, 0, 0, 255, 255);
   Uint32 colorGreen = SDL_MapRGBA(doubleBuffer->format, 0, 192, 0, 255);
   Uint32 colorWhite = SDL_MapRGBA(doubleBuffer->format, 192, 192, 192, 255);
+#else
+  unsigned int colorBlack = 0xFF000000U;
+  unsigned int colorBlue = 0xFFFF0000U;
+  unsigned int colorGreen = 0xFF00C000U;
+  unsigned int colorWhite = 0xFFC0C0C0U;
 #endif
   unsigned int *ptrPixel;
   initMultipleArray();
@@ -260,8 +257,8 @@ void setPointUlamSpiral(int x, int y)
       t = -y;
     }
     t = t + t;
-    multiply(t, t, Nminustt);
-    SubtBigNbr(value, Nminustt, Nminustt);
+    multiplyBigNbrs(t, t, Nminustt);
+    SubtBigNbrs(value, Nminustt, Nminustt);
     if ((x + y) >= 0)
     {
       if ((x - y) >= 0)
@@ -318,10 +315,10 @@ void setPointUlamSpiral(int x, int y)
   }
   for (row = firstRow; row < lastRow; row++)
   {
-#ifdef EMSCRIPTEN
-    ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol];
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
     ptrPixel = (Uint32*)doubleBuffer->pixels + (row * width) + firstCol;
+#else
+    ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol];
 #endif
     for (col = firstCol; col < lastCol; col++)
     {
@@ -338,18 +335,18 @@ void setPointUlamSpiral(int x, int y)
     {
       if ((xPhysical >= 0) && (xPhysical < width))
       {
-#ifdef EMSCRIPTEN
-        ptrPixel = &pixelArray[(firstRow * MAX_WIDTH) + xPhysical];
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
         ptrPixel = (Uint32*)doubleBuffer->pixels + (firstRow * width) + xPhysical;
+#else
+        ptrPixel = &pixelArray[(firstRow * MAX_WIDTH) + xPhysical];
 #endif
         for (row = firstRow; row < lastRow; row++)
         {
           *ptrPixel = color;
-#ifdef __EMSCRIPTEN__
-          ptrPixel += MAX_WIDTH;
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
           ptrPixel += width;
+#else
+          ptrPixel += MAX_WIDTH;
 #endif    
         }
       }
@@ -360,10 +357,10 @@ void setPointUlamSpiral(int x, int y)
       currY = yPhysical + thickness - 1;
       if ((currY >= 0) && (currY < height))
       {
-#ifdef EMSCRIPTEN
-        ptrPixel = &pixelArray[(currY * MAX_WIDTH) + firstCol];
-#else
+#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
         ptrPixel = (Uint32*)doubleBuffer->pixels + (currY * width) + firstCol;
+#else
+        ptrPixel = &pixelArray[(currY * MAX_WIDTH) + firstCol];
 #endif
         for (col = firstCol; col < lastCol; col++)
         {
@@ -374,23 +371,6 @@ void setPointUlamSpiral(int x, int y)
     }
   }
 }     /* end method setPoint */
-
-#ifdef __EMSCRIPTEN__
-void copyStr(char** pptrString, const char* stringToCopy)
-{
-  char* ptrString = *pptrString;
-  const char* ptrStringToCopy = stringToCopy;
-  while (*ptrStringToCopy != '\0')
-  {
-    *ptrString = *ptrStringToCopy;
-    ptrString++;
-    ptrStringToCopy++;
-  }
-  *ptrString = '\0';
-  *pptrString = ptrString;
-}
-
-#endif
 
 // Convert the number from binary to string.
 char *appendInt64(char *text, const int *value)
@@ -504,11 +484,11 @@ static void ShowLabel(char **pptrText, const char *text, int linear, int *indep)
       {    // Independent term is positive.
         dDelta = (dB * dB) - dFourAC;
       }
-      double dSqDelta = sqrt(dDelta) + 0.5;                 // Convert to nearest integer.
+      double dSqDelta = sqrt(dDelta) + 0.5;      // Convert to nearest integer.
       int iSqDelta = (int)dSqDelta;
-      int t1 = (int)((-dB + iSqDelta) / 4);                 // t1 and t2 are less than 2^31 so
-      int t2 = (int)((-dB - iSqDelta) / 4);                 // they fit into a double.
-                                                            // Twice the roots are integer numbers
+      int t1 = (int)((-dB + iSqDelta) / 4);         // t1 and t2 are less than 2^31 so
+      int t2 = (int)((-dB - iSqDelta) / 4);         // they fit into a double.
+                                                    // Twice the roots are integer numbers
       if (t1 > 0)
       {
         copyStr(&ptrText, " = (2t + ");
@@ -615,9 +595,8 @@ static void ShowLabel(char **pptrText, const char *text, int linear, int *indep)
       }
       else
       {
-        int i;
         bool firstTime = true;
-        for (i = 0; i < NBR_SMALL_PRIMES; i++)
+        for (int i = 0; i < NBR_SMALL_PRIMES; i++)
         {
           int deltaModP;
           int indepModP;
@@ -657,7 +636,7 @@ static void ShowLabel(char **pptrText, const char *text, int linear, int *indep)
   *pptrText = ptrText;
 }
 
-EXTERNALIZE char *getInformation(int x, int y)
+char *ulamGetInformation(int x, int y)
 {
   int value[2];
   char *ptrText = infoText;
@@ -689,8 +668,8 @@ EXTERNALIZE char *getInformation(int x, int y)
       t = -yLogical;
     }
     t = t + t;
-    multiply(t, t, Nminustt);
-    SubtBigNbr(value, Nminustt, Nminustt);
+    multiplyBigNbrs(t, t, Nminustt);
+    SubtBigNbrs(value, Nminustt, Nminustt);
     if ((xLogical + yLogical) >= 0)
     {
       if ((xLogical - yLogical) >= 0)
@@ -780,50 +759,15 @@ EXTERNALIZE char *getInformation(int x, int y)
 
 // inputBoxNbr = 1 -> changing center
 // inputBoxNbr = 2 -> changing start value
-EXTERNALIZE char* nbrChanged(char* value, int inputBoxNbr, int newWidth, int newHeight)
+char *ulamNbrChanged(const char* value, int inputBoxNbr, int newWidth, int newHeight)
 {
-  bool valueIsNegative = false;
-  char* ptrValue = value;
   int temp[2];
-  int nbrLo = 0;
-  int nbrHi = 0;
-  int index;
+  int nbrLo;
+  int nbrHi;
   unsigned int tmp;
   width = newWidth;
   height = newHeight;
-  if (*ptrValue == '-')
-  {
-    valueIsNegative = true;
-    ptrValue++;
-  }
-  for (index = 0; index < 19; index++)
-  {
-    int charConverted;
-    double dProd;
-    if (*ptrValue == 0)
-    {      // End of string, so end of conversion from string to number.
-      break;
-    }
-    charConverted = (*ptrValue - '0');
-    ptrValue++;
-    dProd = ((double)nbrLo * 10.0) + (double)charConverted;
-    nbrLo = (nbrLo * 10) + charConverted;
-    tmp = (unsigned int)nbrLo & MAX_VALUE_LIMB;
-    nbrLo = (int)tmp;
-    nbrHi = (nbrHi * 10) + (int)(dProd / (double)LIMB_RANGE);
-  }
-  if (valueIsNegative)
-  {
-    if (nbrLo == 0)
-    {
-      nbrHi = -nbrHi & (int)MAX_VALUE_LIMB;
-    }
-    else
-    {
-      nbrLo = -nbrLo & (int)MAX_VALUE_LIMB;
-      nbrHi = (-1-nbrHi) & (int)MAX_VALUE_LIMB;
-    }
-  }
+  getValue64(value, &nbrLo, &nbrHi);
   if (inputBoxNbr == 1)
   {           // Changing center
               // nbr <- nbr - startNumber + 1 
@@ -903,3 +847,9 @@ EXTERNALIZE char* nbrChanged(char* value, int inputBoxNbr, int newWidth, int new
   (void)appendInt64(&infoText[1], temp);
   return infoText;
 }
+
+#ifdef __EMSCRIPTEN__
+  setPointFunc setPoint = setPointUlamSpiral;
+  getInfoFunc getInfo = ulamGetInformation;
+  nbrChangedFunc nbrChgd = ulamNbrChanged;
+#endif

@@ -125,7 +125,7 @@ static void smallmodmult(int factor1, int factor2, int *product, int mod)
   }
 }
 
-static void MontgomeryMult(int *factor1, int *factor2, int *Product)
+static void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
 {
   if (TestNbr[1] == 0)
   {
@@ -154,7 +154,7 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   Prod1 = (int32_t)(Pr >> BITS_PER_GROUP);
     
   Nbr = *(factor1 + 1);
-  Pr = Nbr * (int64_t)factor2_0 + (int32_t)Prod0;
+  Pr = Nbr * (int64_t)factor2_0 + (int64_t)Prod0;
   MontDig = ((int32_t)Pr * MontgomeryMultN) & MAX_VALUE_LIMB;
   Pr = ((Pr - ((int64_t)MontDig * (int64_t)TestNbr0)) >> BITS_PER_GROUP) -
     ((int64_t)MontDig * (int64_t)TestNbr1) +
@@ -229,7 +229,7 @@ static void MontgomeryMult(int *factor1, int *factor2, int *Product)
   *(Product+1) = Prod1;
 }
 
-void AddBigNbr(const int *Nbr1, const int *Nbr2, int *Sum)
+void AddBigNbrs(const int *Nbr1, const int *Nbr2, int *Sum)
 {
   unsigned int carry = (unsigned int)*Nbr1 + (unsigned int)*Nbr2;
   *Sum = carry & MAX_VALUE_LIMB;
@@ -237,7 +237,7 @@ void AddBigNbr(const int *Nbr1, const int *Nbr2, int *Sum)
   *(Sum+1) = carry & MAX_VALUE_LIMB;
 }
 
-void SubtBigNbr(const int *Nbr1, const int *Nbr2, int *Diff)
+void SubtBigNbrs(const int *Nbr1, const int *Nbr2, int *Diff)
 {
   unsigned int borrow = (unsigned int)*Nbr1 - (unsigned int)*Nbr2;
   *Diff = borrow & MAX_VALUE_LIMB;
@@ -278,7 +278,7 @@ static void GetMontgomeryParms(void)
     MontgomeryMultR1[0] = 1;
     return;
   }
-  N = (int)TestNbr[0];   // 2 least significant bits of inverse correct.
+  N = TestNbr[0];   // 2 least significant bits of inverse correct.
   x = N;
   x = x * (2 - (N * x)); // 4 least significant bits of inverse correct.
   x = x * (2 - (N * x)); // 8 least significant bits of inverse correct.
@@ -293,7 +293,8 @@ static void GetMontgomeryParms(void)
 // Perform Miller-Rabin test of number stored in variable TestNbr.
 // The bases to be used are 2, 3, 5, 7, 11, 13, 17, 19 and 23 which
 // ensures that any composite less than 3*10^18 is discarded.
-bool isPrime(int *value)
+// On input: value: array of two ints, first low, then high.
+bool isPrime(const int *value)
 {
   static const char bases[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 0};
   // List of lowest composite numbers that passes Miller-Rabin for above bases (OEIS A014233).
@@ -475,7 +476,7 @@ bool isPrime(int *value)
   i = 0;
   j = 0;
   while ((limits[j+1] < TestNbr1) || 
-         ((limits[j+1] == TestNbr1) && (limits[j] < TestNbr0)))
+         ((limits[j+1] == TestNbr1) && (limits[j] <= TestNbr0)))
   {
     int idxNbr;
     base = bases[i];
@@ -544,7 +545,7 @@ bool isPrime(int *value)
   return true;         // All Miller-Rabin tests were passed, so number is prime.
 }
 
-void multiply(int factor1, int factor2, int *prod)
+void multiplyBigNbrs(int factor1, int factor2, int *prod)
 {
   unsigned int tmp = ((unsigned int)factor1 * (unsigned int)factor2) & MAX_VALUE_LIMB;
 #ifdef _USING64BITS_
@@ -595,4 +596,48 @@ char* appendInt(char* text, int intValue)
   ptrText++;
   *ptrText = 0;
   return ptrText;
+}
+
+void getValue64(const char* value, int* pNbrLo, int* pNbrHi)
+{
+  bool valueIsNegative = false;
+  const char* ptrValue = value;
+  int nbrLo = 0;
+  int nbrHi = 0;
+  if (*ptrValue == '-')
+  {
+    valueIsNegative = true;
+    ptrValue++;
+  }
+  for (int index = 0; index < 19; index++)
+  {
+    unsigned int tmp;
+    int charConverted;
+    double dProd;
+    if (*ptrValue == 0)
+    {      // End of string, so end of conversion from string to number.
+      break;
+    }
+    charConverted = (*ptrValue - '0');
+    ptrValue++;
+    dProd = ((double)nbrLo * 10.0) + (double)charConverted;
+    nbrLo = (nbrLo * 10) + charConverted;
+    tmp = (unsigned int)nbrLo & MAX_VALUE_LIMB;
+    nbrLo = (int)tmp;
+    nbrHi = (nbrHi * 10) + (int)(dProd / (double)LIMB_RANGE);
+  }
+  if (valueIsNegative)
+  {
+    if (nbrLo == 0)
+    {
+      nbrHi = -nbrHi & (int)MAX_VALUE_LIMB;
+    }
+    else
+    {
+      nbrLo = -nbrLo & (int)MAX_VALUE_LIMB;
+      nbrHi = (-1 - nbrHi) & (int)MAX_VALUE_LIMB;
+    }
+  }
+  *pNbrHi = nbrHi;
+  *pNbrLo = nbrLo;
 }

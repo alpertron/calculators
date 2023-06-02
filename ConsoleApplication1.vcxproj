@@ -166,6 +166,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="gausspr.c" />
+    <ClCompile Include="graphics.c" />
+    <ClCompile Include="isprime.c" />
+    <ClCompile Include="output.c" />
     <ClCompile Include="quartics.c" />
     <ClCompile Include="sumSquares.c" />
     <ClCompile Include="tsqcubes.c" />
@@ -201,7 +205,7 @@
     <ClCompile Include="inputstr.c" />
     <ClCompile Include="karatsuba.c" />
     <ClCompile Include="modmult.c" />
-    <ClCompile Include="output.c" />
+    <ClCompile Include="copyStr.c" />
     <ClCompile Include="partition.c" />
     <ClCompile Include="polfact.c" />
     <ClCompile Include="polfacte.c" />
@@ -218,9 +222,11 @@
     <ClCompile Include="test.c" />
     <ClCompile Include="showtime.c" />
     <ClCompile Include="tsquares.c" />
+    <ClCompile Include="ulam.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="batch.h" />
+    <ClInclude Include="copyStr.h" />
     <ClInclude Include="exprfact.h" />
     <ClInclude Include="fft.h" />
     <ClInclude Include="fromBlockly.h" />
