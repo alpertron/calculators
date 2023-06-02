@@ -497,7 +497,8 @@ gcovr --json run-13.json
 make clean
 make isprime flags_coverage=--coverage
 echo -e "\n\n**** ISPRIME ****" >> coverage.out
-./isprime -3 -5 -7 -9 4759 81463477561 25326001 341550071728321 >> coverage.out
+./isprime -3 -5 -7 -9 4759 81463477561 25326001 341550071728321 1000000000000000003 >> coverage.out
+./isprime 0 1 2 3 4 15 65537 -4294967296 >> coverage.out
 lcov --capture --directory . --output-file isprime.info
 gcovr --json run-14.json
 gcovr --add-tracefile "run-*.json" --sonarqube > coverage.xml

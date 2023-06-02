@@ -531,7 +531,7 @@ int main(int argc, char* argv[])
   {
     int value[2];
     getValue64(argv[cont], &value[0], &value[1]);
-    ptrResults = appendInt(ptrResults, (isPrime(value)? 1: 0));
+    ptrResults = appendInt(ptrResults, (isPrime(value)? -109: 0));
   }
   *ptrResults = 0;
   (void)printf("%s\n", results);
