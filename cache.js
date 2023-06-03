@@ -30,17 +30,11 @@ async function updateCache(cache)
     await tempCache.addAll([url].concat((typeof(WebAssembly) === "undefined")?
                getCalcURLs():getCalcURLs().slice(1)));
     // For each file in temporary cache, copy it to cache passed as parameter.
-    const responseArr = await tempCache.matchAll();
-    responseArr.forEach(function(responseTempCache, _index, _array)
+    const matchesArr = await tempCache.matchAll();
+    for (const match of matchesArr)
     {
-      cache.put(responseTempCache.url, responseTempCache).
-            then(function()
-            {              
-            },
-            function()
-            {              
-            });
-    });
+      await cache.put(match.url, match);
+    }
   }
   catch (e)
   {  // Nothing to do on error (missing file, error retrieving file, etc.)
@@ -92,29 +86,30 @@ async function fillCache()
         await tempCache.addAll((typeof(WebAssembly) === "undefined")?
                   getCalcURLs():getCalcURLs().slice(1));
         // Copy cached resources to main cache and delete this one.
-        let responseArr = await tempCache.matchAll();
-        // All responses in array responseArr.
-        responseArr.forEach(async function(responseTempCache, _index, _array)
+        let matchesArr = await tempCache.matchAll();
+        // For each match...
+        for (const match of matchesArr)
         {
-          let urlTemp = responseTempCache.url;
+          let urlTemp = match.url;
           let indexZero = url.indexOf("00");
           if (indexZero > 0)
           {      // There is an old version of this resource on cache to be erased.
-            let keys = await cache.keys();
-            keys.forEach(async function(requestCache, _idx, _arr)
+            let keysArr = await cache.keys();
+            // For each key...
+            for (const key of keysArr)
             {    // Traverse cache.
-              if (requestCache.url.startsWith(urlTemp.substring(0, indexZero+2)) &&
-                  requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
-                  requestCache.url.endsWith(urlTemp.substring(indexZero+4)))
+              if (key.url.startsWith(urlTemp.substring(0, indexZero+2)) &&
+                  key.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
+                  key.url.endsWith(urlTemp.substring(indexZero+4)))
               {  // Old version of asset found (different number and same prefix
                  // and suffix). Delete it from cache.
-                await cache.delete(requestCache);
+                await cache.delete(key);
               }  
-            });
+            }
           }
              // Put resource into cache. 
-          await cache.put(urlTemp, responseTempCache);
-        });
+          await cache.put(urlTemp, match);
+        }
         await cache.put(url, responseHTML);
       }
       catch (e)    // Cannot fetch HTML.
