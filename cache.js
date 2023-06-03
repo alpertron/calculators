@@ -23,10 +23,13 @@ let url = window.location.pathname;
 async function updateCache(cache)
 {
   try
-  {
+  { // Retrieve from server all files. Use temporary cache.
     const tempCache = await caches.open("cacheTEMP");
+    // Do not retrieve alternate JavaScript code if
+    // WebAssembly is enabled in browser. Always include current HTML.
     await tempCache.addAll([url].concat((typeof(WebAssembly) === "undefined")?
                getCalcURLs():getCalcURLs().slice(1)));
+    // For each file in temporary cache, copy it to cache passed as parameter.
     const responseArr = await tempCache.matchAll();
     responseArr.forEach(function(responseTempCache, _index, _array)
     {
@@ -40,10 +43,10 @@ async function updateCache(cache)
     });
   }
   catch (e)
-  {  // Nothing to do on error.
+  {  // Nothing to do on error (missing file, error retrieving file, etc.)
   }
   finally
-  {
+  {  // In any case, delete the temporary cache.
     await caches.delete("cacheTEMP");
   }
 }
@@ -52,9 +55,10 @@ async function fillCache()
 {
   try
   {
-    // Test whether the HTML is already on the cache.
+    // Test whether the current HTML is already on the cache.
     const cache = await caches.open("newCache");
-    const response = await cache.match(url); 
+    // url has the format "/xxxx.HTML".
+    const response = await cache.match(url);
     if (typeof response === "undefined")
     {     // HTML is not in cache.
       await updateCache(cache);
@@ -63,63 +67,53 @@ async function fillCache()
     {     // Response is the HTML contents.
       let date = response.headers.get("last-modified");
           // Request the HTML from the Web server.
-          // Use non-standard header to tell Service Worker not to retrieve HTML from cache.
+          // Use non-standard header to tell Service Worker
+          // not to retrieve HTML from cache.
       let responseHTML = await fetch(url,
                                {headers:{"If-Modified-Since": date, "x-calc": "1"},
                                cache: "no-store"});
       if (responseHTML.status !== 200)
       {
-        return;        // HTML could not be retrieved, so go out.
+        return;       // HTML could not be retrieved, so go out.
       }
       if (date === responseHTML.headers.get("last-modified"))
       {
-        return;        // HTML has not changed, so other files have not been changed. Go out.
+        return;       // HTML has not changed,
+                      // so other files have not been changed. Go out.
       }
       // Read files to new cache.
-      // Use temporary cache so if there is any network error, original cache is not changed.
+      // Use temporary cache so if there is any network error,
+      // original cache is not changed.
       
       try
       {
         let tempCache = await caches.open("cacheTEMP");
         // Do not fetch HTML because it is already fetched.
         await tempCache.addAll((typeof(WebAssembly) === "undefined")?
-                  getCalcURLs():getCalcURLs().shift);
+                  getCalcURLs():getCalcURLs().slice(1));
         // Copy cached resources to main cache and delete this one.
-        let responseArr = tempCache.matchAll();
+        let responseArr = await tempCache.matchAll();
         // All responses in array responseArr.
         responseArr.forEach(async function(responseTempCache, _index, _array)
         {
           let urlTemp = responseTempCache.url;
           let indexZero = url.indexOf("00");
           if (indexZero > 0)
-          {        // There is an old version of this resource on cache to be erased.
+          {      // There is an old version of this resource on cache to be erased.
             let keys = await cache.keys();
-            keys.forEach(function(requestCache, _idx, _arr)
+            keys.forEach(async function(requestCache, _idx, _arr)
             {    // Traverse cache.
               if (requestCache.url.startsWith(urlTemp.substring(0, indexZero+2)) &&
                   requestCache.url.substring(indexZero+2, indexZero+4) !== urlTemp.substring(indexZero+2, indexZero+4) &&
                   requestCache.url.endsWith(urlTemp.substring(indexZero+4)))
-              {  // Old version of asset found (different number and same prefix and suffix). Delete it from cache.
-                cache.delete(requestCache).then(function()
-                {
-                },
-                function()
-                {
-                });
+              {  // Old version of asset found (different number and same prefix
+                 // and suffix). Delete it from cache.
+                await cache.delete(requestCache);
               }  
-              // Put resource into cache after old resource has been erased.
-              cache.put(urlTemp, responseTempCache).then(function()
-              {
-              },
-              function()
-              {
-              });
             });
           }
-          else
-          {   // Put resource into cache (no old resource into cache). 
-            await cache.put(urlTemp, responseTempCache);
-          }
+             // Put resource into cache. 
+          await cache.put(urlTemp, responseTempCache);
         });
         await cache.put(url, responseHTML);
       }
