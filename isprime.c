@@ -25,10 +25,9 @@
 
 #define SMALL_NUMBER_BOUND 32768
 
-int TestNbr[NBR_LIMBS];
-unsigned int MontgomeryMultN;
-int MontgomeryMultR1[NBR_LIMBS+1];  // One more limb required for AdjustModN.
-int MontgomeryMultR2[NBR_LIMBS+1];
+static int TestNbr[NBR_LIMBS];
+static unsigned int MontgomeryMultN;
+static int MontgomeryMultR1[NBR_LIMBS+1];  // One more limb required for AdjustModN.
 
 static char primes[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
                          43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };

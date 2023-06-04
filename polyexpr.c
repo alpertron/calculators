@@ -976,8 +976,9 @@ int* CopyPolynomialFixedCoeffSize(int* dest, const int* src, int polyDegree, int
   return ptrDest;
 }
 
-static int PowerPolynomialExpr(int* ptrArgument1, int expon)
+static enum eExprErr PowerPolynomialExpr(int* ptrArgument1, int expon)
 {
+  enum eExprErr rc;
   limb exponLimb;
   int degreePower;
   int* ptrValue1;
@@ -1003,7 +1004,11 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
     }
     if (modulusIsZero)
     {
-      (void)BigIntPowerIntExp(&operand1, expon, &operand2);
+      rc = BigIntPowerIntExp(&operand1, expon, &operand2);
+      if (rc != EXPR_OK)
+      {
+        return rc;
+      }
       NumberLength = operand2.nbrLimbs;
     }
     else
@@ -1087,7 +1092,7 @@ static int PowerPolynomialExpr(int* ptrArgument1, int expon)
   return EXPR_OK;
 }
 
-static int PowerRatPolynomialExpr(int* ptrArgument1, int expon)
+static enum eExprErr PowerRatPolynomialExpr(int* ptrArgument1, int expon)
 {
   enum eExprErr err;
   const int* ptrDenom = getNextElement(ptrArgument1);

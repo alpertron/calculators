@@ -404,7 +404,7 @@ char *appendInt64(char *text, const int *value)
     dDivid = (double)rem * (double)LIMB_RANGE + (double)nbrLo;
     nbrLo = (int)(dDivid / 10.0);
     ptrText--;
-    *ptrText = (int)(dDivid - (double)nbrLo * 10.0) + '0';
+    *ptrText = (char)((int)(dDivid - (double)nbrLo * 10.0) + '0');
   }
   for (index = 0; index < 18; index++)
   {

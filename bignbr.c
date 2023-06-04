@@ -559,16 +559,23 @@ enum eExprErr BigIntPower(const BigInteger *pBase, const BigInteger *pExponent, 
   assert(pBase->nbrLimbs >= 1);
   assert(pExponent->nbrLimbs >= 1);
   if (pExponent->sign == SIGN_NEGATIVE)
-  {    // Negative exponent not accepted.
+  {     // Negative exponent not accepted.
     return EXPR_INVALID_PARAM;
   }
   if (pExponent->nbrLimbs > 1)
   {     // Exponent too high.
     if ((pBase->nbrLimbs == 1) && (pBase->limbs[0].x < 2))
-    {     // Base = 0 -> power = 0
+    {   // If base equals -1, 0 or 1, set power to the value of base.
       pPower->limbs[0].x = pBase->limbs[0].x;
       pPower->nbrLimbs = 1;
-      pPower->sign = SIGN_POSITIVE;
+      if ((pBase->sign == SIGN_NEGATIVE) && ((pExponent->limbs[0].x & 1) != 0))
+      {   // Base negative and exponent odd means power negative.
+        pPower->sign = SIGN_NEGATIVE;
+      }
+      else
+      {
+        pPower->sign = SIGN_POSITIVE;
+      }
       return EXPR_OK;
     }
     return EXPR_INTERM_TOO_HIGH;
