@@ -2783,7 +2783,10 @@ static void PerfectSquareDiscriminant(void)
     }
     if (index == nbrFactors)
     {               // All factors have been found. Exit loop.
-      showText("</ol>");
+      if (teach)
+      {
+        showText("</ol>");
+      }
       break;
     }
   }
