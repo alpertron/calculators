@@ -43,10 +43,12 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "10^600 / 10^300" >> coverage.out
 ./ecm "3**333+1" >> coverage.out
 ./ecm "2**142+1" >> coverage.out
+./ecm "5**(5*23)-1" >> coverage.out
 ./ecm "7**(7*23)+1" >> coverage.out
 ./ecm "2**360-1" >> coverage.out
 ./ecm "10^1000/10^700" >> coverage.out
 ./ecm "10^1800/10^700" >> coverage.out
+./ecm "123**12000" >> coverage.out
 ./ecm "x" >> coverage.out
 ./ecm "x=" >> coverage.out
 ./ecm "x=23" >> coverage.out

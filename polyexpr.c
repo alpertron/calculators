@@ -978,7 +978,6 @@ int* CopyPolynomialFixedCoeffSize(int* dest, const int* src, int polyDegree, int
 
 static enum eExprErr PowerPolynomialExpr(int* ptrArgument1, int expon)
 {
-  enum eExprErr rc;
   limb exponLimb;
   int degreePower;
   int* ptrValue1;
@@ -1004,7 +1003,7 @@ static enum eExprErr PowerPolynomialExpr(int* ptrArgument1, int expon)
     }
     if (modulusIsZero)
     {
-      rc = BigIntPowerIntExp(&operand1, expon, &operand2);
+      enum eExprErr rc = BigIntPowerIntExp(&operand1, expon, &operand2);
       if (rc != EXPR_OK)
       {
         return rc;
