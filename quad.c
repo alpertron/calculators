@@ -283,7 +283,7 @@ static void PrintLinear(enum eLinearSolution Ret, const char *var)
   }
   if (Ret == INFINITE_SOLUTIONS)
   {
-    showText("<p>x, y: any integer</p>");
+    showText(lang?"<p>x, y: caulquier entero</p>": "<p>x, y: any integer</p>");
     return;
   }
   if (ExchXY)
