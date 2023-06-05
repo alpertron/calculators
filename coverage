@@ -359,6 +359,11 @@ echo -e "\n\n**** QUAD ****" >> coverage.out
 ./quad 0 0 0 0 0 0 0 >> coverage.out
 ./quad 0 0 0 0 5 6 0 >> coverage.out
 ./quad 0 0 0 0 5 6 1 >> coverage.out
+./quad 0 0 0 5 0 6 0 >> coverage.out
+./quad 0 0 0 5 0 6 1 >> coverage.out
+./quad 0 0 0 0 1 5 0 >> coverage.out
+./quad 0 0 0 1 0 5 0 >> coverage.out
+./quad 0 0 0 0 1 5 1 >> coverage.out
 ./quad 0 0 0 1 1 5 0 >> coverage.out
 ./quad 0 0 0 1 1 5 1 >> coverage.out
 ./quad 1 2 3 4 5 6 0 >> coverage.out
