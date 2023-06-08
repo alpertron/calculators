@@ -976,6 +976,7 @@ int* CopyPolynomialFixedCoeffSize(int* dest, const int* src, int polyDegree, int
   return ptrDest;
 }
 
+// On input, exponent is positive or zero.
 static enum eExprErr PowerPolynomialExpr(int* ptrArgument1, int expon)
 {
   limb exponLimb;
@@ -997,10 +998,6 @@ static enum eExprErr PowerPolynomialExpr(int* ptrArgument1, int expon)
     }
     *ptrArgument1 = degreeBase * expon;
     UncompressBigIntegerB(ptrArgument1 + 1, &operand1);
-    if (expon < 0)
-    {
-      return EXPR_EXPONENT_NEGATIVE;
-    }
     if (modulusIsZero)
     {
       enum eExprErr rc = BigIntPowerIntExp(&operand1, expon, &operand2);
@@ -1094,22 +1091,31 @@ static enum eExprErr PowerPolynomialExpr(int* ptrArgument1, int expon)
 static enum eExprErr PowerRatPolynomialExpr(int* ptrArgument1, int expon)
 {
   enum eExprErr err;
+  int absExpon = expon;
+  if (absExpon < 0)
+  {
+    absExpon = -absExpon;
+  }
   const int* ptrDenom = getNextElement(ptrArgument1);
   int* ptrNumer1 = getNextElement(ptrDenom);
   (void)CopyCompletePolynomial(ptrNumer1, ptrArgument1);
-  err = PowerPolynomialExpr(ptrNumer1, expon);
+  err = PowerPolynomialExpr(ptrNumer1, absExpon);
   if (err != EXPR_OK)
   {
     return err;
   }
   int* ptrDenom1 = getNextElement(ptrNumer1);
   (void)CopyCompletePolynomial(ptrDenom1, ptrDenom);
-  err = PowerPolynomialExpr(ptrDenom1, expon);
+  err = PowerPolynomialExpr(ptrDenom1, absExpon);
   if (err != EXPR_OK)
   {
     return err;
   }
-  return AdjustNumDenom(ptrArgument1, ptrNumer1, ptrDenom1);
+  if (expon >= 0)
+  {
+    return AdjustNumDenom(ptrArgument1, ptrNumer1, ptrDenom1);
+  }
+  return AdjustNumDenom(ptrArgument1, ptrDenom1, ptrNumer1);
 }
 
 void computePower(int expo)
@@ -1501,10 +1507,6 @@ int ComputePolynomial(const char* input, int expo)
         return EXPR_CANNOT_PARSE_EXPRESSION;
       }
       expon = *stackValues[stackIndex];
-      if (expon < 0)
-      {
-        return EXPR_EXPONENT_NEGATIVE;
-      }
       if (insideExpon)
       {
         val = *stackValues[stackIndex - 1];
