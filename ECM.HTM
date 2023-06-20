@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
 <meta property="og:description" content="This factors numbers using ECM and SIQS algorithms.">
-<meta property="article:published_time" content="2023-02-06">
+<meta property="article:published_time" content="2023-06-08">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/ECMC.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/ECM.HTM">
@@ -57,12 +57,14 @@ nav::after {clear:both}
 @media (max-width: 400px) {nav {font-size:0.7em}}
 @media (min-width: 400px) {nav {font-size:1em}}
 }
+#skipc a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
+#skipc a:focus {position:absolute;	left:0px;	top:0px; outline-color:transparent; transition: top .1s ease-in}
 .bread {padding:0px;list-style:none; display:inline-block}
 .bread li {display:inline}
 .bread li+li:before {content:"›"}
 .newline {clear:both}
 .bmodebuttons {text-align:center}
-h2 > button {background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 100%; width:100%; text-align:left; border:none; outline:none; transition:0.4s}
+h2 > button {background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 100%; width:100%; text-align:left; border:none; transition:0.4s}
 h2 > button.active,h2 > button:hover {background-color:#ccc}
 h2 > button:after {content:"\002B"; color:#777; font-weight:bold; float:right; margin-left:5px}
 h2 > button.active:after {content:"\2212"}
@@ -709,6 +711,7 @@ input:disabled {color: #808080; background-color: #606060}
 </noscript>
 </head>
 <body>
+<div id="skipc"><a href="#main">Skip to main content</a></div>
 <nav aria-label="Main navigation">
 <ul role="menubar">
 <li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electronics
@@ -718,7 +721,7 @@ input:disabled {color: #808080; background-color: #606060}
 </li>
 <li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Mathematics
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="CALTORS.HTM" title="HTML5 applications with JavaScript and WebAssembly implementing calculators">Calculators</a></li>
+<li role="menuitem"><a href="CALTORS.HTM" title="Web applications with JavaScript and WebAssembly implementing calculators">Calculators</a></li>
 <li role="menuitem"><a href="NUMBERT.HTM" title="Articles and programs about number theory">Number Theory</a></li>
 <li role="menuitem"><a href="PROBLEMS.HTM" title="Interesting math problems">Problems</a></li>
 </ul>
@@ -726,7 +729,7 @@ input:disabled {color: #808080; background-color: #606060}
 <li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programs
 <ul role="menu" class="alignright popup">
 <li role="menuitem"><a href="ASSEM386.HTM" title="Programs written in 80386 Assembler">Assembler 80386</a></li>
-<li role="menuitem"><a href="JAVAPROG.HTM" title="HTML5 applications with JavaScript and WebAssembly">HTML5 applications</a></li>
+<li role="menuitem"><a href="JAVAPROG.HTM" title="Web applications with JavaScript and WebAssembly">Web applications</a></li>
 <li role="menuitem"><a href="GAMES.HTM" title="Computer games">Games</a></li>
 </ul>
 </li>
@@ -752,7 +755,7 @@ input:disabled {color: #808080; background-color: #606060}
 <meta property="position" content="1">
 </li>
 <li property="itemListElement" typeof="ListItem">
-<a property="item" typeof="WebPage" href="JAVAPROG.HTM"><span property="name">Programs</span></a>
+<a property="item" typeof="WebPage" href="JAVAPROG.HTM"><span property="name">Web applications</span></a>
 <meta property="position" content="2">
 </li>
 <li property="itemListElement" typeof="ListItem">
@@ -1148,10 +1151,10 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
   "name": "Integer factorization calculator",
   "description": "Web application that factors integers using ECM and SIQS algorithms.",
   "image": ["https://www.alpertron.com.ar/ecm.png"],
-  "datePublished": "2023-02-06",
-  "dateModified": "2023-02-06",
+  "datePublished": "2023-06-08",
+  "dateModified": "2023-06-08",
   "operatingSystem": "Any",
-  "applicationCategory": "https://schema.org/EducationalApplication",
+  "applicationCategory": "EducationalApplication",
   "author": {
     "@type": "Person",
     "name": "Dario Alpern"
@@ -1163,9 +1166,11 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
   },
   "inLanguage": "en",
   "license": "https://www.gnu.org/licenses/gpl-3.0.en.html",
+  "isAccessibleForFree": true,
   "offers": {
     "@type": "Offer",
-    "price": "0.00",
+    "availability": "https://schema.org/OnlineOnly",
+    "price": "0",
     "priceCurrency": "USD"
   }
 }

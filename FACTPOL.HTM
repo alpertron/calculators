@@ -18,7 +18,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:description" content="Funciona con polinomios enteros y módulo p^n.">
-<meta property="article:published_time" content="2023-02-06">
+<meta property="article:published_time" content="2023-06-08">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/FACTPOL.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/POLFACT.HTM">
@@ -59,11 +59,13 @@ nav::after {clear:both}
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
 @media print {nav {display:none;}}
+#skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
+#skip a:focus {position:absolute;	left:0px;	top:0px; outline-color:transparent; transition: top .1s ease-in}
 kbd {font-size:120%}
 .bread {padding:0px;list-style:none; display:inline-block;}
 .bread li {display:inline}
 .bread li+li:before {content:"›"}
-h2 > button {background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 100%; width:100%; text-align:left; border:none; outline:none; transition:0.4s;}
+h2 > button {background-color:#eee; color:#444; cursor:pointer; padding:18px; font-weight:bold; font-size: 100%; width:100%; text-align:left; border:none; transition:0.4s}
 h2 > button.active,h2 > button:hover {background-color:#ccc;}
 h2 > button:after {content:"\002B"; color:#777; font-weight:bold; float:right; margin-left:5px;}
 h2 > button.active:after {content:"\2212";}
@@ -133,6 +135,7 @@ input:disabled {color: #808080; background-color: #606060}
 </noscript>
 </head>
 <body>
+<div id="skip"><a href="#main">Ir al contenido principal</a></div>
 <nav aria-label="Navegación principal">
 <ul role="menubar">
 <li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electrónica
@@ -142,7 +145,7 @@ input:disabled {color: #808080; background-color: #606060}
 </li>
 <li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Matemáticas
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="CALDORAS.HTM" title="Aplicaciones HTML5 que implementan calculadoras">Calculadoras</a></li>
+<li role="menuitem"><a href="CALDORAS.HTM" title="Aplicaciones web que implementan calculadoras">Calculadoras</a></li>
 <li role="menuitem"><a href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a></li>
 <li role="menuitem"><a href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a></li>
 </ul>
@@ -150,7 +153,7 @@ input:disabled {color: #808080; background-color: #606060}
 <li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programas
 <ul role="menu" class="alignright popup">
 <li role="menuitem"><a href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a></li>
-<li role="menuitem"><a href="PROGJAVA.HTM" title="Aplicaciones HTML5 con JavaScript y WebAssembly">Aplicaciones HTML5</a></li>
+<li role="menuitem"><a href="PROGJAVA.HTM" title="Aplicaciones web con JavaScript y WebAssembly">Aplicaciones web</a></li>
 <li role="menuitem"><a href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a></li>
 </ul>
 </li>
@@ -176,7 +179,7 @@ input:disabled {color: #808080; background-color: #606060}
 <meta property="position" content="1">
 </li>
 <li property="itemListElement" typeof="ListItem">
-<a property="item" typeof="WebPage" href="PROGJAVA.HTM"><span property="name">Programas</span></a>
+<a property="item" typeof="WebPage" href="PROGJAVA.HTM"><span property="name">Aplicaciones web</span></a>
 <meta property="position" content="2">
 </li>
 <li property="itemListElement" typeof="ListItem">
@@ -676,9 +679,9 @@ Puede bajar el código fuente del programa actual y del viejo applet de factoriz
   "description": "Aplicación Web que factoriza polinomios enteros y módulo una potencia de número primo.",
   "operatingSystem": "Any",
   "image": ["https://www.alpertron.com.ar/factpol.png"],
-  "datePublished": "2023-02-06",
-  "dateModified": "2023-02-06",
-  "applicationCategory": "https://schema.org/EducationalApplication",
+  "datePublished": "2023-06-08",
+  "dateModified": "2023-06-08",
+  "applicationCategory": "EducationalApplication",
   "author": {
     "@type": "Person",
     "name": "Dario Alpern"
@@ -690,9 +693,11 @@ Puede bajar el código fuente del programa actual y del viejo applet de factoriz
   },
   "inLanguage": "es",
   "license": "https://www.gnu.org/licenses/gpl-3.0.en.html",
+  "isAccessibleForFree": true,
   "offers": {
     "@type": "Offer",
-    "price": "0.00",
+    "availability": "https://schema.org/OnlineOnly",
+    "price": "0",
     "priceCurrency": "USD"
   }
 }
@@ -710,7 +715,7 @@ Puede bajar el código fuente del programa actual y del viejo applet de factoriz
      "@type": "SolveMathAction",
      "target": "https://www.alpertron.com.ar/FACTPOL.HTM?q={math_expression_string}",
      "mathExpression-input": "required name=math_expression_string",
-     "eduQuestionType": ["Polynomial Equation", "Polynomial Expression", "Biquadratic Equation", "Quadratic Equation", "Quadratic Expression"]
+     "eduQuestionType": ["Polynomial Equation", "Polynomial Expression", "Biquadratic Equation", "Quadratic Equation", "Quadratic Expression", "Rational Expression", "Rational Equation", "Linear Equation"]
    }],
   "learningResourceType": "Math solver"
 }

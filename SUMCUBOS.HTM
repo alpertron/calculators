@@ -19,7 +19,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:description" content="Funciona con polinomios enteros y módulo p^n.">
-<meta property="article:published_time" content="2023-02-06">
+<meta property="article:published_time" content="2023-06-08">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/SUMCUBOS.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/FCUBES.HTM">
@@ -60,6 +60,8 @@ nav::after {clear:both}
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
 @media print {nav .footer {display:none;}}
+#skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
+#skip a:focus {position:absolute;	left:0px;	top:0px; outline-color:transparent; transition: top .1s ease-in}
 .bread {padding:0px;list-style:none; display:inline-block;}
 .bread li {display:inline}
 .bread li+li:before {content:"›"}
@@ -106,6 +108,7 @@ input:disabled {color: #808080; background-color: #606060}
 </noscript>
 </head>
 <body>
+<div id="skip"><a href="#main">Ir al contenido principal</a></div>
 <nav aria-label="Navegación principal">
 <ul role="menubar">
 <li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electrónica
@@ -115,7 +118,7 @@ input:disabled {color: #808080; background-color: #606060}
 </li>
 <li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Matemáticas
 <ul role="menu" class="alignleft popup">
-<li role="menuitem"><a href="CALDORAS.HTM" title="Aplicaciones HTML5 que implementan calculadoras">Calculadoras</a></li>
+<li role="menuitem"><a href="CALDORAS.HTM" title="Aplicaciones web que implementan calculadoras">Calculadoras</a></li>
 <li role="menuitem"><a href="TNUMEROS.HTM" title="Artículos y programas sobre teoría de números">Teoría de números</a></li>
 <li role="menuitem"><a href="PROBLEMAS.HTM" title="Problemas matemáticos interesantes">Problemas</a></li>
 </ul>
@@ -123,7 +126,7 @@ input:disabled {color: #808080; background-color: #606060}
 <li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="-1">Programas
 <ul role="menu" class="alignright popup">
 <li role="menuitem"><a href="ENSAM386.HTM" title="Programas escritos en lenguaje ensamblador del 80386">Assembler 80386</a></li>
-<li role="menuitem"><a href="PROGJAVA.HTM" title="Aplicaciones HTML5 con JavaScript y WebAssembly">Aplicaciones HTML5</a></li>
+<li role="menuitem"><a href="PROGJAVA.HTM" title="Aplicaciones web con JavaScript y WebAssembly">Aplicaciones web</a></li>
 <li role="menuitem"><a href="JUEGOS.HTM" title="Juegos en línea y para descargar">Juegos</a></li>
 </ul>
 </li>
@@ -148,7 +151,7 @@ input:disabled {color: #808080; background-color: #606060}
 <meta property="position" content="1">
 </li>
 <li property="itemListElement" typeof="ListItem">
-<a property="item" typeof="WebPage" href="PROGJAVA.HTM"><span property="name">Programas</span></a>
+<a property="item" typeof="WebPage" href="PROGJAVA.HTM"><span property="name">Aplicaciones web</span></a>
 <meta property="position" content="2">
 </li>
 <li property="itemListElement" typeof="ListItem">
@@ -456,10 +459,10 @@ Se puede bajar el código fuente de este programa y el del viejo applet de suma 
   "name": "Suma de cuatro cubos",
   "description": "Aplicación Web application que descompone un número en una suma de cuatro cubos.",
   "image": ["https://www.alpertron.com.ar/fcubes.png"],
-  "datePublished": "2023-02-06",
-  "dateModified": "2023-02-06",
+  "datePublished": "2023-06-08",
+  "dateModified": "2023-06-08",
   "operatingSystem": "Any",
-  "applicationCategory": "https://schema.org/EducationalApplication",
+  "applicationCategory": "EducationalApplication",
   "author": {
     "@type": "Person",
     "name": "Dario Alpern"
@@ -471,9 +474,11 @@ Se puede bajar el código fuente de este programa y el del viejo applet de suma 
   },
   "inLanguage": "es",
   "license": "https://www.gnu.org/licenses/gpl-3.0.en.html",
+  "isAccessibleForFree": true,
   "offers": {
     "@type": "Offer",
-    "price": "0.00",
+    "availability": "https://schema.org/OnlineOnly",
+    "price": "0",
     "priceCurrency": "USD"
   }
 }
