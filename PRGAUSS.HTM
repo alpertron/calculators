@@ -71,6 +71,8 @@ h1 {text-align:center}
 .atright {float:right}
 .atleft {float:left}
 #stop, #animform {display:none}
+fieldset {display:inline}
+#info {white-space: nowrap}
 @media (min-height: 200px) {#canvas {height:100px}}
 @media (min-height: 300px) {#canvas {height:200px}}
 @media (min-height: 400px) {#canvas {height:300px}}
@@ -79,8 +81,16 @@ h1 {text-align:center}
 @media (min-height: 700px) {#canvas {height:600px}}
 @media (min-height: 800px) {#canvas {height:700px}}
 @media (min-height: 900px) {#canvas {height:800px}}
-@media (min-width: 600px) {#info {display:inline}
-#inputboxes {display:inline; float:right; padding-right:10px}
+@media (max-width: 600px){
+@media (min-height: 200px) {#canvas {height:30px}}
+@media (min-height: 300px) {#canvas {height:130px}}
+@media (min-height: 400px) {#canvas {height:230px}}
+@media (min-height: 500px) {#canvas {height:330px}}
+@media (min-height: 600px) {#canvas {height:430px}}
+@media (min-height: 700px) {#canvas {height:530px}}
+@media (min-height: 800px) {#canvas {height:630px}}
+@media (min-height: 900px) {#canvas {height:730px}}
+}
 #left {float:left}
 #right {float:right}
 }
@@ -142,17 +152,19 @@ input:disabled {color: #808080; background-color: #606060}
 <noscript><p><strong>El gráfico interactivo no funciona con Javascript deshabilitado. Por favor revise la configuración de su navegador.</strong></p></noscript>
 <canvas id="canvas" aria-label="Primos gaussianos" role="img" tabindex="0"></canvas>
 <div id="bottom" class="pad">
-<div id="inputboxes">
+<fieldset>
+<legend>Acciones</legend>
 <input id="animate" type="button" value="Animar">
 <input id="stop" type="button" value="Detener">
 <input type="button" id="zoomin" value="Acercar">
-<label for="centerX">Centrar gráfico en el número</label>
-<br>
 <input type="button" id="zoomout" value="Alejar">
-<input type="number" value="0" min="-999999999" max="999999999" id="centerX" tabindex="1" title="Parte real"> +
-<input type="number" value="0" min="-999999999" max="999999999" id="centerY" title="Parte imaginaria">&nbsp;<var>i</var>
-</div>
-<div id="info"></div>
+</fieldset>
+<fieldset>
+<legend>Centrar gráfico en el número</legend>
+<input type="number" value="0" min="-999999999" max="999999999" id="centerX" title="Parte real" aria-label="Parte real"> +
+<input type="number" value="0" min="-999999999" max="999999999" id="centerY" title="Parte imaginaria" aria-label="Parte imaginaria">&nbsp;<var>i</var>
+</fieldset>
+<span id="info"></span>
 </div>
 </div>
 <div id="animform">
