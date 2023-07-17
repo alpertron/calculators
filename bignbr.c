@@ -1764,7 +1764,7 @@ void initializeSmallPrimes(int* pSmallPrimes)
   int P;
   int* ptrSmallPrimes = pSmallPrimes;
   if (*ptrSmallPrimes != 0)
-  {
+  {    // Array already initialized.
     return;
   }
   P = 3;
@@ -2069,19 +2069,33 @@ int BpswPrimalityTest(const BigInteger *pValue)
   int nbrLimbs = pValue->nbrLimbs;
   const limb* limbs = pValue->limbs;
   static BigInteger tmp;
+  if (pValue->sign == SIGN_NEGATIVE)
+  {
+    return 1;      // Indicate not prime.
+  }
   if (nbrLimbs < 1)
   {      // It should never come here.
     return 1;      // Indicate prime.
   }
   if (nbrLimbs == 1)
   {
+    int smallPrimesLen = (int)(sizeof(smallPrimes) / sizeof(smallPrimes[0]));
     if (limbs->x <= 1)
     {
       return 1;    // Indicate not prime if 0, -1, or 1.
     }
-    if (limbs->x <= 3)
+    initializeSmallPrimes(smallPrimes);
+    for (int index = 0; index < smallPrimesLen; index++)
     {
-      return 0;    // Indicate prime if 2, -2, 3 or -3.
+      int prime = smallPrimes[index];
+      if ((unsigned int)(prime * prime) > (unsigned int)limbs->x)
+      {
+        return 0;  // Number is prime.
+      }
+      if ((limbs->x % prime) == 0)
+      {
+        return 1;  // Number is not prime.
+      }
     }
   }
   if ((limbs->x & 1) == 0)

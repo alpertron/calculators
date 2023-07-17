@@ -36,16 +36,16 @@ while (readdir $dir)
   print $htaccess  $hash." www.googletagmanager.com";
   if (index($dirEntry, "ECM.HTM") != -1)
   {
-    getFileHash("blockly.js", $hash);
+    getFileHash("../blockly.js", $hash);
     print $htaccess  $hash;
-    getFileHash("en.js", $hash);
+    getFileHash("../en.js", $hash);
     print $htaccess  $hash;
   }
   if (index($dirEntry, "ECMC.HTM") != -1)
   {
-    getFileHash("blockly.js", $hash);
+    getFileHash("../blockly.js", $hash);
     print $htaccess  $hash;
-    getFileHash("es.js", $hash);
+    getFileHash("../es.js", $hash);
     print $htaccess  $hash;
   }
   if ($hash ne "")
@@ -92,7 +92,7 @@ sub getHashes
 sub getFileHash
 {
   my $filename = $_[0];
-  open my $filehandle, '<', $filename or die $!; 
+  open my $filehandle, '<', $filename or die "Cannot open $filename: $!\n"; 
   my $string = do { local $/; <$filehandle> };
   close $filehandle;
   my $hash = sha256_base64($string);

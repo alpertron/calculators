@@ -569,10 +569,10 @@ enum eExprErr ComputeNext(BigInteger* pArgument)
   BigInteger* pResult = pArgument;
   limb* pResultLimbs = pResult->limbs;
   const limb* pArgumentLimbs = pArgument->limbs;
-  pResult->sign = SIGN_POSITIVE;
   if ((pArgument->sign == SIGN_NEGATIVE) ||
     ((pArgument->nbrLimbs == 1) && (pArgumentLimbs->x < 2)))
-  {
+  {    // If number is less than 2, the next prime is 2.
+    pResult->sign = SIGN_POSITIVE;
     pResult->nbrLimbs = 1;
     pResultLimbs->x = 2;
     return EXPR_OK;
