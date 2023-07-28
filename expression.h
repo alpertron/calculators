@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 16 de julio de 2023."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 16 July 2023."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 27 de julio de 2023."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 27 July 2023."
 
 #include "bignbr.h"
 #ifdef __EMSCRIPTEN__
@@ -137,8 +137,7 @@ extern BigInteger valueX;
 extern int counterC;
 extern int expressionNbr;
 enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *ExpressionResult);
-enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
-  bool varsExpected);
+enum eExprErr ComputeExpression(const char *ptrStartRPN, BigInteger *ExpressionResult);
 int ConvertToReversePolishNotation(const char* input, char** pptrOut,
   const struct sFuncOperExpr* funcOperExpr, enum eParseExpr eParseExpr,
   bool* pUsingVariables, bool *pUsingRandom);
@@ -151,4 +150,7 @@ enum eExprErr ComputeNext(BigInteger* pArgument);
 void textError(char **pptrOutput, enum eExprErr rc);
 void initializeSmallPrimes(int* pSmallPrimes);
 enum eExprErr parseNumberInsideExpr(const char** ppInput, char** ppOutput);
+void setInsideExpressionLoop(bool inside);
+bool isInsideExpressionLoop(void);
+enum eExprErr convertToRPN(const char* expr, char** pointerRPNbuffer, bool varsExpected);
 #endif

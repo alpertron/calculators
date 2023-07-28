@@ -267,27 +267,16 @@ static enum eExprErr getParms(int nbrParms, int stackIndexThreshold)
   return EXPR_OK;
 }
 
-enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
-  bool varsExpected)
+enum eExprErr convertToRPN(const char* expr, char **pointerRPNbuffer, bool varsExpected)
 {
-  bool valueXused;
   bool randomUsed;
-  enum eExprErr retcode;
-  char* pointerRPNbuffer;
-  const char* ptrRPNbuffer;
-  int len;
+  bool valueXused;
 #ifdef USING_BLOCKLY
-  const char* ptrRPNstartBuffer;
-  bool hexBak;
-  bool doFactBak;
-  int offset;
-#endif
-  int stackIndexThreshold = DO_NOT_SHORT_CIRCUIT;
-#ifdef USING_BLOCKLY
-  if (ExpressionResult != NULL)
+  if (pointerRPNbuffer != NULL)
   {
 #endif
-    retcode = ConvertToReversePolishNotation(expr, &pointerRPNbuffer, stFuncOperIntExpr,
+    enum eExprErr retcode = ConvertToReversePolishNotation(expr,
+      pointerRPNbuffer, stFuncOperIntExpr,
       PARSE_EXPR_INTEGER, &valueXused, &randomUsed);
     if (retcode != EXPR_OK)
     {
@@ -307,16 +296,48 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
         return EXPR_VAR_IN_EXPRESSION;
       }
     }
-    ptrRPNbuffer = pointerRPNbuffer;
 #ifdef USING_BLOCKLY
   }
   else
   {
-    ptrRPNbuffer = expr;
     valueXused = false;
   }
-  ptrRPNstartBuffer = ptrRPNbuffer;
 #endif
+  return EXPR_OK;
+}
+
+enum eExprErr ComputeExpression(const char *ptrStartRPN, BigInteger *ExpressionResult)
+{
+  bool valueXused = false;
+  enum eExprErr retcode;
+  const char* ptrRPNbuffer = ptrStartRPN;
+  int len;
+#ifdef USING_BLOCKLY
+  const char* ptrRPNstartBuffer = ptrStartRPN;
+  bool hexBak;
+  bool doFactBak;
+  int offset;
+#endif
+  int stackIndexThreshold = DO_NOT_SHORT_CIRCUIT;
+
+  if (!isInsideExpressionLoop())
+  {
+    if (ExpressionResult == NULL)
+    {
+      retcode = convertToRPN(ptrStartRPN, NULL, false);
+    }
+    else
+    {
+      char* ptrStartRpnBuffer;
+      retcode = convertToRPN(ptrStartRPN,
+        &ptrStartRpnBuffer, false);
+      ptrRPNbuffer = (const char*)ptrStartRpnBuffer;
+    }
+    if (retcode != EXPR_OK)
+    {
+      return retcode;
+    }
+  }
   stackIndex = -1;
   comprStackOffset[0] = 0;
   while (*ptrRPNbuffer != '\0')
@@ -364,6 +385,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
       {     // Part of second operand of binary AND/OR not short-circuited.
         CopyBigInt(&curStack, &valueX);
       }
+      valueXused = true;
       break;
 
     case TOKEN_COUNTER:
@@ -372,6 +394,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
       {     // Part of second operand of binary AND/OR not short-circuited.
         intToBigInteger(&curStack, counterC);
       }
+      valueXused = true;
       break;
 
     case TOKEN_ANS:
@@ -705,6 +728,7 @@ enum eExprErr ComputeExpression(const char *expr, BigInteger *ExpressionResult,
       {
         return retcode;
       }
+      valueXused = true;
       break;
 
     case TOKEN_NUMDIGITS:

@@ -392,7 +392,7 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
 static void getNumber(BigInteger *pNumber, const char *title, char** pptrInput)
 {
   enum eExprErr rc;
-  rc = ComputeExpression(*pptrInput, pNumber, false);
+  rc = ComputeExpression(*pptrInput, pNumber);
   if (rc != EXPR_OK)
   {
     if (ptrOutput == output)

@@ -593,7 +593,7 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
   char *ptrOut;
   enum eExprErr rc;
   int expon = 0;
-  rc = ComputeExpression(modText, &powerMod, false);
+  rc = ComputeExpression(modText, &powerMod);
   modulusIsZero = false;
   if (rc == EXPR_OK)
   {

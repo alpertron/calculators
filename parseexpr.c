@@ -26,6 +26,8 @@
 #include "polynomial.h"
 
 bool hexadecimal;
+static bool insideExpressionLoop;
+static char* ptrStartExprRPNbuffer;
 static char RPNbuffer[1000000];
 static bool forceMultiplication;
 static short stackOper[STACK_OPER_SIZE];
@@ -34,6 +36,20 @@ static char stackArgumNbrPriority[STACK_OPER_SIZE];  // For functions: argument 
 static int stackOperIndex;
 static int exponOperatorCounter;
 static bool prevTokenIsNumber;
+
+void setInsideExpressionLoop(bool inside)
+{
+  insideExpressionLoop = inside;
+  if (inside == true)
+  {
+    ptrStartExprRPNbuffer = RPNbuffer;
+  }
+}
+
+bool isInsideExpressionLoop(void)
+{
+  return insideExpressionLoop;
+}
 
 static bool isFunc(const char** ppcInput, const struct sFuncOperExpr** ppstFuncOperExpr)
 {
@@ -552,6 +568,10 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
   const struct sFuncOperExpr* pstFuncOperExpr;
   char* ptrOutput = RPNbuffer;
   const char* pInput = input;
+  if (insideExpressionLoop)
+  {
+    ptrOutput = ptrStartExprRPNbuffer;
+  }
   if (pUsingVariables != NULL)
   {
     *pUsingVariables = false;
@@ -561,7 +581,7 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
   char s;
   char variableLetter = ' ';  // Indicate variable letter not known yet.
   stackOperIndex = 0;
-  *pptrOut = RPNbuffer;
+  *pptrOut = ptrOutput;
   // Initialize pointers to tokens. Sections are separated by elements
   // whose field "name" is equal to NULL.
   pstFuncOperExpr = funcOperExpr;
@@ -779,5 +799,6 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
     }
   }
   *ptrOutput = '\0';
+  ptrStartExprRPNbuffer = ptrOutput + 1;
   return EXPR_OK;
 }

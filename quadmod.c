@@ -229,28 +229,28 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
   ptrOutput = output;
   *ptrOutput = '2';  // Prefix for sending output to screen.
   ptrOutput++;
-  rc = ComputeExpression(quadrText, &ValA, false);
+  rc = ComputeExpression(quadrText, &ValA);
   if (rc != EXPR_OK)
   {
     copyStr(&ptrOutput, lang ? "<p>Coeficiente cuadrático: ": "<p>Quadratic coefficient: ");
     textErrorQuadMod(&ptrOutput, rc);
     copyStr(&ptrOutput, "</p>");
   }
-  rc = ComputeExpression(linearText, &ValB, false);
+  rc = ComputeExpression(linearText, &ValB);
   if (rc != EXPR_OK)
   {
     copyStr(&ptrOutput, lang ? "<p>Coeficiente lineal: " : "<p>Linear coefficient: ");
     textErrorQuadMod(&ptrOutput, rc);
     copyStr(&ptrOutput, "</p>");
   }
-  rc = ComputeExpression(constText, &ValC, false);
+  rc = ComputeExpression(constText, &ValC);
   if (rc != EXPR_OK)
   {
     copyStr(&ptrOutput, lang ? "<p>Término independiente: " : "<p>Constant coefficient: ");
     textErrorQuadMod(&ptrOutput, rc);
     copyStr(&ptrOutput, "</p>");
   }
-  rc = ComputeExpression(modText, &ValN, false);
+  rc = ComputeExpression(modText, &ValN);
   if ((rc == EXPR_OK) && (ValN.sign == SIGN_NEGATIVE))
   {
     rc = EXPR_MODULUS_MUST_BE_NONNEGATIVE;

@@ -1013,7 +1013,7 @@ void fromBlockly(const char* ptrXMLFromBlockly)
 #ifdef __EMSCRIPTEN__
   databack("L");  // Exit Blockly mode.
 #endif
-  if (ComputeExpression(bufferInstr, NULL, false) ==
+  if (ComputeExpression(bufferInstr, NULL) ==
     EXPR_SYNTAX_ERROR)
   {
     copyStr(&ptrBlocklyOutput, lang ? "<li>Error interno</li>" :
