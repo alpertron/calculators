@@ -2364,22 +2364,22 @@ static void InternalBigIntLogical(const BigInteger *firstArgum,
       result->limbs[idx].x = limbFirst ^ limbSecond;
     }
   }
-  if (firstArg->sign == SIGN_POSITIVE)
+  if (secondArg->sign == SIGN_POSITIVE)
   {
-    limbFirst = 0;
+    limbSecond = 0;
   }
   else
   {
-    limbFirst = -1;
+    limbSecond = -1;
   }
   for (; idx < firstArg->nbrLimbs; idx++)
   {
-    limbSecond = secondArg->limbs[idx].x;
-    if (secondArg->sign == SIGN_NEGATIVE)
+    limbFirst = firstArg->limbs[idx].x;
+    if (firstArg->sign == SIGN_NEGATIVE)
     {
-      carrySecond -= limbSecond;
-      limbSecond = carrySecond & MAX_INT_NBR;
-      carrySecond >>= 31;
+      carryFirst -= limbFirst;
+      limbFirst = carryFirst & MAX_INT_NBR;
+      carryFirst >>= 31;
     }
     if (operation == OPERATION_AND)
     {

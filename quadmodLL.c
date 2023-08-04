@@ -61,7 +61,7 @@ static pShowSolutionsModPrime ShowSolutionsModPrime;
 static pShowNoSolsModPrime ShowNoSolsModPrime;
 
 // Use Chinese remainder theorem to obtain the solutions.
-void PerformChineseRemainderTheorem(void)
+static void PerformChineseRemainderTheorem(void)
 {
   int T1;
   int expon;
