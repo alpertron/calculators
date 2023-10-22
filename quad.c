@@ -2614,20 +2614,38 @@ static void PerfectSquareDiscriminant(void)
   if (BigIntIsZero(&ValK))
   {      // k equals zero.
     enum eLinearSolution ret;
+    if (teach)
+    {
+      showText(lang ? "Para que el producto valga cero, cualquiera de los paréntesis vale cero.</p><p>" :
+        "The product is zero, so any of the values inside parenthesis equal zero.</p><p>");
+    }
     if (BigIntIsZero(&ValA))
-    {    // Coefficient a does equals zero.
-      // Solve Dy + beta = 0
+    {    // Coefficient a equals zero.
+      if (teach)
+      {
+        ShowLin(&ValH, &ValI, &ValJ, "X", "Y");
+        showText(" = 0</p>");
+      }
+      // Solve Dy - beta = 0
       intToBigInteger(&Aux[0], 0);
+      BigIntChSign(&ValBeta);
       ret = LinearEq(&Aux[0], &discr, &ValBeta);
+      BigIntChSign(&ValBeta);
+      if ((ret == NO_SOLUTIONS) && teach)
+      {
+        showText(lang ? "Esta ecuación no tiene soluciones enteras.</p><p>" :
+          "This equation does not have integer solutions.</p><p>");
+      }
       startResultBox(ret);
       PrintLinear(ret, "t");
       endResultBox(ret);
-      // Solve bDx + cDy + b*alpha + c*beta = 0
+      // Solve bDx + cDy - b*alpha - c*beta = 0
       (void)BigIntMultiply(&ValB, &discr, &Aux[0]);
       (void)BigIntMultiply(&ValC, &discr, &Aux[1]);
       (void)BigIntMultiply(&ValB, &ValAlpha, &Aux[2]);
       (void)BigIntMultiply(&ValC, &ValBeta, &bigTmp);
       BigIntAdd(&Aux[2], &bigTmp, &Aux[2]);
+      BigIntChSign(&Aux[2]);
     }
     else
     {    // Coefficient a does not equal zero.
@@ -2642,7 +2660,17 @@ static void PerfectSquareDiscriminant(void)
       (void)BigIntMultiply(&bigTmp, &ValBeta, &bigTmp);
       BigIntAdd(&Aux[2], &bigTmp, &Aux[2]);
       BigIntChSign(&Aux[2]);
+      if (teach)
+      {
+        ShowLin(&ValH, &ValI, &ValJ, "X", "Y");
+        showText(" = 0</p>");
+      }
       ret = LinearEq(&Aux[0], &Aux[1], &Aux[2]);
+      if ((ret == NO_SOLUTIONS) && teach)
+      {
+        showText(lang ? "Esta ecuación no tiene soluciones enteras.</p><p>" :
+          "This equation does not have integer solutions.</p><p>");
+      }
       startResultBox(ret);
       PrintLinear(ret, "t");
       endResultBox(ret);
@@ -2657,6 +2685,11 @@ static void PerfectSquareDiscriminant(void)
       (void)BigIntMultiply(&bigTmp, &ValBeta, &bigTmp);
       BigIntAdd(&Aux[2], &bigTmp, &Aux[2]);
       BigIntChSign(&Aux[2]);
+    }
+    if (teach)
+    {
+      ShowLin(&V1, &V2, &ValJ, "X", "Y");
+      showText(" = 0</p>");
     }
     ret = LinearEq(&Aux[0], &Aux[1], &Aux[2]);
     startResultBox(ret);
@@ -3545,7 +3578,7 @@ void SolveQuadEquation(void)
   if (teach)
   {
     showText(lang ? "<p>El discriminante es" : "<p>The discriminant is");
-    showText(" <var>b</var>");
+    showText(" <var>D</var> = <var>b</var>");
     showSquare();
     showText("&nbsp;&minus;&nbsp;4&#8290;<var>a</var>&#8290;<var>c</var> = ");
     shownbr(&discr);
@@ -3602,8 +3635,8 @@ void SolveQuadEquation(void)
     BigIntChSign(&ValK);                           // k
     if (teach)
     {
-      showText(lang ? "<p>Sea <var>D</var> el discriminante. Aplicamos la transformación de Legendre " :
-        "<p>Let <var>D</var> be the discriminant. We apply the transformation of Legendre ");
+      showText(lang ? "<p>Aplicamos la transformación de Legendre " :
+        "<p>We apply the transformation of Legendre ");
       showText("<var>D</var><var>x</var> = <var>X</var> + <var>&alpha;</var>,  <var>D</var><var>y</var> = <var>Y</var> + <var>&beta;</var>, ");
       showText(lang ? "y obtenemos" : "and we obtain");
       showText(":</p><p><var>&alpha;</var> = 2&#8290;<var>c</var>&#8290;<var>d</var> - <var>b</var>&#8290;<var>e</var> = ");
@@ -3637,7 +3670,7 @@ void SolveQuadEquation(void)
         CopyBigInt(&ValB, &ValBBak);
         CopyBigInt(&ValC, &ValCBak);
         CopyBigInt(&ValK, &V1);
-      }
+      }  
     }
   }
   // If k is not multiple of gcd(A, B, C), there are no solutions.
