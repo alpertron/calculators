@@ -95,6 +95,7 @@ static BigInteger Xlin;
 static BigInteger Ylin;
 static int nbrFactors;
 static bool solFound;
+static bool originTranslated;
 bool teach = true;
 static char also;
 static bool ExchXY;
@@ -2940,10 +2941,19 @@ static void ShowArgumentContinuedFraction(void)
 
 static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
 {
+  int periodsToCompute;
   int index = 0;
   int periodIndex = 0;
   char isIntegerPart;
   bool isBeven = ((ValB.limbs[0].x & 1) == 0);
+  if (originTranslated)
+  {
+    periodsToCompute = 2;
+  }
+  else
+  {
+    periodsToCompute = 1;
+  }
   // If (D-U^2) is not multiple of V, exit routine.
   (void)BigIntMultiply(&ValU, &ValU, &bigTmp); // V <- (D - U^2)/V
   BigIntSubt(&ValL, &bigTmp, &bigTmp);   // D - U^2
@@ -3031,12 +3041,12 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
     {         // Found solution.
       if ((discr.nbrLimbs == 1) && (discr.limbs[0].x == 5) && (ValA.sign != ValK.sign) && 
         (solutionNbr == FIRST_SOLUTION))
-      {       // Determinant is 5 and aK < 0. Use exceptional solution (U1-U2)/(V1-V2).
+      {       // Discriminant is 5 and aK < 0. Use exceptional solution (U1-U2)/(V1-V2).
         BigIntSubt(&V1, &V2, &ValH);
         BigIntSubt(&U1, &U2, &ValI);
       }
       else
-      {       // Determinant is not 5 or aK > 0. Use convergent U1/V1 as solution.
+      {       // Discriminant is not 5 or aK > 0. Use convergent U1/V1 as solution.
         CopyBigInt(&ValH, &V1);
         CopyBigInt(&ValI, &U1);
         ShowSolutionFromConvergent();
@@ -3056,7 +3066,11 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
                    // New period started.
          ((periodIndex & 1) == 0))
       {           // Two periods of period length is odd, one period if even.
-        break;  // Go out in this case.
+        periodsToCompute--;
+        if (periodsToCompute == 0)
+        {
+          break;      // Go out in this case.
+        }
       }
     }
     else if (!isIntegerPart)
@@ -3528,6 +3542,7 @@ static void PrintQuadEqConst(bool showEquationNbr)
 
 void SolveQuadEquation(void)
 {
+  originTranslated = false;
   also = 0;
   showSolution = ONE_SOLUTION;
   showRecursiveSolution = 0;    // Do not show recursive solution by default.
@@ -3607,6 +3622,7 @@ void SolveQuadEquation(void)
   }
   else
   {
+    originTranslated = true;
     CopyBigInt(&ValDiv, &discr);
     // Translate the origin (x, y) by (alpha, beta).
     // Compute alpha = 2cd - be
