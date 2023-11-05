@@ -560,6 +560,7 @@ static void showFactors(const BigInteger *value)
   pstFactor = &astFactorsMod[1];
   for (int index = 0; index < numFactors; index++)
   {
+    NumberLength = *pstFactor->ptrFactor;
     IntArray2BigInteger(pstFactor->ptrFactor, &prime);
     if (pstFactor->multiplicity == 0)
     {
@@ -2798,6 +2799,7 @@ static void PerfectSquareDiscriminant(void)
           pstFactor++;
           continue;
         }
+        NumberLength = *pstFactor->ptrFactor;
         IntArray2BigInteger(pstFactor->ptrFactor, &prime);
         (void)BigIntMultiply(&currentFactor, &prime, &currentFactor);
         counters[index]++;
@@ -2810,6 +2812,7 @@ static void PerfectSquareDiscriminant(void)
         pstFactor++;
         continue;
       }
+      NumberLength = *pstFactor->ptrFactor;
       IntArray2BigInteger(pstFactor->ptrFactor, &prime);
       (void)BigIntDivide(&currentFactor, &prime, &currentFactor);
       counters[index]--;
