@@ -65,7 +65,7 @@ struct stSiqs
   long largePrimeUpperBound;
   int aindex[MAX_NBR_FACTORS];
   PrimeSieveData primeSieveData[PRIME_SIEVE_DATA_LEN];
-  PrimeTrialDivisionData primeTrialDivisionData[MAX_PRIMES];
+  PrimeTrialDivisionData primeTrialDivisionData[MAX_PRIMES + 50];
   int span;
   int indexMinFactorA;
   int threadNumber;
@@ -75,9 +75,9 @@ struct stSiqs
   int NbrPolynomials;
   int SieveLimit;
   int matrixPartial[MAX_PRIMES * 8][(MAX_LIMBS_SIQS/2) + 4];
-  limb vectLeftHandSide[MAX_PRIMES+50][MAX_LIMBS_SIQS + 4];
+  limb vectLeftHandSide[MAX_PRIMES*33/32 + 50][MAX_LIMBS_SIQS + 4];
   int matrixPartialHashIndex[1 << BITS_SIQS_HASH];
-  int matrixB[MAX_PRIMES + 50][MAX_FACTORS_RELATION];
+  int matrixB[MAX_PRIMES*33/32 + 50][MAX_FACTORS_RELATION];
   int amodq[MAX_NBR_FACTORS];
   int tmodqq[MAX_NBR_FACTORS];
   int smallPrimeUpperLimit;
