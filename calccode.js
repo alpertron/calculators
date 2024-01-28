@@ -66,7 +66,7 @@ function getCalculatorCode(jsFileName, workerParameter)
     {
       length--;
     }
-    fileContents=new Int8Array(length);
+    fileContents = new Int8Array(length);
     b64decode(wasm, fileContents);
   }
 }

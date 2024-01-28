@@ -1,4 +1,5 @@
 //
+//
 // This file is part of Alpertron Calculators.
 //
 // Copyright 2016-2021 Dario Alejandro Alpern
@@ -30,14 +31,13 @@ extern int64_t lModularMult;
 static BigInteger groupOrder;
 static BigInteger subGroupOrder;
 static BigInteger powSubGroupOrder;
-static BigInteger powSubGroupOrderBak;
+static BigInteger powSubGroupOrder2;
 static BigInteger Exponent;
 static BigInteger runningExp;
 static BigInteger baseExp;
 static BigInteger mod;
 static BigInteger logar;
 static BigInteger logarMult;
-static BigInteger runningExpBase;
 static BigInteger currentExp;
 static BigInteger DiscreteLog;
 static BigInteger DiscreteLogPeriod;
@@ -59,11 +59,9 @@ static limb nbrA2[MAX_LEN];
 static limb nbrB[MAX_LEN];
 static limb nbrB2[MAX_LEN];
 static limb nbrR[MAX_LEN];
-static limb nbrROther[MAX_LEN];
 static limb nbrR2[MAX_LEN];
 static limb nbrPower[MAX_LEN];
 static limb nbrBase[MAX_LEN];
-static limb nbrTemp[MAX_LEN];
 static limb baseMontg[MAX_LEN];
 static limb basePHMontg[MAX_LEN];
 static limb powerMontg[MAX_LEN];
@@ -81,13 +79,6 @@ int factorsGO[10000];
 extern int NumberLength;
 static void AdjustExponent(limb *nbr, limb mult, limb add, const BigInteger *subGroupOrder);
 static void ExchangeMods(void);
-
-enum eLogMachineState
-{
-  BASE_PRIMITIVE_ROOT = 0,
-  CALC_LOG_BASE,
-  CALC_LOG_POWER,
-};
 
 static void showText(const char *text)
 {
@@ -151,6 +142,8 @@ static void indicateCannotComputeLog(int indexBase, int indexExp)
   DiscreteLogPeriod.sign = SIGN_NEGATIVE;
 }
 
+// primRootPwr = base
+// powerPHmont = power
 static bool ComputeDLogModSubGroupOrder(int indexBase, int indexExp, 
   BigInteger *bigExp, const BigInteger *bigSubGroupOrder)
 {
@@ -175,31 +168,41 @@ static bool ComputeDLogModSubGroupOrder(int indexBase, int indexExp,
   return false;
 }
 
+// On input: 
+// - primRootPwr = base
+// - powerPHmont = power
+// - NumberSizeBytes: number of bytes of subgroup (multiple of 4).
+// - firstLimit: limit between the sets S_0 and S_1.
+// - secondLimit: limit between the sets S_1 and S_2.
+// - leastSignificantLimb: index to next to most significant limb.
+// - mostSignificantLimb: index to next most significant limb.
+// On output: Exponent: result.
 static bool PollardRho(int NumberSizeBytes, double firstLimit, double secondLimit,
-  int leastSignificantDword, int mostSignificantDword, int indexBase, int indexExp)
+  int leastSignificantLimb, int mostSignificantLimb, int indexBase, int indexExp)
 {
   limb addA;
   limb addB;
+  limb mult1;
+  // Use intermediate values of addA2, addB2 and mult2 so
+  // we do not have to compute modular arithmetic for every cycle.
   limb addA2 = { 0 };
   limb addB2 = { 0 };
-  limb mult1;
-  limb mult2 = { 0 };
+  limb mult2 = { 1 };
   double magnitude;
-  long long brentK;
-  long long brentR;
+  int64_t brentK;
+  int64_t brentR;
   bool EndPollardBrentRho;
   (void)memcpy(nbrPower, powerPHMontg, NumberSizeBytes);
+  // Copy base ^ (groupOrder/subGroupOrder)
   (void)memcpy(nbrBase, primRootPwr, NumberSizeBytes);
   (void)memcpy(nbrR2, nbrBase, NumberSizeBytes);
   (void)memset(nbrA2, 0, NumberSizeBytes);
   (void)memset(nbrB2, 0, NumberSizeBytes);
   nbrB2[0].x = 1;
-  addA2.x = 0;
-  addB2.x = 0;
-  mult2.x = 1;
   brentR = 1;
   brentK = 0;
   EndPollardBrentRho = false;
+  // Perform Brent's cycle finding loop.
   do
   {
     (void)memcpy(nbrR, nbrR2, NumberSizeBytes);
@@ -209,39 +212,36 @@ static bool PollardRho(int NumberSizeBytes, double firstLimit, double secondLimi
     addB = addB2;
     mult1 = mult2;
     brentR *= 2;
+    // Loop inside power of 2.
     do
     {
       brentK++;
       if (NumberLength == 1)
       {
-        magnitude = (double)nbrR2[leastSignificantDword].x;
+        magnitude = (double)nbrR2[leastSignificantLimb].x;
       }
       else
       {
-        magnitude = ((double)nbrR2[mostSignificantDword].x * (double)LIMB_RANGE) +
-          nbrR2[leastSignificantDword].x;
+        magnitude = ((double)nbrR2[mostSignificantLimb].x * (double)LIMB_RANGE) +
+          nbrR2[leastSignificantLimb].x;
       }
       if (magnitude < firstLimit)
-      {
-        modmult(nbrR2, nbrPower, nbrROther);
+      {    // nbrR2 is in set S_0.
+        modmult(nbrR2, nbrPower, nbrR2);
         addA2.x++;
       }
       else if (magnitude < secondLimit)
-      {
-        modmult(nbrR2, nbrR2, nbrROther);
+      {    // nbrR2 is in set S_1.
+        modmult(nbrR2, nbrR2, nbrR2);
         mult2.x *= 2;
         addA2.x *= 2;
         addB2.x *= 2;
       }
       else
-      {
-        modmult(nbrR2, nbrBase, nbrROther);
+      {    // nbrR2 is in set S_2.
+        modmult(nbrR2, nbrBase, nbrR2);
         addB2.x++;
       }
-      // Exchange nbrR2 and nbrROther
-      (void)memcpy(nbrTemp, nbrR2, NumberSizeBytes);
-      (void)memcpy(nbrR2, nbrROther, NumberSizeBytes);
-      (void)memcpy(nbrROther, nbrTemp, NumberSizeBytes);
       if ((addA2.x >= HALF_INT_RANGE) || (addB2.x >= HALF_INT_RANGE) ||
         (mult2.x >= HALF_INT_RANGE))
       {
@@ -249,11 +249,12 @@ static bool PollardRho(int NumberSizeBytes, double firstLimit, double secondLimi
         AdjustExponent(nbrA2, mult2, addA2, &subGroupOrder);
         // Get next value of B2 as nbrB2 <- (nbrB2 * mult2 + addB2) % subGroupOrder
         AdjustExponent(nbrB2, mult2, addB2, &subGroupOrder);
+        // Reinitialize temporary multiplier and adders.
         mult2.x = 1;
         addA2.x = 0;
         addB2.x = 0;
       }
-      if (!memcmp(nbrR, nbrR2, NumberSizeBytes))
+      if (memcmp(nbrR, nbrR2, NumberSizeBytes) == 0)
       {
         EndPollardBrentRho = true;
         break;
@@ -292,16 +293,19 @@ static bool PollardRho(int NumberSizeBytes, double firstLimit, double secondLimi
   return true;
 }
 
+int pepe;
+// On output: logar: Computed logarithm.
 static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   double firstLimit, double secondLimit,
-  int leastSignificantDword, int mostSignificantDword)
+  int leastSignificantLimb, int mostSignificantLimb)
 {
   char* ptr;
   int nbrLimbs;
   int NumberSizeBytes;
-  enum eLogMachineState logMachineState;
   int indexExp;
   int lenBytes;
+  int maxSGExp;
+  int subGroupMultiplicity = astFactorsGO[indexBase + 1].multiplicity;
 
   NumberLength = *astFactorsGO[indexBase + 1].ptrFactor;
   IntArray2BigInteger(astFactorsGO[indexBase + 1].ptrFactor, &subGroupOrder);
@@ -322,7 +326,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
     ptr++;
     *ptr = '>';
     ptr++;
-    int2dec(&ptr, astFactorsGO[indexBase + 1].multiplicity);
+    int2dec(&ptr, subGroupMultiplicity);
     *ptr = '<';
     ptr++;
     *ptr = '/';
@@ -336,7 +340,19 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
     *ptr = '>';
     ptr++;
   }
-  copyStr(&ptr, lang? " elementos.": " elements.");
+  copyStr(&ptr, lang? " elementos": " elements");
+  if (NbrFactorsMod > 1)
+  {
+    copyStr(&ptr, lang ? " módulo " : " modulo ");
+    Bin2Dec(&ptr, mod.limbs, mod.nbrLimbs, groupLen);
+  }
+  *ptr = '.';
+  ptr++;
+  *ptr = 0;
+  if (mod.limbs[0].x == 23)
+  {
+    pepe = 1;
+  }
   showText(textExp);
   NumberLength = mod.nbrLimbs;
   lenBytes = NumberLength * (int)sizeof(limb);
@@ -358,147 +374,80 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
     }
   }
   CopyBigInt(&baseExp, &groupOrder);
-  // Check whether base is primitive root.
-  (void)BigIntDivide(&groupOrder, &subGroupOrder, &tmpBase);
-  modPow(baseMontg, tmpBase.limbs, tmpBase.nbrLimbs, primRootPwr);
-  if (!memcmp(primRootPwr, MontgomeryMultR1, NumberSizeBytes))
-  {        // Power is one, so it is not a primitive root.
-    logMachineState = CALC_LOG_BASE;
-    // Find primitive root
-    primRoot[0].x = 1;
-    if (NumberLength > 1)
-    {
-      lenBytes = (NumberLength - 1) * (int)sizeof(limb);
-      (void)memset(&primRoot[1], 0, lenBytes);
-    }
-    do
-    {
-      primRoot[0].x++;
-      modPow(primRoot, tmpBase.limbs, tmpBase.nbrLimbs, primRootPwr);
-    } while (!memcmp(primRootPwr, MontgomeryMultR1, NumberSizeBytes));
+  BigIntPowerIntExp(&subGroupOrder, subGroupMultiplicity, &powSubGroupOrder2);
+  (void)BigIntDivide(&groupOrder, &powSubGroupOrder2, &tmpBase);
+  modPow(baseMontg, tmpBase.limbs, tmpBase.nbrLimbs, primRoot);
+  memcpy(primRootPwr, primRoot, NumberSizeBytes);
+  ExponentsGOComputed[indexBase] = 0;
+  if (!memcmp(primRoot, MontgomeryMultR1, NumberSizeBytes))
+  {          // Power is one, check power of power.
+    intToBigInteger(&nbrV[indexBase], 0);
+    modPow(powerMontg, tmpBase.limbs, tmpBase.nbrLimbs, primRoot);
+    return memcmp(primRoot, MontgomeryMultR1, NumberSizeBytes) == 0;
   }
-  else
-  {           // Power is not 1, so the base is a primitive root.
-    logMachineState = BASE_PRIMITIVE_ROOT;
-    (void)memcpy(primRoot, baseMontg, NumberSizeBytes);
-  }
-  for (;;)
-  {                  // Calculate discrete logarithm in subgroup.
-    intToBigInteger(&runningExp, 0);       // runningExp <- 0
-    intToBigInteger(&powSubGroupOrder, 1); // powSubGroupOrder <- 1
-    CopyBigInt(&currentExp, &groupOrder);
-    if (logMachineState == BASE_PRIMITIVE_ROOT)
-    {
-      (void)memcpy(basePHMontg, baseMontg, NumberSizeBytes);
-      (void)memcpy(currPowerMontg, powerMontg, NumberSizeBytes);
-    }
-    else if (logMachineState == CALC_LOG_BASE)
-    {
-      (void)memcpy(basePHMontg, primRoot, NumberSizeBytes);
-      (void)memcpy(currPowerMontg, baseMontg, NumberSizeBytes);
-    }
-    else
-    {           // logMachineState == CALC_LOG_POWER
-      (void)memcpy(primRoot, basePHMontg, NumberSizeBytes);
-      (void)memcpy(currPowerMontg, powerMontg, NumberSizeBytes);
-    }
-    for (indexExp = 0; indexExp < astFactorsGO[indexBase + 1].multiplicity; indexExp++)
-    {
-      /* PH below comes from Pohlig-Hellman algorithm */
-      (void)BigIntDivide(&currentExp, &subGroupOrder, &currentExp);
-      modPow(currPowerMontg, currentExp.limbs, currentExp.nbrLimbs, powerPHMontg);
-      (void)BigIntDivide(&baseExp, &subGroupOrder, &baseExp);
-      if ((subGroupOrder.nbrLimbs == 1) && (subGroupOrder.limbs[0].x < 20))
-      {        // subGroupOrder less than 20.
-        if (!ComputeDLogModSubGroupOrder(indexBase, indexExp, &Exponent, &subGroupOrder))
-        {      // Cannot find logarithm, so go out.
-          return false;
-        }
+  // Get the maximum value of k such that:
+  // base^((p-1)/s^k), base^((p-1)/s^(k-1)), ... , base^((p-1)/s^(k-1))
+  // is congruent to 1. s = subgroup.
+  for (maxSGExp = 1; maxSGExp <= subGroupMultiplicity; maxSGExp++)
+  {
+    ExponentsGOComputed[indexBase]++;
+    modPow(primRootPwr, subGroupOrder.limbs,
+      subGroupOrder.nbrLimbs, primRoot);
+    if (memcmp(primRoot, MontgomeryMultR1, NumberSizeBytes) == 0)
+    {          // Power is one, so check power of power.
+      BigIntPowerIntExp(&subGroupOrder, subGroupMultiplicity - maxSGExp,
+        &powSubGroupOrder2);
+      (void)BigIntDivide(&groupOrder, &powSubGroupOrder2, &tmpBase);
+      modPow(powerMontg, tmpBase.limbs, tmpBase.nbrLimbs, primRoot);
+      if (memcmp(primRoot, MontgomeryMultR1, NumberSizeBytes) != 0)
+      {        // Power is not one, so there is no logarithm.
+        return false;
       }
-      else
-      {        // Use Pollard's rho method with Brent's modification
-        if (!PollardRho(NumberSizeBytes, firstLimit, secondLimit,
-          leastSignificantDword, mostSignificantDword, indexBase, indexExp))
-        {
-          return false;
-        }
-      }
-      modPow(primRoot, Exponent.limbs, Exponent.nbrLimbs, tmpBase.limbs);
-      (void)ModInvBigNbr(tmpBase.limbs, tmpBase.limbs, TestNbr, NumberLength);
-      modmult(tmpBase.limbs, currPowerMontg, currPowerMontg);
-      (void)BigIntMultiply(&Exponent, &powSubGroupOrder, &tmpBase);
-      BigIntAdd(&runningExp, &tmpBase, &runningExp);
-      (void)BigIntMultiply(&powSubGroupOrder, &subGroupOrder, &powSubGroupOrder);
-      modPow(primRoot, subGroupOrder.limbs, subGroupOrder.nbrLimbs, tmpBase.limbs);
-      (void)memcpy(primRoot, tmpBase.limbs, NumberSizeBytes);
-    }
-    if (logMachineState == BASE_PRIMITIVE_ROOT)
-    {         // Discrete logarithm was determined for this subgroup.
-      ExponentsGOComputed[indexBase] = astFactorsGO[indexBase + 1].multiplicity;
       break;
     }
-    if (logMachineState == CALC_LOG_BASE)
-    {
-      CopyBigInt(&runningExpBase, &runningExp);
-      logMachineState = CALC_LOG_POWER;
+    memcpy(primRootPwr, primRoot, NumberLength * 4);
+  }
+  (void)memcpy(primRoot, baseMontg, NumberSizeBytes);
+
+  intToBigInteger(&runningExp, 0);       // runningExp <- 0
+  intToBigInteger(&powSubGroupOrder, 1); // powSubGroupOrder <- 1
+  CopyBigInt(&currentExp, &groupOrder);
+  (void)memcpy(basePHMontg, baseMontg, NumberSizeBytes);
+  (void)memcpy(currPowerMontg, powerMontg, NumberSizeBytes);
+  BigIntPowerIntExp(&subGroupOrder, subGroupMultiplicity - maxSGExp,
+    &powSubGroupOrder2);
+  (void)BigIntDivide(&currentExp, &powSubGroupOrder2, &currentExp);
+  for (indexExp = 0; indexExp < maxSGExp; indexExp++)
+  {
+    /* PH below comes from Pohlig-Hellman algorithm */
+    (void)BigIntDivide(&currentExp, &subGroupOrder, &currentExp);
+    modPow(currPowerMontg, currentExp.limbs, currentExp.nbrLimbs, powerPHMontg);
+    (void)BigIntDivide(&baseExp, &subGroupOrder, &baseExp);
+    if ((subGroupOrder.nbrLimbs == 1) && (subGroupOrder.limbs[0].x < 20))
+    {        // subGroupOrder less than 20. Get Exponent.
+      if (!ComputeDLogModSubGroupOrder(indexBase, indexExp, &Exponent, &subGroupOrder))
+      {      // Cannot find logarithm, so go out.
+        return false;
+      }
     }
     else
-    {  // Set powSubGroupOrderBak to powSubGroupOrder.
-       // if runningExpBase is not multiple of subGroupOrder,
-       // discrete logarithm is runningExp/runningExpBase mod powSubGroupOrderBak.
-       // Otherwise if runningExp is multiple of subGroupOrder, there is no logarithm.
-       // Otherwise, divide runningExp, runnignExpBase and powSubGroupOrderBak by subGroupOrder and repeat.
-      ExponentsGOComputed[indexBase] = astFactorsGO[indexBase + 1].multiplicity;
-      CopyBigInt(&powSubGroupOrderBak, &powSubGroupOrder);
-      do
+    {        // Use Pollard's rho method with Brent's modification. Get Exponent.
+      if (!PollardRho(NumberSizeBytes, firstLimit, secondLimit,
+        leastSignificantLimb, mostSignificantLimb, indexBase, indexExp))
       {
-        (void)BigIntRemainder(&runningExpBase, &subGroupOrder, &tmpBase);
-        if (!BigIntIsZero(&tmpBase))
-        {    // runningExpBase is not multiple of subGroupOrder
-          BigIntModularDivisionSaveTestNbr(&runningExp, &runningExpBase,
-            &powSubGroupOrderBak, &tmpBase);
-          CopyBigInt(&runningExp, &tmpBase);
-          break;
-        }
-        (void)BigIntRemainder(&runningExp, &subGroupOrder, &tmpBase);
-        if (!BigIntIsZero(&tmpBase))
-        {    // runningExpBase is not multiple of subGroupOrder
-          noDiscreteLog();
-          return false;
-        }
-        (void)BigIntDivide(&runningExp, &subGroupOrder, &tmpBase);
-        CopyBigInt(&runningExp, &tmpBase);
-        (void)BigIntDivide(&runningExpBase, &subGroupOrder, &tmpBase);
-        CopyBigInt(&runningExpBase, &tmpBase);
-        (void)BigIntDivide(&powSubGroupOrderBak, &subGroupOrder, &tmpBase);
-        CopyBigInt(&powSubGroupOrderBak, &tmpBase);
-        ExponentsGOComputed[indexBase]--;
-        if ((tmpBase.nbrLimbs == 1) && (tmpBase.limbs[0].x == 1))
-        {
-          break;
-        }
-        (void)BigIntRemainder(&runningExpBase, &subGroupOrder, &tmpBase);
-      } while (BigIntIsZero(&tmpBase));
-      CopyBigInt(&powSubGroupOrder, &powSubGroupOrderBak);
-      // The logarithm is runningExp / runningExpBase mod powSubGroupOrder
-      // When powSubGroupOrder is even, we cannot use Montgomery.
-      if ((powSubGroupOrder.limbs[0].x & 1) == 1)
-      {          // powSubGroupOrder is odd.
-        BigIntModularDivisionSaveTestNbr(&runningExp, &runningExpBase, &powSubGroupOrder, &tmpBase);
-        CopyBigInt(&runningExp, &tmpBase);
+        return false;
       }
-      else
-      {          // powSubGroupOrder is even (power of 2).
-        NumberLength = powSubGroupOrder.nbrLimbs;
-        CompressLimbsBigInteger(nbrB, &runningExpBase);
-        ComputeInversePower2(nbrB, nbrA, nbrB2);  // nbrB2 is auxiliary var.
-        CompressLimbsBigInteger(nbrB, &runningExp);
-        multiply(nbrA, nbrB, nbrA, NumberLength, NULL);   // nbrA <- quotient.
-        UncompressLimbsBigInteger(nbrA, &runningExp);
-      }
-      break;
     }
+    modPow(primRoot, Exponent.limbs, Exponent.nbrLimbs, tmpBase.limbs);
+    (void)ModInvBigNbr(tmpBase.limbs, tmpBase.limbs, TestNbr, NumberLength);
+    modmult(tmpBase.limbs, currPowerMontg, currPowerMontg);
+    (void)BigIntMultiply(&Exponent, &powSubGroupOrder, &tmpBase);
+    BigIntAdd(&runningExp, &tmpBase, &runningExp);
+    (void)BigIntMultiply(&powSubGroupOrder, &subGroupOrder, &powSubGroupOrder);
+    modPow(primRoot, subGroupOrder.limbs, subGroupOrder.nbrLimbs, tmpBase.limbs);
+    (void)memcpy(primRoot, tmpBase.limbs, NumberSizeBytes);
   }
+  
   CopyBigInt(&nbrV[indexBase], &runningExp);
   NumberLength = powSubGroupOrder.nbrLimbs;
   lenBytes = NumberLength * (int)sizeof(limb);
@@ -637,6 +586,7 @@ void DiscreteLogarithm(void)
 #ifdef __EMSCRIPTEN__
   lModularMult = 0;
 #endif
+  intToBigInteger(&nbrV[0], 0);
   NumberLength = modulus.nbrLimbs;
   if ((LastModulus.nbrLimbs == 0) || !TestBigNbrEqual(&LastModulus, &modulus))
   {
@@ -651,8 +601,8 @@ void DiscreteLogarithm(void)
   intToBigInteger(&DiscreteLogPeriod, 1); // DiscreteLogPeriod <- 1
   for (int index = 1; index <= NbrFactorsMod; index++)
   {
-    int mostSignificantDword;
-    int leastSignificantDword;
+    int mostSignificantLimb;
+    int leastSignificantLimb;
     int NbrFactors;
     const int *ptrPrime;
     int multiplicity;
@@ -743,31 +693,35 @@ void DiscreteLogarithm(void)
     // Convert base and power to Montgomery notation.
     modmult(baseMontg, MontgomeryMultR2, baseMontg);
     modmult(powerMontg, MontgomeryMultR2, powerMontg);
-    mostSignificantDword = NumberLength - 1;
+    // Compute firstLimit as TestNbr / 3.
+    mostSignificantLimb = NumberLength - 1;
     if (NumberLength == 1)
     {
-      leastSignificantDword = NumberLength - 1;
-      firstLimit = (double)TestNbr[leastSignificantDword].x / 3;
+      leastSignificantLimb = NumberLength - 1;
+      firstLimit = (double)TestNbr[leastSignificantLimb].x / 3;
     }
     else
     {
-      leastSignificantDword = NumberLength - 2;
-      firstLimit = ((double)TestNbr[mostSignificantDword].x * (double)LIMB_RANGE +
-        (double)TestNbr[leastSignificantDword].x) / 3.0;
+      leastSignificantLimb = NumberLength - 2;
+      firstLimit = ((double)TestNbr[mostSignificantLimb].x * (double)LIMB_RANGE +
+        (double)TestNbr[leastSignificantLimb].x) / 3.0;
     }
+    // Compute secondLimit as 2 * TestNbr / 3.
     secondLimit = firstLimit * 2.0;
     for (int indexBase = 0; indexBase < NbrFactors; indexBase++)
     {
       rc = ComputeDiscrLogInPrimeSubgroup(indexBase, firstLimit, secondLimit,
-        leastSignificantDword, mostSignificantDword);
+        leastSignificantLimb, mostSignificantLimb);
       if (!rc)
       {
+        DiscreteLogPeriod.sign = SIGN_NEGATIVE;    // There is no logarithm.
         return;
       }
     }
     rc = DiscrLogPowerPrimeSubgroup(astFactorsMod[index].multiplicity, ptrPrime);
     if (!rc)
     {
+      DiscreteLogPeriod.sign = SIGN_NEGATIVE;    // There is no logarithm.
       return;
     }
     // Based on logar and logarMult, compute DiscreteLog and DiscreteLogPeriod
@@ -970,9 +924,7 @@ EXTERNALIZE void doWork(void)
   char *ptrPower;
   char *ptrMod;
   groupLength = 0;
-#ifdef __EMSCRIPTEN__
   originalTenthSecond = tenths();
-#endif
   while (*ptrData != ',')
   {
     groupLength = (groupLength * 10) + (*ptrData - '0');

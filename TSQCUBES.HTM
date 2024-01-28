@@ -60,6 +60,8 @@ nav::after {clear:both}
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
 @media print {nav .footer {display:none;}}
+#sending, #sentOK, #notSent {display:none}
+.center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
 #skip a:focus {position:absolute;	left:0px;	top:0px; outline-color:transparent; transition: top .1s ease-in}
 .bread {padding:0px;list-style:none; display:inline-block;}
@@ -162,7 +164,7 @@ input:disabled {color: #808080; background-color: #606060}
 <div class="applet">
 <div id="inputs">
 <label for="num">Number to be decomposed in sum of two squares and a power</label>
-<textarea id="num" rows="4" class="input"></textarea>
+<textarea inputmode="numeric" id="num" rows="4" class="input"></textarea>
 </div>
 <fieldset id="actions"><legend>Actions</legend>
 <button type="button" id="calc" title="Find sums of two squares and a cube."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup>3</sup></button>
@@ -246,7 +248,8 @@ to find <var>d</var> = <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup>.</li>
 <li> <strong>Jacobi(m,n)</strong>: obtains the Jacobi symbol of <var>m</var> and <var>n</var>. When the second argument is prime, the result is zero when <var>m</var> is multiple of <var>n</var>, it is one if there is a solution of <var>x</var>&sup2; &equiv; <var>m</var> (mod <var>n</var>) and it is equal to &minus;1 when the mentioned congruence has no solution.</li>
 <li> <strong>Random(m,n)</strong>: integer random number between <var>m</var> and <var>n</var>.</li>
 <li> <strong>Abs(n)</strong>: absolute value of <var>n</var>.</li>
-<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is. Example: IsPrime(5) = -1.</li>
+<li> <strong>Sign(n)</strong>: returns zero if <var>n</var> is zero, &minus;1 if negative or 1 if positive.</li>
+<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, &minus;1 if it is. Example: IsPrime(5) = &minus;1.</li>
 <li> <strong>Sqrt(n)</strong>: Integer part of the square root of the argument.</li>
 <li> <strong>Iroot(n,r)</strong>: Integer r-root of the first argument. Example: Iroot(8, 3) = 2.</li>
 <li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>. Example: NumDigits(13, 2) = 4 because 13 in binary (base 2) is expressed as 1101.</li>
@@ -285,11 +288,11 @@ The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <p>To print a percent sign, you have to write two percent signs, and a quotation mark is represented by a percent sign followed by a quotation mark.</p>
 <p>Example 3: For each number between -100 and 100, show whether the number is prime and then the decomposition in two squares and a cube both in decimal and hexadecimal.</p>
 <p>The line to write is: <code>x=-100; x=x+1; &lt;=100; &quot;%d is prime: %l, %Fd, %Fx&quot;:x:isprime(x):x:x</code>
+<div class="noand">
 <h2>Source code</h2>
-<p>
-You can download the source of the this program from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.
-</p>
-<p>Written by Dario Alpern. Last updated 20 November 2023.</p>
+<p>You can download the source of the this program from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
+</div>
+<p>Written by Dario Alpern. Last updated 28 January 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -319,7 +322,7 @@ You can download the source of the this program from <a href="https://github.com
 </fieldset>
 <label for="wzdinput" id="wzddesc">1</label>
 <br class="newline">
-<input type="text" id="wzdinput" value="" placeholder="Number or numerical expression" class="input">
+<input type="text" inputmode="numeric" id="wzdinput" value="" placeholder="Number or numerical expression" class="input">
 <br class="newline">
 <p id="wzdexam">&nbsp;</p>
 <input type="button" id="next" value="Next" title="Next step of wizard">
@@ -346,6 +349,17 @@ You can download the source of the this program from <a href="https://github.com
 <li id="X">Variable <var>X</var>: variable changed on each iteration of the loop.</li>
 </ul>
 </aside>
+<aside id="sending">
+<p>Sending comments...</p>
+</aside>
+<aside id="sentOK">
+<p>Feedback sent successfully.</p>
+<div class="center"><button type="button" id="btnSentOK">Go back</button></div>
+</aside>
+<aside id="notSent">
+<p>Feedback could not be sent.</p>
+<div class="center"><button type="button" id="btnNotSent">Go back</button></div>
+</aside>
 <aside id="feedback" aria-label="Feedback form">
 <h2 class="h2title">Feedback form</h2>
 <form class="applet" id="formfeedback">
@@ -357,7 +371,7 @@ You can download the source of the this program from <a href="https://github.com
 <div class="labels"><label for="province">Province/State:</label><input class="inputfbck" type="text" name="province" maxlength="70" id="province" autocomplete="address-level1"></div>
 <div class="labels"><label for="country">Country:</label><input class="inputfbck" type="text" name="country" maxlength="70" id="country" autocomplete="country-name"></div>
 <div class="labels"><label for="reply">E-mail address:</label><input class="inputfbck" type="email" name="reply" maxlength="70" id="reply" autocomplete="email"></div>
-<p>Enter your e-mail address if you want a reply from the author of this application.</p>
+<p>All fields are optional. Enter your e-mail address if you want a reply from the author of this application.</p>
 <p><input type="checkbox" id="adduserdata"><label for="adduserdata">Send expression to be decomposed in sum of two squares and a perfect power</label></p>
 <input type="hidden" name="userdata" value="" id="userdata">
 </div>
@@ -382,7 +396,7 @@ You can download the source of the this program from <a href="https://github.com
 <input type="radio" name="Interesting" value="Yes" id="intyes"><label for="intyes">Yes</label>
 <input type="radio" name="Interesting" value="No" id="intno"><label for="intno">No</label>
 </fieldset>
-<p><input type="submit" value="Send it in!" id="formsend" title="Deliver this form">
+<p><input type="submit" disabled="disabled" value="Send it in!" id="formsend" title="Deliver this form">
 <input type="reset" value="Reset">
 <input type="button" value="Cancel" id="formcancel" title="Do not deliver this form"></p>
 </div>

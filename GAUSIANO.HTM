@@ -57,6 +57,8 @@ nav::after {clear:both}
 @media (max-width: 400px) { nav { font-size:0.7em; } }
 @media (min-width: 400px) { nav { font-size:1em; } }
 }
+#sending, #sentOK, #notSent {display:none}
+.center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
 #skip a:focus {position:absolute;	left:0px;	top:0px; outline-color:transparent; transition: top .1s ease-in}
 .bread {padding:0px;list-style:none; display:inline-block;}
@@ -186,7 +188,7 @@ input:disabled {color: #808080; background-color: #606060}
 <noscript><p><strong>La calculadora no funciona con Javascript deshabilitado. Por favor revise la configuración de su navegador.</strong></p></noscript>
 <div class="applet">
 <div id="inputs">
-<label for="value">Valor</label><input type="text" id="value" value="" class="input">
+<label for="value">Valor</label><input type="text" inputmode="numeric" id="value" value="" class="input">
 </div>
 <fieldset id="actions"><legend>Acciones</legend>
 <input type="button" id="more" value="Más" title="Cambiar número de curva o ingresar factor">
@@ -285,9 +287,11 @@ Si <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, entonces 
 <li> <strong>isPrime(n)</strong>: Verifica si el entero gausiano es primo probable. En este caso retorna &minus;1, en caso contrario, cero.</li>
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
+<div class="noand">
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente del programa actual y del viejo applet de factorización de enteros gaussianos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 20 de noviembre de 2023.</p>
+</div>
+<p>Escrito por Dario Alpern. Actualizado el 28 de enero de 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -332,7 +336,7 @@ Si <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, entonces 
 <div class="labels"><label for="province">Provincia:</label><input class="inputfbck" type="text" name="Provincia" maxlength="70" id="province" autocomplete="address-level1"></div>
 <div class="labels"><label for="country">País:</label><input class="inputfbck" type="text" name="Pais" maxlength="70" id="country" autocomplete="country-name"></div>
 <div class="labels"><label for="reply">Su e-mail:</label><input class="inputfbck" type="email" name="Responder" maxlength="70" id="reply" autocomplete="email"></div>
-<p>Ingrese su dirección de correo electrónico si desea una respuesta del autor de esta aplicación.</p>
+<p>Todos los campos son opcionales. Ingrese su dirección de correo electrónico si desea una respuesta del autor de esta aplicación.</p>
 <p><input type="checkbox" id="adduserdata"><label for="adduserdata">Enviar expresión a factorizar</label></p>
 <input type="hidden" name="datos" value="" id="userdata">
 </div>
@@ -357,12 +361,23 @@ Si <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, entonces 
 <input type="radio" name="Interesante" value="Si" id="intyes"><label for="intyes">Sí</label>
 <input type="radio" name="Interesante" value="No" id="intno"><label for="intno">No</label>
 </fieldset>
-<p><input type="submit" value="Enviar el comentario" id="formsend" title="Enviar el formulario">
+<p><input type="submit" disabled="disabled" value="Enviar el comentario" id="formsend" title="Enviar el formulario">
 <input type="reset" value="Entrar otra vez">
 <input type="button" value="Cancelar" id="formcancel" title="No enviar el formulario"></p>
 </div>
 <div class="lf"></div>
 </form>
+</aside>
+<aside id="sending">
+<p>Enviando comentario...</p>
+</aside>
+<aside id="sentOK">
+<p>Comentario enviado correctamente.</p>
+<div class="center"><button type="button" id="btnSentOK">Volver</button></div>
+</aside>
+<aside id="notSent">
+<p>No se pudo enviar el comentario.</p>
+<div class="center"><button type="button" id="btnNotSent">Volver</button></div>
 </aside>
 <script type="text/wasmb64" id="wasmb64">
 </script>

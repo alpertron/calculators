@@ -39,13 +39,14 @@ function formSend()
     {             // XHR finished.
       if (xhr.status === 200)
       {           // PHP page loaded.
-        alert(lang?"Comentarios enviados satisfactoriamente.": "Feedback sent successfully.");
+        hide("sending");
+        show("sentOK");
       }
       else
       {           // PHP page not loaded.
-        alert(lang?"No se pudieron enviar los comentarios.": "Feedback could not be sent.");
+        hide("sending");
+        show("notSent");
       }
-      endFeedback();
     }
   };
   xhr.open("POST", (lang? "/enviomail.php": "/sendmail.php"), true);
@@ -71,14 +72,19 @@ function formSend()
     }
   }
   xhr.send(contents);
+  hide("feedback");
+  show("sending");
   return false;   // Send form only through JavaScript.
 }
 
 function clickFormLink()
 {    
+  hide("sentOK");
+  hide("notSent");
   hide("main");
   show("feedback");
   get("formfeedback").reset();
+  get("formsend").disabled = true;
   get("name").focus();
   return false;   // Do not follow the link.
 }

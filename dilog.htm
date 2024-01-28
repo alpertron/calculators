@@ -59,6 +59,8 @@ nav::after {clear:both}
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
 @media only print {nav, .footer {display:none;}}
+#sending, #sentOK, #notSent {display:none}
+.center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
 #skip a:focus {position:absolute;	left:0px;	top:0px; outline-color:transparent; transition: top .1s ease-in}
 .bread {padding:0px;list-style:none; display:inline-block;}
@@ -223,7 +225,8 @@ The applet works in a reasonable amount of time if this factor is less than <spa
 <li> <strong>Jacobi(m,n)</strong>: obtains the Jacobi symbol of <var>m</var> and <var>n</var>. When the second argument is prime, the result is zero when <var>m</var> is multiple of <var>n</var>, it is one if there is a solution of <var>x</var>&sup2; &equiv; <var>m</var> (mod <var>n</var>) and it is equal to &minus;1 when the mentioned congruence has no solution.</li>
 <li> <strong>Random(m,n)</strong>: integer random number between <var>m</var> and <var>n</var>.</li>
 <li> <strong>Abs(n)</strong>: absolute value of <var>n</var>.</li>
-<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is. Example: IsPrime(5) = -1.</li>
+<li> <strong>Sign(n)</strong>: returns zero if <var>n</var> is zero, &minus;1 if negative or 1 if positive.</li>
+<li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, &minus;1 if it is. Example: IsPrime(5) = &minus;1.</li>
 <li> <strong>Sqrt(n)</strong>: Integer part of the square root of the argument.</li>
 <li> <strong>Iroot(n, r)</strong>: Integer r-root of the first argument. Example: Iroot(8, 3) = 2.</li>
 <li> <strong>NumDigits(n,r)</strong>: Number of digits of <var>n</var> in base <var>r</var>. Example: NumDigits(13, 2) = 4 because 13 in binary (base 2) is expressed as 1101.</li>
@@ -235,11 +238,11 @@ The applet works in a reasonable amount of time if this factor is less than <spa
 <p>Example: Find the number <var>n</var> such that <span role="math" aria-label="7 raised to the power of n is congruent to 23 modulo 43241">7<sup>n</sup> &equiv; 23 (mod 43241)</span>.</p>
 <p>Type 7 in the Base input box, 23 in the Power input box and 43241 in the Mod input box. Then press the button named "Discrete logarithm".</p>
 <p>The result is 3360 + 3930 k. As a check you can compute <span role="math" aria-label="7 raised to the power of 3360 is congruent to 23 modulo 43241">7<sup>3360</sup> &equiv; 23 (mod&nbsp;43241)</span> and <span role="math" aria-label="7 raised to the power of 3930 is congruent to 1 modulo 43241">7<sup>3930</sup> &equiv; 1 (mod&nbsp;43241)</span>.</p>
+<div class="noand">
 <h2>Source code</h2>
-<p>
-You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.
-</p>
-<p>Written by Dario Alpern. Last updated 20 November 2023.</p>
+<p>You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
+</div>
+<p>Written by Dario Alpern. Last updated 28 January 2024.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>
@@ -261,7 +264,7 @@ You can download the source of the current program and the old sum polynomial fa
 <div class="labels"><label for="province">Province/State:</label><input class="inputfbck" type="text" name="province" maxlength="70" id="province" autocomplete="address-level1"></div>
 <div class="labels"><label for="country">Country:</label><input class="inputfbck" type="text" name="country" maxlength="70" id="country" autocomplete="country-name"></div>
 <div class="labels"><label for="reply">E-mail address:</label><input class="inputfbck" type="email" name="reply" maxlength="70" id="reply" autocomplete="email"></div>
-<p>Enter your e-mail address if you want a reply from the author of this application.</p>
+<p>All fields are optional. Enter your e-mail address if you want a reply from the author of this application.</p>
 <p><input type="checkbox" id="adduserdata"><label for="adduserdata">Send input data</label></p>
 <input type="hidden" name="userdata" value="" id="userdata">
 </div>
@@ -286,12 +289,23 @@ You can download the source of the current program and the old sum polynomial fa
 <input type="radio" name="Interesting" value="Yes" id="intyes"><label for="intyes">Yes</label>
 <input type="radio" name="Interesting" value="No" id="intno"><label for="intno">No</label>
 </fieldset>
-<p><input type="submit" value="Send it in!" id="formsend">
+<p><input type="submit" disabled="disabled" value="Send it in!" id="formsend">
 <input type="reset" value="Reset">
 <input type="button" value="Cancel" id="formcancel"></p>
 </div>
 <div class="lf"></div>
 </form>
+</aside>
+<aside id="sending">
+<p>Sending comments...</p>
+</aside>
+<aside id="sentOK">
+<p>Feedback sent successfully.</p>
+<div class="center"><button type="button" id="btnSentOK">Go back</button></div>
+</aside>
+<aside id="notSent">
+<p>Feedback could not be sent.</p>
+<div class="center"><button type="button" id="btnNotSent">Go back</button></div>
 </aside>
 <script type="text/wasmb64" id="wasmb64">
 </script>

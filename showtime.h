@@ -18,7 +18,7 @@
 //
 #ifndef _SHOWTIME_H
 #define _SHOWTIME_H
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__) || defined(__ANDROID__)
 double tenths(void);
 extern double originalTenthSecond;
 extern int oldTimeElapsed;

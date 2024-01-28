@@ -70,16 +70,6 @@ function getParens()
   return parens;
 }
 
-function setStorage(name, data)
-{
-  localStorage.setItem(name, data);
-}
-
-function getStorage(name)
-{
-  return localStorage.getItem(name);
-}
-
 function styleButtons(style1, style2)
 {
   get("eval").style.display = style1;
@@ -90,35 +80,40 @@ function styleButtons(style1, style2)
   get("more").style.display = style2;
 }
 
-function comingFromWorker(e)
+function fromWorker(e)
 {
-  // First character of e.data is "1" for intermediate text
+  // First character of e is "1" for intermediate text
   // and it is "2" for end of calculation.
   // It is "9" for saving expression to factor into Web Storage.
-  let firstChar = e.data.substring(0, 1);
+  let firstChar = e.substring(0, 1);
   if (firstChar === "8" && debugEcm)
   {
-    setStorage("ecmFactors", e.data.substring(1));
+    setStorage("ecmFactors", e.substring(1));
     setStorage("ecmCurve", "");
   }
   else if (firstChar === "7" && debugEcm)
   {
-    setStorage("ecmCurve", e.data.substring(1));
+    setStorage("ecmCurve", e.substring(1));
   }
   else if (firstChar === "4")
   {
-    get("status").innerHTML = e.data.substring(1);
+    get("status").innerHTML = e.substring(1);
   }
   else
   {
-    get("result").innerHTML = e.data.substring(1);
-    if (e.data.substring(0, 1) === "2")
+    get("result").innerHTML = e.substring(1);
+    if (e.substring(0, 1) === "2")
     {   // First character passed from web worker is "2".
       get("status").innerHTML = "";
       styleButtons("inline", "none");  // Enable eval and factor
       hide("modal-more");
     }
   }
+}
+
+function comingFromWorker(e)
+{
+  fromWorker(e.data);
 }
 
 function dowork(n)
@@ -149,6 +144,8 @@ function endFeedback()
 {
   show("main");
   hide("feedback");
+  hide("sentOK");
+  hide("notSent");
   get("value").focus();   
 }
 
@@ -165,6 +162,8 @@ function getFormSendValue()
 
 window.onload = function()
 {
+  get("btnSentOK").onclick = endFeedback;
+  get("btnNotSent").onclick = endFeedback;
   get("eval").onclick = function()
   {
     dowork(0);
@@ -249,6 +248,10 @@ window.onload = function()
   {
     endFeedback();
   };
+  get("comments").oninput = function(_event)
+  {
+    get("formsend").disabled = (get("comments").value === "");
+  };
   get("formsend").onclick = formSend;
   window.onclick = function(event)
   {
@@ -284,3 +287,4 @@ window.onload = function()
   currentInputBox = get("value");
 };
 getCalculatorCode("gaussianW0000.js", false);
+window["fromWorker"] = fromWorker;

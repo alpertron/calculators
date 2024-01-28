@@ -447,7 +447,7 @@ void contfracText(char *input, int GroupLen, bool hex)
   ContFrac();
 }
 
-#if defined __EMSCRIPTEN__ && !defined _MSC_VER
+#if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
 EXTERNALIZE void doWork(void)
 {
   int app;

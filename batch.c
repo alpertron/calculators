@@ -781,9 +781,13 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       {
         if (rc == EXPR_VAR_IN_EXPRESSION)
         {
-          return rc;
+          copyStr(&ptrOutput, lang ? "Variable inesperada en la expresión." :
+            "Unexpected variable in expression.");
         }
-        textError(&ptrOutput, rc);
+        else
+        {
+          textError(&ptrOutput, rc);
+        }
       }
       counterC = -1;
       if (fromFile)

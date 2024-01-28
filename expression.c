@@ -68,7 +68,7 @@ const struct sFuncOperExpr stFuncOperIntExpr[] =
   {"SQRT", TOKEN_SQRT + ONE_PARM, 0},
   {"IROOT", TOKEN_IROOT + TWO_PARMS, 0},
   {"ABS", TOKEN_ABS + ONE_PARM, 0},
-  {"SGN", TOKEN_SGN + ONE_PARM, 0},
+  {"SIGN", TOKEN_SGN + ONE_PARM, 0},
   {"F", TOKEN_F + ONE_PARM, 0},
   {"L", TOKEN_L + ONE_PARM, 0},
   {"P", TOKEN_P + ONE_PARM, 0},
@@ -1820,7 +1820,7 @@ static enum eExprErr ShiftLeft(BigInteger* first, const BigInteger *second,
   return PerformShiftRight(first, shiftCtr, result);
 }
 
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
 void databack(const char *data)
 {
   (void)data;

@@ -59,6 +59,8 @@ nav::after {clear:both}
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
 @media print {nav {display:none;}}
+#sending, #sentOK, #notSent {display:none}
+.center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
 #skip a:focus {position:absolute;	left:0px;	top:0px; outline-color:transparent; transition: top .1s ease-in}
 .bread {padding:0px;list-style:none; display:inline-block;}
@@ -223,7 +225,8 @@ El applet responde en un período de tiempo razonable si este factor es menor qu
 <li> <strong>Jacobi(m,n)</strong>: obtiene el símbolo de Jacobi de <var>m</var> y <var>n</var>. Cuando el segundo argumento es primo, el resultado es cero si <var>m</var> es múltiplo de <var>n</var>, es uno si hay una solución a <var>x</var>&sup2; &equiv; <var>m</var> (mód <var>n</var>) y es igual a &minus;1 cuando la congruencia mencionada no tiene soluciones.</li>
 <li> <strong>Random(m,n)</strong>: número entero aleatorio entre <var>m</var> y <var>n</var>.</li>
 <li> <strong>Abs(n)</strong>: valor absoluto de <var>n</var>.</li>
-<li> <strong>IsPrime(n)</strong>: retorna cero si <var>n</var> no es un primo probable y -1 si lo es. Ejemplo: IsPrime(5) = -1.</li>
+<li> <strong>Sign(n)</strong>: retorna cero si <var>n</var> es zero, &minus;1 si es negativo o 1 si es positivo.</li>
+<li> <strong>IsPrime(n)</strong>: retorna cero si <var>n</var> no es un primo probable y &minus;1 si lo es. Ejemplo: IsPrime(5) = &minus;1.</li>
 <li> <strong>Sqrt(n)</strong>: parte entera de la raíz cuadrada del argumento.</li>
 <li> <strong>Iroot(n,r)</strong>: Raíz r-ésima entera del primer argumento. Ejemplo: Iroot(8, 3) = 2.</li>
 <li> <strong>NumDigits(n,r)</strong>: cantidad de dígitos de <var>n</var> en base <var>r</var>. Ejemplo: NumDigits(13, 2) = 4 porque 13 en binario (base 2) se expresa como 1101.</li>
@@ -236,11 +239,11 @@ El applet responde en un período de tiempo razonable si este factor es menor qu
 <p>Digita 7 en la caja de entrada de Base, 23 en la caja de Potencia y 43241 en la caja Mod. Luego aprieta el botón denominado "Logaritmo discreto".</p>
 <p>El resultado es 3360 + 3930 <var>k</var>, donde <var>k</var> puede ser cualquier número entero.
 Como verificación puedes hallar <span role="math" aria-label="7 a la 3360 congruente a 23 módulo 43241">7<sup>3360</sup> &equiv; 23 (mod&nbsp;43241)</span> y <span role="math" aria-label="7 a la 3930 congruente a 1 módulo 43241">7<sup>3930</sup> &equiv; 1 (mod&nbsp;43241)</span></p>
+<div class="noand">
 <h2>Código fuente</h2>
-<p>
-Puedes bajar el código fuente del programa actual y del viejo applet de cálculo de logaritmos discretos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.
-</p>
-<p>Escrito por Dario Alpern. Actualizado el 20 de noviembre de 2023.</p>
+<p>Puedes bajar el código fuente del programa actual y del viejo applet de cálculo de logaritmos discretos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
+</div>
+<p>Escrito por Dario Alpern. Actualizado el 28 de enero de 2024.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div>
@@ -260,7 +263,7 @@ Puedes bajar el código fuente del programa actual y del viejo applet de cálcul
 <div class="labels"><label for="province">Provincia:</label><input class="inputfbck" type="text" name="Provincia" maxlength="70" id="province" autocomplete="address-level1"></div>
 <div class="labels"><label for="country">País:</label><input class="inputfbck" type="text" name="Pais" maxlength="70" id="country" autocomplete="country-name"></div>
 <div class="labels"><label for="reply">Su e-mail:</label><input class="inputfbck" type="email" name="Responder" maxlength="70" id="reply" autocomplete="email"></div>
-<p>Ingrese su dirección de correo electrónico si desea una respuesta del autor de esta aplicación.</p>
+<p>Todos los campos son opcionales. Ingrese su dirección de correo electrónico si desea una respuesta del autor de esta aplicación.</p>
 <p><input type="checkbox" id="adduserdata"><label for="adduserdata">Enviar parámetros</label></p>
 <input type="hidden" name="datos" value="" id="userdata">
 </div>
@@ -285,12 +288,23 @@ Puedes bajar el código fuente del programa actual y del viejo applet de cálcul
 <input type="radio" name="Interesante" value="Si" id="intyes"><label for="intyes">Sí</label>
 <input type="radio" name="Interesante" value="No" id="intno"><label for="intno">No</label>
 </fieldset>
-<p><input type="submit" value="Enviar el comentario" id="formsend">
+<p><input type="submit" disabled="disabled" value="Enviar el comentario" id="formsend">
 <input type="reset" value="Entrar otra vez">
 <input type="button" value="Cancelar" id="formcancel"></p>
 </div>
 <div class="lf"></div>
 </form>
+</aside>
+<aside id="sending">
+<p>Enviando comentario...</p>
+</aside>
+<aside id="sentOK">
+<p>Comentario enviado correctamente.</p>
+<div class="center"><button type="button" id="btnSentOK">Volver</button></div>
+</aside>
+<aside id="notSent">
+<p>No se pudo enviar el comentario.</p>
+<div class="center"><button type="button" id="btnNotSent">Volver</button></div>
 </aside>
 <script type="text/wasmb64" id="wasmb64">
 </script>

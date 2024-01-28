@@ -34,7 +34,7 @@
 /* global typedOnWizard */
 /* global useBlockly */
 /* global wizardNext */
-/** @define {number} */ const lang = 1;   // Use with Closure compiler.
+/** @define {number} */ const lang = 1;        // Use with Closure compiler.
 const points=[0,6, 2,9, 4,0, 5,6, 7,1, 8,0, 13,9, 14,9, 15,7, 16,7, 17,0, 18,13, 20,5, 22,10, 23,12, 24,6, 27,7];
 let fileContents = null;
 let app;
@@ -88,7 +88,7 @@ if (lang)
 {
   funcnames =
   [
-    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(",
+    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(,Variable,x,Contador,c",
     "Igual,=,Distinto,!=,Mayor,>,Menor o igual,<=,Menor,<,Mayor o igual,>=",
     "Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT ,Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ",
     "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD(,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM(,¿El valor es primo?,IsPrime(,Cantidad de factores primos,NumFact(,menor divisor primo,MinFact(,mayor divisor primo,MaxFact(,Cantidad de divisores,NumDivs(,Suma de divisores,SumDivs(",
@@ -96,13 +96,13 @@ if (lang)
     "Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv(,División modular\n\nPrimer argumento: dividendo\nSegundo argumento: divisor\nTercer argumento: módulo,ModDiv(,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow(,Indicador de Euler,Totient(,Símbolo de Jacobi\n\nPrimer argumento: valor superior\nSegundo argumento: valor inferior,Jacobi(",
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partición,P("
   ];
-  parens = "Paréntesis izquierdo,(,Paréntesis derecho,),";
+  parens = "Paréntesis izquierdo,(,Paréntesis derecho,),Nueva línea,\u23CE,";
 }
 else
 {
   funcnames =
   [
-    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt(,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(",
+    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt(,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(,Variable,x,Counter,c",
     "Equal,=,Not equal,!=,Greater,>,Not greater,<=,Less,<,Not less,>=",
     "Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ,Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ",
     "Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(,Number of prime factors,NumFact(,smallest prime divisor,MinFact(,greatest prime divisor,MaxFact(,Number of divisors,NumDivs(,Sum of divisors,SumDivs(",
@@ -110,7 +110,7 @@ else
     "Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv(,Modular division\n\nFirst argument: dividend\nSecond argument: divisor\nThird argument: modulus,ModDiv(,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow(,Totient,Totient(,Jacobi symbol\n\nFirst argument: upper value\nSecond argument: lower value,Jacobi(",
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
   ];
-  parens = "Left parenthesis,(,Right parenthesis,),";
+  parens = "Left parenthesis,(,Right parenthesis,),New line,\u23CE,";
 }
 
 function getFuncNames()
@@ -136,16 +136,6 @@ function oneexpr()
   wzdExamText.innerHTML = "&nbsp;";
   clearWizardTextInput();
   setWizardStep(9);
-}
-
-function setStorage(name, data)
-{
-  window.localStorage.setItem(name, data);
-}
-
-function getStorage(name)
-{
-  return window.localStorage.getItem(name);
 }
 
 function styleButtons(style1, style2)
@@ -183,9 +173,9 @@ function showSumSquares()
   callWorker("S");  // Indicate worker that user pressed Sum of squares button.
 }
 
-function comingFromWorker(e)
+function fromWorker(e)
 {
-  // First character of e.data is:
+  // First character of e is:
   // "1" for intermediate output
   // "2" for ending calculation
   // "4" for sending intermediate data
@@ -202,27 +192,27 @@ function comingFromWorker(e)
   // "M" for loading polynomial factorization application for factorization.
   // "N" for loading polynomial factorization application for evaluation.
   // "S" for sending data to div named sumSquares.
-  let firstChar = e.data.substring(0, 1);
+  let firstChar = e.substring(0, 1);
   if (firstChar === "9")
   {
-    console.log(e.data.substring(1));
+    console.log(e.substring(1));
   }
   else if (firstChar === "8")
   {
-    setStorage("ecmFactors", e.data.substring(1));
+    setStorage("ecmFactors", e.substring(1));
     setStorage("ecmCurve", "");
   }
   else if (firstChar === "7")
   {
-    setStorage("ecmCurve", e.data.substring(1));
+    setStorage("ecmCurve", e.substring(1));
   }
   else if (firstChar === "D")
   {    // Show divisors.
-    get("divisors").innerHTML = e.data.substring(1);
+    get("divisors").innerHTML = e.substring(1);
   }
   else if (firstChar === "E")
   {
-    get("divisors").innerHTML = e.data.substring(1);
+    get("divisors").innerHTML = e.substring(1);
     get("showdiv").onclick = function()
     {
       callWorker("D");  // Indicate worker that user pressed Divisors button.
@@ -230,7 +220,7 @@ function comingFromWorker(e)
   }
   else if (firstChar === "K")
   {
-    get("berror").innerHTML = e.data.substring(1);
+    get("berror").innerHTML = e.substring(1);
     show("BlocklyErrors");
     hide("BlocklyButtons");
   }
@@ -241,27 +231,25 @@ function comingFromWorker(e)
   }
   else if ((firstChar === "M") || (firstChar === "N"))
   {    // User entered a polynomial. Load calculator to process it.
-    window.sessionStorage.setItem((firstChar === "M"? "F": "E"),
-      value.value);
-    window.location.replace(lang? "FACTPOL.HTM": "POLFACT.HTM");
+    loadPolyCalc(firstChar, value.value);
   }
   else if (firstChar === "S")
   {    // Show sum of squares.
-    get("sumSquares").innerHTML = e.data.substring(1);
+    get("sumSquares").innerHTML = e.substring(1);
     get("showSumSq").onclick = showSumSquares;
   }
   else if (firstChar === "T")
   {    // Show sum of squares without button.
-    get("sumSquares").innerHTML = e.data.substring(1);
+    get("sumSquares").innerHTML = e.substring(1);
   }
    else if (firstChar === "4")
   {
     statusDirty = true;
-    statusText = e.data.substring(1);
+    statusText = e.substring(1);
   }
   else if (firstChar === "5")
   {
-    if (e.data.substring(1, 2) === "1")
+    if (e.substring(1, 2) === "1")
     {
       show("skip");
     }
@@ -282,13 +270,13 @@ function comingFromWorker(e)
       hide("modal-more");
       if (firstChar === "A" || firstChar === "B")
       {
-        tofile = e.data.substring(1);
+        tofile = e.substring(1);
         show("savefile");
         resultText = "";
       }
       else
       {
-        resultText = e.data.substring(1);
+        resultText = e.substring(1);
       }
       if (firstChar === "6" || firstChar === "A")
       {
@@ -305,9 +293,14 @@ function comingFromWorker(e)
     }
     else
     {
-      resultText = e.data.substring(1);
+      resultText = e.substring(1);
     }
   }
+}
+
+function comingFromWorker(e)
+{
+  fromWorker(e.data);
 }
 
 function performWork(n, valueText)
@@ -316,7 +309,6 @@ function performWork(n, valueText)
   app = lang + n;
   let charNull = String.fromCharCode(0);
   let helphelp = get("helphelp");
-  let langName = (typeof(WebAssembly) === "undefined")? "asm.js": "WebAssembly";
   hide("sharediv");
   if (valueText === "")
   {    // Nothing in input box.
@@ -328,16 +320,16 @@ function performWork(n, valueText)
   hide("cont");
   hide("help");
   show("helphelp");
-  helphelp.innerHTML = (lang ? "<p class=\"pad\">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. También puedes ver <a href=\"/videos/videosEcmc.htm\" target=\"_blank\">videos</a>. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización. Esta es la versión "+langName+".</p>":
-                               "<p class=\"pad\">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. You can also watch <a href=\"/videos/videosEcm.htm\" target=\"_blank\">videos</a>. Keyboard users can press CTRL+ENTER to start factorization. This is the "+langName+" version.</p>");
-  show("result");
-  if (typeof(Worker) === "undefined")
-  {    // Web workers not supported on this browser.
-    resultDirty = true;
-    resultText = (lang ? "<p>Esta calculadora necesita Web Workers. Por favor use otro navegador Web.</p>" :
-                         "<p>This calculator requires Web Workers. Please use another Web browser.</p>");
+  let strHelp = (lang ? "<p class=\"pad\">Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a la factorización. También puedes ver <a href=\"/videos/videosEcmc.htm\" target=\"_blank\">videos</a>. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar la factorización.":
+                        "<p class=\"pad\">Press the <strong>Help</strong> button to get help about this application. Press it again to return to the factorization. You can also watch <a href=\"/videos/videosEcm.htm\" target=\"_blank\">videos</a>. Keyboard users can press CTRL+ENTER to start factorization.");
+  let strHelp2 = showVersion(lang);
+  if (strHelp2 == null)
+  {
     return;
   }
+  strHelp += strHelp2;
+  helphelp.innerHTML = strHelp;
+  show("result");
   styleButtons("none", "inline");  // Enable "more" and "stop" buttons
   if (n === 0)
   {
@@ -428,6 +420,8 @@ function endFeedback()
 {
   show("main");
   hide("feedback");
+  hide("sentOK");
+  hide("notSent");
   value.focus();   
 }
 
@@ -479,7 +473,7 @@ function getFormSendValue()
 
 function startUp()
 {
-  let index, ecmFactor;
+  let index;
   value = get("value");
   btnNext = get("next");
   btnEval = get("eval");
@@ -539,33 +533,14 @@ function startUp()
   {
     getFile.click();
   };
-  btnToFile.onclick = function()
-  {
-    hide("savefile");
-    let fileBlob = new Blob([tofile], { type: "text/plain" });
-    let fileUrl = URL.createObjectURL(fileBlob);
-    let a = document.createElement("a");
-    a.href = fileUrl;
-    a.download = fileName;
-    let clickHandler = function()
-    {
-      setTimeout(function()
-      {
-        URL.revokeObjectURL(fileUrl);
-        this.removeEventListener("click", clickHandler);
-      },
-      150);
-    };
-    a.addEventListener("click", clickHandler, false);
-    a.click();
-  };
+  btnToFile.onclick = downloadResult;
   getFile.onchange = function()
   {
     fileName = getFile.value.replace(/^.*[\\/]/, "");
     if (lang)
     {          // Spanish
       value.value = "Archivo a procesar: " + fileName +
-          "\nApriete el botón \"Solo evaluar\", \"Primo\" or \"Factorizar\" para continuar.";
+          "\nApriete uno de los botones \"Solo evaluar\", \"Primo\" o \"Factorizar\" para continuar.";
     }
     else
     {          // English
@@ -603,6 +578,8 @@ function startUp()
     oneexpr();
   };
   wzdInput.onkeydown = keyDownOnWizard;
+  get("btnSentOK").onclick = endFeedback;
+  get("btnNotSent").onclick = endFeedback;
   get("oneexpr").onclick = function()
   {
     oneexpr();
@@ -783,6 +760,10 @@ function startUp()
   {
     currentInputBox = get("wzdinput");
   };
+  get("comments").oninput = function(_event)
+  {
+    get("formsend").disabled = (get("comments").value === "");
+  };
   get("formsend").onclick = formSend;
   window.onclick = function(event)
   {
@@ -923,40 +904,7 @@ function startUp()
       updateVerbose(config.substring(1,2) === "1");
     }
   }
-  let fromPolfact = window.sessionStorage.getItem("F");
-  if (fromPolfact != null)
-  {    // Number to factor coming from polynomial factorization calculator.
-    window.sessionStorage.removeItem("F");
-    value.value = fromPolfact;
-    dowork(-2);    // Perform factorization.
-  }
-  fromPolfact = window.sessionStorage.getItem("E");
-  if (fromPolfact != null)
-  {    // Number to factor coming from polynomial factorization calculator.
-    window.sessionStorage.removeItem("E");
-    value.value = fromPolfact;
-    dowork(0);     // Perform evaluation.
-  }
-  else
-  {
-    let search = window.location.search;
-    if (search.startsWith("?q="))
-    {
-      value.value = decodeURIComponent(search.substring(3)).replace(/\{/g, "(").replace(/\}/g, ")");
-      dowork(-2);
-    }
-    else
-    {
-      ecmFactor = getStorage("ecmFactors");
-      if (ecmFactor)
-      {          // Continue factoring.
-        value.value = ecmFactor.slice(0,ecmFactor.indexOf("="));
-        newCurveOrFactor.value = getStorage("ecmCurve");
-        dowork(-2);
-        newCurveOrFactor.value = "";
-      }
-    }
-  }
+  comingFromPolfact(value);
   registerServiceWorker();
   currentInputBox = get("value");
   generateFuncButtons("funccat", "funcbtns");
@@ -965,3 +913,4 @@ function startUp()
 }
 getCalculatorCode("ecmW0000.js", workerParam);
 window.addEventListener("load", startUp);
+window["fromWorker"] = fromWorker;

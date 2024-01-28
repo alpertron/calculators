@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="Author" content="Dario Alejandro Alpern">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Web application that finds the continued fraction representation of rational numbers and quadratic irrationalities. Written by Dario Alpern." />
+<meta name="description" content="Web application that finds the continued fraction representation of rational numbers and quadratic irrationalities. Written by Dario Alpern.">
 <meta name="theme-color" content="#db5945">
 <meta name="twitter:card" content="summary_large_image">
 <meta property="og:title" content="Continued fraction calculator">
@@ -59,6 +59,8 @@ nav::after {clear:both}
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
 @media print {nav, .footer {display:none;}}
+#sending, #sentOK, #notSent {display:none}
+.center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
 #skip a:focus {position:absolute;	left:0px;	top:0px; outline-color:transparent; transition: top .1s ease-in}
 .bread {padding:0px;list-style:none; display:inline-block;}
@@ -188,20 +190,20 @@ svg {fill:white}
 </svg>
 </p>
 <div id="inputs">
-<label for="num">a</label><input type="text" id="num" value="" class="input" aria-label="numerator"/>
+<label for="num">a</label><input type="text" inputmode="numeric" id="num" value="" class="input" aria-label="numerator">
 <div class="lf"></div>
-<label for="delta">b</label><input type="text" id="delta" value="" class="input" aria-label="radicand"/>
+<label for="delta">b</label><input type="text" inputmode="numeric" id="delta" value="" class="input" aria-label="radicand">
 <div class="lf"></div>
-<label for="den">c</label><input type="text" id="den" value="" class="input" aria-label="denominator"/>
+<label for="den">c</label><input type="text" inputmode="numeric" id="den" value="" class="input" aria-label="denominator">
 </div>
 <fieldset id="actions"><legend>Actions</legend>
-<input type="button" id="calc" value="Compute continued fraction" title="Show the continued fraction for the requested number"/>
-<input type="button" id="helpbtn" value="Help" title="Read information about this calculator"/>
+<input type="button" id="calc" value="Compute continued fraction" title="Show the continued fraction for the requested number">
+<input type="button" id="helpbtn" value="Help" title="Read information about this calculator">
 <div class="lf"></div>
 <input type="checkbox" id="converg"><label for="converg" title="Show the best approximations as rational number for the requested number">Show convergents</label>
 <div class="lf"></div>
 <label for="digits">Digits per group:</label>
-<input type="number" id="digits" value="6" min="0" step="1"/>
+<input type="number" id="digits" value="6" min="0" step="1">
 </fieldset>
 <fieldset id="functions"><legend>Functions</legend>
 <label for="funccat">Category:</label> 
@@ -359,6 +361,7 @@ If <var>b</var> is negative, the result is not a real number, so it cannot be re
 <li> <strong>Jacobi(m,n)</strong>: obtains the Jacobi symbol of <var>m</var> and <var>n</var>. When the second argument is prime, the result is zero when <var>m</var> is multiple of <var>n</var>, it is one if there is a solution of <var>x</var>&sup2; &equiv; <var>m</var> (mod <var>n</var>) and it is equal to &minus;1 when the mentioned congruence has no solution.</li>
 <li> <strong>Random(m,n)</strong>: integer random number between <var>m</var> and <var>n</var>.</li>
 <li> <strong>Abs(n)</strong>: absolute value of <var>n</var>.</li>
+<li> <strong>Sign(n)</strong>: returns zero if <var>n</var> is zero, &minus;1 if negative or 1 if positive.</li>
 <li> <strong>IsPrime(n)</strong>: returns zero if <var>n</var> is not probable prime, -1 if it is. Example: IsPrime(5) = -1.</li>
 <li> <strong>Sqrt(n)</strong>: Integer part of the square root of the argument.</li>
 <li> <strong>Iroot(n,r)</strong>: Integer r-root of the first argument. Example: Iroot(8, 3) = 2.</li>
@@ -390,8 +393,8 @@ If <var>b</var> is negative, the result is not a real number, so it cannot be re
 </ol></li></ol>
 <p>Based on the coefficients, the convergent numerators <var>A</var><sub><var>i</var></sub> and denominators <var>B</var><sub><var>i</var></sub> can be calculated using the following operations:</p>
 <ol>
-<li>Initialize the current and previous convergent numerator with the values ​​1 and 0 respectively. </li>
-<li>Initialize the current and previous convergent denominator with the values ​​0 and 1 respectively. </li>
+<li>Initialize the current and previous convergent numerator with the values 1 and 0 respectively. </li>
+<li>Initialize the current and previous convergent denominator with the values 0 and 1 respectively. </li>
 <li>For each coefficient obtained:
 <ol>
 <li>Calculate an auxiliary result as the product of the coefficient by the current convergent numerator.</li>
@@ -401,17 +404,17 @@ If <var>b</var> is negative, the result is not a real number, so it cannot be re
 <li>Replace the current convergent numerator with the next one.</li>
 <li>Perform the previous five steps replacing numerator by denominator.</li>
 </ol></li></ol>
+<div class="noand">
 <h2>Source code</h2>
-<p>
-You can download the source of the current program and the old continued fraction applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.
-</p>
-<p>Written by Dario Alpern. Last updated 20 November 2023.</p>
+<p>You can download the source of the current program and the old continued fraction applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
+</div>
+<p>Written by Dario Alpern. Last updated 28 January 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
 <div id="status"></div>
 <div id="cont" class="pad">
-<input type="button" id="continue" value="Continue" title="Show more results. Pressing this button will delete old results."/>
+<input type="button" id="continue" value="Continue" title="Show more results. Pressing this button will delete old results.">
 </div>
 <div class="footer">
 <p>If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
@@ -419,25 +422,25 @@ You can download the source of the current program and the old continued fractio
 </div>
 </article>
 </main>
-<aside id="feedback" aria-label="Wizard">
+<aside id="feedback" aria-label="Feedback">
 <h2 class="h2title">Feedback form</h2>
 <form class="applet" id="formfeedback">
-<input type="hidden" name="subject" value="Continued fraction calculator feedback" />
+<input type="hidden" name="subject" value="Continued fraction calculator feedback">
 <div id="formleft">
-<div class="labels"><label for="name">Your name is:</label><input class="inputfbck" type="text" name="name" maxlength="40" id="name" autocomplete="name"/></div>
-<div class="labels"><label for="age">Age:</label><input class="inputfbck" type="number" name="age" min="0" max="999" id="age" /></div>
-<div class="labels"><label for="city">City:</label><input class="inputfbck" type="text" name="city" maxlength="70" id="city" autocomplete="address-level2"/></div>
-<div class="labels"><label for="province">Province/State:</label><input class="inputfbck" type="text" name="province" maxlength="70" id="province" autocomplete="address-level1"/></div>
-<div class="labels"><label for="country">Country:</label><input class="inputfbck" type="text" name="country" maxlength="70" id="country" autocomplete="country-name" /></div>
-<div class="labels"><label for="reply">E-mail address:</label><input class="inputfbck" type="email" name="reply" maxlength="70" id="reply" autocomplete="email" /></div>
-<p>Enter your e-mail address if you want a reply from the author of this application.</p>
+<div class="labels"><label for="name">Your name is:</label><input class="inputfbck" type="text" name="name" maxlength="40" id="name" autocomplete="name"></div>
+<div class="labels"><label for="age">Age:</label><input class="inputfbck" type="number" name="age" min="0" max="999" id="age"></div>
+<div class="labels"><label for="city">City:</label><input class="inputfbck" type="text" name="city" maxlength="70" id="city" autocomplete="address-level2"></div>
+<div class="labels"><label for="province">Province/State:</label><input class="inputfbck" type="text" name="province" maxlength="70" id="province" autocomplete="address-level1"></div>
+<div class="labels"><label for="country">Country:</label><input class="inputfbck" type="text" name="country" maxlength="70" id="country" autocomplete="country-name"></div>
+<div class="labels"><label for="reply">E-mail address:</label><input class="inputfbck" type="email" name="reply" maxlength="70" id="reply" autocomplete="email"></div>
+<p>All fields are optional. Enter your e-mail address if you want a reply from the author of this application.</p>
 <p><input type="checkbox" id="adduserdata"><label for="adduserdata">Send input data</label></p>
-<input type="hidden" name="userdata" value="" id="userdata" />
+<input type="hidden" name="userdata" value="" id="userdata">
 </div>
 <div id="formright">
-<label for="comments">Please feel free to add comments:</label><br />
+<label for="comments">Please feel free to add comments:</label><br>
 <textarea name="Comments" rows="7" cols="40" id="comments"></textarea>
-<p><label for="how">How did you find my page?</label><br />
+<p><label for="how">How did you find my page?</label><br>
 <select name="how" title="How did you find my page?" id="how">
 <optgroup label="Select response">
 <option value="from a search engine" selected>From a search engine</option>
@@ -448,19 +451,30 @@ You can download the source of the current program and the old continued fractio
 </optgroup>
 </select></p>
 <fieldset><legend>Are the programs instructive?</legend>
-<input type="radio" name="Instructive" value="Yes" id="insyes" /><label for="insyes">Yes</label>
-<input type="radio" name="Instructive" value="No" id="insno" /><label for="insno">No</label>
+<input type="radio" name="Instructive" value="Yes" id="insyes"><label for="insyes">Yes</label>
+<input type="radio" name="Instructive" value="No" id="insno"><label for="insno">No</label>
 </fieldset>
 <fieldset><legend>Are the programs interesting?</legend>
-<input type="radio" name="Interesting" value="Yes" id="intyes" /><label for="intyes">Yes</label>
-<input type="radio" name="Interesting" value="No" id="intno" /><label for="intno">No</label>
+<input type="radio" name="Interesting" value="Yes" id="intyes"><label for="intyes">Yes</label>
+<input type="radio" name="Interesting" value="No" id="intno"><label for="intno">No</label>
 </fieldset>
-<p><input type="submit" value="Send it in!" id="formsend" />
-<input type="reset" value="Reset" />
-<input type="button" value="Cancel" id="formcancel" /></p>
+<p><input type="submit" disabled="disabled" value="Send it in!" id="formsend">
+<input type="reset" value="Reset">
+<input type="button" value="Cancel" id="formcancel"></p>
 </div>
 <div class="lf"></div>
 </form>
+</aside>
+<aside id="sending">
+<p>Sending comments...</p>
+</aside>
+<aside id="sentOK">
+<p>Feedback sent successfully.</p>
+<div class="center"><button type="button" id="btnSentOK">Go back</button></div>
+</aside>
+<aside id="notSent">
+<p>Feedback could not be sent.</p>
+<div class="center"><button type="button" id="btnNotSent">Go back</button></div>
 </aside>
 <script type="text/wasmb64" id="wasmb64">
 </script>

@@ -25,8 +25,13 @@ function buttonClick(event)
   let input = currentInputBox;
   input.focus();
   let start = input.selectionStart;
+  let chars = event.target.innerText
+  if (chars === "\u23CE")
+  {
+    chars = "\n";
+  }
   input.value = input.value.substring(0, start) +
-                event.target.innerText +
+                chars +
                 input.value.substring(input.selectionEnd);
     // Place the caret at the end of the appended text.
   input.selectionStart = start + event.target.innerText.length;

@@ -197,7 +197,7 @@ static int gauss(int nbrCols, int nbrRows)
 }
 
 
-// Compute the matrix lambda of Gram-Schimdt orthogonalization.
+// Compute the matrix lambda of Gram-Schmidt orthogonalization.
 // Use algorithm 2 of "Symplectic Lattice Reduction and NTRU"
 // (Gama1, Howgrave - Graham, Nguyen)
 static void GramSchmidtOrthogonalization(int nbrRows, int nbrCols)

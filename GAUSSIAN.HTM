@@ -57,6 +57,8 @@ nav::after {clear:both}
 @media (max-width: 400px) { nav { font-size:0.7em; } }
 @media (min-width: 400px) { nav { font-size:1em; } }
 }
+#sending, #sentOK, #notSent {display:none}
+.center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
 #skip a:focus {position:absolute;	left:0px;	top:0px; outline-color:transparent; transition: top .1s ease-in}
 .bread {padding:0px;list-style:none; display:inline-block;}
@@ -186,7 +188,7 @@ input:disabled {color: #808080; background-color: #606060}
 <noscript><p><strong>The calculator does not work with Javascript disabled. Please check your browser settings.</strong></p></noscript>
 <div class="applet">
 <div id="inputs">
-<label for="value">Value</label><input type="text" id="value" value="" class="input">
+<label for="value">Value</label><input type="text" inputmode="numeric" id="value" value="" class="input">
 </div>
 <fieldset id="actions"><legend>Actions</legend>
 <input type="button" id="more" value="More" title="Change curve number or enter a known factor">
@@ -285,9 +287,11 @@ If <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, then you 
 <li> <strong>isPrime(n)</strong>: Checks whether the Gaussian integer is probable prime. In this case it returns &minus;1, otherwise, zero.</li>
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
+<div class="noand">
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
-<p>Written by Dario Alpern. Last updated 20 November 2023.</p>
+</div>
+<p>Written by Dario Alpern. Last updated 28 January 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -332,7 +336,7 @@ If <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, then you 
 <div class="labels"><label for="province">Province/State:</label><input class="inputfbck" type="text" name="province" maxlength="70" id="province" autocomplete="address-level1"></div>
 <div class="labels"><label for="country">Country:</label><input class="inputfbck" type="text" name="country" maxlength="70" id="country" autocomplete="country-name"></div>
 <div class="labels"><label for="reply">E-mail address:</label><input class="inputfbck" type="email" name="reply" maxlength="70" id="reply" autocomplete="email"></div>
-<p>Enter your e-mail address if you want a reply from the author of this application.</p>
+<p>All fields are optional. Enter your e-mail address if you want a reply from the author of this application.</p>
 <p><input type="checkbox" id="adduserdata"><label for="adduserdata">Send expression to factor</label></p>
 <input type="hidden" name="userdata" value="" id="userdata">
 </div>
@@ -357,12 +361,23 @@ If <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, then you 
 <input type="radio" name="Interesting" value="Yes" id="intyes"><label for="intyes">Yes</label>
 <input type="radio" name="Interesting" value="No" id="intno"><label for="intno">No</label>
 </fieldset>
-<p><input type="submit" value="Send it in!" id="formsend" title="Deliver this form">
+<p><input type="submit" disabled="disabled" value="Send it in!" id="formsend" title="Deliver this form">
 <input type="reset" value="Reset">
 <input type="button" value="Cancel" id="formcancel" title="Do not deliver this form"></p>
 </div>
 <div class="lf"></div>
 </form>
+</aside>
+<aside id="sending">
+<p>Sending comments...</p>
+</aside>
+<aside id="sentOK">
+<p>Feedback sent successfully.</p>
+<div class="center"><button type="button" id="btnSentOK">Go back</button></div>
+</aside>
+<aside id="notSent">
+<p>Feedback could not be sent.</p>
+<div class="center"><button type="button" id="btnNotSent">Go back</button></div>
 </aside>
 <script type="text/wasmb64" id="wasmb64">
 </script>

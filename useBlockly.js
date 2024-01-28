@@ -50,16 +50,6 @@ function show(id)
   get(id).style.display = "block";
 }
 
-function setStorage(name, data)
-{
-  window.localStorage.setItem(name, data);
-}
-
-function getStorage(name)
-{
-  return window.localStorage.getItem(name);
-}
-
 function BigIntValidator(newValue)
 {
   /** @type {number} */
@@ -456,7 +446,7 @@ function useBlockly(callback, lang)
     /** @type {string} */
     let filename = get("bfilename").value.trim();
     /** @type {string|null} */
-    let contents = getStorage("blockly"+filename);
+    let contents = window.localStorage.getItem("blockly"+filename);
     if (contents == null)
     {
       alert("File "+ filename +" not found");
@@ -472,7 +462,7 @@ function useBlockly(callback, lang)
     let filename = get("bfilename").value.trim();
     let xml = Blockly.Xml.workspaceToDom(workspace);
     let contents = Blockly.Xml.domToText(xml);
-    setStorage("blockly"+filename, contents);
+    window.localStorage.setItem("blockly"+filename, contents);
   };
   get("runBlockly").onclick = function()
   {

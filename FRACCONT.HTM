@@ -1,7 +1,7 @@
 ﻿<!doctype html>
 <html lang="es" prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article#">
 <head>
-<meta charset="utf-8" />
+<meta charset="utf-8">
 <meta name="Author" content="Dario Alejandro Alpern">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Aplicación Web que muestra la fracción continua de números racionales e irracionalidades cuadráticas.">
@@ -59,6 +59,8 @@ nav::after {clear:both}
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
 @media print {nav {display:none;}}
+#sending, #sentOK, #notSent {display:none}
+.center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
 #skip a:focus {position:absolute;	left:0px;	top:0px; outline-color:transparent; transition: top .1s ease-in}
 .bread {padding:0px;list-style:none; display:inline-block;}
@@ -188,20 +190,20 @@ svg {fill:white}
 </svg>
 </p>
 <div id="inputs">
-<label for="num">a</label><input type="text" id="num" value="" class="input" aria-label="numerador"/>
+<label for="num">a</label><input type="text" inputmode="numeric" id="num" value="" class="input" aria-label="numerador">
 <div class="lf"></div>
-<label for="delta">b</label><input type="text" id="delta" value="" class="input" aria-label="radicando"/>
+<label for="delta">b</label><input type="text" inputmode="numeric" id="delta" value="" class="input" aria-label="radicando">
 <div class="lf"></div>
-<label for="den">c</label><input type="text" id="den" value="" class="input" aria-label="denominador"/>
+<label for="den">c</label><input type="text" inputmode="numeric" id="den" value="" class="input" aria-label="denominador">
 </div>
 <fieldset id="actions"><legend>Acciones</legend>
-<input type="button" id="calc" value="Calcular fracción continua" title="Mostrar la fracción continua para el número ingresado"/>
-<input type="button" id="helpbtn" value="Ayuda" title="Leer información sobre esta calculadora"/>
+<input type="button" id="calc" value="Calcular fracción continua" title="Mostrar la fracción continua para el número ingresado">
+<input type="button" id="helpbtn" value="Ayuda" title="Leer información sobre esta calculadora">
 <div class="lf"></div>
 <input type="checkbox" id="converg"><label for="converg" title="Mostrar las mejores aproximaciones como número racional para el número ingresado">Mostrar convergentes</label>
 <div class="lf"></div>
 <label for="digits">Dígitos por grupo:</label>
-<input type="number" id="digits" value="6" min="0" step="1"/>
+<input type="number" id="digits" value="6" min="0" step="1">
 </fieldset>
 <fieldset id="functions"><legend>Funciones</legend>
 <label for="funccat">Categorías:</label> 
@@ -359,7 +361,8 @@ Si <var>b</var> es negativo, el resultado no es un número real, así que no se 
 <li> <strong>Jacobi(m,n)</strong>: obtiene el símbolo de Jacobi de <var>m</var> y <var>n</var>. Cuando el segundo argumento es primo, el resultado es cero si <var>m</var> es múltiplo de <var>n</var>, es uno si hay una solución a <var>x</var>&sup2; &equiv; <var>m</var> (mód <var>n</var>) y es igual a &minus;1 cuando la congruencia mencionada no tiene soluciones.</li>
 <li> <strong>Random(m,n)</strong>: número entero aleatorio entre <var>m</var> y <var>n</var>.</li>
 <li> <strong>Abs(n)</strong>: valor absoluto de <var>n</var>.</li>
-<li> <strong>IsPrime(n)</strong>: retorna cero si <var>n</var> no es un primo probable y -1 si lo es. Ejemplo: IsPrime(5) = -1.</li>
+<li> <strong>Sign(n)</strong>: returns zero if <var>n</var> is zero, &minus;1 if negative or 1 if positive.</li>
+<li> <strong>IsPrime(n)</strong>: retorna cero si <var>n</var> no es un primo probable y &minus;1 si lo es. Ejemplo: IsPrime(5) = &minus;1.</li>
 <li> <strong>Sqrt(n)</strong>: parte entera de la raíz cuadrada del argumento.</li>
 <li> <strong>Iroot(n,r)</strong>: Raíz r-ésima entera del primer argumento. Ejemplo: Iroot(8, 3) = 2.</li>
 <li> <strong>NumDigits(n,r)</strong>: cantidad de dígitos de <var>n</var> en base <var>r</var>. Ejemplo: NumDigits(13, 2) = 4 porque 13 en binario (base 2) se expresa como 1101.</li>
@@ -401,17 +404,17 @@ Si <var>b</var> es negativo, el resultado no es un número real, así que no se 
 <li>Reemplazar el numerador del convergente actual por el próximo.</li>
 <li>Realizar los cinco pasos anteriores reemplazando numerador por denominador.</li>
 </ol></li></ol>
+<div class="noand">
 <h2>Código fuente</h2>
-<p>
-Se puede bajar el código fuente de este programa y el del viejo applet de fracciones continuas desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.
-</p>
-<p>Escrito por Dario Alpern. Actualizado el 20 de noviembre de 2023.</p>
+<p>Se puede bajar el código fuente de este programa y el del viejo applet de fracciones continuas desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
+</div>
+<p>Escrito por Dario Alpern. Actualizado el 28 de enero de 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
 <div id="status"></div>
 <div id="cont" class="pad">
-<input type="button" id="continue" value="Continue" title="Show more results. Pressing this button will delete old results."/>
+<input type="button" id="continue" value="Continue" title="Show more results. Pressing this button will delete old results.">
 </div>
 <div>
 <p>Si encuentra algún error o tiene algún comentario, por favor llene el <a href="#" id="formlink">formulario</a>.</p>
@@ -422,22 +425,22 @@ Se puede bajar el código fuente de este programa y el del viejo applet de fracc
 <aside id="feedback" aria-label="Formulario de comentarios">
 <h2 class="h2title">Formulario de comentarios</h2>
 <form class="applet" id="formfeedback">
-<input type="hidden" name="subject" value="Comentario de calculadora de fracciones continuas" />
+<input type="hidden" name="subject" value="Comentario de calculadora de fracciones continuas">
 <div id="formleft">
-<div class="labels"><label for="name">Nombre:</label><input class="inputfbck" type="text" name="Nombre" maxlength="40" id="name" autocomplete="name"/></div>
-<div class="labels"><label for="age">Edad:</label><input class="inputfbck" type="number" name="Edad" min="0" max="999" id="age"/></div>
-<div class="labels"><label for="city">Ciudad:</label><input class="inputfbck" type="text" name="Ciudad" maxlength="70" id="city" autocomplete="address-level2"/></div>
-<div class="labels"><label for="province">Provincia:</label><input class="inputfbck" type="text" name="Provincia" maxlength="70" id="province" autocomplete="address-level1"/></div>
-<div class="labels"><label for="country">País:</label><input class="inputfbck" type="text" name="Pais" maxlength="70" id="country" autocomplete="country-name" /></div>
-<div class="labels"><label for="reply">Su e-mail:</label><input class="inputfbck" type="email" name="Responder" maxlength="70" id="reply" autocomplete="email" /></div>
-<p>Ingrese su dirección de correo electrónico si desea una respuesta del autor de esta aplicación.</p>
+<div class="labels"><label for="name">Nombre:</label><input class="inputfbck" type="text" name="Nombre" maxlength="40" id="name" autocomplete="name"></div>
+<div class="labels"><label for="age">Edad:</label><input class="inputfbck" type="number" name="Edad" min="0" max="999" id="age"></div>
+<div class="labels"><label for="city">Ciudad:</label><input class="inputfbck" type="text" name="Ciudad" maxlength="70" id="city" autocomplete="address-level2"></div>
+<div class="labels"><label for="province">Provincia:</label><input class="inputfbck" type="text" name="Provincia" maxlength="70" id="province" autocomplete="address-level1"></div>
+<div class="labels"><label for="country">País:</label><input class="inputfbck" type="text" name="Pais" maxlength="70" id="country" autocomplete="country-name"></div>
+<div class="labels"><label for="reply">Su e-mail:</label><input class="inputfbck" type="email" name="Responder" maxlength="70" id="reply" autocomplete="email"></div>
+<p>Todos los campos son opcionales. Ingrese su dirección de correo electrónico si desea una respuesta del autor de esta aplicación.</p>
 <p><input type="checkbox" id="adduserdata"><label for="adduserdata">Enviar datos ingresados</label></p>
-<input type="hidden" name="datos" value="" id="userdata" />
+<input type="hidden" name="datos" value="" id="userdata">
 </div>
 <div id="formright">
-<label for="comments">Por favor, ingrese sus comentarios o sugerencias:</label><br />
+<label for="comments">Por favor, ingrese sus comentarios o sugerencias:</label><br>
 <textarea name="Comentarios" rows="7" cols="40" id="comments"></textarea>
-<p><label for="how">¿Cómo encontró mi página?</label><br />
+<p><label for="how">¿Cómo encontró mi página?</label><br>
 <select name="Como" title="¿Cómo encontró mi página?" id="how">
 <optgroup label="Seleccione respuesta">
 <option value="Por un buscador" selected>Por un buscador</option>
@@ -448,19 +451,30 @@ Se puede bajar el código fuente de este programa y el del viejo applet de fracc
 <option value="Otros">Otros</option>
 </select></p>
 <fieldset><legend>¿Son instructivos los programas?</legend>
-<input type="radio" name="Instructivo" value="Si" id="insyes" /><label for="insyes">Sí</label>
-<input type="radio" name="Instructivo" value="No" id="insno" /><label for="insno">No</label>
+<input type="radio" name="Instructivo" value="Si" id="insyes"><label for="insyes">Sí</label>
+<input type="radio" name="Instructivo" value="No" id="insno"><label for="insno">No</label>
 </fieldset>
 <fieldset><legend>¿Son interesantes los programas?</legend>
-<input type="radio" name="Interesante" value="Si" id="intyes" /><label for="intyes">Sí</label>
-<input type="radio" name="Interesante" value="No" id="intno" /><label for="intno">No</label>
+<input type="radio" name="Interesante" value="Si" id="intyes"><label for="intyes">Sí</label>
+<input type="radio" name="Interesante" value="No" id="intno"><label for="intno">No</label>
 </fieldset>
-<p><input type="submit" value="Enviar el comentario" id="formsend" />
-<input type="reset" value="Entrar otra vez" />
-<input type="button" value="Cancelar" id="formcancel" /></p>
+<p><input type="submit" disabled="disabled" value="Enviar el comentario" id="formsend">
+<input type="reset" value="Entrar otra vez">
+<input type="button" value="Cancelar" id="formcancel"></p>
 </div>
 <div class="lf"></div>
 </form>
+</aside>
+<aside id="sending">
+<p>Enviando comentario...</p>
+</aside>
+<aside id="sentOK">
+<p>Comentario enviado correctamente.</p>
+<div class="center"><button type="button" id="btnSentOK">Volver</button></div>
+</aside>
+<aside id="notSent">
+<p>No se pudo enviar el comentario.</p>
+<div class="center"><button type="button" id="btnNotSent">Volver</button></div>
 </aside>
 <script type="text/wasmb64" id="wasmb64">
 </script>

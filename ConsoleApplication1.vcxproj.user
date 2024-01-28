@@ -4,15 +4,15 @@
     <ShowAllFiles>true</ShowAllFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>0 "der(x**2)"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>0 "x**2" 0</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>"(2^372-3271)/75/979/10663" 2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>2 2417127491429477899985762879392273445920140573547300334342743900999888057458790592924089419742390925513922941510205867199016331428593320505481033311208857985114740620125834497392020402954225388709381025496219197170126546718142841212893378397885326167327263857609817366317978224215162857904581446145152142 2644233424050979919959472773551014160896585325892159594283808864074283164412198242430622504046152302216251426005808485472118356499482789461488463475451971721075109470831515836398170407749289340517906396427118712097084818355186185714843140217934670470297724600474648108502799503321625512090834701793488115</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>"(2**372-3271)/75/979/10663" 2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>34 1632173972 10779215329</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\x64\release</LocalDebuggerWorkingDirectory>

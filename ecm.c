@@ -523,7 +523,7 @@ enum eEcmResult ecmStep1(void)
       indexPrimes++;
 #endif
       P = SmallPrime[indexM];
-      for (long long IP = P; IP <= boundStep1; IP *= P)
+      for (int64_t IP = P; IP <= boundStep1; IP *= P)
       {
         prac(P, common.ecm.X, common.ecm.Z);
       }

@@ -72,6 +72,10 @@ while (<htmlFile>)
   {
     $step = 1;
   }
+  elsif (/noand/)
+  {
+    $step = 5;
+  }
   if ($step == 3)
   {
     if (/^\/\/-->/)
@@ -82,6 +86,20 @@ while (<htmlFile>)
   }
   elsif ($step == 4)
   {
+  }
+  elsif ($step == 5)
+  {
+    if (/\<\/div/)
+    {
+      $step = 1;
+    }
+    elsif (/noand/)
+    {
+    }
+    else
+    {
+      print tempFile;
+    }
   }
   else
   {

@@ -57,3 +57,10 @@ function callWorker(param)
     worker.postMessage([param, fileContents]);
   }
 }
+
+function getVersionText()
+{
+  let langName = (typeof(WebAssembly) === "undefined")? "asm.js": "WebAssembly";
+  return (lang ? " Esta es la versión "+langName+".</p>":
+                 " This is the "+langName+" version.</p>");
+}

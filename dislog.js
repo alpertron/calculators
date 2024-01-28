@@ -79,16 +79,21 @@ function exprText(es, en)
   return lang? exprTextEs + es: exprTextEn + en;
 }
 
-function comingFromWorker(e)
+function fromWorker(e)
 {
-  // First character of e.data is "1" for intermediate text
+  // First character of e is "1" for intermediate text
   // and it is "2" for end of calculation.
-  result.innerHTML = e.data.substring(1);
-  if (e.data.substring(0, 1) === "2")
+  result.innerHTML = e.substring(1);
+  if (e.substring(0, 1) === "2")
   {   // First character passed from web worker is "2".
     dlog.disabled = false;
     stop.disabled = true;
   }
+}
+
+function comingFromWorker(e)
+{
+  fromWorker(e.data);
 }
 
 function dowork(n)
@@ -128,6 +133,8 @@ function endFeedback()
 {
   show("main");
   hide("feedback");
+  hide("sentOK");
+  hide("notSent");
   base.focus();   
 }
 
@@ -173,6 +180,8 @@ window.onload = function()
       (lang? "<p>Cálculo detenido por el usuario.</p>" :
              "<p>Calculation stopped by user</p>");
   };
+  get("btnSentOK").onclick = endFeedback;
+  get("btnNotSent").onclick = endFeedback;
   helpbtn.onclick = function()
   {
     show("help");
@@ -195,6 +204,10 @@ window.onload = function()
     generateFuncButtons("funccat", "funcbtns");
   };
   formlink.onclick = clickFormLink;
+  get("comments").oninput = function(_event)
+  {
+    get("formsend").disabled = (get("comments").value === "");
+  };
   formcancel.onclick = function()
   {
     endFeedback();
@@ -205,3 +218,4 @@ window.onload = function()
   registerServiceWorker();
 };
 getCalculatorCode("dilogW0000.js", false);
+window["fromWorker"] = fromWorker;

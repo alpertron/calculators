@@ -69,7 +69,6 @@ void GetDHMSt(char **pptrText, int tenths)
   ptrText++;
   *pptrText = ptrText;
 }
-
 #endif
 
 void showElapsedTime(char **pptrOutput)

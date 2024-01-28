@@ -71,16 +71,21 @@
     return parens;
   }
 
-  function comingFromWorker(e)
+  function fromWorker(e)
   {
-    // First character of e.data is "1" for intermediate text
+    // First character of e is "1" for intermediate text
     // and it is "2" for end of calculation.
-    get("result").innerHTML = e.data.substring(1);
-    if (e.data.substring(0, 1) === "2")
+    get("result").innerHTML = e.substring(1);
+    if (e.substring(0, 1) === "2")
     {   // First character passed from web worker is "2".
       get("solve").disabled = false;
       get("stop").disabled = true;
     }
+  }
+
+  function comingFromWorker(e)
+  {
+    fromWorker(e.data);
   }
 
   function dowork()
@@ -199,3 +204,4 @@ window.onload = function()
 };
 
 getCalculatorCode("quadmodW0000.js", false);
+window["fromWorker"] = fromWorker;

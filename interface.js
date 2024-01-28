@@ -43,7 +43,7 @@ if (lang)
 {
   funcnames =
   [
-    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt(,Raíz entera\n\nPrimer argumento: radicando\nSegundo argumento: orden de la raíz,iroot(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(",
+    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt(,Raíz entera\n\nPrimer argumento: radicando\nSegundo argumento: orden de la raíz,iroot(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(,Variable,x,Contador,c",
     "Igual,=,Distinto,!=,Mayor,>,Menor o igual,<=,Menor,<,Mayor o igual,>=",
     "Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT ,Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ",
     "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD(,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM(,¿El valor es primo?,IsPrime(",
@@ -51,13 +51,13 @@ if (lang)
     "Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv(,División modular\n\nPrimer argumento: dividendo\nSegundo argumento: divisor\nTercer argumento: módulo,ModDiv(,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow(,Indicador de Euler,Totient(,Símbolo de Jacobi\n\nPrimer argumento: valor superior\nSegundo argumento: valor inferior,Jacobi(",
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partición,P("
   ]; 
-  parens = "Paréntesis izquierdo,(,Paréntesis derecho,),";
+  parens = "Paréntesis izquierdo,(,Paréntesis derecho,),Nueva línea,\u23CE,";
 }
 else
 {
   funcnames =
   [
-    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt(,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(",
+    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt(,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(,Variable,x,Counter,c",
     "Equal,=,Not equal,!=,Greater,>,Not greater,<=,Less,<,Not less,>=",
     "Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ,Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ",
     "Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(",
@@ -65,7 +65,7 @@ else
     "Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv(,Modular division\n\nFirst argument: dividend\nSecond argument: divisor\nThird argument: modulus,ModDiv(,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow(,Totient,Totient(,Jacobi symbol\n\nFirst argument: upper value\nSecond argument: lower value,Jacobi(",
     "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
   ];
-  parens = "Left parenthesis,(,Right parenthesis,),";
+  parens = "Left parenthesis,(,Right parenthesis,),New line,\u23CE,";
 }
 
 function getFuncNames()
@@ -127,21 +127,21 @@ function getCalcURLs()
   return calcURLs;
 }
 
-function comingFromWorker(e)
+function fromWorker(e)
 {
-  // First character of e.data is:
+  // First character of e is:
   // "1" for intermediate output
   // "2" for end calculation
   // "4" for sending data to status line
   // "6" for pausing calculation and showing the Continue button
-  let firstChar = e.data.substring(0, 1);
+  let firstChar = e.substring(0, 1);
   if (firstChar === "4")
   {
-    get("status").innerHTML = e.data.substring(1);
+    get("status").innerHTML = e.substring(1);
   }
   else
   {
-    get("result").innerHTML = e.data.substring(1);
+    get("result").innerHTML = e.substring(1);
     if (firstChar === "2" || firstChar === "6")
     {   // First character passed from web worker is "2".
       get("status").innerHTML = "";
@@ -152,6 +152,11 @@ function comingFromWorker(e)
       }
     }
   }
+}
+
+function comingFromWorker(e)
+{
+  fromWorker(e.data);
 }
 
 function saveConfig(fromWizard)
@@ -241,8 +246,9 @@ function performCalc(from)
   let helphelp = get("helphelp");
   let langName = (typeof(WebAssembly) === "undefined")? "asm.js": "WebAssembly";
   show("helphelp");
-  helphelp.innerHTML = (lang ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. Esta es la versión "+langName+".</p>":
-                               "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. This is the "+langName+" version.</p>");
+  let versionText = getVersionText();
+  helphelp.innerHTML = (lang ? "<p>Aprieta el botón <strong>Ayuda</strong> para obtener ayuda para esta aplicación. Apriétalo de nuevo para retornar a esta pantalla. Los usuarios con teclado pueden presionar CTRL+ENTER para comenzar el cálculo. "+versionText+"</p>":
+                               "<p>Press the <strong>Help</strong> button to get help about this application. Press it again to return to this screen. Keyboard users can press CTRL+ENTER to start calculation. "+versionText+"</p>");
 }
 
 function oneexpr()
@@ -258,6 +264,8 @@ function endFeedback()
 {
   show("main");
   hide("feedback");
+  hide("sentOK");
+  hide("notSent");
   get("num").focus();
 }
 
@@ -308,6 +316,8 @@ function startUp()
       }
     };
   }
+  get("btnSentOK").onclick = endFeedback;
+  get("btnNotSent").onclick = endFeedback;
   get("calc").onclick = function()
   {
     performCalc(0);
@@ -376,7 +386,7 @@ function startUp()
     hide("cont");
     callWorker("C");  // Indicate worker that user pressed Continue button.
   };
-  get("num").onkeydown = function (event)
+  get("num").onkeydown = function(event)
   {
     let keyCode = event.key;
     if (keyCode === "Enter" && event.ctrlKey)
@@ -439,6 +449,10 @@ function startUp()
       currentInputBox = get("den");
     };
   }
+  get("comments").oninput = function(_event)
+  {
+    get("formsend").disabled = (get("comments").value === "");
+  };
   get("formsend").onclick = formSend;
   currentInputBox = get("num");
   generateFuncButtons("funccat", "funcbtns");
@@ -450,3 +464,4 @@ function startUp()
 }
 getCalculatorCode("fsquaresW0000.js", false);
 window.addEventListener("load", startUp);
+window["fromWorker"] = fromWorker;

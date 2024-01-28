@@ -25,7 +25,7 @@
 #include "polynomial.h"
 #include "showtime.h"
 
-#if defined __EMSCRIPTEN__ && !defined _MSC_VER
+#if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
 EXTERNALIZE void doWork(void)
 {
   int flags = 0;

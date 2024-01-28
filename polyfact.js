@@ -30,11 +30,11 @@ let busy = false;
 let workerParam;
 let fileContents = 0;
 
-function comingFromWorker(e)
+function fromWorker(e)
 {
-  // First character of e.data is "1" for intermediate text
+  // First character of e is "1" for intermediate text
   // and it is "2" for end of calculation.
-  let firstChar = e.data.substring(0, 1);
+  let firstChar = e.substring(0, 1);
   if ((firstChar === "M") || (firstChar === "N"))
   {    // User entered a number. Load calculator to process it.
     window.sessionStorage.setItem((firstChar === "M"? "F": "E"),
@@ -43,8 +43,8 @@ function comingFromWorker(e)
     return;
   }
   let result = get("result");
-  result.innerHTML = e.data.substring(1);
-  if (e.data.substring(0, 1) === "2")
+  result.innerHTML = e.substring(1);
+  if (e.substring(0, 1) === "2")
   {   // First character passed from web worker is "2".
     get("eval").disabled = false;
     get("factor").disabled = false;
@@ -57,6 +57,11 @@ function comingFromWorker(e)
     busy = true;
     result.setAttribute("aria-live", "off");
   }
+}
+
+function comingFromWorker(e)
+{
+  fromWorker(e.data);
 }
 
 function dowork(n)
@@ -101,6 +106,8 @@ function endFeedback()
 {
   show("main");
   hide("feedback");
+  hide("sentOK");
+  hide("notSent");
   get("poly").focus();   
 }
 
@@ -117,6 +124,8 @@ function getFormSendValue()
 
 window.onload = function ()
 {
+  get("btnSentOK").onclick = endFeedback;
+  get("btnNotSent").onclick = endFeedback;
   get("stop").disabled = true;
   get("eval").onclick = function ()
   {
@@ -160,6 +169,10 @@ window.onload = function ()
   get("formcancel").onclick = function ()
   {
     endFeedback();
+  };
+  get("comments").oninput = function(_event)
+  {
+    get("formsend").disabled = (get("comments").value === "");
   };
   get("formsend").onclick = formSend;
 
@@ -245,3 +258,4 @@ window.onload = function ()
   registerServiceWorker();
 };
 getCalculatorCode("polfactW0000.js", workerParam);
+window["fromWorker"] = fromWorker;
