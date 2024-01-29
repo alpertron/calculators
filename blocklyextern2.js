@@ -4,7 +4,10 @@
  */
 
 /** @constructor */
-function BlockInfo() {}
+function BlockInfo()
+{
+  /* Nothing to be done in extern file */
+}
 /** @type {string} */
 BlockInfo.prototype.type;
 /** @type {Object} */

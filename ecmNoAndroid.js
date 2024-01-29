@@ -16,7 +16,15 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
+/* global dowork */
+/* global fileName */
+/* global getStorage */
+/* global getVersionText */
+/* global lang */
 /* global hide */
+/* global newCurveOrFactor */
+/* global resultDirty */
+/* global resultText */
 /* global tofile */
 function loadPolyCalc(firstChar, value)
 {

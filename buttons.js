@@ -25,7 +25,7 @@ function buttonClick(event)
   let input = currentInputBox;
   input.focus();
   let start = input.selectionStart;
-  let chars = event.target.innerText
+  let chars = event.target.innerText;
   if (chars === "\u23CE")
   {
     chars = "\n";
