@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'temurin'
-          java-version: 17
+          java-version: '17'
           overwrite-settings: false
       - uses: actions/checkout@v3
       - name: Set up Python 3.8 for gcovr
