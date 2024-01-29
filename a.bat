@@ -151,7 +151,7 @@ java -jar %compilerName% -D app=2 %compilerOptionsAnd% %fsquaresJS% --js workerA
 @if errorlevel 1 goto end
 copy FCUBES.HTM toweb
 copy FCUBES.HTM assets\fcubes.html
-perl replaceEmbeddedJS.pl %1 toweb\FCUBES.HTM fsquaresE.js fsquaresE.wasm intWW.js
+perl replaceEmbeddedJS.pl %1 toweb\FCUBES.HTM fsquaresE.js fcubesE.wasm intWW.js
 perl replaceEmbeddedJSAnd.pl %1 assets\fcubes.html fsquaresEA.js
 java -jar %compilerName% -D app=3 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file fsquaresS.js
 @if errorlevel 1 goto end
@@ -159,7 +159,7 @@ java -jar %compilerName% -D app=3 %compilerOptionsAnd% %fsquaresJS% --js workerA
 @if errorlevel 1 goto end
 copy SUMCUBOS.HTM toweb
 copy SUMCUBOS.HTM "assets\sumcubos.html"
-perl replaceEmbeddedJS.pl %1 toweb\SUMCUBOS.HTM fsquaresS.js fsquaresS.wasm intWW.js
+perl replaceEmbeddedJS.pl %1 toweb\SUMCUBOS.HTM fsquaresS.js fcubesS.wasm intWW.js
 perl replaceEmbeddedJSAnd.pl %1 "assets\sumcubos.html" fsquaresSA.js
 
 java -jar %compilerName% -D app=4 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file fsquaresE.js
@@ -168,7 +168,7 @@ java -jar %compilerName% -D app=4 %compilerOptionsAnd% %fsquaresJS% --js workerA
 @if errorlevel 1 goto end
 copy CONTFRAC.HTM toweb
 copy CONTFRAC.HTM assets\contfrac.html
-perl replaceEmbeddedJS.pl %1 toweb\CONTFRAC.HTM fsquaresE.js fsquaresE.wasm intWW.js
+perl replaceEmbeddedJS.pl %1 toweb\CONTFRAC.HTM fsquaresE.js contfracE.wasm intWW.js
 perl replaceEmbeddedJSAnd.pl %1 assets\contfrac.html fsquaresEA.js
 java -jar %compilerName% -D app=5 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file fsquaresS.js
 @if errorlevel 1 goto end
@@ -176,7 +176,7 @@ java -jar %compilerName% -D app=5 %compilerOptionsAnd% %fsquaresJS% --js workerA
 @if errorlevel 1 goto end
 copy FRACCONT.HTM toweb
 copy FRACCONT.HTM "assets\fraccont.html"
-perl replaceEmbeddedJS.pl %1 toweb\FRACCONT.HTM fsquaresS.js fsquaresS.wasm intWW.js
+perl replaceEmbeddedJS.pl %1 toweb\FRACCONT.HTM fsquaresS.js contfracS.wasm intWW.js
 perl replaceEmbeddedJSAnd.pl %1 "assets\fraccont.html" fsquaresSA.js
 
 java -jar %compilerName% -D app=6 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file fsquaresE.js
