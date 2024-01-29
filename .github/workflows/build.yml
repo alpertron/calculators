@@ -25,8 +25,11 @@ jobs:
       - name: install gcovr 5.0
         run: |
           pip install gcovr==5.0 # 5.1 is not supported
-      - name: Setup SonarQube
-        uses: warchant/setup-sonar-scanner@v7
+      - name: Install sonar-scanner and build-wrapper
+        uses: SonarSource/sonarcloud-github-c-cpp@v1
+      - name: Run build-wrapper
+        run: |
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} make clean all
       - name: Run tests to generate coverage statistics
         run: |
           chmod 755 coverage
