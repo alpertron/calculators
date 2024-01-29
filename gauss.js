@@ -22,9 +22,11 @@
 /* global formSend */
 /* global generateFuncButtons */
 /* global get */
+/* global getStorage */
 /* global getCalculatorCode */
 /* global hide */
 /* global registerServiceWorker */
+/* global setStorage */
 /* global show */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 const debugEcm = false;

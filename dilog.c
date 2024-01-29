@@ -374,10 +374,10 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
     }
   }
   CopyBigInt(&baseExp, &groupOrder);
-  BigIntPowerIntExp(&subGroupOrder, subGroupMultiplicity, &powSubGroupOrder2);
+  (void)BigIntPowerIntExp(&subGroupOrder, subGroupMultiplicity, &powSubGroupOrder2);
   (void)BigIntDivide(&groupOrder, &powSubGroupOrder2, &tmpBase);
   modPow(baseMontg, tmpBase.limbs, tmpBase.nbrLimbs, primRoot);
-  memcpy(primRootPwr, primRoot, NumberSizeBytes);
+  (void)memcpy(primRootPwr, primRoot, NumberSizeBytes);
   ExponentsGOComputed[indexBase] = 0;
   if (!memcmp(primRoot, MontgomeryMultR1, NumberSizeBytes))
   {          // Power is one, check power of power.
@@ -395,7 +395,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
       subGroupOrder.nbrLimbs, primRoot);
     if (memcmp(primRoot, MontgomeryMultR1, NumberSizeBytes) == 0)
     {          // Power is one, so check power of power.
-      BigIntPowerIntExp(&subGroupOrder, subGroupMultiplicity - maxSGExp,
+      (void)BigIntPowerIntExp(&subGroupOrder, subGroupMultiplicity - maxSGExp,
         &powSubGroupOrder2);
       (void)BigIntDivide(&groupOrder, &powSubGroupOrder2, &tmpBase);
       modPow(powerMontg, tmpBase.limbs, tmpBase.nbrLimbs, primRoot);
@@ -405,7 +405,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
       }
       break;
     }
-    memcpy(primRootPwr, primRoot, NumberLength * 4);
+    (void)memcpy(primRootPwr, primRoot, NumberLength * 4);
   }
   (void)memcpy(primRoot, baseMontg, NumberSizeBytes);
 

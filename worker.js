@@ -19,6 +19,7 @@
 /* global comingFromWorker */
 /* global fileContents */
 /* global get */
+/* global lang */
 let blob;
 let worker = null;
 function endWorker()

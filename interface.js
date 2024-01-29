@@ -21,6 +21,7 @@
 /* global clickFormLink */
 /* global endWorker */
 /* global get */
+/* global getVersionText */
 /* global formSend */
 /* global generateFuncButtons */
 /* global getCalculatorCode */
