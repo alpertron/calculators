@@ -9,10 +9,6 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    env:
-      SONAR_SCANNER_VERSION: 4.7.0.2747
-      SONAR_SERVER_URL: "https://sonarcloud.io"
-      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
     steps:
       - uses: actions/checkout@v3
         with:
@@ -20,9 +16,8 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
+          distribution: 'temurin'
           java-version: '17'
-          distribution: 'adopt'
-      - uses: actions/checkout@v3
       - name: Set up Python 3.8 for gcovr
         uses: actions/setup-python@v4
         with:
@@ -30,24 +25,8 @@ jobs:
       - name: install gcovr 5.0
         run: |
           pip install gcovr==5.0 # 5.1 is not supported
-      - name: Download and set up sonar-scanner
-        env:
-          SONAR_SCANNER_DOWNLOAD_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
-        run: |
-          mkdir -p $HOME/.sonar
-          curl -sSLo $HOME/.sonar/sonar-scanner.zip ${{ env.SONAR_SCANNER_DOWNLOAD_URL }} 
-          unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
-          echo "$HOME/.sonar/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> $GITHUB_PATH
-      - name: Download and set up build-wrapper
-        env:
-          BUILD_WRAPPER_DOWNLOAD_URL: ${{ env.SONAR_SERVER_URL }}/static/cpp/build-wrapper-linux-x86.zip
-        run: |
-          curl -sSLo $HOME/.sonar/build-wrapper-linux-x86.zip ${{ env.BUILD_WRAPPER_DOWNLOAD_URL }}
-          unzip -o $HOME/.sonar/build-wrapper-linux-x86.zip -d $HOME/.sonar/
-          echo "$HOME/.sonar/build-wrapper-linux-x86" >> $GITHUB_PATH
-      - name: Run build-wrapper
-        run: |
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} make clean all
+      - name: Setup SonarQube
+        uses: warchant/setup-sonar-scanner@v7
       - name: Run tests to generate coverage statistics
         run: |
           chmod 755 coverage
