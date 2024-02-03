@@ -401,10 +401,10 @@ bool isSumOfTwoSquares(void)
   bool multipleOf4kPlus3 = false;
   limb carry;
   int mod8 = valueP[0].x & 7;
-  int mod3squared = sieve[(3 * 3 - 3) / 2];
-  int mod7squared = sieve[(7 * 7 - 3) / 2];
-  int mod11squared = sieve[(11 * 11 - 3) / 2];
-  int mod19squared = sieve[(19 * 19 - 3) / 2];
+  int mod3squared = sieve[((3 * 3) - 3) / 2];
+  int mod7squared = sieve[((7 * 7) - 3) / 2];
+  int mod11squared = sieve[((11 * 11) - 3) / 2];
+  int mod19squared = sieve[((19 * 19) - 3) / 2];
 
   if ((mod8 == 3) || (mod8 == 6) || (mod8 == 7) ||
     (mod3squared == 3) || (mod3squared == 6) ||

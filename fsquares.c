@@ -94,7 +94,7 @@ static void UpdateSieveArray(void)
   {
     if (sieve[index] >= 0)
     {
-      int modulus = 2 * index + 3;
+      int modulus = (2 * index) + 3;
       sieve[index] = (sieve[index] + delta[index]) % modulus;
       delta[index] -= 2;
       if (delta[index] < 0)
@@ -141,13 +141,13 @@ static void SumOfSquaresNumber(void)
   FillSieveArray(toProcess.limbs, sieve);
   CopyBigInt(&biMult3, &toProcess);
   DivideBigNbrByMaxPowerOf4(&power4, biMult3.limbs, &biMult3.nbrLimbs);
-  int nbrBytes = toProcess.nbrLimbs * sizeof(int);
+  int nbrBytes = toProcess.nbrLimbs * (int)sizeof(int);
   if ((biMult3.limbs[0].x & 7) != 7)
   {              // n!=7 (mod 8) => Sum of three squares
                  // Compute biMult4 as a sum of two squares.
     CopyBigInt(&biSecondTerm, &biFirstTerm);
     intToBigInteger(&biFirstTerm, 0);
-    memcpy(valueP, toProcess.limbs, nbrBytes);
+    (void)memcpy(valueP, toProcess.limbs, nbrBytes);
     nbrLimbsP = toProcess.nbrLimbs;
     if (isSumOfTwoSquares())
     {            // Number is a sum of two squares: biMult1^2 + biMult2^2.
@@ -157,8 +157,8 @@ static void SumOfSquaresNumber(void)
       Mult4Len = biMult2.nbrLimbs;
       int mult1LenBytes = Mult3Len * (int)sizeof(int);
       int mult2LenBytes = Mult4Len * (int)sizeof(int);
-      memcpy(Mult3, biMult1.limbs, mult1LenBytes);
-      memcpy(Mult4, biMult2.limbs, mult2LenBytes);
+      (void)memcpy(Mult3, biMult1.limbs, mult1LenBytes);
+      (void)memcpy(Mult4, biMult2.limbs, mult2LenBytes);
       return;
     }
   }
@@ -180,7 +180,7 @@ static void SumOfSquaresNumber(void)
     }
     squareRoot(biMult4.limbs, biSecondTerm.limbs, biMult4.nbrLimbs,
       &biSecondTerm.nbrLimbs);
-    BigIntMultiply(&biSecondTerm, &biSecondTerm, &biMult3);
+    (void)BigIntMultiply(&biSecondTerm, &biSecondTerm, &biMult3);
     BigIntSubt(&biMult4, &biMult3, &biMult4);
   }
   nbrLimbs = biMult4.nbrLimbs;
@@ -201,7 +201,7 @@ static void SumOfSquaresNumber(void)
     // powers of small primes of form 4k+1 and
     // powers of squares of small primes of form 4k+3.
     nbrBytes = biMult4.nbrLimbs * (int)sizeof(int);
-    memcpy(valueP, biMult4.limbs, nbrBytes);
+    (void)memcpy(valueP, biMult4.limbs, nbrBytes);
     nbrLimbsP = biMult4.nbrLimbs;
     if (isSumOfTwoSquares())
     {   // Found biMult1^2 + biMult2^2.
@@ -209,8 +209,8 @@ static void SumOfSquaresNumber(void)
       Mult4Len = biMult2.nbrLimbs;
       int mult1LenBytes = Mult3Len * (int)sizeof(int);
       int mult2LenBytes = Mult4Len * (int)sizeof(int);
-      memcpy(Mult3, biMult1.limbs, mult1LenBytes);
-      memcpy(Mult4, biMult2.limbs, mult2LenBytes);
+      (void)memcpy(Mult3, biMult1.limbs, mult1LenBytes);
+      (void)memcpy(Mult4, biMult2.limbs, mult2LenBytes);
       break;
     }
     addbigint(&biSecondTerm, -1);
@@ -234,13 +234,13 @@ int fsquares(void)
   // Get Mult1 <- square root of origNbr.
   squareRoot(toProcess.limbs, biFirstTerm.limbs, nbrLimbs,
     &biFirstTerm.nbrLimbs);
-  BigIntMultiply(&biFirstTerm, &biFirstTerm, &biMult4);
+  (void)BigIntMultiply(&biFirstTerm, &biFirstTerm, &biMult4);
   BigIntSubt(&toProcess, &biMult4, &biMult4);
   if (BigIntIsZero(&biMult4))
   {          // number is a perfect square.
     Mult1Len = biFirstTerm.nbrLimbs;
     int Mult1LenBytes = Mult1Len * (int)sizeof(int);
-    memcpy(Mult1, biFirstTerm.limbs, Mult1LenBytes);
+    (void)memcpy(Mult1, biFirstTerm.limbs, Mult1LenBytes);
     Mult2[0].x = 0;
     Mult2Len = 1;
     Mult3[0].x = 0;
@@ -271,10 +271,10 @@ int fsquares(void)
     SumOfSquaresNumber();
     Mult1Len = biFirstTerm.nbrLimbs;
     int Mult1LenBytes = Mult1Len * (int)sizeof(int);
-    memcpy(Mult1, biFirstTerm.limbs, Mult1LenBytes);
+    (void)memcpy(Mult1, biFirstTerm.limbs, Mult1LenBytes);
     Mult2Len = biSecondTerm.nbrLimbs;
     int Mult2LenBytes = Mult2Len * (int)sizeof(int);
-    memcpy(Mult2, biSecondTerm.limbs, Mult2LenBytes);
+    (void)memcpy(Mult2, biSecondTerm.limbs, Mult2LenBytes);
     while ((Mult3[Mult3Len-1].x == 0) && (Mult3Len > 1))
     {
       Mult3Len--;
