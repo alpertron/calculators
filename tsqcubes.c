@@ -75,8 +75,7 @@ static bool checkSumOfTwoSquares(const BigInteger *pArgument, int expon)
   nbrLimbsP = powerN.nbrLimbs;
   nbrLimbs = nbrLimbsP;
   (void)memcpy(valueP, powerN.limbs, nbrLimbsP * sizeof(int));
-  sum = 0;
-  FillSieveArray(valueP);
+  FillSieveArray(valueP, sieve);
   if (!isSumOfTwoSquares())
   {
     return false;

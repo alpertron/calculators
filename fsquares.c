@@ -27,16 +27,16 @@
 #include "batch.h"
 #include "tsquares.h"
 
-static limb origNbr[MAX_LEN];
+static int delta[MAX_SIEVE];
 static int power4;
-static limb result[MAX_LEN];
-static int origNbrLimbs;
 static int groupLength;
 static void batchSquaresCallback(char** pptrOutput, int type);
 #ifdef __EMSCRIPTEN__
   static char tmpOutput[MAX_LEN*12];
 #endif
 static BigInteger toProcess;
+static BigInteger biFirstTerm;
+static BigInteger biSecondTerm;
 extern limb TestNbr[MAX_LEN];
 extern limb MontgomeryMultR1[MAX_LEN];
 void DivideBigNbrByMaxPowerOf2(int *pShRight, limb *number, int *pNbrLimbs);
@@ -88,82 +88,159 @@ static void SortBigNbrs(limb *mult1, int *mult1Len, limb *mult2, int *mult2Len)
   }
 }
 
-// Try to decompose a number as a sum of two squares.
-// p = Mult1^2 + Mult2^2
+static void UpdateSieveArray(void)
+{
+  for (int index = 0; index < MAX_SIEVE; index++)
+  {
+    if (sieve[index] >= 0)
+    {
+      int modulus = 2 * index + 3;
+      sieve[index] = (sieve[index] + delta[index]) % modulus;
+      delta[index] -= 2;
+      if (delta[index] < 0)
+      {
+        delta[index] += modulus;
+      }
+    }
+  }
+}
+
+// Try to decompose a number as a sum of three or four squares.
+// Mult1 = sqrt(toProcess).
+// biMult4 = toProcess - biFirstTerm^2.
 // Use biMult1, biMult2 and biMult3 as temporary storage.
 
-static void SumOfSquaresNumberGreaterThan3(void)
+static void SumOfSquaresNumber(void)
 {
-  limb carry;
-  FillSieveArray(number);
-  if ((number[0].x & 7) != 7)
+  if (nbrLimbs == 1)
+  {
+    if (number[0].x == 3)
+    {      // Number is 3 = 1^2 + 1^2 + 1^2.
+           // At this moment Mult1 = 1.
+      Mult2[0].x = 1;
+      Mult2Len = 1;
+      Mult3[0].x = 1;
+      Mult3Len = 1;
+      Mult4[0].x = 0;
+      Mult4Len = 1;
+      return;
+    }
+    if (number[0].x == 2)
+    {      // Number is 2 = 1^2 + 1^2.
+           // At this moment Mult1 = 1.
+      Mult2[0].x = 1;
+      Mult2Len = 1;
+      Mult3[0].x = 0;
+      Mult3Len = 1;
+      Mult4[0].x = 0;
+      Mult4Len = 1;
+      return;
+    }
+  }
+  attempts = 0;
+  FillSieveArray(toProcess.limbs, sieve);
+  CopyBigInt(&biMult3, &toProcess);
+  DivideBigNbrByMaxPowerOf4(&power4, biMult3.limbs, &biMult3.nbrLimbs);
+  int nbrBytes = toProcess.nbrLimbs * sizeof(int);
+  if ((biMult3.limbs[0].x & 7) != 7)
   {              // n!=7 (mod 8) => Sum of three squares
-    Computing3Squares = true;
-    iMult4 = 0;
-    iMult3 = -1;
+                 // Compute biMult4 as a sum of two squares.
+    CopyBigInt(&biSecondTerm, &biFirstTerm);
+    intToBigInteger(&biFirstTerm, 0);
+    memcpy(valueP, toProcess.limbs, nbrBytes);
+    nbrLimbsP = toProcess.nbrLimbs;
+    if (isSumOfTwoSquares())
+    {            // Number is a sum of two squares: biMult1^2 + biMult2^2.
+      intToBigInteger(&biFirstTerm, 0);
+      intToBigInteger(&biSecondTerm, 0);
+      Mult3Len = biMult1.nbrLimbs;
+      Mult4Len = biMult2.nbrLimbs;
+      int mult1LenBytes = Mult3Len * (int)sizeof(int);
+      int mult2LenBytes = Mult4Len * (int)sizeof(int);
+      memcpy(Mult3, biMult1.limbs, mult1LenBytes);
+      memcpy(Mult4, biMult2.limbs, mult2LenBytes);
+      return;
+    }
   }
   else
   {              // n==7 (mod 8) => Sum of four squares
-    Computing3Squares = false;
-    iMult3 = -1;
-    iMult4 = 0;
+                 // Compute biMult4 as a sum of three squares.
+    for (;;)
+    {
+      CopyBigInt(&biMult3, &biMult4);
+      DivideBigNbrByMaxPowerOf4(&power4, biMult3.limbs, &biMult3.nbrLimbs);
+      if ((biMult3.limbs[0].x & 7) != 7)
+      {          // biMult4 is a sum of three squares. Compute them.
+        break;
+      }
+      addbigint(&biFirstTerm, -1);  // Next candidate for largest term.
+      BigIntAdd(&biMult4, &biFirstTerm, &biMult4);
+      BigIntAdd(&biMult4, &biFirstTerm, &biMult4);
+      addbigint(&biMult4, 1);
+    }
+    squareRoot(biMult4.limbs, biSecondTerm.limbs, biMult4.nbrLimbs,
+      &biSecondTerm.nbrLimbs);
+    BigIntMultiply(&biSecondTerm, &biSecondTerm, &biMult3);
+    BigIntSubt(&biMult4, &biMult3, &biMult4);
   }
-  // If number is a sum of three squares, subtract a small square.
-  // If number is a sum of four squares, subtract two small squares.
+  nbrLimbs = biMult4.nbrLimbs;
+  FillSieveArray(biMult4.limbs, sieve);
+  multint(&biMult3, &biSecondTerm, 2);
+  addbigint(&biMult3, -1);
+  nbrLimbs = biMult3.nbrLimbs;
+  FillSieveArray(biMult3.limbs, delta);
+  // Compute biMult4 as a sum of two squares:
   // If the result is not the product of a power of 2, small primes
   // of the form 4k+1 and squares of primes of the form (4k+3)^2
-  // and a (big) prime, try with other squares.
-  do
+  // and a (big) prime, it is not a sum of two squares (or it is
+  // very difficult to compute it).
+  // In this case, decrement Mult2 and try again.
+  for (;;)
   {
-    if (!Computing3Squares && (iMult3 >= iMult4))
-    {
-      iMult3 = 1;
-      iMult4++;
-    }
-    else
-    {
-      iMult3++;
-    }
-    sum = (iMult3 * iMult3) + (iMult4 * iMult4);
-    carry.x = number[0].x - sum;
-    valueP[0].x = UintToInt((unsigned int)carry.x & MAX_VALUE_LIMB);
-    carry.x >>= BITS_PER_GROUP;
-    if (nbrLimbs > 1)
-    {
-      carry.x += number[1].x;
-      valueP[1].x = UintToInt((unsigned int)carry.x & MAX_VALUE_LIMB);
-      carry.x >>= BITS_PER_GROUP;
-      for (int index = 2; index < nbrLimbs; index++)
-      {
-        carry.x += number[index].x;
-        valueP[index].x = UintToInt((unsigned int)carry.x & MAX_VALUE_LIMB);
-        carry.x >>= BITS_PER_GROUP;
-      }
-    }
     // p should be the product of power of 2,
     // powers of small primes of form 4k+1 and
     // powers of squares of small primes of form 4k+3.
-    nbrLimbsP = nbrLimbs;
-  } while (!isSumOfTwoSquares());        /* end while */
+    nbrBytes = biMult4.nbrLimbs * (int)sizeof(int);
+    memcpy(valueP, biMult4.limbs, nbrBytes);
+    nbrLimbsP = biMult4.nbrLimbs;
+    if (isSumOfTwoSquares())
+    {   // Found biMult1^2 + biMult2^2.
+      Mult3Len = biMult1.nbrLimbs;
+      Mult4Len = biMult2.nbrLimbs;
+      int mult1LenBytes = Mult3Len * (int)sizeof(int);
+      int mult2LenBytes = Mult4Len * (int)sizeof(int);
+      memcpy(Mult3, biMult1.limbs, mult1LenBytes);
+      memcpy(Mult4, biMult2.limbs, mult2LenBytes);
+      break;
+    }
+    addbigint(&biSecondTerm, -1);
+    BigIntAdd(&biMult4, &biSecondTerm, &biMult4);
+    BigIntAdd(&biMult4, &biSecondTerm, &biMult4);
+    addbigint(&biMult4, 1);
+    UpdateSieveArray();
+  }
 }
 
-// Variable to split in up to four squares: number
+// Variable to split in up to four squares: toProcess.
 int fsquares(void)
 {
 #ifdef __EMSCRIPTEN__
   char *ptrOutput;
 #endif
   int tmp;
-  int count;
   int idx;
   int lenBytes;
-  nbrLimbs = origNbrLimbs;
-  lenBytes = nbrLimbs * (int)sizeof(limb);
-  (void)memcpy(number, origNbr, lenBytes);
-  squareRoot(number, Mult1, nbrLimbs, &Mult1Len);
-  multiply(Mult1, Mult1, result, Mult1Len, NULL);
-  if (memcmp(result, number, lenBytes) == 0)
+  nbrLimbs = toProcess.nbrLimbs;
+  // Get Mult1 <- square root of origNbr.
+  squareRoot(toProcess.limbs, biFirstTerm.limbs, nbrLimbs,
+    &biFirstTerm.nbrLimbs);
+  BigIntMultiply(&biFirstTerm, &biFirstTerm, &biMult4);
+  BigIntSubt(&toProcess, &biMult4, &biMult4);
+  if (BigIntIsZero(&biMult4))
   {          // number is a perfect square.
+    Mult1Len = biFirstTerm.nbrLimbs;
+    int Mult1LenBytes = Mult1Len * (int)sizeof(int);
+    memcpy(Mult1, biFirstTerm.limbs, Mult1LenBytes);
     Mult2[0].x = 0;
     Mult2Len = 1;
     Mult3[0].x = 0;
@@ -177,93 +254,32 @@ int fsquares(void)
     nbrModExp = 0;
     InitSieveArray();
 #ifdef __EMSCRIPTEN__
+    // Show number to be processed on screen.
     ptrOutput = tmpOutput;
     copyStr(&ptrOutput, "1<p><var>n</var> = ");
     if (hexadecimal)
     {
-      Bin2Hex(&ptrOutput, origNbr, nbrLimbs, groupLength);
+      Bin2Hex(&ptrOutput, toProcess.limbs, toProcess.nbrLimbs, groupLength);
     }
     else
     {
-      Bin2Dec(&ptrOutput, origNbr, nbrLimbs, groupLength);
+      Bin2Dec(&ptrOutput, toProcess.limbs, toProcess.nbrLimbs, groupLength);
     }
     copyStr(&ptrOutput, "</p>");
     databack(tmpOutput);
 #endif
-    DivideBigNbrByMaxPowerOf4(&power4, number, &nbrLimbs);
-    Mult1Len = 1;
-    Mult2Len = 1;
-    if ((nbrLimbs == 1) && (number[0].x < 4))
-    {
-      iMult3 = 0;
-      iMult4 = 0;
-      switch (number[0].x)
-      {
-      case 3:
-        iMult3 = 1;
-        Mult2[0].x = 1;
-        Mult1[0].x = 1;
-        break;
-      case 2:
-        Mult2[0].x = 1;
-        Mult1[0].x = 1;
-        break;
-      case 1:
-        Mult1[0].x = 1;
-        break;
-      default:
-        break;
-      }
-    }
-    else
-    {     // Number greater than 3.
-      SumOfSquaresNumberGreaterThan3();
-    }
-    // Shift left the number of bits that the original number was divided by 4.
-    for (count = 0; count < power4; count++)
-    {
-      MultBigNbrByInt(Mult1, 2, Mult1, nbrLimbs + 1);
-      MultBigNbrByInt(Mult2, 2, Mult2, nbrLimbs + 1);
-      if ((Mult1[nbrLimbs].x != 0) || (Mult2[nbrLimbs].x != 0))
-      {
-        nbrLimbs++;
-        Mult1[nbrLimbs].x = 0;
-        Mult2[nbrLimbs].x = 0;
-      }
-    }
-    nbrLimbsP = 1;
-    Mult3[0].x = iMult3;
-    Mult4[0].x = iMult4;
-    Mult3[1].x = 0;
-    Mult4[1].x = 0;
-    for (count = 0; count < power4; count++)
-    {
-      MultBigNbrByInt(Mult3, 2, Mult3, nbrLimbsP + 1);
-      MultBigNbrByInt(Mult4, 2, Mult4, nbrLimbsP + 1);
-      if ((Mult3[nbrLimbsP].x != 0) || (Mult4[nbrLimbsP].x != 0))
-      {
-        nbrLimbsP++;
-      }
-      Mult3[nbrLimbsP].x = 0;
-      Mult4[nbrLimbsP].x = 0;
-    }
-    Mult1Len = nbrLimbs;
-    Mult2Len = nbrLimbs;
-    while ((Mult1[Mult1Len-1].x == 0) && (Mult1Len > 1))
-    {
-      Mult1Len--;
-    }
-    while ((Mult2[Mult2Len-1].x == 0) && (Mult2Len > 1))
-    {
-      Mult2Len--;
-    }
-    Mult3Len = nbrLimbsP;
-    Mult4Len = nbrLimbsP;
+    SumOfSquaresNumber();
+    Mult1Len = biFirstTerm.nbrLimbs;
+    int Mult1LenBytes = Mult1Len * (int)sizeof(int);
+    memcpy(Mult1, biFirstTerm.limbs, Mult1LenBytes);
+    Mult2Len = biSecondTerm.nbrLimbs;
+    int Mult2LenBytes = Mult2Len * (int)sizeof(int);
+    memcpy(Mult2, biSecondTerm.limbs, Mult2LenBytes);
     while ((Mult3[Mult3Len-1].x == 0) && (Mult3Len > 1))
     {
       Mult3Len--;
     }
-    while ((Mult1[Mult4Len-1].x == 0) && (Mult4Len > 1))
+    while ((Mult4[Mult4Len-1].x == 0) && (Mult4Len > 1))
     {
       Mult4Len--;
     }
@@ -299,13 +315,13 @@ int fsquares(void)
   {
     idx--;
   }
-  if (idx != origNbrLimbs)
+  if (idx != toProcess.nbrLimbs)
   {           // Invalid length.
     return 1;
   }
   for (int index = 0; index < idx; index++)
   {
-    if (SquareMult1.limbs[index].x != origNbr[index].x)
+    if (SquareMult1.limbs[index].x != toProcess.limbs[index].x)
     {
       return 1;
     }
@@ -338,13 +354,9 @@ static void batchSquaresCallback(char **pptrOutput, int type)
 {
   int rc;
   char *ptrOutput;
-  int lenBytes;
   ptrOutput = *pptrOutput;
   NumberLength = toProcess.nbrLimbs;
   BigInteger2IntArray((int *)number, &toProcess);
-  origNbrLimbs = toProcess.nbrLimbs;
-  lenBytes = origNbrLimbs * (int)sizeof(limb);
-  (void)memcpy(origNbr, toProcess.limbs, lenBytes);
   if ((type == BATCH_NO_PROCESS_DEC) || (type == BATCH_NO_PROCESS_HEX))
   {         // Do not compute sum of squares.
     if (hexadecimal)

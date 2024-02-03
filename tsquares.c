@@ -30,9 +30,7 @@
 #define NBR_PRIMES_QUADR_SIEVE  17
 
 const char* square = "<span class=\"bigger\">²</span>";
-bool Computing3Squares;
-int iMult3;
-int iMult4;
+int attempts;
 int sieve[MAX_SIEVE];
 int primediv[256];
 int primeexp[256];
@@ -48,7 +46,6 @@ int Mult2Len;
 int Mult3Len;
 int Mult4Len;
 int nbrLimbsP;
-int sum;
 int nbrLimbs;
 int nbrModExp;
 BigInteger biMult1;
@@ -111,11 +108,6 @@ bool FindTwoSquaresNoNumTheory(void)
   static BigInteger nextroot;
   static BigInteger c;
   static BigInteger val;
-  if (sum > 0)
-  {      // Do not attempt to find sum of two squares using this method
-         // if number requires 3 or 4 squares.
-    return false;
-  }
   int lenBytes = nbrLimbsP * (int)sizeof(limb);
   (void)memcpy(biMult3.limbs, valueP, lenBytes);  // Mult3 <- number to find
   biMult3.sign = SIGN_POSITIVE;         // the decomposition into
@@ -198,11 +190,11 @@ bool FindTwoSquaresNoNumTheory(void)
   return false;               // Decomposition in two squares not found.
 }
 
-void FillSieveArray(const limb *value)
+void FillSieveArray(const limb *value, int *sieveArr)
 {
   for (int i = 0; i < (MAX_SIEVE / 2); i++)
   {
-    if (sieve[i] >= 0)                        // If prime...
+    if (*(sieveArr + i) >= 0)                        // If prime...
     {
       int Rem;
       int LimbModQ;
@@ -217,7 +209,7 @@ void FillSieveArray(const limb *value)
         int Divid = ptrValue->x + (Rem * LimbModQ);
         Rem = UintToInt((unsigned int)Divid % (unsigned int)Q);
       }
-      sieve[i] = Rem;
+      *(sieveArr + i) = Rem;
     }
   }
 }
@@ -408,7 +400,22 @@ bool isSumOfTwoSquares(void)
   int shRight;
   bool multipleOf4kPlus3 = false;
   limb carry;
+  int mod8 = valueP[0].x & 7;
+  int mod3squared = sieve[(3 * 3 - 3) / 2];
+  int mod7squared = sieve[(7 * 7 - 3) / 2];
+  int mod11squared = sieve[(11 * 11 - 3) / 2];
+  int mod19squared = sieve[(19 * 19 - 3) / 2];
 
+  if ((mod8 == 3) || (mod8 == 6) || (mod8 == 7) ||
+    (mod3squared == 3) || (mod3squared == 6) ||
+    ((mod7squared != 0) && ((mod7squared % 7) == 0)) ||
+    ((mod11squared != 0) && ((mod11squared % 11) == 0)) ||
+    ((mod19squared != 0) && ((mod19squared % 19) == 0)))
+
+  {    // Number cannot be a sum of two squares in this case.
+    return false;
+  }
+  attempts++;
   if (FindTwoSquaresNoNumTheory())
   {   // Sum of two squares was found.
     return true;
@@ -419,7 +426,7 @@ bool isSumOfTwoSquares(void)
   divisor = 3;
   for (int i = 0; i < (MAX_SIEVE / 2); i++)
   {
-    if ((sieve[i] >= 0) && (((sieve[i] - sum) % divisor) == 0))
+    if ((sieve[i] >= 0) && ((sieve[i] % divisor) == 0))
     {                          // Divisor found.
       primediv[nbrDivisors] = divisor;   // Store divisor.
       primeexp[nbrDivisors] = 0;         // Store exponent.
@@ -536,29 +543,9 @@ void ShowStatus(void)
   ptrStatus = status;
   copyStr(&ptrStatus, lang ? "4<p>Transcurrió " : "4<p>Time elapsed: ");
   GetDHMS(&ptrStatus, elapsedTime / 10);
-  copyStr(&ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Intentando suma de dos cuadrados de n &minus; " : "&nbsp;&nbsp;&nbsp;Attempting sum of two squares of <var>n</var> &minus; ");
-  if (hexadecimal)
-  {
-    int2hex(&ptrStatus, iMult3);
-  }
-  else
-  {
-    int2dec(&ptrStatus, iMult3);
-  }
-  copyStr(&ptrStatus, square);
-  if (!Computing3Squares)
-  {
-    copyStr(&ptrStatus, " &minus; ");
-    if (hexadecimal)
-    {
-      int2hex(&ptrStatus, iMult4);
-    }
-    else
-    {
-      int2dec(&ptrStatus, iMult4);
-    }
-    copyStr(&ptrStatus, square);
-  }
+  copyStr(&ptrStatus, lang ? "&nbsp;&nbsp;&nbsp;Intentando obtener suma de dos cuadrados. Prueba número " : "&nbsp;&nbsp;&nbsp;Attempting sum of two squares. Attempt #");
+  int2dec(&ptrStatus, attempts);
+  *ptrStatus = 0;
   databack(status);
 #endif
 }

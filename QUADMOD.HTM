@@ -165,13 +165,13 @@ input:disabled {color: #808080; background-color: #606060}
 <var>a</var>&#8290;<var>x</var>&sup2; + <var>b</var>&#8290;<var>x</var> + <var>c</var> &equiv; 0 (mod&nbsp;<var>n</var>)
 </div>
 <div id="inputs">
-<label for="quad">a</label>&nbsp;<input type="text" id="quad" value="" class="input" aria-label="Quadratic coefficient">
+<label for="quad">a</label>&nbsp;<input type="text" id="quad" inputmode="numeric" value="" class="input" aria-label="Quadratic coefficient">
 <div class="lf"></div>
-<label for="lin">b</label>&nbsp;<input type="text" id="lin" value="" class="input" aria-label="Linear coefficient">
+<label for="lin">b</label>&nbsp;<input type="text" id="lin" inputmode="numeric" value="" class="input" aria-label="Linear coefficient">
 <div class="lf"></div>
-<label for="const">c</label>&nbsp;<input type="text" id="const" value="" class="input" aria-label="Constant coefficient">
+<label for="const">c</label>&nbsp;<input type="text" id="const" inputmode="numeric" value="" class="input" aria-label="Constant coefficient">
 <div class="lf"></div>
-<label for="mod">n</label>&nbsp;<input type="text" id="mod" value="" class="input">
+<label for="mod">n</label>&nbsp;<input type="text" id="mod" inputmode="numeric" value="" class="input">
 </div>
 <fieldset id="actions"><legend>Actions</legend>
 <input type="button" id="solve" value="Solve" title="Find the values of x">
@@ -259,7 +259,7 @@ input:disabled {color: #808080; background-color: #606060}
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old quadratic modular equation applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 29 January 2024.</p>
+<p>Written by Dario Alpern. Last updated 3 February 2024.</p>
 </div>
 <div id="result" aria-live="polite"></div>
 <div>

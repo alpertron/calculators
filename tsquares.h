@@ -21,7 +21,7 @@
 #define MAX_SIEVE 65536
 
 bool FindTwoSquaresNoNumTheory(void);
-void FillSieveArray(const limb *value);
+void FillSieveArray(const limb *value, int *sieveArr);
 bool FindSumTwoSquaresNoSmallDivisors(void);
 void FindSumOfTwoSquaresUsingCrt(int nbrDivisors);
 bool isSumOfTwoSquares(void);
@@ -41,13 +41,10 @@ extern int Mult2Len;
 extern int Mult3Len;
 extern int Mult4Len;
 extern int nbrLimbsP;
-extern int sum;
 extern int nbrModExp;
 extern int nbrLimbs;
 extern bool hexadecimal;
-extern bool Computing3Squares;
-extern int iMult3;
-extern int iMult4;
+extern int attempts;
 extern BigInteger SquareMult1;
 extern BigInteger SquareMult2;
 extern BigInteger SquareMult3;

@@ -29,7 +29,7 @@
 #include "fromBlockly.h"
 #include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 11
+#define DEBUG_CODE 23
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -462,7 +462,7 @@ int main(int argc, char* argv[])
 #elif DEBUG_CODE == 23
   if (argc != 3)
   {
-    printf("Command line: calculator number expon (use 0 for 3, 1 for 5, 2 for 7");
+    printf("Command line: calculator number expon (use 0 for 3, 1 for 5, 2 for 7)");
   }
   else
   {

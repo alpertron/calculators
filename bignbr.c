@@ -2684,6 +2684,11 @@ enum eExprErr BigIntRoot(const BigInteger* argument, BigInteger* nthRoot, int Ex
   {
     return EXPR_BASE_MUST_BE_POSITIVE;
   }
+  if (BigIntIsZero(argument))
+  {
+    intToBigInteger(nthRoot, 0);
+    return EXPR_OK;
+  }
   computeRoot(argument, nthRoot, Exponent);
   // At this moment nthRoot is rounded to the root of argument.
   // Make it floor of root.
