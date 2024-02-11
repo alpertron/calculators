@@ -714,7 +714,7 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
         {    // Add factor of degree zero if it is not one.
           totalFactors++;
         }
-        copyStr(&ptrOut, lang ? "Los " : "The ");
+        copyStr(&ptrOut, lang ? "<p>Los " : "<p>The ");
         int2dec(&ptrOut, totalFactors);
         copyStr(&ptrOut, lang ? " factores son:</p>" : " factors are:</p>");
         if (modulusIsZero)
@@ -815,7 +815,7 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
         copyStr(&ptrOut, lang ? "<h2>Raíces</h2>" : "<h2>Roots</h2>");
         if (degree > 1)
         {
-          copyStr(&ptrOut, lang ? "Las " : "The ");
+          copyStr(&ptrOut, lang ? "<p>Las " : "<p>The ");
           int2dec(&ptrOut, degree);
           copyStr(&ptrOut, lang ? " raíces son:</p>" : " roots are:</p>");
         }

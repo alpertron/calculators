@@ -88,6 +88,7 @@ void showElapsedTimeSec(char **pptrOutput)
   copyStr(&ptrOutput, lang ? "<p>Tiempo transcurrido: " : "<p>Time elapsed: ");
   GetDHMS(&ptrOutput, (int)(tenths() - originalTenthSecond) / 10);
   copyStr(&ptrOutput, "</p>");
+  *ptrOutput = 0;   // Add string terminator.
   *pptrOutput = ptrOutput;
 }
 #endif

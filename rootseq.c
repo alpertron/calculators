@@ -1171,6 +1171,7 @@ static int showRadicals(int numerator, int denominator, int multipl,
         else
         {
           int2dec(&ptrDenom, exprDen / 2);
+          *ptrDenom = 0;   // End of string.
           showRatString("1", denom);
         }
         showText(ptrTimes);
