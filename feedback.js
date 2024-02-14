@@ -16,7 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
-/* global endFeedback */
 /* global get */
 /* global getFormSendValue */
 /* global hide */
@@ -77,7 +76,7 @@ function formSend()
   return false;   // Send form only through JavaScript.
 }
 
-function clickFormLink()
+function clickFormLink(event)
 {    
   hide("sentOK");
   hide("notSent");
@@ -86,5 +85,6 @@ function clickFormLink()
   get("formfeedback").reset();
   get("formsend").disabled = true;
   get("name").focus();
-  return false;   // Do not follow the link.
+  history.pushState({id: 1}, "", location.href);
+  event.preventDefault();   // Do not follow the link.
 }

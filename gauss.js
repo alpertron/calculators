@@ -142,15 +142,6 @@ function dowork(n)
   callWorker(param);
 }
 
-function endFeedback()
-{
-  show("main");
-  hide("feedback");
-  hide("sentOK");
-  hide("notSent");
-  get("value").focus();   
-}
-
 function getCalcURLs()
 {
   return ["gaussianW0000.js",
@@ -162,10 +153,30 @@ function getFormSendValue()
   get("userdata").value = "\n" + get("value").value + "\n" + get("result").innerHTML + "\n" + get("status").innerHTML;
 }
 
-window.onload = function()
+function popstate(event)
 {
-  get("btnSentOK").onclick = endFeedback;
-  get("btnNotSent").onclick = endFeedback;
+  if (get("feedback").style.display == "block" ||
+      get("sentOK").style.display == "block" ||
+      get("notSent").style.display == "block")
+  {     // End feedback.
+    show("main");
+    hide("feedback");
+    hide("sentOK");
+    hide("notSent");
+    get("value").focus();   
+  }
+}
+
+function startUp()
+{
+  get("btnSentOK").onclick = function()
+  {
+    history.back();
+  }
+  get("btnNotSent").onclick = function()
+  {
+    history.back();
+  }
   get("eval").onclick = function()
   {
     dowork(0);
@@ -248,7 +259,7 @@ window.onload = function()
   get("formlink").onclick = clickFormLink;
   get("formcancel").onclick = function()
   {
-    endFeedback();
+    history.back();
   };
   get("comments").oninput = function(_event)
   {
@@ -289,4 +300,6 @@ window.onload = function()
   currentInputBox = get("value");
 };
 getCalculatorCode("gaussianW0000.js", false);
+window.addEventListener("load", startUp);
+window.addEventListener("popstate", popstate);
 window["fromWorker"] = fromWorker;

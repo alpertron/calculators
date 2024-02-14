@@ -90,6 +90,7 @@ function wizardNext()
       saveConfig(true);
       show("main");
       hide("wizard");
+      history.back();
       valueInput.focus();
       break;
     default:
@@ -98,6 +99,7 @@ function wizardNext()
       valueInput.value = wzdInput.value;
       show("main");
       hide("wizard");
+      history.back();
       valueInput.focus();
       break;
   } 

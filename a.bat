@@ -135,7 +135,7 @@ java -jar %compilerName% -D app=0 %compilerOptionsAnd% %fsquaresJS% --js workerA
 copy FSQUARES.HTM toweb
 copy FSQUARES.HTM assets\fsquares.html
 perl replaceEmbeddedJS.pl %1 toweb\FSQUARES.HTM fsquaresE.js fsquaresE.wasm intWW.js
-perl replaceEmbeddedJSAnd.pl %1 assets\fsquares.html fsquaresEA.js
+perl replaceEmbeddedJSAnd.pl %1 assets\fsquares.html fsquaresEA.js calc_privacy.html
 java -jar %compilerName% -D app=1 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file fsquaresS.js
 @if errorlevel 1 goto end
 java -jar %compilerName% -D app=1 %compilerOptionsAnd% %fsquaresJS% --js workerAndroid.js --js_output_file fsquaresSA.js
@@ -143,7 +143,7 @@ java -jar %compilerName% -D app=1 %compilerOptionsAnd% %fsquaresJS% --js workerA
 copy SUMCUAD.HTM toweb
 copy SUMCUAD.HTM "assets\sumcuad.html"
 perl replaceEmbeddedJS.pl %1 toweb\SUMCUAD.HTM fsquaresS.js fsquaresS.wasm intWW.js
-perl replaceEmbeddedJSAnd.pl %1 "assets\sumcuad.html" fsquaresSA.js
+perl replaceEmbeddedJSAnd.pl %1 "assets\sumcuad.html" fsquaresSA.js privacidad_calc.html
 
 java -jar %compilerName% -D app=2 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file fsquaresE.js
 @if errorlevel 1 goto end
@@ -152,7 +152,7 @@ java -jar %compilerName% -D app=2 %compilerOptionsAnd% %fsquaresJS% --js workerA
 copy FCUBES.HTM toweb
 copy FCUBES.HTM assets\fcubes.html
 perl replaceEmbeddedJS.pl %1 toweb\FCUBES.HTM fsquaresE.js fcubesE.wasm intWW.js
-perl replaceEmbeddedJSAnd.pl %1 assets\fcubes.html fsquaresEA.js
+perl replaceEmbeddedJSAnd.pl %1 assets\fcubes.html fsquaresEA.js calc_privacy.html
 java -jar %compilerName% -D app=3 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file fsquaresS.js
 @if errorlevel 1 goto end
 java -jar %compilerName% -D app=3 %compilerOptionsAnd% %fsquaresJS% --js workerAndroid.js --js_output_file fsquaresSA.js
@@ -160,7 +160,7 @@ java -jar %compilerName% -D app=3 %compilerOptionsAnd% %fsquaresJS% --js workerA
 copy SUMCUBOS.HTM toweb
 copy SUMCUBOS.HTM "assets\sumcubos.html"
 perl replaceEmbeddedJS.pl %1 toweb\SUMCUBOS.HTM fsquaresS.js fcubesS.wasm intWW.js
-perl replaceEmbeddedJSAnd.pl %1 "assets\sumcubos.html" fsquaresSA.js
+perl replaceEmbeddedJSAnd.pl %1 "assets\sumcubos.html" fsquaresSA.js privacidad_calc.html
 
 java -jar %compilerName% -D app=4 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file fsquaresE.js
 @if errorlevel 1 goto end
@@ -169,7 +169,7 @@ java -jar %compilerName% -D app=4 %compilerOptionsAnd% %fsquaresJS% --js workerA
 copy CONTFRAC.HTM toweb
 copy CONTFRAC.HTM assets\contfrac.html
 perl replaceEmbeddedJS.pl %1 toweb\CONTFRAC.HTM fsquaresE.js contfracE.wasm intWW.js
-perl replaceEmbeddedJSAnd.pl %1 assets\contfrac.html fsquaresEA.js
+perl replaceEmbeddedJSAnd.pl %1 assets\contfrac.html fsquaresEA.js calc_privacy.html
 java -jar %compilerName% -D app=5 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file fsquaresS.js
 @if errorlevel 1 goto end
 java -jar %compilerName% -D app=5 %compilerOptionsAnd% %fsquaresJS% --js workerAndroid.js --js_output_file fsquaresSA.js
@@ -177,7 +177,7 @@ java -jar %compilerName% -D app=5 %compilerOptionsAnd% %fsquaresJS% --js workerA
 copy FRACCONT.HTM toweb
 copy FRACCONT.HTM "assets\fraccont.html"
 perl replaceEmbeddedJS.pl %1 toweb\FRACCONT.HTM fsquaresS.js contfracS.wasm intWW.js
-perl replaceEmbeddedJSAnd.pl %1 "assets\fraccont.html" fsquaresSA.js
+perl replaceEmbeddedJSAnd.pl %1 "assets\fraccont.html" fsquaresSA.js privacidad_calc.html
 
 java -jar %compilerName% -D app=6 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file fsquaresE.js
 @if errorlevel 1 goto end
@@ -186,14 +186,14 @@ java -jar %compilerName% -D app=6 %compilerOptionsAnd% %fsquaresJS% --js workerA
 copy TSQCUBES.HTM toweb
 copy TSQCUBES.HTM assets\tsqcubes.html
 perl replaceEmbeddedJS.pl %1 toweb\TSQCUBES.HTM fsquaresE.js fsquaresE.wasm intWW.js
-perl replaceEmbeddedJSAnd.pl %1 assets\tsqcubes.html fsquaresEA.js
+perl replaceEmbeddedJSAnd.pl %1 assets\tsqcubes.html fsquaresEA.js calc_privacy.html
 java -jar %compilerName% -D app=7 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file fsquaresS.js
 java -jar %compilerName% -D app=7 %compilerOptionsAnd% %fsquaresJS% --js workerAndroid.js --js_output_file fsquaresSA.js
 @if errorlevel 1 goto end
 copy TCUADCUB.HTM toweb
 copy TCUADCUB.HTM "assets\tcuadcub.html"
 perl replaceEmbeddedJS.pl %1 toweb\TCUADCUB.HTM fsquaresS.js fsquaresS.wasm intWW.js
-perl replaceEmbeddedJSAnd.pl %1 "assets\tcuadcub.html" fsquaresSA.js
+perl replaceEmbeddedJSAnd.pl %1 "assets\tcuadcub.html" fsquaresSA.js privacidad_calc.html
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js cache.js --js calccode.js %polfactJS% --js worker.js --js_output_file polfactE.js
 @if errorlevel 1 goto end
@@ -202,7 +202,7 @@ java -jar %compilerName% -D lang=0 %compilerOptionsAnd% %polfactJS% --js workerA
 copy POLFACT.HTM toweb
 copy POLFACT.HTM assets\polfact.html
 perl replaceEmbeddedJS.pl %1 toweb\POLFACT.HTM polfactE.js polfactE.wasm ecmWW.js
-perl replaceEmbeddedJSAnd.pl %1 assets\polfact.html polfactEA.js
+perl replaceEmbeddedJSAnd.pl %1 assets\polfact.html polfactEA.js calc_privacy.html
 java -jar %compilerName% -D lang=1 %compilerOptions% --js cache.js --js calccode.js %polfactJS% --js worker.js --js_output_file polfactS.js
 @if errorlevel 1 goto end
 java -jar %compilerName% -D lang=1 %compilerOptionsAnd% %polfactJS% --js workerAndroid.js --js_output_file polfactSA.js
@@ -210,7 +210,7 @@ java -jar %compilerName% -D lang=1 %compilerOptionsAnd% %polfactJS% --js workerA
 copy FACTPOL.HTM toweb
 copy FACTPOL.HTM "assets\factpol.html"
 perl replaceEmbeddedJS.pl %1 toweb\FACTPOL.HTM polfactS.js polfactS.wasm ecmWW.js
-perl replaceEmbeddedJSAnd.pl %1 "assets\factpol.html" polfactSA.js
+perl replaceEmbeddedJSAnd.pl %1 "assets\factpol.html" polfactSA.js privacidad_calc.html
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js cache.js --js calccode.js %dilogJS% --js worker.js --js_output_file dilogE.js
 @if errorlevel 1 goto end
@@ -219,7 +219,7 @@ java -jar %compilerName% -D lang=0 %compilerOptionsAnd% %dilogJS% --js workerAnd
 copy DILOG.HTM toweb
 copy DILOG.HTM assets\dilog.html
 perl replaceEmbeddedJS.pl %1 toweb\DILOG.HTM dilogE.js dilogE.wasm ecmWW.js
-perl replaceEmbeddedJSAnd.pl %1 assets\dilog.html dilogEA.js
+perl replaceEmbeddedJSAnd.pl %1 assets\dilog.html dilogEA.js calc_privacy.html
 java -jar %compilerName% -D lang=1 %compilerOptions% --js cache.js --js calccode.js %dilogJS% --js worker.js --js_output_file dilogS.js
 @if errorlevel 1 goto end
 java -jar %compilerName% -D lang=1 %compilerOptionsAnd% %dilogJS% --js workerAndroid.js --js_output_file dilogSA.js
@@ -227,7 +227,7 @@ java -jar %compilerName% -D lang=1 %compilerOptionsAnd% %dilogJS% --js workerAnd
 copy LOGDI.HTM toweb
 copy LOGDI.HTM "assets\logdi.html"
 perl replaceEmbeddedJS.pl %1 toweb\LOGDI.HTM dilogS.js dilogS.wasm ecmWW.js
-perl replaceEmbeddedJSAnd.pl %1 "assets\logdi.html" dilogSA.js
+perl replaceEmbeddedJSAnd.pl %1 "assets\logdi.html" dilogSA.js privacidad_calc.html
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js cache.js --js calccode.js %quadmodJS% --js worker.js --js_output_file quadmodE.js
 @if errorlevel 1 goto end
@@ -236,7 +236,7 @@ java -jar %compilerName% -D lang=0 %compilerOptionsAnd% %quadmodJS% --js workerA
 copy QUADMOD.HTM toweb
 copy QUADMOD.HTM assets\quadmod.html
 perl replaceEmbeddedJS.pl %1 toweb\QUADMOD.HTM quadmodE.js quadmodE.wasm ecmWW.js
-perl replaceEmbeddedJSAnd.pl %1 assets\quadmod.html quadmodEA.js
+perl replaceEmbeddedJSAnd.pl %1 assets\quadmod.html quadmodEA.js calc_privacy.html
 java -jar %compilerName% -D lang=1 %compilerOptions% --js cache.js --js calccode.js %quadmodJS% --js worker.js --js_output_file quadmodS.js
 @if errorlevel 1 goto end
 java -jar %compilerName% -D lang=1 %compilerOptionsAnd% %quadmodJS% --js workerAndroid.js --js_output_file quadmodSA.js
@@ -244,7 +244,7 @@ java -jar %compilerName% -D lang=1 %compilerOptionsAnd% %quadmodJS% --js workerA
 copy CUADMOD.HTM toweb
 copy CUADMOD.HTM "assets\cuadmod.html"
 perl replaceEmbeddedJS.pl %1 toweb\CUADMOD.HTM quadmodS.js quadmodS.wasm ecmWW.js
-perl replaceEmbeddedJSAnd.pl %1 "assets\cuadmod.html" quadmodSA.js
+perl replaceEmbeddedJSAnd.pl %1 "assets\cuadmod.html" quadmodSA.js privacidad_calc.html
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js cache.js --js calccode.js %gaussianJS% --js worker.js --js_output_file gaussianE.js
 @if errorlevel 1 goto end
@@ -253,7 +253,7 @@ java -jar %compilerName% -D lang=0 %compilerOptionsAnd% %gaussianJS% --js worker
 copy GAUSSIAN.HTM toweb
 copy GAUSSIAN.HTM assets\gaussian.html
 perl replaceEmbeddedJS.pl %1 toweb\GAUSSIAN.HTM gaussianE.js gaussianE.wasm ecmWW.js
-perl replaceEmbeddedJSAnd.pl %1 assets\gaussian.html gaussianEA.js
+perl replaceEmbeddedJSAnd.pl %1 assets\gaussian.html gaussianEA.js calc_privacy.html
 java -jar %compilerName% -D lang=1 %compilerOptions% --js cache.js --js calccode.js %gaussianJS% --js worker.js --js_output_file gaussianS.js
 @if errorlevel 1 goto end
 java -jar %compilerName% -D lang=1 %compilerOptionsAnd% %gaussianJS% --js workerAndroid.js --js_output_file gaussianSA.js
@@ -261,7 +261,7 @@ java -jar %compilerName% -D lang=1 %compilerOptionsAnd% %gaussianJS% --js worker
 copy GAUSIANO.HTM toweb
 copy GAUSIANO.HTM "assets\gausiano.html"
 perl replaceEmbeddedJS.pl %1 toweb\GAUSIANO.HTM gaussianS.js gaussianS.wasm ecmWW.js
-perl replaceEmbeddedJSAnd.pl %1 "assets\gausiano.html" gaussianSA.js
+perl replaceEmbeddedJSAnd.pl %1 "assets\gausiano.html" gaussianSA.js privacidad_calc.html
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js cache.js --js calccode.js --js ecmNoAndroid.js %ecmJS% --js worker.js --js_output_file ecmE.js
 @if errorlevel 1 goto end
@@ -270,7 +270,7 @@ java -jar %compilerName% -D lang=0 %compilerOptionsAnd% --js ecmAndroid.js %ecmJ
 copy ECM.HTM toweb
 copy ECM.HTM assets\ecm.html
 perl replaceEmbeddedJS.pl %1 toweb\ECM.HTM ecmE.js ecmE.wasm ecmWW.js
-perl replaceEmbeddedJSAnd.pl %1 assets\ecm.html ecmEA.js
+perl replaceEmbeddedJSAnd.pl %1 assets\ecm.html ecmEA.js calc_privacy.html
 java -jar %compilerName% -D lang=1 %compilerOptions% --js cache.js --js calccode.js --js ecmNoAndroid.js %ecmJS% --js worker.js --js_output_file ecmS.js
 @if errorlevel 1 goto end
 java -jar %compilerName% -D lang=1 %compilerOptionsAnd% --js ecmAndroid.js %ecmJS% --js workerAndroid.js --js_output_file ecmSA.js
@@ -279,7 +279,7 @@ java -jar %compilerName% %compilerOptions% --js ecmfwebw.js --js commonwebw.js -
 copy ECMC.HTM toweb
 copy ECMC.HTM "assets\ecmc.html"
 perl replaceEmbeddedJS.pl %1 toweb\ECMC.HTM ecmS.js ecmS.wasm ecmWW.js
-perl replaceEmbeddedJSAnd.pl %1 "assets\ecmc.html" ecmSA.js
+perl replaceEmbeddedJSAnd.pl %1 "assets\ecmc.html" ecmSA.js privacidad_calc.html
 copy calculatorSW.js toweb\calcSW.js
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js cache.js --js calccode.js %quadJS% --js worker.js --js_output_file quadE.js
@@ -289,7 +289,7 @@ java -jar %compilerName% -D lang=0 %compilerOptionsAnd% %quadJS% --js workerAndr
 copy QUAD.HTM toweb
 copy QUAD.HTM assets\quad.html
 perl replaceEmbeddedJS.pl %1 toweb\QUAD.HTM quadE.js quadE.wasm ecmWW.js
-perl replaceEmbeddedJSAnd.pl %1 assets\quad.html quadEA.js
+perl replaceEmbeddedJSAnd.pl %1 assets\quad.html quadEA.js calc_privacy.html
 java -jar %compilerName% -D lang=1 %compilerOptions% --js cache.js --js calccode.js %quadJS% --js worker.js --js_output_file quadS.js
 @if errorlevel 1 goto end
 java -jar %compilerName% -D lang=1 %compilerOptionsAnd% %quadJS% --js workerAndroid.js --js_output_file quadSA.js
@@ -297,7 +297,7 @@ java -jar %compilerName% -D lang=1 %compilerOptionsAnd% %quadJS% --js workerAndr
 copy CUAD.HTM toweb
 copy CUAD.HTM "assets\cuad.html"
 perl replaceEmbeddedJS.pl %1 toweb\CUAD.HTM quadS.js quadS.wasm ecmWW.js
-perl replaceEmbeddedJSAnd.pl %1 "assets\cuad.html" quadSA.js
+perl replaceEmbeddedJSAnd.pl %1 "assets\cuad.html" quadSA.js privacidad_calc.html
 
 java -jar %compilerName% %compilerOptions% --js dist.js --js common.js --js_output_file distE.js
 @if errorlevel 1 goto end

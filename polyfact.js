@@ -102,15 +102,6 @@ function dowork(n)
   }
 }
 
-function endFeedback()
-{
-  show("main");
-  hide("feedback");
-  hide("sentOK");
-  hide("notSent");
-  get("poly").focus();   
-}
-
 function getCalcURLs()
 {
   return ["polfactW0000.js",
@@ -122,10 +113,30 @@ function getFormSendValue()
   get("userdata").value = get("poly").value + " (mod " + get("mod").value + ")";
 }
 
-window.onload = function ()
+function popstate(event)
 {
-  get("btnSentOK").onclick = endFeedback;
-  get("btnNotSent").onclick = endFeedback;
+  if (get("feedback").style.display == "block" ||
+      get("sentOK").style.display == "block" ||
+      get("notSent").style.display == "block")
+  {        // End feedback.
+    show("main");
+    hide("feedback");
+    hide("sentOK");
+    hide("notSent");
+    get("poly").focus();   
+  }
+}
+
+function startUp()
+{
+  get("btnSentOK").onclick = function()
+  {
+    history.back();
+  }
+  get("btnNotSent").onclick = function()
+  {
+    history.back();
+  }
   get("stop").disabled = true;
   get("eval").onclick = function ()
   {
@@ -168,7 +179,7 @@ window.onload = function ()
   get("formlink").onclick = clickFormLink;
   get("formcancel").onclick = function ()
   {
-    endFeedback();
+    history.back();
   };
   get("comments").oninput = function(_event)
   {
@@ -258,4 +269,6 @@ window.onload = function ()
   registerServiceWorker();
 };
 getCalculatorCode("polfactW0000.js", workerParam);
+window.addEventListener("load", startUp);
+window.addEventListener("popstate", popstate);
 window["fromWorker"] = fromWorker;

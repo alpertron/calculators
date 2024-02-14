@@ -129,15 +129,6 @@ function dowork(n)
   callWorker(param);
 }
 
-function endFeedback()
-{
-  show("main");
-  hide("feedback");
-  hide("sentOK");
-  hide("notSent");
-  base.focus();   
-}
-
 function getCalcURLs()
 {
   return ["dilogW0000.js",
@@ -151,7 +142,21 @@ function getFormSendValue()
         (lang? "\nMódulo = ": "\nModulus = ") + mod.value;
 }
 
-window.onload = function()
+function popstate(event)
+{
+  if (get("feedback").style.display == "block" ||
+      get("sentOK").style.display == "block" ||
+      get("notSent").style.display == "block")
+  {         // End feedback.
+    show("main");
+    hide("feedback");
+    hide("sentOK");
+    hide("notSent");
+    base.focus();   
+  }
+}
+
+function startUp()
 {
   result = get("result");
   dlog = get("dlog");
@@ -180,8 +185,14 @@ window.onload = function()
       (lang? "<p>Cálculo detenido por el usuario.</p>" :
              "<p>Calculation stopped by user</p>");
   };
-  get("btnSentOK").onclick = endFeedback;
-  get("btnNotSent").onclick = endFeedback;
+  get("btnSentOK").onclick = function()
+  {
+    history.back();
+  }
+  get("btnNotSent").onclick = function()
+  {
+    history.back();
+  }
   helpbtn.onclick = function()
   {
     show("help");
@@ -210,7 +221,7 @@ window.onload = function()
   };
   formcancel.onclick = function()
   {
-    endFeedback();
+    history.back();
   };
   formsend.onclick = formSend;
   currentInputBox = base;
@@ -218,4 +229,6 @@ window.onload = function()
   registerServiceWorker();
 };
 getCalculatorCode("dilogW0000.js", false);
+window.addEventListener("load", startUp);
+window.addEventListener("popstate", popstate);
 window["fromWorker"] = fromWorker;

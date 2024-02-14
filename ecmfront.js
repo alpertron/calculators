@@ -230,9 +230,8 @@ function fromWorker(e)
     hide("BlocklyButtons");
   }
   else if (firstChar === "L")
-  {
-    show("main");
-    hide("blockmode");
+  {   // Exit Blockly mode.
+    history.back();
   }
   else if ((firstChar === "M") || (firstChar === "N"))
   {    // User entered a polynomial. Load calculator to process it.
@@ -256,11 +255,11 @@ function fromWorker(e)
   {
     if (e.substring(1, 2) === "1")
     {
-      show("skip");
+      show("sktest");
     }
     else
     {
-      hide("skip");
+      hide("sktest");
     }
   }
   else
@@ -272,7 +271,6 @@ function fromWorker(e)
       statusDirty = true;
       statusText = "";
       styleButtons("inline", "none");  // Enable eval and factor
-      hide("modal-more");
       if (firstChar === "A" || firstChar === "B")
       {
         tofile = e.substring(1);
@@ -398,7 +396,6 @@ function dowork(n)
 
 function restartFactorization(type)
 {
-  hide("modal-more");
   endWorker();
   dowork(type);
 }
@@ -419,15 +416,6 @@ function updateVerbose(isVerbose)
       cssRules[index >> 0].style["display"] = (isVerbose? "none": "inline");
     }
   }
-}
-
-function endFeedback()
-{
-  show("main");
-  hide("feedback");
-  hide("sentOK");
-  hide("notSent");
-  value.focus();   
 }
 
 function fromBlocklyRun(xml)
@@ -474,6 +462,40 @@ function initBlockly()
 function getFormSendValue()
 {
   get("userdata").value = "\n" + value.value + "\n" + divResult.innerHTML + "\n" + get("status").innerHTML;
+}
+
+function popstate(event)
+{     
+  if (get("feedback").style.display == "block" ||     
+      get("sentOK").style.display == "block" ||     
+      get("notSent").style.display == "block")     
+  {     // End feedback. 
+    show("main");
+    hide("feedback");
+    hide("sentOK");
+    hide("notSent");
+    value.focus();   
+  }
+  else if (get("wizard").style.display == "block")
+  {     // End wizard.
+    show("main");
+    hide("wizard");
+    get("value").focus();
+  }
+  else if (get("blockmode").style.display == "flex")
+  {     // End blockly mode.
+    document.activeElement.blur();
+    show("main");
+    hide("blockmode");
+  }
+  else if (get("modal-more").style.display == "block")
+  {     // End "more" mode.
+    hide("modal-more");
+  }
+  else if (get("modal-config").style.display == "block")
+  {     // End configuration mode.
+    hide("modal-config");
+  }
 }
 
 function startUp()
@@ -523,6 +545,8 @@ function startUp()
   };
   btnMore.onclick = function()
   {
+    get("ncurve").disabled = false;
+    history.pushState({id: 4}, "", location.href);
     show("modal-more");
   };
   btnConfig.onclick = function()
@@ -532,6 +556,7 @@ function startUp()
     chkPretty.checked = (config.substring(2,3) === "1");
     chkCunningham.checked = (config.substring(3,4) === "1");  
     chkHex.checked = (config.substring(4,5) === "1");
+    history.pushState({id: 5}, "", location.href);
     show("modal-config");
   };
   btnFromFile.onclick = function()
@@ -557,6 +582,7 @@ function startUp()
   {
     hide("main");
     get("blockmode").style.display = "flex";
+    history.pushState({id: 3}, "", location.href);
     if (bmodeLoaded === 0)
     {
       initBlockly();
@@ -565,9 +591,7 @@ function startUp()
   };
   get("exitBlockly").onclick = function()
   {
-    document.activeElement.blur();
-    show("main");
-    hide("blockmode");
+    history.back();
   };
   btnOpenWizard.onclick = function()
   {
@@ -575,6 +599,7 @@ function startUp()
     show("wizard");
     show("mode");
     get("oneexpr").checked = true;
+    history.pushState({id: 2}, "", location.href);
     btnNext.disabled = true;
     wzdInput.value = "";
     wzdInput.focus();
@@ -583,8 +608,14 @@ function startUp()
     oneexpr();
   };
   wzdInput.onkeydown = keyDownOnWizard;
-  get("btnSentOK").onclick = endFeedback;
-  get("btnNotSent").onclick = endFeedback;
+  get("btnSentOK").onclick = function()
+  {
+    history.back();    // End feedback.
+  }
+  get("btnNotSent").onclick = function()
+  {
+    history.back();    // End feedback.
+  }
   get("oneexpr").onclick = function()
   {
     oneexpr();
@@ -597,35 +628,39 @@ function startUp()
   wzdInput.oninput = typedOnWizard;
   get("cancel").onclick = function()
   {
-    show("main");
-    hide("wizard");
-    get("value").focus();
-  };
+    history.back();   // Close configuration mode.
+  }
   get("close-config").onclick = function()
   {
-    hide("modal-config");
+    history.back();   // Close configuration mode.
   };
   get("cancel-config").onclick = function()
   {
-    hide("modal-config");
+    history.back();   // Close configuration mode.
   };
   get("save-config").onclick = function()
   {
     saveConfig(false);
     updateVerbose(chkVerbose.checked);
-    hide("modal-config");
+    history.back();   // Close configuration mode.
   };
   get("close-more").onclick = function()
   {
-    hide("modal-more");
+    history.back();   // Close "more" mode.
   };
   get("ncurve").onclick = function()
   {
+    history.back();   // Close "more" mode.
     restartFactorization(-2);
   };
   get("nfactor").onclick = function()
   {
+    history.back();   // Close "more" mode.
     restartFactorization(-4);
+  };
+  newCurveOrFactor.oninput = function(event)
+  {     // Curve number cannot be greater than 100 000 000.
+    get("ncurve").disabled = (newCurveOrFactor.value.length >= 9);
   };
   newCurveOrFactor.onkeydown = function(event)
   {
@@ -650,7 +685,7 @@ function startUp()
     }
     else if (key === "Esc" || key === "Escape")
     {
-      hide("modal-more");
+      history.back();                  // Close "More" mode.
       return;
     }
     if (acceptedKeys.indexOf(","+key+",") < 0)
@@ -662,7 +697,7 @@ function startUp()
   {
     endWorker();
     styleButtons("inline", "none");      // Enable eval and factor
-    hide("skip");    // Hide button if it is present during factorization.
+    hide("sktest");    // Hide button if it is present during factorization.
     resultDirty = true;
     resultText += (lang ? "<p>Cálculo detenido por el usuario.</p>" :
                           "<p>Calculation stopped by user</p>");
@@ -734,9 +769,9 @@ function startUp()
       helphelpStyle.display = resultStyle.display = "none";
     }
   };
-  get("skiptest").onclick = function()
+  get("skptest").onclick = function()
   {
-    hide("skip");
+    hide("sktest");
     restartFactorization(4);
   };
   get("continue").onclick = function()
@@ -747,7 +782,7 @@ function startUp()
   get("formlink").onclick = clickFormLink;
   get("formcancel").onclick = function()
   {
-    endFeedback();
+    history.back();
   };
   get("funccat").onchange = function()
   {
@@ -918,4 +953,5 @@ function startUp()
 }
 getCalculatorCode("ecmW0000.js", workerParam);
 window.addEventListener("load", startUp);
+window.addEventListener("popstate", popstate);
 window["fromWorker"] = fromWorker;

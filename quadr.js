@@ -155,13 +155,6 @@ function moveNext(e, curr, next)
   }
 }
 
-function endFeedback()
-{
-  show("main");
-  hide("feedback");
-  get("coefA").focus();   
-}
-
 function getCalcURLs()
 {
   return ["quadW0000.js",
@@ -176,8 +169,30 @@ function getFormSendValue()
                      "\ne = " + get("coefE").value.trim() + "\nf = " + get("coefF").value.trim();  
 }
 
-window.onload = function()
+function popstate(event)
 {
+  if (get("feedback").style.display == "block" ||
+      get("sentOK").style.display == "block" ||
+      get("notSent").style.display == "block")
+  {           // End feedback.
+    show("main");
+    hide("feedback");
+    hide("sentOK");
+    hide("notSent");
+    get("coefA").focus();   
+  }
+}
+
+function startUp()
+{
+  get("btnSentOK").onclick = function()
+  {
+    history.back();
+  }
+  get("btnNotSent").onclick = function()
+  {
+    history.back();
+  }
   get("stop").disabled = true;
   get("solve").onclick = function()
   {
@@ -262,12 +277,18 @@ window.onload = function()
   get("formlink").onclick = clickFormLink;
   get("formcancel").onclick = function()
   {
-    endFeedback();
+    history.back();
+  };
+  get("comments").oninput = function(_event)
+  {
+    get("formsend").disabled = (get("comments").value === "");
   };
   get("formsend").onclick = formSend;
   currentInputBox = get("coefA");
   generateFuncButtons("funccat", "funcbtns");
   registerServiceWorker();
 };
+window.addEventListener("load", startUp);
+window.addEventListener("popstate", popstate);
 getCalculatorCode("quadW0000.js", false);
 window["fromWorker"] = fromWorker;

@@ -261,15 +261,6 @@ function oneexpr()
   setWizardStep(9);
 }
 
-function endFeedback()
-{
-  show("main");
-  hide("feedback");
-  hide("sentOK");
-  hide("notSent");
-  get("num").focus();
-}
-
 function getFormSendValue()
 {
   let userdata = get("userdata");
@@ -280,6 +271,27 @@ function getFormSendValue()
   else
   {     // Continued fraction application.
     userdata.value = "\nnum = " + get("num").value + "\ndelta = " + get("delta").value + "\nden = " + get("den").value;         
+  }
+}
+
+function popstate(event)
+{
+  if (get("feedback").style.display == "block" ||
+      get("sentOK").style.display == "block" ||
+      get("notSent").style.display == "block")
+  {         // End feedback.
+    show("main");
+    hide("feedback");
+    hide("sentOK");
+    hide("notSent");
+    get("num").focus();
+  }
+  else if (get("wizard") != null &&
+           get("wizard").style.display == "block")
+  {         // End wizard.
+    show("main");
+    hide("wizard");
+    get("num").focus();
   }
 }
 
@@ -317,8 +329,14 @@ function startUp()
       }
     };
   }
-  get("btnSentOK").onclick = endFeedback;
-  get("btnNotSent").onclick = endFeedback;
+  get("btnSentOK").onclick = function()
+  {
+    history.back();
+  }
+  get("btnNotSent").onclick = function()
+  {
+    history.back();
+  }
   get("calc").onclick = function()
   {
     performCalc(0);
@@ -350,6 +368,7 @@ function startUp()
       get("decW").checked = !get("hexW").checked;
       get("wzdinput").value = "";
       get("wzdinput").focus();
+      history.pushState({id: 2}, "", location.href);
       oneexpr();
     };
     get("wzdinput").onkeydown = keyDownOnWizard;
@@ -365,9 +384,7 @@ function startUp()
     get("wzdinput").oninput = typedOnWizard;
     get("cancel").onclick = function()
     {
-      show("main");
-      hide("wizard");
-      get("num").focus();
+      history.back();
     };
   }
   if (get("stop") !== null)
@@ -415,7 +432,7 @@ function startUp()
   get("formlink").onclick = clickFormLink;
   get("formcancel").onclick = function()
   {
-    endFeedback();
+    history.back();
   };
   get("funccat").onchange = function()
   {
@@ -465,4 +482,5 @@ function startUp()
 }
 getCalculatorCode("fsquaresW0000.js", false);
 window.addEventListener("load", startUp);
+window.addEventListener("popstate", popstate);
 window["fromWorker"] = fromWorker;

@@ -59,8 +59,8 @@ nav::after {clear:both}
 }
 #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
-#skipc a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
-#skipc a:focus {position:absolute;	left:0px;	top:0px; outline-color:transparent; transition: top .1s ease-in}
+#skip a {padding:6px; position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
+#skip a:focus {position:absolute; left:0px; top:0px; outline-color:transparent; transition: top .1s ease-in}
 .bread {padding:0px;list-style:none; display:inline-block}
 .bread li {display:inline}
 .bread li+li:before {content:"›"}
@@ -75,6 +75,7 @@ h2 > button.active:after {content:"\2212"}
 html {height:100%}
 body {font-family: Arial, sans-serif; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000; min-height:100%}
 h1, .h2title {text-align:center}
+#actions input[type=button] {color: white; background-color: #3b3b3b}
 fieldset {display:inline; padding-inline-start:0.3em; padding-inline-end:0.3em}
 #functions {max-width:50%}
 .lf,.labels {padding:0.2em; clear:both}
@@ -88,7 +89,7 @@ fieldset {display:inline; padding-inline-start:0.3em; padding-inline-end:0.3em}
 #blocklyDiv {position:absolute; color:initial; background-color:initial}
 #bfilename {width: 10em}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px}
-#savefile,#getFile,#lgetFile,#cont,#wizard,#feedback,#more,#stop,#skip,#sharediv,#BlocklyErrors {display:none}
+#savefile,#getFile,#lgetFile,#cont,#wizard,#feedback,#more,#stop,#sktest,#sharediv,#BlocklyErrors {display:none}
 #digits {width:5em}
 #value {white-space:pre;overflow-wrap:normal;overflow:auto}
 .inline {display:inline}
@@ -713,7 +714,7 @@ input:disabled {color: #808080; background-color: #606060}
 </noscript>
 </head>
 <body>
-<div id="skipc"><a href="#main">Skip to main content</a></div>
+<div id="skip"><a href="#main">Skip to main content</a></div>
 <nav aria-label="Main navigation">
 <ul role="menubar">
 <li role="menuitem" aria-haspopup="true" aria-expanded="false" tabindex="0">Electronics
@@ -988,14 +989,14 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
 </div>
-<p>Written by Dario Alpern. Last updated 11 February 2024.</p>
+<p>Written by Dario Alpern. Last updated 13 February 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
 <div id="status"></div>
 <div id="sharediv" class="pad"><button id="share" type="button">Share factorization!</button></div>
-<div id="skip" class="pad">
-<input type="button" id="skiptest" value="Skip test" title="Skip primality test">
+<div id="sktest" class="pad">
+<input type="button" id="skptest" value="Skip test" title="Skip primality test">
 </div>
 <div id="savefile" class="pad">
 <input type="button" id="tofile" value="Save results to file" title="Save the results to an external file">
