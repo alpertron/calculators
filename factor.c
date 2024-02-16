@@ -1819,7 +1819,7 @@ void factorExt(const BigInteger *toFactor, const int *number,
       *ptrCharFound = 0;
       diffPtrs = ptrCharFound - ptrKnownFactors;
       Dec2Bin(ptrKnownFactors, prime.limbs, (int)diffPtrs, &prime.nbrLimbs);
-      NumberLength = (int)diffPtrs;
+      NumberLength = prime.nbrLimbs;  // Set number of limbs.
       BigInteger2IntArray(pstFactors->ptrFactor, &prime);
       ptrKnownFactors = ptrCharFound + 1;
       if (getNextInteger(&ptrKnownFactors, &pstCurFactor->multiplicity, '('))
