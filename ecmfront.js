@@ -274,6 +274,20 @@ function fromWorker(e)
       if (firstChar === "A" || firstChar === "B")
       {
         tofile = e.substring(1);
+        const regexVerbose = /\<span class=\"verbose\">(.*?)\<\/span>/g;
+        const regexSpan = /\<span(.*?)>(.*?)\<\/span>/g;
+        const regexAbbr = /\<abbr(.*?)>(.*?)\<\/abbr>/g;
+        if (config.charAt(1) == "1")
+        {    // Discard HTML tags for verbose mode.
+          tofile = tofile.replace(regexVerbose, "$1").
+                          replace(regexAbbr, "$2").
+                          replace(regexSpan, "$2");
+        }
+        else
+        {    // Discard HTML tags for non-verbose mode.
+          tofile = tofile.replace(regexVerbose, "").
+                          replace(regexSpan, "$2");
+        }        
         show("savefile");
         resultText = "";
       }
