@@ -93,7 +93,8 @@ if (lang)
 {
   funcnames =
   [
-    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(,Variable,x,Contador,c",
+    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(",
+    "Variable,x,Inicializar variable,x=,Variable es menor que,x<,Variable es menor o igual que,x<=,Contador,c,Contador es menor que,c<,Contador es menor o igual que,c<=,Separador,;",
     "Igual,=,Distinto,!=,Mayor,>,Menor o igual,<=,Menor,<,Mayor o igual,>=",
     "Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT ,Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ",
     "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD(,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM(,¿El valor es primo?,IsPrime(,Cantidad de factores primos,NumFact(,menor divisor primo,MinFact(,mayor divisor primo,MaxFact(,Cantidad de divisores,NumDivs(,Suma de divisores,SumDivs(",
@@ -107,7 +108,8 @@ else
 {
   funcnames =
   [
-    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt(,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(,Variable,x,Counter,c",
+    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt(,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(",
+    "Variable,x,Initialize variable,x=,Variable is less than,x<,Variable is less or equal than,x<=,Counter,c,Counter is less than,c<,Counter is less or equal than,c<=,Separator,;",
     "Equal,=,Not equal,!=,Greater,>,Not greater,<=,Less,<,Not less,>=",
     "Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ,Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ",
     "Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(,Number of prime factors,NumFact(,smallest prime divisor,MinFact(,greatest prime divisor,MaxFact(,Number of divisors,NumDivs(,Sum of divisors,SumDivs(",

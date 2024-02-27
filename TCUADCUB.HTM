@@ -59,7 +59,7 @@ nav::after {clear:both}
 @media (min-width: 400px) { nav { font-size:1em;} }
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
-@media print {nav .footer {display:none;}}
+@media print {nav, #footer {display:none}}
 #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
@@ -67,23 +67,25 @@ nav::after {clear:both}
 .bread {padding:0px;list-style:none; display:inline-block;}
 .bread li {display:inline}
 .bread li+li:before {content:"›"}
+.inputact {display:flex; justify-content: space-between}
 body {font-family: Arial, sans-serif; margin: 0; padding: 0;}
 h1, .h2title {text-align:center}
 #actions button, #actions input[type=button] {color: white; background-color: #3b3b3b}
 fieldset {display:inline}
 #functions {max-width:50%}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
-.atright {float:right;}
+.atright {float:right}
 .funcbtn {margin:3px}
 #num {white-space:pre;overflow-wrap:normal;overflow:auto;margin:5px;width:100%;padding:3px}
 #stop, #cont, #wizard, #feedback {display:none}
 .lf,.labels {padding:0.2em; clear:both; width:100%}
 .offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
-.bigger {font-size:150%;}
-.pad {padding:10px;}
+.bigger {font-size:150%}
+.pad, #footer {padding:10px}
 .hex {font-family: Courier, "Lucida Console", monospace}
-.und {text-decoration: underline;}
-.newline {clear:both;}
+.und {text-decoration: underline}
+.newline {clear:both}
+.diginput {width:7em}
 @media (min-width: 400px) {.input {width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
 @media (max-width: 400px) {.input {width:100%;padding:3px;margin:0px;}}
 @media (max-width: 53em) {
@@ -171,25 +173,34 @@ input:disabled {color: #808080; background-color: #606060}
 <fieldset id="actions"><legend>Acciones</legend>
 <button type="button" id="calc" title="Hallar suma de dos cuadrados y un cubo."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup>3</sup></button>
 <button type="button" id="calc5" title="Hallar suma de dos cuadrados y una potencia quinta."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup>5</sup></button>
-<button type="button" id="calc7" title="Hallar suma de dos cuadrados y una potencia séptima."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup>7</sup></button>
+<button type="button" id="calcN" title="Hallar suma de dos cuadrados y una potencia impar."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup><var>n</var></sup></button>
 <input type="button" id="stop" value="Parar" title="Detener cálculo">
 <input type="button" id="helpbtn" value="Ayuda" title="Leer información sobre la calculadora">
 <input type="button" id="openwizard" value="Asistente" title="Facilitar el ingreso de expresiones y ciclos">
 <div class="lf"></div>
-<label for="digits">Dígitos por grupo:</label>
-<input type="number" id="digits" value="6">
+<div class="inputact">
+<div>
+<label for="digits">Dígitos por grupo:</label><br>
+<input type="number" id="digits" class="diginput" value="6">
+</div>
+<div>
+<label for="digits"><var>n</var> (impar):</label><br>
+<input type="number" id="expon" class="diginput" value="7">
+</div>
+</div>
 </fieldset>
 <fieldset id="functions"><legend>Funciones</legend>
 <label for="funccat">Categorías:</label> 
 <select id="funccat">
 <optgroup label="Funciones u operadores">
 <option value="0" selected>Matemática básica</option>
-<option value="1">Comparaciones</option>
-<option value="2">Lógica</option>
-<option value="3">Divisibilidad</option>
-<option value="4">Matemática recreativa</option>
-<option value="5">Teoría de números</option>
-<option value="6">Otros</option>
+<option value="1">Procesamiento en lotes</option>
+<option value="2">Comparaciones</option>
+<option value="3">Lógica</option>
+<option value="4">Divisibilidad</option>
+<option value="5">Matemática recreativa</option>
+<option value="6">Teoría de números</option>
+<option value="7">Otros</option>
 </optgroup>
 </select>
 <span id="funcbtns">
@@ -293,7 +304,7 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <h2>Código fuente</h2>
 <p>Se puede bajar el código fuente de este programa desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 22 de febrero de 2024.</p>
+<p>Escrito por Dario Alpern. Actualizado el 27 de febrero de 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -302,8 +313,11 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <div id="cont" class="pad">
 <input type="button" id="continue" value="Continuar">
 </div>
+<div id="footer">
 <p>Si encuentra algún error o tiene algún comentario, por favor llene el <a href="#" id="formlink">formulario</a>.</p>
 <p>Si le gustan estas calculadoras y desea soportar el software libre sin propagandas molestas, puede <a href="https://www.PayPal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MR65QPWZM5JT6&source=url&locale.x=es_ES">donar a través de PayPal</a>.</p>
+<p>Puedes instalar una aplicación para Android que incluye esta calculadora desde <a href="https://play.google.com/store/apps/details?id=ar.com.alpertron.calculators">Google Play</a>.</p>
+</div>
 </article>
 </main>
 <aside id="wizard" aria-label="Asistente">

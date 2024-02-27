@@ -30,13 +30,11 @@ static BigInteger valueN;
 static BigInteger powerN;
 static BigInteger toProcess;
 static int groupLength;
-static const char* cube = "<span class=\"bigger\">³</span>";
-static const char* fifth = "<sup>5</sup>";
-static const char* seventh = "<sup>7</sup>";
 static const char* powerStr;
 static void batchSqCubesCallback(char** pptrOutput, int type);
 static int power4;
 static int Exponent = 3;
+static char bigExponText[20];
 
 static bool checkSumOfTwoSquares(const BigInteger *pArgument, int expon)
 {
@@ -119,12 +117,29 @@ static int tsqcubes(const BigInteger *pArgument, int expon)
   return 0;
 }
 
-void tsqcubesText(char *input, int grpLen)
+void tsqcubesText(char *input, int grpLen, int expon)
 {
   char *ptrOutput;
   if (valuesProcessed == 0)
   {
     groupLength = grpLen;
+  }
+  if (expon > 0)
+  {
+    Exponent = expon;
+  }
+  if (Exponent == 3)
+  {
+    powerStr = "<span class=\"bigger\">³</span>";
+  }
+  else
+  {
+    char* ptrBigExponText = bigExponText;
+    copyStr(&ptrBigExponText, "<sup>");
+    int2dec(&ptrBigExponText, Exponent);
+    copyStr(&ptrBigExponText, "</sup>");
+    *ptrBigExponText = 0;
+    powerStr = bigExponText;
   }
   (void)BatchProcessing(input, &toProcess, &ptrOutput, NULL, batchSqCubesCallback);
 #ifdef __EMSCRIPTEN__
@@ -240,40 +255,27 @@ static void batchSqCubesCallback(char **pptrOutput, int type)
   *pptrOutput = ptrOutput;
 }
 
-void assignExponent(char c)
-{
-  switch (c)
-  {
-  case '0':
-    Exponent = 3;
-    powerStr = cube;
-    break;
-  case '1':
-    Exponent = 5;
-    powerStr = fifth;
-    break;
-  default:
-    Exponent = 7;
-    powerStr = seventh;
-    break;
-  }
-}
-
 #if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
 EXTERNALIZE void doWork(void)
 {
+  int expon;
   int app;
   int grpLen = 0;
   char* ptrData = inputString;
   originalTenthSecond = tenths();
   if (*ptrData == 'C')
   {    // User pressed Continue button.
-    tsqcubesText(NULL, 0); // Routine does not use parameters in this case.
+    tsqcubesText(NULL, 0, -1); // Routine does not use parameters in this case.
     databack(output);
     return;
   }
-  assignExponent(*ptrData);
-  ptrData += 2;   // Skip from and comma.
+  expon = 0;
+  while (*ptrData != ',')
+  {
+    expon = (expon * 10) + (*ptrData - '0');
+    ptrData++;
+  }
+  ptrData++;        // Skip comma.
   valuesProcessed = 0;
   while (*ptrData != ',')
   {
@@ -298,7 +300,7 @@ EXTERNALIZE void doWork(void)
   {
     hexadecimal = false;
   }
-  tsqcubesText(ptrData + 2, grpLen);
+  tsqcubesText(ptrData + 2, grpLen, expon);
   databack(output);
 }
 #endif

@@ -313,16 +313,16 @@ gcovr --json run-4.json
 make clean
 make tsqcubes flags_coverage=--coverage
 echo -e "\n\n**** TSQCUBES ****" >> coverage.out
-./tsqcubes "-2" 0 >> coverage.out
-./tsqcubes "10**150" 0 >> coverage.out
-./tsqcubes "10**150" 1 >> coverage.out
-./tsqcubes "10**150" 2 >> coverage.out
-./tsqcubes "10**30000" 0 >> coverage.out
-./tsqcubes "3**100+3**76" 0 >> coverage.out
-./tsqcubes "2**60+500000**2" 0 >> coverage.out
-./tsqcubes 0 0 >> coverage.out
-./tsqcubes 27 0 >> coverage.out
-./tsqcubes "10**200+54154255642" 0 >> coverage.out
+./tsqcubes "-2" 3 >> coverage.out
+./tsqcubes "10**150" 3 >> coverage.out
+./tsqcubes "10**150" 5 >> coverage.out
+./tsqcubes "10**150" 7 >> coverage.out
+./tsqcubes "10**30000" 3 >> coverage.out
+./tsqcubes "3**100+3**76" 3 >> coverage.out
+./tsqcubes "2**60+500000**2" 3 >> coverage.out
+./tsqcubes 0 3 >> coverage.out
+./tsqcubes 27 3 >> coverage.out
+./tsqcubes "10**200+54154255642" 3 >> coverage.out
 lcov --capture --directory . --output-file fsquares.info
 gcovr --json run-5.json
 make clean

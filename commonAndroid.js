@@ -18,6 +18,7 @@
 */
 /* global Android */
 /* global fileContents */
+/* global get */
 function setStorage(name, data)
 {
   Android.setStorage(name, data);
@@ -35,4 +36,5 @@ function getCalculatorCode(fileName, workerParam)
 
 function registerServiceWorker()
 {
+  get("appver").value = Android.getAppVer();
 }

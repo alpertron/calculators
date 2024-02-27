@@ -58,7 +58,7 @@ nav::after {clear:both}
 @media (min-width: 400px) {nav {font-size:1em}}
 @media (min-width: 500px) {#formleft {float:left;width:50%} #formright {float:right;width:50%}}
 }
-@media only print {nav {display:none}}
+@media only print {nav, #footer {display:none}}
 #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
@@ -244,12 +244,13 @@ input:disabled {color: #808080; background-color: #606060}
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de ecuaciones cuadráticas modulares desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 22 de febrero de 2024.</p>
+<p>Escrito por Dario Alpern. Actualizado el 27 de febrero de 2024.</p>
 </div>
 <div id="result" aria-live="polite"></div>
-<div>
+<div id="footer">
 <p>Si encuentra algún error o tiene algún comentario, por favor llene el <a href="#" id="formlink">formulario</a>.</p>
 <p>Si le gustan estas calculadoras y desea soportar el software libre sin propagandas molestas, puede <a href="https://www.PayPal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MR65QPWZM5JT6&source=url&locale.x=es_ES">donar a través de PayPal</a>.</p>
+<p>Puedes instalar una aplicación para Android que incluye esta calculadora desde <a href="https://play.google.com/store/apps/details?id=ar.com.alpertron.calculators">Google Play</a>.</p>
 </div>
 </article>
 </main>

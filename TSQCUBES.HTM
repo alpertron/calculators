@@ -59,7 +59,7 @@ nav::after {clear:both}
 @media (min-width: 400px) { nav { font-size:1em;} }
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
-@media print {nav .footer {display:none;}}
+@media print {nav, #footer {display:none;}}
 #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
@@ -67,6 +67,7 @@ nav::after {clear:both}
 .bread {padding:0px;list-style:none; display:inline-block;}
 .bread li {display:inline}
 .bread li+li:before {content:"›"}
+.inputact {display:flex; justify-content: space-between}
 body {font-family: Arial, sans-serif; margin: 0; padding: 0;}
 h1, .h2title {text-align:center}
 #actions button, #actions input[type=button] {color: white; background-color: #3b3b3b}
@@ -79,15 +80,16 @@ fieldset {display:inline}
 #stop, #cont, #wizard, #feedback {display:none}
 .lf,.labels {padding:0.2em; clear:both; width:100%}
 .offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
-.bigger {font-size:150%;}
-.pad {padding:10px;}
+.bigger {font-size:150%}
+.pad, #footer {padding:10px}
 .hex {font-family: Courier, "Lucida Console", monospace}
-.und {text-decoration: underline;}
-.newline {clear:both;}
+.und {text-decoration: underline}
+.newline {clear:both}
+.diginput {width:7em}
 @media (min-width: 400px) {.input {width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
 @media (max-width: 400px) {.input {width:100%;padding:3px;margin:0px;}}
 @media (max-width: 53em) {
-.applet {display: flex; flex-direction: column;}
+.applet {display: flex; flex-direction: column}
 #inputs {order:2}
 #actions {order:1}
 #functions {order:3; max-width:100%}
@@ -99,7 +101,7 @@ a {color: #a3d4a7}
 a:link,a:active {color: #a3d4a7}
 a:hover {color: #f5cba7}
 a:visited {color: #d7bde2}
-input, textarea, #calc, #calc5, #calc7 {color: white; background-color: #3b3b3b}
+input, textarea, #calc, #calc5, #calcN {color: white; background-color: #3b3b3b}
 input:disabled {color: #808080; background-color: #606060}
 }
 </style>
@@ -170,25 +172,34 @@ input:disabled {color: #808080; background-color: #606060}
 <fieldset id="actions"><legend>Actions</legend>
 <button type="button" id="calc" title="Find sums of two squares and a cube."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup>3</sup></button>
 <button type="button" id="calc5" title="Find sums of two squares and a fifth power."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup>5</sup></button>
-<button type="button" id="calc7" title="Find sums of two squares and a seventh power."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup>7</sup></button>
+<button type="button" id="calcN" title="Find sums of two squares and an odd power."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup><var>n</var></sup></button>
 <input type="button" id="stop" value="Stop" title="Stop calculation">
 <input type="button" id="helpbtn" value="Help" title="Read information about this calculator">
 <input type="button" id="openwizard" value="Wizard" title="Enter expressions and loops in an easy way">
 <div class="lf"></div>
-<label for="digits">Digits per group:</label>
-<input type="number" id="digits" value="6">
+<div class="inputact">
+<div>
+<label for="digits">Digits per group:</label><br>
+<input type="number" id="digits" class="diginput" value="6">
+</div>
+<div>
+<label for="digits"><var>n</var> (odd):</label><br>
+<input type="number" id="expon" class="diginput" value="7">
+</div>
+</div>
 </fieldset>
 <fieldset id="functions"><legend>Functions</legend>
 <label for="funccat">Category:</label> 
 <select id="funccat">
 <optgroup label="Functions or operators">
 <option value="0" selected>Basic Math</option>
-<option value="1">Comparisons</option>
-<option value="2">Logic</option>
-<option value="3">Divisibility</option>
-<option value="4">Recreational Math</option>
-<option value="5">Number Theory</option>
-<option value="6">Other</option>
+<option value="1">Batch processing</option>
+<option value="2">Comparisons</option>
+<option value="3">Logic</option>
+<option value="4">Divisibility</option>
+<option value="5">Recreational Math</option>
+<option value="6">Number Theory</option>
+<option value="7">Other</option>
 </optgroup>
 </select>
 <span id="funcbtns">
@@ -293,7 +304,7 @@ The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <h2>Source code</h2>
 <p>You can download the source of the this program from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 22 February 2024.</p>
+<p>Written by Dario Alpern. Last updated 27 February 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -302,10 +313,10 @@ The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <div id="cont" class="pad">
 <input type="button" id="continue" value="Continue" title="Show more results. Pressing this button will delete old results.">
 </div>
-<div class="footer pad">
+<div id="footer">
 <p>If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
 <p>If you like these calculators and you want to support free software with no annoying advertisements, you can <a href="https://www.PayPal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MR65QPWZM5JT6&source=url">donate through PayPal</a>.</p>
-</div>
+<p>You can download an application for Android that includes this calculator from <a href="https://play.google.com/store/apps/details?id=ar.com.alpertron.calculators">Google Play</a>.</p></div>
 </article>
 </main>
 <aside id="wizard" aria-label="Wizard">

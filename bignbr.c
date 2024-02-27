@@ -622,36 +622,42 @@ void BigIntDivide2(BigInteger *pArg)
 
 enum eExprErr BigIntMultiplyPower2(BigInteger *pArg, int powerOf2)
 {
-  int ctr;
   int nbrLimbs = pArg->nbrLimbs;
   assert(nbrLimbs >= 1);
+  if (BigIntIsZero(pArg))
+  {    // Nothing to do if number to be shifted is zero.
+    return EXPR_OK;
+  }
   limb *ptrLimbs = pArg->limbs;
   int limbsToShiftLeft = powerOf2 / BITS_PER_GROUP;
-  int bitsToShiftLeft = powerOf2 % BITS_PER_GROUP;
+  unsigned int bitsToShiftLeft = (unsigned int)(powerOf2 % BITS_PER_GROUP);
+  unsigned int bitsToShiftRight = BITS_PER_GROUP - bitsToShiftLeft;
   if ((nbrLimbs + limbsToShiftLeft) >= MAX_LEN)
   {
     return EXPR_INTERM_TOO_HIGH;
   }
-  for (; bitsToShiftLeft > 0; bitsToShiftLeft--)
+  if (bitsToShiftLeft > 0)
   {
     unsigned int carry = 0U;
-    for (ctr = 0; ctr < nbrLimbs; ctr++)
+    for (int ctr = 0; ctr < nbrLimbs; ctr++)
     {
-      carry += (unsigned int)(ptrLimbs + ctr)->x << 1;
-      (ptrLimbs + ctr)->x = UintToInt(carry & MAX_VALUE_LIMB);
-      carry >>= BITS_PER_GROUP;
-    }
-    if (carry != 0U)
-    {
+      unsigned int newCarry = (unsigned int)(ptrLimbs + ctr)->x >> bitsToShiftRight;
+      carry = (((unsigned int)(ptrLimbs + ctr)->x << bitsToShiftLeft) +
+        carry) & MAX_INT_NBR_U;
       (ptrLimbs + ctr)->x = (int)carry;
-      nbrLimbs++;
+      carry = newCarry;
+    }
+    if (carry != 0UL)
+    {
+      (ptrLimbs + nbrLimbs)->x = (int)carry;
+      nbrLimbs++;    // Indicate new significant limb.
     }
   }
-  nbrLimbs += limbsToShiftLeft;
   // Shift left entire limbs.
   if (limbsToShiftLeft > 0)
   {
-    int bytesToMove = (nbrLimbs - limbsToShiftLeft) * (int)sizeof(limb);
+    int bytesToMove = nbrLimbs * (int)sizeof(limb);
+    nbrLimbs += limbsToShiftLeft;
     (void)memmove(&pArg->limbs[limbsToShiftLeft], pArg->limbs, bytesToMove);
     bytesToMove = limbsToShiftLeft * (int)sizeof(limb);
     (void)memset(pArg->limbs, 0, bytesToMove);
@@ -2259,6 +2265,11 @@ void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs)
   int powerOf2 = 0;
   int numLimbs = *pNbrLimbs;
   assert(numLimbs >= 1);
+  if ((numLimbs == 1) && (value->x == 0))
+  {         // Input number is zero. Go out.
+    *pPower4 = 0;
+    return;
+  }
   int index;
   int power2gr;
   unsigned int shRight;

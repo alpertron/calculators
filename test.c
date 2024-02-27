@@ -39,7 +39,6 @@ static char bufferXML[1000000];
 #endif
 void showSumTwoSquares(void);
 void showDivisors(void);
-void assignExponent(char c);
 void dilogText(const char *baseText, const char *powerText, const char *modText, int groupLen);
 void gaussianText(char *valueText, int doFactorization);
 void ecmFrontText(char *tofactorText, bool doFactorization, char *knownFactors);
@@ -462,12 +461,11 @@ int main(int argc, char* argv[])
 #elif DEBUG_CODE == 23
   if (argc != 3)
   {
-    printf("Command line: calculator number expon (use 0 for 3, 1 for 5, 2 for 7)");
+    printf("Command line: calculator number expon (expon must be odd)");
   }
   else
   {
-    assignExponent(argv[2][0]);
-    tsqcubesText(argv[1], 6);
+    tsqcubesText(argv[1], 6, atoi(argv[2]));
     (void)printf("%s\n", output);
   }
 #elif DEBUG_CODE == 24

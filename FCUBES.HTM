@@ -59,7 +59,7 @@ nav::after {clear:both}
 @media (min-width: 400px) { nav { font-size:1em;} }
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
-@media print {nav .footer {display:none;}}
+@media print {nav, #footer {display:none;}}
 #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
@@ -81,7 +81,7 @@ fieldset {display:inline}
 .leftpar::before {content:" parenthesis ";position:absolute;top:-9999px;left:-9999px}
 .rightpar::before {content:" close parenthesis ";position:absolute;top:-9999px;left:-9999px}
 .bigger {font-size:150%;}
-.pad {padding:10px;}
+.pad, #footer {padding:10px;}
 .hex {font-family: Courier, "Lucida Console", monospace}
 .und {text-decoration: underline;}
 .newline {clear:both;}
@@ -182,12 +182,13 @@ input:disabled {color: #808080; background-color: #606060}
 <select id="funccat">
 <optgroup label="Functions or operators">
 <option value="0" selected>Basic Math</option>
-<option value="1">Comparisons</option>
-<option value="2">Logic</option>
-<option value="3">Divisibility</option>
-<option value="4">Recreational Math</option>
-<option value="5">Number Theory</option>
-<option value="6">Other</option>
+<option value="1">Batch processing</option>
+<option value="2">Comparisons</option>
+<option value="3">Logic</option>
+<option value="4">Divisibility</option>
+<option value="5">Recreational Math</option>
+<option value="6">Number Theory</option>
+<option value="7">Other</option>
 </optgroup>
 </select>
 <span id="funcbtns">
@@ -349,7 +350,7 @@ The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old sum of four cubes applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 22 February 2024.</p>
+<p>Written by Dario Alpern. Last updated 27 February 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -358,9 +359,10 @@ The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <div id="cont" class="pad">
 <input type="button" id="continue" value="Continue" title="Show more results. Pressing this button will delete old results.">
 </div>
-<div class="footer pad">
+<div id="footer">
 <p>If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
 <p>If you like these calculators and you want to support free software with no annoying advertisements, you can <a href="https://www.PayPal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MR65QPWZM5JT6&source=url">donate through PayPal</a>.</p>
+<p>You can download an application for Android that includes this calculator from <a href="https://play.google.com/store/apps/details?id=ar.com.alpertron.calculators">Google Play</a>.</p>
 </div>
 </article>
 </main>

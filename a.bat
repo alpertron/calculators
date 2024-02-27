@@ -185,14 +185,14 @@ java -jar %compilerName% -D app=6 %compilerOptionsAnd% %fsquaresJS% --js workerA
 @if errorlevel 1 goto end
 copy TSQCUBES.HTM toweb
 copy TSQCUBES.HTM assets\tsqcubes.html
-perl replaceEmbeddedJS.pl %1 toweb\TSQCUBES.HTM fsquaresE.js fsquaresE.wasm intWW.js
+perl replaceEmbeddedJS.pl %1 toweb\TSQCUBES.HTM fsquaresE.js tsqcubesE.wasm intWW.js
 perl replaceEmbeddedJSAnd.pl %1 assets\tsqcubes.html fsquaresEA.js calc_privacy.html
 java -jar %compilerName% -D app=7 %compilerOptions% --js cache.js --js calccode.js %fsquaresJS% --js worker.js --js_output_file fsquaresS.js
 java -jar %compilerName% -D app=7 %compilerOptionsAnd% %fsquaresJS% --js workerAndroid.js --js_output_file fsquaresSA.js
 @if errorlevel 1 goto end
 copy TCUADCUB.HTM toweb
 copy TCUADCUB.HTM "assets\tcuadcub.html"
-perl replaceEmbeddedJS.pl %1 toweb\TCUADCUB.HTM fsquaresS.js fsquaresS.wasm intWW.js
+perl replaceEmbeddedJS.pl %1 toweb\TCUADCUB.HTM fsquaresS.js tsqcubesS.wasm intWW.js
 perl replaceEmbeddedJSAnd.pl %1 "assets\tcuadcub.html" fsquaresSA.js privacidad_calc.html
 
 java -jar %compilerName% -D lang=0 %compilerOptions% --js cache.js --js calccode.js %polfactJS% --js worker.js --js_output_file polfactE.js
