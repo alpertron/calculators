@@ -18,6 +18,7 @@
 */
 /* global callWorker */
 /* global clickFormLink */
+/* global endCalculation */
 /* global endWorker */
 /* global formSend */
 /* global generateFuncButtons */
@@ -80,6 +81,7 @@ function fromWorker(e)
     get("solve").disabled = false;
     get("steps").disabled = false;
     get("stop").disabled = true;
+    endCalculation();
   }
 }
 

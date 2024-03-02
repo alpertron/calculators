@@ -25,3 +25,7 @@ function getStorage(name)
 {
   return window.localStorage.getItem(name);
 }
+
+function endCalculation()
+{   // Nothing to do.
+}

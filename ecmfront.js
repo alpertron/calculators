@@ -21,6 +21,7 @@
 /* global clickFormLink */
 /* global comingFromPolfact */
 /* global completeFuncButtons */
+/* global endCalculation */
 /* global endWorker */
 /* global formSend */
 /* global generateFuncButtons */
@@ -248,7 +249,7 @@ function fromWorker(e)
   {    // Show sum of squares without button.
     get("sumSquares").innerHTML = e.substring(1);
   }
-   else if (firstChar === "4")
+  else if (firstChar === "4")
   {
     statusDirty = true;
     statusText = e.substring(1);
@@ -308,6 +309,7 @@ function fromWorker(e)
         {
           show("sharediv");
         }
+        endCalculation();
       }
     }
     else

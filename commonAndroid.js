@@ -38,3 +38,8 @@ function registerServiceWorker()
 {
   get("appver").value = Android.getAppVer();
 }
+
+function endCalculation()
+{
+  Android.endCalculation();
+}

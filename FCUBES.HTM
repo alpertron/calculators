@@ -73,18 +73,19 @@ h1, .h2title {text-align:center}
 fieldset {display:inline}
 #functions {max-width:50%}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
-.atright {float:right;}
+.atright {float:right}
 .funcbtn {margin:3px}
 #num {white-space:pre;overflow-wrap:normal;overflow:auto;margin:5px;width:100%;padding:3px}
 #stop, #cont, #wizard, #feedback {display:none}
 .lf,.labels {padding:0.2em; clear:both; width:100%}
 .leftpar::before {content:" parenthesis ";position:absolute;top:-9999px;left:-9999px}
 .rightpar::before {content:" close parenthesis ";position:absolute;top:-9999px;left:-9999px}
-.bigger {font-size:150%;}
-.pad, #footer {padding:10px;}
+.bigger {font-size:150%}
+.pad, #footer {padding:10px}
 .hex {font-family: Courier, "Lucida Console", monospace}
-.und {text-decoration: underline;}
-.newline {clear:both;}
+.und {text-decoration: underline}
+.newline {clear:both}
+.new {color: #0000FF; font-weight:bold}
 @media (min-width: 400px) {.input {width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
 @media (max-width: 400px) {.input {width:100%;padding:3px;margin:0px;}}
 @media (max-width: 53em) {
@@ -102,6 +103,7 @@ a:hover {color: #f5cba7}
 a:visited {color: #d7bde2}
 input, textarea {color: white; background-color: #3b3b3b}
 input:disabled {color: #808080; background-color: #606060}
+.new {color: #E0E000}
 }
 </style>
 <noscript>
@@ -350,7 +352,7 @@ The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old sum of four cubes applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 27 February 2024.</p>
+<p>Written by Dario Alpern. Last updated 2 March 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -360,9 +362,9 @@ The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <input type="button" id="continue" value="Continue" title="Show more results. Pressing this button will delete old results.">
 </div>
 <div id="footer">
+<p><span class="new">New!</span> You can download an application for Android that includes this calculator from <a href="https://play.google.com/store/apps/details?id=ar.com.alpertron.calculators">Google Play</a>.</p>
 <p>If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
 <p>If you like these calculators and you want to support free software with no annoying advertisements, you can <a href="https://www.PayPal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MR65QPWZM5JT6&source=url">donate through PayPal</a>.</p>
-<p>You can download an application for Android that includes this calculator from <a href="https://play.google.com/store/apps/details?id=ar.com.alpertron.calculators">Google Play</a>.</p>
 </div>
 </article>
 </main>

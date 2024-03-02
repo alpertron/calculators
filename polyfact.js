@@ -18,6 +18,7 @@
 */
 /* global callWorker */
 /* global clickFormLink */
+/* global endCalculation */
 /* global endWorker */
 /* global formSend */
 /* global get */
@@ -51,6 +52,7 @@ function fromWorker(e)
     get("stop").disabled = true;
     busy = false;
     result.setAttribute("aria-live", "polite");
+    endCalculation();
   }
   else if (!busy)
   {

@@ -19,6 +19,7 @@
 /* global callWorker */
 /* global clearWizardTextInput */
 /* global clickFormLink */
+/* global endCalculation */
 /* global endWorker */
 /* global get */
 /* global getVersionText */
@@ -188,6 +189,10 @@ function fromWorker(e)
       if (firstChar === "6")
       {
         show("cont");
+      }
+      else
+      {
+        endCalculation();
       }
     }
   }

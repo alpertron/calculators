@@ -18,6 +18,7 @@
 */
 /* global callWorker */
 /* global clickFormLink */
+/* global endCalculation */
 /* global endWorker */
 /* global formSend */
 /* global generateFuncButtons */
@@ -88,6 +89,7 @@ function fromWorker(e)
   {   // First character passed from web worker is "2".
     dlog.disabled = false;
     stop.disabled = true;
+    endCalculation();
   }
 }
 

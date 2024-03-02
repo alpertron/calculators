@@ -76,6 +76,7 @@ fieldset {display:inline}
 .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px}
 .lf,.labels {padding:0.2em; clear:both; width:100%}
 .bold {font-weight: bold; color:blue}
+.new {color: #0000FF; font-weight:bold}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
 #feedback, #cont {display:none}
 .fraction {display: inline-block; vertical-align: middle; margin: 0 0.2em 0.4ex; text-align: center}
@@ -108,6 +109,7 @@ input:disabled {color: #808080; background-color: #606060}
 .fraction span.fdn {border-top: thin solid #eee}
 .bold {color:yellow}
 svg {fill:white}
+.new {color: #E0E000}
 }
 </style>
 <noscript>
@@ -409,7 +411,7 @@ If <var>b</var> is negative, the result is not a real number, so it cannot be re
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old continued fraction applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 27 February 2024.</p>
+<p>Written by Dario Alpern. Last updated 2 March 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -418,9 +420,9 @@ If <var>b</var> is negative, the result is not a real number, so it cannot be re
 <input type="button" id="continue" value="Continue" title="Show more results. Pressing this button will delete old results.">
 </div>
 <div id="footer">
+<p><span class="new">New!</span> You can download an application for Android that includes this calculator from <a href="https://play.google.com/store/apps/details?id=ar.com.alpertron.calculators">Google Play</a>.</p>
 <p>If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
 <p>If you like these calculators and you want to support free software with no annoying advertisements, you can <a href="https://www.PayPal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MR65QPWZM5JT6&source=url">donate through PayPal</a>.</p>
-<p>You can download an application for Android that includes this calculator from <a href="https://play.google.com/store/apps/details?id=ar.com.alpertron.calculators">Google Play</a>.</p>
 </div>
 </article>
 </main>

@@ -18,6 +18,7 @@
 */
 /* global callWorker */
 /* global clickFormLink */
+/* global endCalculation */
 /* global endWorker */
 /* global formSend */
 /* global generateFuncButtons */
@@ -109,6 +110,7 @@ function fromWorker(e)
       get("status").innerHTML = "";
       styleButtons("inline", "none");  // Enable eval and factor
       hide("modal-more");
+      endCalculation();
     }
   }
 }

@@ -19,6 +19,7 @@
 /* global callWorker */
 /* global clickFormLink */
 /* global completeFuncButtons */
+/* global endCalculation */
 /* global endWorker */
 /* global formSend */
 /* global generateFuncButtons */
@@ -80,6 +81,7 @@ function fromWorker(e)
   {   // First character passed from web worker is "2".
     get("solve").disabled = false;
     get("stop").disabled = true;
+    endCalculation();
   }
 }
 

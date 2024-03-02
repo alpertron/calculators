@@ -52,3 +52,8 @@ Android.getAppVer = function()
   /* Nothing to be done in extern file */
 };
 
+Android.endCalculation = function()
+{
+  /* Nothing to be done in extern file */
+};
+
