@@ -828,6 +828,9 @@ static void initializeSumOfTwoSquares(void)
 
 static void showSumSqButton(char** pptrOutput)
 {
+#ifndef __EMSCRIPTEN__
+  (void)pptrOutput;
+#endif
   if (common.k.sumSquares.manyDecompositions)
   {    // Sum of two squares. Show button and init sum of two squares data.
     common.k.sumSquares.initPending = true;

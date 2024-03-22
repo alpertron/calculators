@@ -434,8 +434,8 @@ enum eExprErr DivideRatCoeffPolynomial(int* pDividend, const int* pDivisor, enum
   int degreeDividend;
   int degreeDivisor;
   int* ptrQuotient;
-  int* denomin1 = getNextElement(pDividend);
-  int* denomin2 = getNextElement(pDivisor);
+  const int* denomin1 = getNextElement(pDividend);
+  const int* denomin2 = getNextElement(pDivisor);
   if ((*denomin1 != 0) || (*denomin2 != 0))
   {   // Degree of denominator is not zero.
     return EXPR_DENOMINATOR_MUST_BE_CONSTANT;

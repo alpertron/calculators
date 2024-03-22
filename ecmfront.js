@@ -372,7 +372,7 @@ function performWork(n, valueText)
   {
     app += 6;   // Convert to factorization.
   }
-  param = digits + "," + app + "," + fromFile + config.substring(1) +
+  param = digits + "," + app + "," + fromFile + config.substring(1) + "," +
           valueText + charNull + getStorage("ecmFactors");
   if (n === -1 || n === -2)
   {

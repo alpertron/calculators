@@ -168,15 +168,6 @@
     <ClCompile Include="isprime.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
-    <ClCompile Include="gausspr.c">
-      <Filter>Archivos de código fuente</Filter>
-    </ClCompile>
-    <ClCompile Include="ulam.c">
-      <Filter>Archivos de código fuente</Filter>
-    </ClCompile>
-    <ClCompile Include="graphics.c">
-      <Filter>Archivos de código fuente</Filter>
-    </ClCompile>
     <ClCompile Include="output.c">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>

@@ -464,9 +464,28 @@ static void generateSieve(const int* pSmallPrimes, char* sieve,
   const BigInteger* pArgument, bool isNext)
 {
   const int* ptrSmallPrimes = pSmallPrimes;
+  int maxPrimeIndex = 1229;
+  if (pArgument->nbrLimbs <= 2)
+  {
+    double value;
+    if (pArgument->nbrLimbs == 1)
+    {
+      value = (double)pArgument->limbs[0].x;
+    }
+    else
+    {
+      value = (double)pArgument->limbs[0].x +
+        (double)pArgument->limbs[1].x * (double)LIMB_RANGE;
+    }
+    maxPrimeIndex = (int)sqrt(sqrt(value));
+    if (maxPrimeIndex > 1229)
+    {
+      maxPrimeIndex = 1229;
+    }
+  }
   // Indicate numbers not divisible by small primes in advance.
   (void)memset(sieve, 0, COMPUTE_NEXT_PRIME_SIEVE_SIZE);
-  for (int ctr = 0; ctr < 1229; ctr++)
+  for (int ctr = 0; ctr < maxPrimeIndex; ctr++)
   {     // For each prime less than 10000...
     int prime = *ptrSmallPrimes;
     ptrSmallPrimes++;

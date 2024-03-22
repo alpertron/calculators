@@ -29,7 +29,7 @@
 #include "fromBlockly.h"
 #include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 6
+#define DEBUG_CODE 13
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;

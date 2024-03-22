@@ -775,7 +775,11 @@ EXTERNALIZE void doWork(void)
   }
   cunningham = (*(ptrData + 2) == '1');
   hexadecimal = (*(ptrData + 3) == '1');
-  ptrData += 4;
+  while (*ptrData != ',')
+  {    // Loop that finds the end of configuration data.
+    ptrData++;
+  }
+  ptrData++;    // Skip comma.
   ptrWebStorage = ptrData + (int)strlen(ptrData) + 1;
   if (useBlockly)
   {

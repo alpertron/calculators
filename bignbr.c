@@ -56,6 +56,9 @@ int groupLen = 6;
 int smallPrimes[SMALL_PRIMES_ARRLEN+1];
 #ifdef __EMSCRIPTEN__
 int percentageBPSW;
+#ifdef FACTORIZATION_APP
+static int savedSecond;
+#endif
 #endif
 
 void CopyBigInt(BigInteger *pDest, const BigInteger *pSrc)
@@ -913,10 +916,8 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
     double dQuotient = floor((dDividend / dDivisor) + 0.5);
     int quotient = (int)(unsigned int)dQuotient;   // quotient has correct value or 1 more.
     remainder = dividend - (quotient * divisor);
-    if ((unsigned int)remainder >= (unsigned int)divisor)
-    {     // remainder not in range 0 <= remainder < divisor. Adjust.
-      remainder += divisor;
-    }
+    // Adjust remainder if not in range 0 <= remainder < divisor..
+    remainder += divisor & (remainder >> BITS_PER_GROUP);
     pLimb--;
   }
   if ((pBigInt->sign == SIGN_NEGATIVE) && (remainder != 0))
@@ -1807,15 +1808,33 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
   int lenBytes;
 #ifdef __EMSCRIPTEN__
 #ifdef FACTORIZATION_APP
-  char* ptrText;
-  StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
-  ptrText = ShowFactoredPart(pValue, pstFactors);
-  (void)strcpy(ptrText, lang ? "<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
-    "<p>Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.</p>");
-  ShowLowerText();
+  if (nbrLimbs > 5)
+  {   // Show text only if testing primality time is noticeable.
+    char* ptrText;
+    StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
+    ptrText = ShowFactoredPart(pValue, pstFactors);
+    (void)strcpy(ptrText, lang ? "<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
+      "<p>Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.</p>");
+    ShowLowerText();
+  }
+  else
+  {
+    int newSecond = (int)(tenths() - originalTenthSecond) / 10;
+    StepECM = 0;
+    if (newSecond != savedSecond)
+    {                // At least a second has passed.
+      StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
+      (void)ShowFactoredPart(pValue, pstFactors);
+      ShowLowerText();
+      savedSecond = newSecond;
+    }
+  }
 #else
-  databack(lang ? "3<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
-    "3<p>Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.</p>");
+  if (nbrLimbs > 5)
+  {   // Show text only if testing primality time is noticeable.
+    databack(lang ? "3<p>Paso 1 del algoritmo BPSW de primos probables: Miller-Rabin fuerte con base 2.</p>" :
+      "3<p>Step 1 of BPSW probable prime algorithm: Strong Miller-Rabin with base 2.</p>");
+  }
 #endif
 #endif
   // Perform 2-SPRP test
@@ -1914,33 +1933,39 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
 #ifdef __EMSCRIPTEN__
   char* ptrText;
 #ifdef FACTORIZATION_APP
-  StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
-  ptrText = ShowFactoredPart(pValue, pstFactors);
-#else
-  char text[200];
-  ptrText = text;
-  *ptrText = '3';
-  ptrText++;
+  StepECM = 0;
 #endif
-  copyStr(&ptrText, lang ? "<p>Paso 2 del algoritmo BPSW de primos probables: Lucas fuerte con P=1, D=" :
-    "<p>Step 2 of BPSW probable prime algorithm: Strong Lucas with P=1, D=");
-  if (signD < 0)
-  {
-    copyStr(&ptrText, "&minus;");
-  }
-  int2dec(&ptrText, D);
-  copyStr(&ptrText, ", Q=");
-  if (signD > 0)
-  {
-    copyStr(&ptrText, "&minus;");
-  }
-  int2dec(&ptrText, absQ);
-  copyStr(&ptrText, "</p>");
+  if (nbrLimbs > 5)
+  {   // Show text only if testing primality time is noticeable.
 #ifdef FACTORIZATION_APP
-  ShowLowerText();
+    StepECM = 3;   // Show progress (in percentage) of BPSW primality test.
+    ptrText = ShowFactoredPart(pValue, pstFactors);
 #else
-  databack(text);
+    char text[200];
+    ptrText = text;
+    *ptrText = '3';
+    ptrText++;
 #endif
+    copyStr(&ptrText, lang ? "<p>Paso 2 del algoritmo BPSW de primos probables: Lucas fuerte con P=1, D=" :
+      "<p>Step 2 of BPSW probable prime algorithm: Strong Lucas with P=1, D=");
+    if (signD < 0)
+    {
+      copyStr(&ptrText, "&minus;");
+    }
+    int2dec(&ptrText, D);
+    copyStr(&ptrText, ", Q=");
+    if (signD > 0)
+    {
+      copyStr(&ptrText, "&minus;");
+    }
+    int2dec(&ptrText, absQ);
+    copyStr(&ptrText, "</p>");
+#ifdef FACTORIZATION_APP
+    ShowLowerText();
+#else
+    databack(text);
+#endif
+  }
 #endif
   nbrLimbsBytes = (nbrLimbs + 1) * (int)sizeof(limb);
   (void)memcpy(Mult1, MontgomeryMultR1, nbrLimbsBytes); // Q^0 <- 1.
