@@ -17,6 +17,7 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global callWorker */
+/* global changeInputmode */
 /* global clickFormLink */
 /* global completeFuncButtons */
 /* global endCalculation */
@@ -25,6 +26,7 @@
 /* global generateFuncButtons */
 /* global get */
 /* global getCalculatorCode */
+/* global getConfig */
 /* global hide */
 /* global registerServiceWorker */
 /* global show */
@@ -33,6 +35,12 @@ let fileContents = 0;
 let currentInputBox;
 let funcnames;
 let parens;
+let verboseValue;
+let prettyValue;
+let CunninghamValue;
+let hexValue;
+let digits;
+let config;
 if (lang)
 {
   funcnames =
@@ -85,6 +93,19 @@ function fromWorker(e)
   }
 }
 
+function saveConfig()
+{
+  config = "1" +   // Batch mode
+           verboseValue +
+           prettyValue +
+           CunninghamValue +
+           hexValue +
+           (get("kbd")[1].selected? "1" : "0");
+  digits = get("digits").value.trim();
+  setStorage("ecmConfig", digits+","+config);
+  changeInputmode(get("kbd")[1].selected);
+}
+
 function comingFromWorker(e)
 {
   fromWorker(e.data);
@@ -98,7 +119,7 @@ function dowork()
   let linText = get("lin").value.trim();
   let constText = get("const").value.trim();
   let modText = get("mod").value.trim();
-  let digitGroup = get("digits").value.trim();
+  let digitGroup = digits;
   hide("help");
   show("result");
   let missing = "";
@@ -158,6 +179,10 @@ function popstate(event)
     hide("notSent");
     get("quad").focus();   
   }
+  else if (get("modal-config").style.display == "block")
+  {     // End configuration mode.
+    hide("modal-config");
+  }
 }
 
 function startUp()
@@ -206,6 +231,31 @@ function startUp()
   {
     generateFuncButtons("funccat", "funcbtns");
   };
+  get("config").onclick = function()
+  {
+    verboseValue = config.charAt(1);
+    prettyValue = config.charAt(2);
+    CunninghamValue = config.charAt(3);
+    hexValue = config.charAt(4);
+    get("digits").value = digits;
+    history.pushState({id: 5}, "", location.href);
+    get("kbd")[+config.charAt(5)].selected = "selected";
+    show("modal-config");
+  };
+  get("close-config").onclick = function()
+  {
+    history.back();   // Close configuration mode.
+  };
+  get("cancel-config").onclick = function()
+  {
+    history.back();   // Close configuration mode.
+  };
+  get("save-config").onclick = function()
+  {
+    saveConfig();
+    history.back();   // Close configuration mode.
+  };
+  getConfig();
   get("formlink").onclick = clickFormLink;
   get("formcancel").onclick = function()
   {

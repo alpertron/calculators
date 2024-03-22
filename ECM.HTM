@@ -944,10 +944,11 @@ Since this method needs a large amount of your computer's memory to store relati
 If the checkbox is not set, the exponents are preceded by the exponentiation sign &quot; ^ &quot; and the multiplication is indicated by asterisks. Also, the number of digits is never displayed. This mode eases copying the results to other mathematical programs.</li>
 <li><strong>Hexadecimal output</strong>: If this checkbox is set, the numbers are shown in hexadecimal format instead of decimal, which is the common notation.
 To enter numbers in hexadecimal format, you will need to precede them by the string 0x. For instance, 0x38 = 56. The program shows hexadecimal numbers with monospaced font.</li>
+<li><strong>Keyboard</strong>: This enables the user to select between numeric or complete (alphanumeric) virtual keyboard. The virtual keyboard appears on the screen when the user selects an input box on touch screens.</li>
 <li><strong>Use Cunningham tables on server</strong>: When selected, if the number to be factored has the form a<sup>b</sup> &pm; 1, the application will attempt to retrieve the known factors from the Web server.
 In order to reduce the database, only factors with at least 14 digits are included, so the application will find the small factors. These factors come from <a href="http://myfactors.mooo.com/">Jonathan Crombie list</a> and it includes 2674850 factors of Cunningham numbers.</li>
 </ul>
-<p>The configuration is saved in your device, so when you start again the Web browser, all settings remain the same.</p>
+<p>The configuration is saved in your device, so when you start again the calculator, all settings remain the same.</p>
 </div>
 <h2><button type="button">Batch factorization</button></h2>
 <div class="panel">
@@ -979,7 +980,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p>The expressions are written after the string, separated by colons. There must be a colon also between the string and the first expression.</p>
 <p>To print a percent sign, you have to write two percent signs, and a quote is represented by a percent sign followed by a quote.</p>
 <p>Example 3: For each number between -100 and 100, show whether the number is prime and then show the factorization both in decimal and hexadecimal.</p>
-<p>The line to write is: <code>x=-100; x=x+1; &lt;=100; &quot;%d is prime: %l, %Fd, %Fx&quot;:x:isprime(x):x:x</code>
+<p>The line to write is: <code>x=-100; x=x+1; x&lt;=100; &quot;%d is prime: %l, %Fd, %Fx&quot;:x:isprime(x):x:x</code>
 </div>
 <div class="noand">
 <h2><button type="button">Source code</button></h2>
@@ -989,7 +990,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
 </div>
-<p>Written by Dario Alpern. Last updated 2 March 2024.</p>
+<p>Written by Dario Alpern. Last updated 21 March 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -1012,7 +1013,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 </div>
 </article>
 </main>
-<div id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
+<aside id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
 <div class="modal-content">
 <div class="modal-header"><span id="close-more" aria-label="close" class="atright">×</span><p id="moreopt">More options</p></div>
 <div class="modal-body">
@@ -1021,7 +1022,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <input type="button" id="ncurve" value="New curve" title="Change curve number for the algorithm ECM. Set to zero to change to algorithm SIQS.">
 <input type="button" id="nfactor" value="New factor" title="Enter a known factor">
 </div>
-</div></div></div>
+</div></div></aside>
 <div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
 <div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuration</p></div>
@@ -1032,6 +1033,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p><label for="digits">Digits per group</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"></p>
 <p><input type="checkbox" id="verbose"><label for="verbose">Verbose mode</label></p>
 <p><input type="checkbox" id="pretty"><label for="pretty">Pretty print</label></p>
+<p><label for="kbd">Keyboard:&nbsp;</label><select id="kbd"><option value="numeric">Numeric</option><option value="comp">Complete</option></select>
 <p><input type="checkbox" id="hex"><label for="hex">Hexadecimal output</label></p>
 <p><input type="checkbox" id="cunnin"><label for="cunnin">Use Cunningham tables on server</label></p>
 </fieldset>

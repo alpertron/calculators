@@ -44,12 +44,24 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen);
 static bool isShowingConvergents;
 static int periodIndex;
 static int coefIndex;
+static bool hexadecimal;
 
 static void showText(const char *text)
 {
   copyStr(&ptrOutput, text);
 }
 
+static void BigInteger2Out(char **ppDecimal, const BigInteger *pBigInt, int groupLength)
+{
+  if (hexadecimal)
+  {
+    BigInteger2Hex(ppDecimal, pBigInt, groupLength);
+  }
+  else
+  {
+    BigInteger2Dec(ppDecimal, pBigInt, groupLength);
+  }
+}
 static void ShowConvergents(int coeffIndex, const BigInteger *coeff)
 {
   CopyBigInt(&U3, &U2);                   // U3 <- U2, U2 <- U1, U1 <- a*U2 + U3
@@ -82,10 +94,10 @@ static void ShowConvergents(int coeffIndex, const BigInteger *coeff)
   ptrOutput++;
   *ptrOutput = ' ';
   ptrOutput++;
-  BigInteger2Dec(&ptrOutput, &U1, groupLen);  // Show continued fraction convergent.
+  BigInteger2Out(&ptrOutput, &U1, groupLen);  // Show continued fraction convergent.
   *ptrOutput = '/';
   ptrOutput++;
-  BigInteger2Dec(&ptrOutput, &V1, groupLen);  // Show continued fraction convergent.
+  BigInteger2Out(&ptrOutput, &V1, groupLen);  // Show continued fraction convergent.
   *ptrOutput = ',';
   ptrOutput++;
   *ptrOutput = ' ';
@@ -103,7 +115,7 @@ static void ShowConvergents(int coeffIndex, const BigInteger *coeff)
   ptrOutput++;
   *ptrOutput = ' ';
   ptrOutput++;
-  BigInteger2Dec(&ptrOutput, coeff, groupLen);  // Show continued fraction coefficient.
+  BigInteger2Out(&ptrOutput, coeff, groupLen);  // Show continued fraction coefficient.
   *ptrOutput = '<';
   ptrOutput++;
   *ptrOutput = 'b';
@@ -162,7 +174,7 @@ static void PeriodicContinuedFraction(bool isContinuation)
     }
     else
     {      // Show convergent checkbox not checked.
-      BigInteger2Dec(&ptrOutput, &Temp, groupLen);  // Show continued fraction coefficient.
+      BigInteger2Out(&ptrOutput, &Temp, groupLen);  // Show continued fraction coefficient.
       copyStr(&ptrOutput, ((coefIndex == 0) ? " + //" : ", ")); // Show separator.
     }
     (void)BigIntMultiply(&Temp, &den, &bigTmp);  // U <- a*V - U
@@ -258,12 +270,12 @@ static void showFormula(void)
   showText("2<p><var>x</var> = <span class=\"fraction\"><span class=\"offscr\">");
   copyStr(&ptrOutput, lang ? " la fracción cuyo numerador es </span>" : " the fraction whose numerator is </span>");
   showText("<span class=\"fup\">");
-  BigInteger2Dec(&ptrOutput, &origNum, groupLen);    // Show numerator.
+  BigInteger2Out(&ptrOutput, &origNum, groupLen);    // Show numerator.
   showText(" + <span class=\"sqrtout\"><span class=\"sqrtin\">");
-  BigInteger2Dec(&ptrOutput, &origDelta, groupLen);  // Show radicand.
+  BigInteger2Out(&ptrOutput, &origDelta, groupLen);  // Show radicand.
   showText("</span></span></span><span class=\"bar\"> </span><span class=\"fdn\"><span class=\"offscr\">");
   copyStr(&ptrOutput, lang ? " y el denominador es </span>" : " and the denominator is </span>");
-  BigInteger2Dec(&ptrOutput, &origDen, groupLen);    // Show denominator.
+  BigInteger2Out(&ptrOutput, &origDen, groupLen);    // Show denominator.
   showText("</span></span></span></p>");
 }
 
@@ -357,7 +369,7 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
   }
   else
   {
-    BigInteger2Dec(&ptrOutput, &Tmp, groupLen);  // Show convergent.
+    BigInteger2Out(&ptrOutput, &Tmp, groupLen);  // Show convergent.
   }
   (void)BigIntRemainder(pNum, pDen, pNum);
   sep = " + //";
@@ -374,7 +386,7 @@ static void ShowRational(BigInteger *pNum, BigInteger *pDen)
       else
       {
         showText(sep);
-        BigInteger2Dec(&ptrOutput, &Tmp, groupLen);  // Show convergent.
+        BigInteger2Out(&ptrOutput, &Tmp, groupLen);  // Show convergent.
       }
       sep = ", ";
     }
@@ -413,7 +425,7 @@ static void getNumber(BigInteger *pNumber, const char *title, char** pptrInput)
 }
 
 // input contains three expressions separated by 00h (null character).
-void contfracText(char *input, int GroupLen, bool hex)
+void contfracText(char *input, int GroupLen, bool hex, bool converg)
 {
   if (input == NULL)
   {
@@ -421,7 +433,7 @@ void contfracText(char *input, int GroupLen, bool hex)
     if (!isShowingConvergents)
     {        // Show convergents checkbox not checked.
       showX();
-      BigInteger2Dec(&ptrOutput, &integerPart, groupLen);  // Show integer part.
+      BigInteger2Out(&ptrOutput, &integerPart, groupLen);  // Show integer part.
       copyStr(&ptrOutput, " + // ");       // Show separator.
     }
     showText("<span class=\"offscr\">");   // Indicate start of periodic part.
@@ -435,7 +447,8 @@ void contfracText(char *input, int GroupLen, bool hex)
   char *ptrInput = input;
   groupLen = GroupLen;
   ptrOutput = output;
-  isShowingConvergents = hex;
+  isShowingConvergents = converg;
+  hexadecimal = hex;
   getNumber(&num, lang? "Numerador": "Numerator", &ptrInput);
   getNumber(&delta, lang? "Argumento de la raíz cuadrada": "Square root argument", &ptrInput);
   getNumber(&den, lang? "Denominador": "Denominator", &ptrInput);
@@ -452,11 +465,12 @@ EXTERNALIZE void doWork(void)
 {
   int app;
   bool hex;
+  bool converg;
   int grpLen = 0;
   char* ptrData = inputString;
   if (*ptrData == 'C')
   {    // User pressed Continue button.
-    contfracText(NULL, 0, false); // Routine does not use parameters in this case.
+    contfracText(NULL, 0, false, false); // Routine does not use parameters in this case.
     databack(output);
     return;
   }
@@ -468,7 +482,7 @@ EXTERNALIZE void doWork(void)
   }
   ptrData++;             // Skip comma.
   app = *ptrData - '0';
-  if (*(ptrData + 1) != ',')
+  while (*(ptrData + 1) != ',')
   {
     ptrData++;
     app = (app * 10) + *ptrData - '0';
@@ -476,15 +490,9 @@ EXTERNALIZE void doWork(void)
 #ifndef lang  
   lang = ((app & 1) ? true : false);
 #endif
-  if ((app & 0x40) != 0)
-  {
-    hex = true;
-  }
-  else
-  {
-    hex = false;
-  }
-  contfracText(ptrData + 2, grpLen, hex);
+  hex = ((app & 0x40) != 0);
+  converg = ((app & 0x20) != 0);
+  contfracText(ptrData + 2, grpLen, hex, converg);
   databack(output);
 }
 #endif

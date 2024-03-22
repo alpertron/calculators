@@ -59,6 +59,31 @@ nav::after {clear:both}
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
 @media print {nav, #footer {display:none;}}
+.modal-header {padding: 2px 10px; background-color: #5cb85c; color: white}
+.modal-body {padding: 2px 10px}
+.modal-content {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background-color: #fefefe;
+  padding: 0;
+  border: 1px solid #888;
+  width: 80%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+}
+#close {float:right}
+#modal-header-text {font-size:1.5em}
+.hex {font-family: Courier, "Lucida Console", monospace}
 #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
@@ -201,12 +226,10 @@ svg {fill:white}
 </div>
 <fieldset id="actions"><legend>Actions</legend>
 <input type="button" id="calc" value="Compute continued fraction" title="Show the continued fraction for the requested number">
+<input type="button" id="config" value="Config" title="Change parameters used in the application">
 <input type="button" id="helpbtn" value="Help" title="Read information about this calculator">
 <div class="lf"></div>
 <input type="checkbox" id="converg"><label for="converg" title="Show the best approximations as rational number for the requested number">Show convergents</label>
-<div class="lf"></div>
-<label for="digits">Digits per group:</label>
-<input type="number" id="digits" value="6" min="0" step="1">
 </fieldset>
 <fieldset id="functions"><legend>Functions</legend>
 <label for="funccat">Category:</label> 
@@ -373,6 +396,15 @@ If <var>b</var> is negative, the result is not a real number, so it cannot be re
 <li> <strong>RevDigits(n,r)</strong>: finds the value obtained by writing backwards the digits of <var>n</var> in base <var>r</var>. Example: RevDigits(213, 10) = 312.</li>
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
+<h2>Configuration</h2>
+<p>You can change settings for this application by pressing the Config button when a factorization is not in progress. A new window will pop up where you can select different settings:</p>
+<ul>
+<li><strong>Digits per group</strong>: In order to improve readability, big numbers are separated by spaces forming groups of a fixed number of digits. With this input box, you can determine the number of digits in a group.</li> 
+<li><strong>Hexadecimal output</strong>: If this checkbox is set, the numbers are shown in hexadecimal format instead of decimal, which is the common notation.
+To enter numbers in hexadecimal format, you will need to precede them by the string 0x. For instance, 0x38 = 56. The program shows hexadecimal numbers with monospaced font.</li>
+<li><strong>Keyboard</strong>: This enables the user to select between numeric or complete (alphanumeric) virtual keyboard. The virtual keyboard appears on the screen when the user selects an input box on touch screens.
+</ul>
+<p>The configuration is saved in your device, so when you start again the calculator, all settings remain the same.</p>
 <h2>Algorithms used</h2>
 <p>The calculation of the coefficients of the continued fraction of a rational number is done as follows:</p>
 <ol>
@@ -411,7 +443,7 @@ If <var>b</var> is negative, the result is not a real number, so it cannot be re
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old continued fraction applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 2 March 2024.</p>
+<p>Written by Dario Alpern. Last updated 21 March 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -426,6 +458,20 @@ If <var>b</var> is negative, the result is not a real number, so it cannot be re
 </div>
 </article>
 </main>
+<div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
+<div class="modal-content">
+<div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuration</p></div>
+<div class="modal-body">
+<div class="applet">
+<fieldset>
+<legend>Configuration parameters</legend>
+<p><label for="digits">Digits per group</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"></p>
+<p><label for="kbd">Keyboard:&nbsp;</label><select id="kbd"><option value="numeric">Numeric</option><option value="comp">Complete</option></select>
+<p><input type="checkbox" id="hex"><label for="hex">Hexadecimal output</label></p>
+</fieldset>
+<p><input type="button" id="save-config" value="Save" title="Save configuration"><input type="button" id="cancel-config" value="Cancel" title="Discard changes to configuration"></p>
+</div>
+</div></div></div>
 <aside id="feedback" aria-label="Feedback">
 <h2 class="h2title">Feedback form</h2>
 <form class="applet" id="formfeedback">

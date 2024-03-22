@@ -96,10 +96,11 @@ h1, .h2title {text-align:center}
 #actions input[type=button] {color: white; background-color: #3b3b3b}
 fieldset {display:inline}
 #functions {max-width:50%}
-.lf,.labels {padding:0.2em; clear:both;}
-.blue {color: #0000FF;}
-.inline  {display:inline;}
-.pad {padding:10px;}
+.hex {font-family: Courier, "Lucida Console", monospace}
+.lf,.labels {padding:0.2em; clear:both}
+.blue {color: #0000FF}
+.inline  {display:inline}
+.pad {padding:10px}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
 .funcbtn {margin:3px}
 #feedback {display:none}
@@ -291,10 +292,19 @@ Si <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, entonces 
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 <div class="noand">
+<h2>Configuración</h2>
+<p>Puedes cambiar la configuración de esta aplicación apretando el botón <strong>Config</strong> mientras el programa no está factorizando. En ese momento aparecerá una nueva ventana donde puedes seleccionar los siguientes ajustes:</p>
+<ul>
+<li><strong>Dígitos por grupo</strong>: Para mejorar la legibilidad, los números grandes se separan mediante espacios formando grupos de una cantidad fija de dígitos. Con esta caja de entrada, puedes determinar la cantidad de dígitos por grupo.</li> 
+<li><strong>Salida hexadecimal</strong>: Indica que los valores mostrados en pantalla deben figurar en hexadecimal en vez de decimal, que es lo habitual.
+Para ingresar números en el formato hexadecimal es necesario que tengan los caracteres 0x adelante. Por ejemplo, 0x38 = 56. El programa muestra números en hexadecimal con tipo monoespaciado.</li>
+<li><strong>Teclado</strong>: Esto permite que el usuario seleccione entre el teclado virtual númerico o completo (alfanumérico). El teclado virtual aparece en la pantalla cuando el usuario selecciona una caja de entrada en pantallas táctiles.</li>
+</ul>
+<p>La configuración se almacena en tu dispositivo, así que si arrancas nuevamente la calculadora, los ajustes no se modificarán.</p>
 <h2>Código fuente</h2>
 <p>Puedes bajar el código fuente del programa actual y del viejo applet de factorización de enteros gaussianos desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 2 de marzo de 2024.</p>
+<p>Escrito por Dario Alpern. Actualizado el 21 de marzo de 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -316,19 +326,20 @@ Si <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, entonces 
 <input type="button" id="nfactor" value="Nuevo factor" title="Ingrese factor conocido">
 </div>
 </div></div></div>
-<div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
+<aside id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
 <div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuración</p></div>
 <div class="modal-body">
 <div class="applet">
+<fieldset>
+<legend>Parámetros de configuración</legend>
 <p><label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"></p>
-<p><input type="checkbox" id="batch"><label for="batch">Factorización en lotes</label></p>
-<p><input type="checkbox" id="verbose"><label for="verbose">Información</label></p>
-<p><input type="checkbox" id="pretty"><label for="pretty">Impresión bonita</label></p>
-<p><input type="checkbox" id="cunnin"><label for="cunnin">Usar tablas de Cunningham en el servidor</label></p>
-<p><input type="button" id="save-config" value="Save" title="Almacenar la nueva configuración"><input type="button" id="cancel-config" value="Cancel" title="Descartar los cambios hechos a la configuración"></p>
+<p><label for="kbd">Teclado:&nbsp;</label><select id="kbd"><option value="num">Numérico</option><option value="comp">Completo</option></select>
+<p><input type="checkbox" id="hex"><label for="hex">Salida hexadecimal</label></p>
+</fieldset>
+<p><input type="button" id="save-config" value="Aceptar" title="Almacenar la nueva configuración"><input type="button" id="cancel-config" value="Cancelar" title="Descartar los cambios hechos a la configuración"></p>
 </div>
-</div></div></div>
+</div></div></aside>
 <aside id="feedback" aria-label="Formulario de comentarios">
 <h2 class="h2title">Formulario de comentarios</h2>
 <form class="applet" id="formfeedback">

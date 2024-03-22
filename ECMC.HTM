@@ -935,10 +935,11 @@ Como este método necesita gran cantidad de memoria de tu computadora para almac
 Si la casilla de verificación no está marcada, los exponentes se muestran precedidos por el signo &quot; ^ &quot; y la multiplicación se indica mediante asteriscos. Además, nunca se muestra la cantidad de dígitos. Esto facilita la copia de resultados a otros programas matemáticos.</li>
 <li><strong>Salida hexadecimal</strong>: Indica que los valores mostrados en pantalla deben figurar en hexadecimal en vez de decimal, que es lo habitual.
 Para ingresar números en el formato hexadecimal es necesario que tengan los caracteres 0x adelante. Por ejemplo, 0x38 = 56. El programa muestra números en hexadecimal con tipo monoespaciado.</li>
+<li><strong>Teclado</strong>: Esto permite que el usuario seleccione entre el teclado virtual númerico o completo (alfanumérico). El teclado virtual aparece en la pantalla cuando el usuario selecciona una caja de entrada en pantallas táctiles.</li>
 <li><strong>Usar tablas de Cunningham en el servidor</strong>: Si está seleccionado y el número a factorizar tiene la forma a<sup>b</sup> &pm; 1, la aplicación intentará recuperar los factores conocidos del servidor Web.
 Para reducir esa base de datos, sólo se incluyen factores primos con al menos 14 dígitos, así que la aplicación deberá hallar los factores pequeños. La fuente de estos factores es la <a href="http://myfactors.mooo.com/">lista de factores de Jonathan Crombie</a> e incluye 2674850 factores de números de Cunningham.</li>
 </ul>
-<p>La configuración se almacena en tu dispositivo, así que si arrancas nuevamente el navegador, los ajustes no se modificarán.</p>
+<p>La configuración se almacena en tu dispositivo, así que si arrancas nuevamente la calculadora, los ajustes no se modificarán.</p>
 </div>
 <h2><button type="button">Factorización en lotes</button></h2>
 <div class="panel">
@@ -969,7 +970,7 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <p>Las expresiones se escriben después de la cadena, separadas por dos puntos. También debe haber dos puntos entre la cadena y la primera expresión.</p>
 <p>Para mostrar el símbolo de procentaje, se deben usar dos símbolos de porcentaje seguidos, y la comilla se representa mediante un símbolo de porcentaje seguido por una comilla.</p>
 <p>Ejemplo 3: Por cada número entre -100 y 100, mostrar si el número es primo y luego mostrar la factorización tanto en decimal como en hexadecimal.</p>
-<p>La línea a escribir es: <code>x=-100; x=x+1; &lt;=100; &quot;%d es primo: %l, %Fd, %Fx&quot;:x:isprime(x):x:x</code>
+<p>La línea a escribir es: <code>x=-100; x=x+1; x&lt;=100; &quot;%d es primo: %l, %Fd, %Fx&quot;:x:isprime(x):x:x</code>
 </div>
 <div class="noand">
 <h2><button type="button">Código fuente</button></h2>
@@ -979,7 +980,7 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <p>Puedes bajar el código fuente de esta aplicación y del viejo applet de factorización desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 2 de marzo de 2024.</p>
+<p>Escrito por Dario Alpern. Actualizado el 21 de marzo de 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -1002,7 +1003,7 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 </div>
 </article>
 </main>
-<div id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
+<aside id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
 <div class="modal-content">
 <div class="modal-header"><span id="close-more" aria-label="close" class="atright">×</span><p id="moreopt">Más opciones</p></div>
 <div class="modal-body">
@@ -1011,7 +1012,7 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <input type="button" id="ncurve" value="Nueva curva" title="Cambiar el número de curva para el algoritmo ECM. Ingrese cero para cambiar al algoritmo SIQS.">
 <input type="button" id="nfactor" value="Nuevo factor" title="Ingrese factor conocido">
 </div>
-</div></div></div>
+</div></div></aside>
 <div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
 <div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuración</p></div>
@@ -1022,6 +1023,7 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <p><label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"></p>
 <p><input type="checkbox" id="verbose"><label for="verbose">Información</label></p>
 <p><input type="checkbox" id="pretty"><label for="pretty">Impresión bonita</label></p>
+<p><label for="kbd">Teclado:&nbsp;</label><select id="kbd"><option value="numeric">Numérico</option><option value="comp">Completo</option></select>
 <p><input type="checkbox" id="hex"><label for="hex">Salida hexadecimal</label></p>
 <p><input type="checkbox" id="cunnin"><label for="cunnin">Usar tablas de Cunningham en el servidor</label></p>
 </fieldset>

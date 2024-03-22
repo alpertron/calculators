@@ -705,7 +705,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
   }
   for (; ptrCurrBatchFactor < ptrEndBatchFactor;
     ptrCurrBatchFactor += (int)strlen(ptrCurrBatchFactor) + 1)
-  {  // Get next line.
+  {  // Get next line. Line finishes with \r\n or \n only.
     char c;
     if ((ptrCurrBatchFactor != batchText) && (pIsBatch != NULL))
     {         // Not processing first line: Indicate batch processing.
@@ -721,11 +721,18 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       {
         ptrNextBatchFactor++;
       }
-      if ((*ptrNextBatchFactor == '\r') && (*(ptrNextBatchFactor+1) == '\n'))
-      {
+      if (*ptrNextBatchFactor == '\n')
+      {           // One-byte end of line.
         lineEndingCRLF = true;
-        *ptrNextBatchFactor = ' ';
-        ptrNextBatchFactor++;
+      }
+      else
+      {
+        if ((*ptrNextBatchFactor == '\r') && (*(ptrNextBatchFactor+1) == '\n'))
+        {         // Two-byte end of line.
+          lineEndingCRLF = true;
+          *ptrNextBatchFactor = ' ';   // Dummy space to replace first byte of EOL.
+          ptrNextBatchFactor++;
+        }
       }
       *ptrNextBatchFactor = 0;    // Indicate end of line.
       counterC = 1;

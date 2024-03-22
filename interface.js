@@ -17,11 +17,13 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global callWorker */
+/* global changeInputmode */
 /* global clearWizardTextInput */
 /* global clickFormLink */
 /* global endCalculation */
 /* global endWorker */
 /* global get */
+/* global getConfig */
 /* global getVersionText */
 /* global formSend */
 /* global generateFuncButtons */
@@ -41,6 +43,12 @@ let currentInputBox;
 let funcnames;
 let parens;
 let value;
+let verboseValue;
+let prettyValue;
+let CunninghamValue;
+let digits;
+let config;
+
 if (lang)
 {
   if ((app === 4) || (app === 5))
@@ -205,6 +213,19 @@ function comingFromWorker(e)
 
 function saveConfig(fromWizard)
 {
+  if (fromWizard)
+  {
+    get("hex").checked = get("hexW").checked;
+  }
+  config = "1" +   // Batch mode
+           verboseValue +
+           prettyValue +
+           CunninghamValue +
+           (get("hex").checked? "1" : "0") +
+           (get("kbd")[1].selected? "1" : "0");
+  digits = get("digits").value.trim();
+  setStorage("ecmConfig", digits+","+config);
+  changeInputmode(get("kbd")[1].selected);
 }
 
 function performCalc(from)
@@ -268,15 +289,12 @@ function performCalc(from)
   {         // Sum of two squares and a power.
     param = from + ",";
   }
+  let options = app + ((config.charAt(4) === '1')? 64: 0);
   if ((app === 4) || (app === 5))
   {         // Continued fractions.
-    id = "converg";
+    options += get("converg").checked? 32: 0;
   }
-  else
-  {
-    id = "hexW";
-  }
-  param += digitGroup + "," + (app+(get(id).checked? 64: 0)) + "," + valueA + String.fromCharCode(0);
+  param += digitGroup + "," + options + "," + valueA + String.fromCharCode(0);
   if ((app === 4) || (app === 5))
   {         // Continued fractions.
     param += valueB + String.fromCharCode(0) + valueC + String.fromCharCode(0);
@@ -335,6 +353,10 @@ function popstate(event)
     show("main");
     hide("wizard");
     get("num").focus();
+  }
+  else if (get("modal-config").style.display == "block")
+  {     // End configuration mode.
+    hide("modal-config");
   }
 }
 
@@ -530,6 +552,31 @@ function startUp()
   {
     generateFuncButtons("wzdfunccat", "wzdfuncbtns");
   }
+  get("config").onclick = function()
+  {
+    verboseValue = config.charAt(1);
+    prettyValue = config.charAt(2);
+    CunninghamValue = config.charAt(3);
+    get("digits").value = digits;
+    get("hex").checked = (config.charAt(4) === "1");
+    history.pushState({id: 5}, "", location.href);
+    get("kbd")[+config.charAt(5)].selected = "selected";
+    show("modal-config");
+  };
+  get("close-config").onclick = function()
+  {
+    history.back();   // Close configuration mode.
+  };
+  get("cancel-config").onclick = function()
+  {
+    history.back();   // Close configuration mode.
+  };
+  get("save-config").onclick = function()
+  {
+    saveConfig(false);
+    history.back();   // Close configuration mode.
+  };
+  getConfig();
   registerServiceWorker();
 }
 getCalculatorCode("fsquaresW0000.js", false);

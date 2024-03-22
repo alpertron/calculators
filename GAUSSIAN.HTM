@@ -96,6 +96,7 @@ h1, .h2title {text-align:center}
 #actions input[type=button] {color: white; background-color: #3b3b3b}
 fieldset {display:inline}
 #functions {max-width:50%}
+.hex {font-family: Courier, "Lucida Console", monospace}
 .lf,.labels {padding:0.2em; clear:both;}
 .blue {color: #0000FF;}
 .inline {display:inline;}
@@ -291,10 +292,19 @@ If <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, then you 
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 <div class="noand">
+<h2>Configuration</h2>
+<p>You can change settings for this application by pressing the Config button when a factorization is not in progress. A new window will pop up where you can select different settings:</p>
+<ul>
+<li><strong>Digits per group</strong>: In order to improve readability, big numbers are separated by spaces forming groups of a fixed number of digits. With this input box, you can determine the number of digits in a group.</li> 
+<li><strong>Hexadecimal output</strong>: If this checkbox is set, the numbers are shown in hexadecimal format instead of decimal, which is the common notation.
+To enter numbers in hexadecimal format, you will need to precede them by the string 0x. For instance, 0x38 = 56. The program shows hexadecimal numbers with monospaced font.</li>
+<li><strong>Keyboard</strong>: This enables the user to select between numeric or complete (alphanumeric) virtual keyboard. The virtual keyboard appears on the screen when the user selects an input box on touch screens.
+</ul>
+<p>The configuration is saved in your device, so when you start again the calculator, all settings remain the same.</p>
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 2 March 2024.</p>
+<p>Written by Dario Alpern. Last updated 21 March 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -315,19 +325,20 @@ If <var>p</var> = <var>m</var><sup>2</sup> + <var>n</var><sup>2</sup>, then you 
 <input type="button" id="nfactor" value="New factor" title="Enter a known factor">
 </div>
 </div></div></div>
-<div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
+<aside id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
 <div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuration</p></div>
 <div class="modal-body">
 <div class="applet">
+<fieldset>
+<legend>Configuration parameters</legend>
 <p><label for="digits">Digits per group</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"></p>
-<p><input type="checkbox" id="batch"><label for="batch">Batch mode</label></p>
-<p><input type="checkbox" id="verbose"><label for="verbose">Verbose mode</label></p>
-<p><input type="checkbox" id="pretty"><label for="pretty">Pretty print</label></p>
-<p><input type="checkbox" id="cunnin"><label for="cunnin">Use Cunningham tables on server</label></p>
+<p><label for="kbd">Keyboard:&nbsp;</label><select id="kbd"><option value="num">Numeric</option><option value="comp">Complete</option></select>
+<p><input type="checkbox" id="hex"><label for="hex">Hexadecimal output</label></p>
+</fieldset>
 <p><input type="button" id="save-config" value="Save" title="Save configuration"><input type="button" id="cancel-config" value="Cancel" title="Discard changes to configuration"></p>
 </div>
-</div></div></div>
+</div></div></aside>
 <aside id="feedback" aria-label="Feedback form">
 <h2 class="h2title">Feedback form</h2>
 <form class="applet" id="formfeedback">

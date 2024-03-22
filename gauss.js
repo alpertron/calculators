@@ -17,12 +17,14 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global callWorker */
+/* global changeInputmode */
 /* global clickFormLink */
 /* global endCalculation */
 /* global endWorker */
 /* global formSend */
 /* global generateFuncButtons */
 /* global get */
+/* global getConfig */
 /* global getStorage */
 /* global getCalculatorCode */
 /* global hide */
@@ -38,6 +40,9 @@ let fileContents = 0;
 let funcnames;
 let parens;
 let currentInputBox;
+let verboseValue;
+let prettyValue;
+let CunninghamValue;
 if (lang)
 {
   funcnames =
@@ -115,6 +120,19 @@ function fromWorker(e)
   }
 }
 
+function saveConfig(fromWizard)
+{
+  config = "1" +   // Batch mode
+           verboseValue +
+           prettyValue +
+           CunninghamValue +
+           (get("hex").checked? "1" : "0") +
+           (get("kbd")[1].selected? "1" : "0");
+  digits = get("digits").value.trim();
+  setStorage("ecmConfig", digits+","+config);
+  changeInputmode(get("kbd")[1].selected);
+}
+
 function comingFromWorker(e)
 {
   fromWorker(e.data);
@@ -122,7 +140,7 @@ function comingFromWorker(e)
 
 function dowork(n)
 {
-  app = lang + n;
+  app = lang + n + (config.charAt(4) === "1"? 16: 0);
   let res = get("result");
   let valueText = get("value").value;
   let helphelp = get("helphelp");
@@ -167,6 +185,10 @@ function popstate(event)
     hide("notSent");
     get("value").focus();   
   }
+  else if (get("modal-config").style.display == "block")
+  {     // End configuration mode.
+    hide("modal-config");
+  }
 }
 
 function startUp()
@@ -203,33 +225,28 @@ function startUp()
   get("config").onclick = function()
   {
     get("digits").value = digits;
-    get("batch").checked = (config.substring(1,2) === "1");
-    get("verbose").checked = (config.substring(1,2) === "1");
-    get("pretty").checked = (config.substring(2,3) === "1");
-    get("cunnin").checked = (config.substring(3,4) === "1");  
+    get("pretty").checked = (config.charAt(2) === "1");
+    get("cunnin").checked = (config.charAt(3) === "1");  
+    get("hex").checked = (config.charAt(4) === "1");  
+    get("kbd")[+config.charAt(5)].selected = "selected";
     show("modal-config");
   };
   get("close-config").onclick = function()
   {
-    hide("modal-config");
+    history.back();   // Close configuration mode.
   };
   get("cancel-config").onclick = function()
   {
-    hide("modal-config");
+    history.back();   // Close configuration mode.
   };
   get("save-config").onclick = function()
   {
-    config = (get("batch").checked? "1" :"0") +
-             (get("verbose").checked? "1" :"0") +
-             (get("pretty").checked? "1" :"0") +
-             (get("cunnin").checked? "1" :"0");
-    digits = get("digits").value;
-    setStorage("ecmConfig", digits+","+config);
-    hide("modal-config");
+    saveConfig(false);
+    history.back();   // Close configuration mode.
   };
   get("close-more").onclick = function()
   {
-    hide("modal-more");
+    history.back();   // Close configuration mode.
   };
   get("helpbtn").onclick = function()
   {
@@ -275,28 +292,18 @@ function startUp()
       hide("modal");
     }
   };
-  digits = getStorage("ecmConfig");
-  if (digits === null || digits === "")
+  get("config").onclick = function()
   {
-    digits = 6;
-    config = "0010";
-    setStorage("ecmConfig", digits+","+config);
-  }
-  else
-  {
-    let index = digits.indexOf(",");
-    if (index<0)
-    {
-      digits = 6;
-      config = "0010";
-      setStorage("ecmConfig", digits+","+config);
-    }
-    else
-    {
-      config = digits.substring(index+1);
-      digits = digits.substring(0,index);
-    }
-  }
+    verboseValue = config.charAt(1);
+    prettyValue = config.charAt(2);
+    CunninghamValue = config.charAt(3);
+    get("digits").value = digits;
+    get("hex").checked = (config.charAt(4) === "1");
+    history.pushState({id: 5}, "", location.href);
+    get("kbd")[+config.charAt(5)].selected = "selected";
+    show("modal-config");
+  };
+  getConfig();
   generateFuncButtons("funccat", "funcbtns");
   registerServiceWorker();
   currentInputBox = get("value");

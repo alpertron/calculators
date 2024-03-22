@@ -29,7 +29,7 @@
 #include "fromBlockly.h"
 #include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 1
+#define DEBUG_CODE 6
 #endif
 #if DEBUG_CODE == 17
 extern bool teach;
@@ -144,9 +144,9 @@ int main(int argc, char* argv[])
   }
 #elif DEBUG_CODE == 6
   char* ptrInput;
-  if (argc != 5)
+  if (argc != 6)
   {
-    (void)printf("num delta den show_convergents\n");
+    (void)printf("num delta den show_hex show_convergents\n");
     return 0;
   }
   ptrInput = input;
@@ -157,7 +157,8 @@ int main(int argc, char* argv[])
   copyStr(&ptrInput, argv[3]);
   ptrInput++;
   bool hex = (argv[4][0] != '0');
-  contfracText(input, 6, hex);
+  bool converg = (argv[5][0] != '0');
+  contfracText(input, 6, hex, converg);
   (void)printf("%s\n", output);
 #elif DEBUG_CODE == 7
   char* ptrInput;

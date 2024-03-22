@@ -17,6 +17,7 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global callWorker */
+/* global changeInputmode */
 /* global clickFormLink */
 /* global endCalculation */
 /* global endWorker */
@@ -24,6 +25,7 @@
 /* global generateFuncButtons */
 /* global get */
 /* global getCalculatorCode */
+/* global getConfig */
 /* global hide */
 /* global registerServiceWorker */
 /* global show */
@@ -36,6 +38,10 @@ let formfeedback, formcancel, formsend, userdata;
 let currentInputBox;
 let funcnames;
 let parens;
+let verboseValue;
+let prettyValue;
+let CunninghamValue;
+let config;
 if (lang)
 {
   funcnames =
@@ -93,6 +99,19 @@ function fromWorker(e)
   }
 }
 
+function saveConfig()
+{
+  config = "1" +   // Batch mode
+           verboseValue +
+           prettyValue +
+           CunninghamValue +
+           (get("hex").checked? "1" : "0") +
+           (get("kbd")[1].selected? "1" : "0");
+  digits = get("digits").value.trim();
+  setStorage("ecmConfig", digits+","+config);
+  changeInputmode(get("kbd")[1].selected);
+}
+
 function comingFromWorker(e)
 {
   fromWorker(e.data);
@@ -100,11 +119,10 @@ function comingFromWorker(e)
 
 function dowork(n)
 {
-  const app = lang + n;
+  const app = lang + n + (config.charAt(4) === "1"? 16: 0);
   const baseText = base.value;
   const powText = pow.value;
   const modText = mod.value;
-  const digitGroup = digits.value;
   hide("help");
   show("result");
   if (baseText === "")
@@ -126,7 +144,7 @@ function dowork(n)
   stop.disabled = false;
   result.innerHTML = (lang? "Calculando el logaritmo discreto..." :
                             "Computing discrete logarithm...");
-  const param = digitGroup + "," + app + "," + baseText + String.fromCharCode(0) + powText +
+  const param = digits + "," + app + "," + baseText + String.fromCharCode(0) + powText +
   String.fromCharCode(0) + modText + String.fromCharCode(0);
   callWorker(param);
 }
@@ -156,6 +174,10 @@ function popstate(event)
     hide("notSent");
     base.focus();   
   }
+  else if (get("modal-config").style.display == "block")
+  {     // End configuration mode.
+    hide("modal-config");
+  }
 }
 
 function startUp()
@@ -166,7 +188,6 @@ function startUp()
   base = get("base");
   pow = get("pow");
   mod = get("mod");
-  digits = get("digits");
   helpbtn = get("helpbtn");
   formlink = get("formlink");
   formfeedback = get("formfeedback");
@@ -221,6 +242,31 @@ function startUp()
   {
     get("formsend").disabled = (get("comments").value === "");
   };
+  get("config").onclick = function()
+  {
+    verboseValue = config.charAt(1);
+    prettyValue = config.charAt(2);
+    CunninghamValue = config.charAt(3);
+    get("digits").value = digits;
+    get("hex").checked = (config.charAt(4) === "1");
+    history.pushState({id: 5}, "", location.href);
+    get("kbd")[+config.charAt(5)].selected = "selected";
+    show("modal-config");
+  };
+  get("close-config").onclick = function()
+  {
+    history.back();   // Close configuration mode.
+  };
+  get("cancel-config").onclick = function()
+  {
+    history.back();   // Close configuration mode.
+  };
+  get("save-config").onclick = function()
+  {
+    saveConfig();
+    history.back();   // Close configuration mode.
+  };
+  getConfig();
   formcancel.onclick = function()
   {
     history.back();

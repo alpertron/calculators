@@ -59,6 +59,30 @@ nav::after {clear:both}
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
 @media print {nav, #footer {display:none;}}
+.modal-header {padding: 2px 10px; background-color: #5cb85c; color: white}
+.modal-body {padding: 2px 10px}
+.modal-content {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background-color: #fefefe;
+  padding: 0;
+  border: 1px solid #888;
+  width: 80%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+}
+#close {float:right}
+#modal-header-text {font-size:1.5em}
 #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
@@ -201,12 +225,10 @@ svg {fill:white}
 </div>
 <fieldset id="actions"><legend>Acciones</legend>
 <input type="button" id="calc" value="Calcular fracción continua" title="Mostrar la fracción continua para el número ingresado">
+<input type="button" id="config" value="Config" title="Cambiar los parámetros de uso de la aplicación">
 <input type="button" id="helpbtn" value="Ayuda" title="Leer información sobre esta calculadora">
 <div class="lf"></div>
 <input type="checkbox" id="converg"><label for="converg" title="Mostrar las mejores aproximaciones como número racional para el número ingresado">Mostrar convergentes</label>
-<div class="lf"></div>
-<label for="digits">Dígitos por grupo:</label>
-<input type="number" id="digits" value="6" min="0" step="1">
 </fieldset>
 <fieldset id="functions"><legend>Funciones</legend>
 <label for="funccat">Categorías:</label> 
@@ -373,6 +395,15 @@ Si <var>b</var> es negativo, el resultado no es un número real, así que no se 
 <li> <strong>RevDigits(n,r)</strong>: halla el valor que se obtiene escribiendo para atrás los dígitos de <var>n</var> en base <var>r</var>. Ejemplo: RevDigits(213, 10) = 312.</li>
 </ul>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
+<h2>Configuración</h2>
+<p>Puedes cambiar la configuración de esta aplicación apretando el botón <strong>Config</strong> mientras el programa no está factorizando. En ese momento aparecerá una nueva ventana donde puedes seleccionar los siguientes ajustes:</p>
+<ul>
+<li><strong>Dígitos por grupo</strong>: Para mejorar la legibilidad, los números grandes se separan mediante espacios formando grupos de una cantidad fija de dígitos. Con esta caja de entrada, puedes determinar la cantidad de dígitos por grupo.</li> 
+<li><strong>Salida hexadecimal</strong>: Indica que los valores mostrados en pantalla deben figurar en hexadecimal en vez de decimal, que es lo habitual.
+Para ingresar números en el formato hexadecimal es necesario que tengan los caracteres 0x adelante. Por ejemplo, 0x38 = 56. El programa muestra números en hexadecimal con tipo monoespaciado.</li>
+<li><strong>Teclado</strong>: Esto permite que el usuario seleccione entre el teclado virtual númerico o completo (alfanumérico). El teclado virtual aparece en la pantalla cuando el usuario selecciona una caja de entrada en pantallas táctiles.</li>
+</ul>
+<p>La configuración se almacena en tu dispositivo, así que si arrancas nuevamente la calculadora, los ajustes no se modificarán.</p>
 <h2>Algoritmos utilizados</h2>
 <p>El cálculo de los coeficientes de la fracción continua de un número racional se realiza de la siguiente manera:</p>
 <ol>
@@ -411,7 +442,7 @@ Si <var>b</var> es negativo, el resultado no es un número real, así que no se 
 <h2>Código fuente</h2>
 <p>Se puede bajar el código fuente de este programa y el del viejo applet de fracciones continuas desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 2 de marzo de 2024.</p>
+<p>Escrito por Dario Alpern. Actualizado el 21 de marzo de 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -426,6 +457,20 @@ Si <var>b</var> es negativo, el resultado no es un número real, así que no se 
 </div>
 </article>
 </main>
+<div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
+<div class="modal-content">
+<div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuración</p></div>
+<div class="modal-body">
+<div class="applet">
+<fieldset>
+<legend>Parámetros de configuración</legend>
+<p><label for="digits">Dígitos por grupo</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"></p>
+<p><label for="kbd">Teclado:&nbsp;</label><select id="kbd"><option value="numeric">Numérico</option><option value="comp">Completo</option></select>
+<p><input type="checkbox" id="hex"><label for="hex">Salida hexadecimal</label></p>
+</fieldset>
+<p><input type="button" id="save-config" value="Aceptar" title="Almacenar la nueva configuración"><input type="button" id="cancel-config" value="Cancelar" title="Descartar los cambios hechos a la configuración"></p>
+</div>
+</div></div></div>
 <aside id="feedback" aria-label="Formulario de comentarios">
 <h2 class="h2title">Formulario de comentarios</h2>
 <form class="applet" id="formfeedback">

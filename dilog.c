@@ -130,13 +130,25 @@ void textErrorDilog(char **pptrOutput, enum eExprErr rc)
   *pptrOutput = pOutput;
 }
 
+static void Bin2Out(char** ppDecimal, const limb* binary, int nbrLimbs, int groupLength)
+{
+  if (hexadecimal)
+  {
+    Bin2Hex(ppDecimal, binary, nbrLimbs, groupLength);
+  }
+  else
+  {
+    Bin2Dec(ppDecimal, binary, nbrLimbs, groupLength);
+  }
+}
+
 static void indicateCannotComputeLog(int indexBase, int indexExp)
 {
   char *ptrText = textExp;
   const struct sFactors *pstFactors = &astFactorsGO[indexBase + 1];
   copyStr(&ptrText, "Cannot compute discrete logarithm: subgroup=");
   IntArray2BigInteger(pstFactors->ptrFactor, &tmpBase);
-  Bin2Dec(&ptrText, tmpBase.limbs, tmpBase.nbrLimbs, groupLen);
+  Bin2Out(&ptrText, tmpBase.limbs, tmpBase.nbrLimbs, groupLen);
   copyStr(&ptrText, ", exponent=");
   int2dec(&ptrText, indexExp);
   DiscreteLogPeriod.sign = SIGN_NEGATIVE;
@@ -313,7 +325,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   ptr = textExp;
   copyStr(&ptr, lang? "Calculando el logaritmo discreto en subgrupo de ":
     "Computing discrete logarithm in subgroup of ");
-  Bin2Dec(&ptr, subGroupOrder.limbs, subGroupOrder.nbrLimbs, groupLen);
+  Bin2Out(&ptr, subGroupOrder.limbs, subGroupOrder.nbrLimbs, groupLen);
   if (astFactorsGO[indexBase + 1].multiplicity > 1)
   {
     *ptr = '<';
@@ -344,7 +356,7 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   if (NbrFactorsMod > 1)
   {
     copyStr(&ptr, lang ? " módulo " : " modulo ");
-    Bin2Dec(&ptr, mod.limbs, mod.nbrLimbs, groupLen);
+    Bin2Out(&ptr, mod.limbs, mod.nbrLimbs, groupLen);
   }
   *ptr = '.';
   ptr++;
@@ -593,7 +605,7 @@ void DiscreteLogarithm(void)
     char* ptrToFactorDec;
     BigInteger2IntArray(nbrToFactor, &modulus);
     ptrToFactorDec = tofactorDec;
-    Bin2Dec(&ptrToFactorDec, modulus.limbs, modulus.nbrLimbs, groupLen);
+    Bin2Out(&ptrToFactorDec, modulus.limbs, modulus.nbrLimbs, groupLen);
     factor(&modulus, nbrToFactor, factorsMod, astFactorsMod);
     NbrFactorsMod = astFactorsMod[0].multiplicity;
   }
@@ -849,11 +861,11 @@ static void generateOutput(enum eExprErr rc, int groupLength)
   {
     copyStr(&ptrOutput, lang ? "<p>Hallar <var>exp</var> tal que " :
       "<p>Find <var>exp</var> such that ");
-    Bin2Dec(&ptrOutput, base.limbs, base.nbrLimbs, groupLength);
+    Bin2Out(&ptrOutput, base.limbs, base.nbrLimbs, groupLength);
     copyStr(&ptrOutput, "<sup><var>exp</var></sup> &equiv; ");
-    Bin2Dec(&ptrOutput, power.limbs, power.nbrLimbs, groupLength);
+    Bin2Out(&ptrOutput, power.limbs, power.nbrLimbs, groupLength);
     copyStr(&ptrOutput, " (mod ");
-    Bin2Dec(&ptrOutput, modulus.limbs, modulus.nbrLimbs, groupLength);
+    Bin2Out(&ptrOutput, modulus.limbs, modulus.nbrLimbs, groupLength);
     copyStr(&ptrOutput, ")</p><p>");
     if (DiscreteLogPeriod.sign == SIGN_NEGATIVE)
     {
@@ -864,11 +876,11 @@ static void generateOutput(enum eExprErr rc, int groupLength)
     else
     {
       copyStr(&ptrOutput, "<var>exp</var> = ");
-      Bin2Dec(&ptrOutput, DiscreteLog.limbs, DiscreteLog.nbrLimbs, groupLength);
+      Bin2Out(&ptrOutput, DiscreteLog.limbs, DiscreteLog.nbrLimbs, groupLength);
       if (!BigIntIsZero(&DiscreteLogPeriod))
       {   // Discrete log period is not zero.
         copyStr(&ptrOutput, " + ");
-        Bin2Dec(&ptrOutput, DiscreteLogPeriod.limbs, DiscreteLogPeriod.nbrLimbs, groupLength);
+        Bin2Out(&ptrOutput, DiscreteLogPeriod.limbs, DiscreteLogPeriod.nbrLimbs, groupLength);
         copyStr(&ptrOutput, "<var>k</var>");
       }
       copyStr(&ptrOutput, "</p>");
@@ -931,10 +943,16 @@ EXTERNALIZE void doWork(void)
     ptrData++;
   }
   ptrData++;             // Skip comma.
-  flags = *ptrData;
-#ifndef lang  
+  flags = *ptrData - '0';
+  if (*(ptrData+1) != ',')
+  {
+    ptrData++;
+    flags = (flags * 10) + *ptrData - '0';
+  }
+#ifndef lang
   lang = ((flags & 1)? true: false);
 #endif
+  hexadecimal = ((flags & 0x10) ? true : false);
   ptrData += 2;          // Skip flags and comma.
   ptrPower = ptrData + (int)strlen(ptrData) + 1;
   ptrMod = ptrPower + (int)strlen(ptrPower) + 1;

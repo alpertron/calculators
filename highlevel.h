@@ -21,7 +21,7 @@
 void fsquaresText(char* input, int grpLen);
 void fcubesText(char *input, int grpLen);
 void tsqcubesText(char* input, int grpLen, int expon);
-void contfracText(char *input, int GroupLen, bool hex);
+void contfracText(char *input, int GroupLen, bool hex, bool converg);
 void polyFactText(const char *modText, const char *polyText, int groupLen);
 void quadmodText(const char *quadrText, const char *linearText, const char *constText,
   const char *modText, int groupLength);

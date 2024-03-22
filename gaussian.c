@@ -45,13 +45,25 @@ static void showText(const char *text)
   copyStr(&ptrOutput, text);
 }
 
+static void Bin2Out(char** ppDecimal, const limb* binary, int nbrLimbs, int groupLength)
+{
+  if (hexadecimal)
+  {
+    Bin2Hex(ppDecimal, binary, nbrLimbs, groupLength);
+  }
+  else
+  {
+    Bin2Dec(ppDecimal, binary, nbrLimbs, groupLength);
+  }
+}
+
 static void showNumber(const BigInteger *real, const BigInteger *imag)
 {
   if (real->sign == SIGN_NEGATIVE)
   {
     showText("-");
   }
-  Bin2Dec(&ptrOutput, real->limbs, real->nbrLimbs, groupLen);
+  Bin2Out(&ptrOutput, real->limbs, real->nbrLimbs, groupLen);
   if (imag->sign == SIGN_POSITIVE)
   {
     showText(" + ");
@@ -60,7 +72,7 @@ static void showNumber(const BigInteger *real, const BigInteger *imag)
   {
     showText(" - ");
   }
-  Bin2Dec(&ptrOutput, imag->limbs, imag->nbrLimbs, groupLen);
+  Bin2Out(&ptrOutput, imag->limbs, imag->nbrLimbs, groupLen);
   showText(" i");
 }
 
@@ -94,9 +106,9 @@ void GaussianFactorization(void)
     NumberLength = tofactor.nbrLimbs;
     BigInteger2IntArray(nbrToFactor, &tofactor);
     copyStr(&ptrFactorDec, "Re&sup2; + Im&sup2; = ");
-    Bin2Dec(&ptrFactorDec, ReValue.limbs, ReValue.nbrLimbs, groupLen);
+    Bin2Out(&ptrFactorDec, ReValue.limbs, ReValue.nbrLimbs, groupLen);
     copyStr(&ptrFactorDec, "&sup2; + ");
-    Bin2Dec(&ptrFactorDec, ImValue.limbs, ImValue.nbrLimbs, groupLen);
+    Bin2Out(&ptrFactorDec, ImValue.limbs, ImValue.nbrLimbs, groupLen);
     copyStr(&ptrFactorDec, "&sup2;");
     factor(&tofactor, nbrToFactor, factorsNorm, astFactorsNorm);
     NbrFactorsNorm = astFactorsNorm[0].multiplicity;
@@ -323,10 +335,16 @@ EXTERNALIZE void doWork(void)
     ptrData++;
   }
   ptrData++;             // Skip comma.
-  flags = *ptrData;
+  flags = *ptrData - '0';
+  if (*(ptrData+1) != ',')
+  {
+    ptrData++;
+    flags = flags*10 + *ptrData - '0';
+  }
 #ifndef lang  
   lang = ((flags & 1)? true: false);
 #endif
+  hexadecimal = ((flags & 0x10)? true: false);
   ptrData += 2;          // Skip flags and comma.
   gaussianText(ptrData, (flags & 2)+'0');
   databack(output);

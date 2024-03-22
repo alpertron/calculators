@@ -60,6 +60,30 @@ nav::after {clear:both}
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
 @media print {nav, #footer {display:none;}}
+.modal-header {padding: 2px 10px; background-color: #5cb85c; color: white}
+.modal-body {padding: 2px 10px}
+.modal-content {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background-color: #fefefe;
+  padding: 0;
+  border: 1px solid #888;
+  width: 80%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+}
+#close {float:right}
+#modal-header-text {font-size:1.5em}
 #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
@@ -172,20 +196,19 @@ input:disabled {color: #808080; background-color: #606060}
 <textarea inputmode="numeric" id="num" rows="4" class="input"></textarea>
 </div>
 <fieldset id="actions"><legend>Actions</legend>
+<div class="inputact">
+<div>
 <button type="button" id="calc" title="Find sums of two squares and a cube."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup>3</sup></button>
 <button type="button" id="calc5" title="Find sums of two squares and a fifth power."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup>5</sup></button>
 <button type="button" id="calcN" title="Find sums of two squares and an odd power."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup><var>n</var></sup></button>
+<div class="lf"></div>
 <input type="button" id="stop" value="Stop" title="Stop calculation">
 <input type="button" id="helpbtn" value="Help" title="Read information about this calculator">
 <input type="button" id="openwizard" value="Wizard" title="Enter expressions and loops in an easy way">
-<div class="lf"></div>
-<div class="inputact">
-<div>
-<label for="digits">Digits per group:</label><br>
-<input type="number" id="digits" class="diginput" value="6">
+<input type="button" id="config" value="Config" title="Change parameters used in the application">
 </div>
 <div>
-<label for="digits"><var>n</var> (odd):</label><br>
+<label for="expon"><var>n</var> (odd):</label><br>
 <input type="number" id="expon" class="diginput" value="7">
 </div>
 </div>
@@ -272,6 +295,15 @@ to find <var>d</var> = <var>a</var><sup>2</sup> + <var>b</var><sup>2</sup>.</li>
 </ul>
 <p>You can use the prefix <em>0x</em> for hexadecimal numbers, for example 0x38 is equal to 56.</p>
 </div>
+<h2>Configuration</h2>
+<p>You can change settings for this application by pressing the Config button when a factorization is not in progress. A new window will pop up where you can select different settings:</p>
+<ul>
+<li><strong>Digits per group</strong>: In order to improve readability, big numbers are separated by spaces forming groups of a fixed number of digits. With this input box, you can determine the number of digits in a group.</li> 
+<li><strong>Hexadecimal output</strong>: If this checkbox is set, the numbers are shown in hexadecimal format instead of decimal, which is the common notation.
+To enter numbers in hexadecimal format, you will need to precede them by the string 0x. For instance, 0x38 = 56. The program shows hexadecimal numbers with monospaced font.</li>
+<li><strong>Keyboard</strong>: This enables the user to select between numeric or complete (alphanumeric) virtual keyboard. The virtual keyboard appears on the screen when the user selects an input box on touch screens.
+</ul>
+<p>The configuration is saved in your device, so when you start again the calculator, all settings remain the same.</p>
 <h2>Batch processing</h2>
 <p>Write an expression per line, then press one of the sum of powers button. The output will be placed in the lower pane.</p>
 <p>Blank lines or comment lines (which start with a numeral '#' character) will be replicated on the lower pane.</p>
@@ -301,12 +333,12 @@ The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <p>The expressions are written after the string, separated by colons. There must be a colon also between the string and the first expression.</p>
 <p>To print a percent sign, you have to write two percent signs, and a quotation mark is represented by a percent sign followed by a quotation mark.</p>
 <p>Example 3: For each number between -100 and 100, show whether the number is prime and then the decomposition in two squares and a cube both in decimal and hexadecimal.</p>
-<p>The line to write is: <code>x=-100; x=x+1; &lt;=100; &quot;%d is prime: %l, %Fd, %Fx&quot;:x:isprime(x):x:x</code>
+<p>The line to write is: <code>x=-100; x=x+1; x&lt;=100; &quot;%d is prime: %l, %Fd, %Fx&quot;:x:isprime(x):x:x</code>
 <div class="noand">
 <h2>Source code</h2>
 <p>You can download the source of the this program from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 2 March 2024.</p>
+<p>Written by Dario Alpern. Last updated 21 March 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -319,6 +351,7 @@ The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <p><span class="new">New!</span> You can download an application for Android that includes this calculator from <a href="https://play.google.com/store/apps/details?id=ar.com.alpertron.calculators">Google Play</a>.</p>
 <p>If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
 <p>If you like these calculators and you want to support free software with no annoying advertisements, you can <a href="https://www.PayPal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MR65QPWZM5JT6&source=url">donate through PayPal</a>.</p>
+</div>
 </article>
 </main>
 <aside id="wizard" aria-label="Wizard">
@@ -374,6 +407,20 @@ The line to type is: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <p>Feedback could not be sent.</p>
 <div class="center"><button type="button" id="btnNotSent">Go back</button></div>
 </aside>
+<div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
+<div class="modal-content">
+<div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuration</p></div>
+<div class="modal-body">
+<div class="applet">
+<fieldset>
+<legend>Configuration parameters</legend>
+<p><label for="digits">Digits per group</label> <input type="number" id="digits" value="6" min="0" max="10000" step="1"></p>
+<p><label for="kbd">Keyboard:&nbsp;</label><select id="kbd"><option value="numeric">Numeric</option><option value="comp">Complete</option></select>
+<p><input type="checkbox" id="hex"><label for="hex">Hexadecimal output</label></p>
+</fieldset>
+<p><input type="button" id="save-config" value="Save" title="Save configuration"><input type="button" id="cancel-config" value="Cancel" title="Discard changes to configuration"></p>
+</div>
+</div></div></div>
 <aside id="feedback" aria-label="Feedback form">
 <h2 class="h2title">Feedback form</h2>
 <form class="applet" id="formfeedback">

@@ -17,6 +17,7 @@
     along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* global callWorker */
+/* global changeInputmode */
 /* global clearWizardTextInput */
 /* global clickFormLink */
 /* global comingFromPolfact */
@@ -27,6 +28,7 @@
 /* global generateFuncButtons */
 /* global get */
 /* global getCalculatorCode */
+/* global getConfig */
 /* global getStorage */
 /* global hide */
 /* global keyDownOnWizard */
@@ -171,9 +173,11 @@ function saveConfig(fromWizard)
            (chkVerbose.checked? "1" : "0") +
            (chkPretty.checked? "1" : "0") +
            (chkCunningham.checked? "1" : "0") +
-           (chkHex.checked? "1" : "0");
-  digits = get("digits").value;
+           (chkHex.checked? "1" : "0") +
+           (get("kbd")[1].selected? "1" : "0");
+  digits = get("digits").value.trim();
   setStorage("ecmConfig", digits+","+config);
+  changeInputmode(get("kbd")[1].selected);
 }
 
 function showSumSquares()
@@ -518,7 +522,6 @@ function popstate(event)
 
 function startUp()
 {
-  let index;
   value = get("value");
   btnNext = get("next");
   btnEval = get("eval");
@@ -570,11 +573,12 @@ function startUp()
   btnConfig.onclick = function()
   {
     get("digits").value = digits;
-    chkVerbose.checked = (config.substring(1,2) === "1");
-    chkPretty.checked = (config.substring(2,3) === "1");
-    chkCunningham.checked = (config.substring(3,4) === "1");  
-    chkHex.checked = (config.substring(4,5) === "1");
+    chkVerbose.checked = (config.charAt(1) === "1");
+    chkPretty.checked = (config.charAt(2) === "1");
+    chkCunningham.checked = (config.charAt(3) === "1");  
+    chkHex.checked = (config.charAt(4) === "1");
     history.pushState({id: 5}, "", location.href);
+    get("kbd")[+config.charAt(5)].selected = "selected";
     show("modal-config");
   };
   btnFromFile.onclick = function()
@@ -621,8 +625,8 @@ function startUp()
     btnNext.disabled = true;
     wzdInput.value = "";
     wzdInput.focus();
-    chkHexW.checked = (config.substring(4,5) === "1");
-    chkDecW.checked = (config.substring(4,5) !== "1");
+    chkHexW.checked = (config.charAt(4) === "1");
+    chkDecW.checked = (config.charAt(4) !== "1");
     oneexpr();
   };
   wzdInput.onkeydown = keyDownOnWizard;
@@ -934,34 +938,9 @@ function startUp()
   ctx.fillText("28",297,308);
   ctx.font = "italic "+ctx.font;
   ctx.fillText("y",5,150);
-  ctx.fillText("x",160,308);  
-  digits = getStorage("ecmConfig");
-  if (digits === null || digits === "")
-  {
-    digits = 6;
-    config = "00100";
-    setStorage("ecmConfig", digits+","+config);
-  }
-  else
-  {
-    index = digits.indexOf(",");
-    if (index<0)
-    {
-      digits = 6;
-      config = "00100";
-      setStorage("ecmConfig", digits+","+config);
-    }
-    else
-    {
-      config = digits.substring(index+1);
-      while (config.length < 5)
-      {  // Convert legacy configuration.
-        config += "0";
-      }
-      digits = digits.substring(0,index);
-      updateVerbose(config.substring(1,2) === "1");
-    }
-  }
+  ctx.fillText("x",160,308);
+  getConfig();
+  updateVerbose(config.charAt(1) === "1");
   comingFromPolfact(value);
   registerServiceWorker();
   currentInputBox = get("value");

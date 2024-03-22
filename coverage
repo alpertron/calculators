@@ -407,22 +407,23 @@ gcovr --json run-8.json
 make clean
 make contfrac flags_coverage=--coverage
 echo -e "\n\n**** CONTFRAC ****" >> coverage.out
-./contfrac 1 2 3 0 >> coverage.out
-./contfrac 1 0 991 0 >> coverage.out
-./contfrac 5 27 991 0 >> coverage.out
-./contfrac 1 2 3 1 >> coverage.out
-./contfrac 1 0 991 1 >> coverage.out
-./contfrac 5 27 991 1 >> coverage.out
-./contfrac 1 3 -1 1 >> coverage.out
-./contfrac 1 2 0 1 >> coverage.out
-./contfrac 1 -5 3 1 >> coverage.out
-./contfrac 1 9 3 1 >> coverage.out
-./contfrac A 9 3 1 >> coverage.out
-./contfrac 1 A 3 1 >> coverage.out
-./contfrac 1 9 A 1 >> coverage.out
-./contfrac "sqrt(2,4)" 9 A 1 >> coverage.out
-./contfrac "sqrt()" 9 A 1 >> coverage.out
-./contfrac "random(6)" 9 A 1 >> coverage.out
+./contfrac 1 2 3 0 0 >> coverage.out
+./contfrac 1 0 991 0 0 >> coverage.out
+./contfrac 5 27 991 0 0 >> coverage.out
+./contfrac 1 2 3 0 1 >> coverage.out
+./contfrac 1 0 991 0 1 >> coverage.out
+./contfrac 5 27 991 0 1 >> coverage.out
+./contfrac 1 3 -1 0 1 >> coverage.out
+./contfrac 1 2 0 0 1 >> coverage.out
+./contfrac 1 -5 3 0 1 >> coverage.out
+./contfrac 1 9 3 0 1 >> coverage.out
+./contfrac A 9 3 0 1 >> coverage.out
+./contfrac 1 A 3 0 1 >> coverage.out
+./contfrac 1 9 A 0 1 >> coverage.out
+./contfrac "sqrt(2,4)" 9 A 0 1 >> coverage.out
+./contfrac "sqrt()" 9 A 0 1 >> coverage.out
+./contfrac "random(6)" 9 A 0 1 >> coverage.out
+./contfrac 1 2 3 1 0 >> coverage.out
 lcov --capture --directory . --output-file contfrac.info
 gcovr --json run-9.json
 make clean
