@@ -54,6 +54,7 @@ void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* ps
 void showVariable(char **pptrOutput, char letter);
 void stepsForQuadraticEquation(char origVar, char substVar);
 void showVarIndex(char letter, int index);
+void showCoeffBeforeParen(BigRational* rat);
 
 extern BigInteger Quintic;
 extern BigInteger Quartic;

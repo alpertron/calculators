@@ -30,6 +30,7 @@ extern char* ptrOutput;
 extern const char* ptrSin;
 extern const char* ptrCos;
 extern const char* ptrPi;
+extern const char* ptrI;
 
 void stepsForQuadraticEquation(char origVar, char substVar)
 {
@@ -54,7 +55,7 @@ void stepsForQuadraticEquation(char origVar, char substVar)
     showPlusMinusRational(&Rat2);
     endParen();
     showPower(&ptrOutput, 2);
-    showPlusMinusRational(&RatLinear);
+    showCoeffBeforeParen(&RatLinear);
     showText(ptrTimes);
     startParen();
     showVariable(&ptrOutput, substVar);
@@ -62,6 +63,7 @@ void stepsForQuadraticEquation(char origVar, char substVar)
     endParen();
     showPlusMinusRational(&RatIndependent);
     showText(" = 0</p><p>");
+    showText(lang?"Distribuyendo:</p><p>": "Expanding brackets:</p><p>");
     // Expand all terms.
     // (y-B/2)^2
     showRatCoeffAndPowerVar(NULL, -2, substVar);
@@ -77,6 +79,7 @@ void stepsForQuadraticEquation(char origVar, char substVar)
     // C
     showPlusMinusRational(&RatIndependent);
     showText(" = 0</p><p>");
+    showText(lang ? "Simplificando:</p><p>" : "Simplifying:</p><p>");
     // Show y^2 - delta = 0.
     BigRationalDivideByInt(&Rat4, 2, &Rat4);
     BigRationalAdd(&Rat4, &RatIndependent, &Rat4);
@@ -216,8 +219,7 @@ void QuadraticEquation(const int* polynomial, int multiplicity)
       *ptrOutput = ' ';
       ptrOutput++;
       showText(ptrTimes);
-      *ptrOutput = 'i';
-      ptrOutput++;
+      showText(ptrI);
     }
     endShowX();
   }

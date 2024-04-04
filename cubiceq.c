@@ -688,8 +688,7 @@ static void showRPlusS(void)
 
 static void showN(void)
 {
-  showPlusMinusRational(&RatDeprLinear);
-  showText(ptrTimes);
+  showCoeffBeforeParen(&RatDeprLinear);
   showRPlusS();
   showPlusMinusRational(&RatDeprIndependent);
   showText(" = 0</p><p>");
@@ -841,6 +840,32 @@ static void showCardanoMethod(char currLetter)
   CopyBigInt(&RatIndependent.denominator, &RatCubic.denominator);
 }
 
+void showCoeffBeforeParen(BigRational* rat)
+{
+  if (BigIntEqual(&rat->numerator, &rat->denominator))
+  {
+    showText(" + ");
+  }
+  else
+  {
+    bool ratIsMinusOne;
+    BigIntChSign(&rat->numerator);
+    ratIsMinusOne = BigIntEqual(&rat->numerator, &rat->denominator);
+    BigIntChSign(&rat->numerator);
+    if (ratIsMinusOne)
+    {
+      showText(" ");
+      showText(ptrMinus);
+      showText(" ");
+    }
+    else
+    {
+      showPlusMinusRational(rat);
+      showText(ptrTimes);
+    }
+  }
+}
+
 void CubicEquation(const int* polynomial, int multiplicity)
 {
   const int* ptrPolynomial = polynomial;
@@ -915,8 +940,7 @@ void CubicEquation(const int* polynomial, int multiplicity)
       endParen();
       showPower(&ptrOutput, 3);
       // Quadratic term is already non-zero.
-      showPlusMinusRational(&RatQuadratic);
-      showText(ptrTimes);
+      showCoeffBeforeParen(&RatQuadratic);
       startParen();
       showVariable(&ptrOutput, 'y');
       showPlusMinusRational(&Rat2);
@@ -924,7 +948,7 @@ void CubicEquation(const int* polynomial, int multiplicity)
       showPower(&ptrOutput, 2);
       if (!BigIntIsZero(&RatLinear.numerator))
       {  // Do not show linear term if it equals zero.
-        showPlusMinusRational(&RatLinear);
+        showCoeffBeforeParen(&RatLinear);
         startParen();
         showVariable(&ptrOutput, 'y');
         showPlusMinusRational(&Rat2);
@@ -932,6 +956,7 @@ void CubicEquation(const int* polynomial, int multiplicity)
       }
       showPlusMinusRational(&RatIndependent);
       showText(" = 0</p><p>");
+      showText(lang ? "Distribuyendo:</p><p>" : "Expanding brackets:</p><p>");
       // Expand all terms.
       // (y-B/3)^3
       showRatCoeffAndPowerVar(NULL, -3, 'y');
@@ -963,6 +988,7 @@ void CubicEquation(const int* polynomial, int multiplicity)
       // D
       showPlusMinusRational(&RatIndependent);
       showText(" = 0</p><p>");
+      showText(lang ? "Simplificando:</p><p>" : "Simplifying:</p><p>");
       // Show y^3 + Py + Q = 0.
       showRatCoeffAndPowerVar(NULL, -3, 'y');
       showRatCoeffAndPowerVar(&RatDeprLinear, 1, 'y');

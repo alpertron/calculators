@@ -30,6 +30,7 @@ static BigRational Rat1;
 static BigRational Rat2;
 extern char* ptrOutput;
 extern char* ptrTimes;
+extern char* ptrMinus;
 
 // Let A = a_n/a_d, B = b_n/b_d, C = c_n/d_n
 // A = B+C means a_n = b_n*c_d + c_n*b_d, a_d = b_d * c_d
@@ -468,23 +469,40 @@ void showPlusMinusRational(BigRational* rat)
   }
 }
 
+// expon < 0: Leading term. Do not show sign if positive.
+// If coefficient is 1 or -1, do not show the number, just the sign,
+// except when the exponent is zero. In that case, show the number.
 void showRatCoeffAndPowerVar(BigRational* rat, int expon, char letter)
 {
   int absExpon;
-  bool numAndDenAreEqual = true;
-  bool numAndDenAreNeg = false;
-  if ((expon >= 0) && BigIntIsZero(&rat->numerator))
-  {
-    return;
-  }
+  bool ratIsPlusOne = true;
+  bool ratIsMinusOne = false;
   if (expon >= 0)
   {
-    numAndDenAreEqual = BigIntEqual(&rat->numerator, &rat->denominator);
+    if (BigIntIsZero(&rat->numerator))
+    {    // Do not show the term if coefficient is zero.
+      return;
+    }
+    // Test whether the number is 1 or -1.
+    ratIsPlusOne = BigIntEqual(&rat->numerator, &rat->denominator);
     BigIntChSign(&rat->numerator);
-    numAndDenAreNeg = BigIntEqual(&rat->numerator, &rat->denominator);
+    ratIsMinusOne = BigIntEqual(&rat->numerator, &rat->denominator);
     BigIntChSign(&rat->numerator);
   }
-  if ((expon == 0) || (numAndDenAreEqual == numAndDenAreNeg))
+  if ((expon != 0) && (ratIsPlusOne || ratIsMinusOne))
+  {
+    if (ratIsMinusOne)
+    {
+      showText(" ");
+      showText(ptrMinus);
+      showText(" ");
+    }
+    if ((expon >= 0) && ratIsPlusOne)
+    {
+      showText(" + ");
+    }
+  }
+  else
   {
     if (expon >= 0)
     {
@@ -492,14 +510,17 @@ void showRatCoeffAndPowerVar(BigRational* rat, int expon, char letter)
     }
     else
     {       // For leading coefficient, just show the number.
-      showRational(rat);
+      if (rat != NULL)
+      {
+        showRational(rat);
+      }
     }
   }
   if (expon == 0)
   {
     return;
   }
-  if (numAndDenAreEqual == numAndDenAreNeg)
+  if (!ratIsPlusOne && !ratIsMinusOne)
   {
     if (pretty == PRETTY_PRINT)
     {
