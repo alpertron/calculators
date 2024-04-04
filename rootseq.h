@@ -24,11 +24,24 @@
 #define TYPE_PM_SPACE_BEFORE 1
 #define TYPE_PM_SPACE_AFTER  2
 
+void LinearEquation(const int* polynomial, int multiplicity);
+void QuadraticEquation(const int* polynomial, int multiplicity);
+void CubicEquation(const int* polynomial, int multiplicity);
 void QuarticEquation(const int* polynomial, int multiplicity);
 void QuinticEquation(const int* ptrPolynomial, int multiplicity);
+bool isLinearExponential(const int* ptrPolynomial, int polyDegree, int multiplicity);
+bool isQuadraticExponential(const int* ptrPolynomial, int polyDegree,
+  int multiplicity);
+void GenerateRoots(int multiplicity, const char* rationalRoot,
+  bool isNegative, int polyDegree);
+void StartRadicand(int polyDegree);
+void EndRadicand(int polyDegree);
+void showTimesPi(char** pptrString);
+void showRatString(const char* num, const char* den);
 void startLine(void);
 void endLine(void);
 void showX(int multiplicity);
+void endShowX(void);
 void showPlusSignOn(bool condPlus, int type);
 void startParen(void);
 void endParen(void);
@@ -38,6 +51,9 @@ void startCbrt(void);
 void endCbrt(void);
 void showRatConstants(const char* numerator, const char* denominator);
 void getRootsPolynomial(int nbrFactor, char **pptrOutput, struct sFactorInfo* pstFactorInfo, int groupLength);
+void showVariable(char **pptrOutput, char letter);
+void stepsForQuadraticEquation(char origVar, char substVar);
+void showVarIndex(char letter, int index);
 
 extern BigInteger Quintic;
 extern BigInteger Quartic;
@@ -78,4 +94,5 @@ extern int indexRoot;
 extern const char *ptrMinus;
 extern const char *ptrTimes;
 extern int polyInteger[1000000];
+extern bool teach;
 #endif

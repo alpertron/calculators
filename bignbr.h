@@ -260,6 +260,8 @@ void showRationalOverStr(const BigRational* rat, const char* str, const char *pt
 void ShowRationalAndSqrParts(const BigRational* RatPart, const BigRational* SqrPart,
   int root, const char *ptrTimes);
 void showSquareRootOfRational(const BigRational* rat, int root, const char *ptrTimes);
+void showPlusMinusRational(BigRational* rat);
+void showRatCoeffAndPowerVar(BigRational* rat, int expon, char letter);
 void copyStr(char** pptrString, const char* stringToCopy);
 void computeRoot(const BigInteger* argument, BigInteger* nthRoot, int Exponent);
 

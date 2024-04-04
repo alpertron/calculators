@@ -40,6 +40,7 @@ extern bool doShowPrime;
 
 #define DO_NOT_SHORT_CIRCUIT  (COMPR_STACK_SIZE + 100)  // Larger than stack size.
 
+bool teach = true;
 BigInteger LastAnswer;
 const struct sFuncOperExpr stFuncOperIntExpr[] =
 {

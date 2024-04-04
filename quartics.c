@@ -92,7 +92,7 @@ static void biquadraticConstantSquare(int multiplicity)
         showText(ptrI);
       }
     }
-    endLine();
+    endShowX();
   }
 }
 
@@ -187,7 +187,6 @@ static void biquadraticConstantNotSquare(int multiplicity)
         BigIntChSign(&RatDeprIndependent.numerator);
         showSquareRootOfRational(&RatDeprIndependent, 4, ptrTimes);
         BigIntChSign(&RatDeprIndependent.numerator);
-        endLine();
       }
       else
       {
@@ -211,9 +210,9 @@ static void biquadraticConstantNotSquare(int multiplicity)
         BigRationalSubt(&Rat1, &RatDeprIndependent, &Rat1);
         showSquareRootOfRational(&Rat1, 2, ptrTimes);
         endSqrt();
-        endLine();
       }
     }
+    endShowX();
   }
 }
 
@@ -406,6 +405,7 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
       showSquareRootOfComplex(szMinus, " + ");
       endParen();
     }
+    endShowX();
   }
 }
 
@@ -715,6 +715,7 @@ void QuarticEquation(const int* polynomial, int multiplicity)
         showRationalOverStr(&RatDeprLinear, "S", ptrTimes);
       }
       endSqrt();
+      endShowX();
     }
   }
   else
@@ -856,8 +857,7 @@ void QuarticEquation(const int* polynomial, int multiplicity)
         showRationalOverStr(&RatDeprLinear, "S", ptrTimes);
       }
       endSqrt();
-      endLine();
+      endShowX();
     }
   }
 }
-

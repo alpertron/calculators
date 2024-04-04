@@ -2076,7 +2076,7 @@ static int PerformStrongLucasTest(const BigInteger* pValue, int D, int absQ, int
 // 1) If the input number is 2-SPRP composite, indicate composite and go out.
 // 2) If number is perfect square, indicate it is composite and go out.
 // 3) Find the first D in the sequence 5, -7, 9, -11, 13, -15, ...
-//    for which the Jacobi symbol (D/n) is −1. Set P = 1 and Q = (1 - D) / 4.
+//    for which the Jacobi symbol (D/n) is &minus;1. Set P = 1 and Q = (1 - D) / 4.
 // 4) Perform a strong Lucas probable prime test on n using parameters D, P,
 //    and Q. If n is not a strong Lucas probable prime, then n is composite.
 //    Otherwise, n is almost certainly prime.

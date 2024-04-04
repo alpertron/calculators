@@ -1,4 +1,4 @@
-//
+﻿//
 // This file is part of Alpertron Calculators.
 //
 // Copyright 2019-2021 Dario Alejandro Alpern
@@ -29,6 +29,7 @@ static BigInteger tmp3;
 static BigRational Rat1;
 static BigRational Rat2;
 extern char* ptrOutput;
+extern char* ptrTimes;
 
 // Let A = a_n/a_d, B = b_n/b_d, C = c_n/d_n
 // A = B+C means a_n = b_n*c_d + c_n*b_d, a_d = b_d * c_d
@@ -245,11 +246,11 @@ static void showRationalPretty(const BigRational* rat)
 {
   if (pretty == PRETTY_PRINT)
   {
-    showText("<span class=\"fraction\"><span class=\"numerator\">");
+    showText("<f-f><f-n>");
     shownbr(&rat->numerator);
-    showText("</span><span class=\"denominator\">");
+    showText("</f-n><f-d>");
     shownbr(&rat->denominator);
-    showText("</span></span>");
+    showText("</f-d></f-f>");
   }
   else
   {      // Tex
@@ -283,9 +284,9 @@ void showRationalOverStr(const BigRational* rat, const char *str, const char *pt
   if (pretty != PARI_GP)
   {
     showText((pretty == PRETTY_PRINT)?
-      "<span class=\"fraction\"><span class=\"numerator\">": "\\frac{");
+      "<f-f><f-n>": "\\frac{");
     shownbr(&rat->numerator);
-    showText((pretty == PRETTY_PRINT)? "</span><span class=\"denominator\">": "}{");
+    showText((pretty == PRETTY_PRINT)? "</f-n><f-d>": "}{");
     if (denominatorIsNotOne)
     {
       shownbr(&rat->denominator);
@@ -293,7 +294,7 @@ void showRationalOverStr(const BigRational* rat, const char *str, const char *pt
       showText(" ");
     }
     showText(str);
-    showText((pretty == PRETTY_PRINT)? "</span></span>": "}");
+    showText((pretty == PRETTY_PRINT)? "</f-d></f-f>": "}");
     return;
   }
   shownbr(&rat->numerator);
@@ -343,8 +344,7 @@ void showRational(const BigRational* rat)
 void ShowRationalAndSqrParts(const BigRational* RatPart, const BigRational* SqrPart, int root,
   const char *ptrTimes)
 {
-  if ((SqrPart->numerator.nbrLimbs != 1) || (SqrPart->numerator.limbs[0].x != 1) ||
-    (SqrPart->denominator.nbrLimbs != 1) || (SqrPart->denominator.limbs[0].x != 1))
+  if (!BigIntIsOne(&SqrPart->numerator) || !BigIntIsOne(&SqrPart->denominator))
   {       // Square root part is not 1.
     if ((RatPart->numerator.nbrLimbs != 1) || (RatPart->numerator.limbs[0].x != 1) ||
       (RatPart->denominator.nbrLimbs != 1) || (RatPart->denominator.limbs[0].x != 1))
@@ -357,9 +357,9 @@ void ShowRationalAndSqrParts(const BigRational* RatPart, const BigRational* SqrP
       {
         if (pretty == PRETTY_PRINT)
         {
-          showText("<span class=\"root\"><span class=\"radicand2\">");
+          showText("<r-2><r-a>");
           showRational(RatPart);
-          showText("</span></span>");
+          showText("</r-a></r-2>");
         }
         else if (pretty == TEX)
         {
@@ -389,21 +389,28 @@ void ShowRationalAndSqrParts(const BigRational* RatPart, const BigRational* SqrP
     {     // Absolute value of rational part is 1.
       if (RatPart->numerator.sign == SIGN_NEGATIVE)
       {   // Rational part is 1. Show negative sign.
-        showText((pretty != PARI_GP)? "&minus;": "-");
+        showText((pretty == PRETTY_PRINT)? "&minus;": "-");
       }
     }
     if (pretty == PRETTY_PRINT)
     {
       if (root == 2)
       {
-        showText("<span class=\"root\"><span class=\"radicand2\">");
+        showText("<r-2><r-a>");
       }
       else
       {
-        showText("<span class=\"root\"><span class=\"befrad\" aria-hidden=\"true\">4</span><span class=\"radicand4\">");
+        showText("<r-t><span class=\"befrad\" aria-hidden=\"true\">4</span><span class=\"radicand4\">");
       }
       showRational(SqrPart);
-      showText("</span></span>");
+      if (root == 2)
+      {
+        showText("</r-a></r-2>");
+      }
+      else
+      {
+        showText("</span></r-t>");
+      }
     }
     else if (pretty == TEX)
     {
@@ -440,7 +447,83 @@ void showSquareRootOfRational(const BigRational* rat, int root, const char *ptrT
   ShowRationalAndSqrParts(&Rat1, &Rat2, root, ptrTimes);
 }
 
+void showPlusMinusRational(BigRational* rat)
+{
+  if (BigIntIsZero(&rat->numerator))
+  {
+    return;
+  }
+  ForceDenominatorPositive(rat);
+  if (rat->numerator.sign == SIGN_POSITIVE)
+  {
+    showText(" + ");
+    showRational(rat);
+  }
+  else
+  {
+    showText(pretty == PRETTY_PRINT? " &minus; ": " - ");
+    BigIntChSign(&rat->numerator);
+    showRational(rat);
+    BigIntChSign(&rat->numerator);
+  }
+}
+
+void showRatCoeffAndPowerVar(BigRational* rat, int expon, char letter)
+{
+  int absExpon;
+  bool numAndDenAreEqual = true;
+  bool numAndDenAreNeg = false;
+  if ((expon >= 0) && BigIntIsZero(&rat->numerator))
+  {
+    return;
+  }
+  if (expon >= 0)
+  {
+    numAndDenAreEqual = BigIntEqual(&rat->numerator, &rat->denominator);
+    BigIntChSign(&rat->numerator);
+    numAndDenAreNeg = BigIntEqual(&rat->numerator, &rat->denominator);
+    BigIntChSign(&rat->numerator);
+  }
+  if ((expon == 0) || (numAndDenAreEqual == numAndDenAreNeg))
+  {
+    if (expon >= 0)
+    {
+      showPlusMinusRational(rat);
+    }
+    else
+    {       // For leading coefficient, just show the number.
+      showRational(rat);
+    }
+  }
+  if (expon == 0)
+  {
+    return;
+  }
+  if (numAndDenAreEqual == numAndDenAreNeg)
+  {
+    if (pretty == PRETTY_PRINT)
+    {
+      showText(ptrTimes);
+    }
+    else
+    {
+      *ptrOutput++ = '*';
+      ptrOutput++;
+    }
+  }
+  if (expon >= 0)
+  {
+    absExpon = expon;
+  }
+  else
+  {
+    absExpon = -expon;
+  }
+  showPowerVar(&ptrOutput, absExpon, letter);
+}
+
 double BigRational2double(const BigRational* value)
 {
   return BigInt2double(&value->numerator) / BigInt2double(&value->denominator);
 }
+

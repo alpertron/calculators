@@ -25,6 +25,7 @@
 #include "polynomial.h"
 #include "showtime.h"
 
+extern bool teach;
 #if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
 EXTERNALIZE void doWork(void)
 {
@@ -45,7 +46,8 @@ EXTERNALIZE void doWork(void)
   lang = ((flags & 1)? true: false);
 #endif
   onlyEvaluate = ((flags & 2) != 0);
-  switch (flags / 4)
+  teach = ((flags & 4) != 0);
+  switch (flags / 8)
   {
   case 0:
     pretty = PRETTY_PRINT;

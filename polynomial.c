@@ -25,6 +25,7 @@
 #include "expression.h"
 #include "highlevel.h"
 #include "polynomial.h"
+#include "rootseq.h"
 #include "showtime.h"
 #include "output.h"
 
@@ -1825,7 +1826,7 @@ void OrigPolyFromMontgomeryToStandard(void)
   (void)memcpy(&values[1], &poly4[0], (ptrValue2 - &poly4[0])*sizeof(int));
 }
 
-static void showPower(char **pptrOutput, int exponent)
+void showPower(char **pptrOutput, int exponent)
 {
   char *ptrOutput = *pptrOutput;
   if (pretty == PRETTY_PRINT)
@@ -1873,9 +1874,9 @@ static void showPower(char **pptrOutput, int exponent)
   *pptrOutput = ptrOutput;
 }
 
-void showPowerX(char **pptrOutput, int polyDegree)
+void showPowerVar(char** pptrOutput, int polyDegree, char letter)
 {
-  char *ptrOutput = *pptrOutput;
+  char* ptrOutput = *pptrOutput;
   if (polyDegree == 0)
   {
     *ptrOutput = '1';
@@ -1885,11 +1886,18 @@ void showPowerX(char **pptrOutput, int polyDegree)
   {
     if (pretty == PRETTY_PRINT)
     {
-      copyStr(&ptrOutput, lang?"<span class=\"hide\">equis </span><span aria-hidden=\"true\"><var>x</var></span>":"<var>x</var>");
+      if (letter == 'x')
+      {
+        copyStr(&ptrOutput, lang ? "<var role=\"img\" aria-label=\"equis\">x</var>" : "<var>x</var>");
+      }
+      else
+      {
+        showVariable(&ptrOutput, letter);
+      }
     }
     else
     {
-      *ptrOutput = 'x';
+      *ptrOutput = letter;
       ptrOutput++;
     }
     if (polyDegree != 1)
@@ -1898,6 +1906,11 @@ void showPowerX(char **pptrOutput, int polyDegree)
     }
   }
   *pptrOutput = ptrOutput;
+}
+
+void showPowerX(char **pptrOutput, int polyDegree)
+{
+  showPowerVar(pptrOutput, polyDegree, 'x');
 }
 
 static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree, int groupLength)
@@ -2070,7 +2083,7 @@ void outputOriginalPolynomial(char** pptrOutput, int groupLength)
     isFraction = true;
     if (pretty == PRETTY_PRINT)
     {
-      copyStr(pptrOutput, "<span class=\"fraction\"><span class=\"numerator\">");
+      copyStr(pptrOutput, "<f-f><f-n>");
     }
     else if (pretty == PARI_GP)
     {
@@ -2088,7 +2101,7 @@ void outputOriginalPolynomial(char** pptrOutput, int groupLength)
   }
   if (pretty == PRETTY_PRINT)
   {
-    copyStr(pptrOutput, "</span><span class=\"denominator\">");
+    copyStr(pptrOutput, "</f-n><f-d>");
   }
   else if (pretty == PARI_GP)
   {
@@ -2101,7 +2114,7 @@ void outputOriginalPolynomial(char** pptrOutput, int groupLength)
   outputOriginalPolynomialElem(pptrOutput, denom, groupLength);
   if (pretty == PRETTY_PRINT)
   {
-    copyStr(pptrOutput, "</span></span>");
+    copyStr(pptrOutput, "</f-d></f-f>");
   }
   else if (pretty == PARI_GP)
   {

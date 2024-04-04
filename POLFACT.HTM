@@ -78,49 +78,55 @@ h1, .h2title {text-align:center}
 input[type=button] {color: white; background-color: #3b3b3b}
 fieldset {display:inline}
 .lf,.labels {padding:0.2em; clear:both; width:100%}
-.nolf {white-space: nowrap;}
-.atright {float:right;}
-.pad, #footer {padding:10px;}
+.nolf {white-space: nowrap}
+.atright {float:right}
+.pad, #footer {padding:10px}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+.outerbox {display:table; color:blue}
+.box {font-weight:bold; text-align:center; border-style:double; display:table-cell;border-radius:10px;}
+.box > p {margin-left:5px;margin-right:5px;}
 #feedback {display:none}
 #digits {width:5em}
-@media (min-width: 400px) { .input{width: calc(100% - 8em);float:right;padding:3px;margin:0px;}}
-@media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
+@media (min-width: 400px) {.input{width: calc(100% - 8em);float:right;padding:3px;margin:0px;}}
+@media (max-width: 400px) {.input{width:100%;padding:3px;margin:0px;}}
 #result ul {margin:0;padding:0px 20px 0px 20px;}
 sup::before {content:" raised to the power ";position:absolute;top:-9999px;left:-9999px}
-.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
-.input{width: calc(100% - 8em);float:right;padding:3px;margin:0px;}
-.root,.root2dig,.root3dig{display: inline-block; vertical-align:middle; border-top: 1px solid; border-left: 1px solid; transform: skew(-15deg); transform-origin: bottom left; position: relative;}
-.root {margin:2px 10px}
+.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px}
+.input{width: calc(100% - 8em);float:right;padding:3px;margin:0px}
+r-t,r-2,.root2dig,.root3dig{display: inline-block; vertical-align:middle; border-top: 1px solid; border-left: 1px solid; transform: skew(-15deg); transform-origin: bottom left; position: relative;}
+r-t,r-2 {margin:2px 10px}
 .root2dig {margin:2px 10px 2px 18px}
 .root3dig {margin:2px 10px 2px 26px}
-.root:before,.root2dig:before,.root3dig:before {content: ""; position:absolute; bottom:0; height:40%; width:5px; left:-5px; border-right:1px solid; transform:skew(30deg); transform-origin:bottom right;}
-.root:after,.root2dig:after,.root3dig:after {content: " end root ";position:absolute;top:-9999px;left:-9999px}
-.radicand2, .radicand3, .radicand4, .radicand5{display: inline-block; padding-left:0.5em; transform:skew(15deg);}
-.radicand2:before{content: " square root of "; position:absolute;top:-9999px;left:-9999px}
+r-t:before,r-2:before,.root2dig:before,.root3dig:before {content: ""; position:absolute; bottom:0; height:40%; width:5px; left:-5px; border-right:1px solid; transform:skew(30deg); transform-origin:bottom right;}
+r-t:after,r-2:after,.root2dig:after,.root3dig:after {content: " end root ";position:absolute;top:-9999px;left:-9999px}
+r-a,r-d,.radicand3,.radicand4,.radicand5{display: inline-block; padding-left:0.5em; transform:skew(15deg);}
+r-a:before{content: " square root of "; position:absolute;top:-9999px;left:-9999px}
 .radicand3,.radicand4,.radicand5 {top:-0.2em; left:-0.7em;}
 .radicand3:before{content: " cubic root of "; position:absolute;top:-9999px;left:-9999px}
 .radicand4:before{content: " fourth root of "; position:absolute;top:-9999px;left:-9999px}
 .radicand5:before{content: " fifth root of "; position:absolute;top:-9999px;left:-9999px}
-.root>.befrad{position:absolute; font-size:80%; top:-0.2em; left: -1em; transform: skew(15deg);}
+r-t>.befrad{position:absolute; font-size:80%; top:-0.2em; left: -1em; transform: skew(15deg);}
 .root2dig>.befrad{position:absolute; font-size:80%; top:-0.2em; left: -1.5em; transform: skew(15deg);}
 .root3dig>.befrad{position:absolute; font-size:80%; top:-0.2em; left: -2em; transform: skew(15deg);}
 .befrad:after {content:" root of ";position:absolute;top:-9999px;left:-9999px}
-.fraction{display: inline-flex; flex-direction:column; padding:0.3em; align-items:center; vertical-align:middle;}
-.fraction:before {content:" start fraction ";position:absolute;top:-9999px;left:-9999px}
-.fraction:after {content:" end fraction ";position:absolute;top:-9999px;left:-9999px}
-.numerator {border-bottom: 2px solid grey; margin:-1px;}
-.denominator {border-top: 2px solid grey; margin:-1px;}
-.denominator:before {content:" over ";position:absolute;top:-9999px;left:-9999px}
-.paren{padding-left:8px; padding-right:8px; position:relative; display:inline-block; margin-left:5px}
-.paren:before{border-left:2px solid black; border-radius:50%; bottom:0; content:''; position:absolute; top:0; width:8px; left:-3px;}
-.paren:after{border-right:2px solid black; border-radius:50%; bottom:0; content:''; position:absolute; top:0; width:8px; right:3px;}
-.hide {position:absolute;top:-9999px;left:-9999px}
+f-f{display: inline-flex; flex-direction:column; padding:0.3em; align-items:center; vertical-align:middle;}
+f-f:before {content:" start fraction ";position:absolute;top:-9999px;left:-9999px}
+f-f:after {content:" end fraction ";position:absolute;top:-9999px;left:-9999px}
+f-n {border-bottom: 2px solid grey; margin:-1px;}
+f-d {border-top: 2px solid grey; margin:-1px;}
+f-d:before {content:" over ";position:absolute;top:-9999px;left:-9999px}
+p-p {padding-left:8px; padding-right:8px; position:relative; display:inline-block; margin-left:5px}
+p-p:before {border-left:2px solid black; border-radius:50%; bottom:0; content:''; position:absolute; top:0; width:8px; left:-3px;}
+p-p:after {border-right:2px solid black; border-radius:50%; bottom:0; content:''; position:absolute; top:0; width:8px; right:3px;}
+o-t,o-p:before,o-p:after {position:absolute;top:-9999px;left:-9999px}
+o-t {content:"times"}
+o-p:before {content:" left parenthesis "}
+o-p:after {content:" right parenthesis "}
 @media screen and (prefers-color-scheme: dark) {
 body {color: #ddd; background-color: #121212}
 .applet {background-color:#606060; color: #fff}
-.paren:before{border-left:2px solid #ddd}
-.paren:after{border-right:2px solid #ddd}
+p-p:before{border-left:2px solid #ddd}
+p-p:after{border-right:2px solid #ddd}
 h2 > button {background-color:#333; color:#eee;}
 h2 > button.active,h2 > button:hover {background-color:#555;}
 h2 > button:after {color:#777}
@@ -131,6 +137,7 @@ a:visited {color: #d7bde2}
 input, textarea, select {color: white; background-color: #3b3b3b}
 input:disabled {color: #808080; background-color: #606060}
 .new {color: #E0E000}
+.outerbox {color:yellow}
 }
 </style>
 <noscript>
@@ -201,6 +208,7 @@ input:disabled {color: #808080; background-color: #606060}
 <div class="lf"></div>
 <input type="button" id="eval" value="Evaluate">
 <input type="button" id="factor" value="Factor">
+<input type="button" id="steps" value="Steps">
 <input type="button" id="stop" value="Stop">
 <input type="button" id="helpbtn" value="Help"><br>
 <div class="lf"></div>
@@ -241,21 +249,21 @@ and then adding the coefficients of the same degree. Finally, the coefficients a
 <p>Use the upper input box to enter the polynomial expression and the lower input box to enter a numerical expression for the modulus,
 which must be either zero or an integer number greater than 1 of the form prime number raised to an exponent.
 You can just evaluate the polynomial or evaluate and factor it, by pressing the corresponding button.</p>
-<p>Example for integer polynomial factorization: to factor <var>x</var><sup>30</sup> &minus; 1, type <kbd>x<span class="hide">caret</span><span aria-hidden="true">^</span>30<span class="hide">minus</span><span aria-hidden="true">-</span>1</kbd> in the upper input box and 0 in the lower input box.
+<p>Example for integer polynomial factorization: to factor <var>x</var><sup>30</sup> &minus; 1, type <kbd>x<span role="img" aria-label="caret">^</span>30<<span role="img" aria-label="minus">-</span>1</kbd> in the upper input box and 0 in the lower input box.
 Then press the factor button.</p>
 <p>Example for polynomial modulo a prime factorization: copy any of the expressions below in the upper input box and type the number 211 (a prime number) in the lower input box.
 Then press the button "Factor expression".</p>
 <ul>
-<li><kbd>6x<span class="hide"> caret</span><span aria-hidden="true">^</span>8+x<span class="hide"> caret</span><span aria-hidden="true">^</span>5+3</kbd></li>
-<li><kbd>2*<span class="hide">left parenthesis</span><span aria-hidden="true">(</span>x+6<span class="hide">right parenthesis</span><span aria-hidden="true">)</span>*<span class="hide">left parenthesis</span><span aria-hidden="true">(</span>x-5<span class="hide">right parenthesis</span><span aria-hidden="true">)</span>+xx<span class="hide"> caret</span><span aria-hidden="true">^</span>4+23x</kbd></li>
+<li><kbd>6x<<span role="img" aria-label=" caret">^</span>8+x<span role="img" aria-label=" caret">^</span>5+3</kbd></li>
+<li><kbd>2*<span role="img" aria-label="left parenthesis">(</span>x+6<span role="img" aria-label="right parenthesis">)</span>*<span role="img" aria-label="left parenthesis">(</span>x-5<span role="img" aria-label="right parenthesis">)</span>+xx<span role="img" aria-label=" caret">^</span>4+23x</kbd></li>
 </ul>
 <p>The exponentiation symbol is not present in some mobile devices, so two asterisks ** can by typed as the exponentiation operator.
 So, equivalent expressions would be:</p>
 <ul>
 <li><kbd>6x**8+x**5+3</kbd></li>
-<li><kbd>2*<span class="hide">left parenthesis</span><span aria-hidden="true">(</span>x+6<span class="hide">right parenthesis</span><span aria-hidden="true">)</span>*<span class="hide">left parenthesis</span><span aria-hidden="true">(</span>x-5<span class="hide">right parenthesis</span><span aria-hidden="true">)</span>+xx**4+23x</kbd></li>
+<li><kbd>2*<span role="img" aria-label="left parenthesis">(</span>x+6<span role="img" aria-label="right parenthesis">)</span>*<span role="img" aria-label="left parenthesis">(</span>x-5<span role="img" aria-label="right parenthesis">)</span>+xx**4+23x</kbd></li>
 </ul>
-<p>You can type a dot (.) and the application will replace it by &quot;x<span class="hide"> caret</span><span aria-hidden="true">^</span>&quot;. This saves a lot of time in mobile devices because there is no
+<p>You can type a dot (.) and the application will replace it by &quot;x<span role="img" aria-label=" caret">^</span>&quot;. This saves a lot of time in mobile devices because there is no
 need to switch between alphabetical and numerical keyboards for simple polynomials.</p>
 <p>For the first example you would type:</p>
 <ul><li><kbd>6.8+.5+3</kbd></li></ul>
@@ -273,12 +281,12 @@ By Abel-Ruffini theorem, some polynomials of degree 5 cannot be expressed by rad
 <p>You can use any letter to represent the variable. Multiple variables are not accepted. The program always use the letter <var>x</var> to show the output.</p>
 <p>You can also enter expressions that use the following operators and parentheses:</p>
 <ul>
-<li><span class="hide">plus sign</span><strong aria-hidden="true">+</strong> for addition</li>
-<li><span class="hide">minus sign</span><strong aria-hidden="true">-</strong> for subtraction</li>
-<li><span class="hide">asterisk</span><strong aria-hidden="true">*</strong> for multiplication</li>
-<li><span class="hide">slash</span><strong aria-hidden="true">/</strong> for division</li>
-<li><span class="hide">percent symbol</span><strong aria-hidden="true">%</strong> for remainder of polynomial long division</li>
-<li><span class="hide">caret or two asterisks</span><span aria-hidden="true"><strong>^</strong> or <strong>**</strong></span> for exponentiation</li>
+<li><strong role="img" aria-label="plus sign">+</strong> for addition</li>
+<li><strong role="img" aria-label="minus sign">-</strong> for subtraction</li>
+<li><strong role="img" aria-label="asterisk">*</strong> for multiplication</li>
+<li><strong role="img" aria-label="slash">/</strong> for division</li>
+<li><strong role="img" aria-label="percent symbol">%</strong> for remainder of polynomial long division</li>
+<li><span role="img" aria-label="caret or two asterisks"><strong>^</strong> or <strong>**</strong></span> for exponentiation</li>
 <li><strong>Ans</strong>: retrieves the last answer.</li>
 </ul>
 <p>Operators and functions for the polynomial (upper box) only:</p>
@@ -595,8 +603,8 @@ Compute <var>b</var> = gcdp(<var>a</var>, lc(<var>f</var>) &#8290; <var>f</var>)
 <p>For polynomials of degrees up to 4, the standard formulas are used. No cube roots of complex numbers are used. In these cases (named <em>casus irreducibilis</em>), the program uses trigonometric functions.</p>
 <p>For polynomials of degree 5, the application uses the results of D. S. Dummit's paper <em><a href="https://www.ams.org/journals/mcom/1991-57-195/S0025-5718-1991-1079014-X/S0025-5718-1991-1079014-X.pdf">Solving Solvable Quintic</a></em>, Mathematics of Computation volume 57, number 195, July 1991, pp. 387-401.</p>
 <p>The program can determine whether an irreducible polynomial is cyclotomic, i. e., a divisor of <var>x</var><sup><var>n</var></sup> &minus; 1. In this case the program shows the complex roots of 1:</p>
-<p><span aria-hidden="true">cos</span> <span class="hide">cosine of </span><span class="fraction"><span class="numerator"><var>m</var><span class="hide"> times pi</span><span aria-hidden="true"> &pi;</span></span><span class="denominator"><var>n</var></span></span> +
-i <span aria-hidden="true">sin</span> <span class="hide">times sine of </span><span class="fraction"><span class="numerator"><var>m</var><span class="hide"> times pi</span><span aria-hidden="true"> &pi;</span></span><span class="denominator"><var>n</var></span></span></p>
+<p><span role="img" aria-label="cosine of">cos</span> <f-f><f-n><var>m</var><span role="img" aria-label=" times pi"> &pi;</span></f-n><f-d><var>n</var></f-d></f-f> +
+i <span role="img" aria-label=" times sine of">sin</span><f-f><f-n><var>m</var><span role="img" aria-label=" times pi"> &pi;</span></f-n><f-d><var>n</var></f-d></f-f></p>
 <p>where <var>m</var> and <var>n</var> are coprime.</p>
 <p>If <var>n</var> = 2<sup><var>q</var></sup> &times; 3<sup><var>r</var></sup> &times; 5<sup><var>s</var></sup> &times; 17<sup><var>t</var></sup>
 where <var>r</var> &lt; 2, <var>s</var> &lt; 2 and <var>t</var> &lt; 2, the program can find the roots as radical expressions.</p>
@@ -617,7 +625,7 @@ Otherwise, only trigonometric functions are shown.</p>
 <p>You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
 </div>
-<p>Written by Dario Alpern. Last updated 22 March 2024.</p>
+<p>Written by Dario Alpern. Last updated 3 April 2024.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div id="footer">

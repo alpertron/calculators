@@ -12,7 +12,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>"x=2**31;x=n(x);x%3c2**31+2**20;x;isprime(2+x) and isprime(6+x) and isprime(8+x)"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>0 "(x^2 - 3*x + 5)^2" 0 0</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\x64\release</LocalDebuggerWorkingDirectory>

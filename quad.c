@@ -96,7 +96,6 @@ static BigInteger Ylin;
 static int nbrFactors;
 static bool solFound;
 static bool originTranslated;
-bool teach = true;
 static char also;
 static bool ExchXY;
 static char *ptrOutput;
@@ -145,6 +144,8 @@ static const char *varYnoTrans;
 static bool firstSolutionX;
 extern BigInteger LastModulus;
 extern BigInteger prime;
+extern bool teach;
+
 #define NBR_COEFF 6
 struct stValidateCoeff
 {

@@ -118,182 +118,192 @@ gcovr --json run-2.json
 make clean
 make polfact flags_coverage=--coverage
 echo -e "\n\n**** POLFACT ****" >> coverage.out
-./polfact 0 "x^120-1" 0 >> coverage.out
-./polfact 0 "x^120-1" 1 >> coverage.out
-./polfact 0 "x^120-1" 2 >> coverage.out
-./polfact 7 "x^10+x^5-1" 0 >> coverage.out
-./polfact 7 "x^10+x^5-1" 1 >> coverage.out
-./polfact 7 "x^10+x^5-1" 2 >> coverage.out
-./polfact 0 "x+23" 0 >> coverage.out
-./polfact 0 "x+23" 1 >> coverage.out
-./polfact 0 "x+23" 2 >> coverage.out
-./polfact 0 "(2*x+23)*(3x+5)" 0 >> coverage.out
-./polfact 0 "(2*x+23)*(3x+5)" 1 >> coverage.out
-./polfact 0 "(2*x+23)*(3x+5)" 2 >> coverage.out
-./polfact 0 "x^2+7*x+23" 0 >> coverage.out
-./polfact 0 "x^2+7*x+23" 1 >> coverage.out
-./polfact 0 "x^2+7*x+23" 2 >> coverage.out
-./polfact 0 "x^3-4*x^2+12*x+23" 0 >> coverage.out
-./polfact 0 "x^3-4*x^2+12*x+23" 1 >> coverage.out
-./polfact 0 "x^3-4*x^2+12*x+23" 2 >> coverage.out
-./polfact 0 "x^3-x^2+2x+5" 0 >> coverage.out
-./polfact 0 "x^3-x^2+2x+5" 1 >> coverage.out
-./polfact 0 "x^3-x^2+2x+5" 2 >> coverage.out
-./polfact 0 "x^3+2" 0 >> coverage.out
-./polfact 0 "x^3+2" 1 >> coverage.out
-./polfact 0 "x^3+2" 2 >> coverage.out
-./polfact 0 "x^3-2" 0 >> coverage.out
-./polfact 0 "x^3-2" 1 >> coverage.out
-./polfact 0 "x^3-2" 2 >> coverage.out
-./polfact 0 "x^3+6*x^2+18" 0 >> coverage.out
-./polfact 0 "x^3+6*x^2+18" 1 >> coverage.out
-./polfact 0 "x^3+6*x^2+18" 2 >> coverage.out
-./polfact 0 "3x**3+3x**2+x-5" 2 >> coverage.out
-./polfact 0 "x^4+7" 0 >> coverage.out
-./polfact 0 "x^4-7" 0 >> coverage.out
-./polfact 0 "x^4+x^2-2*x+1" 2 >> coverage.out
-./polfact 0 "x^3-12x^2+12x+23" 0 >> coverage.out
-./polfact 0 "x^3-12x^2+12x+23" 1 >> coverage.out
-./polfact 0 "x^3-12x^2+12x+23" 2 >> coverage.out
-./polfact 0 "x^4+3*x^2+12*x+23" 0 >> coverage.out
-./polfact 0 "x^4+3*x^2+12*x+23" 1 >> coverage.out
-./polfact 0 "x^4+3*x^2+12*x+23" 2 >> coverage.out
-./polfact 0 "x^4+4*x^2+23" 0 >> coverage.out
-./polfact 0 "x^4+4*x^2+23" 1 >> coverage.out
-./polfact 0 "x^4+4*x^2+23" 2 >> coverage.out
-./polfact 0 "x^4+4*x^2-23" 0 >> coverage.out
-./polfact 0 "x^4+4*x^2-23" 1 >> coverage.out
-./polfact 0 "x^4+4*x^2-23" 2 >> coverage.out
-./polfact 0 "x^4+18*x^2+25" 2 >> coverage.out
-./polfact 0 "x^4-18*x^2+25" 2 >> coverage.out
-./polfact 0 "x^4+18*x^2+144" 2 >> coverage.out
-./polfact 0 "x^4-18*x^2+144" 2 >> coverage.out
-./polfact 0 "x^4+18*x^2+24" 2 >> coverage.out
-./polfact 0 "x^4-18*x^2+24" 2 >> coverage.out
-./polfact 0 "x^4+18*x^2+95" 2 >> coverage.out
-./polfact 0 "x^4-18*x^2+95" 2 >> coverage.out
-./polfact 0 "x^4+18*x^2-25" 2 >> coverage.out
-./polfact 0 "x^4-18*x^2-25" 2 >> coverage.out
-./polfact 0 "x^4+18*x^2-121" 2 >> coverage.out
-./polfact 0 "x^4-18*x^2-121" 2 >> coverage.out
-./polfact 0 "x^4+18*x^2-24" 2 >> coverage.out
-./polfact 0 "x^4-18*x^2-24" 2 >> coverage.out
-./polfact 0 "x^4+18*x^2-95" 2 >> coverage.out
-./polfact 0 "x^4-18*x^2-95" 2 >> coverage.out
-./polfact 0 "x^4-18*x^2+3*x+5" 2 >> coverage.out
-./polfact 0 "x^4-18*x^2-3*x+5" 2 >> coverage.out
-./polfact 0 "x^4+3x^2+79*x+8" 2 >> coverage.out
-./polfact 0 "3x**4-3x**2+x-5" 0 >> coverage.out
-./polfact 0 "3x**4-3x**2+x-5" 1 >> coverage.out
-./polfact 0 "3x**4-3x**2+x-5" 2 >> coverage.out
-./polfact 0 "x^5+15*x+12" 0 >> coverage.out
-./polfact 0 "x^5+15*x+12" 1 >> coverage.out
-./polfact 0 "x^5+15*x+12" 2 >> coverage.out
-./polfact 0 "x^5-5*x+12" 0 >> coverage.out
-./polfact 0 "x^5-5*x+12" 1 >> coverage.out
-./polfact 0 "x^5-5*x+12" 2 >> coverage.out
-./polfact 0 "17x^5-20*x+21" 0 >> coverage.out
-./polfact 0 "17x^5-20*x+21" 1 >> coverage.out
-./polfact 0 "17x^5-20*x+21" 2 >> coverage.out
-./polfact 0 "x^4+4=x^8" 0 >> coverage.out
-./polfact 0 "x^5+20*x^3+20*x^2+30x+10" 0 >> coverage.out
-./polfact 0 "x^5+20*x^3+20*x^2+30x+10" 1 >> coverage.out
-./polfact 0 "x^5+20*x^3+20*x^2+30x+10" 2 >> coverage.out
-./polfact 0 "x^5+10*x^3-20x^2-1505x-7412" 0 >> coverage.out
-./polfact 0 "x^5+10*x^3-20x^2-1505x-7412" 1 >> coverage.out
-./polfact 0 "x^5+10*x^3-20x^2-1505x-7412" 2 >> coverage.out
-./polfact 0 "x**6+x**5+3*x**4+x**3+3*x**2+x+1" 2 >> coverage.out
-./polfact 0 "x^7+x+12" 0 >> coverage.out
-./polfact 0 "x^7+x+12" 1 >> coverage.out
-./polfact 0 "x^7+x+12" 2 >> coverage.out
-./polfact 0 "x**9+6*x**3+5" 2 >> coverage.out
-./polfact 0 "x^10+2*x^5+23" 0 >> coverage.out
-./polfact 0 "x^10+2*x^5+23" 1 >> coverage.out
-./polfact 0 "x^10+2*x^5+23" 2 >> coverage.out
-./polfact 0 "x^10+2*x^5-23" 0 >> coverage.out
-./polfact 0 "x^10+2*x^5-23" 1 >> coverage.out
-./polfact 0 "x^10+2*x^5-23" 2 >> coverage.out
-./polfact 0 "x**12+x+5" 2 >> coverage.out
-./polfact 0 "x**13+3*x+5" 2 >> coverage.out
-./polfact 0 "x^17-1" 0 >> coverage.out
-./polfact 0 "x^17-1" 1 >> coverage.out
-./polfact 0 "x^17-1" 2 >> coverage.out
-./polfact 0 "x**129+6*x**4+5" 2 >> coverage.out
-./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" 0 >> coverage.out
-./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" 1 >> coverage.out
-./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" 2 >> coverage.out
-./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 >> coverage.out
-./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 1 >> coverage.out
-./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 2 >> coverage.out
-./polfact 0 "gcd(x+1,x)+3" 2 >> coverage.out
-./polfact 0 "lcm(x+1,x)+3" 2 >> coverage.out
-./polfact 0 "gcd(x+1,x**2-1)+2" 2 >> coverage.out
-./polfact 0 "lcm(x+1,x**2-1)+2" 2 >> coverage.out
-./polfact 0 "gcd(x+1,x*(x**2-1), x**3-1)" 2 >> coverage.out
-./polfact 0 "lcm(x+1,x**2-1, x**3-1)" 2 >> coverage.out
-./polfact 0 "gcd(x^4, x^7+x^3, x^6)" 2 >> coverage.out
-./polfact 0 "lcm(x^4, x^7+x^3, x^6)" 2 >> coverage.out
-./polfact 3 "gcd(x+1,x)+3" 2 >> coverage.out
-./polfact 3 "lcm(x+1,x)+3" 2 >> coverage.out
-./polfact 3 "gcd(x+1,x**2-1)+2" 2 >> coverage.out
-./polfact 3 "lcm(x+1,x**2-1)+2" 2 >> coverage.out
-./polfact 3 "gcd(x+1,x*(x**2-1), x**3-1)" 2 >> coverage.out
-./polfact 3 "lcm(x+1,x**2-1, x**3-1)" 2 >> coverage.out
-./polfact 3 "gcd(x^4, x^7+x^3, x^6)" 2 >> coverage.out
-./polfact 3 "lcm(x^4, x^7+x^3, x^6)" 2 >> coverage.out
-./polfact 2 "x^60-1" 2 >> coverage.out
-./polfact 11 "(x^5+x^3+1)+(2x^4+2)" 2 >> coverage.out
-./polfact 11 "(2x^4+2)+(x^5+x^3+1)" 2 >> coverage.out
-./polfact 11 "-(x^5+x^3+1)" 2 >> coverage.out
-./polfact 11 "x^5^2" 2 >> coverage.out
-./polfact 11 "x^(5*3)+x^(9/3)+x^(8%3)+lcm(0,x)+lcm(x,0)" 2 >> coverage.out
-./polfact 11 "-x^3+(x^5+x^3+1)" 2 >> coverage.out
-./polfact 11 "-x^9+(x^5+x^3+1)" 2 >> coverage.out
-./polfact 11 "random(1,4,3,6)" 2 >> coverage.out
-./polfact 0 "random(1,4,3,6)" 2 >> coverage.out
-./polfact 11 "x^2+x^7" 2 >> coverage.out
-./polfact 11 "(2x^4+2)^2" 2 >> coverage.out
-./polfact 11 "ans+x" 2 >> coverage.out
-./polfact 11 "2+x = 3-x^2" 2 >> coverage.out
-./polfact 0 "-x^5" 2 >> coverage.out
-./polfact 0 "x**5+x**4-4x**3-3x**2+3x+1" 2 >> coverage.out
-./polfact 0 "(68987*x^2+47773*x+4983)*(61415*x^2+4334*x+343)" 2 >> coverage.out
-./polfact 0 "(3789678961*x^2+545543121*x+432143141)*(678585781*x^2+43213515*x+342143153)" 2 >> coverage.out
-./polfact 0 "(678967896891*x^2+431545543121*x+43432143141)*(67567856785781*x^2+43213515*x+342143153)" 1 >> coverage.out
-./polfact 0 "(x^8-1)/(x^4+1)" 2 >> coverage.out
-./polfact 7 "(x^8-1)/(x^4+1)" 2 >> coverage.out
-./polfact 0 "(x^8-1)%(x^4+1)" 2 >> coverage.out
-./polfact 7 "(x^8-1)%(x^4+1)" 2 >> coverage.out
-./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 >> coverage.out
-./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 1 >> coverage.out
-./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 2 >> coverage.out
-./polfact "7^21" "x**39-1" 2 >> coverage.out
-./polfact "7^21" "x**39" 2 >> coverage.out
-./polfact "n(10**19)" "(x**2+23*x-54)*(x**2-42*x+23)" 0 >> coverage.out
-./polfact "n(10**19)" "(x**2+23*x-54)*(x**2-42*x+23)" 1 >> coverage.out
-./polfact "n(10**19)" "(x**2+23*x-54)*(x**2-42*x+23)" 2 >> coverage.out
-./polfact 0 "2.3" 2 >> coverage.out
-./polfact ".8" "2" 2 >> coverage.out
-./polfact "3.8" "6.2" 2 >> coverage.out
-./polfact 0 "1/x+1/(x-1)+1/(x+1)=1" 2 >> coverage.out
-./polfact 7 "1/x+1/(x-1)+1/(x+1)=1" 2 >> coverage.out
-./polfact 0 "LongDiv(x^8-1, x^4-1)" 2 >> coverage.out
-./polfact 7 "LongDiv(x^8-1, x^4-1)" 2 >> coverage.out
-./polfact 0 "LongDiv(x^7/3, x^6/4+3*x^5)" 2 >> coverage.out
-./polfact 0 "LongDiv(x^4, x^8)" 2 >> coverage.out
-./polfact 0 "(x+1)^3+(x-1)^3" 2 >> coverage.out
-./polfact 0 "longdiv((x+1)^3,(x-1)^6)" 2 >> coverage.out
-./polfact 0 "longdiv((x+1)^6,4*(x-1)^3)" 2 >> coverage.out
-./polfact 0 "(x+1)^6 % 26" 2 >> coverage.out
-./polfact 0 "longdiv((x+1)^6, 0)" 2 >> coverage.out
-./polfact 0 "(x+1)^6 / 0" 2 >> coverage.out
-./polfact 0 "(x+1)^6 % (26x)" 2 >> coverage.out
-./polfact 0 "(x-1)^3/(x-1)^6" 2 >> coverage.out
-./polfact 0 "longdiv(x/(x^2+1), x/(x^3+1))" 2 >> coverage.out
-./polfact 0 "x^(-3)" 2 >> coverage.out
-./polfact 0 "(x+2)^(-3)" 2 >> coverage.out
-./polfact 0 "x^(-2)/(x+2)^(-3)" 2 >> coverage.out
-./polfact "n(10**19)" "(x**2-1)*(x-1)" 2 >> coverage.out
+./polfact 0 "x^510-1" 0 0 >> coverage.out
+./polfact 0 "x^120-1" 0 0 >> coverage.out
+./polfact 0 "x^120-1" 0 1 >> coverage.out
+./polfact 0 "x^120-1" 0 2 >> coverage.out
+./polfact 7 "x^10+x^5-1" 0 0 >> coverage.out
+./polfact 7 "x^10+x^5-1" 0 1 >> coverage.out
+./polfact 7 "x^10+x^5-1" 0 2 >> coverage.out
+./polfact 0 "x+23" 0 0 >> coverage.out
+./polfact 0 "x+23" 0 1 >> coverage.out
+./polfact 0 "x+23" 0 2 >> coverage.out
+./polfact 0 "(2*x+23)*(3x+5)" 0 0 >> coverage.out
+./polfact 0 "(2*x+23)*(3x+5)" 0 1 >> coverage.out
+./polfact 0 "(2*x+23)*(3x+5)" 0 2 >> coverage.out
+./polfact 0 "x^2+7*x+23" 0 0 >> coverage.out
+./polfact 0 "x^2+7*x+23" 0 1 >> coverage.out
+./polfact 0 "x^2+7*x+23" 0 2 >> coverage.out
+./polfact 0 "x^3-4*x^2+12*x+23" 0 0 >> coverage.out
+./polfact 0 "x^3-4*x^2+12*x+23" 0 1 >> coverage.out
+./polfact 0 "x^3-4*x^2+12*x+23" 0 2 >> coverage.out
+./polfact 0 "x^3-x^2+2x+5" 0 0 >> coverage.out
+./polfact 0 "x^3-x^2+2x+5" 0 1 >> coverage.out
+./polfact 0 "x^3-x^2+2x+5" 0 2 >> coverage.out
+./polfact 0 "x^3+2" 0 0 >> coverage.out
+./polfact 0 "x^3+2" 0 1 >> coverage.out
+./polfact 0 "x^3+2" 0 2 >> coverage.out
+./polfact 0 "x^3-2" 0 0 >> coverage.out
+./polfact 0 "x^3-2" 0 1 >> coverage.out
+./polfact 0 "x^3-2" 0 2 >> coverage.out
+./polfact 0 "x^3+6*x^2+18" 0 0 >> coverage.out
+./polfact 0 "x^3+6*x^2+18" 0 1 >> coverage.out
+./polfact 0 "x^3+6*x^2+18" 0 2 >> coverage.out
+./polfact 0 "3x**3+3x**2+x-5" 0 2 >> coverage.out
+./polfact 0 "x^4+7" 0 0 >> coverage.out
+./polfact 0 "x^4-7" 0 0 >> coverage.out
+./polfact 0 "x^4+x^2-2*x+1" 0 2 >> coverage.out
+./polfact 0 "x^3-12x^2+12x+23" 0 0 >> coverage.out
+./polfact 0 "x^3-12x^2+12x+23" 0 1 >> coverage.out
+./polfact 0 "x^3-12x^2+12x+23" 0 2 >> coverage.out
+./polfact 0 "x^4+3*x^2+12*x+23" 0 0 >> coverage.out
+./polfact 0 "x^4+3*x^2+12*x+23" 0 1 >> coverage.out
+./polfact 0 "x^4+3*x^2+12*x+23" 0 2 >> coverage.out
+./polfact 0 "x^4+4*x^2+23" 0 0 >> coverage.out
+./polfact 0 "x^4+4*x^2+23" 0 1 >> coverage.out
+./polfact 0 "x^4+4*x^2+23" 0 2 >> coverage.out
+./polfact 0 "x^4+4*x^2-23" 0 0 >> coverage.out
+./polfact 0 "x^4+4*x^2-23" 0 1 >> coverage.out
+./polfact 0 "x^4+4*x^2-23" 0 2 >> coverage.out
+./polfact 0 "x^4+18*x^2+25" 0 2 >> coverage.out
+./polfact 0 "x^4-18*x^2+25" 0 2 >> coverage.out
+./polfact 0 "x^4+18*x^2+144" 0 2 >> coverage.out
+./polfact 0 "x^4-18*x^2+144" 0 2 >> coverage.out
+./polfact 0 "x^4+18*x^2+24" 0 2 >> coverage.out
+./polfact 0 "x^4-18*x^2+24" 0 2 >> coverage.out
+./polfact 0 "x^4+18*x^2+95" 0 2 >> coverage.out
+./polfact 0 "x^4-18*x^2+95" 0 2 >> coverage.out
+./polfact 0 "x^4+18*x^2-25" 0 2 >> coverage.out
+./polfact 0 "x^4-18*x^2-25" 0 2 >> coverage.out
+./polfact 0 "x^4+18*x^2-121" 0 2 >> coverage.out
+./polfact 0 "x^4-18*x^2-121" 0 2 >> coverage.out
+./polfact 0 "x^4+18*x^2-24" 0 2 >> coverage.out
+./polfact 0 "x^4-18*x^2-24" 0 2 >> coverage.out
+./polfact 0 "x^4+18*x^2-95" 0 2 >> coverage.out
+./polfact 0 "x^4-18*x^2-95" 0 2 >> coverage.out
+./polfact 0 "x^4-18*x^2+3*x+5" 0 2 >> coverage.out
+./polfact 0 "x^4-18*x^2-3*x+5" 0 2 >> coverage.out
+./polfact 0 "x^4+3x^2+79*x+8" 0 2 >> coverage.out
+./polfact 0 "3x**4-3x**2+x-5" 0 0 >> coverage.out
+./polfact 0 "3x**4-3x**2+x-5" 0 1 >> coverage.out
+./polfact 0 "3x**4-3x**2+x-5" 0 2 >> coverage.out
+./polfact 0 "x^5+15*x+12" 0 0 >> coverage.out
+./polfact 0 "x^5+15*x+12" 0 1 >> coverage.out
+./polfact 0 "x^5+15*x+12" 0 2 >> coverage.out
+./polfact 0 "x^5-5*x+12" 0 0 >> coverage.out
+./polfact 0 "x^5-5*x+12" 0 1 >> coverage.out
+./polfact 0 "x^5-5*x+12" 0 2 >> coverage.out
+./polfact 0 "17x^5-20*x+21" 0 0 >> coverage.out
+./polfact 0 "17x^5-20*x+21" 0 1 >> coverage.out
+./polfact 0 "17x^5-20*x+21" 0 2 >> coverage.out
+./polfact 0 "x^4+4=x^8" 0 0 >> coverage.out
+./polfact 0 "x^5+20*x^3+20*x^2+30x+10" 0 0 >> coverage.out
+./polfact 0 "x^5+20*x^3+20*x^2+30x+10" 0 1 >> coverage.out
+./polfact 0 "x^5+20*x^3+20*x^2+30x+10" 0 2 >> coverage.out
+./polfact 0 "x^5+10*x^3-20x^2-1505x-7412" 0 0 >> coverage.out
+./polfact 0 "x^5+10*x^3-20x^2-1505x-7412" 0 1 >> coverage.out
+./polfact 0 "x^5+10*x^3-20x^2-1505x-7412" 0 2 >> coverage.out
+./polfact 0 "x**6+x**5+3*x**4+x**3+3*x**2+x+1" 0 2 >> coverage.out
+./polfact 0 "x^7+x+12" 0 0 >> coverage.out
+./polfact 0 "x^7+x+12" 0 1 >> coverage.out
+./polfact 0 "x^7+x+12" 0 2 >> coverage.out
+./polfact 0 "x**9+6*x**3+5" 0 2 >> coverage.out
+./polfact 0 "x^10+2*x^5+23" 0 0 >> coverage.out
+./polfact 0 "x^10+2*x^5+23" 0 1 >> coverage.out
+./polfact 0 "x^10+2*x^5+23" 0 2 >> coverage.out
+./polfact 0 "x^10+2*x^5-23" 0 0 >> coverage.out
+./polfact 0 "x^10+2*x^5-23" 0 1 >> coverage.out
+./polfact 0 "x^10+2*x^5-23" 0 2 >> coverage.out
+./polfact 0 "x**12+x+5" 0 2 >> coverage.out
+./polfact 0 "x**13+3*x+5" 0 2 >> coverage.out
+./polfact 0 "x^17-1" 0 0 >> coverage.out
+./polfact 0 "x^17-1" 0 1 >> coverage.out
+./polfact 0 "x^17-1" 0 2 >> coverage.out
+./polfact 0 "x**129+6*x**4+5" 0 2 >> coverage.out
+./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" 0 0 >> coverage.out
+./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" 0 1 >> coverage.out
+./polfact 0 "(x^2-3*x+5)^2*(x+1)^5*(x-23)*x^9" 0 2 >> coverage.out
+./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 0 >> coverage.out
+./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 1 >> coverage.out
+./polfact 0 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 2 >> coverage.out
+./polfact 0 "gcd(x+1,x)+3" 0 2 >> coverage.out
+./polfact 0 "lcm(x+1,x)+3" 0 2 >> coverage.out
+./polfact 0 "gcd(x+1,x**2-1)+2" 0 2 >> coverage.out
+./polfact 0 "lcm(x+1,x**2-1)+2" 0 2 >> coverage.out
+./polfact 0 "gcd(x+1,x*(x**2-1), x**3-1)" 0 2 >> coverage.out
+./polfact 0 "lcm(x+1,x**2-1, x**3-1)" 0 2 >> coverage.out
+./polfact 0 "gcd(x^4, x^7+x^3, x^6)" 0 2 >> coverage.out
+./polfact 0 "lcm(x^4, x^7+x^3, x^6)" 0 2 >> coverage.out
+./polfact 3 "gcd(x+1,x)+3" 0 2 >> coverage.out
+./polfact 3 "lcm(x+1,x)+3" 0 2 >> coverage.out
+./polfact 3 "gcd(x+1,x**2-1)+2" 0 2 >> coverage.out
+./polfact 3 "lcm(x+1,x**2-1)+2" 0 2 >> coverage.out
+./polfact 3 "gcd(x+1,x*(x**2-1), x**3-1)" 0 2 >> coverage.out
+./polfact 3 "lcm(x+1,x**2-1, x**3-1)" 0 2 >> coverage.out
+./polfact 3 "gcd(x^4, x^7+x^3, x^6)" 0 2 >> coverage.out
+./polfact 3 "lcm(x^4, x^7+x^3, x^6)" 0 2 >> coverage.out
+./polfact 2 "x^60-1" 0 2 >> coverage.out
+./polfact 11 "(x^5+x^3+1)+(2x^4+2)" 0 2 >> coverage.out
+./polfact 11 "(2x^4+2)+(x^5+x^3+1)" 0 2 >> coverage.out
+./polfact 11 "-(x^5+x^3+1)" 0 2 >> coverage.out
+./polfact 11 "x^5^2" 0 2 >> coverage.out
+./polfact 11 "x^(5*3)+x^(9/3)+x^(8%3)+lcm(0,x)+lcm(x,0)" 0 2 >> coverage.out
+./polfact 11 "-x^3+(x^5+x^3+1)" 0 2 >> coverage.out
+./polfact 11 "-x^9+(x^5+x^3+1)" 0 2 >> coverage.out
+./polfact 11 "random(1,4,3,6)" 0 2 >> coverage.out
+./polfact 0 "random(1,4,3,6)" 0 2 >> coverage.out
+./polfact 11 "x^2+x^7" 0 2 >> coverage.out
+./polfact 11 "(2x^4+2)^2" 0 2 >> coverage.out
+./polfact 11 "ans+x" 0 2 >> coverage.out
+./polfact 11 "2+x = 3-x^2" 0 2 >> coverage.out
+./polfact 0 "-x^5" 0 2 >> coverage.out
+./polfact 0 "x**5+x**4-4x**3-3x**2+3x+1" 0 2 >> coverage.out
+./polfact 0 "(68987*x^2+47773*x+4983)*(61415*x^2+4334*x+343)" 0 2 >> coverage.out
+./polfact 0 "(3789678961*x^2+545543121*x+432143141)*(678585781*x^2+43213515*x+342143153)" 0 2 >> coverage.out
+./polfact 0 "(678967896891*x^2+431545543121*x+43432143141)*(67567856785781*x^2+43213515*x+342143153)" 0 1 >> coverage.out
+./polfact 0 "(x^8-1)/(x^4+1)" 0 2 >> coverage.out
+./polfact 7 "(x^8-1)/(x^4+1)" 0 2 >> coverage.out
+./polfact 0 "(x^8-1)%(x^4+1)" 0 2 >> coverage.out
+./polfact 7 "(x^8-1)%(x^4+1)" 0 2 >> coverage.out
+./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 0 >> coverage.out
+./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 1 >> coverage.out
+./polfact 7 "der(x^8)+gcd(x^7+x^5+2, x^3+43*x)" 0 2 >> coverage.out
+./polfact "7^21" "x**39-1" 0 2 >> coverage.out
+./polfact "7^21" "x**39" 0 2 >> coverage.out
+./polfact "n(10**19)" "(x**2+23*x-54)*(x**2-42*x+23)" 0 0 >> coverage.out
+./polfact "n(10**19)" "(x**2+23*x-54)*(x**2-42*x+23)" 0 1 >> coverage.out
+./polfact "n(10**19)" "(x**2+23*x-54)*(x**2-42*x+23)" 0 2 >> coverage.out
+./polfact 0 "2.3" 0 2 >> coverage.out
+./polfact ".8" "2" 0 2 >> coverage.out
+./polfact "3.8" "6.2" 0 2 >> coverage.out
+./polfact 0 "1/x+1/(x-1)+1/(x+1)=1" 0 2 >> coverage.out
+./polfact 7 "1/x+1/(x-1)+1/(x+1)=1" 0 2 >> coverage.out
+./polfact 0 "LongDiv(x^8-1, x^4-1)" 0 2 >> coverage.out
+./polfact 7 "LongDiv(x^8-1, x^4-1)" 0 2 >> coverage.out
+./polfact 0 "LongDiv(x^7/3, x^6/4+3*x^5)" 0 2 >> coverage.out
+./polfact 0 "LongDiv(x^4, x^8)" 0 2 >> coverage.out
+./polfact 0 "(x+1)^3+(x-1)^3" 0 2 >> coverage.out
+./polfact 0 "longdiv((x+1)^3,(x-1)^6)" 0 2 >> coverage.out
+./polfact 0 "longdiv((x+1)^6,4*(x-1)^3)" 0 2 >> coverage.out
+./polfact 0 "(x+1)^6 % 26" 0 2 >> coverage.out
+./polfact 0 "longdiv((x+1)^6, 0)" 0 2 >> coverage.out
+./polfact 0 "(x+1)^6 / 0" 0 2 >> coverage.out
+./polfact 0 "(x+1)^6 % (26x)" 0 2 >> coverage.out
+./polfact 0 "(x-1)^3/(x-1)^6" 0 2 >> coverage.out
+./polfact 0 "longdiv(x/(x^2+1), x/(x^3+1))" 0 2 >> coverage.out
+./polfact 0 "x^(-3)" 0 2 >> coverage.out
+./polfact 0 "(x+2)^(-3)" 0 2 >> coverage.out
+./polfact 0 "x^(-2)/(x+2)^(-3)" 0 2 >> coverage.out
+./polfact "n(10**19)" "(x**2-1)*(x-1)" 0 2 >> coverage.out
+./polfact 0 "x+6" 1 0 >> coverage.out
+./polfact 0 "5*x+6" 1 0 >> coverage.out
+./polfact 0 "x^2+6" 1 0 >> coverage.out
+./polfact 0 "x^2+9" 1 0 >> coverage.out
+./polfact 0 "x^2-9" 1 0 >> coverage.out
+./polfact 0 "x^2-7*x+9" 1 0 >> coverage.out
+./polfact 0 "x^3-9" 1 0 >> coverage.out
+./polfact 0 "x^3-23*x-9" 1 0 >> coverage.out
+./polfact 0 "x^3+12*x^2+23*x-9" 1 0 >> coverage.out
 
 lcov --capture --directory . --output-file polfact.info
 gcovr --json run-3.json

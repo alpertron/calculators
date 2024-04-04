@@ -29,9 +29,9 @@
 #include "fromBlockly.h"
 #include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 13
+#define DEBUG_CODE 9
 #endif
-#if DEBUG_CODE == 17
+#if (DEBUG_CODE == 9) || (DEBUG_CODE == 17)
 extern bool teach;
 #endif
 #if DEBUG_CODE == 22
@@ -214,12 +214,13 @@ int main(int argc, char* argv[])
   }
   (void)printf("%s", output);
 #elif DEBUG_CODE == 9
-  if (argc != 4)
+  if (argc != 5)
   {
-    (void)printf("modulus polynomial pretty (0: pretty, 1: TEX, 2: Pari-GP)\n");
+    (void)printf("modulus polynomial teach pretty (0: pretty, 1: TEX, 2: Pari-GP)\n");
     return 0;
   }
-  switch (argv[3][0] - '0')
+  teach = (argv[3][0] != '0');
+  switch (argv[4][0] - '0')
   {
   case 0:
     pretty = PRETTY_PRINT;

@@ -81,46 +81,52 @@ fieldset {display:inline}
 .nolf {white-space: nowrap;}
 .pad {padding:10px;}
 .applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;}
+.outerbox {display:table; color:blue;}
+.box > p {margin-left:5px;margin-right:5px;}
+.box {font-weight:bold; text-align:center; border-style:double; display:table-cell;border-radius:10px;}
 #feedback {display:none}
 #digits {width:5em}
 sup::before {content:" a la ";position:absolute;top:-9999px;left:-9999px}
 .inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
 .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
-.root,.root2dig,.root3dig{display: inline-block; vertical-align:middle; border-top: 1px solid; border-left: 1px solid; transform: skew(-15deg); transform-origin: bottom left; position: relative;}
-.root {margin:2px 10px}
+r-t,r-2,.root2dig,.root3dig{display: inline-block; vertical-align:middle; border-top: 1px solid; border-left: 1px solid; transform: skew(-15deg); transform-origin: bottom left; position: relative;}
+r-t,r-2 {margin:2px 10px}
 .root2dig {margin:2px 10px 2px 18px}
 .root3dig {margin:2px 10px 2px 26px}
-.root:before,.root2dig:before,.root3dig:before {content: ""; position:absolute; bottom:0; height:40%; width:5px; left:-5px; border-right:1px solid; transform:skew(30deg); transform-origin:bottom right;}
-.root:after,.root2dig:after,.root3dig:after {content: " fin raíz ";position:absolute;top:-9999px;left:-9999px}
-.radicand2, .radicand3, .radicand4, .radicand5{display: inline-block; padding-left:0.5em; transform:skew(15deg);}
-.radicand2:before{content: " raíz cuadrada de "; position:absolute;top:-9999px;left:-9999px}
+r-t:before,r-2:before,.root2dig:before,.root3dig:before {content: ""; position:absolute; bottom:0; height:40%; width:5px; left:-5px; border-right:1px solid; transform:skew(30deg); transform-origin:bottom right;}
+r-t:after,r-2:after,.root2dig:after,.root3dig:after {content: " fin raíz ";position:absolute;top:-9999px;left:-9999px}
+r-a,r-d,.radicand3,.radicand4,.radicand5{display: inline-block; padding-left:0.5em; transform:skew(15deg);}
+r-a:before{content: " raíz cuadrada de "; position:absolute;top:-9999px;left:-9999px}
 .radicand3,.radicand4,.radicand5 {top:-0.2em; left:-0.7em;}
 .radicand3:before{content: " raíz cúbica de "; position:absolute;top:-9999px;left:-9999px}
 .radicand4:before{content: " raíz cuarta de "; position:absolute;top:-9999px;left:-9999px}
 .radicand5:before{content: " raíz quinta de "; position:absolute;top:-9999px;left:-9999px}
-.root>.befrad{position:absolute; font-size:80%; top:-0.2em; left: -1em; transform: skew(15deg);}
+r-t>.befrad{position:absolute; font-size:80%; top:-0.2em; left: -1em; transform: skew(15deg);}
 .root2dig>.befrad{position:absolute; font-size:80%; top:-0.2em; left: -1.5em; transform: skew(15deg);}
 .root3dig>.befrad{position:absolute; font-size:80%; top:-0.2em; left: -2em; transform: skew(15deg);}
 .befrad:before {content:" raíz ";position:absolute;top:-9999px;left:-9999px}
 .befrad:after {content:" de ";position:absolute;top:-9999px;left:-9999px}
-.fraction{display: inline-flex; flex-direction:column; padding:0.3em; align-items:center; vertical-align:middle;}
-.fraction:before {content:" inicio fracción ";position:absolute;top:-9999px;left:-9999px}
-.fraction:after {content:" fin fracción ";position:absolute;top:-9999px;left:-9999px}
-.numerator {border-bottom: 2px solid grey; margin:-1px;}
-.denominator:before {content:" sobre ";position:absolute;top:-9999px;left:-9999px}
-.denominator {border-top: 2px solid grey; margin:-1px;}
-.paren{padding-left:8px; padding-right:8px; position:relative; display:inline-block; margin-left:5px}
-.paren:before{border-left:2px solid black; border-radius:50%; bottom:0; content:''; position:absolute; top:0; width:8px; left:-3px;}
-.paren:after{border-right:2px solid black; border-radius:50%; bottom:0; content:''; position:absolute; top:0; width:8px; right:3px;}
-.hide {position:absolute;top:-9999px;left:-9999px}
-@media (min-width: 400px) { .input{width: calc(100% - 8em);float:right;padding:3px;margin:0px;}}
-@media (max-width: 400px) { .input{width:100%;padding:3px;margin:0px;}}
+f-f{display: inline-flex; flex-direction:column; padding:0.3em; align-items:center; vertical-align:middle;}
+f-f:before {content:" inicio fracción ";position:absolute;top:-9999px;left:-9999px}
+f-f:after {content:" fin fracción ";position:absolute;top:-9999px;left:-9999px}
+f-n {border-bottom: 2px solid grey; margin:-1px}
+f-d:before {content:" sobre ";position:absolute;top:-9999px;left:-9999px}
+f-d {border-top: 2px solid grey; margin:-1px}
+p-p {padding-left:8px; padding-right:8px; position:relative; display:inline-block; margin-left:5px}
+p-p:before {border-left:2px solid black; border-radius:50%; bottom:0; content:''; position:absolute; top:0; width:8px; left:-3px;}
+p-p:after {border-right:2px solid black; border-radius:50%; bottom:0; content:''; position:absolute; top:0; width:8px; right:3px;}
+o-t,o-p:before,o-p:after {position:absolute;top:-9999px;left:-9999px}
+o-t {content:"por"}
+o-p:before {content:" paréntesis izquierdo "}
+o-p:after {content:" paréntesis derecho "}
+@media (min-width: 400px) {.input{width: calc(100% - 8em);float:right;padding:3px;margin:0px;}}
+@media (max-width: 400px) {.input{width:100%;padding:3px;margin:0px;}}
 @media screen and (prefers-color-scheme: dark) {
 body {color: #ddd; background-color: #121212}
 .new {color: #0000FF; font-weight:bold}
 .applet {background-color:#606060; color: #fff}
-.paren:before{border-left:2px solid #ddd}
-.paren:after{border-right:2px solid #ddd}
+p-p:before{border-left:2px solid #ddd}
+p-p:after{border-right:2px solid #ddd}
 h2 > button {background-color:#333; color:#eee;}
 h2 > button.active,h2 > button:hover {background-color:#555;}
 h2 > button:after {color:#777}
@@ -131,6 +137,7 @@ a:visited {color: #d7bde2}
 input, textarea, select {color: white; background-color: #3b3b3b}
 input:disabled {color: #808080; background-color: #606060}
 .new {color: #E0E000}
+.outerbox {color:yellow}
 }
 </style>
 <noscript>
@@ -201,6 +208,7 @@ input:disabled {color: #808080; background-color: #606060}
 <div class="lf"></div>
 <input type="button" id="eval" value="Evaluar">
 <input type="button" id="factor" value="Factorizar">
+<input type="button" id="steps" value="Pasos">
 <input type="button" id="stop" value="Parar">
 <input type="button" id="helpbtn" value="Ayuda"><br>
 <div class="lf"></div>
@@ -241,20 +249,20 @@ y luego sumando los coeficientes del mismo grado. Finalmente se reducen los coef
 <p>Utilice la caja superior para ingresar el polinomio y la inferior para ingresar el módulo,
 que debe ser un número entero mayor que 1 que sea un número primo o un primo elevado a alguna potencia.
 Es posible simplemente evaluar el polinomio, o bien evaluarlo y factorizarlo, apretando el botón correspondiente.</p>
-<p>Ejemplo para polinomio entero: para factorizar <span class="hide">equis</span><var aria-hidden="true">x</var><sup>30</sup> &minus; 1, ingrese <kbd><span class="hide">equis</span><span aria-hidden="true">x</span><span class="hide">caret</span><span aria-hidden="true">^</span>30<span class="hide">minus</span><span aria-hidden="true">-</span>1</kbd> en la caja superior y cero en la inferior. Luego presione el botón Factorizar.</p>
+<p>Ejemplo para polinomio entero: para factorizar <var role="img" aria-label="equis">x</var><sup>30</sup> &minus; 1, ingrese <kbd><span role="img" aria-label="equis">x</span><span role="img" aria-label="caret">^</span>30<span role="img" aria-label="minus">-</span>1</kbd> en la caja superior y cero en la inferior. Luego presione el botón Factorizar.</p>
 <p>Ejemplo para polinomio módulo primo: copie cualquiera de las expresiones que figura abajo en la caja de texto superior y escriba el número 211 (un número primo) en la caja de texto inferior.
 Luego apriete el botón denominado "Factorizar".</p>
 <ul>
-<li><kbd>6<span class="hide">equis</span><span aria-hidden="true">x</span><span class="hide"> caret</span><span aria-hidden="true">^</span>8+<span class="hide">equis</span><span aria-hidden="true">x</span><span class="hide"> caret</span><span aria-hidden="true">^</span>5+3</kbd></li>
-<li><kbd>2*<span class="hide">paréntesis izquierdo</span><span aria-hidden="true">(</span><span class="hide">equis</span><span aria-hidden="true">x</span>+6<span class="hide">paréntesis derecho</span><span aria-hidden="true">)</span>*<span class="hide">paréntesis izquierdo</span><span aria-hidden="true">(</span><span class="hide">equis menos </span><span aria-hidden="true">x-</span>5<span class="hide">paréntesis derecho</span><span aria-hidden="true">)</span>+<span class="hide">equis</span><span aria-hidden="true">x</span><span class="hide">equis</span><span aria-hidden="true">x</span><span class="hide"> caret</span><span aria-hidden="true">^</span>4+23<span class="hide">equis</span><span aria-hidden="true">x</span></kbd></li>
+<li><kbd>6<span role="img" aria-label="equis">x</span><span role="img" aria-label=" caret">^</span>8+<span role="img" aria-label="equis">x</span><span role="img" aria-label=" caret">^</span>5+3</kbd></li>
+<li><kbd>2*<span role="img" aria-label="paréntesis izquierdo">(</span><span role="img" aria-label="equis">x</span>+6<span role="img" aria-label="paréntesis derecho">)</span>*<span role="img" aria-label="paréntesis izquierdo">(</span><span role="img" aria-label="equis menos">x-</span>5<span role="img" aria-label="paréntesis derecho">)</span>+<span role="img" aria-label="equis">x</span><span role="img" aria-label="equis">x</span><span role="img" aria-label=" caret">^</span>4+23<span role="img" aria-label="equis">x</span></kbd></li>
 </ul>
 <p>Algunos dispositivos móviles no permiten ingresar el símbolo de exponenciación. En este caso se puede escribir dos asteriscos ** para el operador de exponenciación.
 De esta manera, las siguientes expresiones son equivalentes:</p>
 <ul>
-<li><kbd>6<span class="hide">equis</span><span aria-hidden="true">x</span>**8+<span class="hide">equis</span><span aria-hidden="true">x</span>**5+3</kbd></li>
-<li><kbd>2*<span class="hide">paréntesis izquierdo</span><span aria-hidden="true">(</span><span class="hide">equis</span><span aria-hidden="true">x</span>+6<span class="hide">paréntesis derecho</span><span aria-hidden="true">)</span>*<span class="hide">paréntesis izquierdo</span><span aria-hidden="true">(</span><span class="hide">equis menos </span><span aria-hidden="true">x-</span>5<span class="hide">paréntesis derecho</span><span aria-hidden="true">)</span>+<span class="hide">equis</span><span aria-hidden="true">x</span><span class="hide">equis</span><span aria-hidden="true">x</span>**4+23<span class="hide">equis</span><span aria-hidden="true">x</span></kbd></li>
+<li><kbd>6<span role="img" aria-label="equis">x</span>**8+<span role="img" aria-label="equis">x</span>**5+3</kbd></li>
+<li><kbd>2*<span role="img" aria-label="paréntesis izquierdo">(</span><span role="img" aria-label="equis">x</span>+6<span role="img" aria-label="paréntesis derecho">)</span>*<span role="img" aria-label="paréntesis izquierdo">(</span><span role="img" aria-label="equis menos ">x-</span>5<span role="img" aria-label="paréntesis derecho">)</span>+<span role="img" aria-label="equis">x</span><span role="img" aria-label="equis">x</span>**4+23<span role="img" aria-label="equis">x</span></kbd></li>
 </ul>
-<p>Escribiendo un punto (.), la aplicación lo reemplazará por &quot;<span class="hide">equis caret</span><span aria-hidden="true">x^</span>&quot;. Esto reduce notablemente el tiempo de ingreso de expresiones polinómicas en dispositivos móviles
+<p>Escribiendo un punto (.), la aplicación lo reemplazará por &quot;<span role="img" aria-label="equis caret">x^</span>&quot;. Esto reduce notablemente el tiempo de ingreso de expresiones polinómicas en dispositivos móviles
 porque no hay necesidad de cambiar de teclado numérico a alfabético y viceversa para escribir polinomios sencillos.</p>
 <p>Para el primer ejemplo sería:</p>
 <ul><li><kbd>6.8+.5+3</kbd></li></ul>
@@ -271,12 +279,12 @@ Por el teorema de Abel y Ruffini, algunos polinomios de grado 5 no se pueden exp
 <p>Se puede utilizar cualquier letra del alfabeto latino para representar la variable. No se admiten múltiples variables. El programa siempre muestra la letra <var>x</var> como variable.</p>
 <p>Se pueden ingresar expresiones que usan los siguientes operadores y paréntesis:</p>
 <ul>
-<li><span class="hide">signo más</span><strong aria-hidden="true">+</strong> para suma</li>
-<li><span class="hide">signo menos</span><strong aria-hidden="true">-</strong> para resta</li>
+<li><strong role="img" aria-label="signo más">+</strong> para suma</li>
+<li><strong role="img" aria-label="signo menos">-</strong> para resta</li>
 <li><strong>*</strong> para multiplicación</li>
-<li><span class="hide">barra</span><strong aria-hidden="true">/</strong> para división entera</li>
-<li><span class="hide">símbolo porciento</span><strong aria-hidden="true">%</strong> para resto del cociente de dos polinomios con coeficientes racionales</li>
-<li><span class="hide">caret o dos asteriscos</span><span aria-hidden="true"><strong>^</strong> o <strong>**</strong></span> para exponenciación</li>
+<li><strong role="img" aria-label="barra">/</strong> para división entera</li>
+<li><strong role="img" aria-label="símbolo porciento">%</strong> para resto del cociente de dos polinomios con coeficientes racionales</li>
+<li><strong role="img" aria-label="caret o dos asteriscos">^</strong> o <strong>**</strong></span> para exponenciación</li>
 <li><strong>Ans</strong> obtiene la última respuesta.</li>
 </ul>
 <p>Operadores y funciones exclusivos para el polinomio (caja de entrada superior):</p>
@@ -596,8 +604,8 @@ Calculemos <var>b</var> = gcdp(<var>a</var>, cp(<var>f</var>) &#8290; <var>f</va
 <p>Para los polinomios de grado hasta 4, se usan las fórmulas clásicas. No se calculan raíces cúbicas de números complejos. En estos casos (llamados <em>casus irreducibilis</em>), el programa usa funciones trigonométricas.</p>
 <p>Para los polinomios de grado 5, la aplicación usa los resultados del paper de D. S. Dummit <em><a href="https://www.ams.org/journals/mcom/1991-57-195/S0025-5718-1991-1079014-X/S0025-5718-1991-1079014-X.pdf">Solving Solvable Quintic</a></em>, Mathematics of Computation volumen 57, número 195, julio de 1991, pp. 387-401.</p>
 <p>El programa puede determinar si un polinomio irreducible es ciclotómico, es decir, un divisor de <var>x</var><sup><var>n</var></sup> &minus; 1. En este caso el programa muestra las raíces complejas de 1:</p>
-<p><span aria-hidden="true">cos</span> <span class="hide">coseno de </span><span class="fraction"><span class="numerator"><var>m</var><span class="hide"> por pi</span><span aria-hidden="true"> &pi;</span></span><span class="denominator"><var>n</var></span></span> +
-i <span aria-hidden="true">sen</span> <span class="hide">por seno de </span><span class="fraction"><span class="numerator"><var>m</var><span class="hide"> por pi</span><span aria-hidden="true"> &pi;</span></span><span class="denominator"><var>n</var></span></span></p>
+<p><span role="img" aria-label="coseno de ">cos</span><f-f><f-n><var>m</var> <span role="img" aria-label="por pi">&pi;</span></f-n><f-d><var>n</var></f-d></f-f> +
+i <span role="img" aria-label="por seno de ">sen</span><f-f><f-n><var>m</var> <span role="img" aria-label="por pi">&pi;</span></f-n><f-d><var>n</var></f-d></f-f></p>
 <p>donde <var>m</var> y <var>n</var> son coprimos.</p>
 <p>Si <var>n</var> = 2<sup><var>q</var></sup> &times; 3<sup><var>r</var></sup> &times; 5<sup><var>s</var></sup> &times; 17<sup><var>t</var></sup>
 donde <var>r</var> &lt; 2, <var>s</var> &lt; 2 y <var>t</var> &lt; 2, el programa puede mostrar las raíces mediante expresiones radicales.</p>
@@ -618,7 +626,7 @@ En caso contrario, solo se muestran funciones trigonométricas.</p>
 <p>Puede bajar el código fuente del programa actual y del viejo applet de factorización de polinomios <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 22 de marzo de 2024.</p>
+<p>Escrito por Dario Alpern. Actualizado el 3 de abril de 2024.</p>
 </div>
 <div id="result" aria-live="polite" class="pad"></div>
 <div id="footer">

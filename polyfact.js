@@ -31,6 +31,14 @@ let busy = false;
 let workerParam;
 let fileContents = 0;
 
+function enableButtons(enable)
+{
+  get("eval").disabled = enable;
+  get("factor").disabled = enable;
+  get("steps").disabled = enable;
+  get("stop").disabled = !enable;
+}
+
 function fromWorker(e)
 {
   // First character of e is "1" for intermediate text
@@ -47,9 +55,7 @@ function fromWorker(e)
   result.innerHTML = e.substring(1);
   if (e.substring(0, 1) === "2")
   {   // First character passed from web worker is "2".
-    get("eval").disabled = false;
-    get("factor").disabled = false;
-    get("stop").disabled = true;
+    enableButtons(false);
     busy = false;
     result.setAttribute("aria-live", "polite");
     endCalculation();
@@ -68,7 +74,7 @@ function comingFromWorker(e)
 
 function dowork(n)
 {
-  let app = lang + n + (get("out").value.charCodeAt(0)-48)*4;
+  let app = lang + n + (get("out").value.charCodeAt(0)-48)*8;
   let res = get("result");
   let polyText = get("poly").value;
   let modText = get("mod").value;
@@ -87,9 +93,7 @@ function dowork(n)
                            "Please type a number or expression for the modulus.");
     return;
   }
-  get("eval").disabled = true;
-  get("factor").disabled = true;
-  get("stop").disabled = false;
+  enableButtons(true);
   res.innerHTML = (lang? "Factorizando el polinomio..." :
                          "Factoring polynomial...");
   let param = digitGroup + "," + app + "," + modText + String.fromCharCode(0) + polyText +
@@ -148,12 +152,14 @@ function startUp()
   {
     dowork(0);
   };
+  get("steps").onclick = function ()
+  {
+    dowork(4);
+  };
   get("stop").onclick = function ()
   {
     endWorker();
-    get("eval").disabled = false;
-    get("factor").disabled = false;
-    get("stop").disabled = true;
+    enableButtons(false);
     get("result").innerHTML = 
       (lang? "<p>Factorización detenida por el usuario.</p>" :
              "<p>Factorization stopped by user</p>");

@@ -380,7 +380,7 @@ void start5thRoot(void)
 {
   if (pretty == PRETTY_PRINT)
   {
-    showText("<span class=\"root\"><span class=\"befrad\" aria-hidden=\"true\">5</span><span class=\"radicand5\">");
+    showText("<r-t><span class=\"befrad\" aria-hidden=\"true\">5</span><span class=\"radicand5\">");
   }
   else if (pretty == TEX)
   {
@@ -396,7 +396,7 @@ void end5thRoot(void)
 {
   if (pretty == PRETTY_PRINT)
   {
-    showText("</span></span>");
+    showText("</span></r-t>");
   }
   else if (pretty == TEX)
   {
@@ -752,7 +752,7 @@ static void ShowQuinticsRootsRealR(int multiplicity)
     default:
       break;
     }
-    endLine();
+    endShowX();
   }
 }
 
@@ -1056,7 +1056,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
   // Compute the roots l1, l2, l3 and l4 of the pair of quadratic equations.
   // l1, l4 = (-(T1 + T2*d) +/- sqrt(M + N*d)) / 2
   // l2, l3 = (-(T1 - T2*d) +/- sqrt(M - N*d)) / 2
-  // The order of the roots must comply with: (l1 − l4)(l2 − l3) = O*d
+  // The order of the roots must comply with: (l1 - l4)(l2 - l3) = O*d
   // If O > 0 -> l1 and l2: plus sign, l3 and l4: minus sign
   // If O < 0 -> l1 and l3: plus sign, l2 and l4: minus sign
   // sqrt(M + N*d) is already computed as Rat3 and d is Rat4.
@@ -1239,7 +1239,7 @@ static void GaloisGroupHasOrder5(int multiplicity)
       }
     }
     endParen();
-    endLine();
+    endShowX();
   }
 }
 
@@ -1335,7 +1335,7 @@ void QuinticEquation(const int* ptrPoly, int multiplicity)
   // and d = sqrt(D), then:
   // l1, l4 = (-(T1 + T2*d) +/- sqrt(M + N*d)) / 2
   // l2, l3 = (-(T1 - T2*d) +/- sqrt(M - N*d)) / 2
-  // The order of the roots must comply with: (l1 − l4)(l2 − l3) = O*d
+  // The order of the roots must comply with: (l1 - l4)(l2 - l3) = O*d
   // l1 - l4 = +/- sqrt(M + N*d)
   // l2 - l3 = +/- sqrt(M - N*d)
   // Compute M.
