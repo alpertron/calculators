@@ -905,7 +905,7 @@ void CubicEquation(const int* polynomial, int multiplicity)
       showPlusMinusRational(&Rat2);
       showText("</p><p>");
       showText(lang ? "El valor indicado en la sustitución es la tercera parte del coeficiente cuadrático.</p>" :
-        "The constant value in the substitution equals a third of the linear coefficient.</p>");
+        "The constant value in the substitution equals a third of the quadratic coefficient.</p>");
       currLetter = 'y';
       // Show a(y-k)^3 + b(y-k)^2 + c(y-k) + d = 0.
       showText("<p>");
@@ -914,6 +914,7 @@ void CubicEquation(const int* polynomial, int multiplicity)
       showPlusMinusRational(&Rat2);
       endParen();
       showPower(&ptrOutput, 3);
+      // Quadratic term is already non-zero.
       showPlusMinusRational(&RatQuadratic);
       showText(ptrTimes);
       startParen();
@@ -921,11 +922,14 @@ void CubicEquation(const int* polynomial, int multiplicity)
       showPlusMinusRational(&Rat2);
       endParen();
       showPower(&ptrOutput, 2);
-      showPlusMinusRational(&RatLinear);
-      startParen();
-      showVariable(&ptrOutput, 'y');
-      showPlusMinusRational(&Rat2);
-      endParen();
+      if (!BigIntIsZero(&RatLinear.numerator))
+      {  // Do not show linear term if it equals zero.
+        showPlusMinusRational(&RatLinear);
+        startParen();
+        showVariable(&ptrOutput, 'y');
+        showPlusMinusRational(&Rat2);
+        endParen();
+      }
       showPlusMinusRational(&RatIndependent);
       showText(" = 0</p><p>");
       // Expand all terms.
