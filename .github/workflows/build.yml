@@ -31,7 +31,7 @@ jobs:
         run: |
           chmod 755 coverage
           ./coverage
-- name: Install sonar-scanner and build-wrapper
+      - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v2
       - name: Run build-wrapper
         run: |
