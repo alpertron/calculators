@@ -40,4 +40,4 @@ jobs:
           args: >
             -D sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
             -D sonar.coverageReportPaths=coverage.xml
-            -D sonar.cfamily.cache.enabled=false
+            -D sonar.cfamily.analysisCache.mode=server

@@ -1,4 +1,4 @@
-//
+ï»¿//
 // This file is part of Alpertron Calculators.
 //
 // Copyright 2018-2021 Dario Alejandro Alpern
@@ -245,11 +245,11 @@ static void complexFFT(struct sComplex *x, struct sComplex *y, int length)
 }
 
 // Formulas to use:
-// Gr(k) = Xr(k)Ar(k) – Xi(k)Ai(k) + Xr(N/2–k)Br(k) + Xi(N/2–k)Bi(k)
-// Gi(k) = Xi(k)Ar(k) + Xr(k)Ai(k) + Xr(N/2–k)Bi(k) – Xi(N/2–k)Br(k)
-// for k = 0, 1, ..., N/2–1 and X(N/2) = X(0)
-// Ar(k) = 1 – sin( PI k / N)
-// Ai(k) = –cos( PI k / N)
+// Gr(k) = Xr(k)Ar(k) â€“ Xi(k)Ai(k) + Xr(N/2â€“k)Br(k) + Xi(N/2â€“k)Bi(k)
+// Gi(k) = Xi(k)Ar(k) + Xr(k)Ai(k) + Xr(N/2â€“k)Bi(k) â€“ Xi(N/2â€“k)Br(k)
+// for k = 0, 1, ..., N/2â€“1 and X(N/2) = X(0)
+// Ar(k) = 1 â€“ sin( PI k / N)
+// Ai(k) = â€“cos( PI k / N)
 // Br(k) = 1 + sin( PI k / N)
 // Bi(k) = cos( PI k / N)
 static void ConvertHalfToFullSizeFFT(struct sComplex *halfSizeFFT, 
@@ -283,10 +283,10 @@ static void ConvertHalfToFullSizeFFT(struct sComplex *halfSizeFFT,
 }
 
 // Formulas to use:
-// Xr(k) = Gr(k)IAr(k) – Gi(k)IAi(k) + Gr(N/2–k)IBr(k) + Gi(N/2–k)IBi(k)
-// Xi(k) = Gi(k)IAr(k) + Gr(k)IAi(k) + Gr(N/2–k)IBi(k) – Gi(N/2–k)IBr(k)
-// for k = 0, 1, ..., N/2–1
-// IAr(k) = 1 – sin( PI k / N)
+// Xr(k) = Gr(k)IAr(k) â€“ Gi(k)IAi(k) + Gr(N/2â€“k)IBr(k) + Gi(N/2â€“k)IBi(k)
+// Xi(k) = Gi(k)IAr(k) + Gr(k)IAi(k) + Gr(N/2â€“k)IBi(k) â€“ Gi(N/2â€“k)IBr(k)
+// for k = 0, 1, ..., N/2â€“1
+// IAr(k) = 1 â€“ sin( PI k / N)
 // IAi(k) = cos( PI k / N)
 // IBr(k) = 1 + sin( PI k / N)
 // IBi(k) = -cos( PI k / N)
