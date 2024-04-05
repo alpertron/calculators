@@ -281,9 +281,9 @@ function fromWorker(e)
       if (firstChar === "A" || firstChar === "B")
       {
         tofile = e.substring(1);
-        const regexVerbose = /\<span class=\"verbose\">(.*?)\<\/span>/g;
-        const regexSpan = /\<span(.*?)>(.*?)\<\/span>/g;
-        const regexAbbr = /\<abbr(.*?)>(.*?)\<\/abbr>/g;
+        const regexVerbose = /<span class="verbose">(.*?)<\/span>/g;
+        const regexSpan = /<span(.*?)>(.*?)<\/span>/g;
+        const regexAbbr = /<abbr(.*?)>(.*?)<\/abbr>/g;
         if (config.charAt(1) == "1")
         {    // Discard HTML tags for verbose mode.
           tofile = tofile.replace(regexVerbose, "$1").
