@@ -181,10 +181,13 @@ static void CasusIrreducibilis(int multiplicity, char currLetter)
   {
     char buf[1000];
     char* ptrBuf;
-    showRAndS();
-    showText(lang ? "<p>La solución requiere el cálculo de raíces cúbicas de números complejos. Para hacer cálculos con números reales, se debe usar trigonometría.</p>"
-      "<p>Comenzando con la fórmula de la triplicación del ángulo:</p><p>4":
-      "<p>The solution requires to compute cube roots of complex numbers. To stick to real numbers, we need to use trigonometry.</p>"
+    showText(lang ? "<p>El discriminante es positivo, lo que indica que las tres raíces son reales. "
+      "En este caso no es posible representar las raíces mediante expresiones radicales de números reales, "
+      "por lo que se debe utilizar trigonometría.</p>"
+      "<p>Comenzando con la fórmula de la triplicación del ángulo:</p><p>4" :
+      "<p>The discriminant is positive, which implies that all three roots are real. "
+      "In this case the roots cannot be represented by radical expressions of real numbers, "
+      "so we must use trigonometry.</p>"
       "<p>Starting with the formula of the triple angle:</p><p>4");
     showText(ptrTimes);
     showCosTPower3();
@@ -210,7 +213,8 @@ static void CasusIrreducibilis(int multiplicity, char currLetter)
     showText(" ");
     showText(ptrTimes);
     showCosT();
-    showText(lang ? ". De (1):</p><p>": ". From (1):</p><p>");
+    showText(lang ? ". De la ecuación anterior a la definición del discriminante:</p><p>":
+      ". From the previous equation to the definition of the discriminant:</p><p>");
     showPowerVar(&ptrOutput, 3, 'u');
     showText(ptrTimes);
     showCosTPower3();
@@ -426,6 +430,20 @@ static void showCompleteCbrt1(const char* ptrPlusMinus)
   showImagPartCubicRoot1();
 }
 
+static void showNonRealCubeRootsOf1(void)
+{
+  for (char letter = 'e'; letter <= 'f'; letter++)
+  {
+    if (letter == 'f')
+    {
+      showText(", ");
+    }
+    showVariable(&ptrOutput, letter);
+    showText(" = ");
+    showCompleteCbrt1((letter == 'e') ? "+" : ptrMinus);
+  }
+}
+
 // The first root x1 is q ^ (1/3)
 // The second root x2 is (-1/2) * x1 + i * (3 ^ (1/2) * x1) / 2
 // The third root x3 is (-1/2) * x1 - i * (3 ^ (1/2) * x1) / 2
@@ -434,6 +452,16 @@ static void bothQuadraticAndLinearCoeffZero(int multiplicity)
   bool isCbrtNegative;
   BigRationalNegate(&RatDeprIndependent, &RatDeprIndependent);
   ForceDenominatorPositive(&RatDeprIndependent);
+  if (teach)
+  {
+    showText(lang ? "<p>Las soluciones son la raíz cúbica real de " :
+      "<p>The solutions are the real cube root of ");
+    showRationalNoParen(&RatDeprIndependent);
+    showText(lang ? " y su producto por las dos raíces cúbicas no reales de 1, que son:</p><p>":
+      " and the multiplication by both non-real cube roots of 1:</p><p>");
+    showNonRealCubeRootsOf1();
+    showText("</p>");
+  }
   isCbrtNegative = (RatDeprIndependent.numerator.sign == SIGN_NEGATIVE);
   RatDeprIndependent.numerator.sign = SIGN_POSITIVE;
   for (int ctr = 0; ctr < 3; ctr++)
@@ -504,8 +532,177 @@ static void bothQuadraticAndLinearCoeffZero(int multiplicity)
   }
 }
 
+static void showRPlusS(void)
+{
+  startParen();
+  showVariable(&ptrOutput, 'r');
+  showText(" + ");
+  showVariable(&ptrOutput, 's');
+  endParen();
+}
+
+static void showN(void)
+{
+  showCoeffBeforeParen(&RatDeprLinear);
+  showRPlusS();
+  showPlusMinusRational(&RatDeprIndependent);
+  showText(" = 0</p><p>");
+}
+
+static void showCardanoMethod(char currLetter)
+{
+  showText(lang ? "<p>Usando el método de Cardano, asignando " : "<p>Using Cardano's method, setting ");
+  showVariable(&ptrOutput, currLetter);
+  showText(" = ");
+  showVariable(&ptrOutput, 'r');
+  showText(" + ");
+  showVariable(&ptrOutput, 's');
+  showText(":</p><p>");
+  // Show (r+s)^3 + N = 0, where N = p(r+s) + q
+  showRPlusS();
+  showPower(&ptrOutput, 3);
+  showN();
+  // Show r^3 + 3r^2*s + 3rs^2 + s^3 + N = 0
+  showPowerVar(&ptrOutput, 3, 'r');
+  intToBigInteger(&Rat1.numerator, 3);
+  intToBigInteger(&Rat1.denominator, 1);
+  showRatCoeffAndPowerVar(&Rat1, 2, 'r');
+  showText(ptrTimes);
+  showVariable(&ptrOutput, 's');
+  showRatCoeffAndPowerVar(&Rat1, 1, 'r');
+  showText(ptrTimes);
+  showPowerVar(&ptrOutput, 2, 's');
+  showText(" + ");
+  showPowerVar(&ptrOutput, 3, 's');
+  showN();
+  // Show r^3 + s^3 + 3rs(r+s) + N = 0
+  showPowerVar(&ptrOutput, 3, 'r');
+  showText(" + ");
+  showPowerVar(&ptrOutput, 3, 's');
+  showRatCoeffAndPowerVar(&Rat1, 1, 'r');
+  showText(ptrTimes);
+  showVariable(&ptrOutput, 's');
+  showText(ptrTimes);
+  showRPlusS();
+  showN();
+  // Show r^3 + s^3 + (3rs + p)(r+s) + q = 0
+  showPowerVar(&ptrOutput, 3, 'r');
+  showText(" + ");
+  showPowerVar(&ptrOutput, 3, 's');
+  showText(" + ");
+  startParen();
+  showRational(&Rat1);
+  showText(ptrTimes);
+  showVariable(&ptrOutput, 'r');
+  showText(ptrTimes);
+  showVariable(&ptrOutput, 's');
+  showPlusMinusRational(&RatDeprLinear);
+  endParen();
+  showText(ptrTimes);
+  showRPlusS();
+  showPlusMinusRational(&RatDeprIndependent);
+  showText(" = 0&nbsp;&nbsp;&nbsp;&nbsp;(1)</p><p>");
+  showText(lang ? "Como hay una variable adicional, se puede imponer una condición extra. En este caso la elección es:</p><p>" :
+    "Since there is an extra variable, we can impose an additional condition. In our case it is:</p><p>");
+  // Show 3rs + p = 0
+  showRational(&Rat1);
+  showText(ptrTimes);
+  showVariable(&ptrOutput, 'r');
+  showText(ptrTimes);
+  showVariable(&ptrOutput, 's');
+  showPlusMinusRational(&RatDeprLinear);
+  showText(" = 0&nbsp;&nbsp;&nbsp;&nbsp;(2)</p><p>");
+  // Show rs = -p/3
+  showVariable(&ptrOutput, 'r');
+  showText(ptrTimes);
+  showVariable(&ptrOutput, 's');
+  showText(" = ");
+  BigRationalDivideByInt(&RatDeprLinear, -3, &Rat1);
+  ForceDenominatorPositive(&Rat1);
+  showRational(&Rat1);
+  showText("&nbsp;&nbsp;&nbsp;&nbsp;(3)</p>");
+  showPowerVar(&ptrOutput, 3, 'r');
+  showText(ptrTimes);
+  showPowerVar(&ptrOutput, 3, 's');
+  showText(" = ");
+  BigRationalMultiply(&Rat1, &Rat1, &Rat2);
+  BigRationalMultiply(&Rat2, &Rat1, &Rat2);
+  showRational(&Rat2);
+  showText("&nbsp;&nbsp;&nbsp;&nbsp;(4)</p>");
+  showText(lang ? "<p>De (1) y (2):</p><p>" : "<p>From (1) and (2):</p><p>");
+  // Show r^3 + s^3 + q = 0
+  showPowerVar(&ptrOutput, 3, 'r');
+  showText(" + ");
+  showPowerVar(&ptrOutput, 3, 's');
+  showPlusMinusRational(&RatDeprIndependent);
+  showText(" = 0&nbsp;&nbsp;&nbsp;&nbsp;(5)</p><p>");
+  showText(lang ? "Multiplicando por " : "Multiplying by ");
+  showPowerVar(&ptrOutput, 3, 'r');
+  showText(":</p></p>");
+  // Show r^6 + r^3*s^3 + q*r^3 = 0
+  showPowerVar(&ptrOutput, 6, 'r');
+  showText(" + ");
+  showPowerVar(&ptrOutput, 3, 'r');
+  showText(ptrTimes);
+  showPowerVar(&ptrOutput, 3, 's');
+  showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
+  showText(" = 0</p><p>");
+  showText(lang ? "De (4):</p>" : "From (4):</p>");
+  showPowerVar(&ptrOutput, 6, 'r');
+  showPlusMinusRational(&Rat2);
+  showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
+  showText(" = 0</p><p>");
+  showPowerVar(&ptrOutput, 6, 'r');
+  showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
+  showPlusMinusRational(&Rat2);
+  showText(" = 0</p><p>");
+  showText(lang ? "Esta es una ecuación cuadrática en " :
+    "This is a quadratic equation in ");
+  showPowerVar(&ptrOutput, 3, 'r');
+  showText(lang ? ". Al multiplicar (5) por " : ". If we multiplied (5) by ");
+  showPowerVar(&ptrOutput, 3, 's');
+  showText(lang ? " en vez de " : " instead of ");
+  showPowerVar(&ptrOutput, 3, 'r');
+  showText(lang ? ", los coeficientes de la ecuación serían los mismos, así que la ecuación cuadrática también permite obtener " :
+    ", the equation coefficients would be the same, so the quadratic equation can also give us the value of ");
+  showPowerVar(&ptrOutput, 3, 's');
+  showText(lang ? ". Sea " : ". Let ");
+  showVariable(&ptrOutput, 'w');
+  showText(" = ");
+  showPowerVar(&ptrOutput, 3, 'r');
+  showText(lang ? " o " : " or ");
+  showPowerVar(&ptrOutput, 3, 's');
+  showText(".</p><p>");
+  // Back-up linear and independent coefficients.
+  CopyBigInt(&RatQuartic.numerator, &RatLinear.numerator);
+  CopyBigInt(&RatQuartic.denominator, &RatLinear.denominator);
+  CopyBigInt(&RatCubic.numerator, &RatIndependent.numerator);
+  CopyBigInt(&RatCubic.denominator, &RatIndependent.denominator);
+  // Populate linear and independent coefficients.
+  CopyBigInt(&RatLinear.numerator, &RatDeprIndependent.numerator);
+  CopyBigInt(&RatLinear.denominator, &RatDeprIndependent.denominator);
+  CopyBigInt(&RatIndependent.numerator, &Rat2.numerator);
+  CopyBigInt(&RatIndependent.denominator, &Rat2.denominator);
+  showRatCoeffAndPowerVar(NULL, -2, 'w');
+  showRatCoeffAndPowerVar(&RatLinear, 1, 'w');
+  showRatCoeffAndPowerVar(&RatIndependent, 0, 'w');
+  showText(" = 0</p>");
+  stepsForQuadraticEquation('w', 'z');
+  // Restore linear and independent coefficients.
+  CopyBigInt(&RatLinear.numerator, &RatQuartic.numerator);
+  CopyBigInt(&RatLinear.denominator, &RatQuartic.denominator);
+  CopyBigInt(&RatIndependent.numerator, &RatCubic.numerator);
+  CopyBigInt(&RatIndependent.denominator, &RatCubic.denominator);
+}
+
 static void linearCoeffNotZero(int multiplicity, char currLetter)
 {
+  if (teach)
+  {
+    showText(lang ? "<p>El discriminante es negativo, lo que indica que hay una raíz real y dos raíces complejas conjugadas.</p>" :
+      "<p>The discriminant is negative, so there is a real root and two complex conjugate roots.</p>");
+    showCardanoMethod(currLetter);
+  }
   showRAndS();
   if (teach)
   {
@@ -514,8 +711,8 @@ static void linearCoeffNotZero(int multiplicity, char currLetter)
     showVariable(&ptrOutput, 'r');
     showText(lang ? " y " : " and ");
     showVariable(&ptrOutput, 's');
-    showText(lang ? " porque se debe cumplir la condición (4). Así que el producto debe ser un número real.</p><p>Sea " :
-      " because the condition (4) must be true. So their product must be a real number.</p><p>Let ");
+    showText(lang ? " porque se debe cumplir la condición (3). Así que el producto debe ser un número real.</p><p>Sea " :
+      " because the condition (3) must be true. So their product must be a real number.</p><p>Let ");
     for (char letter = 'r'; letter <= 's'; letter++)
     {
       if (letter == 's')
@@ -539,16 +736,7 @@ static void linearCoeffNotZero(int multiplicity, char currLetter)
       showVariable(&ptrOutput, 'f');
     }
     showText(lang ? ", donde</p><p>" : ", where</p><p>");
-    for (char letter = 'e'; letter <= 'f'; letter++)
-    {
-      if (letter == 'f')
-      {
-        showText(", ");
-      }
-      showVariable(&ptrOutput, letter);
-      showText(" = ");
-      showCompleteCbrt1((letter == 'e') ? "+" : ptrMinus);
-    }
+    showNonRealCubeRootsOf1();
     showText(lang ? "</p><p>son las raíces cúbicas no reales de 1. Como " :
       "</p><p>are the non-real cubic roots of 1. Since ");
     showVariable(&ptrOutput, 'e');
@@ -560,7 +748,7 @@ static void linearCoeffNotZero(int multiplicity, char currLetter)
     showPowerVar(&ptrOutput, 2, 'f');
     showText(lang ? " no lo son, los valores de " : " are not, the values of ");
     showVariable(&ptrOutput, currLetter);
-    showText(lang ? " que cumplen la condición (4) son:</p>" : " that follow the condition (4) are:</p>");
+    showText(lang ? " que cumplen la condición (3) son:</p>" : " that follow the condition (3) are:</p>");
     for (int rootNbr = 1; rootNbr <= 3; rootNbr++)
     {
       showText("<p>");
@@ -677,169 +865,6 @@ static void linearCoeffNotZero(int multiplicity, char currLetter)
   }
 }
 
-static void showRPlusS(void)
-{
-  startParen();
-  showVariable(&ptrOutput, 'r');
-  showText(" + ");
-  showVariable(&ptrOutput, 's');
-  endParen();
-}
-
-static void showN(void)
-{
-  showCoeffBeforeParen(&RatDeprLinear);
-  showRPlusS();
-  showPlusMinusRational(&RatDeprIndependent);
-  showText(" = 0</p><p>");
-}
-
-static void showCardanoMethod(char currLetter)
-{
-  showText(lang ? "<p>Usando el método de Cardano, asignando " : "<p>Using Cardano's method, setting ");
-  showVariable(&ptrOutput, currLetter);
-  showText(" = ");
-  showVariable(&ptrOutput, 'r');
-  showText(" + ");
-  showVariable(&ptrOutput, 's');
-  showText(":</p><p>");
-  // Show (r+s)^3 + N = 0, where N = p(r+s) + q
-  showRPlusS();
-  showPower(&ptrOutput, 3);
-  showN();
-  // Show r^3 + 3r^2*s + 3rs^2 + s^3 + N = 0
-  showPowerVar(&ptrOutput, 3, 'r');
-  intToBigInteger(&Rat1.numerator, 3);
-  intToBigInteger(&Rat1.denominator, 1);
-  showRatCoeffAndPowerVar(&Rat1, 2, 'r');
-  showText(ptrTimes);
-  showVariable(&ptrOutput, 's');
-  showRatCoeffAndPowerVar(&Rat1, 1, 'r');
-  showText(ptrTimes);
-  showPowerVar(&ptrOutput, 2, 's');
-  showText(" + ");
-  showPowerVar(&ptrOutput, 3, 's');
-  showN();
-  // Show r^3 + s^3 + 3rs(r+s) + N = 0
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(" + ");
-  showPowerVar(&ptrOutput, 3, 's');
-  showRatCoeffAndPowerVar(&Rat1, 1, 'r');
-  showText(ptrTimes);
-  showVariable(&ptrOutput, 's');
-  showText(ptrTimes);
-  showRPlusS();
-  showN();
-  // Show r^3 + s^3 + (3rs + p)(r+s) + q = 0
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(" + ");
-  showPowerVar(&ptrOutput, 3, 's');
-  showText(" + ");
-  startParen();
-  showRational(&Rat1);
-  showText(ptrTimes);
-  showVariable(&ptrOutput, 'r');
-  showText(ptrTimes);
-  showVariable(&ptrOutput, 's');
-  showPlusMinusRational(&RatDeprLinear);
-  endParen();
-  showText(ptrTimes);
-  showRPlusS();
-  showPlusMinusRational(&RatDeprIndependent);
-  showText(" = 0&nbsp;&nbsp;&nbsp;&nbsp;(2)</p><p>");
-  showText(lang ? "Como hay una variable adicional, se puede imponer una condición extra. En este caso la elección es:</p><p>" :
-    "Since there is an extra variable, we can impose an additional condition. In our case it is:</p><p>");
-  // Show 3rs + p = 0
-  showRational(&Rat1);
-  showText(ptrTimes);
-  showVariable(&ptrOutput, 'r');
-  showText(ptrTimes);
-  showVariable(&ptrOutput, 's');
-  showPlusMinusRational(&RatDeprLinear);
-  showText(" = 0&nbsp;&nbsp;&nbsp;&nbsp;(3)</p><p>");
-  // Show rs = -p/3
-  showVariable(&ptrOutput, 'r');
-  showText(ptrTimes);
-  showVariable(&ptrOutput, 's');
-  showText(" = ");
-  BigRationalDivideByInt(&RatDeprLinear, -3, &Rat1);
-  ForceDenominatorPositive(&Rat1);
-  showRational(&Rat1);
-  showText("&nbsp;&nbsp;&nbsp;&nbsp;(4)</p>");
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(ptrTimes);
-  showPowerVar(&ptrOutput, 3, 's');
-  showText(" = ");
-  BigRationalMultiply(&Rat1, &Rat1, &Rat2);
-  BigRationalMultiply(&Rat2, &Rat1, &Rat2);
-  showRational(&Rat2);
-  showText("&nbsp;&nbsp;&nbsp;&nbsp;(5)</p>");
-  showText(lang ? "<p>De (2) y (3):</p><p>" : "<p>From (2) and (3):</p><p>");
-  // Show r^3 + s^3 + q = 0
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(" + ");
-  showPowerVar(&ptrOutput, 3, 's');
-  showPlusMinusRational(&RatDeprIndependent);
-  showText(" = 0&nbsp;&nbsp;&nbsp;&nbsp;(6)</p><p>");
-  showText(lang ? "Multiplicando por " : "Multiplying by ");
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(":</p></p>");
-  // Show r^6 + r^3*s^3 + q*r^3 = 0
-  showPowerVar(&ptrOutput, 6, 'r');
-  showText(" + ");
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(ptrTimes);
-  showPowerVar(&ptrOutput, 3, 's');
-  showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
-  showText(" = 0</p><p>");
-  showText(lang ? "De (5):</p>" : "From (5):</p>");
-  showPowerVar(&ptrOutput, 6, 'r');
-  showPlusMinusRational(&Rat2);
-  showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
-  showText(" = 0</p><p>");
-  showPowerVar(&ptrOutput, 6, 'r');
-  showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
-  showPlusMinusRational(&Rat2);
-  showText(" = 0</p><p>");
-  showText(lang ? "Esta es una ecuación cuadrática en " :
-    "This is a quadratic equation in ");
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(lang ? ". Al multiplicar (6) por " : ". If we multiplied (6) by ");
-  showPowerVar(&ptrOutput, 3, 's');
-  showText(lang ? " en vez de " : " instead of ");
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(lang ? ", los coeficientes de la ecuación serían los mismos, así que la ecuación cuadrática también permite obtener " :
-    ", the equation coefficients would be the same, so the quadratic equation can also give us the value of ");
-  showPowerVar(&ptrOutput, 3, 's');
-  showText(lang ? ". Sea " : ". Let ");
-  showVariable(&ptrOutput, 'w');
-  showText(" = ");
-  showPowerVar(&ptrOutput, 3, 'r');
-  showText(lang ? " o " : " or ");
-  showPowerVar(&ptrOutput, 3, 's');
-  showText(".</p><p>");
-  // Back-up linear and independent coefficients.
-  CopyBigInt(&RatQuartic.numerator, &RatLinear.numerator);
-  CopyBigInt(&RatQuartic.denominator, &RatLinear.denominator);
-  CopyBigInt(&RatCubic.numerator, &RatIndependent.numerator);
-  CopyBigInt(&RatCubic.denominator, &RatIndependent.denominator);
-  // Populate linear and independent coefficients.
-  CopyBigInt(&RatLinear.numerator, &RatDeprIndependent.numerator);
-  CopyBigInt(&RatLinear.denominator, &RatDeprIndependent.denominator);
-  CopyBigInt(&RatIndependent.numerator, &Rat2.numerator);
-  CopyBigInt(&RatIndependent.denominator, &Rat2.denominator);
-  showRatCoeffAndPowerVar(NULL, -2, 'w');
-  showRatCoeffAndPowerVar(&RatLinear, 1, 'w');
-  showRatCoeffAndPowerVar(&RatIndependent, 0, 'w');
-  showText(" = 0</p>");
-  stepsForQuadraticEquation('w', 'z');
-  // Restore linear and independent coefficients.
-  CopyBigInt(&RatLinear.numerator, &RatQuartic.numerator);
-  CopyBigInt(&RatLinear.denominator, &RatQuartic.denominator);
-  CopyBigInt(&RatIndependent.numerator, &RatCubic.numerator);
-  CopyBigInt(&RatIndependent.denominator, &RatCubic.denominator);
-}
-
 void showCoeffBeforeParen(BigRational* rat)
 {
   if (BigIntEqual(&rat->numerator, &rat->denominator))
@@ -902,9 +927,28 @@ void CubicEquation(const int* polynomial, int multiplicity)
   BigRationalSubt(&RatLinear, &RatDeprLinear, &RatDeprLinear); // p
   BigRationalSubt(&RatIndependent, &RatDeprIndependent, &RatDeprIndependent); // d - bc/3
   BigRationalAdd(&RatDeprIndependent, &Rat1, &RatDeprIndependent); // q
-  if (teach)
+  // Compute discriminant (delta)/(-27) = q^2 + 4p^3/27.
+  BigRationalMultiply(&RatDeprIndependent, &RatDeprIndependent, &RatDiscr);  // q^2
+  BigRationalMultiply(&RatDeprLinear, &RatDeprLinear, &Rat1); // p^2
+  BigRationalMultiply(&RatDeprLinear, &Rat1, &Rat1);          // p^3
+  BigRationalMultiplyByInt(&Rat1, 4, &Rat1);                   // 4p^3
+  BigRationalDivideByInt(&Rat1, 27, &Rat1);                  // 4p^3/27
+  BigRationalAdd(&RatDiscr, &Rat1, &RatDiscr);                   // q^2 + 4p^3/27
+  if (teach && !BigIntIsZero(&RatDeprLinear.numerator))
   {
-    bool equationShown = false;
+    const char* ptrDelta;
+    if (pretty == PRETTY_PRINT)
+    {
+      ptrDelta = "&Delta;";
+    }
+    else if (pretty == TEX)
+    {
+      ptrDelta = "\\Delta";
+    }
+    else
+    {
+      ptrDelta = "D";
+    }
     if (!BigIntIsOne(&Cubic))
     {
       showText(lang ? "<p>Dividiendo la ecuación por el coeficiente cúbico:</p><p>" :
@@ -913,14 +957,10 @@ void CubicEquation(const int* polynomial, int multiplicity)
       showRatCoeffAndPowerVar(&RatQuadratic, 2, 'x');
       showRatCoeffAndPowerVar(&RatLinear, 1, 'x');
       showRatCoeffAndPowerVar(&RatIndependent, 0, 'x');
-      equationShown = true;
+      showText(" = 0</p>");
     }
     if (!BigIntIsZero(&Quadratic))
     {
-      if (!BigIntIsOne(&Cubic))
-      {
-        showText(" = 0</p>");
-      }
       showText(lang ? "<p>Para eliminar el término cuadrático se debe hacer la sustitución:</p><p>" :
         "<p>To eliminate the quadratic term, we will perform the following substitution:</p><p>");
       showVariable(&ptrOutput, 'x');
@@ -993,25 +1033,46 @@ void CubicEquation(const int* polynomial, int multiplicity)
       showRatCoeffAndPowerVar(NULL, -3, 'y');
       showRatCoeffAndPowerVar(&RatDeprLinear, 1, 'y');
       showPlusMinusRational(&RatDeprIndependent);
-      equationShown = true;
+      showText(" = 0</p>");
     }
-    if (equationShown)
-    {
-      showText(" = 0&nbsp;&nbsp;&nbsp;&nbsp;(1)</p>");
-    }
-    if (!BigIntIsZero(&RatDeprLinear.numerator))
-    {
-      showCardanoMethod(currLetter);
-    }
+    showText(lang ? "<p>La naturaleza de las raíces está dada por el valor del discriminante.</p><p>" :
+      "<p>The nature of the roots depends on the value of the discriminant.</p><p>");
+    showText(ptrDelta);
+    showText(" = ");
+    intToBigInteger(&Rat1.numerator, -4);
+    intToBigInteger(&Rat1.denominator, 1);
+    showRatCoeffAndPowerVar(&Rat1, 3, 'p');
+    showText(" ");
+    intToBigInteger(&Rat1.numerator, -27);
+    showRatCoeffAndPowerVar(&Rat1, 2, 'q');
+    showText(lang ? "<p>donde " : "<p>where ");
+    showVariable(&ptrOutput, 'p');
+    showText(lang ? " es el coeficiente lineal y " : " is the linear coefficient and ");
+    showVariable(&ptrOutput, 'q');
+    showText(lang ? " es el término independiente.</p><p>" : " is the constant term.</p><p>");
+    showText(ptrDelta);
+    showText(" = ");
+    showText(ptrMinus);
+    showText("4");
+    showText(ptrTimes);
+    showRational(&RatDeprLinear);
+    showPower(&ptrOutput, 3);
+    showText(" ");
+    showText(ptrMinus);
+    showText(" ");
+    showText("27");
+    showText(ptrTimes);
+    startParen();
+    showRationalNoParen(&RatDeprIndependent);
+    endParen();
+    showPower(&ptrOutput, 2);
+    showText(" = ");
+    BigRationalMultiplyByInt(&RatDiscr, -27, &Rat1);
+    ForceDenominatorPositive(&Rat1);
+    showRationalNoParen(&Rat1);
+    showText("</p>");
   }
-  // Compute discriminant (delta)/(-27) = q^2 + 4p^3/27.
-  BigRationalMultiply(&RatDeprIndependent, &RatDeprIndependent, &RatDiscr);  // q^2
-  BigRationalMultiply(&RatDeprLinear, &RatDeprLinear, &Rat1);  // p^2
-  BigRationalMultiply(&RatDeprLinear, &Rat1, &Rat1);           // p^3
-  BigRationalMultiplyByInt(&Rat1, 4, &Rat1);                   // 4p^3
-  BigRationalDivideByInt(&Rat1, 27, &Rat1);                    // 4p^3/27
-  BigRationalAdd(&RatDiscr, &Rat1, &RatDiscr);                 // q^2 + 4p^3/27
-  BigRationalDivideByInt(&RatQuadratic, -3, &RatQuadratic);    // -b/3
+  BigRationalDivideByInt(&RatQuadratic, -3, &RatQuadratic);  // -b/3
   ForceDenominatorPositive(&RatQuadratic);
   if (RatDiscr.numerator.sign == RatDiscr.denominator.sign)
   {   // Discriminant is negative.
