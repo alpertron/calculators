@@ -611,7 +611,7 @@ static void DistinctDegreeFactorization(int polyDeg)
         showText("<p><strong>");
         showVariable(&ptrOutput, 'f');
         showText("(x)");
-        showEquAndPoly(poly3, polyDegree);
+        showEquAndPoly(ptrPolyToFactor, polyDegree);
         showText("</strong></p><p>");
         showText(lang ? "Este polinomio es irreducible.</p>" :
           "This polynomial is irreducible.</p>");
