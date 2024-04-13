@@ -1284,16 +1284,18 @@ static void vanHoeij(int prime, int numFactors)
       int elapsedTime = (int)(tenths() - originalTenthSecond);
       if ((elapsedTime / 10) != (oldTimeElapsed / 10))
       {
+        char outputInfo[1000];
+        char *ptrOut = outputInfo;
+
         oldTimeElapsed = elapsedTime;
-        ptrOutput = output;
-        copyStr(&ptrOutput, lang? "1<p>Obteniendo factores de dos factores modulares: prueba ":
+        copyStr(&ptrOut, lang? "1<p>Obteniendo factores de dos factores modulares: prueba ":
                                 "1<p>Finding factors from two modular factors: attempt ");
-        int2dec(&ptrOutput, currentAttempts);
-        copyStr(&ptrOutput, lang ? " de " : " of ");
-        int2dec(&ptrOutput, maxAttempts);
-        copyStr(&ptrOutput, "</p>");
-        showElapsedTimeSec(&ptrOutput);
-        databack(output);
+        int2dec(&ptrOut, currentAttempts);
+        copyStr(&ptrOut, lang ? " de " : " of ");
+        int2dec(&ptrOut, maxAttempts);
+        copyStr(&ptrOut, "</p>");
+        showElapsedTimeSec(&ptrOut);
+        databack(outputInfo);
       }
 #endif
       intToLinkedBigInt(&lambda[0][ctr2], 0);
@@ -2072,7 +2074,8 @@ void FactorPolynomialModPrime(int prime)
 {
   (void)memset(factorInfo, 0, sizeof(factorInfo));
   initFactorModularPoly(prime);
-  (void)FactorModularPolynomial(false);   // Input is not in Montgomery notation.
+  // Input is not in Montgomery notation.
+  (void)FactorModularPolynomial(false);
 }
 
 static void CopyFactorsFoundToRecord(void)

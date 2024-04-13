@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
 <meta property="og:description" content="This finds the continued fraction representation of rational numbers and quadratic irrationalities.">
-<meta property="article:published_time" content="2024-04-06">
+<meta property="article:published_time" content="2024-04-12">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="manifest" href="contfrac.webmanifest">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/FRACCONT.HTM">
@@ -94,15 +94,16 @@ nav::after {clear:both}
 body {font-family:Arial, sans-serif; margin:0; padding:0}
 main {padding:10px}
 h1, .h2title {text-align:center}
+input[type=button], button {border-radius:5px}
 #actions input[type=button] {color: white; background-color: #3b3b3b}
-fieldset {display:inline}
+fieldset {border-radius:10px;display:inline}
 #functions {max-width:50%}
 .mysvg {margin:0px;padding:0px}
 .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px}
 .lf,.labels {padding:0.2em; clear:both; width:100%}
 .bold {font-weight: bold; color:blue}
 .new {color: #0000FF; font-weight:bold}
-.applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px}
 #feedback, #cont {display:none}
 .fraction {display: inline-block; vertical-align: middle; margin: 0 0.2em 0.4ex; text-align: center}
 .fraction > span {display: block; padding-top: 0.15em}
@@ -443,7 +444,7 @@ To enter numbers in hexadecimal format, you will need to precede them by the str
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old continued fraction applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 6 April 2024.</p>
+<p>Written by Dario Alpern. Last updated 13 April 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -544,8 +545,8 @@ self.onmessage=function(b){k?(m(e.getInputStringPtr(),b.data[0]),e.doWork()):Web
   "name": "Continued Fraction calculator",
   "description": "Web application that finds the continued fraction representation of rational numbers and quadratic irrationalities.",
   "image": ["https://www.alpertron.com.ar/contfrac.png"],
-  "datePublished": "2024-04-06",
-  "dateModified": "2024-04-06",
+  "datePublished": "2024-04-12",
+  "dateModified": "2024-04-12",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

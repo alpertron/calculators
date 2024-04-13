@@ -306,6 +306,9 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "x^3+12*x^2+23*x-9" 1 0 >> coverage.out
 ./polfact 0 "x^3-x-9" 1 0 >> coverage.out
 ./polfact 0 "x^3+x^2-9" 1 0 >> coverage.out
+./polfact 811 "x^20+13x+6" 1 0 >> coverage.out
+./polfact 2 "x^20+13x+6" 1 0 >> coverage.out
+./polfact "n(10**19)" "(x**2-1)*(x-1)" 1 2 >> coverage.out
 
 lcov --capture --directory . --output-file polfact.info
 gcovr --json run-3.json

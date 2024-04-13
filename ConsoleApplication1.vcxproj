@@ -169,6 +169,7 @@
     <ClCompile Include="cubiceq.c" />
     <ClCompile Include="isprime.c" />
     <ClCompile Include="lineareq.c" />
+    <ClCompile Include="modpolfact.c" />
     <ClCompile Include="output.c" />
     <ClCompile Include="quadraticeq.c" />
     <ClCompile Include="quartics.c" />

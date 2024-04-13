@@ -279,7 +279,7 @@ void showRationalNoParen(const BigRational* rat)
   }
 }
 
-void showRationalOverStr(const BigRational* rat, const char *str, const char *ptrTimes)
+void showRationalOverStr(const BigRational* rat, const char *str, const char *pTimes)
 {
   bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) || (rat->denominator.limbs[0].x != 1));
   if (pretty != PARI_GP)
@@ -291,7 +291,7 @@ void showRationalOverStr(const BigRational* rat, const char *str, const char *pt
     if (denominatorIsNotOne)
     {
       shownbr(&rat->denominator);
-      showText(ptrTimes);
+      showText(pTimes);
       showText(" ");
     }
     showText(str);
@@ -343,7 +343,7 @@ void showRational(const BigRational* rat)
 }
 
 void ShowRationalAndSqrParts(const BigRational* RatPart, const BigRational* SqrPart, int root,
-  const char *ptrTimes)
+  const char *pTimes)
 {
   if (!BigIntIsOne(&SqrPart->numerator) || !BigIntIsOne(&SqrPart->denominator))
   {       // Square root part is not 1.
@@ -379,7 +379,7 @@ void ShowRationalAndSqrParts(const BigRational* RatPart, const BigRational* SqrP
         *ptrOutput = ' ';
         ptrOutput++;
       }
-      showText(ptrTimes);
+      showText(pTimes);
       if (pretty == PRETTY_PRINT)
       {
         *ptrOutput = ' ';
@@ -438,14 +438,14 @@ void ShowRationalAndSqrParts(const BigRational* RatPart, const BigRational* SqrP
   }
 }
 
-void showSquareRootOfRational(const BigRational* rat, int root, const char *ptrTimes)
+void showSquareRootOfRational(const BigRational* rat, int root, const char *pTimes)
 {
   intToBigInteger(&Rat1.numerator, 1);
   intToBigInteger(&Rat1.denominator, 1);
   CopyBigInt(&Rat2.numerator, &rat->numerator);
   CopyBigInt(&Rat2.denominator, &rat->denominator);
   MultiplyRationalBySqrtRational(&Rat1, &Rat2);
-  ShowRationalAndSqrParts(&Rat1, &Rat2, root, ptrTimes);
+  ShowRationalAndSqrParts(&Rat1, &Rat2, root, pTimes);
 }
 
 void showPlusMinusRational(BigRational* rat)

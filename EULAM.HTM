@@ -18,7 +18,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:description" content="muestra una representación gráfica de los números primos.">
-<meta property="article:published_time" content="2024-04-06">
+<meta property="article:published_time" content="2024-04-12">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/EULAM.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/ULAM.HTM">
@@ -60,10 +60,14 @@ nav::after {clear:both}
 .bread {padding:0px;list-style:none; display:inline-block}
 .bread li {display:inline}
 .bread li+li:before {content:"›"}
+input[type=button], button {border-radius:5px}
+fieldset {border-radius:10px}
 body {font-family: Arial, sans-serif;margin:0; padding:0}
 h1 {text-align:center}
+input[type=button] {border-radius:5px}
+button {border-radius:5px}
 #canvas {margin-left:auto; margin-right:auto; display:block; width:100%;text-align:center;vertical-align:middle; max-width:2000px;touch-action:none}
-#applet {border: 0px none;width:100%}
+#applet {border: 0px none;width:100%;border-radius:10px}
 #bottom {border: 0px none;width:100%;min-height:4em;padding:5px}
 .pad {padding:10px}
 @media (min-height: 200px) {#canvas {height:100px}}
@@ -213,7 +217,7 @@ Cualquier número en la línea diagonal menor que 41<sup>2</sup> = 1681 debe ser
 Las diagonales cuyos números no se pueden dividir por primos pequeños tienen mayor cantidad de números primos, porque la mayoría de los números compuestos son divisibles por primos pequeños.</p>
 <h2>Código fuente</h2>
 <p>Puede bajar el código fuente de esta aplicación y del viejo applet de visualización de la espiral de Ulam desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
-<p>Escrito por Dario Alpern. Actualizado el 6 de abril de 2024.</p>
+<p>Escrito por Dario Alpern. Actualizado el 13 de abril de 2024.</p>
 </div>
 </article></main>
 <div id="cannotShow"><p>No se puede mostrar la espiral cuando el valor del centro es menor que el valor inicial.</p></div>
@@ -231,8 +235,8 @@ Las diagonales cuyos números no se pueden dividir por primos pequeños tienen m
   "name": "Espiral de Ulam",
   "description": "Aplicación Web que muestra una representación gráfica de los números primos.",
   "image": ["https://www.alpertron.com.ar/eulam.png"],
-  "datePublished": "2024-04-06",
-  "dateModified": "2024-04-06",
+  "datePublished": "2024-04-12",
+  "dateModified": "2024-04-12",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

@@ -84,6 +84,7 @@ extern int polyNonRepeatedFactors[1000000];
 
 
 typedef void (*powerCback)(int percentage);
+void SortFactors(const BigInteger* modulus);
 void SetNumberToOne(/*@out@*/int *ptrValue1);
 void PolyModularGcd(const int *arg1, int degree1, int *arg2, int degree2, int *gcd, int *degreeGcd);
 void powerPolynomial(int* polyBase, const int* polyMod, int polyDegree, const BigInteger* expon,
@@ -99,7 +100,6 @@ void GetPolyInvParm(int polyDegree, const int *polyMod);
 int ComputePolynomial(const char *input, int expo);
 void OrigPolyFromMontgomeryToStandard(void);
 void ConvertToMonic(int *poly, int polyDegree);
-void SquareFreeFactorization(int polyDegree, int *poly, int expon);
 int HenselLifting(struct sFactorInfo* factorInfo, bool compressPoly);
 void polyToStandardNotation(int *nbr, int qtyNbrs);
 void textErrorPol(char **pptrOutput, enum eExprErr rc);
@@ -126,6 +126,8 @@ void showPower(char** pptrOutput, int exponent);
 void showPowerX(char** pptrOutput, int polyDegree);
 void showPowerVar(char** pptrOutput, int polyDegree, char letter);
 int FactorModularPolynomial(bool inputMontgomery);
+void showPolynomial(char** pptrOutput, const int* ptrPoly, int polyDegree, int groupLength);
+void showMontPolynomial(char** pptrOutput, const int* ptrPoly, int polyDegree, int groupLength);
 int getNextPrimeNoDuplicatedFactors(int prime);
 void FactorPolynomialModPrime(int prime);
 void fftPolyMult(const int* factor1, const int* factor2, int* result, int len, int maxLen);

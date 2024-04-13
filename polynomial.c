@@ -917,163 +917,6 @@ int getDegreePoly(const int *poly, int polyDegree)
   return currentDegree;
 }
 
-#if 0
-// Square-free factorization (from Wikipedia).
-// i <- 1; g <- f';
-// if g != 0 then {
-//   c <- gcd(f, g);
-//   w <- f / c;
-//   while w != 1 do {
-//     y <- gcd(w, c); z <- w / y;
-//     Output(z^i); i <- i + 1;
-//     w <- y; c <- c / y
-//   }
-//   if c != 1 then {
-//     c <- c^(1/p);
-//     Output(SFF(c)^p)
-//   }
-// }
-// else {
-//    f <- f^(1/p);
-//    Output(SFF(f)^p)
-//  }
-//  end.
-#endif
-void SquareFreeFactorization(int polyDegree, int *poly, int expon)
-{
-  int currentDegree;
-  int degreeC;
-  int degreeY;
-  int index;
-  int primeInt = primeMod.limbs[0].x;
-  int nbrLimbs = primeMod.nbrLimbs + 1;
-  int* ptrValue1;
-  int *ptrValue2;
-  // Generate derivative in poly1.
-  ptrValue1 = poly;
-  ptrValue2 = poly1;
-  for (currentDegree = 1; currentDegree <= polyDegree; currentDegree++)
-  {
-    ptrValue1 += nbrLimbs;
-    IntArray2BigInteger(ptrValue1, &operand1);
-    modmultInt(operand1.limbs, currentDegree, operand1.limbs);
-    BigInteger2IntArray(ptrValue2, &operand1);
-    ptrValue2 += nbrLimbs;
-  }
-  // Check whether the derivative is zero.
-  for (currentDegree = polyDegree-1; currentDegree >= 0; currentDegree--)
-  {
-    ptrValue1 = &poly1[(currentDegree*nbrLimbs)+1];
-    for (index = 1; index < nbrLimbs; index++)
-    {
-      if (*ptrValue1 != 0)
-      {         // Coefficient of derivative is not zero.
-        break;
-      }
-      ptrValue1++;
-    }
-    if (index < nbrLimbs)
-    {           // Coefficient of derivative is not zero.
-      break;
-    }
-  }
-  if (currentDegree >= 0)
-  {             // Derivative is not zero.
-    int lenBytes;
-    int degreeW;
-    int i = 1;
-
-    PolyModularGcd(poly, polyDegree, poly1, currentDegree, poly2, &degreeC); // poly2 = c
-    lenBytes = (polyDegree + 1) * nbrLimbs * (int)sizeof(int);
-    (void)memcpy(poly4, poly, lenBytes);             // Backup poly
-    SetNumberToOne(&poly2[degreeC * nbrLimbs]);
-    if (degreeC == 0)
-    {
-      (void)memcpy(poly1, poly, lenBytes);           // poly1 = w
-    }
-    else
-    {
-      DividePolynomial(poly4, polyDegree, poly2, degreeC, poly1);    // poly1 = w
-    }
-    degreeW = polyDegree - degreeC;
-    while (degreeW != 0)
-    {
-      lenBytes = (degreeW + 1) * nbrLimbs * (int)sizeof(int);
-      (void)memcpy(poly4, poly1, lenBytes);        // Backup w.
-      PolyModularGcd(poly2, degreeC, poly1, degreeW, poly3, &degreeY);      // poly3 = y
-      SetNumberToOne(&poly3[degreeY*nbrLimbs]);
-      if (degreeW != degreeY)
-      {
-        int degreeZ;
-        int lenLimbs;
-        struct sFactorInfo *pstFactorInfo;
-
-        DividePolynomial(poly4, degreeW, poly3, degreeY, poly1);     // poly1 = z
-        // z^i is divisor of the original polynomial.
-        degreeZ = degreeW - degreeY;
-        for (currentDegree = 0; currentDegree < (i*expon); currentDegree++)
-        {
-          DividePolynomial(ptrOrigPoly, degreeOrigPoly, poly1, degreeZ, poly4);
-          degreeOrigPoly -= degreeZ;
-          lenBytes = (degreeOrigPoly + 1) * nbrLimbs * (int)sizeof(int);
-          (void)memcpy(ptrOrigPoly, poly4, lenBytes);
-        }
-        pstFactorInfo = &factorInfo[nbrFactorsFound];
-        nbrFactorsFound++;
-        pstFactorInfo -> ptr = ptrOrigPoly;
-        pstFactorInfo -> degree = degreeZ;
-        pstFactorInfo -> multiplicity = i*expon;
-        pstFactorInfo -> expectedDegree = 0;    // Unknown at this moment.
-        lenBytes = degreeZ * nbrLimbs * (int)sizeof(int);
-        (void)memcpy(ptrOrigPoly, poly1, lenBytes);
-        lenLimbs = (degreeZ + 1) * nbrLimbs;
-        ptrOrigPoly += lenLimbs;
-        lenBytes = (degreeOrigPoly + 1) * nbrLimbs * (int)sizeof(int);
-        (void)memcpy(ptrOrigPoly, poly4, lenBytes);
-      }
-      i++;
-      lenBytes = (degreeY + 1) * nbrLimbs * (int)sizeof(int);
-      (void)memcpy(poly1, poly3, lenBytes);  // Copy y to w.
-      degreeW = getDegreePoly(poly1, degreeY);
-      DividePolynomial(poly2, degreeC, poly1, degreeW, poly4); // Compute c.
-      degreeC -= degreeW;
-      lenBytes = (degreeC + 1) * nbrLimbs * (int)sizeof(int);
-      (void)memcpy(poly2, poly4, lenBytes);
-    }
-    if (degreeC != 0)
-    {      // C is a perfect power.
-      int lenLimbs = (degreeOrigPoly + 1) * nbrLimbs;
-      ptrValue1 = ptrOrigPoly + lenLimbs;
-      ptrValue2 = poly2;
-      for (currentDegree = 0; currentDegree <= degreeC; currentDegree += primeInt)
-      {
-        lenBytes = nbrLimbs * (int)sizeof(int);
-        (void)memcpy(ptrValue1, ptrValue2, lenBytes);
-        ptrValue1 += nbrLimbs;
-        lenLimbs = primeInt * nbrLimbs;
-        ptrValue2 += lenLimbs;
-      }
-      lenLimbs = (degreeOrigPoly + 1) * nbrLimbs;
-      SquareFreeFactorization(degreeC / primeInt, ptrOrigPoly + lenLimbs, expon * primeInt);
-    }
-  }
-  else
-  {           // Derivative is zero.
-    int lenLimbs = (degreeOrigPoly + 1) * nbrLimbs;
-    ptrValue1 = ptrOrigPoly + lenLimbs;
-    ptrValue2 = poly;
-    for (currentDegree = 0; currentDegree <= polyDegree; currentDegree += primeInt)
-    {
-      int lenBytes = nbrLimbs * (int)sizeof(int);
-      (void)memcpy(ptrValue1, ptrValue2, lenBytes);
-      ptrValue1 += nbrLimbs;
-      lenLimbs = primeInt * nbrLimbs;
-      ptrValue2 += lenLimbs;
-    }
-    lenLimbs = (degreeOrigPoly + 1) * nbrLimbs;
-    SquareFreeFactorization(polyDegree / primeInt, ptrOrigPoly + lenLimbs, expon * primeInt);
-  }
-}
 
 #if 0
 // Extended GCD algorithm of polynomials a, b:
@@ -1504,26 +1347,26 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
     if ((elapsedTime / 10) != (oldTimeElapsed / 10))
     {
       char outputInfo[1000];
-      char* ptrOutput = outputInfo;
+      char* ptrOut = outputInfo;
       if (lang)
       {
-        copyStr(&ptrOutput, "1<p>Aplicando lema de Hensel usando el número primo ");
-        int2dec(&ptrOutput, primeMod.limbs[0].x);
-        copyStr(&ptrOutput, " procesando exponente ");
-        int2dec(&ptrOutput, currentExp);
-        copyStr(&ptrOutput, " de ");
+        copyStr(&ptrOut, "1<p>Aplicando lema de Hensel usando el número primo ");
+        int2dec(&ptrOut, primeMod.limbs[0].x);
+        copyStr(&ptrOut, " procesando exponente ");
+        int2dec(&ptrOut, currentExp);
+        copyStr(&ptrOut, " de ");
       }
       else
       {
-        copyStr(&ptrOutput, "1<p>Hensel lifting using prime number ");
-        int2dec(&ptrOutput, primeMod.limbs[0].x);
-        copyStr(&ptrOutput, " processing exponent ");
-        int2dec(&ptrOutput, currentExp);
-        copyStr(&ptrOutput, " of ");
+        copyStr(&ptrOut, "1<p>Hensel lifting using prime number ");
+        int2dec(&ptrOut, primeMod.limbs[0].x);
+        copyStr(&ptrOut, " processing exponent ");
+        int2dec(&ptrOut, currentExp);
+        copyStr(&ptrOut, " of ");
       }
-      int2dec(&ptrOutput, exponentMod);
-      copyStr(&ptrOutput, ".</p>");
-      showElapsedTimeSec(&ptrOutput);
+      int2dec(&ptrOut, exponentMod);
+      copyStr(&ptrOut, ".</p>");
+      showElapsedTimeSec(&ptrOut);
       databack(outputInfo);
     }
 #endif
@@ -1913,7 +1756,22 @@ void showPowerX(char **pptrOutput, int polyDegree)
   showPowerVar(pptrOutput, polyDegree, 'x');
 }
 
-static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree, int groupLength)
+static void getMontCoeff(const int* ptrCoeff)
+{
+  NumberLength = powerMod.nbrLimbs;
+  IntArray2BigInteger(ptrCoeff, &operand2);
+  memset(operand1.limbs, 0, NumberLength * sizeof(limb));
+  operand1.limbs[0].x = 1;
+  modmult(operand1.limbs, operand2.limbs, operand1.limbs);
+  operand1.nbrLimbs = NumberLength;
+  while ((operand1.nbrLimbs > 1) && (operand1.limbs[operand1.nbrLimbs - 1].x == 0))
+  {   // Loop that discards non-significant limbs.
+    operand1.nbrLimbs--;
+  }
+}
+
+static void showPolynomialMontOrNorm(char **pptrOutput, const int *ptrPoly,
+      int polyDegree, int groupLength, bool isMontNotation)
 {
   int currentDegree;
   char *ptrOutput = *pptrOutput;
@@ -1967,11 +1825,18 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
       }
       *ptrOutput = ' ';
       ptrOutput++;
-      if ((len != 1) || (*(ptrValue1 + 1) != 1))
-      {            // Absolute value of coefficient is not one.
+      if (isMontNotation)
+      {
+        getMontCoeff(ptrValue1);
+      }
+      else
+      {
         NumberLength = numLimbs(ptrValue1);
         IntArray2BigInteger(ptrValue1, &operand1);
         NumberLength = powerMod.nbrLimbs;
+      }
+      if ((operand1.nbrLimbs > 1) || (operand1.limbs[0].x != 1))
+      {            // Absolute value of coefficient is not one.
         operand1.sign = SIGN_POSITIVE;
         Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
         if (currentDegree > 0)
@@ -1998,7 +1863,17 @@ static void showPolynomial(char **pptrOutput, const int *ptrPoly, int polyDegree
   NumberLength = NumberLengthBak;
 }
 
-static void outputOriginalPolynomialElem(char** pptrOutput, const int *ptrPoly, int groupLength)
+void showPolynomial(char** pptrOutput, const int* ptrPoly, int polyDegree, int groupLength)
+{
+  showPolynomialMontOrNorm(pptrOutput, ptrPoly, polyDegree, groupLength, false);
+}
+
+void showMontPolynomial(char** pptrOutput, const int* ptrPoly, int polyDegree, int groupLength)
+{
+  showPolynomialMontOrNorm(pptrOutput, ptrPoly, polyDegree, groupLength, true);
+}
+
+static void outputOriginalPolynomialElem(char** pptrOutput, const int* ptrPoly, int groupLength)
 {
   int currentDegree;
   const int* ptrValue1;
@@ -2009,6 +1884,10 @@ static void outputOriginalPolynomialElem(char** pptrOutput, const int *ptrPoly, 
   if (!modulusIsZero)
   {
     int* ptrValue2;
+    if (pretty == PARI_GP)
+    {
+      copyStr(&ptrOutput, "Mod(");
+    }
     // Output polynomial to factor. First move polynomial to poly4
     ptrValue2 = &poly4[0];
     for (currentDegree = 0; currentDegree <= degree; currentDegree++)
@@ -2020,7 +1899,7 @@ static void outputOriginalPolynomialElem(char** pptrOutput, const int *ptrPoly, 
       ptrValue2 += nbrLimbs;
     }
     // Get leading coefficient.
-    IntArray2BigInteger(&poly4[degree * nbrLimbs], &operand1);
+    getMontCoeff(&poly4[degree * nbrLimbs]);
   }
   else
   { // Find leading coefficient.
@@ -2055,12 +1934,31 @@ static void outputOriginalPolynomialElem(char** pptrOutput, const int *ptrPoly, 
     {
       showPowerX(&ptrOutput, degree);
     }
-    showPolynomial(&ptrOutput, (modulusIsZero ? (ptrPoly + 1) : poly4),
-      degree, groupLength);
+    if (modulusIsZero)
+    {
+      showPolynomial(&ptrOutput, (modulusIsZero ? (ptrPoly + 1) : poly4),
+        degree, groupLength);
+    }
+    else
+    {
+      showMontPolynomial(&ptrOutput, (modulusIsZero ? (ptrPoly + 1) : poly4),
+        degree, groupLength);
+    }
   }
   if (!modulusIsZero)
   {
-    copyStr(&ptrOutput, " (mod ");
+    if (pretty == PRETTY_PRINT)
+    {
+      copyStr(&ptrOutput, " (mod ");
+    }
+    else if (pretty == TEX)
+    {
+      copyStr(&ptrOutput, " (\\pmod ");
+    }
+    else
+    {     // Pari-GP
+      copyStr(&ptrOutput, ", ");
+    }
     Bin2Dec(&ptrOutput, primeMod.limbs, primeMod.nbrLimbs, groupLength);
     if (exponentMod != 1)
     {
