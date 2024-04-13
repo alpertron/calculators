@@ -406,7 +406,7 @@ static void DistinctDegreeFactorization(int polyDeg)
   int lenBytes = nbrLimbs * (polyDegree + 1) * (int)sizeof(int);
   if (teachMod)
   {
-    showText(lang ? "<h3>Factorización de distintos grados.</h3>" :
+    showText(lang ? "<h3>Factorización de distintos grados</h3>" :
       "<h3>Distinct degree factorization</h3>");
   }
   (void)memset(poly1, 0, lenBytes);
@@ -464,7 +464,7 @@ static void DistinctDegreeFactorization(int polyDeg)
         showText(lang ? ", el producto de todos los factores de grado " :
           ", the product of all factors of degree ");
         showVariable(&ptrOutput, 'd');
-        showText(lang ? " se obtiene calculando" :
+        showText(lang ? " se obtiene calculando " :
           " is found by computing ");
         ptrBuf = bufExp;
         showVariable(&ptrBuf, 'd');
@@ -808,7 +808,7 @@ static void showResultEqualDegreeFact(int degreeGcd, int degreeQuot, int expecte
   }
   showVariable(&ptrOutput, 'r');
   showEqu();
-  showText(lang ? "mcd" : "gcd(");
+  showText(lang ? "mcd(" : "gcd(");
   showVariable(&ptrOutput, 'g');
   showText(", ");
   showVariable(&ptrOutput, 'f');
@@ -850,7 +850,7 @@ void SameDegreeFactorization(void)
   firstFactor = true;
   if (teachMod)
   {
-    showText(lang ? "<h3>Factorización del mismo grado.</h3>" :
+    showText(lang ? "<h3>Factorización del mismo grado</h3>" :
       "<h3>Equal degree factorization</h3>");
   }
   for (int nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
