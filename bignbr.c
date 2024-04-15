@@ -2740,3 +2740,24 @@ enum eExprErr BigIntRoot(const BigInteger* argument, BigInteger* nthRoot, int Ex
   }
   return EXPR_OK;
 }
+
+enum eExprErr BigIntMod(const BigInteger* pVal, const BigInteger* pMod, BigInteger* pRes)
+{
+  enum eExprErr rc = BigIntRemainder(pVal, pMod, pRes);
+  if (rc != EXPR_OK)
+  {
+    return rc;
+  }
+  if (pRes->sign == SIGN_NEGATIVE)
+  {
+    if (pMod->sign == SIGN_POSITIVE)
+    {
+      BigIntAdd(pRes, pMod, pRes);
+    }
+    else
+    {
+      BigIntSubt(pRes, pMod, pRes);
+    }
+  }
+  return EXPR_OK;
+}

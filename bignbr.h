@@ -139,6 +139,7 @@ void BigInteger2Hex(char** ppDecimal, const BigInteger *pBigInt, int groupLength
 void BigIntGcd(const BigInteger *pArg1, const BigInteger *pArg2, BigInteger *pResult);
 enum eExprErr BigIntLcm(const BigInteger* pArg1, const BigInteger* pArg2,
   BigInteger* pResult);
+enum eExprErr BigIntMod(const BigInteger *pVal, const BigInteger *pMod, BigInteger *pRes);
 void BigIntGeneralModularDivision(const BigInteger *Num, const BigInteger *Den,
   const BigInteger *mod, BigInteger *quotient);
 void BigIntModularDivision(const BigInteger* Num, const BigInteger* Den,

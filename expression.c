@@ -57,9 +57,11 @@ const struct sFuncOperExpr stFuncOperIntExpr[] =
   {"ANS", TOKEN_ANS + NO_PARMS, 0},
   {"GCD", TOKEN_GCD + MANY_PARMS, 0},
   {"LCM", TOKEN_LCM + MANY_PARMS, 0},
+  {"FLOORDIV", TOKEN_FLOORDIV + TWO_PARMS, 0},
   {"MODPOW", TOKEN_MODPOW + THREE_PARMS, 0},
   {"MODINV", TOKEN_MODINV + TWO_PARMS, 0},
   {"MODDIV", TOKEN_MODDIV + THREE_PARMS, 0},
+  {"MOD", TOKEN_MOD + TWO_PARMS, 0},
   {"SUMDIGITS", TOKEN_SUMDIGITS + TWO_PARMS, 0},
   {"NUMDIGITS", TOKEN_NUMDIGITS + TWO_PARMS, 0},
   {"REVDIGITS", TOKEN_REVDIGITS + TWO_PARMS, 0},
@@ -523,6 +525,36 @@ enum eExprErr ComputeExpression(const char *ptrStartRPN, BigInteger *ExpressionR
       squareRoot(curStack.limbs, curStack2.limbs, curStack.nbrLimbs, &curStack2.nbrLimbs);
       curStack2.sign = SIGN_POSITIVE;
       CopyBigInt(&curStack, &curStack2);
+      break;
+
+    case TOKEN_FLOORDIV:
+      retcode = getParms(2, stackIndexThreshold);
+      if (retcode == EXPR_SHORT_CIRCUIT)
+      {
+        break;
+      }
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      floordiv(&curStack, &curStack2, &curStack);
+      break;
+
+    case TOKEN_MOD:
+      retcode = getParms(2, stackIndexThreshold);
+      if (retcode == EXPR_SHORT_CIRCUIT)
+      {
+        break;
+      }
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
+      retcode = BigIntMod(&curStack, &curStack2, &curStack);
+      if (retcode != EXPR_OK)
+      {
+        return retcode;
+      }
       break;
 
     case TOKEN_MODPOW:
@@ -1732,6 +1764,7 @@ static enum eExprErr PerformShiftLeft(BigInteger* value, int shiftCtr,
   {
     result->nbrLimbs++;
   }
+  result->sign = value->sign;
   return EXPR_OK;
 }
 

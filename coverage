@@ -86,6 +86,8 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "x=3; x=x+1; x<10; \"23%y\"" >> coverage.out
 ./ecm "# This is a comment" >> coverage.out
 ./ecm "iroot(54265656536,3)" >> coverage.out
+./ecm "Mod(10,6)*1000+Mod(-10,6)*100+Mod(10,-6)*10+Mod(-10,-6)" >> coverage.out
+./ecm "FloorDiv(10,6)*1000+FloorDiv(-10,6)*100+FloorDiv(10,-6)*10+FloorDiv(-10,-6)" >> coverage.out
 
 lcov --capture --directory . --output-file ecm.info
 gcovr --json run-1.json
