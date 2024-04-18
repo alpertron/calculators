@@ -44,13 +44,13 @@ if (lang)
 {
   funcnames =
   [
-    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Raíz cuadrada entera,sqrt(,Raíz entera\n\nPrimer argumento: radicando\nSegundo argumento: orden de la raíz,iroot(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(,Valor absoluto,Abs(,Signo,Sign(",
+    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Raíz cuadrada entera,sqrt1,Raíz entera\n\nPrimer argumento: radicando\nSegundo argumento: orden de la raíz,iroot2,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random2,Valor absoluto,Abs1,Signo,Sign1",
     "Igual,=,Distinto,!=,Mayor,>,Menor o igual,<=,Menor,<,Mayor o igual,>=",
     "Y lógica, AND ,O lógica, OR ,O exclusiva, XOR ,Negación lógica, NOT ,Desplazamiento a la izquierda\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHL ,Desplazamiento a la derecha\n\nOperando izquierdo: valor a desplazar\nOperando derecho: cantidad de bits, SHR ",
-    "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD(,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM(,¿El valor es primo?,IsPrime(,Cantidad de factores primos,NumFact(,menor divisor primo,MinFact(,mayor divisor primo,MaxFact(,Cantidad de divisores,NumDivs(,Suma de divisores,SumDivs(",
-    "Primo siguiente,N(,Primo anterior,B(,Cantidad de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,NumDigits(,Suma de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,SumDigits(,Invertir dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,RevDigits(,Concatenar factores primos\n\nPrimer argumento: modo\n0: Primos no repetidos en forma ascendente\n1: Primos no repetidos en forma descendente\n2: Primos repetidos en forma ascendente\n3: Primos repetidos en forma descendente\nSegundo argumento: valor a factorizar,ConcatFact(",
-    "Parte entera del cociente\n\nPrimer argumento: dividendo\nSegundo argumento: divisor,FloorDiv(,Módulo\n\nPrimer argumento: valor\nSegundo argumento: módulo,Mod(,Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv(,División modular\n\nPrimer argumento: dividendo\nSegundo argumento: divisor\nTercer argumento: módulo,ModDiv(,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow(,Indicador de Euler,Totient(,Símbolo de Jacobi\n\nPrimer argumento: valor superior\nSegundo argumento: valor inferior,Jacobi(",
-    "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partición,P("
+    "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD2,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM2,¿El valor es primo?,IsPrime1",
+    "Primo siguiente,N1,Primo anterior,B1,Cantidad de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,NumDigits2,Suma de dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,SumDigits2,Invertir dígitos\n\nPrimer argumento: valor\nSegundo argumento: base,RevDigits2",
+    "Parte entera del cociente\n\nPrimer argumento: dividendo\nSegundo argumento: divisor,FloorDiv2,Módulo\n\nPrimer argumento: valor\nSegundo argumento: módulo,Mod2,Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv2,División modular\n\nPrimer argumento: dividendo\nSegundo argumento: divisor\nTercer argumento: módulo,ModDiv3,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow3,Indicador de Euler,Totient1,Símbolo de Jacobi\n\nPrimer argumento: valor superior\nSegundo argumento: valor inferior,Jacobi2",
+    "Factorial,!,Primorial,#,Fibonacci,F1,Lucas,L1,Partición,P1"
   ];
   parens = "Paréntesis izquierdo,(,Paréntesis derecho,),";
 }
@@ -58,13 +58,13 @@ else
 {
   funcnames =
   [
-    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Integer square root,sqrt(,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(,Absolute value,Abs(,Sign,Sign(",
+    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Integer square root,sqrt1,Integer root\n\nFirst argument: radicand\nSecond argument: root order,iroot2,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random2,Absolute value,Abs1,Sign,Sign1",
     "Equal,=,Not equal,!=,Greater,>,Not greater,<=,Less,<,Not less,>=",
     "Logic AND, AND ,Logic OR, OR ,Exclusive OR, XOR ,Logic NOT, NOT ,Shift left\n\nLeft operand: value to shift\nRight operand: number of bits, SHL ,Shift right\n\nLeft operand: value to shift\nRight operand: number of bits, SHR ",
-    "Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(,Number of prime factors,NumFact(,smallest prime divisor,MinFact(,greatest prime divisor,MaxFact(,Number of divisors,NumDivs(,Sum of divisors,SumDivs(",
-    "Next prime after,N(,Last prime before,B(,Number of digits\n\nFirst argument: value\nSecond argument: base,NumDigits(,Sum of digits\n\nFirst argument: value\nSecond argument: base,SumDigits(,Reverse digits\n\nFirst argument: value\nSecond argument: base,RevDigits(,Concatenate prime factors\n\nFirst argument: Mode\n0: No repeated primes in ascending order\n1: No repeated primes in descending order\n2: Repeated primes in ascending order\n3: Repeated primes in descending order\nSecond argument: Value to factor,ConcatFact(",
-    "Integer part of quotient\n\nFirst argument: dividend\nSecond argument: divisor,FloorDiv(,Modulo\n\nFirst argument: value\nSecond argument: modulo,Mod(,Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv(,Modular division\n\nFirst argument: dividend\nSecond argument: divisor\nThird argument: modulus,ModDiv(,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow(,Totient,Totient(,Jacobi symbol\n\nFirst argument: upper value\nSecond argument: lower value,Jacobi(",
-    "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
+    "Greatest Common Divisor\n\nOne or more arguments can be used,GCD2,Least Common Multiple\n\nOne or more arguments can be used,LCM2,The value is prime?,IsPrime1",
+    "Next prime after,N1,Last prime before,B1,Number of digits\n\nFirst argument: value\nSecond argument: base,NumDigits2,Sum of digits\n\nFirst argument: value\nSecond argument: base,SumDigits2,Reverse digits\n\nFirst argument: value\nSecond argument: base,RevDigits2",
+    "Integer part of quotient\n\nFirst argument: dividend\nSecond argument: divisor,FloorDiv2,Modulo\n\nFirst argument: value\nSecond argument: modulo,Mod2,Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv2,Modular division\n\nFirst argument: dividend\nSecond argument: divisor\nThird argument: modulus,ModDiv3,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow3,Totient,Totient1,Jacobi symbol\n\nFirst argument: upper value\nSecond argument: lower value,Jacobi2",
+    "Factorial,!,Primorial,#,Fibonacci,F1,Lucas,L1,Partition,P1"
   ];
   parens = "Left parenthesis,(,Right parenthesis,),";
 }

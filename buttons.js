@@ -25,7 +25,7 @@ function buttonClick(event)
   let input = currentInputBox;
   input.focus();
   let start = input.selectionStart;
-  let chars = event.target.innerText;
+  let chars = event.target.getAttribute("totalchars");
   if (chars === "\u23CE")
   {
     chars = "\n";
@@ -34,7 +34,12 @@ function buttonClick(event)
                 chars +
                 input.value.substring(input.selectionEnd);
     // Place the caret at the end of the appended text.
-  input.selectionStart = start + event.target.innerText.length;
+  let offset = chars.indexOf("(") + 1;
+  if (offset == 0)
+  {
+    offset = chars.length;
+  }
+  input.selectionStart = start + offset;
   input.selectionEnd = input.selectionStart;
 }
 
@@ -53,7 +58,23 @@ function generateFuncButtons(optionCategory, funcButtons)
     button = document.createElement("button");
     button.setAttribute("type", "button");        // Indicate this is a button, not submit.
     button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
-    button.innerHTML = funcname[catIndex*2 + 1];         // Text of button.
+    let btnName = funcname[catIndex*2 + 1];
+    let nbrArguments = parseInt(btnName.slice(-1), 10);
+    if (nbrArguments >= 1 && nbrArguments <= 9)
+    {
+      let text = btnName.slice(0, -1) + "(";
+      // Set text of button.
+      button.innerHTML = text;
+      // Text to be displayed when the button is pressed.
+      button.setAttribute("totalchars", text + ",".repeat(nbrArguments-1) + ")");
+    }
+    else
+    {
+      // Set text of button.
+      button.innerHTML = btnName;
+      // Text to be displayed when the button is pressed.
+      button.setAttribute("totalchars", btnName);
+    }
     button.classList.add("funcbtn");
     button.onclick = buttonClick;
     fragment.appendChild(button);
