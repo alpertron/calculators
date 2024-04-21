@@ -77,6 +77,43 @@ static void insertBigFactor(struct sFactors *pstFactors, const BigInteger *divis
   int type);
 static char *findChar(char *str, char c);
 
+// Values of b for x^e - b*y^e so the polynomial can be factored.
+// e = 4, 6, 8, ...
+static int coeffMinus8[] = { 16, 2, 1, 2, 2 };
+static int coeffMinus10[] = { 3125, 4, 1, 5, 15, 25, 25 };
+static int coeffMinus12[] = { 3125, 2, 1, 3, 3 };
+static int coeffMinus16[] = { 256, 2, 1, 2, 2 };
+static int *coeffMinus[8] =
+{
+  NULL,
+  NULL,
+  coeffMinus8,
+  coeffMinus10,
+  coeffMinus12,
+  NULL,
+  coeffMinus16,
+  NULL
+};
+
+// Values of b for x^e + b*y^e so the polynomial can be factored.
+// e = 4, 6, 8, ...
+static int coeffPlus4[] = { 4, 2, 1, 2, 2 };
+static int coeffPlus6[] = { 27, 2, 1, 3, 3 };
+static int coeffPlus12[] = { 64, 2, 1, 2, 2 };
+static int coeffPlus14[] = { 823543, 6, 1, 7, 21, 49, 147, 343, 343 };
+static int coeffPlus18[] = { 19683, 2, 1, 3, 3 };
+static int *coeffPlus[] =
+{
+  coeffPlus4,
+  coeffPlus6,
+  NULL,
+  NULL,
+  coeffPlus12,
+  coeffPlus14,
+  NULL,
+  coeffPlus18
+};
+
 static void GetYieldFrequency(void)
 {
   yieldFreq = 1000000 / (NumberLength * NumberLength) + 1;
@@ -712,6 +749,39 @@ static void insertAlgebraicFactorPlus(int expon, int divExpon, struct sFactors* 
   }
 }
 
+static void attemptEvenExpAlgebFactors(int expon, const int *ptrCoeff, 
+  struct sFactors* pstFactors)
+{
+  const int* ptrCurrCoeff;
+  int degreePoly;
+  if ((ptrCoeff == NULL) || (getRemainder(&Temp2, *ptrCoeff) != 0))
+  {
+    return;
+  }
+  subtractdivide(&Temp2, 0, *ptrCoeff);
+  (void)BigIntRoot(&Temp2, &Temp3, expon);
+  (void)BigIntPowerIntExp(&Temp3, expon, &Temp4);
+  if (!BigIntEqual(&Temp2, &Temp4))
+  {
+    return;
+  }
+  // At this moment the number has the form a^e +/- k*b^e where a = Temp1, b = Temp3.
+  degreePoly = *(ptrCoeff + 1);
+  ptrCurrCoeff = ptrCoeff + 2;
+  // Use power as a temporary variable.
+  intToBigInteger(&power, 0);
+  for (int index = 0; index <= degreePoly; index++)
+  {
+    BigIntPowerIntExp(&Temp1, degreePoly - index, &Temp2);
+    BigIntPowerIntExp(&Temp3, index, &Temp4);
+    BigIntMultiply(&Temp2, &Temp4, &Temp2);
+    multint(&Temp2, &Temp2, *ptrCurrCoeff);
+    ptrCurrCoeff++;
+    BigIntAdd(&power, &Temp2, &power);
+  }
+  insertBigFactor(pstFactors, &power, TYP_ALGEBR);
+}
+
 // Test whether the number has the form a^e + b^e or a^e - b^e for 3 < e < 18.
 // If this is the case, store the factors in pstFactors.
 static void getFactorsSumDiffPowers(struct sFactors* pstFactors,
@@ -736,12 +806,19 @@ static void getFactorsSumDiffPowers(struct sFactors* pstFactors,
       }
       return;
     }
-    // Check whether the number has the form a^e + b^e.
     if ((expon % 2) == 0)
-    {    // There is no algebraic factor in this case.
+    {
+      int indexExp = expon / 2 - 2;
+      attemptEvenExpAlgebFactors(expon, coeffMinus[indexExp], pstFactors);
+      addbigint(&Temp1, -1);   // This is the value of a.
+      (void)BigIntPowerIntExp(&Temp1, expon, &Temp2);
+      BigIntSubt(numToFactor, &Temp2, &Temp2);
+      attemptEvenExpAlgebFactors(expon, coeffPlus[indexExp], pstFactors);
+      // There is no algebraic factor of a^e + b^e when e is even.
       continue;
     }
     addbigint(&Temp1, -1);   // This is the value of a.
+    // Check whether the number has the form a^e + b^e.
     (void)BigIntPowerIntExp(&Temp1, expon, &Temp2);
     BigIntSubt(numToFactor, &Temp2, &Temp2);
     (void)BigIntRoot(&Temp2, &Temp3, expon);

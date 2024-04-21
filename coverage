@@ -91,6 +91,7 @@ echo -e "**** ECM ****" > coverage.out
 ./ecm "5000012000^18+3^18" >> coverage.out
 ./ecm "50000171000000^9+3^9" >> coverage.out
 ./ecm "5000017500000^18-3^18" >> coverage.out
+./ecm "10**90+27*2^12" >> coverage.out
 lcov --capture --directory . --output-file ecm.info
 gcovr --json run-1.json
 make clean
