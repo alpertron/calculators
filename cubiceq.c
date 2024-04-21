@@ -1055,7 +1055,9 @@ void CubicEquation(const int* polynomial, int multiplicity)
     showText(ptrMinus);
     showText("4");
     showText(ptrTimes);
-    showRational(&RatDeprLinear);
+    startParen();
+    showRationalNoParen(&RatDeprLinear);
+    endParen();
     showPower(&ptrOutput, 3);
     showText(" ");
     showText(ptrMinus);

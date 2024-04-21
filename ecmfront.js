@@ -375,12 +375,12 @@ function performWork(n, valueText)
   param = digits + "," + app + "," + fromFile + config.substring(1) + "," +
           valueText + charNull + getStorage("ecmFactors");
   if (n === -1 || n === -2)
-  {
-    param += "," + newCurveOrFactor.value;        // Append new curve number typed by user.
+  {           // Append new curve number typed by user.
+    param += "," + newCurveOrFactor.value;
   }
   if (n === -3 || n === -4)
-  {
-    param += ";" + newCurveOrFactor.value;        // Append new factor typed by user.
+  {           // Append new factor typed by user.
+    param += ";" + newCurveOrFactor.value;
   }
   if (!fileContents)
   {

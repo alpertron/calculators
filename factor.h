@@ -31,6 +31,7 @@ void getCunn(const char *url, char *factorsFromServer);
 #define TYP_RABIN    300000000
 #define TYP_DIVISION 350000000
 #define TYP_EC       400000000
+#define TYP_ALGEBR   450000000
 
 enum eEcmResult
 {

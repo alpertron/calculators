@@ -25,6 +25,7 @@
 #include "commonstruc.h"
 #include "skiptest.h"
 
+#define MAX_ALGEBRAIC_EXPON 18
 int yieldFreq;
 int maxIndexM;
 int indexM;
@@ -689,6 +690,74 @@ static void PowerPM1Check(struct sFactors *pstFactors, const BigInteger *numToFa
   }
 }
 
+static void insertAlgebraicFactorMinus(int expon, int divExpon, struct sFactors* pstFactors)
+{
+  if ((expon > divExpon) && ((expon % divExpon) == 0))
+  {
+    BigIntPowerIntExp(&Temp1, expon / divExpon, &Temp2);
+    BigIntPowerIntExp(&Temp3, expon / divExpon, &Temp4);
+    BigIntSubt(&Temp2, &Temp4, &Temp4);
+    insertBigFactor(pstFactors, &Temp4, TYP_ALGEBR);
+  }
+}
+
+static void insertAlgebraicFactorPlus(int expon, int divExpon, struct sFactors* pstFactors)
+{
+  if ((expon > divExpon) && ((expon % divExpon) == 0))
+  {
+    BigIntPowerIntExp(&Temp1, expon / divExpon, &Temp2);
+    BigIntPowerIntExp(&Temp3, expon / divExpon, &Temp4);
+    BigIntAdd(&Temp2, &Temp4, &Temp4);
+    insertBigFactor(pstFactors, &Temp4, TYP_ALGEBR);
+  }
+}
+
+// Test whether the number has the form a^e + b^e or a^e - b^e for 3 < e < 18.
+// If this is the case, store the factors in pstFactors.
+static void getFactorsSumDiffPowers(struct sFactors* pstFactors,
+  const BigInteger* numToFactor)
+{
+  for (int expon = MAX_ALGEBRAIC_EXPON; expon >= 3; expon--)
+  {
+    // Check whether the number has the form a^e - b^e.
+    (void)BigIntRoot(numToFactor, &Temp1, expon);
+    addbigint(&Temp1, 1);   // This is the value of a.
+    (void)BigIntPowerIntExp(&Temp1, expon, &Temp2);
+    BigIntSubt(&Temp2, numToFactor, &Temp2);
+    (void)BigIntRoot(&Temp2, &Temp3, expon);
+    (void)BigIntPowerIntExp(&Temp3, expon, &Temp4);
+    if (BigIntEqual(&Temp2, &Temp4))
+    {  // Number has the form a^e - b^e, where a = Temp1, b = Temp3.
+      BigIntSubt(&Temp1, &Temp3, &Temp4);
+      insertBigFactor(pstFactors, &Temp4, TYP_ALGEBR);
+      for (int divExpon = 2; divExpon <= (MAX_ALGEBRAIC_EXPON/2); divExpon++)
+      {
+        insertAlgebraicFactorMinus(expon, divExpon, pstFactors);
+      }
+      return;
+    }
+    // Check whether the number has the form a^e + b^e.
+    if ((expon % 2) == 0)
+    {    // There is no algebraic factor in this case.
+      continue;
+    }
+    addbigint(&Temp1, -1);   // This is the value of a.
+    (void)BigIntPowerIntExp(&Temp1, expon, &Temp2);
+    BigIntSubt(numToFactor, &Temp2, &Temp2);
+    (void)BigIntRoot(&Temp2, &Temp3, expon);
+    (void)BigIntPowerIntExp(&Temp3, expon, &Temp4);
+    if (BigIntEqual(&Temp2, &Temp4))
+    {  // Number has the form a^e + b^e, where a = Temp1, b = Temp3.
+      BigIntAdd(&Temp1, &Temp3, &Temp4);
+      insertBigFactor(pstFactors, &Temp4, TYP_ALGEBR);
+      for (int divExpon = 3; divExpon <= (MAX_ALGEBRAIC_EXPON / 2); divExpon += 2)
+      {
+        insertAlgebraicFactorPlus(expon, divExpon, pstFactors);
+      }
+    }
+  }
+}
+
 // Perform Lehman algorithm
 #define NBR_PRIMES_QUADR_SIEVE  17
 static void Lehman(const BigInteger *nbr, int multiplier, BigInteger *factor)
@@ -1120,6 +1189,14 @@ void SendFactorizationToOutput(const struct sFactors *pstFactors, char **pptrOut
       else if (compositeType == TYP_DIVISION)
       {
         copyStr(&ptrOutput, lang ? "División" : "Division");
+        if (!isPrime)
+        {
+          copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
+        }
+      }
+      else if (compositeType == TYP_ALGEBR)
+      {
+        copyStr(&ptrOutput, lang ? "Algebraico" : "Algebraic");
         if (!isPrime)
         {
           copyStr(&ptrOutput, lang ? " - Compuesto" : " - Composite");
@@ -1893,6 +1970,10 @@ void factorExt(const BigInteger *toFactor, const int *number,
   if (toFactor->nbrLimbs > 1)
   {
     PowerPM1Check(pstFactors, toFactor);
+  }
+  if (toFactor->nbrLimbs > 5)
+  {
+    getFactorsSumDiffPowers(pstFactors, toFactor);
   }
   pstCurFactor = pstFactors;
   factorNbr = 0;
