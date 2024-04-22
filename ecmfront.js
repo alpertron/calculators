@@ -65,6 +65,8 @@ let script2;
 let funcnames;
 let parens;
 let currentInputBox;
+let insideFactoring = false;
+
 
 // DOM resources
 let value;
@@ -277,6 +279,7 @@ function fromWorker(e)
     {   // First character passed from web worker is "2".
       statusDirty = true;
       statusText = "";
+      insideFactoring = false;
       styleButtons("inline", "none");  // Enable eval and factor
       if (firstChar === "A" || firstChar === "B")
       {
@@ -355,7 +358,14 @@ function performWork(n, valueText)
   strHelp += strHelp2;
   helphelp.innerHTML = strHelp;
   show("result");
-  styleButtons("none", "inline");  // Enable "more" and "stop" buttons
+  setInterval(function()
+  {
+    if (insideFactoring)
+    {                      // Enable "more" and "stop" buttons
+      styleButtons("none", "inline");
+    }
+  }, 100);
+  insideFactoring = true;
   if (n === 0)
   {
     resultDirty = true;
@@ -717,6 +727,7 @@ function startUp()
   };
   btnStop.onclick = function()
   {
+    insideFactoring = false;
     endWorker();
     styleButtons("inline", "none");      // Enable eval and factor
     hide("sktest");    // Hide button if it is present during factorization.
