@@ -26,7 +26,7 @@
 
 #define FFT_LIMB_SIZE   22
 #define FFT_LIMB_RANGE  0x00400000    // 2^22
-#define MAX_FFT_LEN     2048          // Power of 2 greater than 2*MAX_DEGREE
+#define MAX_FFT_LEN     4096          // Power of 2 greater than 2*MAX_DEGREE
 #define POWERS_2        13
 #define FULL_CIRCLE     0x00002000    // 2^13
 // In the next array, all numbers are represented by two elements,

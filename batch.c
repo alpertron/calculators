@@ -823,7 +823,7 @@ enum eExprErr BatchProcessing(char *batchText, BigInteger *valueFound, char **pp
       output[0] = (fromFile ? 'A' : '6');  // Show Continue button.
       break;
     }
-    if ((*ptrCurrBatchFactor & 0xDF) == 'x')
+    if ((*ptrCurrBatchFactor & 0xDF) == 'X')
     {      // Loop mode.
       if (ptrConditionExpr != NULL)
       {

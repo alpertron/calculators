@@ -27,7 +27,6 @@
 #include "showtime.h"
 #include "rootseq.h"
 #include "musl.h"
-
 #define MAX_MATRIX_SIZE  200
 char* ptrOutput2;
 #if DEBUG_VANHOEIJ
@@ -949,8 +948,8 @@ static bool AttemptToFactorStepNbr(int stepNbr, int nbrVectors,
   int* ptrDest;
   struct sFactorInfo* pstFactorInfo;
   int nbrTmp[1000];
-  int dividendMod32768[(2 * MAX_DEGREE) + 1];
-  int divisorMod32768[(2 * MAX_DEGREE) + 1];
+  int dividendMod32768[2 * (MAX_DEGREE + 1)];
+  int divisorMod32768[2 * (MAX_DEGREE + 1)];
 #if DEBUG_VANHOEIJ
   copyStr(&ptrDebugOutput, "stepNbr = ");
   int2dec(&ptrDebugOutput, stepNbr);

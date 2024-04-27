@@ -28,8 +28,7 @@
 #ifdef FACTORIZATION_APP
 #include "factor.h"
 #endif
-extern int poly4[1000000];
-extern int denom[1000000];
+extern int denom[COMPRESSED_POLY_MAX_LENGTH];
 extern int primeEisenstein;
 extern char* ptrOutput;
 int grpLen;

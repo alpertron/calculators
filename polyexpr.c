@@ -53,12 +53,12 @@ struct sFuncOperExpr stFuncOperPolyExpr[] =
   {"DER", TOKEN_DER + ONE_PARM, 0},
   {"LONGDIV", TOKEN_LONGDIV + TWO_PARMS, 0},
   {"RANDOM", TOKEN_RANDOM + FOUR_PARMS, 0},
-  {NULL, 0},
+  {NULL, 0, 0},
   // Second section: functions written at right of argument.
-  {NULL, 0},
+  {NULL, 0, 0},
   // Third section: unary operators.
   {"-", OPER_UNARY_MINUS, 3},
-  {NULL, 0},
+  {NULL, 0, 0},
   // Fourth section: binary operators.
   {"**", OPER_POWER, 1}, // This must be located before multiplication operator.
   {"+", OPER_ADD, 3},
@@ -68,7 +68,7 @@ struct sFuncOperExpr stFuncOperPolyExpr[] =
   {"/", OPER_DIVIDE, 2},
   {"^", OPER_POWER, 1},
   {"=", OPER_EQUAL, 4},
-  {NULL, 0},
+  {NULL, 0, 0},
 };
 
 static enum eExprErr NegatePolynomialExpr(int* ptrArgument)
@@ -552,7 +552,7 @@ static enum eExprErr MultPolynomialExpr(int* ptrArgument1, const int* ptrArgumen
     ptrValue1 = ptrArgument1 + 1;
     // Get coefficient of monomial.
     UncompressBigIntegerB(ptrArgument2 + 1, &operand1);
-    if ((degreeMono + degreePoly) > MAX_DEGREE)
+    if ((degreeMono + degreePoly) > 2*MAX_DEGREE)
     {
       return EXPR_DEGREE_TOO_HIGH;
     }

@@ -759,10 +759,10 @@ EXTERNALIZE void doWork(void)
   else if ((flags & (-2)) == '6')
   {
     doShowPrime = true;
-    flags = 0;  // Do not perform factorization.
+    flags = 0;           // Do not perform factorization.
   }
   else
-  {   // No more cases.
+  {                      // No more cases.
   }
 #endif
   ptrData += 2;          // Skip app number and second comma.
@@ -799,19 +799,16 @@ EXTERNALIZE void doWork(void)
   }
   if ((flags & 0x80) && (ptrKnownFactors != NULL))
   {
-    flags = 2;  // Do factorization.
+    flags = 2;    // Do factorization.
   }
   if (useBlockly)
   {
     fromBlockly(ptrData);
   }
-  else if ((flags & 2) != 0)
-  {               // Do factorization.
-    ecmFrontText(ptrData, true, ptrKnownFactors); // The 3rd parameter includes known factors.
-  }
   else
-  {               // Do not perform factorization.
-    ecmFrontText(ptrData, false, ptrKnownFactors); // The 3rd parameter includes known factors.
+  {               // Do factorization if second parameter is true.
+                  // The 3rd parameter includes known factors.
+    ecmFrontText(ptrData, (flags & 2) != 0, ptrKnownFactors);
   }
 #ifdef __EMSCRIPTEN__
   databack(output);

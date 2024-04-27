@@ -18,7 +18,7 @@
 //
 #ifndef __POLYNOMIAL_H
 #define __POLYNOMIAL_H
-#define MAX_DEGREE          1000
+#define MAX_DEGREE          1024
 #define COMPRESSED_POLY_MAX_LENGTH 1000000
 
 #define DEBUG_VANHOEIJ        0
@@ -65,12 +65,13 @@ extern BigInteger operand2;
 extern BigInteger operand3;
 extern BigInteger operand4;
 extern BigInteger operand5;
-extern int values[1000000];
-extern int poly1[1000000];
-extern int poly2[1000000];
-extern int poly3[1000000];
-extern int polyMultTemp[1000000];
-extern int valuesPrime[1000000];
+extern int values[COMPRESSED_POLY_MAX_LENGTH];
+extern int poly1[COMPRESSED_POLY_MAX_LENGTH];
+extern int poly2[COMPRESSED_POLY_MAX_LENGTH];
+extern int poly3[COMPRESSED_POLY_MAX_LENGTH];
+extern int poly4[COMPRESSED_POLY_MAX_LENGTH];
+extern int polyMultTemp[COMPRESSED_POLY_MAX_LENGTH];
+extern int valuesPrime[COMPRESSED_POLY_MAX_LENGTH];
 extern int nbrFactorsFound;
 extern enum eOutput pretty;
 extern bool onlyEvaluate;
@@ -80,7 +81,7 @@ extern int degreeOrigPoly;
 extern int polyInvCached;
 extern int valuesIndex;
 extern int poly5[COMPRESSED_POLY_MAX_LENGTH];
-extern int polyNonRepeatedFactors[1000000];
+extern int polyNonRepeatedFactors[COMPRESSED_POLY_MAX_LENGTH];
 
 
 typedef void (*powerCback)(int percentage);
