@@ -80,7 +80,7 @@ void Show1(const BigInteger *num, int t)
   }
 }
 
-void Solution(BigInteger *value)
+void Solution(const BigInteger *value)
 {
   SolNbr++;
   copyStr(&ptrOutput, "<li>x = ");
@@ -181,7 +181,7 @@ static void ModulusIsNotZero(void)
   (void)BigIntRemainder(&ValC, &ValN, &ValC);
   BigIntGcd(&ValA, &ValB, &Aux0);
   Aux0.sign = SIGN_POSITIVE;
-  BigIntGcd(&ValC, &Aux0, &GcdAll);
+  BigIntGcd(&ValN, &Aux0, &GcdAll);
   GcdAll.sign = SIGN_POSITIVE;
   (void)BigIntRemainder(&ValC, &GcdAll, &Aux0);
   if (!BigIntIsZero(&Aux0))
@@ -216,7 +216,8 @@ static void ModulusIsNotZero(void)
     }
     return;
   }
-  SetCallbacksForSolveEquation(Solution, NULL, NULL);
+  SetCallbacksForSolveEquation(&Solution, NULL,
+    NULL);
   SolveEquation(&ValA, &ValB, &ValC, &ValN, &GcdAll, &ValNn);
 }
 

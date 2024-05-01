@@ -1,7 +1,9 @@
 #!/bin/bash
+flags="flags_coverage=--coverage"
+#flags="flags_coverage=--coverage flags_sanitize=-fsanitize=address"
 rm *.info *.out
 make clean
-make ecm flags_coverage=--coverage
+make ecm $flags
 echo -e "**** ECM ****" > coverage.out
 ./ecm "10**150000" >> coverage.out
 ./ecm "10**300000" >> coverage.out
@@ -95,7 +97,8 @@ echo -e "**** ECM ****" > coverage.out
 lcov --capture --directory . --output-file ecm.info
 gcovr --json run-1.json
 make clean
-make blockly flags_coverage=--coverage
+make blockly $flags
+
 echo -e "**** BLOCKLY ****" >> coverage.out
 ./blockly xml.txt 0 >> coverage.out
 ./blockly xml.txt 1 >> coverage.out
@@ -121,7 +124,7 @@ echo -e "**** BLOCKLY ****" >> coverage.out
 lcov --capture --directory . --output-file blockly.info
 gcovr --json run-2.json
 make clean
-make polfact flags_coverage=--coverage
+make polfact $flags
 echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "x^510-1" 0 0 >> coverage.out
 ./polfact 0 "x^120-1" 0 0 >> coverage.out
@@ -318,7 +321,7 @@ echo -e "\n\n**** POLFACT ****" >> coverage.out
 lcov --capture --directory . --output-file polfact.info
 gcovr --json run-3.json
 make clean
-make fsquares flags_coverage=--coverage
+make fsquares $flags
 echo -e "\n\n**** FSQUARES ****" >> coverage.out
 ./fsquares "-2" >> coverage.out
 ./fsquares "10**15000" >> coverage.out
@@ -331,7 +334,7 @@ echo -e "\n\n**** FSQUARES ****" >> coverage.out
 lcov --capture --directory . --output-file fsquares.info
 gcovr --json run-4.json
 make clean
-make tsqcubes flags_coverage=--coverage
+make tsqcubes $flags
 echo -e "\n\n**** TSQCUBES ****" >> coverage.out
 ./tsqcubes "-2" 3 >> coverage.out
 ./tsqcubes "10**150" 3 >> coverage.out
@@ -346,7 +349,7 @@ echo -e "\n\n**** TSQCUBES ****" >> coverage.out
 lcov --capture --directory . --output-file fsquares.info
 gcovr --json run-5.json
 make clean
-make fcubes flags_coverage=--coverage
+make fcubes $flags
 echo -e "\n\n**** FCUBES ****" >> coverage.out
 ./fcubes 0 >> coverage.out
 ./fcubes 16 >> coverage.out
@@ -357,7 +360,7 @@ echo -e "\n\n**** FCUBES ****" >> coverage.out
 lcov --capture --directory . --output-file fcubes.info
 gcovr --json run-6.json
 make clean
-make dilog flags_coverage=--coverage
+make dilog $flags
 echo -e "\n\n**** DILOG ****" >> coverage.out
 ./dilog -1 4 5 >> coverage.out
 ./dilog 3 -1 5 >> coverage.out
@@ -378,7 +381,7 @@ echo -e "\n\n**** DILOG ****" >> coverage.out
 lcov --capture --directory . --output-file dilog.info
 gcovr --json run-7.json
 make clean
-make quad flags_coverage=--coverage
+make quad $flags
 echo -e "\n\n**** QUAD ****" >> coverage.out
 ./quad 0 0 0 0 0 0 0 >> coverage.out
 ./quad 0 0 0 0 5 6 0 >> coverage.out
@@ -425,7 +428,7 @@ echo -e "\n\n**** QUAD ****" >> coverage.out
 lcov --capture --directory . --output-file quad.info
 gcovr --json run-8.json
 make clean
-make contfrac flags_coverage=--coverage
+make contfrac $flags
 echo -e "\n\n**** CONTFRAC ****" >> coverage.out
 ./contfrac 1 2 3 0 0 >> coverage.out
 ./contfrac 1 0 991 0 0 >> coverage.out
@@ -447,7 +450,7 @@ echo -e "\n\n**** CONTFRAC ****" >> coverage.out
 lcov --capture --directory . --output-file contfrac.info
 gcovr --json run-9.json
 make clean
-make quadmod flags_coverage=--coverage
+make quadmod $flags
 echo -e "\n\n**** QUADMOD ****" >> coverage.out
 ./quadmod 1 2 3 7 >> coverage.out
 ./quadmod 1 0 991 "n(10^5)" >> coverage.out
@@ -486,11 +489,12 @@ echo -e "\n\n**** QUADMOD ****" >> coverage.out
 ./quadmod 1 0 112 243 >> coverage.out
 ./quadmod 1 0 195722369727 1099511627776 >> coverage.out
 ./quadmod 1 0 -1 "2**90" >> coverage.out
+./quadmod 11 11 10 121 >> coverage.out
 ./quadmod T Q R M >> coverage.out
 lcov --capture --directory . --output-file quadmod.info
 gcovr --json run-10.json
 make clean
-make gaussian flags_coverage=--coverage
+make gaussian $flags
 echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 ./gaussian 5 1 >> coverage.out
 ./gaussian 1 1 >> coverage.out
@@ -523,7 +527,7 @@ echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 lcov --capture --directory . --output-file gaussian.info
 gcovr --json run-11.json
 make clean
-make sumquad flags_coverage=--coverage
+make sumquad $flags
 echo -e "\n\n**** SUMQUAD ****" >> coverage.out
 ./sumquad 100 >> coverage.out
 ./sumquad 200 >> coverage.out
@@ -533,7 +537,7 @@ echo -e "\n\n**** SUMQUAD ****" >> coverage.out
 lcov --capture --directory . --output-file sumquad.info
 gcovr --json run-12.json
 make clean
-make divisors flags_coverage=--coverage
+make divisors $flags
 echo -e "\n\n**** DIVISORS ****" >> coverage.out
 ./divisors 0 >> coverage.out
 ./divisors 2 >> coverage.out
@@ -543,7 +547,7 @@ echo -e "\n\n**** DIVISORS ****" >> coverage.out
 lcov --capture --directory . --output-file divisors.info
 gcovr --json run-13.json
 make clean
-make isprime flags_coverage=--coverage
+make isprime $flags
 echo -e "\n\n**** ISPRIME ****" >> coverage.out
 ./isprime -3 -5 -7 -9 4759 81463477561 25326001 341550071728321 1000000000000000003 >> coverage.out
 ./isprime 0 1 2 3 4 15 65537 -4294967296 >> coverage.out
