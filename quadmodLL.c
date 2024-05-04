@@ -925,7 +925,8 @@ void SolveEquation(BigInteger* pValA, const BigInteger* pValB,
   pValNn = pValNnParm;
   (void)BigIntRemainder(pValA, pValN, &Aux[0]);
   if (BigIntIsZero(&Aux[0]))
-  {           // Linear equation.
+  {           // Linear equation.              
+    LastModulus.nbrLimbs = 0;        // Invalidate last modulus.
     SolveModularLinearEquation(pValA, pValB, pValC, pValN);
     return;
   }

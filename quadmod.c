@@ -80,7 +80,7 @@ void Show1(const BigInteger *num, int t)
   }
 }
 
-void Solution(const BigInteger *value)
+void Solution(BigInteger *value)
 {
   SolNbr++;
   copyStr(&ptrOutput, "<li>x = ");

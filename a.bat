@@ -195,17 +195,17 @@ copy TCUADCUB.HTM "assets\tcuadcub.html"
 perl replaceEmbeddedJS.pl %1 toweb\TCUADCUB.HTM fsquaresS.js tsqcubesS.wasm intWW.js
 perl replaceEmbeddedJSAnd.pl %1 "assets\tcuadcub.html" fsquaresSA.js privacidad_calc.html
 
-java -jar %compilerName% -D lang=0 %compilerOptions% --js cache.js --js calccode.js %polfactJS% --js worker.js --js_output_file polfactE.js
+java -jar %compilerName% -D android=0 -D lang=0 %compilerOptions% --js cache.js --js calccode.js %polfactJS% --js worker.js --js_output_file polfactE.js
 @if errorlevel 1 goto end
-java -jar %compilerName% -D lang=0 %compilerOptionsAnd% %polfactJS% --js workerAndroid.js --js_output_file polfactEA.js
+java -jar %compilerName% -D android=1 -D lang=0 %compilerOptionsAnd% %polfactJS% --js workerAndroid.js --js_output_file polfactEA.js
 @if errorlevel 1 goto end
 copy POLFACT.HTM toweb
 copy POLFACT.HTM assets\polfact.html
 perl replaceEmbeddedJS.pl %1 toweb\POLFACT.HTM polfactE.js polfactE.wasm ecmWW.js
 perl replaceEmbeddedJSAnd.pl %1 assets\polfact.html polfactEA.js calc_privacy.html
-java -jar %compilerName% -D lang=1 %compilerOptions% --js cache.js --js calccode.js %polfactJS% --js worker.js --js_output_file polfactS.js
+java -jar %compilerName% -D android=0 -D lang=1 %compilerOptions% --js cache.js --js calccode.js %polfactJS% --js worker.js --js_output_file polfactS.js
 @if errorlevel 1 goto end
-java -jar %compilerName% -D lang=1 %compilerOptionsAnd% %polfactJS% --js workerAndroid.js --js_output_file polfactSA.js
+java -jar %compilerName% -D android=1 -D lang=1 %compilerOptionsAnd% %polfactJS% --js workerAndroid.js --js_output_file polfactSA.js
 @if errorlevel 1 goto end
 copy FACTPOL.HTM toweb
 copy FACTPOL.HTM "assets\factpol.html"

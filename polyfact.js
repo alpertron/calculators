@@ -26,7 +26,8 @@
 /* global hide */
 /* global registerServiceWorker */
 /* global show */
-/** @define {number} */ const lang = 1;   // Use with Closure compiler.
+/** @define {number} */ const android = 0;   // Use with Closure compiler.
+/** @define {number} */ const lang = 1;      // Use with Closure compiler.
 let busy = false;
 let workerParam;
 let fileContents = 0;
@@ -44,7 +45,7 @@ function fromWorker(e)
   // First character of e is "1" for intermediate text
   // and it is "2" for end of calculation.
   let firstChar = e.substring(0, 1);
-  if ((firstChar === "M") || (firstChar === "N"))
+  if ((android == 0) && ((firstChar === "M") || (firstChar === "N")))
   {    // User entered a number. Load calculator to process it.
     window.sessionStorage.setItem((firstChar === "M"? "F": "E"),
       get("poly").value);
