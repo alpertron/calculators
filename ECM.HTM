@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
 <meta property="og:description" content="This factors numbers using ECM and SIQS algorithms.">
-<meta property="article:published_time" content="2024-05-04">
+<meta property="article:published_time" content="2024-05-16">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/ECMC.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/ECM.HTM">
@@ -57,6 +57,8 @@ nav::after {clear:both}
 @media (max-width: 400px) {nav {font-size:0.7em}}
 @media (min-width: 400px) {nav {font-size:1em}}
 }
+input[type=text], input[type=number] {min-height:2em; border-radius:10px}
+input[type=button], button {min-height:2.5em; min-width:2.5em; border-radius:5px}
 #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
 #skip a {padding:6px; position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
@@ -75,10 +77,19 @@ h2 > button.active:after {content:"\2212"}
 html {height:100%}
 body {font-family: Arial, sans-serif; margin: 0; padding: 0; background-color:#FFFFFF; color:#000000; min-height:100%}
 h1, .h2title {text-align:center}
-input[type=button], button {border-radius:5px}
-#actions input[type=button] {color: white; background-color: #3b3b3b}
-fieldset {border-radius:10px;display:inline; padding-inline-start:0.3em; padding-inline-end:0.3em}
-#functions {max-width:50%}
+button {border-radius:5px}
+.wzdact, #actions button {color: white; background-color: #3b3b3b; margin:3px; border-radius:10px}
+#actions button {min-height:3em}
+.actbtn {display:flex; flex-flow:row wrap; justify-content:space-around; min-width:320px}
+.funcbtns {display:flex; justify-content:space-around; flex-flow:row wrap; min-width:320px; margin-top:3px; margin-bottom:3px}
+.funcbtns button {margin:3px}
+fieldset {border-radius:10px}
+#inputs {grid-column:1/3; grid-row:1}
+#actions {grid-column:1; grid-row:2; width:320px}
+#functions {grid-column:2/3; grid-row:2}
+#explan {grid-column:1/3; grid-row:3}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px}
+.newline {clear:both}
 .lf,.labels {padding:0.2em; clear:both}
 .blue {color: #0000FF}
 .red {color: #FF0000}
@@ -89,7 +100,6 @@ fieldset {border-radius:10px;display:inline; padding-inline-start:0.3em; padding
 #blocklyArea {flex-grow:1; height:99%}
 #blocklyDiv {position:absolute; color:initial; background-color:initial}
 #bfilename {width: 10em}
-.applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px}
 #savefile,#getFile,#lgetFile,#cont,#wizard,#feedback,#more,#stop,#sktest,#sharediv,#BlocklyErrors {display:none}
 #digits {width:5em}
 #value {white-space:pre;overflow-wrap:normal;overflow:auto}
@@ -102,18 +112,23 @@ fieldset {border-radius:10px;display:inline; padding-inline-start:0.3em; padding
 .tnr {font-family: "Cambria Math", "Times New Roman", Times, serif}
 fieldset button, fieldset input {margin:3px}
 #explan,#wzdexam {margin-block-start:0; margin-block-end:0}
+#valueapp, #wzdupper {display:grid}
+#mode {grid-column:1; grid-row:1}
+#output {grid-column:2; grid-row:1}
 #tableCurves {max-width:700px; margin-left:auto; margin-right:auto}
 #help,#result,#status,#footer {margin:3px; padding:3px}
 #comments {width:90%}
 .inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px}
-@media (min-width: 400px) {.input {width: calc(100% - 6em);float:right;padding:3px;margin:0px}}
+@media (min-width: 400px) {
+.input {width: calc(100% - 6em);float:right;padding:3px;margin:0px}
+}
 @media (max-width: 400px) {.input {width:100%;padding:3px;margin:0px}}
 @media (max-width: 50em) {
-#valueapp {display: flex; flex-direction: column;}
-#value1 {order:2}
-#actions {order:1}
-#functions {order:3; max-width:100%}
-#explan {order:4}
+#actions {grid-column:1/3; grid-row:1; width:95%}
+#inputs {grid-column:1/3; grid-row:2}
+#functions {grid-column:1/3; grid-row:3}
+#explan {grid-column:1/3; grid-row:4}
+#output {grid-column:1; grid-row:2}
 }
 @media screen and (min-width: 500px) {#formleft {float:left;width:50%} #formright {float:right;width:50%}}
 .modal-header {padding: 2px 10px; background-color: #5cb85c; color: white}
@@ -701,7 +716,7 @@ a:hover {color: #f5cba7}
 a:visited {color: #d7bde2}
 input, textarea {color: white; background-color: #3b3b3b}
 .blocklyCommentTextarea {color:initial}
-input:disabled {color: #808080; background-color: #606060}
+button:disabled {color: #808080; background-color: #606060}
 .blue, .new {color: #E0E000}
 .red {color: #00E0E0}
 }
@@ -770,13 +785,27 @@ input:disabled {color: #808080; background-color: #606060}
 </div>
 <noscript><p><strong>The calculator does not work with Javascript disabled. Please check your browser settings.</strong></p></noscript>
 <div class="applet" id="valueapp">
-<div id="value1">
+<div id="inputs">
 <label for="value">Value</label><textarea inputmode="numeric" id="value" rows="4" class="input"></textarea>
 </div>
 <fieldset id="actions"><legend>Actions</legend>
-<input type="button" id="more" value="More" title="Change curve number or enter a known factor"><input type="button" id="eval" value="Only evaluate" title="Evaluate expression but do not factor it"><input type="button" id="prime" value="Prime" title="Show whether the expression is prime or not without performing factorization"><input type="button" id="factor" value="Factor" title="Factor expression"><input type="button" id="stop" value="Stop" title="Stop the current computation"><input type="button" id="helpbtn" value="Help" title="Show help about the application and the math used"><br><input type="button" id="config" value="Config" title="Change parameters used in the application"><input type="button" id="openwizard" value="Wizard" title="Enter expressions and loops in an easy way"><input type="button" id="fromfile" value="From file" title="Evaluate or factor expressions located in an external file"><input type="button" id="bmode" value="Blockly mode" title="Program this calculator using blocks"><input type="file" id="getFile" accept=".txt" aria-label="Select file"><label for="getFile" id="lgetFile">From file</label>
+<div class="actbtn">
+<button type="button" id="more" title="Change curve number or enter a known factor">More</button>
+<button type="button" id="eval" title="Evaluate expression but do not factor it">Only<br>evaluate</button>
+<button type="button" id="prime" title="Show whether the expression is prime or not without performing factorization">Is<br>prime?</button>
+<button type="button" id="factor" title="Factor expression">Factor</button>
+<button type="button" id="stop" title="Stop the current computation">Stop</button>
+<button type="button" id="helpbtn" title="Show help about the application and the math used">Help</button>
+<button type="button" id="config" title="Change parameters used in the application">Config</button>
+<button type="button" id="openwizard" title="Enter expressions and loops in an easy way">Open<br>wizard</button>
+<button type="button" id="fromfile" title="Evaluate or factor expressions located in an external file">From<br>file</button>
+<button type="button" id="bmode" title="Program this calculator using blocks">Blockly<br>mode</button>
+<input type="file" id="getFile" accept=".txt" aria-label="Select file">
+<label for="getFile" id="lgetFile">From file</label>
+</div>
 </fieldset>
 <fieldset id="functions"><legend>Functions</legend>
+<div>
 <label for="funccat">Category:</label> 
 <select id="funccat">
 <optgroup label="Functions or operators">
@@ -790,10 +819,11 @@ input:disabled {color: #808080; background-color: #606060}
 <option value="7">Other</option>
 </optgroup>
 </select>
-<span id="funcbtns">
-<button type="button">(</button><button type="button">)</button><button type="button">+</button><button type="button">-</button><button type="button">*</button><button type="button">/</button><button type="button">%</button><button type="button">^</button><button type="button">ans</button><button type="button">sqrt(</button><button type="button">iroot(</button><button type="button">Random(</button><button type="button">Abs(</button><button type="button">Sign(</button>
-</span>
-</fieldset><br>
+</div>
+<div id="funcbtns" class="funcbtns">
+<button type="button">(</button><button type="button">)</button><button type="button">&#9166;</button><button type="button">+</button><button type="button">-</button><button type="button">*</button><button type="button">/</button><button type="button">%</button><button type="button">^</button><button type="button">ans</button><button type="button">sqrt(</button><button type="button">iroot(</button><button type="button">Random(</button><button type="button">Abs(</button><button type="button">Sign(</button>
+</div>
+</fieldset>
 <p id="explan">Type one numerical expression or loop per line. Example: x=3;x=n(x);c&lt;=100;x&#8209;1</p>
 </div>
 <div id="help" aria-live="polite">
@@ -994,20 +1024,20 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
 </div>
-<p>Written by Dario Alpern. Last updated 4 May 2024.</p>
+<p>Written by Dario Alpern. Last updated 16 May 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
 <div id="status"></div>
 <div id="sharediv" class="pad"><button id="share" type="button">Share factorization!</button></div>
 <div id="sktest" class="pad">
-<input type="button" id="skptest" value="Skip test" title="Skip primality test">
+<button type="button" id="skptest" title="Skip primality test">Skip<br>test</button>
 </div>
 <div id="savefile" class="pad">
-<input type="button" id="tofile" value="Save results to file" title="Save the results to an external file">
+<button type="button" id="tofile" title="Save the results to an external file">Save results<br>to file</button>
 </div>
 <div id="cont" class="pad">
-<input type="button" id="continue" value="Continue" title="Show more results. Pressing this button will delete old results.">
+<button type="button" id="continue" title="Show more results. Pressing this button will delete old results.">Continue</button>
 </div>
 <div id="footer">
 <p><span class="new">New!</span> You can download an application for Android that includes this calculator from <a href="https://play.google.com/store/apps/details?id=ar.com.alpertron.calculators">Google Play</a>.</p>
@@ -1017,16 +1047,16 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 </div>
 </article>
 </main>
-<aside id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
+<div id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
 <div class="modal-content">
 <div class="modal-header"><span id="close-more" aria-label="close" class="atright">×</span><p id="moreopt">More options</p></div>
 <div class="modal-body">
 <div class="applet">
 <p><label for="curve">New curve number or factor:</label></p><input type="number" id="curve" value="" class="input" min="0" step="1">
-<input type="button" id="ncurve" value="New curve" title="Change curve number for the algorithm ECM. Set to zero to change to algorithm SIQS.">
-<input type="button" id="nfactor" value="New factor" title="Enter a known factor">
+<button type="button" id="ncurve" title="Change curve number for the algorithm ECM. Set to zero to change to algorithm SIQS.">New curve</button>
+<button type="button" id="nfactor" title="Enter a known factor">New factor</button>
 </div>
-</div></div></aside>
+</div></div></div>
 <div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
 <div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuration</p></div>
@@ -1041,7 +1071,8 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p><input type="checkbox" id="hex"><label for="hex">Hexadecimal output</label></p>
 <p><input type="checkbox" id="cunnin"><label for="cunnin">Use Cunningham tables on server</label></p>
 </fieldset>
-<p><input type="button" id="save-config" value="Save" title="Save configuration"><input type="button" id="cancel-config" value="Cancel" title="Discard changes to configuration"></p>
+<p><button type="button" id="save-config" title="Save configuration">Save</button>
+<button type="button" id="cancel-config" title="Discard changes to configuration">Cancel</button></p>
 </div>
 </div></div></div>
 <aside id="blockmode" class="pad" aria-label="Blockly mode">
@@ -1066,7 +1097,8 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <aside id="wizard" class="pad" aria-label="Wizard">
 <h2 class="h2title">Factorization wizard</h2>
 <div class="applet">
-<fieldset id="output" class="atright">
+<div id="wzdupper">
+<fieldset id="output">
 <legend>Output</legend>
 <input type="radio" name="output" id="decW"><label for="decW">Decimal</label><br>
 <input type="radio" name="output" id="hexW"><label for="hexW">Hexadecimal</label><br>
@@ -1076,14 +1108,15 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <input type="radio" name="mode" id="oneexpr"><label for="oneexpr">Process one expression</label><br>
 <input type="radio" name="mode" id="loop"><label for="loop">Process several expressions in a loop</label><br>
 </fieldset>
+</div>
 <label for="wzdinput" id="wzddesc">1</label>
 <br class="newline">
 <input type="text" inputmode="numeric" id="wzdinput" value="" placeholder="Number or numerical expression" class="input">
 <br class="newline">
 <p id="wzdexam">&nbsp;</p>
 <div>
-<input type="button" id="next" value="Next" title="Next step of wizard">
-<input type="button" id="cancel" value="Cancel" title="Exit wizard">
+<button type="button" id="next" class="wzdact" title="Next step of wizard">Next</button>
+<button type="button" id="cancel" class="wzdact" title="Exit wizard">Cancel</button>
 </div>
 <fieldset id="wzdfunccatblock"><legend>Functions</legend>
 <label for="wzdfunccat">Category:</label> 
@@ -1098,7 +1131,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <option value="6">Other</option>
 </optgroup>
 </select>
-<span id="wzdfuncbtns"></span>
+<div id="wzdfuncbtns" class="funcbtns"></div>
 </fieldset>
 </div>
 <h3>Operators and functions</h3>
@@ -1144,9 +1177,9 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <input type="radio" name="Interesting" value="Yes" id="intyes"><label for="intyes">Yes</label>
 <input type="radio" name="Interesting" value="No" id="intno"><label for="intno">No</label>
 </fieldset>
-<p><input type="submit" disabled="disabled" value="Send it in!" id="formsend" title="Deliver this form">
-<input type="reset" value="Reset">
-<input type="button" value="Cancel" id="formcancel" title="Do not deliver this form"></p>
+<p><button type="submit" disabled="disabled" id="formsend" title="Deliver this form">Send it in!</button>
+<button type="reset">Reset</button>
+<button type="button" id="formcancel" title="Do not deliver this form">Cancel</button></p>
 </div>
 <div class="lf"></div>
 </form>
@@ -1178,8 +1211,8 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
   "name": "Integer factorization calculator",
   "description": "Web application that factors integers using ECM and SIQS algorithms.",
   "image": ["https://www.alpertron.com.ar/ecm.png"],
-  "datePublished": "2024-05-04",
-  "dateModified": "2024-05-04",
+  "datePublished": "2024-05-16",
+  "dateModified": "2024-05-16",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

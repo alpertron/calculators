@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
 <meta property="og:description" content="This finds the continued fraction representation of rational numbers and quadratic irrationalities.">
-<meta property="article:published_time" content="2024-05-04">
+<meta property="article:published_time" content="2024-05-16">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="manifest" href="contfrac.webmanifest">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/FRACCONT.HTM">
@@ -81,6 +81,7 @@ nav::after {clear:both}
   background-color: rgb(0,0,0);
   background-color: rgba(0,0,0,0.4);
 }
+input[type=text], input[type=number] {min-height:2em; border-radius:10px}
 #close {float:right}
 #modal-header-text {font-size:1.5em}
 .hex {font-family: Courier, "Lucida Console", monospace}
@@ -95,33 +96,36 @@ body {font-family:Arial, sans-serif; margin:0; padding:0}
 main {padding:10px}
 h1, .h2title {text-align:center}
 input[type=button], button {border-radius:5px}
-#actions input[type=button] {color: white; background-color: #3b3b3b}
-fieldset {border-radius:10px;display:inline}
-#functions {max-width:50%}
+#actions button {color: white; background-color: #3b3b3b; min-height:100%; border-radius:10px}
+#actbtn {display:flex; flex-direction:row; justify-content:space-around; min-width:320px; min-height:3em; margin-bottom:1em}
+#funcbtns {display:flex; justify-content:space-around; flex-flow:row wrap; min-width:320px; margin-top:3px; margin-bottom:3px}
+#funcbtns button {min-height:2.5em; min-width:2.5em; margin:3px}
+fieldset {border-radius:10px}
+.mysvg {grid-column:1/3; grid-row:1}
+#inputs {grid-column:1/3; grid-row:2}
+#actions {grid-column:1; grid-row:3}
+#functions {grid-column:2/3; grid-row:3}
 .mysvg {margin:0px;padding:0px}
 .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px}
 .lf,.labels {padding:0.2em; clear:both; width:100%}
 .bold {font-weight: bold; color:blue}
 .new {color: #0000FF; font-weight:bold}
-.applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px; display:grid}
 #feedback, #cont {display:none}
 .fraction {display: inline-block; vertical-align: middle; margin: 0 0.2em 0.4ex; text-align: center}
 .fraction > span {display: block; padding-top: 0.15em}
 .fraction span.fdn {border-top: thin solid black}
-.fraction span.bar {display: none}
+.fraction span.bar {display:none}
 .sqrtout {white-space: nowrap}
 .sqrtout:before {content: "√"}
 .sqrtin {text-decoration:overline}
 .offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
-.atright {float:right;}
-.funcbtn {margin:3px}
+.atright {float:right}
 #digits {max-width:6em}
-@media (max-width: 43em) {
-.applet {display: flex; flex-direction: column;}
-.mysvg {order:1}
-#inputs {order:3}
-#actions {order:2}
-#functions {order:4; max-width:100%}
+@media (max-width: 53em) {
+#actions {grid-column:1/3; grid-row:2}
+#inputs {grid-column:1/3; grid-row:3}
+#functions {grid-column:1/3; grid-row:4}
 }
 @media screen and (prefers-color-scheme: dark) {
 body {color: #ddd; background-color: #121212}
@@ -131,7 +135,7 @@ a:link,a:active {color: #a3d4a7}
 a:hover {color: #f5cba7}
 a:visited {color: #d7bde2}
 input, textarea {color: white; background-color: #3b3b3b}
-input:disabled {color: #808080; background-color: #606060}
+button:disabled {color: #808080; background-color: #606060}
 .fraction span.fdn {border-top: thin solid #eee}
 .bold {color:yellow}
 svg {fill:white}
@@ -226,10 +230,11 @@ svg {fill:white}
 <label for="den">c</label><input type="text" inputmode="numeric" id="den" value="" class="input" aria-label="denominator">
 </div>
 <fieldset id="actions"><legend>Actions</legend>
-<input type="button" id="calc" value="Compute continued fraction" title="Show the continued fraction for the requested number">
-<input type="button" id="config" value="Config" title="Change parameters used in the application">
-<input type="button" id="helpbtn" value="Help" title="Read information about this calculator">
-<div class="lf"></div>
+<div id="actbtn">
+<button type="button" id="calc" title="Show the continued fraction for the requested number">Continued<br>fraction</button>
+<button type="button" id="config" title="Change parameters used in the application">Config</button>
+<button type="button" id="helpbtn" title="Read information about this calculator">Help</button>
+</div>
 <input type="checkbox" id="converg"><label for="converg" title="Show the best approximations as rational number for the requested number">Show convergents</label>
 </fieldset>
 <fieldset id="functions"><legend>Functions</legend>
@@ -245,9 +250,9 @@ svg {fill:white}
 <option value="6">Other</option>
 </optgroup>
 </select>
-<span id="funcbtns">
+<div id="funcbtns">
 <button type="button">(</button><button type="button">)</button><button type="button">+</button><button type="button">-</button><button type="button">*</button><button type="button">/</button><button type="button">%</button><button type="button">^</button><button type="button">ans</button><button type="button">sqrt(</button><button type="button">iroot(</button><button type="button">Random(</button><button type="button">Abs(</button><button type="button">Sign(</button>
-</span>
+</div>
 </fieldset>
 </div>
 <div id="help" aria-live="polite">
@@ -446,7 +451,7 @@ To enter numbers in hexadecimal format, you will need to precede them by the str
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old continued fraction applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 4 May 2024.</p>
+<p>Written by Dario Alpern. Last updated 16 May 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -511,9 +516,9 @@ To enter numbers in hexadecimal format, you will need to precede them by the str
 <input type="radio" name="Interesting" value="Yes" id="intyes"><label for="intyes">Yes</label>
 <input type="radio" name="Interesting" value="No" id="intno"><label for="intno">No</label>
 </fieldset>
-<p><input type="submit" disabled="disabled" value="Send it in!" id="formsend">
-<input type="reset" value="Reset">
-<input type="button" value="Cancel" id="formcancel"></p>
+<p><button type="submit" disabled="disabled" id="formsend" title="Deliver this form">Send it in!</button>
+<button type="reset">Reset</button>
+<button type="button" id="formcancel" title="Do not deliver this form">Cancel</button></p>
 </div>
 <div class="lf"></div>
 </form>
@@ -547,8 +552,8 @@ self.onmessage=function(b){k?(m(e.getInputStringPtr(),b.data[0]),e.doWork()):Web
   "name": "Continued Fraction calculator",
   "description": "Web application that finds the continued fraction representation of rational numbers and quadratic irrationalities.",
   "image": ["https://www.alpertron.com.ar/contfrac.png"],
-  "datePublished": "2024-05-04",
-  "dateModified": "2024-05-04",
+  "datePublished": "2024-05-16",
+  "dateModified": "2024-05-16",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

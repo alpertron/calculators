@@ -19,7 +19,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
 <meta property="og:description" content="La potencia perfecta puede ser un cubo, una quinta o séptima potencia.">
-<meta property="article:published_time" content="2024-05-04">
+<meta property="article:published_time" content="2024-05-16">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/TCUADCUB.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/TSQCUBES.HTM">
@@ -55,8 +55,8 @@ nav li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; wid
 nav li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%}
 nav::after {clear:both}
 .inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
-@media (max-width: 400px) { nav { font-size:0.7em;} }
-@media (min-width: 400px) { nav { font-size:1em;} }
+@media (max-width: 400px) {nav {font-size:0.7em}}
+@media (min-width: 400px) {nav {font-size:1em}}
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 }
 @media print {nav, #footer {display:none}}
@@ -82,6 +82,8 @@ nav::after {clear:both}
   background-color: rgb(0,0,0);
   background-color: rgba(0,0,0,0.4);
 }
+input[type=text], input[type=number] {min-height:2em; border-radius:10px}
+input[type=button], button {min-height:2.5em; min-width:2.5em; border-radius:5px}
 #close {float:right}
 #modal-header-text {font-size:1.5em}
 #sending, #sentOK, #notSent {display:none}
@@ -91,15 +93,25 @@ nav::after {clear:both}
 .bread {padding:0px;list-style:none; display:inline-block;}
 .bread li {display:inline}
 .bread li+li:before {content:"›"}
-.inputact {display:flex; justify-content: space-between}
 .new {color: #0000FF; font-weight:bold}
 body {font-family: Arial, sans-serif; margin: 0; padding: 0;}
 h1, .h2title {text-align:center}
 input[type=button], button {border-radius:5px}
-#actions button, #actions input[type=button] {color: white; background-color: #3b3b3b}
-fieldset {border-radius:10px;display:inline}
-#functions {max-width:50%}
-.applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px}
+.wzdact, #actions button {color: white; background-color: #3b3b3b; margin:3px; border-radius:10px}
+#actions button {min-height:90%}
+.actbtn {display:flex; flex-direction:row; justify-content:space-around; min-width:320px; min-height:3em}
+.funcbtns {display:flex; justify-content:space-around; flex-flow:row wrap; min-width:320px; margin-top:3px; margin-bottom:3px}
+.funcbtns button {min-height:2.5em; min-width:2.5em; margin:3px}
+fieldset {border-radius:10px}
+#inputs {grid-column:1/3; grid-row:1}
+#actions {grid-column:1; grid-row:2}
+#functions {grid-column:2/3; grid-row:2}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px}
+.newline {clear:both}
+#valueapp, #wzdupper {display:grid}
+#mode {grid-column:1; grid-row:1}
+#output {grid-column:2; grid-row:1}
+#wzdexam {margin-block-start:0; margin-block-end:0}
 .atright {float:right}
 .funcbtn {margin:3px}
 #num {white-space:pre;overflow-wrap:normal;overflow:auto;margin:5px;width:100%;padding:3px}
@@ -110,15 +122,14 @@ fieldset {border-radius:10px;display:inline}
 .pad, #footer {padding:10px}
 .hex {font-family: Courier, "Lucida Console", monospace}
 .und {text-decoration: underline}
-.newline {clear:both}
 .diginput {width:7em}
 @media (min-width: 400px) {.input {width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
 @media (max-width: 400px) {.input {width:100%;padding:3px;margin:0px;}}
 @media (max-width: 53em) {
-.applet {display: flex; flex-direction: column;}
-#inputs {order:2}
-#actions {order:1}
-#functions {order:3; max-width:100%}
+#actions {grid-column:1/3; grid-row:1}
+#inputs {grid-column:1/3; grid-row:2}
+#functions {grid-column:1/3; grid-row:3}
+#output {grid-column:1; grid-row:2}
 }
 @media screen and (prefers-color-scheme: dark) {
 body {color: #ddd; background-color: #121212}
@@ -128,7 +139,7 @@ a:link,a:active {color: #a3d4a7}
 a:hover {color: #f5cba7}
 a:visited {color: #d7bde2}
 input, textarea, #calc, #calc5, #calc7 {color: white; background-color: #3b3b3b}
-input:disabled {color: #808080; background-color: #606060}
+button:disabled {color: #808080; background-color: #606060}
 .new {color: #E0E000}
 }
 </style>
@@ -192,26 +203,25 @@ input:disabled {color: #808080; background-color: #606060}
 </ol>
 <br><br>
 <noscript><p><strong>La calculadora no funciona con Javascript deshabilitado. Por favor revise la configuración de su navegador.</strong></p></noscript>
-<div class="applet">
+<div class="applet" id="valueapp">
 <div id="inputs">
 <label for="num">Número a descomponer en suma de dos cuadrados y una potencia perfecta</label>
 <textarea inputmode="numeric" id="num" rows="4" class="input"></textarea>
 </div>
 <fieldset id="actions"><legend>Acciones</legend>
-<div class="inputact">
-<div>
+<div class="actbtn">
 <button type="button" id="calc" title="Hallar suma de dos cuadrados y un cubo."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup>3</sup></button>
 <button type="button" id="calc5" title="Hallar suma de dos cuadrados y una potencia quinta."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup>5</sup></button>
 <button type="button" id="calcN" title="Hallar suma de dos cuadrados y una potencia impar."><var>a</var><sup>2</sup> + <var>b</var><sup>2</sup> + <var>c</var><sup><var>n</var></sup></button>
-<div class="lf"></div>
-<input type="button" id="stop" value="Parar" title="Detener cálculo">
-<input type="button" id="helpbtn" value="Ayuda" title="Leer información sobre la calculadora">
-<input type="button" id="openwizard" value="Asistente" title="Facilitar el ingreso de expresiones y ciclos">
-<input type="button" id="config" value="Config" title="Cambiar los parámetros de uso de la aplicación">
 </div>
+<div class="actbtn">
+<button type="button" id="stop" title="Detener cálculo">Parar</button>
+<button type="button" id="helpbtn" title="Leer información sobre la calculadora">Ayuda</button>
+<button type="button" id="openwizard" title="Facilitar el ingreso de expresiones y ciclos">Abrir<br>asistente</button>
+<button type="button" id="config" title="Cambiar los parámetros de uso de la aplicación">Config</button>
 <div>
 <label for="expon"><var>n</var> (impar):</label><br>
-<input type="number" id="expon" class="diginput" value="7">
+<input type="number" id="expon" class="diginput" value="7" step="2" min="1">
 </div>
 </div>
 </fieldset>
@@ -229,9 +239,9 @@ input:disabled {color: #808080; background-color: #606060}
 <option value="7">Otros</option>
 </optgroup>
 </select>
-<span id="funcbtns">
-<button type="button">(</button><button type="button">)</button><button type="button">+</button><button type="button">-</button><button type="button">*</button><button type="button">/</button><button type="button">%</button><button type="button">^</button><button type="button">ans</button><button type="button">sqrt(</button><button type="button">iroot(</button><button type="button">Random(</button><button type="button">Abs(</button><button type="button">Sign(</button>
-</span>
+<div class="funcbtns" id="funcbtns">
+<button type="button">(</button><button type="button">)</button><button type="button">&#9166;</button><button type="button">+</button><button type="button">-</button><button type="button">*</button><button type="button">/</button><button type="button">%</button><button type="button">^</button><button type="button">ans</button><button type="button">sqrt(</button><button type="button">iroot(</button><button type="button">Random(</button><button type="button">Abs(</button><button type="button">Sign(</button>
+</div>
 </fieldset>
 </div>
 <div class="pad">
@@ -340,7 +350,7 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <h2>Código fuente</h2>
 <p>Se puede bajar el código fuente de este programa desde <a href="https://github.com/alpertron/calculators">GitHub</a>. El código fuente está escrito en lenguaje C, por lo que es necesario <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> para generar JavaScript.</p>
 </div>
-<p>Escrito por Dario Alpern. Actualizado el 4 de mayo de 2024.</p>
+<p>Escrito por Dario Alpern. Actualizado el 16 de mayo de 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -359,7 +369,8 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <aside id="wizard" aria-label="Asistente">
 <h2 class="h2title">Asistente de suma de dos cuadrados y potencia perfecta</h2>
 <div class="applet">
-<fieldset id="output" class="atright">
+<div id="wzdupper">
+<fieldset id="output">
 <legend>Salida</legend>
 <input type="radio" name="output" id="decW"><label for="decW">Decimal</label><br>
 <input type="radio" name="output" id="hexW"><label for="hexW">Hexadecimal</label><br>
@@ -369,13 +380,14 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <input type="radio" name="mode" id="oneexpr"><label for="oneexpr">Procesar una expresión</label><br>
 <input type="radio" name="mode" id="loop"><label for="loop">Procesar varias expresiones en un ciclo</label><br>
 </fieldset>
+</div>
 <label for="wzdinput" id="wzddesc">1</label>
 <br class="newline">
 <input type="text" inputmode="numeric" id="wzdinput" value="" placeholder="Número o expresión numérica" class="input">
 <br class="newline">
 <p id="wzdexam">&nbsp;</p>
-<input type="button" id="next" value="Siguiente" title="Siguiente paso del asistente">
-<input type="button" id="cancel" value="Cancelar" title="Salir del asistente">
+<input type="button" id="next" class="wzdact" value="Siguiente" title="Siguiente paso del asistente">
+<input type="button" id="cancel" class="wzdact" value="Cancelar" title="Salir del asistente">
 <div id="wzdfunccatblock">
 <label for="wzdfunccat">Categorías de funciones:</label> 
 <select id="wzdfunccat">
@@ -390,7 +402,7 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 </optgroup>
 </select>
 </div>
-<div id="wzdfuncbtns"></div>
+<div class="funcbtns" id="wzdfuncbtns"></div>
 </div>
 <div id="exprwiz"></div>
 <ul>
@@ -448,9 +460,9 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
 <input type="radio" name="Interesante" value="Si" id="intyes"><label for="intyes">Sí</label>
 <input type="radio" name="Interesante" value="No" id="intno"><label for="intno">No</label>
 </fieldset>
-<p><input type="submit" disabled="disabled" value="Enviar el comentario" id="formsend" title="Enviar el formulario">
-<input type="reset" value="Entrar otra vez">
-<input type="button" value="Cancelar" id="formcancel" title="No enviar el formulario"></p>
+<p><button type="submit" disabled="disabled" id="formsend" title="Enviar el formulario">Enviar el<br>comentario</button>
+<button type="reset">Entrar<br>otra vez</button>
+<button type="button" id="formcancel" title="No enviar el formulario">Cancelar</button></p>
 </div>
 <div class="lf"></div>
 </form>
@@ -482,8 +494,8 @@ La línea a escribir es: <code>x=3;x=n(x);c&lt;=100;x-1</code>.</p>
   "name": "Suma de dos cuadrados y una potencia perfecta",
   "description": "Aplicación Web application que descompone un número en una suma de dos cuadrados y un cubo, quinta o séptima potencia.",
   "image": ["https://www.alpertron.com.ar/tsqcubes.png"],
-  "datePublished": "2024-05-04",
-  "dateModified": "2024-05-04",
+  "datePublished": "2024-05-16",
+  "dateModified": "2024-05-16",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

@@ -55,6 +55,10 @@ function generateFuncButtons(optionCategory, funcButtons)
   let fragment = document.createDocumentFragment();
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
+    if (funcButtons == "wzdfuncbtns" && catIndex == 2)
+    {   // Do not show Enter button on wizard.
+      continue;
+    }
     button = document.createElement("button");
     button.setAttribute("type", "button");        // Indicate this is a button, not submit.
     button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.

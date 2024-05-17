@@ -436,7 +436,7 @@ function startUp()
       get("exprwiz").innerHTML = get("expr").innerHTML;
       hide("main");
       show("wizard");
-      show("mode");
+      get("wzdupper").style.display = "grid";
       get("oneexpr").checked = true;
       get("next").disabled = true;
       get("decW").checked = !get("hexW").checked;

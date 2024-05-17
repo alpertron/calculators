@@ -59,7 +59,7 @@ function wizardNext()
   {
     case 2:
       wizardTextInput += "x="+wzdInput.value;
-      hide("mode");
+      hide("wzdupper");
       wzdDescText.innerHTML = (lang? "Paso 2 de 5: Valor de x para la nueva iteración": "Step 2 of 5: Value of x for new iteration");
       wzdExamText.innerHTML = textExample + "x+1</code>";
       break;

@@ -160,7 +160,6 @@ function styleButtons(style1, style2)
   btnBlocklyMode.style.display = style1;
   btnOpenWizard.style.display = style1;
   get("functions").style.display = style1;
-  get("funcbtns").style.display = style1;
   btnStop.style.display = style2;
   btnMore.style.display = style2;
 }
@@ -594,7 +593,7 @@ function startUp()
   btnFromFile.onclick = function()
   {
     getFile.click();
-  };
+  }
   btnToFile.onclick = downloadResult;
   getFile.onchange = function()
   {
@@ -629,7 +628,7 @@ function startUp()
   {
     hide("main");
     show("wizard");
-    show("mode");
+    get("wzdupper").style.display = "grid";
     get("oneexpr").checked = true;
     history.pushState({id: 2}, "", location.href);
     btnNext.disabled = true;

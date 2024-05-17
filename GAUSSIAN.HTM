@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
 <meta property="og:description" content="This factors Gaussian integers of the form (a+bi).">
-<meta property="article:published_time" content="2024-05-04">
+<meta property="article:published_time" content="2024-05-16">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/GAUSIANO.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/GAUSSIAN.HTM">
@@ -54,9 +54,10 @@ nav li ul li a:hover{background-color:#FFFFFF; color:#004000; display:block; wid
 nav li ul li a:active{background-color:#FFFFFF; color:#004000; display:block; width:100%}
 nav::after {clear:both}
 .atright {float:right;}
-@media (max-width: 400px) { nav { font-size:0.7em; } }
-@media (min-width: 400px) { nav { font-size:1em; } }
+@media (max-width: 400px) {nav {font-size:0.7em;}}
+@media (min-width: 400px) {nav {font-size:1em;}}
 }
+input[type=text], input[type=number] {min-height:2em; border-radius:10px}
 #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
 #skip a {padding:6px;	position:absolute; top:-40px; left:0px; color:white; border-right:1px solid white; border-bottom:1px solid white; border-bottom-right-radius:8px; background:#BF1722; transition:top 1s ease-out; z-index:100}
@@ -65,7 +66,7 @@ nav::after {clear:both}
 .bread li {display:inline}
 .bread li+li:before {content:"›"}
 .modal-header {padding: 2px 10px; background-color: #5cb85c; color: white;}
-.modal-body {padding: 2px 10px;}
+.modal-body {padding: 2px 10px}
 .modal-content {
   position: relative;
   background-color: #fefefe;
@@ -94,25 +95,29 @@ nav::after {clear:both}
 body {font-family: Arial, sans-serif;margin: 0; padding: 0;}
 h1, .h2title {text-align:center}
 input[type=button], button {border-radius:5px}
-#actions input[type=button] {color: white; background-color: #3b3b3b}
-fieldset {border-radius:10px;display:inline}
-#functions {max-width:50%}
+#actions button {color: white; background-color: #3b3b3b; min-height:100%; border-radius:10px}
+#actbtn {display:flex; flex-direction:row; justify-content:space-around; min-width:320px; min-height:3em}
+#funcbtns {display:flex; justify-content:space-around; flex-flow:row wrap; min-width:320px; margin-top:3px; margin-bottom:3px}
+#funcbtns button {min-height:2.5em; min-width:2.5em; margin:3px}
+fieldset {border-radius:10px}
+#inputs {grid-column:1/3; grid-row:1}
+#actions {grid-column:1; grid-row:2}
+#functions {grid-column:2/3; grid-row:2}
 .hex {font-family: Courier, "Lucida Console", monospace}
-.lf,.labels {padding:0.2em; clear:both;}
-.blue {color: #0000FF;}
-.inline {display:inline;}
+.lf,.labels {padding:0.2em; clear:both}
+.blue {color: #0000FF}
+.inline {display:inline}
 .pad {padding:10px;}
-.applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px; display:grid}
 .funcbtn {margin:3px}
 #feedback {display:none}
-.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px;}
-@media (min-width: 400px) {.input{width: calc(100% - 6em);float:right;padding:3px;margin:0px;}}
-@media (max-width: 400px) {.input{width:100%;padding:3px;margin:0px;}}
+.inputfbck{width: calc(100% - 10em);float:right;padding:3px;margin:0px}
+@media (min-width: 400px) {.input{width: calc(100% - 6em);float:right;padding:3px;margin:0px}}
+@media (max-width: 400px) {.input{width:100%;padding:3px;margin:0px}}
 @media (max-width: 53em) {
-.applet {display: flex; flex-direction: column;}
-#inputs {order:2}
-#actions {order:1}
-#functions {order:3; max-width:100%}
+#actions {grid-column:1/3; grid-row:1}
+#inputs {grid-column:1/3; grid-row:2}
+#functions {grid-column:1/3; grid-row:3}
 }
 @media (min-width: 500px) {#formleft {float:left;width:50%;} #formright {float:right;width:50%;}}
 #help,#result,#status,#footer {margin: 3px; padding: 3px;}
@@ -125,7 +130,7 @@ a:link,a:active {color: #a3d4a7}
 a:hover {color: #f5cba7}
 a:visited {color: #d7bde2}
 input, textarea {color: white; background-color: #3b3b3b}
-input:disabled {color: #808080; background-color: #606060}
+button:disabled {color: #808080; background-color: #606060}
 .blue {color: #E0E000}
 .new {color: #E0E000}
 }
@@ -196,12 +201,14 @@ input:disabled {color: #808080; background-color: #606060}
 <label for="value">Value</label><input type="text" inputmode="numeric" id="value" value="" class="input">
 </div>
 <fieldset id="actions"><legend>Actions</legend>
-<input type="button" id="more" value="More" title="Change curve number or enter a known factor">
-<input type="button" id="eval" value="Only evaluate" title="Evaluate expression but do not factor it">
-<input type="button" id="factor" value="Factor" title="Factor expression">
-<input type="button" id="stop" value="Stop" title="Stop the current computation">
-<input type="button" id="helpbtn" value="Help" title="Show help about the application and the math used">
-<input type="button" id="config" value="Config" title="Change parameters used in the application">
+<div id="actbtn">
+<button type="button" id="more" title="Change curve number or enter a known factor">More</button>
+<button type="button" id="eval" title="Evaluate expression but do not factor it">Only<br>evaluate</button>
+<button type="button" id="factor" title="Factor expression">Factor</button>
+<button type="button" id="stop" title="Stop the current computation">Stop</button>
+<button type="button" id="helpbtn" title="Show help about the application and the math used">Help</button>
+<button type="button" id="config" title="Change parameters used in the application">Config</button>
+</div>
 </fieldset>
 <fieldset id="functions"><legend>Functions</legend>
 <label for="funccat">Category:</label> 
@@ -214,9 +221,9 @@ input:disabled {color: #808080; background-color: #606060}
 <option value="4">Other</option>
 </optgroup>
 </select>
-<span id="funcbtns">
+<div id="funcbtns">
 <button type="button">(</button><button type="button">)</button><button type="button">i</button><button type="button">+</button><button type="button">-</button><button type="button">*</button><button type="button">/</button><button type="button">%</button><button type="button">^</button><button type="button">ans</button><button type="button">Re(</button><button type="button">Im(</button><button type="button">Norm(</button><button type="button">Random(</button>
-</span>
+</div>
 </fieldset>
 </div>
 <div id="help" aria-live="polite">
@@ -305,7 +312,7 @@ To enter numbers in hexadecimal format, you will need to precede them by the str
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old sum polynomial factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 4 May 2024.</p>
+<p>Written by Dario Alpern. Last updated 16 May 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -314,6 +321,7 @@ To enter numbers in hexadecimal format, you will need to precede them by the str
 <p><span class="new">New!</span> You can download an application for Android that includes this calculator from <a href="https://play.google.com/store/apps/details?id=ar.com.alpertron.calculators">Google Play</a>.</p>
 <p>If you find any error or you have a comment, please fill in the <a href="#" id="formlink">form</a>.</p>
 <p>If you like these calculators and you want to support free software with no annoying advertisements, you can <a href="https://www.PayPal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=MR65QPWZM5JT6&source=url">donate through PayPal</a>.</p>
+</div>
 </article>
 </main>
 <div id="modal-more" class="modal" role="dialog" aria-labelledby="moreopt">
@@ -326,7 +334,7 @@ To enter numbers in hexadecimal format, you will need to precede them by the str
 <input type="button" id="nfactor" value="New factor" title="Enter a known factor">
 </div>
 </div></div></div>
-<aside id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
+<div id="modal-config" class="modal" role="dialog" aria-labelledby="conf">
 <div class="modal-content">
 <div class="modal-header"><span id="close-config" aria-label="close" class="atright">×</span><p id="conf">Configuration</p></div>
 <div class="modal-body">
@@ -339,7 +347,7 @@ To enter numbers in hexadecimal format, you will need to precede them by the str
 </fieldset>
 <p><input type="button" id="save-config" value="Save" title="Save configuration"><input type="button" id="cancel-config" value="Cancel" title="Discard changes to configuration"></p>
 </div>
-</div></div></aside>
+</div></div></div>
 <aside id="feedback" aria-label="Feedback form">
 <h2 class="h2title">Feedback form</h2>
 <form class="applet" id="formfeedback">
@@ -376,9 +384,9 @@ To enter numbers in hexadecimal format, you will need to precede them by the str
 <input type="radio" name="Interesting" value="Yes" id="intyes"><label for="intyes">Yes</label>
 <input type="radio" name="Interesting" value="No" id="intno"><label for="intno">No</label>
 </fieldset>
-<p><input type="submit" disabled="disabled" value="Send it in!" id="formsend" title="Deliver this form">
-<input type="reset" value="Reset">
-<input type="button" value="Cancel" id="formcancel" title="Do not deliver this form"></p>
+<p><button type="submit" disabled="disabled" id="formsend" title="Deliver this form">Send it in!</button>
+<button type="reset">Reset</button>
+<button type="button" id="formcancel" title="Do not deliver this form">Cancel</button></p>
 </div>
 <div class="lf"></div>
 </form>
@@ -412,8 +420,8 @@ To enter numbers in hexadecimal format, you will need to precede them by the str
   "name": "Gaussian integer factorization calculator",
   "description": "Web application that factors Gaussian integers of the form (a+bi).",
   "image": ["https://www.alpertron.com.ar/gaussian.png"],
-  "datePublished": "2024-05-04",
-  "dateModified": "2024-05-04",
+  "datePublished": "2024-05-16",
+  "dateModified": "2024-05-16",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {
