@@ -97,15 +97,11 @@ main {padding:10px;}
 h1, .h2title {text-align:center}
 .new {color: #0000FF; font-weight:bold}
 #actions button {color: white; background-color: #3b3b3b; min-height:100%; border-radius:10px}
-#actbtn {display:flex; flex-direction:row; justify-content:space-around; min-width:320px; min-height:3em; margin-bottom:1em}
-#funcbtns {display:flex; justify-content:space-around; flex-flow:row wrap; min-width:320px; margin-top:3px; margin-bottom:3px}
+#actbtn {display:flex; flex-flow:row wrap; justify-content:space-around; min-height:3em; margin-bottom:1em}
+#funcbtns {display:flex; justify-content:space-around; flex-flow:row wrap; margin-top:3px; margin-bottom:3px}
 #funcbtns button {min-height:2.5em; min-width:2.5em; margin:3px}
 fieldset {border-radius:10px}
-.mysvg {grid-column:1/3; grid-row:1}
-#inputs {grid-column:1/3; grid-row:2}
-#actions {grid-column:1; grid-row:3}
-#functions {grid-column:2/3; grid-row:3}
-.mysvg {margin:0px;padding:0px;}
+.mysvg {margin:0px;padding:0px}
 .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px;}
 .lf,.labels {padding:0.2em; clear:both; width:100%}
 .bold {font-weight: bold; color:blue}
@@ -122,10 +118,16 @@ fieldset {border-radius:10px}
 .sqrtin {text-decoration:overline}
 .offscr {position:absolute;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);padding:0;border:0;height:1px;width:1px;overflow:hidden;}
 #digits {max-width:6em}
+.mysvg {grid-column:1/3; grid-row:1}
 @media (max-width: 53em) {
 #actions {grid-column:1/3; grid-row:2}
 #inputs {grid-column:1/3; grid-row:3}
 #functions {grid-column:1/3; grid-row:4}
+}
+@media (min-width: 53em) {
+#inputs {grid-column:1/3; grid-row:2}
+#actions {grid-column:1; grid-row:3; width:320px}
+#functions {grid-column:2/3; grid-row:3}
 }
 @media screen and (prefers-color-scheme: dark) {
 body {color: #ddd; background-color: #121212}

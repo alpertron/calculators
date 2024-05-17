@@ -97,14 +97,10 @@ body {font-family:Arial, sans-serif; margin:0; padding:0}
 main {padding:10px}
 h1, .h2title {text-align:center}
 #actions button {color: white; background-color: #3b3b3b; min-height:100%; border-radius:10px}
-#actbtn {display:flex; flex-direction:row; justify-content:space-around; min-width:320px; min-height:3em; margin-bottom:1em}
-#funcbtns {display:flex; justify-content:space-around; flex-flow:row wrap; min-width:320px; margin-top:3px; margin-bottom:3px}
+#actbtn {display:flex; flex-flow:row wrap; justify-content:space-around; min-height:3em; margin-bottom:1em}
+#funcbtns {display:flex; justify-content:space-around; flex-flow:row wrap; margin-top:3px; margin-bottom:3px}
 #funcbtns button {min-height:2.5em; min-width:2.5em; margin:3px}
 fieldset {border-radius:10px}
-.mysvg {grid-column:1/3; grid-row:1}
-#inputs {grid-column:1/3; grid-row:2}
-#actions {grid-column:1; grid-row:3}
-#functions {grid-column:2/3; grid-row:3}
 .mysvg {margin:0px;padding:0px}
 .input{width: calc(100% - 3em);float:right;padding:3px;margin:0px}
 .lf,.labels {padding:0.2em; clear:both; width:100%}
@@ -124,9 +120,15 @@ fieldset {border-radius:10px}
 .atright {float:right}
 #digits {max-width:6em}
 @media (max-width: 53em) {
+.mysvg {grid-column:1/3; grid-row:1}
 #actions {grid-column:1/3; grid-row:2}
 #inputs {grid-column:1/3; grid-row:3}
 #functions {grid-column:1/3; grid-row:4}
+}
+@media (min-width: 53em) {
+#inputs {grid-column:1/3; grid-row:2}
+#actions {grid-column:1; grid-row:3; width:320px}
+#functions {grid-column:2/3; grid-row:3}
 }
 @media screen and (prefers-color-scheme: dark) {
 body {color: #ddd; background-color: #121212}
