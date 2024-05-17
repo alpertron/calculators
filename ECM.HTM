@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
 <meta property="og:description" content="This factors numbers using ECM and SIQS algorithms.">
-<meta property="article:published_time" content="2024-05-16">
+<meta property="article:published_time" content="2024-05-17">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/ECMC.HTM">
 <link rel="alternate" hreflang="en" href="https://www.alpertron.com.ar/ECM.HTM">
@@ -57,7 +57,7 @@ nav::after {clear:both}
 @media (max-width: 400px) {nav {font-size:0.7em}}
 @media (min-width: 400px) {nav {font-size:1em}}
 }
-input[type=text], input[type=number] {min-height:2em; border-radius:10px}
+input[type=text], input[type=email], input[type=number] {min-height:2em; border-radius:10px}
 input[type=button], button {min-height:2.5em; min-width:2.5em; border-radius:5px}
 #sending, #sentOK, #notSent {display:none}
 .center {text-align:center}
@@ -88,7 +88,7 @@ fieldset {border-radius:10px}
 #actions {grid-column:1; grid-row:2; width:320px}
 #functions {grid-column:2/3; grid-row:2}
 #explan {grid-column:1/3; grid-row:3}
-.applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px}
 .newline {clear:both}
 .lf,.labels {padding:0.2em; clear:both}
 .blue {color: #0000FF}
@@ -1024,7 +1024,7 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p>You can download the source of the current program and the old factorization applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
 </div>
-<p>Written by Dario Alpern. Last updated 16 May 2024.</p>
+<p>Written by Dario Alpern. Last updated 17 May 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -1211,8 +1211,8 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
   "name": "Integer factorization calculator",
   "description": "Web application that factors integers using ECM and SIQS algorithms.",
   "image": ["https://www.alpertron.com.ar/ecm.png"],
-  "datePublished": "2024-05-16",
-  "dateModified": "2024-05-16",
+  "datePublished": "2024-05-17",
+  "dateModified": "2024-05-17",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {

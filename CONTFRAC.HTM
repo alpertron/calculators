@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
 <meta property="og:description" content="This finds the continued fraction representation of rational numbers and quadratic irrationalities.">
-<meta property="article:published_time" content="2024-05-16">
+<meta property="article:published_time" content="2024-05-17">
 <meta property="fb:app_id" content="1495228927625175">
 <link rel="manifest" href="contfrac.webmanifest">
 <link rel="alternate" hreflang="es" href="https://www.alpertron.com.ar/FRACCONT.HTM">
@@ -81,7 +81,8 @@ nav::after {clear:both}
   background-color: rgb(0,0,0);
   background-color: rgba(0,0,0,0.4);
 }
-input[type=text], input[type=number] {min-height:2em; border-radius:10px}
+input[type=text], input[type=email], input[type=number] {min-height:2em; border-radius:10px}
+input[type=button], button {min-height:2.5em; min-width:2.5em; border-radius:5px}
 #close {float:right}
 #modal-header-text {font-size:1.5em}
 .hex {font-family: Courier, "Lucida Console", monospace}
@@ -95,7 +96,6 @@ input[type=text], input[type=number] {min-height:2em; border-radius:10px}
 body {font-family:Arial, sans-serif; margin:0; padding:0}
 main {padding:10px}
 h1, .h2title {text-align:center}
-input[type=button], button {border-radius:5px}
 #actions button {color: white; background-color: #3b3b3b; min-height:100%; border-radius:10px}
 #actbtn {display:flex; flex-direction:row; justify-content:space-around; min-width:320px; min-height:3em; margin-bottom:1em}
 #funcbtns {display:flex; justify-content:space-around; flex-flow:row wrap; min-width:320px; margin-top:3px; margin-bottom:3px}
@@ -110,7 +110,8 @@ fieldset {border-radius:10px}
 .lf,.labels {padding:0.2em; clear:both; width:100%}
 .bold {font-weight: bold; color:blue}
 .new {color: #0000FF; font-weight:bold}
-.applet {margin-left: auto;margin-right: auto; border: 0px none;width:95%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px; display:grid}
+.applet {margin-left: auto;margin-right: auto; border: 0px none;width:90%;text-align:center;background-color:#c0c0c0;padding:10px;border-radius:10px}
+#valueapp {display:grid}
 #feedback, #cont {display:none}
 .fraction {display: inline-block; vertical-align: middle; margin: 0 0.2em 0.4ex; text-align: center}
 .fraction > span {display: block; padding-top: 0.15em}
@@ -201,7 +202,7 @@ svg {fill:white}
 </li>
 </ol>
 <noscript><p><strong>The calculator does not work with Javascript disabled. Please check your browser settings.</strong></p></noscript>
-<div class="applet">
+<div class="applet" id="valueapp">
 <p class="mysvg">
 <svg height="30.4592pt" version="1.1" viewbox="0 0 40.118 30.4592" width="40.118pt" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <defs>
@@ -451,7 +452,7 @@ To enter numbers in hexadecimal format, you will need to precede them by the str
 <h2>Source code</h2>
 <p>You can download the source of the current program and the old continued fraction applet from <a href="https://github.com/alpertron/calculators">GitHub</a>. Notice that the source code is in C language and you need the <a href="https://emscripten.org/docs/getting_started/downloads.html">Emscripten</a> environment in order to generate JavaScript.</p>
 </div>
-<p>Written by Dario Alpern. Last updated 16 May 2024.</p>
+<p>Written by Dario Alpern. Last updated 17 May 2024.</p>
 </div>
 <div id="helphelp"></div>
 <div id="result" aria-live="polite"></div>
@@ -552,8 +553,8 @@ self.onmessage=function(b){k?(m(e.getInputStringPtr(),b.data[0]),e.doWork()):Web
   "name": "Continued Fraction calculator",
   "description": "Web application that finds the continued fraction representation of rational numbers and quadratic irrationalities.",
   "image": ["https://www.alpertron.com.ar/contfrac.png"],
-  "datePublished": "2024-05-16",
-  "dateModified": "2024-05-16",
+  "datePublished": "2024-05-17",
+  "dateModified": "2024-05-17",
   "operatingSystem": "Any",
   "applicationCategory": "EducationalApplication",
   "author": {
