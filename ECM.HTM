@@ -1017,6 +1017,11 @@ The line to type is: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigits(co
 <p>To print a percent sign, you have to write two percent signs, and a quote is represented by a percent sign followed by a quote.</p>
 <p>Example 3: For each number between -100 and 100, show whether the number is prime and then show the factorization both in decimal and hexadecimal.</p>
 <p>The line to write is: <code>x=-100; x=x+1; x&lt;=100; &quot;%d is prime: %l, %Fd, %Fx&quot;:x:isprime(x):x:x</code>
+<p>Example 4: Get 33331 digits of &pi; using Gauss-Legendre algorithm.</p>
+<p><code>x=10^99999+10^66666/4+10^66666/sqrt(2*10^66666);x=(x/10^66666+x%10^33333)/2*10^66666+(((x/10^33333)%10^33333)-2^(c-1)*(x/10^66666-(x/10^66666+x%10^33333)/2)^2/10^33333)*10^33333+sqrt((x/10^66666)*(x%10^33333));c&lt;=15;(x/10^66666+x%10^33333)^2/4/((x/10^33333)%10^33333)/1000;c==15</code></p>
+<p>In this script written by Samuel Eraut: <var>b</var> = lowest 33333 digits of <var>x</var>, <var>t</var> = next higher 33333 digits, <var>a</var> = all higher digits of <var>x</var>. Variable names <var>a</var>, <var>b</var> and <var>t</var> conform to the current example shown on Gauss-Legendre algorithm on Wikipedia.</p>
+<p>Example 5: Get 33331 digits of &pi; using Bailey–Borwein–Plouffe (BBP) formula (script written by Samuel Eraut).</p>
+<p><code>x=0;x=x+(2^(110742-c*4)/(8*(c-1)+1)-2^(110741-c*4)/(8*(c-1)+4)-2^(110740-c*4)/(8*(c-1)+5)-2^(110740-c*4)/(8*(c-1)+6));c&lt;=27674;x*10^33330/2^110736;c==27674</code></p>
 </div>
 <div class="noand">
 <h2><button type="button">Source code</button></h2>

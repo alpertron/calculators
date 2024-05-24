@@ -29,7 +29,7 @@
 #include "fromBlockly.h"
 #include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 16
+#define DEBUG_CODE 13
 #endif
 #if (DEBUG_CODE == 9) || (DEBUG_CODE == 17)
 extern bool teach;
@@ -261,13 +261,16 @@ int main(int argc, char* argv[])
   char text[40000];
   char* ptrText = text;
   char* ptrCurveNbr = NULL;
-  if ((argc != 2) && (argc != 3))
+  bool doFactorization = true;
+  if ((argc < 2) || (argc > 4))
   {
-    (void)printf("nbr_to_factor [flags]\n"
+    (void)printf("nbr_to_factor [flags] [dofact]\n"
       "flags = 1: hexadecimal output, do not use SIQS\n"
       "flags = 2: decimal output, use SIQS\n"
       "flags = 3: hexadecimal output, use SIQS\n"
-      "flags = 4: decimal output, do not use SIQS\n");
+      "flags = 4: decimal output, do not use SIQS\n"
+      "dofact = 0: do not factor, just show expression result\n"
+      "dofact = 1: factor expression (default)\n");
     return 0;
   }
   if (argc == 3)
@@ -281,9 +284,13 @@ int main(int argc, char* argv[])
       ptrCurveNbr = "!";    // Use SIQS.
     }
   }
+  if ((argc == 4) && (argv[3][0] == '0'))
+  {
+    doFactorization = false;
+  }
   copyStr(&ptrText, argv[1]);
   copyStr(&ptrText, "\n");
-  ecmFrontText(text, true, ptrCurveNbr);
+  ecmFrontText(text, doFactorization, ptrCurveNbr);
   (void)printf("%s\n", output);
 #if 0
   if (argc == 3)

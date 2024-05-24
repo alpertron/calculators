@@ -889,6 +889,7 @@ button:disabled {color: #808080; background-color: #606060}
 </table>
 <p>Puedes usar el prefijo <em>0x</em> para números hexadecimales, por ejemplo 0x38 es igual a 56.</p>
 </div>
+
 <h2><button type="button">Factorización usando el método de curvas elípticas (ECM)</button></h2>
 <div class="panel">
 <p>La notación <var>k</var> &equiv; <var>m</var> (mod <var>n</var>) significa que el resto de la división de <var>k</var> dividido <var>n</var> es igual al resto de la división de <var>m</var> dividido <var>n</var>. El número <var>n</var> se denomina módulo.</p>
@@ -1003,6 +1004,11 @@ La línea a escribir es: <code>x=1;x=x+1;x&lt;10000;x;sumdigits(x, 10)==sumdigit
 <p>Para mostrar el símbolo de procentaje, se deben usar dos símbolos de porcentaje seguidos, y la comilla se representa mediante un símbolo de porcentaje seguido por una comilla.</p>
 <p>Ejemplo 3: Por cada número entre -100 y 100, mostrar si el número es primo y luego mostrar la factorización tanto en decimal como en hexadecimal.</p>
 <p>La línea a escribir es: <code>x=-100; x=x+1; x&lt;=100; &quot;%d es primo: %l, %Fd, %Fx&quot;:x:isprime(x):x:x</code>
+<p>Ejemplo 4: Obtener 33331 dígitos de &pi; usando el algoritmo de Gauss-Legendre.</p>
+<p><code>x=10^99999+10^66666/4+10^66666/sqrt(2*10^66666);x=(x/10^66666+x%10^33333)/2*10^66666+(((x/10^33333)%10^33333)-2^(c-1)*(x/10^66666-(x/10^66666+x%10^33333)/2)^2/10^33333)*10^33333+sqrt((x/10^66666)*(x%10^33333));c&lt;=15;(x/10^66666+x%10^33333)^2/4/((x/10^33333)%10^33333)/1000;c==15</code></p>
+<p>En este script escrito por Samuel Eraut: <var>b</var> = los 33333 dígitos menos significativos de <var>x</var>, <var>t</var> = los siguientes 33333 dígitos, <var>a</var> = los dígitos más significativos de <var>x</var>. Los nombres de variable <var>a</var>, <var>b</var> y <var>t</var> corresponden con lo que se muestra en el algoritmo de Gauss-Legendre en Wikipedia.</p>
+<p>Ejemplo 5: Obtener 33331 dígitos de &pi; usando la fórmula de Bailey–Borwein–Plouffe (BBP) (script escrito por Samuel Eraut).</p>
+<p><code>x=0;x=x+(2^(110742-c*4)/(8*(c-1)+1)-2^(110741-c*4)/(8*(c-1)+4)-2^(110740-c*4)/(8*(c-1)+5)-2^(110740-c*4)/(8*(c-1)+6));c&lt;=27674;x*10^33330/2^110736;c==27674</code></p>
 </div>
 <div class="noand">
 <h2><button type="button">Código fuente</button></h2>
