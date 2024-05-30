@@ -1592,13 +1592,16 @@ static void showECMStatus(void)
 }
 
 // Save factors in Web Storage so factorization can continue the next time the application runs.
-static void SaveFactors(struct sFactors *pstFactors)
+static void SaveFactors(const struct sFactors *pstFactors)
 {
 #ifdef FACTORIZATION_APP
-  struct sFactors *pstCurFactor = pstFactors + 1;
-  int factorNbr;
+  const struct sFactors *pstCurFactor = pstFactors + 1;
   BigInteger bigint;
   char *ptrText = common.saveFactors.text;
+  if (ptrInputText == NULL)
+  {   // If coming from quadratic Diophantine equation, do not save anything.
+    return;
+  }
   if (oldNbrFactors == pstFactors->multiplicity)
   {
     return;
@@ -1609,7 +1612,7 @@ static void SaveFactors(struct sFactors *pstFactors)
   copyStr(&ptrText, ptrInputText);
   *ptrText = '=';
   ptrText++;
-  for (factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++)
+  for (int factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++)
   {
     if (factorNbr > 1)
     {

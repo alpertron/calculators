@@ -12,7 +12,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>"x=0;x=x+(2^(110742-c*4)/(8*(c-1)+1)-2^(110741-c*4)/(8*(c-1)+4)-2^(110740-c*4)/(8*(c-1)+5)-2^(110740-c*4)/(8*(c-1)+6));c&lt;=27674;x*10^33330/2^110736;c==27674" 4 0</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>43434334 43434323 4343413 7 8 -1 0</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\x64\release</LocalDebuggerWorkingDirectory>
