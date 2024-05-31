@@ -2943,7 +2943,7 @@ static void ShowArgumentContinuedFraction(void)
 //  Set V to (D - U^2)/V
 //  Inside period when: 0 <= G - U < V
 
-static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
+static enum eExprErr ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
 {
   int periodsToCompute;
   int index = 0;
@@ -2964,7 +2964,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
   (void)BigIntRemainder(&bigTmp, &ValV, &bigTmp);
   if (!BigIntIsZero(&bigTmp))
   {
-    return;
+    return EXPR_OK;
   }
   CopyBigInt(&Tmp[11], value);   // Back up value.
   if (teach)
@@ -3040,6 +3040,11 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
   isIntegerPart = 1;
   for (;;)
   {
+    if ((U1.nbrLimbs > MAX_LEN_MULT / 2) || (U2.nbrLimbs > MAX_LEN_MULT / 2) ||
+      (V1.nbrLimbs > MAX_LEN_MULT / 2) || (V2.nbrLimbs > MAX_LEN_MULT / 2))
+    {
+      return EXPR_NUMBER_TOO_HIGH;
+    }
     if ((ValV.nbrLimbs == 1) && (ValV.limbs[0].x == (isBeven ? 1 : 2)) &&
       ((index & 1) == ((ValK.sign == ValV.sign)? 0 : 1)))
     {         // Found solution.
@@ -3108,6 +3113,7 @@ static void ContFrac(BigInteger *value, enum eShowSolution solutionNbr)
     isIntegerPart = 0;
   }
   CopyBigInt(value, &Tmp[11]);   // Restore value.
+  return EXPR_OK;
 }
 
 static void ShowRecSol(char variable, const BigInteger *coefX,
@@ -3383,6 +3389,13 @@ static void recursiveSolution(void)
   CopyBigInt(&ValC, &ValCBak);
   for (;;)
   {
+    if ((U1.nbrLimbs > MAX_LEN_MULT / 2) || (U2.nbrLimbs > MAX_LEN_MULT / 2) ||
+      (V1.nbrLimbs > MAX_LEN_MULT / 2) || (V2.nbrLimbs > MAX_LEN_MULT / 2))
+    {
+      showText(lang ? "<p>Coeficientes demasiado grandes.</p>" :
+        "<p>Coefficients are too large.</p>");
+      return;
+    }
     int limbValue;
     BigIntAdd(&ValU, &ValG, &bigTmp);
     if (ValV.sign == SIGN_NEGATIVE)
@@ -3437,6 +3450,7 @@ static void recursiveSolution(void)
 
 static void callbackQuadModHyperbolic(BigInteger *value)
 {
+  enum eExprErr rc;
   bool isBeven = ((ValB.limbs[0].x & 1) == 0);
   positiveDenominator = 1;
   if (!PerformTransformation(value))
@@ -3502,7 +3516,13 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   CopyBigInt(&ValUBak, &ValU);
   CopyBigInt(&ValVBak, &ValV);
   contfracEqNbr = equationNbr + 2;
-  ContFrac(value, FIRST_SOLUTION);    // Continued fraction of (U+G)/V
+  rc = ContFrac(value, FIRST_SOLUTION);    // Continued fraction of (U+G)/V
+  if (rc == EXPR_NUMBER_TOO_HIGH)
+  {
+    showText(lang ? "<p>Solución con demasiados dígitos.</p>":
+       "<p>Solution is too large to be displayed.</p>");
+    return;
+  }
   positiveDenominator = 0;
   CopyBigInt(&ValU, &ValUBak);
   CopyBigInt(&ValV, &ValVBak);
@@ -3513,7 +3533,13 @@ static void callbackQuadModHyperbolic(BigInteger *value)
   {
     contfracEqNbr++;
   }
-  ContFrac(value, SECOND_SOLUTION);   // Continued fraction of (-U+G)/(-V)
+  rc = ContFrac(value, SECOND_SOLUTION);   // Continued fraction of (-U+G)/(-V)
+  if (rc == EXPR_NUMBER_TOO_HIGH)
+  {
+    showText(lang ? "<p>Solución con demasiados dígitos.</p>" :
+      "<p>Solution is too large to be displayed.</p>");
+    return;
+  }
   showSolution = ONE_SOLUTION;
   if (Xplus.nbrLimbs != 0)
   {

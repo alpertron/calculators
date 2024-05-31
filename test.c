@@ -342,6 +342,7 @@ int main(int argc, char* argv[])
   quadmodText(argv[1], argv[2], argv[3], argv[4], 6);
   (void)printf("%s\n", output);
 #elif DEBUG_CODE == 17
+#if 1
   if (argc != 8)
   {
     (void)printf("Enter 6 coefficients and teach flag (0 or 1):\n"
@@ -358,6 +359,25 @@ int main(int argc, char* argv[])
   }
   quadText(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
   (void)printf("%s\n", output);
+#else
+for (int k = 0; k < 100; k++)
+{
+  char buf1[100];
+  char buf2[100];
+  char buf3[100];
+  char buf4[100];
+  char buf5[100];
+  char buf6[100];
+  sprintf(buf1, "%d", 543253452 + 7 * k);
+  sprintf(buf2, "%d", 1547654759 + 11 * k);
+  sprintf(buf3, "%d", 945432534 + 13 * k);
+  sprintf(buf4, "%d", 743134318 + 17 * k);
+  sprintf(buf5, "%d", 142435467 + 19 * k);
+  sprintf(buf6, "%d", 854325454 + 23 * k);
+  teach = false;
+  quadText(buf1, buf2, buf3, buf4, buf5, buf6);
+}
+#endif
 #elif DEBUG_CODE == 18
   int resultLen, k;
   (void)memset(factors, 0xEE, 1000 * sizeof(limb));
