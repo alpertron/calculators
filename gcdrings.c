@@ -299,10 +299,10 @@ static void approximate(const BigInteger *nbr, struct approx *appNbr)
   {
     appNbr->mantissa += (double)nbr->limbs[nbrLimbs - 2].x;
   }
-if (nbr->sign == SIGN_NEGATIVE)
-{
-  appNbr->mantissa = -appNbr->mantissa;
-}
+  if (nbr->sign == SIGN_NEGATIVE)
+  {
+    appNbr->mantissa = -appNbr->mantissa;
+  }
 }
 
 static void addApprox(const struct approx *addend1, const struct approx *addend2, struct approx *sum)
@@ -681,4 +681,3 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
     BigIntChSign(vecJB);
   }
 }
-

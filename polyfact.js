@@ -185,6 +185,11 @@ function startUp()
       }, 30);   
     }
   };
+  get("clrinput").onclick = function()
+  {
+    get("poly").value = "";
+    get("poly").focus();
+  };
   get("formlink").onclick = clickFormLink;
   get("formcancel").onclick = function ()
   {

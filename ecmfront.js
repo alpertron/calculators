@@ -55,6 +55,7 @@ let workerParam;
 let bmodeLoaded = 0;
 let statusText = "";
 let resultText = "";
+let showResult = false;
 let divisorsDirty = false;
 let statusDirty = false;
 let resultDirty = false;
@@ -337,6 +338,7 @@ function performWork(n, valueText)
   let charNull = String.fromCharCode(0);
   let helphelp = get("helphelp");
   hide("sharediv");
+  showResult = true;
   if (valueText === "")
   {    // Nothing in input box.
     resultDirty = true;
@@ -505,7 +507,7 @@ function popstate(event)
     hide("feedback");
     hide("sentOK");
     hide("notSent");
-    value.focus();   
+    value.focus();
   }
   else if (get("wizard").style.display == "block")
   {     // End wizard.
@@ -623,6 +625,11 @@ function startUp()
   get("exitBlockly").onclick = function()
   {
     history.back();
+  };
+  get("clrinput").onclick = function()
+  {
+    value.value = "";
+    value.focus();
   };
   btnOpenWizard.onclick = function()
   {
@@ -867,6 +874,11 @@ function startUp()
     {
       divResult.innerHTML = resultText;
       resultDirty = false;
+      if (showResult)
+      {
+        showResult = false;
+        divResult.scrollIntoView({behavior: "smooth"});
+      }
     }
     if (statusDirty)
     {

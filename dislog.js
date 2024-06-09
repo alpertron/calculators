@@ -242,6 +242,13 @@ function startUp()
   {
     get("formsend").disabled = (get("comments").value === "");
   };
+  get("clrinput").onclick = function()
+  {
+    base.value = "";
+    pow.value = "";
+    mod.value = "";
+    base.focus();
+  };
   get("config").onclick = function()
   {
     verboseValue = config.charAt(1);

@@ -284,6 +284,7 @@ function performCalc(from)
   {
     res.innerHTML = "Calculando desarrollo en fracciones continuas...";
   }
+  res.scrollIntoView({behavior: "smooth"});
   let param = "";
   if ((app === 6) || (app === 7))
   {         // Sum of two squares and a power.
@@ -519,6 +520,16 @@ function startUp()
       generateFuncButtons("wzdfunccat", "wzdfuncbtns");
     };
   }
+  get("clrinput").onclick = function()
+  {
+    if ((app === 4) || (app === 5))
+    {
+      get("delta").value = "";
+      get("den").value = "";
+    }
+    get("num").value = "";
+    get("num").focus();
+  };
   get("num").onfocus = function()
   {
     currentInputBox = get("num");

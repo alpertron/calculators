@@ -231,6 +231,14 @@ function startUp()
   {
     generateFuncButtons("funccat", "funcbtns");
   };
+  get("clrinput").onclick = function()
+  {
+    get("quad").value = "";
+    get("lin").value = "";
+    get("const").value = "";
+    get("mod").value = "";
+    get("quad").focus();
+  };
   get("config").onclick = function()
   {
     verboseValue = config.charAt(1);

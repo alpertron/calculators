@@ -40,6 +40,12 @@ let CunninghamValue;
 let hexValue;
 let digits;
 let config;
+let coefA;
+let coefB;
+let coefC;
+let coefD;
+let coefE;
+let coefF;
 if (lang)
 {
   funcnames =
@@ -116,12 +122,12 @@ function dowork(n)
   let param;
   let app = lang + n;
   let res = get("result");
-  let coefAText = get("coefA").value.trim();
-  let coefBText = get("coefB").value.trim();
-  let coefCText = get("coefC").value.trim();
-  let coefDText = get("coefD").value.trim();
-  let coefEText = get("coefE").value.trim();
-  let coefFText = get("coefF").value.trim();
+  let coefAText = coefA.value.trim();
+  let coefBText = coefB.value.trim();
+  let coefCText = coefC.value.trim();
+  let coefDText = coefD.value.trim();
+  let coefEText = coefE.value.trim();
+  let coefFText = coefF.value.trim();
   let digitGroup = get("digits").value.trim();
   hide("help");
   show("result");
@@ -187,9 +193,9 @@ function getCalcURLs()
 function getFormSendValue()
 {
   get("userdata").value = "ax^2 + bxy + cy^2 + dx + ey + f = 0" +
-                     "\na = " + get("coefA").value.trim() + "\nb = " + get("coefB").value.trim() +
-                     "\nc = " + get("coefC").value.trim() + "\nd = " + get("coefD").value.trim() +
-                     "\ne = " + get("coefE").value.trim() + "\nf = " + get("coefF").value.trim();  
+                     "\na = " + coefA.value.trim() + "\nb = " + coefB.value.trim() +
+                     "\nc = " + coefC.value.trim() + "\nd = " + coefD.value.trim() +
+                     "\ne = " + coefE.value.trim() + "\nf = " + coefF.value.trim();  
 }
 
 function popstate(event)
@@ -202,7 +208,7 @@ function popstate(event)
     hide("feedback");
     hide("sentOK");
     hide("notSent");
-    get("coefA").focus();   
+    coefA.focus();   
   }
   else if (get("modal-config").style.display == "block")
   {     // End configuration mode.
@@ -212,6 +218,12 @@ function popstate(event)
 
 function startUp()
 {
+  coefA = get("coefA");
+  coefB = get("coefB");
+  coefC = get("coefC");
+  coefD = get("coefD");
+  coefE = get("coefE");
+  coefF = get("coefF");
   get("btnSentOK").onclick = function()
   {
     history.back();
@@ -244,58 +256,68 @@ function startUp()
     show("help");
     hide("result");
   };
-  get("coefA").onkeydown = function(e)
+  get("clrinput").onclick = function()
+  {
+    coefA.value = "";
+    coefB.value = "";
+    coefC.value = "";
+    coefD.value = "";
+    coefE.value = "";
+    coefF.value = "";
+    coefA.focus();
+  };
+  coefA.onkeydown = function(e)
   {
     moveNext(e, this, "coefB");
   };
-  get("coefB").onkeydown = function(e)
+  coefB.onkeydown = function(e)
   {
     moveNext(e, this, "coefC");
   };
-  get("coefC").onkeydown = function(e)
+  coefC.onkeydown = function(e)
   {
     moveNext(e, this, "coefD");
   };
-  get("coefD").onkeydown = function(e)
+  coefD.onkeydown = function(e)
   {
     moveNext(e, this, "coefE");
   };
-  get("coefE").onkeydown = function(e)
+  coefE.onkeydown = function(e)
   {
     moveNext(e, this, "coefF");
   };
-  get("coefF").onkeydown = function(e)
+  coefF.onkeydown = function(e)
   {
     if (e.key === "Enter" && e.target.value.trim().length > 0)
     {
       e.preventDefault();
-      get("coefA").focus();
+      coefA.focus();
       dowork(0);
     }
   };
-  get("coefA").onfocus = function()
+  coefA.onfocus = function()
   {
-    currentInputBox = get("coefA");
+    currentInputBox = coefA;
   };
-  get("coefB").onfocus = function()
+  coefB.onfocus = function()
   {
-    currentInputBox = get("coefB");
+    currentInputBox = coefB;
   };
-  get("coefC").onfocus = function()
+  coefC.onfocus = function()
   {
-    currentInputBox = get("coefC");
+    currentInputBox = coefC;
   };
-  get("coefD").onfocus = function()
+  coefD.onfocus = function()
   {
-    currentInputBox = get("coefD");
+    currentInputBox = coefD;
   };
-  get("coefE").onfocus = function()
+  coefE.onfocus = function()
   {
-    currentInputBox = get("coefE");
+    currentInputBox = coefE;
   };
-  get("coefF").onfocus = function()
+  coefF.onfocus = function()
   {
-    currentInputBox = get("coefF");
+    currentInputBox = coefF;
   };
   get("funccat").onchange = function()
   {
@@ -336,7 +358,7 @@ function startUp()
     get("formsend").disabled = (get("comments").value === "");
   };
   get("formsend").onclick = formSend;
-  currentInputBox = get("coefA");
+  currentInputBox = coefA;
   generateFuncButtons("funccat", "funcbtns");
   registerServiceWorker();
 };
