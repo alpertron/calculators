@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 9 de junio de 2024."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 9 June 2024."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 14 de julio de 2024."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 14 July 2024."
 
 #include "bignbr.h"
 #ifdef __EMSCRIPTEN__
@@ -82,6 +82,7 @@ enum eExprErr
   EXPR_INTERM_TOO_HIGH,
   EXPR_DIVIDE_BY_ZERO,
   EXPR_PAREN_MISMATCH,
+  EXPR_INTERNAL_ERROR,
   EXPR_SYNTAX_ERROR,
   EXPR_LITERAL_NOT_INTEGER,
   EXPR_INVALID_PARAM,

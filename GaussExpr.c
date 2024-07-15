@@ -236,16 +236,28 @@ enum eExprErr ComputeGaussianExpression(const char *expr, BigInteger *Expression
       break;
 
     case TOKEN_RE:
+      if (stackIndex < 0)
+      {
+        return EXPR_INTERNAL_ERROR;
+      }
       getCurrentStackValue(&curStackRe, &curStackIm);
       intToBigInteger(&curStackIm, 0);
       break;
 
     case TOKEN_IM:
+      if (stackIndex < 0)
+      {
+        return EXPR_INTERNAL_ERROR;
+      }
       getCurrentStackValue(&curStackIm, &curStackRe);
       intToBigInteger(&curStackIm, 0);
       break;
 
     case TOKEN_NORM:
+      if (stackIndex < 0)
+      {
+        return EXPR_INTERNAL_ERROR;
+      }
       // norm = Re^2 + Im^2
       getCurrentStackValue(&curStackRe, &curStackIm);
       retcode = BigIntMultiply(&curStackRe, &curStackRe, &curStack2Re);

@@ -520,7 +520,7 @@ static bool DiscrLogPowerPrimeSubgroup(int multiplicity, const int *ptrPrime)
       if ((lsbPower & mask) == 1)
       {
         intToBigInteger(&logar, 0);
-        intToBigInteger(&logarMult, ((lsbBase == 1) ? 1 : 2));
+        intToBigInteger(&logarMult, (((lsbBase & mask) == 1) ? 1 : 2));
       }
       else if (((lsbPower - lsbBase) & mask) == 0)
       {

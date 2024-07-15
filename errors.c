@@ -58,6 +58,9 @@ void textError(char **pptrOutput, enum eExprErr rc)
   case EXPR_LITERAL_NOT_INTEGER:
     copyStr(&ptrOut, lang ? "Solo se aceptan números enteros" : "Only integer numbers are accepted");
     break;
+  case EXPR_INTERNAL_ERROR:
+    copyStr(&ptrOut, lang ? "Error interno" : "Internal error");
+    break;
   case EXPR_SYNTAX_ERROR:
     if (lang)
     {

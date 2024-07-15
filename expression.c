@@ -242,6 +242,10 @@ static void GetLastAnswer(int stackIndexThreshold)
 
 static enum eExprErr getParms(int nbrParms, int stackIndexThreshold)
 {
+  if (stackIndex < 0)
+  {
+    return EXPR_INTERNAL_ERROR;
+  }
   if (stackIndexThreshold < stackIndex)
   {     // Part of second operand of binary AND/OR short-circuited.
     stackIndex -= nbrParms - 1;

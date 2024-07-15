@@ -21,6 +21,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <assert.h>
 #include "bignbr.h"
 #include "expression.h"
 #include "highlevel.h"
@@ -128,6 +129,7 @@ static void ReversePolynomial(int* ptrDest, const int* ptrSrc, const int *ptrDen
   // Fill indexes to start of each coefficient.
   ptrIndex = &indexes[0];
   index = 1;
+  assert(degreePoly <= (2 * MAX_DEGREE));
   for (degree = 0; degree <= degreePoly; degree++)
   {
     *ptrIndex = index;

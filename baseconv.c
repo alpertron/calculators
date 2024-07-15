@@ -20,6 +20,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdint.h>
+#include <assert.h>
 #include "bignbr.h"
 #include "expression.h"
 
@@ -251,6 +252,7 @@ void Bin2Hex(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
   int mask;
   int value;
   int digits = 0;
+  assert(nbrLimbs > 0);
 
   if (grpLen <= 0)
   {
@@ -301,24 +303,25 @@ void Bin2Hex(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
 static void Bin2DecLoop(char** ppDest, bool *pSignificantZero,
   int valueGrp, int grpLen, int *pGroupCtr, int *pDigits, bool last)
 {
-  int digit[DIGITS_PER_LIMB];
   int digits = *pDigits;
   int count;
   int value = valueGrp;
   char* ptrDest = *ppDest;
   int groupCtr = *pGroupCtr;
   bool significantZero = *pSignificantZero;
+  int divisor = 1;
   for (count = 0; count < DIGITS_PER_LIMB; count++)
   {
-    digit[count] = value % 10;
-    value /= 10;
+    divisor *= 10;
   }
   for (count = DIGITS_PER_LIMB - 1; count >= 0; count--)
   {
-    if ((digit[count] != 0) || significantZero)
+    divisor /= 10;
+    int digit = (value / divisor) % 10;
+    if ((digit != 0) || significantZero)
     {
       digits++;
-      *ptrDest = (char)(digit[count] + '0');
+      *ptrDest = (char)(digit + '0');
       ptrDest++;
       if ((groupCtr == 1) && (!last || (count != 0)))
       {    // Do not insert space at the end of number.
@@ -351,13 +354,14 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
   char *ptrDest;
   bool significantZero = false;
   int groupCtr;
-  int digits=0;
+  int digits = 0;
   bool showDigitsText = true;
   unsigned int firstMult;
   unsigned int secondMult;
   firstMult = (unsigned int)BITS_PER_GROUP / 2U;
   firstMult = 1U << firstMult;
   secondMult = LIMB_RANGE / firstMult;
+  assert(nbrLimbs > 0);
 
   if (grpLen <= 0)
   {
@@ -377,7 +381,7 @@ void Bin2Dec(char **ppDecimal, const limb *binary, int nbrLimbs, int groupLength
     // more than 53 bits in the product.
 
     ptrPower = power10000;
-    dQuotient = 0;
+    dQuotient = 0.0;
     for (index2 = 0; index2 < len; index2++)
     {
       dCarry = dQuotient + ((double)ptrPower->x * (double)firstMult);

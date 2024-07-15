@@ -335,10 +335,18 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
   nbrVariables = 0;
   // Point to first tag after initial XML tag.
   ptrXML = strchr(ptrXMLFromBlockly + 1, '<');
+  if (ptrXML == NULL)
+  {
+    return BLOCKLY_CANNOT_PARSE_XML;
+  }
   if (xmlcmp(ptrXML, "<variables") == 0)
   {   // Blockly XML has variables.
     char* ptrLastVariableName = variableNames;
     ptrXML = strchr(ptrXML + 1, '<');  // Point to first variable
+    if (ptrXML == NULL)
+    {
+      return BLOCKLY_CANNOT_PARSE_XML;
+    }
     for (;;)
     {
       size_t variableNameSize;
@@ -355,8 +363,17 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
       {    // Too many variables.
         return BLOCKLY_TOO_MANY_VARIABLES;
       }
-      startVariable = strchr(ptrXML, '>') + 1;
+      startVariable = strchr(ptrXML, '>');
+      if (startVariable == NULL)
+      {
+        return BLOCKLY_CANNOT_PARSE_XML;
+      }
+      startVariable++;    // Skip '>'.
       endVariable = strchr(startVariable, '<');
+      if (endVariable == NULL)
+      {
+        return BLOCKLY_CANNOT_PARSE_XML;
+      }
       variableNameSize = endVariable - startVariable;
       if ((endVariable - startVariable) > 127)
       {
@@ -529,22 +546,24 @@ static int parseBlocklyXml(const char* ptrXMLFromBlockly)
       {     // Set counter variable in FOR. 
         *ptrInstr = TOKEN_SET_VAR;
         ptrInstr++;
-        if (ptrBlockStack < &blockStack[3])
+        char *ptrCurrBlockStack = ptrBlockStack - 3;
+        if (ptrCurrBlockStack < &blockStack[0])
         {
           return BLOCKLY_CANNOT_PARSE_XML;
         }
-        *ptrInstr = *(ptrBlockStack - 3);
+        *ptrInstr = *ptrCurrBlockStack;
         ptrInstr++;
       }
       else if (xmlcmp(ptrXML, "BY") == 0)
       {     // Set limit variable in FOR.
         *ptrInstr = TOKEN_SET_VAR;
         ptrInstr++;
-        if (ptrBlockStack < &blockStack[2])
+        char *ptrCurrBlockStack = ptrBlockStack - 2;
+        if (ptrCurrBlockStack < &blockStack[0])
         {
           return BLOCKLY_CANNOT_PARSE_XML;
         }
-        *ptrInstr = *(ptrBlockStack - 2);
+        *ptrInstr = *ptrCurrBlockStack;
         ptrInstr++;
       }
       else if (xmlcmp(ptrXML, "IF") == 0)
