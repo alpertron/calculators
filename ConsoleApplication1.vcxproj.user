@@ -18,7 +18,7 @@
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\x64\release</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>0 "x^4 - 18*x^2 - 3*x + 5" 2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>"GCD(60+50i, 19+22i)" 0</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

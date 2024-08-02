@@ -56,4 +56,3 @@ Android.endCalculation = function()
 {
   /* Nothing to be done in extern file */
 };
-

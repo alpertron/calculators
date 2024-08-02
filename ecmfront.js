@@ -67,7 +67,9 @@ let funcnames;
 let parens;
 let currentInputBox;
 let insideFactoring = false;
-
+let firstHalfSecond = true;
+let doScroll = false;
+let halfSecInterval;
 
 // DOM resources
 let value;
@@ -854,11 +856,12 @@ function startUp()
   };
   window.onresize = function(_event)
   {
-    let options = {
-            "behavior": "auto",
-            "block": "center",
-            "inline": "center"
-        };
+    let options =
+    {
+      "behavior": "auto",
+      "block": "center",
+      "inline": "center"
+    };
     if (document.activeElement === value)
     {  // Center input.
       value.scrollIntoView(options);
@@ -868,6 +871,19 @@ function startUp()
       wzdInput.scrollIntoView(options);
     }
   };
+  halfSecInterval = setInterval(function()
+  {
+    firstHalfSecond = false;
+    if (doScroll)
+    {
+      if (insideFactoring)
+      {
+        divResult.scrollIntoView({behavior: "smooth"});
+      }
+      doScroll = false;
+    }
+    clearInterval(halfSecInterval);
+  }, 500);
   setInterval(function()
   {
     if (resultDirty)
@@ -877,7 +893,14 @@ function startUp()
       if (showResult)
       {
         showResult = false;
-        divResult.scrollIntoView({behavior: "smooth"});
+        if (firstHalfSecond)
+        {
+          doScroll = true;
+        }
+        else
+        {
+          divResult.scrollIntoView({behavior: "smooth"});
+        }
       }
     }
     if (statusDirty)

@@ -527,6 +527,7 @@ echo -e "\n\n**** GAUSSIAN ****" >> coverage.out
 ./gaussian "lcm(0, 0)" 0 >> coverage.out
 ./gaussian "lcm(3, 0)" 0 >> coverage.out
 ./gaussian "lcm(0, 3)" 0 >> coverage.out
+./gaussian "GCD(60+50i, 19+22i)" 0 >> coverage.out
 lcov --capture --directory . --output-file gaussian.info
 gcovr --json run-11.json
 make clean

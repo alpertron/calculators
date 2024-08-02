@@ -1947,6 +1947,15 @@ static enum eTrialFactorRetCode performTrialDivision(struct sFactors* pstFactors
   {
     return CONTINUE_FACTORIZATION;   // Do not perform trial factorization.
   }
+#ifdef FACTORIZATION_APP
+  StepECM = 0;
+  copyStr(&ptrText, lang ? "<p>Verificando si el número es potencia perfecta.<p>" :
+      "<p>Testing whether the number is perfect power or not.</p>");
+  ShowLowerText();
+#else
+  databack(lang ? "3<p>Verificando si el número es potencia perfecta.</p>" :
+      "3<p>Testing whether the number is perfect power or not.</p>");
+#endif
 #endif
   expon = PowerCheck(&power, &prime);
   if (expon > 1)
@@ -2223,18 +2232,6 @@ void factorExt(const BigInteger *toFactor, const int *number,
     IntArray2BigInteger(pstCurFactor->ptrFactor, &prime);
     NumberLength = power.nbrLimbs;
 #ifdef __EMSCRIPTEN__
-    if (!skipPrimality)
-    {
-#ifdef FACTORIZATION_APP
-      StepECM = 0;
-      copyStr(&ptrText, lang ? "<p>Verificando si el número es potencia perfecta.<p>" :
-        "<p>Testing whether the number is perfect power or not.</p>");
-      ShowLowerText();
-#else
-      databack(lang ? "3<p>Verificando si el número es potencia perfecta.</p>" :
-        "3<p>Testing whether the number is perfect power or not.</p>");
-#endif
-    }
     SaveFactors(pstFactors);
 #endif
 #ifdef FACTORIZATION_APP

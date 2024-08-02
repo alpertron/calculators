@@ -19,6 +19,7 @@
 /* global Android */
 /* global fileContents */
 /* global get */
+/* global processDKey */
 function setStorage(name, data)
 {
   Android.setStorage(name, data);
@@ -43,3 +44,56 @@ function endCalculation()
 {
   Android.endCalculation();
 }
+
+function getFocusableItems()
+{
+  let focusableItems = [];
+  let buttons = document.getElementsByTagName('button');
+  for (let i=0; i<buttons.length; i++)
+  {
+    if (buttons[i].style.visibility && !buttons[i].disabled)
+    {
+      focusableItems.push(buttons[i]);
+    }
+  }
+  let inputs = document.getElementsByTagName('input');
+  for (let i=0; i<inputs.length; i++)
+  {
+    if (inputs[i].style.visibility && !buttons[i].disabled)
+    {
+      focusableItems.push(inputs[i]);
+    }
+  }
+  return focusableItems;
+}
+
+function processKey(keyCode)
+{
+  let focusableItems = getFocusableItems();
+  let focusController = this.getFocusController();
+  if (keyCode == 19)
+  {           // DPAD up
+    focusController.moveFocus({x: 0, y: 1});
+  }
+  else if (keyCode == 20)
+  {           // DPAD down
+    focusController.moveFocus({x: 0, y: -1});
+  }
+  else if (keyCode == 21)
+  {           // DPAD left
+    focusController.moveFocus({x: -1, y: 0});
+  }
+  else if (keyCode == 22)
+  {           // DPAD right
+    focusController.moveFocus({x: 1, y: 0});
+  }
+  else if (keyCode == 23)
+  {          // DPAD center
+    if (focusController.getCurrentlyFocusedItem())
+    {
+      focusController.getCurrentlyFocusedItem().onItemClick();
+    }
+  }
+}
+
+window.processDKey = processKey;

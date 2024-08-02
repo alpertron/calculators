@@ -72,8 +72,15 @@ static void showNumber(const BigInteger *real, const BigInteger *imag)
   {
     showText(" - ");
   }
-  Bin2Out(&ptrOutput, imag->limbs, imag->nbrLimbs, groupLen);
-  showText(" i");
+  if (imag->nbrLimbs == 1 && imag->limbs[0].x == 1)
+  {   // Imaginary part is 1 or -1.
+    showText("i");
+  }
+  else
+  {
+    Bin2Out(&ptrOutput, imag->limbs, imag->nbrLimbs, groupLen);
+    showText(" i");
+  }
 }
 
 void GaussianFactorization(void)

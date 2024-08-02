@@ -665,7 +665,7 @@ static void ComputeGCD(void)
     &curStack3Re, &curStack3Im, &ReTmp, &ImTmp);
   CopyBigInt(&curStackRe, &curStack3Re);
   CopyBigInt(&curStackIm, &curStack3Im);
-  while ((curStack3Re.sign == SIGN_NEGATIVE) || (curStack3Im.sign == SIGN_NEGATIVE))
+  while ((curStackRe.sign == SIGN_NEGATIVE) || (curStackIm.sign == SIGN_NEGATIVE))
   {    // Multiply by i until number is in first quadrant.
     CopyBigInt(&curStack3Re, &curStackRe);
     BigIntNegate(&curStackIm, &curStackRe);
