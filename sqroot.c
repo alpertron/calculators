@@ -19,8 +19,9 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "bignbr.h"
 #include <math.h>
+#include <assert.h>
+#include "bignbr.h"
 
 static limb approxInvSqrt[MAX_LEN];
 limb approxInv[MAX_LEN];
@@ -119,6 +120,7 @@ void squareRoot(const limb *argument, /*@out@*/limb *sqRoot, int len, /*@out@*/i
   int lenBytes;
   int shRightBits;
 
+  assert(len >= 1);
   if ((len == 1) && (argument->x == 0))
   {    // Input number is zero. Its square root is also zero.
     *pLenSqRoot = 1;

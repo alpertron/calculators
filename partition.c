@@ -233,7 +233,7 @@ void partition(int val, BigInteger *pResult)
       prodModulusLimbs++;
     }
   }
-  while (pResult->limbs[prodModulusLimbs - 1].x == 0)
+  while ((prodModulusLimbs > 1) && (pResult->limbs[prodModulusLimbs - 1].x == 0))
   {
     prodModulusLimbs--;
   }
@@ -247,10 +247,7 @@ static int numberofBitsSetToOne(int value)
   int shiftedValue = value;
   while (shiftedValue > 0)
   {
-    if ((shiftedValue & 1) != 0)
-    {
-      bitsSet++;
-    }
+    bitsSet += (shiftedValue & 1);
     shiftedValue >>= 1;
   }
   return bitsSet;
@@ -271,7 +268,7 @@ static enum eExprErr ProcessFactorsFactorial(double factorAccum,
         // bits set to zero at the right.
     int nbrGroupsAccum = nbrGroupsAccumulated;
     index = numberofBitsSetToOne(nbrGroupsAccumulated - 1);
-    while ((nbrGroupsAccum & 1) == 0)
+    while ((index > 0) && ((nbrGroupsAccum & 1) == 0))
     {
       index--;
       IntArray2BigInteger(&partArray[partArray[index].x].x, &theFactor);
