@@ -33,8 +33,11 @@
 /* global hide */
 /* global keyDownOnWizard */
 /* global loadPolyCalc */
+/* global onShowDivisors */
+/* global onShowSumSquares */
 /* global registerServiceWorker */
 /* global selectLoop */
+/* global setFocusTo */
 /* global setStorage */
 /* global setWizardStep */
 /* global show */
@@ -186,6 +189,7 @@ function saveConfig(fromWizard)
 
 function showSumSquares()
 {
+  onShowSumSquares();
   callWorker("S");  // Indicate worker that user pressed Sum of squares button.
 }
 
@@ -225,14 +229,17 @@ function fromWorker(e)
   else if (firstChar === "D")
   {    // Show divisors.
     get("divisors").innerHTML = e.substring(1);
+    setFocusTo(document.querySelector("#divisors > p"));
   }
   else if (firstChar === "E")
   {
     get("divisors").innerHTML = e.substring(1);
     get("showdiv").onclick = function()
     {
+      onShowDivisors();
       callWorker("D");  // Indicate worker that user pressed Divisors button.
     };
+    setFocusTo(document.querySelector("#divisors > p"));
   }
   else if (firstChar === "K")
   {
@@ -252,10 +259,12 @@ function fromWorker(e)
   {    // Show sum of squares.
     get("sumSquares").innerHTML = e.substring(1);
     get("showSumSq").onclick = showSumSquares;
+    setFocusTo(document.querySelector("#sumSquares > p"));
   }
   else if (firstChar === "T")
   {    // Show sum of squares without button.
     get("sumSquares").innerHTML = e.substring(1);
+    setFocusTo(document.querySelector("#sumSquares > p"));
   }
   else if (firstChar === "4")
   {

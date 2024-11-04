@@ -20,6 +20,7 @@
 /* global fileContents */
 /* global get */
 /* global processDKey */
+let elementInFocus = null;
 function setStorage(name, data)
 {
   Android.setStorage(name, data);
@@ -45,55 +46,125 @@ function endCalculation()
   Android.endCalculation();
 }
 
-function getFocusableItems()
+function isVisible(element)
 {
-  let focusableItems = [];
-  let buttons = document.getElementsByTagName('button');
-  for (let i=0; i<buttons.length; i++)
-  {
-    if (buttons[i].style.visibility && !buttons[i].disabled)
-    {
-      focusableItems.push(buttons[i]);
-    }
-  }
-  let inputs = document.getElementsByTagName('input');
-  for (let i=0; i<inputs.length; i++)
-  {
-    if (inputs[i].style.visibility && !buttons[i].disabled)
-    {
-      focusableItems.push(inputs[i]);
-    }
-  }
-  return focusableItems;
+  return element !== null && element.offsetParent !== null &&
+         !element.disabled && !element.hidden;
 }
 
-function processKey(keyCode)
+function getNextVisibleElement(discardElem)
 {
-  let focusableItems = getFocusableItems();
-  let focusController = this.getFocusController();
-  if (keyCode == 19)
-  {           // DPAD up
-    focusController.moveFocus({x: 0, y: 1});
-  }
-  else if (keyCode == 20)
-  {           // DPAD down
-    focusController.moveFocus({x: 0, y: -1});
-  }
-  else if (keyCode == 21)
-  {           // DPAD left
-    focusController.moveFocus({x: -1, y: 0});
-  }
-  else if (keyCode == 22)
-  {           // DPAD right
-    focusController.moveFocus({x: 1, y: 0});
-  }
-  else if (keyCode == 23)
-  {          // DPAD center
-    if (focusController.getCurrentlyFocusedItem())
+  const elements = document.querySelectorAll("textarea, input, button, p");
+  let prevElement = null;
+  let firstElement = null;
+  let activeElementFound = false;
+  let elementsLength = elements.length;
+  for (let index=0; index<elementsLength; index++)
+  {
+    let element = elements[index];
+    if (element == elementInFocus)
     {
-      focusController.getCurrentlyFocusedItem().onItemClick();
+      if (discardElem)
+      {
+        return prevElement;
+      }
+      activeElementFound = true;
     }
+    if (isVisible(element))
+    {
+      if (firstElement == null)
+      {
+        firstElement = element;
+      }
+      if (activeElementFound)
+      {
+        return element;
+      }
+      prevElement = element;
+    }
+  }
+  if (activeElementFound)
+  {
+    return prevElement;
+  }
+  return firstElement;
+}
+
+function showFocus(elem)
+{
+  elementInFocus = elem;
+  if (elem == null)
+  {   // No element can be focused.
+    document.body.focus();
+  }
+  else
+  {
+    elem.setAttribute("tabindex", "0");
+    elem.setAttribute("readonly", true);
+    elem.focus();
+    setTimeout(() =>
+    {
+      elem.removeAttribute("readonly");  // Remove readonly after focusing
+    }, 100);
   }
 }
 
-window.processDKey = processKey;
+function newFocus(event)
+{
+  if (event.target != document.body)
+  {
+    elementInFocus = event.target;
+  }
+}
+
+document.addEventListener("keydown", function(event)
+{
+  if (event.keyCode >= 37 && event.keyCode <= 40)
+  {    // Directional keys.
+    if (!document.hasFocus() || !isVisible(elementInFocus))
+    {
+      showFocus(getNextVisibleElement(true));
+    }
+    else if (document.activeElement == document.body)
+    {
+      showFocus(elementInFocus);
+    }
+    else
+    {
+      elementInFocus = document.activeElement;
+    }
+  }
+  if (event.keyCode == 13)
+  {    // Enter
+    newFocus(event);
+  }
+});
+
+window.addEventListener("load", function(event)
+{
+  const elements = document.querySelectorAll("textarea, input, button, p");
+  let elementsLength = elements.length;
+  for (let index=0; index<elementsLength; index++)
+  {
+    let element = elements[index];
+    element.addEventListener("click", newFocus);
+  }
+});
+
+function onShowDivisors()
+{
+  elementInFocus = get("showDiv");
+  showFocus(getNextVisibleElement(true));
+}
+
+function onShowSumSquares()
+{
+  elementInFocus = get("showSumSq");
+  showFocus(getNextVisibleElement(true));
+}
+
+function setFocusTo(newFocusObj)
+{
+  elementInFocus = newFocusObj;
+}
+

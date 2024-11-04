@@ -63,7 +63,7 @@ static BigInteger trailingCoeff;
 static BigInteger leadingCoeff;
 int polyNonRepeatedFactors[1000000];
 static int tempPoly[1000000];
-static int polyBackup[1000000];
+int polyBackup[1000000];
 static int polyLiftedRecord[1000000];
 static struct sFactorInfo factorInfoRecord[MAX_DEGREE];
 struct sFactorInfo factorInfoInteger[MAX_DEGREE];
@@ -2074,7 +2074,7 @@ void FactorPolynomialModPrime(int prime)
   (void)memset(factorInfo, 0, sizeof(factorInfo));
   initFactorModularPoly(prime);
   // Input is not in Montgomery notation.
-  (void)FactorModularPolynomial(false);
+  (void)FactorModularPolynomial(false, true);
 }
 
 static void CopyFactorsFoundToRecord(void)

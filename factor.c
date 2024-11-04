@@ -1942,9 +1942,10 @@ static enum eTrialFactorRetCode performTrialDivision(struct sFactors* pstFactors
   IntArray2BigInteger(pstCurFactor->ptrFactor, &power);
   NumberLength = power.nbrLimbs;
 #ifdef __EMSCRIPTEN__
-  char* ptrText = ShowFactoredPart(&prime, pstFactors);
+  char* ptrText = ShowFactoredPart(&power, pstFactors);
   if (skipPrimality)
   {
+    CopyBigInt(&prime, &power);
     return CONTINUE_FACTORIZATION;   // Do not perform trial factorization.
   }
 #ifdef FACTORIZATION_APP

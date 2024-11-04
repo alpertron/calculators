@@ -31,6 +31,7 @@
 extern int denom[COMPRESSED_POLY_MAX_LENGTH];
 extern int primeEisenstein;
 extern char* ptrOutput;
+extern int polyBackup[];
 int grpLen;
 bool teachMod;
 
@@ -121,9 +122,12 @@ static int FactorPolynomial(void)
     teachMod = false;
     return FactorPolyOverIntegers();
   }
+  // Back up input polynomial.
+  polyBackup[0] = values[0];
+  (void)CopyPolynomial(&polyBackup[1], &values[1], (values[0] >= 0) ? values[0] : 0);
   // Input is in Montgomery notation.
   teachMod = teach;
-  return FactorModularPolynomial(true);
+  return FactorModularPolynomial(true, false);
 }
 
 void polyFactText(const char *modText, const char *polyText, int groupLength)
@@ -134,6 +138,16 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
   grpLen = groupLength;
   rc = ComputeExpression(modText, &powerMod);
   modulusIsZero = false;
+  if (pretty == PRETTY_PRINT)
+  {
+    ptrTimes = "&#8290;";
+    ptrMinus = "&minus;";
+  }
+  else
+  {
+    ptrTimes = (pretty == TEX ? "" : "*");
+    ptrMinus = "-";
+  }
   if (rc == EXPR_OK)
   {
     if (BigIntIsZero(&powerMod))
@@ -228,10 +242,8 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
       else
       {
         pstFactorInfo = factorInfo;
-      }
-      if (!modulusIsZero)
-      {      // Get leading coefficient if using modular arithmetic.
-        const int* ptrCoeff = poly4;
+        // Get leading coefficient if using modular arithmetic.
+        const int* ptrCoeff = &values[1];
         for (int currDegree = 0; currDegree < degree; currDegree++)
         {
           ptrCoeff += numLimbs(ptrCoeff) + 1;
@@ -288,7 +300,14 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
           {
             copyStr(&ptrOutput, " &minus;");
           }
-          Bin2Dec(&ptrOutput, operand5.limbs, operand5.nbrLimbs, groupLength);
+          if (pretty == PRETTY_PRINT)
+          {          // Show number of digits if there are more than 30.
+            Bin2Dec(&ptrOutput, operand5.limbs, operand1.nbrLimbs, groupLength);
+          }
+          else
+          {         // Do not show number of digits.
+            Bin2Dec(&ptrOutput, operand5.limbs, operand1.nbrLimbs, -groupLength);
+          }
           showText("</li>");
         }
         for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)

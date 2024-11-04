@@ -1088,6 +1088,7 @@ void IntArray2BigInteger(const int *ptrValues, BigInteger *bigint)
     bigint->sign = SIGN_NEGATIVE;
     nbrLimbs = -nbrLimbs;
   }
+  assert(nbrLimbs < MAX_LEN);
   if (NumberLength == 1)
   {
     destLimb->x = *piValues;
@@ -1115,16 +1116,27 @@ int IntArrayCompare(const int* ptrFirst, const int* ptrSecond)
 {
   const int* pFirst;
   const int* pSecond;
-  if (*ptrFirst < *ptrSecond)
+  int nbrLimbsFirst = *ptrFirst;
+  int nbrLimbsSecond = *ptrSecond;
+  if (nbrLimbsFirst < 0)
+  {   // If number is negative, convert it to positive.
+    nbrLimbsFirst = -nbrLimbsFirst;
+  }
+  if (nbrLimbsSecond < 0)
+  {   // If number is negative, convert it to positive.
+    nbrLimbsSecond = -nbrLimbsSecond;
+  }
+  assert((nbrLimbsFirst < MAX_LEN) && (nbrLimbsSecond < MAX_LEN));
+  if (nbrLimbsFirst < nbrLimbsSecond)
   {
     return -1;         // First number less than second.
   }
-  if (*ptrFirst > *ptrSecond)
+  if (nbrLimbsFirst > nbrLimbsSecond)
   {
     return 1;          // First number greater than second.
   }
-  pFirst = ptrFirst + *ptrFirst;
-  pSecond = ptrSecond + *ptrSecond;
+  pFirst = ptrFirst + nbrLimbsFirst;
+  pSecond = ptrSecond + nbrLimbsSecond;
   while (pFirst > ptrFirst)
   {
     if (*pFirst < *pSecond)
@@ -1145,7 +1157,7 @@ void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint)
 {
   int* pValues = ptrValues;
   const limb *srcLimb = bigint->limbs;
-  assert(NumberLength >= 1);
+  assert(NumberLength >= 1 && (NumberLength < MAX_LEN));
   if (NumberLength == 1)
   {
     *pValues = ((bigint->sign == SIGN_POSITIVE)? 1: -1);
@@ -1168,7 +1180,7 @@ void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint)
 
 void UncompressLimbsBigInteger(const limb *ptrValues, /*@out@*/BigInteger *bigint)
 {
-  assert(NumberLength >= 1);
+  assert((NumberLength >= 1) && (NumberLength < MAX_LEN));
   if (NumberLength == 1)
   {
     bigint->limbs[0].x = ptrValues->x;
@@ -1195,7 +1207,7 @@ void UncompressLimbsBigInteger(const limb *ptrValues, /*@out@*/BigInteger *bigin
 
 void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, const BigInteger *bigint)
 {
-  assert(NumberLength >= 1);
+  assert((NumberLength >= 1) && (NumberLength < MAX_LEN));
   if (NumberLength == 1)
   {
     ptrValues->x = bigint->limbs[0].x;
@@ -1317,7 +1329,6 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
   {
     for (base = 2; base <= 100; base++)
     {     // Check whether pBigNbr is perfect power of these bases.
-      int nbrLimbsBytes;
       double dProd;
       double dLogBase = log(base);
       double dExponent = dLogBigNbr / dLogBase;
@@ -1343,10 +1354,6 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
       {
         return Exponent;
       }
-      pBase->nbrLimbs = pBigNbr->nbrLimbs;
-      nbrLimbsBytes = pBase->nbrLimbs * (int)sizeof(limb);
-      (void)memcpy(pBase->limbs, pBigNbr->limbs, nbrLimbsBytes);
-      return 1;
     }
     dMaxExpon = (dLogBigNbr / log(101.0)) + 0.5;
   }

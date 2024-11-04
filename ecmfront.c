@@ -49,7 +49,6 @@ bool doFactorization;
 bool doShowPrime;
 static char *knownFactors;
 bool useBlockly;
-void heapsort(int count, int **ptrBigInts);
 void showSumTwoSquares(void);
 
 #ifdef FACTORIZATION_APP
@@ -601,6 +600,11 @@ void showDivisors(void)
   {                      // Process only the first 50 exponents.
     nbrExponents = 50;
   }
+  int nbrDivisorsCurrDivisor = 0;
+  for (int currExp = 0; currExp < nbrExponents; currExp++)
+  {
+    nbrDivisorsCurrDivisor += common.k.divisors.currentExp[currExp];
+  }
   for (divisorNbr = 0; divisorNbr < 1000; divisorNbr++)
   {
     int exponentNbr;
@@ -612,7 +616,10 @@ void showDivisors(void)
     }
     common.k.divisors.ptrFoundDivisors[divisorNbr] = ptrFoundDivisors;
     NumberLength = common.k.divisors.divisor.nbrLimbs;
-    BigInteger2IntArray(ptrFoundDivisors, &common.k.divisors.divisor);
+    if (divisorNbr == 0)
+    {
+      BigInteger2IntArray(ptrFoundDivisors, &common.k.divisors.divisor);
+    }
     arrLen = 1 + common.k.divisors.divisor.nbrLimbs;
     ptrFoundDivisors += arrLen;
 
@@ -626,12 +633,17 @@ void showDivisors(void)
           pstFactors->multiplicity)
         {
           common.k.divisors.currentExp[exponentNbr]++;
+          nbrDivisorsCurrDivisor++;
           NumberLength = *pstFactors->ptrFactor;
           IntArray2BigInteger(pstFactors->ptrFactor, &Tmp);
           (void)BigIntMultiply(&common.k.divisors.divisor, &Tmp,
             &common.k.divisors.divisor);
           NumberLength = common.k.divisors.divisor.nbrLimbs;
           BigInteger2IntArray(ptrFoundDivisors, &common.k.divisors.divisor);
+          if (nbrDivisorsCurrDivisor == 1)
+          {       // Mark prime numbers as negative.
+            *ptrFoundDivisors = -*ptrFoundDivisors;
+          }
           break;
         }
       }
@@ -640,12 +652,17 @@ void showDivisors(void)
         if (common.k.divisors.currentExp[exponentNbr] > 0)
         {
           common.k.divisors.currentExp[exponentNbr]--;
+          nbrDivisorsCurrDivisor--;
           NumberLength = *pstFactors->ptrFactor;
           IntArray2BigInteger(pstFactors->ptrFactor, &Tmp);
           (void)BigIntDivide(&common.k.divisors.divisor, &Tmp,
             &common.k.divisors.divisor);
           NumberLength = common.k.divisors.divisor.nbrLimbs;
           BigInteger2IntArray(ptrFoundDivisors, &common.k.divisors.divisor);
+          if (nbrDivisorsCurrDivisor == 1)
+          {       // Mark prime numbers as negative.
+            *ptrFoundDivisors = -*ptrFoundDivisors;
+          }
           break;
         }
       }
@@ -666,18 +683,24 @@ void showDivisors(void)
   for (divisorNbr = 0; divisorNbr < nbrDivisors; divisorNbr++)
   {
     const int* ptrIntArray = common.k.divisors.ptrFoundDivisors[divisorNbr];
-    int arrLen;
-    NumberLength = *common.k.divisors.ptrFoundDivisors[divisorNbr];
+    NumberLength = *ptrIntArray;
+    if (NumberLength < 0)
+    {    // If prime, convert it to positive.
+      NumberLength = -NumberLength;
+    }
     IntArray2BigInteger(common.k.divisors.ptrFoundDivisors[divisorNbr], &Tmp);
     copyStr(&ptrOutput, "<li>");
-    arrLen = *ptrIntArray;
     if (hexadecimal)
     {
-      Bin2Hex(&ptrOutput, (const limb *)ptrIntArray + 1, arrLen, groupLen);
+      Bin2Hex(&ptrOutput, (const limb *)ptrIntArray + 1, NumberLength, groupLen);
     }
     else
     {
-      Bin2Dec(&ptrOutput, (const limb*)ptrIntArray + 1, arrLen, groupLen);
+      Bin2Dec(&ptrOutput, (const limb*)ptrIntArray + 1, NumberLength, groupLen);
+    }
+    if (*ptrIntArray < 0)
+    {
+      copyStr(&ptrOutput, lang ? " (primo)" : " (prime)");
     }
     copyStr(&ptrOutput, "</li>");
   }

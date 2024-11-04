@@ -359,17 +359,29 @@ static void ComputeSumOfTwoSquaresForPrime(void)
 {
   static limb minusOneMont[MAX_LEN];
   int lenBytes = NumberLength * (int)sizeof(limb);
+  int shRightExpon;
+  bool sqrtMinusOneFound = false;
   (void)memset(minusOneMont, 0, lenBytes);
   SubtBigNbrModN(minusOneMont, MontgomeryMultR1, minusOneMont, TestNbr, NumberLength);
   CopyBigInt(&bigExpon, &valueP);
-  subtractdivide(&bigExpon, 1, 4);     // q = (prime-1)/4
+  subtractdivide(&bigExpon, 1, 2);     // q = (prime-1)/2
+  DivideBigNbrByMaxPowerOf2(&shRightExpon, bigExpon.limbs, &bigExpon.nbrLimbs);
   bigBase.limbs[0].x = 1;
   do
   {    // Loop that finds mult1 = sqrt(-1) mod prime in Montgomery notation.
     bigBase.limbs[0].x++;
     modPowShowStatus(bigBase.limbs, bigExpon.limbs, bigExpon.nbrLimbs, Mult1.limbs);
-  } while (!memcmp(Mult1.limbs, MontgomeryMultR1, lenBytes) ||
-    !memcmp(Mult1.limbs, minusOneMont, lenBytes));
+    for (int squareNbr = 0; squareNbr < shRightExpon; squareNbr++)
+    {
+      modmult(Mult1.limbs, Mult1.limbs, Mult2.limbs);
+      if (memcmp(Mult2.limbs, minusOneMont, lenBytes) == 0)
+      {            // Mult2 is -1, so Mult1 is sqrt(-1).
+        sqrtMinusOneFound = true;
+        break;
+      }
+      memcpy(Mult1.limbs, Mult2.limbs, lenBytes);
+    }
+  } while (!sqrtMinusOneFound);
   Mult1.sign = SIGN_POSITIVE;
   lenBytes = valueP.nbrLimbs * (int)sizeof(limb);
   (void)memset(Mult2.limbs, 0, lenBytes);
@@ -610,6 +622,7 @@ void ComputeFourSquares(const struct sFactors* pstFactors)
       NumberLength = valueP.nbrLimbs;
       (void)memcpy(&TestNbr, valueP.limbs, lenBytes);
       TestNbr[NumberLength].x = 0;
+      valueP.limbs[NumberLength].x = 0;
       GetMontgomeryParms(NumberLength);
       (void)memset(bigBase.limbs, 0, lenBytes);
       if ((valueP.limbs[0].x & 3) == 1)

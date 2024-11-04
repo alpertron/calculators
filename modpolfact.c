@@ -36,6 +36,7 @@ int attemptNbr;
 static bool firstFactor;
 static bool isCharacteristic2;
 extern int poly4[1000000];
+extern int polyBackup[1000000];
 extern char* ptrOutput;
 extern int grpLen;
 extern bool teachMod;
@@ -468,6 +469,7 @@ static void DistinctDegreeFactorization(int polyDeg)
           " is found by computing ");
         ptrBuf = bufExp;
         showVariable(&ptrBuf, 'd');
+        *ptrBuf = 0;    // Add string terminator.
         showGcdDistinctDegFact(bufExp);
         showText("</p>");
       }
@@ -1051,7 +1053,7 @@ void SameDegreeFactorization(void)
 
 // Input: values = degree, coefficient degree 0, coefficient degree 1, etc.
 // Output: factorInfo = structure that holds the factors.
-int FactorModularPolynomial(bool inputMontgomery)
+int FactorModularPolynomial(bool inputMontgomery, bool fromIntPolyFact)
 {
   struct sFactorInfo* ptrFactorInfo;
   enum eExprErr rc;
@@ -1092,6 +1094,7 @@ int FactorModularPolynomial(bool inputMontgomery)
   {
     return EXPR_LEADING_COFF_MULTIPLE_OF_PRIME;
   }
+  CopyBigInt(&powerMod, &primeMod);
   lenBytes = primeMod.nbrLimbs * (int)sizeof(limb);
   (void)memcpy(&TestNbr, primeMod.limbs, lenBytes);
   NumberLength = primeMod.nbrLimbs;
@@ -1131,6 +1134,12 @@ int FactorModularPolynomial(bool inputMontgomery)
   {
     polyToStandardNotation(ptrFactorInfo->ptr, ptrFactorInfo->degree);
     ptrFactorInfo++;
+  }
+  if (!fromIntPolyFact)
+  {
+    // Retore input polynomial.
+    (void)CopyPolynomial(&poly4[0], &polyBackup[1], (polyBackup[0] >= 0) ? polyBackup[0] : 0);
+    computePower(exponentMod);
   }
   OrigPolyFromMontgomeryToStandard();
   rc = HenselLifting(factorInfo, false);

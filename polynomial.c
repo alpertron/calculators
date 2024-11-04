@@ -21,6 +21,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <assert.h>
 #include "bignbr.h"
 #include "expression.h"
 #include "highlevel.h"
@@ -31,6 +32,9 @@
 
 #define MAX_MODULUS 100
 
+extern bool teachMod;
+extern int grpLen;
+extern char* ptrOutput; 
 extern char* ptrOutput2;
 BigInteger primeMod;              // p
 int exponentMod;                  // k
@@ -80,6 +84,66 @@ int numLimbs(const int *pLen)
     nbrLimbs = -nbrLimbs;
   }
   return nbrLimbs;
+}
+
+static void showExponent(char **pptrOutput, int expon)
+{
+  if (expon == 1)
+  {    // Do not show exponent if it equals 1.
+    return;
+  }
+  if (pretty == PRETTY_PRINT)
+  {
+    copyStr(pptrOutput, "<sup>");
+    int2dec(pptrOutput, expon);
+    copyStr(pptrOutput, "</sup>");
+  }
+  else
+  {
+    char* ptrOut = *pptrOutput;
+    *ptrOut++ = '^';
+    if ((pretty == TEX) && (expon >= 10))
+    {
+      *ptrOut++ = '{';
+      int2dec(&ptrOut, expon);
+      *ptrOut++ = '}';
+    }
+    else
+    {
+      int2dec(&ptrOut, expon);
+    }
+    *pptrOutput = ptrOut;
+  }
+}
+
+static void show1overM(int expon)
+{
+  if (pretty == PRETTY_PRINT)
+  {
+    copyStr(&ptrOutput, " = <f-f><f-n>1</f-n><f-d>p");
+    showExponent(&ptrOutput, expon);
+    copyStr(&ptrOutput, "</f-d></f-f> &#8290; (");
+  }
+  else
+  {
+    copyStr(&ptrOutput, " = (1/p");
+    showExponent(&ptrOutput, expon);
+    copyStr(&ptrOutput, ") * (");
+  }
+}
+
+static void showSumOfProducts(void)
+{
+  if (pretty == PRETTY_PRINT)
+  {
+    copyStr(&ptrOutput,
+      "<f-f><f-n>f<sub>1</sub>(x)</f-n><f-d>f<sub>1, 1</sub>(x)</f-d></f-f> &#8290; a<sub>1, 1</sub>(x) + ... + "
+      "<f-f><f-n>f<sub>1</sub>(x)</f-n><f-d>f<sub>1, n</sub>(x)</f-d></f-f> &#8290; a<sub>1, n</sub>(x)");
+  }
+  else
+  {
+    copyStr(&ptrOutput, "(f_1(x)/f_{1, 1}(x)) * a_{1, 1}(x) + ... + (f_1(x)/f_{1, n}(x)) * a_{1, n}(x)");
+  }
 }
 
 // Divide the polynomial by its leading coefficient.
@@ -1100,32 +1164,32 @@ static void ExtendedGcdPolynomial(/*@in@*/int *pointrA, int degA, /*@in@*/int * 
 //
 // Let f(x) = f_1(x) * f_2(x) * ... * f_n(x)
 // 
-// Compute 1 = (f(x)/f_1(x)) * a1(x) + ... + (f(x)/f_n(x)) * a_n(x)
+// Compute 1 = (f(x)/f_1(x)) * a_1(x) + ... + (f(x)/f_n(x)) * a_n(x)
 // This is done by computing n extended GCDs between f_i(x) and
 // f(x)/f_i(x).
 //
 // Hensel lift from mod m to mod m^2:
-// u(x) <- (1/m)*(f - f_1*f_2*...*f_n)
+// u(x) <- (1/m)*(f - f_1*f_2*...*f_n)  (mod m).
 // For i = 1 to n compute:
 //   g(x) <- u(x) * a_i(x) mod f_i(x) (all computations done mod m).
 //   f_i(x) <- f_i(x) + m*g(x)
 //
-// Compute u(x) <- (1/m)*(f(x)/f_1(x)*a_1(x) + ... + f(x)/f_n(x)*a_n(x) - 1).
+// Compute v(x) <- (1/m)*(f(x)/f_1(x)*a_1(x) + ... + f(x)/f_n(x)*a_n(x) - 1).
 // For i = 1 to n compute:
-//   g(x) <- u(x) * a_i(x) mod f_i(x) (all computations done mod m).
-//   a_i(x) <- a_i(x) - m*g(x)
+//   h(x) <- v(x) * a_i(x) mod f_i(x) (all computations done mod m).
+//   a_i(x) <- a_i(x) - m*h(x)
 //
 // Memory usage:
-// poly3: u
-// poly4: f, g
+// poly3: u, v
+// poly4: f, g, h
 // poly5: m*g, f/f_i*a_i
 // polyT: a_i
 // polyLifted: f_i.
 // Change the fields ptrPolyLifted to point to f_i.
 
 // Compute polynomial poly4 <- values divided by the leading coefficient
-// mod prime. This is the polynomial f.
-static void ComputeF(void)
+// mod prime. This is the polynomial f. Polynomial values is in Montgomery notation.
+static void ComputeF(bool isMontg)
 {
   int currentDegree;
   const int* ptrValue1;
@@ -1146,10 +1210,10 @@ static void ComputeF(void)
     int lenBytes = (NumberLength - operand1.nbrLimbs) * (int)sizeof(limb);
     (void)memset(&operand1.limbs[operand1.nbrLimbs], 0, lenBytes);
   }
+  ptrValue1 = &values[1];                          // Point to constant coefficient.
   // Compute the inverse of leading coefficient.
   (void)ModInvBigNbr(operand1.limbs, operand2.limbs, TestNbr, NumberLength);
   // Convert operand1 from standard to Montgomery notation.
-  ptrValue1 = &values[1];                          // Point to constant coefficient.
   for (currentDegree = 0; currentDegree <= polyDegree; currentDegree++)
   {
     int lenLimbs;
@@ -1164,6 +1228,13 @@ static void ComputeF(void)
     }
     // Multiply by inverse. Result is in Montgomery notation.
     modmult(operand1.limbs, operand2.limbs, operand1.limbs);
+    if (!isMontg)
+    {     // Convert to normal notation by multiplying by 1.
+      int lenBytes = NumberLength * (int)sizeof(limb);
+      memset(operand3.limbs, 0, lenBytes);
+      operand3.limbs[0].x = 1;
+      modmult(operand1.limbs, operand3.limbs, operand1.limbs);
+    }
     BigInteger2IntArray(&poly4[currentDegree * (NumberLength + 1)], &operand1);
     lenLimbs = 1 + numLimbs(ptrValue1);
     ptrValue1 += lenLimbs;               // Point to next coefficient.
@@ -1172,7 +1243,7 @@ static void ComputeF(void)
 
 // Get polynomial a_i. This polynomial is stored with no spaces
 // between coefficients. The output is in Montgomery notation in
-// polynomial poly2.
+// polynomial poly1.
 static int getAi(int nbrFactor, int degreeA)
 {
   int nbrLimbs = NumberLength+1;
@@ -1193,20 +1264,31 @@ static int getAi(int nbrFactor, int degreeA)
 // Get polynomial factor f_i. This factor is stored with no spaces
 // between coefficients. The output is in Montgomery notation in
 // polynomial poly2.
-static void getFi(int degreeFactor, const int *src, int nbrLimbs)
+static void getFi(int degreeFactor, const int *src, int nbrLimbsDest, int nbrLimbsSrc)
 {
   const int* ptrSrc = src;
+  int NumberLengthBak = NumberLength;
   int *ptrDest = poly2;       // Copy f_i to poly2.
   for (int currentDegree = 0; currentDegree < degreeFactor; currentDegree++)
   {
     int nbrLen = *ptrSrc + 1;
+    assert((nbrLen >= 1) && (nbrLen < MAX_LEN));
     int lenBytes = nbrLen * (int)sizeof(int);
     (void)memcpy(ptrDest, ptrSrc, lenBytes);
-    ptrSrc += nbrLen;
-    ptrDest += nbrLimbs;
+    if (nbrLimbsSrc == 0)
+    {
+      ptrSrc += nbrLen;
+    }
+    else
+    {
+      ptrSrc += nbrLimbsSrc;
+    }
+    ptrDest += nbrLimbsDest;
   }
+  NumberLength = nbrLimbsDest - 1;
   SetNumberToOne(ptrDest);
   polyToMontgomeryNotation(poly2, degreeFactor);
+  NumberLength = NumberLengthBak;
 }
 
 // Move factors f_i from polyLiftedNew to polyLifted, then adjust
@@ -1238,6 +1320,43 @@ static void MoveFactorsAndFixPointers(struct sFactorInfo* ptrFactorInfo, bool co
       }
     }
     pstFactorInfo++;
+  }
+}
+
+static void showOneSubindex(char poly, int index)
+{
+  *ptrOutput++ = poly;
+  if (pretty == PRETTY_PRINT)
+  {
+    copyStr(&ptrOutput, "<sub>");
+    int2dec(&ptrOutput, index);
+    copyStr(&ptrOutput, "</sub>");
+  }
+  else
+  {
+    copyStr(&ptrOutput, "_");
+    int2dec(&ptrOutput, index);
+  }
+}
+
+static void showTwoSubindexes(char poly, int firstIndex, int secondIndex)
+{
+  *ptrOutput++ = poly;
+  if (pretty == PRETTY_PRINT)
+  {
+    copyStr(&ptrOutput, "<sub>");
+    int2dec(&ptrOutput, firstIndex);
+    copyStr(&ptrOutput, ", ");
+    int2dec(&ptrOutput, secondIndex);
+    copyStr(&ptrOutput, "</sub>");
+  }
+  else
+  {
+    copyStr(&ptrOutput, "_{");
+    int2dec(&ptrOutput, firstIndex);
+    copyStr(&ptrOutput, ", ");
+    int2dec(&ptrOutput, secondIndex);
+    copyStr(&ptrOutput, "}");
   }
 }
 
@@ -1305,6 +1424,11 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
     degree += pstFactorInfo->degree;
     pstFactorInfo++;
   }
+  if (teachMod)
+  {
+    showText(lang ? "<h3>Lema de Hensel</h3>" :
+      "<h3>Hensel Lifting</h3>");
+  }
   computePower(1);
   // Compute a_i for each factor f_i by computing the extended gcd between
   // f_i(x) and f(x)/f_i(x).
@@ -1313,11 +1437,12 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
   for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
   {
     int lenBytes;
-    ComputeF();                       // poly4 <- f mod prime (Montgomery notation).
+    ComputeF(true);                   // poly4 <- f mod prime (Montgomery notation).
     nbrLimbs = NumberLength + 1;
     degreeFactor = pstFactorInfo->degree;
     lenBytes = pstFactorInfo->degree * nbrLimbs * (int)sizeof(int);
     (void)memcpy(poly2, pstFactorInfo->ptr, lenBytes);
+    polyToMontgomeryNotation(poly2, degreeFactor + 1);
     // The factors do not include their leading coefficient. Set it to one.
     SetNumberToOne(&poly2[pstFactorInfo->degree * nbrLimbs]);
     DividePolynomial(poly4, degree,   // Dividend f(x).
@@ -1325,6 +1450,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
       poly1);                         // Quotient f(x)/f_i(x).
     ExtendedGcdPolynomial(poly1, degree - degreeFactor, poly2, degreeFactor,
       poly3, poly4, poly5, polyS, &degreeS);
+    polyToStandardNotation(polyS, degreeS + 1);
+    // At this moment: polyS = a_i on Montgomery notation, degreeS = degree of a_i.
     ptrA[nbrFactor] = ptrDest;
     ptrDest = CopyPolynomial(ptrDest, polyS, degreeS);
     for (currentDegree = degreeS + 1; currentDegree < degreeFactor; currentDegree++)
@@ -1381,15 +1508,91 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
     computePower(newExponent);       // Compute powerMod and init Montgomery parms.
     newNumberLength = NumberLength;
     nbrLimbs = NumberLength + 1;
-    ComputeF();                      // poly4 <- f mod m^newExponent (Montgomery notation).
-    SetNumberToOne(poly1);           // Initialize product of factors.
+    if (teachMod)
+    {
+      ComputeF(false);               // poly4 <- f mod m^newExponent (normal notation).
+      copyStr(&ptrOutput, "<p>");
+      showOneSubindex('f', currentExp);
+      copyStr(&ptrOutput, " = x");
+      showExponent(&ptrOutput, values[0]);
+      *ptrOutput++ = ' ';
+      showPolynomial(&ptrOutput, poly4, degree, grpLen);
+      copyStr(&ptrOutput, "</p>");
+      if (currentExp == 1)
+      {   // If exponent is not 1, f_{m, n} is already shown.
+        computePower(currentExp);
+        pstFactorInfo = ptrFactorInfo;
+        for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+        {    // Loop that shows all factors.
+          degreeFactor = pstFactorInfo->degree;
+          copyStr(&ptrOutput, "<p>");
+          showTwoSubindexes('f', 1, nbrFactor + 1);
+          copyStr(&ptrOutput, " = x");
+          showExponent(&ptrOutput, degreeFactor);
+          *ptrOutput++ = ' ';
+          computePower(newExponent);
+          if (currentExp == 1)
+          {
+            getFi(degreeFactor, pstFactorInfo->ptrPolyLifted, nbrLimbs, oldNumberLength + 1);
+          }
+          else
+          {     // Copy f_i to poly2.
+            getFi(degreeFactor, pstFactorInfo->ptrPolyLifted, nbrLimbs, 0);
+          }
+          showMontPolynomial(&ptrOutput, poly2, degreeFactor, grpLen);
+          copyStr(&ptrOutput, "</p>");
+          pstFactorInfo++;
+        }
+        copyStr(&ptrOutput, lang? "<p>Usando el algoritmo de MCD extendido, calcular ":
+          "<p>Using the extended GCD algorithm, compute ");
+        if (pretty == PRETTY_PRINT)
+        {
+          copyStr(&ptrOutput, "a<sub>1, 1</sub>, ..., a<sub>1, n</sub>");
+        }
+        else
+        {
+          copyStr(&ptrOutput, "a_{1, 1}, ..., a_{1, n}");
+        }
+        copyStr(&ptrOutput, lang ? " tales que</p><p>" : " such that</p><p>");
+        copyStr(&ptrOutput, "1 = ");
+        showSumOfProducts();
+        if (pretty != PRETTY_PRINT)
+        {
+          *ptrOutput++ = ')';
+        }
+        copyStr(&ptrOutput, "</p>");
+        pstFactorInfo = ptrFactorInfo;
+        for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
+        {    // Loop that shows all a_i.
+          degreeFactor = pstFactorInfo->degree;
+          computePower(currentExp);
+          degreeA = getAi(nbrFactor, degreeFactor - 1);
+          copyStr(&ptrOutput, "<p>");
+          showTwoSubindexes('a', 1, nbrFactor + 1);
+          copyStr(&ptrOutput, " = ");
+          showMontPolynomial(&ptrOutput, poly1, degreeA, grpLen);
+          copyStr(&ptrOutput, "</p>");
+          pstFactorInfo++;
+        }
+      }
+      computePower(newExponent);
+    }
+    ComputeF(true);                 // poly4 <- f mod m^newExponent (Montgomery notation).
+    SetNumberToOne(poly1);          // Initialize product of factors.
     pstFactorInfo = ptrFactorInfo;
     degree = 0;
     for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
     {    // Loop that multiplies all factors. poly1 holds the result.
       int lenBytes;
       degreeFactor = pstFactorInfo->degree;
-      getFi(degreeFactor, pstFactorInfo->ptrPolyLifted, nbrLimbs);   // Copy f_i to poly2.
+      if (currentExp == 1)
+      {
+        getFi(degreeFactor, pstFactorInfo->ptrPolyLifted, nbrLimbs, oldNumberLength + 1);
+      }
+      else
+      {     // Copy f_i to poly2.
+        getFi(degreeFactor, pstFactorInfo->ptrPolyLifted, nbrLimbs, 0);
+      }
       MultPolynomial(degree, degreeFactor, poly1, poly2);
       degree += degreeFactor;
       lenBytes = (degree + 1) * nbrLimbs * (int)sizeof(int);
@@ -1428,11 +1631,33 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
       (void)memcpy(ptrDest, operand1.limbs, lenBytes);
     }
     computePower(currentExp);
+    if (teachMod)
+    {
+      copyStr(&ptrOutput, "<p>");
+      showOneSubindex('u', currentExp);
+      show1overM(currentExp);
+      showOneSubindex('f', currentExp);
+      *ptrOutput++ = ' ';
+      copyStr(&ptrOutput, ptrMinus);
+      *ptrOutput++ = ' ';
+      showTwoSubindexes('f', currentExp, 1);
+      for (nbrFactor = 2; nbrFactor <= nbrFactorsFound; nbrFactor++)
+      {
+        *ptrOutput++ = ' ';
+        copyStr(&ptrOutput, ptrTimes);
+        *ptrOutput++ = ' ';
+        showTwoSubindexes('f', currentExp, nbrFactor);
+      }
+      copyStr(&ptrOutput, ") = ");
+      showPolynomial(&ptrOutput, poly3, degree, grpLen);
+      copyStr(&ptrOutput, "</p>");
+    }
     polyToMontgomeryNotation(poly3, degree + 1);
     nbrLimbs = NumberLength + 1;
     pstFactorInfo = ptrFactorInfo;
     ptrDest = polyLiftedNew;
     ptrNewFactor = ptrNewFactors;
+    computePower(currentExp);
     for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
     {
       int lenBytes;
@@ -1444,13 +1669,38 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
       (void)memcpy(poly1, polyMultTemp, lenBytes);
                                                  // poly1 <- u * a_i
                                                  // Copy f_i to poly2.
-      getFi(degreeFactor, pstFactorInfo->ptrPolyLifted, nbrLimbs);
+      if (currentExp == 1)
+      {
+        getFi(degreeFactor, pstFactorInfo->ptrPolyLifted, nbrLimbs, oldNumberLength + 1);
+      }
+      else
+      {     // Copy f_i to poly2.
+        getFi(degreeFactor, pstFactorInfo->ptrPolyLifted, nbrLimbs, 0);
+      }
       DividePolynomial(poly1, degree + degreeA,  // Dividend = u * a_i
         poly2, degreeFactor,                     // Divisor = f_i
         NULL);                                   // Quotient: not needed.
+                                                 // Remainder will be stored in poly1.
       polyToStandardNotation(poly1, degreeFactor);  // Convert g to standard notation.
-      // f_i(x) <- f_i(x) + m*g(x)
+      if (teachMod)
+      {
+        copyStr(&ptrOutput, "<p>");
+        showTwoSubindexes('g', currentExp, nbrFactor + 1);
+        copyStr(&ptrOutput, " = ");
+        showOneSubindex('u', currentExp);
+        *ptrOutput++ = ' ';
+        copyStr(&ptrOutput, ptrTimes);
+        *ptrOutput++ = ' ';
+        showTwoSubindexes('a', currentExp, nbrFactor + 1);
+        copyStr(&ptrOutput, (pretty == PRETTY_PRINT? " mod ": " % "));
+        showTwoSubindexes('f', currentExp, nbrFactor + 1);
+        copyStr(&ptrOutput, " = ");
+        showPolynomial(&ptrOutput, poly1, degreeFactor, grpLen);
+        copyStr(&ptrOutput, "</p>");
+      }
+      // Compute new value of f_i(x) as f_i(x) + m*g(x)
       const int *ptrFi = pstFactorInfo->ptrPolyLifted;
+      const int *ptrStartPolyF = ptrDest;
       *ptrNewFactor = ptrDest;                   // Point to f_i(x) mod new modulus.
       ptrNewFactor++;
       for (currentDegree = 0; currentDegree < degreeFactor; currentDegree++)
@@ -1471,7 +1721,14 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
         ptrFi++;
         lenBytes = operand2.nbrLimbs * (int)sizeof(int);
         (void)memcpy(operand2.limbs, ptrFi, lenBytes);
-        ptrFi += operand2.nbrLimbs;
+        if (currentExp == 1)
+        {
+          ptrFi += NumberLength;
+        }
+        else
+        {
+          ptrFi += operand2.nbrLimbs;
+        }
         (void)BigIntMultiply(&operand1, &powerMod, &operand1);  // poly1 <- m*g
         BigIntAdd(&operand1, &operand2, &operand1);       // poly1 <- f_i + m*g
         // Store coefficient of new f_i (no spaces between coefficients).
@@ -1481,6 +1738,27 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
         (void)memcpy(ptrDest, &operand1.limbs, lenBytes);
         ptrDest += operand1.nbrLimbs;    // Point to next coeffficient of f_i.
       }
+      if (teachMod)
+      {
+        computePower(newExponent);         // Compute powerMod and init Montgomery parms.
+        copyStr(&ptrOutput, "<p>");
+        showTwoSubindexes('f', newExponent, nbrFactor + 1);
+        copyStr(&ptrOutput, " = ");
+        showTwoSubindexes('f', currentExp, nbrFactor + 1);
+        copyStr(&ptrOutput, " + ");
+        *ptrOutput++ = 'p';
+        showExponent(&ptrOutput, currentExp);
+        *ptrOutput++ = ' ';
+        copyStr(&ptrOutput, ptrTimes);
+        *ptrOutput++ = ' ';
+        showTwoSubindexes('g', currentExp, nbrFactor + 1);
+        copyStr(&ptrOutput, " = x");
+        computePower(newExponent);
+        showExponent(&ptrOutput, degreeFactor);
+        showPolynomial(&ptrOutput, ptrStartPolyF, degreeFactor, grpLen);
+        copyStr(&ptrOutput, "</p>");
+        computePower(currentExp);
+      }
       pstFactorInfo++;
     }
     computePower(newExponent);         // Compute powerMod and init Montgomery parms.
@@ -1488,8 +1766,8 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
     {                 // Final values of f_1, f_2,..., f_n found. Exit loop.
       break;
     }
-    // Compute u(x) <- (1/m)*(f(x)/f_1(x)*a_1(x) + ... + f(x)/f_n(x)*a_n(x) - 1).
-    // Init u(x) to zero.
+    // Compute v(x) <- (1/m)*(f(x)/f_1(x)*a_1(x) + ... + f(x)/f_n(x)*a_n(x) - 1).
+    // Init v(x) to zero.
     ptrDest = poly3;
     nbrLimbs = newNumberLength + 1;
     for (currentDegree = 0; currentDegree <= degree; currentDegree++)
@@ -1500,7 +1778,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
     }
     pstFactorInfo = ptrFactorInfo;
     ptrNewFactor = ptrNewFactors;
-    ComputeF();              // poly4 <- f (mod m^2) in Montgomery notation.
+    ComputeF(true);              // poly4 <- f (mod m^2) in Montgomery notation.
     for (nbrFactor = 0; nbrFactor < nbrFactorsFound; nbrFactor++)
     {
       int lenBytes;
@@ -1508,7 +1786,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
       lenBytes = (degree + 1) * nbrLimbs * (int)sizeof(int);
       (void)memcpy(poly1, poly4, lenBytes);
                                         // poly2 <- f_i(x) in Montgomery notation.
-      getFi(degreeFactor, *ptrNewFactor, nbrLimbs);
+      getFi(degreeFactor, *ptrNewFactor, nbrLimbs, 0);
       ptrNewFactor++;
       DividePolynomial(poly1, degree,   // Dividend = f.
         poly2, degreeFactor,            // Divisor = f_i.
@@ -1552,7 +1830,19 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
       ptrDest += oldNumberLength;
       ptrSrc += nbrLimbs;
     }
-    polyToMontgomeryNotation(poly3, degree);   // poly3 <- u(x)
+    polyToMontgomeryNotation(poly3, degree);   // poly3 <- v(x)
+    if (teachMod)
+    {
+      copyStr(&ptrOutput, "<p>");
+      showOneSubindex('v', currentExp);
+      show1overM(currentExp);
+      showSumOfProducts();
+      *ptrOutput++ = ' ';
+      copyStr(&ptrOutput, ptrMinus);
+      copyStr(&ptrOutput, " 1) = ");
+      showMontPolynomial(&ptrOutput, poly3, degree, grpLen);
+      copyStr(&ptrOutput, "</p>");
+    }
     nbrLimbs = NumberLength + 1;
     pstFactorInfo = ptrFactorInfo;
     // Use polyS as a temporary storage for a_i.
@@ -1561,7 +1851,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
     {
       int lenBytes;
       degreeFactor = pstFactorInfo->degree;
-      // g(x) <- u(x) * a_i(x) mod f_i(x) (all computations done mod m).
+      // h(x) <- v(x) * a_i(x) mod f_i(x) (all computations done mod m).
       NumberLength = oldNumberLength;
       degreeA = getAi(nbrFactor, degreeFactor - 1);  // poly1 <- a_i
       MultPolynomial(degree, degreeA, poly3, poly1);
@@ -1569,7 +1859,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
       (void)memcpy(poly4, polyMultTemp, lenBytes);
                                                 // poly4 <- u * a_i
                                                 // poly2 <- f_i(x) in Montgomery notation. 
-      getFi(degreeFactor, pstFactorInfo->ptrPolyLifted, nbrLimbs);
+      getFi(degreeFactor, pstFactorInfo->ptrPolyLifted, nbrLimbs, 0);
       DividePolynomial(poly4, degree + degreeA, // Dividend = u * a_i
         poly2, degreeFactor,                    // Divisor = f_i
         NULL);                                  // Quotient: not needed.
@@ -1577,6 +1867,7 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
                                                 // Convert g to standard notation.
       polyToStandardNotation(poly4, degree + degreeA - degreeFactor + 1);
       // Subtract m*g(x) from a_i(x).
+      const int* ptrStartPolyG = ptrDest;
       for (currentDegree = 0; currentDegree <= degreeA; currentDegree++)
       {                 // Loop that computes a_i - m*g
         // Get coefficient of g.
@@ -1603,6 +1894,39 @@ int HenselLifting(struct sFactorInfo* ptrFactorInfo, bool compressPoly)
         lenBytes = operand1.nbrLimbs * (int)sizeof(int);
         (void)memcpy(ptrDest, operand1.limbs, lenBytes);
         ptrDest += operand1.nbrLimbs;  // Point to next coefficient of a_i.
+      }
+      if (teachMod)
+      {
+        copyStr(&ptrOutput, "<p>");
+        showTwoSubindexes('h', currentExp, nbrFactor + 1);
+        copyStr(&ptrOutput, " = ");
+        showOneSubindex('v', currentExp);
+        *ptrOutput++ = ' ';
+        copyStr(&ptrOutput, ptrTimes);
+        *ptrOutput++ = ' ';
+        showTwoSubindexes('a', currentExp, nbrFactor + 1);
+        copyStr(&ptrOutput, (pretty == PRETTY_PRINT ? " mod " : " % "));
+        showTwoSubindexes('f', currentExp, nbrFactor + 1);
+        copyStr(&ptrOutput, " = ");
+        showMontPolynomial(&ptrOutput, poly3, degreeFactor, grpLen);
+        copyStr(&ptrOutput, "</p>");
+        computePower(newExponent);         // Compute powerMod and init Montgomery parms.
+        copyStr(&ptrOutput, "<p>");
+        showTwoSubindexes('a', newExponent, nbrFactor + 1);
+        copyStr(&ptrOutput, " = ");
+        showTwoSubindexes('a', currentExp, nbrFactor + 1);
+        copyStr(&ptrOutput, " + ");
+        *ptrOutput++ = 'p';
+        showExponent(&ptrOutput, currentExp);
+        *ptrOutput++ = ' ';
+        copyStr(&ptrOutput, ptrTimes);
+        *ptrOutput++ = ' ';
+        showTwoSubindexes('g', currentExp, nbrFactor + 1);
+        copyStr(&ptrOutput, " = ");
+        computePower(newExponent);
+        showPolynomial(&ptrOutput, ptrStartPolyG, degreeFactor, grpLen);
+        copyStr(&ptrOutput, "</p>");
+        computePower(currentExp);
       }
       pstFactorInfo++;
     }
@@ -1779,10 +2103,7 @@ static void showPolynomialMontOrNorm(char **pptrOutput, const int *ptrPoly,
   int indexes[MAX_DEGREE+1];
   int NumberLengthBak = NumberLength;
 
-  if (polyDegree < 0)
-  {      // It should not come here.
-    return;
-  }
+  assert(polyDegree >= 0);
   ptrIndex = &indexes[0];
   if (modulusIsZero)
   {
@@ -1838,18 +2159,17 @@ static void showPolynomialMontOrNorm(char **pptrOutput, const int *ptrPoly,
       if ((operand1.nbrLimbs > 1) || (operand1.limbs[0].x != 1))
       {            // Absolute value of coefficient is not one.
         operand1.sign = SIGN_POSITIVE;
-        Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
+        if (pretty == PRETTY_PRINT)
+        {          // Show number of digits if there are more than 30.
+          Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
+        }
+        else
+        {         // Do not show number of digits.
+          Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, -groupLength);
+        }
         if (currentDegree > 0)
         {
-          if (pretty == PRETTY_PRINT)
-          {
-            copyStr(&ptrOutput, "&#8290;");
-          }
-          if (pretty == PARI_GP)
-          {
-            *ptrOutput = '*';
-            ptrOutput++;
-          }
+          copyStr(&ptrOutput, ptrTimes);
           showPowerX(&ptrOutput, currentDegree);
         }
       }
@@ -1917,7 +2237,14 @@ static void outputOriginalPolynomialElem(char** pptrOutput, const int* ptrPoly, 
   }
   if ((operand1.nbrLimbs != 1) || (operand1.limbs[0].x != 1) || (degree == 0))
   {     // Leading coefficient is not 1 or degree is zero.
-    Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
+    if (pretty == PRETTY_PRINT)
+    {          // Show number of digits if there are more than 30.
+      Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
+    }
+    else
+    {         // Do not show number of digits.
+      Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, -groupLength);
+    }
     if ((pretty == PARI_GP) && (degree > 0))
     {
       *ptrOutput = '*';
@@ -1936,13 +2263,11 @@ static void outputOriginalPolynomialElem(char** pptrOutput, const int* ptrPoly, 
     }
     if (modulusIsZero)
     {
-      showPolynomial(&ptrOutput, (modulusIsZero ? (ptrPoly + 1) : poly4),
-        degree, groupLength);
+      showPolynomial(&ptrOutput, ptrPoly + 1, degree, groupLength);
     }
     else
     {
-      showMontPolynomial(&ptrOutput, (modulusIsZero ? (ptrPoly + 1) : poly4),
-        degree, groupLength);
+      showMontPolynomial(&ptrOutput, poly4, degree, groupLength);
     }
   }
   if (!modulusIsZero)
@@ -1959,7 +2284,14 @@ static void outputOriginalPolynomialElem(char** pptrOutput, const int* ptrPoly, 
     {     // Pari-GP
       copyStr(&ptrOutput, ", ");
     }
-    Bin2Dec(&ptrOutput, primeMod.limbs, primeMod.nbrLimbs, groupLength);
+    if (pretty == PRETTY_PRINT)
+    {          // Show number of digits if there are more than 30.
+      Bin2Dec(&ptrOutput, primeMod.limbs, primeMod.nbrLimbs, groupLength);
+    }
+    else
+    {         // Do not show number of digits.
+      Bin2Dec(&ptrOutput, primeMod.limbs, primeMod.nbrLimbs, -groupLength);
+    }
     if (exponentMod != 1)
     {
       showPower(&ptrOutput, exponentMod);

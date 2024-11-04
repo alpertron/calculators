@@ -126,7 +126,7 @@ void polyFactText(const char* modText, const char* polyText, int groupLength);
 void showPower(char** pptrOutput, int exponent);
 void showPowerX(char** pptrOutput, int polyDegree);
 void showPowerVar(char** pptrOutput, int polyDegree, char letter);
-int FactorModularPolynomial(bool inputMontgomery);
+int FactorModularPolynomial(bool inputMontgomery, bool fromIntPolyFact);
 void showPolynomial(char** pptrOutput, const int* ptrPoly, int polyDegree, int groupLength);
 void showMontPolynomial(char** pptrOutput, const int* ptrPoly, int polyDegree, int groupLength);
 int getNextPrimeNoDuplicatedFactors(int prime);

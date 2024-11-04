@@ -29,3 +29,15 @@ function getStorage(name)
 function endCalculation()
 {   // Nothing to do.
 }
+
+function onShowDivisors()
+{   // Nothing to do.
+}
+
+function onShowSumSquares()
+{   // Nothing to do.
+}
+
+function setFocusTo(newFocusObj)
+{   // Nothing to do.
+}
