@@ -1073,6 +1073,7 @@ static void Karatsuba(int indexFactor1, int numLen)
       nbrLen *= 2;
       diffIndex -= nbrLen;
       pstKaratsubaStack--;
+      assert(pstKaratsubaStack >= &astKaratsubaStack[0]);
       idxFactor1 = pstKaratsubaStack->idxFactor1;
       stage = pstKaratsubaStack->stage;
       sign = pstKaratsubaStack->sign;
