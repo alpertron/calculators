@@ -978,13 +978,12 @@ static void Lehman(const BigInteger *nbr, int multiplier, BigInteger *factor)
       if (shiftBits < 32U)
       {
         bitsSqr = bitsSqrLow[i];
-        bitsToShift = shiftBits;
       }
       else
       {
         bitsSqr = bitsSqrHigh[i];
-        bitsToShift = shiftBits - 32U;
       }
+      bitsToShift = shiftBits & 0x1FU;
       if (((bitsSqr >> bitsToShift) & 0x01U) == 0U)
       { // Not a perfect square
         break;

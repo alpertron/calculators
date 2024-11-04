@@ -1007,6 +1007,7 @@ static void Karatsuba(int indexFactor1, int numLen)
       {
         belowKaratsubaCutoff(nbrLen, idxFactor1, idxFactor2);
         pstKaratsubaStack--;
+        assert(pstKaratsubaStack >= &astKaratsubaStack[0]);
         idxFactor1 = pstKaratsubaStack->idxFactor1;
         nbrLen *= 2;
         diffIndex -= nbrLen;

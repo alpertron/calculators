@@ -20,6 +20,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <assert.h>
 #include "bignbr.h"
 #include "expression.h"
 #ifdef FACTORIZATION_APP
@@ -86,13 +87,9 @@ void partition(int val, BigInteger *pResult)
       } while ((currentPrime % 3) == 0);
       for (Q = 5; Q <= SQRT_MAX_VALUE_LIMB; Q += 6)
       { /* Check if Base is prime */
-        if ((currentPrime % Q) == 0)
+        if (((currentPrime % Q) == 0) || (currentPrime % (Q + 2) == 0))
         {
           break;     /* Composite */
-        }
-        if (currentPrime % (Q + 2) == 0)
-        {
-          break;    /* Composite */
         }
       }
       if (Q > SQRT_MAX_VALUE_LIMB)
@@ -293,6 +290,7 @@ static enum eExprErr ProcessFactorsFactorial(double factorAccum,
   else
   {     // Odd means that the Big Integer has to be stored into the buffer.
     index = numberofBitsSetToOne(nbrGroupsAccumulated) - 1;
+    assert(index >= 0);
     offset = partArray[index].x;
     NumberLength = prod.nbrLimbs;
     BigInteger2IntArray((int *)&partArray[offset], &prod);

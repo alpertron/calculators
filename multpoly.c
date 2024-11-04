@@ -389,6 +389,7 @@ static void KaratsubaPoly(int idxFact1, int nbrLen, int nbrLimbs)
           }
         }
         pstKaratsubaStack--;
+        assert(pstKaratsubaStack >= &astKaratsubaStack[0]);
         idxFactor1 = pstKaratsubaStack->idxFactor1;
         nbrLength *= 2;
         diffIndex -= nbrLength;

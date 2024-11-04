@@ -17,6 +17,7 @@
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include <string.h>
+#include <assert.h>
 #include "bignbr.h"
 #include "expression.h"
 #include "highlevel.h"
@@ -102,6 +103,7 @@ static void SortBigIntegers(BigInteger *pValue1, BigInteger *pValue2)
   limb *ptr2;
   int nbrLimbs1 = pValue1->nbrLimbs;
   int nbrLimbs2 = pValue2->nbrLimbs;
+  assert((nbrLimbs1 > 0) && (nbrLimbs2 > 0));
   if (nbrLimbs1 > nbrLimbs2)
   {
     return;    // Base1 > Base2, so nothing to do.

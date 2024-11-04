@@ -19,6 +19,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdint.h>
+#include <assert.h>
 #include "bignbr.h"
 #include "expression.h"
 #include "factor.h"
@@ -1849,6 +1850,7 @@ static void PartialRelationFound(
         DivBigNbrByInt(biT,
           common.siqs.primeTrialDivisionData[*(indexFactorsA+index)].value, biT,
           NumberLengthDivid);
+        assert(NumberLengthDivid > 1);
         if (biT[NumberLengthDivid - 1].x == 0)
         {
           NumberLengthDivid--;
@@ -2726,6 +2728,7 @@ static bool InsertNewRelation(
       biT[k].x = 0;
     }
     lenDivisor = NumberLengthMod;
+    assert(lenDivisor > 1);
     if (common.siqs.Modulus[lenDivisor - 1].x == 0)
     {
       lenDivisor--;
@@ -3223,6 +3226,7 @@ static void sieveThread(BigInteger *result)
           break;
         }
       }
+      assert(NumberLength > 1);
       if ((uint32_t)biLinearCoeff[NumberLength - 1].x >= LIMB_RANGE)
       {                               // Number is negative.
         positive = false;
