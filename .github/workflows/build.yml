@@ -28,9 +28,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: install gcovr 5.0
+      - name: install gcovr 7.0
         run: |
-          pip install gcovr==5.0 # 5.1 is not supported
+          pip install gcovr==7.0 # 5.1 is not supported
       - name: Run tests to generate coverage statistics
         run: |
           chmod 755 coverage
