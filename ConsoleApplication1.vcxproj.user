@@ -4,11 +4,11 @@
     <ShowAllFiles>true</ShowAllFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>340282366920938463942989953348216553641 "5667530654982595821816822621761574133x**6 + 280365549666932341048626630173879303660x**5 + 289503983726793829277601201546545569830x**4 + 192310109207024097427027200580245797879x**3 + 126385846793624922705849470011156284296x**2 + 281529891788748348858486056833458826787x**1 + 36471158667290440087181703883006630495" 0 2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>1000000000000000003</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>"n(10^50)^4" "7*x^3+2*x^2+x+56" 1 2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>"126**32+234"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

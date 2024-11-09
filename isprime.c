@@ -163,19 +163,17 @@ static void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
     
 #else
   double dInvLimbRange = 1.0 / (double)LIMB_RANGE;
-  int Nbr = *(factor1);
+  int Nbr = *factor1;
   double dNbr = (double)Nbr;
   int low = Nbr * factor2_0;
   double dAccum = dNbr * (double)factor2_0;
-  int tmp = (low * MontgomeryMultN) & MAX_INT_NBR;
-  int MontDig = (int)tmp;
+  int MontDig = (low * MontgomeryMultN) & MAX_INT_NBR;
   double dMontDig = (double)MontDig;
   dAccum -= dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
   dAccum = floor((dAccum*dInvLimbRange) + 0.5);
-  tmp = ((int)dAccum - (MontDig * TestNbr1) + (Nbr * factor2_1)) &
+  low = ((int)dAccum - (MontDig * TestNbr1) + (Nbr * factor2_1)) &
         MAX_INT_NBR;
-  low = (int)tmp;
   dAccum += (dNbr * (double)factor2_1) - (dMontDig * (double)TestNbr1);
   Prod0 = low;
   // Casting from double to int truncates to nearest to zero,
@@ -192,18 +190,16 @@ static void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
   
   Nbr = *(factor1 + 1);
   dNbr = (double)Nbr;
-  low = (Nbr * factor2_0) + (int)Prod0;
+  low = (Nbr * factor2_0) + Prod0;
   dAccum = (dNbr * (double)factor2_0) + (double)Prod0;
-  tmp = (low * MontgomeryMultN) & MAX_VALUE_LIMB;
-  MontDig = (int)tmp;
+  MontDig = (low * MontgomeryMultN) & MAX_VALUE_LIMB;
   dMontDig = (double)MontDig;
   dAccum -= dMontDig * (double)TestNbr0;
   // At this moment dAccum is multiple of LIMB_RANGE.
   dAccum = floor((dAccum*dInvLimbRange) + 0.5);
-  tmp = ((int)dAccum - (MontDig * TestNbr1) + (Nbr * factor2_1) + Prod1) &
+  low = ((int)dAccum - (MontDig * TestNbr1) + (Nbr * factor2_1) + Prod1) &
         MAX_INT_NBR;
-  low = (int)tmp;
-  dAccum += (dMontDig * (double)TestNbr1) + (dNbr * (double)factor2_1) +
+  dAccum += (dNbr * (double)factor2_1) - (dMontDig * (double)TestNbr1) +
             (double)Prod1;
   Prod0 = low;
   // Casting from double to int truncates to nearest to zero,
@@ -286,7 +282,7 @@ static void GetMontgomeryParms(void)
   MontgomeryMultN = x & MAX_INT_NBR;
   MontgomeryMultR1[2] = 1;
   MontgomeryMultR1[0] = 0;
-  AdjustModN(MontgomeryMultR1);
+  AdjustModN(MontgomeryMultR1);  // 2^62 mod TestNbr.
 }
 
 // Perform Miller-Rabin test of number stored in variable TestNbr.
@@ -296,38 +292,41 @@ static void GetMontgomeryParms(void)
 bool isPrime(const int *value)
 {
   static const char bases[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 0};
-  // List of lowest composite numbers that passes Miller-Rabin for above bases (OEIS A014233).
-  // The first number is the limit modulo 2^31, the second number is the limit divided 2^31.
+  // List of lowest composite numbers that passes Miller-Rabin
+  // for above bases (OEIS A014233).
+  // The first number is the limit modulo 2^31,
+  // the second number is the limit divided 2^31.
   static const int limits[] =
   {
     0, 0,
 
     // Base 2: limit = 2047
-    2047, 0,
+    2047, 0,              // Least and most 31 significant bits.
 
     // Bases 2 and 3: limit = 1373653
-    1373653, 0,              
+    1373653, 0,           // Least and most 31 significant bits.
 
     // Bases 2, 3 and 5: limit = 25326001
-    25326001, 0,             
+    25326001, 0,          // Least and most 31 significant bits.
 
     // Bases 2, 3, 5 and 7: limit = 3215031751
-    1067548103, 1,
+    1067548103, 1,        // Least and most 31 significant bits.
  
     // Bases 2, 3, 5, 7 and 11: limit = 2152302898747
-    524283451, 1002,
+    524283451, 1002,      // Least and most 31 significant bits.
 
     // Bases 2, 3, 5, 7, 11 and 13: limit = 3474749660383
-    121117919, 1618,
+    121117919, 1618,      // Least and most 31 significant bits.
 
     // Bases 2, 3, 5, 7, 11, 13 and 17: limit = 341550071728321
-    1387448513, 159046,
+    1387448513, 159046,   // Least and most 31 significant bits.
 
     // Bases 2, 3, 5, 7, 11, 13, 17 and 19: limit = 341550071728321
-    1387448513, 159046,
+    1387448513, 159046,   // Least and most 31 significant bits.
 
+    // Bases 2, ..., 23: limit = 3825123056546413051 = 2^61.73.
     // Greater than any argument of isPrime()
-    0, 2000000000,
+    0, 2000000000,        // Least and most 31 significant bits.
   };
   int i;
   int j;
@@ -544,6 +543,7 @@ bool isPrime(const int *value)
   return true;         // All Miller-Rabin tests were passed, so number is prime.
 }
 
+// Multiply 32x32 = 64 bits.
 void multiplyBigNbrs(int factor1, int factor2, int *prod)
 {
   unsigned int tmp = ((unsigned int)factor1 * (unsigned int)factor2) & MAX_VALUE_LIMB;
@@ -567,6 +567,7 @@ void multiplyBigNbrs(int factor1, int factor2, int *prod)
 #endif 
 }
 
+// Generate the ASCII characters from a 32-bit number.
 char* appendInt(char* text, int intValue)
 {
   char* ptrText = text;
@@ -597,6 +598,7 @@ char* appendInt(char* text, int intValue)
   return ptrText;
 }
 
+// Store in *pNbrLo and *pNbrHi the 64-bit number represented in ASCII.
 void getValue64(const char* value, int* pNbrLo, int* pNbrHi)
 {
   bool valueIsNegative = false;
