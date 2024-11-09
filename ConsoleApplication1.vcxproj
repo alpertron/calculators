@@ -93,7 +93,7 @@
       </PrecompiledHeader>
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;FACTORIZATION_FUNCTIONS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;FACTORIZATION_APP</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <CompileAs>CompileAsC</CompileAs>
       <EnablePREfast>true</EnablePREfast>
@@ -166,9 +166,64 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cubiceq.c" />
     <ClCompile Include="isprime.c" />
+    <ClCompile Include="lineareq.c" />
+    <ClCompile Include="modpolfact.c" />
+    <ClCompile Include="output.c" />
+    <ClCompile Include="quadraticeq.c" />
+    <ClCompile Include="quartics.c" />
+    <ClCompile Include="sumSquares.c" />
+    <ClCompile Include="tsqcubes.c" />
+    <ClCompile Include="baseconv.c" />
+    <ClCompile Include="batch.c" />
+    <ClCompile Include="bigint.c" />
+    <ClCompile Include="bignbr.c" />
+    <ClCompile Include="bigrational.c" />
+    <ClCompile Include="divpoly.c" />
+    <ClCompile Include="ecm.c" />
+    <ClCompile Include="ecmfront.c" />
+    <ClCompile Include="fcubes.c" />
+    <ClCompile Include="fftpoly.c" />
+    <ClCompile Include="fromBlockly.c" />
+    <ClCompile Include="fsquares.c" />
+    <ClCompile Include="intpolfact.c" />
+    <ClCompile Include="linkedbignbr.c" />
+    <ClCompile Include="multpoly.c" />
+    <ClCompile Include="parseexpr.c" />
+    <ClCompile Include="polyexpr.c" />
+    <ClCompile Include="quadmodLL.c" />
+    <ClCompile Include="quintics.c" />
+    <ClCompile Include="contfrac.c" />
+    <ClCompile Include="dilog.c" />
+    <ClCompile Include="division.c" />
+    <ClCompile Include="errors.c" />
+    <ClCompile Include="expression.c" />
+    <ClCompile Include="factor.c" />
+    <ClCompile Include="fft.c" />
+    <ClCompile Include="GaussExpr.c" />
+    <ClCompile Include="gaussian.c" />
+    <ClCompile Include="gcdrings.c" />
+    <ClCompile Include="inputstr.c" />
+    <ClCompile Include="karatsuba.c" />
+    <ClCompile Include="modmult.c" />
+    <ClCompile Include="copyStr.c" />
+    <ClCompile Include="partition.c" />
+    <ClCompile Include="polfact.c" />
     <ClCompile Include="polfacte.c" />
+    <ClCompile Include="polynomial.c" />
+    <ClCompile Include="quad.c" />
+    <ClCompile Include="quadmod.c" />
+    <ClCompile Include="quinticsData.c" />
+    <ClCompile Include="rootseq.c" />
+    <ClCompile Include="siqs.c" />
+    <ClCompile Include="siqsLA.c" />
+    <ClCompile Include="sqroot.c">
+      <DeploymentContent>true</DeploymentContent>
+    </ClCompile>
     <ClCompile Include="test.c" />
+    <ClCompile Include="showtime.c" />
+    <ClCompile Include="tsquares.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="batch.h" />
@@ -177,6 +232,7 @@
     <ClInclude Include="fft.h" />
     <ClInclude Include="fromBlockly.h" />
     <ClInclude Include="graphics.h" />
+    <ClInclude Include="linkedbignbr.h" />
     <ClInclude Include="output.h" />
     <ClInclude Include="polynomial.h" />
     <ClInclude Include="quadmodLL.h" />

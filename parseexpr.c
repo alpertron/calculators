@@ -746,11 +746,13 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
           retcode = parseNumberInsidePolyExpr(&pInput, &ptrOutput);
         }
         else
-#endif
         {
+#endif
           pInput--;
           retcode = parseNumberInsideExpr(&pInput, &ptrOutput);
+#ifdef POLYEXPR
         }
+#endif
         if (retcode != EXPR_OK)
         {
           return retcode;

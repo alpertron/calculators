@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 #include "bignbr.h"
 #include "factor.h"
 #include "expression.h"
@@ -133,6 +134,7 @@ static int numLimbs(const int* pLen)
 
 static void getCurrentStackValue(BigInteger* pValueRe, BigInteger *pValueIm)
 {
+  assert(stackIndex >= 0);
   const int* ptrStackValue = &comprStackValues[comprStackOffset[2*stackIndex]];
   NumberLength = numLimbs(ptrStackValue);
   IntArray2BigInteger(ptrStackValue, pValueRe);
@@ -143,6 +145,7 @@ static void getCurrentStackValue(BigInteger* pValueRe, BigInteger *pValueIm)
 
 static enum eExprErr setStackValue(const BigInteger* pValueRe, const BigInteger *pValueIm)
 {
+  assert(stackIndex >= 0);
   int currentOffset = comprStackOffset[2 * stackIndex];
   if (currentOffset >= (COMPR_STACK_SIZE - ((int)sizeof(BigInteger) / (int)sizeof(limb))))
   {
@@ -833,7 +836,7 @@ static enum eExprErr ComputeModPow(void)
       int groupExp = ReExp.limbs[index].x;
       for (unsigned int mask = HALF_INT_RANGE_U; mask > 0U; mask >>= 1)
       {
-        // Let Re + i*Im <- (Re + i*Im)^2
+        // Compute Re + i*Im as (Re + i*Im)^2
         (void)BigIntMultiply(&Re, &Re, &ReTmp);
         (void)BigIntMultiply(&Im, &Im, &ImTmp);
         BigIntSubt(&ReTmp, &ImTmp, &ReTmp);
@@ -846,7 +849,7 @@ static enum eExprErr ComputeModPow(void)
         GetRemainder(&norm, &Re, &Im, &ReMod, &ImMod, &ReTmp, &ImTmp);
         if (((unsigned int)groupExp & mask) != 0U)
         {
-          // Let Re + i*Im <- (Re + i*Im)*(ReBase + i*ImBase)
+          // Compute Re + i*Im as (Re + i*Im)*(ReBase + i*ImBase)
           (void)BigIntMultiply(&ReBase, &Re, &ReTmp);
           (void)BigIntMultiply(&ImBase, &Im, &ImTmp);
           BigIntSubt(&ReTmp, &ImTmp, &ReTmp);
@@ -1075,7 +1078,8 @@ static int Modulo(BigInteger *ReNum, BigInteger *ImNum,
   return 0;
 }
 
-// (curStackRe + i*curStackIm) <- (curStackRe + i*curStackIm) / (curStack2Re + i*curStack2Im)
+// Compute curStackRe + i*curStackIm as the quotient of
+// curStackRe + i*curStackIm over curStack2Re + i*curStack2Im
 static enum eExprErr GaussianDivide(void)
 {
   enum eExprErr retcode = BigIntMultiply(&curStack2Re, &curStack2Re, &curStack3Re);
@@ -1128,7 +1132,8 @@ static enum eExprErr GaussianDivide(void)
   return EXPR_OK;
 }
 
-// (curStackRe + i*curStackIm) <- (curStack2Re + i*curStack2Im) * (curStackRe + i*curStackIm)
+// Compute curStackRe + i*curStackIm as the product of
+// (curStack2Re + i*curStack2Im) and (curStackRe + i*curStackIm)
 static enum eExprErr GaussianMultiply(void)
 {
   // Re <- re1*re2 - im1*im2.

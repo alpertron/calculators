@@ -190,12 +190,12 @@ void GaussianFactorization(void)
           {
             BigIntSubt(&M2, &tofactor, &M2);
           }
-          // Compute q <- (mult1*M1 + mult2*M2) / norm
+          // Compute q as (mult1*M1 + mult2*M2) / norm
           (void)BigIntMultiply(&mult1, &M1, &bigExpon);
           (void)BigIntMultiply(&mult2, &M2, &Tmp);
           BigIntAdd(&bigExpon, &Tmp, &Tmp);
           (void)BigIntDivide(&Tmp, &tofactor, &bigExpon);
-          // Compute Mult2 <- (mult1*M2 - mult2*M1) / tofactor
+          // Compute Mult2 as (mult1*M2 - mult2*M1) / tofactor
           (void)BigIntMultiply(&mult1, &M2, &r);
           (void)BigIntMultiply(&mult2, &M1, &Tmp);
           BigIntSubt(&r, &Tmp, &Tmp);
