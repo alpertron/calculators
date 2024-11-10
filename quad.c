@@ -2420,7 +2420,7 @@ static void callbackQuadModElliptic(BigInteger *value)
   (void)BigIntDivide(&U1, &discr, &U1);
   BigIntChSign(&U1);               // 4P/(-D)
   squareRoot(U1.limbs, ValL.limbs, U1.nbrLimbs, &ValL.nbrLimbs);  // sqrt(4P/(-D))
-
+  ValL.sign = SIGN_POSITIVE;
   intToBigInteger(&U1, 1);         // Initial value of last convergent: 1/0.
   intToBigInteger(&V1, 0);
   intToBigInteger(&U2, 0);         // Initial value of next to last convergent: 0/1.

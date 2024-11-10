@@ -305,7 +305,6 @@ static bool PollardRho(int NumberSizeBytes, double firstLimit, double secondLimi
   return true;
 }
 
-int pepe;
 // On output: logar: Computed logarithm.
 static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   double firstLimit, double secondLimit,
@@ -361,10 +360,6 @@ static bool ComputeDiscrLogInPrimeSubgroup(int indexBase,
   *ptr = '.';
   ptr++;
   *ptr = 0;
-  if (mod.limbs[0].x == 23)
-  {
-    pepe = 1;
-  }
   showText(textExp);
   NumberLength = mod.nbrLimbs;
   lenBytes = NumberLength * (int)sizeof(limb);
