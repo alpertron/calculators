@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 #include "fft.h"
 
 #define FFT_LIMB_SIZE   18
@@ -407,6 +408,7 @@ static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
 void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   int len1, int len2, int *pResultLen)
 {
+  assert((len1 > 0) && (len2 > 0));
   const struct sComplex *ptrFirst;
   const struct sComplex *ptrSecond;
   struct sComplex *ptrProduct;
@@ -424,10 +426,12 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   int sumLen;
   int sumLenBytes;
   fftLen1 = ReduceLimbs(factor1, firstFactor, len1);
+  assert(fftLen1 > 0);
   if ((factor1 != factor2) && !((TestNbrCached == NBR_CACHED) && (factor2 == TestNbr)) &&
     !((MontgomeryMultNCached == NBR_CACHED) && (factor2 == MontgomeryMultN)))
   {
     fftLen2 = ReduceLimbs(factor2, secondFactor, len2);
+    assert(fftLen2 > 0);
   }
   // Get next power of 2 to len (the greatest of the two lengths).
   fftLen = fftLen1;
