@@ -50,6 +50,11 @@ factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c bignbr.c showtime.c from_
 blockly: $(blockly_files) $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=22 -DUSING_BLOCKLY=1 $(blockly_files) -lm -o $@
 
+testmodmult_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c \
+factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c fromBlockly.c linkedbignbr.c test.c
+testmultmod: $(testmodmult_files) $(h_files)
+	gcc $(flags_factorization) -DDEBUG_CODE=24 $(testmodmult_files) -lm -o $@
+
 sumquad_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c \
 factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c fromBlockly.c linkedbignbr.c test.c
 sumquad: $(sumquad_files) $(h_files)

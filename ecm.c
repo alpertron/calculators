@@ -60,16 +60,16 @@ static void duplicate(limb* x2, limb* z2, const limb* x1, const limb* z1);
 #define DUP 5  /* number of multiplications in a duplicate */
 
 /* returns the number of modular multiplications */
-static int lucas_cost(int multiplier, double v)
+static int lucas_cost(int64_t multiplier, double v)
 {
   int nbrMultiplications;
-  int e;
-  int d = multiplier;
+  int64_t e;
+  int64_t d = multiplier;
   double dr = ((double)d / v) + 0.5;
   int r = (int)dr;
   if (r >= multiplier)
   {
-    return (ADD * multiplier);
+    return ADD * (int)multiplier;
   }
   d = multiplier - r;
   e = (2 * r) - multiplier;
@@ -78,19 +78,20 @@ static int lucas_cost(int multiplier, double v)
   {
     if (d < e)
     {
-      r = d;
+      int64_t tmp = d;
       d = e;
-      e = r;
+      e = tmp;
     }
     if (((4 * d) <= (5 * e)) && (((d + e) % 3) == 0))
     { /* condition 1 */
-      r = ((2 * d) - e) / 3;
+      int64_t tmp = ((2 * d) - e) / 3;
       e = ((2 * e) - d) / 3;
-      d = r;
+      d = tmp;
       nbrMultiplications += 3 * ADD; /* 3 additions */
     }
-    else if (((4 * d) <= (5 * e)) && (((d - e) % 6) == 0))
-    { /* condition 2 */
+    else if ((((4 * d) <= (5 * e)) && (((d - e) % 6) == 0)) ||
+      ((d + e) % 2) == 0)
+    { /* condition 2 or condition 4 */
       d = (d - e) / 2;
       nbrMultiplications += ADD + DUP; /* one addition, one duplicate */
     }
@@ -98,11 +99,6 @@ static int lucas_cost(int multiplier, double v)
     { /* condition 3 */
       d -= e;
       nbrMultiplications += ADD; /* one addition */
-    }
-    else if (((d + e) % 2) == 0)
-    { /* condition 4 */
-      d = (d - e) / 2;
-      nbrMultiplications += ADD + DUP; /* one addition, one duplicate */
     }
     else if ((d % 2) == 0)
     { /* condition 5 */
@@ -137,12 +133,13 @@ static int lucas_cost(int multiplier, double v)
 }
 
 /* computes nP from P=(x:z) and puts the result in (x:z). Assumes n>2. */
-void prac(int multiplier, limb* x, limb *z)
+void prac(int64_t multiplier, limb* x, limb *z)
 {
-  int d;
-  int e;
+  int64_t d;
+  int64_t e;
   int r;
   int i;
+  int nbrMultipl;
   double dr;
   limb* t;
   limb* xA = x;
@@ -171,13 +168,13 @@ void prac(int multiplier, limb* x, limb *z)
   /* chooses the best value of v */
   r = lucas_cost(multiplier, v[0]);
   i = 0;
-  for (d = 1; d < 10; d++)
+  for (int index = 1; index < 10; index++)
   {
-    e = lucas_cost(multiplier, v[d]);
-    if (e < r)
+    nbrMultipl = lucas_cost(multiplier, v[index]);
+    if (nbrMultipl < r)
     {
-      r = e;
-      i = d;
+      r = nbrMultipl;
+      i = index;
     }
   }
   d = multiplier;
@@ -195,9 +192,9 @@ void prac(int multiplier, limb* x, limb *z)
   {
     if (d < e)
     {
-      r = d;
+      int64_t tmp = d;
       d = e;
-      e = r;
+      e = tmp;
       t = xA;
       xA = xB;
       xB = t;
@@ -208,9 +205,9 @@ void prac(int multiplier, limb* x, limb *z)
     /* do the first line of Table 4 whose condition qualifies */
     if (((4 * d) <= (5 * e)) && (((d + e) % 3) == 0))
     { /* condition 1 */
-      r = ((2 * d) - e) / 3;
+      int64_t tmp = ((2 * d) - e) / 3;
       e = ((2 * e) - d) / 3;
-      d = r;
+      d = tmp;
       add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T = f(A,B,C) */
       add3(xT2, zT2, xT, zT, xA, zA, xB, zB); /* T2 = f(T,A,B) */
       add3(xB, zB, xB, zB, xT, zT, xA, zA); /* B = f(B,T,A) */
@@ -953,44 +950,41 @@ enum eEcmResult ecmCurve(int *pEC, int *pNextEC)
         }
       }
     }
-    boundStep1 = 2000;
-    boundStep2 = 200000;
-    sqrtBoundStep1 = 45;
-#ifdef __EMSCRIPTEN__
-    nbrPrimes = 303; /* Number of primes less than 2000 */
-#endif
-    if (EC > 25)
+    if (EC < 26)
     {
-      if (EC < 326)
-      {
-        boundStep1 = 50000;
-        boundStep2 = 5000000;
-        sqrtBoundStep1 = 224;
+      boundStep1 = 2000;
+      boundStep2 = 200000;
+      sqrtBoundStep1 = 45;
 #ifdef __EMSCRIPTEN__
-        nbrPrimes = 5133; /* Number of primes less than 50000 */
+      nbrPrimes = 303; /* Number of primes less than 2000 */
 #endif
-      }
-      else
-      {
-        if (EC < 2000)
-        {
-          boundStep1 = 1000000;
-          boundStep2 = 100000000;
-          sqrtBoundStep1 = 1001;
+    }
+    else if (EC < 326)
+    {
+      boundStep1 = 50000;
+      boundStep2 = 5000000;
+      sqrtBoundStep1 = 224;
 #ifdef __EMSCRIPTEN__
-          nbrPrimes = 78498; /* Number of primes less than 1000000 */
+      nbrPrimes = 5133; /* Number of primes less than 50000 */
 #endif
-        }
-        else
-        {
-          boundStep1 = 11000000;
-          boundStep2 = 1100000000;
-          sqrtBoundStep1 = 3316;
+    }
+    else if (EC < 2000)
+    {
+      boundStep1 = 1000000;
+      boundStep2 = 100000000;
+      sqrtBoundStep1 = 1001;
 #ifdef __EMSCRIPTEN__
-          nbrPrimes = 726517; /* Number of primes less than 11000000 */
+      nbrPrimes = 78498; /* Number of primes less than 1000000 */
 #endif
-        }
-      }
+    }
+    else
+    {
+      boundStep1 = 11000000;
+      boundStep2 = 1100000000;
+      sqrtBoundStep1 = 3316;
+#ifdef __EMSCRIPTEN__
+      nbrPrimes = 726517; /* Number of primes less than 11000000 */
+#endif
     }
 #ifdef __EMSCRIPTEN__
     ptrText = ptrLowerText;  // Point after number that is being factored.

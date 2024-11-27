@@ -1939,7 +1939,7 @@ static void MontgomeryMult11(const limb *pNbr1, const limb *pNbr2, limb *pProd)
 }
 #endif
 
-void endBigModmult(const limb *prodNotAdjusted, limb *product)
+void endBigModmult(const limb *prodNotAdjusted, const limb *origProd, limb *product)
 {
   int count;
   unsigned int cy = 0;
@@ -1948,7 +1948,7 @@ void endBigModmult(const limb *prodNotAdjusted, limb *product)
   int index = NumberLength;
   for (count = 0; count < NumberLength; count++)
   {
-    cy = (unsigned int)(product + index)->x - (unsigned int)(prodNotAdjusted+index)->x -
+    cy = (unsigned int)(origProd + index)->x - (unsigned int)(prodNotAdjusted+index)->x -
       (cy >> BITS_PER_GROUP);
     (product + count)->x = UintToInt(cy & MAX_VALUE_LIMB);
     index++;
@@ -2001,12 +2001,12 @@ void modmult(const limb* factor1, const limb* factor2, limb* product)
   if (NumberLength > MONTGOMERY_MULT_THRESHOLD)
   {
     // Compute T
-    multiply(factor1, factor2, product, NumberLength, NULL);
+    multiply(factor1, factor2, aux2, NumberLength, NULL);
     // Compute m
-    multiply(product, MontgomeryMultN, aux, NumberLength, NULL);
+    multiply(aux2, MontgomeryMultN, aux, NumberLength, NULL);
     // Compute mN
-    multiply(aux, TestNbr, aux2, NumberLength, NULL);
-    endBigModmult(aux2, product);
+    multiply(aux, TestNbr, aux, NumberLength, NULL);
+    endBigModmult(aux, aux2, product);
     return;
   }
        // Small numbers.

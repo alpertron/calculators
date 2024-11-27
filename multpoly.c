@@ -926,7 +926,7 @@ static bool MultiplyUsingKroneckerSubst(int degree1, int degree2,
         multiply(prod, MontgomeryMultN, tmp1, NumberLength, NULL);
         // Compute mN
         multiply(tmp1, TestNbr, tmp1, NumberLength, NULL);
-        endBigModmult(tmp1, prod);
+        endBigModmult(tmp1, prod, prod);
       }
     }
     // Find number of limbs of coefficients.

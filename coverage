@@ -133,6 +133,15 @@ make clean
 done
 for var in 64 32
 do
+make testmodmult $flags bits=$var
+echo -e "\n\n**** TESTMODMULT ****" >> coverage.out
+./testmodmult >> coverage.out
+lcov --capture --directory . --output-file testmodmult.info
+gcovr --merge-mode-functions=merge-use-line-min --json run-2-${var}.json
+make clean
+done
+for var in 64 32
+do
 make polfact $flags bits=$var
 echo -e "\n\n**** POLFACT ****" >> coverage.out
 ./polfact 0 "x^510-1" 0 0 >> coverage.out

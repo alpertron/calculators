@@ -29,7 +29,7 @@
 #include "fromBlockly.h"
 #include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 17
+#define DEBUG_CODE 24
 #endif
 #if (DEBUG_CODE == 9) || (DEBUG_CODE == 17)
 extern bool teach;
@@ -498,33 +498,40 @@ for (int k = 0; k < 100; k++)
     (void)printf("%s\n", output);
   }
 #elif DEBUG_CODE == 24
-  limb firstFactor[20];
-  limb secondFactor[20];
-  limb product[20];
-  int groups;
-  Dec2Bin("1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001", TestNbr, 115, &groups);
-  GetMontgomeryParms(groups);
-  memset(secondFactor, 0, groups * 4);
-  secondFactor[0].x = 32;
-  memcpy(firstFactor, MontgomeryMultR1, groups * 4);
-  char* ptrOutput = output;
-  copyStr(&ptrOutput, "TestNbr =          ");
-  Bin2Dec(&ptrOutput, TestNbr, groups, 0);
-  copyStr(&ptrOutput, "\nMontgomeryMultR1 = ");
-  Bin2Dec(&ptrOutput, MontgomeryMultR1, groups, 0);
-  copyStr(&ptrOutput, "\nMontgomeryMultR2 = ");
-  Bin2Dec(&ptrOutput, MontgomeryMultR2, groups, 0);
-  copyStr(&ptrOutput, "\nMontgomeryMultN =  ");
-  Bin2Dec(&ptrOutput, MontgomeryMultN, groups, 0);
-  copyStr(&ptrOutput, "\nFirstFactor =      ");
-  Bin2Dec(&ptrOutput, firstFactor, groups, 0);
-  copyStr(&ptrOutput, "\nSecondFactor =     ");
-  Bin2Dec(&ptrOutput, secondFactor, groups, 0);
-  modmult(firstFactor, secondFactor, product);
-  copyStr(&ptrOutput, "\nProduct =          ");
-  Bin2Dec(&ptrOutput, product, groups, 0);
-  copyStr(&ptrOutput, "\n");
-  (void)printf("%s\n", output);
+  limb product[501];
+  bool linePrinted = false;
+  for (int limbNbr = 0; limbNbr < 500; limbNbr++)
+  {
+    TestNbr[limbNbr].x = 0;
+    product[limbNbr+1].x = 0x32423424;
+    for (int ctr = 0; ctr < 7; ctr++)
+    {
+      TestNbr[limbNbr].x = TestNbr[limbNbr].x * 16 + 5;
+      GetMontgomeryParms(limbNbr + 1);
+      modmult(MontgomeryMultR1, MontgomeryMultR1, product);
+      int nbrBytes = NumberLength * (int)sizeof(limb);
+      if (memcmp(MontgomeryMultR1, product, nbrBytes) != 0)
+      {
+        (void)printf("Product is not equal to MontgomeryMultR1 in limbNbr = %d, ctr = %d\n", limbNbr, ctr);
+        linePrinted = true;
+        break;
+      }
+      if (product[limbNbr + 1].x != 0x32423424)
+      {
+        (void)printf("Overwriting after product when limbNbr = %d, ctr = %d\n", limbNbr, ctr);
+        linePrinted = true;
+        break;
+      }
+    }
+    if (linePrinted)
+    {
+      break;
+    }
+  }
+  if (!linePrinted)
+  {
+    (void)printf("No errors found in modmult test\n");
+  }
 #elif DEBUG_CODE == 25
   if (argc != 2)
   {
