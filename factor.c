@@ -69,6 +69,7 @@ int64_t Gamma[386];
 int64_t Delta[386];
 int64_t AurifQ[386];
 char tofactorDec[MAX_LEN*12];
+char tofactorDecNoSpaces[MAX_LEN * 12];
 extern int valueQ[MAX_LEN];
 int nbrToFactor[MAX_LEN];
 struct sFactors astFactorsMod[5000];
@@ -200,7 +201,7 @@ static int intTotient(int argument)
   return totient;
 }
 
-int Moebius(int argument)
+static int Moebius(int argument)
 {
   int moebius;
   int argumentDivisor;
@@ -250,7 +251,7 @@ int Moebius(int argument)
   return moebius;
 }
 
-void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, const BigInteger *BigBase)
+static void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, const BigInteger *BigBase)
 {
   static BigInteger x;
   static BigInteger Csal;
@@ -282,7 +283,7 @@ void GetAurifeuilleFactor(struct sFactors *pstFactors, int L, const BigInteger *
 }
 
 // Get Aurifeuille factors.
-void InsertAurifFactors(struct sFactors *pstFactors, const BigInteger *BigBase,
+static void InsertAurifFactors(struct sFactors *pstFactors, const BigInteger *BigBase,
   int exponent, int increment)
 {
   int Incre = increment;
@@ -1625,7 +1626,7 @@ static void SaveFactors(const struct sFactors *pstFactors)
   oldNbrFactors = pstFactors->multiplicity;
   *ptrText = '8';
   ptrText++;
-  copyStr(&ptrText, ptrInputText);
+  copyStr(&ptrText, tofactorDecNoSpaces);
   *ptrText = '=';
   ptrText++;
   for (int factorNbr = 1; factorNbr <= pstFactors->multiplicity; factorNbr++)
@@ -2235,8 +2236,8 @@ void factorExt(const BigInteger *toFactor, const int *number,
     SaveFactors(pstFactors);
 #endif
 #ifdef FACTORIZATION_APP
-    if (skipPrimality)
-    {
+    if (skipPrimality && *(pstCurFactor->ptrFactor) > 100)
+    {   // Factor is large. Skip primality assumes it is composite, so start factoring it.
       skipPrimality = false;
       result = 1;
     }

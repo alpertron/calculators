@@ -32,7 +32,15 @@ function comingFromPolfact(value)
   let ecmFactor = getStorage("ecmFactors");
   if (ecmFactor)
   {          // Continue factoring.
-    value.value = ecmFactor.slice(0,ecmFactor.indexOf("="));
+    let inputValue = getStorage("ecmInput");
+    if (inputValue == "")
+    {        // Old version does not have ecmInput.
+      value.value = ecmFactor.slice(0, ecmFactor.indexOf("="));
+    }
+    else
+    {
+      value.value = inputValue;
+    }
     newCurveOrFactor.value = getStorage("ecmCurve");
     dowork(-2);
     newCurveOrFactor.value = "";

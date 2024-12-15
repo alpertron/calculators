@@ -60,16 +60,16 @@ static void duplicate(limb* x2, limb* z2, const limb* x1, const limb* z1);
 #define DUP 5  /* number of multiplications in a duplicate */
 
 /* returns the number of modular multiplications */
-static int lucas_cost(int64_t multiplier, double v)
+static int lucas_cost(int multiplier, double v)
 {
   int nbrMultiplications;
-  int64_t e;
-  int64_t d = multiplier;
+  int e;
+  int d = multiplier;
   double dr = ((double)d / v) + 0.5;
   int r = (int)dr;
   if (r >= multiplier)
   {
-    return ADD * (int)multiplier;
+    return (ADD * multiplier);
   }
   d = multiplier - r;
   e = (2 * r) - multiplier;
@@ -78,20 +78,19 @@ static int lucas_cost(int64_t multiplier, double v)
   {
     if (d < e)
     {
-      int64_t tmp = d;
+      r = d;
       d = e;
-      e = tmp;
+      e = r;
     }
     if (((4 * d) <= (5 * e)) && (((d + e) % 3) == 0))
     { /* condition 1 */
-      int64_t tmp = ((2 * d) - e) / 3;
+      r = ((2 * d) - e) / 3;
       e = ((2 * e) - d) / 3;
-      d = tmp;
+      d = r;
       nbrMultiplications += 3 * ADD; /* 3 additions */
     }
-    else if ((((4 * d) <= (5 * e)) && (((d - e) % 6) == 0)) ||
-      ((d + e) % 2) == 0)
-    { /* condition 2 or condition 4 */
+    else if (((4 * d) <= (5 * e)) && (((d - e) % 6) == 0))
+    { /* condition 2 */
       d = (d - e) / 2;
       nbrMultiplications += ADD + DUP; /* one addition, one duplicate */
     }
@@ -99,6 +98,11 @@ static int lucas_cost(int64_t multiplier, double v)
     { /* condition 3 */
       d -= e;
       nbrMultiplications += ADD; /* one addition */
+    }
+    else if (((d + e) % 2) == 0)
+    { /* condition 4 */
+      d = (d - e) / 2;
+      nbrMultiplications += ADD + DUP; /* one addition, one duplicate */
     }
     else if ((d % 2) == 0)
     { /* condition 5 */
@@ -133,13 +137,12 @@ static int lucas_cost(int64_t multiplier, double v)
 }
 
 /* computes nP from P=(x:z) and puts the result in (x:z). Assumes n>2. */
-void prac(int64_t multiplier, limb* x, limb *z)
+static void prac(int multiplier, limb* x, limb *z)
 {
-  int64_t d;
-  int64_t e;
+  int d;
+  int e;
   int r;
   int i;
-  int nbrMultipl;
   double dr;
   limb* t;
   limb* xA = x;
@@ -168,13 +171,13 @@ void prac(int64_t multiplier, limb* x, limb *z)
   /* chooses the best value of v */
   r = lucas_cost(multiplier, v[0]);
   i = 0;
-  for (int index = 1; index < 10; index++)
+  for (d = 1; d < 10; d++)
   {
-    nbrMultipl = lucas_cost(multiplier, v[index]);
-    if (nbrMultipl < r)
+    e = lucas_cost(multiplier, v[d]);
+    if (e < r)
     {
-      r = nbrMultipl;
-      i = index;
+      r = e;
+      i = d;
     }
   }
   d = multiplier;
@@ -192,9 +195,9 @@ void prac(int64_t multiplier, limb* x, limb *z)
   {
     if (d < e)
     {
-      int64_t tmp = d;
+      r = d;
       d = e;
-      e = tmp;
+      e = r;
       t = xA;
       xA = xB;
       xB = t;
@@ -205,9 +208,9 @@ void prac(int64_t multiplier, limb* x, limb *z)
     /* do the first line of Table 4 whose condition qualifies */
     if (((4 * d) <= (5 * e)) && (((d + e) % 3) == 0))
     { /* condition 1 */
-      int64_t tmp = ((2 * d) - e) / 3;
+      r = ((2 * d) - e) / 3;
       e = ((2 * e) - d) / 3;
-      d = tmp;
+      d = r;
       add3(xT, zT, xA, zA, xB, zB, xC, zC); /* T = f(A,B,C) */
       add3(xT2, zT2, xT, zT, xA, zA, xB, zB); /* T2 = f(T,A,B) */
       add3(xB, zB, xB, zB, xT, zT, xA, zA); /* B = f(B,T,A) */
@@ -451,7 +454,7 @@ static void GenerateSieve(int initial)
 /*******************************/
 /* First step of ECM algorithm */
 /*******************************/
-enum eEcmResult ecmStep1(void)
+static enum eEcmResult ecmStep1(void)
 {
   int I;
   int P;
@@ -621,7 +624,7 @@ enum eEcmResult ecmStep1(void)
 /******************************************************/
 /* Second step (using improved standard continuation) */
 /******************************************************/
-enum eEcmResult ecmStep2(void)
+static enum eEcmResult ecmStep2(void)
 {
   int j;
   StepECM = 2;

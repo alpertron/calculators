@@ -30,9 +30,9 @@
 
 #ifdef FACTORIZATION_APP
 #ifdef __EMSCRIPTEN__
-extern bool skipPrimality;
 extern int64_t lModularMult;
 #endif
+extern bool skipPrimality;
 extern bool fromFile;
 extern bool lineEndingCRLF;
 extern BigInteger tofactor;
@@ -69,12 +69,14 @@ void batchEcmCallback(char **pptrOutput, int type)
     }
   }
   char *ptrFactorDec = tofactorDec;
+  char* ptrFactorDecNoSpaces = tofactorDecNoSpaces;
   *ptrFactorDec = 0;
+  *ptrFactorDecNoSpaces = 0;
   NumberLength = tofactor.nbrLimbs;
   BigInteger2IntArray(nbrToFactor, &tofactor);
-  if (*nbrToFactor < 0)
+  if (nbrToFactor[0] < 0)
   {    // If number is negative, make it positive.
-    *nbrToFactor = -*nbrToFactor;
+    nbrToFactor[0] = -nbrToFactor[0];
   }
   if (type == BATCH_NO_QUOTE)
   {
@@ -82,6 +84,8 @@ void batchEcmCallback(char **pptrOutput, int type)
     {
       *ptrFactorDec = '-';
       ptrFactorDec++;
+      *ptrFactorDecNoSpaces = '-';
+      ptrFactorDecNoSpaces++;
     }
     if (hexadecimal)
     {
@@ -91,6 +95,9 @@ void batchEcmCallback(char **pptrOutput, int type)
     {
       Bin2Dec(&ptrFactorDec, tofactor.limbs, tofactor.nbrLimbs, groupLen);
     }
+    Bin2Dec(&ptrFactorDecNoSpaces, tofactor.limbs, tofactor.nbrLimbs, 0);
+    *ptrFactorDec = 0;           // Add string terminator.
+    *ptrFactorDecNoSpaces = 0;   // Add string terminator.
   }
   if (doFactorization)
   {
@@ -721,7 +728,7 @@ EXTERNALIZE void doWork(void)
 {
   int flags;
   char *ptrData = inputString;
-  const char *ptrWebStorage;
+  char *ptrWebStorage;
   char *ptrKnownFactors;
 #ifdef __EMSCRIPTEN__
   originalTenthSecond = tenths();
@@ -767,7 +774,6 @@ EXTERNALIZE void doWork(void)
 #ifndef lang  
   lang = ((flags & 1)? true: false);
 #endif
-#ifdef __EMSCRIPTEN__
   useBlockly = false;
   doShowPrime = false;
   if ((flags & (-2)) == '8')
@@ -787,7 +793,6 @@ EXTERNALIZE void doWork(void)
   else
   {                      // No more cases.
   }
-#endif
   ptrData += 2;          // Skip app number and second comma.
   fromFile = (*ptrData == '1');
   ptrData++;
@@ -803,7 +808,20 @@ EXTERNALIZE void doWork(void)
     ptrData++;
   }
   ptrData++;    // Skip comma.
-  ptrWebStorage = ptrData + (int)strlen(ptrData) + 1;
+  ptrWebStorage = ptrData;
+  while (*ptrWebStorage != 0x01)
+  {
+    if (*ptrWebStorage == 0x00)
+    {
+#ifdef __EMSCRIPTEN__
+      databack("\x02Missing separator character");
+#endif
+      return;
+    }
+    ptrWebStorage++;
+  }
+  *ptrWebStorage = 0; // Replace separator by terminator.
+  ptrWebStorage++;    // Skip separator.
   if (useBlockly)
   {
     ptrKnownFactors = NULL;
@@ -818,11 +836,11 @@ EXTERNALIZE void doWork(void)
   }
   if (ptrKnownFactors != NULL)
   {
-    ptrKnownFactors++;
+    ptrKnownFactors++;     // Skip equal sign.
   }
   if ((flags & 0x80) && (ptrKnownFactors != NULL))
   {
-    flags = 2;    // Do factorization.
+    flags = 2;             // Do factorization.
   }
   if (useBlockly)
   {

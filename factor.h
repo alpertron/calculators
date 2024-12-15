@@ -73,6 +73,7 @@ extern int matrixCols;
 extern int nbrPartials;
 
 extern char tofactorDec[MAX_LEN*12];
+extern char tofactorDecNoSpaces[MAX_LEN*12];
 extern bool prettyprint;
 extern bool cunningham;
 extern bool hexadecimal;

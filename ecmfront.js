@@ -347,6 +347,7 @@ function performWork(n, valueText)
   let param;
   app = lang + n;
   let charNull = String.fromCharCode(0);
+  let charSeparator = String.fromCharCode(1);
   let helphelp = get("helphelp");
   hide("sharediv");
   showResult = true;
@@ -395,7 +396,7 @@ function performWork(n, valueText)
     app += 6;   // Convert to factorization.
   }
   param = digits + "," + app + "," + fromFile + config.substring(1) + "," +
-          valueText + charNull + getStorage("ecmFactors");
+          valueText + charSeparator + getStorage("ecmFactors");
   if (n === -1 || n === -2)
   {           // Append new curve number typed by user.
     param += "," + newCurveOrFactor.value;
@@ -434,6 +435,15 @@ function dowork(n)
   else
   {
     valueText = value.value.replace(/\u2011/g, "-");
+    setStorage("ecmInput", value.value);
+    if (n == -2 || n == 4)
+    {     // Automatic factorization or pressed skip test.
+      let ecmFactor = getStorage("ecmFactors");
+      if (ecmFactor !== "")
+      {
+        valueText = ecmFactor.slice(0, ecmFactor.indexOf("="));
+      }
+    }
     performWork(n, valueText);
   }
 }
@@ -524,7 +534,7 @@ function popstate(event)
   {     // End wizard.
     show("main");
     hide("wizard");
-    get("value").focus();
+    value.focus();
   }
   else if (get("blockmode").style.display == "flex")
   {     // End blockly mode.
@@ -842,13 +852,13 @@ function startUp()
   {
     generateFuncButtons("wzdfunccat", "wzdfuncbtns");
   };
-  get("value").onfocus = function()
+  value.onfocus = function()
   {
-    currentInputBox = get("value");
+    currentInputBox = value;
   };
-  get("wzdinput").onfocus = function()
+  wzdInput.onfocus = function()
   {
-    currentInputBox = get("wzdinput");
+    currentInputBox = wzdInput;
   };
   get("comments").oninput = function(_event)
   {
@@ -997,7 +1007,7 @@ function startUp()
   updateVerbose(config.charAt(1) === "1");
   comingFromPolfact(value);
   registerServiceWorker();
-  currentInputBox = get("value");
+  currentInputBox = value;
   generateFuncButtons("funccat", "funcbtns");
   generateFuncButtons("wzdfunccat", "wzdfuncbtns");
   completeFuncButtons("funcbtns");

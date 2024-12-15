@@ -29,7 +29,10 @@
 #include "fromBlockly.h"
 #include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 24
+#define DEBUG_CODE 29
+#endif
+#ifdef __EMSCRIPTEN__
+extern char inputString[];
 #endif
 #if (DEBUG_CODE == 9) || (DEBUG_CODE == 17)
 extern bool teach;
