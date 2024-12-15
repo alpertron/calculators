@@ -436,7 +436,7 @@ function dowork(n)
   {
     valueText = value.value.replace(/\u2011/g, "-");
     setStorage("ecmInput", value.value);
-    if (n == -2 || n == 4)
+    if (n === -2 || n === 4)
     {     // Automatic factorization or pressed skip test.
       let ecmFactor = getStorage("ecmFactors");
       if (ecmFactor !== "")

@@ -25,6 +25,7 @@
 /* global newCurveOrFactor */
 /* global resultDirty */
 /* global resultText */
+/* global setStorage */
 /* global tofile */
 function loadPolyCalc(firstChar, value)
 {
@@ -64,7 +65,7 @@ function comingFromPolfact(value)
       if (ecmFactor)
       {          // Continue factoring.
         let inputValue = getStorage("ecmInput");
-        if (inputValue == "")
+        if (inputValue === "")
         {        // Old version does not have ecmInput.
           value.value = ecmFactor.slice(0, ecmFactor.indexOf("="));
         }
