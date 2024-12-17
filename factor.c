@@ -901,13 +901,14 @@ static void Lehman(const BigInteger *nbr, int multiplier, BigInteger *factor)
     0x1713E694U, // squares mod 61
   };
   const int primes[NBR_PRIMES_QUADR_SIEVE] =
-      { 3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
-        37, 41, 43, 47, 53, 59, 61 };
+  { 3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
+    37, 41, 43, 47, 53, 59, 61 };
   int nbrs[NBR_PRIMES_QUADR_SIEVE];
   int diffs[NBR_PRIMES_QUADR_SIEVE];
   int i;
   int m;
   int r;
+  int diff;
   int nbrLimbs;
   int nbrIterations;
   static BigInteger sqrRoot;
@@ -920,6 +921,7 @@ static void Lehman(const BigInteger *nbr, int multiplier, BigInteger *factor)
   { // nbr is even
     r = 0;
     m = 1;
+    diff = 2;    // 2 * m * m
   }
   else
   {
@@ -927,11 +929,13 @@ static void Lehman(const BigInteger *nbr, int multiplier, BigInteger *factor)
     { // multiplier is even
       r = 1;
       m = 2;
+      diff = 8;    // 2 * m * m
     }
     else
     { // multiplier is odd
       r = (multiplier + nbr->limbs[0].x) & 3;
       m = 4;
+      diff = 32;    // 2 * m * m
     }
   }
   intToBigInteger(&sqr, multiplier * 4);
@@ -941,7 +945,7 @@ static void Lehman(const BigInteger *nbr, int multiplier, BigInteger *factor)
   CopyBigInt(&a, &sqrRoot);
   for (;;)
   {
-    if ((a.limbs[0].x & (m-1)) == r)
+    if ((a.limbs[0].x & (m - 1)) == r)
     {
       (void)BigIntMultiply(&a, &a, &nextroot);
       BigIntSubt(&nextroot, &sqr, &nextroot);
@@ -960,57 +964,89 @@ static void Lehman(const BigInteger *nbr, int multiplier, BigInteger *factor)
     nbrs[i] = getRemainder(&c, pr);    // nbrs[i] <- c % primes[i]
     diffs[i] = m * ((getRemainder(&a, pr) * 2) + m) % pr;
   }
-  nbrLimbs = factor->nbrLimbs;
+  nbrLimbs = nbr->nbrLimbs;
   if (nbrLimbs > 10)
   {
-    nbrIterations = 10000;
+    nbrIterations = 50000;
   }
   else
   {
-    nbrIterations = 1000 * factor->nbrLimbs;
+    nbrIterations = 5000 * nbr->nbrLimbs;
   }
   for (int iterNbr = 0; iterNbr < nbrIterations; iterNbr++)
   {
-    for (i = 0; i < NBR_PRIMES_QUADR_SIEVE; i++)
-    {
-      unsigned int shiftBits = (unsigned int)nbrs[i];
-      unsigned int bitsSqr;
-      unsigned int bitsToShift;
-      if (shiftBits < 32U)
+    if ((((bitsSqrLow[0] >> (unsigned int)nbrs[0]) & 0x01U) != 0x00U) &&
+      (((bitsSqrLow[1] >> (unsigned int)nbrs[1]) & 0x01U) != 0x00U) &&
+      (((bitsSqrLow[2] >> (unsigned int)nbrs[2]) & 0x01U) != 0x00U) &&
+      (((bitsSqrLow[3] >> (unsigned int)nbrs[3]) & 0x01U) != 0x00U) &&
+      (((bitsSqrLow[4] >> (unsigned int)nbrs[4]) & 0x01U) != 0x00U) &&
+      (((bitsSqrLow[5] >> (unsigned int)nbrs[5]) & 0x01U) != 0x00U) &&
+      (((bitsSqrLow[6] >> (unsigned int)nbrs[6]) & 0x01U) != 0x00U) &&
+      (((bitsSqrLow[7] >> (unsigned int)nbrs[7]) & 0x01U) != 0x00U) &&
+      (((bitsSqrLow[8] >> (unsigned int)nbrs[8]) & 0x01U) != 0x00U) &&
+      (((bitsSqrLow[9] >> (unsigned int)nbrs[9]) & 0x01U) != 0x00U))
+    {   // Perfect square mod 3, 5, 7, ..., 29 and 31.
+      for (i = 10; i < NBR_PRIMES_QUADR_SIEVE; i++)
       {
-        bitsSqr = bitsSqrLow[i];
+        unsigned int shiftBits = (unsigned int)nbrs[i];
+        unsigned int bitsSqr = (shiftBits < 32U ? bitsSqrLow[i] : bitsSqrHigh[i]);
+        unsigned int bitsToShift = shiftBits & 0x1FU;
+        if (((bitsSqr >> bitsToShift) & 0x01U) == 0U)
+        { // Not a perfect square
+          break;
+        }
       }
-      else
-      {
-        bitsSqr = bitsSqrHigh[i];
-      }
-      bitsToShift = shiftBits & 0x1FU;
-      if (((bitsSqr >> bitsToShift) & 0x01U) == 0U)
-      { // Not a perfect square
-        break;
-      }
-    }
-    if (i == NBR_PRIMES_QUADR_SIEVE)
-    { // Test for perfect square
-      intToBigInteger(&c, m * iterNbr);           // c <- m * j
-      BigIntAdd(&a, &c, &val);
-      (void)BigIntMultiply(&val, &val, &c); // c <- val * val
-      BigIntSubt(&c, &sqr, &c);             // c <- val * val - sqr
-      squareRoot(c.limbs, sqrRoot.limbs, c.nbrLimbs, &sqrRoot.nbrLimbs);
-      sqrRoot.sign = SIGN_POSITIVE;         // sqrRoot <- sqrt(c)
-      BigIntAdd(&sqrRoot, &val, &sqrRoot);
-      BigIntGcd(&sqrRoot, nbr, &c);         // Get GCD(sqrRoot + val, nbr)
-      if (c.nbrLimbs > 1)
-      {    // Non-trivial factor has been found.
-        CopyBigInt(factor, &c);
-        return;
+      if (i == NBR_PRIMES_QUADR_SIEVE)
+      { // Test for perfect square
+        intToBigInteger(&c, m * iterNbr);     // c <- m * j
+        BigIntAdd(&a, &c, &val);
+        (void)BigIntMultiply(&val, &val, &c); // c <- val * val
+        BigIntSubt(&c, &sqr, &c);             // c <- val * val - sqr
+        squareRoot(c.limbs, sqrRoot.limbs, c.nbrLimbs, &sqrRoot.nbrLimbs);
+        sqrRoot.sign = SIGN_POSITIVE;         // sqrRoot <- sqrt(c)
+        BigIntAdd(&sqrRoot, &val, &sqrRoot);
+        BigIntGcd(&sqrRoot, nbr, &c);         // Get GCD(sqrRoot + val, nbr)
+        if (c.nbrLimbs > 1)
+        {    // Non-trivial factor has been found.
+          CopyBigInt(factor, &c);
+          return;
+        }
       }
     }
-    for (i = 0; i < NBR_PRIMES_QUADR_SIEVE; i++)
-    {
-      nbrs[i] = (nbrs[i] + diffs[i]) % primes[i];
-      diffs[i] = (diffs[i] + (2 * m * m)) % primes[i];
-    }
+    nbrs[0] = (nbrs[0] + diffs[0]) % 3;
+    diffs[0] = (diffs[0] + diff) % 3;
+    nbrs[1] = (nbrs[1] + diffs[1]) % 5;
+    diffs[1] = (diffs[1] + diff) % 5;
+    nbrs[2] = (nbrs[2] + diffs[2]) % 7;
+    diffs[2] = (diffs[2] + diff) % 7;
+    nbrs[3] = (nbrs[3] + diffs[3]) % 11;
+    diffs[3] = (diffs[3] + diff) % 11;
+    nbrs[4] = (nbrs[4] + diffs[4]) % 13;
+    diffs[4] = (diffs[4] + diff) % 13;
+    nbrs[5] = (nbrs[5] + diffs[5]) % 17;
+    diffs[5] = (diffs[5] + diff) % 17;
+    nbrs[6] = (nbrs[6] + diffs[6]) % 19;
+    diffs[6] = (diffs[6] + diff) % 19;
+    nbrs[7] = (nbrs[7] + diffs[7]) % 23;
+    diffs[7] = (diffs[7] + diff) % 23;
+    nbrs[8] = (nbrs[8] + diffs[8]) % 29;
+    diffs[8] = (diffs[8] + diff) % 29;
+    nbrs[9] = (nbrs[9] + diffs[9]) % 31;
+    diffs[9] = (diffs[9] + diff) % 31;
+    nbrs[10] = (nbrs[10] + diffs[10]) % 37;
+    diffs[10] = (diffs[10] + diff) % 37;
+    nbrs[11] = (nbrs[11] + diffs[11]) % 41;
+    diffs[11] = (diffs[11] + diff) % 41;
+    nbrs[12] = (nbrs[12] + diffs[12]) % 43;
+    diffs[12] = (diffs[12] + diff) % 43;
+    nbrs[13] = (nbrs[13] + diffs[13]) % 47;
+    diffs[13] = (diffs[13] + diff) % 47;
+    nbrs[14] = (nbrs[14] + diffs[14]) % 53;
+    diffs[14] = (diffs[14] + diff) % 53;
+    nbrs[15] = (nbrs[15] + diffs[15]) % 59;
+    diffs[15] = (diffs[15] + diff) % 59;
+    nbrs[16] = (nbrs[16] + diffs[16]) % 61;
+    diffs[16] = (diffs[16] + diff) % 61;
   }
   intToBigInteger(factor, 1);   // Factor not found.
 }
@@ -1106,7 +1142,7 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
   {
     enum eEcmResult ecmResp;
     // Try to factor BigInteger N using Lehman algorithm. Result in potentialFactor.
-    Lehman(numToFactor, EC % 50000000, &potentialFactor);
+    Lehman(numToFactor, (EC % 50000000) + 1, &potentialFactor);
     if (potentialFactor.nbrLimbs > 1)
     {                // Factor found.
       int lenBytes;
