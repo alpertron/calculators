@@ -2233,8 +2233,10 @@ void factorExt(const BigInteger *toFactor, const int *number,
   {
     if (toFactor->nbrLimbs > 200)
     {
+#ifdef __EMSCRIPTEN__
       databack(lang ? "3<p>Verificando si el número es una potencia perfecta más o menos 1.</p>" :
         "3<p>Testing whether the number is a perfect power plus or minus one or not.</p>");
+#endif
     }
     PowerPM1Check(pstFactors, toFactor);
   }
