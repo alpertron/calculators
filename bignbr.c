@@ -861,9 +861,11 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
   int nbrLimbs = pBigInt->nbrLimbs;
   assert(nbrLimbs >= 1);
   // Point to most significant limb.
+#ifndef _USING64BITS_
   double dDivisor = (double)divisor;
   double dInvDivisor = 1.0 / dDivisor;
   double dLimb = (double)LIMB_RANGE;
+#endif
 
   if (subt >= 0)
   {
@@ -908,6 +910,13 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
     // Divide number by divisor.
     for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
     {
+#ifdef _USING64BITS_
+      uint64_t oldLimb = (uint64_t)remainder << BITS_PER_GROUP;
+      uint64_t newLimb = (uint64_t)pLimbs->x;
+      uint64_t numerator = oldLimb + newLimb;
+      int64_t quotient = numerator / divisor;
+      remainder = (int)(numerator - (divisor * quotient));
+#else
       unsigned int dividend = ((unsigned int)remainder << BITS_PER_GROUP) + 
         (unsigned int)pLimbs->x;
       double dDividend = ((double)remainder * dLimb) + (double)pLimbs->x;
@@ -919,6 +928,7 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
         quotient--;
         remainder += divisor;
       }
+#endif
       pLimbs->x = (int)quotient;
       pLimbs--;
     }
@@ -935,8 +945,10 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
   int remainder = 0;
   int nbrLimbs = pBigInt->nbrLimbs;
   assert(nbrLimbs >= 1);
+#ifndef _USING64BITS_
   double dDivisor = (double)divisor;
   double dLimb = 0x80000000;
+#endif
   const limb *pLimb = &pBigInt->limbs[nbrLimbs - 1];
   if (divisor == 2)
   {
@@ -944,6 +956,11 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
   }
   for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
+#ifdef _USING64BITS_
+    uint64_t oldLimb = (uint64_t)remainder << BITS_PER_GROUP;
+    uint64_t newLimb = (uint64_t)pLimb->x;
+    remainder = (int)((oldLimb + newLimb) % divisor);
+#else
     int dividend = UintToInt(((unsigned int)remainder << BITS_PER_GROUP) +
       (unsigned int)pLimb->x);
     double dDividend = ((double)remainder * dLimb) + (double)pLimb->x;
@@ -952,6 +969,7 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
     remainder = dividend - (quotient * divisor);
     // Adjust remainder if not in range 0 <= remainder < divisor..
     remainder += divisor & (remainder >> BITS_PER_GROUP);
+#endif
     pLimb--;
   }
   if ((pBigInt->sign == SIGN_NEGATIVE) && (remainder != 0))
@@ -969,9 +987,11 @@ int getQuotientAndRemainder(const BigInteger* pDividend, int divisor, BigInteger
   limb* ptrQuot;
   assert(nbrLimbs >= 1);
   // Point to most significant limb.
+#ifndef _USING64BITS_
   double dDivisor = (double)divisor;
   double dInvDivisor = 1.0 / dDivisor;
   double dLimb = (double)LIMB_RANGE;
+#endif
   if (divisor == 2)
   {      // Use shifts for divisions by 2.
     ptrDivid = pDividend->limbs;
@@ -997,6 +1017,13 @@ int getQuotientAndRemainder(const BigInteger* pDividend, int divisor, BigInteger
     // Divide number by divisor.
     for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
     {
+#ifdef _USING64BITS_
+      uint64_t oldLimb = (uint64_t)remainder << BITS_PER_GROUP;
+      uint64_t newLimb = (uint64_t)ptrDivid->x;
+      uint64_t numerator = oldLimb + newLimb;
+      int64_t quotient = numerator / divisor;
+      remainder = (int)(numerator - (divisor * quotient));
+#else
       unsigned int dividend = ((unsigned int)remainder << BITS_PER_GROUP) +
         (unsigned int)ptrDivid->x;
       double dDividend = ((double)remainder * dLimb) + (double)ptrDivid->x;
@@ -1008,6 +1035,7 @@ int getQuotientAndRemainder(const BigInteger* pDividend, int divisor, BigInteger
         quotient--;
         remainder += divisor;
       }
+#endif
       ptrQuot->x = (int)quotient;
       ptrQuot--;
       ptrDivid--;

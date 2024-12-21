@@ -255,7 +255,8 @@ void classicalDivision(const BigInteger* pDividend, const BigInteger* pDivisor,
 // After computing the number of limbs of the results, this routine finds the inverse
 // of the divisor and then multiplies it by the dividend using nbrLimbs+1 limbs.
 // After that, the quotient is adjusted.
-enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivisor, BigInteger *pQuotient)
+enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivisor,
+  BigInteger *pQuotient)
 {
   double inverse;
   limb oldLimb;
