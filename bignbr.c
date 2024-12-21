@@ -330,11 +330,41 @@ enum eExprErr BigIntRemainder(const BigInteger *pDividend,
   const BigInteger *pDivisor, BigInteger *pRemainder)
 {
   enum eExprErr rc;
-  assert(pDividend->nbrLimbs >= 1);
-  assert(pDivisor->nbrLimbs >= 1);
+  int nbrLimbsDividend = pDividend->nbrLimbs;
+  int nbrLimbsDivisor = pDivisor->nbrLimbs;
+  assert(nbrLimbsDividend >= 1);
+  assert(nbrLimbsDivisor >= 1);
   if (BigIntIsZero(pDivisor))
   {   // If divisor = 0, then remainder is the dividend.
     CopyBigInt(pRemainder, pDividend);
+    return EXPR_OK;
+  }
+  if (nbrLimbsDividend < nbrLimbsDivisor)
+  {
+    CopyBigInt(pRemainder, pDividend);
+    return EXPR_OK;
+  }
+  if (nbrLimbsDivisor == 1)
+  {
+    int divisor = pDivisor->limbs[0].x;
+    int remainder = getRemainder(pDividend, divisor);
+    if ((remainder != 0) && (pDividend->sign == SIGN_NEGATIVE))
+    {
+      if (divisor > 0)
+      {
+        remainder -= divisor;
+      }
+      else
+      {
+        remainder += divisor;
+      }
+    }
+    intToBigInteger(pRemainder, remainder);
+    return EXPR_OK;
+  }
+  if (nbrLimbsDivisor < 64)
+  {
+    classicalDivision(pDividend, pDivisor, NULL, pRemainder);
     return EXPR_OK;
   }
   CopyBigInt(&Temp2, pDividend);
@@ -908,6 +938,10 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
   double dDivisor = (double)divisor;
   double dLimb = 0x80000000;
   const limb *pLimb = &pBigInt->limbs[nbrLimbs - 1];
+  if (divisor == 2)
+  {
+    return pBigInt->limbs[0].x & 1;
+  }
   for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
   {
     int dividend = UintToInt(((unsigned int)remainder << BITS_PER_GROUP) +
@@ -924,6 +958,66 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
   {
     remainder = divisor - remainder;
   }
+  return remainder;
+}
+
+int getQuotientAndRemainder(const BigInteger* pDividend, int divisor, BigInteger *pQuotient)
+{
+  int nbrLimbs = pDividend->nbrLimbs;
+  int remainder;
+  const limb* ptrDivid;
+  limb* ptrQuot;
+  assert(nbrLimbs >= 1);
+  // Point to most significant limb.
+  double dDivisor = (double)divisor;
+  double dInvDivisor = 1.0 / dDivisor;
+  double dLimb = (double)LIMB_RANGE;
+  if (divisor == 2)
+  {      // Use shifts for divisions by 2.
+    ptrDivid = pDividend->limbs;
+    ptrQuot = pQuotient->limbs;
+    unsigned int curLimb = (unsigned int)ptrDivid->x;
+    for (int ctr = 1; ctr < nbrLimbs; ctr++)
+    {  // Process starting from least significant limb.
+      unsigned int nextLimb = (unsigned int)(ptrDivid + 1)->x;
+      ptrQuot->x = UintToInt(((curLimb >> 1) | (nextLimb << BITS_PER_GROUP_MINUS_1)) &
+        MAX_VALUE_LIMB);
+      ptrDivid++;
+      ptrQuot++;
+      curLimb = nextLimb;
+    }
+    ptrQuot->x = UintToInt((curLimb >> 1) & MAX_VALUE_LIMB);
+    remainder = pDividend->limbs[0].x & 1;
+  }
+  else
+  {
+    remainder = 0;
+    ptrDivid = pDividend->limbs + nbrLimbs - 1;
+    ptrQuot = pQuotient->limbs + nbrLimbs - 1;
+    // Divide number by divisor.
+    for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
+    {
+      unsigned int dividend = ((unsigned int)remainder << BITS_PER_GROUP) +
+        (unsigned int)ptrDivid->x;
+      double dDividend = ((double)remainder * dLimb) + (double)ptrDivid->x;
+      double dQuotient = (dDividend * dInvDivisor) + 0.5;
+      unsigned int quotient = (unsigned int)dQuotient;   // quotient has correct value or 1 more.
+      remainder = UintToInt(dividend - (quotient * (unsigned int)divisor));
+      if (remainder < 0)
+      {     // remainder not in range 0 <= remainder < divisor. Adjust.
+        quotient--;
+        remainder += divisor;
+      }
+      ptrQuot->x = (int)quotient;
+      ptrQuot--;
+      ptrDivid--;
+    }
+  }
+  if ((nbrLimbs > 1) && (pQuotient->limbs[nbrLimbs - 1].x == 0))
+  {   // Most significant limb is now zero, so discard it.
+    nbrLimbs--;
+  }
+  pQuotient->nbrLimbs = nbrLimbs;
   return remainder;
 }
 
@@ -1056,7 +1150,7 @@ void addmult(BigInteger *pResult, const BigInteger *pMult1, int iMult1,
   BigIntAdd(pResult, &Temp, pResult);
 }
 
-int intModPow(int NbrMod, int Expon, int currentPrime)
+static int intModPow(int NbrMod, int Expon, int currentPrime)
 {
   int exponent = Expon;
   unsigned int power = 1;
@@ -1314,6 +1408,7 @@ int PowerCheck(const BigInteger *pBigNbr, BigInteger *pBase)
   double log2N;
   double log2root;
   double dMaxExpon;
+  assert(pBigNbr->nbrLimbs >= 1);
   int prime2310x1[] =
   { 2311, 4621, 9241, 11551, 18481, 25411, 32341, 34651, 43891, 50821 };
   // Primes of the form 2310x+1.

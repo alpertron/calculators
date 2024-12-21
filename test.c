@@ -103,6 +103,10 @@ int main(int argc, char* argv[])
   return 0;
 #elif DEBUG_CODE == 4
   char* ptrOutput;
+  if (argc != 3)
+  {
+    printf("Arguments: dividend divisor");
+  }
   if (argv[1][0] == '-')
   {
     Dec2Bin(&argv[1][1], dividend.limbs, (int)strlen(&argv[1][1]), &dividend.nbrLimbs);
@@ -136,6 +140,17 @@ int main(int argc, char* argv[])
   else
   {
     (void)printf("Quotient = -%s\n", output);
+  }
+  BigIntRemainder(&dividend, &divisor, &quotient);
+  ptrOutput = output;
+  Bin2Dec(&ptrOutput, quotient.limbs, quotient.nbrLimbs, 0);
+  if (quotient.sign == SIGN_POSITIVE)
+  {
+    (void)printf("Remainder = %s\n", output);
+  }
+  else
+  {
+    (void)printf("Remainder = -%s\n", output);
   }
 #elif DEBUG_CODE == 5
   int i;

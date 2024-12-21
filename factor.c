@@ -653,11 +653,11 @@ static void initProcessExponVector(const BigInteger* numToFactor, int numPrimes,
          // If n+/-1 is multiple of p, then it must be multiple
          // of p^2, otherwise it cannot be a perfect power.
     bool isPower;
-    int rem = getRemainder(numToFactor, currentPrime);
-    uint64_t iSquared = (uint64_t)currentPrime * (uint64_t)currentPrime;
-    longToBigInteger(&Temp1, iSquared);
+    int rem = getQuotientAndRemainder(numToFactor, currentPrime, &Temp2);
+    int rem2 = getRemainder(&Temp2, currentPrime);
+    longToBigInteger(&Temp1, (int64_t)currentPrime * (int64_t)currentPrime);
     // Compute Temp2 as the remainder of nbrToFactor divided by (i*i).
-    (void)BigIntRemainder(numToFactor, &Temp1, &Temp2);
+    longToBigInteger(&Temp2, (int64_t)rem2 * (int64_t)currentPrime + (int64_t)rem);
     isPower = isPerfectPower(rem, currentPrime, &Temp2);
     if (!isPower)
     {
@@ -749,8 +749,8 @@ static void insertAlgebraicFactorMinus(int expon, int divExpon, struct sFactors*
 {
   if ((expon > divExpon) && ((expon % divExpon) == 0))
   {
-    BigIntPowerIntExp(&Temp1, expon / divExpon, &Temp2);
-    BigIntPowerIntExp(&Temp3, expon / divExpon, &Temp4);
+    BigIntPowerIntExp(&prime, expon / divExpon, &Temp2);
+    BigIntPowerIntExp(&power, expon / divExpon, &Temp4);
     BigIntSubt(&Temp2, &Temp4, &Temp4);
     insertBigFactor(pstFactors, &Temp4, TYP_ALGEBR);
   }
@@ -760,8 +760,8 @@ static void insertAlgebraicFactorPlus(int expon, int divExpon, struct sFactors* 
 {
   if ((expon > divExpon) && ((expon % divExpon) == 0))
   {
-    BigIntPowerIntExp(&Temp1, expon / divExpon, &Temp2);
-    BigIntPowerIntExp(&Temp3, expon / divExpon, &Temp4);
+    BigIntPowerIntExp(&prime, expon / divExpon, &Temp2);
+    BigIntPowerIntExp(&power, expon / divExpon, &Temp4);
     BigIntAdd(&Temp2, &Temp4, &Temp4);
     insertBigFactor(pstFactors, &Temp4, TYP_ALGEBR);
   }
@@ -808,15 +808,16 @@ static void getFactorsSumDiffPowers(struct sFactors* pstFactors,
   for (int expon = MAX_ALGEBRAIC_EXPON; expon >= 3; expon--)
   {
     // Check whether the number has the form a^e - b^e.
-    (void)BigIntRoot(numToFactor, &Temp1, expon);
-    addbigint(&Temp1, 1);   // This is the value of a.
-    (void)BigIntPowerIntExp(&Temp1, expon, &Temp2);
+    // Use temporary values prime and power for a and b respectively.
+    (void)BigIntRoot(numToFactor, &prime, expon);
+    addbigint(&prime, 1);   // "prime" is the value of a.
+    (void)BigIntPowerIntExp(&prime, expon, &Temp2);
     BigIntSubt(&Temp2, numToFactor, &Temp2);
-    (void)BigIntRoot(&Temp2, &Temp3, expon);
-    (void)BigIntPowerIntExp(&Temp3, expon, &Temp4);
+    (void)BigIntRoot(&Temp2, &power, expon);  // "power" is the value of b.
+    (void)BigIntPowerIntExp(&power, expon, &Temp4);
     if (BigIntEqual(&Temp2, &Temp4))
-    {  // Number has the form a^e - b^e, where a = Temp1, b = Temp3.
-      BigIntSubt(&Temp1, &Temp3, &Temp4);
+    {  // Number has the form a^e - b^e, where a = prime, b = power.
+      BigIntSubt(&prime, &power, &Temp4);
       insertBigFactor(pstFactors, &Temp4, TYP_ALGEBR);
       for (int divExpon = 2; divExpon <= (MAX_ALGEBRAIC_EXPON/2); divExpon++)
       {
@@ -828,22 +829,27 @@ static void getFactorsSumDiffPowers(struct sFactors* pstFactors,
     {
       int indexExp = expon / 2 - 2;
       attemptEvenExpAlgebFactors(expon, coeffMinus[indexExp], pstFactors);
-      addbigint(&Temp1, -1);   // This is the value of a.
-      (void)BigIntPowerIntExp(&Temp1, expon, &Temp2);
+      addbigint(&prime, -1);   // This is the value of a.
+      (void)BigIntPowerIntExp(&prime, expon, &Temp2);
       BigIntSubt(numToFactor, &Temp2, &Temp2);
       attemptEvenExpAlgebFactors(expon, coeffPlus[indexExp], pstFactors);
       // There is no algebraic factor of a^e + b^e when e is even.
       continue;
     }
-    addbigint(&Temp1, -1);   // This is the value of a.
+    addbigint(&prime, -1);   // This is the value of a.
     // Check whether the number has the form a^e + b^e.
-    (void)BigIntPowerIntExp(&Temp1, expon, &Temp2);
+    (void)BigIntPowerIntExp(&prime, expon, &Temp2);
     BigIntSubt(numToFactor, &Temp2, &Temp2);
-    (void)BigIntRoot(&Temp2, &Temp3, expon);
-    (void)BigIntPowerIntExp(&Temp3, expon, &Temp4);
+    (void)BigIntRoot(&Temp2, &power, expon);   // "power" is the value of b.
+    (void)BigIntPowerIntExp(&power, expon, &Temp4);
+    if (BigIntIsZero(&Temp4))
+    {    // Perfect power. Cannot be processed in this routine.
+         // It will be processed in function PowerCheck.
+      return;
+    }
     if (BigIntEqual(&Temp2, &Temp4))
-    {  // Number has the form a^e + b^e, where a = Temp1, b = Temp3.
-      BigIntAdd(&Temp1, &Temp3, &Temp4);
+    {  // Number has the form a^e + b^e, where a = prime, b = power.
+      BigIntAdd(&prime, &power, &Temp4);
       insertBigFactor(pstFactors, &Temp4, TYP_ALGEBR);
       for (int divExpon = 3; divExpon <= (MAX_ALGEBRAIC_EXPON / 2); divExpon += 2)
       {
@@ -1152,7 +1158,6 @@ static void performFactorization(const BigInteger *numToFactor, const struct sFa
       foundByLehman = true;
       break;
     }
-    Lehman(&tofactor, EC % 50000000, &potentialFactor);
     BigIntGcd(numToFactor, &potentialFactor, &potentialFactor);
     if ((potentialFactor.nbrLimbs > 1) &&
       !BigIntEqual(&potentialFactor, numToFactor))
@@ -1490,17 +1495,27 @@ static void insertIntFactor(struct sFactors *pstFactors, struct sFactors *pstFac
   for (factorNumber = 1; factorNumber <= pstFactors->multiplicity; factorNumber++)
   {
     ptrValue = pstCurFactor->ptrFactor;  // Point to factor in factor array.
-    if ((*ptrValue == 1) && (*(ptrValue+1) == divisor))
-    {  // Prime already found: increment multiplicity and go out.
-      pstCurFactor->multiplicity += pstFactorDividend->multiplicity * expon;
-      ptrValue = pstFactorDividend->ptrFactor;
-      if ((*ptrValue == 1) && (*(ptrValue + 1) == 1))
-      {    // Dividend is 1 now, so discard it.
-        *pstFactorDividend = *(pstFactors + pstFactors->multiplicity);
-        pstFactors->multiplicity--;
+    if (*ptrValue == 1)
+    {
+      if (*(ptrValue + 1) == 1)
+      {  // Factor in list is one. Replace it by the factor just found.
+        pstCurFactor->multiplicity = expon;
+        *(ptrValue + 1) = divisor;
+        SortFactors(pstFactors);
+        return;
       }
-      SortFactors(pstFactors);
-      return;
+      if (*(ptrValue + 1) == divisor)
+      {  // Prime already found: increment multiplicity and go out.
+        pstCurFactor->multiplicity += pstFactorDividend->multiplicity * expon;
+        ptrValue = pstFactorDividend->ptrFactor;
+        if ((*ptrValue == 1) && (*(ptrValue + 1) == 1))
+        {    // Dividend is 1 now, so discard it.
+          *pstFactorDividend = *(pstFactors + pstFactors->multiplicity);
+          pstFactors->multiplicity--;
+        }
+        SortFactors(pstFactors);
+        return;
+      }
     }
     if ((*ptrValue > 1) || (*(ptrValue + 1) > divisor))
     {   // Factor in factor list is greater than factor to insert. Exit loop.
@@ -1940,7 +1955,6 @@ static enum eTrialFactorRetCode performTrialDivision(struct sFactors* pstFactors
   struct sFactors* pstCurFactor)
 {
   int nbrLimbs;
-  int expon;
   const int* ptrFactor;
   int upperBoundIndex;
   int remainder;
@@ -1975,36 +1989,15 @@ static enum eTrialFactorRetCode performTrialDivision(struct sFactors* pstFactors
   ptrFactor = pstCurFactor->ptrFactor;
   nbrLimbs = *ptrFactor;
   NumberLength = *pstCurFactor->ptrFactor;
-  IntArray2BigInteger(pstCurFactor->ptrFactor, &power);
-  NumberLength = power.nbrLimbs;
+  IntArray2BigInteger(pstCurFactor->ptrFactor, &prime);
+  NumberLength = prime.nbrLimbs;
 #ifdef __EMSCRIPTEN__
-  char* ptrText = ShowFactoredPart(&power, pstFactors);
+  char* ptrText = ShowFactoredPart(&prime, pstFactors);
   if (skipPrimality)
   {
-    CopyBigInt(&prime, &power);
+    CopyBigInt(&prime, &prime);
     return CONTINUE_FACTORIZATION;   // Do not perform trial factorization.
   }
-#ifdef FACTORIZATION_APP
-  StepECM = 0;
-  copyStr(&ptrText, lang ? "<p>Verificando si el número es potencia perfecta.<p>" :
-      "<p>Testing whether the number is perfect power or not.</p>");
-  ShowLowerText();
-#else
-  databack(lang ? "3<p>Verificando si el número es potencia perfecta.</p>" :
-      "3<p>Testing whether the number is perfect power or not.</p>");
-#endif
-#endif
-  expon = PowerCheck(&power, &prime);
-  if (expon > 1)
-  {
-    NumberLength = prime.nbrLimbs;
-    BigInteger2IntArray(pstCurFactor->ptrFactor, &prime);
-    pstCurFactor->multiplicity *= expon;
-    SortFactors(pstFactors);
-    // Factor order has been changed. Restart factorization.
-    return RESTART_FACTORIZATION;
-  }
-#ifdef __EMSCRIPTEN__
   copyStr(&ptrText, lang ? "<p>División por primos menores que 100000.</p>" :
     "<p>Trial division by primes less than 100000.</p>");
   ShowLowerText();
@@ -2238,6 +2231,11 @@ void factorExt(const BigInteger *toFactor, const int *number,
   }
   if (toFactor->nbrLimbs > 1)
   {
+    if (toFactor->nbrLimbs > 200)
+    {
+      databack(lang ? "3<p>Verificando si el número es una potencia perfecta más o menos 1.</p>" :
+        "3<p>Testing whether the number is a perfect power plus or minus one or not.</p>");
+    }
     PowerPM1Check(pstFactors, toFactor);
   }
   if (toFactor->nbrLimbs > 5)
@@ -2253,6 +2251,26 @@ void factorExt(const BigInteger *toFactor, const int *number,
     factorNbr++;
     pstCurFactor++;
     rc = performTrialDivision(pstFactors, pstCurFactor);
+    if (rc == CONTINUE_FACTORIZATION)
+    {
+#ifdef FACTORIZATION_APP
+      StepECM = 0;
+#else
+      databack(lang ? "3<p>Verificando si el número es potencia perfecta.</p>" :
+        "3<p>Testing whether the number is perfect power or not.</p>");
+#endif
+      CopyBigInt(&power, &prime);
+      int expon = PowerCheck(&power, &prime);
+      if (expon > 1)
+      {
+        NumberLength = prime.nbrLimbs;
+        BigInteger2IntArray(pstCurFactor->ptrFactor, &prime);
+        pstCurFactor->multiplicity *= expon;
+        SortFactors(pstFactors);
+        // Factor order has been changed. Restart factorization.
+        rc = RESTART_FACTORIZATION;
+      }
+    }
     if (rc == RESTART_FACTORIZATION)
     {
       factorNbr = 0;

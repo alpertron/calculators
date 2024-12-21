@@ -122,6 +122,8 @@ void BigIntAdd(const BigInteger *pAddend1, const BigInteger *pAddend2, BigIntege
 void BigIntSubt(const BigInteger* pMinuend, const BigInteger* pSubtrahend, BigInteger* pDifference);
 void BigIntNegate(const BigInteger *pSrc, BigInteger *pDest);
 enum eExprErr BigIntDivide(const BigInteger *pDividend, const BigInteger *pDivisor, BigInteger *pQuotient);
+void classicalDivision(const BigInteger* pDividend, const BigInteger* pDivisor,
+  BigInteger* pQuotient, BigInteger* pRemainder);
 enum eExprErr BigIntMultiply(const BigInteger *pFactor1, const BigInteger *pFactor2, BigInteger *pProduct);
 enum eExprErr BigIntRemainder(const BigInteger* pDividend,
   const BigInteger* pDivisor, BigInteger* pRemainder);
@@ -154,6 +156,8 @@ void addmult(BigInteger* pResult, const BigInteger* pMult1, int iMult1,
   const BigInteger* pMult2, int iMult2);
 void BigIntPowerOf2(BigInteger *pResult, int expon);
 int getRemainder(const BigInteger *pBigInt, int divisor);
+int getQuotientAndRemainder(const BigInteger* pDividend, int divisor,
+  BigInteger* pQuotient);
 void subtractdivide(BigInteger *pBigInt, int subt, int divisor);
 void addbigint(BigInteger *pResult, int addend);
 bool TestBigNbrEqual(const BigInteger *pNbr1, const BigInteger *pNbr2);
@@ -175,7 +179,6 @@ void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint);
 int IntArrayCompare(const int* ptrFirst, const int* ptrSecond);
 void UncompressLimbsBigInteger(const limb *ptrValues, /*@out@*/BigInteger *bigint);
 void CompressLimbsBigInteger(/*@out@*/limb *ptrValues, const BigInteger *bigint);
-void NbrToLimbs(int nbr, /*@out@*/limb *limbs, int len);
 void ComputeInversePower2(const limb *value, /*@out@*/limb *result, /*@out@*/limb *aux);
 bool BigNbrIsZero(const limb *value);
 void intToBigInteger(BigInteger *bigint, int value);

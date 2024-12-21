@@ -1995,59 +1995,59 @@ void OrigPolyFromMontgomeryToStandard(void)
 
 void showPower(char **pptrOutput, int exponent)
 {
-  char *ptrOutput = *pptrOutput;
+  char *ptrOut = *pptrOutput;
   if (pretty == PRETTY_PRINT)
   {
-    *ptrOutput = '<';
-    ptrOutput++;
-    *ptrOutput = 's';
-    ptrOutput++;
-    *ptrOutput = 'u';
-    ptrOutput++;
-    *ptrOutput = 'p';
-    ptrOutput++;
-    *ptrOutput = '>';
-    ptrOutput++;
-    int2dec(&ptrOutput, exponent);
-    *ptrOutput = '<';
-    ptrOutput++;
-    *ptrOutput = '/';
-    ptrOutput++;
-    *ptrOutput = 's';
-    ptrOutput++;
-    *ptrOutput = 'u';
-    ptrOutput++;
-    *ptrOutput = 'p';
-    ptrOutput++;
-    *ptrOutput = '>';
-    ptrOutput++;
+    *ptrOut = '<';
+    ptrOut++;
+    *ptrOut = 's';
+    ptrOut++;
+    *ptrOut = 'u';
+    ptrOut++;
+    *ptrOut = 'p';
+    ptrOut++;
+    *ptrOut = '>';
+    ptrOut++;
+    int2dec(&ptrOut, exponent);
+    *ptrOut = '<';
+    ptrOut++;
+    *ptrOut = '/';
+    ptrOut++;
+    *ptrOut = 's';
+    ptrOut++;
+    *ptrOut = 'u';
+    ptrOut++;
+    *ptrOut = 'p';
+    ptrOut++;
+    *ptrOut = '>';
+    ptrOut++;
   }
   else if (pretty == TEX)
   {
-    *ptrOutput = '^';
-    ptrOutput++;
-    *ptrOutput = '{';
-    ptrOutput++;
-    int2dec(&ptrOutput, exponent);
-    *ptrOutput = '}';
-    ptrOutput++;
+    *ptrOut = '^';
+    ptrOut++;
+    *ptrOut = '{';
+    ptrOut++;
+    int2dec(&ptrOut, exponent);
+    *ptrOut = '}';
+    ptrOut++;
   }
   else
   {
-    *ptrOutput = '^';
-    ptrOutput++;
-    int2dec(&ptrOutput, exponent);
+    *ptrOut = '^';
+    ptrOut++;
+    int2dec(&ptrOut, exponent);
   }
-  *pptrOutput = ptrOutput;
+  *pptrOutput = ptrOut;
 }
 
 void showPowerVar(char** pptrOutput, int polyDegree, char letter)
 {
-  char* ptrOutput = *pptrOutput;
+  char* ptrOut = *pptrOutput;
   if (polyDegree == 0)
   {
-    *ptrOutput = '1';
-    ptrOutput++;
+    *ptrOut = '1';
+    ptrOut++;
   }
   else
   {
@@ -2055,24 +2055,24 @@ void showPowerVar(char** pptrOutput, int polyDegree, char letter)
     {
       if (letter == 'x')
       {
-        copyStr(&ptrOutput, lang ? "<var role=\"img\" aria-label=\"equis\">x</var>" : "<var>x</var>");
+        copyStr(&ptrOut, lang ? "<var role=\"img\" aria-label=\"equis\">x</var>" : "<var>x</var>");
       }
       else
       {
-        showVariable(&ptrOutput, letter);
+        showVariable(&ptrOut, letter);
       }
     }
     else
     {
-      *ptrOutput = letter;
-      ptrOutput++;
+      *ptrOut = letter;
+      ptrOut++;
     }
     if (polyDegree != 1)
     {
-      showPower(&ptrOutput, polyDegree);
+      showPower(&ptrOut, polyDegree);
     }
   }
-  *pptrOutput = ptrOutput;
+  *pptrOutput = ptrOut;
 }
 
 void showPowerX(char **pptrOutput, int polyDegree)
@@ -2098,7 +2098,7 @@ static void showPolynomialMontOrNorm(char **pptrOutput, const int *ptrPoly,
       int polyDegree, int groupLength, bool isMontNotation)
 {
   int currentDegree;
-  char *ptrOutput = *pptrOutput;
+  char *ptrOut = *pptrOutput;
   int *ptrIndex;
   int indexes[MAX_DEGREE+1];
   int NumberLengthBak = NumberLength;
@@ -2133,19 +2133,19 @@ static void showPolynomialMontOrNorm(char **pptrOutput, const int *ptrPoly,
     int len = numLimbs(ptrValue1);
     if ((len != 1) || (*(ptrValue1 + 1) != 0))
     {            // Coefficient is not zero.
-      *ptrOutput = ' ';
-      ptrOutput++;
+      *ptrOut = ' ';
+      ptrOut++;
       if (*ptrValue1 > 0)
       {
-        *ptrOutput = '+';
-        ptrOutput++;
+        *ptrOut = '+';
+        ptrOut++;
       }
       else
       {
-        copyStr(&ptrOutput, (pretty == PRETTY_PRINT)? "&minus;": "-");
+        copyStr(&ptrOut, (pretty == PRETTY_PRINT)? "&minus;": "-");
       }
-      *ptrOutput = ' ';
-      ptrOutput++;
+      *ptrOut = ' ';
+      ptrOut++;
       if (isMontNotation)
       {
         getMontCoeff(ptrValue1);
@@ -2161,25 +2161,25 @@ static void showPolynomialMontOrNorm(char **pptrOutput, const int *ptrPoly,
         operand1.sign = SIGN_POSITIVE;
         if (pretty == PRETTY_PRINT)
         {          // Show number of digits if there are more than 30.
-          Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
+          Bin2Dec(&ptrOut, operand1.limbs, operand1.nbrLimbs, groupLength);
         }
         else
         {         // Do not show number of digits.
-          Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, -groupLength);
+          Bin2Dec(&ptrOut, operand1.limbs, operand1.nbrLimbs, -groupLength);
         }
         if (currentDegree > 0)
         {
-          copyStr(&ptrOutput, ptrTimes);
-          showPowerX(&ptrOutput, currentDegree);
+          copyStr(&ptrOut, ptrTimes);
+          showPowerX(&ptrOut, currentDegree);
         }
       }
       else
       {
-        showPowerX(&ptrOutput, currentDegree);
+        showPowerX(&ptrOut, currentDegree);
       }
     }
   }
-  *pptrOutput = ptrOutput;
+  *pptrOutput = ptrOut;
   NumberLength = NumberLengthBak;
 }
 
@@ -2198,7 +2198,7 @@ static void outputOriginalPolynomialElem(char** pptrOutput, const int* ptrPoly, 
   int currentDegree;
   const int* ptrValue1;
   int nbrLimbs = powerMod.nbrLimbs + 1;
-  char* ptrOutput = *pptrOutput;
+  char* ptrOut = *pptrOutput;
   degree = *ptrPoly;
   ptrValue1 = ptrPoly + 1;
   if (!modulusIsZero)
@@ -2206,7 +2206,7 @@ static void outputOriginalPolynomialElem(char** pptrOutput, const int* ptrPoly, 
     int* ptrValue2;
     if (pretty == PARI_GP)
     {
-      copyStr(&ptrOutput, "Mod(");
+      copyStr(&ptrOut, "Mod(");
     }
     // Output polynomial to factor. First move polynomial to poly4
     ptrValue2 = &poly4[0];
@@ -2233,74 +2233,74 @@ static void outputOriginalPolynomialElem(char** pptrOutput, const int* ptrPoly, 
   }
   if (operand1.sign == SIGN_NEGATIVE)
   {
-    copyStr(&ptrOutput, " &minus;");
+    copyStr(&ptrOut, " &minus;");
   }
   if ((operand1.nbrLimbs != 1) || (operand1.limbs[0].x != 1) || (degree == 0))
   {     // Leading coefficient is not 1 or degree is zero.
     if (pretty == PRETTY_PRINT)
     {          // Show number of digits if there are more than 30.
-      Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
+      Bin2Dec(&ptrOut, operand1.limbs, operand1.nbrLimbs, groupLength);
     }
     else
     {         // Do not show number of digits.
-      Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, -groupLength);
+      Bin2Dec(&ptrOut, operand1.limbs, operand1.nbrLimbs, -groupLength);
     }
     if ((pretty == PARI_GP) && (degree > 0))
     {
-      *ptrOutput = '*';
-      ptrOutput++;
+      *ptrOut = '*';
+      ptrOut++;
     }
   }
   if (degree < 0)
   {
-    showPowerX(&ptrOutput, -degree);
+    showPowerX(&ptrOut, -degree);
   }
   else
   {
     if (degree > 0)
     {
-      showPowerX(&ptrOutput, degree);
+      showPowerX(&ptrOut, degree);
     }
     if (modulusIsZero)
     {
-      showPolynomial(&ptrOutput, ptrPoly + 1, degree, groupLength);
+      showPolynomial(&ptrOut, ptrPoly + 1, degree, groupLength);
     }
     else
     {
-      showMontPolynomial(&ptrOutput, poly4, degree, groupLength);
+      showMontPolynomial(&ptrOut, poly4, degree, groupLength);
     }
   }
   if (!modulusIsZero)
   {
     if (pretty == PRETTY_PRINT)
     {
-      copyStr(&ptrOutput, " (mod ");
+      copyStr(&ptrOut, " (mod ");
     }
     else if (pretty == TEX)
     {
-      copyStr(&ptrOutput, " (\\pmod ");
+      copyStr(&ptrOut, " (\\pmod ");
     }
     else
     {     // Pari-GP
-      copyStr(&ptrOutput, ", ");
+      copyStr(&ptrOut, ", ");
     }
     if (pretty == PRETTY_PRINT)
     {          // Show number of digits if there are more than 30.
-      Bin2Dec(&ptrOutput, primeMod.limbs, primeMod.nbrLimbs, groupLength);
+      Bin2Dec(&ptrOut, primeMod.limbs, primeMod.nbrLimbs, groupLength);
     }
     else
     {         // Do not show number of digits.
-      Bin2Dec(&ptrOutput, primeMod.limbs, primeMod.nbrLimbs, -groupLength);
+      Bin2Dec(&ptrOut, primeMod.limbs, primeMod.nbrLimbs, -groupLength);
     }
     if (exponentMod != 1)
     {
-      showPower(&ptrOutput, exponentMod);
+      showPower(&ptrOut, exponentMod);
     }
-    *ptrOutput = ')';
-    ptrOutput++;
+    *ptrOut = ')';
+    ptrOut++;
   }
-  *ptrOutput = 0;    // Append string terminator.
-  *pptrOutput = ptrOutput;
+  *ptrOut = 0;    // Append string terminator.
+  *pptrOutput = ptrOut;
 }
 
 void outputOriginalPolynomial(char** pptrOutput, int groupLength)
@@ -2362,11 +2362,11 @@ void outputPolynomialFactor(char **pptrOutput, int groupLength, const struct sFa
   int multiplicity = pstFactorInfo->multiplicity;
   int isMonomial = ((polyDegree == 1) && (*pstFactorInfo->ptrPolyLifted == 1) &&
      (*(pstFactorInfo->ptrPolyLifted+1) == 0));
-  char* ptrOutput = *pptrOutput;
+  char* ptrOut = *pptrOutput;
   if ((multiplicity > 1) && !isMonomial)
   {
-    *ptrOutput = '(';
-    ptrOutput++;
+    *ptrOut = '(';
+    ptrOut++;
   }
   if (modulusIsZero)
   {
@@ -2380,102 +2380,102 @@ void outputPolynomialFactor(char **pptrOutput, int groupLength, const struct sFa
     UncompressBigIntegerB(ptrSrc, &operand1);
     if (operand1.sign == SIGN_NEGATIVE)
     {
-      copyStr(&ptrOutput, "&minus;");
+      copyStr(&ptrOut, "&minus;");
     }
     if ((operand1.nbrLimbs != 1) || (operand1.limbs[0].x != 1))
     {     // Absolute value is not 1.
-      Bin2Dec(&ptrOutput, operand1.limbs, operand1.nbrLimbs, groupLength);
+      Bin2Dec(&ptrOut, operand1.limbs, operand1.nbrLimbs, groupLength);
     }
   }
-  showPowerX(&ptrOutput, polyDegree);
-  showPolynomial(&ptrOutput, pstFactorInfo->ptrPolyLifted, polyDegree, groupLength);
+  showPowerX(&ptrOut, polyDegree);
+  showPolynomial(&ptrOut, pstFactorInfo->ptrPolyLifted, polyDegree, groupLength);
   if (multiplicity > 1)
   {
     if (!isMonomial)
     {
-      *ptrOutput = ')';
-      ptrOutput++;
+      *ptrOut = ')';
+      ptrOut++;
     }
-    showPower(&ptrOutput, multiplicity);
+    showPower(&ptrOut, multiplicity);
   }
-  *ptrOutput = 0;    // Append string terminator.
-  *pptrOutput = ptrOutput;
+  *ptrOut = 0;    // Append string terminator.
+  *pptrOutput = ptrOut;
 }
 
 void textErrorPol(char **pptrOutput, enum eExprErr rc)
 {
-  char *ptrOutput = *pptrOutput;
-  *ptrOutput = '<';
-  ptrOutput++;
-  *ptrOutput = 'p';
-  ptrOutput++;
-  *ptrOutput = '>';
-  ptrOutput++;
+  char *ptrOut = *pptrOutput;
+  *ptrOut = '<';
+  ptrOut++;
+  *ptrOut = 'p';
+  ptrOut++;
+  *ptrOut = '>';
+  ptrOut++;
   switch (rc)
   {
   case EXPR_CANNOT_USE_X_IN_EXPONENT:
-    copyStr(&ptrOutput, lang ? "No se puede usar variable en el exponente" :
+    copyStr(&ptrOut, lang ? "No se puede usar variable en el exponente" :
       "Cannot use variable in exponent");
     break;
   case EXPR_POLYNOMIAL_DIVISION_NOT_INTEGER:
-    copyStr(&ptrOutput, lang ? "La división de polinomios no es entera" :
+    copyStr(&ptrOut, lang ? "La división de polinomios no es entera" :
       "Polynomial division is not integer");
     break;
   case EXPR_DENOMINATOR_MUST_BE_CONSTANT:
-    copyStr(&ptrOutput, lang ? "El denominador debe ser constante" :
+    copyStr(&ptrOut, lang ? "El denominador debe ser constante" :
       "Denominator must be constant");
     break;
   case EXPR_DEGREE_TOO_HIGH:
-    copyStr(&ptrOutput, lang ? "El grado del polinomio es muy elevado" :
+    copyStr(&ptrOut, lang ? "El grado del polinomio es muy elevado" :
       "Degree is too high");
     break;
   case EXPR_EXPONENT_TOO_LARGE:
-    copyStr(&ptrOutput, lang ? "Exponente muy grande" : "Exponent is too large");
+    copyStr(&ptrOut, lang ? "Exponente muy grande" : "Exponent is too large");
     break;
   case EXPR_EXPONENT_NEGATIVE:
-    copyStr(&ptrOutput, lang ? "Exponente negativo" : "Exponent is negative");
+    copyStr(&ptrOut, lang ? "Exponente negativo" : "Exponent is negative");
     break;
   case EXPR_LEADING_COFF_MULTIPLE_OF_PRIME:
-    copyStr(&ptrOutput, lang ? "El primer coeficiente es múltiplo del número primo" :
+    copyStr(&ptrOut, lang ? "El primer coeficiente es múltiplo del número primo" :
       "Leading coefficient multiple of prime");
     break;
   case EXPR_CANNOT_LIFT:
-    copyStr(&ptrOutput, lang ? "No se puede elevar porque hay factores duplicados" :
+    copyStr(&ptrOut, lang ? "No se puede elevar porque hay factores duplicados" :
       "Cannot lift because of duplicate factors modulo prime");
     break;
   case EXPR_MODULUS_MUST_BE_GREATER_THAN_ONE:
-    copyStr(&ptrOutput, lang ? "El módulo debe ser mayor que 1" : "Modulus must be greater than one");
+    copyStr(&ptrOut, lang ? "El módulo debe ser mayor que 1" : "Modulus must be greater than one");
     break;
   case EXPR_MODULUS_MUST_BE_PRIME_EXP:
-    copyStr(&ptrOutput, lang ? "El módulo debe ser un número primo o una potencia de número primo" :
+    copyStr(&ptrOut, lang ? "El módulo debe ser un número primo o una potencia de número primo" :
       "Modulus must be a prime number or a power of a prime");
     break;
   case EXPR_MULTIPLE_VARIABLES_NOT_ACCEPTED:
-    copyStr(&ptrOutput, lang ? "No se aceptan múltiples variables" :
+    copyStr(&ptrOut, lang ? "No se aceptan múltiples variables" :
       "Multiple variables are not accepted");
     break;
   case EXPR_MORE_THAN_ONE_EQUAL_SIGN:
-    copyStr(&ptrOutput, lang ? "No se acepta más de un signo igual" :
+    copyStr(&ptrOut, lang ? "No se acepta más de un signo igual" :
       "More than one equal sign is not accepted");
     break;
   case EXPR_EQUAL_SIGN_INSIDE_PAREN:
-    copyStr(&ptrOutput, lang ? "Hay un signo igual dentro de paréntesis" :
+    copyStr(&ptrOut, lang ? "Hay un signo igual dentro de paréntesis" :
       "Equal sign inside parentheses");
     break;
   default:
-    textError(&ptrOutput, rc);
+    textError(&ptrOut, rc);
     break;
   }
-  *ptrOutput = '<';
-  ptrOutput++;
-  *ptrOutput = '/';
-  ptrOutput++;
-  *ptrOutput = 'p';
-  ptrOutput++;
-  *ptrOutput = '>';
-  ptrOutput++;
-  *ptrOutput = 0;    // Add terminator character.
-  *pptrOutput = ptrOutput;
+  *ptrOut = '<';
+  ptrOut++;
+  *ptrOut = '/';
+  ptrOut++;
+  *ptrOut = 'p';
+  ptrOut++;
+  *ptrOut = '>';
+  ptrOut++;
+  *ptrOut = 0;    // Add terminator character.
+  *pptrOutput = ptrOut;
 }
 
 void SubtractIntegerPolynomial(const int* minuend, const int* subtrahend, int* difference)
