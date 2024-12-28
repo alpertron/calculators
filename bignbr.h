@@ -241,6 +241,9 @@ void QuaternionGCD(BigInteger *scalarA, BigInteger *vecIA, BigInteger *vecJA, Bi
 void MultiplyQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
 void DivideQuaternionBy2(BigInteger *scalar, BigInteger *vecI, BigInteger *vecJ, BigInteger *vecK);
 
+typedef void (*showGenericFunc)(void);
+void showRationalNoParenOverGeneric(const BigRational* rat,
+  showGenericFunc showGeneric);
 double BigRational2double(const BigRational* value);
 void BigRationalAdd(const BigRational* pAddend1,
   const BigRational* pAddend2, BigRational* pSum);

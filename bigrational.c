@@ -243,14 +243,32 @@ bool BigRationalSquareRoot(BigRational* RatArgum, BigRational* RatSqRoot)
   return true;
 }
 
-static void showRationalPretty(const BigRational* rat)
+static void showDenomPretty(const BigRational* rat, showGenericFunc showGeneric)
+{
+  bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) ||
+    (rat->denominator.limbs[0].x != 1));
+  if (denominatorIsNotOne)
+  {
+    shownbr(&rat->denominator);
+  }
+  if (showGeneric != NULL)
+  {
+    if (denominatorIsNotOne)
+    {
+      showText(ptrTimes);
+    }
+    showGeneric();
+  }
+}
+
+static void showRationalPretty(const BigRational* rat, showGenericFunc showGeneric)
 {
   if (pretty == PRETTY_PRINT)
   {
     showText("<f-f><f-n>");
     shownbr(&rat->numerator);
     showText("</f-n><f-d>");
-    shownbr(&rat->denominator);
+    showDenomPretty(rat, showGeneric);
     showText("</f-d></f-f>");
   }
   else
@@ -258,17 +276,18 @@ static void showRationalPretty(const BigRational* rat)
     showText("\\frac{");
     shownbr(&rat->numerator);
     showText("}{");
-    shownbr(&rat->denominator);
+    showDenomPretty(rat, showGeneric);
     showText("}");
   }
 }
 
 void showRationalNoParen(const BigRational* rat)
 {
-  bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) || (rat->denominator.limbs[0].x != 1));
+  bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) || 
+    (rat->denominator.limbs[0].x != 1));
   if ((pretty != PARI_GP) && denominatorIsNotOne)
   {
-    showRationalPretty(rat);
+    showRationalPretty(rat, NULL);
     return;
   }
   shownbr(&rat->numerator);
@@ -276,6 +295,37 @@ void showRationalNoParen(const BigRational* rat)
   {
     showText(" / ");
     shownbr(&rat->denominator);
+  }
+}
+
+void showRationalNoParenOverGeneric(const BigRational* rat, showGenericFunc showGeneric)
+{
+  bool denominatorIsNotOne = ((rat->denominator.nbrLimbs != 1) || (rat->denominator.limbs[0].x != 1));
+  if ((pretty != PARI_GP) && (denominatorIsNotOne || (showGeneric != NULL)))
+  {
+    showRationalPretty(rat, showGeneric);
+    return;
+  }
+  shownbr(&rat->numerator);
+  if (denominatorIsNotOne || (showGeneric != NULL))
+  {
+    showText(" / ");
+    if (denominatorIsNotOne && (showGeneric != NULL))
+    {
+      showText("(");
+    }
+    if (denominatorIsNotOne)
+    {
+      shownbr(&rat->denominator);
+    }
+    if (showGeneric != NULL)
+    {
+      showGeneric();
+    }
+    if (denominatorIsNotOne && (showGeneric != NULL))
+    {
+      showText(")");
+    }
   }
 }
 
@@ -320,7 +370,7 @@ void showRational(const BigRational* rat)
   bool showParen;
   if ((pretty != PARI_GP) && denominatorIsNotOne)
   {
-    showRationalPretty(rat);
+    showRationalPretty(rat, NULL);
     return;
   }
   showParen = denominatorIsNotOne || (rat->numerator.sign == SIGN_NEGATIVE);

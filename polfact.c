@@ -142,11 +142,13 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
   {
     ptrTimes = "&#8290;";
     ptrMinus = "&minus;";
+    ptrPlusMinus = " &pm; ";
   }
   else
   {
     ptrTimes = (pretty == TEX ? "" : "*");
     ptrMinus = "-";
+    ptrPlusMinus = (pretty == TEX ? " \\pm " : " &pm; ");
   }
   if (rc == EXPR_OK)
   {

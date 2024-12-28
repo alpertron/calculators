@@ -92,6 +92,7 @@ extern BigRational Rat4;
 extern BigRational Rat5;
 extern BigRational RatS;
 extern int indexRoot;
+extern const char *ptrPlusMinus;
 extern const char *ptrMinus;
 extern const char *ptrTimes;
 extern int polyInteger[1000000];
