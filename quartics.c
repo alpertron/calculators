@@ -45,7 +45,7 @@ static void showFirstTermQuarticEq(int ctr)
 
 // Show steps for solving the equation x^4 + mx^2 + n = 0
 static void showStepsForRealBiquadratic(BigRational *pQuadratic,
-  BigRational *pIndependent, const BigRational *pDiscr, char letter)
+  BigRational *pIndependent, char letter)
 {
   BigRationalDivideByInt(pQuadratic, 2, &Rat1);
   BigRationalMultiply(pQuadratic, pQuadratic, &Rat2);
@@ -75,7 +75,9 @@ static void showStepsForRealBiquadratic(BigRational *pQuadratic,
   BigRationalMultiplyByInt(&Rat1, -1, &Rat1);
   showRationalNoParen(&Rat1);
   showText(ptrPlusMinus);
-  BigRationalDivideByInt(pDiscr, 4, &Rat2);
+  BigRationalMultiply(pQuadratic, pQuadratic, &Rat2);
+  BigRationalDivideByInt(&Rat2, 4, &Rat2);
+  BigRationalSubt(&Rat2, pIndependent, &Rat2);
   showSquareRootOfRational(&Rat2, 2, ptrTimes);
   showText("</p>");
 }
@@ -99,111 +101,116 @@ static void showAdjustForCubic(void)
   }
 }
 
+// Show steps to find the square root of the complex number Rat1 + i*sqrt(-Rat2).
+static void showStepsForComplexSquareRoot(char letter, const char *pszPlus)
+{
+  showText("<p>");
+  showRatCoeffAndPowerVar(NULL, -2, letter);
+  showText(" = ");
+  showRationalNoParen(&Rat1);
+  showText(pszPlus);
+  showText(ptrI);
+  showText(ptrTimes);
+  BigRationalMultiplyByInt(&Rat2, -1, &Rat2);
+  showSquareRootOfRational(&Rat2, 2, ptrTimes);
+  showText("</p><p>");
+  showText(lang ? "Sea " : "Let ");
+  showRatCoeffAndPowerVar(NULL, -1, letter);
+  showText(" = ");
+  showU();
+  showText(" + ");
+  showText(ptrI);
+  showRatCoeffAndPowerVar(NULL, -1, 'v');
+  showText(lang ? "</p><p>Entonces " : "</p><p>Then ");
+  showRatCoeffAndPowerVar(NULL, -2, letter);
+  showText(" = ");
+  showRatCoeffAndPowerVar(NULL, -2, 'u');
+  showText(ptrMinus);
+  showRatCoeffAndPowerVar(NULL, -2, 'v');
+  showText(" + 2");
+  showText(ptrTimes);
+  showText(ptrI);
+  showU();
+  showText(ptrTimes);
+  showRatCoeffAndPowerVar(NULL, -1, 'v');
+  showText("</p><p>");
+  showText(lang ? "Igualando las partes reales:" : "Equating the real parts:");
+  showText("</p><p>");
+  showRatCoeffAndPowerVar(NULL, -2, 'u');
+  showText(ptrMinus);
+  showRatCoeffAndPowerVar(NULL, -2, 'v');
+  showText(" = ");
+  showRationalNoParen(&Rat1);
+  showText("</p><p>");
+  showText(lang ? "Multiplicando por " : "Multiplying by ");
+  showRatCoeffAndPowerVar(NULL, -2, 'u');
+  showText(":</p><p>");
+  BigRationalMultiplyByInt(&Rat1, -1, &Rat1);
+  showRatCoeffAndPowerVar(NULL, -4, 'u');
+  showText(" + ");
+  showRatCoeffAndPowerVar(&Rat1, -2, 'u');
+  showText(ptrMinus);
+  showRatCoeffAndPowerVar(NULL, -2, 'u');
+  showText(ptrTimes);
+  showRatCoeffAndPowerVar(NULL, -2, 'v');
+  showText(" = 0</p><p>");
+  showText(lang ? "Igualando las partes imaginarias y dividiendo por 2:" :
+    "Equating the imaginary parts and dividing by 2:");
+  showText("</p><p>");
+  showU();
+  showText(ptrTimes);
+  showRatCoeffAndPowerVar(NULL, -1, 'v');
+  showText(" = ");
+  BigRationalDivideByInt(&Rat2, 4, &Rat2);
+  showSquareRootOfRational(&Rat2, 2, ptrTimes);
+  showText("</p><p>");
+  showRatCoeffAndPowerVar(NULL, -2, 'u');
+  showText(ptrTimes);
+  showRatCoeffAndPowerVar(NULL, -2, 'v');
+  showText(" = ");
+  showRational(&Rat2);
+  showText("</p><p>");
+  showRatCoeffAndPowerVar(NULL, -4, 'u');
+  showText(" + ");
+  showRatCoeffAndPowerVar(&Rat1, -2, 'u');
+  BigRationalMultiplyByInt(&Rat2, -1, &Rat4);
+  showRatCoeffAndPowerVar(&Rat4, 0, 'u');
+  showText(" = 0</p>");
+  CopyBigInt(&Rat3.numerator, &Rat1.numerator);
+  CopyBigInt(&Rat3.denominator, &Rat1.denominator);
+  showStepsForRealBiquadratic(&Rat3, &Rat4, 'u');
+  showText(lang ? "<p>Usaremos el signo más para que el argumento de la raíz cuadrada sea positiva." :
+    "<p>We will use the plus sign so the argument of the square root is positive.");
+  showText("</p><p>");
+  showRatCoeffAndPowerVar(NULL, -2, 'v');
+  showText(" = ");
+  BigRationalMultiplyByInt(&Rat1, -2, &Rat1);
+  showRationalNoParen(&Rat1);
+  showText(" + ");
+  showRatCoeffAndPowerVar(NULL, -2, 'u');
+  showText(" = ");
+  BigRationalDivideByInt(&Rat1, 2, &Rat1);
+  showRationalNoParen(&Rat1);
+  showText(" + ");
+  showSquareRootOfRational(&Rat2, 2, ptrTimes);
+  showText("</p><p>");
+  showText(lang ? "Como " : "Since ");
+  showU();
+  showText(lang ? " es la parte real de " : " is the real part of ");
+  showRatCoeffAndPowerVar(NULL, -1, letter);
+  showText(lang ? " y " : " and ");
+  showRatCoeffAndPowerVar(NULL, -1, 'v');
+  showText(lang ? " es la parte imaginaria de " : " is the imaginary part of ");
+  showRatCoeffAndPowerVar(NULL, -1, letter);
+  showText(lang ? ", obtenemos:</p>" : ", we get:</p>");
+}
+
 static void showStepsForBiquadratic(void)
 {
-  showStepsForRealBiquadratic(&RatDeprQuadratic, &RatDeprIndependent,
-    &RatDiscr, currLetter);
+  showStepsForRealBiquadratic(&RatDeprQuadratic, &RatDeprIndependent, currLetter);
   if (RatDiscr.numerator.sign == SIGN_NEGATIVE)
   {
-    showText("<p>");
-    showRatCoeffAndPowerVar(NULL, -2, currLetter);
-    showText(" = ");
-    showRationalNoParen(&Rat1);
-    showText(ptrPlusMinus);
-    showText(ptrI);
-    showText(ptrTimes);
-    BigRationalMultiplyByInt(&Rat2, -1, &Rat2);
-    showSquareRootOfRational(&Rat2, 2, ptrTimes);
-    showText("</p><p>");
-    showText(lang ? "Sea " : "Let ");
-    showRatCoeffAndPowerVar(NULL, -1, currLetter);
-    showText(" = ");
-    showU();
-    showText(" + ");
-    showText(ptrI);
-    showRatCoeffAndPowerVar(NULL, -1, 'v');
-    showText(lang ? "</p><p>Entonces " : "</p><p>Then ");
-    showRatCoeffAndPowerVar(NULL, -2, currLetter);
-    showText(" = ");
-    showRatCoeffAndPowerVar(NULL, -2, 'u');
-    showText(ptrMinus);
-    showRatCoeffAndPowerVar(NULL, -2, 'v');
-    showText(" + 2");
-    showText(ptrTimes);
-    showText(ptrI);
-    showU();
-    showText(ptrTimes);
-    showRatCoeffAndPowerVar(NULL, -1, 'v');
-    showText("</p><p>");
-    showText(lang ? "Igualando las partes reales:" : "Equating the real parts:");
-    showText("</p><p>");
-    showRatCoeffAndPowerVar(NULL, -2, 'u');
-    showText(ptrMinus);
-    showRatCoeffAndPowerVar(NULL, -2, 'v');
-    showText(" = ");
-    showRationalNoParen(&Rat1);
-    showText("</p><p>");
-    showText(lang ? "Multiplicando por " : "Multiplying by ");
-    showRatCoeffAndPowerVar(NULL, -2, 'u');
-    showText(":</p><p>");
-    BigRationalMultiplyByInt(&Rat1, -1, &Rat1);
-    showRatCoeffAndPowerVar(NULL, -4, 'u');
-    showText(" + ");
-    showRatCoeffAndPowerVar(&Rat1, -2, 'u');
-    showText(ptrMinus);
-    showRatCoeffAndPowerVar(NULL, -2, 'u');
-    showText(ptrTimes);
-    showRatCoeffAndPowerVar(NULL, -2, 'v');
-    showText(" = 0</p><p>");
-    showText(lang ? "Igualando las partes imaginarias y dividiendo por 2:" :
-      "Equating the imaginary parts and dividing by 2:");
-    showText("</p><p>");
-    showU();
-    showText(ptrTimes);
-    showRatCoeffAndPowerVar(NULL, -1, 'v');
-    showText(" = ");
-    BigRationalDivideByInt(&Rat2, 4, &Rat2);
-    showSquareRootOfRational(&Rat2, 2, ptrTimes);
-    showText("</p><p>");
-    showRatCoeffAndPowerVar(NULL, -2, 'u');
-    showText(ptrTimes);
-    showRatCoeffAndPowerVar(NULL, -2, 'v');
-    showText(" = ");
-    showRational(&Rat2);
-    showText("</p><p>");
-    showRatCoeffAndPowerVar(NULL, -4, 'u');
-    showText(" + ");
-    showRatCoeffAndPowerVar(&Rat1, -2, 'u');
-    BigRationalMultiplyByInt(&Rat2, -1, &Rat4);
-    showRatCoeffAndPowerVar(&Rat4, 0, 'u');
-    showText(" = 0</p>");
-    CopyBigInt(&Rat3.numerator, &Rat1.numerator);
-    CopyBigInt(&Rat3.denominator, &Rat1.denominator);
-    showStepsForRealBiquadratic(&Rat3, &Rat4, &RatDeprIndependent, 'u');
-    showText(lang ? "<p>Usaremos el signo más para que el argumento de la raíz cuadrada sea positiva." :
-      "<p>We will use the plus sign so the argument of the square root is positive.");
-    showText("</p><p>");
-    showRatCoeffAndPowerVar(NULL, -2, 'v');
-    showText(" = ");
-    BigRationalMultiplyByInt(&Rat1, -2, &Rat1);
-    showRationalNoParen(&Rat1);
-    showText(" + ");
-    showRatCoeffAndPowerVar(NULL, -2, 'u');
-    showText(" = ");
-    BigRationalDivideByInt(&Rat1, 2, &Rat1);
-    showRationalNoParen(&Rat1);
-    showText(" + ");
-    showSquareRootOfRational(&Rat2, 2, ptrTimes);
-    showText("</p><p>");
-    showText(lang ? "Como " : "Since ");
-    showU();
-    showText(lang ? " es la parte real de " : " is the real part of ");
-    showRatCoeffAndPowerVar(NULL, -1, currLetter);
-    showText(lang ? " y " : " and ");
-    showRatCoeffAndPowerVar(NULL, -1, 'v');
-    showText(lang ? " es la parte imaginaria de " : " is the imaginary part of ");
-    showRatCoeffAndPowerVar(NULL, -1, currLetter);
-    showText(lang ? ", obtenemos:</p>" : ", we get:</p>");
+    showStepsForComplexSquareRoot(currLetter, ptrPlusMinus);
   }
   showAdjustForCubic();
 }
@@ -480,23 +487,29 @@ static void showSquareRHS(void)
   showPower(&ptrOutput, 2);
 }
 
+// RatS is the rational root divided by 2.
 static void showStepsOnRationalRootOfResolvent(const char *pszMinus, enum eSign sign)
 {
-  showText("</p><p>");
+  showText("<p>");
   showRatCoeffAndPowerVar(NULL, -2, currLetter);
-  BigRationalMultiplyByInt(&Rat4, 2, &Rat2);
+  CopyBigInt(&Rat2.numerator, &RatS.numerator);
+  CopyBigInt(&Rat2.denominator, &RatS.denominator);
+  BigRationalMultiplyByInt(&Rat2, 4, &Rat2);
   showText(" ");
   showText(pszMinus);
   showText(" ");
   showSquareRootOfRational(&Rat2, 2, ptrTimes);
   showText(ptrTimes);
   showRatCoeffAndPowerVar(NULL, -1, currLetter);
+  BigRationalDivideByInt(&RatDeprQuadratic, 2, &Rat1);
+  BigRationalAdd(&Rat1, &RatS, &Rat1);
+  BigRationalAdd(&Rat1, &RatS, &Rat1);
   showRatCoeffAndPowerVar(&Rat1, 0, currLetter);
   BigRationalMultiplyByInt(&RatDeprLinear, -1, &Rat2);
   BigRationalDivideByInt(&Rat2, 2, &Rat2);
-  CopyBigInt(&Rat3.numerator, &Rat4.denominator);
-  CopyBigInt(&Rat3.denominator, &Rat4.numerator);
-  BigRationalDivideByInt(&Rat3, 2, &Rat3);
+  CopyBigInt(&Rat3.numerator, &RatS.denominator);
+  CopyBigInt(&Rat3.denominator, &RatS.numerator);
+  BigRationalDivideByInt(&Rat3, 4, &Rat3);
   MultiplyRationalBySqrtRational(&Rat2, &Rat3);
   showPlusSignOn(RatDeprLinear.numerator.sign == sign,
     TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
@@ -515,7 +528,8 @@ static void showStepsOnRationalRootOfResolvent(const char *pszMinus, enum eSign 
   showText("</p><p>");
   startParen();
   showRatCoeffAndPowerVar(NULL, -1, currLetter);
-  BigRationalDivideByInt(&Rat4, 2, &Rat2);
+  CopyBigInt(&Rat2.numerator, &RatS.numerator);
+  CopyBigInt(&Rat2.denominator, &RatS.denominator);
   showText(" ");
   showText(pszMinus);
   showText(" ");
@@ -524,22 +538,26 @@ static void showStepsOnRationalRootOfResolvent(const char *pszMinus, enum eSign 
   showPower(&ptrOutput, 2);
   showText(" = ");
   showRatCoeffAndPowerVar(NULL, -2, currLetter);
-  BigRationalMultiplyByInt(&Rat4, 2, &Rat2);
   showText(" ");
   showText(pszMinus);
   showText(" ");
+  CopyBigInt(&Rat2.numerator, &RatS.numerator);
+  CopyBigInt(&Rat2.denominator, &RatS.denominator);
+  BigRationalMultiplyByInt(&Rat2, 4, &Rat2);
   showSquareRootOfRational(&Rat2, 2, ptrTimes);
   showText(ptrTimes);
   showRatCoeffAndPowerVar(NULL, -1, currLetter);
   showText(" + ");
-  BigRationalDivideByInt(&Rat4, 2, &Rat3);
-  showRationalNoParen(&Rat3);
+  CopyBigInt(&Rat3.numerator, &RatS.numerator);
+  CopyBigInt(&Rat3.denominator, &RatS.denominator);
+  showRatCoeffAndPowerVar(&Rat3, 0, currLetter);
   showText("</p><p>");
   showText(lang ? "obtenemos:" : "we get:");
   showText("</p><p>");
   startParen();
   showRatCoeffAndPowerVar(NULL, -1, currLetter);
-  BigRationalDivideByInt(&Rat4, 2, &Rat2);
+  CopyBigInt(&Rat2.numerator, &RatS.numerator);
+  CopyBigInt(&Rat2.denominator, &RatS.denominator);
   showText(" ");
   showText(pszMinus);
   showText(" ");
@@ -550,9 +568,9 @@ static void showStepsOnRationalRootOfResolvent(const char *pszMinus, enum eSign 
   showRatCoeffAndPowerVar(&Rat1, 0, currLetter);
   BigRationalMultiplyByInt(&RatDeprLinear, -1, &Rat2);
   BigRationalDivideByInt(&Rat2, 2, &Rat2);
-  CopyBigInt(&Rat3.numerator, &Rat4.denominator);
-  CopyBigInt(&Rat3.denominator, &Rat4.numerator);
-  BigRationalDivideByInt(&Rat3, 2, &Rat3);
+  CopyBigInt(&Rat3.numerator, &RatS.denominator);
+  CopyBigInt(&Rat3.denominator, &RatS.numerator);
+  BigRationalDivideByInt(&Rat3, 4, &Rat3);
   MultiplyRationalBySqrtRational(&Rat2, &Rat3);
   showPlusSignOn(RatDeprLinear.numerator.sign == sign,
     TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
@@ -574,18 +592,18 @@ static void showStepsOnRationalRootOfResolvent(const char *pszMinus, enum eSign 
     showText(ptrMinus);
     showText(" ");
   }
-  BigRationalDivideByInt(&Rat4, 2, &Rat2);
+  CopyBigInt(&Rat2.numerator, &RatS.numerator);
+  CopyBigInt(&Rat2.denominator, &RatS.denominator);
   showSquareRootOfRational(&Rat2, 2, ptrTimes);
   showText(ptrPlusMinus);
   startSqrt();
   BigRationalMultiplyByInt(&Rat1, -1, &Rat1);
   showRationalNoParen(&Rat1);
-  BigRationalMultiplyByInt(&Rat1, -1, &Rat1);
   BigRationalMultiplyByInt(&RatDeprLinear, -1, &Rat2);
   BigRationalDivideByInt(&Rat2, 2, &Rat2);
-  CopyBigInt(&Rat3.numerator, &Rat4.denominator);
-  CopyBigInt(&Rat3.denominator, &Rat4.numerator);
-  BigRationalDivideByInt(&Rat3, 2, &Rat3);
+  CopyBigInt(&Rat3.numerator, &RatS.denominator);
+  CopyBigInt(&Rat3.denominator, &RatS.numerator);
+  BigRationalDivideByInt(&Rat3, 4, &Rat3);
   MultiplyRationalBySqrtRational(&Rat2, &Rat3);
   showPlusSignOn(RatDeprLinear.numerator.sign != sign,
     TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
@@ -600,9 +618,40 @@ static void showStepsOnRationalRootOfResolvent(const char *pszMinus, enum eSign 
     Rat2.numerator.sign = SIGN_NEGATIVE;
   }
   endSqrt();
-  BigRationalDivideByInt(&RatS, 2, &Rat3);
-  BigRationalSubt(&Rat1, &Rat3, &Rat1);
+  BigRationalMultiply(&Rat2, &Rat2, &Rat2);
+  BigRationalMultiply(&Rat2, &Rat3, &Rat2);
+  if (Rat2.numerator.sign == SIGN_NEGATIVE)
+  {   // Square root of complex number Rat1 + i*sqrt(-Rat2).
+    showText(lang ? "<p>Debemos calcular la raíz cuadrada de un número complejo.</p>" :
+      "<p>We must compute the square root of a complex number.</p>");
+    showStepsForComplexSquareRoot('g', "+");
+    showText("<p>");
+    showVariable(&ptrOutput, currLetter);
+    showText(" = ");
+    if (sign == SIGN_NEGATIVE)
+    {
+      showText(ptrMinus);
+      showText(" ");
+    }
+    CopyBigInt(&Rat2.numerator, &RatS.numerator);
+    CopyBigInt(&Rat2.denominator, &RatS.denominator);
+    BigRationalMultiplyByInt(&Rat2, -1, &Rat2);
+    showSquareRootOfRational(&Rat2, 2, ptrTimes);
+    showText(ptrTimes);
+    showText(ptrI);
+    showText(" ");
+    showText(ptrPlusMinus);
+    showText(" ");
+    showVariable(&ptrOutput, 'u');
+    showText(" ");
+    showText(ptrPlusMinus);
+    showText(" ");
+    showText(ptrI);
+    showText(ptrTimes);
+    showVariable(&ptrOutput, 'v');
+  }
   showText("</p>");
+  showAdjustForCubic();
 }
 
 static void showFerrariResolventRationalRoot(void)
@@ -613,7 +662,7 @@ static void showFerrariResolventRationalRoot(void)
   showU();
   showText(" = ");
   BigRationalMultiplyByInt(&RatS, -1, &Rat4);
-  showRational(&Rat4);
+  showRationalNoParen(&Rat4);
   showText("</p><p>");
   showText(lang ? "Reemplazando esta raíz en la ecuación anterior:" :
     "Replacing this root in the previous equation:");
@@ -679,14 +728,143 @@ static void showFerrariResolventRationalRoot(void)
     Rat2.numerator.sign = SIGN_NEGATIVE;
   }
   endParen();
-  showText("</p><p>");
-  showText(lang ? "Usando el signo más:" : "Using the plus sign:");
-  showStepsOnRationalRootOfResolvent(ptrMinus, SIGN_POSITIVE);
-  showText("<p>");
-  showText(lang ? "Usando el signo menos:" : "Using the minus sign:");
-  showStepsOnRationalRootOfResolvent("+", SIGN_NEGATIVE);
   showText("</p>");
-  showAdjustForCubic();
+}
+
+static void showSolFerrariResolventRatRoot(int ctr, enum eSign oldLinearSign, int multiplicity)
+{
+  RatDeprLinear.numerator.sign = oldLinearSign;
+  CopyBigInt(&Rat1.numerator, &RatDeprLinear.numerator);
+  CopyBigInt(&Rat1.denominator, &RatDeprLinear.denominator);
+  CopyBigInt(&Rat2.numerator, &RatS.denominator);
+  CopyBigInt(&Rat2.denominator, &RatS.numerator);
+  MultiplyRationalBySqrtRational(&Rat1, &Rat2);          // q/S
+  BigRationalMultiplyByInt(&RatS, 4, &Rat3);             // 4S^2
+  BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat3);
+  BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat3);       // 4S^2 + 2p
+  ForceDenominatorPositive(&Rat3);
+  BigIntChSign(&Rat3.numerator);                         // u = -(4S^2 + 2p)
+  RatDeprLinear.numerator.sign = SIGN_POSITIVE;
+  showX(multiplicity);
+  showFirstTermQuarticEq(ctr);                         // Show -b/4a and next sign.
+  *ptrOutput = ' ';
+  ptrOutput++;
+  if (RatS.numerator.sign == SIGN_POSITIVE)
+  {             // S is real.
+    bool isImaginary;
+    showSquareRootOfRational(&RatS, 2, ptrTimes);
+    if ((ctr == 0) || (ctr == 1))
+    {   // Change sign so we always consider q/S.
+      BigIntChSign(&Rat1.numerator);
+    }
+    // Determine whether the radicand is positive or not.
+    if ((Rat1.numerator.sign == SIGN_POSITIVE) && (Rat3.numerator.sign == SIGN_POSITIVE))
+    {
+      isImaginary = false;
+    }
+    else if ((Rat1.numerator.sign == SIGN_NEGATIVE) && (Rat3.numerator.sign == SIGN_NEGATIVE))
+    {
+      isImaginary = true;
+    }
+    else
+    {
+      // Compute Rat5 as Rat1^2*Rat2 - Rat3^2
+      BigRationalMultiply(&Rat1, &Rat1, &Rat5);
+      BigRationalMultiply(&Rat5, &Rat2, &Rat5);
+      BigRationalMultiply(&Rat3, &Rat3, &Rat4);
+      BigRationalSubt(&Rat5, &Rat4, &Rat5);
+      ForceDenominatorPositive(&Rat5);
+      if ((Rat1.numerator.sign == SIGN_POSITIVE) && (Rat3.numerator.sign == SIGN_NEGATIVE))
+      {
+        isImaginary = (Rat5.numerator.sign != SIGN_POSITIVE);
+      }
+      else
+      {
+        isImaginary = (Rat5.numerator.sign == SIGN_POSITIVE);
+      }
+    }
+    showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+    if (isImaginary)
+    {
+      showText(ptrI);
+      if (pretty != PRETTY_PRINT)
+      {
+        *ptrOutput = ' ';
+        ptrOutput++;
+      }
+      showText(ptrTimes);
+      *ptrOutput = ' ';
+      ptrOutput++;
+      BigIntChSign(&Rat1.numerator);
+      BigIntChSign(&Rat3.numerator);
+    }
+    startSqrt();
+    BigRationalDivideByInt(&Rat1, 4, &Rat1);
+    BigRationalDivideByInt(&Rat3, 4, &Rat3);
+    ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
+    showPlusSignOn(Rat3.numerator.sign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+    if (Rat3.numerator.sign == SIGN_POSITIVE)
+    {
+      showRationalNoParen(&Rat3);
+    }
+    else
+    {
+      BigIntChSign(&Rat3.numerator);
+      showRationalNoParen(&Rat3);
+      BigIntChSign(&Rat3.numerator);
+    }
+    BigRationalMultiplyByInt(&Rat1, 4, &Rat1);
+    BigRationalMultiplyByInt(&Rat3, 4, &Rat3);
+    if (ctr <= 1)
+    {   // Restore sign of q/S.
+      BigIntChSign(&Rat1.numerator);
+    }
+    endSqrt();
+    if (isImaginary)
+    {
+      BigIntChSign(&Rat1.numerator);
+      BigIntChSign(&Rat3.numerator);
+    }
+  }
+  else
+  {             // S is imaginary.
+    // k^2 = sqrt(u^2 + q^2/S^2)
+    // x1,2 = -(b/4a) +/- sqrt((k+u)/2) - i*(-S) +/- sqrt((k-u)/2))
+    // x3,4 = -(b/4a) +/- sqrt((k+u)/2) + i*(-S) +/- sqrt((k-u)/2))
+    // Get value of k^2.
+    char szMinus[10];
+    char* pszMinus = &szMinus[1];
+    szMinus[0] = ' ';
+    copyStr(&pszMinus, ptrMinus);
+    *pszMinus = ' ';
+    *(pszMinus + 1) = 0;
+
+    BigRationalMultiply(&RatDeprLinear, &RatDeprLinear, &Rat4);
+    // Compute q^2 / S^2 (S^2 negative)
+    BigRationalDivide(&Rat4, &RatS, &Rat4);
+    // Compute u^2
+    BigRationalMultiply(&Rat3, &Rat3, &Rat5);
+    // Compute k^2 as u^2 + q^2 / |S^2|
+    BigRationalSubt(&Rat5, &Rat4, &Rat4);
+    showSquareRootOfComplex(" + ", szMinus);
+    showText(" + ");
+    showText(ptrI);
+    showText(ptrTimes);
+    startParen();
+    if ((ctr == 1) || (ctr == 3))
+    {
+      showText(ptrMinus);
+      *ptrOutput = ' ';
+      ptrOutput++;
+    }
+    BigIntChSign(&RatS.numerator);
+    showSquareRootOfRational(&RatS, 2, ptrTimes);
+    BigIntChSign(&RatS.numerator);
+    showPlusSignOn((ctr == 1) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+    showSquareRootOfComplex(szMinus, " + ");
+    endParen();
+  }
+  endShowX();
 }
 
 static void FerrariResolventHasRationalRoot(int multiplicity)
@@ -702,143 +880,24 @@ static void FerrariResolventHasRationalRoot(int multiplicity)
   }
   BigRationalDivideByInt(&RatS, -2, &RatS);              // RatS <- S^2 (as on Wikipedia article).
   ForceDenominatorPositive(&RatS);
-  BigRationalMultiplyByInt(&RatS, 4, &Rat3);             // 4S^2
-  BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat3);
-  BigRationalAdd(&Rat3, &RatDeprQuadratic, &Rat3);       // 4S^2 + 2p
-  ForceDenominatorPositive(&Rat3);
-  BigIntChSign(&Rat3.numerator);                         // u = -(4S^2 + 2p)
   // According to Quartic function Wikipedia article the roots are:
   // x1,2 = -(b/4a) - S +/- sqrt(u + q/S)
   // x3,4 = -(b/4a) + S +/- sqrt(u - q/S)
-  CopyBigInt(&Rat1.numerator, &RatDeprLinear.numerator);
-  CopyBigInt(&Rat1.denominator, &RatDeprLinear.denominator);
-  CopyBigInt(&Rat2.numerator, &RatS.denominator);
-  CopyBigInt(&Rat2.denominator, &RatS.numerator);
-  MultiplyRationalBySqrtRational(&Rat1, &Rat2);          // q/S
-  RatDeprLinear.numerator.sign = SIGN_POSITIVE;
-  for (int ctr = 0; ctr < 4; ctr++)
+  enum eSign oldLinearSign = RatDeprLinear.numerator.sign;
+  if (teach)
   {
-    showX(multiplicity);
-    showFirstTermQuarticEq(ctr);                         // Show -b/4a and next sign.
-    *ptrOutput = ' ';
-    ptrOutput++;
-    if (RatS.numerator.sign == SIGN_POSITIVE)
-    {             // S is real.
-      bool isImaginary;
-      showSquareRootOfRational(&RatS, 2, ptrTimes);
-      if ((ctr == 0) || (ctr == 1))
-      {   // Change sign so we always consider q/S.
-        BigIntChSign(&Rat1.numerator);
-      }
-      // Determine whether the radicand is positive or not.
-      if ((Rat1.numerator.sign == SIGN_POSITIVE) && (Rat3.numerator.sign == SIGN_POSITIVE))
-      {
-        isImaginary = false;
-      }
-      else if ((Rat1.numerator.sign == SIGN_NEGATIVE) && (Rat3.numerator.sign == SIGN_NEGATIVE))
-      {
-        isImaginary = true;
-      }
-      else
-      {
-        // Compute Rat5 as Rat1^2*Rat2 - Rat3^2
-        BigRationalMultiply(&Rat1, &Rat1, &Rat5);
-        BigRationalMultiply(&Rat5, &Rat2, &Rat5);
-        BigRationalMultiply(&Rat3, &Rat3, &Rat4);
-        BigRationalSubt(&Rat5, &Rat4, &Rat5);
-        ForceDenominatorPositive(&Rat5);
-        if ((Rat1.numerator.sign == SIGN_POSITIVE) && (Rat3.numerator.sign == SIGN_NEGATIVE))
-        {
-          isImaginary = (Rat5.numerator.sign != SIGN_POSITIVE);
-        }
-        else
-        {
-          isImaginary = (Rat5.numerator.sign == SIGN_POSITIVE);
-        }
-      }
-      showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-      if (isImaginary)
-      {
-        showText(ptrI);
-        if (pretty != PRETTY_PRINT)
-        {
-          *ptrOutput = ' ';
-          ptrOutput++;
-        }
-        showText(ptrTimes);
-        *ptrOutput = ' ';
-        ptrOutput++;
-        BigIntChSign(&Rat1.numerator);
-        BigIntChSign(&Rat3.numerator);
-      }
-      startSqrt();
-      BigRationalDivideByInt(&Rat1, 4, &Rat1);
-      BigRationalDivideByInt(&Rat3, 4, &Rat3);
-      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
-      showPlusSignOn(Rat3.numerator.sign == SIGN_POSITIVE, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-      if (Rat3.numerator.sign == SIGN_POSITIVE)
-      {
-        showRationalNoParen(&Rat3);
-      }
-      else
-      {
-        BigIntChSign(&Rat3.numerator);
-        showRationalNoParen(&Rat3);
-        BigIntChSign(&Rat3.numerator);
-      }
-      BigRationalMultiplyByInt(&Rat1, 4, &Rat1);
-      BigRationalMultiplyByInt(&Rat3, 4, &Rat3);
-      if (ctr <= 1)
-      {   // Restore sign of q/S.
-        BigIntChSign(&Rat1.numerator);
-      }
-      endSqrt();
-      if (isImaginary)
-      {
-        BigIntChSign(&Rat1.numerator);
-        BigIntChSign(&Rat3.numerator);
-      }
-    }
-    else
-    {             // S is imaginary.
-      // k^2 = sqrt(u^2 + q^2/S^2)
-      // x1,2 = -(b/4a) +/- sqrt((k+u)/2) - i*(-S) +/- sqrt((k-u)/2))
-      // x3,4 = -(b/4a) +/- sqrt((k+u)/2) + i*(-S) +/- sqrt((k-u)/2))
-      // Get value of k^2.
-      char szMinus[10];
-      char* pszMinus = &szMinus[1];
-      szMinus[0] = ' ';
-      copyStr(&pszMinus, ptrMinus);
-      *pszMinus = ' ';
-      *(pszMinus + 1) = 0;
-
-      BigRationalMultiply(&RatDeprLinear, &RatDeprLinear, &Rat4);
-      // Compute q^2 / S^2 (S^2 negative)
-      BigRationalDivide(&Rat4, &RatS, &Rat4);
-      // Compute u^2
-      BigRationalMultiply(&Rat3, &Rat3, &Rat5);
-      // Compute k^2 as u^2 + q^2 / |S^2|
-      BigRationalSubt(&Rat5, &Rat4, &Rat4);
-      showSquareRootOfComplex(" + ", szMinus);
-      showText(" + ");
-      showText(ptrI);
-      showText(ptrTimes);
-      startParen();
-      if ((ctr == 1) || (ctr == 3))
-      {
-        showText(ptrMinus);
-        *ptrOutput = ' ';
-        ptrOutput++;
-      }
-      BigIntChSign(&RatS.numerator);
-      showSquareRootOfRational(&RatS, 2, ptrTimes);
-      BigIntChSign(&RatS.numerator);
-      showPlusSignOn((ctr == 1) || (ctr == 2), TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-      showSquareRootOfComplex(szMinus, " + ");
-      endParen();
-    }
-    endShowX();
+    showText(lang ? "<p>Usando el signo más:" : "<p>Using the plus sign:");
+    showStepsOnRationalRootOfResolvent(ptrMinus, SIGN_POSITIVE);
   }
+  showSolFerrariResolventRatRoot(0, oldLinearSign, multiplicity);
+  showSolFerrariResolventRatRoot(2, oldLinearSign, multiplicity);
+  if (teach)
+  {
+    showText(lang ? "<p>Usando el signo menos:" : "<p>Using the minus sign:");
+    showStepsOnRationalRootOfResolvent("+", SIGN_NEGATIVE);
+  }
+  showSolFerrariResolventRatRoot(1, oldLinearSign, multiplicity);
+  showSolFerrariResolventRatRoot(3, oldLinearSign, multiplicity);
 }
 
 static void showDepressedQuartic(void)

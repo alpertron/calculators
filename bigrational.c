@@ -578,7 +578,7 @@ void showRatCoeffAndPowerVar(BigRational* rat, int expon, char letter)
     }
     else
     {
-      *ptrOutput++ = '*';
+      *ptrOutput = '*';
       ptrOutput++;
     }
   }
