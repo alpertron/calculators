@@ -100,6 +100,9 @@ r-t,r-2,.root2dig,.root3dig{display: inline-block; vertical-align:middle; border
 r-t,r-2 {margin:2px 10px}
 .root2dig {margin:2px 10px 2px 18px}
 .root3dig {margin:2px 10px 2px 26px}
+e-q:before {content: "\00a0\00a0\00a0\00a0("}
+e-q:after {content: ")"}
+e-q,e-q:before,e-q:after {color: #800000; font-weight:bold}
 r-t:before,r-2:before,.root2dig:before,.root3dig:before {content: ""; position:absolute; bottom:0; height:40%; width:5px; left:-5px; border-right:1px solid; transform:skew(30deg); transform-origin:bottom right;}
 r-t:after,r-2:after,.root2dig:after,.root3dig:after {content: " fin raíz ";position:absolute;top:-9999px;left:-9999px}
 r-a,r-d,.radicand3,.radicand4,.radicand5{display: inline-block; padding-left:0.5em; transform:skew(15deg);}
@@ -144,7 +147,7 @@ a:visited {color: #d7bde2}
 input, textarea, select {color: white; background-color: #3b3b3b}
 button:disabled {color: #808080; background-color: #606060}
 .new {color: #E0E000}
-.outerbox {color:yellow}
+e-q,e-q:before,e-q:after,.outerbox {color:yellow}
 }
 </style>
 <noscript>
