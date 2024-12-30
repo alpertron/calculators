@@ -29,6 +29,7 @@ extern BigInteger Independent;
 extern char* ptrOutput;
 extern const char* ptrACos;
 extern const char* ptrCos;
+extern int eqNbr;
 
 static void CbrtIndep(void)
 {
@@ -419,13 +420,13 @@ static void showImagPartCubicRoot1(void)
   }
 }
 
-static void showCompleteCbrt1(const char* ptrPlusMinus)
+static void showCompleteCbrt1(const char* pszPlusMinus)
 {
   showText(ptrMinus);
   showText(" ");
   showRatConstants("1", "2");
   showText(" ");
-  showText(ptrPlusMinus);
+  showText(pszPlusMinus);
   showText(" ");
   showImagPartCubicRoot1();
 }
@@ -601,7 +602,9 @@ static void showCardanoMethod(char currLetter)
   showText(ptrTimes);
   showRPlusS();
   showPlusMinusRational(&RatDeprIndependent);
-  showText(" = 0&nbsp;&nbsp;&nbsp;&nbsp;(1)</p><p>");
+  showText(" = 0");
+  generateEqNbr();     // Equation 1
+  showText("</p><p>");
   showText(lang ? "Como hay una variable adicional, se puede imponer una condición extra. En este caso la elección es:</p><p>" :
     "Since there is an extra variable, we can impose an additional condition. In our case it is:</p><p>");
   // Show 3rs + p = 0
@@ -611,7 +614,9 @@ static void showCardanoMethod(char currLetter)
   showText(ptrTimes);
   showVariable(&ptrOutput, 's');
   showPlusMinusRational(&RatDeprLinear);
-  showText(" = 0&nbsp;&nbsp;&nbsp;&nbsp;(2)</p><p>");
+  showText(" = 0");
+  generateEqNbr();       // Equation 2
+  showText("</p><p>");
   // Show rs = -p/3
   showVariable(&ptrOutput, 'r');
   showText(ptrTimes);
@@ -620,7 +625,8 @@ static void showCardanoMethod(char currLetter)
   BigRationalDivideByInt(&RatDeprLinear, -3, &Rat1);
   ForceDenominatorPositive(&Rat1);
   showRational(&Rat1);
-  showText("&nbsp;&nbsp;&nbsp;&nbsp;(3)</p>");
+  generateEqNbr();     // Equation 3
+  showText("</p><p>");
   showPowerVar(&ptrOutput, 3, 'r');
   showText(ptrTimes);
   showPowerVar(&ptrOutput, 3, 's');
@@ -628,14 +634,19 @@ static void showCardanoMethod(char currLetter)
   BigRationalMultiply(&Rat1, &Rat1, &Rat2);
   BigRationalMultiply(&Rat2, &Rat1, &Rat2);
   showRational(&Rat2);
-  showText("&nbsp;&nbsp;&nbsp;&nbsp;(4)</p>");
-  showText(lang ? "<p>De (1) y (2):</p><p>" : "<p>From (1) and (2):</p><p>");
+  generateEqNbr();     // Equation 4
+  showText("</p><p>");
+  showText(lang ? "De " : "From ");
+  showEqNbrs(eqNbr - 3, eqNbr - 2);  // Equations 1 and 2.
+  showText(":</p><p>");
   // Show r^3 + s^3 + q = 0
   showPowerVar(&ptrOutput, 3, 'r');
   showText(" + ");
   showPowerVar(&ptrOutput, 3, 's');
   showPlusMinusRational(&RatDeprIndependent);
-  showText(" = 0&nbsp;&nbsp;&nbsp;&nbsp;(5)</p><p>");
+  showText(" = 0");
+  generateEqNbr();     // Equation 5
+  showText("</p><p>");
   showText(lang ? "Multiplicando por " : "Multiplying by ");
   showPowerVar(&ptrOutput, 3, 'r');
   showText(":</p></p>");
@@ -647,7 +658,9 @@ static void showCardanoMethod(char currLetter)
   showPowerVar(&ptrOutput, 3, 's');
   showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
   showText(" = 0</p><p>");
-  showText(lang ? "De (4):</p>" : "From (4):</p>");
+  showText(lang ? "De (": "From (");
+  int2dec(&ptrOutput, eqNbr - 1);   // Equation 4.
+  showText("):</p>");
   showPowerVar(&ptrOutput, 6, 'r');
   showPlusMinusRational(&Rat2);
   showRatCoeffAndPowerVar(&RatDeprIndependent, 3, 'r');
@@ -659,7 +672,9 @@ static void showCardanoMethod(char currLetter)
   showText(lang ? "Esta es una ecuación cuadrática en " :
     "This is a quadratic equation in ");
   showPowerVar(&ptrOutput, 3, 'r');
-  showText(lang ? ". Al multiplicar (5) por " : ". If we multiplied (5) by ");
+  showText(lang ? ". Al multiplicar (" : ". If we multiplied (");
+  int2dec(&ptrOutput, eqNbr);    // Equation 5.
+  showText(lang ? ") por " : ") by ");
   showPowerVar(&ptrOutput, 3, 's');
   showText(lang ? " en vez de " : " instead of ");
   showPowerVar(&ptrOutput, 3, 'r');
@@ -711,8 +726,10 @@ static void linearCoeffNotZero(int multiplicity, char currLetter)
     showVariable(&ptrOutput, 'r');
     showText(lang ? " y " : " and ");
     showVariable(&ptrOutput, 's');
-    showText(lang ? " porque se debe cumplir la condición (3). Así que el producto debe ser un número real.</p><p>Sea " :
-      " because the condition (3) must be true. So their product must be a real number.</p><p>Let ");
+    showText(lang ? " porque se debe cumplir la condición (" : "because the condition (");
+    int2dec(&ptrOutput, eqNbr - 2);     // Equation 3.
+    showText(lang ? "). Así que el producto debe ser un número real.</p><p>Sea " :
+      ") must be true. So their product must be a real number.</p><p>Let ");
     for (char letter = 'r'; letter <= 's'; letter++)
     {
       if (letter == 's')
@@ -748,7 +765,9 @@ static void linearCoeffNotZero(int multiplicity, char currLetter)
     showPowerVar(&ptrOutput, 2, 'f');
     showText(lang ? " no lo son, los valores de " : " are not, the values of ");
     showVariable(&ptrOutput, currLetter);
-    showText(lang ? " que cumplen la condición (3) son:</p>" : " that follow the condition (3) are:</p>");
+    showText(lang ? " que cumplen la condición (" : " that follow the condition (");
+    int2dec(&ptrOutput, eqNbr - 2);   // Equation 3.
+    showText(lang ? ") son:</p>" : ") are:</p>");
     for (int rootNbr = 1; rootNbr <= 3; rootNbr++)
     {
       showText("<p>");

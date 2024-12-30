@@ -24,5 +24,7 @@ void showText(const char* text);
 void shownbr(const BigInteger* value);
 void beginLine(char** pptrOutput);
 void finishLine(char** pptrOutput);
+void generateEqNbr(void);
+void showEqNbrs(int eqNbr1, int eqNbr2);
 
 #endif

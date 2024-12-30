@@ -17,10 +17,15 @@
 // along with Alpertron Calculators.  If not, see <http://www.gnu.org/licenses/>.
 //
 #include <string.h>
+#include <stdbool.h>
 #include "output.h"
 #include "bignbr.h"
 
 char* ptrOutput;
+int eqNbr;
+#ifndef lang  
+extern bool lang;
+#endif
 
 void showText(const char* text)
 {
@@ -30,4 +35,21 @@ void showText(const char* text)
 void shownbr(const BigInteger* value)
 {
   BigInteger2Dec(&ptrOutput, value, groupLen);
+}
+
+void generateEqNbr(void)
+{
+  showText("<e-q>");
+  eqNbr++;
+  int2dec(&ptrOutput, eqNbr);
+  showText("</e-q>");
+}
+
+void showEqNbrs(int eqNbr1, int eqNbr2)
+{
+  showText("(");
+  int2dec(&ptrOutput, eqNbr1);
+  showText(lang ? ") y (" : ") and (");
+  int2dec(&ptrOutput, eqNbr2);
+  showText(")");
 }

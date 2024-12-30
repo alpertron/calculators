@@ -32,6 +32,7 @@ extern int denom[COMPRESSED_POLY_MAX_LENGTH];
 extern int primeEisenstein;
 extern char* ptrOutput;
 extern int polyBackup[];
+extern int eqNbr;
 int grpLen;
 bool teachMod;
 
@@ -136,6 +137,7 @@ void polyFactText(const char *modText, const char *polyText, int groupLength)
   int expon = 0;
   bool isFraction;
   grpLen = groupLength;
+  eqNbr = 0;
   rc = ComputeExpression(modText, &powerMod);
   modulusIsZero = false;
   if (pretty == PRETTY_PRINT)
