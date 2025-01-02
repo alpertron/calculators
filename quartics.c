@@ -22,12 +22,15 @@
 #include "rootseq.h"
 #include "expression.h"
 
+#define NBR_COEFFS_BACKUP 7
 extern const char* ptrI;
 extern const char* ptrCos;
 extern char* ptrOutput;
 extern int eqNbr;
 char currLetter;
 static int eqPlusMinusAfterRoot;
+static int FerrariEq;
+static BigRational coeffBackup[NBR_COEFFS_BACKUP];
 
 static void showFirstTermQuarticEq(int ctr)
 {
@@ -84,9 +87,14 @@ static void showStepsForRealBiquadratic(BigRational *pQuadratic,
   showText("</p>");
 }
 
+static void showM(void)
+{
+  showVariable(&ptrOutput, 'm');
+}
+
 static void showU(void)
 {
-  showRatCoeffAndPowerVar(NULL, -1, 'u');
+  showVariable(&ptrOutput, 'u');
 }
 
 static void showAdjustForCubic(void)
@@ -465,12 +473,12 @@ static void showSquareRootOfComplex(const char* plus, const char* minus)
   BigRationalMultiplyByInt(&Rat3, 2 * 4, &Rat3);
 }
 
-static void showSqrt2U(void)
+static void showSqrt2M(void)
 {
   startSqrt();
   showText("2");
   showText(ptrTimes);
-  showU();
+  showM();
   endSqrt();
 }
 
@@ -480,33 +488,41 @@ static void showSquareLHS(void)
   showRatCoeffAndPowerVar(NULL, -2, currLetter);
   showRatCoeffAndPowerVar(&Rat1, 0, currLetter);
   showText(" + ");
-  showU();
+  showM();
   endParen();
   showPower(&ptrOutput, 2);
 }
 
-static void showSquareRHS(void)
+static void showNbrOverSqrt2M(void)
 {
-  startParen();
-  showSqrt2U();
-  showText(ptrTimes);
-  showRatCoeffAndPowerVar(NULL, -1, currLetter);
-  BigRationalDivideByInt(&RatDeprLinear, 2, &Rat4);
-  BigRationalMultiplyByInt(&Rat4, -1, &Rat4);
   showPlusSignOn(Rat4.numerator.sign == SIGN_POSITIVE,
     TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
   if (Rat4.numerator.sign == SIGN_POSITIVE)
   {
-    showRationalNoParenOverGeneric(&Rat4, showSqrt2U);
+    showRationalNoParenOverGeneric(&Rat4, showSqrt2M);
   }
   else
   {
     Rat4.numerator.sign = SIGN_POSITIVE;
-    showRationalNoParenOverGeneric(&Rat4, showSqrt2U);
+    showRationalNoParenOverGeneric(&Rat4, showSqrt2M);
     Rat4.numerator.sign = SIGN_NEGATIVE;
   }
+}
+
+static void showSquareRHS(bool isSquare)
+{
+  startParen();
+  showSqrt2M();
+  showText(ptrTimes);
+  showRatCoeffAndPowerVar(NULL, -1, currLetter);
+  BigRationalDivideByInt(&RatDeprLinear, 2, &Rat4);
+  BigRationalMultiplyByInt(&Rat4, -1, &Rat4);
+  showNbrOverSqrt2M();
   endParen();
-  showPower(&ptrOutput, 2);
+  if (isSquare)
+  {
+    showPower(&ptrOutput, 2);
+  }
 }
 
 static void ComputeLeftSqrtFerrariRational(int divisor)
@@ -695,7 +711,7 @@ static void showFerrariResolventRationalRoot(void)
   showText(lang ? "<p>Esta ecuación tiene una raíz racional:":
     "<p>This equation has a rational root:");
   showText("</p><p>");
-  showU();
+  showM();
   showText(" = ");
   BigRationalMultiplyByInt(&RatS, -1, &Rat4);
   showRationalNoParen(&Rat4);
@@ -886,6 +902,177 @@ static void showSolFerrariResolventRatRoot(int ctr, enum eSign oldLinearSign, in
   endShowX();
 }
 
+static void showEndFerrariResolventNoRationalRoot(const char* minus, int multiplicity)
+{
+  showRatCoeffAndPowerVar(NULL, -2, currLetter);
+  showText(" ");
+  showText(minus);
+  showText(" ");
+  showSqrt2M();
+  showText(ptrTimes);
+  showText(" ");
+  showVariable(&ptrOutput, currLetter);
+  BigRationalDivideByInt(&RatDeprQuadratic, 2, &Rat1);
+  showRatCoeffAndPowerVar(&Rat1, 0, currLetter);
+  showText(" + ");
+  showVariable(&ptrOutput, 'm');
+  BigRationalDivideByInt(&RatDeprLinear, 2, &Rat4);
+  if (minus != ptrMinus)
+  {
+    BigIntChSign(&Rat4.numerator);
+  }
+  showNbrOverSqrt2M();
+  showText("= 0</p><p>");
+  showText(lang ? "<p>Como " : "<p>Since ");
+  intToBigInteger(&Rat2.numerator, (minus == ptrMinus? -1: 1));
+  intToBigInteger(&Rat2.denominator, 2);
+  startParen();
+  showRatCoeffAndPowerVar(NULL, -1, currLetter);
+  showRatCoeffAndPowerVar(&Rat2, 0, currLetter);
+  showText(ptrTimes);
+  showText(" ");
+  showSqrt2M();
+  endParen();
+  showPower(&ptrOutput, 2);
+  showText(" = ");
+  showRatCoeffAndPowerVar(NULL, -2, currLetter);
+  showText(" ");
+  showText(minus);
+  showText(" ");
+  showSqrt2M();
+  showText(ptrTimes);
+  showText(" ");
+  showVariable(&ptrOutput, currLetter);
+  Rat2.numerator.sign = SIGN_POSITIVE;
+  showRatCoeffAndPowerVar(&Rat2, 1, 'm');
+  showText("</p><p>");
+  showText(lang ? "obtenemos:" : "we get:");
+  showText("</p><p>");
+  intToBigInteger(&Rat2.numerator, (minus == ptrMinus ? -1 : 1));
+  startParen();
+  showRatCoeffAndPowerVar(NULL, -1, currLetter);
+  showRatCoeffAndPowerVar(&Rat2, 0, currLetter);
+  showText(ptrTimes);
+  showText(" ");
+  showSqrt2M();
+  endParen();
+  showPower(&ptrOutput, 2);
+  showRatCoeffAndPowerVar(&Rat1, 0, currLetter);
+  showRatCoeffAndPowerVar(&Rat2, 1, 'm');
+  showNbrOverSqrt2M();
+  showText(" = 0</p>");
+  for (int ctr = 0; ctr < 3; ctr++)
+  {
+    if (ctr == 0)
+    {
+      showText("<p>");
+      showRatCoeffAndPowerVar(NULL, -1, currLetter);
+      showText(" = ");
+    }
+    else
+    {
+      showX(multiplicity);
+      showPlusMinusRational(&RatCubic);
+    }
+    intToBigInteger(&Rat2.numerator, (minus == ptrMinus ? 1 : -1));
+    showRatCoeffAndPowerVar(&Rat2, 0, currLetter);
+    showText(ptrTimes);
+    showText(" ");
+    showSqrt2M();
+    showText(" ");
+    if (ctr == 0)
+    {
+      showText(ptrPlusMinus);
+    }
+    else
+    {
+      showText(ctr == 1 ? "+" : ptrMinus);
+    }
+    showText(" ");
+    startSqrt();
+    BigRationalDivideByInt(&RatDeprQuadratic, 2, &Rat1);
+    BigIntChSign(&Rat1.numerator);
+    showRatCoeffAndPowerVar(&Rat1, 0, currLetter);
+    Rat2.numerator.sign = SIGN_NEGATIVE;
+    showRatCoeffAndPowerVar(&Rat2, 1, 'm');
+    if (ctr == 0)
+    {
+      BigIntChSign(&Rat4.numerator);
+    }
+    showNbrOverSqrt2M();
+    endSqrt();
+    if (ctr == 0)
+    {
+      showAdjustForCubic();
+    }
+    else
+    {
+      endShowX();
+    }
+  }
+}
+
+static void showFerrariResolventNoRationalRoot(int multiplicity)
+{
+  BigRational* coeffsToBackup[NBR_COEFFS_BACKUP] =
+  {
+    &RatDeprLinear,
+    &RatDeprIndependent,
+    &RatCubic,
+    &RatQuadratic,
+    &RatLinear,
+    &RatIndependent,
+    &RatDiscr
+  };
+  BigRational** pRat = coeffsToBackup;
+  for (int i = 0; i < NBR_COEFFS_BACKUP; i++)
+  {
+    CopyBigInt(&coeffBackup[i].numerator, &(*pRat)->numerator);
+    CopyBigInt(&coeffBackup[i].denominator, &(*pRat)->denominator);
+    pRat++;
+  }
+  // Lodovico Ferrari's resolvent equation is:
+  // 8x^3 + 8px^2 + (2p^2-8r)x - q^2 = 0
+  // Initialize RatQuadratic, RatLinear and RatIndependent.
+  CopyBigInt(&RatQuadratic.numerator, &RatDeprQuadratic.numerator);
+  CopyBigInt(&RatQuadratic.denominator, &RatDeprQuadratic.denominator);
+  BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &Rat2);
+  BigRationalDivideByInt(&Rat2, 4, &Rat2);                       // (1/4)p^2
+  BigRationalSubt(&Rat2, &RatDeprIndependent, &RatLinear);       // (1/4)p^2 - r
+  BigRationalMultiply(&RatDeprLinear, &RatDeprLinear, &Rat3);    // q^2
+  BigRationalDivideByInt(&Rat3, 8, &RatIndependent);             // (1/8)q^2
+  BigIntChSign(&RatIndependent.numerator);                       // (-1/8)q^2
+  solveCubic(1, true, 'm');
+  pRat = coeffsToBackup;
+  for (int i = 0; i < NBR_COEFFS_BACKUP; i++)
+  {
+    CopyBigInt(&(*pRat)->numerator, &coeffBackup[i].numerator);
+    CopyBigInt(&(*pRat)->denominator, &coeffBackup[i].denominator);
+    pRat++;
+  }
+  showText(lang ? "<p>De " : "<p>From ");
+  showEqNbrs(FerrariEq, FerrariEq + 1);
+  showText(":</p><p>");
+  showRatCoeffAndPowerVar(NULL, -2, currLetter);
+  BigRationalDivideByInt(&RatDeprQuadratic, 2, &Rat1);
+  showRatCoeffAndPowerVar(&Rat1, 0, currLetter);
+  showText(" + ");
+  showM();
+  showText(" = ");
+  showText(ptrPlusMinus);
+  showSquareRHS(false);
+  generateEqNbr();
+  showText("</p><p>");
+  showText(lang ? "Usando el signo más:" : "Using the plus sign:");
+  showText("</p>");
+  showEndFerrariResolventNoRationalRoot(ptrMinus, multiplicity);
+  showText(lang ? "<p>Usando el signo menos en (" : "<p>Using the minus sign in (");
+  int2dec(&ptrOutput, eqNbr);
+  showText("):</p><p>");
+  showEndFerrariResolventNoRationalRoot(" + ", multiplicity);
+  showText("</p>");
+}
+
 static void FerrariResolventHasRationalRoot(int multiplicity)
 {
   const int* ptrValues = factorInfoInteger[0].ptrPolyLifted;
@@ -1054,15 +1241,15 @@ static void showFerrariMethodDerivation(void)
   showRatCoeffAndPowerVar(&RatDeprQuadratic, 2, currLetter);
   intToBigInteger(&Rat2.numerator, 2);
   intToBigInteger(&Rat2.denominator, 1);
-  showRatCoeffAndPowerVar(&Rat2, 1, 'u');
+  showRatCoeffAndPowerVar(&Rat2, 1, 'm');
   showText(ptrTimes);
   showRatCoeffAndPowerVar(NULL, -2, currLetter);
   showText(" + ");
-  showRatCoeffAndPowerVar(NULL, -2, 'u');
-  showRatCoeffAndPowerVar(&RatDeprQuadratic, 1, 'u');
+  showRatCoeffAndPowerVar(NULL, -2, 'm');
+  showRatCoeffAndPowerVar(&RatDeprQuadratic, 1, 'm');
   BigRationalMultiply(&RatDeprQuadratic, &RatDeprQuadratic, &Rat3);
   BigRationalDivideByInt(&Rat3, 4, &Rat3);
-  showRatCoeffAndPowerVar(&Rat3, 0, 'u');
+  showRatCoeffAndPowerVar(&Rat3, 0, 'm');
   showText("</p><p>");
   showText(lang ? "Como la ecuación vale cero, podemos restar al miembro derecho de la "
     "identidad el miembro izquierdo de la ecuación." : "Since the equation equals zero, "
@@ -1071,28 +1258,28 @@ static void showFerrariMethodDerivation(void)
   showSquareLHS();
   showText(" = 2");
   showText(ptrTimes);
-  showU();
+  showM();
   showText(ptrTimes);
   showRatCoeffAndPowerVar(NULL, -2, currLetter);
   BigRationalMultiplyByInt(&RatDeprLinear, -1, &Rat4);
   showRatCoeffAndPowerVar(&Rat4, 1, currLetter);
   showText(" + ");
-  showRatCoeffAndPowerVar(NULL, -2, 'u');
-  showRatCoeffAndPowerVar(&RatDeprQuadratic, 1, 'u');
+  showRatCoeffAndPowerVar(NULL, -2, 'm');
+  showRatCoeffAndPowerVar(&RatDeprQuadratic, 1, 'm');
   BigRationalSubt(&Rat3, &RatDeprIndependent, &Rat3);
-  showRatCoeffAndPowerVar(&Rat3, 0, 'u');
+  showRatCoeffAndPowerVar(&Rat3, 0, 'm');
   showText("</p><p>");
   showText(lang ? "Elegimos el valor de " : "We select the value of ");
-  showU();
+  showVariable(&ptrOutput, 'm');
   showText(lang ? " tal que el miembro derecho sea un cuadrado perfecto.</p>"
     "</p><p>De la identidad" :
     " such that the right hand side be a perfect square.</p>"
     "<p>From the identity");
   showText("</p><p>");
-  showSquareRHS();
+  showSquareRHS(true);
   showText(" = 2");
   showText(ptrTimes);
-  showU();
+  showVariable(&ptrOutput, 'm');
   showText(ptrTimes);
   showRatCoeffAndPowerVar(NULL, -2, currLetter);
   BigRationalMultiplyByInt(&RatDeprLinear, -1, &Rat4);
@@ -1100,24 +1287,25 @@ static void showFerrariMethodDerivation(void)
   BigRationalMultiply(&RatDeprLinear, &RatDeprLinear, &Rat4);
   BigRationalDivideByInt(&Rat4, 8, &Rat4);
   showText(" + ");
-  showRationalNoParenOverGeneric(&Rat4, showU);
+  showRationalNoParenOverGeneric(&Rat4, showM);
   showText("</p><p>");
   showText(lang ? "obtenemos:" : "we get:");
   showText("</p><p>");
   showSquareLHS();
   showText(" = ");
-  showSquareRHS();
+  showSquareRHS(true);
   showText(" + ");
-  showRatCoeffAndPowerVar(NULL, -2, 'u');
-  showRatCoeffAndPowerVar(&RatDeprQuadratic, 1, 'u');
-  showRatCoeffAndPowerVar(&Rat3, 0, 'u');
+  showRatCoeffAndPowerVar(NULL, -2, 'm');
+  showRatCoeffAndPowerVar(&RatDeprQuadratic, 1, 'm');
+  showRatCoeffAndPowerVar(&Rat3, 0, 'm');
   BigRationalMultiply(&RatDeprLinear, &RatDeprLinear, &Rat4);
   BigRationalDivideByInt(&Rat4, 8, &Rat4);
   showText(" ");
   showText(ptrMinus);
   showText(" ");
-  showRationalNoParenOverGeneric(&Rat4, showU);
+  showRationalNoParenOverGeneric(&Rat4, showM);
   generateEqNbr();    // Equation 1.
+  FerrariEq = eqNbr;
   showText("</p><p>");
   showText(lang ? "Para que el miembro derecho sea un cuadrado perfecto, podemos hacer "
     "que lo que se encuentra fuera del paréntesis valga cero. De esta manera obtenemos "
@@ -1126,20 +1314,323 @@ static void showFerrariMethodDerivation(void)
     "outside the parentheses. In this way we get a cubic equation:");
   showText("</p><p>");
   BigRationalMultiplyByInt(&Rat4, -1, &Rat4);
-  showRatCoeffAndPowerVar(NULL, -3, 'u');
-  showRatCoeffAndPowerVar(&RatDeprQuadratic, 2, 'u');
-  showRatCoeffAndPowerVar(&Rat3, 1, 'u');
-  showRatCoeffAndPowerVar(&Rat4, 0, 'u');
-  showText(" = 0</p>");
+  showRatCoeffAndPowerVar(NULL, -3, 'm');
+  showRatCoeffAndPowerVar(&RatDeprQuadratic, 2, 'm');
+  showRatCoeffAndPowerVar(&Rat3, 1, 'm');
+  showRatCoeffAndPowerVar(&Rat4, 0, 'm');
+  showText(" = 0");
+  generateEqNbr();
+  showText("</p>");
+}
+
+static void FerrariDiscriminantIsPositive(int multiplicity)
+{
+  bool isImaginary;
+  enum eSign sign1;
+  ForceDenominatorPositive(&RatDelta1);
+  if (RatDelta1.numerator.sign == SIGN_POSITIVE)
+  {
+    intToBigInteger(&Rat1.numerator, 1);
+  }
+  else
+  {
+    intToBigInteger(&Rat1.numerator, -1);
+  }
+  intToBigInteger(&Rat1.denominator, 2);
+  CopyBigInt(&Rat2.numerator, &RatDiscr.numerator);
+  CopyBigInt(&Rat2.denominator, &RatDiscr.denominator);
+  MultiplyRationalBySqrtRational(&Rat1, &Rat2);
+  startLine();
+  if (pretty == PRETTY_PRINT)
+  {
+    showText("<var>Q</var> = ");
+  }
+  else
+  {
+    showText("Q = ");
+  }
+  startCbrt();
+  if (BigIntIsOne(&Rat2.numerator))
+  {
+    BigRationalAdd(&RatDelta1, &Rat2, &Rat1);
+    BigRationalDivideByInt(&Rat1, 2, &Rat1);
+    showRationalNoParen(&Rat1);
+  }
+  else
+  {
+    BigRationalDivideByInt(&RatDelta1, 2, &RatDelta1);
+    showRationalNoParen(&RatDelta1);
+    BigRationalMultiplyByInt(&RatDelta1, 2, &RatDelta1);
+    showText(" + ");
+    ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
+  }
+  endCbrt();
+  endLine();
+  startLine();
+  if (pretty == PRETTY_PRINT)
+  {
+    showText("<var>S</var> = ");
+  }
+  else
+  {
+    showText("S = ");
+  }
+  if (pretty != PARI_GP)
+  {
+    showRatConstants("1", "2");
+  }
+  else
+  {
+    showText("(1/2)");
+  }
+  showText(ptrTimes);
+  startSqrt();
+  intToBigInteger(&Rat1.numerator, -2);
+  intToBigInteger(&Rat1.denominator, 3);
+  BigRationalMultiply(&RatDeprQuadratic, &Rat1, &Rat1);
+  if (!BigIntIsZero(&Rat1.numerator))
+  {
+    ForceDenominatorPositive(&Rat1);
+    showRationalNoParen(&Rat1);
+    showText(" + ");
+  }
+  if (pretty != PARI_GP)
+  {
+    showRatConstants("<var>Q</var>", "3");
+  }
+  else
+  {
+    showText("Q / 3 ");
+  }
+  BigRationalDivideByInt(&RatDelta0, 3, &Rat1);
+  ForceDenominatorPositive(&Rat1);
+  showPlusSignOn(Rat1.numerator.sign == SIGN_POSITIVE, TYPE_PM_SPACE_AFTER);
+  CopyBigInt(&Rat2.numerator, &Rat1.numerator);
+  CopyBigInt(&Rat2.denominator, &Rat1.denominator);
+  Rat2.numerator.sign = SIGN_POSITIVE;
+  showRationalOverStr(&Rat2, "Q", ptrTimes);
+  endSqrt();
+  endLine();
+  sign1 = RatDeprLinear.numerator.sign;
+  RatDeprLinear.numerator.sign = SIGN_POSITIVE;
+  for (int ctr = 0; ctr < 4; ctr++)
+  {
+    bool signS = (ctr <= 1);
+    bool signNumerator = RatDeprLinear.numerator.sign == SIGN_POSITIVE;
+    isImaginary = false;
+    if ((signS && signNumerator) || (!signS && !signNumerator))
+    {
+      isImaginary = true;
+    }
+    showX(multiplicity);
+    showFirstTermQuarticEq(ctr);
+    showText((pretty == PRETTY_PRINT) ? " <var>S</var> " : " S ");
+    showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_AFTER);
+    if (pretty != PARI_GP)
+    {
+      showRatConstants((isImaginary ? "i" : "1"), "2");
+    }
+    else
+    {
+      showText(isImaginary ? "(I/2) " : "(1/2) ");
+    }
+    showText(ptrTimes);
+    *ptrOutput = ' ';
+    ptrOutput++;
+    startSqrt();
+    if (!isImaginary)
+    {
+      showText(ptrMinus);
+    }
+    showText("4 ");
+    showText(ptrTimes);
+    if (pretty == PRETTY_PRINT)
+    {
+      showText("<var>S</var>&sup2; ");
+    }
+    else
+    {
+      showText("S^2 ");
+    }
+    if (!BigIntIsZero(&RatDeprQuadratic.numerator))
+    {
+      if (RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE)
+      {
+        showPlusSignOn(!isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      }
+      else
+      {
+        showPlusSignOn(isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      }
+      BigRationalMultiplyByInt(&RatDeprQuadratic, 2, &Rat1);  // 2p
+      Rat1.numerator.sign = SIGN_POSITIVE;
+      showRationalNoParen(&Rat1);
+    }
+    if (!BigIntIsZero(&RatDeprLinear.numerator))
+    {
+      if ((signS && (sign1 == SIGN_NEGATIVE)) || (!signS && (sign1 != SIGN_NEGATIVE)))
+      {
+        showPlusSignOn(!isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      }
+      else
+      {
+        showPlusSignOn(isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      }
+      showRationalOverStr(&RatDeprLinear, "S", ptrTimes);
+    }
+    endSqrt();
+    endShowX();
+  }
+}
+
+static void FerrariDiscriminantIsNegative(int multiplicity)
+{
+  bool isImaginary;
+  enum eSign sign2;
+  startLine();
+  if (pretty == PRETTY_PRINT)
+  {
+    showText("<var>t</var> = arccos");
+  }
+  else if (pretty == TEX)
+  {
+    showText("t = \\arccos");
+  }
+  else
+  {
+    showText("t = acos");
+  }
+  startParen();
+  BigRationalDivide(&RatDelta1, &RatDelta0, &Rat1);
+  BigRationalDivideByInt(&Rat1, 2, &Rat1);
+  CopyBigInt(&Rat2.numerator, &RatDelta0.denominator);
+  CopyBigInt(&Rat2.denominator, &RatDelta0.numerator);
+  MultiplyRationalBySqrtRational(&Rat1, &Rat2);
+  ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
+  endParen();
+  endLine();
+  startLine();
+  if (pretty == PRETTY_PRINT)
+  {
+    showText("<var>S</var> = ");
+  }
+  else
+  {
+    showText("S = ");
+  }
+  if (pretty != PARI_GP)
+  {
+    showRatConstants("1", "2");
+  }
+  else
+  {
+    showText("(1/2)");
+  }
+  showText(ptrTimes);
+  startSqrt();
+  intToBigInteger(&Rat1.numerator, -2);
+  intToBigInteger(&Rat1.denominator, 3);
+  BigRationalMultiply(&RatDeprQuadratic, &Rat1, &Rat2);
+  ForceDenominatorPositive(&Rat2);
+  if (!BigIntIsZero(&Rat2.numerator))
+  {
+    showRationalNoParen(&Rat2);
+    showText(" + ");
+  }
+  BigIntChSign(&Rat1.numerator);
+  CopyBigInt(&Rat2.numerator, &RatDelta0.numerator);
+  CopyBigInt(&Rat2.denominator, &RatDelta0.denominator);
+  MultiplyRationalBySqrtRational(&Rat1, &Rat2);
+  ForceDenominatorPositive(&Rat1);
+  ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
+  showText(ptrTimes);
+  showText(ptrCos);
+  if (pretty != PARI_GP)
+  {
+    showRatConstants("<var>t</var>", "3");
+  }
+  else
+  {
+    showText("(<var>t</var> / 3)");
+  }
+  endSqrt();
+  if (pretty == TEX)
+  {
+    *ptrOutput = '}';
+    ptrOutput++;
+  }
+  endLine();
+  BigRationalMultiplyByInt(&RatDeprQuadratic, -2, &Rat1);
+  ForceDenominatorPositive(&Rat1);
+  Rat1.numerator.sign = SIGN_POSITIVE;
+  CopyBigInt(&Rat2.numerator, &RatDeprLinear.numerator);
+  CopyBigInt(&Rat2.denominator, &RatDeprLinear.denominator);
+  sign2 = Rat2.numerator.sign;
+  Rat2.numerator.sign = SIGN_POSITIVE;
+  isImaginary = (RatDeprQuadratic.numerator.sign == SIGN_POSITIVE) ||
+    (RatD.numerator.sign == SIGN_POSITIVE);
+  RatDeprLinear.numerator.sign = SIGN_POSITIVE;
+  for (int ctr = 0; ctr < 4; ctr++)
+  {
+    showX(multiplicity);
+    showFirstTermQuarticEq(ctr);
+    showText(" <var>S</var> ");
+    showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_AFTER);
+    if (pretty != PARI_GP)
+    {
+      showRatConstants((isImaginary ? "i" : "1"), "2");
+    }
+    else
+    {
+      showText(isImaginary ? "(I/2)" : "(1/2)");
+    }
+    showText(ptrTimes);
+    startSqrt();
+    if (!isImaginary)
+    {
+      showText("&minus;");
+    }
+    showText("4 ");
+    showText(ptrTimes);
+    showText("<var>S</var>");
+    showText((pretty == PRETTY_PRINT) ? "&sup2;" : "^2");
+    *ptrOutput = ' ';
+    ptrOutput++;
+    if (!BigIntIsZero(&RatDeprQuadratic.numerator))
+    {
+      if (RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE)
+      {
+        showPlusSignOn(!isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      }
+      else
+      {
+        showPlusSignOn(isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      }
+      BigRationalMultiplyByInt(&RatDeprQuadratic, 2, &Rat1);  // 2p
+      Rat1.numerator.sign = SIGN_POSITIVE;
+      showRationalNoParen(&Rat1);
+    }
+    if (!BigIntIsZero(&RatDeprLinear.numerator))
+    {
+      bool signS = (ctr <= 1);
+      if ((signS && (sign2 == SIGN_NEGATIVE)) || (!signS && (sign2 != SIGN_NEGATIVE)))
+      {
+        showPlusSignOn(!isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      }
+      else
+      {
+        showPlusSignOn(isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
+      }
+      showRationalOverStr(&RatDeprLinear, "S", ptrTimes);
+    }
+    endSqrt();
+    endShowX();
+  }
 }
 
 void QuarticEquation(const int* polynomial, int multiplicity)
 {
-  int ctr;
-  bool isImaginary;
   int* ptrValues;
-  enum eSign sign1;
-  enum eSign sign2;
   const int* ptrPolynomial = polynomial;
   currLetter = 'x';
   UncompressBigIntegerB(ptrPolynomial, &Independent);
@@ -1294,303 +1785,19 @@ void QuarticEquation(const int* polynomial, int multiplicity)
   {   // Rational root found. Get root.
     FerrariResolventHasRationalRoot(multiplicity);
   }
-  else if (RatDiscr.numerator.sign == SIGN_POSITIVE)
+  else if (teach)
   {
-    ForceDenominatorPositive(&RatDelta1);
-    if (RatDelta1.numerator.sign == SIGN_POSITIVE)
-    {
-      intToBigInteger(&Rat1.numerator, 1);
-    }
-    else
-    {
-      intToBigInteger(&Rat1.numerator, -1);
-    }
-    intToBigInteger(&Rat1.denominator, 2);
-    CopyBigInt(&Rat2.numerator, &RatDiscr.numerator);
-    CopyBigInt(&Rat2.denominator, &RatDiscr.denominator);
-    MultiplyRationalBySqrtRational(&Rat1, &Rat2);
-    startLine();
-    if (pretty == PRETTY_PRINT)
-    {
-      showText("<var>Q</var> = ");
-    }
-    else
-    {
-      showText("Q = ");
-    }
-    startCbrt();
-    if (BigIntIsOne(&Rat2.numerator))
-    {
-      BigRationalAdd(&RatDelta1, &Rat2, &Rat1);
-      BigRationalDivideByInt(&Rat1, 2, &Rat1);
-      showRationalNoParen(&Rat1);
-    }
-    else
-    {
-      BigRationalDivideByInt(&RatDelta1, 2, &RatDelta1);
-      showRationalNoParen(&RatDelta1);
-      BigRationalMultiplyByInt(&RatDelta1, 2, &RatDelta1);
-      showText(" + ");
-      ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
-    }
-    endCbrt();
-    endLine();
-    startLine();
-    if (pretty == PRETTY_PRINT)
-    {
-      showText("<var>S</var> = ");
-    }
-    else
-    {
-      showText("S = ");
-    }
-    if (pretty != PARI_GP)
-    {
-      showRatConstants("1", "2");
-    }
-    else
-    {
-      showText("(1/2)");
-    }
-    showText(ptrTimes);
-    startSqrt();
-    intToBigInteger(&Rat1.numerator, -2);
-    intToBigInteger(&Rat1.denominator, 3);
-    BigRationalMultiply(&RatDeprQuadratic, &Rat1, &Rat1);
-    if (!BigIntIsZero(&Rat1.numerator))
-    {
-      ForceDenominatorPositive(&Rat1);
-      showRationalNoParen(&Rat1);
-      showText(" + ");
-    }
-    if (pretty != PARI_GP)
-    {
-      showRatConstants("<var>Q</var>", "3");
-    }
-    else
-    {
-      showText("Q / 3 ");
-    }
-    BigRationalDivideByInt(&RatDelta0, 3, &Rat1);
-    ForceDenominatorPositive(&Rat1);
-    showPlusSignOn(Rat1.numerator.sign == SIGN_POSITIVE, TYPE_PM_SPACE_AFTER);
-    CopyBigInt(&Rat2.numerator, &Rat1.numerator);
-    CopyBigInt(&Rat2.denominator, &Rat1.denominator);
-    Rat2.numerator.sign = SIGN_POSITIVE;
-    showRationalOverStr(&Rat2, "Q", ptrTimes);
-    endSqrt();
-    endLine();
-    sign1 = RatDeprLinear.numerator.sign;
-    RatDeprLinear.numerator.sign = SIGN_POSITIVE;
-    for (ctr = 0; ctr < 4; ctr++)
-    {
-      bool signS = (ctr <= 1);
-      bool signNumerator = RatDeprLinear.numerator.sign == SIGN_POSITIVE;
-      isImaginary = false;
-      if ((signS && signNumerator) || (!signS && !signNumerator))
-      {
-        isImaginary = true;
-      }
-      showX(multiplicity);
-      showFirstTermQuarticEq(ctr);
-      showText((pretty == PRETTY_PRINT) ? " <var>S</var> " : " S ");
-      showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_AFTER);
-      if (pretty != PARI_GP)
-      {
-        showRatConstants((isImaginary ? "i" : "1"), "2");
-      }
-      else
-      {
-        showText(isImaginary ? "(I/2) " : "(1/2) ");
-      }
-      showText(ptrTimes);
-      *ptrOutput = ' ';
-      ptrOutput++;
-      startSqrt();
-      if (!isImaginary)
-      {
-        showText(ptrMinus);
-      }
-      showText("4 ");
-      showText(ptrTimes);
-      if (pretty == PRETTY_PRINT)
-      {
-        showText("<var>S</var>&sup2; ");
-      }
-      else
-      {
-        showText("S^2 ");
-      }
-      if (!BigIntIsZero(&RatDeprQuadratic.numerator))
-      {
-        if (RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE)
-        {
-          showPlusSignOn(!isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-        }
-        else
-        {
-          showPlusSignOn(isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-        }
-        BigRationalMultiplyByInt(&RatDeprQuadratic, 2, &Rat1);  // 2p
-        Rat1.numerator.sign = SIGN_POSITIVE;
-        showRationalNoParen(&Rat1);
-      }
-      if (!BigIntIsZero(&RatDeprLinear.numerator))
-      {
-        if ((signS && (sign1 == SIGN_NEGATIVE)) || (!signS && (sign1 != SIGN_NEGATIVE)))
-        {
-          showPlusSignOn(!isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-        }
-        else
-        {
-          showPlusSignOn(isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-        }
-        showRationalOverStr(&RatDeprLinear, "S", ptrTimes);
-      }
-      endSqrt();
-      endShowX();
-    }
+    showFerrariResolventNoRationalRoot(multiplicity);
   }
   else
   {
-    startLine();
-    if (pretty == PRETTY_PRINT)
+    if (RatDiscr.numerator.sign == SIGN_POSITIVE)
     {
-      showText("<var>t</var> = arccos");
-    }
-    else if (pretty == TEX)
-    {
-      showText("t = \\arccos");
+      FerrariDiscriminantIsPositive(multiplicity);
     }
     else
     {
-      showText("t = acos");
-    }
-    startParen();
-    BigRationalDivide(&RatDelta1, &RatDelta0, &Rat1);
-    BigRationalDivideByInt(&Rat1, 2, &Rat1);
-    CopyBigInt(&Rat2.numerator, &RatDelta0.denominator);
-    CopyBigInt(&Rat2.denominator, &RatDelta0.numerator);
-    MultiplyRationalBySqrtRational(&Rat1, &Rat2);
-    ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
-    endParen();
-    endLine();
-    startLine();
-    if (pretty == PRETTY_PRINT)
-    {
-      showText("<var>S</var> = ");
-    }
-    else
-    {
-      showText("S = ");
-    }
-    if (pretty != PARI_GP)
-    {
-      showRatConstants("1", "2");
-    }
-    else
-    {
-      showText("(1/2)");
-    }
-    showText(ptrTimes);
-    startSqrt();
-    intToBigInteger(&Rat1.numerator, -2);
-    intToBigInteger(&Rat1.denominator, 3);
-    BigRationalMultiply(&RatDeprQuadratic, &Rat1, &Rat2);
-    ForceDenominatorPositive(&Rat2);
-    if (!BigIntIsZero(&Rat2.numerator))
-    {
-      showRationalNoParen(&Rat2);
-      showText(" + ");
-    }
-    BigIntChSign(&Rat1.numerator);
-    CopyBigInt(&Rat2.numerator, &RatDelta0.numerator);
-    CopyBigInt(&Rat2.denominator, &RatDelta0.denominator);
-    MultiplyRationalBySqrtRational(&Rat1, &Rat2);
-    ForceDenominatorPositive(&Rat1);
-    ShowRationalAndSqrParts(&Rat1, &Rat2, 2, ptrTimes);
-    showText(ptrTimes);
-    showText(ptrCos);
-    if (pretty != PARI_GP)
-    {
-      showRatConstants("<var>t</var>", "3");
-    }
-    else
-    {
-      showText("(<var>t</var> / 3)");
-    }
-    endSqrt();
-    if (pretty == TEX)
-    {
-      *ptrOutput = '}';
-      ptrOutput++;
-    }
-    endLine();
-    BigRationalMultiplyByInt(&RatDeprQuadratic, -2, &Rat1);
-    ForceDenominatorPositive(&Rat1);
-    Rat1.numerator.sign = SIGN_POSITIVE;
-    CopyBigInt(&Rat2.numerator, &RatDeprLinear.numerator);
-    CopyBigInt(&Rat2.denominator, &RatDeprLinear.denominator);
-    sign2 = Rat2.numerator.sign;
-    Rat2.numerator.sign = SIGN_POSITIVE;
-    isImaginary = (RatDeprQuadratic.numerator.sign == SIGN_POSITIVE) ||
-      (RatD.numerator.sign == SIGN_POSITIVE);
-    RatDeprLinear.numerator.sign = SIGN_POSITIVE;
-    for (ctr = 0; ctr < 4; ctr++)
-    {
-      showX(multiplicity);
-      showFirstTermQuarticEq(ctr);
-      showText(" <var>S</var> ");
-      showPlusSignOn((ctr == 0) || (ctr == 2), TYPE_PM_SPACE_AFTER);
-      if (pretty != PARI_GP)
-      {
-        showRatConstants((isImaginary ? "i" : "1"), "2");
-      }
-      else
-      {
-        showText(isImaginary ? "(I/2)" : "(1/2)");
-      }
-      showText(ptrTimes);
-      startSqrt();
-      if (!isImaginary)
-      {
-        showText("&minus;");
-      }
-      showText("4 ");
-      showText(ptrTimes);
-      showText("<var>S</var>");
-      showText((pretty == PRETTY_PRINT) ? "&sup2;" : "^2");
-      *ptrOutput = ' ';
-      ptrOutput++;
-      if (!BigIntIsZero(&RatDeprQuadratic.numerator))
-      {
-        if (RatDeprQuadratic.numerator.sign == SIGN_NEGATIVE)
-        {
-          showPlusSignOn(!isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-        }
-        else
-        {
-          showPlusSignOn(isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-        }
-        BigRationalMultiplyByInt(&RatDeprQuadratic, 2, &Rat1);  // 2p
-        Rat1.numerator.sign = SIGN_POSITIVE;
-        showRationalNoParen(&Rat1);
-      }
-      if (!BigIntIsZero(&RatDeprLinear.numerator))
-      {
-        bool signS = (ctr <= 1);
-        if ((signS && (sign2 == SIGN_NEGATIVE)) || (!signS && (sign2 != SIGN_NEGATIVE)))
-        {
-          showPlusSignOn(!isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-        }
-        else
-        {
-          showPlusSignOn(isImaginary, TYPE_PM_SPACE_BEFORE | TYPE_PM_SPACE_AFTER);
-        }
-        showRationalOverStr(&RatDeprLinear, "S", ptrTimes);
-      }
-      endSqrt();
-      endShowX();
+      FerrariDiscriminantIsNegative(multiplicity);
     }
   }
 }

@@ -318,6 +318,10 @@ void showRationalNoParenOverGeneric(const BigRational* rat, showGenericFunc show
     {
       shownbr(&rat->denominator);
     }
+    if (denominatorIsNotOne && (showGeneric != NULL))
+    {
+      showText(ptrTimes);
+    }
     if (showGeneric != NULL)
     {
       showGeneric();

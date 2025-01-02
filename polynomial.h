@@ -139,4 +139,5 @@ void SameDegreeFactorization(void);
 enum eExprErr DivPolynomialExpr(int* ptrArgument1, const int* ptrArgument2, enum eDivType type);
 int* getNextElement(const int* ptrPoly);
 int DivideRatCoeffPolynomial(int* pDividend, const int* pDivisor, enum eDivType type);
+void solveCubic(int multiplicity, bool fromQuartic, char currLetter);
 #endif
