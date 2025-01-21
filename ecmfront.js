@@ -439,8 +439,8 @@ function dowork(n)
     if (n === -2 || n === 4)
     {     // Automatic factorization or pressed skip test.
       let ecmFactor = getStorage("ecmFactors");
-      if (ecmFactor !== "")
-      {
+      if (ecmFactor != "" && ecmFactor != null)
+      {      // ecmFactor local storage exists.
         valueText = ecmFactor.slice(0, ecmFactor.indexOf("="));
       }
     }
