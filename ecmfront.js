@@ -689,7 +689,7 @@ function startUp()
   get("cancel").onclick = function()
   {
     history.back();   // Close configuration mode.
-  }
+  };
   get("close-config").onclick = function()
   {
     history.back();   // Close configuration mode.
