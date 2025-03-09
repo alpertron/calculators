@@ -18,6 +18,7 @@
 
 /* global cantShowCanvas */
 /* global commonGraphicEvents */
+/* global copyStr */
 /* global drawGraphic */
 /* global get */
 /* global getHeight */
@@ -27,13 +28,16 @@
 /* global isNotSpecialKey */
 /* global moveGraphic */
 /* global ptrToString */
+/* global setNewDimensionsForCanvas */
 /* global startLowLevelCode */
+/* global startOffset */
 // In order to reduce the number of files to read from Web server, this 
 // Javascript file includes both the Javascript in the main thread and the 
 // Javascript that drives WebAssembly on its own Web Worker.
 const none = "none";
 const block = "block";
 const inline = "inline";
+let fileContents = 0;
 let buffer, env, asm;
 let zoom, zoomDone, imgData;
 let canvas, zoomin, zoomout, center, start;
@@ -68,16 +72,9 @@ let interval;
 
 function updateGraphic(input, nbr)
 {
-  let startOffset = 11000000|0;
-  let idx;
-  let value = input.value;
   if (input !== 0)
   {
-    for (idx=0; idx<value.length; idx++)  
-    {
-      HEAPU8[(startOffset+idx) >> 0] = value.charCodeAt(idx);
-    }
-    HEAPU8[(startOffset+idx) >> 0] = 0;
+    copyStr(startOffset, input.value);
   }
   let width = getWidth();
   let height = getHeight();
@@ -244,9 +241,7 @@ function startUp()
   };
   window.onresize = function()
   {
-    let newDomRect = canvas.getBoundingClientRect();
-    canvas.width = newDomRect.width;
-    canvas.height = newDomRect.height;
+    setNewDimensionsForCanvas();
     updateGraphic(center, 1);
   };
   animate.onclick = function()
@@ -270,6 +265,8 @@ function startUp()
     oldX = 0;
     oldY = 0;
     oldStart = 0;
+    setNewDimensionsForCanvas();
+    updateGraphic(center, 1);
     interval = setInterval(animation, parseFloat(delay.value) * 1000);    
   };
   cancelanim.onclick = function()
@@ -284,6 +281,11 @@ function startUp()
     clearInterval(interval);
   };
   initMenubarEvents();
+  if (get("left") == null)
+  {
+    setNewDimensionsForCanvas();
+    updateGraphic(center, 1);
+  }
 }
 
 window.addEventListener("load", startUp);

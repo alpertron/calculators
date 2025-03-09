@@ -167,4 +167,3 @@ function setFocusTo(newFocusObj)
 {
   elementInFocus = newFocusObj;
 }
-

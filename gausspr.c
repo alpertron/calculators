@@ -34,8 +34,12 @@
   int oldYCenter;
   int oldXFraction;
   int oldYFraction;
-#else        // Emscripten
-  unsigned int pixelArray[PIXEL_ARRAY_SIZE];
+#else
+  #ifdef __ANDROID__
+    unsigned int *pixelArrPtr;
+  #else          // Emscripten
+    unsigned int pixelArray[PIXEL_ARRAY_SIZE];
+  #endif
 #endif
 
 #define MAX_LINES  1000
@@ -53,7 +57,7 @@ extern int height;
  // 1) x is not zero and y is not zero and x^2+y^2 is prime
  // 2) x=0, y is prime and y=3 (mod 4)
  // 3) y=0, x is prime and x=3 (mod 4)
-void setPointGaussian(int x, int y)
+void setPointGaussian(unsigned int *ptrPixelArr, int x, int y)
 {
   int xPhysical;
   int yPhysical;
@@ -126,11 +130,7 @@ void setPointGaussian(int x, int y)
   }
   for (row = firstRow; row < lastRow; row++)
   {
-#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
-    ptrPixel = (Uint32*)doubleBuffer->pixels + (row * width) + firstCol;
-#else
-    ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol];
-#endif
+    ptrPixel = ptrPixelArr + (row * ROW_WIDTH) + firstCol;
     for (col = firstCol; col < lastCol; col++)
     {
       *ptrPixel = color;
@@ -145,19 +145,11 @@ void setPointGaussian(int x, int y)
       col = xPhysical + (thickness / 2);
       if ((col >= 0) && (col < width))
       {
-#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
-        ptrPixel = (Uint32*)doubleBuffer->pixels + (firstRow * width) + col;
-#else
-        ptrPixel = &pixelArray[(firstRow * MAX_WIDTH) + col];
-#endif
+        ptrPixel = ptrPixelArr + (firstRow * ROW_WIDTH) + col;
         for (row = firstRow; row < lastRow; row++)
         {
           *ptrPixel = color;
-#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
-          ptrPixel += width;
-#else
-          ptrPixel += MAX_WIDTH;
-#endif    
+          ptrPixel += ROW_WIDTH;
         }
       }
     }
@@ -173,19 +165,11 @@ void setPointGaussian(int x, int y)
         {
           lastRow2 = height;
         }
-#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
-        ptrPixel = (Uint32*)doubleBuffer->pixels + (firstRow2 * width) + col;
-#else
-        ptrPixel = &pixelArray[(firstRow2 * MAX_WIDTH) + col];
-#endif
+        ptrPixel = ptrPixelArr + (firstRow2 * ROW_WIDTH) + col;
         for (row = firstRow2; row < lastRow2; row++)
         {
           *ptrPixel = color;
-#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
-          ptrPixel += width;
-#else
-          ptrPixel += MAX_WIDTH;
-#endif    
+          ptrPixel += ROW_WIDTH;
         }
       }
     }
@@ -197,11 +181,7 @@ void setPointGaussian(int x, int y)
       row = yPhysical + (thickness / 2);
       if ((row >= 0) && (row < height))
       {
-#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
-        ptrPixel = (Uint32*)doubleBuffer->pixels + (row * width) + firstCol;
-#else
-        ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol];
-#endif
+        ptrPixel = ptrPixelArr + (row * ROW_WIDTH) + firstCol;
         for (col = firstCol; col < lastCol; col++)
         {
           *ptrPixel = color;
@@ -221,11 +201,7 @@ void setPointGaussian(int x, int y)
         {
           lastCol2 = width;
         }
-#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
-        ptrPixel = (Uint32*)doubleBuffer->pixels + (row * width) + firstCol2;
-#else
-        ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol2];
-#endif
+        ptrPixel = ptrPixelArr + (row * ROW_WIDTH) + firstCol2;
         for (col = firstCol2; col < lastCol2; col++)
         {
           *ptrPixel = color;
@@ -293,7 +269,7 @@ static int getValue(const char **ppValue)
     sign = 1;
     ptrValue++;
   }
-  while (*ptrValue != '\0')
+  while (*ptrValue >= '0')
   {
     nbr = (nbr * 10) + (*ptrValue - '0');
     ptrValue++;

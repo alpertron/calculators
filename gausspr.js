@@ -17,6 +17,7 @@
 */
 /* global cantShowCanvas */
 /* global commonGraphicEvents */
+/* global copyStr */
 /* global drawGraphic */
 /* global get */
 /* global getHeight */
@@ -26,13 +27,16 @@
 /* global isNotSpecialKey */
 /* global moveGraphic */
 /* global ptrToString */
+/* global setNewDimensionsForCanvas */
 /* global startLowLevelCode */
+/* global startOffset */
 // In order to reduce the number of files to read from Web server, this 
 // Javascript file includes both the Javascript in the main thread and the 
 // Javascript that drives WebAssembly on its own Web Worker.
 const none = "none";
 const block = "block";
 const inline = "inline";
+let fileContents = 0;
 let center = null;
 let buffer, env, asm;
 let zoom, zoomDone, imgData;
@@ -68,23 +72,9 @@ let interval;
 
 function updateGraphic(dummy, nbr)
 {
-  let idx, value, ctr;
-  let startOffset = 11000000|0;
   if (nbr === 1)
   {
-    ctr = 0;
-    value = centerX.value;
-    for (idx=0; idx<value.length; idx++, ctr++)
-    {
-      HEAPU8[startOffset+ctr] = value.charCodeAt(idx);
-    }
-    HEAPU8[startOffset+ctr++] = 0;
-    value = centerY.value;
-    for (idx=0; idx<value.length; idx++, ctr++)
-    {
-      HEAPU8[startOffset+ctr] = value.charCodeAt(idx);
-    }
-    HEAPU8[startOffset+ctr] = 0;
+    copyStr(startOffset, centerX.value + "\x01" + centerY.value);
   }
   let width = getWidth();
   let height = getHeight();
@@ -227,9 +217,7 @@ function startUp()
   };
   window.onresize = function()
   {
-    let newDomRect = canvas.getBoundingClientRect();
-    canvas.width = newDomRect.width;
-    canvas.height = newDomRect.height;
+    setNewDimensionsForCanvas();
     updateGraphic(0, 1);
   };
   animate.onclick = function()
@@ -250,6 +238,8 @@ function startUp()
     incrY = parseFloat(yincr.value);
     oldX = 0;
     oldY = 0;
+    setNewDimensionsForCanvas();
+    updateGraphic(0, 1);
     interval = setInterval(animation, parseFloat(delay.value) * 1000);    
   };
   cancelanim.onclick = function()
@@ -264,6 +254,11 @@ function startUp()
     clearInterval(interval);
   };
   initMenubarEvents();
+  if (get("left") == null)
+  {
+    setNewDimensionsForCanvas();
+    updateGraphic(0, 1);
+  }
 }
 
 window.addEventListener("load", startUp);

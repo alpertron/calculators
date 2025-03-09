@@ -56,3 +56,29 @@ Android.endCalculation = function()
 {
   /* Nothing to be done in extern file */
 };
+
+Android.getInformation = function(x, y)
+{
+  /* Nothing to be done in extern file */
+};
+
+Android.moveGraphic = function(deltaX, deltaY)
+{
+  /* Nothing to be done in extern file */
+};
+
+Android.drawPartialGraphic = function(xminDisp, xmaxDisp, yminDisp, ymaxDisp)
+{
+  /* Nothing to be done in extern file */
+};
+
+Android.nbrChanged = function(value, inputBoxNbr, newWidth, newHeight)
+{
+  /* Nothing to be done in extern file */
+};
+
+Android.getPixelArrayData = function(firstPixel, width, height)
+{
+  /* Nothing to be done in extern file */
+};
+

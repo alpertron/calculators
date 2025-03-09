@@ -291,3 +291,7 @@ function isNotSpecialKey(event)
   }
   return acceptedKeys.indexOf(","+key+",") < 0;
 }
+
+function initGraphicFunctionPointers()
+{     // Not used if not Android.
+}

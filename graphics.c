@@ -23,7 +23,7 @@
 #include "graphics.h"
 
 #ifndef __EMSCRIPTEN__
-#define EXTERNALIZE	
+#define EXTERNALIZE
 #if TEST_GRAPHICS
 #include <SDL.h>
 extern setPointFunc setPoint;
@@ -40,8 +40,13 @@ bool quit;
 extern setPointFunc setPoint;
 extern getInfoFunc getInfo;
 extern nbrChangedFunc nbrChgd;
+#ifdef __ANDROID__
+#define EXTERNALIZE
+extern int *pixelArrPtr;
+#else
 #define EXTERNALIZE  __attribute__((visibility("default")))
 extern unsigned int pixelArray[PIXEL_ARRAY_SIZE];
+#endif
 #endif
 
 int thickness = 8;              // Number of bits to shift.
@@ -53,8 +58,12 @@ int width;
 int height;
 
 #if defined(__EMSCRIPTEN__) || TEST_GRAPHICS
-EXTERNALIZE void drawPartialGraphic(int xminDisp, int xmaxDisp, int yminDisp, int ymaxDisp)
+EXTERNALIZE void drawPartialGraphic(int xminDisp, int xmaxDisp, int yminDisp, int ymaxDisp,
+      unsigned int *ptrPixelArr)
 {
+#ifndef __ANDROID__
+  ptrPixelArr = pixelArray;
+#endif
   int adjust = 16384 / thickness;
   int xmin = xCenter + ((xFraction + xminDisp + 16384) / thickness) - adjust;
   int xmax = xCenter + ((xFraction + xmaxDisp + 16384) / thickness) - adjust;
@@ -65,7 +74,7 @@ EXTERNALIZE void drawPartialGraphic(int xminDisp, int xmaxDisp, int yminDisp, in
   {
     for (int y = ymin; y <= ymax; y++)
     {
-      setPoint(x, y);
+      setPoint(ptrPixelArr, x, y);
     }  /* end for y */
   }    /* end for x */
 }      /* end method drawPartialGraphic */
@@ -91,12 +100,20 @@ EXTERNALIZE char* nbrChanged(char* value, int inputBoxNbr, int newWidth, int new
   return nbrChgd(value, inputBoxNbr, newWidth, newHeight);
 }
 
-#ifdef __EMSCRIPTEN__
+#if defined(__ANDROID__)
+EXTERNALIZE void stopCalculation(void)
+{  // Nothing to do in graphic applications.
+}
+EXTERNALIZE void setPixelArrPtr(int *arrPtr)
+{
+  pixelArrPtr = arrPtr;
+}
+#elif defined(__EMSCRIPTEN__)
 unsigned int* getPixels(void)
 {
   return pixelArray;
 }
-#else
+#else         // Using SDL library.
 void drawGraphic(void)
 {
   if (SDL_MUSTLOCK(doubleBuffer) != 0)

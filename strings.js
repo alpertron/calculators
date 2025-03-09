@@ -20,7 +20,7 @@
 
 function ptrToString(ptr)
 {
-  let t=-1;
+  let t = -1;
   let i = 0;
   let str="", outString="";
   do

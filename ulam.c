@@ -35,8 +35,12 @@
   int oldYCenter;
   int oldXFraction;
   int oldYFraction;
-#else     // Emscripten
-  unsigned int pixelArray[PIXEL_ARRAY_SIZE];
+#else
+  #ifdef __ANDROID__
+    unsigned int *pixelArrPtr;
+  #else          // Emscripten
+    unsigned int pixelArray[PIXEL_ARRAY_SIZE];
+  #endif
 #endif
 
 #define MAX_LINES  1000
@@ -184,7 +188,7 @@ void AddTwoLimbsPlusOneLimb(const int *addend1, int addend2, int *sum)
   }
 }
 
-void setPointUlamSpiral(int x, int y)
+void setPointUlamSpiral(unsigned int *ptrPixelArr, int x, int y)
 {
   int value[2];
   int xPhysical;
@@ -315,11 +319,7 @@ void setPointUlamSpiral(int x, int y)
   }
   for (row = firstRow; row < lastRow; row++)
   {
-#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
-    ptrPixel = (Uint32*)doubleBuffer->pixels + (row * width) + firstCol;
-#else
-    ptrPixel = &pixelArray[(row * MAX_WIDTH) + firstCol];
-#endif
+    ptrPixel = ptrPixelArr + (row * ROW_WIDTH) + firstCol;
     for (col = firstCol; col < lastCol; col++)
     {
       *ptrPixel = color;
@@ -335,19 +335,11 @@ void setPointUlamSpiral(int x, int y)
     {
       if ((xPhysical >= 0) && (xPhysical < width))
       {
-#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
-        ptrPixel = (Uint32*)doubleBuffer->pixels + (firstRow * width) + xPhysical;
-#else
-        ptrPixel = &pixelArray[(firstRow * MAX_WIDTH) + xPhysical];
-#endif
+        ptrPixel = ptrPixelArr + (firstRow * ROW_WIDTH) + xPhysical;
         for (row = firstRow; row < lastRow; row++)
         {
           *ptrPixel = color;
-#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
-          ptrPixel += width;
-#else
-          ptrPixel += MAX_WIDTH;
-#endif    
+          ptrPixel += ROW_WIDTH;
         }
       }
     }
@@ -357,11 +349,7 @@ void setPointUlamSpiral(int x, int y)
       currY = yPhysical + thickness - 1;
       if ((currY >= 0) && (currY < height))
       {
-#if !defined(__EMSCRIPTEN__) && TEST_GRAPHICS
-        ptrPixel = (Uint32*)doubleBuffer->pixels + (currY * width) + firstCol;
-#else
-        ptrPixel = &pixelArray[(currY * MAX_WIDTH) + firstCol];
-#endif
+        ptrPixel = ptrPixelArr + (currY * ROW_WIDTH) + firstCol;
         for (col = firstCol; col < lastCol; col++)
         {
           *ptrPixel = color;
