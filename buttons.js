@@ -35,7 +35,7 @@ function buttonClick(event)
                 input.value.substring(input.selectionEnd);
     // Place the caret at the end of the appended text.
   let offset = chars.indexOf("(") + 1;
-  if (offset == 0)
+  if (offset === 0)
   {
     offset = chars.length;
   }
@@ -55,7 +55,7 @@ function generateFuncButtons(optionCategory, funcButtons)
   let fragment = document.createDocumentFragment();
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
-    if (funcButtons == "wzdfuncbtns" && catIndex == 2)
+    if (funcButtons === "wzdfuncbtns" && catIndex === 2)
     {   // Do not show Enter button on wizard.
       continue;
     }

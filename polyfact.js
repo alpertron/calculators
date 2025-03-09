@@ -45,7 +45,7 @@ function fromWorker(e)
   // First character of e is "1" for intermediate text
   // and it is "2" for end of calculation.
   let firstChar = e.substring(0, 1);
-  if ((android == 0) && ((firstChar === "M") || (firstChar === "N")))
+  if ((android === 0) && ((firstChar === "M") || (firstChar === "N")))
   {    // User entered a number. Load calculator to process it.
     window.sessionStorage.setItem((firstChar === "M"? "F": "E"),
       get("poly").value);
@@ -122,9 +122,9 @@ function getFormSendValue()
 
 function popstate(event)
 {
-  if (get("feedback").style.display == "block" ||
-      get("sentOK").style.display == "block" ||
-      get("notSent").style.display == "block")
+  if (get("feedback").style.display === "block" ||
+      get("sentOK").style.display === "block" ||
+      get("notSent").style.display === "block")
   {        // End feedback.
     show("main");
     hide("feedback");
@@ -139,11 +139,11 @@ function startUp()
   get("btnSentOK").onclick = function()
   {
     history.back();
-  }
+  };
   get("btnNotSent").onclick = function()
   {
     history.back();
-  }
+  };
   get("stop").disabled = true;
   get("eval").onclick = function ()
   {
@@ -281,7 +281,7 @@ function startUp()
     dowork(0);    // Factor polynomial.
   }
   registerServiceWorker();
-};
+}
 getCalculatorCode("polfactW0000.js", workerParam);
 window.addEventListener("load", startUp);
 window.addEventListener("popstate", popstate);

@@ -28,6 +28,7 @@
 /* global getConfig */
 /* global hide */
 /* global registerServiceWorker */
+/* global setStorage */
 /* global show */
 /** @define {number} */ const lang = 1;   // Use with Closure compiler.
 let fileContents = 0;
@@ -210,7 +211,7 @@ function popstate(event)
     hide("notSent");
     coefA.focus();   
   }
-  else if (get("modal-config").style.display == "block")
+  else if (get("modal-config").style.display === "block")
   {     // End configuration mode.
     hide("modal-config");
   }
@@ -227,11 +228,11 @@ function startUp()
   get("btnSentOK").onclick = function()
   {
     history.back();
-  }
+  };
   get("btnNotSent").onclick = function()
   {
     history.back();
-  }
+  };
   get("stop").disabled = true;
   get("solve").onclick = function()
   {
@@ -361,7 +362,7 @@ function startUp()
   currentInputBox = coefA;
   generateFuncButtons("funccat", "funcbtns");
   registerServiceWorker();
-};
+}
 window.addEventListener("load", startUp);
 window.addEventListener("popstate", popstate);
 getCalculatorCode("quadW0000.js", false);

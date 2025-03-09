@@ -29,6 +29,7 @@
 /* global getConfig */
 /* global hide */
 /* global registerServiceWorker */
+/* global setStorage */
 /* global show */
 /** @define {number} */ const lang = 0;   // Use with Closure compiler.
 let fileContents = 0;
@@ -169,9 +170,9 @@ function getFormSendValue()
 
 function popstate(event)
 {
-  if (get("feedback").style.display == "block" ||
-      get("sentOK").style.display == "block" ||
-      get("notSent").style.display == "block")
+  if (get("feedback").style.display === "block" ||
+      get("sentOK").style.display === "block" ||
+      get("notSent").style.display === "block")
   {
     show("main");
     hide("feedback");
@@ -179,7 +180,7 @@ function popstate(event)
     hide("notSent");
     get("quad").focus();   
   }
-  else if (get("modal-config").style.display == "block")
+  else if (get("modal-config").style.display === "block")
   {     // End configuration mode.
     hide("modal-config");
   }
@@ -190,11 +191,11 @@ function startUp()
   get("btnSentOK").onclick = function()
   {
     history.back();
-  }
+  };
   get("btnNotSent").onclick = function()
   {
     history.back();
-  }
+  };
   get("stop").disabled = true;
   get("solve").onclick = dowork;
   get("stop").onclick = function()
@@ -277,7 +278,7 @@ function startUp()
   currentInputBox = get("quad");
   registerServiceWorker();
   completeFuncButtons("funcbtns");
-};
+}
 
 window.addEventListener("load", startUp);
 window.addEventListener("popstate", popstate);

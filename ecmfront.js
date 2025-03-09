@@ -22,6 +22,7 @@
 /* global clickFormLink */
 /* global comingFromPolfact */
 /* global completeFuncButtons */
+/* global downloadResult */
 /* global endCalculation */
 /* global endWorker */
 /* global formSend */
@@ -298,7 +299,7 @@ function fromWorker(e)
         const regexVerbose = /<span class="verbose">(.*?)<\/span>/g;
         const regexSpan = /<span(.*?)>(.*?)<\/span>/g;
         const regexAbbr = /<abbr(.*?)>(.*?)<\/abbr>/g;
-        if (config.charAt(1) == "1")
+        if (config.charAt(1) === "1")
         {    // Discard HTML tags for verbose mode.
           tofile = tofile.replace(regexVerbose, "$1").
                           replace(regexAbbr, "$2").
@@ -439,7 +440,7 @@ function dowork(n)
     if (n === -2 || n === 4)
     {     // Automatic factorization or pressed skip test.
       let ecmFactor = getStorage("ecmFactors");
-      if (ecmFactor != "" && ecmFactor != null)
+      if (ecmFactor !== "" && ecmFactor != null)
       {      // ecmFactor local storage exists.
         valueText = ecmFactor.slice(0, ecmFactor.indexOf("="));
       }
@@ -520,9 +521,9 @@ function getFormSendValue()
 
 function popstate(event)
 {     
-  if (get("feedback").style.display == "block" ||     
-      get("sentOK").style.display == "block" ||     
-      get("notSent").style.display == "block")     
+  if (get("feedback").style.display === "block" ||     
+      get("sentOK").style.display === "block" ||     
+      get("notSent").style.display === "block")     
   {     // End feedback. 
     show("main");
     hide("feedback");
@@ -530,23 +531,23 @@ function popstate(event)
     hide("notSent");
     value.focus();
   }
-  else if (get("wizard").style.display == "block")
+  else if (get("wizard").style.display === "block")
   {     // End wizard.
     show("main");
     hide("wizard");
     value.focus();
   }
-  else if (get("blockmode").style.display == "flex")
+  else if (get("blockmode").style.display === "flex")
   {     // End blockly mode.
     document.activeElement.blur();
     show("main");
     hide("blockmode");
   }
-  else if (get("modal-more").style.display == "block")
+  else if (get("modal-more").style.display === "block")
   {     // End "more" mode.
     hide("modal-more");
   }
-  else if (get("modal-config").style.display == "block")
+  else if (get("modal-config").style.display === "block")
   {     // End configuration mode.
     hide("modal-config");
   }
@@ -616,7 +617,7 @@ function startUp()
   btnFromFile.onclick = function()
   {
     getFile.click();
-  }
+  };
   btnToFile.onclick = downloadResult;
   getFile.onchange = function()
   {

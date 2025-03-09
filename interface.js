@@ -32,6 +32,7 @@
 /* global keyDownOnWizard */
 /* global registerServiceWorker */
 /* global selectLoop */
+/* global setStorage */
 /* global setWizardStep */
 /* global show */
 /* global typedOnWizard */
@@ -290,7 +291,7 @@ function performCalc(from)
   {         // Sum of two squares and a power.
     param = from + ",";
   }
-  let options = app + ((config.charAt(4) === '1')? 64: 0);
+  let options = app + ((config.charAt(4) === "1")? 64: 0);
   if ((app === 4) || (app === 5))
   {         // Continued fractions.
     options += get("converg").checked? 32: 0;
@@ -338,9 +339,9 @@ function getFormSendValue()
 
 function popstate(event)
 {
-  if (get("feedback").style.display == "block" ||
-      get("sentOK").style.display == "block" ||
-      get("notSent").style.display == "block")
+  if (get("feedback").style.display === "block" ||
+      get("sentOK").style.display === "block" ||
+      get("notSent").style.display === "block")
   {         // End feedback.
     show("main");
     hide("feedback");
@@ -349,13 +350,13 @@ function popstate(event)
     get("num").focus();
   }
   else if (get("wizard") != null &&
-           get("wizard").style.display == "block")
+           get("wizard").style.display === "block")
   {         // End wizard.
     show("main");
     hide("wizard");
     get("num").focus();
   }
-  else if (get("modal-config").style.display == "block")
+  else if (get("modal-config").style.display === "block")
   {     // End configuration mode.
     hide("modal-config");
   }
@@ -398,11 +399,11 @@ function startUp()
   get("btnSentOK").onclick = function()
   {
     history.back();
-  }
+  };
   get("btnNotSent").onclick = function()
   {
     history.back();
-  }
+  };
   get("calc").onclick = function()
   {
     performCalc(3);

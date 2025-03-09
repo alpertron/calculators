@@ -62,7 +62,7 @@ function getNextVisibleElement(discardElem)
   for (let index=0; index<elementsLength; index++)
   {
     let element = elements[index];
-    if (element == elementInFocus)
+    if (element === elementInFocus)
     {
       if (discardElem)
       {
@@ -111,7 +111,7 @@ function showFocus(elem)
 
 function newFocus(event)
 {
-  if (event.target != document.body)
+  if (event.target !== document.body)
   {
     elementInFocus = event.target;
   }
@@ -125,7 +125,7 @@ document.addEventListener("keydown", function(event)
     {
       showFocus(getNextVisibleElement(true));
     }
-    else if (document.activeElement == document.body)
+    else if (document.activeElement === document.body)
     {
       showFocus(elementInFocus);
     }
@@ -134,7 +134,7 @@ document.addEventListener("keydown", function(event)
       elementInFocus = document.activeElement;
     }
   }
-  if (event.keyCode == 13)
+  if (event.keyCode === 13)
   {    // Enter
     newFocus(event);
   }
