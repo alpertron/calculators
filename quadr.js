@@ -201,9 +201,9 @@ function getFormSendValue()
 
 function popstate(event)
 {
-  if (get("feedback").style.display == "block" ||
-      get("sentOK").style.display == "block" ||
-      get("notSent").style.display == "block")
+  if (get("feedback").style.display === "block" ||
+      get("sentOK").style.display === "block" ||
+      get("notSent").style.display === "block")
   {           // End feedback.
     show("main");
     hide("feedback");

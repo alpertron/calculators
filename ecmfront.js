@@ -671,11 +671,11 @@ function startUp()
   get("btnSentOK").onclick = function()
   {
     history.back();    // End feedback.
-  }
+  };
   get("btnNotSent").onclick = function()
   {
     history.back();    // End feedback.
-  }
+  };
   get("oneexpr").onclick = function()
   {
     oneexpr();
