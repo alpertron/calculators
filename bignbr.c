@@ -111,6 +111,7 @@ void floordiv(const BigInteger *num, const BigInteger *den, BigInteger *result)
 
 void BigIntChSign(BigInteger *value)
 {
+  assert(value->nbrLimbs > 0);
   if ((value->nbrLimbs == 1) && (value->limbs[0].x == 0))
   {    // Value is zero. Do not change sign.
     return;
@@ -732,6 +733,8 @@ bool TestBigNbrEqual(const BigInteger *pNbr1, const BigInteger *pNbr2)
 void BigIntGcd(const BigInteger *pArg1, const BigInteger *pArg2, BigInteger *pResult)
 {
   int power2;
+  assert(pArg1->nbrLimbs > 0);
+  assert(pArg2->nbrLimbs > 0);
   if (BigIntIsZero(pArg1))
   {               // First argument is zero, so the GCD is second argument.
     CopyBigInt(pResult, pArg2);
@@ -1200,6 +1203,7 @@ void IntArray2BigInteger(const int *ptrValues, BigInteger *bigint)
   const int* piValues = ptrValues;
   limb *destLimb = bigint->limbs;
   int nbrLimbs = *piValues;
+  assert(nbrLimbs != 0);
   piValues++;
   if (nbrLimbs > 0)
   {
@@ -1240,6 +1244,7 @@ int IntArrayCompare(const int* ptrFirst, const int* ptrSecond)
   const int* pSecond;
   int nbrLimbsFirst = *ptrFirst;
   int nbrLimbsSecond = *ptrSecond;
+  assert((nbrLimbsFirst != 0) && (nbrLimbsSecond != 0));
   if (nbrLimbsFirst < 0)
   {   // If number is negative, convert it to positive.
     nbrLimbsFirst = -nbrLimbsFirst;
@@ -1279,7 +1284,8 @@ void BigInteger2IntArray(/*@out@*/int *ptrValues, const BigInteger *bigint)
 {
   int* pValues = ptrValues;
   const limb *srcLimb = bigint->limbs;
-  assert(NumberLength >= 1 && (NumberLength < MAX_LEN));
+  assert((NumberLength >= 1) && (NumberLength < MAX_LEN));
+  assert(bigint->limbs > 0);
   if (NumberLength == 1)
   {
     *pValues = ((bigint->sign == SIGN_POSITIVE)? 1: -1);

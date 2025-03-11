@@ -252,6 +252,7 @@ function startUp()
     delay.value = "1";
     applet.style.display = none;
     animform.style.display = block;
+    xincr.focus();
   };
   doanimate.onclick = function()
   {
@@ -267,7 +268,7 @@ function startUp()
     oldStart = 0;
     setNewDimensionsForCanvas();
     updateGraphic(center, 1);
-    interval = setInterval(animation, parseFloat(delay.value) * 1000);    
+    interval = setInterval(animation, parseFloat(delay.value) * 1000);
   };
   cancelanim.onclick = function()
   {
@@ -286,6 +287,74 @@ function startUp()
     setNewDimensionsForCanvas();
     updateGraphic(center, 1);
   }
+  xincr.onkeydown = function(evt)
+  {
+    if (evt.key === "Down" || evt.key === "ArrowDown")
+    {
+      yincr.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+  };
+  yincr.onkeydown = function(evt)
+  {
+    if (evt.key === "Up" || evt.key === "ArrowUp")
+    {
+      xincr.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+    if (evt.key === "Down" || evt.key === "ArrowDown")
+    {
+      sincr.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+  };
+  sincr.onkeydown = function(evt)
+  {
+    if (evt.key === "Up" || evt.key === "ArrowUp")
+    {
+      yincr.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+    if (evt.key === "Down" || evt.key === "ArrowDown")
+    {
+      delay.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+  };
+  delay.onkeydown = function(evt)
+  {
+    if (evt.key === "Up" || evt.key === "ArrowUp")
+    {
+      sincr.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+    if (evt.key === "Down" || evt.key === "ArrowDown")
+    {
+      doanimate.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+  };
+  center.onkeydown = function(evt)
+  {
+    if (evt.key === "Up" || evt.key === "ArrowUp")
+    {
+      canvas.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+    if (evt.key === "Down" || evt.key === "ArrowDown")
+    {
+      start.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+  };
+  start.onkeydown = function(evt)
+  {
+    if (evt.key === "Up" || evt.key === "ArrowUp")
+    {
+      center.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+  };
 }
 
 window.addEventListener("load", startUp);

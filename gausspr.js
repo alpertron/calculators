@@ -187,9 +187,14 @@ function startUp()
   canvas.height = domRect.height;
   startLowLevelCode();
   commonGraphicEvents();
-  centerX.onkeydown = function(e)
+  centerX.onkeydown = function(evt)
   {
-    keydown(e);
+    if (evt.key === "Up" || evt.key === "ArrowUp")
+    {
+      canvas.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+    keydown(evt);
   };
   centerX.oninput = function()
   {
@@ -201,9 +206,14 @@ function startUp()
     get("info").innerHTML = "";	
     updateGraphic(0, 1);
   };
-  centerY.onkeydown = function(e)
+  centerY.onkeydown = function(evt)
   {
-    keydown(e);
+    if (evt.key === "Up" || evt.key === "ArrowUp")
+    {
+      canvas.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+    keydown(evt);
   };
   centerY.oninput = function()
   {
@@ -227,6 +237,7 @@ function startUp()
     delay.value = "1";
     applet.style.display = none;
     animform.style.display = block;
+    xincr.focus();
   };
   doanimate.onclick = function()
   {
@@ -259,6 +270,40 @@ function startUp()
     setNewDimensionsForCanvas();
     updateGraphic(0, 1);
   }
+  xincr.onkeydown = function(evt)
+  {
+    if (evt.key === "Down" || evt.key === "ArrowDown")
+    {
+      yincr.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+  };
+  yincr.onkeydown = function(evt)
+  {
+    if (evt.key === "Up" || evt.key === "ArrowUp")
+    {
+      xincr.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+    if (evt.key === "Down" || evt.key === "ArrowDown")
+    {
+      delay.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+  };
+  delay.onkeydown = function(evt)
+  {
+    if (evt.key === "Up" || evt.key === "ArrowUp")
+    {
+      yincr.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+    if (evt.key === "Down" || evt.key === "ArrowDown")
+    {
+      doanimate.focus();
+      evt.preventDefault();          // Do not propagate this key.
+    }
+  };
 }
 
 window.addEventListener("load", startUp);
