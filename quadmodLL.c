@@ -305,7 +305,7 @@ static void findQuadraticSolution(BigInteger* pSolution, int exponent)
 {
   int bytesLen;
   int expon = exponent;
-  int bitMask = 1;
+  int bitCount = 0;
   limb* ptrSolution = pSolution->limbs;
   BigIntPowerOf2(&Aux0, expon);
   bytesLen = Aux0.nbrLimbs * (int)sizeof(limb);
@@ -317,7 +317,7 @@ static void findQuadraticSolution(BigInteger* pSolution, int exponent)
     addbigint(&Aux2, -1);              // Aux2 <- 2^expon -1
     if ((Const.limbs[0].x & 1) != 0)
     { // Const is odd.
-      ptrSolution->x |= bitMask;
+      ptrSolution->x |= (1 << bitCount);
       // Compute Const as Quadr/2 + floor(Linear/2) + floor(Const/2) + 1
       if (Const.sign == SIGN_NEGATIVE)
       {
@@ -348,10 +348,10 @@ static void findQuadraticSolution(BigInteger* pSolution, int exponent)
     }
     BigIntAnd(&Const, &Aux2, &Const);    // Reduce mod 2^expon
     BigIntAnd(&Quadr, &Aux2, &Quadr);    // Reduce mod 2^expon
-    bitMask *= 2;
-    if (bitMask < 0)
+    bitCount++;
+    if (bitCount == BITS_PER_GROUP)
     {
-      bitMask = 1;
+      bitCount = 0;
       ptrSolution++;
     }
   }

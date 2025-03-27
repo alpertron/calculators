@@ -36,7 +36,7 @@ flags_factorization=$(flags_factorization_1) $(flags_cov_and_asan) $(flags_gener
 flags_squares=$(flags_squares_1) $(flags_cov_and_asan) $(flags_general)
 flags_other=$(flags_other_1) $(flags_cov_and_asan) $(flags_general)
 h_files=batch.h bignbr.h commonstruc.h expression.h factor.h highlevel.h polynomial.h showtime.h skiptest.h
-targets = ecm quad quadmod fsquares fcubes polfact dilog gaussian contfrac blockly tsqcubes sumquad divisors isprime
+targets = ecm quad quadmod fsquares fcubes polfact dilog gaussian contfrac blockly tsqcubes sumquad divisors isprime modmult testmodmult
 .PHONY : all
 all: $(targets)
 
@@ -99,6 +99,14 @@ fcubes_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c 
 fcubes.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c test.c
 fcubes: $(fcubes_files) $(h_files)
 	gcc $(flags_squares) -DDEBUG_CODE=2 $(fcubes_files) -lm -o $@
+
+modmult_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c \
+bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c test.c
+modmult: $(tsqcubes_files) $(h_files)
+	gcc $(flags_other) -DDEBUG_CODE=29 -DFACTORIZATION_APP=1 $(modmult_files) -lm -o $@
+
+testmodmult: $(modmult_files) $(h_files)
+	gcc $(flags_other) -DDEBUG_CODE=30 -DFACTORIZATION_APP=1 $(modmult_files) -lm -o $@
 
 isprime_files = isprime.c test.c
 isprime: $(isprime_files) $(h_files)

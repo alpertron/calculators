@@ -19,8 +19,8 @@
 #ifndef _EXPRESSION_H
 #define _EXPRESSION_H
 
-#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 8 de marzo de 2025."
-#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 8 March 2025."
+#define COPYRIGHT_SPANISH "Hecho por Darío Alpern. Actualizado el 26 de marzo de 2025."
+#define COPYRIGHT_ENGLISH "Written by Dario Alpern. Last updated on 26 March 2025."
 
 #include "bignbr.h"
 #ifdef __EMSCRIPTEN__

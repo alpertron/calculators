@@ -300,7 +300,6 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
 #if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
 EXTERNALIZE void doWork(void)
 {
-  int flags;
   char *ptrData = inputString;
   char* ptrQuadrCoeff;
   char* ptrLinearCoeff;
@@ -313,8 +312,8 @@ EXTERNALIZE void doWork(void)
     ptrData++;
   }
   ptrData++;                    // Skip comma.
-  flags = *ptrData;
 #ifndef lang  
+  int flags = *ptrData;
   lang = ((flags & 1)? true: false);
 #endif
   ptrQuadrCoeff = ptrData + 2;  // Skip flags and comma.

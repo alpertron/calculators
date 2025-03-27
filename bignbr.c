@@ -945,20 +945,40 @@ void subtractdivide(BigInteger *pBigInt, int subt, int divisor)
 
 int getRemainder(const BigInteger *pBigInt, int divisor)
 {
-  int remainder = 0;
   int nbrLimbs = pBigInt->nbrLimbs;
   assert(nbrLimbs >= 1);
-#ifndef _USING64BITS_
-  double dDivisor = (double)divisor;
-  double dLimb = 0x80000000;
-#endif
-  const limb *pLimb = &pBigInt->limbs[nbrLimbs - 1];
+  assert(divisor >= 1);
   if (divisor == 2)
   {
     return pBigInt->limbs[0].x & 1;
   }
-  for (int ctr = nbrLimbs - 1; ctr >= 0; ctr--)
+  const limb *pLimb = &pBigInt->limbs[nbrLimbs - 1];
+#if 1
+  if (divisor < 46340)    // Square root of 2^31.
   {
+    uint32_t uDivisor = (uint32_t)divisor;
+    uint32_t uRemainder = (uint32_t)pLimb->x % uDivisor;
+    uint32_t limbRangeModDivisor = LIMB_RANGE % uDivisor;
+    for (int ctr = nbrLimbs - 2; ctr >= 0; ctr--)
+    {
+      pLimb--;
+      uRemainder = ((uRemainder * limbRangeModDivisor) + (uint32_t)pLimb->x) % uDivisor;
+    }
+    if ((pBigInt->sign == SIGN_NEGATIVE) && (uRemainder != 0U))
+    {
+      uRemainder = uDivisor - uRemainder;
+    }
+    return (int)uRemainder;
+  }
+#endif
+  int remainder = pLimb->x % divisor;
+#ifndef _USING64BITS_
+  double dDivisor = (double)divisor;
+  double dLimb = 0x80000000;
+#endif
+  for (int ctr = nbrLimbs - 2; ctr >= 0; ctr--)
+  {
+    pLimb--;
 #ifdef _USING64BITS_
     uint64_t oldLimb = (uint64_t)remainder << BITS_PER_GROUP;
     uint64_t newLimb = (uint64_t)pLimb->x;
@@ -973,7 +993,6 @@ int getRemainder(const BigInteger *pBigInt, int divisor)
     // Adjust remainder if not in range 0 <= remainder < divisor..
     remainder += divisor & (remainder >> BITS_PER_GROUP);
 #endif
-    pLimb--;
   }
   if ((pBigInt->sign == SIGN_NEGATIVE) && (remainder != 0))
   {
@@ -2000,7 +2019,7 @@ static int Perform2SPRPtest(int nbrLimbs, const limb* limbs)
       modmult(Mult1, Mult1, Mult1);
       if (((unsigned int)groupExp & mask) != 0U)
       {
-        modmultInt(Mult1, 2, Mult1);
+        AddBigNbrMod(Mult1, Mult1, Mult1);
       }
     }
   }
@@ -2271,8 +2290,9 @@ int BpswPrimalityTest(const BigInteger *pValue)
   }
   if (nbrLimbs > 1)
   {              // Check whether it is divisible by small number.
+    int primeIndex;
     initializeSmallPrimes(smallPrimes);
-    for (int primeIndex = 0; primeIndex < 180; primeIndex += 3)
+    for (primeIndex = 0; primeIndex < 180; primeIndex += 3)
     {
       int primeProd = smallPrimes[primeIndex] * smallPrimes[primeIndex+1] * smallPrimes[primeIndex+2];
       int remainder = getRemainder(pValue, primeProd);
@@ -2281,6 +2301,18 @@ int BpswPrimalityTest(const BigInteger *pValue)
         ((remainder % smallPrimes[primeIndex + 2]) == 0))
       {
         return 1;   // Number is divisible by small number. Indicate composite.
+      }
+    }
+    if (nbrLimbs > 30)
+    {
+      while (primeIndex < SMALL_PRIMES_ARRLEN)
+      {
+        int remainder = getRemainder(pValue, smallPrimes[primeIndex]);
+        if (remainder == 0)
+        {
+          return 1;   // Number is divisible by small number. Indicate composite.
+        }
+        primeIndex++;
       }
     }
   }

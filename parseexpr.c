@@ -800,7 +800,7 @@ int ConvertToReversePolishNotation(const char* input, char** pptrOut,
       ptrOutput++;
     }
   }
-  *ptrOutput = '\0';
+  *ptrOutput = '\0';   // Add RPN expression terminator.
   ptrStartExprRPNbuffer = ptrOutput + 1;
   return EXPR_OK;
 }

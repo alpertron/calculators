@@ -6,6 +6,9 @@ rm *.info *.out
 make clean
 for var in 64 32
 do
+# make testmodmult $flags bits=$var
+# echo -e "\n\n**** TESTMODMULT ****" >> coverage.out
+# ./testmodmult >> coverage.out
 make ecm $flags bits=$var
 echo -e "\n\n**** ECM ****" >> coverage.out
 ./ecm "10**150000" >> coverage.out
@@ -133,9 +136,9 @@ make clean
 done
 for var in 64 32
 do
-make testmodmult $flags bits=$var
-echo -e "\n\n**** TESTMODMULT ****" >> coverage.out
-./testmodmult >> coverage.out
+# make testmodmult $flags bits=$var
+# echo -e "\n\n**** TESTMODMULT ****" >> coverage.out
+# ./testmodmult >> coverage.out
 lcov --capture --directory . --output-file testmodmult.info
 gcovr --merge-mode-functions=merge-use-line-min --json run-2-${var}.json
 make clean

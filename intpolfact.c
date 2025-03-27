@@ -2170,7 +2170,6 @@ static void factorDifferentModuli(int *pNbrFactorsRecord, int *pPrimeRecord)
   int primeIndex = 0;
   for (int attemptNbr = 1; attemptNbr < 5; attemptNbr++)
   {
-    int expon = 1;
     int prime;
     int nbrFactors;
     bool isIrreducible;
@@ -2188,7 +2187,6 @@ static void factorDifferentModuli(int *pNbrFactorsRecord, int *pPrimeRecord)
         break;     // prime^expon >= 2 * bound -> go out.
       }
       multint(&operand1, &operand1, prime);
-      expon++;
     }
     FactorPolynomialModPrime(prime);
     // Get number of factors found.

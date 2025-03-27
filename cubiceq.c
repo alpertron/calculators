@@ -491,6 +491,7 @@ static void showNonRealCubeRootsOf1(void)
 // The third root x3 is (-1/2) * x1 - i * (3 ^ (1/2) * x1) / 2
 static void bothQuadraticAndLinearCoeffZero(int multiplicity, bool fromQuartic)
 {
+  (void)fromQuartic;
   bool isCbrtNegative;
   BigRationalNegate(&RatDeprIndependent, &RatDeprIndependent);
   ForceDenominatorPositive(&RatDeprIndependent);

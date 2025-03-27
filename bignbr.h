@@ -81,6 +81,8 @@ extern int NumberLengthR1;
 extern int groupLen;
 extern enum eNbrCached MontgomeryMultNCached;
 extern enum eNbrCached TestNbrCached;
+extern enum eNbrCached CustomNbrCached;
+extern const limb *CustomNbrAddr;
 extern limb MontgomeryMultN[MAX_LEN];
 extern int smallPrimes[SMALL_PRIMES_ARRLEN+1];
 #ifdef __EMSCRIPTEN__

@@ -51,6 +51,8 @@
 
 enum eNbrCached MontgomeryMultNCached;
 enum eNbrCached TestNbrCached;
+enum eNbrCached CustomNbrCached;
+const limb* CustomNbrAddr;
 limb MontgomeryR1[MAX_LEN];
 limb TestNbr[MAX_LEN];
 limb MontgomeryMultN[MAX_LEN];
@@ -200,6 +202,8 @@ void BigIntModularPower(const BigInteger* base, const BigInteger* exponent, BigI
 // Output: power = power in Montgomery notation.
 void modPow(const limb* base, const limb* exp, int nbrGroupsExp, limb* power)
 {
+  CustomNbrAddr = base;
+  CustomNbrCached = NBR_NOT_CACHED;
   int lenBytes = (NumberLength + 1) * (int)sizeof(*power);
   (void)memcpy(power, MontgomeryMultR1, lenBytes);  // power <- 1
   for (int index = nbrGroupsExp - 1; index >= 0; index--)
@@ -214,6 +218,7 @@ void modPow(const limb* base, const limb* exp, int nbrGroupsExp, limb* power)
       }
     }
   }
+  CustomNbrCached = NBR_NOT_CACHED;
 }
 
 // Input: base = base in Montgomery notation.

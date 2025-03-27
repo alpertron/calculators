@@ -1,6 +1,6 @@
 set compilerName=%userprofile%\emsdk\emsdk\upstream\emscripten\node_modules\google-closure-compiler-java\compiler.jar
 set compilerOptions2=--compilation_level ADVANCED_OPTIMIZATIONS --isolation_mode IIFE --externs=custom-externs.js
-set commonOptions=--no-entry -Os -Wall -s WASM=0 -s TEXTDECODER=0 -s ASSERTIONS=0 -s NO_FILESYSTEM=1 -s WASM_ASYNC_COMPILATION=0 --pre-js preGraphics.js --closure 1 --memory-init-file 0
+set commonOptions=--no-entry -Os -Wall -s WASM=0 -s TEXTDECODER=0 -s ASSERTIONS=0 -s NO_FILESYSTEM=1 -s WASM_ASYNC_COMPILATION=0 --pre-js preGraphics.js --closure 1
 set wasmCommon=--no-entry -Os -Wall -s WASM=1 -D_USING64BITS_ -s ASSERTIONS=0 -s NO_FILESYSTEM=1 --js-library lib.js --pre-js pre.js
 rem del *.wasm
 rem del *00*js

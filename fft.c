@@ -24,9 +24,8 @@
 #include <assert.h>
 #include "fft.h"
 
-#define FFT_LIMB_SIZE   18
-#define FFT_LIMB_RANGE  0x00040000     // 2^18
-#define MAX_FFT_LEN     (((MAX_LEN_MULT * BITS_PER_GROUP) / FFT_LIMB_SIZE) + 10)
+#define MIN_FFT_LIMB_SIZE  15
+#define MAX_FFT_LEN     (((MAX_LEN_MULT * BITS_PER_GROUP) / MIN_FFT_LIMB_SIZE) + 10)
 #define POWERS_2        17
 #define FULL_CIRCLE     0x00020000     // 2^17
 // In the next array, all numbers are represented by two elements,
@@ -58,7 +57,10 @@ static struct sComplex transf[MAX_FFT_LEN];
 static struct sComplex product[MAX_FFT_LEN];
 static struct sComplex tempFFT[MAX_FFT_LEN];
 static struct sComplex MontgomeryMultNTransf[MAX_FFT_LEN];
+static struct sComplex CustomNbrTransf[MAX_FFT_LEN];
 static struct sComplex TestNbrTransf[MAX_FFT_LEN];
+static int fftLimbSize;
+static int fftLimbRange;
 // Use formulas sin(A+B) = sin A cos B + cos A sin B
 // and cos(A+B) = cos A cos B - sin A sin B
 static void initCosinesArray(void)
@@ -319,12 +321,12 @@ static void ConvertFullToHalfSizeFFT(const struct sComplex *fullSizeFFT,
 }
 
 // Read limbs of input numbers with length BITS_PER_GROUP and convert them
-// to internal FFT limbs with length FFT_LIMB_SIZE.
+// to internal FFT limbs with length fftLimbSize.
 // The output is the number of internal FFT limbs generated.
 // Even limbs correspond to real component and odd limbs
 // correspond to imaginary component.
-// This code requires that FFT_LIMB_SIZE > BITS_PER_GROUP/2.
-// At this moment FFT_LIMB_SIZE = 19 and BITS_PER_GROUP = 31.
+// This code requires that fftLimbSize > BITS_PER_GROUP/2.
+// At this moment fftLimbSize >= 17 and BITS_PER_GROUP = 31.
 static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
 {
   size_t diffPtrs;
@@ -344,10 +346,10 @@ static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
       unsigned int complementBitExternal = (unsigned int)BITS_PER_GROUP - uBitExternal;
       real += UintToInt((unsigned int)(ptrFactor + 1)->x << complementBitExternal);
     }
-    maxValueFFTLimb = MAX_VALUE_FFT_LIMB;
+    maxValueFFTLimb = fftLimbRange - 1;
     real &= (unsigned int)maxValueFFTLimb;
     ptrInternalFactor->real = (double)real;
-    bitExternal += FFT_LIMB_SIZE;
+    bitExternal += fftLimbSize;
     if (bitExternal >= BITS_PER_GROUP)
     {                   // All bits of input limb have been used.
       bitExternal -= BITS_PER_GROUP;
@@ -367,10 +369,10 @@ static int ReduceLimbs(const limb *factor, struct sComplex *fftFactor, int len)
       unsigned int complementBitExternal = (unsigned int)BITS_PER_GROUP - uBitExternal;
       imaginary += UintToInt((unsigned int)(ptrFactor + 1)->x << complementBitExternal);
     }
-    imaginary &= MAX_VALUE_FFT_LIMB;
+    imaginary &= fftLimbRange - 1;
     ptrInternalFactor->imaginary = (double)imaginary;
     ptrInternalFactor++;
-    bitExternal += FFT_LIMB_SIZE;
+    bitExternal += fftLimbSize;
     if (bitExternal >= BITS_PER_GROUP)
     {                   // All bits of input limb have been used.
       bitExternal -= BITS_PER_GROUP;
@@ -425,10 +427,22 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   int index;
   int sumLen;
   int sumLenBytes;
+  int maxLen = (len1 < len2 ? len2 : len1);
+  int nbrBits = 0;
+  while (maxLen > 0)
+  {
+    nbrBits++;
+    maxLen /= 2;
+  }
+  fftLimbSize = 26 - nbrBits*3/4;
+  fftLimbRange = 1 << fftLimbSize;
   fftLen1 = ReduceLimbs(factor1, firstFactor, len1);
   assert(fftLen1 > 0);
-  if ((factor1 != factor2) && !((TestNbrCached == NBR_CACHED) && (factor2 == TestNbr)) &&
-    !((MontgomeryMultNCached == NBR_CACHED) && (factor2 == MontgomeryMultN)))
+  bool accessingCustomNbr = (CustomNbrCached == NBR_CACHED) && (factor2 == CustomNbrAddr);
+  bool accessingTestNbr = (TestNbrCached == NBR_CACHED) && (factor2 == TestNbr);
+  bool accessingMontgomeryMultN = (MontgomeryMultNCached == NBR_CACHED) && (factor2 == MontgomeryMultN);
+  if ((factor1 != factor2) && !accessingCustomNbr &&
+    !accessingTestNbr && !accessingMontgomeryMultN)
   {
     fftLen2 = ReduceLimbs(factor2, secondFactor, len2);
     assert(fftLen2 > 0);
@@ -460,13 +474,17 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   power2plus1Bytes = power2plus1 * (int)sizeof(transf[0]);
   if (factor1 != factor2)
   {
-    if ((TestNbrCached == NBR_CACHED) && (factor2 == TestNbr))
+    if (accessingTestNbr)
     {
       (void)memcpy(transf, TestNbrTransf, power2plus1Bytes);
     }
-    else if ((MontgomeryMultNCached == NBR_CACHED) && (factor2 == MontgomeryMultN))
+    else if (accessingMontgomeryMultN)
     {
       (void)memcpy(transf, MontgomeryMultNTransf, power2plus1Bytes);
+    }
+    else if (accessingCustomNbr)
+    {
+      (void)memcpy(transf, CustomNbrTransf, power2plus1Bytes);
     }
     else
     {
@@ -482,6 +500,11 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
     {
       (void)memcpy(MontgomeryMultNTransf, transf, power2plus1Bytes);
       MontgomeryMultNCached = NBR_CACHED;
+    }
+    else if ((CustomNbrCached == NBR_READY_TO_BE_CACHED) && (factor2 == CustomNbrAddr))
+    {
+      (void)memcpy(CustomNbrTransf, transf, power2plus1Bytes);
+      CustomNbrCached = NBR_CACHED;
     }
     else
     {  // No more conditions.
@@ -525,15 +548,15 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
 
     // Real part.
     dCarry += floor((ptrProduct->real * invPower2) + 0.5);
-    dQuot = floor(dCarry / (double)FFT_LIMB_RANGE);
-    fftResult = (int)(dCarry - (dQuot * (double)FFT_LIMB_RANGE));
+    dQuot = floor(dCarry / (double)fftLimbRange);
+    fftResult = (int)(dCarry - (dQuot * (double)fftLimbRange));
     ptrResult->x |= UintToInt(((unsigned int)fftResult << bitExternal) & MAX_VALUE_LIMB);
-    if ((int)bitExternal > (BITS_PER_GROUP - FFT_LIMB_SIZE))
+    if ((int)bitExternal > (BITS_PER_GROUP - fftLimbSize))
     {
       unsigned int shiftRight = (unsigned int)BITS_PER_GROUP - bitExternal;
       (ptrResult+1)->x |= UintToInt(((unsigned int)fftResult >> shiftRight) & MAX_VALUE_LIMB);
     }
-    bitExternal += (unsigned int)FFT_LIMB_SIZE;
+    bitExternal += (unsigned int)fftLimbSize;
     if (bitExternal >= (unsigned int)BITS_PER_GROUP)
     {
       bitExternal -= (unsigned int)BITS_PER_GROUP;
@@ -548,15 +571,15 @@ void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
     // Imaginary part. Use negative value for inverse FFT.
     dCarry += floor((-ptrProduct->imaginary * invPower2) + 0.5);
     ptrProduct++;
-    dQuot = floor(dCarry / (double)FFT_LIMB_RANGE);
-    fftResult = (int)(dCarry - (dQuot * (double)FFT_LIMB_RANGE));
+    dQuot = floor(dCarry / (double)fftLimbRange);
+    fftResult = (int)(dCarry - (dQuot * (double)fftLimbRange));
     ptrResult->x |= UintToInt(((unsigned int)fftResult << bitExternal) & MAX_VALUE_LIMB);
-    if ((int)bitExternal > (BITS_PER_GROUP - FFT_LIMB_SIZE))
+    if ((int)bitExternal > (BITS_PER_GROUP - fftLimbSize))
     {
       unsigned int shRight = (unsigned int)BITS_PER_GROUP - bitExternal;
       (ptrResult + 1)->x |= UintToInt(((unsigned int)fftResult >> shRight) & MAX_VALUE_LIMB);
     }
-    bitExternal += (unsigned int)FFT_LIMB_SIZE;
+    bitExternal += (unsigned int)fftLimbSize;
     if (bitExternal >= (unsigned int)BITS_PER_GROUP)
     {
       bitExternal -= (unsigned int)BITS_PER_GROUP;

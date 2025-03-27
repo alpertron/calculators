@@ -29,7 +29,7 @@
 #include "fromBlockly.h"
 #include "isprime.h"
 #ifndef DEBUG_CODE
-#define DEBUG_CODE 9
+#define DEBUG_CODE 13
 #endif
 #ifdef __EMSCRIPTEN__
 extern char inputString[];
@@ -61,6 +61,7 @@ extern int number[MAX_LEN];
 extern int nbrLimbs;
 extern int groupLen;
 extern limb TestNbr[MAX_LEN];
+extern limb MontgomeryMultN[MAX_LEN];
 char expr[] = "123456789012345";
 int Product[32];
 char input[MAX_LEN*4];
@@ -378,23 +379,23 @@ int main(int argc, char* argv[])
   quadText(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
   (void)printf("%s\n", output);
 #else
-for (int k = 0; k < 100; k++)
-{
-  char buf1[100];
-  char buf2[100];
-  char buf3[100];
-  char buf4[100];
-  char buf5[100];
-  char buf6[100];
-  sprintf(buf1, "%d", 543253452 + 7 * k);
-  sprintf(buf2, "%d", 1547654759 + 11 * k);
-  sprintf(buf3, "%d", 945432534 + 13 * k);
-  sprintf(buf4, "%d", 743134318 + 17 * k);
-  sprintf(buf5, "%d", 142435467 + 19 * k);
-  sprintf(buf6, "%d", 854325454 + 23 * k);
-  teach = false;
-  quadText(buf1, buf2, buf3, buf4, buf5, buf6);
-}
+  for (int k = 0; k < 100; k++)
+  {
+    char buf1[100];
+    char buf2[100];
+    char buf3[100];
+    char buf4[100];
+    char buf5[100];
+    char buf6[100];
+    sprintf(buf1, "%d", 543253452 + 7 * k);
+    sprintf(buf2, "%d", 1547654759 + 11 * k);
+    sprintf(buf3, "%d", 945432534 + 13 * k);
+    sprintf(buf4, "%d", 743134318 + 17 * k);
+    sprintf(buf5, "%d", 142435467 + 19 * k);
+    sprintf(buf6, "%d", 854325454 + 23 * k);
+    teach = false;
+    quadText(buf1, buf2, buf3, buf4, buf5, buf6);
+  }
 #endif
 #elif DEBUG_CODE == 18
   int resultLen, k;
@@ -521,7 +522,7 @@ for (int k = 0; k < 100; k++)
   for (int limbNbr = 0; limbNbr < 500; limbNbr++)
   {
     TestNbr[limbNbr].x = 0;
-    product[limbNbr+1].x = 0x32423424;
+    product[limbNbr + 1].x = 0x32423424;
     for (int ctr = 0; ctr < 7; ctr++)
     {
       TestNbr[limbNbr].x = TestNbr[limbNbr].x * 16 + 5;
@@ -583,10 +584,130 @@ for (int k = 0; k < 100; k++)
   {
     int value[2];
     getValue64(argv[cont], &value[0], &value[1]);
-    ptrResults = appendInt(ptrResults, (isPrime(value)? -109: 0));
+    ptrResults = appendInt(ptrResults, (isPrime(value) ? -109 : 0));
   }
   *ptrResults = 0;
   (void)printf("%s\n", results);
+#elif DEBUG_CODE == 29
+  BigInteger multiplier;
+  BigInteger multiplicand;
+  BigInteger modulus;
+  if (argc != 4)
+  {
+    printf("modmult {multiplicand} {multiplier} {modulus}\n");
+    return 1;
+  }
+  int rc = ComputeExpression(argv[1], &multiplicand);
+  if (rc != EXPR_OK)
+  {
+    printf("Error in the multiplicand: %s\n", argv[1]);
+    return 1;
+  }
+  rc = ComputeExpression(argv[2], &multiplier);
+  if (rc != EXPR_OK)
+  {
+    printf("Error in the multiplier: %s\n", argv[2]);
+    return 1;
+  }
+  rc = ComputeExpression(argv[3], &modulus);
+  if (rc != EXPR_OK)
+  {
+    printf("Error in the modulus: %s.\n", argv[3]);
+    return 1;
+  }
+  int nbrBytes = (int)sizeof(limb) * modulus.nbrLimbs;
+  memcpy(TestNbr, modulus.limbs, nbrBytes);
+  GetMontgomeryParms(modulus.nbrLimbs);
+  if (multiplicand.nbrLimbs < NumberLength)
+  {
+    nbrBytes = (NumberLength - multiplicand.nbrLimbs) * (int)sizeof(limb);
+    memset(&multiplier.limbs[multiplicand.nbrLimbs], 0, nbrBytes);
+  }
+  if (multiplier.nbrLimbs < NumberLength)
+  {
+    nbrBytes = (NumberLength - multiplier.nbrLimbs) * (int)sizeof(limb);
+    memset(&multiplier.limbs[multiplier.nbrLimbs], 0, nbrBytes);
+  }
+  // Convert to Montgomery notation.
+  modmult(multiplicand.limbs, MontgomeryMultR2, multiplicand.limbs);
+  modmult(multiplier.limbs, MontgomeryMultR2, multiplier.limbs);
+  // Multiply in Montgomery notation.
+  modmult(multiplicand.limbs, multiplier.limbs, multiplier.limbs);
+  // Convert to normal notation.
+  nbrBytes = NumberLength * (int)sizeof(limb);
+  memset(multiplicand.limbs, 0, nbrBytes);
+  multiplicand.limbs[0].x = 1;
+  modmult(multiplicand.limbs, multiplier.limbs, multiplier.limbs);
+  while (NumberLength > 1)
+  {
+    if (&multiplier.limbs[NumberLength - 1].x != 0)
+    {
+      break;
+    }
+    NumberLength--;
+  }
+  char* ptrResults = results;
+  Bin2Dec(&ptrResults, multiplier.limbs, NumberLength, 0);
+  *ptrResults = 0;     // Add string terminator.
+  (void)printf("%s\n", results);
+#elif DEBUG_CODE == 30
+  BigInteger multiplier;
+  BigInteger multiplicand;
+  BigInteger modulus;
+  BigInteger power;
+  intToBigInteger(&multiplier, 10);
+  BigIntPowerIntExp(&multiplier, 100, &power);
+  for (int exponent = 100; exponent < 100000; exponent += 10)
+  {
+    if (exponent % 100 == 0)
+    {
+      fprintf(stderr, "%d\n", exponent);
+    }
+    intToBigInteger(&multiplicand, 3);
+    intToBigInteger(&multiplier, 6);
+    intToBigInteger(&modulus, 18745);
+    BigIntAdd(&power, &modulus, &modulus);
+    multint(&power, &power, 100000);
+    multint(&power, &power, 100000);
+    int nbrBytes = (int)sizeof(limb) * modulus.nbrLimbs;
+    memcpy(TestNbr, modulus.limbs, nbrBytes);
+    GetMontgomeryParms(modulus.nbrLimbs);
+    if (multiplicand.nbrLimbs < NumberLength)
+    {
+      nbrBytes = (NumberLength - multiplicand.nbrLimbs) * (int)sizeof(limb);
+      memset(&multiplier.limbs[multiplicand.nbrLimbs], 0, nbrBytes);
+    }
+    if (multiplier.nbrLimbs < NumberLength)
+    {
+      nbrBytes = (NumberLength - multiplier.nbrLimbs) * (int)sizeof(limb);
+      memset(&multiplier.limbs[multiplier.nbrLimbs], 0, nbrBytes);
+    }
+    // Convert to Montgomery notation.
+    modmult(multiplicand.limbs, MontgomeryMultR2, multiplicand.limbs);
+    modmult(multiplier.limbs, MontgomeryMultR2, multiplier.limbs);
+    // Multiply in Montgomery notation.
+    modmult(multiplicand.limbs, multiplier.limbs, multiplier.limbs);
+    // Convert to normal notation.
+    nbrBytes = NumberLength * (int)sizeof(limb);
+    memset(multiplicand.limbs, 0, nbrBytes);
+    multiplicand.limbs[0].x = 1;
+    modmult(multiplicand.limbs, multiplier.limbs, multiplier.limbs);
+    while (NumberLength > 1)
+    {
+      if (&multiplier.limbs[NumberLength - 1].x != 0)
+      {
+        break;
+      }
+      NumberLength--;
+    }
+    char* ptrResults = results;
+    Bin2Dec(&ptrResults, multiplier.limbs, NumberLength, 0);
+    *ptrResults = 0;     // Add string terminator.
+    if (strcmp(results, "18") != 0)
+    {                    // Modular multiplication is incorrect.
+      (void)printf("Exponent = %d, Result = %s\n", exponent, results);
+    }
+  }
 #endif
   return 0;
 }

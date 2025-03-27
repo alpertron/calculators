@@ -4,8 +4,8 @@ del /q toweb\*.*
 set compilerName=%userprofile%\emsdk\emsdk\upstream\emscripten\node_modules\google-closure-compiler-java\compiler.jar
 set compilerOptions=--compilation_level ADVANCED_OPTIMIZATIONS --isolation_mode IIFE --externs=custom-externs.js --js androidextern.js --js commonNoAndroid.js
 set compilerOptionsAnd=--compilation_level ADVANCED_OPTIMIZATIONS --isolation_mode IIFE --externs=custom-externs.js --js androidextern.js --js commonAndroid.js
-set commonFlags=-Os --no-entry -Wall -s DYNAMIC_EXECUTION=0 -s SUPPORT_ERRNO=0 -s ASSERTIONS=0 -s NO_FILESYSTEM=1 --js-library lib.js --pre-js pre.js -finline-functions -DNDEBUG
-set jsCommon=%commonFlags% -s WASM=0 -s SINGLE_FILE=1 -s TEXTDECODER=0 -s INCOMING_MODULE_JS_API=['preRun','noInitialRun'] -s WASM_ASYNC_COMPILATION=0 -s ENVIRONMENT='worker' --closure 1 --memory-init-file 0
+set commonFlags=-Os --no-entry -Wall -s ASSERTIONS=0 -s NO_FILESYSTEM=1 --js-library lib.js --pre-js pre.js -finline-functions -DNDEBUG
+set jsCommon=%commonFlags% -s WASM=0 -s DYNAMIC_EXECUTION=0 -s SINGLE_FILE=1 -s TEXTDECODER=0 -s INCOMING_MODULE_JS_API=['preRun','noInitialRun'] -s WASM_ASYNC_COMPILATION=0 -s ENVIRONMENT='worker' --closure 1
 set wasmCommon=%commonFlags% -s WASM=1 %commonFlags% -D_USING64BITS_ 
 del *.wasm
 del *00*js
