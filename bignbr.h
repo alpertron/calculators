@@ -230,6 +230,7 @@ int JacobiSymbol(int upper, int lower);
 int BigIntJacobiSymbol(const BigInteger *upper, const BigInteger *lower);
 void DivideBigNbrByMaxPowerOf4(int *pPower4, limb *value, int *pNbrLimbs);
 void smallmodmult(int factor1, int factor2, limb *product, int mod);
+void MontgomeryMult(const limb* factor1, const limb* factor2, limb* product);
 void fftMultiplication(const limb *factor1, const limb *factor2, limb *result,
   int len1, int len2, int *pResultLen);
 
