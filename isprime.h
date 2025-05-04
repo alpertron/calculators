@@ -38,4 +38,5 @@ void SubtBigNbrs(const int *Nbr1, const int *Nbr2, int *Diff);
 int getPrime(int index);
 char* appendInt(char* text, int intValue);
 void getValue64(const char* value, int* pNbrLo, int* pNbrHi);
+void MontMultGraphic(const int *factor1, const int *factor2, int *Product);
 #endif

@@ -27,7 +27,11 @@
 
 extern bool teach;
 #if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
+#ifdef __ANDROID__
+EXTERNALIZE void doWorkPolfact(void)
+#else
 EXTERNALIZE void doWork(void)
+#endif
 {
   int flags = 0;
   int groupLength = 0;

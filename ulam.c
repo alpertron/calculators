@@ -37,12 +37,17 @@
   int oldYFraction;
 #else
   #ifdef __ANDROID__
-    unsigned int *pixelArrPtr;
+    extern unsigned int *pixelArrPtr;
   #else          // Emscripten
     unsigned int pixelArray[PIXEL_ARRAY_SIZE];
   #endif
 #endif
 
+#ifdef __EMSCRIPTEN__
+  extern setPointFunc setPoint;
+  extern getInfoFunc getInfo;
+  extern nbrChangedFunc nbrChgd;
+#endif
 #define MAX_LINES  1000
 #define MAX_COLUMNS 2000
 static char infoText[500];
@@ -836,8 +841,11 @@ char *ulamNbrChanged(const char* value, int inputBoxNbr, int newWidth, int newHe
   return infoText;
 }
 
+void initUlam(void)
+{
 #ifdef __EMSCRIPTEN__
-  setPointFunc setPoint = setPointUlamSpiral;
-  getInfoFunc getInfo = ulamGetInformation;
-  nbrChangedFunc nbrChgd = ulamNbrChanged;
+  setPoint = setPointUlamSpiral;
+  getInfo = ulamGetInformation;
+  nbrChgd = ulamNbrChanged;
 #endif
+}

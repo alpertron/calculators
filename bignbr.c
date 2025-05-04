@@ -2259,10 +2259,7 @@ int BpswPrimalityTest(const BigInteger *pValue)
   {
     return 1;      // Indicate not prime.
   }
-  if (nbrLimbs < 1)
-  {      // It should never come here.
-    return 1;      // Indicate prime.
-  }
+  assert(nbrLimbs >= 1);
   if (nbrLimbs == 1)
   {
     int smallPrimesLen = (int)(sizeof(smallPrimes) / sizeof(smallPrimes[0]));

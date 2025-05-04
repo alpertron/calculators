@@ -11,8 +11,8 @@ del *.wasm
 del *00*js
 
 rem ==================== GENERATION OF ASM.JS ===============================
-set fsquaresFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c
-set fsquaresOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=33554432
+set fsquaresFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c output.c bignbr.c showtime.c inputstr.c batch.c gcdrings.c fft.c
+set fsquaresOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=34275328
 set fsquaresJS=--js interface.js --js config.js --js common.js --js buttons.js --js feedback.js --js wizard.js
 cmd /c emcc %jsCommon% %fsquaresFiles% fsquares.c tsquares.c %fsquaresOptions% -o fsquaresW%1.js
 @if errorlevel 1 goto end
@@ -26,37 +26,37 @@ cmd /c emcc %jsCommon% %fsquaresFiles% tsqcubes.c tsquares.c %fsquaresOptions% -
 cmd /c emcc %jsCommon% %fsquaresFiles% contfrac.c %fsquaresOptions% -o contfracW%1.js
 @if errorlevel 1 goto end
 
-set polfactFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c linkedbignbr.c division.c baseconv.c karatsuba.c modmult.c sqroot.c rootseq.c lineareq.c quadraticeq.c cubiceq.c quartics.c quintics.c quinticsData.c bigrational.c output.c polynomial.c polyexpr.c multpoly.c divpoly.c fftpoly.c intpolfact.c modpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c
-set polfactOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=257032192 -DPOLYEXPR=1
+set polfactFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c linkedbignbr.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c rootseq.c lineareq.c quadraticeq.c cubiceq.c quartics.c quintics.c quinticsData.c bigrational.c output.c polynomial.c polyexpr.c multpoly.c divpoly.c fftpoly.c intpolfact.c modpolfact.c polfact.c polfacte.c bignbr.c showtime.c inputstr.c fft.c
+set polfactOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=278200320 -DPOLYEXPR=1
 set polfactJS=--js polyfact.js --js common.js --js feedback.js
 cmd /c emcc %jsCommon% %polfactFiles% %polfactOptions% -o polfactW%1.js
 @if errorlevel 1 goto end
 
-set dilogFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c dilog.c bignbr.c showtime.c inputstr.c fft.c
+set dilogFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c dilog.c bignbr.c showtime.c inputstr.c fft.c
 set dilogOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
 set dilogJS=--js dislog.js --js config.js --js common.js --js buttons.js --js feedback.js
 cmd /c emcc %jsCommon% %dilogFiles% %dilogOptions% -o dilogW%1.js
 @if errorlevel 1 goto end
 
-set quadmodFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quadmod.c quadmodLL.c bignbr.c showtime.c inputstr.c fft.c
+set quadmodFiles=expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quadmod.c quadmodLL.c bignbr.c showtime.c inputstr.c fft.c
 set quadmodOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
 set quadmodJS=--js quadrmod.js --js config.js --js common.js --js buttons.js --js feedback.js
 cmd /c emcc %jsCommon% %quadmodFiles% %quadmodOptions% -o quadmodW%1.js
 @if errorlevel 1 goto end
 
-set gaussianFiles=GaussExpr.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c gaussian.c output.c bignbr.c showtime.c inputstr.c gcdrings.c fft.c
+set gaussianFiles=GaussExpr.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c gaussian.c output.c bignbr.c showtime.c inputstr.c gcdrings.c fft.c
 set gaussianOptions=-s EXPORTED_FUNCTIONS="['_doWork','_getInputStringPtr']" -s TOTAL_MEMORY=301989888
 set gaussianJS=--js gauss.js --js config.js --js common.js --js buttons.js --js feedback.js
 cmd /c emcc %jsCommon% %gaussianFiles% %gaussianOptions% -o gaussianW%1.js
 @if errorlevel 1 goto end
 
-set ecmFiles=batch.c fft.c expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c gcdrings.c bignbr.c showtime.c inputstr.c fromBlockly.c linkedbignbr.c
+set ecmFiles=batch.c fft.c expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c gcdrings.c bignbr.c showtime.c inputstr.c fromBlockly.c linkedbignbr.c
 set ecmOptions=-DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -DUSING_BLOCKLY=1 -DENABLE_VERBOSE=1 -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr','_getFactorsAsciiPtr']" -s TOTAL_MEMORY=282460160
 set ecmJS=--js blocklyextern.js --js buttons.js --js ecmfront.js --js config.js --js common.js --js feedback.js --js wizard.js 
 cmd /c emcc %jsCommon% %ecmFiles% %ecmOptions% -o ecmW%1.js
 @if errorlevel 1 goto end
 
-set quadFiles=batch.c fft.c expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quad.c quadmodLL.c output.c bignbr.c showtime.c inputstr.c
+set quadFiles=batch.c fft.c expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c factor.c ecm.c siqs.c siqsLA.c quad.c quadmodLL.c output.c bignbr.c showtime.c inputstr.c
 set quadOptions=-DFACTORIZATION_FUNCTIONS=1 -DFACTORIZATION_APP=1 -s EXPORTED_FUNCTIONS="['_doWork','_copyString','_getInputStringPtr']" -s TOTAL_MEMORY=263192576
 set quadJS=--js quadr.js --js config.js --js common.js --js buttons.js --js feedback.js
 cmd /c emcc %jsCommon% %quadFiles% %quadOptions% -o quadW%1.js

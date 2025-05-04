@@ -40,7 +40,11 @@ BigInteger ValB;
 BigInteger ValC;
 BigInteger ValN;
 static int SolNbr;
+#ifdef __ANDROID__
+extern char *ptrOutput;
+#else
 char *ptrOutput;
+#endif
 extern int factorsMod[20000];
 
 static int Show(const BigInteger *num, const char *str, int t)
@@ -298,7 +302,11 @@ void quadmodText(const char *quadrText, const char *linearText, const char *cons
 }
 
 #if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
+#ifdef __ANDROID__
+EXTERNALIZE void doWorkQuadMod(void)
+#else
 EXTERNALIZE void doWork(void)
+#endif
 {
   char *ptrData = inputString;
   char* ptrQuadrCoeff;

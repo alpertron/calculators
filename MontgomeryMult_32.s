@@ -60,7 +60,7 @@
     .set MAX_LIMBS_MONTGOMERY, 14
     .set STACK_SIZE_RESULT_BUFFER, (MAX_LIMBS_MONTGOMERY+3)/4 * 16
 MontgomeryMult:
-    push {r3-r12, lr}
+    push {r4-r11, lr}
     @ Get external values and pointers to buffers.
     ldr r7, locGOT
 .LPIC0:
@@ -73,12 +73,75 @@ MontgomeryMult:
     ldr r5, NumberLength_offset
     ldr r5, [r5, r7]           @ r5 <- Address of NumberLength.
     ldr r5, [r5]               @ r5 <- NumberLength.
+    cmp r5, #2
+    bne more_than_two_limbs
+    
+    @ Montgomery multiplication with two limbs.
+    @ Optimizations: Do not use loops. Use registers.
+    
+    ldr r5, [r4, #4]
+    ldr r4, [r4]               @ R5:R4 = TestNbr.
+    ldr r6, [r1, #4]
+    ldr r1, [r1]               @ R6:R1 = Multiplier.
+    /* Processing least significant limb of multiplicand */
+    ldr r9, [r0]               @ Get limb from multiplicand.
+    smull r10, r11, r9, r1     @ r11:r10 <- multiplicand[0] * multiplier[0].
+    mul r8, r10, r3            @ r8 <- MontDig = Pr * MontgomeryMultN mod R
+    bic r8, r8, #0x80000000    @ Clear bit 31.
+    rsb r8, r8, #0             @ r8 <- -MontDig
+    smlal r10, r11, r8, r4     @ r11:r10 = Pr <- Pr - MontDig * TestNbr[0]
+                               @ Shift right Pr (r11:r10) 31 bits.
+    lsl r12, r11, #1
+    asr r11, r11, #31
+    orr r10, r12, r10, lsr #31
+    smlal r10, r11, r9, r6     @ Pr <- Pr + multiplicand[0] * multiplier[1].
+    smlal r10, r11, r8, r5     @ Pr <- Pr - MontDig * TestNbr[1].
+    lsl r7, r11, #1            @ Store most significant limb of result.
+    orr r7, r7, r10, lsr #31   @ as shift right Pr (r11:r10) 31 bits.
+    bic r10, r10, #0x80000000  @ r7:r10 = Temporary result.
 
+    @ Processing most significant limb of multiplicand.
+    ldr r9, [r0, #4]           @ Get limb from multiplicand.
+    mov r11, #0
+    smlal r10, r11, r9, r1     @ r11:r10 <- Pr + multiplicand[1] * multiplier[0].
+    mul r8, r10, r3            @ r8 <- MontDig = Pr * MontgomeryMultN mod R
+    bic r8, r8, #0x80000000    @ Clear bit 31.
+    rsb r8, r8, #0             @ r8 <- -MontDig
+    smlal r10, r11, r8, r4     @ r11:r10 = Pr <- Pr - MontDig * TestNbr[0]
+                               @ Shift right Pr (r11:r10) 31 bits.
+    lsl r12, r11, #1
+    asr r11, r11, #31
+    orr r10, r12, r10, lsr #31
+    smlal r10, r11, r9, r6     @ Pr <- Pr + multiplicand[1] * multiplier[1].
+    smlal r10, r11, r8, r5     @ Pr <- Pr - MontDig * TestNbr[1].
+    adds r10, r10, r7          @ Pr <- Pr + result[1] (sign extended).
+    adc r11, r11, r7, asr #31
+    bic r6, r10, #0x80000000   @ Clear bit 31 and store limb of temp result[0].
+                               @ Shift right Pr (r11:r10) 31 bits.
+    lsl r7, r11, #1
+    orrs r7, r7, r10, lsr #31 @ Store most significant limb of result.
+    
+    @ Test whether the result is positive.
+    bpl copy_temp_to_result_2L @ If so, copy temporary result to actual result.
+    
+    @ Add TestNbr to result.
+    add r8, r4, r6             /* TestNbr[0] + temporary result[0]. */
+    bic r6, r8, #0x80000000    /* Clear bit 31 and store into temp result. */   
+    add r8, r5, r8, lsr #31    /* Add TestNbr[1] + temp result[1] with carry. */
+    add r8, r8, r7
+    bic r7, r8, #0x80000000    /* Clear bit 31 and store into temp result. */
+   
+copy_temp_to_result_2L:
+    str r6, [r2]
+    str r7, [r2, #4]
+    pop {r4-r11, pc}
+    
+more_than_two_limbs:
     @ Adjust stack to store temporary result there
     @ so the arguments are not overwritten with the result.
     sub sp, sp, #STACK_SIZE_RESULT_BUFFER
 
-    @ Step 1: Clear result.
+    @ Clear result.
     mov r7, r5
     mov r6, #0
 clear_result_loop:
@@ -86,11 +149,9 @@ clear_result_loop:
     str r6, [sp, r7, lsl #2]
     bne clear_result_loop
     
-    @ Step 2: Outer loop.
+    @ Outer loop.
     @ Index for multiplicand (r6) is already zero.
 outer_loop:
-
-    @ Step 5:
     mov r7, #1                 @ Initialize index for result.
     ldr r9, [r0, r6, lsl #2]   @ Get limb from multiplicand.
     ldr r10, [sp]              @ Get the least significant limb of result.
@@ -129,11 +190,11 @@ inner_loop:
     cmp r6, r5
     bne outer_loop
     
-    @ Step 6: Test whether the result is positive.
+    @ Test whether the result is positive.
     tst r10, #0x80000000       @ Is most significant limb of result positive?
     beq copy_temp_to_result    @ Jump to end of routine if so.
     
-    @ Step 7: Add TestNbr to result.
+    @ Add TestNbr to result.
     mov r6, #0                 @ Initialize index.
     mov r7, #0                 @ Initialize result of previous addition.
 add_TestNbr_cycle:
@@ -153,7 +214,7 @@ copy_temp_to_result_loop:
     str r8, [r2, r5, lsl #2]  /* Set limb to result. */
     bne copy_temp_to_result_loop
     add sp, sp, #STACK_SIZE_RESULT_BUFFER
-    pop {r3-r12, pc}
+    pop {r4-r11, pc}
 locGOT:
     .word _GLOBAL_OFFSET_TABLE_-(.LPIC0+4)
 TestNbr_offset:

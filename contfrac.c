@@ -461,7 +461,11 @@ void contfracText(char *input, int GroupLen, bool hex, bool converg)
 }
 
 #if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
+#ifdef __ANDROID__
+EXTERNALIZE void doWorkContFrac(void)
+#else
 EXTERNALIZE void doWork(void)
+#endif
 {
   int app;
   bool hex;

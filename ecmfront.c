@@ -724,7 +724,11 @@ void showDivisors(void)
 }
 
 #ifndef _MSC_VER
+#ifdef __ANDROID__
+EXTERNALIZE void doWorkEcm(void)
+#else
 EXTERNALIZE void doWork(void)
+#endif
 {
   int flags;
   char *ptrData = inputString;

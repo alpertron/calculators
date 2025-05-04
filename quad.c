@@ -3808,7 +3808,11 @@ void quadText(char *coefAText, char *coefBText, char *coefCText,
 }
 
 #if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
+#ifdef __ANDROID__
+EXTERNALIZE void doWorkQuad(void)
+#else
 EXTERNALIZE void doWork(void)
+#endif
 {
   int flags;
   char *ptrData = inputString;

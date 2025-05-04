@@ -85,12 +85,12 @@ static void showNumber(const BigInteger *real, const BigInteger *imag)
 
 void GaussianFactorization(void)
 {
-  BigInteger prime;
-  BigInteger bigExpon;
-  BigInteger r;
-  BigInteger M1;
-  BigInteger M2;
-  BigInteger Tmp;
+  static BigInteger prime;
+  static BigInteger bigExpon;
+  static BigInteger r;
+  static BigInteger M1;
+  static BigInteger M2;
+  static BigInteger Tmp;
   const struct sFactors *pstFactor;
 
   (void)BigIntMultiply(&ReValue, &ReValue, &tofactor);
@@ -261,10 +261,10 @@ void GaussianFactorization(void)
 
 static void DivideGaussian(const BigInteger *real, const BigInteger *imag)
 {
-  BigInteger Tmp;
-  BigInteger norm;
-  BigInteger realNum;
-  BigInteger imagNum;
+  static BigInteger Tmp;
+  static BigInteger norm;
+  static BigInteger realNum;
+  static BigInteger imagNum;
   CopyBigInt(&Tmp, real);
   Tmp.sign = SIGN_POSITIVE;
   (void)BigIntMultiply(real, real, &norm);
@@ -331,7 +331,11 @@ void gaussianText(char *valueText, int doFactorization)
 }
 
 #if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
+#ifdef __ANDROID__
+EXTERNALIZE void doWorkGaussian(void)
+#else
 EXTERNALIZE void doWork(void)
+#endif
 {
   int flags;
   char *ptrData = inputString;

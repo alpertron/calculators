@@ -7,15 +7,15 @@ rem del *00*js
 rem --compilation_level WHITESPACE_ONLY
 rem --compilation_level ADVANCED_OPTIMIZATIONS
 rem ==================== GENERATION OF ASM.JS ===============================
-cmd /c emcc ulam.c isprime.c graphics.c copyStr.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 %commonOptions% -o ulamW.js
+cmd /c emcc ulam.c isprime.c MontMultGraphic.c graphics.c copyStr.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 %commonOptions% -o ulamW.js
 if errorlevel 1 goto end
-cmd /c emcc gausspr.c isprime.c graphics.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 %commonOptions% -o gaussprW.js
+cmd /c emcc gausspr.c isprime.c MontMultGraphic.c graphics.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 %commonOptions% -o gaussprW.js
 if errorlevel 1 goto end
 
 rem ===================== GENERATION OF WASM ================================
-cmd /c emcc %wasmCommon% ulam.c isprime.c graphics.c copyStr.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o ulam.wasm
+cmd /c emcc %wasmCommon% ulam.c isprime.c MontMultGraphic.c graphics.c copyStr.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o ulam.wasm
 if errorlevel 1 goto end
-cmd /c emcc %wasmCommon% gausspr.c isprime.c graphics.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o gausspr.wasm
+cmd /c emcc %wasmCommon% gausspr.c isprime.c MontMultGraphic.c graphics.c -s EXPORTED_FUNCTIONS="['_moveGraphic', '_drawPartialGraphic', '_nbrChanged', '_getInformation', '_getPixels']" -s TOTAL_MEMORY=33554432 -o gausspr.wasm
 if errorlevel 1 goto end
 
 copy /b ulam.js + common.js + strings.js + commonGraphics.js ulamA.js

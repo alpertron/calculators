@@ -69,12 +69,65 @@ MontgomeryMult:
     adrp x5, :got:NumberLength@GOTPAGE
     ldr x5, [x5, #:got_lo12:NumberLength]
     ldr w5, [x5]               /* x5 <- NumberLength */
-
+    cmp w5, #2
+    bne more_than_two_limbs
+    
+    /* Montgomery multiplication with two limbs */
+    /* Optimizations: Do not use loops. Use registers. */
+    
+    ldr w5, [x4, #4]
+    ldr w4, [x4]               /* R5:R4 = TestNbr */
+    ldr w6, [x1, #4]
+    ldr w1, [x1]               /* R6:R1 = Multiplier */
+    /* Processing least significant limb of multiplicand */
+    ldr w9, [x0]               /* Get limb from multiplicand. */
+    smull x10, w9, w1          /* x10 <- multiplicand[0] * multiplier[0]. */
+    mul w8, w10, w3            /* w8 <- MontDig = Pr * MontgomeryMultN mod R */
+    bic w8, w8, #0x80000000    /* Clear bit 31. */
+    smsubl x10, w8, w4, x10    /* x10 = Pr <- Pr - MontDig * TestNbr[0] */
+    asr x10, x10, #31          /* Shift right Pr (x10) by 31 bits. */
+    smaddl x10, w9, w6, x10    /* Pr <- Pr + multiplicand[0] * multiplier[1]. */
+    smsubl x10, w8, w5, x10    /* Pr <- Pr - MontDig * TestNbr[1]. */
+    asr x7, x10, #31           /* Shift right Pr (x10) by 31 bits. */
+                               /* and store most significant limb of temp result. */
+    bic w10, w10, #0x80000000  /* R7:R10 = Temporary result. */
+    
+    /* Processing most significant limb of multiplicand */
+    ldr w9, [x0, #4]           /* Get limb from multiplicand. */
+    smaddl x10, w9, w1, x10    /* x10 <- Pr + multiplicand[1] * multiplier[0]. */
+    mul w8, w10, w3            /* w8 <- MontDig = Pr * MontgomeryMultN mod R */
+    bic w8, w8, #0x80000000    /* Clear bit 31. */
+    smsubl x10, w8, w4, x10    /* x10 = Pr <- Pr - MontDig * TestNbr[0] */
+    asr x10, x10, #31          /* Shift right Pr (x10) by 31 bits. */
+    smaddl x10, w9, w6, x10    /* Pr <- Pr + multiplicand[1] * multiplier[1]. */
+    smsubl x10, w8, w5, x10    /* Pr <- Pr - MontDig * TestNbr[1]. */
+    sxtw x12, w7               /* Get MS limb from temp result (sign extended). */
+    add x10, x10, x12          /* Pr <- Pr + result[j+1]. */
+    bic w6, w10, #0x80000000   /* Clear bit 31 and store limb to temp result[0]. */
+    asr x7, x10, #31           /* Shift right Pr (x10) by 31 bits */
+                               /* and store most significant limb of temp result. */
+    /* Test whether the result is positive. */
+    tst w7, #0x80000000        /* Is most significant limb of result positive? */
+    beq copy_temp_to_result_2L /* If so, copy temporary result to actual result. */
+    
+    /* Add TestNbr to result. */
+    add w8, w4, w6             /* TestNbr[0] + temporary result[0]. */
+    bic w6, w8, #0x80000000    /* Clear bit 31 and store into temp result. */   
+    add w8, w5, w8, lsr #31    /* Add TestNbr[1] + temp result[1] with carry. */
+    add w8, w8, w7
+    bic w7, w8, #0x80000000    /* Clear bit 31 and store into temp result. */
+    
+copy_temp_to_result_2L:
+    str w6, [x2]
+    str w7, [x2, #4]
+    ret
+    
+more_than_two_limbs:
     /* Adjust stack to store temporary result there */
     /* so the arguments are not overwritten with the result. */
     sub sp, sp, #STACK_SIZE_RESULT_BUFFER
 
-    /* Step 1: Clear result. */
+    /* Clear result. */
     mov w7, w5                 /* Clear NumberLength limbs. */
     mov w6, #0                 /* Set all limbs to zero. */
 clear_result_loop:
@@ -82,11 +135,9 @@ clear_result_loop:
     str w6, [sp, w7, uxtw #2]  /* Set limb of temporary result to zero. */
     bne clear_result_loop
 
-    /* Step 2: Outer loop. */
     /* Index for multiplicand (w6) is already zero. */
 outer_loop:
 
-    /* Step 5: */
     mov w7, #1                 /* Initialize index for result. */
     ldr w9, [x0, w6, uxtw #2]  /* Get limb from multiplicand. */
     ldr w10, [sp]              /* Get the least significant limb of temp result. */
@@ -94,15 +145,14 @@ outer_loop:
     smaddl x10, w9, w12, x10   /* x10 <- Pr + multiplicand[i] * multiplier[0]. */
     mul w8, w10, w3            /* w8 <- MontDig = Pr * MontgomeryMultN mod R */
     bic w8, w8, #0x80000000    /* Clear bit 31. */
-    neg w8, w8                 /* r8 <- -MontDig */
     ldr w12, [x4]              /* Get least significant of TestNbr. */
-    smaddl x10, w8, w12, x10   /* x10 = Pr <- Pr - MontDig * TestNbr[0] */
+    smsubl x10, w8, w12, x10   /* x10 = Pr <- Pr - MontDig * TestNbr[0] */
 inner_loop:
     asr x10, x10, #31          /* Shift right Pr (x10) by 31 bits. */
     ldr w12, [x1, w7, uxtw #2] /* Get limb from multiplier */
     smaddl x10, w9, w12, x10   /* Pr <- Pr + multiplicand[i] * multiplier[j+1]. */
     ldr w12, [x4, w7, uxtw #2] /* Get limb from TestNbr */
-    smaddl x10, w8, w12, x10   /* Pr <- Pr - MontDig * TestNbr[j+1]. */
+    smsubl x10, w8, w12, x10   /* Pr <- Pr - MontDig * TestNbr[j+1]. */
     ldrsw x12, [sp, w7, uxtw #2] /* Get limb from temp result (sign extended). */
     add x10, x10, x12          /* Pr <- Pr + result[j+1]. */
     sub w7, w7, #1             /* Decrement index. */
@@ -118,11 +168,11 @@ inner_loop:
     cmp w6, w5
     bne outer_loop
     
-    /* Step 6: Test whether the result is positive. */
+    /* Test whether the result is positive. */
     tst w10, #0x80000000       /* Is most significant limb of result positive? */
     beq copy_temp_to_result    /* If so, copy temporary result to actual result. */
     
-    /* Step 7: Add TestNbr to result. */
+    /* Add TestNbr to result. */
     mov w6, #0                 /* Initialize index. */
     mov w7, #0                 /* Initialize result of previous addition. */
 add_TestNbr_cycle:
@@ -141,6 +191,6 @@ copy_temp_to_result_loop:
     ldr w8, [sp, w5, uxtw #2]  /* Get limb from temporary result. */
     str w8, [x2, w5, uxtw #2]  /* Set limb to result. */
     bne copy_temp_to_result_loop
-    add sp, sp, #STACK_SIZE_RESULT_BUFFER
+    add sp, sp, #STACK_SIZE_RESULT_BUFFER    
     ret
     .end

@@ -1,7 +1,7 @@
 //
 // This file is part of Alpertron Calculators.
 //
-// Copyright 2021 Dario Alejandro Alpern
+// Copyright 2021-2025 Dario Alejandro Alpern
 //
 // Alpertron Calculators is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,11 +23,9 @@
 #include <stdbool.h>
 #include "isprime.h"
 
-#define SMALL_NUMBER_BOUND 32768
-
-static int TestNbr[NBR_LIMBS];
-static unsigned int MontgomeryMultN;
-static int MontgomeryMultR1[NBR_LIMBS+1];  // One more limb required for AdjustModN.
+int TestNbrGraphic[NBR_LIMBS];
+unsigned int MontMultGraphicN;
+int MontMultGraphicR1[NBR_LIMBS+1];  // One more limb required for AdjustModN.
 
 static char primes[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41,
                          43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97 };
@@ -39,7 +37,7 @@ int getPrime(int index)
 // Each limb has 31 bits, so with 2 limbs these routines can use numbers up to 2^62
 // This is over 10^18.
 
-// Compute Nbr <- Nbr mod TestNbr.
+// Compute Nbr <- Nbr mod TestNbrGraphic.
 static void AdjustModN(int *Nbr)
 {
   int i;
@@ -52,7 +50,7 @@ static void AdjustModN(int *Nbr)
   double dVal = 1.0 / (double)LIMB_RANGE;
   double dSquareLimb = (double)LIMB_RANGE * (double)LIMB_RANGE;
 
-  dModulus = (double)TestNbr[1] + (double)TestNbr[0] * dVal;
+  dModulus = (double)TestNbrGraphic[1] + (double)TestNbrGraphic[0] * dVal;
   dNbr = (double)Nbr[2] * (double)LIMB_RANGE + (double)Nbr[1] + (double)Nbr[0] * dVal;
   TrialQuotient = (int)(unsigned int)floor((dNbr / dModulus) + 0.5);
   if ((unsigned int)TrialQuotient >= LIMB_RANGE)
@@ -66,10 +64,10 @@ static void AdjustModN(int *Nbr)
   for (i = 0; i < NBR_LIMBS; i++)
   {
     double dAccumulator;
-    int low = (*(Nbr + i) - (TestNbr[i] * TrialQuotient) + carry) & MAX_INT_NBR;
+    int low = (*(Nbr + i) - (TestNbrGraphic[i] * TrialQuotient) + carry) & MAX_INT_NBR;
     // Subtract or add 0x20000000 so the multiplication by dVal is not nearly an integer.
     // In that case, there would be an error of +/- 1.
-    dAccumulator = *(Nbr+i) - ((double)TestNbr[i] * dTrialQuotient) + (double)carry + dDelta;
+    dAccumulator = *(Nbr+i) - ((double)TestNbrGraphic[i] * dTrialQuotient) + (double)carry + dDelta;
     dDelta = 0.0;
     if (dAccumulator < 0.0)
     {
@@ -93,135 +91,13 @@ static void AdjustModN(int *Nbr)
     for (i = 0; i < NBR_LIMBS; i++)
     {
       unsigned int tmp;
-      cy += (unsigned int)*(Nbr+i) + (unsigned int)TestNbr[i];
+      cy += (unsigned int)*(Nbr+i) + (unsigned int)TestNbrGraphic[i];
       tmp = cy & MAX_VALUE_LIMB;
       *(Nbr+i) = (int)tmp;
       cy >>= BITS_PER_GROUP;
     }
     *(Nbr+NBR_LIMBS) = 0;
   }
-}
-static void smallmodmult(int factor1, int factor2, int *product, int mod)
-{
-  if (mod < SMALL_NUMBER_BOUND)
-  {
-    *product = factor1 * factor2 % mod;
-  }
-  else
-  {   // TestNbr has one limb but it is not small.
-#ifdef _USING64BITS_
-    *product = (int64_t)factor1 * factor2 % mod;
-#else
-      // Round up quotient.
-    int quotient = (int)floor((double)factor1 * (double)factor2 / (double)mod + 0.5);
-    int remainder = (factor1 * factor2) - (quotient * mod);
-    if (remainder < 0)
-    {    // Quotient was 1 more than expected. Adjust remainder.
-      remainder += mod;
-    }
-    *product = remainder;
-#endif
-  }
-}
-
-static void MontgomeryMult(const int *factor1, const int *factor2, int *Product)
-{
-  if (TestNbr[1] == 0)
-  {
-    smallmodmult(*factor1, *factor2, Product, TestNbr[0]);
-    *(Product+1) = 0;
-    return;
-  }
-  int TestNbr0 = TestNbr[0];
-  int TestNbr1 = TestNbr[1];
-  int32_t Prod0;
-  int32_t Prod1;
-  int factor2_0 = *factor2;
-  int factor2_1 = *(factor2+1);
-#ifdef _USING64BITS_
-  int64_t Pr;
-  int Nbr;
-  int MontDig;
-  
-  Nbr = *factor1;
-  Pr = Nbr * (int64_t)factor2_0;
-  MontDig = ((int32_t)Pr * MontgomeryMultN) & MAX_VALUE_LIMB;
-  Pr = ((Pr - ((int64_t)MontDig * (int64_t)TestNbr0)) >> BITS_PER_GROUP) -
-    ((int64_t)MontDig * (int64_t)TestNbr1) +
-    ((int64_t)Nbr * (int64_t)factor2_1);
-  Prod0 = (int32_t)(Pr & MAX_VALUE_LIMB);
-  Prod1 = (int32_t)(Pr >> BITS_PER_GROUP);
-    
-  Nbr = *(factor1 + 1);
-  Pr = Nbr * (int64_t)factor2_0 + (int64_t)Prod0;
-  MontDig = ((int32_t)Pr * MontgomeryMultN) & MAX_VALUE_LIMB;
-  Pr = ((Pr - ((int64_t)MontDig * (int64_t)TestNbr0)) >> BITS_PER_GROUP) -
-    ((int64_t)MontDig * (int64_t)TestNbr1) +
-    ((int64_t)Nbr * (int64_t)factor2_1) + Prod1;
-  Prod0 = (int32_t)(Pr & MAX_VALUE_LIMB);
-  Prod1 = (int32_t)(Pr >> BITS_PER_GROUP);
-    
-#else
-  double dInvLimbRange = 1.0 / (double)LIMB_RANGE;
-  int Nbr = *factor1;
-  double dNbr = (double)Nbr;
-  int low = Nbr * factor2_0;
-  double dAccum = dNbr * (double)factor2_0;
-  int MontDig = (low * MontgomeryMultN) & MAX_INT_NBR;
-  double dMontDig = (double)MontDig;
-  dAccum -= dMontDig * (double)TestNbr0;
-  // At this moment dAccum is multiple of LIMB_RANGE.
-  dAccum = floor((dAccum*dInvLimbRange) + 0.5);
-  low = ((int)dAccum - (MontDig * TestNbr1) + (Nbr * factor2_1)) &
-        MAX_INT_NBR;
-  dAccum += (dNbr * (double)factor2_1) - (dMontDig * (double)TestNbr1);
-  Prod0 = low;
-  // Casting from double to int truncates to nearest to zero,
-  // so the conversion is done on non-negative numbers.
-  if (low < HALF_INT_RANGE)
-  {
-    dAccum = (dAccum * dInvLimbRange) + 2147483648.25;
-  }
-  else
-  {
-    dAccum = (dAccum * dInvLimbRange) + 2147483647.75;
-  }
-  Prod1 = (unsigned int)dAccum ^ LIMB_RANGE;
-  
-  Nbr = *(factor1 + 1);
-  dNbr = (double)Nbr;
-  low = (Nbr * factor2_0) + Prod0;
-  dAccum = (dNbr * (double)factor2_0) + (double)Prod0;
-  MontDig = (low * MontgomeryMultN) & MAX_VALUE_LIMB;
-  dMontDig = (double)MontDig;
-  dAccum -= dMontDig * (double)TestNbr0;
-  // At this moment dAccum is multiple of LIMB_RANGE.
-  dAccum = floor((dAccum*dInvLimbRange) + 0.5);
-  low = ((int)dAccum - (MontDig * TestNbr1) + (Nbr * factor2_1) + Prod1) &
-        MAX_INT_NBR;
-  dAccum += (dNbr * (double)factor2_1) - (dMontDig * (double)TestNbr1) +
-            (double)Prod1;
-  Prod0 = low;
-  // Casting from double to int truncates to nearest to zero,
-  // so the conversion is done on non-negative numbers.
-  if (low < HALF_INT_RANGE)
-  {
-    dAccum = (dAccum * dInvLimbRange) + 2147483648.25;
-  }
-  else
-  {
-    dAccum = (dAccum * dInvLimbRange) + 2147483647.75;
-  }
-  Prod1 = (unsigned int)dAccum ^ LIMB_RANGE;
-#endif  
-  if (Prod1 < 0)
-  {
-    uint32_t carry = Prod0 + TestNbr0;
-    Prod0 = carry & MAX_VALUE_LIMB;
-    Prod1 += TestNbr1 + (carry >> BITS_PER_GROUP);
-  }
-  *Product = Prod0;
-  *(Product+1) = Prod1;
 }
 
 void AddBigNbrs(const int *Nbr1, const int *Nbr2, int *Sum)
@@ -245,18 +121,18 @@ static void AddBigNbrModN(const int *Nbr1, const int *Nbr2, int *Sum)
 {
   unsigned int Sum0;
   unsigned int Sum1;
-  unsigned int TestNbr0 = (unsigned int)TestNbr[0];
-  unsigned int TestNbr1 = (unsigned int)TestNbr[1];
+  unsigned int TestNbrGraphic0 = (unsigned int)TestNbrGraphic[0];
+  unsigned int TestNbrGraphic1 = (unsigned int)TestNbrGraphic[1];
   unsigned int carry = (unsigned int)*Nbr1 + (unsigned int)*Nbr2;
   Sum0 = carry & MAX_VALUE_LIMB;
   Sum1 = (carry >> BITS_PER_GROUP) + *(Nbr1 + 1) + *(Nbr2 + 1);
-  if ((Sum1 > TestNbr1) || 
-     ((Sum1 == TestNbr1) && (Sum0 >= TestNbr0)))
+  if ((Sum1 > TestNbrGraphic1) || 
+     ((Sum1 == TestNbrGraphic1) && (Sum0 >= TestNbrGraphic0)))
   {
-    unsigned int borrow = Sum0 - TestNbr0;
+    unsigned int borrow = Sum0 - TestNbrGraphic0;
     Sum0 = borrow & MAX_VALUE_LIMB;
     // On subtraction, borrow subtracts too.
-    Sum1 = Sum1 - TestNbr1 - (borrow >> BITS_PER_GROUP);
+    Sum1 = Sum1 - TestNbrGraphic1 - (borrow >> BITS_PER_GROUP);
   }
   *Sum = (int)Sum0;
   *(Sum+1) = (int)Sum1;
@@ -267,25 +143,30 @@ static void GetMontgomeryParms(void)
   int N;
   int x;
 
-  MontgomeryMultR1[1] = 0;
-  if (TestNbr[1] == 0)
-  {
-    MontgomeryMultR1[0] = 1;
-    return;
-  }
-  N = TestNbr[0];   // 2 least significant bits of inverse correct.
+  N = TestNbrGraphic[0];   // 2 least significant bits of inverse correct.
   x = N;
   x = x * (2 - (N * x)); // 4 least significant bits of inverse correct.
   x = x * (2 - (N * x)); // 8 least significant bits of inverse correct.
   x = x * (2 - (N * x)); // 16 least significant bits of inverse correct.
   x = x * (2 - (N * x)); // 32 least significant bits of inverse correct.
-  MontgomeryMultN = x & MAX_INT_NBR;
-  MontgomeryMultR1[2] = 1;
-  MontgomeryMultR1[0] = 0;
-  AdjustModN(MontgomeryMultR1);  // 2^62 mod TestNbr.
+  MontMultGraphicN = x & MAX_INT_NBR;
+  MontMultGraphicR1[1] = 0;
+  if (TestNbrGraphic[1] == 0)
+  {
+#ifdef __ARM_ARCH_7A__
+    MontMultGraphicR1[0] = (MAX_INT_NBR - TestNbrGraphic[0] + 1) %
+                            TestNbrGraphic[0]; // 2^31 mod TestNbrGraphic.
+#else
+    MontMultGraphicR1[0] = 1;
+#endif
+    return;
+  }
+  MontMultGraphicR1[2] = 1;
+  MontMultGraphicR1[0] = 0;
+  AdjustModN(MontMultGraphicR1);  // 2^62 mod TestNbrGraphic.
 }
 
-// Perform Miller-Rabin test of number stored in variable TestNbr.
+// Perform Miller-Rabin test of number stored in variable TestNbrGraphic.
 // The bases to be used are 2, 3, 5, 7, 11, 13, 17, 19 and 23 which
 // ensures that any composite less than 3*10^18 is discarded.
 // On input: value: array of two ints, first low, then high.
@@ -343,55 +224,55 @@ bool isPrime(const int *value)
   int power[NBR_LIMBS];
   int temp[NBR_LIMBS];
     // Convert parameter to big number (2 limbs of 31 bits each).
-  int TestNbr0 = value[0];
-  int TestNbr1 = value[1];
-  if (TestNbr1 >= HALF_INT_RANGE)
+  int TestNbrGraphic0 = value[0];
+  int TestNbrGraphic1 = value[1];
+  if (TestNbrGraphic1 >= HALF_INT_RANGE)
   {    // Number is negative. Change sign.
-    if (TestNbr0 == 0)
+    if (TestNbrGraphic0 == 0)
     {
-      TestNbr1 = -TestNbr1 & (int)MAX_VALUE_LIMB;
+      TestNbrGraphic1 = -TestNbrGraphic1 & (int)MAX_VALUE_LIMB;
     }
     else
     {
-      TestNbr0 = -TestNbr0 & (int)MAX_VALUE_LIMB;
-      TestNbr1 = (-1 - TestNbr1) & (int)MAX_VALUE_LIMB;
+      TestNbrGraphic0 = -TestNbrGraphic0 & (int)MAX_VALUE_LIMB;
+      TestNbrGraphic1 = (-1 - TestNbrGraphic1) & (int)MAX_VALUE_LIMB;
     }
   }
-  TestNbr[0] = TestNbr0;
-  TestNbr[1] = TestNbr1;
-  if (TestNbr1 == 0)
+  TestNbrGraphic[0] = TestNbrGraphic0;
+  TestNbrGraphic[1] = TestNbrGraphic1;
+  if (TestNbrGraphic1 == 0)
   {
-    if (TestNbr0 == 1)
+    if (TestNbrGraphic0 == 1)
     {
       return false;           // 1 is not prime.
     }
-    if (TestNbr0 == 2)
+    if (TestNbrGraphic0 == 2)
     {
       return true;            // 2 is prime.
     }
   }
-  if ((TestNbr0 & 1) == 0)
+  if ((TestNbrGraphic0 & 1) == 0)
   {
     return false;             // Even numbers different from 2 are not prime.
   }
   for (i=1; i<(int)sizeof(primes); i++)
   {
     base = primes[i];
-    if (TestNbr1 == 0)
+    if (TestNbrGraphic1 == 0)
     {
-      if ((unsigned int)TestNbr0 == base)
+      if ((unsigned int)TestNbrGraphic0 == base)
       {
         return true;          // Number is prime.
       }
-      if (((unsigned int)TestNbr0 % base) == 0U)
+      if (((unsigned int)TestNbrGraphic0 % base) == 0U)
       {
         return false;         // Number is multiple of base, so it is composite.
       }
     }
-    // Check whether TestNbr is multiple of base. In this case the number would be composite.
+    // Check whether TestNbrGraphic is multiple of base. In this case the number would be composite.
     // No overflow possible in next expression.
-    else if (((((unsigned int)TestNbr1 % base) * (LIMB_RANGE % base) +
-      (unsigned int)TestNbr0) % base) == 0U)
+    else if (((((unsigned int)TestNbrGraphic1 % base) * (LIMB_RANGE % base) +
+      (unsigned int)TestNbrGraphic0) % base) == 0U)
     {
       return false;           // Number is multiple of base, so it is composite.
     }
@@ -400,15 +281,15 @@ bool isPrime(const int *value)
     }
   }
   GetMontgomeryParms();
-  baseInMontRepres[0] = MontgomeryMultR1[0];
-  baseInMontRepres[1] = MontgomeryMultR1[1];
+  baseInMontRepres[0] = MontMultGraphicR1[0];
+  baseInMontRepres[1] = MontMultGraphicR1[1];
   
        // Find index of least significant bit set disregarding bit 0.
-  mask = TestNbr0 & (MAX_INT_NBR-1);
+  mask = TestNbrGraphic0 & (MAX_INT_NBR-1);
   indexLSB = 0;
   if (mask == 0U)
   {    // Least significant bit is inside high limb.
-    mask = TestNbr1;
+    mask = TestNbrGraphic1;
     indexLSB = BITS_PER_GROUP;
   }
   if ((mask & 0xFFFFU) == 0U)
@@ -436,12 +317,12 @@ bool isPrime(const int *value)
     indexLSB++;
   }
       // Find index of most significant bit set.
-  mask = TestNbr1;
+  mask = TestNbrGraphic1;
   indexMSB = BITS_PER_GROUP;
   idxNbrMSB = 1;
   if (mask == 0U)
   {    // Most significant bit is inside low limb.
-    mask = TestNbr0;
+    mask = TestNbrGraphic0;
     indexMSB = 0;
     idxNbrMSB = 0;
   }
@@ -473,14 +354,14 @@ bool isPrime(const int *value)
   maskMSB = (tmp << ((unsigned int)indexMSB % (unsigned int)BITS_PER_GROUP));
   i = 0;
   j = 0;
-  while ((limits[j+1] < TestNbr1) || 
-         ((limits[j+1] == TestNbr1) && (limits[j] <= TestNbr0)))
+  while ((limits[j+1] < TestNbrGraphic1) || 
+         ((limits[j+1] == TestNbrGraphic1) && (limits[j] <= TestNbrGraphic0)))
   {
     int idxNbr;
     base = bases[i];
     do                     // Compute next base in Montgomery representation.
     {
-      AddBigNbrModN(baseInMontRepres, MontgomeryMultR1, baseInMontRepres);
+      AddBigNbrModN(baseInMontRepres, MontMultGraphicR1, baseInMontRepres);
       prevBase++;
     } while (prevBase < base);
     i++;
@@ -497,20 +378,20 @@ bool isPrime(const int *value)
         mask = HALF_INT_RANGE;
         idxNbr--;
       }
-      MontgomeryMult(power, power, power);
+      MontMultGraphic(power, power, power);
 
-      if (((unsigned int)TestNbr[idxNbr] & mask) != 0U)
+      if (((unsigned int)TestNbrGraphic[idxNbr] & mask) != 0U)
       {
-        MontgomeryMult(power, baseInMontRepres, power);
+        MontMultGraphic(power, baseInMontRepres, power);
       }
     }
        // If power equals 1 or -1 in Montgomery representation,
        // another base must be tried.
-    if ((power[0] == MontgomeryMultR1[0]) && (power[1] == MontgomeryMultR1[1]))
+    if ((power[0] == MontMultGraphicR1[0]) && (power[1] == MontMultGraphicR1[1]))
     {
       continue;   // power equals 1, so another base must be tried.
     }
-    AddBigNbrModN(power, MontgomeryMultR1, temp);
+    AddBigNbrModN(power, MontMultGraphicR1, temp);
     if ((temp[0] == 0) && (temp[1] == 0))
     {
       continue;   // power equals -1, so another base must be tried.
@@ -523,12 +404,12 @@ bool isPrime(const int *value)
         mask = HALF_INT_RANGE;
         idxNbr--;
       }
-      MontgomeryMult(power, power, power);
-      if ((power[0] == MontgomeryMultR1[0]) && (power[1] == MontgomeryMultR1[1]))
+      MontMultGraphic(power, power, power);
+      if ((power[0] == MontMultGraphicR1[0]) && (power[1] == MontMultGraphicR1[1]))
       {
         return false;  // power equals 1, so number is composite.
       }
-      AddBigNbrModN(power, MontgomeryMultR1, temp);
+      AddBigNbrModN(power, MontMultGraphicR1, temp);
       if ((temp[0] == 0) && (temp[1] == 0))
       {                // power equals -1.
         break;

@@ -923,7 +923,11 @@ void dilogText(const char* baseText, const char* powerText, const char* modText,
 }
 
 #ifdef __EMSCRIPTEN__
+#ifdef __ANDROID__
+EXTERNALIZE void doWorkDilog(void)
+#else
 EXTERNALIZE void doWork(void)
+#endif
 {
   int flags;
   int groupLength = 0;

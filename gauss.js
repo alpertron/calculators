@@ -47,11 +47,11 @@ if (lang)
 {
   funcnames =
   [
-    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Parte real,Re(,Parte imaginaria,Im(,Norma\n\nRe(z)^2 + Im(z)^2,Norm(,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random(",
-    "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD(,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM(,¿El valor es primo?,IsPrime(",
-    "Primo siguiente,N(,Primo anterior,B(",
-    "Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv(,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow(",
-    "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partición,P("
+    "Suma,+,Resta,-,Multiplicación,*,División,/,Resto,%,Potencia,^,Resultado anterior,ans,Parte real,Re1,Parte imaginaria,Im1,Norma\n\nRe(z)^2 + Im(z)^2,Norm1,Número aleatorio\n\nPrimer argumento: mínimo valor del número aleatorio\nSegundo argumento: máximo valor del número aleatorio,Random2",
+    "Máximo común divisor\n\nSe pueden usar uno o más argumentos,GCD2,Mínimo común múltiplo\n\nSe pueden usar uno o más argumentos,LCM2,¿El valor es primo?,IsPrime1",
+    "Primo siguiente,N1,Primo anterior,B1",
+    "Inverso modular\n\nPrimer argumento: valor\nSegundo argumento: módulo,ModInv2,Exponenciación modular\n\nPrimer argumento: base\nSegundo argumento: exponente\nTercer argumento: módulo,ModPow3",
+    "Factorial,!,Primorial,#,Fibonacci,F1,Lucas,L1,Partición,P1"
   ];
   parens = "Paréntesis izquierdo,(,Paréntesis derecho,),Unidad imaginaria,i,";
 }
@@ -59,11 +59,11 @@ else
 {
   funcnames =
   [
-    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Real part,Re(,Imaginary part,Im(,Norm\n\nRe(z)^2 + Im(z)^2,Norm(,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random(",
-    "Greatest Common Divisor\n\nOne or more arguments can be used,GCD(,Least Common Multiple\n\nOne or more arguments can be used,LCM(,The value is prime?,IsPrime(",
-    "Next prime after,N(,Last prime before,B(",
-    "Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv(,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow(",
-    "Factorial,!,Primorial,#,Fibonacci,F(,Lucas,L(,Partition,P("
+    "Sum,+,Subtraction,-,Multiplication,*,Division,/,Remainder,%,Power,^,Last answer,ans,Real part,Re1,Imaginary part,Im1,Norm\n\nRe(z)^2 + Im(z)^2,Norm1,Random number\n\nFirst argument: minimum value for random number\nSecond argument: maximum value for random number,Random2",
+    "Greatest Common Divisor\n\nOne or more arguments can be used,GCD2,Least Common Multiple\n\nOne or more arguments can be used,LCM2,The value is prime?,IsPrime1",
+    "Next prime after,N1,Last prime before,B1",
+    "Modular inverse\n\nFirst argument: value\nSecond argument: modulus,ModInv2,Modular power\n\nFirst argument: base\nSecond argument: exponent\nThird argument: modulus,ModPow3",
+    "Factorial,!,Primorial,#,Fibonacci,F1,Lucas,L1,Partition,P1"
   ];
   parens = "Left parenthesis,(,Right parenthesis,),Imaginary unit,i,";
 }
@@ -200,6 +200,11 @@ function startUp()
   get("btnNotSent").onclick = function()
   {
     history.back();
+  };
+  get("clrinput").onclick = function()
+  {
+    get("value").value = "";
+    get("value").focus();
   };
   get("eval").onclick = function()
   {

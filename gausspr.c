@@ -36,12 +36,17 @@
   int oldYFraction;
 #else
   #ifdef __ANDROID__
-    unsigned int *pixelArrPtr;
+    extern unsigned int *pixelArrPtr;
   #else          // Emscripten
     unsigned int pixelArray[PIXEL_ARRAY_SIZE];
   #endif
 #endif
 
+#ifdef __EMSCRIPTEN__
+  extern setPointFunc setPoint;
+  extern getInfoFunc getInfo;
+  extern nbrChangedFunc nbrChgd;
+#endif
 #define MAX_LINES  1000
 #define MAX_COLUMNS 2000
 static char infoText[500];
@@ -314,8 +319,11 @@ char *gaussianNbrChanged(const char *value, int inputBoxNbr, int newWidth, int n
   return NULL;
 }
 
+void initGaussPr(void)
+{
 #ifdef __EMSCRIPTEN__
-  setPointFunc setPoint = setPointGaussian;
-  getInfoFunc getInfo = gaussianGetInformation;
-  nbrChangedFunc nbrChgd = gaussianNbrChanged;
+  setPoint = setPointGaussian;
+  getInfo = gaussianGetInformation;
+  nbrChgd = gaussianNbrChanged;
 #endif
+}

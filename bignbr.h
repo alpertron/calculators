@@ -21,11 +21,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #define MAX_LEN_MULT  25000  // 200000 digits
-#ifdef FACTORIZATION_APP
 #define MAX_LEN       25000  // 200000 digits
-#else
-#define MAX_LEN        2500  // 20000 digits
-#endif
 #define BITS_PER_GROUP         31
 #define BITS_PER_GROUP_MINUS_1 30
 #define HALF_INT_RANGE        0x40000000
@@ -135,6 +131,7 @@ enum eExprErr BigIntRoot(const BigInteger* argument, BigInteger* nthRoot, int Ex
 void BigIntRandom(BigInteger* pLowerLimit, BigInteger* pUpperLimit, BigInteger* pRandom);
 int intRandom(int firstLimit, int secondLimit);
 void floordiv(const BigInteger *num, const BigInteger *den, BigInteger *result);
+void ClassicalMult(int idxFactor1, int idxFactor2, int nbrLen);
 enum eExprErr BigIntMultiplyPower2(BigInteger* pArg, int powerOf2);
 void BigIntMultiplyBy2(BigInteger *nbr);
 void BigIntDivideBy2(BigInteger *nbr);

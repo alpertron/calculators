@@ -40,67 +40,67 @@ targets = ecm quad quadmod fsquares fcubes polfact dilog gaussian contfrac block
 .PHONY : all
 all: $(targets)
 
-ecm_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+ecm_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c fromBlockly.c linkedbignbr.c test.c
 ecm: $(ecm_files) $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=13 $(ecm_files) -lm -o $@
 
-blockly_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+blockly_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c fromBlockly.c linkedbignbr.c test.c
 blockly: $(blockly_files) $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=22 -DUSING_BLOCKLY=1 $(blockly_files) -lm -o $@
 
-testmodmult_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+testmodmult_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c fromBlockly.c linkedbignbr.c test.c
 testmultmod: $(testmodmult_files) $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=24 $(testmodmult_files) -lm -o $@
 
-sumquad_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+sumquad_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c fromBlockly.c linkedbignbr.c test.c
 sumquad: $(sumquad_files) $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=25 $(sumquad_files) -lm -o $@
 
-divisors_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+divisors_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 factor.c ecm.c siqs.c siqsLA.c ecmfront.c sumSquares.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c fromBlockly.c linkedbignbr.c test.c
 divisors: $(divisors_files) $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=27 $(divisors_files) -lm -o $@
 
-gaussian_files = parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+gaussian_files = parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 factor.c ecm.c siqs.c siqsLA.c gaussian.c GaussExpr.c bignbr.c showtime.c from_musl.c inputstr.c fft.c gcdrings.c test.c
 gaussian: $(gaussian_files) $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=12 $(gaussian_files) -lm -o $@
 
-quad_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+quad_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 factor.c ecm.c siqs.c siqsLA.c quad.c quadmodLL.c bignbr.c showtime.c from_musl.c inputstr.c fft.c test.c
 quad: $(quad_files) $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=17 $(quad_files) -lm -o $@
 
-dilog_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+dilog_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 factor.c ecm.c siqs.c siqsLA.c dilog.c bignbr.c showtime.c from_musl.c inputstr.c fft.c test.c
 dilog: $(dilog_files) $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=11 $(dilog_files) -lm -o $@
 
-quadmod_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+quadmod_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 factor.c ecm.c siqs.c siqsLA.c quadmod.c quadmodLL.c bignbr.c showtime.c from_musl.c inputstr.c fft.c test.c
 quadmod: $(quadmod_files) $(h_files)
 	gcc $(flags_factorization) -DDEBUG_CODE=16 $(quadmod_files) -lm -o $@
 
-fsquares_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+fsquares_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 fsquares.c tsquares.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c test.c
 fsquares: $(fsquares_files) $(h_files)
 	gcc $(flags_squares) -DDEBUG_CODE=1 $(fsquares_files) -lm -o $@
 
-tsqcubes_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+tsqcubes_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 tsqcubes.c tsquares.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c test.c
 tsqcubes: $(tsqcubes_files) $(h_files)
 	gcc $(flags_squares) -DDEBUG_CODE=23 $(tsqcubes_files) -lm -o $@
 
-fcubes_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+fcubes_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 fcubes.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c test.c
 fcubes: $(fcubes_files) $(h_files)
 	gcc $(flags_squares) -DDEBUG_CODE=2 $(fcubes_files) -lm -o $@
 
-modmult_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+modmult_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c test.c
 modmult: $(tsqcubes_files) $(h_files)
 	gcc $(flags_other) -DDEBUG_CODE=29 -DFACTORIZATION_APP=1 $(modmult_files) -lm -o $@
@@ -108,16 +108,16 @@ modmult: $(tsqcubes_files) $(h_files)
 testmodmult: $(modmult_files) $(h_files)
 	gcc $(flags_other) -DDEBUG_CODE=30 -DFACTORIZATION_APP=1 $(modmult_files) -lm -o $@
 
-isprime_files = isprime.c test.c
+isprime_files = isprime.c test.c MontMultGraphic.c
 isprime: $(isprime_files) $(h_files)
 	gcc $(flags_other) -DDEBUG_CODE=28 $(isprime_files) -lm -o $@
 
-contfrac_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+contfrac_files = expression.c parseexpr.c partition.c errors.c copyStr.c bigint.c division.c baseconv.c karatsuba.c ClassicalMult.c modmult.c MontgomeryMult.c sqroot.c \
 contfrac.c bignbr.c showtime.c from_musl.c inputstr.c batch.c fft.c gcdrings.c test.c
 contfrac: $(contfrac_files) $(h_files)
 	gcc $(flags_squares) -DDEBUG_CODE=6 $(contfrac_files) -lm -o $@
 
-polfact_files = expression.c parseexpr.c partition.c errors.c bigint.c linkedbignbr.c division.c baseconv.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
+polfact_files = expression.c parseexpr.c partition.c errors.c bigint.c linkedbignbr.c division.c baseconv.c ClassicalMult.c karatsuba.c modmult.c MontgomeryMult.c sqroot.c \
 rootseq.c lineareq.c quadraticeq.c cubiceq.c quartics.c quintics.c quinticsData.c bigrational.c output.c copyStr.c polynomial.c polyexpr.c multpoly.c divpoly.c fftpoly.c polfact.c bignbr.c showtime.c from_musl.c inputstr.c fft.c test.c intpolfact.c modpolfact.c
 polfact: $(polfact_files) $(h_files)
 	gcc $(flags_other) -DDEBUG_CODE=9 -DPOLYEXPR=1 $(polfact_files) -lm -o $@

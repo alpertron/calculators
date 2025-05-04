@@ -256,7 +256,11 @@ static void batchSqCubesCallback(char **pptrOutput, int type)
 }
 
 #if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
+#ifdef __ANDROID__
+EXTERNALIZE void doWorkTSqCubes(void)
+#else
 EXTERNALIZE void doWork(void)
+#endif
 {
   int expon;
   int app;

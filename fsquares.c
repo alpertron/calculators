@@ -370,7 +370,11 @@ static void batchSquaresCallback(char **pptrOutput, int type)
 }
 
 #if defined(__EMSCRIPTEN__) && !defined(_MSC_VER)
+#ifdef __ANDROID__
+EXTERNALIZE void doWorkFSquares(void)
+#else
 EXTERNALIZE void doWork(void)
+#endif
 {
   int app;
   int grpLen = 0;

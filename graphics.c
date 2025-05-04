@@ -37,12 +37,12 @@ int oldYFraction;
 int timer;
 bool quit;
 #else     // Emscripten
-extern setPointFunc setPoint;
-extern getInfoFunc getInfo;
-extern nbrChangedFunc nbrChgd;
+setPointFunc setPoint;
+getInfoFunc getInfo;
+nbrChangedFunc nbrChgd;
 #ifdef __ANDROID__
 #define EXTERNALIZE
-extern int *pixelArrPtr;
+int *pixelArrPtr;
 #else
 #define EXTERNALIZE  __attribute__((visibility("default")))
 extern unsigned int pixelArray[PIXEL_ARRAY_SIZE];
@@ -95,15 +95,15 @@ EXTERNALIZE char* getInformation(int x, int y)
   return getInfo(x, y);
 }
 
-EXTERNALIZE char* nbrChanged(char* value, int inputBoxNbr, int newWidth, int newHeight)
+#if !defined(__ANDROID__)
+  EXTERNALIZE
+#endif
+char* nbrChanged(const char* value, int inputBoxNbr, int newWidth, int newHeight)
 {
   return nbrChgd(value, inputBoxNbr, newWidth, newHeight);
 }
 
 #if defined(__ANDROID__)
-EXTERNALIZE void stopCalculation(void)
-{  // Nothing to do in graphic applications.
-}
 EXTERNALIZE void setPixelArrPtr(int *arrPtr)
 {
   pixelArrPtr = arrPtr;
