@@ -37,7 +37,7 @@
  x1: 0x7FFFFFFF (mask)
  x4: x3 = Sum of products of double limbs in a column during long multiplication.
  x6: x5 = Product of double limbs in a column during long multiplication.
- x8, x9, ... = Double limbs of multplicand and multiplier.
+ x8, x9, ... = Double limbs of multiplicand and multiplier.
  */
 
 ClassicalMult:
