@@ -319,7 +319,7 @@ char *gaussianNbrChanged(const char *value, int inputBoxNbr, int newWidth, int n
   return NULL;
 }
 
-void initGaussPr(void)
+EXTERNALIZE void initGaussPr(void)
 {
 #ifdef __EMSCRIPTEN__
   setPoint = setPointGaussian;

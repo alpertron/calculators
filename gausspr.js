@@ -185,7 +185,7 @@ function startUp()
   let domRect = canvas.getBoundingClientRect();
   canvas.width = domRect.width;
   canvas.height = domRect.height;
-  startLowLevelCode();
+  startLowLevelCode(1);
   commonGraphicEvents();
   centerX.onkeydown = function(evt)
   {

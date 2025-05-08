@@ -29,7 +29,7 @@
 /* global pixels */
 /* global updateGraphic */
 let startOffset;
-function startLowLevelCode()
+function startLowLevelCode(type)
 {
   let bufSize = 33554432;
   startOffset = 0;

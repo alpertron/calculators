@@ -29,7 +29,7 @@
 /* global updateGraphic */
 
 let startOffset;
-function startLowLevelCode()
+function startLowLevelCode(type)
 {
   let length, bytes;
   let info;
@@ -86,7 +86,14 @@ function startLowLevelCode()
       asmDrawPartialGraphic = asm["drawPartialGraphic"];
       asmMoveGraphic = asm["moveGraphic"];
       asmNbrChanged = asm["nbrChanged"];
-      
+      if (type == 0)
+      {
+        asm["initUlam"]();
+      }
+      else
+      {
+        asm["initGaussPr"]();
+      }
       HEAPU8 = new Uint8Array(asm["memory"]["buffer"]);
       pixels = HEAPU8.subarray(asm["getPixels"]());
       updateGraphic(center, 1);
