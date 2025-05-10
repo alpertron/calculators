@@ -33,14 +33,17 @@ function buttonClick(event)
   input.value = input.value.substring(0, start) +
                 chars +
                 input.value.substring(input.selectionEnd);
-    // Place the caret at the end of the appended text.
+    // When appending a function, place the cursor just after
+    // the opening paren. Otherwise, place the cursor at the
+    // end of the inserted characters.
   let offset = chars.indexOf("(") + 1;
   if (offset === 0)
-  {
+  { // Not a function. Place cursor at the end of these characters.
     offset = chars.length;
   }
-  input.selectionStart = start + offset;
-  input.selectionEnd = input.selectionStart;
+  input.selectionEnd = start + offset;
+  input.selectionStart = input.selectionEnd;
+  event.stopPropagation();
 }
 
 function generateFuncButtons(optionCategory, funcButtons)
@@ -53,6 +56,8 @@ function generateFuncButtons(optionCategory, funcButtons)
   // Append all buttons to document fragment instead of funcbtns
   // and finally append the fragment to funcbtns to minimize redraws.
   let fragment = document.createDocumentFragment();
+  let buttonSpan = document.createElement('span');
+  fragment.appendChild(buttonSpan);
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
     if (funcButtons === "wzdfuncbtns" && catIndex === 2)
@@ -63,25 +68,33 @@ function generateFuncButtons(optionCategory, funcButtons)
     button.setAttribute("type", "button");        // Indicate this is a button, not submit.
     button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
     let btnName = funcname[catIndex*2 + 1];
-    let nbrArguments = parseInt(btnName.slice(-1), 10);
-    if (nbrArguments >= 1 && nbrArguments <= 9)
+    if (btnName == "")
     {
-      let text = btnName.slice(0, -1) + "(";
-      // Set text of button.
-      button.innerHTML = text;
-      // Text to be displayed when the button is pressed.
-      button.setAttribute("totalchars", text + ",".repeat(nbrArguments-1) + ")");
+      buttonSpan = document.createElement('span');
+      fragment.appendChild(buttonSpan);      
     }
     else
     {
-      // Set text of button.
-      button.innerHTML = btnName;
-      // Text to be displayed when the button is pressed.
-      button.setAttribute("totalchars", btnName);
+      let nbrArguments = parseInt(btnName.slice(-1), 10);
+      if (nbrArguments >= 1 && nbrArguments <= 9)
+      {
+        let text = btnName.slice(0, -1) + "(";
+        // Set text of button.
+        button.innerHTML = text;
+        // Text to be displayed when the button is pressed.
+        button.setAttribute("totalchars", text + ",".repeat(nbrArguments-1) + ")");
+      }
+      else
+      {
+        // Set text of button.
+        button.innerHTML = btnName;
+        // Text to be displayed when the button is pressed.
+        button.setAttribute("totalchars", btnName);
+      }
+      button.classList.add("funcbtn");
+      button.onclick = buttonClick;
+      buttonSpan.appendChild(button);
     }
-    button.classList.add("funcbtn");
-    button.onclick = buttonClick;
-    fragment.appendChild(button);
   }
   funcbtns.innerHTML = "";
   funcbtns.appendChild(fragment);

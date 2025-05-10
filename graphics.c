@@ -23,6 +23,7 @@
 #include "graphics.h"
 
 #ifndef __EMSCRIPTEN__
+#define EXTERNALIZE
 #if TEST_GRAPHICS
 #include <SDL.h>
 extern setPointFunc setPoint;
@@ -40,8 +41,10 @@ setPointFunc setPoint;
 getInfoFunc getInfo;
 nbrChangedFunc nbrChgd;
 #ifdef __ANDROID__
+#define EXTERNALIZE
 int *pixelArrPtr;
 #else
+#define EXTERNALIZE  __attribute__((visibility("default")))
 extern unsigned int pixelArray[PIXEL_ARRAY_SIZE];
 #endif
 #endif

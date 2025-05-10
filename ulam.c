@@ -841,7 +841,7 @@ char *ulamNbrChanged(const char* value, int inputBoxNbr, int newWidth, int newHe
   return infoText;
 }
 
-EXTERNALIZE void initUlam(void)
+void initUlam(void)
 {
 #ifdef __EMSCRIPTEN__
   setPoint = setPointUlamSpiral;
