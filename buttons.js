@@ -22,17 +22,17 @@
 /* global getParens */
 function buttonClick(event)
 {
+  event.preventDefault();  // Prevent button from getting focus.
   let input = currentInputBox;
-  input.focus();
   let start = input.selectionStart;
   let chars = event.target.getAttribute("totalchars");
   if (chars === "\u23CE")
   {
     chars = "\n";
   }
-  input.value = input.value.substring(0, start) +
-                chars +
-                input.value.substring(input.selectionEnd);
+  let newValue = input.value.substring(0, start) +
+                 chars +
+                 input.value.substring(input.selectionEnd);
     // When appending a function, place the cursor just after
     // the opening paren. Otherwise, place the cursor at the
     // end of the inserted characters.
@@ -41,11 +41,37 @@ function buttonClick(event)
   { // Not a function. Place cursor at the end of these characters.
     offset = chars.length;
   }
-  input.selectionEnd = start + offset;
-  input.selectionStart = input.selectionEnd;
-  event.stopPropagation();
+  input.focus();
+  input.value = newValue;
+  setTimeout(() => {  // Required for Android TV.
+    input.selectionEnd = start + offset;
+    input.selectionStart = input.selectionEnd;
+  }, window["isTV"]? 100: 0);
 }
 
+function setButtonInfo(button, funcname, catIndex)
+{
+  let btnName = funcname[catIndex*2 + 1];
+  button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
+  let nbrArguments = parseInt(btnName.slice(-1), 10);
+  if (nbrArguments >= 1 && nbrArguments <= 9)
+  {
+    let text = btnName.slice(0, -1) + "(";
+    // Set text of button.
+    button.innerHTML = text;
+    // Text to be displayed when the button is pressed.
+    button.setAttribute("totalchars", text + ",".repeat(nbrArguments-1) + ")");
+  }
+  else
+  {
+    // Set text of button.
+    button.innerHTML = btnName;
+    // Text to be displayed when the button is pressed.
+    button.setAttribute("totalchars", btnName);
+  }
+  button.onclick = buttonClick;
+}
+ 
 function generateFuncButtons(optionCategory, funcButtons)
 {
   let button;
@@ -56,7 +82,7 @@ function generateFuncButtons(optionCategory, funcButtons)
   // Append all buttons to document fragment instead of funcbtns
   // and finally append the fragment to funcbtns to minimize redraws.
   let fragment = document.createDocumentFragment();
-  let buttonSpan = document.createElement('span');
+  let buttonSpan = document.createElement("span");
   fragment.appendChild(buttonSpan);
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
@@ -64,35 +90,18 @@ function generateFuncButtons(optionCategory, funcButtons)
     {   // Do not show Enter button on wizard.
       continue;
     }
-    button = document.createElement("button");
-    button.setAttribute("type", "button");        // Indicate this is a button, not submit.
-    button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
     let btnName = funcname[catIndex*2 + 1];
     if (btnName == "")
     {
-      buttonSpan = document.createElement('span');
+      buttonSpan = document.createElement("span");
       fragment.appendChild(buttonSpan);      
     }
     else
     {
-      let nbrArguments = parseInt(btnName.slice(-1), 10);
-      if (nbrArguments >= 1 && nbrArguments <= 9)
-      {
-        let text = btnName.slice(0, -1) + "(";
-        // Set text of button.
-        button.innerHTML = text;
-        // Text to be displayed when the button is pressed.
-        button.setAttribute("totalchars", text + ",".repeat(nbrArguments-1) + ")");
-      }
-      else
-      {
-        // Set text of button.
-        button.innerHTML = btnName;
-        // Text to be displayed when the button is pressed.
-        button.setAttribute("totalchars", btnName);
-      }
+      button = document.createElement("button");
+      button.setAttribute("type", "button");        // Indicate this is a button, not submit.
+      setButtonInfo(button, funcname, catIndex);
       button.classList.add("funcbtn");
-      button.onclick = buttonClick;
       buttonSpan.appendChild(button);
     }
   }
@@ -100,16 +109,36 @@ function generateFuncButtons(optionCategory, funcButtons)
   funcbtns.appendChild(fragment);
 }
 
+// Add tooltips and click handlers to buttons already defined in HTML.
 function completeFuncButtons(funcButtons)
 {
   let button;
   let catIndex;
   let funcname = (getParens() + getFuncNames()[0]).split(",");
-  let funcbtns = get(funcButtons);
+  let funcBtns = get(funcButtons);
+  let spanIndex = 0;
+  let spanBtns = funcBtns.children[+spanIndex];
+  if (spanBtns.tagName !== "SPAN")
+  {
+    spanBtns = funcBtns;
+  }
+  let btnIndex = 0;
   for (catIndex = 0; catIndex < funcname.length/2; catIndex++)
   {
-    button = funcbtns.children[+catIndex];
-    button.setAttribute("title", funcname[catIndex*2]);  // Text of tooltip.
-    button.onclick = buttonClick;
+    if (funcname[catIndex*2] === "")
+    {
+      if (spanBtns.tagName === "SPAN")
+      {
+        spanIndex++;
+        btnIndex = 0;
+        spanBtns = funcBtns.children[+spanIndex];
+      }
+    }
+    else
+    {
+      button = spanBtns.children[+btnIndex];
+      setButtonInfo(button, funcname, catIndex);
+      btnIndex++;
+    }
   } 
 }
